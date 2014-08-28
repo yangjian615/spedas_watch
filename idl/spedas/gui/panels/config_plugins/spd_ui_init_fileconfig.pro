@@ -146,9 +146,6 @@ pro spd_ui_init_fileconfig,  gui_id,  historyWin
   statusBar = Obj_New('SPD_UI_MESSAGE_BAR', $
                        Value='Status information is displayed here.', $
                         bottomBase, XSize=83, YSize=1)
-
-  ;defaults for reset:
-  def_values=[0,0,0,2]
   
   ; call the configuration file gui IDL procedure for each mission listed in the 
   ; spd_ui_config text file

@@ -220,13 +220,11 @@ function spd_ui_degap_options, gui_id, statusbar, historywin
 ;Options Widgets
   interval = spd_ui_spinner(timesBase, value=intrvl, text_box_size=10, incr=1, $
                             label='Time Interval (sec):  ', getxlabelsize=xlsize, $
-                            uval='INTERVAL',tooltip='Gaps are removed where greater'+ $
-                            ' than interval+margin and less than the maximum gap', min_value=0)
+                            uval='INTERVAL',tooltip='dt is the time interval for tests', min_value=0)
 
   margin = spd_ui_spinner(timesBase, value=mrgn, text_box_size=10, incr=.05, $
                           label='Margin (sec): ', xlabelsize=xlsize, $
-                          uval='MARGIN',tooltip='Gaps are removed where greater'+ $
-                          ' than interval+margin and less than the maximum gap', min_value=0)
+                          uval='MARGIN',tooltip='Minimum gap to be removed is (dt+margin)', min_value=0)
 
   flagbutton = widget_button(obBase, value='Set Flag:', uval='FLAGB', $
                              tooltip='Value to fill gaps with. Uses '+ $

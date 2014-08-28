@@ -8,9 +8,9 @@
 ; 
 ;HISTORY:
 
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-15 15:05:46 -0700 (Thu, 15 May 2014) $
-;$LastChangedRevision: 15143 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2014-06-02 15:01:50 -0700 (Mon, 02 Jun 2014) $
+;$LastChangedRevision: 15289 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_goes_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -89,6 +89,30 @@ PRO spd_ui_goes_fileconfig_event, event
 
     END
 
+    'NDON': BEGIN
+
+        IF event.select EQ 1 then !goes.no_download=0 else !goes.no_download=1
+
+    END
+    
+    'NDOFF': BEGIN
+
+        IF event.select EQ 1 then !goes.no_download=1 else !goes.no_download=0
+
+    END
+    
+    'NUON': BEGIN
+
+        IF event.select EQ 1 then !goes.no_update=0 else !goes.no_update=1
+
+    END
+    
+    'NUOFF': BEGIN
+
+        IF event.select EQ 1 then !goes.no_update=1 else !goes.no_update=0
+
+    END
+    
     'VERBOSE': BEGIN
 
        !goes.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
@@ -122,25 +146,7 @@ PRO spd_ui_goes_fileconfig_event, event
    'RESETTODEFAULT': Begin
 
       goes_init,  /reset
-      !goes.no_download = state.def_values[0]
-      !goes.no_update = state.def_values[1]      
-      !goes.downloadonly = state.def_values[2]
-      !goes.verbose = state.def_values[3]
-
-      widget_control,state.localdir,set_value=!goes.local_data_dir
-      widget_control,state.remotedir,set_value=!goes.remote_data_dir
-      if !goes.no_download eq 1 then begin
-         widget_control,state.nd_off_button,set_button=1
-      endif else begin
-         widget_control,state.nd_on_button,set_button=1
-      endelse  
-      if !goes.no_update eq 1 then begin
-        widget_control,state.nu_off_button,set_button=1
-      endif else begin
-        widget_control,state.nu_on_button,set_button=1
-      endelse  
-      widget_control,state.v_droplist,set_combobox_select=!goes.verbose
-
+      spd_ui_goes_init_struct,state,!goes
       state.historywin->update,'Resetting configuration to default values.'
       state.statusbar->update,'Resetting configuration to default values.'  
 

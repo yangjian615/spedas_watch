@@ -16,9 +16,9 @@
 ;spinner (as they change) so that the user can't click down below valid values.
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-06-02 15:01:37 -0700 (Mon, 02 Jun 2014) $
+;$LastChangedRevision: 15288 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_layout_options/spd_ui_layout_options.pro $
 ;--------------------------------------------------------------------------------
 
@@ -576,7 +576,7 @@ pro spd_ui_layout_add_trace,event,state,spectra=spectra
     if ~keyword_set(spectra) then begin
       spd_ui_make_default_lineplot, state.info.loadedData, cpanel, $
                                     xnames[i], ynames[i], state.template,$
-                                    gui_sbar=state.statusBar
+                                    gui_sbar=state.statusBar, datanum=i
     endif else begin
       
       spd_ui_make_default_specplot, state.info.loadedData, cpanel, $

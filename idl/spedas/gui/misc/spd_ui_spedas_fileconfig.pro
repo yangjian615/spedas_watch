@@ -219,12 +219,8 @@ PRO spd_ui_spedas_fileconfig_event, event
   if currentfile ne '' then path = file_dirname(currentfile)
   fileName = Dialog_Pickfile(Title='Choose SPEDAS Template:', $
     Filter='*.tgt',Dialog_Parent=event.top,file=filestring,path=path, /must_exist,/fix_filter); /fix_filter doesn't seem to make a difference on Windows. Does on unix.
-  ; check to make sure the file selected actually is a tgt file
-  if is_string(fileName) then begin
-    if ~stregex(fileName, '.*(.tgt)$',/fold_case,/bool) then begin
-      ok = dialog_message('Selected file does not appear to be a SPEDAS Template. Please select a SPEDAS Template (*.tgt) file',/center)
-    endif else spd_ui_fileconfig_load_template, filename, event.top, state.statusBar
-  endif
+  ; load the template
+  spd_ui_fileconfig_load_template, filename, event.top, state.statusBar    
 
 END
   
@@ -233,20 +229,7 @@ END
     ; to reset all values to their default values the system
     ; variable needs to be reinitialized
     spedas_init,  /reset
-    
-    ; used the stored default values to set the download
-    ; and update variables
-    !spedas.no_download = state.def_values[0]
-    !spedas.no_update = state.def_values[1]
-    !spedas.downloadonly = state.def_values[2]
-    !spedas.verbose = state.def_values[3]
-    !spedas.linux_fix = state.def_values[4]
-      
-    ; reset the widgets to these values
-    widget_control,state.tempdir,set_value=!spedas.temp_dir
-    widget_control,state.browserexe,set_value=!spedas.browser_exe
-    widget_control,state.v_droplist,set_combobox_select=!spedas.verbose
-    Widget_Control,  state.fixlinux, Set_Button=!spedas.linux_fix
+    spd_ui_spedas_init_struct, state, !spedas
        
     !spd_gui.templatepath = ''
     widget_control, (widget_info(event.top, find_by_uname='TMPPATH')), set_value=''

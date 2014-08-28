@@ -130,10 +130,13 @@
 ; Note: Record & Number_Records can be used together to specify a range of records to be read.
 ;
 ; Author: Davin Larson - 2006
+; 
+; Side Effects:
+;   Data is returned in pointer variables. Calling routine is responsible for freeing up heap memory - otherwise a memory leak will occur.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-05-27 09:07:19 -0700 (Tue, 27 May 2014) $
-; $LastChangedRevision: 15230 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2014-06-04 08:35:27 -0700 (Wed, 04 Jun 2014) $
+; $LastChangedRevision: 15302 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_load_vars.pro $
 ;
 ;-
@@ -147,7 +150,7 @@ function cdf_load_vars,files,varnames=vars,varformat=vars_fmt,info=info,verbose=
 vb = keyword_set(verbose) ? verbose : 0
 vars=''
 info = 0
-dprint,dlevel=4,verbose=verbose,'$Id: cdf_load_vars.pro 15230 2014-05-27 16:07:19Z pcruce $'
+dprint,dlevel=4,verbose=verbose,'$Id: cdf_load_vars.pro 15302 2014-06-04 15:35:27Z davin-mac $'
 
 on_ioerror, ferr
 for fi=0,n_elements(files)-1 do begin
@@ -175,7 +178,8 @@ for fi=0,n_elements(files)-1 do begin
             for v=0,info.nv-1 do begin
                 vtypes[v] = cdf_var_atts(id,info.vars[v].num,zvar=info.vars[v].is_zvar,'VAR_TYPE',default='')
             endfor
-            vars= [vars, info.vars[strfilter(vtypes,var_type,delimiter=' ',/index)].name]
+            w = strfilter(vtypes,var_type,delimiter=' ',count=count,/index)
+            if count ge 1 then vars= [vars, info.vars[w].name] else dprint,dlevel=1,verbose=verbose,'No VAR_TYPE matching: ',VAR_TYPE
         endif
         vars = vars[uniq(vars,sort(vars))]
         if n_elements(vars) le 1 then begin

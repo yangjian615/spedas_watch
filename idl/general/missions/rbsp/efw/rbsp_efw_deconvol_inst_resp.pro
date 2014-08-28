@@ -34,13 +34,16 @@
 ;   2013-06-21: JBT. 
 ;         1. Added support to eb1.
 ;         2. Removed hard-wired sample rate.
+;	2014-06-01: AWB
+;		  Checks to be sure that block length is greater than kernel length
+;		  Not doing this can cause blk_con to fail for short bursts. 
 ;
 ;
 ; Version:
 ;
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2014-02-25 11:56:01 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14426 $
+; $LastChangedDate: 2014-06-02 09:07:12 -0700 (Mon, 02 Jun 2014) $
+; $LastChangedRevision: 15281 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_efw_deconvol_inst_resp.pro $
 ;-
 
@@ -79,6 +82,9 @@ adcresp_56 = rbsp_adc_response(f, 'E56AC')
 E12_resp = 1d / (spb_resp * hipass_resp * bessel_resp * adcresp_12)
 E34_resp = 1d / (spb_resp * hipass_resp * bessel_resp * adcresp_34)
 E56_resp = 1d / (axb_resp * hipass_resp * bessel_resp * adcresp_56)
+
+
+
 ; E12_resp[0] = 0
 ; E34_resp[0] = 0
 ; E56_resp[0] = 0
@@ -151,10 +157,12 @@ FOR ib=0L, nbursts-1 DO BEGIN
   Eyf = [Eyf, fltarr(kernel_length/2)]
   Ezf = [Ezf, fltarr(kernel_length/2)]
 
-  ;-- Deconvolve transfer function
-  Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
-  Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
-  Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)
+	  ;-- Deconvolve transfer function
+	if b_length > kernel_length then begin
+	  Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
+	  Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
+	  Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)
+	endif
 
   ;-- Remove the padding
   Exf = Exf[0:nt_burst-1]
@@ -278,10 +286,12 @@ FOR ib=0L, nbursts-1 DO BEGIN
   Eyf = [Eyf, fltarr(kernel_length/2)]
   Ezf = [Ezf, fltarr(kernel_length/2)]
 
-  ;-- Deconvolve transfer function
-  Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
-  Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
-  Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)
+	;-- Deconvolve transfer function
+	if b_length > kernel_length then begin
+		Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
+		Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
+		Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)
+	endif
 
   ;-- Remove the padding
   Exf = Exf[0:nt_burst-1]
@@ -416,10 +426,13 @@ FOR ib=0L, nbursts-1 DO BEGIN
   Eyf = [Eyf, fltarr(kernel_length/2)]
   Ezf = [Ezf, fltarr(kernel_length/2)]
 
-  ;-- Deconvolve transfer function
-  Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
-  Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
-  Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)
+
+	;-- Deconvolve transfer function
+	if b_length > kernel_length then begin
+	  Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
+	  Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
+	  Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)
+	endif
 
   ;-- Remove the padding
   Exf = Exf[0:nt_burst-1]

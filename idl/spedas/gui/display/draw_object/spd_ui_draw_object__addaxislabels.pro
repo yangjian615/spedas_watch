@@ -18,9 +18,9 @@
 ;labelpos: returns the position of the most distant label from the axis
 ;blacklabels: indicates that default settings should be over-ridden to make all labels black
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-06-02 14:46:56 -0700 (Mon, 02 Jun 2014) $
+;$LastChangedRevision: 15286 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__addaxislabels.pro $
 ;-
 pro spd_ui_draw_object::addAxisLabels,model,labels,margin,placeLabel,dir,orientation,stacklabels,showlabels,pt1,pt2,lazylabels,blacklabels,labelPos=labelPos
@@ -64,6 +64,8 @@ pro spd_ui_draw_object::addAxisLabels,model,labels,margin,placeLabel,dir,orienta
   
   ;logic to control label alignment
   ;ie top/bottom/left/right justify
+  ; orientation = 0 --> vertical
+  ; orientation = 1 --> horizontal
   if orient eq 0 then begin
     if stacklabels eq 0 then begin
       halign = .5
@@ -81,7 +83,7 @@ pro spd_ui_draw_object::addAxisLabels,model,labels,margin,placeLabel,dir,orienta
       halign = ~placelabel
     endelse
   endelse
-  
+
   len = 0D
   
   n = n_elements(objs)
@@ -113,7 +115,7 @@ pro spd_ui_draw_object::addAxisLabels,model,labels,margin,placeLabel,dir,orienta
       if stacklabels eq 0 then begin
         len += max(strlen(value))*pt1*size
       endif else begin
-        len += pt2*size*n_elements(value)
+        len += max(strlen(value))*pt2*size
       endelse
     endelse
   ;need to correct to account for varying orientations/pt1/pt2
@@ -165,11 +167,10 @@ pro spd_ui_draw_object::addAxisLabels,model,labels,margin,placeLabel,dir,orienta
         loc1 = .5D
         loc2 = -(margin*pt1+pos);-(margin*pt1+pos+size*pt1/2D)
         pos += pt1*(size)*n_elements(value)
-      ; pos += pt1*size
       endif else begin
-        loc1 = (.5D)-(len/2D)+ pos;(.5D)-(len/2D)+(size*pt2)/2D + pos;
-        loc2 = -(margin*pt1)
-        pos += pt2*(size)*n_elements(value)
+        loc1 = (size*max(strlen(value)))/(len/pt1*2D) + pos
+        loc2 = -(margin*pt1+size*pt1/2D)
+        pos += double(size*max(strlen(value)))/double(len/pt2)
       endelse
       
       if dir eq 1 then begin
@@ -180,7 +181,7 @@ pro spd_ui_draw_object::addAxisLabels,model,labels,margin,placeLabel,dir,orienta
         endelse
       endif
     endelse
-    
+
     if placelabel eq 1 then begin
       loc2 = 1 - loc2
     endif
@@ -192,7 +193,7 @@ pro spd_ui_draw_object::addAxisLabels,model,labels,margin,placeLabel,dir,orienta
       loc = [loc1,loc2,zstack]
       labelPos = loc2
     endelse
-   
+
     if keyword_set(blacklabels) then begin
       color = [0,0,0]
     endif 

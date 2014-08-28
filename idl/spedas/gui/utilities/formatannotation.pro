@@ -80,9 +80,9 @@ end
 ;  print,formatannotation(0,0,1234,data={timeaxis:0,formatid:7,scaling:0,exponent:2})
 ;  1.234000!z(00d7)10!U3
 ;  
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-06-05 10:01:44 -0700 (Thu, 05 Jun 2014) $
+;$LastChangedRevision: 15308 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/formatannotation.pro $
 ;-
 function formatannotation,axis,index,value,data=data
@@ -120,7 +120,7 @@ function formatannotation,axis,index,value,data=data
   endelse
   
 ;  numLimit = 10000000000
-  roundingfactor = 1d-15
+   roundingfactor = 1d-15
   
   ;print,value
   ;help,data,/str
@@ -142,14 +142,15 @@ function formatannotation,axis,index,value,data=data
      if val le relativecuttoff && val ge -relativecuttoff then begin
        val = 0
      endif
-;    if ~data.timeaxis then begin
-;      rval = round(val)
-;      if abs(val - rval) lt 10d^(-11) then val = rval
-;    endif
+     ; the following code will round annotations like 999999 to 1000000 on non-time axes
+     if ~data.timeaxis then begin
+         rval = round(val)
+         if abs(val - rval) lt roundingfactor then val = rval
+     endif
   endif else begin
     val = value
   endelse
-
+  
   
   ;Calculate real space value if necessary
   oval = 1d*val
@@ -160,7 +161,7 @@ function formatannotation,axis,index,value,data=data
   endif else begin
     val = 1d*val
   endelse
-  
+
   if ~finite(val) then begin
   ;  print,strtrim(string(val))
     return,strtrim(string(val))
@@ -377,7 +378,7 @@ function formatannotation,axis,index,value,data=data
 
         ;increment length if rounding will add digit
         check_dround, val, neg, dec, prec
-
+        
         formatString = '(D' + strtrim(string(negzero+neg+dec+1+prec,format='(I)'),2)+$
                          '.' + strtrim(prec,2)+')'
       endelse

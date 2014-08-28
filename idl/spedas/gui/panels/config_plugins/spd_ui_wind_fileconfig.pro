@@ -9,9 +9,9 @@
 ;NOTE:
 ; This is essentially the same routine as spd_ui_goes_fileconfig
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-15 15:10:13 -0700 (Thu, 15 May 2014) $
-;$LastChangedRevision: 15145 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2014-06-02 15:01:50 -0700 (Mon, 02 Jun 2014) $
+;$LastChangedRevision: 15289 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_wind_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -91,6 +91,30 @@ PRO spd_ui_wind_fileconfig_event, event
 
     END
 
+    'NDON': BEGIN
+
+        IF event.select EQ 1 then !wind.no_download=0 else !wind.no_download=1
+
+    END
+    
+    'NDOFF': BEGIN
+
+        IF event.select EQ 1 then !wind.no_download=1 else !wind.no_download=0
+
+    END
+    
+    'NUON': BEGIN
+
+        IF event.select EQ 1 then !wind.no_update=0 else !wind.no_update=1
+
+    END
+    
+    'NUOFF': BEGIN
+
+        IF event.select EQ 1 then !wind.no_update=1 else !wind.no_update=0
+
+    END
+    
     'VERBOSE': BEGIN
 
        !wind.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
@@ -124,25 +148,7 @@ PRO spd_ui_wind_fileconfig_event, event
    'RESETTODEFAULT': Begin
 
       wind_init,  /reset
-      !wind.no_download = state.def_values[0]
-      !wind.no_update = state.def_values[1]      
-      !wind.downloadonly = state.def_values[2]
-      !wind.verbose = state.def_values[3]
-
-      widget_control,state.localdir,set_value=!wind.local_data_dir
-      widget_control,state.remotedir,set_value=!wind.remote_data_dir
-      if !wind.no_download eq 1 then begin
-         widget_control,state.nd_off_button,set_button=1
-      endif else begin
-         widget_control,state.nd_on_button,set_button=1
-      endelse  
-      if !wind.no_update eq 1 then begin
-        widget_control,state.nu_off_button,set_button=1
-      endif else begin
-        widget_control,state.nu_on_button,set_button=1
-      endelse  
-      widget_control,state.v_droplist,set_combobox_select=!wind.verbose
-
+      spd_ui_wind_init_struct,state,!wind
       state.historywin->update,'Resetting configuration to default values.'
       state.statusbar->update,'Resetting configuration to default values.'
 

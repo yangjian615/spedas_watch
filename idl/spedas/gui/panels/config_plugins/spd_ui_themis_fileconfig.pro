@@ -16,9 +16,9 @@
 ;              slightly to make things line up in both windows and linux.
 ; 24-oct-2013 clr, removed graphic buttons and goes wind and istp code. panel is now tabbed
 ; 
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-16 10:19:06 -0700 (Fri, 16 May 2014) $
-;$LastChangedRevision: 15152 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2014-06-02 15:01:50 -0700 (Mon, 02 Jun 2014) $
+;$LastChangedRevision: 15289 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_themis_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -106,8 +106,9 @@ PRO spd_ui_themis_fileconfig_event, event
   Widget_Control, event.id, Get_UValue = uval
   
   CASE uval OF
+  
     'LOCALBROWSE':BEGIN
-
+    
       widget_control, state.localDir, get_value=currentDir
       if currentDir ne '' then path = file_dirname(currentDir)
       dirName = Dialog_Pickfile(Title='Choose a Local Data Directory:', $
@@ -118,20 +119,44 @@ PRO spd_ui_themis_fileconfig_event, event
       ENDIF ELSE BEGIN
         ;  ok = dialog_message('Selection is not a directory',/center)
       ENDELSE
-      
+     
     END
     
     'LOCALDIR': BEGIN
-    
+
         widget_control, state.localDir, get_value=currentDir
         !themis.local_data_dir = currentDir
 
     END
  
      'REMOTEDIR': BEGIN
-    
+
         widget_control, state.remoteDir, get_value=currentDir
         !themis.remote_data_dir = currentDir
+
+    END
+
+    'NDON': BEGIN
+
+        IF event.select EQ 1 then !themis.no_download=0 else !themis.no_download=1
+
+    END
+    
+    'NDOFF': BEGIN
+
+        IF event.select EQ 1 then !themis.no_download=1 else !themis.no_download=0
+
+    END
+    
+    'NUON': BEGIN
+
+        IF event.select EQ 1 then !themis.no_update=0 else !themis.no_update=1
+
+    END
+    
+    'NUOFF': BEGIN
+
+        IF event.select EQ 1 then !themis.no_update=1 else !themis.no_update=0
 
     END
     
@@ -143,7 +168,7 @@ PRO spd_ui_themis_fileconfig_event, event
     
     
     'RESET': BEGIN
-     
+    
       !themis=state.thm_cfg_save
       widget_control,state.localdir,set_value=!themis.local_data_dir
       widget_control,state.remotedir,set_value=!themis.remote_data_dir
@@ -173,20 +198,15 @@ PRO spd_ui_themis_fileconfig_event, event
 ;        spd_ui_fileconfig_set_draw,state,1
 ;      endelse
 
-
     END
     
    'RESETTODEFAULT': BEGIN
 
+      thm_init,  /reset      
+      spd_ui_fileconfig_init_struct,state,!themis
       state.historywin->update,'Resetting configuration to default values.'
       state.statusbar->update,'Resetting configuration to default values.'
-      thm_init,  /reset      
-      !themis.no_download = state.def_values[0]
-      !themis.no_update = state.def_values[1]      
-      !themis.downloadonly = state.def_values[2]
-      !themis.verbose = state.def_values[3]        
-      widget_control, state.LocalDir, set_value=!themis.local_data_dir
-      widget_control, state.RemoteDir, set_value=!themis.remote_data_dir
+
 ;      Do Not delete may reinstall at later date    
 ;      !spd_gui.renderer = 1
 ;      widget_control,state.gr_soft_button,/set_button
@@ -286,9 +306,6 @@ PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
   savebut = widget_button(bmaster, value = '   Save To File  ', uvalue = 'SAVE')
   resetbut = widget_button(bmaster, value = '     Cancel     ', uvalue = 'RESET')
   reset_to_dbutton =  widget_button(bmaster,  value =  '  Reset to Default   ',  uvalue =  'RESETTODEFAULT')
-
-  ;defaults for reset:
-  def_values=[0,0,0,2]
  
   ;store these guys in pointers so that they
   ;are easy to return from event handler
@@ -298,7 +315,6 @@ PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
           nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
           nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
           v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
-          def_values:def_values, $
           historyWin:historyWin, tab_id:tab_id, master:master}
 
   spd_ui_fileconfig_init_struct,state,!themis

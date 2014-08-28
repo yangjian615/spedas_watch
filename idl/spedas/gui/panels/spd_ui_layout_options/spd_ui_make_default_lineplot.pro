@@ -13,17 +13,17 @@
 ;  panel:  the panel on which the plot should be placed.
 ;  xvar:  the name of the variable storing the x-data.
 ;  yvar:  the name of the variable storing the y-data.
-;  gui_sbar: the main GUI status bar object
 ;            
 ;KEYWORDS:
-;  none
+;  gui_sbar: the main GUI status bar object
+;  datanum: # of the trace that we're plotting - passed from layout options 
 ;        
 ;OUTPUT:
 ;  none
 ;
 ;--------------------------------------------------------------------------------
 
-pro spd_ui_make_default_lineplot, loadedData, panel, xvar, yvar,template, gui_sbar=gui_sbar
+pro spd_ui_make_default_lineplot, loadedData, panel, xvar, yvar,template, gui_sbar=gui_sbar, datanum=datanum
 
 compile_opt idl2, hidden
 
@@ -261,12 +261,10 @@ if obj_valid(yAxisTemplate) then begin
   
   if obj_valid(yTlabels) && obj_isa(yTlabels,'IDL_Container') then begin
   
-    yTlabel = yTlabels->get()
-  
-    if obj_valid(yTlabel) then begin
-  
-      yTlabel->getProperty,font=yfont,format=yformat,size=ysize
-  
+    yTlabel = yTlabels->get(/all)
+
+    if datanum lt n_elements(yTlabel) && obj_valid(yTlabel[datanum]) then begin
+      yTlabel[datanum]->getProperty,font=yfont,format=yformat,size=ysize
     endif
   
   endif

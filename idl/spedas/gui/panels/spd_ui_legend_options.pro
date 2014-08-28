@@ -14,9 +14,9 @@
 ; KEYWORDS:
 ;  panel_select:     pointer to current panel
 ; 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-28 09:35:05 -0700 (Wed, 28 May 2014) $
-;$LastChangedRevision: 15239 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-06-03 11:01:15 -0700 (Tue, 03 Jun 2014) $
+;$LastChangedRevision: 15293 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_legend_options.pro $
 ;-
 
@@ -949,11 +949,11 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
    formatLabel = Widget_Label(formatBase, value=' Variable format:')   
    fBase = Widget_Base(formatBase, Row=2, Frame=3, SCR_XSIZE=500, /base_align_center)
    varformatBase = Widget_Base(fBase, Row=1)
-   nullLabel = Widget_Label(varformatBase, value=' ', SCR_XSIZE=15)
-   varlistLabel = Widget_Label(varformatBase, value=' Variables:', sensitive=validpanel, SCR_XSIZE=65)
-   varlistCombo = Widget_Combobox(varformatBase, uval='VARLIST', uname='varlist', sensitive=validpanel, SCR_XSIZE=combobox_xsize)
-   nullLabel = Widget_Label(varformatBase, value=' ', SCR_XSIZE=15)
-   formatLabel = Widget_Label(varformatBase, value=' Format: ', sensitive=validpanel, SCR_XSIZE=45)
+   ;nullLabel = Widget_Label(varformatBase, value=' ', SCR_XSIZE=5)
+   varlistLabel = Widget_Label(varformatBase, value=' For all variables of type: ', sensitive=validpanel, SCR_XSIZE=170)
+   varlistCombo = Widget_Combobox(varformatBase, uval='VARLIST', uname='varlist', sensitive=validpanel, SCR_XSIZE=80)
+   nullLabel = Widget_Label(varformatBase, value=' ', SCR_XSIZE=5)
+   formatLabel = Widget_Label(varformatBase, value=' Set format: ', sensitive=validpanel, SCR_XSIZE=70)
    formatCombo = Widget_Combobox(varformatBase, uval='FORMCOMBO', uname='formcombo', sensitive=validpanel, SCR_XSIZE=combobox_xsize)
    
    notationBase1 = Widget_Base(fBase, row=1)  
