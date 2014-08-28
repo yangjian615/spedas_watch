@@ -235,11 +235,11 @@ pro spd_ui_part_getspec_set_values, state
   endelse
 
 
-  ;check gyrovelocity input
-  a0 = spd_ui_part_getspec_check_input(state,'gyro_min','Gyrovelocity min',min=0,max=360,value=gvmin)
-  a1 = spd_ui_part_getspec_check_input(state,'gyro_max','Gyrovelocity max',min=0,max=360,value=gvmax)
+  ;check gyrophase input
+  a0 = spd_ui_part_getspec_check_input(state,'gyro_min','Gyrophase min',min=0,max=360,value=gvmin)
+  a1 = spd_ui_part_getspec_check_input(state,'gyro_max','Gyrophase max',min=0,max=360,value=gvmax)
   if ~a0 || ~a1 || gvmin ge gvmax then begin
-    if a0 && a1 && gvmin ge gvmax then x=dialog_message('Gyrovelocity minimum must be less than maximum; values reset.',/center)
+    if a0 && a1 && gvmin ge gvmax then x=dialog_message('Gyrophase minimum must be less than maximum; values reset.',/center)
     spd_ui_part_getspec_reset_widget, state,['gyro_min','gyro_max']
   endif else begin
     spd_ui_part_getspec_set_value, state, ['gyro_min','gyro_max']
@@ -822,9 +822,9 @@ end
 ; 01-jul-2014, aaf, now conforms to standard SPEDAS load API
 ; 
 ; 
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-03 15:14:01 -0700 (Thu, 03 Jul 2014) $
-;$LastChangedRevision: 15508 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-08-18 16:32:47 -0700 (Mon, 18 Aug 2014) $
+;$LastChangedRevision: 15682 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_part_getspec_options.pro $
 ;-
 Pro spd_ui_part_getspec_options, tab_id, loadedData, historyWin, statusBar, $
@@ -960,7 +960,7 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
                      tooltip='Theta (latitudinal) spectrogram. Averages over energy and phi (longitude).')
   
   spec_selection_base3 = widget_base(spec_type_base, /nonexclusive)
-    spec_gyro = widget_button(spec_selection_base3, value='Gyrovelocity', uname='gyro', uval='fac_set', $ 
+    spec_gyro = widget_button(spec_selection_base3, value='Gyrophase', uname='gyro', uval='fac_set', $ 
                      tooltip='Field aligned longitudinal spectrogram.  Averages over energy and latitude in field alligned coordinates.')
     spec_pa = widget_button(spec_selection_base3, value='Pitch Angle', uname='pa', uval='fac_set', $ 
                      tooltip='Field aligned colatitude spectrogram.  Averages over energy and longitude in field alligned coordinates.') 
@@ -993,16 +993,16 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
   gyro_range_base = widget_base(angle_range_base, /row, uname='gyro_base')
     gyro_range_label = widget_label(gyro_range_base, value='Gyro:  ')
     gyro_min = spd_ui_spinner(gyro_range_base, label='', value=gyro[0], uname='gyro_min', $
-                     tooltip = 'Minimum gyrovelocity used to calculate field aligned spectrograms.')
+                     tooltip = 'Minimum gyrophase used to calculate field aligned spectrograms.')
     gyro_max = spd_ui_spinner(gyro_range_base, label='', value=gyro[1], uname='gyro_max', $
-                     tooltip = 'Maximum gyrovelocity used to calculate field aligned spectrograms.')
+                     tooltip = 'Maximum gyrophase used to calculate field aligned spectrograms.')
 
   pa_range_base = widget_base(angle_range_base, /row, uname='pa_base')
     pa_range_label = widget_label(pa_range_base, value='PA:  ')
     pa_min = spd_ui_spinner(pa_range_base, label='', value=pa[0], uname='pa_min', $
                      tooltip = 'Minimum pitch angle used to calculate field aligned spectrograms.')
     pa_max = spd_ui_spinner(pa_range_base, label='', value=pa[1], uname='pa_max',$
-                     tooltip = 'Maximum gyrovelocity used to calculate field aligned spectrograms.')
+                     tooltip = 'Maximum gyrophase used to calculate field aligned spectrograms.')
 
   ;dynamically resize angle range labels
   geo = widget_info(theta_range_label,/geo)
@@ -1039,7 +1039,7 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
   start_angle_base2 = widget_base(start_angle_base, /row, xpad=0)
     start_angle = spd_ui_spinner(start_angle_base2, label='Start plot at (degrees): ', $
                       value=phi_start, incr=5,  uname='start_angle', $
-                      tooltip='Start phi and gyrovelocity y axes at this value.')
+                      tooltip='Start phi and gyrophase y axes at this value.')
   
   
 ;------------------------------------------------------------------------------

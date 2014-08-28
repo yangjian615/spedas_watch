@@ -18,8 +18,8 @@
 ;  TODO: Accept multiple arguments, loop
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-18 18:30:02 -0700 (Tue, 18 Mar 2014) $
-;$LastChangedRevision: 14586 $
+;$LastChangedDate: 2014-08-18 17:02:28 -0700 (Mon, 18 Aug 2014) $
+;$LastChangedRevision: 15685 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -395,7 +395,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
       thm_pgs_make_theta_spec, clean_data, spec=pa_spec, sigma=pa_sigma, yaxis=pa_y
     endif
     
-    ;Build gyrovelocity spectrogram
+    ;Build gyrophase spectrogram
     if in_set(outputs_lc, 'gyro') then begin
       thm_pgs_make_phi_spec, clean_data, spec=gyro_spec, sigma=gyro_sigma, yaxis=gyro_y
     endif
@@ -464,7 +464,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     endif
   endif
   
-  ;Gyrovelocity Spectrograms
+  ;Gyrophase Spectrograms
   if ~undefined(gyro_spec) then begin
     ;gyro range may be wrapped about gyro=0, this keeps an invalid range from being passed to tplot
     gyro_y_range = (undefined(start_angle) ? 0:start_angle) + [0,360]

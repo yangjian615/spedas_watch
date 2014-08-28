@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-21 16:53:34 -0700 (Mon, 21 Jul 2014) $
-;$LastChangedRevision: 15588 $
+;$LastChangedDate: 2014-08-18 16:33:36 -0700 (Mon, 18 Aug 2014) $
+;$LastChangedRevision: 15683 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1305,7 +1305,6 @@ PRO spd_gui_event, event
     END
     
     'HELPFORM': spd_gui_error, info.master, info.historyWin
-    'HELP:OVIEWKEY': spd_ui_overplot_key, info.master, info.historyWin
     'HELPABOUT': spd_ui_help_about, info.master, info.historyWin
     
     
@@ -1566,7 +1565,6 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   helpMenu = Widget_Button(bar, Value='Help ', /Menu)
   helpButton = Widget_Button(helpMenu, Value='Help Window...', uValue='HELP')
   helpRequestButton = Widget_Button(helpMenu, Value='Help Request Form...', uValue='HELPFORM')
-  oplotkeyButton = Widget_Button(helpMenu, Value='Overview Plot Key...', uValue='HELP:OVIEWKEY')
   helpAboutButton = Widget_Button(helpMenu, Value='About...', uValue='HELPABOUT') ;nikos: new button
   
   ; Start of Toolbar Buttons

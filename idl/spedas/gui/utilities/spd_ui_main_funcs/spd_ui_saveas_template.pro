@@ -7,9 +7,9 @@
 ;  Inputs: The info structure from the main gui
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-08-18 16:40:46 -0700 (Mon, 18 Aug 2014) $
+;$LastChangedRevision: 15684 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_main_funcs/spd_ui_saveas_template.pro $
 ;-
 
@@ -36,6 +36,12 @@ pro spd_ui_saveas_template,info
   fileName = spd_ui_dialog_pickfile_save_wrapper(Title='Save As:', $
        Filter='*.tgt', File = fileString,path=path, /Write, Dialog_Parent=info.master)
   IF(Is_String(fileName)) THEN BEGIN
+     ;For Windows, test filename for '.tgd' extension and add if not present
+     ;copied from spd_ui_save, aaf, 2014-08-18
+     If(!version.os_family Eq 'Windows') Then Begin
+       test_tgd = strpos(filename, '.tgd')
+       If(test_tgd[0] Eq -1) Then filename = filename+'.tgd'
+     Endif
      save_spedas_template,template=info.template_object,filename=fileName,$
          statusmsg=statusmsg,statuscode=statuscode
      IF (statuscode LT 0) THEN BEGIN
