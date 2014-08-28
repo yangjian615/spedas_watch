@@ -50,6 +50,8 @@
 ;
 ;       SYMDIAG:       Plot symmetry weighting function in separate window.
 ;
+;       SUNDIR:        Plot the direction of the Sun in SWEA coordinates.
+;
 ;       LABEL:         If set, label the 3D angle bins.
 ;
 ;       KEEPWINS:      If set, then don't close the snapshot window(s) on exit.
@@ -57,15 +59,15 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:13:44 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15561 $
+; $LastChangedDate: 2014-08-08 12:46:09 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15673 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  center=center, units=units, ddd=ddd, sum=sum, padmag=padmag, $
-                 energy=energy, label=label, smo=smo, symdir=symdir, $
+                 energy=energy, label=label, smo=smo, symdir=symdir, sundir=sundir, $
                  symenergy=symenergy, symdiag=symdiag, power=pow
 
   @mvn_swe_com
@@ -73,6 +75,16 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if (data_type(units) ne 7) then units = 'crate'
+  
+  case strupcase(units) of
+    'COUNTS' : yrange = [1.,1.e5]
+    'RATE'   : yrange = [1.,1.e5]
+    'CRATE'  : yrange = [1.,1.e6]
+    'FLUX'   : yrange = [1.,1.e8]
+    'EFLUX'  : yrange = [1.e4,1.e9]
+    'DF'     : yrange = [1.e-19,1.e-8]
+    else     : yrange = [0.,0.]
+  endcase
 
   case n_elements(center) of
     0 : begin
@@ -110,6 +122,19 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
     npts = 1
     doall = 0
   endelse
+  
+  if keyword_set(sundir) then begin
+    get_data,'Sun_MAVEN_SWEA_STOW',data=sun,index=i
+    if (i eq 0) then begin
+      print,"No sun direction!"
+      sundir = 0
+    endif else begin
+      xyz_to_polar, sun, theta=the, phi=phi, /ph_0_360
+      sun = {time:sun.x, the:the.y, phi:phi.y}
+      the = 0
+      phi = 0
+    endelse
+  endif
 
 ; Put up snapshot window(s)
 
@@ -194,10 +219,21 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
         xyouts,reform(ddd.phi[63,*]),reform(ddd.theta[63,*]),lab,align=.5
       endif
       
+      if keyword_set(sundir) then begin
+        dt = min(abs(sun.time - mean(ddd.time)),j)
+        Saz = sun.phi[j]
+        Sel = sun.the[j]
+        if (abs(Sel) gt 61.) then col=255 else col=0
+        oplot,[Saz],[Sel],psym=6,color=col,thick=2,symsize=1.2
+        Saz = (Saz + 180.) mod 360.
+        Sel = -Sel
+        oplot,[Saz],[Sel],psym=7,color=col,thick=2,symsize=1.2
+      endif
+      
       if keyword_set(symdir) then begin
         de = min(abs(ddd.energy[*,0] - symenergy), sbin)
         f = reform(ddd.data[sbin,*],16,6)
-        if (min(ddd.time) lt t_mtx3) then f[*,0:1] = 0.
+        if (min(ddd.time) lt t_mtx[2]) then f[*,0:1] = 0.
         phi = (reform(ddd.phi[sbin,*],16,6))[*,0]
         the = (reform(ddd.theta[sbin,*],16,6))[0,*]
         
@@ -232,7 +268,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
           oplot,[az0,az0]+360.,[0.,2.*max(faz[m])], line=2, color=6
 
           plot,el,fel,xtitle='Elevation',psym=10
-          if (min(ddd.time) lt t_mtx3) then j = 2 else j = 0
+          if (min(ddd.time) lt t_mtx[2]) then j = 2 else j = 0
           oplot,[el[j],el[j]],[0.,2.*max(fel)], line=2, color=4
           oplot,[el[5],el[5]],[0.,2.*max(fel)], line=2, color=4
           oplot,[el0,el0],[0.,2.*max(fel)], line=2, color=6
@@ -242,7 +278,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
       if (sflg) then begin
         wset, Swin
-        spec3d, ddd, units=units
+        spec3d, ddd, units=units, limits={yrange:yrange, ystyle:1, ylog:1, psym:0}
       endif
     endif
 

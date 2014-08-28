@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-06-08 19:05:39 -0700 (Sun, 08 Jun 2014) $
-; $LastChangedRevision: 15331 $
+; $LastChangedDate: 2014-08-08 12:43:26 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15669 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -141,6 +141,15 @@ pro mvn_swe_struct
                     Bphi            : 0.                      , $  ; SWEA azimuth (radians)
                     Bthe            : 0.                      , $  ; SWEA elevation (radians)
                     magf            : fltarr(3)                  } ; vector in SWEA coord. (nT)
+
+; Define Spacecraft Potential data structure
+
+  swe_pot_struct = {project_name    : 'MAVEN'                 , $
+                    data_name       : 'SWEA SC POT'           , $
+                    units_name      : 'V'                     , $
+                    valid           : 0B                      , $
+                    time            : 0D                      , $  ; unix time
+                    potential       : 0.                         } ; spacecraft potential (V)
 
   return
 

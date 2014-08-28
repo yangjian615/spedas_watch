@@ -20,24 +20,32 @@
 ;	POTENTIAL: Returns a time-ordered array of spacecraft potentials
 ;
 ;   ERANGE:    Energy range over which to search for the potential.
-;              Default = [4.,40.]
+;              Default = [4.,15.]
 ;
-;   SMO:       Smoothing parameter for the derived potentials.
+;   PSMO:      Smoothing parameter for the derived potentials.
+;
+;   ESMO:      Smoothing parameter in energy for dF and d2F.
+;              Not recommended.
 ;
 ;   FUDGE:     Multiply the derived potential by this fudge factor.
-;              Default = 1.
+;              (for calibration against LPW).  Default = 1.
+;
+;   PANS:      Named varible to hold the tplot panels created.
+;
+;   OVERLAY:   Overlay the result on the energy spectrogram.
 ;
 ;OUTPUTS:
-;   none - result is returned via POTENTIAL keyword.
+;   none - result is returned via POTENTIAL keyword or as TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:11:18 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15559 $
+; $LastChangedDate: 2014-08-08 12:43:05 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15668 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
-pro mvn_swe_sc_pot, potential=phi, erange=erange, smo=smo, fudge=fudge
+pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, esmo=esmo, fudge=fudge, $
+                    pans=pans, overlay=overlay
 
   compile_opt idl2
   
@@ -49,9 +57,10 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, smo=smo, fudge=fudge
     return
   endif
   
-  if not keyword_set(erange) then erange = [4.,40.]
+  if not keyword_set(erange) then erange = [4.,15.]
   erange = float(erange[sort(erange)])
-  if not keyword_set(smo) then smo = 1
+  if not keyword_set(psmo) then psmo = 1
+  if not keyword_set(esmo) then esmo = 1
   if not keyword_set(fudge) then fudge = 1.
     
   old_units = mvn_swe_engy[0].units_name
@@ -65,7 +74,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, smo=smo, fudge=fudge
   e = e[indx,*]
   f = alog10(f[indx,*])
 
-; Take second and third derivatives of log(eflux) w.r.t. log(E)
+; Take first and second derivatives of log(eflux) w.r.t. log(E)
 
   df = f
   d2f = f
@@ -82,33 +91,42 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, smo=smo, fudge=fudge
   
   dfs = fltarr(n_es,npts)
   for i=0L,(npts-1L) do dfs[*,i] = interpol(df[*,i],n_es)
-  dfs = smooth(dfs,[9,1])
+  dfs = smooth(dfs,[esmo,1])
 
   d2fs = fltarr(n_es,npts)
   for i=0L,(npts-1L) do d2fs[*,i] = interpol(d2f[*,i],n_es)
-  d2fs = smooth(d2fs,[9,1])
+  d2fs = smooth(d2fs,[esmo,1])
 
-  indx = where((ee[*,0] gt erange[0]) and (ee[*,0] lt erange[1]))
+; Trim to the desired search range
+
+  indx = where((ee[*,0] gt erange[0]) and (ee[*,0] lt erange[1]), n_e)
   ee = ee[indx,*]
   dfs = dfs[indx,*]
   d2fs = d2fs[indx,*]
-  
-  sign = d2fs*shift(d2fs,[1,0])
 
-; The spacecraft potential is taken to be the local maximum slope (dlogF/dlogE)
-; at energies just below the maximum curvature (d2logF/dlogE2). Use diagnostics
-; keywords in swe_engy_snap to plot these functions, together with the retrieved
-; potential.
+; The spacecraft potential is taken to be the maximum curvature (d2logF/dlogE2)
+; within the search window.  A fudge factor is included to adjust the estimate 
+; for cross calibration with LPW.
+;
+; Use diagnostics keywords in swe_engy_snap to plot these functions, together
+; with the retrieved potential.
 
   phi = fltarr(npts)
   for i=0L,(npts-1L) do begin
-    d2max = max(d2fs[*,i],j)    
-    k = (where(sign[j:*,i] lt 0.))[0]
-    phi[i] = ee[j+k,i]
+    dmax = max(dfs[*,i],j)
+    d2max = max(d2fs[0:j,i],k)
+    phi[i] = ee[k,i]
   endfor
-  phi = smooth(phi*fudge,smo,/nan)
+
+  phi = smooth(phi*fudge,psmo,/nan)
+  mvn_swe_engy.sc_pot = phi
 
   mvn_swe_convert_units, mvn_swe_engy, old_units
+  
+  swe_sc_pot = replicate(swe_pot_struct, npts)
+  swe_sc_pot.time = mvn_swe_engy.time
+  swe_sc_pot.potential = phi
+  swe_sc_pot.valid = 1
 
 ; Make tplot variables
   
@@ -128,6 +146,22 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, smo=smo, fudge=fudge
 
   store_data,'Potential',data=['d2f','phi']
   ylim,'Potential',0,30,0
+  
+  pans = 'Potential'
+
+  if keyword_set(overlay) then begin
+    tplot_options, get=opt
+    i = (where(opt.varnames eq 'swe_a4'))[0]
+    if (i ne -1) then begin
+      store_data,'swe_a4_pot',data=['swe_a4','phi']
+      ylim,'swe_a4_pot',3,5000,1
+      opt.varnames[i] = 'swe_a4_pot'
+      tplot, opt.varnames
+    endif else begin
+      i = (where(opt.varnames eq 'swe_a4_pot'))[0]
+      if (i ne -1) then tplot
+    endelse
+  endif
 
   return
 

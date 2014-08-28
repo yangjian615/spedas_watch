@@ -19,14 +19,16 @@
 ;       STOW:     Calculate the transformation for a stowed SWEA boom.
 ;                 Default assumes a deployed boom.
 ;
+;       INVERSE:  Reverse the rotation: swe to mag coordinates.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-06-25 17:19:48 -0700 (Wed, 25 Jun 2014) $
-; $LastChangedRevision: 15439 $
+; $LastChangedDate: 2014-08-08 12:45:39 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15672 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/rotate_mag_to_swe.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
-function rotate_mag_to_swe, v_in, magu=magu, stow=stow
+function rotate_mag_to_swe, v_in, magu=magu, stow=stow, inverse=inverse
   
   if (data_type(v_in) eq 0) then begin
     print,"You must specify an N x 3 input array."
@@ -99,6 +101,10 @@ function rotate_mag_to_swe, v_in, magu=magu, stow=stow
 
 ; Combine the rotations and apply to the input array
 
-  return, (rot1 ## (rot2 ## (rot3 ## rot4))) ## v_in
+  mtx = (rot1 ## (rot2 ## (rot3 ## rot4)))
+  
+  if keyword_set(inverse) then mtx = transpose(mtx)
+
+  return, mtx ## v_in
 
 end

@@ -16,8 +16,8 @@
 ;	Returns the same data structure in the new units
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-03-30 17:41:49 -0700 (Sun, 30 Mar 2014) $
-; $LastChangedRevision: 14698 $
+; $LastChangedDate: 2014-08-08 12:38:48 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15661 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_convert_units.pro $
 ;
 ;-
@@ -32,7 +32,7 @@ pro mvn_swe_convert_units, data, units, scale=scale
 
   c = 2.99792458D5                ; velocity of light [km/s]
   mass = (5.10998910D5)/(c*c)     ; electron rest mass [eV/(km/s)^2]
-  m_conv = 2D/mass/mass*1D5       ; mass conversion factor
+  m_conv = 2D5/(mass*mass)        ; mass conversion factor (flux to distribution function)
 
 ; Get information from input 3D structure
 
@@ -55,7 +55,7 @@ pro mvn_swe_convert_units, data, units, scale=scale
     'DF'     : scale = 1D*dtc*dt*dt_arr*gf * energy^2. * m_conv   ; 1/(cm^3-(km/s)^3)
     else     : begin
                  print, 'Unknown starting units: ',data[0].units_name
-	         return
+	             return
                end
   endcase
 

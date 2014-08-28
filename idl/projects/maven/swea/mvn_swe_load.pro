@@ -57,8 +57,8 @@
 ;       RESET:         Clear the data common block before loading new data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-06-25 17:16:30 -0700 (Wed, 25 Jun 2014) $
-; $LastChangedRevision: 15435 $
+; $LastChangedDate: 2014-08-08 12:41:38 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15665 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load.pro $
 ;
 ;CREATED BY:    David L. Mitchell  06-26-11
@@ -1095,9 +1095,17 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
 
   endif
 
+; Define times of configuration changes
+
+  mvn_swe_config
+
 ; Determine calibration factors
 
-  mvn_swe_calib, tab=3
+  mvn_swe_calib
+
+; Define the 3D, PAD, and SPEC data structures
+
+  mvn_swe_struct
 
   return
 

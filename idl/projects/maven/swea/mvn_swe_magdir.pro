@@ -22,8 +22,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:09:44 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15557 $
+; $LastChangedDate: 2014-08-08 12:42:31 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15667 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_magdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -37,7 +37,7 @@ pro mvn_swe_magdir, time, iBaz, jBel, Baz, Bel
 
 ; Correct for MICD error before FSW fix
   
-  indx = where(time lt t_mtx2, count)
+  indx = where(time lt t_mtx[1], count)
   if (count gt 0L) then iBaz_c[indx] = iBaz_c[indx] - 64B
 
 ; Convert to radians, SWEA coordinates

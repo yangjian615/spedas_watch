@@ -26,16 +26,19 @@
 ;
 ;       RESULT:        Named variable to hold the result.
 ;
+;       ARCHIVE:       Use archive data instead of survey data.
+;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:14:40 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15562 $
+; $LastChangedDate: 2014-08-08 12:46:25 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15674 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_strahl_dir.pro $
 ;
 ;-
 
-pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pans
+pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pans, $
+                       archive=archive
 
   compile_opt idl2
 
@@ -43,14 +46,23 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
   
 ; Make sure data are loaded
 
-  if (data_type(swe_3d) ne 8) then begin
-    print,"Load SWEA data first.  Use mvn_swe_load_l0."
-    return
-  endif
+  if keyword_set(archive) then aflg = 1 else aflg = 0
+
+  if (aflg) then begin
+    if (data_type(swe_3d_arc) ne 8) then begin
+      print,"No 3D archive data loaded."
+      return
+    endif
+  endif else begin
+    if (data_type(swe_3d) ne 8) then begin
+      print,"No 3D survey data loaded."
+      return
+    endif
+  endelse
   
   units = 'crate'
   
-  t = swe_3d.time
+  if (aflg) then t = swe_3d_arc.time else t = swe_3d.time
   npts = n_elements(t)
   sphi = fltarr(npts)
   sthe = sphi
@@ -72,13 +84,13 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
 
   if not keyword_set(pow) then pow = 3.
   
-  indx = where(t gt t_mtx3, count)
+  indx = where(t gt t_mtx[2], count)
   if (count gt 0L) then i_deploy = indx[0] else i_deploy = npts
 
 ; Loop through data and get peak direction
 
   i = 0L
-  ddd = mvn_swe_get3d(t[i],units=units)
+  ddd = mvn_swe_get3d(t[i],units=units,archive=aflg)
   e = ddd.energy[*,0]
   de = min(abs(e - energy), ebin)
 
@@ -129,7 +141,7 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
   Bel[i] = aBel*!radeg
 
   for i=1L,(npts-1L) do begin
-    ddd = mvn_swe_get3d(t[i],units=units)
+    ddd = mvn_swe_get3d(t[i],units=units,archive=aflg)
 
     if (dosmo) then begin
       ddat = reform(ddd.data,64,16,6)
@@ -211,8 +223,13 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
   options,'Sel_min','color',4
   options,'Sel_max','color',4
 
-  store_data,'SYM_Phi',data=['Baz','Saz','Saz2']
-  store_data,'SYM_The',data=['Bel','Sel','Sel2','Sel_min','Sel_max']
+  get_data,'Bphi1',index=i
+  if (i gt 0) then store_data,'SYM_Phi',data=['Bphi1','Saz','Saz2'] $
+              else store_data,'SYM_Phi',data=['Baz','Saz','Saz2']
+
+  get_data,'Bthe1',index=i
+  if (i gt 0) then store_data,'SYM_The',data=['Bthe1','Sel','Sel2','Sel_min','Sel_max'] $
+              else store_data,'SYM_The',data=['Bel','Sel','Sel2','Sel_min','Sel_max']
 
   ylim,'SYM_Phi',0,360,0
   options,'SYM_Phi','ytitle','SYM Phi'
@@ -226,7 +243,6 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
 
   pans = ['SYM_Phi','SYM_The']
   
-  tplot,pans,/add
   timebar,t_cfg,/line
 
   return

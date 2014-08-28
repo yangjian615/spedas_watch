@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-06-11 12:28:38 -0700 (Wed, 11 Jun 2014) $
-; $LastChangedRevision: 15351 $
+; $LastChangedDate: 2014-08-08 12:40:58 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15664 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -87,6 +87,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
   endelse
   
   if (data_type(swe_mag1) eq 8) then addmag = 1 else addmag = 0
+  if (data_type(swe_sc_pot) eq 8) then addpot = 1 else addpot = 0
 
 ; Locate the PAD data closest to the desired time
 
@@ -204,11 +205,19 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
 
 ; Insert MAG1 data, if available.  This is distinct from the MAG angles
 ; included in the PAD packets (A2, A3), which are calculated by flight
-; software using a basic calibration (offsets only).
+; software using a basic calibration.
 
     if (addmag) then begin
       dt = min(abs(pad[n].time - swe_mag1.time),i)
       if (dt lt 1D) then pad[n].magf = swe_mag1[i].magf
+    endif
+
+; Insert spacecraft potential, if available
+
+    if (addpot) then begin
+      dt = min(abs(pad[n].time - swe_sc_pot.time),i)
+      if (dt lt pad[n].delta_t) then pad[n].sc_pot = swe_sc_pot[i].potential $
+                                else pad[n].sc_pot = !values.f_nan
     endif
 
 ; And last, but not least, the data

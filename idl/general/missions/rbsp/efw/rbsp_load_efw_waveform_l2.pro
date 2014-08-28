@@ -45,9 +45,9 @@
 ;         1. Added keywords *coord*, *tper*, and *tphase* that are passed into
 ;             *rbsp_efw_cal_waveform*.
 ;
-; $LastChangedBy: jbonnell $
-; $LastChangedDate: 2013-06-24 10:22:51 -0700 (Mon, 24 Jun 2013) $
-; $LastChangedRevision: 12572 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2014-08-07 12:56:07 -0700 (Thu, 07 Aug 2014) $
+; $LastChangedRevision: 15656 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_load_efw_waveform_l2.pro $
 ;-
 
@@ -61,7 +61,7 @@ pro rbsp_load_efw_waveform_l2,probe=probe, datatype=datatype, trange=trange, $
                  tper = tper, tphase = tphase, _extra = _extra
 
 rbsp_efw_init
-dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_waveform_l2.pro 12572 2013-06-24 17:22:51Z jbonnell $'
+dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_waveform_l2.pro 15656 2014-08-07 19:56:07Z aaronbreneman $'
 
 UMN_data_location = 'http://rbsp.space.umn.edu/data/rbsp/'
 cache_remote_data_dir = !rbsp_efw.remote_data_dir
@@ -78,7 +78,7 @@ vb = vb > !rbsp_efw.verbose
 vprobes = ['a','b']
 vlevels = ['l1','l2']
 ;vdatatypes=['e-hires-uvw','e-spinfit-mgse','vsvy-hires']
-vdatatypes=['e-spinfit-mgse','vsvy-hires']
+vdatatypes=['e-spinfit-mgse','vsvy-hires','esvy_despun','fbk','spec']
 default_data_att = {units: 'ADC', coord_sys: 'uvw', st_type: 'none'}
 support_data_keep = ['BEB_config','DFB_config']
 
@@ -126,6 +126,7 @@ for s=0,n_elements(p_var)-1 do begin
 ;     midfix='_hsk_beb_analog_'
      prefix=rbspx+'_efw_'+datatype[typeindex]+'_'
 
+
 ;     if keyword_set(get_support_data) then $
           cdf2tplot,file=files,varformat=varformat,all=0,prefix=prefix,suffix=suf,verbose=vb, $
               tplotnames=tns,/convert_int1_to_int2,get_support_data=1 ; load data into tplot variables
@@ -154,7 +155,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        colors = color_array[0:n_elements(labels)-1]
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_waveform_l2.pro 12572 2013-06-24 17:22:51Z jbonnell $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_waveform_l2.pro 15656 2014-08-07 19:56:07Z aaronbreneman $'
 
        store_data,new_name,/delete
        store_data,old_name,newname=new_name

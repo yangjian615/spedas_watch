@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-06-11 12:27:56 -0700 (Wed, 11 Jun 2014) $
-; $LastChangedRevision: 15350 $
+; $LastChangedDate: 2014-08-08 12:40:24 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15663 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -87,6 +87,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
   endelse
   
   if (data_type(swe_mag1) eq 8) then addmag = 1 else addmag = 0
+  if (data_type(swe_sc_pot) eq 8) then addpot = 1 else addpot = 0
 
 ; Locate the 3D data closest to the desired time
 
@@ -144,12 +145,12 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
 ; is modest (< 1% from +55 to -30 deg, increasing to ~4% at -45 deg).  For
 ; now, I will not include elevation variation.
 
-    energy = swe_swp[*,g]
-    denergy = transpose(swe_de[*,*,g])
-    for i=0,95 do begin
-      ddd[n].energy[*,i] = energy
-      ddd[n].denergy[*,i] = denergy[*,i/16]
-    endfor
+    energy = swe_swp[*,0] # replicate(1.,96)
+    ddd[n].energy = energy
+    
+    ddd[n].denergy[0,*] = abs(energy[0,*] - energy[1,*])
+    for i=1,62 do ddd[n].denergy[i,*] = abs(energy[i-1,*] - energy[i+1,*])/2.
+    ddd[n].denergy[63,*] = abs(energy[62,*] - energy[63,*])
 
 ; Geometric factor.  When using V0, the geometric factor is a function of
 ; energy.  There is also variation in elevation.
@@ -230,6 +231,14 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
     if (addmag) then begin
       dt = min(abs(ddd[n].time - swe_mag1.time),i)
       if (dt lt 1D) then ddd[n].magf = swe_mag1[i].magf
+    endif
+
+; Insert spacecraft potential, if available
+
+    if (addpot) then begin
+      dt = min(abs(ddd[n].time - swe_sc_pot.time),i)
+      if (dt lt ddd[n].delta_t) then ddd[n].sc_pot = swe_sc_pot[i].potential $
+                                else ddd[n].sc_pot = !values.f_nan
     endif
 
 ; And last, but not least, the data

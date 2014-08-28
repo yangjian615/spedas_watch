@@ -8,9 +8,9 @@
 ;Author: Davin Larson
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-06-09 16:43:18 -0700 (Mon, 09 Jun 2014) $
-; $LastChangedRevision: 15337 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2014-08-06 13:43:35 -0700 (Wed, 06 Aug 2014) $
+; $LastChangedRevision: 15655 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_sst.pro $
 ;-
 ;
@@ -37,7 +37,7 @@ thm_part_products,probe=probe,datatype=datatype,trange=trange,outputs =['energy'
 tplot_names
 
 ;plot the energy spectrogram, and angular spectrograms(despun spacecraft coordinates (DSL))
-tplot,['thc_psif_eflux_energy','thc_psif_eflux_theta','thc_psif_eflux_phi','thc_psif_density']
+tplot,['th'+probe+'_psif_eflux_energy','th'+probe+'_psif_eflux_theta','th'+probe+'_psif_eflux_phi','th'+probe+'_psif_density']
 
 stop
 
@@ -58,7 +58,7 @@ thm_part_load,probe=probe,trange=trange,datatype=datatype
 ; Bin numbers specified in this example are the current default
 thm_part_products,probe=probe,datatype=datatype,trange=trange,sun_bins=[0,8,16,24,32,33,34,40,47,48,49,50,55,56,57] 
 
-tplot,['tha_psif_eflux_energy','tha_psif_eflux_theta','tha_psif_eflux_phi']
+tplot,['th'+probe+'_psif_eflux_energy','th'+probe+'_psif_eflux_theta','th'+probe+'_psif_eflux_phi']
 
 stop
 
@@ -87,5 +87,5 @@ stop
 ;use bins in data
 thm_part_products,probe=probe,datatype=datatype,trange=trange,sun_bins=where(~bins)
 
-tplot,['tha_psif_eflux_energy','tha_psif_eflux_theta','tha_psif_eflux_phi']
+tplot,['th'+probe+'_psif_eflux_energy','th'+probe+'_psif_eflux_theta','th'+probe+'_psif_eflux_phi']
 end

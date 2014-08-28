@@ -10,22 +10,13 @@
 ;  as text in a small separate window.
 ;
 ;USAGE:
-;  swe_pad_snap
+;  swe_engy_snap
 ;
 ;INPUTS:
 ;
 ;KEYWORDS:
-;       LAYOUT:        A named variable to specify window layouts.
-;
-;                        0 --> Default.  No fixed window positions.
-;                        1 --> Macbook Air with Viewsonic 1680x1050 screen above.
-;                        2 --> HP Z220 with twin Dell 1920x1200 screens left/right.
-;                        3 --> Macbook Air with Samsung widescreen left.
-;
-;                      This puts up snapshot windows in convenient, non-overlapping
-;                      locations, depending on display hardware.
-;
 ;       UNITS:         Plot the data in these units.  See mvn_swe_convert_units.
+;                      Default = 'eflux'.
 ;
 ;       KEEPWINS:      If set, then don't close the snapshot window(s) on exit.
 ;
@@ -34,38 +25,75 @@
 ;       SPEC:          Named variable to hold the energy spectrum at the last time
 ;                      selected.
 ;
+;       SUM:           If set, use cursor to specify time ranges for averaging.
+;
 ;       POT:           Overplot an estimate of the spacecraft potential.  Must run
 ;                      mvn_swe_sc_pot first.
 ;
 ;       PDIAG:         Plot potential estimator in a separate window.
 ;
+;       PXLIM:         X limits (Volts) for diagnostic plot.
+;
+;       DDD:           Create an energy spectrum from the nearest 3D spectrum and
+;                      plot for comparison.
+;
+;       ABINS:         Angular bins to include/exclude (0=exclude, 1=include).  
+;                      Can be a 16x6 (azimuth x elevation) array or a 96-element 
+;                      3D angle array.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:15:25 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15563 $
+; $LastChangedDate: 2014-08-08 12:47:24 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15675 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
-pro swe_engy_snap, layout=layout, units=units, keepwins=keepwins, archive=archive, $
-                   spec=spec, pot=pot, pdiag=pdiag
+pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
+                   ddd=ddd, abins=abins, sum=sum, pot=pot, pdiag=pdiag, pxlim=pxlim, $
+                   mb=mb,erange=erange
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
   
   if not keyword_set(archive) then aflg = 0 else aflg = 1
-  if keyword_set(units) then uflg = 1 else uflg = 0
+  if not keyword_set(units) then units = 'eflux'
+  if keyword_set(sum) then npts = 2 else npts = 1
+  if keyword_set(ddd) then dflg = 1 else dflg = 0
+  if keyword_set(abins) then begin
+    if (n_elements(abins) ne 96) then begin
+      print,'ABINS must have 96 elements.'
+      return
+    endif
+    indx = where(round(abins) ne 0, anorm)
+    abins = replicate(0.,96)
+    abins[indx] = 1.
+  endif else begin
+    anorm = 96
+    abins = replicate(1.,anorm)
+  endelse
+  amask = replicate(1.,64) # abins
+  anorm = float(anorm)
   
-  if keyword_set(pot) then begin
-    get_data,'phi',data=phi,index=i
-    if (i gt 0) then dopot = 1 else dopot = 0
-  endif else dopot = 0
+  if keyword_set(pot) then dopot = 1 else dopot = 0
   
+  if keyword_set(mb) then mflg = 1 else mflg = 0
+  
+  if (n_elements(erange) lt 2) then begin
+    emin = 16.
+    emax = 80.
+  endif else emin = min(erange[0:1], max=emax)
+  
+  if (n_elements(erange) gt 2) then begin
+    emax2 = erange[2]
+    dokap = 1
+  endif else dokap = 0
+
   if keyword_set(pdiag) then begin
     get_data,'df',data=df
     get_data,'d2f',data=d2f,index=i
     if (i gt 0) then pflg = 1 else pflg = 0
   endif else pflg = 0
-    
+  
   if (data_type(mvn_swe_engy) ne 8) then mvn_swe_getspec
   
   if (aflg) then begin
@@ -83,8 +111,6 @@ pro swe_engy_snap, layout=layout, units=units, keepwins=keepwins, archive=archiv
   if (data_type(swe_hsk) ne 8) then hflg = 0 else hflg = 1
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   if keyword_set(archive) then aflg = 1 else aflg = 0
-
-  gudsum = ['C0'X, 'DE'X]
 
 ; Put up snapshot window(s)
 
@@ -106,11 +132,13 @@ pro swe_engy_snap, layout=layout, units=units, keepwins=keepwins, archive=archiv
   endif
 
 ; Get the spectrum closest the selected time
+  
+  ok = 1
 
   print,'Use button 1 to select time; button 3 to quit.'
 
   wset,Twin
-  ctime2,trange,npoints=1,/silent,button=button
+  ctime2,trange,npoints=npts,/silent,button=button
 
   if (data_type(trange) eq 2) then begin
     wdelete,Ewin
@@ -121,26 +149,50 @@ pro swe_engy_snap, layout=layout, units=units, keepwins=keepwins, archive=archiv
   endif
   
   if (aflg) then begin                                          ; closest ENGY
-    if (uflg) then begin
-      old_units = mvn_swe_engy_arc[0].units_name
-      mvn_swe_convert_units, mvn_swe_engy_arc, units
-    endif
+    old_units = mvn_swe_engy_arc[0].units_name
+    mvn_swe_convert_units, mvn_swe_engy_arc, units
     units_name = mvn_swe_engy_arc[0].units_name
-    dt = min(abs(mvn_swe_engy_arc.time - trange[0]), iref)
-    spec = mvn_swe_engy_arc[iref]
+
+    if (npts gt 1) then begin
+      tmin = min(trange, max=tmax)
+      indx = where((mvn_swe_engy_arc.time ge tmin) and $
+                   (mvn_swe_engy_arc.time le tmax), count)
+      if (count eq 0L) then begin
+        if (button eq 1) then print,'No SPEC archive data within selected time range.'
+        ok = 0
+      endif
+      spec = mvn_swe_engy_arc[indx[0]]
+      spec.time = mean(mvn_swe_engy_arc[indx].time)
+      spec.data = total(mvn_swe_engy_arc[indx].data, 2, /nan)/float(count)
+    endif else begin
+      dt = min(abs(mvn_swe_engy_arc.time - trange[0]), iref)
+      spec = mvn_swe_engy_arc[iref]
+    endelse
 
     ymin = min(mvn_swe_engy_arc.data, max=ymax, /nan)           ; global yrange
     ymin = 10.^floor(alog10(ymin > 1.))
     ymax = 10.^ceil(alog10(ymax > 1.))
     yrange = [ymin, ymax]
   endif else begin
-    if (uflg) then begin
-      old_units = mvn_swe_engy[0].units_name
-      mvn_swe_convert_units, mvn_swe_engy, units
-    endif
+    old_units = mvn_swe_engy[0].units_name
+    mvn_swe_convert_units, mvn_swe_engy, units
     units_name = mvn_swe_engy[0].units_name
-    dt = min(abs(mvn_swe_engy.time - trange[0]), iref)
-    spec = mvn_swe_engy[iref]
+
+    if (npts gt 1) then begin
+      tmin = min(trange, max=tmax)
+      indx = where((mvn_swe_engy.time ge tmin) and $
+                   (mvn_swe_engy.time le tmax), count)
+      if (count eq 0L) then begin
+        if (button eq 1) then print,'No SPEC survey data within selected time range.'
+        ok = 0
+      endif
+      spec = mvn_swe_engy[indx[0]]
+      spec.time = mean(mvn_swe_engy[indx].time)
+      spec.data = total(mvn_swe_engy[indx].data, 2, /nan)/float(count)
+    endif else begin
+      dt = min(abs(mvn_swe_engy.time - trange[0]), iref)
+      spec = mvn_swe_engy[iref]
+    endelse
 
     ymin = min(mvn_swe_engy.data, max=ymax, /nan)               ; global yrange
     ymin = 10.^floor(alog10(ymin > 1.))
@@ -164,9 +216,7 @@ pro swe_engy_snap, layout=layout, units=units, keepwins=keepwins, archive=archiv
     else     : ytitle = 'Unknown Units'
   endcase
 
-  if (hflg) then dt = min(abs(swe_hsk.time - trange[0]), jref)  ; closest HSK
-  
-  ok = 1
+  if (hflg) then dt = min(abs(swe_hsk.time - spec.time), jref)  ; closest HSK
 
   while (ok) do begin
 
@@ -182,29 +232,57 @@ pro swe_engy_snap, layout=layout, units=units, keepwins=keepwins, archive=archiv
     plot_oo,x,y,yrange=yrange,/ysty,xtitle='Energy (eV)',ytitle=ytitle, $
             charsize=1.4,psym=psym
 
-    if (dopot) then begin
-      dt = min(abs(phi.x - trange[0]), kref)
-      pot = phi.y[kref]
-      oplot,[pot,pot],yrange,line=2,color=6
+    if (dflg) then begin
+      if (npts gt 1) then ddd = mvn_swe_get3d([tmin,tmax],/all,/sum) $
+                     else ddd = mvn_swe_get3d(spec.time)
+      ddd = conv_units(ddd, units_name)
+      dt = min(abs(swe_hsk.time - ddd.time), kref)
+      spec3d = total(ddd.data*amask,2)/anorm
+      oplot,ddd.energy[*,0],spec3d,psym=psym,color=4
+    endif
+
+    if (dopot) then oplot,[spec.sc_pot,spec.sc_pot],yrange,line=2,color=6
+    
+    if (mflg) then begin
+      e1 = spec.energy
+      eflux = spec.data
+      p = swe_maxbol()
+      p.pot = spec.sc_pot      
+      indx = where((e1 gt emin) and (e1 lt emax))
+      fit,e1[indx],eflux[indx],func='swe_maxbol',par=p,names='N T',/silent
+      if (dokap) then begin
+        indx = where((e1 gt emin) and (e1 lt emax2))
+        fit,e1[indx],eflux[indx],func='swe_maxbol',par=p,names='N T K_N K_VH K_K'
+      endif
+      oplot,e1[indx],swe_maxbol(e1[indx],par=p),color=6,thick=2
+      xyouts,0.75,0.90,string(p.n,format='("N = ",f4.1)'),color=6,charsize=1.2,/norm
+      xyouts,0.75,0.87,string(p.T,format='("T = ",f4.1)'),color=6,charsize=1.2,/norm
+      xyouts,0.75,0.84,string(p.pot,format='("V = ",f4.1)'),color=6,charsize=1.2,/norm
     endif
     
     if (pflg) then begin
       wset, Pwin
+      
+      if not keyword_set(pxlim) then xlim = [0,30]
+      xlim = [min(xlim),max(xlim)]
+
+      indx = where((df.v ge xlim[0]) and (df.v le xlim[1]))
+      ymin = min(df.y[indx],/nan) < min(d2f.y[indx],/nan)
+      ymax = max(df.y[indx],/nan) > max(d2f.y[indx],/nan)
+      ylim = [floor(100.*ymin), ceil(100.*ymax)]/100.
 
       dt = min(abs(d2f.x - trange[0]), kref)
       px = reform(d2f.v[kref,*])
       py = reform(df.y[kref,*])
       py2 = reform(d2f.y[kref,*])
       
-      xlim = [0,30]
-      ylim = [-0.2,0.25]
-      title = string(pot,format='("Potential = ",f5.1)')
-      plot,px,py,xtitle='Potential',ytitle='Slope or Curvature',$
+      title = string(pot,format='("Potential = ",f5.1," V")')
+      plot,px,py,xtitle='Potential (V)',ytitle='dF and d2F',$
                   xrange=xlim,/xsty,yrange=ylim,/ysty,title=title,charsize=1.4
       oplot,[pot,pot],ylim,line=2,color=6
       oplot,px,py2,color=4
       pmax = max(py2,i)
-      oplot,[px[i],px[i]],ylim,line=2,color=5
+      oplot,[px[i],px[i]],ylim,line=2,color=4
       oplot,xlim,[0,0],line=2
 
     endif
@@ -222,12 +300,11 @@ pro swe_engy_snap, layout=layout, units=units, keepwins=keepwins, archive=archiv
   
       fmt1 = '(f7.2," V")'
       fmt2 = '(f7.2," C")'
-      fmt3 = '(Z2.2)'
+      fmt3 = '(i2)'
       
       j = jref
     
-      if (swe_hsk[j].CHKSUM[0] eq gudsum[0]) then col0 = 4 else col0 = 6
-      if (swe_hsk[j].CHKSUM[1] eq gudsum[1]) then col1 = 4 else col1 = 6
+      tabnum = mvn_swe_tabnum(swe_hsk[j].chksum[swe_hsk[j].ssctl])
           
       erase
       xyouts,x1,y1[0],/normal,"SWEA Housekeeping",charsize=csize
@@ -270,38 +347,61 @@ pro swe_engy_snap, layout=layout, units=units, keepwins=keepwins, archive=archiv
       xyouts,x2,y1[23],/normal,string(swe_hsk[j].LVPST,format=fmt2),charsize=csize,align=1.0
       xyouts,x1,y1[24],/normal,"DIGT",charsize=csize
       xyouts,x2,y1[24],/normal,string(swe_hsk[j].DIGT,format=fmt2),charsize=csize,align=1.0
-      xyouts,x1,y1[26],/normal,"CHKSUM",charsize=csize
-      xyouts,x2,y1[26],/normal,string(swe_hsk[j].CHKSUM[1],format=fmt3),charsize=csize,align=1.0,$
-                       color=col1
-      xyouts,x3,y1[26],/normal,string(swe_hsk[j].CHKSUM[0],format=fmt3),charsize=csize,align=1.0,$
-                       color=col0
+      xyouts,x1,y1[26],/normal,"SWEEP TABLE",charsize=csize
+      xyouts,x2,y1[26],/normal,string(tabnum,format=fmt3),charsize=csize,align=1.0
     endif
 
 ; Get the next button press
 
     wset,Twin
-    ctime2,trange,npoints=1,/silent,button=button
+    ctime2,trange,npoints=npts,/silent,button=button
 
     if (data_type(trange) eq 5) then begin
   
       if (aflg) then begin
-        dt = min(abs(mvn_swe_engy_arc.time - trange[0]), iref)
-        spec = mvn_swe_engy_arc[iref]
+        if (npts gt 1) then begin
+          tmin = min(trange, max=tmax)
+          indx = where((mvn_swe_engy_arc.time ge tmin) and $
+                       (mvn_swe_engy_arc.time le tmax), count)
+          if (count eq 0L) then begin
+            if (button eq 1) then print,'No SPEC archive data within selected time range.'
+            ok = 0
+          endif else begin
+            spec = mvn_swe_engy_arc[indx[0]]
+            spec.time = mean(mvn_swe_engy_arc[indx].time)
+            spec.data = total(mvn_swe_engy_arc[indx].data, 2, /nan)/float(count)
+          endelse
+        endif else begin
+          dt = min(abs(mvn_swe_engy_arc.time - trange[0]), iref)
+          spec = mvn_swe_engy_arc[iref]
+        endelse
       endif else begin
-        dt = min(abs(mvn_swe_engy.time - trange[0]), iref)
-        spec = mvn_swe_engy[iref]
+        if (npts gt 1) then begin
+          tmin = min(trange, max=tmax)
+          indx = where((mvn_swe_engy.time ge tmin) and $
+                       (mvn_swe_engy.time le tmax), count)
+          if (count eq 0L) then begin
+            if (button eq 1) then print,'No SPEC survey data within selected time range.'
+            ok = 0
+          endif else begin
+            spec = mvn_swe_engy[indx[0]]
+            spec.time = mean(mvn_swe_engy[indx].time)
+            spec.data = total(mvn_swe_engy[indx].data, 2, /nan)/float(count)
+          endelse
+        endif else begin
+          dt = min(abs(mvn_swe_engy.time - trange[0]), iref)
+          spec = mvn_swe_engy[iref]
+        endelse
       endelse
 
       if (hflg) then dt = min(abs(swe_hsk.time - trange[0]), jref)
-      ok = 1
+
     endif else ok = 0
 
   endwhile
   
-  if (uflg) then begin
-    if (aflg) then mvn_swe_convert_units, mvn_swe_engy_arc, old_units $
-              else mvn_swe_convert_units, mvn_swe_engy, old_units
-  endif
+  if (aflg) then mvn_swe_convert_units, mvn_swe_engy_arc, old_units $
+            else mvn_swe_convert_units, mvn_swe_engy, old_units
 
   if (kflg) then begin
     wdelete, Ewin

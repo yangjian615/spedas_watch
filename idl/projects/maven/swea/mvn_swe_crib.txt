@@ -5,8 +5,8 @@
 ; displayed using doc_library.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-06-26 19:06:43 -0700 (Thu, 26 Jun 2014) $
-; $LastChangedRevision: 15452 $
+; $LastChangedDate: 2014-08-08 12:39:08 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15662 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crib.txt $
 ;--------------------------------------------------------------------
 ;
@@ -16,9 +16,10 @@ swe_snap_layout
 
 ;
 ; Load telemetry data by (unix) time range into a common block
+;   See the cruise catalog for some interesting times.
 
-trange = ['2014-05-01','2014-05-02']
-mvn_swe_load_l0, trange
+trange = ['2014-05-10','2014-05-11']
+mvn_swe_load_l0, trange, /sumplot
 
 ;
 ; Summary plot for all data in the common block
@@ -36,43 +37,58 @@ mvn_swe_sumplot,apid=['A2','A4'],timing=1,lut=0,sifctl=0,pad_e=280,hsk=['']
 
 swe_getmag_ql,trange,both=1,smo=1,/davin
 
-;
-; Determine the time offset between MAG1 and SWEA PAD MAG angles
+; Calculate the electron distribution symmetry direction
 
-fit_pad_mag, result=dat
+swe_3d_strahl_dir, pans=pans
+
+; Calculate the spacecraft potential
+
+mvn_swe_sc_pot, /overlay, erange=[4,20], psmo=5, fudge=0.95
+
+; Determine the observing geometry
+
+mvn_swe_sundir, pans=pans
+
+; Estimate electron density from 3D moment
+
+abins = replicate(1B, 16)         ; all anodes on
+dbins = [0B, 0B, 1B, 1B, 1B, 1B]  ; turn off lower 2 deflector bins
+
+mvn_swe_n3d, abins=abins, dbins=dbins
 
 ;
 ; Snapshots selected by the cursor in the tplot window
 ;   Return data by keyword (ddd, pad, spec) at the last place clicked
 
-swe_3d_snap,spec=1,sum=0,center=[180.,0.],ddd=ddd
+abins = reform(replicate(1.,16) # [0.,0.,1.,1.,1.,1.], 96)
+swe_engy_snap,units='eflux',/mb,/pot,spec=spec,/ddd,abins=abins,erange=[10,50]
+
+swe_3d_snap,spec=1,sum=0,ddd=ddd
 swe_pad_snap,units='eflux',sum=0,energy=140,pad=pad,/ddd
-swe_engy_snap,units='crate',spec=spec
 
 ;
 ; Get 3D or PAD data at a specified time or array of times.
 ;   Use keyword ALL to get all 3D/PAD distributions bounded by
-;   the input time array.
+;   the input time array.  Use keyword SUM to average all
+;   distributions bounded by the input time array.
 
 ddd = mvn_swe_get3d(time)
 pad = mvn_swe_getpad(time)
 
-; Estimate the spacecraft potential from SWEA energy spectra
+;-----------------------------------------------------------------------
+; Anything below this line is not intended for general use
+;-----------------------------------------------------------------------
 
-mvn_swe_sc_pot, thresh=800., potential=phi, /tplot
-pans = ['swe_a2_*','swe_mag_svy','swe_a4','Potential']
-tplot,pans
-swe_engy_snap,/pot  ; overplot potential on energy spectra
+; Estimate electron density and temperature from fitting energy spectra
+;   Not ready for prime time yet.
+
+mvn_swe_n1d, erange=[10.,50.], pans=pans
 
 ;
 ; Display calibration factors for 3D, PAD, or SPEC data products
 ; at times selected by the cursor.
 
 swe_cal_snap,/pad
-
-;-----------------------------------------------------------------------
-; Anything below this line is not intended for general use
-;-----------------------------------------------------------------------
 
 ; Plot the PAD data with variable PA mapping
 ;   (each half of the anode separately)
@@ -624,6 +640,7 @@ oneweek = 7D*86400D
 tstart = time_double('2014-03-19')
 ; mvn_swe_sweep,tab=4,result=foo
 
+tpclear
 trange = [tstart, tstart + oneweek]
 mvn_swe_load_l0,trange
 mvn_swe_sumplot,/png
@@ -640,11 +657,6 @@ a4_x = [a4_x, foo.x]
 a4_y = a4_y_temp
 help,a4_x,a4_y,a4_v
 
-tstart = tstart + oneweek
-
-store_data,'swe_a4',data={x:a4_x, y:a4_y, v:a4_v}
-
-
 get_data,'LVPST',data=foo
 lvpst_x = [lvpst_x, foo.x]
 lvpst_y = [lvpst_y, foo.y]
@@ -655,7 +667,11 @@ get_data,'ANALT',data=foo
 analt_x = [analt_x, foo.x]
 analt_y = [analt_y, foo.y]
 
+tstart = tstart + oneweek
 
+
+
+store_data,'swe_a4',data={x:a4_x, y:a4_y, v:a4_v}
 store_data,'LVPST',data={x:lvpst_x, y:lvpst_y}
 store_data,'DIGT',data={x:digt_x, y:digt_y}
 store_data,'ANALT',data={x:analt_x, y:analt_y}
@@ -733,22 +749,88 @@ plot_oo,energy,eflux,xrange=[1,1e3],/xsty,yrange=[1e4,1e8],/ysty,psym=10, $
 oplot,energy,kappa(vel,par=p),psym=-4,color=red
 
 
-fit,vel,eflux,func='kappa',par=p,names='N VH K'
+fit,vel,y,func='kappa',par=p,names='N'
 fy = kappa(vel,par=p)
 
 plot_oo,spec.energy,spec.data,xrange=[1,1e3],/xsty,yrange=[1e4,1e8],/ysty,psym=10, $
         xtitle='Energy (eV)',ytitle='Energy Flux'
 oplot,spec.energy,kappa(sqrt(2D*spec.energy/mass),par=p),psym=0,color=red
 
+.r swe_tempfit3
+p = swe_tempfit3()
+
+p.dens = 0.8
+p.temp = 11.7
+p.k_dens = 0.12
+p.k_vh = 4250.
+p.k_k = 6.
+
+units = 'eflux'
+spec = conv_units(spec,units)
+ddd = mvn_swe_get3d(spec.time,units=units)
+energy = ddd.energy[*,0]
+f = ddd
+foo = swe_tempfit3(f,par=p)
+yrange = [1e3,1e8]
+
+plot_oo,spec.energy,spec.data,yrange=yrange,/ysty,psym=10
+oplot,[ddd.sc_pot,ddd.sc_pot],yrange,line=2,color=6
+oplot,2.*[p.temp,p.temp],yrange,line=2,color=4
+
+oplot,energy,f.data[*,0],color=6,thick=2
+
+
+trange = ['2014-06-25','2014-06-26']
+mvn_swe_load_l0,trange
+mvn_swe_sumplot
+swe_getmag_ql,a2.time,/davin,/smo
+swe_3d_strahl_dir,pow=3,smo=[5,3,1]
+store_data,'SYM_Phi',data=['Bphi1','Saz','Saz2']
+store_data,'SYM_The',data=['Bthe1','Sel','Sel2','Sel_min','Sel_max']
+tplot,pans
+
+swe_3d_snap,/padmag,/symdir,pow=3,smo=[5,3,1],energy=200
+
+trange = ['2014-07-07/16','2014-07-07/22']
+mvn_swe_load_l0,trange
+mvn_swe_sumplot
 
 
 ; Yuki's method for reading MAG data (uses Davin code)
 
 files = mvn_pfp_file_retrieve(trange=trange,/l0)
 
-;- load SPICE kernel
-sk = spice_standard_kernels(/load,/mars)
-mk = mvn_spice_kernels(/all,/load,trange=trange)
+;- load SPICE kernels
+; sk = spice_standard_kernels(/load,/mars)
+
+mvn_swe_spice_init
+
+;- Sun direction
+
+tmin = min(mvn_swe_engy.time, max=tmax)
+dt = 0.5D
+npts = floor((tmax - tmin)/dt) + 1L
+x = tmin + dt*dindgen(npts)
+y = replicate(1.,npts) # [1.,0.,0.]  ; MAVEN_SSO direction of Sun
+store_data,'Sun',data={x:x, y:y, v:indgen(3)}
+options,'Sun','labels',['X','Y','Z']
+options,'Sun','labflag',1
+options,'Sun',spice_frame='MAVEN_SSO',spice_master_frame='MAVEN_SPACECRAFT'
+spice_vector_rotate_tplot,'Sun','MAVEN_SPACECRAFT',trange=[tmin,tmax]
+spice_vector_rotate_tplot,'Sun','MAVEN_SWEA_STOW',trange=[tmin,tmax]
+
+get_data,'Sun_MAVEN_SWEA_STOW',data=sun
+xyz_to_polar, sun, theta=the, phi=phi, /ph_0_360
+store_data,'Sun_The',data=the
+store_data,'Sun_Phi',data=phi
+options,'Sun_The','ynozero',1
+options,'Sun_Phi','ynozero',1
+options,'Sun_The','psym',3
+options,'Sun_Phi','psym',3
+
+tplot,['Sun_The','Sun_Phi'],/add
+
+swe_3d_snap,energy=4,/sundir,/label,/spec,smo=[3,1,1],/arc
 
 ;- MAG
 mvn_pfp_l0_file_read,file=files,/mag
@@ -763,3 +845,10 @@ options,'mvn_mag1_svy_BRAW',spice_frame='MAVEN_MAG1', $
     spice_master_frame='MAVEN_SPACECRAFT'
 spice_vector_rotate_tplot,'mvn_mag1_svy_BRAW','MAVEN_SSO', $
                           trange=[time0,time1]
+
+; heatflux.pro - heat flux
+; p_3d.pro	- pressure tensor (error in calculating domega)
+; n_3d.pro  - density from 3D (error in calculating domega)
+; j_3d.pro  - flux
+; j3_3d.pro - energy flux
+; symm3d.pro - symmetry direction

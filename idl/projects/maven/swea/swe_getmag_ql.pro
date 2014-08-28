@@ -35,8 +35,8 @@
 ;       DAVIN:         Use Davin's code for loading MAG data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:16:50 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15564 $
+; $LastChangedDate: 2014-08-08 12:47:55 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15676 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_getmag_ql.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
@@ -63,8 +63,12 @@ pro swe_getmag_ql, trange, filename=filename, both=both, toff=toff, smo=smo, dav
     trange = 0
   endif else begin
     if (data_type(trange) eq 0) then begin
-      print,"You must specify a file name or time range."
-      return
+      if (data_type(mvn_swe_engy) ne 8) then begin
+        print,"You must load SWEA data or specify a file name or time range."
+        return
+      endif
+      tmin = min(mvn_swe_engy.time, max=tmax)
+      trange = [tmin,tmax]
     endif
     tmin = min(time_double(trange), max=tmax)
     file = mvn_pfp_file_retrieve(trange=[tmin,tmax],/l0)
@@ -180,14 +184,14 @@ pro swe_getmag_ql, trange, filename=filename, both=both, toff=toff, smo=smo, dav
 ; Rotate to SWEA coordinates
 
   if (domag1) then begin
-    indx = where((mag1.x gt t_mtx1) and (mag1.x lt t_mtx3), nstow, $
+    indx = where((mag1.x gt t_mtx[0]) and (mag1.x lt t_mtx[2]), nstow, $
                  complement=jndx, ncomplement=ndeploy)
 
     if (nstow gt 0L) then mag1.y[indx,*] = rotate_mag_to_swe(mag1.y[indx,*], magu=1, /stow)
     if (ndeploy gt 0L) then mag1.y[jndx,*] = rotate_mag_to_swe(mag1.y[jndx,*], magu=1)
   endif
   if (domag2) then begin
-    indx = where((mag2.x gt t_mtx1) and (mag2.x lt t_mtx3), nstow, $
+    indx = where((mag2.x gt t_mtx[0]) and (mag2.x lt t_mtx[2]), nstow, $
                  complement=jndx, ncomplement=ndeploy)
 
     if (nstow gt 0L) then mag2.y[indx,*] = rotate_mag_to_swe(mag2.y[indx,*], magu=2, /stow)

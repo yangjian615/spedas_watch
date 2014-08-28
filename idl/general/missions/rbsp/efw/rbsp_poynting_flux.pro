@@ -212,22 +212,34 @@ if is_struct(Bw_test) then begin
 	flow = (1/Tlong)/nyquist		
 	fhigh = (1/Tshort)/nyquist
 
-				
 	
-	Epf = BANDPASS_FILTER(Ep,flow,fhigh);,/gaussian)
-	Bpf = BANDPASS_FILTER(Bp,flow,fhigh);,/gaussian)
+	;Zero-pad these arrays to speed up FFT	
+	fac = 1
+	nelem = n_elements(Ep[*,0])
+	while 2L^fac lt n_elements(Ep[*,0]) do fac++	
 
+	addarr = fltarr(2L^fac - nelem)  ;array of zeros
+	Ep2 = [Ep,[[addarr],[addarr],[addarr]]]
+	Bp2 = [Bp,[[addarr],[addarr],[addarr]]]
+	
+	
+	Epf = BANDPASS_FILTER(Ep2,flow,fhigh);,/gaussian)
+	Bpf = BANDPASS_FILTER(Bp2,flow,fhigh);,/gaussian)
 
 
 	Epf = Epf/1000.  ;V/m
 	Bpf = Bpf/1d9    ;Tesla
+
+	;Remove the padded zeros
+	Epf = Epf[0:nelem-1,*]
+	Bpf = Bpf[0:nelem-1,*]
 
 
 	store_data,'Epft',data={x:times,y:Epf}
 	store_data,'Bpft',data={x:times,y:Bpf}
 	ylim,'Epft',-0.1,0.1
 	ylim,'Bpft',-1d-9,1d-9
-	tplot,['Epft','Bpft','Mag_mgse_r_DC_interp']
+	tplot,['Epft','Bpft','Mag_mgse_DC_interp']
 	
 	
 	
@@ -294,8 +306,8 @@ if is_struct(Bw_test) then begin
 	;----------------------------------
 	
 	
-	store_data,'Ew_pftst',data={x:times,y:Epf}
-	store_data,'Bw_pftst',data={x:times,y:Bpf}
+	store_data,'Ew_pftst',data={x:times,y:Epf*1000.}  ;change back to mV/m
+	store_data,'Bw_pftst',data={x:times,y:Bpf*1d9}    ;change back to nT
 	store_data,'pftst_nospinaxis_perp',data={x:times,y:pure2}
 	store_data,'pftst_nospinaxis_para',data={x:times,y:pure3}
 	store_data,'pftst',data={x:times,y:[[P1],[P2],[P3]]}

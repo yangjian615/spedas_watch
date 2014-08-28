@@ -51,8 +51,8 @@
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:12:13 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15560 $
+; $LastChangedDate: 2014-08-08 12:44:22 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15670 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -128,6 +128,7 @@ pro mvn_swe_sumplot, vnorm=vnorm, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=
 ; SIF Control bit definitions
 ;
 ; Digital Housekeeping Register bit definitions
+;   Normal science operation is bits 0 and 15 on, all others off.
 ;
 ;   Bit    Definition
 ; ------------------------------------------------------------
@@ -737,6 +738,7 @@ pro mvn_swe_sumplot, vnorm=vnorm, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=
   endif
 
   tplot,pans
+  timebar,t_cfg,/line
   
   if (dopng) then begin
     tstr = time_struct(tmin)
@@ -754,6 +756,7 @@ pro mvn_swe_sumplot, vnorm=vnorm, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=
       loadct2,34
       device,set_resolution=[1200,800]
       tplot,pans
+      timebar,t_cfg,/line
       img = tvrd()
       tvlct,red,green,blue,/get
       write_image,path+pngname,itype,img,red,green,blue

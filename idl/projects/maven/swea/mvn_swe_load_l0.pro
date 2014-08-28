@@ -54,15 +54,18 @@
 ;
 ;       BADPKT:        An array of structures providing details of bad packets.
 ;
+;       SUMPLOT:       Create a summary plot of the loaded data.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:08:42 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15556 $
+; $LastChangedDate: 2014-08-08 12:42:03 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15666 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mvn_swe_load_l0.pro
 ;-
-pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt
+pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
+                             sumplot=sumplot
 
   @mvn_swe_com
   
@@ -227,6 +230,10 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 ; Define the 3D, PAD, and SPEC data structures
 
   mvn_swe_struct
+
+; Create a summary plot
+
+  if keyword_set(sumplot) then mvn_swe_sumplot
 
   return
 

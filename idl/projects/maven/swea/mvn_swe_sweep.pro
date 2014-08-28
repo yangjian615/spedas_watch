@@ -76,9 +76,12 @@
 ;                     for ground tests, early cruise checkout (Dec 6-7, 2013), and
 ;                     outer cruise.
 ;
+;       DUMPFILE:     Saves an ascii hex dump to this named file, for comparison with
+;                     PFDPU EEPROM dump.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-06-25 17:19:00 -0700 (Wed, 25 Jun 2014) $
-; $LastChangedRevision: 15438 $
+; $LastChangedDate: 2014-08-08 12:45:12 -0700 (Fri, 08 Aug 2014) $
+; $LastChangedRevision: 15671 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sweep.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-01-03
@@ -86,7 +89,7 @@
 ;-
 pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xmax, $
                    V0scale=V0scale, Vrange=Vrange, Erange=Erange, old_def=old_def, $
-                   chksum=chksum, V0tweak=V0tweak
+                   chksum=chksum, V0tweak=V0tweak, dumpfile=dumpfile
 
   @mvn_swe_com
 
@@ -464,6 +467,41 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
     endfor
     
     wset,twin
+  endif
+  
+  if (data_type(dumpfile) eq 7) then begin
+    openw, lun, dumpfile, /get_lun
+    
+    msb = cmd_def2 / 256
+    lsb = cmd_def2 mod 256
+    for i=0,223 do begin
+      for j=i*8,i*8+7 do printf,lun,msb[j],lsb[j],format='(z2.2," ",z2.2," ",$)'
+      printf,lun,''
+    endfor
+    
+    msb = cmd_def1 / 256
+    lsb = cmd_def1 mod 256
+    for i=0,223 do begin
+      for j=i*8,i*8+7 do printf,lun,msb[j],lsb[j],format='(z2.2," ",z2.2," ",$)'
+      printf,lun,''
+    endfor
+    
+    msb = cmd_anlz / 256
+    lsb = cmd_anlz mod 256
+    for i=0,223 do begin
+      for j=i*8,i*8+7 do printf,lun,msb[j],lsb[j],format='(z2.2," ",z2.2," ",$)'
+      printf,lun,''
+    endfor
+    
+    msb = cmd_v0 / 256
+    lsb = cmd_v0 mod 256
+    for i=0,223 do begin
+      for j=i*8,i*8+7 do printf,lun,msb[j],lsb[j],format='(z2.2," ",z2.2," ",$)'
+      printf,lun,''
+    endfor
+
+    free_lun,lun
+
   endif
 
   return
