@@ -15,9 +15,9 @@
 ; none
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-05-09 14:33:45 -0700 (Fri, 09 May 2014) $
-;$LastChangedRevision: 15087 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-19 15:49:19 -0700 (Mon, 19 May 2014) $
+;$LastChangedRevision: 15170 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_calculate.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -278,32 +278,18 @@ PRO spd_ui_calculate_event, event
           spd_ui_calculate_insert,state.listInFocus,state.insertTree,state.programText,state.strToAdd,state.offset,state.statusBar,state.historyWin
         endif
     end
-    'CONSTANT': begin
-        ; 0 for default/data tree, 1 for functions list, 2 for operators list and 3 for constants
-        state.listinFocus = 3
-        
-        buttonid = widget_info(state.tlb,find_by_uname='INSERT')
-        widget_control,state.constant,get_value=cvalue
-
-        insertvarlbl = 'Insert constant: '+cvalue[event.index]
-        widget_control,buttonid, tooltip=insertvarlbl+' into the program', /sensitive
-        
-        if cvalue[event.index] eq 'Re' then begin
-          state.strtoadd = '6374.4' ;use actual value instead of symbolic constant so that users know what value they're getting
-        endif else begin
-          state.strtoadd = cvalue[event.index]
-        endelse
-    
-        state.selectBar->update,insertvarlbl
-        state.statusBar->update,'Constant selected: '+cvalue[event.index]+'.'
-        state.historyWin->update,'Calculate: Constant selected: '+cvalue[event.index]
-        ; we should clear the selection on the function and operator lists
-        idoperator = widget_info(state.tlb, find_by_uname='operator')
-        idfunction = widget_info(state.tlb, find_by_uname='function')
-        widget_control, idoperator, set_list_select=-1 ; no selection 
-        widget_control, idfunction, set_list_select=-1 ; ^^
-        ; clear selection in data tree
-        state.insertTree->clearSelected
+    'PI':begin
+      ;use abstracted function
+      spd_ui_calculate_insert,3,state.insertTree,state.programText,'pi',state.offset,state.statusBar,state.historyWin
+    end
+    'E':begin
+      ;use abstracted function
+      spd_ui_calculate_insert,3,state.insertTree,state.programText,'e',state.offset,state.statusBar,state.historyWin
+    end
+    'RE':begin
+      ;use abstracted function
+      ;use actual value instead of symbolic constant so that users know what value they're getting
+      spd_ui_calculate_insert,3,state.insertTree,state.programText,'6374.4',state.offset,state.statusBar,state.historyWin
     end
     'RUN': begin 
       ; initialize a prompt object to pass to calc
@@ -623,6 +609,7 @@ Pro spd_ui_calculate, gui_id,loadedData,settings,historywin,treeCopyPtr,call_seq
   col3row3 = widget_base(col3base,/row)
   col3row4 = widget_base(col3base,/row)
   col3row5 = widget_base(col3base,/row)
+  col3row6 = widget_base(col3base,/row,space=4) ;constant buttons
   col4row1 = widget_base(col4base,/row)
   col4row2 = widget_base(col4base,/row)
  
@@ -658,7 +645,7 @@ Pro spd_ui_calculate, gui_id,loadedData,settings,historywin,treeCopyPtr,call_seq
  leftArrow = read_bmp(rpath + 'arrow_180_medium.bmp', /rgb)
  spd_ui_match_background, tlb, leftArrow
  insertButton = Widget_Button(col1arow1, Value = leftArrow, /Bitmap,  UValue = 'INSERT', UName='INSERT', $
-                          ToolTip = 'Select a variable, function, operator or constant to add to the program',/align_center, sensitive=insertbuttonsens); sensitivity cannot change without leaving calc panel to load data
+                          ToolTip = 'Select a variable, function, or operator to add to the program',/align_center, sensitive=insertbuttonsens); sensitivity cannot change without leaving calc panel to load data
  
  ;size calculations for text area 
  xtextsize=floor(xsize/(!D.X_CH_SIZE))
@@ -695,13 +682,16 @@ Pro spd_ui_calculate, gui_id,loadedData,settings,historywin,treeCopyPtr,call_seq
   functionList = Widget_List(col3row2, Value=functionNames, xsize=27, ysize=13, uval='FUNCTION', uname='function')
 
   operatorLabel= Widget_Label(col3row3, Value='Insert Operator: ')
-  operatorList = Widget_List(col3row4, Value=operatorNames, xsize=27, ysize=13, uval='OPERATOR', uname='operator')
+  operatorList = Widget_List(col3row4, Value=operatorNames, xsize=27, ysize=12, uval='OPERATOR', uname='operator')
 
-  constantValue = ['pi', 'e','Re']
   constlabel = widget_label(col3row5, value = 'Insert Constant: ')
-  constant_droplist = Widget_combobox(col3row5, Value=constantValue, $
-  UValue='CONSTANT') 
-  
+  pibutton = widget_button(col3row6, value = 'pi', uvalue='PI', tooltip='Insert pi')
+    pigeo = widget_info(pibutton,/geo)
+    bs = pigeo.scr_xsize * 1.35
+    widget_control, pibutton, xsize=bs, ysize=bs
+  ebutton = widget_button(col3row6, value = 'e', uvalue='E', tooltip='Insert e', xsize=bs, ysize=bs)
+  rebutton = widget_button(col3row6, value = 'Re', uvalue='RE', tooltip='Insert Earth''s radius (km)', xsize=bs, ysize=bs)
+    
   statusBar = obj_new('spd_ui_message_bar',statusBase,xsize=143,ysize=1)
   
   newButton = Widget_Button(col1row3, Value=' Open ', UValue = 'OPEN', xsize=70)
@@ -723,7 +713,6 @@ Pro spd_ui_calculate, gui_id,loadedData,settings,historywin,treeCopyPtr,call_seq
            insertTree:insertTree,$
            functions:functionNames,$
            operators:operatorNames,$
-           constant:constant_droplist, $
            loadedData:loadedData, $
            offset:0,$
            historywin:historywin, $

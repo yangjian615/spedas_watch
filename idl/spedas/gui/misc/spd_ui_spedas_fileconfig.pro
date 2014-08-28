@@ -15,6 +15,28 @@
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/spedas/spd_ui/api_examples/file_configuration_tab/spd_ui_spedas_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
+PRO spd_ui_fileconfig_load_template, fileName, topid, statusBar
+
+  if(Is_String(fileName)) then begin
+    open_spedas_template,template=template,filename=fileName,$
+      statusmsg=statusmsg,statuscode=statuscode
+    if (statuscode LT 0) then begin
+      ok=dialog_message(statusmsg,/ERROR,/CENTER)
+      statusBar->Update, 'Error: '+statusmsg
+    endif else begin
+      !SPD_GUI.templatepath = fileName
+      tmppathid = widget_info(topid, find_by_uname='TMPPATH')
+      widget_control, tmppathid,set_value=filename
+      !SPD_GUI.windowStorage->setProperty,template=template
+    ENDELSE
+  ENDIF ELSE BEGIN
+    statusBar->Update, 'Failed to load template: invalid filename'
+  ENDELSE
+
+END
+
+;--------------------------------------------------------------------------------
+
 pro spd_ui_spedas_init_struct,state,struct
 
   compile_opt idl2,hidden
@@ -22,26 +44,12 @@ pro spd_ui_spedas_init_struct,state,struct
   ; Initialize all the widgets on the configuration panel to
   ; the reflect the system variables values (!spedas)
   
-  widget_control,state.localdir,set_value=struct.local_data_dir
-  widget_control,state.remotedir,set_value=struct.remote_data_dir
   widget_control,state.tempdir,set_value=struct.temp_dir
   widget_control,state.browserexe,set_value=struct.browser_exe
-  widget_control,state.tempcdfdir,set_value=struct.temp_cdf_dir
-   
-  if struct.no_download eq 1 then begin
-    widget_control,state.nd_off_button,set_button=1
-  endif else begin
-    widget_control,state.nd_on_button,set_button=1
-  endelse
-  
-  if struct.no_update eq 1 then begin
-    widget_control,state.nu_off_button,set_button=1
-  endif else begin
-    widget_control,state.nu_on_button,set_button=1
-  endelse
-  
+  widget_control,state.tempcdfdir,set_value=struct.temp_cdf_dir  
   widget_control,state.v_droplist,set_combobox_select=struct.verbose
-  
+  Widget_Control,  state.fixlinux, Set_Button=struct.linux_fix
+
 end
 
 PRO spd_ui_spedas_fileconfig_event, event
@@ -64,6 +72,34 @@ PRO spd_ui_spedas_fileconfig_event, event
   Widget_Control, event.id, Get_UValue = uval
   
   CASE uval OF
+    
+    'USETMP': BEGIN
+
+      btnid = widget_info(event.top,find_by_uname='TMPBUTTON')
+      usetemplate = widget_info(btnid, /button_set)
+      widget_control, (widget_info(event.top,find_by_uname='TMPPATHBASE')), sensitive=usetemplate
+      if usetemplate then begin
+        ; if the user turns on template, then load it
+        tmppathid = widget_info(event.top, find_by_uname='TMPPATH')
+        widget_control, tmppathid, get_value=filename
+        if filename ne '' then spd_ui_fileconfig_load_template, filename, event.top, state.statusBar
+        state.historywin->update,'Using template ' + filename
+      endif else begin
+        ; if the user turns off template, close it
+        !SPD_GUI.templatepath = ''
+        !SPD_GUI.windowStorage->setProperty,template=obj_new('spd_ui_template')
+        state.statusbar->update,'Template disabled.'
+        state.historywin->update,'Template disabled.'
+      endelse
+
+    END 
+    
+    'FIXLINUX': BEGIN      
+      id = widget_info(event.top, find_by_uname='FIXLINUX')
+      linux_fix = widget_info(id,/button_set)  
+      !spedas.linux_fix =  fix(linux_fix)   
+      spd_ui_fix_performance, !spedas.linux_fix
+    END
   
     'BROWSEREXEBTN':BEGIN
     
@@ -89,20 +125,6 @@ PRO spd_ui_spedas_fileconfig_event, event
     widget_control, state.browserexe, get_value=currentDir
     !spedas.browser_exe = currentDir
 
-  END
-  
-  'LOCALDIR': BEGIN
-  
-    widget_control, state.localDir, get_value=currentDir
-    !spedas.local_data_dir = currentDir
-    
-  END
-  
-  'REMOTEDIR': BEGIN
-  
-    widget_control, state.remoteDir, get_value=currentDir
-    !spedas.remote_data_dir = currentDir
-    
   END
   
   'TEMPCDFDIR': BEGIN
@@ -173,23 +195,38 @@ PRO spd_ui_spedas_fileconfig_event, event
     widget_control,state.browserexe,set_value=!spedas.browser_exe
     widget_control,state.tempdir,set_value=!spedas.temp_dir
     widget_control,state.tempcdfdir,set_value=!spedas.temp_cdf_dir
-    widget_control,state.localdir,set_value=!spedas.local_data_dir
-    widget_control,state.remotedir,set_value=!spedas.remote_data_dir
-    if !spedas.no_download eq 1 then begin
-      widget_control,state.nd_off_button,set_button=1
-    endif else begin
-      widget_control,state.nd_on_button,set_button=1
-    endelse
-    if !spedas.no_update eq 1 then begin
-      widget_control,state.nu_off_button,set_button=1
-    endif else begin
-      widget_control,state.nu_on_button,set_button=1
-    endelse
+    Widget_Control, state.fixlinux, Set_Button=!spedas.linux_fix
+    
+    !spd_gui.templatepath = ''
+    widget_control, (widget_info(event.top, find_by_uname='TMPPATH')), set_value=''
+    widget_control, (widget_info(event.top, find_by_uname='TMPBUTTON')), set_button=0
+    widget_control, (widget_info(event.top, find_by_uname='TMPPATHBASE')), sensitive = 0
+
+    state.spd_ui_cfg_sav = !spd_gui
+    state.spedas_cfg_save = !spedas        
+    
     widget_control,state.v_droplist,set_combobox_select=!spedas.verbose
     state.historywin->update,'Resetting controls to saved values.'
     state.statusbar->update,'Resetting controls to saved values.'
     
   END
+  
+  
+  'TMPBROWSE':BEGIN
+
+  tmppathid = widget_info(event.top, find_by_uname='TMPPATH')
+  widget_control, tmppathid, get_value=currentfile
+  if currentfile ne '' then path = file_dirname(currentfile)
+  fileName = Dialog_Pickfile(Title='Choose SPEDAS Template:', $
+    Filter='*.tgt',Dialog_Parent=event.top,file=filestring,path=path, /must_exist,/fix_filter); /fix_filter doesn't seem to make a difference on Windows. Does on unix.
+  ; check to make sure the file selected actually is a tgt file
+  if is_string(fileName) then begin
+    if ~stregex(fileName, '.*(.tgt)$',/fold_case,/bool) then begin
+      ok = dialog_message('Selected file does not appear to be a SPEDAS Template. Please select a SPEDAS Template (*.tgt) file',/center)
+    endif else spd_ui_fileconfig_load_template, filename, event.top, state.statusBar
+  endif
+
+END
   
   'RESETTODEFAULT': Begin
   
@@ -203,24 +240,21 @@ PRO spd_ui_spedas_fileconfig_event, event
     !spedas.no_update = state.def_values[1]
     !spedas.downloadonly = state.def_values[2]
     !spedas.verbose = state.def_values[3]
-    
-    
+    !spedas.linux_fix = state.def_values[4]
+      
     ; reset the widgets to these values
     widget_control,state.tempdir,set_value=!spedas.temp_dir
     widget_control,state.browserexe,set_value=!spedas.browser_exe
-    widget_control,state.localdir,set_value=!spedas.local_data_dir
-    widget_control,state.remotedir,set_value=!spedas.remote_data_dir
-    if !spedas.no_download eq 1 then begin
-      widget_control,state.nd_off_button,set_button=1
-    endif else begin
-      widget_control,state.nd_on_button,set_button=1
-    endelse
-    if !spedas.no_update eq 1 then begin
-      widget_control,state.nu_off_button,set_button=1
-    endif else begin
-      widget_control,state.nu_on_button,set_button=1
-    endelse
     widget_control,state.v_droplist,set_combobox_select=!spedas.verbose
+    Widget_Control,  state.fixlinux, Set_Button=!spedas.linux_fix
+       
+    !spd_gui.templatepath = ''
+    widget_control, (widget_info(event.top, find_by_uname='TMPPATH')), set_value=''
+    widget_control, (widget_info(event.top, find_by_uname='TMPBUTTON')), set_button=0
+    widget_control, (widget_info(event.top, find_by_uname='TMPPATHBASE')), sensitive = 0
+ 
+    state.spd_ui_cfg_sav = !spd_gui
+    state.spedas_cfg_save = !spedas
     
     state.historywin->update,'Resetting configuration to default values.'
     state.statusbar->update,'Resetting configuration to default values.'
@@ -232,7 +266,8 @@ PRO spd_ui_spedas_fileconfig_event, event
     ; write the values to the text file stored on disk
     ; so the values will be set outside of the panel
     ; and/or gui
-    ; these values will also be used each time spedas_init is called
+    ; these values will also be used each time spedas_init is called 
+    
     spedas_write_config
     state.statusBar->update,'Saved spedas_config.txt'
     state.historyWin->update,'Saved spedas_config.txt'
@@ -254,6 +289,8 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   defsysv, '!spedas', exists=exists
   if not keyword_set(exists) then spedas_init
   spedas_cfg_save = !spedas
+  spd_ui_cfg_sav = !spd_gui
+  linux_fix = !spedas.linux_fix 
   
   ;Build the widget bases
   master = Widget_Base(tab_id, /col, tab_mode=1,/align_left, /align_top)
@@ -282,7 +319,7 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   temp_dirbtn = widget_button(rbase,value='Browse', uval='TEMPDIRBTN', /align_center)
 
   rbase1 = widget_base(configbase, /row, /align_left, ypad=1)  
-  flabel2 = widget_label(rbase1, value = 'Directory for CDAweb files:  ')
+  flabel2 = widget_label(rbase1, value = 'Directory for CDAWeb files:  ')
   tempcdfdir = widget_text(rbase1, /edit, xsiz = 50, /all_events, uval='TEMPCDFDIR', val = !spedas.temp_cdf_dir)
   tempcdfdirbtn = widget_button(rbase1,value='Browse', uval='TEMPCDFDIRBTN', /align_center)
   
@@ -291,41 +328,40 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   v_values = ['0', '1', '2','3', '4', '5', '6', '7', '8', '9', '10']
   v_droplist = widget_Combobox(v_base, value=v_values, uval='VERBOSE', /align_center)
   
+  n_base = widget_base(configbase,/row,/nonexclusive,uval='FL')
+  fixlinux = widget_button(n_base,value=' Fix drawing performance  ',uval='FIXLINUX',uname='FIXLINUX') 
+  Widget_Control, fixlinux, Set_Button=!spedas.linux_fix 
+  
   ; buttons to save or reset the widget values
   savebut = widget_button(bmaster, value = '    Save to File     ', uvalue = 'SAVE')
   resetbut = widget_button(bmaster, value = '     Cancel     ', uvalue = 'RESET')
   reset_to_dbutton =  widget_button(bmaster,  value =  '  Reset to Default   ',  uvalue =  'RESETTODEFAULT')
-    
-  ;;;;;;;; TO BE REMOVED - START
-  ;Next radio buttions
-  nd_base = widget_base(configbase, /row, /align_left, map=0)
-  nd_labelbase = widget_base(nd_base,/col,/align_center)
-  nd_label = widget_label(nd_labelbase, value='Download Data:',/align_left, xsize=95)
-  nd_buttonbase = widget_base(nd_base, /exclusive, column=2, uval="ND",/align_center)
-  remotedir = widget_text(nd_base, /edit, /all_events, xsiz = 5, $
-    uval = 'REMOTEDIR', val = !spedas.remote_data_dir)
-  localdir = widget_text(nd_base, /edit, /all_events, xsiz = 5, $
-    uval = 'LOCALDIR', val = !spedas.local_data_dir)
-  nd_on_button = widget_button(nd_buttonbase, value='Automatically    ', uval='NDON',/align_left,xsize=120)
-  nd_off_button = widget_button(nd_buttonbase, value='Use Local Data Only', uval='NDOFF',/align_left)
-  
-  nubase = widget_base(configbase, /row, /align_left, map=0)
-  nu_labelbase = widget_base(nubase,/col,/align_center)
-  nu_label = widget_label(nu_labelbase, value='Update Files:',/align_left, xsize=95)
-  nu_buttonbase = widget_base(nubase, /exclusive, column=2, uval="NU",/align_center)
-  nu_on_button = widget_button(nu_buttonbase, value='Update if Newer  ', uval='NUON',/align_left,xsize=120)
-  nu_off_button = widget_button(nu_buttonbase, value='Use Local Data Only', uval='NUOFF',/align_left)
-  ;;;;;;;; TO BE REMOVED - END
+      
+  ; Template
+  grtemp_base = widget_base(vmaster,/col,/align_left)
+  tmp_base = widget_base(grtemp_base, row=2,/align_left,uname='TMPBASE')
+  tmp_labelbase = widget_base(tmp_base, /align_center,/col)
+  tmp_label = widget_label(tmp_labelbase, value='Template:            ',/align_left,xsize=97)
+  tmp_buttonbase = widget_base(tmp_base,/row,/nonexclusive,uval='TMP',/align_center)
+  tmp_button = widget_button(tmp_buttonbase,value='Load Template',uval='USETMP',uname='TMPBUTTON')
+
+  tmp_pathbase = widget_base(tmp_base,/row,/align_center,uname='TMPPATHBASE')
+  tmp_label = widget_label(tmp_pathbase, value='',xsize=100)
+  tmppath = widget_text(tmp_pathbase, xsize = 56, $
+    uval = 'TMPPATH',uname='TMPPATH',/align_center)
+  tmp_browsebtn = widget_button(tmp_pathbase,value='Browse', uval='TMPBROWSE',/align_center)
+  if !SPD_GUI.templatepath ne '' then begin
+    widget_control, tmp_button,/set_button
+    widget_control, tmppath, /sensitive, set_value = !SPD_GUI.templatepath
+  endif else widget_control, tmp_pathbase, sensitive=0
   
   ;defaults for Cancel:
-  def_values=['0','0','0','2']
+  def_values=['0','0','0','2',0]
   
-  state = {localdir:localdir, master:master, remotedir:remotedir,  $
-    browserexe:browserexe, tempdir:tempdir, tempcdfdir:tempcdfdir, $
-    nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
-    nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
-    v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
-    def_values:def_values, historyWin:historyWin, tab_id:tab_id}
+  state = {spedas_cfg_save:spedas_cfg_save, spd_ui_cfg_sav:spd_ui_cfg_sav, $
+    master:master, browserexe:browserexe, tempdir:tempdir, tempcdfdir:tempcdfdir, $
+    v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, fixlinux:fixlinux, $
+    def_values:def_values, historyWin:historyWin, tab_id:tab_id, linux_fix:linux_fix}
     
   spd_ui_spedas_init_struct,state,!spedas
   

@@ -18,8 +18,8 @@
 ;   attname:    CDF attribute name
 ;CREATED BY:    Davin Larson
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2008-03-11 12:14:10 -0700 (Tue, 11 Mar 2008) $
-; $LastChangedRevision: 2469 $
+; $LastChangedDate: 2014-05-20 10:05:23 -0700 (Tue, 20 May 2014) $
+; $LastChangedRevision: 15173 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_var_atts.pro $
 ;-
 
@@ -55,6 +55,7 @@ if n_elements(var) eq 0 then begin     ; Get all global attributes
                   cdf_attget, id, a, gentry, value_new
                   value = [temporary(value), temporary(value_new)]
                 endwhile
+                name = idl_validname(name,/convert_all)
                 if keyword_set(attstr) then attstr = create_struct(attstr,name,value)  $
                 else attstr = create_struct(name,value)
             endelse

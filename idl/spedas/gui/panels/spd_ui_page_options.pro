@@ -14,9 +14,9 @@
 ;OUTPUT:
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-16 17:55:52 -0700 (Fri, 16 May 2014) $
+;$LastChangedRevision: 15162 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_page_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -777,7 +777,10 @@ PRO spd_ui_page_options_event, event, pagesettings
     Help, /Last_Message, Output = err_msg
     
     spd_ui_sbar_hwin_update, state, err_msg, /error, err_msgbox_title='Error in Page Options'
-    if obj_valid(state.pagesettings) then state.pagesettings->Reset
+    
+    if is_struct(state) then begin
+      if obj_valid(state.pagesettings) then state.pagesettings->Reset
+    endif
     
     Widget_Control, event.TOP, Set_UValue=state, /No_Copy
     widget_control, event.top,/destroy

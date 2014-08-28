@@ -17,8 +17,8 @@
 ; 24-oct-2013 clr, removed graphic buttons and goes wind and istp code. panel is now tabbed
 ; 
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-15 15:05:46 -0700 (Thu, 15 May 2014) $
-;$LastChangedRevision: 15143 $
+;$LastChangedDate: 2014-05-16 10:19:06 -0700 (Fri, 16 May 2014) $
+;$LastChangedRevision: 15152 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_themis_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -60,27 +60,7 @@
 
 ;--------------------------------------------------------------------------------
 
-PRO spd_ui_fileconfig_load_template, fileName, topid, statusBar
-  
-  if(Is_String(fileName)) then begin
-    open_spedas_template,template=template,filename=fileName,$
-        statusmsg=statusmsg,statuscode=statuscode
-    if (statuscode LT 0) then begin
-        ok=dialog_message(statusmsg,/ERROR,/CENTER)
-        statusBar->Update, 'Error: '+statusmsg
-    endif else begin
-      !SPD_GUI.templatepath = fileName
-      tmppathid = widget_info(topid, find_by_uname='TMPPATH')
-      widget_control, tmppathid,set_value=filename
-      !SPD_GUI.windowStorage->setProperty,template=template
-    ENDELSE
-  ENDIF ELSE BEGIN
-    statusBar->Update, 'Failed to load template: invalid filename'
-  ENDELSE     
 
-END
-
-;--------------------------------------------------------------------------------
 
 PRO spd_ui_fileconfig_init_struct,state,struct
 
@@ -162,43 +142,6 @@ PRO spd_ui_themis_fileconfig_event, event
     END
     
     
-    'USETMP': BEGIN
-
-       btnid = widget_info(event.top,find_by_uname='TMPBUTTON')
-       usetemplate = widget_info(btnid, /button_set)
-       widget_control, (widget_info(event.top,find_by_uname='TMPPATHBASE')), sensitive=usetemplate
-       if usetemplate then begin
-       ; if the user turns on template, then load it
-         tmppathid = widget_info(event.top, find_by_uname='TMPPATH')
-         widget_control, tmppathid, get_value=filename
-         if filename ne '' then spd_ui_fileconfig_load_template, filename, event.top, state.statusBar
-         state.historywin->update,'Using template ' + filename
-       endif else begin
-       ; if the user turns off template, close it
-         !SPD_GUI.templatepath = ''
-         !SPD_GUI.windowStorage->setProperty,template=obj_new('spd_ui_template')
-         state.statusbar->update,'Template disabled.'
-         state.historywin->update,'Template disabled.'
-       endelse
-
-    END
-    
-    'TMPBROWSE':BEGIN
-
-      tmppathid = widget_info(event.top, find_by_uname='TMPPATH')
-      widget_control, tmppathid, get_value=currentfile
-      if currentfile ne '' then path = file_dirname(currentfile)
-      fileName = Dialog_Pickfile(Title='Choose SPEDAS Template:', $
-           Filter='*.tgt',Dialog_Parent=event.top,file=filestring,path=path, /must_exist,/fix_filter); /fix_filter doesn't seem to make a difference on Windows. Does on unix.
-      ; check to make sure the file selected actually is a tgt file
-      if is_string(fileName) then begin
-        if ~stregex(fileName, '.*(.tgt)$',/fold_case,/bool) then begin
-          ok = dialog_message('Selected file does not appear to be a SPEDAS Template. Please select a SPEDAS Template (*.tgt) file',/center)
-        endif else spd_ui_fileconfig_load_template, filename, event.top, state.statusBar
-      endif
-
-    END
-    
     'RESET': BEGIN
      
       !themis=state.thm_cfg_save
@@ -229,12 +172,7 @@ PRO spd_ui_themis_fileconfig_event, event
 ;        widget_control,state.gr_soft_button,/set_button
 ;        spd_ui_fileconfig_set_draw,state,1
 ;      endelse
-      !spd_gui.templatepath = ''
-      widget_control, (widget_info(event.top, find_by_uname='TMPPATH')), set_value=''
-      widget_control, (widget_info(event.top, find_by_uname='TMPBUTTON')), set_button=0
-      widget_control, (widget_info(event.top, find_by_uname='TMPPATHBASE')), sensitive = 0
-      
-      state.spd_ui_cfg_sav = !spd_gui
+
 
     END
     
@@ -253,13 +191,6 @@ PRO spd_ui_themis_fileconfig_event, event
 ;      !spd_gui.renderer = 1
 ;      widget_control,state.gr_soft_button,/set_button
 ;      spd_ui_fileconfig_set_draw,state,1
-      !spd_gui.templatepath = ''
-      widget_control, (widget_info(event.top, find_by_uname='TMPPATH')), set_value=''
-      widget_control, (widget_info(event.top, find_by_uname='TMPBUTTON')), set_button=0
-      widget_control, (widget_info(event.top, find_by_uname='TMPPATHBASE')), sensitive = 0
-      
-      state.spd_ui_cfg_sav = !spd_gui
-                   
     END
     
     'SAVE': BEGIN
@@ -287,7 +218,6 @@ PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
   defsysv, '!themis', exists=exists
   if not keyword_set(exists) then thm_init
   thm_cfg_save = !themis
-  spd_ui_cfg_sav = !spd_gui
   
 ;Build the widget bases
   master = Widget_Base(tab_id, /col, tab_mode=1,/align_left, /align_top) 
@@ -335,7 +265,6 @@ PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
   v_droplist = widget_Combobox(v_base, value=v_values, uval='VERBOSE', /align_center)
 
   ;base for graphics and template
-  grtemp_base = widget_base(vmaster,/col,/align_left)
   ; Graphics mode
   ; DO NOT delete in case we want to reinstall grahics buttons
 ;  gr_base = widget_base(grtemp_base, /row, /align_left)
@@ -351,22 +280,7 @@ PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
 ;    widget_control,gr_hard_button,/set_button
 ;  endelse
 
-; Template
-  tmp_base = widget_base(grtemp_base, row=2,/align_left,uname='TMPBASE')
-  tmp_labelbase = widget_base(tmp_base, /align_center,/col)
-  tmp_label = widget_label(tmp_labelbase, value='Template:            ',/align_left,xsize=97)
-  tmp_buttonbase = widget_base(tmp_base,/row,/nonexclusive,uval='TMP',/align_center)
-  tmp_button = widget_button(tmp_buttonbase,value='Load Template',uval='USETMP',uname='TMPBUTTON')
-  
-  tmp_pathbase = widget_base(tmp_base,/row,/align_center,uname='TMPPATHBASE')
-  tmp_label = widget_label(tmp_pathbase, value='',xsize=100)
-  tmppath = widget_text(tmp_pathbase, xsize = 56, $
-                         uval = 'TMPPATH',uname='TMPPATH',/align_center)
-  tmp_browsebtn = widget_button(tmp_pathbase,value='Browse', uval='TMPBROWSE',/align_center)
-  if !SPD_GUI.templatepath ne '' then begin
-    widget_control, tmp_button,/set_button
-    widget_control, tmppath, /sensitive, set_value = !SPD_GUI.templatepath
-  endif else widget_control, tmp_pathbase, sensitive=0
+
 
 ;buttons
   savebut = widget_button(bmaster, value = '   Save To File  ', uvalue = 'SAVE')
@@ -379,7 +293,7 @@ PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
   ;store these guys in pointers so that they
   ;are easy to return from event handler
 
-  state = {spd_ui_cfg_sav:spd_ui_cfg_sav, thm_cfg_save:thm_cfg_save, $
+  state = { thm_cfg_save:thm_cfg_save, $
           localdir:localdir, remotedir:remotedir, $
           nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
           nu_on_button:nu_on_button, nu_off_button:nu_off_button, $

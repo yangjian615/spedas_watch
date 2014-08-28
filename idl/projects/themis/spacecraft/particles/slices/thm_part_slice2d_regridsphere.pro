@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-03 14:09:43 -0800 (Tue, 03 Dec 2013) $
-;$LastChangedRevision: 13616 $
+;$LastChangedDate: 2014-05-16 15:53:53 -0700 (Fri, 16 May 2014) $
+;$LastChangedRevision: 15157 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_regridsphere.pro $
 ;
 ;-
@@ -58,8 +58,8 @@ pro thm_part_slice2d_regridsphere, dist, energy=energy, regrid=regrid, $
   erest = dist.mass * c^2 / 1e6
 
   nangles = regrid[0] * regrid[1]
-  nenergy = dist.nenergy
-  ncopies = round(regrid[2]/dist.nenergy) > 1
+  nenergy = dimen1(dist.energy)
+  ncopies = round(regrid[2]/nenergy) > 1
   
   ;set up new angle grid
   phigrid0 = interpol([0,360],regrid[0]+1)
@@ -70,7 +70,7 @@ pro thm_part_slice2d_regridsphere, dist, energy=energy, regrid=regrid, $
 
   ;Spherically interpolate the data at each energy using the nearest neighbor.
   ;----------------------------------------------------------------
-  for i=0, dist.nenergy-1 do begin
+  for i=0, nenergy-1 do begin
     
 ;    ;ignore energies with no valid bins (saves resources)
 ;    if total(dist.bins[i,*]) lt 1 then continue

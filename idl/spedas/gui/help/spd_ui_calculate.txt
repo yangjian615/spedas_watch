@@ -13,11 +13,10 @@ scripting or 'mini language'.
 
 The 'Program Area' text box on the left side of the window is editable. This is where you can 
 enter statements. You can simply type the text directly into the box or you can use the Insert 
-list boxes on the right hand side of the window.  Insert list boxes include variables, functions, 
-operators, and a droplist menu for constants.  To insert a variable into the program area select 
-the variable in the data tree and click the arrow button. To insert a function, operator or
-constant, simply select the item within the insert box and the text for that item will be entered 
-in the programming area wherever the cursor is located.  
+list boxes on the right hand side of the window.  Insert lists include variables, functions, 
+and operators plus dedicated buttons for constants.  To insert a variable, function, or operator 
+into the program area select the item in the appropriate list and click the arrow button.
+The item will be inserted at the cursor's last position.
 
 Here is an example of a mini language call:
 "tha_state_pos_avg" = mean("tha_state_pos",2)

@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-06 10:24:09 -0700 (Tue, 06 May 2014) $
-;$LastChangedRevision: 15054 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-20 17:03:56 -0700 (Tue, 20 May 2014) $
+;$LastChangedRevision: 15182 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1344,6 +1344,8 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   thm_graphics_config
   spd_gui_init
   cdf_leap_second_init
+  
+  spd_ui_fix_performance, !spedas.linux_fix
   
   ;stop reporting of floating point errors(which will get annoying)
   !EXCEPT=0

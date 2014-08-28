@@ -15,9 +15,9 @@
 ;pt2: multiplicand to change pt into view normalized coords(par axis)
 ; lazytitles: like lazy labels, determines if underscores should be treated as carriage returns.
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-16 17:51:22 -0700 (Fri, 16 May 2014) $
+;$LastChangedRevision: 15160 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__addaxistitle.pro $
 ;-
 pro spd_ui_draw_object::addAxisTitle, model, titleobj, subtitleobj, titlemargin, placetitle, dir, titleorientation, showtitle, pt1, pt2, lazytitles
@@ -86,6 +86,10 @@ pro spd_ui_draw_object::addAxisTitle, model, titleobj, subtitleobj, titlemargin,
   
   if showtitle then begin
     titleobj->getProperty, size=titlesize, value=titletext, color=titlecolor
+    
+    ;this is checked elsewhere, but just in case...
+    titlesize = titlesize > 1
+    
     titleFont = titleobj->getGrFont()
     titleFont->setProperty,size=titlesize*self->getZoom()
     if showsubtitle then begin
@@ -140,6 +144,11 @@ pro spd_ui_draw_object::addAxisTitle, model, titleobj, subtitleobj, titlemargin,
     if showtitle then begin
       titleobj->getProperty, size=titlesize
     endif else titlesize=subtitlesize
+    
+    ;this is checked elsewhere, but just in case...
+    titlesize = titlesize > 1
+    subtitlesize = subtitlesize > 1
+    
     titlesize+=1
     subtitleFont = subtitleobj->getGrFont()
     subtitleFont->setProperty, size=subtitlesize*self->getZoom()

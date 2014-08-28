@@ -21,7 +21,7 @@
 ; out_suffix= a suffix to add to new tplot variables for the
 ;             moments. The default is the null string, so that
 ;             variables are overwritten.
-; in_suffix= if set, only varaibles with this suffix will be
+; in_suffix= if set, only variables with this suffix will be
 ;            corrected, to avoid correcting variables that have been
 ;            loaded without corrections.
 ;HISTORY:
@@ -30,9 +30,9 @@
 ;              confusion, also passes out_suffix keyword through to
 ;              thm_esa_dtc4mom
 ; 9-aug-2011, jmm, added in_suffix keyword
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-01-26 16:43:39 -0800 (Thu, 26 Jan 2012) $
-; $LastChangedRevision: 9625 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2014-05-20 16:42:39 -0700 (Tue, 20 May 2014) $
+; $LastChangedRevision: 15178 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_apply_esa_mom_dtc.pro $
 ;-
 Pro thm_apply_esa_mom_dtc,  probe = probe, instrument = instrument, $
@@ -100,7 +100,7 @@ Pro thm_apply_esa_mom_dtc,  probe = probe, instrument = instrument, $
                 init_dtc_vars = 1b
               Endif
 ;here you now have dead time corrections, all that is needed it to
-;interpolate the corrections and multiply by the appropriate variabld
+;interpolate the corrections and multiply by the appropriate variable
 ;data
               dtcvar = thx+'_pe'+species[i]+mode+'_'+vv[k]+'_dtc'+osfx
               dtc = data_cut(dtcvar, d.x)
@@ -119,7 +119,13 @@ Pro thm_apply_esa_mom_dtc,  probe = probe, instrument = instrument, $
       Endfor
     Endfor
   Endfor
-
+;If you're in the GUI, delete the dead time corrections and the
+;delta_time variables for moment calculation
+  If(xregistered('spd_gui') Ne 0) Then Begin
+     store_data, 'th?_pe??_delta_time', /delete
+     store_data, 'th?_pe??_*_dtc', /delete
+  Endif
+     
   Return
 End
 

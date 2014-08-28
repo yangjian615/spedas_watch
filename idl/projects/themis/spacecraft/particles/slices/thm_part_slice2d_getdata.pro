@@ -37,8 +37,8 @@
 ;
 ; 
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-25 16:20:57 -0800 (Tue, 25 Feb 2014) $
-;$LastChangedRevision: 14442 $
+;$LastChangedDate: 2014-05-16 15:53:53 -0700 (Fri, 16 May 2014) $
+;$LastChangedRevision: 15157 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getdata.pro $
 ;-
 
@@ -88,12 +88,8 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
     
     
     ;Determine data type for sanitization
-    thm_pgs_get_datatype, ptr_array[j], datatype=datatype
+    thm_pgs_get_datatype, ptr_array[j], instrument=instrument
     
-    esa = strmid(datatype,1,1) eq 'e'
-    sst = strmid(datatype,1,1) eq 's'
-    combined = strmid(datatype,1,1) eq 't'
-
     
     ;------------------------------------------------------------------
     ;Loop over sample times
@@ -111,11 +107,11 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
       
       ;Use standard particle sanitization routines to perform unit
       ;conversion and contamination removal.
-      if esa then begin
+      if instrument eq 'esa' then begin
         thm_pgs_clean_esa, ( (*ptr_array[j])[times_ind] )[i], units_lc, output=dist, _extra=ex
-      endif else if sst then begin
+      endif else if instrument eq 'sst' then begin
         thm_pgs_clean_sst, ( (*ptr_array[j])[times_ind] )[i], units_lc, output=dist, sst_sun_bins=sst_sun_bins,_extra=ex
-      endif else if combined then begin
+      endif else if instrument eq 'combined' then begin
         thm_pgs_clean_cmb, ( (*ptr_array[j])[times_ind] )[i], units_lc, output=dist
       endif else begin
         dprint,dlevel=0,'WARNING: Instrument type unrecognized'
@@ -172,8 +168,10 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
     
     ;Remove/subtract count limit from data.
     ;**One-count removal performed before averaging from 2012-12-21 to 2013-07-02.**
-    thm_part_slice2d_climit, dist, data_ave, units=units, $
-           subtract_counts=subtract_counts, count_threshold=count_threshold
+    ;  -a unit conversion is often required here so use un-sanitized structure
+    ;  -invalid bins are removed independently from this 
+    thm_part_slice2d_climit, ( (*ptr_array[j])[times_ind] )[0], data_ave, $
+      units=units, regrid=regrid, subtract_counts=subtract_counts, count_threshold=count_threshold
   
   
     ;Remove bins with no valid data

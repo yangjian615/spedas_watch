@@ -22,6 +22,7 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
     str_element,tmp_struct,'browser_exe','',/add
     str_element,tmp_struct,'temp_dir','',/add
     str_element,tmp_struct,'temp_cdf_dir','',/add
+    str_element,tmp_struct,'linux_fix',0,/add
     defsysv,'!spedas',tmp_struct
   endif
 
@@ -31,6 +32,7 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
     str_element,tmp_struct,'browser_exe','',/add
     str_element,tmp_struct,'temp_dir','',/add
     str_element,tmp_struct,'temp_cdf_dir','',/add
+    str_element,tmp_struct,'linux_fix',0,/add
     defsysv,'!spedas',tmp_struct
     data_dir =  root_data_dir()
     data_dir = StrJoin( StrSplit(data_dir, '\\' , /Regex, /Extract, /Preserve_Null), path_sep())
@@ -40,6 +42,7 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
     !spedas.temp_dir =  data_dir
     !spedas.temp_cdf_dir =  data_dir + 'cdaweb' + path_sep()
     !spedas.browser_exe = ''
+    !spedas.linux_fix = 0
     !spedas.init = 1
     print,'Resetting !spedas to default configuration.'
   endif else begin ;retrieved from saved values

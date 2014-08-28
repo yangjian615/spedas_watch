@@ -54,6 +54,8 @@ Pro spedas_write_config, copy = copy, _extra = _extra
       str_element,tmp_struct,'browser_exe','',/add
       str_element,tmp_struct,'temp_dir','',/add
       str_element,tmp_struct,'temp_cdf_dir','',/add
+      str_element,tmp_struct,'linux_fix',0,/add
+      ;str_element,tmp_struct,'temp_cdf_dir','',/add
       defsysv,'!spedas',tmp_struct
     endif
     cfg = !spedas

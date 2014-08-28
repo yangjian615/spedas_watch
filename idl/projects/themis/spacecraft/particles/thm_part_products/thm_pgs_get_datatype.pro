@@ -13,19 +13,20 @@
 ;Output Keywords:
 ;  probe: String denoting probe
 ;  datatype: String denoting particle data type (e.g. peif, pseb)
+;  instrument: String denoting instrument ('esa', 'sst', 'combined')
 ;
 ;  
 ;Notes:
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-10-09 18:03:13 -0700 (Wed, 09 Oct 2013) $
-;$LastChangedRevision: 13298 $
+;$LastChangedDate: 2014-05-16 15:53:53 -0700 (Fri, 16 May 2014) $
+;$LastChangedRevision: 15157 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_get_datatype.pro $
 ;-
 
 
-pro thm_pgs_get_datatype, dist_array, probe=probe, datatype=datatype, units=units
+pro thm_pgs_get_datatype, dist_array, probe=probe, datatype=datatype, instrument=instrument, units=units
 
   compile_opt idl2, hidden
       
@@ -60,6 +61,16 @@ pro thm_pgs_get_datatype, dist_array, probe=probe, datatype=datatype, units=unit
       endcase
     endif
     
+    ;instrument
+    case strmid(datatype,1,1) of 
+      'e': instrument = 'esa'
+      's': instrument = 'sst'
+      't': instrument = 'combined'
+      else: begin
+        ;this should also never happen
+        message, 'Error: Cannot determine data type
+      end
+    endcase
     
     if ~keyword_set(units) then begin
       units = (*dist_array[0])[0].units_name

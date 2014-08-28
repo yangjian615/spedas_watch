@@ -8,7 +8,7 @@
 ;
 ;
 ;Input:
-;  dist: 3D particle data structure
+;  dist: 3D particle data structure (UNSANITIZED)
 ;  datatpoints: final averaged data array from thm_part_slice2d_getxyz
 ;  units: string specifying units (e.g. 'eflux', 'df')
 ;  subtract_counts: (float) subtract this many counts from all values 
@@ -24,12 +24,14 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-11-05 17:44:02 -0800 (Tue, 05 Nov 2013) $
-;$LastChangedRevision: 13496 $
+;$LastChangedDate: 2014-05-16 15:53:53 -0700 (Fri, 16 May 2014) $
+;$LastChangedRevision: 15157 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_climit.pro $
 ;
 ;-
-pro thm_part_slice2d_climit, dist, datapoints, units=units, $
+pro thm_part_slice2d_climit, dist, datapoints, $
+                             units=units, $
+                             regrid=regrid, $
                              subtract_counts=subtract_counts, $
                              count_threshold=count_threshold
 
@@ -42,7 +44,7 @@ pro thm_part_slice2d_climit, dist, datapoints, units=units, $
     threshold = keyword_set(subtract_counts) ? subtract_counts:count_threshold
 
     ;get array of values in the specified units for the given threshold 
-    thresh = thm_part_slice2d_ncount(dist, units, threshold)
+    thresh = thm_part_slice2d_ncount(dist, units, threshold, regrid=regrid)
     
     if n_elements(thresh) eq n_elements(datapoints) then begin
       
@@ -57,8 +59,8 @@ pro thm_part_slice2d_climit, dist, datapoints, units=units, $
                           ' bins below one count from "'+dist.data_name+'"'
       endelse
     endif else begin
-      dprint, dlevel=0, 'Error matching one-count data to distribution. ' + $
-                        'Bins below one count could not be subtracted!'
+      dprint, dlevel=0, 'Error matching count threshold to distribution. ' + $
+                        'Bins below threshold could not be subtracted!'
     endelse
   endif
   

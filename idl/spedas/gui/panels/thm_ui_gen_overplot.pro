@@ -22,8 +22,8 @@
 ;  none
 ;  
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-04-09 10:24:46 -0700 (Wed, 09 Apr 2014) $
-;$LastChangedRevision: 14781 $
+;$LastChangedDate: 2014-05-16 15:34:14 -0700 (Fri, 16 May 2014) $
+;$LastChangedRevision: 15154 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/thm_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -123,8 +123,11 @@ pro thm_ui_fix_page_fonts, state=state
   panel = panelsObj->get(/all,count=count) 
   if count eq 0 then return
 
-  IF !VERSION.RELEASE GE '8.0' THEN begin    
+  IF !VERSION.RELEASE GE '8.0' THEN begin
     size_multiplier = 0.8
+    if (!version.os_family ne 'Windows') and (!version.os_name ne 'Mac OS X') then begin
+      size_multiplier = 0.9
+    endif
     
     ; Loop through the panels and fix the axis
     for i = 0, n_elements(panel)-1 do begin

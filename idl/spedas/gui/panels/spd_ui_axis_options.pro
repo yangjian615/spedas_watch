@@ -22,9 +22,9 @@
 ;NB: This problem doesn't seem to happen with the panel title on Panel Options window.
 ;If we could work out why the panel title combobox worked there it would be better to fix axis label title to match rather than truncating.
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-08 09:31:26 -0700 (Thu, 08 May 2014) $
-;$LastChangedRevision: 15072 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-05-20 16:51:02 -0700 (Tue, 20 May 2014) $
+;$LastChangedRevision: 15179 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_axis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -1600,13 +1600,14 @@ PRO spd_ui_axis_options_set_labels, tlb, state,nopopups=nopopups
         if ~blacklabels and showlabels then currpanelobj->SyncLinesToLabels
       endif
       if ~finite(size,/nan) then begin
-        if size lt 1 then begin
+        ;size will be cast as short when added to object
+        if fix(size) lt 1 then begin
           spd_ui_message,'Label Size must be greater than or equal to one; value reset.', $
                          sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
           currlabelobj->GetProperty, size = prevsize
           id = widget_info(tlb, find_by_uname='labelsize')
           widget_control, id, set_value =prevsize
-        endif else currlabelobj->SetProperty, size = double(size)
+        endif else currlabelobj->SetProperty, size = size
       endif else begin
         spd_ui_message,'Invalid label font size; value reset.', $
                        sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
@@ -1645,9 +1646,16 @@ pro spd_ui_axis_options_set_major_ticks,state,nopopups=nopopups
   showmessage = bynumberset
   id = widget_info(tlb, find_by_uname = 'nummajorticks')
   widget_control,id,get_value=ticknum
+  spd_ui_spinner_get_max_value, id, majormax 
   if ~finite(ticknum,/nan) then begin
-    if tickNum lt 0 then begin
-      spd_ui_message,'Major Tick Number cannot be less than 0; value reset.', $
+    if tickNum gt majormax then begin 
+      spd_ui_message,'Major Ticks number cannot be greater than ' + STRTRIM(string(majormax),2) + '; value reset.', $
+      sb=state.statusbar, hw=state.historywin, $
+        dialog=(showmessage && ~keyword_set(nopopups))
+      axisSettings->getProperty,numMajorTicks=ticknum
+      widget_control,id,set_value=ticknum    
+    endif else  if tickNum lt 0 then begin
+      spd_ui_message,'Major Ticks number cannot be less than 0; value reset.', $
                      sb=state.statusbar, hw=state.historywin, $
                      dialog=(showmessage && ~keyword_set(nopopups))
       axisSettings->getProperty,numMajorTicks=ticknum
@@ -1718,6 +1726,12 @@ pro spd_ui_axis_options_set_minor_ticks,state,nopopups=nopopups
       spd_ui_message,'Minor Tick Number cannot be less than 0; value reset.', $
                      sb=state.statusbar, hw=state.historywin, $
                      dialog=(showmessage && ~keyword_set(nopopups))
+      axisSettings->getProperty,numminorTicks=ticknum
+      widget_control,id,set_value=ticknum
+    endif else if tickNum gt 2ll^63-1 then begin  ;(2ll^63-1 rolls over to the maximum positive signed 64 bit integer, 2's complement FTW)
+      spd_ui_message,strtrim(tickNum,2) + ' is waaaaaay too many minor ticks. Try something smaller.', $
+      sb=state.statusbar, hw=state.historywin, $
+        dialog=(showmessage && ~keyword_set(nopopups))
       axisSettings->getProperty,numminorTicks=ticknum
       widget_control,id,set_value=ticknum
     endif else begin
@@ -2092,15 +2106,17 @@ pro spd_ui_axis_options_set_title, tlb, state,nopopups=nopopups
   widget_control, id, get_value = marginsize
   ; check for invalid entries
   
+  ;check title size
   if ~finite(size,/nan) then begin
-    if size le 0 then begin
+    ;size will be cast as short when added to object
+    if fix(size) le 0 then begin
       spd_ui_message,'Title font size must be greater than zero; value reset.', $
                sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
       titleobj->GetProperty, size = prevsize
       id = widget_info(tlb, find_by_uname='titlesize')
       widget_control, id, set_value =prevsize
     endif else begin
-      titleobj->SetProperty, size = double(size)
+      titleobj->SetProperty, size = size
     endelse
   endif else begin
     spd_ui_message,'Invalid title font size; value reset.', $
@@ -2109,15 +2125,18 @@ pro spd_ui_axis_options_set_title, tlb, state,nopopups=nopopups
     id = widget_info(tlb, find_by_uname='titlesize')
     widget_control, id, set_value =prevsize
   endelse
+  
+  ;check subtitle size
   if ~finite(subsize,/nan) then begin
-    if subsize le 0 then begin
+    ;size will be cast as short when added to object
+    if fix(subsize) le 0 then begin
       spd_ui_message,'Subtitle font size must be greater than zero; value reset.', $
                sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
       subtitleobj->GetProperty, size = prevsize
       id = widget_info(tlb, find_by_uname='subtitlesize')
       widget_control, id, set_value =prevsize
     endif else begin
-      subtitleobj->SetProperty, size = double(subsize)
+      subtitleobj->SetProperty, size = subsize
     endelse
   endif else begin
     spd_ui_message,'Invalid subtitle font size; value reset.', $
@@ -2597,20 +2616,25 @@ PRO spd_ui_axis_options_event, event
       spd_ui_init_axis_window, state = state
     end
     ;******************************************************************************
-    ;  Annotation Options
+    ;Panel drop list
     ;******************************************************************************
-    'ANNOPANELDROPLIST': begin
+    ;Multiple widgets have the same uvalue and trigger the same event
+    ;The repeated code for each panel was making maintenance more difficult
+    'PANELDROPLIST' : begin
       spd_ui_axis_options_setvalues, state.tlb, state,/nopopups
-;      spd_ui_propagate_axis,state,0 ;favoring a delayed axis propagation over immediate to simplify code
-      
+     
       state.axispanelselect = event.index
-      ;currpanelobj = state.panelobjs[state.axispanelselect]
-      ; is this needed?
-      currpanelobj = spd_ui_axis_options_getcurrentpanel(state)
+      ;currpanelobj = spd_ui_axis_options_getcurrentpanel(state)
+      state.labelselect=0
       spd_ui_init_axis_window , state = state
-      ;      state.statusBar->Update, 'Panel selected'
+      ; state.statusBar->Update, 'Panel selected'
       state.historywin->Update, 'Panel selected'
     end
+    
+    ;******************************************************************************
+    ;  Annotation Options
+    ;******************************************************************************
+    
     'AAUTO': if event.select eq 1 then begin
       axissettings->setproperty, AnnotateExponent=0
       ;      state.statusbar->update,'Auto-Notation selected'
@@ -2815,16 +2839,7 @@ END
 ;******************************************************************************
 ;  Grid Panel Options
 ;******************************************************************************
-'GRIDPANELDROPLIST': begin
-  spd_ui_axis_options_setvalues, state.tlb, state,/nopopups
-;  spd_ui_propagate_axis,state,0 ;favoring a delayed axis propagation over immediate to simplify code
-  
-  state.axispanelselect = event.index
-  ;currpanelobj = spd_ui_axis_options_getcurrentpanel(state)
-  spd_ui_init_axis_window , state = state
-  ;  state.statusBar->Update, 'Panel selected'
-  state.historywin->Update, 'Panel selected'
-end
+
 ;'OUTLINETHICK': BEGIN
 ;  if event.valid then begin
 ;    currpanelobj->GetProperty, settings = panelsettings
@@ -2979,17 +2994,7 @@ END
 ;******************************************************************************
 ;  Labels Options
 ;******************************************************************************
-'LABELPANELDROPLIST': begin
-  spd_ui_axis_options_setvalues, state.tlb, state,/nopopups
-;  spd_ui_propagate_axis,state,0 ;favoring a delayed axis propagation over immediate to simplify code
-  
-  state.axispanelselect = event.index
-  ;currpanelobj = spd_ui_axis_options_getcurrentpanel(state)
-  state.labelselect=0
-  spd_ui_init_axis_window , state = state
-  ; state.statusBar->Update, 'Panel selected'
-  state.historywin->Update, 'Panel selected'
-end
+
 'BLACKLABELS': BEGIN
   axissettings->SetProperty, BlackLabels=event.select
   id = widget_info(state.tlb, find_by_uname='labelpalette')
@@ -3207,19 +3212,7 @@ END
 ;******************************************************************************
 ;  Range Options
 ;******************************************************************************
-'RANGEPANELDROPLIST': begin
 
-  spd_ui_axis_options_setvalues, state.tlb, state,/nopopups
-;  spd_ui_propagate_axis,state,0 ;favoring a delayed axis propagation over immediate to simplify code
-  
-  state.axispanelselect = event.index
-  ; is this needed?
-  ;currpanelobj = state.panelobjs[state.axispanelselect]
-  
-  spd_ui_init_axis_window , state = state
-  ;    state.statusBar->Update, 'Panel selected'
-  state.historywin->Update, 'Panel selected'
-end
 'AUTORANGE': begin
 
   ;Update AXISSETTINGS:
@@ -3394,18 +3387,7 @@ end
   ;******************************************************************************
   ;  Tick Options
   ;******************************************************************************
-  'TICKPANELDROPLIST': begin
-  
-    spd_ui_axis_options_setvalues, state.tlb, state,/nopopups
-;    spd_ui_propagate_axis,state,0 ;favoring a delayed axis propagation over immediate to simplify code
-    
-    state.axispanelselect = event.index
-    ;currpanelobj = state.panelobjs[state.axispanelselect]
-    
-    spd_ui_init_axis_window , state = state
-    ;    state.statusBar->Update, 'Panel selected'
-    state.historywin->Update, 'Panel selected'
-  end
+
   
   'MAJORTICKUNITS': BEGIN
   
@@ -3497,18 +3479,7 @@ end
   ;******************************************************************************
   ; Title Options
   ;******************************************************************************
-  'TITLEPANELDROPLIST': begin
-    spd_ui_axis_options_setvalues, state.tlb, state,/nopopups
-;    spd_ui_propagate_axis,state,0 ;favoring a delayed axis propagation over immediate to simplify code
-    
-    state.axispanelselect = event.index
-    ;currpanelobj = state.panelobjs[state.axispanelselect]
-    ; is this needed?
-    currpanelobj = spd_ui_axis_options_getcurrentpanel(state)
-    spd_ui_init_axis_window , state = state
-    ;      state.statusBar->Update, 'Panel selected'
-    state.historywin->Update, 'Panel selected'
-  end
+
   'TITLEPALETTE': BEGIN
     axissettings->getProperty, titleobj=titleobj
     if obj_valid(titleobj) then titleobj->GetProperty,color=currentcolor else currentcolor = [0,0,0]
@@ -3848,7 +3819,7 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
   ;range widgets
     
   rpdlabel = Widget_label(panelbase, value = 'Panel: ', /align_center)
-  rangepanelDroplist = Widget_combobox(panelBase, Value=panelNames, XSize=200, uval='RANGEPANELDROPLIST', uname='rangepaneldroplist')
+  rangepanelDroplist = Widget_combobox(panelBase, Value=panelNames, XSize=200, uval='PANELDROPLIST', uname='rangepaneldroplist')
   roptionsLabel = Widget_Label(rlabelBase, Value='Range Options:', /Align_Left)
   rbuttonsBase = Widget_Base(roptionsBase, /Col, /Exclusive)
   ;IF isTimeAxis EQ 1 THEN sensitive=0 ELSE sensitive=1
@@ -3950,7 +3921,7 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
   
   tpanellabel = widget_label(tpanelbase, value = 'Panel: ', /align_left)
   tpanelDroplist = Widget_combobox(tpanelBase, Value=panelNames, XSize=200, $
-    uval='TICKPANELDROPLIST', uname='tickpaneldroplist')
+    uval='PANELDROPLIST', uname='tickpaneldroplist')
     
   tickUnitValues = axisSettings->GetUnits()
   tickStyleValues = axisSettings->GetStyles()
@@ -4002,7 +3973,7 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
     tooltip='Places ticks at easily read values.')
   majorTickBase = widget_base(numberBase,uname='majortickbase',sens=0)
   MajorTicknum = spd_ui_spinner(majorTickBase, value=nummajorticks, getXlabelSize=xlsize, $
-    uname='nummajorticks', uvalue='NUMMAJORTICKS', label='Major Ticks:  ', incr=1, min_value=0,tooltip='Number of ticks may be approximate.')
+    uname='nummajorticks', uvalue='NUMMAJORTICKS', label='Major Ticks:  ', incr=1, min_value=0, max_value=100,tooltip='Number of ticks may be approximate.')
   
 
     
@@ -4021,7 +3992,7 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
     
   minorTickBase = widget_base(ticksMiddleBase, /row, sens=0, uname='minortickbase')
   MinorTicknum = spd_ui_spinner(minorTickBase, value=numminorticks, getXlabelSize=xlsize, $
-    uname='numminorticks', label='# of Minor Ticks:  ', incr=1, min_value=0)
+    uname='numminorticks', label='# of Minor Ticks:  ', incr=1, min_value=0, max_value=100)
     
   minorLogTickTypeBase = widget_base(ticksMiddleBase,/col,/frame,/base_align_center)
   minorLogTickTypeLabelBase = widget_base(minorLogTickTypeBase,/base_align_center,/row)
@@ -4081,7 +4052,7 @@ lminorLabel = Widget_Label(lminorBase, Value=' pts')
 
 gppanelbase = widget_base(gpbase, /row)
 gplabel = widget_label(gppanelbase, value='Panel: ')
-gpDroplist = Widget_combobox(gppanelBase, Value=panelNames, XSize=200, uval='GRIDPANELDROPLIST', uname='gridpaneldroplist')
+gpDroplist = Widget_combobox(gppanelBase, Value=panelNames, XSize=200, uval='PANELDROPLIST', uname='gridpaneldroplist')
 ;outlineBase = Widget_Base(gpBase, /Row)
 ;outlineIncrement = spd_ui_spinner(outlineBase, Label= 'Panel Outline Thickness : ', Increment=1, Value=1,  uval='OUTLINETHICK', uname='outlinethick', min_value=1, max_value=10)
 gmajorLabel = Widget_Label(mglabelBase, Value='Major Grids: ', /Align_left, uname='majorgridbtnlabel')
@@ -4147,7 +4118,7 @@ sminorDroplist = Widget_combobox(sminorbase, XSize=160, $
 ;annotation widgets
   
 anoPlabel = widget_label(anopanelbase, value = 'Panel: ')
-anoPanelDroplist = Widget_combobox(anopanelBase, Value=panelNames, XSize=200, uval='ANNOPANELDROPLIST', uname='annopaneldroplist')
+anoPanelDroplist = Widget_combobox(anopanelBase, Value=panelNames, XSize=200, uval='PANELDROPLIST', uname='annopaneldroplist')
 
 IF isTimeAxis EQ 1 THEN sensitive=1 ELSE sensitive=0
 
@@ -4286,7 +4257,7 @@ titlepdBase = widget_base(titlepanelbase, /row)
 titlePLabel=Widget_Label(titlepdBase, value='Panel: ')
 
 
-titlepanelDroplist = Widget_combobox(titlepdBase, Value=panelNames,  XSize=150, uval='TITLEPANELDROPLIST', uname='titlepaneldroplist')
+titlepanelDroplist = Widget_combobox(titlepdBase, Value=panelNames,  XSize=150, uval='PANELDROPLIST', uname='titlepaneldroplist')
 titletextcolbase = widget_base(titletextBase, col=2, space=350)
 titletextframeLabel = Widget_Label(titletextcolbase, Value='Text: ', /Align_Left)
 titlehelpbutton = widget_button(titletextcolbase, value='Format Help', uname='formathelpbutton', uvalue='FORMATHELPBUTTON', /align_right)
@@ -4298,11 +4269,7 @@ titleeditbasecol2 = widget_base(titleeditbase, /col, /base_align_left);, space=1
 titletextlabel = widget_label(titleeditbasecol1, value='Title:', xsize=60, /align_left)
 titletextfield = widget_text(titleeditBasecol2, value = '', /editable, /all_events, xsize=55, ysize=1, $
   uval='TITLETEXTEDIT', uname='titletextedit')
-;subtitleeditbase = widget_base(titlecolbase,/row)
-;subtitletextlabel = widget_label(titleeditbasecol1, value='Subtitle: ')
-;subtitletextfield = widget_text(titleeditbasecol2, value='',/editable, /all_events, xsize=55, ysize=1,$
-;                        uval='SUBTITLETEXTEDIT',uname='subtitletextedit')
-  
+
 titlerow1base = widget_base(titlecolbase,/row, xpad=40,/base_align_center);, ypad=10)
 titlelabel1base = widget_base(titlerow1base,/col,/base_align_left, space=20, ypad=6);, xpad=30)
 titlefield1base = widget_base(titlerow1base,/col,/base_align_left, space=12)
@@ -4393,7 +4360,7 @@ Widget_Control, titleVertButton, /Set_Button ;correct button will be set in spd_
 lpdBase = widget_base(lpanelbase, /row)
 panelLabel=Widget_Label(lpdBase, value='Panel: ')
 
-lpanelDroplist = Widget_combobox(lpdBase, Value=panelNames,  XSize=150, uval='LABELPANELDROPLIST', uname='labelpaneldroplist')
+lpanelDroplist = Widget_combobox(lpdBase, Value=panelNames,  XSize=150, uval='PANELDROPLIST', uname='labelpaneldroplist')
 ltextLabel = Widget_Label(labeltextBase, Value='Text: ', /Align_Left)
 ltFrameBase = Widget_Base(labeltextBase, /col, Frame=3,XPad=1, uname='ltframebase')
 lt1TextBase = Widget_Base(ltFrameBase, /row, xpad=3)
