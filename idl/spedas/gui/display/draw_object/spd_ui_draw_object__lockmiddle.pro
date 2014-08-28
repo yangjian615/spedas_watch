@@ -8,9 +8,9 @@
 ;                 This will generally be a copy to prevent mutation of
 ;                 central gui copy.
 ;                 
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-06-11 15:56:35 -0700 (Wed, 11 Jun 2014) $
+;$LastChangedRevision: 15353 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__lockmiddle.pro $
 ;-
 pro spd_ui_draw_object::lockMiddle,panel
@@ -31,15 +31,6 @@ pro spd_ui_draw_object::lockMiddle,panel
                      annotateAxis=0
   endif
 
-  ;Turn off panel title.
-  if obj_valid(settings) then begin
-    settings->getProperty,titleobj=title
-   
-    if obj_valid(title) then begin
-      title->setProperty,show=0
-    endif
-  
-  endif 
   
    ;If marker title is above or below the axis, then move it to the middle
   if obj_valid(markers) then begin

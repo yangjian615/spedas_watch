@@ -31,9 +31,9 @@
 ;If you change the ordering be sure to check that this change hasn't oscured some
 ;important feature.
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-06-11 15:56:35 -0700 (Wed, 11 Jun 2014) $
+;$LastChangedRevision: 15353 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__updatepanels.pro $
 ;-
 
@@ -155,7 +155,14 @@ function spd_ui_draw_object::updatePanels,layoutDims,margins,panelObjs,loadedDat
   ;Gets the variable size of all the variables in the layout
   ;Note this has a problem, because it doesn't account for panels in separate columns
   ;It should get the height of all the variables in a column.
-  variableSizes = self->pt2norm(self->getVariableRowSizes(panelObjs),1)
+  self->getRowTextSizes, panelObjs, top_sizes=top_sizes, bottom_sizes=bottom_sizes
+  bottom_sizes = self->pt2norm(bottom_sizes,1)
+  top_sizes = self->pt2norm(top_sizes,1)
+  
+  ;Do not alter panel layout to account for panel titles unless panels are locked.
+  ;  -This is partly for consistency as no other annotations are accounted for
+  ;   (sans variables), but also to prioritize data space over annotation space.
+  if locked eq -1 then top_sizes[*] = 0.
   
   ;calculate the range of the locked panel
   ;so that we can use it on other panels
@@ -310,7 +317,8 @@ function spd_ui_draw_object::updatePanels,layoutDims,margins,panelObjs,loadedDat
       layoutPos,$
       pcoord,$
       markernum,$
-      variablesizes,$
+      bottom_sizes,$
+      top_sizes,$
       view=view,$
       annotation=annotation,$
       markers=markerviews,$

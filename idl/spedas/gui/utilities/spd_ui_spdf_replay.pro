@@ -8,8 +8,8 @@
 ;  as I'm forking a little bit here.
 ;  
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-06-10 19:13:51 -0700 (Tue, 10 Jun 2014) $
-;$LastChangedRevision: 15345 $
+;$LastChangedDate: 2014-06-13 16:28:05 -0700 (Fri, 13 Jun 2014) $
+;$LastChangedRevision: 15364 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_spdf_replay.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -19,9 +19,6 @@ pro spd_ui_spdf_replay,tlb,statusbar,historywindow,$
   timeInterval,datasetId,varnames,$
   selectedDataview,loadedData,$
   windowStorage
-  
-  ;do nothing until IDL crash is traced
-  return
 
   RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
   RESOLVE_ROUTINE, 'spdfCdawebChooser', /COMPILE_FULL_FILE
@@ -40,14 +37,24 @@ pro spd_ui_spdf_replay,tlb,statusbar,historywindow,$
 
   timeIntervalObj =  obj_new('SpdfTimeInterval', timeInterval[0], timeInterval[1])
 
+  ;not copying these parameters triggers an unexpected crash in IDLnetURL on all OSs and all IDL versions up to 8.3
+  timeIntervalObj_tmp = timeIntervalObj[0]
+  datasetId_tmp = datasetId[0]
+  varNames_tmp = varNames[0]
+  dataView_tmp = selectedDataView[0]
+  authenticator_tmp = authenticator[0]
+  errorDialog_tmp = errorDialog[0]
+
   dataResults = $
     cdas->getCdfData($
-    timeIntervalObj, datasetId, varNames, $
-    dataview=selectedDataview, $
-    authenticator=authenticator, $
-    httpErrorReporter=errorDialog)
+    timeIntervalObj_tmp, datasetId_tmp, varNames_tmp, $
+    dataview=dataView_tmp, $
+    authenticator=authenticator_tmp, $
+    httpErrorReporter=errorDialog_tmp)
 
   fileDescriptions = dataResults->getFileDescriptions()
+
+  localCdfNames = strarr(n_elements(fileDescriptions))
 
   for i = 0, n_elements(fileDescriptions) - 1 do begin
     urlname = fileDescriptions[i]->getName()
@@ -55,27 +62,27 @@ pro spd_ui_spdf_replay,tlb,statusbar,historywindow,$
     urlfilename = file_basename(urlComponents.path)
     filename = localdir + urlfilename
     localCdfNames[i] = fileDescriptions[i]->getFile(filename=filename[0])
+    fix_spedas_depend_time, localCDFNames[i]
   endfor
-
-  CDFfileExists = FILE_TEST(localCDFfile)
-  if CDFfileExists then begin
-
-    fix_spedas_depend_time, localCDFfile[0]
-
-    cdf2tplot,files=localCDFfile,all=1,prefix=theprefix,tplotnames=tplotnames,/load_labels
+  
+  
+  CDFfileExists = FILE_TEST(localCDFnames[0])
+  if CDFfileExists then begin ;at least one exists
+  
+    cdf2tplot,files=localCDFnames,all=1,prefix=theprefix,tplotnames=tplotnames,/load_labels
 
     spd_ui_tplot_gui_load_tvars,tplotnames,all_names=all_varnames,gui_id=tlb
-    spd_ui_verify_data,tl, all_varnames,loadedData, windowStorage, historyWin, success=success,newnames=new_names
+    spd_ui_verify_data,tlb, all_varnames,loadedData, windowStorage, historyWindow, success=success,newnames=new_names
 
     if ~keyword_set(success) then success=0
     if success then begin
       statusMessage = 'CDAWeb: All variables imported successfully. Check history window for details.'
       statusBar->Update, statusMessage
-      historyWin->Update, statusMessage
+      historyWindow->Update, statusMessage
     endif else begin
       statusMessage = 'CDAWeb: Problem importing some variables.  Check history window for details.'
       statusBar->Update, statusMessage
-      historyWin->Update, statusMessage
+      historyWindow->Update, statusMessage
     endelse
   endif
 

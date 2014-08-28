@@ -22,7 +22,7 @@
 ; STATUSBAR: The main bar of the main window of SPEDAS. Required for the calendar widget.
 ;
 ; OUTPUTS:
-; This function returns a CDF file. Also, it stores the values into variable thm_spdfdata.
+; This function returns a CDF file. Also, it stores the values into variable spd_spdfdata.
 ; If there is no data read, it shows a message to the user.
 ;
 ; EXAMPLE:
@@ -34,9 +34,9 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-06-10 19:38:56 -0700 (Tue, 10 Jun 2014) $
-;$LastChangedRevision: 15346 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-06-11 10:59:22 -0700 (Wed, 11 Jun 2014) $
+;$LastChangedRevision: 15347 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -53,7 +53,7 @@
 ; @returns new string
 ;            inString where findString is replaced by replaceString.
 ;-
-function thm_string_replacen, inString, findString, replaceString
+function spd_string_replacen, inString, findString, replaceString
   if STRLEN(inString) le 0 then return, inString
   if STRLEN(inString) lt STRLEN(findString) then return, inString
   return, StrJoin( StrSplit(inString, findString, /Regex, /Extract, /Preserve_Null), replaceString)
@@ -88,10 +88,10 @@ end
 ; @returns new string
 ;            time in the SPDF format 2007/03/23 00:00:00.
 ;-
-function thm_tranform_time_to_spdf, time
+function spd_tranform_time_to_spdf, time
 
-  time = thm_string_replacen(time, "/", " ")
-  time = thm_string_replacen(time, "-", "/")
+  time = spd_string_replacen(time, "/", " ")
+  time = spd_string_replacen(time, "-", "/")
   
   return, time
 end
@@ -102,7 +102,7 @@ end
 ; @param event {in} {type=widget_button}
 ;            event triggering the execution of this procedure.
 ;-
-pro thm_spdfExit, event
+pro spd_spdfExit, event
 
   ;  widget_control, event.top, get_uvalue=state
   
@@ -119,7 +119,7 @@ end
 ; @param dvIndex {in} {type=int}
 ;            index of dataview to select
 ;-
-pro thm_spdfSelectDataview, $
+pro spd_spdfSelectDataview, $
   tlb, dvList, dvIndex
   widget_control, dvList, set_combobox_select=dvIndex
   widget_control, dvList, $
@@ -140,7 +140,7 @@ end
 ; @param varNames {in} {type=strarr}
 ;            names of variables containing the desired data.
 ;-
-pro thm_spdfGetCdawebDataExec, $
+pro spd_spdfGetCdawebDataExec, $
   event, state, timeInterval, datasetId, varNames
   
   tlb=state.tlb
@@ -256,7 +256,7 @@ end
 ; @returns 1 if a valid selections was made.  0 if the selection
 ;              was invalid.
 ;-
-function thm_spdfGetDatasetSelection, $
+function spd_spdfGetDatasetSelection, $
   datasetTree, selectedDatasetId, selectedVarNames
   
   selectedDatasets = widget_info(datasetTree, /tree_select)
@@ -324,7 +324,7 @@ end
 ; @returns true if the given string is a valid date/time value.
 ;             Otherwise false.
 ;-
-function thm_spdfIsValidDate, $
+function spd_spdfIsValidDate, $
   value
   
   return, stregex(value, $
@@ -342,12 +342,12 @@ end
 ; @returns specifed time interval or null object reference if an
 ;              invalid value was specified.
 ;-
-function thm_spdfGetSpecifiedTime, $
+function spd_spdfGetSpecifiedTime, $
   startTimeWidget, stopTimeWidget
   
   widget_control, startTimeWidget, get_value=startTime
   
-  if ~thm_spdfIsValidDate(startTime) then begin
+  if ~spd_spdfIsValidDate(startTime) then begin
   
     reply = dialog_message( $
       ['The Start Time must be set to a valid value', $
@@ -358,7 +358,7 @@ function thm_spdfGetSpecifiedTime, $
   
   widget_control, stopTimeWidget, get_value=stopTime
   
-  if ~thm_spdfIsValidDate(stopTime) then begin
+  if ~spd_spdfIsValidDate(stopTime) then begin
   
     reply = dialog_message( $
       ['The Stop Time must be set to a valid value', $
@@ -390,19 +390,19 @@ end
 ; @param event {in} {type=widget_button}
 ;            event triggering the execution of this procedure.
 ;-
-pro thm_spdfGetCdawebData, $
+pro spd_spdfGetCdawebData, $
   event
   
   widget_control, event.top, get_uvalue=state
   
-  if thm_spdfGetDatasetSelection(state.datasetTree, $
+  if spd_spdfGetDatasetSelection(state.datasetTree, $
     selectedDatasetId, selectedVarNames) ne 1 then return
     
-  timeInterval = thm_spdfGetSpecifiedTime(state.startTime, state.stopTime)
+  timeInterval = spd_spdfGetSpecifiedTime(state.startTime, state.stopTime)
   
   if ~obj_valid(timeInterval) then return
   
-  thm_spdfGetCdawebDataExec, $
+  spd_spdfGetCdawebDataExec, $
     event, state, timeInterval, selectedDatasetId, selectedVarNames
     
   state.callsequence->addspdfcall,[timeInterval->getCdawebStart(),timeInterval->getCdawebStop()],selectedDatasetId,selectedVarNames,*state.selectedDataview
@@ -423,7 +423,7 @@ end
 ; @returns objarr containing SpdfDataviewDescription objects for all
 ;              cdaweb dataviews.
 ;-
-function thm_spdfGetDataviews, $
+function spd_spdfGetDataviews, $
   cdas
   
   if ~(cdas->isUpToDate()) then begin
@@ -506,7 +506,7 @@ end
 ; @param event {in} {type=widget_button}
 ;            event triggering the execution of this procedure.
 ;-
-pro thm_GetCdawebDataRun, event
+pro spd_GetCdawebDataRun, event
 
   widget_control, event.top, get_uvalue=state
   groupLeaderWidgetId = state.groupLeaderWidgetId
@@ -518,19 +518,19 @@ pro thm_GetCdawebDataRun, event
   startTimeObj->getProperty,tdouble=startTimeDouble,tstring=startTimeString
   endTimeObj->getProperty,tdouble=endTimeDouble,tstring=endTimeString
   
-  newStartTime=thm_tranform_time_to_spdf(startTimeString)
-  newStopTime=thm_tranform_time_to_spdf(endTimeString)
+  newStartTime=spd_tranform_time_to_spdf(startTimeString)
+  newStopTime=spd_tranform_time_to_spdf(endTimeString)
   
   widget_control, state.startTime, set_value=newStartTime
   widget_control, state.stopTime, set_value=newStopTime
   
-  thm_spdfGetCdawebData, event
+  spd_spdfGetCdawebData, event
   
   prefixText = widget_info(event.top, find_by_uname='PREFIXTEXT')
   widget_control, prefixText, get_value=prefix
   widget_control, event.top, get_uvalue=state
   theprefix = prefix[0]
-  if theprefix ne '' then theprefix = thm_string_replacen(theprefix,' ', '_')
+  if theprefix ne '' then theprefix = spd_string_replacen(theprefix,' ', '_')
   
   saveCheckbox = widget_info(event.top, find_by_uname='SAVECDFFILE')
   checkboxstatus = Widget_Info(saveCheckbox, /BUTTON_SET)
@@ -598,7 +598,7 @@ PRO spd_ui_spdfcdawebchooser_event, event
 
   IF TAG_NAMES(event, /STRUCTURE_NAME) EQ 'WIDGET_KILL_REQUEST' THEN begin
   
-    thm_spdfExit, event
+    spd_spdfExit, event
     return
   ENDIF
   
@@ -620,7 +620,7 @@ PRO spd_ui_spdfcdawebchooser_event, event
   END
   'EXIT': BEGIN
     spd_spdf_savecdfdir, event
-    thm_spdfExit, event
+    spd_spdfExit, event
     return
   end
   else:
@@ -688,7 +688,7 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
     endpoint='http://cdaweb.gsfc.nasa.gov/WS/cdasr/1', $
     userAgent='CdawebChooser/1.0')
     
-  dataviews = thm_spdfGetDataviews(cdas)
+  dataviews = spd_spdfGetDataviews(cdas)
   
   initialDvSelection = 0
   
@@ -852,7 +852,7 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
 
   
   dataButton1 = widget_button(programControlPanel, $
-    event_pro='thm_GetCdawebDataRun', $
+    event_pro='spd_GetCdawebDataRun', $
     value='Get CDAWeb Data', $
     tooltip='Read CDAWeb data into SPEDAS environment', /align_center)
     
@@ -860,7 +860,7 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
     widget_label(programControlPanel, /align_center, $
     value='       ')
   exitButton = widget_button(programControlPanel, /align_center, $
-    event_pro='thm_spdfExit', $
+    event_pro='spd_spdfExit', $
     value='Close', tooltip='Close this window')
     
 
@@ -895,7 +895,7 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
   
   widget_control, tlb, set_uvalue=state, /realize
   WIDGET_CONTROL, tlb, tab_mode=1
-  thm_spdfSelectDataview, tlb, dvList, initialDvSelection
+  spd_spdfSelectDataview, tlb, dvList, initialDvSelection
   
   if keyword_set(groupLeaderWidgetId) then begin
   

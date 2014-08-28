@@ -12,7 +12,8 @@
 ;  pos(4 element long):  [row,col,rowSpan,colSpan] of the panel being drawn.
 ;  pcoord(4 element double): User defined explicit panel position, in draw-area normalized coords: [xpos,ypos,xsize,ysize], if unused, will be -1 
 ;  markernum(long): The number of markers in the panel.  Each marker is in a different view, so a number of markerviews equal to markernum will be returned
-;  varsizes(double array): The varsize that is occupied by each row in the layout
+;  bottomsizes(double array): Array of verical text sizes to be allocated at the bottom of each panel
+;  topsizes(double array): Array of verical text sizes to be allocated at the top of each panel
 ;Outputs:
 ;  view(object reference):  The static panel IDLgrView
 ;  annotation(object reference):  The panel IDLgrView for dynamic display elements(ie annotations etc.. that are being updated)
@@ -29,46 +30,50 @@
 ;    errmsg being set does not guarantee fail=1 and likewise fail=1 is not an indication that errmsg is set.
 ;    See also notes in spd_ui_draw_object__update
 ;           
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-06-11 15:56:35 -0700 (Wed, 11 Jun 2014) $
+;$LastChangedRevision: 15353 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__makeview.pro $
 ;-
                           
-pro spd_ui_draw_object::makeView,dims,margins,pos,pcoord,markernum,varsizes,view=view,annotation=annotation,markers=markers,xplotpos=xplotpos,yplotpos=yplotpos,fail=fail,errmsg=errmsg,outmargins=outmargins
+pro spd_ui_draw_object::makeView,dims,margins,pos,pcoord,markernum,bottomsizes,topsizes,view=view,annotation=annotation,markers=markers,xplotpos=xplotpos,yplotpos=yplotpos,fail=fail,errmsg=errmsg,outmargins=outmargins
 
   compile_opt idl2,hidden
   
-  ;  margins = margins_in
-  ;  margins[2] = margins_in[3]
-  ;  margins[3] = margins_in[2]
+  
+  fail = 1
   
   dims = double(dims)
   margins = double(margins)
   pos = double(pos)
   pcoord = double(pcoord)
   
-  totalVarSize = total(varsizes)
+  ;get total vertical size of text annotations for this panel
+  ; -these could probably be summed earlier, but keep them separate
+  ;  in case top vs. bottom becomes an important distinction
   
-  currentVarSize = varsizes[pos[0]+pos[2]-2]
+  totalTextSize = total(bottomsizes) + total(topsizes)
   
+  bottomsize = bottomsizes[pos[0]+pos[2]-2]
+  topsize = topsizes[pos[0]-1]
+  
+  ;get the space occupied by text below this panel
   if pos[0]+pos[2] - 2 eq 0 then begin
-    cumulvarsize = totalVarSize - 0
+    ;pretty sure this is wrong, but also pretty sure it will never be used -aaf
+    partialTextSize = totalTextSize - 0
   endif else begin
-    cumulvarSize = totalVarSize - total(varsizes[0:pos[0]+pos[2]-3])
+    partialTextSize = totalTextSize - total(bottomsizes[0:pos[0]+pos[2]-3]) - total(topsizes[0:pos[0]-1])
   endelse
   
   ;outmargins indicate the range in normalized device coordinates to
   ;be considered part of the region(this is used for identifying context sensitive clicks)
   outmargins = dblarr(5) ; [left,right,top,bottom,var]
   
-  fail = 1
-  
   ;calculate the amount of space the whole panel will occupy(including margins)
   xused = margins[0] + margins[1] + (dims[1]-1) * margins[4]
   xsize = (1.-xused)/dims[1]
   
-  yused = margins[3] + margins[2] + (dims[0]-1) * margins[5] + totalvarsize
+  yused = margins[3] + margins[2] + (dims[0]-1) * margins[5] + totalTextSize
   ysize = (1. - yused)/dims[0]
   
   if xsize lt 0 then begin
@@ -189,32 +194,31 @@ pro spd_ui_draw_object::makeView,dims,margins,pos,pcoord,markernum,varsizes,view
   ;each panel, depending on whether it is on the edge or in the middle of the panel
   if pos[0] eq 1 && pos[0] + pos[2] - 1 eq dims[0] then begin ;case 1: 1 row layout
   
-    ystart = margins[2] + currentvarsize
+    ystart = margins[2] + bottomsize
     
     outmargins[2] = margins[2]/2D
     outmargins[3] = margins[3]/2D
     
   endif else if pos[0] eq 1 then begin ;case 2: bottom row in layout
   
-    ystart = margins[3] + currentvarsize
+    ystart = margins[3] + bottomsize
     
     outmargins[2] = margins[5]/2D
     outmargins[3] = margins[3]/2D
     
   endif else if pos[0] + pos[2] - 1 eq dims[0] then begin ;case 3: top row in layout
   
-    ystart = 1. - (margins[2] + yplot_size)
+    ystart = 1. - (margins[2] + yplot_size + topsize)
     
     outmargins[2] = margins[2]/2D
     outmargins[3] = margins[5]/2D
     
   endif else begin  ;case 4, somewhere in the middle of layout
   
-    ystart = margins[3] + (ysize+margins[5])*(pos[0]-1) + cumulvarsize
+    ystart = margins[3] + (ysize+margins[5])*(pos[0]-1) + partialTextSize
     
     outmargins[2] = margins[5]/2D
     outmargins[3] = margins[5]/2D
-    
     
   endelse
   
@@ -238,7 +242,7 @@ pro spd_ui_draw_object::makeView,dims,margins,pos,pcoord,markernum,varsizes,view
   viewYpos = -(ystart / yplot_size)
   viewYlen = 1./ yplot_size
   
-  outmargins[4] = currentvarsize
+  outmargins[4] = bottomsize
   
   ;Now generate the views.  
   ;The logic for IDL views is a little weird, but these settings guarantee that

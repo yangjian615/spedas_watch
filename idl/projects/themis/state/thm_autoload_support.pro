@@ -29,19 +29,19 @@
 ; NOTES:
 ; 
 ;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-06-10 16:55:27 -0700 (Tue, 10 Jun 2014) $
-;$LastChangedRevision: 15341 $
+;$LastChangedDate: 2014-06-12 10:12:12 -0700 (Thu, 12 Jun 2014) $
+;$LastChangedRevision: 15355 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_autoload_support.pro $
 ;
 ;-
 Pro thm_autoload_support, vname=vname, spinmodel=spinmodel, spinaxis=spinaxis, slp=slp, history_out=history_out, probe_in=probe_in, trange=trange, progobj=progobj, _extra=_extra
 
 ; Check to see if input variable name is specified
-if (not keyword_set(vname)) then begin
-  if (not keyword_set(trange)) then begin
+if (~keyword_set(vname)) then begin
+  if (~keyword_set(trange)) then begin
     message, 'The trange keyword must be used if no input variable name is supplied.'
   endif
-  if ((keyword_set(spinmodel) || keyword_set(spinaxis)) && not keyword_set(probe_in)) then begin
+  if ((keyword_set(spinmodel) || keyword_set(spinaxis)) && ~keyword_set(probe_in)) then begin
     message, 'The probe_in keyword must be used if requesting spinmodel or spinaxis data, and no input variable name is supplied.'
   endif
 endif
@@ -55,7 +55,7 @@ If(keyword_set(spinmodel) || keyword_set(spinaxis)) then begin
 endif
 
 ; Set trange (from input tplot variable, if necessary)
-  If(not keyword_set(trange)) then begin
+  If(~keyword_set(trange)) then begin
     get_data,vname,trange=trange
     if n_elements(trange) NE 2 then begin
        message,'Tplot variable name ' + vname + ' not found.'
@@ -76,7 +76,7 @@ endif
 
   if (keyword_set(spinmodel)) then begin
     smp=spinmodel_get_ptr(probe)
-    if (not obj_valid(smp)) then loadstate=1b else begin
+    if (~obj_valid(smp)) then loadstate=1b else begin
        smp->get_info,start_time=st, end_time=et
        st = st-slop
        et = et+slop

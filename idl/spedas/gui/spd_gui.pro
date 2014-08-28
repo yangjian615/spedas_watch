@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-06-10 19:11:37 -0700 (Tue, 10 Jun 2014) $
-;$LastChangedRevision: 15344 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-06-12 12:54:59 -0700 (Thu, 12 Jun 2014) $
+;$LastChangedRevision: 15356 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1234,6 +1234,11 @@ PRO spd_gui_event, event
           endif else begin
               info.drawobject->setzoom,double(zoomval)/100
               if event.valid then info.statusbar->update,"Zoom updated."
+              if strlowcase(!version.os_family) eq 'windows' then begin
+                ; This solves an issue where top of image disappears when zoom decreases
+                info.scrollbar->getProperty,xsize=xsize
+                info.scrollbar->setProperty,xsize=xsize
+              endif
           endelse
         
         endif else begin
@@ -1243,7 +1248,7 @@ PRO spd_gui_event, event
           
         endelse
       endif else info.statusbar->update,'Invalid Zoom value, please re-enter.'
-          
+
     END
 
     'NEWWIN':BEGIN

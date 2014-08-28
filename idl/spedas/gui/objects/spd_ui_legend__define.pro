@@ -49,8 +49,8 @@
 ; 
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-28 09:35:05 -0700 (Wed, 28 May 2014) $
-;$LastChangedRevision: 15239 $
+;$LastChangedDate: 2014-06-12 08:22:12 -0700 (Thu, 12 Jun 2014) $
+;$LastChangedRevision: 15354 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_legend__define.pro $
 ;-
 PRO SPD_UI_LEGEND::Cleanup
@@ -207,7 +207,7 @@ FUNCTION SPD_UI_LEGEND::Init,       $
     
     if undefined(enabled) then enabled = 1 ; show the legend by default
     if undefined(font) then font = 2 ; default is Helvetica
-    if undefined(size) then size = 10
+    if undefined(size) then size = 12
     if undefined(format) then format = 3 ; no default formatting
     if undefined(color) then color = [0,0,0] ; black text
     if undefined(vspacing) then vspacing = 2 
@@ -278,7 +278,7 @@ PRO SPD_UI_LEGEND__DEFINE
   struct = { SPD_UI_LEGEND,             $
             enabled:1,                  $ ; flag for showing the legend -- 0=no legend, 1=show legend
             font:2,                     $ ; index of legend font type
-            size:10,                    $ ; size of legend text
+            size:12,                    $ ; size of legend text
             format:3,                   $ ; legend font formats ('bold', 'italic', 'bold-italic')
             color:[0,0,0],              $ ; color of legend text
             vspacing:2,                 $ ; vertical spacing between lines in legend
