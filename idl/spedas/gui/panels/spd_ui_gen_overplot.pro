@@ -3,13 +3,10 @@
 ;  spd_ui_gen_overplot
 ;
 ;PURPOSE:
-;  Widget wrapper for spd_ui_overplot used to create THEMIS overview plots in
-;  the GUI.  If the overview plot is successfully created, this function returns
-;  the number 1.  Otherwise, a zero is returned.
+;  Widget wrapper for spd_ui_overplot used to create THEMIS overview plots in SPEDAS.
 ;
 ;CALLING SEQUENCE:
-;  success = spd_ui_gen_overplot(gui_id, historyWin, oplot_calls, callSequence,$
-;                                windowStorage,windowMenus,loadedData,drawObject)
+;  See SPEDAS plugin API
 ;
 ;INPUT:
 ;  gui_id:  The id of the main GUI window.
@@ -20,16 +17,13 @@
 ;  windowMenus: standard menu object
 ;  loadedData: standard loadedData object
 ;  drawObject: standard drawObject object
-;  
-;KEYWORDS:
-;  none
 ;
 ;OUTPUT:
-;  success: a 0-1 flag.
+;  none
 ;  
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-03-20 18:55:44 -0700 (Thu, 20 Mar 2014) $
-;$LastChangedRevision: 14623 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-03-27 17:01:04 -0700 (Thu, 27 Mar 2014) $
+;$LastChangedRevision: 14689 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -308,10 +302,11 @@ pro thm_ui_fix_overview_panels, state=state
           panel[8]->getproperty, yaxis = yobj
           yobj->setproperty, scaling = 1
           yobj->setproperty, rangeoption = 2
-          get_data, ssti_name, data = d
+;          get_data, ssti_name, data = d
           yobj->setproperty, maxfixedrange = 3.0e6
-          If(is_struct(d) && tag_exist(d, 'v')) Then yobj->setproperty, minfixedrange = min(d.v) $
-          Else yobj->setproperty, minfixedrange = 3.0e4
+          yobj->setproperty, minfixedrange = 3.0e4
+;          If(is_struct(d) && tag_exist(d, 'v')) Then yobj->setproperty, minfixedrange = min(d.v) $
+;          Else yobj->setproperty, minfixedrange = 3.0e4
           ;quick_set_panel_labels, panel[8], ['SSTi_Eflux_[eV]']
           ;  quick_set_panel_labels, panel[8], 'Eflux!CeV/cm!U2!N!C-s-sr-eV', /zaxis, /zhorizontal
           ;quick_set_panel_labels, panel[8], 'Eflux, EFU', /zaxis
@@ -325,10 +320,11 @@ pro thm_ui_fix_overview_panels, state=state
           panel[10]->getproperty, yaxis = yobj
           yobj->setproperty, scaling = 1
           yobj->setproperty, rangeoption = 2
-          get_data, sste_name, data = d
+;          get_data, sste_name, data = d
           yobj->setproperty, maxfixedrange = 3.0e6
-          If(is_struct(d) && tag_exist(d, 'v')) Then yobj->setproperty, minfixedrange = min(d.v) $
-          Else yobj->setproperty, minfixedrange = 3.0e4
+          yobj->setproperty, minfixedrange = 3.0e4
+;          If(is_struct(d) && tag_exist(d, 'v')) Then yobj->setproperty, minfixedrange = min(d.v) $
+;          Else yobj->setproperty, minfixedrange = 3.0e4
           ;quick_set_panel_labels, panel[10], ['SSTe_eflux_[eV]']
           ;  quick_set_panel_labels, panel[10], 'Eflux!CeV/cm!U2!N!C-s-sr-eV', /zaxis, /zhorizontal
           ;quick_set_panel_labels, panel[10], 'Eflux, EFU', /zaxis
@@ -475,35 +471,30 @@ pro spd_ui_gen_overplot_event, event
       
       activeWindow = state.windowStorage->GetActive()
     
-      ; add window name to gui window menu
-      activeWindow[0]->GetProperty, Name=name
-      state.windowMenus->Add, name
-      state.windowMenus->Update, state.windowStorage
- 
-;      spd_ui_overplot, state.windowStorage,state.loadedData,state.drawObject,$
-;                       probes=state.probe, date=st_double, dur=dur, $
-;                       oplot_calls=state.oplot_calls,error=error
-;                       
-                    
       thm_gen_overplot,  probes=state.probe, date=st_double, dur = dur, $
-         days = days, hours = hours, device = device, $
-         directory = directory, makepng = 0, $
-         fearless = 0, dont_delete_data = 1, error=error, $
-         no_draw=no_draw, gui_plot = 1 ; 1 : gui plot, 0 : server plot
+         makepng = 0, fearless = 0, dont_delete_data = 1, gui_plot = 1, error=error
+         
                      
       if ~error then begin  
            
         thm_ui_fix_page_fonts, state=state
         thm_ui_fix_overview_panels, state=state
-
                            
-        state.callSequence->addLoadOver,state.probe,st_double,dur,*state.oplot_calls           
+        state.callSequence->addplugincall, 'thm_gen_overplot', $
+          probes=state.probe, date=st_double, dur = dur, $
+          makepng = 0, fearless = 0, dont_delete_data = 1, gui_plot = 1, no_draw=1
+
+;        callSequence->singlePanelTracking, ptr_new(info)
+
         *state.oplot_calls = *state.oplot_calls + 1 ; update # of calls to overplot
-        *state.success = 1
-        spd_ui_orientation_update, state.drawObject, state.windowStorage
-        state.drawObject->update, state.windowStorage, state.loadedData
-        state.drawObject->draw
-      endif
+        
+        msg = 'THEMIS overview plot completed.'
+      endif else begin
+        msg = 'Error generating THEMIS overview plot.'
+      endelse
+      
+      state.statusbar->update, msg
+      state.historywin->update, msg
       
       Widget_Control, event.top, Set_UValue=state, /No_Copy
       Widget_Control, event.top, /Destroy
@@ -526,53 +517,6 @@ pro spd_ui_gen_overplot_event, event
     'PROBE:D': state.probe='d'
     'PROBE:E': state.probe='e'
     'TIME': ;nothing to implement at this time
-;    'STARTCAL': begin
-;      widget_control, state.trcontrols[0], get_value= val
-;      start=spd_ui_timefix(val)
-;      state.tr_obj->getproperty, starttime = start_time       
-;      if ~is_string(start) then start_time->set_property, tstring=start
-;      spd_ui_calendar, 'Choose date/time: ', start_time, state.gui_id
-;      start_time->getproperty, tstring=start
-;      widget_control, state.trcontrols[0], set_value=start
-;    end
-;    'STOPCAL': begin
-;      widget_control, state.trcontrols[1], get_value= val
-;      endt=spd_ui_timefix(val)
-;      state.tr_obj->getproperty, endtime = end_time       
-;      if ~is_string(endt) then end_time->set_property, tstring=endt
-;      spd_ui_calendar, 'Choose date/time: ', end_time, state.gui_id
-;      end_time->getproperty, tstring=endt
-;      widget_control, state.trcontrols[1], set_value=endt
-;    end
-;    'TSTART': begin ; Start Time entry box
-;      widget_control,event.id,get_value=value
-;      t0 = spd_ui_timefix(value)
-;      If(is_string(t0)) Then Begin
-;;get both times for limit checking
-;          state.tr_obj->GetProperty, startTime=st ;st is starttime object (spd_ui_time__define)
-;          state.tr_obj->GetProperty, endTime=et   ;et is endtime object
-;;set start time value
-;          st->SetProperty, tstring = value
-;;return a warning if the time range is less than zero, or longer than 1 week
-;          et->getproperty, tdouble=t1
-;          st->getproperty, tdouble=t0
-;          state.validTime = 1
-;       Endif else state.validTime = 0
-;    end
-;    'TEND': begin ; End Time entry box
-;      widget_control,event.id,get_value=value
-;      t0 = spd_ui_timefix(value)
-;      If(is_string(t0)) Then Begin
-;          state.tr_obj->GetProperty, startTime=st ;st is starttime object (spd_ui_time__define)
-;          state.tr_obj->GetProperty, endTime=et ;et is endtime object (spd_ui_time__define)
-;;Set end time value
-;          et->SetProperty, tstring = value
-;;return a warning if the time range is less than zero, or longer than 1 week
-;          et->getproperty, tdouble=t1
-;          st->getproperty, tdouble=t0
-;          state.validTime = 1
-;      Endif else state.validTime = 0
-;    end
     ELSE: dprint,  'Not yet implemented'
   ENDCASE
   
@@ -582,9 +526,16 @@ pro spd_ui_gen_overplot_event, event
 end
 
 
-;returns 1 if overplot generated and 0 otherwise
-function spd_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSequence,$
-                              windowStorage,windowMenus,loadedData,drawObject,tr_obj=tr_obj
+;see top of file for header
+pro spd_ui_gen_overplot, gui_id = gui_id, $
+                         history_window = historyWin, $
+                         status_bar = statusbar, $
+                         call_sequence = callSequence, $
+                         time_range = tr_obj, $
+                         window_storage = windowStorage, $
+                         loaded_data = loadedData, $
+                         data_structure = data_structure, $
+                         _extra = _extra 
 
   compile_opt idl2
 
@@ -601,7 +552,7 @@ function spd_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSeq
     ok = error_message('An unknown error occured while starting the THEMIS overview plot widget. ', $
          'See console for details.', /noname, /center, title='Error in THEMIS overview plots')
     spd_gui_error, gui_id, historywin
-    RETURN,0
+    RETURN
   ENDIF
   
   tlb = widget_base(/col, title='Generate THEMIS Overview Plot', group_leader=gui_id, $
@@ -615,8 +566,6 @@ function spd_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSeq
       probeButtonBase = widget_base(probeBase, /row, /exclusive)
     midBase = widget_base(mainBase, /Row)
       trvalsBase = Widget_Base(midBase, /Col, Frame=1, xpad=8)
-;        tstartBase = Widget_Base(trvalsBase, /Row, tab_mode=1)
-;        tendBase = Widget_Base(trvalsBase, /Row, tab_mode=1)
       keyButtonBase = widget_button(midBase, Value=' Plot Key ', UValue='KEY', XSize=80, $
                                     tooltip = 'Displays detailed descriptions of overview plot panels.')
     goWebBase = Widget_Base(mainBase, /Row, Frame=1, xpad=8)
@@ -654,32 +603,23 @@ function spd_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSeq
   timeWidget = spd_ui_time_widget(trvalsBase,statusBar,historyWin,timeRangeObj=tr_obj, $
                                   uvalue='TIME',uname='time');, oneday=1 
   
-;  tstartLabel = Widget_Label(tstartBase,Value='Start Time: ')
-;  geo_struct = widget_info(tstartlabel,/geometry)
-;  labelXSize = geo_struct.scr_xsize
-;  tstartText = Widget_Text(tstartBase, Value=st_text, /Editable, /Align_Left, /All_Events, $
-;                           UValue='TSTART')
-;  startcal = widget_button(tstartbase, val = cal, /bitmap, tab_mode=0, uval='STARTCAL', uname='startcal', $
-;                           tooltip='Choose date/time from calendar.')
-;  tendLabel = Widget_Label(tendBase,Value='End Time: ', xsize=labelXSize)
-;  tendText = Widget_Text(tendBase,Value=et_text, /Editable, /Align_Left, /All_Events, $
-;                         UValue='TEND')
-;  stopcal = widget_button(tendbase, val = cal, /bitmap, tab_mode=0, uval='STOPCAL', uname='stopcal', $
-;                          tooltip='Choose date/time from calendar.')
   trControls=[timewidget]
 
 ; Main window buttons
   applyButton = Widget_Button(buttonBase, Value='  Apply   ', UValue='APPLY', XSize=80)
   cancelButton = Widget_Button(buttonBase, Value='  Cancel  ', UValue='CANC', XSize=80)
 
-  success = ptr_new(0)
+  ;initialize structure to store variables for future calls
+  if ~is_struct(data_structure) then begin
+    data_structure = { oplot_calls:0 }
+  endif
 
   state = {tlb:tlb, gui_id:gui_id, historyWin:historyWin,statusBar:statusBar, $
-           trControls:trControls, tr_obj:tr_obj, $
-           probe:probe,success:success, oplot_calls:oplot_calls, $
-           validTime:1,callSequence:callSequence,$;validTime doesn't seem to be used anymore
-           windowStorage:windowStorage,windowMenus:windowMenus,$
-           loadedData:loadedData,drawObject:drawObject}
+           trControls:trControls, tr_obj:tr_obj, probe:probe, $
+           oplot_calls:ptr_new(data_structure.oplot_calls), $
+           callSequence:callSequence,$
+           windowStorage:windowStorage, $
+           loadedData:loadedData}
 
   Centertlb, tlb         
   Widget_Control, tlb, Set_UValue=state, /No_Copy
@@ -693,5 +633,5 @@ function spd_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSeq
 
   XManager, 'spd_ui_gen_overplot', tlb, /No_Block
 
-  RETURN,*success
+  RETURN
 end

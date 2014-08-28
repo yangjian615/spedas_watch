@@ -11,8 +11,8 @@
 ;   
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
-; $LastChangedRevision: 14467 $
+; $LastChangedDate: 2014-03-25 09:20:33 -0700 (Tue, 25 Mar 2014) $
+; $LastChangedRevision: 14659 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_lib.pro $
 ;-
 
@@ -381,7 +381,7 @@ end
 ; Procedure: goes_magpd_omni_flux
 ; 
 ; Purpose:
-;     Calculates the omni-directional electron flux for each energy channel 
+;     Calculates the omni-directional proton flux for each energy channel 
 ;     and combines the data into a single tplot variable
 pro goes_magpd_omni_flux, prefix, suffix
 

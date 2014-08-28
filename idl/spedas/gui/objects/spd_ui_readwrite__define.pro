@@ -26,9 +26,9 @@
 ; 
 ;HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-03-27 16:21:55 -0700 (Thu, 27 Mar 2014) $
+;$LastChangedRevision: 14686 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_readwrite__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -173,7 +173,13 @@ for i=0, n_elements(tagnames)-1 do begin
             child_array=(fieldval[j])->Get(/all,count=container_count)
             valobj->SetAttribute,'container_count',strtrim(string(container_count,format='(I)'),2)
             if (container_count GT 0) then begin
-               contained_type=obj_class(child_array[0])
+;               contained_type=obj_class(child_array[0])
+               ;get all contained types and join into a single string
+               ;leave duplicates for now 2014-03-??
+               for k=0, n_elements(child_array)-1 do begin
+                  contained_type = array_concat(obj_class(child_array[k]),contained_type)
+               endfor
+               contained_type = strjoin(contained_type,' ')
                valobj->SetAttribute,'contained_type',contained_type
                for container_index=0,container_count-1 do begin
                   this_obj=child_array[container_index]
@@ -351,6 +357,8 @@ for i=0, att_count-1 do begin
             self.(tagindex)[valindex] = obj_new()
         endif else if (classname EQ 'IDL_CONTAINER') then begin
            contained_type=valobj->GetAttribute('contained_type')
+           ;support multiple types, space separated
+           contained_type = strsplit(contained_type,' ',/extract)
            container_count_str=valobj->GetAttribute('container_count')
            container_count = 0
            reads,container_count_str,container_count,format='(I)' 
@@ -365,9 +373,9 @@ for i=0, att_count-1 do begin
                  if (sibname EQ 'value') then begin
                     tgt_dom_element=container_sib->GetFirstChild()
                     tgt_type=tgt_dom_element->GetNodeName()
-                    if (tgt_type EQ contained_type) then begin
+                    if in_set(tgt_type,contained_type) then begin
                        child_count = child_count + 1
-                       this_container_child=obj_new(contained_type)
+                       this_container_child=obj_new(tgt_type)
                        this_container_child->BuildFromDOMElement,tgt_dom_element
                        proto_value->Add,this_container_child
                     endif else begin

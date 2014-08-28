@@ -524,21 +524,31 @@ endif else begin
 			if keyword_set(make_plot) then store_data,'th'+sc+'_vaf1234_3s_pot',data={x:tmp1.x,y:vaf1234_3s}
 
 			if keyword_set(make_plot) then store_data,'th'+sc+'_mom_pot',data={x:time,y:scpot}
+      
+      ; Previously we were trying to combine on-board data (pxxm) with ground data (vaf)
+      ; However, there are some differences on the way those two are computed 
+      ; which leads to scale differences and produces spikes. 
+      ; So, at this point we prefer
+      ; 1) the vaf data when available, averaged over 3s
+      ; or 2) the on-board values when this is not available
 
-			if index ne 0 then begin
-;				t3 = [time,newtime]
-;				d3 = [scpot,vaf1234_3a]
-				t3 = [time,tmp1.x]
-				d3 = [scpot,vaf1234_3s]
-				s = sort(t3)
-				time=t3[s]
-				scpot=d3[s]
-			endif else begin
-; bug, newtime no longer defined
-;				time=newtime
-				time = tmp1.x  		; bug fix by Jim McTiernan, failed when no mom data existed
-				scpot=vaf1234_3s
-			endelse
+      time=tmp1.x
+      scpot=vaf1234_3s
+      
+;			if index ne 0 then begin
+;;				t3 = [time,newtime]
+;;				d3 = [scpot,vaf1234_3a]
+;				t3 = [time,tmp1.x]
+;				d3 = [scpot,vaf1234_3s]
+;				s = sort(t3)
+;				time=t3[s]
+;				scpot=d3[s]
+;			endif else begin
+;; bug, newtime no longer defined
+;;				time=newtime
+;				time = tmp1.x  		; bug fix by Jim McTiernan, failed when no mom data existed
+;				scpot=vaf1234_3s
+;			endelse
 		endif
 
 		scpot=(scale*(scpot+offset)) > min_pot

@@ -70,9 +70,9 @@ i_cal=[1.539,1.501, 1.497,1.501,1.519,1.5]
 
 ; Electron Energy modes
 
-e_energy=fltarr(32,4)
-e_denergy=fltarr(32,4)
-e_nenergy=intarr(4)
+e_energy=fltarr(32,5)
+e_denergy=fltarr(32,5)
+e_nenergy=intarr(5)
 ;e_cal=2.
 ;e_cal=795.6/419.
 ; old calibration e_cal=7856./4095.
@@ -113,6 +113,12 @@ e_cal=[1.939,1.905,1.907,1.905,1.927,1.9]
 	e_denergy(2:24,3)=e_cal(fm-1)*(1.*dac(3,1:23)+dac(0,2:24)-dac(3,2:24)-dac(0,3:25))/2.
 	e_nenergy(3)=32
 	
+; Electron mode 4 - Revised low energy sweep, Msph mode
+	dac=thm_esa_energy_steps(xstart=16375,xslope=19,cstart=31,cslope=1,number=128,retrace=3,dblsweep=0)	
+	e_energy(*,4)=e_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4.
+	e_denergy(1:30,4)=e_cal(fm-1)*(1.*dac(3,0:29)+dac(0,1:30)-dac(3,1:30)-dac(0,2:31))/2.
+	e_denergy(31,4)=e_cal(fm-1)*(1.*dac(3,30)+dac(0,31)-2.*dac(3,31))/2.
+	e_nenergy(4)=32
 
 mode={i_energy:i_energy,i_denergy:i_denergy,i_nenergy:i_nenergy,$
 	e_energy:e_energy,e_denergy:e_denergy,e_nenergy:e_nenergy}

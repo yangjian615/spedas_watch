@@ -26,6 +26,7 @@
 ;   DONT_DELETE_DATA:  keyword to not delete all existing tplot variables before loading data in for
 ;      the overview plot (sometimes old variables can interfere with overview plot)
 ;   gui_plot: 1 for gui plot, 0 for server plot
+;   no_draw: flag passed to tplot_gui for gui overview plots
 ;   error: 0 if it run to the end
 ;     
 ;OUTPUT:
@@ -55,7 +56,8 @@ pro thm_gen_overplot, probes = probes, date = date, dur = dur, $
                       days = days, hours = hours, device = device, $
                       directory = directory, makepng = makepng, $
                       fearless = fearless, dont_delete_data = dont_delete_data, $
-                      no_draw=no_draw, gui_plot = gui_plot, error=error  
+                      no_draw=no_draw, gui_plot = gui_plot, error=error, $
+                      _extra=_extra
 
 ;catch errors and fail gracefully
 ;-------------------------------------------------------

@@ -4,24 +4,34 @@
 ; USAGE:
 ;    file_touch,'foo',systime(1)-300,/mtime   ; sets mod time to 5 minutes ago
 ; keywords:
-;    MTIME    set only modification time
-;    ATIME    set only access time
+;    MTIME    set only modification time(UTC)
+;    ATIME    set only access time(UTC)
 ;    VERBOSE  sets VERBOSITY of messages (0: error messages only,  6: lots)
 ;    TOFFSET set an hour offset for time zones or DST (e.g. +0700, -0300)   This keyword is deprecated
 ; Restrictions:
+;   #1 
 ;   Shell executable "touch" must be in path on local operating system.  This is common on unix systems.
 ;   Windows executable available from: http://sourceforge.net/projects/unxutils/
 ;   If the touch executable is not found then no action is taken.
 ;   Test for executable occurs only once.
-;   
-;   Time is set in system local time.  Use toffset with get_timezone_offset() if time is a unix time.
-;   Example:  file_touch,'foo',systime(1)-300,/mtime ,toffset=time_zone_offset()
-;   
-;   Warning: This routine will not work with home directories(~/file_name will not work) on linux variants.  The /noshell option to spawn means that it won't expand home directories into full paths
-;   
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-03-14 10:58:06 -0700 (Fri, 14 Mar 2014) $
-;$LastChangedRevision: 14542 $
+;
+;   #2 Behavior on Windows is currently untested, and may not be
+;   consistent with Linux.
+;    
+;   #3 This routine will not work with home directories(~/file_name will not work) on linux variants.  The /noshell option to spawn means that it won't expand home directories into full paths
+;  
+;   #4 Routine will not work for modification date 1970-01-01/00:00:00
+; 
+;   #5 Time should be a UTC time in seconds since 1970.
+;   Example:  file_touch,'foo',systime(1),/mtime
+;
+;   #6 This routine primarily for SPEDAS file_http_copy routine.  It
+;   is not considered stable for general purpose use and the interface
+;   may change. 
+;
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-03-24 09:53:58 -0700 (Mon, 24 Mar 2014) $
+;$LastChangedRevision: 14656 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_touch.pro $
 ;-
 

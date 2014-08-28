@@ -1,320 +1,175 @@
-; rbsp_b1_predict_plot.pro
-
-;Overplot the predicted buffer location over the current buffer location plot
-;This is a useful tool for visualizing the future location of the B1 memory pointer location. 
-;You can implement B1 collection times, pointer jumps, and indicate regions that you'd
-;rather not overwrite. 
-
-;Written by Aaron W Breneman, University of Minnesota, December, 2013
-
-
-;First need to run:  .run b1_status_crib
-
-;In order to check out exact memory locations at specific times use
-    ;ctime, t, buffer_index, npoints=2, /exact
-    ;record_rate=(buffer_index[1] - buffer_index[0]) / (t[1] - t[0])
-    ;print, 'B1 record rate (blocks/sec):', record_rate
-
-;-----------------------------------------------------------------------------------------
-
-;Reference (memory) location of B1 pointer. All collection times are based on this location. 
-;Probably need to update this from time-to-time b/c the prediction times may drift
-;from actual collection times. 
-;Update using ctime, t, buffer_index, npoints=2, /exact
-;Only included predicted times AFTER the reference location
-
-sz = 262144L    ;size of memory buffer (blocks)
-
-cloca = 160415d
-clocb = 209006d
-
-;-----------------------------------------------------------------------------------------
-; jump id and its start times (AFTER REFERENCE TIME ONLY)
-jumpa_s = time_double(['2014-03-08/15:24','2014-03-10/03:16','2014-03-11/15:08'])
-nb_jumpa = [248020D,248020D,248020D]
-
-jumpb_s = time_double(['2014-03-08/23:55','2014-03-11/23:46'])
-nb_jumpb = [112202D,112202D]
-
-;-----------------------------------------------------------------------------------------
-
-;Start and stop times of requested data playback that we want to be sure to protect (black diamonds are changed to blue diamonds)
-tmp = [['2014-02-28/00:35', '2014-02-28/00:35:01']]
-tpa0 = time_double(transpose(tmp[0,*]))
-tpa1 = time_double(transpose(tmp[1,*]))
-
-tmp =  [['2014-02-22/03:10', '2014-02-22/05:56'],$
-        ['2014-02-23/04:00', '2014-02-23/05:00'],$
-        ['2014-02-23/07:00', '2014-02-23/08:00']]
-tpb0 = time_double(transpose(tmp[0,*]))
-tpb1 = time_double(transpose(tmp[1,*]))
+; 0, To use, edit jumpa/jumpb, prota/protb, colla/collb. They corresponds to
+;    jumps, protected time, collection time.
+; 1, First location is the first element in jump, so # of jump is always >1.
+; 2, Use last location, or known jump to update "first location".
+; 3, The predict curve should be very accurate.
+; 4, Don't put jump in between collections. Add 1min pad time between 
+;    jump and collection. Don't let collection time overlap.
+; 5, To ensure accuracy, if update "first location" using last location, then 
+;   set 1st collection start from last time, set earlier.
 
 
-;-----------------------------------------------------------------------------------------
+; **** combine jump & collection, sort, convert to abs memory id, print info,
+; treat wrap, generate time & memory id for tplot.
+pro rbsp_b1_predict_plot_process, probe, jumps, colls, $
+    lun = lun, time = t0, memf = memf, mems = mems
 
-;Define date collection rate for each collection time
-ratea = [16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,$
-    16384,16384,16384,16384,16384,16384,16384,16384]
-rateb = [4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,$
-    4096,4096,4096,4096,4096,4096,4096,4096]
+    ; constants.
+    sz = 262144D            ; memory size, in block.
+    s2b = sz/84900D/16834D  ; sec to block.
 
-;Start and end times of collection on A (AFTER REFERENCE TIME ONLY!!!)
-tmp = [['2014-03-08/15:25', '2014-03-08/20:25'],$
-       ['2014-03-09/00:23', '2014-03-09/05:23'],$
-       ['2014-03-09/09:21', '2014-03-09/14:21'],$
-       ['2014-03-09/18:19', '2014-03-09/23:19'],$
-       ['2014-03-10/03:17', '2014-03-10/08:17'],$
-       ['2014-03-10/12:15', '2014-03-10/17:15'],$
-       ['2014-03-10/21:13', '2014-03-11/02:13'],$
-       ['2014-03-11/06:11', '2014-03-11/11:11'],$
-       ['2014-03-11/15:09', '2014-03-11/20:09'],$
-       ['2014-03-12/00:07', '2014-03-12/05:07'],$
-       ['2014-03-12/09:05', '2014-03-12/14:05'],$
-       ['2014-03-12/18:03', '2014-03-12/23:03'],$
+    if n_elements(lun) eq 0 then lun = -1
+    ; combine jump and collection.
+    njump = n_elements(jumps)/2 & ncoll = n_elements(colls)/3
+    nmem = njump+ncoll
+    mems = dblarr(nmem, 5)      ; [tsta, tend, memsta, memend, rate].
+    mems[0:njump-1,0:1] = [[jumps[*,0]], [jumps[*,0]]]
+    mems[0:njump-1,2:3] = [[jumps[*,1]], [jumps[*,1]]]
+    mems[0:njump-1,4] = 0
+    mems[njump:*,0:1] = colls[*,0:1]
+    mems[njump:*,2:3] = 0
+    mems[njump:*,4] = colls[*,2]
+    idx = sort(mems[*,0])
+    mems = mems[idx,*]
 
-       ['2014-03-13/03:01', '2014-03-13/08:01'],$
-       ['2014-03-13/11:59', '2014-03-13/16:59'],$
-       ['2014-03-13/20:56', '2014-03-14/01:56'],$
-       ['2014-03-14/05:54', '2014-03-14/10:54'],$
-       ['2014-03-14/14:52', '2014-03-14/19:52'],$
-       ['2014-03-14/23:50', '2014-03-15/04:50'],$
-       ['2014-03-15/08:48', '2014-03-15/13:48'],$
-       ['2014-03-15/17:46', '2014-03-15/22:46']]
+    ; convert to absolute memory id.
+    for i = 0, nmem-1 do begin
+        if mems[i,0] eq mems[i,1] then continue     ; jump.
+        mems[i,2] = mems[i-1,3]
+        mems[i,3] = mems[i,2]+(mems[i,1]-mems[i,0])*mems[i,4]*s2b
+        mems[i,2:3] = long(mems[i,2:3]) mod sz      ; wrap absolute memory id.
+    endfor
 
+    ; print result.
+    printf, lun, ''
+    printf, lun, 'RBSP-'+strupcase(probe)
+    fmt = '(I6)'
+    for i = 0, nmem-1 do begin
+        if mems[i,4] eq 0 then begin
+            printf, lun, 'jump:          '+time_string(mems[i,0])+' to '+$
+                string(mems[i,3],format=fmt)
+        endif else if mems[i,4] eq -1 then begin
+            printf, lun, 'wrap:          '+time_string(mems[i,0])
+        endif else begin
+            printf, lun, 'collection:    '+time_string(mems[i,0])+' to '+$
+                time_string(mems[i,1])+'    '+string(mems[i,2],format=fmt)+$
+                ' to '+string(mems[i,3],format=fmt)+' at '+$
+                string(mems[i,4],format='(I5)')+' sample/s'
+        endelse
+    endfor
 
-timea_s = time_double(transpose(tmp[0,*]))
-timea_e = time_double(transpose(tmp[1,*]))
-
-;Start and end times of collection on B (AFTER REFERENCE TIME ONLY!!!)
-tmp = [['2014-03-08/05:59', '2014-03-08/11:59'],$
-       ['2014-03-08/14:58', '2014-03-08/20:58'],$
-       ['2014-03-08/23:56', '2014-03-09/05:56'],$
-       ['2014-03-09/08:55', '2014-03-09/14:55'],$
-       ['2014-03-09/17:54', '2014-03-09/23:54'],$
-       ['2014-03-10/02:53', '2014-03-10/08:53'],$
-       ['2014-03-10/11:51', '2014-03-10/17:51'],$
-       ['2014-03-10/20:50', '2014-03-11/02:50'],$
-       ['2014-03-11/05:49', '2014-03-11/11:49'],$
-       ['2014-03-11/14:48', '2014-03-11/20:48'],$
-       ['2014-03-11/23:47', '2014-03-12/05:47'],$
-       ['2014-03-12/08:45', '2014-03-12/14:45'],$
-       ['2014-03-12/17:44', '2014-03-12/23:44'],$
-
-       ['2014-03-13/02:43', '2014-03-13/08:43'],$
-       ['2014-03-13/11:42', '2014-03-13/17:42'],$
-       ['2014-03-13/20:41', '2014-03-14/02:41'],$
-       ['2014-03-14/05:40', '2014-03-14/11:40'],$
-       ['2014-03-14/14:38', '2014-03-14/20:38'],$
-       ['2014-03-14/23:37', '2014-03-15/05:37'],$
-       ['2014-03-15/08:36', '2014-03-15/14:36'],$
-       ['2014-03-15/17:35', '2014-03-15/23:35']]
-
-timeb_s = time_double(transpose(tmp[0,*]))
-timeb_e = time_double(transpose(tmp[1,*]))
-
-
-;Do some quick array size checks
-if n_elements(ratea) ne n_elements(timea_s) then stop
-if n_elements(ratea) ne n_elements(timea_e) then stop
-if n_elements(rateb) ne n_elements(timeb_s) then stop
-if n_elements(rateb) ne n_elements(timeb_e) then stop
-if n_elements(timea_s) ne n_elements(timea_e) then stop
-if n_elements(timeb_s) ne n_elements(timeb_e) then stop
-if n_elements(jumpa_s) ne n_elements(nb_jumpa) then stop
-if n_elements(jumpb_s) ne n_elements(nb_jumpb) then stop
-if n_elements(tpa0) ne n_elements(tpa1) then stop
-if n_elements(tpb0) ne n_elements(tpb1) then stop
-
-
-;Blocks per second
-ratea2 = ratea/(16000./3.)
-rateb2 = rateb/(16000./3.)
-
-
-;Number of blocks to record for each collection time (3 blocks/sec for 16K)
-hopva = (timea_e - timea_s)*ratea2
-hopvb = (timeb_e - timeb_s)*rateb2
-
-jumpva = nb_jumpa
-jumpvb = nb_jumpb
-
-jump_or_collect_a = [replicate(1,n_elements(timea_s)),replicate(2,n_elements(jumpa_s))]
-jump_or_collect_b = [replicate(1,n_elements(timeb_s)),replicate(2,n_elements(jumpb_s))]
-
-
-;combine collection times and jump times
-timea_s = [timea_s,jumpa_s]
-timeb_s = [timeb_s,jumpb_s]
-timea_e = [timea_e,jumpa_s+0.1]
-timeb_e = [timeb_e,jumpb_s+0.1]
-jumpatime = [jumpa_s,jumpa_s+0.1]
-jumpbtime = [jumpb_s,jumpb_s+0.1]
-skipva = [hopva,jumpva]
-skipvb = [hopvb,jumpvb]
-
-
-sta = sort(timea_s)
-stb = sort(timeb_s)
-
-joc_a = jump_or_collect_a[sta]
-joc_b = jump_or_collect_b[stb]
-
-
-;Final sorted start and end times for each collection and jump
-timea_s = timea_s[sta]
-timea_e = timea_e[sta]
-timeb_s = timeb_s[stb]
-timeb_e = timeb_e[stb]
-;Final sorted values of the buffer hop and jump for each collection and jump
-incrementva = skipva[sta]
-incrementvb = skipvb[stb]
-
-;-------------------------------------------------------------------------------
-;Print out timeline of collection and jumps
-
-rr=0
-print,'-----------------------------------------------------------------------------------'
-print,'RBSP-A'
-for uu=0,n_elements(timea_s)-1 do begin
-
-    output = time_string(timea_s[uu])+' to '+ time_string(timea_e[uu])
-    if joc_a[uu] eq 2 then output = 'JUMP    ' + output
-    if joc_a[uu] eq 1 then output = 'COLLECT ' + output+' rate='+strtrim(floor(ratea[rr]),2)+ ' S/s|'
-    if joc_a[uu] eq 1 then output += ' ' + strtrim(floor((timea_e[uu] - timea_s[uu])/60.),2) + ' minutes|'
-    if joc_a[uu] eq 1 then output += ' ' + strtrim(floor((timea_e[uu] - timea_s[uu])*ratea2[rr]),2) + ' blocks'
-    if joc_a[uu] eq 1 then rr++
-    print,output
-endfor
-print,'-----------------------------------------------------------------------------------'
-rr=0
-print,'RBSP-B'
-for uu=0,n_elements(timeb_s)-1 do begin
-
-    output = time_string(timeb_s[uu])+' to '+ time_string(timeb_e[uu])
-    if joc_b[uu] eq 2 then output = 'JUMP    ' + output
-    if joc_b[uu] eq 1 then output = 'COLLECT ' + output+' rate='+strtrim(floor(rateb[rr]),2)+ ' S/s|'
-    if joc_b[uu] eq 1 then output += ' ' + strtrim(floor((timeb_e[uu] - timeb_s[uu])/60.),2) + ' minutes|'
-    if joc_b[uu] eq 1 then output += ' ' + strtrim(floor((timeb_e[uu] - timeb_s[uu])*rateb2[rr]),2) + ' blocks'
-    if joc_b[uu] eq 1 then rr++
-    print,output
-endfor
-print,''
-;-------------------------------------------------------------------------------
-
-;Future memory locations
-mema = dblarr(n_elements(incrementva))
-memb = dblarr(n_elements(incrementvb))
-
-; check first location, if it's jump, then do nothing, otherwise use start location.
-idx = where(timea_s[0] eq jumpa_s, cnt)
-if cnt ne 0 then mema[0] = incrementva[0] else mema[0] = cloca+incrementva[0]
-for i=1,n_elements(incrementva)-1 do begin
-    idx = where(timea_s[i] eq jumpa_s, cnt)
-    ; if it's jump, then do nothing, otherwise increment.
-    if cnt ne 0 then mema[i] = incrementva[i] else mema[i] = mema[i-1]+incrementva[i]
-endfor
-
-idx = where(timeb_s[0] eq jumpb_s, cnt)
-if cnt ne 0 then mema[0] = incrementvb[0] else memb[0] = clocb+incrementvb[0]
-for i=1,n_elements(incrementvb)-1 do begin
-    idx = where(timeb_s[i] eq jumpb_s, cnt)
-    if cnt ne 0 then memb[i] = incrementvb[i] else memb[i] = memb[i-1]+incrementvb[i]
-endfor
-
-;Take into account circular nature of buffer
-mema = mema mod sz
-memb = memb mod sz
-mema = floor(mema)
-memb = floor(memb)
-
-memas = shift(mema,1)
-memas[0] = floor(cloca mod sz)
-membs = shift(memb,1)
-membs[0] = floor(clocb mod sz)
-
-;combine start and end times of each collection interval
-memaf = [memas,mema]
-membf = [membs,memb]
-
-;Sort chronologically
-timea = [timea_s,timea_e]
-timeb = [timeb_s,timeb_e]
-sa = sort(timea)
-sb = sort(timeb)
-timea = timea[sa]
-timeb = timeb[sb]
-memaf = memaf[sa]
-membf = membf[sb]
-
-;Treat the wraparound bug.
-memaf = float(memaf)    ; float because need !values.f_nan.
-nmemf = n_elements(memaf)
-i = 1
-while i lt nmemf do begin
-    idx = where(timea[i] eq jumpatime, cnt)
-    if cnt ne 0 or memaf[i] ge memaf[i-1] then begin
+    ; treat memory overflow.
+    i = 1 & dt = 0.1
+    while i lt nmem do begin
+        if mems[i,2] le mems[i,3] then begin        ; jump, or normal.
+            if mems[i,0] eq mems[i,1] then begin    ; jump
+                mems[i,1] = mems[i,0]+dt
+                if i gt 1 then mems[i,2] = mems[i-1,3]
+            endif
+            i+=1 & continue
+        endif
+        twrap = mems[i,0]+(mems[i,1]-mems[i,0])*$
+            (sz-1-mems[i,2])/(sz-1-mems[i,2]+mems[i,3])
+        tmem = [twrap,twrap,!values.d_nan,!values.d_nan,-1]
+        mems = [mems[0:i,*],transpose(tmem),mems[i:*,*]]
+        mems[i,1] = twrap-dt & mems[i,3] = sz-1
+        i+=2
+        mems[i,0] = twrap+dt & mems[i,2] = 0
         i+=1
-        continue    ; jump, or normal situation, otherwise overflow.
-    endif
-    wraptime = timea[i-1]+(timea[i]-timea[i-1])*(sz-memaf[i-1])/(memaf[i]+sz-memaf[i-1])
-    memaf = [memaf[0:i-1],sz-1,!values.f_nan,0,memaf[i:*]]   ; add f_nan to eliminate vertical line from sz to 0.
-    timea = [timea[0:i-1],wraptime-1,wraptime,wraptime+1,timea[i:*]]
-    i+=3
-    nmemf = n_elements(memaf)
-endwhile
+        nmem = n_elements(mems)/5
+    endwhile
 
-membf = float(membf)
-nmemf = n_elements(membf)
-i = 1
-while i lt nmemf do begin
-    idx = where(timeb[i] eq jumpbtime, cnt)
-    if cnt ne 0 or membf[i] ge membf[i-1] then begin
-        i+=1
-        continue    ; jump, or normal situation, otherwise overflow.
-    endif
-    wraptime = timeb[i-1]+(timeb[i]-timeb[i-1])*(sz-membf[i-1])/(membf[i]+sz-membf[i-1])
-    membf = [membf[0:i-1],sz-1,!values.f_nan,0,membf[i:*]]
-    timeb = [timeb[0:i-1],wraptime-1,wraptime,wraptime+1,timeb[i:*]]
-    i+=3
-    nmemf = n_elements(membf)
-endwhile
+    ; convert to array.
+    t0 = dblarr(nmem*2) & memf = dblarr(nmem*2)
+    for i = 0, nmem-1 do begin
+        t0[i*2:i*2+1] = mems[i,0:1]
+        memf[i*2:i*2+1] = mems[i,2:3]
+    endfor
+end
 
-;Create a tplot variable with the future memory locations
+timespan, systime(1)-10D*86400, 20
+
+; jumps: [n,2], each record in [tsta, absolute memory id].
+; The 1st record is always the start location.
+jumpa = [$
+    [time_double('2014-03-15/19:52'), 158286D],$
+    [time_double('2014-03-16/02:43'),      0D],$
+    [time_double('2014-03-17/08:06'),      0D],$
+    [time_double('2014-03-18/17:29'),      0D],$
+    [time_double('2014-03-19/23:24'),      0D]]
+jumpb = [$
+    [time_double('2014-03-15/14:36'), 12464D],$
+    [time_double('2014-03-18/09:12'), 205200D],$
+    [time_double('2014-03-18/19:26'), 242200D]]
+jumpa = transpose(jumpa)
+jumpb = transpose(jumpb)
+
+; protected memory, [n,2], each record in [tsta, tend].
+prota = [$
+    [time_double(['2014-03-12/22:00', '2014-03-13/08:00'])]]
+protb = [$
+    [time_double(['2014-03-13/14:07', '2014-03-14/20:38'])]]
+prota = transpose(prota)
+protb = transpose(protb)
+
+; collection, [n,3], each record in [tsta, tend, rate].
+colla = [$
+    [time_double(['2014-03-15/19:52:41', '2014-03-15/22:46']), 16384],$
+    [time_double(['2014-03-16/02:44', '2014-03-16/07:44']), 16384],$
+    [time_double(['2014-03-16/11:42', '2014-03-16/16:42']), 16384],$
+    [time_double(['2014-03-16/20:40', '2014-03-17/01:40']), 16384],$
+    [time_double(['2014-03-17/05:38', '2014-03-17/08:05']), 16384],$
+    [time_double(['2014-03-17/08:07', '2014-03-17/10:38']), 16384],$
+    [time_double(['2014-03-17/14:36', '2014-03-17/19:36']), 16384],$
+    [time_double(['2014-03-17/23:34', '2014-03-18/04:34']), 16384],$
+    [time_double(['2014-03-18/08:32', '2014-03-18/13:32']), 16384],$
+
+    [time_double(['2014-03-18/17:58', '2014-03-18/22:58']), 16384],$ 
+    [time_double(['2014-03-19/02:57', '2014-03-19/07:57']), 16384],$
+    [time_double(['2014-03-19/11:56', '2014-03-19/16:56']), 16384],$
+    [time_double(['2014-03-19/20:54', '2014-03-19/23:23']), 16384],$
+
+    [time_double(['2014-03-19/23:25', '2014-03-20/01:54']), 16384],$
+    [time_double(['2014-03-20/05:53', '2014-03-20/10:53']), 16384],$
+    [time_double(['2014-03-20/14:52', '2014-03-20/19:52']), 16384],$
+    [time_double(['2014-03-20/23:50', '2014-03-21/04:50']), 16384]]
+collb = [$
+    [time_double(['2014-03-15/17:35', '2014-03-15/23:35']), 4096],$
+    [time_double(['2014-03-16/02:28', '2014-03-16/02:38']),16384],$
+    [time_double(['2014-03-17/23:24', '2014-03-17/23:34']),16384],$
+    [time_double(['2014-03-18/09:13', '2014-03-18/09:23']),16384],$
+    [time_double(['2014-03-19/12:35', '2014-03-19/12:45']),16384],$
+    [time_double(['2014-03-20/23:41', '2014-03-20/23:51']),16384],$
+    [time_double(['2014-03-16/04:16', '2014-03-16/10:16']), 4096],$
+    [time_double(['2014-03-16/13:17', '2014-03-16/19:17']), 4096],$
+    [time_double(['2014-03-16/22:19', '2014-03-17/04:19']), 4096],$
+    [time_double(['2014-03-17/07:21', '2014-03-17/13:21']), 4096],$
+    [time_double(['2014-03-17/16:22', '2014-03-17/22:22']), 4096],$
+    [time_double(['2014-03-18/01:24', '2014-03-18/07:24']), 4096],$
+    [time_double(['2014-03-18/10:26', '2014-03-18/16:26']), 4096],$
+    [time_double(['2014-03-18/19:27', '2014-03-19/01:27']), 4096],$
+    [time_double(['2014-03-19/04:29', '2014-03-19/10:29']), 4096],$
+    [time_double(['2014-03-19/13:31', '2014-03-19/19:31']), 4096],$
+    [time_double(['2014-03-19/22:32', '2014-03-20/04:32']), 4096],$
+    [time_double(['2014-03-20/07:34', '2014-03-20/13:34']), 4096],$
+    [time_double(['2014-03-20/16:36', '2014-03-20/22:36']), 4096]]
+colla = transpose(colla)
+collb = transpose(collb)
+
+
+rbsp_b1_predict_plot_process, 'a', jumpa, colla, $
+    time = timea, memf = memaf, mems = mema
+rbsp_b1_predict_plot_process, 'b', jumpb, collb, $
+    time = timeb, memf = membf, mems = memb
+
+; **** below are from Aaron.
+; create a tplot variable with the future memory locations.
 store_data,'future_a',data={x:timea,y:memaf}
 store_data,'future_b',data={x:timeb,y:membf}
 options,['future_a','future_b'],'colors',250
-options,['future_a','future_b'],'thick',3
+options,['future_a','future_b'],'thick',2
 
-
-;Create a tplot variable with horizontal lines to represent the jumped memory locations
-
-
-;Find value at jump location
-get_data,'future_a',data=bia
-get_data,'future_b',data=bib
-
-
-;use last element of the jump array
-gooa = where(bia.x ge jumpa_s[n_elements(jumpa_s)-1])
-goob = where(bib.x ge jumpb_s[n_elements(jumpb_s)-1])
-
-
-v0a = bia.y[gooa[0]]
-v1a = v0a + nb_jumpa[n_elements(jumpa_s)-1]
-v1a = v1a mod sz
-
-v0b = bib.y[goob[0]]
-v1b = v0b + nb_jumpb[n_elements(jumpb_s)-1]
-v1b = v1b mod sz
-
-t0 = time_double('2012-01-01/00:00')
-t1 = time_double('2050-01-01/00:00')
-
-store_data,'jump_a1',data={x:[t0,t1],y:[v0a,v0a]}
-store_data,'jump_a2',data={x:[t0,t1],y:[v1a,v1a]}
-store_data,'jump_b1',data={x:[t0,t1],y:[v0b,v0b]}
-store_data,'jump_b2',data={x:[t0,t1],y:[v1b,v1b]}
-
+; treat protect memory.
 get_data,'rbspa_efw_b1_fmt_block_index2',data=gootmpa
 get_data,'rbspb_efw_b1_fmt_block_index2',data=gootmpb
 gootmpa2 = gootmpa
@@ -323,36 +178,43 @@ gootmpb2 = gootmpb
 gootmpa2.y = !values.f_nan
 gootmpb2.y = !values.f_nan
 
-
-
+tpa0 = reform(prota[*,0]) & tpa1 = reform(prota[*,1])
 for vv=0,n_elements(tpa0)-1 do begin
     boob = where((gootmpa.x ge tpa0[vv]) and (gootmpa.x le tpa1[vv]))
     if boob[0] ne -1 then gootmpa2.y[boob] = gootmpa.y[boob]
 endfor
+tpb0 = reform(protb[*,0]) & tpb1 = reform(protb[*,1])
 for vv=0,n_elements(tpb0)-1 do begin
     boob = where((gootmpb.x ge tpb0[vv]) and (gootmpb.x le tpb1[vv]))
     if boob[0] ne -1 then gootmpb2.y[boob] = gootmpb.y[boob]
 endfor
-
-
-
 store_data,'rbspa_efw_b1_fmt_block_index3',data=gootmpa2
 store_data,'rbspb_efw_b1_fmt_block_index3',data=gootmpb2
 options,'rbsp?_efw_b1_fmt_block_index3','colors',100
 options,'rbsp?_efw_b1_fmt_block_index3','psym',4
 
+; prepare tplot.
+store_data,'comba',data=['rbspa_efw_b1_fmt_block_index_cutoff',$
+    'rbspa_efw_b1_fmt_block_index','rbspa_efw_b1_fmt_block_index2',$
+    'rbspa_efw_b1_fmt_block_index3','future_a']
+store_data,'combb',data=['rbspb_efw_b1_fmt_block_index_cutoff',$
+    'rbspb_efw_b1_fmt_block_index','rbspb_efw_b1_fmt_block_index2',$
+    'rbspb_efw_b1_fmt_block_index3','future_b']
 
-store_data,'comba',data=['rbspa_efw_b1_fmt_block_index_cutoff','rbspa_efw_b1_fmt_block_index','rbspa_efw_b1_fmt_block_index2','rbspa_efw_b1_fmt_block_index3','future_a','jump_a1','jump_a2']
-store_data,'combb',data=['rbspb_efw_b1_fmt_block_index_cutoff','rbspb_efw_b1_fmt_block_index','rbspb_efw_b1_fmt_block_index2','rbspb_efw_b1_fmt_block_index3','future_b','jump_b1','jump_b2']
-
-
-
+sz = 262144D            ; memory size, in block.
 ylim,['comba','combb'],0,sz
-
 options,'rbsp?_b1_status','panel_size',0.5
 tplot,['comba','rbspa_b1_status','combb','rbspb_b1_status']
-timebar,jumpa_s,color=50,varname=['comba','rbspa_b1_status']
-timebar,jumpb_s,color=50,varname=['combb','rbspb_b1_status']
+
+
+; print last position: time and memory id.
+get_data, 'rbspa_efw_b1_fmt_block_index_cutoff', data = tmp
+print, 'RBSP-A last pos:    '+time_string(tmp.x[1])+'    at    '+$
+    string(tmp.y[1],format='(I6)')
+get_data, 'rbspb_efw_b1_fmt_block_index_cutoff', data = tmp
+print, 'RBSP-B last pos:    '+time_string(tmp.x[1])+'    at    '+$
+    string(tmp.y[1],format='(I6)')
+
 
 print,'type .c to print the plot to the desktop'
 stop
@@ -406,6 +268,5 @@ rbsp_efw_init,/reset
 !p.font=pfont_saved
 !p.charthick=pcharthick_saved
 !p.thick=pthick_saved
-
 
 end

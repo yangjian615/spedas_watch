@@ -25,7 +25,9 @@ pro spd_ui_spedas_init_struct,state,struct
   widget_control,state.localdir,set_value=struct.local_data_dir
   widget_control,state.remotedir,set_value=struct.remote_data_dir
   widget_control,state.tempdir,set_value=struct.temp_dir
-  
+  widget_control,state.browserexe,set_value=struct.browser_exe
+  widget_control,state.tempcdfdir,set_value=struct.temp_cdf_dir
+   
   if struct.no_download eq 1 then begin
     widget_control,state.nd_off_button,set_button=1
   endif else begin
@@ -63,7 +65,7 @@ PRO spd_ui_spedas_fileconfig_event, event
   
   CASE uval OF
   
-    'BROWSEREXE':BEGIN
+    'BROWSEREXEBTN':BEGIN
     
     ; get the web browser executable file
     widget_control, state.browserexe, get_value=browser_exe
@@ -82,6 +84,13 @@ PRO spd_ui_spedas_fileconfig_event, event
     
   END
   
+  'BROWSEREXE': BEGIN
+
+    widget_control, state.browserexe, get_value=currentDir
+    !spedas.browser_exe = currentDir
+
+  END
+  
   'LOCALDIR': BEGIN
   
     widget_control, state.localDir, get_value=currentDir
@@ -96,7 +105,41 @@ PRO spd_ui_spedas_fileconfig_event, event
     
   END
   
-  'TEMPDIR': BEGIN
+  'TEMPCDFDIR': BEGIN
+
+    widget_control, state.tempcdfdir, get_value=currentDir
+    !spedas.temp_cdf_dir = currentDir
+
+  END
+  
+
+  'TEMPCDFDIRBTN': BEGIN
+
+    widget_control, state.tempcdfdir, get_value=currentDir
+    if currentDir ne '' then path = file_dirname(currentDir)
+    ; call the file chooser window and set the default value
+    ; to the current value in the local data dir text box
+    dirName = Dialog_Pickfile(Title='Select the directory for CDF files:', $
+      Dialog_Parent=state.master, /must_exist, /DIRECTORY)
+    ; check to make sure the selection is valid
+    IF is_string(dirName) THEN BEGIN
+      !spedas.temp_cdf_dir = dirName
+      widget_control, state.tempcdfdir, set_value=dirName
+    ENDIF ELSE BEGIN
+      ok = dialog_message('Selection is not a directory',/center)
+    ENDELSE
+
+
+  END
+  
+    'TEMPDIR': BEGIN
+
+    widget_control, state.tempDir, get_value=currentDir
+    !spedas.temp_dir = currentDir
+
+  END
+  
+  'TEMPDIRBTN': BEGIN
   
     widget_control, state.tempDir, get_value=currentDir
     if currentDir ne '' then path = file_dirname(currentDir)
@@ -129,6 +172,7 @@ PRO spd_ui_spedas_fileconfig_event, event
     !spedas=state.spedas_cfg_save
     widget_control,state.browserexe,set_value=!spedas.browser_exe
     widget_control,state.tempdir,set_value=!spedas.temp_dir
+    widget_control,state.tempcdfdir,set_value=!spedas.temp_cdf_dir
     widget_control,state.localdir,set_value=!spedas.local_data_dir
     widget_control,state.remotedir,set_value=!spedas.remote_data_dir
     if !spedas.no_download eq 1 then begin
@@ -159,8 +203,6 @@ PRO spd_ui_spedas_fileconfig_event, event
     !spedas.no_update = state.def_values[1]
     !spedas.downloadonly = state.def_values[2]
     !spedas.verbose = state.def_values[3]
-    !spedas.temp_dir = state.def_values[4]
-    !spedas.browser_exe = state.def_values[5]
     
     
     ; reset the widgets to these values
@@ -209,7 +251,7 @@ END ;---------------------------------------------------------------------------
 PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
 
   ;check whether the !spedas system variable has been initialized
-  defsysv, 'spedas', exists=exists
+  defsysv, '!spedas', exists=exists
   if not keyword_set(exists) then spedas_init
   spedas_cfg_save = !spedas
   
@@ -231,15 +273,18 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   
   lbase = widget_base(configbase, /row, /align_left, ypad=1)
   flabel = widget_label(lbase,  value = 'Web browser executable:    ')
-  browserexe = widget_text(lbase, /edit, xsiz = 50, $
-     val = !spedas.browser_exe)
-  loc_browsebtn = widget_button(lbase,value='Browse', uval='BROWSEREXE',/align_center)
+  browserexe = widget_text(lbase, /edit, xsiz = 50, /all_events, uval='BROWSEREXE', val = !spedas.browser_exe)
+  loc_browsebtn = widget_button(lbase,value='Browse', uval='BROWSEREXEBTN',/align_center)
   
   rbase = widget_base(configbase, /row, /align_left, ypad=1)
-  flabel1 = widget_label(rbase, value = 'Temp directory:      ')
-  tempdir = widget_text(rbase, /edit, xsiz = 50, $
-    val = !spedas.remote_data_dir)
-  temp_dirbtn = widget_button(rbase,value='Browse', uval='TEMPDIR', /align_center)
+  flabel1 = widget_label(rbase, value = 'Temp directory:                    ')
+  tempdir = widget_text(rbase, /edit, xsiz = 50, /all_events, uval='TEMPDIR', val = !spedas.temp_dir)
+  temp_dirbtn = widget_button(rbase,value='Browse', uval='TEMPDIRBTN', /align_center)
+
+  rbase1 = widget_base(configbase, /row, /align_left, ypad=1)  
+  flabel2 = widget_label(rbase1, value = 'Directory for CDAweb files:  ')
+  tempcdfdir = widget_text(rbase1, /edit, xsiz = 50, /all_events, uval='TEMPCDFDIR', val = !spedas.temp_cdf_dir)
+  tempcdfdirbtn = widget_button(rbase1,value='Browse', uval='TEMPCDFDIRBTN', /align_center)
   
   v_base = widget_base(configbase, /row, ypad=7)
   v_label = widget_label(v_base, value='Verbose level for tplot (higher value = more comments):      ')
@@ -250,8 +295,7 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   savebut = widget_button(bmaster, value = '    Save to File     ', uvalue = 'SAVE')
   resetbut = widget_button(bmaster, value = '     Cancel     ', uvalue = 'RESET')
   reset_to_dbutton =  widget_button(bmaster,  value =  '  Reset to Default   ',  uvalue =  'RESETTODEFAULT')
-  
-  
+    
   ;;;;;;;; TO BE REMOVED - START
   ;Next radio buttions
   nd_base = widget_base(configbase, /row, /align_left, map=0)
@@ -274,9 +318,10 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   ;;;;;;;; TO BE REMOVED - END
   
   ;defaults for Cancel:
-  def_values=['0','0','0','2','','']
+  def_values=['0','0','0','2']
   
-  state = {localdir:localdir, master:master, tempdir:tempdir, browserexe:browserexe, remotedir:remotedir, spedas_cfg_save:spedas_cfg_save, $
+  state = {localdir:localdir, master:master, remotedir:remotedir,  $
+    browserexe:browserexe, tempdir:tempdir, tempcdfdir:tempcdfdir, $
     nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
     nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
     v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $

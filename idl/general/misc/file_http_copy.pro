@@ -47,6 +47,7 @@
  ;
  ; OPTIONAL KEYWORDS:
  ;     NO_CLOBBER:   (0/1) Set this keyword to prevent overwriting local files.
+ ;     NO_UPDATE:    (0/1) Set this keyword to prevent contacting the remote server to update existing files. Ignored with directory lists
  ;     IGNORE_FILESIZE: (0/1) Set this keyword to ignore file size when
  ;           evaluating need to download.
  ;     NO_DOWNLOAD:  (0/1,2) Set this keyword to prevent file downloads (url_info
@@ -124,9 +125,9 @@
  ;   April  2008 - Added dir_mode keyword
  ;   Sep 2009    - Fixed user-agent
  ;
- ; $LastChangedBy: jwl $
- ; $LastChangedDate: 2014-03-21 17:10:55 -0700 (Fri, 21 Mar 2014) $
- ; $LastChangedRevision: 14630 $
+ ; $LastChangedBy: davin-mac $
+ ; $LastChangedDate: 2014-03-24 02:11:45 -0700 (Mon, 24 Mar 2014) $
+ ; $LastChangedRevision: 14649 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -304,7 +305,8 @@ end
    s=''
    links = ''
    while not eof(lun) do begin
-     readf,lun,s
+     readf,lun,s     
+    ; The REGEX version of this code typically takes about 2.5 times longer to run than the older code - is there a way to avoid having to use REGEX?
      ;extract_html_links,s,links,/relative,/normal ;deprecated, see extract_html_links_regex pcruce 2013-04-09
      extract_html_links_regex,s,links,/relative,/normal,no_parent_links=no_parent_links
    endwhile
@@ -502,7 +504,7 @@ end
    tstart = systime(1)
    ;  if n_elements(verbose) eq 1 then dprint,setdebug=verbose,getdebug=last_dbg
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14630 2014-03-22 00:10:55Z jwl $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14649 2014-03-24 09:11:45Z davin-mac $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -571,7 +573,7 @@ end
        ; First get directory listing and extract links:  (listing will not be archived)
        file_http_copy,sub_pathname,serverdir=serverdir,localdir=localdir,url_info=index, host=host ,ascii_mode=1 $
          ,min_age_limit=min_age_limit,verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,if_modified_since=if_modified_since $
-         ,no_update=no_update, links=links, user_agent=user_agent  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
+         , links=links, user_agent=user_agent ;, no_update=no_update  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
        dprint,dlevel=5,verbose=verbose,/phelp,links
        
        ;strip out return directory links
@@ -641,11 +643,11 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
      endif
      
      if keyword_set(no_update) && lcl.exists then begin
-       dprint,dlevel=3,verbose=verbose,'Warning: Updates to existing file: "',lcl.name,'" are not being checked!'
+       dprint,dlevel=3,verbose=verbose,'Warning: Updates to existing file: "'+lcl.name+'" are not being checked!'
        url_info.localname = localname
-       url_info.exists = -1   ; existence is not known!
+       url_info.exists = -1   ; remote file existence is not known!
        if arg_present(links2) then begin
-          links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)         ; Does this belong here?
+          links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)         ; Does this belong here?  this might be producing unneeded work
        endif
        goto, final
      endif

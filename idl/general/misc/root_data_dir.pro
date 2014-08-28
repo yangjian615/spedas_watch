@@ -42,8 +42,8 @@
 ;
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-03-13 00:16:13 -0700 (Thu, 13 Mar 2014) $
-;$LastChangedRevision: 14533 $
+;$LastChangedDate: 2014-03-24 01:27:36 -0700 (Mon, 24 Mar 2014) $
+;$LastChangedRevision: 14646 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/root_data_dir.pro $
 ;-
 
@@ -54,9 +54,10 @@ function root_data_dir,verbose=verbose
   common root_data_dir_com, rootdir,last_warning_time
   def_root = getenv('ROOT_DATA_DIR')
   if not keyword_set(def_root) then begin   ;  Determine default directory.
+       homedir = (file_search('~',/expand_tilde))[0]+'/'
        case !version.os_family of
-        'Windows': def_root = 'c:/data/;e:/data/;c:/data/'         ; Use c: if it exists ; else use e: if it exists ; else use c: regardless
-        'unix' : def_root = '/disks/data/:~/data/'
+        'Windows': def_root = 'c:/data/;e:/data/;'+homedir+'data/;c:/data/'         ; Use c: if it exists ; else use e: if it exists ; else use c: regardless
+        'unix' : def_root = '/disks/data/:'+homedir+'data/'
          else :  def_root = getenv('IDL_TMPDIR')+'data/'
        endcase
        if not keyword_set(last_warning_time) then last_warning_time = 1

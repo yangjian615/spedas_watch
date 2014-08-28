@@ -30,18 +30,18 @@
 ; $LastChangedRevision: $
 ; $URL: $
 ;-
-function spice_standard_kernels,load=load,source=source,reset=reset,verbose=verbose,mars=mars
+function spice_standard_kernels,load=load,source=src,reset=reset,verbose=verbose,mars=mars
 common spice_standard_kernels_com, kernels,retrievetime,tranges
 if ~spice_test()  then return,''
 if keyword_set(reset) then kernels=0
 ct = systime(1)
 waittime = -300.           ; always check      ; search no more often than this number of seconds
 if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin     ; 
-    naif = naif_file_source()
+    source = spice_file_source(src,verbose=verbose)
 ;    sprg = mvn_file_source()
-    if not keyword_set(source) then source=naif
+;    if not keyword_set(source) then source=naif
     source.no_update =1      ;  Don't check for file if it exists
-    if keyword_set(verbose) then source.verbose=verbose
+;    if keyword_set(verbose) then source.verbose=verbose
     kernels=0
 ;        WARNING!!!!!  ALL FILE NAMES LISTED BELOW ARE SUBJECT TO CHANGE AND DO CHANGE REGULARLY
     append_array,kernels,  file_retrieve('generic_kernels/lsk/naif0010.tls',_extra=source)        ; naif0010.tls is most recent as of 2013/12/16

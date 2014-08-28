@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-20 15:07:58 -0700 (Thu, 20 Mar 2014) $
-;$LastChangedRevision: 14618 $
+;$LastChangedDate: 2014-03-25 14:40:02 -0700 (Tue, 25 Mar 2014) $
+;$LastChangedRevision: 14673 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1192,46 +1192,7 @@ PRO spd_gui_event, event
       spd_ui_variable_options, info.master, info.loadeddata, info.windowstorage, info.drawobject, info.historywin,info.template_object,info.guiTree
     end
     
-    'OVERPLOT': begin
-    
-      info.windowStorage->getProperty,callSequence=callSequence
-      success = spd_ui_gen_overplot(info.master, info.historyWin, info.statusBar, info.oplot_calls, $
-                                    callSequence,info.windowStorage,info.windowMenus,info.loadedData,info.drawObject,$
-                                    tr_obj=info.loadtr)
-      
-      if success then begin
-        ; to avoid unnecessarily repeating code, we're using the 
-        ; singlePanelTracking method in the callSequence object
-        ; to switch to single panel tracking
-        callSequence->singlePanelTracking, ptr_new(info)
-        
-        info.historyWin->Update, 'Generate THEMIS overview plot completed.'
-        info.statusBar->Update, 'Generate THEMIS overview plot completed.'
-      endif else begin
-        info.historyWin->Update, 'Generate THEMIS overview plot not completed.'
-        info.statusBar->Update, 'Generate THEMIS overview plot not completed.'
-      endelse
-       
-    end
-;    'GOES_OVERPLOT': begin
-;        ; grab the call sequence object
-;        info.windowStorage->getProperty, callSequence=callSequence
-;        success = goes_ui_gen_overplot(info.master, info.historyWin, info.statusBar, info.oplot_calls, $
-;                                    callSequence,info.windowStorage,info.windowMenus,info.loadedData,info.drawObject, $
-;                                    tr_obj=info.loadtr)
-;        if success then begin
-;            ; to avoid unnecessarily repeating code, we're using the 
-;            ; singlePanelTracking method in the callSequence object
-;            ; to switch to single panel tracking
-;            callSequence->singlePanelTracking, ptr_new(info)
-;
-;            info.historyWin->Update, 'Generate GOES overview plot completed.'
-;            info.statusBar->Update, 'Generate GOES overview plot completed.'
-;        endif else begin
-;            info.historyWin->Update, 'Generate GOES overview plot not completed.'
-;            info.statusBar->Update, 'Generate GOES overview plot not completed.'
-;        endelse
-;    end
+
     'NUDGE': BEGIN
       info.windowStorage->getProperty,callSequence=callSequence
       spd_ui_nudge_options, info.master, info,callSequence
@@ -1447,8 +1408,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   loadMenu = Widget_Button(fileMenu, Value='Load Data ', UValue='LOAD', /Separator)
   loadCDAWebMenu = Widget_Button(fileMenu, Value='Load Data using CDAWeb', UValue='LOADCDAWEB')
   loadCDFMenu = Widget_Button(fileMenu, Value='Load SPEDAS CDF', UValue='LOADCDF')
-  overplotMenu = Widget_Button(fileMenu, Value='Generate THEMIS Overview Plot...', uvalue='OVERPLOT')          
-;  overplotMenu = Widget_Button(fileMenu, Value='Generate GOES Overview Plot...', uvalue='GOES_OVERPLOT')                        
+
   saveDataAsMenu = Widget_Button(fileMenu, Value='Save Data As... ', UValue='SAVEDATAAS')
   importExportMenu = Widget_button(fileMenu, Value='Manage Data and Import/Export Tplot Variables...', UValue='MANAGEDATA')
   exportMetaMenu = Widget_Button(fileMenu, Value='Export To Image File... ', $
