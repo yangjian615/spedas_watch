@@ -33,10 +33,10 @@
 ;                             server_run = '1', themis_dir ='/disks/themisdata/', goes_dir = '/disks/data/goes/qa/'
 ;
 ;HISTORY:
-;$LastChangedBy:  $
-;$LastChangedDate:  $
-;$LastChangedRevision:  $
-;$URL:  $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+;$LastChangedRevision: 14467 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_overview_plot_wrapper.pro $
 ;----------
 
 function goes_url_callback, status, progress, data

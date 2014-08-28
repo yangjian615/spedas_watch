@@ -43,9 +43,9 @@
 ;       
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-07 10:52:31 -0800 (Fri, 07 Feb 2014) $
-; $LastChangedRevision: 14196 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goes/goes_overview_plot.pro $
+; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14467 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_overview_plot.pro $
 ;-
 
 pro goes_overview_plot, date = date, probe = probe, directory = directory, device = device, $

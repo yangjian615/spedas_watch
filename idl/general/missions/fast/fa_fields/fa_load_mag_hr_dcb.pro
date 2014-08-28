@@ -18,8 +18,8 @@
 ;  
 ;HISTORY:
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-27 16:42:58 -0800 (Thu, 27 Feb 2014) $
-;$LastChangedRevision: 14464 $
+;$LastChangedDate: 2014-02-28 16:39:25 -0800 (Fri, 28 Feb 2014) $
+;$LastChangedRevision: 14473 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_fields/fa_load_mag_hr_dcb.pro $
 ;
 ;-
@@ -99,7 +99,7 @@ pro fa_load_mag_hr_dcb,trange=trange,tplotnames=tplotnames
    
   if downloadonly then return
   
-  cdf2tplot,file=files,verbose=verbose ,prefix = 'fa_hr_dcb_',tplotnames=tplotnames,/resolve_labels
+  cdf2tplot,file=files,verbose=verbose ,prefix = 'fa_hr_dcb_',tplotnames=tplotnames,/load_labels
   
   if keyword_set(tplotnames) then begin ;output is '' for no variables loaded
     for i = 0,n_elements(tplotnames)-1 do begin

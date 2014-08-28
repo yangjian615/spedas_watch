@@ -11,9 +11,9 @@
 ;   
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-06 12:33:37 -0800 (Thu, 06 Feb 2014) $
-; $LastChangedRevision: 14179 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goes/goes_lib.pro $
+; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14467 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_lib.pro $
 ;-
 
 ; Procedure: goes_pitch_angles

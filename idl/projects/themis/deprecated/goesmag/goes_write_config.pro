@@ -19,10 +19,10 @@
 ; 17-may-2007, jmm, jimm@ssl.berkeley.edu
 ; 18-mar-2009, jmm, fixed problem with writing string representations
 ;                   of byte values
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2009-04-10 09:49:50 -0700 (Fri, 10 Apr 2009) $
-;$LastChangedRevision: 5595 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goesmag/goes_write_config.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+;$LastChangedRevision: 14467 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/goesmag/goes_write_config.pro $
 ;-
 
 Pro goes_write_config, copy = copy, _extra = _extra

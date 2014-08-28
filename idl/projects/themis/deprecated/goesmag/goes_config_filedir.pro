@@ -2,10 +2,10 @@
 ;Function: goes_config_filedir.pro
 ;Purpose: Get the applications user directory for THEMIS data analysis software
 ;
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2009-04-10 09:49:50 -0700 (Fri, 10 Apr 2009) $
-;$LastChangedRevision: 5595 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goesmag/goes_config_filedir.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+;$LastChangedRevision: 14467 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/goesmag/goes_config_filedir.pro $
 ;-
 
 Function goes_config_filedir, app_query = app_query, _extra = _extra

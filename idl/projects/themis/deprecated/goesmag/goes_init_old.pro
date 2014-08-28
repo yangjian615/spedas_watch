@@ -6,10 +6,10 @@
 ; The system variable !GOES is defined here.  The elements of this structure
 ; are the same as for !THEMIS.
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2013-12-23 08:35:57 -0800 (Mon, 23 Dec 2013) $
-;$LastChangedRevision: 13728 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goesmag/goes_init_old.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+;$LastChangedRevision: 14467 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/goesmag/goes_init_old.pro $
 ;-
 pro goes_init_old,reset=reset
 

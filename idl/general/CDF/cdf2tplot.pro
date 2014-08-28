@@ -4,23 +4,23 @@
 ;
 ; record=record if only one record and not full cdf-file is requested
 ;
-;resolve_labels=resolve_labels ;copy labels from labl_ptr_1 in attributes into dlimits
+;load_labels=load_labels ;copy labels from labl_ptr_1 in attributes into dlimits
 ;         resolve labels implemented as keyword to preserve backwards compatibility
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-02-27 16:42:25 -0800 (Thu, 27 Feb 2014) $
-; $LastChangedRevision: 14463 $
+; $LastChangedDate: 2014-02-28 16:39:25 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14473 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf2tplot.pro $
 ;-
 
 pro cdf2tplot,files=files,prefix=prefix,midfix=midfix,midpos=midpos,suffix=suffix ,newname=newname $
    ,varformat=varformat ,varnames=varnames2 $
    ,all=all,verbose=verbose, get_support_data=get_support_data, convert_int1_to_int2=convert_int1_to_int2 $
-   ,record=record, tplotnames=tplotnames,resolve_labels=resolve_labels
+   ,record=record, tplotnames=tplotnames,load_labels=load_labels
 
 
-dprint,dlevel=4,verbose=verbose,'$Id: cdf2tplot.pro 14463 2014-02-28 00:42:25Z pcruce $'
+dprint,dlevel=4,verbose=verbose,'$Id: cdf2tplot.pro 14473 2014-03-01 00:39:25Z pcruce $'
 vb = keyword_set(verbose) ? verbose : 0
 
 ; Load data from file(s)
@@ -34,7 +34,7 @@ cdfi = cdf_load_vars(files,varformat=varformat,var_type=var_type,/spdf_depend, $
 dprint,dlevel=5,verbose=verbose,'Starting load into tplot'
 ;  Insert into tplot format
 cdf_info_to_tplot,cdfi,varnames2,all=all,prefix=prefix,midfix=midfix,midpos=midpos,suffix=suffix,newname=newname, $  ;bpif keyword_set(all) eq 0
-       verbose=verbose,  tplotnames=tplotnames,resolve_labels=resolve_labels
+       verbose=verbose,  tplotnames=tplotnames,load_labels=load_labels
 
 
 dprint,dlevel=5,verbose=verbose,'Starting Clean up' ;bpif keyword_set(all) eq 0

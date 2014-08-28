@@ -24,9 +24,9 @@
 ;                           instead of the NGDC servers
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-06 12:33:37 -0800 (Thu, 06 Feb 2014) $
-; $LastChangedRevision: 14179 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goes/goes_load_data.pro $
+; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14467 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_load_data.pro $
 ;-
 pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffix = suffix, $
       downloadonly = downloadonly, avg_1m = avg_1m, avg_5m = avg_5m, no_time_clip = no_time_clip, $

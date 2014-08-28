@@ -22,9 +22,9 @@
 ;OUTPUT:
 ; 
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-20 14:15:21 -0800 (Thu, 20 Feb 2014) $
-;$LastChangedRevision: 14406 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-03-03 11:25:46 -0800 (Mon, 03 Mar 2014) $
+;$LastChangedRevision: 14475 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_verify_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -375,7 +375,10 @@ PRO spd_ui_verify_data, gui_id, names, loadedData, windowstorage, historywin, ed
         ; get the st_type (position, velocity or none) from the dlimits structure
         ; metaData[i].st_type can be:
         ; 0 - 'none', 1 - 'position', 2 - 'velocity'
-        if undefined(st_type) || st_type eq 'none' then metaData[i].st_type = 0
+        if undefined(st_type) || st_type eq 'none' then begin
+          metaData[i].st_type = 0
+          st_type = 'none'
+        endif
         if st_type eq 'pos' then metaData[i].st_type = 1
         if st_type eq 'vel' then metaData[i].st_type = 2
 
@@ -407,8 +410,11 @@ PRO spd_ui_verify_data, gui_id, names, loadedData, windowstorage, historywin, ed
   coordinateDroplist = Widget_Combobox(coordinateBase, Value=validCoords, uval='COORDINATE')
   st_typeComboBox = Widget_Combobox(st_typeBase, value=['N/A', 'position', 'velocity'], uval='ST_TYPE')
   filenameText = Widget_Text(filenameBase, Value='', xsize=20)
-  
-  if st_type eq 'none' then st_type_cb_idx = 0
+
+  if undefined(st_type) || st_type eq 'none' then begin
+    st_type_cb_idx = 0
+    st_type = 'none'
+  endif
   if st_type eq 'pos' then st_type_cb_idx = 1
   if st_type eq 'vel' then st_type_cb_idx = 2
   

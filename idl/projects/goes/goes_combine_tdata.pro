@@ -28,9 +28,9 @@
 ;            increasing energy
 ;     
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-06 12:53:02 -0800 (Thu, 06 Feb 2014) $
-; $LastChangedRevision: 14181 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goes/goes_combine_tdata.pro $
+; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14467 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_combine_tdata.pro $
 ;-
 
 pro goes_set_ephem_data_att, ephem_tvar, prefix, tplotnames = tplotnames

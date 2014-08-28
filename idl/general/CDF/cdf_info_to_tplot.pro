@@ -7,8 +7,8 @@
 ; Written by Davin Larson
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-02-27 16:42:25 -0800 (Thu, 27 Feb 2014) $
-; $LastChangedRevision: 14463 $
+; $LastChangedDate: 2014-02-28 16:39:25 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14473 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_info_to_tplot.pro $
 ;-
 pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
@@ -17,10 +17,10 @@ pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
         force_epoch=force_epoch, $
         verbose=verbose,get_support_data=get_support_data,  $
         tplotnames=tplotnames,$
-        resolve_labels=resolve_labels ;copy labels from labl_ptr_1 in attributes into dlimits
+        load_labels=load_labels ;copy labels from labl_ptr_1 in attributes into dlimits
                                       ;resolve labels implemented as keyword to preserve backwards compatibility
 
-dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 14463 2014-02-28 00:42:25Z pcruce $'
+dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 14473 2014-03-01 00:39:25Z pcruce $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
@@ -139,7 +139,7 @@ for i=0,nv-1 do begin
      dlimit = {cdf:cdfstuff,spec:spec,log:log}
      if keyword_set(units) then str_element,/add,dlimit,'ysubtitle','['+units+']'
      
-     if keyword_set(resolve_labels) then begin
+     if keyword_set(load_labels) then begin
        labl_ptr_1 = struct_value(attr,'labl_ptr_1',default='')
        if keyword_set(labl_ptr_1) then begin
          labl_idx = where(cdfi.vars.name eq labl_ptr_1,c)

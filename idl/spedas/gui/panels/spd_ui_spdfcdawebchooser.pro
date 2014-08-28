@@ -36,8 +36,8 @@ COMPILE_OPT IDL2
 ; MODIFICATION HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-02-11 15:04:05 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14334 $
+;$LastChangedDate: 2014-03-03 11:28:09 -0800 (Mon, 03 Mar 2014) $
+;$LastChangedRevision: 14476 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -236,6 +236,13 @@ pro thm_spdfGetCdawebDataExec, $
       urlname = fileDescriptions[i]->getName()
       urlComponents = parse_url(urlname)
       urlfilename = file_basename(urlComponents.path)
+      if STRMID(localdir, 0, 1, /REVERSE_OFFSET) ne path_sep() then localdir = localdir + path_sep()
+      if ~FILE_SEARCH(localdir, /TEST_WRITE) then begin
+        reply = dialog_message( $
+          'Local CDF directory must exist and be writable: ' + localdir , $
+          title='Local CDF directory', /center, /error)
+        return
+      endif 
       filename = localdir + urlfilename
       localCdfNames[i] = fileDescriptions[i]->getFile(filename=filename[0])
     endfor
@@ -592,16 +599,17 @@ pro thm_GetCdawebDataRun, event
       
     fix_spedas_depend_time, localCDFfile[0]
     
-    cdf2tplot,files=localCDFfile,all=1,prefix=theprefix,tplotnames=tplotnames
+    cdf2tplot,files=localCDFfile,all=1,prefix=theprefix,tplotnames=tplotnames,/load_labels
     
     ;replacing with automatic import
     ;spd_ui_manage_data, info.master, info.loadedData, info.windowStorage, info.historywin,info.guiTree
  
     ;better import, although gui_load_tvars breaks abstraction a little bit
     ;TODO: fix abstraction violation by allowing keyword override of !SPD_GUI variables that spd_ui_tplot_gui_load_tvars uses (I only fixed the funcitonally important one, gui_id)
-    spd_ui_tplot_gui_load_tvars,tplotnames,all_names=all_varnames,gui_id=event.top
+    spd_ui_tplot_gui_load_tvars,tplotnames,all_names=all_varnames,gui_id=event.top   
     spd_ui_verify_data,event.top, all_varnames,info.loadedData, info.windowStorage, info.historyWin, success=success,newnames=new_names
-      
+    
+    if ~keyword_set(success) then success=0
     if success then begin
       statusMessage = 'CDAWeb: All variables imported successfully. Check history window for details.'
       state.statusBar->Update, statusMessage

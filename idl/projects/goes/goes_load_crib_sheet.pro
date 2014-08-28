@@ -17,9 +17,9 @@
 ; 
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-09-27 09:37:02 -0700 (Fri, 27 Sep 2013) $
-; $LastChangedRevision: 13159 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goes/goes_load_crib_sheet.pro $
+; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14467 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_load_crib_sheet.pro $
 ;-
 
 ; initialize the GOES configuration

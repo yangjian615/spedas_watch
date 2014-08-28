@@ -6,12 +6,12 @@
 ;
 ;Inputs: q: an Nx4 element array, representing a list of quaternions
 ;with N > 1, all quaternions must be unit quaternions(ie length/norm = 1)
-;        x1: The input abcissa values of the quaternions,an array of
-;        length N, abcissa values must also be monotonic
+;        x1: The input abscissa values of the quaternions,an array of
+;        length N, abscissa values must also be monotonic
 ;
-;        x2: The output abcissa values for the quaternions, can have
+;        x2: The output abscissa values for the quaternions, can have
 ;        as many elements as wanted but must fall on the interval
-;        [x[0],x[N-1]], an M element array, abcissa values must also
+;        [x[0],x[N-1]], an M element array, abscissa values must also
 ;        be monotonic
 ;
 ;        geometric(optional): this keyword allows you to specify that
@@ -45,9 +45,9 @@
 ;
 ;Written by: Patrick Cruce(pcruce@igpp.ucla.edu)
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-01-26 16:59:44 -0800 (Thu, 26 Jan 2012) $
-; $LastChangedRevision: 9629 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-03-03 09:16:32 -0800 (Mon, 03 Mar 2014) $
+; $LastChangedRevision: 14474 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/quaternion/qslerp.pro $
 ;-
 
@@ -97,20 +97,20 @@ qdims = size(qi, /dimensions)
 
 if(qdims[0] ne n_elements(x1i)) then begin
 
-  dprint, 'Number of input abcissa values does not match the number of input quaternions'
+  dprint, 'Number of input abscissa values does not match the number of input quaternions'
 
   return, -1
 
 endif
 
-;check that input abcissa values are monotonic
+;check that input abscissa values are monotonic
 
 if(n_elements(x1i) gt 1) then begin 
    idx = where((x1i[1:n_elements(x1i)-1]-x1i[0:n_elements(x1i)-2]) lt 0)
 
    if(idx[0] ne -1) then begin
 
-      dprint, 'input abcissa values not monotonic'
+      dprint, 'input abscissa values not monotonic'
 
       return, -1
 
@@ -118,12 +118,12 @@ if(n_elements(x1i) gt 1) then begin
 endif
 
 if(n_elements(x2i) gt 1) then begin
-;check that output abcissa values are strictly monotonic
+;check that output abscissa values are strictly monotonic
    idx = where((x2i[1:n_elements(x2i)-1]-x2i[0:n_elements(x2i)-2]) le 0)
 
    if(idx[0] ne -1) then begin
 
-      dprint, 'output abcissa values not monotonic'
+      dprint, 'output abscissa values not monotonic'
 
       return, -1
 
@@ -133,7 +133,7 @@ endif
 
 q_out = make_array(n_elements(x2i), 4, /double)
 
-;if output abcissa values are outside of the range of input abcissa
+;if output abscissa values are outside of the range of input abscissa
 ;values constant extrapolation is used
 
 idx = where(x2i lt x1i[0])
@@ -153,7 +153,7 @@ x2i = x2i[out_idx]
 ;construct arguments to the slerp function, this includes the source
 ;quaternion list, the target quaternions list, and the proportion of
 ;interpolation list for each quaternion pair.  They should all have
-;the same number of elements as the output abcissa value list
+;the same number of elements as the output abscissa value list
 
 t_temp = interpol(dindgen(qdims[0]), x1i, x2i)
 
@@ -161,7 +161,7 @@ t_list = t_temp mod 1.0D
 
 q_idx = long(floor(t_temp))
 
-;if the last abcissa values are identical,the indexing scheme to
+;if the last abscissa values are identical,the indexing scheme to
 ;generate the q_list could generate an overflow, the two conditionals
 ;below prevent this
 

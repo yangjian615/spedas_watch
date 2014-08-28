@@ -149,6 +149,7 @@ End
 ; 19-feb-2008, jmm, jimm@ssl.berkeley.edu
 ; 24-feb-2008, jmm, Allow replication of 1d y variables to n
 ;                   dimensions when multiple dimensions are passed in.
+; 3-mar-2014, jmm, testing SVN mail
 ;+
 Function tuserdef, inp_var, input_string, $
                    otp_string = otp_string, success = yyy, $

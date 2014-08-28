@@ -9,19 +9,19 @@
 ; none, the filename is hardcoded, 'goes_config.txt',and is s put in a
 ; folder given by the routine goes_config_filedir, that uses the IDL
 ; routine app_user_dir to create/obtain it: my linux example:
-; /disks/ice/home/jimm/.idl/themis/thm_config-4-linux
+; /disks/ice/home/jimm/.idl/themis/goes_config-4-linux
 ;OUTPUT:
-; cstruct = a structure with the changeable fields of the !istp
+; cstruct = a structure with the changeable fields of the !goes
 ;           structure
-; Copied from thm_read_config and tt2000_read_config lphilpott 20-jun-2012
-; 
+;HISTORY:
+; 17-may-2007, jmm, jimm@ssl.berkeley.edu
+; 2-jul-2007, jmm, 'Add trailing slash to data directories, if necessary
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2013-08-06 09:57:19 -0700 (Tue, 06 Aug 2013) $
-;$LastChangedRevision: 12798 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goes/goes_read_config.pro $
+;$LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+;$LastChangedRevision: 14467 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/goesmag/goes_read_config_old.pro $
 ;-
-
-Function goes_config_template
+Function goes_config_template_old
 
   anan = fltarr(1) & anan[0] = 'NaN'
   ppp = {VERSION:1.00000, $
@@ -37,7 +37,7 @@ Function goes_config_template
 
   Return, ppp
 End
-Function goes_read_config, header = hhh
+Function goes_read_config_old, header = hhh
   otp = -1
 ;First step is to get the filename
   dir = goes_config_filedir(/app_query)
@@ -57,10 +57,8 @@ Function goes_read_config, header = hhh
                             strtrim(strfx.field1[1], 2), $
                             strtrim(strfx.field2[1], 2))
         For j = 2, n_elements(strfx.field1)-1 Do $
-          if is_numeric(strfx.field2[j]) then begin 
-            str_element, otp, strtrim(strfx.field1[j], 2), $
-            fix(strfx.field2[j]), /add
-          endif else str_element, otp, strtrim(strfx.field1[j], 2), strtrim(strfx.field2[j], 2), /add
+          str_element, otp, strtrim(strfx.field1[j], 2), $
+          fix(strfx.field2[j]), /add
       Endif
     Endif
   Endif; Else message, /info, 'NO APP_USER_DIR'

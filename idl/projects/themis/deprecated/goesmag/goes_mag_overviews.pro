@@ -19,10 +19,10 @@
 ;  1. Deletes all tplot variables stored in memory.
 ;  2. Probably crashes if you try to run on Z-device
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2010-10-27 14:12:39 -0700 (Wed, 27 Oct 2010) $
-; $LastChangedRevision: 7887 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goesmag/goes_mag_overviews.pro $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14467 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/goesmag/goes_mag_overviews.pro $
 
 ;-
 

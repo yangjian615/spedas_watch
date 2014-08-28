@@ -15,9 +15,9 @@
 ;         
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-12-04 09:58:24 -0800 (Wed, 04 Dec 2013) $
-; $LastChangedRevision: 13627 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/goes/goesstruct_to_cdfstruct.pro $
+; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14467 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goesstruct_to_cdfstruct.pro $
 ;-
 function GOESstruct_to_cdfstruct, netCDFi
     compile_opt idl2

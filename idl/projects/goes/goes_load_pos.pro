@@ -22,8 +22,8 @@
 ;     Requires the SSC web services IDL library
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-09-27 13:44:01 -0700 (Fri, 27 Sep 2013) $
-; $LastChangedRevision: 13163 $
+; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14467 $
 ; $URL $
 ;-
 function goes_load_pos, trange = trange, probe = probe, coord_sys = coord_sys

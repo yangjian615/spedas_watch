@@ -1,4 +1,4 @@
-;+  print
+;+ 
 ;Procedure: THM_LOAD_SCM
 ;
 ;Purpose:  Loads THEMIS SCM data
@@ -109,9 +109,9 @@
 ;                    called from the command line. Re-tabbed, to find
 ;                    an 'End of file encountered...' bug.
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-01-15 11:08:25 -0800 (Wed, 15 Jan 2014) $
-; $LastChangedRevision: 13904 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2014-02-28 11:29:17 -0800 (Fri, 28 Feb 2014) $
+; $LastChangedRevision: 14466 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_scm.pro $
 ;-
 pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
