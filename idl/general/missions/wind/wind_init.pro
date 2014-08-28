@@ -6,9 +6,9 @@
 ;HISTORY
 ; Written by Davin Larson
 ;
-;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-02-06 01:14:57 -0800 (Thu, 06 Feb 2014) $
-;$LastChangedRevision: 14170 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-07-09 12:05:25 -0700 (Wed, 09 Jul 2014) $
+;$LastChangedRevision: 15536 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wind_init.pro $
 ;-
 pro wind_init, reset=reset  ;, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
@@ -38,7 +38,7 @@ Endif else begin; use defaults
     endif else begin
       print,'No WIND config found...creating default configuration'
     endelse
-    !wind.local_data_dir = root_data_dir()
+    !wind.local_data_dir = spd_default_local_data_dir() + 'wind' + path_sep()
     !wind.remote_data_dir = 'http://sprg.ssl.berkeley.edu/data/
 endelse
 if file_test(!wind.local_data_dir+'wind/.master') then begin  ; Local directory IS the master directory

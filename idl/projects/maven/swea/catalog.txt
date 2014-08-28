@@ -1,0 +1,580 @@
+; 13 March 2013 (Wed) - LM testing -------------------------
+;
+date = '20130313/'
+fname = 'apid_' + ['a0','a2','a4'] + '_decompressed.dat'
+fname = ['apid_28_all.dat',fname,'common_block.dat']
+
+; 20 March 2013 (Wed) - LM self-test -----------------------
+;
+date = '20130320/Side_A/'
+fname = 'apid_' + ['a0','a2','a4'] + '_decompressed.dat'
+fname = ['apid_28_all.dat',fname,'common_block.dat']
+
+date = '20130320/Side_B/'
+fname = 'apid_' + ['a0','a2','a4'] + '_decompressed.dat'
+fname = ['apid_28_all.dat',fname,'common_block.dat']
+
+date = '20130320/'
+fname = 'apid_' + ['a0','a2','a4'] + '_decompressed.dat'
+fname = ['apid_28_all.dat',fname,'common_block.dat']
+
+; 21 March 2013 (Thu) - Test of SWEA boom deploy script on EM
+date = '20130321_EM/'
+fname = 'engNsciPkts_20130321_211317_APP_Test.dat'
+
+; 21 March 2013 (Thu) - Test of PAD MAG angles on EM --------
+date = '20130321_EM/'
+fname = 'commonBlock_20130321_225242_SWIA\ 3.3\ Test.dat'
+fname = 'mag_swea.tplot'
+
+; 27 March 2013 (Wed) - SWEA Boom deploy --------------------
+date = '20130327/'
+fname = 'apid_' + ['a0','a2','a4'] + '_decompressed.dat'
+fname = ['apid_28_all.dat',fname,'common_block.dat']
+fname = [fname, '20130327_171153_atlo_l0.dat']
+fname = [fname, 'mvn_ATLO_pfp_all_l0_20130327_v1.dat']
+
+; 28 March 2013 (Thu) - Self-test ---------------------------
+date = '20130328/'
+fname = 'apid_' + ['a0','a2','a4'] + '_decompressed.dat'
+fname = ['apid_28_all.dat',fname,'common_block.dat']
+fname = [fname, '20130328_143211_atlo_l0.dat']
+; fname = [fname, 'mvn_ATLO_pfp_all_l0_20130327_v1.dat']
+
+; 03 April 2013 (Wed) - Timing test with FSW fixes - EM -----
+date = '20130403/'
+fname = 'commonBlock_20130403_220155_V33fTimingTest4.dat'
+
+; 05 April 2013 (Fri) - Self Test FM ------------------------
+date = '20130405/'
+fname = 'commonBlock_20130405_135643_Self_Test_5Apr13.dat'  ; common block
+fname = '20130405_143448_atlo_l0.dat' ; side A
+fname = '20130405_190707_atlo_l0.dat' ; side B
+fname = '20130405_194207_atlo_l0.dat' ; SWEA EEPROM load
+
+; 05 April 2013 (Fri) - HVPS-EM stability testing -----------
+date = '20130405_EM/'
+fname = 'misg_inst_msg.dat' ; sawtooth
+fname = 'SWEMSG_20130406_001446.dat' ; fast (hash) instability
+fname = 'SWEMSG_20130406_014257.dat' ; same with fhsk on MCPHV
+
+; 09 April 2013 (Tue) - MAG test ----------------------------
+; housekeeping only for SWEA
+date = '20130409/'
+fname = '20130409_163525_atlo_l0.dat' ; 
+
+; 11 April 2013 (Thu) - Transition SVT ----------------------
+; includes PFP turnon and checkout, with SWEA boom deploy
+date = '20130411/'
+fname = '20130411_125643_atlo_l0.dat'         ; realtime L0
+fname = 'mvn_ATLO_pfp_all_l0_20130411_v1.dat' ; playback L0
+
+; 17 April 2013 (Wed) - A0 test on the EM -------------------
+date = '20130417_EM/20130417_181122_SWEA_A0_test/'
+fname = 'engNsciPkts_20130417_181122_SWEA_A0_test.dat'
+
+date = '20130417_EM/2013417_191943_SWEA_A0_test_allon/'
+fname = 'engNsciPkts_20130417_191943_SWEA_A0_test_allon.dat'
+
+date = '20130417_EM/'
+fname = 'cmnblk_20130419_173116.dat'
+
+; 19 April 2013 (Fri) - EMC/EMI testing
+; instruments in noisy modes
+
+date = '20130419/'
+fname = 'common_block.dat'
+
+; 22 April 2013 (Mon) - HV script test
+;
+date = '20130422_EM/'
+date = '20130422_234544_cmnToSplit/'
+fname = 'common_block.dat'
+
+; 23 April 2013 (Tue) - EMC/EMI
+; radiated emissions
+date = '20130423/'
+fname = '20130423_153321_atlo_l0.dat'
+
+; 25 April 2013 (Thu) - EMC/EMI - radiated susceptibility
+; real-time L0 (many errors)
+path = '/home/mitchell/mavdata/dpu/prelaunch/ATLO/'
+date = ''
+fname = '20130425_154942_atlo_l0.dat'
+
+; common block (cleaned up)
+path = '/home/mitchell/mavdata/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130425_154935/initial/'
+fname = 'common_block.dat'
+
+; 30 April 2013 (Tue) - EMC/EMI
+;
+; real-time L0
+path = '/home/mitchell/mavdata/dpu/prelaunch/ATLO/'
+date = ''
+fname = '20130430_152425_atlo_l0.dat'
+
+; common block
+path = '/home/mitchell/mavdata/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130430_152415/initial/'
+fname = 'common_block.dat'
+
+; 01 May 2013 (Wed) - EMC/EMI
+;
+; real-time L0
+path = '/home/mitchell/mavdata/dpu/prelaunch/ATLO/'
+date = ''
+fname = '20130501_152140_atlo_l0.dat'
+
+; common block
+path = '/home/mitchell/mavdata/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130501_152131/initial/'
+fname = 'common_block.dat'
+
+; 02 May 2013 (Thu) - EMC/EMI
+;
+; real-time L0
+path = '/home/mitchell/mavdata/dpu/prelaunch/ATLO/'
+date = ''
+fname = '20130502_151553_atlo_l0'
+
+; common block
+path = '/home/mitchell/mavdata/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130502_151543/initial/'
+fname = 'common_block.dat'
+
+; 03 May 2013 (Fri) - Test of PAD data (A2) on EM with MAG rotations
+; no preamp board - Anode bins 0, 4, and 12 are connected directly to
+; the internal test pulser with no HC4040 (so no division by powers of
+; two).  Anode 14 is connected to an external test pulser that generates
+; a constant tone.
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130503_235236_cmnToSplit/'
+fname = 'common_block.dat'
+
+; 08 May 2013 (Wed) - EMC/EMI
+;
+; real-time L0
+path = '/home/mitchell/mavdata/dpu/prelaunch/ATLO/'
+date = ''
+fname = '20130508_174738_atlo_l0.dat'
+
+; replay L0
+path = '/disks/data/maven/data/sci/pfp/ATLO/'
+date = ''
+fname = 'mvn_ATLO_pfp_all_l0_20130508_v1.dat'
+
+; common block
+path = '/home/mitchell/mavdata/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130508_174725/initial/'
+fname = 'common_block.dat'
+
+; 11 May 2013 (Sat) - FlatSat test with A0 at full bore
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130511_004257_cmnToSplit/'
+fname = 'common_block.dat'
+
+; 20 May 2013 (Mon) - Self-test
+;
+; common block
+path = '/home/mitchell/mavdata/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130520_145437/initial/'
+fname = 'common_block.dat'
+
+; 21 May 2013 (Tue) - Monitor (all instruments on, 1-sec HSK)
+;
+; common block
+path = '/home/mitchell/mavdata/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130521_153810/initial/'
+fname = 'common_block.dat'
+
+; 22 May 2013 (Wed) - ?
+;
+; common block
+path = '/home/mitchell/mavdata/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130522_005723/initial/'
+fname = 'common_block.dat'
+
+; 23 May 2013 (Thu) - Self test and TVAC Dry run
+;
+; common block
+path = '/home/mitchell/mavdata/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130523_162338/initial/'
+fname = 'common_block.dat'
+
+; ATLO L0
+path = '/disks/data/maven/data/sci/pfp/ATLO/'
+date = ''
+fname = 'mvn_ATLO_pfp_all_l0_20130523_v2.dat'
+
+; 24 May 2013 (Fri) - Self test and TVAC Dry run (replay)
+;
+; common block
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130524_224251/initial/'
+fname = 'common_block.dat'
+
+; 24 May 2013 (Fri) - Timing test on EM
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130524_222915_cmnToSplit/'
+fname = 'common_block.dat'
+
+tmark = ['01:11:53','01:27:00','01:27:33','01:28:06','01:28:39','01:29:12',$
+         '01:29:45','01:39:55','01:40:30','01:50:40','01:51:16','01:51:53',$
+         '01:52:31','02:02:31','02:03:06']
+tmark = time_double('2013-05-25/' + tmark + '.743')
+
+timebar,tmark,/line,color=4
+timebar,tmark+4D,/line,color=6
+
+; 29 May 2013 (Thu) - Spacecraft TVAC
+;
+; common block
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130529_194036/initial/'
+fname = 'common_block.dat'
+
+; 30 May 2013 (Thu) - Test of PAD data (A2) on EM with MAG rotations
+; no preamp board - Anode bins 0, 4, and 12 are connected directly to
+; the internal test pulser with no HC4040 (so no division by powers of
+; two).  Anode 14 is connected to an external test pulser that generates
+;
+;
+; common block with split MAG1 APID 40
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130530_005318_cmnToSplit/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; 11 June 2013 (Tue) - Spacecraft TVAC self test
+;
+; common block
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130608_013831/initial/'
+fname = 'common_block.dat'
+
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130611_183509/initial/'
+fname = 'common_block.dat'
+
+; 17 June 2013 (Mon) - Spacecraft TVAC self test
+;
+; L0
+path = '/disks/data/maven/data/sci/pfp/ATLO/'
+date = ''
+fname = 'mvn_ATLO_pfp_all_l0_20130617_v1.dat'
+
+; 20 June 2013 (Thu) - Science SVT
+;
+; L0
+path = '/disks/data/maven/data/sci/pfp/ATLO/'
+date = ''
+fname = 'mvn_ATLO_pfp_all_l0_20130620_v1.dat'
+
+; Reprocesses L0 file from above SVT
+;mvn_pfp_arc_l0_20150803_v2.dat
+; L0
+path = '/disks/data/maven/data/sci/pfp/l0/'
+date = ''
+fname = 'mvn_pfp_arc_l0_20150803_v2.dat'
+
+path = '/disks/data/maven/data/sci/pfp/l0/'
+date = ''
+fname = 'mvn_pfp_svy_l0_20150803_v2.dat'
+
+; 28 June 2013 (Fri) - Test of MAG rotation matrix.  SWEA collects
+; data while MAG1 is taken out of shield can and rotated by hand.
+;
+; common block with split MAG1 APID 40
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130628_204539_cmnToSplit/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; 01 July 2013 (Mon) - Test of SWEA HV RTS (EEPROM)
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130701_210853_cmnToSplit/'
+fname = 'common_block.dat'
+
+; 03 July 2013 (Wed) - Test of SWEA HV RTS - Take 2 (EEPROM)
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130703_174948_cmnToSplit/'
+fname = 'common_block.dat'
+
+; 04 July 2013 (Thu) - Day in the Life Test
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130704_160649_cmnToSplit/'
+fname = 'common_block.dat'
+
+; 05 July 2013 (Fri) - Timing Test - all but A5 good
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130705_180140_cmnToSplit/'
+fname = 'common_block.dat'
+
+tmark = ['18:19:48','18:20:21','18:20:54','18:21:27','18:22:00',$
+         '18:22:35','18:32:44','18:33:18','18:43:41','18:44:34',$
+         '18:45:40','18:46:50','18:56:50','18:57:25']
+tmark = time_double('2013-07-05/' + tmark + '.813')
+
+timebar,tmark,/line,color=4
+timebar,tmark+4D,/line,color=6
+
+
+; 10 July 2013 (Wed) - Timing Test with A5 fixed
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130710_191442_cmnToSplit/'
+fname = 'common_block.dat'
+
+tmark = ['19:12:01','19:12:34','19:13:07','19:13:40','19:14:13',$
+         '19:29:37','19:30:10','19:30:43','19:31:16','19:31:49',$
+         '19:32:22','19:42:32','19:43:07','19:53:17','19:54:22',$
+         '19:55:28','19:56:38','20:06:39','20:07:14']
+tmark = time_double('2013-07-10/' + tmark + '.361')
+
+timebar,tmark,line=2,color=4,thick=3
+timebar,tmark+4D,line=2,color=6,thick=3
+
+; 18 July 2013 (Thu) - Self Test
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130718_010655_cmnToSplit/'
+fname = 'common_block.dat'
+
+; 18 July 2013 (Thu) - Day in the Life
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130718_214726_cmnToSplit/'
+fname = 'common_block.dat'
+
+; 25 July 2013 (Thu) - Self Test (SWEA FM in 125)
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130725_202239_cmnToSplit/'
+fname = 'common_block.dat'
+
+; 31 July 2013 (Wed) - SWEA PAD Test (FM in 125)
+; Take 1               EM MAG1
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130731_201540_cmnToSplit/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; 31 July 2013 (Wed) - SWEA PAD Test (FM in 125)
+; Take 2               EM MAG1
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130731_232610_cmnToSplit/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; 31 July 2013 (Wed) - SWEA PAD Test (FM in 125)
+; Take 3               EM MAG1
+;
+; common block
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20130801_000126_cmnToSplit/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; 22 Aug 2013 - Self test
+;
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130823_171751/initial/'
+fname = 'common_block.dat'
+mname = 'apid_40_all.dat'
+
+; 03 Sep 2013 (Mon) - Transition SVT
+;
+; realtime
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130903_215755/initial/'
+fname = 'common_block.dat'
+mname = 'apid_40_all.dat'
+
+; reprocessed
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130905_153621/initial/'
+fname = 'common_block.dat'
+mname = 'apid_40_all.dat'
+
+; L0
+path = '/disks/data/maven/data/sci/pfp/ATLO/'
+date = ''
+fname = 'mvn_ATLO_pfp_all_l0_20130904_v1.dat'
+
+; SWEA boom deploy
+; common block
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130916_153023/initial/'
+fname = 'common_block.dat'
+mname = 'apid_40_all.dat'
+
+; L0
+path = '/disks/data/maven/data/sci/pfp/ATLO/'
+date = ''
+fname = 'mvn_ATLO_pfp_all_l0_20130916_v1.dat'
+
+; KSC SVT - 18 Sep 2013
+; common block
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20130918_004053/initial/'
+fname = 'common_block.dat'
+mname = 'apid_40_all.dat'
+
+; L0
+path = '/disks/data/maven/data/sci/pfp/ATLO/'
+date = ''
+fname = 'mvn_ATLO_pfp_all_l0_20130918_v1.dat'
+
+; KSC SVT - 01 Oct 2013
+; common block
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20131001_140443/initial/'
+fname = 'common_block.dat'
+mname = 'apid_40_all.dat'
+
+; KSC - 12 Oct 2013
+; L0
+path = '/disks/data/maven/data/sci/pfp/ATLO/'
+date = ''
+fname = 'mvn_ATLO_pfp_all_l0_20131012_v1.dat'
+
+
+; KSC self check - 14 Oct 2013
+; common block
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20131014_143802/initial/'
+fname = 'common_block.dat'
+mname = 'apid_40_all.dat'
+
+; L0 data
+path = '/disks/data/maven/data/sci/pfp/ATLO/'
+date = ''
+fname = 'mvn_ATLO_pfp_all_l0_20131014_v1.dat'
+
+; KSC testing - 17 Oct 2013
+; common block
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20131017_154514/initial/'
+fname = 'common_block.dat'
+mname = 'apid_40_all.dat'
+
+; FlatSat test of new RTS's - 6 Nov 2013
+;
+; common block
+;
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20131106_015417_cmnToSplit/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; FlatSat DIL for new RTS's - 6 Nov 2013
+;
+; common block
+;
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20131106_195401_cmnToSplit/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; FlatSat DIL for new RTS's - 8 Nov 2013
+;
+; common block
+;
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20131108_003825_cmnToSplit/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; On-pad Functional - 9 Nov 2013 - Side A
+;
+; common block
+;
+path = '/disks/data/maven/dpu/prelaunch/live/flight/'
+date = 'Split_At_20131109_010021/initial/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; Flatsat Test of turn-on RTS
+;
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20131202_214112_cmnToSplit/'
+fname = 'common_block.dat'
+mname = 'APID_40.dat'
+
+; Early cruise checkout
+;
+path = '/disks/data/maven/data/sci/pfp/l0/'
+date = ''
+fname = 'mvn_pfp_svy_l0_20131206_v4.dat'
+fname = 'mvn_pfp_svy_l0_20131207_v6.dat'
+mname = 'APID_40.dat'
+
+; EUV Cruciform test (FlatSat)
+;
+path = '/disks/data/maven/ITF/FlatSat/'
+date = '20140131_185928_cmnToSplit/'
+fname = 'commonBlock_20140131_190744_playback.dat'
+
+; Cruise Cruciform
+;
+path = '/disks/data/maven/data/sci/pfp/l0/'
+date = ''
+fname = 'mvn_pfp_all_l0_20140320_v003.dat'
+mvn_swe_load_l0,path+date+fname,badpkt=badpkt
+
+; Interesting Day (interplanetary shock)
+;
+path = '/disks/data/maven/data/sci/pfp/l0/'
+date = ''
+fname = 'mvn_pfp_all_l0_20140326_v001.dat'
+mvn_swe_load_l0,path+date+fname,badpkt=badpkt
+
+; Stowed SWEA boom MAG rotation matrix loaded
+;
+path = '/disks/data/maven/data/sci/pfp/l0/'
+date = ''
+fname = 'mvn_pfp_all_l0_20140402_v001.dat'
+mvn_swe_load_l0,path+date+fname,badpkt=badpkt
+
+; V0 Calibration (4 Apr 2014 - Fri)
+;
+path = '/disks/data/maven/data/sci/pfp/l0/'
+date = ''
+fname = 'mvn_pfp_all_l0_20140404_v002.dat'
+mvn_swe_load_l0,path+date+fname,badpkt=badpkt,/reset
+
+; Latest data (14 Apr 2014)
+;
+path = '/disks/data/maven/data/sci/pfp/l0/'
+date = ''
+fname = 'mvn_pfp_all_l0_20140414_v001.dat'
+mvn_swe_load_l0,path+date+fname,badpkt=badpkt,/reset
+
+; MAG roll real time
+;
+path = '/disks/data/maven/ITF/CruisePhase_SOCRealtime_LevelZero/'
+date = ''
+fname = '20140415_202845_cruise_l0.dat'
+mvn_swe_load_l0,path+date+fname,badpkt=badpkt,/reset,/nodupe
+

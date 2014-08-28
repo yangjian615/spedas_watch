@@ -1,8 +1,8 @@
 ;$author: $ 
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
+;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
 ;$Header: /home/cdaweb/dev/control/RCS/plot_enaflux5.pro,v 1.13 2006/04/05 14:47:06 klipsch Exp $
 ;$Locker:  $
-;$Revision: 8 $;
+;$Revision: 15545 $;
 ;
 ;------------------------------------------------------------------------- 
 ; NAME: plot_enaflux 
@@ -736,7 +736,8 @@ s = plot_enaflux3(etime,image,spin_angle,polar_angle,np,sc_pos_sm,$
 return,s
 end
 
-
+pro plot_enaflux5
+end
 
 
 

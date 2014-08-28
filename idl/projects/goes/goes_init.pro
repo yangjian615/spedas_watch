@@ -8,18 +8,15 @@
 ;            reset: resets configuration data already in place on the machine
 ;            local_data_dir: location to save data files on the local machine
 ;            remote_data_dir: location of the data on the remote machine
-;            use_ssl: use data from SSL servers instead of the default of NGDC
-;            use_spdf: use data from SPDF servers instead of default of NGDC
 ;            no_color_setup: skip setting up the graphics configuration
 ;            
 ;             
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
-;$LastChangedRevision: 14467 $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-07-16 10:29:42 -0700 (Wed, 16 Jul 2014) $
+;$LastChangedRevision: 15581 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_init.pro $
 ;-
-pro goes_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-               use_ssl = use_ssl, use_spdf = use_spdf, no_color_setup = no_color_setup
+pro goes_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, no_color_setup = no_color_setup
 
 defsysv,'!goes',exists=exists
 if not keyword_set(exists) then begin
@@ -46,17 +43,10 @@ Endif else begin; use defaults
     endif else begin
       print,'No GOES config found...creating default configuration'
     endelse
-    !goes.local_data_dir  = root_data_dir() + 'goes/'
-    if keyword_set(use_ssl) then begin
-        !goes.remote_data_dir = 'http://themis.ssl.berkeley.edu/data/goes/'
-    endif else if keyword_set(use_spdf) then begin
-        !goes.remote_data_dir = 'http://spdf.gsfc.nasa.gov/pub/data/'
-    endif else begin
-        !goes.remote_data_dir = 'http://satdat.ngdc.noaa.gov/sem/goes/data/'
-    endelse
+    !goes.local_data_dir  = spd_default_local_data_dir() + 'goes' + path_sep()
+    !goes.remote_data_dir = 'http://satdat.ngdc.noaa.gov/sem/goes/data/'
 endelse
 !goes.min_age_limit = 900    ; Don't check for new files if local file is less than 900 seconds old.
-!goes.use_wget= getenv('username') eq 'davin'
 
 ;if keyword_set(local_data_dir) then  $
 ;   !istp.local_data_dir = local_data_dir
@@ -71,10 +61,6 @@ if not keyword_set(no_color_setup) then begin
   thm_graphics_config,colortable=colortable
   
 endif ; no_color_setup
-
-; To change default settings; create a new procedure:  istp_config.pro
-;libs,'istp_config',routine=name
-;if keyword_set(name) then call_procedure,name
 
 !goes.init = 1
 

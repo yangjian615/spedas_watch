@@ -1,8 +1,8 @@
-;$Author: kenb-mac $
-;$Date: 2007-01-24 14:23:38 -0800 (Wed, 24 Jan 2007) $
+;$Author: nikos $
+;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
 ;$Header: /home/cdaweb/dev/control/RCS/b_lib.pro,v 1.18 1997/09/25 12:53:11 baldwin Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 225 $
+;$Revision: 15545 $
 ;+
 ; NAME: MAKE_TICK.PRO
 ;
@@ -406,3 +406,5 @@ y =  yn(i) + (yn(i+1)-yn(i))*( (x-xn(i))/(xn(i+1)-xn(i)) )
 return,y
 end
 
+pro b_lib
+end

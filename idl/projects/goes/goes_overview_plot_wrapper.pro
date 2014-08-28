@@ -33,9 +33,9 @@
 ;                             server_run = '1', themis_dir ='/disks/themisdata/', goes_dir = '/disks/data/goes/qa/'
 ;
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
-;$LastChangedRevision: 14467 $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-07-16 10:29:42 -0700 (Wed, 16 Jul 2014) $
+;$LastChangedRevision: 15581 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_overview_plot_wrapper.pro $
 ;----------
 
@@ -124,7 +124,7 @@ pro goes_overview_plot_wrapper, date_start = date_start, date_end = date_end, $
   ; so that files will not have to be downloaded every time
   device = 'z'
   thm_init, /reset
-  goes_init, /reset, use_ssl = use_ssl
+  goes_init, /reset
   if keyword_set(server_run) then begin
     if FILE_TEST(themis_dir, /DIRECTORY) then !themis.local_data_dir = themis_dir
     if FILE_TEST(goes_dir, /DIRECTORY) then !goes.local_data_dir = goes_dir

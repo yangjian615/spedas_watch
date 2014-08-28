@@ -20,21 +20,18 @@
 ;             /no_time_clip: Don't clip the tplot variables
 ;             /get_support_data: keep the support data
 ;             /noephem:     Don't keep the ephemeris data
-;             /use_ssl:     Download data from the SSL servers at: http://themis.ssl.berkeley.edu/data/goes/
-;                           instead of the NGDC servers
 ; 
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-05-14 09:24:28 -0700 (Wed, 14 May 2014) $
-; $LastChangedRevision: 15132 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-07-16 10:29:42 -0700 (Wed, 16 Jul 2014) $
+; $LastChangedRevision: 15581 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_load_data.pro $
 ;-
 pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffix = suffix, $
       downloadonly = downloadonly, avg_1m = avg_1m, avg_5m = avg_5m, no_time_clip = no_time_clip, $
-      tplotnames = tplotnames, varformat = varformat, get_support_data = get_support_data, noephem = noephem, $
-      use_ssl = use_ssl 
+      tplotnames = tplotnames, varformat = varformat, get_support_data = get_support_data, noephem = noephem
     compile_opt idl2
     
-    goes_init, use_ssl = use_ssl
+    goes_init
     if undefined(suffix) then suffix = ''
     
     ; handle possible server errors

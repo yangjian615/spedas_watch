@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
+;$Author: nikos $
+;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
 ;$Header: /home/rumba/cdaweb/dev/control/RCS/virtual_funcs.pro,v 1.0 
 ;$Locker: kovalick $
-;$Revision: 7092 $
+;$Revision: 15545 $
 ;+
 ;
 ; NAME: Function VTYPE_NAMES
@@ -2962,7 +2962,8 @@ return, buf
 
 end
 
-
+pro virtual_funcs
+end
 
 
 

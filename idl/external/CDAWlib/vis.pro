@@ -1,8 +1,8 @@
-;$Author: kenb $
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
+;$Author: nikos $
+;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
 ;$Header: /home/rumba/cdaweb/dev/control/RCS/vis.pro,v 1.3 1998/05/20 15:22:55 kovalick Exp baldwin $
 ;$Locker: baldwin $
-;$Revision: 8 $
+;$Revision: 15545 $
 ;----------------------------------------------------------
 ;This code was picked up from the polar vis web site mentioned 
 ;in their polar vis CDFs. http://eiger.physics.uiowa.edu/~vis/software/.
@@ -155,5 +155,6 @@ PRO COMPUTE_CRDS
     
 END
 
-
+pro vis
+end
 

@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
+;$Author: nikos $
+;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
 ;$Header: /home/cdaweb/dev/control/RCS/combined_subtitle.pro,v 1.15 2007/05/09 19:03:06 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 7092 $
+;$Revision: 15545 $
 ;+------------------------------------------------------------------------
 ; NAME: Combined_SUBTITLE
 ; PURPOSE: Take a prepared string for both the title and pi line  of the subtitle 
@@ -46,9 +46,9 @@ endelse
   pi = ' ' & s='' & b = tagindex('PROJECT',tag_names(a))
   if (b(0) ne -1) then begin
    if(n_elements(a.PROJECT) eq 1) then begin 
-    pr = break_mystring(a.PROJECT,delimiter='>')
+    pr = break_mystring(a.PROJECT, ">") 
    endif else begin
-    pr = break_mystring(a.PROJECT(0),delimiter='>')
+    pr = break_mystring(a.PROJECT(0),">") 
    endelse
     if (pr(0) eq 'ISTP') then begin
       s = 'Key Parameter and Survey data (labels K0,K1,K2)'

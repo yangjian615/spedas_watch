@@ -34,9 +34,9 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-06-27 13:45:09 -0700 (Fri, 27 Jun 2014) $
-;$LastChangedRevision: 15457 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-07-10 12:51:18 -0700 (Thu, 10 Jul 2014) $
+;$LastChangedRevision: 15548 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -639,8 +639,12 @@ PRO spd_ui_spdfcdawebchooser_event, event
     widget_control, localDirText, get_value=cdfFolder
     sFolder = DIALOG_PICKFILE(PATH=cdfFolder, /DIRECTORY, $
       TITLE="Choose directory for saving CDAWeb CDF files.")
-    localDirText = widget_info(event.top, find_by_uname='LOCALDIR')
-    widget_control, localDirText, set_value=sFolder
+    
+    ; only update the directory if the user didn't cancel the window
+    if sFolder ne '' then begin
+        localDirText = widget_info(event.top, find_by_uname='LOCALDIR')
+        widget_control, localDirText, set_value=sFolder
+    endif 
     
   END
   'SAVECDFFILE': BEGIN
@@ -745,10 +749,9 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
   ;
   dvBase = widget_base(tlb, frame=3, /column)
   datasetSelectionPanel = widget_base(tlb, frame=3, /column)
-  dataSelectionPanel = widget_base(tlb, frame=3, /column)
+  dataSelectionPanel = widget_base(tlb, frame=3, row=3)
   dsContextMenu = widget_base(tlb, /context_menu)
-  dataOperationPanel = widget_base(tlb, frame=3, /column, MAP=0, SCR_YSIZE=1)
-  localSettingsPanel = widget_base(tlb, frame=3, /column)
+  ;dataOperationPanel = widget_base(tlb, frame=3, /column, MAP=0, SCR_YSIZE=1)
   programControlPanel = widget_base(tlb, /row, /align_center,/GRID_LAYOUT)
   
   ;
@@ -811,79 +814,70 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
     
   dsLabel = widget_label(dataSelectionPanel, $
     value='Datasets/Variables')
-  dsTree = widget_tree(dataSelectionPanel, /multiple, $
+  dsTreeBase = widget_base(dataSelectionPanel, row=1)
+  dsTree = widget_tree(dsTreeBase, /multiple, $
     /context_events, event_pro='spdfDatasetTreeEvent', $
-    xsize=600, ysize=200)
+   xsize=650, ysize=200)
    
-  
-  viewNotesButton = widget_button(dsContextMenu, $
-    event_pro='spdfViewNotes', $
-    value="View Notes")
-  viewInventoryButton = widget_button(dsContextMenu, $
-    event_pro='spdfViewInventory', $
-    value="View Inventory")
+;; commented out the follow lines because they don't appear to do anything, egrimes 7/7/2014  
+;  viewNotesButton = widget_button(dsContextMenu, $
+;    event_pro='spdfViewNotes', $
+;    value="View Notes")
+;  viewInventoryButton = widget_button(dsContextMenu, $
+;    event_pro='spdfViewInventory', $
+;    value="View Inventory")
+
+   ;; the purpose of this new base is to split the time selection and CDF directory
+   ;; selection widgets into 2 columns, rather than 2 rows; this is needed so that the
+   ;; buttons on the bottom of the screen are displayed on displays with resolutions ****x800px.
    
-  timeWidget = spd_ui_time_widget(dataSelectionPanel,$
+   new_col_base = widget_base(dataSelectionPanel, col=2)
+  timeWidget = spd_ui_time_widget(new_col_base,$
     statusBar,$
     historyWin,$
     timeRangeObj=timeRangeObj,$
     uvalue='TIME_WIDGET',$
     uname='time_widget', $
     startyear = 1965)
-    
-  timePanel = widget_base(dataSelectionPanel, /row, MAP=0, SCR_YSIZE=1)
-  defaultTimeButton = widget_button(timePanel, $
-    event_pro='spdfDefaultTime', $
-    value="Set Default Time")
+  ; the following is needed to grab SPDF data, for some reason, egrimes 7/10/2014  
+  timePanel = widget_base(new_col_base, /row, MAP=0, SCR_YSIZE=1, scr_xsize=120)
+ ; defaultTimeButton = widget_button(timePanel, $
+ ;   event_pro='spdfDefaultTime', $
+ ;   value="Set Default Time")
   startTime = cw_field(timePanel, title='Start Time')
   
   stopTime = cw_field(timePanel, title='Stop Time')
-  timeFormatLabel = widget_label(timePanel, $
-    value='Format YYYY/MM/DD[ HH:MM:SS]')
+ ; timeFormatLabel = widget_label(timePanel, $
+ ;   value='Format YYYY/MM/DD[ HH:MM:SS]')
     
-  ;
-  ; Data operation panel
-  ;
- 
-  dataOperationLabel = $
-    widget_label(dataOperationPanel, /align_left, $
-    value='Data Operation:')
+  dataVarName = cw_field(timePanel, title='Variable Name', value='spdf_data')
     
-  optionPanel = widget_base(dataOperationPanel, /row)
-  
-  dataVarName = cw_field(optionPanel, title='Variable Name', $
-    value='spdf_data')
-  saveCdfOption = cw_bgroup(optionPanel, $
-    ['Save local CDF files'], $
-    /nonexclusive, /frame, $
-    label_left='File Option', $
-    event_funct='spdfSaveDataButton', $
-    set_value=[defaultSaveCdfOption])
-    
-  localDirPanel = widget_base(localSettingsPanel, /row)
+  right_col_base = widget_base(new_col_base, row=2, /base_align_right)
+  localDirPanel = widget_base(right_col_base, row=2)
   localDirLabel = widget_label(localDirPanel, value = 'Local CDF directory:  ')
-  localDirText = widget_text(localDirPanel, /edit, /all_events, xsize = 35,  $
+  localDirText = widget_text(localDirPanel, /edit, /all_events, xsize = 20,  $
     uval = 'LOCALDIR', uname = 'LOCALDIR', val = localdir )
+
   getresourcepath,rpath
-  localDirButton=WIDGET_BUTTON(localDirPanel, VALUE=rpath + 'folder_horizontal_open.bmp', UValue='PICKDIR', $
+  folderbmp = read_bmp(rpath + 'folder_horizontal_open.bmp', /rgb)
+  spd_ui_match_background, tlb, folderbmp
+
+  localDirButton=WIDGET_BUTTON(localDirPanel, VALUE=folderbmp, UValue='PICKDIR', $
     tooltip='Choose directory for saving CDAWeb CDF files', /BITMAP)
-    
-  localDirLabelEmpty = widget_label(localDirPanel, value = '         ')
+
+  localDirLabelEmpty = widget_label(localDirPanel, value = ' ')
   saveCDFPanel = widget_base(localDirPanel, /row, /NonExclusive)
   prefixLabel = Widget_Button(saveCDFPanel, uname='SAVECDFFILE', uvalue='SAVECDFFILE', value = 'Save local CDF file')
-  
-  
-  prefixPanel = widget_base(localSettingsPanel, /row)
-  prefixLabel = widget_label(prefixPanel, value = 'Prefix for tplot variables:  ')
-  prefixText = widget_text(prefixPanel, /edit, /all_events, xsiz = 35, $
+
+
+  prefixPanel = widget_base(right_col_base, /row)
+  prefixLabel = widget_label(prefixPanel, value = 'Prefix for tplot variables:')
+  prefixText = widget_text(prefixPanel, /edit, /all_events, xsiz = 20, $
     uval = 'PREFIXTEXT', uname = 'PREFIXTEXT', val = '' )
-    
-    
+
   ;
   ; Program control panel
   ;
-  
-
   
   dataButton1 = widget_button(programControlPanel, $
     event_pro='spd_GetCdawebDataRun', $

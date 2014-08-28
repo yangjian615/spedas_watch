@@ -19,10 +19,10 @@
 ; 27-mar-2008, jmm, another comment to test SVN from my PC..
 ; 10-apr-2008, jmm, another test of SVN
 ; 29-apr-2008, jmm, another test of SVN
-;$LastChangedBy: jimmpc $
-;$LastChangedDate: 2009-06-04 17:35:52 -0700 (Thu, 04 Jun 2009) $
-;$LastChangedRevision: 6050 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/yesno_widget_fn.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-07-08 09:29:52 -0700 (Tue, 08 Jul 2014) $
+;$LastChangedRevision: 15528 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/thm_ui/yesno_widget_fn.pro $
 ;
 ;-
 

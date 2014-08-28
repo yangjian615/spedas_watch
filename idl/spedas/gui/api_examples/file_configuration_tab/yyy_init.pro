@@ -3,9 +3,9 @@
 ;PURPOSE:    Initializes system variables for yyy data.  Can be called from idl_startup to set
 ;            custom locations.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-06 09:45:01 -0800 (Thu, 06 Feb 2014) $
-;$LastChangedRevision: 14174 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-07-09 12:06:56 -0700 (Wed, 09 Jul 2014) $
+;$LastChangedRevision: 15537 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/file_configuration_tab/yyy_init.pro $
 ;-
 pro yyy_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, use_spdf = use_spdf, no_color_setup
@@ -37,7 +37,7 @@ Endif else begin; use defaults
     endif else begin
       print,'No yyy config found...creating default configuration'
     endelse
-    !yyy.local_data_dir = root_data_dir()
+    !yyy.local_data_dir = spd_default_local_data_dir()
     !yyy.remote_data_dir = ''
 endelse
 

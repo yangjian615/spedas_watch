@@ -15,9 +15,9 @@
 ;(lphilpott 06/2011) Delayed the handling of spinner events until user clicks OK/APPLY/SET ALL or changes panel. Dialog messages
 ;are issued for invalid entries. This avoids the issue of the text overwriting in spinners as the user types if values aren't valid.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-29 09:13:07 -0700 (Thu, 29 May 2014) $
-;$LastChangedRevision: 15255 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-07-15 15:50:52 -0700 (Tue, 15 Jul 2014) $
+;$LastChangedRevision: 15579 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_panel_options.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -912,7 +912,7 @@ PRO spd_ui_panel_options, gui_id, windowStorage, loadedData, historyWin, $
   bgcolorWindow = WIDGET_DRAW(bgpaletteBase,graphics_level=2,renderer=1, $
     retain=1, XSize=50, YSize=20, units=0, frame=1, /expose_events)
   fpaletteBase = Widget_Base(thicknessBase, /Row)
-  fcolorLabel = Widget_Label(fpaletteBase, Value='Panel Frame Color: ', xsize=labelXSize)
+  fcolorLabel = Widget_Label(fpaletteBase, Value=' Panel Frame Color: ', xsize=labelXSize)
   fpaletteButton = Widget_Button(fpaletteBase, Value=palettebmp, /Bitmap, $
     UValue='FPALETTE',uname='fpalette', Tooltip='Choose panel frame color from palette')
   fspaceLabel = Widget_Label(fpaletteBase, Value=' ')

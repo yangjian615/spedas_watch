@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
+;$Author: nikos $
+;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
 ;$Header: /home/cdaweb/dev/control/RCS/evaluate_varstruct.pro,v 1.54 2007/10/24 14:44:21 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 7092 $
+;$Revision: 15545 $
 ; Purpose: called from plotmaster, given a variable structure it
 ; returns the plotting information: plot type, number of panels,
 ; width, height, beginning and end time and title of the window/gif.
@@ -180,7 +180,7 @@ if (plottable_data eq 0) then return,pstruct
 ; Attempt to determine the plot type based on the display type attribute
 b = tagindex('DISPLAY_TYPE',atags)
 if b(0) ne -1 then begin ; attribute found
-  c = break_mystring(a.(b(0)), delimiter='>')
+  c = break_mystring(a.(b(0)),'>')
 
   case strupcase(strtrim(c(0),2)) of
   'TIME_SERIES': begin
@@ -522,7 +522,7 @@ endif
 ; Determine the title for a window or gif file using this variable
 b = tagindex('SOURCE_NAME',atags)
 if (b(0) ne -1) then begin
-  n = break_mystring(a.SOURCE_NAME,delimiter='>')
+  n = break_mystring(a.SOURCE_NAME,'>')
   mytitle = n(0)
 endif else mytitle = ''
 

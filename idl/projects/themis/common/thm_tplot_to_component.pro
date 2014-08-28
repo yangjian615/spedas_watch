@@ -54,8 +54,8 @@ function thm_tplot_to_component, active_vars, cw, mw
           question_list[0]= string('Active variable '+active_vars(i)+$
                      ' has'+n_components+' components. ')
           question_list[1]='Do you really want to do this?'
-          answer=yesno_widget_fn('Components', list = question_list)
-          if answer eq 0 then return, active_vars        
+          answer = dialog_message(question_list, /question, title='Components')
+          if answer eq 'No' then return, active_vars        
         endif
         dnames=tag_names(dl)
         index=where(dnames eq 'SPEC') 

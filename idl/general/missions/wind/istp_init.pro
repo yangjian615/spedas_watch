@@ -7,9 +7,9 @@
 ;HISTORY
 ; Written by Davin Larson
 ;
-;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-02-02 17:14:30 -0800 (Sun, 02 Feb 2014) $
-;$LastChangedRevision: 14137 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-07-09 12:05:16 -0700 (Wed, 09 Jul 2014) $
+;$LastChangedRevision: 15535 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/istp_init.pro $
 ;-
 pro istp_init, reset=reset  ;, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
@@ -39,7 +39,7 @@ Endif else begin; use defaults
     endif else begin
       print,'No ISTP config found...creating default configuration'
     endelse
-    !istp.local_data_dir  = root_data_dir() + 'istp/'
+    !istp.local_data_dir  = spd_default_local_data_dir() + 'istp' + path_sep()
     ;URL is deprecated
     ;!istp.remote_data_dir = 'http://cdaweb.gsfc.nasa.gov/istp_public/data/'
     ;New url 2012/10 pcruce@igpp

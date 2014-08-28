@@ -15,7 +15,11 @@
 ;OUTPUT:
 ; None
 ;
-;HISTORY:
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-07-10 17:29:19 -0700 (Thu, 10 Jul 2014) $
+;$LastChangedRevision: 15554 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file_del.pro $
 ;-
 pro spd_ui_load_data_file_del, state
 
@@ -28,8 +32,6 @@ pro spd_ui_load_data_file_del, state
         /question, /center, title='Load Data: Delete GUI data?')
     
     if result eq 'Yes' then begin
-        ; need to track deletions of data using the callsequence object
-        state.windowStorage->getProperty, callSequence=callSequence
         
         for i=0, n_elements(sel)-1 do begin
           if ~state.loadedData->remove((*sel[i]).groupname) then begin
@@ -38,7 +40,7 @@ pro spd_ui_load_data_file_del, state
             state.historyWin->Update, 'LOAD DATA: ' + msg
             return
           endif else begin
-            callSequence->adddeletecall,(*sel[i]).groupname
+            state.callSequence->adddeletecall,(*sel[i]).groupname
           endelse
         endfor
         msg = 'Selected data deleted.'

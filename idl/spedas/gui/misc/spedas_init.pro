@@ -34,12 +34,12 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
     str_element,tmp_struct,'temp_cdf_dir','',/add
     str_element,tmp_struct,'linux_fix',0,/add
     defsysv,'!spedas',tmp_struct
-    data_dir =  root_data_dir()
+    data_dir =  spd_default_local_data_dir()
     data_dir = StrJoin( StrSplit(data_dir, '\\' , /Regex, /Extract, /Preserve_Null), path_sep())
     data_dir = StrJoin( StrSplit(data_dir, '/', /Regex, /Extract, /Preserve_Null), path_sep())    
     if STRMID(data_dir, 0, 1, /REVERSE_OFFSET) ne path_sep() then data_dir = data_dir + path_sep()
     !spedas.local_data_dir = data_dir
-    !spedas.temp_dir =  data_dir
+    !spedas.temp_dir =  data_dir + 'temp' + path_sep()
     !spedas.temp_cdf_dir =  data_dir + 'cdaweb' + path_sep()
     !spedas.browser_exe = ''
     !spedas.linux_fix = 0

@@ -1,0 +1,765 @@
+;--------------------------------------------------------------------
+; SWEA Crib
+;
+; Additional information for all procedures and functions can be
+; displayed using doc_library.
+;
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2014-06-26 19:06:43 -0700 (Thu, 26 Jun 2014) $
+; $LastChangedRevision: 15452 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crib.txt $
+;--------------------------------------------------------------------
+;
+; Hardware-dependent positions for snapshot windows (optional)
+
+swe_snap_layout
+
+;
+; Load telemetry data by (unix) time range into a common block
+
+trange = ['2014-05-01','2014-05-02']
+mvn_swe_load_l0, trange
+
+;
+; Summary plot for all data in the common block
+;   All keywords are optional.  Use doc_library for details.
+
+mvn_swe_sumplot,apid=['A2','A4'],timing=1,lut=0,sifctl=0,pad_e=280,hsk=['']
+
+;
+; Load MAG data, rotate to SWEA coordinates, and smooth to SWEA PAD 
+; resolution (1-sec averages).  Set keyword DAVIN to use his MAG loader.
+; It is fast, but uses only nominal calibrations and the timing might be 
+; a few seconds off.  Otherwise use the MAG quicklook software provided 
+; by the MAG team.  The current version is quite slow and has a known 
+; timing error.
+
+swe_getmag_ql,trange,both=1,smo=1,/davin
+
+;
+; Determine the time offset between MAG1 and SWEA PAD MAG angles
+
+fit_pad_mag, result=dat
+
+;
+; Snapshots selected by the cursor in the tplot window
+;   Return data by keyword (ddd, pad, spec) at the last place clicked
+
+swe_3d_snap,spec=1,sum=0,center=[180.,0.],ddd=ddd
+swe_pad_snap,units='eflux',sum=0,energy=140,pad=pad,/ddd
+swe_engy_snap,units='crate',spec=spec
+
+;
+; Get 3D or PAD data at a specified time or array of times.
+;   Use keyword ALL to get all 3D/PAD distributions bounded by
+;   the input time array.
+
+ddd = mvn_swe_get3d(time)
+pad = mvn_swe_getpad(time)
+
+; Estimate the spacecraft potential from SWEA energy spectra
+
+mvn_swe_sc_pot, thresh=800., potential=phi, /tplot
+pans = ['swe_a2_*','swe_mag_svy','swe_a4','Potential']
+tplot,pans
+swe_engy_snap,/pot  ; overplot potential on energy spectra
+
+;
+; Display calibration factors for 3D, PAD, or SPEC data products
+; at times selected by the cursor.
+
+swe_cal_snap,/pad
+
+;-----------------------------------------------------------------------
+; Anything below this line is not intended for general use
+;-----------------------------------------------------------------------
+
+; Plot the PAD data with variable PA mapping
+;   (each half of the anode separately)
+
+mvn_swe_convert_units,mvn_swe_pad,'crate'
+eref = 280.
+epad = mvn_swe_pad.energy[*,0]
+de = min(abs(epad[*,0] - eref), k)
+
+pdat1 = transpose(reform(mvn_swe_pad.data[k,0:7]))
+pam1 = transpose(reform(mvn_swe_pad.pa[k,0:7]))*!radeg
+
+pdat2 = transpose(reform(mvn_swe_pad.data[k,8:15]))
+pam2 = transpose(reform(mvn_swe_pad.pa[k,8:15]))*!radeg
+
+; Possibly smooth
+nsmo = 8
+pdat1 = smooth(pdat1,[nsmo,1],/nan)
+pdat2 = smooth(pdat2,[nsmo,1],/nan)
+
+lim = {yrange:[0,180], ystyle:1, ytitle:'Pitch Angle', no_interp:1, spec:1, $
+       zlog:1, yticks:2, yminor:3}
+
+store_data,'PAD1',data={x:mvn_swe_pad.time, y:pdat1, v:pam1},limits=lim
+store_data,'PAD2',data={x:mvn_swe_pad.time, y:pdat2, v:pam2},limits=lim
+
+options,'PAD1','ytitle','Pitch Angle (0-7)'
+options,'PAD2','ytitle','Pitch Angle (8-15)'
+ylim,'PAD2',180,0,0
+
+tplot_options,'charsize',1.4
+tplot, ['PAD2','PAD1','swe_mag_svy','swe_a4']
+
+window,2
+plot,pam1[k,*],pdat1[k,*],psym=10
+for i=0,7 do xyouts,pam1[k,i],pdat1[k,i]*1.05,string(swe_pam.k3d[i,k],format='(i2.2)')
+
+window,3
+plot,pam2[k,*],pdat2[k,*],psym=10
+for i=0,7 do xyouts,pam2[k,i],pdat2[k,i]*1.05,string(swe_pam.k3d[i+8,k],format='(i2.2)')
+
+; ----------------------------------------------------------------------------
+; Testing the mag rotation by comparing MAG1 and MAG2
+
+fullname = path+date+fname
+i = rstrpos(fullname,'/')
+mpath = strmid(fullname,0,i+1)
+mname = strmid(fullname,i+1)
+pkt_type = 'ccsds'
+mvn_mag_ql, datafile=mname, pkt_type=pkt_type, input_path=mpath, $
+           data_output_path='./', plot_save_path='./', /tsmake, $
+            /mag1, /tplot
+
+fullname = path+date+fname
+i = rstrpos(fullname,'/')
+mpath = strmid(fullname,0,i+1)
+mname = strmid(fullname,i+1)
+pkt_type = 'ccsds'
+mvn_mag_ql, datafile=mname, pkt_type=pkt_type, input_path=mpath, $
+           data_output_path='./', plot_save_path='./', /tsmake, $
+            /mag2, /tplot
+
+stow = 1
+get_data,'mvn_ql_mag1',data=mag1
+mag1.y = rotate_mag_to_swe(mag1.y, magu=1, stow=stow)
+store_data,'mag1_swe',data=mag1
+Bmag1 = sqrt(total(mag1.y * mag1.y, 2))
+Bphi1 = atan(mag1.y[*,1], mag1.y[*,0])*!radeg
+indx = where(Bphi1 lt 0., count)
+if (count gt 0L) then Bphi1[indx] = Bphi1[indx] + 360.
+Bthe1 = asin(mag1.y[*,2]/Bmag1)*!radeg
+store_data,'Bmag1',data={x:mag1.x, y:Bmag1}
+store_data,'Bphi1',data={x:mag1.x, y:Bphi1}
+store_data,'Bthe1',data={x:mag1.x, y:Bthe1}
+
+get_data,'mvn_ql_mag2',data=mag2
+mag2.y = rotate_mag_to_swe(mag2.y, magu=2, stow=stow)
+store_data,'mag2_swe',data=mag2
+Bmag2 = sqrt(total(mag2.y * mag2.y, 2))
+Bphi2 = atan(mag2.y[*,1], mag2.y[*,0])*!radeg
+indx = where(Bphi2 lt 0., count)
+if (count gt 0L) then Bphi2[indx] = Bphi2[indx] + 360.
+Bthe2 = asin(mag2.y[*,2]/Bmag2)*!radeg
+store_data,'Bmag2',data={x:mag2.x, y:Bmag2}
+store_data,'Bphi2',data={x:mag2.x, y:Bphi2}
+store_data,'Bthe2',data={x:mag2.x, y:Bthe2}
+
+store_data,'Bmag',data=['Bmag1','Bmag2']
+store_data,'Bphi',data=['Bphi1','Bphi2']
+store_data,'Bthe',data=['Bthe1','Bthe2']
+
+options,'Bmag2','color',6
+options,'Bphi2','color',6
+options,'Bthe2','color',6
+options,'Bphi','psym',3
+ylim,'Bphi',0,360
+options,'Bphi','yticks',4
+options,'Bphi','yminor',3
+ylim,'Bthe',-90,90
+options,'Bthe','yticks',2
+options,'Bthe','yminor',3
+tplot,['Bmag','Bphi','Bthe']
+
+; ----------------------------------------------------------------------------
+; Look at count rate vs. anode number to assess asymmetric MCP scrubbing
+
+dt = 1.95*(6./7.) ; integration time per anode
+adat = mvn_swe_3d.data
+acnts = fltarr(64,16,n_elements(mvn_swe_3d))
+for i=0,15 do acnts[*,i,*] = total(adat[*,(16*indgen(6) + i),*],2,/nan)
+acnts = transpose(total(acnts,1,/nan))/dt
+amean = total(acnts,2) # replicate(1./16.,16)
+
+store_data,'ACnts',data={x:mvn_swe_3d.time, y:acnts/amean, v:indgen(16)}
+options,'ACnts','spec',1
+options,'ACnts','no_interp',1
+zlim,'ACnts',0.6,1.4,0
+tplot,'Acnts',/add
+
+; ----------------------------------------------------------------------------
+; Consistency Checks and Sanity Checks
+
+; Compare 3D and SPEC for consistency
+;
+
+; Get 3D and SPEC taken at the same time
+
+swe_3d_snap, ddd=ddd, units='counts'
+dt = min(abs(mvn_swe_engy.time - ddd.time),j)
+engy = mvn_swe_engy[j]
+mvn_swe_convert_units,engy,'counts'
+
+; Times should be exactly the same, are they?
+print,'3D:   ',time_string(ddd.time,prec=3)
+print,'SPEC: ',time_string(engy.time,prec=3)
+help, ddd.time - engy.time
+
+; Correct for duplicated bins, then total
+spec_3d = total((ddd.data/ddd.dt_arr),2,/nan)
+
+; Don't divide spec by dt_arr because spec_3d is total counts
+spec = engy.data
+
+x = engy.energy
+
+dsf = total(transpose(swe_hsk.dsf),2)/(6.*4096.)
+dt = min(abs(swe_hsk.time - engy.time),k)
+
+window,2,xsize=450,ysize=600
+plot_oo,x,spec/dsf[k],xrange=[3,5000],/xsty,yrange=[1e0,1e6],/ysty,psym=10, $
+        xtitle='Energy (eV)',ytitle='Raw Counts',charsize=1.2
+oplot,x,spec_3d,psym=10,color=red
+
+; Now compare in physical units -- dt_arr is used in the unit conversion,
+; so just take an average of the 96 angle bins in the 3D spectra.
+
+mvn_swe_convert_units,ddd,'eflux'
+mvn_swe_convert_units,engy,'eflux'
+
+spec_3d = total(ddd.data,2,/nan)/96. ; average
+spec = engy.data
+
+window,2,xsize=450,ysize=600
+plot_oo,x,spec,xrange=[3,5000],/xsty,yrange=[1e4,1e10],/ysty,psym=10, $
+        xtitle='Energy (eV)',ytitle='Energy Flux',charsize=1.2
+oplot,x,spec_3d,psym=10,color=red
+
+mvn_swe_convert_units,ddd,'counts'
+mvn_swe_convert_units,engy,'counts'
+
+; Sanity Check 3D arrays
+
+x = findgen(64)
+y = findgen(96)
+
+limits = {no_interp:1, xrange:[0,63], xstyle:1, yrange:[0,95], ystyle:1, $
+          xmargin:[15,15], xtitle:'Energy Bin', ytitle:'Angle Bin', $
+          zlog:1, ztitle:'', xlog:0, ylog:0, charsize:1.2}
+
+z = ddd.dt_arr
+limits.ztitle = 'dt Array'
+limits.zlog = 0
+specplot,x,y,z,limits=limits
+
+z = ddd.energy
+limits.ztitle = 'Energy (eV)'
+limits.zlog = 1
+specplot,x,y,z,limits=limits
+
+z = ddd.denergy
+limits.ztitle = 'dE (eV)'
+limits.zlog = 1
+specplot,x,y,z,limits=limits
+
+z = ddd.gf
+limits.ztitle = 'Geometric Factor'
+limits.zlog = 0
+specplot,x,y,z,limits=limits
+
+z = ddd.eff
+limits.ztitle = 'MCP Efficiency'
+limits.zlog = 0
+specplot,x,y,z,limits=limits
+
+z = ddd.theta
+limits.ztitle = 'Theta (deg)'
+limits.zlog = 0
+specplot,x,y,z,limits=limits
+
+z = ddd.dtheta
+limits.ztitle = 'dTheta (deg)'
+limits.zlog = 0
+specplot,x,y,z,limits=limits
+
+z = ddd.phi
+limits.ztitle = 'Phi (deg)'
+limits.zlog = 0
+specplot,x,y,z,limits=limits
+
+z = ddd.dphi
+limits.ztitle = 'dPhi (deg)'
+limits.zlog = 0
+specplot,x,y,z,limits=limits
+
+x = ddd.energy[*,0]
+z = ddd.dtc
+limits.ztitle = 'Deadtime Correction'
+limits.xlog = 1
+limits.xtitle = 'Energy (eV)'
+limits.xrange = [0,0]
+limits.zlog = 0
+specplot,x,y,z,limits=limits
+
+; compare deadtime correction in 3D and SPEC
+; Note that dtc in SPEC is only an approximation, since the 16 anodes
+; are summed before the deadtime correction can be determined
+
+plot_oi,x,engy.dtc,psym=10,xrange=[3,5000],/xsty,/ynozero, $
+        xtitle='Energy (eV)',ytitle='Deadtime Correction',charsize=1.2
+oplot,x,total(ddd.dtc,2)/96.,color=red,psym=10
+
+; 3D packet mapping
+;
+xb = [8,16,32,48,64]
+x = findgen(80) + 0.5
+y = findgen(16) + 0.5
+z = a0[k+1].data
+z[0:15,*] = z[0:15,*]/2.
+for i=0,15 do z[*,i] = z[*,i]/max(z[*,i],/nan)
+
+limits = {no_interp:1, xmargin:[15,15], xticks:5, xminor:4, xstyle:1, $
+          xrange:[0,80], yrange:[0,16], ystyle:1, yticks:4, yminor:4}
+specplot,x,y,z,limits=limits
+for i=0,4 do oplot,[xb[i],xb[i]],[0,16],line=2
+
+; V0 Calibration
+;
+
+t = mvn_swe_engy.time
+
+V0_cal = {x_off: fltarr(64), y_off: fltarr(64), g_off: fltarr(64), $
+          x_on : fltarr(64), y_on : fltarr(64), g_on : fltarr(64), $
+          y_on1: fltarr(64), g_on1: fltarr(64), ratio: fltarr(64), $
+          model: fltarr(64)}
+
+V0_cal = replicate(V0_cal, 8)
+
+; Calibration based on A4.
+
+i = 7
+
+ctime,tsp,npoints=2
+off1 = where((t gt min(tsp)) and (t lt max(tsp)), noff1)
+
+ctime,tsp,npoints=2
+on = where((t gt min(tsp)) and (t lt max(tsp)), non)
+
+ctime,tsp,npoints=2
+off2 = where((t gt min(tsp)) and (t lt max(tsp)), noff2)
+
+V0_cal[i].x_off = mvn_swe_engy[off1[0]].energy
+V0_cal[i].y_off = (total(mvn_swe_engy[off1].data,2) + total(mvn_swe_engy[off2].data,2))/float(noff1 + noff2)
+V0_cal[i].g_off = mvn_swe_engy[off1[0]].gf
+
+V0_cal[i].x_on = mvn_swe_engy[on[0]].energy
+V0_cal[i].y_on = total(mvn_swe_engy[on].data,2)/float(non)
+V0_cal[i].g_on = mvn_swe_engy[on[0]].gf
+
+; Interpolate since energy sweep is close but not exactly the same when V0 is enabled
+
+lyon = interpol(alog10(V0_cal[i].y_on), alog10(V0_cal[i].x_on), alog10(V0_cal[i].x_off))
+V0_cal[i].y_on1 = 10.^lyon
+
+lgon = interpol(alog10(V0_cal[i].g_on), alog10(V0_cal[i].x_on), alog10(V0_cal[i].x_off))
+V0_cal[i].g_on1 = 10.^lgon
+
+; Calculate ratio of corrected count rate with V0 on and off.  In CRATE units, this
+; should be the ratio of geometric factors.
+
+V0_cal[i].ratio = V0_cal[i].y_on1/V0_cal[i].y_off
+
+V0_cal[i].model = V0_cal[i].g_on1/V0_cal[i].g_off
+
+plot_oo, V0_cal[i].x_off, V0_cal[i].ratio, psym=10, yrange=[0.03,3], /ysty
+oplot, V0_cal[i].x_off, V0_cal[i].model, color=red, thick=2
+
+ratio = total(V0_cal.ratio,2)/8.
+plot_oo, V0_cal[i].x_off, ratio, psym=10, yrange=[0.03,3], /ysty
+oplot, V0_cal[i].x_off, V0_cal[i].model, color=red, thick=2
+
+; Calibration based on A1.
+
+; accumulate spectra
+
+ctime, ton  ; select time ranges when V0 is active
+don = mvn_swe_get3d(ton[0:1],/archive,/all,/sum,units='crate')
+for i=2,(n_elements(ton)-1),2 do don = [don, mvn_swe_get3d(ton[i:i+1],/arc,/all,/sum,units='crate')]
+
+ctime, toff  ; select time ranges when V0 is active
+doff = mvn_swe_get3d(toff[0:1],/archive,/all,/sum,units='crate')
+for i=2,(n_elements(toff)-1),2 do doff = [doff, mvn_swe_get3d(toff[i:i+1],/arc,/all,/sum,units='crate')]
+
+; Sum energy spectra over top half of detector
+
+ilower = indgen(48)
+iupper = ilower + 48
+
+indx = iupper
+
+x_on = don[0].energy[*,0]  ; energy sweep the same for all angle bins and all 3D spectra
+y_on = total(don.data[*,indx],2)/48.  ; energy spectra for upper half of FOV (away from S/C)
+g_on = don[0].gf[*,0]  ; geometric factor the same for all angle bins and all 3D spectra
+
+x_off = doff[0].energy[*,0]  ; energy sweep the same for all angle bins and all 3D spectra
+y_off = total(doff.data[*,indx],2)/48.  ; energy spectra for upper half of FOV (away from S/C)
+g_off = doff[0].gf[*,0]  ; geometric factor the same for all angle bins and all 3D spectra
+
+; Interpolate to correct for small differences in energy sweep
+
+lyon = y_on
+for i=0,7 do lyon[*,i] = interpol(alog10(y_on[*,i]), alog10(x_on), alog10(x_off))
+y_on1 = 10.^lyon  ; V0-on energy spectra sampled at V0-off energies
+
+lgon = interpol(alog10(g_on), alog10(x_on), alog10(x_off))
+g_on1 = 10.^lgon  ; V0-on geometric factor variation sampled at V0-off energies
+
+; Ratio of energy spectra and geometric factors, sum for statistics
+
+xu = x_off
+yu = total(y_on1/y_off,2)/8.
+gu = g_on1/g_off
+
+; Sum energy spectra over bottom half of detector
+
+indx = ilower
+
+x_on = don[0].energy[*,0]  ; energy sweep the same for all angle bins and all 3D spectra
+y_on = total(don.data[*,indx],2)/48.  ; energy spectra for upper half of FOV (away from S/C)
+g_on = don[0].gf[*,0]  ; geometric factor the same for all angle bins and all 3D spectra
+
+x_off = doff[0].energy[*,0]  ; energy sweep the same for all angle bins and all 3D spectra
+y_off = total(doff.data[*,indx],2)/48.  ; energy spectra for upper half of FOV (away from S/C)
+g_off = doff[0].gf[*,0]  ; geometric factor the same for all angle bins and all 3D spectra
+
+; Interpolate to correct for small differences in energy sweep
+
+lyon = y_on
+for i=0,7 do lyon[*,i] = interpol(alog10(y_on[*,i]), alog10(x_on), alog10(x_off))
+y_on1 = 10.^lyon  ; V0-on energy spectra sampled at V0-off energies
+
+lgon = interpol(alog10(g_on), alog10(x_on), alog10(x_off))
+g_on1 = 10.^lgon  ; V0-on geometric factor variation sampled at V0-off energies
+
+; Ratio of energy spectra and geometric factors, sum for statistics
+
+xl = x_off
+yl = total(y_on1/y_off,2)/8.
+gl = g_on1/g_off
+
+; Plot the result
+
+window,2,xsize=600,ysize=600
+plot_oo,xu,gu,yrange=[0.03,2.],/ysty,xtitle='Energy (eV)',$
+        ytitle='CRATE (V0 on) / CRATE (V0 off)',$
+        xrange=[3,1000],/xsty,thick=2,charsize=1.2,$
+        title='V0tweak = {gain:1.04, offset:1.0}'
+oplot,xl,yl,color=blue,psym=10
+oplot,xu,yu,color=red,psym=10
+xyouts,5,1.5,'Upper Deflections',color=red,charsize=1.3
+xyouts,5,1.3,'Lower Deflections',color=blue,charsize=1.3
+xyouts,5,1.1,'Geometric Factor Ratio',charsize=1.3
+
+
+; Packet statistics over long time periods - to check for patterns of
+; dropped packets.
+
+trange = ['2014-05-12','2014-05-20']
+mvn_swe_load_l0, trange
+mvn_swe_sumplot,apid=['A2'],timing=1,lut=0,sifctl=0,pad_e=280,hsk=['']
+
+get_data,'dchsk',data=dchsk
+dchsk_x = dchsk.x
+dchsk_y = dchsk.y
+get_data,'dca0',data=dca0
+dca0_x = dca0.x
+dca0_y = dca0.y
+get_data,'dca2',data=dca2
+dca2_x = dca2.x
+dca2_y = dca2.y
+get_data,'dca4',data=dca4
+dca4_x = dca4.x
+dca4_y = dca4.y
+get_data,'dthsk',data=dthsk
+dthsk_x = dthsk.x
+dthsk_y = dthsk.y
+get_data,'dta0',data=dta0
+dta0_x = dta0.x
+dta0_y = dta0.y
+get_data,'dta2',data=dta2
+dta2_x = dta2.x
+dta2_y = dta2.y
+get_data,'dta4',data=dta4
+dta4_x = dta4.x
+dta4_y = dta4.y
+
+get_data,'dchsk',data=foo
+dchsk_x = [dchsk_x, foo.x]
+dchsk_y = [dchsk_y, foo.y]
+get_data,'dca0',data=foo
+dca0_x = [dca0_x, foo.x]
+dca0_y = [dca0_y, foo.y]
+get_data,'dca2',data=foo
+dca2_x = [dca2_x, foo.x]
+dca2_y = [dca2_y, foo.y]
+get_data,'dca4',data=foo
+dca4_x = [dca4_x, foo.x]
+dca4_y = [dca4_y, foo.y]
+get_data,'dthsk',data=foo
+dthsk_x = [dthsk_x, foo.x]
+dthsk_y = [dthsk_y, foo.y]
+get_data,'dta0',data=foo
+dta0_x = [dta0_x, foo.x]
+dta0_y = [dta0_y, foo.y]
+get_data,'dta2',data=foo
+dta2_x = [dta2_x, foo.x]
+dta2_y = [dta2_y, foo.y]
+get_data,'dta4',data=foo
+dta4_x = [dta4_x, foo.x]
+dta4_y = [dta4_y, foo.y]
+
+store_data,'dchsk',data={x:dchsk_x, y:dchsk_y}
+store_data,'dca0',data={x:dca0_x, y:dca0_y}
+store_data,'dca2',data={x:dca2_x, y:dca2_y}
+store_data,'dca4',data={x:dca4_x, y:dca4_y}
+store_data,'dthsk',data={x:dthsk_x, y:dthsk_y}
+store_data,'dta0',data={x:dta0_x, y:dta0_y}
+store_data,'dta2',data={x:dta2_x, y:dta2_y}
+store_data,'dta4',data={x:dta4_x, y:dta4_y}
+timefit,var='dchsk'
+tplot,['dC','dT']
+
+tplot,['dC','foo28']
+timebar,mon+dt,line=2
+timebar,wed+dt,line=2,color=2
+timebar,fri+dt,line=2,color=6
+
+; MAG STS file - to test for relative SWEA-to-MAG timing
+;
+path = '/Users/mitchell/data/maven/pfp/mag/'
+fname = 'mvn_mag_svy_l0_20140401_v001_ob_cnts_time_seq.sts'
+read_mag_sts, path+fname, ob_b, mag1, /doplot
+swe_mag1 = mag1
+
+path = '/Users/mitchell/data/maven/pfp/mag/'
+fname = 'mvn_mag_svy_l0_20140501_v003_ob_cnts_time_seq.sts'
+read_mag_sts, path+fname, ob_b, mag1, /doplot
+swe_mag1 = mag1
+
+; Investigating PAD MAG elevation glitch:
+; MAG_EL is never 1 or 38 because of arcsin LUT rounding.
+; Jumps to 20 and 0 occur because of a rounding error in FSW.
+; Analysis of FSW indicates that MAG_EL < 20 is biased one
+; bin lower because of the same rounding error.
+;
+trange = ['2014-05-05','2014-05-06'] ; 1-20 and 38-0 modes
+trange = ['2014-05-10','2014-05-11'] ; 1-20 mode
+trange = ['2014-04-16','2014-04-17']
+
+tpclear
+mvn_swe_clear
+mvn_swe_load_l0,trange
+mvn_swe_sumplot,/timing
+
+swe_getmag_ql,trange,both=0,smo=1
+
+store_data,'iBaz',data={x:a2.time, y:a2.baz}
+store_data,'iBel',data={x:a2.time, y:a2.bel}
+ylim,'iBaz',0,256,0
+options,'iBaz','yticks',4
+options,'iBaz','yminor',4
+options,'iBaz','psym',4
+ylim,'iBel',0,40,0
+options,'iBel','psym',4
+timefit,var='iBaz'
+tplot,['iBaz','iBel','Baz','Bel','dT']
+
+get_data,'Sthe',data=foo
+indx = where(a2.Bel ge 7, count)
+if (count gt 0L) then foo.y[indx] = !values.f_nan
+store_data,'Sthe_lo',data=foo
+options,'Sthe_lo','psym',3
+options,'Sthe_lo','color',6
+store_data,'Bel',data=['Bthe1','Sthe','Sthe_lo']
+tplot
+
+; Deflection scale factors for flight
+;
+;   The energy-dependent terms in the moment calculation can be applied
+;   ex post facto.  The angle dependent terms need to be applied onboard.
+;   There are two angle dependent factors: ddd.domega and ddd.dgf
+;
+;   The first term scales as cos(ddd.theta).  The second term depends on 
+;   calibration data.
+
+;------------
+
+; Artifacts
+;   since turn-on, every Saturday at 04:00, lasting 1-4 minutes
+;   also before three s/c maneuvers: EUV cruciform, MAG roll, IUVS cal
+
+tart = '2014-03-22/04:00:08'  ; slight hint, 2 events, 32 sec apart
+tart = '2014-03-29/04:00:20'  ; more pronounced, 4.5 events, 32 sec apart
+tart = '2014-04-02/15:42:37'  ; slightly different signature, 4 events
+                              ; right before EUV cruciform (thruster?)
+tart = '2014-04-05/04:00:33'  ; slight hint, 2 events
+tart = '2014-04-12/04:00:49'  ; 4 events
+tart = '2014-04-16/20:00:04'  ; 5 events, weaker signature, before MAG roll
+tart = '2014-04-19/04:00:24'  ; 2 events, very weak
+tart = '2014-04-26/04:00:11'  ; 7 events, moderate
+tart = '2014-05-03/04:00:18'  ; 7 events, moderate
+tart = '2014-05-10/04:00:12'  ; 7 events, moderate, cross-over at different energy
+tart = '2014-05-17/04:00:10'  ; 7 events, moderate, no cross-over
+tart = '2014-05-21/07:20:32'  ; 4 events, just before IUVS maneuver
+tart = '2014-05-24/04:00:11'  ; 3 events, moderate, no cross-over
+                              ; data gap at expected events on May 31
+tart = '2014-06-07/04:00:09'  ; 7 events, with cross-over
+
+oneweek = 7D*86400D
+tstart = time_double('2014-03-19')
+; mvn_swe_sweep,tab=4,result=foo
+
+trange = [tstart, tstart + oneweek]
+mvn_swe_load_l0,trange
+mvn_swe_sumplot,/png
+tstart = tstart + oneweek
+
+get_data,'swe_a4',data=foo
+n1 = n_elements(a4_x)
+n2 = n_elements(foo.x)
+a4_y_temp = fltarr(n1+n2,64)
+a4_y_temp[0L:(n1-1L),*] = a4_y
+a4_y_temp[n1:*,*] = foo.y
+
+a4_x = [a4_x, foo.x]
+a4_y = a4_y_temp
+help,a4_x,a4_y,a4_v
+
+tstart = tstart + oneweek
+
+store_data,'swe_a4',data={x:a4_x, y:a4_y, v:a4_v}
+
+
+get_data,'LVPST',data=foo
+lvpst_x = [lvpst_x, foo.x]
+lvpst_y = [lvpst_y, foo.y]
+get_data,'DIGT',data=foo
+digt_x = [digt_x, foo.x]
+digt_y = [digt_y, foo.y]
+get_data,'ANALT',data=foo
+analt_x = [analt_x, foo.x]
+analt_y = [analt_y, foo.y]
+
+
+store_data,'LVPST',data={x:lvpst_x, y:lvpst_y}
+store_data,'DIGT',data={x:digt_x, y:digt_y}
+store_data,'ANALT',data={x:analt_x, y:analt_y}
+
+
+get_data,'swe_a4',data=dat
+store_data,'a4sum',data={x:dat.x, y:total(dat.y,2)}
+tplot,'a4sum',/add
+
+swe_engy_snap,spec=spec
+print,time_string(spec.time)
+
+swe_engy_snap,spec=spec0
+swe_engy_snap,spec=spec1
+swe_engy_snap,spec=spec2
+window,1
+plot_oi,spec0.energy,replicate(1.,64),xrange=[3,300],/xsty,xtitle='Energy (eV)', $
+        yrange=[0,2],/ysty,ytitle='Ratio',charsize=1.2,title=time_string(spec0.time)
+oplot,spec0.energy,spec1.data/spec0.data,psym=-4,color=4
+oplot,spec0.energy,spec2.data/spec0.data,psym=-4,color=6
+oplot,foo.E,foo.gfw,line=2
+
+tpclear
+mvn_swe_clear
+tstart = tstart + oneweek
+
+; Kappa function fitting
+;   velocity units = [km/s]
+;   distribution function units = [1/(cm^3-(km/s)^3)]
+
+.r kappa
+p = kappa()
+units = 'eflux'
+p.units = units
+
+c = 2.99792458D5     ; velocity of light [km/s]
+E0 = 5.10998910D5    ; electron rest energy [eV]
+mass = E0/(c*c)      ; electron rest mass [eV/(km/s)^2]
+
+swe_engy_snap,units=units,spec=spec,/pot
+wset,1
+plot_oo,spec.energy,spec.data,xrange=[1,1e3],/xsty,yrange=[1e4,1e8],/ysty,psym=10, $
+        xtitle='Energy (eV)',ytitle='Energy Flux'
+
+; correct for spacecraft potential
+
+mvn_swe_sc_pot, thresh=1200., potential=phi, /tplot
+pans = ['swe_a2_*','swe_mag_svy','swe_a4','Potential']
+tplot,pans
+swe_engy_snap,/pot
+
+; fit for the density
+
+p = kappa()
+units = 'eflux'
+p.units = units
+p.n = 6.4
+p.vh = 1350.
+plot_oo,spec.energy,spec.data,xrange=[1,1e3],/xsty,yrange=[1e4,1e8],/ysty,psym=10, $
+        xtitle='Energy (eV)',ytitle='Energy Flux',charsize=1.2, $
+        title='Phi = 6.7 V    N = 6.4 cm-3'
+oplot,spec.energy,kappa(sqrt(2D*spec.energy/mass),par=p),psym=0,color=red
+oplot,[phi[i],phi[i]],[1e4,1e8],line=2,color=green
+
+dt = min(abs(dat.x - spec.time),i)
+energy = spec.energy - 7.  ; units = eV
+indx = where((energy gt 7.) and (energy lt 100.))
+energy = energy[indx]
+vel = sqrt(2D*energy/mass)                 ; classical (kappa.pro uses classical)
+; vel = c*sqrt(1D - (E0/(energy + E0))^2D) ; relativistic
+eflux = spec.data[indx]
+
+plot_oo,energy,eflux,xrange=[1,1e3],/xsty,yrange=[1e4,1e8],/ysty,psym=10, $
+        xtitle='Energy (eV)',ytitle='Energy Flux'
+oplot,energy,kappa(vel,par=p),psym=-4,color=red
+
+
+fit,vel,eflux,func='kappa',par=p,names='N VH K'
+fy = kappa(vel,par=p)
+
+plot_oo,spec.energy,spec.data,xrange=[1,1e3],/xsty,yrange=[1e4,1e8],/ysty,psym=10, $
+        xtitle='Energy (eV)',ytitle='Energy Flux'
+oplot,spec.energy,kappa(sqrt(2D*spec.energy/mass),par=p),psym=0,color=red
+
+
+
+; Yuki's method for reading MAG data (uses Davin code)
+
+files = mvn_pfp_file_retrieve(trange=trange,/l0)
+
+;- load SPICE kernel
+sk = spice_standard_kernels(/load,/mars)
+mk = mvn_spice_kernels(/all,/load,trange=trange)
+
+;- MAG
+mvn_pfp_l0_file_read,file=files,/mag
+options,'mvn_mag1_svy_BAVG',spice_frame='MAVEN_MAG1', $
+        spice_master_frame='MAVEN_SPACECRAFT'
+; spice_vector_rotate_tplot,'mvn_mag1_svy_BAVG','MAVEN_SSO', $
+;                           trange=trange
+
+;- Braw
+mvn_mag_handler,svy_tags='BRAW' ;- 8 Hz B data
+options,'mvn_mag1_svy_BRAW',spice_frame='MAVEN_MAG1', $
+    spice_master_frame='MAVEN_SPACECRAFT'
+spice_vector_rotate_tplot,'mvn_mag1_svy_BRAW','MAVEN_SSO', $
+                          trange=[time0,time1]

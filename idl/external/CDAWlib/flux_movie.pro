@@ -1,8 +1,8 @@
 ;$author: $ 
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
+;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
 ;$Header: /home/cdaweb/dev/control/RCS/flux_movie.pro,v 1.20 2006/05/08 14:55:51 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 8 $
+;$Revision: 15545 $
 ;+------------------------------------------------------------------------
 ; NAME: FLUX_MOVIE
 ; PURPOSE: To generate mpeg "flux" IMAGE movie files given in the 
@@ -169,7 +169,7 @@ endif
 
 a = tagindex('SOURCE_NAME',tag_names(astruct.(vnum)))
 if (a(0) ne -1) then begin
-  sn = break_mystring(astruct.(vnum).SOURCE_NAME,delimiter='>')
+  sn = break_mystring(astruct.(vnum).SOURCE_NAME,'>')
   b = sn(0)
 endif else b = ''
 a = tagindex('DESCRIPTOR',tag_names(astruct.(vnum)))
@@ -481,10 +481,10 @@ win(0) = xs & win(1) = ys
 for numgif = 0, nimages-1 do begin
   temp_gif = gif + strtrim(string(numgif),2)
 
-  stat = plot_enaflux(edat(numgif),idat(*,*,numgif), spin, polar, $
-	 pos_dat(*,numgif), spin_dat(*,numgif), 1, wsize=win, $
-	 noborder=noborder, nocircles=nocircles, nodipole=nodipole, $
-	 nocolorbar=nocolorbar, smooth=smooth, gif=temp_gif, reverseorder=reverseorder)	
+;  stat = plot_enaflux(edat(numgif),idat(*,*,numgif), spin, polar, $
+;	 pos_dat(*,numgif), spin_dat(*,numgif), 1,win, $
+;	 noborder, nocircles, nodipole, $
+;	 nocolorbar=nocolorbar, smooth=smooth, temp_gif, reverseorder)	
 
 ;TJK added smooth keyword because Rick added it in plot_enaflux 4/24/01
 ;original settings for EUV	 /noborder, /nocircles, /nodipole, /nocolorbar, gif=temp_gif)	

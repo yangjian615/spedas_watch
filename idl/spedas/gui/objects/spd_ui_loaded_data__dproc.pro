@@ -135,9 +135,9 @@ end
 ;                   process.
 ; 10-Feb-2009, jmm, Added hwin, sbar keywords
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-29 16:48:11 -0700 (Thu, 29 May 2014) $
-;$LastChangedRevision: 15263 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-07-10 14:54:38 -0700 (Thu, 10 Jul 2014) $
+;$LastChangedRevision: 15552 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__dproc.pro $
 Function spd_ui_loaded_data::dproc, dp_task, dp_pars,callSequence=callSequence,replay=replay,in_vars=in_vars, names_out = names_out, $
                            no_setactive = no_setactive, hwin = hwin, sbar = sbar, gui_id = gui_id, $
@@ -269,8 +269,8 @@ For j = 0, nav-1 Do Begin
             End
             'spike': Begin
                 clean_spikes, varname, new_name = nn0+dp_pars.suffix[0], display_object=display_object, $
-                              nsmooth = dp_pars.swidth, $
-                              thresh = dp_pars.thresh
+                              nsmooth = dp_pars.swidth[0], $
+                              thresh = dp_pars.thresh[0]
                 nn = tnames(nn0+dp_pars.suffix)
             End
             'smooth': Begin
@@ -375,7 +375,7 @@ For j = 0, nav-1 Do Begin
               endelse
             End
             'clip': Begin
-                tclip, varname, dp_pars.minc, dp_pars.maxc, newname = nn0+dp_pars.suffix[0], display_object=display_object, $
+                tclip, varname, dp_pars.minc[0], dp_pars.maxc[0], newname = nn0+dp_pars.suffix[0], display_object=display_object, $
                        _extra = {clip_adjacent: dp_pars.opts[0], $
                                  flag: (dp_pars.opts[1] ? dp_pars.flag:0b)}
                 nn = tnames(nn0+dp_pars.suffix)

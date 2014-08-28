@@ -15,13 +15,22 @@
 ;    are already screened by dialog_pickfile on windows (cases that cause no problems on linux).
 ;  
 ;  
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-07-10 15:57:22 -0700 (Thu, 10 Jul 2014) $
+;$LastChangedRevision: 15553 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_dialog_pickfile_save_wrapper.pro $
 ;-
 
 function spd_ui_dialog_pickfile_save_wrapper,get_path=newpath,_extra=ex
+  
+  ; this fixes a bug specific to the default_extension and filter keywords in IDL 7.1
+  if is_struct(ex) then begin
+      ; check that both default_extension and filter keywords are set in the ex struct
+      str_element, ex, 'default_extension', success=de_success
+      str_element, ex, 'filter', success=filter_success
+      if filter_success && de_success then $
+          if n_elements(ex.filter) eq 1 then str_element, ex, 'filter', [ex.filter], /add_replace
+  endif 
 
   validfile = 0
   while ~validfile do begin
