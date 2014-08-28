@@ -69,8 +69,11 @@ pro spd_ui_scroll_bar::getProperty, $
     compile_opt idl2
 
   widget_control, self.id, get_value = value
+
   range = self.range
-  xsize = self.xsize
+
+  geo = widget_info(self.id, /geometry)
+  xsize = geo.scr_xsize
 
 
 end ;------------------------------------------
@@ -94,7 +97,7 @@ pro spd_ui_scroll_bar::setProperty, $
   endif
 
   if keyword_set(xsize) then begin
-    widget_control, self.id, xsize=xsize
+    widget_control, self.id, scr_xsize=xsize
   endif
 
 end ;------------------------------------------
@@ -321,7 +324,6 @@ function spd_ui_scroll_bar::init, $
 
   self.parent = parent
   self.range = range
-  self.xsize = xsize
 
   self.id = widget_slider(self.parent, $
                           max = self.range[1], $
@@ -329,7 +331,7 @@ function spd_ui_scroll_bar::init, $
                           scroll = 0.02*(self.range[1]-self.range[0]), $
                           value = value, $
                           uvalue = self, $
-                          xsize = self.xsize, $
+                          xsize = xsize, $
                           event_pro = 'spd_ui_scroll_bar_event', $
                           /suppress_value)
 
@@ -345,7 +347,6 @@ pro spd_ui_scroll_bar__define
   struct = {SPD_UI_SCROLL_BAR, $
     parent: 0,                 $ ;parent's widget ID
     id: 0,                     $ ;slider widget's ID
-    xsize: 0,                  $ ;screen size, in pixels, of the slider
     range: [0,0],              $ ;range of the slider
     windowstorage: ptr_new(),  $ ;pointer to windows object
     loadeddata: ptr_new(),     $ ;pointer to loaded data object

@@ -19,8 +19,8 @@
 ;
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-07-07 10:37:52 -0700 (Mon, 07 Jul 2014) $
-;$LastChangedRevision: 15517 $
+;$LastChangedDate: 2014-07-18 13:52:30 -0700 (Fri, 18 Jul 2014) $
+;$LastChangedRevision: 15585 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_call_plugin.pro $
 ;
 ;-
@@ -43,7 +43,9 @@ pro spd_ui_call_plugin, event, info
         /dialog, /error, /center, title='Plugin not found.'     
       RETURN
     ENDIF
-
+    resolve_routine, plugin.procedure
+    catch, /cancel
+    
   ;-------------------------------------------------------
   ; Call procedure
   ;-------------------------------------------------------

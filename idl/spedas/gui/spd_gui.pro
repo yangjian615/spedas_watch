@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-01 20:07:45 -0700 (Tue, 01 Jul 2014) $
-;$LastChangedRevision: 15500 $
+;$LastChangedDate: 2014-07-21 16:53:34 -0700 (Mon, 21 Jul 2014) $
+;$LastChangedRevision: 15588 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1234,8 +1234,8 @@ PRO spd_gui_event, event
               if event.valid then info.statusbar->update,"Zoom updated."
               if strlowcase(!version.os_family) eq 'windows' then begin
                 ; This solves an issue where top of image disappears when zoom decreases
-                gw = widget_info(info.scrollbar.id,/geometry)
-                widget_control,info.scrollbar.id,scr_xsize= gw.scr_xsize
+                info.scrollbar->getproperty, xsize=sb_xsize
+                info.scrollbar->setproperty, xsize=sb_xsize
               endif
           endelse
         
