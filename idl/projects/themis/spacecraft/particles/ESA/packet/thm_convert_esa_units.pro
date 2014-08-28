@@ -63,7 +63,6 @@ else: begin
         return
       end
 endcase
-
 ; dead time correct data if not counts or rate
 if strupcase(units) ne 'COUNTS' and strupcase(units) ne 'RATE' and strupcase(units) ne 'COMPRESSED' then begin
 	denom = 1.- dead/dt_arr*tmp/dt
@@ -87,7 +86,7 @@ if strupcase(units) eq 'COMPRESSED' then begin
 	ind=where(tmp2 ge 0.,npts)
 	ntmp=n_elements(tmp2)
 	if npts gt 0 then begin
-		for i=0,npts do begin
+		for i=0L,npts-1 do begin
 			minval=min(abs(cc3d-tmp2[ind[i]]),jj)
 			tmp2[ind[i]]=jj
 		endfor

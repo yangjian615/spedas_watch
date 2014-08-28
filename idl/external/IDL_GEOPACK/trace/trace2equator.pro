@@ -1,60 +1,61 @@
 ;+
 ;Procedure: trace2equator
 ;
-;Purpose:  generates a model field line footprint from an array of given
-;positions and times, will also trace field lines at the user's request
-;         This program will always use the refined foot point mappings(a
+;Purpose: Generates a model field line footprint from an array of given
+;         positions and times, will also trace field lines at the user's request
+;         This program will always use the refined foot point mappings (a
 ;         modification made by Vassilis Angelopoulos to provide more accurate
 ;         mappings of foot points) as there is no Tsyganenko code to 
 ;         perform equatorial traces.
 ;
-;Keywords:
+;Input:
 ;         tarray: N length array storing the position times in seconds utc since 1970
 ;
 ;         in_pos_array: Nx3 array representing the position series (in
-;         km gsm by default)
+;             km gsm by default)
 ;
 ;         out_foot_array: named variable in which to store the footprints
-;         calculated by this function(will be an Nx3 array) will be returned
-;         (in RE gsm by default)
+;             calculated by this function(will be an Nx3 array) will be returned
+;             (in RE gsm by default)
 ;
+;Keywords:
 ;         out_trace_array(optional): named variable in which to store the traces of
-;         field lines leading to footprints. Because traces are of variable
-;         length, the returned array will be of dimensions NxDx3
-;         D is the maximum number of vectors in any of the traces.
-;         Shorter traces will have NaNs filling the space at the end
-;         of the array  
+;             field lines leading to footprints. Because traces are of variable
+;             length, the returned array will be of dimensions NxDx3
+;             D is the maximum number of vectors in any of the traces.
+;             Shorter traces will have NaNs filling the space at the end
+;             of the array  
 ;
 ;         in_coord(optional): set this keyword to a string indicating the
-;         coordinate system input position data is in.
-;         (can be 'gei','gse','geo','gsm',or 'sm' default: gsm)
+;             coordinate system input position data is in.
+;             (can be 'gei','gse','geo','gsm',or 'sm' default: gsm)
 ;
 ;         out_coord(optional): set this keyword to a string indicating the
-;         coordinate system output data should be in.
-;         (can be 'gei','gse','geo','gsm',or 'sm' default: gsm)
+;             coordinate system output data should be in.
+;             (can be 'gei','gse','geo','gsm',or 'sm' default: gsm)
 ;
 ;         internal_model(optional): set this keyword to a string
-;         indicating the internal model that should be used in tracing
-;         (can be 'dip' or 'igrf' default:igrf)
+;             indicating the internal model that should be used in tracing
+;             (can be 'dip' or 'igrf' default:igrf)
 ;
 ;         external_model(optional): set this keyword to a string
-;         indicating the external model that should be used in tracing
-;         (can be 'none','t89','t96','t01', or 't04s' default: none)
+;             indicating the external model that should be used in tracing
+;             (can be 'none','t89','t96','t01', or 't04s' default: none)
 ;
-;         /SOUTH(optional): set this keyword to indicate that fields
-;         should be traced towards the southern hemisphere. By default
-;         they trace north.
+;         SOUTH(optional): set this keyword to indicate that fields
+;             should be traced towards the southern hemisphere. By default
+;             they trace north.
 ;         
-;         /KM(optional): set this keyword to indicate that input
-;         and output will be in KM not RE
+;         KM(optional): set this keyword to indicate that input
+;             and output will be in KM not RE
 ; 
 ;         par(optional): parameter input for the external field model
-;         if using t89 then it should be an N element array containing 
-;         kp values or a single kp value, if using t96,t01,t04s it
-;         should be an N x 10 element array of parmod values or a 10
-;         element array or a 1x10 element array. At the moment if an
-;         external model is set and this is not set an error will be
-;         thrown.
+;             if using t89 then it should be an N element array containing 
+;             kp values or a single kp value, if using t96,t01,t04s it
+;             should be an N x 10 element array of parmod values or a 10
+;             element array or a 1x10 element array. At the moment if an
+;             external model is set and this is not set an error will be
+;             thrown.
 ;           
 ;         period(optional): the amount of time between recalculations of
 ;             geodipole tilt and input of new model parameters in
@@ -65,70 +66,75 @@
 ;             iteration
 ;
 ;         error(optional): named variable in which to return the error state
-;         of the procedure.  1 for success, 0 for failure
+;             of the procedure.  1 for success, 0 for failure
 ;         
 ;         R0(optional): Minimum trace distance in RE.
 ;
 ;         RLIM(optional): Maximum trace distance in RE (default 60 RE)
 ;
-;         /NOBOUNDARY(optional): Override boundary limits.
+;         NOBOUNDARY(optional): Override boundary limits.
 ;
-;         /STORM(optional): Specify storm-time version of T01 external 
-;         magnetic field model use together with /T01.
+;         STORM(optional): Specify storm-time version of T01 external 
+;             magnetic field model use together with /T01.
 ;
-;;         add_tilt:  Increment the default dipole tilt used by the model with
-;                    a user provided tilt in degrees.  Result will be produced with TSY_DEFAULT_TILT+ADD_TILT
-;                    Value can be set to an N length array an M length array or a single element array. 
-;                    N is the number of time elements for the data.  M is the number of periods in the time interval.(determined by the period keyword)
-;                    If single element is provided the same correction will be applied to all periods.   
-;                    If an N length array is provided, the data will be re-sampled to an M length array. Consequently, if
-;                    the values change quickly, the period may need to be shortened. 
+;         add_tilt:  Increment the default dipole tilt used by the model with
+;             a user provided tilt in degrees.  Result will be produced with TSY_DEFAULT_TILT+ADD_TILT
+;             Value can be set to an N length array an M length array or a single element array. 
+;             N is the number of time elements for the data.  M is the number of periods in the time interval.(determined by the period keyword)
+;             If single element is provided the same correction will be applied to all periods.   
+;             If an N length array is provided, the data will be re-sampled to an M length array. Consequently, if
+;             the values change quickly, the period may need to be shortened. 
 ;         
 ;         get_tilt: Returns the dipole_tilt parameter used for each period. 
-;                   Returned value has a number of elements equal to the value returned by get_nperiod
+;             Returned value has a number of elements equal to the value returned by get_nperiod
 ;         
 ;         set_tilt: Alternative alternative dipole_tilt value rather than the geopack tilt.
-;                   This input can be an M length array, and N length array or a single elemnt.
-;                   Value can be set to an N length array an M length array or a single element array. 
-;                   N is the number of time elements for the data.  M is the number of periods in the time interval.(determined by the period keyword)
-;                   If an N length array is provided, the data will be re-sampled to an M length array. Consequently, if
-;                   the values change quickly, the period may need to be shortened. 
-;                   set_tilt will cause add_tilt to be ignored. 
+;             This input can be an M length array, and N length array or a single elemnt.
+;             Value can be set to an N length array an M length array or a single element array. 
+;             N is the number of time elements for the data.  M is the number of periods in the time interval.(determined by the period keyword)
+;             If an N length array is provided, the data will be re-sampled to an M length array. Consequently, if
+;             the values change quickly, the period may need to be shortened. 
+;             set_tilt will cause add_tilt to be ignored. 
 ;                   
 ;         get_nperiod: Returns the number of periods used for the time interval=  ceil((end_time-start_time)/period)
-;         
-;Example: trace2equator,in_time,in_pos,out_foot
+;     
+;         geopack_2008 (optional): Set this keyword to use the latest version (2008) of the Geopack
+;              library. Version 9.2 of the IDL Geopack DLM is required for this keyword to work.
+;Example: 
+;        trace2equator,in_time,in_pos,out_foot
 ;
 ;Notes:
 ;  1. Relies on the IDL/Geopack Module provided by Haje Korth JHU/APL
-;  and N.A. Tsyganenko NASA/GSFC, if the module is not installed
-;  this function will fail.  
+;      and N.A. Tsyganenko NASA/GSFC, if the module is not installed
+;      this function will fail.  
 ;  2. Has a loop with number of iterations =
-;  (tarray[n_elements(t_array)]-tarray[0])/period
-;  This means that as period becomes smaller the amount time of this
-;  function should take will grow quickly.
+;      (tarray[n_elements(t_array)]-tarray[0])/period
+;      This means that as period becomes smaller the amount time of this
+;      function should take will grow quickly.
 ;  3. If the trace_array variable is set
-;     the period variable will be ignored.  The program will
-;     recalculate for each value, this will cause the program to
-;     run very slowly. 
+;      the period variable will be ignored.  The program will
+;      recalculate for each value, this will cause the program to
+;      run very slowly. 
 ;  4. All calculations are done internally in double precision
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-04 10:12:54 -0800 (Tue, 04 Mar 2014) $
-; $LastChangedRevision: 14488 $
+; $LastChangedDate: 2014-03-17 12:49:30 -0700 (Mon, 17 Mar 2014) $
+; $LastChangedRevision: 14554 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/trace/trace2equator.pro $
 ;-
 
-pro trace2equator,tarray,in_pos_array,out_foot_array, out_trace_array = out_trace_array, in_coord = in_coord, out_coord = out_coord, internal_model = internal_model, external_model = external_model, south = south, km = km, par=par,period=period,error = error, r0=r0,rlim=rlim,add_tilt=add_tilt,get_tilt=get_tilt,set_tilt=set_tilt,get_nperiod=get_nperiod,get_period_times=get_period_times,_extra=_extra
+pro trace2equator, tarray, in_pos_array, out_foot_array, out_trace_array=out_trace_array, $
+    in_coord=in_coord, out_coord=out_coord, internal_model=internal_model, external_model=external_model, $
+    south=south, km=km, par=par, period=period, error=error, r0=r0, rlim=rlim, add_tilt=add_tilt, $
+    get_tilt=get_tilt, set_tilt=set_tilt, get_nperiod=get_nperiod, get_period_times=get_period_times, $
+    geopack_2008=geopack_2008, _extra=_extra
 
     error = 0
     
     ;constant arrays used for input validation
     valid_coords = ['gei', 'gse','geo', 'gsm', 'sm']
-    
     valid_internals = ['dip', 'igrf']
-    
     valid_externals = ['none', 't89', 't96', 't01', 't04s']
     
     km_in_re = 6374.4D
@@ -140,7 +146,7 @@ pro trace2equator,tarray,in_pos_array,out_foot_array, out_trace_array = out_trac
           rlim = 60D
      
     ;test to make sure idl/geopack library is installed
-    if igp_test() eq 0 then return
+    if igp_test(geopack_2008=geopack_2008) eq 0 then return
     
     if not keyword_set(tarray) then begin 
       message, /continue, 'tarray must be set'
@@ -195,18 +201,13 @@ pro trace2equator,tarray,in_pos_array,out_foot_array, out_trace_array = out_trac
     
     ;convert inputs into double precision to ensure consistency of calculations
     tarray2 = double(tarray)
-    
     in_pos_array2 = double(in_pos_array)
-    
     if n_elements(r0) gt 0 then r02 = double(r0)
-    
     if n_elements(rlim) gt 0 then rlim2 = double(rlim)
     
     if keyword_set(km) then begin
        in_pos_array2 = in_pos_array2/km_in_re
-    
        if n_elements(r02) gt 0 then r02 = r02/km_in_re
-    
        if n_elements(rlim2) gt 0 then rlim2 = rlim2/km_in_re
     endif else begin
        idx_temp = where(abs(in_pos_array2) gt km_in_re)
@@ -414,7 +415,11 @@ pro trace2equator,tarray,in_pos_array,out_foot_array, out_trace_array = out_trac
        if arg_present(out_trace_array) then begin
     
           ;recalculate magnetic dipole
-          geopack_recalc, ts[i].year,ts[i].doy, ts[i].hour, ts[i].min, ts[i].sec, tilt = tilt
+          if ~undefined(geopack_2008) then begin
+            geopack_recalc_08, ts[i].year,ts[i].doy, ts[i].hour, ts[i].min, ts[i].sec, tilt = tilt
+          endif else begin
+            geopack_recalc, ts[i].year,ts[i].doy, ts[i].hour, ts[i].min, ts[i].sec, tilt = tilt
+          endelse
     
           ;calculate which par values should be used on this iteration
           if T89 eq 1 then par_iter = par_array[i] $
@@ -435,9 +440,12 @@ pro trace2equator,tarray,in_pos_array,out_foot_array, out_trace_array = out_trac
           endif
     
       ;    geopack_trace,in_pos_array2[i,0],in_pos_array2[i,1],in_pos_array2[i,2],dir,par_iter,out_foot_array[i,0],out_foot_array[i,1],out_foot_array[i,2],R0=R02,RLIM=RLIM2,fline = trgsm_out,tilt=tilt,IGRF=IGRF,T89=T89,T96=T96,T01=T01,TS04=TS04,_extra=_extra,/REFINE,/EQUATOR
-    
-        geopack_trace, in_pos_array2[i, 0], in_pos_array2[i, 1], in_pos_array2[i, 2], dir, par_iter, out_foot_x, out_foot_y, out_foot_z, R0 = R02, RLIM = RLIM2, fline = trgsm_out, tilt = tilt, IGRF = IGRF, T89 = T89, T96 = T96, T01 = T01, TS04 = TS04, /refine, /equator, _extra = _extra
-    
+          if ~undefined(geopack_2008) then begin
+            geopack_trace_08,in_pos_array2[i, 0], in_pos_array2[i, 1], in_pos_array2[i, 2], dir, par_iter, out_foot_x, out_foot_y, out_foot_z, R0 = R02, RLIM = RLIM2, fline = trgsm_out, tilt = tilt, IGRF = IGRF, T89 = T89, T96 = T96, T01 = T01, TS04 = TS04, /refine, /equator, _extra = _extra
+          endif else begin
+            geopack_trace, in_pos_array2[i, 0], in_pos_array2[i, 1], in_pos_array2[i, 2], dir, par_iter, out_foot_x, out_foot_y, out_foot_z, R0 = R02, RLIM = RLIM2, fline = trgsm_out, tilt = tilt, IGRF = IGRF, T89 = T89, T96 = T96, T01 = T01, TS04 = TS04, /refine, /equator, _extra = _extra
+          endelse
+          
           out_foot_array[i, 0] = out_foot_x
           out_foot_array[i, 1] = out_foot_y
           out_foot_array[i, 2] = out_foot_z
@@ -464,8 +472,12 @@ pro trace2equator,tarray,in_pos_array,out_foot_array, out_trace_array = out_trac
              id = idx[0]
     
              ;recalculate geomagnetic dipole
-             geopack_recalc, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
-    
+             if ~undefined(geopack_2008) then begin
+                geopack_recalc_08, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+             endif else begin
+                geopack_recalc, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+             endelse
+             
              ;account for user tilt.
              if n_elements(tilt_value) gt 0 then begin
                if n_elements(set_tilt) gt 0 then begin
@@ -487,8 +499,12 @@ pro trace2equator,tarray,in_pos_array,out_foot_array, out_trace_array = out_trac
              if T89 eq 1 then par_iter = par_array[id] $
              else if T96 eq 1 || T01 eq 1 || TS04 eq 1 then par_iter = par_array[id,*] else par_iter = ''
              
-             geopack_trace,rgsm_x,rgsm_y,rgsm_z,dir,par_iter,foot_x,foot_y,foot_z,R0=R02,RLIM=RLIM2,tilt=tilt,IGRF=IGRF,T89=T89,T96=T96,T01=T01,TS04=TS04,_extra=_extra,/REFINE,/EQUATOR
-    
+             if ~undefined(geopack_2008) then begin
+                geopack_trace_08,rgsm_x,rgsm_y,rgsm_z,dir,par_iter,foot_x,foot_y,foot_z,R0=R02,RLIM=RLIM2,tilt=tilt,IGRF=IGRF,T89=T89,T96=T96,T01=T01,TS04=TS04,_extra=_extra,/REFINE,/EQUATOR
+             endif else begin
+                geopack_trace,rgsm_x,rgsm_y,rgsm_z,dir,par_iter,foot_x,foot_y,foot_z,R0=R02,RLIM=RLIM2,tilt=tilt,IGRF=IGRF,T89=T89,T96=T96,T01=T01,TS04=TS04,_extra=_extra,/REFINE,/EQUATOR
+             endelse 
+             
              ;output foot
              out_foot_array[idx, 0] = foot_x
              out_foot_array[idx, 1] = foot_y

@@ -5,9 +5,9 @@
 ;  Purpose: Manages window menu
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-03-18 18:23:36 -0700 (Tue, 18 Mar 2014) $
+;$LastChangedRevision: 14582 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_window_menus__define.pro $
 ;-
 
@@ -141,6 +141,7 @@ END ;---------------------------------------------------------------------------
 
 ;This function will crash if the number of names in the list of names is less than the number of windowobjs in the windowStorage object.
 ;A good solution would be to redesign this object to automatically manage the names list, rather than require manual adds & removes.
+; ^ added sync function below 2014-03-18
 PRO SPD_UI_WINDOW_MENUS::Update, windowStorage
     self->Clear
     IF Ptr_Valid(self.names) THEN BEGIN
@@ -166,6 +167,38 @@ PRO SPD_UI_WINDOW_MENUS::Update, windowStorage
           ENDIF
        ENDIF      
     ENDIF
+END ;--------------------------------------------------------------------------------
+
+
+
+; This will clear the current menu and synchronize it to the window storage object.
+PRO SPD_UI_WINDOW_MENUS::sync, windowStorage
+  
+  ;check objects
+  if ~obj_valid(windowstorage) then return
+  windows = windowstorage->getobjects()
+  if ~obj_valid(windows[0]) then return
+
+  ;clear previous page list
+  if ptr_valid(self.ids) then begin
+    for i=0, n_elements(*self.ids)-1 do begin
+      widget_control, (*self.ids)[i], /destroy
+    endfor
+  endif
+
+  ;clear internal vars
+  ; -apparently IDL reserves "Cleanup" as an ojbect destruction method
+  ;  and will not allow a method with that name to be called internally
+  ptr_free, self.names
+  ptr_free, self.ids
+  
+  ;add existing pages
+  for i=0, n_elements(windows)-1 do begin
+    windows->getproperty, name=name, isactive=active
+    self->add, name
+    if active then widget_control, (*self.ids)[i], set_button=1 
+  endfor
+  
 END ;--------------------------------------------------------------------------------
 
 

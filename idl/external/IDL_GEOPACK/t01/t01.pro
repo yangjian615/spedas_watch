@@ -64,25 +64,27 @@
 ;  units by 6374 km to convert them.
 ;  5.Find more documentation on the inner workings of the model,
 ;    any gotchas, and the meaning of the arguments at:
-;    http://modelweb.gsfc.nasa.gov/magnetos/data-based/modeling.html
+;    http://geo.phys.spbu.ru/~tsyganenko/modeling.html
 ;    -or-
-;    http://dysprosium.jhuapl.edu/idl_geopack/
+;    http://ampere.jhuapl.edu/code/idl_geopack.html
 ;
 ;  6. Definition of G1 and G2 can be found at: 
 ;  http://modelweb.gsfc.nasa.gov/magnetos/data-based/Paper220.pdf
 ;  http://modelweb.gsfc.nasa.gov/magnetos/data-based/Paper219.pdf
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-01-15 15:09:40 -0800 (Wed, 15 Jan 2014) $
-; $LastChangedRevision: 13909 $
+; $LastChangedDate: 2014-03-17 08:22:00 -0700 (Mon, 17 Mar 2014) $
+; $LastChangedRevision: 14543 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t01/t01.pro $
 ;-
 
-function t01, tarray, rgsm_array,pdyn,dsti,yimf,zimf,g1,g2, period = period,add_tilt=add_tilt,get_tilt=get_tilt,set_tilt=set_tilt,get_nperiod=get_nperiod,get_period_times=get_period_times,storm=storm
+function t01, tarray, rgsm_array,pdyn,dsti,yimf,zimf,g1,g2,period = period,$
+    add_tilt=add_tilt,get_tilt=get_tilt,set_tilt=set_tilt,get_nperiod=get_nperiod,$
+    get_period_times=get_period_times,storm=storm,geopack_2008=geopack_2008
 
   ;sanity tests, setting defaults
 
-  if igp_test() eq 0 then return, -1L
+  if igp_test(geopack_2008=geopack_2008) eq 0 then return, -1L
 
   if ~n_elements(tarray) then begin 
     message, /continue, 'tarray must be set'
@@ -330,15 +332,23 @@ function t01, tarray, rgsm_array,pdyn,dsti,yimf,zimf,g1,g2, period = period,add_
       id = idx[0]
 
       ;recalculate geomagnetic dipole
-      geopack_recalc, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+      if ~undefined(geopack_2008) then begin
+        geopack_recalc_08, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+      endif else begin
+        geopack_recalc, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+      endelse
 
       rgsm_x = rgsm_array[idx, 0]
       rgsm_y = rgsm_array[idx, 1]
       rgsm_z = rgsm_array[idx, 2]
 
       ;calculate internal contribution
-      geopack_igrf_gsm,rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by,igrf_bz 
-
+      if ~undefined(geopack_2008) then begin
+        geopack_igrf_gsw_08,rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by,igrf_bz 
+      endif else begin
+        geopack_igrf_gsm,rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by,igrf_bz 
+      endelse 
+      
       ;account for user tilt.
       if n_elements(tilt_value) gt 0 then begin
         if n_elements(set_tilt) gt 0 then begin

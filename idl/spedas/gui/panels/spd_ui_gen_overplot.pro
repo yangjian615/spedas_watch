@@ -28,10 +28,234 @@
 ;  success: a 0-1 flag.
 ;  
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-03-10 14:29:33 -0700 (Mon, 10 Mar 2014) $
-;$LastChangedRevision: 14528 $
+;$LastChangedDate: 2014-03-18 18:28:24 -0700 (Tue, 18 Mar 2014) $
+;$LastChangedRevision: 14585 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
+
+
+pro thm_ui_fix_axis_fonts, axis_obj=axis_obj, axis_name=axis_name, size_multiplier=size_multiplier 
+  ; This function fixes font sizes for IDL versions greater than 8.0
+  
+  err_xxx = 0
+  Catch, err_xxx
+  IF (err_xxx NE 0) THEN BEGIN
+    Catch, /Cancel
+    Help, /Last_Message, Output = err_msg
+    dprint, dlevel = 1, 'Error trying to fix overview font sizes: ' + err_msg
+    RETURN
+  ENDIF
+  
+  IF ~keyword_set(size_multiplier) THEN return
+  IF abs(size_multiplier-1) lt 0.01 then return
+  IF ~(axis_name eq 'x' or axis_name eq 'y' or axis_name eq 'z') THEN return
+  IF ~obj_valid(axis_obj) THEN return
+   
+  if axis_name eq 'x' or axis_name eq 'y' then begin 
+    ; fix labels
+    axis_obj->getProperty, labels = labels
+    if obj_valid(labels) then begin
+      label_obj = labels->get(/all)
+      for j = 0, n_elements(label_obj)-1 do begin
+        label_obj[j]->getProperty, size = size
+        ;labels tend to get cluttered, so we further decrease them 
+        size = size*size_multiplier-1
+        label_obj[j]->setProperty, size = size
+      endfor
+    endif
+    ; fix titles
+    axis_obj->getProperty, titleobj = titleobj
+    if obj_valid(titleobj) then begin 
+      titleobj->getProperty, size = size
+      size *= size_multiplier
+      titleobj->setProperty, size = size
+    endif
+    ; fix subtitles
+    axis_obj->getProperty, subtitleobj = subtitleobj
+    if obj_valid(subtitleobj) then begin
+      subtitleobj->getProperty, size = size
+      size *= size_multiplier
+      subtitleobj->setProperty, size = size
+    endif
+  endif
+  
+  if (axis_name eq 'x') or (axis_name eq 'y')  or (axis_name eq 'z') then begin 
+    ; fix annotationsf
+    axis_obj->getProperty, annotatetextobject = annotatetextobject
+   if obj_valid(annotatetextobject) then begin 
+      annotatetextobject->getProperty, size = size
+      ;annotations (axis scale) tend to get cluttered, so we further decrease them 
+      size = size*size_multiplier-1
+      annotatetextobject->setProperty, size = size
+    endif
+  endif
+
+  if axis_name eq 'z' then begin
+    ; fix labels
+    axis_obj->getProperty, labeltextobject = labeltextobject
+    if obj_valid(labeltextobject) then begin
+      labeltextobject->getProperty, size = size 
+      ;z-axis labels tend to overlap, so we further decrease them
+      size = size*size_multiplier-1
+      labeltextobject->setProperty, size = size
+    endif  
+    ; fix subtitles  
+    axis_obj->getProperty, subtitletextobject = subtitletextobject
+    if obj_valid(subtitletextobject) then begin
+      subtitletextobject->getProperty, size = size
+      size *= size_multiplier
+      subtitletextobject->setProperty, size = size
+    endif
+  endif
+  
+end
+
+pro thm_ui_fix_page_fonts, state=state 
+  ; Fixes font sizes for all panels on the current page
+  ; Assumes that after IDL 8.0 we need to multiply font sizes by a factor of 0.8
+  ; size_multiplier = 0.8 is derived by comparing overview plots in IDL 7.1 vs IDL 8.3
+  
+  err_xxx = 0
+  Catch, err_xxx
+  IF (err_xxx NE 0) THEN BEGIN
+    Catch, /Cancel
+    Help, /Last_Message, Output = err_msg
+    dprint, dlevel = 1, 'Error trying to fix overview font sizes: ' + err_msg
+    RETURN
+  ENDIF
+  
+  activeWindow = state.windowStorage->GetActive()
+  activeWindow->GetProperty, panels = panelsObj
+  panels = panelsObj->get(/all,count=count) 
+  if count eq 0 then return
+
+  IF !VERSION.RELEASE GE '8.0' THEN begin    
+    size_multiplier = 0.8
+    
+    ; Loop through the panels and fix the axis
+    for i = 0, n_elements(panels)-1 do begin
+      panels[i]->getProperty,xaxis=axis_obj
+      thm_ui_fix_axis_fonts, axis_obj=axis_obj, axis_name='x', size_multiplier=size_multiplier
+      panels[i]->getProperty,yaxis=axis_obj
+      thm_ui_fix_axis_fonts, axis_obj=axis_obj, axis_name='y', size_multiplier=size_multiplier
+      panels[i]->getProperty,zaxis=axis_obj
+      thm_ui_fix_axis_fonts, axis_obj=axis_obj, axis_name='z', size_multiplier=size_multiplier     
+    endfor
+    
+    ; Title of page
+    activeWindow->GetProperty, settings = settings
+    if obj_valid(settings) then begin 
+      settings->GetProperty, title = title
+      if obj_valid(title) then begin 
+        title->getProperty, size = size
+        size *= size_multiplier
+        title->setProperty, size = size
+      endif
+    endif
+    
+    ; Also the variables of the last panel (printed below the last panel)
+    panels[n_elements(panels)-1]->GetProperty, variables = variables
+    if obj_valid(variables) then begin 
+      vars = variables->get(/all)
+      for i=0, n_elements(vars)-1 do begin 
+        vars[i]->getProperty, text=textobj
+        textobj->getProperty, size = size
+        size *= size_multiplier
+        textobj->setProperty, size = size
+        vars[i]->setProperty, text=textobj      
+      endfor    
+    endif
+  endif 
+  
+end
+
+pro thm_ui_fix_overview_panels, state=state
+  ; Only for GUI THEMIS overviews
+  ; We need to fix some panel properties 
+  
+  err_xxx = 0
+  Catch, err_xxx
+  IF (err_xxx NE 0) THEN BEGIN
+    Catch, /Cancel
+    Help, /Last_Message, Output = err_msg
+    dprint, dlevel = 1, 'Error trying to fix overview font sizes: ' + err_msg
+    RETURN
+  ENDIF
+
+  activeWindow = state.windowStorage->GetActive()
+  activeWindow->GetProperty, panels = panelsObj
+  panels = panelsObj->get(/all)
+
+  ; Fix panel orientiation for all panels
+  for i = 0,n_elements(panels)-1 do begin
+    panels[i]->getProperty, yaxis=nobj
+    if obj_valid(nobj) then begin
+      nobj->setProperty, stackLabels = 1, orientation = 0
+      nobj->setProperty, titlemargin = 50
+    endif
+  endfor
+  
+  ; There should be 14 panels
+  ; If not, then what follows might need modifications
+  if n_elements(panels) ne 14 then begin
+    dprint, dlevel = 1, 'Error: THEMIS overview plot does not contain 14 panels'
+    return
+  endif
+  
+
+   
+  ; ### Panel specific fixes ###
+  ; Panel 0
+  
+  ; Panel 1: ROI 
+  ; This needs special handling
+  panels[1]->getProperty,yaxis=nobj
+  nobj->setProperty,annotateAxis=0,lineatzero=0
+  panels[1]->getproperty, tracesettings = obj0
+  trace_obj = obj0 -> get(/all)
+  ntr = 11 ; 11 is based on the total of the bit mask in thm_roi_bar.pro
+  ; setup colors for ROI plot
+  ctbl = transpose([[7,0,5],$
+    [235,255,0],$
+    [0,97,255],$
+    [253,0,0],$
+    [90,255,0],$
+    [43,0,232],$
+    [255,103,0],$
+    [0,255,133],$
+    [83,0,117],$
+    [255,199,0],$
+    [0,235,254]])
+  for i = 0,ntr-1 do begin
+    trace_obj[i]->getProperty,linestyle=linestyleObj
+    lineStyleObj->setProperty,thickness=2, color=ctbl[i,*]
+  endfor
+
+  ; Panel 2
+  
+  ; Panel 7 
+  ; This should have no ytitle
+  panels[7]->getProperty, yaxis=nobj
+  if obj_valid(nobj) then begin
+    nobj->getProperty, titleobj = titleobj
+    titleobj->setProperty, value = ''
+  endif
+  
+  ; Panel 13
+  ; Fix the variables of the last panel (printed below the last panel)
+  panels[n_elements(panels)-1]->GetProperty, variables = variables
+  if obj_valid(variables) then begin
+    vars = variables->get(/all)
+    for i=0, n_elements(vars)-1 do begin
+      vars[i]->getProperty, text=textobj
+      if i eq 0 then textobj->setProperty, value='X-GSE'
+      if i eq 1 then textobj->setProperty, value='Y-GSE'
+      if i eq 2 then textobj->setProperty, value='Z-GSE'
+      vars[i]->setProperty, text=textobj
+    endfor
+  endif
+
+end
 
 pro spd_ui_gen_overplot_event, event
 
@@ -113,15 +337,30 @@ pro spd_ui_gen_overplot_event, event
       activeWindow[0]->GetProperty, Name=name
       state.windowMenus->Add, name
       state.windowMenus->Update, state.windowStorage
-   
-      spd_ui_overplot, state.windowStorage,state.loadedData,state.drawObject,$
-                       probes=state.probe, date=st_double, dur=dur, $
-                       oplot_calls=state.oplot_calls,error=error
+ 
+;      spd_ui_overplot, state.windowStorage,state.loadedData,state.drawObject,$
+;                       probes=state.probe, date=st_double, dur=dur, $
+;                       oplot_calls=state.oplot_calls,error=error
+;                       
+                    
+      thm_gen_overplot,  probes=state.probe, date=st_double, dur = dur, $
+         days = days, hours = hours, device = device, $
+         directory = directory, makepng = 0, $
+         fearless = 0, dont_delete_data = 1, error=error, $
+         no_draw=no_draw, gui_plot = 1 ; 1 : gui plot, 0 : server plot
                      
-      if ~error then begin               
+      if ~error then begin  
+           
+        thm_ui_fix_page_fonts, state=state
+        thm_ui_fix_overview_panels, state=state
+
+                           
         state.callSequence->addLoadOver,state.probe,st_double,dur,*state.oplot_calls           
         *state.oplot_calls = *state.oplot_calls + 1 ; update # of calls to overplot
         *state.success = 1
+        spd_ui_orientation_update, state.drawObject, state.windowStorage
+        state.drawObject->update, state.windowStorage, state.loadedData
+        state.drawObject->draw
       endif
       
       Widget_Control, event.top, Set_UValue=state, /No_Copy

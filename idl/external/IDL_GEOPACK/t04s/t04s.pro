@@ -66,26 +66,26 @@
 ;  units by 6374 km to convert them.
 ;  5.Find more documentation on the inner workings of the model,
 ;    any gotchas, and the meaning of the arguments at:
-;    http://modelweb.gsfc.nasa.gov/magnetos/data-based/modeling.html
+;    http://geo.phys.spbu.ru/~tsyganenko/modeling.html
 ;    -or-
-;    http://dysprosium.jhuapl.edu/idl_geopack/
+;    http://ampere.jhuapl.edu/code/idl_geopack.html
 ;  6. Definition of W1-W6 can be found at:
 ;  N. A. Tsyganenko and M. I. Sitnov, Modeling the dynamics of the
 ;  inner magnetosphere during strong geomagnetic storms, J. Geophys. 
 ;  Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-01-23 09:26:45 -0800 (Thu, 23 Jan 2014) $
-; $LastChangedRevision: 13980 $
+; $LastChangedDate: 2014-03-17 08:22:00 -0700 (Mon, 17 Mar 2014) $
+; $LastChangedRevision: 14543 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t04s/t04s.pro $
 ;-
 
-function t04s, tarray, rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, period = period,add_tilt=add_tilt,get_tilt=get_tilt,set_tilt=set_tilt,get_nperiod=get_nperiod,get_period_times=get_period_times
+function t04s,tarray,rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, $
+    period=period,add_tilt=add_tilt,get_tilt=get_tilt,set_tilt=set_tilt, $
+    get_nperiod=get_nperiod,get_period_times=get_period_times,geopack_2008=geopack_2008
 
   ;sanity tests, setting defaults
-
-  if igp_test() eq 0 then return, -1L
-
+  if igp_test(geopack_2008=geopack_2008) eq 0 then return, -1L
   if not keyword_set(period) then period = 600
 
   if period le 0. then begin
@@ -94,27 +94,16 @@ function t04s, tarray, rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, period 
   endif
 
   t_size = size(tarray, /dimensions)
-
   pdyn_size = size(pdyn, /dimensions)
-
   dsti_size = size(dsti, /dimensions)
-
   yimf_size = size(yimf, /dimensions)
-
   zimf_size = size(zimf, /dimensions)
-
   w1_size = size(w1,/dimensions)
-
   w2_size = size(w2,/dimensions)
-
   w3_size = size(w3,/dimensions)
-
   w4_size = size(w4,/dimensions)
-
   w5_size = size(w5,/dimensions)
-
   w6_size = size(w6,/dimensions)
-
   r_size = size(rgsm_array, /dimensions)
 
   if n_elements(t_size) ne 1 then begin
@@ -282,23 +271,14 @@ function t04s, tarray, rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, period 
   parmod = dblarr(t_size, 10)
 
   parmod[*, 0] = pdyn_array
-  
   parmod[*, 1] = dsti_array
-
   parmod[*, 2] = yimf_array
-
   parmod[*, 3] = zimf_array
-
   parmod[*, 4] = w1_array
-
   parmod[*, 5] = w2_array
-  
   parmod[*, 6] = w3_array
-
   parmod[*, 7] = w4_array
-
   parmod[*, 8] = w5_array
-
   parmod[*, 9] = w6_array
   
   ;validate parameters related to geodipole_tilt
@@ -345,7 +325,6 @@ function t04s, tarray, rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, period 
     endelse
   endif
 
-
   while i lt nperiod do begin
 
     ;find indices of points to be input this iteration
@@ -355,18 +334,27 @@ function t04s, tarray, rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, period 
     idx = ssl_set_intersection(idx1, idx2)
 
     if idx[0] ne -1L then begin 
-
       id = idx[0]
 
       ;recalculate geomagnetic dipole
-      geopack_recalc, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+      if ~undefined(geopack_2008) then begin
+        ; the user requested the 2008 version
+        geopack_recalc_08, ts[id].year, ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+      endif else begin
+        geopack_recalc, ts[id].year, ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+      endelse
 
       rgsm_x = rgsm_array[idx, 0]
       rgsm_y = rgsm_array[idx, 1]
       rgsm_z = rgsm_array[idx, 2]
 
       ;calculate internal contribution
-      geopack_igrf_gsm,rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by,igrf_bz 
+      if ~undefined(geopack_2008) then begin
+        ; Geopack 2008 uses the GSW coordinate system instead of GSM
+        geopack_igrf_gsw_08, rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by, igrf_bz 
+      endif else begin
+        geopack_igrf_gsm, rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by, igrf_bz 
+      endelse
 
       ;account for user tilt.
       if n_elements(tilt_value) gt 0 then begin
@@ -396,7 +384,6 @@ function t04s, tarray, rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, period 
 
   endwhile
 
-return, out_array
-
+  return, out_array
 end
 

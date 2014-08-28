@@ -17,18 +17,18 @@
 ;
 ;  Notes: This routine requires IDL geopack routines, returns -1L if not installed
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-12-03 16:49:51 -0800 (Tue, 03 Dec 2013) $
-; $LastChangedRevision: 13623 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-03-17 08:22:00 -0700 (Mon, 17 Mar 2014) $
+; $LastChangedRevision: 14543 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/calculate_lshell.pro $
 ;-
 
-FUNCTION calculate_lshell, gsm_re
+FUNCTION calculate_lshell, gsm_re, geopack_2008=geopack_2008
 
     compile_opt idl2
 
 
- if igp_test() eq 0 then return, -1L
+ if igp_test(geopack_2008=geopack_2008) eq 0 then return, -1L
  
  
   lshell=make_array(n_elements(gsm_re[0,*]), /double)

@@ -7,7 +7,7 @@
 ;    MTIME    set only modification time
 ;    ATIME    set only access time
 ;    VERBOSE  sets VERBOSITY of messages (0: error messages only,  6: lots)
-;    TOFFSET set an hour offset for time zones or DST (e.g. +0700, -0300)
+;    TOFFSET set an hour offset for time zones or DST (e.g. +0700, -0300)   This keyword is deprecated
 ; Restrictions:
 ;   Shell executable "touch" must be in path on local operating system.  This is common on unix systems.
 ;   Windows executable available from: http://sourceforge.net/projects/unxutils/
@@ -19,14 +19,14 @@
 ;   
 ;   Warning: This routine will not work with home directories(~/file_name will not work) on linux variants.  The /noshell option to spawn means that it won't expand home directories into full paths
 ;   
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-03-13 16:59:48 -0700 (Thu, 13 Mar 2014) $
-;$LastChangedRevision: 14539 $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-03-14 10:58:06 -0700 (Fri, 14 Mar 2014) $
+;$LastChangedRevision: 14542 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_touch.pro $
 ;-
 
 
-pro file_touch,file,time,mtime=mtime,atime=atime,no_create=no_create,toffset=toffset,exit_status=status,verbose=verbose,exists=exists
+pro file_touch,file,time,mtime=mtime,atime=atime,no_create=no_create,exit_status=status,verbose=verbose,exists=exists   ;,toffset=toffset
 
 common file_touch_com, touch_init,touch_version
 
@@ -57,20 +57,20 @@ if keyword_set(mtime) then commands = [commands,'-m']
 if keyword_set(atime) then commands = [commands,'-a']
 if keyword_set(no_create) then commands = [commands,'-c']
 
-if undefined(toffset) then toffset= '+0'
+;if undefined(toffset) then toffset= '+0'
    
    
 if !version.os_family eq 'unix' then begin
    ;;; if keyword_set(tstring) then commands = [commands,'-d',tstring +toffset]       ;;; previous version
-
    
-   if ~undefined(time) then begin    
+   if keyword_set(time) then begin    
 
       ;orphaned code
       ;;;; tstring = time_string(time[0], tformat= 'YYYY-MM-DD hh:mm:ss')   ;+ toffset   ;;; previous version (for -d option)
-      tstring = time_string(double(time[0])+double(toffset)*60.*60., tformat='YYYYMMDDhhmm.ss') ;I believe that this version is in error.  It interprets toffset as seconds, when it should be hours(pcruce)
+;      tstring = time_string(double(time[0])+double(toffset)*60.*60., tformat='YYYYMMDDhhmm.ss') ;I believe that this version is in error.  It interprets toffset as seconds, when it should be hours(pcruce)
+
+      tstring = time_string(time[0],/local, tformat ='YYYYMMDDhhmm.ss')
       commands = [commands,"-t",tstring]
-      
    endif
  
    commands = [commands,file]

@@ -12,7 +12,7 @@
 ;           kp can also be an array, if it is an array it should be an
 ;           N length array(you should interpolate your values onto the tarray)
 ;           Also kp values passed in can only be integers. any pluses
-;           or minuses will be ignored, because the Tysganenko model
+;           or minuses will be ignored, because the Tsyganenko model
 ;           ignores plus and minuses on kp values
 ;
 ;         period(optional): the amount of time between recalculations of
@@ -62,17 +62,19 @@
 ;  4. Position units are earth radii, be sure to divide your normal
 ;  units by 6374 km to convert them.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2012-01-19 17:24:35 -0800 (Thu, 19 Jan 2012) $
-; $LastChangedRevision: 9580 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-03-17 08:22:00 -0700 (Mon, 17 Mar 2014) $
+; $LastChangedRevision: 14543 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t89/t89.pro $
 ;-
 
-function t89, tarray, rgsm_array, kp = kp, period = period,igrf_only=igrf_only,add_tilt=add_tilt,get_tilt=get_tilt,set_tilt=set_tilt,get_nperiod=get_nperiod,get_period_times=get_period_times
+function t89, tarray, rgsm_array, kp=kp, period=period, igrf_only=igrf_only,$
+    add_tilt=add_tilt,get_tilt=get_tilt,set_tilt=set_tilt,get_nperiod=get_nperiod,$
+    get_period_times=get_period_times, geopack_2008 = geopack_2008
 
   ;sanity tests, setting defaults
 
-  if igp_test() eq 0 then return, -1L
+  if igp_test(geopack_2008=geopack_2008) eq 0 then return, -1L
 
   if n_elements(tarray) eq 0 then begin 
     message, /continue, 'tarray must be set'
@@ -229,14 +231,22 @@ function t89, tarray, rgsm_array, kp = kp, period = period,igrf_only=igrf_only,a
       id = idx[0]
 
       ;recalculate geomagnetic dipole
-      geopack_recalc, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+      if ~undefined(geopack_2008) then begin
+        geopack_recalc_08, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+      endif else begin
+        geopack_recalc, ts[id].year,ts[id].doy, ts[id].hour, ts[id].min, ts[id].sec, tilt = tilt
+      endelse
 
       rgsm_x = rgsm_array2[idx, 0]
       rgsm_y = rgsm_array2[idx, 1]
       rgsm_z = rgsm_array2[idx, 2]
 
       ;calculate internal contribution
-      geopack_igrf_gsm,rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by,igrf_bz 
+      if ~undefined(geopack_2008) then begin
+        geopack_igrf_gsw_08, rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by,igrf_bz 
+      endif else begin
+        geopack_igrf_gsm,rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by,igrf_bz 
+      endelse
 
       ;account for user tilt.
       if n_elements(tilt_value) gt 0 then begin

@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-03-10 10:40:22 -0700 (Mon, 10 Mar 2014) $
-;$LastChangedRevision: 14524 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-03-18 18:23:36 -0700 (Tue, 18 Mar 2014) $
+;$LastChangedRevision: 14582 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -175,19 +175,7 @@ PRO spd_gui_event, event
   
   if uname eq 'GUI_PLUGIN' then begin
     
-    ;call sequence is stored in the window object (gui doc support) 
-    info.windowStorage->getProperty,callSequence=callSequence
-    
-    spd_ui_call_plugin, event, $
-                        info.loadeddata, $
-                        info.guitree, $
-                        info.loadtr, $
-                        callSequence, $
-                        info.historywin, $
-                        info.statusbar
-    
-    info.drawObject->Update,info.windowStorage,info.loadedData 
-    info.drawObject->Draw
+    spd_ui_call_plugin, event, info
     
     widget_control, event.top, set_uvalue=info, /no_copy
     
@@ -2049,8 +2037,9 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   
   ;create the window menus object and synchronize it with the window storage object
   windowMenus = Obj_New("SPD_UI_WINDOW_MENUS", windowMenu)
-  windowStorage->reloadWindowMenus,windowMenus
-  windowMenus->Update, windowStorage
+;  windowStorage->reloadWindowMenus,windowMenus
+;  windowMenus->Update, windowStorage
+  windowMenus->sync, windowstorage
   
   drawWin->setProperty,units=1
   drawWin->getProperty,dimensions=dim

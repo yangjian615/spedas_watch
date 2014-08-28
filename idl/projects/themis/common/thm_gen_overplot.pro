@@ -1,34 +1,61 @@
 ;+
-; Purpose: To make mission overview plots of all instruments
+;NAME:
+;   thm_gen_overplot
 ;
-; Inputs:  PROBES: spacecraft ('a','b','c','d','e')
-;          DATE: the date string or seconds since 1970 ('2007-03-23')
-;          DUR: duration (default units are days)
-;          DAYS: redundant keyword to set  the units of duration (but its comforting to have)
-;          HOURS: keyword to make the duration be in units of hours
-;          DEVICE: sets the device (x or z) (default is x)
-;          MAKEPNG: keyword to generate 5 png files
-;          DIRECTORY: sets the directory where the above pngs are placed (default is './')
-;	   FEARLESS: keyword that prevents program from quitting when it fears its in an infinite loop
-;			(infinite loop is feared when catch statement has been call 1000 times)
-;	   DONT_DELETE_DATA:  keyword to not delete all existing tplot variables before loading data in for
-;			        the overview plot (sometimes old variables can interfere with overview plot)
+;PURPOSE:
+;   To make mission overview plots of all instruments
+;   This can be called either from SPEDAS GUI or from a server script to create png images
 ;
-; Example: thm_gen_overplot,probe='a',date='2007-03-23',dur=1
-;	   The above example will produce a full day plot in the X window.
+;CALLING SEQUENCE:
+;   thm_gen_overplot
 ;
+;INPUT:
+;   none
 ;
-;Version:
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
-;-
+;KEYWORDS:
+;   PROBES: spacecraft ('a','b','c','d','e')
+;   DATE: the date string or seconds since 1970 ('2007-03-23')
+;   DUR: duration (default units are days)
+;   DAYS: redundant keyword to set  the units of duration (but its comforting to have)
+;   HOURS: keyword to make the duration be in units of hours
+;   DEVICE: sets the device (x or z) (default is x)
+;   MAKEPNG: keyword to generate 5 png files
+;   DIRECTORY: sets the directory where the above pngs are placed (default is './')
+;   FEARLESS: keyword that prevents program from quitting when it fears its in an infinite loop
+;     (infinite loop is feared when catch statement has been call 1000 times)
+;   DONT_DELETE_DATA:  keyword to not delete all existing tplot variables before loading data in for
+;      the overview plot (sometimes old variables can interfere with overview plot)
+;   gui_plot: 1 for gui plot, 0 for server plot
+;   error: 0 if it run to the end
+;     
+;OUTPUT:
+;   A set of png files or a set of plots for the GUI
+;
+;EXAMPLES:
+;   thm_gen_overplot,probe='a',date='2007-03-23',dur=1
+;     The above example will produce the overview plots for a full day in the X window.
+;   thm_gen_overplot, probes='a', date='2008-03-23',dur=1, makepng=1, device='z', directory='c:\tmp'
+;     The above example will produce a set of 17 plots in c:\temp
+;   thm_gen_overplot, probes='a', date='2009-03-23', dur = 1, makepng = 0, fearless = 0, dont_delete_data = 1, error=error, gui_plot = 1  
+;     The above example calls this function from the SPEDAS GUI
+;
+;HISTORY:
+;  This has replaced the older spd_ui_overplot.pro which was written specifically for GUI overview plots.
+;
+;$LastChangedBy:   $
+;$LastChangedDate: $
+;$LastChangedRevision:   $
+;$URL:  $
+;-----------------------------------------------------------------------------------
+
+
+
 
 pro thm_gen_overplot, probes = probes, date = date, dur = dur, $
                       days = days, hours = hours, device = device, $
                       directory = directory, makepng = makepng, $
-                      fearless = fearless, dont_delete_data = dont_delete_data
+                      fearless = fearless, dont_delete_data = dont_delete_data, $
+                      no_draw=no_draw, gui_plot = gui_plot, error=error  
 
 ;catch errors and fail gracefully
 ;-------------------------------------------------------
@@ -36,10 +63,14 @@ pro thm_gen_overplot, probes = probes, date = date, dur = dur, $
 
 common overplot_position, load_position, error_count
 
+heap_gc 
 quiet=0
 error_count=0
 load_position = 'init'
 if ~keyword_set(directory) then cd,current = directory
+
+; set the suffix to identify different calls to overplot
+; osuffix = ('_op' + strcompress(string(*oplot_calls + 1), /remove_all))[0]
 
 ;catch statement to allow program to recover from errors
 ;-------------------------------------------------------
@@ -185,7 +216,7 @@ endelse
 ;clip data
 tclip, thx+'_fgs_gse', -100.0, 100.0, /overwrite
 name = thx+'_fgs_gse'
-options, name, 'ytitle', 'B FIT!CGSE (nT)'
+options, name, 'ytitle', 'B FIT!CGSE!C[nT]'
 options, name, 'labels', ['Bx', 'By', 'Bz']
 options, name, 'labflag', 1
 options, name, 'colors', [2, 4, 6]
@@ -223,7 +254,7 @@ for i=0,n_elements(fbk_tvars)-1 do begin
     options, fbk_tvars[i], 'zlog', 1
     ylim, fbk_tvars[i], 2.0, 2048.0, 1
     thm_spec_lim4overplot, fbk_tvars[i], ylog = 1, zlog = 1, /overwrite
-    options, fbk_tvars[i], 'ytitle', thx+'!CFBK '+strmid(fbk_tvars[i], 7)
+    options, fbk_tvars[i], 'ytitle', 'FBK!C'+strmid(fbk_tvars[i], 7) +'!C[eV]'
 ;for ztitle, we need to figure out which type of data is there
 ;      for V channels, <|V|>.
 ;      for E channels, <|mV/m|>.
@@ -274,7 +305,7 @@ if index_sst eq -1 then begin
   options, name, 'spec', 1
   ylim, name, 1, 1000, 1
   zlim, name, 1d1, 5d2, 1
-  options, name, 'ytitle', thx+'!CSST ions!CeV'
+  options, name, 'ytitle', 'SST!Cions!C[eV]'
   options, name, 'ysubtitle', ''
 ;  options, name, 'ztitle', 'Eflux !C eV/cm!U2!N!C-s-sr-eV'
   options, name, 'ztitle', 'Eflux, EFU'
@@ -283,7 +314,7 @@ endif else begin
   name = thx+'_psif_en_eflux'
   tdegap, name, /overwrite, dt = 600.0
   options, name, 'spec', 1
-  options, name, 'ytitle', thx+'!CSST ions!CeV'
+  options, name, 'ytitle', 'SST!Cions!C[eV]'
   options, name, 'ysubtitle', ''
 ;  options, name, 'ztitle', 'Eflux !C eV/cm!U2!N!C-s-sr-eV'
   options, name, 'ztitle', 'Eflux, EFU'
@@ -301,7 +332,7 @@ if index_sst eq -1 then begin
   options, name, 'spec', 1
   ylim, name, 1, 1000, 1
   zlim, name, 1d1, 5d2, 1
-  options, name, 'ytitle', thx+'!CSST elec!CeV'
+  options, name, 'ytitle', 'SST!Celec!C[eV]'
   options, name, 'ysubtitle', ''
 ;  options, name, 'ztitle', 'Eflux !C eV/cm!U2!N!C-s-sr-eV'
   options, name, 'ztitle', 'Eflux, EFU'
@@ -310,7 +341,7 @@ endif else begin
   name = thx+'_psef_en_eflux'
   tdegap, name, /overwrite, dt = 600.0
   options, name, 'spec', 1
-  options, name, 'ytitle', thx+'!CSST elec!CeV'
+  options, name, 'ytitle', 'SST!Celec!C[eV]'
   options, name, 'ysubtitle', ''
 ;  options, name, 'ztitle', 'Eflux !C eV/cm!U2!N!C-s-sr-eV'
   options, name, 'ztitle', 'Eflux, EFU'
@@ -375,7 +406,7 @@ For j = 0, 1 Do Begin
     ylim, name1, 3., 40000., 1
 ;    options, name1, 'ztitle', 'Eflux !C!C eV/cm!U2!N!C-s-sr-eV'
     options, name1, 'ztitle', 'Eflux, EFU'
-    options, name1, 'ytitle', 'ESA i+ '+thx+'!C eV'
+    options, name1, 'ytitle', 'ESA!Cions!C[eV]'
     options, name1, 'ysubtitle', ''
     options, name1, 'spec', 1
   endif else begin
@@ -385,7 +416,7 @@ For j = 0, 1 Do Begin
     ylim, name1, 3., 40000., 1
 ;    options, name1, 'ztitle', 'Eflux !C!C eV/cm!U2!N!C-s-sr-eV'
     options, name1, 'ztitle', 'Eflux, EFU'
-    options, name1, 'ytitle', 'ESA i+ '+thx+'!C eV'
+    options, name1, 'ytitle', 'ESA!Cions!C[eV]'
     options, name1, 'ysubtitle', ''
     options, name1, 'spec', 1
     options, name1, 'x_no_interp', 1
@@ -398,12 +429,12 @@ For j = 0, 1 Do Begin
     filler[*] = float('Nan')
     store_data, itest+'_density', data = {x:time_double(date)+findgen(2), y:filler}
 ;    options, itest+'_density', 'ytitle', 'Ni '+thx+'!C!C1/cm!U3'
-    options, itest+'_density', 'ytitle', 'Ni '+thx
+    options, itest+'_density', 'ytitle', 'Ni'
   endif else begin
     name1 = itest+'_density'
     tdegap, name1, /overwrite, dt = 600.0
     ylim, name1, .1, nmax, 1
-    options, name1, 'ytitle', 'Ni '+thx
+    options, name1, 'ytitle', 'Ni'
     ok_esai_moms[j] = 1
   endelse
 
@@ -411,7 +442,7 @@ For j = 0, 1 Do Begin
     filler = fltarr(2, 3)
     filler[*, *] = float('Nan')
     store_data, itest+'_velocity_dsl', data = {x:time_double(date)+findgen(2), y:filler}
-    options, itest+'_velocity_dsl', 'ytitle', 'VI '+thx+'!Ckm/s'
+    options, itest+'_velocity_dsl', 'ytitle', 'VI!C[km/s]'
     options, itest+'_velocity_dsl', 'ysubtitle', ''
   endif else begin
     name1 = itest+'_velocity_dsl'
@@ -425,7 +456,7 @@ For j = 0, 1 Do Begin
     if maxvel le 100. then ylim, name1, -50,50,0 else ylim, name1, minlim, maxlim, 0
     options, name1, 'colors', [2, 4, 6]
     options, name1, 'labflag', 1
-    options, name1, 'ytitle', 'VI '+thx+'!Ckm/s'
+    options, name1, 'ytitle', 'VI!C[km/s]'
     options, name1, 'ysubtitle', ''
 ;;    options, name1, labels = ['Vi!dx!n', 'Vi!dy!n', 'Vi!dz!n'], constant = 0.
     options, name1, labels = ['VIx', 'VIy', 'VIz'], constant = 0.
@@ -435,14 +466,14 @@ For j = 0, 1 Do Begin
     filler = fltarr(2, 3)
     filler[*, *] = float('Nan')
     store_data, itest+'_t3', data = {x:time_double(date)+findgen(2), y:filler}
-    options, itest+'_t3', 'ytitle', 'Ti '+thx+'!CeV'
+    options, itest+'_t3', 'ytitle', 'Ti!C[eV]'
     options, itest+'_t3', 'ysubtitle', ''
   endif else begin
     name1 = itest+'_t3'
     tdegap, name1, /overwrite, dt = 600.0
     ylim, name1, 10, 10000., 1
     options, name1, 'colors', [2, 4, 6, 0]
-    options, name1, 'ytitle', 'Ti '+thx+'!C eV'
+    options, name1, 'ytitle', 'Ti!C[eV]'
     options, name1, 'ysubtitle', ''
   endelse
   
@@ -456,7 +487,7 @@ For j = 0, 1 Do Begin
     ylim, name1, 3., 40000., 1
 ;    options, name1, 'ztitle', 'Eflux !C!C eV/cm!U2!N!C-s-sr-eV'
     options, name1, 'ztitle', 'Eflux, EFU'
-    options, name1, 'ytitle', 'ESA e- '+thx+'!C eV'
+    options, name1, 'ytitle', 'ESA!Celec!C[eV]'
     options, name1, 'ysubtitle', ''
     options, name1, 'spec', 1
   endif else begin 
@@ -466,7 +497,7 @@ For j = 0, 1 Do Begin
     ylim, name1, 3., 40000., 1
 ;    options, name1, 'ztitle', 'Eflux !C!C eV/cm!U2!N!C-s-sr-eV'
     options, name1, 'ztitle', 'Eflux, EFU'
-    options, name1, 'ytitle', 'ESA e- '+thx+'!C eV'
+    options, name1, 'ytitle', 'ESA!Celec!C[eV]'
     options, name1, 'ysubtitle', ''
     options, name1, 'spec', 1
     options, name1, 'x_no_interp', 1
@@ -479,19 +510,19 @@ For j = 0, 1 Do Begin
     filler[*] = float('Nan')
     store_data, etest+'_density', data = {x:time_double(date)+findgen(2), y:filler}
 ;    options, etest+'_density', 'ytitle', 'Ne '+thx+'!C!C1/cm!U3'
-    options, etest+'_density', 'ytitle', 'Ne '+thx+'!C1/cc'
+    options, etest+'_density', 'ytitle', 'Ne!C[1/cc]'
     options, etest+'_density', 'ysubtitle', ''
 no_npot:
     filler = fltarr(2)
     filler[*] = float('Nan')
     store_data, etest+'_density_npot', data = {x:time_double(date)+findgen(2), y:filler}
-    options, etest+'_density_npot', 'ytitle', 'Ne '+thx+'!C1/cc'
+    options, etest+'_density_npot', 'ytitle', 'Ne!C[1/cc]'
     options, etest+'_density_npot', 'ysubtitle', ''
   endif else begin 
     name1 = etest+'_density'
     ylim, name1, .1, nmax, 1
 ;    options, name1, 'ytitle', 'Ne '+thx+'!C!C1/cm!U3'
-    options, name1, 'ytitle', 'Ne '+thx+'!C1/cc'
+    options, name1, 'ytitle', 'Ne!C[1/cc]'
     options, name1, 'ysubtitle', ''
     ok_esae_moms[j] = 1
 ;Npot calculation, 2009-10-12, jmm
@@ -502,7 +533,7 @@ no_npot:
     get_data, name1x, data = npot_test
     If(is_struct(temporary(npot_test)) Eq 0) Then Goto, no_npot
     tdegap, name1x, /overwrite, dt = 600.0
-    options, name1x, 'ytitle', 'Ne '+thx+'!C1/cc'
+    options, name1x, 'ytitle', 'Ne!C[1/cc]'
     options, name1x, 'ysubtitle', ''
   endelse
   
@@ -511,14 +542,14 @@ no_npot:
     filler[*, *] = float('Nan')
     store_data, etest+'_velocity_dsl', data = {x:time_double(date)+findgen(2), y:filler}
 ;    options, etest+'_velocity_dsl', 'ytitle', 'Ve '+thx+'!C!Ckm/s'
-    options, etest+'_velocity_dsl', 'ytitle', 'VE '+thx+'!Ckm/s'
+    options, etest+'_velocity_dsl', 'ytitle', 'VE!C[km/s]'
     options, etest+'_velocity_dsl', 'ysubtitle', ''
   endif else begin
     name1 = etest+'_velocity_dsl'
     tdegap, name1, /overwrite, dt = 600.0
     ylim, name1, -500, 200., 0
 ;    options, name1, 'ytitle', 'Ve '+thx+'!C!Ckm/s'
-    options, name1, 'ytitle', 'VE '+thx+'!Ckm/s'
+    options, name1, 'ytitle', 'VE!C[km/s]'
     options, name1, 'ysubtitle', ''
   endelse
 
@@ -526,7 +557,7 @@ no_npot:
     filler = fltarr(2, 3)
     filler[*, *] = float('Nan')
     store_data, etest+'_t3', data = {x:time_double(date)+findgen(2), y:filler}
-    options, etest+'_t3', 'ytitle', 'Te '+thx+'!CeV'
+    options, etest+'_t3', 'ytitle', 'Te!C[eV]'
     options, etest+'_t3', 'ysubtitle', ''
   endif else begin
   ;options,name1,'colors',[cols.blue,cols.green,cols.red]
@@ -536,7 +567,7 @@ no_npot:
     options, name1, labels = ['TEx', 'TEy', 'TEz'], constant = 0.
     ylim, name1, 10, 10000., 1
     options, name1, 'colors', [2, 4, 6]
-    options, name1, 'ytitle', 'TE '+thx+'!CeV'
+    options, name1, 'ytitle', 'TE!C[eV]'
     options, name1, 'ysubtitle', ''
   endelse
 
@@ -566,12 +597,12 @@ no_npot:
   store_data, thx+'_Nie'+mtyp[j], data = [itest+'_density', Ne_kluge_name]
 ;  options, thx+'_Nie'+mtyp[j], 'ytitle', 'Ni,e '+thx+'!C1/cm!U3'
 ;  options, thx+'_Nie'+mtyp[j], 'ytitle', 'Ni,e '+thx
-  options, thx+'_Nie'+mtyp[j], 'ytitle', 'Ni,e '+thx+'!C1/cc'
+  options, thx+'_Nie'+mtyp[j], 'ytitle', 'Ni!Celec!C[1/cc]'
   options, thx+'_Nie'+mtyp[j], 'ysubtitle', ''
   nameti=itest+'_t3'
   namete=etest+'_t3'
   store_data, thx+'_Tie'+mtyp[j], data = [nameti,namete]
-  options, thx+'_Tie'+mtyp[j], 'ytitle', 'Ti,e '+thx+'!CeV'
+  options, thx+'_Tie'+mtyp[j], 'ytitle', 'Ti!Celec!C[eV]'
   options, thx+'_Tie'+mtyp[j], 'ysubtitle', ''
   options,nameti,'labels',['Ti!9'+string(120B)+'!X','Ti!9'+string(35B)+'!X']
   options,namete,'labels',['Te!9'+string(120B)+'!X','Te!9'+string(35B)+'!X']
@@ -623,11 +654,11 @@ get_data, thx+'_state_pos_gse',data=tmp
 
 if is_struct(tmp) then begin
   store_data,thx+'_state_pos_gse_x',data={x:tmp.x,y:tmp.y[*,0]/6370.}
-	  options,thx+'_state_pos_gse_x','ytitle',thx+'_X-GSE'
+	  options,thx+'_state_pos_gse_x','ytitle','X-GSE'
   store_data,thx+'_state_pos_gse_y',data={x:tmp.x,y:tmp.y[*,1]/6370.}
-	  options,thx+'_state_pos_gse_y','ytitle',thx+'_Y-GSE'
+	  options,thx+'_state_pos_gse_y','ytitle','Y-GSE'
   store_data,thx+'_state_pos_gse_z',data={x:tmp.x,y:tmp.y[*,2]/6370.}
-  	options,thx+'_state_pos_gse_z','ytitle',thx+'_Z-GSE'
+  	options,thx+'_state_pos_gse_z','ytitle','Z-GSE'
 endif else begin
   dprint,'No state gse data found'
 ;  store_data,thx+'_state_pos_gse_x',data={x:time_double(date)+dindgen(2), y:replicate(!values.d_nan,2)}
@@ -730,14 +761,49 @@ If(ok_esai_moms[0] Eq 0) Then Begin
     esaf_n_name = thx+'_Nier'
   Endif
 Endif
-    
+   
 vars_full = ['thg_idx_ae', roi_bar, 'Keogram', thx+'_fgs_gse', $
              esaf_n_name, esaif_v_name, esaf_t_name, 'sample_rate_'+sc, $
              ssti_name, esaif_flux_name, sste_name,  $
              esaef_flux_name, thx+'_fb_*', thx+'_pos_gse_z']
-             
-tplot, vars_full, title = probes_title[pindex[0]]+' (TH-'+strupcase(sc)+')', $
-  var_label = [thx+'_state_pos_gse_z', thx+'_state_pos_gse_y', thx+'_state_pos_gse_x']
+
+options, 'Keogram', 'ytitle', 'Keogram'
+options, 'Keogram', 'ysubtitle', ''  
+
+if keyword_set(gui_plot) then begin ; for GUI plots
+    title = probes_title[pindex[0]] + ' (TH-'+strupcase(sc)+')'
+    tplot_options, 'title', title
+    tplot_options, 'ymargin', [3,5]
+
+    options, esaf_t_name, labels=  ['Ti ||', 'Ti per', 'Te ||', 'Te per']
+   
+    get_data,roi_bar,data=ppp,limit=l ;the ROI bar has to be transormed
+    If(is_struct(ppp)) Then Begin
+        bits2,ppp.y,new_bar ;the extracts the bit values into a bytarr of 16xntimes
+        nbv=n_elements(new_bar[*,0])
+        nxv=n_elements(ppp.x)
+        new_bar=rebin(1+bindgen(nbv), nbv, nxv)*new_bar ;this assigns each non-zero bit the value equal to its bit number
+        new_bar=float(new_bar)  ;to allow for NaN's to plot correctly
+        zerov=where(new_bar Eq 0,nzerov)
+        If(nzerov Gt 0) Then new_bar[zerov]=!values.f_nan
+        str_element,ppp,'y',transpose(new_bar),/add_replace ;need transpose to make it ntimesX16
+        str_element,l,'panel_size', /delete  ;panel sizing handled using different method in gui overview plots
+        store_data,roi_bar,data=ppp,limit=l
+        options,roi_bar,tplot_routine='mplot' ;reset this for testing
+    Endif Else Begin
+        filler=fltarr(2,16)
+        filler[*,*]=float('NaN')
+        store_data,thx+'_roi_bar',data={x:time_double(date)+findgen(2),y:filler}
+        roi_bar=thx+'_roi_bar'
+    Endelse
+    
+    tplot_gui,vars_full,/no_verify,/no_update,/add_panel,no_draw=keyword_set(no_draw),  var_label = [thx+'_state_pos_gse_x', thx+'_state_pos_gse_y', thx+'_state_pos_gse_z']
+
+endif else begin
+  ;for server plots
+  tplot, vars_full, title = probes_title[pindex[0]]+' (TH-'+strupcase(sc)+')', $
+    var_label = [thx+'_state_pos_gse_x', thx+'_state_pos_gse_y', thx+'_state_pos_gse_z']
+endelse
 
 ; make pngs
 ;-----------
@@ -794,6 +860,7 @@ tplot_options,var_label=''
 SKIP_DAY:
 message, /info, 'Returning:'
 help, /memory
+error=0
 Return
 
 end

@@ -19,3 +19,5 @@
 ; 
 ; ---------------- Add entries below here ----------------
 
+THEMIS Particle Distribution Slices, , thm_ui_slice2d
+

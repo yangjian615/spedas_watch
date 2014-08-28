@@ -4,9 +4,9 @@
 ; Purpose: A few tests to verify that the model and the wrapper
 ; procedures work correctly
 ;
-; $LastChangedBy: lphilpott $
-; $LastChangedDate: 2012-06-14 11:16:20 -0700 (Thu, 14 Jun 2012) $
-; $LastChangedRevision: 10563 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-03-18 08:26:40 -0700 (Tue, 18 Mar 2014) $
+; $LastChangedRevision: 14570 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t01/t01_test.pro $
 ;-
 
@@ -129,7 +129,7 @@ stop
 del_data,'thb_state_pos_bt01'
 
 ;test with newname
-tt01, 'thb_state_pos',pdyn=2.0D,dsti=-30.0D,yimf=0.0D,zimf=-5.0D,newname='test',error=e
+tt01, 'thb_state_pos',pdyn=2.0D,dsti=-30.0D,yimf=0.0D,zimf=-5.0D,newname='test',g1='t_g1',g2='t_g2',error=e
 
 if e eq 0 then begin
     message,/continue,'error detected, stopping'
@@ -143,7 +143,7 @@ stop
 del_data,'test'
 
 ;test with a different period
-tt01, 'thb_state_pos',pdyn=2.0D,dsti=-30.0D,yimf=0.0D,zimf=-5.0D,period=30,error=e
+tt01, 'thb_state_pos',pdyn=2.0D,dsti=-30.0D,yimf=0.0D,zimf=-5.0D,period=30,g1='t_g1',g2='t_g2',error=e
 
 if e eq 0 then begin
     message,/continue,'error detected, stopping'
@@ -157,7 +157,7 @@ stop
 del_data,'test'
 
 ;test with an incremented tilt
-tt01, 'thb_state_pos',pdyn=2.0D,dsti=-30.0D,yimf=0.0D,zimf=-5.0D,period=30,error=e,get_tilt='tilt_vals',get_nperiod=gn,add_tilt=1
+tt01, 'thb_state_pos',pdyn=2.0D,dsti=-30.0D,yimf=0.0D,zimf=-5.0D,period=30,error=e,get_tilt='tilt_vals',get_nperiod=gn,add_tilt=1,g1='t_g1',g2='t_g2'
 
 if e eq 0 then begin
     message,/continue,'error detected, stopping'
@@ -169,7 +169,7 @@ tplot,'tilt_vals'
 stop
 
 ;test with a set tilt
-tt01, 'thb_state_pos',pdyn=2.0D,dsti=-30.0D,yimf=0.0D,zimf=-5.0D,period=30,error=e,get_tilt='tilt_vals',get_nperiod=gn,set_tilt=1
+tt01, 'thb_state_pos',pdyn=2.0D,dsti=-30.0D,yimf=0.0D,zimf=-5.0D,period=30,error=e,get_tilt='tilt_vals',get_nperiod=gn,set_tilt=1,g1='t_g1',g2='t_g2'
 
 if e eq 0 then begin
     message,/continue,'error detected, stopping'

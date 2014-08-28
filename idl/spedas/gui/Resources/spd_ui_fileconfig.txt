@@ -11,7 +11,7 @@
 ; YYY, spd_ui_yyy_fileconfig
 ;
 SPEDAS, spd_ui_spedas_fileconfig 
-SPEDAS, spd_ui_fileconfig
+THEMIS, spd_ui_themis_fileconfig
 GOES, spd_ui_goes_fileconfig
 WIND, spd_ui_wind_fileconfig
 ISTP, spd_ui_istp_fileconfig

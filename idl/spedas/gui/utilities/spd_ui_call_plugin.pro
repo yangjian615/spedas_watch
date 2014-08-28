@@ -6,17 +6,11 @@
 ;  Opens specified GUI plugin window.
 ;
 ;Calling Sequence:
-;  spd_ui_call_plugin, event, loaded_data, data_tree, time_range, call_sequence,
-;                      history_window, status_bar
+;  spd_ui_call_plugin, event, info
 ;
 ;Input:
 ;  event: event structure from plugin menu
-;  loaded_data: loaded data object
-;  data_tree: GUI data tree object
-;  time_range: GUI time range object
-;  call_sequence: GUI call sequence object
-;  history_window: history window object
-;  status_bar: status bar object
+;  info: Main storage structure from GUI
 ;
 ;Output:
 ;  none
@@ -25,19 +19,13 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-18 15:16:51 -0800 (Tue, 18 Feb 2014) $
-;$LastChangedRevision: 14386 $
+;$LastChangedDate: 2014-03-18 18:23:36 -0700 (Tue, 18 Mar 2014) $
+;$LastChangedRevision: 14582 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_call_plugin.pro $
 ;
 ;-
 
-pro spd_ui_call_plugin, event, $
-                        loaded_data, $
-                        data_tree, $
-                        time_range, $
-                        call_sequence, $
-                        history_window, $
-                        status_bar
+pro spd_ui_call_plugin, event, info
 
 
     compile_opt idl2, hidden
@@ -66,18 +54,22 @@ pro spd_ui_call_plugin, event, $
     data_structure = *plugin.data
   endif
   
+  ;call sequence is stored in the window object (gui doc support) 
+  info.windowStorage->getProperty,callSequence=call_Sequence
+  
   ;Required inputs are passed as arguments, optional inputs use keywords
   call_procedure, plugin.procedure, $
-                  event.top, $
-                  loaded_data, $
-                  call_sequence, $
-                  history_window, $
-                  status_bar, $
-                  data_tree=data_tree, $
-                  time_range=time_range, $
-                  data_structure=data_structure
+                  gui_id = event.top, $
+                  loaded_data = info.loadeddata, $
+                  call_sequence = call_sequence, $
+                  data_tree = info.guitree, $
+                  time_range = info.loadtr, $
+                  window_storage = info.windowStorage, $
+                  history_window = info.historywin, $
+                  status_bar = info.statusbar, $
+                  data_structure = data_structure
                   
-  
+                  
   ;-------------------------------------------------------
   ; Update objects and other stored quantities
   ;-------------------------------------------------------
@@ -87,5 +79,18 @@ pro spd_ui_call_plugin, event, $
   endif
   
   widget_control, event.id, set_uvalue=plugin
+  
+  info.windowMenus->sync, info.windowStorage
+  
+  
+  ;-------------------------------------------------------
+  ; Update draw object and draw
+  ;-------------------------------------------------------
+  
+;    ;needed for overview plots?
+;    spd_ui_orientation_update,drawObject,windowStorage
+    
+    info.drawObject->Update,info.windowStorage,info.loadedData 
+    info.drawObject->Draw
 
 end

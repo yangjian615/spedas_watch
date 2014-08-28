@@ -2,10 +2,8 @@
 ;Procedure : ttrace2equator
 ;
 ;Purpose: tplot wrapper for field line footprint and tracing routines
-;         This program will always use the refined foot point mappings
-;          a
-;         modification made by Vassilis Angelopoulos to provide more
-;          accurate
+;         This program will always use the refined foot point mappings 
+;         (a modification made by Vassilis Angelopoulos to provide more accurate
 ;         mappings of foot points) as there is no Tsyganenko code to 
 ;         perform equatorial traces.Model parameters can be provided
 ;         in the par array or individually, using the
@@ -14,62 +12,58 @@
 ;         provided.  If a named parameter is provided, but is
 ;         unneeded by the model, it will be ignored.
 ;
-;Keywords:
-;         
+;Input:
 ;         in_pos_tvar: name of the tplot variable storing the
-;         position information for tracing, input values should be in
-;         'gse','gei','gsm',or 'sm'
+;             position information for tracing, input values should be in
+;             'gse','gei','gsm',or 'sm'
 ;
+;Keywords:
 ;         newname(optional): name of the tplot variable in which output
-;         footprints should be stored(default: in_pos_tvar+'_foot')
+;             footprints should be stored(default: in_pos_tvar+'_foot')
 ;
 ;         trace_var_name(optional): name of the tplot variable in
-;          which to
-;         store the traces of field lines leading to footprints. 
-;         Because traces are of variable length, the returned array
-;         will be of dimensions NxDx3
-;         D is the maximum number of vectors in any of the traces.
-;         Shorter traces will have NaNs filling the space at the end
-;         of the array  
+;             which to store the traces of field lines leading to footprints. 
+;             Because traces are of variable length, the returned array
+;             will be of dimensions NxDx3
+;             D is the maximum number of vectors in any of the traces.
+;             Shorter traces will have NaNs filling the space at the end
+;             of the array  
 ;
 ;         in_coord(optional): set this keyword to the coordinate
-;         system of the input, defaults to 'gsm', must match tplot
-;          meta data
+;             system of the input, defaults to 'gsm', must match tplot
+;             meta data
 ;
 ;         out_coord(optional): set this keyword to a string indicating
-;          the
-;         coordinate system output data should be in, defaults to
-;         'gsm'
-;         (can be 'geo','gei','gse','gsm',or 'sm' default: the same as
-;          the input)
+;             the coordinate system output data should be in, defaults to 'gsm'
+;             (can be 'geo','gei','gse','gsm',or 'sm' default: the same as
+;              the input)
 ;
 ;         internal_model(optional): set this keyword to a string
-;         indicating the internal model that should be used in tracing
-;         (can be 'dip' or 'igrf' default:igrf)
+;             indicating the internal model that should be used in tracing
+;             (can be 'dip' or 'igrf' default:igrf)
 ;
 ;         external_model(optional): set this keyword to a string
-;         indicating the external model that should be used in tracing
-;         (can be 'none','t89','t96','t01', or 't04s' default: none)
+;             indicating the external model that should be used in tracing
+;             (can be 'none','t89','t96','t01', or 't04s' default: none)
 ;
-;         /SOUTH(optional): set this keyword to indicate that fields
-;         should be traced towards the southern hemisphere. By default
-;         they trace north.
+;         SOUTH(optional): set this keyword to indicate that fields
+;             should be traced towards the southern hemisphere. By default
+;             they trace north.
 ;         
-;         /KM(optional): set this keyword to indicate that input
-;         and output will be in KM not RE
+;         KM(optional): set this keyword to indicate that input
+;             and output will be in KM not RE
 ; 
 ;         par(optional): parameter input for the external field model
-;         if using t89 then it should be an N element array containing 
-;         kp values or a single kp value, if using t96,t01,t04s it
-;         should be an N x 10 element array of parmod values or a 10
-;         element array. At the moment if an external model is set and
-;         this is not set an error will be thrown. This value can also
-;         be tplot variable name. If it is a tplot variable name it
-;         will be interpolated to match the positions in pos_tvar
+;             if using t89 then it should be an N element array containing 
+;             kp values or a single kp value, if using t96,t01,t04s it
+;             should be an N x 10 element array of parmod values or a 10
+;             element array. At the moment if an external model is set and
+;             this is not set an error will be thrown. This value can also
+;             be tplot variable name. If it is a tplot variable name it
+;             will be interpolated to match the positions in pos_tvar
 ; 
 ;           
-;         period(optional): the amount of time between recalculations
-;          of
+;         period(optional): the amount of time between recalculations of
 ;             geodipole tilt and input of new model parameters in
 ;             seconds (default: 60) increase this value to decrease
 ;             run time 
@@ -78,123 +72,116 @@
 ;             iteration
 ;
 ;         error(optional): named variable in which to return the error
-;          state
-;         of the procedure.  1 for success, 0 for failure
+;             state of the procedure.  1 for success, 0 for failure
 ;
 ;         R0(optional): Minimum trace distance in RE.
 ;
 ;         RLIM(optional): Maximum trace distance in RE (default: 60 RE)
 ;
-;         /NOBOUNDARY(optional): Override boundary limits.
+;         NOBOUNDARY(optional): Override boundary limits.
 ;  
-;         /STORM(optional): Specify storm-time version of T01 external 
-;         magnetic field model use together with /T01.
+;         STORM(optional): Specify storm-time version of T01 external 
+;             magnetic field model use together with /T01.
 ;
-;          pdyn(optional): Solar wind pressure(nanoPascals) should
-;          either be a
-;          string naming a tplot variable or an array or a single
-;          value.  If a tplot input is used it will
-;          be interpolated to match the time inputs from the position
-;          var. Non-tplot array values must match the number of times in the
-;          tplot input for pos_gsm_tvar 
+;             
+;         pdyn(optional): Solar wind pressure(nanoPascals) should either be a
+;              string naming a tplot variable or an array or a single
+;              value. If a tplot input is used it will be interpolated to
+;              match the time inputs from the position var. Non-tplot array values
+;              must match the number of times in the tplot input for pos_gsm_tvar
 ;
-;          dsti(optional): DST index(nanoTeslas)  should either be a
-;          string naming a tplot variable or an array or a single
-;          value.  If a tplot input is used it will
-;          be interpolated to match the time inputs from the position
-;          var. Non-tplot array values must match the number of times in the
-;          tplot input for pos_gsm_tvar
+;         dsti(optional): DST index(nanoTeslas)  should either be a
+;              string naming a tplot variable or an array or a single
+;              value.  If a tplot input is used it will be interpolated to
+;              match the time inputs from the position var. Non-tplot array values
+;              must match the number of times in the tplot input for pos_gsm_tvar
 ;
+;         yimf(optional): y component of the interplanetary magnetic field
+;             should either be a string naming a tplot variable or an
+;             array or a single value.  If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;
-;         yimf(optional): y component of the interplanetary magnetic
-;          field
-;         should either be a string naming a tplot variable or an
-;          array or a
-;         single value.   If a tplot input is used it will
-;         be interpolated to match the time inputs from the position
-;         var. Non-tplot array values must match the number of times in the
-;         tplot input for pos_gsm_tvar
-;
-;         zimf(optional): z component of the interplanetary magnetic
-;          field
-;          should either be a string naming a tplot variable or an
-;          array or a single value.   If a tplot input is used it will
-;          be interpolated to match the time inputs from the position
-;          var. Non-tplot array values must match the number of times in the
-;          tplot input for pos_gsm_tvar
+;         zimf(optional): z component of the interplanetary magnetic field
+;             should either be a string naming a tplot variable or an
+;             array or a single value.  If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;
 ;         g1(optional):  index describes solar wind conditions in the
-;         previous hour, should either be a string naming a tplot
-;          variable or an
-;          array or a single value.   If a tplot input is used it will
-;          be interpolated to match the time inputs from the position
-;          var. Non-tplot array values must match the number of times in the
-;          tplot input for pos_gsm_tvar
+;             previous hour, should either be a string naming a tplot variable or an
+;             array or a single value.   If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;
 ;         g2(optional): index describes solar wind conditions in the
-;         previous hour should either be a string naming a tplot
-;         variable or an
-;         array or a single value.   If a tplot input is used it will
-;         be interpolated to match the time inputs from the position
-;         var. Non-tplot array values must match the number of times in the
-;         tplot input for pos_gsm_tvar
+;             previous hour should either be a string naming a tplot variable or an
+;             array or a single value.   If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;        
 ;         w1(optional):  time integral from the beginning of a storm
-;         can be an array or a tplot variable(see paper reference
-;         below for definitions of w1-w6) or a single value. 
-;         If a tplot input is used it will
-;         be interpolated to match the time inputs from the position
-;         var. Non-tplot array values must match the number of times in the
-;         tplot input for pos_gsm_tvar
+;             can be an array or a tplot variable(see paper reference
+;             below for definitions of w1-w6) or a single value. 
+;             If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;
 ;         w2(optional): time integral from the beginning of a storm
-;         can be an array or a tplot variable or a single value
-;         If a tplot input is used it will
-;         be interpolated to match the time inputs from the position
-;         var. Non-tplot array values must match the number of times in the
-;         tplot input for pos_gsm_tvar
+;             can be an array or a tplot variable or a single value
+;             If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;
 ;         w3(optional):  time integral from the beginning of a storm
-;         can be an array or a tplot variable or a single value
-;         If a tplot input is used it will
-;         be interpolated to match the time inputs from the position
-;         var. Non-tplot array values must match the number of times in the
-;         tplot input for pos_gsm_tvar
+;             can be an array or a tplot variable or a single value
+;             If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;
 ;         w4(optional): time integral from the beginning of a storm
-;         can be an array or a tplot variable or a single value
-;         If a tplot input is used it will
-;         be interpolated to match the time inputs from the position
-;         var. Non-tplot array values must match the number of times in the
-;         tplot input for pos_gsm_tvar
+;             can be an array or a tplot variable or a single value
+;             If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;
 ;         w5(optional):  time integral from the beginning of a storm
-;         can be an array or a tplot variable or a single value
-;         If a tplot input is used it will
-;         be interpolated to match the time inputs from the position
-;         var. Non-tplot array values must match the number of times in the
-;         tplot input for pos_gsm_tvar
+;             can be an array or a tplot variable or a single value
+;             If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;
 ;         w6(optional): time integral from the beginning of a storm
-;         can be an array or a tplot variable or a single value
-;  If a tplot input is used it will
-;be interpolated to match the time inputs from the position
-;var. Non-tplot array values must match the number of times in the
-;tplot input for pos_gsm_tvar
+;             can be an array or a tplot variable or a single value
+;             If a tplot input is used it will
+;             be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the
+;             tplot input for pos_gsm_tvar
 ;
-;        get_tilt(optional):  Set this value to a tplot variable name in which the geodipole tilt for each period will be returned
-;                     One sample will be returned for each period with time at the center of the period.
+;         get_tilt(optional):  Set this value to a tplot variable name in which the geodipole tilt for each period will be returned
+;             One sample will be returned for each period with time at the center of the period.
 ;          
-;        set_tilt(optional): Set this to a tplot variable name or an array of values containing the dipole tilt that should be used.
-;                              If a tplot input is used it will be interpolated to match the time inputs from the position
-;                              var. Non-tplot array values must match the number of times in the tplot input for pos_gsm_tvar
+;         set_tilt(optional): Set this to a tplot variable name or an array of values containing the dipole tilt that should be used.
+;             If a tplot input is used it will be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the tplot input for pos_gsm_tvar
 ;
-;        add_tilt(optional): Set this to a tplot variable name or an array of values containing the values to be added to the dipole tilt
-;                              that should be used for each period. If a tplot input is used it will be interpolated to match the time inputs from the position
-;                              var. Non-tplot array values must match the number of times in the tplot input for pos_gsm_tvar
+;         add_tilt(optional): Set this to a tplot variable name or an array of values containing the values to be added to the dipole tilt
+;             that should be used for each period. If a tplot input is used it will be interpolated to match the time inputs from the position
+;             var. Non-tplot array values must match the number of times in the tplot input for pos_gsm_tvar
 ;
-;        get_nperiod(optional): Return the number of periods used in the time interval
-;
+;         get_nperiod(optional): Return the number of periods used in the time interval
+;     
+;         geopack_2008 (optional): Set this keyword to use the latest version (2008) of the Geopack
+;              library. Version 9.2 of the IDL Geopack DLM is required for this keyword to work.
 ;
 ;Example: ttrace2equator,'tha_state_pos',newname='tha_out_foot'
 ;
@@ -202,31 +189,30 @@
 ;
 ;Notes:
 ;  1. Relies on the IDL/Geopack Module provided by Haje Korth JHU/APL
-;  and N.A. Tsyganenko NASA/GSFC, if the module is not installed
-;  this function will fail.  
+;      and N.A. Tsyganenko NASA/GSFC, if the module is not installed
+;      this function will fail.  
 ;  2. Has a loop with number of iterations =
-;  (tarray[n_elements(t_array)]-tarray[0])/period
-;  This means that as period becomes smaller the amount time of this
-;  function should take will grow quickly.
+;      (tarray[n_elements(t_array)]-tarray[0])/period
+;      This means that as period becomes smaller the amount time of this
+;      function should take will grow quickly.
 ;  3. If the trace_array variable is set
-;     the period variable will be ignored.  The program will
-;     recalculate for each value, this will cause the program to
-;     run very slowly. 
+;      the period variable will be ignored.  The program will
+;      recalculate for each value, this will cause the program to
+;      run very slowly. 
 ;  4. All calculations are done internally in double precision
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-04 09:40:56 -0800 (Tue, 04 Mar 2014) $
-; $LastChangedRevision: 14486 $
+; $LastChangedDate: 2014-03-18 08:23:43 -0700 (Tue, 18 Mar 2014) $
+; $LastChangedRevision: 14569 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/trace/ttrace2equator.pro $
 ;-
 
-pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, in_coord = in_coord, $
-    out_coord = out_coord, internal_model = internal_model, external_model = external_model, south = south, $
-    km = km, par=par,period=period,error = error, r0=r0,rlim=rlim,noboundary=noboundary,storm=storm,$
-    pdyn=pdyn,dsti=dsti,yimf=yimf,zimf=zimf,g1=g1,g2=g2,w1=w1,w2=w2,w3=w3,w4=w4,w5=w5,w6=w6,$
-    get_tilt=get_tilt,set_tilt=set_tilt,add_tilt=add_tilt,get_nperiod=get_nperiod
-
+pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name=trace_tvar, in_coord=in_coord, $
+    out_coord=out_coord, internal_model=internal_model, external_model=external_model, south=south, $
+    km=km, par=par, period=period, error=error, r0=r0, rlim=rlim, noboundary=noboundary, storm=storm,$
+    pdyn=pdyn, dsti=dsti, yimf=yimf, zimf=zimf, g1=g1, g2=g2, w1=w1, w2=w2, w3=w3, w4=w4, w5=w5, w6=w6,$
+    get_tilt=get_tilt, set_tilt=set_tilt, add_tilt=add_tilt, get_nperiod=get_nperiod, _extra=_extra
 
     error = 0
     
@@ -248,17 +234,13 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     
     if n_elements(par_in) gt 0 && size(par_in,/type) eq 7 then begin
        if tnames(par_in) eq '' then message,'par variable not valid tplot variable'
-    
        tinterpol_mxn,par_in,in_pos_tvar,newname='par_out'
-    
        get_data,'par_out',data=dat
-    
        par_in = dat.y
     endif
     
     if n_elements(pdyn) gt 0 then begin
-       pdyn_dat = ttrace_valid_param(pdyn,'pdyn',in_pos_tvar)
-    
+       pdyn_dat = tsy_valid_param(pdyn, in_pos_tvar)
        if(size(pdyn_dat, /n_dim) eq 0 && pdyn_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
@@ -269,13 +251,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(dsti) gt 0 then begin
-       dsti_dat = ttrace_valid_param(dsti,'dsti',in_pos_tvar)
-    
+       dsti_dat = tsy_valid_param(dsti, in_pos_tvar)
        if(size(dsti_dat, /n_dim) eq 0 && dsti_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(dsti_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -283,13 +263,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(yimf) gt 0 then begin
-       yimf_dat = ttrace_valid_param(yimf,'yimf',in_pos_tvar)
-    
+       yimf_dat = tsy_valid_param(yimf, in_pos_tvar)
        if(size(yimf_dat, /n_dim) eq 0 && yimf_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(yimf_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -297,13 +275,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(zimf) gt 0 then begin
-       zimf_dat = ttrace_valid_param(zimf,'zimf',in_pos_tvar)
-    
+       zimf_dat = tsy_valid_param(zimf, in_pos_tvar)
        if(size(zimf_dat, /n_dim) eq 0 && zimf_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(zimf_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -311,13 +287,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif 
     
     if n_elements(g1) gt 0 then begin
-       g1_dat = ttrace_valid_param(g1,'g1',in_pos_tvar)
-    
+       g1_dat = tsy_valid_param(g1, in_pos_tvar)
        if(size(g1_dat, /n_dim) eq 0 && g1_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(g1_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -325,13 +299,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(g2) gt 0 then begin
-       g2_dat = ttrace_valid_param(g2,'g2',in_pos_tvar)
-    
+       g2_dat = tsy_valid_param(g2, in_pos_tvar)
        if(size(g2_dat, /n_dim) eq 0 && g2_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(g2_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -339,13 +311,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(w1) gt 0 then begin
-       w1_dat = ttrace_valid_param(w1,'w1',in_pos_tvar)
-    
+       w1_dat = tsy_valid_param(w1, in_pos_tvar)
        if(size(w1_dat, /n_dim) eq 0 && w1_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(w1_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -357,13 +327,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(w2) gt 0 then begin
-       w2_dat = ttrace_valid_param(w2,'w2',in_pos_tvar)
-    
+       w2_dat = tsy_valid_param(w2, in_pos_tvar)
        if(size(w2_dat, /n_dim) eq 0 && w2_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(w2_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -375,13 +343,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(w3) gt 0 then begin
-       w3_dat = ttrace_valid_param(w3,'w3',in_pos_tvar)
-    
+       w3_dat = tsy_valid_param(w3, in_pos_tvar)
        if(size(w3_dat, /n_dim) eq 0 && w3_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(w3_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -389,13 +355,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(w4) gt 0 then begin
-       w4_dat = ttrace_valid_param(w4,'w4',in_pos_tvar)
-    
+       w4_dat = tsy_valid_param(w4, in_pos_tvar)
        if(size(w4_dat, /n_dim) eq 0 && w4_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(w4_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -403,13 +367,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(w5) gt 0 then begin
-       w5_dat = ttrace_valid_param(w5,'w5',in_pos_tvar)
-    
+       w5_dat = tsy_valid_param(w5, in_pos_tvar)
        if(size(w5_dat, /n_dim) eq 0 && w5_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(w5_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -417,13 +379,11 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     endif
     
     if n_elements(w6) gt 0 then begin
-       w6_dat = ttrace_valid_param(w6,'w6',in_pos_tvar)
-    
+       w6_dat = tsy_valid_param(w6, in_pos_tvar)
        if(size(w6_dat, /n_dim) eq 0 && w6_dat[0] eq -1L) then return
     
        if n_elements(par_in) eq 0 then begin
           par_in = dblarr(n_elements(w6_dat),10)
-    
           message,/continue,'Possible error, not all parameters for model provided.'
        endif
     
@@ -448,12 +408,12 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
     if not keyword_set(out_coord)  then out_coord = 'gsm'
     
     if n_elements(add_tilt) gt 0 then begin
-      add_tilt_dat = ttrace_valid_param(add_tilt, 'add_tilt', in_pos_tvar)
+      add_tilt_dat = tsy_valid_param(add_tilt, in_pos_tvar)
       if(size(add_tilt, /n_dim) eq 0 && add_tilt_dat[0] eq -1L) then return
     endif
      
     if n_elements(set_tilt) gt 0 then begin
-      set_tilt_dat = ttrace_valid_param(set_tilt, 'set_tilt', in_pos_tvar)
+      set_tilt_dat = tsy_valid_param(set_tilt, in_pos_tvar)
       if(size(set_tilt, /n_dim) eq 0 && set_tilt_dat[0] eq -1L) then return
     endif
     
@@ -462,12 +422,12 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
         trace2equator,d.x,d.y,f,out_trace_array = tr,in_coord=in_coord,out_coord=out_coord,$
             internal_model=internal_model,external_model=external_model,south=south,km=km,$
             par=par_in,period=period,error=e,r0=r0,rlim=rlim,get_nperiod=get_nperiod,$
-            get_tilt=tilt_dat,set_tilt=set_tilt_dat,get_period_times=period_times_dat,_extra=_extra 
+            get_tilt=tilt_dat,set_tilt=set_tilt_dat,get_period_times=period_times_dat,geopack_2008=geopack_2008,_extra=_extra 
       endif else begin
         trace2equator,d.x,d.y,f,in_coord=in_coord,out_coord=out_coord,internal_model=internal_model,$
             external_model=external_model,south=south,km=km,par=par_in,period=period,error=e,r0=r0,$
             rlim=rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,set_tilt=set_tilt_dat,$
-            get_period_times=period_times_dat,_extra=_extra
+            get_period_times=period_times_dat,geopack_2008=geopack_2008,_extra=_extra
       endelse
       
     endif else if n_elements(add_tilt) gt 0 then begin
@@ -475,23 +435,23 @@ pro ttrace2equator,in_pos_tvar,newname = newname, trace_var_name = trace_tvar, i
         trace2equator,d.x,d.y,f,out_trace_array = tr,in_coord=in_coord,out_coord=out_coord,$
             internal_model=internal_model,external_model=external_model,south=south,km=km,$
             par=par_in,period=period,error=e,r0=r0,rlim=rlim,get_nperiod=get_nperiod,$
-            get_tilt=tilt_dat,add_tilt=add_tilt_dat,get_period_times=period_times_dat,_extra=_extra 
+            get_tilt=tilt_dat,add_tilt=add_tilt_dat,get_period_times=period_times_dat,geopack_2008=geopack_2008,_extra=_extra 
       endif else begin
         trace2equator,d.x,d.y,f,in_coord=in_coord,out_coord=out_coord,internal_model=internal_model,$
             external_model=external_model,south=south,km=km,par=par_in,period=period,error=e,r0=r0,$
             rlim=rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,add_tilt=add_tilt_dat,$
-            get_period_times=period_times_dat,_extra=_extra
+            get_period_times=period_times_dat,geopack_2008=geopack_2008,_extra=_extra
       endelse
     endif else begin
       if keyword_set(trace_tvar) then begin
         trace2equator,d.x,d.y,f,out_trace_array = tr,in_coord=in_coord,out_coord=out_coord,$
             internal_model=internal_model,external_model=external_model,south=south,km=km,$
             par=par_in,period=period,error=e,r0=r0,rlim=rlim,get_nperiod=get_nperiod,$
-            get_tilt=tilt_dat,get_period_times=period_times_dat,_extra=_extra 
+            get_tilt=tilt_dat,get_period_times=period_times_dat,geopack_2008=geopack_2008,_extra=_extra 
       endif else begin
         trace2equator,d.x,d.y,f,in_coord=in_coord,out_coord=out_coord,internal_model=internal_model,$
             external_model=external_model,south=south,km=km,par=par_in,period=period,error=e,r0=r0,$
-            rlim=rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,get_period_times=period_times_dat,_extra=_extra
+            rlim=rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,get_period_times=period_times_dat,geopack_2008=geopack_2008,_extra=_extra
       endelse
     endelse 
     

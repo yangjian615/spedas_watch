@@ -1,10 +1,10 @@
 ;+
 ;NAME:
-; spd_ui_fileconfig
+; spd_ui_themis_fileconfig
 ;
 ;PURPOSE:
 ; A widget that allows the user to set some of the fields in the
-; !spedas system variable: Also allows the user to set the spedas
+; !themis system variable: Also allows the user to set the THEMIS
 ; configuration text file, and save it
 ;
 ;HISTORY:
@@ -16,10 +16,10 @@
 ;              slightly to make things line up in both windows and linux.
 ; 24-oct-2013 clr, removed graphic buttons and goes wind and istp code. panel is now tabbed
 ; 
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_fileconfig.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-03-17 09:21:13 -0700 (Mon, 17 Mar 2014) $
+;$LastChangedRevision: 14546 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_themis_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
 ;SAVE this routine in the event we want to reinstall the graphics buttons
@@ -107,7 +107,7 @@ END
 
 ;--------------------------------------------------------------------------------
 
-PRO spd_ui_fileconfig_event, event
+PRO spd_ui_themis_fileconfig_event, event
   ; Get state structure from the base level 
   Widget_Control, event.handler, Get_UValue=state, /No_Copy
  
@@ -133,7 +133,7 @@ PRO spd_ui_fileconfig_event, event
       dirName = Dialog_Pickfile(Title='Choose a Local Data Directory:', $
       Dialog_Parent=event.top,path=currentDir, /directory); /fix_filter doesn't seem to make a difference on Windows. Does on unix.  
       IF is_string(dirName) THEN BEGIN
-          !SPEDAS.local_data_dir = dirName
+          !THEMIS.local_data_dir = dirName
           widget_control, state.localDir, set_value=dirName             
       ENDIF ELSE BEGIN
           ok = dialog_message('Selection is not a directory',/center)
@@ -144,20 +144,20 @@ PRO spd_ui_fileconfig_event, event
     'LOCALDIR': BEGIN
     
         widget_control, state.localDir, get_value=currentDir
-        !spedas.local_data_dir = currentDir
+        !themis.local_data_dir = currentDir
 
     END
  
      'REMOTEDIR': BEGIN
     
         widget_control, state.remoteDir, get_value=currentDir
-        !spedas.remote_data_dir = currentDir
+        !themis.remote_data_dir = currentDir
 
     END
     
     'VERBOSE': BEGIN
 
-       !spedas.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
+       !themis.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
 
     END
     
@@ -201,20 +201,20 @@ PRO spd_ui_fileconfig_event, event
     
     'RESET': BEGIN
      
-      !SPEDAS=state.thm_cfg_save
-      widget_control,state.localdir,set_value=!SPEDAS.local_data_dir
-      widget_control,state.remotedir,set_value=!SPEDAS.remote_data_dir
-      if !SPEDAS.no_download eq 1 then begin
+      !themis=state.thm_cfg_save
+      widget_control,state.localdir,set_value=!themis.local_data_dir
+      widget_control,state.remotedir,set_value=!themis.remote_data_dir
+      if !themis.no_download eq 1 then begin
          widget_control,state.nd_off_button,set_button=1
       endif else begin
          widget_control,state.nd_on_button,set_button=1
       endelse  
-      if !SPEDAS.no_update eq 1 then begin
+      if !themis.no_update eq 1 then begin
         widget_control,state.nu_off_button,set_button=1
       endif else begin
         widget_control,state.nu_on_button,set_button=1
       endelse  
-      widget_control,state.v_droplist,set_combobox_select=!SPEDAS.verbose
+      widget_control,state.v_droplist,set_combobox_select=!themis.verbose
       state.historywin->update,'Resetting controls to saved values.'
       state.statusbar->update,'Resetting controls to saved values.'           
                
@@ -243,12 +243,12 @@ PRO spd_ui_fileconfig_event, event
       state.historywin->update,'Resetting configuration to default values.'
       state.statusbar->update,'Resetting configuration to default values.'
       thm_init,  /reset      
-      !spedas.no_download = state.def_values[0]
-      !spedas.no_update = state.def_values[1]      
-      !spedas.downloadonly = state.def_values[2]
-      !spedas.verbose = state.def_values[3]        
-      widget_control, state.LocalDir, set_value=!spedas.local_data_dir
-      widget_control, state.RemoteDir, set_value=!spedas.remote_data_dir
+      !themis.no_download = state.def_values[0]
+      !themis.no_update = state.def_values[1]      
+      !themis.downloadonly = state.def_values[2]
+      !themis.verbose = state.def_values[3]        
+      widget_control, state.LocalDir, set_value=!themis.local_data_dir
+      widget_control, state.RemoteDir, set_value=!themis.remote_data_dir
 ;      Do Not delete may reinstall at later date    
 ;      !spd_gui.renderer = 1
 ;      widget_control,state.gr_soft_button,/set_button
@@ -282,11 +282,11 @@ END
 
 ;--------------------------------------------------------------------------------
 
-PRO spd_ui_fileconfig, tab_id, historyWin, statusBar
+PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
 
-  defsysv, '!SPEDAS', exists=exists
+  defsysv, '!themis', exists=exists
   if not keyword_set(exists) then thm_init
-  thm_cfg_save = !spedas
+  thm_cfg_save = !themis
   spd_ui_cfg_sav = !spd_gui
   
 ;Build the widget bases
@@ -298,7 +298,7 @@ PRO spd_ui_fileconfig, tab_id, historyWin, statusBar
 
 ;Widget base for save, reset and exit buttons
   bmaster = widget_base(master, /row, /align_center)
-  ll = max(strlen([!spedas.local_data_dir, !spedas.remote_data_dir]))+12
+  ll = max(strlen([!themis.local_data_dir, !themis.remote_data_dir]))+12
 ;Now create directory text widgets
 
   configbase = widget_base(vmaster,/col)
@@ -306,13 +306,13 @@ PRO spd_ui_fileconfig, tab_id, historyWin, statusBar
   lbase = widget_base(configbase, /row, /align_left)
   flabel = widget_label(lbase, value = 'Local data directory:    ')
   localdir = widget_text(lbase, /edit, /all_events, xsiz = ll, $
-                         uval = 'LOCALDIR', val = !spedas.local_data_dir)
+                         uval = 'LOCALDIR', val = !themis.local_data_dir)
   loc_browsebtn = widget_button(lbase,value='Browse', uval='LOCALBROWSE',/align_center)
 
   rbase = widget_base(configbase, /row, /align_left)
   flabel = widget_label(rbase, value = 'Remote data directory: ')
   remotedir = widget_text(rbase, /edit, /all_events, xsiz = ll, $
-                          uval = 'REMOTEDIR', val = !spedas.remote_data_dir)
+                          uval = 'REMOTEDIR', val = !themis.remote_data_dir)
 
 ;Next radio buttions
   nd_base = widget_base(configbase, /row, /align_left)
@@ -387,7 +387,7 @@ PRO spd_ui_fileconfig, tab_id, historyWin, statusBar
           def_values:def_values, $
           historyWin:historyWin, tab_id:tab_id, master:master}
 
-  spd_ui_fileconfig_init_struct,state,!spedas
+  spd_ui_fileconfig_init_struct,state,!themis
 
   Widget_Control, master, Set_UValue=state, /No_Copy
   widget_control, master, /realize
@@ -399,7 +399,7 @@ PRO spd_ui_fileconfig, tab_id, historyWin, statusBar
     widget_control, master, xoffset=0, yoffset=0
   endif
 
-  xmanager, 'spd_ui_fileconfig', master, /no_block
+  xmanager, 'spd_ui_themis_fileconfig', master, /no_block
 
 END ;--------------------------------------------------------------------------------
 

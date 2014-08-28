@@ -12,9 +12,8 @@
 ;  yyy_ui_plugin_delete, loaded_data, history_window, status_bar, 
 ;                        names=names
 ;
-;API Required Input:
+;API Input:
 ;  loaded_data:  GUI loaded data object
-;  history_window:  GUI history window object
 ;  status_bar:  GUI status bar object
 ;
 ;Other Input:
@@ -25,9 +24,8 @@
 ;  none
 ;
 ;API Requirements:
-;  -Plugin routines must take the loaded data, history window, and status bar
-;   objects as arguments (in that order) and must include the _extra keyword.
-;  -All other inputs must be specified in keyword format.
+;  -GUI objects must be passed by keyword.
+;  -Routine must include the _extra keyword.
 ;
 ;See Also:
 ;   yyy_ui_plugin
@@ -38,15 +36,19 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-18 15:28:01 -0800 (Tue, 18 Feb 2014) $
-;$LastChangedRevision: 14388 $
+;$LastChangedDate: 2014-03-18 18:27:19 -0700 (Tue, 18 Mar 2014) $
+;$LastChangedRevision: 14584 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/plugin_menu/yyy_ui_plugin_delete.pro $
 ;
 ;-
-pro yyy_ui_plugin_delete,$ ;API Required Inputs
-                          loaded_data, history_window, status_bar, _extra=_extra, $
+pro yyy_ui_plugin_delete,$ ;API Inputs 
+                          loaded_data=loaded_data, $
+                          status_bar=status_bar, $
                            ;Inputs specific to this routine
-                          names=names
+                          names=names, $
+                           ;API Required
+                          _extra=_extra
+
                           
 
   compile_opt idl2, hidden

@@ -121,9 +121,9 @@
  ;   April  2008 - Added dir_mode keyword
  ;   Sep 2009    - Fixed user-agent
  ;
- ; $LastChangedBy: pcruce $
- ; $LastChangedDate: 2014-03-13 16:59:48 -0700 (Thu, 13 Mar 2014) $
- ; $LastChangedRevision: 14539 $
+ ; $LastChangedBy: jwl $
+ ; $LastChangedDate: 2014-03-14 10:58:06 -0700 (Fri, 14 Mar 2014) $
+ ; $LastChangedRevision: 14542 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -419,7 +419,7 @@ end
    ; get file modification time
    last_modified = file_http_header_element(header,'Last-Modified:')
    hi.mtime = keyword_set(last_modified) ? str2time(last_modified, informat = 'DMYhms') : systime(1)
-   dprint,dlevel=6,verbose=verbose,'last_modified=',last_modified
+   dprint,dlevel=4,verbose=verbose,'last_modified=',last_modified
    
    ; Try to determine length
    len = file_http_header_element(header,'Content-Length:')
@@ -499,7 +499,7 @@ end
    tstart = systime(1)
    ;  if n_elements(verbose) eq 1 then dprint,setdebug=verbose,getdebug=last_dbg
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14539 2014-03-13 23:59:48Z pcruce $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14542 2014-03-14 17:58:06Z jwl $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -817,8 +817,7 @@ end
              dprint,verbose=verbose,dlevel=3 ,'Executable "touch" not found. Could not preserve_mtime'
            endif else if keyword_set(preserve_mtime) and lcl.size eq url_info.size then begin  
              ;file touch works in local time, but mtime is unix time
-             is_dst=isdaylightsavingtime(systime(/sec),system_timezone)
-             file_touch,lcl.name,url_info.mtime,/mtime,/no_create,verbose=verbose,toffset=system_timezone+is_dst
+             file_touch,lcl.name,url_info.mtime,/mtime,/no_create,verbose=verbose   ; ,toffset=time_zone_offset()
            endif
          endif
          
@@ -900,17 +899,13 @@ end
          free_lun, wunit
          if keyword_set(file_mode) then file_chmod,localname,file_mode
          if keyword_set(preserve_mtime) then begin
-          
-           file_touch,exists=texists
-           
-           if texists then begin
+;          file_touch,exists=texists          
+;           if texists then begin
             ;file touch works in local time, but mtime is unix time
-             is_dst = isdaylightsavingtime(url_info.mtime,system_timezone)
-             file_touch,localname,url_info.mtime,/mtime,/no_create,verbose=verbose,toffset=is_dst+system_timezone
-           endif else begin
-             dprint,verbose=verbose,dlevel=3 ,'Executable "touch" not found. Could not preserve_mtime'
-           endelse
-          
+              file_touch,localname,url_info.mtime,/mtime,/no_create,verbose=verbose   ;,toffset=time_zone_offset()
+;           endif else begin
+;             dprint,verbose=verbose,dlevel=3 ,'Executable "touch" not found. Could not preserve_mtime'
+;           endelse
          endif 
          
          if 0 then begin

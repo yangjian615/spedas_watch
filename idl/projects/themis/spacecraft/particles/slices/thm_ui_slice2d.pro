@@ -1676,10 +1676,6 @@ end ;----------------------------------------------------
 ;
 ;INPUT:
 ;  gui_id: group leader widget if opening from SPEDAS GUI
-;  loaded_data: n/a (required for SPEDAS plugin API)
-;  call_sequence: n/a (required for SPEDAS plugin API)
-;  history_window: history window object if opening from SPEDAS GUI
-;  status_bar: n/a (required for SPEDAS plugin API)
 ;
 ;OUTPUT:
 ;  N/A  
@@ -1692,18 +1688,14 @@ end ;----------------------------------------------------
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-07 14:35:00 -0800 (Fri, 07 Mar 2014) $
-;$LastChangedRevision: 14515 $
+;$LastChangedDate: 2014-03-18 18:25:24 -0700 (Tue, 18 Mar 2014) $
+;$LastChangedRevision: 14583 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
 
 
-pro thm_ui_slice2d, gui_ID, $
-                    loaded_data, $
-                    call_sequence, $
-                    history_window, $
-                    status_bar, $
+pro thm_ui_slice2d, gui_ID=gui_id, $
                     _extra=dummy ;SPEDAS API req
 
     compile_opt idl2

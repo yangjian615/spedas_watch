@@ -110,8 +110,8 @@
 ;                    an 'End of file encountered...' bug.
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-02-28 11:29:17 -0800 (Fri, 28 Feb 2014) $
-; $LastChangedRevision: 14466 $
+; $LastChangedDate: 2014-03-14 09:57:49 -0700 (Fri, 14 Mar 2014) $
+; $LastChangedRevision: 14540 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_scm.pro $
 ;-
 pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
@@ -137,9 +137,16 @@ pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
         labels = [ 'b1', 'b2', 'b3']
       end else if strmatch(lvl, 'l2') then begin
         unit = dl_str.cdf.vatt.units
-        coord_sys = strlowcase(strmid(dl_str.cdf.vatt.coordinate_system, 0, 3))
-        data_att = { data_type:'calibrated', coord_sys:coord_sys, $
-                     units:unit}
+        
+        str_element,dl_str.cdf.vatt,'coordinate_system',success=s
+        if s then begin
+          coord_sys = strlowcase(strmid(dl_str.cdf.vatt.coordinate_system, 0, 3))
+          data_att = { data_type:'calibrated', coord_sys:coord_sys, $
+                       units:unit}
+        endif else begin
+          data_att = { data_type:'calibrated', coord_sys:'none', $
+            units:unit}
+        endelse
         labels = [ 'bx', 'by', 'bz']
       end
       str_element, dl_str, 'data_att', data_att, /add
@@ -319,6 +326,7 @@ pro thm_load_scm, probe = probe, datatype = datatype, trange = trange, $
     vL2datatypes = 'scf scp scw', $
     file_vL2datatypes = 'scm', $
     vL2coord = 'dsl gse gsm', $
+    varformat='*',$
     vlevels = vlevels, $
     deflevel = deflevel, $
     vtypes = 'raw calibrated', $

@@ -18,8 +18,8 @@
 ;  TODO: Accept multiple arguments, loop
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-04 17:05:29 -0800 (Tue, 04 Mar 2014) $
-;$LastChangedRevision: 14492 $
+;$LastChangedDate: 2014-03-18 18:30:02 -0700 (Tue, 18 Mar 2014) $
+;$LastChangedRevision: 14586 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -118,8 +118,8 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     return
   endif
   
-  datatype_lc = strlowcase(datatype)
-  probe_lc = strlowcase(probe)
+  datatype_lc = strlowcase(datatype[0])
+  probe_lc = strlowcase(probe[0])
   
   inst_format = 'th'+probe_lc+'_'+datatype_lc
   

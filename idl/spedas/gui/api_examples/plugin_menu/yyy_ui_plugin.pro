@@ -108,12 +108,13 @@ pro yyy_ui_plugin_event, event
     'add': begin
       
       ;call helper routine
-      yyy_ui_plugin_add, state.loaded_data, state.history_window, state.status_bar
+      yyy_ui_plugin_add, loaded_data=state.loaded_data, $
+                         history_window=state.history_window, $
+                         status_bar = state.status_bar
       
       ;Add to call sequence for GUI document replay
       ;  -specify name of routine that was just called
-      ;  -any keywords that were used should be added here 
-      ;    (none for this example)
+      ;  -specify any non-API keywords (none for this example)
       state.call_sequence->addPluginCall, 'yyy_ui_plugin_add' 
     end
     
@@ -132,12 +133,14 @@ pro yyy_ui_plugin_event, event
                  state.time_range->getendtime()  ]
       
       ;call helper routine
-      yyy_ui_plugin_randomize, state.loaded_data, state.history_window, state.status_bar, $
-                               names=names, trange=trange
+      yyy_ui_plugin_randomize, loaded_data=state.loaded_data, $
+                               history_window=state.history_window, $
+                               status_bar = state.status_bar, $
+                               names=names, trange=trange ;non-API keywords
       
       ;Add to call sequence for GUI document replay
       ;  -specify name of routine that was just called
-      ;  -any keywords that were used should be added here
+      ;  -specify any non-API keywords
       state.call_sequence->addPluginCall, 'yyy_ui_plugin_randomize', $
                                           names=names, trange=trange
     end
@@ -151,12 +154,13 @@ pro yyy_ui_plugin_event, event
       if ~is_string(names) then break
       
       ;call helper routine
-      yyy_ui_plugin_delete, state.loaded_data, state.history_window, state.status_bar, $
-                            names=names
+      yyy_ui_plugin_delete, loaded_data=state.loaded_data, $
+                            status_bar = state.status_bar, $
+                            names=names ;non-API keywords
       
       ;Add to call sequence for GUI document replay
       ;  -specify name of routine that was just called
-      ;  -any keywords that were used should be added here
+      ;  -specify any non-API keywords
       state.call_sequence->addPluginCall, 'yyy_ui_plugin_delete', $
                                           names=names
     end
@@ -188,7 +192,7 @@ end
 ;  See instructions in spedas/gui/resources/spd_ui_plugin_config.txt
 ;  to enable the plugin in the GUI.
 ;
-;Required Input:
+;Input:
 ;  gui_id:  The widget ID of the top level GUI base.
 ;  loaded_data:  The GUI loaded data object.  This object stores all
 ;                data and corresponding metadata currently loaded
@@ -203,7 +207,6 @@ end
 ;  status_bar:  The GUI status bar object.  This object displays 
 ;               informational messages at the bottom of the main 
 ;               GUI window.
-;Optional Input:
 ;  data_tree:  The GUI data tree object.  This object provides a 
 ;              graphical tree of all loaded data variables.
 ;              A copy of this object can be used to create a
@@ -237,22 +240,20 @@ end
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-18 15:28:01 -0800 (Tue, 18 Feb 2014) $
-;$LastChangedRevision: 14388 $
+;$LastChangedDate: 2014-03-18 18:27:19 -0700 (Tue, 18 Mar 2014) $
+;$LastChangedRevision: 14584 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/plugin_menu/yyy_ui_plugin.pro $
 ;-
 
-pro yyy_ui_plugin,$ ;API Required Inputs
-                   gui_id, $
-                   loaded_data, $
-                   call_sequence, $
-                   history_window, $
-                   status_bar, $
-                   _extra=_extra, $
-                    ;API Optional Inputs
+pro yyy_ui_plugin, gui_id=gui_id, $
+                   loaded_data=loaded_data, $
+                   call_sequence=call_sequence, $
                    data_tree=data_tree, $
                    time_range=time_range, $
-                   data_structure=data_structure
+                   data_structure=data_structure, $
+                   history_window=history_window, $
+                   status_bar=status_bar, $
+                   _extra=_extra
                    
 
 
