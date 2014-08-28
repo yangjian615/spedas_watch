@@ -38,8 +38,8 @@
 ; Update removed to not use thm_load_xxx by DEL
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2014-05-05 18:12:35 -0700 (Mon, 05 May 2014) $
-; $LastChangedRevision: 15053 $
+; $LastChangedDate: 2014-05-23 12:38:29 -0700 (Fri, 23 May 2014) $
+; $LastChangedRevision: 15224 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_load_sst.pro $
 ;-
 
@@ -360,8 +360,9 @@ pro thm_load_sst_l2,relpathnames_all=relpathnames_all,suffix=suffix,level=level,
     ;eflux spectra
     en_eflux_vars = strfilter(tplotnames,'*en_eflux*')
     options,en_eflux_vars,/default,/zlog,/ylog
-    thm_new_units, en_eflux_vars, units_in = 'eV/(cm^2-s)'
+    thm_new_units, en_eflux_vars, units_in = 'eV/(cm^2-sec-sr-eV)'
     thm_new_coords,en_eflux_vars, coords_in = 'DSL'
+    thm_fix_spec_units, en_eflux_vars
     
     ;flux vectors
     flux_vars = strfilter(tplotnames,'*_flux*')
@@ -433,7 +434,7 @@ if size(/type,datatype0) gt 0 then datatype = datatype0 ;keep input vars from be
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 15053 2014-05-06 01:12:35Z aaflores $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 15224 2014-05-23 19:38:29Z aaflores $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']

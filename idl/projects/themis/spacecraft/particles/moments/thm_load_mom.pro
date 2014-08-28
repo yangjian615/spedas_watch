@@ -67,37 +67,27 @@
 ;  potential, and efficiency.
 ;
 ;
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2014-02-14 11:15:18 -0800 (Fri, 14 Feb 2014) $
-; $LastChangedRevision: 14380 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2014-05-21 17:16:07 -0700 (Wed, 21 May 2014) $
+; $LastChangedRevision: 15201 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
-pro thm_clip_moment, trange, tn_pre_proc
+pro thm_clip_moment, tplotnames=tplotnames, trange=trange
 
-; make sure tplot_vars created in post_procs get added to list
-tn_post_proc = tnames()
-if ~array_equal(tn_pre_proc, '') then begin
+    compile_opt idl2, hidden
 
-  ; make ssl_set_intersection doesn't get scalar inputs
-  if n_elements(tn_pre_proc) eq 1 then tn_pre_proc=[tn_pre_proc]
-  if n_elements(tn_post_proc) eq 1 then tn_post_proc=[tn_post_proc]
+  if undefined(tplotnames) then return
 
-  post_proc_names = ssl_set_complement(tn_pre_proc, tn_post_proc)
-endif
-
-  if size(post_proc_names, /type) eq 7 then tplotnames = post_proc_names else tplotnames = tn_post_proc
-
-; clip data to requested trange
-If (keyword_set(trange) && n_elements(trange) Eq 2) $
-  Then tr = timerange(trange) $
-  else tr = timerange()
-      
-for i=0,n_elements(tplotnames)-1 do begin
-  if tnames(tplotnames[i]) eq '' then continue
-  time_clip, tplotnames[i], min(tr), max(tr), /replace, error=tr_err
-  if tr_err then del_data, tplotnames[i]
-endfor
+  ;ensure time range is set
+  tr = timerange(trange) 
+  
+  ;clip specified new/altered variables
+  ;loop here instead of in time_clip so that out-of-range vars can be deleted
+  for i=0, n_elements(tplotnames)-1 do begin
+    time_clip, tplotnames[i], min(tr), max(tr), /replace, error=tr_err
+    if tr_err then del_data, tplotnames[i]
+  endfor
 
 end
 
@@ -107,7 +97,7 @@ pro thm_transform_moment, coord, quantity, trange=trange, probe=probe, $
                           prefix=prefix, suffix=suffix, $
                           state_loaded=state_loaded
 
-    compile_opt idl2
+    compile_opt idl2, hidden
 
   ;only transform valid 3-vectors
   q = quantity[0] eq '*' ? ['flux','eflux','velocity']:quantity
@@ -138,8 +128,10 @@ end
 
 
 pro thm_store_moment,time,dens,flux,mflux,eflux,mag,prefix = prefix, suffix=sfx,mass=mass, $
-        raw=raw, quantity=quantity, $
+        raw=raw, quantity=quantity, tplotnames=tplotnames, $
         probe=probe,use_eclipse_corrections=use_eclipse_corrections
+
+    compile_opt idl2, hidden
 
 if use_eclipse_corrections GT 0 then begin
    ; Rotate vector quantities from pseudo-DSL (which drifts during eclipses) 
@@ -164,17 +156,28 @@ endif
 for j=0,n_elements(quantity)-1 do begin
   
   case quantity[j] of
-    'density': store_data,prefix+'density'+sfx, data={x:time, y:dens}, dlim={ysubtitle:'[#/cm3]',data_att:{units:'#/cm3'}}
-    'flux': store_data,prefix+'flux'+sfx, data={x:time, y:flux}, $
-                     dlim={colors:'bgr',ysubtitle:'[#/cm2/s]',$
-                     data_att:{units:'#/cm2/s',coord_sys:'dsl'}}
-    'mftens': store_data,prefix+'mftens'+sfx, data={x:time, y:mflux},dlim={colors:'bgrmcy',ysubtitle:'[eV/cm3]',data_att:{units:'eV/cm3',coord_sys:'dsl'}}
-    'eflux': store_data,prefix+'eflux'+sfx, data={x:time, y:eflux}  ,dlim={colors:'bgr',ysubtitle:'[eV/cm2/s]',data_att:{units:'eV/cm2/s',coord_sys:'dsl'}}
+    'density': begin
+      store_data,prefix+'density'+sfx, data={x:time, y:dens}, dlim={ysubtitle:'[#/cm3]',data_att:{units:'#/cm3'}}
+      tplotnames = array_concat(prefix+'density'+sfx,tplotnames)
+    end
+    'flux': begin
+      store_data,prefix+'flux'+sfx, data={x:time, y:flux}, dlim={colors:'bgr',ysubtitle:'[#/cm2/s]',data_att:{units:'#/cm2/s',coord_sys:'dsl'}}
+      tplotnames = array_concat(prefix+'flux'+sfx,tplotnames)
+    end
+    'mftens': begin 
+      store_data,prefix+'mftens'+sfx, data={x:time, y:mflux},dlim={colors:'bgrmcy',ysubtitle:'[eV/cm3]',data_att:{units:'eV/cm3',coord_sys:'dsl'}}
+      tplotnames = array_concat(prefix+'mftens'+sfx,tplotnames)
+    end
+    'eflux': begin
+      store_data,prefix+'eflux'+sfx, data={x:time, y:eflux}  ,dlim={colors:'bgr',ysubtitle:'[eV/cm2/s]',data_att:{units:'eV/cm2/s',coord_sys:'dsl'}}
+      tplotnames = array_concat(prefix+'eflux'+sfx,tplotnames)
+    end
     '*': begin
       store_data,prefix+'density'+sfx, data={x:time, y:dens}, dlim={ysubtitle:'[#/cm3]',data_att:{units:'#/cm3'}}
       store_data,prefix+'flux'+sfx, data={x:time, y:flux}     ,dlim={colors:'bgr',ysubtitle:'[#/s/cm2]',data_att:{units:'#/s/cm2',coord_sys:'dsl'}}
       store_data,prefix+'mftens'+sfx, data={x:time, y:mflux},dlim={colors:'bgrmcy',ysubtitle:'[eV/cm3]',data_att:{units:'eV/cm3',coord_sys:'dsl'}}
       store_data,prefix+'eflux'+sfx, data={x:time, y:eflux}  ,dlim={colors:'bgr',ysubtitle:'[eV/cm2/s]',data_att:{units:'eV/cm2/s',coord_sys:'dsl'}}
+      tplotnames = array_concat(prefix+['density','flux','mftens','eflux']+sfx,tplotnames)
     end
     else:
   endcase
@@ -185,6 +188,7 @@ for j=0,n_elements(quantity)-1 do begin
     if quantity[j] eq 'velocity' || quantity[j] eq '*' then begin
       store_data,prefix+'velocity'+sfx, data={x:time,  y:vel }, $
         dlim={colors:'bgrmcy',labels:['Vx','Vy','Vz'],ysubtitle:'[km/s]',data_att:{coord_sys:'dsl'}}
+      tplotnames = array_concat(prefix+'velocity'+sfx,tplotnames)
     endif
     
     pressure = mflux
@@ -199,11 +203,14 @@ for j=0,n_elements(quantity)-1 do begin
       press_labels=['Pxx','Pyy','Pzz','Pxy','Pxz','Pyz']
       store_data,prefix+'ptens'+sfx, data={x:time, y:pressure }, $
         dlim={colors:'bgrmcy',labels:press_labels,constant:0.,ysubtitle:'[eV/cc]'}
+      tplotnames = array_concat(prefix+'ptens'+sfx,tplotnames)
     endif
 
     ptot = total(pressure[*,0:2],2)/3
-    if quantity[j] eq 'ptot' || quantity[j] eq '*' then $
+    if quantity[j] eq 'ptot' || quantity[j] eq '*' then begin
       store_data,prefix+'ptot'+sfx, data={x:time, y:ptot } ;,dlim={colors:'bgrmcy',labels:press_labels}
+      tplotnames = array_concat(prefix+'ptot'+sfx,tplotnames)
+    endif
   endif
   if keyword_set(mag) then begin
      map3x3 = [[0,3,4],[3,1,5],[4,5,2]]
@@ -225,6 +232,7 @@ for j=0,n_elements(quantity)-1 do begin
      store_data,prefix+'ptens_mag',data={x:time,y:ptens_mag},dlim={colors:'bgrmcy',labels:['Pperp1','Pperp2','Ppar','','',''],ysubtitle:'[eV/cc]',data_att:{units:'eV/cm3'}}
      store_data,prefix+'t3_mag',data={x:time,y:ptens_mag[*,0:2]/[dens,dens,dens]},dlim={colors:'bgrmcy',labels:['Tperp1','Tperp2','Tpar'],ysubtitle:'[eV]',data_att:{units:'eV'}}
      store_data,prefix+'mag',data={x:time,y:mag},dlim={colors:'bgr',ysubtitle:'[nT]'}
+     tplotnames = array_concat(prefix+['velocity_mag','ptens_mag','t3_mag','mag'],tplotnames)
   endif
 
 endfor ; loop over quantity
@@ -243,7 +251,10 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
   iesa_solarwind_time, eesa_solarwind_time, $
   probe=probe,caldata=caldata, coord=coord, $
   verbose=verbose,raw=raw,comptest=comptest, datatype=datatype, $
-  use_eclipse_corrections=use_eclipse_corrections, suffix = suffix
+  use_eclipse_corrections=use_eclipse_corrections, suffix = suffix, $
+  tplotnames=tplotnames
+
+  compile_opt idl2, hidden
 
   ;each instrument has its own cal file,23-jul-2009
   ;reverted to pre-July 2009 version to avoid conflicts with
@@ -445,7 +456,7 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
        endif else quantity = '*'
 
        thm_store_moment,time,dens,flux,mflux,eflux,mag,prefix = thx+'_'+instr+'_', $
-           suffix=sfx,mass=mass[i],raw=raw, quantity=quantity, $
+           suffix=sfx,mass=mass[i],raw=raw, quantity=quantity, tplotnames=tplotnames, $
            probe=probe, use_eclipse_corrections=use_eclipse_corrections
 
        if keyword_set(coord) then begin
@@ -459,11 +470,13 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
        if not keyword_set(raw) && totmom_flag then begin
           thm_store_moment,time,n_i_tot,nv_i_tot,nvv_i_tot,nvvv_i_tot,mag,$
             prefix = thx+'_'+'ptim_', suffix=sfx,mass=mass[0],raw=raw, quantity='*',$
-            probe=probe, use_eclipse_corrections=use_eclipse_corrections
+            probe=probe, use_eclipse_corrections=use_eclipse_corrections, $
+            tplotnames=tplotnames
               
           thm_store_moment,time,n_e_tot,nv_e_tot,nvv_e_tot,nvvv_e_tot,mag,$
             prefix = thx+'_'+'ptem_', suffix=sfx,mass=mass[1],raw=raw, quantity='*',$
-            probe=probe, use_eclipse_corrections=use_eclipse_corrections
+            probe=probe, use_eclipse_corrections=use_eclipse_corrections, $
+            tplotnames=tplotnames
        endif
 
     endif
@@ -474,70 +487,94 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
     scpot = scpotraw*caldata.scpot_scale
 
     if keyword_set(datatype) then begin
-      if where(strmid(datatype,0,8) eq 'pxxm_pot') ne -1 then $
+      if where(strmid(datatype,0,8) eq 'pxxm_pot') ne -1 then begin
         store_data,thx+'_pxxm_pot'+sfx,data={x:time,  y:scpot },dlimit={ysubtitle:'[Volts]'}
-      if where(strmid(datatype,0,7) eq 'pxxm_qf') ne -1 then $
+        tplotnames = array_concat(thx+'_pxxm_pot'+sfx,tplotnames)
+      endif
+      if where(strmid(datatype,0,7) eq 'pxxm_qf') ne -1 then begin
         store_data,thx+'_pxxm_qf'+sfx,data={x:time, y:qf}, dlimit={tplot_routine:'bitplot'}
-      if where(strmid(datatype,0,9) eq 'pxxm_shft') ne -1 then $
+        tplotnames = array_concat(thx+'_pxxm_qf'+sfx,tplotnames)
+      endif
+      if where(strmid(datatype,0,9) eq 'pxxm_shft') ne -1 then begin
         store_data,thx+'_pxxm_shft'+sfx,data={x:time, y:shft}, dlimit={tplot_routine:'bitplot'}
+        tplotnames = array_concat(thx+'_pxxm_shft'+sfx,tplotnames)
+      endif
     endif else begin
       store_data,thx+'_pxxm_pot'+sfx,data={x:time,  y:scpot },dlimit={ysubtitle:'[Volts]'}
       store_data,thx+'_pxxm_qf'+sfx,data={x:time, y:qf}, dlimit={tplot_routine:'bitplot'}
       store_data,thx+'_pxxm_shft'+sfx,data={x:time, y:shft}, dlimit={tplot_routine:'bitplot'}
+      tplotnames = array_concat(thx+['_pxxm_pot','_pxxm_qf','_pxxm_shft']+sfx,tplotnames)
     endelse
 
 ;ESA sweep mode variables, 1-mar-2010, jmm
-    if(ptr_valid(iesa_sweep) && ptr_valid(iesa_sweep_time)) then $
+    if(ptr_valid(iesa_sweep) && ptr_valid(iesa_sweep_time)) then begin
       store_data, thx+'_iesa_sweep'+sfx, data = {x:*iesa_sweep_time, y:*iesa_sweep}, dlimit={tplot_routine:'bitplot'}
-    if(ptr_valid(eesa_sweep) && ptr_valid(eesa_sweep_time)) then $
+      tplotnames = array_concat(thx+'_iesa_sweep'+sfx,tplotnames)
+    endif
+    if(ptr_valid(eesa_sweep) && ptr_valid(eesa_sweep_time)) then begin
       store_data, thx+'_eesa_sweep'+sfx, data = {x:*eesa_sweep_time, y:*eesa_sweep}, dlimit={tplot_routine:'bitplot'}
+      tplotnames = array_concat(thx+'_eesa_sweep'+sfx,tplotnames)
+    endif
 
 ;ESA solar wind mode variables, 1-mar-2010, jmm
-    if(ptr_valid(iesa_solarwind_flag) && ptr_valid(iesa_solarwind_time)) then $
+    if(ptr_valid(iesa_solarwind_flag) && ptr_valid(iesa_solarwind_time)) then begin
       store_data, thx+'_iesa_solarwind_flag'+sfx, data = {x:*iesa_solarwind_time, y:*iesa_solarwind_flag}
-    if(ptr_valid(eesa_solarwind_flag) && ptr_valid(eesa_solarwind_time)) then $
+      tplotnames = array_concat(thx+'_iesa_solarwind_flag'+sfx,tplotnames)
+    endif
+    if(ptr_valid(eesa_solarwind_flag) && ptr_valid(eesa_solarwind_time)) then begin
       store_data, thx+'_eesa_solarwind_flag'+sfx, data = {x:*eesa_solarwind_time, y:*eesa_solarwind_flag}
+      tplotnames = array_concat(thx+'_eesa_solarwind_flag'+sfx,tplotnames)
+    endif
 
 ;ESA configuration
-    if(ptr_valid(iesa_config) && ptr_valid(iesa_config_time)) then $
+    if(ptr_valid(iesa_config) && ptr_valid(iesa_config_time)) then begin
       store_data, thx+'_iesa_config'+sfx, data = {x:*iesa_config_time, y:*iesa_config}
-    if(ptr_valid(eesa_config) && ptr_valid(eesa_config_time)) then $
+      tplotnames = array_concat( thx+'_iesa_config'+sfx,tplotnames)
+    endif
+    if(ptr_valid(eesa_config) && ptr_valid(eesa_config_time)) then begin
       store_data, thx+'_eesa_config'+sfx, data = {x:*eesa_config_time, y:*eesa_config}
+      tplotnames = array_concat(thx+'_eesa_config'+sfx,tplotnames)
+    endif
     
 ;SST configuration
-    if(ptr_valid(isst_config) && ptr_valid(isst_config_time)) then $
+    if(ptr_valid(isst_config) && ptr_valid(isst_config_time)) then begin
       store_data, thx+'_isst_config'+sfx, data = {x:*isst_config_time, y:*isst_config}
-    if(ptr_valid(esst_config) && ptr_valid(esst_config_time)) then $
+      tplotnames = array_concat(thx+'_isst_config'+sfx,tplotnames)
+    endif
+    if(ptr_valid(esst_config) && ptr_valid(esst_config_time)) then begin
       store_data, thx+'_esst_config'+sfx, data = {x:*esst_config_time, y:*esst_config}
+      tplotnames = array_concat(thx+'_esst_config'+sfx,tplotnames)
+    endif
       
 end
 
 
-;+
-; Themis moment calibration routine.
-; Author: Davin Larson
-;-
-pro thm_load_mom_cal,probes=probes, create=create, verbose=verbose
-
-if not keyword_set(probes) then probes = ['a','b','c','d','e']
-
-for s=0,n_elements(probes)-1 do begin
-  thx = 'th'+probes(s)
-  get_data,thx+'_mom_raw',ptr=p
-  get_data,thx+'_mom_pot_raw',ptr=pot
-  get_data,thx+'_mom_qf_raw',ptr
-
-  if keyword_set(p) then begin
-    thm_load_mom_cal_array,*p.x,*p.y,0 ,probe=probe
-
-    dprint,dlevel=4,'Finished with cal on '+thx
-  endif
-
-
-endfor
-
-
-end
+; this appears not to be in use  (aaf 2014-05-21)
+;;+
+;; Themis moment calibration routine.
+;; Author: Davin Larson
+;;-
+;pro thm_load_mom_cal,probes=probes, create=create, verbose=verbose
+;
+;if not keyword_set(probes) then probes = ['a','b','c','d','e']
+;
+;for s=0,n_elements(probes)-1 do begin
+;  thx = 'th'+probes(s)
+;  get_data,thx+'_mom_raw',ptr=p
+;  get_data,thx+'_mom_pot_raw',ptr=pot
+;  get_data,thx+'_mom_qf_raw',ptr
+;
+;  if keyword_set(p) then begin
+;    thm_load_mom_cal_array,*p.x,*p.y,0 ,probe=probe
+;
+;    dprint,dlevel=4,'Finished with cal on '+thx
+;  endif
+;
+;
+;endfor
+;
+;
+;end
 
 
 pro thm_load_mom, probe = probe, datatype = datatype, trange = trange, all = all, $
@@ -549,7 +586,8 @@ pro thm_load_mom, probe = probe, datatype = datatype, trange = trange, all = all
                   true_dsl = true_dsl, use_eclipse_corrections = use_eclipse_corrections, $
                   no_dead_time_correct = no_dead_time_correct, dead_time_correct = dead_time_correct
 
-tn_pre_proc = tnames()
+compile_opt idl2
+
 
 thm_init
 thm_load_esa_cal
@@ -592,7 +630,6 @@ if (lvl eq 'l2') or (lvl eq 'l1' and keyword_set(valid_names)) then begin
     suffix = suffix, no_time_clip = no_time_clip, $
     no_dead_time_correct = no_dead_time_correct, $
     dead_time_correct = dead_time_correct
-;  If(~keyword_set(no_time_clip)) Then thm_clip_moment, trange, tn_pre_proc
   return
 endif
 
@@ -751,7 +788,8 @@ for s=0,n_elements(probes)-1 do begin
        isst_config, isst_config_time, esst_config, esst_config_time,$
        iesa_solarwind_time, eesa_solarwind_time, coord=coord, $
        raw = raw, verbose = verbose, comptest = comptest, datatype = datatype, $
-       use_eclipse_corrections=use_eclipse_corrections, suffix = suffix
+       use_eclipse_corrections=use_eclipse_corrections, suffix = suffix, $
+       tplotnames=tplotnames
 
      tplot_ptrs = ptr_extract(tnames(/dataquant))
      unused_ptrs = ptr_extract(cdfi,except=tplot_ptrs)
@@ -788,9 +826,9 @@ if file_list_flag && n_elements(file_list) ne 0 then begin
   files=file_list
 endif
 
-If(~keyword_set(no_time_clip)) Then Begin
-  If(keyword_set(trange)) Then thm_clip_moment, trange, tn_pre_proc $
-  Else thm_clip_moment, timerange(/current), tn_pre_proc
-Endif
+;clip data to requested time range
+if ~keyword_set(no_time_clip) then begin
+  thm_clip_moment, tplotnames=tplotnames, trange=trange 
+endif
 
 end

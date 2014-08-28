@@ -77,6 +77,7 @@ pro thm_load_esa_post, sname=probe, datatype=dt, level=lvl, $
   ;; add DLIMIT tags to data quantities
   thm_new_units, tplotnames     ;gets units from cdf vatts
   thm_new_coords, tplotnames    ;gets coords from cdf vatts
+  thm_fix_spec_units, strfilter(tplotnames,'*eflux*')  ;move units to z axis title
   for l=0, n_elements(tplotnames)-1 do begin
      tplot_var = tplotnames[l]
      get_data, tplot_var, data=d_str, limit=l_str, dlimit=dl_str

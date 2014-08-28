@@ -4,7 +4,9 @@
 ;PURPOSE:
 ; Given an IDL variable, return the appropriate CDF type code
 ;CALLING SEQUENCE:
-; code = idl2cdftype(var)
+; code = idl2cdftype(var, format_out=format_out,
+;        fillval_out=fillval_out, validmin_out=validmin_out,
+;        validmax_out=validmax_out)
 ;INPUT:
 ; var = an IDL variable
 ;OUTPUT:
@@ -21,28 +23,134 @@
 ;    13 (unsigned long)   'CDF_UINT4'
 ;    14 (long64)          'CDF_INT8'
 ;    15 (unsigned long64) 'CDF_UINT8'
-;
+;KEYWORDS:
+; format_out = return a format code for the data type
+;    1 (byte)             'I4'
+;    2 (int)              'I6'
+;    3 (long)             'I10'
+;    4 (float)            'E13.6'
+;    5 (double)           'E20.12'
+;    7 (string)           strlen(value)
+;    12 (unsigned int)    'I6'
+;    13 (unsigned long)   'I10'
+;    14 (long64)          'I20'
+;    15 (unsigned long64) 'I20'
+; fillval_out = a fill value
+;    1 (byte)             255
+;    2 (int)              -32768
+;    3 (long)             -2147483648
+;    4 (float)            !values.f_nan
+;    5 (double)           !values.d_nan
+;    7 (string)           ''
+;    12 (unsigned int)    65535
+;    13 (unsigned long)   4294967295
+;    14 (long64)          -9223372036854775808
+;    15 (unsigned long64) 18446744073709551615
+; validmin_out = a min value
+;    1 (byte)             0
+;    2 (int)              -32768
+;    3 (long)             -2147483648
+;    4 (float)            -1.0e38
+;    5 (double)           -1.0e308
+;    7 (string)           'NA'
+;    12 (unsigned int)    0
+;    13 (unsigned long)   0
+;    14 (long64)          -9223372036854775808
+;    15 (unsigned long64) 0
+; validmax_out = a max value
+;    1 (byte)             255
+;    2 (int)              32767
+;    3 (long)             2147483647
+;    4 (float)            1.0e38
+;    5 (double)           1.0e308
+;    7 (string)           'NA'
+;    12 (unsigned int)    65535
+;    13 (unsigned long)   4294967295
+;    14 (long64)          -9223372036854775808
+;    15 (unsigned long64) 18446744073709551615
 ;HISTORY:
 ; 26-nov-2013, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2013-11-26 11:46:46 -0800 (Tue, 26 Nov 2013) $
-; $LastChangedRevision: 13596 $
+; $LastChangedDate: 2014-05-23 12:24:27 -0700 (Fri, 23 May 2014) $
+; $LastChangedRevision: 15221 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/idl2cdftype.pro $
 ;-
-Function idl2cdftype, var
+Function idl2cdftype, var, format_out=format_out, fillval_out=fillval_out, $
+                      validmin_out=validmin_out, validmax_out=validmax_out, _extra=_extra
+;INPUT:
 
 otp = ''
 Case(size(var, /type)) Of        ;text code for type
-    1: otp = 'CDF_UINT1'
-    2: otp = 'CDF_INT2'
-    3: otp = 'CDF_INT4'
-    4: otp = 'CDF_FLOAT'
-    5: otp = 'CDF_DOUBLE'
-    7: otp = 'CDF_CHAR'
-    12: otp = 'CDF_UINT2'
-    13: otp = 'CDF_UINT4'
-    14: otp = 'CDF_INT8'
-    15: otp = 'CDF_UINT8'
+    1: Begin
+       otp = 'CDF_UINT1'
+       format_out = 'I4'
+       fillval_out = 255
+       validmin_out = 0
+       validmax_out = 255
+    End
+    2: Begin
+       otp = 'CDF_INT2'
+       format_out = 'I6'
+       fillval_out = -32767     ;note that CDF changes -32768 to 4 bytes, CDF_INT4
+       validmin_out = -32767
+       validmax_out = 32767
+    End
+    3: Begin
+       otp = 'CDF_INT4'
+       format_out = 'I11'
+       fillval_out = -2147483647 ;same here, a vaild IDL value is bad for CDF
+       validmin_out = -2147483647
+       validmax_out = 2147483647
+    End
+    4: Begin
+       otp = 'CDF_FLOAT'
+       format_out = 'E13.6'
+       fillval_out = !values.f_nan
+       validmin_out = -1.0e38
+       validmax_out = 1.0e38
+    End
+    5: Begin
+       otp = 'CDF_DOUBLE'
+       format_out = 'E25.18'
+       fillval_out = !values.f_nan
+       validmin_out = -1.0e308
+       validmax_out = 1.0e308
+    End
+    7: Begin
+       otp = 'CDF_CHAR'
+       format_out = 'A'+strcompress(/remove_all, string(strlen(var[0])+1))
+       fillval_out = ''
+       validmin_out = 'NA'
+       validmax_out = 'NA'
+    End
+    12: Begin
+       otp = 'CDF_UINT2'
+       format_out = 'I6'
+       fillval_out = 65535
+       validmin_out = 0
+       validmax_out = 65535
+    End
+    13: Begin
+       otp = 'CDF_UINT4'
+       format_out = 'I11'
+       fillval_out = 4294967295
+       validmin_out = 0
+       validmax_out = 4294967295
+    End
+    14: Begin
+       otp = 'CDF_INT8'
+       format_out = 'I21'
+       fillval_out = -9223372036854775807
+       validmin_out = -9223372036854775807
+       validmax_out =  9223372036854775807
+    End
+    15: Begin
+       otp = 'CDF_UINT8'
+       format_out = 'I21'
+       fillval_out = 18446744073709551615
+       validmin_out = 0
+       validmax_out = 18446744073709551615
+    End
     Else: otp = ''
 Endcase
 

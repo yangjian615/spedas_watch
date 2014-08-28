@@ -77,7 +77,6 @@ pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplo
 
 	;Get antenna pointing direction and stuff
 	rbsp_load_state,probe=probe,/no_spice_load,datatype=['spinper','spinphase','mat_dsc','Lvec'] 
-
 	rbsp_efw_position_velocity_crib,/no_spice_load,/noplot
 	get_data,rbspx+'_spinaxis_direction_gse',data=wsc_GSE
 
@@ -86,6 +85,7 @@ pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplo
 
 ;Load EMFISIS L3 data in GSE. 
 	if ~keyword_set(ql) then begin
+	
 		rbsp_load_emfisis,probe=probe,coord='gse',cadence='4sec',level='l3'  ;load this for the mag model subtract
 
 		get_data,rbspx+'_emfisis_l3_4sec_gse_Mag',data=dd
@@ -104,7 +104,7 @@ pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplo
 				   		[interpol(wsc_GSE.y[*,1],wsc_GSE.x,dd.x)],$
 				   		[interpol(wsc_GSE.y[*,2],wsc_GSE.x,dd.x)]]
 
-		rbsp_gse2mgse,rbspx+'_mag_gse',reform(wsc_GSE_tmp2),newname=rbspx+'_mag_mgse'
+		rbsp_gse2mgse,rbspx+'_mag_gse',reform(wsc_GSE_tmp),newname=rbspx+'_mag_mgse'
 	
 	
 	
@@ -205,7 +205,6 @@ pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplo
 	wsc_GSE_tmp3 = [[interpol(wsc_GSE.y[*,0],wsc_GSE.x,tmpp.x)],$
 				   [interpol(wsc_GSE.y[*,1],wsc_GSE.x,tmpp.x)],$
 				   [interpol(wsc_GSE.y[*,2],wsc_GSE.x,tmpp.x)]]
-
 
 	rbsp_gse2mgse,rbspx+'_mag_gse_'+model,reform(wsc_GSE_tmp3),newname=rbspx+'_mag_mgse_'+model
 

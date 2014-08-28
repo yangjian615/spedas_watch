@@ -22,9 +22,9 @@
 ;NB: This problem doesn't seem to happen with the panel title on Panel Options window.
 ;If we could work out why the panel title combobox worked there it would be better to fix axis label title to match rather than truncating.
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-05-20 16:51:02 -0700 (Tue, 20 May 2014) $
-;$LastChangedRevision: 15179 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-23 09:20:59 -0700 (Fri, 23 May 2014) $
+;$LastChangedRevision: 15217 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_axis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -1649,16 +1649,16 @@ pro spd_ui_axis_options_set_major_ticks,state,nopopups=nopopups
   spd_ui_spinner_get_max_value, id, majormax 
   if ~finite(ticknum,/nan) then begin
     if tickNum gt majormax then begin 
-      spd_ui_message,'Major Ticks number cannot be greater than ' + STRTRIM(string(majormax),2) + '; value reset.', $
+      spd_ui_message,'Major Ticks number cannot be greater than ' + STRTRIM(string(majormax,format='(I)'),2) + '; value reset.', $
       sb=state.statusbar, hw=state.historywin, $
         dialog=(showmessage && ~keyword_set(nopopups))
       axisSettings->getProperty,numMajorTicks=ticknum
       widget_control,id,set_value=ticknum    
-    endif else  if tickNum lt 0 then begin
+    endif else if tickNum lt 0 then begin
       spd_ui_message,'Major Ticks number cannot be less than 0; value reset.', $
                      sb=state.statusbar, hw=state.historywin, $
                      dialog=(showmessage && ~keyword_set(nopopups))
-      axisSettings->getProperty,numMajorTicks=ticknum
+      axisSettings->getProperty,numMajorTicks=0
       widget_control,id,set_value=ticknum
     endif else begin
       axissettings->SetProperty, nummajorticks = ticknum
@@ -1844,14 +1844,24 @@ pro spd_ui_axis_options_set_ticks,tlb,state,nopopups=nopopups
   ; informed that their entry will be ignored.
   
   id = widget_info(tlb, find_by_uname = 'majorlength')
-  widget_control, id, get_value=value
+  widget_control, id, get_value=value  
+  spd_ui_spinner_get_max_value, id, majormax
   if ~finite(value,/nan) then begin
-    if value lt 1. then begin
-      spd_ui_message,'Major tick length must be greater than or equal to one; value reset.', $
+    if value gt majormax then begin
+      spd_ui_message,'Major tick length must be less than or equal to ' + STRTRIM(string(majormax,format='(I)'),2) + '; value reset.', $
+      sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
+      axisSettings->getProperty, majorlength = prevvalue
+      if prevvalue gt majormax then prevvalue = majormax
+      widget_control, id, set_value=STRTRIM(string(prevvalue,format='(I)'),2)   
+    endif else if value lt 0. then begin
+      spd_ui_message,'Major tick length must be greater than or equal to 0; value reset.', $
                      sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
       axisSettings->getProperty, majorlength = prevvalue
-      widget_control, id, set_value=prevalue
-    endif
+      if prevvalue lt 0 then prevvalue = 0
+      widget_control, id, set_value=prevvalue
+    endif else begin
+      axisSettings->setProperty, majorlength = value
+    endelse
   endif else begin
     spd_ui_message,'Invalid major tick length; value reset.', $
                    sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
@@ -1861,20 +1871,29 @@ pro spd_ui_axis_options_set_ticks,tlb,state,nopopups=nopopups
   
   id = widget_info(tlb, find_by_uname = 'minorlength')
   widget_control, id, get_value=value
-  if ~finite(value,/nan) then begin
-    if value lt 1. then begin
-      spd_ui_message,'Minor tick length must be greater than or equal to one; value reset.', $
+  spd_ui_spinner_get_max_value, id, majormax
+  if ~finite(value,/nan) then begin    
+    if value gt majormax then begin
+      spd_ui_message,'Minor tick length must be less than or equal to ' + STRTRIM(string(majormax,format='(I)'),2) + '; value reset.', $
+      sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
+      axisSettings->getProperty, minorlength = prevvalue
+      if prevvalue gt majormax then prevvalue = majormax
+      widget_control, id, set_value=prevvalue
+    endif else if value lt 0. then begin
+      spd_ui_message,'Minor tick length must be greater than or equal to 0; value reset.', $
                      sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
       axisSettings->getProperty, minorlength = prevvalue
+      if prevvalue lt 0 then prevvalue = 0
       widget_control, id, set_value=prevvalue
-    endif
+    endif else begin
+      axisSettings->setProperty, minorlength = value
+    endelse
   endif else begin
     spd_ui_message,'Invalid minor tick length; value reset.', $
                    sb=state.statusbar, hw=state.historywin, dialog=~keyword_set(nopopups)
     axisSettings->getProperty, minorlength = prevvalue
     widget_control, id, set_value=prevvalue
   endelse
-  
 end
 
 
@@ -3171,10 +3190,15 @@ axissettings->SetProperty, placelabel=event.index
 state.historyWin->Update, 'Label placement updated to "'+event.str+'".'
 END
 'LABELMARGIN': BEGIN
-  if event.valid then begin
-    axissettings->SetProperty, margin=event.value
-    ;   state.statusBar->Update, 'Label margin changed.'
-    state.historywin->Update, 'Label margin changed.'
+  if event.valid then begin    
+    axissettings->getProperty, margin=oldvalue
+    mvalue = double(event.value)
+    if (mvalue gt 10000) or  (mvalue lt -10000)  then begin
+       state.historywin->Update, 'Invalid label margin, please re-enter.'
+    endif else begin
+      axissettings->SetProperty, margin=mvalue
+      state.historywin->Update, 'Label margin changed.'
+    endelse
   endif else state.statusBar->Update, 'Invalid label margin, please re-enter.'
 END
 ;n;'LABELTSETALL': begin
@@ -3449,28 +3473,6 @@ end
     ;     state.statusBar->Update, 'Major Ticks by Interval selected'
     state.historywin->Update, 'Major Ticks by Interval selected'
   end
-  'MAJORLENGTH': BEGIN
-    if event.valid then begin
-      if event.value lt 1. then begin
-        state.statusbar->update, 'Major tick length should be greater than or equal to one.'
-      endif else begin
-        axissettings->SetProperty,majorlength=event.value
-        ;        state.statusBar->Update, 'Major tick length changed.'
-        state.historywin->Update, 'Major tick length changed.'
-      endelse
-    endif else state.statusBar->Update, 'Invalid major tick length, please re-enter.'
-  END
-  'MINORLENGTH': BEGIN
-    if event.valid then begin
-      if event.value lt 1. then begin
-        state.statusbar->update, 'Minor tick length should be greater than or equal to one.'
-      endif else begin
-        axissettings->SetProperty,minorlength=event.value
-        ;       state.statusBar->Update, 'Minor tick length changed.'
-        state.historywin->Update, 'Minor tick length changed.'
-      endelse
-    endif else state.statusBar->Update, 'Invalid minor tick length, please re-enter.'
-  END
   
   ;******************************************************************************
   ;  End Tick Options
@@ -4034,11 +4036,11 @@ lengthLabel = Widget_Label(lengthBase, Value = 'Length', /Align_Left)
 lengthFrameBase = Widget_Base(lengthBase, /Col, Frame=3, uname='lengthframebase')
 lmajorBase = Widget_Base(lengthFrameBase, /Row, YPad=3)
 lmajorIncrement = spd_ui_spinner(lmajorBase, label = 'Major : ',Increment=1, uval='MAJORLENGTH', $
-  uname='majorlength', min_value = 1)
+  uname='majorlength', min_value = 0, max_value = 10000)
 lmajorLabel= Widget_Label(lmajorBase, Value=' pts')
 lminorBase = Widget_Base(lengthFrameBase, /Row, YPad=3)
 lminorIncrement = spd_ui_spinner(lminorBase, label = 'Minor : ',Increment=1, uval='MINORLENGTH', $
-  uname='minorlength', min_value = 1)
+  uname='minorlength', min_value = 0, max_value = 10000)
 lminorLabel = Widget_Label(lminorBase, Value=' pts')
 
 ;n;tsetAllButton = Widget_Button(ticksButtonBase, Value='Set All Panels', /Align_Center, XSize = 120, uval='TICKSSETALL', uname='tickssetall')
