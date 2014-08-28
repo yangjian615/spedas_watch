@@ -126,11 +126,11 @@ pro thm_load_peer,file=file,sc=sc,themishome=themishome, $
 ; define mode variables for different modes
 	nspins = [1,1,1,1,1,1,1,1,1,1,1]               ; # of spins between measurements in mode
 	nenergy = [16,32,32,32,32,32,32,32,32,32,32]      ; # of energies in mode
-	nangle = [1,1,6,1,6,1,1,6,1,1,6]               ; # of angles in mode
+	nangle = [1,1,6,1,6,1,1,6,1,1,1]               ; # of angles in mode
 	dat_len = nenergy*nangle                 ; size data arrays
-	spin_decode  = [160,96,16,96,16,96,96,16,96,96,16]; # measurements in packet
-	case_decode  = [0,1,3,1,3,1,1,3,1,1,3]         ; datl[16,32,96,192]==>size[0,1,2,3]
-	angle_decode = [0,1,2,1,2,1,1,2,1,1,2]         ; angle mode index
+	spin_decode  = [160,96,16,96,16,96,96,16,96,96,96]; # measurements in packet
+	case_decode  = [0,1,3,1,3,1,1,3,1,1,1]         ; datl[16,32,96,192]==>size[0,1,2,3]
+	angle_decode = [0,1,2,1,2,1,1,2,1,1,1]         ; angle mode index
 	energy_decode = [0,1,1,2,2,1,3,3,3,4,4]        ; energy mode index
 
 

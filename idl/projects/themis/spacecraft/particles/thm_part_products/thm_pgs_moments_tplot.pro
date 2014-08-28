@@ -25,16 +25,17 @@
 ;  Much of this code was copied from thm_part_moments.pro
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-05 16:42:22 -0800 (Wed, 05 Mar 2014) $
-;$LastChangedRevision: 14506 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2014-04-07 12:20:35 -0700 (Mon, 07 Apr 2014) $
+;$LastChangedRevision: 14762 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_moments_tplot.pro $
 ;-
 pro thm_pgs_moments_tplot, moments, $
                            get_error=get_error, $
                            prefix=prefix0, $
                            suffix=suffix0, $
-                           tplotnames=tplotnames
+                           tplotnames=tplotnames, $
+                           _extra = _extra
 
     compile_opt idl2, hidden
 
@@ -71,7 +72,9 @@ pro thm_pgs_moments_tplot, moments, $
     tname = prefix + valid_moments[i] + suffix
     
     mom_data = struct_value(moments, valid_moments[i])
-    mom_data = reform(transpose(temporary(mom_data))) ;copied from tpm
+    If(n_elements(mom_data) Gt 1) Then Begin
+       mom_data = reform(transpose(temporary(mom_data))) ;copied from tpm
+    Endif
     
     store_data, tname, data= {x:moments.time, y:mom_data} ;,verbose=0
     
