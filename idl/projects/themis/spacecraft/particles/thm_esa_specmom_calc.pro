@@ -83,7 +83,7 @@ for i=0,n_elements(sc)-1 do begin
     if total(strmatch(mtyp,'spe')) gt 0 then begin
 	get_dat=strjoin('th'+sc(i)+'_pe'+spe(j)+typ(k))
 	name1=strjoin('th'+sc(i)+'_pe'+spe(j)+typ(k)+'_en_eflux')
-	get_en_spec,get_dat,units='eflux',retrace=1,name=name1,gap_time=gap_time,t1=t1,t2=t2,_extra=_extra
+	thm_get_en_spec,get_dat,units='eflux',retrace=1,name=name1,gap_time=gap_time,t1=t1,t2=t2,_extra=_extra
 
 	options,name1,'ztitle','Eflux !C!C eV/cm!U2!N!C-s-sr-eV'
 	options,name1,'ytitle','ESA '+spe(j)+'+ th'+sc(i)+'!C!C eV'
@@ -101,7 +101,7 @@ for i=0,n_elements(sc)-1 do begin
     if total(strmatch(mtyp,'den')) gt 0 then begin
         get_dat=strjoin('th'+sc(i)+'_pe'+spe(j)+typ(k))
 	name1=strjoin('th'+sc(i)+'_pe'+spe(j)+typ(k)+'_density')
-	get_2dt,'n_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.],_extra=_extra
+	thm_get_2dt,'n_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.],_extra=_extra
 ;delete ytitle in the data structure, from get_2dt.pro
         get_data, name1, data = d & options, d, 'ytitle' & store_data, name1, data = d
 	options,name1,'ytitle','N'+spe(j)+' th'+sc(i)+'!C!C1/cm!U3'
@@ -115,7 +115,7 @@ for i=0,n_elements(sc)-1 do begin
     if total(strmatch(mtyp,'vel')) gt 0 then begin
         get_dat=strjoin('th'+sc(i)+'_pe'+spe(j)+typ(k))
 	name1=strjoin('th'+sc(i)+'_pe'+spe(j)+typ(k)+'_velocity_dsl')
-	get_2dt,'v_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.],_extra=_extra
+	thm_get_2dt,'v_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.],_extra=_extra
 
 	get_data,name1,data=d,dlimits=a
 	cotrans_set_coord,a,'dsl'
@@ -134,7 +134,7 @@ for i=0,n_elements(sc)-1 do begin
     if total(strmatch(mtyp,'tem')) gt 0 then begin
         get_dat=strjoin('th'+sc(i)+'_pe'+spe(j)+typ(k))
  	name1=strjoin('th'+sc(i)+'_pe'+spe(j)+typ(k)+'_T_dsl')
-	get_2dt,'t_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.],_extra=_extra
+	thm_get_2dt,'t_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.],_extra=_extra
 
 	get_data,name1,data=d,dlimits=a
 	cotrans_set_coord,a,'dsl'

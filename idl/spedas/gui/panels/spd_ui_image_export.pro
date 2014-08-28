@@ -15,9 +15,9 @@
 ;OUTPUT:
 ; 
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-06-24 14:54:28 -0700 (Tue, 24 Jun 2014) $
-;$LastChangedRevision: 15424 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-06-27 13:46:19 -0700 (Fri, 27 Jun 2014) $
+;$LastChangedRevision: 15458 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_image_export.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -357,7 +357,7 @@ function spd_ui_image_export, gui_id,drawObject,historywin,statusBar,inPtr
     ok = error_message('An unknown error occured while starting Image Export.  See console for details.',$
         /noname, /center, title='Error in Image Export')
     widget_control, tlb, /destroy
-    spd_ui_error, gui_id
+    ;spd_ui_error, gui_id
     return,-1
   endif
       

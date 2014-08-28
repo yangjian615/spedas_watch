@@ -45,16 +45,16 @@ nb = dat.nbins
 
 ebins2=replicate(1b,na)
 if keyword_set(en) then begin
-	ebins2(*)=0
-	er2=[energy_to_ebin(dat,en)]
-	if er2(0) gt er2(1) then er2=reverse(er2)
-	ebins2(er2(0):er2(1))=1
+	ebins2[*]=0
+	er2=[thm_energy_to_ebin(dat,en)]
+	if er2[0] gt er2[1] then er2=reverse(er2)
+	ebins2[er2[0]:er2[1]]=1
 endif
 if keyword_set(er) then begin
-	ebins2(*)=0
+	ebins2[*]=0
 	er2=er
-	if er2(0) gt er2(1) then er2=reverse(er2)
-	ebins2(er2(0):er2(1))=1
+	if er2[0] gt er2[1] then er2=reverse(er2)
+	ebins2[er2[0]:er2[1]]=1
 endif
 if keyword_set(ebins) then ebins2=ebins
 
@@ -70,28 +70,28 @@ bins2=replicate(1b,nb)
 ;		str_element,dat,'PHI',INDEX=tf_phi
 		if ndimen(an) eq 2 then bins=angle_to_bins(dat,an)
 		if ndimen(an) ne 2 then begin
-			th=reform(dat.theta(0,*)/!radeg)
-			ph=reform(dat.phi(fix(dat.nenergy/2),*)/!radeg)
+			th=reform(dat.theta[0,*]/!radeg)
+			ph=reform(dat.phi[fix(dat.nenergy/2),*]/!radeg)
 			xx=cos(ph)*cos(th)
 			yy=sin(ph)*cos(th)
 			zz=sin(th)
-			Bmag=(dat.magf(0)^2+dat.magf(1)^2+dat.magf(2)^2)^.5
-			pitch=acos((dat.magf(0)*xx+dat.magf(1)*yy+dat.magf(2)*zz)/Bmag)*!radeg
-			if an(0) gt an(1) then an=reverse(an)
-			bins= pitch gt an(0) and pitch lt an(1)
+			Bmag=(dat.magf[0]^2+dat.magf[1]^2+dat.magf[2]^2)^.5
+			pitch=acos((dat.magf[0]*xx+dat.magf[1]*yy+dat.magf[2]*zz)/Bmag)*!radeg
+			if an[0] gt an[1] then an=reverse(an)
+			bins= pitch gt an[0] and pitch lt an[1]
 			if total(bins) eq 0 then begin
-				tmp=min(abs(pitch-(an(0)+an(1))/2.),ind)
-				bins(ind)=1
+				tmp=min(abs(pitch-(an[0]+an[1])/2.),ind)
+				bins[ind]=1
 			endif
 		endif
 	endif
 if keyword_set(ar) then begin
-	bins2(*)=0
-	if ar(0) gt ar(1) then begin
-		bins2(ar(0):nb-1)=1
-		bins2(0:ar(1))=1
+	bins2[*]=0
+	if ar[0] gt ar[1] then begin
+		bins2[ar[0]:nb-1]=1
+		bins2[0:ar[1]]=1
 	endif else begin
-		bins2(ar(0):ar(1))=1
+		bins2[ar[0]:ar[1]]=1
 	endelse
 endif
 if keyword_set(bins) then bins2=bins

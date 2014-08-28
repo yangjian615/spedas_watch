@@ -18,9 +18,9 @@
 ;  majorNum(long):  The number of major ticks on this axis.
 ;  minorNum(long):  The number of minor ticks per major tick on this axis
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-06-25 17:47:00 -0700 (Wed, 25 Jun 2014) $
-;$LastChangedRevision: 15444 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-06-27 11:32:10 -0700 (Fri, 27 Jun 2014) $
+;$LastChangedRevision: 15454 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__makezaxismodel.pro $
 ;-
 pro spd_ui_draw_object::makeZAxisModel,zrange,zAxis,xplotpos,yplotpos,framecolor,framethick,model=model,palette=palette,majorNum=majorTickNum,minorNum=minorTickNum
@@ -543,8 +543,13 @@ pro spd_ui_draw_object::makeZAxisModel,zrange,zAxis,xplotpos,yplotpos,framecolor
     endif
     subtitlesplit = strsplit(subtitletext,'!c|!C',/regex,/extract,count=numsublines)
     subtitlespace = (subtitlesize+1)*numsublines
-  endif else subtitlespace=0 
-
+  endif else subtitlespace=0
+  
+  ;title/subtitle still collide a bit when the text is perpendicular to the colorbar,
+  ;his should provide adequate padding while the "offset" var below still allows scalability
+  ;(to keep label truly centered some padding should be applied to title and subtitle,
+  ; but I've only applied it to the title for simplicity)
+  titlepadding = self->pt2norm(10.,1)
   
   if obj_valid(labelTextObject) then begin
   
@@ -553,7 +558,7 @@ pro spd_ui_draw_object::makeZAxisModel,zrange,zAxis,xplotpos,yplotpos,framecolor
         pos = [.5,1.+self->pt2norm(margin+thick+labelmargin+subtitlespace,1)/(yplotpos[1]-yplotpos[0]),zstack+.1]
         justify = 0
       endif else begin
-        pos = [.5,1.+self->pt2norm(margin+thick+labelmargin,1)/(yplotpos[1]-yplotpos[0]),zstack+.1]
+        pos = [.5-titlepadding,1.+self->pt2norm(margin+thick+labelmargin,1)/(yplotpos[1]-yplotpos[0]),zstack+.1]
         justify = -1
       endelse
       offset = 1
@@ -563,7 +568,7 @@ pro spd_ui_draw_object::makeZAxisModel,zrange,zAxis,xplotpos,yplotpos,framecolor
         pos = [.5,0.-self->pt2norm(margin+thick+labelmargin,1)/(yplotpos[1]-yplotpos[0]),zstack+.1]
         justify = 0
       endif else begin
-        pos = [.5,0.-self->pt2norm(margin+thick+labelmargin,1)/(yplotpos[1]-yplotpos[0]),zstack+.1]
+        pos = [.5-titlepadding,0.-self->pt2norm(margin+thick+labelmargin,1)/(yplotpos[1]-yplotpos[0]),zstack+.1]
         justify = -1
       endelse
       offset = -1
@@ -571,18 +576,18 @@ pro spd_ui_draw_object::makeZAxisModel,zrange,zAxis,xplotpos,yplotpos,framecolor
     endif else if placement eq 2 then begin
 
       if labelOrientation eq 0 then begin; horizontal
-        pos = [0.-self->pt2norm(margin+thick+labelmargin,0)/(xplotpos[1]-xplotpos[0]),.5,zstack+.1]
+        pos = [0.-self->pt2norm(margin+thick+labelmargin,0)/(xplotpos[1]-xplotpos[0]),.5+titlepadding,zstack+.1]
         offset = 1
         justify = 1
       endif else begin; vertical
-        pos = [0.-self->pt2norm(margin+thick+labelmargin+subtitlespace,0)/(xplotpos[1]-xplotpos[0]),.5,zstack+.1];allow space for subtitle
+        pos = [0.-self->pt2norm(margin+thick+labelmargin+subtitlespace,0)/(xplotpos[1]-xplotpos[0]),.5,zstack+.1]
         offset = 0
         justify = -1
       endelse
       
     endif else if placement eq 3 then begin
     
-      pos = [1.+self->pt2norm(margin+thick+labelmargin,0)/(xplotpos[1]-xplotpos[0]),.5,zstack+.1]
+      pos = [1.+self->pt2norm(margin+thick+labelmargin,0)/(xplotpos[1]-xplotpos[0]),.5+titlepadding,zstack+.1]
       
       if labelOrientation eq 0 then begin
         offset = 1

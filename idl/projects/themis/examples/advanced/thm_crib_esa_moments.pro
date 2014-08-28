@@ -93,7 +93,7 @@ tplot,['tha_peif_en_eflux','tha_peif_density','tha_peif_velocity_dsl','tha_peif_
 	get_dat='th'+sc+'_pei'+typ
 	name1='th'+sc+'_pei'+typ+'_en_eflux'
 	;call get_en_spec to make sure units are properly set before moment calculations
-	get_en_spec,get_dat,units='eflux',retrace=1,name=name1,gap_time=gap_time,t1=t1,t2=t2
+	thm_get_en_spec,get_dat,units='eflux',retrace=1,name=name1,gap_time=gap_time,t1=t1,t2=t2
 	
 	;make spectrogram plot look pretty
 	zlim,name1,1.e3,1.e7,1
@@ -105,10 +105,10 @@ tplot,['tha_peif_en_eflux','tha_peif_density','tha_peif_velocity_dsl','tha_peif_
 	options,name1,'y_no_interp',1
 
 
-	;use get_2dt as wrapper to calculate moments
+	;use thm_get_2dt as wrapper to calculate moments
 	;n_3d_new is name of proc that calculates density moments
 	name1='th'+sc+'_pei'+typ+'_density'
-	get_2dt,'n_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.]
+	thm_get_2dt,'n_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.]
 	;set metadata
 	ylim,name1,.1,nmax,1
 	options,name1,'ytitle','Ni th'+sc+'!C!C1/cm!U3'
@@ -116,7 +116,7 @@ tplot,['tha_peif_en_eflux','tha_peif_density','tha_peif_velocity_dsl','tha_peif_
 	
 	name1='th'+sc+'_pei'+typ+'_velocity_dsl'
 	;v_3d_new is proc that calculates velocity moments
-	get_2dt,'v_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.]
+	thm_get_2dt,'v_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.]
 	;set metadata
 	get_data,name1,data=d,dlimits=a
 	cotrans_set_coord,a,'dsl'	; add coord system label for cotrans routines
@@ -130,7 +130,7 @@ tplot,['tha_peif_en_eflux','tha_peif_density','tha_peif_velocity_dsl','tha_peif_
 
 	name1='th'+sc+'_pei'+typ+'_T_dsl'
 	;t_3d_new calculates temperature moments
-	get_2dt,'t_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.]
+	thm_get_2dt,'t_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[20.,21000.]
 	;set metadata
 	get_data,name1,data=d,dlimits=a
 	cotrans_set_coord,a,'dsl'	; add coord system label for cotrans routines
@@ -149,7 +149,7 @@ tplot,['tha_peif_en_eflux','tha_peif_density','tha_peif_velocity_dsl','tha_peif_
 	get_dat='th'+sc+'_pee'+typ
 	name1='th'+sc+'_pee'+typ+'_en_eflux'
 	;get_en_spec sets proper units so it should be called prior to moments calculations
-	get_en_spec,get_dat,units='eflux',retrace=1,name=name1,gap_time=gap_time,t1=t1,t2=t2
+	thm_get_en_spec,get_dat,units='eflux',retrace=1,name=name1,gap_time=gap_time,t1=t1,t2=t2
 	;set metadata
 	zlim,name1,1.e5,1.e9,1
 	ylim,name1,3.,40000.,1
@@ -160,13 +160,13 @@ tplot,['tha_peif_en_eflux','tha_peif_density','tha_peif_velocity_dsl','tha_peif_
 	options,name1,'y_no_interp',1
 
 	name1='th'+sc+'_pee'+typ+'_density'
-	get_2dt,'n_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[emin,27000.]
+	thm_get_2dt,'n_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[emin,27000.]
 	;set metadata
 	ylim,name1,.1,nmax,1
 	options,name1,'ytitle','Ne th'+sc+'!C!C1/cm!U3'
 	
 	name1='th'+sc+'_pee'+typ+'_velocity_dsl'
-	get_2dt,'v_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[emin,27000.]
+	thm_get_2dt,'v_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[emin,27000.]
 	;set metadata
 	get_data,name1,data=d,dlimits=a
 	cotrans_set_coord,a,'dsl'	; add coord system label for cotrans routines
@@ -179,7 +179,7 @@ tplot,['tha_peif_en_eflux','tha_peif_density','tha_peif_velocity_dsl','tha_peif_
 	options,name1,labels=['V!dex!n', 'V!dey!n', 'V!dez!n'],constant=0.
 
 	name1='th'+sc+'_pee'+typ+'_T_dsl'
-	get_2dt,'t_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[emin,27000.]
+	thm_get_2dt,'t_3d_new',get_dat,name=name1,gap_time=gap_time,t1=t1,t2=t2,energy=[emin,27000.]
 	;set metadata
 	get_data,name1,data=d,dlimits=a
 	cotrans_set_coord,a,'dsl'	; add coord system label for cotrans routines

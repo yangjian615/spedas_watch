@@ -1,5 +1,5 @@
 ;+
-;PROGRAM:	get_2dt,funct,get_dat
+;PROGRAM:	thm_get_2dt,funct,get_dat
 ;INPUT:	
 ;	funct:	function,	function that operates on structures generated 
 ;					by get_eesa_surv, get_eesa_burst, etc.
@@ -55,11 +55,17 @@
 ;		09/01/05	changed loop to use index to allow for dat.valid=0 data in stored data
 ;		09/01/05	calib keyword no longer passed to routine
 ;		09/04/16	bkg keyword removed for Themis electron sst, assume bkg removal is part of get_th?_pse?
+; 2014/06/30  Adding thm prefix to differentiate from identically named FAST routines  
+; 
+;NOTES:
 ;
-;NOTES:	  
-;	Current version only works for FAST
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-06-30 18:58:14 -0700 (Mon, 30 Jun 2014) $
+;$LastChangedRevision: 15492 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/packet/functions/thm_get_2dt.pro $
 ;-
-pro get_2dt,funct,get_dat, $
+pro thm_get_2dt,funct,get_dat, $
 	T1=t1, $
 	T2=t2, $
 	ENERGY=en, $
@@ -82,7 +88,7 @@ pro get_2dt,funct,get_dat, $
 ex_start = systime(1)
 
 if n_params() lt 2 then begin
-	dprint, 'Wrong Format, Use: get_2dt,funct,get_dat,[t1=t1,t2=t2,...]'
+	dprint, 'Wrong Format, Use: thm_get_2dt,funct,get_dat,[t1=t1,t2=t2,...]'
 	return
 endif
 

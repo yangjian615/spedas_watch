@@ -155,7 +155,7 @@ if (dat.valid eq 1) then begin
 	count = dat.nenergy
 
 	if keyword_set(en) then begin
-		er=energy_to_ebin(dat,en-dat.charge*1.15*(dat.sc_pot-1.))
+		er=thm_energy_to_ebin(dat,en-dat.charge*1.15*(dat.sc_pot-1.))
 	endif
 	if keyword_set(er) then begin
 		ebins=bytarr(dat.nenergy)

@@ -43,10 +43,10 @@
 ;HISTORY:
 ;  This has replaced the older spd_ui_overplot.pro which was written specifically for GUI overview plots.
 ;
-;$LastChangedBy:   $
+;$LastChangedBy: $
 ;$LastChangedDate: $
-;$LastChangedRevision:   $
-;$URL:  $
+;$LastChangedRevision: $
+;$URL: $
 ;-----------------------------------------------------------------------------------
 
 
@@ -809,12 +809,12 @@ if keyword_set(gui_plot) then begin ; for GUI plots we have some differences
         roi_bar=thx+'_roi_bar'
     Endelse
        
-    tplot_gui,vars_full,/no_verify,/no_update,/add_panel,no_draw=keyword_set(no_draw),  var_label = [thx+'_state_pos_gse_x', thx+'_state_pos_gse_y', thx+'_state_pos_gse_z']
+    tplot_gui,vars_full,/no_verify,/no_update,/add_panel,no_draw=keyword_set(no_draw),  var_label = [thx+'_state_pos_gse_z', thx+'_state_pos_gse_y', thx+'_state_pos_gse_x']
 
 endif else begin
   ;for server plots
   tplot, vars_full, title = probes_title[pindex[0]]+' (TH-'+strupcase(sc)+')', $
-    var_label = [thx+'_state_pos_gse_x', thx+'_state_pos_gse_y', thx+'_state_pos_gse_z']
+    var_label = [thx+'_state_pos_gse_z', thx+'_state_pos_gse_y', thx+'_state_pos_gse_x']
 endelse
 
 ; make pngs

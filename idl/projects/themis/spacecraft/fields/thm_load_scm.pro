@@ -110,8 +110,8 @@
 ;                    an 'End of file encountered...' bug.
 ;
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-05-09 11:36:37 -0700 (Fri, 09 May 2014) $
-; $LastChangedRevision: 15081 $
+; $LastChangedDate: 2014-06-27 12:48:02 -0700 (Fri, 27 Jun 2014) $
+; $LastChangedRevision: 15455 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_scm.pro $
 ;-
 pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
@@ -347,11 +347,14 @@ pro thm_load_scm, probe = probe, datatype = datatype, trange = trange, $
     msg_out=msg_out, $
     _extra = _extra
 
-  if lvl eq 'l1' && keyword_set(valid_names) then begin
+;If valid names is set, both l1 and l2 are returned as valid levels
+;and need to be passed out in the level variable
+  if keyword_set(valid_names) then level = lvl
+  if lvl[0] eq 'l1' && keyword_set(valid_names) then begin
     thm_cotrans, out_coord = coord, /valid_names, verbose = 0
     dprint, $
       string(strjoin(coord, ','), $
-             format = '( "Valid '+lvl+' coords:",X,A,".")')
+             format = '( "Valid '+lvl[0]+' coords:",X,A,".")')
   endif
   
   ;print any saved error messages now that loading is complete

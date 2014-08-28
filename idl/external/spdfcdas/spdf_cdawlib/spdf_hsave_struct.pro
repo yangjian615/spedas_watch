@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-06-25 09:46:29 -0700 (Wed, 25 Jun 2014) $
+;$Date: 2014-06-26 14:10:49 -0700 (Thu, 26 Jun 2014) $
 ;$Header: /home/cdaweb/dev/control/RCS/spdf_hsave_struct.pro,v 1.2 2010/07/09 14:33:43 kovalick Exp johnson $
 ;$Locker: johnson $
-;$Revision: 15432 $
+;$Revision: 15447 $
 ;
 ;Copyright 1996-2013 United States Government as represented by the 
 ;Administrator of the National Aeronautics and Space Administration. 
@@ -14,6 +14,8 @@
 ;the data from the handles and put into the .dat tags, then wipe out
 ;the .handle tags.
 FUNCTION spdf_hsave_struct,a,fname, debug=debug, nosave=nosave
+ 
+if SIZE(a, /type) ne 8 then return,a 
 
 if (spdf_tagindex('HANDLE',tag_names(a.(0))) eq -1) then begin
   if (not(keyword_set(nosave)))then begin ;save the buffer to the save file

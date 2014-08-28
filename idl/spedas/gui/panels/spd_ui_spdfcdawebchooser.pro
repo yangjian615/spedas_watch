@@ -34,9 +34,9 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-06-24 08:54:24 -0700 (Tue, 24 Jun 2014) $
-;$LastChangedRevision: 15407 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-06-27 13:45:09 -0700 (Fri, 27 Jun 2014) $
+;$LastChangedRevision: 15457 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -693,8 +693,14 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
   COMPILE_OPT IDL2
   
   RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
+  RESOLVE_ROUTINE, 'spdf_list_mystruct', /IS_FUNCTION, /COMPILE_FULL_FILE
+  RESOLVE_ROUTINE, 'spdf_break_mystring', /IS_FUNCTION, /COMPILE_FULL_FILE
+  RESOLVE_ROUTINE, 'spdf_plotmaster', /IS_FUNCTION, /COMPILE_FULL_FILE
+  RESOLVE_ROUTINE, 'spdf_read_mycdf', /IS_FUNCTION, /COMPILE_FULL_FILE
+  RESOLVE_ROUTINE, 'spdf_replace_bad_chars', /IS_FUNCTION, /COMPILE_FULL_FILE
+  RESOLVE_ROUTINE, 'spdf_tagindex', /IS_FUNCTION, /COMPILE_FULL_FILE
+  RESOLVE_ROUTINE, 'spdf_version', /IS_FUNCTION, /COMPILE_FULL_FILE
   RESOLVE_ROUTINE, 'spdfCdawebChooser', /COMPILE_FULL_FILE
-  RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
   
   if ~keyword_set(!spedas) then spedas_init
   localdir = !spedas.TEMP_CDF_DIR

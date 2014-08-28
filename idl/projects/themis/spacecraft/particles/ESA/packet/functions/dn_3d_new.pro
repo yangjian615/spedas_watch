@@ -49,7 +49,7 @@ nb = dat.nbins
 ebins2=replicate(1b,na)
 if keyword_set(en) then begin
 	ebins2(*)=0
-	er2=[energy_to_ebin(dat,en)]
+	er2=[thm_energy_to_ebin(dat,en)]
 	if er2(0) gt er2(1) then er2=reverse(er2)
 	ebins2(er2(0):er2(1))=1
 endif

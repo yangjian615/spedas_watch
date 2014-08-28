@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-; spd_ui_themis_fileconfig
+; themis_fileconfig
 ;
 ;PURPOSE:
 ; A widget that allows the user to set some of the fields in the
@@ -16,14 +16,14 @@
 ;              slightly to make things line up in both windows and linux.
 ; 24-oct-2013 clr, removed graphic buttons and goes wind and istp code. panel is now tabbed
 ; 
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2014-06-02 15:01:50 -0700 (Mon, 02 Jun 2014) $
-;$LastChangedRevision: 15289 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_themis_fileconfig.pro $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-06-30 15:34:38 -0700 (Mon, 30 Jun 2014) $
+;$LastChangedRevision: 15483 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/themis_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
 ;SAVE this routine in the event we want to reinstall the graphics buttons
-;pro spd_ui_fileconfig_set_draw,state,renderer;;
+;pro themis_fileconfig_set_draw,state,renderer;;
 ;
 ;  if renderer eq 0 && $
 ;     strlowcase(!VERSION.os_family) eq 'windows' then begin
@@ -62,7 +62,7 @@
 
 
 
-PRO spd_ui_fileconfig_init_struct,state,struct
+PRO themis_fileconfig_init_struct,state,struct
 
   compile_opt idl2,hidden
 
@@ -87,7 +87,7 @@ END
 
 ;--------------------------------------------------------------------------------
 
-PRO spd_ui_themis_fileconfig_event, event
+PRO themis_fileconfig_event, event
   ; Get state structure from the base level 
   Widget_Control, event.handler, Get_UValue=state, /No_Copy
  
@@ -192,10 +192,10 @@ PRO spd_ui_themis_fileconfig_event, event
         
 ;      if !spd_gui.renderer eq 0 then begin
 ;        widget_control,state.gr_hard_button,/set_button
-;        spd_ui_fileconfig_set_draw,state,0
+;        themis_fileconfig_set_draw,state,0
 ;      endif else begin
 ;        widget_control,state.gr_soft_button,/set_button
-;        spd_ui_fileconfig_set_draw,state,1
+;        themis_fileconfig_set_draw,state,1
 ;      endelse
 
     END
@@ -203,14 +203,14 @@ PRO spd_ui_themis_fileconfig_event, event
    'RESETTODEFAULT': BEGIN
 
       thm_init,  /reset      
-      spd_ui_fileconfig_init_struct,state,!themis
+      themis_fileconfig_init_struct,state,!themis
       state.historywin->update,'Resetting configuration to default values.'
       state.statusbar->update,'Resetting configuration to default values.'
 
 ;      Do Not delete may reinstall at later date    
 ;      !spd_gui.renderer = 1
 ;      widget_control,state.gr_soft_button,/set_button
-;      spd_ui_fileconfig_set_draw,state,1
+;      themis_fileconfig_set_draw,state,1
     END
     
     'SAVE': BEGIN
@@ -233,7 +233,7 @@ END
 
 ;--------------------------------------------------------------------------------
 
-PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
+PRO themis_fileconfig, tab_id, historyWin, statusBar
 
   defsysv, '!themis', exists=exists
   if not keyword_set(exists) then thm_init
@@ -317,7 +317,7 @@ PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
           v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
           historyWin:historyWin, tab_id:tab_id, master:master}
 
-  spd_ui_fileconfig_init_struct,state,!themis
+  themis_fileconfig_init_struct,state,!themis
 
   Widget_Control, master, Set_UValue=state, /No_Copy
   widget_control, master, /realize
@@ -329,7 +329,7 @@ PRO spd_ui_themis_fileconfig, tab_id, historyWin, statusBar
     widget_control, master, xoffset=0, yoffset=0
   endif
 
-  xmanager, 'spd_ui_themis_fileconfig', master, /no_block
+  xmanager, 'themis_fileconfig', master, /no_block
 
 END ;--------------------------------------------------------------------------------
 

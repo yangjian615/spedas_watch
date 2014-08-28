@@ -90,9 +90,9 @@
 ;Still have questions:
 ;   Send e-mail to:  tplot@ssl.berkeley.edu    someone might answer!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-01-31 17:32:47 -0800 (Fri, 31 Jan 2014) $
-; $LastChangedRevision: 14111 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2014-06-27 14:34:15 -0700 (Fri, 27 Jun 2014) $
+; $LastChangedRevision: 15459 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot.pro $
 ;-
 
@@ -103,6 +103,7 @@ pro tplot,datanames,      $
    wshow = wshow,         $
    OPLOT = oplot,         $
    OVERPLOT = overplot,   $
+   VERSION = version , $
    TITLE = title,         $
    LASTVAR = lastvar,     $
    ADD_VAR = add_var,     $

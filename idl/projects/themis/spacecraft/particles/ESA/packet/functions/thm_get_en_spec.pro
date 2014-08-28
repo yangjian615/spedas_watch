@@ -1,5 +1,5 @@
 ;+
-;PROCEDURE:	get_en_spec
+;PROCEDURE:	thm_get_en_spec
 ;PURPOSE:	
 ;	Generates energy-time spectrogram data structures for tplot
 ;INPUT:		
@@ -44,13 +44,13 @@
 ;		09/01/05	changed loop to use index to allow for dat.valid=0 data in stored data
 ;		09/01/05	calib keyword no longer passed to routine
 ;		09/04/16	bkg keyword removed for Themis electron sst, assume bkg removal is part of get_th?_pse?
-;
+; 2014/06/30  Adding thm prefix to differentiate from identically named FAST routines
 ;
 ;NOTES:	  
 ;	Current version only works for FAST and THEMIS
 ;-
 
-pro get_en_spec,get_dat,  $
+pro thm_get_en_spec,get_dat,  $
 	T1=t1, $
 	T2=t2, $
 ;	ENERGY=en, $
@@ -316,7 +316,7 @@ if not all_same then dprint, 'all_same=',all_same
 
 time = time(0l:n-1)
 
-dprint, 'get_en_spec time range = ',time_string(minmax(time))
+dprint, 'thm_get_en_spec time range = ',time_string(minmax(time))
 ;if keyword_set(t1) then begin
 ;	ind=where(time ge t1,count)
 ;	print,count
