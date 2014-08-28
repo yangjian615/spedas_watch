@@ -37,15 +37,15 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2013-11-26 14:11:06 -0800 (Tue, 26 Nov 2013) $
-; $LastChangedRevision: 13602 $
+; $LastChangedDate: 2014-06-24 13:42:43 -0700 (Tue, 24 Jun 2014) $
+; $LastChangedRevision: 15419 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_spinfit.pro $
 ;
 ;-
 
 pro rbsp_efw_make_l2_spinfit, sc, date, folder = folder, $
         magExtra = magExtra, version = version, save_flags = save_flags, $
-        no_spice_load = no_spice_load, no_cdf = no_cdf
+        no_spice_load = no_spice_load, no_cdf = no_cdf, testing=testing
 
 compile_opt idl2
 
@@ -88,20 +88,17 @@ if ~keyword_set(no_cdf) then begin
 
 	; make sure we have the skeleton CDF
 	skeletonFile=file_search(skeletonFile,count=found) ; looking for single file, so count will return 0 or 1
-	if ~found then begin
-		dprint,'Could not find e-spinfit-mgse v'+vstr+' skeleton CDF, returning.'
-		return
-	endif
+;	if ~found then begin
+;		dprint,'Could not find e-spinfit-mgse v'+vstr+' skeleton CDF, returning.'
+;		return
+;	endif
 	; fix single element source file array
 	skeletonFile=skeletonFile[0]
 
 endif
 
 
-;;*************
-;;FOR TESTING
-;skeletonfile = '~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/ssl_general/missions/rbsp/efw/l1_to_l2/rbspa_efw-l2_e-spinfit-mgse_00000000_v01.cdf'
-;;*************
+if keyword_set(testing) then skeletonfile = '~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/rbspa_efw-l2_e-spinfit-mgse_00000000_v01.cdf'
 
 
 
@@ -398,18 +395,20 @@ cdf_varput, cdfid, cdfhandle, epoch
 ; Write sfit12
 fill_value = -1e31 ; 
 tvar = rbx+'efw_esvy_mgse_vxb_removed_spinfit'
-cdfhandle = 'e12_spinfit_mgse'
+;cdfhandle = 'e12_spinfit_mgse'
+cdfhandle = 'efield_spinfit_mgse'
 get_data, tvar, data = d, dlim = dl
 d.y[*,0] = fill_value  ; fill the axial component
 cdf_varput, cdfid, cdfhandle, transpose(d.y)
 
 ; Write vxb
-cdfhandle = 'vxb_spinfit_mgse'
+;cdfhandle = 'vxb_spinfit_mgse'
+cdfhandle = 'VxB_mgse'
 cdf_varput, cdfid, cdfhandle, transpose(vxb)
 
 ; Write corotation field
 tvar = rbx+'E_coro_mgse'
-cdfhandle = 'ecoro_mgse'
+cdfhandle = 'efield_coro_mgse'
 get_data, tvar, data = d, dlim = dl
 cdf_varput, cdfid, cdfhandle, transpose(d.y)
 

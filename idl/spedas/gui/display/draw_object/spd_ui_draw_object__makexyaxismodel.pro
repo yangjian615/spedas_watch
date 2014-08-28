@@ -22,9 +22,9 @@
 ;labelPos: this keyword returns the most distant label position from the axis
 ;fail: 1 indicates failure, 0 success
 ; 
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-06-25 17:47:00 -0700 (Wed, 25 Jun 2014) $
+;$LastChangedRevision: 15444 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__makexyaxismodel.pro $
 ;-
 
@@ -181,6 +181,7 @@ pro spd_ui_draw_object::makeXYAxisModel, $
     majorTickValues=majorTickValues,$
     majorTickInterval=tickSpacingMajor,$
     minorTickNum=minorTickNumRecommended,$
+    logMinorTickType=logMinorTickType,$
     ticksFixed=ticksFixed,$
     fail=placefail
     

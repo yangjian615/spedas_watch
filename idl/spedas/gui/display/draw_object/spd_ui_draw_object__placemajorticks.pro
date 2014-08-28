@@ -15,9 +15,9 @@
 ;1,2,5 * 10^n or 60*1,2,5*10^n or 60*60*1,2,5*10^n or
 ;24*60*60*1,2,5*10^n  With selection/n dependent on scale
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-06-25 17:47:00 -0700 (Wed, 25 Jun 2014) $
+;$LastChangedRevision: 15444 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__placemajorticks.pro $
 ;-
 pro spd_ui_draw_object::placeMajorTicks, $
@@ -32,6 +32,7 @@ pro spd_ui_draw_object::placeMajorTicks, $
                         majorTickValues=majorTickValues,$ ; the locations of major ticks are returned as an array from this argument
                         majorTickInterval=majorTickInterval,$ ; the final space between ticks
                         minorTickNum=minorTickNum,$ ; the recommended number of minor ticks for this spacing
+                        logMinorTickType=logMinorTickType,$ ; needed to make good recommendation on number of minor ticks
                         ticksFixed=ticksFixed,$ ; if we used the non-standard log-spacing, note this so that we can change the annotation style
                         fail=fail  ;Boolean, 1 indicates a failure
           
@@ -62,6 +63,7 @@ pro spd_ui_draw_object::placeMajorTicks, $
                     tickValues=majorTickValues, $ ; Returns the tick values here
                     tickInterval=majorTickInterval,$ ; Returns the spacing here
                     minorTickNum=minorTickNum,$ ; returns recommended minor tick number here
+                    logMinorTickType=logMinorTickType, $  ;needed to make good recommendation on number of minor ticks
                     nicest=keyword_set(autoticks)  ;If this is set, disregards requested number of ticks and tries for best placement
                                                    ;See note in goodticks header, we may be able to deprecate for calls to IDL axis routine with /nodraw set  
      

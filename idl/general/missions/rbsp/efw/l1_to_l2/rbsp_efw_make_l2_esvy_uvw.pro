@@ -32,15 +32,15 @@
 ;
 ;
 ; VERSION:
-; $LastChangedBy: kersten $
-; $LastChangedDate: 2013-09-18 13:41:10 -0700 (Wed, 18 Sep 2013) $
-; $LastChangedRevision: 13062 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2014-06-24 15:23:47 -0700 (Tue, 24 Jun 2014) $
+; $LastChangedRevision: 15428 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_esvy_uvw.pro $
 ;
 ;-
 
 pro rbsp_efw_make_l2_esvy_uvw_remove_offset, data, winlen = winlen, $
-  icomp = icomp, offset = offset_out 
+  icomp = icomp, offset = offset_out
 compile_opt idl2, hidden
 
 ; winlen -- smoothing window length in seconds
@@ -94,7 +94,7 @@ end
 ;-------------------------------------------------------------------------------
 pro rbsp_efw_make_l2_esvy_uvw, sc, date, folder = folder, $
         version = version, save_flags = save_flags, $
-        save_offset = save_offset, no_spice_load = no_spice_load
+        save_offset = save_offset, no_spice_load = no_spice_load,testing=testing
 
 compile_opt idl2
 
@@ -126,9 +126,19 @@ skeletonFile=file_retrieve(skeleton,_extra=!rbsp_efw)
 
 ; use skeleton from the staging dir until we go live in the main data tree
 ;skeletonFile='/Volumes/DataA/user_volumes/kersten/data/rbsp/'+skeleton	
+
+
+if keyword_set(testing) then begin
+	skeleton = rbspx+'_efw-l2_e-hires-uvw_00000000_v'+vstr+'.cdf'
+	source_file='~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/' + skeleton
+endif
+
+
+
 	
 ; make sure we have the skeleton CDF
-skeletonFile=file_search(skeletonFile,count=found) ; looking for single file, so count will return 0 or 1
+skeletonFile=file_search(source_file,count=found) ; looking for single file, so count will return 0 or 1
+
 
 if ~found then begin
 	dprint,'Could not find e-hires-uvw v'+vstr+' skeleton CDF, returning.'
@@ -444,7 +454,7 @@ cdf_varput, cdfid, 'e_boom_length', dl.data_att.boom_length
 ; Write e_hires_uvw
 fill_value = -1e31 ; 
 tvar = rbx + 'efw_esvy_no_offset'
-cdfhandle = 'e_hires_uvw'
+cdfhandle = 'efield_uvw'
 get_data, tvar, data = d, dlim = dl
 d.y[*,2] = fill_value  ; fill the axial component
 cdf_varput, cdfid, cdfhandle, transpose(d.y)
@@ -452,7 +462,7 @@ cdf_varput, cdfid, cdfhandle, transpose(d.y)
 ; Write e_hires_uvw_raw
 fill_value = -1e31 ; 
 tvar = rbx + 'efw_esvy'
-cdfhandle = 'e_hires_uvw_raw'
+cdfhandle = 'efield_raw_uvw'
 get_data, tvar, data = d, dlim = dl
 d.y[*,2] = fill_value  ; fill the axial component
 cdf_varput, cdfid, cdfhandle, transpose(d.y)

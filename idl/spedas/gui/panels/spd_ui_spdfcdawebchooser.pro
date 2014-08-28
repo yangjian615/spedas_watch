@@ -34,9 +34,9 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-06-11 10:59:22 -0700 (Wed, 11 Jun 2014) $
-;$LastChangedRevision: 15347 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-06-24 08:54:24 -0700 (Tue, 24 Jun 2014) $
+;$LastChangedRevision: 15407 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -149,9 +149,14 @@ pro spd_spdfGetCdawebDataExec, $
   widget_control, localDirText, get_value=cdfFolder
   localdir = STRTRIM(cdfFolder[0],2)
   if STRMID(localdir, 0, 1, /REVERSE_OFFSET) ne path_sep() then localdir = localdir + path_sep()
+  ; check that the directory exists; if not, create it.
+  if ~file_test(localdir, /directory, /write) then begin
+    file_mkdir2, localdir, /writeable
+  endif
+  ; now check that the directory is writable
   if ~FILE_SEARCH(localdir, /TEST_WRITE) then begin
     reply = dialog_message( $
-      'Local CDF directory must exist and be writable. ' +  string(10B) + string(10B) + localdir , $
+      'Local CDF directory must be writable. ' +  string(10B) + string(10B) + localdir , $
       title='Local CDF directory', /center, /error)
     return
   endif else begin
@@ -394,6 +399,29 @@ pro spd_spdfGetCdawebData, $
   event
   
   widget_control, event.top, get_uvalue=state
+  
+  ; check the CDF library version, gracefully error 
+  ; when the user is using an outdated version
+  cdf_lib_info, release=release, version=version, increment=increment
+  cdf_version = float(strcompress(string(version)+'.'+string(release), /rem))
+  if cdf_version lt 3.3 then begin
+      current_cdf_version = strcompress(string(version)+'.'+string(release)+'.'+string(increment), /rem)
+      err_message = [ $
+          'The installed version of the CDF library is out of date', $
+          'Current CDF version: ' + current_cdf_version, $
+          'You must install the IDL CDF patch to continue.', $
+          'See: http://cdf.gsfc.nasa.gov/html/cdf_patch_for_idl.html']
+      reply = dialog_message(err_message, $
+          title='Can''t continue without patching the CDF library', /center, /information)
+      
+      ; send the error to the status bar, history window and console
+      for linenum = 0, n_elements(err_message)-1 do begin
+          state.historyWin->update, err_message[linenum]
+          state.statusBar->update, err_message[linenum]
+          dprint, dlevel = 0, err_message[linenum]
+      endfor
+      return
+  endif
   
   if spd_spdfGetDatasetSelection(state.datasetTree, $
     selectedDatasetId, selectedVarNames) ne 1 then return
@@ -890,6 +918,7 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
     tlb:tlb, $
     callSequence:callSequence,$
     statusBar:statusBar,$
+    historyWin:historyWin,$
     groupLeaderWidgetId:groupLeaderWidgetId $
   }
   

@@ -16,8 +16,8 @@
 ; 
 ;HISTORY:
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedDate: 2014-06-24 14:54:28 -0700 (Tue, 24 Jun 2014) $
+;$LastChangedRevision: 15424 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_image_export.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -195,7 +195,7 @@ PRO spd_ui_image_export_event, event
     'SELECTFILE':BEGIN
     widget_control,state.wFileName,get_value=filename
     selFileName = spd_ui_dialog_pickfile_save_wrapper(Title='Save SPEDAS Image As', $
-      Filter=state.typelist, /FIX_FILTER, DEFAULT_EXTENSION ='*.png', File=filename, /Write, Dialog_Parent=event.top, path=state.dirName)
+      Filter=state.typelist, /FIX_FILTER, DEFAULT_EXTENSION ='png', File=filename, /Write, Dialog_Parent=event.top, path=state.dirName)
     if selFileName ne '' then begin 
        filenameid = widget_info(event.top,find_by_uname='FILENAME')
        Widget_Control, filenameid, Set_Value=selFileName 
@@ -412,7 +412,7 @@ function spd_ui_image_export, gui_id,drawObject,historywin,statusBar,inPtr
   outPtr = ptr_new({name:'',type:'',options:optionsptr})
     
   selFileName = spd_ui_dialog_pickfile_save_wrapper(Title='Save SPEDAS Image As', $
-    Filter=typelist, /FIX_FILTER, DEFAULT_EXTENSION ='*.png', File=filestring, /Write, Dialog_Parent=gui_id, path=dirname)
+    Filter=typelist, /FIX_FILTER, DEFAULT_EXTENSION ='png', File=filestring, /Write, Dialog_Parent=gui_id, path=dirname)
   if selFileName eq '' then RETURN,*outPtr
    dirname = file_dirname(selFileName)
    basename=FILE_BASENAME(selFileName)

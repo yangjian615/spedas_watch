@@ -18,9 +18,9 @@
 ;  majorNum(long):  The number of major ticks on this axis.
 ;  minorNum(long):  The number of minor ticks per major tick on this axis
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-06-25 17:47:00 -0700 (Wed, 25 Jun 2014) $
+;$LastChangedRevision: 15444 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__makezaxismodel.pro $
 ;-
 pro spd_ui_draw_object::makeZAxisModel,zrange,zAxis,xplotpos,yplotpos,framecolor,framethick,model=model,palette=palette,majorNum=majorTickNum,minorNum=minorTickNum
@@ -201,7 +201,8 @@ pro spd_ui_draw_object::makeZAxisModel,zrange,zAxis,xplotpos,yplotpos,framecolor
     self->goodTicks,0,zrange,scaling,majorTickNum, $
                   tickValues=tickValues,tickInterval=tickInterval,$
                   /nozero,minorTickNum=minorTickNumRecommended,$
-                  nicest=keyword_set(autoticks)
+                  nicest=keyword_set(autoticks),$
+                  logMinorTickType=logMinorTickType
          
 
     ;if we don't have enough ticks on a logarithmic axis

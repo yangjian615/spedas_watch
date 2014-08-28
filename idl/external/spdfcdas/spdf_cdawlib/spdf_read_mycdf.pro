@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-04-01 14:57:35 -0700 (Tue, 01 Apr 2014) $
+;$Date: 2014-06-24 19:14:23 -0700 (Tue, 24 Jun 2014) $
 ;$Header: /home/cdaweb/dev/control/RCS/spdf_read_mycdf.pro,v 1.302 2014/03/18 16:34:46 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 14728 $
+;$Revision: 15431 $
 ;+------------------------------------------------------------------------
 ; This package of IDL functions facilitates reading data and metadata from
 ; Common Data Format (CDF) files.  While CDF provides all the benefits
@@ -1424,18 +1424,20 @@ function correct_varname, struct, varnames, index
 ;its variables structure tag name - if it doesn't spdf_list_mystruct won't work...
 ;This is all necessary for the upgrade to IDL5.3
 str_index = strtrim(string(index),2) ;convert to string
-comm = execute('att_names = tag_names(struct.('+str_index+'))')
-if (comm eq 1) then begin
+;comm = execute('att_names = tag_names(struct.('+str_index+'))')
+att_names = tag_names(struct.(str_index))
+;if (comm eq 1) then begin
    att_v = where(att_names eq 'VARNAME', att_cnt)
    if (att_cnt gt 0) then begin
       ;assign the variable name to the "VARNAME" attribute for this variable...
       ;assign_string = 'struct.'+varnames(index)+'.('+strtrim(string((att_v[0])),2)+')='''+varnames(index)+'''
       assign_string = 'struct.('+str_index+').('+strtrim(string((att_v[0])),2)+')='''+varnames[index]+'''
+      struct.(str_index).(strtrim(string((att_v[0])),2))=varnames[index]
       ;print, 'assign_string = ',assign_string
-      comm = execute(assign_string)
-      if (comm ne 1) then print, 'execute failed for ',assign_string 
+      ;comm = execute(assign_string)
+      ;if (comm ne 1) then print, 'execute failed for ',assign_string 
    endif
-endif ;end TJK mod 09/29/00
+;endif ;end TJK mod 09/29/00
 
 return, struct
 end

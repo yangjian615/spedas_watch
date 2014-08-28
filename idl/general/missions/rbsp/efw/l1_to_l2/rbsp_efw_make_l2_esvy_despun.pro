@@ -10,13 +10,13 @@
 ; HISTORY: Created Aaron Breneman Aug 2013
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2013-11-04 11:13:02 -0800 (Mon, 04 Nov 2013) $
-;   $LastChangedRevision: 13480 $
+;   $LastChangedDate: 2014-06-24 15:22:43 -0700 (Tue, 24 Jun 2014) $
+;   $LastChangedRevision: 15425 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_esvy_despun.pro $
 ;-
 
 
-pro rbsp_efw_make_l2_esvy_despun,sc,date,folder=folder,no_spice_load=no_spice_load,qa=qa
+pro rbsp_efw_make_l2_esvy_despun,sc,date,folder=folder,no_spice_load=no_spice_load,qa=qa,testing=testing
 
 
 	rbsp_efw_init
@@ -37,7 +37,7 @@ pro rbsp_efw_make_l2_esvy_despun,sc,date,folder=folder,no_spice_load=no_spice_lo
 	endif
 	rbspx = 'rbsp'+sc
 
-	if ~keyword_set(folder) then folder ='~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/ssl_general/missions/rbsp/efw/l1_to_l2/'
+	if ~keyword_set(folder) then folder ='~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/'
 	; make sure we have the trailing slash on folder
 	if strmid(folder,strlen(folder)-1,1) ne path_sep() then folder=folder+path_sep()
 	file_mkdir,folder
@@ -52,12 +52,11 @@ pro rbsp_efw_make_l2_esvy_despun,sc,date,folder=folder,no_spice_load=no_spice_lo
 	;source_file='/Volumes/UserA/user_homes/kersten/RBSP_l2/'+skeleton
 
 
-;########################
-;testing skeleton
-;skeleton = 'rbsp'+sc+'_efw-l2_esvy_despun_00000000_v01.cdf'
-;source_file='~/Desktop/code/Aaron/RBSP/l2_processing_cribs/' + skeleton
-;stop
-;########################
+
+	if keyword_set(testing) then begin
+		skeleton = 'rbsp'+sc+'_efw-l2_esvy_despun_00000000_v01.cdf'
+		source_file='~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/' + skeleton
+	endif
 
 
 	; make sure we have the skeleton CDF
@@ -267,8 +266,6 @@ pro rbsp_efw_make_l2_esvy_despun,sc,date,folder=folder,no_spice_load=no_spice_lo
 	
 
 
-
-
 ; FILL THE CDF
 	
 	;Rename the skeleton file 
@@ -279,7 +276,7 @@ pro rbsp_efw_make_l2_esvy_despun,sc,date,folder=folder,no_spice_load=no_spice_lo
 	cdfid = cdf_open(folder+filename)
 	cdf_control, cdfid, get_var_info=info, variable='epoch_esvy'
 
-	cdf_varput,cdfid,'epoch_qual',epochstate
+	cdf_varput,cdfid,'epoch',epochstate
 	cdf_varput,cdfid,'mlt',mlt.y
 	cdf_varput,cdfid,'mlat',mlat.y
 	cdf_varput,cdfid,'lshell',lshell.y
@@ -287,9 +284,9 @@ pro rbsp_efw_make_l2_esvy_despun,sc,date,folder=folder,no_spice_load=no_spice_lo
 	cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
 
 	cdf_varput,cdfid,'epoch_esvy',epoch_esvy
-	cdf_varput,cdfid,'esvy_vxb_mgse',transpose(esvy_mgse.y)
+	cdf_varput,cdfid,'efield_mgse',transpose(esvy_mgse.y)
 
-	cdf_varput,cdfid,'epoch',epochvals
+	cdf_varput,cdfid,'epoch_qual',epochvals
 	cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
 
 ;	cdf_varput,cdfid,'vsvy_vavg',transpose(vsvy_vavg)

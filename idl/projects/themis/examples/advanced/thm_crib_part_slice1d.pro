@@ -5,7 +5,7 @@
 ;
 ; Calling sequence for thm_part_slice1d:
 ;   thm_part_slice1d, slice, [,xcut=xcut | ,ycut=ycut | ,vcut=vcut | ,ecut=ecut ]
-;                            [,angle=angle] [,/overplot] [,data=data]
+;                            [,angle=angle] [,/overplot] [,data=data] [,window=window]
 ;
 ; Plotting:
 ;   IDL graphics keywords may also be used in calls to thm_part_slice1d.
@@ -13,9 +13,9 @@
 ; See Also:
 ;   thm_crib_part_slice2d.pro
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-;$LastChangedRevision: 13081 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-06-24 18:01:54 -0700 (Tue, 24 Jun 2014) $
+;$LastChangedRevision: 15430 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_slice1d.pro $
 ;
 ;
@@ -42,13 +42,17 @@ thm_part_slice2d, dist_arr, slice_time=start_time, timewin=30, part_slice=slice,
                   rotation='BV', mag_data='thb_fgl_dsl', /two_d_interp
 
 ;plot slice for reference
-thm_part_slice2d_plot, slice 
+thm_part_slice2d_plot, slice
 
 stop
+
 
 ;-------------------------------------------
 ;plot 1D cut along the slice's x axis
 ;-------------------------------------------
+
+;put 1d plots in a new window
+window, 4
 
 ;x axis is used by default
 thm_part_slice1d, slice
@@ -140,21 +144,11 @@ stop
 ;use simple loops to quickly produce multiple plots
 ;-------------------------------------------
 
-;plot multiple radial cuts
+;plot multiple radial cuts with different colors
 v = [500,750,1000,1250,1500]
-for i=0, n_elements(v)-1 do $
-  thm_part_slice1d, slice, vcut=v[i], overplot=(i gt 0), yrange=[1e-14,1e-8]
-
-stop
-
-;-------------------
-
-;plot multiple linear cuts at different angles
-x = 0
-angle = [0,22.5,45,67.5,90] ; cut every pi/8 radians between x and y
 color = [.25,.35,.45,.55,.65] * 256 ; see IDL documentation for "Graphics System Variables"
-for i=0, n_elements(angle)-1 do $
-  thm_part_slice1d, slice, xcut=x, angle=angle[i], overplot=(i gt 0), color=color[i]
+for i=0, n_elements(v)-1 do $
+  thm_part_slice1d, slice, vcut=v[i], overplot=(i gt 0), yrange=[1e-14,1e-8], color=color[i]
 
 stop
 

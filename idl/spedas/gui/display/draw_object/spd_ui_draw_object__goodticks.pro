@@ -11,9 +11,9 @@
 ;  tick placement by lookup with IDL plotting routines and /nodraw.
 ;  We just need to be VERY careful about interaction/interference with command line utilities
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-06-25 17:47:00 -0700 (Wed, 25 Jun 2014) $
+;$LastChangedRevision: 15444 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__goodticks.pro $
 ;-
 pro spd_ui_draw_object::goodTicks,$
@@ -24,6 +24,7 @@ pro spd_ui_draw_object::goodTicks,$
                         tickValues=tickValues, $ ; Returns the tick values here
                         tickInterval=tickInterval,$ ; Returns the spacing here
                         minorTickNum=minorTickNum,$ ; Returns recommended number of minor Ticks
+                        logMinorTickType=logMinorTickType, $  ;needed to make good recommendation on number of minor ticks
                         nozero=nozero,$ ; set this keyword to guarantee there are never 0 ticks
                         nicest=nicest ;set this keyword to mostly disregard requested # of ticks
 
@@ -101,7 +102,7 @@ pro spd_ui_draw_object::goodTicks,$
   ;Identify the value at which the ticks will stop.
   tickStopFloor =  floor(range[1]/realTickIntervalFloor,/l64)*realTickIntervalFloor - range[1]
   
-  ;Identify the actual number of ticks that will be drawn.(numTicks is treated as an approximate value.
+  ;Identify the actual number of ticks that will be drawn.(numTicks is treated as an approximate value.)
   realTickNumFloor = round((range[1]-range[0]+tickStopFloor-tickStartFloor)/realTickIntervalFloor + 1,/l64)
   
   ;Identify a nice interval close to the tick interval.
@@ -154,6 +155,15 @@ pro spd_ui_draw_object::goodTicks,$
   ;So one tick is used
   if scaling eq 2 then begin
     minorTickNum = 1
+  endif
+  
+  ;if we're using minor ticks that don't cover the full interval our recommended minor tick number may be bad for intervals greater than one order of magnitude
+  if scaling eq 1 && keyword_set(logMinorTickType) then begin
+    if logMinorTickType eq 1 || logMinorTickType eq 2 then begin
+      if realTickInterval gt 1 then begin
+        minorTickNum = 9 ;if we're only drawing minor ticks for one order of magnitude, pick minor tick number appropriate for single order, even if major ticks have larger spacing
+      endif
+    endif
   endif
       
   ;if we don't generate any ticks, lets get out of here

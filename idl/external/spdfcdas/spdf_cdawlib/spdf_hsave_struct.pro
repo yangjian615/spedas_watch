@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
+;$Date: 2014-06-25 09:46:29 -0700 (Wed, 25 Jun 2014) $
 ;$Header: /home/cdaweb/dev/control/RCS/spdf_hsave_struct.pro,v 1.2 2010/07/09 14:33:43 kovalick Exp johnson $
 ;$Locker: johnson $
-;$Revision: 14512 $
+;$Revision: 15432 $
 ;
 ;Copyright 1996-2013 United States Government as represented by the 
 ;Administrator of the National Aeronautics and Space Administration. 
@@ -26,11 +26,11 @@ if (spdf_tagindex('HANDLE',tag_names(a.(0))) eq -1) then begin
 endif else begin
   ; data is stored in handles.  Retrieve the data from the handles,
   ; create .dat and re-create the structure, then SAVE to file.
-  tn = tag_names(a) & nt = n_elements(tn) & cmd = 'SAVE,'
+  tn = tag_names(a)
+  nt = n_elements(tn)
 
-  for i=0,nt-1 do begin ; retrieve each handle value
-    order = 'handle_value,a.(i).HANDLE,data'
-     status = EXECUTE(order)
+  for i=0,nt-1 do begin ; retrieve each handle value    
+     handle_value,a.(i).HANDLE,data
      a.(0).handle = 0
      tmp = create_struct(a.(i),'dat',data)
      if (i eq 0) then data_buf = create_struct(a.(i).varname, tmp) else $
@@ -39,13 +39,11 @@ endif else begin
 
   if (not(keyword_set(nosave)))then begin ;save the buffer to the save file
     ; Add the filename keyword to save command
-    cmd = cmd+"data_buf,FILENAME='"+fname+"'"
-    if keyword_set(debug) then print, 'Saving data contents to ',fname
-    status = execute(cmd) ; execute the save command
+    if keyword_set(debug) then print, 'Saving data contents to ',fname    
+    SAVE,data_buf,FILENAME=fname ; execute the save command
   endif else begin ;otherwise return the buffer to the calling program
     return, data_buf
   endelse
-
 endelse
 end
 
