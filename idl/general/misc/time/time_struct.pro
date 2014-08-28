@@ -54,8 +54,8 @@
 ;CREATED BY:    Davin Larson  Oct 1996
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-02-07 17:21:01 -0800 (Fri, 07 Feb 2014) $
-; $LastChangedRevision: 14206 $
+; $LastChangedDate: 2014-02-19 18:04:05 -0800 (Wed, 19 Feb 2014) $
+; $LastChangedRevision: 14395 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/time_struct.pro $
 ;-
 function time_struct,time,epoch=epoch,no_clean=no_clean,$
@@ -63,7 +63,8 @@ function time_struct,time,epoch=epoch,no_clean=no_clean,$
    timezone=timezone,  $
    local_time=local_time, $
    is_local_time=is_local_time,$     ; this keyword is not yet working correctly
-   tformat=tformat
+   tformat=tformat,$
+   tdiff=tdiff
    
 ;dprint,dlevel=9,time[0]
 dt = size(/type,time)
@@ -78,52 +79,57 @@ tst0 = {time_structr,year:0,month:0,date:0,hour:0,min:0,sec:0, $
         dst:0,tzone:0,tdiff:0}
 dim =   size(/dimension,time)
 ndim =  size(/n_dimen,time)
-if ndim eq 0 then tsts =tst0 else tsts = make_array(value=tst0,dim=dim)
+
 
 if dt eq 7 then begin         ; input is a string
 
-  ;recursive call for tformat keyword string->time_parse->time_double->time_struct
-  if keyword_set(tformat) then begin
-    return, time_struct(time_double(time,tformat=tformat))
-  endif
-   
-  bt = bindgen(256)
-  bt[byte(':_-/,')]= 32
-  year=0l & month=0l & date=0 & hour=0 & min=0 & fsec=0.d
-  for i=0l,n_elements(time)-1l do begin
-    tst = tst0
-    str = string(bt[byte(time[i])])+' 0 0 0 0 0 0'    ; remove separators
-    if keyword_set(MMDDYYYY) then reads,str,month,date,year,hour,min,fsec  $
-    else  reads,str,year,month,date,hour,min,fsec
-
-    if year gt 10000000l then begin
-       hour = month
-       date = year mod 100
-       year = year/100
-       month = year mod 100
-       year = year/100
-;       if hour gt 99999 then begin
-;          fsec = hour mod 100
+;Code below replaced with vectorized code from time_parse
+; 
+;  ;recursive call for tformat keyword string->time_parse->time_double->time_struct
+;  if keyword_set(tformat) then begin
+;    return, time_struct(time_double(time,tformat=tformat))
+;  endif
+;   
+;  bt = bindgen(256)
+;  bt[byte(':_-/,')]= 32
+;  year=0l & month=0l & date=0 & hour=0 & min=0 & fsec=0.d
+;  for i=0l,n_elements(time)-1l do begin
+;    tst = tst0
+;    str = string(bt[byte(time[i])])+' 0 0 0 0 0 0'    ; remove separators
+;    if keyword_set(MMDDYYYY) then reads,str,month,date,year,hour,min,fsec  $
+;    else  reads,str,year,month,date,hour,min,fsec
+;
+;    if year gt 10000000l then begin
+;       hour = month
+;       date = year mod 100
+;       year = year/100
+;       month = year mod 100
+;       year = year/100
+;;       if hour gt 99999 then begin
+;;          fsec = hour mod 100
+;;          hour = hour / 100
+; ;      endif
+;  ;     if hour gt 999 then begin
+;          min = hour mod 100
 ;          hour = hour / 100
- ;      endif
-  ;     if hour gt 999 then begin
-          min = hour mod 100
-          hour = hour / 100
-   ;    endif
-    endif
-    if year lt 70  then year = year+2000
-    if year lt 200 then year = year+1900
-;    if not (year eq 0 and month eq 0 and date eq 0)
-    month = month > 1
-    date = date > 1
-    tst.year=year
-    tst.month=month
-    tst.date=date
-    tst.hour=hour
-    tst.min=min
-    tst.fsec=fsec
-    tsts[i]=tst
-  endfor
+;   ;    endif
+;    endif
+;    if year lt 70  then year = year+2000
+;    if year lt 200 then year = year+1900
+;;    if not (year eq 0 and month eq 0 and date eq 0)
+;    month = month > 1
+;    date = date > 1
+;    tst.year=year
+;    tst.month=month
+;    tst.date=date
+;    tst.hour=hour
+;    tst.min=min
+;    tst.fsec=fsec
+;    tsts[i]=tst
+;  endfor
+
+  tsts = time_parse(time,tformat=tformat,MMDDYYYY=MMDDYYYY)
+  
   if keyword_set(no_clean) then return,tsts $
   else begin
      t = time_double(tsts)
@@ -135,6 +141,8 @@ if dt eq 7 then begin         ; input is a string
      return,time_struct(t,timezone=timezone,local_time=local_time)
   endelse
 endif
+
+if ndim eq 0 then tsts =tst0 else tsts = make_array(value=tst0,dim=dim)
 
 if keyword_set(epoch) then return,time_struct(time_double(time,epoch=epoch),timezone=timezone)
 

@@ -46,9 +46,8 @@ pro yyy_ui_plugin_event, event
 
   ;Extract structure holding important object references and widget IDs.
   ;------------------------------------------------------------
-  ;  Use /no_copy to improve performance.
-  ;  If /no_copy is used the uvalue must be re-set before the event 
-  ;  handler returns.
+  ;  If /no_copy is used the uvalue must be re-set before 
+  ;  the event handler returns.
   widget_control, event.top, get_uval=state, /no_copy
 
   
@@ -64,7 +63,7 @@ pro yyy_ui_plugin_event, event
               /error, /center, title='Unknown Error') 
     
     ;close plugin if state structure is no longer defined, 
-    ;otherwise attempt to continue as usual
+    ;otherwise attempt to continue running
     if is_struct(state) then begin
       widget_control, event.top, set_uval=state, /no_copy
       return
@@ -104,6 +103,7 @@ pro yyy_ui_plugin_event, event
     end
     
     ;add test variable
+    ; -demostrates adding a new variable to loaded data object
     ;----------------------------------
     'add': begin
       
@@ -118,6 +118,8 @@ pro yyy_ui_plugin_event, event
     end
     
     ;multiply data by scaled random factor
+    ; -demonstrates retrieving a variable from loaded data object and
+    ;  storing modified variable with identical metadata 
     ;----------------------------------
     'randomize': begin
       
@@ -125,6 +127,7 @@ pro yyy_ui_plugin_event, event
       names = yyy_ui_plugin_getselection(state)
       if ~is_string(names) then break
       
+      ;get time range from object
       trange = [ state.time_range->getstarttime(), $
                  state.time_range->getendtime()  ]
       
@@ -179,13 +182,13 @@ end
 ;  yyy_ui_plugin
 ;
 ;Purpose:
-;  A basic example plugin for SPEDAS GUI API.
+;  A basic example plugin for the SPEDAS GUI API.
 ;
 ;Calling Sequence:
 ;  See instructions in spedas/gui/resources/spd_ui_plugin_config.txt
 ;  to enable the plugin in the GUI.
 ;
-;Input:
+;Required Input:
 ;  gui_id:  The widget ID of the top level GUI base.
 ;  loaded_data:  The GUI loaded data object.  This object stores all
 ;                data and corresponding metadata currently loaded
@@ -200,6 +203,7 @@ end
 ;  status_bar:  The GUI status bar object.  This object displays 
 ;               informational messages at the bottom of the main 
 ;               GUI window.
+;Optional Input:
 ;  data_tree:  The GUI data tree object.  This object provides a 
 ;              graphical tree of all loaded data variables.
 ;              A copy of this object can be used to create a
@@ -221,16 +225,20 @@ end
 ;   call sequence object, history window object, and status bar object
 ;   (in that order) and must include the _extra keyword.
 ;  -The GUI data tree and time range objects may also be accessed
-;   via the corresponding keywords
+;   via the corresponding keywords, but are not required.
 ;  -Information for subsequent calls can be stored using the
-;   data_structure keyword.
+;   data_structure keyword (described above).
+;  -All operations performed by a plugin must be executed in separate
+;   helper routines to be compatible with GUI document files.  See
+;   yyy_ui_plugin_add, yyy_ui_plugin_delete, and yyy_ui_plugin_randomize 
+;   for examples.
 ;
 ;Notes:
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-14 12:17:24 -0800 (Fri, 14 Feb 2014) $
-;$LastChangedRevision: 14382 $
+;$LastChangedDate: 2014-02-18 15:28:01 -0800 (Tue, 18 Feb 2014) $
+;$LastChangedRevision: 14388 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/plugin_menu/yyy_ui_plugin.pro $
 ;-
 
@@ -253,14 +261,15 @@ pro yyy_ui_plugin,$ ;API Required Inputs
 
   ;top level base
   ;-------------------------------------------------------
-  ;  IMPORTANT: The top level base should always be modal and have its
-  ;             group leader set to GUI_ID.  This will keep events from 
-  ;             the main gui from conflicting with those from the plugin. 
+  ; IMPORTANT: The top level base should always be modal and have its
+  ;            group leader set to GUI_ID.  This will keep events from 
+  ;            the main gui from conflicting with those from the plugin. 
   main_base = widget_base(title='Example Plugin.', /col, /base_align_center, $ 
                group_leader=gui_id, /modal, /tlb_kill_request_events, tab_mode=1)
   
   
   ;time widget
+  ; -allows user to modify the current GUI time range
   ;-------------------------------------------------------
   
   time_base = widget_base(main_base, /row)
@@ -271,6 +280,7 @@ pro yyy_ui_plugin,$ ;API Required Inputs
 
   
   ;data tree
+  ; -allows user to select loaded data variables
   ;-------------------------------------------------------
   
   tree_base = widget_base(main_base, /row)
@@ -296,7 +306,7 @@ pro yyy_ui_plugin,$ ;API Required Inputs
            tooltip='Add test variable.')
     
     randomize = widget_button(button_base, value='Randomize', uname='randomize', $
-           tooltip='Multiply data by scaled random factor.')
+           tooltip='Multiply selected data within the current time range by scaled random factor.')
         
     delete = widget_button(button_base, value='Delete', uname='delete', $
            tooltip='Delete all selected variables')
@@ -341,6 +351,7 @@ pro yyy_ui_plugin,$ ;API Required Inputs
     widget_control, main_base, xoffset=0, yoffset=0
   endif
   
+  ;start IDL event manager
   xmanager, 'yyy_ui_plugin', main_base, /no_block
   
   return

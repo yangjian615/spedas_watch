@@ -78,9 +78,9 @@
 ;  uniformity will be assumed as data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: aaflores1 $
-;$LastChangedDate: 2014-01-24 16:04:40 -0800 (Fri, 24 Jan 2014) $
-;$LastChangedRevision: 14012 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-02-19 18:19:53 -0800 (Wed, 19 Feb 2014) $
+;$LastChangedRevision: 14396 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_combine.pro $
 ;
 ;-
@@ -172,7 +172,7 @@ function thm_part_combine, probe=probe, $
   sst = thm_part_dist_array(probe=probe,type=sst_datatype,trange=trange,sst_cal=sst_cal,_extra=_extra)
   esa = thm_part_dist_array(probe=probe,type=esa_datatype,trange=trange,/bgnd_remove,_extra=_extra)
 
-  if ~ptr_valid(sst) or ~ptr_valid(esa) then begin
+  if ~ptr_valid(sst[0]) or ~ptr_valid(esa[0]) then begin
     dprint, dlevel=0, 'Unable to load data.  Check requested datatype and time range.'
     return, 0
   endif
@@ -204,7 +204,7 @@ function thm_part_combine, probe=probe, $
   ;To ensure they're mutually matching for the combine operation and prevent errors, you need to call it forward & backwards.
   ;But this is inefficient.
   ;Aaron said he's got a plan to rewrite time interpolation to interpolate mutually in the future
-  if n_esa_samples gt n_sst_samples then begin
+  if total(n_esa_samples) gt total(n_sst_samples) then begin
     thm_part_time_interpolate,sst,esa,error=time_interp_error
     thm_part_time_interpolate,esa,sst,error=time_interp_error
   endif else begin

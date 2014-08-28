@@ -1,20 +1,26 @@
 ;+
 ;Procedure:
-;  yyy_ui_plugin_delete
+;  yyy_ui_plugin_add
 ;
 ;Purpose:
-;  This is an example of a core routine for GUI plugins.  It can be called
-;  by a plugin to perform an operation and re-called later to reproduce
-;  that operation when a GUI document is opened.  See yyy_ui_plugin for  
-;  an example of its usage.
+;  This is an example of a helper routine for GUI plugins.
+;  Plugin helper routines perform operations on GUI data
+;  and allow those operations to be reproduced when loading
+;  GUI documents (see API requirements below).
+;  
+;  This example demostrates adding a new variable to the
+;  loaded data object.
 ;
 ;Calling Sequence:
 ;  yyy_ui_plugin_add, loaded_data, history_window, status_bar
 ;
-;Input:
+;API Required Input:
 ;  loaded_data:  GUI loaded data object
 ;  history_window:  GUI history window object
 ;  status_bar:  GUI status bar object
+
+;Other Input:
+;  none
 ;
 ;Output:
 ;  none
@@ -24,12 +30,17 @@
 ;   objects as arguments (in that order) and must include the _extra keyword.
 ;  -All other inputs must be specified in keyword format.
 ;
+;See Also:
+;   yyy_ui_plugin
+;   yyy_ui_plugin_randomize
+;   yyy_ui_plugin_delete
+;
 ;Notes:  
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-14 12:17:24 -0800 (Fri, 14 Feb 2014) $
-;$LastChangedRevision: 14382 $
+;$LastChangedDate: 2014-02-18 15:28:01 -0800 (Tue, 18 Feb 2014) $
+;$LastChangedRevision: 14388 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/plugin_menu/yyy_ui_plugin_add.pro $
 ;
 ;-
@@ -58,9 +69,9 @@ pro yyy_ui_plugin_add,$ ;API Required Inputs
   ;  Data is added in structure format as in tplot.  Metadata can be specified
   ;  with keyword and/or via the limit and dlimit structures (see yyy_ui_plugin_randomize).
   ;  Here example values are added for tree placement and coordinates.
-  ok = loaded_data->addData(test_var, {x:t, y:d}, limit=0, dlimit=0, $
-    mission='TEST MISSION', observatory='TEST OBS', instrument='TEST INST', $
-    coordsys='gsm', units='eV')
+  ok = loaded_data->addData(test_var, {x:t, y:d}, $
+                      mission='TEST MISSION', observatory='TEST OBS', $
+                      instrument='TEST INST', coordsys='gsm', units='eV')
 
   if ~ok then begin
     ;send message to status bar and history window and display a dialog message

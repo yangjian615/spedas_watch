@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-14 13:30:02 -0800 (Fri, 14 Feb 2014) $
-;$LastChangedRevision: 14383 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-02-18 16:13:53 -0800 (Tue, 18 Feb 2014) $
+;$LastChangedRevision: 14389 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1589,11 +1589,11 @@ PRO spd_gui,reset=reset,template_filename=template_filename
                             sensitive = 1)
   tsyMenu = widget_button(analysisMenu, value='Magnetic Field Models...', uval='FIELDMODELS')
   
-;  ; Plugins Pull Down Menu (preliminary - leave commented out)
-;  
-;  pluginsMenu = widget_button(bar, value='Plugins ', /menu)
-;  
-;  spd_ui_plugin_menu, pluginsMenu 
+  ; Plugins Pull Down Menu
+  
+  pluginsMenu = widget_button(bar, value='Plugins ', /menu)
+  
+  spd_ui_plugin_menu, pluginsMenu
   
 ; Window Pull Down Menu window
 

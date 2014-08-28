@@ -39,10 +39,10 @@ function ssl_set_intersection, l1, l2
   if cnt eq 0 then return, id
 
   ;permute
-  l3 = l3(id)
+  l3 = l3[id]
 
   ;remove repeated elements and return
-  s = l3(uniq(l3))
+  s = l3[uniq(l3)]
 
   if(size(s, /n_dim) eq 0) then return, [s]
 

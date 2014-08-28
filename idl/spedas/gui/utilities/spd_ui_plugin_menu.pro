@@ -31,22 +31,22 @@
 ;
 ;-
 
-pro spd_ui_plugin_menu, menu_id, hwin=hwin, sbar=sbar
+pro spd_ui_plugin_menu, menu_id
 
     compile_opt idl2, hidden
 
 
-  ;error catch block in case of incorrect setup
-  ;todo: this should be removed or updated when development is complete
-  err=0
-  catch, err
-  if err ne 0 then begin
-    catch, /cancel
-    help, /last_message ;, output=err_msg
-    ok = error_message('An unknown error occured while populating the Plugins menu.', $
-                       /noname, /center, title='Plugin Menu Error')
-    return
-  endif
+;  ;error catch block in case of incorrect setup
+;  ;todo: this should be removed or updated when development is complete
+;  err=0
+;  catch, err
+;  if err ne 0 then begin
+;    catch, /cancel
+;    help, /last_message ;, output=err_msg
+;    ok = error_message('An unknown error occured while populating the Plugins menu.', $
+;                       /noname, /center, title='Plugin Menu Error')
+;    return
+;  endif
   
 
   ;template for reading config file
@@ -71,7 +71,8 @@ pro spd_ui_plugin_menu, menu_id, hwin=hwin, sbar=sbar
   plugins = read_ascii(configPath+'spd_ui_plugin_config.txt', template=ascii_temp, count=nitems)
   
   if nitems lt 1 then begin
-    dprint, dlevel=2, 'No plugins found in config file.'
+    dummy = widget_button(menu_id, value='None', sens=0)
+;    dprint, dlevel=2, 'No plugins found in config file.'
     return
   endif
   
@@ -140,11 +141,11 @@ pro spd_ui_plugin_menu, menu_id, hwin=hwin, sbar=sbar
     button = widget_button(node, value=name, uval=plugin, uname='GUI_PLUGIN')
     
   endfor
-
-
-  ;----------------------------------------------------
-  ; Anything Left?
-  ;----------------------------------------------------
-
+  
+  if ~widget_valid(button) then begin
+    dummy = widget_button(menu_id, value='None', sens=0)
+    dprint, dlevel=2, 'GUI plugins not configured correctly.'
+    return
+  endif
 
 end

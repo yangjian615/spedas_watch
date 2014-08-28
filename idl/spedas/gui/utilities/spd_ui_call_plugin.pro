@@ -24,10 +24,10 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy:  $
-;$LastChangedDate:  $
-;$LastChangedRevision:  $
-;$URL:  $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-02-18 15:16:51 -0800 (Tue, 18 Feb 2014) $
+;$LastChangedRevision: 14386 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_call_plugin.pro $
 ;
 ;-
 
@@ -50,9 +50,10 @@ pro spd_ui_call_plugin, event, $
   widget_control, event.id, get_uvalue=plugin
   
   if ~spd_find_file(plugin.procedure+'.pro') then begin
-    dummy = dialog_message('The plugin file "'+plugin.procedure+'.pro" could not be located.  '+ $
-                           'Check that file exists in the current IDL path.', $
-                           title='Plugin not found.', /error, /center)
+    spd_ui_message, 'The plugin file "'+plugin.procedure+'.pro" could not be located.  '+ $
+                    'Check that file exists in the current IDL path.', $
+                    sb=status_bar, hw=history_window, $
+                    /dialog, /error, /center, title='Plugin not found.'
     return
   endif
   

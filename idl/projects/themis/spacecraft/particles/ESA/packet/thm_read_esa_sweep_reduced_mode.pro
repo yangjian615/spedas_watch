@@ -121,11 +121,16 @@ e_cal=[1.939,1.905,1.907,1.905,1.927,1.9]
 	e_nenergy(2)=32
 
 ; Electron mode 3 - Full sweep, linear at Low Energy, Msph mode
-	dac=thm_esa_energy_steps(xstart=16383,xslope=19,cstart=60,cslope=2,number=128,retrace=3,dblsweep=0)	
-	e_energy(*,3)=e_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4.
-	e_denergy(1:30,3)=e_cal(fm-1)*(1.*dac(3,0:29)+dac(0,1:30)-dac(3,1:30)-dac(0,2:31))/2.
-	e_denergy(31,3)=e_cal(fm-1)*(1.*dac(3,30)+dac(0,31)-2.*dac(3,31))/2.
+;   this mode had illegal values for parameters and was only used for about 12 days on THB starting 20140206
+	dac=thm_esa_energy_steps(xstart=16383,xslope=19,cstart=15,cslope=2,number=128,retrace=3,dblsweep=0)	
+;	e_energy(*,3)=e_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4. 
+;	e_denergy(1:30,3)=e_cal(fm-1)*(1.*dac(3,0:29)+dac(0,1:30)-dac(3,1:30)-dac(0,2:31))/2.
+;	e_denergy(31,3)=e_cal(fm-1)*(1.*dac(3,30)+dac(0,31)-2.*dac(3,31))/2.
+	e_energy(*,3)=e_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4. > 0.0001
+	e_energy(25:31,3) = 1.
+	e_denergy(2:24,3)=e_cal(fm-1)*(1.*dac(3,1:23)+dac(0,2:24)-dac(3,2:24)-dac(0,3:25))/2.
 	e_nenergy(3)=32
+
 	
 mode={i_energy:i_energy,i_denergy:i_denergy,i_nenergy:i_nenergy,$
 	e_energy:e_energy,e_denergy:e_denergy,e_nenergy:e_nenergy}

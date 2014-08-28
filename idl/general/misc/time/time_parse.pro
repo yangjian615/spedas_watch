@@ -6,7 +6,7 @@
 ;
 ;INPUTS:
 ;  s : the input string or array of strings
-;  
+;
 ;KEYWORDS:
 ;  tformat=tformat:  Format string such as "YYYY-MM-DD/hh:mm:ss" (Default)
 ;               the following tokens are recognized:
@@ -27,7 +27,10 @@
 ;              If your input times are not UTC and offset 
 ;              is not specified in the time string itself,
 ;              use this keyword.
-;              
+;  
+; MMDDYYYY=MMDDYYYY: handle dates in month/day/year format flexibly if tformat not specified
+;             
+;     
 ;Examples:
 ;
 ;NOTES:
@@ -37,92 +40,172 @@
 ;  #4 Based heavily on str2time by Davin Larson.
 ; 
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-07 17:38:36 -0800 (Fri, 07 Feb 2014) $
-;$LastChangedRevision: 14209 $
+;$LastChangedDate: 2014-02-19 18:04:05 -0800 (Wed, 19 Feb 2014) $
+;$LastChangedRevision: 14395 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/time_parse.pro $
 ;-
 
-function time_parse,s, tformat=tformat,tdiff=tdiff
+function time_parse,s, tformat=tformat,tdiff=tdiff,MMDDYYYY=MMDDYYYY
 
   compile_opt idl2
   
   months= ['JAN','FEB','MAR','APR', 'MAY', 'JUN', 'JUL', 'AUG','SEP','OCT','NOV','DEC']
   
-  if undefined(tformat) then begin
-    tformat = "YYYY-MM-DD/hh:mm:ss"
-  endif
-
-  ns = n_elements(s)
-  str = replicate(time_struct(0d),ns)
+  ndim = size(s,/n_dimen)
+  dim = size(s,/dim)
+  if ndim gt 0 then begin
+    str = replicate(time_struct(0d),dim)
+  endif else begin
+    str = time_struct(0d)
+  endelse
   
-  year = 0
-  p = strpos(tformat,'yy')
-  
-  if p ge 0 then begin
-    year = fix(strmid(s,p,2))
-    year +=  1900*(year ge 70) +2000 *(year lt 70)
-  endif
-  
-  p = strpos(tformat,'YYYY')
-  if p ge 0 then begin
-     year = fix(strmid(s,p,4))
-  endif
-  
-  str.year = year
-  
-  p = strpos(tformat,'MM')
-  if p ge 0 then begin
-    str.month = fix(strmid(s,p,2))
-  endif
-  
-  p = strpos(tformat,'MTH')
-  
-  for i = 0,11 do begin
-    idx = where(months[i] eq strupcase(strmid(s,p,3)),c)
-    if c gt 0 then begin
-      str[idx].month = i+1
-    endif
-  endfor
-  
-  p = strpos(tformat,'DD')
-  if p ge 0 then str.date = fix(strmid(s,p,2))
-  
-  p = strpos(tformat,'DOY')
-  if p ge 0 then begin
-    doy_to_month_date,str.year,fix(strmid(s,p,3)),month,date
-    str.month = month
-    str.date = date
-  endif
-  
-  p = strpos(tformat,'hh')
-  if p ge 0 then str.hour = fix(strmid(s,p,2))
-  
-  p = strpos(tformat,'mm')
-  if p ge 0 then str.min = fix(strmid(s,p,2))
-  
-  p = strpos(tformat,'ss')
-  if p ge 0 then str.sec = fix(strmid(s,p,2))
-  
-  token='.'
-  repeat begin
-    token = token +'f'
-    p = strpos(tformat, token )
-  endrep until strpos(tformat,token+'f') lt 0
-  if p ge 0 then str.fsec = double(strmid(s,p,strlen(token)))
-    
   if undefined(tdiff) then begin
     tdiff = 0
   endif
   
   tdiff_sec = tdiff * 60. * 60.
+  
+  ;flexible formatting, allows arbitary punctuation, variable length fields, etc...
+  ;primarily used for human entry and legacy support
+  if undefined(tformat) then begin
     
-  p = strpos(tformat,'TDIFF')
-  if p gt 0 then begin
-    tdiff_hr = fix(strmid(s,p,3))
-    tdiff_min = fix(strmid(s,p+3,2))
-    tdiff_sec = tdiff_hr * 60. * 60. + tdiff_min * 60. 
-  endif
+    num_regex = '[0-9]+' ;matches digits 
+    st = reform(s,n_elements(s)) ;prevent mutation of s
+  
+    ;because of weird behavior of strmid, I have to extract the diagonals to get correct behavior
+    da = lindgen(n_elements(s)) ;diagonal array
     
-  return,time_double(str) - tdiff_sec
+    p = stregex(st,num_regex,length=l) ;find location of first numeric field
+    year = (long(strmid(st,p,l)))[da,da] ; store value (can't store year in struct, because years will roll over in yyyymmdd format)
+    st = (strmid(st,p+l))[da,da] ;remove the field from the string
+    
+    p = stregex(st,num_regex,length=l)
+    str[*].month = (fix(strmid(st,p,l)))[da,da]
+    st = (strmid(st,p+l))[da,da]
+    
+    p = stregex(st,num_regex,length=l)
+    str[*].date = (fix(strmid(st,p,l)))[da,da]
+    st = (strmid(st,p+l))[da,da]
+    
+    p = stregex(st,num_regex,length=l)
+    str[*].hour = (fix(strmid(st,p,l)))[da,da]
+    st = (strmid(st,p+l))[da,da]
+    
+    p = stregex(st,num_regex,length=l)
+    str[*].min = (fix(strmid(st,p,l)))[da,da]
+    st = (strmid(st,p+l))[da,da]
+    
+    ;matches digits and decimal point and post decimal digits
+    num_regex = '[0-9]+\.?[0-9]*'
+    p = stregex(st,num_regex,length=l)
+    str[*].sec = (fix(strmid(st,p,l)))[da,da]
+    str[*].fsec = (double(strmid(st,p,l)) mod 1.0)[da,da]
+   
+    if keyword_set(MMDDYYYY) then begin ;if in month/date/year format, swap fields
+      str.year = str.date
+      str.date = str.month
+      str[*].month = year
+    endif else if year[0] gt 10000000l then begin ;yyyymmdd hhmm format, not compatible with mmddyyyy format
+  
+      ;y/m/d
+      str.hour = str.month
+     
+      str[*].date = year mod 100
+      year = year / 100
+      str[*].month = year mod 100
+      str.year = year / 100
+      
+      ;h/m
+      str.min= str.hour mod 100
+      str.hour = str.hour / 100
+      
+    endif else begin
+      str[*].year = year
+    endelse
+                                 
+    idx = where(str.year lt 70,c)
+    if c gt 0 then begin
+      str[idx].year += 2000
+    endif
+    
+    idx = where(str.year lt 200,c)
+    if c gt 0 then begin
+      str[idx].year += 1900
+    endif
+   
+    str.month = str.month>1
+    str.date = str.date>1
+     
+  endif else begin ;fixed formatting
+
+    year = 0
+    p = strpos(tformat,'yy')
+    
+    if p ge 0 then begin
+      year = fix(strmid(s,p,2))
+      year +=  1900*(year ge 70) +2000 *(year lt 70)
+    endif
+    
+    p = strpos(tformat,'YYYY')
+    if p ge 0 then begin
+       year = fix(strmid(s,p,4))
+    endif
+    
+    str.year = year
+    
+    p = strpos(tformat,'MM')
+    if p ge 0 then begin
+      str.month = fix(strmid(s,p,2))
+    endif
+    
+    p = strpos(tformat,'MTH')
+    
+    for i = 0,11 do begin
+      idx = where(months[i] eq strupcase(strmid(s,p,3)),c)
+      if c gt 0 then begin
+        str[idx].month = i+1
+      endif
+    endfor
+    
+    p = strpos(tformat,'DD')
+    if p ge 0 then str.date = fix(strmid(s,p,2))
+    
+    p = strpos(tformat,'DOY')
+    if p ge 0 then begin
+      doy_to_month_date,str.year,fix(strmid(s,p,3)),month,date
+      str.month = month
+      str.date = date
+    endif
+    
+    p = strpos(tformat,'hh')
+    if p ge 0 then str.hour = fix(strmid(s,p,2))
+    
+    p = strpos(tformat,'mm')
+    if p ge 0 then str.min = fix(strmid(s,p,2))
+    
+    p = strpos(tformat,'ss')
+    if p ge 0 then str.sec = fix(strmid(s,p,2))
+    
+    token='.'
+    repeat begin
+      token = token +'f'
+      p = strpos(tformat, token )
+    endrep until strpos(tformat,token+'f') lt 0
+    if p ge 0 then str.fsec = double(strmid(s,p,strlen(token)))
+      
+    p = strpos(tformat,'TDIFF')
+    if p gt 0 then begin
+      tdiff_hr = fix(strmid(s,p,3))
+      tdiff_min = fix(strmid(s,p+3,2))
+      tdiff_sec = tdiff_hr * 60. * 60. + tdiff_min * 60. 
+    endif
+    
+  endelse
+ 
+  if n_elements(tdiff_sec) gt 1 || tdiff_sec ne 0 then begin   
+    return,time_struct(time_double(str) - tdiff_sec)
+  endif else begin
+    return,str
+  endelse
     
 end

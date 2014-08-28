@@ -69,6 +69,7 @@ i_cal=[1.539,1.501, 1.497,1.501,1.519,1.5]
 	i_nenergy(3)=32
 
 ; Electron Energy modes
+
 e_energy=fltarr(32,6)
 e_denergy=fltarr(32,6)
 e_nenergy=intarr(6)
@@ -109,17 +110,27 @@ e_cal=[1.939,1.905,1.907,1.905,1.927,1.9]
 	e_nenergy(3)=15
 
 ; Electron mode 4 - Full sweep, linear at Low Energy, 32E Msph mode
-	dac=thm_esa_energy_steps(xstart=16383,xslope=19,cstart=60,cslope=2,number=128,retrace=3,dblsweep=0)	
-	e_energy(*,4)=e_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4.
-	e_denergy(1:30,4)=e_cal(fm-1)*(1.*dac(3,0:29)+dac(0,1:30)-dac(3,1:30)-dac(0,2:31))/2.
-	e_denergy(31,4)=e_cal(fm-1)*(1.*dac(3,30)+dac(0,31)-2.*dac(3,31))/2.
+;   this mode had illegal values for parameters and was only used for about 12 days on THB starting 20140206
+	dac=thm_esa_energy_steps(xstart=16383,xslope=19,cstart=15,cslope=2,number=128,retrace=3,dblsweep=0)	
+;	e_energy(*,4)=e_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4. 
+;	e_denergy(1:30,4)=e_cal(fm-1)*(1.*dac(3,0:29)+dac(0,1:30)-dac(3,1:30)-dac(0,2:31))/2.
+;	e_denergy(31,4)=e_cal(fm-1)*(1.*dac(3,30)+dac(0,31)-2.*dac(3,31))/2.
+	e_energy(*,4)=e_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4. 
+	e_energy(25:31,4) = 1.
+	e_denergy(2:24,4)=e_cal(fm-1)*(1.*dac(3,1:23)+dac(0,2:24)-dac(3,2:24)-dac(0,3:25))/2.
 	e_nenergy(4)=32
 
-	dac=thm_esa_energy_steps(xstart=16383,xslope=19,cstart=60,cslope=2,number=128,retrace=3,dblsweep=0)    
+; Electron mode 5 - Full sweep, linear at Low Energy, 15E Msph mode
+;   this mode had illegal values for parameters and was only used for about 12 days on THB starting 20140206
+	dac=thm_esa_energy_steps(xstart=16383,xslope=19,cstart=15,cslope=2,number=128,retrace=3,dblsweep=0)	
 	tmp=reform(e_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4.)
-	e_energy(0:14,5)=(tmp(2*indgen(15)+1)+tmp(2*indgen(15)+2))/2.
-	e_denergy(0:14,5)=e_cal(fm-1)*(1.*dac(3,2*indgen(15))+dac(0,2*indgen(15)+1)-dac(3,2*indgen(15)+2)-dac(0,2*indgen(15)+3))/2.
+;	e_energy(0:14,5)=(tmp(2*indgen(15)+1)+tmp(2*indgen(15)+2))/2.
+;	e_denergy(0:14,5)=e_cal(fm-1)*(1.*dac(3,2*indgen(15))+dac(0,2*indgen(15)+1)-dac(3,2*indgen(15)+2)-dac(0,2*indgen(15)+3))/2.
+	e_energy(0:14,5)=(tmp(2*indgen(15)+1)+tmp(2*indgen(15)+2))/2. 
+	e_energy(12:14,5) = 1.
+	e_denergy(1:11,5)=e_cal(fm-1)*(1.*dac(3,2*indgen(11)+2)+dac(0,2*indgen(11)+3)-dac(3,2*indgen(11)+4)-dac(0,2*indgen(11)+5))/2.
 	e_nenergy(5)=15	
+
 
 mode={i_energy:i_energy,i_denergy:i_denergy,i_nenergy:i_nenergy,$
 	e_energy:e_energy,e_denergy:e_denergy,e_nenergy:e_nenergy}

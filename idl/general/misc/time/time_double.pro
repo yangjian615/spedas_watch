@@ -45,8 +45,8 @@
 ;CREATED BY:    Davin Larson  Oct 1996
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-07 17:21:01 -0800 (Fri, 07 Feb 2014) $
-;$LastChangedRevision: 14206 $
+;$LastChangedDate: 2014-02-19 18:04:05 -0800 (Wed, 19 Feb 2014) $
+;$LastChangedRevision: 14395 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/time_double.pro $
 ;
 ;-
@@ -75,11 +75,7 @@ case size(/type,time) of
    return,seconds
    end
 7: begin
-    if keyword_set(tformat) then begin
-      return,time_parse(time,tformat=tformat)
-    endif else begin
-      return,time_double(time_struct(time,/no_clean,MMDDYYYY=MMDDYYYY,timezone=timezone,is_local_time=is_local_time),dim=size(/dimension,time)) ;   strings
-    endelse
+     return,time_double(time_struct(time,/no_clean,MMDDYYYY=MMDDYYYY,timezone=timezone,is_local_time=is_local_time,tformat=tformat),dim=size(/dimension,time)) ;   strings
    end
 5: begin                                                    ;   doubles
    if keyword_set(epoch) then return, time/1000.d - 719528.d * 24.* 3600.

@@ -52,9 +52,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-12 10:27:30 -0800 (Wed, 12 Feb 2014) $
-;$LastChangedRevision: 14357 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-02-18 15:18:25 -0800 (Tue, 18 Feb 2014) $
+;$LastChangedRevision: 14387 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -155,6 +155,10 @@ FUNCTION spd_ui_loaded_data::addData,in_name,d,limit=l,dlimit=dl,file=file, miss
     ok = error_message('Problem Loading: ' + name + '.  X and Y components contain a different number of elements.',/center,traceback=0,title='Data Load Problem')
     return,0
   endif
+  
+  ;ensure metadata variables are not empty
+  if undefined(l) then l = 0
+  if undefined(dl) then dl = 0
   
   ;merge settings from dl & l into one structure
   extract_tags,dl,l,except_tags='data_att'
