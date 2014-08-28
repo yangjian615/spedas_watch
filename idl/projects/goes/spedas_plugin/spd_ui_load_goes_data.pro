@@ -7,9 +7,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-03 12:32:20 -0700 (Thu, 03 Jul 2014) $
-;$LastChangedRevision: 15503 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-08-26 16:00:22 -0700 (Tue, 26 Aug 2014) $
+;$LastChangedRevision: 15707 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/spedas_plugin/spd_ui_load_goes_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -176,6 +176,9 @@ pro spd_ui_load_goes_data_event,event
       'CHECK_DATA_AVAIL': begin
         spd_ui_open_url, 'http://themis.ssl.berkeley.edu/data_products/#goes'
       end
+      'RULESOFTHEROAD': begin
+        spd_ui_open_url, 'http://spedas.org/wiki/index.php?title=GOES_Rules_of_the_Road'
+      end
       else:
     endcase
   endif
@@ -290,6 +293,9 @@ pro spd_ui_load_goes_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
   davailabilitybutton = widget_button(leftBase, val = ' Check data availability', $
                                       uval = 'CHECK_DATA_AVAIL', /align_center, $
                                       ToolTip = 'Check data availability on the web')
+  davaRoRbutton = widget_button(leftBase, val = 'Rules of the Road', $
+                                      uval = 'RULESOFTHEROAD', /align_center, $
+                                      ToolTip = 'See the GOES Rules of the Road on the web')
                                                                 
   state = {baseid:topBase,$
            loadTree:loadTree,$

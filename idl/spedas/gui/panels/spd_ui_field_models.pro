@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-13 15:52:19 -0700 (Tue, 13 May 2014) $
-;$LastChangedRevision: 15117 $
+;$LastChangedDate: 2014-08-21 12:21:00 -0700 (Thu, 21 Aug 2014) $
+;$LastChangedRevision: 15698 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_field_models.pro $
 ;-
 
@@ -695,7 +695,7 @@ pro spd_ui_field_models, info
     
     positionBase = Widget_Base(mainBase, row=2)
     inputLabel = Widget_Label(positionBase, value='Input: ')
-    posSelectButton = Widget_Button(positionBase, value=pos_tvar, xsize=130, uname='selectposition', uval='SELECTPOSITION', tooltip='Select a variable containing the input position') 
+    posSelectButton = Widget_Button(positionBase, value=pos_tvar, xsize=200, uname='selectposition', uval='SELECTPOSITION', tooltip='Select a variable containing the input position') 
     label_width = 55
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
