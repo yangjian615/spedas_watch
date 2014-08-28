@@ -109,9 +109,9 @@
 ;                    called from the command line. Re-tabbed, to find
 ;                    an 'End of file encountered...' bug.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-03-14 09:57:49 -0700 (Fri, 14 Mar 2014) $
-; $LastChangedRevision: 14540 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-04-30 15:55:39 -0700 (Wed, 30 Apr 2014) $
+; $LastChangedRevision: 14981 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_scm.pro $
 ;-
 pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
@@ -314,8 +314,12 @@ pro thm_load_scm, probe = probe, datatype = datatype, trange = trange, $
     endif
   endif
 
+;varformat='*' only works for L1 data, because each datatype only
+;comes from one file
+  If(lvl Eq 'l1') Then varformat_xxx = '*' Else varformat_xxx = ''
+
   thm_load_xxx, sname = probe, datatype = datatype, trange = trange, $
-    level = level, verbose = verbose, downloadonly = downloadonly, $
+    level = lvl, verbose = verbose, downloadonly = downloadonly, $
     relpathnames_all = relpathnames_all, no_download = no_download, $
     cdf_data = cdf_data, get_cdf_data = arg_present(cdf_data), $
     get_support_data = get_support_data, $
@@ -323,10 +327,10 @@ pro thm_load_scm, probe = probe, datatype = datatype, trange = trange, $
     vsnames = 'a b c d e', $
     type_sname = 'probe', $
     vdatatypes = 'scf scp scw', $
-    vL2datatypes = 'scf scp scw', $
+    vL2datatypes = 'scf scp scw scf_btotal scp_btotal scw_btotal', $
     file_vL2datatypes = 'scm', $
-    vL2coord = 'dsl gse gsm', $
-    varformat='*',$
+    vL2coord = 'dsl gse gsm none', $
+    varformat = varformat_xxx, $
     vlevels = vlevels, $
     deflevel = deflevel, $
     vtypes = 'raw calibrated', $

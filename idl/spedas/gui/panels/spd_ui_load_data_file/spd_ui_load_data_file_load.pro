@@ -141,10 +141,7 @@ pro spd_ui_load_data_file_load, state, event
   raw_id = widget_info(state.tab_id,find_by_uname='raw_data')
   raw = widget_info(raw_id,/button_set)
 
-  ;special case for scm, need to pass in calibration parameters
-  if (strlowcase(strmid(dtype[0],0,3)) eq 'scm') then Begin
-
-    spd_ui_load_data2obj, t0, t1, dtype = dtype, $
+  spd_ui_load_data2obj, t0, t1, dtype = dtype, $
                               outcoord = outcoord, $
                               observ = *state.observ, $
                               raw=raw,$ 
@@ -155,23 +152,9 @@ pro spd_ui_load_data_file_load, state, event
                               loadedVarList = loadedVarList,$
                               overwrite_selections=overwrite_selections
      
-     ; store load_data2obj call on windowStorage
-     callSequence->addloadcall, t0, t1, dtype, *state.observ, outcoord,raw,overwrite_selections
-  endif else Begin
-    spd_ui_load_data2obj, t0, t1, dtype = dtype, $
-                              outcoord = outcoord, $
-                              observ = *state.observ, $
-                               raw=raw,$
-                              loadedData = state.loadedData, $
-                              historywin = state.historyWin, $
-                              statustext = state.statusText, $
-                              state_gui_id = state.tab_id, $ ;using tab id so that overwrite messages will layer correctly
-                              loadedVarList = loadedVarList,$
-                              overwrite_selections=overwrite_selections
-    
-    ; store load_data2obj call on windowStorage
-    callSequence->addloadcall, t0, t1, dtype, *state.observ, outcoord,raw,overwrite_selections
-  endelse
+  ; store load_data2obj call on windowStorage
+  callSequence->addloadcall, t0, t1, dtype, *state.observ, outcoord,raw,overwrite_selections
+
  
   if is_string(loadedVarList) then begin
   

@@ -8,9 +8,9 @@
 ;
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-01 10:44:54 -0700 (Thu, 01 May 2014) $
+;$LastChangedRevision: 15008 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_field_models.pro $
 ;-
 
@@ -637,7 +637,7 @@ pro spd_ui_field_models_event, event
             if double(!version.release) lt 8.0d then heap_gc
         end
         else: begin
-            dprint, dlevel = 0, 'Not implemented yet. 
+            dprint, dlevel = 0, 'Not implemented yet.' 
             return
         end
     endcase
@@ -771,28 +771,30 @@ pro spd_ui_field_models, info
     ; show the user their current selections
     modelinfoLabel = Widget_Label(bottomBase, value='Current model parameters:', /align_left)
     modelparamBase = Widget_Base(bottomBase, col=1)
-    modelinfoBase = Widget_Base(modelparamBase, row=7, xsize=300, /align_left)
+    modelinfoBase = Widget_Base(modelparamBase, row=7, scr_xsize=350, /align_left)
     colBaseModel = Widget_Base(modelinfoBase, col=2)
     modelLabel = Widget_Label(colBaseModel, value='Model: ', /align_left)
     selectedModelLabel = Widget_Label(colBaseModel, value='TS04', /align_left, uname='selectedmodel')
-    colBaseimfy = Widget_Base(modelinfoBase, col=2, uname='imfbybase')
-    imfyLabel = Widget_Label(colBaseimfy, value='IMF By: ', /align_left)
-    selectedByIMFLabel = Widget_Label(colBaseimfy, value=(imf_by_tvar eq '' ? '[none]' : imf_by_tvar), /align_left, uname='selectedByimf', xsize=250)
-    colBaseimfz = Widget_Base(modelinfoBase, col=2, uname='imfbzbase')
+    colBaseimfy = Widget_Base(modelinfoBase,  uname='imfbybase', row=1, scr_xsize=340)
+    imfyLabel = Widget_Label(colBaseimfy, value='IMF By: ', /align_left, scr_xsize=50)
+    ; the extra 30-35 whitespace characters in the selected IMF strings are needed because Motif doesn't
+    ; resize these widgets when their values are updated on linux machines
+    selectedByIMFLabel = Widget_Label(colBaseimfy, value=(imf_by_tvar eq '' ? '[none]                                      ' : imf_by_tvar), /align_left, uname='selectedByimf')
+    colBaseimfz = Widget_Base(modelinfoBase, row=1, uname='imfbzbase', scr_xsize=340)
     imfzLabel = Widget_Label(colBaseimfz, value='IMF Bz: ', /align_left)
-    selectedBzIMFLabel = Widget_Label(colBaseimfz, value=(imf_bz_tvar eq '' ? '[none]' : imf_bz_tvar), /align_left, uname='selectedBzimf', xsize=250)
-    colBaseDensity = Widget_Base(modelinfoBase, col=2, uname='swdensitybase')
+    selectedBzIMFLabel = Widget_Label(colBaseimfz, value=(imf_bz_tvar eq '' ? '[none]                                          ' : imf_bz_tvar), /align_left, uname='selectedBzimf', xsize=250)
+    colBaseDensity = Widget_Base(modelinfoBase, row=1, uname='swdensitybase', scr_xsize=340)
     swdensLabel = Widget_Label(colBaseDensity, value='SW density: ', /align_left)
-    selecteddensLabel = Widget_Label(colBaseDensity, value=(sw_density_tvar eq '' ? '[none]' : sw_density_tvar), /align_left, uname='selectedswdens', xsize=250)
-    colBaseVelocity = Widget_Base(modelinfoBase, col=2, uname='swvelbase')
+    selecteddensLabel = Widget_Label(colBaseDensity, value=(sw_density_tvar eq '' ? '[none]                                        ' : sw_density_tvar), /align_left, uname='selectedswdens', xsize=250)
+    colBaseVelocity = Widget_Base(modelinfoBase, row=1, uname='swvelbase', scr_xsize=340)
     swvelLabel = Widget_Label(colBaseVelocity, value='SW flow speed: ', /align_left)
-    selswvelLabel = Widget_Label(colBaseVelocity, value=(sw_speed_tvar eq '' ? '[none]' : sw_speed_tvar), uname='selectedswvel', /align_left, xsize=250)
-    colBaseDst= Widget_Base(modelinfoBase, col=2, uname='dstbase')
+    selswvelLabel = Widget_Label(colBaseVelocity, value=(sw_speed_tvar eq '' ? '[none]                                      ' : sw_speed_tvar), uname='selectedswvel', /align_left, xsize=250)
+    colBaseDst= Widget_Base(modelinfoBase, row=1, uname='dstbase', scr_xsize=340)
     dstLabel = Widget_Label(colBaseDst, value='Dst: ', /align_left)
-    seldstLabel = Widget_Label(colBaseDst, value=(dst_tvar eq '' ? '[none]' : dst_tvar), uname='selecteddst', /align_left, xsize=250)
-    colBaseWs= Widget_Base(modelinfoBase, col=2, uname='Wsbase')
+    seldstLabel = Widget_Label(colBaseDst, value=(dst_tvar eq '' ? '[none]                                                 ' : dst_tvar), uname='selecteddst', /align_left, xsize=250)
+    colBaseWs= Widget_Base(modelinfoBase, row=1, uname='Wsbase', scr_xsize=340)
     WcoeffLabel = Widget_Label(colBaseWs, value='W coefficients: ', /align_left, uname='selectedwlabel')
-    selWLabel = Widget_Label(colBaseWs, value=(w_coeff_tvar eq '' ? '[calculate automatically]' : w_coeff_tvar), uname='selectedw', /align_left, xsize=250)
+    selWLabel = Widget_Label(colBaseWs, value=(w_coeff_tvar eq '' ? '[calculate automatically]                                         ' : w_coeff_tvar), uname='selectedw', /align_left, xsize=250)
     
     ; buttons for output options
     labelmodel = Widget_Label(bottomBase, value='Output:', /align_left)

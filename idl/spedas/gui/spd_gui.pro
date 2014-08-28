@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-25 14:40:02 -0700 (Tue, 25 Mar 2014) $
-;$LastChangedRevision: 14673 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-04-30 17:04:44 -0700 (Wed, 30 Apr 2014) $
+;$LastChangedRevision: 14989 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1407,7 +1407,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   closeMenu = Widget_Button(fileMenu, Value='Close Window', UValue='CLOSE', Accelerator="Ctrl+Z")
   loadMenu = Widget_Button(fileMenu, Value='Load Data ', UValue='LOAD', /Separator)
   loadCDAWebMenu = Widget_Button(fileMenu, Value='Load Data using CDAWeb', UValue='LOADCDAWEB')
-  loadCDFMenu = Widget_Button(fileMenu, Value='Load SPEDAS CDF', UValue='LOADCDF')
+  loadCDFMenu = Widget_Button(fileMenu, Value='Load CDF', UValue='LOADCDF')
 
   saveDataAsMenu = Widget_Button(fileMenu, Value='Save Data As... ', UValue='SAVEDATAAS')
   importExportMenu = Widget_button(fileMenu, Value='Manage Data and Import/Export Tplot Variables...', UValue='MANAGEDATA')

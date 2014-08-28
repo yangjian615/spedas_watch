@@ -1,5 +1,4 @@
-To see User's Guide, press the "Open Help" button.
+The SPEDAS wiki (http://spedas.org/wiki) contains help and documentation. Just press the button below to open the web site.
 
-For the latest version of help, paste the link below in your web browser and download the document that has "v8.0" at the end of the file name.
+To download the User's Guide as a pdf or doc file, press the "Open Online Documentation" button, and download the latest file.
 
-ftp://apollo.ssl.berkeley.edu/pub/SPEDAS/3%20Ground%20Systems/3.2%20Science%20Operations/Science%20Operations%20Documents/Software%20Users%20Guides/

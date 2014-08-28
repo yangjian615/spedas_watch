@@ -44,8 +44,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-25 15:49:38 -0800 (Tue, 25 Feb 2014) $
-;$LastChangedRevision: 14437 $
+;$LastChangedDate: 2014-04-30 16:25:15 -0700 (Wed, 30 Apr 2014) $
+;$LastChangedRevision: 14982 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_coordinate_systems__define.pro $
 ;-
 
@@ -83,10 +83,12 @@ function spd_ui_coordinate_systems::init
                            'gci' $  ; Geocentric Solar Inertial
                            ]
     
-    ; coordinate systems valid for the FGM/SCM load routines
+    ; coordinate systems valid for the FGM load routines
+    ; no long valid for SCM (removed due to SSL coordinates - not in the CDFs)
     fgm_scm_load_list = ['dsl', 'gsm', 'ssl', 'gse']
 
-    ; coordinate systems valid for FIT/ESA instruments
+    ; coordinate systems valid for FIT/ESA/SCM instruments
+    ; As of 4/2014, this should be used for the SCM instrument - egrimes
     fit_esa_load_list = ['dsl', 'gsm', 'gse']
    
     ; coordinate systems that require position data for transformations
@@ -113,10 +115,10 @@ function spd_ui_coordinate_systems::makeCoordSysList, include_all = include_all,
     if ~undefined(instrument) then begin
         instrument = strlowcase(instrument)
         ; check for THEMIS FGM/SCM data
-        if instrument eq 'fgm' || instrument eq 'scm' then begin
+        if instrument eq 'fgm'  then begin
             ret_coords = *self.fgm_scm_load_list
         ; check for THEMIS ESA/FIT data
-        endif else if instrument eq 'fit' || instrument eq 'esa' then begin
+        endif else if instrument eq 'fit' || instrument eq 'esa' || instrument eq 'scm' || instrument eq 'efi' then begin
             ret_coords = *self.fit_esa_load_list
         endif else begin
             ret_coords = *self.coordinate_systems

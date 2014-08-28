@@ -1,6 +1,6 @@
 ;+
 ;
-;Name: is_num
+;Name: is_numeric
 ;
 ;Purpose: determines if input string is a validly formatted number.  Does
 ;
@@ -9,7 +9,10 @@
 ;Outputs: 1: if it is validly formatted
 ;         0: if it is not
 ;         
-;Keywords: sci_notation: add support for scientific notation (3*10^6)
+;Keywords: 
+;    sci_notation: add support for scientific notation (3*10^6)
+;    decimal: when set, only return 1 for decimal numeric values, such as 1.0, 0.000004, 
+;             returns 0 for scientific, exponential, engineering, etc. notations
 ;
 ;Notes:  Does not consider numbers in complex notation or numbers with trailing type codes to be valid.
 ;
@@ -50,17 +53,20 @@
 ;   0
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-05-23 14:12:09 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12405 $
+; $LastChangedDate: 2014-05-01 11:53:17 -0700 (Thu, 01 May 2014) $
+; $LastChangedRevision: 15010 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/is_numeric.pro $
 ;-
 
-function is_numeric,s, sci_notation=sci_notation
-  if ~keyword_set(sci_notation) then begin
-    ; old regex, before adding support for scientific notation (3*10^6)
-    return,stregex(strtrim(s,2),'^[-+]?(([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+))([EeDd][-+]?[0-9]+)?$') eq 0
-  endif else begin
+function is_numeric,s, sci_notation=sci_notation, decimal=decimal
+  if keyword_set(sci_notation) then begin
     if s eq '' then return, 0
     return,stregex(strtrim(s,2),'^[-+]?([0-9.]*\.?[0-9.]*|([0-9.]*\*?[0-9.]+)|([0-9]*\.?[0-9]+))(([EeDd][-+]?[0-9]+)|(\*?[0-9\.?]+(\^)?[(]*[+-]?[0-9\.?]+[)]*))?$') eq 0
+  endif else if keyword_set(decimal) then begin
+    if s eq '' then return, 0
+    return, stregex(strtrim(s,2),'^[-+]?[0-9]*\.?[0-9]*$') eq 0
+  endif else begin
+    ; old regex, before adding support for scientific notation (3*10^6)
+    return,stregex(strtrim(s,2),'^[-+]?(([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+))([EeDd][-+]?[0-9]+)?$') eq 0
   endelse
 end

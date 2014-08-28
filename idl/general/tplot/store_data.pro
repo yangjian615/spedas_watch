@@ -34,8 +34,8 @@
 ;
 ;CREATED BY:    Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2013-06-06 14:11:29 -0700 (Thu, 06 Jun 2013) $
-; $LastChangedRevision: 12459 $
+; $LastChangedDate: 2014-04-29 12:16:31 -0700 (Tue, 29 Apr 2014) $
+; $LastChangedRevision: 14965 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/store_data.pro $
 ;-
 pro store_data,name, time,ydata,values, $
@@ -235,7 +235,7 @@ if n_elements(data) ne 0 then begin
                 if oldp ne newv then  ptr_free,ptr_extract(oldp,except=save_ptrs)
             endelse
             str_element,/add_replace,myptrstr,mytags[i],newv
-            str_element,/add_replace,myptrstr,mytags[i]+'_ind',dim_newv[0] > 1
+            if strpos(mytags[i],'_IND') lt 0 then    str_element,/add_replace,myptrstr,mytags[i]+'_ind',dim_newv[0] > 1
         endfor
         *dq.dh = myptrstr
     endif else *dq.dh = data

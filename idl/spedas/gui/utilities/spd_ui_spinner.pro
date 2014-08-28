@@ -286,7 +286,6 @@ FUNCTION spd_ui_spinner_getvalue, base
   widget_control, widget_info(base, FIND_BY_UNAME='_text'), GET_VALUE=value,get_uvalue=state
   
   value = value[0]
-  
   ;If there are units on the value, then remove them
   if stregex(value,'.*' + state.units + '.*$',/boolean) then begin
     value = (stregex(value,' *(.*)'+state.units + '.*$',/extract,/subexpr))[1]
@@ -295,14 +294,13 @@ FUNCTION spd_ui_spinner_getvalue, base
   if is_numeric(value[0],/sci) then begin
     ; if we have a valid number, use calc to evaluate the expression
      a='cexp='
-     b=value[0]
-     calc, a+b
+     b=string(value[0])
+     ; if the value is in decimal notation, append D0 to force calc to treat it as a double
+     if is_numeric(value[0], /decimal) then calc, a+b+'D0' else calc, a+b
   endif else cexp = ''
-  
-  cexp = string(cexp)
-  
+
   ;Return NaN if value isn't numeric or double() conversion fails
-  if is_numeric(cexp,/sci) then begin
+  if is_numeric(string(cexp),/sci) then begin
     on_ioerror, fail
     return, double(cexp)
     fail: return, !values.D_NAN

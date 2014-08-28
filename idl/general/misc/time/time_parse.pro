@@ -40,9 +40,9 @@
 ;  #3 letter codes are case insensitive.
 ;  #4 Based heavily on str2time by Davin Larson.
 ; 
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-25 15:51:08 -0800 (Tue, 25 Feb 2014) $
-;$LastChangedRevision: 14438 $
+;$LastChangedBy: davin-mac $
+;$LastChangedDate: 2014-04-29 20:06:36 -0700 (Tue, 29 Apr 2014) $
+;$LastChangedRevision: 14975 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/time_parse.pro $
 ;-
 
@@ -73,7 +73,7 @@ function time_parse,s, tformat=tformat,tdiff=tdiff,MMDDYYYY=MMDDYYYY
     ;Davin's version.  Even though it loops and is a little opaque,
       ;this is faster than the vectorized versions using stregex
     bt = bindgen(256)
-    bt[byte(':_-/,')]= 32 ;create new ascii set where common separators are replaced with space
+    bt[byte(':_-/,T')]= 32 ;create new ascii set where common separators are replaced with space
     
     year=0l & month=0l & date=0 & hour=0 & min=0 & fsec=0.d ;select output types for parse
     for i=0l,n_elements(s)-1l do begin

@@ -29,9 +29,9 @@
 ; started on 31-Jan-2008, jmm, jimm@ssl.berkeley.edu, this is under
 ; development for the next 6 months or so.
 ; 9-apr-2008, jmm, added all instruments, for Version 4_00
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-04 16:12:37 -0800 (Tue, 04 Feb 2014) $
-;$LastChangedRevision: 14157 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-04-30 15:55:39 -0700 (Wed, 30 Apr 2014) $
+;$LastChangedRevision: 14981 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_data2load.pro $
 ;-
 function thm_valid_variables, instrument, level
@@ -165,7 +165,8 @@ function thm_valid_variables, instrument, level
         endif else if(level eq 'l1') then begin
             instr_data = ['scf', 'scp', 'scw']
         endif else begin
-            instr_data = ['scf', 'scp', 'scw']
+            vl2_coord = '_'+['dsl', 'gse', 'gsm', 'btotal'] ;yes, btotal isn't a coordinate system
+            instr_data = ['scf'+vl2_coord, 'scp'+vl2_coord, 'scw'+vl2_coord]
         endelse
     end
     'spin' : begin

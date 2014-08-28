@@ -40,8 +40,8 @@
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-12 10:20:31 -0800 (Wed, 12 Feb 2014) $
-;$LastChangedRevision: 14354 $
+;$LastChangedDate: 2014-04-30 15:55:39 -0700 (Wed, 30 Apr 2014) $
+;$LastChangedRevision: 14981 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_load_data_file/spd_ui_load_data2obj.pro $
 ;
 ;-
@@ -399,7 +399,6 @@ pro spd_ui_load_data2obj, st_time, en_time, $
           endif else begin
             type_keyword = ''
           endelse
-          
           thm_load_fgm, probe=observ[i], datatype=iname_mod, $
             level=lvls[j], /get_support_data, trange=[st_time, en_time], $
             coord=out_coord, files=fns4obj,type=type_keyword
@@ -500,6 +499,16 @@ pro spd_ui_load_data2obj, st_time, en_time, $
             type_keyword = ''
           endelse
           
+          If(lvls[j] Eq 'l2') Then begin
+          
+            for k=0,n_elements(iname[ss[ssj]])-1 do begin
+              ; check for btotal dtype to account for it's different filename
+              if array_equal('_btotal', strmid(iname[ss[ssj[k]]], 3, 7)) $
+                then iname_tmp = iname[ss[ssj[k]]] else iname_tmp = strmid(iname[ss[ssj[k]]], 0, 3)
+              if k eq 0 then iname_mod = iname_tmp else iname_mod = [iname_mod, iname_tmp]
+            endfor
+          endif else iname_mod = iname[ss[ssj]]
+          
           if keyword_set(scm_cal) then Begin 
             thm_load_scm,probe=observ[i],datatype=iname[ss[ssj]],level=lvls[j], $
                /get_support_data, trange=[st_time,en_time], $
@@ -507,14 +516,13 @@ pro spd_ui_load_data2obj, st_time, en_time, $
                coord=out_coord, cleanup='full', $
                type='calibrated', scm_cal = scm_cal, files=fns4obj
           endif else begin
-            thm_load_scm,probe=observ[i],datatype=iname[ss[ssj]],level=lvls[j], $
+            thm_load_scm,probe=observ[i],datatype=iname_mod,level=lvls[j], $
                /get_support_data, trange=[st_time,en_time], $
                coord=out_coord, cleanup='full', $
                files=fns4obj,type=type_keyword
           endelse
         Endif
       Endfor
-      
       if ~array_equal(del_names, '') then store_data, delete=del_names  
     Endif
 

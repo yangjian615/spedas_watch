@@ -22,9 +22,9 @@
 ;NB: This problem doesn't seem to happen with the panel title on Panel Options window.
 ;If we could work out why the panel title combobox worked there it would be better to fix axis label title to match rather than truncating.
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-04-30 13:47:33 -0700 (Wed, 30 Apr 2014) $
+;$LastChangedRevision: 14980 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_axis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -3133,6 +3133,9 @@ END
   color = PickColor(!P.Color, Group_Leader=state.tlb, Cancel=cancelled, $
     currentcolor=currentcolor)
   if cancelled then color=currentcolor
+  
+  ; update the label object with the user's selection
+  if obj_valid(currlabelobj) then currlabelobj->setProperty, color=color
   
   labelcolorid = widget_info(state.tlb, find_by_uname='labelcolorwin')
   Widget_Control, labelcolorid, Get_Value=labelcolorWin
