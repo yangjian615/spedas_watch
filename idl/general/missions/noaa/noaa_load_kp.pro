@@ -19,10 +19,16 @@
 ;          'cp', 'c9', 'sunspot_number', 'solar_radio_flux', 'flux_qualifier'
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-05-14 12:39:13 -0700 (Wed, 14 May 2014) $
-; $LastChangedRevision: 15135 $
+; $LastChangedDate: 2014-05-28 14:52:30 -0700 (Wed, 28 May 2014) $
+; $LastChangedRevision: 15250 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/noaa/noaa_load_kp.pro $
 ;-f
+function kp_return_fraction, value
+    kp_lhs = floor(value/10.)
+    kp_rhs_times_3 = value mod 10
+    kp_rhs = floor(kp_rhs_times_3/3.)
+    return, kp_lhs + kp_rhs/3.
+end
 pro noaa_load_kp, trange = trange, kp_mirror = kp_mirror, remote_kp_dir=remote_kp_dir,$
                   local_kp_dir = local_kp_dir, datatype = datatype
     if ~keyword_set(trange) then get_timespan, trange
@@ -105,7 +111,7 @@ pro noaa_load_kp, trange = trange, kp_mirror = kp_mirror, remote_kp_dir=remote_k
       if size(ndatatype[i],/type) eq 7 then begin
         case ndatatype[i] of
           'kp': begin
-            store_data,'Kp',data={x: kptimes[0:j*8-1], y: kpdata[0:j*8-1]}
+            store_data,'Kp',data={x: kptimes[0:j*8-1], y: kp_return_fraction(kpdata[0:j*8-1])}
             options,'Kp','ytitle','NOAA!CKp'
           end
           'ap': begin

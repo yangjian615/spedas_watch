@@ -135,9 +135,9 @@ end
 ;                   process.
 ; 10-Feb-2009, jmm, Added hwin, sbar keywords
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-29 16:48:11 -0700 (Thu, 29 May 2014) $
+;$LastChangedRevision: 15263 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__dproc.pro $
 Function spd_ui_loaded_data::dproc, dp_task, dp_pars,callSequence=callSequence,replay=replay,in_vars=in_vars, names_out = names_out, $
                            no_setactive = no_setactive, hwin = hwin, sbar = sbar, gui_id = gui_id, $
@@ -384,7 +384,7 @@ For j = 0, nav-1 Do Begin
                 tdeflag, varname, (dp_pars.method[0] ? 'repeat':'linear'), $
                          newname = nn0+dp_pars.suffix[0], display_object=display_object, $
                          _extra = {flag: (dp_pars.opts[0] ? dp_pars.flag:0b), $
-                                   maxgap: (dp_pars.opts(1) ? dp_pars.maxgap:0b)}
+                                   maxgap: (dp_pars.opts[1] ? dp_pars.maxgap:0b)}
                 nn = tnames(nn0+dp_pars.suffix)
             End
             'degap': Begin
@@ -392,7 +392,16 @@ For j = 0, nav-1 Do Begin
               get_data, nn0, t
               
               if n_elements(t) gt 1 then begin ; operation not valid on single time element
-                av_dt = median(t[1:*]-t[0:n_elements(t)-2])
+                dt = t[1:*]-t[0:n_elements(t)-2]
+                av_dt = median(dt)
+                max_dt = max(dt)
+                
+                ;filter variables who no dt larger than threshold+margin (seems to be how xdegap works)
+                if (dp_pars.dt[0] + dp_pars.margin[0]) gt max_dt then begin
+                  dproc_status_update,'No gaps below threshold in '+nn0+'.', sbar, hwin
+                  canceled = 1b ;prevent variable from being added later
+                  break
+                endif
                 
                 If(av_dt Gt dp_pars.dt) then begin
                   if degap_selection ne 'yestoall' && degap_selection ne 'notoall' Then Begin
@@ -426,13 +435,10 @@ For j = 0, nav-1 Do Begin
                             margin = dp_pars.margin[0], $
 ;                            maxgap = dp_pars.maxgap[0], $
                             newname = nn0+dp_pars.suffix[0], $
-;                            output_message=output_message, $
                             display_object=display_object, $
                             _extra = _extra
                     nn = tnames(nn0+dp_pars.suffix)
-;                    if is_string(output_message) then begin
-;                      dproc_status_update,output_message, sbar, hwin
-;                    endif
+
                 Endif Else Begin
                     dproc_status_update,'Degap process for: '+nn0+' cancelled.', sbar, hwin
                     canceled = 1b ;prevent variable from being added later

@@ -15,8 +15,8 @@
 ;  panel_select:     pointer to current panel
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-13 10:12:55 -0700 (Tue, 13 May 2014) $
-;$LastChangedRevision: 15110 $
+;$LastChangedDate: 2014-05-28 09:35:05 -0700 (Wed, 28 May 2014) $
+;$LastChangedRevision: 15239 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_legend_options.pro $
 ;-
 
@@ -159,7 +159,9 @@ pro spd_ui_legend_options_init, tlb, legendSettings, panel_select=panel_select
       Widget_Control, lwidthvalue, sensitive=width, set_value=wValue
       Widget_Control, lheightunits, sensitive=height, Set_Combobox_Select=hUnit
       Widget_Control, lheightvalue, sensitive=height, set_value=hValue
-
+      ; reset combobox units to pts if the placement option isn't sensitized
+      legendSettings->ResetPlacement, bunit=bUnit, lunit=lUnit, wunit=wUnit, hunit=hUnit
+      
       ; variable name widgets
       Widget_Control, lxAxisVal, set_value=xAxisLabel, sensitive=xAxisValueEnabled
       Widget_Control, lyAxisVal, set_value=yAxisLabel, sensitive=yAxisValueEnabled
@@ -173,10 +175,10 @@ pro spd_ui_legend_options_init, tlb, legendSettings, panel_select=panel_select
         Widget_Control, ltraces, set_value=tracesstruct.traceNames
         Widget_Control, tracestext, set_value=(tracesstruct.traceNames)[0], sensitive=sens
       endif else begin
-         tracesstruct = {panel:0, numTraces:0, traceNames:['']}
+         tracesstruct = {panel:(ptr_valid(panel_select) ? *panel_select : 0), numTraces:0, traceNames:['']}
          linesonthispanel = spd_ui_legend_options_get_traces(state.panelObjs, *panel_select)
          tracesstruct.numTraces=n_elements(linesonthispanel)
-         tracesstruct.panel = *panel_select+1
+        ; tracesstruct.panel = *panel_select+1
          str_element, tracesstruct, 'traceNames', linesonthispanel, /add_replace
         ; if obj_valid(legendSettings) then legendSettings->setProperty, traces=ptr_new(tracesstruct)
          Widget_Control, ltraces, set_value=linesonthispanel
@@ -263,6 +265,8 @@ function spd_ui_legend_options_update_varnames, tlb, legend
     widget_control, updatetrace, get_value=droplist_values
     widget_control, tracename_txtbox, get_value = newtrace_txt
     
+    Widget_Control, tlb, Get_UValue=pState
+    state = *pState
     if ptr_valid(traces) then begin
         tracesstruct = *traces
       
@@ -272,21 +276,21 @@ function spd_ui_legend_options_update_varnames, tlb, legend
             widget_control, updatetrace, set_droplist_select=idx_to_update
 
             tracesstruct.traceNames = droplist_values
-            legend->setProperty, traces=ptr_new(tracesstruct), customTracesset=1
+            tracesstruct.panel = *state.panel_select+1
+            legend->UpdateTraces, tracesstruct
         endif
     endif else begin
-        Widget_Control, tlb, Get_UValue=pState
-        state = *pState
          tracesstruct = {panel:0, numTraces:0, traceNames:['']}
          linesonthispanel = spd_ui_legend_options_get_traces(state.panelObjs, *state.panel_select)
-         tracesstruct.numTraces=n_elements(linesonthispanel)
          tracesstruct.panel = *state.panel_select+1
-         str_element, tracesstruct, 'traceNames', linesonthispanel, /add_replace
 
          if linesonthispanel[0] ne 'None' then begin
             droplist_values[idx_to_update] = newtrace_txt
             widget_control, updatetrace, set_value=droplist_values
             widget_control, updatetrace, set_droplist_select=idx_to_update
+            tracesstruct.numTraces=n_elements(linesonthispanel)
+            str_element, tracesstruct, 'tracenames', linesonthispanel, /add_replace
+            legend->UpdateTraces, tracesstruct
          endif
     endelse
     return, legend
@@ -331,10 +335,10 @@ pro spd_ui_legend_options_event, event
         ; check the legend we're restoring
         state.origlegendSettings->getProperty, traces=the_tracesptr
 
-        legend->getproperty, traces=curr_panel_traces
+        state.legendSettings->getProperty, traces=curr_panel_traces
         ; make sure this is the correct panel
-        if ptr_valid(curr_panel_traces) && ((*curr_panel_traces).panel eq (*the_tracesptr).panel) then begin
-            legend=legend->RestoreBackup(state.origlegendSettings)
+        if ptr_valid(curr_panel_traces) && ptr_valid(the_tracesptr) && ((*curr_panel_traces).panel eq (*the_tracesptr).panel) then begin
+            state.legendSettings=state.legendSettings->RestoreBackup(state.origlegendSettings)
         endif
     endif 
 
@@ -377,7 +381,7 @@ pro spd_ui_legend_options_event, event
               upd_legend = spd_ui_legend_options_update_varnames(event.top, legend)
               
               state.origLegendSettings=upd_legend->BackupSettings(state.origLegendSettings)
-
+              
               state.drawObject->update,state.windowStorage,state.loadedData
               state.drawObject->draw
               state.historyWin->update,'Changes applied to legend'
@@ -421,7 +425,7 @@ pro spd_ui_legend_options_event, event
                 
                 ; make sure this is the correct panel
                 legend->getproperty, traces=curr_panel_traces
-                if ptr_valid(curr_panel_traces) && ((*curr_panel_traces).panel eq (*the_tracesptr).panel) then begin
+                if ptr_valid(curr_panel_traces) && ptr_valid(the_tracesptr) && ((*curr_panel_traces).panel eq (*the_tracesptr).panel) then begin
                     legend=legend->RestoreBackup(state.origlegendSettings)
                 endif
             endif
@@ -509,18 +513,8 @@ pro spd_ui_legend_options_event, event
              if obj_valid(state.panelObjs[event.index]) then state.panelObjs[event.index]->getProperty, legendSettings=leg
 
              if obj_valid(leg) then begin
-                 leg -> getProperty, customTracesset=customTracesset, traces=thetraces
-
-                 if customTracesset eq 0 then begin
-                     ; new stuff
-                     tracesstruct = {panel:0, numTraces:0, traceNames:['']}
-                     linesonthispanel = spd_ui_legend_options_get_traces(state.panelObjs, event.index)
-                     tracesstruct.numTraces=n_elements(linesonthispanel)
-                     tracesstruct.panel = event.index+1
-                     str_element, tracesstruct, 'traceNames', linesonthispanel, /add_replace
-                     if obj_valid(legendSettings) then legendSettings->setProperty, traces=ptr_new(tracesstruct)
-                  endif 
-                 
+                 leg->getProperty,customTracesset=customTracesset, traces=thetraces
+   
                  spd_ui_legend_options_init, state.tlb, leg, panel_select=state.panel_select
              endif
         END
@@ -660,7 +654,7 @@ pro spd_ui_legend_options_event, event
             Widget_Control, newTrace, set_value=droplist_values[droplist_selection]
         END 
         'CHANGETRACENAME': BEGIN ; user changed currently selected trace name
-            pd_varnames = spd_ui_legend_options_update_varnames(event.top, legend)
+            pd_varnames = spd_ui_legend_options_update_varnames(event.top, state.legendSettings)
         END
         'AUTONOTATION': BEGIN ; user clicked auto-notation button
             legend->setProperty, notationSet=0
@@ -774,10 +768,11 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
    legendSettings->getProperty, size=lfontsize, font=lfont, color=lfontcolor, format=lfontformat, $
         vspacing=vspacing, bgcolor=bgcolor, framethickness=framethickness, bordercolor=bordercolor, $
         enabled=enabled, bottom=lbottom, left=lleft, width=lwidth, height=lheight, bValue=bValue, $
-        lValue=lValue, wValue=wValue, hValue=hValue, bUnit=bUnit, lUnit=lUnit, wUnit=wUnit, hUnit=hUnut, $
+        lValue=lValue, wValue=wValue, hValue=hValue, bUnit=bUnit, lUnit=lUnit, wUnit=wUnit, hUnit=hUnit, $
         xAxisValue=xAxisValue, xAxisValEnabled=xAxisValEnabled, yAxisValue=yAxisValue, yAxisValEnabled=yAxisValEnabled, $
         traces=legendtraces, customTracesset=customTracesset
    
+
    if(panelNames eq ['No Panels']) then begin
        validpanel=0 ; if there are no valid panels, desensitize everything
    endif else begin
@@ -791,7 +786,7 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
         tracesstruct.numTraces=n_elements(linesonthispanel)
         tracesstruct.panel = *panel_select+1
         str_element, tracesstruct, 'traceNames', linesonthispanel, /add_replace
-        if obj_valid(legendSettings) then legendSettings->setProperty, traces=ptr_new(tracesstruct)
+        if obj_valid(legendSettings) then legendSettings->UpdateTraces, tracesstruct
        
     endif else begin
         ;legendsettings->getproperty, traces=oldtraces
@@ -803,7 +798,7 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
 
    tlb = Widget_Base(/Col, Title='Legend Options', Group_Leader=info.master, /Modal, $
         /Floating, /tlb_kill_request_events, tab_mode=1)
-
+        
    getresourcepath,rpath
    palettebmp = read_bmp(rpath + 'color.bmp', /rgb)
    spd_ui_match_background, tlb, palettebmp
@@ -918,22 +913,17 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
   placementunitsize = 45
    ; create placement widgets
    plBottom = Widget_Button(sBase1, Value=' Bottom: ', uval='BOTBUTTON', uname='botbutton', sensitive=validpanel, SCR_XSIZE=placementlabelsize)
-   bottomSpinner = spd_ui_spinner(spinnerBase1, increment=1, uval='BVALUE', uname='bvalue', min_value=0, sensitive=validpanel)
+   bottomSpinner = spd_ui_spinner(spinnerBase1, increment=1, uval='BVALUE', uname='bvalue', min_value=0, sensitive=validpanel, value=bvalue)
    botDropDown = Widget_Combobox(unitsBase1, uval='BUNIT', uname='bunit', xsize=placementcombosize, value=placementunits, sensitive=validpanel)
-   Widget_Control, botDropDown, set_combobox_select=bUnit
-   
    plLeft = Widget_Button(sBase2, Value=' Left: ', uval='LEFTBUTTON', uname='leftbutton', sensitive=validpanel)
-   leftSpinner = spd_ui_spinner(spinnerBase2, increment=1, uval='LVALUE', uname='lvalue', min_value=0, sensitive=validpanel)
+   leftSpinner = spd_ui_spinner(spinnerBase2, increment=1, uval='LVALUE', uname='lvalue', min_value=0, sensitive=validpanel, value=lvalue)
    leftDropDown = Widget_Combobox(unitsBase2, uval='LUNIT', uname='lunit', xsize=placementcombosize, value=placementunits, sensitive=validpanel)
-   Widget_Control, leftDropDown, set_combobox_select=lUnit
    plWidth = Widget_Button(sBase3, Value=' Width: ', uval='WIDTHBUTTON', uname='widthbutton', sensitive=validpanel)
-   widthSpinner = spd_ui_spinner(spinnerBase3, increment=1, uval='WVALUE', uname='wvalue', min_value=0, sensitive=validpanel)
+   widthSpinner = spd_ui_spinner(spinnerBase3, increment=1, uval='WVALUE', uname='wvalue', min_value=0, sensitive=validpanel, value=wvalue)
    widthDropDown = Widget_Combobox(unitsBase3, uval='WUNIT', uname='wunit', xsize=placementcombosize, value=placementunits, sensitive=validpanel)
-   Widget_Control, widthDropDown, set_combobox_select=wUnit
    plHeight = Widget_Button(sBase4, Value=' Height: ', uval='HEIGHTBUTTON', uname='heightbutton', sensitive=validpanel)
-   heightSpinner = spd_ui_spinner(spinnerBase4, increment=1, uval='HVALUE', uname='hvalue', min_value=0, sensitive=validpanel)
+   heightSpinner = spd_ui_spinner(spinnerBase4, increment=1, uval='HVALUE', uname='hvalue', min_value=0, sensitive=validpanel, value=hvalue)
    heightDropDown = Widget_Combobox(unitsBase4, uval='HUNIT', uname='hunit', xsize=placementcombosize, value=placementunits, sensitive=validpanel)
-   Widget_Control, heightDropDown, set_combobox_select=hUnit
    
    ; create variable name widgets
    xnamelabel = Widget_Label(varNameBase, value=' X Axis Value:', /Align_Left, sensitive=validpanel)

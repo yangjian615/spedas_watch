@@ -22,9 +22,9 @@
 ;NB: This problem doesn't seem to happen with the panel title on Panel Options window.
 ;If we could work out why the panel title combobox worked there it would be better to fix axis label title to match rather than truncating.
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-23 09:20:59 -0700 (Fri, 23 May 2014) $
-;$LastChangedRevision: 15217 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-29 14:42:00 -0700 (Thu, 29 May 2014) $
+;$LastChangedRevision: 15262 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_axis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -3641,7 +3641,7 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
   rangeBase = Widget_Base(tabBase, Title='Range', /Col)
   ticksBase = Widget_Base(tabBase, Title='Ticks', /Col)
   gridBase = Widget_Base(tabBase, Title='Grid', /Col)
-  annotationBase = Widget_Base(tabBase, Title='Annotation', /Col)
+  annotationBase = Widget_Base(tabBase, Title='Annotations', /Col)
   titleBase = widget_base(tabBase,Title='Title',/col)
   labelsBase  = Widget_Base(tabBase, Title='Labels', /Col)
   
@@ -3829,7 +3829,7 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
   
   autoRangeButton = Widget_Button(rbuttonsBase, Value='Auto Range', Sensitive=sensitive, UValue='AUTORANGE',uname='autorange')
   ;floatingRangeButton = Widget_Button(rbuttonsBase, Value='Floating Center', Sensitive=sensitive, UValue='FLOATRANGE', uname ='floatrange')
-  fixedRangeButton = Widget_Button(rbuttonsBase, Value='Fixed Min/Max', Sensitive=sensitive, UValue='FIXEDRANGE',uname='fixedrange')
+  fixedRangeButton = Widget_Button(rbuttonsBase, Value='Fixed Range', Sensitive=sensitive, UValue='FIXEDRANGE',uname='fixedrange')
   
   rangeOptions = [autoRangeButton, fixedRangeButton]
   
@@ -3843,11 +3843,11 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
   ;equalXYButton = Widget_Button(timeXYBase, Value='Equal X & Y Axis Scaling', uval = 'EQUALXYSCALING', uname='equalxyscaling')
   ;IF equalXYScaling EQ 1 THEN Widget_Control, equalXYButton, /Set_Button
   ;widget_control,equalxybutton,sensitive=0
-  isTimeButton = Widget_Button(timeXYBase, Value='Is Time', UValue='ISTIME',uname='istime')
+  isTimeButton = Widget_Button(timeXYBase, Value='Time Axis', UValue='ISTIME',uname='istime', tooltip='If checked, SPEDAS will generate date and time based annotations for this axis.')
   lockMSG = widget_label(lockmsgbase, value='', uvalue = 'lockmsg')
   IF isTimeAxis EQ 1 THEN Widget_Control, isTimeButton, /Set_Button
   IF rangeIndex EQ 2 THEN sensitive=1 ELSE sensitive=0
-  foptionsLabel = Widget_Label(flabelBase, Value='Fixed Min/Max:', /Align_Left)
+  foptionsLabel = Widget_Label(flabelBase, Value='Fixed Range:', /Align_Left)
   minBase = Widget_Base(foptionsBase, /Row, /align_right, uname='minbase')
   maxBase = Widget_Base(foptionsBase, /Row, /align_right, uname='maxbase')
   minIncLabel=widget_label(minbase, Value='Min: ')
@@ -3975,7 +3975,7 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
     tooltip='Places ticks at easily read values.')
   majorTickBase = widget_base(numberBase,uname='majortickbase',sens=0)
   MajorTicknum = spd_ui_spinner(majorTickBase, value=nummajorticks, getXlabelSize=xlsize, $
-    uname='nummajorticks', uvalue='NUMMAJORTICKS', label='Major Ticks:  ', incr=1, min_value=0, max_value=100,tooltip='Number of ticks may be approximate.')
+    uname='nummajorticks', uvalue='NUMMAJORTICKS', label='Major Ticks (hint):  ', incr=1, min_value=0, max_value=100,tooltip='Number of ticks may be approximate.')
   
 
     
@@ -4262,7 +4262,7 @@ titlePLabel=Widget_Label(titlepdBase, value='Panel: ')
 titlepanelDroplist = Widget_combobox(titlepdBase, Value=panelNames,  XSize=150, uval='PANELDROPLIST', uname='titlepaneldroplist')
 titletextcolbase = widget_base(titletextBase, col=2, space=350)
 titletextframeLabel = Widget_Label(titletextcolbase, Value='Text: ', /Align_Left)
-titlehelpbutton = widget_button(titletextcolbase, value='Format Help', uname='formathelpbutton', uvalue='FORMATHELPBUTTON', /align_right)
+titlehelpbutton = widget_button(titletextcolbase, value='Format Help', uname='formathelpbutton', uvalue='FORMATHELPBUTTON')
 titletextFrameBase = Widget_Base(titletextBase, /col, Frame=3,XPad=1, uname='titletextframebase')
 titlecolBase = widget_base(titletextframebase,/col)
 titleeditBase = widget_base(titlecolbase,/row, ypad=1,/base_align_center)

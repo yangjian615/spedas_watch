@@ -60,9 +60,9 @@ END
 ; seconds are not valid.
 ; 2011-07-20, added comment to test post-commit emails, jmm
 ; 2011-11-04, added comment to test post-commit emails, jmm
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-29 08:25:10 -0700 (Thu, 29 May 2014) $
+;$LastChangedRevision: 15254 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_timefix.pro $
 Function spd_ui_timefix, time_in, progobj = progobj, _extra = _extra
 ;-
@@ -77,8 +77,12 @@ Function spd_ui_timefix, time_in, progobj = progobj, _extra = _extra
     Return, otp
   Endif
   ggg = strsplit(t, '-', /extract)
-;Require year-month-day, yy-mm-dd or yyyy-mm-dd
-  If(n_elements(ggg) Lt 3) Then Begin
+  ;Require year-month-day, yy-mm-dd or yyyy-mm-dd
+  ;  changed logic to ensure ggg contains exactly 3 elements to avoid
+  ;  crashes when the user inputs clearly invalid inputs, like: 'yyyy-mm-dd-/', 'yyyy-mm-dd-o', etc. 
+  ; - egrimes 5/29/14
+  If(n_elements(ggg) ne 3) Then Begin
+  ;If(n_elements(ggg) Lt 3) Then Begin
     If(obj_valid(progobj)) Then progobj -> update, 0.0, $
       text = 'Bad time string input, no selection'
     Return, otp

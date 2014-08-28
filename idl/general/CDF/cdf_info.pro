@@ -15,9 +15,9 @@ end
 ;   id:   CDF file ID.
 ;CREATED BY:    Davin Larson
 ; LAST MODIFIED: @(#)cdf_info.pro    1.9 02/11/01
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-04-10 11:19:32 -0700 (Thu, 10 Apr 2014) $
-; $LastChangedRevision: 14794 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-05-29 12:20:42 -0700 (Thu, 29 May 2014) $
+; $LastChangedRevision: 15257 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_info.pro $
 ;-
 
@@ -39,6 +39,10 @@ endif  else id=id0
 inq = cdf_inquire(id)
 q = !quiet
 cdf_control,id,get_filename=fn
+; need to add .cdf to the filename, since "cdf_control,id, get_filename="
+;    returns the filename without the extension
+fn = fn + '.cdf'
+
 nullp = ptr_new()
 varinfo_format = {name:'',num:0, is_zvar:0, datatype:'',type:0, $
 ;   depend_0:'', $

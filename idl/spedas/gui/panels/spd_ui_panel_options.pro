@@ -15,9 +15,9 @@
 ;(lphilpott 06/2011) Delayed the handling of spinner events until user clicks OK/APPLY/SET ALL or changes panel. Dialog messages
 ;are issued for invalid entries. This avoids the issue of the text overwriting in spinners as the user types if values aren't valid.
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-09 17:27:30 -0700 (Fri, 09 May 2014) $
-;$LastChangedRevision: 15093 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-29 09:13:07 -0700 (Thu, 29 May 2014) $
+;$LastChangedRevision: 15255 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_panel_options.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -226,19 +226,13 @@ end
 ; this does not change the title of the panels any more, to do so we need panelSettings->SetProperty, titleobj=titleobj->copy()
 pro spd_ui_panel_options_set_all, tlb, state=state, panelSettings=panelSettings
 
-  panelSettings->GetProperty, titleobj=titleobj, titlemargin=titlemargin, bottom=bottom, $
-    bvalue=bvalue, bunit=bunit, left=left, lvalue=lvalue, $
-    lunit=lunit, width=width, wvalue=wvalue, wunit=wunit, $
-    height=height, hvalue=hvalue, hunit=hunit, $
+  panelSettings->GetProperty, titleobj=titleobj, titlemargin=titlemargin, $
     backgroundcolor=backgroundcolor, framecolor=framecolor, $
     framethick=framethick
   npanels = n_elements(state.panelobjs)
   for i=0,npanels-1 do begin
     state.panelobjs[i]->GetProperty, settings=panelSettings
-    panelSettings->SetProperty,titlemargin=titlemargin, bottom=bottom, $
-      bvalue=bvalue, bunit=bunit, left=left, lvalue=lvalue, $
-      lunit=lunit, width=width, wvalue=wvalue, wunit=wunit, $
-      height=height, hvalue=hvalue, hunit=hunit, $
+    panelSettings->SetProperty,titlemargin=titlemargin, $
       backgroundcolor=backgroundcolor, framecolor=framecolor, $
       framethick=framethick
     state.panelobjs[i]->SetProperty, settings=panelSettings

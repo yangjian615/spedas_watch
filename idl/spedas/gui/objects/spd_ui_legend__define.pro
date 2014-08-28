@@ -49,8 +49,8 @@
 ; 
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-13 10:12:55 -0700 (Tue, 13 May 2014) $
-;$LastChangedRevision: 15110 $
+;$LastChangedDate: 2014-05-28 09:35:05 -0700 (Wed, 28 May 2014) $
+;$LastChangedRevision: 15239 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_legend__define.pro $
 ;-
 PRO SPD_UI_LEGEND::Cleanup
@@ -103,7 +103,7 @@ FUNCTION SPD_UI_LEGEND::RestoreBackup, origlegendSettings
     return, self
 END
 
-;handles special cases for setProperty, the rest is handled by parent class: spd_ui_getset
+;handles special cases for setProperty, the rest are handled by parent class: spd_ui_getset
 PRO SPD_UI_LEGEND::setProperty,$
                              bunit=bunit,$
                              lunit=lunit,$
@@ -111,18 +111,35 @@ PRO SPD_UI_LEGEND::setProperty,$
                              hunit=hunit,$
                              traces=traces,$
                              _extra=ex
-                             
+
   if n_elements(bunit) gt 0 then self.bvalue = self->convertunit(self.bvalue,self.bunit,bunit)
   if n_elements(lunit) gt 0 then self.lvalue = self->convertunit(self.lvalue,self.lunit,lunit)
   if n_elements(wunit) gt 0 then self.wvalue = self->convertunit(self.wvalue,self.wunit,wunit)
   if n_elements(hunit) gt 0 then self.hvalue = self->convertunit(self.hvalue,self.hunit,hunit)
   if ~undefined(traces) then begin
+      self.customTracesset = 1
       self.traces = traces
   endif
   ;Do all general purpose setPropery with parent class
   self->spd_ui_getset::setProperty,bunit=bunit,lunit=lunit,wunit=wunit,hunit=hunit,traces=traces,_extra=ex
-END                      
-                              
+END
+
+PRO SPD_UI_LEGEND::ResetPlacement, bunit=bunit, lunit=lunit, wunit=wunit, hunit=hunit
+    if keyword_set(bunit) then self->setProperty, bunit = 0
+    if keyword_set(lunit) then self->setProperty, lunit = 0
+    if keyword_set(wunit) then self->setProperty, wunit = 0
+    if keyword_set(hunit) then self->setProperty, hunit = 0
+    
+END
+; procedure for updating traces structure
+PRO SPD_UI_LEGEND::UpdateTraces, newStruct
+    if ~undefined(newStruct) then begin
+        ptr_free, self.traces
+        self.traces = ptr_new(newStruct)
+        self.customTracesset = 1
+    endif
+END         
+            
 FUNCTION SPD_UI_LEGEND::GetUnitNames
     return, ['pt', 'in', 'cm', 'mm']  
 END

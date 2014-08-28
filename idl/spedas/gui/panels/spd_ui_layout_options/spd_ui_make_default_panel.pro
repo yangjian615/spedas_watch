@@ -135,6 +135,10 @@ if obj_valid(templateXaxis) then begin
   if obj_valid(xLabels) then begin
     xLabels->remove,/all
   endif
+  
+  ;major ticks should not be copied from template
+  xAxis->setProperty,majortickauto=1  
+  
 endif else begin
 
   ; create x-axis object
@@ -180,6 +184,10 @@ if obj_valid(templateYaxis) then begin
   if obj_valid(yLabels) then begin
     yLabels->remove,/all
   endif
+  
+  ;major ticks should not be copied from template
+  yAxis->setProperty,majortickauto=1
+    
 endif else begin
   ; create y-axis object
   yAxis = obj_new('spd_ui_axis_settings', $

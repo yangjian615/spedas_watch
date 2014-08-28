@@ -18,9 +18,9 @@
 ;  Things that need to be done to improve approximation, account for text height, take layout issues
 ;  into account.  Resolve variable/z-axis on the same size.
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-07 09:52:16 -0700 (Wed, 07 May 2014) $
-;$LastChangedRevision: 15063 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-28 09:53:58 -0700 (Wed, 28 May 2014) $
+;$LastChangedRevision: 15240 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__getclick.pro $
 ;-
 function spd_ui_draw_object::getClick
@@ -44,6 +44,9 @@ function spd_ui_draw_object::getClick
     margins = panels[i].margins
     place = panels[i].zplacement
     
+    xdiv = xpos[1]-xpos[0]
+    ydiv = ypos[1]-ypos[0]
+    
     ; check if the user clicked inside a legend
     legendObj = *panels[i].legendInfo
     if obj_valid(legendObj) then begin
@@ -59,10 +62,10 @@ function spd_ui_draw_object::getClick
     endif
     
     ; normalize legend location so that we can rescale to the draw area
-    normleft = self->pt2norm(legendleft,0)
-    normwidth = self->pt2norm(legendwidth,0)
-    normbottom = self->pt2norm(legendbottom,1)
-    normheight = self->pt2norm(legendheight,1)
+    normleft = self->pt2norm(legendleft,0)/xdiv
+    normwidth = self->pt2norm(legendwidth,0)/xdiv
+    normbottom = self->pt2norm(legendbottom,1)/ydiv
+    normheight = self->pt2norm(legendheight,1)/ydiv
     
     ; get dimensions of the draw area, in points
     self.destination->getProperty,dimensions=dim

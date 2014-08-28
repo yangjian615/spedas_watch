@@ -15,9 +15,9 @@
 ; none
 ;
 ;HISTORY:
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-19 15:49:19 -0700 (Mon, 19 May 2014) $
-;$LastChangedRevision: 15170 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-05-27 16:29:10 -0700 (Tue, 27 May 2014) $
+;$LastChangedRevision: 15236 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_calculate.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -297,31 +297,12 @@ PRO spd_ui_calculate_event, event
 
       Widget_control,state.programtext,get_value=programtext
      
-      spd_ui_run_calc,programtext,state.loadedData,state.historyWin,state.statusBar,state.gui_id,error=err,overwrite_selections=overwrite_selections,overwrite_count=overwrite_count,calc_prompt_obj=calc_prompt_user
+      spd_ui_run_calc,programtext,state.loadedData,state.historyWin,state.statusBar,state.gui_id,error=err,overwrite_selections=overwrite_selections,overwrite_count=overwrite_count,calc_prompt_obj=calc_prompt_user,last_line=last_line
  
       widget_control,state.programLabel,set_value=state.programName
       state.insertTree->update
            
-      if ~keyword_set(err) then begin
-        defsysv, '!mini_globals', exists=mini_globals_exists
-        if mini_globals_exists eq 1 then begin
-            ; add the calc operation to the call sequence object
-            state.call_sequence->addCalcOp,programText,(*!mini_globals.replay_struct).overwrite_selections
-            ; need to clear the user's overwrite selections, in case the user decides to do more calc operations in this session
-            str_element, *!mini_globals.replay_struct, 'overwrite_selections', '', /add_rep
-            ; gotta reset the overwrite count to 0, too. 
-            (*!mini_globals.replay_struct).overwrite_count = 0
-         ;   ok = dialog_message('Calculation complete',/information,/center)
-            state.statusBar->update,'Calculation complete'
-            state.historyWin->update,'Calculation complete'
-        endif else begin
-            errmsg = 'Error in spd_ui_calculate, !mini_globals system variable seems to be missing.'
-            dprint, dlevel = 0, errmsg
-            state.statusBar->update,errmsg
-            state.historyWin->update,errmsg
-            return
-        endelse
-      endif else begin
+      if keyword_set(err) then begin
       
         state.historyWin->update,'Calculation Failed.  Error Follows:'
         printdat,err,output=o
@@ -330,15 +311,44 @@ PRO spd_ui_calculate_event, event
         endfor
         
         if in_set('VALUE',tag_names(err)) then begin
-          state.statusBar->update,'Calculation failed with error: ' + err.name + '  :  ' + err.value[0] + '. Check history for more detail.'
+          state.statusBar->update,'Calculation failed with error: ' + err.name + '  :  ' + err.value[0] + ' on line: ' + strtrim(last_line+1,2) + '. Check history for more detail.'
           for i = 0,n_elements(err.value)-1 do begin
             state.historyWin->update,'VALUE:' + err.value[i]
           endfor
         endif else begin
-          state.statusBar->update,'Calculation failed with error: ' + err.name + '. Check history for more detail.'
+          state.statusBar->update,'Calculation failed with error: ' + err.name + ' on line: ' + strtrim(last_line+1,2) + '. Check history for more detail.'
         endelse
         
-      endelse      
+      endif
+       
+      defsysv, '!mini_globals', exists=mini_globals_exists
+      if mini_globals_exists eq 1 then begin
+        
+        
+        if last_line gt -1 then begin        
+          ; add the calc operation to the call sequence object
+          state.call_sequence->addCalcOp,programText[0:last_line],(*!mini_globals.replay_struct).overwrite_selections
+          
+        endif
+        
+        ; need to clear the user's overwrite selections, in case the user decides to do more calc operations in this session
+        str_element, *!mini_globals.replay_struct, 'overwrite_selections', '', /add_rep
+        ; gotta reset the overwrite count to 0, too.
+        (*!mini_globals.replay_struct).overwrite_count = 0
+        ;   ok = dialog_message('Calculation complete',/information,/center)
+        if ~keyword_set(err) then begin
+          state.statusBar->update,'Calculation complete'
+          state.historyWin->update,'Calculation complete'
+        endif  
+      endif else begin
+        errmsg = 'Error in spd_ui_calculate, !mini_globals system variable seems to be missing.'
+        dprint, dlevel = 0, errmsg
+        state.statusBar->update,errmsg
+        state.historyWin->update,errmsg
+        return
+      endelse
+      
+
        
      ; Widget_Control, event.TOP, Set_UValue=state, /No_Copy    
     end

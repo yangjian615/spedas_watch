@@ -25,9 +25,9 @@
 ;   and transformed into the new coordinate system with suffix added/changed
 ;
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-20 13:58:59 -0800 (Thu, 20 Feb 2014) $
-;$LastChangedRevision: 14400 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-28 18:13:21 -0700 (Wed, 28 May 2014) $
+;$LastChangedRevision: 15252 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_cotrans_new.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -87,21 +87,13 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
       origname=name
       
       if strlowcase(mission) ne 'themis' then begin
-;          result=error_message('No coordinate transformation support for non-SPEDAS missions',$
-;                               title ='Error in Cotrans: ', /noname ) 
-;          sobj->update, 'No coordinate transformation support for non-SPEDAS missions'
-          
+
           probe='xxx' ; set a dummy probe so non-THEMIS data can be converted
           
-;          continue              ;skip the rest of the loop
       endif
       
       if strlowcase(coordSys) eq 'n/a' then begin
-        if ~keyword_set(replay) then begin
-          result=error_message('Sorry. '+name+ ' does not have its coordinate system defined. Cannot perform transformation.', $
-                              title ='Error in Cotrans: ', /noname, /center,traceback=0)
-        endif
-        sobj->update, 'Sorry. '+name+ ' does not have its coordinate system defined. Cannot perform transformation.'
+        errors = array_concat(name + ':  Data has no defined coordinate system.', errors)
         spd_ui_cleanup_tplot,tn_before,del_vars=to_delete
         if to_delete[0] ne '' then begin
           store_data,to_delete,/delete
@@ -112,17 +104,12 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
       get_data,name,data=dTest
       dDim = dimen(dTest.y)
       if n_elements(dDim) ne 2 || dDim[1] ne 3 then begin
-        if ~keyword_set(replay) then begin
-          result=error_message('Sorry. '+name+ ' is not a 3-vector. Cannot perform transformation.', $
-                              title ='Error in Cotrans: ', /noname, /center,traceback=0)
-        endif
-        sobj->update, 'Sorry. '+name+ ' is not a 3-vector. Cannot perform transformation.'
+        errors = array_concat(name + ':  Data is not a 3-vector.', errors)
         spd_ui_cleanup_tplot,tn_before,del_vars=to_delete
         if to_delete[0] ne '' then begin
           store_data,to_delete,/delete
         endif
         continue              ;skip the rest of the loop
-      
       endif
 
       if strlowcase(probe) eq 'tha' then probe = 'a'
@@ -134,16 +121,13 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
 
       ok_probe = where(['a', 'b', 'c', 'd', 'e', 'x'] Eq probe)
       if ok_probe[0] eq -1 then begin
-          if ~keyword_set(replay) then begin
-            result=error_message('Sorry. No coordinate transformation support for ground-based data: '+probe,$
-                               title ='Error in Cotrans: ', /noname, /center,traceback=0)
-          endif
-          sobj->update, 'Sorry. No coordinate transformation support for ground-based data: '+probe
-          spd_ui_cleanup_tplot,tn_before,del_vars=to_delete
-          if to_delete[0] ne '' then begin
-            store_data,to_delete,/delete
-          endif
-          continue              ;skip the rest of the loop
+        errors = array_concat(probe+' ('+name+')'+ $
+          ':  No coordinate transformation support for ground-based data.', errors)
+        spd_ui_cleanup_tplot,tn_before,del_vars=to_delete
+        if to_delete[0] ne '' then begin
+          store_data,to_delete,/delete
+        endif
+        continue              ;skip the rest of the loop
       endif
       
       if strlowcase(coordSys) eq 'spg' || strlowcase(coordSys) eq 'dsl' || strlowcase(coordSys) eq 'ssl' || $
@@ -151,11 +135,7 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
 
         if probe eq 'x' then begin
         ; make sure non-THEMIS data isn't converted to spg, dsl, or ssl coords
-          if ~keyword_set(replay) then begin
-            result=error_message('Sorry. '+name+ ' is not THEMIS data. Can not convert to SPG, DSL, or SSL coordinates.',$
-                               title ='Error in Cotrans: ', /noname, /center,traceback=0)
-          endif 
-          sobj->update, 'Sorry. '+name+ ' is not THEMIS data. Can not convert to SPG, DSL, or SSL coordinates.'
+          errors = array_concat(name + ':  Cannot convert non THEMIS data to SPG, DSL, or SSL coordinates.', errors)
           spd_ui_cleanup_tplot,tn_before,del_vars=to_delete
           if to_delete[0] ne '' then begin
             store_data,to_delete,/delete
@@ -169,11 +149,8 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
       instr = strmid(name, 4, 3)
       efi_test = where(instr Eq efi_vars)
       if(efi_test[0] ne -1 &&  strlowcase(coordSys) eq 'spg') then begin
-        if(~keyword_set(replay)) then begin
-          result = error_message('Sorry. '+name+ ' is in SPG coordinates. EFI data in SPG can not be converted to other coordinates. Please load EFI L1 data in DSL to convert.', $
-                                 title = 'Error in Cotrans: ', /noname, /center, traceback = 0)
-        endif 
-        sobj -> update, 'Sorry. '+name+ ' is in SPG coordinates. EFI data in SPG can not be converted to other coordinates. Please load EFI L1 data in DSL to convert.'
+        errors = array_concat(name + ':  EFI data in SPG cannot be transformed.'+ $
+                              ' Please load EFI L1 data in DSL instead.', errors)
         spd_ui_cleanup_tplot, tn_before, del_vars = to_delete
         if to_delete[0] ne '' then begin
           store_data, to_delete, /delete
@@ -410,8 +387,14 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
         store_data,to_delete,/delete
       endif
     endfor
+    
     if ~keyword_set(replay) then begin
       callSequence->addCotransOp,value,active,tvar_overwrite_selections,load_support_selections,load_slp_selections
+    endif
+
+    if ~undefined(errors) then begin
+      text = ['Some errors were encountered; the following data was not transformed:  ',errors]
+      spd_ui_message, strjoin(text,ssl_newline()), title='Skipped variables', dialog=~keyword_set(replay), hw=historywin
     endif
        
   endelse

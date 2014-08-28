@@ -5,9 +5,9 @@
 ;PURPOSE:
 ; A widget to display the all messages generated during this session
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-29 12:47:11 -0700 (Thu, 29 May 2014) $
+;$LastChangedRevision: 15259 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_history__define.pro $
 ;+ 
 ;NAME: 
@@ -45,9 +45,9 @@
 
 ;HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-29 12:47:11 -0700 (Thu, 29 May 2014) $
+;$LastChangedRevision: 15259 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_history__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -208,7 +208,9 @@ END ;---------------------------------------------------------------------------
 
 
 
-PRO SPD_UI_HISTORY::Update, message, DontShow=dontShow,nosave=nosave
+PRO SPD_UI_HISTORY::Update, message_in, DontShow=dontShow,nosave=nosave
+
+if ~undefined(message_in) then message = message_in
 
 if ~keyword_set(nosave) then nosave=0
 

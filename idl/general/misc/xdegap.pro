@@ -61,9 +61,9 @@
 ;Added _extra keyword, 20-oct-2009, jmm
 ;Added output_message keyword Feb-02-2011 prc
 ;Added twonanpergap, jmm, 14-aug-2012
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2013-03-13 12:58:05 -0700 (Wed, 13 Mar 2013) $
-;$LastChangedRevision: 11797 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-29 12:48:05 -0700 (Thu, 29 May 2014) $
+;$LastChangedRevision: 15260 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/xdegap.pro $
 ;-
 pro xdegap, dt, margin, ct0, y, ct_out, y_out, nowarning = nowarning, $
@@ -305,7 +305,6 @@ pro xdegap, dt, margin, ct0, y, ct_out, y_out, nowarning = nowarning, $
     msg = 'No data gaps detected larger than '+strtrim(dt+margin,2)+$
       ' and less than '+strtrim(mxgp,2)+' seconds'
     dprint, msg, dlevel=4, display_object=display_object
-    dprint,dlevel=4,msg
     if arg_present(output_message) then begin
       output_message = array_concat([msg],output_message)
     endif

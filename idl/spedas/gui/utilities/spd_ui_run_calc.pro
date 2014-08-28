@@ -18,15 +18,15 @@
 ; error=error: set to named variable, will be 0 on success, will be set to error struct returned by calc.pro on failure
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-05-27 16:29:10 -0700 (Tue, 27 May 2014) $
+;$LastChangedRevision: 15236 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_run_calc.pro $
 ;
 ;---------------------------------------------------------------------------------
 
 
-pro spd_ui_run_calc,programtext,loadeddata,historywin,statusbar,gui_id,error=error,replay=replay,overwrite_selections=overwrite_selections,overwrite_count=overwrite_count,calc_prompt_obj=calc_prompt_obj
+pro spd_ui_run_calc,programtext,loadeddata,historywin,statusbar,gui_id,error=error,last_line=last_line,replay=replay,overwrite_selections=overwrite_selections,overwrite_count=overwrite_count,calc_prompt_obj=calc_prompt_obj
 
   compile_opt hidden,idl2
   
@@ -34,8 +34,8 @@ pro spd_ui_run_calc,programtext,loadeddata,historywin,statusbar,gui_id,error=err
   e = exp(1)
   
   error = 0
-
-
+  last_line = -1  ;return last completed error free line so that we can include successfully completed lines in the GUI document
+   
   ;list of names so that we can delete any newly created names
   tn_before = tnames()
   
@@ -50,15 +50,15 @@ pro spd_ui_run_calc,programtext,loadeddata,historywin,statusbar,gui_id,error=err
       calc,programtext[i],gui_data_obj=loadedData,error=error,historywin=historywin,statusbar=statusbar,gui_id=gui_id,overwrite_selections=overwrite_selections,overwrite_count=overwrite_count,replay=replay,calc_prompt_obj=calc_prompt_obj
     endif
     
-    if keyword_set(error) then begin
-    
-      break
-    
+    if keyword_set(error) then begin    
+      break  
     endif
+ 
+    last_line = i
   
   endfor
 
-
+ 
   ;list of names after processing
   spd_ui_cleanup_tplot,tn_before,del_vars=to_delete
   if to_delete[0] ne '' then begin
