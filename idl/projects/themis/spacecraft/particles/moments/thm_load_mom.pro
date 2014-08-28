@@ -68,8 +68,8 @@
 ;
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2012-12-13 18:20:20 -0800 (Thu, 13 Dec 2012) $
-; $LastChangedRevision: 11357 $
+; $LastChangedDate: 2014-02-14 11:15:18 -0800 (Fri, 14 Feb 2014) $
+; $LastChangedRevision: 14380 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
@@ -84,8 +84,9 @@ if ~array_equal(tn_pre_proc, '') then begin
   if n_elements(tn_post_proc) eq 1 then tn_post_proc=[tn_post_proc]
 
   post_proc_names = ssl_set_complement(tn_pre_proc, tn_post_proc)
-  if size(post_proc_names, /type) eq 7 then tplotnames = post_proc_names
-endif else tplotnames = tn_post_proc
+endif
+
+  if size(post_proc_names, /type) eq 7 then tplotnames = post_proc_names else tplotnames = tn_post_proc
 
 ; clip data to requested trange
 If (keyword_set(trange) && n_elements(trange) Eq 2) $

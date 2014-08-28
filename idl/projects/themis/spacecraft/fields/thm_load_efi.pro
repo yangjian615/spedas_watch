@@ -50,9 +50,9 @@
 ;    through to THM_CAL_EFI.PRO, W.M.Feuerstein, 4/7/2008 (M).
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;  Added _extra keyword to ease the passing of keywords to thm_cal_efi
-; $LastChangedBy: aaflores1 $
-; $LastChangedDate: 2014-01-28 11:02:00 -0800 (Tue, 28 Jan 2014) $
-; $LastChangedRevision: 14045 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2014-02-14 10:22:23 -0800 (Fri, 14 Feb 2014) $
+; $LastChangedRevision: 14379 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi.pro $
 ;-
 
@@ -264,8 +264,8 @@ end
          time_clip, tplotnames[l], tr[0], tr[1], /replace, error=clip_err
          if clip_err then begin
            dprint,  'Unable to clip '+tplotnames[l]+' to requested time range. Data may be out of range.'
-           store_data, tplotnames[l], /del
-           filtered_tplotnames = tplotnames[l]
+           store_data, tplotnames[l], /del        
+           if ~(~size(filtered_tplotnames, /type)) then filtered_tplotnames = [filtered_tplotnames, tplotnames[l]] else filtered_tplotnames = tplotnames[l]
          endif
        endfor
        if keyword_set(filtered_tplotnames) then tplotnames = filtered_tplotnames

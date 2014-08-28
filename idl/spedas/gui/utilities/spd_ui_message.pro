@@ -1,19 +1,28 @@
 ;+
+;Procedure:
+;  spd_ui_message
 ;
 ;Purpose:
-;  Output messages to the history window, status bar, and/or dialog message
+;  Output messages to the history window, status bar, and/or dialog message pop-up.
 ; 
-;Arguments:
-;  message: string to be output
-;  sb: status bar obj ref (optional)
-;  hw: history window obj ref (optional) 
+;Calling sequence:
+;  spd_ui_message, message [,sb=sb] [,hw=hw] [,dialog=dialog]
+; 
+;Inputs:
+;  message: output message string
+;  sb: GUI status bar object reference (optional)
+;  hw: GUI history window object reference (optional) 
 ;  dialog: flag to pop-up dialog message (optional) 
 ; 
 ;Notes: 
 ;  _extra can be used to pass keywords to:
 ;     -history window
 ;     -dialog_message
-; 
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-02-14 12:17:24 -0800 (Fri, 14 Feb 2014) $
+;$LastChangedRevision: 14382 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_message.pro $
 ;-
 pro spd_ui_message, message, sb=sb, hw=hw, dialog=dialog, $
                     _extra=_extra

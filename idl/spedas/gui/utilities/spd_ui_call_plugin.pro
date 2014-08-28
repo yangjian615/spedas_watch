@@ -62,29 +62,27 @@ pro spd_ui_call_plugin, event, $
   ;-------------------------------------------------------
   
   if ptr_valid(plugin.data) && is_struct(*plugin.data) then begin
-    data_struct = *plugin.data
+    data_structure = *plugin.data
   endif
   
-  ;top level widget ID passed as argument because it is required,
-  ;everything else will use keywords to allow developer discretion
-  ;over level of GUI connectivity
+  ;Required inputs are passed as arguments, optional inputs use keywords
   call_procedure, plugin.procedure, $
-                  event.top, $ 
-                  loaded_data=loaded_data, $
+                  event.top, $
+                  loaded_data, $
+                  call_sequence, $
+                  history_window, $
+                  status_bar, $
                   data_tree=data_tree, $
                   time_range=time_range, $
-                  call_sequence=call_sequence, $
-                  history_window=history_window, $
-                  status_bar=status_bar, $
-                  data_struct=data_struct
+                  data_structure=data_structure
                   
   
   ;-------------------------------------------------------
   ; Update objects and other stored quantities
   ;-------------------------------------------------------
   
-  if ~undefined(data_struct) && is_struct(data_struct) then begin
-    plugin.data = ptr_new(data_struct)
+  if ~undefined(data_structure) && is_struct(data_structure) then begin
+    plugin.data = ptr_new(data_structure)
   endif
   
   widget_control, event.id, set_uvalue=plugin

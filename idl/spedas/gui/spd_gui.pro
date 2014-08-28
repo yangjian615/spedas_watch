@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-13 18:17:32 -0800 (Thu, 13 Feb 2014) $
-;$LastChangedRevision: 14376 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-14 13:30:02 -0800 (Fri, 14 Feb 2014) $
+;$LastChangedRevision: 14383 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1407,7 +1407,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   endif
 
   ; top level and main bases
-  gui_title = 'SPace Environment Data Analysis System (SPEDAS)'
+  gui_title = 'Space Physics Environment Data Analysis Software (SPEDAS)'
   master = Widget_Base(Title=gui_title, MBar=bar, /TLB_Kill_Request_Events, $
                      /Col, XPad=10, /Kbrd_Focus_Events,tlb_size_events=1, _extra=_extra, TAB_MODE=1)
   toolBarBase = Widget_Base(master, /Row, /ToolBar)

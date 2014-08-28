@@ -80,7 +80,6 @@ pro yyy_ui_plugin_event, event
   
   
   ;catch kill requests
-  ;------------------------------------------------------------
   if tag_names(event, /structure_name) eq 'WIDGET_KILL_REQUEST' then begin
     widget_control, event.top, /destroy
     return
@@ -175,8 +174,6 @@ pro yyy_ui_plugin_event, event
 end
 
 
-
-
 ;+
 ;Procedure:
 ;  yyy_ui_plugin
@@ -188,29 +185,74 @@ end
 ;  See instructions in spedas/gui/resources/spd_ui_plugin_config.txt
 ;  to enable the plugin in the GUI.
 ;
+;Input:
+;  gui_id:  The widget ID of the top level GUI base.
+;  loaded_data:  The GUI loaded data object.  This object stores all
+;                data and corresponding metadata currently loaded
+;                into the GUI.
+;  call_sequence:  The GUI call sequence object.  This object stores
+;                  a list of calls to external routines.  These calls
+;                  are replicated when a GUI document is opened to
+;                  reproduce those operations.
+;  history_window:  The GUI history window object.  This object 
+;                   provides a viewable textual history of GUI
+;                   operations and error reports. 
+;  status_bar:  The GUI status bar object.  This object displays 
+;               informational messages at the bottom of the main 
+;               GUI window.
+;  data_tree:  The GUI data tree object.  This object provides a 
+;              graphical tree of all loaded data variables.
+;              A copy of this object can be used to create a
+;              tree display within the plugin.
+;  time_trange:  The GUI's main time range object.  This object
+;                stores the current time range for the GUI and
+;                may be used/modified by the plugin.
+;
+;Input/Output:
+;  data_structure: This keyword may be used to return a data structure
+;                  that will be saved by the GUI and passed back to
+;                  the plugin the next time it is called.  This can be 
+;                  used to save any information that could be needed
+;                  on subsequent calls (e.g. time ranges, previous 
+;                  operations, plugin specific option selections, etc.)  
+;
+;API Requirements:
+;  -Plugins must accept the GUI top widget ID, loaded data object, 
+;   call sequence object, history window object, and status bar object
+;   (in that order) and must include the _extra keyword.
+;  -The GUI data tree and time range objects may also be accessed
+;   via the corresponding keywords
+;  -Information for subsequent calls can be stored using the
+;   data_structure keyword.
+;
 ;Notes:
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-13 18:21:48 -0800 (Thu, 13 Feb 2014) $
-;$LastChangedRevision: 14378 $
+;$LastChangedDate: 2014-02-14 12:17:24 -0800 (Fri, 14 Feb 2014) $
+;$LastChangedRevision: 14382 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/plugin_menu/yyy_ui_plugin.pro $
 ;-
 
-pro yyy_ui_plugin, gui_id, $
-                   loaded_data=loaded_data, $
+pro yyy_ui_plugin,$ ;API Required Inputs
+                   gui_id, $
+                   loaded_data, $
+                   call_sequence, $
+                   history_window, $
+                   status_bar, $
+                   _extra=_extra, $
+                    ;API Optional Inputs
                    data_tree=data_tree, $
                    time_range=time_range, $
-                   call_sequence=call_sequence, $
-                   history_window=history_window, $
-                   status_bar=status_bar, $
-                   _extra=dummy
+                   data_structure=data_structure
+                   
 
 
     compile_opt idl2, hidden
 
 
-  ;Create top level base.
+  ;top level base
+  ;-------------------------------------------------------
   ;  IMPORTANT: The top level base should always be modal and have its
   ;             group leader set to GUI_ID.  This will keep events from 
   ;             the main gui from conflicting with those from the plugin. 
@@ -218,7 +260,7 @@ pro yyy_ui_plugin, gui_id, $
                group_leader=gui_id, /modal, /tlb_kill_request_events, tab_mode=1)
   
   
-  ;time
+  ;time widget
   ;-------------------------------------------------------
   
   time_base = widget_base(main_base, /row)
@@ -274,6 +316,18 @@ pro yyy_ui_plugin, gui_id, $
            history_window:history_window, $
            status_bar:status_bar $
            }
+  
+  ;Create/update output structure.  In general this structure can 
+  ;contain and information that the plugin may need on subsequent calls.
+  ;For the purpose of this example it will simply store the number of
+  ;times the plugin has been opened.
+  if is_struct(data_structure) then begin
+    data_structure.count++
+  endif else begin
+    data_structure = {count:1}
+  endelse
+  
+  status_bar->update, 'This plugin has been opened '+strtrim(data_structure.count,2)+' times.'
   
   ;center the window
   centertlb, main_base
