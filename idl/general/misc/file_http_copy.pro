@@ -126,9 +126,9 @@
  ;   April  2008 - Added dir_mode keyword
  ;   Sep 2009    - Fixed user-agent
  ;
- ; $LastChangedBy: jwl $
- ; $LastChangedDate: 2014-06-10 16:11:47 -0700 (Tue, 10 Jun 2014) $
- ; $LastChangedRevision: 15340 $
+ ; $LastChangedBy: davin-mac $
+ ; $LastChangedDate: 2014-08-01 08:52:35 -0700 (Fri, 01 Aug 2014) $
+ ; $LastChangedRevision: 15639 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -504,7 +504,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 15340 2014-06-10 23:11:47Z jwl $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 15639 2014-08-01 15:52:35Z davin-mac $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -573,7 +573,12 @@ end
        ; First get directory listing and extract links:  (listing will not be archived)
        file_http_copy,sub_pathname,serverdir=serverdir,localdir=localdir,url_info=index, host=host ,ascii_mode=1 $
          ,min_age_limit=min_age_limit,verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,if_modified_since=if_modified_since $
-         , links=links, user_agent=user_agent ,user_pass=user_pass ;, no_update=no_update  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
+         , links=links, user_agent=user_agent ,user_pass=user_pass,error=error ;, no_update=no_update  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
+
+       if keyword_set(error) then begin
+          dprint,dlevel=1,verbose=verbose,'Error detected ',error 
+          goto, final_quit
+       endif
        dprint,dlevel=5,verbose=verbose,/phelp,links
        
        ;strip out return directory links
@@ -709,15 +714,17 @@ end
      
      dprint,dlevel=4,verbose=verbose,'Opening server: "',server, '" on Port: ',port
      if not keyword_set(server) then dprint,dlevel=0,verbose=verbose,'Bad server: "'+server+'"'
+     dprint,dlevel=5,verbose=verbose,'If IDL hangs soon after printing this statement then it could be a problem with VPN on some versions of MacOS'
      socket, unit, Server,  Port, /get_lun,/swap_if_little_endian,error=error,$
        read_timeout=read_timeout,connect_timeout=connect_timeout
      if error ne 0 then begin
        If(n_elements(unit) Gt 0) Then free_lun, unit  ;jmm, 19-jun-2007 for cases where unit is undefined
        dprint,dlevel=0,verbose=verbose,!error_state.msg
+       if error eq -292 then dprint,dlevel=1,verbose=verbose,"It appears that the server "+server+" is down."
        if error eq -291 then dprint,dlevel=1,verbose=verbose,"Do you need to set a proxy server?  (i.e. setenv,'http_proxy=www.proxy-example.com')"
        if error eq -290 then dprint,dlevel=1,verbose=verbose,"Are you connected to the internet?"
        dprint,dlevel=2,verbose=verbose,'error code:',error,!error_state.code,' ',!error_state.sys_msg
-       goto, final2
+       goto, final_quit
      endif
      dprint,dlevel=4,verbose=verbose,'Purl= ',purl
      printf, unit, 'GET '+purl +  ' HTTP/1.0'
@@ -1001,5 +1008,10 @@ end
    dprint,dlevel=5,verbose=verbose,'Done'
    ;if n_elements(verbose) ne 0 then dprint,setdebug=last_dbg           ; Reset previous debug level.
    return
+   final_quit:
+     if keyword_set(url_info_s) and keyword_set(url_info) then $
+       url_info_s=[url_info_s,url_info] else url_info_s=url_info
+     dprint,dlevel=1,verbose=verbose,'Abnormal exit.  Aborting.'
+   
    
  END

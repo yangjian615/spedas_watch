@@ -21,9 +21,9 @@
 ;OUTPUT:
 ;  none
 ;  
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-08-04 09:28:09 -0700 (Mon, 04 Aug 2014) $
+;$LastChangedRevision: 15647 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_overplot_key.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ pro spd_ui_overplot_key, gui_id, historyWin, modal=modal, goes=goes
   ; check if the GOES overview plot panel sent us here
   if undefined(goes) then goes=0
   
-  keyid = widget_base(/col, title='Overview Plot Key', modal=false, TLB_FRAME_ATTR=1)
+  keyid = widget_base(/col, title='Overview Plot Key', group_leader=gui_id, modal=modal, TLB_FRAME_ATTR=1)
   
   keyDisplay = widget_draw(keyid, graphics_level=2, renderer=1, retain=0, XSize=750, YSIZE=(~undefined(goes) ? 1015 : 900), units=0, x_scroll_size=750, y_scroll_size=y_length, /expose_events)
   buttons= widget_base(keyid, /row, /align_center)

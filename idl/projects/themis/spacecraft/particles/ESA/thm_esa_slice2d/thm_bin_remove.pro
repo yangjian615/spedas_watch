@@ -1,7 +1,7 @@
 ;sets certain bins to -1.  Outputs good bins in outbins.
 ;theta and phi set angle range around sun to be removed
 
-function bin_remove, thedata, anglerange = anglerange,outbins = outbins,whichbins = whichbins,phi=phi,theta=theta,en_pa = en_pa
+function thm_bin_remove, thedata, anglerange = anglerange,outbins = outbins,whichbins = whichbins,phi=phi,theta=theta,en_pa = en_pa
 
 if thedata.valid eq 0 then return, thedata
 

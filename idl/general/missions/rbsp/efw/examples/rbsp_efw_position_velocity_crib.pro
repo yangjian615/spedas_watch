@@ -68,7 +68,6 @@ pro rbsp_efw_position_velocity_crib,no_spice_load=no_spice_load,noplot=noplot,no
 
 
 
-
 ;Transform velocity to MGSE 
 
 	get_data,'rbspa_state_vel_gse',data=tmpp

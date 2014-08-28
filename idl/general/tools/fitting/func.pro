@@ -9,10 +9,12 @@ if ~keyword_set(p) then begin
    dprint,'No function or parameter defined'
    return,0
 endif
-if n_params() eq 0 then f = (size(/type,p) eq 8) ? call_function(p.func,param=p) : call_function(p)
-if n_params() eq 1 then f = (size(/type,p) eq 8) ? call_function(p.func,x,param=p) : call_function(p,x)
-if n_params() eq 2 then f = (size(/type,p) eq 8) ? call_function(p.func,x,y,param=p) : call_function(p,x,y)
-if n_params() eq 3 then f = (size(/type,p) eq 8) ? call_function(p.func,x,y,z,param=p) : call_function(p,x,y,z)
+case n_params() of
+  0:  f = (size(/type,p) eq 8) ? call_function(p.func,param=p) : call_function(p)
+  1:  f = (size(/type,p) eq 8) ? call_function(p.func,x,param=p) : call_function(p,x)
+  2:  f = (size(/type,p) eq 8) ? call_function(p.func,x,y,param=p) : call_function(p,x,y)
+  3:  f = (size(/type,p) eq 8) ? call_function(p.func,x,y,z,param=p) : call_function(p,x,y,z)
+endcase
 ;if valid then func_parameter=p
 return,f
 end

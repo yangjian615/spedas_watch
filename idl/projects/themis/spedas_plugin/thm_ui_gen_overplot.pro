@@ -22,8 +22,8 @@
 ;  none
 ;  
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-07-25 11:09:28 -0700 (Fri, 25 Jul 2014) $
-;$LastChangedRevision: 15613 $
+;$LastChangedDate: 2014-07-31 11:40:40 -0700 (Thu, 31 Jul 2014) $
+;$LastChangedRevision: 15634 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -440,11 +440,15 @@ pro thm_ui_gen_overplot_event, event
         state.tr_obj->getproperty, starttime=starttime, endtime=endtime 
         starttime->getproperty, year=year, month=month, date=date       
         probet = state.probe
-      endif
+        ; For some reason, the & cannot be sent as part of the URL. So we are going to use a single string variable that will be split by PHP.
+        url = "http://themis.ssl.berkeley.edu/summary.php?bigvar=" + string(year, format='(I04)') + "___" + string(month, format='(I02)') + "___" + string(date, format='(I02)') + "___0024___th" + probet + "___overview"
+        spd_ui_open_url, url
+      endif else begin
+        ok = dialog_message('Invalid start/end time, please use: YYYY-MM-DD/hh:mm:ss', $
+          /center)   
+      endelse
       
-      ; For some reason, the & cannot be sent as part of the URL. So we are going to use a single string variable that will be split by PHP.
-      url = "http://themis.ssl.berkeley.edu/summary.php?bigvar=" + string(year, format='(I04)') + "___" + string(month, format='(I02)') + "___" + string(date, format='(I02)') + "___0024___th" + probet + "___overview"
-      spd_ui_open_url, url
+
   END
     'APPLY': BEGIN
     ; Check whether times set in widget are valid

@@ -19,8 +19,8 @@
 ;  into account.  Resolve variable/z-axis on the same size.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-06-16 07:59:35 -0700 (Mon, 16 Jun 2014) $
-;$LastChangedRevision: 15375 $
+;$LastChangedDate: 2014-07-31 09:46:47 -0700 (Thu, 31 Jul 2014) $
+;$LastChangedRevision: 15631 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__getclick.pro $
 ;-
 function spd_ui_draw_object::getClick
@@ -62,10 +62,10 @@ function spd_ui_draw_object::getClick
     endif
     
     ; normalize legend location so that we can rescale to the draw area
-    normleft = self->pt2norm(legendleft,0)/xdiv
-    normwidth = self->pt2norm(legendwidth,0)/xdiv
-    normbottom = self->pt2norm(legendbottom,1)/ydiv
-    normheight = self->pt2norm(legendheight,1)/ydiv
+    normleft = self->pt2norm(legendleft,0)
+    normwidth = self->pt2norm(legendwidth,0)
+    normbottom = self->pt2norm(legendbottom,1)
+    normheight = self->pt2norm(legendheight,1)
     
     ; get dimensions of the draw area, in points
     self.destination->getProperty,dimensions=dim
@@ -77,16 +77,16 @@ function spd_ui_draw_object::getClick
 
     ; legend location in drea area coordinates, in points
     self.destination->getProperty, current_zoom=cz
-    da_left = cz*normleft*panelwidth
-    da_bottom = cz*normbottom*panelheight+panelsize[1]
-    da_right = cz*da_left+normwidth*panelwidth
-    da_top = cz*da_bottom+normheight*panelheight
 
-
+    da_left = xpos[0]*dim[0]*cz+normleft*dim[0]*cz
+    da_right = da_left + normwidth*dim[0]*cz
+    da_bottom =  cz*normbottom*dim[1]+cz*ypos[0]*dim[1] 
+    da_top = da_bottom + cz*normheight*dim[1]
+   
     ; click location in draw area coordinates, in points
-    xloc_pts = loc[0]*dim[0]
-    yloc_pts = loc[1]*dim[1]
-    
+    xloc_pts = loc[0]*dim[0]*cz
+    yloc_pts = loc[1]*dim[1]*cz
+
     ; check whether the click was in the legend
     if xloc_pts ge da_left && $
        xloc_pts le da_right && $

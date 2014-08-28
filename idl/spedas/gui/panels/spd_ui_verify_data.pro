@@ -22,9 +22,9 @@
 ;OUTPUT:
 ; 
 ;HISTORY:
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-03-03 11:25:46 -0800 (Mon, 03 Mar 2014) $
-;$LastChangedRevision: 14475 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-08-04 13:17:11 -0700 (Mon, 04 Aug 2014) $
+;$LastChangedRevision: 15648 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_verify_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -343,7 +343,7 @@ PRO spd_ui_verify_data, gui_id, names, loadedData, windowstorage, historywin, ed
  ; validCoords = ['N/A','DSL', 'SSL', 'GSE', 'GEI', 'SPG', 'GSM', 'GEO', 'SM','ENP','RTN','GCI','HDZ']
   ; make a list of valid coordinate systems 
   coord_sys_obj = obj_new('spd_ui_coordinate_systems')
-  validCoords = coord_sys_obj->makeCoordSysList(/uppercase, /include_none, /include_all)
+  validCoords = coord_sys_obj->makeCoordSysList(/uppercase, /include_none)
   obj_destroy, coord_sys_obj
 
 

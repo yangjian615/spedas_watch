@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-26 18:49:55 -0800 (Wed, 26 Feb 2014) $
-;$LastChangedRevision: 14451 $
+;$LastChangedDate: 2014-07-31 11:16:59 -0700 (Thu, 31 Jul 2014) $
+;$LastChangedRevision: 15632 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_fac.pro $
 ;
 ;-
@@ -65,7 +65,7 @@ pro thm_part_slice2d_fac, probe=probe, coord=coord, trange=trange, mag_data=mag_
   ;Get averaged bfield data
   ; -This is done separately here because dlimits are needed
   get_data, mag_data, dlimits = mdl ;will need dlimits later
-  bvector = dat_avg(mag_data, trange[0], trange[1], /interp)
+  bvector = thm_dat_avg(mag_data, trange[0], trange[1], /interp)
   if total(finite(bvector,/nan)) gt 0 then begin
     fail = 'Cannot perform FAC transformation.  The data in '+ $
            mag_data+' is out of range.'

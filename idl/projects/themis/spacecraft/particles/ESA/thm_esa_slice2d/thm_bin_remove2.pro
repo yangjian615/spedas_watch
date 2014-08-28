@@ -1,7 +1,7 @@
 ;subtracts characteristic noise from data, using stored data in new
 ;Use load_ph to get variable new
 
-function bin_remove2, thedata, anglerange = anglerange,outbins = outbins,whichbins = whichbins,phi=phi,theta=theta,new = new,nlow = nlow
+function thm_bin_remove2, thedata, anglerange = anglerange,outbins = outbins,whichbins = whichbins,phi=phi,theta=theta,new = new,nlow = nlow
 
 if thedata.valid ne 0 then begin
 

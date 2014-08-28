@@ -1,5 +1,5 @@
 ;+
-;FUNCTION:	cal_rot(v1,v2)
+;FUNCTION:	thm_cal_rot(v1,v2)
 ;INPUT:	
 ;	v1:	3 component vector,		
 ;	v2:	3 component vector,		
@@ -15,7 +15,7 @@
 ;LAST MODIFICATION:
 ;	95-9-13		J.McFadden
 ;-
-function cal_rot,v1,v2
+function thm_cal_rot,v1,v2
 
 a=v1/(total(v1^2))^.5
 d=v2/(total(v2^2))^.5

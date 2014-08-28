@@ -1,7 +1,7 @@
 ;Sets all data below nlevel to bottom.
 
 
-function noise_remove,innoise,nlevel = nlevel,bottom = bottom,quiet = quiet
+function thm_noise_remove,innoise,nlevel = nlevel,bottom = bottom,quiet = quiet
 
 if innoise.valid eq 0 then return, innoise
 

@@ -1,13 +1,13 @@
 
 ;+
 ; 
-; Name: dat_avg.pro
+; Name: thm_dat_avg.pro
 ; 
 ; Purpose:  Averages data from tplot variable over specified 
 ;           time range and returns value.
 ; 
 ; Calling Sequence:
-;   result = dat_avg( tplot_var,  time1, time2 [,interpolate=interpolate])
+;   result = thm_dat_avg( tplot_var,  time1, time2 [,interpolate=interpolate])
 ;
 ; Arguments:
 ;   tplot_var: String containing the name of valid tplot variable
@@ -23,16 +23,16 @@
 ; Example:
 ;   t1 = '2008-4-12/02:00'
 ;   t0 = '2008-4-12/01:00'
-;   bfield_ave = dat_avg('tha_fgs', t0, t1)
+;   bfield_ave = thm_dat_avg('tha_fgs', t0, t1)
 ;   
 ;-
 
-function dat_avg, tvar, t_0, t_1, interpolate=interpolate, _extra=_extra
+function thm_dat_avg, tvar, t_0, t_1, interpolate=interpolate, _extra=_extra
 
     compile_opt idl2, hidden
 
 
-tn = '_dat_avg_tmp'
+tn = '_thm_dat_avg_tmp'
 
 get_data, tvar, data=d, index=i
 

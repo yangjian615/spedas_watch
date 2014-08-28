@@ -26,8 +26,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-17 17:34:10 -0800 (Tue, 17 Dec 2013) $
-;$LastChangedRevision: 13700 $
+;$LastChangedDate: 2014-07-31 11:16:59 -0700 (Thu, 31 Jul 2014) $
+;$LastChangedRevision: 15632 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getvel.pro $
 ;
 ;-
@@ -46,7 +46,7 @@ function thm_part_slice2d_getvel, ds, vel_data=vel_data, $
   
     ; user specified variable
     ; this assumes the data is in km/s!
-    vbulk = dat_avg(vel_data, trange[0], trange[1], /interp)
+    vbulk = thm_dat_avg(vel_data, trange[0], trange[1], /interp)
 
     if total(finite(vbulk,/nan)) gt 0 then begin
       fail = 'Invalid velocity variable: "'+vel_data+'".'

@@ -24,8 +24,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-10-30 17:31:16 -0700 (Wed, 30 Oct 2013) $
-;$LastChangedRevision: 13454 $
+;$LastChangedDate: 2014-07-31 11:16:59 -0700 (Thu, 31 Jul 2014) $
+;$LastChangedRevision: 15632 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getmag.pro $
 ;
 ;-
@@ -40,7 +40,7 @@ function thm_part_slice2d_getmag, ds, mag_data=mag_data, $
   if keyword_set(mag_data) then begin
   
     ; user specified tplot variable 
-    bfield = dat_avg(mag_data, trange[0], trange[1], /interp)
+    bfield = thm_dat_avg(mag_data, trange[0], trange[1], /interp)
   
     if total(finite(bfield,/nan)) gt 0 then begin
       fail = 'Invalid magnetic field variable: "'+mag_data+'".'

@@ -115,8 +115,8 @@ for i=0,thedata.nbins-1 do begin
 endfor
 
 if keyword_set(rmbins) then begin
-	dprint,  'Removing bins (bin_remove)'
-	thedata = bin_remove(thedata,theta = theta,phi = phi)
+	dprint,  'Removing bins (thm_bin_remove)'
+	thedata = thm_bin_remove(thedata,theta = theta,phi = phi)
 endif ;else thedata = thedata2
 
 if keyword_set(sr) then rm2 = 1
@@ -124,19 +124,19 @@ if keyword_set(rs) then rm2 = 1
 if keyword_set(nofill) then noolines = 1
 
 if keyword_set(rm2) then begin
-	dprint,  'Removing bins (bin_remove2)'
+	dprint,  'Removing bins (thm_bin_remove2)'
 	leavezero = 1
 	if not keyword_set(nosmooth) then nosmooth = 0
 	;nr = 1
 	load_ph,new,filename = filename
-	thedata = bin_remove2(thedata,theta = theta,phi = phi,new= new,nlow = nlow)
+	thedata = thm_bin_remove2(thedata,theta = theta,phi = phi,new= new,nlow = nlow)
 endif ;else thedata = thedata2
 
 
 if keyword_set(nr) then begin
 	dprint, 'Removing Noise'
 ;dprint,  noiselevel
-	thedata = noise_remove(thedata,nlevel = noiselevel,bottom = bottom)
+	thedata = thm_noise_remove(thedata,nlevel = noiselevel,bottom = bottom)
 	leavezero = 1
 endif
 
@@ -368,7 +368,7 @@ store_data,'time',data = {x:thedata.time+thedata.integ_t*.5}
 ;bfield[1] = mgf.y(0,1)
 ;bfield[2] = mgf.y(0,2)
 
-bfield = dat_avg(thebdata, thedata3(0).time, thedata.end_time)
+bfield = thm_dat_avg(thebdata, thedata3(0).time, thedata.end_time)
 
 ;dprint,  'BFIELD is ',bfield
 
@@ -394,7 +394,7 @@ if keyword_set(vel) then begin
 ;	get_data,'value',data = thevalue
 ;	thevel = 1000.* reform(thevalue.y)
 
-	thevel = 1000. * dat_avg(vel, thedata3(0).time, thedata.end_time)
+	thevel = 1000. * thm_dat_avg(vel, thedata3(0).time, thedata.end_time)
 
 ;	print, thevel
 
@@ -434,23 +434,23 @@ endelse
 ;**************NOW CONVERT TO THE DATA SET REQUIRED*****************
 
 
-if rotation eq 'BV' then rot=cal_rot(bfield,thevel)
-if rotation eq 'BE' then rot=cal_rot(bfield,crossp(bfield,thevel))
-if rotation eq 'xy' then rot=cal_rot([1,0,0],[0,1,0])
-if rotation eq 'xz' then rot=cal_rot([1,0,0],[0,0,1])
-if rotation eq 'yz' then rot=cal_rot([0,1,0],[0,0,1])
-if rotation eq 'xvel' then rot=cal_rot([1,0,0],thevel)
+if rotation eq 'BV' then rot=thm_cal_rot(bfield,thevel)
+if rotation eq 'BE' then rot=thm_cal_rot(bfield,crossp(bfield,thevel))
+if rotation eq 'xy' then rot=thm_cal_rot([1,0,0],[0,1,0])
+if rotation eq 'xz' then rot=thm_cal_rot([1,0,0],[0,0,1])
+if rotation eq 'yz' then rot=thm_cal_rot([0,1,0],[0,0,1])
+if rotation eq 'xvel' then rot=thm_cal_rot([1,0,0],thevel)
 if rotation eq 'perp' then begin
-    rot=cal_rot(crossp(bfield,crossp(bfield,thevel)),crossp(bfield,thevel))
+    rot=thm_cal_rot(crossp(bfield,crossp(bfield,thevel)),crossp(bfield,thevel))
 endif
 if rotation eq 'perp_yz' then begin
-    rot=cal_rot(CROSSP(CROSSP(bfield,[0,1,0]),bfield),CROSSP(CROSSP(bfield,[0,0,1]),bfield))
+    rot=thm_cal_rot(CROSSP(CROSSP(bfield,[0,1,0]),bfield),CROSSP(CROSSP(bfield,[0,0,1]),bfield))
 endif
 if rotation eq 'perp_xy' then begin
-    rot=cal_rot(CROSSP(CROSSP(bfield,[1,0,0]),bfield),CROSSP(CROSSP(bfield,[0,1,0]),bfield))
+    rot=thm_cal_rot(CROSSP(CROSSP(bfield,[1,0,0]),bfield),CROSSP(CROSSP(bfield,[0,1,0]),bfield))
 endif
 if rotation eq 'perp_xz' then begin
-    rot=cal_rot(CROSSP(CROSSP(bfield,[1,0,0]),bfield),CROSSP(CROSSP(bfield,[0,0,1]),bfield))
+    rot=thm_cal_rot(CROSSP(CROSSP(bfield,[1,0,0]),bfield),CROSSP(CROSSP(bfield,[0,0,1]),bfield))
 endif
 
 newdata.dir = newdata.dir#rot

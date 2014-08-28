@@ -105,7 +105,7 @@ if not keyword_set(format) then begin
      sz = sizes[dt]
      form = forms2[dt]
      if form eq 'x' then begin
-        dprint,'Tagname: '+tg[j]+' Ingored.'
+        dprint,'Tagname: '+tg[j]+' Ignored.'
         tg[j] = ''
         continue
      endif

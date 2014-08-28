@@ -34,13 +34,15 @@ function interp,y,x,u,index=i,no_check_monotonic=ch_mon,no_extrapolate=no_extrap
 
 
 ndimy = size(/n_dimension,y)
+ndimx = size(/n_dimension,x)
 if ndimy eq 2 then begin
     dimy= size(/dimension,y)
     dimv = dimy
     dimv[0]=n_elements(u)
     nv = make_array(dimv,type=size(/type,y))
     for j=0l,dimy[1]-1 do begin
-       nv[*,j] = interp(y[*,j],x,u,no_extrapolate=no_extrap,interp_threshold=int_th,no_check_mono=ch_mon,index=i,ignore_nan=ignore_nan)
+       xx = (ndimx eq 2) ? x[*,j] : x
+       nv[*,j] = interp(y[*,j],xx,u,no_extrapolate=no_extrap,interp_threshold=int_th,no_check_mono=ch_mon,index=i,ignore_nan=ignore_nan)
     endfor
     return,nv
 endif

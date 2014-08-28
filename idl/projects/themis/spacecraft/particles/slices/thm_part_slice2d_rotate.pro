@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-18 18:39:35 -0800 (Wed, 18 Dec 2013) $
-;$LastChangedRevision: 13708 $
+;$LastChangedDate: 2014-07-31 11:16:59 -0700 (Thu, 31 Jul 2014) $
+;$LastChangedRevision: 15632 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_rotate.pro $
 ;
 ;-
@@ -46,16 +46,16 @@ pro thm_part_slice2d_rotate, rotation=rotation, $
 
   ; Create/get rotation matrix
   case strlowcase(rotation) of
-    'bv': matrix=cal_rot(bfield,vbulk)
-    'be': matrix=cal_rot(bfield,crossp(bfield,vbulk))
-    'xy': matrix=cal_rot([1,0,0],[0,1,0])
-    'xz': matrix=cal_rot([1,0,0],[0,0,1])
-    'yz': matrix=cal_rot([0,1,0],[0,0,1])
-    'xvel': matrix=cal_rot([1,0,0],vbulk)
-    'perp': matrix=cal_rot(crossp(crossp(bfield,vbulk),bfield),crossp(bfield,vbulk))
-    'perp_yz': matrix=cal_rot(crossp(crossp(bfield,[0,1,0]),bfield),crossp(crossp(bfield,[0,0,1]),bfield))
-    'perp_xy': matrix=cal_rot(crossp(crossp(bfield,[1,0,0]),bfield),crossp(crossp(bfield,[0,1,0]),bfield))
-    'perp_xz': matrix=cal_rot(crossp(crossp(bfield,[1,0,0]),bfield),crossp(crossp(bfield,[0,0,1]),bfield))
+    'bv': matrix=thm_cal_rot(bfield,vbulk)
+    'be': matrix=thm_cal_rot(bfield,crossp(bfield,vbulk))
+    'xy': matrix=thm_cal_rot([1,0,0],[0,1,0])
+    'xz': matrix=thm_cal_rot([1,0,0],[0,0,1])
+    'yz': matrix=thm_cal_rot([0,1,0],[0,0,1])
+    'xvel': matrix=thm_cal_rot([1,0,0],vbulk)
+    'perp': matrix=thm_cal_rot(crossp(crossp(bfield,vbulk),bfield),crossp(bfield,vbulk))
+    'perp_yz': matrix=thm_cal_rot(crossp(crossp(bfield,[0,1,0]),bfield),crossp(crossp(bfield,[0,0,1]),bfield))
+    'perp_xy': matrix=thm_cal_rot(crossp(crossp(bfield,[1,0,0]),bfield),crossp(crossp(bfield,[0,1,0]),bfield))
+    'perp_xz': matrix=thm_cal_rot(crossp(crossp(bfield,[1,0,0]),bfield),crossp(crossp(bfield,[0,0,1]),bfield))
     else: begin
       fail = 'Unrecognized rotation: "'+rotation+'".'
       dprint, dlevel=1, fail
