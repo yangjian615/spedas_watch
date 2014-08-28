@@ -17,6 +17,8 @@
 ;  KEYWORDS:  Bw -> tplot name of the [n,3] magnetic field waveform
 ;			  Ew -> tplot name of the [n,3] electric field waveform
 ;			  Tshort, Tlong -> short and long period of waveform to use. 
+;			  Bo -> (optional keyword) array of DC magnetic field directions.
+;					Use, for example, if Bw is from AC-coupled data.
 ;  
 ;
 ;   NOTES:     
@@ -57,7 +59,7 @@
 ;**************************************************************************		
 
 
-pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong
+pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo
 
 
 get_data,Bw,data=Bw_test
@@ -68,10 +70,14 @@ if is_struct(Bw_test) then begin
 	;-----------------------------------------------------------
 	;Get DC magnetic field and use to define P1,P2,P3 directions
 	;-----------------------------------------------------------
-	
-	rbsp_downsample,Bw,suffix='_DC',1/40.
-	Bdc = Bw + '_DC'
-	
+
+	if ~keyword_set(Bo) then begin		
+		rbsp_downsample,Bw,suffix='_DC',1/40.
+		Bdc = Bw + '_DC'
+	endif else begin
+		tinterpol_mxn,Bo,Bw,newname='Mag_mgse_DC'
+		Bdc = 'Mag_mgse_DC'
+	endelse
 	
 	;----------------------------------------------------
 	;Downsample both the Bw and Ew based on Tshort. 
@@ -92,7 +98,6 @@ if is_struct(Bw_test) then begin
 	;------------------------------------------------------------------------------
 	;Interpolate to get MagDC and Esvy data to be on the same times as the Bw data
 	;------------------------------------------------------------------------------
-	
 	
 	
 	tinterpol_mxn,Ew,times
@@ -319,7 +324,7 @@ if is_struct(Bw_test) then begin
 	options,'pftst_nospinaxis_perp','labels','No spin axis!C comp'
 	options,'pftst_nospinaxis_para','labels','No spin axis!C comp!C+ along Bo'
 	options,'pftst','ytitle','pftst!C[erg/cm^2/s]'
-	options,'pftst','labels','1-40 sec!Cperiod BP'
+	;options,'pftst','labels','1-40 sec!Cperiod BP'
 	options,'pftst_p1','ytitle','pftst!Cperp1 to Bo!C[erg/cm^2/s]'
 	options,'pftst_p2','ytitle','pftst!Cperp2 to Bo!C[erg/cm^2/s]'
 	options,'pftst_Bo','ytitle','pftst!Cparallel to Bo!C[erg/cm^2/s]'
@@ -328,7 +333,7 @@ if is_struct(Bw_test) then begin
 	options,'pftst_nospinaxis_perp_iono','labels','No spin axis!C comp'
 	options,'pftst_nospinaxis_para_iono','labels','No spin axis!C comp!C+ along Bo'
 	options,'pftst_iono','ytitle','pftst!Cmapped!C[erg/cm^2/s]'
-	options,'pftst_iono','labels','1-40 sec!Cperiod BP'
+	;options,'pftst_iono','labels','1-40 sec!Cperiod BP'
 	options,'pftst_iono_p1','ytitle','pftst!Cmapped!Cperp1 to Bo!C[erg/cm^2/s]'
 	options,'pftst_iono_p2','ytitle','pftst!Cmapped!Cperp2 to Bo!C[erg/cm^2/s]'
 	options,'pftst_iono_Bo','ytitle','pftst!Cmapped!Cparallel to Bo!C[erg/cm^2/s]'

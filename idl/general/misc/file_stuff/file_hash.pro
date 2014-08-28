@@ -14,15 +14,15 @@
 ;   All users are granted permission to use this unaltered code.
 ;   It may NOT be modified without the consent of the author. However the author welcomes input for bug fixes or upgrades.
 ;-
-function file_hash,files,method=method,add_mtime=add_mtime,mtime_format=mtime_format
+function file_hash,files,method=method,add_mtime=add_mtime,mtime_format=mtime_format,verbose=verbose,executable=executable
 common file_hash_com2, hash_init,hash_version,hash_executable,hash_error
 
-if ~keyword_set(hash_init)  then begin
+if ~keyword_set(hash_init)   then begin
     hash_executable = 'shasum'
     spawn,hash_executable+' --version',hash_version,hash_error
     hash_init = 4
     if keyword_set(hash_error) then begin
-      dprint,dlevel=0,'HASH executable: '+hash_executable+' Error:',hash_error
+      dprint,dlevel=0,verbose=verbose,'HASH executable: '+hash_executable+' Error:',hash_error
       wait,3
     endif else  dprint,dlevel=2,'Using shell executable: '+hash_executable+' Version: ',hash_version[0]
 endif
@@ -41,7 +41,7 @@ if keyword_set(hash_error) then output ='HashNotAvailable  '+ file else begin
     dprint,verbose=verbose,dlevel=4,commands
     spawn,[commands,file] ,/noshell,/stderr,output,exit_status=status
   endif else if !version.os_family eq 'Windows' then begin
-    dprint,dlevel=3,'Not tested on Windows OS yet - feel free to fix this!'      
+    dprint,verbose=verbose,dlevel=3,'Not tested on Windows OS yet - feel free to fix this!'      
     filestring = '"' + file + '"'
     command = strjoin([commands,filestring],' ')
     dprint,verbose=verbose,dlevel=4,command

@@ -42,8 +42,8 @@
 ;
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-02-26 13:46:13 -0800 (Wed, 26 Feb 2014) $
-;   $LastChangedRevision: 14447 $
+;   $LastChangedDate: 2014-04-10 13:37:34 -0700 (Thu, 10 Apr 2014) $
+;   $LastChangedRevision: 14806 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/utils/rbsp_rotate_field_2_vec.pro $
 ;-
 
@@ -189,8 +189,10 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
 		Emax = fltarr(n_elements(vec.x),3)
 		Eint = fltarr(n_elements(vec.x),3)
 		Emin = fltarr(n_elements(vec.x),3)
+		theta_kb = fltarr(n_elements(vec.x))
+		dtheta_kb = fltarr(n_elements(vec.x))
 
-		for j=0L,nchunks-1 do begin
+		for j=0L,nchunks-2 do begin
 	
 			s = j*chsz
 			e = (j+1)*chsz-1
@@ -228,6 +230,8 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
 			Emax[j,*] = [total(Emaxt*xs),total(Emaxt*ys),total(Emaxt*zs)]
 			Eint[j,*] = [total(Eintt*xs),total(Eintt*ys),total(Eintt*zs)]
 			Emin[j,*] = [total(Emint*xs),total(Emint*ys),total(Emint*zs)]
+			theta_kb[j,*] = vals.theta_kb
+			dtheta_kb[j,*] = vals.dtheta
 
 			tmpx = wf.y[s:e,0]*xs[0] + wf.y[s:e,1]*xs[1] + wf.y[s:e,2]*xs[2]
 			tmpy = wf.y[s:e,0]*ys[0] + wf.y[s:e,1]*ys[1] + wf.y[s:e,2]*ys[2]
@@ -254,8 +258,9 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
 		store_data,'minvar_eigenvalues',data={x:vec.x,y:[[Emax_mag],[Eint_mag],[Emin_mag]]}
 		store_data,'emax2eint',data={x:vec.x,y:Emax_mag/Eint_mag}
 		store_data,'eint2emin',data={x:vec.x,y:Eint_mag/Emin_mag}
-		store_data,'theta_kb',data={x:vec.x,y:vals.theta_kb}
-	
+		store_data,'theta_kb',data={x:vec.x,y:theta_kb}
+		store_data,'dtheta_kb',data={x:vec.x,y:dtheta_kb}
+		
 		struct = {notes:['ROTATED TO MIN-VAR COORDINATES']}
 	
 		
@@ -271,7 +276,7 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
 
 		if chsz gt 1 then begin
 
-			for j=0L,nchunks-1 do begin
+			for j=0L,nchunks-2 do begin
 	
 				s = j*chsz
 				e = (j+1)*chsz-1
@@ -350,7 +355,7 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
 	if keyword_set(efa) then begin
 
 		if chsz gt 1 then begin
-			for j=0L,nchunks-1 do begin
+			for j=0L,nchunks-2 do begin
 	
 				s = j*chsz
 				e = (j+1)*chsz-1
@@ -410,10 +415,6 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
 	
 		struct = {notes:['ROTATED TO EFA COORDINATES']}
 		return,struct
-
-
-	stop
-
 
 
 

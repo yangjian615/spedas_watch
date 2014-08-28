@@ -29,15 +29,15 @@
 ;    remote_data_dir:  String or string array w/ remote data directory(s)
 ;                      Pathnames will be appended to this variable.
 ;    
-;   PRESERVE_MTIME(optional):  Uses the serve modification time instead of local modification time.  This keyword is ignored
+;    PRESERVE_MTIME(optional):  Uses the serve modification time instead of local modification time.  This keyword is ignored
 ;        on windows machines that don't have touch installed. (No cygwin or GNU utils)
 ;History: 
 ;    2012-6-25:  local_data_dir and remote_data_dir accept array inputs 
 ;                with the same # of elements as pathnames/newpathnames
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-03-20 08:39:09 -0700 (Thu, 20 Mar 2014) $
-;$LastChangedRevision: 14612 $
+;$LastChangedDate: 2014-04-10 23:13:52 -0700 (Thu, 10 Apr 2014) $
+;$LastChangedRevision: 14809 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_retrieve.pro $
 ;-
 function file_retrieve,pathnames, newpathnames, structure_format=structure_format,  $
@@ -45,6 +45,7 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     local_data_dir=local_data_dir,remote_data_dir=remote_data_dir, $
     min_age_limit=min_age_limit , $
     last_version = last_version , $
+    valid_only=valid_only,   $
     file_mode = file_mode,  $
     recurse_limit=recurse_limit, $
     dir_mode = dir_mode,   $
@@ -60,7 +61,7 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     no_clobber=no_clobber, ignore_filesize=ignore_filesize, $
     verbose=verbose,progress=progress,progobj=progobj
 
-dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 14612 2014-03-20 15:39:09Z davin-mac $'
+dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 14809 2014-04-11 06:13:52Z davin-mac $'
 if keyword_set(structure_format) then begin
    user_agent =  'FILE_RETRIEVE: IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
    str= {   $
@@ -126,7 +127,7 @@ if keyword_set(remote_data_dir) and  not (keyword_set(no_server) or keyword_set(
          pn = pathnames[i]
          npn = keyword_set(newpathnames) ? newpathnames[i] : ''
          
-         ;2012-6-25: these variables may be single value or array
+         ;2012-6-25: these variables may be single value or array   (Who made this change?  - Might not be consistent with other options/ methods!)
          ; error checks should probably be added to check # of elements between local_data_dir and
          ; remote_data_dir (if arrays), pathnames, and newpathnames
          http = n_elements(http0) gt 1 ? http0[i]:http0
@@ -160,21 +161,28 @@ endif
 
 ; The following bit of code should find the highest version number if globbing is used.
 
+fullnames2 = ''
 for i=0,n_elements(fullnames)-1 do begin
    ff = file_search(fullnames[i],count=c)
    case c of
-   0:    dprint,dlevel=3,verbose=vb,'No matching file: "'+fullnames[i]+'"'
+   0:    begin
+           dprint,dlevel=3,verbose=vb,'No matching file: "'+fullnames[i]+'"'
+           if ~keyword_set(valid_only) then append_array,fullnames2,fullnames[i]
+         end
    1:    begin
-           fullnames[i] = ff[0]
-           dprint,dlevel=3,verbose=vb,'Found: "'+fullnames[i]+'"'
+           dprint,dlevel=3,verbose=vb,'Found: "'+ff[0]+'"'
+;           fullnames[i] = ff[0]
+           append_array,fullnames2,ff[0]
          end
    else: begin
            if keyword_set(last_version) then begin
              dprint,dlevel=2,verbose=vb,strtrim(c,2)+' matches found for: "'+fullnames[i]+'"  Using last version.'
-             fullnames[i] = ff[n_elements(ff)-1]   ; Cluge to Use highest version number?
+ ;            fullnames[i] = ff[n_elements(ff)-1]   ; Cluge to Use highest version number?
+             append_array,fullnames2,ff[n_elements(ff)-1]
            endif else begin
              dprint,dlevel=2,verbose=vb,'Multiple matches found for: "'+fullnames[i]+'"'
-             fullnames = ff
+             append_array,fullnames2,ff
+;             fullnames = ff
            endelse
          end
    endcase
@@ -182,6 +190,6 @@ endfor
 
    
 
-return,fullnames
+return,fullnames2
 end
 

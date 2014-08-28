@@ -10,7 +10,7 @@
 ;-
 function spice_valid_times,et,objects=objects,tolerance=tol
 if ~keyword_set(tol) then tol=120.
-kinfo = spice_kernel_info(/use_cache)
+kinfo = spice_kernel_info(use_cache=1)
 ok = et ne 0  ; get array of 1b     
 for j=0,n_elements(objects)-1 do begin
   cspice_bods2c,objects[j],code,found
@@ -25,7 +25,7 @@ for j=0,n_elements(objects)-1 do begin
     endfor
     ok = ok and (nvalid ne 0)
   endif else  begin
-      dprint,objects[j],'Not found. (Ignoring)'
+      dprint,objects[j],' Not found. (Ignoring)'
   endelse
 endfor
 return,ok

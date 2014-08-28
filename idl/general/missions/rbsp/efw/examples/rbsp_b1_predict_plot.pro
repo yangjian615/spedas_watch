@@ -10,13 +10,28 @@
 
 
 ; **** combine jump & collection, sort, convert to abs memory id, print info,
-; treat wrap, generate time & memory id for tplot.
+; treat wrap, generate time & memory id for tplot, load contact time to tplot.
 pro rbsp_b1_predict_plot_process, probe, jumps, colls, $
     lun = lun, time = t0, memf = memf, mems = mems
 
     ; constants.
     sz = 262144D            ; memory size, in block.
-    s2b = sz/84900D/16834D  ; sec to block.
+    s2b = sz/84890D         ; sec to 16438 block.
+    s2b = sz/85890D         ; sec to 16438 block.
+    s2b = sz/86916D         ; sec to 16438 block.
+    print, 'conversion constant: ', s2b
+
+    ; load contact times.
+    rbsp_load_contact, conta, probe
+    nrec = n_elements(conta)/2
+    t0 = dblarr(nrec*3)
+    for i = 0, nrec-1 do t0[i*3:i*3+2] = [reform(conta[i,*]),conta[i,1]+1e-5]
+    tmp = dblarr(nrec*3) & tmp[2:*:3] = !values.d_nan
+
+    vname = 'rbsp'+strlowcase(probe)+'_contact'
+    store_data, vname, t0, tmp, limits = {labels:'contact', yrange:[-1,1], $
+        ytitle:'', ytickformat:'(A1)', yticks:2, yminor:1, yticklen:0.01, $
+        thick:5, panel_size:0.1, colors:2}
 
     if n_elements(lun) eq 0 then lun = -1
     ; combine jump and collection.
@@ -36,7 +51,7 @@ pro rbsp_b1_predict_plot_process, probe, jumps, colls, $
     for i = 0, nmem-1 do begin
         if mems[i,0] eq mems[i,1] then continue     ; jump.
         mems[i,2] = mems[i-1,3]
-        mems[i,3] = mems[i,2]+(mems[i,1]-mems[i,0])*mems[i,4]*s2b
+        mems[i,3] = mems[i,2]+(mems[i,1]-mems[i,0])*(mems[i,4]/16438D)*s2b
         mems[i,2:3] = long(mems[i,2:3]) mod sz      ; wrap absolute memory id.
     endfor
 
@@ -87,75 +102,87 @@ pro rbsp_b1_predict_plot_process, probe, jumps, colls, $
     endfor
 end
 
+
 timespan, systime(1)-10D*86400, 20
 
 ; jumps: [n,2], each record in [tsta, absolute memory id].
 ; The 1st record is always the start location.
 jumpa = [$
-    [time_double('2014-03-15/19:52'), 158286D],$
-    [time_double('2014-03-16/02:43'),      0D],$
-    [time_double('2014-03-17/08:06'),      0D],$
-    [time_double('2014-03-18/17:29'),      0D],$
-    [time_double('2014-03-19/23:24'),      0D]]
+    [time_double('2014-04-09/01:43'),  95350D]]
 jumpb = [$
-    [time_double('2014-03-15/14:36'), 12464D],$
-    [time_double('2014-03-18/09:12'), 205200D],$
-    [time_double('2014-03-18/19:26'), 242200D]]
+    [time_double('2014-04-08/01:11'),  78505D],$
+
+    [time_double('2014-04-09/21:50'), 161480D],$
+    [time_double('2014-04-10/07:42'), 179520D],$
+    [time_double('2014-04-11/03:10'), 239650D],$
+    [time_double('2014-04-11/11:08'), 255890D]]
+
 jumpa = transpose(jumpa)
 jumpb = transpose(jumpb)
 
 ; protected memory, [n,2], each record in [tsta, tend].
 prota = [$
-    [time_double(['2014-03-12/22:00', '2014-03-13/08:00'])]]
+    [time_double(['2014-03-13/05:09', '2014-03-13/05:10'])]]
 protb = [$
-    [time_double(['2014-03-13/14:07', '2014-03-14/20:38'])]]
+    [time_double(['2014-04-05/12:00', '2014-04-05/17:00'])]]
 prota = transpose(prota)
 protb = transpose(protb)
 
 ; collection, [n,3], each record in [tsta, tend, rate].
 colla = [$
-    [time_double(['2014-03-15/19:52:41', '2014-03-15/22:46']), 16384],$
-    [time_double(['2014-03-16/02:44', '2014-03-16/07:44']), 16384],$
-    [time_double(['2014-03-16/11:42', '2014-03-16/16:42']), 16384],$
-    [time_double(['2014-03-16/20:40', '2014-03-17/01:40']), 16384],$
-    [time_double(['2014-03-17/05:38', '2014-03-17/08:05']), 16384],$
-    [time_double(['2014-03-17/08:07', '2014-03-17/10:38']), 16384],$
-    [time_double(['2014-03-17/14:36', '2014-03-17/19:36']), 16384],$
-    [time_double(['2014-03-17/23:34', '2014-03-18/04:34']), 16384],$
-    [time_double(['2014-03-18/08:32', '2014-03-18/13:32']), 16384],$
+    [time_double(['2014-04-09/01:44', '2014-04-09/06:44']), 16384],$
+    [time_double(['2014-04-09/10:42', '2014-04-09/15:42']), 16384],$
+    [time_double(['2014-04-09/19:41', '2014-04-10/00:41']), 16384],$
+    [time_double(['2014-04-10/04:40', '2014-04-10/09:40']), 16384],$
+    [time_double(['2014-04-10/13:38', '2014-04-10/18:38']), 16384],$
+    [time_double(['2014-04-10/22:37', '2014-04-11/03:37']), 16384],$
+    [time_double(['2014-04-11/07:36', '2014-04-11/12:36']), 16384],$
+    [time_double(['2014-04-11/16:35', '2014-04-11/21:35']), 16384]]
 
-    [time_double(['2014-03-18/17:58', '2014-03-18/22:58']), 16384],$ 
-    [time_double(['2014-03-19/02:57', '2014-03-19/07:57']), 16384],$
-    [time_double(['2014-03-19/11:56', '2014-03-19/16:56']), 16384],$
-    [time_double(['2014-03-19/20:54', '2014-03-19/23:23']), 16384],$
-
-    [time_double(['2014-03-19/23:25', '2014-03-20/01:54']), 16384],$
-    [time_double(['2014-03-20/05:53', '2014-03-20/10:53']), 16384],$
-    [time_double(['2014-03-20/14:52', '2014-03-20/19:52']), 16384],$
-    [time_double(['2014-03-20/23:50', '2014-03-21/04:50']), 16384]]
 collb = [$
-    [time_double(['2014-03-15/17:35', '2014-03-15/23:35']), 4096],$
-    [time_double(['2014-03-16/02:28', '2014-03-16/02:38']),16384],$
-    [time_double(['2014-03-17/23:24', '2014-03-17/23:34']),16384],$
-    [time_double(['2014-03-18/09:13', '2014-03-18/09:23']),16384],$
-    [time_double(['2014-03-19/12:35', '2014-03-19/12:45']),16384],$
-    [time_double(['2014-03-20/23:41', '2014-03-20/23:51']),16384],$
-    [time_double(['2014-03-16/04:16', '2014-03-16/10:16']), 4096],$
-    [time_double(['2014-03-16/13:17', '2014-03-16/19:17']), 4096],$
-    [time_double(['2014-03-16/22:19', '2014-03-17/04:19']), 4096],$
-    [time_double(['2014-03-17/07:21', '2014-03-17/13:21']), 4096],$
-    [time_double(['2014-03-17/16:22', '2014-03-17/22:22']), 4096],$
-    [time_double(['2014-03-18/01:24', '2014-03-18/07:24']), 4096],$
-    [time_double(['2014-03-18/10:26', '2014-03-18/16:26']), 4096],$
-    [time_double(['2014-03-18/19:27', '2014-03-19/01:27']), 4096],$
-    [time_double(['2014-03-19/04:29', '2014-03-19/10:29']), 4096],$
-    [time_double(['2014-03-19/13:31', '2014-03-19/19:31']), 4096],$
-    [time_double(['2014-03-19/22:32', '2014-03-20/04:32']), 4096],$
-    [time_double(['2014-03-20/07:34', '2014-03-20/13:34']), 4096],$
-    [time_double(['2014-03-20/16:36', '2014-03-20/22:36']), 4096]]
+    [time_double(['2014-04-08/01:12', '2014-04-08/01:22']),16384],$
+    [time_double(['2014-04-08/02:58', '2014-04-08/08:58']), 4096],$
+    [time_double(['2014-04-08/11:59', '2014-04-08/17:59']), 4096],$
+; new.
+    [time_double(['2014-04-09/21:51', '2014-04-09/22:01']),16384],$
+    [time_double(['2014-04-10/07:43', '2014-04-10/07:53']),16384],$
+    [time_double(['2014-04-11/11:09', '2014-04-11/11:19']),16384],$
+
+    [time_double(['2014-04-08/21:01', '2014-04-09/03:01']), 4096],$
+    [time_double(['2014-04-09/06:03', '2014-04-09/12:03']), 4096],$
+    [time_double(['2014-04-09/15:04', '2014-04-09/21:04']), 4096],$
+    [time_double(['2014-04-10/00:06', '2014-04-10/06:06']), 4096],$
+    [time_double(['2014-04-10/09:08', '2014-04-10/15:08']), 4096],$
+    [time_double(['2014-04-10/18:09', '2014-04-11/00:09']), 4096],$
+    [time_double(['2014-04-11/03:11', '2014-04-11/09:11']), 4096],$
+    [time_double(['2014-04-11/12:13', '2014-04-11/18:13']), 4096],$
+    [time_double(['2014-04-11/21:14', '2014-04-12/03:14']), 4096]]
+
+
 colla = transpose(colla)
 collb = transpose(collb)
 
+
+; future lightning collection for April.
+;    [time_double(['2014-04-12/22:11', '2014-04-12/22:21']),16384],$
+;    [time_double(['2014-04-13/08:05', '2014-04-13/08:15']),16384],$
+;    [time_double(['2014-04-14/11:25', '2014-04-14/11:35']),16384],$
+;    [time_double(['2014-04-15/22:29', '2014-04-15/22:39']),16384],$
+;    [time_double(['2014-04-16/08:23', '2014-04-16/08:33']),16384],$
+;    [time_double(['2014-04-17/11:43', '2014-04-17/11:53']),16384],$
+;    [time_double(['2014-04-18/22:48', '2014-04-18/22:58']),16384],$
+;    [time_double(['2014-04-19/08:26', '2014-04-19/08:36']),16384],$
+;    [time_double(['2014-04-20/02:14', '2014-04-20/02:24']),16384],$
+;    [time_double(['2014-04-21/23:02', '2014-04-21/23:12']),16384],$
+;    [time_double(['2014-04-22/08:50', '2014-04-22/09:00']),16384],$
+;    [time_double(['2014-04-23/02:28', '2014-04-23/02:38']),16384],$
+;    [time_double(['2014-04-24/23:16', '2014-04-24/23:26']),16384],$
+;    [time_double(['2014-04-25/09:04', '2014-04-25/09:14']),16384],$
+;    [time_double(['2014-04-26/02:42', '2014-04-26/02:52']),16384],$
+;    [time_double(['2014-04-27/23:33', '2014-04-27/23:43']),16384],$
+;    [time_double(['2014-04-28/09:16', '2014-04-28/09:26']),16384],$
+;    [time_double(['2014-04-29/02:57', '2014-04-29/03:07']),16384],$
+;    [time_double(['2014-04-30/23:49', '2014-04-30/23:59']),16384],$
 
 rbsp_b1_predict_plot_process, 'a', jumpa, colla, $
     time = timea, memf = memaf, mems = mema
@@ -196,10 +223,12 @@ options,'rbsp?_efw_b1_fmt_block_index3','psym',4
 ; prepare tplot.
 store_data,'comba',data=['rbspa_efw_b1_fmt_block_index_cutoff',$
     'rbspa_efw_b1_fmt_block_index','rbspa_efw_b1_fmt_block_index2',$
-    'rbspa_efw_b1_fmt_block_index3','future_a']
+    'rbspa_efw_b1_fmt_block_index3','future_a','rbspa_contact']
 store_data,'combb',data=['rbspb_efw_b1_fmt_block_index_cutoff',$
     'rbspb_efw_b1_fmt_block_index','rbspb_efw_b1_fmt_block_index2',$
-    'rbspb_efw_b1_fmt_block_index3','future_b']
+    'rbspb_efw_b1_fmt_block_index3','future_b','rbspb_contact']
+store_data, 'comba2', data = ['rbspa_efw_b1_fmt_block_index', 'future_a']
+store_data, 'combb2', data = ['rbspb_efw_b1_fmt_block_index', 'future_b']
 
 sz = 262144D            ; memory size, in block.
 ylim,['comba','combb'],0,sz
@@ -211,9 +240,21 @@ tplot,['comba','rbspa_b1_status','combb','rbspb_b1_status']
 get_data, 'rbspa_efw_b1_fmt_block_index_cutoff', data = tmp
 print, 'RBSP-A last pos:    '+time_string(tmp.x[1])+'    at    '+$
     string(tmp.y[1],format='(I6)')
+get_data, 'future_a', t0, yy
+idx = (where(tmp.x[1] le t0))[0]
+loc = interpol(yy[[idx-1,idx]],t0[[idx-1,idx]],tmp.x[1])
+print, 'RBSP-A predict pos: '+time_string(tmp.x[1])+'    at    '+$
+    string(loc,format='(F8.1)')
+print, yy[idx]
 get_data, 'rbspb_efw_b1_fmt_block_index_cutoff', data = tmp
 print, 'RBSP-B last pos:    '+time_string(tmp.x[1])+'    at    '+$
     string(tmp.y[1],format='(I6)')
+get_data, 'future_b', t0, yy
+idx = (where(tmp.x[1] le t0))[0]
+loc = interpol(yy[[idx-1,idx]],t0[[idx-1,idx]],tmp.x[1])
+print, 'RBSP-B predict pos: '+time_string(tmp.x[1])+'    at    '+$
+    string(loc,format='(F8.1)')
+print, yy[idx]
 
 
 print,'type .c to print the plot to the desktop'

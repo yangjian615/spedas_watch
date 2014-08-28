@@ -11,9 +11,9 @@
 ;             ERG-Science Center, STEL, Nagoya Univ.
 ;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
 ;
-;   $LastChangedBy: jwl $
-;   $LastChangedDate: 2014-02-10 16:54:11 -0800 (Mon, 10 Feb 2014) $
-;   $LastChangedRevision: 14265 $
+;   $LastChangedBy: nikos $
+;   $LastChangedDate: 2014-04-08 15:36:11 -0700 (Tue, 08 Apr 2014) $
+;   $LastChangedRevision: 14778 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/examples/erg_crib_camera_omti_asi.pro $
 ;-
 
@@ -21,7 +21,7 @@
 thm_init
 
 ; set the date and duration (in days)
-timespan, '2012-09-04/10:00', 2, /hour
+timespan, '2012-09-04/10:00', 2, /hours
 
 ; set site and wavelength
 site='drw'

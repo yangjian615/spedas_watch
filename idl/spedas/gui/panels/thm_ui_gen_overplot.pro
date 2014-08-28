@@ -21,9 +21,9 @@
 ;OUTPUT:
 ;  none
 ;  
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-31 17:09:35 -0700 (Mon, 31 Mar 2014) $
-;$LastChangedRevision: 14721 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-04-09 10:24:46 -0700 (Wed, 09 Apr 2014) $
+;$LastChangedRevision: 14781 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/thm_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -321,8 +321,8 @@ pro thm_ui_fix_overview_panels, state=state
           yobj->setproperty, scaling = 1
           yobj->setproperty, rangeoption = 2
 ;          get_data, sste_name, data = d
-          yobj->setproperty, maxfixedrange = 3.0e6
-          yobj->setproperty, minfixedrange = 3.0e4
+;          yobj->setproperty, maxfixedrange = 3.0e6
+;          yobj->setproperty, minfixedrange = 3.0e4
 ;          If(is_struct(d) && tag_exist(d, 'v')) Then yobj->setproperty, minfixedrange = min(d.v) $
 ;          Else yobj->setproperty, minfixedrange = 3.0e4
           ;quick_set_panel_labels, panel[10], ['SSTe_eflux_[eV]']

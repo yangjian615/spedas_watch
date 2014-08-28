@@ -1,6 +1,6 @@
 function cdf_var_type,string
-stypes = 'CDF_'+strsplit(/extr,'XXX BYTE UINT1 INT1 CHAR UCHAR INT2 UINT2 INT4 UINT4 REAL4 FLOAT DOUBLE REAL8 EPOCH EPOCH16 LONG_EPOCH')
-vtypes = [0,1,1,1,1,1,2,12,3,13,4,4,5,5,5,9,9]
+stypes = 'CDF_'+strsplit(/extr,'XXX BYTE UINT1 INT1 CHAR UCHAR INT2 UINT2 INT4 UINT4 REAL4 FLOAT DOUBLE REAL8 EPOCH EPOCH16 LONG_EPOCH TIME_TT2000')
+vtypes = [0,1,1,1,1,1,2,12,3,13,4,4,5,5,5,9,9,14]
 type = array_union(string,stypes)
 return,(vtypes[type])[0]
 end
@@ -15,9 +15,9 @@ end
 ;   id:   CDF file ID.
 ;CREATED BY:    Davin Larson
 ; LAST MODIFIED: @(#)cdf_info.pro    1.9 02/11/01
-; $LastChangedBy: davin-win $
-; $LastChangedDate: 2011-02-11 15:55:04 -0800 (Fri, 11 Feb 2011) $
-; $LastChangedRevision: 8197 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2014-04-10 11:19:32 -0700 (Thu, 10 Apr 2014) $
+; $LastChangedRevision: 14794 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_info.pro $
 ;-
 
@@ -54,6 +54,7 @@ nv = inq.nvars+inq.nzvars
 vinfo = nv gt 0 ? replicate(varinfo_format, nv) : 0
 i = 0
 g_atts = cdf_var_atts(id)
+g_att_names = cdf_var_atts(id,/names_only)   ; If cdf_var_atts were modified slightly these calls could be made in parallel
 num_recs =0
 t0=systime(1)
 
@@ -114,7 +115,7 @@ for zvar = 0,1 do begin   ; regular variables first, then zvariables
   endfor
 endfor
 
-res = create_struct('filename',fn,'inq',inq,'g_attributes',g_atts,'nv',nv,'vars',vinfo)  ;'num_recs',num_recs,'nvars',nv
+res = create_struct('filename',fn,'inq',inq,'g_attributes',g_atts,'g_att_names',g_att_names,'nv',nv,'vars',vinfo)  ;'num_recs',num_recs,'nvars',nv
 if size(/type,id0) eq 7 then cdf_close,id
 
 dprint,dlevel=4,verbose=verbose,'Time=',systime(1)-tstart

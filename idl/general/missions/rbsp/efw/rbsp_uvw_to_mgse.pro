@@ -67,9 +67,9 @@
 ;	1. Created Nov 2012 - Kris Kersten, kris.kersten@gmail.com
 ;
 ; VERSION:
-;   $LastChangedBy: kersten $
-;   $LastChangedDate: 2014-03-03 14:17:56 -0800 (Mon, 03 Mar 2014) $
-;   $LastChangedRevision: 14479 $
+;   $LastChangedBy: aaronbreneman $
+;   $LastChangedDate: 2014-04-09 13:46:37 -0700 (Wed, 09 Apr 2014) $
+;   $LastChangedRevision: 14782 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_uvw_to_mgse.pro $
 ;
 ;-
@@ -336,7 +336,7 @@ pro rbsp_uvw_to_mgse,probe,tvar,suffix=suffix,$
 			tstring=time_string(times,prec=6)
 			strput,tstring,'T',10
 			ets=dblarr(ntimes)
-			for tcount=0,ntimes-1 do begin
+			for tcount=0L,ntimes-1 do begin
 				cspice_str2et,tstring[tcount],et_temp
 				ets[tcount]=et_temp
 			endfor

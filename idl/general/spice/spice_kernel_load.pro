@@ -1,6 +1,6 @@
 
 function spice_bod2s,nnn
-if size(/type,nnn) eq 7 then name=nnn else cspice_bodc2s,code,name
+if size(/type,nnn) eq 7 then name=nnn else cspice_bodc2s,nnn,name
 return,strupcase(name)
 end
 
@@ -19,13 +19,24 @@ end
 ; Loads kernels only if they are not already loaded
 pro spice_kernel_load,kernels,unload=unload,verbose=verbose
   if spice_test() eq 0 then return
-  loaded = spice_test('*')
-  for i=0L,n_elements(kernels)-1 do begin
-     w = where(kernels[i] eq loaded,nw)
-     if nw eq 0 then begin
-       dprint,verbose=verbose,dlevel=2,'Loading  '+kernels[i]
-       cspice_furnsh,kernels[i]
-     endif else dprint,verbose=verbose,dlevel=3,'Ignoring '+kernels[i] + ' (already loaded)'
-  endfor
+  if ~keyword_set(unload) then begin
+    loaded = spice_test('*')
+    for i=0L,n_elements(kernels)-1 do begin
+       w = where(kernels[i] eq loaded,nw)
+       if nw eq 0 then begin
+         if file_test(/regular , kernels[i]) eq 0 then continue
+         dprint,verbose=verbose,dlevel=2,'Loading  '+kernels[i]
+         cspice_furnsh,kernels[i]
+       endif else dprint,verbose=verbose,dlevel=3,'Ignoring '+kernels[i] + ' (already loaded)'
+    endfor
+  endif else begin
+    loaded = spice_test('*')
+    k = strfilter(loaded,kernels,/str,count=c)
+;    print,k
+    for i=0,c-1 do begin
+      dprint,dlevel=2,'Unloading '+k[i]
+      cspice_unload,k[i]
+    endfor
+  endelse
 end
 

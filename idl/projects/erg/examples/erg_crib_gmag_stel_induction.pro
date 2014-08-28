@@ -14,9 +14,9 @@
 ;             ERG-Science Center, STEL, Nagoya Univ.
 ;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
 ;
-;   $LastChangedBy: lphilpott $
-;   $LastChangedDate: 2011-10-14 09:18:54 -0700 (Fri, 14 Oct 2011) $
-;   $LastChangedRevision: 9112 $
+;   $LastChangedBy: nikos $
+;   $LastChangedDate: 2014-04-08 15:36:11 -0700 (Tue, 08 Apr 2014) $
+;   $LastChangedRevision: 14778 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/examples/erg_crib_gmag_stel_induction.pro $
 ;-
 
@@ -25,7 +25,7 @@
 thm_init
 
 ; set the date and duration (in hours)
-timespan, '2009-01-03/09:40:00', 30, /minute
+timespan, '2009-01-03/09:40:00', 30, /minutes
 
 ; load the data
 erg_load_gmag_stel_induction, site='ath msr'

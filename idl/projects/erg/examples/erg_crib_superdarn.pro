@@ -15,9 +15,9 @@
 ;    2011/01/11: Added commands for 2-D map plotting
 ;    2010/06/24: Created
 ;
-; $LastChangedBy: lphilpott $
-; $LastChangedDate: 2011-10-14 09:18:54 -0700 (Fri, 14 Oct 2011) $
-; $LastChangedRevision: 9112 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2014-04-08 15:36:11 -0700 (Tue, 08 Apr 2014) $
+; $LastChangedRevision: 14778 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/examples/erg_crib_superdarn.pro $
 ;-
 
@@ -26,7 +26,7 @@
 thm_init 
 
 ;Set the date and time for loading data
-timespan, '2007-06-21', 1, /day 
+timespan, '2007-06-21', 1, /days 
 
 ;Load the data with the position table
 erg_load_sdfit, site='hok', /get_support 
@@ -60,7 +60,7 @@ splitbeam, ['sd_hok_vnorth_bothscat_1','sd_hok_veast_bothscat_1']
 tplot, ['sd_hok_vnorth_bothscat_1_azim04','sd_hok_veast_bothscat_1_azim04']
 
 ;Plot some parameters relating to the radar operation
-timespan, '2007-06-21', 1, /day    ;again set the time range to be 1 day
+timespan, '2007-06-21', 1, /days    ;again set the time range to be 1 day
 erg_load_sdfit, site='hok', /get_support_data  ;Load data with the supporting data
 splitbeam, 'sd_hok_elev_angle_1'
 ylim, 'sd_hok_noise_1', 0,0, 1  ;auto range with log scale
