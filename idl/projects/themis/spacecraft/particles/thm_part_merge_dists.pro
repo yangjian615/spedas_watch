@@ -32,10 +32,9 @@
 ;
 ;-
 
-pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, esa_datatype=esa_datatype, sst_datatype=sst_datatype
+pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, esa_datatype=esa_datatype, sst_datatype=sst_datatype,only_sst=only_sst
 
-    compile_opt idl2, hidden
-
+  compile_opt idl2, hidden
 
   error = 1
 
@@ -52,7 +51,12 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
   species = strmid(esa_datatype,2,1)
   esa_type = strmid(esa_datatype,3,1)
   sst_type = strmid(sst_datatype,3,1)
-  data_name = 'pt' + species + esa_type + sst_type
+  
+  if ~keyword_set(only_sst) then begin
+    data_name = 'pt' + species + esa_type + sst_type
+  endif else begin
+    data_name = 'ps' + species + sst_type
+  endelse
   
  
   ;loop over combined modes
@@ -79,7 +83,12 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
     endif
     
     ;get output dimensions
-    dim_out = [dim_esa[0] + dim_sst[0], dim_esa[1], dim_esa[2]]
+    
+    if ~keyword_set(only_sst) then begin
+      dim_out = [dim_esa[0] + dim_sst[0], dim_esa[1], dim_esa[2]]
+    endif else begin
+      dim_out = dim_sst
+    endelse
 
     ;dummy array to be copied
     comb_arr = fltarr(dim_out[0:1])
@@ -123,20 +132,35 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
     ;       var while freeing that used by the input would be preferable.
     out_str = replicate(template,dim_out[2])
     
-    ;copy values
-    out_str.data = [esa_str.data, sst_str.data]
-    out_str.bins = [esa_str.bins, sst_str.bins]
-    
-    out_str.energy = [esa_str.energy, sst_str.energy]
-    out_str.denergy = [esa_str.denergy, sst_str.denergy]
-    out_str.phi = [esa_str.phi, sst_str.phi]
-    out_str.dphi = [esa_str.dphi, sst_str.dphi]
-    out_str.theta = [esa_str.theta, sst_str.theta]
-    out_str.dtheta = [esa_str.dtheta, sst_str.dtheta]  
-    
+    if ~keyword_set(only_sst) then begin
+      ;copy values
+      out_str.data = [esa_str.data, sst_str.data]
+      out_str.bins = [esa_str.bins, sst_str.bins]
+      
+      out_str.energy = [esa_str.energy, sst_str.energy]
+      out_str.denergy = [esa_str.denergy, sst_str.denergy]
+      out_str.phi = [esa_str.phi, sst_str.phi]
+      out_str.dphi = [esa_str.dphi, sst_str.dphi]
+      out_str.theta = [esa_str.theta, sst_str.theta]
+      out_str.dtheta = [esa_str.dtheta, sst_str.dtheta]  
+    endif else begin
+      ;copy values
+      out_str.data = sst_str.data
+      out_str.bins = sst_str.bins
+      
+      out_str.energy = sst_str.energy
+      out_str.denergy = sst_str.denergy
+      out_str.phi = sst_str.phi
+      out_str.dphi = sst_str.dphi
+      out_str.theta = sst_str.theta
+      out_str.dtheta = sst_str.dtheta
+      
+    endelse
+      
     out_str.time = esa_str.start_time  ;times should be identical
     out_str.start_time = esa_str.start_time  ;times should be identical
     out_str.end_time = esa_str.end_time
+  
     
     ;set pointer
     out_dist[i] = ptr_new(out_str, /no_copy)

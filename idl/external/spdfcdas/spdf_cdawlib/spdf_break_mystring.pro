@@ -1,14 +1,14 @@
 ;$Author: nikos $
-;$Date: 2013-09-09 14:51:13 -0700 (Mon, 09 Sep 2013) $
-;$Header: /home/cdaweb/dev/control/RCS/break_mySTRING.pro,v 1.3 1996/10/17 18:21:35 baldwin Exp johnson $
+;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/spdf_break_mystring.pro,v 1.4 2012/05/03 16:10:43 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 12996 $
+;$Revision: 14512 $
 ;+------------------------------------------------------------------------
-; NAME: BREAK_MYSTRING
+; NAME: spdf_break_mystring
 ; PURPOSE: 
 ;       Convert a string into a string array given a delimiting character 
 ; CALLING SEQUENCE:
-;       out = break_mystring(instring)
+;       out = spdf_break_mystring(instring)
 ; INPUTS:
 ;       instring = input text string
 ; KEYWORD PARAMETERS:
@@ -19,12 +19,18 @@
 ;       Jason Mathews, NASA/GSFC/Code 633,  June, 1994
 ;       mathews@nssdc.gsfc.nasa.gov    (301)286-6879
 ; MODIFICATION HISTORY:
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION spdf_break_mystring, s, DELIMITER=delimiter
 ; Validate the input parameters
 s_size=size(s) & n_size=n_elements(s_size)
 if (s_size[(n_size - 2)] ne 7) then begin
-  print,'ERROR>Argument to break_mySTRING must be of type string'
+  print,'ERROR>Argument to spdf_break_mystring must be of type string'
   return,-1
 endif
 if s eq '' then return, [ '' ]

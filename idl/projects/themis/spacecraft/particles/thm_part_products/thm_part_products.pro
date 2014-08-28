@@ -17,9 +17,9 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedBy: aaflores1 $
-;$LastChangedDate: 2014-02-10 17:24:35 -0800 (Mon, 10 Feb 2014) $
-;$LastChangedRevision: 14269 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-03-04 17:05:29 -0800 (Tue, 04 Mar 2014) $
+;$LastChangedRevision: 14492 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -200,7 +200,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     gyro = [0,360.]
   endif else begin
     if abs(gyro_in[1]-gyro_in[0]) gt 360 then begin
-      dprint, 'ERROR: Gyrovelocity restrictons must have range no larger than 360 degrees'
+      dprint, 'ERROR: Gyrophase restrictons must have range no larger than 360 degrees'
       return
     endif
     gyro = thm_pgs_map_azimuth(gyro_in)

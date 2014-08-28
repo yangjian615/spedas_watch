@@ -62,9 +62,9 @@ end
 ;
 ;
 ;Written by: Ken Bromund ????,   Jan 5 2007
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-06-19 16:17:02 -0700 (Tue, 19 Jun 2012) $
-; $LastChangedRevision: 10592 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2014-03-04 16:43:24 -0800 (Tue, 04 Mar 2014) $
+; $LastChangedRevision: 14490 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_asi.pro $
 ;-
 ;
@@ -159,6 +159,7 @@ pro thm_load_asi,site = site, datatype = datatype, trange = trange, $
                cdf_to_tplot = 'thm_load_asi_cdf_to_tplot', $
                progobj = progobj, $
                msg_out = msg_out, $
+               /no_time_clip,$
                _extra = _extra
 
   ;print accumulated error messages now that loading is complete

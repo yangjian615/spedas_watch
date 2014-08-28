@@ -102,9 +102,9 @@
 ;                         rather than by network.
 ; 04-Apr-2012, clrussell, Added units to the data_att structure
 ; 
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2013-04-12 12:42:38 -0700 (Fri, 12 Apr 2013) $
-; $LastChangedRevision: 12027 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2014-03-06 10:52:31 -0800 (Thu, 06 Mar 2014) $
+; $LastChangedRevision: 14510 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag.pro $
 ;-
 
@@ -225,7 +225,7 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
   Endif else begin
     vsnames = 'abk amd amer arct atha benn bett blc bmls bou brw bsl cbb ccnv cdrt chbg cigo cmo crvr ded dik drby eagl ekat fcc frd frn fsim fsmi fykn '+ $
       'fyts gako gbay gill gjoa glyn gua hlms homr hon hots iglo inuv iqa kako kapu kian kuuj larg leth loys lrv lyfd mcgr mea nain new nrsq '+ $
-      'ott pang pbk pcel pg1 pg2 pg3 pgeo pina pine pokr ptrs rank rbay redr rich rmus roth satx shu sit sjg snap snkq stj swno tik tpas trap tuc ukia vic vldr whit wrth ykc yknf'
+      'ott pang pbk pcel pg1 pg2 pg3 pg4 pgeo pina pine pokr ptrs rank rbay redr rich rmus roth satx shu sit sjg snap snkq stj swno tik tpas trap tuc ukia vic vldr whit wrth ykc yknf'
     vsnames_arr = strsplit(vsnames, ' ', /extract)
     vsnames_g =  'amk and atu bfe bjn dob dmh dnb don fhb gdh ghb hop jck kar kuv lyr nal naq nor nrd roe rvk sco skt sol sor stf svs tdc thl tro umq upn'
     vsnames_g_arr = strsplit(vsnames_g, ' ', /extract)

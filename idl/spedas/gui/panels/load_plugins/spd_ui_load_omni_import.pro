@@ -12,9 +12,9 @@
 ;
 ;HISTORY:
 ;
-;;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-03-06 10:31:36 -0800 (Thu, 06 Mar 2014) $
+;$LastChangedRevision: 14509 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/load_plugins/spd_ui_load_omni_import.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -69,11 +69,6 @@ pro spd_ui_load_omni_import,$
   spd_ui_cleanup_tplot, tn_before, create_time_before=cn_before, del_vars=to_delete,$
                         new_vars=new_vars
 
-  ; let's check that we have data in the time range
-  get_data, new_vars[0], data=newvars_data
-  lasttimewehave = newvars_data.x[n_elements(newvars_data.x)-1]
-  omnimaxtime = time_string(lasttimewehave)
-  
   if time_double(omnimaxtime) lt time_double(timerange[1]) || $
       time_double(omnimintime) gt time_double(timerange[0]) then begin
       statusBar->update,'No OMNI Data Loaded, OMNI data is only available between ' + omnimintime + ' and ' + omnimaxtime

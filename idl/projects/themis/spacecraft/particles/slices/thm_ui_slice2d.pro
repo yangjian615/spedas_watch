@@ -1015,7 +1015,7 @@ end
 
 ; Export slice(s) to .png
 ;
-pro thm_ui_slice2d_export, state, uval, all=all
+pro thm_ui_slice2d_export, state, event
 
     compile_opt idl2, hidden
 
@@ -1026,6 +1026,10 @@ pro thm_ui_slice2d_export, state, uval, all=all
       'There are no plots to export, operation canceled.'
     return
   endif
+
+  ;export all plots?
+  id = widget_info(state.tlb, find_by_uname='exportall')
+  all = widget_info(id, /button_set)
 
   ; check that plotting window is open if exporting one
   if ~keyword_set(all) and !d.window lt 0 then begin
@@ -1041,13 +1045,10 @@ pro thm_ui_slice2d_export, state, uval, all=all
   etypes = ['png','eps']
   
   ; get file type
-  etype = strlowcase( stregex(uval, '('+strjoin(etypes,'|')+')$', /extract, /fold_case) )
+  etype = widget_info(event.id, /uname)
   if etype eq '' then etype = etypes[0]
 
   ; get file path
-;  filepath = dialog_pickfile(title='Export Slice', filter=('*.'+etype), $
-;                         file=filename, /write, dialog_parent=state.gui_id, $
-;                         /overwrite_prompt)
   filepath = spd_ui_dialog_pickfile_save_wrapper(title='Export Slice', filter=('*.'+etype), $
                          file=filename, /write, dialog_parent=state.tlb, $
                          /overwrite_prompt)
@@ -1119,7 +1120,7 @@ pro thm_ui_slice2d_export, state, uval, all=all
             continue
           endif
           if ~keyword_set(allyes) then begin
-            overwrite = thm_ui_prompt_widget(state.gui_id, (obj_new()), state.historywin, $
+            overwrite = spd_ui_prompt_widget(state.gui_id, (obj_new()), state.historywin, $
                            promptText='Overwrite file: '+file+' ?', /yes, /no, /allyes, /allno, /cancel, frame_attr=8)
             if overwrite eq 'cancel' then begin
               thm_ui_slice2d_message,'Export Canceled', sb=state.statusbar
@@ -1419,6 +1420,57 @@ end
 
 
 
+pro thm_ui_slice2d_checkval, state
+
+    compile_opt idl2, hidden
+
+
+  ; check that current data is valid
+  if ~ptr_valid(state.slices) then begin
+    state.statusbar->update,'No plots loaded.'
+    return
+  endif
+
+  ; check that plotting window is open if exporting one
+  if ~keyword_set(all) and !d.window lt 0 then begin
+    state.statusbar->update,'No current plot.'
+    return
+  endif
+
+  state.statusbar->update,'Select a location on the current plot...'
+  
+  ;get cursor position on mouse-click-up
+  cursor, x, y, 4, /data
+  
+  state.slider->getproperty, value=current
+  
+  ;check that selection was in range
+  xrange = minmax( (*state.slices)[current].xgrid )
+  yrange = minmax( (*state.slices)[current].xgrid )
+  
+  if x lt xrange[0] or x gt xrange[1] or y lt yrange[0] or y gt yrange[1] then begin
+    state.statusbar->update,'Selection outside plot range.'
+    return
+  endif
+  
+  ;get location and print value
+  xidx = value_locate( (*state.slices)[current].xgrid, x )
+  yidx = value_locate( (*state.slices)[current].ygrid, y )
+  
+  ;print x/y location if this isn't a radial log plot
+  if keyword_set( (*state.slices)[current].rlog ) then begin
+    msg = 'Value = ' + strtrim( (*state.slices)[current].data[xidx,yidx], 2)
+  endif else begin
+    msg = 'Value at ['+strtrim(round(x),2)+', '+strtrim(round(y),2)+'] = '+ $
+          strtrim( (*state.slices)[current].data[xidx,yidx], 2)
+  endelse
+
+  state.statusbar->update, msg
+
+end
+
+
+
 ; Event handler
 ;
 pro thm_ui_slice2d_event, event
@@ -1587,13 +1639,19 @@ pro thm_ui_slice2d_event, event
 
       'ZMAJOR':thm_ui_slice2d_ticksens, event, uval
       
-      'EXPORTPNG': thm_ui_slice2d_export, state, uval
+      'CHECKVAL': thm_ui_slice2d_checkval, state
       
-      'EXPORTEPS': thm_ui_slice2d_export, state, uval
+      'EXPORT': thm_ui_slice2d_export, state, event
       
-      'EXPORTALLPNG': thm_ui_slice2d_export, state, uval, all=1b
-      
-      'EXPORTALLEPS': thm_ui_slice2d_export, state, uval, all=1b
+      'EXPORTOPT': begin
+        if widget_info(event.id,/button_set) then break
+        
+        id = widget_info(state.tlb, find_by_uname='exportall')
+        widget_control, id, set_button=~widget_info(id,/button_set)
+        
+        id = widget_info(state.tlb, find_by_uname='exportcurrent')
+        widget_control, id, set_button=~widget_info(id,/button_set)
+      end
       
       Else: 
     EndCase
@@ -1614,12 +1672,15 @@ end ;----------------------------------------------------
 ;  of particle distributions.
 ;
 ;CALLING SEQUENCE:
-;  thm_ui_slice2d [, gui_ID=gui_ID [, historywin=historywin]]
+;  thm_ui_slice2d
 ;
 ;INPUT:
-;  gui_id: group leader widget if opening from THEMIS GUI
-;  historywin: history window object if opening from THEMIS GUI
-;;
+;  gui_id: group leader widget if opening from SPEDAS GUI
+;  loaded_data: n/a (required for SPEDAS plugin API)
+;  call_sequence: n/a (required for SPEDAS plugin API)
+;  history_window: history window object if opening from SPEDAS GUI
+;  status_bar: n/a (required for SPEDAS plugin API)
+;
 ;OUTPUT:
 ;  N/A  
 ;
@@ -1628,24 +1689,26 @@ end ;----------------------------------------------------
 ;
 ;  For command line use see:
 ;    thm_crib_part_slice2d.pro
-;    thm_part_slice2d_plot.pro
-;    thm_part_slice2d.pro
-;    thm_part_dist_array.pro
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-26 18:45:11 -0800 (Wed, 26 Feb 2014) $
-;$LastChangedRevision: 14450 $
+;$LastChangedDate: 2014-03-07 14:35:00 -0800 (Fri, 07 Mar 2014) $
+;$LastChangedRevision: 14515 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
 
 
-pro thm_ui_slice2d, gui_ID, history_window=history_window, _extra=dummy
+pro thm_ui_slice2d, gui_ID, $
+                    loaded_data, $
+                    call_sequence, $
+                    history_window, $
+                    status_bar, $
+                    _extra=dummy ;SPEDAS API req
 
     compile_opt idl2
 
-  tlb_title = 'Particle Distribution Slices v4.0'
+  tlb_title = 'Particle Distribution Slices v4.2'
 
 if keyword_set(gui_ID) then begin
   tlb = widget_base(title = tlb_title, /col, /base_align_center, $ 
@@ -1704,7 +1767,7 @@ thm_graphics_config
   
 ;Bottom Bases
   sliderbase = widget_base(tabbase, /col, /align_center, ypad=2, xpad=0)
-  buttonBase = widget_base(tabbase, /row, /align_center, ypad=2, xpad=0)
+  buttonBase = widget_base(tabbase, /row, /align_center, ypad=2, xpad=0, space=4)
   statusbarBase = widget_base(tabbase, /row, ypad=0, xpad=0)
 
 
@@ -1717,19 +1780,21 @@ thm_graphics_config
 
   
 ;Buttons
-  buttonsize=60
-  generateplot = widget_button(buttonbase, value='Generate', uval='GENERATE', $
-                               xsize=buttonsize*(1+sqrt(5))/2, tooltip=$
-                               'Loads distributions, creates slices, and plots ' +$
-                               'slice at center of given time range.')
-  done = widget_button(buttonbase, value = 'Close', xsize=buttonsize, uval='DONE')
-    dummy = widget_label(buttonbase, value = ' ',xsize=buttonsize*.5)
-  exportslice = widget_button(buttonbase, value='Export', /menu)
-    exportpng = widget_button(exportslice, value='PNG', uval='EXPORTPNG')
-    exporteps = widget_button(exportslice, value='EPS', uval='EXPORTEPS')
-  exportall = widget_button(buttonbase, value='Export All', /menu)
-    exportallpng = widget_button(exportall, value='PNG', uval='EXPORTALLPNG')
-    exportalleps = widget_button(exportall, value='EPS', uval='EXPORTALLEPS')
+
+  generate = widget_button(buttonbase, value='Generate', uval='GENERATE', $
+                       tooltip='Load data and generate plots with current options.')
+  checkval = widget_button(buttonbase, value='Check Value', uval='CHECKVAL', $
+                       tooltip='Display the data value at a particular location on the plot.')
+  exportslice = widget_button(buttonbase, value='Export Plots...', /menu, $
+                       tooltip='Export plots to image files or postscript.')
+    exportpng = widget_button(exportslice, value='PNG', uval='EXPORT', uname='png')
+    exporteps = widget_button(exportslice, value='EPS', uval='EXPORT', uname='eps')
+    exportcurrent = widget_button(exportslice, value='Current plot', $
+                       /checked_menu,/separator,uval='EXPORTOPT',uname='exportcurrent')
+    exportall = widget_button(exportslice, value='All plots', $
+                       /checked_menu,uval='EXPORTOPT',uname='exportall')
+  done = widget_button(buttonbase, value = 'Close', uval='DONE', tooltip='Exits the window.')
+
 
 ;Output
   statusbar = obj_new('spd_ui_message_bar', statusbarbase,  Xsize=60, YSize=1, $
@@ -2252,6 +2317,8 @@ thm_graphics_config
   widget_control, rotation, set_combobox_select=2
 
   widget_control, orz, set_value='1' ;default orientation (0,0,1)
+  
+  widget_control, exportcurrent, set_button=1
 
 ; Options Widgets
   widget_control, ctbutton, set_button=0 ; no removal by default
@@ -2322,6 +2389,9 @@ thm_graphics_config
     widget_control, smoothbutton, xsize=ogeo.scr_xsize
     widget_control, averagebutton, xsize=ogeo.scr_xsize
     widget_control, resbutton, xsize=ogeo.scr_xsize
+    
+  ggeo = widget_info(generate,/geo)
+    widget_control, generate, xsize=1.5*ggeo.scr_xsize
 
   ;main widgets
   factor = 0.98

@@ -38,6 +38,16 @@ Function spedas_config_template
 End
 
 Function spedas_read_config, header = hhh
+
+  ; Catch errors and return
+  catch, errstats
+  if errstats ne 0 then begin
+    error = 1
+    dprint, dlevel=1, 'Error: ', !ERROR_STATE.MSG
+    catch, /cancel
+    return, -1
+  endif
+
   otp = -1
 ;First step is to get the filename
 ;For this example the directory name has been hard coded

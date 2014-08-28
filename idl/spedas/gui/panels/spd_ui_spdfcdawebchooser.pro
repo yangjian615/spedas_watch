@@ -1,4 +1,3 @@
-COMPILE_OPT IDL2
 ;+
 ; NAME:
 ; spd_ui_spdfcdawebchooser
@@ -36,8 +35,8 @@ COMPILE_OPT IDL2
 ; MODIFICATION HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-03-03 11:28:09 -0800 (Mon, 03 Mar 2014) $
-;$LastChangedRevision: 14476 $
+;$LastChangedDate: 2014-03-05 10:44:50 -0800 (Wed, 05 Mar 2014) $
+;$LastChangedRevision: 14503 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -75,7 +74,7 @@ end
 pro fix_spedas_depend_time, cdffile
   cdfid = CDF_OPEN(cdffile)
   CDF_ATTGET, cdfid, 'Project', 0, project
-  if (STRMATCH(project, 'spedas', /FOLD_CASE) EQ 1) or (STRMATCH(project, 'artemis', /FOLD_CASE) EQ 1) then begin
+  if (STRMATCH(project, 'themis', /FOLD_CASE) EQ 1) or (STRMATCH(project, 'artemis', /FOLD_CASE) EQ 1) then begin
     CDF_ATTDELETE, cdfid, 'DEPEND_TIME'
   endif
   CDF_CLOSE, cdfid
@@ -95,62 +94,6 @@ function thm_tranform_time_to_spdf, time
   time = thm_string_replacen(time, "-", "/")
   
   return, time
-end
-
-;+
-; Get the directory where SPDF CDF files will be stored.
-;
-; @param localdir {in} {type=string}
-;            the local directory.
-; @returns localdir
-;            the function tries to return a valid directory for saving data
-;
-; TODO: in the future the directory will be specified in Configuration Settings
-;-
-pro thm_get_spdf_dir, localdir=localdir
-  if ~keyword_set(localdir) then begin
-    ;localdir =!spedas.local_data_dir
-    localdir = ''
-    if localdir ne '' then begin
-      resfile = file_info(localdir)
-      if resfile.write eq 0 then begin
-        localdir=''
-      endif else begin
-        if STRMATCH(localdir, '*spedas*') gt 0 then begin
-          localdir = thm_string_replacen(localdir, 'spedas', 'cdaweb')
-        endif
-      endelse
-    endif
-  endif
-  if PATH_SEP() eq "\" then begin
-    localdir = thm_string_replacen(localdir, "/", PATH_SEP())
-  endif
-  if localdir eq '' then localdir = GETENV('IDL_TMPDIR')
-  if localdir eq '' then begin
-    localdir = file_search('~',/expand_tidle)
-  endif
-  
-  if localdir ne '' then begin
-    if  STRCMP(STRMID(localdir, 0, 1, /REVERSE_OFFSET), PATH_SEP()) ne 1 then begin
-      localdir = localdir + PATH_SEP()
-    endif
-  endif    
-  
-  FILE_MKDIR, localdir
-  result = FILE_TEST(localdir, /DIRECTORY, /read)
-  if result eq 1 then begin    
-    CD, CURRENT=curdir
-    resultcur = FILE_TEST(curdir, /DIRECTORY, /write)
-    if resultcur ne 1 then begin      
-      CD, localdir
-    endif
-    localdir = localdir
-  endif else begin
-    errorstr = 'Could not write to directory' +  string(10B) + localdir +  string(10B) + 'Please create it and make sure that it is writable.'
-    res = dialog_message(errorstr, /center )
-    localdir = ''
-  endelse    
-  localdir = file_search(localdir, /expand_tilde)
 end
 
 ;+
@@ -198,17 +141,24 @@ end
 ;            names of variables containing the desired data.
 ;-
 pro thm_spdfGetCdawebDataExec, $
-  state, timeInterval, datasetId, varNames
-  
-  widget_control, state.dataVarName, get_value=dataVarName
+  event, state, timeInterval, datasetId, varNames
   
   tlb=state.tlb
-  localDirText = widget_info(tlb, find_by_uname='LOCALDIR')
-  widget_control, localDirText, get_value=localdir
-  thm_get_spdf_dir, localdir=localdir
-  if localdir eq '' then return
-  widget_control, localDirText, set_value=localdir
   
+  localDirText = widget_info(tlb, find_by_uname='LOCALDIR')
+  widget_control, localDirText, get_value=cdfFolder
+  localdir = STRTRIM(cdfFolder[0],2)
+  if STRMID(localdir, 0, 1, /REVERSE_OFFSET) ne path_sep() then localdir = localdir + path_sep()
+  if ~FILE_SEARCH(localdir, /TEST_WRITE) then begin
+    reply = dialog_message( $
+      'Local CDF directory must exist and be writable. ' +  string(10B) + string(10B) + localdir , $
+      title='Local CDF directory', /center, /error)
+    return
+  endif else begin
+    spd_spdf_savecdfdir, event
+  endelse
+  
+  widget_control, state.dataVarName, get_value=dataVarName  
   if dataVarName eq '' then begin
     reply = dialog_message( $
       'A name for the result variable must be set.', $
@@ -236,13 +186,6 @@ pro thm_spdfGetCdawebDataExec, $
       urlname = fileDescriptions[i]->getName()
       urlComponents = parse_url(urlname)
       urlfilename = file_basename(urlComponents.path)
-      if STRMID(localdir, 0, 1, /REVERSE_OFFSET) ne path_sep() then localdir = localdir + path_sep()
-      if ~FILE_SEARCH(localdir, /TEST_WRITE) then begin
-        reply = dialog_message( $
-          'Local CDF directory must exist and be writable: ' + localdir , $
-          title='Local CDF directory', /center, /error)
-        return
-      endif 
       filename = localdir + urlfilename
       localCdfNames[i] = fileDescriptions[i]->getFile(filename=filename[0])
     endfor
@@ -460,7 +403,7 @@ pro thm_spdfGetCdawebData, $
   if ~obj_valid(timeInterval) then return
   
   thm_spdfGetCdawebDataExec, $
-    state, timeInterval, selectedDatasetId, selectedVarNames
+    event, state, timeInterval, selectedDatasetId, selectedVarNames
     
   widget_control, event.top, set_uvalue=state
   obj_destroy, timeInterval
@@ -674,6 +617,7 @@ PRO spd_ui_spdfcdawebchooser_event, event
     *state.saveData = event.select
   END
   'EXIT': BEGIN
+    spd_spdf_savecdfdir, event
     thm_spdfExit, event
     return
   end
@@ -681,6 +625,21 @@ PRO spd_ui_spdfcdawebchooser_event, event
   
 endcase
 end
+
+pro spd_spdf_savecdfdir, event
+  localDirText = widget_info(event.top, find_by_uname='LOCALDIR')
+  widget_control, localDirText, get_value=cdfFolder
+  localdir = STRTRIM(cdfFolder[0],2)
+  if localdir ne '' then begin
+    if STRMID(localdir, 0, 1, /REVERSE_OFFSET) ne path_sep() then localdir = localdir + path_sep()
+    if FILE_SEARCH(localdir, /TEST_WRITE) then begin
+      if localdir ne !spedas.TEMP_CDF_DIR then begin
+        !spedas.TEMP_CDF_DIR = localdir
+        spedas_write_config
+      endif
+    endif
+   endif
+end 
 
 ;+
 ; Provides a GUI for choosing and retrieving data from
@@ -699,10 +658,15 @@ end
 ;-
 pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderWidgetId,timeRangeObj=timeRangeObj
 
+  COMPILE_OPT IDL2
+  
   RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
   RESOLVE_ROUTINE, 'spdfCdawebChooser', /COMPILE_FULL_FILE
   RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
   
+  if ~keyword_set(!spedas) then spedas_init
+  localdir = !spedas.TEMP_CDF_DIR
+    
   if keyword_set(groupLeaderWidgetId) then begin
   
     tlb = widget_base(title='CDAWeb Data Chooser', /column, $
@@ -858,14 +822,6 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
     event_funct='spdfSaveDataButton', $
     set_value=[defaultSaveCdfOption])
     
-  ;
-  ; Settings Panel
-  ; TODO: Int the future, this will probably go into configuration Settings...
-  ; Perhaps !SPEDAS.spdf_local_data_dir
-  ;
-  thm_get_spdf_dir, localdir=localdir
-  if localdir eq '' then return
-
   localDirPanel = widget_base(localSettingsPanel, /row)
   localDirLabel = widget_label(localDirPanel, value = 'Local CDF directory:  ')
   localDirText = widget_text(localDirPanel, /edit, /all_events, xsize = 35,  $

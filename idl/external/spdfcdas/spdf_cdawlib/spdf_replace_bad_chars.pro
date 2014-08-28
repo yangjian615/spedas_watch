@@ -1,9 +1,9 @@
-;Name: Replace_bad_chars
+;Name: spdf_replace_bad_chars
 ;Purpose: to find "illegal" characters and replace them w/ the "replacement'
 ;character.
 ;
 ;calling sequence:
-;	outstring = replace_bad_chars(instring, repchar=repchar, found)
+;	outstring = spdf_replace_bad_chars(instring, repchar=repchar, found)
 ;
 ;arguments:
 ;		instring: input string or array of strings to examine
@@ -19,8 +19,14 @@
 ;			1L if a bad char is replaced in a string.
 ;	RCJ 03/06/02 - Added code to check for strings starting in numbers.
 ;			Structure names cannot start with a number in IDL5.3,
-;			and we were getting errors in read_myCDF.
+;			and we were getting errors in spdf_read_mycdf.
 ;
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 function spdf_replace_bad_chars, instring, repchar=repchar, found
 

@@ -1,4 +1,28 @@
-
+;+
+;NAME:
+; spd_ui_dproc_panel
+; 
+;PURPOSE:
+; A widget interface that can be used to set the active data variables
+; and perform various data analysis tasks.
+; 
+;CALLING SEQURNCE:
+; spd_ui_dproc_panel, gui_id
+; 
+;INPUT:
+; gui_id = the id of the calling widget
+; 
+;OUTPUT:
+; No explicit output, processes are done
+; 
+;HISTORY:
+; 21-nov-2008, jmm, jimm@ssl.berkeley.edu
+; 
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-03-05 08:35:38 -0800 (Wed, 05 Mar 2014) $
+;$LastChangedRevision: 14498 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_dproc_panel.pro $
+;-
 
 ;helper function for setting active data/determining tree selection
 pro spd_ui_dproc_panel_get_tree_select, state, sobj
@@ -48,25 +72,6 @@ pro spd_ui_dproc_panel_get_active_select, state, sobj
 end
 
 
-;+
-;NAME:
-; spd_ui_dproc_panel
-;PURPOSE:
-; A widget interface that can be used to set the active data variables
-; and perform various data analysis tasks.
-;CALLING SEQURNCE:
-; spd_ui_dproc_panel, gui_id
-;INPUT:
-; gui_id = the id of the calling widget
-;OUTPUT:
-; No explicit output, processes are done
-;HISTORY:
-; 21-nov-2008, jmm, jimm@ssl.berkeley.edu
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-20 13:58:59 -0800 (Thu, 20 Feb 2014) $
-;$LastChangedRevision: 14400 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_dproc_panel.pro $
-;-
 Pro spd_ui_dproc_panel_event, event
 
  ; print, ''

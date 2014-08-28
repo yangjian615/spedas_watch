@@ -1,9 +1,14 @@
 ;$Author: nikos $
-;$Date: 2013-09-09 14:51:13 -0700 (Mon, 09 Sep 2013) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/virtual_funcs.pro,v 1.0 
+;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
+;$Header: /home/rumba/cdaweb/dev/control/RCS/spdf_virtual_funcs.pro,v 1.0 
 ;$Locker: kovalick $
-;$Revision: 12996 $
-
+;$Revision: 14512 $
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 compile_opt idl2
 
@@ -141,8 +146,8 @@ end
 ; VARIABLES:
 ;
 ; Input:
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as
 ;               VAR_TYPE= data otherwise VAR_TYPE = metadata.
 ;
@@ -267,8 +272,8 @@ end
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -352,7 +357,7 @@ status=0
       if(spdf_tagindex('HANDLE',tagnames1) ge 0) then $
         buf.(vvtag_indices[i]).HANDLE=buf.(component0_index).HANDLE $
 
-      else print, "Set /NODATASTRUCT keyword in call to read_myCDF";
+      else print, "Set /NODATASTRUCT keyword in call to spdf_read_mycdf";
     endif else begin
      print, "ERROR= No COMPONENT0 variable found in alternate_view"
      print, "ERROR= Message: ",component0_index
@@ -384,8 +389,8 @@ end
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  index      - variable index, so we deal with one variable at a time.
@@ -526,7 +531,7 @@ end
 ; INPUT:
 ;
 ;    buf           an IDL structure
-;    org_names     an array of original variables sent to read_myCDF
+;    org_names     an array of original variables sent to spdf_read_mycdf
 ;
 ; KEYWORDS:
 ;    COORD         string corresponding to coordinate transformation
@@ -1350,8 +1355,8 @@ END
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -1683,8 +1688,8 @@ FUNCTION calc_p, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -1805,8 +1810,8 @@ FUNCTION Add_51s, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -1913,8 +1918,8 @@ FUNCTION Add_seconds, buf, org_names, seconds=seconds, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  seconds    - the number of seconds to add to given time 
@@ -2027,8 +2032,8 @@ FUNCTION compute_magnitude, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2153,8 +2158,8 @@ FUNCTION extract_array, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2269,8 +2274,8 @@ end
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  index      - variable index, so we deal with one variable at a time.
@@ -2314,7 +2319,7 @@ handle_value,buf.(component0_index).handle,geo_coord
 height=0
 for i=2L,n_elements(geo_coord)-1,3 do height=[height,geo_coord[i]]
 ; RCJ 10/01/2003 I would start the height array at [1:*] to eliminate the first
-; 0 but a few more 0's come from read_mycdf so I have to start it at [2:*] :
+; 0 but a few more 0's come from spdf_read_mycdf so I have to start it at [2:*] :
 height=height[2:*]
 buf.(index).handle=handle_create()
 handle_value,buf.(index).handle,height,/set
@@ -2342,8 +2347,8 @@ end
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  index      - variable index, so we deal with one variable at a time.
@@ -2483,7 +2488,7 @@ if((component0_index ge 0 )and (component1_index ge 0)) then begin
       wind[1,*]=reform(meri[q[0],*])
       buf.(index).handle=handle_create()
       handle_value,buf.(index).HANDLE,wind,/set
-   endif else print, "Set /NODATASTRUCT keyword in call to read_myCDF";
+   endif else print, "Set /NODATASTRUCT keyword in call to spdf_read_mycdf";
 endif else begin
    print, "ERROR= No COMPONENT0 and/or 1 variable found in wind_plot"
    print, "ERROR= Message: ",component0_index, component1_index
@@ -2518,8 +2523,8 @@ FUNCTION comp_epoch, buf, org_names, index=index, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2635,8 +2640,8 @@ FUNCTION comp_themis_epoch, buf, org_names, index=index, DEBUG=DEBUG, $
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2826,8 +2831,8 @@ FUNCTION convert_toev, buf, org_names, index=index, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2936,8 +2941,8 @@ FUNCTION convert_Ni, buf, org_names, index=index, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -3043,7 +3048,7 @@ end
 ;
 ; INPUT:
 ;    buf           an IDL structure
-;    org_names     an array of original variables sent to read_myCDF
+;    org_names     an array of original variables sent to spdf_read_mycdf
 ;    index	   variable position in buf
 ;
 ; CALLING SEQUENCE:
@@ -3142,8 +3147,8 @@ FUNCTION correct_FAST_By, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -3300,7 +3305,7 @@ end
 ;
 ; INPUT:
 ;    buf           an IDL structure
-;    org_names     an array of original variables sent to read_myCDF
+;    org_names     an array of original variables sent to spdf_read_mycdf
 ;    index	   variable position in buf
 ;
 ; CALLING SEQUENCE:
@@ -3362,7 +3367,7 @@ end
 ;
 function apply_rtn_qflag, astruct, orig_names, index=index
 
-;Input: astruct: the structure, created by read_myCDF that should
+;Input: astruct: the structure, created by spdf_read_mycdf that should
 ;		 contain at least one Virtual variable.
 ;	orig_names: the list of varibles that exist in the structure.
 ;	index: the virtual variable (index number) for which this function
@@ -3475,7 +3480,7 @@ end
 ;
 function apply_rtn_cadence, astruct, orig_names, index=index
 
-;Input: astruct: the structure, created by read_myCDF that should
+;Input: astruct: the structure, created by spdf_read_mycdf that should
 ;		 contain at least one Virtual variable.
 ;	orig_names: the list of varibles that exist in the structure.
 ;	index: the virtual variable (index number) for which this function
@@ -3618,8 +3623,8 @@ function expand_wave_data, astruct, org_names, INDEX=index, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  buf        - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -3778,8 +3783,8 @@ end
 ;
 ; Input:
 ;
-;  astruct    - an IDL structure built w/in read_myCDF
-;  org_names  - list of original variables input to read_myCDF. Any
+;  astruct    - an IDL structure built w/in spdf_read_mycdf
+;  org_names  - list of original variables input to spdf_read_mycdf. Any
 ;               variables in this list will remain tagged as
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  index - keyword - if set use this index value to find the virtual 
@@ -3818,7 +3823,7 @@ status=0
    return, status
 endif
 
-; If the index of the Virtual variable is given, us it, if not, then
+; If the index of the Virtual variable is given, use it, if not, then
 ; find the 1st virtual variable in the structure.
 atags = tag_names(astruct) ;get the variable names.
 vv_tagnames=strarr(1)
@@ -3854,8 +3859,18 @@ if (c_0 ne '') then begin ;this should be the real data
   if (d[0] ne -1) then begin
      display_string = astruct.(index).DISPLAY_TYPE
      a = spdf_break_mystring(display_string,delimiter='>')
+     new_display_type=''
      ; Count the number of '=' to determine the number of instructions
-     b=0 & for i=0,strlen(a[1])-1 do if (strmid(a[1],i,1) eq '=') then b=b+1
+     b=0 
+     ;for i=0,strlen(a[1])-1 do if (strmid(a[1],i,1) eq '=') then b=b+1
+     for j=0,n_elements(a)-1 do begin
+        if strpos(a[j],'=') ne -1 then begin
+           for i=0,strlen(a[j])-1 do if (strmid(a[j],i,1) eq '=') then b=b+1
+	   eq_index=j  ; element of display_type for which '=' exists
+	endif else begin
+	   new_display_type=[new_display_type,a[j]]  ;  make array; add '>' later
+	endelse 
+     endfor	  
      if (b ge 1) then begin
         ilist = strarr(b) 
      endif else begin ;no y=var(*,1) instructions found, return the parents data
@@ -3866,8 +3881,8 @@ if (c_0 ne '') then begin ;this should be the real data
      ;looking for syntax like stack_plot>y=FLUX_SEL_ENERGY_STACK(*,1)
      ; Dissect the input string into its separate instructions
      inum = 0 & next_target=',' ; initialize
-     for i=0,strlen(a[1])-1 do begin
-        c = strmid(a[1],i,1)    ; get next character in string
+     for i=0,strlen(a[eq_index])-1 do begin
+        c = strmid(a[eq_index],i,1)    ; get next character in string
         if (c eq next_target) then begin
            if (next_target eq ',') then inum = inum + 1
            if (next_target eq ')') then begin
@@ -3913,7 +3928,13 @@ endif else print, 'make_stack_array - parent variable not found'
 ;Put the reduced sized array in the virtual variables handle
 temp = handle_create(value=new_array)
 astruct.(index).HANDLE = temp
-astruct.(index).DISPLAY_TYPE = a[0] ; should be just stack_plot
+;astruct.(index).DISPLAY_TYPE = a[0] ; should be just stack_plot
+ndt=''
+; start at 1 because 1st element of new_display_type is ''
+for i=1,n_elements(new_display_type)-2 do ndt=ndt+strtrim(new_display_type[i],2)+'>'
+; last element:
+ndt=ndt+strtrim(new_display_type[i])
+astruct.(index).DISPLAY_TYPE = ndt ; should be just stack_plot
 
 ; Check that all variables in the original variable list are declared
 ; as data otherwise set to support_data
@@ -3923,5 +3944,5 @@ astruct.(index).DISPLAY_TYPE = a[0] ; should be just stack_plot
 return, astruct
 end
 
-pro spdf_virtual_funcs
+pro spdf_virtual_funcs 
 end

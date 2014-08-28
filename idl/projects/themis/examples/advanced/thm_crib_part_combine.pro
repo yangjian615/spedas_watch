@@ -29,9 +29,9 @@
 ;   If you see any useful examples missing from these cribs, please let us know.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-01-10 17:34:23 -0800 (Fri, 10 Jan 2014) $
-;$LastChangedRevision: 13848 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-03-05 17:20:40 -0800 (Wed, 05 Mar 2014) $
+;$LastChangedRevision: 14508 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine.pro $
 ;
 ;-
@@ -225,6 +225,25 @@ thm_part_slice2d_plot, sep_slice, zrange=zrange, window=1
 
 print, ' ','This comparison shows a slice of the combined data compared to an '
 print, 'un-interpolated esa + sst slice.',' '
+
+stop
+
+;----------------------------------------------------------------------------------------
+;Generate data with SST & interpolated bins only.  
+;(This Backwards compatibility mode, generates the output from thm_sst_load_calibrate.)
+;----------------------------------------------------------------------------------------
+combined = thm_part_combine(probe=probe, trange=trange, $
+  esa_datatype=esa_datatype, sst_datatype=sst_datatype, $
+  orig_esa=esa, orig_sst=sst,/only_sst)
+  
+
+;Pass the combined data into processing routines the same way you
+;would use output from thm_part_dist_array.
+thm_part_products, dist_array=combined, outputs='energy'
+
+tplot,'thd_psif_eflux_energy'
+
+print,'SST data & interpolated bins used to generate particle products.'
 
 stop
 

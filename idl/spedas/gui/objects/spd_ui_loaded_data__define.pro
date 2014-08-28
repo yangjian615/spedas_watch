@@ -53,8 +53,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-26 12:26:14 -0800 (Wed, 26 Feb 2014) $
-;$LastChangedRevision: 14446 $
+;$LastChangedDate: 2014-03-05 09:18:01 -0800 (Wed, 05 Mar 2014) $
+;$LastChangedRevision: 14499 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -288,7 +288,7 @@ FUNCTION spd_ui_loaded_data::addData,in_name,d,limit=l,dlimit=dl,file=file, miss
       groupname=groupname,$
       instrument=instrument,$
       filename=file,$
-      ;units='seconds',$
+      units='seconds',$
       isSpect=isSpect,$
       timeRange=tr,$
       suffix=suffix+'_time',$
@@ -1754,13 +1754,21 @@ function SPD_UI_LOADED_DATA::GetTvarObject,name
 
   objs = self->getObjects(name=name)
   
-  if ~obj_valid(objs[0]) then return,0
+  ; use the properties from the last object in the group instead of the first object
+  ; this prevents GUI cotrans operations from using properties (such as units)
+  ; from the time object
+  ; 
+  ; This assumes the objects in the group, other than the time object, have 
+  ; the same properties (units, coordinate systems, etc.)
+  last_element_idx = n_elements(objs)-1
   
-  objs[0]->updateDlimits
+  if ~obj_valid(objs[last_element_idx]) then return,0
+  
+  objs[last_element_idx]->updateDlimits
   
   varname = self->getTvarData(name)
   
-  objs[0]->getproperty,groupname=groupname, $
+  objs[last_element_idx]->getproperty,groupname=groupname, $
                        filename=filename, $
                        isTime=isTime,     $
                        isYaxis=isYaxis,   $
@@ -1774,7 +1782,7 @@ function SPD_UI_LOADED_DATA::GetTvarObject,name
                        yaxisunits=yaxisunits,$
                        dlimitPtr=dlimitPtr,$
                        limitPtr=limitPtr
-  
+
   if varname eq '' then return,0
   
   newdlptr = ptr_new(*dlimitPtr)

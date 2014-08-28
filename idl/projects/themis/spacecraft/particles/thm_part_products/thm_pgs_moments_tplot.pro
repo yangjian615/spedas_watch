@@ -25,9 +25,9 @@
 ;  Much of this code was copied from thm_part_moments.pro
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-12-05 17:33:26 -0800 (Thu, 05 Dec 2013) $
-;$LastChangedRevision: 13647 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-03-05 16:42:22 -0800 (Wed, 05 Mar 2014) $
+;$LastChangedRevision: 14506 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_moments_tplot.pro $
 ;-
 pro thm_pgs_moments_tplot, moments, $
@@ -73,7 +73,7 @@ pro thm_pgs_moments_tplot, moments, $
     mom_data = struct_value(moments, valid_moments[i])
     mom_data = reform(transpose(temporary(mom_data))) ;copied from tpm
     
-    store_data, tname, data= {x:moments.time, y:mom_data},verbose=0
+    store_data, tname, data= {x:moments.time, y:mom_data} ;,verbose=0
     
     if size(/n_dimen,mom_data) gt 1 then options,tname,colors='bgr',/def
     

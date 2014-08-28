@@ -1,15 +1,19 @@
 ;$Author: nikos $
-;$Date: 2013-09-09 14:51:13 -0700 (Mon, 09 Sep 2013) $
-;$Header: /home/cdaweb/dev/control/RCS/hsave_struct.pro,v 1.2 2010/07/09 14:33:43 kovalick Exp johnson $
+;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/spdf_hsave_struct.pro,v 1.2 2010/07/09 14:33:43 kovalick Exp johnson $
 ;$Locker: johnson $
-;$Revision: 12996 $
+;$Revision: 14512 $
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 ; Utilize IDL's SAVE procedure to save the structure a into the given filename.
 ;If data is stored in handles, make .dat structure tags and extract
 ;the data from the handles and put into the .dat tags, then wipe out
 ;the .handle tags.
 FUNCTION spdf_hsave_struct,a,fname, debug=debug, nosave=nosave
-
-;if a eq -1 then return, a
 
 if (spdf_tagindex('HANDLE',tag_names(a.(0))) eq -1) then begin
   if (not(keyword_set(nosave)))then begin ;save the buffer to the save file

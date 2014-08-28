@@ -22,8 +22,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-11-12 16:55:16 -0800 (Tue, 12 Nov 2013) $
-;$LastChangedRevision: 13529 $
+;$LastChangedDate: 2014-03-04 17:05:29 -0800 (Tue, 04 Mar 2014) $
+;$LastChangedRevision: 14492 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_checkbins.pro $
 ;
 ;-
@@ -34,7 +34,7 @@ function thm_part_checkbins, dist1, dist2, msg=msg
   diff = ''
   
   if ~array_equal(dist1.theta, dist2.theta) then diff += 'THETA '
-  if ~array_equal(dist1.phi, dist2.phi) then diff += 'THETA '
+  if ~array_equal(dist1.phi, dist2.phi) then diff += 'PHI '
   if ~array_equal(dist1.energy, dist2.energy) then diff += 'ENERGY '
   if dist1.mass ne dist2.mass then diff += 'MASS '
   

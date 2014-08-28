@@ -225,559 +225,332 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-01-27 13:06:46 -0800 (Mon, 27 Jan 2014) $
-; $LastChangedRevision: 14037 $
+; $LastChangedDate: 2014-03-04 09:11:11 -0800 (Tue, 04 Mar 2014) $
+; $LastChangedRevision: 14483 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/trace/ttrace2iono.pro $
 ;-
 
-; Helper function moved to separate file.
-;function ttrace_valid_param, in_val, name_string, pos_name
-;
-;  COMPILE_OPT HIDDEN, IDL2
-;
-;  if n_elements(in_val) gt 0 then begin
-;
-;    ;if in_val is a string, assume in_val is stored in a tplot variable
-;
-;    if size(in_val, /type) eq 7 then begin
-;
-;      if tnames(in_val) eq '' then begin
-;
-;        message, /continue, name_string + $
-;
-;' is of type string but no tplot variable of that name exists'
-;
-;        return, -1L
-;
-;      endif
-;
-;      ;make sure there are an appropriate number of pdyn values in the
-;
-;;array
-;
-;      tinterpol_mxn, in_val, pos_name, out=d_verify, error =$
-;
-; e
-;
-;      if e ne 0 then begin
-;
-;        return, d_verify.y
-;
-;      endif else begin
-;
-;        message, /continue, 'error interpolating ' + name_string + $
-;
-;' onto position data'
-;
-;        return, -1L
-;
-;      endelse
-;
-;    endif else return, in_val
-;
-;  endif
-;
-;  message, /continue, 'Warning: Unable to read ' + name_string + $
-;
-;' defaulting to 0.'
-;
-;  get_data, pos_name, data = d
-;
-;  return, dblarr(n_elements(d.x))
-;
-;end
-
-pro ttrace2iono,in_pos_tvar,newname = newname, trace_var_name = $
-
-trace_tvar, in_coord = in_coord, out_coord = out_coord, internal_model $
-
-= internal_model, external_model = external_model, south = south, km = $
-
-km, par=par,period=period,error = error, standard_mapping = $
-
-standard_mapping,r0=r0,rlim=rlim,noboundary=noboundary,storm=storm,$
-
-pdyn=pdyn,dsti=dsti,yimf=yimf,zimf=zimf,g1=g1,g2=g2,w1=w1,w2=w2,w3=w3,$
-
-w4=w4,w5=w5,w6=w6,get_tilt=get_tilt,set_tilt=set_tilt,add_tilt=add_tilt,$
-
-get_nperiod=get_nperiod
-
-error = 0
-
-if not keyword_set(in_pos_tvar) or tnames(in_pos_tvar) eq '' then begin
-
-   message,/continue,'in_pos_tvar must be set'
-
-   return
-
-endif
-
-get_data,in_pos_tvar,data=d,dlimits=dl
-
-if not keyword_set(newname) then newname = in_pos_tvar + '_foot'
-
-if not keyword_set(in_coord) then in_coord='gsm'
-
-if n_elements(par) gt 0 then begin ;prevent variable mutation
-  par_in = par
-endif
-
-if n_elements(par_in) gt 0 && size(par_in,/type) eq 7 then begin
-
-   if tnames(par_in) eq '' then message,$
-
-'par variable not valid tplot variable'
-
-   tinterpol_mxn,par_in,in_pos_tvar,newname='par_out'
-
-   get_data,'par_out',data=dat
-
-   par_in = dat.y
-
-endif
-
-if n_elements(pdyn) gt 0 then begin
-
-   pdyn_dat = ttrace_valid_param(pdyn,'pdyn',in_pos_tvar)
-
-   if(size(pdyn_dat, /n_dim) eq 0 && pdyn_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(pdyn_dat),10)
-
-   endif
-
-   par_in[*,0] = pdyn_dat
-
-endif
-
-if n_elements(dsti) gt 0 then begin
-
-   dsti_dat = ttrace_valid_param(dsti,'dsti',in_pos_tvar)
-
-   if(size(dsti_dat, /n_dim) eq 0 && dsti_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(dsti_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   par_in[*,1] = dsti_dat
-
-endif
-
-if n_elements(yimf) gt 0 then begin
-
-   yimf_dat = ttrace_valid_param(yimf,'yimf',in_pos_tvar)
-
-   if(size(yimf_dat, /n_dim) eq 0 && yimf_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(yimf_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   par_in[*,2] = yimf_dat
-
-endif
-
-if n_elements(zimf) gt 0 then begin
-
-   zimf_dat = ttrace_valid_param(zimf,'zimf',in_pos_tvar)
-
-   if(size(zimf_dat, /n_dim) eq 0 && zimf_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(zimf_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   par_in[*,3] = zimf_dat
-
-endif 
-
-if n_elements(g1) gt 0 then begin
-
-   g1_dat = ttrace_valid_param(g1,'g1',in_pos_tvar)
-
-   if(size(g1_dat, /n_dim) eq 0 && g1_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(g1_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   par_in[*,4] = g1_dat
-
-endif
-
-if n_elements(g2) gt 0 then begin
-
-   g2_dat = ttrace_valid_param(g2,'g2',in_pos_tvar)
-
-   if(size(g2_dat, /n_dim) eq 0 && g2_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(g2_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   par_in[*,5] = g2_dat
-
-endif
-
-if n_elements(w1) gt 0 then begin
-
-   w1_dat = ttrace_valid_param(w1,'w1',in_pos_tvar)
-
-   if(size(w1_dat, /n_dim) eq 0 && w1_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(w1_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   if n_elements(g1) gt 0 then begin
-
-      message,'g1 and w1 set'
-
-   endif
-
-   par_in[*,4] = w1_dat
-
-endif
-
-if n_elements(w2) gt 0 then begin
-
-   w2_dat = ttrace_valid_param(w2,'w2',in_pos_tvar)
-
-   if(size(w2_dat, /n_dim) eq 0 && w2_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(w2_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   if n_elements(g2) gt 0 then begin
-
-      message,'g2 and w2 set'
-
-   endif
-
-   par_in[*,5] = w2_dat
-
-endif
-
-if n_elements(w3) gt 0 then begin
-
-   w3_dat = ttrace_valid_param(w3,'w3',in_pos_tvar)
-
-   if(size(w3_dat, /n_dim) eq 0 && w3_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(w3_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   par_in[*,6] = w3_dat
-
-endif
-
-if n_elements(w4) gt 0 then begin
-
-   w4_dat = ttrace_valid_param(w4,'w4',in_pos_tvar)
-
-   if(size(w4_dat, /n_dim) eq 0 && w4_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(w4_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   par_in[*,7] = w4_dat
-
-endif
-
-if n_elements(w5) gt 0 then begin
-
-   w5_dat = ttrace_valid_param(w5,'w5',in_pos_tvar)
-
-   if(size(w5_dat, /n_dim) eq 0 && w5_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(w5_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   par_in[*,8] = w5_dat
-
-endif
-
-if n_elements(w6) gt 0 then begin
-
-   w6_dat = ttrace_valid_param(w6,'w6',in_pos_tvar)
-
-   if(size(w6_dat, /n_dim) eq 0 && w6_dat[0] eq -1L) then return
-
-   if n_elements(par_in) eq 0 then begin
-
-      par_in = dblarr(n_elements(w6_dat),10)
-
-      message,/continue,$
-
-'Possible error, not all parameters for model provided.'
-
-   endif
-
-   par_in[*,9] = w6_dat
-
-endif
-
-if keyword_set(dl) then begin
-
-    str_element,dl,'data_att',success=s
-
-    if s eq 1 then begin
-
-        str_element,dl.data_att,'coord_sys',success=s
-
-        if s eq 1 then begin
-
-            if(strlowcase(in_coord) ne strlowcase(dl.data_att.coord_sys)) then begin
-
-                message,/continue,$
-
-'input coord_sys does not match tplot meta data'
-
-                return
-
-            endif    
-
+pro ttrace2iono, in_pos_tvar, newname = newname, trace_var_name = trace_tvar, in_coord = in_coord, $
+    out_coord = out_coord, internal_model = internal_model, external_model = external_model, $
+    south = south, km = km, par=par, period=period, error = error, standard_mapping = standard_mapping, $
+    r0=r0, rlim=rlim, noboundary=noboundary, storm=storm, pdyn=pdyn, dsti=dsti, yimf=yimf, zimf=zimf, $
+    g1=g1, g2=g2, w1=w1, w2=w2, w3=w3, w4=w4, w5=w5, w6=w6, get_tilt=get_tilt, set_tilt=set_tilt, $
+    add_tilt=add_tilt, get_nperiod=get_nperiod
+
+    error = 0
+    
+    if not keyword_set(in_pos_tvar) or tnames(in_pos_tvar) eq '' then begin
+       message,/continue,'in_pos_tvar must be set'
+       return
+    endif
+    
+    get_data,in_pos_tvar,data=d,dlimits=dl
+    
+    if not keyword_set(newname) then newname = in_pos_tvar + '_foot'
+    if not keyword_set(in_coord) then in_coord='gsm'
+    
+    if n_elements(par) gt 0 then begin ;prevent variable mutation
+      par_in = par
+    endif
+    
+    if n_elements(par_in) gt 0 && size(par_in,/type) eq 7 then begin
+       if tnames(par_in) eq '' then message, 'par variable not valid tplot variable'
+    
+       tinterpol_mxn,par_in,in_pos_tvar,newname='par_out'
+       
+       get_data,'par_out',data=dat
+    
+       par_in = dat.y
+    endif
+    
+    if n_elements(pdyn) gt 0 then begin
+       pdyn_dat = ttrace_valid_param(pdyn,'pdyn',in_pos_tvar)
+    
+       if(size(pdyn_dat, /n_dim) eq 0 && pdyn_dat[0] eq -1L) then return
+    
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(pdyn_dat),10)
        endif
-
-   endif   
-
-endif
-
-if not keyword_set(out_coord)  then out_coord = 'gsm'
-
-if n_elements(add_tilt) gt 0 then begin
-  add_tilt_dat = ttrace_valid_param(add_tilt, 'add_tilt', in_pos_tvar)
-  if(size(add_tilt, /n_dim) eq 0 && add_tilt_dat[0] eq -1L) then return
-endif
- 
-if n_elements(set_tilt) gt 0 then begin
-  set_tilt_dat = ttrace_valid_param(set_tilt, 'set_tilt', in_pos_tvar)
-  if(size(set_tilt, /n_dim) eq 0 && set_tilt_dat[0] eq -1L) then return
-endif
-
-if n_elements(set_tilt) gt 0 then begin
-
-  if keyword_set(trace_tvar) then  begin
-  
-    trace2iono,d.x,d.y,f,out_trace_array =$
     
-     tr,in_coord=in_coord,out_coord=out_coord,internal_model=$
+       par_in[*,0] = pdyn_dat
+    endif
     
-    internal_model,external_model=external_model,south=south,km=km,par=par_in,$
+    if n_elements(dsti) gt 0 then begin
+       dsti_dat = ttrace_valid_param(dsti,'dsti',in_pos_tvar)
     
-    period=period,standard_mapping=standard_mapping,error=e,r0=r0,rlim=$
+       if(size(dsti_dat, /n_dim) eq 0 && dsti_dat[0] eq -1L) then return
     
-    rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,set_tilt=set_tilt_dat,$
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(dsti_dat),10)
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
     
-    get_period_times=period_times_dat,_extra=_extra  
+       par_in[*,1] = dsti_dat
+    endif
     
-  endif else begin
-    trace2iono,d.x,d.y,f,in_coord=in_coord,$
-  
-    out_coord=out_coord,internal_model=internal_model,external_model=$
+    if n_elements(yimf) gt 0 then begin
+       yimf_dat = ttrace_valid_param(yimf,'yimf',in_pos_tvar)
     
-    external_model,south=south,km=km,par=par_in,period=period,error=e,$
+       if(size(yimf_dat, /n_dim) eq 0 && yimf_dat[0] eq -1L) then return
     
-    standard_mapping=standard_mapping,r0=r0,rlim=rlim,get_nperiod=get_nperiod,$
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(yimf_dat),10)
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
     
-    get_tilt=tilt_dat,set_tilt=set_tilt_dat,get_period_times=period_times_dat,_extra=_extra
-  
-  endelse
-  
-endif else if n_elements(add_tilt) gt 0 then begin
-
-  if keyword_set(trace_tvar) then  begin
-  
-    trace2iono,d.x,d.y,f,out_trace_array =$
+       par_in[*,2] = yimf_dat
+    endif
     
-     tr,in_coord=in_coord,out_coord=out_coord,internal_model=$
+    if n_elements(zimf) gt 0 then begin
+       zimf_dat = ttrace_valid_param(zimf,'zimf',in_pos_tvar)
     
-    internal_model,external_model=external_model,south=south,km=km,par=par_in,$
+       if(size(zimf_dat, /n_dim) eq 0 && zimf_dat[0] eq -1L) then return
     
-    period=period,standard_mapping=standard_mapping,error=e,r0=r0,rlim=$
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(zimf_dat),10)
+          
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
     
-    rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,add_tilt=add_tilt_dat,$
+       par_in[*,3] = zimf_dat
+    endif 
     
-    get_period_times=period_times_dat,_extra=_extra  
+    if n_elements(g1) gt 0 then begin
+       g1_dat = ttrace_valid_param(g1,'g1',in_pos_tvar)
     
-  endif else begin
-  
-    trace2iono,d.x,d.y,f,in_coord=in_coord,$
-  
-    out_coord=out_coord,internal_model=internal_model,external_model=$
+       if(size(g1_dat, /n_dim) eq 0 && g1_dat[0] eq -1L) then return
     
-    external_model,south=south,km=km,par=par_in,period=period,error=e,$
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(g1_dat),10)
     
-    standard_mapping=standard_mapping,r0=r0,rlim=rlim,get_nperiod=get_nperiod,$
+          message,/continue,'Possible error, not all parameters for model provided.'
     
-    get_tilt=tilt_dat,add_tilt=add_tilt_dat,get_period_times=period_times_dat,_extra=_extra
-  
-  endelse
-  
-endif else begin
-
-  
-  if keyword_set(trace_tvar) then  begin
-  
-    trace2iono,d.x,d.y,f,out_trace_array =$
+       endif
+       
+       par_in[*,4] = g1_dat
+    endif
     
-     tr,in_coord=in_coord,out_coord=out_coord,internal_model=$
+    if n_elements(g2) gt 0 then begin
+       g2_dat = ttrace_valid_param(g2,'g2',in_pos_tvar)
     
-    internal_model,external_model=external_model,south=south,km=km,par=par_in,$
+       if(size(g2_dat, /n_dim) eq 0 && g2_dat[0] eq -1L) then return
     
-    period=period,standard_mapping=standard_mapping,error=e,r0=r0,rlim=$
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(g2_dat),10)
     
-    rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,get_period_times=period_times_dat,$
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
     
-    _extra=_extra  
+       par_in[*,5] = g2_dat
+    endif
     
-  endif else begin
-  
-    trace2iono,d.x,d.y,f,in_coord=in_coord,$
-  
-    out_coord=out_coord,internal_model=internal_model,external_model=$
+    if n_elements(w1) gt 0 then begin
+       w1_dat = ttrace_valid_param(w1,'w1',in_pos_tvar)
     
-    external_model,south=south,km=km,par=par_in,period=period,error=e,$
+       if(size(w1_dat, /n_dim) eq 0 && w1_dat[0] eq -1L) then return
     
-    standard_mapping=standard_mapping,r0=r0,rlim=rlim,get_nperiod=get_nperiod,$
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(w1_dat),10)
     
-    get_tilt=tilt_dat,get_period_times=period_times_dat,_extra=_extra
-  
-  endelse
-endelse
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
     
-
-if e eq 0 then begin
-
-   message,/continue,'trace2iono failed returning'
-
-   return
-
-endif
-
-str_element,d,'v',success=s
-
-if s eq 0 then out = {x:d.x,y:f}  else out = {x:d.x,y:f,v:d.v}
-
-if not keyword_set(dl) then begin
-
-   data_att = {coord_sys:out_coord}
-
-   dl = {data_att:data_att}
-
-endif
-
-str_element,dl,'data_att',success=s
-
-if s eq 0 then begin
-
-   data_att = {coord_sys:out_coord}
-
-   str_element,dl,'data_att',data_att,/add_replace
-
-endif
-
-str_element,dl.data_att,'coord_sys',success=s
-
-if s eq 0 then begin
-
-   data_att = dl.data_att
-
-   str_element,data_att,'coord_sys',out_coord,/add_replace
-
-   str_element,dl,'data_att',data_att,/add_replace
-
-endif
-
-dl.data_att.coord_sys = out_coord
-
-store_data,newname,data=out,dlimits=dl
-
-if keyword_set(trace_tvar) then begin
-
-   tr_out = {x:d.x,y:tr}
-
-   ;dl element will already be set by
-
-   ;previous store so no need to repeat checks
-
-   store_data,trace_tvar,data=tr_out,dlimits=dl
-
-endif
-
-if is_string(get_tilt) then begin
-  store_data,get_tilt,data={x:period_times_dat,y:tilt_dat}
-endif
-
-error = 1
-
+       if n_elements(g1) gt 0 then begin
+          message,'g1 and w1 set'
+       endif
+    
+       par_in[*,4] = w1_dat
+    endif
+    
+    if n_elements(w2) gt 0 then begin
+       w2_dat = ttrace_valid_param(w2,'w2',in_pos_tvar)
+    
+       if(size(w2_dat, /n_dim) eq 0 && w2_dat[0] eq -1L) then return
+    
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(w2_dat),10)
+    
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
+    
+       if n_elements(g2) gt 0 then begin
+          message,'g2 and w2 set'
+       endif
+    
+       par_in[*,5] = w2_dat
+    endif
+    
+    if n_elements(w3) gt 0 then begin
+       w3_dat = ttrace_valid_param(w3,'w3',in_pos_tvar)
+    
+       if(size(w3_dat, /n_dim) eq 0 && w3_dat[0] eq -1L) then return
+    
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(w3_dat),10)
+    
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
+    
+       par_in[*,6] = w3_dat
+    endif
+    
+    if n_elements(w4) gt 0 then begin
+       w4_dat = ttrace_valid_param(w4,'w4',in_pos_tvar)
+    
+       if(size(w4_dat, /n_dim) eq 0 && w4_dat[0] eq -1L) then return
+    
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(w4_dat),10)
+    
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
+    
+       par_in[*,7] = w4_dat
+    endif
+    
+    if n_elements(w5) gt 0 then begin
+       w5_dat = ttrace_valid_param(w5,'w5',in_pos_tvar)
+    
+       if(size(w5_dat, /n_dim) eq 0 && w5_dat[0] eq -1L) then return
+    
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(w5_dat),10)
+    
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
+    
+       par_in[*,8] = w5_dat
+    endif
+    
+    if n_elements(w6) gt 0 then begin
+       w6_dat = ttrace_valid_param(w6,'w6',in_pos_tvar)
+    
+       if(size(w6_dat, /n_dim) eq 0 && w6_dat[0] eq -1L) then return
+    
+       if n_elements(par_in) eq 0 then begin
+          par_in = dblarr(n_elements(w6_dat),10)
+    
+          message,/continue,'Possible error, not all parameters for model provided.'
+       endif
+    
+       par_in[*,9] = w6_dat
+    endif
+    
+    if keyword_set(dl) then begin
+        str_element,dl,'data_att',success=s
+    
+        if s eq 1 then begin
+            str_element,dl.data_att,'coord_sys',success=s
+    
+            if s eq 1 then begin
+                if(strlowcase(in_coord) ne strlowcase(dl.data_att.coord_sys)) then begin
+                    message,/continue,'input coord_sys does not match tplot meta data'
+                    return
+                endif    
+           endif
+       endif   
+    endif
+    
+    if not keyword_set(out_coord)  then out_coord = 'gsm'
+    
+    if n_elements(add_tilt) gt 0 then begin
+      add_tilt_dat = ttrace_valid_param(add_tilt, 'add_tilt', in_pos_tvar)
+      if(size(add_tilt, /n_dim) eq 0 && add_tilt_dat[0] eq -1L) then return
+    endif
+     
+    if n_elements(set_tilt) gt 0 then begin
+      set_tilt_dat = ttrace_valid_param(set_tilt, 'set_tilt', in_pos_tvar)
+      if(size(set_tilt, /n_dim) eq 0 && set_tilt_dat[0] eq -1L) then return
+    endif
+    
+    if n_elements(set_tilt) gt 0 then begin
+      if keyword_set(trace_tvar) then  begin
+        trace2iono,d.x,d.y,f,out_trace_array=tr,in_coord=in_coord,out_coord=out_coord, $
+            internal_model=internal_model,external_model=external_model,south=south,km=km, $
+            par=par_in,period=period,standard_mapping=standard_mapping,error=e,r0=r0, $
+            rlim=rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,set_tilt=set_tilt_dat, $
+            get_period_times=period_times_dat,_extra=_extra  
+      endif else begin
+        trace2iono,d.x,d.y,f,in_coord=in_coord,out_coord=out_coord,internal_model=internal_model, $
+            external_model=external_model,south=south,km=km,par=par_in,period=period,error=e, $
+            standard_mapping=standard_mapping,r0=r0,rlim=rlim,get_nperiod=get_nperiod, $
+            get_tilt=tilt_dat,set_tilt=set_tilt_dat,get_period_times=period_times_dat,_extra=_extra
+      endelse
+      
+    endif else if n_elements(add_tilt) gt 0 then begin
+      if keyword_set(trace_tvar) then  begin
+        trace2iono,d.x,d.y,f,out_trace_array=tr,in_coord=in_coord,out_coord=out_coord, $
+            internal_model=internal_model,external_model=external_model,south=south,km=km, $
+            par=par_in,period=period,standard_mapping=standard_mapping,error=e,r0=r0, $
+            rlim=rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,add_tilt=add_tilt_dat, $
+            get_period_times=period_times_dat,_extra=_extra  
+      endif else begin
+        trace2iono,d.x,d.y,f,in_coord=in_coord,out_coord=out_coord,internal_model=internal_model,$
+            external_model=external_model,south=south,km=km,par=par_in,period=period,error=e,$
+            standard_mapping=standard_mapping,r0=r0,rlim=rlim,get_nperiod=get_nperiod,$
+            get_tilt=tilt_dat,add_tilt=add_tilt_dat,get_period_times=period_times_dat,_extra=_extra
+      endelse
+    endif else begin
+      if keyword_set(trace_tvar) then  begin
+        trace2iono,d.x,d.y,f,out_trace_array=tr,in_coord=in_coord,out_coord=out_coord,$
+            internal_model=internal_model,external_model=external_model,south=south,km=km,$
+            par=par_in,period=period,standard_mapping=standard_mapping,error=e,r0=r0,$
+            rlim=rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,get_period_times=period_times_dat,_extra=_extra  
+      endif else begin
+        trace2iono,d.x,d.y,f,in_coord=in_coord,out_coord=out_coord,internal_model=internal_model, $
+            external_model=external_model,south=south,km=km,par=par_in,period=period,error=e,$
+            standard_mapping=standard_mapping,r0=r0,rlim=rlim,get_nperiod=get_nperiod,get_tilt=tilt_dat,$
+            get_period_times=period_times_dat,_extra=_extra
+      endelse
+    endelse
+        
+    
+    if e eq 0 then begin
+       message,/continue,'trace2iono failed returning'
+       return
+    endif
+    
+    str_element,d,'v',success=s
+    
+    if s eq 0 then out = {x:d.x,y:f}  else out = {x:d.x,y:f,v:d.v}
+    
+    if not keyword_set(dl) then begin
+       data_att = {coord_sys:out_coord}
+       dl = {data_att:data_att}
+    endif
+    
+    str_element,dl,'data_att',success=s
+    
+    if s eq 0 then begin
+       data_att = {coord_sys:out_coord}
+       str_element,dl,'data_att',data_att,/add_replace
+    endif
+    
+    str_element,dl.data_att,'coord_sys',success=s
+    
+    if s eq 0 then begin
+       data_att = dl.data_att
+       str_element,data_att,'coord_sys',out_coord,/add_replace
+       str_element,dl,'data_att',data_att,/add_replace
+    endif
+    
+    dl.data_att.coord_sys = out_coord
+    
+    store_data,newname,data=out,dlimits=dl
+    
+    if keyword_set(trace_tvar) then begin
+       tr_out = {x:d.x,y:tr}
+    
+       ;dl element will already be set by
+       ;previous store so no need to repeat checks
+    
+       store_data,trace_tvar,data=tr_out,dlimits=dl
+    endif
+    
+    if is_string(get_tilt) then begin
+      store_data,get_tilt,data={x:period_times_dat,y:tilt_dat}
+    endif
+    
+    error = 1
 end
 

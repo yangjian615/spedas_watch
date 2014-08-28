@@ -32,6 +32,9 @@
 ;  energies:  Array specifying the energies used to replace the default SST energies
 ;             and cover the ESA-SST energy gap (in ascending order) (float).
 ;  sst_sun_bins:  Array list of SST bins to mask (bin indices) (int).
+;  only_sst: Interpolates ESA to match SST and returns SST(only) with interpolated bins.(Backwards compatibility: functionality of thm_sst_load_calibrate)
+;  interp_to_esa: Combined product but data interpolated to match ESA(instead of always interpolating to higher resolution)
+;  interp_to_sst: Combined product but data interpolated to match SST(instead of always interpolating to higher resolution)
 ;
 ;
 ;Outputs:
@@ -78,9 +81,9 @@
 ;  uniformity will be assumed as data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-19 18:19:53 -0800 (Wed, 19 Feb 2014) $
-;$LastChangedRevision: 14396 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-03-05 17:20:40 -0800 (Wed, 05 Mar 2014) $
+;$LastChangedRevision: 14508 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_combine.pro $
 ;
 ;-
@@ -95,6 +98,9 @@ function thm_part_combine, probe=probe, $
                       sst_sun_bins=sst_sun_bins, $
                       orig_esa=orig_esa, $
                       orig_sst=orig_sst, $
+                      only_sst=only_sst,$ ;Interpolates ESA to match SST and returns SST(only) with interpolated bins. (Backwards compatibility: functionality of thm_sst_load_calibrate)
+                      interp_to_esa=interp_to_esa,$ ;Combined product but data interpolated to match ESA(instead of always interpolating to higher resolution)
+                      interp_to_sst=interp_to_sst,$ ;Combined product but data interpolated to match SST(instead of always interpolating to higher resolution)
                       _extra=_extra
 
     compile_opt idl2
@@ -197,14 +203,12 @@ function thm_part_combine, probe=probe, $
   for i=0, n_elements(sst)-1 do n_sst_samples = array_concat(n_elements(*sst[i]),n_sst_samples)
 
   ;interpolate to instrument with higher time resolution
-  ;TODO: allow user to specify?
-  
+ 
   ;TODO: Calling both interpolations is a quick fix that prevents a crash.
   ;The interpolation logic used in the SST matching, matches source to target, but not target to source.
   ;To ensure they're mutually matching for the combine operation and prevent errors, you need to call it forward & backwards.
-  ;But this is inefficient.
-  ;Aaron said he's got a plan to rewrite time interpolation to interpolate mutually in the future
-  if total(n_esa_samples) gt total(n_sst_samples) then begin
+  ;But this is inefficient. Aaron said he's got a plan to rewrite time interpolation to interpolate mutually in the future
+  if ~keyword_set(interp_to_sst) && ~keyword_set(only_sst) && (total(n_esa_samples) gt total(n_sst_samples) || keyword_set(interp_to_esa)) then begin
     thm_part_time_interpolate,sst,esa,error=time_interp_error
     thm_part_time_interpolate,esa,sst,error=time_interp_error
   endif else begin
@@ -242,9 +246,9 @@ function thm_part_combine, probe=probe, $
   ;-------------------------------------------------------------------------------------------
   ;Form final distribution
   ;-------------------------------------------------------------------------------------------
- 
-  ;create output product
-  thm_part_merge_dists, esa, sst, out_dist=out_dist, $
+
+    ;create output product
+  thm_part_merge_dists, esa, sst, out_dist=out_dist, only_sst=only_sst,$
            probe=probe, esa_datatype=esa_datatype, sst_datatype=sst_datatype
 
   ;convert into requested units
@@ -257,7 +261,7 @@ function thm_part_combine, probe=probe, $
 
   print, string(10b), 'FINISHED - RUNTIME: '+strtrim(systime(/sec)-start_time,2)+' sec', string(10b)
   
-  heap_gc ;why not
+  heap_gc ;why not?
   
   return, out_dist
 

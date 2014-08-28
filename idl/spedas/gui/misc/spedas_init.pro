@@ -1,63 +1,71 @@
 ;+
 ;PROCEDURE:  spedas_init
-;PURPOSE:    Initializes system variables for spedas data.  Can be called from idl_startup to set
-;            custom locations.
+;
+;PURPOSE:    Initializes system variables for spedas data.
+;            Can be called from idl_startup to set custom locations.
 ;
 ;$LastChangedBy: crussell $
 ;$LastChangedDate: 2013-10-26 12:08:47 -0700 (Sat, 26 Oct 2013) $
 ;$LastChangedRevision: 13403 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/spedas/spd_ui/api_examples/file_configuration_tab/spedas_init.pro $
 ;-
+
 pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, use_spdf = use_spdf, no_color_setup
 
-defsysv,'!spedas',exists=exists
-if not keyword_set(exists) then begin
-   ;defsysv,'!spedas',  file_retrieve(/structure_format)
-   tmp_struct=file_retrieve(/structure_format)
-   str_element,tmp_struct,'browser_exe','',/add 
-   str_element,tmp_struct,'temp_dir','',/add 
-   defsysv,'!spedas',tmp_struct
-endif
+  compile_opt idl2
 
-if keyword_set(reset) then !spedas.init=0
+  spedas_reset = 1
 
-if !spedas.init ne 0 then return
+  defsysv,'!spedas',exists=exists
+  if (not keyword_set(exists)) then begin ;if !spedas is not defined
+    tmp_struct=file_retrieve(/structure_format)
+    str_element,tmp_struct,'browser_exe','',/add
+    str_element,tmp_struct,'temp_dir','',/add
+    str_element,tmp_struct,'temp_cdf_dir','',/add
+    defsysv,'!spedas',tmp_struct
+  endif
 
-tmp_struct = file_retrieve(/structure_format)     
-str_element,tmp_struct,'browser_exe','',/add  
-str_element,tmp_struct,'temp_dir','',/add 
-!spedas=tmp_struct
+  ftest = spedas_read_config()
+  if (keyword_set(reset)) or not (size(ftest, /type) eq 8) then begin ;if it was not saved before or if it is reset
+    tmp_struct=file_retrieve(/structure_format)
+    str_element,tmp_struct,'browser_exe','',/add
+    str_element,tmp_struct,'temp_dir','',/add
+    str_element,tmp_struct,'temp_cdf_dir','',/add
+    defsysv,'!spedas',tmp_struct
+    data_dir =  root_data_dir()
+    data_dir = StrJoin( StrSplit(data_dir, '\\' , /Regex, /Extract, /Preserve_Null), path_sep())
+    data_dir = StrJoin( StrSplit(data_dir, '/', /Regex, /Extract, /Preserve_Null), path_sep())    
+    if STRMID(data_dir, 0, 1, /REVERSE_OFFSET) ne path_sep() then data_dir = data_dir + path_sep()
+    !spedas.local_data_dir = data_dir
+    !spedas.temp_dir =  data_dir
+    !spedas.temp_cdf_dir =  data_dir + 'cdaweb' + path_sep()
+    !spedas.browser_exe = ''
+    !spedas.init = 1
+    print,'Resetting !spedas to default configuration.'
+  endif else begin ;retrieved from saved values
+    ctags = tag_names(ftest)
+    nctags = n_elements(ctags)
+    stags = tag_names(!spedas)
+    sctags = n_elements(stags)
+
+    For j = 0, nctags-1 Do Begin
+      x0 = strtrim(ctags[j])
+      x1 = ftest.(j)
+      If (size(x1, /type) eq 11) then x1 = '' ;ignore objects
+      If(is_string(x1)) Then x1 = strtrim(x1, 2) $
+      Else Begin                  ;Odd thing can happen with byte arrays
+        If(size(x1, /type) Eq 1) Then x1 = fix(x1)
+        x1 = strcompress(/remove_all, string(x1))
+      Endelse
+      index = WHERE(stags eq x0, count)
+      if (count gt 0) and not (size(!spedas.(index), /type) eq 11) then !spedas.(index) = x1
+    endfor
+    spedas_reset = 0
+    print,'Loaded !spedas from saved values.'
+  endelse
+
+  if spedas_reset then spedas_write_config ;if i twas just re-loaded from file, we do not re-write the values
+
+  printdat,/values,!spedas,varname='!spedas
   
-;Read saved values from file
-;ftest = yyy_read_config()
-
-If(size(ftest, /type) Eq 8) && ~keyword_set(reset) Then Begin
-    !spedas.local_data_dir = ftest.local_data_dir
-    !spedas.remote_data_dir = ftest.remote_data_dir
-    !spedas.no_download = ftest.no_download
-    !spedas.no_update = ftest.no_update
-    !spedas.downloadonly = ftest.downloadonly
-    !spedas.verbose = ftest.verbose
-    !spedas.browser_exe = ''
-Endif else begin; use defaults
-    if keyword_set(reset) then begin
-      print,'Resetting spedas to default configuration'
-    endif else begin
-      print,'No spedas config found...creating default configuration'
-    endelse
-    !spedas.local_data_dir = root_data_dir()
-    !spedas.remote_data_dir = ''
-    !spedas.browser_exe = ''
-endelse
-
-if file_test(!spedas.local_data_dir+'spedas/.master') then !spedas.no_server=1  ; Local directory IS the master directory
-
-;libs,'spedas_config',routine=name
-;if keyword_set(name) then call_procedure,name
-
-!spedas.init = 1
-
-printdat,/values,!spedas,varname='!spedas
-
-
 end

@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-18 16:13:53 -0800 (Tue, 18 Feb 2014) $
-;$LastChangedRevision: 14389 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-03-04 19:43:30 -0800 (Tue, 04 Mar 2014) $
+;$LastChangedRevision: 14496 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1391,6 +1391,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   Endif
 
   thm_init
+  spedas_init
   thm_graphics_config
   spd_gui_init
   cdf_leap_second_init

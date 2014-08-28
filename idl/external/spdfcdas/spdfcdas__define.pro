@@ -48,7 +48,7 @@
 ;
 ; @keyword endpoint {in} {optional} {type=string}
 ;              {default=http://cdaweb.gsfc.nasa.gov/WS/cdasr/1}
-;              URL of CDAS web service .
+;              URL of CDAS web service.
 ; @keyword userAgent {in} {optional} {type=string} {default=WsExample}
 ;              HTTP user-agent value used in communications with CDAS.
 ; @keyword defaultDataview {in} {optional} {type=string} 
@@ -167,18 +167,18 @@ end
 
 
 ;+
-; Compares getVersion() and getCurrentVersion() to determine if this
+; Compares getversion() and getCurrentversion() to determine if this
 ; class is up to date.
 ;
-; @returns true if getVersion() >= getCurrentVersion().  Otherwise 
+; @returns true if getversion() >= getCurrentversion().  Otherwise 
 ;     false.
 ;-
 function SpdfCdas::isUpToDate
     compile_opt idl2
 
-    version = strsplit(self->getVersion(), '.', /extract)
+    version = strsplit(self->getversion(), '.', /extract)
     versionElements = n_elements(version)
-    currentVersion = strsplit(self->getCurrentVersion(), '.', /extract)
+    currentVersion = strsplit(self->getCurrentversion(), '.', /extract)
     currentVersionElements = n_elements(currentVersion)
 
     if versionElements eq 1 or currentVersionElements eq 1 then begin

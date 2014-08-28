@@ -24,9 +24,9 @@
 ;  
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-11-18 12:04:32 -0800 (Mon, 18 Nov 2013) $
-;$LastChangedRevision: 13551 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-03-05 16:42:22 -0800 (Wed, 05 Mar 2014) $
+;$LastChangedRevision: 14506 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_make_tplot.pro $
 ;-
 
@@ -73,7 +73,7 @@ pro thm_pgs_make_tplot, name, x=x, y=y, z=z, units=units, tplotnames=tplotnames,
   ;store the data
   store_data, name, $
               data = {x:x, y:transpose(temporary(z)), v:y}, $
-              dlimits = dlimits,verbose=0
+              dlimits = dlimits ;,verbose=0
   
   ;limit default z range based on units
   thm_pgs_set_spec_zlimits, name, units_lc

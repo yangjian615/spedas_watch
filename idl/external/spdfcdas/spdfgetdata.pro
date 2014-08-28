@@ -22,7 +22,7 @@
 ;
 ; NOSA HEADER END
 ;
-; Copyright (c) 2010-2013 United States Government as represented by the
+; Copyright (c) 2010-2014 United States Government as represented by the
 ; National Aeronautics and Space Administration. No copyright is claimed
 ; in the United States under Title 17, U.S.Code. All Other Rights Reserved.
 ;
@@ -38,7 +38,7 @@
 ; <a href="http://spdf.gsfc.nasa.gov/CDAWlib.html">CDAWlib</a>
 ; library.
 ;
-; @copyright Copyright (c) 2010-2013 United States Government as 
+; @copyright Copyright (c) 2010-2014 United States Government as 
 ;     represented by the National Aeronautics and Space 
 ;     Administration. No copyright is claimed in the United States 
 ;     under Title 17, U.S.Code. All Other Rights Reserved.
@@ -95,13 +95,6 @@ end
 ;            data to get.
 ; @keyword dataview {in} {optional} {type=string} {default='sp_phys'}
 ;            name of dataview containing the dataset.
-; @keyword all {in} {optional} {type=int} {default=0}
-;            The ALL keyword causes SpdfGetData to get data according
-;            to the following:<pre>
-;            0 = get data and metadata for requested variable(s) only,
-;            1 = get data and metadata for ALL variables in the CDFs,
-;            2 = get data and metadata for all var_type='data' variables.
-;            </pre>
 ; @keyword keepfiles {in} {optional} {type=boolean} {default=false}
 ;            The KEEPFILES keyword causes SpdfGetData to retain the
 ;            downloaded data files.  Normally these files are deleted
@@ -110,9 +103,8 @@ end
 ;            SpdfGetData normally prints an error message if no data is
 ;            found.  If QUIET is set, no error messages is printed.
 ; @keyword verbose {in} {optional} {type=boolean} {default=false}
-;            The VERBOSE keyword causes SpdfGetData to print an 
-;            informative message about how to access the data that was
-;            returned.
+;            The VERBOSE keyword causes SpdfGetData to print additional
+;            status, debugging, and usage information.
 ; @keyword callback_function {in} {optional} {type=string}
 ;            this keyword value is the name of the IDL function that
 ;            is to be called during this retrieval operation.  The 
@@ -149,7 +141,7 @@ end
 ;-
 function SpdfGetData, $
     dataset, variables, timeSpan, dataview = dataview, $
-    all = all, keepfiles = keepfiles, quiet = quiet, $
+    keepfiles = keepfiles, quiet = quiet, $
     verbose = verbose, callback_function = callback_function, $
     callback_data = callback_data
     compile_opt idl2
@@ -176,6 +168,9 @@ function SpdfGetData, $
             httpErrorReporter = httpErrorReporter)
 
     if ~obj_valid(dataResults) then begin
+
+        obj_destroy, timeInterval
+        obj_destroy, cdas
 
         return, obj_new()
     endif
@@ -254,12 +249,32 @@ function SpdfGetData, $
         endfor
 
         localCdfNames2 = localCdfNames
+        allVars = ''
         ; reads data into handles (memory) should be fastest
-        data = spdf_read_mycdf(variables, localCdfNames2, all = all, $
+        data = spdf_read_mycdf(allVars, localCdfNames2, all = 1, $
                           /nodata) 
 
         ; reads data into .dat structure tags
         ; data = spdf_read_mycdf(variables, localCdfNames) 
+
+        if n_tags(data) eq 3 && $
+           array_equal (tag_names(data), $
+               ['DATASET', 'ERROR', 'STATUS']) then begin
+ 
+            if keyword_set(verbose) then begin
+
+                print, 'Error in spdf_read_mycdf()'
+                print, '  ERROR: ', data.error
+                print, '  STATUS: ', data.status
+            endif
+
+            obj_destroy, fileDescriptions
+            obj_destroy, dataResults
+            obj_destroy, timeInterval
+            obj_destroy, cdas
+
+            return, 1
+        endif
 
         newbuf = spdf_hsave_struct(data, /nosave) 
         ; don't use the /nosave if you want it saved

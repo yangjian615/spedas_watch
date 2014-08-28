@@ -93,10 +93,24 @@ for i=0,n-1 do begin
       str_element,dl,'data_att.st_type','acc',/add
     endif
   endif
+  
+  ;append correction to units
+  ;also check y axis subtitle for unit reference
+  str_element,dl,'data_att.units',units,success=s
+  if s then begin
+    dl.data_att.units += '/s'
+    str_element,dl,'ysubtitle', yst, success=s2
+    if s2 then begin
+      split = stregex(yst, '(.*\['+units+')(\].*)', /subexp,/extract)
+      if split[0] ne '' then begin
+        dl.ysubtitle = split[1]+'/s'+split[2]
+      endif
+    endif
+  endif
 
   if ndimen(d.y) eq 1 then d.y = deriv(d.x,d.y)
   if ndimen(d.y) eq 2 then $
-     for j=0,dimen2(d.y)-1 do d.y(*,j) = deriv(d.x,d.y(*,j))
+     for j=0,dimen2(d.y)-1 do d.y[*,j] = deriv(d.x,d.y[*,j])
 
   store_data,nout,data=d,dlimits=dl
 endfor

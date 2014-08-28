@@ -2,7 +2,18 @@
 ;NAME: SPICE_STANDARD_KERNELs
 ;USAGE:  files = spice_standard_kernels(/load)
 ;PURPOSE:
-; Provides standard spice kernel filenames
+; Provides fully resolved standard spice kernel filenames. files are downloaded if needed.
+; NOTE: this routine is in development still.
+; 
+; NAIF specifies a few "standard" files that must typically be loaded in before for any calculations can be performed. These are:
+;    Leap second kernel:   (naif????.tls)  Contains times of leap seconds.   ???? contains the version number and increments by 1 with every new leap second.
+;    PCK kernel:           (pck?????.tpc)  Contains spin axis and size of most solar system bodies. 
+;    SPK kernel:           (de???.bsp)     Contains ephemeris data for the planets. Mars (499) is NOT included in most recent version!
+;    
+; The file names and locations (and even contents) of these kernels is not standard and will change with each new release.
+; 
+;KEYWORDS:
+;  MARS:   
 ; 
 ;CALLING SEQUENCE:
 ;  files=spice_standard_kernels(/load) 

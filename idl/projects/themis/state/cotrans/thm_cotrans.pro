@@ -72,8 +72,8 @@
 ;              in_coord='dsl', probe='b c d', out_suff='_gse'
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-20 14:04:12 -0800 (Thu, 20 Feb 2014) $
-; $LastChangedRevision: 14401 $
+; $LastChangedDate: 2014-03-04 09:59:31 -0800 (Tue, 04 Mar 2014) $
+; $LastChangedRevision: 14487 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/cotrans/thm_cotrans.pro $
 ;-
 
@@ -386,7 +386,7 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
                       
 end
                       
-; in_coord is optional if dlimits includs a data_att.coord_sys element.
+; in_coord is optional if dlimits includes a data_att.coord_sys element.
 pro thm_cotrans, in_name, out_name, probe=probe, datatype=datatype,  $
                  in_coord=in_coord, out_coord=out_coord, verbose=verbose, $
                  in_suffix=in_suf, out_suffix=out_suf, valid_names=valid_names, $

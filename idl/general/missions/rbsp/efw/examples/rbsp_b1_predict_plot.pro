@@ -1,10 +1,11 @@
+; rbsp_b1_predict_plot.pro
+
 ;Overplot the predicted buffer location over the current buffer location plot
 ;This is a useful tool for visualizing the future location of the B1 memory pointer location. 
 ;You can implement B1 collection times, pointer jumps, and indicate regions that you'd
 ;rather not overwrite. 
 
 ;Written by Aaron W Breneman, University of Minnesota, December, 2013
-
 
 
 ;First need to run:  .run b1_status_crib
@@ -14,7 +15,6 @@
     ;record_rate=(buffer_index[1] - buffer_index[0]) / (t[1] - t[0])
     ;print, 'B1 record rate (blocks/sec):', record_rate
 
-
 ;-----------------------------------------------------------------------------------------
 
 ;Reference (memory) location of B1 pointer. All collection times are based on this location. 
@@ -22,84 +22,80 @@
 ;from actual collection times. 
 ;Update using ctime, t, buffer_index, npoints=2, /exact
 ;Only included predicted times AFTER the reference location
-;;A: 2.207d4 at 2014-02-15/23:40 (REFERENCE TIME)
-;;B: 1.220d5 at 2014-01-31/19:30 (REFERENCE TIME)
-;cloca = 2.207d4
-;clocb = 1.220d5
-
-;A: 164400d at 2014-02-21/21:58 (REFERENCE TIME)
-;B: 95614d at  2014-02-21/18:59 (REFERENCE TIME)
-cloca = 164400d
-clocb = 95614.0d
-
 
 sz = 262144L    ;size of memory buffer (blocks)
 
-
+cloca = 160415d
+clocb = 209006d
 
 ;-----------------------------------------------------------------------------------------
-;Start times of jump (AFTER REFERENCE TIME ONLY)
-;jumpa_s = time_double(['2014-02-02/13:25','2014-02-05/19:00','2014-02-07/02:30'])
-;jumpa_s = time_double(['2014-02-17/06:00','2014-02-13/09:00'])
-;jumpb_s = time_double(['2014-02-06/23:55'])
-jumpa_s = time_double(['2014-02-27/15:35'])
-jumpb_s = time_double(['2014-02-23/00:06'])
-;number of blocks to jump
-;A - jump to 120,000 at 2014-02-13/09:00
+; jump id and its start times (AFTER REFERENCE TIME ONLY)
+jumpa_s = time_double(['2014-03-08/15:24','2014-03-10/03:16','2014-03-11/15:08'])
+nb_jumpa = [248020D,248020D,248020D]
 
-nb_jumpa = [0.]
-nb_jumpb = [0.]
 
-;2014-02-21/21:58    ptr at block  490.0 on rbspa
-;2014-02-21/18:59    ptr at block  41619.0 on rbspb
-;2014-02-23/00:06  9.561e+04 
+jumpb_s = time_double(['2014-03-08/23:55','2014-03-11/23:46'])
+nb_jumpb = [112202D,112202D]
 
 ;-----------------------------------------------------------------------------------------
 
+;Start and stop times of requested data playback that we want to be sure to protect (black diamonds are changed to blue diamonds)
+tmp = [['2014-02-28/00:35', '2014-02-28/02:00']]
+tpa0 = time_double(transpose(tmp[0,*]))
+tpa1 = time_double(transpose(tmp[1,*]))
 
+tmp =  [['2014-02-20/13:14', '2014-02-20/16:00'],$
+        ['2014-02-20/12:00', '2014-02-20/15:00'],$
+        ['2014-02-20/16:00', '2014-02-20/17:44'],$
+        ['2014-02-20/22:00', '2014-02-20/24:00'],$
+        ['2014-02-21/06:00', '2014-02-21/10:30'],$
+        ['2014-02-22/00:00', '2014-02-22/05:56'],$
+        ['2014-02-23/04:00', '2014-02-23/05:00'],$
+        ['2014-02-23/07:00', '2014-02-23/08:00']]
+tpb0 = time_double(transpose(tmp[0,*]))
+tpb1 = time_double(transpose(tmp[1,*]))
 
-;Times of requested data playback that we want to be sure to protect (black diamonds are changed to blue diamonds)
-
-;tpa0 = time_double('2014-02-' + ['09/00:00','10/02:20','13/11:30','16/19:00'])
-;tpa1 = time_double('2014-02-' + ['09/03:30','10/06:00','13/15:00','16/23:00'])
-;tpb0 = time_double('2014-02-' + ['08/21:30','10/00:00','09/13:30','09/18:00','12/13:30','17/01:00','16/17:00'])
-;tpb1 = time_double('2014-02-' + ['09/01:00','10/03:30','09/16;30','09/20:00','12/16:30','17/03:00','16/24:00'])
-
-tpa0 = time_double('2014-02-' + ['27/16:40','27/18:15','28/18:33'])
-tpa1 = time_double('2014-02-' + ['27/17:20','27/18:45','28/19:00'])
-
-tpb0 = time_double('2014-02-' + ['20/11:44','20/12:00','20/16:00','20/22:00','21/06:00','22/00:00','23/04:00','23/07:00'])
-tpb1 = time_double('2014-02-' + ['20/16:00','20/15:00','20/17:44','20/24:00','21/10:30','22/05:56','23/05:00','23/08:00'])
 
 ;-----------------------------------------------------------------------------------------
-
 
 ;Define date collection rate for each collection time
-ratea = [16384,16384,16384,16384]
-rateb = [4096,4096,4096,4096,4096,4096,4096,4096]
+ratea = [16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,16384]
+rateb = [4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096]
 
+;Start and end times of collection on A (AFTER REFERENCE TIME ONLY!!!)
+tmp = [['2014-03-08/15:25', '2014-03-08/20:25'],$
+       ['2014-03-09/00:23', '2014-03-09/05:23'],$
+       ['2014-03-09/09:21', '2014-03-09/14:21'],$
+       ['2014-03-09/18:19', '2014-03-09/23:19'],$
+       ['2014-03-10/03:17', '2014-03-10/08:17'],$
+       ['2014-03-10/12:15', '2014-03-10/17:15'],$
+       ['2014-03-10/21:13', '2014-03-11/02:13'],$
+       ['2014-03-11/06:11', '2014-03-11/11:11'],$
+       ['2014-03-11/15:09', '2014-03-11/20:09'],$
+       ['2014-03-12/00:07', '2014-03-12/05:07'],$
+       ['2014-03-12/09:05', '2014-03-12/14:05'],$
+       ['2014-03-12/18:03', '2014-03-12/23:03']]
  
-;Start times of collection on A (AFTER REFERENCE TIME ONLY)
+timea_s = time_double(transpose(tmp[0,*]))
+timea_e = time_double(transpose(tmp[1,*]))
 
-timea_s = time_double(['2014-02-27/15:36','2014-02-28/00:35','2014-02-28/09:34','2014-02-28/18:33'])
+;Start and end times of collection on B (AFTER REFERENCE TIME ONLY!!!)
+tmp = [['2014-03-08/05:59', '2014-03-08/11:59'],$
+       ['2014-03-08/14:58', '2014-03-08/20:58'],$
+       ['2014-03-08/23:56', '2014-03-09/05:56'],$
+       ['2014-03-09/08:55', '2014-03-09/14:55'],$
+       ['2014-03-09/17:54', '2014-03-09/23:54'],$
+       ['2014-03-10/02:53', '2014-03-10/08:53'],$
+       ['2014-03-10/11:51', '2014-03-10/17:51'],$
+       ['2014-03-10/20:50', '2014-03-11/02:50'],$
+       ['2014-03-11/05:49', '2014-03-11/11:49'],$
+       ['2014-03-11/14:48', '2014-03-11/20:48'],$
+       ['2014-03-11/23:47', '2014-03-12/05:47'],$
+       ['2014-03-12/08:45', '2014-03-12/14:45'],$
+       ['2014-03-12/17:44', '2014-03-12/23:44']]
 
-
-;End times of collection on A (AFTER REFERENCE TIME ONLY)
-
-timea_e = time_double(['2014-02-27/21:36','2014-02-28/06:35','2014-02-28/15:34','2014-03-01/00:33'])
-
-
-;Start times of collection on B (AFTER REFERENCE TIME ONLY)
-
-timeb_s = time_double(['2014-02-23/03:05','2014-02-23/12:08','2014-02-23/21:22','2014-02-24/06:15','2014-02-24/15:18',$
-'2014-02-25/00:20','2014-02-25/09:23','2014-02-25/18:26'])
-
-;End times of collection on B (AFTER REFERENCE TIME ONLY)
-
-timeb_e = time_double(['2014-02-23/09:05','2014-02-23/18:08','2014-02-24/03:12','2014-02-24/12:15','2014-02-24/21:18',$
-'2014-02-25/06:20','2014-02-25/15:23','2014-02-26/00:26'])
-
-;-----------------------------------------------------------------------------------------
+timeb_s = time_double(transpose(tmp[0,*]))
+timeb_e = time_double(transpose(tmp[1,*]))
 
 
 ;Do some quick array size checks
@@ -113,7 +109,6 @@ if n_elements(jumpa_s) ne n_elements(nb_jumpa) then stop
 if n_elements(jumpb_s) ne n_elements(nb_jumpb) then stop
 if n_elements(tpa0) ne n_elements(tpa1) then stop
 if n_elements(tpb0) ne n_elements(tpb1) then stop
-
 
 
 ;Blocks per second
@@ -157,7 +152,6 @@ timeb_e = timeb_e[stb]
 incrementva = skipva[sta]
 incrementvb = skipvb[stb]
 
-
 ;-------------------------------------------------------------------------------
 ;Print out timeline of collection and jumps
 
@@ -190,15 +184,27 @@ endfor
 print,''
 ;-------------------------------------------------------------------------------
 
-
 stop
 
 ;Future memory locations
 mema = dblarr(n_elements(incrementva))
 memb = dblarr(n_elements(incrementvb))
 
-for i=0,n_elements(incrementva)-1 do mema[i] = total(incrementva[0:i]) + cloca
-for i=0,n_elements(incrementvb)-1 do memb[i] = total(incrementvb[0:i]) + clocb
+; check first location, if it's jump, then do nothing, otherwise use start location.
+idx = where(timea_s[0] eq jumpa_s, cnt)
+if cnt ne 0 then mema[0] = incrementva[0] else mema[0] = cloca+incrementva[0]
+for i=1,n_elements(incrementva)-1 do begin
+    idx = where(timea_s[i] eq jumpa_s, cnt)
+    ; if it's jump, then do nothing, otherwise increment.
+    if cnt ne 0 then mema[i] = incrementva[i] else mema[i] = mema[i-1]+incrementva[i]
+endfor
+
+idx = where(timeb_s[0] eq jumpb_s, cnt)
+if cnt ne 0 then mema[0] = incrementvb[0] else memb[0] = clocb+incrementvb[0]
+for i=1,n_elements(incrementvb)-1 do begin
+    idx = where(timeb_s[i] eq jumpb_s, cnt)
+    if cnt ne 0 then memb[i] = incrementvb[i] else memb[i] = memb[i-1]+incrementvb[i]
+endfor
 
 timea = [timea_s,timea_e]
 timeb = [timeb_s,timeb_e]
@@ -230,7 +236,6 @@ membf = [membs,memb]
 ;Sort chronologically
 memaf = memaf[sa]
 membf = membf[sb]
-
 
 
 ;Create a tplot variable with the future memory locations

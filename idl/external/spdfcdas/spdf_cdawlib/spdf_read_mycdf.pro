@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2013-09-09 14:51:13 -0700 (Mon, 09 Sep 2013) $
-;$Header: /home/cdaweb/dev/control/RCS/read_myCDF.pro,v 1.293 2013/06/27 13:50:17 kovalick Exp kovalick $
+;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/spdf_read_mycdf.pro,v 1.300 2014/01/30 20:09:47 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 12996 $
+;$Revision: 14512 $
 ;+------------------------------------------------------------------------
 ; This package of IDL functions facilitates reading data and metadata from
 ; Common Data Format (CDF) files.  While CDF provides all the benefits
@@ -10,7 +10,7 @@
 ; not always a simple matter.  To make it simple, I have created this IDL
 ; package so that all of the data and metadata from multiple variables can 
 ; be read from multiple CDF files ... in one single, simple command.  The 
-; function is called 'READ_MYCDF' and it returns an anonymous structure of
+; function is called 'spdf_read_mycdf' and it returns an anonymous structure of
 ; the form:
 ;
 ;       structure_name.variable_name.attribute_name.attribute_value
@@ -58,11 +58,11 @@
 ; Modifications: 
 ;	As of October 2, 2000, this software can run on all of the following
 ;	IDL versions, 5.1, 5.2 and 5.3 (testing for 5.4 will commence soon).
-;	Some fairly major changes were necessary in order for read_myCDF
+;	Some fairly major changes were necessary in order for spdf_read_mycdf
 ;	to work under 5.3.  IDL 5.3 enforces the variable naming rules for
 ;	structure tag names.  This change affects this s/w because we basically
 ;	had never checked our tag names, e.g. we used the CDF variable names
-;	and label attribute values directly.  So in read_myCDF the general
+;	and label attribute values directly.  So in spdf_read_mycdf the general
 ;	concept to fixing this problem was to set up a table (which is shared
 ;	in a common block - not my favorite way to go, but definitely the 
 ;	easiest), where there are two tags, equiv and varname.  varname 
@@ -76,8 +76,46 @@
 ; routine is provided as is without any express or implied warranties
 ; whatsoever.
 ;-------------------------------------------------------------------------
-
-
+; NAME: spdf_break_mystring
+; PURPOSE: 
+;       Convert a string into a string array given a delimiting character 
+; CALLING SEQUENCE:
+;       out = spdf_break_mystring(instring)
+; INPUTS:
+;       instring = input text string
+; KEYWORD PARAMETERS:
+;       delimiter = character to parse by.  Default = ' '
+; OUTPUTS:
+;       out = string array
+; AUTHOR:
+;       Jason Mathews, NASA/GSFC/Code 633,  June, 1994
+;       mathews@nssdc.gsfc.nasa.gov    (301)286-6879
+; MODIFICATION HISTORY:
+;-------------------------------------------------------------------------
+FUNCTION spdf_break_mystring, s, DELIMITER=delimiter
+; Validate the input parameters
+s_size=size(s) & n_size=n_elements(s_size)
+if (s_size[n_size - 2] ne 7) then begin
+  print,'ERROR>Argument to spdf_break_mystring must be of type string'
+  return,-1
+endif
+if s eq '' then return, [ '' ]
+if n_elements(delimiter) eq 0 then delimiter = ''
+; dissect the string
+byte_delim = Byte( delimiter ) ; convert string to byte delimiter
+result = Where( Byte(s) eq byte_delim[0], count ) ; count occurences
+result = StrArr( count+1 ) & pos = -1
+if (count gt 0) then begin
+  for i=0, count-1 do begin
+    oldpos = pos + 1
+    pos = StrPos(s, delimiter, oldpos)
+    result[i] = StrMid(s, oldpos, pos-oldpos)
+  endfor
+endif
+pos = pos + 1
+result[count] = StrMid( s, pos, StrLen(s) - pos )
+return, result
+end
 ;+-----------------------------------------------------------------------
 ; Search the tnames array for the instring, returning the index in tnames
 ; if it is present, or -1 if it is not.
@@ -91,12 +129,12 @@
 ;end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_amI_ISTPptr
+; NAME: AMI_ISTPPTR
 ; PURPOSE:
 ;       Return true(1) or false(0) depending on whether or not the
 ;       given attribute name qualifies as an ISTP pointer-class attribute.
 ; CALLING SEQUENCE:
-;	out = spdf_amI_ISTPptr(attribute_name)
+;	out = amI_ISTPptr(attribute_name)
 ; INPUTS:
 ;	attribute_name = name of a CDF attribute as a string
 ; KEYWORD PARAMETERS:
@@ -107,7 +145,7 @@
 ;       burley@nssdca.gsfc.nasa.gov    (301)286-2864
 ; MODIFICATION HISTORY:
 ;-------------------------------------------------------------------------
-FUNCTION spdf_amI_ISTPptr, aname
+FUNCTION amI_ISTPptr, aname
 if (aname eq 'UNIT_PTR')        then return,1
 if (aname eq 'FORM_PTR')        then return,1
 ;if (aname eq 'DELTA_PLUS_VAR')  then return,1
@@ -132,12 +170,12 @@ escape: return,0
 end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_amI_VAR
+; NAME: AMI_VAR
 ; PURPOSE:
 ;       Return true(1) or false(0) depending on whether or not the
 ;       given attribute name's value is assigned to a real CDF variable name.
 ; CALLING SEQUENCE:
-;	out = spdf_amI_VAR(attribute_name)
+;	out = amI_VAR(attribute_name)
 ; INPUTS:
 ;	attribute_name = name of a CDF attribute as a string
 ; KEYWORD PARAMETERS:
@@ -148,20 +186,20 @@ end
 ;
 ; MODIFICATION HISTORY:
 ;-------------------------------------------------------------------------
-FUNCTION spdf_amI_VAR, aname
+FUNCTION amI_VAR, aname
 if (strpos(aname, 'DEPEND') eq 0) then return,1
 if (strpos(aname, 'COMPONENT') eq 0) then return,1
 return,0
 end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_parse_DISPLAY_TYPE
+; NAME: PARSE_DISPLAY_TYPE
 ; PURPOSE: 
 ;	Parse and examine the input string.  It should be the value of the
 ;	CDF attribute 'DISPLAY_TYPE'.  Return an array of variable names
 ;       that it 'points' to.
 ; CALLING SEQUENCE:
-;	out = spdf_parse_DISPLAY_TYPE(instring)
+;	out = parse_display_type(instring)
 ; INPUTS:
 ;       instring = string, value of a CDF attribute called 'DISPLAY_TYPE'
 ; KEYWORD PARAMETERS:
@@ -180,7 +218,7 @@ end
 ;value isn't a variable.
 ;
 ;-------------------------------------------------------------------------
-FUNCTION spdf_parse_DISPLAY_TYPE, instring
+FUNCTION parse_DISPLAY_TYPE, instring
 num_vnames = 0L & spos = 0L & i=0L ; initialize
 a = spdf_break_mystring(instring,DELIMITER='>') ; break string into components
 if n_elements(a) le 1 then return,-1 ; no '>' following plot type
@@ -212,12 +250,12 @@ endfor
 if num_vnames eq 0 then return,-1 else return,variable_names
 end
 
-;Function spdf_correct_vnames(vnames)
+;Function correct_vnames(vnames)
 ;This function takes a list of variable names, checks to see if any of them
 ;are in the structure called "table" which has a mapping of the "real" variable names
 ;to those who've been "corrected" in order to run under IDL5.3.
 
-Function spdf_correct_vnames, vnames
+Function correct_vnames, vnames
 common global_table, table
 
 if (n_elements(table) gt 0) then begin
@@ -231,14 +269,14 @@ return, vnames
 end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_follow_myDEPENDS
+; NAME: follow_myDEPENDS
 ; PURPOSE: 
 ;	Search the metadata anonymous structure for ISTP 'DEPEND' attributes.
 ;       If and when found, add the variable name that it points to to the
 ;       vnames array if it is not already present, and increase the size
 ;       of the dhids and mhids arrays.
 ; CALLING SEQUENCE:
-;       spdf_follow_myDEPENDS, metadata, vnames, dhids, mhids
+;       follow_myDEPENDS, metadata, vnames, dhids, mhids
 ; INPUTS:
 ;       metadata = anonymous structure holding attribute values
 ;       vnames   = string array of the names of variables already processed
@@ -254,16 +292,16 @@ end
 ;       burley@nssdca.gsfc.nasa.gov    (301)286-2864
 ; MODIFICATION HISTORY:
 ;-------------------------------------------------------------------------
-PRO spdf_follow_myDEPENDS, metadata, vnames, vvarys, ctypes, dhids, mhids
+PRO follow_myDEPENDS, metadata, vnames, vvarys, ctypes, dhids, mhids
 
 tnames = tag_names(metadata)
 for i=0,n_elements(tnames)-1 do begin
    ; Determine if the current tagname is a legal ISTP-style DISPLAY_TYPE vattr
    if (tnames[i] eq 'DISPLAY_TYPE') then begin
-      dvnames = spdf_parse_DISPLAY_TYPE(metadata.(i)) & dvs = size(dvnames)
+      dvnames = parse_DISPLAY_TYPE(metadata.(i)) & dvs = size(dvnames)
       if (dvs[n_elements(dvs)-2] eq 7) then begin ; variable names found
          for j=0,n_elements(dvnames)-1 do begin
-	    dvnames[j] = spdf_correct_vnames(dvnames[j]) ;look for variable names that have
+	    dvnames[j] = correct_vnames(dvnames[j]) ;look for variable names that have
 	    ;been corrected (no illegal characters)
 	    ;replace them w/ their "real" names 
 	    ;so that their associated data can be
@@ -294,7 +332,7 @@ for i=0,n_elements(tnames)-1 do begin
          r = strmid(tnames[i],(7+j),1) & READS,r,v,FORMAT='(I1)'
       endfor
       dvname = metadata.(i) ; depend attribute FOUND
-      dvname = spdf_correct_vnames(dvname) ;look for variable names that have
+      dvname = correct_vnames(dvname) ;look for variable names that have
       ;been corrected (no illegal characters)
       ;replace them w/ their "real" names 
       ;so that their associated data can be
@@ -332,7 +370,7 @@ end
 ; PURPOSE: 
 ;	Convert from CDF type number to IDL type number
 ; CALLING SEQUENCE:
-;       out = spdf_CDFtype_to_myIDLtype(in)
+;       out = CDFtype_to_myIDLtype(in)
 ; INPUTS:
 ;       in = integer, CDF type number
 ; KEYWORD PARAMETERS:
@@ -346,7 +384,7 @@ end
 ;       for handling the new (IDL6.3/CDF3.1) Epoch16 values
 ;       The CDFTYPE values come from cdf.inc in the cdf/include directory
 ;-------------------------------------------------------------------------
-FUNCTION spdf_CDFtype_to_myIDLtype,cdftype
+FUNCTION CDFtype_to_myIDLtype,cdftype
 
 case cdftype of
    22L : idltype = 5 ; CDF_REAL8
@@ -371,11 +409,11 @@ end
 
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_appendn_myDATA
+; NAME: APPEND_MYDATA
 ; PURPOSE: 
 ; 	Append the 'new' data to the 'old' data using array concatenation.
 ; CALLING SEQUENCE:
-;       out = spdf_appendn_myDATA(new,old)
+;       out = append_mydata(new,old)
 ; INPUTS:
 ;       new = data to be appended to the old data
 ;       old = older data that new data is to be appended to
@@ -394,7 +432,7 @@ end
 ;       burley@nssdca.gsfc.nasa.gov    (301)286-2864
 ; MODIFICATION HISTORY:
 ;-------------------------------------------------------------------------
-FUNCTION spdf_appendn_myDATA, new, old, dict_key=dict_key, vector=vector
+FUNCTION append_myDATA, new, old, dict_key=dict_key, vector=vector
 
 ; RCJ (11/21/01) Added this line because of problem w/ dataset wi_k0_sms:
 ; RCJ (02/01/02) Well, fixed problem for wi_k0_sms but broke for other datasets
@@ -454,9 +492,9 @@ if (a[0] gt b[0]) then begin ; dimension mismatch - reform old data
    case b[0] of
       0    : ; no special actions needed
       1    : begin
-               old = reform(temporary(old),b[1],1)
-               ;if keyword_set(vector) then old = reform(temporary(old),b[1],1) $
-               ;   else old = reform(temporary(old),1,b[1])
+               ;old = reform(temporary(old),b[1],1)
+               if keyword_set(vector) then old = reform(temporary(old),b[1],1) $
+                  else old = reform(temporary(old),1,b[1])
 	       ; RCJ 04/19/2013  Making value=old[0] makes all values of a vector
 	       ;  equal to that value.
                ;old = make_array(a[1],1,type=size(old,/type),value=old[0])
@@ -479,9 +517,9 @@ if (a[0] lt b[0]) then begin ; dimension mismatch - reform new data
    case a[0] of
       0    : ; no special actions needed
       1    : begin
-               new = reform(temporary(new),a[1],1)
-               ;if keyword_set(vector) then new = reform(temporary(new),a[1],1) $
-               ;   else new = reform(temporary(new),1,a[1])
+               ;new = reform(temporary(new),a[1],1)
+               if keyword_set(vector) then new = reform(temporary(new),a[1],1) $
+                  else new = reform(temporary(new),1,a[1])
 	       ; RCJ 04/19/2013  Making value=new[0] makes all values of a vector
 	       ;  equal to that value.
                ;new = make_array(b[1],1,type=size(new,/type),value=new[0])
@@ -560,7 +598,7 @@ case obsme[0] of
    else: print,'ERROR=Cannot append arrays with > 4 dimensions yet'
 endcase
 ; TJK 10/21/2009 remove this line from here.  Plot_spectrogram uses
-; spdf_appendn_myDATA to add fill values to the data array. The following line wipes
+; append_mydata to add fill values to the data array. The following line wipes
 ; out the fill values.  Let the calling routine take care of releasing memory.
 ;new = 0L & old = 0L ; free up unneeded memory
 
@@ -568,7 +606,7 @@ return,data
 end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_add_myDEPENDS
+; NAME: add_myDEPENDS
 ; PURPOSE: 
 ;	Search the metadata anonymous structure for ISTP 'DEPEND' 
 ;	attributes and add the variable name that it points to to the
@@ -577,7 +615,7 @@ end
 ;	won't be plotted.
 ;
 ; CALLING SEQUENCE:
-;       spdf_add_myDEPENDS, metadata, vnames
+;       add_myDEPENDS, metadata, vnames
 ;
 ; INPUTS:
 ;       metadata = anonymous structure holding attribute values
@@ -587,12 +625,12 @@ end
 ;       vnames    = modified variable name that includes component variable
 ;                   names
 ;
-; NOTES - this is similar to spdf_follow_myDEPENDS, except it does less.
+; NOTES - this is similar to follow_myDEPENDS, except it does less.
 ;
 ; AUTHOR:
 ; 	Tami Kovalick, QSS,   11/29/2006
 ;-------------------------------------------------------------------------
-PRO spdf_add_myDEPENDS, metadata, vnames
+PRO add_myDEPENDS, metadata, vnames
 common global_table, table
 
 tnames = tag_names(metadata)
@@ -606,7 +644,7 @@ for k=0,n_elements(tnames)-1 do begin
          r = strmid(tnames[k],(10+j),1) & READS,r,v,FORMAT='(I1)'
       endfor
       dvname = metadata.(k) ; depend attribute FOUND
-      dvname = spdf_correct_vnames(dvname) ;look for variable names that have
+      dvname = correct_vnames(dvname) ;look for variable names that have
       a = where(vnames eq dvname,count)    ; search vnames array
       ;TJK 4/23/01 added extra check for the case where the depend_0 variable
       ; has an alternate name (its original name had invalid characters in it) - so
@@ -628,7 +666,7 @@ endfor  ;  Finished looping through all metadata elements
 
 end
 ;+------------------------------------------------------------------------
-; NAME: spdf_add_myCOMPONENTS
+; NAME: add_myCOMPONENTS
 ; PURPOSE: 
 ;	Search the metadata anonymous structure for ISTP 'COMPONENT' 
 ;	attributes and add the variable name that it points to to the
@@ -637,7 +675,7 @@ end
 ;	won't be plotted.
 ;
 ; CALLING SEQUENCE:
-;       spdf_add_myCOMPONENTS, metadata, vnames
+;       add_myCOMPONENTS, metadata, vnames
 ;
 ; INPUTS:
 ;       metadata = anonymous structure holding attribute values
@@ -650,7 +688,7 @@ end
 ; AUTHOR:
 ; 	Carrie Gallap, Raytheon STX,   1/5/98
 ;-------------------------------------------------------------------------
-PRO spdf_add_myCOMPONENTS, metadata, vnames
+PRO add_myCOMPONENTS, metadata, vnames
 common global_table, table
 
 tnames = tag_names(metadata)
@@ -667,7 +705,7 @@ for k=0,n_elements(tnames)-1 do begin
          r = strmid(tnames[k],(10+j),1) & READS,r,v,FORMAT='(I1)'
       endfor
       dvname = metadata.(k) ; component attribute FOUND
-      dvname = spdf_correct_vnames(dvname) ;look for variable names that have
+      dvname = correct_vnames(dvname) ;look for variable names that have
       a = where(vnames eq dvname,count)    ; search vnames array
       ;TJK 4/23/01 added extra check for the case where the component_0 variable
       ; has an alternate name (its original name had invalid characters in it) - so
@@ -693,7 +731,7 @@ endfor  ;  Finished looping through all metadata elements
 
 end
 ;-------------------------------------------------------------------------
-PRO spdf_add_myDELTAS, metadata, vnames
+PRO add_myDELTAS, metadata, vnames
 common global_table, table
 
 tnames = tag_names(metadata)
@@ -703,9 +741,9 @@ for i=0,n_elements(tnames)-1 do begin
           & pos2 = strpos(tnames[i],'DELTA_MINUS_VAR')
    if ((pos1[0] ne -1) or (pos2[0] ne -1)) then begin ; DELTA found, 
       dvname = metadata.(i) 
-      dvname = spdf_correct_vnames(dvname) ;look for variable names that have
+      dvname = correct_vnames(dvname) ;look for variable names that have
       q = where(vnames eq dvname,count) ;search vnames array to make sure
-      ;TJK (from spdf_add_myDELTAS): added extra check for the case where 
+      ;TJK (from add_mydeltas): added extra check for the case where 
       ; the delta variable
       ; has an alternate name (its original name had invalid characters in it) - so
       ; check the table prior to including it.
@@ -729,11 +767,11 @@ end
 ;
 ;
 ;+------------------------------------------------------------------------
-; NAME: spdf_read_myVARIABLE
+; NAME: READ_MYVARIABLE
 ; PURPOSE: 
 ;	Return the data for the requested variable.
 ; CALLING SEQUENCE:
-;       out = spdf_read_myVARIABLE(vname, CDFid, vary, dtype, recs)
+;       out = read_myvariable(vname, CDFid, vary, dtype, recs)
 ; INPUTS:
 ;       vname = string, name of variable to be read from the CDF
 ;       CDFid = integer, id or already opened CDF file.
@@ -755,12 +793,12 @@ end
 ;	keywords (see above).  If they aren't set you will get all of
 ; 	the records in a cdf.
 ;-------------------------------------------------------------------------
-FUNCTION spdf_read_myVARIABLE, vname, CDFid, vary, $
+FUNCTION read_myVARIABLE, vname, CDFid, vary, $
 	 dtype, recs, START_REC=START_REC, REC_COUNT=REC_COUNT,DEBUG=DEBUG
 
 ;
 ; Get needed information about the cdf and variable
-
+;stop;
 cinfo = cdf_inquire(CDFid) ; inquire about the cdf
 vinfo = cdf_varinq(CDFid,vname) ; inquire about the variable
 cdf_control,CDFid,VAR=vname,GET_VAR_INFO=vinfo2 ; inquire more about the var
@@ -804,7 +842,6 @@ if (zflag eq 1) then begin ; read the z-variable
 ;                 written), return the fill value for this variable
 ;print, 'WARNING, no records for variable ',vname
 ;print, 'attempting to get fillval and return that'
-
       anum = cdf_attnum(CDFid,'FILLVAL')
       if ((anum ne -1) and cdf_attexists(CDFid,'FILLVAL',vname))then begin
          cdf_attget,CDFid,'FILLVAL',vname,wfill
@@ -834,8 +871,43 @@ if (zflag eq 1) then begin ; read the z-variable
                    if (vinfo2.maxrecs le 0) then begin
 		      return, make_array(vinfo.dim,value=wfill)
 		   endif else begin 
-		      if keyword_set(DEBUG) then print,'WARNING, ',vname,' has no records but its depend_0 does. Filling in array with ',vinfo2.maxrecs+1,' elements.'  
-		      return, make_array(vinfo.dim,vinfo2.maxrecs+1,value=wfill)
+ 
+;1/30/2014 TJK check the depend0 variable to see if its virtual, if so
+;it will have a component_1 (THEMIS case) so the epoch values don't 
+;exist yet... so need to get the depend_0's, component_1's data size 
+;and compare w/ the current variables size - stored below in cinfo.maxrec
+                      dnum = cdf_attnum(CDFid,'DEPEND_0')
+                      if ((dnum ne -1) and cdf_attexists(CDFid,'DEPEND_0',vname))then begin
+                         cdf_attget,CDFid,'DEPEND_0',vname, depend0 ;depend_0 of the data variable
+                         if (depend0 ne ' ') then begin ;if depend_0 isn't blank get its component_0
+                            cnum = cdf_attnum(CDFid,'COMPONENT_1')
+                            if ((cnum ne -1) and cdf_attexists(CDFid,'COMPONENT_1',depend0))then begin
+                               cdf_attget,CDFid,'COMPONENT_1',depend0,component1 ;component_1 of the data variable
+                               if (component1 ne ' ') then begin ; now get the data array sizes for the component_1 variable
+                                  cdf_control,CDFid,VAR=component1,GET_VAR_INFO=cinfo
+                                  if (cinfo.maxrec+1 gt 0) then make_records = cinfo.maxrec+1 else make_records = 1
+                                  if keyword_set(DEBUG) then print,'WARNING, ',vname,' has no records but its component_1 ',component1,' does. Filling in array with ',make_records,' elements.'  
+                                  return, make_array(vinfo.dim,make_records,value=wfill)
+;                                 help, /struct, cinfo
+                               endif 
+                             endif else begin ; if component_1 isn't found, then use the maxrec for this variable
+                                if (vinfo2.maxrec+1 gt 0) then make_records = vinfo2.maxrec+1 else make_records = 1
+                                if keyword_set(DEBUG) then print,'WARNING, ',vname,' has no records but its depend_0 ',depend0,' does. Filling in array with ',make_records,' elements.'  
+                                return, make_array(vinfo.dim,make_records,value=wfill)
+                             endelse
+                         endif
+                      endif else begin ; if depend_0 isn't found, then use the maxrec for this variable
+                        if (vinfo2.maxrec+1 gt 0) then make_records = vinfo2.maxrec+1 else make_records = 1
+                        if keyword_set(DEBUG) then print,'WARNING, ',vname,' has no records and no depend_0. Filling in array with ',make_records,' elements.'  
+                        return, make_array(vinfo.dim,make_records,value=wfill)
+                      endelse
+
+                      ;1/30/2014 TJK vinfo2.maxrecs is the maximum record for all variables
+                                ;in this cdf.  So we don't want
+                                ;to use that, see above for new logic
+;		      if keyword_set(DEBUG) then print,'WARNING, ',vname,' has no records but its depend_0 does. Filling in array with ',vinfo2.maxrecs+1,' elements.'  
+;		      return, make_array(vinfo.dim,vinfo2.maxrecs+1,value=wfill)
+
 		   endelse  
 		 endelse   
                 end
@@ -952,11 +1024,11 @@ return,dat
 end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_read_myattribute
+; NAME: READ_MYATTRIBUTE
 ; PURPOSE: 
 ;	Return the value of the requested attribute for the requested variable.
 ; CALLING SEQUENCE:
-;       out = spdf_read_myattribute(vname,anum,CDFid)
+;       out = read_myattribute(vname,anum,CDFid)
 ; INPUTS:
 ;       vname = string, name of variable whose attribute is being read
 ;       anum = integer, number of attribute being read
@@ -972,7 +1044,7 @@ end
 ; MODIFICATION HISTORY:
 ;   	RCJ 11/2003 Added keyword isglobal
 ;-------------------------------------------------------------------------
-FUNCTION spdf_read_myattribute, vname, anum, CDFid, isglobal=isglobal
+FUNCTION read_myATTRIBUTE, vname, anum, CDFid, isglobal=isglobal
 common global_table, table
 
 cdf_attinq,CDFid,anum,aname,ascope,maxe,maxze ; inquire about the attribute
@@ -1009,9 +1081,9 @@ CATCH,error_status & if error_status ne 0 then begin !ERROR=0 & return,astruct &
    endif else begin ; 'VARIABLE_SCOPE' or 'VARIABLE_SCOPE_ASSUMED'
       isglobal=0
       cdf_attget,CDFid,anum,vname,aval & attval = aval ; read variable attribute 
-      if (spdf_amI_ISTPptr(aname) eq 1) then begin ; check for pointer-type attribute
+      if (amI_ISTPptr(aname) eq 1) then begin ; check for pointer-type attribute
 
-         attval = spdf_read_myVARIABLE(attval,CDFid,vary,ctype,recs)
+         attval = read_myVARIABLE(attval,CDFid,vary,ctype,recs)
 
       endif
 
@@ -1021,11 +1093,11 @@ CATCH,error_status & if error_status ne 0 then begin !ERROR=0 & return,astruct &
       ;blanks in order to be found in the cdf...  this is certainly the case for
       ;depend and component variable attributes...
 
-      if ((asize[nea-2] eq 7) and NOT(spdf_amI_VAR(aname))) then begin
+      if ((asize[nea-2] eq 7) and NOT(amI_VAR(aname))) then begin
          if asize[0] eq 0 then attval = strtrim(attval,2) $
          else for i=0,asize[1]-1 do attval[i] = strtrim(attval[i],2)
       endif else begin
-         if (spdf_amI_VAR(aname)) then begin
+         if (amI_VAR(aname)) then begin
          ;replace "bad characters" w/ a "$"
          table_index = where(table.varname eq attval, tcount)
          ttable_index = where(table.equiv eq attval, ttcount)
@@ -1059,15 +1131,15 @@ CATCH,error_status & if error_status ne 0 then begin !ERROR=0 & return,astruct &
 endelse
 
 return,astruct
-end ;spdf_read_myattribute
+end ;read_myattribute
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_read_myMETADATA
+; NAME: READ_MYMETADATA
 ; PURPOSE: 
 ;	To read all of the attribute values for the requested variable, and
 ;       to return this information as an anonymous structure.
 ; CALLING SEQUENCE:
-;       metadata = spdf_read_myMETADATA(vname,CDFid)
+;       metadata = read_mymetadata(vname,CDFid)
 ; INPUTS:
 ;       vname = string, name of variable whose metadata is being read
 ;       CDFid = integer, id of already opened CDF file
@@ -1081,7 +1153,7 @@ end ;spdf_read_myattribute
 ; MODIFICATION HISTORY:
 ;
 ;-------------------------------------------------------------------------
-FUNCTION spdf_read_myMETADATA, vname, CDFid
+FUNCTION read_myMETADATA, vname, CDFid
 
 cinfo = cdf_inquire(CDFid) ; inquire about the cdf to get #attributes
 ; Create initial data structure to hold all of the metadata information
@@ -1091,7 +1163,7 @@ nglobal=0
 for anum=0,cinfo.natts-1 do begin
    astruct = 0 ; initialize astruct
    ; Get the name and value of the next attribute for vname
-   astruct = spdf_read_myattribute(vname,anum,CDFid,isglobal=isglobal)
+   astruct = read_myATTRIBUTE(vname,anum,CDFid,isglobal=isglobal)
    nglobal=[nglobal,isglobal]
    METADATA = create_struct(temporary(METADATA),astruct)
 endfor ; for each attribute
@@ -1125,18 +1197,22 @@ tnames=tag_names(metadata)
 
 q0=where(tnames eq 'FIELDNAM')
 if q0[0] ne -1 then begin
-   n0=where(nglobal eq 0) ; variable scope
-   n1=where(nglobal eq 1) ; global scope
+   n0=where(nglobal eq 0, var_cnt) ; variable scope
+   n1=where(nglobal eq 1, global_cnt) ; global scope
+;print, 'number of global attrs ', global_cnt
+;print, 'number of variable attrs ', var_cnt
    if q0[0] ne n0[1] then begin ; if fieldnam is not the second 'variable scope' var.
              ; we do not compare q0[0] and n0[0] because n0[0] is 'varname's
 	     ; position. 'Fieldnam' should be the next one, n0[1]
       si=strtrim(n1[0],2)
       comm = "tmpstr=create_struct('varname',vname," ; first global attr
-      for ii=0,n_elements(n1)-1 do begin  ;do global attr first
-         si=strtrim(n1[ii],2)
-         ;print,si,' g ',tnames[si]
-         comm = comm + "tnames["+si+"],metadata.("+si+"),"
-      endfor   
+      if (global_cnt gt 0) then begin ;TJK 11/27 check if there are global attributes
+        for ii=0,n_elements(n1)-1 do begin  ;do global attr first
+           si=strtrim(n1[ii],2)
+           ;print,si,' g ',tnames[si]
+           comm = comm + "tnames["+si+"],metadata.("+si+"),"
+        endfor 
+      endif
       si=strtrim(q0[0],2)
       comm=comm + "'FIELDNAM',metadata.("+si+"),"
       for ii=0,n_elements(n0)-2 do begin  ;do variable attr now
@@ -1147,9 +1223,10 @@ if q0[0] ne -1 then begin
          endif 
       endfor
       si=strtrim(n0[n_elements(n0)-1],2)  ; last variable attr
-      comm = comm + "tnames["+si+"],metadata.("+si+"))
+      comm = comm + "tnames["+si+"],metadata.("+si+"))"
       s=execute(comm)
       metadata=tmpstr
+
    endif
 endif
 ;
@@ -1157,12 +1234,12 @@ return,METADATA
 end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_getvar_attribute_names CDFid
+; NAME: Getvar_attribute_names CDFid
 ; PURPOSE: 
 ;	To return all of the attribute names for the requested variable, as
 ;	an array.
 ; CALLING SEQUENCE:
-;       att_array = spdf_getvar_attribute_names(vname,CDFid, ALL=ALL)
+;       att_array = getvar_attribute_names(vname,CDFid, ALL=ALL)
 ; INPUTS:
 ;       CDFid = integer, id of already opened CDF file
 ; KEYWORD PARAMETERS:
@@ -1176,7 +1253,7 @@ end
 ; MODIFICATION HISTORY:
 ;
 ;-------------------------------------------------------------------------
-FUNCTION spdf_getvar_attribute_names, CDFid, ALL=ALL
+FUNCTION getvar_attribute_names, CDFid, ALL=ALL
 
 cinfo = cdf_inquire(CDFid) ; inquire about the cdf to get #attributes
 ; Create initial data structure to hold all of the metadata information
@@ -1212,12 +1289,12 @@ return,att_array
 end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_get_numallvars
+; NAME: GET_NUMALLVARS
 ; PURPOSE: 
 ; 	To return the total number of variables in the cdf.
 ;
 ; CALLING SEQUENCE:
-;       num_vars = spdf_get_numallvars(CNAME=CNAME)
+;       num_vars = get_numallvars(CNAME=CNAME)
 ; INPUTS:
 ; KEYWORD PARAMETERS:
 ;	CNAME = string, name of a CDF file to be opened and read
@@ -1229,7 +1306,7 @@ end
 ; MODIFICATION HISTORY:
 ;
 ;-------------------------------------------------------------------------
-FUNCTION spdf_get_numallvars, CNAME=CNAME, CDFid=CDFid
+FUNCTION get_numallvars, CNAME=CNAME, CDFid=CDFid
 
 ; validate keyword combination and open cdf if needed
 if keyword_set(CNAME) AND keyword_set(CDFid) then return,0 ; invalid
@@ -1244,12 +1321,12 @@ return, num_vars
 end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_get_allvarnames
+; NAME: GET_ALLVARNAMES
 ; PURPOSE: 
 ; 	To return a string array containing the names of all of the
 ;	variables in the given CDF file.
 ; CALLING SEQUENCE:
-;       vnames = spdf_get_allvarnames()
+;       vnames = get_allvarnames()
 ; INPUTS:
 ; KEYWORD PARAMETERS:
 ;	CNAME = string, name of a CDF file to be opened and read
@@ -1268,7 +1345,7 @@ end
 ;	that vary by record so some important "support_data" variables
 ;	were being thrown out.
 ;-------------------------------------------------------------------------
-FUNCTION spdf_get_allvarnames, CNAME=CNAME, CDFid=CDFid, VAR_TYPE=VAR_TYPE
+FUNCTION get_allvarnames, CNAME=CNAME, CDFid=CDFid, VAR_TYPE=VAR_TYPE
 
 ; validate keyword combination and open cdf if needed
 if keyword_set(CNAME) AND keyword_set(CDFid) then return,0 ; invalid
@@ -1286,7 +1363,7 @@ CATCH, Error_status
 if Error_status ne 0 then begin
    if keyword_set(CNAME) then cdf_close,CDFindex
    print, "STATUS= Error reading CDF. "
-   print,!ERR_STRING, "spdf_get_allvarnames.pro" & return,-1
+   print,!ERR_STRING, "get_allvarnames.pro" & return,-1
 endif
 
 
@@ -1302,11 +1379,11 @@ for i=0,cinfo.nvars-1 do begin
    vinfo = CDF_VARINQ(CDFindex,i)
    if keyword_set(VAR_TYPE) then begin ; only get VAR_TYPE='data', for example
       ; RCJ 01/14/2013  Mabye this approach works better? My experience is that,
-      ; because mode changes when spdf_read_myMETADATA is called, I did not get all
-      ; requested vars back when all=2 (all 'data' types) in the call to read_myCDF.
+      ; because mode changes when read_mymetadata is called, I did not get all
+      ; requested vars back when all=2 (all 'data' types) in the call to spdf_read_mycdf.
       cdf_attget,CDFindex,'VAR_TYPE',vinfo.name,attgot
       if ((attgot eq VAR_TYPE) and (vinfo.recvar eq 'VARY')) then vnames=[vnames,vinfo.name]
-      ;metadata = spdf_read_myMETADATA(vinfo.name,CDFindex)
+      ;metadata = read_myMETADATA(vinfo.name,CDFindex)
       ;tags = tag_names(metadata) & temp = where(tags eq 'VAR_TYPE',count)
       ;if count ne 0 then begin
       ;   if metadata.VAR_TYPE eq VAR_TYPE then vnames[i] = vinfo.name
@@ -1325,7 +1402,7 @@ for j=0,cinfo.nzvars-1 do begin
       ; RCJ 01/14/2013  Same argument as above (see RCJ 01/14/2013)
       cdf_attget,CDFindex,'VAR_TYPE',vinfo.name,attgot
       if ((attgot eq VAR_TYPE) and (vinfo.recvar eq 'VARY')) then vnames=[vnames,vinfo.name]
-      ;metadata = spdf_read_myMETADATA(vinfo.name,CDFindex)
+      ;metadata = read_myMETADATA(vinfo.name,CDFindex)
       ;;tags = tag_names(metadata)  
       ;temp = where(tag_names(metadata) eq 'VAR_TYPE',count)
       ;if count ne 0 then begin
@@ -1351,7 +1428,7 @@ return,vnames[1:*]
 end
 ;---------------------------------------------------------------------------
  
-function spdf_write_fill, vn_sdat, burley, tmp_str
+function write_fill, vn_sdat, burley, tmp_str
 
 ;v_err='ERROR=Instrument off; fillval=dat'
 v_stat='STATUS=Instrument off for variable '+vn_sdat+'.  Re-select variable or time. '
@@ -1377,10 +1454,10 @@ end
 ;This function checks to make sure a given variables 'varname' attribute 
 ;actually matches its structure members name.
 ;
-function spdf_correct_varname, struct, varnames, index
+function correct_varname, struct, varnames, index
 
 ;TJK 09/29/00 Put in a check to make the varname attribute value match
-;its variables structure tag name - if it doesn't list_mystruct won't work...
+;its variables structure tag name - if it doesn't spdf_list_mystruct won't work...
 ;This is all necessary for the upgrade to IDL5.3
 str_index = strtrim(string(index),2) ;convert to string
 comm = execute('att_names = tag_names(struct.('+str_index+'))')
@@ -1400,7 +1477,7 @@ return, struct
 end
 ;------------------------------------------------------------------------------------
 
-function spdf_find_var, CDFid, variable
+function find_var, CDFid, variable
 ;Look in the current data cdf and return the actual correct spelling 
 ;of this variable (called only when one doesn't exist).
 ;This can occur when the master has a variable like "Epoch" (which many 
@@ -1426,7 +1503,7 @@ end
 
 ;------------------------------------------------------------------------------------
 
-function spdf_find_epochvar, CDFid
+function find_epochvar, CDFid
 ;Look in the current data cdf and return the actual correct spelling 
 ;of this epoch variable (called only when one doesn't exist).
 ;This occurs when the master has depend0 = "Epoch" (which many of the datasets
@@ -1436,7 +1513,7 @@ function spdf_find_epochvar, CDFid
 cinfo = CDF_INQUIRE(CDFid) ; inquire about number of variables
 numvars = cinfo.nvars + cinfo.nzvars
 for j=0,numvars-1 do begin
-print, 'in spdf_find_epochvar'
+print, 'in find_epochvar'
    vinfo = CDF_VARINQ(CDFid,j,/ZVARIABLE)
    caps = strupcase(strtrim(vinfo.name,2)); trim blanks and capitalize
    match = where(caps eq 'EPOCH',match_cnt)
@@ -1450,7 +1527,7 @@ return, -1 ;no match found
 end
 ;----------------------------------------------------------
 
-;Function spdf_merge_metadata
+;Function merge_metadata
 ;Merge the master and the 1st data cdf's attributes when some of the
 ;master's attribute values are intensionally left blank.
 ;This function was originally conceived to accommodate ACE's concerns
@@ -1459,7 +1536,7 @@ end
 ;
 ;Written by Tami Kovalick, QSS, 4/8/2005
 ;
-function spdf_merge_metadata, cnames, base_struct, all=all
+function merge_metadata, cnames, base_struct, all=all
 ;
 ;Mods: 12/7/2005 by TJK
 ;Had to change how I dealt w/ multiple element attributes
@@ -1474,7 +1551,7 @@ function spdf_merge_metadata, cnames, base_struct, all=all
 CATCH, Error_status
 if Error_status ne 0 then begin
    if keyword_set(CNAMES) then cdf_close,data_CDFid
-   print,!ERR_STRING, " in spdf_merge_metadata" 
+   print,!ERR_STRING, " in merge_metadata" 
    return, burley ;probably not a critical error, just return the buffer
 endif
 
@@ -1483,14 +1560,14 @@ status = 0
 if ((n_elements(cnames) ge 2) and strpos(cnames[0],'00000000') ne -1) then begin  
 
       data_CDFid = cdf_open(cnames[1]) 
-      ; RCJ 01/14/2013   spdf_get_allvarnames needs to know the value of 'all'.
-      ;data_vnames = spdf_get_allvarnames(CDFid=data_CDFid)
+      ; RCJ 01/14/2013   get_allvarnames needs to know the value of 'all'.
+      ;data_vnames = get_allvarnames(CDFid=data_CDFid)
       if keyword_set(ALL) then begin
-         if all eq 1 then data_vnames = spdf_get_allvarnames(CDFid=data_CDFid)
-         if all eq 2 then data_vnames = spdf_get_allvarnames(CDFid=data_CDFid,var_type='data')
-      endif else data_vnames = spdf_get_allvarnames(CDFid=data_CDFid)
+         if all eq 1 then data_vnames = get_allvarnames(CDFid=data_CDFid)
+         if all eq 2 then data_vnames = get_allvarnames(CDFid=data_CDFid,var_type='data')
+      endif else data_vnames = get_allvarnames(CDFid=data_CDFid)
       
-      atmp = spdf_read_myMETADATA (data_vnames[0], data_CDFid)
+      atmp = read_myMETADATA (data_vnames[0], data_CDFid)
       dnames=tag_names(atmp)
       data_attr=where(dnames eq 'FIELDNAM') ; this is the break between global and variable attributes
 
@@ -1553,7 +1630,7 @@ end
 ;uniq_array takes two string arrays (like lists of variable names)
 ;and doesn't modify the 1st, but adds the second to the 1st w/o adding
 ;any duplicates.
-function spdf_unique_array, first, second
+function unique_array, first, second
    x = where(second ne '',xcnt)
    if (xcnt gt 0) then begin
      second = second[x]
@@ -1588,7 +1665,7 @@ end
 ;end
 
 ;+------------------------------------------------------------------------
-; NAME: READ_MYCDF
+; NAME: spdf_read_mycdf
 ; PURPOSE: 
 ;	Read all data and metadata for given variables, from given CDF
 ;       files, and return all information in a single anonymous structure
@@ -1596,7 +1673,7 @@ end
 ;          structure_name.variable_name.attribute_name.attribute_value
 ;
 ; CALLING SEQUENCE:
-;       out = read_mycdf(vnames,cnames)
+;       out = spdf_read_mycdf(vnames,cnames)
 ; INPUTS:
 ;       vnames = string, array of variable names or a single string of
 ;                names separated by a comma.  (ex. 'Epoch,Magfld,Bmax')
@@ -1637,9 +1714,9 @@ end
 ; w/ one or the other keyword - right now they are only used if both
 ; are set.
 ;	Tami Kovalick, RSTX, 02/13/98, Carrie Gallap started modifications
-; to read_myCDF to accommodate "virtual variables" (VV) .  Tami finished 
+; to spdf_read_mycdf to accommodate "virtual variables" (VV) .  Tami finished 
 ; up the code and made corrections to several sections.  One new routine was
-; written spdf_add_myCOMPONENTS, this routine is called when a valid virtual
+; written add_myCOMPONENTS, this routine is called when a valid virtual
 ; variable is found in order to add any additional variables needed for
 ; actually generating the data for the VV.  The routine looks for variable
 ; attributes w/ the naming convention COMPONENT_n where n is a digit.  The
@@ -1665,13 +1742,13 @@ START_PSEC=START_PSEC, STOP_PSEC=STOP_PSEC, NOVIRTUAL=NOVIRTUAL
 
 
 compile_opt idl2
-;if (!version.release ge '8.0') then CDF_SET_VALIDATE, /no  ;turn off CDF validation
+if (!version.release ge '8.0') then CDF_SET_VALIDATE, /no  ;turn off CDF validation
 
 ; establish exception handler to trap errors from all sources.
 
 CATCH,error_status
 if (error_status ne 0) then begin
-   print,!ERR_string ," Trapped in read_myCDF."; output description of error
+   print,!ERR_string ," Trapped in spdf_read_mycdf."; output description of error
    print,'Error Index=',error_status
    ;also need to check for -123 for IDL 5.02, -98 is for IDL 4.01b - TJK 1/23/98
    ;added check for -134 out of memory in IDL5.3
@@ -1734,8 +1811,8 @@ common global_table, table
 ;                 master and a datacdf (if there is a
 ;                 master)... sometimes the master has fewer (like w/
 ;                 sta_l1_mag_rtn) which then causes a problem.
-if (n_elements(cnames) gt 1) then num_vars = max([spdf_get_numallvars(CNAME=cnames[0]), spdf_get_numallvars(CNAME=cnames[1])]) else $
-num_vars = spdf_get_numallvars(CNAME=cnames[0])
+if (n_elements(cnames) gt 1) then num_vars = max([get_numallvars(CNAME=cnames[0]), get_numallvars(CNAME=cnames[1])]) else $
+num_vars = get_numallvars(CNAME=cnames[0])
 var_names = strarr(num_vars)
 total_storage_time = 0L
 ;varname will contain the real cdf variable name(s)
@@ -1747,8 +1824,8 @@ table = create_struct('varname',var_names,'equiv',var_names)
 ; RCJ 11/21/2003  Added another option for 'all'. Now if all=0: read requested
 ;   var(s);  if all=1: read all vars;  if all=2: read all 'data' vars
 if keyword_set(ALL) then begin
-   if all eq 1 then vnames = spdf_get_allvarnames(CNAME=cnames[0])
-   if all eq 2 then vnames = spdf_get_allvarnames(CNAME=cnames[0],var_type='data')
+   if all eq 1 then vnames = get_allvarnames(CNAME=cnames[0])
+   if all eq 2 then vnames = get_allvarnames(CNAME=cnames[0],var_type='data')
 endif
 
 variables_read = make_array(n_elements(cnames),num_vars,/string, value="")
@@ -1760,7 +1837,7 @@ variables_read = make_array(n_elements(cnames),num_vars,/string, value="")
 orig_names = vnames
 
 ; RCJ 01/10/2005 Commented this part out. Call func
-; spdf_add_myDELTAS instead.
+; add_mydeltas instead.
 ;
 ;for cx=0,n_elements(cnames)-1 do begin
 ;   ; RCJ 08/25/2003 I was trying to save time with the 'if' below but the error
@@ -1770,7 +1847,7 @@ orig_names = vnames
 ;      CDFid = cdf_open(cnames[cx]) 
 ;        ;   
 ;	for nreq =0, n_elements(vnames)-1 do begin
-;	    atmp = spdf_read_myMETADATA (vnames(nreq), CDFid)
+;	    atmp = read_myMETADATA (vnames(nreq), CDFid)
 ;	    atags = tag_names (atmp)
 ;	    b0 = spdf_tagindex ('DELTA_PLUS_VAR', atags)
 ;	    if (b0(0) ne -1) then begin
@@ -1852,8 +1929,8 @@ for cx=0,n_elements(cnames)-1 do begin
          chkvv_dep=''
 
          for nreq =0, n_elements(vnames)-1 do begin
-	    atmp = spdf_read_myMETADATA (vnames[nreq], CDFid)
-	    spdf_add_myDELTAS,atmp,vnames
+	    atmp = read_myMETADATA (vnames[nreq], CDFid)
+	    add_mydeltas,atmp,vnames
 	    atags = tag_names (atmp)
             ;TJK 09/28/2001 add code to flag whether we're looking at an ISIS mission, if so set
             ; a flag that's used lower down.  We need to check here in the master instead of in
@@ -1957,8 +2034,8 @@ for cx=0,n_elements(cnames)-1 do begin
                       print, 'found a VV ', vnames[nreq], ' in Master CDF.'
                       print, 'adding deltas and components next...'
                   endif
-                  spdf_add_myDELTAS, atmp, vnames
-	          spdf_add_myCOMPONENTS, atmp, vnames
+                  add_myDELTAS, atmp, vnames
+	          add_myCOMPONENTS, atmp, vnames
 
                   ; Check VV's depends for other VV's and add to list
                   ;TJK 11/98 added logic to only add the variable if it doesn't
@@ -2076,7 +2153,7 @@ for cx=0,n_elements(cnames)-1 do begin
             chkvv_dep=chkvv_dep[1:*]
 
             for nvvq =0, n_elements(chkvv_dep)-1 do begin
-               atmp = spdf_read_myMETADATA (chkvv_dep[nvvq], CDFid)
+               atmp = read_myMETADATA (chkvv_dep[nvvq], CDFid)
                atags = tag_names (atmp)
                b0 = spdf_tagindex ('VIRTUAL', atags)
 ;TJK 11/6/2009 add check for component_0 in order to determine if virtual
@@ -2105,8 +2182,8 @@ for cx=0,n_elements(cnames)-1 do begin
                        num_virs = num_virs + 1
                        vir_vars.name[num_virs] = chkvv_dep[nvvq]
                        vir_vars.flag[num_virs] = 0 ;indicate this var found in master
-                       spdf_add_myDELTAS, atmp, vnames 
-                       spdf_add_myCOMPONENTS, atmp, vnames 
+                       add_myDELTAS, atmp, vnames 
+                       add_myCOMPONENTS, atmp, vnames 
                      endif
                   endif
                endif
@@ -2135,9 +2212,9 @@ for cx=0,n_elements(cnames)-1 do begin
 	    ; like the one described by TJK 8/27/2002 below.
 
 	    for nreq =0, n_elements(vnames)-1 do begin
-	       atmp = spdf_read_myMETADATA (vnames[nreq], CDFid)
-               spdf_add_myDELTAS, atmp, vnames
-               spdf_add_myCOMPONENTS, atmp, vnames
+	       atmp = read_myMETADATA (vnames[nreq], CDFid)
+               add_mydeltas, atmp, vnames
+               add_mycomponents, atmp, vnames
             endfor
 	 endif  
 
@@ -2145,12 +2222,12 @@ for cx=0,n_elements(cnames)-1 do begin
          ;variables that were requested (in vnames) actually exist in this cdf.
          ;If not, do not ask for them... doing so causing problems...
          ; look for the requested variable in the whole list of vars in this cdf
-         all_cdf_vars = spdf_get_allvarnames(CDFid = CDFid)
+         all_cdf_vars = get_allvarnames(CDFid = CDFid)
          ;  Look to see if a virtual variable is defined in the cdf file...
 
 ;	 if (debug) then print, 'checking the data cdf for virtual variables '
 
-	att_names = spdf_getvar_attribute_names (CDFid, /ALL) ;added all keyword, default 
+	att_names = getvar_attribute_names (CDFid, /ALL) ;added all keyword, default 
 							 ;is the variable attributes
 	;TJK if no attributes are found, a -1 is returned above - which should
 	;kick out below.
@@ -2166,16 +2243,16 @@ for cx=0,n_elements(cnames)-1 do begin
 
 	if (acnt eq 1 and not(virs_found)) then begin ; continue on w/ the checking otherwise get out
          for nvar = 0, (n_elements(all_cdf_vars)-1)  do begin
-	   ;TJK 8/27/2002 replaced call to spdf_read_myMETADATA since we found at least
+	   ;TJK 8/27/2002 replaced call to read_myMETADATA since we found at least
 	   ; one case w/ c*_pp_whi where doing so severely hampered performance
 	   ; because some attributes had many thousands of entries.
-           ; atmp = spdf_read_myMETADATA (all_cdf_vars(nvar), CDFid) 
-	   ; Replaced w/ call to spdf_getvar_attribute_names and where statement, then
+           ; atmp = read_myMETADATA (all_cdf_vars(nvar), CDFid) 
+	   ; Replaced w/ call to getvar_attribute_names and where statement, then
 	   ; only get into this for loop if the VIRTUAL attribute actually exists...
            ; Now, just get the  value for the VIRTUAL attribute, not all
 	   ; attributes
 	   
-           atmp = spdf_read_myattribute(all_cdf_vars[nvar],afound[0],CDFid)
+           atmp = read_myATTRIBUTE(all_cdf_vars[nvar],afound[0],CDFid)
            ;this section finds all virtual variables in the data cdf
             atags = tag_names (atmp)
 	    b0 = spdf_tagindex ('VIRTUAL', atags)
@@ -2183,7 +2260,7 @@ for cx=0,n_elements(cnames)-1 do begin
 ;the virtual tag in it not all tags for the given variable (unlike way
 ;above)... so get the component_0 info. and store in btmp, btags and use t0 below
 
-            btmp = spdf_read_myattribute(all_cdf_vars[nvar],bfound[0],CDFid)
+            btmp = read_myATTRIBUTE(all_cdf_vars[nvar],bfound[0],CDFid)
             btags = tag_names (btmp)
             t0 = spdf_tagindex ('COMPONENT_0', btags);add check for component_0 value as well
 
@@ -2253,11 +2330,11 @@ for cx=0,n_elements(cnames)-1 do begin
             ;for requested vnames - add to the vnames array a little 
             ;lower down.
 
-            dtmp = spdf_read_myMETADATA (vnames[req_vars], CDFid)
-            spdf_add_myDEPENDS, dtmp, dnames
+            dtmp = read_myMETADATA (vnames[req_vars], CDFid)
+            add_myDEPENDS, dtmp, dnames
             for delts = 0, n_elements(dnames)-1 do begin
-              ctmp = spdf_read_myMETADATA (dnames[delts], CDFid)
-              spdf_add_myCOMPONENTS,ctmp, cmpnames
+              ctmp = read_myMETADATA (dnames[delts], CDFid)
+              add_myCOMPONENTS,ctmp, cmpnames
             endfor
 
             vcdf = where(vir_vars.name eq vnames[req_vars], v_cnt)
@@ -2267,11 +2344,11 @@ for cx=0,n_elements(cnames)-1 do begin
 	       ; found in data cdf (vs. Master cdf) so we need to add it
                if(vir_vars.flag[num_virs]) then begin
 	          if (debug) then print, 'Reading metadata for VV, ',vnames[req_vars]
-                  atmp = spdf_read_myMETADATA (vnames[req_vars], CDFid)
+                  atmp = read_myMETADATA (vnames[req_vars], CDFid)
 	          if (debug) then print, 'Add DELTAs for VV, ',vnames[req_vars]
-	          spdf_add_myDELTAS, atmp, vnames
+	          add_myDELTAS, atmp, vnames
 	          if (debug) then print, 'Add components for VV, ',vnames[req_vars]
-	          spdf_add_myCOMPONENTS, atmp, vnames
+	          add_myCOMPONENTS, atmp, vnames
 	       endif
            endif 
          endfor
@@ -2285,8 +2362,8 @@ for cx=0,n_elements(cnames)-1 do begin
          ;plot them in the same order they're listed in the master cdf.
 
 
-         vnames = spdf_unique_array(vnames, dnames)
-         cmpnames = spdf_unique_array(vnames, cmpnames)
+         vnames = unique_array(vnames, dnames)
+         cmpnames = unique_array(vnames, cmpnames)
 
 ;old code below:
 ;         if (xcnt gt 0)then begin
@@ -2435,7 +2512,7 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 
       vnn=0
       vn_sdat=strarr(n_elements(vnames)+40)
-      all_cdf_vars = spdf_get_allvarnames(CDFid = CDFid)
+      all_cdf_vars = get_allvarnames(CDFid = CDFid)
       ;get the list of vars in the current CDF.
       ; Read all of the selected variables from the open CDF
       vx = 0 & REPEAT begin
@@ -2446,7 +2523,7 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 	 ;case that we know exists is w/ geotail orbit files, most data files and the
 	 ; master cdf have the variable Epoch, some data cdfs have it spelled EPOCH...
 	 if (found_cnt eq 0L) then begin
-            new_name = spdf_find_var(CDFid, vnames[vx]) ; return the actual 
+            new_name = find_var(CDFid, vnames[vx]) ; return the actual 
 						   ;correct spelling of the variable
 	    if (strtrim(string(new_name),2) ne '-1') then begin
                print, 'replacing vnames ',vnames[vx], ' w/ ',new_name
@@ -2486,7 +2563,7 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                   ;TJK - 12/20/96 added the use of the start_rec and rec_count keywords.
                   if (cx eq 0) then begin ;TJK only get the metadata from the 1st cdf.
                      ;read this metadata from a master CDF only
-                     atmp=spdf_read_myMETADATA(vnames[vx], CDFid)
+                     atmp=read_myMETADATA(vnames[vx], CDFid)
                   endif else begin ;get the already retrieved data out of the handle
                      handle_value, mhids[vx], atmp
                   endelse
@@ -2523,7 +2600,7 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 ;			;found case where depend0 variable doesn't reallyexist  in the data cdf
 ;		 	;send depend0 to blank so we'll read the entire cdf
 ;		        print, 'variable ',depend0,' not found in this cdf, trying to correct spelling'
-;			depend0 = spdf_find_epochvar(CDFid) ; return the actual 
+;			depend0 = find_epochvar(CDFid) ; return the actual 
 ;						;correct spelling of the depend0 variable
 ;
 ;			if (strtrim(string(depend0),2) eq '-1') then begin
@@ -2555,7 +2632,7 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                         ;in order to get the data out of the cdf
                      endif
 
-                     epoch = spdf_read_myVARIABLE(depend0,CDFid,vary,dtype,recs)
+                     epoch = read_myVARIABLE(depend0,CDFid,vary,dtype,recs)
                      epoch_varname = depend0
 
                   endif else begin ;assumes this is the epoch variable
@@ -2565,13 +2642,15 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                            depend0 = table.varname[table_index[0]]
                            ;another name needs to be used 
                            ;in order to get the data out of the cdf
-                           epoch = spdf_read_myVARIABLE(depend0,CDFid,vary,dtype,recs)
+
+                           epoch = read_myVARIABLE(depend0,CDFid,vary,dtype,recs)
                            epoch_varname = depend0
 ;                           print, 'DEBUG looking for valid epoch recs'
 ;                           print, 'DEBUG ',stop_timett, start_timett, epoch[0]
 
                         endif else begin
-                           epoch = spdf_read_myVARIABLE(vnames[vx],CDFid,vary,dtype,recs)
+
+                           epoch = read_myVARIABLE(vnames[vx],CDFid,vary,dtype,recs)
                            epoch_varname = vnames[vx]
                         endelse
                      endif
@@ -2715,7 +2794,7 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 ;but if its the depend_0, read it again... (because the above reads of
 ;depend_0 aren't saved into the dhids structure below)
 
-            data = spdf_read_myVARIABLE(vnames[vx],CDFid,$
+            data = read_myVARIABLE(vnames[vx],CDFid,$
               vary,dtype,recs,start_rec=start_rec, $
               rec_count=rec_count, debug=debug) ; read the data
 
@@ -2795,10 +2874,10 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
          if (cx eq 0) then begin ; for only the first cdf on the list 
             vvarys[vx] = vary ; set value in variable variance array
             if keyword_set(DEBUG) then print,'Reading metadata for ',vnames[vx], ' and CDF #',cx
-            metadata = spdf_read_myMETADATA(vnames[vx],CDFid) ; read variable metadata
+            metadata = read_myMETADATA(vnames[vx],CDFid) ; read variable metadata
             mhids[vx] = HANDLE_CREATE() & HANDLE_VALUE, mhids[vx], metadata, /SET
             ; Check metadata for ISTP depend attr's, modify other arrays accordingly
-            spdf_follow_myDEPENDS, metadata, vnames, vvarys, cdftyp, dhids, mhids
+            follow_myDEPENDS, metadata, vnames, vvarys, cdftyp, dhids, mhids
          endif
 
          ; Process the data of the current variable
@@ -2834,7 +2913,8 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 		     ; *always* be recalculated. I did the same a few lines below,
 		     ; same case.
 	             ;if n_elements(valid_recs) eq 0 then begin 
-		        epoch = spdf_read_myVARIABLE('Epoch',CDFid,vary,dtype,recs)
+
+		        epoch = read_myVARIABLE('Epoch',CDFid,vary,dtype,recs)
 		        ; Above, we know that for FH or geo_coord data time is 'Epoch'
 		        valid_recs = where((epoch le stop_time) and $
 			      (epoch ge start_time))
@@ -2862,7 +2942,7 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                   ;print, "vn_sdat ",vn_sdat
                   ;if(vnn eq 0) then begin 
                   ;if(vn_sdat(vnn-1) ne vnames(vx)) then $ 
-                  ;data = spdf_appendn_myDATA(data,olddata)  ; append new data to old data
+                  ;data = append_myDATA(data,olddata)  ; append new data to old data
                   ;endif else begin
                   ; print, vnames(vx),vnn
                   ;
@@ -2883,7 +2963,8 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 			; RCJ 10/21/2005 Commented out this if statement.
 			; Reason is stated a few lines above, for the same case.
 			;if n_elements(valid_recs) eq 0 then begin 
-		           epoch = spdf_read_myVARIABLE('Epoch',CDFid,vary,dtype,recs)
+
+		           epoch = read_myVARIABLE('Epoch',CDFid,vary,dtype,recs)
 		           ; Above, we know that for FH or geo_coord data time is 'Epoch'
 		           valid_recs = where((epoch le stop_time) and $
 			         (epoch ge start_time))
@@ -2916,13 +2997,13 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                     endif
                 endif
 if (keyword_set(DEBUG)) then begin
-                  if (vector) then print, 'spdf_appendn_myDATA vector flag set' else print, 'spdf_appendn_myDATA vector flag not set'
+                  if (vector) then print, 'append_mydata vector flag set' else print, 'append_mydata vector flag not set'
 endif
-                  data = spdf_appendn_myDATA(data,olddata,dict_key=dk,vector=vector)  ; append new data to old data
+                  data = append_myDATA(data,olddata,dict_key=dk,vector=vector)  ; append new data to old data
 
 
 ;if (keyword_set(DEBUG)) then begin
-;  print, 'after spdf_appendn_myDATA'
+;  print, 'after append_mydata'
 ;  help, data
 ;endif
                   HANDLE_VALUE, dhids[vx], data ,/SET ; save back into handle
@@ -3025,7 +3106,7 @@ endif
       burley = create_struct(vnames[0],mydata)    ; create initial structure
    endelse
       
-   burley = spdf_correct_varname(burley, vnames, 0)
+   burley = correct_varname(burley, vnames, 0)
 
    ; If more than one variable is being processed, then retrieve the data
    ; and metadata from the handles, and append them into an anonymous struct
@@ -3063,7 +3144,7 @@ endif
          rick   = create_struct(vnames[vx],mydata)    ; create new structure
          burley = create_struct(burley,rick)          ; append the structures
       endelse
-      burley = spdf_correct_varname(burley, vnames, vx)
+      burley = correct_varname(burley, vnames, vx)
    endfor
 
 
@@ -3109,7 +3190,7 @@ endif
                                 ;      really don't want to kick out
                                 ;      entirely.
                      ;if (vfill eq vdat(0)) then $
-   	             ;   ikill = spdf_write_fill(vn_sdat(vi), burley, tmp_str)
+   	             ;   ikill = write_fill(vn_sdat(vi), burley, tmp_str)
                   endif else begin 
                      if (data_type gt 1) then begin
                         ; RCJ 06/06/01 Commented this part out. Maybe we have to rethink
@@ -3121,7 +3202,7 @@ endif
                         ;   one (fill)value: -1.0000e+31
 	                ;;print, 'detected a non byte value'
                         ;if (abs(vfill) eq abs(vdat(0))) then $
-	                ;   ikill = spdf_write_fill(vn_sdat(vi), burley, tmp_str)
+	                ;   ikill = write_fill(vn_sdat(vi), burley, tmp_str)
                      endif ;datatype isn't byte (is gt 1)
                   endelse
                endif else begin
@@ -3132,7 +3213,7 @@ endif
 	             ;   if (fcnt eq n_elements(vdat)) then begin
                      ;     ;print, 'Found single record vector w/ all fill values'
                      ;     ;print, 'Setting fill message for variable',vn_sdat(vi)
-	             ;     ikill = spdf_write_fill(vn_sdat(vi), burley, tmp_str)
+	             ;     ikill = write_fill(vn_sdat(vi), burley, tmp_str)
 	             ;   endif
 	             ;endif
                endelse
@@ -3326,7 +3407,7 @@ for i = 0, num_virs do begin
       endif ;if function defined for this virtual variable    
    endif ;found the tag index for this virtual variable
 endfor ; for number of virtual variables
- if keyword_set(DEBUG) then print, 'read_myCDF took ',systime(1)-ttime, ' seconds to generate VVs.'
+ if keyword_set(DEBUG) then print, 'spdf_read_mycdf took ',systime(1)-ttime, ' seconds to generate VVs.'
 endif ;no virtual variable population 
 
 ;Add a check for variables that have var_type of data, but that the user didn't request.
@@ -3342,15 +3423,16 @@ var_stat = 0
 
 if (n_tags(burley) ne 0) then begin
    var_stat = check_myvartype(burley, orig_names)
-   if (var_stat ne 0) then print, 'READ_MYCDF, no data to plot/list.'
-   ; RCJ 01/14/2013  Add keyword 'all' to call to spdf_merge_metadata:
-   ;burley = spdf_merge_metadata(cnames, burley)
-   burley = spdf_merge_metadata(cnames, burley, all=all)
+   if (var_stat ne 0) then print, 'spdf_read_mycdf, no data to plot/list.'
+   ; RCJ 01/14/2013  Add keyword 'all' to call to merge_metadata:
+   ;burley = merge_metadata(cnames, burley)
+   burley = merge_metadata(cnames, burley, all=all)
 endif
 ;TJK 10/25/2006 - if THEMIS data then epoch values had to be computed
 ;                 (all virtual), thus time subsetting wasn't possible
 ;                 above, do it here by calling timeslice_mystruct
 if (need_timeslice) then begin
+
     burley = timeslice_mystruct(temporary(burley), start_time16, stop_time16,$
        START_MSEC=START_MSEC, STOP_MSEC=STOP_MSEC, START_USEC=START_USEC, $ 
        STOP_USEC=STOP_USEC, START_NSEC=START_NSEC, STOP_NSEC=STOP_NSEC, $

@@ -51,9 +51,9 @@
 ;  thm_part_dist_array.pro
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-09-26 16:32:05 -0700 (Thu, 26 Sep 2013) $
-;$LastChangedRevision: 13156 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/SST_cal_workdir/thm_sst_load_calibrate.pro $
+;$LastChangedDate: 2014-03-05 17:20:40 -0800 (Wed, 05 Mar 2014) $
+;$LastChangedRevision: 14508 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/SST_cal_workdir/deprecated/thm_sst_load_calibrate.pro $
 ;-
 
 pro thm_sst_load_calibrate,probe=probe,datatype=datatype,esa_datatype=esa_datatype,trange=trange,energies=energies,sun_bins=sun_bins,dist_data=dist_data,error=error,dist_esa=dist_esa_copy,_extra=ex
@@ -61,6 +61,8 @@ pro thm_sst_load_calibrate,probe=probe,datatype=datatype,esa_datatype=esa_dataty
   compile_opt idl2
 
   error=1
+
+  dprint,'WARNING: This routine is deprecated.  Use thm_part_combine with the /only_sst keyword instead',dlevel=1
 
   heap_gc
   thm_init ;color table & stuffs

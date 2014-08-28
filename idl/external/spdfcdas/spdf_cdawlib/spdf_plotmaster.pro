@@ -1,17 +1,17 @@
 ;$author: baldwin $
-;$Date: 2013-09-09 14:51:13 -0700 (Mon, 09 Sep 2013) $
-;$Header: /home/cdaweb/dev/control/RCS/plotmaster.pro,v 1.281 2013/05/17 18:07:11 kovalick Exp johnson $
-;$Locker: johnson $
-;$Revision: 12996 $ 
+;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/spdf_plotmaster.pro,v 1.286 2013/12/02 22:07:32 johnson Exp kovalick $
+;$Locker: kovalick $
+;$Revision: 14512 $ 
 ;+------------------------------------------------------------------------
-; NAME: PLOTMASTER
+; NAME: spdf_plotmaster
 ; PURPOSE: To plot the data given in 1 to 10 anonymous structure of the type
-;          returned by the read_mycdf function.  This function determines
+;          returned by the spdf_read_mycdf function.  This function determines
 ;          the plot type for each variable, and generates the plot.
 ; CALLING SEQUENCE:
-;       out = plotmaster(a,[more_structures])
+;       out = spdf_plotmaster(a,[more_structures])
 ; INPUTS:
-;       a = structure returned by the read_mycdf procedure.
+;       a = structure returned by the spdf_read_mycdf procedure.
 ;
 ; KEYWORD PARAMETERS:
 ;   TSTART =  String of the form '1996/01/02 12:00:00' or a DOUBLE CDF_EPOCH
@@ -59,7 +59,7 @@
 ;    CDAWEB
 ;    Set this keyword to force the margin on the right side of time series 
 ;    plots to be 100 pixels. This is the same margin used for spectrograms 
-;    for the color bar. By default, PLOTMASTER will examine the data, and if 
+;    for the color bar. By default, spdf_plotmaster will examine the data, and if 
 ;    ANY spectrograms will be produced, then it will align the margins 
 ;    properly. This keyword is only necessary for use in the CDAWeb system.
 ;
@@ -85,7 +85,7 @@
 ;
 ;    FRAME
 ;    Used to indicate the frame number within a series of images. If you 
-;    specify FRAME = 2, then plotmaster will produce a "full size" version 
+;    specify FRAME = 2, then spdf_plotmaster will produce a "full size" version 
 ;    of the 3rd image in a sequence of images.
 ;
 ;       COMBINE  = if set, all time series and spectrogram plots will be
@@ -121,6 +121,11 @@
 ;        4/98   ; R. Baldwin   : Added virtual variable plot types; 
 ;				 plot_map_images.pro
 ;       11/98   ; R. Baldwin   : Added movie_images and movie_map_images
+;
+;
+;Copyright 1996-2013 United States Government as represented by the
+;Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+;
 ;-------------------------------------------------------------------------
 FUNCTION spdf_plotmaster, a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,$
 		     a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,$
@@ -272,7 +277,7 @@ for i=0,n_params()-1 do begin ; process each structure parameter
       v_stat='STATUS=Cannot plot this data'
       a=create_struct('DATASET',v_data,'ERROR',v_err,'STATUS',v_stat)
    endif else begin  
-      ; Test for errors trapped in read_myCDF
+      ; Test for errors trapped in spdf_read_mycdf
       atags=tag_names(a)
       rflag=spdf_tagindex('DATASET',atags)
       if(rflag[0] ne -1) then ibad=1 
@@ -508,7 +513,9 @@ ps_counter=0L
 ; if min in p.btime = [0,0,epoch] then min epoch will be missed RTB
 btime=ps.btime                                ; RTB
 we=where(btime ne 0.D0,wc)                   ; RTB
-if (wc gt 0) then min_ep=btime[we]
+if (wc gt 0) then min_ep=btime[we] $
+        else min_ep=0.D0  ; need some default value. min_ep would be
+	;undefined below if time range requested has no data in it
 
 ; RCJ 05/28/2003  var fUHR from dataset po_h1_pwi caused problem here
 ; when one of its cdfs had all virtual values for epoch, 
@@ -530,7 +537,10 @@ endif
 
 etime=ps.etime                 
 we=where(etime ne 0.D0,wc)     
-if (wc gt 0) then max_ep=etime[we]
+if (wc gt 0) then max_ep=etime[we] else $
+        max_ep=0.D0  ; need some default value. max_ep would be
+	;undefined below if time range requested has no data in it
+
 
 ;TJK 10/27/2006 - add checking for epoch16 end times when epoch doesn't exist
 ; RCJ 04/09/2013  Look for tt2000 too
@@ -991,7 +1001,7 @@ for i=0,n_elements(PS)-1 do begin
       Yvar = (a.(PS[i].vnum))
       t = size(Yvar)
       if (t[n_elements(t)-2] ne 8) then begin
-         print,'ERROR=input to plotmaster not a structure' & return,-1
+         print,'ERROR=input to spdf_plotmaster not a structure' & return,-1
       endif else begin
 	 YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
          t = spdf_tagindex('DAT',YTAGS)
@@ -1116,14 +1126,14 @@ for i=0,n_elements(PS)-1 do begin
 	    ; RCJ 04/22/2003  'vnames' was here instead of 'tag_names(a)'
 	    ; but vnames will be the tag names of the *last* structure a
 	    ; read during another loop above.
-	    err_p1=spdf_tagindex(replace_bad_chars(err_p[0]),tag_names(a))
-	    err_m1=spdf_tagindex(replace_bad_chars(err_m[0]),tag_names(a))
+	    err_p1=spdf_tagindex(spdf_replace_bad_chars(err_p[0]),tag_names(a))
+	    err_m1=spdf_tagindex(spdf_replace_bad_chars(err_m[0]),tag_names(a))
 	    if a.(err_p1).var_type eq 'additional_data' then $
 	       err_p=-1 else $
-	       err_p=spdf_tagindex(replace_bad_chars(err_p[0]),tag_names(a))   
+	       err_p=spdf_tagindex(spdf_replace_bad_chars(err_p[0]),tag_names(a))   
 	    if a.(err_m1).var_type eq 'additional_data' then $
 	       err_m=-1 else $
-	       err_m=spdf_tagindex(replace_bad_chars(err_m[0]),tag_names(a))
+	       err_m=spdf_tagindex(spdf_replace_bad_chars(err_m[0]),tag_names(a))
 	 endif else begin ; RCJ 02/08/2005 Added this so the test below will work.
 	    err_m=-1 & err_p=-1
 	 endelse   
@@ -1285,7 +1295,7 @@ for i=0,n_elements(PS)-1 do begin
           Yvar = (a.(PS[i].vnum))
           t = size(Yvar)
           if (t[n_elements(t)-2] ne 8) then begin
-            print,'ERROR=input to plotmaster not a structure' & return,-1
+            print,'ERROR=input to spdf_plotmaster not a structure' & return,-1
           endif else begin
 	   YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
            t = spdf_tagindex('DAT',YTAGS)
@@ -1324,7 +1334,21 @@ for i=0,n_elements(PS)-1 do begin
       endif else begin
          if (q12snum[0] ne -1) then nosubtitle=1 else nosubtitle=0
       endelse  
-
+      ;
+      if (strpos(a.(c[0]).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
+         ;The following if statements are needed in the case where TSTART/TSTOP is not
+         ;used but the data is in epoch16 
+         if (n_elements(start_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, start_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         if (n_elements(stop_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, stop_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         start_time = start_time16 & stop_time = stop_time16
+      endif
+      ;
       if (strpos(a.(c[0]).CDFTYPE, 'CDF_TIME_TT2000') ge 0) then begin
       ;The following if statements are needed in the case where TSTART/TSTOP is not
                                 ;used but the data is in time TT2000
@@ -1369,6 +1393,8 @@ for i=0,n_elements(PS)-1 do begin
    ; Generate STACKED TIME SERIES plot
    if (PS[i].ptype eq 7) then begin
       ; Ensure that 'a' holds the correct data structure
+      scatter = 0L
+      reverse_order = 0L
       if (PS[i].snum ne a_id) then begin
          s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
@@ -1384,6 +1410,18 @@ for i=0,n_elements(PS)-1 do begin
       ; Determine if the display type variable attribute is present
       b = spdf_tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
       if (b[0] ne -1) then begin
+         ;  RCJ 10/15/2013  added scatter:
+	  keywords=str_sep(a.(PS[i].vnum).display_type,'>')  ; keyword 1 or greater  
+	  scn=where(strupcase(keywords) eq 'SCATTER',sn)
+	  ;turn scatter plot on if "scatter" is set
+	  if (sn gt 0) then SCATTER = 1L else SCATTER = 0L
+
+          ; TJK 12/31/2013 added reverse:
+	  keywords=str_sep(a.(PS[i].vnum).display_type,'>')  ; keyword 1 or greater  
+	  scn=where(strupcase(keywords) eq 'REVERSE',sn)
+	  ;turn scatter plot on if "scatter" is set
+	  if (sn gt 0) then REVERSE_ORDER = 1L else REVERSE_ORDER = 0L
+
          ; examine_spectrogram_dt looks at the DISPLAY_TYPE structure member in 
          ; detail. for spectrograms and stacked time series the DISPLAY_TYPE 
          ; can contain syntax like the following: stack_plot>y=flux[1],y=flux[3],
@@ -1405,7 +1443,7 @@ for i=0,n_elements(PS)-1 do begin
          Yvar = (a.(PS[i].vnum))
          t = size(Yvar)
 	 if (t[n_elements(t)-2] ne 8) then begin
-	    print,'ERROR=input to plotmaster not a structure' & return,-1
+	    print,'ERROR=input to spdf_plotmaster not a structure' & return,-1
 	 endif else begin
 	    YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
   	    t = spdf_tagindex('DAT',YTAGS)
@@ -1536,6 +1574,7 @@ for i=0,n_elements(PS)-1 do begin
        		          AUTO=autoscale,GIF=GIF,$
                	          TSTART=start_time,TSTOP=stop_time,$
                        	  FIRSTPLOT=first_plot,LASTPLOT=last_plot,$
+			  SCATTER=SCATTER, REVERSE_ORDER=REVERSE_ORDER,$
                        	  NONOISE=NONOISE,DEBUG=debugflag, /COLORBAR);,$/NOGAPS)
 	
             if(s eq -1) then begin
@@ -1555,6 +1594,7 @@ for i=0,n_elements(PS)-1 do begin
 			 PANEL_HEIGHT=pheight,COMBINE=COMBINE,$
  			 AUTO=autoscale, GIF=GIF,$
                          FIRSTPLOT=first_plot,LASTPLOT=last_plot,$
+			 SCATTER=SCATTER, REVERSE_ORDER=REVERSE_ORDER,$
                          NONOISE=NONOISE,DEBUG=debugflag, /COLORBAR);,$/NOGAPS)
             if(s eq -1) then begin
                if(reportflag) then printf, 1, 'STATUS=Stack plot failed' & close, 1
@@ -1606,7 +1646,7 @@ for i=0,n_elements(PS)-1 do begin
       Yvar = (a.(PS[i].vnum))
       t = size(Yvar)
       if (t[n_elements(t)-2] ne 8) then begin
-         print,'ERROR=input to plotmaster not a structure' & return,-1
+         print,'ERROR=input to spdf_plotmaster not a structure' & return,-1
       endif else begin
 	 YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
          t = spdf_tagindex('DAT',YTAGS)
@@ -1681,7 +1721,21 @@ for i=0,n_elements(PS)-1 do begin
       endif else begin
          if ps[i].ptype ne ps[i+1].ptype then nosubtitle=0 else nosubtitle=1
       endelse   
-
+      ;
+      if (strpos(a.(c[0]).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
+         ;The following if statements are needed in the case where TSTART/TSTOP is not
+         ;used but the data is in epoch16 
+         if (n_elements(start_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, start_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         if (n_elements(stop_time16) eq 0) then begin ;convert the regular epoch to epoch16
+            cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+            cdf_epoch16, stop_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         start_time = start_time16 & stop_time = stop_time16
+      endif
+      ;
       if (strpos(a.(c[0]).CDFTYPE, 'CDF_TIME_TT2000') ge 0) then begin
       ;The following if statements are needed in the case where TSTART/TSTOP is not
                                 ;used but the data is in time TT2000
@@ -2395,7 +2449,7 @@ if(orbit_trip eq 1) then begin
       xsize=21000 & ysize=28000 ; TJK seems to work better...
    endif
 
-;Check to see if plotmaster is being called by ssc_plot, and
+;Check to see if spdf_plotmaster is being called by ssc_plot, and
 ;Postscript option requested
 help, /traceback, output=trace_back
 if (n_elements(trace_back) gt 1) then begin
@@ -2430,7 +2484,7 @@ endif
    endif
 endif
 
-; Display of map images will be accomplished through calls to plotmaster
+; Display of map images will be accomplished through calls to spdf_plotmaster
 ; where the DISPLAY_TYPE for map image variables will be set to "MAP_IMAGE"  
 ; These variables will be passed to a new function called plot_map_images.pro
 ; which will process and display each image in a fashion similar to plot_images
@@ -2635,6 +2689,20 @@ for i=0,n_elements(PS)-1 do begin
 
       ; Get the index of the time variable associated with variable to be plotted
       b = a.(PS[i].vnum).DEPEND_0 & c = spdf_tagindex(b[0],tag_names(a))
+
+      if (strpos(a.(c[0]).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
+         ;The following if statements are needed in the case where TSTART/TSTOP is not
+         ;used but the data is in epoch16 
+         if (n_elements(start_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, start_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         if (n_elements(stop_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, stop_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         start_time = start_time16 & stop_time = stop_time16
+      endif
 
       if (strpos(a.(c[0]).CDFTYPE, 'CDF_TIME_TT2000') ge 0) then begin
       ;The following if statements are needed in the case where TSTART/TSTOP are not
@@ -2959,6 +3027,7 @@ for i=0,n_elements(PS)-1 do begin
    ; RCJ 02/25/2005  Changed this line to get the number instead
    ; of the name because a var called 'Ne' gave us a syntax error!
    stat = execute('v_type = a.('+strtrim(string(ps[i].vnum),2)+').var_type')
+   stat = execute('c_type = a.('+strtrim(string(ps[i].vnum),2)+').cdftype')
    ;print, 'TJK DEBUG: VARIABLE ',ps[i].vname,'  ',v_type
    ; RCJ 03/29/2006  The line below fails if there's no v_type
    ;if (strupcase(v_type) eq 'DATA' and stat) then begin
@@ -2968,12 +3037,16 @@ for i=0,n_elements(PS)-1 do begin
           if (n_elements(ds) eq 0) then begin
             ds = PS[i].source
             print, 'DATASET=',ds
+	    if strupcase(c_type) eq 'CDF_CHAR' then $
+            print, 'STATUS= ',PS[i].vname,' is of CDF_CHAR type and is not plottable.' else $
             print, 'STATUS= ',PS[i].vname,' data are all fill: reselect time range.'
           endif else begin
 	    if (PS[i].source ne ds) then begin
               ds = PS[i].source
               print, 'DATASET=',ds
 	    endif
+	    if strupcase(c_type) eq 'CDF_CHAR' then $
+	    print, 'STATUS= ',PS[i].vname,' is of CDF_CHAR type and is not plottable.' else $
 	    print, 'STATUS= ',PS[i].vname,' data are all fill: reselect time range.'
           endelse
         endif

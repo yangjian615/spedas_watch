@@ -44,8 +44,8 @@
 
 pro nwin ; stub functions that patches CDAWLib
 end
-pro tvimage
-end
+;pro tvimage
+;end
 pro twinscolorbar
 end
 
@@ -581,9 +581,9 @@ function spdfGetDatasetSelection, $
     datasetTree, selectedDatasetId, selectedVarNames
     compile_opt idl2
 
-    selectedDatasets = widget_info(datasetTree, /tree_select)
+    selectedItems = widget_info(datasetTree, /tree_select)
 
-    if selectedDatasets[0] eq -1 then begin
+    if selectedItems[0] eq -1 then begin
 
         reply = dialog_message( $
             'Please choose one or more Variables within a single Dataset', $
@@ -595,11 +595,13 @@ function spdfGetDatasetSelection, $
     varsSelected = 0
     selectedDatasetId = ''
 
-    for i = 0, n_elements(selectedDatasets) - 1 do begin
+    ; first count the number of selected datasets and variables
 
-        if ~widget_info(selectedDatasets[i], /tree_folder) then begin
+    for i = 0, n_elements(selectedItems) - 1 do begin
 
-            widget_control, selectedDatasets[i], $
+        if ~widget_info(selectedItems[i], /tree_folder) then begin
+
+            widget_control, selectedItems[i], $
                 get_uvalue=selectedDataset
 
             if selectedDataset.datasetId ne selectedDatasetId then begin
@@ -616,15 +618,21 @@ function spdfGetDatasetSelection, $
     if datasetsSelected eq 1 then begin
 
         selectedVarNames = strarr(varsSelected)
+        selectedVarIndex = 0
 
-        for i = 0, n_elements(selectedDatasets) - 1 do begin
+        ; now go back and get the selected variable names
+        
+        for i = 0, n_elements(selectedItems) - 1 do begin
 
-            if ~widget_info(selectedDatasets[i], /tree_folder) then begin
+            if ~widget_info(selectedItems[i], /tree_folder) then begin
 
-                widget_control, selectedDatasets[i], $
+
+                widget_control, selectedItems[i], $
                     get_uvalue=selectedDataset
 
-                selectedVarNames[i] = selectedDataset.varName
+                selectedVarNames[selectedVarIndex] = $
+                    selectedDataset.varName
+                selectedVarIndex++
             endif
         endfor
     endif else begin
@@ -851,7 +859,7 @@ pro spdfGetCdawebDataExec, $
             endfor
         endif else begin
 
-            file_delete, localCdfNames
+            file_delete, localCdfNames, /ALLOW_NONEXISTENT, /QUIET
         endelse
     endif else begin
 
@@ -1089,7 +1097,7 @@ pro spdfAbout, $
         'http://spdf.gsfc.nasa.gov/', $
         '', $
         'Current CDAWlib version: ' + spdf_version(), $
-        'Current SpdfCdas version: ' + state.cdas->getVersion()], $
+        'Current SpdfCdas version: ' + state.cdas->getversion()], $
         title='About', /center, /information)
 end
 
@@ -1111,9 +1119,9 @@ function spdfGetDataviews, $
     if ~(cdas->isUpToDate()) then begin
 
         reply = dialog_message([ $
-            'Current CDAWlib version: ' + version(), $
-            'Current SpdfCdas version: ' + cdas->getVersion(), $
-            'Available SpdfCdas version: ' + cdas->getCurrentVersion(), $
+            'Current CDAWlib version: ' + spdf_version(), $
+            'Current SpdfCdas version: ' + cdas->getversion(), $
+            'Available SpdfCdas version: ' + cdas->getCurrentversion(), $
             'There is a newer version of the SpdfCdas library available.'], $
             title='Version Warning', /center, /information)
     endif
@@ -1187,17 +1195,20 @@ end
 ; Provides a GUI for choosing and retrieving data from 
 ; <a href="http://cdaweb.gsfc.nasa.gov/">CDAWeb</a>.
 ;
+; @keyword endpoint {in} {optional} {type=string}
+;              {default=http://cdaweb.gsfc.nasa.gov/WS/cdasr/1}
+;              URL of CDAS web service.
 ; @keyword GROUP_LEADER {in} {optional} {type=int}
 ;              The widget ID of the group leader for this window.  If
 ;              no value is provided, the resulting window will not
 ;              belong to a group and will be non-blocking.
 ;-
 pro spdfCdawebChooser, $
+    endpoint = endpoint, $
     GROUP_LEADER = groupLeaderWidgetId
     compile_opt idl2
-    
-    RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
 
+	 RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
     cd, current=cwd
     if ~file_test(cwd, /write) then begin
 
@@ -1214,6 +1225,11 @@ pro spdfCdawebChooser, $
 ; "extended desktop".
 ;    monitorInfo = obj_new('IDLsysMonitorInfo')
 
+    if ~keyword_set(endpoint) then begin
+
+        endpoint = 'http://cdaweb.gsfc.nasa.gov/WS/cdasr/1'
+    endif
+
     if keyword_set(groupLeaderWidgetId) then begin
 
         tlb = widget_base(title='CDAWeb Data Chooser', /column, $
@@ -1227,7 +1243,7 @@ pro spdfCdawebChooser, $
 
     cdas = $
         obj_new('SpdfCdas', $
-        endpoint='http://cdaweb.gsfc.nasa.gov/WS/cdasr/1', $
+        endpoint=endpoint, $
         userAgent='CdawebChooser/1.0')
 
     dataviews = spdfGetDataviews(cdas)
