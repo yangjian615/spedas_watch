@@ -6,9 +6,9 @@
 ;Rewritten pcruce@igpp.ucla.edu 9/10/2009
 ;-
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-06 17:25:10 -0700 (Tue, 06 May 2014) $
+;$LastChangedRevision: 15058 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_variable_options.pro $
 ;-
 
@@ -205,9 +205,9 @@ end
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-06 17:25:10 -0700 (Tue, 06 May 2014) $
+;$LastChangedRevision: 15058 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_variable_options.pro $
 ;---------------------------------------------------------------------------------
 
@@ -848,7 +848,7 @@ Pro spd_ui_variable_options, gui_id, loadeddata, windowstorage, drawobject, hist
     panelObjs = obj_new()
   endif
   
-  if obj_valid(cWindow) then begin
+  if  n_elements(panel_select) eq 0 and obj_valid(cWindow) then begin
     cWindow->GetProperty,varOptionsPanel=panel_select
   endif
   

@@ -7,9 +7,9 @@
 ;  Inputs: The info structure from the main gui
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: jimmpc1 $
+;$LastChangedDate: 2014-05-07 10:48:54 -0700 (Wed, 07 May 2014) $
+;$LastChangedRevision: 15065 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_main_funcs/spd_ui_saveas.pro $
 ;-
 
@@ -37,7 +37,14 @@ pro spd_ui_saveas,info
 
   fileName = spd_ui_dialog_pickfile_save_wrapper(Title='Save SPEDAS Document As', $
        Filter='*.tgd', File=filestring, /Write, Dialog_Parent=info.master, path=currentpath)
+
   IF(Is_String(fileName)) THEN BEGIN
+;For Windows, test filename for '.tgd' extension, if it isn't
+;there add it, jmm, 2014-05-07
+     If(!version.os_family Eq 'Windows') Then Begin
+        test_tgd = strpos(filename, '.tgd')
+        If(test_tgd[0] Eq -1) Then filename = filename+'.tgd'
+     Endif
      widget_control,/hourglass
      save_document,windowstorage=info.windowstorage,filename=fileName,$
          statusmsg=statusmsg,statuscode=statuscode

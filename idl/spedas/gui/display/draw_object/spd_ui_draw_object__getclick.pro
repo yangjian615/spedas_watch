@@ -18,9 +18,9 @@
 ;  Things that need to be done to improve approximation, account for text height, take layout issues
 ;  into account.  Resolve variable/z-axis on the same size.
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-07 09:52:16 -0700 (Wed, 07 May 2014) $
+;$LastChangedRevision: 15063 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__getclick.pro $
 ;-
 function spd_ui_draw_object::getClick
@@ -73,10 +73,11 @@ function spd_ui_draw_object::getClick
     panelheight = panelsize[3]
 
     ; legend location in drea area coordinates, in points
-    da_left = normleft*panelwidth+panelsize[0]
-    da_bottom = normbottom*panelheight+panelsize[1]
-    da_right = da_left+normwidth*panelwidth
-    da_top = da_bottom+normheight*panelheight
+    self.destination->getProperty, current_zoom=cz
+    da_left = cz*normleft*panelwidth+panelsize[0]
+    da_bottom = cz*normbottom*panelheight+panelsize[1]
+    da_right = cz*da_left+normwidth*panelwidth
+    da_top = cz*da_bottom+normheight*panelheight
 
     ; click location in draw area coordinates, in points
     xloc_pts = loc[0]*dim[0]

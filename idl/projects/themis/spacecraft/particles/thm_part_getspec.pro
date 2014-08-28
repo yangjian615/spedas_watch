@@ -17,8 +17,8 @@
 ; Old version in particles/deprecated
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-11-15 18:01:00 -0800 (Fri, 15 Nov 2013) $
-;$LastChangedRevision: 13546 $
+;$LastChangedDate: 2014-05-09 14:03:20 -0700 (Fri, 09 May 2014) $
+;$LastChangedRevision: 15083 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_getspec.pro $
 ;-
 
@@ -99,7 +99,7 @@ pro thm_part_getspec,$
                               phi=phi_in,$ ;angle limit 2-element array [min,max], in degrees, spacecraft spin plane
                               theta=theta,$ ;angle limits 2-element array [min,max], in degrees, normal to spacecraft spin plane
                               pitch=pitch,$ ;angle limits 2-element array [min,max], in degrees, magnetic field pitch angle
-                              gyro=gyro,$ ;angle limits 2-element array [min,max], in degrees, gyrophase
+                              gyro=gyro_in,$ ;angle limits 2-element array [min,max], in degrees, gyrophase
   
                               angle=angle,$ ;select the angular spectrum
   
@@ -298,6 +298,13 @@ pro thm_part_getspec,$
     if n_elements(gyro) lt 2 then begin
       dprint,'Error: gyro keyword should have 2 elements.',dlevel=1
       return
+      
+      if max(gyro_in) - min(gyro_in) gt 360. then begin
+        gyro = [0,360]
+        if undefined(start_angle) then start_angle = min(gyro_in) 
+      endif else begin
+        gyro = gyro_in
+      endelse
       
       ;NOTE: this doesn't wrap gyros the way the old one did.
       ; I think that this should probably be handled at the lower level

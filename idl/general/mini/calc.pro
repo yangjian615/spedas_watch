@@ -102,9 +102,9 @@
 ;       3. Implement procedures
 ;       4. Implement control statements
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-10-28 09:23:25 -0700 (Mon, 28 Oct 2013) $
-; $LastChangedRevision: 13410 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2014-05-06 10:41:49 -0700 (Tue, 06 May 2014) $
+; $LastChangedRevision: 15055 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/calc.pro $
 ;-
 
@@ -144,7 +144,9 @@ pro calc,s,error=error,function_list=function_list,operator_list=operator_list,v
     ;replace unary/binary minus codes with normal minus
     ;...this should probably be done in the operator_list routine
     list = [list[0:2],'-',list[5:*]]
-    operator_list = [list[0:3],'+',list[6:*]]
+    list = [list[0:3],'+',list[6:*]]
+    list = [list[0:5],'/',list[8:*]]
+    operator_list = list
     
   endif
   

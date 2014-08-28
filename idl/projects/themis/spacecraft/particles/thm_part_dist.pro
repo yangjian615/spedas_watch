@@ -86,9 +86,9 @@
 ;       thm_remove_sunpulse.pro or thm_crib_sst_contamination.pro
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-01-10 18:10:18 -0800 (Thu, 10 Jan 2013) $
-;$LastChangedRevision: 11424 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-09 14:11:06 -0700 (Fri, 09 May 2014) $
+;$LastChangedRevision: 15085 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_dist.pro $
 ;-
 function thm_part_dist, format, time, type = type, probe = probe, $
@@ -112,10 +112,21 @@ if keyword_set(format) then begin
    type  = strmid(format,4,4)
 endif else format = 'th'+probe+'_'+type
 
-;beta SST calibrations only working for full/burst data
-if keyword_set(sst_cal) && strmid(format,5,1) eq 's' && (strmid(format,7,1) eq 'f' || strmid(format,7,1) eq 'b') then begin
-  return,thm_part_dist2(format,time,_extra=ex)
+
+;calibrated SST data loaded by default (thm_part_load)
+;TODO: It might be better to check for the presence of
+;      normal & callibrated data with thm_part_trange and 
+;      preferentially load calibrated when both exist. 
+if strmid(format,5,1) eq 's' then begin
+  if strmid(format,7,1) ne 'r' && undefined(sst_cal) then begin
+    sst_cal = 1
+  endif
+  ;SST calibrations only apply to full/burst data
+  if keyword_set(sst_cal) && (strmid(format,7,1) eq 'f' || strmid(format,7,1) eq 'b') then begin
+    return,thm_part_dist2(format,time,_extra=ex)
+  endif
 endif
+
 
 ;type=type[0]
 if n_elements(time) gt 1 then begin

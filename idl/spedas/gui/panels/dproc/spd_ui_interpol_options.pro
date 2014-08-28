@@ -370,12 +370,12 @@ function spd_ui_interpol_options, gui_ID, historywin, statusbar, datap, ptree = 
                          value=suffix)
 
 ;Number widgets
-  number = widget_button(numtypebase, value='Number of points: ', uval='NUMB')
   cadence = widget_button(numtypebase, value='Cadence (sec): ', uval='CADB')
-  numtext = spd_ui_spinner(spinnerbase, text_box_size=10, $
-                           uval='NUM', value = num, incr=1,min_value='1')
-  cadtext = spd_ui_spinner(spinnerbase, text_box_size=10, sens=0, $
+  cadtext = spd_ui_spinner(spinnerbase, text_box_size=10, $
                            uval='CAD', value = cad, incr=1, min_value='0')
+  number = widget_button(numtypebase, value='Number of points: ', uval='NUMB')
+  numtext = spd_ui_spinner(spinnerbase, text_box_size=10, sens=0, $
+                           uval='NUM', value = num, incr=1,min_value='1')
 
 ;Type widgets
   linear = widget_button(typebase, value = 'Linear', uname='LINEAR')
@@ -410,7 +410,7 @@ function spd_ui_interpol_options, gui_ID, historywin, statusbar, datap, ptree = 
 
 ;Initializations and such
 ;
-  widget_control, number, set_button=1
+  widget_control, cadence, set_button=1
   widget_control, linear, set_button=1
   widget_control, noextra, set_button=1
 

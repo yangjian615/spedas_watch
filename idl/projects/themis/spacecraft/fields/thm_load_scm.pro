@@ -109,9 +109,9 @@
 ;                    called from the command line. Re-tabbed, to find
 ;                    an 'End of file encountered...' bug.
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-04-30 15:55:39 -0700 (Wed, 30 Apr 2014) $
-; $LastChangedRevision: 14981 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2014-05-09 11:36:37 -0700 (Fri, 09 May 2014) $
+; $LastChangedRevision: 15081 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_scm.pro $
 ;-
 pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
@@ -317,6 +317,9 @@ pro thm_load_scm, probe = probe, datatype = datatype, trange = trange, $
 ;varformat='*' only works for L1 data, because each datatype only
 ;comes from one file
   If(lvl Eq 'l1') Then varformat_xxx = '*' Else varformat_xxx = ''
+;Be sure to delete_support_data, if get_support_data is not set,
+;because the varformat command will caues all data to be loaded.
+  If(~keyword_set(get_support_data)) Then delete_support_data = 1
 
   thm_load_xxx, sname = probe, datatype = datatype, trange = trange, $
     level = lvl, verbose = verbose, downloadonly = downloadonly, $

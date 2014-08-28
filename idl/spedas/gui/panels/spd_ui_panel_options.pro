@@ -15,9 +15,9 @@
 ;(lphilpott 06/2011) Delayed the handling of spinner events until user clicks OK/APPLY/SET ALL or changes panel. Dialog messages
 ;are issued for invalid entries. This avoids the issue of the text overwriting in spinners as the user types if values aren't valid.
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-02 12:09:56 -0700 (Fri, 02 May 2014) $
-;$LastChangedRevision: 15027 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-09 17:27:30 -0700 (Fri, 09 May 2014) $
+;$LastChangedRevision: 15093 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_panel_options.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -328,7 +328,7 @@ end
 ; set reset keyword if you want to reset to previous value (NB: this just means this helper function doesn't change the settings, widget must be updated elsewhere)
 ; if reset is not set it will update to the minvalue if value is less than minimum.
 
-pro spd_ui_panel_spinner_check, tlb,panelsettings,uname,namestring, minvalue, reset=reset, _extra=ex
+pro spd_ui_panel_spinner_check, tlb,panelsettings,uname,namestring, minvalue,reset=reset, _extra=ex
 
   id = widget_info(tlb, find_by_uname=uname)
   widget_control, id, get_value=val
@@ -628,34 +628,41 @@ PRO spd_ui_panel_options_event, event
         state.statusbar->Update, 'Height Margin toggled'
         
       END
-      'BVALUE': BEGIN
-        ; handle only valid cases (wait until the user switches panels or clicks apply/ok/setall to do anything about invalid entries)
-        if event.valid and event.value ge 0 then panelSettings->SetProperty, bvalue=event.value
-        
-        state.historyWin->Update, 'Bottom Margin updated'
-        state.statusbar->Update, 'Bottom Margin updated'
-      END
-      'LVALUE': BEGIN
-        ; handle only valid cases
-        if event.valid and event.value ge 0 then panelSettings->SetProperty, lvalue=event.value
-        
-        state.historyWin->Update, 'Left Margin updated'
-        state.statusbar->Update, 'Left Margin updated'
-      END
-      'WVALUE': BEGIN
-        ; handle only valid cases
-        if event.valid and event.value gt 0 then panelSettings->SetProperty, wvalue=event.value
-        
-        state.historyWin->Update, 'Width Margin updated'
-        state.statusbar->Update, 'Width Margin updated'
-      END
-      'HVALUE': BEGIN
-        ; handle only valid cases
-        if event.valid and event.value gt 0 then panelSettings->SetProperty, hvalue=event.value
-        
-        state.historyWin->Update, 'Height Margin updated'
-        state.statusbar->Update, 'Height Margin updated'
-      END
+      
+; This code was updating the state too aggressively.  When invalid spinner entries were made, it would revert to the last valid entry
+; Rather than the last applied entry.  (.e.g. If bvalue is 7 and I change it to 56ff, it would reset to 56, when it should reset to 7
+; Commenting the code fixes the problem
+; I'm not deleting this for now block because it is always possible removing it could cause regressions.
+; Current date is 2014/05/08.  If you read this comment and it is next year or something, it is probably safe to remove the block.  
+; 
+;      'BVALUE': BEGIN
+;        ; handle only valid cases (wait until the user switches panels or clicks apply/ok/setall to do anything about invalid entries)
+;        if event.valid and event.value ge 0 then panelSettings->SetProperty, bvalue=event.value
+;        
+;        state.historyWin->Update, 'Bottom Margin updated'
+;        state.statusbar->Update, 'Bottom Margin updated'
+;      END
+;      'LVALUE': BEGIN
+;        ; handle only valid cases
+;        if event.valid and event.value ge 0 then panelSettings->SetProperty, lvalue=event.value
+;        
+;        state.historyWin->Update, 'Left Margin updated'
+;        state.statusbar->Update, 'Left Margin updated'
+;      END
+;      'WVALUE': BEGIN
+;        ; handle only valid cases
+;        if event.valid and event.value gt 0 then panelSettings->SetProperty, wvalue=event.value
+;        
+;        state.historyWin->Update, 'Width Margin updated'
+;        state.statusbar->Update, 'Width Margin updated'
+;      END
+;      'HVALUE': BEGIN
+;        ; handle only valid cases
+;        if event.valid and event.value gt 0 then panelSettings->SetProperty, hvalue=event.value
+;        
+;        state.historyWin->Update, 'Height Margin updated'
+;        state.statusbar->Update, 'Height Margin updated'
+;      END
       'BUNIT': BEGIN
         panelSettings->SetProperty, bunit=event.index
         panelSettings->GetProperty, bvalue=bvalue
@@ -734,7 +741,7 @@ PRO spd_ui_panel_options_event, event
         
       END
       
-      ELSE: dprint,  ''
+      ELSE:; dprint,  ''
     ENDCASE
   ENDIF
   
@@ -881,8 +888,10 @@ PRO spd_ui_panel_options, gui_id, windowStorage, loadedData, historyWin, $
   
   botButton = Widget_Button(tbutBase, Value = 'Bottom:', uval='BOTBUTTON', uname='botbutton')
   leftButton = Widget_Button(t2butBase, Value = 'Left:', uval='LEFTBUTTON', uname='leftbutton')
-  botText = spd_ui_spinner(tsizeBase, Increment=1, uval='BVALUE', uname='bvalue',min_value=0)
-  leftText = spd_ui_spinner(t2sizeBase, Increment=1, uval='LVALUE', uname='lvalue',min_value=0)
+  botText = spd_ui_spinner(tsizeBase, Increment=1, uval='BVALUE', uname='bvalue', $
+    min_value=0, tooltip='Measured from the bottom of the page')
+  leftText = spd_ui_spinner(t2sizeBase, Increment=1, uval='LVALUE', uname='lvalue', $
+    min_value=0, tooltip='Measured from the left side of the page')
   botDroplist = Widget_combobox(tpullBase, uval='BUNIT', uname='bunit')
   leftDroplist = Widget_combobox(t2pullBase, uval='LUNIT', uname='lunit')
   widthButton = Widget_Button(t3butBase, Value = 'Width:', uval='WIDTHBUTTON', uname='widthbutton')

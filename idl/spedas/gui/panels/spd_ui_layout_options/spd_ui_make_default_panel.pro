@@ -113,8 +113,16 @@ endif
 if obj_valid(templatePanel) then begin
 
   panelSettings = templatePanel->Copy()
-  panelSettings->setProperty,row=setrow,col=setcol
- 
+  
+  ;prevent saved location & size settings from being used
+  panelSettings->setProperty, row=setrow, col=setcol, rspan=1, cspan=1, $
+    bottom=0, left=0, width=0, height=0, $ 
+    bvalue=-1d, lvalue=-1d, wvalue=-1d, hvalue=-1d 
+  
+  ;prevent saved title text from being used
+  panelsettings->getProperty, titleObj=titleObj
+  titleObj->setProperty, value=''
+  
 endif else begin
   ; create panel_settings object
   panelSettings = obj_new('spd_ui_panel_settings', row=setrow, col=col, rspan=1, $

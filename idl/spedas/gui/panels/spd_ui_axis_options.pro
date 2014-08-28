@@ -22,9 +22,9 @@
 ;NB: This problem doesn't seem to happen with the panel title on Panel Options window.
 ;If we could work out why the panel title combobox worked there it would be better to fix axis label title to match rather than truncating.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-04-30 13:47:33 -0700 (Wed, 30 Apr 2014) $
-;$LastChangedRevision: 14980 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-08 09:31:26 -0700 (Thu, 08 May 2014) $
+;$LastChangedRevision: 15072 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_axis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -214,7 +214,7 @@ pro SPD_UI_PROPAGATE_AXIS , state, apply_to_all_panels
             titleObj=oldtitleObj,         $  
             subtitleObj=oldsubtitleObj  
            oldTitleStr = oldtitleObj->GetValue()
-           oldSubTitleStr = oldtitleObj->GetValue()
+           oldSubTitleStr = oldsubtitleObj->GetValue()
            newTitle = titleObj->copy()
            newSubTitle = subtitleObj->copy()
            newTitle->setProperty, Value=oldTitleStr
@@ -4496,7 +4496,7 @@ labelColorWindow = WIDGET_DRAW(cb1Base, graphics_level=2, renderer=1, retain=1, 
 okButton = Widget_Button(buttonBase, Value='OK', XSize=75, uval='OK')
 applyButton = Widget_Button(buttonBase, Value='Apply', UValue='APPLY',Tooltip='Apply all settings from all tabs to current panel.', XSize=75)
 applyToAllButton = Widget_Button(buttonBase, Value='Apply to All Panels', Uvalue='APPLYTOALL', sens=1, $
-   Tooltip='All changes (all tabs) applied to selected panel; settings on this tab applied to all panels.',XSize=125)
+   Tooltip='Apply settings from the current tab to all panels',XSize=125)
 cancelButton = Widget_Button(buttonBase, Value='Cancel', UValue='CANC', XSize=75)
 templateButton = Widget_Button(buttonBase,  Value='Save as Default', UValue='TEMP',xsize=125,tooltip="Save current settings as default template")
 ;helpButton = Widget_Button(buttonBase, Value='Help', XSize=75)

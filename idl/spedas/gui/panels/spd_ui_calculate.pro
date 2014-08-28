@@ -15,9 +15,9 @@
 ; none
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-05-09 14:33:45 -0700 (Fri, 09 May 2014) $
+;$LastChangedRevision: 15087 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_calculate.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -212,10 +212,10 @@ PRO spd_ui_calculate_event, event
             ; 0 for default/data tree, 1 for functions list, 2 for operators list and 3 for constants
             state.listinFocus = 0
         
-            id = widget_info(state.tlb,find_by_uname='selectedlistLabel')
             buttonid = widget_info(state.tlb,find_by_uname='INSERT')
             insertvarlbl =  'Insert variable: '+selection[0]
-            Widget_Control, id, set_value=insertvarlbl
+  
+            state.selectBar->update,insertvarlbl
             widget_control,buttonid, tooltip=insertvarlbl+' into the program'
             state.strtoadd = selection[0]
             state.statusBar->update,'Variable selected: '+selection+'.'
@@ -229,10 +229,10 @@ PRO spd_ui_calculate_event, event
         endif else begin
           ; the user clicked in the data tree, but not a valid variable
           if (state.listinFocus eq 0) then begin ; the data tree was in focus last
-              id = widget_info(state.tlb,find_by_uname='selectedlistLabel')
+       
               buttonid = widget_info(state.tlb,find_by_uname='INSERT')
               insertvarlbl =  'Select a variable, function, operator or constant to add to the program'
-              Widget_Control, id, set_value=insertvarlbl
+              state.selectBar->update,insertvarlbl
               widget_control,buttonid, tooltip=insertvarlbl
           endif
         endelse
@@ -241,12 +241,11 @@ PRO spd_ui_calculate_event, event
         ; 0 for default/data tree, 1 for functions list, 2 for operators list and 3 for constants
         state.listinFocus = 1
 
-        id = widget_info(state.tlb,find_by_uname='selectedlistLabel')
         buttonid = widget_info(state.tlb,find_by_uname='INSERT')
         insertvarlbl = 'Insert function: '+state.functions[event.index]
         widget_control,buttonid, tooltip=insertvarlbl+' into the program', /sensitive
         state.strtoadd = state.functions[event.index]
-        Widget_Control, id, set_value=insertvarlbl
+        state.selectBar->update,insertvarlbl
         state.statusBar->update,'Function selected: '+state.functions[event.index]+'.'
         state.historyWin->update,'Calculate: Function selected: '+state.functions[event.index]
         ; we should clear the selection on the operator list
@@ -263,12 +262,11 @@ PRO spd_ui_calculate_event, event
         ; 0 for default/data tree, 1 for functions list, 2 for operators list and 3 for constants
         state.listinFocus = 2
 
-        id = widget_info(state.tlb,find_by_uname='selectedlistLabel')
         buttonid = widget_info(state.tlb,find_by_uname='INSERT')
         insertvarlbl = 'Insert operator: '+state.operators[event.index]
+        state.selectBar->update,insertvarlbl
         widget_control,buttonid, tooltip=insertvarlbl+' into the program', /sensitive
         state.strtoadd = state.operators[event.index]
-        Widget_Control, id, set_value=insertvarlbl
         state.statusBar->update,'Operator selected: '+state.operators[event.index]+'.'
         state.historyWin->update,'Calculate: Operator selected: '+state.operators[event.index]
         ; we should clear the selection on the function list
@@ -283,8 +281,7 @@ PRO spd_ui_calculate_event, event
     'CONSTANT': begin
         ; 0 for default/data tree, 1 for functions list, 2 for operators list and 3 for constants
         state.listinFocus = 3
-
-        id = widget_info(state.tlb,find_by_uname='selectedlistLabel')
+        
         buttonid = widget_info(state.tlb,find_by_uname='INSERT')
         widget_control,state.constant,get_value=cvalue
 
@@ -296,7 +293,8 @@ PRO spd_ui_calculate_event, event
         endif else begin
           state.strtoadd = cvalue[event.index]
         endelse
-        Widget_Control, id, set_value=insertvarlbl
+    
+        state.selectBar->update,insertvarlbl
         state.statusBar->update,'Constant selected: '+cvalue[event.index]+'.'
         state.historyWin->update,'Calculate: Constant selected: '+cvalue[event.index]
         ; we should clear the selection on the function and operator lists
@@ -654,8 +652,8 @@ Pro spd_ui_calculate, gui_id,loadedData,settings,historywin,treeCopyPtr,call_seq
   insertTree = obj_new('spd_ui_widget_tree',col2row2,'INSERTTREE',loadedData,xsize=xsize,ysize=ysize,mode=3,multi=0,leafonly=1,showdatetime=1)
   insertTree->update,from_copy=*treeCopyPtr
  
-  selectedlistLabel = Widget_Label(col2row3, Value='Select a variable, function, operator or constant to add to the program', uname='selectedlistLabel', /dynamic_resize)
- ; Right arrow button to insert field into program area
+ ; selectedlistLabel = Widget_Label(col2row3, Value='Select a variable, function, operator or constant to add to the program', uname='selectedlistLabel', /dynamic_resize)
+  ; Right arrow button to insert field into program area
  getresourcepath,rpath
  leftArrow = read_bmp(rpath + 'arrow_180_medium.bmp', /rgb)
  spd_ui_match_background, tlb, leftArrow
@@ -671,6 +669,10 @@ Pro spd_ui_calculate, gui_id,loadedData,settings,historywin,treeCopyPtr,call_seq
  if strlen(programText[0]) lt xtextsize+10 then begin
    programText[0] = programText[0]+strjoin(replicate(' ',xtextsize+10-strlen(programText[0])))
  endif
+
+ selectBar = obj_new('spd_ui_message_bar',col2row3,value='Select item from list to add it to program.',xsize=xtextSize-6,ysize=1,/notimestamp)
+
+
 
 ;  if n_elements(programText) gt 1 && stregex(programText[0],"^[ ]*$",/bool) then begin ; check if first string is all spaces
 ;    programText = programText[1:n_elements(programText)-1] ;remove sentinel string
@@ -726,6 +728,7 @@ Pro spd_ui_calculate, gui_id,loadedData,settings,historywin,treeCopyPtr,call_seq
            offset:0,$
            historywin:historywin, $
            statusBar:statusBar,$
+           selectBar:selectBar,$
            settings:settings, $
            treeCopyPtr:treeCopyPtr, $
            call_sequence:call_sequence, $

@@ -14,9 +14,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-06 12:21:42 -0700 (Tue, 06 May 2014) $
+;$LastChangedRevision: 15056 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_zaxis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -72,76 +72,89 @@ PRO spd_ui_zaxis_init_color, state=state
   
 END ;---------------------------------------------------------------------------------------------
 
-pro spd_ui_zaxis_propagate_settings, state, apply_to_all_panels
+pro spd_ui_zaxis_propagate_settings, state
 
   compile_opt idl2, hidden
   
-  if  apply_to_all_panels ne '1' then return
   
+  ;get settings for current panel
   z = state.zaxissettings->getall()
   
+  ;get current tab
+  tab = widget_info(state.tabbase, /tab_current)
   
-  if  apply_to_all_panels eq '1'  then begin
-    for i=0, n_elements(state.zaxes)-1 do begin
+  
+  ;loop over panels
+  for i=0, n_elements(state.zaxes)-1 do begin
+  
+    if i eq state.selectedpanel then continue
     
-      if i eq state.selectedpanel then continue
+    ;propagate main tab's settings
+    if tab eq 0 then begin
       
       state.zaxes[i]->setproperty, $
         minrange=z.minrange, $
         maxrange=z.maxrange, $
         colortable=z.colortable, $
-        fixed=z.fixed,$
+        fixed=z.fixed, $
         scaling=z.scaling, $
         ticknum=z.ticknum, $
         minorticknum=z.minorticknum, $
+        logminorticktype=z.logminorticktype, $
         autoticks=z.autoticks, $
         placement=z.placement, $
-        margin=z.margin,$
-        logminorticktype=z.logminorticktype
-    endfor
+        margin=z.margin
+        
+    ;propagate title tab's settings
+    endif else if tab eq 1 then begin
     
-    ;    l = z.labelTextObject->getall()
-    ;    for i=0, n_elements(state.zaxes)-1 do begin
-    ;
-    ;      if i eq state.selectedPanel then continue
-    ;
-    ;      state.zaxes[i]->setproperty, labelOrientation=z.labelOrientation, $
-    ;        labelMargin=z.labelMargin
-    ;
-    ;      state.zAxes[i]->getproperty, labelTextObject=labelTextObject
-    ;
-    ;      if obj_valid(labelTextObject) then $
-    ;        labelTextObject->setproperty, value = l.value, $
-    ;        color=l.color, $
-    ;        font=l.font, $
-    ;        format=l.format, $
-    ;        show=l.show, $
-    ;        size=l.size, $
-    ;        thickness=l.thickness
-    ;
-    ;    endfor
-    
-    a = z.annotateTextObject->getall()
-    
-    for i=0, n_elements(state.zaxes)-1 do begin
-    
-      if i eq state.selectedPanel then continue
+      t = z.labelTextObject->getall()
+      st = z.subtitleTextObject->getall()
       
-      state.zaxes[i]->setproperty, annotationOrientation=z.annotationOrientation, $
-        annotateExponent=z.annotateExponent, $
-        annotationStyle=z.annotationStyle
-        
-      state.zAxes[i]->getproperty, annotateTextObject=annotateTextObject, $
-        labelTextObject=labelTextObject
-        
-      annotateTextObject->setproperty, color=a.color, $
+      state.zAxes[i]->getproperty, $
+        labelTextObject=titleTextObject, $
+        subtitleTextObject=subtitleTextObject
+
+      titleTextObject->setproperty, $
+        color=t.color, $
+        font=t.font, $
+        format=t.format, $
+        size=t.size
+      
+      subtitleTextObject->setproperty, $
+        color=st.color, $
+        font=st.font, $
+        format=st.format, $
+        size=st.size
+
+      state.zAxes[i]->setproperty, $
+        lazylabels=z.lazylabels, $
+        labelmargin=z.labelmargin, $
+        labelorientation=z.labelorientation
+
+    ;propagate annotation tab's settings
+    endif else if tab eq 2 then begin
+      
+      a = z.annotateTextObject->getall()
+      
+      state.zAxes[i]->getproperty, $
+        annotateTextObject=annotateTextObject
+      
+      annotateTextObject->setproperty, $
+        color=a.color, $
         font=a.font, $
         format=a.format, $
-        show=a.show, $
-        size=a.size, $
-        thickness=a.thickness
-    endfor
-  endif
+        size=a.size
+      
+      state.zaxes[i]->setproperty, $
+        annotationOrientation=z.annotationOrientation, $
+        annotateExponent=z.annotateExponent, $
+        annotationStyle=z.annotationStyle
+      
+    endif
+    
+  endfor
+
   
 end ;---------------------------------------------------------------------------------------------
 
@@ -1001,7 +1014,7 @@ PRO spd_ui_zaxis_options_event, event
       
         IF Obj_Valid(state.zAxisSettings) && ~in_set(obj_valid(state.zAxes),'0') THEN BEGIN
           spd_ui_zaxis_set_value,state,event
-          spd_ui_zaxis_propagate_settings, state, '1'
+          spd_ui_zaxis_propagate_settings, state
           state.zAxes[state.selectedPanel]=state.zAxisSettings
           state.drawObject->Update, state.windowStorage, state.loadedData,error=draw_error
           
@@ -1032,7 +1045,6 @@ PRO spd_ui_zaxis_options_event, event
       'APPLY': BEGIN
         IF Obj_Valid(state.zAxisSettings) && ~in_set(obj_valid(state.zAxes),'0') THEN BEGIN
           spd_ui_zaxis_set_value,state,event
-          spd_ui_zaxis_propagate_settings, state,'0'
           state.zAxes[state.selectedPanel]=state.zAxisSettings
           state.drawObject->Update, state.windowStorage, state.loadedData,error=draw_error
           
@@ -1061,7 +1073,6 @@ PRO spd_ui_zaxis_options_event, event
       END
       'OK': BEGIN
         spd_ui_zaxis_set_value,state,event
-        spd_ui_zaxis_propagate_settings, state,'0'
         state.drawObject->Update, state.windowStorage, state.loadedData,error=draw_error
         
         if draw_error then begin
@@ -1093,7 +1104,6 @@ PRO spd_ui_zaxis_options_event, event
       
         ;make sure internal state is updated before save
         spd_ui_zaxis_set_value,state,event
-        spd_ui_zaxis_propagate_settings, state,'0'
         IF N_Elements(state.zAxes) GE 1 && ~in_set(obj_valid(state.zAxes),'0') THEN BEGIN
           FOR i=0, N_Elements(state.zAxes)-1 DO BEGIN
             state.spectraPanels[i]->setTouched
@@ -1113,7 +1123,6 @@ PRO spd_ui_zaxis_options_event, event
       'PANEL': BEGIN
         IF ~in_set(Obj_Valid(state.zAxes),'0') THEN  BEGIN
           spd_ui_zaxis_set_value,state,event
-          spd_ui_zaxis_propagate_settings, state,'0'
           state.selectedPanel = event.index
           state.zAxisSettings = state.zAxes[event.index]
           spd_ui_zaxis_update, state
@@ -1692,7 +1701,8 @@ PRO spd_ui_zaxis_options, gui_id, windowStorage, zaxisSettings, drawObject, load
   
   okButton = Widget_Button(buttonBase, Value='OK', XSize=75, UValue='OK')
   applyButton = Widget_Button(buttonBase, Value='Apply', XSize=75, UValue='APPLY')
-  applyToAllButton = Widget_Button(buttonBase, Value='Apply to All Panels', Uvalue='APPLYTOALL', XSize=125)
+  applyToAllButton = Widget_Button(buttonBase, Value='Apply to All Panels', $
+    Uvalue='APPLYTOALL', XSize=125, tooltip='Apply settings from the current tab to all panels')
   cancelButton = Widget_Button(buttonBase, Value='Cancel', UValue='CANC', XSize=75)
   templateButton = Widget_Button(buttonBase, Value='Save as Default', UValue='TEMP',xsize=125,tooltip="Save current settings as default template")
   

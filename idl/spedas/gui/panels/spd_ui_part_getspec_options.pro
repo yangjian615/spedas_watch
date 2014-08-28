@@ -1043,7 +1043,7 @@ mainBase = widget_base(tab_id, /col, tab_mode=1)
   fac_label = widget_label(fac_label_base, value='Field Aligned Coordinates:')
   
   regrid_base = widget_base(fac_base, /row)
-    regrid_label = widget_label(regrid_base, value='Resolution (long,lat):  ')
+    regrid_label = widget_label(regrid_base, value='Bin Num (long,lat):  ')
     regrid_phi = spd_ui_spinner(regrid_base, value=regrid[0], incr=2, label='', text_box_size=4, $
                  uname='regrid_phi', tooltip='Number of bins across rphi (field aligned longitude).')
     regrid_theta = spd_ui_spinner(regrid_base, value=regrid[1], incr=2, label='', text_box_size=4, $

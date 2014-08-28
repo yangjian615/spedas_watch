@@ -38,9 +38,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-05-09 14:33:45 -0700 (Fri, 09 May 2014) $
+;$LastChangedRevision: 15087 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_message_bar__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -89,7 +89,11 @@ PRO SPD_UI_MESSAGE_BAR::Update, value
 IF self.id NE 0 THEN BEGIN
    newId = self.currentMsgId+1
    currentTime = time_string(systime(/seconds),/local_time)
-   newValue = '(' + currentTime + ') ' + strtrim(string(newId), 2)+': ' + strmid(value,0,1000)
+   if self.notimestamp eq 1 then begin
+     newValue = strtrim(string(newId), 2)+': ' + strmid(value,0,1000)
+   endif else begin
+     newValue = '(' + currentTime + ') ' + strtrim(string(newId), 2)+': ' + strmid(value,0,1000)
+   endelse
    newMessages = [*self.messages, newValue]
    IF N_Elements(newMessages) GT self.msgLimit THEN newMessages = newMessages[1:self.msgLimit]
    
@@ -197,6 +201,7 @@ FUNCTION SPD_UI_MESSAGE_BAR::Init,    $ ; The INIT method of the bar object.
             XSize=xsize,             $ ; size of bar in x direction
             YSize=ysize,             $ ; size of bar in y direction
             Scroll=scroll,           $ ; size of bar in x direction
+            notimestamp=notimestamp, $ ;don't print the timestamp if this is set, it can take a lot of text on narrow bars 
             Debug=debug                ; set to one for debugging
 
    Catch, theError
@@ -217,6 +222,7 @@ FUNCTION SPD_UI_MESSAGE_BAR::Init,    $ ; The INIT method of the bar object.
    IF N_Elements(xsize) EQ 0 THEN xsize = 10
    IF N_Elements(ysize) EQ 0 THEN ysize = 1
    IF N_Elements(scroll) EQ 0 THEN scroll = 1
+   if n_elements(notimestamp) eq 0 then notimestamp = 0
 
   ; Set all parameters
   
@@ -229,6 +235,7 @@ FUNCTION SPD_UI_MESSAGE_BAR::Init,    $ ; The INIT method of the bar object.
    self.xsize = xsize
    self.ysize = ysize
    self.scroll = scroll
+   self.notimestamp = notimestamp
 
   ; If bar is displayed then create the widget
    
@@ -253,6 +260,7 @@ PRO SPD_UI_MESSAGE_BAR__DEFINE
               xSize: 0,             $ ; size of bar in x direction
               ySize: 0,             $ ; size of bar in y direction
               scroll: 0,            $ ; flag to set scroll arrows
+              notimestamp: 0,       $ ; notimestamp set or not?
               debug: 0              $ ; set this value to one for debugging
 
 }

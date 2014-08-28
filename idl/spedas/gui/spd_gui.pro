@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-04-30 17:04:44 -0700 (Wed, 30 Apr 2014) $
-;$LastChangedRevision: 14989 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-05-06 10:24:09 -0700 (Tue, 06 May 2014) $
+;$LastChangedRevision: 15054 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1232,7 +1232,7 @@ PRO spd_gui_event, event
           widget_control,info.zoom,set_value=zoomval
           
         endelse
-      endif else info.statusbar->update,"Invalid Zoom value, please re-enter.'
+      endif else info.statusbar->update,'Invalid Zoom value, please re-enter.'
           
     END
 
@@ -1404,7 +1404,6 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   ;resetLineTemplate = Widget_Button(templateMenu, Value='Reset Line Template', UValue='RESET_LINE_TEMPLATE')
   ;resetVariableTemplate = Widget_Button(templateMenu, Value='Reset Variable Template', UValue='RESET_VARIABLE_TEMPLATE')
     
-  closeMenu = Widget_Button(fileMenu, Value='Close Window', UValue='CLOSE', Accelerator="Ctrl+Z")
   loadMenu = Widget_Button(fileMenu, Value='Load Data ', UValue='LOAD', /Separator)
   loadCDAWebMenu = Widget_Button(fileMenu, Value='Load Data using CDAWeb', UValue='LOADCDAWEB')
   loadCDFMenu = Widget_Button(fileMenu, Value='Load CDF', UValue='LOADCDF')
