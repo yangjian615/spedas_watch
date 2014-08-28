@@ -47,7 +47,7 @@
 	get_data,rbspx+'_spinaxis_direction_gse',data=wsc_GSE	
 
 
-
+ 
 ;------------------------------------------------------
 ;Get EMFISIS mag data in GSE
 ;------------------------------------------------------
@@ -69,8 +69,8 @@
 
 	;wsc_GSE_tmp = [[wsc_GSE.y[0,0]],[wsc_GSE.y[0,1]],[wsc_GSE.y[0,2]]]
 
-	rbsp_gse2mgse,rbspx+'_emfisis_l3_hires_gse_Mag',reform(wsc_GSE_tmp),newname='Mag_mgse'
-	;rbsp_gse2mgse,rbspx+'_emfisis_l3_4sec_gse_Mag',reform(wsc_GSE_tmp),newname='Mag_mgse'
+	rbsp_gse2mgse,rbspx+'_emfisis_l3_hires_gse_Mag',reform(wsc_GSE_tmp),newname=rbspx+'_Mag_mgse'
+	;rbsp_gse2mgse,rbspx+'_emfisis_l3_4sec_gse_Mag',reform(wsc_GSE_tmp),newname=rbspx+'_Mag_mgse'
 
 
 
@@ -90,8 +90,8 @@
 ;Reduce the data to reasonable times
 ;---------------------------------------------------------
 
-	m1 = tsample('Mag_mgse',[t0,t1],times=tm)
- 	store_data,'Mag_mgse_r',data={x:tm,y:m1}
+	m1 = tsample(rbspx+'_Mag_mgse',[t0,t1],times=tm)
+ 	store_data,rbspx+'_Mag_mgse_r',data={x:tm,y:m1}
 	m1 = tsample(rbspx+'_efw_esvy_mgse',[t0,t1],times=tm)
  	store_data,rbspx+'_efw_esvy_mgse_r',data={x:tm,y:m1}
 
@@ -112,8 +112,18 @@
 ;	Tshort = 0.2 
 
 
-	rbsp_poynting_flux,'Mag_mgse_r',rbspx+'_efw_esvy_mgse_r',Tshort,Tlong
+	rbsp_poynting_flux,rbspx+'_Mag_mgse_r',rbspx+'_efw_esvy_mgse_r',Tshort,Tlong
 
+	copy_data,'pftst_nospinaxis_perp',rbspx+'_pftst_nospinaxis_perp'
+	copy_data,'pftst_nospinaxis_para',rbspx+'_pftst_nospinaxis_para'
+	copy_data,'pftst_p1',rbspx+'_pftst_p1'
+	copy_data,'pftst_p2',rbspx+'_pftst_p2'
+	copy_data,'pftst_Bo',rbspx+'_pftst_Bo'
+	copy_data,'Bw_pftst_p3',rbspx+'_Bw_pftst_p3'
+	copy_data,'Bw_pftst_p2',rbspx+'_Bw_pftst_p2'
+	copy_data,'Mag_mgse_DC_interp',rbspx+'_Mag_mgse_DC_interp'
+
+	store_data,['pftst_nospinaxis_perp','pftst_nospinaxis_para','pftst_p1','pftst_p2','pftst_Bo','Bw_pftst_p3','Bw_pftst_p2','Mag_mgse_DC_interp'],/delete
 
 ;----------------------------------------------------------
 ;Plot various quantities
@@ -121,21 +131,21 @@
 
 
 	;compare pure to mixed pflux
-	tplot,['pftst_nospinaxis_perp','pftst_nospinaxis_para','pftst_p1','pftst_p2','pftst_Bo']
+	tplot,rbspx+'_'+['pftst_nospinaxis_perp','pftst_nospinaxis_para','pftst_p1','pftst_p2','pftst_Bo']
 
 
 	;compare E and B to pftst
 
 	;Perp to field component
 	
-	ylim,'pftst_nospinaxis_perp',-0.005,0.005
-	ylim,'pftst_nospinaxis_para',-0.005,0.005
-	ylim,['Ew_pftst_p1','Bw_pftst_p3','Mag_mgse_DC_interp'],0,0
-	tplot,['pftst_nospinaxis_perp','Ew_pftst_p1','Bw_pftst_p3','Mag_mgse_DC_interp']
+	ylim,rbspx+'_pftst_nospinaxis_perp',-0.005,0.005
+	ylim,rbspx+'_pftst_nospinaxis_para',-0.005,0.005
+	ylim,[rbspx+'_Ew_pftst_p1',rbspx+'_Bw_pftst_p3',rbspx+'_Mag_mgse_DC_interp'],0,0
+	tplot,[rbspx+'_pftst_nospinaxis_perp',rbspx+'_Ew_pftst_p1',rbspx+'_Bw_pftst_p3',rbspx+'_Mag_mgse_DC_interp']
 
 	;Field aligned component
-	tplot,['pftst_nospinaxis_para','Ew_pftst_p1','Bw_pftst_p2','Mag_mgse_DC_interp']
+	tplot,[rbspx+'_pftst_nospinaxis_para',rbspx+'_Ew_pftst_p1',rbspx+'_Bw_pftst_p2',rbspx+'_Mag_mgse_DC_interp']
 
 
-	tplot,['pftst_nospinaxis_para','pftst_nospinaxis_perp']
+	tplot,[rbspx+'_pftst_nospinaxis_para',rbspx+'_pftst_nospinaxis_perp']
 

@@ -38,6 +38,7 @@ if not keyword_set(psource) then begin
     psource.archive_ext = '.arc'   ; archive old files instead of deleting them
     psource.archive_dir = 'archive/'  ; archive directory
     psource.preserve_mtime = 1
+;    psource.no_update = 1
     psource.verbose=3
     psource.min_age_limit=3600  ; one hour delay before checking again
 endif

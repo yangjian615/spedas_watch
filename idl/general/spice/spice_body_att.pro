@@ -28,6 +28,7 @@ endelse
 
 res = replicate(!values.d_nan,3,3,ns)
 if nind ne 0 then begin
+;     cspice_pxform,spice_bod2s(from),spice_bod2s(to),et[ind],temp    ; 3 element position? (online documentation is misleading)
      cspice_pxform,from,to,et[ind],temp    ; 3 element position? (online documentation is misleading)
  ;    cspice_spkpos,body_name,et[ind],frame,abcorr,obs_name, pos2, ltime2
      res[*,*,ind] = temp

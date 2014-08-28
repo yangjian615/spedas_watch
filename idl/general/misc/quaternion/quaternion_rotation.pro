@@ -14,8 +14,8 @@
 ;Written by: Davin Larson
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-02-05 09:54:46 -0800 (Wed, 05 Feb 2014) $
-; $LastChangedRevision: 14164 $
+; $LastChangedDate: 2014-04-18 13:05:24 -0700 (Fri, 18 Apr 2014) $
+; $LastChangedRevision: 14862 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/quaternion/quaternion_rotation.pro $
 ;-
 function quaternion_rotation,v,q,last_index=last_index
@@ -29,7 +29,7 @@ if n_elements(last_index) eq 0 then begin
     wq = where(dim_q eq 4,nwq)
     if nwv eq 0 then message,'At least one of V dimensions must be 3'
     if nwq eq 0 then message,'At least one of Q dimensions must be 4'    
-    last_index = (dim_v[0] eq 3) and (dimq[0] eq 4)
+    last_index = (dim_v[0] eq 3) and (dim_q[0] eq 4)
 endif
 
 if keyword_set(last_index) then begin

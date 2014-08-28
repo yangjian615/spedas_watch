@@ -36,20 +36,20 @@
 ;                with the same # of elements as pathnames/newpathnames
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-04-10 23:13:52 -0700 (Thu, 10 Apr 2014) $
-;$LastChangedRevision: 14809 $
+;$LastChangedDate: 2014-04-18 13:26:55 -0700 (Fri, 18 Apr 2014) $
+;$LastChangedRevision: 14865 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_retrieve.pro $
 ;-
 function file_retrieve,pathnames, newpathnames, structure_format=structure_format,  $
     use_wget=use_wget, nowait=nowait, $
     local_data_dir=local_data_dir,remote_data_dir=remote_data_dir, $
     min_age_limit=min_age_limit , $
-    last_version = last_version , $
     valid_only=valid_only,   $
     file_mode = file_mode,  $
     recurse_limit=recurse_limit, $
     dir_mode = dir_mode,   $
     user_agent=user_agent,   $
+    user_pass=user_pass, $
     preserve_mtime=preserve_mtime,  $
     restore_mtime=restore_mtime, $
     ascii_mode=ascii_mode,   $
@@ -57,11 +57,14 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     no_update=no_update, $
     archive_ext=archive_ext, $
     archive_dir=archive_dir, $
+    last_version = last_version , $
+    oldversion_dir = oldversion_dir, $
+    oldversion_ext = oldversion_ext, $
     force_download=force_download,$
     no_clobber=no_clobber, ignore_filesize=ignore_filesize, $
     verbose=verbose,progress=progress,progobj=progobj
 
-dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 14809 2014-04-11 06:13:52Z davin-mac $'
+dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 14865 2014-04-18 20:26:55Z davin-mac $'
 if keyword_set(structure_format) then begin
    user_agent =  'FILE_RETRIEVE: IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
    str= {   $
@@ -141,7 +144,7 @@ if keyword_set(remote_data_dir) and  not (keyword_set(no_server) or keyword_set(
                no_download = no_download, archive_ext=archive_ext,archive_dir=archive_dir,  $
                ascii_mode=ascii_mode, $
                recurse_limit=recurse_limit, $
-               user_agent=user_agent, $
+               user_agent=user_agent, user_pass=user_pass, $
                preserve_mtime = preserve_mtime, restore_mtime=restore_mtime, $
                file_mode=file_mode,dir_mode=dir_mode,last_version=last_version, $
                min_age_limit=min_age_limit,force_download=force_download
@@ -179,6 +182,7 @@ for i=0,n_elements(fullnames)-1 do begin
              dprint,dlevel=2,verbose=vb,strtrim(c,2)+' matches found for: "'+fullnames[i]+'"  Using last version.'
  ;            fullnames[i] = ff[n_elements(ff)-1]   ; Cluge to Use highest version number?
              append_array,fullnames2,ff[n_elements(ff)-1]
+             file_archive,ff[0:n_elements(ff)-2],verbose=verbose,archive_dir=oldversion_dir,archive_ext=oldversion_ext
            endif else begin
              dprint,dlevel=2,verbose=vb,'Multiple matches found for: "'+fullnames[i]+'"'
              append_array,fullnames2,ff

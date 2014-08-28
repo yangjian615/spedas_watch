@@ -1,6 +1,6 @@
 ;+
-;Procedure:  spice_tplot_qrot
-;  obtains a unit (rotation) quaternion that can be used to rotate from one frame to another 
+;Procedure:  spice_qrot_to_tplot,from_frame,to_frame
+;Purpose:  Obtains a unit (rotation) quaternion that can be used to rotate from one frame to another 
 ;
 ;Purpose: ;
 ; Author: Davin Larson  
@@ -33,8 +33,8 @@ repeat   begin
    qatt =  spice_body_att(frame1,frame2,ut,/quaternion,fix_qsign=fix_qsign,baserot=baserot,check_objects=check_objects) 
    if keyword_set(error) || keyword_set(derror) then begin
       if nreps++ gt 12 then break
-     del_qatt = sqrt(total( (shift(qatt,0,-1) - shift(qatt,0,1))^2,1))
-;     del_qatt = sqrt(total( (qatt - shift(qatt,0,1))^2,1))
+      del_qatt = sqrt(total( (shift(qatt,0,-1) - shift(qatt,0,1))^2,1))
+;      del_qatt = sqrt(total( (qatt - shift(qatt,0,1))^2,1))
 ;      printdat,del_qatt
       del_qatt[[0,n_elements(ut)-1]] = 0
 ;      del_qatt[0] = 0
@@ -51,7 +51,7 @@ repeat   begin
       if nw eq 0 then break
       ndiv = 5
       uti = 0
-      dprint,dlevel=2,'Subdividing '+strtrim(nw,2)+' intervals into '+strtrim(ndiv,2)+' sections'
+      dprint,dlevel=2,'Subdividing '+strtrim(nw,2)+' intervals into '+strtrim(ndiv,2)+' sections ',nreps
       for i=1,ndiv-1 do  append_array,uti,  ut[w-1]+ (ut[w]-ut[w-1])*double(i)/ndiv
       ut = [ut,uti]
       ut = ut[sort(ut)]

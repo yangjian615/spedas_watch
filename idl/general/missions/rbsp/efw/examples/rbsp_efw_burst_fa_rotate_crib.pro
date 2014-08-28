@@ -8,8 +8,8 @@
 ; HISTORY: Created by Aaron W Breneman, Univ. Minnesota  4/10/2014
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-04-10 13:33:36 -0700 (Thu, 10 Apr 2014) $
-;   $LastChangedRevision: 14803 $
+;   $LastChangedDate: 2014-04-16 11:53:43 -0700 (Wed, 16 Apr 2014) $
+;   $LastChangedRevision: 14832 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/examples/rbsp_efw_burst_fa_rotate_crib.pro $
 ;-
 
@@ -70,8 +70,8 @@
 				   [interpol(wsc_GSE.y[*,1],wsc_GSE.x,tmpp.x)],$
 				   [interpol(wsc_GSE.y[*,2],wsc_GSE.x,tmpp.x)]]
 
-	rbsp_gse2mgse,rbspx+'_emfisis_l3_hires_gse_Mag',reform(wsc_GSE_tmp),newname='Mag_mgse'
-	;rbsp_gse2mgse,rbspx+'_emfisis_l3_4sec_gse_Mag',reform(wsc_GSE_tmp),newname='Mag_mgse'
+	rbsp_gse2mgse,rbspx+'_emfisis_l3_hires_gse_Mag',reform(wsc_GSE_tmp),newname=rbspx+'_Mag_mgse'
+	;rbsp_gse2mgse,rbspx+'_emfisis_l3_4sec_gse_Mag',reform(wsc_GSE_tmp),newname=rbspx+'_Mag_mgse'
 
 
 
@@ -110,8 +110,8 @@ stop
 	store_data,rbspx+'_efw_mscb2_uvw',data={x:t1,y:dat1}
 	dat1 = tsample(rbspx+'_efw_vb2',[t0z,t1z],times=t1)
 	store_data,rbspx+'_efw_vb2_uvw',data={x:t1,y:dat1}
-	dat1 = tsample('Mag_mgse',[t0z,t1z],times=t1)
-	store_data,'Mag_mgse',data={x:t1,y:dat1}
+	dat1 = tsample(rbspx+'_Mag_mgse',[t0z,t1z],times=t1)
+	store_data,rbspx+'_Mag_mgse',data={x:t1,y:dat1}
 	
 	
 	;Create E-field variables (mV/m)
@@ -159,9 +159,20 @@ stop
 ;---------------------------------------------------------
 
 
-	tplot,[rbspx+'_efw_mscb2_mgse','Mag_mgse']
+	tplot,[rbspx+'_efw_mscb2_mgse',rbspx+'_Mag_mgse']
 
-	fa = rbsp_rotate_field_2_vec(rbspx+'_efw_mscb2_mgse','Mag_mgse')
+	fa = rbsp_rotate_field_2_vec(rbspx+'_efw_mscb2_mgse',rbspx+'_Mag_mgse')
+
+	copy_data,'theta_kb',rbspx+'_theta_kb'
+	copy_data,'dtheta_kb',rbspx+'_dtheta_kb'
+	copy_data,'minvar_eigenvalues',rbspx+'_minvar_eigenvalues'
+	copy_data,'emax2eint',rbspx+'_emax2eint'
+	copy_data,'eint2emin',rbspx+'_eint2emin'
+  	copy_data,'emax_vec_minvar',rbspx+'_emax_vec_minvar'
+  	copy_data,'eint_vec_minvar',rbspx+'_eint_vec_minvar'
+  	copy_data,'emin_vec_minvar',rbspx+'_emin_vec_minvar'
+
+	store_data,['theta_kb','dtheta_kb','minvar_eigenvalues','emax2eint','eint2emin','emax_vec_minvar','eint_vec_minvar','emin_vec_minvar'],/delete
 
 	split_vec,rbspx+'_efw_mscb2_mgse_FA_minvar'
 	ylim,[rbspx+'_efw_mscb2_mgse_FA_minvar_x',rbspx+'_efw_mscb2_mgse_FA_minvar_y',rbspx+'_efw_mscb2_mgse_FA_minvar_z'],-0.15,0.15
@@ -170,17 +181,17 @@ stop
 	tplot,[rbspx+'_efw_mscb2_mgse_FA_minvar_x',rbspx+'_efw_mscb2_mgse_FA_minvar_y',rbspx+'_efw_mscb2_mgse_FA_minvar_z']
 
 	;plot wave normal angle from min variance analysis
-	options,'theta_kb','ytitle','Wave normal!Cangle'
-	options,'dtheta_kb','ytitle','Wave normal!Cangle!Cuncertainty'
+	options,rbspx+'_theta_kb','ytitle',rbspx+ '!CWave normal!Cangle'
+	options,rbspx+'_dtheta_kb','ytitle',rbspx+'!CWave normal!Cangle!Cuncertainty'
 	
-	tplot,['theta_kb','dtheta_kb','minvar_eigenvalues','emax2eint','eint2emin']
-	tplot,['theta_kb','dtheta_kb',rbspx+'_efw_mscb2_mgse_FA_minvar_x',rbspx+'_efw_mscb2_mgse_FA_minvar_y',rbspx+'_efw_mscb2_mgse_FA_minvar_z']
+	tplot,[rbspx+'_theta_kb',rbspx+'_dtheta_kb',rbspx+'_minvar_eigenvalues',rbspx+'_emax2eint',rbspx+'_eint2emin']
+	tplot,[rbspx+'_theta_kb',rbspx+'_dtheta_kb',rbspx+'_efw_mscb2_mgse_FA_minvar_x',rbspx+'_efw_mscb2_mgse_FA_minvar_y',rbspx+'_efw_mscb2_mgse_FA_minvar_z']
 
 stop
 
 	;------------------
 	;Now try EFA coord
-	fa = rbsp_rotate_field_2_vec(rbspx+'_efw_mscb2_mgse','Mag_mgse',/efa)
+	fa = rbsp_rotate_field_2_vec(rbspx+'_efw_mscb2_mgse',rbspx+'_Mag_mgse',/efa)
 
 	split_vec,rbspx+'_efw_mscb2_mgse_EFA_coord'
 	ylim,[rbspx+'_efw_mscb2_mgse_EFA_coord_x',rbspx+'_efw_mscb2_mgse_EFA_coord_y',rbspx+'_efw_mscb2_mgse_EFA_coord_z'],-0.15,0.15
@@ -196,11 +207,11 @@ stop
 ;---------------------------------------------------------
 
 
-	tplot,[rbspx+'_efw_eb2_mgse','Mag_mgse']
+	tplot,[rbspx+'_efw_eb2_mgse',rbspx+'_Mag_mgse']
 
 
 	;First try minimum variance option
-	fa = rbsp_rotate_field_2_vec(rbspx+'_efw_eb2_mgse','Mag_mgse')
+	fa = rbsp_rotate_field_2_vec(rbspx+'_efw_eb2_mgse',rbspx+'_Mag_mgse')
 
 	split_vec,rbspx+'_efw_eb2_mgse_FA_minvar'
 	ylim,[rbspx+'_efw_eb2_mgse_FA_minvar_x',rbspx+'_efw_eb2_mgse_FA_minvar_y',rbspx+'_efw_eb2_mgse_FA_minvar_z'],-0.15,0.15
@@ -212,7 +223,7 @@ stop
 
 	;------------------
 	;Now try EFA coord
-	fa = rbsp_rotate_field_2_vec(rbspx+'_efw_eb2_mgse','Mag_mgse',/efa)
+	fa = rbsp_rotate_field_2_vec(rbspx+'_efw_eb2_mgse',rbspx+'_Mag_mgse',/efa)
 
 	split_vec,rbspx+'_efw_eb2_mgse_EFA_coord'
 	ylim,[rbspx+'_efw_eb2_mgse_EFA_coord_x',rbspx+'_efw_eb2_mgse_EFA_coord_y',rbspx+'_efw_eb2_mgse_EFA_coord_z'],-0.15,0.15
@@ -221,7 +232,73 @@ stop
 	tplot,[rbspx+'_efw_eb2_mgse_EFA_coord_x',rbspx+'_efw_eb2_mgse_EFA_coord_y',rbspx+'_efw_eb2_mgse_EFA_coord_z']
 
 
+stop
+
+
+;------------------------------------------------------------------------------
+;Use Chasten's program to calculate spec, wave normal angle, ellipticity, etc..
+;------------------------------------------------------------------------------
+
+
+	twavpol,rbspx+'_efw_mscb2_mgse_FA_minvar',prefix=rbspx+'_efw_mscb2_mgse_FA_minvar'
+
+	;change wave normal angle to degrees
+	get_data,rbspx+'_efw_mscb2_mgse_FA_minvar_waveangle',data=wn
+	store_data,rbspx+'_efw_mscb2_mgse_FA_minvar_waveangle',data={x:wn.x,y:wn.y/!dtor,v:wn.v}
+	options,rbspx+'_efw_mscb2_mgse_FA_minvar_waveangle','spec',1
+	zlim,rbspx+'_efw_mscb2_mgse_FA_minvar_waveangle',0,90,0
+
+	ylim,[rbspx+'_efw_mscb2_mgse_FA_minvar_powspec',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_degpol',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_waveangle',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_elliptict',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_helicit',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_pspec3'],100,8000,1
+
+	zlim,rbspx+'_efw_mscb2_mgse_FA_minvar_powspec',1d-9,1d-4,1
+	zlim,rbspx+'_efw_mscb2_mgse_FA_minvar_pspec3',1d-9,1d-4,1
+
+	;eliminate data under a certain deg of polarization threshold
+	get_data,rbspx+'_efw_mscb2_mgse_FA_minvar_degpol',data=degp
+	goo = where(degp.y le 0.5)
+	if goo[0] ne -1 then degp.y[goo] = !values.f_nan
+	store_data,rbspx+'_efw_mscb2_mgse_FA_minvar_degpol',data=degp
+	get_data,rbspx+'_efw_mscb2_mgse_FA_minvar_powspec',data=tmp
+	if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+	store_data,rbspx+'_efw_mscb2_mgse_FA_minvar_powspec',data=tmp
+	get_data,rbspx+'_efw_mscb2_mgse_FA_minvar_waveangle',data=tmp
+	if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+	store_data,rbspx+'_efw_mscb2_mgse_FA_minvar_waveangle',data=tmp
+	get_data,rbspx+'_efw_mscb2_mgse_FA_minvar_elliptict',data=tmp
+	if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+	store_data,rbspx+'_efw_mscb2_mgse_FA_minvar_elliptict',data=tmp
+	get_data,rbspx+'_efw_mscb2_mgse_FA_minvar_helict',data=tmp
+	if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+	store_data,rbspx+'_efw_mscb2_mgse_FA_minvar_helict',data=tmp
+
+	tplot,[rbspx+'_efw_mscb2_mgse_FA_minvar_powspec',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_degpol',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_waveangle',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_elliptict',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_helict',$
+			rbspx+'_efw_mscb2_mgse_FA_minvar_pspec3']
+
+;----------------------------------------------------
+;Plot FFTs
+;----------------------------------------------------
+
+	;Call program that plots FFTs, hodograms
+	
+	fftlims =  {xlog:1,xrange:[10,4000]} ;limits for the FFT
+	hodlims = {xrange:[-20,20],yrange:[-20,20]}
+		
+	plot_wavestuff,rbspx+'_efw_eb2_mgse_FA_minvar',/psd,/hod,$
+		/nodelete,$    ;keep tplot variables around
+		extra_psd=fftlims,$
+		extra_hod=hodlims
 
 stop
+
+
 
 end

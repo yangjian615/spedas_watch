@@ -40,7 +40,7 @@ if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin     ;
     source = spice_file_source(src,verbose=verbose)
 ;    sprg = mvn_file_source()
 ;    if not keyword_set(source) then source=naif
-    source.no_update =1      ;  Don't check for file if it exists
+;    source.no_update =1      ;  Don't check for file if it exists
 ;    if keyword_set(verbose) then source.verbose=verbose
     kernels=0
 ;        WARNING!!!!!  ALL FILE NAMES LISTED BELOW ARE SUBJECT TO CHANGE AND DO CHANGE REGULARLY

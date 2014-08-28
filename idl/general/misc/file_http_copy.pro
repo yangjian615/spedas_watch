@@ -62,6 +62,7 @@
  ;     ASCII_MODE:  (0/1)   When set to 1 it forces files to be downloaded as ascii text files (converts CR/LF)
  ;                          Setting this keyword will force ignore_filesize keyword to be set as well because
  ;                          files will be of different sizes typically.
+ ;     USER_PASS:    string with format:  'user:password' for sites that require Basic authentication. Digest authentication is not supported.
  ;     VERBOSE:      (input; integer) Set level of verboseness:   Uses "DPRINT"
  ;           0-nearly silent;  2-typical messages;  4: debugging info
  ;      PRESERVE_MTIME:  Uses the server modification time instead of local modification time.  This keyword is ignored
@@ -126,8 +127,8 @@
  ;   Sep 2009    - Fixed user-agent
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2014-03-24 02:11:45 -0700 (Mon, 24 Mar 2014) $
- ; $LastChangedRevision: 14649 $
+ ; $LastChangedDate: 2014-04-18 13:20:51 -0700 (Fri, 18 Apr 2014) $
+ ; $LastChangedRevision: 14864 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -504,7 +505,7 @@ end
    tstart = systime(1)
    ;  if n_elements(verbose) eq 1 then dprint,setdebug=verbose,getdebug=last_dbg
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14649 2014-03-24 09:11:45Z davin-mac $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14864 2014-04-18 20:20:51Z davin-mac $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -573,7 +574,7 @@ end
        ; First get directory listing and extract links:  (listing will not be archived)
        file_http_copy,sub_pathname,serverdir=serverdir,localdir=localdir,url_info=index, host=host ,ascii_mode=1 $
          ,min_age_limit=min_age_limit,verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,if_modified_since=if_modified_since $
-         , links=links, user_agent=user_agent ;, no_update=no_update  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
+         , links=links, user_agent=user_agent ,user_pass=user_pass ;, no_update=no_update  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
        dprint,dlevel=5,verbose=verbose,/phelp,links
        
        ;strip out return directory links
@@ -595,9 +596,8 @@ end
        
        w = where(strmatch(sub_pathname+links,sup_pathname),nlinks)
        if nlinks gt 0 then begin
-dprint,dlevel=5,verbose=verbose,links[w],/phelp
          w = w[sort(links[w])]      ; sort in alphabetical order (needed for last_version keyword)
-dprint,dlevel=3,verbose=verbose,links[w],/phelp
+         dprint,dlevel=5,verbose=verbose,links[w],/phelp
          rec_pathnames = sub_pathname + links[w] + end_pathname
          dprint,dlevel=5,verbose=verbose,/phelp,sup_pathname
          dprint,dlevel=5,verbose=verbose,/phelp,end_pathname
@@ -611,7 +611,7 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
              , min_age_limit=min_age_limit, last_version=last_version, url_info=ui $
              , no_download=no_download, no_clobber=no_clobber, no_update=no_update, archive_ext=archive_ext, archive_dir=archive_dir $
              , force_download=force_download $
-             , ignore_filesize=ignore_filesize,user_agent=user_agent,if_modified_since=if_modified_since $
+             , ignore_filesize=ignore_filesize,user_agent=user_agent,user_pass=user_pass,if_modified_since=if_modified_since $
              , preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
 ;           dprint,dlevel=5,verbose=verbose,/phelp,lns
            if not keyword_set(ui)  then message,'URL info error'
@@ -736,8 +736,8 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
        printf, unit,  'Referer: ',referrer
        dprint,dlevel=4,verbose=verbose,'Referer: ',referrer
      endif
-     if keyword_set(user_pass) then begin
-       printf, unit,  'Authorization:  user  ',user_pass
+     if keyword_set(user_pass) then begin      
+       printf, unit,  'Authorization: Basic ',strpos(user_pass,':') ge 0 ?  idl_base64(byte(user_pass)) : user_pass
        dprint,dlevel=4,verbose=verbose,'USER_PASS: ',user_pass
      endif
      if keyword_set(if_modified_since) then begin
@@ -780,6 +780,12 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
      dprint,dlevel=6,verbose=verbose,'Header= ',transpose(header)
      dprint,dlevel=6,verbose=verbose,phelp=2,url_info
      
+     if url_info.status_code eq 401 then begin
+        dprint,dlevel=1,'Authentication required for "'+url+'" (Use USER_PASS)' 
+        goto , close_server   
+     endif
+     
+     
      ; lphilpott may-2012 call redirect code for permanent redirects (301) in addition to temporary redirects
      if url_info.status_code eq 302 || url_info.status_code eq 301 then begin   ; Redirection
        location = file_http_header_element(header,'Location:')
@@ -795,8 +801,7 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
              ;localdir=localdir,verbose=verbose, $
              url_info=url_info,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode, host=host, $
              archive_ext=archive_ext, archive_dir=archive_dir, $
-             user_agent=user_agent, if_modified_since=if_modified_since  ;,preserve_mtime=preserve_mtime,restore_mtime=restore_mtime 
-             
+             user_agent=user_agent,user_pass=user_pass, if_modified_since=if_modified_since  ;,preserve_mtime=preserve_mtime,restore_mtime=restore_mtime              
            goto, close_server
          endelse
        endif
@@ -807,8 +812,7 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
        
      if url_info.status_code eq 304 then begin   ;  Not modified since
        dprint,dlevel=2,verbose=verbose,'Local file: ',localname,' is current'
-       goto,  close_server
-       
+       goto,  close_server      
      endif
      
      if url_info.exists then begin
@@ -874,7 +878,7 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
              if arg_present(links2) then extract_html_links_regex,text,links2 ,/relative, /normal,no_parent=url
              dprint,dwait=10,dlevel=1,verbose=verbose,'Downloading "',localname,'"  Please wait ', lines++
            endwhile
-           dprint,dlevel=2,verbose=verbose,'Downloaded ',strtrim(lines,2),' lines in ',string(systime(1)-ts,format='(f0.2)'),' seconds. File:',localname
+           dprint,dlevel=2,verbose=verbose,'Downloaded ',strtrim(lines,2),' lines in ',string(systime(1)-ts,format='(f0.2)'),' seconds. File:'+localname
           ; if n_elements(links2) gt 1 then links2 = links2[1:*]   ; get rid of first ''
          endif else begin                                                      ; download Non-text (binary) files
            maxb = 2l^20   ; 1 Megabyte default buffer size
@@ -925,7 +929,6 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
          
          if 0 then begin
            file_error2:
-           beep
            dprint,dlevel=0,verbose=verbose,'Error downloading file: "',url,'"'
            error = !error_state.msg
            dprint,dlevel=0,verbose=verbose,error
@@ -940,10 +943,10 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
          dprint,dlevel=3,verbose=verbose,'Local file: "' + localname + '" is current (Not downloaded)'
        endelse
      endif else begin
-       dprint,dlevel=1,verbose=verbose,'Remote file not found! "'+ url + '"'
-       dprint,dlevel=1,verbose=verbose,'If file was expected, you should verify that your anti-virus software did not block the connection and add an exception for IDL, if necessary'
-       dprint,dlevel=2,verbose=verbose,'Request Had Header: '
-       dprint,dlevel=2,verbose=verbose, transpose(Header)
+       dprint,dlevel=1,verbose=verbose,'Remote file not found! "'+ url + '" (increase VERBOSE to learn more)'
+       dprint,dlevel=3,verbose=verbose,'If file was expected, you should verify that your anti-virus software did not block the connection and add an exception for IDL, if necessary'
+       dprint,dlevel=4,verbose=verbose,'Request Had Header: '
+       dprint,dlevel=4,verbose=verbose, transpose(Header)
        
      ;      url_info = 0
      endelse
@@ -962,7 +965,7 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
          file_http_copy,'',serverdir=serverdir,localdir=localdir, $
            min_age_limit=min_age_limit,verbose=verbose,no_update=no_update, $
            file_mode=file_mode,dir_mode=dir_mode,ascii_mode=1 , host=host, $
-           url_info=index,links=links,user_agent=user_agent,if_modified_since=if_modified_since   ;No need to preserve mtime on dir listings ,preserve_mtime=preserve_mtime
+           url_info=index,links=links,user_agent=user_agent,user_pass=user_pass,if_modified_since=if_modified_since   ;No need to preserve mtime on dir listings ,preserve_mtime=preserve_mtime
        endif
        wdir = where(strpos(links,'/',0) gt 0,ndirs)   ; Look in each directory for the requested file
        for i=0,ndirs-1 do begin
@@ -971,7 +974,7 @@ dprint,dlevel=3,verbose=verbose,links[w],/phelp
            , verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,ascii_mode=ascii_mode $
            , min_age_limit=min_age_limit, last_version=last_version, url_info=ui $
            , no_download=no_download, no_clobber=no_clobber,no_update=no_update, archive_ext=archive_ext,archive_dir=archive_dir $
-           , ignore_filesize=ignore_filesize,user_agent=user_agent, host=host $
+           , ignore_filesize=ignore_filesize,user_agent=user_agent,user_pass=user_pass, host=host $
            , preserve_mtime=preserve_mtime,restore_mtime=restore_mtime,if_modified_since=if_modified_since
          if not keyword_set(ui)  then message,'URL error  (this error should never occur)'
          w = where(ui.exists ne 0,nw)
