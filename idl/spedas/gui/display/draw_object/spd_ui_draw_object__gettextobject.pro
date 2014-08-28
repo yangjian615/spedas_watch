@@ -9,9 +9,9 @@
 ;justify, -1 = left, 1=right, 0 = middle
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-07-24 11:24:17 -0700 (Thu, 24 Jul 2014) $
+;$LastChangedRevision: 15597 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__gettextobject.pro $
 ;-
 function spd_ui_draw_object::getTextObject,text,loc,offsetDirFlag,orientation,justify=justify,enable_formatting=enable_formatting
@@ -66,7 +66,7 @@ function spd_ui_draw_object::getTextObject,text,loc,offsetDirFlag,orientation,ju
     
   endelse
   
-  if size eq 0 then begin
+  if size le 0 then begin
     show = 0
     size = 1D
   endif

@@ -60,7 +60,6 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
 			return
 		endif		
 
-;	endif else rbsp_load_emfisis,probe=probe,coord='gse',cadence='1sec',level='l3'
 	endif else begin
 
 		if keyword_set(hiresl3) then type = 'hires' else type = '1sec'
@@ -120,23 +119,31 @@ message,"Rotating emfisis data...",/continue
 
 
 		;spinfit the mag data and transform to MGSE
-		rbsp_decimate,rbspx +'_emfisis_quicklook_Mag', upper = 2
-		rbsp_spinfit,rbspx +'_emfisis_quicklook_Mag', plane_dim = 0
-		rbsp_cotrans,rbspx +'_emfisis_quicklook_Mag_spinfit', rbspx + '_mag_mgse', /dsc2mgse
+		
+		get_data,rbspx +'_emfisis_quicklook_Mag',data=dmag
+		
+		if is_struct(dmag) then begin		
+			rbsp_decimate,rbspx +'_emfisis_quicklook_Mag', upper = 2
+			rbsp_spinfit,rbspx +'_emfisis_quicklook_Mag', plane_dim = 0
+			rbsp_cotrans,rbspx +'_emfisis_quicklook_Mag_spinfit', rbspx + '_mag_mgse', /dsc2mgse
+		endif
 
 	endif else begin
 		;Transform the EMFISIS gse mag data to mgse
 	
 		get_data,rbspx+'_emfisis_l3_'+type+'_gse_Mag',data=tmpp
 
-		wsc_GSE_tmp = [[interpol(wsc_GSE.y[*,0],wsc_GSE.x,tmpp.x)],$
-					   [interpol(wsc_GSE.y[*,1],wsc_GSE.x,tmpp.x)],$
-					   [interpol(wsc_GSE.y[*,2],wsc_GSE.x,tmpp.x)]]
+		if is_struct(tmpp) then begin
+			wsc_GSE_tmp = [[interpol(wsc_GSE.y[*,0],wsc_GSE.x,tmpp.x)],$
+						   [interpol(wsc_GSE.y[*,1],wsc_GSE.x,tmpp.x)],$
+						   [interpol(wsc_GSE.y[*,2],wsc_GSE.x,tmpp.x)]]
 		
 		
-		message,"Rotating emfisis l3_hires, npoints:"+string(n_elements(tmpp.x)),/continue
+			message,"Rotating emfisis l3_hires, npoints:"+string(n_elements(tmpp.x)),/continue
 
-		rbsp_gse2mgse,rbspx+'_emfisis_l3_'+type+'_gse_Mag',wsc_GSE_tmp,newname=rbspx+'_mag_mgse'
+			rbsp_gse2mgse,rbspx+'_emfisis_l3_'+type+'_gse_Mag',wsc_GSE_tmp,newname=rbspx+'_mag_mgse'
+		endif
+
 
 	endelse
 
@@ -149,7 +156,12 @@ message,"Done rotating emfisis data...",/continue
 ;Find residual Efield (i.e. no Vsc x B and no Vcoro x B field)	
 	dif_data,rbspx+'_state_vel_mgse',rbspx+'_state_vel_coro_mgse',newname='vel_total'
 	
-	rbsp_vxb_subtract,'vel_total',rbspx + '_mag_mgse',rbspx+'_sfit12_mgse'
+	get_data,'vel_total',data=vt
+	get_data,rbspx + '_mag_mgse',data=mmgse
+	get_data,rbspx+'_sfit12_mgse',data=sfmgse
+	
+	if is_struct(vt) and is_struct(mmgse) and is_struct(sfmgse) then $
+		rbsp_vxb_subtract,'vel_total',rbspx + '_mag_mgse',rbspx+'_sfit12_mgse'
 
 
 	copy_data,'Esvy_mgse_vxb_removed',rbspx+'_efw_esvy_mgse_vxb_removed_spinfit'
@@ -162,12 +174,14 @@ message,"Done rotating emfisis data...",/continue
 
 ;Apply crude antenna effective length correction to minimize residual field
 	get_data,rbspx+'_efw_esvy_mgse_vxb_removed_spinfit', data = d
-;	d.y[*, 1] *= 1.05d
-;	d.y[*, 2] *= 1.05d
-	d.y[*, 1] *= 1d
-	d.y[*, 2] *= 1d
-	store_data,rbspx+'_efw_esvy_mgse_vxb_removed_spinfit', data = d
 
+	if is_struct(d) then begin
+	;	d.y[*, 1] *= 1.05d
+	;	d.y[*, 2] *= 1.05d
+		d.y[*, 1] *= 1d
+		d.y[*, 2] *= 1d
+		store_data,rbspx+'_efw_esvy_mgse_vxb_removed_spinfit', data = d
+	endif
 
 
 

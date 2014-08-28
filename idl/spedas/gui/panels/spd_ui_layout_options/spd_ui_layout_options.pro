@@ -16,12 +16,45 @@
 ;spinner (as they change) so that the user can't click down below valid values.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-01 20:07:45 -0700 (Tue, 01 Jul 2014) $
-;$LastChangedRevision: 15500 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-07-24 12:12:58 -0700 (Thu, 24 Jul 2014) $
+;$LastChangedRevision: 15600 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_layout_options/spd_ui_layout_options.pro $
 ;--------------------------------------------------------------------------------
 
+; the following procedure exists to reset custom trace names set by the user
+; in the event that they add/remove trace names from a panel using Layout Options
+pro spd_ui_layout_sync_traces, state
+  thewindows = state.info.windowStorage->getActive()
+  
+  panel_names = spd_ui_get_panels(thewindows, panelObjs=panelObjs)
+  num_panels =  n_elements(panelObjs)
+
+  for panel_idx = 0, num_panels-1 do begin
+        ; grab the legendSettings
+        panelObjs[panel_idx]->getProperty, legendSettings = legendSettings
+        
+        ; are custom traces set for this panel?
+        legendSettings->getProperty, traces=traces, customTracesSet = customTracesSet
+        
+        ; check if custom traces are set by the user
+        if customTracesSet eq 1 then begin
+            ; need to check whether the user added a line to this panel
+            (*state.panelObjs)[panel_idx]->getproperty, tracesettings=new_tracesettings
+            new_traces=new_tracesettings->get(/all)
+            
+            num_old_traces = n_elements((*traces).tracenames)
+            num_new_traces = n_elements(new_traces)
+            if num_new_traces ne num_old_traces then begin ; out of sync
+                legendSettings->setProperty, customTracesSet = 0
+                
+                out_of_sync_error = 'SPD_UI_LAYOUT_OPTIONS: Conflict with trace names set in Legend Options - resetting to default names.'
+                state.historywin->update, out_of_sync_error
+                state.statusbar->update, out_of_sync_error
+            endif
+        endif
+  endfor
+end
 
 function spd_ui_check_panel_layout, state
   
@@ -1482,7 +1515,7 @@ EndIF
 ;
 ;      endelse
 
-
+      spd_ui_layout_sync_traces, state
       spd_ui_layout_draw_update,event.top,state,/apply
       
       state.historywin->Update, 'SPD_UI_LAYOUT_OPTIONS: Changes applied.'
@@ -1739,7 +1772,7 @@ EndIF
 ;      endif else begin
 ;
 ;      endelse
-      
+      spd_ui_layout_sync_traces, state
       spd_ui_layout_draw_update,event.top,state
       
       state.historywin->Update, 'SPD_UI_LAYOUT_OPTIONS: Layout updated.  Layout Options widget closed.'

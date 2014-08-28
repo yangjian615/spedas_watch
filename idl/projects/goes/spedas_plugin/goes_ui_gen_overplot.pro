@@ -23,16 +23,16 @@
 ; OUTPUT:
 ;  none
 ;  
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-03 15:13:05 -0700 (Thu, 03 Jul 2014) $
-;$LastChangedRevision: 15507 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-07-25 10:45:46 -0700 (Fri, 25 Jul 2014) $
+;$LastChangedRevision: 15611 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/spedas_plugin/goes_ui_gen_overplot.pro $
 ;-
 
 pro goes_ui_gen_overplot_event, event
 
   Compile_Opt hidden
-
+ 
   Widget_Control, event.TOP, Get_UValue=state, /No_Copy
 
   ;Put a catch here to insure that the state remains defined
@@ -108,6 +108,7 @@ pro goes_ui_gen_overplot_event, event
     
       tplot_options, title='GOES-'+string(state.probe)+' Overview ('+time_string(st_double)+')'
 
+      state.statusBar->Update,'Generating GOES overview plot. Please wait!...'
       goes_overview_plot, date = st_double, probe = state.probe, duration = dur, /gui_overplot, oplot_calls = (*state.data).oplot_calls, error = error
       
       if ~error then begin
@@ -141,7 +142,7 @@ pro goes_ui_gen_overplot_event, event
       endif else begin
         msg = 'Error generating GOES everview plot.'
       endelse
-      
+      state.statusBar->Update, msg
       Widget_Control, event.top, Set_UValue=state, /No_Copy
       Widget_Control, event.top, /Destroy
       return
@@ -150,6 +151,7 @@ pro goes_ui_gen_overplot_event, event
     END
     'CANC': BEGIN
       state.historyWin->update,'Generate GOES overview plot canceled',/dontshow
+      state.statusBar->Update,'Generate GOES overview plot canceled.'
       Widget_Control, event.TOP, Set_UValue=state, /No_Copy
       Widget_Control, event.top, /Destroy
       RETURN
@@ -169,7 +171,6 @@ pro goes_ui_gen_overplot_event, event
     'TIME': ; don't send 'Not yet implemented' to the console for time events
     ELSE: dprint,  'Not yet implemented'
   ENDCASE
-  
   Widget_Control, event.top, Set_UValue=state, /No_Copy
 
   RETURN

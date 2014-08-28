@@ -14,35 +14,12 @@
 ; KEYWORDS:
 ;  panel_select:     pointer to current panel
 ; 
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-06-03 11:01:15 -0700 (Tue, 03 Jun 2014) $
-;$LastChangedRevision: 15293 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-07-24 12:15:09 -0700 (Thu, 24 Jul 2014) $
+;$LastChangedRevision: 15601 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_legend_options.pro $
 ;-
 
-; function to return a list of panels
-function spd_ui_legend_options_get_panels, window, panelObjs=panelObjs
-   ; Query panel list and coordinates
-   if ~obj_valid(window) then begin
-        panelNames = ['No Panels']
-   endif else begin
-        window->getProperty, Panels=panels
-        if obj_valid(panels) then begin
-            panelObjs = panels->Get(/all)
-            if obj_valid(panelObjs[0]) then begin
-                for i=0, n_elements(panelObjs)-1 do begin
-                    name=panelObjs[i]->constructPanelName()
-                    if (i eq 0) then panelNames=[name] else panelNames=[panelNames, name]
-                endfor
-            endif else begin
-                panelNames=['No Panels']
-            endelse
-        endif else begin
-            panelNames = ['No Panels']
-        endelse
-   endelse
-   return, panelNames
-end
 
 ; function to return names of traces from panelObjs[selected_panel] 
 ; note that the 'legendtraces' keyword is passed when the user has changed
@@ -748,7 +725,7 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
    ; valid panel objects will be returned in panelObjs
    cWindow = info.windowStorage->getActive()
    panelObjs = obj_new('spd_ui_panel')
-   panelNames = spd_ui_legend_options_get_panels(cWindow, panelObjs=panelObjs)
+   panelNames = spd_ui_get_panels(cWindow, panelObjs=panelObjs)
    
    if ~ptr_valid(panel_select) then panel_select = ptr_new(0)
    

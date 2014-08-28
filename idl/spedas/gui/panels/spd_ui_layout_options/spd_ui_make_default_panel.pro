@@ -115,7 +115,7 @@ if obj_valid(templatePanel) then begin
   panelSettings = templatePanel->Copy()
   
   ;prevent saved location & size settings from being used
-  panelSettings->setProperty, row=setrow, col=setcol, rspan=1, cspan=1, $
+  panelSettings->setProperty, row=setrow, col=col, rspan=1, cspan=1, $
     bottom=0, left=0, width=0, height=0, $ 
     bvalue=-1d, lvalue=-1d, wvalue=-1d, hvalue=-1d 
   

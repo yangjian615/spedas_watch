@@ -8,30 +8,46 @@
 ; HISTORY: Created by Aaron W Breneman, Univ. Minnesota  4/10/2014
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-07-16 10:41:35 -0700 (Wed, 16 Jul 2014) $
-;   $LastChangedRevision: 15582 $
+;   $LastChangedDate: 2014-07-25 06:14:12 -0700 (Fri, 25 Jul 2014) $
+;   $LastChangedRevision: 15607 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/examples/rbsp_efw_burst_fa_rotate_crib.pro $
 ;-
 ; cindy tried to make work on B1. It doesn't get past making the search coil in mgse; nothing in the e_b1 tplot quantities
 
 
-	;Select to bandpass data or not
+;------------------------------------------------------------------------
+;VARIABLES TO SET
+;------------------------------------------------------------------------
+
+	;burst type ('1' or '2')
+	bt = '2'   
+
+	;Select to bandpass data or not (note that bandpassed data also used for Pflux calculation)
 	bandpass_data = 'n'
 	fmin = 100. ;Hz
 	fmax = 10000. 
 
-
-	rbsp_efw_init
-
-	date = '2013-06-08'   ;Wave at 4 Hz
+	;date and time
+	date = '2013-05-05'   ;Wave at 4 Hz
 	timespan,date
 
 	;Define timerange for loading of burst waveform
 	;(CURRENTLY NEED AT LEAST 1 SEC OF BURST FOR MGSE TRANSFORMATION TO WORK!!!)
-	t0 = date + '/04:00'
-	t1 = date + '/05:00'
+	t0 = date + '/08:00'
+	t1 = date + '/18:00'
 
 	probe='b'
+
+	minduration = 1.  ;minimum duration of each burst (sec). This is used to eliminate
+					  ;spuriously short bursts that occur when there are short data gaps.
+					  ;Spuriously short bursts can screw up twavpol.
+
+
+;-----------------------------------------------------------------------
+
+
+	rbsp_efw_init
+
 	rbspx = 'rbsp'+probe
 
 	dt = time_double(t1) - time_double(t0)
@@ -92,12 +108,12 @@
 	timespan,t0,dt2,/seconds
 
 
-	rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['mscb2']
-	rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['vb2']
+	rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['mscb'+bt]
+	rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['vb'+bt]
 		
 
-	copy_data,rbspx+'_efw_mscb2',rbspx+'_efw_mscb2_uvw'
-	store_data,rbspx+'_efw_mscb2',/delete
+	copy_data,rbspx+'_efw_mscb'+bt,rbspx+'_efw_mscb'+bt+'_uvw'
+	store_data,rbspx+'_efw_mscb'+bt,/delete
 	
 	;Create E-field variables (mV/m)
 	trange = timerange()
@@ -110,7 +126,7 @@
 	boom_length = cp.boom_length
 	boom_shorting_factor = cp.boom_shorting_factor
 
-	get_data,rbspx+'_efw_vb2',data=dd
+	get_data,rbspx+'_efw_vb'+bt,data=dd
 	e12 = 1000.*(dd.y[*,0]-dd.y[*,1])/boom_length[0]
 	e34 = 1000.*(dd.y[*,2]-dd.y[*,3])/boom_length[1]
 	e56 = 1000.*(dd.y[*,4]-dd.y[*,5])/boom_length[2]
@@ -120,33 +136,33 @@
 	
 	
 	eb1= [[e12],[e34],[e56]]
-	store_data,rbspx+'_efw_eb2_uvw',data={x:dd.x,y:eb1}
+	store_data,rbspx+'_efw_eb'+bt+'_uvw',data={x:dd.x,y:eb1}
 	
-	tplot,[rbspx+'_efw_eb2_uvw',rbspx+'_efw_mscb2_uvw']
+	tplot,[rbspx+'_efw_eb'+bt+'_uvw',rbspx+'_efw_mscb'+bt+'_uvw']
 	
 	;Convert from UVW (spinning sc) to MGSE coord
-	rbsp_uvw_to_mgse,probe,rbspx+'_efw_mscb2_uvw',/no_spice_load,/nointerp,/no_offset	
-	rbsp_uvw_to_mgse,probe,rbspx+'_efw_eb2_uvw',/no_spice_load,/nointerp,/no_offset	
+	rbsp_uvw_to_mgse,probe,rbspx+'_efw_mscb'+bt+'_uvw',/no_spice_load,/nointerp,/no_offset	
+	rbsp_uvw_to_mgse,probe,rbspx+'_efw_eb'+bt+'_uvw',/no_spice_load,/nointerp,/no_offset	
 	
-	copy_data,rbspx+'_efw_eb2_uvw_mgse',rbspx+'_efw_eb2_mgse'
-	copy_data,rbspx+'_efw_mscb2_uvw_mgse',rbspx+'_efw_mscb2_mgse'
+	copy_data,rbspx+'_efw_eb'+bt+'_uvw_mgse',rbspx+'_efw_eb'+bt+'_mgse'
+	copy_data,rbspx+'_efw_mscb'+bt+'_uvw_mgse',rbspx+'_efw_mscb'+bt+'_mgse'
 
-	tplot,[rbspx+'_efw_eb2_mgse',rbspx+'_efw_mscb2_mgse']
+	tplot,[rbspx+'_efw_eb'+bt+'_mgse',rbspx+'_efw_mscb'+bt+'_mgse']
 
-	split_vec,rbspx+'_efw_eb2_mgse'
-	split_vec,rbspx+'_efw_mscb2_mgse'
+	split_vec,rbspx+'_efw_eb'+bt+'_mgse'
+	split_vec,rbspx+'_efw_mscb'+bt+'_mgse'
 
 	;Check to see how things look (MGSEx is spin axis)
-	tplot,[rbspx+'_efw_eb2_mgse_x',rbspx+'_efw_eb2_mgse_y',rbspx+'_efw_eb2_mgse_z']
+	tplot,[rbspx+'_efw_eb'+bt+'_mgse_x',rbspx+'_efw_eb'+bt+'_mgse_y',rbspx+'_efw_eb'+bt+'_mgse_z']
 stop
-	tplot,[rbspx+'_efw_mscb2_mgse_x',rbspx+'_efw_mscb2_mgse_y',rbspx+'_efw_mscb2_mgse_z']
+	tplot,[rbspx+'_efw_mscb'+bt+'_mgse_x',rbspx+'_efw_mscb'+bt+'_mgse_y',rbspx+'_efw_mscb'+bt+'_mgse_z']
 stop
 
 
 	;--------
 	;These are the variables we will be working with
-	varM = rbspx+'_efw_mscb2_mgse'
-	varE = rbspx+'_efw_eb2_mgse'
+	varM = rbspx+'_efw_mscb'+bt+'_mgse'
+	varE = rbspx+'_efw_eb'+bt+'_mgse'
 
 
 	if bandpass_data eq 'y' then begin
@@ -196,7 +212,6 @@ stop
 	goo = where(abs(dt) ge 2*threshold[1])
 
 
-	nchunks = n_elements(goo)
 	b = 0L
 	q = 0L
 
@@ -205,6 +220,20 @@ stop
 	chunkR = [goo-1,n_elements(sr)-1]
 
 
+	;Get rid of abnormally small chunks. These sometimes occur if there is a small
+	;gap in the data. 
+
+	chunkduration = (chunkR - chunkL)/medavg[1]
+	
+	goo = where(chunkduration ge minduration)
+	chunkL = chunkL[goo]
+	chunkR = chunkR[goo]
+	nchunks = n_elements(goo)
+
+	print,'Duration (sec) of each chunk: ',(chunkR - chunkL)/medavg[1]
+
+	
+stop
 
 
 	Burstdata = [[0.],[0.],[0.]]
@@ -219,13 +248,6 @@ stop
 	eint_vec_minvar = [[0.],[0.],[0.]]
 	emin_vec_minvar = [[0.],[0.],[0.]]
 
-	waveangle = replicate(0.,[1,128])
-	powspec = replicate(0.,[1,128]) 
-	degpol = replicate(0.,[1,128])
-	elliptict = replicate(0.,[1,128])
-	helicit = replicate(0.,[1,128])
-	pspec3 = replicate(0.,[1,128,3])
-	chastontimes = 0d
 
 	for i=0,nchunks-1 do begin
 
@@ -274,8 +296,23 @@ stop
 		;-------
 	
 		;Run Chaston crib on each chunk	
-		twavpol,varM+'_tmp_FA_minvar',prefix='tmp'
+		;twavpol,varM+'_tmp_FA_minvar',prefix='tmp'
+		twavpol,varM+'_tmp_FA_minvar',prefix='tmp',nopfft=16448,steplength=4112
+		;twavpol,varM+'_tmp_FA_minvar',prefix='tmp',nopfft=16448,steplength=4096
 
+		;Find the size of returned data
+		get_data,'tmp'+'_waveangle',data=dtmp
+		sz = n_elements(dtmp.v)
+
+		if i eq 0 then begin
+			waveangle = replicate(0.,[1,sz])
+			powspec = replicate(0.,[1,sz]) 
+			degpol = replicate(0.,[1,sz])
+			elliptict = replicate(0.,[1,sz])
+			helicit = replicate(0.,[1,sz])
+			pspec3 = replicate(0.,[1,sz,3])
+			chastontimes = 0d
+		endif
 
 		;change wave normal angle to degrees
 		get_data,'tmp'+'_waveangle',data=dtmp
@@ -367,6 +404,14 @@ stop
 	if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
 	store_data,varM+'_helicit',data=tmp
 
+	options,[varM+'_powspec',$
+			varM+'_degpol',$
+			varM+'_waveangle',$
+			varM+'_elliptict',$
+			varM+'_helict',$
+			varM+'_pspec3'],'spec',1
+
+
 	tplot,[varM,$
 			varM+'_powspec',$
 			varM+'_degpol',$
@@ -428,8 +473,6 @@ stop
 	threshold = 1/medavg
 	goo = where(abs(dt) ge 2*threshold[1])
 
-
-	nchunks = n_elements(goo)
 	b = 0L
 	q = 0L
 	
@@ -437,7 +480,17 @@ stop
 	chunkL = [0,goo+1]
 	chunkR = [goo-1,n_elements(sr)-1]
 
+	;Get rid of abnormally small chunks. These sometimes occur if there is a small
+	;gap in the data. 
 
+	chunkduration = (chunkR - chunkL)/medavg[1]
+	
+	goo = where(chunkduration ge minduration)
+	chunkL = chunkL[goo]
+	chunkR = chunkR[goo]
+	nchunks = n_elements(goo)
+
+	print,'Duration (sec) of each chunk: ',(chunkR - chunkL)/medavg[1]
 
 
 	Burstdata = [[0.],[0.],[0.]]
@@ -452,13 +505,6 @@ stop
 	eint_vec_minvar = [[0.],[0.],[0.]]
 	emin_vec_minvar = [[0.],[0.],[0.]]
 
-	waveangle = replicate(0.,[1,128])
-	powspec = replicate(0.,[1,128]) 
-	degpol = replicate(0.,[1,128])
-	elliptict = replicate(0.,[1,128])
-	helicit = replicate(0.,[1,128])
-	pspec3 = replicate(0.,[1,128,3])
-	chastontimes = 0d
 
 	for i=0,nchunks-1 do begin
 
@@ -507,7 +553,22 @@ stop
 		;-------
 	
 		;Run Chaston crib on each chunk	
-		twavpol,varE+'_tmp_FA_minvar',prefix='tmp'
+		;twavpol,varE+'_tmp_FA_minvar',prefix='tmp'
+		twavpol,varE+'_tmp_FA_minvar',prefix='tmp',nopfft=16448,steplength=4112
+		
+		;Find the size of returned data
+		get_data,'tmp'+'_waveangle',data=dtmp
+		sz = n_elements(dtmp.v)
+
+		if i eq 0 then begin
+			waveangle = replicate(0.,[1,sz])
+			powspec = replicate(0.,[1,sz]) 
+			degpol = replicate(0.,[1,sz])
+			elliptict = replicate(0.,[1,sz])
+			helicit = replicate(0.,[1,sz])
+			pspec3 = replicate(0.,[1,sz,3])
+			chastontimes = 0d
+		endif
 
 
 		;change wave normal angle to degrees
@@ -600,6 +661,13 @@ stop
 	if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
 	store_data,varE+'_helicit',data=tmp
 
+	options,[varE+'_powspec',$
+			varE+'_degpol',$
+			varE+'_waveangle',$
+			varE+'_elliptict',$
+			varE+'_helict',$
+			varE+'_pspec3'],'spec',1
+
 	tplot,[varE,$
 			varE+'_powspec',$
 			varE+'_degpol',$
@@ -629,7 +697,67 @@ stop
 	tplot,[varE,varE+'_theta_kb',varE+'_dtheta_kb',varE+'_x',varE+'_y',varE+'_z']
 
 stop
+
+
 ;-----------------------------------------------------------------------------------
+;Calculate Poynting flux 
+;-----------------------------------------------------------------------------------
+
+
+;			 Poynting flux coord system
+;   		 	P1mgse = Bmgse x xhat_mgse  (xhat_mgse is spin axis component)
+;				P2mgse = Bmgse x P1mgse
+;  		   		P3mgse = Bmgse
+;
+;			 The output tplot variables are:
+;
+;			 	These three output variables contain a mix of spin axis and spin plane components:
+;			 		pflux_p1  -> Poynting flux in perp1 direction
+;			 		pflux_p2  -> Poynting flux in perp2 direction
+; 			 		pflux_Bo  -> Poynting flux along Bo
+;
+;			 	These partial Poynting flux calculations contain only spin plane Ew.
+;			 		pflux_nospinaxis_perp 
+;			 		pflux_nospinaxis_para
+;
+
+	Tlong = 1/fmin
+	Tshort = 1/fmax
+
+
+	rbsp_poynting_flux,$
+		'rbsp'+probe+'_efw_mscb'+bt+'_mgse',$
+		'rbsp'+probe+'_efw_eb'+bt+'_mgse',$
+		Tshort,Tlong,$
+		Bo='rbsp'+probe+'_Mag_mgse'
+
+
+	;Components parallel and perp to Bo without the spin-axis mixed in
+	copy_data,'pftst_nospinaxis_para','rbsp'+probe+'_pflux_nospinaxis_para'
+	copy_data,'pftst_nospinaxis_perp','rbsp'+probe+'_pflux_nospinaxis_perp'
+	;Same but mapped to ionosphere
+	copy_data,'pftst_nospinaxis_para_iono','rbsp'+probe+'_pflux_nospinaxis_para_iono'
+	copy_data,'pftst_nospinaxis_perp_iono','rbsp'+probe+'_pflux_nospinaxis_perp_iono'
+	copy_data,'pftst_p1','pflux_p1'
+	copy_data,'pftst_p2','pflux_p2'
+	copy_data,'pftst_Bo','pflux_Bo'
+	copy_data,'Ew_pftst','Ew_pflux'
+	copy_data,'Bw_pftst','Bw_pflux'
+
+	ylim,['rbsp'+probe+'_pflux_nospinaxis_para','rbsp'+probe+'_pflux_nospinaxis_perp'],-1d-5,1d-5
+
+
+	;Plot uncontaminated parallel and perp components
+	tplot,['Ew_pflux',$
+			'Bw_pflux',$
+			'rbsp'+probe+'_Mag_mgse',$
+			'rbsp'+probe+'_pflux_nospinaxis_para',$
+			'rbsp'+probe+'_pflux_nospinaxis_perp']
+
+
+	;Plot all 3 components of Pflux (contains spinaxis data)
+	ylim,['pflux_p1','pflux_p2','pflux_Bo'],-1d-5,1d-5
+	tplot,['pflux_p1','pflux_p2','pflux_Bo']
 
 
 

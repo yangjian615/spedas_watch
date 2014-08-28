@@ -86,6 +86,7 @@ if error_status ne 0 then begin
      dprint,  ' '
      dprint,  'The program is quitting because it fears its in an infinite loop.'
      dprint,  'To eliminate this fear add the keyword /fearless to the call.'
+     error=1
      return
    endif
 
@@ -119,16 +120,19 @@ vsc = ['a','b','c','d','e']
 if not keyword_set(sc) then begin
   dprint, 'You did not enter a spacecraft into the program call.'
   dprint,  "Valid inputs are: 'a','b','c','d','e'  (ie, sc='b')"
+  error=1
   return
 endif
 if total(strmatch(vsc,strtrim(strlowcase(sc)))) gt 1 then begin
   dprint,  'This program is only designed to accept a single spacecraft as input.'
   dprint,  "Valid inputs are: 'a','b','c','d','e'  (ie, sc='b')"
+  error=1
   return
 endif
 if total(strmatch(vsc,strtrim(strlowcase(sc)))) eq 0 then begin
   dprint, "The input sc= '",strtrim(sc),"' is not a valid input."
   dprint,  "Valid inputs are: 'a','b','c','d','e'  (ie, sc='b')"
+  error=1
   return
 endif
 
@@ -146,16 +150,19 @@ if keyword_set(hours) then dur=dur/24.
 if not keyword_set(date) then begin
   dprint, 'You did not enter a date into the program call.'
   dprint, "Example: thm_gen_overplot,sc='b',date='2007-03-23'"
+  error=1
   return
 endif else begin
   t0 = time_double(date)
   t1 = t0+dur*60D*60D*24D
   
   if t1 lt time_double('2007-02-17/00:00:00') then begin
-    dprint,  'Invalid time entered: ', date
+    dprint,  'Invalid time entered: ', time_string(date)
+    error=1
     return
   endif else if (t0 Gt systime(/seconds)) then begin
-    dprint,  'Invalid time entered: ', date
+    dprint,  'Invalid time entered: ', time_string(date)
+    error=1
     return
   endif
 endelse
@@ -171,6 +178,7 @@ endif else begin
 
   if ~in_set(strlowcase(device),valid_devices) then begin
     dprint,'Device keyword has invalid value. Returning'
+    error=1
     return
   endif  
 

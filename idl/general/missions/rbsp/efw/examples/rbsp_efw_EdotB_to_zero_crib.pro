@@ -35,7 +35,7 @@
 
 
 
-pro rbsp_efw_EdotB_to_zero_crib,date,probe
+pro rbsp_efw_EdotB_to_zero_crib,date,probe,no_spice_load=no_spice_load
 
 
 	rbspx = 'rbsp' + probe
@@ -61,16 +61,19 @@ pro rbsp_efw_EdotB_to_zero_crib,date,probe
 
 
 ;Load spice
-	rbsp_load_spice_kernels
+	if ~keyword_set(no_spice_load) then rbsp_load_spice_kernels
 	rbsp_load_spice_state,probe=probe,coord='gse',/no_spice_load
 	store_data,'rbsp'+probe+'_state_pos_gse',newname='rbsp'+probe+'_pos_gse'
 	store_data,'rbsp'+probe+'_state_vel_gse',newname='rbsp'+probe+'_vel_gse'
 
 
 ;Load spinfit MGSE Efield and Bfield
-	rbsp_efw_make_l2_spinfit,probe,date,/no_spice_load,/no_cdf
-	tplot,'rbsp'+probe+'_' + ['vxb_mgse', 'sfit12_mgse']
-
+	;rbsp_efw_make_l2_spinfit,probe,date,/no_spice_load,/no_cdf	
+	rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,/noplot,/ql
+	
+	
+	;tplot,'rbsp'+probe+'_' + ['vxb_mgse', 'sfit12_mgse']
+	tplot,'rbsp'+probe+'_' + ['vxb_mgse','rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit']
 
 
 
@@ -79,6 +82,14 @@ pro rbsp_efw_EdotB_to_zero_crib,date,probe
 ;	get_data,'rbsp'+probe+'_' +'sfit12_mgse',data=sfit
 	get_data,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit',data=sfit
 	get_data,'rbsp'+probe+'_mag_mgse',data=magmgse
+
+
+	if ~is_struct(magmgse) then begin
+		print,'NO MAG DATA FOR rbsp_efw_EdotB_to_zero_crib.pro TO USE...RETURNING'
+		return		
+	endif
+		
+	
 	bmag = sqrt(magmgse.y[*,0]^2 + magmgse.y[*,1]^2 + magmgse.y[*,2]^2)
 
 
@@ -86,6 +97,7 @@ pro rbsp_efw_EdotB_to_zero_crib,date,probe
 	sfit.y[*,0] = -1*(sfit.y[*,1]*magmgse.y[*,1] + sfit.y[*,2]*magmgse.y[*,2])/magmgse.y[*,0]
 ;	store_data,'rbsp'+probe+'_' +'sfit12_mgse',data=sfit	
 	store_data,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit',data=sfit
+
 
 ;Find bad E*B=0 data (where the angle b/t spinplane MGSE and Bo is less than 15 deg) 
 ;Good data has By/Bx < 3.732   and  Bz/Bx < 3.732
@@ -202,11 +214,10 @@ pro rbsp_efw_EdotB_to_zero_crib,date,probe
 		'e_sa',$
 		'e_sp']
 
-	timebar,eu.x
-	timebar,eu.x + eu.y
+	if keyword_set(eu) then timebar,eu.x
+	if keyword_set(eu) then timebar,eu.x + eu.y
 
 
-stop
 
 end
 

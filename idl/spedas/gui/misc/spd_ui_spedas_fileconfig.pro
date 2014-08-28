@@ -322,7 +322,7 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   v_droplist = widget_Combobox(v_base, value=v_values, uval='VERBOSE', /align_center)
   
   n_base = widget_base(configbase,/row,/nonexclusive,uval='FL')
-  fixlinux = widget_button(n_base,value=' Fix drawing performance  ',uval='FIXLINUX',uname='FIXLINUX') 
+  fixlinux = widget_button(n_base,value=' Fix drawing performance  ',uval='FIXLINUX',uname='FIXLINUX', tooltip="For Linux only, disables STROKED_LINES to improve IDL 8.3 perfomance") 
   Widget_Control, fixlinux, Set_Button=!spedas.linux_fix 
   
   ; buttons to save or reset the widget values

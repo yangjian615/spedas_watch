@@ -19,8 +19,8 @@
 ;
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-07-18 13:52:30 -0700 (Fri, 18 Jul 2014) $
-;$LastChangedRevision: 15585 $
+;$LastChangedDate: 2014-07-25 10:45:13 -0700 (Fri, 25 Jul 2014) $
+;$LastChangedRevision: 15610 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_call_plugin.pro $
 ;
 ;-
@@ -45,6 +45,7 @@ pro spd_ui_call_plugin, event, info
     ENDIF
     resolve_routine, plugin.procedure
     catch, /cancel
+    info.statusBar->Update, 'Loaded plugin '+plugin.procedure 
     
   ;-------------------------------------------------------
   ; Call procedure

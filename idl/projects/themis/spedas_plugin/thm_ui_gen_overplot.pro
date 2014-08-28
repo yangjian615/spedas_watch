@@ -21,9 +21,9 @@
 ;OUTPUT:
 ;  none
 ;  
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-03 15:14:01 -0700 (Thu, 03 Jul 2014) $
-;$LastChangedRevision: 15508 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-07-25 11:09:28 -0700 (Fri, 25 Jul 2014) $
+;$LastChangedRevision: 15613 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -454,6 +454,13 @@ pro thm_ui_gen_overplot_event, event
       state.tr_obj->getproperty, starttime=starttime, endtime=endtime
       starttime->getproperty, tdouble=st_double
       endtime->getproperty, tdouble=et_double
+      if (st_double le 0.0) or (et_double le 0.0) then begin
+        etxt = 'Invalid End Time.'
+        if (st_double le 0.0) then etxt = 'Invalid Start Time.'
+        ok = dialog_message(etxt,title='Error while generating THEMIS overview plot', /center, information=1)        
+        Widget_Control, event.top, Set_UValue=state, /No_Copy
+        return 
+      endif
       dur = (et_double - st_double) / 86400
       if dur le 0 then begin
         etxt = 'End Time is earlier than Start Time.'
@@ -473,10 +480,10 @@ pro thm_ui_gen_overplot_event, event
       endif  
       
       activeWindow = state.windowStorage->GetActive()
-    
+      state.statusBar->Update,'Generating THEMIS overview plot. Please wait!...'
+      
       thm_gen_overplot,  probes=state.probe, date=st_double, dur = dur, $
-         makepng = 0, fearless = 0, dont_delete_data = 1, gui_plot = 1, error=error
-         
+         makepng = 0, fearless = 0, dont_delete_data = 1, gui_plot = 1, error=error        
                      
       if ~error then begin  
            

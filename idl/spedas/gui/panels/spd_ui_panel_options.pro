@@ -16,8 +16,8 @@
 ;are issued for invalid entries. This avoids the issue of the text overwriting in spinners as the user types if values aren't valid.
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-07-15 15:50:52 -0700 (Tue, 15 Jul 2014) $
-;$LastChangedRevision: 15579 $
+;$LastChangedDate: 2014-07-24 17:28:25 -0700 (Thu, 24 Jul 2014) $
+;$LastChangedRevision: 15606 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_panel_options.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -307,12 +307,12 @@ pro spd_ui_panel_spinner_update,tlb,panelsettings
   
   ; TITLE MARGIN
   minval = 1
-  spd_ui_panel_spinner_check, tlb, panelSettings, 'titlemargin', 'Title margin', minval,titlemargin=testvar
+  spd_ui_panel_spinner_check, tlb, panelSettings, 'titlemargin', 'Title margin', minval,maxvalue=1000,titlemargin=testvar
   panelSettings->GetProperty, titlemargin=titlemargin
   widget_control, (widget_info(tlb,find_by_uname='titlemargin')), set_value=titlemargin
   ; TITLE SIZE
   panelsettings->GetProperty, titleobj=title
-  spd_ui_panel_spinner_check, tlb, title, 'titlesize','Title size',minval, reset=1,size=testvar
+  spd_ui_panel_spinner_check, tlb, title, 'titlesize','Title size',minval,maxvalue=100, reset=1,size=testvar
   title->Getproperty, size=size
   widget_control, (widget_info(tlb,find_by_uname='titlesize')), set_value=size
   
@@ -322,8 +322,8 @@ end
 ; set reset keyword if you want to reset to previous value (NB: this just means this helper function doesn't change the settings, widget must be updated elsewhere)
 ; if reset is not set it will update to the minvalue if value is less than minimum.
 
-pro spd_ui_panel_spinner_check, tlb,panelsettings,uname,namestring, minvalue,reset=reset, _extra=ex
-
+pro spd_ui_panel_spinner_check, tlb,panelsettings,uname,namestring, minvalue,maxvalue=maxvalue, reset=reset, _extra=ex
+  if ~keyword_set(maxvalue) then maxvalue = 1000
   id = widget_info(tlb, find_by_uname=uname)
   widget_control, id, get_value=val
   if ~finite(val,/nan) then begin
@@ -337,6 +337,17 @@ pro spd_ui_panel_spinner_check, tlb,panelsettings,uname,namestring, minvalue,res
         panelSettings->SetProperty,_extra=ex
         widget_control, id, set_value=minvalue
         messageString = namestring+' must be greater than or equal to '+strtrim(string(minvalue),1)+'; value set to '+strtrim(string(minvalue),1)+'.'
+        response=dialog_message(messageString,/CENTER)
+      endelse
+    endif else if val gt maxvalue then begin
+      if keyword_set(reset) then begin
+        messageString = namestring+' must be lower than or equal to '+strtrim(string(maxvalue),1)+'; value reset.'
+        response=dialog_message(messageString,/CENTER)
+      endif else begin
+        ex.(0)=maxvalue
+        panelSettings->SetProperty,_extra=ex
+        widget_control, id, set_value=maxvalue
+        messageString = namestring+' must be lower than or equal to '+strtrim(string(maxvalue),1)+'; value set to '+strtrim(string(maxvalue),1)+'.'
         response=dialog_message(messageString,/CENTER)
       endelse
     endif else begin

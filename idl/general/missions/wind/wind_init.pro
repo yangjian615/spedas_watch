@@ -6,9 +6,9 @@
 ;HISTORY
 ; Written by Davin Larson
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-07-09 12:05:25 -0700 (Wed, 09 Jul 2014) $
-;$LastChangedRevision: 15536 $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-07-25 15:53:47 -0700 (Fri, 25 Jul 2014) $
+;$LastChangedRevision: 15615 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wind_init.pro $
 ;-
 pro wind_init, reset=reset  ;, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
@@ -38,7 +38,12 @@ Endif else begin; use defaults
     endif else begin
       print,'No WIND config found...creating default configuration'
     endelse
-    !wind.local_data_dir = spd_default_local_data_dir() + 'wind' + path_sep()
+    ; The WIND load routines add a trailing "wind" component to 
+    ; the local_data_dir.  So we should leave that out of the
+    ; default path.  JWL 2014-07-25
+
+    ;!wind.local_data_dir = spd_default_local_data_dir() + 'wind' + path_sep()
+    !wind.local_data_dir = spd_default_local_data_dir()
     !wind.remote_data_dir = 'http://sprg.ssl.berkeley.edu/data/
 endelse
 if file_test(!wind.local_data_dir+'wind/.master') then begin  ; Local directory IS the master directory
@@ -51,7 +56,7 @@ endif
 
 !wind.init = 1
 
-printdat,/values,!wind,varname='!wind
+printdat,/values,!wind,varname='!wind'
 
 end
 

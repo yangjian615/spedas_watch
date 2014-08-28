@@ -854,7 +854,7 @@ pro thm_ui_slice2d_plot, state, current, _extra=_extra
   id = widget_info(tlb, find_by_uname='nolines')
   if widget_info(id, /sensitive) then begin
     widget_control, id, get_value=olines
-    if ~finite(olines) || olines lt 0 then begin
+    if ~finite(olines) || olines lt 0 || olines gt 1e5 then begin
       thm_ui_slice2d_error, state.statusbar, err_title, $
         'Invalid number of contour levels, operation canceled.'
       return
@@ -866,7 +866,7 @@ pro thm_ui_slice2d_plot, state, current, _extra=_extra
   ; Get contour colors options
   id = widget_info(tlb, find_by_uname='nlevels')
   widget_control, id, get_value=nlines
-  if ~finite(nlines) || nlines le 0 then begin
+  if ~finite(nlines) || nlines le 0 || nlines gt 1e5 then begin
     thm_ui_slice2d_error, state.statusbar, err_title, $
       'Invalid number of color levels, operation canceled.'
     return
@@ -1688,8 +1688,8 @@ end ;----------------------------------------------------
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-18 18:25:24 -0700 (Tue, 18 Mar 2014) $
-;$LastChangedRevision: 14583 $
+;$LastChangedDate: 2014-07-24 11:36:34 -0700 (Thu, 24 Jul 2014) $
+;$LastChangedRevision: 15598 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-

@@ -49,8 +49,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-06-20 18:54:00 -0700 (Fri, 20 Jun 2014) $
-;$LastChangedRevision: 15403 $
+;$LastChangedDate: 2014-07-24 15:50:38 -0700 (Thu, 24 Jul 2014) $
+;$LastChangedRevision: 15604 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_plot.pro $
 ;
 ;-
@@ -66,7 +66,7 @@ pro thm_part_slice2d_plot, slice, $
                        xtitle=xtitle, ytitle=ytitle, $
                        xticks=x_ticks, yticks=y_ticks, zticks=z_ticks, $
                        xminor=x_minor, yminor=y_minor, $
-                       charsize=charsize, plotsize=plotsize, $
+                       charsize=charsize_in, plotsize=plotsize, $
                        zlog=zlog, $
                        window=window, $
                      ; Annotations 
@@ -117,8 +117,10 @@ pro thm_part_slice2d_plot, slice, $
 
   if ~keyword_set(plotsize) then plotsize = 500.
   plotsize = 100. > plotsize ;min size
-
-
+  
+  ;large charsize values cause draw_color_scale to corrupt "data coordinate system"
+  if ~undefined(charsize_in) then charsize = charsize_in < 4
+  
 
   ; X,Y,Z ranges
   if keyword_set(xrange) && ~keyword_set(slice.rlog) then begin
@@ -152,14 +154,14 @@ pro thm_part_slice2d_plot, slice, $
   
   ; Set color contour levels
   if keyword_set(zlog) then begin
-    colorlevels = 10.^(indgen(levels)/float(levels)*(alog10(zrange[1]) - alog10(zrange[0])) + alog10(zrange[0]))
+    colorlevels = 10.^(lindgen(levels)/float(levels)*(alog10(zrange[1]) - alog10(zrange[0])) + alog10(zrange[0]))
   endif else begin
-    colorlevels = (indgen(levels)/float(levels)*(zrange[1]-zrange[0])+zrange[0])
+    colorlevels = (lindgen(levels)/float(levels)*(zrange[1]-zrange[0])+zrange[0])
   endelse
   
   
   ; Set colors
-  thecolors = round((indgen(levels)+1)*(!d.table_size-9)/levels)+7
+  thecolors = round((lindgen(levels)+1)*(!d.table_size-9)/levels)+7
 
 
   ; Get general annotations

@@ -32,8 +32,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-06-20 18:50:40 -0700 (Fri, 20 Jun 2014) $
-;$LastChangedRevision: 15402 $
+;$LastChangedDate: 2014-07-23 17:55:41 -0700 (Wed, 23 Jul 2014) $
+;$LastChangedRevision: 15594 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getticks_rlog.pro $
 ;
 ;-
@@ -53,10 +53,22 @@ pro thm_part_slice2d_getticks_rlog, range=range, grid=grid, $
   ;Generate values for ticks in (linear) data space
   if log_span ge 1 then begin
     lin_values = 10 ^ ( findgen(ceil(log_span)+1) + floor(log_range[0]) ) 
-    lin_values = range[0] > lin_values
   endif else begin
     axis, /yaxis, /ylog, ystyle=1+4, yrange=range, yticks=nticks, ytick_get=lin_values
+    ;ensure center tick is present
+    if lin_values[0] gt range[0] then begin
+      lin_values=[range[0],lin_values]
+    endif
+    ;in case axis returns ticks completely outside the range (sadly, this happens)
+    dummy = where(lin_values gt range[0] and lin_values le range[1], nt)
+    if nt eq 0 then begin
+      lin_values = lin_values < range[1]
+    endif
   endelse
+  
+  ;Lowest value tick should reflect the minimum range
+  ;(this will be the axis's center tick)
+  lin_values = range[0] > lin_values
 
   ;Get values for ticks in log space.
   log_values = alog10(lin_values)
