@@ -8,14 +8,15 @@
 ;  
 ;Calling Sequence:
 ;  thm_part_slice1d_plot, x, y [,overplot=overplot] [,xrange=xrange] [,yrange=yrange]
-;                        [,title=title] [,xtitle=xtitle] [,ytitle=ytitle]
+;                   [,title=title] [,xtitle=xtitle] [,ytitle=ytitle] [,window=window]
 ;
 ;Input:
-;         x: data's x axis values (velocity)
+;         x: data's x axis values (km/s, eV, degrees)
 ;         y: data's y axis values (slice's units)
-;  overplot: flag to add data without redrawing the plot
+;  overplot: flag to add the trace to the previous plot 
 ;    xrange: range to force the x axis to
 ;    yrange: range to force the y axis to
+;    window: index of the plotting window to be used
 ;     title: plot title
 ;    xtitle: x axis title
 ;    ytitle: y axis title
@@ -33,8 +34,8 @@
 ;   
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-07-24 18:14:14 -0700 (Wed, 24 Jul 2013) $
-;$LastChangedRevision: 12713 $
+;$LastChangedDate: 2014-06-20 18:44:58 -0700 (Fri, 20 Jun 2014) $
+;$LastChangedRevision: 15400 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice1d_plot.pro $
 ;
 ;-
@@ -46,10 +47,17 @@ pro thm_part_slice1d_plot, x, y, $
                            xtitle=xtitle, $
                            ytitle=ytitle, $
                            title=title, $
+                           window=window, $
                            _extra=_extra
 
     compile_opt idl2, hidden
 
+
+  if undefined(xstyle) then xstyle=0
+  if undefined(xprecision) then xprecision=4
+  if undefined(ystyle) then ystyle=0
+  if undefined(yprecision) then yprecision=4
+  
 
   ;Format window and plotting area
   if ~keyword_set(overplot) then begin     
@@ -69,10 +77,16 @@ pro thm_part_slice1d_plot, x, y, $
     
       xcsize = (total(xmargin) + plotxcsize) > tsize
       ycsize = (total(ymargin) + plotycsize) 
-  
-      window, xsize = xcsize * !d.x_ch_size, $
-              ysize = ycsize * !d.y_ch_size, $
-              title = title
+      
+      if undefined(window) then begin
+        wn = !d.window > 0
+      endif else begin
+        wn = window
+      endelse
+      
+      window, wn, xsize = xcsize * !d.x_ch_size, $
+                  ysize = ycsize * !d.y_ch_size, $
+                  title = title
   
       xmargin[0] = xmargin[0] > 0.5*(xcsize - plotxcsize)
       

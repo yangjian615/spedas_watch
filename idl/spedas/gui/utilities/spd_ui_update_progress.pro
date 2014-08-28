@@ -1,10 +1,10 @@
 ;+
 ;NAME:
-; thm_ui_update_progress
+; spd_ui_update_progress
 ;PURPOSE:
 ; Write a string into the progress widget for the THEMIS GUI
 ;CALLING SEQUENCE:
-; thm_ui_update_progress, gui_id, input_string
+; spd_ui_update_progress, gui_id, input_string
 ;INPUT:
 ; gui_id = the widget_id for the GUI
 ; input_string = a string to be displayed
@@ -22,7 +22,7 @@
 ;$LastChangedRevision: 15392 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_update_progress.pro $
 ;-
-Pro thm_ui_update_progress, gui_id, input_string, $
+Pro spd_ui_update_progress, gui_id, input_string, $
                             message_wid = message_wid
 
 ;Extract the state from the widget

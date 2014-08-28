@@ -114,7 +114,7 @@ ctime,my_tr,/silent
 if n_elements(my_tr) eq 2 then begin
   tlimit,my_tr
 endif else begin
-  print,ptrace(),'             Invalid selection, must select two time to degine a time range.'
+  print,ptrace(),'             Invalid selection, must select two times to specify a time range.'
   print,ptrace(),'             Proceeding to next example.'
 endelse
 stop

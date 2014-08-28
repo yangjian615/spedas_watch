@@ -27,7 +27,7 @@ function thm_component_to_tplot, active_vars, cw, mw
     if result ge 0 then Begin
        mtext = 'Active variable '+active_vars(i)+$
                      ' is already grouped by spacecract. Reselect active data.'
-       thm_ui_update_progress, cw, mtext, message_wid = mw
+       SPD_UI_UPDATE_PROGRESS, cw, mtext, message_wid = mw
        return, active_vars
     endif 
   endfor
@@ -59,7 +59,7 @@ function thm_component_to_tplot, active_vars, cw, mw
   if n_elements(new_vars) le 1 &&  new_vars eq '' then Begin
     mtext = 'No loaded variables were found that match the active data. '$
             +'Reselect active data.'
-    thm_ui_update_progress, cw, mtext, message_wid = mw
+    SPD_UI_UPDATE_PROGRESS, cw, mtext, message_wid = mw
     return, active_vars
   endif else Begin
     new_vars=new_vars(1:*)

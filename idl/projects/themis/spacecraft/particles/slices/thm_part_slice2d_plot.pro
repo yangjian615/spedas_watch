@@ -35,6 +35,7 @@
 ;             Set to 0 (default) for style to be chosen automatically. 
 ;             Set to 1 for decimal annotations only ('0.0123') 
 ;             Set to 2 for scientific notation only ('1.23e-2')
+;  WINDOW:  Index of plotting window to be used.
 ;
 ;Exporting keywords:
 ; EXPORT: String designating the path and file name of the desired file. 
@@ -48,8 +49,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-18 12:27:29 -0800 (Wed, 18 Dec 2013) $
-;$LastChangedRevision: 13703 $
+;$LastChangedDate: 2014-06-20 18:54:00 -0700 (Fri, 20 Jun 2014) $
+;$LastChangedRevision: 15403 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_plot.pro $
 ;
 ;-
@@ -235,7 +236,7 @@ pro thm_part_slice2d_plot, slice, $
   
     ; Get x ticks & annotations
     thm_part_slice2d_getticks,nticks=x_ticks, range=xrange, style=xstyle, precision=xprecision, $
-                               ticks=xticks, tickv=xtickv, tickname=xtickname
+                               ticks=xticks, tickv=xtickv, tickname=xtickname, log=0
     
     ; x minor ticks, simulate default if not set
     ; use new name to avoid mutating input
@@ -243,7 +244,7 @@ pro thm_part_slice2d_plot, slice, $
   
     ; Get y ticks & annotations
     thm_part_slice2d_getticks,nticks=y_ticks, range=yrange, style=ystyle, precision=yprecision, $
-                               ticks=yticks, tickv=ytickv, tickname=ytickname
+                               ticks=yticks, tickv=ytickv, tickname=ytickname, log=0
     
     ; y minor ticks, simulate default if not set
     ; use new name to avoid mutating input

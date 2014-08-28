@@ -15,9 +15,9 @@
 ;correctly set, it should just use the label text object from
 ;the appropriate axis.
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-05-15 16:55:04 -0700 (Thu, 15 May 2014) $
-;$LastChangedRevision: 15150 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-06-16 08:02:17 -0700 (Mon, 16 Jun 2014) $
+;$LastChangedRevision: 15376 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__addlegend.pro $
 ;-
 pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
@@ -119,7 +119,7 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
   
   ;2 is for colon and one extra
   ; nChars+=annoBias+extrabias
-  
+
   ;Placement for legend is within the panel view, so it is relative to 
   ;the coordinate system of the panel view.  Measurements in the global
   ;page view will need to scaled to the shrunk coordinate system of
@@ -135,39 +135,40 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
   
   ; check if any of the placement settings were set by the user
   if obj_valid(legendObj) then legendObj->getProperty, bottom=legendbottom, left=legendleft, width=legendwidth, height=legendheight
-  
-  
+
+
   ;This correction prevents the legend from being drawn off the edge of the screen.
   ;The width correction was previously disabled, but no comment was given as to why
   ;So I turned it back on.(pcruce 2014-05-14)
-
   view->getProperty,viewPlane_rect=vpr
+  if legendleft ne 1 then begin
+      if width/2D gt vpr[2]+vpr[0]-1D then begin
+        wbias = width/2D - (vpr[2]+vpr[0]-1D)
+      endif else begin
+        wbias = 0D
+      endelse
+      ;ensure that legend is not flush with edge of screen
+      wbias += self->pt2norm(2.,0)/xdiv
+  endif else wbias = 0.
   
-  wbias = 0
-
-  if legendwidth ne 1 then begin ;only applies correction if legend is being placed automatically
-    if width/2D gt vpr[2]+vpr[0]-1D then begin
-      wbias = width/2D - (vpr[2]+vpr[0]-1D)
-    endif
-
-    ;ensure that legend is not flush with edge of screen(Just looks nicer)
-    wbias += self->pt2norm(2.,0)/xdiv
-  endif
-
-  hbias = 0
-
-  if legendheight ne 1 then begin  ;only applies correction if legend is being placed automatically
-    if height/2D gt vpr[3]+vpr[1]-1D then begin
-      hbias = height/2D - (vpr[3]+vpr[1]-1D)
-    endif
-  endif
+  ;wbias = 0
+  if legendbottom ne 1 then begin
+      if height/2D gt vpr[3]+vpr[1]-1D then begin
+        hbias = height/2D - (vpr[3]+vpr[1]-1D)
+      endif else begin
+        hbias = 0D
+      endelse
+      ; ensure the legend isn't flush with the top of the view
+      hbias += self->pt2norm(2.,1)/ydiv
+  endif else hbias = 0.
   
+
   if (legendbottom eq 1) then begin
     legendObj->getProperty, bValue=bValue, bUnit=bUnit
     userBottom = legendObj->ConvertUnit(bValue, bUnit, 0) ; convert to pts
     userBottom = self->pt2norm(userBottom,1)/ydiv
   endif else begin
-    userBottom = (1.-height/2.)-hbias
+    userBottom = 1.-height/2.
     legendObj->setProperty, bValue=self->norm2pt(userBottom,1)*ydiv
   endelse
   if (legendleft eq 1) then begin
@@ -175,7 +176,7 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
     userLeft = legendObj->ConvertUnit(lValue, lUnit, 0) ; convert to pts
     userLeft = self->pt2norm(userLeft,0)/xdiv
   endif else begin
-    userLeft = (1.-width/2.)-wbias
+    userLeft = (1.-width/2.)
     legendObj->setProperty, lValue=self->norm2pt(userLeft,0)*xdiv
   endelse
   if (legendwidth eq 1) then begin
@@ -183,7 +184,7 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
     userWidth = legendObj->ConvertUnit(wValue, wUnit, 0) ; convert to pts
     userWidth = self->pt2norm(userWidth,0)/xdiv
   endif else begin 
-    userWidth = width-wbias
+    userWidth = width
     legendObj->setProperty, wValue=self->norm2pt(userWidth,0)*xdiv
   endelse
   if (legendheight eq 1) then begin
@@ -191,7 +192,7 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
     userHeight = legendObj->ConvertUnit(hValue, hUnit, 0) ; convert to pts
     userHeight = self->pt2norm(userHeight,1)/ydiv
   endif else begin
-    userHeight = height-hbias
+    userHeight = height
     legendObj->setProperty, hValue=self->norm2pt(userHeight,1)*ydiv
   endelse
   
@@ -208,7 +209,7 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
   if (xAxisValEnabled eq 1 and yAxisValEnabled eq 0) then shiftpolygon = shiftpolygon+self->pt2norm(1*textsize+(2)*spacing,1)/ydiv
   if (yAxisValEnabled eq 1 and xAxisValEnabled eq 0) then shiftpolyline = shiftpolyline+self->pt2norm(1*textsize+(2)*spacing,1)/ydiv
 
- 
+  
   model = obj_new('IDLgrModel',hide=hide_val)
   anno_model = obj_new('IDLgrModel',hide=hide_val)
   

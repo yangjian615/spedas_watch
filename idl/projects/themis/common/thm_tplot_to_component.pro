@@ -29,7 +29,7 @@ function thm_tplot_to_component, active_vars, cw, mw
     if result lt 0 then Begin
        mtext = 'Active variable '+active_vars(i)+$
                ' is not a valid probe data set. Reselect active data.'
-       thm_ui_update_progress, cw, mtext, message_wid = mw
+       SPD_UI_UPDATE_PROGRESS, cw, mtext, message_wid = mw
        return, active_vars
     endif 
   endfor
@@ -42,14 +42,14 @@ function thm_tplot_to_component, active_vars, cw, mw
         if n_elements(s) le 1 then Begin
           mtext = 'Active variable '+active_vars(i)+$
                   ' has only one component. Reselect active data.'
-          thm_ui_update_progress, cw, mtext, message_wid = mw
+          SPD_UI_UPDATE_PROGRESS, cw, mtext, message_wid = mw
           return, active_vars
         endif 
         if s[1] gt 6 then Begin
           n_components=strcompress(string(s[1]))
           mtext = 'Active variable '+active_vars(i)+$
                      ' has'+n_components+' components.'
-          thm_ui_update_progress, cw, mtext, message_wid = mw
+          SPD_UI_UPDATE_PROGRESS, cw, mtext, message_wid = mw
           question_list=strarr(2)
           question_list[0]= string('Active variable '+active_vars(i)+$
                      ' has'+n_components+' components. ')
@@ -63,14 +63,14 @@ function thm_tplot_to_component, active_vars, cw, mw
           if dl.spec eq 1 then Begin
             mtext = 'Active variable '+active_vars(i)+$
                   ' is spectrographic data. Reselect active data.'
-            thm_ui_update_progress, cw, mtext, message_wid = mw
+            SPD_UI_UPDATE_PROGRESS, cw, mtext, message_wid = mw
             return, active_vars
           endif
         endif       
      endif else begin
         mtext = 'Active variable '+active_vars(i)+$
                 ' does not contain valid data. Reselect active data.'
-        thm_ui_update_progress, cw, mtext, message_wid = mw
+        SPD_UI_UPDATE_PROGRESS, cw, mtext, message_wid = mw
         return, active_vars
      endelse
   endfor      
@@ -127,7 +127,7 @@ function thm_tplot_to_component, active_vars, cw, mw
        if size(d,/type) ne 8 then Begin
           mtext = 'Variable '+data_names(i:0)+$
                   ' are not valid tplot data. Reselect active data.'
-          thm_ui_update_progress, cw, mtext, message_wid = mw
+          SPD_UI_UPDATE_PROGRESS, cw, mtext, message_wid = mw
           return, active_vars
        endif
        dx = d.x
@@ -140,7 +140,7 @@ function thm_tplot_to_component, active_vars, cw, mw
           if size(d,/type) ne 8 then Begin
              mtext = 'Variable '+data_names(i,j)+$
                      ' are not valid tplot data. Reselect active data.'
-             thm_ui_update_progress, cw, mtext, message_wid = mw
+             SPD_UI_UPDATE_PROGRESS, cw, mtext, message_wid = mw
              return, active_vars
           endif
           dy=congrid(d.y, n_elements(dx))

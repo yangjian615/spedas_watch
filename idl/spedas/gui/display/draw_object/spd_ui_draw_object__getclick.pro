@@ -19,8 +19,8 @@
 ;  into account.  Resolve variable/z-axis on the same size.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-28 09:53:58 -0700 (Wed, 28 May 2014) $
-;$LastChangedRevision: 15240 $
+;$LastChangedDate: 2014-06-16 07:59:35 -0700 (Mon, 16 Jun 2014) $
+;$LastChangedRevision: 15375 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__getclick.pro $
 ;-
 function spd_ui_draw_object::getClick
@@ -77,10 +77,11 @@ function spd_ui_draw_object::getClick
 
     ; legend location in drea area coordinates, in points
     self.destination->getProperty, current_zoom=cz
-    da_left = cz*normleft*panelwidth+panelsize[0]
+    da_left = cz*normleft*panelwidth
     da_bottom = cz*normbottom*panelheight+panelsize[1]
     da_right = cz*da_left+normwidth*panelwidth
     da_top = cz*da_bottom+normheight*panelheight
+
 
     ; click location in draw area coordinates, in points
     xloc_pts = loc[0]*dim[0]

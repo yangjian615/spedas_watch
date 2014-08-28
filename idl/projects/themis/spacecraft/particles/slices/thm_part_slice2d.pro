@@ -469,8 +469,7 @@ endif
 
 ; Subtract bulk velocity vector
 ;  -invalid for geometric method
-;  -incompatible with radial log scaling, it may be possible to implement
-;   by displacing the slice plane and shifting the slice's axes
+;  -incompatible with radial log scaling
 if keyword_set(subtract_bulk) and (type ne 0) and ~keyword_set(log) then begin
   thm_part_slice2d_subtract,  vectors=xyz, vbulk=vbulk, vel_data=vel_data, energy=energy
 endif
@@ -642,7 +641,6 @@ slice_struct = {  $
               trange: tr, $      ;total time range of used distributions
               rrange: rrange , $ ;instrument velocity/energy range
               rlog: keyword_set(log), $  ;flag for radial log plot
-              ndists: n_elements((*ds[0])), $ ;# distributions used
              ; Support Data
               shift: keyword_set(subtract_bulk) ? vbulk:0, $ ;for plotting energy limits
               bulk: keyword_set(vbulk) ? vbulk:0, $     ;bulk velocity vector

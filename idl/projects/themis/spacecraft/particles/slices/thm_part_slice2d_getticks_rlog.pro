@@ -32,8 +32,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-03 14:09:43 -0800 (Tue, 03 Dec 2013) $
-;$LastChangedRevision: 13616 $
+;$LastChangedDate: 2014-06-20 18:50:40 -0700 (Fri, 20 Jun 2014) $
+;$LastChangedRevision: 15402 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getticks_rlog.pro $
 ;
 ;-
@@ -62,8 +62,8 @@ pro thm_part_slice2d_getticks_rlog, range=range, grid=grid, $
   log_values = alog10(lin_values)
  
   ;Map into normalized range
-  ;This should mirror the original operation performed in thm_part_slice2d_xyz
-  log_values = log_values - min(log_values)
+  ;This should mirror the original operation performed in thm_part_slice2d_rlog
+  log_values = log_values - log_range[0]
   log_values = log_values / log_span
 
   ;Initialize text output

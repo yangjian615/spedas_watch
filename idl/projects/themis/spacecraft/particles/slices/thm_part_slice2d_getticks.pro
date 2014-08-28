@@ -13,7 +13,8 @@
 ;Input:
 ;  nticks: (int) # of ticks requested by user (optional)
 ;  range: (float) two element array specifying axis range
-;  log: (bool/int) flag to denote logarithmic axis (optional)
+;  log: (bool/int) flag to denote logarithmic axis, this should always
+;                  be set to avoid persistence of the last axis setting
 ;  precision: (int) number of significant digits for annotation
 ;  style: (int) type of numberical annotation (0=auto, 1=decimal, 2=sci)
 ;  
@@ -32,8 +33,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-10-30 18:39:18 -0700 (Wed, 30 Oct 2013) $
-;$LastChangedRevision: 13456 $
+;$LastChangedDate: 2014-06-20 18:54:00 -0700 (Fri, 20 Jun 2014) $
+;$LastChangedRevision: 15403 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getticks.pro $
 ;
 ;-
