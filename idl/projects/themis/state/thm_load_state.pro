@@ -67,8 +67,8 @@
 ; corresponding changes to the c_names constant
 ;
 ; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-01-13 16:53:08 -0800 (Mon, 13 Jan 2014) $
-; $LastChangedRevision: 13859 $
+; $LastChangedDate: 2014-06-10 16:56:01 -0700 (Tue, 10 Jun 2014) $
+; $LastChangedRevision: 15342 $
 ; $URL $
 ;-
 
@@ -201,7 +201,10 @@ for i = 0,n_elements(dt_temp)-1L do begin
             if dt_temp[i] eq 'vel' then begin
               dprint,'WARNING.  thm_cotrans does not account for the rotational component in velocity transformations: ' +var_name+ ' may have errors' 
             endif       
-        
+       
+            if (strlowcase(coord) eq 'sse' || strlowcase(coord) eq 'sel') then begin
+               thm_autoload_support, vname=var_name, slp=1
+            endif 
             get_data, var_name, data=d, dlimits=dl
             thm_cotrans, var_name, out_coord = coord,support_suffix='_state_temp'
             

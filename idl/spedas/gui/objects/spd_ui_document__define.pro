@@ -18,9 +18,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-06-10 19:11:37 -0700 (Tue, 10 Jun 2014) $
+;$LastChangedRevision: 15344 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_document__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ pro spd_ui_document::onLoad,ptr_to_info
     historywin->Update,'spd_ui_document::onLoad: Replaying callSequence data loading calls', dontshow=1
     dprint, 'spd_ui_document::onLoad: Replaying callSequence data loading calls'
     ; Replay callSequence calls
-    self.callSequence->reCall,historywin=historywin,statustext=statusbar,guiId=guiID,infoptr=ptr_to_info
+    self.callSequence->reCall,historywin=historywin,statustext=statusbar,guiId=guiID,infoptr=ptr_to_info,windowstorage=windowstorage
     
     ; Remove everything from windowMenus object
     historywin->Update,'spd_ui_document::onLoad: Removing old windows from windowMenus object', dontshow=1

@@ -29,7 +29,7 @@ end
 
 Pro spd_ui_help_about, gui_id, historywin
   ;aboutlabel should show the SPEDAS version and some other info (perhaps build date, web site URL, etc)
-  aboutString= ' SPEDAS 1.0 '  +  string(10B) + string(10B) + ' Space Physics Environment Data Analysis Software ' +  string(10B) + string(10B) + ' May 2014 ' + string(10B) + string(10B) + string(10B) + string(10B) +' For support or bug reports, contact: THEMIS_Science_Support@ssl.berkeley.edu '
+  aboutString= ' SPEDAS 1.0 '  +  string(10B) + string(10B) + ' Space Physics Environment Data Analysis Software ' +  string(10B) + string(10B) + ' June 2014 ' + string(10B) + string(10B) + string(10B) + string(10B) +' For support or bug reports, contact: THEMIS_Science_Support@ssl.berkeley.edu '
 
   aboutBase = widget_base(/col, title = 'About', /modal, Group_Leader=gui_id)
   aboutLabel = widget_label(aboutBase, value=aboutString, /align_center, XSIZE=500, YSIZE=150, UNITS=0)

@@ -69,11 +69,13 @@
 ;
 ;
 ;  SEE ALSO:
-;     mva_crib.pro,minvar.pro,tvector_rotate.pro 
+;     minvar.pro
+;     tvector_rotate.pro
+;     thm_crib_mva.pro (THEMIS project) 
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-01-26 16:53:10 -0800 (Thu, 26 Jan 2012) $
-; $LastChangedRevision: 9628 $
+; $LastChangedDate: 2014-06-06 17:26:00 -0700 (Fri, 06 Jun 2014) $
+; $LastChangedRevision: 15328 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/minvar/minvar_matrix_make.pro $
 ;-
 
@@ -270,9 +272,9 @@ if keyword_set(tminname) then begin
     str_element,d,'v',SUCCESS=s
 
     if(s) then $
-      tm_d = {x:o_times[0:i-1L], y:o_eigs[0:i-1L, *,2], v:d.v} $
+      tm_d = {x:o_times[0:i-1L], y:reform(o_eigs[0:i-1L, 2, *],i,3), v:d.v} $
     else $
-      tm_d = {x:o_times[0:i-1L], y:o_eigs[0:i-1L, *,2]}
+      tm_d = {x:o_times[0:i-1L], y:reform(o_eigs[0:i-1L, 2, *],i,3)}
 
   store_data, tminname, data = tm_d, limits = l, dlimits = dl
 
@@ -284,9 +286,9 @@ if keyword_set(tmidname) then begin
     str_element,d,'v',SUCCESS=s
 
     if(s) then $
-      tm_d = {x:o_times[0:i-1L], y:o_eigs[0:i-1L, *,1], v:d.v} $
+      tm_d = {x:o_times[0:i-1L], y:reform(o_eigs[0:i-1L, 1, *],i,3), v:d.v} $
     else $
-      tm_d = {x:o_times[0:i-1L], y:o_eigs[0:i-1L, *,1]}
+      tm_d = {x:o_times[0:i-1L], y:reform(o_eigs[0:i-1L, 1, *],i,3)}
 
   store_data, tmidname, data = tm_d, limits = l, dlimits = dl
 
@@ -298,9 +300,9 @@ if keyword_set(tmaxname) then begin
     str_element,d,'v',SUCCESS=s
 
     if(s) then $
-      tm_d = {x:o_times[0:i-1L], y:o_eigs[0:i-1L, *,0], v:d.v} $
+      tm_d = {x:o_times[0:i-1L], y:reform(o_eigs[0:i-1L, 0, *],i,3), v:d.v} $
     else $
-      tm_d = {x:o_times[0:i-1L], y:o_eigs[0:i-1L, *,0]}
+      tm_d = {x:o_times[0:i-1L], y:reform(o_eigs[0:i-1L, 0, *],i,3)}
 
   store_data, tmaxname, data = tm_d, limits = l, dlimits = dl
 

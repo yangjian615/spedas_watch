@@ -6,20 +6,20 @@
 ; phase exist, for coordinate transformations, If they do not, load
 ; the state data for the appropriate time period
 ;CALLING SEQUENCE:
-; thm_autoload_support, vname, /spinmodel, /spinaxis, /slp, probe_in=probe,
+; thm_autoload_support, vname=vname, spinmodel=spinmodel, spinaxis=spinaxis, slp=slp, probe_in=probe,
 ;     trange=[tmin, tmax], history_out=hist_string
 ;INPUT:
-; vname = tplot variable name
 ;OUTPUT:
 ;KEYWORDS:
+; vname = tplot variable name
 ; probe_in: Specifies the probe name to load support data for (required
 ;           for /spinmodel and /spinaxis)
-; spinmodel: if set, ensure spinmodel data is loaded and covers the
+; spinmodel: if set to 1, ensure spinmodel data is loaded and covers the
 ;           requested time interval
-; spinaxis: if set, ensure state (spinras, spindec) data is loaded and 
+; spinaxis: if set to 1, ensure state (spinras, spindec) data is loaded and 
 ;           covers the requested time interval
 ; slp:  if set, ensure sun & moon data are loaded and cover the requested
-;       time interval (not yet implemented)
+;       time interval
 ; trange: Specify a time range for which support data should be loaded
 ;        (required if vname is not supplied)
 ; history_out = a history string, if data needs loading
@@ -29,8 +29,8 @@
 ; NOTES:
 ; 
 ;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-01-24 16:07:46 -0800 (Fri, 24 Jan 2014) $
-;$LastChangedRevision: 14013 $
+;$LastChangedDate: 2014-06-10 16:55:27 -0700 (Tue, 10 Jun 2014) $
+;$LastChangedRevision: 15341 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_autoload_support.pro $
 ;
 ;-
@@ -41,17 +41,18 @@ if (not keyword_set(vname)) then begin
   if (not keyword_set(trange)) then begin
     message, 'The trange keyword must be used if no input variable name is supplied.'
   endif
-  if (not keyword_set(probe_in)) then begin
-    message, 'The probe_in keyword must be used if no input variable name is supplied.'
+  if ((keyword_set(spinmodel) || keyword_set(spinaxis)) && not keyword_set(probe_in)) then begin
+    message, 'The probe_in keyword must be used if requesting spinmodel or spinaxis data, and no input variable name is supplied.'
   endif
 endif
 
 
 
-
-; Set probe letter (from input tplot variable, if necessary)
-  If(keyword_set(probe_in)) Then probe = probe_in $
-  Else probe = strmid(vname, 2, 1)
+If(keyword_set(spinmodel) || keyword_set(spinaxis)) then begin
+   ; Set probe letter (from input tplot variable, if necessary)
+   If(keyword_set(probe_in)) Then probe = probe_in $
+   Else probe = strmid(vname, 2, 1)
+endif
 
 ; Set trange (from input tplot variable, if necessary)
   If(not keyword_set(trange)) then begin
@@ -120,7 +121,39 @@ endif
      endelse
   Endif
 
+; Does loaded SLP data cover the requested time range?
+
   if (keyword_set(slp)) then begin
+     all_names = tnames()
+     var1 = 'slp_lun_att_x'
+     var2 = 'slp_lun_att_z'
+     var3 = 'slp_lun_pos'
+     var4 = 'slp_sun_pos'
+     get_data,var1,trange=tr1
+     get_data,var2,trange=tr2
+     get_data,var3,trange=tr3
+     get_data,var4,trange=tr4
+     if ( (n_elements(tr1) NE 2) OR (n_elements(tr2) NE 2) OR $
+          (n_elements(tr3) NE 2) OR (n_elements(tr4) NE 2)) then begin
+        loadslp=1b
+     endif else begin
+        tr1 += [-slop,slop]
+        tr2 += [-slop,slop]
+        tr3 += [-slop,slop]
+        tr4 += [-slop,slop]
+        if ((trange[0] LT tr1[0]) OR (trange[1] GT tr1[1])) then begin
+          loadslp=1b
+        endif
+        if ((trange[0] LT tr2[0]) OR (trange[1] GT tr2[1])) then begin
+          loadslp=1b
+        endif
+        if ((trange[0] LT tr3[0]) OR (trange[1] GT tr3[1])) then begin
+          loadslp=1b
+        endif
+        if ((trange[0] LT tr4[0]) OR (trange[1] GT tr4[1])) then begin
+          loadslp=1b
+        endif
+     endelse
   endif
  
   If(loadstate) Then Begin
@@ -134,5 +167,17 @@ endif
     If(obj_valid(progobj)) Then progobj -> update, 100.0,  $
       text = 'Finished Loading State data for Calibration, Probe: '+probe
   Endif Else history_out = ''
+
+  If(loadslp) Then Begin
+    If(obj_valid(progobj)) Then progobj -> update, 0.0,  $
+      text = 'Loading SLP data for Cotrans'
+    thm_load_slp, trange = trange
+    tj = time_string(trange)        ;for history
+    history_out = 'thm_load_slp, trange = ['+''''+tj[0]+''''+', '+''''+tj[1]+''''+ ']'
+    If(obj_valid(progobj)) Then progobj -> update, 100.0,  $
+      text = 'Finished Loading SLP data for Cotrans'
+  Endif Else history_out = ''
+
+
   Return
 End

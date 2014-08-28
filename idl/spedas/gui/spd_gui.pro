@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-20 17:03:56 -0700 (Tue, 20 May 2014) $
-;$LastChangedRevision: 15182 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-06-10 19:11:37 -0700 (Tue, 10 Jun 2014) $
+;$LastChangedRevision: 15344 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -106,7 +106,16 @@ PRO spd_gui_event, event
       mincharsize = ceil(info.toolbar_xsize/!d.x_ch_size)
       
       widget_control,info.master,update=0
-      widget_control,info.drawID,xsize=newx > info.toolbar_xsize,ysize=newy>1
+      if strlowcase(!version.os_family) eq 'windows' then begin
+        ; These are empirical numbers that fix a sizing problem in MS Windows
+        newx = newx + 19
+        newy = newy + 2
+        widget_control,info.drawID,scr_xsize=newx > info.toolbar_xsize,scr_ysize=newy>1
+      endif else begin
+        widget_control,info.drawID,xsize=newx > info.toolbar_xsize,ysize=newy>1
+      endelse
+      
+      
       info.scrollbar->setProperty,xsize=newx > info.toolbar_xsize
 
       res = info.statusBar->GetState() 
@@ -273,7 +282,8 @@ PRO spd_gui_event, event
     END
   
     'LOADCDAWEB': BEGIN
-      spd_ui_spdfcdawebchooser, historyWin=info.historyWin, GROUP_LEADER = info.master,timeRangeObj=info.loadtr
+      info.windowStorage->getProperty,callsequence=callsequence
+      spd_ui_spdfcdawebchooser, historyWin=info.historyWin, GROUP_LEADER = info.master,timeRangeObj=info.loadtr,callsequence=callsequence
     END
     
     'LOADCDF': BEGIN

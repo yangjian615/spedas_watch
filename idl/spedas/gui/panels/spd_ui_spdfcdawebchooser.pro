@@ -34,9 +34,9 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-03-05 10:44:50 -0800 (Wed, 05 Mar 2014) $
-;$LastChangedRevision: 14503 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-06-10 19:38:56 -0700 (Tue, 10 Jun 2014) $
+;$LastChangedRevision: 15346 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -405,6 +405,8 @@ pro thm_spdfGetCdawebData, $
   thm_spdfGetCdawebDataExec, $
     event, state, timeInterval, selectedDatasetId, selectedVarNames
     
+  state.callsequence->addspdfcall,[timeInterval->getCdawebStart(),timeInterval->getCdawebStop()],selectedDatasetId,selectedVarNames,*state.selectedDataview
+    
   widget_control, event.top, set_uvalue=state
   obj_destroy, timeInterval
 end
@@ -534,7 +536,7 @@ pro thm_GetCdawebDataRun, event
   checkboxstatus = Widget_Info(saveCheckbox, /BUTTON_SET)
   
   localCDFfile = state.localcdfnames
-  CDFfileExists = FILE_TEST(localCDFfile)
+  CDFfileExists = FILE_TEST(localCDFfile[0])
   if CDFfileExists then begin
   
     selectedObservatoryGroups = $
@@ -641,6 +643,8 @@ pro spd_spdf_savecdfdir, event
    endif
 end 
 
+
+
 ;+
 ; Provides a GUI for choosing and retrieving data from
 ; <a href="http://cdaweb.gsfc.nasa.gov/">CDAWeb</a>.
@@ -656,7 +660,7 @@ end
 ; @keyword timeRangeObj {in} {type=obj}
 ;              Object reference for the GUI time range.  (Allows webChooser to maintain time range state when panel is opened and closed)
 ;-
-pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderWidgetId,timeRangeObj=timeRangeObj
+pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderWidgetId,timeRangeObj=timeRangeObj,callSequence=callSequence
 
   COMPILE_OPT IDL2
   
@@ -884,6 +888,7 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
     timeRangeObj:timeRangeObj, $
     localCdfNames:localCdfNames, $
     tlb:tlb, $
+    callSequence:callSequence,$
     statusBar:statusBar,$
     groupLeaderWidgetId:groupLeaderWidgetId $
   }

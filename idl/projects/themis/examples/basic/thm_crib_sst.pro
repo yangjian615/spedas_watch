@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-12-05 17:37:51 -0800 (Thu, 05 Dec 2013) $
-; $LastChangedRevision: 13648 $
+; $LastChangedDate: 2014-06-09 16:43:18 -0700 (Mon, 09 Jun 2014) $
+; $LastChangedRevision: 15337 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_sst.pro $
 ;-
 ;
@@ -39,6 +39,53 @@ tplot_names
 ;plot the energy spectrogram, and angular spectrograms(despun spacecraft coordinates (DSL))
 tplot,['thc_psif_eflux_energy','thc_psif_eflux_theta','thc_psif_eflux_phi','thc_psif_density']
 
+stop
+
+;----------------------------------------------------------------------------------------------------------------------------
+;  Manual SST sun decontamination
+;----------------------------------------------------------------------------------------------------------------------------
 
 
+probe='c'
+datatype='psif'
+trange = ['2010-06-05','2010-06-06']
+timespan,trange
+
+;loads particle data for data type
+thm_part_load,probe=probe,trange=trange,datatype=datatype
+
+;  manual sun decontamination with SST (bin numbers)
+; Bin numbers specified in this example are the current default
+thm_part_products,probe=probe,datatype=datatype,trange=trange,sun_bins=[0,8,16,24,32,33,34,40,47,48,49,50,55,56,57] 
+
+tplot,['tha_psif_eflux_energy','tha_psif_eflux_theta','tha_psif_eflux_phi']
+
+stop
+
+;----------------------------------------------------------------------------------------------------------------------------
+;  Use edit 3d bins to view data
+;----------------------------------------------------------------------------------------------------------------------------
+
+probe='c'
+datatype='psif'
+trange = ['2010-06-05','2010-06-06']
+timespan,trange
+
+;loads particle data for data type
+thm_part_load,probe=probe,trange=trange,datatype=datatype
+
+;select bins for removal
+edit3dbins,thm_part_dist('th'+probe+'_psif',time_double('2010-06-05/12:00:00'),/sst_cal),bins
+;right click to exit, left click to select bins for removal
+stop
+
+;see removed bins
+edit3dbins,thm_part_dist('th'+probe+'_psif',time_double('2010-06-05/12:00:00'),/sst_cal,sun_bins=bins,method_clean='manual')
+
+stop
+
+;use bins in data
+thm_part_products,probe=probe,datatype=datatype,trange=trange,sun_bins=where(~bins)
+
+tplot,['tha_psif_eflux_energy','tha_psif_eflux_theta','tha_psif_eflux_phi']
 end

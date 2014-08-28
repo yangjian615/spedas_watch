@@ -38,9 +38,9 @@
 ;       or data processing calls. 
 ; 
 ;HISTORY:
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-31 17:09:35 -0700 (Mon, 31 Mar 2014) $
-;$LastChangedRevision: 14721 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-06-10 19:38:56 -0700 (Tue, 10 Jun 2014) $
+;$LastChangedRevision: 15346 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_call_sequence__define.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -373,9 +373,23 @@ pro spd_ui_call_sequence::adddeletecall,groupname
   self->addSt,in_st 
 end
 
+pro spd_ui_call_sequence::addspdfcall,$
+  timeInterval,datasetId,varnames,$
+  selectedDataview
+  
+  in_st = {type:'spdfop',$
+           timeInterval:timeInterval,$
+           datasetId:datasetId,$
+           varnames:varnames,$
+           selectedDataview:selectedDataView}
+           
+  self->addSt,in_st
+  
+end
+
 ;this method will re-execute the sequence of stored 
 ;function calls
-pro spd_ui_call_sequence::reCall,historywin=historywin,statustext=statustext,guiID=guiID,infoptr=infoptr
+pro spd_ui_call_sequence::reCall,historywin=historywin,statustext=statustext,guiID=guiID,infoptr=infoptr,windowstorage=windowstorage
 
   compile_opt idl2
 
@@ -486,7 +500,13 @@ pro spd_ui_call_sequence::reCall,historywin=historywin,statustext=statustext,gui
               st.energy, st.regrid, st.fac_type[0], $
               st.sst_cal[0], st.sst_method_clean[0], $
               statustext, historyWin, self.loadedData
-              
+    
+   endif else if st.type eq 'spdfop' then begin
+     spd_ui_spdf_replay,guiId,statustext,historyWin,$
+      st.timeInterval,st.dataSetId,st.varnames,$
+      st.selectedDAtaView,self.loadedData,$
+      windowStorage
+      
    endif else begin
       ok = error_message('Unrecognized function call',/traceback)
       return
@@ -1114,6 +1134,7 @@ pro spd_ui_call_sequence__define
 
   struct = { spd_ui_call_sequence,     $
              call_list:ptr_new(), $  ;an array of ptrs to structs
-             loadedData:obj_new() }  ; the loaded data object
+             loadedData:obj_new() $ ; the loaded data object
+             }
       
 end

@@ -50,6 +50,15 @@ pro spd_ui_spedas_init_struct,state,struct
   widget_control,state.v_droplist,set_combobox_select=struct.verbose
   Widget_Control,  state.fixlinux, Set_Button=struct.linux_fix
 
+  if !SPD_GUI.templatepath ne '' then begin
+    widget_control, state.tmp_button,/set_button
+    widget_control, state.tmp_pathbase, sensitive=1
+    widget_control, state.tmppath, /editable
+    widget_control, state.tmppath, /sensitive, set_value = !SPD_GUI.templatepath
+  endif else begin
+    widget_control, state.tmp_pathbase, sensitive=0
+  endelse
+
 end
 
 PRO spd_ui_spedas_fileconfig_event, event
@@ -80,6 +89,7 @@ PRO spd_ui_spedas_fileconfig_event, event
       widget_control, (widget_info(event.top,find_by_uname='TMPPATHBASE')), sensitive=usetemplate
       if usetemplate then begin
         ; if the user turns on template, then load it
+        widget_control, (widget_info(event.top,find_by_uname='TMPPATH')), /editable
         tmppathid = widget_info(event.top, find_by_uname='TMPPATH')
         widget_control, tmppathid, get_value=filename
         if filename ne '' then spd_ui_fileconfig_load_template, filename, event.top, state.statusBar
@@ -333,10 +343,6 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   tmppath = widget_text(tmp_pathbase, xsize = 56, $
     uval = 'TMPPATH',uname='TMPPATH',/align_center)
   tmp_browsebtn = widget_button(tmp_pathbase,value='Browse', uval='TMPBROWSE',/align_center)
-  if !SPD_GUI.templatepath ne '' then begin
-    widget_control, tmp_button,/set_button
-    widget_control, tmppath, /sensitive, set_value = !SPD_GUI.templatepath
-  endif else widget_control, tmp_pathbase, sensitive=0
   
   ;defaults for Cancel:
   def_values=['0','0','0','2',0]
@@ -344,7 +350,8 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   state = {spedas_cfg_save:spedas_cfg_save, spd_ui_cfg_sav:spd_ui_cfg_sav, $
     master:master, browserexe:browserexe, tempdir:tempdir, tempcdfdir:tempcdfdir, $
     v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, fixlinux:fixlinux, $
-    def_values:def_values, historyWin:historyWin, tab_id:tab_id, linux_fix:linux_fix}
+    def_values:def_values, historyWin:historyWin, tab_id:tab_id, linux_fix:linux_fix, $
+    tmp_pathbase:tmp_pathbase, tmppath:tmppath, tmp_button:tmp_button, tmp_browsebtn:tmp_browsebtn}
     
   spd_ui_spedas_init_struct,state,!spedas
   

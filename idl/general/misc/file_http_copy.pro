@@ -126,9 +126,9 @@
  ;   April  2008 - Added dir_mode keyword
  ;   Sep 2009    - Fixed user-agent
  ;
- ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2014-04-21 19:25:14 -0700 (Mon, 21 Apr 2014) $
- ; $LastChangedRevision: 14906 $
+ ; $LastChangedBy: jwl $
+ ; $LastChangedDate: 2014-06-10 16:11:47 -0700 (Tue, 10 Jun 2014) $
+ ; $LastChangedRevision: 15340 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -504,7 +504,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14906 2014-04-22 02:25:14Z davin-mac $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 15340 2014-06-10 23:11:47Z jwl $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -797,10 +797,16 @@ end
            goto, close_server
          endif else begin  ; WARNING THIS SECTION OF CODE MIGHT BE INCOMPLETE BECAUSE RECURSIVE CALL IS MISSING MANY KEYWORDS !!!!
            dprint,'Warning:  Redirection may not work properly because not all keywords are set!'
+
+           ; 2014-06-10 JWL  
+           ; Removed 'host' keyword from recursive call when resolving HTTP
+           ; 301/302 redirections.  It was erroneously sending the original
+           ; 'host' parameter to the target of the redirection.
+
            file_http_copy,location,keyword_set(newpathnames) ? newpathname : '', $
              localdir=file_dirname(localdir+pathname)+'/',verbose=verbose, links=links2,$; lphilpott may-2012 change localdir so that the final directory the file is saved to is the one intended
              ;localdir=localdir,verbose=verbose, $
-             url_info=url_info,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode, host=host, $
+             url_info=url_info,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode,  $
              archive_ext=archive_ext, archive_dir=archive_dir, $
              user_agent=user_agent,user_pass=user_pass, if_modified_since=if_modified_since  ;,preserve_mtime=preserve_mtime,restore_mtime=restore_mtime              
            goto, close_server

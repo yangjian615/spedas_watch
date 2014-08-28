@@ -61,6 +61,17 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
         x1 = strcompress(/remove_all, string(x1))
       Endelse
       index = WHERE(stags eq x0, count)
+      if count EQ 0 then begin
+         dir = spedas_config_filedir()
+         msg='The configuration file '+dir+'\spedas_config.txt contains invalid or obsolete fields. Would you like a new file automatically generated for you? If not, you will need to modify your existing file before proceeding. Configuration information can be found in the Users Guide.'
+         answer = dialog_message(msg, /question)
+         if answer EQ 'Yes' then begin
+            cmd='del '+dir+'\spedas_config.txt'
+            spawn, cmd, res, errres
+            spedas_init
+         endif
+         return
+      endif 
       if (count gt 0) and not (size(!spedas.(index), /type) eq 11) then !spedas.(index) = x1
     endfor
     spedas_reset = 0

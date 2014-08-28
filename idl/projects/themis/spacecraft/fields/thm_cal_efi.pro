@@ -25,6 +25,11 @@
 
 pro thm_put_element, struct, sstruct_tag, data_tag, data
 
+  ; Was failing for the case when there were no gaps detected
+  ; but gap_begin or gap_end args are present.
+
+  if undefined(data) then return
+
   if undefined(struct) then begin
     struct = create_struct(sstruct_tag, create_struct(data_tag, data))
   endif else begin
