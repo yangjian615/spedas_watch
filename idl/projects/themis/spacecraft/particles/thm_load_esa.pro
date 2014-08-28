@@ -174,7 +174,11 @@ pro thm_load_esa,probe=probe, datatype=datatype, trange=trange, $
      return
   endif
   
-  vcoord=['dsl','gse','gsm','all']
+  ;vcoord=['dsl','gse','gsm','all']
+  coordSysObj = obj_new('spd_ui_coordinate_systems')
+  vcoord = coordSysObj->MakeCoordSysList(instrument = 'esa', /include_all)
+  obj_destroy, coordSysObj
+  
   instr_0 = ['peif', 'peef', 'peir', 'peer', 'peib', 'peeb']
   moments_0 = ['mode', 'en_eflux', 'sc_pot', 'sc_current', 'magf', 'density', 'avgtemp', $
                'vthermal', 'flux', 'ptens', 'mftens', 't3', 'symm', $

@@ -53,9 +53,9 @@
 ;  spd_ui_getset.  You can still call these methods when using objects of type spd_ui_data, and
 ;  call them in the same way as before
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-20 14:07:15 -0800 (Thu, 20 Feb 2014) $
+;$LastChangedRevision: 14405 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -110,12 +110,14 @@ pro spd_ui_data::updateDlimits
     str_element,data_att,'filename',self.filename,/add_replace
     str_element,data_att,'coord_sys',self.coordSys,/add_replace
     str_element,data_att,'units',self.units,/add_replace
+    str_element,data_att,'st_type',self.st_type,/add_replace
   endif else begin
     data_att = {project:self.mission,$
                 observatory:self.observatory,$
                 instrument:self.instrument,$
                 filename:self.filename,$
                 coord_sys:self.coordSys,$
+                st_type:self.st_type,$
                 units:self.units}
   endelse
                               
@@ -223,6 +225,7 @@ FUNCTION SPD_UI_DATA::Init,             $ ; The INIT method of the data object.
               instrument = instrument,  $ ; the instrument from which the data was collected    
               timerange=timerange,      $ ; The time range object of the data object
               units=units,              $ ; the units of this variable
+              st_type=st_type,          $ ; type of variable ('none', 'pos', 'vel'), for cotrans routines
               yaxisunits=yaxisunits,    $ ; the units of the yaxis of this variable
               suffix=suffix,            $ ; suffix of this variable,if applicable
               settings=settings           ; data settings object
@@ -255,6 +258,7 @@ FUNCTION SPD_UI_DATA::Init,             $ ; The INIT method of the data object.
    if n_elements(instrument) eq 0 then instrument = ''
    if n_elements(timerange) eq 0 then timerange = obj_new()
    if n_elements(units) eq 0 then units = ''
+   if n_elements(st_type) eq 0 then st_type = 'none'
    if n_elements(yaxisunits) eq 0 then yaxisunits = ''
    if n_elements(suffix) eq 0 then suffix = ''
    if n_elements(settings) eq 0 then settings = obj_new()
@@ -280,6 +284,7 @@ FUNCTION SPD_UI_DATA::Init,             $ ; The INIT method of the data object.
    self.instrument = instrument
    self.timerange = timerange
    self.units = units
+   self.st_type = st_type
    self.yaxisunits = yaxisunits
    self.suffix = suffix
    self.settings = settings
@@ -312,6 +317,7 @@ PRO SPD_UI_DATA__DEFINE
               instrument: '',           $ ; the instrument from which the data was collected
               timeRange:Obj_new(),      $ ; the time range object of the data object
               units:'',                 $ ; units for data product
+              st_type: 'none',          $ ; type of variable ('none', 'pos', 'vel'), for cotrans routines
               yaxisunits:'',            $ ; units for yaxis of this variable if applicable
               suffix:'',                $ ; suffix of this variable, if applicable
               settings:obj_new(),       $ ; data settings object for this data object

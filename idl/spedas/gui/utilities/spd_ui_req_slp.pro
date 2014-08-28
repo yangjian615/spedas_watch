@@ -7,10 +7,14 @@ function spd_ui_req_slp_check, name, in, out, trange, loadedData
 
     compile_opt idl2, hidden
 
-  pos = ['sel','sse'] ;transforms to/from these require position data
-  att = ['sel'] ;transforms to/from these requre attitude data
-  other = ['gse','gsm','sm','gei','geo','spg','ssl','dsl']
-
+  ; commenting out 'att', 'other' coordinate system lists because they aren't used. -egrimes, 2/21/2014
+ ; pos = ['sel','sse'] ;transforms to/from these require position data
+ ; att = ['sel'] ;transforms to/from these requre attitude data
+ ; other = ['gse','gsm','sm','gei','geo','spg','ssl','dsl']
+  coordSysObj = obj_new('spd_ui_coordinate_systems')
+  pos = coordSysObj->makeCoordSysListForTHEMISReqPos()
+  obj_destroy, coordSysObj
+  
   ovr = 120. ;overlap buffer
 
   

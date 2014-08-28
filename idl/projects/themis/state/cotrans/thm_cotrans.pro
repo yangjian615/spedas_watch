@@ -72,8 +72,8 @@
 ;              in_coord='dsl', probe='b c d', out_suff='_gse'
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-01-10 10:14:03 -0800 (Fri, 10 Jan 2014) $
-; $LastChangedRevision: 13840 $
+; $LastChangedDate: 2014-02-20 14:04:12 -0800 (Thu, 20 Feb 2014) $
+; $LastChangedRevision: 14401 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/cotrans/thm_cotrans.pro $
 ;-
 
@@ -179,6 +179,16 @@ pro thm_cotrans_update_limits,out_name,in_coord,out_coord
 
 end
 
+; if the data is of type 'vel' this is an invalid coordinate transform, warn user
+pro thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
+    get_data, in_name, dlimit = dl
+    if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
+        in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $ 
+        strlowcase(dl.data_att.st_type) eq 'vel' then begin
+        dprint, 'Warning: Transforming '+in_name+' from '+strupcase(in_coord)+' to '+strupcase(out_coord)+' coordinates can produce invalid results'
+    endif
+end
+
 ;helps simplify transformation logic code using a recursive formulation.
 ;Rather than specifying the set of transformations for each combination of
 ;in_coord & out_coord, this routine will perform only the nearest transformation
@@ -197,7 +207,7 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
                       prb=prb,use_eclipse_corrections=use_eclipse_corrections
                       
   compile_opt hidden
-  
+
   ;case select below modified to increase simplicity and maintainability.
   ;#1 Identity transform separated.
   ;#2 Recursive calls to thm_cotrans prevents duplicated code. 
@@ -207,12 +217,7 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
     case in_coord of
       'sel': begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          get_data, in_name, dlimit = dl
-          if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-             in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $ 
-             strlowcase(dl.data_att.st_type) eq 'vel' then begin
-             dprint, 'Warning: Transforming '+in_name+' from '+in_coord+' to '+out_coord+' coordinates can produce invalid results'
-          endif
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
           sse2sel,in_name,name_sun_pos,name_lun_pos,name_lun_att_x,name_lun_att_z,out_name,/sel2sse
           recursive_in_coord='sse'
         end
@@ -248,12 +253,7 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
         end
         else: begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          get_data, in_name, dlimit = dl
-          if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-             in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $
-             strlowcase(dl.data_att.st_type) eq 'vel' then begin
-             dprint, 'Warning: Transforming '+in_name+' from '+in_coord+' to '+out_coord+' coordinates can produce invalid results'
-          endif
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
           dsl2gse, in_name, spinras, spindec, out_name,ignore_dlimits=ignore_dlimits      
           recursive_in_coord='gse'           
         end   
@@ -263,12 +263,7 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
         'ssl':
         'dsl': begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          get_data, in_name, dlimit = dl
-          if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-             in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $
-             strlowcase(dl.data_att.st_type) eq 'vel' then begin
-             dprint, 'Warning: Transforming '+in_name+' from '+in_coord+' to '+out_coord+' coordinates can produce invalid results'
-          endif
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
           dsl2gse, in_name, spinras, spindec, out_name,ignore_dlimits=ignore_dlimits,/gse2dsl
           recursive_in_coord='dsl'
           break
@@ -285,27 +280,28 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
           recursive_in_coord='gsm'
           break
         end
+        'agsm': begin
+          ; using a rotation angle of 4 degrees when transforming to aGSM coordinates in the GUI
+          gse2agsm, in_name, out_name, rotation_angle = 4.0
+          recursive_in_coord='agsm'
+          break
+        end
         else: begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          get_data, in_name, dlimit = dl
-          if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-             in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $
-             strlowcase(dl.data_att.st_type) eq 'vel' then begin
-             dprint, 'Warning: Transforming '+in_name+' from '+in_coord+' to '+out_coord+' coordinates can produce invalid results'
-          endif
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
           cotrans, in_name,out_name,/gse2gei, ignore_dlimits=ignore_dlimits
           recursive_in_coord='gei'
         end
       endswitch
+      'agsm': begin
+        gse2agsm, in_name, out_name, rotation_angle = 4.0, /aGSM2GSE
+        recursive_in_coord='gse'
+        break
+      end
       'sse': switch out_coord of
         'sel': begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          get_data, in_name, dlimit = dl
-          if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-             in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $
-             strlowcase(dl.data_att.st_type) eq 'vel' then begin
-             dprint, 'Warning: Transforming '+in_name+' from '+in_coord+' to '+out_coord+' coordinates can produce invalid results'
-          endif
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
           sse2sel,in_name,name_sun_pos,name_lun_pos,name_lun_att_x,name_lun_att_z,out_name   
           recursive_in_coord='sel'
           break;
@@ -334,36 +330,21 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
       'gei': switch out_coord of
         'geo': begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          get_data, in_name, dlimit = dl
-          if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-             in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $
-             strlowcase(dl.data_att.st_type) eq 'vel' then begin
-             dprint, 'Warning: Transforming '+in_name+' from '+in_coord+' to '+out_coord+' coordinates can produce invalid results'
-          endif
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
           cotrans,in_name,out_name,/gei2geo,ignore_dlimits=ignore_dlimits
           recursive_in_coord='geo'
           break
         end
         'mag': begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          get_data, in_name, dlimit = dl
-          if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-             in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $
-             strlowcase(dl.data_att.st_type) eq 'vel' then begin
-             dprint, 'Warning: Transforming '+in_name+' from '+in_coord+' to '+out_coord+' coordinates can produce invalid results'
-          endif
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
           cotrans,in_name,out_name,/gei2geo,ignore_dlimits=ignore_dlimits
           recursive_in_coord='geo'
           break
         end
         else: begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          get_data, in_name, dlimit = dl
-          if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-             in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $
-             strlowcase(dl.data_att.st_type) eq 'vel' then begin
-             dprint, 'Warning: Transforming '+in_name+' from '+in_coord+' to '+out_coord+' coordinates can produce invalid results'
-          endif
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
           cotrans,in_name,out_name,/gei2gse,ignore_dlimits=ignore_dlimits
           recursive_in_coord='gse'
         end
@@ -377,12 +358,7 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
         end
         else: begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          get_data, in_name, dlimit = dl
-          if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-             in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $
-             strlowcase(dl.data_att.st_type) eq 'vel' then begin
-             dprint, 'Warning: Transforming '+in_name+' from '+in_coord+' to '+out_coord+' coordinates can produce invalid results'
-          endif
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
           cotrans,in_name,out_name,/geo2gei,ignore_dlimits=ignore_dlimits
           recursive_in_coord='gei'
           break
@@ -426,7 +402,11 @@ pro thm_cotrans, in_name, out_name, probe=probe, datatype=datatype,  $
   vb = size(verbose, /type) ne 0 ? verbose : !themis.verbose
 
    vprobes = ['a','b','c','d','e']
-   vcoord = ['spg', 'ssl', 'dsl', 'gse', 'gsm','sm', 'gei','geo','sse','sel', 'mag']
+   ;vcoord = ['spg', 'ssl', 'dsl', 'gse', 'gsm','sm', 'gei','geo','sse','sel', 'mag']
+   coordSysObj = obj_new('spd_ui_coordinate_systems')
+   vcoord = coordSysObj->makeCoordSysList()
+   obj_destroy, coordSysObj
+   
    if keyword_set(valid_names) then begin
       in_coord = vcoord
       out_coord = vcoord
@@ -615,7 +595,7 @@ for i = 0, n_elements(in_names)-1 do begin
   endif
 
   in_c = in_coords[i]
-  
+
   if in_c eq 'conflict' then begin
     dprint,'Argument input coordinate system and data coordinate system of "' + in_nam + '" do not match. Skipping.'
     continue
@@ -681,7 +661,7 @@ for i = 0, n_elements(in_names)-1 do begin
    
    
   if n_elements(name_list) eq 0 then begin
-    name_list = [out_nam]
+    name_list = [out_nam] 
   endif else begin
     name_list = [name_list,out_nam]
   endelse

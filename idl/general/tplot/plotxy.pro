@@ -472,7 +472,7 @@ pro p3p_parse_elements,string, element, vectors, custom, ele = ele, title = titl
 ;main function
 pro plotxy, vectors, versus=versus, symsize=symsize, custom = custom,title=title,overplot=overplot,$
  addpanel=addpanel,multi=multi,mmargin=mmargin,mtitle=mtitle,mpanel=mpanel,memsave=memsave,noisotropic=noisotropic,linestyle=linestyle, xrange = xrange,$
- yrange = yrange, pstart=pstart,pstop=pstop, window = window, xsize = xsize, ysize = ysize, xmargin = xmargin, ymargin = ymargin,$
+ yrange = yrange, pstart=pstart,pstop=pstop, psymcolor=psymcolor, window = window, xsize = xsize, ysize = ysize, xmargin = xmargin, ymargin = ymargin,$
  wtitle=wtitle,xtitle=xtitle,ytitle=ytitle,colors=colors,replot=replot,xlog=xlog,ylog=ylog,units=units,labels=labels, $
  grid=grid,markends=markends,marks=marks,xtick_get=xtick_get,ytick_get=ytick_get,xistime=xistime,$
  get_plot_pos=get_plot_pos,_extra = _extra
@@ -709,11 +709,13 @@ for i = 0, dims[0]-1 do begin
    if keyword_set(cols) then co = cols[i]
 
    oplot, plot1, plot2, linestyle = linestyle,color=co,symsize=symsize, _extra = _extra
+   
+   if undefined(psymcolor) then psymcolor=co
 
    if keyword_set(pstart) then begin
 
       ;mark start
-      oplot, make_array(1, value = plot1[0]), make_array(1, value = plot2[0]), psym = pstart, symsize = symsize
+      oplot, make_array(1, value = plot1[0]), make_array(1, value = plot2[0]), psym = pstart, symsize = symsize,color=psymcolor
 
    endif
    
@@ -721,7 +723,7 @@ for i = 0, dims[0]-1 do begin
 
       ;mark stop
       oplot, make_array(1, value = plot1[n_elements(plot1)-1]), make_array(1, value = plot2[n_elements(plot2)-1]),$
-             psym = pstop, symsize = symsize
+             psym = pstop, symsize = symsize,color=psymcolor
   
    endif
 
@@ -734,7 +736,7 @@ if ~keyword_set(replot) and ~keyword_set(memsave) then begin
 
    pxy_push_state,'plotxy',{vectors:vectors}, versus=versus, symsize=symsize, custom = custom,title=title,overplot=overplot,$
                    addpanel=addpanel,multi=multi,mmargin=mmargin,mtitle=mtitle,mpanel=mpanel,memsave=memsave,noisotropic=noisotropic,linestyle=linestyle,$
-                   xrange = xrange, yrange = yrange, pstart=pstart,pstop=pstop,  xmargin = xmargin, ymargin = ymargin, $
+                   xrange = xrange, yrange = yrange, pstart=pstart,pstop=pstop,psymcolor=psymcolor,  xmargin = xmargin, ymargin = ymargin, $
                    xtitle=xtitle,ytitle=ytitle,colors=colors,xlog=xlog,ylog=ylog,units=units,$
                    labels=labels,grid=grid,markends=markends,marks=marks,xtick_get=xtick_get,ytick_get=ytick_get,$
                    _extra=_extra

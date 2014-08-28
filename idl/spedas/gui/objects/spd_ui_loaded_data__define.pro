@@ -52,9 +52,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-18 15:18:25 -0800 (Tue, 18 Feb 2014) $
-;$LastChangedRevision: 14387 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-20 14:06:54 -0800 (Thu, 20 Feb 2014) $
+;$LastChangedRevision: 14404 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -171,7 +171,7 @@ FUNCTION spd_ui_loaded_data::addData,in_name,d,limit=l,dlimit=dl,file=file, miss
       str_element,dl,'data_att',l.data_att,/add
     endelse
   endif
-  self->detectDlimits,name,dl,mission=mission,observatory=observatory,instrument=instrument,coordsys=coordsys,units=units,file=file
+  self->detectDlimits,name,dl,mission=mission,observatory=observatory,instrument=instrument,coordsys=coordsys,units=units,file=file,st_type=st_type
 
   if size(isSpect,/type) eq 0 then begin  ;autodetect spectrographic flag
     if ~(size(dl, /type) eq 8) then begin
@@ -234,6 +234,7 @@ FUNCTION spd_ui_loaded_data::addData,in_name,d,limit=l,dlimit=dl,file=file, miss
       instrument=instrument,$
       filename=file,$
       units=units,$
+      st_type=st_type,$
       yaxisunits=yaxisunits,$
       isSpect=isSpect,$
       timeRange=tr,$
@@ -442,6 +443,7 @@ FUNCTION spd_ui_loaded_data::addData,in_name,d,limit=l,dlimit=dl,file=file, miss
         isSpect=isSpect,$
         timename=timename,$
         units=units,$
+        st_type=st_type,$
         yaxisunits=yaxisunits,$
         isYaxis=isYaxis,$
         suffix=suffix+suffixes[i],$
@@ -511,13 +513,17 @@ FUNCTION spd_ui_loaded_data::addData,in_name,d,limit=l,dlimit=dl,file=file, miss
   return,1
 END ;--------------------------------------------------------------------------------
 
-pro spd_ui_loaded_data::detectDlimits,name,dl,mission=mission,observatory=observatory,instrument=instrument,file=file,coordsys=coordsys,units=units
+pro spd_ui_loaded_data::detectDlimits,name,dl,mission=mission,observatory=observatory,instrument=instrument,file=file,coordsys=coordsys,units=units,st_type=st_type
 
   compile_opt idl2
 
   ;**************************
   ; Set mission/project name
   if ~keyword_set(mission) then mission = self->detectMission(name, dl)
+  
+  ;**************************
+  ; Set st_type
+  if ~keyword_set(st_type) then st_type = self->detectSttype(name, dl)
   
   ;**************************
   ; Set observatory
@@ -539,6 +545,31 @@ pro spd_ui_loaded_data::detectDlimits,name,dl,mission=mission,observatory=observ
   ; Set units
   if ~keyword_set(units) then units = self->detectunits(name, dl)
   
+end
+
+function SPD_UI_LOADED_DATA::detectSttype, name, dl
+    compile_opt idl2, hidden
+    
+    st_type = 'none'
+    ; check that the dlimits struct exists
+    if ~is_struct(dl) then begin
+        dprint, 'Unable to determine st_type for ' + name, dlevel = 4
+        st_type = 'none'
+        return, st_type
+    endif
+    
+    ; assume we failed
+    success = 0
+    
+    ; check for st_type in the data_att struct
+    if in_set('data_att', strlowcase(tag_names(dl))) && is_struct(dl.data_att) then begin
+        if in_set('st_type', strlowcase(tag_names(dl.data_att))) then begin
+            st_type = dl.data_att.st_type
+            success = 1
+        endif else success = 0
+    endif else success = 0
+    
+    return, st_type
 end
 
 function SPD_UI_LOADED_DATA::detectMission, name, dl
@@ -1512,7 +1543,7 @@ end
 ;Call this method to read the metadata associated with a quantity, without the need for costly data operations
 ;Note that this operation can fail, if the quantity in question does not exist.
 ;Set fail to a named variable, which will be 0 on success and 1 on failure, after this method returns
-pro spd_ui_loaded_data::getdatainfo,name,mission=mission,observatory=observatory,instrument=instrument,units=units,coordinate_system=coordinate_system,filename=filename,limit=limit,dlimit=dlimit,fail=fail
+pro spd_ui_loaded_data::getdatainfo,name,mission=mission,observatory=observatory,instrument=instrument,units=units,coordinate_system=coordinate_system,filename=filename,limit=limit,dlimit=dlimit,fail=fail,st_type=st_type
 
   compile_opt idl2
 
@@ -1537,7 +1568,7 @@ pro spd_ui_loaded_data::getdatainfo,name,mission=mission,observatory=observatory
   
   if ~obj_valid(reference) || ~obj_valid(group) then return
       
-  reference->getProperty,mission=mission,observatory=observatory,instrument=instrument,units=units,coordSys=coordinate_system,filename=filename,limitptr=limitptr,dlimitptr=dlimitptr
+  reference->getProperty,mission=mission,observatory=observatory,instrument=instrument,units=units,coordSys=coordinate_system,filename=filename,limitptr=limitptr,dlimitptr=dlimitptr,st_type=st_type
 
   limit = *limitptr
   dlimit =  *dlimitptr
@@ -1552,7 +1583,7 @@ end
 ;Also, note that these operations can only be performed on groups. If an element is selected, the change will propagate out to the entire group.
 ;For example 'tha_state_pos_x', and 'tha_state_pos_y' cannot be in different coordinate systems, if you change 'tha_state_pos_x' to 'gsm', 'tha_state_pos_y'
 ;will also become 'gsm' 
-pro spd_ui_loaded_data::setDataInfo,name,newname=newname,mission=mission,observatory=observatory,instrument=instrument,units=units,coordinate_system=coordinate_system,windowstorage=windowstorage,fail=fail
+pro spd_ui_loaded_data::setDataInfo,name,newname=newname,mission=mission,observatory=observatory,instrument=instrument,units=units,coordinate_system=coordinate_system,windowstorage=windowstorage,fail=fail,st_type=st_type
 
   compile_opt idl2
   
@@ -1580,7 +1611,7 @@ pro spd_ui_loaded_data::setDataInfo,name,newname=newname,mission=mission,observa
   yaxisname = group->getyaxisname()
   
   if keyword_set(yaxisname) then begin
-    self->setdatainfo,yaxisname,mission=mission,observatory=observatory,instrument=instrument,units=units,coordinate_system=coordinate_system,fail=yaxisfail
+    self->setdatainfo,yaxisname,mission=mission,observatory=observatory,instrument=instrument,units=units,coordinate_system=coordinate_system,fail=yaxisfail,st_type=st_type
     if yaxisfail then return
   endif
   
@@ -1695,7 +1726,7 @@ pro spd_ui_loaded_data::setDataInfo,name,newname=newname,mission=mission,observa
     
   for i = 0,n_elements(children)-1 do begin
     
-    children[i]->setProperty,mission=mission,observatory=observatory,instrument=instrument,units=units,coordSys=coordinate_system
+    children[i]->setProperty,mission=mission,observatory=observatory,instrument=instrument,units=units,coordSys=coordinate_system,st_type=st_type
   
   endfor
   

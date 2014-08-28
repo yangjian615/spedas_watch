@@ -26,9 +26,9 @@
 ;   and transformed into the new coordinate system with suffix added/changed
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-21 13:54:28 -0800 (Fri, 21 Feb 2014) $
+;$LastChangedRevision: 14413 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_req_spin.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -42,8 +42,12 @@ function spd_ui_cotrans_new_req_spin_tvars_helper,in_coord,out_coord,trange,load
   
   varList = loadedData->getAll(/parent)
   
-  left_coords = ['gse','gsm','sm','gei','geo','sse','sel','mag']
-  right_coords = ['spg','ssl','dsl']
+ ; left_coords = ['gse','gsm','sm','gei','geo','sse','sel','mag']
+ ; right_coords = ['spg','ssl','dsl']
+  coordSysObj = obj_new('spd_ui_coordinate_systems')
+  left_coords = coordSysObj->makeCoordSysListForSpinModel()
+  right_coords = coordSysObj->makeCoordSysListforTHEMIS(/include_dsl)
+  obj_destroy, coordSysObj
   
   in_coord_tmp = strlowcase(in_coord[0])
   out_coord_tmp = strlowcase(out_coord[0])
@@ -118,8 +122,12 @@ function spd_ui_cotrans_new_req_spin_model,in_coord,out_coord,probe,trange
 
   compile_opt idl2,hidden
 
-  left_coords = ['dsl','gse','gsm','sm','gei','geo','sse']
-  right_coords = ['spg','ssl']
+  ;left_coords = ['dsl','gse','gsm','sm','gei','geo','sse']
+  ;right_coords = ['spg','ssl']
+  coordsysobj = obj_new('spd_ui_coordinate_systems')
+  left_coords = coordsysobj->makeCoordSysListForSpinModel(/include_dsl)
+  right_coords = coordsysobj->makeCoordSysListForTHEMIS()
+  obj_destroy, coordsysobj
   
   in_coord_tmp = strlowcase(in_coord[0])
   out_coord_tmp = strlowcase(out_coord[0])

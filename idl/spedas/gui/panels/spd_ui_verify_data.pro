@@ -22,9 +22,9 @@
 ;OUTPUT:
 ; 
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-20 14:15:21 -0800 (Thu, 20 Feb 2014) $
+;$LastChangedRevision: 14406 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_verify_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ pro spd_ui_update_verify,state
       value='<unknown>'
     endelse
   
-    for i = 0,6 do begin
+    for i = 0,7 do begin
       if i ne 5 then begin
         widget_control,state.textWidgets[i],set_value=value
       endif else begin
@@ -59,6 +59,7 @@ pro spd_ui_update_verify,state
     Widget_Control, state.textWidgets[4], set_value=(*state.metaData)[index].unit
     Widget_Control, state.textWidgets[5], set_combobox_select=(*state.metaData)[index].coordinate
     Widget_Control, state.textWidgets[6], set_value=(*state.metaData)[index].filename
+    Widget_Control, state.textWidgets[7], set_combobox_select=(*state.metaData)[index].st_type
   endelse
 
 end
@@ -141,7 +142,11 @@ pro spd_ui_verify_data_event,event
         numData=N_Elements(*state.metaData)
         existingData=state.loadedData->GetAll(/Parent)
         FOR i=0,numData-1 DO BEGIN
-        
+          ; check st_type
+          st_type = 'none' ; default to none
+          if (*state.metaData)[i].st_type eq 1 then st_type = 'pos'
+          if (*state.metaData)[i].st_type eq 2 then st_type = 'vel'
+
           ;This check verifies that the requested name is in the set of selected names, but that the name is not THIS variable's name(which would be the case if the name was left unchanged)
           if in_set((*state.metadata)[i].name,existingData) && (*state.metadata)[i].name ne state.origNames[i] then begin
             messageString=String('The name '+(*state.metaData)[i].name +' is already used by another variable. Name will not be changed')              
@@ -152,6 +157,7 @@ pro spd_ui_verify_data_event,event
               Observatory=(*state.metaData)[i].observatory,$
               Instrument=(*state.metaData)[i].instrument, $
               Units=(*state.metaData)[i].unit, $
+              st_type=st_type,$
               Coordinate_System=state.validCoords[(*state.metaData)[i].coordinate], $
               windowstorage=state.windowStorage, fail=fail 
               
@@ -162,7 +168,8 @@ pro spd_ui_verify_data_event,event
                   (*state.metaData)[i].observatory,$
                   (*state.metaData)[i].instrument, $
                   (*state.metaData)[i].unit, $
-                  state.validCoords[(*state.metaData)[i].coordinate]
+                  state.validCoords[(*state.metaData)[i].coordinate], $
+                  st_type=st_type
             endif
           endif else begin
           
@@ -173,6 +180,7 @@ pro spd_ui_verify_data_event,event
               Observatory=(*state.metaData)[i].observatory,$
               Instrument=(*state.metaData)[i].instrument, $
               Units=(*state.metaData)[i].unit, $
+              st_type=st_type,$
               Coordinate_System=state.validCoords[(*state.metaData)[i].coordinate], $
               windowstorage=state.windowStorage, fail=fail 
               
@@ -180,6 +188,7 @@ pro spd_ui_verify_data_event,event
               state.callSequence->addDataInfoOp,$
                   state.origNames[i], $
                   newname=(*state.metadata)[i].name,$
+                  st_type=st_type,$
                   (*state.metaData)[i].mission, $
                   (*state.metaData)[i].observatory,$
                   (*state.metaData)[i].instrument, $
@@ -249,6 +258,13 @@ pro spd_ui_verify_data_event,event
         spd_ui_update_meta,state,'coordinate',index
       endif
     END
+    'ST_TYPE': BEGIN
+        Widget_Control, state.textWidgets[7], Get_Value=value ; value = array of possible values
+        ; get the current selection
+        cb_text = widget_info(state.textWidgets[7], /COMBOBOX_GETTEXT)
+        cb_selected_idx = where(value eq cb_text)
+        if cb_selected_idx ne -1 then spd_ui_update_meta, state, 'st_type', cb_selected_idx
+    END
     'UP': BEGIN
        IF ptr_valid(state.metadata) && state.currentIndex ne - 1 then begin   
          state.currentIndex = (-1 + state.currentIndex + n_elements(*state.metadata)) mod n_elements(*state.metadata)
@@ -310,6 +326,7 @@ PRO spd_ui_verify_data, gui_id, names, loadedData, windowstorage, historywin, ed
        instrumentBase = Widget_Base(metaFrameBase, /row, ypad=1)
        unitBase = Widget_Base(metaFrameBase, /row, ypad=1)
        coordinateBase = Widget_Base(metaFrameBase, /row, ypad=1)
+       st_typeBase = Widget_Base(metaFrameBase, /row, ypad=1)
        filenameBase = Widget_Base(metaFrameBase, /row, ypad=1)
 ;       arrowBase = Widget_Base(metaFrameBase, /row, /align_center)
     
@@ -323,18 +340,23 @@ PRO spd_ui_verify_data, gui_id, names, loadedData, windowstorage, historywin, ed
   validProbes = [' * (All)', ' A (P5)', ' B (P1)', ' C (P2)', ' D (P3)', $
                  ' E (P4)', ' F (Flatsat)']
                  
-  validCoords = ['N/A','DSL', 'SSL', 'GSE', 'GEI', 'SPG', 'GSM', 'GEO', 'SM','ENP','RTN','GCI','HDZ']
-  
+ ; validCoords = ['N/A','DSL', 'SSL', 'GSE', 'GEI', 'SPG', 'GSM', 'GEO', 'SM','ENP','RTN','GCI','HDZ']
+  ; make a list of valid coordinate systems 
+  coord_sys_obj = obj_new('spd_ui_coordinate_systems')
+  validCoords = coord_sys_obj->makeCoordSysList(/uppercase, /include_none, /include_all)
+  obj_destroy, coord_sys_obj
+
+
   ; get pre-existing gui variable names
   origGuiNames = loadedData->GetAll(/Parent)
  
   ; initialize the meta data structure
   metaDataStruc = {name:'', mission:'', observatory:'', instrument:'',unit:'', coordinate:0, $
-     filename:''}
+     st_type: 0, filename:''}
   IF N_Elements(names) GT 0 THEN BEGIN
      metaData=replicate(metaDataStruc, N_Elements(names))
      FOR i=0,N_Elements(names)-1 DO BEGIN
-        loadedData->GetDataInfo, names[i], mission=mission, observatory=observatory, $
+        loadedData->GetDataInfo, names[i], mission=mission, observatory=observatory, dlimit=dlimit, st_type=st_type, $
            instrument=instrument, units=unit, coordinate_system=coordinate, filename=filename, fail=fail
         IF fail THEN BEGIN
           ok = error_message('Error retrieving data for ' + names[i], $
@@ -350,11 +372,18 @@ PRO spd_ui_verify_data, gui_id, names, loadedData, windowstorage, historywin, ed
         IF index EQ -1 THEN index = 0
         metaData[i].coordinate=index
         metaData[i].filename=filename
+        ; get the st_type (position, velocity or none) from the dlimits structure
+        ; metaData[i].st_type can be:
+        ; 0 - 'none', 1 - 'position', 2 - 'velocity'
+        if undefined(st_type) || st_type eq 'none' then metaData[i].st_type = 0
+        if st_type eq 'pos' then metaData[i].st_type = 1
+        if st_type eq 'vel' then metaData[i].st_type = 2
+
      ENDFOR
      metaData = ptr_new(metaData)
   ENDIF ELSE BEGIN
      metaData=ptr_new()
-     names = ['<none']
+     names = ['<none>']
   ENDELSE  
   
   varLabel = Widget_Label(varLabelBase, value='Data: ')
@@ -367,6 +396,7 @@ PRO spd_ui_verify_data, gui_id, names, loadedData, windowstorage, historywin, ed
   instrumentLabel = Widget_Label(instrumentBase, value = 'Instrument:              ')
   unitsLabel = Widget_Label(unitBase, value = 'Units:                      ')
   coordinateLabel = Widget_Label(coordinateBase, value = 'Coordinate System: ')
+  st_typeLabel = Widget_Label(st_typeBase, value = 'Variable type:          ')
   filenameLabel = Widget_Label(filenameBase, value = 'Filename:                 ')
 
   varNameText = Widget_Text(variableBase, value='', uValue='NAME', /editable, xsize=20,/all_events)             
@@ -375,13 +405,21 @@ PRO spd_ui_verify_data, gui_id, names, loadedData, windowstorage, historywin, ed
   instrumentText = Widget_Text(instrumentBase, Value='', uval='INSTRUMENT',/editable, xsize=20,/all_events)
   unitText = Widget_Text(unitBase, Value='', uval='UNIT',/editable, xsize=20,/all_events)
   coordinateDroplist = Widget_Combobox(coordinateBase, Value=validCoords, uval='COORDINATE')
+  st_typeComboBox = Widget_Combobox(st_typeBase, value=['N/A', 'position', 'velocity'], uval='ST_TYPE')
   filenameText = Widget_Text(filenameBase, Value='', xsize=20)
-getresourcepath,rpath
-upArrow = read_bmp(rpath + 'arrow_090_medium.bmp', /rgb)
-downArrow = read_bmp(rpath + 'arrow_270_medium.bmp', /rgb)
+  
+  if st_type eq 'none' then st_type_cb_idx = 0
+  if st_type eq 'pos' then st_type_cb_idx = 1
+  if st_type eq 'vel' then st_type_cb_idx = 2
+  
+  widget_control, st_typeComboBox, set_combobox_select=st_type_cb_idx
+  
+  getresourcepath,rpath
+  upArrow = read_bmp(rpath + 'arrow_090_medium.bmp', /rgb)
+  downArrow = read_bmp(rpath + 'arrow_270_medium.bmp', /rgb)
 
-spd_ui_match_background, tlb, upArrow
-spd_ui_match_background, tlb, downArrow
+  spd_ui_match_background, tlb, upArrow
+  spd_ui_match_background, tlb, downArrow
 
 ;shiftUpButton = Widget_Button(varButtonBase, Value=upArrow, /Bitmap, UValue='UP', uname = 'shiftupbutton', Tooltip='Move this panel up by one', $
 ;  sensitive = 0)   
@@ -398,7 +436,7 @@ spd_ui_match_background, tlb, downArrow
   statusBar = Obj_New("SPD_UI_MESSAGE_BAR", status_row, Xsize=82, YSize=1)
   
   textWidgets = [varNameText, missionText, observatoryText, instrumentText, unitText, $
-      coordinateDroplist, filenameText]
+      coordinateDroplist, filenameText, st_typeComboBox]
   origNames = names
   index = [0]
   selectedIndices=Ptr_New(index)

@@ -15,9 +15,9 @@
 ;OUTPUT:
 ; None
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-20 13:58:59 -0800 (Thu, 20 Feb 2014) $
+;$LastChangedRevision: 14400 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_load_data_file/spd_ui_load_data_file_itype_sel.pro $
 ;-
 pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
@@ -29,20 +29,28 @@ pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
   state.instr = strlowcase(strcompress(instr_in, /remove_all))
  
   ; handle different coordinate system abilities of load routines 
-  if (state.instr eq 'fgm') OR (state.instr eq 'scm') then begin
-    if ptr_valid(state.validcoords) then ptr_free, state.validcoords
-    validcoords = [ ' DSL ', ' GSM ', ' SSL ',' GSE ']
-    state.validcoords = ptr_new(validcoords)
-  endif else if (state.instr eq 'fit') OR (state.instr eq 'esa') then begin
-      if ptr_valid(state.validcoords) then ptr_free, state.validcoords
-      validcoords = [ ' DSL ', ' GSM ', ' GSE ']
-      state.validcoords = ptr_new(validcoords)
-  endif else begin
-      if ptr_valid(state.validcoords) then ptr_free, state.validcoords
-      validCoords = [ ' DSL ', ' GSM ', ' SPG  ', ' SSL ',' GSE ', ' GEI ',' SM ', ' SSE ', ' SEL ', ' GEO', ' MAG ']
-      state.validcoords = ptr_new(validcoords)
-  endelse
+;  if (state.instr eq 'fgm') OR (state.instr eq 'scm') then begin
+;    if ptr_valid(state.validcoords) then ptr_free, state.validcoords
+;    validcoords = [ ' DSL ', ' GSM ', ' SSL ',' GSE ']
+;    state.validcoords = ptr_new(validcoords)
+;  endif else if (state.instr eq 'fit') OR (state.instr eq 'esa') then begin
+;      if ptr_valid(state.validcoords) then ptr_free, state.validcoords
+;      validcoords = [ ' DSL ', ' GSM ', ' GSE ']
+;      state.validcoords = ptr_new(validcoords)
+;  endif else begin
+;      if ptr_valid(state.validcoords) then ptr_free, state.validcoords
+;      validCoords = [ ' DSL ', ' GSM ', ' SPG  ', ' SSL ',' GSE ', ' GEI ',' SM ', ' SSE ', ' SEL ', ' GEO', ' MAG ']
+;      state.validcoords = ptr_new(validcoords)
+;  endelse
   
+  ; make a list of valid coordinate systems 
+  coord_sys_obj = obj_new('spd_ui_coordinate_systems')
+  validCoords = coord_sys_obj->makeCoordSysList(/uppercase, instrument = state.instr)
+  if ptr_valid(state.validcoords) then ptr_free, state.validcoords
+  state.validcoords = ptr_new(validCoords)
+  obj_destroy, coord_sys_obj
+
+
   ;determine whether to sensitize the raw button
   raw_id = widget_info(state.tab_id,find_by_uname='raw_data')
   if state.instr eq 'efi' || $

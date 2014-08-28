@@ -62,9 +62,9 @@ end
 ; No explicit output, processes are done
 ;HISTORY:
 ; 21-nov-2008, jmm, jimm@ssl.berkeley.edu
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-20 13:58:59 -0800 (Thu, 20 Feb 2014) $
+;$LastChangedRevision: 14400 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_dproc_panel.pro $
 ;-
 Pro spd_ui_dproc_panel_event, event
@@ -366,7 +366,13 @@ pwrspecMenu = Widget_Button(analysisMenu, Value='Power Spectrum...', UValue='PRO
                          tooltip = 'Performs Dynamic power spectrum for each trace')
 cotranMenu = Widget_Button(analysisMenu, Value='Coordinate Transform...', UValue='PROC:COTRAN', $
                          tooltip = 'Performs a coordinate transform on active data', /menu)
-validCoords = ['DSL', 'SSL', 'GSE', 'GEI', 'SPG', 'GSM', 'GEO', 'SM', 'SSE', 'SEL', 'MAG']
+;validCoords = ['DSL', 'SSL', 'GSE', 'GEI', 'SPG', 'GSM', 'GEO', 'SM', 'SSE', 'SEL', 'MAG']
+
+; make a list of valid coordinate systems 
+coord_sys_obj = obj_new('spd_ui_coordinate_systems')
+validCoords = coord_sys_obj->makeCoordSysList(/uppercase)
+obj_destroy, coord_sys_obj
+
 coordMenus = LonArr(N_Elements(validCoords))
 FOR i = 0, N_Elements(validCoords)-1 DO $
   coordMenus[i] = Widget_Button(cotranMenu, Value=string(validCoords[i]+'  '),UValue='COTRANS:'+validCoords[i])

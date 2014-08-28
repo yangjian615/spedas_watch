@@ -26,9 +26,9 @@
 ;                and remote data directories.
 ;HISTORY:
 ; April 1, 2010, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2010-05-30 09:17:13 -0700 (Sun, 30 May 2010) $
-; $LastChangedRevision: 7648 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2014-02-20 12:48:24 -0800 (Thu, 20 Feb 2014) $
+; $LastChangedRevision: 14398 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_load_state_relpath.pro $
 ;-
 Function thm_load_state_relpath, sname = sname, filetype = filetype, $
@@ -57,7 +57,8 @@ relpathnames_local = file_dailynames(relpath, prefix, ending, dir = dir, $
                                      trange = trange, addmaster = addmaster)
 
 ;tweak for different relpath if loading state data from SPDF
-If(!themis.remote_data_dir Eq 'http://cdaweb.gsfc.nasa.gov/istp_public/data/themis/') Then Begin
+If(!themis.remote_data_dir Eq 'http://cdaweb.gsfc.nasa.gov/istp_public/data/themis/') || $
+  (!themis.remote_data_dir eq 'http://spdf.gsfc.nasa.gov/pub/data/themis/') then Begin
 ;    relpath = 'th'+snamei+'/or/'
     ending = '_v0?.cdf'
     relpathnames = file_dailynames(relpath, prefix, ending, dir = dir, $

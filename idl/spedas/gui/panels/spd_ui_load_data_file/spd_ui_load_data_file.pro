@@ -31,8 +31,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-12 09:13:00 -0800 (Wed, 12 Feb 2014) $
-;$LastChangedRevision: 14352 $
+;$LastChangedDate: 2014-02-20 13:58:59 -0800 (Thu, 20 Feb 2014) $
+;$LastChangedRevision: 14400 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_load_data_file/spd_ui_load_data_file.pro $
 ;
 ;-
@@ -325,7 +325,11 @@ pro spd_ui_load_data_file, tab_id, gui_id, windowStorage, loadedData, historyWin
   level2List = Widget_List(level2Base, Value=*dlist2, /Multiple, XSize=16, YSize=11, $
                            Uvalue='LEVEL2')
                            
-  validCoords = [ ' DSL ', ' GSM ', ' SPG  ', ' SSL ',' GSE ', ' GEI ']
+  ;validCoords = [ ' DSL ', ' GSM ', ' SPG  ', ' SSL ',' GSE ', ' GEI ']
+  ; make a list of valid coordinate systems 
+  coord_sys_obj = obj_new('spd_ui_coordinate_systems')
+  validCoords = coord_sys_obj->makeCoordSysList(/uppercase)
+  obj_destroy, coord_sys_obj
 
   coordDroplistLabel = Widget_Label(coordBase, Value=' Output Coordinates:  ')
   coordDroplist = Widget_ComboBox(coordBase, Value=validCoords, $ ;XSize=165, $

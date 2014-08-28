@@ -38,9 +38,9 @@
 ;       or data processing calls. 
 ; 
 ;HISTORY:
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-13 18:16:45 -0800 (Thu, 13 Feb 2014) $
-;$LastChangedRevision: 14375 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-20 14:06:33 -0800 (Thu, 20 Feb 2014) $
+;$LastChangedRevision: 14403 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_call_sequence__define.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -302,11 +302,10 @@ pro spd_ui_call_sequence::addDataInfoOp,$
                            instrument,$
                            unit,$
                            coord,$
-                           newname=newname
-  
-  if ~keyword_set(newname) then begin
-    newname = ''
-  endif
+                           newname=newname,$
+                           st_type=st_type
+  if ~keyword_set(newname) then newname = ''
+  if ~keyword_set(st_type) then st_type = 'none'
                         
   in_st = {type:'datainfoop',$
            name:name,$
@@ -315,6 +314,7 @@ pro spd_ui_call_sequence::addDataInfoOp,$
            instrument:instrument,$
            unit:unit,$
            coord:coord,$
+           st_type:st_type,$
            newname:newname}
   
   self->addSt,in_st
@@ -542,6 +542,7 @@ pro spd_ui_call_sequence::reCall,historywin=historywin,statustext=statustext,gui
        observatory=st.observatory[0],$
        instrument=st.instrument[0],$
        units=st.unit[0],$
+       st_type=st.st_type[0],$
        coordinate_system=st.coord[0],$
        newname=st.newname[0]
    endif else if st.type eq 'cotransop' then begin

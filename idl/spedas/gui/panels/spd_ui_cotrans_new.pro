@@ -26,8 +26,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-13 07:49:19 -0800 (Thu, 13 Feb 2014) $
-;$LastChangedRevision: 14371 $
+;$LastChangedDate: 2014-02-20 13:58:59 -0800 (Thu, 20 Feb 2014) $
+;$LastChangedRevision: 14400 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_cotrans_new.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -40,8 +40,11 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
   
   
   ;READ THIS: If you are adding any new coordinate systems, you need to update spd_ui_req_spin.pro
-  validcoords = ['dsl','ssl','spg','gsm','gse','gei','sm','geo', 'sse', 'sel']
-    
+  ;validcoords = ['dsl','ssl','spg','gsm','gse','gei','sm','geo', 'sse', 'sel']
+  coordSysObj = obj_new('spd_ui_coordinate_systems')
+  validcoords = coordSysObj->makeCoordSysList()
+  obj_destroy, coordSysObj
+   
   ;remember "Yes to all" and "No to all" decisions for state load queries
   yesall = 0
   noall = 0
