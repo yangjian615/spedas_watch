@@ -15,8 +15,8 @@
 ;  panel_select:     pointer to current panel
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-05 15:26:57 -0700 (Mon, 05 May 2014) $
-;$LastChangedRevision: 15052 $
+;$LastChangedDate: 2014-05-13 10:12:55 -0700 (Tue, 13 May 2014) $
+;$LastChangedRevision: 15110 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_legend_options.pro $
 ;-
 
@@ -84,7 +84,7 @@ pro spd_ui_legend_options_init, tlb, legendSettings, panel_select=panel_select
         enabled=enabled, xAxisValue=xAxisLabel, xAxisValEnabled=xAxisValueEnabled, yAxisValue=yAxisLabel, $
         yAxisValEnabled=yAxisValueEnabled, traces=traces, xIsTime=xIsTime, yIsTime=yIsTime, $
         notationSet=notationSet, timeFormat=timeFormat, numFormat=numFormat
-        
+      
       ; is this legend enabled?
       legendenabled = widget_info(tlb,find_by_uname='legendenabled')
       Widget_Control, legendenabled, set_button=enabled
@@ -170,9 +170,18 @@ pro spd_ui_legend_options_init, tlb, legendSettings, panel_select=panel_select
       ; populate trace dropdown
       if ptr_valid(traces) then tracesstruct = *traces
       if ~undefined(tracesstruct) then BEGIN
-        Widget_Control, ltraces, set_value=*tracesstruct.traceNames
-        Widget_Control, tracestext, set_value=(*tracesstruct.traceNames)[0], sensitive=sens
-      endif else Widget_Control, tracestext, sensitive=sens
+        Widget_Control, ltraces, set_value=tracesstruct.traceNames
+        Widget_Control, tracestext, set_value=(tracesstruct.traceNames)[0], sensitive=sens
+      endif else begin
+         tracesstruct = {panel:0, numTraces:0, traceNames:['']}
+         linesonthispanel = spd_ui_legend_options_get_traces(state.panelObjs, *panel_select)
+         tracesstruct.numTraces=n_elements(linesonthispanel)
+         tracesstruct.panel = *panel_select+1
+         str_element, tracesstruct, 'traceNames', linesonthispanel, /add_replace
+        ; if obj_valid(legendSettings) then legendSettings->setProperty, traces=ptr_new(tracesstruct)
+         Widget_Control, ltraces, set_value=linesonthispanel
+         Widget_Control, tracestext, set_value=linesonthispanel[0], sensitive=sens
+      endelse 
 
       ; colors
       Widget_Control, lcolorwindow, Get_Value=lcolorWin, sensitive=sens
@@ -246,28 +255,41 @@ end
 ; function for syncing variable names droplist with variable name text box
 function spd_ui_legend_options_update_varnames, tlb, legend
     legend->getProperty, traces=traces
+    updatetrace = widget_info(tlb,find_by_uname='addtraces')
+    ; find the currently selected element in the droplist
+    idx_to_update = widget_info(updatetrace, /droplist_select)
+    ; find the text box where the user can change a variable name
+    tracename_txtbox = widget_info(tlb,find_by_uname='changetracename')
+    widget_control, updatetrace, get_value=droplist_values
+    widget_control, tracename_txtbox, get_value = newtrace_txt
+    
     if ptr_valid(traces) then begin
         tracesstruct = *traces
-        updatetrace = widget_info(tlb,find_by_uname='addtraces')
-        ; find the currently selected element in the droplist
-        idx_to_update = widget_info(updatetrace, /droplist_select)
-        ; find the text box where the user can change a variable name
-        tracename_txtbox = widget_info(tlb,find_by_uname='changetracename')
       
-        widget_control, updatetrace, get_value=droplist_values
-        widget_control, tracename_txtbox, get_value = newtrace_txt
-        
-        
-        if ((*tracesstruct.traceNames)[0] ne 'None') then begin
+        if (tracesstruct.traceNames[0] ne 'None') then begin
             droplist_values[idx_to_update] = newtrace_txt
             widget_control, updatetrace, set_value=droplist_values
             widget_control, updatetrace, set_droplist_select=idx_to_update
 
-            (*tracesstruct.traceNames) = droplist_values
+            tracesstruct.traceNames = droplist_values
             legend->setProperty, traces=ptr_new(tracesstruct), customTracesset=1
         endif
-    endif
-    return, 1
+    endif else begin
+        Widget_Control, tlb, Get_UValue=pState
+        state = *pState
+         tracesstruct = {panel:0, numTraces:0, traceNames:['']}
+         linesonthispanel = spd_ui_legend_options_get_traces(state.panelObjs, *state.panel_select)
+         tracesstruct.numTraces=n_elements(linesonthispanel)
+         tracesstruct.panel = *state.panel_select+1
+         str_element, tracesstruct, 'traceNames', linesonthispanel, /add_replace
+
+         if linesonthispanel[0] ne 'None' then begin
+            droplist_values[idx_to_update] = newtrace_txt
+            widget_control, updatetrace, set_value=droplist_values
+            widget_control, updatetrace, set_droplist_select=idx_to_update
+         endif
+    endelse
+    return, legend
 end
 
 pro spd_ui_legend_options_event, event
@@ -290,26 +312,6 @@ pro spd_ui_legend_options_event, event
     RETURN
   ENDIF
   
-  ; kill request block
-  IF (Tag_Names(event, /Structure_Name) EQ 'WIDGET_KILL_REQUEST') THEN BEGIN
-    state.historyWin->Update,'SPD_UI_LEGEND_OPTIONS: Legend Options window killed.'
-    state.statusBar->update,'Legend Options killed'
-    state.tlb_statusBar->update,'Legend Options killed'
-    
-    ; reset original settings
-    if(obj_valid(state.origlegendSettings) && obj_valid(legend)) then begin
-        legend=legend->RestoreBackup(state.origlegendSettings)
-    endif 
-
-    exit_sequence:
-    dprint, dlevel=4, 'widget killed'
-    ; free the pointer to the state before closing the window
-    if(ptr_valid(pState)) then ptr_free, pState
-    Widget_Control, event.top, /Destroy
-    if double(!version.release) lt 8.0d then heap_gc
-    RETURN
-  ENDIF
-
   if obj_valid(state.panelObjs[*state.panel_select]) then begin
       state.panelObjs[*state.panel_select]->getProperty, legendSettings=legend
       state.legendSettings = legend
@@ -318,12 +320,44 @@ pro spd_ui_legend_options_event, event
       state.statusBar->Update, 'SPD_UI_LEGEND_OPTIONS: No valid legend object.'
   endelse 
   
+  ; kill request block
+  IF (Tag_Names(event, /Structure_Name) EQ 'WIDGET_KILL_REQUEST') THEN BEGIN
+    state.historyWin->Update,'SPD_UI_LEGEND_OPTIONS: Legend Options window killed.'
+    state.statusBar->update,'Legend Options killed'
+    state.tlb_statusBar->update,'Legend Options killed'
+    
+    ; reset original settings
+    if(obj_valid(state.origlegendSettings) && obj_valid(legend)) then begin
+        ; check the legend we're restoring
+        state.origlegendSettings->getProperty, traces=the_tracesptr
+
+        legend->getproperty, traces=curr_panel_traces
+        ; make sure this is the correct panel
+        if ptr_valid(curr_panel_traces) && ((*curr_panel_traces).panel eq (*the_tracesptr).panel) then begin
+            legend=legend->RestoreBackup(state.origlegendSettings)
+        endif
+    endif 
+
+    dprint, dlevel=4, 'Legend Options widget killed'
+    ; free the pointer to the state before closing the window
+    if(ptr_valid(pState)) then ptr_free, pState
+    Widget_Control, event.top, /Destroy
+    if double(!version.release) lt 8.0d then heap_gc
+    RETURN
+  ENDIF
+  
   Widget_Control, event.id, Get_UValue=uval
   
   IF size(uval, /Type) NE 0 THEN BEGIN
     CASE uval OF
         'OK': BEGIN ; user hit 'OK'
             ; update page
+            if (obj_valid(legend) && obj_valid(state.origLegendSettings)) then begin
+                ; query the variable name text box and update the trace names appropriately
+                upd_legend = spd_ui_legend_options_update_varnames(event.top, legend)
+              
+                state.origLegendSettings=upd_legend->BackupSettings(state.origLegendSettings)
+            endif 
             state.drawObject->update,state.windowStorage,state.loadedData
             state.drawObject->draw
             state.historyWin->update,'Changes applied to legend'
@@ -339,31 +373,31 @@ pro spd_ui_legend_options_event, event
         'APPLY': BEGIN ; user hit 'Apply'
             ; create a backup, in case the user hits 'Cancel' after hitting 'Apply'
             if (obj_valid(legend) && obj_valid(state.origLegendSettings)) then begin
-              state.origLegendSettings=legend->BackupSettings(state.origLegendSettings)
-              
               ; query the variable name text box and update the trace names appropriately
-              upd_varnames = spd_ui_legend_options_update_varnames(event.top, legend)
+              upd_legend = spd_ui_legend_options_update_varnames(event.top, legend)
               
+              state.origLegendSettings=upd_legend->BackupSettings(state.origLegendSettings)
+
               state.drawObject->update,state.windowStorage,state.loadedData
               state.drawObject->draw
               state.historyWin->update,'Changes applied to legend'
               state.statusBar->update,'Changes applied to legend'
-            endif else begin
-            
-            endelse
+            endif
         END
         'APPALL': BEGIN
             if obj_valid(state.panelObjs[0]) then begin
+                ; query the variable name text box and update the trace names appropriately
+                ; only update the traces in this panel, though. 
+                upd_legend = spd_ui_legend_options_update_varnames(event.top, legend)
+                
                 ; loop through panels, saving current settings to each
                 for i=0, n_elements(state.panelObjs)-1 do begin
                     state.panelObjs[i]->getProperty, legendSettings=plegend
                     legend->CopyContents, plegend
                 endfor
                 
-                ; query the variable name text box and update the trace names appropriately
-                ; only update the traces in this panel, though. 
-                upd_varnames = spd_ui_legend_options_update_varnames(event.top, legend)
-              
+                state.origLegendSettings=upd_legend->BackupSettings(state.origLegendSettings)
+                
                 state.drawObject->update,state.windowStorage,state.loadedData
                 state.drawObject->draw
                 state.historyWin->update,'Changes applied to all legends'
@@ -377,11 +411,20 @@ pro spd_ui_legend_options_event, event
             state.historyWin->Update, 'Legend Options window canceled.'
             state.statusBar->update,'Legend Options canceled'
             state.tlb_statusbar->update, 'Legend Options canceled'
-             
+            
+            ;state.origLegendSettings->getProperty, traces=otraces
+            
             ; reset original settings
             if(obj_valid(state.origlegendSettings) && obj_valid(legend)) then begin
-                 legend=legend->RestoreBackup(state.origlegendSettings)
-            endif 
+                ; check the legend we're restoring
+                state.origlegendSettings->getProperty, traces=the_tracesptr
+                
+                ; make sure this is the correct panel
+                legend->getproperty, traces=curr_panel_traces
+                if ptr_valid(curr_panel_traces) && ((*curr_panel_traces).panel eq (*the_tracesptr).panel) then begin
+                    legend=legend->RestoreBackup(state.origlegendSettings)
+                endif
+            endif
 
             ; free the pointer to the state before closing the window
             if(ptr_valid(pState)) then ptr_free, pState
@@ -441,9 +484,21 @@ pro spd_ui_legend_options_event, event
         END
         'TEMP': BEGIN ; user wants to save to a template
             if(obj_valid(state.legendSettings) && obj_valid(state.template)) then begin
-                state.template->setProperty,legend=state.legendSettings->copy()
-                state.historywin->update,'Current Legend Settings Saved to Template'
-                state.statusBar->update,'Current Legend Settings Saved to Template'
+                new_legend_template = state.legendSettings->copy()
+                
+                if obj_valid(new_legend_template) then begin
+                    ; make sure customTracesset is set to 0, since we don't save custom trace names
+                    new_legend_template->setProperty, customTracesset = 0
+                
+                    ; save the new legend to the global template
+                    state.template->setProperty, legend=new_legend_template
+                
+                    state.historywin->update,'Current Legend Settings Saved to Template'
+                    state.statusBar->update,'Current Legend Settings Saved to Template'
+                endif else begin
+                    state.historywin->update, 'Problem copying legend settings to template.'
+                    state.statusBar->update, 'Problem copying legend settings to template.'
+                endelse
             endif else begin
                state.historywin->update,'Cannot save template. Needs a valid legend to save legend template.'
                state.statusBar->update,'Cannot save template. Needs a valid legend to save legend template.'
@@ -452,8 +507,21 @@ pro spd_ui_legend_options_event, event
         'PANELSELECTED': BEGIN ; user clicked panel dropdown
              *state.panel_select = event.index
              if obj_valid(state.panelObjs[event.index]) then state.panelObjs[event.index]->getProperty, legendSettings=leg
+
              if obj_valid(leg) then begin
-                 spd_ui_legend_options_init, state.tlb, leg
+                 leg -> getProperty, customTracesset=customTracesset, traces=thetraces
+
+                 if customTracesset eq 0 then begin
+                     ; new stuff
+                     tracesstruct = {panel:0, numTraces:0, traceNames:['']}
+                     linesonthispanel = spd_ui_legend_options_get_traces(state.panelObjs, event.index)
+                     tracesstruct.numTraces=n_elements(linesonthispanel)
+                     tracesstruct.panel = event.index+1
+                     str_element, tracesstruct, 'traceNames', linesonthispanel, /add_replace
+                     if obj_valid(legendSettings) then legendSettings->setProperty, traces=ptr_new(tracesstruct)
+                  endif 
+                 
+                 spd_ui_legend_options_init, state.tlb, leg, panel_select=state.panel_select
              endif
         END
         'BOTBUTTON': BEGIN ; user clicked 'bottom' placement button
@@ -570,7 +638,7 @@ pro spd_ui_legend_options_event, event
                 state.statusBar->update,'Legend enabled.'
                 state.tlb_statusbar->update, 'Legend enabled.'
             endelse    
-            spd_ui_legend_options_init, state.tlb, legend   
+            spd_ui_legend_options_init, state.tlb, legend, panel_select=state.panel_select
         END
         'NEWXAXISVALUE': BEGIN ; user changed X axis value
             widget_control, event.id, get_value=xlabel
@@ -715,20 +783,20 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
    endif else begin
        validpanel=1
    endelse
-
+   
     if customTracesset eq 0 then begin
         ; create a structure to store trace information
-        tracesstruct = {panel:0, numTraces:0, traceNames:ptr_new(0)}
-    
-        for numPanels=0,n_elements(panelObjs)-1 do begin
-          tracesstruct.panel = numPanels+1 ; here, we're numbering panels starting at 1
-          linesonthispanel = spd_ui_legend_options_get_traces(panelObjs, numPanels)
-          tracesstruct.numTraces=n_elements(linesonthispanel)
-          tracesstruct.traceNames=ptr_new(linesonthispanel)
-          if obj_valid(panelObjs[numPanels]) then panelObjs[numPanels]->getProperty, legendSettings=ls
-          if obj_valid(ls) then ls->setProperty, traces=ptr_new(tracesstruct)
-        endfor
-    endif 
+        tracesstruct = {panel:0, numTraces:0, traceNames:['']}
+        linesonthispanel = spd_ui_legend_options_get_traces(panelObjs, *panel_select)
+        tracesstruct.numTraces=n_elements(linesonthispanel)
+        tracesstruct.panel = *panel_select+1
+        str_element, tracesstruct, 'traceNames', linesonthispanel, /add_replace
+        if obj_valid(legendSettings) then legendSettings->setProperty, traces=ptr_new(tracesstruct)
+       
+    endif else begin
+        ;legendsettings->getproperty, traces=oldtraces
+        if ptr_valid(legendtraces) then linesonthispanel = (*legendtraces).tracenames
+    endelse
 
    if undefined(linesonthispanel) then linesonthispanel='None'
    if n_elements(linesonthispanel) gt 1 then currentline = linesonthispanel[0] else currentline = linesonthispanel
@@ -919,7 +987,7 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
    statusBar = Obj_New('SPD_UI_MESSAGE_BAR', statusBase, XSize=79, YSize=1) 
    ; make a copy of current legend settings, in case of a cancel/close window prior to applying
    origLegendSettings=legendSettings->copy()
-   
+
    ; state structure
    state = {tlb:tlb, gui_id:info.master, historyWin:info.historyWin, $
             drawObject:info.drawObject, statusBar:statusBar, tlb_statusbar:tlb_statusbar, $

@@ -48,9 +48,9 @@
 ; 
 ; 
 ; 
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-13 10:12:55 -0700 (Tue, 13 May 2014) $
+;$LastChangedRevision: 15110 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_legend__define.pro $
 ;-
 PRO SPD_UI_LEGEND::Cleanup
@@ -117,8 +117,7 @@ PRO SPD_UI_LEGEND::setProperty,$
   if n_elements(wunit) gt 0 then self.wvalue = self->convertunit(self.wvalue,self.wunit,wunit)
   if n_elements(hunit) gt 0 then self.hvalue = self->convertunit(self.hvalue,self.hunit,hunit)
   if ~undefined(traces) then begin
-        ptr_free, self.traces ; let's not leave this up to the GC to clean
-        self.traces = traces
+      self.traces = traces
   endif
   ;Do all general purpose setPropery with parent class
   self->spd_ui_getset::setProperty,bunit=bunit,lunit=lunit,wunit=wunit,hunit=hunit,traces=traces,_extra=ex

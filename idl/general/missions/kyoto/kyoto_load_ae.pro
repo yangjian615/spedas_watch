@@ -278,6 +278,7 @@ if keyword_set(allae) then begin
   wbad = where(allae eq 99999,nbad)
   if nbad gt 0 then allae[wbad] = !values.f_nan
   dlimit=create_struct('data_att',create_struct('acknowledgment',acknowledgstring))
+  str_element, dlimit, 'data_att.units', 'nT', /add
   store_data,'kyoto_ae',data={x:allaetime, y:allae},dlimit=dlimit
   options,'kyoto_ae','ytitle','Kyoto!CProv. AE!C[nT]'
 endif
@@ -287,6 +288,7 @@ if keyword_set(allal) then begin
   wbad = where(allal eq 99999,nbad)
   if nbad gt 0 then allal[wbad] = !values.f_nan
   dlimit=create_struct('data_att',create_struct('acknowledgment',acknowledgstring))
+  str_element, dlimit, 'data_att.units', 'nT', /add
   store_data,'kyoto_al',data={x:allaltime, y:allal},dlimit=dlimit
   options,'kyoto_al','ytitle','Kyoto!CProv. AL!C[nT]'
 endif
@@ -296,6 +298,7 @@ if keyword_set(allao) then begin
   wbad = where(allao eq 99999,nbad)
   if nbad gt 0 then allao[wbad] = !values.f_nan
   dlimit=create_struct('data_att',create_struct('acknowledgment',acknowledgstring))
+  str_element, dlimit, 'data_att.units', 'nT', /add
   store_data,'kyoto_ao',data={x:allaotime, y:allao},dlimit=dlimit
   options,'kyoto_ao','ytitle','Kyoto!CProv. AO!C[nT]'
 endif
@@ -305,6 +308,7 @@ if keyword_set(allau) then begin
   wbad = where(allau eq 99999,nbad)
   if nbad gt 0 then allau[wbad] = !values.f_nan
   dlimit=create_struct('data_att',create_struct('acknowledgment',acknowledgstring))
+  str_element, dlimit, 'data_att.units', 'nT', /add
   store_data,'kyoto_au',data={x:allautime, y:allau},dlimit=dlimit
   options,'kyoto_au','ytitle','Kyoto!CProv. AU!C[nT]'
 endif
@@ -314,6 +318,7 @@ if keyword_set(allax) then begin
   wbad = where(allax eq 99999,nbad)
   if nbad gt 0 then allax[wbad] = !values.f_nan
   dlimit=create_struct('data_att',create_struct('acknowledgment',acknowledgstring))
+  str_element, dlimit, 'data_att.units', 'nT', /add
   store_data,'kyoto_ax',data={x:allaxtime, y:allax},dlimit=dlimit
   options,'kyoto_ax','ytitle','Kyoto!CProv. AX!C[nT]'
 endif

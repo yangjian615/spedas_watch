@@ -6,9 +6,9 @@
 ; A widget that allows the user to set some of the !istp variable. The user
 ; can resettodefault, modify, and save the system variable.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-03-31 13:56:56 -0700 (Mon, 31 Mar 2014) $
-;$LastChangedRevision: 14713 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-15 15:10:13 -0700 (Thu, 15 May 2014) $
+;$LastChangedRevision: 15145 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_istp_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ PRO spd_ui_istp_fileconfig_event, event
           !istp.local_data_dir = dirName
           widget_control, state.localDir, set_value=dirName             
       ENDIF ELSE BEGIN
-          ok = dialog_message('Selection is not a directory',/center)
+        ;  ok = dialog_message('Selection is not a directory',/center)
       ENDELSE
 
     END
@@ -222,7 +222,7 @@ PRO spd_ui_istp_fileconfig, tab_id, historyWin, statusBar
   ;defaults for reset:
   def_values=[0,0,0,2]
   
-  state = {localdir:localdir, remotedir:remotedir, istp_cfg_save:istp_cfg_save, $
+  state = {localdir:localdir, master:master, remotedir:remotedir, istp_cfg_save:istp_cfg_save, $
            nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
            nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
            v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
@@ -232,9 +232,9 @@ PRO spd_ui_istp_fileconfig, tab_id, historyWin, statusBar
 
   widget_control, master, set_uval = state, /no_copy
   widget_control, master, /realize
-  msg = 'Editing istp configuration.'
-  statusBar->update,msg
-  historywin->update, msg
+;  msg = 'Editing istp configuration.'
+;  statusBar->update,msg
+;  historywin->update, msg
 
   ;keep windows in X11 from snaping back to 
   ;center during tree widget events 

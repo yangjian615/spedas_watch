@@ -428,10 +428,10 @@ FUNCTION SPD_UI_PAGE_SETTINGS::Init,       $
    IF N_Elements(gutterwidth) EQ 0 THEN gutterwidth = 50
    IF N_Elements(orientation) EQ 0 THEN orientation = 0
    IF N_Elements(backgroundcolor) EQ 0 THEN backgroundcolor = [255,255,255]
-   IF N_Elements(leftprintmargin) EQ 0 THEN leftprintmargin =1.65
-   IF N_Elements(rightprintmargin) EQ 0 THEN rightprintmargin = 1.25 
-   IF N_Elements(topprintmargin) EQ 0 THEN topprintmargin = 1.25
-   IF N_Elements(bottomprintmargin) EQ 0 THEN bottomprintmargin = 1.25 
+   IF N_Elements(leftprintmargin) EQ 0 THEN leftprintmargin =1.25
+   IF N_Elements(rightprintmargin) EQ 0 THEN rightprintmargin = 1. 
+   IF N_Elements(topprintmargin) EQ 0 THEN topprintmargin = 1.
+   IF N_Elements(bottomprintmargin) EQ 0 THEN bottomprintmargin = 1. 
    IF N_Elements(canvassize) EQ 0 THEN canvassize = [8.5, 11.0] 
    IF N_Elements(overlapmajorticks) EQ 0 THEN overlapmajorticks = 0
    IF N_Elements(closerthanvalue) EQ 0 THEN closerthanvalue = 0 

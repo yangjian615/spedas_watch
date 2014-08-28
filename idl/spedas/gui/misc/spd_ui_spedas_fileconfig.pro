@@ -79,7 +79,7 @@ PRO spd_ui_spedas_fileconfig_event, event
       !spedas.browser_exe = dirName
       widget_control, state.browserexe, set_value=dirName
     ENDIF ELSE BEGIN
-      ok = dialog_message('No file was selected',/center)
+      ;ok = dialog_message('No file was selected',/center)
     ENDELSE
     
   END
@@ -126,7 +126,7 @@ PRO spd_ui_spedas_fileconfig_event, event
       !spedas.temp_cdf_dir = dirName
       widget_control, state.tempcdfdir, set_value=dirName
     ENDIF ELSE BEGIN
-      ok = dialog_message('Selection is not a directory',/center)
+     ; ok = dialog_message('Selection is not a directory',/center)
     ENDELSE
 
 
@@ -152,7 +152,7 @@ PRO spd_ui_spedas_fileconfig_event, event
       !spedas.temp_dir = dirName
       widget_control, state.tempDir, set_value=dirName
     ENDIF ELSE BEGIN
-      ok = dialog_message('Selection is not a directory',/center)
+     ; ok = dialog_message('Selection is not a directory',/center)
     ENDELSE
     
     

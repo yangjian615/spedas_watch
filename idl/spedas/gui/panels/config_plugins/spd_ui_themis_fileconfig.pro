@@ -16,9 +16,9 @@
 ;              slightly to make things line up in both windows and linux.
 ; 24-oct-2013 clr, removed graphic buttons and goes wind and istp code. panel is now tabbed
 ; 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-03-31 13:56:56 -0700 (Mon, 31 Mar 2014) $
-;$LastChangedRevision: 14713 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-15 15:05:46 -0700 (Thu, 15 May 2014) $
+;$LastChangedRevision: 15143 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_themis_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -136,7 +136,7 @@ PRO spd_ui_themis_fileconfig_event, event
           !THEMIS.local_data_dir = dirName
           widget_control, state.localDir, set_value=dirName             
       ENDIF ELSE BEGIN
-          ok = dialog_message('Selection is not a directory',/center)
+        ;  ok = dialog_message('Selection is not a directory',/center)
       ENDELSE
       
     END

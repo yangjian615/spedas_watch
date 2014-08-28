@@ -11,9 +11,9 @@
 ;Returns, the value in normalized coordinates
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-05-14 11:58:59 -0700 (Wed, 14 May 2014) $
+;$LastChangedRevision: 15133 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__pt2norm.pro $
 ;-
 
@@ -23,15 +23,23 @@ function spd_ui_draw_object::pt2norm,value,xy
   
   pt2mm = 127D/360D
   mm2cm = .1D
+  in2cm = 2.54
   
   v = value*pt2mm*mm2cm
   
   dim = self->getDim()
   
-  self.destination->getProperty,resolution=r
+  ;Replacing with alternate conversion.  Normalizes based on notional canvas size.  
+  ;Assumes we got it right.  Should get rid of zoom dependence and hopefully make our placements more rational
+  ;self.destination->getProperty,resolution=r
   
-  dim /= self->getZoom()
+  ;dim /= self->getZoom()
+
+  ;return,v/(r[xy]*dim[xy])
+
+  canvas_cm = self.currentpagesize[xy]*in2cm
+ 
+  return,v/canvas_cm 
   
-  return,v/(r[xy]*dim[xy])
-  
+
 end

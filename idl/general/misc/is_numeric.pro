@@ -52,18 +52,22 @@
 ;   print,is_numeric('12.3*', /sci)
 ;   0
 ;   
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-05-01 11:53:17 -0700 (Thu, 01 May 2014) $
-; $LastChangedRevision: 15010 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2014-05-13 09:46:59 -0700 (Tue, 13 May 2014) $
+; $LastChangedRevision: 15109 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/is_numeric.pro $
 ;-
 
 function is_numeric,s, sci_notation=sci_notation, decimal=decimal
   if keyword_set(sci_notation) then begin
     if s eq '' then return, 0
+    if STREGEX(s, '\\', /BOOLEAN) then return, 0
+    if ~STREGEX(s, '[0-9]', /BOOLEAN) then return, 0
     return,stregex(strtrim(s,2),'^[-+]?([0-9.]*\.?[0-9.]*|([0-9.]*\*?[0-9.]+)|([0-9]*\.?[0-9]+))(([EeDd][-+]?[0-9]+)|(\*?[0-9\.?]+(\^)?[(]*[+-]?[0-9\.?]+[)]*))?$') eq 0
   endif else if keyword_set(decimal) then begin
     if s eq '' then return, 0
+    if STREGEX(s, '\\', /BOOLEAN)  then return, 0
+    if ~STREGEX(s, '[0-9]', /BOOLEAN) then return, 0
     return, stregex(strtrim(s,2),'^[-+]?[0-9]*\.?[0-9]*$') eq 0
   endif else begin
     ; old regex, before adding support for scientific notation (3*10^6)

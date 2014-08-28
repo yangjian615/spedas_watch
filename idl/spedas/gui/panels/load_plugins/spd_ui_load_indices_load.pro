@@ -9,9 +9,9 @@
 ;  
 ;HISTORY:
 ;
-;;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-14 12:39:13 -0700 (Wed, 14 May 2014) $
+;$LastChangedRevision: 15135 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/load_plugins/spd_ui_load_indices_load.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'NOAA'
               instrument = 'NGDC'
               indexmintime = '1933-01-01'
-              indexmaxtime = '2013-06-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype[i] eq 'ap' then begin
                   datatype = 'ap'
               endif else if indextype[i] eq 'Ap (ap mean)' then begin
@@ -74,7 +74,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'Kyoto'
               instrument = 'WDC'
               indexmintime = '1957-01-01'
-              indexmaxtime = '2013-05-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype[i] eq 'AE prov' then begin
                   datatype = 'ae'
               endif else if indextype[i] eq 'AO prov' then begin
@@ -94,7 +94,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'NOAA'
               instrument = 'NGDC'
               indexmintime = '1957-01-01'
-              indexmaxtime = '2013-06-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype eq 'Cp' then begin ; currently the only option for this index
                   datatype = 'cp'
               endif
@@ -104,7 +104,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'NOAA'
               instrument = 'NGDC'
               indexmintime = '1957-01-01'
-              indexmaxtime = '2013-06-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype eq 'C9' then begin ; currently the only option for this index
                   datatype = 'c9'
               endif
@@ -114,7 +114,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'Kyoto'
               instrument = 'WDC'
               indexmintime = '1957-01-01'
-              indexmaxtime = '2013-06-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype[i] eq 'Dst prov' then begin
                 datatype = 'dst'
               endif else if indextype[i] eq 'Dst final' then begin
@@ -130,7 +130,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'NOAA'
               instrument = 'NGDC'
               indexmintime = '1957-01-01'
-              indexmaxtime = '2013-06-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype[i] eq 'F10.7' then begin ; only option for this index
                   datatype = 'f10.7'
               endif
@@ -140,7 +140,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'NOAA'
               instrument = 'NGDC'
               indexmintime = '1933-01-01'
-              indexmaxtime = '2013-06-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype[i] eq 'Kp' then begin
                   datatype = 'kp'
               endif else if indextype[i] eq 'Kp sum' then begin
@@ -154,7 +154,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'NOAA'
               instrument = 'NGDC'
               indexmintime = '1957-01-01'
-              indexmaxtime = '2013-06-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype[i] eq 'Solar rotation #' then begin ; only option for this index
                   datatype = 'sol_rot_num'
               endif 
@@ -164,7 +164,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'NOAA'
               instrument = 'NGDC'
               indexmintime = '1957-01-01'
-              indexmaxtime = '2013-06-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype[i] eq 'Solar rotation day' then begin ; only option for this index
                   datatype = 'sol_rot_day'
               endif
@@ -174,9 +174,9 @@ pro spd_ui_load_indices_load,$
               observatory = 'NOAA'
               instrument = 'NGDC'
               indexmintime = '1957-01-01'
-              indexmaxtime = '2013-06-01'
+              indexmaxtime = time_string(systime(/seconds))
               if indextype[i] eq 'Sunspot #' then begin ; only option for this index
-                  datatype = 'sunspot_num'
+                  datatype = 'sunspot_number'
               endif
               noaa_load_kp, trange = ntrange, datatype = datatype
           end
@@ -184,7 +184,7 @@ pro spd_ui_load_indices_load,$
               observatory = 'ISTP'
               instrument = 'OMNI'
               indexmintime = '1995-01-01'
-              indexmaxtime = '2013-05-01'
+              indexmaxtime = time_string(systime(/seconds))
               ; note about kludge:
               ; datatype is used to cull out unwanted OMNI data using strfilter
               ; *sy* will match all SYM/ASY data, but none of the other OMNI variables

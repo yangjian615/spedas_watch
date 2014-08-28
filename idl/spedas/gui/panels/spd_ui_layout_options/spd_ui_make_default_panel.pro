@@ -107,7 +107,7 @@ if (maxrow + 1) gt nRows then begin
 endif
 
 if obj_valid(template) then begin
-  template->GetProperty,panel=templatePanel,x_axis=templateXaxis,y_axis=templateYaxis,z_axis=templateZaxis
+  template->GetProperty,panel=templatePanel,x_axis=templateXaxis,y_axis=templateYaxis,z_axis=templateZaxis,legend=templateLegend
 endif
 
 if obj_valid(templatePanel) then begin
@@ -217,10 +217,18 @@ endif else begin
              )
 endelse
 
+if obj_valid(templateLegend) then  begin
+    legendSettings = templateLegend
+endif else begin
+    legendSettings = obj_new('spd_ui_legend')
+endelse
+
+
 ; create panel object
 panel = OBJ_NEW('spd_ui_panel', maxid+1, $
                 xAxis = xAxis, yAxis = yAxis, $
-                settings=panelSettings,labelmargin=20)
+                settings=panelSettings, $
+                legendSettings=legendSettings, labelmargin=20)
 
 
 ; add new panel to panels object 

@@ -15,9 +15,9 @@
 ;correctly set, it should just use the label text object from
 ;the appropriate axis.
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-05-15 16:55:04 -0700 (Thu, 15 May 2014) $
+;$LastChangedRevision: 15150 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/display/draw_object/spd_ui_draw_object__addlegend.pro $
 ;-
 pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
@@ -120,6 +120,11 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
   ;2 is for colon and one extra
   ; nChars+=annoBias+extrabias
   
+  ;Placement for legend is within the panel view, so it is relative to 
+  ;the coordinate system of the panel view.  Measurements in the global
+  ;page view will need to scaled to the shrunk coordinate system of
+  ;the panel view.  divisors can below can be used to perform the 
+  ;coordinate transform
   xdiv = panelInfo.xplotpos[1]-panelInfo.xplotpos[0]
   ydiv = panelInfo.yplotpos[1]-panelInfo.yplotpos[0]
   
@@ -130,37 +135,64 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
   
   ; check if any of the placement settings were set by the user
   if obj_valid(legendObj) then legendObj->getProperty, bottom=legendbottom, left=legendleft, width=legendwidth, height=legendheight
+  
+  
+  ;This correction prevents the legend from being drawn off the edge of the screen.
+  ;The width correction was previously disabled, but no comment was given as to why
+  ;So I turned it back on.(pcruce 2014-05-14)
+
+  view->getProperty,viewPlane_rect=vpr
+  
+  wbias = 0
+
+  if legendwidth ne 1 then begin ;only applies correction if legend is being placed automatically
+    if width/2D gt vpr[2]+vpr[0]-1D then begin
+      wbias = width/2D - (vpr[2]+vpr[0]-1D)
+    endif
+
+    ;ensure that legend is not flush with edge of screen(Just looks nicer)
+    wbias += self->pt2norm(2.,0)/xdiv
+  endif
+
+  hbias = 0
+
+  if legendheight ne 1 then begin  ;only applies correction if legend is being placed automatically
+    if height/2D gt vpr[3]+vpr[1]-1D then begin
+      hbias = height/2D - (vpr[3]+vpr[1]-1D)
+    endif
+  endif
+  
   if (legendbottom eq 1) then begin
     legendObj->getProperty, bValue=bValue, bUnit=bUnit
     userBottom = legendObj->ConvertUnit(bValue, bUnit, 0) ; convert to pts
-    userBottom = self->pt2norm(userBottom,1)
+    userBottom = self->pt2norm(userBottom,1)/ydiv
   endif else begin
-    userBottom = 1.-height/2.
-    legendObj->setProperty, bValue=self->norm2pt(userBottom,1)
+    userBottom = (1.-height/2.)-hbias
+    legendObj->setProperty, bValue=self->norm2pt(userBottom,1)*ydiv
   endelse
   if (legendleft eq 1) then begin
     legendObj->getProperty, lValue=lValue, lUnit=lUnit
     userLeft = legendObj->ConvertUnit(lValue, lUnit, 0) ; convert to pts
-    userLeft = self->pt2norm(userLeft,0)
+    userLeft = self->pt2norm(userLeft,0)/xdiv
   endif else begin
-    userLeft = (1.-width/2.)
-    legendObj->setProperty, lValue=self->norm2pt(userLeft,0)
+    userLeft = (1.-width/2.)-wbias
+    legendObj->setProperty, lValue=self->norm2pt(userLeft,0)*xdiv
   endelse
   if (legendwidth eq 1) then begin
     legendObj->getProperty, wValue=wValue, wUnit=wUnit
     userWidth = legendObj->ConvertUnit(wValue, wUnit, 0) ; convert to pts
-    userWidth = self->pt2norm(userWidth,0)
+    userWidth = self->pt2norm(userWidth,0)/xdiv
   endif else begin 
-    userWidth = width
-    legendObj->setProperty, wValue=self->norm2pt(userWidth,0)
+    userWidth = width-wbias
+    legendObj->setProperty, wValue=self->norm2pt(userWidth,0)*xdiv
   endelse
   if (legendheight eq 1) then begin
     legendObj->getProperty, hValue=hValue, hUnit=hUnit
     userHeight = legendObj->ConvertUnit(hValue, hUnit, 0) ; convert to pts
-    userHeight = self->pt2norm(userHeight,1)
+    userHeight = self->pt2norm(userHeight,1)/ydiv
   endif else begin
-    userHeight = height
-    legendObj->setProperty, hValue=self->norm2pt(userHeight,1)
+    userHeight = height-hbias
+    legendObj->setProperty, hValue=self->norm2pt(userHeight,1)*ydiv
   endelse
   
   ; check if X/Y axis labels were turned off by the user
@@ -176,26 +208,7 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
   if (xAxisValEnabled eq 1 and yAxisValEnabled eq 0) then shiftpolygon = shiftpolygon+self->pt2norm(1*textsize+(2)*spacing,1)/ydiv
   if (yAxisValEnabled eq 1 and xAxisValEnabled eq 0) then shiftpolyline = shiftpolyline+self->pt2norm(1*textsize+(2)*spacing,1)/ydiv
 
-  
-  ;if the legend is going to be outside of the view, we need to calculate a bias
-  ;to shift it down/left so that it will not be clipped.
-  view->getProperty,viewPlane_rect=vpr
-  if width/2D gt vpr[2]+vpr[0]-1D then begin
-    wbias = width/2D - (vpr[2]+vpr[0]-1D)
-  endif else begin
-    wbias = 0D
-  endelse
-  
-  ;ensure that legend is not flush with edge of screen
-  ;wbias += self->pt2norm(2.,0)/xdiv
-  wbias = 0
-  
-  if height/2D gt vpr[3]+vpr[1]-1D then begin
-    hbias = height/2D - (vpr[3]+vpr[1]-1D)
-  endif else begin
-    hbias = 0D
-  endelse
-  
+ 
   model = obj_new('IDLgrModel',hide=hide_val)
   anno_model = obj_new('IDLgrModel',hide=hide_val)
   
@@ -274,12 +287,11 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
   endif
 
   if ptr_valid(traces) then tracesstruct = *traces
-  if ~undefined(tracesstruct) then listoftraces=reverse(*tracesstruct.traceNames)
-
+  if ~undefined(tracesstruct) then listoftraces=reverse(tracesstruct.traceNames)
   ;loop backwards because traces are in reverse order to create proper layering
   for i = n_elements(traceInfoArray)-1,0,-1 do begin
    ; if traceInfoArray[i].isSpec then begin
-      
+
       if (customtracesset eq 1 && ~undefined(listoftraces)) then begin
 ;      if ~undefined(listoftraces) then begin
           text = listoftraces[i] + ' :'
@@ -291,7 +303,7 @@ pro spd_ui_draw_object::addLegend,view,annotation,panelInfo,traceInfoArray
       color_convert, c[0],c[1],c[2],h,l,s, /rgb_hls
 
       ;colors near yellow are harder to see, 
-      ;the subracted quantity here should adjust for that
+      ;the subtracted quantity here should adjust for that
       threshold = 0.90 - 0.12 * (  1 - (h/70.-60/70.)^2  > 0 )
       color = l le threshold ? traceInfoArray[i].color : [0,0,0]
       

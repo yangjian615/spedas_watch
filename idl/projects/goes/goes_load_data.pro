@@ -24,8 +24,8 @@
 ;                           instead of the NGDC servers
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
-; $LastChangedRevision: 14467 $
+; $LastChangedDate: 2014-05-14 09:24:28 -0700 (Wed, 14 May 2014) $
+; $LastChangedRevision: 15132 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_load_data.pro $
 ;-
 pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffix = suffix, $
@@ -53,15 +53,17 @@ pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
       then tr = timerange(trange) $
       else tr = timerange()
       
+    tn_list_before = tnames('*')
+      
     for idx_probes=0,n_elements(probes)-1 do begin ; loop through the probes
-        sc = 'g'+probes[idx_probes]
+        sc = 'g'+string(probes[idx_probes], format='(I02)')
         prefix = sc + '_'
 
         dprint,dlevel=2,verbose=source.verbose,'Loading GOES-',probes[idx_probes],' ',strupcase(datatype),' data'
         
         fullavgpath = ['new_full', 'new_avg']
         goes_path_dir = fullavgpath[~undefined(avg_1m) or ~undefined(avg_5m)]
-        remote_path = goes_path_dir + '/YYYY/MM/goes' + probes[idx_probes] + '/netcdf/'
+        remote_path = goes_path_dir + '/YYYY/MM/goes' + string(probes[idx_probes], format='(I02)') + '/netcdf/'
 
         case datatype of
             ; flux-gate magnetometer -- valid for GOES 08-15
@@ -177,8 +179,13 @@ pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
             ; netcdf2tplot, files, varformat = varformat, prefix = prefix, suffix = suffix
             netcdf2tplot, files, prefix = prefix, suffix = suffix
         endfor
+        
+        ; make sure some tplot variables were loaded
+        tn_list_after = tnames('*')
+        new_tnames = ssl_set_complement([tn_list_before], [tn_list_after])
+
         ; load the ephemeris data in GEI coordinates
-        if undefined(noephem) then begin
+        if undefined(noephem) && new_tnames[0] ne -1 then begin
             ephem = goes_load_pos(trange = time_string(tr), probe = probes[idx_probes])
             if is_struct(ephem) then begin
                 ; store the data attributes structure 
@@ -191,11 +198,12 @@ pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
             endelse
         endif
         
-        
-        ; now that we've loaded the variables from the netCDF file into tplot, we can combine 
-        ; data for the different telescopes/detectors to TDAS-ify the tvariables
-        goes_combine_tdata, datatype = datatype, probe = probes[idx_probes], prefix = prefix, suffix = suffix, $
-                            get_support_data = get_support_data, tplotnames = tplotnames, noephem = noephem
+        if new_tnames[0] ne -1 then begin
+            ; now that we've loaded the variables from the netCDF file into tplot, we can combine 
+            ; data for the different telescopes/detectors to TDAS-ify the tvariables
+            goes_combine_tdata, datatype = datatype, probe = probes[idx_probes], prefix = prefix, suffix = suffix, $
+                               get_support_data = get_support_data, tplotnames = tplotnames, noephem = noephem
+        endif
     endfor
 
     if ~undefined(tr) && ~undefined(tplotnames) then begin

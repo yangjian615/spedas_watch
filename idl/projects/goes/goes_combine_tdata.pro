@@ -28,8 +28,8 @@
 ;            increasing energy
 ;     
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
-; $LastChangedRevision: 14467 $
+; $LastChangedDate: 2014-05-14 09:15:26 -0700 (Wed, 14 May 2014) $
+; $LastChangedRevision: 15131 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_combine_tdata.pro $
 ;-
 
@@ -67,6 +67,8 @@ pro goes_combine_eps_data, prefix = prefix, suffix = suffix, get_support_data = 
     if undefined(prefix) then prefix = '' ; just in case the prefix wasn't set
     if undefined(suffix) then suffix = ''
     
+    ; alpha flux
+    eps_alpha_flux = tnames('*_a?_flux')
     ; electron integral flux, without corrections applied
     eps_elec_iflux = tnames('*_e?_flux_i'+suffix)
     ; electron integral flux, with corrections applied
@@ -77,15 +79,17 @@ pro goes_combine_eps_data, prefix = prefix, suffix = suffix, get_support_data = 
     eps_prot_flux_corr = tnames('*_p?_flux_c'+suffix)
     ; proton integral flux, with corrections applied
     eps_prot_iflux_corr = tnames('*_p?_flux_ic'+suffix)
-    ; proton channel, with corrections applied
     
-    tvars = ['eps_elec_iflux', 'eps_elec_iflux_corr', 'eps_prot_flux', 'eps_prot_flux_corr', 'eps_prot_iflux_corr']
+    tvars = ['eps_elec_iflux', 'eps_elec_iflux_corr', 'eps_prot_flux', 'eps_prot_flux_corr', 'eps_prot_iflux_corr', 'eps_alpha_flux']
 
     ; electron energy channels
     eps_elec_en = ['0.6','2.0','4.0'] ; MeV
     ; proton energy channels
     eps_prot_en = ['2.4','6.5','12','27.5','60','122.5','332.5'] ; MeV
-    eps_energies = ['eps_elec_en','eps_prot_en']
+    ; alpha particle energy channels
+    eps_alph_en = ['7', '15.5', '40.5', '105', '200', '400'] ; MeV
+    
+    eps_energies = ['eps_elec_en', 'eps_prot_en', 'eps_alph_en']
 
     ; instead of having individual loops for each potential data type from the EPS
     ; instrument, we have a single loop that loops through the potential types 
@@ -97,13 +101,28 @@ pro goes_combine_eps_data, prefix = prefix, suffix = suffix, get_support_data = 
         ; proton_check is 1 if the first tvariable name has the format of proton data, 
         ; i.e., 'g12_p1_flux_ic'
         proton_check = stregex(tvarnames[0], '.+[_p][0-9]{1}[_].+', /bool)
-        center_energies = scope_varfetch(eps_energies[proton_check])
+        electron_check = stregex(tvarnames[0], '.+[_e][0-9]{1}[_].+',/bool)
+        alpha_check = stregex(tvarnames[0], '.+[_a][0-9]{1}[_].+', /bool)
+        
+        if electron_check eq 1 then begin
+            center_energies = scope_varfetch(eps_energies[0])
+            energy_array = eps_energies[0]
+        endif 
+        if proton_check eq 1 then begin
+            center_energies = scope_varfetch(eps_energies[1])
+            energy_array = eps_energies[1]
+        endif
+        if alpha_check eq 1 then begin
+            center_energies = scope_varfetch(eps_energies[2])
+            energy_array = eps_energies[2]
+        endif
+
         for tvar_idx = 0, n_elements(tvarnames)-1 do begin
             if tvarnames[tvar_idx] ne '' then begin
                 get_data, tvarnames[tvar_idx], data=eps_data, dlimits=eps_dlimits
                 if is_struct(eps_data) then begin
                     ; get species type using regex
-                    speciestype = stregex(eps_energies[proton_check], '.+[_](.{4})[_].+', /subexp, /extr)
+                    speciestype = stregex(energy_array, '.+[_](.{4})[_].+', /subexp, /extr)
                     
                     ; check if this variable contains flux or integral flux (for appropriate naming)
                     integralflux = stregex(tvarnames[tvar_idx], '.+[_]?[i].*')
@@ -377,6 +396,10 @@ pro goes_combine_hepad_data, type, probe, prefix = prefix, suffix = suffix, get_
     ; - channels: S1, S2, S3, S4, S5
     proton_flux_channels = tnames('*_P*_FLUX'+suffix)
     alpha_flux_channels = tnames('*_A*_FLUX'+suffix)
+    
+    ; count rates
+    proton_count_rates = tnames('*_P*_COUNT_RATE'+suffix)
+    alpha_count_rates = tnames('*_A*_COUNT_RATE'+suffix)
     support_count_rates = tnames('*_S*_COUNT_RATE'+suffix)
     
     ; for HEPAD, each energy bin has only one channel, so all we need to do is 
@@ -407,7 +430,34 @@ pro goes_combine_hepad_data, type, probe, prefix = prefix, suffix = suffix, get_
         endif else begin
             dprint, dlevel = 0, 'Invalid structure; data might be missing.'
         endelse
-    endfor 
+    endfor
+    
+    ; now loop over proton count rate variables
+    for pcr_index = 0, n_elements(proton_count_rates)-1 do begin
+        get_data, proton_count_rates[pcr_index], data = protondata, dlimits = protondlimits
+        
+        ; check the returned structures
+        if (is_struct(protondata) && is_struct(protondlimits)) then begin
+            ; store the data attributes in a structure
+            data_att = {project: 'GOES', observatory: (strsplit(prefix,'_', /extra))[0], instrument: 'hepad', units: protondlimits.cdf.vatt.units, coord_sys: 'none', st_type: 'none'}
+            
+            ; label the energies
+            labels = [hepad_proton_center_en[pcr_index]+'MeV']
+            str_element, protondlimits, 'data_att', data_att, /add
+            str_element, protondlimits, 'labels', labels, /add
+            str_element, protondlimits, 'labflag', 2, /add
+            
+            newtvar = prefix+'hepadp_'+hepad_proton_center_en[pcr_index]+'MeV_CR'+suffix
+            ; update the vname in the CDF structure
+            protondlimits.cdf.vname = newtvar
+            
+            store_data, newtvar[0], data=protondata, dlimits=protondlimits
+            tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
+            del_data, proton_count_rates[pcr_index]
+        endif else begin
+            dprint, dlevel = 0, 'Invalid structure; data might be missing.'
+        endelse
+    endfor
     
     ; again, the alpha SSDs have a single channel for each energy bin
     ; so we just need to set the data attributes
@@ -433,6 +483,33 @@ pro goes_combine_hepad_data, type, probe, prefix = prefix, suffix = suffix, get_
             store_data, newtvar[0], data=alphadata, dlimits=alphadlimits
             tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
             del_data, alpha_flux_channels[a_index]
+        endif else begin
+            dprint, dlevel = 0, 'Invalid structure; data might be missing.'
+        endelse
+    endfor
+    
+    ; and now, loop over alpha count rate variables
+    for acr_index = 0, n_elements(alpha_count_rates)-1 do begin
+        get_data, alpha_count_rates[acr_index], data = alphadata, dlimits = alphadlimits
+        
+        ; check the returned structures
+        if (is_struct(alphadata) && is_struct(alphadlimits)) then begin
+            ; store the data attributes in a structure
+            data_att = {project: 'GOES', observatory: (strsplit(prefix,'_', /extra))[0], instrument: 'hepad', units: alphadlimits.cdf.vatt.units, coord_sys: 'none', st_type: 'none'}
+            
+            ; label the energies
+            labels = [hepad_alpha_center_en[acr_index]+'MeV']
+            str_element, alphadlimits, 'data_att', data_att, /add
+            str_element, alphadlimits, 'labels', labels, /add
+            str_element, alphadlimits, 'labflag', 2, /add
+    
+            newtvar = prefix+'hepada_'+hepad_alpha_center_en[acr_index]+'MeV_CR'+suffix
+            ; update the vname in the CDF structure
+            alphadlimits.cdf.vname = newtvar
+            
+            store_data, newtvar[0], data=alphadata, dlimits=alphadlimits
+            tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
+            del_data, alpha_count_rates[acr_index]
         endif else begin
             dprint, dlevel = 0, 'Invalid structure; data might be missing.'
         endelse
@@ -717,10 +794,13 @@ pro goes_combine_mag_data, prefix = prefix, suffix = suffix, get_support_data = 
     ; need to add the new total tplot variables to the list of tplot names
     if oldgoes eq 0 then begin
         newtvar = prefix + 'HT_'+['1', '2']+suffix
+        new_btsc = prefix + 'BTSC_'+['1', '2']+suffix
     endif else begin
         newtvar = prefix + 'ht'+suffix
+        new_btsc = prefix + 'btsc'+suffix
     endelse
     tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar] : newtvar
+    tplotnames = keyword_set(tplotnames) ? [tplotnames,new_btsc] : new_btsc
     
     ; if the user didn't request support data, delete it
     if undefined(get_support_data) then begin

@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-01 10:44:54 -0700 (Thu, 01 May 2014) $
-;$LastChangedRevision: 15008 $
+;$LastChangedDate: 2014-05-13 15:52:19 -0700 (Tue, 13 May 2014) $
+;$LastChangedRevision: 15117 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_field_models.pro $
 ;-
 
@@ -23,7 +23,7 @@
 ;
 function spd_ui_field_models_add_option, statePtr, windowtitle = windowtitle
     state = *statePtr
-    var_to_add = spd_ui_add_variable(state.gui_id,state.loadedData,state.guiTree,state.historywin,state.statusBar,treemode=0,windowtitle=windowtitle)
+    var_to_add = spd_ui_add_variable(state.tlb,state.loadedData,state.guiTree,state.historywin,state.statusBar,treemode=0,windowtitle=windowtitle)
 
     if ~keyword_set(var_to_add[0]) then begin
         return, -1

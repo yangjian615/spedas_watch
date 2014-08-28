@@ -14,9 +14,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-06 12:21:42 -0700 (Tue, 06 May 2014) $
-;$LastChangedRevision: 15056 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-15 10:23:02 -0700 (Thu, 15 May 2014) $
+;$LastChangedRevision: 15139 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_zaxis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -849,14 +849,23 @@ pro spd_ui_zaxis_set_value_ticks,zaxis,tlb,statusBar,historyWin
   major = widget_info(tlb,find_by_uname='nmajorticks')
   widget_control,major,get_value=majornum
   
+  spd_ui_spinner_get_max_value, major, majormax  
+  
   if ~finite(majornum,/nan) then begin
-    if majornum lt 0 then begin
-      messageString = 'Major tick number cannot be negative, value set to 0.'
+    if majornum gt majormax then begin
+      messageString = 'Major ticks number cannot be larger than ' + STRTRIM(string(majormax),2) + ', value reset.'
       statusBar->update,messageString
-      historyWin->update,messageString, /dontshow
+      historywin->update,messageString, /dontshow
       response=dialog_message(messageString,/CENTER)
-      widget_control,major,set_value=0
-      zaxis->setProperty,tickNum=0
+      zaxis->getProperty,ticknum=oldticknum
+      widget_control,major,set_value=oldticknum
+    endif else if majornum lt 0 then begin
+      messageString = 'Major ticks number cannot be negative, value reset.'
+      statusBar->update,messageString
+      historywin->update,messageString, /dontshow
+      response=dialog_message(messageString,/CENTER)
+      zaxis->getProperty,ticknum=oldticknum
+      widget_control,major,set_value=oldticknum
     endif else begin
       zaxis->setProperty,tickNum=majornum
       historyWin->update,'major Ticks Updated',/dontshow
@@ -873,14 +882,23 @@ pro spd_ui_zaxis_set_value_ticks,zaxis,tlb,statusBar,historyWin
   minor = widget_info(tlb,find_by_uname='nminorticks')
   widget_control,minor,get_value=minornum
   
+  spd_ui_spinner_get_max_value, minor, minormax
+  
   if ~finite(minornum,/nan) then begin
-    if minornum lt 0 then begin
-      messageString = 'Minor tick number cannot be negative, value set to 0.'
+     if minornum gt minormax then begin
+      messageString = 'Minor ticks number cannot be larger than ' + STRTRIM(string(minormax),2) + ', value reset.'
       statusBar->update,messageString
-      historyWin->update,messageString, /dontshow
+      historywin->update,messageString, /dontshow
       response=dialog_message(messageString,/CENTER)
-      widget_control,minor,set_value=0
-      zaxis->setProperty,minorTickNum=0
+      zaxis->getProperty,minorTickNum=oldminornum
+      widget_control,minor,set_value=oldminornum
+    endif else if minornum lt 0 then begin
+      messageString = 'Minor ticks number cannot be negative, value reset.'
+      statusBar->update,messageString
+      historywin->update,messageString, /dontshow
+      response=dialog_message(messageString,/CENTER)
+      zaxis->getProperty,minorTickNum=oldminornum
+      widget_control,minor,set_value=oldminornum
     endif else begin
       zaxis->setProperty,minorTickNum=minornum
       historyWin->update,'Minor Ticks Updated',/dontshow
@@ -1508,8 +1526,8 @@ PRO spd_ui_zaxis_options, gui_id, windowStorage, zaxisSettings, drawObject, load
   
   autobutton = widget_button(autotickbase,value='Automatic Ticks',uname='autoticks',UVALUE='AUTOTICKS')
   
-  ticknum = spd_ui_spinner(tickBase, label= 'Major Ticks(#):  ', Increment=1, Value=ticknum, UValue='NTICKS',uname='nmajorticks',min_value=0)
-  minorTickNum = spd_ui_spinner(tickBase, label= 'Minor Ticks(#):  ', Increment=1, Value=minorticknum, UValue='NMINORTICKS',uname='nminorticks',min_value=0)
+  ticknum = spd_ui_spinner(tickBase, label= 'Major Ticks(#):  ', Increment=1, Value=ticknum, UValue='NTICKS',uname='nmajorticks',min_value=0,max_value=100)
+  minorTickNum = spd_ui_spinner(tickBase, label= 'Minor Ticks(#):  ', Increment=1, Value=minorticknum, UValue='NMINORTICKS',uname='nminorticks',min_value=0,max_value=100)
   margin = spd_ui_spinner(marginBase, label= 'Colorbar Margin:  ', Increment=1, Value=margin, $
     uval='MARGIN', /all_events,sensitive=barmarginsensitive,uname='margin',min_value=0)
     

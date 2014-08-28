@@ -16,11 +16,11 @@
 ;    local_kp_dir: directory where data lives locally
 ;    datatype: type of index to load, should be one of the following:
 ;          'kp', 'ap', 'sol_rot_num', 'sol_rot_day', 'kp_sum', 'ap_mean', 
-;          'cp', 'c9', 'sunspot_num', 'solar_radio_flux', 'flux_qualifier'
+;          'cp', 'c9', 'sunspot_number', 'solar_radio_flux', 'flux_qualifier'
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-06-11 14:09:42 -0700 (Tue, 11 Jun 2013) $
-; $LastChangedRevision: 12506 $
+; $LastChangedDate: 2014-05-14 12:39:13 -0700 (Wed, 14 May 2014) $
+; $LastChangedRevision: 15135 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/noaa/noaa_load_kp.pro $
 ;-f
 pro noaa_load_kp, trange = trange, kp_mirror = kp_mirror, remote_kp_dir=remote_kp_dir,$
@@ -97,7 +97,7 @@ pro noaa_load_kp, trange = trange, kp_mirror = kp_mirror, remote_kp_dir=remote_k
     if size(datatype, /type) eq 7 then begin
         ndatatype = datatype
     endif else begin
-        ndatatype = ['kp', 'ap', 'sol_rot_num', 'sol_rot_day', 'kp_sum', 'ap_mean', 'cp', 'c9', 'sunspot_num', 'f10.7', 'flux_qualifier']
+        ndatatype = ['kp', 'ap', 'sol_rot_num', 'sol_rot_day', 'kp_sum', 'ap_mean', 'cp', 'c9', 'sunspot_number', 'f10.7', 'flux_qualifier']
     endelse
 
     ; store the data as tplot variables and set ytitles
@@ -136,7 +136,7 @@ pro noaa_load_kp, trange = trange, kp_mirror = kp_mirror, remote_kp_dir=remote_k
             store_data,'C9',data={x: daytimes[0:j-1], y: c9data[0:j-1]}
             options,'C9','ytitle','NOAA!CC9'
           end
-          'sunspot_num': begin
+          'sunspot_number': begin
             store_data,'Sunspot_Number',data={x: daytimes[0:j-1], y: ssndata[0:j-1]}
             options,'Sunspot_Number','ytitle','NOAA!CSunspot_Number'
           end

@@ -144,8 +144,14 @@ if ~size(fns,/type) then begin
   ;Concatenate and unique possible file names from Final, Provisional and RT data:
   ;========================================================================
   local_paths=[local_paths0,local_paths1,local_paths2]
-  local_paths=local_paths(uniq(local_paths,sort(local_paths)))
 
+  ; prevent data from loading twice on Windows machines due to having the same file
+  ; path in local_paths with different path separators
+  ;     e.g., 'c:\data\dst\datafile.for.request' and 'c:/data/dst/datafile.for.request'
+  ; we're simply replacing '\' with '/' in all paths before sending to uniq() 
+  ; - works on *nix, Windows 7 - not sure about older Windows machines - egrimes 5/15/2014
+  for lpath_idx = 0, n_elements(local_paths)-1 do local_paths[lpath_idx] = strlowcase(strjoin(strsplit(local_paths[lpath_idx], '\', /extract), '/'))
+  local_paths=local_paths[uniq(local_paths,sort(local_paths))]
 endif else file_names=fns
 
 ;basedate=time_string(times,tformat='YYYY-MM-01')
@@ -225,6 +231,7 @@ if keyword_set(alldst) then begin
   wbad = where(alldst eq 99999,nbad)
   if nbad gt 0 then alldst[wbad] = !values.f_nan
   dlimit=create_struct('data_att',create_struct('acknowledgment',acknowledgestring))
+  str_element, dlimit, 'data_att.units', 'nT', /add
   store_data,'kyoto_dst',data={x:alldsttime, y:alldst},dlimit=dlimit
 
   ;Determine version and set ytitle:

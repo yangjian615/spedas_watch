@@ -10,9 +10,9 @@
 ;  the data set to be loaded or some may not be needed. 
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-14 13:15:26 -0700 (Wed, 14 May 2014) $
+;$LastChangedRevision: 15138 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/load_plugins/spd_ui_load_omni_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -251,7 +251,8 @@ pro spd_ui_load_omni_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
                                   historyWin,$
                                   timeRangeObj=timeRangeObj,$
                                   uvalue='TIME_WIDGET',$
-                                  uname='time_widget')
+                                  uname='time_widget', $
+                                  startyear=1981)
     
   ;create the resolution and data types for this mission
   resArray = ['1min', '5min']
