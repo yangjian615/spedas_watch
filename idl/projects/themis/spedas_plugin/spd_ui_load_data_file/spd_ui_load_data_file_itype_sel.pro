@@ -18,7 +18,7 @@
 ;$LastChangedBy: jimm $
 ;$LastChangedDate: 2014-05-23 11:23:25 -0700 (Fri, 23 May 2014) $
 ;$LastChangedRevision: 15219 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_load_data_file/spd_ui_load_data_file_itype_sel.pro $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file_itype_sel.pro $
 ;-
 pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
 

@@ -7,10 +7,10 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-12 09:13:44 -0800 (Wed, 12 Feb 2014) $
-;$LastChangedRevision: 14353 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/load_plugins/spd_ui_load_goes_data.pro $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-07-03 12:32:20 -0700 (Thu, 03 Jul 2014) $
+;$LastChangedRevision: 15503 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/spedas_plugin/spd_ui_load_goes_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 pro spd_ui_load_goes_data_event,event

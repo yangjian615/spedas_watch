@@ -697,8 +697,8 @@ Pro spd_ui_part_getspec_options_event, event
       endfor
     endif
     
-    if widget_valid(stash) then begin
-      Widget_Control, stash, Set_UValue=state, /No_Copy
+    if widget_valid(base) then begin
+      Widget_Control, base, Set_UValue=state, /No_Copy
     endif
     
     Widget_Control, event.TOP, Set_UValue=state, /No_Copy
@@ -713,8 +713,7 @@ Pro spd_ui_part_getspec_options_event, event
   
   ;get state structure
   base = event.handler
-  stash = widget_info(base,/child)
-  widget_control, stash, Get_UValue=state, /no_copy
+  widget_control, base, Get_UValue=state, /no_copy
   
   
   ;identify widget by uval and handle event
@@ -769,7 +768,7 @@ Pro spd_ui_part_getspec_options_event, event
   endcase
   ;-----------------------------------------------------------------------
   
-  widget_control, stash, set_uvalue=state, /NO_COPY
+  widget_control, base, set_uvalue=state, /NO_COPY
   
   return
 
@@ -785,27 +784,29 @@ end
 ;PURPOSE:
 ;  A interface to thm_part_products.pro for creating and loading SPEDAS energy/
 ;  angular particle spectra into the GUI.  Intended to be called from
-;  SPD_UI_INIT_LOAD_WINDOW.PRO.
+;  SPD_UI_INIT_LOAD_WINDOW.PRO using the SPEDAS load API.
 ; 
 ;CALLING SEQUENCE:
-;  spd_ui_part_getspec_options, tab_id, loadedData, historyWin, statusText, $
-;                              trObj, timeWidget=timeWidget
+;  spd_ui_part_getspec_options, tab_id, loadedData, historyWin, statusBar, $
+;                               treecopy, trObj, callSequence, $
+;                               loadTree=loadTree, $
+;                               timeWidget=timeid
+;
 ;INPUT:
 ;  tab_id:  The widget id of the tab.
 ;  loadedData:  The loadedData object.
 ;  historyWin:  The history window object.
 ;  statusText:  The status bar object for the main Load window.
+;  treeCopyPtr:  Pointer variable to a copy of the load widget tree.
 ;  trObj:  The GUI timerange object.
-; 
-;KEYWORDS:
-;  timeWidget = The time widget object.
-; 
+;  callSequence:  Reference to GUI call sequence object
+;
 ;OUTPUT:
-; No explicit output, new variables are created. For a given data
-; type, one or two spectra are created. One is the angular spectrum
-; for the full energy range. If the energy spectrum option is chosen,
-; then another spectrum is created which is the energy spectrum for
-; the full angular range.
+;  loadTree = The Load widget tree.
+;  timeWidget = The time widget object.
+;
+;NOTES:
+;
 ; 
 ;HISTORY:
 ; 5-jan-2009, jmm, jimm@ssl.berkeley.edu
@@ -818,21 +819,27 @@ end
 ; 16-jul-2012, aaf, rewrote error checking on input values to match the 
 ;                   behavior of other GUI windows
 ; ??-sept-2013, aaf, modified to use new spectrogram code
+; 01-jul-2014, aaf, now conforms to standard SPEDAS load API
 ; 
-;$LastChangedBy:  $
-;$LastChangedDate:  $
-;$LastChangedRevision:  $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/spedas/spd_ui/panels/spd_ui_part_getspec_options.pro $
+; 
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-07-03 15:14:01 -0700 (Thu, 03 Jul 2014) $
+;$LastChangedRevision: 15508 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_part_getspec_options.pro $
 ;-
 Pro spd_ui_part_getspec_options, tab_id, loadedData, historyWin, statusBar, $
-                                 trObj,callSequence,timeWidget=timeid
+                                 treecopy, trObj, callSequence, $
+                                 loadTree=loadTree, $
+                                 timeWidget=timeid
+
+compile_opt idl2, hidden                       
 
 widget_control, /hourglass
 
 ;------------------------------------------------------------------------------
 ;Set up initial widget bases for easier formatting
 ;------------------------------------------------------------------------------
-mainBase = widget_base(tab_id, /col, tab_mode=1)
+mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_options_event')
   topBase = widget_base(mainBase, /row, ypad=8)
     topCol1Base =  widget_base(topBase, /col, space=4)
       instrLabelBase = widget_base(topcol1base, /row)
@@ -877,6 +884,7 @@ mainBase = widget_base(tab_id, /col, tab_mode=1)
 ;       Changes to any defaults shoudl be made there.
 ;------------------------------------------------------------------------------
 
+  loadtree = obj_new() ;calling function needs object passed back
 
 ;------------------------------------------------------------------------------
 ; Time selection

@@ -29,9 +29,9 @@
 ;   If you see any useful examples missing from these cribs, please let us know.
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-03-05 17:20:40 -0800 (Wed, 05 Mar 2014) $
-;$LastChangedRevision: 14508 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-07-02 14:57:59 -0700 (Wed, 02 Jul 2014) $
+;$LastChangedRevision: 15501 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine.pro $
 ;
 ;-
@@ -144,7 +144,7 @@ stop
 ;--------------------------------------------------------------------------------------
 
 ;get combined on board moments
-thm_load_mom, probe=probe, trange=trange, datatype='*'
+thm_load_mom, probe=probe, trange=trange, datatype='ptim'
 
 ;density
 mom_names = 'thd_'+['ptim','ptiff']+'_density'
@@ -194,8 +194,15 @@ stop
 ;Produce velocity slice
 ;--------------------------------------------------------------------------------------
 
+;load support data for field aligned slice
+;  -bulk velocity vector must be specified for combined distributions
+;   when using BV, BE, xvel, and perp rotations (no automatic calculation)
+thm_load_mom, probe=probe, trange=trange, datatype='ptim'
+thm_load_fgm, probe=probe, trange=trange, datatype='fgl', level=2, coord='dsl'
+
 ;get velocity slice
-thm_part_slice2d, combined, slice_time=trange[0], timewin=30, part_slice=comb_slice, /two_d_interp
+thm_part_slice2d, combined, slice_time=trange[0], timewin=30, part_slice=comb_slice, $
+   rotation='BV', mag_data='thd_fgl_dsl', vel_data='thd_ptim_velocity', /three_d_interp
 
 thm_part_slice2d_plot, comb_slice
 

@@ -21,10 +21,10 @@
 ;OUTPUT:
 ;  none
 ;  
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-16 15:34:14 -0700 (Fri, 16 May 2014) $
-;$LastChangedRevision: 15154 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/thm_ui_gen_overplot.pro $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-07-03 15:14:01 -0700 (Thu, 03 Jul 2014) $
+;$LastChangedRevision: 15508 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
 

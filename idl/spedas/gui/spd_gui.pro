@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-06-27 11:11:27 -0700 (Fri, 27 Jun 2014) $
-;$LastChangedRevision: 15453 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-07-01 20:07:45 -0700 (Tue, 01 Jul 2014) $
+;$LastChangedRevision: 15500 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -271,10 +271,9 @@ PRO spd_gui_event, event
     'LOAD': BEGIN
      dataLoadSelectPtr = info.dataLoadSelectPtr
        spd_ui_init_load_window, info.master, info.windowStorage, info.loadedData, $
-                                info.historyWin, info.dataFlag, info.dataButtons, $
+                                info.historyWin, $
                                 info.loadtr,info.guiTree,dataLoadSelectPtr
        info.dataLoadSelectPtr = dataLoadSelectPtr
-       ;spd_ui_load_data_file, info.master, info.windowStorage, info.loadedData, info.historyWin, info.dataFlag, info.dataButtons, info.loadtr
      
        info.drawObject->Update,info.windowStorage,info.loadedData 
        info.drawObject->Draw
@@ -430,7 +429,6 @@ PRO spd_gui_event, event
      ENDIF ELSE BEGIN
        info.statusBar->Update, 'Example window not displayed'
      ENDELSE
-     FOR i=0, N_Elements(info.dataButtons)-1 DO Widget_Control, info.dataButtons[i], sensitive=1
      FOR i=0, N_Elements(info.panelButtons)-1 DO Widget_Control, info.panelButtons[i], sensitive=1
      FOR i=0, N_Elements(info.markerButtons)-1 DO Widget_Control, info.markerButtons[i], sensitive=1
      
@@ -1502,9 +1500,6 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   showPositionMenu = Widget_Button(viewMenu, Value='Legend', /Checked_Menu, $
     UValue='POSITIONBAR')
   Widget_Control, showPositionMenu, Set_Button=1
-;  showStatusMenu = Widget_Button(viewMenu, Value='Status Bar', /Checked_Menu, $
-;    UValue='STATUSBAR')
-;  Widget_Control, showStatusMenu, Set_Button=1
 
   ; Graph Pull Down Menus
 
@@ -1856,12 +1851,6 @@ PRO spd_gui,reset=reset,template_filename=template_filename
 ;  ;Turn journaling on
 ;   if ~!journal then Journal,'spd_ui_idlsave.pro'
   
-  ; These are the buttons that are only available when data has been loaded or markers exist
-  dataButtons = [saveMenu, saveAsMenu, copyMenu, scrollfMenu, scrollbMenu, expandMenu, $
-    reduceMenu, savebmpButton, printBmpButton, copyBmpButton, zoomInBmpButton, $
-    zoomOutBmpButton, shiftlBmpButton, shiftrBmpButton, saveDataAsMenu, $
-    ;nextpMenu, prevpMenu, 
-    refreshMenu, subSetMenu, subPageMenu]
   markerButtons = [subMarkerMenu, deletemMenu]
   panelButtons = [xaxisMenu, yaxisMenu, variableMenu]
 
@@ -1886,7 +1875,6 @@ PRO spd_gui,reset=reset,template_filename=template_filename
           drawDisabled:0,$
           drawDisableTimer:0D,$
           data:0, $
-          dataButtons:dataButtons,$
           nWindows:0,$
           mainFileName:'', $
           lastClick: [0d,0], $
@@ -1910,11 +1898,9 @@ PRO spd_gui,reset=reset,template_filename=template_filename
           legendOn:0,$
           cursorPosition:[0.0, 0.0], $
           yAxisSettings:yAxisSettings, $
-          dataFlag:0, $
           drawContextBase:drawContextBase, $
           graphBase:graphBase,$
           showPositionMenu:showPositionMenu, $
-     ;     showStatusMenu:showStatusMenu, $
           historyWin:historyWin, $  ; The history window object
           loadedData:obj_new(), $ ; The loaded data object, manages all loaded quantities
           loadtr:loadtr, $ 
@@ -1931,7 +1917,6 @@ PRO spd_gui,reset=reset,template_filename=template_filename
           markerSettings:markerSettings, $
           resizetime:0D, $ ;Time of last resize, used to prevent flicker during resize
           interface_size:[0.0,0.0], $ ; Estimated size of the interface used for resizing calculations
-     ;     markerTitle:markerTitle, $
           markerTitleOn:1, $
           rubberBanding:0, $
           trackAll:1, $

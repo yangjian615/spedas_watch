@@ -56,8 +56,6 @@ pro spd_ui_init_fileconfig_event, event
       FOR j = 0, N_Elements(err_msg)-1 DO state.historywin->update,err_msg[j]
       x=state.gui_id
       histobj=state.historywin
-      ;update central tree to reflect last expansion of current tree 
-      ;spd_ui_init_load_update_tree_copy,state
     endif
     Print, 'Error--See history'
     ok=error_message('An unknown error occured and the window must be restarted. See console for details.',$

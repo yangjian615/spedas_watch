@@ -39,10 +39,10 @@
 ;HISTORY:
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-04-30 15:55:39 -0700 (Wed, 30 Apr 2014) $
-;$LastChangedRevision: 14981 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_load_data_file/spd_ui_load_data2obj.pro $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-07-03 15:18:14 -0700 (Thu, 03 Jul 2014) $
+;$LastChangedRevision: 15510 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data2obj.pro $
 ;
 ;-
 
@@ -754,7 +754,7 @@ pro spd_ui_load_data2obj, st_time, en_time, $
           h = 'LOAD DATA: LOAD FAILURE for ' + otp[k] + '.'
           load_err = 1
         endif else begin
-          h = 'LOAD DATA: '+ otp[k] + ' loaded successfully.
+          h = 'LOAD DATA: '+ otp[k] + ' loaded successfully.'
           loadedVarList = array_concat_wrapper(otp[k],loadedVarList)
         endelse
         

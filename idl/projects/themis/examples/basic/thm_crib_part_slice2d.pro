@@ -63,8 +63,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-18 15:17:19 -0800 (Wed, 18 Dec 2013) $
-;$LastChangedRevision: 13704 $
+;$LastChangedDate: 2014-07-02 14:57:59 -0700 (Wed, 02 Jul 2014) $
+;$LastChangedRevision: 15501 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_slice2d.pro $
 ;
 ;-
@@ -226,13 +226,15 @@ stop
 
 ;Field aligned rotations require magnetic field data to be loaded beforehand.
 thm_load_fgm, probe='b', datatype='fgl', level=2, coord='dsl', trange=trange
+thm_load_esa, probe='b', datatype='peib_velocity_dsl', trange=trange 
 
 ;This example aligns the slice plane along the BV plane.
 ;The MAG_DATA keyword is used to specify a tplot variable containing magnetic field data.
 ;The VEL_DATA keyword is used to specify a tplot variable containing a bulk velocity vector.
+;  -bulk velocity is calculated from distribution if tplot variable is not specified
 ;These vectors will be averaged over the time range of the slice.
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
-                  rotation='BV', mag_data='thb_fgl_dsl', /two_d_interp
+       rotation='BV', mag_data='thb_fgl_dsl', vel_data='thb_peib_velocity_dsl', /two_d_interp
 
 thm_part_slice2d_plot, slice
 

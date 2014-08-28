@@ -7,9 +7,9 @@
 ;  Inputs: The info structure from the main gui
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-07-01 20:07:45 -0700 (Tue, 01 Jul 2014) $
+;$LastChangedRevision: 15500 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_main_funcs/spd_ui_open.pro $
 ;-
 pro spd_ui_open,info
@@ -52,8 +52,6 @@ pro spd_ui_open,info
       ;report an any errors caught in open_spedas_document
       dummy=error_message(statusmsg,/ERROR,/CENTER)
     ENDIF ELSE BEGIN
-      ; If successful, sensitize data controls
-      FOR i=0, N_Elements(info.dataButtons)-1 DO Widget_Control, info.dataButtons[i], sensitive=1
       ; Put filename in title bar
       activeWindow=info.windowStorage->GetActive()
       activeWindow->GetProperty, Name=name

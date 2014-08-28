@@ -125,6 +125,14 @@ end
 
 FUNCTION reform_mystruct, astrc
 
+  CATCH, err
+  IF err NE 0 THEN BEGIN
+    CATCH, /CANCEL
+    PRINT, !ERROR_STATE.MSG
+    RETURN,-1
+  ENDIF
+
+
 istr=0
 namest=tag_names(astrc)
 ns_tags=n_tags(astrc)
@@ -146,12 +154,7 @@ for k=0, ns_tags-1 do begin
             tempa=create_struct('DAT',newdata)
             tempb=create_struct(tempb,tempa)
          endif else begin
-            tag_cmd='str_p=astrc.'+tagname+'.(j)' 
-            if(not execute(tag_cmd)) then begin
-               print, 'ERROR=Execute error setting tag_cmd'
-               close,1
-               return, -1
-            endif
+            str_p=astrc.(tagname).(j)
             if(j eq 0) then begin
                tempb=create_struct(names[j],str_p)
             endif else begin
@@ -173,12 +176,7 @@ for k=0, ns_tags-1 do begin
             tempa=create_struct('DAT',newdata)
             tempb=create_struct(tempb,tempa)
          endif else begin
-            tag_cmd='str_p=astrc.'+tagname+'.(j)' 
-            if(not execute(tag_cmd)) then begin
-               print, 'ERROR=Execute error setting tag_cmd in reform_mystruct'
-               close,1
-               return, -1
-            endif
+            str_p=astrc.(tagname).(j)
             if(j eq 0) then begin
                tempb=create_struct(names[j],str_p)
             endif else begin
@@ -345,8 +343,8 @@ case d of
       if (q[0] ne -1) then if (a.(i).alt_cdaweb_depend_3 ne '') then dependn=a.(i).alt_cdaweb_depend_3
      end 
 endcase
-if (dependn[0] ne '') then s=execute('tmp_stuff= a.'+dependn+'.DAT')
-if (dependn[0] ne '') then s=execute('dep_fill= a.'+dependn+'.FILLVAL')
+if (dependn[0] ne '') then tmp_stuff= a.(dependn).DAT
+if (dependn[0] ne '') then dep_fill= a.(dependn).FILLVAL
 if string(tmp_stuff[0]) ne '' then begin      
    size_tmp=size(tmp_stuff)
    case size_tmp[0] of
@@ -528,11 +526,11 @@ if(sz eq 2) then begin
          ; RTB added code 3/98
          temp_names=tag_names(a)
          z=spdf_tagindex(depend1,temp_names)
-         if(z[0] ne -1) then $
-                lab_cmd='lab=a.(z[0]).labl_ptr_1' else $
+         if(z[0] ne -1) then begin
+                lab=a.(z[0]).labl_ptr_1 
+         endif else begin
                 print, depend1, ' not found (ListImage section of spdf_list_mystruct).'
-         ; lab_cmd='lab=a.'+depend1+'.labl_ptr_1'
-         if(not execute(lab_cmd)) then print, "ERROR=Error setting lab_cmd"
+         endelse
          if(lab[0] eq '') then begin
             ; RTB  3/98 
             ;lab_cmd='lab=string(a.'+depend1+'.dat[k])'
@@ -664,135 +662,6 @@ units=strjoin(strsplit(units,/extract),'_')
 return, units
 end
 
-;-------------------------------------------------------------------------------------------------
-;FUNCTION label_search_max_width,a,sz,i,k
-;
-;;
-;; This function mirrors the function label_search
-;; with one difference. This version will, when the
-;; label search involves the "dat" array, return the
-;; first instance of the widest "string" value from
-;; that array.
-;;
-;; JWJ 07/31/2000
-;;
-;; Establish error handler
-;catch, error_status
-;if(error_status ne 0) then begin
-;   print, 'STATUS= Data cannot be listed.'
-;   print, 'ERROR=Error number: ',error_status,' in listing (label_search).'
-;   print, 'ERROR=Error Message: ', !ERR_STRING
-;   close, 1
-;   return, -1
-;endif
-;
-;label=''
-;len=size(a.(i).dat)
-;lent=size(a.(0).dat)
-;length=lent(lent(0)+2)
-;
-;if(sz le 1) then begin  
-;   if(length eq 1 and len(0) eq 1 and len(1) gt 1) then begin
-;      if(a.(i).lablaxis ne '') then label=strupcase(a.(i).lablaxis) else $ 
-;                   lab=strupcase(a.(i).labl_ptr_1)
-;      label=lab[k]
-;   endif else begin
-;      if(a.(i).lablaxis eq '') then label=strupcase(a.(i).fieldnam) else $
-;      label=strupcase(a.(i).lablaxis)
-;   endelse
-;endif
-;
-;if(sz eq 2) then begin
-;   if(a.(i).var_notes eq 'ListImage') then begin     
-;      if(a.(i).lablaxis ne '') then label=a.(i).lablaxis else $
-;                   label=a.(i).fieldnam
-;   endif
-;   if(a.(i).var_notes ne 'ListImage') then begin
-;      ;if(a.(i).lablaxis ne '') then label=strupcase(a.(i).lablaxis) ;else begin
-;      ;lab=strupcase(a.(i).labl_ptr_1)
-;      ;if(lab(0) ne '') then begin
-;      ;   label=lab[k]
-;      ;endif else begin
-;      ;
-;      ; RCJ 03/28/01 Replaced the above with the code below. It is not
-;      ; guaranteed that we have labl_ptr_1, and k is sometimes out of range.
-;      ;
-;      lab=''
-;      if(a.(i).lablaxis ne '') then begin
-;         lab=strupcase(a.(i).lablaxis) 
-;      endif else begin
-;         lab=strupcase(a.(i).labl_ptr_1)
-;      endelse   
-;      if(lab(0) ne '') then begin
-;         if (n_elements(lab) gt 1) then label=lab[k] else label=lab(0)
-;      endif else begin
-;         ;
-;         depend1=strupcase(a.(i).depend_1)
-;         ; RTB added code 3/98
-;         temp_names=tag_names(a)
-;         z=spdf_tagindex(depend1,temp_names)
-;         if(z(0) ne -1) then $
-;                lab_cmd='lab=a.(z(0)).labl_ptr_1' else $
-;                print, depend1, ' not found (ListImage section of spdf_list_mystruct).'
-;         ; lab_cmd='lab=a.'+depend1+'.labl_ptr_1'
-;         if(not execute(lab_cmd)) then print, "ERROR=Error setting lab_cmd"
-;         if(lab(0) eq '') then begin
-;            ; RTB  3/98 
-;            ;lab_cmd='lab=string(a.'+depend1+'.dat[k])'
-;
-;            ; JWJ 07/31/2000 ; lab_cmd='lab=string(a.(z(0)).dat[k])'
-;            ; JWJ 07/31/2000 ; wtmp=execute(lab_cmd)
-;            ; JWJ 07/31/2000 ; if(not wtmp) then print, "ERROR=Error setting lab_cmd 1"
-;            ; JWJ 07/31/2000 ; label=strtrim(lab(0),2)
-; 
-;            ; Loop through "dat" array structure element here, find widest
-;            ; "string" contained there, and set label to that value. The
-;            ; first instance of the widest "string" found is the one used
-;            ; primarily for efficiancy reasons
-;            ;
-;            ; JWJ 07/31/2000
-;            ;
-;            label = ''
-;            element_string = ''
-;            element_width = 0
-;            max_element_width = 0
-;            for element = 0, ( n_elements( a.(z(0)).dat ) - 1 ) do begin
-;
-;              ; JWJ 08/08/2000 - changed below ffo_string() call from a string() call
-;              element_string = strtrim( ffo_string( a.(z(0)).format, a.(z(0)).dat(element) ), 2 )
-;
-;              element_width = strlen( element_string )
-;              if( element_width gt max_element_width ) then begin
-;                label = element_string
-;                max_element_width = element_width
-;              endif
-;              ; uncomment the below statement for debugging
-;              ; print, 'label = "', label, '" element = ', element, $
-;              ;        ', element_string = "', element_string, '"'
-;            endfor
-;
-;         endif else begin
-;            label=strtrim(lab[k],2)
-;         endelse
-;      endelse   
-;   endif
-;endif
-;
-;if(n_elements(label) eq 0) then label = ''
-;
-;; Fill ' ' w/ '_'
-;;ii = strpos(label,' ')
-;;if(ii ne -1) then begin
-;; ;if(ii eq 0) then begin
-;; ; label=strtrim(label,1)
-;; ; ii = strpos(label,' ')
-;; ;endif
-;; strput,label,'_',ii
-;;endif
-;
-;return, label
-;end
-
 ;-----------------------------------------------------------------------------------
 FUNCTION list_header, a, unit, ntags
 
@@ -856,10 +725,8 @@ for i=0L, ntags-5 do begin
       ;         print, depend1, ' not found(ListImage section of spdf_list_mystruct).'
       ;if(z[0] ne -1) then frm1_cmd='frm1=a.(z[0]).format' else $
       ;         print, depend1, ' not found (ListImage section of spdf_list_mystruct).'
-      if(z[0] ne -1) then dep1_cmd='dep1=a.(z[0]).dat' else dep1_cmd='dep1=""'
-      if(z[0] ne -1) then frm1_cmd='frm1=a.(z[0]).format' else frm1_cmd='frm1=""'
-      if(not execute(dep1_cmd)) then print, "ERROR=Error setting dep1"
-      if(not execute(frm1_cmd)) then print, "ERROR=Error setting frm1"
+      if(z[0] ne -1) then dep1=a.(z[0]).dat else dep1=""
+      if(z[0] ne -1) then frm1=a.(z[0]).format else frm1=""
       ; RTB added code 3/98
       ; RCJ 12/99 changed z -> zz, otherwise energy and angle will have 
       ;the same values when the commands are executed
@@ -869,16 +736,12 @@ for i=0L, ntags-5 do begin
       ;         print, depend2, ' not found (ListImage section of spdf_list_mystruct).'
       ;if(zz[0] ne -1) then frm2_cmd='frm2=a.(zz[0]).format' else $
       ;         print, depend2, ' not found (ListImage section of spdf_list_mystruct).'
-      if(zz[0] ne -1) then dep2_cmd='dep2=a.(zz[0]).dat' else dep2_cmd='dep2=""'
-      if(zz[0] ne -1) then frm2_cmd='frm2=a.(zz[0]).format' else  frm2_cmd='frm2=""'
-      if(not execute(dep2_cmd)) then print, "ERROR=Error setting dep2"
-      if(not execute(frm2_cmd)) then print, "ERROR=Error setting frm2"
+      if(zz[0] ne -1) then dep2=a.(zz[0]).dat else dep2=""
+      if(zz[0] ne -1) then frm2=a.(zz[0]).format else frm2=""
       if (a.(i).var_notes eq 'ListImage3D') then begin
          zz=spdf_tagindex(depend3,temp_names)
-         if(zz[0] ne -1) then dep3_cmd='dep3=a.(zz[0]).dat' else dep3_cmd='dep3=""'
-         if(zz[0] ne -1) then frm3_cmd='frm3=a.(zz[0]).format' else  frm3_cmd='frm3=""'
-         if(not execute(dep3_cmd)) then print, "ERROR=Error setting dep3"
-         if(not execute(frm3_cmd)) then print, "ERROR=Error setting frm3"
+         if(zz[0] ne -1) then dep3=a.(zz[0]).dat else dep3=""
+         if(zz[0] ne -1) then frm3=a.(zz[0]).format else  frm3=""
       endif
       len1=string(strlen(dep1[0])+1)
       len2=string(strlen(dep2[0])+1)
@@ -1311,7 +1174,7 @@ case convar of
                 ; RCJ 05/16/2013  If alt_cdaweb_depend_1 exists, use it instead:
                 q=where(tag_names(a.(i)) eq 'ALT_CDAWEB_DEPEND_1')
                 if (q[0] ne -1) then if (a.(i).alt_cdaweb_depend_1 ne '') then depend1=a.(i).alt_cdaweb_depend_1
-                s=execute('dep1_units=a.'+strtrim(depend1,2)+'.units')
+                dep1_units=a.(strtrim(depend1,2)).units
                 dep1=['(@_'+dep1+'_'+dep1_units+')']
              endif   
              dep1_values=[dep1_values,dep1]
@@ -1324,12 +1187,6 @@ case convar of
        ; listing depend_1 values if they exist. RCJ 04/01
        ;if (n_elements(dep1_values) gt 1) then begin
           dep1_values=dep1_values[1:*]
-       ;   diff=n_elements(labels)-n_elements(dep1_values)
-       ;   for k=1,diff do begin
-       ;      cmd='space=string("",format="('+strtrim(strlen(labels[k])+1,2)+'x,a)")
-       ;      s=execute(cmd)
-       ;      dep1_values=[space,dep1_values]
-       ;   endfor
           q=where (dep1_values ne '') 
           if q[0] ne -1  then printf,unit,format=a.dpform,dep1_values
        ;endif 
@@ -1615,7 +1472,7 @@ i_ntags = ntags-5
                 ; RCJ 05/16/2013  If alt_cdaweb_depend_1 exists, use it instead:
                 q=where(tag_names(a.(i)) eq 'ALT_CDAWEB_DEPEND_1')
                 if (q[0] ne -1) then if (a.(i).alt_cdaweb_depend_1 ne '') then depend1=a.(i).alt_cdaweb_depend_1 
-                s=execute('dep1_units=a.'+strtrim(depend1,2)+'.units')
+                dep1_units=a.(strtrim(depend1,2)).units
                 dep1=['(@_'+dep1+'_'+dep1_units+')']
              endif 
              dep1_values=[dep1_values,dep1]
@@ -1629,7 +1486,7 @@ i_ntags = ntags-5
                 ; RCJ 05/16/2013  If alt_cdaweb_depend_2 exists, use it instead:
                 q=where(tag_names(a.(i)) eq 'ALT_CDAWEB_DEPEND_2')
                 if (q[0] ne -1) then if (a.(i).alt_cdaweb_depend_2 ne '') then depend2=a.(i).alt_cdaweb_depend_2 
-                s=execute('dep2_units=a.'+strtrim(depend2,2)+'.units')
+                dep2_units=a.(strtrim(depend2,2)).units
                 dep2=['(@_'+dep2+'_'+dep2_units+')']
              endif 
              dep2_values=[dep2_values,dep2]
@@ -1638,7 +1495,7 @@ i_ntags = ntags-5
                 depend3=a.(i).depend_3
                 q=where(tag_names(a.(i)) eq 'ALT_CDAWEB_DEPEND_3')
                 if (q[0] ne -1) then if (a.(i).alt_cdaweb_depend_3 ne '') then depend3=a.(i).alt_cdaweb_depend_3 
-                s=execute('dep3_units=a.'+strtrim(depend3,2)+'.units')
+                dep3_units=a.(strtrim(depend3,2)).units
                 dep3=['(@_'+dep3+'_'+dep3_units+')']
              endif 
              dep3_values=[dep3_values,dep3]
@@ -1711,8 +1568,9 @@ i_ntags = ntags-5
           final_dep1_values=final_dep1_values[1:*]
           diff=n_elements(final_labels)-n_elements(final_dep1_values)
           for k=1L,diff do begin
-             cmd='space=string("",format="('+strtrim(strlen(final_labels[k])+1,2)+'x,a)")
-             s=execute(cmd)
+             formt = "('" + strtrim(strlen(final_labels[k])+1,2)+"'x,a)"
+             space=string("",format=formt)
+             ;cmd='space=string("",format="('+strtrim(strlen(final_labels[k])+1,2)+'x,a)")
              final_dep1_values=[space,final_dep1_values]
           endfor
        ;printf,unit,format=a.dpform,final_dep1_values
@@ -1724,8 +1582,9 @@ i_ntags = ntags-5
           final_dep2_values=final_dep2_values[1:*]
           diff=n_elements(final_labels)-n_elements(final_dep2_values)
           for k=1L,diff do begin
-             cmd='space=string("",format="('+strtrim(strlen(final_labels[k])+1,2)+'x,a)")
-             s=execute(cmd)
+             formt = "('" + strtrim(strlen(final_labels[k])+1,2)+"'x,a)"
+             space=string("",format=formt)
+             ;cmd='space=string("",format="('+strtrim(strlen(final_labels[k])+1,2)+'x,a)")
              final_dep2_values=[space,final_dep2_values]
           endfor
        ;printf,unit,format=a.dpform,final_dep2_values
@@ -1738,8 +1597,9 @@ i_ntags = ntags-5
           final_dep3_values=final_dep3_values[1:*]
           diff=n_elements(final_labels)-n_elements(final_dep3_values)
           for k=1L,diff do begin
-             cmd='space=string("",format="('+strtrim(strlen(final_labels[k])+1,2)+'x,a)")
-             s=execute(cmd)
+             formt = "('" + strtrim(strlen(final_labels[k])+1,2)+"'x,a)"
+             space=string("",format=formt)
+             ;cmd='space=string("",format="('+strtrim(strlen(final_labels[k])+1,2)+'x,a)")
              final_dep3_values=[space,final_dep3_values]
           endfor
           q=where (final_dep3_values ne '') 
@@ -1975,23 +1835,12 @@ endif
 tagnames=tag_names(b)
 v1=spdf_tagindex(depd0,tagnames)
 if(n_elements(handle) eq 0) then handle=0
-;;  x1='b.'+strtrim(depd0,2)+'.units="dd-mm-yyyy hh:mm:ss.ms "'
-;b.(v1(0)).units="dd-mm-yyyy hh:mm:ss.ms "
-;;      if(not execute(x1)) then begin
-;;        print, 'ERROR=Execute error setting x1'
-;;        close,1
-;;        return, -1
-;;      endif
-;;  b.epoch.units="dd-mm-yyyy hh:mm:ss.ms "
 
 if(handle eq 0) then begin
    dat=b.(v1[0]).dat
-   ; x2=execute('dat=b.'+strtrim(depd0,2)+'.dat')
-   ;     dat=b.epoch.dat
    datsz=size(dat)
    if(datsz[0] gt 0) then dat=reform(dat) 
 endif else begin 
-   ;x3=execute('tmp=b.'+strtrim(depd0,2)+'.HANDLE')
    tmp=b.(v1[0]).HANDLE
    handle_value, tmp, dat
    datsz=size(dat)
@@ -2314,7 +2163,6 @@ for mega_loop=1, mega.num do begin
    ; Remove any nasty variables
    v1=spdf_tagindex(depend0,namest)
    if(v1[0] ne -1) then begin
-      ; x1=execute('station=a.'+strtrim(depend0,2)+'.source_name') 
       station=a.(v1[0]).source_name 
       station=strmid(station,0,4)
       v1=spdf_tagindex('delay_time',namest)
@@ -2443,7 +2291,6 @@ for mega_loop=1, mega.num do begin
       return, -1
    endif
    epsz=size(b.(v1[0]).dat)
-   ;x1=execute('epsz=size(b.'+depend0+'.dat)')
    if(epsz[0] eq 0) then b=ord_mystruct(b,vorder,0) else $
                        b=ord_mystruct(b,vorder,1)
 
@@ -2460,7 +2307,6 @@ for mega_loop=1, mega.num do begin
    ; Set/Convert tstart and tstop 
    if(keyword_set(DEBUG)) then print, 'Set/Convert tstart and tstop.'
    tmpoch=b.(v1[0]).dat
-   ;x1=execute('tmpoch=b.'+strtrim(depend0,2)+'.dat')
    leng=n_elements(tmpoch)
    if((n_elements(TSTART) eq 0) or (n_elements(TSTOP) eq 0)) then begin
       if(leng gt 1) then begin
@@ -2969,88 +2815,15 @@ for mega_loop=1, mega.num do begin
                endif
                ; Compute all other 2D variables
                if(st_sz[0] eq 2) then begin
-                  ;
-                  ; This part of the program will change depend_1 variables var_type from 
-                  ; 'data' or 'support_data' to 'metadata' so that we can set the labels
-                  ;
-                  ;
-                  ; 2D variables do not necessarily have depend_1 defined, so I'm defining
-                  ; cur_val_typ and cur_val = '' so we don't get into an error as we pass by
-                  ; this part of the program.  RCJ 06/00
-                  ;
-               ;   cur_var_typ='' & cur_val='' 
-               ;   depend1=strupcase(c.(i).depend_1)
-               ;   temp_names=tag_names(c)
-               ;   z=spdf_tagindex(depend1,temp_names)
-               ;   if(z(0) ne -1) then $
-               ;      cur_val='cur_var_typ=c.(z(0)).var_type'  else $
-               ;      print, 'Depend_1 not found. This does not necessarily represent a problem (spdf_list_mystruct).'
-               ;   if(not execute(cur_val)) then begin
-               ;      print, "ERROR=Execute error setting cur_val"
-               ;      close, 1
-               ;      return, -1
-               ;   endif
-               ;   if(cur_var_typ eq 'data') or  $
-               ;      (cur_var_typ eq 'support_data') then begin
-               ;      cur_var_typ="metadata"
-               ;      set_val='c.(z(0)).var_type=cur_var_typ'
-               ;      if(not execute(set_val)) then begin
-               ;         print, 'ERROR=Execute error setting set_val'
-               ;         close, 1
-               ;         return, -1
-               ;      endif
-               ;   endif
-                  ;
-                  ; Set labels 
-                  ;
+             
                   num_var=st_sz[1]
-		  ; RCJ 12/02/2003  It seems to me we could use only the second
-		  ;    part of this if statement whatever the value of num_var is.
-                  ;if(num_var lt 20) then begin
-                     ;for k=0, num_var-1 do begin
-                        ;if(c.(i).var_type eq 'data') or $
-                        ;   (c.(i).var_type eq 'support_data') then begin
-                        ;   ; Determine labels
-                        ;   ;print,'k = ',k
-                        ;   depend1_labels=dependn_search(c,i,1) ; st_sz(0)=2
-                        ;   if (depend1_labels(0) ne '') then begin
-                        ;      depend1=c.(i).depend_1
-                        ;      s=execute('dep1_units=c.'+strtrim(depend1,2)+'.units')
-                        ;      depend1_labels=['(@_'+depend1_labels+'_'+dep1_units+')']
-                        ;      ;dep1_values=[dep1_values,dep1]
-                        ;   endif   
-                        ;   ; Determine labels
-                        ;   depend2_labels=dependn_search(c,i,2) ; st_sz(0)=2
-                        ;   if (depend2_labels(0) ne '') then begin
-                        ;      depend2=c.(i).depend_2
-                        ;      s=execute('dep2_units=c.'+strtrim(depend2,2)+'.units')
-                        ;      depend2_labels=['(@_'+depend2_labels+'_'+dep2_units+')']
-                        ;   endif   
-                        ;   ;dep_col_sz=max(strlen(depend1_labels)) > max(strlen(depend2_labels)) >strlen(c.(i).units) > dat_len
-                        ;   label=label_search(c,st_sz(0),i,k)
-                        ;   units=unit_search(c,st_sz(0),i,k)
-                        ;   dep_col_sz=max(strlen(depend1_labels)) > max(strlen(depend2_labels)) >strlen(units) > dat_len
-                        ;   ;col_sz = strlen(label) > strlen(c.(i).units) > dat_len
-                        ;   col_sz = strlen(label) > strlen(units) > dat_len
-                        ;   ;sform=form_bld(col_sz, label, c.(i).units, dat_len, dep_col_sz,depend1_labels,dep_col_sz,depend2_labels,form, shft)
-                        ;   sform=form_bld(col_sz, label, units, dat_len, dep_col_sz,depend1_labels,dep_col_sz,depend2_labels,form, shft)
-                        ;   lab_for=lab_for + sform.labv
-                        ;   unt_for=unt_for + sform.untv
-                        ;   dat_for=dat_for + sform.datv
-                        ;   dep_for=dep_for + sform.depv
-                        ;   nvar=nvar+1
-                        ;endif ; end var_type= data condition
-                     ;endfor
-                  ;endif else begin ; num_var condition
-                    ; if(c.(i).var_type eq 'data') or $
-                    ;         (c.(i).var_type eq 'support_data') then begin
                         depend1_labels=dependn_search(c,i,1) ; st_sz(0)=2
                         if (depend1_labels[0] ne '') then begin
                               depend1=c.(i).depend_1
                               ; RCJ 05/16/2013  If alt_cdaweb_depend_1 exists, use it instead:
                               q=where(tag_names(c.(i)) eq 'ALT_CDAWEB_DEPEND_1')
                               if (q[0] ne -1) then if (c.(i).alt_cdaweb_depend_1 ne '') then depend1=c.(i).alt_cdaweb_depend_1
-                              s=execute('dep1_units=c.'+strtrim(depend1,2)+'.units')
+                              dep1_units=c.(strtrim(depend1,2)).units
                               depend1_labels=['(@_'+depend1_labels+'_'+dep1_units+')']
                               ;dep1_values=[dep1_values,dep1]
                         endif
@@ -3060,7 +2833,7 @@ for mega_loop=1, mega.num do begin
                               ; RCJ 05/16/2013  If alt_cdaweb_depend_2 exists, use it instead:
                               q=where(tag_names(c.(i)) eq 'ALT_CDAWEB_DEPEND_2')
                               if (q[0] ne -1) then if (c.(i).alt_cdaweb_depend_2 ne '') then depend2=c.(i).alt_cdaweb_depend_2 
-                              s=execute('dep2_units=c.'+strtrim(depend2,2)+'.units')
+                              dep2_units=c.(strtrim(depend2,2)).units
                               depend2_labels=['(@_'+depend2_labels+'_'+dep2_units+')']
                         endif
                         ;dep_col_sz=max(strlen(depend1_labels)) > max(strlen(depend2_labels)) >strlen(c.(i).units) > dat_len
@@ -3155,7 +2928,7 @@ for mega_loop=1, mega.num do begin
                      ; RCJ 05/16/2013  If alt_cdaweb_depend_1 exists, use it instead:
                      q=where(tag_names(c.(i)) eq 'ALT_CDAWEB_DEPEND_1')
                      if (q[0] ne -1) then if (c.(i).alt_cdaweb_depend_1 ne '') then depend1=c.(i).alt_cdaweb_depend_1
-                     s=execute('dep1_units=c.'+strtrim(depend1,2)+'.units')
+                     dep1_units=c.(strtrim(depend1,2)).units
                      depend1_labels=['(@_'+depend1_labels+'_'+dep1_units+')']
                   endif   
                   depend2_labels=dependn_search(c,i,2) ; st_sz[0]=2
@@ -3164,7 +2937,7 @@ for mega_loop=1, mega.num do begin
                      ; RCJ 05/16/2013  If alt_cdaweb_depend_2 exists, use it instead:
                      q=where(tag_names(c.(i)) eq 'ALT_CDAWEB_DEPEND_2')
                      if (q[0] ne -1) then if (c.(i).alt_cdaweb_depend_2 ne '') then depend2=c.(i).alt_cdaweb_depend_2 
-                     s=execute('dep2_units=c.'+strtrim(depend2,2)+'.units')
+                     dep2_units=c.(strtrim(depend2,2)).units
                      depend2_labels=['(@_'+depend2_labels+'_'+dep2_units+')']
                   endif   
 		  ;if this is 2D image there will be no depend3. 
@@ -3173,7 +2946,7 @@ for mega_loop=1, mega.num do begin
                        depend3=c.(i).depend_3
                        q=where(tag_names(c.(i)) eq 'ALT_CDAWEB_DEPEND_3')
                        if (q[0] ne -1) then if (c.(i).alt_cdaweb_depend_3 ne '') then depend3=c.(i).alt_cdaweb_depend_3 
-                       s=execute('dep3_units=c.'+strtrim(depend3,2)+'.units')
+                       dep3_units=c.(strtrim(depend3,2)).units
                        depend3_labels=['(@_'+depend3_labels+'_'+dep3_units+')']
                      endif 
                   label=''

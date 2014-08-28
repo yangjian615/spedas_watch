@@ -28,7 +28,7 @@
 ;$LastChangedBy: jimm $
 ;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
 ;$LastChangedRevision: 14326 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_load_data_file/spd_ui_valid_datatype.pro $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_valid_datatype.pro $
 ;-
 Function spd_ui_valid_datatype, instr_in, ilist, llist
 

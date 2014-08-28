@@ -28,7 +28,6 @@ pro spd_ui_load_data_file_load, state, event
     Help, /Last_Message, Output = err_msg
     if is_struct(state) then begin
       FOR j = 0, N_Elements(err_msg)-1 DO state.historywin->update,err_msg[j]
-      x=state.gui_id
       histobj=state.historywin
     endif
     if !error_state.name eq 'THM_SPINMODEL_POST_PROCESS_NO_TVAR' then begin
@@ -136,7 +135,6 @@ pro spd_ui_load_data_file_load, state, event
 ;    ''''+time_string(t1)+''''+', '+ $
 ;    'dtype=dtyp, station=station, astation=asi_station, probe=probe)'
 
-  state.windowStorage->getProperty, callSequence=callSequence
 
   raw_id = widget_info(state.tab_id,find_by_uname='raw_data')
   raw = widget_info(raw_id,/button_set)
@@ -153,7 +151,7 @@ pro spd_ui_load_data_file_load, state, event
                               overwrite_selections=overwrite_selections
      
   ; store load_data2obj call on windowStorage
-  callSequence->addloadcall, t0, t1, dtype, *state.observ, outcoord,raw,overwrite_selections
+  state.callSequence->addloadcall, t0, t1, dtype, *state.observ, outcoord,raw,overwrite_selections
 
  
   if is_string(loadedVarList) then begin

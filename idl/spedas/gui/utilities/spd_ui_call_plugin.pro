@@ -18,9 +18,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-05 13:39:26 -0700 (Mon, 05 May 2014) $
-;$LastChangedRevision: 15050 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-07-07 10:37:52 -0700 (Mon, 07 Jul 2014) $
+;$LastChangedRevision: 15517 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_call_plugin.pro $
 ;
 ;-
@@ -30,26 +30,24 @@ pro spd_ui_call_plugin, event, info
 
     compile_opt idl2, hidden
 
+    widget_control, event.id, get_uvalue=plugin
+  
+    ; handle and report errors
+    err_xxx = 0
+    Catch, err_xxx
+    IF (err_xxx NE 0) THEN BEGIN
+      Catch, /Cancel
+      spd_ui_message, 'The plugin "'+plugin.procedure+'" could not be found.  '+ $
+        'Check that file exists in the current IDL path.', $
+        sb=status_bar, hw=history_window, $
+        /dialog, /error, /center, title='Plugin not found.'     
+      RETURN
+    ENDIF
 
-  ;-------------------------------------------------------
-  ; Check that procedure exists in current IDL path
-  ;-------------------------------------------------------
-  
-  widget_control, event.id, get_uvalue=plugin
-  
-  if ~spd_find_file(plugin.procedure+'.pro') then begin
-    spd_ui_message, 'The plugin file "'+plugin.procedure+'.pro" could not be located.  '+ $
-                    'Check that file exists in the current IDL path.', $
-                    sb=status_bar, hw=history_window, $
-                    /dialog, /error, /center, title='Plugin not found.'
-    return
-  endif
-  
-  
   ;-------------------------------------------------------
   ; Call procedure
   ;-------------------------------------------------------
-  
+   
   if ptr_valid(plugin.data) && is_struct(*plugin.data) then begin
     data_structure = *plugin.data
   endif

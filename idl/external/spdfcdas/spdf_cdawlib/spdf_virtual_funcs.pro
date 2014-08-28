@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
+;$Date: 2014-07-01 11:24:32 -0700 (Tue, 01 Jul 2014) $
 ;$Header: /home/rumba/cdaweb/dev/control/RCS/spdf_virtual_funcs.pro,v 1.0 
 ;$Locker: kovalick $
-;$Revision: 14512 $
+;$Revision: 15494 $
 ;
 ;Copyright 1996-2013 United States Government as represented by the 
 ;Administrator of the National Aeronautics and Space Administration. 
@@ -196,65 +196,6 @@ function check_myvartype, nbuf, org_names
       endif
    endfor   
 
-   ;  Old logic: (RCJ 08/29/2012)
-   ;
-   ; RCJ 01/23/2007  depend_0s is to be used if one of the vars
-   ; becomes additional or ignore_data
-;   depend_0s=''
-;   for i=0,n_elements(tag_names(nbuf))-1 do begin
-;      depend_0s=[depend_0s,nbuf.(i).depend_0]
-;   endfor
-;   depend_0s=depend_0s[1:*]
-;   ; RCJ 11/09/2007  Added same thing for depend_1's
-;   depend_1s=''
-;   for i=0,n_elements(tag_names(nbuf))-1 do begin
-;      if (spdf_tagindex('DEPEND_1',tag_names(nbuf.(i))) ge 0) then $
-;      depend_1s=[depend_1s,nbuf.(i).depend_1]
-;   endfor
-;   if n_elements(depend_1s) gt 1 then depend_1s=depend_1s[1:*]
-   ;
-       ; we don't want the var to be ignored in case we are going to write a cdf,
-       ; but we also don't want the var listed/plotted, so turn it into a
-       ; 'additional_data'.
-      ; if ((nbuf.(var_indices(i)).var_type eq 'data') or $
-      ;  (nbuf.(var_indices(i)).var_type eq 'support_data')) then $
-      ;   nbuf.(var_indices(i)).var_type = 'additional_data' else $
-      ;   nbuf.(var_indices(i)).var_type='ignore_data'
-      ; if ((nbuf.(var_indices(i)).var_type eq 'additional_data') or $
-      ;  (nbuf.(var_indices(i)).var_type eq 'ignore_data')) then begin
-      ;	  if nbuf.(var_indices(i)).depend_0 ne '' then begin
-      ;       q=where(depend_0s eq nbuf.(var_indices(i)).depend_0)
-      ;       if n_elements(q) eq 1 then $
-      ;	        s=execute("nbuf."+nbuf.(var_indices(i)).depend_0+".var_type='additional_data'")
-      ;    endif	
-      ;       if nbuf.(var_indices(i)).depend_1 ne '' then begin
-      ;       q=where(depend_1s eq nbuf.(var_indices(i)).depend_1)
-      ;       if n_elements(q) eq 1 then $
-      ;	        s=execute("nbuf."+nbuf.(var_indices(i)).depend_1+".var_type='additional_data'")
-      ;    endif	
-      ; endif	
-       ; RCJ 07/14/2008  Now we do want the depends listed.
-;       print,'*********** not requested: ', nbuf.(var_indices[i]).varname,'  ',nbuf.(var_indices[i]).var_type
-;       if (nbuf.(var_indices[i]).var_type eq 'data')  then $
-;         nbuf.(var_indices[i]).var_type='additional_data'
-;       if (nbuf.(var_indices[i]).var_type eq 'additional_data') then begin
-;      	  if nbuf.(var_indices[i]).depend_0 ne '' then begin
-;                   q=where(depend_0s eq nbuf.(var_indices[i]).depend_0)
-;                   if n_elements(q) eq 1 then $
-;      	        s=execute("nbuf."+nbuf.(var_indices[i]).depend_0+".var_type='additional_data'")
-;                endif	
-;      	  if nbuf.(var_indices[i]).depend_1 ne '' then begin
-;                   q=where(depend_1s eq nbuf.(var_indices[i]).depend_1)
-;                   if n_elements(q) eq 1 then $
-;      	        s=execute("nbuf."+nbuf.(var_indices[i]).depend_1+".var_type='additional_data'")
-;          endif	
-;      endif	
-;
-;    Even older logic:  (RCJ 08/29/2012)
-;
-    ;if(wc[0] lt 0) then nbuf.(var_indices[i]).var_type="ignore_data"
-    ;if(wc[0] lt 0) then nbuf.(var_indices[i]).var_type="metadata"   
-
 return, status
 end
 
@@ -354,10 +295,11 @@ status=0
     if(component0_index ge 0) then begin
 ; WARNING if /NODATASTRUCT keyword not set an error will occur here
 ;TJK - changed this from tagnames to tagnames1
-      if(spdf_tagindex('HANDLE',tagnames1) ge 0) then $
-        buf.(vvtag_indices[i]).HANDLE=buf.(component0_index).HANDLE $
-
-      else print, "Set /NODATASTRUCT keyword in call to spdf_read_mycdf";
+      if(spdf_tagindex('HANDLE',tagnames1) ge 0) then begin
+        buf.(vvtag_indices[i]).HANDLE=buf.(component0_index).HANDLE 
+      endif else begin 
+        print, "Set /NODATASTRUCT keyword in call to spdf_read_mycdf" 
+      endelse   
     endif else begin
      print, "ERROR= No COMPONENT0 variable found in alternate_view"
      print, "ERROR= Message: ",component0_index
@@ -614,7 +556,7 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
 ; use the index passed in instead of vvtag_indices[0]
 ;  cond0=buf.(vvtag_indices[0]).COMPONENT_0 
   cond0=buf.(index).COMPONENT_0 
-  x0=execute('handle_value, buf.'+cond0+'.HANDLE,data') 
+  handle_value, buf.(cond0).HANDLE,data
 ;TJK 12/15/2006 these aren't right either - we'll use index
 ;  fillval=buf.(vvtag_indices[0]).fillval 
 ;  rmin=buf.(vvtag_indices[0]).VALIDMIN[0] 
@@ -631,11 +573,6 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
   tmax=buf.(index).VALIDMAX[1] 
   pmax=buf.(index).VALIDMAX[2] 
 
-;  x0=execute('cond0=buf.'+vvtag_indices[0]+'.COMPONENT_0') 
-;  x0=execute('handle_value, buf.'+org_names[0]+'.HANDLE,data') 
-;  x0=execute('fillval=buf.'+org_names[0]+'.fillval') 
-
-; if(COORD eq "SYN-GCI") then begin
   r=data[0,*]
   theta=data[1,*]
   phi=data[2,*]
@@ -824,12 +761,11 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
   dc=where(depends eq 'EPOCH1',dcn)
   if(not dcn) then begin
    nu_ep_handle=handle_create(value=t3min)
-   ;x0=execute('nbuf.'+depend0+'.handle=nu_ep_handle')
-   x0=execute('temp_buf=nbuf.'+depend0)
+   temp_buf=nbuf.(depend0)
    new=create_struct('EPOCH1',temp_buf)
-   x0=execute('new.'+epoch1+'.handle=nu_ep_handle')
-   x0=execute('new.'+epoch1+'.VARNAME=epoch1')
-   x0=execute('new.'+epoch1+'.LABLAXIS=epoch1')
+   new.(epoch1).handle=nu_ep_handle
+   new.(epoch1).VARNAME=epoch1
+   new.(epoch1).LABLAXIS=epoch1
   endif
 ; Modify position data
   if(COORD eq "SYN-GCI") then begin
@@ -895,7 +831,7 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
   cond0=buf.(INDEX).COMPONENT_0 
   ;cond0=buf.(vvtag_indices(indat)).COMPONENT_0 
 ;print, cond0, INDEX
-  x0=execute('handle_value, buf.'+cond0+'.HANDLE,data') 
+  handle_value, buf.(cond0).HANDLE,data
 
 ; Convert BGSE vector to angular BGSE; 
   data_sz=size(data)
@@ -1461,13 +1397,7 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, im_time
    endif
-;
-;   a0=spdf_tagindex(tagnames,'GCI_LOOK_DIR')
-;   if(a0 ne -1) then begin
-;    handle_value, buf.(a0).handle, look
-;   endif
-; help, look
-;
+
    a0=spdf_tagindex(tagnames,'ATTITUDE')
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, attit
@@ -1578,14 +1508,14 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
     corg=n_elements(temp)
     org_names=strarr(n_elements(temp)+2)
     wc=where(temp ne '',wcn)
-    org_names(wc)=temp(wc)
+    org_names[wc]=temp[wc]
 ; Populate idl structure w/ geod_lat and geod_lon data
 ; Create handles and to existing structure
    a0=spdf_tagindex(tagnames,'GEOD_LAT')
    if(a0 ne -1) then begin
     gdlat_handle=handle_create(value=geod_lat)
     buf.(a0).handle=gdlat_handle
-    org_names(corg)='GEOD_LAT'
+    org_names[corg]='GEOD_LAT'
    endif else begin
      print, "ERROR= No GEOD_LAT variable found in cdf (conv_map_image)"
      print, "ERROR= Message: ", a0
@@ -1596,7 +1526,7 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
    if(a0 ne -1) then begin
     gdlon_handle=handle_create(value=geod_lon)
     buf.(a0).handle=gdlon_handle
-    org_names(corg+1)='GEOD_LONG'
+    org_names[corg+1]='GEOD_LONG'
    endif else begin
      print, "ERROR= No GEOD_LONG variable found in cdf (conv_map_image)"
      print, "ERROR= Message: ", a0
@@ -1766,8 +1696,8 @@ FUNCTION calc_p, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
   cond0=buf.(INDEX).COMPONENT_0 
    ;cond1=buf.(vvtag_indices(indat)).COMPONENT_1 
   cond1=buf.(INDEX).COMPONENT_1 
-  x0=execute('handle_value, buf.'+cond0+'.HANDLE,V_GSE_p') 
-  x1=execute('handle_value, buf.'+cond1+'.HANDLE,np') 
+  handle_value, buf.(cond0).HANDLE,V_GSE_p
+  handle_value, buf.(cond1).HANDLE,np
 ; Compute Pressure
   wnp=where(np eq fillval, wnpn)
   wv=where(V_GSE_p(0,*) eq fillval, wvn)
@@ -1871,8 +1801,12 @@ FUNCTION Add_51s, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 
 ; Determine the "parent variable" component_0
   cond0=buf.(vvar_index).COMPONENT_0 
-  if (handle_found) then x0=execute('handle_value, buf.'+cond0+'.HANDLE,parent_times') $
-	else x0=execute('parent_times =  buf.'+cond0+'.DAT')
+  if (handle_found) then begin 
+    handle_value, buf.(cond0).HANDLE,parent_times
+	endif else begin 
+    parent_times =  buf.(cond0).DAT
+	endelse	
+	
   shifted_times = parent_times ; create the same sized array
 
   num = n_elements(parent_times)-1
@@ -1984,8 +1918,11 @@ FUNCTION Add_seconds, buf, org_names, seconds=seconds, INDEX=INDEX, DEBUG=DEBUG
 
 ; Determine the "parent variable" component_0
   cond0=buf.(vvar_index).COMPONENT_0 
-  if (handle_found) then x0=execute('handle_value, buf.'+cond0+'.HANDLE,parent_times') $
-	else x0=execute('parent_times =  buf.'+cond0+'.DAT')
+  if (handle_found) then begin 
+     handle_value, buf.(cond0).HANDLE,parent_times 
+	endif else begin
+	   parent_times = buf.(cond0).DAT
+	endelse
   shifted_times = parent_times ; create the same sized array
 
   num = n_elements(parent_times)-1
@@ -2092,9 +2029,11 @@ FUNCTION compute_magnitude, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 
 ; Determine the "parent variable" component_0
   cond0=buf.(vvar_index).COMPONENT_0 
-  if (handle_found) then x0=execute('handle_value, buf.'+cond0+'.HANDLE,parent') $
-	else x0=execute('parent =  buf.'+cond0+'.DAT')
-
+  if (handle_found) then begin 
+    handle_value, buf.(cond0).HANDLE,parent
+	endif else begin 
+	  parent =  buf.(cond0).DAT
+	endelse
   psize = size(parent, /struct)
   ; create a magnitude array
   magnitude = make_array(psize.dimensions(psize.n_dimensions-1))
@@ -2224,8 +2163,11 @@ FUNCTION extract_array, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 
 ; Determine the "parent variable" component_0
   cond0=buf.(vvar_index).COMPONENT_0 
-  if (handle_found) then x0=execute('handle_value, buf.'+cond0+'.HANDLE,parent') $
-	else x0=execute('parent =  buf.'+cond0+'.DAT')
+  if (handle_found) then begin 
+    handle_value, buf.(cond0).HANDLE,parent
+	endif else begin 
+	 parent =  buf.(cond0).DAT
+	endelse
 
   evarname = buf.(vvar_index).varname
 
@@ -2580,13 +2522,16 @@ print, 'DEBUG, In comp_epoch'
 
 ; Determine the "parent variable" component_0
   cond0=buf.(vvar_index).COMPONENT_0 
-  if (handle_found) then x0=execute('handle_value, buf.'+cond0+'.HANDLE,parent_times') $
-	else x0=execute('parent_times =  buf.'+cond0+'.DAT')
+  if (handle_found) then begin 
+    handle_value, buf.(cond0).HANDLE,parent_times
+  endif else begin 
+    parent_times =  buf.(cond0).DAT
+  endelse
 
 ; Determine the "parent variable's sidekick" component_1
   cond1=buf.(vvar_index).COMPONENT_1 
-  if (handle_found) then x0=execute('handle_value, buf.'+cond1+'.HANDLE,parent_subsec') $
-	else x0=execute('parent_subsec =  buf.'+cond1+'.DAT')
+  if (handle_found) then handle_value, buf.(cond1).HANDLE,parent_subsec $
+	else parent_subsec =  buf.(cond1).DAT
 
   num = n_elements(parent_times)
   shifted_times = make_array(num, /double)
@@ -2702,8 +2647,8 @@ FUNCTION comp_themis_epoch, buf, org_names, index=index, DEBUG=DEBUG, $
 
 ; Determine the "parent variable" component_0
   cond0=buf.(vvar_index).COMPONENT_0 
-  if (handle_found) then x0=execute('handle_value, buf.'+cond0+'.HANDLE,base_time') $
-	else x0=execute('base_time =  buf.'+cond0+'.DAT')
+  if (handle_found) then handle_value, buf.(cond0).HANDLE,base_time $
+	else base_time =  buf.(cond0).DAT
 
 ; Determine the "parent variable's sidekick" component_1
   cond1=buf.(vvar_index).COMPONENT_1 
@@ -2711,12 +2656,12 @@ FUNCTION comp_themis_epoch, buf, org_names, index=index, DEBUG=DEBUG, $
 ;TJK 11/21/2008 - add check for whether the seconds variable handle is
 ;                 valid (greater than 0) - if not no data exists, get out
 
-  if (handle_found) then x0 = execute('hv = buf.'+cond1+'.HANDLE') $
-	else x0=execute('hv =  buf.'+cond1+'.DAT')
+  if (handle_found) then hv = buf.(cond1).HANDLE $
+	else hv =  buf.(cond1).DAT
 
   if (hv[0] gt 0) then begin
-  if (handle_found) then x0=execute('handle_value, buf.'+cond1+'.HANDLE,seconds') $
-	else x0=execute('seconds =  buf.'+cond1+'.DAT')
+  if (handle_found) then handle_value, buf.(cond1).HANDLE,seconds $
+	else seconds =  buf.(cond1).DAT
 
   num = n_elements(seconds)
   shifted_times = make_array(num, /double)
@@ -2889,11 +2834,11 @@ print, 'DEBUG, In convert_toev'
 ; Determine the "parent variable" component_0
   cond0=buf.(vvar_index).COMPONENT_0 
   if (handle_found) then begin
-      x0=execute('handle_value, buf.'+cond0+'.HANDLE,velocity') 
-      x0=execute('fillval = buf.'+cond0+'.fillval')
+      handle_value, buf.(cond0).HANDLE,velocity
+      fillval = buf.(cond0).fillval
 print, 'velocity fillvalu = ',fillval 
   endif else begin
-      x0=execute('velocity =  buf.'+cond0+'.DAT')
+      velocity =  buf.(cond0).DAT
   endelse
 
   num = n_elements(velocity)
@@ -2999,11 +2944,11 @@ print, 'DEBUG, In convert_Ni'
 ; Determine the "parent variable" component_0
   cond0=buf.(vvar_index).COMPONENT_0 
   if (handle_found) then begin
-      x0=execute('handle_value, buf.'+cond0+'.HANDLE,log_density') 
-      x0=execute('fillval = buf.'+cond0+'.fillval')
+      handle_value, buf.(cond0).HANDLE,log_density 
+      fillval = buf.(cond0).fillval
 print, 'log_density fillvalu = ',fillval 
   endif else begin
-      x0=execute('log_density =  buf.'+cond0+'.DAT')
+      log_density =  buf.(cond0).DAT
   endelse
 
   num = n_elements(log_density)
@@ -3207,15 +3152,15 @@ print, 'DEBUG, In correct_FAST_By'
   cond1=buf.(vvar_index).COMPONENT_1 ; unix_time
   cond2=buf.(vvar_index).COMPONENT_2 ; ilat
   if (handle_found) then begin
-      x0=execute('handle_value, buf.'+cond0+'.HANDLE,BY') 
-      x0=execute('handle_value, buf.'+cond1+'.HANDLE,unix_time') 
-      x0=execute('handle_value, buf.'+cond2+'.HANDLE,ilat') 
-      x0=execute('fillval = buf.'+cond0+'.fillval')
+      handle_value, buf.(cond0).HANDLE,BY
+      handle_value, buf.(cond1).HANDLE,unix_time
+      handle_value, buf.(cond2).HANDLE,ilat
+      fillval = buf.(cond0).fillval
       ;print, 'BY fillvalu = ',fillval 
   endif else begin
-      x0=execute('BY =  buf.'+cond0+'.DAT')
-      x0=execute('unix_time =  buf.'+cond1+'.DAT')
-      x0=execute('ilat =  buf.'+cond2+'.DAT')
+      BY =  buf.(cond0).DAT
+      unix_time =  buf.(cond1).DAT
+      ilat =  buf.(cond2).DAT
   endelse
 
   num = n_elements(BY)
@@ -3906,7 +3851,7 @@ if (c_0 ne '') then begin ;this should be the real data
            c = spdf_break_mystring(ilist[inum],delimiter='(')
            if (n_elements(c) eq 2) then rem = strmid(c[1], 0,strlen(c[1])-1)
            if (rem ne '') then begin ;apply the reduction syntax to the parent array
-              y0 = execute('new_array = parent_array['+rem+',*]') ;last dim. is records
+              new_array = parent_array[rem,*];last dim. is records
 ;stop;
               if (num_lists eq 1) then begin
                 new_array = reform(new_array) ;remove 1-d dimensions

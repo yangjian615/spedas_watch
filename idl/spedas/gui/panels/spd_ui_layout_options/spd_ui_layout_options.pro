@@ -16,9 +16,9 @@
 ;spinner (as they change) so that the user can't click down below valid values.
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-06-02 15:01:37 -0700 (Mon, 02 Jun 2014) $
-;$LastChangedRevision: 15288 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-07-01 20:07:45 -0700 (Tue, 01 Jul 2014) $
+;$LastChangedRevision: 15500 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_layout_options/spd_ui_layout_options.pro $
 ;--------------------------------------------------------------------------------
 
@@ -1741,8 +1741,6 @@ EndIF
 ;      endelse
       
       spd_ui_layout_draw_update,event.top,state
-      
-      FOR i=0,N_Elements(state.info.dataButtons)-1 DO Widget_Control, state.info.dataButtons[i], /sensitive
       
       state.historywin->Update, 'SPD_UI_LAYOUT_OPTIONS: Layout updated.  Layout Options widget closed.'
       state.info.statusBar->update,'Plot/Layout Options closed.'

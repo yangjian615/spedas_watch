@@ -7,15 +7,13 @@
 ;
 ;CALLING SEQUENCE:
 ;  spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
-;                           dataFlag, dataButtons, timerange, treeCopyPtr
+;                           timerange, treeCopyPtr
 ;
 ;INPUT:
 ;  gui_id:  The id of the main GUI window.
 ;  windowStorage:  The windowStorage object.
 ;  loadedData:  The loadedData object.
 ;  historyWin:  The history window object.
-;  dataFlag: 
-;  dataButtons: 
 ;  timerange:  The GUI timerange object.
 ;  treeCopyPtr:  Pointer variable to a copy of the load widget tree.
 ;  
@@ -230,7 +228,7 @@ pro spd_ui_init_load_window_event, event
 end
 
 pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
-                             dataFlag, dataButtons, timerange, treeCopyPtr,userSelectPtr
+                             timerange, treeCopyPtr,userSelectPtr
 
   compile_opt idl2, hidden
   
@@ -287,28 +285,11 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
    
   for i= 0, tabNum-1 do begin
 
-     if (loadDataTabs.mission_name[i] eq 'THEMIS') then begin   
-         spd_ui_load_data_file, tabArray[i], gui_id, windowStorage, loadedData, $
-                         historyWin, dataFlag, dataButtons, timerange, statusText, $
-                         loadTree=spedasTree,timeWidget=loadTimeWidget,treeCopyPtr
-         timeArray[i]=loadTimeWidget
-         treeArray[i]=spedasTree
-         continue
-      endif 
-
-      if (loadDataTabs.mission_name[i] eq 'THEMIS Derived Spectra') then begin   
-         spd_ui_part_getspec_options, tabArray[i], loadedData, historyWin, statusText, $
-                               timerange,callSequence,timeWidget=specTimeWidget
-         treeArray[i] = obj_new() ;filler obj, should not be referenced 
-         timeArray[i] = specTimeWidget
-         continue
-      endif
-
-      call_procedure, strtrim(loadDataTabs.procedure_name[i]), tabArray[i], loadedData, historyWin, statusText, $
-                      treeCopyPtr, timeRange, callSequence,loadTree=thisTreeArray, $
-                      timeWidget=otherTimeWidget
-      timeArray[i] = otherTimeWidget
-      treeArray[i] = thisTreeArray
+    call_procedure, strtrim(loadDataTabs.procedure_name[i]), tabArray[i], loadedData, historyWin, statusText, $
+                    treeCopyPtr, timeRange, callSequence,loadTree=thisTreeArray, $
+                    timeWidget=otherTimeWidget
+    timeArray[i] = otherTimeWidget
+    treeArray[i] = thisTreeArray
       
   endfor     
   

@@ -23,10 +23,10 @@
 ; OUTPUT:
 ;  none
 ;  
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-31 17:09:35 -0700 (Mon, 31 Mar 2014) $
-;$LastChangedRevision: 14721 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/goes_ui_gen_overplot.pro $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2014-07-03 15:13:05 -0700 (Thu, 03 Jul 2014) $
+;$LastChangedRevision: 15507 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/spedas_plugin/goes_ui_gen_overplot.pro $
 ;-
 
 pro goes_ui_gen_overplot_event, event

@@ -29,8 +29,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-06-20 18:44:58 -0700 (Fri, 20 Jun 2014) $
-;$LastChangedRevision: 15400 $
+;$LastChangedDate: 2014-07-07 12:07:04 -0700 (Mon, 07 Jul 2014) $
+;$LastChangedRevision: 15518 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice1d_xy.pro $
 ;
 ;-
@@ -78,13 +78,17 @@ pro thm_part_slice1d_xy, slice, $
       ;create array with equal spacing
       pad = median(x - shift(x,1)) * (findgen(n/2.) + 1)
       x = [ min(x) - reverse(pad), x, max(x) + pad ]
+      
+      rotated_axis = x ;used as plot's x axis
 
     endif else begin
 
       ;create array with equal spacing
       pad = median(y - shift(y,1)) * (findgen(n/2.) + 1)
       y = [ min(y) - reverse(pad), y, max(y) + pad ]
-
+      
+      rotated_axis = y ;used as plot's x axis
+      
     endelse
     
     ;convert to polar
@@ -117,18 +121,9 @@ pro thm_part_slice1d_xy, slice, $
 
   ;adjust annotations and xaxis if the cut was rotated
   if keyword_set(angle) then begin
-    alignment += ', ' + ((angle gt 0) ? '+':'') + strtrim(angle,2)
+    alignment += ', ' + ((angle ge 0) ? '+':'-') + strtrim(angle,2) + string(byte('b0'xu))
     axis = ''
-    
-    ;keep sign of original axis
-    if ~undefined(x0) then begin
-      sign = -1 * (y lt 0) + (y ge 0)
-    endif else begin
-      sign = -1 * (x lt 0) + (x ge 0)
-    endelse
-    
-    xaxis = sqrt(x^2 + y^2) * sign
-    
+    xaxis = rotated_axis
   endif
   
   type = slice.energy ? 'E':'V'

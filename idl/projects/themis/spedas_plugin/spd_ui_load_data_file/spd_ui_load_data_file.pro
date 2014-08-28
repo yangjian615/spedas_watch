@@ -3,37 +3,33 @@
 ;  spd_ui_load_data_file
 ;
 ;PURPOSE:
-;  A widget interface for loading SPEDAS data into the GUI
+;  A widget interface for loading THEMIS data into the SPEDAS GUI
 ;
 ;CALLING SEQUENCE:
-;  spd_ui_load_data_file, tab_id, gui_id, windowStorage, loadedData, historyWin, $
-;                        dataFlag, dataButtons, trObj, statusText, loadTree=loadList,$
-;                        treeCopyPtr, timeWidget=timeid
+;  spd_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
+;                         treeCopyPtr, trObj, callSequence, $
+;                         loadTree=loadList, timeWidget=timeid
 ;
 ;INPUT:
 ;  tab_id:  The widget id of the tab.
-;  gui_id:  The widget id of the main GUI window.
-;  windowStorage:  The windowStorage object.
 ;  loadedData:  The loadedData object.
 ;  historyWin:  The history window object.
-;  dataFlag:  
-;  dataButtons:  
-;  trObj:  The GUI timerange object.
 ;  statusText:  The status bar object for the main Load window.
 ;  treeCopyPtr:  Pointer variable to a copy of the load widget tree.
-;  
-;KEYWORDS:
+;  trObj:  The GUI timerange object.
+;  callSequence:  Reference to GUI call sequence object
+;
+;OUTPUT:
 ;  loadTree = The Load widget tree.
 ;  timeWidget = The time widget object.
 ;
-;OUTPUT:
-;  none
+;NOTES:
+;  
 ;
-;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-20 13:58:59 -0800 (Thu, 20 Feb 2014) $
-;$LastChangedRevision: 14400 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_load_data_file/spd_ui_load_data_file.pro $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-07-01 20:07:45 -0700 (Tue, 01 Jul 2014) $
+;$LastChangedRevision: 15500 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file.pro $
 ;
 ;-
 
@@ -43,8 +39,7 @@ Pro spd_ui_load_data_file_event, event;, info
 
   ; get the state structure from the widget
   base = event.handler
-  stash = widget_info(base,/child)
-  widget_control, stash, Get_UValue=state, /no_copy
+  widget_control, base, Get_UValue=state, /no_copy
 
   ; handle and report errors
   err_xxx = 0
@@ -54,7 +49,6 @@ Pro spd_ui_load_data_file_event, event;, info
     Help, /Last_Message, Output = err_msg
     if is_struct(state) then begin
       FOR j = 0, N_Elements(err_msg)-1 DO state.historywin->update,err_msg[j]
-      x=state.gui_id
       histobj=state.historywin
     endif
     Print, 'Error--See history'
@@ -62,8 +56,8 @@ Pro spd_ui_load_data_file_event, event;, info
        /noname, /center, title='Error in Load Data')
     Widget_Control, event.TOP, Set_UValue=state, /No_Copy
     widget_control, event.top,/destroy
-    if widget_valid(x) && obj_valid(histobj) then begin 
-      spd_gui_error,x,histobj
+    if widget_valid(state.tab_id) && obj_valid(histobj) then begin 
+      spd_gui_error,state.tab_id,histobj
     endif
     RETURN
   ENDIF
@@ -104,13 +98,6 @@ Pro spd_ui_load_data_file_event, event;, info
           widget_control, /hourglass
           state.statusText->Update, 'Loading data...'
           spd_ui_load_data_file_load, state, event
-          IF Obj_Valid(state.loadedData) && state.dataFlag EQ 0 THEN BEGIN
-             dataNames=state.loadedData->GetAll()
-             IF is_string(dataNames) && state.dataFlag EQ 0 THEN BEGIN
-                FOR i=0,N_Elements(state.dataButtons)-1 DO Widget_Control, state.dataButtons[i], sensitive=1
-                state.dataFlag=1  
-            ENDIF
-          ENDIF
         endif else begin
           if state.instr eq 'none' then begin
             h = 'No instrument selected.  Please select an instrument.'
@@ -147,8 +134,7 @@ Pro spd_ui_load_data_file_event, event;, info
           widget_control, /hourglass
           ;val_data = state.loadeddata->getall();/times)
           spd_ui_load_data_file_del, state
-          state.windowStorage->getProperty,callSequence=callSequence
-          callSequence->clearCalls
+          state.callSequence->clearCalls
           h = 'All data deleted.'
           state.statusText->Update, h
           state.historyWin->Update, 'SPD_UI_LOAD_DATA_FILE: ' + h
@@ -213,14 +199,16 @@ Pro spd_ui_load_data_file_event, event;, info
   ENDCASE
   
   ; must ALWAYS reset the state value
-  widget_control, stash, set_uvalue=state, /NO_COPY
+  widget_control, base, set_uvalue=state, /NO_COPY
 
   RETURN
 END
 
-pro spd_ui_load_data_file, tab_id, gui_id, windowStorage, loadedData, historyWin, $
-                           dataFlag, dataButtons, trObj, statusText, loadTree=loadList,$
-                           treeCopyPtr,timeWidget=timeid
+pro spd_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
+                           treeCopyPtr, trObj, callSequence, $
+                           loadTree=loadList, $
+                           timeWidget=timeid
+  
   compile_opt idl2, hidden
   
   widget_control, /hourglass
@@ -268,15 +256,10 @@ pro spd_ui_load_data_file, tab_id, gui_id, windowStorage, loadedData, historyWin
   dlist1 = ptr_new(dlist1_all) & dlist2 = ptr_new(dlist2_all)
   ;dlist1 = dlist1_all & dlist2 = dlist2_all
   
-      ;master widget
-  
-;  tlb = Widget_Base(/Col, Title = 'SPEDAS: Load Data ', Group_Leader = gui_id, $
-;                    /Modal, /Floating, /TLB_KILL_REQUEST_EVENTS)
-                    
+                   
   ; create base widgets
-  topBase = Widget_Base(tab_id, /Row, /Align_Top,  tab_mode=1, /Align_Left, YPad=1) 
-;  buttonBase = Widget_Base(tab_id, /Row, /Align_Center, YPad=8) 
-;  statusBase = Widget_Base(tab_id, /Row)
+  topBase = Widget_Base(tab_id, /Row, /Align_Top,  tab_mode=1, /Align_Left, YPad=1, $
+                        event_pro='spd_ui_load_data_file_event') 
   dataBase = Widget_Base(topBase, /Col, /Align_Left, YPad=1)
   data_label = Widget_Label(dataBase, Value='Data Selection:', /Align_Left)  
   dlistBase = Widget_Base(dataBase, /Col, XPad=2, Frame=3)     
@@ -336,8 +319,6 @@ pro spd_ui_load_data_file, tab_id, gui_id, windowStorage, loadedData, historyWin
                                   Sensitive=0, uval='COORD_DLIST')
   
   getresourcepath,rpath
-;  cal = read_bmp(rpath + 'cal.bmp', /rgb)
-;  spd_ui_match_background, tab_id, cal  
   
   midRowBase = Widget_Base(dbottomBase, /row)
   
@@ -398,12 +379,7 @@ pro spd_ui_load_data_file, tab_id, gui_id, windowStorage, loadedData, historyWin
           endif else begin
             val_data_temp[i] = '  - '+val_data[0,i]+':    '+val_data[1,i]+' to '+val_data[2,i]
           endelse
-          
-;          if child then begin
-;            val_data_temp[i] = '  - '+val_data[0,i]+':    '+val_data[1,i]+' to '+val_data[2,i]
-;          endif else begin
-;            val_data_temp[i] = val_data[0,i]+':    '+val_data[1,i]+' to '+val_data[2,i]
-;          endelse
+
         endfor
         val_data = val_data_temp
       endelse
@@ -414,52 +390,40 @@ pro spd_ui_load_data_file, tab_id, gui_id, windowStorage, loadedData, historyWin
                      XSize=380, YSize=380, mode=0, /multi,/showdatetime)
                      
   loadList->update,from_copy=*treeCopyPtr
-;  loadList = Widget_List(loadBase, Value=val_data, UValue='LOADLIST', $
-;                         XSize=75, YSize=24, /multiple)
+
   ; ============== End setup loaded data list =================================
 
-;  cancelButton = Widget_Button(bottomloadBase, Value='Cancel', XSize=82, UValue='CANC', $
-;    ToolTip='Cancel this operation')
+
   clearButton = Widget_Button(bottomloadBase, Value='Delete All Data', UValue='CLEAR', $
     ToolTip='Deletes all loaded data')
-;  okButton = Widget_Button(bottomloadBase, Value='Done', XSize=82, uValue='DISMISS', $
-;    ToolTip='Dismiss Load Panel')
-
-;  statusText = Widget_Text(statusBase, Value='Status information is displayed here ', $
-;    UValue='STAT', XSize=87)
-    
-;  ; Create Status Bar Object
-;  statusText = Obj_New('SPD_UI_MESSAGE_BAR', $
-;                       Value='Status information is displayed here.', $
-;                        statusBase, XSize=145, YSize=1)
 
 
   ;main structure for this panel (to be filled in as items are needed)
-  state = {tab_id:tab_id, gui_id:gui_id, itypeDroplist:itypeDroplist, observBase:observBase, $
+  state = {tab_id:topbase, $ ;TODO: spd_ui_load_data_file_itype_sel will 
+                             ;      fail if this tag is renamed 
+           itypeDroplist:itypeDroplist, observBase:observBase, $
            observ_label:observ_label, timeID:timeID, $
            observ_labels:observ_labels, observLabel:observLabel, observ:observ, $
            observList:observList, validobserv:validobserv, $
            validobservlist:ptr_new(validobservlist), validIType:validIType, $
            level1List:level1List, probe:ptr_new(probe0), probes:probes, $
-           validProbes:validProbes, dataFlag:dataFlag, $
+           validProbes:validProbes, $
            station:ptr_new(station0), astation:ptr_new(astation0), $
            level2List:level2List, dlist1:dlist1, dlist2:dlist2, instr:instr, $
            dtyp10:dtyp10, dtyp20:dtyp20, dtyp1:dtyp1, dtyp2:dtyp2, dtype:dtype, $
            dtyp:dtyp, dtyp_pre:ptr_new(), $
            coordDroplist:coordDroplist, validCoords:ptr_new(validCoords), $
-           outCoord:outCoord, tr:trObj, dataButtons:dataButtons, $
-           ;addButton:addButton, minusButton:minusButton, loadlist:state_x.loadList, $
+           outCoord:outCoord, tr:trObj, $
            addButton:addButton, minusButton:minusButton, loadlist:loadList, $
            loadedData:loadedData, historyWin:historyWin, $
            validData:ptr_new(val_data), $
-           statusText:statusText, windowStorage:windowStorage,$
+           statusText:statusText, callSequence:callSequence, $
            treeCopyPtr:treeCopyPtr}
 
-;  CenterTLB, tlb
-  Widget_Control, widget_info(tab_id, /child), Set_UValue=state, /No_Copy
-;  Widget_Control, tab_id, /Realize
-;  XManager, 'spd_ui_load_data_file', tlb, /No_BlockWidget_Control, widget_info(tab_id, /child), Set_UValue=state, /No_Copy
 
+  Widget_Control, topbase, Set_UValue=state, /No_Copy
+
+  ;widget will be centered and realized in caller procedure
   
   RETURN
 END
