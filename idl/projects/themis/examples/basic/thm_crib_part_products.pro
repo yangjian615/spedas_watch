@@ -7,9 +7,9 @@
 ;NOTES:
 ;  A lot of features aren't shown here.  This crib is intended to Keep It Simple.
 ;
-;$LastChangedBy: aaflores1 $
-;$LastChangedDate: 2014-02-10 18:13:58 -0800 (Mon, 10 Feb 2014) $
-;$LastChangedRevision: 14272 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-02-24 13:58:57 -0800 (Mon, 24 Feb 2014) $
+;$LastChangedRevision: 14421 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_products.pro $
 ;-
 
@@ -107,11 +107,9 @@ probe='a'
 datatype='peef'
 trange=['2008-02-23','2008-02-24']
 timespan,trange
+ 
 
-;use thm_load_esa_pot to load a corrected spacecraft potential "th?_esa_pot" 
-;this will require some extra processing time
-;**NOTE**: This potential variable may have errors, use th?_pxxm_pot until further notice.
-thm_load_esa_pot,probe=probe,trange=trange
+thm_load_mom,probe=probe,trange=trange
 thm_load_fit,probe=probe,coord='dsl',trange=trange
 
 ;load particle data
@@ -120,7 +118,7 @@ thm_part_load,probe=probe,trange=trange,datatype=datatype
 ;Note ESA background removal is now enabled by default.
 ;Use esa_bgnd=0 keyword to thm_part_products to disable background removal
 thm_part_products,probe=probe,datatype=datatype,trange=trange,outputs='moments pa gyro', $
-      mag_name='tha_fgs',pos_name='tha_state_pos',sc_pot_name='tha_esa_pot'
+      mag_name='tha_fgs',pos_name='tha_state_pos',sc_pot_name='tha_pxxm_pot'
 
 tplot_options, 'xmargin', [16,10] ;bigger margin on the left, so you can see the left-side labels
 tplot,['tha_peef_density','tha_peef_velocity','tha_peef_t3','tha_peef_eflux_pa','tha_peef_eflux_gyro']

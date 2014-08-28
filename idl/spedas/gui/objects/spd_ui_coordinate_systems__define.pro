@@ -39,11 +39,13 @@
 ; NOTE: 
 ;      All coordinate system lists exist in this object's constructor, with pointers
 ;        to the lists in the objects state structure
+;        
+;      Changes to this object should be reflected in the corresponding test procedure, spd_ui_test_coordinate_systems_obj
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-21 14:24:56 -0800 (Fri, 21 Feb 2014) $
-;$LastChangedRevision: 14414 $
+;$LastChangedDate: 2014-02-24 12:53:07 -0800 (Mon, 24 Feb 2014) $
+;$LastChangedRevision: 14420 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_coordinate_systems__define.pro $
 ;-
 

@@ -61,9 +61,9 @@
 ; Updated to use new code from Davin by pcruce Jun 2010
 ; 
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-02-11 16:33:17 -0800 (Tue, 11 Feb 2014) $
-; $LastChangedRevision: 14336 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2014-02-24 18:01:17 -0800 (Mon, 24 Feb 2014) $
+; $LastChangedRevision: 14422 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/SST_cal_workdir/thm_load_sst2.pro $
 ;-
 
@@ -320,7 +320,7 @@ my_themis = source_options
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst2.pro 14336 2014-02-12 00:33:17Z jimm $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst2.pro 14422 2014-02-25 02:01:17Z aaflores $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']
@@ -410,6 +410,9 @@ if lvl ne 'l2' then begin
        data = thm_load_sst2_mergevars(psir_001,psir_006)         ;     merge data:
        store_data,thx+'_psir_data',data=data   ;{x:data.times, y:data.varn, mdistdat:data}
        usedptrs = [usedptrs,ptr_extract(data)]
+       
+       ;set time range - use requested range regardless of clipping
+       thm_part_trange, probe, 'psir', set=timerange(trange), /sst_cal
      endif
 
      if in_set(datatype_cpy,'psif') then begin
@@ -434,6 +437,8 @@ if lvl ne 'l2' then begin
        store_data,thx+'_psif_data',data=data  ;{x:data.times, y:data.varn, mdistdat:data}
        usedptrs = [usedptrs,ptr_extract(data)]
        
+       ;set time range - use requested range regardless of clipping
+       thm_part_trange, probe, 'psif', set=timerange(trange), /sst_cal
      endif
 
      if in_set(datatype_cpy,'pser') then begin
@@ -449,7 +454,9 @@ if lvl ne 'l2' then begin
        data = thm_load_sst2_mergevars(pser_001,pser_006)         ;     merge data:
        store_data,thx+'_pser_data',data=data  ;{x:data.times, y:data.varn, mdistdat:data}
        usedptrs = [usedptrs,ptr_extract(data)]
-
+       
+       ;set time range - use requested range regardless of clipping
+       thm_part_trange, probe, 'pser', set=timerange(trange), /sst_cal
      endif
 
      if in_set(datatype_cpy,'pseb') then begin
@@ -464,6 +471,9 @@ if lvl ne 'l2' then begin
        data = thm_load_sst2_mergevars(pseb_064)         ;     merge data:
        store_data,thx+'_pseb_data',data=data  ;{x:data.times, y:data.varn, mdistdat:data}
        usedptrs = [usedptrs,ptr_extract(data)]
+       
+       ;set time range - use requested range regardless of clipping
+       thm_part_trange, probe, 'pseb', set=timerange(trange), /sst_cal
      endif
      
      if in_set(datatype_cpy,'psef') then begin 
@@ -488,6 +498,8 @@ if lvl ne 'l2' then begin
        store_data,thx+'_psef_data',data=data  ;{x:data.times, y:y, mdistdat:data}
        usedptrs = [usedptrs,ptr_extract(data)]
        
+       ;set time range - use requested range regardless of clipping
+       thm_part_trange, probe, 'psef', set=timerange(trange), /sst_cal
      endif
 
      ptr_free,ptr_extract(cdfi,except=usedptrs)

@@ -1,75 +1,4 @@
 
-; Checks if a list of times covers a time range
-;
-function thm_check_tr, tr, times, margin=margin
-
-    compile_opt idl2, hidden
-  
-  if n_elements(times) lt 2 then return, 0
-  
-  if undefined(margin) then begin
-    margin = median(  (times - shift(times,1))[1:n_elements(times)-1]  )
-  endif
-  
-  return,  (min(times)-margin) le min(tr) && (max(times)+margin) ge max(tr) 
-
-end
-
-
-; Checks for presence of SST data within a given time range
-;
-function thm_check_sst_data, probe, datatype, trange, sst_cal=sst_cal, fail=fail
-
-    compile_opt idl2, hidden
-
-
-  r = 0
-  
-  
-  if keyword_set(sst_cal) then begin
-  
-    times = thm_part_dist2('th'+probe+'_'+datatype, /times)
-  
-  endif else begin
-  
-    times = call_function('thm_sst_'+datatype, probe=probe, /time)
-  
-  endelse
-  
-  
-  if times[0] ne 0 then begin
-  
-    r = thm_check_tr(trange, times)
-    
-  endif
-  
-  
-  return, r
-  
-end
-
-
-; Checks for presence of ESA data withing a given time range
-;
-function thm_check_esa_data, probe, datatype, trange, fail=fail
-
-    compile_opt idl2, hidden
-
-
-  r = 0
-
-  times = call_function('get_th'+probe+'_'+datatype, /time)
-
-  if size(times,/type) ne 8 && times[0] ne 0 then begin
-  
-    r = thm_check_tr(trange, times)
-  
-  endif
-
-  return, r
-  
-end
-
 
 ;+
 ;NAME:
@@ -81,7 +10,7 @@ end
 ;  particular time range.
 ;
 ;CALLING SEQUENCE:
-;  bool = thm_part_check_trange(probe, datatype, trange, [sst_cal=sst_cal], [fail=fail])
+;  bool = thm_part_check_trange(probe, datatype, trange [,sst_cal=sst_cal] [,fail=fail])
 ;
 ;KEYWORDS:
 ;  probe: String or string array specifying the probe
@@ -98,8 +27,8 @@ end
 ;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-09-10 17:23:36 -0700 (Tue, 10 Sep 2013) $
-;$LastChangedRevision: 13018 $
+;$LastChangedDate: 2014-02-24 18:01:17 -0800 (Mon, 24 Feb 2014) $
+;$LastChangedRevision: 14422 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_check_trange.pro $
 ;-
 function thm_part_check_trange, probe0, datatype0, trange, sst_cal=sst_cal, fail=fail
@@ -141,23 +70,21 @@ function thm_part_check_trange, probe0, datatype0, trange, sst_cal=sst_cal, fail
     return, 0
   endif  
   
+  trd = time_double(trange)
   
   ;loop over probe and data type
   for j=0, n_elements(probe)-1 do begin
     for i=0, n_elements(datatype)-1 do begin
-  
-      if strmid(datatype[i],1,1) eq 'e' then begin
       
-        r = thm_check_esa_data(probe[j], datatype[i], trange, fail=fail)
+      ;get stored time range
+      thm_part_trange, probe[j], datatype[i], get=loaded_trange, sst_cal=sst_cal
       
-      endif else if strmid(datatype[i],1,1) eq 's' then begin
-      
-        r = thm_check_sst_data(probe[j], datatype[i], trange, sst_cal=sst_cal, fail=fail)
-      
+      ;simply check against the stored range
+      if trd[0] lt loaded_trange[0] or $
+         trd[1] gt loaded_trange[1] then begin
+        return, 0
       endif
-  
-      if r eq 0 then return,0
-  
+      
     endfor
   endfor
 

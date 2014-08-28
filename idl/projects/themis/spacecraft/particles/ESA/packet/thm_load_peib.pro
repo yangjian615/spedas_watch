@@ -587,6 +587,11 @@ endif else if sc eq 'f' then begin
 	common thf_456,thf_456_ind,thf_456_dat & thf_456_dat=ibd_dat & thf_456_ind=0l
 endif
 
+
+;store time range
+thm_part_trange, sc, 'peib', set=timerange(trange)
+
+
 ; help,ibd_dat,/st
 dprint, dlevel=4, 'Data loading complete: th'+sc+' peib - apid 456'
 

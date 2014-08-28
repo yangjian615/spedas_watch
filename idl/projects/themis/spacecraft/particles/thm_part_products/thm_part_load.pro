@@ -6,8 +6,9 @@
 ;  Load ESA or SST particle data.
 ;
 ;Calling Sequence:
-;  thm_part_load, [probe=probe], [datatype=datatype], [instrument=instrument], 
-;                 [trange=trange], [sst_cal=sst_cal]
+;  thm_part_load, probe=probe, datatype=datatype  
+;                [,trange=trange] [,sst_cal=sst_cal] 
+;                [,forceload=forceload]
 ;
 ;Keywords:
 ;  probe: String or string array containing spacecraft designation (e.g. 'a')
@@ -21,9 +22,9 @@
 ;   skipped unless the forceload keyword is set.
 ;  
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-11-15 11:15:58 -0800 (Fri, 15 Nov 2013) $
-;$LastChangedRevision: 13539 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-02-24 18:01:17 -0800 (Mon, 24 Feb 2014) $
+;$LastChangedRevision: 14422 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_load.pro $
 ;-
 
@@ -48,25 +49,21 @@ pro thm_part_load, probe=probe, datatype=datatype, trange=trange, $
   endif
   
   
+  ;get current timespan if no time range is specified
+  if undefined(trange) then begin
+    trange = timerange()
+  endif
+  
+  
   ;check if requested data is already present
   if keyword_set(probe) and keyword_set(datatype) and ~keyword_set(forceload) then begin
-    
-    for i=0, n_elements(probe)-1 do begin
-    
-      for j=0, n_elements(datatype)-1 do begin
-      
-        ok = thm_part_check_trange(probe, datatype, trange, sst_cal=sst_cal, fail=fail)
-        
-        if ~ok then break
-        
-      endfor
-      
-      if ~ok then break
-      
-    endfor
-    
-    ;if check never failed then all requested data is present
-    if ok then return
+     
+    loaded = thm_part_check_trange(probe, datatype, trange, sst_cal=sst_cal, fail=fail)
+ 
+    if loaded then begin
+      dprint, dlevel=2, 'Using previously loaded data.'
+      return
+    endif
     
   endif
 
