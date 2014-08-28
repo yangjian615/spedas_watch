@@ -17,8 +17,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-07-24 12:12:58 -0700 (Thu, 24 Jul 2014) $
-;$LastChangedRevision: 15600 $
+;$LastChangedDate: 2014-07-28 13:47:52 -0700 (Mon, 28 Jul 2014) $
+;$LastChangedRevision: 15619 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_layout_options/spd_ui_layout_options.pro $
 ;--------------------------------------------------------------------------------
 
@@ -29,6 +29,7 @@ pro spd_ui_layout_sync_traces, state
   
   panel_names = spd_ui_get_panels(thewindows, panelObjs=panelObjs)
   num_panels =  n_elements(panelObjs)
+  if ~obj_valid(panelObjs[0]) then return
 
   for panel_idx = 0, num_panels-1 do begin
         ; grab the legendSettings

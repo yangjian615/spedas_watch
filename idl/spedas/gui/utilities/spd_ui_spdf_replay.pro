@@ -8,8 +8,8 @@
 ;  as I'm forking a little bit here.
 ;  
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-06-13 16:28:05 -0700 (Fri, 13 Jun 2014) $
-;$LastChangedRevision: 15364 $
+;$LastChangedDate: 2014-07-30 18:17:41 -0700 (Wed, 30 Jul 2014) $
+;$LastChangedRevision: 15630 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_spdf_replay.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ pro spd_ui_spdf_replay,tlb,statusbar,historywindow,$
   ;not copying these parameters triggers an unexpected crash in IDLnetURL on all OSs and all IDL versions up to 8.3
   timeIntervalObj_tmp = timeIntervalObj[0]
   datasetId_tmp = datasetId[0]
-  varNames_tmp = varNames[0]
+  varNames_tmp = varNames
   dataView_tmp = selectedDataView[0]
   authenticator_tmp = authenticator[0]
   errorDialog_tmp = errorDialog[0]

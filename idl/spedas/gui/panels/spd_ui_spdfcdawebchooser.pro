@@ -34,9 +34,9 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-07-10 12:51:18 -0700 (Thu, 10 Jul 2014) $
-;$LastChangedRevision: 15548 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-07-30 18:17:41 -0700 (Wed, 30 Jul 2014) $
+;$LastChangedRevision: 15630 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -430,10 +430,13 @@ pro spd_spdfGetCdawebData, $
   
   if ~obj_valid(timeInterval) then return
   
+  ;spd_spdfGetCdawebExec mutates selectedVarNames, this stores pristine copy for callsequence add, if getdataexec call succeeds.
+  saved_varnames = selectedVarNames
+  
   spd_spdfGetCdawebDataExec, $
     event, state, timeInterval, selectedDatasetId, selectedVarNames
     
-  state.callsequence->addspdfcall,[timeInterval->getCdawebStart(),timeInterval->getCdawebStop()],selectedDatasetId,selectedVarNames,*state.selectedDataview
+  state.callsequence->addspdfcall,[timeInterval->getCdawebStart(),timeInterval->getCdawebStop()],selectedDatasetId,saved_varnames,*state.selectedDataview
     
   widget_control, event.top, set_uvalue=state
   obj_destroy, timeInterval

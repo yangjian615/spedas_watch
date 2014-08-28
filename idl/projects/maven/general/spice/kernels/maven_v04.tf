@@ -839,8 +839,28 @@ SWEA Frames
       TKFRAME_-202130_SPEC            = 'ANGLES'
       TKFRAME_-202130_RELATIVE        = 'MAVEN_SPACECRAFT'
       TKFRAME_-202130_ANGLES          = ( 0.0, 0.0, -140.0 )
-      TKFRAME_-202130_AXES            = ( 1,   2,    3   )
+      TKFRAME_-202130_AXES            = ( 1,   2,      3   )
       TKFRAME_-202130_UNITS           = 'DEGREES'
+
+   \begintext
+   
+   During cruise, the SWEA boom is stowed.  To go from the deployed to 
+   the stowed boom configuration, rotate by +135 degrees about the +Y
+   axis.  Then rotate by +140 degrees about the +Z axis to transform
+   to the SWEA science frame.
+
+   \begindata
+
+      FRAME_MAVEN_SWEA_STOW           = -202131
+      FRAME_-202131_NAME              = 'MAVEN_SWEA_STOW'
+      FRAME_-202131_CLASS             = 4
+      FRAME_-202131_CLASS_ID          = -202131
+      FRAME_-202131_CENTER            = -202
+      TKFRAME_-202131_SPEC            = 'ANGLES'
+      TKFRAME_-202131_RELATIVE        = 'MAVEN_SPACECRAFT'
+      TKFRAME_-202131_ANGLES          = ( 0.0, -135.0, -140.0 )
+      TKFRAME_-202131_AXES            = ( 1,      2,      3   )
+      TKFRAME_-202131_UNITS           = 'DEGREES'
 
    \begintext
 
