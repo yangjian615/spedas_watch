@@ -6,8 +6,8 @@
 ;CALLING SEQUENCE:
 ;  source=spice_file_source() 
 ;TYPICAL USAGE:
-;  pathname = 'maven/data/sci/pfp/ATLO/mvn_ATLO_pfp_all_l0_20130601_v1.dat'
-;  files = file_retrieve(pathname,_extra = spice_file_source() )
+;  pathname = 'MAVEN/kernels/sclk/MVN_SCLKSCET.?????.tsc''
+;  sclk_kernel = file_retrieve(pathname,_extra = spice_file_source() ,/last_version)
 ;INPUT:
 ;  None required.
 ;  If default_source is provided then the relevant structure elements are copied and used in the output
@@ -41,6 +41,7 @@ if not keyword_set(psource) then begin
 ;    psource.no_update = 1
     psource.verbose=3
     psource.min_age_limit=3600  ; one hour delay before checking again
+    str_element,/add,psource,'LAST_VERSION',1        
 endif
 
 if size(/type,default_source) eq 8 then  source= default_source  else source = psource

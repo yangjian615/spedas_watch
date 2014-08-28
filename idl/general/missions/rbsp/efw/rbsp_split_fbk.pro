@@ -8,13 +8,18 @@
 ; KEYWORDS:
 ;	probe = 'a' or 'b'  NOTE: single spacecraft only, does not accept ['a b']
 ;	combine -> set to combine peak and average onto a single plot
-;	meansz -> number of data points over which to calculate the mean. This is used
+;	meansz -> number of data points over which to calculate the number of values
+;			  the local mean is away from the local standard deviation. This is used
 ;			  to set y-scaling. If not done then the yscale of the FBK plots
 ;			  is often dominated by single large amplitude spikes, masking the majority
-;			  of the data.  Default is 20.
-;	ysc -> Scale factor for y-scaling. Default is 1.  This should be set to
-;			values greater than 1 for meansz larger than the default.  For
-;			example, ysc=3. works well for meansz=1000.
+;			  of the data.  Default is 100.
+;;	meansz -> number of data points over which to calculate the mean. This is used
+;;			  to set y-scaling. If not done then the yscale of the FBK plots
+;;			  is often dominated by single large amplitude spikes, masking the majority
+;;			  of the data.  Default is 20.
+;;	ysc -> Scale factor for y-scaling. Default is 1.  This should be set to
+;;			values greater than 1 for meansz larger than the default.  For
+;;			example, ysc=3. works well for meansz=1000.
 ;
 ; CREATED: Aaron Breneman 11/07/2012
 ;
@@ -23,9 +28,9 @@
 ;			very large amplitude spiky events. 
 ;
 ; VERSION:
-;$LastChangedBy: kersten $
-;$LastChangedDate: 2013-11-06 08:06:42 -0800 (Wed, 06 Nov 2013) $
-;$LastChangedRevision: 13498 $
+;$LastChangedBy: aaronbreneman $
+;$LastChangedDate: 2014-04-21 13:19:06 -0700 (Mon, 21 Apr 2014) $
+;$LastChangedRevision: 14901 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_split_fbk.pro $
 ;
 ;-
@@ -39,9 +44,6 @@ pro rbsp_split_fbk,probe,combine=combine,meansz=sz,verbose=verbose,ysc=ysc
 	vb = vb > !rbsp_efw.verbose
 	start_time=systime(1)
 	
-;	fbk13_bins=['0.8-1.5Hz', '1.5-3Hz', '3-6Hz', '6-12Hz', '12-25Hz', '25-50Hz', $
-;				'50-100Hz', '100-200Hz', '200-400Hz', '400-800Hz', $
-;				'0.8-1.6kHz', '1.6-3.2kHz', '3.2-6.5kHz']
 	fbk13_bins=['0.8-1.5', '1.5-3', '3-6', '6-12', '12-25', '25-50', $
 				'50-100', '100-200', '200-400', '400-800', $
 				'0.8-1.6', '1.6-3.2', '3.2-6.5']
@@ -53,9 +55,11 @@ pro rbsp_split_fbk,probe,combine=combine,meansz=sz,verbose=verbose,ysc=ysc
 	;Determine ylim based on the mean value. Doing this avoids large y-scalings
 	;based on very spiky FBK data
 	if ~keyword_set(sz) then sz = 100.
-	if ~keyword_set(ysc) then ysc=1.
+;	if ~keyword_set(ysc) then ysc=1.
 
-	
+	;the ratio of the local value of the peak FBK value divided by the standard deviation
+	if ~keyword_set(maxrat) then maxrat = 30
+
 
 ;grab dlimits structure for each of the channels to determine the source
 	get_data,'rbsp'+probe+'_efw_fbk_7_fb1_pk',dlimits=fb7_fb1
@@ -615,8 +619,16 @@ endif
 
 
 ;-----------------------------------------------
-;Set ylimit and tick format
+;Set ylimit and tick format based on keeping peak values within a certain number
+;of standard deviations. Avoids having the scaling set by spiky noise
 ;-----------------------------------------------
+
+
+;---------
+;FBK1 - 13
+;---------
+
+
 
 tst = tnames('rbsp'+probe +'_fbk1_13pk_0')
 if tst ne '' then begin
@@ -635,18 +647,59 @@ if tst ne '' then begin
 	get_data,'rbsp'+probe +'_fbk1_13pk_12',data=goo12
 
 
-	;Determine ylim based on the mean value. Doing this avoids large y-scalings
-	;based on very spiky FBK data
-
-
 	nchunks = floor(n_elements(goo0.y)/sz)
 	mom = fltarr(nchunks,13)
+	maxv = fltarr(nchunks,13) ;peak values
+	varv = fltarr(nchunks,13) ;variances
 
 	ylim_start_time=systime(1)
 	dmessage="using nchunks in fbk1_13pk: "+string(nchunks)
 	dprint,verbose=verbose,dlevel=2,dmessage
 
 	for i=0L,nchunks-1*sz do begin
+	
+		maxv[i,0] = max(goo0.y[i*sz:i*sz+sz])
+		maxv[i,1] = max(goo1.y[i*sz:i*sz+sz])
+		maxv[i,2] = max(goo2.y[i*sz:i*sz+sz])
+		maxv[i,3] = max(goo3.y[i*sz:i*sz+sz])
+		maxv[i,4] = max(goo4.y[i*sz:i*sz+sz])
+		maxv[i,5] = max(goo5.y[i*sz:i*sz+sz])
+		maxv[i,6] = max(goo6.y[i*sz:i*sz+sz])
+		maxv[i,7] = max(goo7.y[i*sz:i*sz+sz])
+		maxv[i,8] = max(goo8.y[i*sz:i*sz+sz])
+		maxv[i,9] = max(goo9.y[i*sz:i*sz+sz])
+		maxv[i,10] = max(goo10.y[i*sz:i*sz+sz])
+		maxv[i,11] = max(goo11.y[i*sz:i*sz+sz])
+		maxv[i,12] = max(goo12.y[i*sz:i*sz+sz])
+	
+		tst = moment(goo0.y[i*sz:i*sz+sz])
+		varv[i,0] = sqrt(tst[1])
+		tst = moment(goo1.y[i*sz:i*sz+sz])
+		varv[i,1] = sqrt(tst[1])
+		tst = moment(goo2.y[i*sz:i*sz+sz])
+		varv[i,2] = sqrt(tst[1])
+		tst = moment(goo3.y[i*sz:i*sz+sz])
+		varv[i,3] = sqrt(tst[1])
+		tst = moment(goo4.y[i*sz:i*sz+sz])
+		varv[i,4] = sqrt(tst[1])
+		tst = moment(goo5.y[i*sz:i*sz+sz])
+		varv[i,5] = sqrt(tst[1])
+		tst = moment(goo6.y[i*sz:i*sz+sz])
+		varv[i,6] = sqrt(tst[1])
+		tst = moment(goo7.y[i*sz:i*sz+sz])
+		varv[i,7] = sqrt(tst[1])
+		tst = moment(goo8.y[i*sz:i*sz+sz])
+		varv[i,8] = sqrt(tst[1])
+		tst = moment(goo9.y[i*sz:i*sz+sz])
+		varv[i,9] = sqrt(tst[1])
+		tst = moment(goo10.y[i*sz:i*sz+sz])
+		varv[i,10] = sqrt(tst[1])
+		tst = moment(goo11.y[i*sz:i*sz+sz])
+		varv[i,11] = sqrt(tst[1])
+		tst = moment(goo12.y[i*sz:i*sz+sz])
+		varv[i,12] = sqrt(tst[1])
+	
+	
 		mom[i,0]=total(goo0.y[i*sz:i*sz+sz])/sz
 		mom[i,1]=total(goo1.y[i*sz:i*sz+sz])/sz
 		mom[i,2]=total(goo2.y[i*sz:i*sz+sz])/sz
@@ -661,57 +714,117 @@ if tst ne '' then begin
 		mom[i,11]=total(goo11.y[i*sz:i*sz+sz])/sz
 		mom[i,12]=total(goo12.y[i*sz:i*sz+sz])/sz
 	endfor
+
+	stdevv = sqrt(varv)
 	
-	ylim,'rbsp'+probe +'_fbk1_13pk_0',0,ysc*max(mom[*,0])
-	ylim,'rbsp'+probe +'_fbk1_13pk_1',0,ysc*max(mom[*,1])
-	ylim,'rbsp'+probe +'_fbk1_13pk_2',0,ysc*max(mom[*,2])
-	ylim,'rbsp'+probe +'_fbk1_13pk_3',0,ysc*max(mom[*,3])
-	ylim,'rbsp'+probe +'_fbk1_13pk_4',0,ysc*max(mom[*,4])
-	ylim,'rbsp'+probe +'_fbk1_13pk_5',0,ysc*max(mom[*,5])
-	ylim,'rbsp'+probe +'_fbk1_13pk_6',0,ysc*max(mom[*,6])
-	ylim,'rbsp'+probe +'_fbk1_13pk_7',0,ysc*max(mom[*,7])
-	ylim,'rbsp'+probe +'_fbk1_13pk_8',0,ysc*max(mom[*,8])
-	ylim,'rbsp'+probe +'_fbk1_13pk_9',0,ysc*max(mom[*,9])
-	ylim,'rbsp'+probe +'_fbk1_13pk_10',0,ysc*max(mom[*,10])
-	ylim,'rbsp'+probe +'_fbk1_13pk_11',0,ysc*max(mom[*,11])
-	ylim,'rbsp'+probe +'_fbk1_13pk_12',0,ysc*max(mom[*,12])
+	ratio = maxv/stdevv
+
+;q=11
+;!p.multi = [0,0,4]
+;plot,maxv[*,q]
+;plot,mom[*,q]
+;plot,stdevv[*,q]
+;plot,maxv[*,q]/stdevv[*,q]
+
+
+	;Reject values (for the y-scaling) where the max value is >> than the standard deviation
+	good = bytarr(nchunks,13)
+	good[*] = 1b
+
+	goo = where(ratio[*,0] ge maxrat)
+	if goo[0] ne -1 then good[goo,0] = 0b
+	goo = where(ratio[*,1] ge maxrat)
+	if goo[0] ne -1 then good[goo,1] = 0b
+	goo = where(ratio[*,2] ge maxrat)
+	if goo[0] ne -1 then good[goo,2] = 0b
+	goo = where(ratio[*,3] ge maxrat)
+	if goo[0] ne -1 then good[goo,3] = 0b
+	goo = where(ratio[*,4] ge maxrat)
+	if goo[0] ne -1 then good[goo,4] = 0b
+	goo = where(ratio[*,5] ge maxrat)
+	if goo[0] ne -1 then good[goo,5] = 0b
+	goo = where(ratio[*,6] ge maxrat)
+	if goo[0] ne -1 then good[goo,6] = 0b
+	goo = where(ratio[*,7] ge maxrat)
+	if goo[0] ne -1 then good[goo,7] = 0b
+	goo = where(ratio[*,8] ge maxrat)
+	if goo[0] ne -1 then good[goo,8] = 0b
+	goo = where(ratio[*,9] ge maxrat)
+	if goo[0] ne -1 then good[goo,9] = 0b
+	goo = where(ratio[*,10] ge maxrat)
+	if goo[0] ne -1 then good[goo,10] = 0b
+	goo = where(ratio[*,11] ge maxrat)
+	if goo[0] ne -1 then good[goo,11] = 0b
+	goo = where(ratio[*,12] ge maxrat)
+	if goo[0] ne -1 then good[goo,12] = 0b
+
+	good = float(good)
+
+	ylim,'rbsp'+probe +'_fbk1_13pk_0',0.,max(maxv[*,0]*good[*,0]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_1',0.,max(maxv[*,1]*good[*,1]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_2',0.,max(maxv[*,2]*good[*,2]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_3',0.,max(maxv[*,3]*good[*,3]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_4',0.,max(maxv[*,4]*good[*,4]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_5',0.,max(maxv[*,5]*good[*,5]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_6',0.,max(maxv[*,6]*good[*,6]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_7',0.,max(maxv[*,7]*good[*,7]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_8',0.,max(maxv[*,8]*good[*,8]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_9',0.,max(maxv[*,9]*good[*,9]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_10',0.,max(maxv[*,10]*good[*,10]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_11',0.,max(maxv[*,11]*good[*,11]),0
+	ylim,'rbsp'+probe +'_fbk1_13pk_12',0.,max(maxv[*,12]*good[*,12]),0
+
+	
+;	ylim,'rbsp'+probe +'_fbk1_13pk_0',0,ysc*max(mom[*,0])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_1',0,ysc*max(mom[*,1])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_2',0,ysc*max(mom[*,2])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_3',0,ysc*max(mom[*,3])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_4',0,ysc*max(mom[*,4])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_5',0,ysc*max(mom[*,5])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_6',0,ysc*max(mom[*,6])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_7',0,ysc*max(mom[*,7])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_8',0,ysc*max(mom[*,8])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_9',0,ysc*max(mom[*,9])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_10',0,ysc*max(mom[*,10])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_11',0,ysc*max(mom[*,11])
+;	ylim,'rbsp'+probe +'_fbk1_13pk_12',0,ysc*max(mom[*,12])
 	
 	if keyword_set(combine) then begin
-		ylim,'rbsp'+probe +'_fbk1_13comb_0',0,ysc*max(mom[*,0])
-		ylim,'rbsp'+probe +'_fbk1_13comb_1',0,ysc*max(mom[*,1])
-		ylim,'rbsp'+probe +'_fbk1_13comb_2',0,ysc*max(mom[*,2])
-		ylim,'rbsp'+probe +'_fbk1_13comb_3',0,ysc*max(mom[*,3])
-		ylim,'rbsp'+probe +'_fbk1_13comb_4',0,ysc*max(mom[*,4])
-		ylim,'rbsp'+probe +'_fbk1_13comb_5',0,ysc*max(mom[*,5])
-		ylim,'rbsp'+probe +'_fbk1_13comb_6',0,ysc*max(mom[*,6])
-		ylim,'rbsp'+probe +'_fbk1_13comb_7',0,ysc*max(mom[*,7])
-		ylim,'rbsp'+probe +'_fbk1_13comb_8',0,ysc*max(mom[*,8])
-		ylim,'rbsp'+probe +'_fbk1_13comb_9',0,ysc*max(mom[*,9])
-		ylim,'rbsp'+probe +'_fbk1_13comb_10',0,ysc*max(mom[*,10])
-		ylim,'rbsp'+probe +'_fbk1_13comb_11',0,ysc*max(mom[*,11])
-		ylim,'rbsp'+probe +'_fbk1_13comb_12',0,ysc*max(mom[*,12])
+	
+	
+		ylim,'rbsp'+probe +'_fbk1_13comb_0',0,max(maxv[*,0]*good[*,0]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_1',0,max(maxv[*,1]*good[*,1]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_2',0,max(maxv[*,2]*good[*,2]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_3',0,max(maxv[*,3]*good[*,3]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_4',0,max(maxv[*,4]*good[*,4]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_5',0,max(maxv[*,5]*good[*,5]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_6',0,max(maxv[*,6]*good[*,6]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_7',0,max(maxv[*,7]*good[*,7]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_8',0,max(maxv[*,8]*good[*,8]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_9',0,max(maxv[*,9]*good[*,9]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_10',0,max(maxv[*,10]*good[*,10]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_11',0,max(maxv[*,11]*good[*,11]),0
+		ylim,'rbsp'+probe +'_fbk1_13comb_12',0,max(maxv[*,12]*good[*,12]),0
+	
+	
+;		ylim,'rbsp'+probe +'_fbk1_13comb_0',0,ysc*max(mom[*,0])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_1',0,ysc*max(mom[*,1])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_2',0,ysc*max(mom[*,2])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_3',0,ysc*max(mom[*,3])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_4',0,ysc*max(mom[*,4])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_5',0,ysc*max(mom[*,5])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_6',0,ysc*max(mom[*,6])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_7',0,ysc*max(mom[*,7])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_8',0,ysc*max(mom[*,8])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_9',0,ysc*max(mom[*,9])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_10',0,ysc*max(mom[*,10])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_11',0,ysc*max(mom[*,11])
+;		ylim,'rbsp'+probe +'_fbk1_13comb_12',0,ysc*max(mom[*,12])
 	endif
 
 	dmessage='ylim fbk1_13pk runtime (s): '+string(systime(1)-ylim_start_time)
 	dprint,verbose=verbose,dlevel=2,dmessage
 
-
-
-
-;Set ylim based on maximum value
-;	ylim,'rbsp'+probe +'_fbk1_13pk_0',0,max(goo0.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_1',0,max(goo1.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_2',0,max(goo2.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_3',0,max(goo3.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_4',0,max(goo4.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_5',0,max(goo5.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_6',0,max(goo6.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_7',0,max(goo7.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_8',0,max(goo8.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_9',0,max(goo9.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_10',0,max(goo10.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_11',0,max(goo11.y)
-;	ylim,'rbsp'+probe +'_fbk1_13pk_12',0,max(goo12.y)
 
 	;Keep only 1 number after decimal place. More just clutters up plot
 	options,'rbsp'+probe +'_fbk1_13pk_0','ytickformat','(f6.1)'
@@ -730,12 +843,13 @@ if tst ne '' then begin
 
 endif
 
-
+;---------
+;FBK2 - 13
+;---------
 
 
 tst = tnames('rbsp'+probe +'_fbk2_13pk_0')
 if tst ne '' then begin
-
 	get_data,'rbsp'+probe +'_fbk2_13pk_0',data=goo0
 	get_data,'rbsp'+probe +'_fbk2_13pk_1',data=goo1
 	get_data,'rbsp'+probe +'_fbk2_13pk_2',data=goo2
@@ -751,17 +865,60 @@ if tst ne '' then begin
 	get_data,'rbsp'+probe +'_fbk2_13pk_12',data=goo12
 
 
-	;Determine ylim based on the mean value. Doing this avoids large y-scalings
-	;based on very spiky FBK data
 
 	nchunks = floor(n_elements(goo0.y)/sz)
 	mom = fltarr(nchunks,13)
+	maxv = fltarr(nchunks,13) ;peak values
+	varv = fltarr(nchunks,13) ;variances
 
 	ylim_start_time=systime(1)
-	dmessage="using nchunks in fbk2_13pk: "+string(nchunks)
+	dmessage="using nchunks in fbk1_13pk: "+string(nchunks)
 	dprint,verbose=verbose,dlevel=2,dmessage
 
 	for i=0L,nchunks-1*sz do begin
+	
+		maxv[i,0] = max(goo0.y[i*sz:i*sz+sz])
+		maxv[i,1] = max(goo1.y[i*sz:i*sz+sz])
+		maxv[i,2] = max(goo2.y[i*sz:i*sz+sz])
+		maxv[i,3] = max(goo3.y[i*sz:i*sz+sz])
+		maxv[i,4] = max(goo4.y[i*sz:i*sz+sz])
+		maxv[i,5] = max(goo5.y[i*sz:i*sz+sz])
+		maxv[i,6] = max(goo6.y[i*sz:i*sz+sz])
+		maxv[i,7] = max(goo7.y[i*sz:i*sz+sz])
+		maxv[i,8] = max(goo8.y[i*sz:i*sz+sz])
+		maxv[i,9] = max(goo9.y[i*sz:i*sz+sz])
+		maxv[i,10] = max(goo10.y[i*sz:i*sz+sz])
+		maxv[i,11] = max(goo11.y[i*sz:i*sz+sz])
+		maxv[i,12] = max(goo12.y[i*sz:i*sz+sz])
+	
+		tst = moment(goo0.y[i*sz:i*sz+sz])
+		varv[i,0] = sqrt(tst[1])
+		tst = moment(goo1.y[i*sz:i*sz+sz])
+		varv[i,1] = sqrt(tst[1])
+		tst = moment(goo2.y[i*sz:i*sz+sz])
+		varv[i,2] = sqrt(tst[1])
+		tst = moment(goo3.y[i*sz:i*sz+sz])
+		varv[i,3] = sqrt(tst[1])
+		tst = moment(goo4.y[i*sz:i*sz+sz])
+		varv[i,4] = sqrt(tst[1])
+		tst = moment(goo5.y[i*sz:i*sz+sz])
+		varv[i,5] = sqrt(tst[1])
+		tst = moment(goo6.y[i*sz:i*sz+sz])
+		varv[i,6] = sqrt(tst[1])
+		tst = moment(goo7.y[i*sz:i*sz+sz])
+		varv[i,7] = sqrt(tst[1])
+		tst = moment(goo8.y[i*sz:i*sz+sz])
+		varv[i,8] = sqrt(tst[1])
+		tst = moment(goo9.y[i*sz:i*sz+sz])
+		varv[i,9] = sqrt(tst[1])
+		tst = moment(goo10.y[i*sz:i*sz+sz])
+		varv[i,10] = sqrt(tst[1])
+		tst = moment(goo11.y[i*sz:i*sz+sz])
+		varv[i,11] = sqrt(tst[1])
+		tst = moment(goo12.y[i*sz:i*sz+sz])
+		varv[i,12] = sqrt(tst[1])
+	
+	
 		mom[i,0]=total(goo0.y[i*sz:i*sz+sz])/sz
 		mom[i,1]=total(goo1.y[i*sz:i*sz+sz])/sz
 		mom[i,2]=total(goo2.y[i*sz:i*sz+sz])/sz
@@ -776,54 +933,81 @@ if tst ne '' then begin
 		mom[i,11]=total(goo11.y[i*sz:i*sz+sz])/sz
 		mom[i,12]=total(goo12.y[i*sz:i*sz+sz])/sz
 	endfor
+
+	stdevv = sqrt(varv)
 	
-	ylim,'rbsp'+probe +'_fbk2_13pk_0',0,ysc*max(mom[*,0])
-	ylim,'rbsp'+probe +'_fbk2_13pk_1',0,ysc*max(mom[*,1])
-	ylim,'rbsp'+probe +'_fbk2_13pk_2',0,ysc*max(mom[*,2])
-	ylim,'rbsp'+probe +'_fbk2_13pk_3',0,ysc*max(mom[*,3])
-	ylim,'rbsp'+probe +'_fbk2_13pk_4',0,ysc*max(mom[*,4])
-	ylim,'rbsp'+probe +'_fbk2_13pk_5',0,ysc*max(mom[*,5])
-	ylim,'rbsp'+probe +'_fbk2_13pk_6',0,ysc*max(mom[*,6])
-	ylim,'rbsp'+probe +'_fbk2_13pk_7',0,ysc*max(mom[*,7])
-	ylim,'rbsp'+probe +'_fbk2_13pk_8',0,ysc*max(mom[*,8])
-	ylim,'rbsp'+probe +'_fbk2_13pk_9',0,ysc*max(mom[*,9])
-	ylim,'rbsp'+probe +'_fbk2_13pk_10',0,ysc*max(mom[*,10])
-	ylim,'rbsp'+probe +'_fbk2_13pk_11',0,ysc*max(mom[*,11])
-	ylim,'rbsp'+probe +'_fbk2_13pk_12',0,ysc*max(mom[*,12])
+	ratio = maxv/stdevv
+
+
+	;Reject values (for the y-scaling) where the max value is >> than the standard deviation
+	good = bytarr(nchunks,13)
+	good[*] = 1b
+
+	goo = where(ratio[*,0] ge maxrat)
+	if goo[0] ne -1 then good[goo,0] = 0b
+	goo = where(ratio[*,1] ge maxrat)
+	if goo[0] ne -1 then good[goo,1] = 0b
+	goo = where(ratio[*,2] ge maxrat)
+	if goo[0] ne -1 then good[goo,2] = 0b
+	goo = where(ratio[*,3] ge maxrat)
+	if goo[0] ne -1 then good[goo,3] = 0b
+	goo = where(ratio[*,4] ge maxrat)
+	if goo[0] ne -1 then good[goo,4] = 0b
+	goo = where(ratio[*,5] ge maxrat)
+	if goo[0] ne -1 then good[goo,5] = 0b
+	goo = where(ratio[*,6] ge maxrat)
+	if goo[0] ne -1 then good[goo,6] = 0b
+	goo = where(ratio[*,7] ge maxrat)
+	if goo[0] ne -1 then good[goo,7] = 0b
+	goo = where(ratio[*,8] ge maxrat)
+	if goo[0] ne -1 then good[goo,8] = 0b
+	goo = where(ratio[*,9] ge maxrat)
+	if goo[0] ne -1 then good[goo,9] = 0b
+	goo = where(ratio[*,10] ge maxrat)
+	if goo[0] ne -1 then good[goo,10] = 0b
+	goo = where(ratio[*,11] ge maxrat)
+	if goo[0] ne -1 then good[goo,11] = 0b
+	goo = where(ratio[*,12] ge maxrat)
+	if goo[0] ne -1 then good[goo,12] = 0b
+
+	good = float(good)
+
+	ylim,'rbsp'+probe +'_fbk2_13pk_0',0.,max(maxv[*,0]*good[*,0]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_1',0.,max(maxv[*,1]*good[*,1]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_2',0.,max(maxv[*,2]*good[*,2]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_3',0.,max(maxv[*,3]*good[*,3]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_4',0.,max(maxv[*,4]*good[*,4]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_5',0.,max(maxv[*,5]*good[*,5]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_6',0.,max(maxv[*,6]*good[*,6]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_7',0.,max(maxv[*,7]*good[*,7]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_8',0.,max(maxv[*,8]*good[*,8]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_9',0.,max(maxv[*,9]*good[*,9]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_10',0.,max(maxv[*,10]*good[*,10]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_11',0.,max(maxv[*,11]*good[*,11]),0
+	ylim,'rbsp'+probe +'_fbk2_13pk_12',0.,max(maxv[*,12]*good[*,12]),0
+
+
+	if keyword_set(combine) then begin	
 	
-	if keyword_set(combine) then begin
-		ylim,'rbsp'+probe +'_fbk2_13comb_0',0,ysc*max(mom[*,0])
-		ylim,'rbsp'+probe +'_fbk2_13comb_1',0,ysc*max(mom[*,1])
-		ylim,'rbsp'+probe +'_fbk2_13comb_2',0,ysc*max(mom[*,2])
-		ylim,'rbsp'+probe +'_fbk2_13comb_3',0,ysc*max(mom[*,3])
-		ylim,'rbsp'+probe +'_fbk2_13comb_4',0,ysc*max(mom[*,4])
-		ylim,'rbsp'+probe +'_fbk2_13comb_5',0,ysc*max(mom[*,5])
-		ylim,'rbsp'+probe +'_fbk2_13comb_6',0,ysc*max(mom[*,6])
-		ylim,'rbsp'+probe +'_fbk2_13comb_7',0,ysc*max(mom[*,7])
-		ylim,'rbsp'+probe +'_fbk2_13comb_8',0,ysc*max(mom[*,8])
-		ylim,'rbsp'+probe +'_fbk2_13comb_9',0,ysc*max(mom[*,9])
-		ylim,'rbsp'+probe +'_fbk2_13comb_10',0,ysc*max(mom[*,10])
-		ylim,'rbsp'+probe +'_fbk2_13comb_11',0,ysc*max(mom[*,11])
-		ylim,'rbsp'+probe +'_fbk2_13comb_12',0,ysc*max(mom[*,12])
+		ylim,'rbsp'+probe +'_fbk2_13comb_0',0,max(maxv[*,0]*good[*,0]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_1',0,max(maxv[*,1]*good[*,1]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_2',0,max(maxv[*,2]*good[*,2]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_3',0,max(maxv[*,3]*good[*,3]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_4',0,max(maxv[*,4]*good[*,4]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_5',0,max(maxv[*,5]*good[*,5]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_6',0,max(maxv[*,6]*good[*,6]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_7',0,max(maxv[*,7]*good[*,7]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_8',0,max(maxv[*,8]*good[*,8]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_9',0,max(maxv[*,9]*good[*,9]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_10',0,max(maxv[*,10]*good[*,10]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_11',0,max(maxv[*,11]*good[*,11]),0
+		ylim,'rbsp'+probe +'_fbk2_13comb_12',0,max(maxv[*,12]*good[*,12]),0
+	
 	endif
 
 	dmessage='ylim fbk2_13pk runtime (s): '+string(systime(1)-ylim_start_time)
 	dprint,verbose=verbose,dlevel=2,dmessage
 
-;Set ylim based on maximum value
-;	ylim,'rbsp'+probe +'_fbk2_13pk_0',0,max(goo0.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_1',0,max(goo1.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_2',0,max(goo2.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_3',0,max(goo3.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_4',0,max(goo4.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_5',0,max(goo5.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_6',0,max(goo6.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_7',0,max(goo7.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_8',0,max(goo8.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_9',0,max(goo9.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_10',0,max(goo10.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_11',0,max(goo11.y)
-;	ylim,'rbsp'+probe +'_fbk2_13pk_12',0,max(goo12.y)
 
 
 	;Keep only 1 number after decimal place. More just clutters up plot
@@ -845,10 +1029,13 @@ endif
 
 
 
+;---------
+;FBK1 - 7
+;---------
+
+
 tst = tnames('rbsp'+probe +'_fbk1_7pk_0')
 if tst ne '' then begin
-
-
 	get_data,'rbsp'+probe +'_fbk1_7pk_0',data=goo0
 	get_data,'rbsp'+probe +'_fbk1_7pk_1',data=goo1
 	get_data,'rbsp'+probe +'_fbk1_7pk_2',data=goo2
@@ -858,17 +1045,41 @@ if tst ne '' then begin
 	get_data,'rbsp'+probe +'_fbk1_7pk_6',data=goo6
 
 
-	;Determine ylim based on the mean value. Doing this avoids large y-scalings
-	;based on very spiky FBK data
-
 	nchunks = floor(n_elements(goo0.y)/sz)
 	mom = fltarr(nchunks,7)
+	maxv = fltarr(nchunks,7) ;peak values
+	varv = fltarr(nchunks,7) ;variances
 
 	ylim_start_time=systime(1)
-	dmessage="using nchunks in fbk1_7pk: "+string(nchunks)
+	dmessage="using nchunks in fbk1_13pk: "+string(nchunks)
 	dprint,verbose=verbose,dlevel=2,dmessage
 
 	for i=0L,nchunks-1*sz do begin
+	
+		maxv[i,0] = max(goo0.y[i*sz:i*sz+sz])
+		maxv[i,1] = max(goo1.y[i*sz:i*sz+sz])
+		maxv[i,2] = max(goo2.y[i*sz:i*sz+sz])
+		maxv[i,3] = max(goo3.y[i*sz:i*sz+sz])
+		maxv[i,4] = max(goo4.y[i*sz:i*sz+sz])
+		maxv[i,5] = max(goo5.y[i*sz:i*sz+sz])
+		maxv[i,6] = max(goo6.y[i*sz:i*sz+sz])
+	
+		tst = moment(goo0.y[i*sz:i*sz+sz])
+		varv[i,0] = sqrt(tst[1])
+		tst = moment(goo1.y[i*sz:i*sz+sz])
+		varv[i,1] = sqrt(tst[1])
+		tst = moment(goo2.y[i*sz:i*sz+sz])
+		varv[i,2] = sqrt(tst[1])
+		tst = moment(goo3.y[i*sz:i*sz+sz])
+		varv[i,3] = sqrt(tst[1])
+		tst = moment(goo4.y[i*sz:i*sz+sz])
+		varv[i,4] = sqrt(tst[1])
+		tst = moment(goo5.y[i*sz:i*sz+sz])
+		varv[i,5] = sqrt(tst[1])
+		tst = moment(goo6.y[i*sz:i*sz+sz])
+		varv[i,6] = sqrt(tst[1])
+
+	
 		mom[i,0]=total(goo0.y[i*sz:i*sz+sz])/sz
 		mom[i,1]=total(goo1.y[i*sz:i*sz+sz])/sz
 		mom[i,2]=total(goo2.y[i*sz:i*sz+sz])/sz
@@ -877,37 +1088,57 @@ if tst ne '' then begin
 		mom[i,5]=total(goo5.y[i*sz:i*sz+sz])/sz
 		mom[i,6]=total(goo6.y[i*sz:i*sz+sz])/sz
 	endfor
+
+	stdevv = sqrt(varv)
 	
-	ylim,'rbsp'+probe +'_fbk1_7pk_0',0,ysc*max(mom[*,0])
-	ylim,'rbsp'+probe +'_fbk1_7pk_1',0,ysc*max(mom[*,1])
-	ylim,'rbsp'+probe +'_fbk1_7pk_2',0,ysc*max(mom[*,2])
-	ylim,'rbsp'+probe +'_fbk1_7pk_3',0,ysc*max(mom[*,3])
-	ylim,'rbsp'+probe +'_fbk1_7pk_4',0,ysc*max(mom[*,4])
-	ylim,'rbsp'+probe +'_fbk1_7pk_5',0,ysc*max(mom[*,5])
-	ylim,'rbsp'+probe +'_fbk1_7pk_6',0,ysc*max(mom[*,6])
-	
+	ratio = maxv/stdevv
+
+
+	;Reject values (for the y-scaling) where the max value is >> than the standard deviation
+	good = bytarr(nchunks,7)
+	good[*] = 1b
+
+	goo = where(ratio[*,0] ge maxrat)
+	if goo[0] ne -1 then good[goo,0] = 0b
+	goo = where(ratio[*,1] ge maxrat)
+	if goo[0] ne -1 then good[goo,1] = 0b
+	goo = where(ratio[*,2] ge maxrat)
+	if goo[0] ne -1 then good[goo,2] = 0b
+	goo = where(ratio[*,3] ge maxrat)
+	if goo[0] ne -1 then good[goo,3] = 0b
+	goo = where(ratio[*,4] ge maxrat)
+	if goo[0] ne -1 then good[goo,4] = 0b
+	goo = where(ratio[*,5] ge maxrat)
+	if goo[0] ne -1 then good[goo,5] = 0b
+	goo = where(ratio[*,6] ge maxrat)
+	if goo[0] ne -1 then good[goo,6] = 0b
+
+	good = float(good)
+
+	ylim,'rbsp'+probe +'_fbk1_7pk_0',0.,max(maxv[*,0]*good[*,0]),0
+	ylim,'rbsp'+probe +'_fbk1_7pk_1',0.,max(maxv[*,1]*good[*,1]),0
+	ylim,'rbsp'+probe +'_fbk1_7pk_2',0.,max(maxv[*,2]*good[*,2]),0
+	ylim,'rbsp'+probe +'_fbk1_7pk_3',0.,max(maxv[*,3]*good[*,3]),0
+	ylim,'rbsp'+probe +'_fbk1_7pk_4',0.,max(maxv[*,4]*good[*,4]),0
+	ylim,'rbsp'+probe +'_fbk1_7pk_5',0.,max(maxv[*,5]*good[*,5]),0
+	ylim,'rbsp'+probe +'_fbk1_7pk_6',0.,max(maxv[*,6]*good[*,6]),0
+
+
 	if keyword_set(combine) then begin
-		ylim,'rbsp'+probe +'_fbk1_7comb_0',0,ysc*max(mom[*,0])
-		ylim,'rbsp'+probe +'_fbk1_7comb_1',0,ysc*max(mom[*,1])
-		ylim,'rbsp'+probe +'_fbk1_7comb_2',0,ysc*max(mom[*,2])
-		ylim,'rbsp'+probe +'_fbk1_7comb_3',0,ysc*max(mom[*,3])
-		ylim,'rbsp'+probe +'_fbk1_7comb_4',0,ysc*max(mom[*,4])
-		ylim,'rbsp'+probe +'_fbk1_7comb_5',0,ysc*max(mom[*,5])
-		ylim,'rbsp'+probe +'_fbk1_7comb_6',0,ysc*max(mom[*,6])
+	
+		ylim,'rbsp'+probe +'_fbk1_7comb_0',0,max(maxv[*,0]*good[*,0]),0
+		ylim,'rbsp'+probe +'_fbk1_7comb_1',0,max(maxv[*,1]*good[*,1]),0
+		ylim,'rbsp'+probe +'_fbk1_7comb_2',0,max(maxv[*,2]*good[*,2]),0
+		ylim,'rbsp'+probe +'_fbk1_7comb_3',0,max(maxv[*,3]*good[*,3]),0
+		ylim,'rbsp'+probe +'_fbk1_7comb_4',0,max(maxv[*,4]*good[*,4]),0
+		ylim,'rbsp'+probe +'_fbk1_7comb_5',0,max(maxv[*,5]*good[*,5]),0
+		ylim,'rbsp'+probe +'_fbk1_7comb_6',0,max(maxv[*,6]*good[*,6]),0
+	
 	endif
 
 	dmessage='ylim fbk1_7pk runtime (s): '+string(systime(1)-ylim_start_time)
 	dprint,verbose=verbose,dlevel=2,dmessage
 
-
-;set ylim based on maximum value
-;	ylim,'rbsp'+probe +'_fbk1_7pk_0',0,max(goo0.y)
-;	ylim,'rbsp'+probe +'_fbk1_7pk_1',0,max(goo1.y)
-;	ylim,'rbsp'+probe +'_fbk1_7pk_2',0,max(goo2.y)
-;	ylim,'rbsp'+probe +'_fbk1_7pk_3',0,max(goo3.y)
-;	ylim,'rbsp'+probe +'_fbk1_7pk_4',0,max(goo4.y)
-;	ylim,'rbsp'+probe +'_fbk1_7pk_5',0,max(goo5.y)
-;	ylim,'rbsp'+probe +'_fbk1_7pk_6',0,max(goo6.y)
 
 
 	;Keep only 1 number after decimal place. More just clutters up plot
@@ -922,10 +1153,13 @@ if tst ne '' then begin
 endif
 
 
+
+;---------
+;FBK2 - 7
+;---------
+
 tst = tnames('rbsp'+probe +'_fbk2_7pk_0')
 if tst ne '' then begin
-
-
 	get_data,'rbsp'+probe +'_fbk2_7pk_0',data=goo0
 	get_data,'rbsp'+probe +'_fbk2_7pk_1',data=goo1
 	get_data,'rbsp'+probe +'_fbk2_7pk_2',data=goo2
@@ -935,17 +1169,41 @@ if tst ne '' then begin
 	get_data,'rbsp'+probe +'_fbk2_7pk_6',data=goo6
 
 
-	;Determine ylim based on the mean value. Doing this avoids large y-scalings
-	;based on very spiky FBK data
-	
 	nchunks = floor(n_elements(goo0.y)/sz)
 	mom = fltarr(nchunks,7)
+	maxv = fltarr(nchunks,7) ;peak values
+	varv = fltarr(nchunks,7) ;variances
 
 	ylim_start_time=systime(1)
-	dmessage="using nchunks in fbk2_7pk: "+string(nchunks)
+	dmessage="using nchunks in fbk2_13pk: "+string(nchunks)
 	dprint,verbose=verbose,dlevel=2,dmessage
-	
+
 	for i=0L,nchunks-1*sz do begin
+	
+		maxv[i,0] = max(goo0.y[i*sz:i*sz+sz])
+		maxv[i,1] = max(goo1.y[i*sz:i*sz+sz])
+		maxv[i,2] = max(goo2.y[i*sz:i*sz+sz])
+		maxv[i,3] = max(goo3.y[i*sz:i*sz+sz])
+		maxv[i,4] = max(goo4.y[i*sz:i*sz+sz])
+		maxv[i,5] = max(goo5.y[i*sz:i*sz+sz])
+		maxv[i,6] = max(goo6.y[i*sz:i*sz+sz])
+	
+		tst = moment(goo0.y[i*sz:i*sz+sz])
+		varv[i,0] = sqrt(tst[1])
+		tst = moment(goo1.y[i*sz:i*sz+sz])
+		varv[i,1] = sqrt(tst[1])
+		tst = moment(goo2.y[i*sz:i*sz+sz])
+		varv[i,2] = sqrt(tst[1])
+		tst = moment(goo3.y[i*sz:i*sz+sz])
+		varv[i,3] = sqrt(tst[1])
+		tst = moment(goo4.y[i*sz:i*sz+sz])
+		varv[i,4] = sqrt(tst[1])
+		tst = moment(goo5.y[i*sz:i*sz+sz])
+		varv[i,5] = sqrt(tst[1])
+		tst = moment(goo6.y[i*sz:i*sz+sz])
+		varv[i,6] = sqrt(tst[1])
+
+	
 		mom[i,0]=total(goo0.y[i*sz:i*sz+sz])/sz
 		mom[i,1]=total(goo1.y[i*sz:i*sz+sz])/sz
 		mom[i,2]=total(goo2.y[i*sz:i*sz+sz])/sz
@@ -954,37 +1212,56 @@ if tst ne '' then begin
 		mom[i,5]=total(goo5.y[i*sz:i*sz+sz])/sz
 		mom[i,6]=total(goo6.y[i*sz:i*sz+sz])/sz
 	endfor
+
+	stdevv = sqrt(varv)
 	
-	ylim,'rbsp'+probe +'_fbk2_7pk_0',0,ysc*max(mom[*,0])
-	ylim,'rbsp'+probe +'_fbk2_7pk_1',0,ysc*max(mom[*,1])
-	ylim,'rbsp'+probe +'_fbk2_7pk_2',0,ysc*max(mom[*,2])
-	ylim,'rbsp'+probe +'_fbk2_7pk_3',0,ysc*max(mom[*,3])
-	ylim,'rbsp'+probe +'_fbk2_7pk_4',0,ysc*max(mom[*,4])
-	ylim,'rbsp'+probe +'_fbk2_7pk_5',0,ysc*max(mom[*,5])
-	ylim,'rbsp'+probe +'_fbk2_7pk_6',0,ysc*max(mom[*,6])
-	
+	ratio = maxv/stdevv
+
+
+	;Reject values (for the y-scaling) where the max value is >> than the standard deviation
+	good = bytarr(nchunks,7)
+	good[*] = 1b
+
+	goo = where(ratio[*,0] ge maxrat)
+	if goo[0] ne -1 then good[goo,0] = 0b
+	goo = where(ratio[*,1] ge maxrat)
+	if goo[0] ne -1 then good[goo,1] = 0b
+	goo = where(ratio[*,2] ge maxrat)
+	if goo[0] ne -1 then good[goo,2] = 0b
+	goo = where(ratio[*,3] ge maxrat)
+	if goo[0] ne -1 then good[goo,3] = 0b
+	goo = where(ratio[*,4] ge maxrat)
+	if goo[0] ne -1 then good[goo,4] = 0b
+	goo = where(ratio[*,5] ge maxrat)
+	if goo[0] ne -1 then good[goo,5] = 0b
+	goo = where(ratio[*,6] ge maxrat)
+	if goo[0] ne -1 then good[goo,6] = 0b
+
+	good = float(good)
+
+	ylim,'rbsp'+probe +'_fbk2_7pk_0',0.,max(maxv[*,0]*good[*,0]),0
+	ylim,'rbsp'+probe +'_fbk2_7pk_1',0.,max(maxv[*,1]*good[*,1]),0
+	ylim,'rbsp'+probe +'_fbk2_7pk_2',0.,max(maxv[*,2]*good[*,2]),0
+	ylim,'rbsp'+probe +'_fbk2_7pk_3',0.,max(maxv[*,3]*good[*,3]),0
+	ylim,'rbsp'+probe +'_fbk2_7pk_4',0.,max(maxv[*,4]*good[*,4]),0
+	ylim,'rbsp'+probe +'_fbk2_7pk_5',0.,max(maxv[*,5]*good[*,5]),0
+	ylim,'rbsp'+probe +'_fbk2_7pk_6',0.,max(maxv[*,6]*good[*,6]),0
+
+
 	if keyword_set(combine) then begin
-		ylim,'rbsp'+probe +'_fbk2_7comb_0',0,ysc*max(mom[*,0])
-		ylim,'rbsp'+probe +'_fbk2_7comb_1',0,ysc*max(mom[*,1])
-		ylim,'rbsp'+probe +'_fbk2_7comb_2',0,ysc*max(mom[*,2])
-		ylim,'rbsp'+probe +'_fbk2_7comb_3',0,ysc*max(mom[*,3])
-		ylim,'rbsp'+probe +'_fbk2_7comb_4',0,ysc*max(mom[*,4])
-		ylim,'rbsp'+probe +'_fbk2_7comb_5',0,ysc*max(mom[*,5])
-		ylim,'rbsp'+probe +'_fbk2_7comb_6',0,ysc*max(mom[*,6])
+	
+		ylim,'rbsp'+probe +'_fbk2_7comb_0',0,max(maxv[*,0]*good[*,0]),0
+		ylim,'rbsp'+probe +'_fbk2_7comb_1',0,max(maxv[*,1]*good[*,1]),0
+		ylim,'rbsp'+probe +'_fbk2_7comb_2',0,max(maxv[*,2]*good[*,2]),0
+		ylim,'rbsp'+probe +'_fbk2_7comb_3',0,max(maxv[*,3]*good[*,3]),0
+		ylim,'rbsp'+probe +'_fbk2_7comb_4',0,max(maxv[*,4]*good[*,4]),0
+		ylim,'rbsp'+probe +'_fbk2_7comb_5',0,max(maxv[*,5]*good[*,5]),0
+		ylim,'rbsp'+probe +'_fbk2_7comb_6',0,max(maxv[*,6]*good[*,6]),0
+	
 	endif
 
 	dmessage='ylim fbk2_7pk runtime (s): '+string(systime(1)-ylim_start_time)
 	dprint,verbose=verbose,dlevel=2,dmessage
-
-
-;Set ylim based on maximum value
-;	ylim,'rbsp'+probe +'_fbk2_7pk_0',0,max(goo0.y)
-;	ylim,'rbsp'+probe +'_fbk2_7pk_1',0,max(goo1.y)
-;	ylim,'rbsp'+probe +'_fbk2_7pk_2',0,max(goo2.y)
-;	ylim,'rbsp'+probe +'_fbk2_7pk_3',0,max(goo3.y)
-;	ylim,'rbsp'+probe +'_fbk2_7pk_4',0,max(goo4.y)
-;	ylim,'rbsp'+probe +'_fbk2_7pk_5',0,max(goo5.y)
-;	ylim,'rbsp'+probe +'_fbk2_7pk_6',0,max(goo6.y)
 
 
 	;Keep only 1 number after decimal place. More just clutters up plot
@@ -997,6 +1274,7 @@ if tst ne '' then begin
 	options,'rbsp'+probe +'_fbk2_7pk_6','ytickformat','(f6.1)'
 
 endif
+
 
 
 dmessage='runtime (s): '+string(systime(1)-start_time)

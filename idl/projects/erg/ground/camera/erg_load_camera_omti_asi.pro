@@ -32,7 +32,7 @@
 ;   $LastChangedBy: jwl $
 ;   $LastChangedDate: 2014-02-10 16:54:11 -0800 (Mon, 10 Feb 2014) $
 ;   $LastChangedRevision: 14265 $
-;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/cameara/erg_load_camera_omti_asi.pro $
+;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/camera/erg_load_camera_omti_asi.pro $
 ;-
 
 pro erg_load_camera_omti_asi, $

@@ -127,8 +127,8 @@
  ;   Sep 2009    - Fixed user-agent
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2014-04-18 13:20:51 -0700 (Fri, 18 Apr 2014) $
- ; $LastChangedRevision: 14864 $
+ ; $LastChangedDate: 2014-04-21 19:25:14 -0700 (Mon, 21 Apr 2014) $
+ ; $LastChangedRevision: 14906 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -503,9 +503,8 @@ end
    ;;
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
-   ;  if n_elements(verbose) eq 1 then dprint,setdebug=verbose,getdebug=last_dbg
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14864 2014-04-18 20:20:51Z davin-mac $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14906 2014-04-22 02:25:14Z davin-mac $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -781,7 +780,9 @@ end
      dprint,dlevel=6,verbose=verbose,phelp=2,url_info
      
      if url_info.status_code eq 401 then begin
-        dprint,dlevel=1,'Authentication required for "'+url+'" (Use USER_PASS)' 
+        realm = file_http_header_element(header,'WWW-Authenticate:')
+        prefix = keyword_set(user_pass) ? 'Invalid USER_PASS: "'+user_pass+'" for: '+realm  : 'keyword USER_PASS required for: '+realm
+        dprint,dlevel=1,prefix+' Authentication Error: "'+url+'"'
         goto , close_server   
      endif
      
@@ -878,7 +879,7 @@ end
              if arg_present(links2) then extract_html_links_regex,text,links2 ,/relative, /normal,no_parent=url
              dprint,dwait=10,dlevel=1,verbose=verbose,'Downloading "',localname,'"  Please wait ', lines++
            endwhile
-           dprint,dlevel=2,verbose=verbose,'Downloaded ',strtrim(lines,2),' lines in ',string(systime(1)-ts,format='(f0.2)'),' seconds. File:'+localname
+           dprint,dlevel=2,verbose=verbose,'Downloaded ',strtrim(lines,2),' lines in '+string(systime(1)-ts,format='(f0.2)'),' seconds. File:'+localname
           ; if n_elements(links2) gt 1 then links2 = links2[1:*]   ; get rid of first ''
          endif else begin                                                      ; download Non-text (binary) files
            maxb = 2l^20   ; 1 Megabyte default buffer size

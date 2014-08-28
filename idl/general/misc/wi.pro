@@ -22,7 +22,10 @@ pro wi, wnum , limits=lim,wsize=wsize,wposition=wposition,show=show,verbose=verb
 ;endif
 
 if (!d.flags and 256) eq 0 then begin          ; device has no windows!
-   dprint,'Device has no windows!',/no_check_events
+   dprint,dlevel=2,'Device has no windows!',/no_check_events
+   if keyword_set(wsize) then begin
+         device, set_resolution = wsize   
+   endif
    return
 endif
 
