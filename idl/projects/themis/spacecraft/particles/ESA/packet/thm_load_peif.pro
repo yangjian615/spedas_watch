@@ -594,8 +594,9 @@ endif else if sc eq 'f' then begin
 endif
 
 
-;store time range
-thm_part_trange, sc, 'peif', set=timerange(trange)
+;store time range & eclipse correction status
+eclipse = undefined(use_eclipse_corrections) ? 0:use_eclipse_corrections
+thm_part_trange, sc, 'peif', set={trange:timerange(trange),eclipse:eclipse}
 
 
 ; help,ifd_dat,/st

@@ -118,11 +118,12 @@ pro spd_ui_pwrspc, options,invars, loadedData, historyWin, statusBar,guiID, $
         else: dsuffix = '_' + strtrim(lindgen(ncomp),2)
       endcase
       
+      
+      
       for j=0, ncomp-1 do begin
-      
-        limit=*l
-        dlimit=*dl
-      
+        if ptr_valid(l) then limit = *l else limit = 0
+        if ptr_valid(dl) then dlimit = *dl else dlimit = 0
+     
         tpts = n_elements(*t)
         nanidx = where(finite((*d)[*,j]),c)
          
@@ -228,6 +229,7 @@ pro spd_ui_pwrspc, options,invars, loadedData, historyWin, statusBar,guiID, $
         endif
         
         ; add data to loadedData object
+        if options.suffix[0] eq '' then options.suffix[0] = '_pwr'
         specname = varname + dsuffix[j] + options.suffix[0]
         freqname = specname + '_freq'
         

@@ -23,8 +23,8 @@
 ;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-24 18:01:17 -0800 (Mon, 24 Feb 2014) $
-;$LastChangedRevision: 14422 $
+;$LastChangedDate: 2014-05-05 18:12:35 -0700 (Mon, 05 May 2014) $
+;$LastChangedRevision: 15053 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_load.pro $
 ;-
 
@@ -43,6 +43,7 @@ pro thm_part_load, probe=probe, datatype=datatype, trange=trange, $
     sst = total( stregex(datatype, 'ps..', /bool,/fold_case) ) gt 0
     
     if sst && undefined(sst_cal) && strlowcase(strmid(datatype,3,1)) ne 'r' then begin
+      dprint, dlevel=2, 'Using new SST calibrations (disable with sst_cal=0).'
       sst_cal = 1
     endif
     
@@ -58,7 +59,7 @@ pro thm_part_load, probe=probe, datatype=datatype, trange=trange, $
   ;check if requested data is already present
   if keyword_set(probe) and keyword_set(datatype) and ~keyword_set(forceload) then begin
      
-    loaded = thm_part_check_trange(probe, datatype, trange, sst_cal=sst_cal, fail=fail)
+    loaded = thm_part_check_trange(probe, datatype, trange, sst_cal=sst_cal, _extra=_extra)
  
     if loaded then begin
       dprint, dlevel=2, 'Using previously loaded data.'

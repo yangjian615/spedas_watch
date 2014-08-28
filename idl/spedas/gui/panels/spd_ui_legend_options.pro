@@ -14,9 +14,9 @@
 ; KEYWORDS:
 ;  panel_select:     pointer to current panel
 ; 
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-05 15:26:57 -0700 (Mon, 05 May 2014) $
+;$LastChangedRevision: 15052 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_legend_options.pro $
 ;-
 
@@ -243,6 +243,33 @@ function spd_ui_legend_options_color_event, tlb, fontcolorwin, currentcolor
   return, color ; returns chosen color
 end 
 
+; function for syncing variable names droplist with variable name text box
+function spd_ui_legend_options_update_varnames, tlb, legend
+    legend->getProperty, traces=traces
+    if ptr_valid(traces) then begin
+        tracesstruct = *traces
+        updatetrace = widget_info(tlb,find_by_uname='addtraces')
+        ; find the currently selected element in the droplist
+        idx_to_update = widget_info(updatetrace, /droplist_select)
+        ; find the text box where the user can change a variable name
+        tracename_txtbox = widget_info(tlb,find_by_uname='changetracename')
+      
+        widget_control, updatetrace, get_value=droplist_values
+        widget_control, tracename_txtbox, get_value = newtrace_txt
+        
+        
+        if ((*tracesstruct.traceNames)[0] ne 'None') then begin
+            droplist_values[idx_to_update] = newtrace_txt
+            widget_control, updatetrace, set_value=droplist_values
+            widget_control, updatetrace, set_droplist_select=idx_to_update
+
+            (*tracesstruct.traceNames) = droplist_values
+            legend->setProperty, traces=ptr_new(tracesstruct), customTracesset=1
+        endif
+    endif
+    return, 1
+end
+
 pro spd_ui_legend_options_event, event
   COMPILE_OPT hidden
 
@@ -313,6 +340,10 @@ pro spd_ui_legend_options_event, event
             ; create a backup, in case the user hits 'Cancel' after hitting 'Apply'
             if (obj_valid(legend) && obj_valid(state.origLegendSettings)) then begin
               state.origLegendSettings=legend->BackupSettings(state.origLegendSettings)
+              
+              ; query the variable name text box and update the trace names appropriately
+              upd_varnames = spd_ui_legend_options_update_varnames(event.top, legend)
+              
               state.drawObject->update,state.windowStorage,state.loadedData
               state.drawObject->draw
               state.historyWin->update,'Changes applied to legend'
@@ -328,6 +359,11 @@ pro spd_ui_legend_options_event, event
                     state.panelObjs[i]->getProperty, legendSettings=plegend
                     legend->CopyContents, plegend
                 endfor
+                
+                ; query the variable name text box and update the trace names appropriately
+                ; only update the traces in this panel, though. 
+                upd_varnames = spd_ui_legend_options_update_varnames(event.top, legend)
+              
                 state.drawObject->update,state.windowStorage,state.loadedData
                 state.drawObject->draw
                 state.historyWin->update,'Changes applied to all legends'
@@ -546,28 +582,17 @@ pro spd_ui_legend_options_event, event
         END
         'ADDTRACES': BEGIN ; user changed which trace is displayed in dropdown box
             newTrace = widget_info(event.top,find_by_uname='changetracename')
-            Widget_Control, newTrace, set_value=event.str
+            
+            ; get the list of values
+            widget_control, event.id, get_value=droplist_values
+
+            ; and the current index
+            droplist_selection = widget_info(event.id, /droplist_select)
+            ; update the text box
+            Widget_Control, newTrace, set_value=droplist_values[droplist_selection]
         END 
         'CHANGETRACENAME': BEGIN ; user changed currently selected trace name
-            legend->getProperty, traces=traces
-            if ptr_valid(traces) then begin
-                tracesstruct = *traces
-                updatetrace = widget_info(event.top,find_by_uname='addtraces')
-                currentval = widget_info(updatetrace, /combobox_gettext)
-
-                if ((*tracesstruct.traceNames)[0] ne 'None') then begin
-                    listtraces=(*tracesstruct.traceNames)
-                    widget_control, event.id, get_value=newtracename
-
-                    indTraces = where(listtraces eq currentval)
-                    listtraces[indTraces]=newtracename
-                    widget_control, updatetrace, set_value=listtraces
-                    widget_control, updatetrace, set_combobox_select=indTraces
-    
-                    (*tracesstruct.traceNames) = listtraces
-                    legend->setProperty, traces=ptr_new(tracesstruct), customTracesset=1
-                 endif
-            endif
+            pd_varnames = spd_ui_legend_options_update_varnames(event.top, legend)
         END
         'AUTONOTATION': BEGIN ; user clicked auto-notation button
             legend->setProperty, notationSet=0
@@ -858,7 +883,8 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
    
    ; change trace/line names, e.g., thd_fgs_bz -> FGS Bz
    tracesBase = Widget_Base(varNameBase, /Row)
-   additionalLabels = Widget_Combobox(tracesBase, value='None', sensitive=validpanel, SCR_XSIZE=105, uval='ADDTRACES', uname='addtraces')
+   ;additionalLabels = Widget_Combobox(tracesBase, value='None', sensitive=validpanel, SCR_XSIZE=105, uval='ADDTRACES', uname='addtraces')
+   additionalLabels = Widget_Droplist(tracesBase, value='None', sensitive=validpanel, SCR_XSIZE=105, uval='ADDTRACES', uname='addtraces')
    changetraces = Widget_Text(tracesBase, value=currentline, uval='CHANGETRACENAME', uname='changetracename', SCR_XSIZE=140, /editable)
       
    formatBase = Widget_Base(mainBase, Row=2)

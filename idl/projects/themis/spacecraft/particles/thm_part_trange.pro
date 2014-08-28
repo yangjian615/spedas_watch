@@ -30,8 +30,8 @@
 ;  Get operation performed before set. 
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-24 18:01:17 -0800 (Mon, 24 Feb 2014) $
-;$LastChangedRevision: 14422 $
+;$LastChangedDate: 2014-05-05 18:12:35 -0700 (Mon, 05 May 2014) $
+;$LastChangedRevision: 15053 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_trange.pro $
 ;
 ;-
@@ -44,24 +44,25 @@ pro thm_part_trange, probe_in, datatype_in, get=get, set=set, sst_cal=sst_cal
     
   ;initialize timesure if needed
   if ~is_struct(times) then begin
-    temp = { peif:[0,0d], $
-             peir:[0,0d], $
-             peib:[0,0d], $
-             peef:[0,0d], $
-             peer:[0,0d], $
-             peeb:[0,0d], $
-             psif:[0,0d], $
-             psir:[0,0d], $
-             psib:[0,0d], $ ;datatype not used
-             psef:[0,0d], $
-             pser:[0,0d], $
-             pseb:[0,0d], $
-             psif_cal:[0,0d], $
-             psir_cal:[0,0d], $
-             psib_cal:[0,0d], $ ;datatype not used
-             psef_cal:[0,0d], $
-             pser_cal:[0,0d], $
-             pseb_cal:[0,0d]  $
+    base = {trange:[0,0d],eclipse:-1}
+    temp = { peif:base, $
+             peir:base, $
+             peib:base, $
+             peef:base, $
+             peer:base, $
+             peeb:base, $
+             psif:base, $
+             psir:base, $
+             psib:base, $ ;datatype not used
+             psef:base, $
+             pser:base, $
+             pseb:base, $
+             psif_cal:base, $
+             psir_cal:base, $
+             psib_cal:base, $ ;datatype not used
+             psef_cal:base, $
+             pser_cal:base, $
+             pseb_cal:base  $
               }
     times = {a:temp, b:temp, c:temp, d:temp, e:temp}
   endif
@@ -88,9 +89,12 @@ pro thm_part_trange, probe_in, datatype_in, get=get, set=set, sst_cal=sst_cal
     return
   endif
   
-  if keyword_set(set) && (n_elements(set) ne 2 || size(/type,set) ne 5) then begin
-    dprint, dlevel=0, 'Invalid time range input.'
-    return
+  if is_struct(set) then begin
+    valid_tags = tag_names(times.a.peif)
+    if n_elements(ssl_set_intersection(tag_names(set),valid_tags)) ne n_elements(valid_tags) then begin
+      dprint, dlevel=0, 'Invalid input structure.'
+      return
+    endif
   endif
 
 
@@ -121,8 +125,10 @@ pro thm_part_trange, probe_in, datatype_in, get=get, set=set, sst_cal=sst_cal
       endif
       
       ;set value
-      if keyword_set(set) then begin
-        times.(pidx).(didx) = set
+      if ~undefined(set) then begin
+        temp = times.(pidx).(didx)        ;struct_assign needs named var
+        struct_assign, set, temp, /nozero ;in case of differing field types (e.g. int/long)
+        times.(pidx).(didx) = temp
       endif
 
     endif

@@ -27,19 +27,18 @@
 ;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-24 18:01:17 -0800 (Mon, 24 Feb 2014) $
-;$LastChangedRevision: 14422 $
+;$LastChangedDate: 2014-05-05 18:12:35 -0700 (Mon, 05 May 2014) $
+;$LastChangedRevision: 15053 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_check_trange.pro $
 ;-
-function thm_part_check_trange, probe0, datatype0, trange, sst_cal=sst_cal, fail=fail
+function thm_part_check_trange, probe0, datatype0, trange, sst_cal=sst_cal, use_eclipse_corrections=use_eclipse_corrections
 
     compile_opt idl2, hidden
 
 
-  r = 0
 
   if undefined(probe0) or undefined(datatype0) or undefined(trange) then begin
-    fail = 'Missing required input; must specify probe, data type, and time range'
+    dprint, dlevel=0, 'Missing required input; must specify probe, data type, and time range'
     return, 0
   endif
 
@@ -51,7 +50,7 @@ function thm_part_check_trange, probe0, datatype0, trange, sst_cal=sst_cal, fail
   if np gt 0 then begin
     probe = probe[valid]
   endif else begin
-    fail = 'No valid probe(s)'
+    dprint, dlevel=0, 'No valid probe(s)'
     return, 0
   endelse
   
@@ -60,28 +59,40 @@ function thm_part_check_trange, probe0, datatype0, trange, sst_cal=sst_cal, fail
   if nv gt 0 then begin
     datatype = datatype[valid]
   endif else begin
-    fail = 'No valid data type(s)'
+    dprint, dlevel=0, 'No valid data type(s)'
     return, 0
   endelse
 
   ;check trange input
   if n_elements(trange) lt 2 then begin
-    fail = 'Time range must be two elements'
+    dprint, dlevel=0, 'Time range must be two elements'
     return, 0
   endif  
   
   trd = time_double(trange)
+  
+  eclipse = undefined(use_eclipse_corrections) ? 0:use_eclipse_corrections
   
   ;loop over probe and data type
   for j=0, n_elements(probe)-1 do begin
     for i=0, n_elements(datatype)-1 do begin
       
       ;get stored time range
-      thm_part_trange, probe[j], datatype[i], get=loaded_trange, sst_cal=sst_cal
+      thm_part_trange, probe[j], datatype[i], get=loaded, sst_cal=sst_cal
       
-      ;simply check against the stored range
-      if trd[0] lt loaded_trange[0] or $
-         trd[1] gt loaded_trange[1] then begin
+      if undefined(loaded) then begin
+        dprint, dlevel=0, 'Cannot determined state of loaded th'+probe+'_'+datatype+' data.'
+        return, 0
+      endif
+      
+      ;check against the stored range
+      if trd[0] lt loaded.trange[0] or $
+         trd[1] gt loaded.trange[1] then begin
+        return, 0
+      endif
+      
+      ;check status of eclipse corrections
+      if eclipse ne loaded.eclipse then begin
         return, 0
       endif
       

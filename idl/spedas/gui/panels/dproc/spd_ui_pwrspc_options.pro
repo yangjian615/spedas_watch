@@ -26,8 +26,8 @@
 ;              SPD_UI_PWRSPC.
 ;            
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-27 09:18:35 -0800 (Thu, 27 Feb 2014) $
-;$LastChangedRevision: 14453 $
+;$LastChangedDate: 2014-05-02 14:17:19 -0700 (Fri, 02 May 2014) $
+;$LastChangedRevision: 15029 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/dproc/spd_ui_pwrspc_options.pro $
 ;-
 
@@ -111,6 +111,11 @@ pro spd_ui_pwrspc_options_event, event
         result = dialog_message('Invalid time range inputed. Use format: YYYY-MM-DD/hh:mm:ss',/center)
         break
       endif
+      
+      ; warn the user that we're going to append _pwr if they got here with an empty suffix text box
+      suffix_widget = widget_info(event.top, find_by_uname='suffix')
+      widget_control, suffix_widget, get_value=the_actual_suffix
+      if the_actual_suffix eq '' then warning_msg = dialog_message('No suffix given - to avoid internal naming conflicts, a suffix of _pwr will be appended to the end of the variables', /center)
 
       spd_ui_pwrspc_options_set_value,state
       fail = spd_ui_pwrspc_options_check_input(state)

@@ -15,9 +15,9 @@
 ;(lphilpott 06/2011) Delayed the handling of spinner events until user clicks OK/APPLY/SET ALL or changes panel. Dialog messages
 ;are issued for invalid entries. This avoids the issue of the text overwriting in spinners as the user types if values aren't valid.
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-05-02 12:09:56 -0700 (Fri, 02 May 2014) $
+;$LastChangedRevision: 15027 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_panel_options.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -453,12 +453,12 @@ PRO spd_ui_panel_options_event, event
       'APPLYTOALL': BEGIN ;apply to all panels
       
         ;Update spinner widget values
-        if obj_valid(state.panelobjs[*state.panel_select])then spd_ui_panel_spinner_update,state.tlb,panelsettings
+        if obj_valid(state.panelobjs[*state.panel_select]) then spd_ui_panel_spinner_update,state.tlb,panelsettings
         
         ;Update list of Panel names in combobox if setall has been set to true.
         ;Also copy all settings from current panel over to other panels.
         
-        spd_ui_panel_options_set_all, tlb, state=state, panelSettings=panelSettings
+        if obj_valid(state.panelobjs[*state.panel_select]) then spd_ui_panel_options_set_all, tlb, state=state, panelSettings=panelSettings
         IF Is_Num(panelNames) THEN panelNames=['No Panels']
         IF N_Elements(panelNames) EQ 1 && panelNames EQ '' THEN panelNames=['No Panels']
         id_layoutpanel = widget_info(state.tlb, find_by_uname='layoutpanel')

@@ -8,17 +8,17 @@
 ;  until the tracking options can be re-worked. 
 ;
 ;Calling Sequence:
-;  spd_ui_track_one, infoptr
+;  spd_ui_track_one, info_struct
 ;
 ;Input:
-;  infoptr:  Pointer to GUI's main storage structure.
+;  info_struct:  The GUI's main storage structure.
 ;
 ;Output:
 ;  none
 ;
 ;Notes:
 ;  Moved from call sequence object.
-;
+;    5/5/2014: Changed input argument from pointer to the main GUI's info struct to the actual struct. 
 ;
 ;$LastChangedBy:  $
 ;$LastChangedDate:  $
@@ -26,22 +26,23 @@
 ;$URL:  $
 ;
 ;-
-pro spd_ui_track_one, infoptr
-  if ~undefined(infoptr) && ptr_valid(infoptr) then begin
-      (*infoptr).tracking = 1
-      (*infoptr).trackall = 0
-      (*infoptr).trackone = 1
-      (*infoptr).trackingv = 1
-      (*infoptr).trackingh = 1
-      (*infoptr).drawObject->vBarOn
-      (*infoptr).drawObject->hBarOn
-      (*infoptr).drawObject->legendOn
-      widget_control, (*infoptr).trackhmenu, set_button=1
-      widget_control, (*infoptr).trackvmenu, set_button=1
-      widget_control, (*infoptr).trackallmenu, set_button=0
-      widget_control, (*infoptr).trackonemenu, set_button=1
-      widget_control, (*infoptr).showpositionmenu,set_button=1
-      widget_control, (*infoptr).trackMenu,set_button=1
+pro spd_ui_track_one, info_struct
+
+  if ~undefined(info_struct) && is_struct(info_struct) then begin
+      info_struct.tracking = 1
+      info_struct.trackall = 0
+      info_struct.trackone = 1
+      info_struct.trackingv = 1
+      info_struct.trackingh = 1
+      info_struct.drawObject->vBarOn
+      info_struct.drawObject->hBarOn
+      info_struct.drawObject->legendOn
+      widget_control, info_struct.trackhmenu, set_button=1
+      widget_control, info_struct.trackvmenu, set_button=1
+      widget_control, info_struct.trackallmenu, set_button=0
+      widget_control, info_struct.trackonemenu, set_button=1
+      widget_control, info_struct.showpositionmenu,set_button=1
+      widget_control, info_struct.trackMenu,set_button=1
   endif
 
 end

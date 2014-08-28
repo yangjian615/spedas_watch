@@ -38,8 +38,8 @@
 ; Update removed to not use thm_load_xxx by DEL
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2014-02-24 18:01:17 -0800 (Mon, 24 Feb 2014) $
-; $LastChangedRevision: 14422 $
+; $LastChangedDate: 2014-05-05 18:12:35 -0700 (Mon, 05 May 2014) $
+; $LastChangedRevision: 15053 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_load_sst.pro $
 ;-
 
@@ -273,7 +273,7 @@ pro thm_load_sst_l1,datatype=datatype,vdatatypes=vdatatypes,probe=probe,$
     
     thm_sst_add_spindata, cache, trange=trange, use_eclipse_corrections=use_eclipse_corrections
     
-    thm_sst_set_trange, cache, trange=trange
+    thm_sst_set_trange, cache, trange=trange, use_eclipse_corrections=use_eclipse_corrections
     
     data_cache,name,cache,/set,/no_copy
     
@@ -433,7 +433,7 @@ if size(/type,datatype0) gt 0 then datatype = datatype0 ;keep input vars from be
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 14422 2014-02-25 02:01:17Z aaflores $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 15053 2014-05-06 01:12:35Z aaflores $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']

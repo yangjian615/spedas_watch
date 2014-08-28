@@ -19,8 +19,8 @@
 ;  Should be called in all idl geopack wrapper routines
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-17 09:54:36 -0700 (Mon, 17 Mar 2014) $
-; $LastChangedRevision: 14547 $
+; $LastChangedDate: 2014-05-05 11:15:26 -0700 (Mon, 05 May 2014) $
+; $LastChangedRevision: 15047 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/igp_test.pro $
 ;-
 
@@ -61,6 +61,27 @@ if ~stregex(out[filter+1],v_string,/boolean) && ~undefined(geopack_2008) then be
   message, /continue, 'external/IDL_GEOPACK/README.txt'
   return, 0
 endif
+
+
+; If the user has the Geopack DLM installed, but can't load it for some reason 
+; (e.g., missing/wrong dependencies), the igp_test() routine will still 
+; return 1 and a crash will occur when the user tries to load Geopack. 
+; The following 'catch', 'dlm_load 'sequence is meant to avoid this by
+; catching the error thrown by loading the DLM
+; this error case was initially seen trying to load Geopack 9.2 on CentOS 6.5
+
+catch, geopack_dlm_error
+
+if geopack_dlm_error ne 0 then begin
+    catch, /cancel
+    help, /last_message, output=err_msg
+    message, /continue, 'The Geopack DLM was found, but there was a problem loading it.'
+    for line_num=0, n_elements(err_msg)-1 do begin
+        message, /continue, err_msg[line_num]
+    endfor
+    return, 0
+endif
+dlm_load, 'geopack'
 
 return, 1
   

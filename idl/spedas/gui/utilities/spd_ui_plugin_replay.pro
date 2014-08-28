@@ -23,9 +23,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-31 17:09:35 -0700 (Mon, 31 Mar 2014) $
-;$LastChangedRevision: 14721 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-05 13:39:26 -0700 (Mon, 05 May 2014) $
+;$LastChangedRevision: 15050 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_plugin_replay.pro $
 ;
 ;-
@@ -70,7 +70,7 @@ pro spd_ui_plugin_replay, procedure, $
     ;which will then be saved directly in XML.
     if in_set('track_one',strlowcase(tag_names(parameters))) then begin
       if keyword_set(parameters.track_one) then begin
-        spd_ui_track_one, infoptr
+        spd_ui_track_one, *infoptr
       endif
     endif
   

@@ -32,9 +32,9 @@
 ;
 ;HISTORY:
 ; 20-oct-2008, jmm, jimm@ssl.berkeley.edu
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-05-02 15:34:01 -0700 (Fri, 02 May 2014) $
+;$LastChangedRevision: 15031 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_dproc.pro $
 
 
@@ -244,6 +244,7 @@ Function spd_ui_dproc, info, uval, $
                                         par_pad = 2, label_xsize = 100, $
                                         title =  'Wavelet Transform Time Range', $
                                         bottomlabel = 'Format: yyyy-mm-dd/hh:mm:ss')
+
       obj_destroy, opar
       
       msg = ''
@@ -253,6 +254,14 @@ Function spd_ui_dproc, info, uval, $
         sbar -> update, msg
       Endif Else Begin
       
+        ; 'trange0' should be an array with 3 elements: 1) start time, 2) end time, 3) max # of samples
+        if n_elements(trange0) ne 3 then begin
+            wavelet_err_msg = 'Error calculating wavelet transform, missing some parameters. Did you leave a textbox in the wavelet panel empty?'
+            hwin->update, wavelet_err_msg
+            sbar->update, wavelet_err_msg
+            break
+        endif 
+        
         t00 = spd_ui_timefix(trange0[0])
         If(is_string(t00)) Then Begin
             t00x = time_double(t00)
