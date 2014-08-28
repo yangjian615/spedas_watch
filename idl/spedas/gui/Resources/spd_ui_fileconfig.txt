@@ -1,0 +1,18 @@
+; Filename: /SPEDAS/idl/spedas/spd_ui/Resources/spd_ui_fileconfig.txt
+;
+; This text file specifies the following:
+; mission name - this is the text that appears on the tabs, 
+; procedure name - the IDL procedure that creates the panel widgets and 
+; handles events.
+; Entries on each line should be separated by a comma and one space.
+;
+; For example to add a configuration file panel for a new mission 'YYY' 
+; add the following line:
+; YYY, spd_ui_yyy_fileconfig
+;
+SPEDAS, spd_ui_spedas_fileconfig 
+SPEDAS, spd_ui_fileconfig
+GOES, spd_ui_goes_fileconfig
+WIND, spd_ui_wind_fileconfig
+ISTP, spd_ui_istp_fileconfig
+YYY, spd_ui_yyy_fileconfig 

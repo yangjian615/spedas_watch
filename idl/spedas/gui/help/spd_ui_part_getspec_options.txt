@@ -1,0 +1,70 @@
+General:
+----------------------------------------------------
+
+Derived spectra are generated using THM_PART_PRODUCTS, a command line routine
+for creating energy and angular spectra from ESA and SST data.  A list of routines
+detailing command line usage is given at the bottom of this document. 
+The available spectrograms are:
+
+Energy Spectrogram:
+  -The data are averaged across all look directions to create an omni-directional energy spectrogram.
+
+Phi Spectrogram (spin axis longitude):
+  -The data are averaged across all energies and latitudes (measured from spin plane to spin axis).
+
+Theta Spectrogram (spin axis latitude):
+  -The data are averaged across all energies and longitudes (measured along the spin plane).
+
+Gyrovelocity Spectrogram:
+  -The data are transformed into field aligned coordinates then averaged across all energies and latitudes.
+
+Pitch Angle Spectrogram:
+  -The data are transformed into field aligned coordinates then averaged across all energies and longitudes.
+
+
+Options:
+----------------------------------------------------
+
+Angular Range Limits:
+  -Limits are applied to the data before calculating data products.
+  -Phi, and theta limits will affect all spectrograms.
+  -Gyrovelocity and pitch angle limits will only affect field alligned spectrograms.
+
+Energy Range Limits:
+  -Limits are applied to the data before calculating data products.
+  -Energy limits will affect all spectrograms.
+  -No limits are applied unless the checkbox is selected
+
+FAC Resolution:
+  -After being transformed to field aligned coordinates the data are interpolated onto a 
+   regular grid in the new coordinates. These fields specify the resolution of the new 
+   grid along longitude (gyrovelocity) and latitude (pitch angle).
+  -Large values may significantly increase the time and memory required to process the data.
+
+FAC Variant:
+  -All field aligned coordinates use the magnetic field vector as their z axis.  
+   The full coordinate system is determined by selecting one of the following options:
+     xgse:  the x axis is the projection of the GSE x-axis
+     ygsm:  the y axis is the projection of the GSM y-axis
+     zdsl:  the y axis is the projection of the DSL z-axis
+     RGeo:  the x is the projection of radial spacecraft position vector (GEI)
+     mRGeo:  the x axis is the projection of the negative radial spacecraft position vector (GEI)
+     phiGeo:  the y axis is the projection of the azimuthal spacecraft position vector (GEI), positive eastward
+     mphiGeo:  the y axis is the projection of the azimuthal spacecraft position vector (GEI), positive westward
+     phiSM:  the y axis is the projection of the azimuthal spacecraft position vector in Solar Magnetic coordinates
+     mphiSM:  the y axis is the projection of the negative azimuthal spacecraft position vector in Solar Magnetic coordinates
+
+SST Contamination:
+  -Select the checkbox to remove the default set of bins that are thought to be contaminated before processing.
+
+Start Angle:
+  -The Start Angle specifies the lower bound of the y axis for phi and gyrovelocity plots. 
+      e.g.: 180 -> y axis drawn from 180 to 540 degrees
+            -90 -> y axis drawn from -90 to 270 degrees
+
+
+Notes:
+----------------------------------------------------
+
+Related cribsheets:
+  thm_crib_part_products.pro

@@ -1,0 +1,5 @@
+To see User's Guide, press the "Open Help" button.
+
+For the latest version of help, paste the link below in your web browser and download the document that has "v8.0" at the end of the file name.
+
+ftp://apollo.ssl.berkeley.edu/pub/SPEDAS/3%20Ground%20Systems/3.2%20Science%20Operations/Science%20Operations%20Documents/Software%20Users%20Guides/

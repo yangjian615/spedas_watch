@@ -1,0 +1,329 @@
+;+
+;Purpose: A basic overview of how to obtain and plot two-dimentional slices of 
+;         SST and/or ESA particle distributions. 
+;         
+;         Run "thm_ui_slice2d" on the IDL console to use for the GUI version.
+;
+;
+;Methods:
+;  Geomtric:
+;    Each point on the plot is given the value of the bin it instersects.
+;    This allows bin boundaries to be drawn at high resolutions.
+;  
+;  2D Interpolation:
+;    Datapoints within the specified theta or z-axis range are projected onto 
+;    the slice plane and linearly interpolated onto a regular 2D grid. 
+;  
+;  3D Interpolation:
+;    The entire 3-dimensional distribution is linearly interpolated onto a 
+;    regular 3D grid and a slice is extracted from the volume.
+;     
+;
+;Coordinates:
+;  The coordinate system in which the slice will be oriented.
+;  Options are 'DSL' (default), 'GSM', 'GSE' and the following magnetic
+;  field aligned coordinates (field parallel to z axis).
+;        
+;    'xgse':  The x axis is the projection of the GSE x-axis
+;    'ygsm':  The y axis is the projection of the GSM y-axis
+;    'zdsl':  The y axis is the projection of the DSL z-axis
+;    'RGeo':  The x is the projection of radial spacecraft position vector (GEI)
+;    'mRGeo':  The x axis is the projection of the negative radial spacecraft position vector (GEI)
+;    'phiGeo':  The y axis is the projection of the azimuthal spacecraft position vector (GEI), positive eastward
+;    'mphiGeo':  The y axis is the projection of the azimuthal spacecraft position vector (GEI), positive westward
+;    'phiSM':  The y axis is the projection of the azimuthal spacecraft position vector in Solar Magnetic coords
+;    'mphiSM':  The y axis is the projection of the negative azimuthal spacecraft position vector in Solar Magnetic coords
+;
+;        
+;Slice Orientation
+;  The slice plane is oriented by using the following options to specify
+;  its x and y axes with respect to the coordinate system.
+;  ("BV," "BE", and "perp" will be invariant between coordinate systems).
+;       
+;    'BV':  The x axis is parallel to B field; the bulk velocity defines the x-y plane
+;    'BE':  The x axis is parallel to B field; the B x V(bulk) vector defines the x-y plane
+;    'xy':  (default) The x axis is along the coordinate's x axis and y is along the coordinate's y axis
+;    'xz':  The x axis is along the coordinate's x axis and y is along the coordinate's z axis
+;    'yz':  The x axis is along the coordinate's y axis and y is along the coordinate's z axis
+;    'xvel':  The x axis is along the coordinate's x axis; the x-y plane is defined by the bulk velocity 
+;    'perp':  The x axis is the bulk velocity projected onto the plane normal to the B field; y is B x V(bulk)
+;    'perp_xy':  The coordinate's x & y axes are projected onto the plane normal to the B field
+;    'perp_xz':  The coordinate's x & z axes are projected onto the plane normal to the B field
+;    'perp_yz':  The coordinate's y & z axes are projected onto the plane normal to the B field
+;     
+;
+;OTHER: 
+;
+;  For more detailed/advanced usage see:
+;    thm_crib_part_slice2d_adv.pro
+;    thm_crib_part_slice2d_multi.pro
+;
+;
+;NOTES: 
+;
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2013-12-18 15:17:19 -0800 (Wed, 18 Dec 2013) $
+;$LastChangedRevision: 13704 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_slice2d.pro $
+;
+;-
+
+compile_opt idl2
+
+thm_init
+
+nl = ssl_newline()
+
+print, nl,'Basic 2D velocity slice crib. Type ".c" or press F8 to continue.',nl
+
+stop
+
+;--------------------------------------------------------------------------------------
+;Load Particle Data
+;--------------------------------------------------------------------------------------
+
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
+
+print, nl,'Load particle data structures for the desired '
+print, 'time range using thm_part_dist_array.',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Generate basic slice from ESA data
+;--------------------------------------------------------------------------------------
+
+;generate a 30 second slice starting at the beginning of the time range
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice
+
+;plot the output
+thm_part_slice2d_plot, slice
+
+print, nl,'This example shows a basic slice of ESA burst data (ions) along the DSL xy plane.'
+print, 'The default method will produce a plot with visible bin boundaries.'
+print, 'The red line is the projection of the bulk velocity vector.',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Generate basic slice using 2D interpolation
+;--------------------------------------------------------------------------------------
+
+;generate an identical cut using 2D interpolation
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  /two_d_interp
+
+thm_part_slice2d_plot, slice
+
+print, nl,'This is an identical cut produced using the 2D interplation method.'
+print, 'This method linearly interpolates all data within a specified range '
+print, 'onto the slice plane (default is +-20 degrees)',nl 
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Generate basic slice using 3D interpolation
+;--------------------------------------------------------------------------------------
+
+;generate an identical cut using 3D interpolation
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  /three_d_interp
+
+thm_part_slice2d_plot, slice
+
+print, nl,'Another identical cut using the 3D interpolation method,'
+print, 'Here the entire distribution is linearly interpolated in 
+print, 'three dimensions and a slice is extracted.',nl
+
+stop
+
+
+
+;--------------------------------------------------------------------------------------
+;Smoothing
+;--------------------------------------------------------------------------------------
+
+;Increase the smoothing width to create smoother plots.
+;The value supplied to the SMOOTH keyword is the width (in points)
+;of the gaussian blur that is applied to the slice data.
+;2D interpolate and 3D interpolation use smooth=3 by default.
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  smooth=15, /three_d_interp
+
+;Add contour lines to the plot
+thm_part_slice2d_plot, slice
+
+print,nl,'Set the SMOOTH keyword to specify the width of the smoothing window.'
+print, '(in # of points).  2D interpolate and 3D interpolation use smooth=3 
+print, 'by default.',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Units
+;--------------------------------------------------------------------------------------
+
+;This example uses the UNITS keyword to create an energy flux slice.
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  units='eflux', /three_d_interp
+
+thm_part_slice2d_plot, slice
+
+print,nl,'Use the UNITS keyword to select what units the data will be presented in.'
+print, ' (e.g. "Counts", "DF", "Rate", "CRate", "Flux", "EFlux")',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Plot Against Energy
+;--------------------------------------------------------------------------------------
+
+;Setting the /ENERGY keyword will plot the data against energy instead of velocity.
+;By default this will use radial log scaling, to use linear scaling use LOG=0.
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  /energy, /three_d_interp ;, log=0
+
+thm_part_slice2d_plot, slice
+
+print,nl,'Use the ENERGY keyword to plot the data against energy instead of velocity.'
+print, 'Energy plots will use radial log scaling; use "log=0" for linear scaling.',nl
+
+stop
+
+;--------------------------------------------------------------------------------------
+;Basic Orientation
+;--------------------------------------------------------------------------------------
+
+;This will produce a slice along the DSL xz plane.
+;See the top of this crib for more options.
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $ 
+                  rotation='xz', /two_d_interp
+
+thm_part_slice2d_plot, slice
+
+
+print,nl,'This example cuts along the DSL xz plane instead of xy'
+print, 'See the documentation at the top of this crib for a full '
+print, 'description of the available rotations.',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Basic Field Aligned Orientation
+;--------------------------------------------------------------------------------------
+
+;Field aligned rotations require magnetic field data to be loaded beforehand.
+thm_load_fgm, probe='b', datatype='fgl', level=2, coord='dsl', trange=trange
+
+;This example aligns the slice plane along the BV plane.
+;The MAG_DATA keyword is used to specify a tplot variable containing magnetic field data.
+;The VEL_DATA keyword is used to specify a tplot variable containing a bulk velocity vector.
+;These vectors will be averaged over the time range of the slice.
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  rotation='BV', mag_data='thb_fgl_dsl', /two_d_interp
+
+thm_part_slice2d_plot, slice
+
+print, nl,'This example orients the slice along a plane defined by the magnetic'
+print, 'field and bulk velocity vectors.  Orientations that use the magnetic ' 
+print, 'field will require support data to be loaded first.  Bulk velocity can '
+print, 'be calculated automatically or loaded separately.  See the documentation '
+print, 'at the top of this crib for a list of valid inputs to the ROTATION keyword.',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Basic Orientation and Coordinates
+;--------------------------------------------------------------------------------------
+
+;This example combines the COORD and ROTATION keywords.
+;The COORD keyword specifies GSM coordinates and the ROTATION keyword specifies 
+;the slice plane's orientation with respect to those coordinates.
+;The 'xvel' rotation aligns the slice's x axis with the (GSM) x axis and the 
+;slice's y axis is defined by the bulk velocity.
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  coord='gsm', rotation='xvel', /two_d_interp
+
+thm_part_slice2d_plot, slice
+
+print,nl,'This example plots a slice oriented along the GSM x axis and the ' 
+print, 'bulk velocity vector.  See the documentation at the top of this crib '
+print, 'for a list of valid inputs to the COORD and ROTATION keywords.',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Plotting options (standard)
+;--------------------------------------------------------------------------------------
+
+;Set tick numbers, character size, and range keywords.
+;Keywords with an axis prefix can be set for all axes.
+; (e.g. xticks/yticks/zticks)
+thm_part_slice2d_plot, slice, $
+                       charsize = 1.5, $  ;set charcter size to 1.5 times the default
+                       xticks = 6, $  ;set number of major x ticks
+                       yminor = 2, $  ;set number of minor y ticks
+                       zrange = [1e-15,1e-9]  ;specify the z axis range
+                       zprecision = 2 ;specify number of significant digits for 
+                                      ;tick annotations
+
+print,nl,'This example demonstrates the keywords that control some of the
+print, 'standard annotation options (character size, ticks, ranges, and
+print, 'numerical annotations)',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Plotting options (miscellaneous)
+;--------------------------------------------------------------------------------------
+
+;Various keywords can be set called with thm_part_slice2d_plot
+;to controll the plot annotations.
+thm_part_slice2d_plot, slice, $
+                       plotbulk = 0, $ ;do not plot bulk v 
+                       plotaxes = 0, $ ;do not plot axis zeros
+                       sundir = 1, $   ;plot projection of sun direction
+                       olines = 0      ;remove contour lines
+
+print,nl,'This example demonstrates the keywords that control some of the
+print, 'non-standard annotations seen on slice plots (plotting of bulk
+print, 'velocity, sun direction, energy limits, and contour lines).',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Plotting options (exporting)
+;--------------------------------------------------------------------------------------
+
+;The EXPORT keyword can be used to automatically produce .png or .eps 
+;images of the plot.  Set export='filename' to write a .png file and
+;add /EPS to use postscript output.
+thm_part_slice2d_plot, slice, export='slice_crib_plot' ;, /eps
+
+print,nl,'This example demostrates how to automatically export a plot '
+print, 'to a png image or postscript file.  This should create a '
+print, '"slice_crib_plot.png" in your current home directory.',nl
+
+stop
+
+
+
+print, 'End of crib.'
+
+end

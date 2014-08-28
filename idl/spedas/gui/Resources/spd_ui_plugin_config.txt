@@ -1,0 +1,16 @@
+; This is a preliminary plugin configuration file for testing
+;
+; 
+; Format:
+;   <menu item name>, <folder> | <subfolder>, <name ofprocedure to call>
+;
+; Item name and procedure name are required.  Any number of folders/subfolders 
+; may be used (including none).
+;
+;
+
+
+Particle Distribution Slices, SPEDAS/ARTEMIS, spd_ui_slice2d
+Test Plugin, SPEDAS/ARTEMIS, spd_ui_test_plugin
+Dummy Plugin 2, Test | Submenu , dummy_pro2
+Dummy Plugin, Test, dummy_pro
