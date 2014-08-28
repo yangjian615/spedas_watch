@@ -419,7 +419,7 @@ if datatype eq 'spec' then begin
 						;***TEMPORARY - rbsp_efw_get_cal_params HAS A ROUGH SQ-CAN FACTOR
 						;BUILT IN. I GET THE CORRECT CURVES FROM rbsp_efw_get_gain_results. SO, I NEED
 						;TO MANUALLY REMOVE THE CORRECTION HERE. 
-						if probe eq 'a' then gain[bb] /= 2.35 else gain[bb] /= 2.33
+						;if probe eq 'a' then gain[bb] /= 2.35 else gain[bb] /= 2.33
 						;*******************
 
 						if probe eq 'a' then begin
@@ -452,7 +452,7 @@ if datatype eq 'spec' then begin
 						;***TEMPORARY - rbsp_efw_get_cal_params HAS A ROUGH SQ-CAN FACTOR
 						;BUILT IN. I GET THE CORRECT CURVES FROM rbsp_efw_get_gain_results. SO, I NEED
 						;TO MANUALLY REMOVE THE CORRECTION HERE. 
-						if probe eq 'a' then gain[bb] /= 2.22 else gain[bb] /= 2.10
+						;if probe eq 'a' then gain[bb] /= 2.22 else gain[bb] /= 2.10
 						;*******************
 						if probe eq 'a' then begin
 							if bins eq '36' then gain_tmp = fcals.cal_spec.scmv_a_spec36.gain_vs_freq
@@ -485,7 +485,7 @@ if datatype eq 'spec' then begin
 						;***TEMPORARY - rbsp_efw_get_cal_params HAS A ROUGH SQ-CAN FACTOR
 						;BUILT IN. I GET THE CORRECT CURVES FROM rbsp_efw_get_gain_results. SO, I NEED
 						;TO MANUALLY REMOVE THE CORRECTION HERE. 
-						if probe eq 'a' then gain[bb] /= 2.22 else gain[bb] /= 2.22
+						;if probe eq 'a' then gain[bb] /= 2.22 else gain[bb] /= 2.22
 						;*******************
 						if probe eq 'a' then begin
 							if bins eq '36' then gain_tmp = fcals.cal_spec.scmw_a_spec36.gain_vs_freq

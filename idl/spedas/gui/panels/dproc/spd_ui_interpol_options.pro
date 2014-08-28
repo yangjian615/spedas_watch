@@ -1,4 +1,38 @@
-
+;+
+;NAME:
+;  spd_ui_interpol_options
+;
+;PURPOSE:
+;  Front end window allowing user to select options for interpolation.
+;
+;CALLING SEQUENCE:
+;  result = spd_ui_interpol_options(gui_ID, historywin, statusbar, datap)
+;
+;INPUT:
+;  gui_id: group leader widget
+;  historywin: history window object
+;  statusbar: status bar object
+;  datap: pointer to loaded data object
+;  ptree: pointer to tree copy
+;
+;OUTPUT:
+;  values = {num, type, matchto, extrap, suffix, ok}
+;    num: number of points passed to interpol function
+;    type: type on interpolation (0=linear, 1=quad, 2=lst sqr qd, 3=spline, 4= nearest neighbor)
+;    matchto: pointer to copy of returned struct from loaded data obj,
+;             specifies the selected quantity to match, null string if
+;             none selected
+;    extrap: type of extrapolation for matching (0=none, 1=nan) 
+;    suffix: optional suffix for new data quantity
+;    ok: flag indicating whether to procede with interpolation
+;
+;NOTES:
+;
+;$LastChangedBy:  $
+;$LastChangedDate:  $
+;$LastChangedRevision:  $
+;$URL:  $
+;-
 
 pro spd_ui_interp_match_event, event
 
@@ -59,7 +93,7 @@ pro spd_ui_interp_match_event, event
   
   widget_control, event.top, set_uval=state, /no_copy
   
-end ;----------------------------------------------------
+end 
 
 
 
@@ -112,7 +146,7 @@ function spd_ui_interp_match, state
 
   return, name
 
-end ;----------------------------------------------------
+end 
 
 
 
@@ -135,7 +169,7 @@ endif else begin
     else state.statusbar->update,i+'Using '+strtrim(value,1)+' second cadence.'
 endelse
 
-end ;----------------------------------------------------
+end 
 
 pro spd_ui_interpol_options_event, event
 
@@ -291,39 +325,7 @@ pro spd_ui_interpol_options_event, event
 
 widget_control, event.top, set_uval=state, /no_copy
 
-end ;----------------------------------------------------
-
-;+
-;NAME:
-;  spd_ui_interpol_options
-;
-;PURPOSE:
-;  Front end window allowing user to select options for interpolation.
-;
-;CALLING SEQUENCE:
-;  result = spd_ui_interpol_options, gui_ID, historywin, statusbar, datap
-;
-;INPUT:
-;  gui_id: group leader widget
-;  historywin: history window object
-;  statusbar: status bar object
-;  datap: pointer to loaded data object
-;  ptree: pointer to tree copy
-;
-;OUTPUT:
-;  values = {num, type, matchto, extrap, suffix, ok}
-;    num: number of points passed to interpol function
-;    type: type on interpolation (0=linear, 1=quad, 2=lst sqr qd, 3=spline, 4= nearest neighbor)
-;    matchto: pointer to copy of returned struct from loaded data obj,
-;             specifies the selected quantity to match, null string if
-;             none selected
-;    extrap: type of extrapolation for matching (0=none, 1=nan) 
-;    suffix: optional suffix for new data quantity
-;    ok: flag indicating whether to procede with interpolation
-;
-;NOTES:
-;  
-;-
+end 
 
 
 function spd_ui_interpol_options, gui_ID, historywin, statusbar, datap, ptree = ptree

@@ -44,8 +44,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-24 12:53:07 -0800 (Mon, 24 Feb 2014) $
-;$LastChangedRevision: 14420 $
+;$LastChangedDate: 2014-02-25 15:49:38 -0800 (Tue, 25 Feb 2014) $
+;$LastChangedRevision: 14437 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_coordinate_systems__define.pro $
 ;-
 
@@ -68,7 +68,7 @@ function spd_ui_coordinate_systems::init
     
     ; standard Earth-centered coordinate systems
     geomag_coord_sys_list = ['gsm', $ ; Geocentric Solar Magnetospheric
-                            ; 'agsm', $ ; aberrated GSM
+                             'agsm', $ ; aberrated GSM
                              'gse', $ ; Geocentric Solar Ecliptic
                              'gei', $ ; Geocentric Equatorial Inertial
                              'sm', $ ; Solar Magnetic

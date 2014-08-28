@@ -27,9 +27,9 @@
 ;   2012-08-07: Created by Jianbao Tao (JBT), SSL, UC Berkley.
 ;
 ; VERSION:
-; $LastChangedBy: jianbao_tao $
-; $LastChangedDate: 2012-11-12 09:52:04 -0800 (Mon, 12 Nov 2012) $
-; $LastChangedRevision: 11222 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2014-02-25 11:57:04 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14428 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_efw_get_cal_params.pro $
 ;
 ;-
@@ -58,7 +58,7 @@ a = {ADC_gain_EAC: [10d, 10d, 10d] * adc_factor $ ; boom 12, 34, 56
    , ADC_gain_VDC: [100d,100d,100d,100d,100d,100d] * adc_factor $ ; sensors 1-6
    , ADC_gain_VAC: [5d, 5d, 5d, 5d, 5d, 5d] * adc_factor $
    , ADC_gain_MAG: dblarr(4,3) $
-   , ADC_gain_MSC: [2d, 2d, 2d] * adc_factor * [2.35d, 2.22d, 2.22d] $
+   , ADC_gain_MSC: [2d, 2d, 2d] * adc_factor $ ;* [2.35d, 2.22d, 2.22d] $
    , ADC_offset_EAC: [0d, 0d, 0d] $                ; All ADC offsets are
    , ADC_offset_EDC: [0d, 0d, 0d] $                ; in units of ADC counts
    , ADC_offset_VDC: [0d, 0d, 0d, 0d, 0d, 0d] $
@@ -77,7 +77,7 @@ b = {ADC_gain_EAC: [10d, 10d, 10d] * adc_factor $ ; boom 12, 34, 56
    , ADC_gain_VDC: [100d,100d,100d,100d,100d,100d] * adc_factor $ ; sensors 1-6
    , ADC_gain_VAC: [5d, 5d, 5d, 5d, 5d, 5d] * adc_factor $
    , ADC_gain_MAG: dblarr(4,3) $
-   , ADC_gain_MSC: [2d, 2d, 2d] * adc_factor * [2.33d, 2.10d, 2.22d] $
+   , ADC_gain_MSC: [2d, 2d, 2d] * adc_factor $ ;* [2.33d, 2.10d, 2.22d] $
    , ADC_offset_EAC: [0d, 0d, 0d] $                ; All ADC offsets are
    , ADC_offset_EDC: [0d, 0d, 0d] $                ; in units of ADC counts
    , ADC_offset_VDC: [0d, 0d, 0d, 0d, 0d, 0d] $

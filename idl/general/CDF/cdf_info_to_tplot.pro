@@ -7,8 +7,8 @@
 ; Written by Davin Larson
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2012-04-17 12:00:02 -0700 (Tue, 17 Apr 2012) $
-; $LastChangedRevision: 10342 $
+; $LastChangedDate: 2014-02-27 16:42:25 -0800 (Thu, 27 Feb 2014) $
+; $LastChangedRevision: 14463 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_info_to_tplot.pro $
 ;-
 pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
@@ -16,9 +16,11 @@ pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
         all=all, $
         force_epoch=force_epoch, $
         verbose=verbose,get_support_data=get_support_data,  $
-        tplotnames=tplotnames
+        tplotnames=tplotnames,$
+        resolve_labels=resolve_labels ;copy labels from labl_ptr_1 in attributes into dlimits
+                                      ;resolve labels implemented as keyword to preserve backwards compatibility
 
-dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 10342 2012-04-17 19:00:02Z pcruce $'
+dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 14463 2014-02-28 00:42:25Z pcruce $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
@@ -133,9 +135,22 @@ for i=0,nv-1 do begin
      if keyword_set(var_2) then data = {x:tvar.dataptr,y:v.dataptr,v1:var_1.dataptr, v2:var_2.dataptr} $
      else if keyword_set(var_1) then data = {x:tvar.dataptr,y:v.dataptr, v:var_1.dataptr}  $
      else data = {x:tvar.dataptr,y:v.dataptr}
-
+     
      dlimit = {cdf:cdfstuff,spec:spec,log:log}
      if keyword_set(units) then str_element,/add,dlimit,'ysubtitle','['+units+']'
+     
+     if keyword_set(resolve_labels) then begin
+       labl_ptr_1 = struct_value(attr,'labl_ptr_1',default='')
+       if keyword_set(labl_ptr_1) then begin
+         labl_idx = where(cdfi.vars.name eq labl_ptr_1,c)
+         if c eq 1 then begin
+           if ptr_valid(cdfi.vars[labl_idx].dataptr) then begin
+             str_element,/add,dlimit,'labels',*cdfi.vars[labl_idx].dataptr
+           endif
+         endif
+       endif
+     endif
+     
      tn = v.name
 ;     if keyword_set(newname) then begin;;  bug here
 ;        tn = newname[i]

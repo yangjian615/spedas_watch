@@ -1,4 +1,39 @@
-
+;+
+;NAME:
+;  spd_ui_degap_options
+;
+;PURPOSE:
+;  Front end interface allowing the user to select options for degapping data.
+;
+;CALLING SEQUENCE:
+;  return_values = spd_ui_degap_options(gui_id, statusbar, historywindow)
+;
+;INPUT:
+;  gui_id: widget id of group leader
+;  statusbar: status bar object ref.
+;  historywindow: history window object ref.
+;
+;OUTPUT:
+;  return values: anonymous structure containing input parameters for dproc routine
+;  {
+;   dt: Interval passed to degap routine
+;   margin: degap margin
+;   opts: Array of flags determining extra options
+;         [set degap flag, set max gap size]
+;   flag: User-specified flag to fill gaps with, uses NaNs if not set
+;   maxgap: Maximum gap size to be removed, uses total range of data if not set 
+;   suffix: Suffix for new variable
+;   ok: Flag indicating success 
+;  }
+;
+;NOTES:
+;  (Gaps are removed were greater than dt+margin and less than maxgap)
+;  
+;$LastChangedBy:  $
+;$LastChangedDate:  $
+;$LastChangedRevision:  $
+;$URL:  $
+;-
 
 pro spd_ui_degap_options_event, event
 
@@ -143,39 +178,6 @@ pro spd_ui_degap_options_event, event
   widget_control, event.top, set_uval = state, /no_copy
 
 end
-
-
-
-;+
-;NAME:
-;  spd_ui_degap_options
-;
-;PURPOSE:
-;  Front end interface allowing the user to select options for degapping data.
-;
-;CALLING SEQUENCE:
-;  return_values = spd_ui_degap_options(gui_id, statusbar, historywindow)
-;
-;INPUT:
-;  gui_id: widget id of group leader
-;  statusbar: status bar object ref.
-;  historywindow: history window object ref.
-;
-;OUTPUT:
-;  return values: anonymous structure containing input parameters for dproc routine
-;  {
-;   dt: Interval passed to degap routine
-;   margin: degap margin
-;   opts: Array of flags determining extra options
-;         [set degap flag, set max gap size]
-;   flag: User-specified flag to fill gaps with, uses NaNs if not set
-;   maxgap: Maximum gap size to be removed, uses total range of data if not set 
-;   suffix: Suffix for new variable
-;   ok: Flag indicating success 
-;  }
-;
-;NOTES:
-;  (Gaps are removed were greater than dt+margin and less than maxgap)
 
 function spd_ui_degap_options, gui_id, statusbar, historywin
 

@@ -137,6 +137,12 @@ function thm_ui_slice2d_check, tlb, state, previous
   if t0 lt previous.trange[0] then return, 0b
   if t1 gt previous.trange[1] then return, 0b
   
+  
+  ;Check SST calibration
+  id = widget_info(tlb, find_by_uname='sstcal')
+  if widget_info(id, /button_set) ne previous.sst_cal then return, 0b
+  
+  
   ;Check ESA background options
   ;
   id = widget_info(tlb, find_by_uname='esaremovebase')
@@ -154,35 +160,6 @@ function thm_ui_slice2d_check, tlb, state, previous
     id = widget_info(tlb, find_by_uname='esascale')
     widget_control, id, get_value = bgnd_scale
     if bgnd_scale ne previous.bgnd_scale then return, 0b
-  endif
-  
-  ;Check SST mask option
-  ;
-  id = widget_info(tlb, find_by_uname='sstmask')
-  if widget_info(id, /sens) ne previous.sst_mask then return, 0b
-  
-  if widget_info(id, /sens) then begin
-    widget_control, id, get_value = mask_remove
-    if mask_remove ne previous.mask_remove then return, 0b
-  endif
-  
-  ;Check SST contamintion options
-  ;
-  id = widget_info(tlb, find_by_uname='sstremovebase')
-  if widget_info(id, /sens) ne previous.sst_remove then return, 0b
-  
-  if widget_info(id, /sens) then begin
-    id = widget_info(tlb, find_by_uname='sstmethod')
-    method_sunpulse_clean = widget_info(id, /combobox_gettext)
-    if method_sunpulse_clean ne previous.method_sunpulse_clean then return, 0b
-    
-    id = widget_info(tlb, find_by_uname='ssttolerance')
-    widget_control, id, get_value = limit_sunpulse_clean
-    if limit_sunpulse_clean ne previous.limit_sunpulse_clean then return, 0b
-    
-    id = widget_info(tlb, find_by_uname='sstfill')
-    fillin_method = widget_info(id, /combobox_gettext)
-    if fillin_method ne previous.fillin_method then return, 0b
   endif
   
   return, 1b
@@ -538,45 +515,11 @@ pro thm_ui_slice2d_gen, tlb, state
   id = widget_info(tlb, find_by_uname='sstcal')
   sst_cal = widget_info(id, /button_set)
 
-  ; SST sunpulse remove?
-  id = widget_info(tlb, find_by_uname='sstremovebase')
-  sst_remove = widget_info(id, /sens)
-
-  ; SST mask proportion
-  id = widget_info(tlb, find_by_uname='sstmask')
-  sst_mask = widget_info(id, /sens)
-  if sst_mask then begin
-    widget_control, id, get_value = mask_remove
-    if ~finite(mask_remove) or mask_remove gt 1 or mask_remove lt 0 then begin
-      thm_ui_slice2d_error, state.statusbar, err_title, $
-        'Invalid SST mask proportion (must be in [0,1]).'
-      return
-    endif
+  ; Suppress SST contamination removal?
+  id = widget_info(tlb, find_by_uname='sstcont')
+  if ~widget_info(id, /button_set) then begin
+    sst_sun_bins = -1
   endif
-  
-  ; SST Sun removal method
-  id = widget_info(tlb, find_by_uname='sstmethod')
-  if widget_info(id, /sens) then begin
-    method_sunpulse_clean = widget_info(id, /combobox_gettext)
-  endif
-
-  ; SST contamination tolerance
-  id = widget_info(tlb, find_by_uname='ssttolerance')
-  if widget_info(id, /sens) then begin
-    widget_control, id, get_value = limit_sunpulse_clean
-    if ~finite(limit_sunpulse_clean) || limit_sunpulse_clean le 0 then begin
-      thm_ui_slice2d_error, state.statusbar, err_title, $
-        'Invalid SST contamination removal tolerance.'
-      return
-    endif
-  endif
-
-  ; SST fill method
-  id = widget_info(tlb, find_by_uname='sstfill')
-  if widget_info(id, /sens) then begin
-    fillin_method = widget_info(id, /combobox_gettext)
-  endif
-
 
   ; ESA background removal
   id = widget_info(tlb, find_by_uname='esaremovebase')
@@ -589,7 +532,7 @@ pro thm_ui_slice2d_gen, tlb, state
     bgnd_type = widget_info(id, /combobox_gettext)
   endif
   
-  ; ESA # points (bngd removal)
+  ; ESA number of points for background determination
   id = widget_info(tlb, find_by_uname='esanpoints')
   if widget_info(id, /sens) then begin
     widget_control, id, get_value = bgnd_npoints
@@ -711,18 +654,13 @@ pro thm_ui_slice2d_gen, tlb, state
     previous.probeidx = probeidx
     previous.trange = trange
 
+    previous.sst_cal = sst_cal
+    
     previous.esa_remove = esa_remove
     previous.bgnd_remove = size(bgnd_remove,/type) ? bgnd_remove:-1
     previous.bgnd_npoints = size(bgnd_npoints,/type) ? bgnd_npoints:-1d
     previous.bgnd_scale = size(bgnd_scale,/type) ? bgnd_scale:-1d
     previous.bgnd_type = size(bgnd_type,/type) ? bgnd_type:''
-    
-    previous.sst_mask = sst_mask
-    previous.sst_remove = sst_remove
-    previous.mask_remove = size(mask_remove,/type) ? mask_remove:-1d
-    previous.method_sunpulse_clean = size(method_sunpulse_clean,/type) ? method_sunpulse_clean:''
-    previous.fillin_method = size(fillin_method,/type) ? fillin_method:''
-    previous.limit_sunpulse_clean = size(limit_sunpulse_clean,/type) ? limit_sunpulse_clean:-1d
     
     str_element, state, 'previous', previous, /add
     
@@ -780,6 +718,7 @@ pro thm_ui_slice2d_gen, tlb, state
                       average_angle=average_angle, $
 ;                      slice_width=slice_width, $
                       subtract_bulk=subtract, $
+                      sst_sun_bins=sst_sun_bins, $
                       count_threshold=count_threshold, $
                       units=units, $
                       smooth=smooth, $
@@ -1358,7 +1297,7 @@ pro thm_ui_slice2d_methodsens, state, id, select
   widget_control, id, sens = ~geo ;~s
   
   ;contour lines
-  if ~state.flags.olinebutton then begin
+  if ~state.flags.olinetouched then begin
     id = widget_info(state.tlb, find_by_uname='olines')
     widget_control, id, set_button = ~geo ;~s 
     id = widget_info(state.tlb, find_by_uname='nolines')
@@ -1366,7 +1305,7 @@ pro thm_ui_slice2d_methodsens, state, id, select
   endif
   
   ;resolution
-  if ~state.flags.resset then begin
+  if ~state.flags.restouched then begin
     id = widget_info(state.tlb, find_by_uname='resbutton')
     if ~widget_info(id,/button_set) then begin
       id = widget_info(state.tlb, find_by_uname='resolution')
@@ -1480,36 +1419,6 @@ end
 
 
 
-; Properly sensitize contamination removal options
-;
-pro thm_ui_slice2d_contsens, event
-
-    compile_opt idl2, hidden
-
-  ; get button status
-  id = widget_info(event.top, find_by_uname='esaremove')
-  esa = widget_info(id, /button_set)
-  
-  id = widget_info(event.top, find_by_uname='sstmaskremove')
-  sstm = widget_info(id, /button_set)
-  
-  id = widget_info(event.top, find_by_uname='sstremove')
-  sst = widget_info(id, /button_set)
-
-  ; get widget bases
-  esabase = widget_info(event.top, find_by_uname='esaremovebase')
-  sstmaskbase = widget_info(event.top, find_by_uname='sstmask')
-  sstbase = widget_info(event.top, find_by_uname='sstremovebase')
-  
-  ; sensitize widgets
-  widget_control, esabase, sens = esa
-  widget_control, sstmaskbase, sens = sstm
-  widget_control, sstbase, sens = sst
-
-end
-
-
-
 ; Event handler
 ;
 pro thm_ui_slice2d_event, event
@@ -1542,11 +1451,9 @@ pro thm_ui_slice2d_event, event
       str_element, state, 'previous', /add, $
              {probeidx:-1,didx:-1,mag:'',vtype:'',trange:[-1d,-1d], $
               bgnd_remove:-1, bgnd_type:'', bgnd_npoints:-1d, bgnd_scale:-1d, $
-              method_sunpulse_clean:'', limit_sunpulse_clean:-1d, $
-              fillin_method:'', mask_remove:-1d, $
-              esa_remove:-1, sst_remove:-1, sst_mask:-1}
+              esa_remove:-1, sst_cal:-1}
       str_element, state, 'flags', /add, $
-             {forcereload:1b,olineset:0b,olinebutton:0b,resset:0b}
+             {forcereload:1b,olinetouched:0b,restouched:0b}
 
       widget_control, event.top, set_uval=state, /no_copy
 
@@ -1656,18 +1563,12 @@ pro thm_ui_slice2d_event, event
       'RES': begin
         id = widget_info(event.top, find_by_uname='resolution')
         widget_control, id, sens=event.select
-        state.flags.resset = event.select
+        state.flags.restouched = event.select
       end
       
-      'CONTAMINATION': thm_ui_slice2d_contsens, event
-      
-      'SSTMETHOD': begin ;change tolerance value if set at defaults
-        id = widget_info(event.top, find_by_uname='ssttolerance')
-        widget_control, id, get_value=tol
-        if (tol eq 2d) && (event.index gt 1) then $
-          widget_control, id, set_value= 3.5d
-        if (tol eq 3.5d) && (event.index lt 2) then $
-          widget_control, id, set_value= 2d  
+      'ESAREMOVE': begin
+        esabase = widget_info(event.top, find_by_uname='esaremovebase')
+        widget_control, esabase, sens = widget_info(event.id, /button_set)
       end
       
       'ZMINMAX': widget_control, state.zminmaxbase, sens=~event.select
@@ -1677,10 +1578,8 @@ pro thm_ui_slice2d_event, event
       'OLINES': begin
         id = widget_info(state.tlb, find_by_uname='nolines')
         widget_control, id, sens = event.select
-        state.flags.olinebutton = 1b
+        state.flags.olinetouched = 1b
       end
-      
-      'NOLINES': state.flags.olineset = 1b
       
       'XYMAJOR': thm_ui_slice2d_ticksens, event, uval
 
@@ -1735,8 +1634,8 @@ end ;----------------------------------------------------
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-12 15:37:14 -0800 (Wed, 12 Feb 2014) $
-;$LastChangedRevision: 14366 $
+;$LastChangedDate: 2014-02-26 18:45:11 -0800 (Wed, 26 Feb 2014) $
+;$LastChangedRevision: 14450 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
@@ -1789,6 +1688,7 @@ thm_graphics_config
   contaminationBase = widget_base(tabs, title='Contamination', /col, xpad=4, ypad=8, space=8)
     esaContBase = widget_base(contaminationBase, /col, /align_left, ypad=4, xpad=4)
     sstContBase = widget_base(contaminationBase, /col, /align_left, ypad=4, xpad=4)
+    genContBase = widget_base(contaminationBase, /col, /align_left, ypad=4, xpad=4)
 
 ;Annotations & Ticks Base
   annoBase = widget_base(tabs, title='Annotations', /col, xpad=4, ypad=4, space=2)
@@ -2013,37 +1913,35 @@ thm_graphics_config
       thetarangeBase = widget_base(range2dbase, /col, xpad=4, ypad=0)
         thetamax = spd_ui_spinner(thetarangeBase, label='Max ('+string(176b)+'): ', $
                                 value=nthetamax, uname='thetamax', text_box_size=7, $
-                                incr=1, getxlabelsize=scr_xsize, max_value=90, min_value=-90)
+                                incr=5, getxlabelsize=scr_xsize, max_value=90, min_value=-90)
         thetamin = spd_ui_spinner(thetarangeBase, label='Min ('+string(176b)+'): ', $
                                 value=nthetamin, uname='thetamin', text_box_size=7, $
-                                incr=1, xlabelsize=scr_xsize, max_value=90, min_value=-90)
+                                incr=5, xlabelsize=scr_xsize, max_value=90, min_value=-90)
           dummy = widget_label(range2dbase, value=' ')
       zdirrangeBase = widget_base(range2dbase, /col, xpad=4, ypad=0)
         zdirmax = spd_ui_spinner(zdirrangeBase, label='Max: ', $
                                 value=nzdirmax, uname='zdirmax', text_box_size=7, $
-                                incr=1, getxlabelsize=scr_xsize)
+                                incr=50, getxlabelsize=scr_xsize)
         zdirmin = spd_ui_spinner(zdirrangeBase, label='Min: ', $
                                 value=nzdirmin, uname='zdirmin', text_box_size=7, $
-                                incr=1, xlabelsize=scr_xsize)
+                                incr=50, xlabelsize=scr_xsize)
 
 ;General Slice ranges
 
   label3d = widget_label(optionsBase1, value='General Slice Options')
   optionsSubBase1 = widget_base(optionsBase1, /col, xpad=0, ypad=0, frame=1)
   
-  subrangebase3d = widget_base(optionsSubBase1, /col, /base_align_center, $
-                            xpad=4, ypad=4)
-    erangebase = widget_base(subrangebase3d, /row, /base_align_center, $
-                              xpad=0, ypad=1, space=0)
+  subrangebase3d = widget_base(optionsSubBase1, /col, /base_align_center, xpad=4, ypad=4)
+    erangebase = widget_base(subrangebase3d, /row, /base_align_center, xpad=0, ypad=1, space=0)
       erangeBase1 = widget_base(erangebase, /row, xpad=0, ypad=0, /nonexclusive)
         erangebutton = widget_button(erangebase1, value='Restrict Energy Range', $
                                    uname='erange', uval='ERANGE') 
       erangeBase2 = widget_base(erangebase, /col, xpad=4, ypad=0)
         emax = spd_ui_spinner(erangebase2, label='Max (eV): ', value=nemax, $
-                                  uname='emax', text_box_size=8, incr=1, $
+                                  uname='emax', text_box_size=8, incr=1000, $
                                   getxlabelsize=scr_xsize, min_value=10)
         emin = spd_ui_spinner(erangebase2, label='Min (eV): ', value=nemin, $
-                                  uname='emin', text_box_size=8, incr=1, $
+                                  uname='emin', text_box_size=8, incr=10, $
                                   xlabelsize=scr_xsize, min_value=0)
 
 ;Other Options
@@ -2072,14 +1970,6 @@ thm_graphics_config
         regridphi = widget_text(averagesubbase, value=angleave[0], xsize=4, uname='angleavemin', /edit)
         regridtheta = widget_text(averagesubbase, value=angleave[1], xsize=4, uname='angleavemax', /edit)
 
-    countthresholdbase = widget_base(optbase1, /row, xpad=0, ypad=0)
-      ctbuttonbase = widget_base(countthresholdbase, /row, xpad=0, ypad=0, /nonexclusive)
-        ctbutton = widget_button(ctbuttonbase, value='Remove bins below (counts): ', $
-                              uname='ctbutton', uval='CTBUTTON', tooltip= $
-                              'Mask out bins that fall below this number of counts before averaging.')
-      ctsubbase = widget_base(countthresholdbase, /row, xpad=0, ypad=0, uname='ctbase')
-        ctspinner = spd_ui_spinner(ctsubbase, value=ct, text_box_size=4, incr=.1, $
-                            uname='count_threshold', label='', min_value=0, tooltip='(counts)')
 
     smoothbase = widget_base(optbase1, /row, xpad=0, ypad=0)
       smoothbuttonbase = widget_base(smoothbase, /row, xpad=0, ypad=0, /nonexclusive)
@@ -2100,8 +1990,6 @@ thm_graphics_config
       subtract = widget_button(suboptbase1, value='Subtract Bulk Velocity', $
                                uname='subtract', uval='SUBTRACT', tooltip = $
                                'Subtracts specified bulk velocity from distribution.')      
-      sstcal = widget_button(suboptbase1, value='Use beta SST calibrations', $
-                             uname='sstcal', uval='SSTCAL', tooltip='See documentation in <?>.')
 
     resolutionbase = widget_base(optbase1, /row, xpad=0, ypad=0)
       resbuttonbase = widget_base(resolutionbase, /row, xpad=0, ypad=0,/nonexclusive)
@@ -2130,7 +2018,7 @@ thm_graphics_config
   ;ESA Widgets
   esaRemoveButtonbase = widget_base(esaContBase, /row, /nonexclusive)
     esaRemoveButton = widget_button(esaRemoveButtonbase, val='Remove ESA Background', $
-                                    uval='CONTAMINATION', uname='esaremove')
+                                    uval='ESAREMOVE', uname='esaremove')
   
   esaRemoveOptsBase = widget_base(esaContBase, /col, xpad=12, uname='esaremovebase', frame=1)
     esaTypeBase = widget_base(esaRemoveOptsBase, /row)
@@ -2145,44 +2033,28 @@ thm_graphics_config
       widget_control, esaTypeLabel, xsize = scr_xsize+1
     esaScaleBase = widget_base(esaRemoveOptsBase, /row)
       esaScale = spd_ui_spinner(esaScaleBase, label='Scaling:  ', text_box_size=6, $ 
-                                uname='esascale', incr=1, value=esaScaleVal, $
+                                uname='esascale', incr=.05, value=esaScaleVal, $
                                 xlabelsize=scr_xsize, min_value=0, $
                                 tooltip='A scaling factor that the background '+ $
                                 'will be multiplied by before it is subtracted.')
   
   ;SST Widgets
-  sstRemoveMaskBase = widget_base(sstContBase, /row, ypad=4)
-    sstRemoveMaskButtonBase = widget_base(sstRemoveMaskBase, /row, /nonexclusive, xpad=0)
-      sstRemoveMaskButton = widget_button(sstRemoveMaskButtonBase, val='Remove SST Mask', $
-                                    uval='CONTAMINATION', uname='sstmaskremove', $
-                                    tooltip='The proportion of values that must be 0 '+ $
-                                   'at all energies to determine that a mask is present.')
-    sstRemoveMask = spd_ui_spinner(sstRemoveMaskBase, val=sstMaskVal, text_box_size=8, $
-                                   uname='sstmask', incr=0.01, min_value=0.01, max_value=1, $
-                                   tooltip='the proportion of values that must be 0 '+ $
-                                   'at all energies to determine that a mask is present.')
-  
-  sstRemoveButtonBase = widget_base(sstContBase, /row, /nonexclusive)
-    sstRemoveButton = widget_button(sstRemoveButtonBase, val='Remove SST Contamination', $
-                                    uval='CONTAMINATION', uname='sstremove')
+  sstButtonBase = widget_base(sstContBase, /col, /nonexclusive, space=6)
+    sstContButton = widget_button(sstButtonBase, value='Remove SST Contamination', $
+       uname='sstcont', tooltip='Interpolated over the default set of contaminated SST bins.')
+    sstCalButton = widget_button(sstButtonBase, value='Use default SST calibrations', $
+       uname='sstcal', uval='SSTCAL', tooltip='See documentation in <?>.')
 
-  sstRemoveOptsBase = widget_base(sstContBase, /col, xpad=12, uname='sstremovebase', frame=1)
-    sstMethodBase = widget_base(sstRemoveOptsBase, /row)
-      sstMethodLabel = widget_label(sstMethodBase, value='Method:  ')
-      sstMethod = widget_combobox(sstMethodBase, val=sstMethods, uname='sstmethod', $
-                                  uval='SSTMETHOD')
-    sstFillBase = widget_base(sstRemoveOptsBase, /row)
-      sstFillLabel = widget_label(sstFillBase, value='Fill Method:  ')
-      sstFill = widget_combobox(sstFillBase, val=sstFillMethods, uname='sstfill')
-    sstToleranceBase = widget_base(sstRemoveOptsBase, /row)
-      sstToleranceLabel = widget_label(sstToleranceBase, value='Tolerance (stdv):  ')
-      sstTolerance = spd_ui_spinner(sstToleranceBase, val=sstToleranceLimits[0], $
-                                    uname='ssttolerance', incr=0.1, min_value=0.1, $
-                                    tooltip='Tolerance in standard deviations '+ $
-                                    'for the given method.')
-      sgeo = widget_info(sstToleranceLabel,/geo)
-      widget_control, sstMethodLabel, xsize = sgeo.scr_xsize
-      widget_control, sstFillLabel, xsize = sgeo.scr_xsize
+  ;General Widgets
+  countthresholdbase = widget_base(genContBase, /row)
+    ctbuttonbase = widget_base(countthresholdbase, /row, xpad=0, ypad=0, /nonexclusive)
+      ctbutton = widget_button(ctbuttonbase, value='Mask bins below: (counts) ', $
+                    uname='ctbutton', uval='CTBUTTON', tooltip= $
+                    'Mask out bins that fall below this number of counts after averaging.')
+    ctsubbase = widget_base(countthresholdbase, /row, xpad=0, ypad=0, uname='ctbase')
+      ctspinner = spd_ui_spinner(ctsubbase, value=ct, text_box_size=4, incr=1, $
+                    uname='count_threshold', label='', min_value=0, tooltip= $
+                    'Mask bins that fall below this number of counts after averaging.')
 
 
 
@@ -2404,10 +2276,10 @@ thm_graphics_config
 ;Contamination Widgets
   widget_control, esaRemoveOptsBase, sens=0 ; off by def
   
-  widget_control, sstRemoveMask, sens=0 ; off by def
+  widget_control, sstcontbutton, set_button=1
   
-  widget_control, sstRemoveOptsBase, sens=0 ; off by def
-
+  widget_control, sstcalbutton, set_button=1
+  
 ;Annotation Widgets
   widget_control, xyprecision, set_combobox_select = 4 ;4 sig figs
   widget_control, xyannodefault, set_button=1
@@ -2447,7 +2319,6 @@ thm_graphics_config
     widget_control, xyminmaxbutton, xsize=zgeo.scr_xsize - 3
 
   ogeo = widget_info(regridbutton,/geo)
-    widget_control, ctbutton, xsize=ogeo.scr_xsize
     widget_control, smoothbutton, xsize=ogeo.scr_xsize
     widget_control, averagebutton, xsize=ogeo.scr_xsize
     widget_control, resbutton, xsize=ogeo.scr_xsize
@@ -2456,10 +2327,6 @@ thm_graphics_config
   factor = 0.98
   geo = widget_info(tlb, /geo)
   widget_control, tlb, xsize = geo.scr_xsize * (1./factor)
-;  widget_control, mainbase, xsize = geo.scr_xsize * factor
-;  widget_control, optionsBase, xsize = geo.scr_xsize * factor
-;  widget_control, contaminationBase, xsize = geo.scr_xsize * factor
-;  widget_control, plotbase, xsize = geo.scr_xsize * factor
 
  
 ;Prep slider bar
@@ -2470,26 +2337,6 @@ thm_graphics_config
 ;Set time (arbitrary)
   t0 = '2008-02-26/04:54:00'
   t1 = '2008-02-26/04:54:30'
-;  t0 = '2010-04-01/03:03:00'
-;  t1 = '2010-04-01/03:04:00'
-;  t0 = '2009-02-09/08:10:00'
-;  t1 = '2009-02-09/08:20:00'
-;  t0 = '2009-10-02/16:00:00'
-;  t1 = '2009-10-02/16:05:00'
-;  t0 = '2011-05-09/12'
-;  t1 = '2011-05-09/01'
-;  t0 = '2011-05-09/14:18:30'
-;  t1 = '2011-05-09/14:19:00'
-;  t0 = '2011-05-29/15:40:41'
-;  t1 = '2011-05-29/15:40:45'
-;  t0 = '2011-10-01/12:40:00'
-;  t1 = '2011-10-01/13:00:00'
-;  t0 = '2012-02-8/09:00:00'
-;  t1 = '2012-02-8/12:00:00'
-;  t0 = '2012-08-31/2:52:30'
-;  t1 = '2012-08-31/2:53:00'
-;  t0 = '2010-04-02/07:02'
-;  t1 = '2010-04-02/07:02:30'
   tr = obj_new('spd_ui_time_range')
   x = tr->SetStartTime(t0)
   y = tr->SetEndTime(t1)
@@ -2500,18 +2347,19 @@ thm_graphics_config
 ;Other Preparations
 ;------------------
 
-  ; Make sure to also edit the error catch block in the event handler 
-  ; if changing the following structure:
-  flags = {forcereload:1b,olineset:0b,olinebutton:0b,resset:0b}
+  ;Various flags for state structure
+  ;  -Make sure to also edit the error catch block in the event handler 
+  ;  if changing the following structure:
+  flags = {forcereload:1b, olinetouched:0b, restouched:0b}
   
 
-  ; Make sure to also edit the error catch block in the event handler 
-  ; if changing the following structure:
+  ;Settings used the previous time data was loaded.  This will be checked
+  ;to determine if the data needs to be re-loaded before generating plots.
+  ;  -Make sure to also edit the error catch block in the event handler 
+  ;  if changing the following structure:
   previous = {probeidx:-1,didx:-1,mag:'',vtype:'',trange:[-1d,-1d], $
               bgnd_remove:-1, bgnd_type:'', bgnd_npoints:-1d, bgnd_scale:-1d, $
-              method_sunpulse_clean:'', limit_sunpulse_clean:-1d, $
-              fillin_method:'', mask_remove:-1d, $
-              esa_remove:-1, sst_remove:-1, sst_mask:-1}
+              esa_remove:-1, sst_cal:-1}
               
 
   ;State structure

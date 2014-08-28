@@ -1,4 +1,37 @@
-
+;+
+;NAME:
+;  spd_ui_smooth_data_options
+;
+;PURPOSE:
+;  Front end interface allowing the user to select options for smoothing data.
+;
+;CALLING SEQUENCE:
+;  return_values = spd_ui_smooth_data_options(gui_id, statusbar, historywindow)
+;
+;INPUT:
+;  gui_id: widget id of group leader
+;  statusbar: status bar object ref.
+;  historywindow: history window object ref.
+;
+;OUTPUT:
+;  return values: anonymous structure containing input parameters for dproc routine
+;  {
+;   dt: Time Resolution for smoothing
+;   icad: Interpolation cadence (not used by default)
+;   setICad: Flag to use interpolation cadence
+;   dttype: Array of flags determining how smoothing is applied [default,forward,backward]
+;   opts: Array of flags determining extra options [no_time_intrp,true_t_integtration,smooth_nans]
+;   suffix: Suffix for new variable
+;   ok: Flag indicating success 
+;  }
+;
+;NOTES:
+;
+;$LastChangedBy:  $
+;$LastChangedDate:  $
+;$LastChangedRevision:  $
+;$URL:  $
+;-
 
 pro spd_ui_smooth_data_options_event, event
 
@@ -140,39 +173,6 @@ pro spd_ui_smooth_data_options_event, event
 widget_control, event.top, set_uval = state
 
 end
-
-
-;+
-;NAME:
-;  spd_ui_smooth_data_options
-;
-;PURPOSE:
-;  Front end interface allowing the user to select options for smoothing data.
-;
-;CALLING SEQUENCE:
-;  return_values = spd_ui_smooth_data_options(gui_id, statusbar, historywindow)
-;
-;INPUT:
-;  gui_id: widget id of group leader
-;  statusbar: status bar object ref.
-;  historywindow: history window object ref.
-;
-;OUTPUT:
-;  return values: anonymous structure containing input parameters for dproc routine
-;  {
-;   dt: Time Resolution for smoothing
-;   icad: Interpolation cadence (not used by default)
-;   setICad: Flag to use interpolation cadence
-;   dttype: Array of flags determining how smoothing is applied [default,forward,backward]
-;   opts: Array of flags determining extra options [no_time_intrp,true_t_integtration,smooth_nans]
-;   suffix: Suffix for new variable
-;   ok: Flag indicating success 
-;  }
-;
-;NOTES:
-;
-;
-;-
 
 function spd_ui_smooth_data_options, gui_id, statusbar, historywin
 

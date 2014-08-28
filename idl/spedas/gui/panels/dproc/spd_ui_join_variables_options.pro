@@ -1,3 +1,32 @@
+;+
+;NAME:
+;  spd_ui_join_variables_options
+;
+;PURPOSE:
+;  Front end interface allowing the user to select options for joining separate variables.
+;
+;CALLING SEQUENCE:
+;  return_values = spd_ui_join_variables_options(gui_id, statusbar, historywindow)
+;
+;INPUT:
+;  gui_id: widget id of group leader
+;  statusbar: status bar object ref.
+;  historywindow: history window object ref.
+;
+;OUTPUT:
+;  return values: anonymous structure containing input parameters for dproc routine
+;  {
+;   new_name: new_name for new variable
+;   ok: Flag indicating success
+;  }
+;
+;NOTES:
+;
+;$LastChangedBy:  $
+;$LastChangedDate:  $
+;$LastChangedRevision:  $
+;$URL:  $
+;-
 
 pro spd_ui_join_variables_options_event, event
 
@@ -77,33 +106,6 @@ pro spd_ui_join_variables_options_event, event
 
 end
 
-
-;+
-;NAME:
-;  spd_ui_join_variables_options
-;
-;PURPOSE:
-;  Front end interface allowing the user to select options for joining separate variables.
-;
-;CALLING SEQUENCE:
-;  return_values = spd_ui_join_variables_options(gui_id, statusbar, historywindow)
-;
-;INPUT:
-;  gui_id: widget id of group leader
-;  statusbar: status bar object ref.
-;  historywindow: history window object ref.
-;
-;OUTPUT:
-;  return values: anonymous structure containing input parameters for dproc routine
-;  {
-;   new_name: new_name for new variable
-;   ok: Flag indicating success
-;  }
-;
-;NOTES:
-;
-;
-;-
 
 function spd_ui_join_variables_options, gui_id, statusbar, historywin
 

@@ -218,7 +218,7 @@ pro thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
                       erange=erange, $
                       thetarange=thetarange, zdirrange=zdirrange, $
                     ; Orientations
-                      coord=coord, rotation=rotation, $
+                      coord=coord_in, rotation=rotation, $
                       slice_x=slice_x, slice_norm=slice_z, $
                       displacement=displacement_in, $  
                     ; Support Data
@@ -254,13 +254,13 @@ if size(ptrArray,/type) ne 10 then begin
   return
 endif
 
-if ~keyword_set(slice_time_in) then begin
+if undefined(slice_time_in) then begin
   fail = 'Please specifiy a time at which to compute the slice.'
   dprint, dlevel=1, fail
   return
 endif
 
-if ~keyword_set(timewin) then begin
+if undefined(timewin) then begin
   fail = 'Please specifiy a time window for the slice."
   dprint, dlevel=1, fail
   return
@@ -268,8 +268,9 @@ endif
 
 valid_coords = ['dsl','gse','gsm','xgse','ygsm','zdsl','rgeo', $
                 'mrgeo','phigeo','mphigeo','phism','mphism']
-if keyword_set(coord) then begin
-  if ~in_set(strlowcase(coord),valid_coords) then begin
+if ~undefined(coord_in) then begin
+  coord = strlowcase(coord_in)
+  if ~in_set(coord,valid_coords) then begin
     fail = 'Invalid coordinates requested.  See thm_crib_part_slice2d for examples.'
     dprint, dlevel=1, fail
     return
@@ -278,7 +279,7 @@ endif
 
 valid_rotations = ['bv', 'be', 'xy', 'xz', 'yz', 'xvel', $
                    'perp', 'perp_xy', 'perp_xz', 'perp_yz']
-if keyword_set(rotation) then begin
+if ~undefined(rotation) then begin
   if ~in_set(strlowcase(rotation),valid_rotations) then begin
     fail = 'Invalid rotation requested.  See thm_crib_part_slice2d for examples.'
     dprint, dlevel=1, fail
@@ -294,11 +295,11 @@ fail = ''
 
 ; Defaults
 ;------------------------------------------------------------
-slice_time = time_double(slice_time_in)
-if ~keyword_set(coord) then coord='dsl'
-if ~keyword_set(rotation) then rotation='xy'
-if ~keyword_set(units) then units = 'df'
-if ~keyword_set(slice_z) then slice_z = [0,0,1.]
+slice_time = time_double(slice_time_in[0])
+if undefined(coord) then coord='dsl'
+if undefined(rotation) then rotation='xy'
+if undefined(units) then units = 'df'
+if undefined(slice_z) then slice_z = [0,0,1.]
 if keyword_set(regrid_in) then regrid = regrid_in
 if keyword_set(energy) && undefined(log) then log = 1
 if rotation eq 'xyz' then rotation = 'xy'
@@ -434,7 +435,16 @@ endif
 
 
 ; Get original data and radial ranges for plotting
-drange = minmax(datapoints,/pos)
+;  -attempt to ignore small values created from interpolation
+;   (useful with SST contamination removal on)
+idx = where(datapoints gt 0,n)
+if n gt 0 then begin
+  dmoms = moment(alog10(datapoints[idx]),maxmom=2)
+  min = 10^(dmoms[0] - 2*sqrt(dmoms[1])) ;ignore if < mean - 2*sigma 
+  drange = minmax(datapoints,min_value=min)
+endif else begin
+  drange = [0,0.]
+endelse
 rrange = [  min( rad - 0.5*dr ), max( rad + 0.5*dr )  ]
 
 
@@ -467,7 +477,7 @@ endif
 
 
 ; Transform to GSM, GSE, or field aligned coordinates
-if in_set(strlowcase(coord),['dsl','gse','gsm']) then begin
+if in_set(coord,['dsl','gse','gsm']) then begin
   thm_part_slice2d_cotrans, probe=probe, coord=coord, trange=trange, fail=fail, $
                 vectors=xyz, bfield=bfield, vbulk=vbulk, sunvec=sunvec, matrix=ct
 endif else begin

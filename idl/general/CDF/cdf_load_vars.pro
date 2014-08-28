@@ -131,9 +131,9 @@
 ;
 ; Author: Davin Larson - 2006
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2013-11-01 13:51:16 -0700 (Fri, 01 Nov 2013) $
-; $LastChangedRevision: 13473 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2014-02-27 16:29:53 -0800 (Thu, 27 Feb 2014) $
+; $LastChangedRevision: 14462 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_load_vars.pro $
 ;
 ;-
@@ -147,7 +147,7 @@ function cdf_load_vars,files,varnames=vars,varformat=vars_fmt,info=info,verbose=
 vb = keyword_set(verbose) ? verbose : 0
 vars=''
 info = 0
-dprint,dlevel=4,verbose=verbose,'$Id: cdf_load_vars.pro 13473 2013-11-01 20:51:16Z jimm $'
+dprint,dlevel=4,verbose=verbose,'$Id: cdf_load_vars.pro 14462 2014-02-28 00:29:53Z pcruce $'
 
 on_ioerror, ferr
 for fi=0,n_elements(files)-1 do begin
@@ -194,6 +194,7 @@ for fi=0,n_elements(files)-1 do begin
                 vi = info.vars[vnum]
                 depnames = [depnames, cdf_var_atts(id,vi.num,zvar=vi.is_zvar,'DEPEND_TIME',default='')]   ;bpif vars[i] eq 'tha_fgl'
                 depnames = [depnames, cdf_var_atts(id,vi.num,zvar=vi.is_zvar,'DEPEND_0',default='')]
+                depnames = [depnames, cdf_var_atts(id,vi.num,zvar=vi.is_zvar,'LABL_PTR_1',default='')]
                 ndim = vi.ndimen
                 for j=1,ndim do begin
                    depnames = [depnames, cdf_var_atts(id,vi.num,zvar=vi.is_zvar,'DEPEND_'+strtrim(j,2),default='')]

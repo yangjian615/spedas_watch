@@ -1,3 +1,33 @@
+;+
+;NAME:
+;  spd_ui_clean_spikes_options
+;
+;PURPOSE:
+;  Front end interface allowing the user to select options for cleaning spikes from data.
+;
+;CALLING SEQUENCE:
+;  return_values = spd_ui_clean_spikes_options(gui_id, statusbar, historywindow)
+;
+;INPUT:
+;  gui_id: widget id of group leader
+;  statusbar: status bar object ref.
+;  historywindow: history window object ref.
+;
+;OUTPUT:
+;  return values: anonymous structure containing input parameters for dproc routine
+;  {
+;   thresh: Threshold for determining spikes (see clean_spikes.pro)
+;   swidth: Width of smoothing window, see IDL documentation on smooth() for more info
+;   suffix: Suffix for new variable
+;   ok: Flag indicating success
+;  }
+;
+;
+;$LastChangedBy:  $
+;$LastChangedDate:  $
+;$LastChangedRevision:  $
+;$URL:  $
+;-
 
 pro spd_ui_clean_spikes_options_event, event
 
@@ -94,36 +124,6 @@ pro spd_ui_clean_spikes_options_event, event
   widget_control, event.top, set_uval = state, /no_copy
 
 end
-
-
-;+
-;NAME:
-;  spd_ui_clean_spikes_options
-;
-;PURPOSE:
-;  Front end interface allowing the user to select options for cleaning spikes from data.
-;
-;CALLING SEQUENCE:
-;  return_values = spd_ui_clean_spikes_options(gui_id, statusbar, historywindow)
-;
-;INPUT:
-;  gui_id: widget id of group leader
-;  statusbar: status bar object ref.
-;  historywindow: history window object ref.
-;
-;OUTPUT:
-;  return values: anonymous structure containing input parameters for dproc routine
-;  {
-;   thresh: Threshold for determining spikes (see clean_spikes.pro)
-;   swidth: Width of smoothing window, see IDL documentation on smooth() for more info
-;   suffix: Suffix for new variable
-;   ok: Flag indicating success
-;  }
-;
-;NOTES:
-;
-;
-;-
 
 function spd_ui_clean_spikes_options, gui_id, statusbar, historywin
 

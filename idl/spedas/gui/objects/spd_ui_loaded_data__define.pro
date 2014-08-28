@@ -53,8 +53,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-20 14:06:54 -0800 (Thu, 20 Feb 2014) $
-;$LastChangedRevision: 14404 $
+;$LastChangedDate: 2014-02-26 12:26:14 -0800 (Wed, 26 Feb 2014) $
+;$LastChangedRevision: 14446 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -288,7 +288,7 @@ FUNCTION spd_ui_loaded_data::addData,in_name,d,limit=l,dlimit=dl,file=file, miss
       groupname=groupname,$
       instrument=instrument,$
       filename=file,$
-      units='seconds',$
+      ;units='seconds',$
       isSpect=isSpect,$
       timeRange=tr,$
       suffix=suffix+'_time',$

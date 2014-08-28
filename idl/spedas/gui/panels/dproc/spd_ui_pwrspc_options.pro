@@ -24,6 +24,11 @@
 ;OUTPUT:
 ;  opt_struct: The anonymous structure contain options and keyword settings for
 ;              SPD_UI_PWRSPC.
+;            
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-27 09:18:35 -0800 (Thu, 27 Feb 2014) $
+;$LastChangedRevision: 14453 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/dproc/spd_ui_pwrspc_options.pro $
 ;-
 
 

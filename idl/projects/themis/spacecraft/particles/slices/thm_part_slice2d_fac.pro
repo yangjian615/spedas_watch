@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-11 12:41:36 -0800 (Wed, 11 Dec 2013) $
-;$LastChangedRevision: 13660 $
+;$LastChangedDate: 2014-02-26 18:49:55 -0800 (Wed, 26 Feb 2014) $
+;$LastChangedRevision: 14451 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_fac.pro $
 ;
 ;-
@@ -59,7 +59,6 @@ pro thm_part_slice2d_fac, probe=probe, coord=coord, trange=trange, mag_data=mag_
   endif
 
   probe = strlowcase(probe)
-  coord = strlowcase(coord)
 
   dprint, dlevel=4, 'Rotating to field aligned coordinates using '+coord
 

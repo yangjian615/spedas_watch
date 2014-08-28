@@ -37,14 +37,15 @@
 ;
 ; 
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-03 14:09:43 -0800 (Tue, 03 Dec 2013) $
-;$LastChangedRevision: 13616 $
+;$LastChangedDate: 2014-02-25 16:20:57 -0800 (Tue, 25 Feb 2014) $
+;$LastChangedRevision: 14442 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getdata.pro $
 ;-
 
 pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $ 
                              regrid=regrid, erange=erange, energy=energy, $
                              count_threshold=count_threshold, subtract_counts=subtract_counts, $
+                             sst_sun_bins=sst_sun_bins, $
                              rad=rad_out, phi=phi_out, theta=theta_out, $
                              dp=dp_out, dt=dt_out, dr=dr_out, $
                              data=data_out, $
@@ -56,7 +57,7 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
 
   thm_part_slice2d_const, c=c
 
-
+  units_lc = strlowcase(units)
 
   ;------------------------------------------------------------------
   ;Loop over pointers (modes/datatypes)
@@ -86,36 +87,43 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
     endif
     
     
-    ;Copy distributions within time range
-    dist_array = (*ptr_array[j])[times_ind]
-  
-  
+    ;Determine data type for sanitization
+    thm_pgs_get_datatype, ptr_array[j], datatype=datatype
+    
+    esa = strmid(datatype,1,1) eq 'e'
+    sst = strmid(datatype,1,1) eq 's'
+    combined = strmid(datatype,1,1) eq 't'
+
+    
     ;------------------------------------------------------------------
-    ;Loop over distributions (samples)
+    ;Loop over sample times
     ;------------------------------------------------------------------
-    for i=0, n_elements(dist_array)-1 do begin
-      
-      dist = dist_array[i]
-  
-      ;Verify valid data
-      if dist.valid ne 1 then begin
-        dprint, dlevel=4,  'No valid data for disribution at: '+time_string(dist.time)
-        continue
-      endif
-  
-      ;Verify that bins do not differ from the last distribution's
+    for i=0, n_elements(times_ind)-1 do begin
+
+      ;Verify that bins do not differ from the last sample
       ;In general, this code assumes it is being called on a similar set of 3d data structs
-      if ~thm_part_checkbins(dist, dist_array[i-1 > 0], msg=msg) then begin 
+      if ~thm_part_checkbins(( (*ptr_array[j])[times_ind] )[i], $
+                             ( (*ptr_array[j])[times_ind] )[i-1 > 0], msg=msg) then begin 
         fail = msg
         dprint,dlevel=0, fail
         return
       endif
       
-      ;Convert to specified units ('df' is default)
-      dist = conv_units(temporary(dist),strlowcase(units),_extra=_extra)
-    
+      ;Use standard particle sanitization routines to perform unit
+      ;conversion and contamination removal.
+      if esa then begin
+        thm_pgs_clean_esa, ( (*ptr_array[j])[times_ind] )[i], units_lc, output=dist, _extra=ex
+      endif else if sst then begin
+        thm_pgs_clean_sst, ( (*ptr_array[j])[times_ind] )[i], units_lc, output=dist, sst_sun_bins=sst_sun_bins,_extra=ex
+      endif else if combined then begin
+        thm_pgs_clean_cmb, ( (*ptr_array[j])[times_ind] )[i], units_lc, output=dist
+      endif else begin
+        dprint,dlevel=0,'WARNING: Instrument type unrecognized'
+        return
+      endelse 
+      
       ;Find active, valid bins.
-      bins = (dist.bins ne 0) and (finite(dist.data) eq 1)
+      bins = (dist.bins ne 0) and finite(dist.data)
   
       ;Find bins within energy limits
       if keyword_set(erange) then begin
@@ -125,11 +133,11 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
         bins = bins and (ecenters ge erange[0] and ecenters le erange[1])
       endif
   
-      ;Get cartesian coordinates
+      ;Get extract data & coordinates
       if keyword_set(regrid) then begin
       
-        ;Regrid in spherical coordinates then determine x,y,z velocity components.
-        dist.bins = bins ;ensure energy limited bins are used
+        ;Regrid in spherical coordinates
+        dist.bins = bins ;ensure energy limited bins are used for regridding
         thm_part_slice2d_regridsphere, dist, regrid=regrid, energy=energy, fail=fail,$ 
                    data=data, bins=bins, rad=rad, phi=phi, theta=theta, dr=dr, dp=dp, dt=dt
       
@@ -138,13 +146,13 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
         ;Get center of each bin plus dphi, dtheta, dr
         thm_part_slice2d_getsphere, dist, energy=energy, fail=fail, $
                    data=data, rad=rad, phi=phi, theta=theta, dr=dr, dp=dp, dt=dt
-            
+        
       endelse
                                  
       if keyword_set(fail) then return
     
     
-      ;Sum of counts at each time sample
+      ;Sum of counts over all time samples
       data_t = keyword_set(data_t) ? data_t+data:data
   
   
@@ -154,7 +162,7 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
       
     endfor
     ;------------------------------------------------------------------
-    ;End loop over distributions
+    ;End loop over sample times
     ;------------------------------------------------------------------
     
     

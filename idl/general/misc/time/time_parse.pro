@@ -1,8 +1,9 @@
 ;+
 ;FUNCTION: time_parse
 ;PURPOSE:
-;  Parse a string or array of strings into double precision seconds since 1970 using
-;    user provided format code. 
+;  Parse a string or array of strings into double precision seconds since 1970
+;    (a)using user provided format code
+; or (b)using flexible formatting and no code 
 ;
 ;INPUTS:
 ;  s : the input string or array of strings
@@ -40,8 +41,8 @@
 ;  #4 Based heavily on str2time by Davin Larson.
 ; 
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-19 18:04:05 -0800 (Wed, 19 Feb 2014) $
-;$LastChangedRevision: 14395 $
+;$LastChangedDate: 2014-02-25 15:51:08 -0800 (Tue, 25 Feb 2014) $
+;$LastChangedRevision: 14438 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/time_parse.pro $
 ;-
 
@@ -69,72 +70,47 @@ function time_parse,s, tformat=tformat,tdiff=tdiff,MMDDYYYY=MMDDYYYY
   ;primarily used for human entry and legacy support
   if undefined(tformat) then begin
     
-    num_regex = '[0-9]+' ;matches digits 
-    st = reform(s,n_elements(s)) ;prevent mutation of s
+    ;Davin's version.  Even though it loops and is a little opaque,
+      ;this is faster than the vectorized versions using stregex
+    bt = bindgen(256)
+    bt[byte(':_-/,')]= 32 ;create new ascii set where common separators are replaced with space
+    
+    year=0l & month=0l & date=0 & hour=0 & min=0 & fsec=0.d ;select output types for parse
+    for i=0l,n_elements(s)-1l do begin
+      st = string(bt[byte(s[i])])+' 0 0 0 0 0 0'    ; remove separators and pad fields
+      if keyword_set(MMDDYYYY) then reads,st,month,date,year,hour,min,fsec  $
+      else  reads,st,year,month,date,hour,min,fsec
   
-    ;because of weird behavior of strmid, I have to extract the diagonals to get correct behavior
-    da = lindgen(n_elements(s)) ;diagonal array
-    
-    p = stregex(st,num_regex,length=l) ;find location of first numeric field
-    year = (long(strmid(st,p,l)))[da,da] ; store value (can't store year in struct, because years will roll over in yyyymmdd format)
-    st = (strmid(st,p+l))[da,da] ;remove the field from the string
-    
-    p = stregex(st,num_regex,length=l)
-    str[*].month = (fix(strmid(st,p,l)))[da,da]
-    st = (strmid(st,p+l))[da,da]
-    
-    p = stregex(st,num_regex,length=l)
-    str[*].date = (fix(strmid(st,p,l)))[da,da]
-    st = (strmid(st,p+l))[da,da]
-    
-    p = stregex(st,num_regex,length=l)
-    str[*].hour = (fix(strmid(st,p,l)))[da,da]
-    st = (strmid(st,p+l))[da,da]
-    
-    p = stregex(st,num_regex,length=l)
-    str[*].min = (fix(strmid(st,p,l)))[da,da]
-    st = (strmid(st,p+l))[da,da]
-    
-    ;matches digits and decimal point and post decimal digits
-    num_regex = '[0-9]+\.?[0-9]*'
-    p = stregex(st,num_regex,length=l)
-    str[*].sec = (fix(strmid(st,p,l)))[da,da]
-    str[*].fsec = (double(strmid(st,p,l)) mod 1.0)[da,da]
-   
-    if keyword_set(MMDDYYYY) then begin ;if in month/date/year format, swap fields
-      str.year = str.date
-      str.date = str.month
-      str[*].month = year
-    endif else if year[0] gt 10000000l then begin ;yyyymmdd hhmm format, not compatible with mmddyyyy format
-  
-      ;y/m/d
-      str.hour = str.month
-     
-      str[*].date = year mod 100
-      year = year / 100
-      str[*].month = year mod 100
-      str.year = year / 100
+      ;handle inputs of the form yyyymmdd hhmmss (only separator is space between date and time)
+      if year gt 10000000l then begin
+        hour = month
+        date = year mod 100
+        year = year/100
+        month = year mod 100
+        year = year/100
+        min = hour mod 100
+        hour = hour / 100
+      endif
       
-      ;h/m
-      str.min= str.hour mod 100
-      str.hour = str.hour / 100
+      ;handle two digit years
+      if year lt 70  then year = year+2000
+      if year lt 200 then year = year+1900
+
+      ; month=0 or date=0 are invalid entries, replace with 1 
+      month = month > 1
+      date = date > 1
       
-    endif else begin
-      str[*].year = year
-    endelse
-                                 
-    idx = where(str.year lt 70,c)
-    if c gt 0 then begin
-      str[idx].year += 2000
-    endif
-    
-    idx = where(str.year lt 200,c)
-    if c gt 0 then begin
-      str[idx].year += 1900
-    endif
-   
-    str.month = str.month>1
-    str.date = str.date>1
+      str[i].year=year
+      str[i].month=month
+      str[i].date=date
+      str[i].hour=hour
+      str[i].min=min
+      
+      ;separate seconds and fractional seconds
+      str[i].sec=fix(fsec)
+      str[i].fsec=double(fsec) mod 1.0
+      
+    endfor
      
   endif else begin ;fixed formatting
 

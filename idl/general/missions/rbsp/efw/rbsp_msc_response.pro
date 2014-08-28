@@ -34,9 +34,9 @@
 ;
 ; Version:
 ;
-; $LastChangedBy: jianbao_tao $
-; $LastChangedDate: 2012-09-06 17:43:01 -0700 (Thu, 06 Sep 2012) $
-; $LastChangedRevision: 10899 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2014-02-25 12:02:41 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14431 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_msc_response.pro $
 ;-
 
@@ -106,11 +106,32 @@ if strcmp(probe, 'b', /fold) and strcmp(component, 'Bw', /fold) then $
   pfit = [302.51760d, 0.79271244d, 15.408950d, 0.85025770d, 0.84073427, $
     1.0783752d]
 
+
+
+;Get mu-metal square can conversion factor (nT/V)
+x = rbsp_efw_get_gain_results()
+freqtmp = x.cal_cit.freq_cit
+if probe eq 'a' then begin
+	if component eq 'Bu' then valstmp = x.cal_cit.scmu_a_cit.stimcoil_nt2v
+	if component eq 'Bv' then valstmp = x.cal_cit.scmv_a_cit.stimcoil_nt2v
+	if component eq 'Bw' then valstmp = x.cal_cit.scmw_a_cit.stimcoil_nt2v
+endif else begin
+	if component eq 'Bu' then valstmp = x.cal_cit.scmu_b_cit.stimcoil_nt2v
+	if component eq 'Bv' then valstmp = x.cal_cit.scmv_b_cit.stimcoil_nt2v
+	if component eq 'Bw' then valstmp = x.cal_cit.scmw_b_cit.stimcoil_nt2v
+endelse
+
+
 ;--------------------------
 ; Positive frequencies
 ind = where(f ge 0, nind)
 if nind gt 0 then begin
   tmp_f = f[ind]
+  
+  ;interpolate nT/V curves to f
+  ntv = interpol(valstmp,freqtmp,tmp_f)
+  
+  
   phasediff = rbsp_msc_response_phasediff(tmp_f, params)
   phasefactor = exp(I * phasediff * !dtor)
 
@@ -118,8 +139,9 @@ if nind gt 0 then begin
   x = tmp_f
   tmp_resp2 = -p[5] * 1d / (1d + I * (x / p[0])^p[1])  $ ; low-pass
        * I * (x/p[2])^p[3] / (1d + I * (x/p[2])^p[4]) ; highpass
-  tmp_resp = tmp_resp2 * phasefactor
+  tmp_resp = tmp_resp2 * phasefactor / ntv
   resp[ind] = tmp_resp
+  
 endif
 
 ;--------------------------
@@ -127,6 +149,11 @@ endif
 ind = where(f lt 0, nind)
 if nind gt 0 then begin
   tmp_f = -f[ind]
+
+  ;interpolate nT/V curves to f
+  ntv = interpol(valstmp,freqtmp,abs(tmp_f))
+
+
   phasediff = rbsp_msc_response_phasediff(tmp_f, params)
   phasefactor = exp(I * phasediff * !dtor)
 
@@ -134,7 +161,7 @@ if nind gt 0 then begin
   x = tmp_f
   tmp_resp2 = -p[5] * 1d / (1d + I * (x / p[0])^p[1])  $ ; low-pass
        * I * (x/p[2])^p[3] / (1d + I * (x/p[2])^p[4]) ; highpass
-  tmp_resp = tmp_resp2 * phasefactor
+  tmp_resp = tmp_resp2 * phasefactor / ntv
   resp[ind] = conj(tmp_resp)
 endif
 

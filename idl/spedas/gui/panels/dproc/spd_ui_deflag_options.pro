@@ -1,5 +1,38 @@
-
-
+;+
+;NAME:
+;  spd_ui_deflag_options
+;
+;PURPOSE:
+;  Front end interface allowing the user to select options for deflagging data.
+;
+;CALLING SEQUENCE:
+;  return_values = spd_ui_deflag_options(gui_id, statusbar, historywindow)
+;
+;INPUT:
+;  gui_id: widget id of group leader
+;  statusbar: status bar object ref.
+;  historywindow: history window object ref.
+;
+;OUTPUT:
+;  return values: anonymous structure containing input parameters for dproc routine
+;  {
+;   method: Array of flags specifying deflagging method
+;           [repeat last value, interpolate(linear)]
+;   opts: Array of flags determining extra options
+;         [set flag (default is 6.8792e28), set max gap size]
+;   flag: user-specified flag, will be removed in addition to NaNs & infinity
+;   maxgap: maximum gap size, in # of points, to be removed
+;   suffix: Suffix for new variable
+;   ok: Flag indicating success 
+;  }
+;
+;NOTES:
+;
+;$LastChangedBy:  $
+;$LastChangedDate:  $
+;$LastChangedRevision:  $
+;$URL:  $
+;-
 
 pro spd_ui_deflag_options_event, event
 
@@ -121,39 +154,6 @@ pro spd_ui_deflag_options_event, event
   widget_control, event.top, set_uval = state, /no_copy
 
 end
-
-
-
-;+
-;NAME:
-;  spd_ui_deflag_options
-;
-;PURPOSE:
-;  Front end interface allowing the user to select options for deflagging data.
-;
-;CALLING SEQUENCE:
-;  return_values = spd_ui_deflag_options(gui_id, statusbar, historywindow)
-;
-;INPUT:
-;  gui_id: widget id of group leader
-;  statusbar: status bar object ref.
-;  historywindow: history window object ref.
-;
-;OUTPUT:
-;  return values: anonymous structure containing input parameters for dproc routine
-;  {
-;   method: Array of flags specifying deflagging method
-;           [repeat last value, interpolate(linear)]
-;   opts: Array of flags determining extra options
-;         [set flag (default is 6.8792e28), set max gap size]
-;   flag: user-specified flag, will be removed in addition to NaNs & infinity
-;   maxgap: maximum gap size, in # of points, to be removed
-;   suffix: Suffix for new variable
-;   ok: Flag indicating success 
-;  }
-;
-;NOTES:
-;
 
 function spd_ui_deflag_options, gui_id, statusbar, historywin
 

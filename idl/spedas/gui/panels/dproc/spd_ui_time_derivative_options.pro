@@ -1,4 +1,34 @@
-
+;+
+;NAME:
+;  spd_ui_time_derivative_options
+;
+;PURPOSE:
+;  Front end interface allowing the user to select options for performing time derivatives on data.
+;
+;CALLING SEQUENCE:
+;  return_values = spd_ui_time_derivative_options(gui_id, statusbar, historywindow)
+;
+;INPUT:
+;  gui_id: widget id of group leader
+;  statusbar: status bar object ref.
+;  historywindow: history window object ref.
+;
+;OUTPUT:
+;  return values: anonymous structure containing input parameters for dproc routine
+;  {
+;   swidth: Width of smoothing window, see IDL documentation on smooth() for more info
+;   setswidth: Flag indicating whether data is to be smoothed
+;   suffix: Suffix for new variable
+;   ok: Flag indicating success
+;  }
+;
+;NOTES:
+;
+;$LastChangedBy:  $
+;$LastChangedDate:  $
+;$LastChangedRevision:  $
+;$URL:  $
+;-
 pro spd_ui_time_derivative_options_event, event
 
     compile_opt idl2, hidden
@@ -86,35 +116,6 @@ pro spd_ui_time_derivative_options_event, event
 
 end
 
-
-;+
-;NAME:
-;  spd_ui_time_derivative_options
-;
-;PURPOSE:
-;  Front end interface allowing the user to select options for performing time derivatives on data.
-;
-;CALLING SEQUENCE:
-;  return_values = spd_ui_time_derivative_options(gui_id, statusbar, historywindow)
-;
-;INPUT:
-;  gui_id: widget id of group leader
-;  statusbar: status bar object ref.
-;  historywindow: history window object ref.
-;
-;OUTPUT:
-;  return values: anonymous structure containing input parameters for dproc routine
-;  {
-;   swidth: Width of smoothing window, see IDL documentation on smooth() for more info
-;   setswidth: Flag indicating whether data is to be smoothed
-;   suffix: Suffix for new variable
-;   ok: Flag indicating success
-;  }
-;
-;NOTES:
-;
-;
-;-
 
 function spd_ui_time_derivative_options, gui_id, statusbar, historywin
 

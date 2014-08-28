@@ -38,9 +38,9 @@
 ;
 ; Version:
 ;
-; $LastChangedBy: jianbao_tao $
-; $LastChangedDate: 2013-06-21 13:29:16 -0700 (Fri, 21 Jun 2013) $
-; $LastChangedRevision: 12568 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2014-02-25 11:56:01 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14426 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_efw_deconvol_inst_resp.pro $
 ;-
 
@@ -345,7 +345,6 @@ E12_resp = 1d / (Bu_resp * bessel_resp * adcresp_u)
 E34_resp = 1d / (Bv_resp * bessel_resp * adcresp_v)
 E56_resp = 1d / (Bw_resp * bessel_resp * adcresp_w)
 
-; stop
 
 ; Remove NaNs.
 ind = where(finite(E12_resp, /nan), nind)
@@ -357,7 +356,6 @@ if nind gt 0 then E34_resp[ind] = 0
 ind = where(finite(E56_resp, /nan), nind)
 if nind gt 0 then E56_resp[ind] = 0
 
-; stop
 
 ; Transfer kernel into time domain: take inverse FFT and center
 E12_resp = shift((fft(E12_resp,1)), kernel_length/2) / kernel_length
@@ -457,7 +455,6 @@ case strlowcase(datatype[0]) of
   'eb1': return, rbsp_efw_deconvol_inst_resp_eb1(data, probe, datatype)
 
   'mscb2': return, rbsp_efw_deconvol_inst_resp_mscb(data, probe, datatype)
-
   'mscb1': return, rbsp_efw_deconvol_inst_resp_mscb(data, probe, datatype)
 
   else: begin

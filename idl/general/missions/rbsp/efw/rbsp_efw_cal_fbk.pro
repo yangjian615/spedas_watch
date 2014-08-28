@@ -27,9 +27,9 @@
 ;				all works as it should.
 ;
 ; VERSION:
-;$LastChangedBy: kersten $
-;$LastChangedDate: 2013-10-04 07:04:03 -0700 (Fri, 04 Oct 2013) $
-;$LastChangedRevision: 13256 $
+;$LastChangedBy: aaronbreneman $
+;$LastChangedDate: 2014-02-25 11:57:26 -0800 (Tue, 25 Feb 2014) $
+;$LastChangedRevision: 14430 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_efw_cal_fbk.pro $
 ;
 ;-
@@ -79,7 +79,7 @@ pro rbsp_efw_cal_fbk, probe=probe, trange=trange, datatype=datatype, pT=pT
 	
 	compile_opt idl2
 
-	;dprint,verbose=verbose,dlevel=4,'$Id: rbsp_efw_cal_fbk.pro 13256 2013-10-04 14:04:03Z kersten $'
+	;dprint,verbose=verbose,dlevel=4,'$Id: rbsp_efw_cal_fbk.pro 14430 2014-02-25 19:57:26Z aaronbreneman $'
 
 	if ~keyword_set(trange) then trange = timerange()
 
@@ -207,7 +207,7 @@ pro rbsp_efw_cal_fbk, probe=probe, trange=trange, datatype=datatype, pT=pT
 	  				;***TEMPORARY - rbsp_efw_get_cal_params HAS A ROUGH SQ-CAN FACTOR
 	  				;BUILT IN. I GET THE CORRECT CURVES FROM rbsp_efw_get_gain_results. SO, I NEED
 	  				;TO MANUALLY REMOVE THE CORRECTION HERE. 
-	  				if probe eq 'a' then gain[0] /= 2.35 else gain[0] /= 2.33
+	  				;if probe eq 'a' then gain[0] /= 2.35 else gain[0] /= 2.33
 					;*******************
 	  				
 	  				offset[0] = cp.ADC_offset_MSC[0]
@@ -239,7 +239,7 @@ pro rbsp_efw_cal_fbk, probe=probe, trange=trange, datatype=datatype, pT=pT
 	  				;***TEMPORARY - rbsp_efw_get_cal_params HAS A ROUGH SQ-CAN FACTOR
 	  				;BUILT IN. I GET THE CORRECT CURVES FROM rbsp_efw_get_gain_results. SO, I NEED
 	  				;TO MANUALLY REMOVE THE CORRECTION HERE. 
-	  				if probe eq 'a' then gain[0] /= 2.22 else gain[0] /= 2.10
+	  				;if probe eq 'a' then gain[0] /= 2.22 else gain[0] /= 2.10
 					;*******************
 	  				offset[0] = cp.ADC_offset_MSC[1]
 	  				if probe eq 'a' then begin
@@ -270,7 +270,7 @@ pro rbsp_efw_cal_fbk, probe=probe, trange=trange, datatype=datatype, pT=pT
 	  				;***TEMPORARY - rbsp_efw_get_cal_params HAS A ROUGH SQ-CAN FACTOR
 	  				;BUILT IN. I GET THE CORRECT CURVES FROM rbsp_efw_get_gain_results. SO, I NEED
 	  				;TO MANUALLY REMOVE THE CORRECTION HERE. 
-					if probe eq 'a' then gain[0] /= 2.22 else gain[0] /= 2.22
+					;if probe eq 'a' then gain[0] /= 2.22 else gain[0] /= 2.22
 					;*******************
 	  				offset[0] = cp.ADC_offset_MSC[2]
 	  				if probe eq 'a' then begin
@@ -393,7 +393,7 @@ pro rbsp_efw_cal_fbk, probe=probe, trange=trange, datatype=datatype, pT=pT
 	  				;***TEMPORARY - rbsp_efw_get_cal_params HAS A ROUGH SQ-CAN FACTOR
 	  				;BUILT IN. I GET THE CORRECT CURVES FROM rbsp_efw_get_gain_results. SO, I NEED
 	  				;TO MANUALLY REMOVE THE CORRECTION HERE. 
-					if probe eq 'a' then gain[1] /= 2.35 else gain[1] /= 2.33
+					;if probe eq 'a' then gain[1] /= 2.35 else gain[1] /= 2.33
 					;*******************
 	  				offset[1] = cp.ADC_offset_MSC[0]
 	  				if probe eq 'a' then begin
@@ -424,7 +424,7 @@ pro rbsp_efw_cal_fbk, probe=probe, trange=trange, datatype=datatype, pT=pT
 	  				;***TEMPORARY - rbsp_efw_get_cal_params HAS A ROUGH SQ-CAN FACTOR
 	  				;BUILT IN. I GET THE CORRECT CURVES FROM rbsp_efw_get_gain_results. SO, I NEED
 	  				;TO MANUALLY REMOVE THE CORRECTION HERE. 
-					if probe eq 'a' then gain[1] /= 2.22 else gain[1] /= 2.10
+					;if probe eq 'a' then gain[1] /= 2.22 else gain[1] /= 2.10
 					;*******************
 
 	  				offset[1] = cp.ADC_offset_MSC[1]
@@ -456,7 +456,7 @@ pro rbsp_efw_cal_fbk, probe=probe, trange=trange, datatype=datatype, pT=pT
 	  				;***TEMPORARY - rbsp_efw_get_cal_params HAS A ROUGH SQ-CAN FACTOR
 	  				;BUILT IN. I GET THE CORRECT CURVES FROM rbsp_efw_get_gain_results. SO, I NEED
 	  				;TO MANUALLY REMOVE THE CORRECTION HERE. 
-					if probe eq 'a' then gain[1] /= 2.22 else gain[1] /= 2.22
+					;if probe eq 'a' then gain[1] /= 2.22 else gain[1] /= 2.22
 					;*******************
 
 

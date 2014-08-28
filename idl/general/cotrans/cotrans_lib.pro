@@ -18,11 +18,36 @@
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ;Written by Hannes Schwarzl
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
+
+
+pro sub_GSE2aGSM,data_in,data_out,aGSM2GSE=aGSM2GSE
+
+data_out=data_in
+
+;convert the time
+timeS=time_struct(data_in.X)
+
+;get direction
+if keyword_set(aGSM2GSE) then begin
+    dprint,'aberrated GSM-->GSE'
+    subGSM2GSE,TIMES,data_in.Y,DATA_outARR
+endif else begin
+    dprint,'GSE-->aberrated GSM'
+    subGSE2GSM,TIMES,data_in.Y,DATA_outARR
+endelse
+
+data_out.Y=DATA_outARR
+
+DPRINT,'done'
+
+;RETURN,data_out
+end
+
 
 
 pro sub_GSE2GSM,data_in,data_out,GSM2GSE=GSM2GSE
@@ -38,16 +63,16 @@ timeS=time_struct(data_in.X)
 
 ;get direction
 if keyword_set(GSM2GSE) then begin
-	dprint,'GSM-->GSE'
-	isGSM2GSE=1
+    dprint,'GSM-->GSE'
+    isGSM2GSE=1
 endif else begin
-	dprint,'GSE-->GSM'
-	isGSM2GSE=0
+    dprint,'GSE-->GSM'
+    isGSM2GSE=0
 endelse
 
 
 if isGSM2GSE eq 0 then begin
-	subGSE2GSM,TIMES,data_in.Y,DATA_outARR
+    subGSE2GSM,TIMES,data_in.Y,DATA_outARR
 endif else begin
   subGSM2GSE,TIMES,data_in.Y,DATA_outARR
 endelse
@@ -82,9 +107,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 
@@ -144,9 +169,9 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ;Written by Hannes Schwarzl
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 
@@ -204,9 +229,9 @@ end
 ;Notes:
 ;
 ;Written by Patrick Cruce(pcruce@igpp.ucla.edu)
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 
@@ -257,9 +282,9 @@ end
 ;Notes:
 ;
 ;Written by Cindy Russell(clrussell@igpp.ucla.edu)
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 
@@ -316,9 +341,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 
@@ -366,9 +391,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 
@@ -420,9 +445,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 
@@ -470,9 +495,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 
@@ -521,9 +546,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 
@@ -572,9 +597,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 
@@ -621,9 +646,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 pro subGEI2GEO,TIMES,DATA_in,DATA_out
@@ -663,9 +688,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 pro subGEO2GEI,TIMES,DATA_in,DATA_out
@@ -704,9 +729,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 pro subGEO2MAG,TIMES,DATA_in,DATA_out
@@ -735,9 +760,9 @@ END
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 pro subMAG2GEO,TIMES,DATA_in,DATA_out
@@ -771,9 +796,9 @@ END
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
@@ -871,9 +896,9 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
       pro tgeigse_vect,iyear,idoy,ih,im,is,xgei,ygei,zgei,xgse,ygse,zgse
@@ -925,9 +950,9 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
       pro tgsegei_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgei,ygei,zgei
@@ -980,13 +1005,13 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 
-	  pro tgsegsm_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgsm,ygsm,zgsm
+pro tgsegsm_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgsm,ygsm,zgsm
 
 
 
@@ -1044,7 +1069,7 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
       zgsm= -sdze*ygse + cdze*zgse
 
 
-      END
+END
 
 
 
@@ -1060,9 +1085,9 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
@@ -1138,9 +1163,9 @@ pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
@@ -1197,9 +1222,9 @@ pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
 pro tsmgsm_vect,iyear,idoy,ih,im,is,xsm,ysm,zsm,xgsm,ygsm,zgsm
@@ -1255,9 +1280,9 @@ pro tsmgsm_vect,iyear,idoy,ih,im,is,xsm,ysm,zsm,xgsm,ygsm,zgsm
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ;
 ; faster algorithm (for loop across all points avoided) Hannes 05/25/2007
 ;
@@ -1351,9 +1376,9 @@ PRO cdipdir_vect,iyear,idoy,gd1,gd2,gd3
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 11:44:30 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12400 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14435 $
 ; $URL $
 ;-
       pro cdipdir,iyear,idoy,d1,d2,d3

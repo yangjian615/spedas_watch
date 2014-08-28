@@ -12,7 +12,7 @@
 ;   
 ; Keywords:
 ;      sw_velocity (optional): vector containing solar wind velocity data, [Vx, Vy, Vz] in GSE coordinates
-;      rotation_angle (optional): angle to rotate about the Z axis to point into the solar wind
+;      rotation_angle (optional): angle to rotate about the Z axis to point into the solar wind (degrees)
 ;
 ;
 ; Notes:
@@ -46,25 +46,50 @@
 ;    
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-12-16 10:46:21 -0800 (Mon, 16 Dec 2013) $
-; $LastChangedRevision: 13675 $
+; $LastChangedDate: 2014-02-25 15:48:12 -0800 (Tue, 25 Feb 2014) $
+; $LastChangedRevision: 14436 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/gse2agsm.pro $
 ;-
-pro gse2agsm, data_in, data_out, sw_velocity = sw_velocity, rotation_angle = rotation_angle
+pro gse2agsm, data_in, data_out, sw_velocity = sw_velocity, rotation_angle = rotation_angle, aGSM2GSE = aGSM2GSE
 
     cotrans_lib
-    if ~is_struct(data_in) then begin
+    ; check the input
+    if is_string(data_in) then begin
+        ; received a tplot variable as input
+        
+        if n_elements(tnames(data_in)) gt 1 then begin
+            dprint, dlevel = 1, 'gse2agsm only supports one input at a time'
+            return
+        endif
+        if ~tnames(data_in) then begin
+            dprint, dlevel = 1, 'string input is not a valid tplot variable'
+            return
+        endif
+        
+        in_name = data_in
+        out_name = data_out
+        
+        get_data, data_in, data=in_data_struct, dlimits=in_dlimits_struct, limits=in_limits_struct
+
+    endif else if is_struct(data_in) then begin
+        ; received a structure as input
+        in_data_struct = data_in
+    endif else begin
         dprint, dlevel = 1, 'Error in gse2agsm, input data must be a structure'
         return
-    endif
+    endelse
 
-    dprint, 'GSE -> aGSM'
+    if undefined(aGSM2GSE) then begin
+        dprint, 'GSE -> aGSM'
+    endif else begin
+        dprint, 'aGSM -> GSE'
+    endelse
 
     ; first do the aberration in GSE coordinates
     ; rotate about the z-GSE axis by an angle, rotation_angle
     if ~undefined(rotation_angle) then begin
         ; user provided the rotation angle
-        rot_y = rotation_angle
+        rot_y = rotation_angle*!dtor
     endif else if ~undefined(sw_velocity) then begin
         ; user provided the solar wind velocity
         ; rotation angle about Z-GSE axis
@@ -76,18 +101,42 @@ pro gse2agsm, data_in, data_out, sw_velocity = sw_velocity, rotation_angle = rot
         dprint, dlevel = 1, 'Error converting between GSE and aGSM coordinates - no rotation angle provided'
         return
     endelse 
-    dprint, dlevel = 4, 'rotating about the z-axis by: ' + string(rot_y/!dtor) + ' degrees'
+
+    if ~undefined(aGSM2GSE) then begin
+        rot_y = -rot_y
+    endif
+    dprint, 'rotating about the z-axis by: ' + string(rot_y/!dtor) + ' degrees'
 
     sin_rot = sin(rot_y)
     cos_rot = cos(rot_y)
 
-    ; now do the aberration in GSE
-    x_out = cos_rot*data_in.Y[*,0]+sin_rot*data_in.Y[*,1]
-    y_out = -sin_rot*data_in.Y[*,0]+cos_rot*data_in.Y[*,1]
-    z_out = data_in.Y[*,2]
-   
-    ; now rotate into aGSM
-    sub_GSE2GSM,{x: data_in.X, y: [[x_out],[y_out],[z_out]]},agsm_out
+    thematrix = [[cos_rot, -sin_rot, 0],[sin_rot, cos_rot, 0], [0, 0, 1]]
     
-    data_out = agsm_out
+    in_data = [[in_data_struct.Y[*,0]], [in_data_struct.Y[*,1]], [in_data_struct.Y[*,2]]]
+
+    ; now do the aberration in GSE
+    the_arr = thematrix#transpose(in_data)
+    x_out = transpose(the_arr[0,*])
+    y_out = transpose(the_arr[1,*])
+    z_out = transpose(the_arr[2,*])
+
+    if ~undefined(aGSM2GSE) then begin
+        data_att = in_dlimits_struct.data_att
+        str_element, data_att, 'coord_sys', 'gse', /add_replace
+        str_element, in_dlimits_struct, 'data_att', data_att, /add_replace
+    endif else begin
+        data_att = in_dlimits_struct.data_att
+        str_element, data_att, 'coord_sys', 'agsm', /add_replace
+        str_element, in_dlimits_struct, 'data_att', data_att, /add_replace
+    endelse
+    
+    
+    ; now rotate into aGSM
+    sub_GSE2aGSM,{x: in_data_struct.X, y: [[x_out],[y_out],[z_out]]},agsm_out,aGSM2GSE=aGSM2GSE
+    store_data, data_out, data=agsm_out, dlimits=in_dlimits_struct
+    
+    ;data_out = agsm_out
+    if ~undefined(in_name) then data_in = in_name 
+    if ~undefined(out_name) then data_out = out_name
+    
 end
