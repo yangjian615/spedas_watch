@@ -17,9 +17,9 @@
 ; 24-oct-2013 clr, removed graphic buttons and goes wind and istp code. panel is now tabbed
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-03-17 09:21:13 -0700 (Mon, 17 Mar 2014) $
-;$LastChangedRevision: 14546 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_themis_fileconfig.pro $
+;$LastChangedDate: 2014-03-31 13:56:56 -0700 (Mon, 31 Mar 2014) $
+;$LastChangedRevision: 14713 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_themis_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
 ;SAVE this routine in the event we want to reinstall the graphics buttons

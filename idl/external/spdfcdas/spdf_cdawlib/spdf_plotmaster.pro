@@ -1,8 +1,8 @@
 ;$author: baldwin $
-;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
-;$Header: /home/cdaweb/dev/control/RCS/spdf_plotmaster.pro,v 1.286 2013/12/02 22:07:32 johnson Exp kovalick $
+;$Date: 2014-04-01 14:57:35 -0700 (Tue, 01 Apr 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/spdf_plotmaster.pro,v 1.289 2014/03/18 17:56:40 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 14512 $ 
+;$Revision: 14728 $ 
 ;+------------------------------------------------------------------------
 ; NAME: spdf_plotmaster
 ; PURPOSE: To plot the data given in 1 to 10 anonymous structure of the type
@@ -732,6 +732,13 @@ if keyword_set(COMBINE) then begin
 endif
 
 for i=0,n_elements(PS)-1 do begin
+
+;TJK 3/14/2012 - add this check for ptype of -1 to go w/ added a
+;                display_type value of "no_plot", so that we can turn
+;                off plotting of certain variables in the masters.
+   if (PS[i].ptype eq -1 and  PS[i].npanels eq 0) then begin
+      print, 'STATUS=',PS[i].source,':',PS[i].vname,' plotting not supported.'
+   endif
    ; Prepare for plotting by creating window and last_plot flag
 ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
    if ((PS[i].ptype eq 1)OR(PS[i].ptype eq 2)OR(PS[i].ptype eq 7)OR $

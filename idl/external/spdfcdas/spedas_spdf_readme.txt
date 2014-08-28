@@ -2,9 +2,9 @@ This directory contains the following:
 
 1. spdfcdas - 25 Files
 
-Release 1.7.10.6 of the CDAS Web Services IDL Library
+Release 1.7.10.7 of the CDAS Web Services IDL Library
 <http://cdaweb.gsfc.nasa.gov/WebServices/REST/CdasIdlLibrary.html> 
-that was deployed on March 5, 2014
+that was deployed on March 27, 2014
 
 Add the following to spdfcdawebchooser.pro: 
 RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
@@ -13,7 +13,7 @@ also, commended tvimage since there is already a SPEDAS function with this name
 2. spdf_cdawlib - 9 files
 
 Modified version of CDAWlib
-release 2014/03/03 
+release 2014/03/16 
 ftp://cdaweb.gsfc.nasa.gov/pub/software/cdawlib/source/
 
 Modifications are the following:

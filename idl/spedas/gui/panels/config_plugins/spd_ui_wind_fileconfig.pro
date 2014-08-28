@@ -1,20 +1,21 @@
 ;+
 ;NAME:
-; spd_ui_goes_fileconfig
+; spd_ui_wind_fileconfig
 ;
 ;PURPOSE:
-; A widget that allows the user to set some of the !goes variable. The user
+; A widget that allows the user to set some of the !wind system variables. The user
 ; can resettodefault, modify, and save the system variable.
 ; 
-;HISTORY:
-
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_goes_fileconfig.pro $
+;NOTE:
+; This is essentially the same routine as spd_ui_goes_fileconfig
+;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-03-31 13:56:56 -0700 (Mon, 31 Mar 2014) $
+;$LastChangedRevision: 14713 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_wind_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
-pro spd_ui_goes_init_struct,state,struct
+pro spd_ui_wind_init_struct,state,struct
 
   compile_opt idl2,hidden
 
@@ -37,7 +38,7 @@ pro spd_ui_goes_init_struct,state,struct
 
 end
 
-PRO spd_ui_goes_fileconfig_event, event
+PRO spd_ui_wind_fileconfig_event, event
 
   ; Get State structure from top level base
   Widget_Control, event.handler, Get_UValue=state, /No_Copy
@@ -55,7 +56,7 @@ PRO spd_ui_goes_fileconfig_event, event
     RETURN
   ENDIF
   Widget_Control, event.id, Get_UValue = uval
- 
+  
   CASE uval OF
   
     'LOCALBROWSE':BEGIN
@@ -67,91 +68,92 @@ PRO spd_ui_goes_fileconfig_event, event
       dirName = Dialog_Pickfile(Title='Choose a Local Data Directory:', $
       Dialog_Parent=state.master,path=currentDir, /directory, /must_exist); /fix_filter doesn't seem to make a difference on Windows. Does on unix.  
       IF is_string(dirName) THEN BEGIN
-          !goes.local_data_dir = dirName
+          !wind.local_data_dir = dirName
+          spd_ui_goes_update_struct, state, !wind   
           widget_control, state.localDir, set_value=dirName             
       ENDIF ELSE BEGIN
           ok = dialog_message('Selection is not a directory',/center)
       ENDELSE
-      
+
     END
 
     'LOCALDIR': BEGIN
     
         widget_control, state.localDir, get_value=currentDir
-        !goes.local_data_dir = currentDir
+        !wind.local_data_dir = currentDir
 
     END
     
     'REMOTEDIR': BEGIN
-    
+        
         widget_control, state.remoteDir, get_value=currentDir
-        !goes.remote_data_dir = currentDir
+        !wind.remote_data_dir = currentDir
 
     END
 
     'VERBOSE': BEGIN
 
-       !goes.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
+       !wind.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
 
     END
-    
-    'RESET': BEGIN
 
+    'RESET': BEGIN
+    
        ; this is basically a cancel and will reset all values to
        ; the original values at the time this window was first 
        ; displayed
-       !goes=state.goes_cfg_save
-       widget_control,state.localdir,set_value=!goes.local_data_dir
-       widget_control,state.remotedir,set_value=!goes.remote_data_dir
-       if !goes.no_download eq 1 then begin
+       !wind=state.wind_cfg_save
+       widget_control,state.localdir,set_value=!wind.local_data_dir
+       widget_control,state.remotedir,set_value=!wind.remote_data_dir
+       if !wind.no_download eq 1 then begin
           widget_control,state.nd_off_button,set_button=1
        endif else begin
           widget_control,state.nd_on_button,set_button=1
        endelse  
-       if !goes.no_update eq 1 then begin
+       if !wind.no_update eq 1 then begin
          widget_control,state.nu_off_button,set_button=1
        endif else begin
          widget_control,state.nu_on_button,set_button=1
        endelse  
-       widget_control,state.v_droplist,set_combobox_select=!goes.verbose
+       widget_control,state.v_droplist,set_combobox_select=!wind.verbose
        state.historywin->update,'Resetting controls to saved values.'
-       state.statusbar->update,'Resetting controls to saved values.'       
+       state.statusbar->update,'Resetting controls to saved values.'           
 
-     END
+    END
     
    'RESETTODEFAULT': Begin
 
-      goes_init,  /reset
-      !goes.no_download = state.def_values[0]
-      !goes.no_update = state.def_values[1]      
-      !goes.downloadonly = state.def_values[2]
-      !goes.verbose = state.def_values[3]
+      wind_init,  /reset
+      !wind.no_download = state.def_values[0]
+      !wind.no_update = state.def_values[1]      
+      !wind.downloadonly = state.def_values[2]
+      !wind.verbose = state.def_values[3]
 
-      widget_control,state.localdir,set_value=!goes.local_data_dir
-      widget_control,state.remotedir,set_value=!goes.remote_data_dir
-      if !goes.no_download eq 1 then begin
+      widget_control,state.localdir,set_value=!wind.local_data_dir
+      widget_control,state.remotedir,set_value=!wind.remote_data_dir
+      if !wind.no_download eq 1 then begin
          widget_control,state.nd_off_button,set_button=1
       endif else begin
          widget_control,state.nd_on_button,set_button=1
       endelse  
-      if !goes.no_update eq 1 then begin
+      if !wind.no_update eq 1 then begin
         widget_control,state.nu_off_button,set_button=1
       endif else begin
         widget_control,state.nu_on_button,set_button=1
       endelse  
-      widget_control,state.v_droplist,set_combobox_select=!goes.verbose
+      widget_control,state.v_droplist,set_combobox_select=!wind.verbose
 
       state.historywin->update,'Resetting configuration to default values.'
-      state.statusbar->update,'Resetting configuration to default values.'  
+      state.statusbar->update,'Resetting configuration to default values.'
 
     END
     
     'SAVE': BEGIN
 
-      ; save the current values of the !goes system variable
-      goes_write_config 
-      state.statusBar->update,'Saved goes_config.txt'
-      state.historyWin->update,'Saved goes_config.txt'
+      ; save all the current values the user has set
+      wind_write_config 
+      state.statusBar->update,'Saved wind_config.txt'
+      state.historyWin->update,'Saved wind_config.txt'
 
     END
     
@@ -164,13 +166,12 @@ Return
 END ;--------------------------------------------------------------------------------
 
 
-PRO spd_ui_goes_fileconfig, tab_id, historyWin, statusBar
+PRO spd_ui_wind_fileconfig, tab_id, historyWin, statusBar
 
-;check whether the !goes system variable has been initialized
-  defsysv, 'goes', exists=exists
-  if not keyword_set(exists) then goes_init
-  goes_cfg_save = !goes
-
+;check whether the !wind system variable has been initialized
+  defsysv, 'wind', exists=exists
+  if not keyword_set(exists) then wind_init
+  wind_cfg_save = !wind
 ;Build the widget bases
   master = Widget_Base(tab_id, /col, tab_mode=1,/align_left, /align_top) 
 
@@ -180,7 +181,7 @@ PRO spd_ui_goes_fileconfig, tab_id, historyWin, statusBar
 
 ;Widget base for save, reset and exit buttons
   bmaster = widget_base(master, /row, /align_center, ypad=7)
-  ll = max(strlen([!goes.local_data_dir, !goes.remote_data_dir]))+12
+  ll = max(strlen([!wind.local_data_dir, !wind.remote_data_dir]))+12
 
 ;Now create directory text widgets
   configbase = widget_base(vmaster,/col)
@@ -188,13 +189,13 @@ PRO spd_ui_goes_fileconfig, tab_id, historyWin, statusBar
   lbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(lbase, value = 'Local data directory:    ')
   localdir = widget_text(lbase, /edit, /all_events, xsiz = ll, $
-                         uval = 'LOCALDIR', val = !goes.local_data_dir)
+                         uval = 'LOCALDIR', val = !wind.local_data_dir)
   loc_browsebtn = widget_button(lbase,value='Browse', uval='LOCALBROWSE',/align_center)
 
   rbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(rbase, value = 'Remote data directory: ')
   remotedir = widget_text(rbase, /edit, /all_events, xsiz = ll, $
-                          uval = 'REMOTEDIR', val = !goes.remote_data_dir)
+                          uval = 'REMOTEDIR', val = !wind.remote_data_dir)
 
 ;Next radio buttions
   nd_base = widget_base(configbase, /row, /align_left)
@@ -217,26 +218,26 @@ PRO spd_ui_goes_fileconfig, tab_id, historyWin, statusBar
   v_droplist = widget_Combobox(v_base, value=v_values, uval='VERBOSE', /align_center)
 
   ;buttons
-  savebut = widget_button(bmaster, value = '  Save to File   ', uvalue = 'SAVE')
-  resetbut = widget_button(bmaster, value = '     Cancel    ', uvalue = 'RESET')
+  savebut = widget_button(bmaster, value = '   Save To File    ', uvalue = 'SAVE')
+  resetbut = widget_button(bmaster, value = '     Cancel     ', uvalue = 'RESET')
   reset_to_dbutton =  widget_button(bmaster,  value =  '  Reset to Default   ',  uvalue =  'RESETTODEFAULT')
 
   ;defaults for reset:
   def_values=[0,0,0,2]
   
-  state = {localdir:localdir, remotedir:remotedir, goes_cfg_save:goes_cfg_save, $
+  state = {localdir:localdir, remotedir:remotedir, wind_cfg_save:wind_cfg_save,$
            nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
            nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
            v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
-           def_values:def_values, historyWin:historyWin, tab_id:tab_id, master:master}
+           def_values:def_values, historyWin:historyWin, tab_id:tab_id}
 
-  spd_ui_goes_init_struct,state,!goes
+  spd_ui_wind_init_struct,state,!wind
 
   widget_control, master, set_uval = state, /no_copy
   widget_control, master, /realize
-  ;msg = 'Editing GOES configuration.'
-  ;statusBar->update,msg
-  ;historywin->update, msg
+  msg = 'Editing wind configuration.'
+  statusBar->update,msg
+  historywin->update, msg
 
   ;keep windows in X11 from snaping back to 
   ;center during tree widget events 
@@ -244,7 +245,7 @@ PRO spd_ui_goes_fileconfig, tab_id, historyWin, statusBar
     widget_control, master, xoffset=0, yoffset=0
   endif
 
-  xmanager, 'spd_ui_goes_fileconfig', master, /no_block
+  xmanager, 'spd_ui_wind_fileconfig', master, /no_block
   
 END ;--------------------------------------------------------------------------------
 

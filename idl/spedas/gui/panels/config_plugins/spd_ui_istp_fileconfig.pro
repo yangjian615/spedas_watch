@@ -1,21 +1,18 @@
 ;+
 ;NAME:
-; spd_ui_wind_fileconfig
+; spd_ui_istp_fileconfig
 ;
 ;PURPOSE:
-; A widget that allows the user to set some of the !wind system variables. The user
+; A widget that allows the user to set some of the !istp variable. The user
 ; can resettodefault, modify, and save the system variable.
-; 
-;NOTE:
-; This is essentially the same routine as spd_ui_goes_fileconfig
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_wind_fileconfig.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-03-31 13:56:56 -0700 (Mon, 31 Mar 2014) $
+;$LastChangedRevision: 14713 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_istp_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
-pro spd_ui_wind_init_struct,state,struct
+pro spd_ui_istp_init_struct,state,struct
 
   compile_opt idl2,hidden
 
@@ -38,7 +35,7 @@ pro spd_ui_wind_init_struct,state,struct
 
 end
 
-PRO spd_ui_wind_fileconfig_event, event
+PRO spd_ui_istp_fileconfig_event, event
 
   ; Get State structure from top level base
   Widget_Control, event.handler, Get_UValue=state, /No_Copy
@@ -60,16 +57,16 @@ PRO spd_ui_wind_fileconfig_event, event
   CASE uval OF
   
     'LOCALBROWSE':BEGIN
-
+ 
       ; display the file chooser window so the user can select the
       ; directory where they want their data files to reside
       widget_control, state.localDir, get_value=currentDir
       if currentDir ne '' then path = file_dirname(currentDir)
       dirName = Dialog_Pickfile(Title='Choose a Local Data Directory:', $
       Dialog_Parent=state.master,path=currentDir, /directory, /must_exist); /fix_filter doesn't seem to make a difference on Windows. Does on unix.  
+      ; check to make sure the file selected actually is a tgt file
       IF is_string(dirName) THEN BEGIN
-          !wind.local_data_dir = dirName
-          spd_ui_goes_update_struct, state, !wind   
+          !istp.local_data_dir = dirName
           widget_control, state.localDir, set_value=dirName             
       ENDIF ELSE BEGIN
           ok = dialog_message('Selection is not a directory',/center)
@@ -80,42 +77,42 @@ PRO spd_ui_wind_fileconfig_event, event
     'LOCALDIR': BEGIN
     
         widget_control, state.localDir, get_value=currentDir
-        !wind.local_data_dir = currentDir
+        !istp.local_data_dir = currentDir
 
     END
-    
+
     'REMOTEDIR': BEGIN
-        
+    
         widget_control, state.remoteDir, get_value=currentDir
-        !wind.remote_data_dir = currentDir
+        !istp.remote_data_dir = currentDir
 
     END
 
     'VERBOSE': BEGIN
 
-       !wind.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
+       !istp.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
 
     END
 
     'RESET': BEGIN
-    
+
        ; this is basically a cancel and will reset all values to
        ; the original values at the time this window was first 
        ; displayed
-       !wind=state.wind_cfg_save
-       widget_control,state.localdir,set_value=!wind.local_data_dir
-       widget_control,state.remotedir,set_value=!wind.remote_data_dir
-       if !wind.no_download eq 1 then begin
+       !istp=state.istp_cfg_save
+       widget_control,state.localdir,set_value=!istp.local_data_dir
+       widget_control,state.remotedir,set_value=!istp.remote_data_dir
+       if !istp.no_download eq 1 then begin
           widget_control,state.nd_off_button,set_button=1
        endif else begin
           widget_control,state.nd_on_button,set_button=1
        endelse  
-       if !wind.no_update eq 1 then begin
+       if !istp.no_update eq 1 then begin
          widget_control,state.nu_off_button,set_button=1
        endif else begin
          widget_control,state.nu_on_button,set_button=1
        endelse  
-       widget_control,state.v_droplist,set_combobox_select=!wind.verbose
+       widget_control,state.v_droplist,set_combobox_select=!istp.verbose
        state.historywin->update,'Resetting controls to saved values.'
        state.statusbar->update,'Resetting controls to saved values.'           
 
@@ -123,25 +120,25 @@ PRO spd_ui_wind_fileconfig_event, event
     
    'RESETTODEFAULT': Begin
 
-      wind_init,  /reset
-      !wind.no_download = state.def_values[0]
-      !wind.no_update = state.def_values[1]      
-      !wind.downloadonly = state.def_values[2]
-      !wind.verbose = state.def_values[3]
+      istp_init,  /reset
+      !istp.no_download = state.def_values[0]
+      !istp.no_update = state.def_values[1]      
+      !istp.downloadonly = state.def_values[2]
+      !istp.verbose = state.def_values[3]
 
-      widget_control,state.localdir,set_value=!wind.local_data_dir
-      widget_control,state.remotedir,set_value=!wind.remote_data_dir
-      if !wind.no_download eq 1 then begin
+      widget_control,state.localdir,set_value=!istp.local_data_dir
+      widget_control,state.remotedir,set_value=!istp.remote_data_dir
+      if !istp.no_download eq 1 then begin
          widget_control,state.nd_off_button,set_button=1
       endif else begin
          widget_control,state.nd_on_button,set_button=1
       endelse  
-      if !wind.no_update eq 1 then begin
+      if !istp.no_update eq 1 then begin
         widget_control,state.nu_off_button,set_button=1
       endif else begin
         widget_control,state.nu_on_button,set_button=1
       endelse  
-      widget_control,state.v_droplist,set_combobox_select=!wind.verbose
+      widget_control,state.v_droplist,set_combobox_select=!istp.verbose
 
       state.historywin->update,'Resetting configuration to default values.'
       state.statusbar->update,'Resetting configuration to default values.'
@@ -150,10 +147,9 @@ PRO spd_ui_wind_fileconfig_event, event
     
     'SAVE': BEGIN
 
-      ; save all the current values the user has set
-      wind_write_config 
-      state.statusBar->update,'Saved wind_config.txt'
-      state.historyWin->update,'Saved wind_config.txt'
+      istp_write_config 
+      state.statusBar->update,'Saved istp_config.txt'
+      state.historyWin->update,'Saved istp_config.txt'
 
     END
     
@@ -166,12 +162,13 @@ Return
 END ;--------------------------------------------------------------------------------
 
 
-PRO spd_ui_wind_fileconfig, tab_id, historyWin, statusBar
+PRO spd_ui_istp_fileconfig, tab_id, historyWin, statusBar
 
-;check whether the !wind system variable has been initialized
-  defsysv, 'wind', exists=exists
-  if not keyword_set(exists) then wind_init
-  wind_cfg_save = !wind
+;check whether the !istp system variable has been initialized
+  defsysv, 'istp', exists=exists
+  if not keyword_set(exists) then istp_init
+  istp_cfg_save = !istp
+  
 ;Build the widget bases
   master = Widget_Base(tab_id, /col, tab_mode=1,/align_left, /align_top) 
 
@@ -181,7 +178,7 @@ PRO spd_ui_wind_fileconfig, tab_id, historyWin, statusBar
 
 ;Widget base for save, reset and exit buttons
   bmaster = widget_base(master, /row, /align_center, ypad=7)
-  ll = max(strlen([!wind.local_data_dir, !wind.remote_data_dir]))+12
+  ll = max(strlen([!istp.local_data_dir, !istp.remote_data_dir]))+12
 
 ;Now create directory text widgets
   configbase = widget_base(vmaster,/col)
@@ -189,13 +186,13 @@ PRO spd_ui_wind_fileconfig, tab_id, historyWin, statusBar
   lbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(lbase, value = 'Local data directory:    ')
   localdir = widget_text(lbase, /edit, /all_events, xsiz = ll, $
-                         uval = 'LOCALDIR', val = !wind.local_data_dir)
+                         uval = 'LOCALDIR', val = !istp.local_data_dir)
   loc_browsebtn = widget_button(lbase,value='Browse', uval='LOCALBROWSE',/align_center)
 
   rbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(rbase, value = 'Remote data directory: ')
   remotedir = widget_text(rbase, /edit, /all_events, xsiz = ll, $
-                          uval = 'REMOTEDIR', val = !wind.remote_data_dir)
+                          uval = 'REMOTEDIR', val = !istp.remote_data_dir)
 
 ;Next radio buttions
   nd_base = widget_base(configbase, /row, /align_left)
@@ -218,24 +215,24 @@ PRO spd_ui_wind_fileconfig, tab_id, historyWin, statusBar
   v_droplist = widget_Combobox(v_base, value=v_values, uval='VERBOSE', /align_center)
 
   ;buttons
-  savebut = widget_button(bmaster, value = '   Save To File    ', uvalue = 'SAVE')
+  savebut = widget_button(bmaster, value = '   Save to File     ', uvalue = 'SAVE')
   resetbut = widget_button(bmaster, value = '     Cancel     ', uvalue = 'RESET')
   reset_to_dbutton =  widget_button(bmaster,  value =  '  Reset to Default   ',  uvalue =  'RESETTODEFAULT')
 
   ;defaults for reset:
   def_values=[0,0,0,2]
   
-  state = {localdir:localdir, remotedir:remotedir, wind_cfg_save:wind_cfg_save,$
+  state = {localdir:localdir, remotedir:remotedir, istp_cfg_save:istp_cfg_save, $
            nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
            nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
            v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
            def_values:def_values, historyWin:historyWin, tab_id:tab_id}
 
-  spd_ui_wind_init_struct,state,!wind
+  spd_ui_istp_init_struct,state,!istp
 
   widget_control, master, set_uval = state, /no_copy
   widget_control, master, /realize
-  msg = 'Editing wind configuration.'
+  msg = 'Editing istp configuration.'
   statusBar->update,msg
   historywin->update, msg
 
@@ -245,7 +242,7 @@ PRO spd_ui_wind_fileconfig, tab_id, historyWin, statusBar
     widget_control, master, xoffset=0, yoffset=0
   endif
 
-  xmanager, 'spd_ui_wind_fileconfig', master, /no_block
+  xmanager, 'spd_ui_istp_fileconfig', master, /no_block
   
 END ;--------------------------------------------------------------------------------
 

@@ -19,8 +19,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-18 18:23:36 -0700 (Tue, 18 Mar 2014) $
-;$LastChangedRevision: 14582 $
+;$LastChangedDate: 2014-03-31 17:09:35 -0700 (Mon, 31 Mar 2014) $
+;$LastChangedRevision: 14721 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_call_plugin.pro $
 ;
 ;-
@@ -76,6 +76,12 @@ pro spd_ui_call_plugin, event, info
   
   if ~undefined(data_structure) && is_struct(data_structure) then begin
     plugin.data = ptr_new(data_structure)
+    
+    if in_set('track_one',strlowcase(tag_names(data_structure))) then begin
+      if keyword_set(data_structure.track_one) then begin
+        spd_ui_track_one, ptr_new(info)
+      endif
+    endif
   endif
   
   widget_control, event.id, set_uvalue=plugin

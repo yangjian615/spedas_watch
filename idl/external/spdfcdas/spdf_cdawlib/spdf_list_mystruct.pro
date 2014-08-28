@@ -939,9 +939,11 @@ for i=0L, slen-1 do begin
    endif else begin
       if(ch eq ' ') then begin
          if(k eq 0) then begin
-            printf, unit, format='("#",5x,a,5x,a)', var, output
+            ;printf, unit, format='("#",5x,a,5x,a)', var, output
+            printf, unit, format='("#",5x,a,2x,a)', var, output
          endif else begin
-            printf, unit, format='("#",30x,a)', output 
+            ;printf, unit, format='("#",30x,a)', output 
+            printf, unit, format='("#",37x,a)', output 
          endelse
          icnt=0
          output='                                                                                                       '
@@ -949,7 +951,8 @@ for i=0L, slen-1 do begin
    endelse
    icnt=icnt+1 
 endfor
-if(icnt gt 1) then printf, unit, format='("#",30x,a)', output 
+;if(icnt gt 1) then printf, unit, format='("#",30x,a)', output 
+if(icnt gt 1) then printf, unit, format='("#",37x,a)', output 
 
 return, status
 end
@@ -1006,17 +1009,26 @@ case convar of
        printf, unit, format='("#",14x,"************************************")'
        printf, unit, format='("#",14x)'
        for i=0L, ntags-1 do begin
-          var='                    '
+          ;  RCJ 03/18/2014  Space below is arbitrarily defined so each global attr name will fit in that
+	  ;       space, and could be chopped if too long.
+	  ;       Needs to be increased if we find longer global attr name. You might need to make changes to ex_prt too.
+          ;var='                    '
+          var='                              '
           var1=strtrim(names[i],2)
           strput,var,var1,0
           tstsz=size(a.(i))
           if(tstsz[0] eq 0) then begin
              var2=strtrim(a.(i),2)
+	     ; RCJ 03/18/2014  Clean var2 from carriage-returns, replace w/ blank space:
+	     var2=strjoin(strsplit(var2,string(10B),/extract),' ')
              slen=strlen(var2)
+	     ;print,'var2 = ',var2
+	     ;print,'slen = ',slen
              if(slen gt 80) then begin
                 status=ex_prt(unit,var,var2,slen,0) 
              endif else begin
-                printf, unit, format='("#",5x,a,5x,a)', var, var2
+                ;printf, unit, format='("#",5x,a,5x,a)', var, var2
+                printf, unit, format='("#",5x,a,2x,a)', var, var2
              endelse
           endif else begin
 
@@ -1027,9 +1039,11 @@ case convar of
                    status=ex_prt(unit,var,var2,slen,k) 
                 endif else begin
                    if(k eq 0) then begin
-                      printf, unit, format='("#",5x,a,5x,a)', var, var2
+                      ;printf, unit, format='("#",5x,a,5x,a)', var, var2
+                      printf, unit, format='("#",5x,a,2x,a)', var, var2
                    endif else begin
-                      printf, unit, format='("#",30x,a)', var2
+                      ;printf, unit, format='("#",30x,a)', var2
+                      printf, unit, format='("#",37x,a)', var2
                    endelse
                 endelse
              endfor   ; end k
@@ -2848,16 +2862,26 @@ for mega_loop=1, mega.num do begin
       ; 'EPOCH' or 'EPOCH92' etc.
 
       if(namest[i] eq depend0) then begin
-         if keyword_set(sec_of_year) then format='A20' else format='A23' 
+         if keyword_set(sec_of_year) then begin
+	    ; RCJ 03/11/2014  When sec_of_year is set we need to redefine the fillval 
+	    ;  which is, up to this point, based on a yyyy-mm-dd hh:mm:ss.msec format.
+	    format='A20' 
+	    c.(i).fillval='9999        0.000000'
+	 endif else format='A23' 
       endif else format=c.(i).format
       ;TJK 10/1/2009 - need to allow for the more epoch fields w/ epoch16
       if (c.(i).cdftype eq 'CDF_EPOCH16') then begin
-         if keyword_set(sec_of_year) then format='A20' else format='A35' 
+         if keyword_set(sec_of_year) then begin
+	    format='A20' 
+	    c.(i).fillval='9999        0.000000'
+	 endif else format='A35' 
       endif
       if (c.(i).cdftype eq 'CDF_TIME_TT2000') then begin
-         if keyword_set(sec_of_year) then format='A20' else format='A27' 
+         if keyword_set(sec_of_year) then begin
+	    format='A20'
+	    c.(i).fillval='9999        0.000000' 
+	 endif else format='A27' 
       endif
-
 
       if(c.(i).var_type eq 'data') or $
          ; the line below will allow support_data that is not a depend_1 or 2 variable to be listed.

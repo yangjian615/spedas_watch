@@ -119,8 +119,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-17 12:49:30 -0700 (Mon, 17 Mar 2014) $
-; $LastChangedRevision: 14554 $
+; $LastChangedDate: 2014-03-31 08:53:44 -0700 (Mon, 31 Mar 2014) $
+; $LastChangedRevision: 14708 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/trace/trace2equator.pro $
 ;-
 
@@ -303,21 +303,42 @@ pro trace2equator, tarray, in_pos_array, out_foot_array, out_trace_array=out_tra
     
     if t_size[0] ne r_size[0] then begin
        message, /continue, 'number of times in tarray does not match number of positions in in_pos_array'
-        return
-     endif
+       return
+    endif
     
-    ;all calculations will be done in gsm internally
-    if in_coord2 eq 'gei' then begin
-       cotrans,in_pos_array2,in_pos_array2,tarray2,/gei2gse
-       cotrans,in_pos_array2,in_pos_array2,tarray2,/gse2gsm
-    endif else if in_coord2 eq 'geo' then begin
-       cotrans,in_pos_array2,in_pos_array2,tarray2,/geo2gei
-       cotrans,in_pos_array2,in_pos_array2,tarray2,/gei2gse
-       cotrans,in_pos_array2,in_pos_array2,tarray2,/gse2gsm
-    endif else if in_coord2 eq 'gse' then $
-       cotrans,in_pos_array2,in_pos_array2,tarray2,/gse2gsm $
-    else if in_coord2 eq 'sm' then $
-       cotrans,in_pos_array2,in_pos_array2,tarray2,/sm2gsm
+    ts = time_struct(tarray2)
+    
+    tstart = tarray2[0]
+    
+    ;all calculations will be done in GSM (or GSW, for Geopack 2008) internally
+    if ~undefined(geopack_2008) then begin
+        if in_coord2 eq 'gei' then begin
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/gei2gse
+        endif else if in_coord2 eq 'geo' then begin
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/geo2gei
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/gei2gse
+        endif else if in_coord2 eq 'sm' then begin 
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/sm2gse
+        endif else if in_coord2 eq 'gsm' then begin
+           cotrans,in_pos_array2,in_pos_array2,tarray2, /gsm2gse
+        endif 
+        ; cotrans transformed the coordinates to GSE, use Geopack to transform to GSW
+        geopack_recalc_08, ts[0].year, ts[0].doy, ts[0].hour, ts[0].min, ts[0].sec, tilt = tilt
+        geopack_conv_coord_08, in_pos_array2[*,0], in_pos_array2[*,1], in_pos_array2[*,2], x_out_gsw, y_out_gsw, z_out_gsw, /from_gse, /to_gsw
+        in_pos_array2 = [[x_out_gsw], [y_out_gsw], [z_out_gsw]]
+    endif else begin
+        if in_coord2 eq 'gei' then begin
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/gei2gse
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/gse2gsm
+        endif else if in_coord2 eq 'geo' then begin
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/geo2gei
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/gei2gse
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/gse2gsm
+        endif else if in_coord2 eq 'gse' then $
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/gse2gsm $
+        else if in_coord2 eq 'sm' then $
+           cotrans,in_pos_array2,in_pos_array2,tarray2,/sm2gsm
+    endelse
     
     ;intialize and check period
     if not keyword_set(period) then period2 = 60.0D  $
@@ -332,9 +353,6 @@ pro trace2equator, tarray, in_pos_array, out_foot_array, out_trace_array=out_tra
     ;insertion of spurious default dindgen values
     out_foot_array = make_array(r_size, /DOUBLE, VALUE = !VALUES.D_NAN)
     
-    ts = time_struct(tarray2)
-    
-    tstart = tarray2[0]
     
     idx = where((tarray2[1:n_elements(tarray2)-1] - tarray2[0:n_elements(tarray2)-2]) lt 0,nonmonotone_times)
       
@@ -532,6 +550,14 @@ pro trace2equator, tarray, in_pos_array, out_foot_array, out_trace_array=out_tra
           t_temp = replicate(tarray2[i],s_temp[0])
     
           ;convert trace into the output coordinate system
+          if ~undefined(geopack_2008) then begin
+              ; if geopack 2008 is being used, need to convert back to GSM
+              geopack_conv_coord_08, tr_temp[*,0], tr_temp[*,1], tr_temp[*,2], x_out_gse, y_out_gse, z_out_gse, /from_gsw, /to_gse
+              tr_temp = [[x_out_gse], [y_out_gse], [z_out_gse]]
+              ; convert from GSE to GSM
+              cotrans, tr_temp, tr_temp, t_temp, /gse2gsm
+          endif
+          
           if out_coord2 eq 'gei' then begin
              cotrans,tr_temp,tr_temp,t_temp,/gsm2gse
              cotrans,tr_temp,tr_temp,t_temp,/gse2gei
@@ -551,6 +577,14 @@ pro trace2equator, tarray, in_pos_array, out_foot_array, out_trace_array=out_tra
        ;convert from re to km
        if keyword_set(km) then out_trace_array *= km_in_re
     
+    endif
+    
+    ; if geopack 2008 is being used, need to convert back to GSM
+    if ~undefined(geopack_2008) then begin
+        geopack_conv_coord_08, out_foot_array[*,0], out_foot_array[*,1], out_foot_array[*,2], x_footout_gse, y_footout_gse, z_footout_gse, /from_gsw, /to_gse
+        out_foot_array = [[x_footout_gse], [y_footout_gse], [z_footout_gse]]
+        ; convert from GSE to GSM
+        cotrans, out_foot_array, out_foot_array, tarray2, /gse2gsm
     endif
     
     ;convert footprint into the output coordinate system

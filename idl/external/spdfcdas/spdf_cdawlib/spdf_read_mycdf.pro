@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
-;$Header: /home/cdaweb/dev/control/RCS/spdf_read_mycdf.pro,v 1.300 2014/01/30 20:09:47 kovalick Exp kovalick $
+;$Date: 2014-04-01 14:57:35 -0700 (Tue, 01 Apr 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/spdf_read_mycdf.pro,v 1.302 2014/03/18 16:34:46 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 14512 $
+;$Revision: 14728 $
 ;+------------------------------------------------------------------------
 ; This package of IDL functions facilitates reading data and metadata from
 ; Common Data Format (CDF) files.  While CDF provides all the benefits
@@ -76,46 +76,7 @@
 ; routine is provided as is without any express or implied warranties
 ; whatsoever.
 ;-------------------------------------------------------------------------
-; NAME: spdf_break_mystring
-; PURPOSE: 
-;       Convert a string into a string array given a delimiting character 
-; CALLING SEQUENCE:
-;       out = spdf_break_mystring(instring)
-; INPUTS:
-;       instring = input text string
-; KEYWORD PARAMETERS:
-;       delimiter = character to parse by.  Default = ' '
-; OUTPUTS:
-;       out = string array
-; AUTHOR:
-;       Jason Mathews, NASA/GSFC/Code 633,  June, 1994
-;       mathews@nssdc.gsfc.nasa.gov    (301)286-6879
-; MODIFICATION HISTORY:
-;-------------------------------------------------------------------------
-FUNCTION spdf_break_mystring, s, DELIMITER=delimiter
-; Validate the input parameters
-s_size=size(s) & n_size=n_elements(s_size)
-if (s_size[n_size - 2] ne 7) then begin
-  print,'ERROR>Argument to spdf_break_mystring must be of type string'
-  return,-1
-endif
-if s eq '' then return, [ '' ]
-if n_elements(delimiter) eq 0 then delimiter = ''
-; dissect the string
-byte_delim = Byte( delimiter ) ; convert string to byte delimiter
-result = Where( Byte(s) eq byte_delim[0], count ) ; count occurences
-result = StrArr( count+1 ) & pos = -1
-if (count gt 0) then begin
-  for i=0, count-1 do begin
-    oldpos = pos + 1
-    pos = StrPos(s, delimiter, oldpos)
-    result[i] = StrMid(s, oldpos, pos-oldpos)
-  endfor
-endif
-pos = pos + 1
-result[count] = StrMid( s, pos, StrLen(s) - pos )
-return, result
-end
+
 ;+-----------------------------------------------------------------------
 ; Search the tnames array for the instring, returning the index in tnames
 ; if it is present, or -1 if it is not.
@@ -876,12 +837,15 @@ if (zflag eq 1) then begin ; read the z-variable
 ;it will have a component_1 (THEMIS case) so the epoch values don't 
 ;exist yet... so need to get the depend_0's, component_1's data size 
 ;and compare w/ the current variables size - stored below in cinfo.maxrec
-                      dnum = cdf_attnum(CDFid,'DEPEND_0')
-                      if ((dnum ne -1) and cdf_attexists(CDFid,'DEPEND_0',vname))then begin
+;3/18/2014 - call cdf_attexists for depend_0 and component_0 instead
+;of cdf_attnum (attnum fails if the attribute doesn't exist)
+
+                      dnum = cdf_attexists(CDFid,'DEPEND_0') ;returns true or false
+                      if ((dnum) and cdf_attexists(CDFid,'DEPEND_0',vname))then begin
                          cdf_attget,CDFid,'DEPEND_0',vname, depend0 ;depend_0 of the data variable
                          if (depend0 ne ' ') then begin ;if depend_0 isn't blank get its component_0
-                            cnum = cdf_attnum(CDFid,'COMPONENT_1')
-                            if ((cnum ne -1) and cdf_attexists(CDFid,'COMPONENT_1',depend0))then begin
+                            cnum = cdf_attexists(CDFid,'COMPONENT_1') ;returns true or false
+                            if ((cnum) and cdf_attexists(CDFid,'COMPONENT_1',depend0))then begin
                                cdf_attget,CDFid,'COMPONENT_1',depend0,component1 ;component_1 of the data variable
                                if (component1 ne ' ') then begin ; now get the data array sizes for the component_1 variable
                                   cdf_control,CDFid,VAR=component1,GET_VAR_INFO=cinfo
@@ -2034,6 +1998,7 @@ for cx=0,n_elements(cnames)-1 do begin
                       print, 'found a VV ', vnames[nreq], ' in Master CDF.'
                       print, 'adding deltas and components next...'
                   endif
+
                   add_myDELTAS, atmp, vnames
 	          add_myCOMPONENTS, atmp, vnames
 
@@ -2155,6 +2120,9 @@ for cx=0,n_elements(cnames)-1 do begin
             for nvvq =0, n_elements(chkvv_dep)-1 do begin
                atmp = read_myMETADATA (chkvv_dep[nvvq], CDFid)
                atags = tag_names (atmp)
+               add_myDELTAS, atmp, vnames ;TJK add this here because we have regular variables w/ delta
+                                          ;not only virtual variables (3/20/2014)
+
                b0 = spdf_tagindex ('VIRTUAL', atags)
 ;TJK 11/6/2009 add check for component_0 in order to determine if virtual
 ;variable definition is for real or not.

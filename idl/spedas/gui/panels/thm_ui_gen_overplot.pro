@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-;  spd_ui_gen_overplot
+;  thm_ui_gen_overplot
 ;
 ;PURPOSE:
 ;  Widget wrapper for spd_ui_overplot used to create THEMIS overview plots in SPEDAS.
@@ -11,7 +11,7 @@
 ;INPUT:
 ;  gui_id:  The id of the main GUI window.
 ;  historyWin:  The history window object.
-;  oplot_calls:  The number calls to spd_ui_gen_overplot
+;  oplot_calls:  The number calls to thm_gen_overplot
 ;  callSequence: object that stores sequence of procedure calls that was used to load data
 ;  windowStorage: standard windowStorage object
 ;  windowMenus: standard menu object
@@ -22,9 +22,9 @@
 ;  none
 ;  
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-27 17:01:04 -0700 (Thu, 27 Mar 2014) $
-;$LastChangedRevision: 14689 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_gen_overplot.pro $
+;$LastChangedDate: 2014-03-31 17:09:35 -0700 (Mon, 31 Mar 2014) $
+;$LastChangedRevision: 14721 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/thm_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
 
@@ -395,7 +395,7 @@ pro thm_ui_fix_overview_panels, state=state
 
 end
 
-pro spd_ui_gen_overplot_event, event
+pro thm_ui_gen_overplot_event, event
 
   Compile_Opt hidden
 
@@ -419,7 +419,7 @@ pro spd_ui_gen_overplot_event, event
   IF (Tag_Names(event, /Structure_Name) EQ 'WIDGET_KILL_REQUEST') THEN BEGIN  
 
     dprint,  'Generate THEMIS overview plot widget killed' 
-    state.historyWin->Update,'SPD_UI_GEN_OVERPLOT: Widget killed' 
+    state.historyWin->Update,'THM_UI_GEN_OVERPLOT: Widget killed' 
     Widget_Control, event.TOP, Set_UValue=state, /No_Copy
     Widget_Control, event.top, /Destroy
     RETURN 
@@ -427,7 +427,7 @@ pro spd_ui_gen_overplot_event, event
   
   Widget_Control, event.id, Get_UValue=uval
   
-  state.historywin->update,'SPD_UI_GEN_OVERPLOT: User value: '+uval  ,/dontshow
+  state.historywin->update,'THM_UI_GEN_OVERPLOT: User value: '+uval  ,/dontshow
   
   CASE uval OF
     'GOWEB': BEGIN
@@ -482,11 +482,13 @@ pro spd_ui_gen_overplot_event, event
                            
         state.callSequence->addplugincall, 'thm_gen_overplot', $
           probes=state.probe, date=st_double, dur = dur, $
-          makepng = 0, fearless = 0, dont_delete_data = 1, gui_plot = 1, no_draw=1
+          makepng = 0, fearless = 0, dont_delete_data = 1, $
+          gui_plot = 1, no_draw=1, track_one = 1 ;panel tacking kludge
 
 ;        callSequence->singlePanelTracking, ptr_new(info)
 
-        *state.oplot_calls = *state.oplot_calls + 1 ; update # of calls to overplot
+        (*state.data).oplot_calls = (*state.data).oplot_calls + 1 ; update # of calls to overplot
+        (*state.data).track_one = 1b ;set to single-panel tracking (temporary kludge)
         
         msg = 'THEMIS overview plot completed.'
       endif else begin
@@ -527,7 +529,7 @@ end
 
 
 ;see top of file for header
-pro spd_ui_gen_overplot, gui_id = gui_id, $
+pro thm_ui_gen_overplot, gui_id = gui_id, $
                          history_window = historyWin, $
                          status_bar = statusbar, $
                          call_sequence = callSequence, $
@@ -611,12 +613,15 @@ pro spd_ui_gen_overplot, gui_id = gui_id, $
 
   ;initialize structure to store variables for future calls
   if ~is_struct(data_structure) then begin
-    data_structure = { oplot_calls:0 }
+    data_structure = { oplot_calls:0, track_one:0b }
   endif
+  
+  ;create copy that can be retrieved later
+  data_ptr = ptr_new(data_structure)
 
   state = {tlb:tlb, gui_id:gui_id, historyWin:historyWin,statusBar:statusBar, $
            trControls:trControls, tr_obj:tr_obj, probe:probe, $
-           oplot_calls:ptr_new(data_structure.oplot_calls), $
+           data:data_ptr, $
            callSequence:callSequence,$
            windowStorage:windowStorage, $
            loadedData:loadedData}
@@ -631,7 +636,12 @@ pro spd_ui_gen_overplot, gui_id = gui_id, $
     widget_control, tlb, xoffset=0, yoffset=0
   endif
 
-  XManager, 'spd_ui_gen_overplot', tlb, /No_Block
+  XManager, 'thm_ui_gen_overplot', tlb, /No_Block
+
+  ;if pointer or struct are not valid the original structure will be unchanged
+  if ptr_valid(data_ptr) && is_struct(*data_ptr) then begin
+    data_structure = *data_ptr
+  endif
 
   RETURN
 end

@@ -38,34 +38,13 @@
 ;       or data processing calls. 
 ; 
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-20 14:06:33 -0800 (Thu, 20 Feb 2014) $
-;$LastChangedRevision: 14403 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-03-31 17:09:35 -0700 (Mon, 31 Mar 2014) $
+;$LastChangedRevision: 14721 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_call_sequence__define.pro $
 ;
 ;--------------------------------------------------------------------------------
 
-; this method switches to single panel tracking
-; used for replaying overview figures
-pro spd_ui_call_sequence::singlePanelTracking, infoptr
-  if ~undefined(infoptr) && ptr_valid(infoptr) then begin
-      (*infoptr).tracking = 1
-      (*infoptr).trackall = 0
-      (*infoptr).trackone = 1
-      (*infoptr).trackingv = 1
-      (*infoptr).trackingh = 1
-      (*infoptr).drawObject->vBarOn
-      (*infoptr).drawObject->hBarOn
-      (*infoptr).drawObject->legendOn
-      widget_control, (*infoptr).trackhmenu, set_button=1
-      widget_control, (*infoptr).trackvmenu, set_button=1
-      widget_control, (*infoptr).trackallmenu, set_button=0
-      widget_control, (*infoptr).trackonemenu, set_button=1
-      widget_control, (*infoptr).showpositionmenu,set_button=1
-      widget_control, (*infoptr).trackMenu,set_button=1
-  endif
-
-end
 
 ;this routine adds load routine calls to the list
 pro spd_ui_call_sequence::addloadcall,st_time0, $
@@ -157,39 +136,6 @@ pro spd_ui_call_sequence::addloadwind,$
 
 end
 
-; this method adds a SPEDAS overview plot call to the call sequence object
-pro spd_ui_call_sequence::addLoadOver,$
-                           probes,$
-                           date,$
-                           duration,$
-                           oplot_num
-  in_st = {type:'loadoverdata',$
-           probes:probes,$
-           date:date,$
-           duration:duration, $
-           oplot_num:oplot_num $
-           }
-           
- self->addSt,in_st
-           
-end
-
-; this method adds a GOES overview plot call to the call sequence object
-pro spd_ui_call_sequence::addGOESLoadOver,$
-                           probes,$
-                           date,$
-                           duration,$
-                           oplot_num
-  in_st = {type:'loadgoesoverdata',$
-           probes:probes,$
-           date:date,$
-           duration:duration, $
-           oplot_num:oplot_num $
-           }
-           
- self->addSt,in_st
-           
-end
 
 pro spd_ui_call_sequence::addPluginCall, $
                           procedure_name, $
@@ -469,23 +415,9 @@ pro spd_ui_call_sequence::reCall,historywin=historywin,statustext=statustext,gui
       spd_ui_plugin_replay, st.procedure_name[0], $ 
                             st.params, $
                             self.loadeddata, $
+                            infoptr, $ ;temporary
                             historywin, $
                             statustext
-    endif else if st.type eq 'loadoverdata' then begin
-      spd_ui_overplot, obj_new(),self.loadedData,obj_new(),$
-                       probes=st.probes, date=st.date, dur=st.duration,  $
-                       oplot_calls=ptr_new(st.oplot_num),/no_draw
-                       
-      ; set tracking to single panel
-      self->singlePanelTracking, infoptr
-      
-    endif else if st.type eq 'loadgoesoverdata' then begin
-      ; replaying a GOES overview plot
-      goes_overview_plot, date =st.date, probe = st.probes[0], /gui_overplot, $
-        duration = st.duration, oplot_calls = ptr_new(st.oplot_num[0])
-
-      ; set tracking to single panel
-      self->singlePanelTracking, infoptr
     endif else if st.type eq 'dprocop' then begin
      
     if is_struct(st.params) then begin
