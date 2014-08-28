@@ -42,6 +42,9 @@
 ;                   
 ;         get_nperiod: Returns the number of periods used for the time interval=  ceil((end_time-start_time)/period)
 ;                   
+;         geopack_2008 (optional): Set this keyword to use the latest version (2008) of the Geopack
+;              library. Version 9.2 of the IDL Geopack DLM is required for this keyword to work.
+;              
 ;Returns: an Nx3 length array or -1L on failure
 ;
 ;Example:
@@ -66,8 +69,8 @@
 ;    http://ampere.jhuapl.edu/code/idl_geopack.html
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-17 08:22:00 -0700 (Mon, 17 Mar 2014) $
-; $LastChangedRevision: 14543 $
+; $LastChangedDate: 2014-03-19 08:22:59 -0700 (Wed, 19 Mar 2014) $
+; $LastChangedRevision: 14600 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t96/t96.pro $
 ;-
 

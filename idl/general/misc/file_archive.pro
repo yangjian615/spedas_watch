@@ -6,6 +6,7 @@
 ; CALLING SEQUENCE:
 ;   FILE_ARCHIVE,'old_file',archive_ext = '.arc'
 ; KEYWORDS:
+;   ARCHIVE_EXT = '.arc'
 ;   ARCHIVE_DIR = 'archive_dir/'  ; name of subdirectory to move files into.
 ;   VERBOSE
 ;   DLEVEL
@@ -13,8 +14,8 @@
 ; Author:
 ;   Davin Larson  June 2013   
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2013-06-08 11:24:59 -0700 (Sat, 08 Jun 2013) $
-; $LastChangedRevision: 12485 $
+; $LastChangedDate: 2014-03-20 08:39:42 -0700 (Thu, 20 Mar 2014) $
+; $LastChangedRevision: 14613 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_archive.pro $
 ;-
  

@@ -36,8 +36,8 @@
 ;                with the same # of elements as pathnames/newpathnames
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-02-06 01:56:33 -0800 (Thu, 06 Feb 2014) $
-;$LastChangedRevision: 14171 $
+;$LastChangedDate: 2014-03-20 08:39:09 -0700 (Thu, 20 Mar 2014) $
+;$LastChangedRevision: 14612 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_retrieve.pro $
 ;-
 function file_retrieve,pathnames, newpathnames, structure_format=structure_format,  $
@@ -50,6 +50,7 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     dir_mode = dir_mode,   $
     user_agent=user_agent,   $
     preserve_mtime=preserve_mtime,  $
+    restore_mtime=restore_mtime, $
     ascii_mode=ascii_mode,   $
     no_download=no_download,no_server=no_server, $
     no_update=no_update, $
@@ -59,7 +60,7 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     no_clobber=no_clobber, ignore_filesize=ignore_filesize, $
     verbose=verbose,progress=progress,progobj=progobj
 
-dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 14171 2014-02-06 09:56:33Z davin-mac $'
+dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 14612 2014-03-20 15:39:09Z davin-mac $'
 if keyword_set(structure_format) then begin
    user_agent =  'FILE_RETRIEVE: IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
    str= {   $
@@ -140,7 +141,7 @@ if keyword_set(remote_data_dir) and  not (keyword_set(no_server) or keyword_set(
                ascii_mode=ascii_mode, $
                recurse_limit=recurse_limit, $
                user_agent=user_agent, $
-               preserve_mtime = preserve_mtime, $
+               preserve_mtime = preserve_mtime, restore_mtime=restore_mtime, $
                file_mode=file_mode,dir_mode=dir_mode,last_version=last_version, $
                min_age_limit=min_age_limit,force_download=force_download
              if url_info[0].io_error ne 0 then begin

@@ -6,8 +6,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-18 18:23:36 -0700 (Tue, 18 Mar 2014) $
-;$LastChangedRevision: 14582 $
+;$LastChangedDate: 2014-03-20 14:57:30 -0700 (Thu, 20 Mar 2014) $
+;$LastChangedRevision: 14617 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_window_menus__define.pro $
 ;-
 
@@ -194,7 +194,7 @@ PRO SPD_UI_WINDOW_MENUS::sync, windowStorage
   
   ;add existing pages
   for i=0, n_elements(windows)-1 do begin
-    windows->getproperty, name=name, isactive=active
+    windows[i]->getproperty, name=name, isactive=active
     self->add, name
     if active then widget_control, (*self.ids)[i], set_button=1 
   endfor

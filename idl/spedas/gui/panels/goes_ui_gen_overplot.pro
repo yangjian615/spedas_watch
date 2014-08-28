@@ -25,9 +25,9 @@
 ; OUTPUT:
 ;  success: a 0-1 flag.
 ;  
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-03-11 09:58:47 -0700 (Tue, 11 Mar 2014) $
-;$LastChangedRevision: 14529 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-03-20 15:07:58 -0700 (Thu, 20 Mar 2014) $
+;$LastChangedRevision: 14618 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/goes_ui_gen_overplot.pro $
 ;-
 
@@ -108,16 +108,16 @@ pro goes_ui_gen_overplot_event, event
       
       activeWindow = state.windowStorage->GetActive()
     
-      ; add window name to gui window menu
-      activeWindow[0]->GetProperty, Name=name
-      state.windowMenus->Add, name
-      state.windowMenus->Update, state.windowStorage
       tplot_options, title='GOES-'+string(state.probe)+' Overview ('+time_string(st_double)+')'
 
-      goes_overview_plot, date = st_double, probe = state.probe, duration = dur, /gui_overplot, oplot_calls = state.oplot_calls, error = error
+      goes_overview_plot, date = st_double, probe = state.probe, duration = dur, /gui_overplot, oplot_calls = *state.oplot_calls, error = error
       
-      if ~error then begin               
-        state.callSequence->addGOESLoadOver,state.probe,st_double,dur,*state.oplot_calls    
+      if ~error then begin
+        
+        ;add to call sequence
+        state.callSequence->addPluginCall, 'goes_overview_plot', $
+          date = st_double, probe = state.probe, duration = dur, $
+          gui_overplot=1, oplot_calls = *state.oplot_calls
         
         ; update the size of the labels       
         activeWindow->GetProperty, panels = panelsObj
@@ -135,9 +135,6 @@ pro goes_ui_gen_overplot_event, event
                 endfor
             endif
         endfor
-        ; update the page
-        state.drawObject->update,state.windowStorage,state.loadedData
-        state.drawObject->draw 
 
         *state.oplot_calls = *state.oplot_calls + 1 ; update # of calls to overplot
         *state.success = 1
@@ -178,10 +175,18 @@ end
 
 
 ;returns 1 if overplot generated and 0 otherwise
-function goes_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSequence,$
-                              windowStorage,windowMenus,loadedData,drawObject,tr_obj=tr_obj
+pro goes_ui_gen_overplot, gui_id = gui_id, $
+                          history_window = historyWin, $
+                          status_bar = statusbar, $
+                          call_sequence = callSequence, $
+                          time_range = tr_obj, $
+                          window_storage = windowStorage, $
+                          loaded_data = loadedData, $
+                          data_structure = data_structure, $
+                          _extra = _extra
 
   compile_opt idl2
+
 
   err_xxx = 0
   Catch, err_xxx
@@ -196,7 +201,7 @@ function goes_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSe
     ok = error_message('An unknown error occured starting widget to generate GOES overview plot. ', $
          'See console for details.', /noname, /center, title='Error while generating GOES overview plot')
     spd_gui_error, gui_id, historywin
-    RETURN,0
+    RETURN
   ENDIF
   
   tlb = widget_base(/col, title='Generate GOES Overview Plot', group_leader=gui_id, $
@@ -254,12 +259,19 @@ function goes_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSe
   applyButton = Widget_Button(buttonBase, Value='Apply', UValue='APPLY', XSize=80)
   cancelButton = Widget_Button(buttonBase, Value='Cancel', UValue='CANC', XSize=80)
 
-  success = ptr_new(0)
+  ;flag denoting successful run
+  success = 0
+
+  ;initialize structure to store variables for future calls
+  if ~is_struct(data_structure) then begin
+    data_structure = { oplot_calls:0 }
+  endif
 
   state = {tlb:tlb, gui_id:gui_id, historyWin:historyWin,statusBar:statusBar, $
-           tr_obj:tr_obj, probe:probe,success:success, oplot_calls:oplot_calls, $
-           callSequence:callSequence,windowStorage:windowStorage,windowMenus:windowMenus,$
-           loadedData:loadedData,drawObject:drawObject}
+           tr_obj:tr_obj, probe:probe,success:ptr_new(success), $
+           oplot_calls:ptr_new(data_structure.oplot_calls), $
+           callSequence:callSequence,windowStorage:windowStorage,$
+           loadedData:loadedData}
 
   Centertlb, tlb         
   Widget_Control, tlb, Set_UValue=state, /No_Copy
@@ -273,5 +285,19 @@ function goes_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSe
 
   XManager, 'goes_ui_gen_overplot', tlb, /No_Block
 
-  RETURN,*success
+  if success then begin
+    ; to avoid unnecessarily repeating code, we're using the 
+    ; singlePanelTracking method in the callSequence object
+    ; to switch to single panel tracking
+    callSequence->singlePanelTracking, ptr_new(info)
+
+    historyWin->Update, 'Generate GOES overview plot completed.'
+    statusBar->Update, 'Generate GOES overview plot completed.'
+  endif else begin
+    historyWin->Update, 'Generate GOES overview plot not completed.'
+    statusBar->Update, 'Generate GOES overview plot not completed.'
+  endelse
+
+
+  RETURN
 end

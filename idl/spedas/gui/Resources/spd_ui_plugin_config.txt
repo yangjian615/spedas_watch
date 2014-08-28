@@ -19,5 +19,5 @@
 ; 
 ; ---------------- Add entries below here ----------------
 
-THEMIS Particle Distribution Slices, , thm_ui_slice2d
-
+THEMIS Particle Distribution Slices..., , thm_ui_slice2d
+Generate GOES Overview Plot..., , goes_ui_gen_overplot

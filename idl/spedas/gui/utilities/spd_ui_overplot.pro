@@ -1,4 +1,4 @@
-
+;OBSOLETE FILE - WAS replaced by thm_gen_overplot
 
 ;+
 ; Purpose: To make mission overview plots of all instruments
@@ -25,9 +25,9 @@
 ;
 ;
 ;Version:
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-; $LastChangedRevision: 14326 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2014-03-20 18:58:37 -0700 (Thu, 20 Mar 2014) $
+; $LastChangedRevision: 14624 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_overplot.pro $
 ;-
 

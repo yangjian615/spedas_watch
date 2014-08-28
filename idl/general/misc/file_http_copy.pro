@@ -65,6 +65,9 @@
  ;           0-nearly silent;  2-typical messages;  4: debugging info
  ;      PRESERVE_MTIME:  Uses the server modification time instead of local modification time.  This keyword is ignored
  ;        on windows machines that don't have touch installed. (No cygwin or GNU utils)
+ ;        Note: The PRESERVE_MTIME option is experimental and highly platform
+ ;        dependent.  Behavior may change in future releases, so use with
+ ;        caution.
  ;
  ;
  ; Examples:
@@ -122,8 +125,8 @@
  ;   Sep 2009    - Fixed user-agent
  ;
  ; $LastChangedBy: jwl $
- ; $LastChangedDate: 2014-03-14 10:58:06 -0700 (Fri, 14 Mar 2014) $
- ; $LastChangedRevision: 14542 $
+ ; $LastChangedDate: 2014-03-21 17:10:55 -0700 (Fri, 21 Mar 2014) $
+ ; $LastChangedRevision: 14630 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -308,9 +311,9 @@ end
    free_lun,lun
    bad = strlen(links) eq 0
    w = where(bad eq 0,count)
-   if count ne 0 then begin
-     links = links[sort(links)]
-   endif
+;   if count ne 0 then begin
+;     links = links[sort(links)]
+;   endif
    dprint,verbose=verbose,dlevel=3,'Extracted '+strtrim(count,2)+' links from: '+filename
    return,count gt 0 ? links[w] : ''
    badfile:
@@ -476,8 +479,8 @@ end
      host=host, $                  ;input string: Used to define HOST in HTTP header
      user_agent=user_agent,   $    ; input string: Used to define user_agent in HTTP message.
      user_pass=user_pass,  $
-     preserve_mtime=preserve_mtime,$
-     restore_mtime=restore_mtime, $
+     preserve_mtime=preserve_mtime,$  ; EXPERIMENTAL, highly platform dependent
+     restore_mtime=restore_mtime, $   ; EXPERIMENTAL, highly platform dependent
      if_modified_since = if_modified_since, $
      ascii_mode = ascii_mode, $    ; input  (0/1)  Set this keyword to force downloaded files to be downloaded as ascii Text. (converts CR/LFs)
      no_globbing=no_globbing,  $
@@ -499,7 +502,7 @@ end
    tstart = systime(1)
    ;  if n_elements(verbose) eq 1 then dprint,setdebug=verbose,getdebug=last_dbg
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14542 2014-03-14 17:58:06Z jwl $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14630 2014-03-22 00:10:55Z jwl $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -568,8 +571,8 @@ end
        ; First get directory listing and extract links:  (listing will not be archived)
        file_http_copy,sub_pathname,serverdir=serverdir,localdir=localdir,url_info=index, host=host ,ascii_mode=1 $
          ,min_age_limit=min_age_limit,verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,if_modified_since=if_modified_since $
-         ,no_update=no_update, links=links, user_agent=user_agent,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
-       dprint,dlevel=4,verbose=verbose,/phelp,links
+         ,no_update=no_update, links=links, user_agent=user_agent  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
+       dprint,dlevel=5,verbose=verbose,/phelp,links
        
        ;strip out return directory links
 ;       if n_elements(links) gt 1 then begin
@@ -590,13 +593,16 @@ end
        
        w = where(strmatch(sub_pathname+links,sup_pathname),nlinks)
        if nlinks gt 0 then begin
+dprint,dlevel=5,verbose=verbose,links[w],/phelp
+         w = w[sort(links[w])]      ; sort in alphabetical order (needed for last_version keyword)
+dprint,dlevel=3,verbose=verbose,links[w],/phelp
          rec_pathnames = sub_pathname + links[w] + end_pathname
          dprint,dlevel=5,verbose=verbose,/phelp,sup_pathname
          dprint,dlevel=5,verbose=verbose,/phelp,end_pathname
          dprint,dlevel=5,verbose=verbose,/phelp,rec_pathnames
          if keyword_set(last_version) then i0 = nlinks-1  else i0=0L
          for i=i0,nlinks-1 do begin
-           dprint,dlevel=4,verbose=verbose,'Retrieve link#'+strtrim(i+1,2)+' of '+strtrim(nlinks,2)+': '+ rec_pathnames[i]
+           dprint,dlevel=3,verbose=verbose,'Retrieve link#'+strtrim(i+1,2)+' of '+strtrim(nlinks,2)+': '+ rec_pathnames[i]
            ; Recursively get files:
            file_http_copy,rec_pathnames[i],serverdir=serverdir,localdir=localdir, host=host  $
              , verbose=verbose,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode  $
@@ -605,7 +611,7 @@ end
              , force_download=force_download $
              , ignore_filesize=ignore_filesize,user_agent=user_agent,if_modified_since=if_modified_since $
              , preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
-           dprint,dlevel=5,verbose=verbose,/phelp,lns
+;           dprint,dlevel=5,verbose=verbose,/phelp,lns
            if not keyword_set(ui)  then message,'URL info error'
            w = where(ui.exists ne 0,nw)
            if nw ne 0 then uis  = keyword_set(uis)  ?  [uis,ui[w]]   : ui[w]  ; only include existing files
@@ -638,7 +644,9 @@ end
        dprint,dlevel=3,verbose=verbose,'Warning: Updates to existing file: "',lcl.name,'" are not being checked!'
        url_info.localname = localname
        url_info.exists = -1   ; existence is not known!
-       if arg_present(links2) then links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)         ; Does this belong here?
+       if arg_present(links2) then begin
+          links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)         ; Does this belong here?
+       endif
        goto, final
      endif
      
@@ -646,7 +654,9 @@ end
        dprint,dlevel=2,verbose=verbose,'Local file: '+lcl.name+ ' exists and is write protected. Skipping.'
        url_info.localname = localname
        url_info.exists = -1   ; existence is not known!
-       if arg_present(links2) then links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)     ; Does this belong here?
+       if arg_present(links2) then begin
+           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)     ; Does this belong here?
+       endif
        goto, final
      endif
      
@@ -658,7 +668,9 @@ end
        ;url_info.ltime = systime(1)
        url_info.localname = localname
        url_info.exists = 1
-       if arg_present(links2) then links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)
+       if arg_present(links2) then begin
+           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)
+       endif
        goto, final
      endif
      
@@ -781,7 +793,8 @@ end
              ;localdir=localdir,verbose=verbose, $
              url_info=url_info,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode, host=host, $
              archive_ext=archive_ext, archive_dir=archive_dir, $
-             user_agent=user_agent,preserve_mtime=preserve_mtime,restore_mtime=restore_mtime,if_modified_since=if_modified_since
+             user_agent=user_agent, if_modified_since=if_modified_since  ;,preserve_mtime=preserve_mtime,restore_mtime=restore_mtime 
+             
            goto, close_server
          endelse
        endif
@@ -811,12 +824,12 @@ end
          endif
          
          if tdiff lt 0 and keyword_set(restore_mtime) then  begin
-           file_touch,exists=texists
-           dprint,dlevel=3,verbose=verbose,'FILE TIME MISMATCH!   ',lcl.name
-           if ~texists then begin
-             dprint,verbose=verbose,dlevel=3 ,'Executable "touch" not found. Could not preserve_mtime'
-           endif else if keyword_set(preserve_mtime) and lcl.size eq url_info.size then begin  
-             ;file touch works in local time, but mtime is unix time
+;           file_touch,exists=texists
+           dprint,dlevel=3,verbose=verbose,'File modification time mismatch. Restoring modification time.   ',lcl.name
+;           if ~texists then begin
+;               dprint,verbose=verbose,dlevel=3 ,'Executable "touch" not found. Could not preserve_mtime'
+;           endif else  $
+           if keyword_set(preserve_mtime) and lcl.size eq url_info.size then begin  
              file_touch,lcl.name,url_info.mtime,/mtime,/no_create,verbose=verbose   ; ,toffset=time_zone_offset()
            endif
          endif
@@ -841,7 +854,7 @@ end
          On_IOERROR, file_error2
          if file_test(localname,/regular,/write) then begin
              if keyword_set(archive_ext) || keyword_set(archive_dir) then begin
-                 file_archive,localname,archive_ext=archive_ext,archive_dir=archive_dir
+                 file_archive,localname,archive_ext=archive_ext,archive_dir=archive_dir,verbose=verbose,dlevel=2
              endif else begin
                 dprint,'Deleting old file: ',localname,dlevel=2,verbose=verbose
                 file_delete,localname,/allow_nonexistent

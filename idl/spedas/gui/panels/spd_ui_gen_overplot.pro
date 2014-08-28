@@ -28,8 +28,8 @@
 ;  success: a 0-1 flag.
 ;  
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-03-18 18:28:24 -0700 (Tue, 18 Mar 2014) $
-;$LastChangedRevision: 14585 $
+;$LastChangedDate: 2014-03-20 18:55:44 -0700 (Thu, 20 Mar 2014) $
+;$LastChangedRevision: 14623 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -126,19 +126,19 @@ pro thm_ui_fix_page_fonts, state=state
   
   activeWindow = state.windowStorage->GetActive()
   activeWindow->GetProperty, panels = panelsObj
-  panels = panelsObj->get(/all,count=count) 
+  panel = panelsObj->get(/all,count=count) 
   if count eq 0 then return
 
   IF !VERSION.RELEASE GE '8.0' THEN begin    
     size_multiplier = 0.8
     
     ; Loop through the panels and fix the axis
-    for i = 0, n_elements(panels)-1 do begin
-      panels[i]->getProperty,xaxis=axis_obj
+    for i = 0, n_elements(panel)-1 do begin
+      panel[i]->getProperty,xaxis=axis_obj
       thm_ui_fix_axis_fonts, axis_obj=axis_obj, axis_name='x', size_multiplier=size_multiplier
-      panels[i]->getProperty,yaxis=axis_obj
+      panel[i]->getProperty,yaxis=axis_obj
       thm_ui_fix_axis_fonts, axis_obj=axis_obj, axis_name='y', size_multiplier=size_multiplier
-      panels[i]->getProperty,zaxis=axis_obj
+      panel[i]->getProperty,zaxis=axis_obj
       thm_ui_fix_axis_fonts, axis_obj=axis_obj, axis_name='z', size_multiplier=size_multiplier     
     endfor
     
@@ -154,7 +154,7 @@ pro thm_ui_fix_page_fonts, state=state
     endif
     
     ; Also the variables of the last panel (printed below the last panel)
-    panels[n_elements(panels)-1]->GetProperty, variables = variables
+    panel[n_elements(panel)-1]->GetProperty, variables = variables
     if obj_valid(variables) then begin 
       vars = variables->get(/all)
       for i=0, n_elements(vars)-1 do begin 
@@ -183,36 +183,188 @@ pro thm_ui_fix_overview_panels, state=state
   ENDIF
 
   activeWindow = state.windowStorage->GetActive()
-  activeWindow->GetProperty, panels = panelsObj
-  panels = panelsObj->get(/all)
+  If(n_elements(activeWindow) gt 0 && obj_valid(activeWindow[0])) Then Begin
+    activeWindow[0]->setproperty, tracking = 0
+    activeWindow[0]->getproperty, panels = panelsj
+    panel = panelsj->get(/all)
+  Endif else return
 
-  ; Fix panel orientiation for all panels
-  for i = 0,n_elements(panels)-1 do begin
-    panels[i]->getProperty, yaxis=nobj
-    if obj_valid(nobj) then begin
-      nobj->setProperty, stackLabels = 1, orientation = 0
-      nobj->setProperty, titlemargin = 50
-    endif
-  endfor
-  
   ; There should be 14 panels
   ; If not, then what follows might need modifications
-  if n_elements(panels) ne 14 then begin
-    dprint, dlevel = 1, 'Error: THEMIS overview plot does not contain 14 panels'
+  if n_elements(panel) ne 14 then begin
+    dprint, dlevel = 1, 'Error: THEMIS overview plot does not contain 14 panel.'
     return
   endif
-  
 
-   
-  ; ### Panel specific fixes ###
+  ; Make changes to panels
+  current_row = 1
+  for i = 0, n_elements(panel)-1 do begin
+    panel[i]->getProperty, xAxis=xobj, yAxis=yobj, zAxis=zobj, settings=panel_settings
+    
+    ; Fix panel orientiation for all panels
+    yobj->setProperty, stackLabels = 1, orientation = 0
+    yobj->setProperty, titlemargin = 50 ; margin of yaxis titles
+    
+    ; panel 7 has no title
+    if i eq 7 then begin 
+      yobj->getProperty, titleobj = titleobj
+      titleobj->setProperty, value = ''
+    endif
+    
+    ;decrease the number of ticks on the panels to avoid clutter
+    if (i eq 1) || (i eq 7) then begin
+     ; xobj->setProperty, majorLength=2, minorLength=1
+      ;yobj->setProperty, numMajorTicks=0, autoticks=0, numMinorTicks=0
+      ;yobj->setProperty, annotateAxis=0
+    endif else begin
+     ; xObj->setProperty, majorLength=4, minorLength=2
+     ; yobj->setProperty, numMajorTicks=3, numMinorTicks=1
+    endelse
+    
+    ; modify layout to make status bars smaller 
+    ; also change number of ticks   
+    CASE i OF
+      1: Begin
+        yobj->setProperty, annotateAxis=0, lineatzero=0
+        panel_settings->setProperty, row=current_row, rSpan=2
+        current_row += 2
+        end
+      7: begin
+        yobj->setProperty, annotateAxis=0, lineatzero=0
+        panel_settings->setProperty, row=current_row, rSpan=1
+        current_row += 1
+        end
+      ELSE:  begin
+        xobj->setProperty, majorLength=4, minorLength=2
+        yobj->setProperty, numMajorTicks=3, numMinorTicks=1
+        panel_settings->setProperty, row=current_row, rSpan=4
+        current_row += 4
+        end
+    ENDCASE
+    
+    ; logarithmic scalling for some of the panels
+    if (i ge 8) || (i eq 6) then begin 
+      yobj->setproperty, scaling = 1
+      yobj->setproperty, rangeoption = 2
+    endif
+    
+   ;panel[i]->setProperty, xAxis=xobj, yAxis=yobj, zAxis=zObj, settings=panel_settings
+    
+  endfor
+  
+  ;set the total number of rows
+   activewindow[0]->setproperty, nrows=current_row-1
+          
+          
+          ;statusbar panel needs different colors
+          panel[7]->getproperty, tracesettings = obj0
+          trace_obj = obj0->get(/all)
+          ntraces = n_elements(trace_obj)
+          If(ntraces Gt 1) Then Begin
+            If(obj_valid(trace_obj[1])) Then Begin
+              trace_obj[1]->getproperty, linestyle = linestyleobj
+              linestyleobj->setproperty, color = [255b, 0b, 0b]
+            Endif
+            If(obj_valid(trace_obj[2])) Then Begin
+              trace_obj[2]->getproperty, linestyle = linestyleobj
+              linestyleobj->setproperty, color = [255b, 255b, 0b]
+            Endif
+            If(obj_valid(trace_obj[4])) Then Begin
+              trace_obj[4]->getproperty, linestyle = linestyleobj
+              linestyleobj->setproperty, color = [0b, 0b, 0b]
+            Endif
+            for i = 0,n_elements(trace_obj)-1 do begin
+              trace_obj[i]->getProperty,linestyle=linestyleObj,symbol=symbolobj
+              lineStyleObj->setProperty,thickness=2
+              lineStyleObj->getProperty,color=linecolor
+              symbolobj->setProperty,show=0,name=symbolobj->getSymbolName(symbolid=4),id=4,color=linecolor
+            endfor
+          Endif
+                   
+          ;keep esa and sst spectra's z-range consistant
+          panel[8]->getproperty, zaxis = zobj_ssti
+          zobj_ssti->setproperty, minrange = 1d0, maxrange = 5d7, fixed=1
+          panel[9]->getproperty, zaxis = zobj_esai
+          zobj_esai->setproperty, minrange = 1d3, maxrange = 7.5d8, fixed=1
+          panel[10]->getproperty, zaxis = zobj_sste
+          zobj_sste->setproperty, minrange = 1d0, maxrange = 5d7, fixed=1
+          panel[11]->getproperty, zaxis = zobj_esae
+          zobj_esae->setproperty, minrange = 1d4, maxrange = 7.5d8, fixed=1
+          
+          ;set the vertical spacing to a smaller number, to save space on a many panel layout
+          activewindow[0]->getproperty, settings=page
+          page->setproperty,ypanelspacing=0
+          
+             
+          ;get trace for the first panel and change the color to black
+          panel[0]->getproperty, tracesettings = obj0
+          trace_obj = obj0->get(/all)
+          if obj_valid(trace_obj[0]) then begin
+            trace_obj[0]->getproperty, linestyle = linestyleobj
+            linestyleobj->setproperty, color = [0b, 0b, 0b]
+          endif
+          
+          ;SST needs to have y scaling set to log
+          panel[8]->getproperty, yaxis = yobj
+          yobj->setproperty, scaling = 1
+          yobj->setproperty, rangeoption = 2
+          get_data, ssti_name, data = d
+          yobj->setproperty, maxfixedrange = 3.0e6
+          If(is_struct(d) && tag_exist(d, 'v')) Then yobj->setproperty, minfixedrange = min(d.v) $
+          Else yobj->setproperty, minfixedrange = 3.0e4
+          ;quick_set_panel_labels, panel[8], ['SSTi_Eflux_[eV]']
+          ;  quick_set_panel_labels, panel[8], 'Eflux!CeV/cm!U2!N!C-s-sr-eV', /zaxis, /zhorizontal
+          ;quick_set_panel_labels, panel[8], 'Eflux, EFU', /zaxis
+          ;ESA needs logs too
+          panel[9]->getproperty, yaxis = yobj
+          yobj->setproperty, scaling = 1
+          ;quick_set_panel_labels, panel[9], ['ESAi_Eflux_[eV]']
+          ;  quick_set_panel_labels, panel[9], 'Eflux!CeV/cm!U2!N!C-s-sr-eV', /zaxis, /zhorizontal
+          ;quick_set_panel_labels, panel[9], 'Eflux, EFU', /zaxis
+          ;SST electrons
+          panel[10]->getproperty, yaxis = yobj
+          yobj->setproperty, scaling = 1
+          yobj->setproperty, rangeoption = 2
+          get_data, sste_name, data = d
+          yobj->setproperty, maxfixedrange = 3.0e6
+          If(is_struct(d) && tag_exist(d, 'v')) Then yobj->setproperty, minfixedrange = min(d.v) $
+          Else yobj->setproperty, minfixedrange = 3.0e4
+          ;quick_set_panel_labels, panel[10], ['SSTe_eflux_[eV]']
+          ;  quick_set_panel_labels, panel[10], 'Eflux!CeV/cm!U2!N!C-s-sr-eV', /zaxis, /zhorizontal
+          ;quick_set_panel_labels, panel[10], 'Eflux, EFU', /zaxis
+          ;ESA electrons
+          panel[11]->getproperty, yaxis = yobj
+          yobj->setproperty, scaling = 1
+          ;quick_set_panel_labels, panel[11], ['ESAe_eflux_[eV]']
+          ;  quick_set_panel_labels, panel[11], 'Eflux!CeV/cm!U2!N!C-s-sr-eV', /zaxis, /zhorizontal
+          ;quick_set_panel_labels, panel[11], 'Eflux, EFU', /zaxis
+          ;FBK panels
+          npanels = n_elements(panel)
+          For j = 0, n_elements(fbk_tvars)-1 Do Begin
+            jp = j+12
+            If(jp Le npanels-1) Then Begin
+              panel[jp]->getproperty, yaxis = yobj
+              yobj->setproperty, scaling = 1
+              get_data, fbk_tvars[j], dlimits = dl, limits = al
+              lbl0 =  strupcase(strmid(fbk_tvars[j], 4)) & lbl1 = '  '
+              If(is_struct(al) && tag_exist(al, 'ztitle')) Then lbl1 = al.ztitle
+              ;          quick_set_panel_labels, panel[jp], [lbl0, '[Hz]']
+              ;quick_set_panel_labels, panel[jp], lbl1, /zaxis
+              ;quick_set_panel_labels, panel[jp], thx+'_FBK '+strmid(fbk_tvars[j], 7)
+            Endif
+            ;quick_set_panel_labels, panel[12], '<|mV/m|>', /zaxis
+            ;quick_set_panel_labels, panel[13], '<|nT|>', /zaxis
+          Endfor       
+     
+ 
   ; Panel 0
   
   ; Panel 1: ROI 
-  ; This needs special handling
-  panels[1]->getProperty,yaxis=nobj
+  ; setup colors for ROI plot
+  panel[1]->getProperty,yaxis=nobj
   nobj->setProperty,annotateAxis=0,lineatzero=0
-  panels[1]->getproperty, tracesettings = obj0
-  trace_obj = obj0 -> get(/all)
+  panel[1]->getproperty, tracesettings = obj0
+  trace_obj = obj0->get(/all)
   ntr = 11 ; 11 is based on the total of the bit mask in thm_roi_bar.pro
   ; setup colors for ROI plot
   ctbl = transpose([[7,0,5],$
@@ -229,21 +381,11 @@ pro thm_ui_fix_overview_panels, state=state
   for i = 0,ntr-1 do begin
     trace_obj[i]->getProperty,linestyle=linestyleObj
     lineStyleObj->setProperty,thickness=2, color=ctbl[i,*]
-  endfor
-
-  ; Panel 2
-  
-  ; Panel 7 
-  ; This should have no ytitle
-  panels[7]->getProperty, yaxis=nobj
-  if obj_valid(nobj) then begin
-    nobj->getProperty, titleobj = titleobj
-    titleobj->setProperty, value = ''
-  endif
+  endfor  
   
   ; Panel 13
   ; Fix the variables of the last panel (printed below the last panel)
-  panels[n_elements(panels)-1]->GetProperty, variables = variables
+  panel[n_elements(panel)-1]->GetProperty, variables = variables
   if obj_valid(variables) then begin
     vars = variables->get(/all)
     for i=0, n_elements(vars)-1 do begin
@@ -453,7 +595,7 @@ function spd_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSeq
     Help, /Last_Message, Output=err_msg
     FOR j = 0, N_Elements(err_msg)-1 DO Begin
       print, err_msg[j]
-      If(obj_valid(historywin)) Then historyWin -> update, err_msg[j]
+      If(obj_valid(historywin)) Then historyWin->update, err_msg[j]
     Endfor
     Print, 'Error--See history'
     ok = error_message('An unknown error occured while starting the THEMIS overview plot widget. ', $

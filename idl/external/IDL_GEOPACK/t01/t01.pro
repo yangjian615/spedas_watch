@@ -45,6 +45,9 @@
 ;         
 ;         storm: Use the storm-time version of the T01 model
 ;         
+;         geopack_2008 (optional): Set this keyword to use the latest version (2008) of the Geopack
+;              library. Version 9.2 of the IDL Geopack DLM is required for this keyword to work.
+;              
 ;Returns: an Nx3 length array or -1L on failure
 ;
 ;Example:
@@ -73,8 +76,8 @@
 ;  http://modelweb.gsfc.nasa.gov/magnetos/data-based/Paper219.pdf
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-17 08:22:00 -0700 (Mon, 17 Mar 2014) $
-; $LastChangedRevision: 14543 $
+; $LastChangedDate: 2014-03-19 08:22:59 -0700 (Wed, 19 Mar 2014) $
+; $LastChangedRevision: 14600 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t01/t01.pro $
 ;-
 

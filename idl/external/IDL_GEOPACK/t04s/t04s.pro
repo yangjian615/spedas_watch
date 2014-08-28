@@ -46,7 +46,10 @@
 ;                   set_tilt will cause add_tilt to be ignored. 
 ;                   
 ;         get_nperiod: Returns the number of periods used for the time interval=  ceil((end_time-start_time)/period)
-;                   
+;
+;         geopack_2008 (optional): Set this keyword to use the latest version (2008) of the Geopack
+;              library. Version 9.2 of the IDL Geopack DLM is required for this keyword to work.
+;              
 ;Returns: an Nx3 length array or -1L on failure
 ;
 ;Example:
@@ -75,8 +78,8 @@
 ;  Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-17 08:22:00 -0700 (Mon, 17 Mar 2014) $
-; $LastChangedRevision: 14543 $
+; $LastChangedDate: 2014-03-19 08:22:59 -0700 (Wed, 19 Mar 2014) $
+; $LastChangedRevision: 14600 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t04s/t04s.pro $
 ;-
 

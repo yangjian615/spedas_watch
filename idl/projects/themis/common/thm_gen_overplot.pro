@@ -673,6 +673,8 @@ load_position='mode'
 ; make tplot variable tracking the sample rate (0=SS,1=FS,2=PB,3=WB)
 ;-------------------------------------------------------------------
 sample_rate_var = thm_sample_rate_bar(date, dur, sc, /outline)
+options, sample_rate_var,'ytitle',''
+
 SKIP_SURVEY_MODE:
 load_position='bound'
 
@@ -763,19 +765,27 @@ If(ok_esai_moms[0] Eq 0) Then Begin
 Endif
    
 vars_full = ['thg_idx_ae', roi_bar, 'Keogram', thx+'_fgs_gse', $
-             esaf_n_name, esaif_v_name, esaf_t_name, 'sample_rate_'+sc, $
+             esaf_n_name, esaif_v_name, esaf_t_name, sample_rate_var, $
              ssti_name, esaif_flux_name, sste_name,  $
              esaef_flux_name, thx+'_fb_*', thx+'_pos_gse_z']
 
 options, 'Keogram', 'ytitle', 'Keogram'
-options, 'Keogram', 'ysubtitle', ''  
+options, 'Keogram', 'ysubtitle', ''
 
-if keyword_set(gui_plot) then begin ; for GUI plots
+if keyword_set(gui_plot) then begin ; for GUI plots we have some differences 
     title = probes_title[pindex[0]] + ' (TH-'+strupcase(sc)+')'
     tplot_options, 'title', title
     tplot_options, 'ymargin', [3,5]
-
+    
+    ;parallel and perpendicular components: select simple label to avoid font problems  
     options, esaf_t_name, labels=  ['Ti ||', 'Ti per', 'Te ||', 'Te per']
+   
+    ; For GUI panels, panel arrangement and height is determined by rows,
+    ;   for example: panel_settings->setProperty, row=current_row, rSpan=2
+    ;   for this to work we have to delete the 'panel_size' variable
+    get_data,sample_rate_var,limit=l
+    str_element,l,'panel_size',/delete ;panel sizing handled using different method in gui overview plots
+    store_data,sample_rate_var,limit=l
    
     get_data,roi_bar,data=ppp,limit=l ;the ROI bar has to be transormed
     If(is_struct(ppp)) Then Begin
@@ -796,7 +806,7 @@ if keyword_set(gui_plot) then begin ; for GUI plots
         store_data,thx+'_roi_bar',data={x:time_double(date)+findgen(2),y:filler}
         roi_bar=thx+'_roi_bar'
     Endelse
-    
+       
     tplot_gui,vars_full,/no_verify,/no_update,/add_panel,no_draw=keyword_set(no_draw),  var_label = [thx+'_state_pos_gse_x', thx+'_state_pos_gse_y', thx+'_state_pos_gse_z']
 
 endif else begin

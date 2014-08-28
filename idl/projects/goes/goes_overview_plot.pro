@@ -42,15 +42,16 @@
 ;       
 ;       
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
-; $LastChangedRevision: 14467 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2014-03-20 15:10:15 -0700 (Thu, 20 Mar 2014) $
+; $LastChangedRevision: 14619 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_overview_plot.pro $
 ;-
 
-pro goes_overview_plot, date = date, probe = probe, directory = directory, device = device, $
+pro goes_overview_plot, date = date, probe = probe_in, directory = directory, device = device, $
                     geopack_lshell = geopack_lshell, duration = duration, gui_overplot = gui_overplot, $
-                    oplot_calls = oplot_calls, error = error, skip_ae_idx = skip_ae_idx
+                    oplot_calls = oplot_calls, error = error, skip_ae_idx = skip_ae_idx, $
+                    _extra=_extra
                     
                        
     compile_opt idl2
@@ -71,10 +72,10 @@ pro goes_overview_plot, date = date, probe = probe, directory = directory, devic
     ;store_data, '*', /delete
     
     ; sample GOES overview plot
-    if undefined(probe) then probe = '13'  
+    if undefined(probe_in) then probe = '13' else probe=probe_in[0]
     if undefined(date) then overviewdate = '2013-12-05' else overviewdate = time_string(date)
     if undefined(duration) then duration = 1 ; days
-    if undefined(oplot_calls) then suffix = '' else suffix = strcompress('_op'+string(*oplot_calls), /rem)
+    if undefined(oplot_calls) then suffix = '' else suffix = strcompress('_op'+string(oplot_calls[0]), /rem)
     
     timespan, overviewdate, duration, /day
     time = time_struct(overviewdate)
@@ -195,9 +196,9 @@ endif
 ;;=============================================================================
 ; Panel 3: magnetic field components subtracted from IGRF
 
-    ; make sure we have the B field loaded in SM coordinates before trying to 
-    ; load the IGRF
-    if tnames('g'+probe+'_H_sm'+suffix) ne '' then begin
+    ; make sure we have the B field loaded in SM coordinates and the IDL Geopack 
+    ; DLM is installed before trying to calculate the IGRF
+    if tnames('g'+probe+'_H_sm'+suffix) ne '' && igp_test() eq 1 then begin
         cotrans, 'g'+probe+'_pos_gei'+suffix, 'g'+probe+'_pos_gse'+suffix, /GEI2GSE
         cotrans, 'g'+probe+'_pos_gse'+suffix, 'g'+probe+'_pos_gsm'+suffix, /GSE2GSM
         

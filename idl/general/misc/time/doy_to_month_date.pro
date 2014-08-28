@@ -25,8 +25,8 @@ if not keyword_set(months) then begin    ; only needs to be computed once!
    dates = doys - mdt(months,isleap)
    w = where(dates lt 0,c)
    if c ne 0 then begin
-      months(w) = months(w) -1
-      dates(w) = doys(w) - mdt(months(w),isleap(w))
+      months[w] = months[w] -1
+      dates[w] = doys[w] - mdt[months[w],isleap[w]]
    endif
    months = months+1
    dates  = dates +1
