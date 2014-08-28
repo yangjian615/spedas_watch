@@ -61,9 +61,9 @@
 ; Updated to use new code from Davin by pcruce Jun 2010
 ; 
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-11-12 12:06:03 -0800 (Tue, 12 Nov 2013) $
-; $LastChangedRevision: 13524 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2014-02-11 16:33:17 -0800 (Tue, 11 Feb 2014) $
+; $LastChangedRevision: 14336 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/SST_cal_workdir/thm_load_sst2.pro $
 ;-
 
@@ -320,7 +320,7 @@ my_themis = source_options
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst2.pro 13524 2013-11-12 20:06:03Z pcruce $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst2.pro 14336 2014-02-12 00:33:17Z jimm $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']
@@ -496,7 +496,7 @@ if lvl ne 'l2' then begin
      store_data, '*' + support_suffix, /delete
      
      ;determine new or modified tplot variables
-     thm_ui_cleanup_tplot,tn_pre_proc,create=cn_pre_proc,new=tplotnames
+     spd_ui_cleanup_tplot,tn_pre_proc,create=cn_pre_proc,new=tplotnames
            
      ;clip new variables and generate rate variable
      for i = 0, n_elements(tplotnames)-1 do begin

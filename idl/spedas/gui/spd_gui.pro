@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-02-13 18:17:32 -0800 (Thu, 13 Feb 2014) $
+;$LastChangedRevision: 14376 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -56,12 +56,12 @@ PRO spd_gui_event, event
         widget_control, event.top, set_uval = info, /no_copy
       endif else begin
         print,'Potentially catastrophic error.  You may want to terminate the gui by selecting run->terminate'
-        return
       endelse
     Endif else begin
       print,'Potentially catastrophic error.  You may want to terminate the gui by selecting run->terminate'
-      return
     endelse
+
+    return
 
   Endif
   
@@ -185,6 +185,9 @@ PRO spd_gui_event, event
                         callSequence, $
                         info.historywin, $
                         info.statusbar
+    
+    info.drawObject->Update,info.windowStorage,info.loadedData 
+    info.drawObject->Draw
     
     widget_control, event.top, set_uvalue=info, /no_copy
     
@@ -1404,7 +1407,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   endif
 
   ; top level and main bases
-  gui_title = 'SPEDAS Data Analysis Software (SPEDAS)'
+  gui_title = 'SPace Environment Data Analysis System (SPEDAS)'
   master = Widget_Base(Title=gui_title, MBar=bar, /TLB_Kill_Request_Events, $
                      /Col, XPad=10, /Kbrd_Focus_Events,tlb_size_events=1, _extra=_extra, TAB_MODE=1)
   toolBarBase = Widget_Base(master, /Row, /ToolBar)
@@ -1455,7 +1458,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   loadMenu = Widget_Button(fileMenu, Value='Load Data ', UValue='LOAD', /Separator)
   loadCDAWebMenu = Widget_Button(fileMenu, Value='Load Data using CDAWeb', UValue='LOADCDAWEB')
   loadCDFMenu = Widget_Button(fileMenu, Value='Load SPEDAS CDF', UValue='LOADCDF')
-  overplotMenu = Widget_Button(fileMenu, Value='Generate SPEDAS Overview Plot...', uvalue='OVERPLOT')          
+  overplotMenu = Widget_Button(fileMenu, Value='Generate THEMIS Overview Plot...', uvalue='OVERPLOT')          
   overplotMenu = Widget_Button(fileMenu, Value='Generate GOES Overview Plot...', uvalue='GOES_OVERPLOT')                        
   saveDataAsMenu = Widget_Button(fileMenu, Value='Save Data As... ', UValue='SAVEDATAAS')
   importExportMenu = Widget_button(fileMenu, Value='Manage Data and Import/Export Tplot Variables...', UValue='MANAGEDATA')

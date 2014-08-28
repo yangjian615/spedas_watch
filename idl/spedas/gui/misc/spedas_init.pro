@@ -50,7 +50,7 @@ Endif else begin; use defaults
     !spedas.browser_exe = ''
 endelse
 
-if file_test(!spedas.local_data_dir+'spedas/.master') then !spedas.no_download=1  ; Local directory IS the master directory
+if file_test(!spedas.local_data_dir+'spedas/.master') then !spedas.no_server=1  ; Local directory IS the master directory
 
 ;libs,'spedas_config',routine=name
 ;if keyword_set(name) then call_procedure,name

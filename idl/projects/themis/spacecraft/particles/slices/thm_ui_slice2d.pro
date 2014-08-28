@@ -454,13 +454,13 @@ pro thm_ui_slice2d_gen, tlb, state
   
   ; get selected time range and set slice windows
   id = widget_info(tlb, find_by_uname='time')
-  widget_control, id, get_value=validtime, func_get_value='thm_ui_time_widget_is_valid'
+  widget_control, id, get_value=validtime, func_get_value='spd_ui_time_widget_is_valid'
   if ~validtime then begin
     thm_ui_slice2d_error, state.statusbar, err_title, $
       'Invalid time range, please re-enter.'
     return
   endif
-  widget_control, id, get_value=time_obj, func_get_value='thm_ui_time_widget_get_value'
+  widget_control, id, get_value=time_obj, func_get_value='spd_ui_time_widget_get_value'
   t0 = time_obj->getstarttime()
   t1 = time_obj->getendtime()
   trange = [t0,t1]
@@ -1109,7 +1109,7 @@ pro thm_ui_slice2d_export, state, uval, all=all
 ;  filepath = dialog_pickfile(title='Export Slice', filter=('*.'+etype), $
 ;                         file=filename, /write, dialog_parent=state.gui_id, $
 ;                         /overwrite_prompt)
-  filepath = thm_ui_dialog_pickfile_save_wrapper(title='Export Slice', filter=('*.'+etype), $
+  filepath = spd_ui_dialog_pickfile_save_wrapper(title='Export Slice', filter=('*.'+etype), $
                          file=filename, /write, dialog_parent=state.tlb, $
                          /overwrite_prompt)
 
@@ -1142,7 +1142,7 @@ pro thm_ui_slice2d_export, state, uval, all=all
       
       ; check for overwrite
       if file_test(file+'.'+etype) then begin
-        overwrite = thm_ui_prompt_widget(state.gui_id, (obj_new()), state.historywin, $
+        overwrite = spd_ui_prompt_widget(state.gui_id, (obj_new()), state.historywin, $
                        promptText='Overwrite file: '+file+' ?', /yes, /no, frame_attr=8)
         if overwrite eq 'no' then begin
           thm_ui_slice2d_message,'Export Canceled', sb=state.statusbar
@@ -1724,16 +1724,19 @@ end ;----------------------------------------------------
 ;OUTPUT:
 ;  N/A  
 ;
-;NOTES: For command line use see:
-;         thm_crib_part_slice2d.pro
-;         thm_part_slice2d_plot.pro
-;         thm_part_slice2d.pro
-;         thm_part_dist_array.pro
+;NOTES:
+;  This routine requires SPEDAS to run. 
+;
+;  For command line use see:
+;    thm_crib_part_slice2d.pro
+;    thm_part_slice2d_plot.pro
+;    thm_part_slice2d.pro
+;    thm_part_dist_array.pro
 ;
 ;
-;$LastChangedBy: aaflores1 $
-;$LastChangedDate: 2014-01-16 18:35:13 -0800 (Thu, 16 Jan 2014) $
-;$LastChangedRevision: 13934 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-02-12 15:37:14 -0800 (Wed, 12 Feb 2014) $
+;$LastChangedRevision: 14366 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
@@ -1829,10 +1832,10 @@ thm_graphics_config
     exportalleps = widget_button(exportall, value='EPS', uval='EXPORTALLEPS')
 
 ;Output
-  statusbar = obj_new('thm_ui_message_bar', statusbarbase,  Xsize=60, YSize=1, $
+  statusbar = obj_new('spd_ui_message_bar', statusbarbase,  Xsize=60, YSize=1, $
                       value='Status information is displayed here.')
   if ~obj_valid(historywin) then begin
-    historyWin = Obj_New('THM_UI_HISTORY', 0L, tlb);dummy history window in absence of gui
+    historyWin = Obj_New('SPD_UI_HISTORY', 0L, tlb);dummy history window in absence of gui
   endif
 
 
@@ -1899,10 +1902,10 @@ thm_graphics_config
   cad = '30'       ;seconds
   incriment = '30' ;
 
-  time = thm_ui_time_widget(timebase, statusbar, historywin, uname='time', suppressoneday=1)
+  time = spd_ui_time_widget(timebase, statusbar, historywin, uname='time', suppressoneday=1)
 
   timeoptbase = widget_base(timebase, /row, xpad=3)
-    timewindow = thm_ui_spinner(timeoptbase, label='Window Size (sec): ',  $
+    timewindow = spd_ui_spinner(timeoptbase, label='Window Size (sec): ',  $
                         value=cad, uname='timewin', text_box_size=6, incr=1, $
                         getxlabelsize=timelabelsize, min_value=1, $
                         tooltip='Window over which data will be averaged.')
@@ -1911,7 +1914,7 @@ thm_graphics_config
       center = widget_button(cBase, value='Center Time', uname='center', $
                              tooltip='Specified times are used as the center of the time window.')
   timeoptbase1 = widget_base(timebase, /row, xpad=3)
-    timeinc = thm_ui_spinner(timeoptbase1, label='Step Time (sec): ', $
+    timeinc = spd_ui_spinner(timeoptbase1, label='Step Time (sec): ', $
                         value=incriment, uname='timeinc', text_box_size=6, incr=1, $
                         xlabelsize=timelabelsize, min_value=1, $
                         tooltip='Time step between slices.')
@@ -1957,7 +1960,7 @@ thm_graphics_config
     orz = widget_text(orientationbase, value=orn[2], xsize=4, uname='orz', /edit)
 
   displacementbase = widget_base(moptbase1, /row, xpad=0, ypad=0)
-    displacement = thm_ui_spinner(displacementbase, text_box_size=6, incr=50, $
+    displacement = spd_ui_spinner(displacementbase, text_box_size=6, incr=50, $
                               uname='displace', label='Displacement: ', $
                               xlabelsize=mgeo.scr_xsize-1, value=ndisplacement, $
                               tooltip='Displacement of slice from zero along '+ $
@@ -1989,7 +1992,7 @@ thm_graphics_config
 ;  subrangebase2dnn = widget_base(rangebase2dnn, /col, /base_align_center, $
 ;                                 xpad=4, ypad=4, frame=1)
 ;    widthbase = widget_base(subrangebase2dnn, /row)
-;      width = thm_ui_spinner(widthbase, value=wth, text_box_size=6, incr=1, $
+;      width = spd_ui_spinner(widthbase, value=wth, text_box_size=6, incr=1, $
 ;                             uname='slice_width', label='Slice Width (%):   ', $
 ;  ;                           xlabelsize=geo.scr_xsize-1, $
 ;                             tooltip = $
@@ -2008,18 +2011,18 @@ thm_graphics_config
                                  uname='zdirrange', uval='ZDIRRANGE')
     range2dbase = widget_base(subrangebase2d, /row)
       thetarangeBase = widget_base(range2dbase, /col, xpad=4, ypad=0)
-        thetamax = thm_ui_spinner(thetarangeBase, label='Max ('+string(176b)+'): ', $
+        thetamax = spd_ui_spinner(thetarangeBase, label='Max ('+string(176b)+'): ', $
                                 value=nthetamax, uname='thetamax', text_box_size=7, $
                                 incr=1, getxlabelsize=scr_xsize, max_value=90, min_value=-90)
-        thetamin = thm_ui_spinner(thetarangeBase, label='Min ('+string(176b)+'): ', $
+        thetamin = spd_ui_spinner(thetarangeBase, label='Min ('+string(176b)+'): ', $
                                 value=nthetamin, uname='thetamin', text_box_size=7, $
                                 incr=1, xlabelsize=scr_xsize, max_value=90, min_value=-90)
           dummy = widget_label(range2dbase, value=' ')
       zdirrangeBase = widget_base(range2dbase, /col, xpad=4, ypad=0)
-        zdirmax = thm_ui_spinner(zdirrangeBase, label='Max: ', $
+        zdirmax = spd_ui_spinner(zdirrangeBase, label='Max: ', $
                                 value=nzdirmax, uname='zdirmax', text_box_size=7, $
                                 incr=1, getxlabelsize=scr_xsize)
-        zdirmin = thm_ui_spinner(zdirrangeBase, label='Min: ', $
+        zdirmin = spd_ui_spinner(zdirrangeBase, label='Min: ', $
                                 value=nzdirmin, uname='zdirmin', text_box_size=7, $
                                 incr=1, xlabelsize=scr_xsize)
 
@@ -2036,10 +2039,10 @@ thm_graphics_config
         erangebutton = widget_button(erangebase1, value='Restrict Energy Range', $
                                    uname='erange', uval='ERANGE') 
       erangeBase2 = widget_base(erangebase, /col, xpad=4, ypad=0)
-        emax = thm_ui_spinner(erangebase2, label='Max (eV): ', value=nemax, $
+        emax = spd_ui_spinner(erangebase2, label='Max (eV): ', value=nemax, $
                                   uname='emax', text_box_size=8, incr=1, $
                                   getxlabelsize=scr_xsize, min_value=10)
-        emin = thm_ui_spinner(erangebase2, label='Min (eV): ', value=nemin, $
+        emin = spd_ui_spinner(erangebase2, label='Min (eV): ', value=nemin, $
                                   uname='emin', text_box_size=8, incr=1, $
                                   xlabelsize=scr_xsize, min_value=0)
 
@@ -2075,7 +2078,7 @@ thm_graphics_config
                               uname='ctbutton', uval='CTBUTTON', tooltip= $
                               'Mask out bins that fall below this number of counts before averaging.')
       ctsubbase = widget_base(countthresholdbase, /row, xpad=0, ypad=0, uname='ctbase')
-        ctspinner = thm_ui_spinner(ctsubbase, value=ct, text_box_size=4, incr=.1, $
+        ctspinner = spd_ui_spinner(ctsubbase, value=ct, text_box_size=4, incr=.1, $
                             uname='count_threshold', label='', min_value=0, tooltip='(counts)')
 
     smoothbase = widget_base(optbase1, /row, xpad=0, ypad=0)
@@ -2083,7 +2086,7 @@ thm_graphics_config
         smoothbutton = widget_button(smoothbuttonbase, value='Smooth Data (width)', uname='smooth', $
                             uvalue='SMOOTH', tooltip='Applies Gaussian smoothing to slice.')
       smoothsubbase = widget_base(smoothbase, /row, xpad=0, ypad=0, uname='smoothbase')
-        smoothspinner = thm_ui_spinner(smoothsubbase, value=smth, text_box_size=4, incr=2, $
+        smoothspinner = spd_ui_spinner(smoothsubbase, value=smth, text_box_size=4, incr=2, $
                         uname='smooth_width', label='', min_value=3, tooltip = 'Width of '+ $
                         'the smoothing window in # of points (only use odd integers >=3)')
 
@@ -2106,7 +2109,7 @@ thm_graphics_config
                             uvalue='RES', tooltip='Specfies the number of elements in each '+ $
                             'dimension of the slice.', uname='resbutton')
       resbase = widget_base(resolutionbase, /row, xpad=0, ypad=0)
-        resolution = thm_ui_spinner(resbase, value=res, text_box_size=6, uname='resolution', $
+        resolution = spd_ui_spinner(resbase, value=res, text_box_size=6, uname='resolution', $
                                  label='', incr=10, min_value=10, $ ;xlabelsize=geo.scr_xsize-1, $
                                  tooltip = 'Specfies the number of elements in each '+ $
                                  'dimension of the slice.')
@@ -2134,14 +2137,14 @@ thm_graphics_config
       esaTypeLabel = widget_label(esaTypeBase, value='Type:  ')
       esaType = widget_combobox(esaTypeBase, value=esaBgndTypes, uname='esatype')
     esaNPtsBase = widget_base(esaRemoveOptsBase, /row)
-      esaNPts = thm_ui_spinner(esaNPtsBase, label='Number of Points:  ', text_box_size=6, $
+      esaNPts = spd_ui_spinner(esaNPtsBase, label='Number of Points:  ', text_box_size=6, $
                                uname='esanpoints', incr=1, value=esaNPoints, $
                                getXLabelSize=scr_xsize, min_value=1, $
                                tooltip='The number of lowest values points to '+ $
                                'average over when determining background.')
       widget_control, esaTypeLabel, xsize = scr_xsize+1
     esaScaleBase = widget_base(esaRemoveOptsBase, /row)
-      esaScale = thm_ui_spinner(esaScaleBase, label='Scaling:  ', text_box_size=6, $ 
+      esaScale = spd_ui_spinner(esaScaleBase, label='Scaling:  ', text_box_size=6, $ 
                                 uname='esascale', incr=1, value=esaScaleVal, $
                                 xlabelsize=scr_xsize, min_value=0, $
                                 tooltip='A scaling factor that the background '+ $
@@ -2154,7 +2157,7 @@ thm_graphics_config
                                     uval='CONTAMINATION', uname='sstmaskremove', $
                                     tooltip='The proportion of values that must be 0 '+ $
                                    'at all energies to determine that a mask is present.')
-    sstRemoveMask = thm_ui_spinner(sstRemoveMaskBase, val=sstMaskVal, text_box_size=8, $
+    sstRemoveMask = spd_ui_spinner(sstRemoveMaskBase, val=sstMaskVal, text_box_size=8, $
                                    uname='sstmask', incr=0.01, min_value=0.01, max_value=1, $
                                    tooltip='the proportion of values that must be 0 '+ $
                                    'at all energies to determine that a mask is present.')
@@ -2173,7 +2176,7 @@ thm_graphics_config
       sstFill = widget_combobox(sstFillBase, val=sstFillMethods, uname='sstfill')
     sstToleranceBase = widget_base(sstRemoveOptsBase, /row)
       sstToleranceLabel = widget_label(sstToleranceBase, value='Tolerance (stdv):  ')
-      sstTolerance = thm_ui_spinner(sstToleranceBase, val=sstToleranceLimits[0], $
+      sstTolerance = spd_ui_spinner(sstToleranceBase, val=sstToleranceLimits[0], $
                                     uname='ssttolerance', incr=0.1, min_value=0.1, $
                                     tooltip='Tolerance in standard deviations '+ $
                                     'for the given method.')
@@ -2218,14 +2221,14 @@ thm_graphics_config
           xymajorbuttonbase = widget_base(xymajortickbase, xpad=0, ypad=0,/nonexclusive,/align_right)
             xymajortickbutton = widget_button(xymajorbuttonbase,value=' ', uval='XYMAJOR', $
                      tooltip='Specify number of major ticks to draw on the x and y axes.')
-          xymajorticknum = thm_ui_spinner(xymajortickbase, label='Major: ', sens=0, incr=1,$
+          xymajorticknum = spd_ui_spinner(xymajortickbase, label='Major: ', sens=0, incr=1,$
                      text_box_size=5, value=nxticks, min_value=0, max_value=60, $
                      uname='nxymajor', tooltip='Number of major ticks to place on the x and y axes.')
         xyminortickbase = widget_base(xyticknumbase, /row)
           xyminorbuttonbase = widget_base(xyminortickbase, xpad=0, ypad=0,/nonexclusive,/align_right)
             xyminortickbutton = widget_button(xyminorbuttonbase,value=' ', uval='XYMINOR', $
                      tooltip='Specify number minor ticks for each interval.')
-          xyminorticknum = thm_ui_spinner(xyminortickbase, label='Minor: ', sens=0, incr=1,$
+          xyminorticknum = spd_ui_spinner(xyminortickbase, label='Minor: ', sens=0, incr=1,$
                      text_box_size=5, value=nxticks, min_value=0, max_value=60, $
                      uname='nxyminor', tooltip='Number of minor ticks per interval.')
 
@@ -2257,7 +2260,7 @@ thm_graphics_config
           zmajorbuttonbase = widget_base(zmajortickbase, xpad=0, ypad=0,/nonexclusive,/align_right)
             zmajortickbutton = widget_button(zmajorbuttonbase,value=' ', uval='ZMAJOR', $
                      tooltip='Specify number of major ticks to draw on the z axis.')
-          zmajorticknum = thm_ui_spinner(zmajortickbase, label='Major: ', sens=0, incr=1,$
+          zmajorticknum = spd_ui_spinner(zmajortickbase, label='Major: ', sens=0, incr=1,$
                      text_box_size=5, value=nxticks, min_value=0, max_value=60, $
                      uname='nzmajor', tooltip='Number of major ticks to place on the z axis.')
 
@@ -2265,7 +2268,7 @@ thm_graphics_config
 
 ;text size
   charsizeBase = widget_base(annotationsBase1, /align_left, ypad=6)
-    charsize = thm_ui_spinner(annotationsBase1, label='Annotation Text Size:  ', $
+    charsize = spd_ui_spinner(annotationsBase1, label='Annotation Text Size:  ', $
                        text_box_size=5, incr=5, value=ncharsize, units='%', uname='charsize', $
                        min_value=0, tooltip='Size of the text printed on the plot')
           
@@ -2288,7 +2291,7 @@ thm_graphics_config
   xymax = '2000'
 
   moreoptionsbase = widget_base(plotoptionsbase1, /col, /base_align_center, space=2)
-    numlevels = thm_ui_spinner(moreoptionsbase, label='Number of Color Contour Levels: ', $
+    numlevels = spd_ui_spinner(moreoptionsbase, label='Number of Color Contour Levels: ', $
                              uname='nlevels', text_box_size=5, incr=1, value=nlevels, $
                              min_value=1, tooltip='Specifies the number of color contours to draw.')
 
@@ -2296,7 +2299,7 @@ thm_graphics_config
     olinebase1 = widget_base(olinesbase, /col, xpad=0, ypad=0, /nonexclusive)
       olinebutton = widget_button(olinebase1, value='Plot Contour Lines', uval='OLINES', $
                          uname='olines',tooltip='Draws contour lines over default plot.')
-    numolines = thm_ui_spinner(olinesbase, label='Number of Contour Levels: ', uval='NOLINES', $
+    numolines = spd_ui_spinner(olinesbase, label='Number of Contour Levels: ', uval='NOLINES', $
                           uname='nolines', text_box_size=5, incr=1, value=nolines, $
                           min_value=1, tooltip='Specifies the number of contour lines to draw.')
 
@@ -2311,10 +2314,10 @@ thm_graphics_config
         dummy2 = widget_label(minmaxBase2, value='Max: ')
         geo2 = widget_info(dummy2, /geo)
         widget_control, dummy2, /destroy
-      zminimum = thm_ui_spinner(minmaxbase2, label='Min: ', value=zmin, $
+      zminimum = spd_ui_spinner(minmaxbase2, label='Min: ', value=zmin, $
                                 uname='zmin', text_box_size=10, incr=1, $
                                 xlabelsize=geo2.scr_xsize)
-      zmaximum = thm_ui_spinner(minmaxbase2, label='Max: ', value=zmax, $
+      zmaximum = spd_ui_spinner(minmaxbase2, label='Max: ', value=zmax, $
                                 uname='zmax', text_box_size=10, incr=1, $
                                 xlabelsize=geo2.scr_xsize)
 
@@ -2327,10 +2330,10 @@ thm_graphics_config
         dummy2 = widget_label(xyminmaxBase2, value='Max: ')
         geo2 = widget_info(dummy2, /geo)
         widget_control, dummy2, /destroy
-      xyminimum = thm_ui_spinner(xyminmaxbase2, label='Min: ', value=xymin, $
+      xyminimum = spd_ui_spinner(xyminmaxbase2, label='Min: ', value=xymin, $
                                 uname='xymin', text_box_size=10, incr=1, $
                                 xlabelsize=geo2.scr_xsize)
-      xymaximum = thm_ui_spinner(xyminmaxbase2, label='Max: ', value=xymax, $
+      xymaximum = spd_ui_spinner(xyminmaxbase2, label='Max: ', value=xymax, $
                                 uname='xymax', text_box_size=10, incr=1, $
                                 xlabelsize=geo2.scr_xsize)
 
@@ -2487,7 +2490,7 @@ thm_graphics_config
 ;  t1 = '2012-08-31/2:53:00'
 ;  t0 = '2010-04-02/07:02'
 ;  t1 = '2010-04-02/07:02:30'
-  tr = obj_new('thm_ui_time_range')
+  tr = obj_new('spd_ui_time_range')
   x = tr->SetStartTime(t0)
   y = tr->SetEndTime(t1)
   widget_control, time, set_value=tr  

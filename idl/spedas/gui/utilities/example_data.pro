@@ -19,28 +19,28 @@ pro example_data,info
   store_data,'tha_state_pos',data=d
    
   ;add data to loadedData data structure
-  if ~info.loadedData->add('tha_state_pos',mission='SPEDAS',observatory='tha',instrument='state') then begin
+  if ~info.loadedData->add('tha_state_pos',mission='THEMIS',observatory='tha',instrument='state') then begin
     ok = error_message('error adding data to loadedData',/traceback)
     return
   endif
   
   ;add data to loadedData data structure
-  if ~info.loadedData->add('tha_state_vel',mission='SPEDAS',observatory='tha',instrument='state') then begin
+  if ~info.loadedData->add('tha_state_vel',mission='THEMIS',observatory='tha',instrument='state') then begin
     ok = error_message('error adding data to loadedData',/traceback)
     return
   endif
 
-  if ~info.loadedData->add('tha_peif_en_eflux',mission='SPEDAS',observatory='tha',instrument='esa') then begin
+  if ~info.loadedData->add('tha_peif_en_eflux',mission='THEMIS',observatory='tha',instrument='esa') then begin
     ok = error_message('error adding data to loadedData',/traceback)
     return
   endif
   
-  if ~info.loadedData->add('tha_peib_en_eflux',mission='SPEDAS',observatory='tha',instrument='esa') then begin
+  if ~info.loadedData->add('tha_peib_en_eflux',mission='THEMIS',observatory='tha',instrument='esa') then begin
     ok = error_message('error adding data to loadedData',/traceback)
     return
   endif
   
-  if ~info.loadedData->add('tha_psif_en_eflux',mission='SPEDAS',observatory='tha',instrument='esa') then begin
+  if ~info.loadedData->add('tha_psif_en_eflux',mission='THEMIS',observatory='tha',instrument='esa') then begin
     ok = error_message('error adding data to loadedData',/traceback)
     return
   endif

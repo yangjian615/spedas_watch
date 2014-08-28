@@ -30,9 +30,9 @@
 ;  none
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-12 09:13:00 -0800 (Wed, 12 Feb 2014) $
+;$LastChangedRevision: 14352 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_load_data_file/spd_ui_load_data_file.pro $
 ;
 ;-
@@ -207,7 +207,7 @@ Pro spd_ui_load_data_file_event, event;, info
       spd_ui_load_data_file_obs_sel, state
     END
     'CHECK_DATA_AVAIL': BEGIN ; launch browser to data availability page
-      spd_ui_open_url, 'http://spedas.ssl.berkeley.edu/data_products/'
+      spd_ui_open_url, 'http://themis.ssl.berkeley.edu/data_products/'
     END
     ELSE:
   ENDCASE

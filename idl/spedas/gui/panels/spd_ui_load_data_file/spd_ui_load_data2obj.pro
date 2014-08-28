@@ -24,7 +24,7 @@
 ;  observ = the probe or ground station requested (string array) (this replaces
 ;           the station, astation, and probe keywords).
 ;  scm_cal = a structure containing calibration parameters
-;  outcoord = requested output coordinates as set in spd_ui SPEDAS: Load Data
+;  outcoord = requested output coordinates as set in spd_ui THEMIS: Load Data
 ;             panel
 ;  loadedData = loaded data object
 ;  historyWin = history window object
@@ -39,9 +39,9 @@
 ;HISTORY:
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-12 10:20:31 -0800 (Wed, 12 Feb 2014) $
+;$LastChangedRevision: 14354 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_load_data_file/spd_ui_load_data2obj.pro $
 ;
 ;-
@@ -738,7 +738,7 @@ pro spd_ui_load_data2obj, st_time, en_time, $
                             ;in the future, file will be able to accept multiple filenames
                             ;and we can remove the [0] index.
                             file=fns4obj[0], $ ; from rel_pathnames_all keyword
-                            mission='SPEDAS', $
+                            mission='THEMIS', $
                             observatory=observ[i], $ ;obs4obj, $
                             coordSys=out_coord, $
                             instrument=ppp[0]) then begin

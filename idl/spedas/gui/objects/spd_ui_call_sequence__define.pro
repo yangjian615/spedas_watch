@@ -38,9 +38,9 @@
 ;       or data processing calls. 
 ; 
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-02-13 18:16:45 -0800 (Thu, 13 Feb 2014) $
+;$LastChangedRevision: 14375 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_call_sequence__define.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -189,6 +189,24 @@ pro spd_ui_call_sequence::addGOESLoadOver,$
            
  self->addSt,in_st
            
+end
+
+pro spd_ui_call_sequence::addPluginCall, $
+                          procedure_name, $
+                          _extra=params
+
+    compile_opt idl2, hidden
+
+  if undefined(params) then begin
+    params = 0
+  endif
+
+  in_st = {type:'plugin', $
+           procedure_name: procedure_name, $
+           params: params}
+
+  self->addSt, in_st
+
 end
 
 pro spd_ui_call_sequence::addDprocOp,$
@@ -447,7 +465,13 @@ pro spd_ui_call_sequence::reCall,historywin=historywin,statustext=statustext,gui
                       overwrite_selections=st.overwrite_selections,$
                       /replay                      
                       
-   endif else if st.type eq 'loadoverdata' then begin
+    endif else if st.type eq 'plugin' then begin
+      spd_ui_plugin_replay, st.procedure_name[0], $ 
+                            st.params, $
+                            self.loadeddata, $
+                            historywin, $
+                            statustext
+    endif else if st.type eq 'loadoverdata' then begin
       spd_ui_overplot, obj_new(),self.loadedData,obj_new(),$
                        probes=st.probes, date=st.date, dur=st.duration,  $
                        oplot_calls=ptr_new(st.oplot_num),/no_draw
@@ -455,14 +479,14 @@ pro spd_ui_call_sequence::reCall,historywin=historywin,statustext=statustext,gui
       ; set tracking to single panel
       self->singlePanelTracking, infoptr
       
-   endif else if st.type eq 'loadgoesoverdata' then begin
+    endif else if st.type eq 'loadgoesoverdata' then begin
       ; replaying a GOES overview plot
       goes_overview_plot, date =st.date, probe = st.probes[0], /gui_overplot, $
         duration = st.duration, oplot_calls = ptr_new(st.oplot_num[0])
 
       ; set tracking to single panel
       self->singlePanelTracking, infoptr
-   endif else if st.type eq 'dprocop' then begin
+    endif else if st.type eq 'dprocop' then begin
      
     if is_struct(st.params) then begin
       otp = self.loadedData->dproc(st.task, st.params,callSequence=self, in_vars=st.vars, $

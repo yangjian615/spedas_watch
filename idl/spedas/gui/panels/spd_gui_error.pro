@@ -4,9 +4,9 @@
 ;PURPOSE:
 ; A widget to display, edit and save the file 'spd_gui_error.txt' error
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-12 08:15:22 -0800 (Wed, 12 Feb 2014) $
+;$LastChangedRevision: 14343 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_gui_error.pro $
 ;
 ;-
@@ -62,8 +62,8 @@ Pro spd_gui_error, gui_id,historywin
 ;Find the directory with the file
   p = expand_path('+'+!path, /array) ;get the path
   If(!version.os_family Eq 'Windows') Then Begin
-    d = strpos(p, 'spedas\spd_ui\Resources')
-  Endif Else d = strpos(p, 'spedas/spd_ui/Resources')
+    d = strpos(p, 'spedas\gui\Resources')
+  Endif Else d = strpos(p, 'spedas/gui/Resources')
   ok = where(d Ne -1)
   If(ok[0] Ne -1) Then Begin
     f = file_search(p[ok[0]]+'/'+'spedas_gui_error_message.txt')
@@ -79,14 +79,15 @@ Pro spd_gui_error, gui_id,historywin
 ;Replace "XXXXXXXXXX" line with the path/filename to the running history file:
 ;*****************************************************************************
 ;
-w=where(error_arr eq 'XXXXXXXXXX')
-if ~(~size(historywin,/type)) && obj_valid(historywin) then begin
-  historywin->GetProperty,running_history_dir=running_history_dir
-  If(!version.os_family Eq 'Windows') Then Begin
-    error_arr[w] = running_history_dir+'\spd_gui_running_history.txt'
-  Endif Else error_arr[w] = running_history_dir+'/spd_gui_running_history.txt'
+w=where(error_arr eq 'XXXXXXXXXX', errcount)
+if errcount ne 0 then begin
+    if ~(~size(historywin,/type)) && obj_valid(historywin) then begin
+      historywin->GetProperty,running_history_dir=running_history_dir
+      If(!version.os_family Eq 'Windows') Then Begin
+        error_arr[w] = running_history_dir+'\spd_gui_running_history.txt'
+      Endif Else error_arr[w] = running_history_dir+'/spd_gui_running_history.txt'
+    endif
 endif
-
 xsize=80
 
 sentinel_string=strjoin(replicate(' ',xsize+10)) ;used to stop an x-11 warning that occurs when:

@@ -33,9 +33,11 @@ End
 ;         points
 ; use_nan = if set, instead of using the median value as a replacement
 ;           for a spike, insert a NaN value
+; jmm, 2013-02-12, testing SVN messaging
+; jmm, 2013-02-12, testing SVN messaging, yet again
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2013-12-03 21:39:45 -0800 (Tue, 03 Dec 2013) $
-;$LastChangedRevision: 13624 $
+;$LastChangedDate: 2014-02-12 13:21:15 -0800 (Wed, 12 Feb 2014) $
+;$LastChangedRevision: 14361 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/simple_despike_1d.pro $
 ;-
 

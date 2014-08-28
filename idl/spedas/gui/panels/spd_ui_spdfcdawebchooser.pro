@@ -35,9 +35,9 @@ COMPILE_OPT IDL2
 ;
 ; MODIFICATION HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-02-11 15:04:05 -0800 (Tue, 11 Feb 2014) $
+;$LastChangedRevision: 14334 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -109,7 +109,8 @@ end
 ;-
 pro thm_get_spdf_dir, localdir=localdir
   if ~keyword_set(localdir) then begin
-    localdir =!spedas.local_data_dir
+    ;localdir =!spedas.local_data_dir
+    localdir = ''
     if localdir ne '' then begin
       resfile = file_info(localdir)
       if resfile.write eq 0 then begin

@@ -25,9 +25,9 @@
 ;   and transformed into the new coordinate system with suffix added/changed
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-13 07:49:19 -0800 (Thu, 13 Feb 2014) $
+;$LastChangedRevision: 14371 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_cotrans_new.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -83,12 +83,12 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
       
       origname=name
       
-      if strlowcase(mission) ne 'spedas' then begin
+      if strlowcase(mission) ne 'themis' then begin
 ;          result=error_message('No coordinate transformation support for non-SPEDAS missions',$
 ;                               title ='Error in Cotrans: ', /noname ) 
 ;          sobj->update, 'No coordinate transformation support for non-SPEDAS missions'
           
-          probe='xxx' ; set a dummy probe so non-SPEDAS data can be converted
+          probe='xxx' ; set a dummy probe so non-THEMIS data can be converted
           
 ;          continue              ;skip the rest of the loop
       endif
@@ -127,7 +127,7 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
       if strlowcase(probe) eq 'thc' then probe = 'c'
       if strlowcase(probe) eq 'thd' then probe = 'd'
       if strlowcase(probe) eq 'the' then probe = 'e'
-      if strlowcase(probe) eq 'xxx' then probe = 'x' ; dummy probe for non-SPEDAS data
+      if strlowcase(probe) eq 'xxx' then probe = 'x' ; dummy probe for non-THEMIS data
 
       ok_probe = where(['a', 'b', 'c', 'd', 'e', 'x'] Eq probe)
       if ok_probe[0] eq -1 then begin
@@ -147,12 +147,12 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
          strlowcase(value) eq 'spg' || strlowcase(value) eq 'dsl' || strlowcase(value) eq 'ssl' then begin
 
         if probe eq 'x' then begin
-        ; make sure non-SPEDAS data isn't converted to spg, dsl, or ssl coords
+        ; make sure non-THEMIS data isn't converted to spg, dsl, or ssl coords
           if ~keyword_set(replay) then begin
-            result=error_message('Sorry. '+name+ ' is not SPEDAS data. Can not convert to SPG, DSL, or SSL coordinates.',$
+            result=error_message('Sorry. '+name+ ' is not THEMIS data. Can not convert to SPG, DSL, or SSL coordinates.',$
                                title ='Error in Cotrans: ', /noname, /center,traceback=0)
           endif 
-          sobj->update, 'Sorry. '+name+ ' is not SPEDAS data. Can not convert to SPG, DSL, or SSL coordinates.'
+          sobj->update, 'Sorry. '+name+ ' is not THEMIS data. Can not convert to SPG, DSL, or SSL coordinates.'
           spd_ui_cleanup_tplot,tn_before,del_vars=to_delete
           if to_delete[0] ne '' then begin
             store_data,to_delete,/delete
@@ -184,11 +184,11 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
       spindec = 'th'+probe+'_state_spindec'
       
       ;determine state dependencies for variable, know that the behavior of these
-      ;routines is undefined if non-spedas observatories request, spedas spacecraft transforms
+      ;routines is undefined if non-THEMIS observatories request THEMIS spacecraft transforms
       ;this is intentional, as it should never happen
       if spd_ui_req_spin(coordSys,value,probe,trange,loadedData) then begin
          
-         message_stem = 'Required state data not loaded for SPEDAS ' + strupcase(probe) + '.'
+         message_stem = 'Required state data not loaded for THEMIS ' + strupcase(probe) + '.'
          skip_message = message_stem + ' skipping transform of ' + active[i] 
          prompt_message = message_stem + ' Would you like to load this data automatically?'
          loading_message = message_stem + ' Attempting to load state data.'
@@ -243,7 +243,7 @@ pro spd_ui_cotrans_new,tlb,value,active,loadedData,sobj,historywin,callSequence,
             if to_delete[0] ne '' then begin
               store_data,to_delete,/delete
             endif
-            fail_message = "Failed to auto-load state data for SPEDAS " + strlowcase(probe) + " to transform " + active[i] + ". Skipping."
+            fail_message = "Failed to auto-load state data for THEMIS " + strlowcase(probe) + " to transform " + active[i] + ". Skipping."
             sobj->update,fail_message
             historywin->update,fail_message
             ok = error_message(fail_message,traceback=0,/center,title='Error in Cotrans New')

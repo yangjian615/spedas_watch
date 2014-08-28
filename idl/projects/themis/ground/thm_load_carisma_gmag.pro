@@ -85,9 +85,9 @@
 ;   thm_load_carisma_gmag, site = 'daws'
 ;
 
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2013-01-16 08:40:35 -0800 (Wed, 16 Jan 2013) $
-; $LastChangedRevision: 11447 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-02-13 12:14:35 -0800 (Thu, 13 Feb 2014) $
+; $LastChangedRevision: 14372 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_carisma_gmag.pro $
 ;-
 Function thm_load_carisma_gmag_relpath, sname = sname, $
@@ -206,7 +206,7 @@ Pro thm_load_carisma_gmag, site = site, datatype = datatype, trange = trange, $
     dprint, vsnames,dlevel=2
     dprint, 'is provided by CARISMA.',dlevel=2
     dprint, 'CARISMA is operated by the University of Alberta, funded by the Canadian Space Agency.',dlevel=2
-    dprint, 'Please see data use requirements at http://www.carisma.ca/CARISMADataUse', dlevel=2
+    dprint, 'Please see data use requirements at http://www.carisma.ca/carisma-data/data-use-requirements', dlevel=2
     dprint, 'NOTE: Not all data sets are complete.'
     dprint, '**********************************************************************************', dlevel=2
   

@@ -287,7 +287,7 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
    
   for i= 0, tabNum-1 do begin
 
-     if (loadDataTabs.mission_name[i] eq 'SPEDAS') then begin   
+     if (loadDataTabs.mission_name[i] eq 'THEMIS') then begin   
          spd_ui_load_data_file, tabArray[i], gui_id, windowStorage, loadedData, $
                          historyWin, dataFlag, dataButtons, timerange, statusText, $
                          loadTree=spedasTree,timeWidget=loadTimeWidget,treeCopyPtr
@@ -296,7 +296,7 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
          continue
       endif 
 
-      if (loadDataTabs.mission_name[i] eq 'SPEDAS Derived Spectra') then begin   
+      if (loadDataTabs.mission_name[i] eq 'THEMIS Derived Spectra') then begin   
          spd_ui_part_getspec_options, tabArray[i], loadedData, historyWin, statusText, $
                                timerange,callSequence,timeWidget=specTimeWidget
          treeArray[i] = obj_new() ;filler obj, should not be referenced 

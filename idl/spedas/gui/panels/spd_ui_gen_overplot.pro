@@ -3,7 +3,7 @@
 ;  spd_ui_gen_overplot
 ;
 ;PURPOSE:
-;  Widget wrapper for spd_ui_overplot used to create SPEDAS overview plots in
+;  Widget wrapper for spd_ui_overplot used to create THEMIS overview plots in
 ;  the GUI.  If the overview plot is successfully created, this function returns
 ;  the number 1.  Otherwise, a zero is returned.
 ;
@@ -27,9 +27,9 @@
 ;OUTPUT:
 ;  success: a 0-1 flag.
 ;  
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-12 08:30:41 -0800 (Wed, 12 Feb 2014) $
+;$LastChangedRevision: 14348 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -46,7 +46,7 @@ pro spd_ui_gen_overplot_event, event
     Catch, /Cancel
     Help, /Last_Message, Output = err_msg
     
-    spd_ui_sbar_hwin_update, state, err_msg, /error, err_msgbox_title='Error while generating SPEDAS overview plot'
+    spd_ui_sbar_hwin_update, state, err_msg, /error, err_msgbox_title='Error while generating THEMIS overview plot'
     
     Widget_Control, event.TOP, Set_UValue=state, /No_Copy
     widget_control, event.top,/destroy
@@ -56,7 +56,7 @@ pro spd_ui_gen_overplot_event, event
   ;kill request block
   IF (Tag_Names(event, /Structure_Name) EQ 'WIDGET_KILL_REQUEST') THEN BEGIN  
 
-    dprint,  'Generate SPEDAS overview plot widget killed' 
+    dprint,  'Generate THEMIS overview plot widget killed' 
     state.historyWin->Update,'SPD_UI_GEN_OVERPLOT: Widget killed' 
     Widget_Control, event.TOP, Set_UValue=state, /No_Copy
     Widget_Control, event.top, /Destroy
@@ -79,7 +79,7 @@ pro spd_ui_gen_overplot_event, event
       dur = (et_double - st_double) / 86400
       if dur le 0 then begin
         etxt = 'End Time is earlier than Start Time.'
-        ok = dialog_message(etxt,title='Error while generating SPEDAS overview plot', /center, information=1)
+        ok = dialog_message(etxt,title='Error while generating THEMIS overview plot', /center, information=1)
         
         Widget_Control, event.top, Set_UValue=state, /No_Copy
         return
@@ -88,8 +88,8 @@ pro spd_ui_gen_overplot_event, event
       widget_control, /hourglass
       
       if ~state.windowStorage->add(isactive=1) then begin
-        ok = spd_ui_prompt_widget(state.tlb,state.statusbar,state.tlb,prompt='Error initializing new window for SPEDAS overview plot.', $
-               title='Error while generating SPEDAS overview plot',/traceback, frame_attr=8)
+        ok = spd_ui_prompt_widget(state.tlb,state.statusbar,state.tlb,prompt='Error initializing new window for THEMIS overview plot.', $
+               title='Error while generating THEMIS overview plot',/traceback, frame_attr=8)
         Widget_Control, event.top, Set_UValue=state, /No_Copy
         return
       endif  
@@ -118,7 +118,7 @@ pro spd_ui_gen_overplot_event, event
                                    /center)
     END
     'CANC': BEGIN
-      state.historyWin->update,'Generate SPEDAS overview plot canceled',/dontshow
+      state.historyWin->update,'Generate THEMIS overview plot canceled',/dontshow
       Widget_Control, event.TOP, Set_UValue=state, /No_Copy
       Widget_Control, event.top, /Destroy
       RETURN
@@ -204,13 +204,13 @@ function spd_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSeq
       If(obj_valid(historywin)) Then historyWin -> update, err_msg[j]
     Endfor
     Print, 'Error--See history'
-    ok = error_message('An unknown error occured while starting the SPEDAS overview plot widget. ', $
-         'See console for details.', /noname, /center, title='Error in SPEDAS overview plots')
+    ok = error_message('An unknown error occured while starting the THEMIS overview plot widget. ', $
+         'See console for details.', /noname, /center, title='Error in THEMIS overview plots')
     spd_gui_error, gui_id, historywin
     RETURN,0
   ENDIF
   
-  tlb = widget_base(/col, title='Generate SPEDAS Overview Plot', group_leader=gui_id, $
+  tlb = widget_base(/col, title='Generate THEMIS Overview Plot', group_leader=gui_id, $
           /floating, /base_align_center, /tlb_kill_request_events, /modal)
 
 ; Base skeleton          

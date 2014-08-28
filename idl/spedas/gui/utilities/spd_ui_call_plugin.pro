@@ -1,21 +1,27 @@
 ;+
 ;Procedure:
-;
+;  spd_ui_call_plugin
 ;
 ;Purpose:
-;
+;  Opens specified GUI plugin window.
 ;
 ;Calling Sequence:
-;
+;  spd_ui_call_plugin, event, loaded_data, data_tree, time_range, call_sequence,
+;                      history_window, status_bar
 ;
 ;Input:
-;
+;  event: event structure from plugin menu
+;  loaded_data: loaded data object
+;  data_tree: GUI data tree object
+;  time_range: GUI time range object
+;  call_sequence: GUI call sequence object
+;  history_window: history window object
+;  status_bar: status bar object
 ;
 ;Output:
-;
+;  none
 ;
 ;Notes:
-;
 ;
 ;
 ;$LastChangedBy:  $
@@ -43,11 +49,7 @@ pro spd_ui_call_plugin, event, $
   
   widget_control, event.id, get_uvalue=plugin
   
-  idl_path_dirs = strsplit(!path, path_sep(/search_path), /extract)
-  
-  file_path = file_search( idl_path_dirs + path_sep() + plugin.procedure + '.pro' )
-  
-  if file_path eq '' then begin
+  if ~spd_find_file(plugin.procedure+'.pro') then begin
     dummy = dialog_message('The plugin file "'+plugin.procedure+'.pro" could not be located.  '+ $
                            'Check that file exists in the current IDL path.', $
                            title='Plugin not found.', /error, /center)

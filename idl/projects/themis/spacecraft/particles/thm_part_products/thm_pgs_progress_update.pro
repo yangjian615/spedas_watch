@@ -20,8 +20,8 @@
 ;  
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-08-13 17:53:37 -0700 (Tue, 13 Aug 2013) $
-;$LastChangedRevision: 12841 $
+;$LastChangedDate: 2014-02-11 16:02:42 -0800 (Tue, 11 Feb 2014) $
+;$LastChangedRevision: 14335 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_progress_update.pro $
 ;-
 
@@ -40,7 +40,7 @@ pro thm_pgs_progress_update, last_update_time,current_sample,total_samples,sb=sb
     if (systime(1)-last_update_time gt 10.) then begin
       msg = type_string +' is ' + strcompress(string(long(100*float(current_sample)/total_samples)),/remove) + '% done.'
       dprint,msg,dlevel=2,sublevel=1 ;dlevel=2 indicates low priority, sublevel=1 indicates that message should appear to come from caller
-      thm_ui_message,msg,sb=sb,hw=hw
+      spd_ui_message,msg,sb=sb,hw=hw
       last_update_time=systime(1)
     endif
   

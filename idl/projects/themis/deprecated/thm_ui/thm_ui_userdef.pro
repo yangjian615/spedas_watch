@@ -20,10 +20,11 @@
 ;                   works, but this comment is different. If svn
 ;                   switch work as expected then this comment will be
 ;                   retained in my local SVN working directory.
-;
+; 12-Feb-2014, jmm, Testing SVN messaging
+; 12-feb-2014, jmm, Another SVN test
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-01-27 10:18:05 -0800 (Mon, 27 Jan 2014) $
-;$LastChangedRevision: 14027 $
+;$LastChangedDate: 2014-02-12 16:01:10 -0800 (Wed, 12 Feb 2014) $
+;$LastChangedRevision: 14369 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/thm_ui/thm_ui_userdef.pro $
 ;-
 Pro thm_ui_userdef_event, event

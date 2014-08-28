@@ -52,9 +52,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-12 10:27:30 -0800 (Wed, 12 Feb 2014) $
+;$LastChangedRevision: 14357 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -582,7 +582,7 @@ function SPD_UI_LOADED_DATA::detectMission, name, dl
     name_pre = strmid(name,0,2)
 
     case name_pre of
-      'th': mission='SPEDAS'
+      'th': mission='THEMIS'
       else: begin
         dprint, 'Unable to determine mission/project for ' + name, dlevel=4
         mission='unknown'
@@ -630,9 +630,9 @@ function SPD_UI_LOADED_DATA::detectObservatory, name, dl, mission
              is_string(dl.cdf.gatt.source_name) then begin
 
           case mission of
-            'SPEDAS': begin
+            'THEMIS': begin
             
-              if strmid(dl.cdf.gatt.source_name,3,13) eq '>SPEDAS Probe' then begin
+              if strmid(dl.cdf.gatt.source_name,3,13) eq '>THEMIS Probe' then begin
               
                 observatory=strlowcase(strmid(dl.cdf.gatt.source_name,2,1))
                 success = 1
@@ -672,7 +672,7 @@ function SPD_UI_LOADED_DATA::detectObservatory, name, dl, mission
     dprint, 'Unknown observatory.  Checking variable name for clues...'
     ; use varname as last resort
     case mission of
-      'SPEDAS': begin
+      'THEMIS': begin
         if stregex(name,'^th[abcdefg].*',/boolean, /fold_case) then begin
           observatory = strmid(name,2,1)
         endif else begin
@@ -756,7 +756,7 @@ function SPD_UI_LOADED_DATA::detectInstrument, name, dl,mission
               success = 1
             end
             'MAG': begin
-              if mission eq 'SPEDAS' then begin
+              if mission eq 'THEMIS' then begin
                 instrument = 'gmag'
                 success = 1
               endif else if mission eq 'GOES' then begin
@@ -802,7 +802,7 @@ function SPD_UI_LOADED_DATA::detectInstrument, name, dl,mission
                 success = 1
               endif
               
-              if mission ne 'SPEDAS' && mission ne 'GOES' then begin
+              if mission ne 'THEMIS' && mission ne 'GOES' then begin
                 instrument = dl.cdf.gatt.data_type
                 success=1
               endif 
@@ -815,7 +815,7 @@ function SPD_UI_LOADED_DATA::detectInstrument, name, dl,mission
   endif
   
   if ~success then begin
-    if mission eq 'SPEDAS' then begin
+    if mission eq 'THEMIS' then begin
       if stregex(name,'^thg_ask_.*',/boolean,/fold_case) then begin
         instrument = 'ask'
       end else if stregex(name,'^th[abcde]_pe[ie][frb]_.*',/boolean,/fold_case) then begin

@@ -7,9 +7,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-02-12 09:13:44 -0800 (Wed, 12 Feb 2014) $
+;$LastChangedRevision: 14353 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/load_plugins/spd_ui_load_goes_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ pro spd_ui_load_goes_data_event,event
      
       end
       'CHECK_DATA_AVAIL': begin
-        spd_ui_open_url, 'http://spedas.ssl.berkeley.edu/data_products/#goes'
+        spd_ui_open_url, 'http://themis.ssl.berkeley.edu/data_products/#goes'
       end
       else:
     endcase

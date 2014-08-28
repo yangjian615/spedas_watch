@@ -12,8 +12,8 @@
 ; For example to add a new mission 'YYY' add the following line:
 ; YYY Data, yyy_ui_load_data, YYY: Load Data
 ;
-SPEDAS, spd_ui_load_data_file_event, SPEDAS: Load Ground and Probe Data
-SPEDAS Derived Spectra, spd_ui_part_getspec_options_event, SPEDAS: Load Derived Particle Energy and Angular Spectra
+THEMIS, spd_ui_load_data_file_event, THEMIS: Load Ground and Probe Data
+THEMIS Derived Spectra, spd_ui_part_getspec_options_event, THEMIS: Load Derived Particle Energy and Angular Spectra
 GOES, spd_ui_load_goes_data, GOES: Load Data
 WIND, spd_ui_load_wind_data, WIND: Load Data
 ACE, spd_ui_load_ace_data, ACE: Load Data

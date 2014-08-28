@@ -1,16 +1,21 @@
-; This is a preliminary plugin configuration file for testing
+; SPEDAS plugin configuration file.
 ;
 ; 
+; All entries should be added below the line indicated below.
+; Each entry should be placed on a new line.
+; Item name and procedure name are required.
+; Any number of folders/subfolders may be used (including none). 
+; 
 ; Format:
-;   <menu item name>, <folder> | <subfolder>, <name ofprocedure to call>
-;
-; Item name and procedure name are required.  Any number of folders/subfolders 
-; may be used (including none).
-;
-;
+;   <menu item name>, <folder> | <subfolder>, <name of procedure to call>
+; 
+; Examples:
+;   Mission Plugin, Mission Folder, mission_plugin_procedure
+;   Mission Plugin 2, Mission Folder | Mission Subfolder, mission_plugin2_procedure
+;   Generic Plugin, , generic_plugin_procedure
+; 
+; To enable the example plugin enter:
+;   Example Plugin, , yyy_ui_plugin
+; 
+; ---------------- Add entries below here ----------------
 
-
-Particle Distribution Slices, SPEDAS/ARTEMIS, spd_ui_slice2d
-Test Plugin, SPEDAS/ARTEMIS, spd_ui_test_plugin
-Dummy Plugin 2, Test | Submenu , dummy_pro2
-Dummy Plugin, Test, dummy_pro
