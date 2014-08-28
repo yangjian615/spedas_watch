@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-03-04 19:43:30 -0800 (Tue, 04 Mar 2014) $
-;$LastChangedRevision: 14496 $
+;$LastChangedDate: 2014-03-10 10:40:22 -0700 (Mon, 10 Mar 2014) $
+;$LastChangedRevision: 14524 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1217,11 +1217,11 @@ PRO spd_gui_event, event
         ; to switch to single panel tracking
         callSequence->singlePanelTracking, ptr_new(info)
         
-        info.historyWin->Update, 'Generate SPEDAS overview plot completed.'
-        info.statusBar->Update, 'Generate SPEDAS overview plot completed.'
+        info.historyWin->Update, 'Generate THEMIS overview plot completed.'
+        info.statusBar->Update, 'Generate THEMIS overview plot completed.'
       endif else begin
-        info.historyWin->Update, 'Generate SPEDAS overview plot not completed.'
-        info.statusBar->Update, 'Generate SPEDAS overview plot not completed.'
+        info.historyWin->Update, 'Generate THEMIS overview plot not completed.'
+        info.statusBar->Update, 'Generate THEMIS overview plot not completed.'
       endelse
        
     end

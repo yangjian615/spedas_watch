@@ -20,8 +20,8 @@
 ;   Warning: This routine will not work with home directories(~/file_name will not work) on linux variants.  The /noshell option to spawn means that it won't expand home directories into full paths
 ;   
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-01-23 18:27:14 -0800 (Thu, 23 Jan 2014) $
-;$LastChangedRevision: 13998 $
+;$LastChangedDate: 2014-03-13 16:59:48 -0700 (Thu, 13 Mar 2014) $
+;$LastChangedRevision: 14539 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_touch.pro $
 ;-
 

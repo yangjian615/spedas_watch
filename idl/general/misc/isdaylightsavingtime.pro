@@ -28,8 +28,9 @@ function  isdaylightsavingtime,gmtime,timezone   ; this can give odd results dur
 ;                 ['2009-3-8/2' ,'2009-11-1/2'],$
 ;                 ['2010-3-14/2','2010-11-7/2'],$
 ;                 ['2011-3-13/2','2011-11-6/2'],$
-;                 ['2012-3-11/2','2012-11-4/2']]))
-;                 ['2013-3-10/2','2013-11-3/2']]))
+;                 ['2012-3-11/2','2012-11-4/2'], $
+;                 ['2013-3-10/2','2013-11-3/2'], $
+;                 ]))
 ;print,time_changes
 
   time_changes=[ $
@@ -45,12 +46,16 @@ function  isdaylightsavingtime,gmtime,timezone   ; this can give odd results dur
   [1268532000 , 1289095200],$  ; 2010
   [1299981600 , 1320544800],$  ; 2011
   [1331431200 , 1351994400],$  ; 2012
-  [1362880800 , 1383444000]]   ; 2013
-
+  [1362880800 , 1383444000],$   ; 2013
+  [1394330400 , 1414893600], $
+  [1425780000 , 1446343200], $
+  [1457834400 , 1478397600]]
 
   ltime = timezone*3600d + gmtime
   dst = 0
   for i = 0,n_elements(time_changes)/2-1 do dst = dst +(ltime gt time_changes[0,i])  and (ltime lt time_changes[1,i])
+  
+  
 
  return,dst
 

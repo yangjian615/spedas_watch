@@ -25,9 +25,9 @@
 ; OUTPUT:
 ;  success: a 0-1 flag.
 ;  
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-03-11 09:58:47 -0700 (Tue, 11 Mar 2014) $
+;$LastChangedRevision: 14529 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/goes_ui_gen_overplot.pro $
 ;-
 
@@ -66,6 +66,20 @@ pro goes_ui_gen_overplot_event, event
   state.historywin->update,'GOES_UI_GEN_OVERPLOT: User value: '+uval  ,/dontshow
   
   CASE uval OF
+    'GOWEB': BEGIN
+      timeid = widget_info(event.top, find_by_uname='time')
+      widget_control, timeid, get_value=valid, func_get_value='spd_ui_time_widget_is_valid'
+      if valid then begin
+        state.tr_obj->getproperty, starttime=starttime, endtime=endtime
+        starttime->getproperty, year=year, month=month, date=date
+        probet = state.probe
+      endif
+
+      ; For some reason, the & cannot be sent as part of the URL. So we are going to use a single string variable that will be split by PHP.
+      url = "http://themis.ssl.berkeley.edu/summary.php?bigvar=" + string(year, format='(I04)') + "___" + string(month, format='(I02)') + "___" + string(date, format='(I02)') + "___0024___goes___goes" + probet 
+      spd_ui_open_url, url
+     end
+     
     'APPLY': BEGIN
     ; Check whether times set in widget are valid
     timeid = widget_info(event.top, find_by_uname='time')
@@ -198,7 +212,11 @@ function goes_ui_gen_overplot, gui_id, historyWin, statusbar, oplot_calls,callSe
       trvalsBase = Widget_Base(midBase, /Col, Frame=1, xpad=8)
       keyButtonBase = widget_button(midBase, Value='Plot Key', UValue='KEY', XSize=80, $
                                     tooltip = 'Displays detailed descriptions of GOES overview plot panels.')
+    goWebBase = Widget_Base(mainBase, /Row, Frame=1, xpad=8)
     buttonBase = Widget_Base(mainBase, /row, /align_center)
+    goWebLabel = widget_label(goWebBase, Value='  Alternatively, you can view the plot on the web (single day).  ', /align_left)
+    goWebButton = Widget_Button(goWebBase, Value='  Web Plot  ', UValue='GOWEB', XSize=80)
+    
 
 ; Help text
   wj = widget_label(txtbase, value='Creating the overview plot might take a few minutes.', /align_left)

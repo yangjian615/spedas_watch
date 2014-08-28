@@ -33,23 +33,17 @@ clocb = 209006d
 jumpa_s = time_double(['2014-03-08/15:24','2014-03-10/03:16','2014-03-11/15:08'])
 nb_jumpa = [248020D,248020D,248020D]
 
-
 jumpb_s = time_double(['2014-03-08/23:55','2014-03-11/23:46'])
 nb_jumpb = [112202D,112202D]
 
 ;-----------------------------------------------------------------------------------------
 
 ;Start and stop times of requested data playback that we want to be sure to protect (black diamonds are changed to blue diamonds)
-tmp = [['2014-02-28/00:35', '2014-02-28/02:00']]
+tmp = [['2014-02-28/00:35', '2014-02-28/00:35:01']]
 tpa0 = time_double(transpose(tmp[0,*]))
 tpa1 = time_double(transpose(tmp[1,*]))
 
-tmp =  [['2014-02-20/13:14', '2014-02-20/16:00'],$
-        ['2014-02-20/12:00', '2014-02-20/15:00'],$
-        ['2014-02-20/16:00', '2014-02-20/17:44'],$
-        ['2014-02-20/22:00', '2014-02-20/24:00'],$
-        ['2014-02-21/06:00', '2014-02-21/10:30'],$
-        ['2014-02-22/00:00', '2014-02-22/05:56'],$
+tmp =  [['2014-02-22/03:10', '2014-02-22/05:56'],$
         ['2014-02-23/04:00', '2014-02-23/05:00'],$
         ['2014-02-23/07:00', '2014-02-23/08:00']]
 tpb0 = time_double(transpose(tmp[0,*]))
@@ -59,8 +53,10 @@ tpb1 = time_double(transpose(tmp[1,*]))
 ;-----------------------------------------------------------------------------------------
 
 ;Define date collection rate for each collection time
-ratea = [16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,16384]
-rateb = [4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096]
+ratea = [16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,16384,$
+    16384,16384,16384,16384,16384,16384,16384,16384]
+rateb = [4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,4096,$
+    4096,4096,4096,4096,4096,4096,4096,4096]
 
 ;Start and end times of collection on A (AFTER REFERENCE TIME ONLY!!!)
 tmp = [['2014-03-08/15:25', '2014-03-08/20:25'],$
@@ -74,8 +70,18 @@ tmp = [['2014-03-08/15:25', '2014-03-08/20:25'],$
        ['2014-03-11/15:09', '2014-03-11/20:09'],$
        ['2014-03-12/00:07', '2014-03-12/05:07'],$
        ['2014-03-12/09:05', '2014-03-12/14:05'],$
-       ['2014-03-12/18:03', '2014-03-12/23:03']]
- 
+       ['2014-03-12/18:03', '2014-03-12/23:03'],$
+
+       ['2014-03-13/03:01', '2014-03-13/08:01'],$
+       ['2014-03-13/11:59', '2014-03-13/16:59'],$
+       ['2014-03-13/20:56', '2014-03-14/01:56'],$
+       ['2014-03-14/05:54', '2014-03-14/10:54'],$
+       ['2014-03-14/14:52', '2014-03-14/19:52'],$
+       ['2014-03-14/23:50', '2014-03-15/04:50'],$
+       ['2014-03-15/08:48', '2014-03-15/13:48'],$
+       ['2014-03-15/17:46', '2014-03-15/22:46']]
+
+
 timea_s = time_double(transpose(tmp[0,*]))
 timea_e = time_double(transpose(tmp[1,*]))
 
@@ -92,7 +98,16 @@ tmp = [['2014-03-08/05:59', '2014-03-08/11:59'],$
        ['2014-03-11/14:48', '2014-03-11/20:48'],$
        ['2014-03-11/23:47', '2014-03-12/05:47'],$
        ['2014-03-12/08:45', '2014-03-12/14:45'],$
-       ['2014-03-12/17:44', '2014-03-12/23:44']]
+       ['2014-03-12/17:44', '2014-03-12/23:44'],$
+
+       ['2014-03-13/02:43', '2014-03-13/08:43'],$
+       ['2014-03-13/11:42', '2014-03-13/17:42'],$
+       ['2014-03-13/20:41', '2014-03-14/02:41'],$
+       ['2014-03-14/05:40', '2014-03-14/11:40'],$
+       ['2014-03-14/14:38', '2014-03-14/20:38'],$
+       ['2014-03-14/23:37', '2014-03-15/05:37'],$
+       ['2014-03-15/08:36', '2014-03-15/14:36'],$
+       ['2014-03-15/17:35', '2014-03-15/23:35']]
 
 timeb_s = time_double(transpose(tmp[0,*]))
 timeb_e = time_double(transpose(tmp[1,*]))
@@ -132,6 +147,8 @@ timea_s = [timea_s,jumpa_s]
 timeb_s = [timeb_s,jumpb_s]
 timea_e = [timea_e,jumpa_s+0.1]
 timeb_e = [timeb_e,jumpb_s+0.1]
+jumpatime = [jumpa_s,jumpa_s+0.1]
+jumpbtime = [jumpb_s,jumpb_s+0.1]
 skipva = [hopva,jumpva]
 skipvb = [hopvb,jumpvb]
 
@@ -184,8 +201,6 @@ endfor
 print,''
 ;-------------------------------------------------------------------------------
 
-stop
-
 ;Future memory locations
 mema = dblarr(n_elements(incrementva))
 memb = dblarr(n_elements(incrementvb))
@@ -206,37 +221,63 @@ for i=1,n_elements(incrementvb)-1 do begin
     if cnt ne 0 then memb[i] = incrementvb[i] else memb[i] = memb[i-1]+incrementvb[i]
 endfor
 
-timea = [timea_s,timea_e]
-timeb = [timeb_s,timeb_e]
-sa = sort(timea)
-sb = sort(timeb)
-timea = timea[sa]
-timeb = timeb[sb]
-
-memas = shift(mema,1)
-memas[0] = cloca
-membs = shift(memb,1)
-membs[0] = clocb
-
-mema = floor(mema)
-memas = floor(memas)
-memb = floor(memb)
-membs = floor(membs)
-
 ;Take into account circular nature of buffer
 mema = mema mod sz
-memas = memas mod sz
 memb = memb mod sz
-membs = membs mod sz
+mema = floor(mema)
+memb = floor(memb)
+
+memas = shift(mema,1)
+memas[0] = floor(cloca mod sz)
+membs = shift(memb,1)
+membs[0] = floor(clocb mod sz)
 
 ;combine start and end times of each collection interval
 memaf = [memas,mema]
 membf = [membs,memb]
 
 ;Sort chronologically
+timea = [timea_s,timea_e]
+timeb = [timeb_s,timeb_e]
+sa = sort(timea)
+sb = sort(timeb)
+timea = timea[sa]
+timeb = timeb[sb]
 memaf = memaf[sa]
 membf = membf[sb]
 
+;Treat the wraparound bug.
+memaf = float(memaf)    ; float because need !values.f_nan.
+nmemf = n_elements(memaf)
+i = 1
+while i lt nmemf do begin
+    idx = where(timea[i] eq jumpatime, cnt)
+    if cnt ne 0 or memaf[i] ge memaf[i-1] then begin
+        i+=1
+        continue    ; jump, or normal situation, otherwise overflow.
+    endif
+    wraptime = timea[i-1]+(timea[i]-timea[i-1])*(sz-memaf[i-1])/(memaf[i]+sz-memaf[i-1])
+    memaf = [memaf[0:i-1],sz-1,!values.f_nan,0,memaf[i:*]]   ; add f_nan to eliminate vertical line from sz to 0.
+    timea = [timea[0:i-1],wraptime-1,wraptime,wraptime+1,timea[i:*]]
+    i+=3
+    nmemf = n_elements(memaf)
+endwhile
+
+membf = float(membf)
+nmemf = n_elements(membf)
+i = 1
+while i lt nmemf do begin
+    idx = where(timeb[i] eq jumpbtime, cnt)
+    if cnt ne 0 or membf[i] ge membf[i-1] then begin
+        i+=1
+        continue    ; jump, or normal situation, otherwise overflow.
+    endif
+    wraptime = timeb[i-1]+(timeb[i]-timeb[i-1])*(sz-membf[i-1])/(membf[i]+sz-membf[i-1])
+    membf = [membf[0:i-1],sz-1,!values.f_nan,0,membf[i:*]]
+    timeb = [timeb[0:i-1],wraptime-1,wraptime,wraptime+1,timeb[i:*]]
+    i+=3
+    nmemf = n_elements(membf)
+endwhile
 
 ;Create a tplot variable with the future memory locations
 store_data,'future_a',data={x:timea,y:memaf}
@@ -355,8 +396,9 @@ xsize=800
 ysize=600
 snapshot3=rebin(snapshot3,3,xsize,ysize)
 
+print, 'saving png ...'
 ; write a png
-write_png,output_dir+'b1_status_predict.png',snapshot3
+write_png,'~/Desktop/b1_status_predict.png',snapshot3
 
 set_plot,'X'
 rbsp_efw_init,/reset

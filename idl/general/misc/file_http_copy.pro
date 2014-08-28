@@ -121,9 +121,9 @@
  ;   April  2008 - Added dir_mode keyword
  ;   Sep 2009    - Fixed user-agent
  ;
- ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2014-02-02 16:45:29 -0800 (Sun, 02 Feb 2014) $
- ; $LastChangedRevision: 14119 $
+ ; $LastChangedBy: pcruce $
+ ; $LastChangedDate: 2014-03-13 16:59:48 -0700 (Thu, 13 Mar 2014) $
+ ; $LastChangedRevision: 14539 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -164,26 +164,26 @@ function compare_urls, url1, url2
 end
  
 ;deprecated, see extract_html_links_regex pcruce 2013-04-09 
-; pro extract_html_links,s,links, $   ; input: string  ;    output: links appended to array
-;     relative=relative,$   ; Set to return only relative links
-;     normal=normal         ; Set to return only normal links (without ? or *)
-;     
-;   ;compile_opt  idl2,hidden
-;     
-;   p0 = strpos(strlowcase(s),'<a href="')
-;   if p0 ge 0 then begin
-;     p1 = strpos(s,'">',p0)
-;     if p1 ge p0+9 then begin
-;       link = strmid(s,p0+9,p1-p0-9)
-;       bad = strlen(link) eq 0
-;       if keyword_set(normal) then bad = (strpos(link,'?') ge 0) or bad
-;       if keyword_set(normal) then bad = (strpos(link,'*') ge 0) or bad
-;       if keyword_set(relative) then bad = (strpos(link,'/') eq 0) or bad   ; remove absolute links (which start with '/')
-;       if not bad then links = [links,link]
-;     endif
-;   endif
-;   
-; end
+ pro extract_html_links,s,links, $   ; input: string  ;    output: links appended to array
+     relative=relative,$   ; Set to return only relative links
+     normal=normal         ; Set to return only normal links (without ? or *)
+     
+   ;compile_opt  idl2,hidden
+     
+   p0 = strpos(strlowcase(s),'<a href="')
+   if p0 ge 0 then begin
+     p1 = strpos(s,'">',p0)
+     if p1 ge p0+9 then begin
+       link = strmid(s,p0+9,p1-p0-9)
+       bad = strlen(link) eq 0
+       if keyword_set(normal) then bad = (strpos(link,'?') ge 0) or bad
+       if keyword_set(normal) then bad = (strpos(link,'*') ge 0) or bad
+       if keyword_set(relative) then bad = (strpos(link,'/') eq 0) or bad   ; remove absolute links (which start with '/')
+       if not bad then links = [links,link]
+     endif
+   endif
+   
+ end
  
  ;Procedure: extract_html_links_regex
  ;Purpose: subroutine to parse <a>(link) tags from html.  
@@ -499,7 +499,7 @@ end
    tstart = systime(1)
    ;  if n_elements(verbose) eq 1 then dprint,setdebug=verbose,getdebug=last_dbg
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14119 2014-02-03 00:45:29Z davin-mac $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 14539 2014-03-13 23:59:48Z pcruce $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -633,7 +633,6 @@ end
        url_info.exists = -1   ; remote existence is not known!
        goto, final     
      endif
-
      
      if keyword_set(no_update) && lcl.exists then begin
        dprint,dlevel=3,verbose=verbose,'Warning: Updates to existing file: "',lcl.name,'" are not being checked!'
@@ -818,7 +817,8 @@ end
              dprint,verbose=verbose,dlevel=3 ,'Executable "touch" not found. Could not preserve_mtime'
            endif else if keyword_set(preserve_mtime) and lcl.size eq url_info.size then begin  
              ;file touch works in local time, but mtime is unix time
-             file_touch,lcl.name,url_info.mtime,/mtime,/no_create,verbose=verbose,toffset=time_zone_offset()
+             is_dst=isdaylightsavingtime(systime(/sec),system_timezone)
+             file_touch,lcl.name,url_info.mtime,/mtime,/no_create,verbose=verbose,toffset=system_timezone+is_dst
            endif
          endif
          
@@ -905,7 +905,8 @@ end
            
            if texists then begin
             ;file touch works in local time, but mtime is unix time
-             file_touch,localname,url_info.mtime,/mtime,/no_create,verbose=verbose,toffset=time_zone_offset()
+             is_dst = isdaylightsavingtime(url_info.mtime,system_timezone)
+             file_touch,localname,url_info.mtime,/mtime,/no_create,verbose=verbose,toffset=is_dst+system_timezone
            endif else begin
              dprint,verbose=verbose,dlevel=3 ,'Executable "touch" not found. Could not preserve_mtime'
            endelse
