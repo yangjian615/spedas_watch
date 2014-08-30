@@ -15,12 +15,12 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-16 17:20:26 -0700 (Mon, 16 Jun 2014) $
-; $LastChangedRevision: 15384 $
+; $LastChangedDate: 2014-08-27 15:26:29 -0700 (Wed, 27 Aug 2014) $
+; $LastChangedRevision: 15716 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
-                   directory = directory, xxx=xxx, _extra = _extra
+                   directory = directory, xxx = xxx, yyy =yyy, _extra = _extra
 
 ;Run in Z buffer
   set_plot,'z'
@@ -56,7 +56,7 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
         dir_out = dir_out+yyyy+'/'+mmmm+'/'
      Endif
   Endif Else Begin
-     dir_out = '/disks/data/maven/pfp/sta/l2/'
+     dir_out = '/disks/data/maven/data/sci/sta/l2/'
      dir_out = dir_out+yyyy+'/'+mmmm+'/' 
   Endelse
   If(~is_string(file_search(dir_out))) Then file_mkdir, dir_out
@@ -87,6 +87,53 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   common mvn_d9, mvn_d9_ind, mvn_d9_dat
   common mvn_da, mvn_da_ind, mvn_da_dat
   common mvn_db, mvn_db_ind, mvn_db_dat
+
+;If yyy is set, we are replicating some app id's
+  If(keyword_set(yyy)) Then Begin
+;cd, cf, d1, d3, d6, d7
+
+; cd = 32e32m8d same as cc
+; cf = 16e16m4d16a same as ce
+; d1 = 32e8m4d16a same as d0
+; d3 = 32e8m16a same as d2
+
+     mvn_cd_dat = mvn_cc_dat
+     mvn_cd_dat.data_name= 'CD Energy-Angle-Mass'
+     mvn_cd_dat.apid = 'CD'
+     mvn_cd_dat.delta_t = mvn_cd_dat.delta_t/16.0
+     tim_arr = mvn_cc_dat.time[0]+[0.0, total(/cumulative, mvn_cd_dat.delta_t)]
+     ntimes = n_elements(tim_arr)-1
+     mvn_cd_dat.time[*] = tim_arr[0:ntimes-1]
+     mvn_cd_dat.end_time[*] = tim_arr[1:*]
+
+
+     mvn_cf_dat = mvn_ce_dat
+     mvn_cf_dat.data_name= 'CF Energy-Angle-Mass'
+     mvn_cf_dat.apid = 'CF'
+     mvn_cf_dat.delta_t = mvn_cf_dat.delta_t/16.0
+     tim_arr = mvn_ce_dat.time[0]+[0.0, total(/cumulative, mvn_cf_dat.delta_t)]
+     ntimes = n_elements(tim_arr)-1
+     mvn_cf_dat.time[*] = tim_arr[0:ntimes-1]
+     mvn_cf_dat.end_time[*] = tim_arr[1:*]
+
+     mvn_d1_dat = mvn_d0_dat
+     mvn_d1_dat.data_name= 'D1 Energy-Angle-Mass'
+     mvn_d1_dat.apid = 'D1'
+     mvn_d1_dat.delta_t = mvn_d1_dat.delta_t/16.0
+     tim_arr = mvn_d0_dat.time[0]+[0.0, total(/cumulative, mvn_d1_dat.delta_t)]
+     ntimes = n_elements(tim_arr)-1
+     mvn_d1_dat.time[*] = tim_arr[0:ntimes-1]
+     mvn_d1_dat.end_time[*] = tim_arr[1:*]
+
+     mvn_d3_dat = mvn_d2_dat
+     mvn_d3_dat.data_name= 'D3 Energy-Angle-Mass'
+     mvn_d3_dat.apid = 'D3'
+     tim_arr = mvn_d2_dat.time[0]+[0.0, total(/cumulative, mvn_d3_dat.delta_t)]
+     ntimes = n_elements(tim_arr)-1
+     mvn_d3_dat.time[*] = tim_arr[0:ntimes-1]
+     mvn_d3_dat.end_time[*] = tim_arr[1:*]
+
+  Endif
 
 ;Write the files
   Print, '2A'

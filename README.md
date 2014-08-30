@@ -1,1 +1,0 @@
-SPEDAS bleeding edge更新監視用リポジトリ

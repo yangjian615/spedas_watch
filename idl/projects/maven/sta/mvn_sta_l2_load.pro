@@ -27,8 +27,8 @@
 ;HISTORY:
 ; 16-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-07-01 16:50:38 -0700 (Tue, 01 Jul 2014) $
-; $LastChangedRevision: 15497 $
+; $LastChangedDate: 2014-08-27 15:28:36 -0700 (Wed, 27 Aug 2014) $
+; $LastChangedRevision: 15717 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_l2_load.pro $
 ;-
 Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_pass = user_pass, no_time_clip = no_time_clip, _extra = _extra
@@ -73,7 +73,7 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
      filex = ''
      For j = 0, napp_id-1 Do For k = 0, ndays-1 Do Begin
         yyyy = strmid(daystr[k], 0, 4) & mmmm = strmid(daystr[k], 4, 2)
-        filejk0 = 'maven/pfp/sta/l2/'+yyyy+'/'+mmmm+'/mvn_sta_l2_'+app_id[j]+'*_'+daystr+'_v??.cdf'
+        filejk0 = 'maven/data/sci/sta/l2/'+yyyy+'/'+mmmm+'/mvn_sta_l2_'+app_id[j]+'*_'+daystr+'_v??.cdf'
         filejk = mvn_pfp_file_retrieve(filejk0, user_pass = user_pass)
         ;Files with ? or * left were not found
         question_mark = strpos(filejk, '?')
