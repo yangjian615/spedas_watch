@@ -7,6 +7,19 @@
 ; mvn_sta_cmn_d7_l2gen, cmn_dat
 ;INPUT:
 ; cmn_dat = a structure with the data:
+;   PROJECT_NAME    STRING    'MAVEN'
+;   SPACECRAFT      STRING    '0'
+;   DATA_NAME       STRING    'd7 fsthkp'
+;   APID            STRING    'd7'
+;   VALID           INT       Array[14336]
+;   QUALITY_FLAG    INT       Array[14336]
+;   TIME            DOUBLE    Array[14336]
+;   HKP_RAW         INT       Array[14336]
+;   HKP_CALIB       FLOAT     Array[14336]
+;   HKP_IND         LONG      Array[14336]
+;   NHKP            INT             24
+;   HKP_CONV        DOUBLE    Array[8, 24]
+;   HKP_LABELS      STRING    Array[24]
 ; ? don't know yet, but this is written from the SIS assuming
 ; that everything is in the structure except for n_elements
 ; All of this has to go into the CDF, also Epoch, tt200, MET time
@@ -22,8 +35,8 @@
 ;HISTORY:
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-23 08:51:38 -0700 (Mon, 23 Jun 2014) $
-; $LastChangedRevision: 15404 $
+; $LastChangedDate: 2014-08-29 14:10:43 -0700 (Fri, 29 Aug 2014) $
+; $LastChangedRevision: 15729 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_d7_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_d7_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -42,7 +55,7 @@ Pro mvn_sta_cmn_d7_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
                 Project:'MAVEN', $
                 Source_name:'MAVEN>Mars Atmosphere and Volatile Evolution Mission', $
                 Discipline:'Space Physics>Planetary Physics>Particles', $
-                Data_type:'L2>L2 HKP Data', $
+                Data_type:'CAL>Calibration', $
                 Descriptor:'STATIC> Supra-Thermal Thermal Ion Composition Particle Distributions', $
                 Data_version:'0', $
                 File_naming_convention: 'source_descriptor_datatype_yyyyMMdd', $
@@ -77,8 +90,9 @@ Pro mvn_sta_cmn_d7_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
             ['TIME_MET', 'DOUBLE', 'Mission elapsed time for this data record, one element per ion distribution (NUM_DISTS elements)', 'Mission Elapsed Time'], $
             ['TIME_EPHEMERIS', 'DOUBLE', 'Time used by SPICE program (NUM_DISTS elements)', 'SPICE Ephemeris Time'], $
             ['TIME_UNIX', 'DOUBLE', 'Unix time (elapsed seconds since 1970-01-01/00:00 without leap seconds) for this data record, one element per ion distribution. This time is the center time of data collection. (NUM_DISTS elements)', 'Unix Time'], $
+            ['VALID', 'INTEGER', 'Validity flag codes valid data (bit 0), test pulser on (bit 1), diagnostic mode (bit 2), data compression type (bit 3-4), packet compression (bit 5) (NUM_DISTS elements)', ' Valid flag'], $
             ['HKP_RAW', 'INTEGER', 'Housekeeping array of dimension (NUM_DISTS) of raw housekeeping values ', 'hxkp_raw'], $
-            ['HKP', 'FLOAT', 'Housekeeping array of dimension (NUM_DISTS) of calibrated housekeeping values', 'hkp'], $
+            ['HKP_CALIB', 'FLOAT', 'Housekeeping array of dimension (NUM_DISTS) of calibrated housekeeping values', 'hkp'], $
             ['HKP_IND', 'INTEGER', 'Index defines the selected fast housekeeping channel (NUM_DISTS elements). HKP_IND can be used to select support data.', 'hkp_ind'], $
             ['QUALITY_FLAG', 'INTEGER', 'Quality flag (NUM_DISTS elements)', 'Quality flag']]
 ;Use Lower case for variable names
@@ -91,7 +105,7 @@ Pro mvn_sta_cmn_d7_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
            ['APID', 'STRING', 'XX, where XX is the APID'], $
            ['NUM_DISTS', 'INTEGER', 'Number of measurements or times in the file'], $
            ['NHKP', 'INTEGER', 'Number of housekeeping channels - 99'], $
-           ['CALIB_CONSTANTS', 'INTEGER', 'Calibration parameters to convert raw housekeeping value to calibrated housekeeping with dimension (8,NHKP)'], $
+           ['HKP_CONV', 'INTEGER', 'Calibration parameters to convert raw housekeeping value to calibrated housekeeping with dimension (8,NHKP)'], $
            ['HKP_LABELS', 'STRING', 'Housekeeping label string array with dimension NHKP']]
 
 ;Use Lower case for variable names
@@ -381,24 +395,11 @@ Pro mvn_sta_cmn_d7_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 ;time will work best
   date = time_string(median(center_time), precision=-3, format=6)
 
-  file = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
-  fullfile = dir+file
-  otp_struct.filename = file
-  otp_struct.g_attributes.logical_file_id = file_basename(file, '.cdf')
-  otp_struct.g_attributes.logical_source = 'mvn_sta_l2_'+ext
-  dummy = cdf_save_vars2(otp_struct, fullfile)
-;Add compression, 2014-05-27, changed to touch all files with
-;cdfconvert, 2014-06-10
-  If(keyword_set(no_compression)) Then Begin
-     spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:none -delete'
-  Endif Else Begin
-     spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:gzip.5 -delete'
-  Endelse
-;delete old files
-  If(is_string(delfiles)) Then Begin
-     ndel = n_elements(delfiles)
-     For j = 0, ndel-1 Do file_delete, delfiles[j]
-  Endif
+  file0 = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
+  fullfile0 = dir+file0
+
+;save the file -- full database management
+  mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression
 
   Return
 End

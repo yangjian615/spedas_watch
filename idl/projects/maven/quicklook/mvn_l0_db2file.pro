@@ -17,8 +17,8 @@
 ; 12-mar-2014, jmm, jimm@ssl.berkeley.edu
 ; 22-apr-2014, jmm, Added l0_file_type, changed default path
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-04-29 19:42:52 -0700 (Tue, 29 Apr 2014) $
-; $LastChangedRevision: 14973 $
+; $LastChangedDate: 2014-08-29 12:54:08 -0700 (Fri, 29 Aug 2014) $
+; $LastChangedRevision: 15727 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_l0_db2file.pro $
 ;-
 Function mvn_l0_db2file, date, l0_file_path = l0_file_path, $
@@ -31,8 +31,8 @@ Function mvn_l0_db2file, date, l0_file_path = l0_file_path, $
   ppp = mvn_file_source()
 
   If(keyword_set(l0_file_path)) Then fpath = l0_file_path $
-  Else fpath = ppp.local_data_dir+'maven/pfp/l0/'+yyyy+'/'+mmmm+'/'
-;  Else fpath = ppp.local_data_dir+'maven/data/sci/pfp/l0/'
+;  Else fpath = ppp.local_data_dir+'maven/pfp/l0/'+yyyy+'/'+mmmm+'/'
+  Else fpath = ppp.local_data_dir+'maven/data/sci/pfp/l0/'
   If(keyword_set(l0_file_type)) Then Begin
      ftyp = strcompress(/remove_all, l0_file_type[0])
   Endif Else ftyp = 'all'

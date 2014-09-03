@@ -15,8 +15,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-08-27 15:26:29 -0700 (Wed, 27 Aug 2014) $
-; $LastChangedRevision: 15716 $
+; $LastChangedDate: 2014-08-29 14:10:43 -0700 (Fri, 29 Aug 2014) $
+; $LastChangedRevision: 15729 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -168,10 +168,10 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   mvn_sta_cmn_l2gen, mvn_d3_dat, directory = dir_out, _extra = _extra
   Print, 'D4'
   mvn_sta_cmn_l2gen, mvn_d4_dat, directory = dir_out, _extra = _extra
-;  Print, 'D6'
-;  mvn_sta_cmn_d6_l2gen, mvn_d6_dat, directory = dir_out, _extra = _extra
-;  Print, 'D7'
-;  mvn_sta_cmn_d7_l2gen, mvn_d7_dat, directory = dir_out, _extra = _extra
+  Print, 'D6'
+  mvn_sta_cmn_d6_l2gen, mvn_d6_dat, directory = dir_out, _extra = _extra
+  Print, 'D7'
+  mvn_sta_cmn_d7_l2gen, mvn_d7_dat, directory = dir_out, _extra = _extra
   Print, 'D8'
   mvn_sta_cmn_d89a_l2gen, mvn_d8_dat, directory = dir_out, _extra = _extra
   Print, 'D9'

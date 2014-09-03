@@ -7,6 +7,33 @@
 ; mvn_sta_cmn_d6_l2gen, cmn_dat
 ;INPUT:
 ; cmn_dat = a structure with the data:
+;  PROJECT_NAME    STRING    'MAVEN'
+;  SPACECRAFT      STRING    '0'
+;  DATA_NAME       STRING    'd6 events'
+;  APID            STRING    'd6'
+;  VALID           INT       Array[4926]
+;  QUALITY_FLAG    INT       Array[4926]
+;  TIME            DOUBLE    Array[4926]
+;  TDC_1           INT       Array[4926]
+;  TDC_2           INT       Array[4926]
+;  TDC_3           INT       Array[4926]
+;  TDC_4           INT       Array[4926]
+;  EVENT_CODE      INT       Array[4926]
+;  CYCLESTEP       INT       Array[4926]
+;  ENERGY          FLOAT     Array[4926]
+;  TDC1_CONV       FLOAT          0.171116
+;  TDC2_CONV       FLOAT          0.171116
+;  TDC3_CONV       FLOAT         0.0569395
+;  TDC4_CONV       FLOAT         0.0557491
+;  TDC1_OFFSET     FLOAT           16.0000
+;  TDC2_OFFSET     FLOAT           22.0000
+;  TDC3_OFFSET     FLOAT           3.00000
+;  TDC4_OFFSET     FLOAT         -0.500000
+;  AN_BIN_TDC3     INT       Array[16, 2]
+;  AN_BIN_TDC4     INT       Array[16, 2]
+;  MS_BIAS_OFFSET  INT       Array[16]
+;  EVCONVLUT       INT            255
+;  TIMERST         INT             10
 ; ? don't know yet, but this is written from the SIS assuming
 ; that everything is in the structure except for n_elements
 ; All of this has to go into the CDF, also Epoch, tt200, MET time
@@ -14,7 +41,7 @@
 ; Data is changed from double to float prior to output
 ;KEYWORDS:
 ; otp_struct = this is the structure that is passed into
-;              cdf_save_vars to creat the file
+;              cdf_save_vars to create the file
 ; directory = Set this keyword to direct the output into this
 ;             directory; the default is to populate the MAVEN STA
 ;             database. /disks/data/maven/pfp/sta/l2
@@ -22,8 +49,8 @@
 ;HISTORY:
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-23 08:51:38 -0700 (Mon, 23 Jun 2014) $
-; $LastChangedRevision: 15404 $
+; $LastChangedDate: 2014-08-30 11:27:28 -0700 (Sat, 30 Aug 2014) $
+; $LastChangedRevision: 15734 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_d6_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -42,7 +69,7 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
                 Project:'MAVEN', $
                 Source_name:'MAVEN>Mars Atmosphere and Volatile Evolution Mission', $
                 Discipline:'Space Physics>Planetary Physics>Particles', $
-                Data_type:'L2>L2 HKP Data', $
+                Data_type:'CAL>Calibration', $
                 Descriptor:'STATIC> Supra-Thermal Thermal Ion Composition Particle Distributions', $
                 Data_version:'0', $
                 File_naming_convention: 'source_descriptor_datatype_yyyyMMdd', $
@@ -106,7 +133,7 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
            ['TDC4_OFFSET', 'FLOAT', 'Offset to subtract from TDC4 before multiplying by TDC1_CONV to get POS in nanoseconds'], $
            ['AN_BIN_TDC3', 'INTEGER', 'Onboard anode bin rejection boundaries used to filter TDC3 event position with dimension 16 anodes x 2 limits (16, 2). (upper/lower limits)'], $
            ['AN_BIN_TDC4', 'INTEGER', 'Onboard anode bin rejection boundaries used to filter TDC4 event position with dimension 16 anodes x 2 limits (16, 2). (upper/lower limits)'], $
-           ['MS_BIN_OFFSET', 'INTEGER', 'Onboard mass bias offset array for correcting TDC1 and TDC2 prior to mass bin validation.'], $
+           ['MS_BIAS_OFFSET', 'INTEGER', 'Onboard mass bias offset array for correcting TDC1 and TDC2 prior to mass bin validation.'], $
            ['EVCONVLUT', 'INTEGER', 'Look up table code for valid events addressed by the TDC pulses (see cmd 0x41 in MAVEN_PF_STATIC_012_FPGA_Specification)'], $
            ['TIMERST', 'INTEGER', 'Sets dead time for rejected events. Used to assure TDC is completely reset. (see cmd 0x46 in MAVEN_PF_STATIC_012_FPGA_Specification)']]
 
@@ -233,7 +260,6 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
            vatt.scalemax = max(dvar[ok])
         Endif
      Endelse
-
 
      vatt.catdesc = rv_vt[2, j]
 ;Rates are data, all else is support data
@@ -397,24 +423,11 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 ;time will work best
   date = time_string(median(center_time), precision=-3, format=6)
 
-  file = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
-  fullfile = dir+file
-  otp_struct.filename = file
-  otp_struct.g_attributes.logical_file_id = file_basename(file, '.cdf')
-  otp_struct.g_attributes.logical_source = 'mvn_sta_l2_'+ext
-  dummy = cdf_save_vars2(otp_struct, fullfile)
-;Add compression, 2014-05-27, changed to touch all files with
-;cdfconvert, 2014-06-10
-  If(keyword_set(no_compression)) Then Begin
-     spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:none -delete'
-  Endif Else Begin
-     spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:gzip.5 -delete'
-  Endelse
-;delete old files
-  If(is_string(delfiles)) Then Begin
-     ndel = n_elements(delfiles)
-     For j = 0, ndel-1 Do file_delete, delfiles[j]
-  Endif
+  file0 = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
+  fullfile0 = dir+file0
+
+;save the file -- full database management
+  mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression
 
   Return
 End

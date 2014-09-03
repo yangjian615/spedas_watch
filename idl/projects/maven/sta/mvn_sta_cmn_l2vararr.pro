@@ -16,8 +16,8 @@
 ;HISTORY:
 ; 16-jun-2014,jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-16 17:17:08 -0700 (Mon, 16 Jun 2014) $
-; $LastChangedRevision: 15382 $
+; $LastChangedDate: 2014-08-30 11:28:42 -0700 (Sat, 30 Aug 2014) $
+; $LastChangedRevision: 15735 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_cmn_l2vararr.pro $
 ;-
 Function mvn_sta_cmn_l2vararr, apid
@@ -120,6 +120,16 @@ Function mvn_sta_cmn_l2vararr, apid
              ['SPACECRAFT', 'SPACECRAFT', 'N'], $
              ['DATA_NAME', 'DATA_NAME', 'N'], $
              ['APID', 'APID', 'N'], $
+             ['VALID', 'VALID', 'Y'], $
+             ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $
+             ['TIME', 'TIME_UNIX', 'Y'], $
+             ['TDC_1', 'TDC_1', 'Y'], $
+             ['TDC_2', 'TDC_2', 'Y'], $
+             ['TDC_3', 'TDC_3', 'Y'], $
+             ['TDC_4', 'TDC_4', 'Y'], $
+             ['EVENT_CODE', 'EVENT_CODE', 'Y'], $
+             ['CYCLESTEP', 'CYCLESTEP', 'Y'], $
+             ['ENERGY', 'ENERGY', 'Y'], $
              ['TDC1_CONV', 'TDC1_CONV', 'N'], $
              ['TDC2_CONV', 'TDC2_CONV', 'N'], $
              ['TDC3_CONV', 'TDC3_CONV', 'N'], $
@@ -130,32 +140,23 @@ Function mvn_sta_cmn_l2vararr, apid
              ['TDC4_OFFSET', 'TDC4_OFFSET', 'N'], $
              ['AN_BIN_TDC3', 'AN_BIN_TDC3', 'N'], $
              ['AN_BIN_TDC4', 'AN_BIN_TDC4', 'N'], $
-             ['MS_BIN_OFFSET', 'MS_BIN_OFFSET', 'N'], $
+             ['MS_BIAS_OFFSET', 'MS_BIAS_OFFSET', 'N'], $
              ['EVCONVLUT', 'EVCONVLUT', 'N'], $
-             ['TIMERST', 'TIMERST', 'N'], $
-             ['TIME', 'TIME_UNIX', 'Y'], $
-             ['VALID', 'VALID', 'Y'], $
-             ['TDC_1', 'TDC_1', 'Y'], $
-             ['TDC_2', 'TDC_2', 'Y'], $
-             ['TDC_3', 'TDC_3', 'Y'], $
-             ['TDC_4', 'TDC_4', 'Y'], $
-             ['EVENT_CODE', 'EVENT_CODE', 'Y'], $
-             ['CYCLESTEP', 'CYCLESTEP', 'Y'], $
-             ['ENERGY', 'ENERGY', 'Y'], $
-             ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y']]
+             ['TIMERST', 'TIMERST', 'N']]
   Endif Else IF(app_id Eq 'd7') Then Begin
      vars = [['PROJECT_NAME', 'PROJECT_NAME', 'N'], $
              ['SPACECRAFT', 'SPACECRAFT', 'N'], $
              ['DATA_NAME', 'DATA_NAME', 'N'], $
              ['APID', 'APID', 'N'], $
+             ['VALID', 'VALID', 'Y'], $
              ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $ 
              ['TIME', 'TIME_UNIX', 'Y'], $
-             ['NHKP', 'NHKP', 'N'], $
-             ['CALIB_CONSTANTS', 'CALIB_CONSTANTS', 'N'], $
-             ['HKP_LABELS', 'HKP_LABELS', 'N'], $
              ['HKP_RAW', 'HKP_RAW', 'Y'], $
+             ['HKP_CALIB', 'HKP_CALIB', 'Y'], $
              ['HKP_IND', 'HKP_IND', 'Y'], $
-             ['HKP', 'HKP', 'Y']]
+             ['NHKP', 'NHKP', 'N'], $
+             ['HKP_CONV', 'HKP_CONV', 'N'], $
+             ['HKP_LABELS', 'HKP_LABELS', 'N']]
   Endif Else IF(app_id Eq 'db') Then Begin
      vars = [['PROJECT_NAME', 'PROJECT_NAME', 'N'], $
              ['SPACECRAFT', 'SPACECRAFT', 'N'], $
@@ -179,7 +180,7 @@ Function mvn_sta_cmn_l2vararr, apid
              ['DATA_NAME', 'DATA_NAME', 'N'], $
              ['APID', 'APID', 'N'], $
              ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $ 
-             ['TIME', 'TIME', 'Y'], $
+             ['TIME', 'TIME_UNIX', 'Y'], $
              ['NHKP', 'NHKP', 'N'], $
              ['CALIB_CONSTANTS', 'CALIB_CONSTANTS', 'N'], $
              ['HKP_LABELS', 'HKP_LABELS', 'N'], $

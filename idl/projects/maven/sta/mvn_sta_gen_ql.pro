@@ -17,7 +17,9 @@
 ;	
 ;-
 
-pro mvn_sta_gen_ql,pathname=pathname,files=files,mag=mag,all=all
+pro mvn_sta_gen_ql,pathname=pathname,files=files,mag=mag,all=all,path_png=path_png
+
+if not keyword_set(path_png) then path_png=''
 
 mvn_sta_l0_load,pathname=pathname,files=files,mag=mag,all=all
 
@@ -35,9 +37,12 @@ mvn_sta_l0_load,pathname=pathname,files=files,mag=mag,all=all
 		options,'mvn_sta_D8_R1_diag',ytitle='sta!CDiagnostics!C!CCounts'
 		ylim,'mvn_sta_D8_R1_Time_ABCD',10.,1.e5,1
 
-	get_4dt,'n_4d','mvn_sta_get_c6',mass=[.1,100],name='mvn_sta_density'
-		options,'mvn_sta_density',ytitle='sta C6!CNi!C!C1/cm!U3'
-		ylim,'mvn_sta_density',.1,100,1
+	common mvn_c6,mvn_c6_ind,mvn_c6_dat 
+	if size(mvn_c6_dat,/type) eq 8 then begin
+		get_4dt,'n_4d','mvn_sta_get_c6',mass=[.1,100],name='mvn_sta_density'
+			options,'mvn_sta_density',ytitle='sta C6!CNi!C!C1/cm!U3'
+			ylim,'mvn_sta_density',.1,100,1
+	endif
 
 	If(!d.name NE 'Z') Then window,0,xsize=900,ysize=1000
 
@@ -63,7 +68,7 @@ tplot,[$
 	,'mvn_sta_D8_R1_diag'$
 	],title=title
 
-makepng,'mvn_sta_ql_'+date
+makepng,path_png+'mvn_sta_ql_'+date
 
 	loadct2,previous_ct
 

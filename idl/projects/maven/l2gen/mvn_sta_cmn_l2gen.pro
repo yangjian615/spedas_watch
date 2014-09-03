@@ -1,7 +1,7 @@
 ;Helper function for eflux calculations
 Function temp_mvn_sta_eflux, cmn_dat
 
-  apid = cmn_dat.apid
+  apid = strupcase(cmn_dat.apid)
   npts = n_elements(cmn_dat.time)
   iswp = cmn_dat.swp_ind
   ieff = cmn_dat.eff_ind
@@ -119,9 +119,11 @@ End
 ; 11-jun-2014, changed filenaming no more R value
 ; 18-jun-2014, added changes suggested by Bob McGuire, fixed epoch and
 ; tt200 attribute types
+; 7-7-2014, jmm, deleted no_cdfconvert option, added md5sum
+; 22-jul-2014, jmm, added revisoining
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-23 08:51:38 -0700 (Mon, 23 Jun 2014) $
-; $LastChangedRevision: 15404 $
+; $LastChangedDate: 2014-08-29 14:10:43 -0700 (Fri, 29 Aug 2014) $
+; $LastChangedRevision: 15729 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -140,7 +142,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
                 Project:'MAVEN', $
                 Source_name:'MAVEN>Mars Atmosphere and Volatile Evolution Mission', $
                 Discipline:'Space Physics>Planetary Physics>Particles', $
-                Data_type:'L2>L2 Calibrated Data', $
+                Data_type:'CAL>Calibration', $
                 Descriptor:'STATIC> Supra-Thermal Thermal Ion Composition Particle Distributions', $
                 Data_version:'0', $
                 File_naming_convention: 'source_descriptor_datatype_yyyyMMdd', $
@@ -696,29 +698,16 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
   If(cmn_dat.ndef Gt 1) Then dstring = strcompress(/remove_all, string(cmn_dat.ndef))+'d' Else dstring = ''
   If(cmn_dat.nanode Gt 1) Then astring = strcompress(/remove_all, string(cmn_dat.nanode))+'a' Else astring = ''
 
-  ext = strcompress(strlowcase(cmn_dat.apid), /remove_all)+'-'+estring+mstring+dstring+astring
+  ext = strcompress(strlowcase(cmn_dat.apid), /remove_all)+'-'+estring+dstring+astring+mstring
 ;date can be complicated, I'm guessing that the median center
 ;time will work best
   date = time_string(median(center_time), precision=-3, format=6)
 
-  file = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
-  fullfile = dir+file
-  otp_struct.filename = file
-  otp_struct.g_attributes.logical_file_id = file_basename(file, '.cdf')
-  otp_struct.g_attributes.logical_source = 'mvn_sta_l2_'+ext
-  dummy = cdf_save_vars2(otp_struct, fullfile)
-;Add compression, 2014-05-27, changed to touch all files with
-;cdfconvert, 2014-06-10
-  If(keyword_set(no_compression)) Then Begin
-     spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:none -delete'
-  Endif Else Begin
-     spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:gzip.5 -delete'
-  Endelse
-;delete old files
-  If(is_string(delfiles)) Then Begin
-     ndel = n_elements(delfiles)
-     For j = 0, ndel-1 Do file_delete, delfiles[j]
-  Endif
+  file0 = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
+  fullfile0 = dir+file0
+
+;save the file -- full database management
+  mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression
 
   Return
 End

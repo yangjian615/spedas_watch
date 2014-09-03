@@ -11,7 +11,7 @@
 ;INPUTS:
 ;	Files: An array of filenames containing PF Level 2 data, by default just the dates in 'YYYYMMDD' format
 ;KEYWORDS:
-;	PATH: Directory path for level 2 files (default '/disks/data/maven/pfp/swi/l2/')
+;	PATH: Directory path for level 2 files (default '/disks/data/maven/data/sci/swi/l2/')
 ;	VERSION: Software version number to put in file (default '000')
 ;	REVISION: Data version number to put in file (default '000')
 ;	TPLOT: Produce Tplot variables
@@ -26,8 +26,8 @@
 ;	EFLUX: Load eflux data instead of counts for 3ds and spectra
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-07-14 20:27:40 -0700 (Mon, 14 Jul 2014) $
-; $LastChangedRevision: 15578 $
+; $LastChangedDate: 2014-08-29 11:31:03 -0700 (Fri, 29 Aug 2014) $
+; $LastChangedRevision: 15724 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l2_data.pro $
 ;
 ;-
@@ -51,7 +51,7 @@ if keyword_set(loadall) then begin
 endif
 
 
-if not keyword_set(path) then path = '/disks/data/maven/pfp/swi/l2/'
+if not keyword_set(path) then path = '/disks/data/maven/data/sci/swi/l2/'
 if not keyword_set(version) then version = '000'
 if not keyword_set(revision) then revision = '000'
 if keyword_set(eflux) then units = 'eflux' else units = 'counts'

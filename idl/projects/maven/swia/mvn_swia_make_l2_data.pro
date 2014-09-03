@@ -16,8 +16,8 @@
 ;	TYPE: 'svy' or 'arc' (default = 'svy')
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-07-14 15:34:27 -0700 (Mon, 14 Jul 2014) $
-; $LastChangedRevision: 15577 $
+; $LastChangedDate: 2014-08-29 11:31:03 -0700 (Fri, 29 Aug 2014) $
+; $LastChangedRevision: 15724 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_l2_data.pro $
 ;
 ;-
@@ -39,7 +39,7 @@ if type eq 'arc' then archive = 1 else archive = 0
 
 if type eq 'arc' then ftype = 'all' else ftype = 'svy'
 
-opath = '/disks/data/maven/pfp/swi/l2/'
+opath = '/disks/data/maven/data/sci/swi/l2/'
 
 date = startdate
 

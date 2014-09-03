@@ -67,6 +67,7 @@ pro mvn_sta_prod_cal,all=all,units=units,apids=apids,test=test,gf_nor=gf_nor
 	endif 
 	
 
+; this section does nothing - obsolete - thought to be useful to change tplot units globally
 if keyword_set(units) then begin
 	un = units
 	if units eq 'cnts' then un=0
@@ -75,7 +76,7 @@ endif else un=0
 
 cols=get_colors()
 
-; decompression array
+; decompression array 19 bit -> 8 bit
 
 decomp19=dblarr(256)
 decomp19[0:127]=$
@@ -214,9 +215,51 @@ decomp19[128:255]=$
 ; TDC peaks in MH room +29C:  TDC2 222,465,709	TDC1 228,471,715	; 20121102_021952_fm_tvac_prod4,     243.5, 24MHz --> 5.844bins/ns , offsets=21.5,15.5
 ; TDC peaks in MH cold -26C:  TDC2 218,457,698	TDC1 224,463,703	; 20121105_064622_fm_tvac_lpt_cold3, 240.0, 24MHz --> 5.760bins/ns , offsets=22.0,16.0
 ; Based on thermal vac, we might expect TOFs to vary by 1.5% with temperature
+; Nominal cruise phase temperature is 8C
 ; 	b_ns  = 5.760 							; May want to change to this value and redue MLUT3 if STATIC runs cold. 
  	b_ns  = 5.844 							; TOF bins/ns for TOF timing (not sure if this is 5.844 or 5.855 for flight unit) 
 
+	tdc1_offset = 16.
+	tdc2_offset = 22.
+
+
+; From calibrations - Anode Bin Rejecton Boundaries in hex 
+; Instrument commands 0x50-5F and 0x60-6F
+; FM Anode 		FM tdc3		FM tdc4
+;	1		93   8c		93   8c
+;	2		81   7a		81   7a
+;	3		6e   67		6e   67
+;	4		5b   54		5a   53
+;	5		49   42		48   41
+;	6		38   31		35   2e
+;	7		24   1d		22   1b
+;	8		12   0b		0f   08
+;	9		05   0c		09   10
+;	10		1b   23		1b   22
+;	11		2b   32		2e   35
+;	12		3c   43		41   48
+;	13		50   57		54   5b
+;	14		62   69		67   6e
+;	15		74   7b		79   80
+;	16		86   8d		8c   93
+
+; Anode bin boundaries transfered to decimal, note only the highest 8 bits of a 10 bit tdc3 and tdc4 are used
+	an_bin_tdc3 = intarr(16,2) 
+	an_bin_tdc4 = intarr(16,2) 
+	an_bin_tdc3[*,0] = [147,128,110, 91, 73, 56, 36, 18,  5, 27, 43, 60, 80, 98,116,134]
+	an_bin_tdc3[*,1] = [140,122,103, 84, 66, 49, 29, 11, 12, 35, 50, 67, 87,105,123,141]
+	an_bin_tdc4[*,0] = [147,129,110, 90, 72, 53, 34, 15,  9, 27, 46, 65, 84,103,121,140]
+	an_bin_tdc4[*,1] = [140,122,103, 83, 65, 46, 27,  8, 16, 34, 53, 72, 91,110,128,147]
+
+ 	p_ns_3  	= (147+140+134+141)/32. 				; 32 ns delay for the entire anode (15+1)*2ns
+ 	p_ns_4  	= (147+140+140+147)/32. 
+	tdc3_offset 	= (18+11-5-12)/4.
+	tdc4_offset 	= (15+ 8-9-16)/4.
+
+	mass_bias_offset = intarr(16)						; value at launch
+;	mass_bias_offset = [0,0,0,0,0,0,0,0,-3,-3,-3,-3,-3,-3,-3,-3]		; TBD - this should upload at MOI to account for different tdc1 and tdc2 offsets
+	evconvlut	 = 255							; nominal value, this should only change if a preamp or tdc dies
+	timerst		 = 10							; 0x46 set to 0x0a, command cmd.STA_EVPFMRCTL(TIMERSTDUR=0x0a)
 
 ; There are several TOF offset errors between the start and stop due to TDC offsets, test pulser offsets, and differences between start/stop electron TOFs
 ; The total test pulser and TDC offset is ~22 (243.5-222), but we only care about the TDC offset which is not measured directly
@@ -1154,13 +1197,10 @@ if not keyword_set(apids) or test then begin
 		endif
 	   endif
 	endif
-endif
 
 ; Make C6 common block
 
-common mvn_c6,mvn_c6_ind,mvn_c6_dat & mvn_c6_dat=0 & mvn_c6_ind=-1l
-
-if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -1211,8 +1251,10 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	c6_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'C6 Energy-Mass', 			$
-		apid:			'C6',					$
+;		data_name:		'C6 Energy-Mass', 			$
+;		apid:			'C6',					$
+		data_name:		'c6 32e64m', 				$
+		apid:			'c6',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,ndis), 			$
@@ -1274,7 +1316,9 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 		common mvn_c6,mvn_c6_ind,mvn_c6_dat & mvn_c6_dat=c6_dat & mvn_c6_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID C0
@@ -1282,6 +1326,7 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'c0') + total(apids eq 'C0')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_C0_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=128									; 64Ex1Dx1Ax2M
@@ -1442,13 +1487,10 @@ if not keyword_set(apids) or test then begin
 		options,'mvn_sta_C0_P1A_E_M0',ytitle='sta!CP1A-C0!CH+He+!C!CEnergy!CeV'
 		options,'mvn_sta_C0_P1A_E_M1',ytitle='sta!CP1A-C0!CO+O2+!C!CEnergy!CeV'
 	endif
-endif
 
 ; Make C0 common block
 
-common mvn_c0,mvn_c0_ind,mvn_c0_dat & mvn_c0_dat=0 & mvn_c0_ind=-1l
-
-if size(/type,t) eq 8 then begin
+   if size(/type,t) eq 8 and nn ge 1 then begin
 
 	nenergy = 64
 	avg_nrg = 64/nenergy
@@ -1497,8 +1539,10 @@ if size(/type,t) eq 8 then begin
 
 	c0_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'C0 Energy-Mass', 			$
-		apid:			'C0',					$
+;		data_name:		'C0 Energy-Mass', 			$
+;		apid:			'C0',					$
+		data_name:		'c0 64e2m', 				$
+		apid:			'c0',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,nn), 			$
@@ -1561,8 +1605,8 @@ if size(/type,t) eq 8 then begin
 
 		common mvn_c0,mvn_c0_ind,mvn_c0_dat & mvn_c0_dat=c0_dat & mvn_c0_ind=0l
 
+   endif
 endif
-
 
 
 ;***************************************************************************************************************
@@ -1571,6 +1615,7 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'c2') + total(apids eq 'C2')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_C2_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=1024									; 32Ex1Dx1Ax32M
@@ -1687,13 +1732,10 @@ if not keyword_set(apids) or test then begin
 		options,'mvn_sta_C2_P1B_M',ytitle='sta!CP1B-C2!C!CMass!Camu'
 
 	endif
-endif
 
 ; Make C2 common block
 
-common mvn_c2,mvn_c2_ind,mvn_c2_dat & mvn_c2_dat=0 & mvn_c2_ind=-1l
-
-if size(/type,t) eq 8 then begin
+   if size(/type,t) eq 8 and nn ge 1 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -1742,8 +1784,10 @@ if size(/type,t) eq 8 then begin
 
 	c2_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'C2 Energy-Mass', 			$
-		apid:			'C2',					$
+;		data_name:		'C2 Energy-Mass', 			$
+;		apid:			'C2',					$
+		data_name:		'c2 32e32m', 				$
+		apid:			'c2',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,nn), 			$
@@ -1805,7 +1849,8 @@ if size(/type,t) eq 8 then begin
 
 		common mvn_c2,mvn_c2_ind,mvn_c2_dat & mvn_c2_dat=c2_dat & mvn_c2_ind=0l
 
-endif 
+   endif 
+endif
 
 ;***************************************************************************************************************
 ; APID C4
@@ -1814,6 +1859,7 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'c4') + total(apids eq 'C4')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_C4_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=256									; 4Ex1Dx1Ax64M
@@ -1945,13 +1991,10 @@ if not keyword_set(apids) or test then begin
 		options,'mvn_sta_C4_P1C_E',ytitle='sta!CP1C-C4!C!CEnergy!CeV'
 		options,'mvn_sta_C4_P1C_M',ytitle='sta!CP1C-C4!C!CMass!Camu'
 	endif
-endif
 
 ; Make C4 common block
 
-common mvn_c4,mvn_c4_ind,mvn_c4_dat & mvn_c4_dat=0 & mvn_c4_ind=-1l
-
-if size(/type,t) eq 8 then begin
+   if size(/type,t) eq 8 and nn ge 1 then begin
 
 	nenergy = 4
 	avg_nrg = 64/nenergy
@@ -1999,8 +2042,10 @@ if size(/type,t) eq 8 then begin
 
 	c4_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'C4 Energy-Mass', 			$
-		apid:			'C4',					$
+;		data_name:		'C4 Energy-Mass', 			$
+;		apid:			'C4',					$
+		data_name:		'c4 4e64m', 				$
+		apid:			'c4',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,nn), 			$
@@ -2063,8 +2108,8 @@ if size(/type,t) eq 8 then begin
 
 		common mvn_c4,mvn_c4_ind,mvn_c4_dat & mvn_c4_dat=c4_dat & mvn_c4_ind=0l
 
+   endif
 endif
-
 
 
 ;***************************************************************************************************************
@@ -2073,6 +2118,7 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'c8') + total(apids eq 'C8')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_C8_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=512									; 32Ex16Dx1Ax1M
@@ -2211,13 +2257,10 @@ if not keyword_set(apids) or test then begin
 		options,'mvn_sta_C8_P2_E',ytitle='sta!CP2-C8!C!CEnergy!CeV'
 		options,'mvn_sta_C8_P2_D',ytitle='sta!CP2-C8!C!CDef!Ctheta'
 	endif
-endif
 
 ; Make C8 common block
 
-common mvn_c8,mvn_c8_ind,mvn_c8_dat & mvn_c8_dat=0 & mvn_c8_ind=-1l
-
-if size(/type,t) eq 8 then begin
+   if size(/type,t) eq 8 and nn ge 1 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -2278,8 +2321,10 @@ if size(/type,t) eq 8 then begin
 
 	c8_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'C8 Energy-Angle-Mass', 		$
-		apid:			'C8',					$
+;		data_name:		'C8 Energy-Angle-Mass', 		$
+;		apid:			'C8',					$
+		data_name:		'c8 32e16d', 				$
+		apid:			'c8',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,nn), 			$
@@ -2341,7 +2386,9 @@ if size(/type,t) eq 8 then begin
 
 		common mvn_c8,mvn_c8_ind,mvn_c8_dat & mvn_c8_dat=c8_dat & mvn_c8_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID CA
@@ -2350,6 +2397,7 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'ca') + total(apids eq 'CA')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_CA_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=1024									; 16Ex4Dx16Ax1M
@@ -2480,13 +2528,11 @@ if not keyword_set(apids) or test then begin
 		options,'mvn_sta_CA_P3_D',ytitle='sta!CP3-CA!C!CDef!Ctheta'
 		options,'mvn_sta_CA_P3_A',ytitle='sta!CP3-CA!C!CAnode!Cphi'
 	endif
-endif
+
 
 ; Make CA common block
 
-common mvn_ca,mvn_ca_ind,mvn_ca_dat & mvn_ca_dat=0 & mvn_ca_ind=-1l
-
-if size(/type,t) eq 8 then begin
+   if size(/type,t) eq 8 and nn ge 1 then begin
 
 	nenergy = 16									; 16Ex4Dx16Ax1M
 	avg_nrg = 64/nenergy
@@ -2545,8 +2591,10 @@ if size(/type,t) eq 8 then begin
 
 	ca_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'CA Energy-Angle-Mass', 		$
-		apid:			'CA',					$
+;		data_name:		'CA Energy-Angle-Mass', 		$
+;		apid:			'CA',					$
+		data_name:		'ca 16e4d16a', 				$
+		apid:			'ca',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,nn), 			$
@@ -2608,7 +2656,9 @@ if size(/type,t) eq 8 then begin
 
 		common mvn_ca,mvn_ca_ind,mvn_ca_dat & mvn_ca_dat=ca_dat & mvn_ca_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID CC
@@ -2744,13 +2794,11 @@ if not keyword_set(apids) or test then begin
 		endif
 	   endif
 	endif
-endif
+
 
 ; Make CC common block
 
-common mvn_cc,mvn_cc_ind,mvn_cc_dat & mvn_cc_dat=0 & mvn_cc_ind=-1l
-
-if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	nenergy = 32							; 32Ex8Dx1Ax32M
 	avg_nrg = 64/nenergy
@@ -2805,8 +2853,10 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	cc_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'CC Energy-Angle-Mass', 		$
-		apid:			'CC',					$
+;		data_name:		'CC Energy-Angle-Mass', 		$
+;		apid:			'CC',					$
+		data_name:		'cc 32e8d32m', 				$
+		apid:			'cc',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,ndis), 			$
@@ -2868,7 +2918,9 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 		common mvn_cc,mvn_cc_ind,mvn_cc_dat & mvn_cc_dat=cc_dat & mvn_cc_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID CD
@@ -3002,13 +3054,11 @@ if not keyword_set(apids) or test then begin
 		endif
 	   endif
 	endif
-endif
+
 
 ; Make CD common block
 
-common mvn_cd,mvn_cd_ind,mvn_cd_dat & mvn_cd_dat=0 & mvn_cd_ind=-1l
-
-if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	nenergy = 32							; 32Ex8Dx1Ax32M
 	avg_nrg = 64/nenergy
@@ -3063,8 +3113,10 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	cd_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'CD Energy-Angle-Mass', 		$
-		apid:			'CD',					$
+;		data_name:		'CD Energy-Angle-Mass', 		$
+;		apid:			'CD',					$
+		data_name:		'cd 32e8d32m', 				$
+		apid:			'cd',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,ndis), 			$
@@ -3126,7 +3178,9 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 		common mvn_cd,mvn_cd_ind,mvn_cd_dat & mvn_cd_dat=cd_dat & mvn_cd_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID CE
@@ -3268,13 +3322,11 @@ if not keyword_set(apids) or test then begin
 		endif
 	   endif
 	endif
-endif
+
 
 ; Make CE common block
 
-common mvn_ce,mvn_ce_ind,mvn_ce_dat & mvn_ce_dat=0 & mvn_ce_ind=-1l
-
-if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	nenergy = 16							; 16Ex4Dx16Ax16M
 	avg_nrg = 64/nenergy
@@ -3328,8 +3380,10 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	ce_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'CE Energy-Angle-Mass', 		$
-		apid:			'CE',					$
+;		data_name:		'CE Energy-Angle-Mass', 		$
+;		apid:			'CE',					$
+		data_name:		'ce 16e4d16a16m', 			$
+		apid:			'ce',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,ndis), 			$
@@ -3391,7 +3445,9 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 		common mvn_ce,mvn_ce_ind,mvn_ce_dat & mvn_ce_dat=ce_dat & mvn_ce_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID CF
@@ -3533,13 +3589,11 @@ if not keyword_set(apids) or test then begin
 		endif
 	   endif
 	endif
-endif
+
 
 ; Make CF common block
 
-common mvn_cf,mvn_cf_ind,mvn_cf_dat & mvn_cf_dat=0 & mvn_cf_ind=-1l
-
-if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	nenergy = 16							; 16Ex4Dx16Ax16M
 	avg_nrg = 64/nenergy
@@ -3593,8 +3647,10 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	cf_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'CF Energy-Angle-Mass', 		$
-		apid:			'CF',					$
+;		data_name:		'CF Energy-Angle-Mass', 		$
+;		apid:			'CF',					$
+		data_name:		'cf 16e4d16a16m', 			$
+		apid:			'cf',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,ndis), 			$
@@ -3656,7 +3712,9 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 		common mvn_cf,mvn_cf_ind,mvn_cf_dat & mvn_cf_dat=cf_dat & mvn_cf_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID D0
@@ -3798,14 +3856,11 @@ if not keyword_set(apids) or test then begin
 		endif
 	   endif
 	endif
-endif
 
 
 ; Make D0 common block
 
-common mvn_d0,mvn_d0_ind,mvn_d0_dat & mvn_d0_dat=0 & mvn_d0_ind=-1l
-
-if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -3859,8 +3914,10 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	d0_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'D0 Energy-Angle-Mass', 		$
-		apid:			'D0',					$
+;		data_name:		'D0 Energy-Angle-Mass', 		$
+;		apid:			'D0',					$
+		data_name:		'd0 32e4d16a8m', 			$
+		apid:			'd0',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,ndis), 			$
@@ -3922,7 +3979,9 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 		common mvn_d0,mvn_d0_ind,mvn_d0_dat & mvn_d0_dat=d0_dat & mvn_d0_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID D1
@@ -4067,13 +4126,11 @@ if not keyword_set(apids) or test then begin
 		endif
 	   endif
 	endif
-endif
+
 
 ; Make D1 common block
 
-common mvn_d1,mvn_d1_ind,mvn_d1_dat & mvn_d1_dat=0 & mvn_d1_ind=-1l
-
-if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -4134,8 +4191,10 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	d1_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'D1 Energy-Angle-Mass', 		$
-		apid:			'D1',					$
+;		data_name:		'D1 Energy-Angle-Mass', 		$
+;		apid:			'D1',					$
+		data_name:		'd1 32e4d16a8m', 			$
+		apid:			'd1',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,ndis), 			$
@@ -4197,7 +4256,9 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 		common mvn_d1,mvn_d1_ind,mvn_d1_dat & mvn_d1_dat=d1_dat & mvn_d1_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID D2
@@ -4329,13 +4390,11 @@ if not keyword_set(apids) or test then begin
 		endif
 	   endif
 	endif
-endif
+
 
 ; Make D2 common block
 
-common mvn_d2,mvn_d2_ind,mvn_d2_dat & mvn_d2_dat=0 & mvn_d2_ind=-1l
-
-if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -4397,8 +4456,10 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	d2_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'D2 Energy-Angle-Mass', 		$
-		apid:			'D2',					$
+;		data_name:		'D2 Energy-Angle-Mass', 		$
+;		apid:			'D2',					$
+		data_name:		'd2 32e16a8m', 				$
+		apid:			'd2',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,ndis), 			$
@@ -4460,7 +4521,9 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 		common mvn_d2,mvn_d2_ind,mvn_d2_dat & mvn_d2_dat=d2_dat & mvn_d2_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID D3
@@ -4592,14 +4655,11 @@ if not keyword_set(apids) or test then begin
 		endif
 	   endif
 	endif
-endif
 
 
 ; Make D3 common block
 
-common mvn_d3,mvn_d3_ind,mvn_d3_dat & mvn_d3_dat=0 & mvn_d3_ind=-1l
-
-if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -4661,8 +4721,10 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 	d3_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'D3 Energy-Angle-Mass', 		$
-		apid:			'D3',					$
+;		data_name:		'D3 Energy-Angle-Mass', 		$
+;		apid:			'D3',					$
+		data_name:		'd3 32e16a8m', 				$
+		apid:			'd3',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,ndis), 			$
@@ -4724,8 +4786,8 @@ if size(/type,t) eq 8 and ndis ge 1 then begin
 
 		common mvn_d3,mvn_d3_ind,mvn_d3_dat & mvn_d3_dat=d3_dat & mvn_d3_ind=0l
 
+   endif
 endif
-
 
 		
 ;***************************************************************************************************************
@@ -4735,6 +4797,7 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'd4') + total(apids eq 'D4')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_D4_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=128									; 1Ex4Dx16Ax2M
@@ -4865,13 +4928,11 @@ if not keyword_set(apids) or test then begin
 		options,'mvn_sta_D4_P4E_A',ytitle='sta!CP4E-D4!C!CAnode!Cphi'
 		options,'mvn_sta_D4_P4E_M',ytitle='sta!CP4E-D4!C!CMass!Camu'
 	endif
-endif
+
 
 ; Make D4 common block
 
-common mvn_d4,mvn_d4_ind,mvn_d4_dat & mvn_d4_dat=0 & mvn_d4_ind=-1l
-
-if size(/type,t) eq 8 then begin
+   if size(/type,t) eq 8 and nn ge 1 then begin
 
 	nenergy = 1
 	avg_nrg = 64/nenergy
@@ -4932,8 +4993,10 @@ if size(/type,t) eq 8 then begin
 
 	d4_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'D4 Energy-Angle-Mass', 		$
-		apid:			'D4',					$
+;		data_name:		'D4 Energy-Angle-Mass', 		$
+;		apid:			'D4',					$
+		data_name:		'd4 4d16a2m', 				$
+		apid:			'd4',					$
 		units_name: 		'counts', 				$
 		units_procedure: 	'mvn_sta_convert_units', 		$
 		valid: 			replicate(1,nn), 			$
@@ -4995,129 +5058,202 @@ if size(/type,t) eq 8 then begin
 
 		common mvn_d4,mvn_d4_ind,mvn_d4_dat & mvn_d4_dat=d4_dat & mvn_d4_ind=0l
 
+   endif
 endif
 
+
 ;***************************************************************************************************************
-; this section needs a fix
+; APID D6
 
-if keyword_set(apids) then test = fix((total(apids eq 'd3') + total(apids eq 'D3')) < 1) else test=0
+; this section is new code 
 
-if 0 and not keyword_set(apids) or test then begin
+if keyword_set(apids) then test = fix((total(apids eq 'd6') + total(apids eq 'D6')) < 1) else test=0
+if not keyword_set(apids) or test then begin
 
+	iy=0l
 	get_data,'mvn_STA_D6_DATA',data=t
 	if size(/type,t) eq 8 then begin
-		npts=49152									; events
-		np = 48										; np is number of packets per measurement
-		ind1 = where(t.x gt 0, nn)
-		tt=t.x[0:nn-1]
 
+		npkts = dimen1(t.y)
+		
 		get_data,'mvn_STA_D6_MODE',data=md
-		get_data,'mvn_STA_D6_AVG',data=avg
-		get_data,'mvn_STA_D6_DIAG',data=diag
-		en = (diag.y[0:nn-1] AND 63)
-		dt=0.1
-			store_data,'mvn_sta_D6_DIAG_EN',data={x:tt+en*dt,y:en}
-			get_data,'mvn_STA_D6_SEQ_CNTR',data=tmp2
-			store_data,'mvn_sta_D6_SEQ_CNTR_EN',data={x:tt+en*dt,y:tmp2.y[0:nn-1]}
-;			store_data,'mvn_sta_D6_DATA_EN',data={x:tt+en*dt,y:total(t.y[0:nn-1,*],2)}
 
-		ind = where(en eq 0,ndis)							; ndis is number of complete distributions
-		if ind[ndis-1]+np-1 gt nn-1 then ndis=ndis-1					; eliminate last distribution if not complete
+; 		if any packet of a 48 event packet set is missing, throw away the entire set - too much trouble to reconstruct
+; 		these are diagnostic packets and are not needed for science  	
+		get_data,'mvn_STA_D6_DIAG',data=di
+			mm = di.y and 63
+			ind1 = where(mm eq 0)
+			ind2 = where(mm[ind1+47] eq 47)
+			ind1 = ind1[ind2]
+			n_events = n_elements(ind1)
+			if n_events ne npkts/48 then print,'Error 1 - D6 packets were missing'
 
-		if ndis ge 1 then begin
-			events=intarr(340*nn,10)
+		nmax = n_events*8192l
+			tdc_1 = intarr(nmax)	
+			tdc_2 = intarr(nmax) 	
+			tdc_3 = intarr(nmax)	
+			tdc_4 = intarr(nmax)	
+			mode = intarr(nmax) 
+			rate = intarr(nmax) 
+			swp_i = intarr(nmax) 
+			event_code = intarr(nmax) 
+			cyclestep = intarr(nmax) 
+			energy = fltarr(nmax)
+			time_unix = dblarr(nmax)
+			valid = intarr(nmax) 
+			qual_flag = intarr(nmax) 
 
-			for i=0,ndis-1 do begin
-			  for j=0,47 do begin
-				while ind lt lst do begin
+		dt1 = 4./1024.
+		dt2 = dt1/64.
+		npts = 1024l*48
 
-;*************************************************************
-;	pntr=0l
-;	pktl=0l
-;	npkt=0l
-;	ntot=0l
-;	hdr  = adat(pntr:pntr+hdrl-1)
-;	last_apid_cntr= hdr(3)
-;	last_time = (1.d*((hdr[6]*256ul+hdr[7])*256ul+hdr[8])*256ul+hdr[9])+(hdr[10]+hdr[11]/256.d)/256.
-;while pntr+1 lt data_size do begin
-;	hdr  = adat[pntr:pntr+hdrl-1]
-;	apid_cntr= hdr(3)
-;	spin_num = hdr[15]
-;	time = (1.d*((hdr[6]*256ul+hdr[7])*256ul+hdr[8])*256ul+hdr[9])+(hdr[10]+hdr[11]/256.d)/256.
-;	time2 = time
-;	pktl = hdr[4]*256+hdr[5]+7-hdrl
-;	pktp = 0l & datl=0
-;	pkt  = adat[pntr+hdrl:pntr+hdrl+pktl-1]
-;	sub_spin=0
-;	last_mode=mode_decode[pkt[0],pkt[1]]
-;	last_apid_cntr= byte(apid_cntr+1)
-;	mode=last_mode 
-;	if mode ne -1 then datl=dat_len[mode]
-;
-;
-;	while pktp+datl+4 le pktl do begin
-;
-;		config_1 = pkt[pktp] & config_2 = pkt[pktp+1]
-;		mode = mode_decode[config_1,config_2]
-;		if mode ne -1 and mode eq last_mode then begin
-;
-;			datl = dat_len[mode]
-;		endif else begin
-;			pktp = pktl
-;			dprint,dlevel=1,'Error: Invalid ESA config header bytes or mode change in packet - skipping packet'
-;			dprint,dlevel=1,mode,config_1,config_2,pntr,pktl,pktp
-;			datl=0 & nsp=1
-;		endelse
-;
-;		pktp = pktp + 4 + datl
-;
-;		sub_spin = sub_spin + nsp
-;		last_mode = mode	
-;		if ntot-1000l*ceil(ntot/1000l) eq 0 then dprint,dlevel=1,pntr,'  ',pktl,'  ',time_string(time),'  ',adat[pntr+hdrl],'  ',adat[pntr+hdrl+1]
-;	endwhile
-;	pntr = pntr + pktl + hdrl
-;	dprint,dlevel=1,pntr,'  ',ntot
-;	last_time=time
-;
-;endwhile
-;
-;*******************************************************************************
-			  	endwhile
-			  endfor	
-			endfor
+		for i=0,n_events-1 do begin
 
-			dat = t.y[ind[0]:ind[0]+ndis*np-1,*]
-			tdis = tt[ind[0:ndis-1]]
+			aa = reform(transpose(t.y[ind1[i]:ind1[i]+47,*]),48l*1024l)	
 
-			energy=nrg[md.y[ind[0:ndis-1]] mod 128,*]
-			energy=total(reform(energy,ndis,2,32),2)/2.
-			tmp=decomp19[reform(transpose(reform(dat,np,ndis,32,8,4),[1,4,0,3,2]),ndis,32,8,32)]		; [time,en,def,ma]
+			t0 = t.x[ind1[i]]
+			vd = 1								; valid data
+			if t0 ne t.x[ind1[i]+47] then begin
+				print,'Error 2 - D6 packets header time error'	
+				vd = 0
+			endif
 
-			store_data,'mvn_sta_D6_P4A_E',data={x:tdis,y:total(total(tmp,4),3),v:energy}
-			store_data,'mvn_sta_D6_P4A_D',data={x:tdis,y:total(total(tmp,4),2),v:indgen(8)}
-			store_data,'mvn_sta_D6_P4A_M',data={x:tdis,y:total(total(tmp,2),2),v:indgen(32)}
-			store_data,'mvn_sta_D6_P4A_tot',data={x:tdis,y:total(total(total(tmp,4),3),2)}
-			store_data,'mvn_sta_D6_P4A_all',data={x:tdis,y:reform(tmp,ndis,npts),v:indgen(npts)}
+			tp  = (di.y[ind1[i]] and 128)/128				; test pulser
+			dm  = (di.y[ind1[i]] and 64)/64					; diagnostic mode
+			md2 =  md.y[ind1[i]] and 15					; mode (ram, conic, pickup)
+			rt2 = (md.y[ind1[i]] and 112)/16				; rate 
+			pc  =  md.y[ind1[i]] and 128					; packet compression
 
-			ylim,'mvn_sta_D6_P4A_tot',0,0,1
-			ylim,'mvn_sta_D6_P4A_E',.4,40000.,1
-			ylim,'mvn_sta_D6_P4A_D',-1,8,0
-			ylim,'mvn_sta_D6_P4A_M',-1,32,0
-			zlim,'mvn_sta_D6_P4A_E',1,1.e6,1
-			zlim,'mvn_sta_D6_P4A_D',1,1.e6,1
-			zlim,'mvn_sta_D6_P4A_M',1,1.e6,1
-			options,'mvn_sta_D6_P4A_E',datagap=128.
-			options,'mvn_sta_D6_P4A_D',datagap=128.
-			options,'mvn_sta_D6_P4A_M',datagap=128.
-			options,'mvn_sta_D6_P4A_tot',datagap=128.
-			options,'mvn_sta_D6_P4A_E','spec',1
-			options,'mvn_sta_D6_P4A_D','spec',1
-			options,'mvn_sta_D6_P4A_M','spec',1
-			options,'mvn_sta_D6_P4A_E',ytitle='sta!CP4A-D6!C!CEnergy!CeV'
-			options,'mvn_sta_D6_P4A_D',ytitle='sta!CP4A-D6!C!CDef!Cbin'
-			options,'mvn_sta_D6_P4A_M',ytitle='sta!CP4A-D6!C!CMass!Cbin'
-		endif
+			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,t0)+.5),md2]					
+
+			ix  = 0l					; index stepping through an event
+			cy1 = 0l
+			cy_last = 0l
+
+			while (aa[ix] and 252)/4 eq 52 and ix lt npts-10 do begin
+				lf = aa[ix+1]
+				cy = aa[ix+2]*256 + aa[ix+3]
+				if cy le cy_last then cy1=cy1+1
+				cy_last = cy
+				for j=0,lf/3-1 do begin
+				    if ix+8+j*6 lt npts then begin
+					tdc_1[iy] 	=  aa[ix+4+j*6]*4		+ (aa[ix+5+j*6] and 192)/64	
+					tdc_2[iy]  	= (aa[ix+6+j*6] and 3)*256 	+  aa[ix+7+j*6]  	
+					tdc_3[iy]  	= (aa[ix+6+j*6] and 252)/4	+ (aa[ix+9+j*6] and 15)*64	
+					tdc_4[iy]  	= (aa[ix+8+j*6] and 63)*16	+ (aa[ix+9+j*6] and 240)/16	
+					event_code[iy]  = (aa[ix+5+j*6] and 63)
+					cyclestep[iy]	= cy
+					energy[iy]	= nrg[swp_ind,fix(cy/16)]
+					time_unix[iy] 	= t0 + (cy1*1024l+cy)*dt1 + j*dt2
+					valid[iy]	= vd+2*tp+4*dm+32*pc
+					qual_flag[iy]	= 1
+					mode[iy]	= md2
+					rate[iy]	= rt2
+					swp_i[iy]	= swp_ind
+;			print,valid[iy],ix,ix+8+j*6,lf,j,cy,cy1,iy
+
+					iy=iy+1
+				    endif
+				endfor
+				ix = (ix + (lf+2)*2) < (npts-1)
+			endwhile 
+			
+			if ix lt npts-20 then print,'Error 3 - D6 packets are scrambled'
+		endfor
+
+;	get rid of extra points
+
+			tdc_1 = tdc_1[0:iy-1]	
+			tdc_2 = tdc_2[0:iy-1] 	
+			tdc_3 = tdc_3[0:iy-1]	
+			tdc_4 = tdc_4[0:iy-1]	
+			mode = mode[0:iy-1] 
+			rate = rate[0:iy-1]
+			swp_i = swp_i[0:iy-1] 
+			event_code = event_code[0:iy-1] 
+			cyclestep = cyclestep[0:iy-1]
+			energy = energy[0:iy-1]
+			time_unix = time_unix[0:iy-1]
+			valid = valid[0:iy-1] 
+			qual_flag = qual_flag[0:iy-1] 
+
+
+; 	make some tplot quantities
+
+			ev1 = (event_code and 1)
+			ev2 = (event_code and 2)
+			ev3 = (event_code and 4)/4*3
+			ev4 = (event_code and 8)/8*4
+			ev5 = (event_code and 16)/16*5
+			ev6 = (event_code and 32)/32*6
+			ev_cd = [[ev1],[ev2],[ev3],[ev4],[ev5],[ev6]]
+		store_data,'mvn_sta_D6_tdc1',data={x:time_unix,y:tdc_1+1}
+		store_data,'mvn_sta_D6_tdc2',data={x:time_unix,y:tdc_2+1}
+		store_data,'mvn_sta_D6_tdc3',data={x:time_unix,y:tdc_3*(-2*ev1+1)}
+		store_data,'mvn_sta_D6_tdc4',data={x:time_unix,y:tdc_4*(-ev2+1)}
+		store_data,'mvn_sta_D6_ev',data={x:time_unix,y:ev_cd,v:[1,2,3,4,5,6]}
+		store_data,'mvn_sta_D6_cy',data={x:time_unix,y:cyclestep}
+		store_data,'mvn_sta_D6_en',data={x:time_unix,y:energy}
+
+		ylim,'mvn_sta_D6_tdc1',.5,1024,1
+		ylim,'mvn_sta_D6_tdc2',.5,1024,1
+		ylim,'mvn_sta_D6_tdc3',-530,530,0
+		ylim,'mvn_sta_D6_tdc4',-530,530,0
+		ylim,'mvn_sta_D6_ev',-1,7,0
+		ylim,'mvn_sta_D6_cy',-1,1024,0
+		ylim,'mvn_sta_D6_en',.1,30000.,1
+		options,'mvn_sta_D6_tdc1',psym=3
+		options,'mvn_sta_D6_tdc2',psym=3
+		options,'mvn_sta_D6_tdc3',psym=3
+		options,'mvn_sta_D6_tdc4',psym=3
+		options,'mvn_sta_D6_ev',psym=3
+		options,'mvn_sta_D6_cy',psym=3
+		options,'mvn_sta_D6_en',psym=3
+
 	endif
+
+
+; Make D6 common block
+
+   if size(/type,t) eq 8 and iy gt 1 then begin
+
+	d6_dat= {project_name:		'MAVEN',				$
+		spacecraft:		'0', 					$
+		data_name:		'd6 events', 				$
+		apid:			'd6',					$
+
+		valid: 			valid, 					$
+		quality_flag: 		qual_flag, 				$
+		time:			time_unix,				$
+; these lines were used for testing
+;		mode:			mode,					$
+;		rate:			rate,					$
+;		swp_ind:		swp_i,					$
+		tdc_1: 			tdc_1,					$
+		tdc_2: 			tdc_2,					$
+		tdc_3: 			tdc_3,					$
+		tdc_4: 			tdc_4,					$
+		event_code: 		event_code,				$
+		cyclestep: 		cyclestep,				$
+		energy: 		energy, 				$
+
+		tdc1_conv: 		1./b_ns,				$
+		tdc2_conv: 		1./b_ns,				$
+		tdc3_conv: 		1./p_ns_3,				$
+		tdc4_conv: 		1./p_ns_4,				$
+		tdc1_offset: 		tdc1_offset,				$
+		tdc2_offset: 		tdc2_offset,				$
+		tdc3_offset: 		tdc3_offset,				$
+		tdc4_offset: 		tdc4_offset,				$
+		an_bin_tdc3: 		an_bin_tdc3,				$
+		an_bin_tdc4: 		an_bin_tdc4,				$
+		ms_bias_offset: 	mass_bias_offset,			$
+		evconvlut:		evconvlut,				$
+		timerst:		timerst}
+
+		common mvn_d6,mvn_d6_ind,mvn_d6_dat & mvn_d6_dat=d6_dat & mvn_d6_ind=0l
+
+   endif
 endif
 
 
@@ -5128,19 +5264,95 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'd7') + total(apids eq 'D7')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_D7_DATA',data=t
 	if size(/type,t) eq 8 then begin
+
+		name_hkp=['Temp_Dig','Imon_ADC5V','+5V_D','+3.3V_D','+5V_A','-5V_A','+12V_A','+28V',$
+		'Vmon_Swp','Vmon_Swp_Err','Vmon_Def1','Vmon_Def1_Err','Vmon_Def2','Vmon_Def2_Err','Vmon_Vgrid','Temp_FPGA',$
+		'Imon_15kV','Vmon_15kV','Imon_MCP','Vmon_MCP','Imon_Raw','Vmon_Def_Raw','Temp_LVPS','Vmon_Swp_Raw']
+
+
+		A0=[1.6484E+02,0.,0.,0.,0.,0.,0.,0.,$
+			0.,0.,0.,0.,0.,0.,0.,1.6484E+02,$
+			0.,0.,0.,0.,0.,0.,2.3037E+02,0.]
+
+		A1=[3.9360E-02,-0.030518,-0.000191,-0.000153,-0.000191,-0.000191,-0.000458,-0.001097,$
+			0.152588,-0.000153,-0.152740,-0.000153,-0.152740,-0.000153,-0.000951,3.9360E-02,$
+			-0.001176,0.571490,-0.003101,-0.143006,-0.000763,-0.189468,5.8791E-02,-0.189468]
+
+		aa=[0,15]
+		A2=replicate(0.,24) & A2[aa]=5.6761E-06 & A2[22]=8.8802E-06
+		A3=replicate(0.,24) & A3[aa]=4.4329E-10 & A3[22]=6.9447E-10
+		A4=replicate(0.,24) & A4[aa]=1.6701E-14 & A4[22]=2.5920E-14
+		A5=replicate(0.,24) & A5[aa]=2.4223E-19 & A5[22]=3.6994E-19
+		A6=replicate(0.,24) 
+		A7=replicate(0.,24) 
+
+		hkp_par = dblarr(8,24)
+		hkp_par[*,*]=1.d
+		hkp_par[0,0:23]=A0
+		hkp_par[1,0:23]=A1
+		hkp_par[2,0:23]=A2
+		hkp_par[3,0:23]=A3
+		hkp_par[4,0:23]=A4
+		hkp_par[5,0:23]=A5
+		hkp_par[6,0:23]=A6
+		hkp_par[7,0:23]=A7
+
 		npts=512									; 512 points
 		dt = 4.d/512.*findgen(512)
-		ind1 = where(t.x gt 0, nn)
-		tt= reform(replicate(1.d,512)#t.x[0:nn-1] + dt#replicate(1.d,nn),nn*512)
+;		ind1 = where(t.x gt 0, nn)
+		nn = dimen(t.x)
+		tt_fhkp= reform(replicate(1.d,512)#t.x[0:nn-1] + dt#replicate(1.d,nn),nn*512)
+
+		get_data,'mvn_STA_D7_MUX',data=mux
+		mx= reform(replicate(1,512)#mux.y[0:nn-1],nn*512) - 1
+
 		dd = reform(transpose(t.y[0:nn-1,*]),nn*512)
-		fshkpcal = 5./2^15
-		store_data,'mvn_sta_D7_data',data={x:tt,y:dd}
-		store_data,'mvn_sta_D7_data_cal',data={x:tt,y:dd*fshkpcal}
-		ylim,'mvn_sta_D7_data_cal',.0005,5,1
-		options,'mvn_sta_D7_data_cal','gap_time',1
+		cal=dblarr(512l*nn)
+		fcal=fltarr(512l*nn)
+		for i=0,7 do cal = cal + hkp_par[i,mx]*(dd*1.d)^i
+		fcal[*] = cal[*]
+		store_data,'mvn_sta_D7_data',data={x:tt_fhkp,y:1.*dd}
+		store_data,'mvn_sta_D7_data_cal',data={x:tt_fhkp,y:fcal}
+		store_data,'mvn_sta_D7_data_mux',data={x:tt_fhkp,y:mx}
+			options,'mvn_sta_D7_data_cal',datagap=1.
+			options,'mvn_sta_D7_data_mux',datagap=1.
+			options,'mvn_sta_D7_data',datagap=1.
+
+		valid = replicate(1,512l*nn)
+		qual  = intarr(512l*nn)
+
 	endif
+
+
+; Make D7 common block
+
+    if size(/type,t) eq 8 and nn gt 0 then begin
+
+	d7_dat= {project_name:		'MAVEN',				$
+		spacecraft:		'0', 					$
+		data_name:		'd7 fsthkp', 				$
+		apid:			'd7',					$
+
+		valid: 			valid, 					$
+		quality_flag: 		qual, 					$
+
+		time:			tt_fhkp,				$
+
+		hkp_raw:		dd,					$
+		hkp_calib:		fcal,					$
+		hkp_ind:		mx,					$
+
+		nhkp: 			24,					$
+		hkp_conv: 		hkp_par,				$
+		hkp_labels: 		name_hkp}
+
+		common mvn_d7,mvn_d7_ind,mvn_d7_dat & mvn_d7_dat=d7_dat & mvn_d7_ind=0l
+
+    endif
+
 endif
 
 
@@ -5151,6 +5363,7 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'd8') + total(apids eq 'D8')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_D8_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=12									; 12R
@@ -5221,14 +5434,11 @@ if not keyword_set(apids) or test then begin
 			options,'mvn_sta_D8_R1_tot',psym=-1
 
 	endif
-endif
 
 
 ; Make d8 common block
 
-common mvn_d8,mvn_d8_ind,mvn_d8_dat & mvn_d8_dat=0 & mvn_d8_ind=-1l
-
-if size(/type,t) eq 8 and nn ge 1 then begin
+   if size(/type,t) eq 8 and nn ge 1 then begin
 
 	rates = tmp/((tt2-tt1)#replicate(1.,12))
 	rate_labels = ['R1_Time_A','R1_Time_B','R1_Time_C','R1_Time_D','R1_Time_RST','R1_Time_NoStart',$
@@ -5236,7 +5446,7 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 
 	d8_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'd8_12r1e', 				$
+		data_name:		'd8 12r1e', 				$
 		apid:			'd8',					$
 ;		units_name: 		'Hz', 					$
 		valid: 			replicate(1,nn), 			$
@@ -5262,6 +5472,7 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 
 	common mvn_d8,mvn_d8_ind,mvn_d8_dat & mvn_d8_dat=d8_dat & mvn_d8_ind=0l
 
+   endif
 endif
 
 
@@ -5281,6 +5492,7 @@ if not keyword_set(apids) or test then begin
 ; 0.36 ~ qual/Trst = (1. + (1.-eff_start)*(1.-eff_stop)) * eff_start * eff_stop ~ 0.36
 ; print,(1. + (1.-.65)*(1.-.47)) * .65 * .47
 
+	nn=0
 	get_data,'mvn_STA_D9_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=768									; 64Ex12R
@@ -5399,14 +5611,11 @@ if not keyword_set(apids) or test then begin
 
 
 	endif
-endif
 
 
 ; Make d9 common block
 
-common mvn_d9,mvn_d9_ind,mvn_d9_dat & mvn_d9_dat=0 & mvn_d9_ind=-1l
-
-if size(/type,t) eq 8 and nn ge 1 then begin
+   if size(/type,t) eq 8 and nn ge 1 then begin
 
 	rates = tmp2/(((tt2-tt1)/64.)#replicate(1.,12*64))
 	rate_labels = ['R1_Time_A','R1_Time_B','R1_Time_C','R1_Time_D','R1_Time_RST','R1_Time_NoStart',$
@@ -5414,7 +5623,7 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 
 	d9_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'd9_12r64e', 				$
+		data_name:		'd9 12r64e', 				$
 		apid:			'd9',					$
 ;		units_name: 		'Hz', 					$
 		valid: 			replicate(1,nn), 			$
@@ -5440,7 +5649,9 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 
 	common mvn_d9,mvn_d9_ind,mvn_d9_dat & mvn_d9_dat=d9_dat & mvn_d9_ind=0l
 
+   endif
 endif
+
 
 ;***************************************************************************************************************
 ; APID DA
@@ -5449,6 +5660,7 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'da') + total(apids eq 'DA')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_DA_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=1024									; 32Ex1Dx1Ax32M
@@ -5582,12 +5794,9 @@ if not keyword_set(apids) or test then begin
 
 
 	endif
-endif
 
 
 ; Make DA common block
-
-common mvn_da,mvn_da_ind,mvn_da_dat & mvn_da_dat=0 & mvn_da_ind=-1l
 
 if size(/type,t) eq 8 and nn ge 1 then begin
 
@@ -5600,7 +5809,7 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 
 	da_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'da_1r64e', 				$
+		data_name:		'da 1r64e', 				$
 		apid:			'da',					$
 ;		units_name: 		'Hz', 					$
 		valid: 			replicate(1,tm), 			$
@@ -5628,6 +5837,8 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 	common mvn_da,mvn_da_ind,mvn_da_dat & mvn_da_dat=da_dat & mvn_da_ind=0l
 
 endif
+endif
+
 
 ;***************************************************************************************************************
 ; APID DB
@@ -5636,6 +5847,7 @@ endif
 if keyword_set(apids) then test = fix((total(apids eq 'db') + total(apids eq 'DB')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
+	nn=0
 	get_data,'mvn_STA_DB_DATA',data=t
 	if size(/type,t) eq 8 then begin
 		npts=1024									; 1024M
@@ -5699,17 +5911,15 @@ if not keyword_set(apids) or test then begin
 
 
 	endif
-endif
+
 
 ; Make DB common block
 
-common mvn_db,mvn_db_ind,mvn_db_dat & mvn_db_dat=0 & mvn_db_ind=-1l
-
-if size(/type,t) eq 8 then begin
+   if size(/type,t) eq 8 and nn ge 1 then begin
 
 	db_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-		data_name:		'db_1024m', 				$
+		data_name:		'db 1024m', 				$
 		apid:			'db',					$
 ;		units_name: 		'counts', 				$
 		valid: 			replicate(1,nn), 			$
@@ -5736,6 +5946,7 @@ if size(/type,t) eq 8 then begin
 
 	common mvn_db,mvn_db_ind,mvn_db_dat & mvn_db_dat=db_dat & mvn_db_ind=0l
 
+   endif
 endif
 
 
