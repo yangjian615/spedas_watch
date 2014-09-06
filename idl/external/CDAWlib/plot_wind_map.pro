@@ -27,7 +27,13 @@
 ;       Rita Johnson 12/2004. Based on plot_map_images.pro
 ; MODIFICATION HISTORY:
 ;      
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION plot_wind_map, astruct, vname, $
                       THUMBSIZE=THUMBSIZE, FRAME=FRAME, $
                       XSIZE=XSIZE, YSIZE=YSIZE,$
@@ -48,14 +54,14 @@ if keyword_set(REPORT) then reportflag=1 else reportflag=0
 
 ; Verify the type of the first parameter and retrieve the data
 a = size(astruct.(vnum))
-if (a(n_elements(a)-2) ne 8) then begin
+if (a[n_elements(a)-2] ne 8) then begin
    print,'ERROR= 1st parameter to plot_wind_map not a structure' & return,-1
 endif else begin
    a = tagindex('DAT',tag_names(astruct.(vnum)))
-   if (a(0) ne -1) then idat = astruct.(vnum).DAT $
+   if (a[0] ne -1) then idat = astruct.(vnum).DAT $
    else begin
       a = tagindex('HANDLE',tag_names(astruct.(vnum)))
-      if (a(0) ne -1) then handle_value,astruct.(vnum).HANDLE,idat $
+      if (a[0] ne -1) then handle_value,astruct.(vnum).HANDLE,idat $
       else begin
          print,'ERROR= 1st parameter does not have DAT or HANDLE tag' & return,-1
       endelse
@@ -106,7 +112,7 @@ endelse
 
 ; Find & Parse DISPLAY_TYPE FOR ancillary map image variables (lat & lon)
 a = tagindex('DISPLAY_TYPE',tag_names(astruct.(vnum)))
-if(a(0) ne -1) then display= astruct.(vnum).DISPLAY_TYPE $
+if(a[0] ne -1) then display= astruct.(vnum).DISPLAY_TYPE $
 else begin
    print, 'ERROR= No DISPLAY_TYPE attribute for variable'
 endelse
@@ -118,14 +124,14 @@ keywords=str_sep(display,'>')  ; keyword 1 or greater
 ; The DISPLAY_TYPE attribute may contain the THUMBSIZE  RTB
 ; The THUMBSIZE must be followed by the size in pixels of the images
 wc=where(keywords eq 'THUMBSIZE')
-if(wc[0] ne -1) then THUMBSIZE = fix(keywords(wc(0)+1))
+if(wc[0] ne -1) then THUMBSIZE = fix(keywords(wc[0]+1))
 
 ;TJK 01/09/2004 - added map_proj into the syntax for the display_type
 ;Prompted by the arrival of TIMED data. Look for the value and then 
 ;set the appropriate projection name
 
 wc=where(keywords eq 'MAP_PROJ')
-if(wc[0] ne -1) then map_proj = fix(keywords(wc(0)+1)) else $
+if(wc[0] ne -1) then map_proj = fix(keywords(wc[0]+1)) else $
                     map_proj = 8 ;default map projection 
 proj_names =["", "stereographic projection","orthographic projection","lambertconic projection",$
 	     "lambertazimuthal projection", "gnomic projection", "azimuthal equidistant projection",$
@@ -164,19 +170,19 @@ if keyword_set(WHITE_BACKGROUND) then begin
 	foreground = 2 
 	white_background = 1
 endif else begin
-	foreground = !d.n_colors-1 
+	foreground = !d.table_size-1 
 	white_background = 0
 endelse
 
 
 ; Assign latitude variable 
-a = tagindex(strtrim(ipts(0),2),tag_names(astruct))
-if(a(0) ne -1) then begin
-   a1=tagindex('DAT',tag_names(astruct.(a(0)))) 
-   if(a1(0) ne -1) then glat = astruct.(a(0)).DAT $
+a = tagindex(strtrim(ipts[0],2),tag_names(astruct))
+if(a[0] ne -1) then begin
+   a1=tagindex('DAT',tag_names(astruct.(a[0]))) 
+   if(a1[0] ne -1) then glat = astruct.(a[0]).DAT $
    else begin
-      a2 = tagindex('HANDLE',tag_names(astruct.(a(0))))
-      if (a2(0) ne -1) then handle_value,astruct.(a(0)).HANDLE,glat $
+      a2 = tagindex('HANDLE',tag_names(astruct.(a[0])))
+      if (a2[0] ne -1) then handle_value,astruct.(a[0]).HANDLE,glat $
       else begin
          print,'ERROR= 2nd parameter does not have DAT or HANDLE tag' 
          return,-1
@@ -188,13 +194,13 @@ endif else begin
 endelse
 
 ; Assign longitude variable
-a = tagindex(strtrim(ipts(1),2),tag_names(astruct))
-if(a(0) ne -1) then begin
-   a1=tagindex('DAT',tag_names(astruct.(a(0))))
-   if(a1(0) ne -1) then glon = astruct.(a(0)).DAT $
+a = tagindex(strtrim(ipts[1],2),tag_names(astruct))
+if(a[0] ne -1) then begin
+   a1=tagindex('DAT',tag_names(astruct.(a[0])))
+   if(a1[0] ne -1) then glon = astruct.(a[0]).DAT $
    else begin
-      a2 = tagindex('HANDLE',tag_names(astruct.(a(0))))
-      if (a2(0) ne -1) then handle_value,astruct.(a(0)).HANDLE,glon $
+      a2 = tagindex('HANDLE',tag_names(astruct.(a[0])))
+      if (a2[0] ne -1) then handle_value,astruct.(a[0]).HANDLE,glon $
       else begin
          print,'ERROR= 3rd parameter does not have DAT or HANDLE tag'
          return,-1
@@ -207,12 +213,12 @@ endelse
 
 ; Determine which variable in the structure is the 'Epoch' data and retrieve it
 b = astruct.(vnum).DEPEND_0  
-c = tagindex(b(0),tag_names(astruct))
+c = tagindex(b[0],tag_names(astruct))
 d = tagindex('DAT',tag_names(astruct.(c)))
-if (d(0) ne -1) then edat = astruct.(c).DAT $
+if (d[0] ne -1) then edat = astruct.(c).DAT $
 else begin
    d = tagindex('HANDLE',tag_names(astruct.(c)))
-   if (d(0) ne -1) then handle_value,astruct.(c).HANDLE,edat $
+   if (d[0] ne -1) then handle_value,astruct.(c).HANDLE,edat $
    else begin
       print,'ERROR= Time parameter does not have DAT or HANDLE tag' & return,-1
    endelse
@@ -220,15 +226,15 @@ endelse
 
 ; Determine the title for the window or gif file
 a = tagindex('SOURCE_NAME',tag_names(astruct.(vnum)))
-;if (a(0) ne -1) then b = astruct.(vnum).SOURCE_NAME else b = ''
-if (a(0) ne -1) then b = astruct.(vnum).SOURCE_NAME+', ' else b = ''
+;if (a[0] ne -1) then b = astruct.(vnum).SOURCE_NAME else b = ''
+if (a[0] ne -1) then b = astruct.(vnum).SOURCE_NAME+', ' else b = ''
 
 a = tagindex('DESCRIPTOR',tag_names(astruct.(vnum)))
-;if (a(0) ne -1) then b = b + '  ' + astruct.(vnum).DESCRIPTOR
-if (a(0) ne -1) then b = b + astruct.(vnum).DESCRIPTOR+', '
+;if (a[0] ne -1) then b = b + '  ' + astruct.(vnum).DESCRIPTOR
+if (a[0] ne -1) then b = b + astruct.(vnum).DESCRIPTOR+', '
 
 a = tagindex('DATA_TYPE',tag_names(astruct.(vnum)))
-if (a(0) ne -1) then begin
+if (a[0] ne -1) then begin
    type=strsplit(astruct.(vnum).DATA_TYPE,'>',/extract)
    if n_elements(type) eq 2 then b=b+type[1]+', '
    ;b = b + '  ' + astruct.(vnum).DATA_TYPE
@@ -236,12 +242,12 @@ if (a(0) ne -1) then begin
 endif
 
 a = tagindex('FIELDNAM',tag_names(astruct.(vnum)))
-;if (a(0) ne -1) then window_title=(b = b + ' ' + astruct.(vnum).FIELDNAM)
-if (a(0) ne -1) then window_title=(b = b + astruct.(vnum).FIELDNAM)
+;if (a[0] ne -1) then window_title=(b = b + ' ' + astruct.(vnum).FIELDNAM)
+if (a[0] ne -1) then window_title=(b = b + astruct.(vnum).FIELDNAM)
 
 
 sedat=strarr(n_elements(edat))
-for i=0L,n_elements(sedat)-1 do sedat(i)=strmid(decode_cdfepoch(edat(i)),8,2)
+for i=0L,n_elements(sedat)-1 do sedat[i]=strmid(decode_cdfepoch(edat[i]),8,2)
 ;TJK 1/26/2006 removed for Rita the "sort" portion, it was putting our data in
 ;the wrong order (across data boundaries)
 ;indices=uniq(sedat,sort(sedat))
@@ -251,16 +257,16 @@ for i=0L,n_elements(sedat)-1 do sedat(i)=strmid(decode_cdfepoch(edat(i)),8,2)
 group=0
 indices=[0]
 for i=1L,n_elements(sedat)-1 do begin
-   if sedat(i) ne sedat(i-1) then group=group+1
+   if sedat[i] ne sedat[i-1] then group=group+1
    indices=[indices,group]
 endfor
 ;
 ;sedatpass=strarr(n_elements(edatpass))
-;for i=0L,n_elements(sedatpass)-1 do sedatpass(i)=strmid(decode_cdfepoch(edatpass(i)),8,2)
+;for i=0L,n_elements(sedatpass)-1 do sedatpass[i]=strmid(decode_cdfepoch(edatpass[i]),8,2)
 ;indicespass=uniq(sedatpass,sort(sedatpass))
 ;n_days=n_elements(indicespass)
 ;n_days=n_elements(indices)
-n_days=n_elements(sedat(uniq(sedat)))
+n_days=n_elements(sedat[uniq(sedat)])
 if (n_days eq 1) and (not keyword_set(frame)) then FRAME=1
 ;
 idat_orig=idat
@@ -282,9 +288,9 @@ if keyword_set(FRAME) then begin ; produce plot of a single frame
    j=frame-1
       ;q=where(sedat eq sedat(indices(j)))
       q=where(indices eq j)
-      idat = idat_orig(*,q) ; grab the frame
-      glat = glat_orig(q) ; grab the frame
-      glon = glon_orig(q) ; grab the frame
+      idat = idat_orig[*,q] ; grab the frame
+      glat = glat_orig[q] ; grab the frame
+      glon = glon_orig[q] ; grab the frame
       ;
       ;q=where(sedatpass eq sedatpass(indicespass(j)))
       ;latpass=latpass_orig[*,q]
@@ -293,16 +299,16 @@ if keyword_set(FRAME) then begin ; produce plot of a single frame
       ; Begin changes 12/11 RTB
       ; determine validmin and validmax values
       a = tagindex('VALIDMIN',tag_names(astruct.(vnum)))
-      if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
-         if (b(0) eq 0) then zvmin = astruct.(vnum).VALIDMIN $
+      if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
+         if (b[0] eq 0) then zvmin = astruct.(vnum).VALIDMIN $
          else begin
             zvmin = 0 ; default for image data
             print,'WARNING=Unable to determine validmin for ',vname
          endelse
       endif
       a = tagindex('VALIDMAX',tag_names(astruct.(vnum)))
-      if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
-         if (b(0) eq 0) then zvmax = astruct.(vnum).VALIDMAX $
+      if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
+         if (b[0] eq 0) then zvmax = astruct.(vnum).VALIDMAX $
          else begin
             zvmax = 2000 ; guesstimate
             print,'WARNING=Unable to determine validmax for ',vname
@@ -324,7 +330,7 @@ if keyword_set(FRAME) then begin ; produce plot of a single frame
 	 return,-1
       endif
       if keyword_set(DEBUG) then begin
-         print, '!d.n_colors = ',!d.n_colors
+         print, '!d.table_size = ',!d.table_size
          print, 'min and max after filtering = ',idmin, ' ', idmax
       endif
 
@@ -335,10 +341,10 @@ if keyword_set(FRAME) then begin ; produce plot of a single frame
          b = tagindex('LOGICAL_SOURCE',atags)
          b1 = tagindex('LOGICAL_FILE_ID',atags)
          b2 = tagindex('Logical_file_id',atags)
-         if (b(0) ne -1) then psrce = strupcase(astruct.(vnum).LOGICAL_SOURCE)
-         if (b1(0) ne -1) then $
+         if (b[0] ne -1) then psrce = strupcase(astruct.(vnum).LOGICAL_SOURCE)
+         if (b1[0] ne -1) then $
             psrce = strupcase(strmid(astruct.(vnum).LOGICAL_FILE_ID,0,9))
-         if (b2(0) ne -1) then $
+         if (b2[0] ne -1) then $
             psrce = strupcase(strmid(astruct.(vnum).Logical_file_id,0,9))
 
          GIF=strmid(GIF,0,(strpos(GIF,'.gif')))+'_f000.gif'
@@ -369,10 +375,10 @@ if keyword_set(FRAME) then begin ; produce plot of a single frame
          b = tagindex('LOGICAL_SOURCE',atags)
          b1 = tagindex('LOGICAL_FILE_ID',atags)
          b2 = tagindex('Logical_file_id',atags)
-         if (b(0) ne -1) then psrce = strupcase(astruct.(vnum).LOGICAL_SOURCE)
-         if (b1(0) ne -1) then $
+         if (b[0] ne -1) then psrce = strupcase(astruct.(vnum).LOGICAL_SOURCE)
+         if (b1[0] ne -1) then $
             psrce = strupcase(strmid(astruct.(vnum).LOGICAL_FILE_ID,0,9))
-         if (b2(0) ne -1) then $
+         if (b2[0] ne -1) then $
             psrce = strupcase(strmid(astruct.(vnum).Logical_file_id,0,9))
 
          ;This part creates the unique name for the individual images.
@@ -440,7 +446,7 @@ if keyword_set(FRAME) then begin ; produce plot of a single frame
       endcase
 	 
       map_proj_info,/current,name=idl_projection
-      projection=proj_names(map_proj+1)
+      projection=proj_names[map_proj+1]
       ;if keyword_set(DEBUG) then print, 'Requested ',projection;proj_names(map_proj)
       
       ; cdaweb_velovect will overplot the wind plot on the map
@@ -458,9 +464,9 @@ if keyword_set(FRAME) then begin ; produce plot of a single frame
       xyouts,.06,.06,/normal,astruct.(vnum).lablaxis,color=foreground
 
       project_subtitle,astruct.(vnum),window_title,/IMAGE,$
-         ;TIMETAG=[edatpass(0),edatpass(n_elements(edatpass)-1)], TCOLOR=foreground
+         ;TIMETAG=[edatpass[0],edatpass(n_elements(edatpass)-1)], TCOLOR=foreground
          ;TIMETAG=edat(indices(j)), TCOLOR=foreground
-         TIMETAG=edat(q(0)), TCOLOR=foreground
+         TIMETAG=edat[q[0]], TCOLOR=foreground
 	 
       ;xyouts, 0.02, 0.1, projection ,color=foreground,/normal
 
@@ -500,14 +506,14 @@ endif else begin
       w = where(edat ge TSTART,wc)
       if wc eq 0 then begin
          print,'ERROR=No image frames after requested start time.' & return,-1
-      endif else start_frame = w(0)
+      endif else start_frame = w[0]
    endelse
    if NOT keyword_set(TSTOP) then stop_frame = nimages $
    else begin
       w = where(edat le TSTOP,wc)
       if wc eq 0 then begin
          print,'ERROR=No image frames before requested stop time.' & return,-1
-      endif else stop_frame = w(wc-1)
+      endif else stop_frame = w[wc-1]
    endelse
    if (start_frame gt stop_frame) then no_data_avail = 1 $
    else begin
@@ -518,16 +524,16 @@ endif else begin
    if (no_data_avail eq 0) then begin
       ;
       a = tagindex('VALIDMIN',tag_names(astruct.(vnum)))
-      if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
-         if (b(0) eq 0) then zvmin = astruct.(vnum).VALIDMIN $
+      if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
+         if (b[0] eq 0) then zvmin = astruct.(vnum).VALIDMIN $
          else begin
             zvmin = 0 ; default for image data
             print,'WARNING=Unable to determine validmin for ',vname
          endelse
       endif
       a = tagindex('VALIDMAX',tag_names(astruct.(vnum)))
-      if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
-         if (b(0) eq 0) then zvmax = astruct.(vnum).VALIDMAX $
+      if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
+         if (b[0] eq 0) then zvmax = astruct.(vnum).VALIDMAX $
          else begin
             zvmax = 2000 ; guesstimate
             print,'WARNING=Unable to determine validmax for ',vname
@@ -610,9 +616,9 @@ endif else begin
          ;
          ;q=where(sedat eq sedat(indices(j)))
          q=where(indices eq j)
-         idat = idat_orig(*,q) ; grab the frame
-         glat = glat_orig(q) ; grab the frame
-         glon = glon_orig(q) ; grab the frame
+         idat = idat_orig[*,q] ; grab the frame
+         glat = glat_orig[q] ; grab the frame
+         glon = glon_orig[q] ; grab the frame
          ;
          ;q=where(sedatpass eq sedatpass(indicespass(j)))
          ;latpass=latpass_orig[*,q]
@@ -657,7 +663,7 @@ endif else begin
            endcase
          
          map_proj_info,/current,name=idl_projection
-	 projection=proj_names(map_proj+1)
+	 projection=proj_names[map_proj+1]
          ;if keyword_set(DEBUG) then print, 'Requested ',projection;proj_names(map_proj)
 
          ; cdaweb_velovect will overplot the wind plot on the map
@@ -677,7 +683,7 @@ endif else begin
             ;strmid(decode_cdfepoch(edat(indices(j))),0,10)
          xyouts,x0,y0, $
             ;strmid(decode_cdfepoch(edat(indices(j))),0,10),/normal
-            strmid(decode_cdfepoch(edat(q(0))),0,10),/normal
+            strmid(decode_cdfepoch(edat[q[0]]),0,10),/normal
       
          !x.margin=xmargin
          icol=icol+1
@@ -686,9 +692,9 @@ endif else begin
       xyouts,.06,.06,/normal,astruct.(vnum).lablaxis,color=foreground
 
       project_subtitle,astruct.(vnum),window_title,/IMAGE,$
-      ;TIMETAG=[edatpass(0),edatpass(indicespass(j-1))], TCOLOR=foreground
-      ;TIMETAG=[edat(0),edat(indices(j-1))], TCOLOR=foreground
-      TIMETAG=[edat(0),edat(q(0))], TCOLOR=foreground
+      ;TIMETAG=[edatpass[0],edatpass(indicespass(j-1))], TCOLOR=foreground
+      ;TIMETAG=[edat[0],edat(indices(j-1))], TCOLOR=foreground
+      TIMETAG=[edat[0],edat[q[0]]], TCOLOR=foreground
 
       ;xyouts, 0.02, 0.1, projection ,color=foreground,/normal
       ;xyouts, 0.02, y0-y0*.2, projection ,color=foreground,/normal

@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/timeaxis_text.pro,v 1.37 2009/10/27 13:14:48 kovalick Exp kovalick $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/timeaxis_text.pro,v 1.41 2013/05/17 15:43:13 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 7092 $
+;$Revision: 15739 $
 ;-------------------------------------------------------------
 ;+
 ; NAME:
@@ -145,13 +145,13 @@ if n_params(0) ge 1 then begin		; First try from given array.
 endif
  
 if n_elements(trange) ne 0 then begin	; Over-ride with range.
-   xmn = trange(0)
-   xmx = trange(1)
+   xmn = trange[0]
+   xmx = trange[1]
 endif
  
 if n_elements(xmn) eq 0 then begin	; Neither time array, t, or
-   xmn = !x.crange(0)			; time range, trange, given,
-   xmx = !x.crange(1)			; so use last plot range.
+   xmn = !x.crange[0]			; time range, trange, given,
+   xmx = !x.crange[1]			; so use last plot range.
 endif
 
 if (xmn + xmx) eq 0 then begin
@@ -170,7 +170,7 @@ endif
 if n_elements(nticks) eq 0 then nticks=0	; Number of ticks.
 if nticks eq 0 then nticks = 6   
 ;rc assume 10 characters per tick label
-maxTicks = fix((!x.window(1)-!x.window(0))*!d.x_size/!d.x_ch_size/10.)
+maxTicks = fix((!x.window[1]-!x.window[0])*!d.x_size/!d.x_ch_size/10.)
 if (nticks gt maxTicks) then nticks = maxTicks > 2
 ;rc 
 
@@ -208,7 +208,7 @@ if (n_elements(jd) ne 0) and ((xmx-xmn) gt 864000.) then begin
    ;   Labels are so close together we can barely read them. The '20' is arbitrary.
    if n_elements(mjr) gt 20 then begin
       mjr1=0
-      for i=0,n_elements(mjr)-1,2 do mjr1=[mjr1,mjr(i)]
+      for i=0,n_elements(mjr)-1,2 do mjr1=[mjr1,mjr[i]]
       mjr=mjr1[1:*]
    endif   
    if keyword_set(noyear) then frm = getwrd(frm,-99,-1,/last)
@@ -229,13 +229,13 @@ lab = time_label(v, form, jd=jd)
 ycr = !y.crange					; Y data range.
 if !y.type eq 1 then ycr = 10^ycr		; Was log Y axis.
 tmp = convert_coord([0,0],ycr,/data,/to_dev)	; Find in device coord.
-yrange = tmp(4) - tmp(1)			; Full y range (pixels).
+yrange = tmp[4] - tmp[1]			; Full y range (pixels).
 if n_elements(ticklen) eq 0 then ticklen = 3.	; Labeled tick length.
 oneperc = yrange/100.				; 1% (pixels)
 tickl = ticklen*oneperc				; Tick in pixels.
 	
 ;-------  Axis y position  ------------
-yv = !y.crange(0)	         		; Lower x axis y value.
+yv = !y.crange[0]	         		; Lower x axis y value.
 if !y.type eq 1 then yv = 10^yv			; Allow log y axis.
 if n_elements(yvalue) ne 0 then begin
    yv = yvalue
@@ -246,53 +246,53 @@ endif
 ;-------  Plot axis  ------------------
 if n_elements(color) eq 0 then color = !p.color
 if n_elements(size) eq 0 then size = 1.
-if (!p.multi(1)>!p.multi(2)) gt 2 then size=size/2.
+if (!p.multi[1]>!p.multi[2]) gt 2 then size=size/2.
 if n_elements(charthick) eq 0 then charthick = 1.
 if n_elements(thick) eq 0 then thick = 1.
 if n_elements(laboff) eq 0 then laboff = 0.
 if n_elements(dy) eq 0 then dy = 1.
 if (onlylabel eq 0) then plots, !x.crange, [yv, yv], color=color, thick=thick
 tmp = convert_coord(v,v*0.+yv,/data,/to_dev)
-ix = round(tmp(0,*))
-iy = round(tmp(1,*))
+ix = round(tmp[0,*])
+iy = round(tmp[1,*])
 iymin = (iy+tickl)<iy			; Want min dev Y used.
 iyt = iymin				; Axis or bottom of tick.
 ;rc	for i = 0, n_elements(v)-1 do begin	; Major (Labeled) ticks.
-;rc	  plots, [ix(i),ix(i)], [iy,iy+tickl], color=color, /dev, thick=thick
+;rc	  plots, [ix[i],ix[i]], [iy,iy+tickl], color=color, /dev, thick=thick
 ;rc	  if keyword_set(nolabels) then goto, skip
-;rc;	  xprint, /init, ix(i) ,iy-laboff*oneperc, /dev, $
-;rc	  xprint, /init, ix(i) ,iyt-laboff*oneperc, /dev, $
+;rc;	  xprint, /init, ix[i] ,iy-laboff*oneperc, /dev, $
+;rc	  xprint, /init, ix[i] ,iyt-laboff*oneperc, /dev, $
 ;rc	    size=size, dy=dy, yspace=ysp, charthick=charthick
 ;rc	  xprint,' '
-;rc	  labtxt = lab(i)
+;rc	  labtxt = lab[i]
 ;rc	  for j = 0, 5 do begin
 
-ixmin = ix(0)
+ixmin = ix[0]
 Ychsize = float(!d.y_ch_size) * size ; in device coordinates
 for i = 0, n_elements(v)-1 do begin	; Major (Labeled) ticks.
-   if (onlylabel eq 0) then plots, [ix(i),ix(i)], [iy,iy+tickl], color=color, /dev, thick=thick
+   if (onlylabel eq 0) then plots, [ix[i],ix[i]], [iy,iy+tickl], color=color, /dev, thick=thick
    if keyword_set(nolabels) then goto, skip
    if keyword_set(plaboff) then begin
-      xprint, /init, ix(i),iyt+plaboff, $
+      xprint, /init, ix[i],iyt+plaboff, $
 	 /dev, size=size, dy=dy, yspace=ysp, charthick=charthick
    endif else begin
-      xprint, /init, ix(i),iyt-oneperc*laboff+min([tickl,0])-ychsize*1.5, $
+      xprint, /init, ix[i],iyt-oneperc*laboff+min([tickl,0])-ychsize*1.5, $
 	 /dev, size=size, dy=dy, yspace=ysp, charthick=charthick
    endelse
 
    ;xprint,' '
-  if not (keyword_set(notime)) then labtxt = lab(i) else labtxt = ''
+  if not (keyword_set(notime)) then labtxt = lab[i] else labtxt = ''
    if (n_elements(addInfo) ne 0) then begin ; print extra data below time
       addSize = size(addInfo)
-      if (addSize(0) eq 2) then begin
-         dummy = min(abs(addInfo(*,0) - v(i)), index) ; find array index for closest time
-	 ;print,'v(i) = ',v(i), addInfo(0,0),index	
+      if (addSize[0] eq 2) then begin
+         dummy = min(abs(addInfo[*,0] - v[i]), index) ; find array index for closest time
+	 ;print,'v[i] = ',v[i], addInfo[0,0],index	
 	 labtxt = labtxt + cr
-	 for addI = 1, addsize(2)-1 do begin
+	 for addI = 1, addsize[2]-1 do begin
 	    if (n_elements(addFormat) ne 0) then begin
 	       addFsize = size(addFormat)
-	       if ((addFsize(addFsize(0)+1) eq 7) and $
-			(addFsize(addFsize(0)+2) eq addSize(2))) then begin 
+	       if ((addFsize(addFsize[0]+1) eq 7) and $
+			(addFsize(addFsize[0]+2) eq addSize[2])) then begin 
 	          labtxt = labtxt + string(addInfo(index,addI), $
 					format=addFormat(addI))
 	       endif else begin ; if string array
@@ -302,9 +302,9 @@ for i = 0, n_elements(v)-1 do begin	; Major (Labeled) ticks.
 	       ;print,i,index,addI,string(addInfo(index,addI))
 	       labtxt = labtxt + string(addInfo(index,addI))
 	    endelse
-	    if (addI ne (addsize(2)-1)) then labtxt = labtxt + cr
+	    if (addI ne (addsize[2]-1)) then labtxt = labtxt + cr
 	 endfor ; addI
-      endif ; addsize(0) eq 2
+      endif ; addsize[0] eq 2
    endif ; addInfo
    for j = 0, 10 do begin
       ;rc
@@ -317,8 +317,8 @@ for i = 0, n_elements(v)-1 do begin	; Major (Labeled) ticks.
    skip:
 endfor ; major (labeled) ticks
 tmp = convert_coord(v2,v2*0.+yv,/data,/to_dev)
-ix = round(tmp(0,*))
-iy = round(tmp(1,*))
+ix = round(tmp[0,*])
+iy = round(tmp[1,*])
 ;Don't do these minor ticks for big plots
 ;if keyword_set(BIGPLOT) then begin
 ;  print, 'bigplot set in timeaxis_text'
@@ -330,32 +330,32 @@ if (not(keyword_set(BIGPLOT) or keyword_set(FIVEYEAR))) then begin
 ;print, 'DOING MINOR TICKS...'
   if (onlylabel eq 0) then begin
     for i = 0, n_elements(v2)-1 do begin	; Minor ticks.
-      plots, [ix(i),ix(i)], [iy,iy+tickl/2.], color=color,/dev,thick=thick
+      plots, [ix[i],ix[i]], [iy,iy+tickl/2.], color=color,/dev,thick=thick
     endfor 
   endif   
 endif 
 ;-------  Top axis  -------------
 if n_elements(yvalue) eq 0 then begin
-   yv1 = !y.crange(1)
+   yv1 = !y.crange[1]
    if !y.type eq 1 then yv1 = 10^yv1
    if (onlylabel eq 0) then plots, !x.crange, [0,0]+yv1, color=color,thick=thick
    tmp = convert_coord(v,v*0.+yv1,/data,/to_dev)
-   ix = round(tmp(0,*))
-   iy = round(tmp(1,*))
+   ix = round(tmp[0,*])
+   iy = round(tmp[1,*])
    if (onlylabel eq 0) then begin
       for i = 0, n_elements(v)-1 do begin
-         plots, [ix(i),ix(i)], [0,-tickl]+iy, color=color, /dev,thick=thick
+         plots, [ix[i],ix[i]], [0,-tickl]+iy, color=color, /dev,thick=thick
       endfor
    endif   
 
    tmp = convert_coord(v2,v2*0.+yv1,/data,/to_dev)
-   ix = round(tmp(0,*))
-   iy = round(tmp(1,*))
+   ix = round(tmp[0,*])
+   iy = round(tmp[1,*])
 ;Don't do these minor ticks for big plots
  if (not keyword_set(BIGPLOT) and not keyword_set(FIVEYEAR)) then begin
    if (onlylabel eq 0) then begin
       for i = 0, n_elements(v2)-1 do begin	; Minor ticks.
-         plots,[ix(i),ix(i)],[0,-tickl/2.]+iy,color=color,/dev,thick=thick
+         plots,[ix[i],ix[i]],[0,-tickl/2.]+iy,color=color,/dev,thick=thick
       endfor
    endif    
  endif
@@ -365,7 +365,7 @@ endif
 if n_elements(title) ne 0 then begin
    tx = total(!x.crange)/2.
    tmp = convert_coord([tx],[yv],/data,/to_dev)
-   ix = tmp(0)
+   ix = tmp[0]
    iy = min(iymin)
    xprint,/init,ix,iy,/dev,size=size,dy=dy,charthick=charthick
    xprint,' ',/dev
@@ -394,43 +394,46 @@ if n_elements(grid) ne 0 then begin		; Major grid.
       if (keyword_set(FIVEYEAR)) then begin 
 	if ((i eq 0) or (i eq 2) or (i eq 4) or (i eq 6) or (i eq 8) or (i eq 10) or (i eq 12) or (i eq 14) or (i eq 16) or (i eq 18) or (i eq 20)) then thick = 4.0 else thick = savethick
       endif
-      ver, v(i), color=color, linestyle=grid, thickness=thick
+      ver, v[i], color=color, linestyle=grid, thickness=thick
    endfor
 endif
 if n_elements(grid2) ne 0 then begin		; Minor grid.
    for i = 0, n_elements(v2)-1 do begin
-      if (v2(i) mod dtt) ne 0 then begin
-         ver, v2(i), color=color, linestyle=grid2, thickness=thick/2.0
+      if (v2[i] mod dtt) ne 0 then begin
+         ver, v2[i], color=color, linestyle=grid2, thickness=thick/2.0
       endif
    endfor
 endif
 ;rc
 if (n_elements(addLabel) ne 0) and not keyword_set(nolabels) then begin
    addLsize = size(addLabel)
-   if ((addLsize(addLsize(0)+1) eq 7) and (addLsize(0) gt 0)) then begin
+   if ((addLsize(addLsize[0]+1) eq 7) and (addLsize[0] gt 0)) then begin
       Xchsize = float(!d.x_ch_size) * size ; in device coordinates
       Ychsize = float(!d.y_ch_size) * size ; in device coordinates
       tmp2 = convert_coord(!x.crange,!y.crange,/data,/to_dev)
-      xtmp2 = tmp2(0,0) - (max(strlen(addLabel))+5) * Xchsize
+      xtmp2 = tmp2[0,0] - (max(strlen(addLabel))+5) * Xchsize
       if keyword_set(plaboff) then begin
          ytmp2 = iyt + plaboff
       endif else begin
-         ytmp2 = tmp2(1,0) - oneperc*laboff + min([tickl,0]) - ychsize*1.5
+         ytmp2 = tmp2[1,0] - oneperc*laboff + min([tickl,0]) - ychsize*1.5
       endelse
 
       xprint, /init, xtmp2 ,ytmp2, /dev, size=size, dy=dy, yspace=ysp, charthick=charthick
       ;xprint,' '
       for i=0,n_elements(addLabel)-1 do begin
-         xprint, addLabel(i), align=0., color=color,y0=y0, /dev
+         xprint, addLabel[i], align=0., color=color,y0=y0, /dev
       endfor
 
 ;TJK add on...
       if (n_elements(add_ds) gt 0)then begin
-        if (add_ds(0) ne '') then begin
-	  xtmp2 = tmp2(0,1) + (15 * Xchsize)
+        if (add_ds[0] ne '') then begin
+	  xtmp2 = tmp2[0,1] + (17 * Xchsize)
           xprint, /init, xtmp2 ,ytmp2, /dev, size=size, dy=dy, yspace=ysp, charthick=charthick
           for i=0,n_elements(add_ds)-1 do begin
-            xprint, Add_ds(i), align=1., color=color,y0=y0, /dev
+                                ;TJK 5/16/2013 - truncate the dataset names
+                                ;so they'll not overwrite the number labels
+            if (strlen(add_ds[i]) gt 15) then add_ds[i] = strmid(add_ds[i],0,14)
+            xprint, Add_ds[i], align=1., color=color,y0=y0, /dev
           endfor
 	endif
       endif

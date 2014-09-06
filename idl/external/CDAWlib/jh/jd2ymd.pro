@@ -49,9 +49,9 @@
     days = jd - jd0             ; Day of year.
     w = where(days le 0, cnt)       ; Find where year is wrong.
     if cnt gt 0 then begin
-      y(w) = y(w) - 1           ; Year was off by 1.
-      jd0(w) = ymd2jd( y(w), 1, 0)      ; New JD for day 0.
-      days(w) = jd(w) - jd0(w)      ; New day of year.
+      y[w] = y[w] - 1           ; Year was off by 1.
+      jd0[w] = ymd2jd( y[w], 1, 0)      ; New JD for day 0.
+      days[w] = jd[w] - jd0[w]      ; New day of year.
     endif
  
     ;---  Correct for leap-years.  -----
@@ -78,17 +78,17 @@
     d = intarr(njd)     ; Set up storage for day of month.
     ; T.B.  i=0L  (was i=0)
     for i = 0L, njd-1 do begin   ; Loop through each JD.
-      ydays2 = ydays+ly(i)*off  ; Correct cumulative days for year.
-      dy = days(i)          ; Days into year for i'th JD.
+      ydays2 = ydays+ly[i]*off  ; Correct cumulative days for year.
+      dy = days[i]          ; Days into year for i'th JD.
       mn = 13-n_elements(where(dy le ydays2))  ; i'th month number.
-      m(i) = mn         ; Store month.
-      d(i) = fix(dy - ydays2(mn))   ; Find and store i'th day of month.
+      m[i] = mn         ; Store month.
+      d[i] = fix(dy - ydays2[mn])   ; Find and store i'th day of month.
     endfor
  
     ;---------  Make sure scalars are returned as scalars  -------
     if n_elements(m) eq 1 then begin
-      m = m(0)
-      d = d(0)
+      m = m[0]
+      d = d[0]
     endif
  
     return

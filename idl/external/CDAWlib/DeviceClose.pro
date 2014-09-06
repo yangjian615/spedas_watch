@@ -1,12 +1,20 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/DeviceClose.pro,v 1.7 2003/01/13 22:42:26 johnson Exp johnson $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/DeviceClose.pro,v 1.9 2013/09/06 16:07:52 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 7092 $
-Pro DeviceClose,command=command
+;$Revision: 15739 $
+;
+; History:
 ; 25 Aug 1993 Bobby Candey, Code 632
 ; Robert.M.Candey.1@gsfc.nasa.gov; 1995 June 22; added GIF
 ; added Mac/Win and ION, RMC 2001 July 19
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+Pro DeviceClose,command=command
 
 ; This procedure closes the print file and submits it to the printer
 
@@ -53,6 +61,12 @@ Case deviceType of
 ;    print,' byte map stored in file: ', file ; 'bytemap.dat'
 ;If you transfer the GIF image to a Macintosh, use Fetch and set its Suffix
 ;Mapping Custom option to assign the filetype 'GIFf' and use binary transfer.
+
+    ; RCJ 05/22/2014  Added !p.noerase=0 . If over 30 datasets are requested for
+    ; plot (ie, more than 30 buffers, the max currently allowed by each calll to plotmaster) and the
+    ; last of the first 30 is an orbit plot, subsequent plots show as 
+    ; all black windows.  Setting !p.noerase=0 fixed the problem in my tests.
+    !p.noerase=0
      device,/close   ;RTB added 11/96
     End            
 

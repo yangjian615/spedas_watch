@@ -143,26 +143,27 @@
 ;        yl = strtrim(fix(y-100*fix(y/100)),2)	; 2 digit year.
         yl = strmid(strtrim(y,2),2,2)     ;get the last two digits of the year.
         mnames = monthnames()			; List of names.
-        mu = mnames(m)				; Long month name.
+        mu = mnames[m]				; Long month name.
         ml = strmid(mu,0,3)			; 3 letter month name.
 	mn = string(m,form='(I2.2)')		; Month as a 2-digit number.
         dl = strtrim(d,2)			; Day of month.
 	dl0 = dl				;   Leading 0 form.
 	w = where(d lt 10, cnt)			; Look for day<10.
 	if cnt gt 0 then begin
-	  dl(w)=' '+dl(w)			;   Leading space form.
-	  dl0(w) = '0'+dl0(w)			;   Leading 0 form.
+	  dl[w]=' '+dl[w]			;   Leading space form.
+	  dl0[w] = '0'+dl0[w]			;   Leading 0 form.
 	endif
         wu = weekday(y,m,d)			; Long weekday name.
         wl = strmid(wu,0,3)			; 3 letter weekday name.
  
-	sechms, rem, h, m, s, hh, mm, ss	; Find Hr, Min, Sec.
+	sechms, rem, h, m, s, hh, mm, ss, frac=frac	; Find Hr, Min, Sec.
 	ii = strtrim(string(idays,format='(f20.2)'),2)
 	ii2 = strtrim(days,2)
 	hh2 = string(idays*24.,format='(I0)')
  
 	;-------  Handle fraction of second  ---------
-	frac = s - floor(s)
+	; RCJ 10/26/2012  Getting frac from func sechms above
+	;frac = s - floor(s)
 	if keyword_set(den) then begin		; nnn/ddd
 	  wid = strtrim(ceil(alog10(den)),2)
 	  dn = strtrim(den,2)
@@ -175,11 +176,11 @@
 	ff = strarr(num)
 	for i = 0, num-1 do begin
 	  if keyword_set(den) then begin
-	    ff(i) = string(den*frac(i),form=fm2)+'/'+dn    ; Add denominator.
+	    ff[i] = string(den*frac[i],form=fm2)+'/'+dn    ; Add denominator.
 	  endif else begin
-	    ;ff(i) = strmid(string(frac(i),form=fm1),1,99)  ; Keep dec. point.
+	    ;ff[i] = strmid(string(frac[i],form=fm1),1,99)  ; Keep dec. point.
 	    ; RCJ 01/29/2003. Do not keep dec. point. We get 2 dec points in the end!
-	    ff(i) = strmid(string(frac(i),form=fm1),2,99)
+	    ff[i] = strmid(string(frac[i],form=fm1),2,99)
 	  endelse
 	endfor
  
@@ -187,28 +188,28 @@
 	out = strarr(num)
 	for i = 0, num-1 do begin
 	  tmp = fmt
-	  tmp = stress(tmp, 'R', 0, 'I$', ii(i))   ; Interval in days (2 dp).
-	  tmp = stress(tmp, 'R', 0, 'i$', ii2(i))  ; Interval in days (int).
-	  tmp = stress(tmp, 'R', 0, 'H$', hh2(i))  ; Interval in integer hours.
-	  tmp = stress(tmp, 'R', 0, 'doy$',doy(i)) ; 3 digit day of year.
-	  tmp = stress(tmp, 'R', 0, 'Y$', yu(i))   ; 4 digit year.
-	  tmp = stress(tmp, 'R', 0, 'y$', yl(i))   ; 2 digit year.
-	  tmp = stress(tmp, 'R', 0, 'N$', mu(i))   ; Long month name.
-	  tmp = stress(tmp, 'R', 0, '0n$',mn(i))   ; Month as 2-digit number.
-	  tmp = stress(tmp, 'R', 0, 'n$', ml(i))   ; 3 letter month name.
-	  tmp = stress(tmp, 'R', 0, 'W$', wu(i))   ; Long weekday name.
-	  tmp = stress(tmp, 'R', 0, 'w$', wl(i))   ; 3 letter weekday name.
-	  tmp = stress(tmp, 'R', 0, '0d$',dl0(i))  ; Day of month (leading 0).
-	  tmp = stress(tmp, 'R', 0, 'd$', dl(i))   ; Day of month.
-	  tmp = stress(tmp, 'R', 0, 'h$', hh(i))   ; Hour.
-	  tmp = stress(tmp, 'R', 0, 'm$', mm(i))   ; Minute.
-	  tmp = stress(tmp, 'R', 0, 's$', ss(i))   ; Second.
-	  tmp = stress(tmp, 'R', 0, 'f$', ff(i))   ; Fraction of second.
+	  tmp = stress(tmp, 'R', 0, 'I$', ii[i])   ; Interval in days (2 dp).
+	  tmp = stress(tmp, 'R', 0, 'i$', ii2[i])  ; Interval in days (int).
+	  tmp = stress(tmp, 'R', 0, 'H$', hh2[i])  ; Interval in integer hours.
+	  tmp = stress(tmp, 'R', 0, 'doy$',doy[i]) ; 3 digit day of year.
+	  tmp = stress(tmp, 'R', 0, 'Y$', yu[i])   ; 4 digit year.
+	  tmp = stress(tmp, 'R', 0, 'y$', yl[i])   ; 2 digit year.
+	  tmp = stress(tmp, 'R', 0, 'N$', mu[i])   ; Long month name.
+	  tmp = stress(tmp, 'R', 0, '0n$',mn[i])   ; Month as 2-digit number.
+	  tmp = stress(tmp, 'R', 0, 'n$', ml[i])   ; 3 letter month name.
+	  tmp = stress(tmp, 'R', 0, 'W$', wu[i])   ; Long weekday name.
+	  tmp = stress(tmp, 'R', 0, 'w$', wl[i])   ; 3 letter weekday name.
+	  tmp = stress(tmp, 'R', 0, '0d$',dl0[i])  ; Day of month (leading 0).
+	  tmp = stress(tmp, 'R', 0, 'd$', dl[i])   ; Day of month.
+	  tmp = stress(tmp, 'R', 0, 'h$', hh[i])   ; Hour.
+	  tmp = stress(tmp, 'R', 0, 'm$', mm[i])   ; Minute.
+	  tmp = stress(tmp, 'R', 0, 's$', ss[i])   ; Second.
+	  tmp = stress(tmp, 'R', 0, 'f$', ff[i])   ; Fraction of second.
 	  tmp = repchr(tmp, '@', string(13B))	   ; <CR>
 	  tmp = repchr(tmp, '!', string(10B))	   ; <LF>
-	  out(i) = tmp
+	  out[i] = tmp
 	endfor
  
-	if n_elements(out) eq 1 then return, out(0)
+	if n_elements(out) eq 1 then return, out[0]
 	return, out
 	end

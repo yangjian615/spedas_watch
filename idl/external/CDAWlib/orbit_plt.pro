@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/orbit_plt.pro,v 1.127 2007/12/10 17:52:42 johnson Exp kovalick $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/orbit_plt.pro,v 1.163 2013/09/06 17:38:44 johnson Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 7092 $
+;$Revision: 15739 $
 
 ;+
 function get_depend0, astrc
@@ -12,9 +12,9 @@ function get_depend0, astrc
 ;
 
 dep0 = tagindex('DEPEND_0',tag_names(astrc.(0)))
-if (dep0(0) ne -1) then begin; found it!
+if (dep0[0] ne -1) then begin; found it!
   epoch_var = astrc.(0).(dep0) ; should return the epoch variable name.
-  if (epoch_var(0) ne '')then epoch_index = tagindex(epoch_var,tag_names(astrc))
+  if (epoch_var[0] ne '')then epoch_index = tagindex(epoch_var,tag_names(astrc))
 endif
 
 if (n_elements(epoch_index) eq 0) then begin
@@ -32,22 +32,22 @@ function ellipse,r,ra
  i=0 
 if(ra gt 0) then begin
  for x=0.0,ra,fact do begin
-  a(0,i)=x
-  a(1,i)=sqrt((r^2*(1.0-(x^2/ra^2))))
+  a[0,i]=x
+  a[1,i]=sqrt((r^2*(1.0-(x^2/ra^2))))
   i=i+1
  endfor
 endif else begin
  for x=ra,0.0,fact do begin
-  a(0,i)=x
-  a(1,i)=sqrt((r^2*(1.0-(x^2/ra^2))))
+  a[0,i]=x
+  a[1,i]=sqrt((r^2*(1.0-(x^2/ra^2))))
   i=i+1
  endfor
 endelse
- b=a(1,*)
+ b=a[1,*]
  wc=where(b ne 0,wcn)
  c=dblarr(2,wcn)
- c(0,*)=a(0,wc)
- c(1,*)=b(wc)
+ c[0,*]=a[0,wc]
+ c[1,*]=b[wc]
 return,c
 end
 
@@ -169,7 +169,7 @@ for i=1L, numstr do begin
    if (proj eq 'SSC') then begin
       v_temp='XYZ_'+crd_sys 
    endif else if (proj eq 'NEW') then begin
-      v_temp=var_names(var_index)
+      v_temp=var_names[var_index]
    endif else v_temp=crd_sys+'_POS'
 
    wc=where(var_names eq v_temp, wcn)
@@ -188,9 +188,9 @@ for i=1L, numstr do begin
                 s=execute('fval= astrc.(i).XYZ_'+crd_sys+'.fillval')
                 if(strupcase(dist) eq "KM") then scale=6371.2 else scale=1.0
                 if(strlen(strtrim(dist,2)) ne 0) then begin
-                   w4=execute('x=astrc.(i).XYZ_'+crd_sys+'.dat(0,*)/scale')
-                   w5=execute('y=astrc.(i).XYZ_'+crd_sys+'.dat(1,*)/scale')
-                   w6=execute('z=astrc.(i).XYZ_'+crd_sys+'.dat(2,*)/scale')
+                   w4=execute('x=astrc.(i).XYZ_'+crd_sys+'.dat[0,*]/scale')
+                   w5=execute('y=astrc.(i).XYZ_'+crd_sys+'.dat[1,*]/scale')
+                   w6=execute('z=astrc.(i).XYZ_'+crd_sys+'.dat[2,*]/scale')
                    ; RTB testing 3/16/2000
                    w6=execute('valmin=astrc.(i).XYZ_'+crd_sys+'.validmin/scale')
                    w6=execute('valmax=astrc.(i).XYZ_'+crd_sys+'.validmax/scale')
@@ -206,9 +206,9 @@ for i=1L, numstr do begin
                 s=execute('fval= astrc.(i).(var_index).fillval')
                 if(strupcase(dist) eq "KM") then scale=6371.2 else scale=1.0
                 if(strlen(strtrim(dist,2)) ne 0) then begin
-                   w4=execute('x=astrc.(i).(var_index).dat(0,*)/scale')
-                   w5=execute('y=astrc.(i).(var_index).dat(1,*)/scale')
-                   w6=execute('z=astrc.(i).(var_index).dat(2,*)/scale')
+                   w4=execute('x=astrc.(i).(var_index).dat[0,*]/scale')
+                   w5=execute('y=astrc.(i).(var_index).dat[1,*]/scale')
+                   w6=execute('z=astrc.(i).(var_index).dat[2,*]/scale')
                    ; RTB testing 3/16/2000
                    w6=execute('valmin=astrc.(i).(var_index).validmin/scale')
                    w6=execute('valmax=astrc.(i).(var_index).validmax/scale')
@@ -224,9 +224,9 @@ for i=1L, numstr do begin
                s=execute('fval= astrc.(i).'+crd_sys+'.fillval')
                if(strupcase(dist) eq "KM") then scale=6371.2 else scale=1.0
                if(strlen(strtrim(dist,2)) ne 0) then begin
-                  w4=execute('x=astrc.(i).'+crd_sys+'_pos.dat(0,*)/scale')
-                  w5=execute('y=astrc.(i).'+crd_sys+'_pos.dat(1,*)/scale')
-                  w6=execute('z=astrc.(i).'+crd_sys+'_pos.dat(2,*)/scale')
+                  w4=execute('x=astrc.(i).'+crd_sys+'_pos.dat[0,*]/scale')
+                  w5=execute('y=astrc.(i).'+crd_sys+'_pos.dat[1,*]/scale')
+                  w6=execute('z=astrc.(i).'+crd_sys+'_pos.dat[2,*]/scale')
                   ; RTB testing 3/16/2000
                   w6=execute('valmin=astrc.(i).'+crd_sys+'_pos.validmin/scale')
                   w6=execute('valmax=astrc.(i).'+crd_sys+'_pos.validmax/scale')
@@ -239,12 +239,12 @@ for i=1L, numstr do begin
                end
       endcase
 
-      axmin(ns)=min(x,max=maxmax)
-      axmax(ns)=maxmax
-      aymin(ns)=min(y,max=maymax)
-      aymax(ns)=maymax
-      azmin(ns)=min(z,max=mazmax)
-      azmax(ns)=mazmax
+      axmin[ns]=min(x,max=maxmax)
+      axmax[ns]=maxmax
+      aymin[ns]=min(y,max=maymax)
+      aymax[ns]=maymax
+      azmin[ns]=min(z,max=mazmax)
+      azmax[ns]=mazmax
 
       ns=ns+1
    endif ; end crd_sys structure test 
@@ -263,14 +263,14 @@ fzmax=max(azmax)
 ;print, valmax
 ;
 vsize=size(valmin)
-if(vsize(0) eq 0) then begin
+if(vsize[0] eq 0) then begin
   xstr=orbax_scl(fxmin,fxmax,valmin,valmax)
   ystr=orbax_scl(fymin,fymax,valmin,valmax)
   zstr=orbax_scl(fzmin,fzmax,valmin,valmax)
 endif else begin
-  xstr=orbax_scl(fxmin,fxmax,valmin(0),valmax(0))
-  ystr=orbax_scl(fymin,fymax,valmin(0),valmax(0))
-  zstr=orbax_scl(fzmin,fzmax,valmin(0),valmax(0))
+  xstr=orbax_scl(fxmin,fxmax,valmin[0],valmax[0])
+  ystr=orbax_scl(fymin,fymax,valmin[0],valmax[0])
+  zstr=orbax_scl(fzmin,fzmax,valmin[0],valmax[0])
 endelse
 
 rstrc=create_struct('xmin',xstr.min,'xmax',xstr.max,'ymin',ystr.min,'ymax',ystr.max,'zmin',zstr.min,'zmax',zstr.max)
@@ -280,7 +280,7 @@ end
 
 pro time_range,epoch,sat
 n=n_elements(epoch)
-;print,sat,' ',pdate(epoch(0)),' ',pdate(epoch(n-1))
+;print,sat,' ',SB_pdate(epoch[0]),' ',SB_pdate(epoch[n-1])
 end
 
 ; New orbit_date
@@ -297,36 +297,36 @@ if n_elements(ct) eq 0 then ct =1.0
 ;added 
 dep = hrtick*3600d3
 dephrmark = hrmark*3600d3
-cdf_epoch,epoch(0),yr,month,dom,/break
+cdf_epoch,epoch[0],yr,month,dom,/break
 cdf_epoch,ep0,yr,month,dom,/comp
-np = fix( (epoch(n-1)-ep0)/dep) + 4
+np = fix( (epoch[n-1]-ep0)/dep) + 4
 epochs = ep0+indgen(np)*dep
-ii = where( (epochs ge epoch(0)) and (epochs le epoch(n-1))  )
-;print,'time range:',pdate(epoch(0)),' ',pdate(epoch(n-1))
-epochs = epochs(ii)
+ii = where( (epochs ge epoch[0]) and (epochs le epoch[n-1])  )
+;print,'time range:',SB_pdate(epoch[0]),' ',SB_pdate(epoch[n-1])
+epochs = epochs[ii]
 n = n_elements(epochs)
 ;
 for i=0L,n-1L do begin
-   cdf_epoch,epochs(i),yr,month,dom,hr,min,/break
+   cdf_epoch,epochs[i],yr,month,dom,hr,min,/break
    cdf_epoch,ep0,yr,month,dom,/comp
    ical,yr,doy,month,dom,/idoy
    ;print,yr,doy,month,dom,min
-   epdiff =min(abs(epochs(i)-epoch))
-   if epdiff gt time_incr(epoch) then goto, skip
-   dt =epochs(i)-ep0
+   epdiff =min(abs(epochs[i]-epoch))
+   if epdiff gt SB_time_incr(epoch) then goto, skip
+   dt =epochs[i]-ep0
    if (dt mod dep) eq 0 then begin
-      ii = where(epochs(i) ge epoch)
-      j = ii(0)
+      ii = where(epochs[i] ge epoch)
+      j = ii[0]
       if j eq n-1 then begin
-         xp = x(i)
-         yp = y(i)
+         xp = x[i]
+         yp = y[i]
       endif else begin
 ;TJK 10/25/2006 - change name of interp routine (in b_lib.pro) because
 ;of conflicts w/ SSL s/w routine.
-;         xp = interp(epochs(i),epoch,x) 
-;         yp = interp(epochs(i),epoch,y) 
-         xp = orbit_interp(epochs(i),epoch,x) 
-         yp = orbit_interp(epochs(i),epoch,y) 
+;         xp = interp(epochs[i],epoch,x) 
+;         yp = interp(epochs[i],epoch,y) 
+         xp = SB_orbit_interp(epochs[i],epoch,x) 
+         yp = SB_orbit_interp(epochs[i],epoch,y) 
       endelse
       symsize=1.2
       oplot,[1,1]*xp,[1,1]*yp,noclip=noclip,psym=1,symsize=cs,color=color
@@ -367,19 +367,19 @@ p2=dblarr(2)
 if(mnmark gt 60) then hrmark=0
 ;
 ;TJK this returns a negative number at least for cluster data
-;hr2=fix(epoch(0)/3600000)
-hr2=(epoch(0)/3600000)
+;hr2=fix(epoch[0]/3600000)
+hr2=(epoch[0]/3600000)
 ;TJK find out whether this datset has minutes starting at 0 or not
 minmin = 60
 for i=0L,n-1L do begin
-   cdf_epoch,epoch(i),yr,month,dom,hr,min,/break
+   cdf_epoch,epoch[i],yr,month,dom,hr,min,/break
      ;find the minimum minute value for this set of epoch values
      if (min lt minmin) then minmin = min
 endfor
 
 for i=0L,n-1L do begin
-;  cdf_epoch,epochs(i),yr,month,dom,hr,min,/break
-   cdf_epoch,epoch(i),yr,month,dom,hr,min,/break
+;  cdf_epoch,epochs[i],yr,month,dom,hr,min,/break
+   cdf_epoch,epoch[i],yr,month,dom,hr,min,/break
    min=fix(min)
    ical,yr,doy,month,dom,/idoy
 ; Build string for date
@@ -393,19 +393,19 @@ for i=0L,n-1L do begin
 ; Include hour total option
 ihr=fix(hr)
 ;TJK the following is returning a negative number - at least for Cluster data
-;hr1=fix(epoch(i)/3600000)
-hr1=(epoch(i)/3600000)
+;hr1=fix(epoch[i]/3600000)
+hr1=(epoch[i]/3600000)
 hrtot=hr1-hr2
 if(hrmark gt 24) then hr=fix(hrtot)
 
 ; force last mark at last point
 ; Hour and day ticks and marks
-         xp = x(i)
-         yp = y(i)
-         p1(0) = x(i)
-         p2(0) = y(i)
-         if(i ne (n-1)) then p1(1) = x(i+1) else p1(1) = x(i-1)
-         if(i ne (n-1)) then p2(1) = y(i+1) else p2(1) = y(i-1)
+         xp = x[i]
+         yp = y[i]
+         p1[0] = x[i]
+         p2[0] = y[i]
+         if(i ne (n-1)) then p1[1] = x(i+1) else p1[1] = x(i-1)
+         if(i ne (n-1)) then p2[1] = y(i+1) else p2[1] = y(i-1)
 ;TJK 1/9/2001 change to allow plotting of Cluster tick marks - they never have 
 ;minute values at "zero".    if min eq 0 then begin
 ;TJK 1/11/2001 change this logic because now we're getting too many tick marks for datasets
@@ -424,7 +424,7 @@ if(hrmark gt 24) then hr=fix(hrtot)
       else xyouts,xp,yp,noclip=noclip,string(hr,format='(" ",'+hrfm+',":00")') $
                ,charthick=ct,charsize=cs,color=color
 ;     	oplot,[1]*xp,[1]*yp,noclip=noclip,psym=1,symsize=cs,color=color
-        make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
+        SB_make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
      endif
     endif
      if((hrmark eq 0) and (doymark ne 0)) then begin
@@ -434,7 +434,7 @@ if(hrmark gt 24) then hr=fix(hrtot)
                ,string(doy_st,format='(" ",'+dfm+')') $
                ,charthick=ct,color=color,charsize=cs 
 ;     	oplot,[1]*xp,[1]*yp,noclip=noclip,psym=1,symsize=cs,color=color
-        make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
+        SB_make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
        endif
      endif
      if((hrmark ne 0) and (doymark eq 0)) then begin
@@ -442,14 +442,14 @@ if(hrmark gt 24) then hr=fix(hrtot)
          xyouts,xp,yp,noclip=noclip,string(hr,format='(" ",'+hrfm+',":00")') $
                ,charthick=ct,charsize=cs,color=color
 ;     	oplot,[1]*xp,[1]*yp,noclip=noclip,psym=1,symsize=cs,color=color
-        make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
+        SB_make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
       endif
      endif
 ; Add tick marks
      if(hrtick ne 0) then begin
       if ( (hr/float(hrtick)) mod 1 ) eq 0 then  $
 ;    	oplot,[1,1]*xp,[1,1]*yp,noclip=noclip,psym=1,symsize=cs,color=color
-        make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
+        SB_make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
      endif
  endif
 ; Minute ticks and marks
@@ -469,47 +469,49 @@ if(hrmark gt 24) then hr=fix(hrtot)
  if(mntick gt 60) then begin
   hrmin=60*hr+min
   if((hrmin mod mntick) eq 0) then $
-     make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
+     SB_make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
  endif
  if((mntick ne 0) and (mntick le 60)) then begin
   if((min mod mntick) eq 0) then $ 
-     make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
+     SB_make_tick, p2, p1,symsiz=symsiz,symcol=color,map=map
  endif
 
 endfor
 
 end
- 
-pro legend,i,labpos=labpos,sats=sats,colors=colors,overplot=overplot,$
-             charsize=cs
-; Not called any longer
-sc = 1.1   ; 0.7
-chsize,xch,ych,norm=0
-xch = abs(xch)
-ych = abs(ych) 
-ichy = n_elements(sats)
-ichx = max(strlen(sats))
-x=!x.crange & dx = x(1)-x(0) & sgnx = sgn(dx)
-y =!y.crange & dy = y(1)-y(0) & sgny = sgn(dy)
-;x0=x(1) - sgnx*1.1*ichx*xch  ; 1.1
-if(n_elements(labpos) eq 0) then begin
-  x0=x(1)/6 & y0 = y(1)-(i+.5)*sgny*sc*ych
-endif else begin
-  x0=labpos(0) & y0=labpos(1)-(i+.5)*sgny*sc*ych
-endelse
 
-; plot symbol conditions
-pltsym=i+1
-if((pltsym eq 3) or (pltsym gt 7)) then pltsym=7 
-; setup array for symbols to be plotted
-  xfc=dx/50.0 & yfc=dy/50.0
-  x1=dblarr(1) & y1=dblarr(1)
-  x1(0)=x0-xfc & y1(0)=y0+yfc
- 
-    xyouts,x0,y0,sats,color=colors,charsize=cs
-    oplot,x1,y1,color=colors,psym=pltsym,symsize=symsiz
-
-end
+;RCJ 06/22/2012  Commented out this pro.  IDL8 has its own 'legend', and so does
+;   the Astronomy Library.  So, if in the future you need this pro, rename it.
+;pro legend,i,labpos=labpos,sats=sats,colors=colors,overplot=overplot,$
+;             charsize=cs
+;; Not called any longer
+;sc = 1.1   ; 0.7
+;chsize,xch,ych,norm=0
+;xch = abs(xch)
+;ych = abs(ych) 
+;ichy = n_elements(sats)
+;ichx = max(strlen(sats))
+;x=!x.crange & dx = x[1]-x[0] & sgnx = sgn(dx)
+;y =!y.crange & dy = y[1]-y[0] & sgny = sgn(dy)
+;;x0=x[1] - sgnx*1.1*ichx*xch  ; 1.1
+;if(n_elements(labpos) eq 0) then begin
+;  x0=x[1]/6 & y0 = y[1]-(i+.5)*sgny*sc*ych
+;endif else begin
+;  x0=labpos[0] & y0=labpos[1]-(i+.5)*sgny*sc*ych
+;endelse
+;
+;; plot symbol conditions
+;pltsym=i+1
+;if((pltsym eq 3) or (pltsym gt 7)) then pltsym=7 
+;; setup array for symbols to be plotted
+;  xfc=dx/50.0 & yfc=dy/50.0
+;  x1=dblarr(1) & y1=dblarr(1)
+;  x1[0]=x0-xfc & y1[0]=y0+yfc
+; 
+;    xyouts,x0,y0,sats,color=colors,charsize=cs
+;    oplot,x1,y1,color=colors,psym=pltsym,symsize=symsiz
+;
+;end
 
 function region_orbit,epoch,x,y,z,xmp,rhomp,xbs,rhobs
 ;region orbit into regions of geospace
@@ -549,21 +551,21 @@ regbs = indgen(npts)
 
 for i=0L,npts-1 do begin
 ; causes error values in HEC Re corrdinates   RTB 5/2000
-;   if(abs(x(i)) ge 6371.2) then x=x/6371.2
-;   if(abs(y(i)) ge 6371.2) then y=y/6371.2
-;   if(abs(z(i)) ge 6371.2) then z=z/6371.2
-    if rho(i) ge rhompmax then begin
-	regmp(i)=-1 
+;   if(abs(x[i]) ge 6371.2) then x=x/6371.2
+;   if(abs(y[i]) ge 6371.2) then y=y/6371.2
+;   if(abs(z[i]) ge 6371.2) then z=z/6371.2
+    if rho[i] ge rhompmax then begin
+	regmp[i]=-1 
     endif else begin
-	r = interpol(xmp,rhomp,rho(i))-x(i) ; >0 inside magnetosphere
-	regmp(i) = r/abs(r)
+	r = interpol(xmp,rhomp,rho[i])-x[i] ; >0 inside magnetosphere
+	regmp[i] = r/abs(r)
     endelse
 
-    if rho(i) ge rhobsmax then begin
-	regbs(i)=-1
+    if rho[i] ge rhobsmax then begin
+	regbs[i]=-1
     endif else begin
-	r = interpol(xbs,rhobs,rho(i))-x(i) ; >0 inside magnetosphere
-	regbs(i) = r/abs(r)
+	r = interpol(xbs,rhobs,rho[i])-x[i] ; >0 inside magnetosphere
+	regbs[i] = r/abs(r)
     endelse
 endfor
 ; -2 -> SW, 0 -> magnetosheath ,2 -> magnetosphere
@@ -575,26 +577,28 @@ end
 pro plot_orbit,x,y,ks,regions=region,color=color,lnthick=lnthick
 ; plot symbol conditions
 kks=ks
-if(kks ge 6) then kks=ks-6
+;TJK off by one in order to match the labels at bottom of plot
+;if(kks ge 6) then kks=ks-6
+if(kks ge 5) then kks=ks-4
 pltsym=kks+1
 if(pltsym eq 3) then pltsym=7
 
 npts = n_elements(x)
 i=indgen(npts-1)
-dr=region(i+1)-region(i)
+dr=region(i+1)-region[i]
 ii=where( dr ne 0 )
-if ii(0) eq -1 then begin
+if ii[0] eq -1 then begin
    ii=[0,npts-1]
 endif else begin
    ii=[0,[ii],npts-1]
 endelse
 nseq = n_elements(ii)-1
 for i=0L,nseq-1 do begin
-    xs = x(ii(i):ii(i+1))
-    ys = y(ii(i):ii(i+1)) 
-    imid =(ii(i)+ii(i+1))/2
+    xs = x(ii[i]:ii(i+1))
+    ys = y(ii[i]:ii(i+1)) 
+    imid =(ii[i]+ii(i+1))/2
     reg = long(region(imid))
-;     print,ii(i),imid,ii(i+1),' region:',reg
+;     print,ii[i],imid,ii(i+1),' region:',reg
 
     case reg of
        -2l: linestyle=0 
@@ -608,16 +612,22 @@ for i=0L,nseq-1 do begin
     oplot,xs,ys,linestyle=linestyle ,color=color,thick=lnthick
 endfor
     x1=dblarr(1) & y1=dblarr(1)
-    x1(0)=x(0) & y1(0)=y(0)
+    ;x1[0]=x[0] & y1[0]=y[0]
+    ;  RCJ 03/02/2011  Line above places the symbol at the beginning of the track.
+    ;                  Line below places it at the end. Seems to make more sense, right?
+    x1[0]=x(n_elements(x)-1) & y1[0]=y(n_elements(y)-1)
     oplot,x1,y1,psym=pltsym,color=color,thick=lnthick
+    ;  Attempt to place arrows in the direction the s/c is moving. Not worth persuing.
+    ;x1[0]=x((n_elements(x)-1)/2) & y1[0]=y((n_elements(y)-1)/2)
+    ;arrow,x(((n_elements(x)-1)/2)-10),y(((n_elements(y)-1)/2)-10),x1,y1,color=color,hthick=3,/data
 end
 
 ;The following routine doesn't seem to be used anymore.
 pro load_interval,eprange,orbit,x,y,z,epoch
-ep0 = eprange(0)
-ep1 = eprange(1)
+ep0 = eprange[0]
+ep1 = eprange[1]
 ii = where( (orbit.epoch ge ep0) and (orbit.epoch le ep1) )
-if(ii(0) eq -1) then begin
+if(ii[0] eq -1) then begin
    x=0
    y=0
    z=0
@@ -646,7 +656,7 @@ function rot_x, x,y,z,deg
   new=dblarr(3)
  
   for i=0L,num-1 do begin
-    old=[x(i),y(i),z(i)] 
+    old=[x[i],y[i],z[i]] 
  
     for n=0,2 do begin
      tmp=0.0
@@ -655,7 +665,7 @@ function rot_x, x,y,z,deg
      endfor 
      new(n)=tmp
     endfor
-    r(i,*)=new(*)
+    r[i,*]=new[*]
  endfor 
   return, r 
  end
@@ -674,7 +684,7 @@ region = region_orbit(epoch,x,y,z,xmp,rhomp,xbs,rhobs)
 ;print, 'xz', region
 ;print, 'xz region'
       plot_orbit,x,z,ks,region = region, color=color,lnthick=lnthick
-        orbit_date,epoch,x,z,doymark,hrmark,hrtick,mntick,mnmark,$
+      orbit_date,epoch,x,z,doymark,hrmark,hrtick,mntick,mnmark,$
         color=color,noclip=noclip,charsize=cs,date=date,symsiz=symsiz
       end
  'xy':begin
@@ -683,7 +693,7 @@ region = region_orbit(epoch,x,y,z,xmp,rhomp,xbs,rhobs)
 ;print, 'xy region'
         plot_orbit,x,y,ks,region = region, color=color,lnthick=lnthick
         orbit_date,epoch,x,y,doymark,hrmark,hrtick,mntick,mnmark,$
-        color=color,noclip=noclip,charsize=cs,date=date,symsiz=symsiz
+          color=color,noclip=noclip,charsize=cs,date=date,symsiz=symsiz
       end
  'yz':begin         
 region = region_orbit(epoch,x,y,z,xmp,rhomp,xbs,rhobs)
@@ -691,7 +701,7 @@ region = region_orbit(epoch,x,y,z,xmp,rhomp,xbs,rhobs)
 ;print, 'yz region'
         plot_orbit,y,z,ks,region = region, color=color,lnthick=lnthick
         orbit_date,epoch,y,z,doymark,hrmark,hrtick,mntick,mnmark,$
-        color=color,noclip=noclip,charsize=cs,date=date,symsiz=symsiz
+          color=color,noclip=noclip,charsize=cs,date=date,symsiz=symsiz
       end
  'xr':begin          
 ;print, 'xr region'
@@ -703,12 +713,12 @@ region = region_orbit(epoch,x,y,z,xmp,rhomp,xbs,rhobs)
         numb=n_elements(y)
         r=dblarr(numb)
         for j=0L, numb-1 do begin
-         r(j)=sqrt(y(j)^2 +z(j)^2)
-;         if(z(j) lt 0) then r(j)=-1.D0*r(j)
+         r[j]=sqrt(y[j]^2 +z[j]^2)
+;         if(z[j] lt 0) then r[j]=-1.D0*r[j]
         endfor 
         plot_orbit,x,r,ks,region = region, color=color,lnthick=lnthick
         orbit_date,epoch,x,r,doymark,hrmark,hrtick,mntick,mnmark,$
-        color=color,noclip=noclip,charsize=cs,date=date,symsiz=symsiz
+          color=color,noclip=noclip,charsize=cs,date=date,symsiz=symsiz
       end
 endcase
 endif
@@ -717,8 +727,8 @@ end
 function secant,x,y
 ; Find 0 crossing
  wm=where((x lt 0), w1)                                                        
- n=wm(0)
- n1=wm(0)-1
+ n=wm[0]
+ n1=wm[0]-1
  r=y(n)-x(n)*((y(n)-y(n1))/(x(n)-x(n1)))
 return, r
 end
@@ -760,6 +770,12 @@ end
 ;
 ; Other variables
 ;  overplot  - controls plotting over the same axises 
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 function orbit_plt,astrc,tstart=tstart,tstop=tstop,xsize=xsize,ysize=ysize, $
                    orb_vw=orb_vw,press=press,bz=bz,crd_sys=crd_sys,xmar=xmar,$
@@ -769,6 +785,10 @@ function orbit_plt,astrc,tstart=tstart,tstop=tstop,xsize=xsize,ysize=ysize, $
                labpos=labpos,chtsize=chtsize,US=us,BSMP=bsmp,autoscl=autoscl,$
       symsiz=symsiz,lnthick=lnthick,autolabel=autolabel,datelabel=datelabel, $
                    eqlscl=eqlscl,panel=panel 
+
+
+compile_opt idl2
+
 
 status=0
 ; Establish error handler
@@ -783,13 +803,13 @@ status=0
 numstr=astrc.(0)
 epoch_index=intarr(numstr+1)
 for ii=1, numstr do begin
- epoch_index(ii) = get_depend0(astrc.(ii))
- ;print, 'epoch index = ',epoch_index(ii)
- if (epoch_index(ii) lt 0) then begin
+ epoch_index[ii] = get_depend0(astrc.(ii))
+ ;print, 'epoch index = ',epoch_index[ii]
+ if (epoch_index[ii] lt 0) then begin
   print,'ERROR= No Epoch variable found' & return,-1
  endif
 endfor
-;nel = n_elements(astrc.(1).(epoch_index(1)).dat)
+;nel = n_elements(astrc.(1).(epoch_index[1]).dat)
 
 if(n_elements(overplot) eq 0) then overplot=0 
 if(n_elements(bz) eq 0) then bz = 0
@@ -827,15 +847,15 @@ if((n_elements(rumn) eq 0) and (n_elements(rumx) eq 0)) then autoscl=1L
 if(n_elements(tstart) eq 0) then begin
   gmins=dblarr(numstr)
 ;  for ik=1,numstr do gmins(ik-1)=astrc.(ik).epoch.dat(0) 
-  for ik=1L,numstr do gmins(ik-1)=astrc.(ik).(epoch_index(ik)).dat(0) 
+  for ik=1L,numstr do gmins[ik-1]=astrc.(ik).(epoch_index[ik]).dat[0] 
   tstart=min(gmins)
 endif
 ; Determine stop time from all satellites in structure
 if(n_elements(tstop) eq 0) then begin
   gmaxs=dblarr(numstr)
   for ik=1L,numstr do begin  
-   nel = n_elements(astrc.(ik).(epoch_index(ik)).dat)
-   gmaxs(ik-1)=astrc.(ik).(epoch_index(ik)).dat(nel-1) 
+   nel = n_elements(astrc.(ik).(epoch_index[ik]).dat)
+   gmaxs[ik-1]=astrc.(ik).(epoch_index[ik]).dat[nel-1] 
   endfor
   tstop=max(gmaxs)
 endif
@@ -904,7 +924,7 @@ endif
  if((crd_sys eq 'TOD') or (crd_sys eq 'J2000') or (crd_sys eq 'GEO') or (crd_sys eq 'GM')) then begin 
    orn=n_elements(orb_vw)
    woc=where(orb_vw ne 'xr',oc)
-   orb_vw=orb_vw(woc)
+   orb_vw=orb_vw[woc]
  endif
 ; Determine structure of axis limits
  if(autoscl) then ax_limits=autoscaler(astrc,crd_sys=crd_sys)
@@ -938,7 +958,7 @@ nall_sats='/'
 
 for ks=1L, numstr do begin 
    proj='' ;initiate proj or it will be 'NEW' for cases when it shouldn't be. RCJ 08/28/02
-   nsat=strtrim(tagnms(ks),2)
+   nsat=strtrim(tagnms[ks],2)
    var_names=tag_names(astrc.(ks))
    ; print, var_names
 
@@ -981,27 +1001,27 @@ for ks=1L, numstr do begin
    if(proj eq 'SSC') then begin
       v_temp='XYZ_'+crd_sys 
    endif else if (proj eq 'NEW') then begin
-      v_temp=var_names(var_index)
+      v_temp=var_names[var_index]
    endif else v_temp=crd_sys+'_POS'
 
    wc=where(var_names eq v_temp, wcn)
 
    if(wcn gt 0) then begin ; Allow only sub-structures w/ appropriate CRD_SYS
 
-      nel = n_elements(astrc.(ks).(epoch_index(ks)).dat)
-      ep00 = astrc.(ks).(epoch_index(ks)).dat(0)
-      ep11 = astrc.(ks).(epoch_index(ks)).dat(nel-1)
+      nel = n_elements(astrc.(ks).(epoch_index[ks]).dat)
+      ep00 = astrc.(ks).(epoch_index[ks]).dat[0]
+      ep11 = astrc.(ks).(epoch_index[ks]).dat[nel-1]
 
-      time_range,astrc.(ks).(epoch_index(ks)).dat,nsat 
+      time_range,astrc.(ks).(epoch_index[ks]).dat,nsat 
 
-      ;print,'orbit data time interval:',pdate(ep00),' ',pdate(ep11)
+      ;print,'orbit data time interval:',SB_pdate(ep00),' ',SB_pdate(ep11)
 
       start_time = 0.0D0 ; initialize
       stop_time = 0.0D0 ; initialize
       if keyword_set(TSTART) then begin ; determine datatype and process if needed
          b1 = size(TSTART) & c1 = n_elements(b1)
-         if (b1(c1-2) eq 5) then start_time = TSTART $ ; double float already
-             else if (b1(c1-2) eq 7) then start_time = encode_cdfepoch(TSTART) $ ; string
+         if (b1[c1-2] eq 5) then start_time = TSTART $ ; double float already
+             else if (b1[c1-2] eq 7) then start_time = encode_cdfepoch(TSTART) $ ; string
          else begin
             print,'ERROR= TSTART parameter must be STRING or DOUBLE' & return,-1
          endelse
@@ -1009,8 +1029,8 @@ for ks=1L, numstr do begin
 
       if keyword_set(TSTOP) then begin ; determine datatype and process if needed
          b1 = size(TSTOP) & c1 = n_elements(b1)
-         if (b1(c1-2) eq 5) then stop_time = TSTOP $ ; double float already
-            else if (b1(c1-2) eq 7) then stop_time = encode_cdfepoch(TSTOP) $ ; string
+         if (b1[c1-2] eq 5) then stop_time = TSTOP $ ; double float already
+            else if (b1[c1-2] eq 7) then stop_time = encode_cdfepoch(TSTOP) $ ; string
          else begin
             print,'ERROR= TSTOP parameter must be STRING or DOUBLE' & return,-1
          endelse
@@ -1018,9 +1038,9 @@ for ks=1L, numstr do begin
 
       ; Determine indices of epoch.dat that are within the tstart and tstop
 
-      tind=where((astrc.(ks).(epoch_index(ks)).dat ge start_time) and  $
-            (astrc.(ks).(epoch_index(ks)).dat le stop_time),w)
-      if(tind(0) lt 0) then begin
+      tind=where((astrc.(ks).(epoch_index[ks]).dat ge start_time) and  $
+            (astrc.(ks).(epoch_index[ks]).dat le stop_time),w)
+      if(tind[0] lt 0) then begin
          print, 'ERROR= Start or stop time beyond range of data'
          print, 'STATUS= Start or stop time beyond range of data'
          print, 'STATUS= Re-select time interval'
@@ -1059,28 +1079,28 @@ for ks=1L, numstr do begin
       endif
 
       ;itle1=rdate1(ep00,format='all') + ' to ' + rdate1(ep11,format='all')
-      title1=rdate1(tstart,format='all') + ' to ' + rdate1(tstop,format='all')
+      title1=SB_rdate1(tstart,format='all') + ' to ' + SB_rdate1(tstop,format='all')
 
       ; Loop through desired views (xy, xz, yz, xr)
       for i=0L,inc-1 do begin
 
          ;set location for each projection
          title2=''
-         pregion,nx,ny,i,/edge,xmargin=xmar,ymargin=ymar,title=title2,bkgrd=bkgrd,$
+         SB_pregion,nx,ny,i,/edge,xmargin=xmar,ymargin=ymar,title=title2,bkgrd=bkgrd,$
             overplot=overplot,chtsz=chtsize0
          ; Set xmin, xmax and ymin, ymax
 
          ;if((panel) and (autoscl)) then begin
          ;  even_scales,xrange0,yrange0,xrange,yrange
-         ;  xmin=xrange(0)
-         ;  xmax=xrange(1)
-         ;  ymin=yrange(0)
-         ;  ymax=yrange(1)
+         ;  xmin=xrange[0]
+         ;  xmax=xrange[1]
+         ;  ymin=yrange[0]
+         ;  ymax=yrange[1]
          ;endif
 
          ; Overwrite results of even_scales routine
          if(autoscl) then begin
-            case orb_vw(i) OF
+            case orb_vw[i] OF
                'xy' : begin
                       xmin=min([ax_limits.xmin,ax_limits.ymin])
                       xmax=max([ax_limits.xmax,ax_limits.ymax])
@@ -1112,7 +1132,7 @@ for ks=1L, numstr do begin
                        end 
             endcase
          endif else begin ; autoscl
-            case orb_vw(i) of
+            case orb_vw[i] of
                'xy' : begin
                       xmin=xumn
                       xmax=xumx
@@ -1145,27 +1165,27 @@ for ks=1L, numstr do begin
 
          ; Equal Scale w/ advanced 1-column panel mode
          if((eqlscl) and (panel)) then begin
-            pp1=!p.position(1)
-            pp3=!p.position(3)
+            pp1=!p.position[1]
+            pp3=!p.position[3]
             ppdf=pp3-pp1
             dpos=(ymax-ymin)*ppdf/(xmax-xmin)
             pp3n=pp1+dpos
             ; If position exceeds = scale limit; use default to = scale & = axis length
             if(pp3n ge pp3) then begin
-               !p.position(3)=pp3
+               !p.position[3]=pp3
                xrng0=dblarr(2)
                yrng0=dblarr(2)
                yrng0=[ymin,ymax]
                xrng0=[xmin,xmax]
-               even_scales,xrng0,yrng0,xrange,yrange
-               xmin=xrange(0)
-               xmax=xrange(1)
-               ymin=yrange(0)
-               ymax=yrange(1)
+               SB_even_scales,xrng0,yrng0,xrange,yrange
+               xmin=xrange[0]
+               xmax=xrange[1]
+               ymin=yrange[0]
+               ymax=yrange[1]
                xyouts,0.55,0.03,"Min & Max values overridden to fit window", $
                   charsize=chtsize1,/normal,color=bkgrd
             endif else begin
-               !p.position(3)=pp3n
+               !p.position[3]=pp3n
             endelse
          endif
 
@@ -1173,17 +1193,17 @@ for ks=1L, numstr do begin
           if(us) then begin
             xrange=[xmax,xmin] 
             ; if(i eq 1) then yrange=[ymin,ymax] else yrange=[ymax,ymin]
-            if((orb_vw(i) eq 'xz') or (orb_vw(i) eq 'yz')) then yrange=[ymin,ymax] $
+            if((orb_vw[i] eq 'xz') or (orb_vw[i] eq 'yz')) then yrange=[ymin,ymax] $
                else yrange=[ymax,ymin]
-            if(orb_vw(i) eq 'yz') then xrange=[xmin,xmax]
+            if(orb_vw[i] eq 'yz') then xrange=[xmin,xmax]
          endif else begin
             xrange=[xmin,xmax]
-            ; if(orb_vw(i) eq 'xz') then yrange=[ymax,ymin] else yrange=[ymin,ymax]
+            ; if(orb_vw[i] eq 'xz') then yrange=[ymax,ymin] else yrange=[ymin,ymax]
             yrange=[ymin,ymax]
          endelse
-         if(orb_vw(i) eq 'xr') then yrange = [ymin,ymax]
-         ;if(n_elements(ymin) ne 0) then yrange(0)=ymin
-         ;if(n_elements(ymax) ne 0) then yrange(1)=ymax
+         if(orb_vw[i] eq 'xr') then yrange = [ymin,ymax]
+         ;if(n_elements(ymin) ne 0) then yrange[0]=ymin
+         ;if(n_elements(ymax) ne 0) then yrange[1]=ymax
          a=indgen(100)/100./!radeg
          xe=cos(a)
          ye=sin(a)
@@ -1192,19 +1212,19 @@ for ks=1L, numstr do begin
          if(crd_sys eq 'TOD') then crd_sys1='GEI/'+crd_sys
          if(crd_sys eq 'J2000') then crd_sys1='GEI/'+crd_sys
 
-         if(orb_vw(i) eq 'xz') then begin
+         if(orb_vw[i] eq 'xz') then begin
             xtit='X!d'+crd_sys1+'!n (Re)'
             ytit='Z!d'+crd_sys1+'!n (Re)'
          endif
-         if(orb_vw(i) eq 'xy') then begin
+         if(orb_vw[i] eq 'xy') then begin
             xtit='X!d'+crd_sys1+'!n (Re)'
             ytit='Y!d'+crd_sys1+'!n (Re)'
          endif
-         if(orb_vw(i) eq 'yz') then begin
+         if(orb_vw[i] eq 'yz') then begin
             xtit='Y!d'+crd_sys1+'!n (Re)'
             ytit='Z!d'+crd_sys1+'!n (Re)'
          endif
-         if(orb_vw(i) eq 'xr') then begin
+         if(orb_vw[i] eq 'xr') then begin
             xtit='X!d'+crd_sys1+'!n (Re)'
             ytit='R=(Y!e2!n+Z!e2!n)!e1/2!n!d'+crd_sys1+'!n (Re)'
             ;  ytit='R!d'+crd_sys1+'!n' 
@@ -1224,8 +1244,8 @@ for ks=1L, numstr do begin
          if(overplot eq 0) then begin
             tl=.01
             ; Condition added to prevent a scray axis from being plotted 
-            if(((yrange(1) gt 0.) and (yrange(0) lt 0.)) or $
-               ((yrange(1) lt 0.) and (yrange(0) gt 0.))) then begin
+            if(((yrange[1] gt 0.) and (yrange[0] lt 0.)) or $
+               ((yrange[1] lt 0.) and (yrange[0] gt 0.))) then begin
                axis,0,0,/xaxis,xstyle=1,xticklen=tl,xtickname=replicate(' ',30),color=bkgrd
                axis,0,0,/xaxis,xstyle=1,xticklen=-tl,xtickname=replicate(' ',30),$
                   color=bkgrd
@@ -1240,38 +1260,38 @@ for ks=1L, numstr do begin
          xmp=0.0
          xbs=0.0
          if((crd_sys eq 'GSE') and (bsmp)) then begin
-            sibeck2,bz=bz,press=press,rhomp,xmp,rhobs,xbs
-            if(orb_vw(i) eq 'xy') then begin
+            SB_sibeck2,bz=bz,press=press,rhomp,xmp,rhobs,xbs
+            if(orb_vw[i] eq 'xy') then begin
                nxs=n_elements(xmp)
                zdum=dblarr(nxs)
-               deg=4.3 & r=rot_x(xmp,rhomp,zdum,deg) & xmp=r(*,0) & rhomp=r(*,1) 
+               deg=4.3 & r=rot_x(xmp,rhomp,zdum,deg) & xmp=r[*,0] & rhomp=r[*,1] 
                oplot,xmp,-rhomp,color=bkgrd
-               deg=4.3 & r=rot_x(xmp,-rhomp,zdum,deg) & xmp=r(*,0) & rhomp=r(*,1) 
+               deg=4.3 & r=rot_x(xmp,-rhomp,zdum,deg) & xmp=r[*,0] & rhomp=r[*,1] 
                oplot,xmp,-rhomp,color=bkgrd
-               deg=4.3 & r=rot_x(xbs,rhobs,zdum,deg) & xbs=r(*,0) & rhobs=r(*,1) 
+               deg=4.3 & r=rot_x(xbs,rhobs,zdum,deg) & xbs=r[*,0] & rhobs=r[*,1] 
                oplot,xbs,-rhobs,color=bkgrd
-               deg=4.3 & r=rot_x(xbs,-rhobs,zdum,deg) & xbs=r(*,0) & rhobs=r(*,1)
+               deg=4.3 & r=rot_x(xbs,-rhobs,zdum,deg) & xbs=r[*,0] & rhobs=r[*,1]
                oplot,xbs,-rhobs,color=bkgrd
             endif
-            if(orb_vw(i) eq 'xz') then begin 
+            if(orb_vw[i] eq 'xz') then begin 
                nxs=n_elements(xmp)
                zdum=dblarr(nxs) 
-               deg=-4.3 & r=rot_x(xmp,zdum,zdum,deg) & xmp=r(*,0)
+               deg=-4.3 & r=rot_x(xmp,zdum,zdum,deg) & xmp=r[*,0]
                oplot,xmp,rhomp,color=bkgrd
                oplot,xmp,-rhomp,color=bkgrd
-               deg=-4.3 & r=rot_x(xbs,zdum,zdum,deg) & xbs=r(*,0)
+               deg=-4.3 & r=rot_x(xbs,zdum,zdum,deg) & xbs=r[*,0]
                oplot,xbs,rhobs,color=bkgrd
                oplot,xbs,-rhobs,color=bkgrd
             endif
-            if(orb_vw(i) eq 'yz') then begin
+            if(orb_vw[i] eq 'yz') then begin
                nxs=n_elements(xmp)
                zdum=dblarr(nxs)
                rmp=secant(xmp,rhomp) 
-               deg=4.3 & r=rot_x(xmp,rhomp,zdum,deg) & rxmp=r(*,0) & rrhomp=r(*,1)
+               deg=4.3 & r=rot_x(xmp,rhomp,zdum,deg) & rxmp=r[*,0] & rrhomp=r[*,1]
                rmpa=secant(rxmp,rrhomp) 
                rmpb=(rmp-rmpa) + rmp
                rbs=secant(xbs,rhobs) 
-               deg=4.3 & r=rot_x(xbs,rhobs,zdum,deg) & rxbs=r(*,0) & rrhobs=r(*,1)
+               deg=4.3 & r=rot_x(xbs,rhobs,zdum,deg) & rxbs=r[*,0] & rrhobs=r[*,1]
                rbsa=secant(rxbs,rrhobs) 
                rbsb=(rbs-rbsa) + rbs 
                ; rad=!PI/180.
@@ -1281,38 +1301,38 @@ for ks=1L, numstr do begin
                ; a1=rmp*cos(deg)
                ; a2=rmp*sin(deg)
                a=ellipse(rmp,rmpa)
-               a1=a(0,*) & a2=a(1,*)
+               a1=a[0,*] & a2=a[1,*]
                oplot,-a1,a2,color=bkgrd
                oplot,-a1,-a2,color=bkgrd
                a=ellipse(rmp,rmpb)
-               a1=a(0,*) & a2=a(1,*)
+               a1=a[0,*] & a2=a[1,*]
                oplot,a1,a2,color=bkgrd
                oplot,a1,-a2,color=bkgrd
                a=ellipse(rbs,rbsa)
-               a1=a(0,*) & a2=a(1,*)
+               a1=a[0,*] & a2=a[1,*]
                oplot,-a1,a2,color=bkgrd
                oplot,-a1,-a2,color=bkgrd
                ; a1=rbs*cos(deg)
                ; a2=rbs*sin(deg)
                a=ellipse(rbs,rbsb)
-               a1=a(0,*) & a2=a(1,*)
+               a1=a[0,*] & a2=a[1,*]
                oplot,a1,a2,color=bkgrd
                oplot,a1,-a2,color=bkgrd
             endif
-            if(orb_vw(i) eq 'xr') then begin
+            if(orb_vw[i] eq 'xr') then begin
                nxs=n_elements(xmp)
                zdum=dblarr(nxs)
                ; estimate rotation angle from 4.30 abberrated GSE
-               deg=2.15 & r=rot_x(xmp,rhomp,zdum,deg) & xmp=r(*,0) & rhomp=r(*,1)
+               deg=2.15 & r=rot_x(xmp,rhomp,zdum,deg) & xmp=r[*,0] & rhomp=r[*,1]
                oplot,xmp,rhomp,color=bkgrd
                ; oplot,xmp,-rhomp,color=bkgrd
-               deg=2.15 & r=rot_x(xbs,rhobs,zdum,deg) & xbs=r(*,0) & rhobs=r(*,1)
+               deg=2.15 & r=rot_x(xbs,rhobs,zdum,deg) & xbs=r[*,0] & rhobs=r[*,1]
                oplot,xbs,rhobs,color=bkgrd 
                ; oplot,xbs,-rhobs,color=bkgrd
             endif
-            ;TJK call sibeck2 again to get clean values for rhomp, xmp, etc. since 
+            ;TJK call SB_sibeck2 again to get clean values for rhomp, xmp, etc. since 
             ;the above section of code modifies these values... 01/22/2001
-            sibeck2,bz=bz,press=press,rhomp,xmp,rhobs,xbs
+            SB_sibeck2,bz=bz,press=press,rhomp,xmp,rhobs,xbs
           
          endif ; GSE crd. sys. only one where mag. pause and bow-shock available
 
@@ -1320,7 +1340,8 @@ for ks=1L, numstr do begin
          x=dblarr(nel) 
          y=dblarr(nel)
          z=dblarr(nel)
-         epoch=astrc.(ks).(epoch_index(ks)).dat(tind)
+;         epoch=astrc.(ks).(epoch_index[ks]).dat(tind)
+         epoch=astrc.(ks).(epoch_index[ks]).dat[tind]
 
          case proj of
             'SSC':begin ; original SSC case
@@ -1330,9 +1351,9 @@ for ks=1L, numstr do begin
                   s=execute('fval= astrc.(ks).XYZ_'+crd_sys+'.fillval')
                   if(strupcase(dist) eq "KM") then scale=6371.2 else scale=1.0
                   if(strlen(strtrim(dist,2)) ne 0) then begin
-                     w4=execute('x=astrc.(ks).XYZ_'+crd_sys+'.dat(0,tind)/scale')
-                     w5=execute('y=astrc.(ks).XYZ_'+crd_sys+'.dat(1,tind)/scale')
-                     w6=execute('z=astrc.(ks).XYZ_'+crd_sys+'.dat(2,tind)/scale')
+                     w4=execute('x=astrc.(ks).XYZ_'+crd_sys+'.dat[0,tind]/scale')
+                     w5=execute('y=astrc.(ks).XYZ_'+crd_sys+'.dat[1,tind]/scale')
+                     w6=execute('z=astrc.(ks).XYZ_'+crd_sys+'.dat[2,tind]/scale')
                      if(not w3) or (not w4) or (not w5) or (not w6) then begin
                         print, " Error in the execute command for ssc variable "
                         return, -1
@@ -1344,9 +1365,9 @@ for ks=1L, numstr do begin
                   s=execute('fval= astrc.(ks).(var_index).fillval')
                   if(strupcase(dist) eq "KM") then scale=6371.2 else scale=1.0
                   if(strlen(strtrim(dist,2)) ne 0) then begin
-                     w4=execute('x=astrc.(ks).(var_index).dat(0,*)/scale')
-                     w5=execute('y=astrc.(ks).(var_index).dat(1,*)/scale')
-                     w6=execute('z=astrc.(ks).(var_index).dat(2,*)/scale')
+                     w4=execute('x=astrc.(ks).(var_index).dat[0,*]/scale')
+                     w5=execute('y=astrc.(ks).(var_index).dat[1,*]/scale')
+                     w6=execute('z=astrc.(ks).(var_index).dat[2,*]/scale')
                      if(not w3) or (not w4) or (not w5) or (not w6) then begin
                         print, " Error in the execute command for NEW cdaw variable "
                         return, -1
@@ -1358,9 +1379,9 @@ for ks=1L, numstr do begin
                   s=execute('fval= astrc.(ks).'+crd_sys+'.fillval')
                   if(strupcase(dist) eq "KM") then scale=6371.2 else scale=1.0
                   if(strlen(strtrim(dist,2)) ne 0) then begin
-                     w4=execute('x=astrc.(ks).'+crd_sys+'_pos.dat(0,tind)/scale')
-                     w5=execute('y=astrc.(ks).'+crd_sys+'_pos.dat(1,tind)/scale')
-                     w6=execute('z=astrc.(ks).'+crd_sys+'_pos.dat(2,tind)/scale')
+                     w4=execute('x=astrc.(ks).'+crd_sys+'_pos.dat[0,tind]/scale')
+                     w5=execute('y=astrc.(ks).'+crd_sys+'_pos.dat[1,tind]/scale')
+                     w6=execute('z=astrc.(ks).'+crd_sys+'_pos.dat[2,tind]/scale')
                      if(not w3) or (not w4) or (not w5) or (not w6) then begin
                         print, " Error in the execute command for cdaw variable " 
                         return, -1
@@ -1391,7 +1412,7 @@ for ks=1L, numstr do begin
 	 endif  
 	 ;
          draw_orbit,epoch,x,y,z,ks,xmp,rhomp,xbs,rhobs,doymark,hrmark,hrtick, $
-            mntick,mnmark,color=cols,noclip=noclip,proj=orb_vw(i),$
+            mntick,mnmark,color=cols,noclip=noclip,proj=orb_vw[i],$
             charsize=chtsize,date=datelabel,symsiz=symsiz,lnthick=lnthick
 
          ;legend,ks,labpos=labpos,sats=nsat,colors=cols,charsize=chtsize
@@ -1427,78 +1448,64 @@ if(overplot eq 0) then begin
 ;also had to be changed - TJK - 02/26/2002
 
        s_len=n_elements(s_prts)-1
-;        if(s_len ge 2) then all_sat1=s_prts(1)+' *'
-;        if(s_len ge 4) then all_sat2=s_prts(3)+' x'
-;        if(s_len ge 6) then all_sat3=s_prts(5)+' !9V!X'
-;        if(s_len ge 8) then all_sat4=s_prts(7)+' !7D!X'
-;        if(s_len ge 10) then all_sat5=s_prts(9)+' *'
-;        if(s_len ge 12) then all_sat6=s_prts(11)+' x'
-;        if(s_len ge 14) then all_sat7=s_prts(13)+' !9V!X'
-;        if(s_len ge 16) then all_sat8=s_prts(15)+' !7D!X'
+;        if(s_len ge 2) then all_sat1=s_prts[1]+' *'
+;        if(s_len ge 4) then all_sat2=s_prts[3]+' x'
+;        if(s_len ge 6) then all_sat3=s_prts[5]+' !9V!X'
+;        if(s_len ge 8) then all_sat4=s_prts[7]+' !7D!X'
+;        if(s_len ge 10) then all_sat5=s_prts[9]+' *'
+;        if(s_len ge 12) then all_sat6=s_prts[11]+' x'
+;        if(s_len ge 14) then all_sat7=s_prts[13]+' !9V!X'
+;        if(s_len ge 16) then all_sat8=s_prts[15]+' !7D!X'
 ;help,s_len
-        if(s_len ge 1) then all_sat1=s_prts(0)+' *'
-        if(s_len ge 3) then all_sat2=s_prts(2)+' x'
-        if(s_len ge 5) then all_sat3=s_prts(4)+' !9V!X'
-        if(s_len ge 6) then all_sat4=s_prts(6)+' !7D!X'
-        if(s_len ge 9) then all_sat5=s_prts(8)+' *'
-        if(s_len ge 11) then all_sat6=s_prts(10)+' x'
-        if(s_len ge 13) then all_sat7=s_prts(12)+' !9V!X'
-        if(s_len ge 15) then all_sat8=s_prts(14)+' !7D!X'
-        if(s_len ge 17) then all_sat9=s_prts(16)+' *'
-        if(s_len ge 19) then all_sat10=s_prts(18)+' x'
-        if(s_len ge 21) then all_sat11=s_prts(20)+' !9V!X'
-        if(s_len ge 23) then all_sat12=s_prts(22)+' !7D!X'
+        if(s_len ge 1) then all_sat1=s_prts[0]+' *'
+        if(s_len ge 3) then all_sat2=s_prts[2]+' x'
+        if(s_len ge 5) then all_sat3=s_prts[4]+' !9V!X'
+        if(s_len ge 6) then all_sat4=s_prts[6]+' !7D!X'
+        if(s_len ge 9) then all_sat5=s_prts[8]+' *'
+        if(s_len ge 11) then all_sat6=s_prts[10]+' x'
+        if(s_len ge 13) then all_sat7=s_prts[12]+' !9V!X'
+        if(s_len ge 15) then all_sat8=s_prts[14]+' !7D!X'
+        if(s_len ge 17) then all_sat9=s_prts[16]+' *'
+        if(s_len ge 19) then all_sat10=s_prts[18]+' x'
+        if(s_len ge 21) then all_sat11=s_prts[20]+' !9V!X'
+        if(s_len ge 23) then all_sat12=s_prts[22]+' !7D!X'
 
 
 ; Set region legend
-       regions=' S/C in the Magnetosphere . . . !C S/C in the Magnetosheath _ _ _ !C S/C in the Solar Wind _____'
+       regions=' S/C in Magnetosphere . . . !C S/C in Magnetosheath _ _ _ !C S/C in Solar Wind _____'
+       ;if stacked (larger) plots, then need to move the "symbols mark..." 
+       ;label and s/c labels down a tad
+       ytpos=0.064 
+       if (panel) then ytpos=0.054
+       xtpos = 0.14
+       if((crd_sys ne 'GSE') or (bsmp eq 0)) then xtpos = 0.20
 
-;     if((inc-1)) then ytpos=0.506 else ytpos=0.081
-    ytpos=0.064 
-;TJK - 02/26/2002 - modified to go to IDL 5.3 - the s_len and s_prts index are different now
-;    if(s_len ge 2) then $
-;     xyouts,0.41,ytpos,all_sat1,charsize=chtsize1,/normal,color=fix(s_prts(2))
-;    if(s_len ge 4) then $
-;     xyouts,0.56,ytpos,all_sat2,charsize=chtsize1,/normal,color=fix(s_prts(4))
-;    if(s_len ge 6) then $
-;     xyouts,0.71,ytpos,all_sat3,charsize=chtsize1,/normal,color=fix(s_prts(6))
-;    if(s_len ge 8) then $
-;     xyouts,0.86,ytpos,all_sat4,charsize=chtsize1,/normal,color=fix(s_prts(8))
-;    if(s_len ge 10) then $
-;     xyouts,0.41,(ytpos-.02),all_sat5,charsize=chtsize1,/normal,color=fix(s_prts(10))
-;    if(s_len ge 12) then $
-;     xyouts,0.56,(ytpos-.02),all_sat6,charsize=chtsize1,/normal,color=fix(s_prts(12))
-;    if(s_len ge 14) then $
-;     xyouts,0.71,(ytpos-.02),all_sat7,charsize=chtsize1,/normal,color=fix(s_prts(14))
-;    if(s_len ge 16) then $
-;     xyouts,0.86,(ytpos-.02),all_sat8,charsize=chtsize1,/normal,color=fix(s_prts(16))
-
-    if(s_len ge 1) then $
-     xyouts,0.41,ytpos,all_sat1,charsize=chtsize1,/normal,color=fix(s_prts(1))
+    if(s_len ge 1) then begin
+     xyouts,0.35,ytpos+.015,'symbols mark s/c at end of time range!C',charsize=1.2,/normal,color=fix(s_prts[1])
+     xyouts,(0.41-xtpos),ytpos,all_sat1,charsize=chtsize1,/normal,color=fix(s_prts[1])
+    endif 
     if(s_len ge 3) then $
-     xyouts,0.56,ytpos,all_sat2,charsize=chtsize1,/normal,color=fix(s_prts(3))
+     xyouts,(0.56-xtpos),ytpos,all_sat2,charsize=chtsize1,/normal,color=fix(s_prts[3])
     if(s_len ge 5) then $
-     xyouts,0.71,ytpos,all_sat3,charsize=chtsize1,/normal,color=fix(s_prts(5))
+     xyouts,(0.71-xtpos),ytpos,all_sat3,charsize=chtsize1,/normal,color=fix(s_prts[5])
     if(s_len ge 7) then $
-     xyouts,0.86,ytpos,all_sat4,charsize=chtsize1,/normal,color=fix(s_prts(7))
+     xyouts,(0.86-xtpos),ytpos,all_sat4,charsize=chtsize1,/normal,color=fix(s_prts[7])
     if(s_len ge 9) then $
-     ;xyouts,0.41,(ytpos-.02),all_sat5,charsize=chtsize1,/normal,color=fix(s_prts(19))
-     ; RCJ 12/04/2003 Typo. 19 should've been 9.
-     xyouts,0.41,(ytpos-.02),all_sat5,charsize=chtsize1,/normal,color=fix(s_prts(9))
+     xyouts,(1.01-xtpos),(ytpos),all_sat5,charsize=chtsize1,/normal,color=fix(s_prts[9])
     if(s_len ge 11) then $
-     xyouts,0.56,(ytpos-.02),all_sat6,charsize=chtsize1,/normal,color=fix(s_prts(11))
+     xyouts,(0.41-xtpos),(ytpos-.017),all_sat6,charsize=chtsize1,/normal,color=fix(s_prts[11])
     if(s_len ge 13) then $
-     xyouts,0.71,(ytpos-.02),all_sat7,charsize=chtsize1,/normal,color=fix(s_prts(13))
+     xyouts,(0.56-xtpos),(ytpos-.017),all_sat7,charsize=chtsize1,/normal,color=fix(s_prts[13])
     if(s_len ge 15) then $
-     xyouts,0.86,(ytpos-.02),all_sat8,charsize=chtsize1,/normal,color=fix(s_prts(15))
+     xyouts,(0.71-xtpos),(ytpos-.017),all_sat8,charsize=chtsize1,/normal,color=fix(s_prts[15])
     if(s_len ge 17) then $
-     xyouts,0.41,(ytpos-.04),all_sat9,charsize=chtsize1,/normal,color=fix(s_prts(17))
+     xyouts,(0.86-xtpos),(ytpos-.017),all_sat9,charsize=chtsize1,/normal,color=fix(s_prts[17])
     if(s_len ge 19) then $
-     xyouts,0.56,(ytpos-.04),all_sat10,charsize=chtsize1,/normal,color=fix(s_prts(19))
+     xyouts,(1.01-xtpos),(ytpos-.017),all_sat10,charsize=chtsize1,/normal,color=fix(s_prts[19])
     if(s_len ge 21) then $
-     xyouts,0.41,(ytpos-.06),all_sat11,charsize=chtsize1,/normal,color=fix(s_prts(21))
+     xyouts,(0.41-xtpos),(ytpos-.033),all_sat11,charsize=chtsize1,/normal,color=fix(s_prts[21])
     if(s_len ge 23) then $
-     xyouts,0.56,(ytpos-.06),all_sat12,charsize=chtsize1,/normal,color=fix(s_prts(23))
+     xyouts,(0.56-xtpos),(ytpos-.033),all_sat12,charsize=chtsize1,/normal,color=fix(s_prts[23])
 
     press=string(press,format='(f5.1)') 
     bz=string(bz,format='(f5.1)')
@@ -1506,16 +1513,23 @@ if(overplot eq 0) then begin
               strtrim(bz,2)+'nT'
 
 ; New adjusting title
-     if(panel) then yp=!p.position(3)+.013 else yp=0.975
+     if(panel) then yp=!p.position[3]+.013 else yp=0.975
 
      xyouts,0.5,yp,title1,charsize=1.8,align=.5,/normal,color=bkgrd
 ; end title
 
 ;       xyouts,0.10,0.64,all_sat,charsize=chtsize2,/normal,color=bkgrd
-       xyouts,0.10,0.066,regions,charsize=chtsize1,/normal,color=bkgrd
+;TJK 11/22/2011 - don't need the regions linestyle label if not
+;                 GSE and bowshock
+     if((crd_sys eq 'GSE') and (bsmp)) then begin
+;       xyouts,0.10,0.066,regions,charsize=chtsize1,/normal,color=bkgrd
+       xyouts,0.01,0.066,regions,charsize=chtsize1,/normal,color=bkgrd
+     endif
        xyouts,0.01,0.02,disclaimer,charsize=chtsize2,/normal,color=bkgrd
        xyouts,0.01,0.008,disclaimer1,charsize=chtsize2,/normal,color=bkgrd
-  if(bsmp) then xyouts,0.68,0.02,bsmp_lab,charsize=chtsize1,/normal,color=bkgrd
+;TJK move the solar wind pressure label down to make room for the s/c labels
+;      if(bsmp) then xyouts,0.68,0.02,bsmp_lab,charsize=chtsize1,/normal,color=bkgrd
+       if(bsmp) then xyouts,0.65,0.008,bsmp_lab,charsize=chtsize1,/normal,color=bkgrd
 
 endif
  

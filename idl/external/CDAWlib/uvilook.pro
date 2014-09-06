@@ -19,7 +19,7 @@ FUNCTION dfmag,x1,x2,x3
 END
 PRO dunit,vector,uvector
    uvector = DBLARR(3)
-   dmag=dfmag(vector(0),vector(1),vector(2))
+   dmag=dfmag(vector[0],vector[1],vector[2])
    IF (dmag NE 0) THEN BEGIN
       uvector=vector/dmag
    ENDIF ELSE BEGIN
@@ -54,21 +54,21 @@ PRO get_rotm,axis,angle,m
     c=DOUBLE(cosd(angle))
     c1=1-c
 
-    e1=axis(0)
-    e2=axis(1)
-    e3=axis(2)
+    e1=axis[0]
+    e2=axis[1]
+    e3=axis[2]
 
-    m(0,0) = c1*e1*e1 + c
-    m(1,0) = c1*e1*e2 + e3*s
-    m(2,0) = c1*e1*e3 - e2*s
+    m[0,0] = c1*e1*e1 + c
+    m[1,0] = c1*e1*e2 + e3*s
+    m[2,0] = c1*e1*e3 - e2*s
 
-    m(0,1) = c1*e1*e2 - e3*s
-    m(1,1) = c1*e2*e2 + c
-    m(2,1) = c1*e2*e3 + e1*s
+    m[0,1] = c1*e1*e2 - e3*s
+    m[1,1] = c1*e2*e2 + c
+    m[2,1] = c1*e2*e3 + e1*s
 
-    m(0,2) = c1*e1*e3 + e2*s
-    m(1,2) = c1*e2*e3 - e1*s
-    m(2,2) = c1*e3*e3 + c
+    m[0,2] = c1*e1*e3 + e2*s
+    m[1,2] = c1*e2*e3 - e1*s
+    m[2,2] = c1*e3*e3 + c
 
 END
 
@@ -78,6 +78,12 @@ END
 
 PRO uvilook,time,o_gci,a_gci3,dsp_angle,filter,versStr,l0,ra,dec $
                 ,system=system,help=help,vers=vers
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
       IF(KEYWORD_SET(help)) THEN BEGIN
        PRINT,''
@@ -308,6 +314,6 @@ NOTE_PT_1: ;see comment at end of code
       dunit,limg,l0
 
 ;     calculate right ascension & declination (gci)
-      vector_to_ra_dec,l0(0),l0(1),l0(2),ra,dec
+      vector_to_ra_dec,l0[0],l0[1],l0[2],ra,dec
 
 END

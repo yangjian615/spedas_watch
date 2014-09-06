@@ -3,18 +3,19 @@
 ; - this depends on which device is being used and the difference between 
 ;the scale min and max (diff)
 ;TJK June 25, 2004
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 function red_offset, GIF=GIF, diff
 
-color_table_size=256 ;default
-;TJK have to open a GIF device, so that I can get the correct !d.table_size
-if keyword_set(GIF) then begin
-;   tmp=strmid(GIF,0,(strpos(GIF,'/',/reverse_search)))+"/tmp.gif"
-;   deviceopen,6,fileOutput=tmp
-   ;for the GIF device - was doing the above, but had problems w/ other gifs
-   ;being open at the same time...
-   color_table_size = 240 ; this needs to match the table size set in deviceopen
+color_table_size=!d.n_colors ;default of device 
 
-endif
+
+if keyword_set(GIF) then color_table_size = !d.table_size
+
 roffset = 1  ; default
 if (diff gt 0) then roffset = diff/(color_table_size)
 ;if keyword_set(GIF) then deviceclose

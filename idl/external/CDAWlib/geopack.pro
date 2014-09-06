@@ -66,7 +66,8 @@
       SRASN=3.141592654D0-atan(COS(OBLIQ)/SOB*SC,-COS(SLP)/COSD)
       RETURN
       END
-
+
+
 ;C
 ;C----------------------------------------------------------------------
 ;C
@@ -145,7 +146,7 @@ IF N_ELEMENTS(IYE) EQ 0 THEN IYE = 0l
 IF N_ELEMENTS(IDE) EQ 0 THEN IDE = 0l
 IF N_ELEMENTS(IPR) EQ 0 THEN IPR = 0l
 
-FORMAT10 ='(//1X,"****RECOMP WARNS:  YEAR IS OUT OF INTERVAL 1965-2010: IYR=",I4,/,6X,"CALCULATIONS WILL BE DONE FOR IYR=",I4,/)'
+FORMAT10 ='(//1X,"****RECALC WARNS:  YEAR IS OUT OF INTERVAL 1965-2015: IYR=",I4,/,6X,"CALCULATIONS WILL BE DONE FOR IYR=",I4,/)'
 
 ;C
 ;C  IYE AND IDE ARE THE CURRENT VALUES OF YEAR AND DAY NUMBER
@@ -154,9 +155,9 @@ FORMAT10 ='(//1X,"****RECOMP WARNS:  YEAR IS OUT OF INTERVAL 1965-2010: IYR=",I4
       IDE=IDAY
       IF ((IYR EQ IYE) AND (IDAY EQ IDE))THEN GOTO, JUMP5
       IF(IY LT 1965)THEN IY=1965
-      IF(IY GT 2010)THEN IY=2010
+      IF(IY GT 2015)THEN IY=2015
 ;C
-;C  WE ARE RESTRICTED BY THE INTERVAL 1965-2010,
+;C  WE ARE RESTRICTED BY THE INTERVAL 1965-2015,
 ;C  FOR WHICH THE IGRF COEFFICIENTS ARE KNOWN; IF IYR IS OUTSIDE THIS INTERVAL
 ;C   THE SUBROUTINE GIVES A WARNING (BUT DOES NOT REPEAT IT AT THE NEXT CALLS)
 ;C
@@ -168,65 +169,71 @@ FORMAT10 ='(//1X,"****RECOMP WARNS:  YEAR IS OUT OF INTERVAL 1965-2010: IYR=",I4
 ;C  VALUES FOR THE NEAREST EPOCHS:
 ;C
 	IF (IY LT 1970) THEN BEGIN			;!1965-1970
-	   F2=(IY + IDAY/365D0-1965.)/5.
-	   F1=1.D0-F2
+	   F2=(FLOAT(IY) + FLOAT(IDAY-1)/365.25-1965.)/5.
+	   F1=1.-F2
 	   G10=30334.*F1+30220.*F2
 	   G11=-2119.*F1-2068.*F2
 	   H11=5776.*F1+5737.*F2
 	ENDIF ELSE IF (IY LT 1975) THEN BEGIN		;!1970-1975
-	   F2=(IY+IDAY/365D0-1970.)/5.
-	   F1=1.D0-F2
+	   F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1970.)/5.
+	   F1=1.-F2
 	   G10=30220.*F1+30100.*F2
 	   G11=-2068.*F1-2013.*F2
 	   H11=5737.*F1+5675.*F2
 	ENDIF ELSE IF (IY LT 1980) THEN BEGIN		;!1975-1980
-	   F2=(IY+IDAY/365D0-1975)/5.
-	   F1=1.D0-F2
+	   F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1975)/5.
+	   F1=1.-F2
 	   G10=30100.*F1+29992.*F2
 	   G11=-2013.*F1-1956.*F2
 	   H11=5675.*F1+5604.*F2
  	ENDIF ELSE IF (IY LT 1985) THEN BEGIN		;!1980-1985
-	   F2=(IY+IDAY/365D0-1980.)/5.
-	   F1=1.D0-F2
+	   F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1980.)/5.
+	   F1=1.-F2
 	   G10=29992.*F1+29873.*F2
 	   G11=-1956.*F1-1905.*F2
 	   H11=5604.*F1+5500.*F2
 	ENDIF ELSE IF (IY LT 1990) THEN BEGIN		;!1985-1990
-	   F2=(IY+IDAY/365D0-1985.)/5.
-	   F1=1.D0-F2
+	   F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1985.)/5.
+	   F1=1.-F2
 	   G10=29873.*F1+29775.*F2
 	   G11=-1905.*F1-1848.*F2
 	   H11=5500.*F1+5406.*F2
 	ENDIF ELSE IF (IY LT 1995) THEN BEGIN		;!1990-1995
 ;TJK added use of FLOAT	   F2=(IY+IDAY/365D0-1990.)/5.
-           F2=(FLOAT(IY)+FLOAT(IDAY)/365.-1990.)/5.
-	   F1=1.D0-F2
+           F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1990.)/5.
+	   F1=1.-F2
 	   G10=29775.*F1+29692.*F2
 	   G11=-1848.*F1-1784.*F2
 	   H11=5406.*F1+5306.*F2
 	ENDIF ELSE IF (IY LT 2000) THEN BEGIN		;!1995-2000
 ;TJK added use of FLOAT	   F2=(IY+IDAY/365D0-1995.)/5.
-           F2=(FLOAT(IY)+FLOAT(IDAY)/365.-1995.)/5.
-	   F1=1.D0-F2
+           F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1995.)/5.
+	   F1=1.-F2
 	   G10=29692.*F1+29619.4*F2
 	   G11=-1784.*F1-1728.2*F2
 	   H11=5306.*F1+5186.1*F2
 	ENDIF ELSE IF (IY LT 2005) THEN BEGIN		;!2000-2005
-           F2=(FLOAT(IY)+FLOAT(IDAY)/365.-2000.)/5.
-	   F1=1.D0-F2
-	   G10=29619.4*F1+29556.8*F2
-	   G11=-1728.2*F1-1671.8*F2
-	   H11=5186.1*F1+5080.*F2
+           F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-2000.)/5.
+	   F1=1.-F2
+	   G10=29619.4*F1+29554.63*F2
+	   G11=-1728.2*F1-1669.05*F2
+	   H11=5186.1*F1+5077.99*F2
+	ENDIF ELSE IF (IY LT 2010) THEN BEGIN		;!2005-2010
+           F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-2005.)/5.
+	   F1=1.-F2
+	   G10=29554.63*F1+29496.5*F2
+	   G11=-1669.05*F1-1585.9*F2
+	   H11=5077.99*F1+4945.1*F2
 ;
 ;   LINEAR EXTRAPOLATION BEYOND 2010 BY USING SECULAR VELOCITY COEFFICIENTS:
 ;
-	ENDIF ELSE BEGIN				;!2005-2010
+	ENDIF ELSE BEGIN				;!2010-2015
 ;TJK added use of float and divide by 366 instead of 365
-;	   DT=IY+IDAY/365D0-2005.
-           DT=FLOAT(IY)+FLOAT(IDAY)/366.-2005.
-	   G10=29556.8-8.8*DT      ;! HERE G10 HAS OPPOSITE SIGN TO THAT IN IGRF TABLES
-	   G11=-1671.8+10.8*DT  ; multiplying by DT are: -second element of DG05 (yes,negative), 
-	   H11=5080.-21.3*DT    ; third element of DG05 and third element of DH05.
+;	   DT=IY+IDAY/365D0-2010.
+           DT=FLOAT(IY)+FLOAT(IDAY-1)/365.25-2010.
+	   G10=29496.5-11.4*DT      ;! HERE G10 HAS OPPOSITE SIGN TO THAT IN IGRF TABLES
+	   G11=-1585.9+16.7*DT  ; multiplying by DT are: -second element of DG10 (yes,negative), 
+	   H11=4945.1-28.8*DT    ; third element of DG10 and third element of DH10.
 	ENDELSE
 ;C
 ;C  NOW CALCULATE THE COMPONENTS OF THE UNIT VECTOR EzMAG IN GEO COORD.SYSTEM:
@@ -366,7 +373,8 @@ JUMP5:   IF (IHOUR GT 24)THEN RETURN
 ;C
       RETURN
       END
-
+
+
 ;C--------------------------------------------------------------------------
 ;C
       pro GEOMAG,XGEO,YGEO,ZGEO,XMAG,YMAG,ZMAG,J,IYR,skip=skip
@@ -415,7 +423,8 @@ JUMP2:   XGEO=XMAG*CTCL-YMAG*SL0+ZMAG*STCL
       ZGEO=ZMAG*CT0-XMAG*ST0
       RETURN
       END
-
+
+
 ;C-------------------------------------------------------------------------
 ;C
        pro GSMGSE,XGSM,YGSM,ZGSM,XGSE,YGSE,ZGSE,J,epoch=epoch
@@ -466,7 +475,8 @@ JUMP1:     XGSM=XGSE
       ZGSM=ZGSE*CHI-YGSE*SHI
       RETURN
       END
-
+
+
 ;C---------------------------------------------------------------------------
 ;C
       PRO GEOGSM,XGEO,YGEO,ZGEO,XGSM,YGSM,ZGSM,J
@@ -510,7 +520,7 @@ JUMP1:   XGEO=A11*XGSM+A21*YGSM+A31*ZGSM
       ZGEO=A13*XGSM+A23*YGSM+A33*ZGSM
       RETURN
       END
-
+      
 ;C--------------------------------------------------------------------------
 ;C
 pro SMGSM,XSM,YSM,ZSM,XGSM,YGSM,ZGSM,J
@@ -553,14 +563,42 @@ K,IY,BA
       ZSM=XGSM*SPS+ZGSM*CPS
       RETURN
       END
-
+
+;-----------------------------------------
+
 pro geigse,xgei,ygei,zgei,xgse,ygse,zgse,j,epoch
+
 ;c added to geopack by SAB 9/9/94 to transform between
 ;c gei and gse coordinate system
 ;c j>0  gei->gse, j<0 gse > gei
 ;c xgse,ygse,zgse axis unit vectors in gei system
-common gei_gse,x1,x2,x3,y1,y2,y3,z1,z2,z3
-;c	print,' in geigse:',x1,x2,x3,y1,y2,y3,z1,z2,z3
+;
+;common gei_gse,x1,x2,x3,y1,y2,y3,z1,z2,z3  ; commented out 07/06/12
+;  
+;  RCJ 07/06/2012  Don't want to have to use common blocks because
+;     we don't want this pro to be dependent on recalc. So we now call the pro sun from here:
+
+SUN,IYR,IDAY,IHOUR,MIN,ISEC,GST,SLONG,SRASN,SDEC,epoch=epoch
+;
+;   get x1,x2,x3 :
+        x1=COS(SRASN)*COS(SDEC)
+        x2=SIN(SRASN)*COS(SDEC)
+        x3=SIN(SDEC)
+;
+;   get z1,z2,z3:
+        DJ=365*(IYR-1900)+FIX((IYR-1901)/4) +IDAY -0.5 +ISEC/86400D0
+        T=DJ/36525D0
+        OBLIQ=(23.45229-0.0130125*T)/57.2957795
+        Z1=0.
+        Z2=-SIN(OBLIQ)
+        Z3=COS(OBLIQ)
+;
+;   get y1,y2,y3:
+        Y1=Z2*x3-Z3*x2
+        Y2=Z3*x1-Z1*x3
+        Y3=Z1*x2-Z2*x1
+
+;	print,' in geigse:',x1,x2,x3,y1,y2,y3,z1,z2,z3
 if( j gt 0 ) then begin
 	xgse = x1*xgei + x2*ygei + x3*zgei
 	ygse = y1*xgei + y2*ygei + y3*zgei
@@ -571,7 +609,10 @@ endif else begin
 	zgei = x3*xgse + y3*ygse + z3*zgse
 endelse
 end
-
+
+;----------------------------------------------
+
+
 pro geigeo,xgei,ygei,zgei,xgeo,ygeo,zgeo,j,epoch=epoch
 SUN,IYR,IDAY,IHOUR,MIN,ISEC,GST,SLONG,SRASN,SDEC,epoch=epoch  
 ;help,gst
@@ -587,7 +628,10 @@ endif else begin
 	zgei = zgeo
 endelse
 end
-
+
+;-------------------------------------------------
+
+
 pro scgei,xgei,ygei,zgei,xy_sunang,xsc=xsc,ysc=ysc,zsc=zsc,colat=colat
 ;compute direction lepedea is pointing in GEI
 ; or a vector direction in s/c coordinates to GEI
@@ -611,21 +655,23 @@ ysc = crossp(zsc,xsc)
 cosa=cos(xy_sunang/!radeg)
 sina=sin(xy_sunang/!radeg)
 ;u= xsc*cos(xy_sunang/!radeg)+ysc*sin(xy_sunang/!radeg)
-;xgei = u(0)
-;ygei = u(1)
-;zgei = u(2)
+;xgei = u[0]
+;ygei = u[1]
+;zgei = u[2]
 if n_elements(colat) ne 0 then begin
 	sint = sin(colat/!radeg)
 	cost = cos(colat/!radeg)
-	xgei = (xsc(0)*cosa + ysc(0)*sina)*sint + zsc(0)*cost
-	ygei = (xsc(1)*cosa + ysc(1)*sina)*sint + zsc(1)*cost
-	zgei = (xsc(2)*cosa + ysc(2)*sina)*sint + zsc(2)*cost
+	xgei = (xsc[0]*cosa + ysc[0]*sina)*sint + zsc[0]*cost
+	ygei = (xsc[1]*cosa + ysc[1]*sina)*sint + zsc[1]*cost
+	zgei = (xsc[2]*cosa + ysc[2]*sina)*sint + zsc[2]*cost
 endif else begin
-	xgei = xsc(0)*cosa + ysc(0)*sina
-	ygei = xsc(1)*cosa + ysc(1)*sina
-	zgei = xsc(2)*cosa + ysc(2)*sina
+	xgei = xsc[0]*cosa + ysc[0]*sina
+	ygei = xsc[1]*cosa + ysc[1]*sina
+	zgei = xsc[2]*cosa + ysc[2]*sina
 endelse
 end
+
+;-----------------------------------------
 
 ; Added S. Boardsen's terminator code   4/98  RTB
 ;
@@ -636,8 +682,8 @@ x = float(v)
 x = x/norm(x)
 du = max( abs(x),i)
 y = fltarr(3) & z= y
-y((i+1) mod 3) = x(i)
-y( i) = -x( (i+1) mod 3 )
+y((i+1) mod 3) = x[i]
+y[i] = -x( (i+1) mod 3 )
 y = y/norm(y)
 z = crossp(x,y)
 z = z/norm(z)
@@ -645,6 +691,8 @@ z = z/norm(z)
 ;print,'z*y:',total(z*y)
 ;print,'z*x:',total(z*x)
 end
+
+;-------------------------------------------
 
 pro cart_polar,x,y,z,r,t,p,i,radians = rad, degrees = deg
 if keyword_set(deg) then f =!radeg else f = 1.
@@ -660,6 +708,8 @@ endif  else begin
 endelse
 end
 
+;----------------------------------------------
+
 pro termcorr,lon,lat,lat0,lon0,corr
 colat0 = (90.-lat0)/!radeg
 cost0 = cos(colat0)
@@ -673,10 +723,11 @@ at = cost*sint0*cosp - sint*cost0
 ap = -sint*sint0*sinp
 it = where( abs(at) gt abs(ap) )
 ip = where( abs(at) le abs(ap) )
-if it(0) ne -1 then lat(it) = lat(it) -  corr/at(it)
-if ip(0) ne -1 then lon(ip) = lon(ip) +  corr/ap(ip)
+if it[0] ne -1 then lat[it] = lat[it] -  corr/at[it]
+if ip[0] ne -1 then lon[ip] = lon[ip] +  corr/ap[ip]
 end
 
+;--------------------------------------------------
 
 function terminator,lat0,lon0,check=check,corr=corr, rad = rad
 ; if check set then confirm orthogonality of terimator to (lat0,lon0) 
@@ -693,20 +744,22 @@ sina = rho*sin(a)
 colat = (90.-lat0)/!radeg
 v = [sin(colat)*cos(lon0/!radeg),sin(colat)*sin(lon0/!radeg),cos(colat)]
 con_basis,v,zb,xb,yb
-x = z0*zb(0) + cosa*xb(0) + sina*yb(0) 
-y = z0*zb(1) + cosa*xb(1) + sina*yb(1) 
-z = z0*zb(2) + cosa*xb(2) + sina*yb(2) 
+x = z0*zb[0] + cosa*xb[0] + sina*yb[0] 
+y = z0*zb[1] + cosa*xb[1] + sina*yb[1] 
+z = z0*zb[2] + cosa*xb[2] + sina*yb[2] 
 ;help,x,y,z
 cart_polar,x,y,z,r,theta,lon,/degree
 lat = 90. - theta
 if keyword_set(corr) then termcorr,lon,lat,lat0,lon0,corr  
 if keyword_set(check) then begin
   for i=0,n-1 do begin
-    print, total(v*[x(i),y(i),z(i)])
+    print, total(v*[x[i],y[i],z[i]])
   endfor
 endif
 return, {lat:lat,lon:lon,lat0:lat0,lon0:lon0,v:[[x],[y],[z]],u:v}
 end
+
+;---------------------------------------------------
 
 function terminator1,lat0,lon0,check=check,corr=corr, rad = rad
 ; if check set then confirm orthogonality of terimator to (lat0,lon0)
@@ -740,12 +793,10 @@ u = [sint*cosp,sint*sinp,cost]
 if keyword_set(corr) then termcorr,lon,lat,lat0,lon0,corr
 if keyword_set(check) then begin
   for i=0,n-1 do begin
-    print, total(u*[x(i),y(i),z(i)])
+    print, total(u*[x[i],y[i],z[i]])
   endfor
 endif
 
 return, {lat:lat,lon:lon,lat0:lat0,lon0:lon0,v:[[x],[y],[z]],u:u}
 end
 ; End terminator code
-pro geopack
-end

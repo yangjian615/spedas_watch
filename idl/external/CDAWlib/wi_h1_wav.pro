@@ -15,7 +15,7 @@ current_files = findfile(file_spec,count=num_files)
 print,'Number of files',num_files
 
 for i = 0,num_files-1 do begin
-    wi_h1_wav_create_cdf,current_files(i),input_Dir
+    wi_h1_wav_create_cdf,current_files[i],input_Dir
 endfor
 
 end
@@ -25,9 +25,9 @@ pro wi_h1_wav_create_cdf,path_name,indir
 ;                     rad2 and tnr must be there to complete.
 
 x = strsplit(path_name,'/',/extract) 
-filename_only = x(size(x,/N_ELEMENTS)-1)
+filename_only = x[size(x,/N_ELEMENTS)-1]
 y = strsplit(filename_only,'.',/extract)
-time = y(0)
+time = y[0]
 
 ;
 ; Create the names of alll idl save set names
@@ -76,11 +76,11 @@ restore,rad1_file
 ;  
 ; 
 
-Voltage_RAD1 = transpose(arrayb(0:1439,*))
+Voltage_RAD1 = transpose(arrayb[0:1439,*])
 ;
 ; Minimum Voltage data is contained in the record 1441
 ;
-minVoltage_RAD1 = transpose(arrayb(1440,*))
+minVoltage_RAD1 = transpose(arrayb[1440,*])
 
 ;
 ; get the year,month, and day and convert to integer
@@ -98,7 +98,7 @@ tmin = 0
 for hr = 0, 23 do begin
     for minute = 0,59  do begin
         cdf_epoch,Ep,y,m,d,hr,minute,30,0, /compute_epoch
-        Epoch(tmin) = Ep
+        Epoch[tmin] = Ep
         tmin = tmin+1
     endfor
 endfor
@@ -113,12 +113,12 @@ cdf_epoch,medEpoch,y,m,d,12,0,0,0, /compute_epoch
 ; 
 
 restore,rad2_file
-Voltage_RAD2 = transpose(arrayb(0:1439,*))
-minVoltage_RAD2 = transpose(arrayb(1440,*))
+Voltage_RAD2 = transpose(arrayb[0:1439,*])
+minVoltage_RAD2 = transpose(arrayb[1440,*])
 
 restore,tnr_file
-Voltage_TNR = transpose(arrayb(0:1439,*))
-minVoltage_TNR = transpose(arrayb(1440,*))
+Voltage_TNR = transpose(arrayb[0:1439,*])
+minVoltage_TNR = transpose(arrayb[1440,*])
 
 ;; Now set the buf1 structure data pointers for each variable to the appropriate
 ;; data arrays/values.

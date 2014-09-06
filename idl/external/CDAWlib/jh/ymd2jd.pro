@@ -20,6 +20,7 @@
 ;       R. Sterner,  23 June, 1985 --- converted from FORTRAN.
 ;       Johns Hopkins University Applied Physics Laboratory.
 ;       RES 18 Sep, 1989 --- converted to SUN
+;       R. Sterner, 2010 Aug 12 --- Added reference and example.
 ;
 ; Copyright (C) 1985, Johns Hopkins University/Applied Physics Laboratory
 ; This software may be used, copied, or redistributed as long as it is not
@@ -38,6 +39,13 @@
 	  print,'   m = month (like 7 for July).             in'
 	  print,'   d = month day (like 23).                 in'
 	  print,'   jd = Julian Day number (like 2447000).   out'
+          print,' Notes:'
+          print,'   From Low-Precision Formulae for Planetary Positions'
+          print,'        T.C.Van Flandern and K.F.Pulkkinen  (US Naval Obs)'
+          print,'        Astrophysical J. Supp Series, 41:391-411, 1979 Nov'
+          print,' '
+          print,'   Example: y = 1986, m = 2, d = 21 gives jd = 2446483.'
+          print,'     For 0:00 of the above day jd = 2446482.5.'
 	  return, -1
 	endif
  

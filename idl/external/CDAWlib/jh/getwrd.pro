@@ -9,6 +9,7 @@
 ;       wrd = getwrd(txt, n, [m])
 ; INPUTS:
 ;       txt = text string to extract from.         in
+;         txt is allowed to be an array.
 ;       n = word number to get (first = 0 = def).  in
 ;       m = optional last word number to get.      in
 ; KEYWORD PARAMETERS:
@@ -20,6 +21,8 @@
 ;           If n=-2 and m=0 then last 3 words are returned.
 ;         /NOTRIM suppresses whitespace trimming on ends.
 ;         NWORDS=n.  Returns number of words in string.
+;         /KEEP_LEADING_DEL  Keep any leading delimiter in result.
+;         /KEEP_TRAILING_DEL Keep any trailing delimiter in result.
 ; OUTPUTS:
 ;       wrd = returned word or words.              out
 ; COMMON BLOCKS:
@@ -41,7 +44,14 @@
 ;       R. Sterner, 20 May, 1991 --- Added common and NULL string.
 ;       R. Sterner, 13 Dec, 1992 --- Made tabs equivalent to spaces.
 ;       R. Sterner,  4 Jan, 1993 --- Added NWORDS keyword.
-;       Johns Hopkins University Applied Physics Laboratory.
+;       R. Sterner, 2001 Jan 15 --- Fixed to use first element if not a scalar.
+;       R. Sterner, 2006 Mar 07 --- Added /KEEP_LEADING_DEL, /KEEP_TRAILING_DEL.
+;       Also cleaned up some.
+;       R. Sterner, 2010 Apr 29 --- Converted arrays from () to [].
+;       R. Sterner, 2010 Jun 17 --- Added the /KEEP_* keywords to the help text.
+;       R. Sterner, 2011 Mar 23 --- Allowed txt to be an array.
+;       R. Sterner, 2011 Dec 12 --- Added /RESET keyword.
+;       R. Sterner, 2013 Feb 01 --- Made loop use long int.
 ;
 ; Copyright (C) 1985, Johns Hopkins University/Applied Physics Laboratory
 ; This software may be used, copied, or redistributed as long as it is not
@@ -53,14 +63,17 @@
  
  
 	FUNCTION GETWRD, TXTSTR, NTH, MTH, help=hlp, location=ll,$
-	   delimiter=delim, notrim=notrim, last=last, nwords=nwords
+	   delimiter=delim, notrim=notrim, last=last, nwords=nwords, $
+	   keep_leading_del=keep_lead, keep_trailing_del=keep_trail, $
+	   reset=reset
  
-	common getwrd_com, txtstr0, nwds, loc, len
+	common getwrd_com, txtstr0, nwds, loc, len, ddel, pre, post
  
 	if (n_params(0) lt 1) or keyword_set(hlp) then begin
 	  print," Return the n'th word from a text string."
 	  print,' wrd = getwrd(txt, n, [m])'
 	  print,'   txt = text string to extract from.         in'
+	  print,'     txt is allowed to be an array.'
 	  print,'   n = word number to get (first = 0 = def).  in'
 	  print,'   m = optional last word number to get.      in'
 	  print,'   wrd = returned word or words.              out'
@@ -72,8 +85,12 @@
 	  print,'     If n=-2 and m=0 then last 3 words are returned.'
 	  print,'   /NOTRIM suppresses whitespace trimming on ends.'
 	  print,'   NWORDS=n.  Returns number of words in string.'
+          print,'   /KEEP_LEADING_DEL  Keep any leading delimiter in result.'
+          print,'   /KEEP_TRAILING_DEL Keep any trailing delimiter in result.'
+	  print,'   /RESET Reinitialize even if a null string is given.'
 	  print,'Note: If a NULL string is given (txt="") then the last string'
 	  print,'      given is used.  This saves finding the words again.'
+	  print,'      With /RESET a null string has no special meaning.'
 	  print,'      If m > n wrd will be a string of words from word n to'
 	  print,'      word m.  If no m is given wrd will be a single word.'
 	  print,'      n<0 returns text starting at word abs(n) to string end'
@@ -82,30 +99,60 @@
 	  return, -1
 	endif
  
+	;-------------------------------------
+	;  Defaults
+	;-------------------------------------
 	if n_params(0) lt 2 then nth = 0		; Def is first word.
-	IF N_PARAMS(0) LT 3 THEN MTH = NTH		; Def is one word.
+	if n_params(0) lt 3 then mth = nth		; Def is one word.
  
-	if strlen(txtstr) gt 0 then begin
+	;-------------------------------------
+	;  Handle input if an array
+	;-------------------------------------
+	n_txtstr = n_elements(txtstr)
+	if n_txtstr gt 1 then begin
+	  txtout = strarr(n_txtstr)
+	  for i=0L,n_txtstr-1L do begin
+	    txtout1 = getwrd(txtstr[i],NTH, MTH, help=hlp, location=ll,$
+	      delimiter=delim, notrim=notrim, last=last, nwords=nwords, $
+	      keep_leading_del=keep_lead, keep_trailing_del=keep_trail)
+	    txtout[i] = txtout1
+	  endfor
+	  return, txtout
+	endif
+ 
+	;-------------------------------------
+	;  Initialize
+	;-------------------------------------
+;	if strlen(txtstr[0]) gt 0 then begin		; Non-null arg.
+	if (strlen(txtstr[0]) gt 0) or $
+           keyword_set(reset) then begin		; Non-null arg.
 	  ddel = ' '					; Def del is a space.
 	  if n_elements(delim) ne 0 then ddel = delim	; Use given delimiter.
-	  TST = (byte(ddel))(0)				; Del to byte value.
-	  tb = byte(txtstr)				; String to bytes.
+	  tst = (byte(ddel))[0]				; Del to byte value.
+	  tb = byte(txtstr[0])				; String to bytes.
 	  if ddel eq ' ' then begin		        ; Check for tabs?
 	    w = where(tb eq 9B, cnt)			; Yes.
-	    if cnt gt 0 then tb(w) = 32B		; Convert any to space.
+	    if cnt gt 0 then tb[w] = 32B		; Convert any to space.
 	  endif
-	  X = tb NE TST					; Non-delchar (=words).
-	  X = [0,X,0]					; 0s at ends.
+	  x = tb NE tst					; Non-delchar (=words).
+	  x = [0,X,0]					; 0s at ends.
  
-	  Y = (X-SHIFT(X,1)) EQ 1			; Diff=1: word start.
-	  Z = WHERE(SHIFT(Y,-1) EQ 1)			; Word start locations.
-	  Y2 = (X-SHIFT(X,-1)) EQ 1			; Diff=1: word end.
-	  Z2 = WHERE(SHIFT(Y2,1) EQ 1)			; Word end locations.
+	  Y = (x-shift(x,1)) eq 1			; Diff=1: word start.
+	  z = where(shift(y,-1) eq 1)			; Word start locations.
+	  y2 = (x-shift(x,-1)) eq 1			; Diff=1: word end.
+	  z2 = where(shift(y2,1) eq 1)			; Word end locations.
  
-	  txtstr0 = txtstr				; Move string to common.
-	  NWDS = long(TOTAL(Y))				; Number of words.
-	  LOC = Z					; Word start locations.
-	  LEN = Z2 - Z - 1				; Word lengths.
+	  txtstr0 = txtstr[0]				; Move string to common.
+	  nwds = LONG(total(y))				; Number of words.
+	  loc = z					; Word start locations.
+	  len = z2 - z - 1				; Word lengths.
+	
+	  ;-----  Deal with /keep_* keywords ----- 
+	  pre = ''					; Prefix.
+	  post = ''					; Postfix.
+	  if strmid(txtstr0,0,1) eq ddel then pre=ddel	; Leading delimiter?
+	  if strmid(txtstr0,strlen(txtstr0)-1,1) $	; Trailing delimiter?
+	    eq ddel then post=ddel
 	endif else begin
 	  if n_elements(nwds) eq 0 then begin		; Check if first call.
 	    print,' Error in getwrd: must give a '+$
@@ -116,6 +163,9 @@
  
 	nwords = nwds					; Set nwords
  
+	;-------------------------------------
+	;  Offset from last word
+	;-------------------------------------
 	if keyword_set(last) then begin			; Offset from last.
 	  lst = nwds - 1
 	  in = lst + nth				; Nth word.
@@ -126,26 +176,35 @@
 	  if (in gt lst) and (im gt lst) then return,'' ; Out of range.
 	  in = in < lst					; Larger of in and im
 	  im = im < lst					;  to be last.
-	  ll = loc(in)					; Nth word start.
-	  return, strtrim(strmid(txtstr0,ll,loc(im)-loc(in)+len(im)), 2) 
+	  ll = loc[in]					; Nth word start.
+	  out = strmid(txtstr0,ll,loc[im]-loc[in]+len[im])
+	  ;-----  Deal with /keep_* keywords ----- 
+	  if in gt 0 then pre2=ddel else pre2=pre	; Not at first word.
+	  if im lt lst then post2=ddel else post2=post	; Not at last word.
+	  if keyword_set(keep_lead) then out=pre2+out
+	  if keyword_set(keep_trail) then out=out+post2
+	  if keyword_set(notrim) then return, out
+	  return, strtrim(out,2)
 	endif
  
-	N = ABS(NTH)					; Allow nth<0.
-	IF N GT NWDS-1 THEN RETURN,''			; out of range, null.
-	ll = loc(n)					; N'th word position.
-	IF NTH LT 0 THEN GOTO, NEG			; Handle nth<0.
-	IF MTH GT NWDS-1 THEN MTH = NWDS-1		; Words to end.
- 
-	if keyword_set(notrim) then begin
-	  RETURN, STRMID(TXTSTR0,ll,LOC(MTH)-LOC(NTH)+LEN(MTH))
-	endif else begin
-	  RETURN, strtrim(STRMID(TXTSTR0,ll,LOC(MTH)-LOC(NTH)+LEN(MTH)), 2)
- 	endelse
- 
-NEG:	if keyword_set(notrim) then begin
-	  RETURN, STRMID(TXTSTR0,ll,9999)
-	endif else begin
-	  RETURN, strtrim(STRMID(TXTSTR0,ll,9999), 2)
+	;-------------------------------------
+	;  Offset from first word
+	;-------------------------------------
+	n = abs(nth)					; Allow nth<0.
+	if n gt nwds-1 then return,''			; out of range, null.
+	ll = loc[n]					; N'th word position.
+	mth = mth<(nwds-1)				; Words to end.
+	if nth lt 0 then begin				; Handle nth<0.
+	  out = strmid(txtstr0,ll,9999)
+	endif else begin				; nth=>0
+	  out = strmid(txtstr0,LL,loc[mth]-loc[nth]+len[mth])
 	endelse
+	;-----  Deal with /keep_* keywords ----- 
+	if n gt 0 then pre2=ddel else pre2=pre		; Not at first word.
+	if mth lt (nwds-1) then post2=ddel else post2=post ; Not at last word.
+	if keyword_set(keep_lead) then out=pre2+out
+	if keyword_set(keep_trail) then out=out+post2
+	if keyword_set(notrim) then return, out
+	return, strtrim(out,2)
  
-	END
+	end

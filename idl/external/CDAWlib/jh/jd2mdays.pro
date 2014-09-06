@@ -33,6 +33,7 @@
 ; MODIFICATION HISTORY:
 ;       R. Sterner, 29 Apr, 1993
 ;       R. Sterner, 1994 Mar 30 --- Extended time range upward.
+;       R. Sterner, 2012 Feb 13 --- Converted arrays from () to [].
 ;
 ; Copyright (C) 1993, Johns Hopkins University/Applied Physics Laboratory
 ; This software may be used, copied, or redistributed as long as it is not
@@ -115,20 +116,20 @@ next:	if n_elements(amaj) eq 0 then return
 	  majv = [0L]	; Major tick values array seed.
 	  minv = [0L]	; Major tick values array seed.
 	  for i = 0, n_elements(mjds)-1 do begin
-	    lo = mjds(i)-1+dx	; Start at day 0 + dx (skips 0).
-	    hi=mjde(i)-(dx<2)	; Stop before end.
-	    if dx le 2 then hi=mjde(i)	; For 1 day steps do all.
+	    lo = mjds[i]-1+dx	; Start at day 0 + dx (skips 0).
+	    hi=mjde[i]-(dx<2)	; Stop before end.
+	    if dx le 2 then hi=mjde[i]	; For 1 day steps do all.
 	    if lo lt hi then begin
-	      majv = [majv, mjds(i),makei(lo,hi,dx)]
+	      majv = [majv, mjds[i],makei(lo,hi,dx)]
 	    endif else begin
-	      majv = [majv, mjds(i)]
+	      majv = [majv, mjds[i]]
 	    endelse
-	    lo = mjds(i)-1+dx2
-	    hi = mjde(i)
+	    lo = mjds[i]-1+dx2
+	    hi = mjde[i]
 	    if lo lt hi then begin
-	      minv = [minv, mjds(i),makei(lo,hi,dx2)]
+	      minv = [minv, mjds[i],makei(lo,hi,dx2)]
 	    endif else begin
-	      minv = [minv, mjds(i)]
+	      minv = [minv, mjds[i]]
 	    endelse
 	  endfor
 	endif else begin
@@ -156,8 +157,8 @@ next:	if n_elements(amaj) eq 0 then return
  
 	;--------  Trim tick values to range  ----------
 	w = where((jd1 le majv) and (jd2 ge majv), c)
-	if c gt 0 then majv = majv(w)
+	if c gt 0 then majv = majv[w]
 	w = where((jd1 le minv) and (jd2 ge minv), c)
-	if c gt 0 then minv = minv(w)
+	if c gt 0 then minv = minv[w]
  
 	end

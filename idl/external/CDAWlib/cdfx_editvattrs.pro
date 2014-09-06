@@ -21,7 +21,7 @@ case wtype of
                          if nb eq 1 then begin
                            if b ne c then new = 1
                          endif else begin
-                           for i=0,nb-1 do if b(i) ne c(i) then new = 1
+                           for i=0,nb-1 do if b[i] ne c[i] then new = 1
                          endelse
                          ; if attr has changed then process the new attribute
                          if new eq 1 then begin
@@ -33,9 +33,9 @@ case wtype of
 ;because gethelp is obsolete and it doesn't support dcomplex datatype
 ;                             b = a.(ti).(i) & h = gethelp('b')
                              b = a.(ti).(i) & help, b, output=h
-                             strput,h,vtags(i),0 & text = [text,h]
+                             strput,h,vtags[i],0 & text = [text,h]
                            endfor
-                           text=text((junk.first_vattr+1):(n_elements(vtags)-2))
+                           text=text[(junk.first_vattr+1):(n_elements(vtags)-2)]
                            widget_control,event.top,set_uvalue=a
                            widget_control,junk.listwid,set_value=text
                            widget_control,junk.cbut,sensitive=1
@@ -68,6 +68,13 @@ end
 ;-----------------------------------------------------------------------------
 ; Display all variable attributes for the given variable in the given struct.
 ; Allow the user to modify the values of these attributes.
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+
 
 pro cdfx_editvattrs, a, vname, GROUP=GROUP
 
@@ -107,19 +114,19 @@ ds = size(d) & nds = n_elements(ds)
 ;TJK 12/7/2006, gethelp routine is obsolete AND it doesn't support
 ;the dcomplex data type, so replace gethelp call w/ one to help
 ;same fix throughout this file...
-;h = gethelp('d') & h = strtrim(strmid(h(0),1,strlen(h(0))-1),2)
+;h = gethelp('d') & h = strtrim(strmid(h[0],1,strlen(h[0])-1),2)
 
-help, d, output=h & h = strtrim(strmid(h(0),1,strlen(h(0))-1),2)
-s = str_sep(h(0),'=') & text1 = 'Variable name : ' + a.(v).VARNAME
-text1 = [text1,('Variable type : ' + strtrim(s(0),2))]
-text1 = [text1,('Dimensionality: ' + strtrim(s(1),2))]
+help, d, output=h & h = strtrim(strmid(h[0],1,strlen(h[0])-1),2)
+s = str_sep(h[0],'=') & text1 = 'Variable name : ' + a.(v).VARNAME
+text1 = [text1,('Variable type : ' + strtrim(s[0],2))]
+text1 = [text1,('Dimensionality: ' + strtrim(s[1],2))]
 d = 0L ; delete the data to same memory
 
 ; Construct another text array about the variable attributes
 for i=0,n_elements(vtags)-1 do begin
 ;  b = a.(v).(i) & h = gethelp('b')
   b = a.(v).(i) & help, b, output=h 
-  strput,h,vtags(i),0 & text2 = [text2,h]
+  strput,h,vtags[i],0 & text2 = [text2,h]
 endfor
 
 ; Slice out the variable attributes out of the text string array
@@ -127,7 +134,7 @@ fi = tagindex('FIELDNAM',vtags)
 if (fi eq -1) then begin
   ok = dialog_message(/error, 'editvattrs:missing required vattr:FIELDNAM.')
   return
-endif else text2 = text2((fi+1):(n_elements(vtags)-2))
+endif else text2 = text2[(fi+1):(n_elements(vtags)-2)]
 
 ; list width and height needed for good layout
 twidth = max(strlen(text1)) & theight = n_elements(text1)

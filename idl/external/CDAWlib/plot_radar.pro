@@ -1,8 +1,14 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/plot_radar.pro,v 1.13 1998/10/01 12:03:51 baldwin Exp johnson $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/plot_radar.pro,v 1.16 2012/05/15 18:09:13 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 7092 $
+;$Revision: 15739 $
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 FUNCTION plot_radar, astruct, vnum, XYSIZE=XYSIZE,TSTART=TSTART,TSTOP=TSTOP,$
                      MINTIME=MINTIME,GIF=GIF,GCOUNT=GCOUNT,$
 		     ps=ps, pcount=pcount,$
@@ -25,7 +31,7 @@ thetitle = ' '
 
 ; Open report file if keyword is set
 ;if keyword_set(REPORT) then begin & reportflag=1L & a=size(REPORT)
-; if (a(n_elements(a)-2) eq 7) then OPENW,1,REPORT,132,WIDTH=132
+; if (a[n_elements(a)-2] eq 7) then OPENW,1,REPORT,132,WIDTH=132
 ;endif else reportflag=0L
 if keyword_set(REPORT) then reportflag=1L else reportflag=0L 
 
@@ -56,38 +62,38 @@ qflgs    = handle_check(astruct.qflag)
 
 ; Unfortunately, much of the DARN radar data has backward time steps.
 ; Search for this and repair the data arrays where it occurs.
-i = lindgen(n_elements(times)-1) & w = where(times(i) gt times(i+1),wc)
+i = lindgen(n_elements(times)-1) & w = where(times[i] gt times[i+1],wc)
 if (wc gt 0) then begin
   if keyword_set(DEBUG) then print,'WARNING=Repairing',wc,' backward time steps'
   for j=0,wc-1 do begin ; process each back step
     ; locate where the data after the break overlaps the data before the break
     ; and flag the overlapped times by zeroing out the times fields
-    b = where(times ge times(w(j)+1),bc) & times(b(0):w(j)) = 0.0D0
+    b = where(times ge times[w[j]+1],bc) & times[b[0]:w[j]] = 0.0D0
   endfor
   ; Scrub out the data where the times array was set to zero
-  w = where(times ne 0.0D0) & times=times(w) & qflgs=qflgs(*,w)
-  position=position(*,*,w) & velocity=velocity(*,*,w)
+  w = where(times ne 0.0D0) & times=times[w] & qflgs=qflgs[*,w]
+  position=position[*,*,w] & velocity=velocity[*,*,w]
 endif
 
 ; Separate the positions and velocities into their components
-mlats = position(0,*,*) & mlats = reform(mlats)
-mlons = position(1,*,*) & mlons = reform(mlons)
-vest  = velocity(0,*,*) & vest  = reform(vest)
-vnrt  = velocity(1,*,*) & vnrt  = reform(vnrt)
+mlats = position[0,*,*] & mlats = reform(mlats)
+mlons = position[1,*,*] & mlons = reform(mlons)
+vest  = velocity[0,*,*] & vest  = reform(vest)
+vnrt  = velocity[1,*,*] & vnrt  = reform(vnrt)
 malts = mlats
 
 ; Expand the times array to match the dimensionality of the mlats and mlons
 ; arrays, so that fill data may be screened correctly with like-sized arrays.
 a = n_elements(times) & b = size(mlats)
-times = rebin(reform(times,1,a,/overwrite),b(1),a,/sample)
+times = rebin(reform(times,1,a,/overwrite),b[1],a,/sample)
 
 ; Screen out data where the quality flag indicates fill data
 w = where(qflgs ne astruct.qflag.fillval,wc)
 if (wc eq 0) then begin
   print,'ERROR=All data is fill data.  Unable to plot.' & return,-1
 endif else begin
-  mlats = mlats(w) & mlons = mlons(w) &  malts = malts(w)
-  vest = vest(w) &  vnrt = vnrt(w) & times = times(w)
+  mlats = mlats[w] & mlons = mlons[w] &  malts = malts[w]
+  vest = vest[w] &  vnrt = vnrt[w] & times = times[w]
 endelse
 
 ; Screen out data where the velocity data indicates fill data
@@ -95,77 +101,77 @@ w = where(vest ne astruct.vel.fillval,wc)
 if (wc eq 0) then begin
   print,'ERROR=All data is fill data.  Unable to plot.' & return,-1
 endif else begin
- mlats = mlats(w) & mlons = mlons(w) &  malts = malts(w)
- vest = vest(w) &  vnrt = vnrt(w) & times = times(w)
+ mlats = mlats[w] & mlons = mlons[w] &  malts = malts[w]
+ vest = vest[w] &  vnrt = vnrt[w] & times = times[w]
 endelse
 w = where(vnrt ne astruct.vel.fillval,wc)
 if (wc eq 0) then begin
   print,'ERROR=All data is fill data.  Unable to plot.' & return,-1
 endif else begin
- mlats = mlats(w) & mlons = mlons(w) &  malts = malts(w)
- vest = vest(w) &  vnrt = vnrt(w) & times = times(w)
+ mlats = mlats[w] & mlons = mlons[w] &  malts = malts[w]
+ vest = vest[w] &  vnrt = vnrt[w] & times = times[w]
 endelse
 
 ; Screen out velocities outside the validmin/validmax range
-vm = astruct.vel.validmin(0) & vx = astruct.vel.validmax(0)
+vm = astruct.vel.validmin[0] & vx = astruct.vel.validmax[0]
 w = where(((vest ge vm)AND(vest le vx)),wc)
 if (wc eq 0) then begin
   print,'ERROR=No vest data within validmin/max limits'
 endif else begin
-  mlats = mlats(w) & mlons = mlons(w) &  malts = malts(w)
-  vest = vest(w) &  vnrt = vnrt(w) & times = times(w)
+  mlats = mlats[w] & mlons = mlons[w] &  malts = malts[w]
+  vest = vest[w] &  vnrt = vnrt[w] & times = times[w]
 endelse
-vm = astruct.vel.validmin(1) & vx = astruct.vel.validmax(1)
+vm = astruct.vel.validmin[1] & vx = astruct.vel.validmax[1]
 w = where(((vnrt ge vm)AND(vnrt le vx)),wc)
 if (wc eq 0) then begin
   print,'ERROR=No vnrt data within validmin/max limits'
 endif else begin
-  mlats = mlats(w) & mlons = mlons(w) &  malts = malts(w)
-  vest = vest(w) &  vnrt = vnrt(w) & times = times(w)
+  mlats = mlats[w] & mlons = mlons[w] &  malts = malts[w]
+  vest = vest[w] &  vnrt = vnrt[w] & times = times[w]
 endelse
 
 ; Screen out positions outside validmin/max limits
-vm = astruct.position.validmin(0) & vx = astruct.position.validmax(0)
+vm = astruct.position.validmin[0] & vx = astruct.position.validmax[0]
 w = where(((mlats ge vm)AND(mlats le vx)),wc)
 if (wc eq 0) then begin
   print,'STATUS=No valid data found. Re-select time interval.'
   print,'ERROR=No mlat data within validmin/max limits'
 endif else begin
-  mlats = mlats(w) & mlons = mlons(w) &  malts = malts(w)
-  vest = vest(w) &  vnrt = vnrt(w) & times = times(w)
+  mlats = mlats[w] & mlons = mlons[w] &  malts = malts[w]
+  vest = vest[w] &  vnrt = vnrt[w] & times = times[w]
 endelse
-vm = astruct.position.validmin(1) & vx = astruct.position.validmax(1)
+vm = astruct.position.validmin[1] & vx = astruct.position.validmax[1]
 w = where(((mlons ge vm)AND(mlons le vx)),wc)
 if (wc eq 0) then begin
   print,'STATUS=No valid data found. Re-select time interval.'
   print,'ERROR=No mlon data within validmin/max limits'
 endif else begin
-  mlats = mlats(w) & mlons = mlons(w) &  malts = malts(w)
-  vest = vest(w) &  vnrt = vnrt(w) & times = times(w)
+  mlats = mlats[w] & mlons = mlons[w] &  malts = malts[w]
+  vest = vest[w] &  vnrt = vnrt[w] & times = times[w]
 endelse
 
 ; Determine the proper start and stop times of the plot
-tbegin = times(0) & tend = times(n_elements(times)-1) ; default to data
+tbegin = times[0] & tend = times[n_elements(times)-1] ; default to data
 if keyword_set(TSTART) then begin ; set tbegin
   tbegin = TSTART & a = size(TSTART)
-  if (a(n_elements(a)-2) eq 7) then tbegin = encode_CDFEPOCH(TSTART)
+  if (a[n_elements(a)-2] eq 7) then tbegin = encode_CDFEPOCH(TSTART)
 endif
 if keyword_set(TSTOP) then begin ; set tend
   tend = TSTOP & a = size(TSTOP)
-  if (a(n_elements(a)-2) eq 7) then tend = encode_CDFEPOCH(TSTOP)
+  if (a[n_elements(a)-2] eq 7) then tend = encode_CDFEPOCH(TSTOP)
 endif
 
 
 ; Reduce the data arrays to within tbegin to tend if needed.
-if (tbegin gt times(0)) then begin
+if (tbegin gt times[0]) then begin
   w = where(times ge tbegin)
-  mlats = mlats(w) & mlons = mlons(w) &  malts = malts(w)
-  vest = vest(w) &  vnrt = vnrt(w) & times = times(w)
+  mlats = mlats[w] & mlons = mlons[w] &  malts = malts[w]
+  vest = vest[w] &  vnrt = vnrt[w] & times = times[w]
 endif
 if (tend lt times(n_elements(times)-1)) then begin
   w = where(times le tend)
-  mlats = mlats(w) & mlons = mlons(w) &  malts = malts(w)
-  vest = vest(w) &  vnrt = vnrt(w) & times = times(w)
+  mlats = mlats[w] & mlons = mlons[w] &  malts = malts[w]
+  vest = vest[w] &  vnrt = vnrt[w] & times = times[w]
 endif
 
 
@@ -175,13 +181,13 @@ endif
 jds = lonarr(n_elements(times)) ; create an array to hold julian days
 sod = lonarr(n_elements(times)) ; create an array to hold seconds of days
 for i=0L,n_elements(times)-1 do begin ; compute julian day of each data point
-  CDF_EPOCH,times(i),y,m,d,h,n,s,ms,/BREAK & jds(i) = julday(m,d,y)
-  sod(i) = float((h*60+n)*60+s+(ms/1000))
+  CDF_EPOCH,times[i],y,m,d,h,n,s,ms,/BREAK & jds[i] = julday(m,d,y)
+  sod[i] = float((h*60+n)*60+s+(ms/1000))
 endfor & u = uniq(jds)
 
 us=size(u)
 ; patch for no data 
-if(us(0) eq 0) then begin
+if(us[0] eq 0) then begin
  if(u lt 12) then begin
   print, "STATUS=No data for the selected time range"
   return, -1
@@ -189,9 +195,9 @@ if(us(0) eq 0) then begin
 endif
 
 for i=0L,n_elements(u)-1 do begin ; validate minimum amount of data per day
-  if i eq 0 then a = times(0) else a = times(u(i-1)+1) & b = times(u(i))
+  if i eq 0 then a = times[0] else a = times[u(i-1)+1] & b = times[u[i]]
   if ((b - a) gt min_t) then begin ; enough data in the day for plot
-    if i eq 0 then a = 0 else a = u(i-1)+1 & b = u(i)
+    if i eq 0 then a = 0 else a = u(i-1)+1 & b = u[i]
     if n_elements(ib) eq 0 then begin & ib=a & ie=b & endif $
     else begin & ib=[ib,a] & ie=[ie,b] & endelse
   endif
@@ -252,19 +258,19 @@ for i=0L,n_elements(ib)-1 do begin
 ;  endelse
 
   ; construct structure containing required time data
-  CDF_EPOCH,times(ib(i)),y,m,d,h,n,s,ms,/BREAK & monday,y,doy,m,d,/yearday
+  CDF_EPOCH,times[ib[i]],y,m,d,h,n,s,ms,/BREAK & monday,y,doy,m,d,/yearday
   mytimes = create_struct('year',y,'doy',doy,'mon',m,'day',d,$
-                          'times',sod(ib(i):ie(i)))
+                          'times',sod[ib[i]:ie[i]])
 
   ; extract data from arrays for plotting
-  lats = mlats(ib(i):ie(i))
-  lons = mlons(ib(i):ie(i))
-  ves  = vest (ib(i):ie(i))
-  vnr  = vnrt (ib(i):ie(i))
-  alts = malts(ib(i):ie(i))
-  qfls = qflgs(ib(i):ie(i))
+  lats = mlats[ib[i]:ie[i]]
+  lons = mlons[ib[i]:ie[i]]
+  ves  = vest [ib[i]:ie[i]]
+  vnr  = vnrt [ib[i]:ie[i]]
+  alts = malts[ib[i]:ie[i]]
+  qfls = qflgs[ib[i]:ie[i]]
 
-;print, "TIMES", size(mytimes), mytimes(0), mytimes(n_elements(mytimes)-1)
+;print, "TIMES", size(mytimes), mytimes[0], mytimes[n_elements(mytimes)-1]
 
  s=vectplt(lats,lons,alts,ves,vnr,mytimes,qfls,$
           Stitle=station,mcors=mltin,Qmin=qmin,Qmax=qmax,nopolar=nop,$

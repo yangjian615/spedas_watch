@@ -1,8 +1,18 @@
 ;$Author: nikos $
-;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
 ;$Header: /home/rumba/cdaweb/dev/control/RCS/virtual_funcs.pro,v 1.0 
-;$Locker: kovalick $
-;$Revision: 15545 $
+;$Locker: johnson $
+;$Revision: 15739 $
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+
+compile_opt idl2
+
+
 ;+
 ;
 ; NAME: Function VTYPE_NAMES
@@ -24,7 +34,7 @@ function vtype_names, buf, vtype, NAMES=vNAMES
     if(tagindex('VAR_TYPE', tagnames1) ge 0) then begin
         if(buf.(i).VAR_TYPE eq vtype) then begin
         ;if(buf.(i).VAR_TYPE eq 'data') then begin
-           vnames(ii)=tagnames(i)
+           vnames[ii]=tagnames[i]
            vindices(ii)=i
            ii=ii+1
         endif
@@ -32,12 +42,12 @@ function vtype_names, buf, vtype, NAMES=vNAMES
    endfor
 
    wc=where(vnames ne '',wcn)
-   if(wc(0) lt 0) then begin
-    vnames(0)=wc
-    vindices(0)=wc
+   if(wc[0] lt 0) then begin
+    vnames[0]=wc
+    vindices[0]=wc
    endif else begin
-    vnames=vnames(wc)
-    vindices=vindices(wc)
+    vnames=vnames[wc]
+    vindices=vindices[wc]
    endelse
 
 ;Jan. 6, 2003 - TJK added the "or (n_elements..." below because in IDL 5.6 
@@ -62,7 +72,7 @@ function buf_trap, a
 
   ibad=0
   str_tst=size(a)
-  if(str_tst(str_tst(0)+1) ne 8) then begin
+  if(str_tst(str_tst[0]+1) ne 8) then begin
     ibad=1
     v_data='DATASET=UNDEFINED'
     v_err='ERROR=a'+strtrim(string(i),2)+' not a structure.'
@@ -72,7 +82,7 @@ function buf_trap, a
 ; Test for errors trapped in conv_map_image
    atags=tag_names(a)
    rflag=tagindex('DATASET',atags)
-   if(rflag(0) ne -1) then ibad=1
+   if(rflag[0] ne -1) then ibad=1
   endelse
 
 return, ibad
@@ -97,19 +107,19 @@ function vv_names, buf, NAMES=NAMES
     tagnames1=tag_names(buf.(i))
     if(tagindex('VIRTUAL', tagnames1) ge 0) then begin
         if(buf.(i).VIRTUAL) then begin
-           vnames(ii)=tagnames(i)
-           vindices(ii)=i
+           vnames[ii]=tagnames[i]
+           vindices[ii]=i
            ii=ii+1
         endif
     endif
    endfor
    wc=where(vnames ne '',wcn)
-   if(wc(0) lt 0) then begin
-    vnames(0)=wc
-    vindices(0)=wc
+   if(wc[0] lt 0) then begin
+    vnames[0]=wc
+    vindices[0]=wc
    endif else begin
-    vnames=vnames(wc)
-    vindices=vindices(wc)
+    vnames=vnames[wc]
+    vindices=vindices[wc]
    endelse
  
 ;TJK IDL6.1 doesn't recognize this keyword as being set since
@@ -120,7 +130,7 @@ NAMES=vnames
 endif
 return, vindices 
 end
-
+;-----------------------------------------------------------------------------
 ;+
 ; NAME: Function CHECK_MYVARTYPE
 ;
@@ -155,32 +165,54 @@ function check_myvartype, nbuf, org_names
    status=0
    var_names=strarr(1)
    var_indices = vtype_names(nbuf,'data',NAMES=var_names)
-   if(var_indices(0) lt 0) then begin
+   if(var_indices[0] lt 0) then begin
+     print, "STATUS= No variable of type DATA detected."
      print, "ERROR= No var_type=DATA variable found in check_myvartype.pro"
-     print, "ERROR= Message: ",var_indices(0)
+     print, "ERROR= Message: ",var_indices[0]
      status = -1
      return, status
    endif
    org_names=strupcase(org_names)
    
+   ; RCJ 08/29/2012   Let's find all 'components'. We'll need this list below.
+   compnames=[''] 
+   for i=0, n_elements(var_indices)-1 do begin
+      tnames=tag_names(nbuf.(i))
+      for k=0,n_elements(tnames)-1 do begin
+         pos = strpos(tnames[k],'COMPONENT_')
+         if (pos eq 0) then compnames=[compnames,nbuf.(var_indices[i]).(k)]
+      endfor
+   endfor   
+     
+   for i=0, n_elements(var_indices)-1 do begin
+      wc=where(org_names eq var_names[i],wcn)
+      if(wc[0] lt 0) then begin  ; this is not the originally requested var.
+        ;print,'***** not requested, make support_data : ',var_names[i]
+        nbuf.(var_indices[i]).var_type = 'support_data'
+        ;
+        wc1=where(strupcase(compnames) eq var_names[i])
+        if (wc1[0] ne -1) then nbuf.(var_indices[i]).var_type='additional_data'
+        ;if (wc1[0] ne -1) then print,'********** and a component, make additional_data: ',nbuf.(var_indices[i]).varname
+      endif
+   endfor   
+
+   ;  Old logic: (RCJ 08/29/2012)
+   ;
    ; RCJ 01/23/2007  depend_0s is to be used if one of the vars
    ; becomes additional or ignore_data
-   depend_0s=''
-   for i=0,n_elements(tag_names(nbuf))-1 do begin
-      depend_0s=[depend_0s,nbuf.(i).depend_0]
-   endfor
-   depend_0s=depend_0s[1:*]
-   ; RCJ 11/09/2007  Added same thing for depend_1's
-   depend_1s=''
-   for i=0,n_elements(tag_names(nbuf))-1 do begin
-      if (tagindex('DEPEND_1',tag_names(nbuf.(i))) ge 0) then $
-      depend_1s=[depend_1s,nbuf.(i).depend_1]
-   endfor
-   if n_elements(depend_1s) gt 1 then depend_1s=depend_1s[1:*]
+;   depend_0s=''
+;   for i=0,n_elements(tag_names(nbuf))-1 do begin
+;      depend_0s=[depend_0s,nbuf.(i).depend_0]
+;   endfor
+;   depend_0s=depend_0s[1:*]
+;   ; RCJ 11/09/2007  Added same thing for depend_1's
+;   depend_1s=''
+;   for i=0,n_elements(tag_names(nbuf))-1 do begin
+;      if (tagindex('DEPEND_1',tag_names(nbuf.(i))) ge 0) then $
+;      depend_1s=[depend_1s,nbuf.(i).depend_1]
+;   endfor
+;   if n_elements(depend_1s) gt 1 then depend_1s=depend_1s[1:*]
    ;
-   for i=0, n_elements(var_indices)-1 do begin
-    wc=where(org_names eq var_names(i),wcn)
-    if(wc(0) lt 0) then begin  ; this is not the originally requested var.
        ; we don't want the var to be ignored in case we are going to write a cdf,
        ; but we also don't want the var listed/plotted, so turn it into a
        ; 'additional_data'.
@@ -202,24 +234,26 @@ function check_myvartype, nbuf, org_names
       ;    endif	
       ; endif	
        ; RCJ 07/14/2008  Now we do want the depends listed.
-       if (nbuf.(var_indices(i)).var_type eq 'data')  then $
-         nbuf.(var_indices(i)).var_type='additional_data'
-       if (nbuf.(var_indices(i)).var_type eq 'additional_data') then begin
-      	  if nbuf.(var_indices(i)).depend_0 ne '' then begin
-                   q=where(depend_0s eq nbuf.(var_indices(i)).depend_0)
-                   if n_elements(q) eq 1 then $
-      	        s=execute("nbuf."+nbuf.(var_indices(i)).depend_0+".var_type='additional_data'")
-                endif	
-      	  if nbuf.(var_indices(i)).depend_1 ne '' then begin
-                   q=where(depend_1s eq nbuf.(var_indices(i)).depend_1)
-                   if n_elements(q) eq 1 then $
-      	        s=execute("nbuf."+nbuf.(var_indices(i)).depend_1+".var_type='additional_data'")
-          endif	
-      endif	
-    endif   
-    ;if(wc(0) lt 0) then nbuf.(var_indices(i)).var_type="ignore_data"
-    ;if(wc(0) lt 0) then nbuf.(var_indices(i)).var_type="metadata"
-   endfor
+;       print,'*********** not requested: ', nbuf.(var_indices[i]).varname,'  ',nbuf.(var_indices[i]).var_type
+;       if (nbuf.(var_indices[i]).var_type eq 'data')  then $
+;         nbuf.(var_indices[i]).var_type='additional_data'
+;       if (nbuf.(var_indices[i]).var_type eq 'additional_data') then begin
+;      	  if nbuf.(var_indices[i]).depend_0 ne '' then begin
+;                   q=where(depend_0s eq nbuf.(var_indices[i]).depend_0)
+;                   if n_elements(q) eq 1 then $
+;      	        s=execute("nbuf."+nbuf.(var_indices[i]).depend_0+".var_type='additional_data'")
+;                endif	
+;      	  if nbuf.(var_indices[i]).depend_1 ne '' then begin
+;                   q=where(depend_1s eq nbuf.(var_indices[i]).depend_1)
+;                   if n_elements(q) eq 1 then $
+;      	        s=execute("nbuf."+nbuf.(var_indices[i]).depend_1+".var_type='additional_data'")
+;          endif	
+;      endif	
+;
+;    Even older logic:  (RCJ 08/29/2012)
+;
+    ;if(wc[0] lt 0) then nbuf.(var_indices[i]).var_type="ignore_data"
+    ;if(wc[0] lt 0) then nbuf.(var_indices[i]).var_type="metadata"   
 
 return, status
 end
@@ -279,9 +313,9 @@ status=0
 ; Find virtual variables
    vvtag_names=strarr(1) 
    vvtag_indices = vv_names(buf,NAMES=vvtag_names)
-   if(vvtag_indices(0) lt 0) then begin
+   if(vvtag_indices[0] lt 0) then begin
      print, "ERROR= No VIRTUAL variable found in alternate_view"
-     print, "ERROR= Message: ",vvtag_indices(0)
+     print, "ERROR= Message: ",vvtag_indices[0]
      status = -1
      return, status
    endif
@@ -293,35 +327,35 @@ status=0
 ;    variable_name=arrayof_vvtags(i) 
 ;    tag_index = tagindex(variable_name, tagnames)
 
-    tagnames1=tag_names(buf.(vvtag_indices(i)))
+    tagnames1=tag_names(buf.(vvtag_indices[i]))
 
 ;now look for the COMPONENT_0 attribute tag for this VV.
 ;TJK had to change to check for 'ge 0', otherwise it wasn't true...
 
     if(tagindex('COMPONENT_0', tagnames1) ge 0) then $
-              component0=buf.(vvtag_indices(i)).COMPONENT_0
+              component0=buf.(vvtag_indices[i]).COMPONENT_0
 
 ; Check if the component0 variable exists 
 
     component0_index = tagindex(component0,tagnames)
 
-;print, buf.(vvtag_indices(i)).handle 
-    vartags = tag_names(buf.(vvtag_indices(i)))
+;print, buf.(vvtag_indices[i]).handle 
+    vartags = tag_names(buf.(vvtag_indices[i]))
 ;11/5/04 - TJK - had to change FUNCTION to FUNCT for IDL6.* compatibility
 ;    findex = tagindex('FUNCTION', vartags) ; find the FUNCTION index number
     findex = tagindex('FUNCT', vartags) ; find the FUNCTION index number
-    if (findex(0) ne -1) then $
-     func_name=strlowcase(buf.(vvtag_indices(i)).(findex(0)))
+    if (findex[0] ne -1) then $
+     func_name=strlowcase(buf.(vvtag_indices[i]).(findex[0]))
 ; Loop through all vv's and assign image handle to all w/ 0 handles RTB 12/98
 ; Check if handle = 0 and if function = 'alternate_view'
  if(func_name eq 'alternate_view') then begin
 ;print, func_name 
-;print, vvtag_names(i)
+;print, vvtag_names[i]
     if(component0_index ge 0) then begin
 ; WARNING if /NODATASTRUCT keyword not set an error will occur here
 ;TJK - changed this from tagnames to tagnames1
       if(tagindex('HANDLE',tagnames1) ge 0) then $
-        buf.(vvtag_indices(i)).HANDLE=buf.(component0_index).HANDLE $
+        buf.(vvtag_indices[i]).HANDLE=buf.(component0_index).HANDLE $
 
       else print, "Set /NODATASTRUCT keyword in call to read_myCDF";
     endif else begin
@@ -331,7 +365,7 @@ status=0
      return, status
     endelse 
   endif
-;print, buf.(vvtag_indices(i)).handle 
+;print, buf.(vvtag_indices[i]).handle 
    endfor
 
 ; Check that all variables in the original variable list are declared as
@@ -371,7 +405,7 @@ end
 
 function crop_image, buf, org_names, index=index
 status=0
-print, 'In Crop_image'
+;print, 'In Crop_image'
 ; Establish error handler
 catch, error_status
 if(error_status ne 0) then begin
@@ -395,13 +429,17 @@ handle_value,buf.(component0_index).handle,img
 ; Rick Burley says that from the original 60x20 image
 ; we need to extract a 20x20 image:
 buf.(index).handle=handle_create()
-handle_value,buf.(index).handle,img(19:38,*,*),/set
+handle_value,buf.(index).handle,img[19:38,*,*],/set
 ;
 ; RCJ 10/22/2003 If the image is being cropped then depend_1
 ; should also be cropped. Found this problem when trying to list the data,
 ; the number of depend_1s did not match the number of data columns.
 if(tagindex('DEPEND_1', tagnames1) ge 0) then $
    depend1=buf.(index).DEPEND_1
+; RCJ 05/16/2013  Good, but if alt_cdaweb_depend_1 exists, use it instead:
+if(tagindex('ALT_CDAWEB_DEPEND_1', tagnames1) ge 0) then if (buf.(index).alt_cdaweb_depend_1 ne '') then $
+   depend1=buf.(index).alt_cdaweb_depend_1
+;
 depend1_index = tagindex(depend1,tagnames)
 handle_value,buf.(depend1_index).handle,sp
 ; RCJ 12/29/2003  Check to see if this depend_1 wasn't already cropped
@@ -448,18 +486,18 @@ function clean_data, data, FILLVAL=FILLVAL
      print, "STATUS = No valid data found. Re-select time interval.";
    endif
    
-;   mean= total(data(w[0:(wn-1)]))/fix(wn)
+;   mean= total(data[w[0:(wn-1)]])/fix(wn)
    ; RCJ 10/03/2003 The function moment needs data to have 2 or more elements.
    ; If that's not possible, then the mean will be the only valid element of
    ; data and the sdev will be 0. 
 
 
 
-   if n_elements(data(w[0:(wn-1)])) gt 1 then begin
-      result = moment(data(w[0:(wn-1)]),sdev=sig)
+   if n_elements(data[w[0:(wn-1)]]) gt 1 then begin
+      result = moment(data[w[0:(wn-1)]],sdev=sig)
       mean=result[0]
    endif else begin
-      mean=data(w[0:(wn-1)])
+      mean=data[w[0:(wn-1)]]
       sig=0.
    endelse      
    sig3=3.0*sig
@@ -471,11 +509,11 @@ function clean_data, data, FILLVAL=FILLVAL
 ; and data, so all values are set to fill, which isn't correct at all...
 ; So to make up for this apparent bug in the moment routine, do the following:
 
-   t = where(data eq data(0), tn)
+   t = where(data eq data[0], tn)
    if (tn eq n_elements(data)) then begin
 	wn = 0
 	print, 'DEBUG clean_data - overriding results from moment func. because '
-	print, 'all data are the same valid value = ',data(0)
+	print, 'all data are the same valid value = ',data[0]
    endif
 
    if(wn gt 0) then data[w] = FILLVAL
@@ -551,7 +589,7 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
 ; Determine time array 
  depend0=strupcase(buf.(INDEX).depend_0)
  incep=where(namest eq depend0,w)
- incep=incep(0)
+ incep=incep[0]
  names=tag_names(buf.(incep))
  ntags=n_tags(buf.(incep))
 ; Check to see if HANDLE a tag name
@@ -573,34 +611,34 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
 ;the data cdfs have one of the label variables incorrectly
 ;defined as a virtual variable, so you can't just assume
 ;the 1st one in vvtag_indices is the correct one.
-; use the index passed in instead of vvtag_indices(0)
-;  cond0=buf.(vvtag_indices(0)).COMPONENT_0 
+; use the index passed in instead of vvtag_indices[0]
+;  cond0=buf.(vvtag_indices[0]).COMPONENT_0 
   cond0=buf.(index).COMPONENT_0 
   x0=execute('handle_value, buf.'+cond0+'.HANDLE,data') 
 ;TJK 12/15/2006 these aren't right either - we'll use index
-;  fillval=buf.(vvtag_indices(0)).fillval 
-;  rmin=buf.(vvtag_indices(0)).VALIDMIN(0) 
-;  tmin=buf.(vvtag_indices(0)).VALIDMIN(1) 
-;  pmin=buf.(vvtag_indices(0)).VALIDMIN(2) 
-;  rmax=buf.(vvtag_indices(0)).VALIDMAX(0) 
-;  tmax=buf.(vvtag_indices(0)).VALIDMAX(1) 
-;  pmax=buf.(vvtag_indices(0)).VALIDMAX(2) 
+;  fillval=buf.(vvtag_indices[0]).fillval 
+;  rmin=buf.(vvtag_indices[0]).VALIDMIN[0] 
+;  tmin=buf.(vvtag_indices[0]).VALIDMIN[1] 
+;  pmin=buf.(vvtag_indices[0]).VALIDMIN[2] 
+;  rmax=buf.(vvtag_indices[0]).VALIDMAX[0] 
+;  tmax=buf.(vvtag_indices[0]).VALIDMAX[1] 
+;  pmax=buf.(vvtag_indices[0]).VALIDMAX[2] 
   fillval=buf.(index).fillval 
-  rmin=buf.(index).VALIDMIN(0) 
-  tmin=buf.(index).VALIDMIN(1) 
-  pmin=buf.(index).VALIDMIN(2) 
-  rmax=buf.(index).VALIDMAX(0) 
-  tmax=buf.(index).VALIDMAX(1) 
-  pmax=buf.(index).VALIDMAX(2) 
+  rmin=buf.(index).VALIDMIN[0] 
+  tmin=buf.(index).VALIDMIN[1] 
+  pmin=buf.(index).VALIDMIN[2] 
+  rmax=buf.(index).VALIDMAX[0] 
+  tmax=buf.(index).VALIDMAX[1] 
+  pmax=buf.(index).VALIDMAX[2] 
 
-;  x0=execute('cond0=buf.'+vvtag_indices(0)+'.COMPONENT_0') 
-;  x0=execute('handle_value, buf.'+org_names(0)+'.HANDLE,data') 
-;  x0=execute('fillval=buf.'+org_names(0)+'.fillval') 
+;  x0=execute('cond0=buf.'+vvtag_indices[0]+'.COMPONENT_0') 
+;  x0=execute('handle_value, buf.'+org_names[0]+'.HANDLE,data') 
+;  x0=execute('fillval=buf.'+org_names[0]+'.fillval') 
 
 ; if(COORD eq "SYN-GCI") then begin
-  r=data(0,*)
-  theta=data(1,*)
-  phi=data(2,*)
+  r=data[0,*]
+  theta=data[1,*]
+  phi=data[2,*]
 ; Check for radius in kilometers; switch to Re
   wrr=where(((r gt 36000.0) and (r lt 48000.0)),wrrn)
   if(wrrn gt 0) then r[wrr] = r[wrr]/6371.2 
@@ -624,8 +662,8 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
   if(plon gt 0) then phi[plo]=fillval
 ;
   num=long(n_elements(time))
-  stime=time-time(0)
-  dtime=(time(num-1) - time(0))/1000.0
+  stime=time-time[0]
+  dtime=(time[num-1] - time[0])/1000.0
   d_m3time=dtime/(60.0*3.0)  ; 3min/interval=(secs/interval) / (secs/3min)
   m3time=fix(d_m3time)
 
@@ -659,16 +697,16 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
    ;wcnp=wcnp-1  
    ;if(wcnp gt 10) then wcnp=10 else wcnp=wcnp-1  
 ; Compute average of all points
-   mphi= total(phi(wcp[0:(wcnp-1)]))/fix(wcnp)
+   mphi= total(phi[wcp[0:(wcnp-1)]])/fix(wcnp)
    mr= total(r(wcr[0:(wcnr-1)]))/fix(wcnr)
-   mtheta= total(theta(wct[0:(wcnt-1)]))/fix(wcnt)
-   ampl=double(max(theta(wct)))
+   mtheta= total(theta[wct[0:(wcnt-1)]])/fix(wcnt)
+   ampl=double(max(theta[wct]))
 ;print, mphi, mr, mtheta, ampl
    wc=where(theta eq ampl,wcn)
 
-  dphi=phi(wcp[wcnp-1]) - phi(wcp[0])
-  dr=r(wcr[wcnr-1]) - r(wcr[0])
-  dtheta=theta(wct[wcnt-1]) - theta(wct[0])
+  dphi=phi[wcp[wcnp-1]] - phi[wcp[0]]
+  dr=r[wcr[wcnr-1]] - r[wcr[0]]
+  dtheta=theta[wct[wcnt-1]] - theta[wct[0]]
   phi_rate=dphi/d_m3time
   r_rate=dr/d_m3time
   theta_rate=dtheta/d_m3time
@@ -683,11 +721,11 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
 ;  sign=0
 ;  corr_coef=0.0
 ;  while(corr_coef lt 0.75) do begin 
-;   T=time(wc(0))/180000.0
-;;   T1=time(wc(0)-1)/180000.0
-;;   T2=time(wc(0)-2)/180000.0
-;;   T3=time(wc(0)+1)/180000.0
-;;   T4=time(wc(0)+2)/180000.0
+;   T=time(wc[0])/180000.0
+;;   T1=time(wc[0]-1)/180000.0
+;;   T2=time(wc[0]-2)/180000.0
+;;   T3=time(wc[0]+1)/180000.0
+;;   T4=time(wc[0]+2)/180000.0
 ;   if(iter eq 0) then T=double(T)
 ;;   if(iter eq 1) then T=double((T+T1)/2.0)
 ;;   if(iter eq 2) then T=double((T1+T2)/2.0)
@@ -697,10 +735,10 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
 ;
 ;; determine array for correlation test
 ;   for i=0L,num-1 do begin
-;      tm=time(i)/(180.0*1000.0)
-;;     tst_theta(i) = ampl*sin((2.0*(!pi))*(tm-T)/480.08898)
-;      if(sign eq 0) then tst_theta(i) = ampl*double(cos((2.0*(!pi))*(tm-T)/new_rate))
-;      if(sign eq 1) then tst_theta(i) = ampl*double(sin((2.0*(!pi))*(tm-T)/new_rate))
+;      tm=time[i]/(180.0*1000.0)
+;;     tst_theta[i] = ampl*sin((2.0*(!pi))*(tm-T)/480.08898)
+;      if(sign eq 0) then tst_theta[i] = ampl*double(cos((2.0*(!pi))*(tm-T)/new_rate))
+;      if(sign eq 1) then tst_theta[i] = ampl*double(sin((2.0*(!pi))*(tm-T)/new_rate))
 ;   endfor
 ;
 ;   corr_coef=correlate(theta,tst_theta)
@@ -724,28 +762,28 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
 ; Generate 3-min data
    for i=0L,m3int do begin   
     tm = (start_time)/180000.0 + i
-    t3min(i)=i*180000.0 + start_time
+    t3min[i]=i*180000.0 + start_time
     half=m3int/2
     it=i-(half+1)
-    syn_phi(i) = mphi + phi_rate*it
-    ; syn_r(i) = mr + r_rate*i
-    syn_r(i) = mr 
+    syn_phi[i] = mphi + phi_rate*it
+    ; syn_r[i] = mr + r_rate*i
+    syn_r[i] = mr 
    if(failed) then begin
 ;    if(abs(mtheta) > 2.0) then begin
 ;      print, 'WARNING: Check daily latitude variation.' 
 ;      return, -1;
 ;    endif
-      syn_theta(i) = 0.0  ; Can't compute daily variation; use this estimate
-    ; syn_theta(i) = mtheta ; Can't compute daily variation; use this estimate
-    ; syn_theta(i) = mtheta + theta_rate*i 
+      syn_theta[i] = 0.0  ; Can't compute daily variation; use this estimate
+    ; syn_theta[i] = mtheta ; Can't compute daily variation; use this estimate
+    ; syn_theta[i] = mtheta + theta_rate*i 
    endif else begin
-;     syn_theta(i) = ampl*sin((2.0*(!pi))*(tm-T)/480.08898)
-    if(sign eq 0) then syn_theta(i) = ampl*double(cos((2.0*(!pi))*(tm-T)/new_rate))
-    if(sign eq 1) then syn_theta(i) = ampl*double(sin((2.0*(!pi))*(tm-T)/new_rate))
+;     syn_theta[i] = ampl*sin((2.0*(!pi))*(tm-T)/480.08898)
+    if(sign eq 0) then syn_theta[i] = ampl*double(cos((2.0*(!pi))*(tm-T)/new_rate))
+    if(sign eq 1) then syn_theta[i] = ampl*double(sin((2.0*(!pi))*(tm-T)/new_rate))
    endelse  
   endfor
 
-;      print, t3min(0), syn_r(0), syn_theta(0), syn_phi(0)
+;      print, t3min[0], syn_r[0], syn_theta[0], syn_phi[0]
 ; Convert spherical to cartesian 
 ;    Determine the offset of the given point from the origin.
   gei=dblarr(3,m3int+1)
@@ -753,30 +791,30 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
   deg2rd=!pi/180.0 
   j=-1
   for i=0L, m3int do begin 
-      CT = SIN(syn_theta(i)*deg2rd)
-      ST = COS(syn_theta(i)*deg2rd)
-      CP = COS(syn_phi(i)*deg2rd)
-      SP = SIN(syn_phi(i)*deg2rd)
+      CT = SIN(syn_theta[i]*deg2rd)
+      ST = COS(syn_theta[i]*deg2rd)
+      CP = COS(syn_phi[i]*deg2rd)
+      SP = SIN(syn_phi[i]*deg2rd)
 ; Save syn-geo 
-       geo(0,i)=syn_r(i)
-       geo(1,i)=syn_theta(i)
-       geo(2,i)=syn_phi(i)
+       geo(0,i)=syn_r[i]
+       geo(1,i)=syn_theta[i]
+       geo(2,i)=syn_phi[i]
 ;     Convert GEO spherical coordinates SGEO(1,2,3) [R,LAT,LON]
 ;          to GEO cartesian coordinates in REs GEO(1,2,3) [X,Y,Z].
-      RHO =    syn_r(i) * ST
+      RHO =    syn_r[i] * ST
       xgeo = RHO * CP
       ygeo = RHO * SP
-      zgeo = syn_r(i) * CT
+      zgeo = syn_r[i] * CT
       xgei=0.0 & ygei=0.0 & zgei=0.0
 ; Rotate 3-min vectors from geo to gci
-      epoch=t3min(i) 
+      epoch=t3min[i] 
 ;      cdf_epoch, epoch, yr, mo, dy, hr, mn, sc, milli, /break
 ;      if((i mod 100) eq 0) then print, epoch, yr, mo, dy, hr, mn, sc, milli
       geigeo,xgei,ygei,zgei,xgeo,ygeo,zgeo,j,epoch=epoch
 ;       if((i mod 100) eq 0) then print, xgei,ygei,zgei,xgeo,ygeo,zgeo
-       gei(0,i)=xgei 
-       gei(1,i)=ygei 
-       gei(2,i)=zgei 
+       gei[0,i]=xgei 
+       gei[1,i]=ygei 
+       gei[2,i]=zgei 
   endfor
 
 ; Modify existing structure 
@@ -798,23 +836,23 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
     nu_dat_handle=handle_create(value=gei)
     vin=where(vvtag_names eq 'SC_POS_SYNGCI',vinn)
     if(vinn) then begin
-      nbuf.(vvtag_indices(vin(0))).handle=nu_dat_handle
-      nbuf.(vvtag_indices(vin(0))).depend_0=epoch1
+      nbuf.(vvtag_indices(vin[0])).handle=nu_dat_handle
+      nbuf.(vvtag_indices(vin[0])).depend_0=epoch1
     endif
   endif
   if(COORD eq "SYN-GEO") then begin
     nu_dat_handle=handle_create(value=geo)
     vin=where(vvtag_names eq 'SC_POS_SYNGEO',vinn)
     if(vinn) then begin
-      nbuf.(vvtag_indices(vin(0))).handle=nu_dat_handle
-      nbuf.(vvtag_indices(vin(0))).depend_0=epoch1
+      nbuf.(vvtag_indices(vin[0])).handle=nu_dat_handle
+      nbuf.(vvtag_indices(vin[0])).depend_0=epoch1
     endif
   endif
 
   cond0=strupcase(cond0) 
   pc=where(org_names eq cond0,pcn)
   ;blank=' '
-  if(pc(0) eq -1) then begin
+  if(pc[0] eq -1) then begin
     ; RCJ 06/16/2004  Only make epoch.var_type = metadata if no other
     ; variable needs epoch as its depend_0. in this case epoch
     ; should still be support_data.
@@ -835,12 +873,12 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
 ; Determine time array 
 ; depend0=depends(INDEX)
 ; incep=where(vvtag_names eq namest(INDEX),w)
-; incep=incep(0)
+; incep=incep[0]
  ;depend0=buf.(vvtag_indices(incep)).DEPEND_0
  depend0=buf.(INDEX).DEPEND_0
 ;print, depend0, INDEX
  incep=tagindex(depend0, namest)
- incep=incep(0)
+ incep=incep[0]
  names=tag_names(buf.(incep))
  ntags=n_tags(buf.(incep))
 ; Check to see if HANDLE a tag name
@@ -853,7 +891,7 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
  endelse
 ; Determine position array 
 ;  indat=where(vvtag_names eq namest(INDEX),w)
-;  indat = indat(0)
+;  indat = indat[0]
   cond0=buf.(INDEX).COMPONENT_0 
   ;cond0=buf.(vvtag_indices(indat)).COMPONENT_0 
 ;print, cond0, INDEX
@@ -861,7 +899,7 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
 
 ; Convert BGSE vector to angular BGSE; 
   data_sz=size(data)
-  ang_gse=dblarr(data_sz(1),data_sz(2))
+  ang_gse=dblarr(data_sz[1],data_sz[2])
 ;  cart_polar,data[0,*],data[1,*],data[2,*],ang_gse[0,*],ang_gse[1,*],$
 ;             ang_gse[2,*],1,/degrees
 ; ang_gse[0,*]=sqrt(data[0,*]*data[0,*]+data[1,*]*data[1,*]+data[2,*]*data[2,*])
@@ -908,17 +946,17 @@ PRO vector_to_ra_decP,x,y,z,ra,dec
 
     fill_value = -1.D31
     ndx = WHERE(z NE 0,count)
-    IF(count GT 0) THEN dec(ndx) = 90.*z(ndx)/ABS(z(ndx))
+    IF(count GT 0) THEN dec[ndx] = 90.*z[ndx]/ABS(z[ndx])
 
     tmp = SQRT(x*x + y*y)
     ndx = WHERE(tmp NE 0,count)
     IF (count GT 0) THEN BEGIN
-      dec(ndx) = atan2d(z(ndx),tmp(ndx))
-      ra(ndx)  = atan2d(y(ndx),x(ndx))
+      dec[ndx] = atan2d(z[ndx],tmp[ndx])
+      ra[ndx]  = atan2d(y[ndx],x[ndx])
     ENDIF
 
     ndx = WHERE((ra LT 0) AND (ra NE fill_value),count)
-    IF (count GT 0) THEN ra(ndx) = ra(ndx) + 360.
+    IF (count GT 0) THEN ra[ndx] = ra[ndx] + 360.
 
 END
 
@@ -939,21 +977,21 @@ PRO drtollP,x,y,z,lat,lon,r
 
 ; RTB comment
  ;     tmp = WHERE(x EQ Y) AND WHERE(x EQ 0)
- ;     IF ((size(tmp))(0) NE 0) THEN BEGIN
+ ;     IF ((size(tmp))[0] NE 0) THEN BEGIN
  ;        lat(tmp)  = DOUBLE(90.D * z(tmp)/ABS(z(tmp)))
  ;        lon(tmp) = 0.D
  ;        r = 6371.D
  ;     ENDIF
 
        tmp2 = WHERE(lon LT 0) 
-       IF ((size(tmp2))(0) NE 0) THEN BEGIN
+       IF ((size(tmp2))[0] NE 0) THEN BEGIN
           lon(tmp2) = lon(tmp2) + 360.D
        ENDIF
 ; RTB added 4/98 avoid boundary
        tmp3 = where(lon eq 0.0)
-       if(tmp3(0) ne -1) then lon(tmp3) = 0.01D
+       if(tmp3[0] ne -1) then lon(tmp3) = 0.01D
        tmp4 = where(lon eq 360.0)
-       if(tmp4(0) ne -1) then lon(tmp4) = 359.09D
+       if(tmp4[0] ne -1) then lon(tmp4) = 359.09D
 
 END
 
@@ -992,7 +1030,7 @@ PRO get_scalarP,Ox,Oy,Oz,Lx,Ly,Lz,emis_hgt,ncols,nrows,s,f
 ;...  remove points off the earth
       determinant = determinant > 0. 
       tmp_d2 = WHERE(determinant EQ 0.,count) 
-      IF(count GT 0) THEN b(tmp_d2) = 0.D
+      IF(count GT 0) THEN b[tmp_d2] = 0.D
 ;...  solve quadratic formula (choose smallest solution) 
       s1 = ( -b + SQRT(determinant) ) / ( 2.D *a ) 
       s2 = ( -b - SQRT(determinant) ) / ( 2.D *a ) 
@@ -1019,10 +1057,10 @@ pro ptg_new,orb,LpixX,LpixY,LpixZ,emis_hgt,gclat,gclon,r,epoch=epoch
 ;... Find scalar (s) such that s*L0 points to
 ;    the imaged emission source.  If the line of
 ;    sight does not intersect the earth s=0.0
-     Ox = orb(0)
-     Oy = orb(1)
-     Oz = orb(2)
-     get_scalarP,Ox,Oy,Oz,LpixX,LpixY,LpixZ,emis_hgt,size_L(1),size_L(2),s,f
+     Ox = orb[0]
+     Oy = orb[1]
+     Oz = orb[2]
+     get_scalarP,Ox,Oy,Oz,LpixX,LpixY,LpixZ,emis_hgt,size_L[1],size_L[2],s,f
      posX = Ox + s*LpixX
      posY = Oy + s*LpixY
      posZ = Oz + s*LpixZ
@@ -1034,8 +1072,8 @@ pro ptg_new,orb,LpixX,LpixY,LpixZ,emis_hgt,gclat,gclon,r,epoch=epoch
 ;... Get geocentric lat/lon.  this converts from
 ;    a 3 element vector to two angles: lat & longitude
 ; Each point must be checked for outlying cyl. geo values.
-  for i=0, size_L(1)-1 do begin
-   for j=0, size_L(2)-1 do begin
+  for i=0, size_L[1]-1 do begin
+   for j=0, size_L[2]-1 do begin
      drtollP,p_geoX(i,j),p_geoY(i,j),p_geoZ(i,j),dum1,dum2,dum3
 ;print, dum1,dum2, dum3
      gclat(i,j)=dum1
@@ -1054,7 +1092,7 @@ pro ptg_new,orb,LpixX,LpixY,LpixZ,emis_hgt,gclat,gclon,r,epoch=epoch
         gdlat = 90.D + 0.D * gclat
         ndx = WHERE(gclat LT 90.,count)
         IF(count GT 0) THEN BEGIN
-           gdlat(ndx) = datand(dtand(gclat(ndx))/(1.D - f)*(1.D - f))
+           gdlat[ndx] = datand(dtand(gclat[ndx])/(1.D - f)*(1.D - f))
         ENDIF
         gclat = gdlat
      ENDIF
@@ -1181,9 +1219,9 @@ PRO ptg,system,time,l0,att,orb,emis_hgt,gclat,gclon $
      fill_value = -1.D31
 
 ;... Define orthonormal coordinate axes
-     xax = l0/dfmag(l0(0),l0(1),l0(2))
+     xax = l0/dfmag(l0[0],l0[1],l0[2])
      yax = CROSSP(att,l0)
-     yax = yax/dfmag(yax(0),yax(1),yax(2))
+     yax = yax/dfmag(yax[0],yax[1],yax[2])
      zax = CROSSP(xax,yax)
 
 ;... single pixel angular resolution
@@ -1226,9 +1264,9 @@ PRO ptg,system,time,l0,att,orb,emis_hgt,gclat,gclon $
      lpy = lpx*tanz
      lpz = lpx*tany
  
-     LpixX = lpx*xax(0) + lpy*yax(0) + lpz*zax(0)
-     LpixY = lpx*xax(1) + lpy*yax(1) + lpz*zax(1)
-     LpixZ = lpx*xax(2) + lpy*yax(2) + lpz*zax(2)
+     LpixX = lpx*xax[0] + lpy*yax[0] + lpz*zax[0]
+     LpixY = lpx*xax[1] + lpy*yax[1] + lpz*zax[1]
+     LpixZ = lpx*xax[2] + lpy*yax[2] + lpz*zax[2]
 
      ptg_new, orb,LpixX,LpixY,LpixZ,emis_hgt,gclat,gclon,r,epoch=epoch
 
@@ -1247,9 +1285,9 @@ PRO ptg,system,time,l0,att,orb,emis_hgt,gclat,gclon $
 ;;    the imaged emission source.  If the line of
 ;;    sight does not intersect the earth s=0.0
 ;;help,orb
-;     Ox = orb(0)
-;     Oy = orb(1)
-;     Oz = orb(2)
+;     Ox = orb[0]
+;     Oy = orb[1]
+;     Oz = orb[2]
 ;     get_scalarP,Ox,Oy,Oz,LpixX,LpixY,LpixZ,emis_hgt,ncols,nrows,s,f
 ;
 ;     posX = Ox + s*LpixX
@@ -1291,7 +1329,7 @@ PRO ptg,system,time,l0,att,orb,emis_hgt,gclat,gclon $
 ;        gdlat = 90.D + 0.D * gclat
 ;        ndx = WHERE(gclat LT 90.,count)
 ;        IF(count GT 0) THEN BEGIN
-;;           gdlat(ndx) = datand(dtand(gclat(ndx))/(1.D - f)*(1.D - f))
+;;           gdlat[ndx] = datand(dtand(gclat[ndx])/(1.D - f)*(1.D - f))
 ;        ENDIF
 ;        gclat = gdlat
 ;     ENDIF
@@ -1353,7 +1391,7 @@ function conv_map_image, buf, org_names, DEBUG=DEBUG
 ; Check tags 
   tagnames=tag_names(buf)
 ;
-print, 'In Conv_map_image'
+;print, 'In Conv_map_image'
 
 ;TJK added 6/10/98 - if the 1st image virtual variable handle or dat structure
 ;elements are already set, then return buf as is (because the other
@@ -1362,21 +1400,21 @@ print, 'In Conv_map_image'
 
 vv_tagnames=strarr(1)
 vv_tagindx = vv_names(buf,names=vv_tagnames) ;find the virtual vars
-vtags = tag_names(buf.(vv_tagindx(0))) ;tags for the 1st Virtual image var.
-if (vv_tagindx(0) lt 0) then return, -1
+vtags = tag_names(buf.(vv_tagindx[0])) ;tags for the 1st Virtual image var.
+if (vv_tagindx[0] lt 0) then return, -1
 
 ; Segment below replaced to handle movie vv's
 ; RTB 12/98
 ;v = tagindex('DAT',vtags)
-;if (v(0) ne -1) then begin
-;   im_val = buf.(vv_tagindx(0)).dat
+;if (v[0] ne -1) then begin
+;   im_val = buf.(vv_tagindx[0]).dat
 ;endif else begin
-;   if (buf.(vv_tagindx(0)).handle ne 0) then return, buf
+;   if (buf.(vv_tagindx[0]).handle ne 0) then return, buf
 ;   im_val = 0
 ;endelse
 ;im_size = size(im_val)
 ;print, 'size', im_size
-;if (im_val(0) ne 0 or im_size(0) eq 3) then begin
+;if (im_val[0] ne 0 or im_size[0] eq 3) then begin
 ;  im_val = 0B ;free up space
 ;  return, buf
 ;endif
@@ -1391,7 +1429,7 @@ im_val_arr=intarr(n_elements(vv_tagindx))
 for ig=0, n_elements(vv_tagindx)-1 do begin ; RTB added 9/98
  vtags=tag_names(buf.(vv_tagindx(ig)))
  v = tagindex('DAT',vtags)
- if (v(0) ne -1) then begin
+ if (v[0] ne -1) then begin
    im_val = buf.(vv_tagindx(ig)).dat
  endif else begin
    im_val = buf.(vv_tagindx(ig)).handle
@@ -1400,7 +1438,7 @@ for ig=0, n_elements(vv_tagindx)-1 do begin ; RTB added 9/98
  im_val_arr(ig)=im_val
  im_size = size(im_val)
  im_val=0
- if (im_val(0) ne 0 or im_size(0) eq 3) then begin
+ if (im_val[0] ne 0 or im_size[0] eq 3) then begin
   im_val = 0B ;free up space
   ireturn=0
  endif
@@ -1412,6 +1450,9 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
     image_handle=buf.(a0).handle
     image_depend0=strupcase(buf.(a0).depend_0)
     handle_value, buf.(a0).handle, im_data
+;TJK 6/27/2013 - add in check if all values are fill, if so get out
+    fillz = where(im_data ne buf.(a0).fillval, fillcnt)
+    if (fillcnt eq 0) then return, buf
     im_sz=size(im_data)
     im_data=0B ; Release image data after we know the dimensionality
    endif
@@ -1459,9 +1500,9 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
 ; uviptg constants
   emis_hgt=120.D0 ; km 
 ; Process each time frame
- jcol=im_sz(2)
- irow=im_sz(1)
- if(im_sz(0) eq 2) then ntimes=1 else ntimes=im_sz(3)
+ jcol=im_sz[2]
+ irow=im_sz[1]
+ if(im_sz[0] eq 2) then ntimes=1 else ntimes=im_sz(3)
  geod_lat=temporary(fltarr(irow,jcol,ntimes))
  geod_lon=temporary(fltarr(irow,jcol,ntimes))
  time=intarr(2)
@@ -1488,8 +1529,8 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
   ical,year,doy,month,day,/idoy
 ;print, year,doy,month,day
   time=fltarr(2)
-  time(0)=year*1000+doy
-  time(1)=(hr*(3600)+min*60+sec)*1000+milli
+  time[0]=year*1000+doy
+  time[1]=(hr*(3600)+min*60+sec)*1000+milli
 
 ; Use uvilook program to compute 2nd detector gci_look
 
@@ -1503,7 +1544,7 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
        ,posX=posX,posY=posY,posZ=posZ, epoch=epoch 
 
     gwc=where(gdlon gt 180.0,gwcn)
-    if(gwc(0) ne -1) then gdlon(gwc)=gdlon(gwc)-360.0
+    if(gwc[0] ne -1) then gdlon(gwc)=gdlon(gwc)-360.0
 ; Section below commented out 8/25/98
 ; Replace any fillval=-1.D31 w/ 999.9
 ;     wf=where(gdlat eq -1.D31, wfn)
@@ -1704,12 +1745,12 @@ FUNCTION calc_p, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ; Determine time array 
 ; depend0=depends(INDEX)
 ; incep=where(vvtag_names eq namest(INDEX),w)
-; incep=incep(0)
+; incep=incep[0]
  ;depend0=buf.(vvtag_indices(incep)).DEPEND_0
  depend0=buf.(INDEX).DEPEND_0
 ;print, depend0, INDEX
  incep=tagindex(depend0, namest)
- incep=incep(0)
+ incep=incep[0]
  names=tag_names(buf.(incep))
  ntags=n_tags(buf.(incep))
 ; Check to see if HANDLE a tag name
@@ -2059,9 +2100,9 @@ FUNCTION compute_magnitude, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
   magnitude = make_array(psize.dimensions(psize.n_dimensions-1))
 
   if (psize.n_dimensions eq 1) then begin ;single record
-	bx = parent(0)
-	by = parent(1)
-	bz = parent(2)
+	bx = parent[0]
+	by = parent[1]
+	bz = parent[2]
 	magnitude = sqrt(bx*bx + by*by + bz*bz)
 	
   endif else begin
@@ -2073,7 +2114,7 @@ FUNCTION compute_magnitude, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 	  bx = parent(0, i)
 	  by = parent(1, i)
 	  bz = parent(2, i)
-	  magnitude(i) = sqrt(bx*bx + by*by + bz*bz)
+	  magnitude[i] = sqrt(bx*bx + by*by + bz*bz)
 
 	endfor
      endif
@@ -2099,7 +2140,126 @@ endif else begin
    return, -1
 endelse
 end
+;;;;;;;;;;;;;;;;;;;;;;
+FUNCTION extract_array, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
+;
+;  PURPOSE:
+;
+;This routine extracts the requested (by specifying index in the ARG0
+;variable attribute value), the energy array given a 2-d energy
+;vs. telescope array variable.  This was written specifically for the
+;RBSP RBSPICE datasets, but will be applicable to others in the future.
+;
+; CALLING SEQUENCE:
+;
+;          new_buf = extract_array(buf,org_names, INDEX=INDEX)
+;
+; VARIABLES:
+;
+; Input:
+;
+;  buf        - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
+;               variables in this list will remain tagged as 
+;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
+;
+; Output:
+;
+;  new_buf    - an IDL structure containing the populated virtual 
+;               variable 
+; Constants:
+;
+;  none
+;  
+; Keyword Parameters: 
+;	INDEX : this can be set the structure variable index # for which
+;	you'd like this conversion.  If this isn't set we'll look for the
+;	epoch variable.
+;  Looks for a new variable attribute called ARG0 - for the array
+;  index value to be used for the
+;
+; REQUIRED PROCEDURES:
+;
+;   none 
+; 
+;-------------------------------------------------------------------
+; History
+;
+;         1.0  T. Kovalick 10/31/2012
+;		Initial version
+;
+;-------------------------------------------------------------------
 
+ status=0
+
+; Establish error handler
+ catch, error_status
+ if(error_status ne 0) then begin
+   print, "ERROR= number: ",error_status," in compute_energy function"
+   print, "ERROR= Message: ",!ERR_STRING
+   status = -1
+   return, status
+ endif
+  
+ org_names=strupcase(org_names)
+ if keyword_set(DEBUG) then DEBUG=1L else DEBUG=0L
+
+;Get the virtual variables index #.
+ if (n_elements(INDEX) gt 0) then vvar_index = INDEX else print, 'No virtual variable specified.'
+
+ if (vvar_index ge 0) then begin
+
+  nbuf=buf 
+  
+  names = tag_names(buf.(vvar_index))
+  handle_found = 0
+
+; Check to see if HANDLE is a tag name
+  wh=where(names eq 'HANDLE',whn)
+  if(whn) then handle_found = 1
+
+; Determine the array element to pull out
+  t = 0
+  t = buf.(vvar_index).ARG0
+
+; Determine the "parent variable" component_0
+  cond0=buf.(vvar_index).COMPONENT_0 
+  if (handle_found) then x0=execute('handle_value, buf.'+cond0+'.HANDLE,parent') $
+	else x0=execute('parent =  buf.'+cond0+'.DAT')
+
+  evarname = buf.(vvar_index).varname
+
+;  print, 'variable name requesting values = ',evarname
+;  print, 'array index = ',t
+  psize = size(parent, /struct)
+
+  if (psize.n_dimensions eq 2) then begin
+     ; create a energy array
+     energy = make_array(psize.dimensions[0])
+     energy = parent[*, t-1] ; fill array
+  endif
+
+  if (handle_found eq 1) then begin
+    nu_dat_handle=handle_create(value=energy)
+    nbuf.(vvar_index).handle=nu_dat_handle
+  endif else begin
+    nbuf.(vvar_index).dat=energy
+  endelse
+
+; Check that all variables in the original variable list are declared as
+; data otherwise set to metadata 
+; Find variables w/ var_type == data
+
+   status = check_myvartype(nbuf, org_names)
+
+   return, nbuf 
+
+endif else begin
+   print, 'No valid variable found in extract_array, returning -1'
+   return, -1
+endelse
+end
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;+
 ; NAME: Function HEIGHT_ISIS
 ;
@@ -2157,10 +2317,16 @@ handle_value,buf.(component0_index).handle,geo_coord
 
 ; get height from coordinates
 height=0
-for i=2L,n_elements(geo_coord)-1,3 do height=[height,geo_coord(i)]
+;  RCJ 06/05/2014  Small change in read_myCDF (look for valid_recs_isis)
+;   prompted this change. array = [0, lat, lon, height, lat, lon, height, etc..]  
+; Old line:  for i=2L,n_elements(geo_coord)-1,3 do height=[height,geo_coord[i]]
+for i=3L,n_elements(geo_coord)-1,3 do height=[height,geo_coord[i]]
 ; RCJ 10/01/2003 I would start the height array at [1:*] to eliminate the first
 ; 0 but a few more 0's come from read_mycdf so I have to start it at [2:*] :
-height=height[2:*]
+;height=height[2:*]
+; RCJ 06/05/2014  Small change in read_myCDF (look for valid_recs_isis) 
+;  made this right again.
+height=height[1:*]
 buf.(index).handle=handle_create()
 handle_value,buf.(index).handle,height,/set
 
@@ -2235,7 +2401,7 @@ if (index ge 0) then begin
  endelse
 
  isize = size(idat) ; determine the number of images in the data
- if (isize(0) eq 2) then nimages = 1 else nimages = isize(isize(0))
+ if (isize[0] eq 2) then nimages = 1 else nimages = isize(isize[0])
 
 ;print,'Flip_image DEBUG', min(idat, max=dmax) & print, dmax
 
@@ -2251,10 +2417,10 @@ if (index ge 0) then begin
 ;keyword so that the make_array routine won't waste extra time setting every
 ;element to zero, since we're going to set the values in the next line.
 ;       idat2 = bytarr(dims(1),dims(0),dims(2))
-       idat2 = make_array(dims(1),dims(0),dims(2), type=dtype, /nozero)
-       idat2(*,*,i) = rotate(idat(*,*,i),4)
+       idat2 = make_array(dims[1],dims[0],dims[2], type=dtype, /nozero)
+       idat2[*,*,i] = rotate(idat[*,*,i],4)
     endif else begin
-       idat2(*,*,i) = rotate(idat(*,*,i),4)
+       idat2[*,*,i] = rotate(idat[*,*,i],4)
     endelse
  endfor
 
@@ -2297,9 +2463,9 @@ endif
 ; Find virtual variables
 vvtag_names=strarr(1) 
 vvtag_indices = vv_names(buf,NAMES=vvtag_names)
-if(vvtag_indices(0) lt 0) then begin
+if(vvtag_indices[0] lt 0) then begin
   print, "ERROR= No VIRTUAL variable found in wind_plot"
-  print, "ERROR= Message: ",vvtag_indices(0)
+  print, "ERROR= Message: ",vvtag_indices[0]
   status = -1
   return, status
 endif
@@ -2320,12 +2486,12 @@ if((component0_index ge 0 )and (component1_index ge 0)) then begin
       handle_value,buf.(component0_index).handle,zone
       handle_value,buf.(component1_index).handle,meri
       sz=size(zone)
-      wind=fltarr(2,sz(2))
+      wind=fltarr(2,sz[2])
       alt=(strtrim(strmid(org_names(index),strlen(org_names(index))-3,3),2))*1
       handle_value,buf.alt_retrieved.handle,altr
       q=where(altr eq alt)
-      wind[0,*]=reform(zone[q(0),*])
-      wind[1,*]=reform(meri[q(0),*])
+      wind[0,*]=reform(zone[q[0],*])
+      wind[1,*]=reform(meri[q[0],*])
       buf.(index).handle=handle_create()
       handle_value,buf.(index).HANDLE,wind,/set
    endif else print, "Set /NODATASTRUCT keyword in call to read_myCDF";
@@ -2513,13 +2679,13 @@ FUNCTION comp_themis_epoch, buf, org_names, index=index, DEBUG=DEBUG, $
  status=0
 
 ; Establish error handler
- catch, error_status
- if(error_status ne 0) then begin
-   print, "ERROR= number: ",error_status," in comp_themis_epoch"
-   print, "ERROR= Message: ",!ERR_STRING
-   status = -1
-   return, status
- endif
+; catch, error_status
+; if(error_status ne 0) then begin
+;   print, "ERROR= number: ",error_status," in comp_themis_epoch"
+;   print, "ERROR= Message: ",!ERR_STRING
+;   status = -1
+;   return, status
+; endif
   
  org_names=strupcase(org_names)
  if keyword_set(DEBUG) then DEBUG=1L else DEBUG=0L
@@ -2554,7 +2720,7 @@ FUNCTION comp_themis_epoch, buf, org_names, index=index, DEBUG=DEBUG, $
   if (handle_found) then x0 = execute('hv = buf.'+cond1+'.HANDLE') $
 	else x0=execute('hv =  buf.'+cond1+'.DAT')
 
-  if (hv gt 0) then begin
+  if (hv[0] gt 0) then begin
   if (handle_found) then x0=execute('handle_value, buf.'+cond1+'.HANDLE,seconds') $
 	else x0=execute('seconds =  buf.'+cond1+'.DAT')
 
@@ -2640,7 +2806,7 @@ if(component0_index ge 0) then begin
    if(tagindex('HANDLE',tagnames1) ge 0) then begin
         handle_value,buf.(component0_index).HANDLE,comp0
 	sz=size(comp0,/n_elements)
-	er=fltarr(sz) & er(*)=value
+	er=fltarr(sz) & er[*]=value
 	buf.(index).handle=handle_create()
 	handle_value,buf.(index).handle,er,/set
    endif else begin
@@ -2740,7 +2906,7 @@ print, 'velocity fillvalu = ',fillval
   energy = velocity ;want the same data type and array sizes
   
   for i=0L, num-1 do begin
-      if (velocity(i) ne fillval) then energy(i) = (velocity(i) / 0.593098E+08)^2
+      if (velocity[i] ne fillval) then energy[i] = (velocity[i] / 0.593098E+08)^2
   endfor
 
   if (handle_found eq 1) then begin
@@ -2850,7 +3016,7 @@ print, 'log_density fillvalu = ',fillval
   density = log_density ;want the same data type and array sizes
   
   for i=0L, num-1 do begin
-      if (density(i) ne fillval) then density(i) = 10^(log_density(i))
+      if (density[i] ne fillval) then density[i] = 10^(log_density[i])
   endfor
 
   if (handle_found eq 1) then begin
@@ -2962,10 +3128,824 @@ return, buf
 
 end
 
-pro virtual_funcs
+
+;Correct FAST DCF By
+FUNCTION correct_FAST_By, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;  PURPOSE:
+;
+; Sign switch is required because Westward component has incorrect 
+; sign for that portion of the FAST orbit where the spacecraft is 
+; moving from high to low latitudes.
+; For high to low latitude orbits the spin-axis is Westward
+; For low to high latitude orbist the spin-axis is Eastward
+; Magnetometer data in original key-parameter files appear to be 
+; in the minus spin-axis direction.
+; Algorithm developed by R. J. Strangeway (UCLA), March 27,2012
+;
+; CALLING SEQUENCE:
+;
+;          new_buf = convert_Ni(buf,org_names,index=index)
+;
+; VARIABLES:
+;
+; Input:
+;
+;  buf        - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
+;               variables in this list will remain tagged as 
+;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
+;
+; Output:
+;
+;  new_buf    - an IDL structure containing the populated virtual 
+;               variable 
+; Constants:
+;
+;
+; Keyword Parameters: 
+; index of variable to populate.
+;
+; REQUIRED PROCEDURES:
+;
+;   none 
+; 
+;-------------------------------------------------------------------
+; History
+;
+;         1.0  T. Kovalick March 28, 2012
+;		Initial version
+;
+;-------------------------------------------------------------------
+print, 'DEBUG, In correct_FAST_By'
+ status=0
+
+; Establish error handler
+ catch, error_status
+ if(error_status ne 0) then begin
+   print, "ERROR= number: ",error_status," in correct_FAST_By"
+   print, "ERROR= Message: ",!ERR_STRING
+   status = -1
+   return, status
+ endif
+  
+ org_names=strupcase(org_names)
+ if keyword_set(DEBUG) then DEBUG=1L else DEBUG=0L
+
+;Get the virtual variables index #.
+ if (n_elements(INDEX) gt 0) then vvar_index = INDEX else print, 'No virtual variable specified.'
+
+ if (vvar_index ge 0) then begin
+
+  nbuf=buf 
+  
+  var = tag_names(buf.(vvar_index))
+  handle_found = 0
+
+; Check to see if HANDLE is a tag name
+  wh=where(var eq 'HANDLE',whn)
+  if(whn) then handle_found = 1
+
+; Determine the "parent variable" component_0
+  cond0=buf.(vvar_index).COMPONENT_0 ; BY
+  cond1=buf.(vvar_index).COMPONENT_1 ; unix_time
+  cond2=buf.(vvar_index).COMPONENT_2 ; ilat
+  if (handle_found) then begin
+      x0=execute('handle_value, buf.'+cond0+'.HANDLE,BY') 
+      x0=execute('handle_value, buf.'+cond1+'.HANDLE,unix_time') 
+      x0=execute('handle_value, buf.'+cond2+'.HANDLE,ilat') 
+      x0=execute('fillval = buf.'+cond0+'.fillval')
+      ;print, 'BY fillvalu = ',fillval 
+  endif else begin
+      x0=execute('BY =  buf.'+cond0+'.DAT')
+      x0=execute('unix_time =  buf.'+cond1+'.DAT')
+      x0=execute('ilat =  buf.'+cond2+'.DAT')
+  endelse
+
+  num = n_elements(BY)
+  correct_BY = BY ;want the same data type and array sizes
+
+;make the corrected values here
+  
+; set flagged data to nans
+;TJK changed test for -1.e30 to fillval
+bf = where (ilat lt fillval, nf)
+if (nf gt 0) then ilat[bf]=!values.f_nan
+bf = where (BY lt fillval, nf)
+if (nf gt 0) then BY[bf]=!values.f_nan
+
+; set up arrays
+change_flag=intarr(n_elements(ilat))
+bf = where(finite(ilat),nf)
+; RCJ 05/22/2012  added this portion, in case n_elements(bf) eq 1
+if n_elements(bf) eq 1 then begin
+   dlat=ilat
+   dt=unix_time
+   nxt=ilat*0.
+   prv=nxt
+   nxt=dlat
+   prv=dlat
+   dtn=unix_time*0.d0
+   dtp=dtn
+   dtn=dt
+   dtp=dt
+endif else begin   
+   dlat=ilat[bf[1:nf-1L]]-ilat[bf[0:nf-2L]]
+   dt=unix_time[bf[1:nf-1L]]-unix_time[bf[0:nf-2L]]
+   nxt=ilat*0.
+   prv=nxt
+   nxt[bf[0:nf-2L]]=dlat
+   prv[bf[1:nf-1L]]=dlat
+   dtn=unix_time*0.d0
+   dtp=dtn
+   dtn[bf[0:nf-2L]]=dt
+   dtp[bf[1:nf-1L]]=dt
+endelse
+
+; now set the change_flag
+
+bc = where((nxt lt 0) and (dtn lt 7.5d0),nc)
+if (nc gt 0) then change_flag[bc]=1
+bc = where((prv lt 0) and (dtp lt 7.5d0),nc)
+if (nc gt 0) then change_flag[bc]=1
+
+; switch the sign of the BY (Westward component)
+
+BY=BY*(1.-2.*change_flag)
+
+;finished with correction
+
+  if (handle_found eq 1) then begin
+    nu_dat_handle=handle_create(value=BY)
+    nbuf.(vvar_index).handle=nu_dat_handle
+  endif else begin
+    nbuf.(vvar_index).dat=BY
+  endelse
+
+; Check that all variables in the original variable list are declared as
+; data otherwise set to metadata 
+; Find variables w/ var_type == data
+
+   status = check_myvartype(nbuf, org_names)
+
+   return, nbuf 
+
+endif else begin
+   print, 'No valid variable found in correct_FAST_By, returning -1'
+   return, -1
+endelse
+
+end 
+
+
+;---------------------------------------------------------------
+;+
+; NAME: Function compute_cadence
+;
+; PURPOSE: Determine the resolution between epoch values so that one
+; can easily see where the "burst" data is located.  Originally
+; implemented for the messenger_mag_rtn dataset.
+;
+;
+; INPUT:
+;    buf           an IDL structure
+;    org_names     an array of original variables sent to read_myCDF
+;    index	   variable position in buf
+;
+; CALLING SEQUENCE:
+;
+;         newbuf = compute_cadence(buf,org_names,index=index)
+;
+
+function compute_cadence, buf, org_names,INDEX=INDEX
+
+status=0
+; Establish error handler
+catch, error_status
+if(error_status ne 0) then begin
+   print, "ERROR= number: ",error_status," in compute_cadence"
+   print, "ERROR= Message: ",!ERR_STRING
+   status = -1
+   return, status
+endif
+tagnames = tag_names(buf)
+tagnames1=tag_names(buf.(index))
+
+; look for the COMPONENT_0 attribute tag for this VV.
+if(tagindex('COMPONENT_0', tagnames1) ge 0) then begin
+   component0=buf.(index).COMPONENT_0
+   ; Check if the component0 variable exists 
+   component0_index = tagindex(component0,tagnames)
+   ; get epoch
+   handle_value,buf.(component0_index).handle,epoch
+endif
+
+; calculate the cadence from one epoch to the next.
+num_epochs = n_elements(epoch)
+cadence = make_array(num_epochs, /double)
+cadence[0] = epoch[1]-epoch[0]
+cadence[num_epochs-1] = epoch[num_epochs-1]-epoch[num_epochs-2]
+for i=1L,num_epochs-2 do begin
+   if(epoch[i+1]-epoch[i]) < (epoch[i]-epoch[i-1])then $
+      cadence[i] = epoch[i+1]-epoch[i] else cadence[i] = epoch[i]-epoch[i-1]
+endfor
+
+buf.(index).handle=handle_create()
+handle_value,buf.(index).handle,cadence,/set
+;
+; Check that all variables in the original variable list are declared as
+; data otherwise set to support_data
+; Find variables w/ var_type == data
+status = check_myvartype(buf, org_names)
+
+return, buf
+;
+
 end
 
+;Function: Apply_rtn_qflag
+;Purpose: To use the quality variable to "filter out bad messenger 
+;data points"
+;Author: Tami Kovalick, Adnet, May, 2012
+;
+;
+function apply_rtn_qflag, astruct, orig_names, index=index
+
+;Input: astruct: the structure, created by read_myCDF that should
+;		 contain at least one Virtual variable.
+;	orig_names: the list of varibles that exist in the structure.
+;	index: the virtual variable (index number) for which this function
+;		is being called to compute.  If this isn't defined, then
+;		the function will find the 1st virtual variable.
+
+;this code assumes that the Component_0 is the "parent" variable, 
+;Component_1 should be the filter/quality variable.
+
+;astruct will contain all of the variables and metadata necessary
+;to filter out the bad flux values (based on the filter variables values -
+;a value != 222 or 223. 
+
+atags = tag_names(astruct) ;get the variable names.
+vv_tagnames=strarr(1)
+vv_tagindx = vv_names(astruct,names=vv_tagnames) ;find the virtual vars
+
+if keyword_set(index) then begin
+  index = index
+endif else begin ;get the 1st vv
+
+  index = vv_tagindx[0]
+  if (vv_tagindx[0] lt 0) then return, -1
+
+endelse
+
+;print, 'In Apply_rtn_qflag'
+;print, 'Index = ',index
+;print, 'Virtual variable ', atags(index)
+;print, 'original variables ',orig_names
+;help, /struct, astruct
+;stop;
+c_0 = astruct.(index).COMPONENT_0 ;1st component var (real flux var)
+
+if (c_0 ne '') then begin ;this should be the real data
+  var_idx = tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = tagindex('DAT',itags)
+    if (d[0] ne -1) then  parent_data = astruct.(var_idx).DAT $
+    else begin
+      d = tagindex('HANDLE',itags)
+      handle_value, astruct.(var_idx).HANDLE, parent_data
+    endelse
+  fill_val = astruct.(var_idx).fillval
+
+endif else print, 'Apply_rtn_qflag - parent variable not found'
+
+data_size = size(parent_data)
+
+if (data_size[1] gt 0) then begin 
+
+c_0 = astruct.(index).COMPONENT_1 ; should be the quality variable
+
+if (c_0 ne '') then begin ;
+  var_idx = tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = tagindex('DAT',itags)
+    if (d[0] ne -1) then  quality_data = astruct.(var_idx).DAT $
+    else begin
+      d = tagindex('HANDLE',itags)
+      handle_value, astruct.(var_idx).HANDLE, quality_data
+    endelse
+  
+endif else print, 'Quality variable not found'
+
+;help, quality_data
+;stop;
+
+temp = where((quality_data ne 222 and quality_data ne 223), badcnt)
+if (badcnt ge 1) then begin
+  print, 'found some bad rtn data, replacing ',badcnt, ' out of ', data_size[1],' values with fill.'
+  parent_data[temp] = fill_val
+endif else begin
+  print, 'All ',astruct.(index).COMPONENT_0,' data good'
+endelse
+
+;now, need to fill the virtual variable data structure with this new data array
+;and "turn off" the original variable.
+
+;
+;print, 'badcnt',badcnt
+;help, parent_data
+;stop;
+
+temp = handle_create(value=parent_data)
+
+astruct.(index).HANDLE = temp
+
+parent_data = 1B
+quality_data = 1B
+
+; Check astruct and reset variables not in orignal variable list to metadata,
+; so that variables that weren't requested won't be plotted/listed.
+
+   status = check_myvartype(astruct, orig_names)
+
+return, astruct
+
+endif else return, -1 ;if there's no rtn B radial/tangent/normal data return -1
+
+end
+
+;Function: Apply_rtn_cadence
+;Purpose: To use the quality variable to "filter out values
+;when the time cadence is less than 200.
+;Author: Tami Kovalick, Adnet, May, 2012
+;
+;
+function apply_rtn_cadence, astruct, orig_names, index=index
+
+;Input: astruct: the structure, created by read_myCDF that should
+;		 contain at least one Virtual variable.
+;	orig_names: the list of varibles that exist in the structure.
+;	index: the virtual variable (index number) for which this function
+;		is being called to compute.  If this isn't defined, then
+;		the function will find the 1st virtual variable.
+
+;this code assumes that the Component_0 is the "parent" variable, 
+;Component_1 should be the filter/quality variable.
+
+;astruct will contain all of the variables and metadata necessary
+;to filter out the values where the time cadence is less than 200. 
+
+atags = tag_names(astruct) ;get the variable names.
+vv_tagnames=strarr(1)
+vv_tagindx = vv_names(astruct,names=vv_tagnames) ;find the virtual vars
+if keyword_set(index) then begin
+  index = index
+endif else begin ;get the 1st vv
+
+  index = vv_tagindx[0]
+  if (vv_tagindx[0] lt 0) then return, -1
+
+endelse
+
+;print, 'In Apply_rtn_cadence'
+;print, 'Index = ',index
+;print, 'Virtual variable ', atags(index)
+;print, 'original variables ',orig_names
+;help, /struct, astruct
+;stop;
+c_0 = astruct.(index).COMPONENT_0 ;1st component var (real variable)
+
+if (c_0 ne '') then begin ;this should be the real data
+  var_idx = tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = tagindex('DAT',itags)
+    if (d[0] ne -1) then  parent_data = astruct.(var_idx).DAT $
+    else begin
+      d = tagindex('HANDLE',itags)
+      if (astruct.(var_idx).HANDLE ne 0) then begin
+        handle_value, astruct.(var_idx).HANDLE, parent_data
+      endif else begin ;need to call the virtual function to compute the quality variables when they don't exist
+          astruct = apply_rtn_qflag(temporary(astruct),orig_names,index=var_idx)
+          handle_value, astruct.(var_idx).HANDLE, parent_data
+      endelse
+
+    endelse
+  fill_val = astruct.(var_idx).fillval
+
+endif else print, 'Apply_rtn_cadence - parent variable not found'
 
 
+data_size = size(parent_data)
+type_code = size(parent_data,/type)
+
+if (data_size[1] gt 0) then begin 
+
+c_0 = astruct.(index).COMPONENT_1 ; should be the time cadence variable
+
+if (c_0 ne '') then begin ;
+  var_idx = tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = tagindex('DAT',itags)
+    if (d[0] ne -1) then  cadence_data = astruct.(var_idx).DAT $
+    else begin
+      d = tagindex('HANDLE',itags)
+      if (astruct.(var_idx).HANDLE ne 0) then begin
+        handle_value, astruct.(var_idx).HANDLE, cadence_data
+      endif else begin ;need to call the virtual function to compute the epoch_cadence when it doesn't exist yet.
+          astruct = compute_cadence(temporary(astruct),orig_names,index=var_idx)
+          handle_value, astruct.(var_idx).HANDLE, cadence_data
+
+      endelse
+    endelse
+  
+endif else print, 'Cadence variable not defined'
+temp = where((cadence_data gt 200), tcnt)
+ngood = data_size[1] - tcnt
+;if (tcnt ge 1) then begin
+if (ngood ge 1) then begin
+  print, 'removing rtn data gt 200, making a smaller array, original = ',data_size[1],' new size = ', ngood
+  new_data = make_array(ngood, type=type_code)
+  new_data = parent_data[temp]
+endif else begin
+  new_data = make_array(1, type=type_code)
+  new_data[0] = fill_val
+  print, 'No cadence <200 data found for ',astruct.(index).COMPONENT_0
+endelse
+
+;now, need to fill the virtual variable data structure with this new data array
+;and "turn off" the original variable.
+
+;
+;print, 'tcnt',tcnt
+;help, new_data
+;stop;
 
 
+temp = handle_create(value=new_data)
+
+astruct.(index).HANDLE = temp
+parent_data = 1B
+cadence_data = 1B
+
+; Check astruct and reset variables not in orignal variable list to metadata,
+; so that variables that weren't requested won't be plotted/listed.
+
+   status = check_myvartype(astruct, orig_names)
+
+return, astruct
+
+endif else return, -1 ;if there's no rtn data return -1
+
+end
+;-------------------------------------------------------------------------------
+
+;The following code was written by Tami Kovalick (ADNET) at GSFC 
+;Written on 3/8/2013 in order to expand the waveform data and times
+;for a time series plot (data is structured as a spectrogram in the
+;data files).
+;
+
+function expand_wave_data, astruct, org_names, INDEX=index, DEBUG=DEBUG
+;
+;  PURPOSE:
+;
+;This routine computes the epochs from the base times and the
+;timeoffsets.  Also restructures the data from size 4096 elements/record out
+;to a single dimensioned array for display as a timeseries (the
+;original/parent data is set up for a spectrogram display)
+;
+;
+; CALLING SEQUENCE:
+;
+;          new_buf = expand_wave_data(buf,org_names, INDEX=INDEX)
+;
+; VARIABLES:
+;
+; Input:
+;
+;  buf        - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
+;               variables in this list will remain tagged as 
+;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
+;
+; Output:
+;
+;  new_buf    - an IDL structure containing the populated virtual 
+;               variable 
+; Constants:
+;
+;  none
+;  
+; Keyword Parameters: 
+;	INDEX : this can be set the structure variable index # for which
+;	you'd like this conversion.  If this isn't set we'll look for the
+;	1st variable that's defined as "virtual".
+;
+; REQUIRED PROCEDURES:
+;
+;   none 
+; 
+;-------------------------------------------------------------------
+;
+; If the index of the Virtual variable is given, us it, if not, then
+; find the 1st virtual variable in the structure.
+atags = tag_names(astruct) ;get the variable names.
+vv_tagnames=strarr(1)
+vv_tagindx = vv_names(astruct,names=vv_tagnames) ;find the virtual vars
+if keyword_set(index) then begin
+  index = index
+endif else begin ;get the 1st vv
+
+  index = vv_tagindx[0]
+  if (vv_tagindx[0] lt 0) then return, -1
+
+endelse
+
+print, 'In Expand_wave_data'
+;print, 'original variables ',org_names
+c_0 = astruct.(index).COMPONENT_0 ;1st component var (real/parent wave variable)
+
+if (c_0 ne '') then begin ;this should be the real data
+  var_idx = tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = tagindex('DAT',itags)
+    if (d[0] ne -1) then  Samples = astruct.(var_idx).DAT $
+    else begin
+      d = tagindex('HANDLE',itags)
+      if (astruct.(var_idx).HANDLE ne 0) then $
+        handle_value, astruct.(var_idx).HANDLE, Samples
+    endelse
+  fill_val = astruct.(var_idx).fillval
+endif else print, 'expand_wave_data - parent variable not found'
+
+c_0 = astruct.(index).COMPONENT_1 ;2nd component var (Epoch)
+
+if (c_0 ne '') then begin ;this should be the Epoch base value
+  var_idx = tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = tagindex('DAT',itags)
+    if (d[0] ne -1) then  Epoch_base = astruct.(var_idx).DAT $
+    else begin
+      d = tagindex('HANDLE',itags)
+      if (astruct.(var_idx).HANDLE ne 0) then $
+        handle_value, astruct.(var_idx).HANDLE, Epoch_base
+    endelse
+endif else print, 'expand_wave_data - Epoch_base variable not found'
+
+
+;TJK made an NRV version of the timeOffsets variable - so using this
+c_0 = astruct.(index).COMPONENT_2 ;3rd component var (time_offsets)
+
+if (c_0 ne '') then begin ;this should be the time offset values
+  var_idx = tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = tagindex('DAT',itags)
+    if (d[0] ne -1) then  time_offsets = astruct.(var_idx).DAT $
+    else begin
+      d = tagindex('HANDLE',itags)
+      if (astruct.(var_idx).HANDLE ne 0) then $
+        handle_value, astruct.(var_idx).HANDLE, time_offsets
+   endelse
+time_offsets = long64(temporary(time_offsets)) ; convert so math will work below
+endif else print, 'expand_wave_data - time_offsets variable not found'
+
+nrec = n_elements(Epoch_base)
+lenwave= n_elements(time_offsets) ;should be 4096 
+; number of result records
+num_new_epoch= nrec*lenwave
+new_epoch = make_array(num_new_epoch+1, /double) ; regular epoch
+if (size(Epoch_base[0],/tname) eq 'LONG64') then new_epoch = lon64arr(num_new_epoch+1, /nozero) ;tt2k epoch
+new_samples = make_array(num_new_epoch+1, /double, value=0.0)
+
+;layout the Samples into one long time series
+;compute the new epochs based on the base_epoch plus time_offsets for
+;each base
+k = 0UL ; counter for the number of elements in the new arrays (needs to be big)
+for i=0,nrec-1 do begin
+;       CDF_EPOCH,Epoch_base[i],year,month,day,hour,minute,second,milli,micro,nano,/TOINTEGER,/BREAK
+;       print, Epoch_base[i]
+;       print, 'Epoch_base date : ', year,month,day,hour,minute,second,milli,micro,nano
+    for j=0,lenwave-1 do begin
+;time_offsets, should vary w/ time, but the cdfs aren't
+;populated that way... so for now just use the 1st records time_offsets
+;       print, 'time offset = ', time_offsets[j,i]
+;       new_epoch[k] = Epoch_base[i]+time_offsets[j,i]
+
+       new_epoch[k] = Epoch_base[i] + time_offsets[j]
+       new_samples[k] = Samples[j,i]
+       k = k + 1
+    endfor 
+endfor
+
+;Populate the HFRsamples_times variable in the structure
+temp = handle_create(value=new_samples)
+astruct.(index).HANDLE = temp
+
+;Populate the HFRsamples_times associated variables (Depend_0/Epoch_exapanded)
+; Create handles and populated data in existing structure
+
+c_0 = astruct.(index).DEPEND_0 ;1st component var (real wave variable)
+
+if (c_0 ne '') then begin ;this should be the new Epoch variable
+  var_idx = tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the new Epoch variable.
+
+  temp = handle_create(value=new_epoch)
+  d = tagindex('HANDLE',itags)
+    if (d[0] ne -1) then  astruct.(var_idx).HANDLE = temp
+  d = tagindex('DAT',itags)
+    if (d[0] ne -1) then  astruct.(var_idx).DAT = new_epoch
+
+endif else print, 'expand_wave_data - new epoch variable not found'
+
+; Check buf and reset variables not in orignal variable list to metadata
+   status = check_myvartype(astruct, org_names)
+
+   return, astruct
+
+end
+
+;+
+; NAME: Function make_stack_array
+;
+; PURPOSE: take the array of data specified by component_0
+; and apply the array reduction specified in the display_type
+; place the result in the return buffer.
+;
+; CALLING SEQUENCE:
+;
+;          new_buf = make_stack_array(buf,org_names)
+;
+; VARIABLES:
+;
+; Input:
+;
+;  astruct    - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
+;               variables in this list will remain tagged as
+;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
+;  index - keyword - if set use this index value to find the virtual 
+;                    variable, otherwise, find the 1st vv in the structure.
+;
+; Output:
+;
+;  new_buf    - an IDL structure containing the populated virtual
+;               variable
+;
+; Keyword Parameters:
+;
+;
+; REQUIRED PROCEDURES:
+;
+;   none
+;
+;-------------------------------------------------------------------
+; History
+;
+;         1.0  T. Kovalick  ADNET     6/19/2013
+;               Initial version
+;
+;-------------------------------------------------------------------
+
+function make_stack_array, astruct,org_names,index=index
+
+status=0
+
+; Establish error handler
+  catch, error_status
+  if(error_status ne 0) then begin
+   print, "ERROR= number: ",error_status," in make_stack_array"
+   print, "ERROR= Message: ",!ERR_STRING
+   status = -1
+   return, status
+endif
+
+; If the index of the Virtual variable is given, use it, if not, then
+; find the 1st virtual variable in the structure.
+atags = tag_names(astruct) ;get the variable names.
+vv_tagnames=strarr(1)
+vv_tagindx = vv_names(astruct,names=vv_tagnames) ;find the virtual vars
+if keyword_set(index) then begin
+  index = index
+endif else begin ;get the 1st vv
+
+  index = vv_tagindx[0]
+  if (vv_tagindx[0] lt 0) then return, -1
+
+endelse
+
+;print, 'In make_stack_array'
+;print, 'original variables ',org_names
+c_0 = astruct.(index).COMPONENT_0 ;1st component var (real/parent wave variable)
+
+if (c_0 ne '') then begin ;this should be the real data
+  var_idx = tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = tagindex('DAT',itags)
+  if (d[0] ne -1) then  parent_array = astruct.(var_idx).DAT $
+  else begin
+    d = tagindex('HANDLE',itags)
+    if (astruct.(var_idx).HANDLE ne 0) then $
+      handle_value, astruct.(var_idx).HANDLE, parent_array
+    endelse
+;  help, parent_array
+
+;don't think I need this...  fill_val = astruct.(var_idx).fillval
+  d = tagindex('DISPLAY_TYPE',itags)
+  if (d[0] ne -1) then begin
+     display_string = astruct.(index).DISPLAY_TYPE
+     a = break_mystring(display_string,delimiter='>')
+     new_display_type=''
+     ; Count the number of '=' to determine the number of instructions
+     b=0 
+     ;for i=0,strlen(a[1])-1 do if (strmid(a[1],i,1) eq '=') then b=b+1
+     for j=0,n_elements(a)-1 do begin
+        if strpos(a[j],'=') ne -1 then begin
+           for i=0,strlen(a[j])-1 do if (strmid(a[j],i,1) eq '=') then b=b+1
+	   eq_index=j  ; element of display_type for which '=' exists
+	endif else begin
+	   new_display_type=[new_display_type,a[j]]  ;  make array; add '>' later
+	endelse 
+     endfor	  
+     if (b ge 1) then begin
+        ilist = strarr(b) 
+     endif else begin ;no y=var(*,1) instructions found, return the parents data
+        astruct.(index).handle = astruct.(var_idx).handle
+        return, astruct
+     endelse
+     ;if instructions are found, continue on
+     ;looking for syntax like stack_plot>y=FLUX_SEL_ENERGY_STACK(*,1)
+     ; Dissect the input string into its separate instructions
+     inum = 0 & next_target=',' ; initialize
+     for i=0,strlen(a[eq_index])-1 do begin
+        c = strmid(a[eq_index],i,1)    ; get next character in string
+        if (c eq next_target) then begin
+           if (next_target eq ',') then inum = inum + 1
+           if (next_target eq ')') then begin
+              ilist[inum] = ilist[inum] + c & next_target = ','
+           endif
+        endif else begin
+           ilist[inum] = ilist[inum] + c ; copy to instruction list
+           if (c eq '(') then next_target = ')'
+        endelse
+     endfor
+
+;we don't need this loop for y=var(*,n) or y=var(n,*) or y=var(n,n,*)
+;but we do need the loop for y=var(1,1),y=var(1,5), etc.
+;help, ilist
+;stop;
+     num_lists = n_elements(ilist)
+     for inum=0,num_lists-1 do begin
+        b=strpos(ilist[inum],'y=') &  c=strpos(ilist[inum],'Y=')
+        if c gt b then b=c
+        if (b ne -1) then begin ; extract the name of the y variable and elist
+           c = break_mystring(ilist[inum],delimiter='(')
+           if (n_elements(c) eq 2) then rem = strmid(c[1], 0,strlen(c[1])-1)
+           if (rem ne '') then begin ;apply the reduction syntax to the parent array
+              y0 = execute('new_array = parent_array['+rem+',*]') ;last dim. is records
+;stop;
+              if (num_lists eq 1) then begin
+                new_array = reform(new_array) ;remove 1-d dimensions
+              endif else begin
+                 temp_array = append_mydata(new_array, temp_array)
+                 if (inum eq num_lists-1) then new_array = reform(temp_array)
+;print, 'check this syntax '
+;stop;
+              endelse
+;              print, 'New reduced array ' & help, new_array
+           endif
+        endif
+     endfor
+
+  endif else print, 'make_stack_array - DISPLAY_TYPE needed'
+
+endif else print, 'make_stack_array - parent variable not found'
+
+;Put the reduced sized array in the virtual variables handle
+temp = handle_create(value=new_array)
+astruct.(index).HANDLE = temp
+;astruct.(index).DISPLAY_TYPE = a[0] ; should be just stack_plot
+ndt=''
+; start at 1 because 1st element of new_display_type is ''
+for i=1,n_elements(new_display_type)-2 do ndt=ndt+strtrim(new_display_type[i],2)+'>'
+; last element:
+ndt=ndt+strtrim(new_display_type[i])
+astruct.(index).DISPLAY_TYPE = ndt ; should be just stack_plot
+
+; Check that all variables in the original variable list are declared
+; as data otherwise set to support_data
+
+   status = check_myvartype(astruct, org_names)
+
+return, astruct
+end

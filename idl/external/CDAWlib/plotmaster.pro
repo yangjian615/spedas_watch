@@ -1,8 +1,8 @@
 ;$author: baldwin $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/plotmaster.pro,v 1.259 2009/11/10 20:54:28 kovalick Exp kovalick $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/plotmaster.pro,v 1.290 2014/03/18 18:01:39 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 7092 $ 
+;$Revision: 15739 $ 
 ;+------------------------------------------------------------------------
 ; NAME: PLOTMASTER
 ; PURPOSE: To plot the data given in 1 to 10 anonymous structure of the type
@@ -121,6 +121,11 @@
 ;        4/98   ; R. Baldwin   : Added virtual variable plot types; 
 ;				 plot_map_images.pro
 ;       11/98   ; R. Baldwin   : Added movie_images and movie_map_images
+;
+;
+;Copyright 1996-2013 United States Government as represented by the
+;Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+;
 ;-------------------------------------------------------------------------
 FUNCTION plotmaster, a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,$
 		     a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,$
@@ -132,6 +137,10 @@ FUNCTION plotmaster, a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,$
                      COLORTAB=COLORTAB,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
                      REPORT=REPORT,PID=PID,STATUS=STATUS,OUTDIR=OUTDIR, $
                      SSCWEB=SSCWEB, ELEMENTS=ELEMENTS, LIMIT_MOVIE=LIMIT_MOVIE
+
+
+compile_opt idl2
+
 
 ; Verify that number of parameters is acceptable
 if ((n_params() le 0)OR(n_params() gt 30)) then begin
@@ -167,7 +176,7 @@ ini_complex = dcomplex(0.0D0)
 
 p_template = {PLOTDESC2,snum:0,vname:'',vnum:0,ptype:0,npanels:0,$
   iwidth:0,iheight:0,btime:0.0D0,etime:0.0D0,btime16:ini_complex, $
-  etime16:ini_complex,title:'',source:'',movie_frame_rate:0, movie_loop:0}
+  etime16:ini_complex,btimett2000:long64(0),etimett2000:long64(0),title:'',source:'',movie_frame_rate:0, movie_loop:0}
 
 ; Verify proper keyword parameters
 ;  9/96 RTB added STATUS, OUTDIR, PID
@@ -219,7 +228,7 @@ case plottype of
   else: begin ; determine xwindow resolution
     ;GIF = 0L ; set gif keyword to no gif
     a = lonarr(2) & DEVICE,GET_SCREEN_SIZE=a ; get device resolution
-    max_xsize = (a(0) * 0.9) & max_ysize = (a(1) * 0.9)
+    max_xsize = (a[0] * 0.9) & max_ysize = (a[1] * 0.9)
     noclipflag = 0
     if keyword_set(PANEL_HEIGHT) then pheight=PANEL_HEIGHT else pheight=100
   end
@@ -261,7 +270,7 @@ for i=0,n_params()-1 do begin ; process each structure parameter
    ; RTB Add code to trap a=-1 bad structures 
    ibad=0
    str_tst=size(a)
-   if(str_tst(str_tst(0)+1) ne 8) then begin
+   if(str_tst[str_tst[0]+1] ne 8) then begin
       ibad=1
       v_data='DATASET=UNDEFINED'
       v_err='ERROR=a'+strtrim(string(i),2)+' not a structure.'
@@ -271,7 +280,7 @@ for i=0,n_params()-1 do begin ; process each structure parameter
       ; Test for errors trapped in read_myCDF
       atags=tag_names(a)
       rflag=tagindex('DATASET',atags)
-      if(rflag(0) ne -1) then ibad=1 
+      if(rflag[0] ne -1) then ibad=1 
    endelse
    ;
    if(ibad) then begin
@@ -286,25 +295,26 @@ for i=0,n_params()-1 do begin ; process each structure parameter
       ;be there).  I believe, the main reason we end up here is that the data
       ;is fill and indicates that the instrument was off.
       ;      p(0).ptype=0
-      p(0).ptype=-1
-      p(0).snum=i
+      p[0].ptype=-1
+      p[0].snum=i
    endif else begin
       ;total_npanels=0
       vnames = tag_names(a)
       p = replicate(p_template,n_elements(vnames))
       for j=0,n_elements(tag_names(a))-1 do begin
          b = evaluate_varstruct(a.(j)) & c = size(b)
-         if c(n_elements(c)-2) ge 8 then begin ; record the evaluation results
-            p(j).snum   = i        & p(j).vnum    = j
-            p(j).ptype  = b.ptype  & p(j).npanels = b.npanels
-            p(j).iwidth = b.iwidth & p(j).iheight = b.iheight
-            p(j).btime  = b.btime  & p(j).etime   = b.etime
-            p(j).btime16  = b.btime16  & p(j).etime16   = b.etime16
-            p(j).title  = b.title  & p(j).source   = b.source
-            p(j).movie_frame_rate = b.movie_frame_rate
-            p(j).movie_loop = b.movie_loop
+         if c[n_elements(c)-2] ge 8 then begin ; record the evaluation results
+            p[j].snum   = i        & p[j].vnum    = j
+            p[j].ptype  = b.ptype  & p[j].npanels = b.npanels
+            p[j].iwidth = b.iwidth & p[j].iheight = b.iheight
+            p[j].btime  = b.btime  & p[j].etime   = b.etime
+            p[j].btime16  = b.btime16  & p[j].etime16   = b.etime16
+            p[j].btimett2000  = b.btimett2000  & p[j].etimett2000   = b.etimett2000
+            p[j].title  = b.title  & p[j].source   = b.source
+            p[j].movie_frame_rate = b.movie_frame_rate
+            p[j].movie_loop = b.movie_loop
 	    
-            if (b.vname ne '') then p(j).vname=b.vname else p(j).vname=vnames(j)
+            if (b.vname ne '') then p[j].vname=b.vname else p[j].vname=vnames[j]
             if b.ptype ne 0 then plottable_found = 1; set flag
 	    
             ; RCJ 02/21/2007 This is only working for timeseries for now:
@@ -329,14 +339,14 @@ for i=0,n_params()-1 do begin ; process each structure parameter
      failed=0
      ;q=where (p(*).ptype gt 1)
      ;q=where (p(*).ptype gt 2)
-     q=where (p(*).ptype gt 2 and p(*).ptype ne 7 $
-          and p(*).ptype ne 3 and p(*).ptype ne 5 and p(*).ptype ne 12)
+     q=where (p[*].ptype gt 2 and p[*].ptype ne 7 $
+          and p[*].ptype ne 3 and p[*].ptype ne 5 and p[*].ptype ne 12)
      if q[0] ne -1 then begin
          for k=0,n_elements(q)-1 do begin
 	    ; RCJ   For each case that's commented out I have to 
 	    ;   remove the condition "and (plottype ne 'pscript')"
 	    ;   from the part of the code that does the specific plot
-	    case p(q[k]).ptype of
+	    case p[q[k]].ptype of
 	       ;1:thisptype='time_series'
 	       ;2: thisptype='spectrogram, topside_ionogram or bottomside_ionogram'
 	       ;3:thisptype='radar_vector'
@@ -398,7 +408,7 @@ endfor ; evaluate every data structure
 ;TJK 12/21/2005 added check for ptype - if its equal to -1, then we've
 ;already printed out the error and status, don't print the message below
 if (plottable_found eq 0) then begin
-  if (p(0).ptype gt -1) then begin
+  if (p[0].ptype gt -1) then begin
     print,'STATUS=No plottable data found for selected variables.'
     print,'STATUS=Please select another time range. Either your time range was too short (no data found for the interval) or'
     print,'STATUS=too long (your session timed out before all of the data you requested could be read).'
@@ -413,13 +423,13 @@ endif
 ; make sure timetexts will be displayed last in gif/ps/window:
 if keyword_set(combine) then begin
    q12 = where(ps.ptype eq 12 or ps.ptype eq 0)
-   if q12(0) ne -1 then begin
+   if q12[0] ne -1 then begin
       qnot12=where(ps.ptype ne 12 and ps.ptype ne 0)
-      if qnot12(0) ne -1 then begin
-         ps_tmp=[ps(qnot12),ps(q12)]
+      if qnot12[0] ne -1 then begin
+         ps_tmp=[ps[qnot12],ps[q12]]
       endif else begin
-         ps_tmp=[ps(q12(0)),ps(q12)]
-         ps_tmp(0).vname='CDAWeb_created_variable' & ps_tmp(0).ptype=1 & ps_tmp(0).npanels=1
+         ps_tmp=[ps[q12[0]],ps[q12]]
+         ps_tmp[0].vname='CDAWeb_created_variable' & ps_tmp[0].ptype=1 & ps_tmp[0].npanels=1
       endelse 
    endif else begin
       ps_tmp=ps
@@ -427,30 +437,30 @@ if keyword_set(combine) then begin
    ps=ps_tmp     
 endif else begin
    min_snum=min(ps.snum,max=max_snum)
-   psd=[ps(0)]
+   psd=[ps[0]]
    psd.ptype=-99
    for i=min_snum,max_snum do begin
       q_snum=where(ps.snum eq i)
-      ps_snum=ps(q_snum)
+      ps_snum=ps[q_snum]
       ;q12=where(ps_snum.ptype eq 12 or ps_snum.ptype eq 0) ; support data (0) goes
       q12=where(ps_snum.ptype eq 12 or ps_snum.ptype eq 0) ; support data (0) goes
    							; after plot types
       q_zero=where(ps_snum.ptype eq 0,count)
-      ;if q12(0) ne -1 then begin
-      if (q12(0) ne -1) and (count ne n_elements(ps_snum.ptype)) then begin
+      ;if q12[0] ne -1 then begin
+      if (q12[0] ne -1) and (count ne n_elements(ps_snum.ptype)) then begin
          qnot12=where(ps_snum.ptype ne 12 and ps_snum.ptype ne 0)
-         if qnot12(0) ne -1 then begin
-            ps_tmp=[ps_snum(qnot12),ps_snum(q12)]
+         if qnot12[0] ne -1 then begin
+            ps_tmp=[ps_snum[qnot12],ps_snum[q12]]
          endif else begin
-            ps_tmp=[ps_snum(q12(0)),ps_snum(q12)]
-            ps_tmp(0).vname='CDAWeb_created_variable' & ps_tmp(0).ptype=1 & ps_tmp(0).npanels=1
+            ps_tmp=[ps_snum[q12[0]],ps_snum[q12]]
+            ps_tmp[0].vname='CDAWeb_created_variable' & ps_tmp[0].ptype=1 & ps_tmp[0].npanels=1
          endelse      
       endif else begin
          ps_tmp=[ps_snum]
       endelse   
       psd=[psd,ps_tmp]
    endfor
-   ps=psd(where(psd.ptype ne -99))
+   ps=psd[where(psd.ptype ne -99)]
 endelse   
 ;
 ; n_q12 and q12 to be used later, if keyword 'combine' is set. RCJ
@@ -503,28 +513,50 @@ ps_counter=0L
 ; if min in p.btime = [0,0,epoch] then min epoch will be missed RTB
 btime=ps.btime                                ; RTB
 we=where(btime ne 0.D0,wc)                   ; RTB
-if (wc gt 0) then min_ep=btime(we)
+if (wc gt 0) then min_ep=btime[we] $
+        else min_ep=0.D0  ; need some default value. min_ep would be
+	;undefined below if time range requested has no data in it
 
 ; RCJ 05/28/2003  var fUHR from dataset po_h1_pwi caused problem here
 ; when one of its cdfs had all virtual values for epoch, 
 ; making btime=0.0D0, the default
-;TJK 10/27/2006 - add checking for epoch16 times when epoch doesn't exist
+; TJK 10/27/2006 - add checking for epoch16 times when epoch doesn't exist
+; RCJ 04/09/2013  Look for tt2000 too
 if we[0] eq -1 then begin
-  btime = ps.btime16 ;try looking for epoch16 value
-  we=where(btime ne 0.D0,wc)
-  if we[0] eq -1 then min_ep=0.0D0 else min_ep=btime(we)
+  ;btime = ps.btime16 ;try looking for epoch16 value
+  ;we=where(btime ne 0.D0,wc)
+  ;if we[0] eq -1 then min_ep=0.0D0 else min_ep=btime[we]
+  btime16 = ps.btime16 ;try looking for epoch16 value
+  btime2000 = ps.btimett2000 ;try looking for tt2000 value
+  we1=-1 & we2=-1
+  we1=where(btime16 ne 0.D0,wc)
+  we2=where(btime2000 ne long64(0),wc)
+  if we1[0] ne -1 then min_ep=btime16[we1]
+  if we2[0] ne -1 then min_ep=btime2000[we2]
 endif
 
-;TJK 10/27/2006 - add checking for epoch16 end times when epoch doesn't exist
 etime=ps.etime                 
 we=where(etime ne 0.D0,wc)     
-if (wc gt 0) then max_ep=etime(we)
+if (wc gt 0) then max_ep=etime[we] else $
+        max_ep=0.D0  ; need some default value. max_ep would be
+	;undefined below if time range requested has no data in it
 
+
+;TJK 10/27/2006 - add checking for epoch16 end times when epoch doesn't exist
+; RCJ 04/09/2013  Look for tt2000 too
 if we[0] eq -1 then begin
-  etime = ps.etime16 ;try looking for epoch16 value
-  we=where(etime ne 0.D0,wc)
-  if we[0] eq -1 then max_ep=0.0D0 else max_ep=etime(we)
+  ;etime = ps.etime16 ;try looking for epoch16 value
+  ;we=where(etime ne 0.D0,wc)
+  ;if we[0] eq -1 then max_ep=0.0D0 else max_ep=etime[we]
+  etime16 = ps.etime16 ;try looking for epoch16 value
+  etime2000 = ps.etimett2000 ;try looking for tt2000 value
+  we1=-1 & we2=-1
+  we1=where(etime16 ne 0.D0,wc)
+  we2=where(etime2000 ne 0.D0,wc)
+  if we1[0] ne -1 then max_ep=etime16[we1]
+  if we2[0] ne -1 then max_ep=etime2000[we2]
 endif
+
 start_time = min(min_ep)
 stop_time = max(max_ep)
 ;print,'start time ', start_time, ' ', 'stop_time ',stop_time, ' before tstart/tstop code'
@@ -533,46 +565,56 @@ stop_time = max(max_ep)
 ;                 that comparison w/ data stored as epoch16 is
 ;                 possible.
  
-if keyword_set(TSTART) then begin ; determine datatype and process if needed
+;if keyword_set(TSTART) then begin ; determine datatype and process if needed
+if (keyword_set(TSTART) or ((not keyword_set(TSTART)) and (start_time ne 0.0))) then begin ; determine datatype and process if needed
+   if ((not keyword_set(TSTART)) and (start_time ne 0.0)) then TSTART=start_time
    b = size(TSTART) & c = n_elements(b)
-;   if (b(c-2) eq 5) then start_time = TSTART $    ; double float already
-;   else if (b(c-2) eq 7) then start_time = encode_cdfepoch(TSTART) $ ; string
+   ;   if (b(c-2) eq 5) then start_time = TSTART $    ; double float already
+   ;   else if (b(c-2) eq 7) then start_time = encode_cdfepoch(TSTART) $ ; string
 
-   if (b(c-2) eq 5) then begin
-       start_time = TSTART ; double float already
-   endif else begin
-     if (b(c-2) eq 7) then begin
-;TJK 10/23/2009 if the TSTART value has a milliseconds component, use
-;that when computing the start time (to get the precision)
+  case b[c-2] of
+   5: begin
+        start_time = TSTART 
+      end	
+   7: begin
+        ;TJK 10/23/2009 if the TSTART value has a milliseconds component, use
+        ;that when computing the start time (to get the precision)
         split_ep=strsplit(TSTART,'.',/extract)
+
         start_time = encode_cdfepoch(TSTART) ; string
-;        start_time16 = encode_cdfepoch(TSTART,/EPOCH16) ; string
+        ;start_time16 = encode_cdfepoch(TSTART,/EPOCH16) ; string
         if (n_elements(split_ep) eq 2) then begin
           start_time16 = encode_cdfepoch(TSTART,/EPOCH16,msec=split_ep[1]) ; string
+          start_timett = encode_cdfepoch(TSTART, /TT2000, MSEC=split_ep[1])    ;TJK added for TT2000 time
         endif else begin
           start_time16 = encode_cdfepoch(TSTART,/EPOCH16) ; string
+          start_timett = encode_cdfepoch(TSTART, /TT2000)    ;TJK added for TT2000 time
         endelse
+      end
+    14:  begin
+            start_timett=TSTART ; already long64
+	 end  
+    else: begin
+            if (reportflag eq 1) then $ 
+            printf,1,'STATUS= Time Range Error' & close, 1
+            print,'STATUS= Time Range Error'
+            print,'ERROR= TSTART parameter must be STRING or DOUBLE' & return,-1
+          end  
+  endcase
 
-     endif else begin
-       if (reportflag eq 1) then $ 
-       printf,1,'STATUS= Time Range Error' & close, 1
-       print,'STATUS= Time Range Error'
-       print,'ERROR= TSTART parameter must be STRING or DOUBLE' & return,-1
-    endelse
-  endelse
 endif else begin
    if keyword_set(COMBINE) then begin
       ; first find all structures with variable plotted as t/s or spectrum
       if keyword_set(DEBUG) then print,'Computing combined axis start time...'
       w = where(((PS.ptype eq 1) OR (PS.ptype eq 2)),wc)
       if (wc gt 0) then begin ; now find earliest time of these structures
-         b = PS(w).snum & bs = size(b) ; determine structure numbers
-         if (bs(0) gt 0) then begin & c=uniq(b) & b=b(c) & endif ; make list
+         b = PS[w].snum & bs = size(b) ; determine structure numbers
+         if (bs[0] gt 0) then begin & c=uniq(b) & b=b[c] & endif ; make list
          ;c = where(PS.btime ne 0.0D0,wc) ; find list of all start times
          c = where(((PS.btime ne 0.0D0) and (strpos(strupcase(ps.vname),'EPOCH') ne -1)),wc) 
          if (wc gt 0) then begin ;TJK added
-            w = where(PS(c).snum eq b) ; find which times belong to t/s & spectro
-            start_time = min(PS(c(w)).btime) & b = decode_cdfepoch(start_time)
+            w = where(PS[c].snum eq b) ; find which times belong to t/s & spectro
+            start_time = min(PS[c[w]].btime) & b = decode_cdfepoch(start_time)
             if keyword_set(DEBUG) then print,'Combined axis start time=',b
          endif else $
          if keyword_set(DEBUG) then print,'Combined axis start time=',start_time
@@ -586,51 +628,61 @@ endelse
 ; common axis.  This is overridden by TSTOP keyword.
 ; TJK commented out stop_time = 0.0D0 ; initialize
 
-if keyword_set(TSTOP) then begin ; determine datatype and process if needed
+;if keyword_set(TSTOP) then begin ; determine datatype and process if needed
+if (keyword_set(TSTOP) or ((not keyword_set(TSTOP)) and (stop_time ne 0.0)))  then begin ; determine datatype and process if needed
+   if ((not keyword_set(TSTOP)) and (stop_time ne 0.0)) then TSTOP=stop_time
    b = size(TSTOP) & c = n_elements(b)
-;   if (b(c-2) eq 5) then stop_time = TSTOP $ ; double float already
-;   else if (b(c-2) eq 7) then stop_time = encode_cdfepoch(TSTOP) $ ; string
+   ;   if (b(c-2) eq 5) then stop_time = TSTOP $ ; double float already
+   ;   else if (b(c-2) eq 7) then stop_time = encode_cdfepoch(TSTOP) $ ; string
 
-   if (b(c-2) eq 5) then begin
-       stop_time = TSTOP       ; stop_time is double float already
-   endif else begin
-      if (b(c-2) eq 7) then begin
-;TJK 10/23/2009 if the TSTOP value has a milliseconds component, use
-;that when computing the start time (to get the precision)
+  case b[c-2] of
+     5: begin
+         stop_time = TSTOP       ; stop_time is double float already
+        end
+     7: begin
+          ;TJK 10/23/2009 if the TSTOP value has a milliseconds component, use
+          ;that when computing the start time (to get the precision)
           split_ep=strsplit(TSTOP,'.',/extract)
           stop_time = encode_cdfepoch(TSTOP) ; string
-;          stop_time16 = encode_cdfepoch(TSTOP,/EPOCH16) ; string
+          ;          stop_time16 = encode_cdfepoch(TSTOP,/EPOCH16) ; string
           if (n_elements(split_ep) eq 2) then begin
             stop_time16 = encode_cdfepoch(TSTOP,/EPOCH16,msec=split_ep[1]) ; string
+            stop_timett = encode_cdfepoch(TSTOP, /TT2000, MSEC=split_ep[1])    ;TJK added for TT2000 time
           endif else begin
             stop_time16 = encode_cdfepoch(TSTOP,/EPOCH16) ; string
-          endelse
-      endif else begin
-      if (reportflag eq 1) then $
-      printf,1,'STATUS= Time range error.' & close,1
-      print,'ERROR= TSTOP parameter must be STRING or DOUBLE' & return,-1
-      print, 'STATUS= Time range error.'
-    endelse
-  endelse
+            stop_timett = encode_cdfepoch(TSTOP, /TT2000)    ;TJK added for TT2000 time
+         endelse
+        end	
+     14: begin
+           stop_timett= TSTOP  ; already long64
+         end 
+     else: begin
+             if (reportflag eq 1) then $
+             printf,1,'STATUS= Time range error.' & close,1
+             print,'ERROR= TSTOP parameter must be STRING or DOUBLE' & return,-1
+             print, 'STATUS= Time range error.'
+           end	  
+  endcase
+
 endif else begin
    if keyword_set(COMBINE) then begin
       ; first find all structures with variable plotted as t/s or spectrum
       if keyword_set(DEBUG) then print,'Computing combined axis stop time...'
       w = where(((PS.ptype eq 1)OR(PS.ptype eq 2)),wc)
       if (wc gt 0) then begin ; now find latest time of these structures
-         b = PS(w).snum & bs = size(b) ; determine structure numbers
-         if (bs(0) gt 0) then begin & c=uniq(b) & b=b(c) & endif ; make list
+         b = PS[w].snum & bs = size(b) ; determine structure numbers
+         if (bs[0] gt 0) then begin & c=uniq(b) & b=b[c] & endif ; make list
          c = where(PS.etime ne 0.0D0,wc) ; find list of all stop times
          if (wc gt 0) then begin ;TJK added
-            w = where(PS(c).snum eq b) ; find which times belong to t/s & spectro
-            stop_time = max(PS(c(w)).etime) & b = decode_cdfepoch(stop_time)
+            w = where(PS[c].snum eq b) ; find which times belong to t/s & spectro
+            stop_time = max(PS[c[w]].etime) & b = decode_cdfepoch(stop_time)
             if keyword_set(DEBUG) then print,'Combined axis stop time=',b
          endif else $
          if keyword_set(DEBUG) then print,'Combined axis stop time=',stop_time
       endif
    endif
 endelse
-;print, 'DEBUG ',start_time, start_time16, stop_time, stop_time16
+
 
 ; Modify the window margin if ordered or required for spectrogram plots
 if keyword_set(CDAWEB) then begin ; leave space for colorbar
@@ -671,7 +723,7 @@ case plottype of
         labeloffset=-40
 	end
 endcase	
-prev_snum=ps(0).snum
+prev_snum=ps[0].snum
 ;
 if keyword_set(COMBINE) then begin
   combined_title = 'Multiple datasets being plotted; refer to labels on either side of plot. ' ;TJK added 10/14/2003
@@ -680,39 +732,46 @@ if keyword_set(COMBINE) then begin
 endif
 
 for i=0,n_elements(PS)-1 do begin
+
+;TJK 3/14/2012 - add this check for ptype of -1 to go w/ added a
+;                display_type value of "no_plot", so that we can turn
+;                off plotting of certain variables in the masters.
+   if (PS[i].ptype eq -1 and  PS[i].npanels eq 0) then begin
+      print, 'STATUS=',PS[i].source,':',PS[i].vname,' plotting not supported.'
+   endif
    ; Prepare for plotting by creating window and last_plot flag
 ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
-   if ((PS(i).ptype eq 1)OR(PS(i).ptype eq 2)OR(PS(i).ptype eq 7)OR $
-      (PS(i).ptype eq 12)) then begin
+   if ((PS[i].ptype eq 1)OR(PS[i].ptype eq 2)OR(PS[i].ptype eq 7)OR $
+      (PS[i].ptype eq 12)) then begin
      ; 1: time_series
      ; 2: spectrogram, topside_ionogram, bottomside_ionogram
      ; 7: stack_plot
      ; 12: time_text
       ;
-      q12snum=where(ps.snum eq ps(i).snum and ps.ptype eq 12,n_q12snum)
-      if not keyword_set(combine) and (q12snum(0) ne -1) and (ps(i).snum ne prev_snum) then begin
+      q12snum=where(ps.snum eq ps[i].snum and ps.ptype eq 12,n_q12snum)
+      if not keyword_set(combine) and (q12snum[0] ne -1) and (ps[i].snum ne prev_snum) then begin
          if plottype eq 'gif' then labeloffset=-40  ; reset offset for next timetext
          if plottype eq 'pscript' then labeloffset=-1500  ; reset offset for next timetext
-         prev_snum=ps(i).snum
+         prev_snum=ps[i].snum
       endif
-      ;if q12snum(0) ne -1 then print,ps(q12snum).vname,ps(q12snum).ptype,ps(q12snum).npanels
+      ;if q12snum[0] ne -1 then print,ps(q12snum).vname,ps(q12snum).ptype,ps(q12snum).npanels
       ;
       ; Determine if this plot will fit within current window/gif
-             ;if (PS(i).ptype eq 12) then b = WS.pos(3) - (PS(i).npanels * pheight_12) $
-    	     ;else b = WS.pos(3) - (PS(i).npanels * pheight)
+             ;if (ps[i].ptype eq 12) then b = WS.pos[3] - (ps[i].npanels * pheight_12) $
+    	     ;else b = WS.pos[3] - (ps[i].npanels * pheight)
 	     ; RCJ 09/28/2007  This *1. is needed. npanels and pheight
 	     ; are integers and if npanels is too high (8 already caused
 	     ; problems) then the multiplication of the 2 will give us 
 	     ; garbage in return.
-      if (PS(i).ptype eq 12) then b = WS.pos(3) - (PS(i).npanels*1. * pheight_12) $
-    	     else b = WS.pos(3) - (PS(i).npanels*1. * pheight)
-      ;if (b lt WS.ymargin(1)) then new_window = 1 else new_window = 0
+      if (PS[i].ptype eq 12) then b = WS.pos[3] - (PS[i].npanels*1. * pheight_12) $
+    	     else b = WS.pos[3] - (PS[i].npanels*1. * pheight)
+      ;if (b lt WS.ymargin[1]) then new_window = 1 else new_window = 0
       ; the above statement was valid when we only had graphs
       ; but now we have labels too. RCJ 03/10/00
       if (b lt 50) then new_window = 1 else new_window = 0
       
       ; if nonoise is set, make title say so
-      if keyword_set(nonoise) then ps(i).title=ps(i).title+'!CFiltered to remove values >3-sigma from mean of all plotted values'
+      if keyword_set(nonoise) then ps[i].title=ps[i].title+'!CFiltered to remove values >3-sigma from mean of all plotted values'
 
       ; Create a window/gif/ps file if current plot will not fit
 
@@ -735,21 +794,21 @@ for i=0,n_elements(PS)-1 do begin
             ;Web services client...
 
             if n_elements(ELEMENTS) ne 0 then begin
-	       PS(i).npanels = n_elements(ELEMENTS)
+	       PS[i].npanels = n_elements(ELEMENTS)
 	    endif
             ; Determine the size for the next gif file
             if keyword_set(COMBINE) then begin
                ; compute size to fit t/s and spectrograms for ALL variables
                w = where((PS.ptype eq 1)OR(PS.ptype eq 2)OR(PS.ptype eq 7))
-               if (w(0) ne -1) then b = (total(PS(w).npanels)*1. * pheight) else b = 0
-               if (q12(0) ne -1) then b = b +(total(ps(q12).npanels)*1.* pheight_12)
-               if (n_params() eq 1) then mytitle = PS(i).title else mytitle=''
+               if (w[0] ne -1) then b = (total(PS[w].npanels)*1. * pheight) else b = 0
+               if (q12[0] ne -1) then b = b +(total(ps[q12].npanels)*1.* pheight_12)
+               if (n_params() eq 1) then mytitle = ps[i].title else mytitle=''
             endif else begin
                ; compute size to fit t/s and spectrograms for THIS structure
-               w = where((PS.snum eq PS(i).snum) and ((PS.ptype eq 1)OR(PS.ptype eq 2)OR(PS.ptype eq 7)))
-               if (w(0) ne -1) then b = (total(PS(w).npanels)*1. * pheight) else b = 0
-               if (q12snum(0) ne -1) then b = b + (total(ps(q12snum).npanels)*1. * pheight_12)
-               mytitle = PS(i).title
+               w = where((PS.snum eq PS[i].snum) and ((PS.ptype eq 1)OR(PS.ptype eq 2)OR(PS.ptype eq 7)))
+               if (w[0] ne -1) then b = (total(PS[w].npanels)*1. * pheight) else b = 0
+               if (q12snum[0] ne -1) then b = b + (total(ps[q12snum].npanels)*1. * pheight_12)
+               mytitle = PS[i].title
             endelse
 
             ; Determine name for new gif file and create GIF/window
@@ -763,9 +822,9 @@ for i=0,n_elements(PS)-1 do begin
                if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2) 
                if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2) 
                if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-               GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+               GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
                ; Initialize window state and open the gif file
-               WS.ys = b + WS.ymargin(0) + WS.ymargin(1) ; add room for timeaxis
+               WS.ys = b + WS.ymargin[0] + WS.ymargin[1] ; add room for timeaxis
                ;
                deviceopen,6,fileOutput=GIF,sizeWindow=[WS.xs,WS.ys]
                ;deviceopen,6,fileOutput=GIF,sizeWindow=[20000,20000]
@@ -775,9 +834,9 @@ for i=0,n_elements(PS)-1 do begin
                if(ps_counter lt 100) then psn='0'+strtrim(string(ps_counter),2) 
                if(ps_counter lt 10) then psn='00'+strtrim(string(ps_counter),2) 
                if(ps_counter ge 100) then psn=strtrim(string(ps_counter),2)
-               out_ps=outdir+PS(i).source+'_'+pid+'_'+psn+'.eps'
+               out_ps=outdir+PS[i].source+'_'+pid+'_'+psn+'.eps'
                ; Initialize window state and open the ps file
-               WS.ys = b + WS.ymargin(0) + WS.ymargin(1) ; add room for timeaxis
+               WS.ys = b + WS.ymargin[0] + WS.ymargin[1] ; add room for timeaxis
                ;
                deviceopen,1,fileOutput=out_ps,/portrait,sizeWindow=[WS.xs,WS.ys]
                gif_ps_open=1L & ps_counter = ps_counter + 1
@@ -787,15 +846,15 @@ for i=0,n_elements(PS)-1 do begin
         
             ; Modify source name for SSCWEB DATASET label 
             if(SSCWEB) then begin
-               if (PS(i).snum ne a_id) then begin
-                  s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+               if (ps[i].snum ne a_id) then begin
+                  s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
                endif
                satname=strtrim(a.epoch.source_name,2)
-               PS(i).source= PS(i).source + '_' + satname
+               PS[i].source= PS[i].source + '_' + satname
             endif
 
             if (reportflag eq 1) then begin 
-               printf, 1, 'DATASET=',PS(i).source
+               printf, 1, 'DATASET=',PS[i].source
                ;printf,1,'GIF=',GIF
                if plottype eq 'gif' then printf,1,'GIF=',GIF 
                if plottype eq 'pscript' then printf,1,'PS=',out_ps 
@@ -807,7 +866,7 @@ for i=0,n_elements(PS)-1 do begin
 ;we only have short s/c names to deal w/ in SSC.
 
 
-            print, 'DATASET=',PS(i).source
+            print, 'DATASET=',PS[i].source
 
 ;            if plottype eq 'gif' then print,'GIF=',GIF
             if plottype eq 'gif' then begin
@@ -815,7 +874,8 @@ for i=0,n_elements(PS)-1 do begin
               loutdir='/'
               for t=0L,n_elements(split)-2 do loutdir=loutdir+split[t]+'/'
                 print, 'GIF_OUTDIR=',loutdir
-                print, 'LONG_GIF=',split[t]
+		fmt='(a9,a'+strtrim(strlen(split[t]),2)+')'
+                print, 'LONG_GIF=',split[t], format=fmt
 
             endif
 ;            if plottype eq 'pscript' then print,'PS=',out_ps 
@@ -824,7 +884,8 @@ for i=0,n_elements(PS)-1 do begin
               loutdir='/'
               for t=0L,n_elements(split)-2 do loutdir=loutdir+split[t]+'/'
                 print, 'PS_OUTDIR=',loutdir
-                print, 'LONG_PS=',split[t]
+		fmt='(a8,a'+strtrim(strlen(split[t]),2)+')'
+                print, 'LONG_PS=',split[t], format=fmt
             endif
          endif  ; end if keyword_set(GIF)
 
@@ -832,28 +893,28 @@ for i=0,n_elements(PS)-1 do begin
          if (plottype ne 'gif' and plottype ne 'pscript') then begin ; producing XWINDOWS
             if keyword_set(COMBINE) then begin ; size for as many vars as possible
                b=0 & c=0 ; initialize loop
-               for j=i,n_elements(PS)-1 do begin & d = PS(j).ptype
+               for j=i,n_elements(PS)-1 do begin & d = PS[j].ptype
                   ;if ((d eq 1)OR(d eq 2)) then begin
                   if ((d eq 1)OR(d eq 2)OR(d eq 7)OR(d eq 12)) then begin
-                     if (d eq 12) then b = PS(j).npanels*1. * pheight_12 $
-              		else b = PS(j).npanels*1. * pheight
-                     if ((c+b) le (max_ysize - WS.ymargin(1))) then c=c+b
+                     if (d eq 12) then b = PS[j].npanels*1. * pheight_12 $
+              		else b = PS[j].npanels*1. * pheight
+                     if ((c+b) le (max_ysize - WS.ymargin[1])) then c=c+b
                   endif
                endfor
-               if (n_params() eq 1) then mytitle = PS(i).title else mytitle=''
+               if (n_params() eq 1) then mytitle = PS[i].title else mytitle=''
             endif else begin ; size only for variables from current structure
                b=0 & c=0 ; initialize loop
                for j=i,n_elements(PS)-1 do begin
-                  if (PS(j).snum eq PS(i).snum) then begin & d = PS(j).ptype
+                  if (PS[j].snum eq PS[i].snum) then begin & d = PS[j].ptype
                      if ((d eq 1)OR(d eq 2)OR(d eq 7)OR(d eq 12)) then begin
                         ;if ((d eq 1)OR(d eq 2)) then begin
-                        if (d eq 12) then b = PS(j).npanels*1. * pheight_12 $
-              		   else b = PS(j).npanels*1. * pheight
-                        if ((c+b) le (max_ysize - WS.ymargin(1))) then c=c+b
+                        if (d eq 12) then b = PS[j].npanels*1. * pheight_12 $
+              		   else b = PS[j].npanels*1. * pheight
+                        if ((c+b) le (max_ysize - WS.ymargin[1])) then c=c+b
                      endif
                   endif
                endfor
-               mytitle = PS(i).title
+               mytitle = PS[i].title
             endelse
 
             ; Verify that the height of the new window is valid
@@ -865,7 +926,7 @@ for i=0,n_elements(PS)-1 do begin
                print,'STATUS=An error occurred plotting this variable
                print,'ERROR=Single variable does not fit in window' & return,-1
             endif else begin ; create the window and initialize window_state
-               WS.ys = c + WS.ymargin(0) + WS.ymargin(1) ; add room for timeaxis
+               WS.ys = c + WS.ymargin[0] + WS.ymargin[1] ; add room for timeaxis
 	       deviceopen, 0 ;TJK added so that labels will come out on stacked and spectrogram
                window,/FREE,XSIZE=WS.xs,YSIZE=WS.ys,TITLE=mytitle
 	       ; RCJ 01/29/2007  Set gifopen=1 even if this is not a gif
@@ -878,29 +939,29 @@ for i=0,n_elements(PS)-1 do begin
          endif  ; end if plottype is not gif or ps, ie, it's an xwindow
 
          ; Reinitialize window state
-         WS.snum = PS(i).snum
-         WS.pos(0) = WS.xmargin(0)                     ; x origin
-         WS.pos(2) = WS.xs - WS.xmargin(1)             ; x corner
-         WS.pos(3) = WS.ys - WS.ymargin(0)             ; y corner
-         if (PS(i).ptype eq 12) then WS.pos(1) = (WS.ys - WS.ymargin(0)) - pheight_12 $
-      	     else WS.pos(1) = (WS.ys - WS.ymargin(0)) - pheight ; y origin
+         WS.snum = PS[i].snum
+         WS.pos[0] = WS.xmargin[0]                     ; x origin
+         WS.pos[2] = WS.xs - WS.xmargin[1]             ; x corner
+         WS.pos[3] = WS.ys - WS.ymargin[0]             ; y corner
+         if (PS[i].ptype eq 12) then WS.pos[1] = (WS.ys - WS.ymargin[0]) - pheight_12 $
+      	     else WS.pos[1] = (WS.ys - WS.ymargin[0]) - pheight ; y origin
 
       endif  ; end if new_window eq 1
 
       ; Determine if this plot will be the first/last in the window
       first_plot = new_window ; it is first if this is a new window
       ; RCJ 09/28/2007  The *1. below is needed. See full explanation by searching for 'RCJ 09/28/2007'
-      if (PS(i).ptype eq 12) then b = WS.pos(1) - (PS(i).npanels*1. * pheight_12) $
-      			else b = WS.pos(1) - (PS(i).npanels*1. * pheight)
+      if (PS[i].ptype eq 12) then b = WS.pos[1] - (PS[i].npanels*1. * pheight_12) $
+      			else b = WS.pos[1] - (PS[i].npanels*1. * pheight)
       			
       ; Life was simple before the time_text plots:    RCJ			
-      ;if (b lt WS.ymargin(1)) then last_plot = 1 else last_plot = 0
+      ;if (b lt WS.ymargin[1]) then last_plot = 1 else last_plot = 0
       ; Now this is what we have to do to determine last_plot:
-      if (PS(i).ptype ne 12) then begin
-         if (b lt WS.ymargin(1)) then last_plot = 1 else last_plot = 0
-         if (q12(0) ne -1) and ((PS(i+1).ptype eq 12) or (PS(i+1).ptype eq 0)) then last_plot=1 
+      if (PS[i].ptype ne 12) then begin
+         if (b lt WS.ymargin[1]) then last_plot = 1 else last_plot = 0
+         if (q12[0] ne -1) and ((PS[i+1].ptype eq 12) or (PS[i+1].ptype eq 0)) then last_plot=1 
       endif else last_plot=1
-      if (PS(i).ptype eq 12) then begin
+      if (PS[i].ptype eq 12) then begin
          if keyword_set(combine) then begin
             if (n_q12 eq 1) then last_plot = 1 else last_plot = 0
             n_q12=n_q12-1
@@ -909,16 +970,14 @@ for i=0,n_elements(PS)-1 do begin
             n_q12snum=n_q12snum-1
          endelse
       endif      
-      ;print,' ps.type =  ',PS(i).ptype
-      ;print,' b, ws.ymargin(1), last_plot = ',b, ws.ymargin(1), last_plot			
+      ;print,' ps.type =  ',PS[i].ptype
+      ;print,' b, ws.ymargin[1], last_plot = ',b, ws.ymargin[1], last_plot			
    endif   ; end if ps.ptype eq 1,2,7 or 12
 
 
 ;TJK 11/30/2006 - save off and restore start/stop time values so that 
 ;subsequece dataset calls w/o epoch16 values will work (they need the 
 ;regular epoch value
-
-;print, 'i = ',i, 'start_time = ',start_time
 
   if (i eq 0) then begin 
     save_start_time = start_time
@@ -928,36 +987,35 @@ for i=0,n_elements(PS)-1 do begin
     stop_time = save_stop_time 
   endelse
 
-
    ; Generate TIME SERIES plots
-   if (PS(i).ptype eq 1) then begin
+   if (PS[i].ptype eq 1) then begin
       ; Ensure that 'a' holds the correct data structure
       SCATTER = 0L  ; turn off by default
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Get the index of the time variable associated with variable to be plotted
-      b = a.(PS(i).vnum).DEPEND_0 & c = tagindex(b(0),tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_0 & c = tagindex(b[0],tag_names(a))
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as time series.'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as time series.'
       ;****** TJK adding code for handling the parsing of the DISPLAY_TYPE attribute 
       ; 	for time series plots.  In this plot types case, we are looking for a
-      ;        a syntax like time_series>y=flux(1) (July 30, 1999).
+      ;        a syntax like time_series>y=flux[1] (July 30, 1999).
       ; determine how many dimensions are in the data by looking at
       ; the data - unfortunately I have to get it out of either the plain
       ; structure or a handle.
 
-      Yvar = (a.(PS(i).vnum))
+      Yvar = (a.(PS[i].vnum))
       t = size(Yvar)
-      if (t(n_elements(t)-2) ne 8) then begin
+      if (t[n_elements(t)-2] ne 8) then begin
          print,'ERROR=input to plotmaster not a structure' & return,-1
       endif else begin
 	 YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
          t = tagindex('DAT',YTAGS)
-         if (t(0) ne -1) then THEDATA = Yvar.DAT $
+         if (t[0] ne -1) then THEDATA = Yvar.DAT $
   	 else begin
     	    t = tagindex('HANDLE',YTAGS)
-     	    if (t(0) ne -1) then handle_value,Yvar.HANDLE,THEDATA $
+     	    if (t[0] ne -1) then handle_value,Yvar.HANDLE,THEDATA $
     	    else begin
       	       print,'ERROR=Yvariable does not have DAT or HANDLE tag' & return,-1
 	    endelse
@@ -965,12 +1023,12 @@ for i=0,n_elements(PS)-1 do begin
       endelse
       datasize = size(thedata)
       ; Determine if the display type variable attribute is present
-      d = tagindex('DISPLAY_TYPE',tag_names(a.(PS(i).vnum)))
-      if (d(0) ne -1) then begin
+      d = tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
+      if (d[0] ne -1) then begin
 	;TJK 5/14/2001 - added two "keywords" to the display_type syntax for time_series, scatter and noauto
 	; to allow for scatter plots vs. line plots and no auto scaling (use the values specified in
 	; the scalemin/max attributes.
-	  keywords=str_sep(a.(PS(i).vnum).display_type,'>')  ; keyword 1 or greater  
+	  keywords=str_sep(a.(PS[i].vnum).display_type,'>')  ; keyword 1 or greater  
 	  scn=where(strupcase(keywords) eq 'SCATTER',sn)
 	  ;turn scatter plot on if "scatter" is set
 	  if (sn gt 0) then SCATTER = 1L else SCATTER = 0L
@@ -987,26 +1045,29 @@ for i=0,n_elements(PS)-1 do begin
 
          ; examine_spectrogram_dt looks at the DISPLAY_TYPE structure member in 
          ; detail. for spectrograms and stacked time series the DISPLAY_TYPE 
-         ; can contain syntax like the following: stack_plot>y=flux(1),y=flux(3),
-         ; y=flux(5),z=energy where this indicates that we only want to plot 
+         ; can contain syntax like the following: stack_plot>y=flux[1],y=flux[3],
+         ; y=flux[5],z=energy where this indicates that we only want to plot 
          ; the 1st, 3rd and 5th energy channel for the flux variable. This 
          ; routine returns a structure of the form e = {x:xname,y:yname,z:zname,
          ; npanels:npanels,dvary:dvary,elist:elist,lptrn:lptrn,igram:igram}, 
 
-         e = examine_spectrogram_dt(a.(PS(i).vnum).DISPLAY_TYPE) 
+         e = examine_spectrogram_dt(a.(PS[i].vnum).DISPLAY_TYPE, thedata=thedata,$
+	      data_fillval=a.(PS[i].vnum).fillval, $
+	      valid_minmax=[a.(PS[i].vnum).validmin,a.(PS[i].vnum).validmax], debug=debugflag)
+
 	 esize=size(e)
          ;if keyword_set(ELEMENTS) then begin
 	 ; RCJ 11/13/2003 Statement above was not a good way to check for elements
 	 ; because if elements=0 (we want the x-component) it's as if the keyword
 	 ; is not set and we get all 3 time_series plots: x,y and z.
          if n_elements(ELEMENTS) ne 0 then begin
-	    if esize(n_elements(esize)-2) eq 8 then begin
+	    if esize[n_elements(esize)-2] eq 8 then begin
 	       datasize = size(ELEMENTS)
                ;rebuild e structure and set the e.elist to contain the index values for
                ;all elements in the y variable.
-	       elist = lonarr(datasize(1))
+	       elist = lonarr(datasize[1])
 	       elist = ELEMENTS
-	       e = {x:e.x,y:e.y,z:e.z,npanels:datasize(1),$
+	       e = {x:e.x,y:e.y,z:e.z,npanels:datasize[1],$
                       dvary:e.dvary,elist:elist,lptrn:e.lptrn,igram:e.igram}
 	       esize=size(e) ; since I rebuild e, then need to determine the size again.
 	    endif else begin 
@@ -1016,19 +1077,19 @@ for i=0,n_elements(PS)-1 do begin
 	       esize=size(e) ; recalculate esize
 	    endelse    
          endif else begin
-            if (esize(n_elements(esize)-2) eq 8) then begin ; results confirmed
+            if (esize[n_elements(esize)-2] eq 8) then begin ; results confirmed
   	       if (e.npanels eq 0) then begin
                   ;rebuild e structure and set the e.elist to contain the index values for
                   ;all elements in the y variable.
-                  elist = lindgen(datasize(1)) ;TJK changed this from a for loop
-	          e = {x:e.x,y:e.y,z:e.z,npanels:datasize(1),$
+                  elist = lindgen(datasize[1]) ;TJK changed this from a for loop
+	          e = {x:e.x,y:e.y,z:e.z,npanels:datasize[1],$
                           dvary:e.dvary,elist:elist,lptrn:e.lptrn,igram:e.igram}
 	          esize=size(e) ; since I rebuild e, then need to determine the size again.
 	       endif
 	    endif else begin ;no arguments to time_series display_type
                ;build an e structure and set the e.elist to contain the index values for
                ;all elements in the y variable.
-               elist = lindgen(datasize(1)) ;TJK changed this from a for loop
+               elist = lindgen(datasize[1]) ;TJK changed this from a for loop
 	       e = {elist:elist}
 	       esize=size(e) ; since I rebuild e, then need to determine the size again.
 	    endelse
@@ -1041,7 +1102,7 @@ for i=0,n_elements(PS)-1 do begin
          if n_elements(elements) ne 0 then begin
 	    elist=elements
 	 endif else begin   
-            elist = lindgen(datasize(1)) ;TJK changed this from a for loop
+            elist = lindgen(datasize[1]) ;TJK changed this from a for loop
 	 endelse  
          e = {elist:elist}
          esize=size(e) ; since I build e, then need to determine the size again.
@@ -1052,34 +1113,34 @@ for i=0,n_elements(PS)-1 do begin
       ;q12snum is where(PS(current_snum).ptype eq 12). if there are extra x-axis labels do not print
     	 			; subtitle after the last graph:
       if keyword_set(combine) then begin
-         if (q12(0) ne -1) then nosubtitle=1 else nosubtitle=0
+         if (q12[0] ne -1) then nosubtitle=1 else nosubtitle=0
       endif else begin
-         if (q12snum(0) ne -1) then nosubtitle=1 else nosubtitle=0
+         if (q12snum[0] ne -1) then nosubtitle=1 else nosubtitle=0
       endelse 
-      if ps(i).vname eq 'CDAWeb_created_variable' then onlylabel=1
+      if ps[i].vname eq 'CDAWeb_created_variable' then onlylabel=1
       ;
       ;Find out if we are supposed to use error bars:
-      tags=tag_names(a.(PS(i).vnum))
+      tags=tag_names(a.(PS[i].vnum))
       err_p=tagindex('DELTA_PLUS_VAR',tags)
       err_m=tagindex('DELTA_MINUS_VAR',tags)
-      if ((err_p(0) ne -1) and (err_m(0) ne -1)) then begin
+      if ((err_p[0] ne -1) and (err_m[0] ne -1)) then begin
          ; get the names
-         err_p=a.(PS(i).vnum).(err_p(0))
-	 err_m=a.(PS(i).vnum).(err_m(0))
+         err_p=a.(PS[i].vnum).(err_p[0])
+	 err_m=a.(PS[i].vnum).(err_m[0])
 	 ; RCJ 02/07/2005 Added the test below.
-	 if ((err_p(0) ne '') and (err_m(0) ne '')) then begin
+	 if ((err_p[0] ne '') and (err_m[0] ne '')) then begin
             ; where in a are those variables?
 	    ; RCJ 04/22/2003  'vnames' was here instead of 'tag_names(a)'
 	    ; but vnames will be the tag names of the *last* structure a
 	    ; read during another loop above.
-	    err_p1=tagindex(replace_bad_chars(err_p(0)),tag_names(a))
-	    err_m1=tagindex(replace_bad_chars(err_m(0)),tag_names(a))
+	    err_p1=tagindex(replace_bad_chars(err_p[0]),tag_names(a))
+	    err_m1=tagindex(replace_bad_chars(err_m[0]),tag_names(a))
 	    if a.(err_p1).var_type eq 'additional_data' then $
 	       err_p=-1 else $
-	       err_p=tagindex(replace_bad_chars(err_p(0)),tag_names(a))   
+	       err_p=tagindex(replace_bad_chars(err_p[0]),tag_names(a))   
 	    if a.(err_m1).var_type eq 'additional_data' then $
 	       err_m=-1 else $
-	       err_m=tagindex(replace_bad_chars(err_m(0)),tag_names(a))
+	       err_m=tagindex(replace_bad_chars(err_m[0]),tag_names(a))
 	 endif else begin ; RCJ 02/08/2005 Added this so the test below will work.
 	    err_m=-1 & err_p=-1
 	 endelse   
@@ -1089,9 +1150,8 @@ for i=0,n_elements(PS)-1 do begin
 ;TJK 7/20/2006 if data is epoch16, then set the start/stop_time
 ;variables to the ep16 values
 ;determine datatype and process if needed
-;print,'DEBUG, cdftyp = ', a.(c(0)).CDFTYPE
-     
-  if (strpos(a.(c(0)).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
+
+  if (strpos(a.(c[0]).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
       ;The following if statements are needed in the case where TSTART/TSTOP is not
       ;used but the data is in epoch16 
       if (n_elements(start_time16) eq 0) then begin ;convert the regular epoch to epoch16
@@ -1105,14 +1165,29 @@ for i=0,n_elements(PS)-1 do begin
       start_time = start_time16 & stop_time = stop_time16
   endif
 
+  if (strpos(a.(c[0]).CDFTYPE, 'CDF_TIME_TT2000') ge 0) then begin
+      ;The following if statements are needed in the case where TSTART/TSTOP is not
+                                ;used but the data is in time TT2000
+                                ;instead of regular Epoch or Epoch16
+      if (n_elements(start_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, start_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+      endif
+      if (n_elements(stop_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, stop_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+      endif
+      start_time = start_timett & stop_time = stop_timett
+  endif
+
       ; Produce the time series plot with specific time axis range
 
       if ((start_time ne 0.0D0)AND(stop_time ne 0.0D0)) then begin
          ; Plot with error bars:
-	 if ((err_p(0) ne -1) and (err_m(0) ne -1)) then begin  
+	 if ((err_p[0] ne -1) and (err_m[0] ne -1)) then begin  
             ; read uncertainty variables
-            handle_value,a.(err_p(0)).handle,err_plus
-            handle_value,a.(err_m(0)).handle,err_minus
+            handle_value,a.(err_p[0]).handle,err_plus
+            handle_value,a.(err_m[0]).handle,err_minus
 	    ;
             ; RCJ 02/27/2007  Note: we don't need to pass a keyword 'ps' to 
 	    ; plot_timeseries because it only needs to know if the plot is a 
@@ -1120,7 +1195,7 @@ for i=0,n_elements(PS)-1 do begin
 	    ; Since we offer only one page of ps for the moment we don't
 	    ; have to worry about this.
 	    ;
-            s = plot_timeseries(a.(c(0)),a.(PS(i).vnum),POSITION=WS.pos,/CDAWEB,$
+            s = plot_timeseries(a.(c[0]),a.(PS[i].vnum),POSITION=WS.pos,/CDAWEB,$
                           PANEL_HEIGHT=pheight,AUTO=autoscale, ELEMENTS=e.elist,$
                           TSTART=start_time,TSTOP=stop_time,COMBINE=COMBINE,$
 			  err_plus=err_plus,err_minus=err_minus,$
@@ -1131,7 +1206,7 @@ for i=0,n_elements(PS)-1 do begin
 			  gif=gif,DEBUG=debugflag)
 	 endif else begin
 	    ; Plot without error bars:
-            s = plot_timeseries(a.(c(0)),a.(PS(i).vnum),POSITION=WS.pos,/CDAWEB,$
+            s = plot_timeseries(a.(c[0]),a.(PS[i].vnum),POSITION=WS.pos,/CDAWEB,$
                           PANEL_HEIGHT=pheight,AUTO=autoscale, ELEMENTS=e.elist,$
                           TSTART=start_time,TSTOP=stop_time,COMBINE=COMBINE,$
                           NOSUBTITLE=nosubtitle, ONLYLABEL=onlylabel,$
@@ -1147,12 +1222,12 @@ for i=0,n_elements(PS)-1 do begin
          endif
       endif else begin ; Produce the time series plot normally
          ; Plot with error bars:
-	 if ((err_p(0) ne -1) and (err_m(0) ne -1)) then begin  
+	 if ((err_p[0] ne -1) and (err_m[0] ne -1)) then begin  
             ; read uncertainty variables
-            handle_value,a.(err_p(0)).handle,err_plus
-            handle_value,a.(err_m(0)).handle,err_minus
+            handle_value,a.(err_p[0]).handle,err_plus
+            handle_value,a.(err_m[0]).handle,err_minus
 	    ;
-            s = plot_timeseries(a.(c(0)),a.(PS(i).vnum),POSITION=WS.pos,/CDAWEB,$
+            s = plot_timeseries(a.(c[0]),a.(PS[i].vnum),POSITION=WS.pos,/CDAWEB,$
                          PANEL_HEIGHT=pheight,AUTO=autoscale, ELEMENTS=e.elist,$
                           FIRSTPLOT=first_plot,LASTPLOT=last_plot,COMBINE=COMBINE,$
 			  err_plus=err_plus,err_minus=err_minus,$
@@ -1162,7 +1237,7 @@ for i=0,n_elements(PS)-1 do begin
 			  gif=gif,DEBUG=debugflag)
 	 endif else begin
 	    ; Plot without error bars:
-            s = plot_timeseries(a.(c(0)),a.(PS(i).vnum),POSITION=WS.pos,/CDAWEB,$
+            s = plot_timeseries(a.(c[0]),a.(PS[i].vnum),POSITION=WS.pos,/CDAWEB,$
                          PANEL_HEIGHT=pheight,AUTO=autoscale, ELEMENTS=e.elist,$
                           FIRSTPLOT=first_plot,LASTPLOT=last_plot,COMBINE=COMBINE,$
                           NOSUBTITLE=nosubtitle, ONLYLABEL=onlylabel,$
@@ -1178,30 +1253,35 @@ for i=0,n_elements(PS)-1 do begin
       endelse
       onlylabel=0
       ; Update the state of the window
-      WS.pos(3) = WS.pos(3) - (pheight * PS(i).npanels) ; update Y corner
-      WS.pos(1) = WS.pos(1) - (pheight * PS(i).npanels) ; update Y origin
+      WS.pos[3] = WS.pos[3] - (pheight * PS[i].npanels) ; update Y corner
+      WS.pos[1] = WS.pos[1] - (pheight * PS[i].npanels) ; update Y origin
       ;check if "noauto" was set and turn it back on for subsequent variables/datasets
       if (n_elements(save_auto) gt 0) then begin
         if (save_auto) then autoscale = 1L else autoscale = 0L 
       endif
 
-   endif   ; end if ps(i).ptype eq 1
+   endif   ; end if ps[i].ptype eq 1
 
    ; Generate SPECTROGRAM plots
-   if (PS(i).ptype eq 2) then begin
+   if (PS[i].ptype eq 2) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine default x and y variable from depend attributes
-      b = a.(PS(i).vnum).DEPEND_0 & c = tagindex(b(0),tag_names(a))
-      b = a.(PS(i).vnum).DEPEND_1 & d = tagindex(b(0),tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_0 & c = tagindex(b[0],tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_1 
+      ; RCJ 05/16/2013 If alt_cdaweb_depend_1 exists use it instead:
+      if (tagindex('ALT_CDAWEB_DEPEND_1',tag_names(a.(PS[i].vnum)))) ne -1 then $
+           if (a.(PS[i].vnum).ALT_CDAWEB_DEPEND_1 ne '') then b = a.(PS[i].vnum).ALT_CDAWEB_DEPEND_1
+      d = tagindex(b[0],tag_names(a))
+
       ; Determine if the display type variable attribute is present
-      b = tagindex('DISPLAY_TYPE',tag_names(a.(PS(i).vnum)))
-      if (b(0) ne -1) then begin
+      b = tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
+      if (b[0] ne -1) then begin
          ; examine_spectrogram_dt looks at the DISPLAY_TYPE structure member in detail.
          ; for spectrograms and stacked time series the DISPLAY_TYPE can contain syntax
-         ; like the following: SPECTROGRAM>y=flux(1),y=flux(3),y=flux(5),z=energy
+         ; like the following: SPECTROGRAM>y=flux[1],y=flux[3],y=flux[5],z=energy
          ; where this indicates that we only want to plot the 1st, 3rd and 5th energy 
          ; channel for the flux variable. This routine returns a structure of the form 
          ;	e = {x:xname,y:yname,z:zname,npanels:npanels,dvary:dvary,elist:elist,
@@ -1212,21 +1292,44 @@ for i=0,n_elements(PS)-1 do begin
           if (autoscale) then save_auto = 1L else save_auto = 0L
 
           ;TJK 2/12/2003 add the capability to look for the 'noauto' keyword
-	  keywords=str_sep(a.(PS(i).vnum).display_type,'>')  ; keyword 1 or greater  
+	  keywords=str_sep(a.(PS[i].vnum).display_type,'>')  ; keyword 1 or greater  
 
 	  acn=where(strupcase(keywords) eq 'NOAUTO',an)
 	  ;turn autoscaling off if "noauto" is set
 	  if (an gt 0) then autoscale = 0L else autoscale = 1L 
 
-         e = examine_spectrogram_dt(a.(PS(i).vnum).DISPLAY_TYPE) & esize=size(e)
+          ; RCJ 03/15/2013 Added this code to get thedata and dfillval:
+          Yvar = (a.(PS[i].vnum))
+          t = size(Yvar)
+          if (t[n_elements(t)-2] ne 8) then begin
+            print,'ERROR=input to plotmaster not a structure' & return,-1
+          endif else begin
+	   YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
+           t = tagindex('DAT',YTAGS)
+           if (t[0] ne -1) then begin
+	     THEDATA = Yvar.DAT 
+	     dfillval=yvar.fillval
+  	   endif else begin
+    	    t = tagindex('HANDLE',YTAGS)
+     	    if (t[0] ne -1) then begin
+	       handle_value,Yvar.HANDLE,THEDATA
+	       dfillval=yvar.fillval
+    	    endif else begin
+      	       print,'ERROR=Yvariable does not have DAT or HANDLE tag' & return,-1
+	    endelse
+          endelse
+         endelse
+         e = examine_spectrogram_dt(a.(PS[i].vnum).DISPLAY_TYPE, thedata=thedata, data_fillval=dfillval,$
+	     valid_minmax=[a.(PS[i].vnum).VALIDMIN,a.(PS[i].vnum).VALIDMAX], debug=debugflag)
 
-         if (esize(n_elements(esize)-2) eq 8) then begin ; results confirmed
+	 esize=size(e)
+         if (esize[n_elements(esize)-2] eq 8) then begin ; results confirmed
             if (e.x ne '') then c = tagindex(e.x,tag_names(a))
             if (e.y ne '') then d = tagindex(e.y,tag_names(a))
          endif
       endif
       ; Produce debug output if requested.
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as spectrogram.'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as spectrogram.'
       ; Generate the spectrogram
       ;if NOT keyword_set(GIF) then deviceopen,0 ; producing XWINDOWS
       if (plottype ne 'gif' and plottype ne 'pscript') then deviceopen,0; producing XWINDOWS
@@ -1234,17 +1337,48 @@ for i=0,n_elements(PS)-1 do begin
       ;q12snum is where(PS(current_snum).ptype eq 12)  if there are extra x-axis labels do not print
     				; subtitle after the last graph:
       if keyword_set(combine) then begin
-         if (q12(0) ne -1) then nosubtitle=1 else nosubtitle=0
+         if (q12[0] ne -1) then nosubtitle=1 else nosubtitle=0
       endif else begin
-         if (q12snum(0) ne -1) then nosubtitle=1 else nosubtitle=0
+         if (q12snum[0] ne -1) then nosubtitle=1 else nosubtitle=0
       endelse  
+      ;
+      if (strpos(a.(c[0]).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
+         ;The following if statements are needed in the case where TSTART/TSTOP is not
+         ;used but the data is in epoch16 
+         if (n_elements(start_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, start_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         if (n_elements(stop_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, stop_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         start_time = start_time16 & stop_time = stop_time16
+      endif
+      ;
+      if (strpos(a.(c[0]).CDFTYPE, 'CDF_TIME_TT2000') ge 0) then begin
+      ;The following if statements are needed in the case where TSTART/TSTOP is not
+                                ;used but the data is in time TT2000
+                                ;instead of regular Epoch or Epoch16
+         if (n_elements(start_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, start_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+         endif
+         if (n_elements(stop_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, stop_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+         endif
+        start_time = start_timett & stop_time = stop_timett
+      endif 
 
-      s = plot_spectrogram(a.(c(0)),a.(d(0)),a.(PS(i).vnum),$
+      print, 'DEBUG in spectrogram section i = ',i, 'start_time = ',start_time
+
+      s = plot_spectrogram(a.(c[0]),a.(d[0]),a.(PS[i].vnum),$
                    POSITION=WS.pos,/CDAWEB,QUICK=quickflag,$
                    PANEL_HEIGHT=pheight,AUTO=autoscale,NOCLIP=noclipflag,$
                    TSTART=start_time,TSTOP=stop_time,FILLER=fillflag,$
                    FIRSTPLOT=first_plot,LASTPLOT=last_plot,$
-                   NOSUBTITLE=nosubtitle, COMBINE=COMBINE,$
+                   NOSUBTITLE=nosubtitle, COMBINE=COMBINE,npanels=PS[i].npanels,$
                    SLOW=slowflag,DEBUG=debugflag)
                    ;SLOW=slowflag,SMOOTH=smoothflag,DEBUG=debugflag)
       if(s eq -1) then begin
@@ -1253,8 +1387,8 @@ for i=0,n_elements(PS)-1 do begin
          return, -1
       endif
       ; Update the state of the window
-      WS.pos(3) = WS.pos(3) - (pheight * PS(i).npanels) ; update Y corner
-      WS.pos(1) = WS.pos(1) - (pheight * PS(i).npanels) ; update Y origin
+      WS.pos[3] = WS.pos[3] - (pheight * PS[i].npanels) ; update Y corner
+      WS.pos[1] = WS.pos[1] - (pheight * PS[i].npanels) ; update Y origin
       ;check if "noauto" was set and turn it back on for subsequent variables/datasets
       if (n_elements(save_auto) gt 0) then begin
         if (save_auto) then autoscale = 1L else autoscale = 0L 
@@ -1264,44 +1398,72 @@ for i=0,n_elements(PS)-1 do begin
 
    ; Make a pass thru the plot script and generate all stacked time series plots
    ; Generate STACKED TIME SERIES plot
-   if (PS(i).ptype eq 7) then begin
+   if (PS[i].ptype eq 7) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      scatter = 0L
+      reverse_order = 0L
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Get the index of the time variable associated with variable to be plotted
       ; Determine default x, y and z variables from depend attributes
-      b = a.(PS(i).vnum).DEPEND_0 & c = tagindex(b(0),tag_names(a))
-      b = a.(PS(i).vnum).DEPEND_1 & z = tagindex(b(0),tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_0 & c = tagindex(b[0],tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_1 
+      ; RCJ 05/16/2013 If alt_cdaweb_depend_1 exists use it instead:
+      if (tagindex('ALT_CDAWEB_DEPEND_1',tag_names(a.(PS[i].vnum)))) ne -1 then $
+           if (a.(PS[i].vnum).ALT_CDAWEB_DEPEND_1 ne '') then b = a.(PS[i].vnum).ALT_CDAWEB_DEPEND_1 
+      z = tagindex(b[0],tag_names(a))
     
       ; Determine if the display type variable attribute is present
-      b = tagindex('DISPLAY_TYPE',tag_names(a.(PS(i).vnum)))
-      if (b(0) ne -1) then begin
+      b = tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
+      if (b[0] ne -1) then begin
+         ;  RCJ 10/15/2013  added scatter:
+	  keywords=str_sep(a.(PS[i].vnum).display_type,'>')  ; keyword 1 or greater  
+	  scn=where(strupcase(keywords) eq 'SCATTER',sn)
+	  ;turn scatter plot on if "scatter" is set
+	  if (sn gt 0) then SCATTER = 1L else SCATTER = 0L
+
+          ; TJK 12/31/2013 added reverse:
+	  keywords=str_sep(a.(PS[i].vnum).display_type,'>')  ; keyword 1 or greater  
+	  scn=where(strupcase(keywords) eq 'REVERSE',sn)
+	  ;turn scatter plot on if "scatter" is set
+	  if (sn gt 0) then REVERSE_ORDER = 1L else REVERSE_ORDER = 0L
+
+          ; TJK 4/16/2014 added nobar (no colorbar, numeric labels instead):
+	  keywords=str_sep(a.(PS[i].vnum).display_type,'>')  ; keyword 1 or greater  
+	  scn=where(strupcase(keywords) eq 'NOBAR',sn)
+	  ;turn colorbar off if "nobar" is set (turns numeric labels on)
+	  if (sn gt 0) then COLORBAR = 0L else COLORBAR = 1L
+
          ; examine_spectrogram_dt looks at the DISPLAY_TYPE structure member in 
          ; detail. for spectrograms and stacked time series the DISPLAY_TYPE 
-         ; can contain syntax like the following: stack_plot>y=flux(1),y=flux(3),
-         ; y=flux(5),z=energy where this indicates that we only want to plot 
+         ; can contain syntax like the following: stack_plot>y=flux[1],y=flux[3],
+         ; y=flux[5],z=energy where this indicates that we only want to plot 
          ; the 1st, 3rd and 5th energy channel for the flux variable. This 
          ; routine returns a structure of the form e = {x:xname,y:yname,z:zname,
          ; npanels:npanels,dvary:dvary,elist:elist,lptrn:lptrn,igram:igram}, 
 
-         e = examine_spectrogram_dt(a.(PS(i).vnum).DISPLAY_TYPE) & esize=size(e)
+         e = examine_spectrogram_dt(a.(PS[i].vnum).DISPLAY_TYPE, thedata=thedata, $
+	        data_fillval=a.(PS[i].vnum).fillval, $
+		valid_minmax=[a.(PS[i].vnum).validmin,a.(PS[i].vnum).validmax], debug=debugflag)
+	 
+	 esize=size(e)
 
          ; determine how many dimensions are in the data by looking at
          ; the data - unfortunately I have to get it out of either the plain
          ; structure or a handle.
 
-         Yvar = (a.(PS(i).vnum))
+         Yvar = (a.(PS[i].vnum))
          t = size(Yvar)
-	 if (t(n_elements(t)-2) ne 8) then begin
+	 if (t[n_elements(t)-2] ne 8) then begin
 	    print,'ERROR=input to plotmaster not a structure' & return,-1
 	 endif else begin
 	    YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
   	    t = tagindex('DAT',YTAGS)
-  	    if (t(0) ne -1) then THEDATA = Yvar.DAT $
+  	    if (t[0] ne -1) then THEDATA = Yvar.DAT $
   	    else begin
     	       t = tagindex('HANDLE',YTAGS)
-     	       if (t(0) ne -1) then handle_value,Yvar.HANDLE,THEDATA $
+     	       if (t[0] ne -1) then handle_value,Yvar.HANDLE,THEDATA $
     	       else begin
       	          print,'ERROR=Yvariable does not have DAT or HANDLE tag' & return,-1
 	       endelse
@@ -1320,9 +1482,9 @@ for i=0,n_elements(PS)-1 do begin
 	    datasize = size(ELEMENTS)
             ;rebuild e structure and set the e.elist to contain the index values for
             ;all elements in the y variable.
-	    elist = lonarr(datasize(1))
+	    elist = lonarr(datasize[1])
 	    elist = ELEMENTS
-	    e = {x:e.x,y:e.y,z:e.z,npanels:datasize(1),$
+	    e = {x:e.x,y:e.y,z:e.z,npanels:datasize[1],$
                    dvary:e.dvary,elist:elist,lptrn:e.lptrn,igram:e.igram}
 	    esize=size(e) ; since I rebuild e, then need to determine the size again.
 
@@ -1335,39 +1497,39 @@ for i=0,n_elements(PS)-1 do begin
 		if (e.npanels eq 0) then begin
                   ;rebuild e structure and set the e.elist to contain the index values for
                   ;all elements in the y variable.
-	          elist = lonarr(datasize(1))
-                  for j = 0, datasize(1)-1 do elist(j) = j
+	          elist = lonarr(datasize[1])
+                  for j = 0, datasize[1]-1 do elist[j] = j
                   ;TJK	pheight = pheight*(n_elements(elist))
-	          e = {x:e.x,y:e.y,z:e.z,npanels:datasize(1),$
+	          e = {x:e.x,y:e.y,z:e.z,npanels:datasize[1],$
                    dvary:e.dvary,elist:elist,lptrn:e.lptrn,igram:e.igram}
 	          esize=size(e) ; since I rebuild e, then need to determine the size again.
 		  print, 'Setting elements to ',e.elist
 		endif
 	    endif else begin ; e isn't a structure yet because no elements were specified.
 			     ; want to to set elist to all index values - just like above.
-	          elist = lonarr(datasize(1))
-                  for j = 0, datasize(1)-1 do elist(j) = j
+	          elist = lonarr(datasize[1])
+                  for j = 0, datasize[1]-1 do elist[j] = j
                   ;need initialize the structure members
 		  xname='' & yname='' & zname='' & lptrn=1 & igram=0
 		  npanels=0 & dvary=-1	   
-	          e = {x:xname,y:yname,z:zname,npanels:datasize(1),$
+	          e = {x:xname,y:yname,z:zname,npanels:datasize[1],$
                    dvary:dvary,elist:elist,lptrn:lptrn,igram:igram}
 	          esize=size(e) ; since I rebuild e, then need to determine the size again.
 	    endelse
          endelse
 
-         if (esize(n_elements(esize)-2) eq 8) then begin ; results confirmed
+         if (esize[n_elements(esize)-2] eq 8) then begin ; results confirmed
             if (e.x ne '') then c = tagindex(e.x,tag_names(a))
             if (e.y ne '') then d = tagindex(e.y,tag_names(a))
             if (e.z ne '') then f = tagindex(e.z,tag_names(a)) $
 	    else f = z
          endif
 
-         ;if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-         ;print, 'DATASET=',PS(i).source
+         ;if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+         ;print, 'DATASET=',PS[i].source
 		
          ; Produce debug output if requested
-         if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as stacked time series.'
+         if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as stacked time series.'
 
          ; Generate the stack plot
          if (plottype ne 'gif' and plottype ne 'pscript') then deviceopen,0; producing XWINDOWS
@@ -1375,14 +1537,49 @@ for i=0,n_elements(PS)-1 do begin
          ;q12snum is where(PS(current_snum).ptype eq 12) ; if there are extra x-axis labels do not print
     				; subtitle after the last graph:
          if keyword_set(combine) then begin
-            if (q12(0) ne -1) then nosubtitle=1 else nosubtitle=0
+            if (q12[0] ne -1) then nosubtitle=1 else nosubtitle=0
          endif else begin
-            if (q12snum(0) ne -1) then nosubtitle=1 else nosubtitle=0
+            if (q12snum[0] ne -1) then nosubtitle=1 else nosubtitle=0
          endelse  
+
+;TJK 4/26/2013 added the code to accept epoch16 and tt2000 time types
+;TJK 7/20/2006 if data is epoch16, then set the start/stop_time
+;variables to the ep16 values
+;determine datatype and process if needed
+
+  if (strpos(a.(c[0]).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
+      ;The following if statements are needed in the case where TSTART/TSTOP is not
+      ;used but the data is in epoch16 
+      if (n_elements(start_time16) eq 0) then begin ;convert the regular epoch to epoch16
+          cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_epoch16, start_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+      endif
+      if (n_elements(stop_time16) eq 0) then begin ;convert the regular epoch to epoch16
+          cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_epoch16, stop_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+      endif
+      start_time = start_time16 & stop_time = stop_time16
+  endif
+
+  if (strpos(a.(c[0]).CDFTYPE, 'CDF_TIME_TT2000') ge 0) then begin
+      ;The following if statements are needed in the case where TSTART/TSTOP is not
+                                ;used but the data is in time TT2000
+                                ;instead of regular Epoch or Epoch16
+      if (n_elements(start_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, start_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+      endif
+      if (n_elements(stop_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, stop_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+      endif
+      start_time = start_timett & stop_time = stop_timett
+  endif
+
 
          ; Produce the stacked time series plot with specific time axis range
          if ((start_time ne 0.0D0)AND(stop_time ne 0.0D0)) then begin
-            s = plot_stack(a.(c(0)),a.(PS(i).vnum),a.(f(0)),/CDAWEB,$
+            s = plot_stack(a.(c[0]),a.(PS[i].vnum),a.(f[0]),/CDAWEB,$
        	                  ELEMENTS = e.elist, $ ;XSIZE = 400,$
        			  ;YSIZE = 700, $
 			  PANEL_HEIGHT=pheight,COMBINE=COMBINE,$
@@ -1390,7 +1587,8 @@ for i=0,n_elements(PS)-1 do begin
        		          AUTO=autoscale,GIF=GIF,$
                	          TSTART=start_time,TSTOP=stop_time,$
                        	  FIRSTPLOT=first_plot,LASTPLOT=last_plot,$
-                       	  NONOISE=NONOISE,DEBUG=debugflag, /COLORBAR);,$/NOGAPS)
+			  SCATTER=SCATTER, REVERSE_ORDER=REVERSE_ORDER,$
+                       	  NONOISE=NONOISE,DEBUG=debugflag, COLORBAR=colorbar);,$/NOGAPS)
 	
             if(s eq -1) then begin
                if(reportflag) then printf, 1, 'STATUS=Stack plot failed' & close, 1
@@ -1402,14 +1600,15 @@ for i=0,n_elements(PS)-1 do begin
                endif
             endelse
          endif else begin ; Produce the stack plot normally
-            s = plot_stack(a.(c(0)),a.(PS(i).vnum),a.(f(0)),/CDAWEB,$
+            s = plot_stack(a.(c[0]),a.(PS[i].vnum),a.(f[0]),/CDAWEB,$
                           ELEMENTS = e.elist, $ ;XSIZE = 400,$
        			 ;YSIZE = 700, $
 			 POSITION=WS.pos, NOSUBTITLE=nosubtitle,$
 			 PANEL_HEIGHT=pheight,COMBINE=COMBINE,$
  			 AUTO=autoscale, GIF=GIF,$
                          FIRSTPLOT=first_plot,LASTPLOT=last_plot,$
-                         NONOISE=NONOISE,DEBUG=debugflag, /COLORBAR);,$/NOGAPS)
+			 SCATTER=SCATTER, REVERSE_ORDER=REVERSE_ORDER,$
+                         NONOISE=NONOISE,DEBUG=debugflag, COLORBAR=colorbar);,$/NOGAPS)
             if(s eq -1) then begin
                if(reportflag) then printf, 1, 'STATUS=Stack plot failed' & close, 1
                print, 'STATUS=Stack plot failed'
@@ -1427,47 +1626,47 @@ for i=0,n_elements(PS)-1 do begin
             ;endif
 
          endelse ; end stacked time series plot w/o start and stop time specs.
-      endif ;   if (b(0) ne -1) 
+      endif ;   if (b[0] ne -1) 
       ; Update the state of the window
-      WS.pos(3) = WS.pos(3) - (pheight * PS(i).npanels) ; update Y corner
-      WS.pos(1) = WS.pos(1) - (pheight * PS(i).npanels) ; update Y origin
+      WS.pos[3] = WS.pos[3] - (pheight * PS[i].npanels) ; update Y corner
+      WS.pos[1] = WS.pos[1] - (pheight * PS[i].npanels) ; update Y origin
 
    endif ; if plottype eq stacked time series
 
    ;  Generate PLOT_TIMETEXT plot
    ;
-   if (PS(i).ptype eq 12) then begin
-   ;if ((PS(i).ptype eq 12) and (plottype ne 'pscript')) then begin
+   if (PS[i].ptype eq 12) then begin
+   ;if ((PS[i].ptype eq 12) and (plottype ne 'pscript')) then begin
       ; the following was copied/pasted from the time series section above
       ; and modified
       ;
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Get the index of the time variable associated with variable to be plotted
-      b = a.(PS(i).vnum).DEPEND_0 & c = tagindex(b(0),tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_0 & c = tagindex(b[0],tag_names(a))
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as time text.'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as time text.'
       ;
       ; TJK added code for handling the parsing of the DISPLAY_TYPE attribute 
       ; for time series plots.  In this plot types case, we are looking for a
-      ; a syntax like time_series>y=flux(1) (July 30, 1999).
+      ; a syntax like time_series>y=flux[1] (July 30, 1999).
       ; determine how many dimensions are in the data by looking at
       ; the data - unfortunately I have to get it out of either the plain
       ; structure or a handle.
 
-      Yvar = (a.(PS(i).vnum))
+      Yvar = (a.(PS[i].vnum))
       t = size(Yvar)
-      if (t(n_elements(t)-2) ne 8) then begin
+      if (t[n_elements(t)-2] ne 8) then begin
          print,'ERROR=input to plotmaster not a structure' & return,-1
       endif else begin
 	 YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
          t = tagindex('DAT',YTAGS)
-         if (t(0) ne -1) then THEDATA = Yvar.DAT $
+         if (t[0] ne -1) then THEDATA = Yvar.DAT $
   	 else begin
     	    t = tagindex('HANDLE',YTAGS)
-     	    if (t(0) ne -1) then handle_value,Yvar.HANDLE,THEDATA $
+     	    if (t[0] ne -1) then handle_value,Yvar.HANDLE,THEDATA $
     	    else begin
       	       print,'ERROR=Yvariable does not have DAT or HANDLE tag' & return,-1
 	    endelse
@@ -1475,18 +1674,21 @@ for i=0,n_elements(PS)-1 do begin
       endelse
       datasize = size(thedata)
       ; Determine if the display type variable attribute is present
-      d = tagindex('DISPLAY_TYPE',tag_names(a.(PS(i).vnum)))
-      if (d(0) ne -1) then begin
+      d = tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
+      if (d[0] ne -1) then begin
          ; examine_spectrogram_dt looks at the DISPLAY_TYPE structure member in 
          ; detail. for time series, time text, spectrograms and 
          ; stacked time series the DISPLAY_TYPE 
-         ; can contain syntax like the following: stack_plot>y=flux(1),y=flux(3),
-         ; y=flux(5),z=energy where this indicates that we only want to plot 
+         ; can contain syntax like the following: stack_plot>y=flux[1],y=flux[3],
+         ; y=flux[5],z=energy where this indicates that we only want to plot 
          ; the 1st, 3rd and 5th energy channel for the flux variable. This 
          ; routine returns a structure of the form e = {x:xname,y:yname,z:zname,
          ; npanels:npanels,dvary:dvary,elist:elist,lptrn:lptrn,igram:igram}, 
-         e = examine_spectrogram_dt(a.(PS(i).vnum).DISPLAY_TYPE) & esize=size(e)
-
+	 e = examine_spectrogram_dt(a.(PS[i].vnum).DISPLAY_TYPE, thedata=thedata,$
+	      data_fillval=a.(PS[i].vnum).fillval, $
+	      valid_minmax=[a.(PS[i].vnum).validmin,a.(PS[i].vnum).validmax], debug=debugflag) 
+	 esize=size(e)
+  
          ;if keyword_set(ELEMENTS) then begin
 	 ; RCJ 11/13/2003 As for time_series plots, statement above was not a good way to check for elements
 	 ; because if elements=0 (we want the x-component) it's as if the keyword
@@ -1495,25 +1697,25 @@ for i=0,n_elements(PS)-1 do begin
 	    datasize = size(ELEMENTS)
             ;rebuild e structure and set the e.elist to contain the index values for
             ;all elements in the y variable.
-	    elist = lonarr(datasize(1))
+	    elist = lonarr(datasize[1])
 	    elist = ELEMENTS
-	    e = {x:e.x,y:e.y,z:e.z,npanels:datasize(1),$
+	    e = {x:e.x,y:e.y,z:e.z,npanels:datasize[1],$
                       dvary:e.dvary,elist:elist,lptrn:e.lptrn,igram:e.igram}
 	    esize=size(e) ; since I rebuild e, then need to determine the size again.
          endif else begin
-            if (esize(n_elements(esize)-2) eq 8) then begin ; results confirmed
+            if (esize[n_elements(esize)-2] eq 8) then begin ; results confirmed
   	       if (e.npanels eq 0) then begin
                   ;rebuild e structure and set the e.elist to contain the index values for
                   ;all elements in the y variable.
-                  elist = lindgen(datasize(1)) ;TJK changed this from a for loop
-	          e = {x:e.x,y:e.y,z:e.z,npanels:datasize(1),$
+                  elist = lindgen(datasize[1]) ;TJK changed this from a for loop
+	          e = {x:e.x,y:e.y,z:e.z,npanels:datasize[1],$
                           dvary:e.dvary,elist:elist,lptrn:e.lptrn,igram:e.igram}
 	          esize=size(e) ; since I rebuild e, then need to determine the size again.
 	       endif
 	    endif else begin ;no arguments to time_text display_type
                ;build an e structure and set the e.elist to contain the index values for
                ;all elements in the y variable.
-               elist = lindgen(datasize(1)) ;TJK changed this from a for loop
+               elist = lindgen(datasize[1]) ;TJK changed this from a for loop
 	       e = {elist:elist}
 	       esize=size(e) ; since I rebuild e, then need to determine the size again.
 	    endelse
@@ -1523,21 +1725,52 @@ for i=0,n_elements(PS)-1 do begin
       endif else begin ;else if no display_type exists
          ;build an e structure and set the e.elist to contain the index values for
          ;all elements in the y variable.
-         elist = lindgen(datasize(1)) ;TJK changed this from a for loop
+         elist = lindgen(datasize[1]) ;TJK changed this from a for loop
          e = {elist:elist}
          esize=size(e) ; since I build e, then need to determine the size again.
       endelse
       if keyword_set(combine) then begin
          if (last_plot eq 1) then nosubtitle=0 else nosubtitle=1
       endif else begin
-         if ps(i).ptype ne ps(i+1).ptype then nosubtitle=0 else nosubtitle=1
+         if ps[i].ptype ne ps[i+1].ptype then nosubtitle=0 else nosubtitle=1
       endelse   
+      ;
+      if (strpos(a.(c[0]).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
+         ;The following if statements are needed in the case where TSTART/TSTOP is not
+         ;used but the data is in epoch16 
+         if (n_elements(start_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, start_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         if (n_elements(stop_time16) eq 0) then begin ;convert the regular epoch to epoch16
+            cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+            cdf_epoch16, stop_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         start_time = start_time16 & stop_time = stop_time16
+      endif
+      ;
+      if (strpos(a.(c[0]).CDFTYPE, 'CDF_TIME_TT2000') ge 0) then begin
+      ;The following if statements are needed in the case where TSTART/TSTOP is not
+                                ;used but the data is in time TT2000
+                                ;instead of regular Epoch or Epoch16
+         if (n_elements(start_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, start_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+         endif
+         if (n_elements(stop_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, stop_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+         endif
+        start_time = start_timett & stop_time = stop_timett
+      endif 
+
       ; Produce the time text with specific time axis range
+
       if ((start_time ne 0.0D0)AND(stop_time ne 0.0D0)) then begin
          ; warning: Plot_timetext assumes there's no need to open a new window.
          qv=where(ps.vname eq 'CDAWeb_created_variable')
-         if (qv(0) ne -1) then onlylabel=1
-         s = plot_timetext(a.(c(0)),a.(PS(i).vnum),notime=1, $ 
+         if (qv[0] ne -1) then onlylabel=1
+         s = plot_timetext(a.(c[0]),a.(PS[i].vnum),notime=1, $ 
      			  PANEL_HEIGHT=pheight_12,AUTO=autoscale, ELEMENTS=e.elist,$
      			  plabeloffset=labeloffset, nosubtitle=nosubtitle, $
                           TSTART=start_time,TSTOP=stop_time, GIF=GIF,$
@@ -1545,11 +1778,12 @@ for i=0,n_elements(PS)-1 do begin
                            DEBUG=debugflag, onlylabel=onlylabel, COMBINE=COMBINE)
          if(s eq -1) then begin
             if(reportflag) then printf, 1, 'STATUS=Time-text plot failed' & close, 1
-            print, 'STATUS=Time-text plot failed'
-            return, -1
+            ;TJK 5/167/2013 don't need to error out 
+            ;print, 'STATUS=Time-text plot failed'
+            ;return, -1
          endif
       endif else begin ; Produce the time text plot normally
-         s = plot_timetext(a.(c(0)),a.(PS(i).vnum),notime=1, $ 
+         s = plot_timetext(a.(c[0]),a.(PS[i].vnum),notime=1, $ 
      			  PANEL_HEIGHT=pheight_12,AUTO=autoscale, ELEMENTS=e.elist,$
      			  plabeloffset=labeloffset, nosubtitle=nosubtitle, $
                           GIF=GIF, COMBINE=COMBINE,$
@@ -1563,30 +1797,30 @@ for i=0,n_elements(PS)-1 do begin
       endelse
       onlylabel=0
       if plottype eq 'pscript' then begin
-         labeloffset=labeloffset-(ps(i).npanels * 400) ; yup, empirical
+         labeloffset=labeloffset-(ps[i].npanels * 400) ; yup, empirical
       endif else begin	                          
-         labeloffset=labeloffset-(ps(i).npanels * 10) ; this is in number of pixels 
+         labeloffset=labeloffset-(ps[i].npanels * 10) ; this is in number of pixels 
       endelse	                         
       ; Update the state of the window
-      WS.pos(3) = WS.pos(3) - (pheight_12 * PS(i).npanels) ; update Y corner
-      WS.pos(1) = WS.pos(1) - (pheight_12 * PS(i).npanels) ; update Y origin
+      WS.pos[3] = WS.pos[3] - (pheight_12 * PS[i].npanels) ; update Y corner
+      WS.pos[1] = WS.pos[1] - (pheight_12 * PS[i].npanels) ; update Y origin
    endif ; if plottype eq time_text    
        
-if keyword_set(COMBINE) then begin
+ if keyword_set(COMBINE) then begin
     mytitle=combined_title
 
     ;now determine the pi and affiliation for this dataset
     ;only add a pi/affiliation to the pi_list if its a new one
     t_source = ''
     b = tagindex('LOGICAL_SOURCE',tag_names(a.(0)))
-    if (b(0) ne -1) then begin
+    if (b[0] ne -1) then begin
      if(n_elements(a.(0).LOGICAL_SOURCE) eq 1) then t_source = a.(0).LOGICAL_SOURCE
     endif
 
     if (t_source ne l_source) then begin  ; if logical source changed
       l_source = t_source ;set this for the next iteration
       b = tagindex('PI_NAME',tag_names(a.(0)))
-      if (b(0) ne -1) then begin
+      if (b[0] ne -1) then begin
        ;if(n_elements(a.(0).PI_NAME) eq 1) then pi = a.(0).PI_NAME else pi=' '
        ; RCJ 01/05/2004 Sometimes the pi_name can be an array of n elements so I changed
        ; the line above to:
@@ -1598,7 +1832,7 @@ if keyword_set(COMBINE) then begin
       endif else pi='' ; RCJ 02/10/2006  Added this 'else'. pi needed to be
                        ; initialized or program would break further down.
       b = tagindex('PI_AFFILIATION',tag_names(a.(0)))
-      if (b(0) ne -1) then begin
+      if (b[0] ne -1) then begin
         ;if((n_elements(a.(0).PI_AFFILIATION) eq 1) and (a.(0).PI_AFFILIATION[0] ne "")) then $
 	; RCJ 01/05/2004  Same as above, pi_affiliation can be an array of n elements
         if((n_elements(a.(0).PI_AFFILIATION) ge 1) and $
@@ -1650,11 +1884,11 @@ endif
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all image plots
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 4) then begin
-   if ((PS(i).ptype eq 4) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 4) then begin
+   if ((PS[i].ptype eq 4) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
@@ -1667,27 +1901,27 @@ for i=0,n_elements(PS)-1 do begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as images...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as images...'
 
       ; Modify source name for SSCWEB DATASET label                                  
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
       ; For CDAWEB set the FRAME=0. This will allow multiple structures w/ image
       ; data to be processed otherwise keyword_set(FRAME) is true even for structures
       ; where it shouldn't be  RTB  4/98
       if(cdawebflag) then FRAME=0
       ; Produce the images
 
-      s = plot_images(a,PS(i).vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
+      s = plot_images(a,PS[i].vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
                     CDAWEB=cdawebflag,GIF=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
                     DEBUG=debugflag,/COLORBAR)
@@ -1709,31 +1943,31 @@ endfor
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all flux_image plots
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 13) then begin
-   if ((PS(i).ptype eq 13) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 13) then begin
+   if ((PS[i].ptype eq 13) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as flux images...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as flux images...'
 
       ; Modify source name for SSCWEB DATASET label                                  
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
       ; For CDAWEB set the FRAME=0. This will allow multiple structures w/ image
       ; data to be processed otherwise keyword_set(FRAME) is true even for structures
       ; where it shouldn't be  RTB  4/98
@@ -1745,7 +1979,7 @@ for i=0,n_elements(PS)-1 do begin
       ; Produce the images
       ;TJK 4/25/01 set smoothflag to false because it doesn't work well for euv yet
       smoothflag = 0
-      s = plot_fluximages(a,PS(i).vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
+      s = plot_fluximages(a,PS[i].vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
                     CDAWEB=cdawebflag,GIF=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
                     DEBUG=debugflag, SMOOTH=smoothflag,/COLORBAR)
@@ -1766,36 +2000,36 @@ endfor
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all image plots for flux movies
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 14) then begin
-   if ((PS(i).ptype eq 14) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 14) then begin
+   if ((PS[i].ptype eq 14) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif' ; was '.mpg'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif' ; was '.mpg'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as flux movie...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as flux movie...'
 
       ; Modify source name for SSCWEB DATASET label                                  
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
       ; Produce the images
       ;TJK 4/25/01 set smoothflag to false because it doesn't work well for euv yet
       smoothflag = 0
 
-      s = flux_movie(a,PS(i).vname,$
+      s = flux_movie(a,PS[i].vname,$
                     CDAWEB=cdawebflag,GIF=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
                     movie_frame_rate=ps[i].movie_frame_rate,$
@@ -1818,38 +2052,38 @@ endfor
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all image plots for movies
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 10) then begin
-   if ((PS(i).ptype eq 10) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 10) then begin
+   if ((PS[i].ptype eq 10) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as images...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as images...'
 
       ; Modify source name for SSCWEB DATASET label                                  
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
       ; For CDAWEB set the FRAME=0. This will allow multiple structures w/ image
       ; data to be processed otherwise keyword_set(FRAME) is true even for structures
       ; where it shouldn't be  RTB  4/98
       if(cdawebflag) then FRAME=0
       ; Produce the images
 
-      s = movie_images(a,PS(i).vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
+      s = movie_images(a,PS[i].vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
                     CDAWEB=cdawebflag,GIF=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
                     movie_frame_rate=ps[i].movie_frame_rate,$
@@ -1874,38 +2108,38 @@ endfor
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all image plots for map movies
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 11) then begin
-   if ((PS(i).ptype eq 11) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 11) then begin
+   if ((PS[i].ptype eq 11) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as images...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as images...'
 
       ; Modify source name for SSCWEB DATASET label
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
       ; For CDAWEB set the FRAME=0. This will allow multiple structures w/ image
       ; data to be processed otherwise keyword_set(FRAME) is true even for structures
       ; where it shouldn't be  RTB  4/98
       if(cdawebflag) then FRAME=0
       ; Produce the images
-      ;s = plot_images(a,PS(i).vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
-      s = movie_map_images(a,PS(i).vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
+      ;s = plot_images(a,PS[i].vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
+      s = movie_map_images(a,PS[i].vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
                     CDAWEB=cdawebflag,GIF=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
                     movie_frame_rate=ps[i].movie_frame_rate,$
@@ -1929,22 +2163,22 @@ endfor
 ; Make a pass thru the plot script and generate all radar plots
 a_id=-1 ; Reset structure id
 for i=0,n_elements(PS)-1 do begin
-   if (PS(i).ptype eq 3) then begin
+   if (PS[i].ptype eq 3) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Only DARN radar data is currently plottable.  Verify that the source
       ; of this variable is DARN.
-      proceed = 1L & b = tagindex('SOURCE_NAME',tag_names(a.(PS(i).vnum)))
-      if (b(0) eq -1) then begin
+      proceed = 1L & b = tagindex('SOURCE_NAME',tag_names(a.(PS[i].vnum)))
+      if (b[0] eq -1) then begin
          proceed = 0L & print,'ERROR=Unable to determine source for radar plot...'
       endif
-      if (strpos(strupcase(a.(PS(i).vnum).SOURCE_NAME),'DARN') eq -1) then begin
+      if (strpos(strupcase(a.(PS[i].vnum).SOURCE_NAME),'DARN') eq -1) then begin
          proceed = 0L & print,'ERROR=Source of radar plot not equal to DARN...'
       endif
       if (proceed eq 1) then begin
-         if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as Radar...'
+         if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as Radar...'
 
          ;if keyword_set(GIF) then begin
          ;   ;if (gif_counter gt 0) then begin
@@ -1956,13 +2190,13 @@ for i=0,n_elements(PS)-1 do begin
          ;   if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2) 
          ;   if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2) 
          ;   if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         ;   GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         ;   GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          ;endif
 	 if plottype eq 'gif' then begin
             if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2) 
             if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2) 
             if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-            GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+            GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
             gif_ps_open=1L & gif_counter = gif_counter + 1
 	    xysize=400
          endif
@@ -1970,9 +2204,9 @@ for i=0,n_elements(PS)-1 do begin
             if(ps_counter lt 100) then psn='0'+strtrim(string(ps_counter),2) 
             if(ps_counter lt 10) then psn='00'+strtrim(string(ps_counter),2) 
             if(ps_counter ge 100) then psn=strtrim(string(ps_counter),2)
-            out_ps=outdir+PS(i).source+'_'+pid+'_'+psn+'.eps'
+            out_ps=outdir+PS[i].source+'_'+pid+'_'+psn+'.eps'
             ;; Initialize window state and open the ps file
-            ;WS.ys = b + WS.ymargin(0) + WS.ymargin(1) ; add room for timeaxis
+            ;WS.ys = b + WS.ymargin[0] + WS.ymargin[1] ; add room for timeaxis
             ;;
             ;deviceopen,1,fileOutput=out_ps,/portrait,sizeWindow=[WS.xs,WS.ys]
             gif_ps_open=1L & ps_counter = ps_counter + 1
@@ -1981,14 +2215,14 @@ for i=0,n_elements(PS)-1 do begin
          ; Modify source name for SSCWEB DATASET label                                  
          if(SSCWEB) then begin
             satname=strtrim(a.epoch.source_name,2)
-            PS(i).source= PS(i).source + '_' + satname
+            PS[i].source= PS[i].source + '_' + satname
          endif
 
-         if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-         print, 'DATASET=',PS(i).source
+         if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+         print, 'DATASET=',PS[i].source
 
          ; Produce the radar plots
-         s = plot_radar(a,PS(i).vnum,XYSIZE=XYSIZE,GIF=GIF,GCOUNT=gif_counter,$
+         s = plot_radar(a,PS[i].vnum,XYSIZE=XYSIZE,GIF=GIF,GCOUNT=gif_counter,$
                      ps=out_ps,pcount=ps_counter,$
                      TSTART=start_time,TSTOP=stop_time,$
                      REPORT=reportflag,DEBUG=debugflag)
@@ -2029,11 +2263,11 @@ if pwcn/2 eq 11 then symcols=[10,25,40,55,70,100,130,145,170,200,238]
 if pwcn/2 eq 12 then symcols=[10,25,40,55,70,100,130,145,170,185,200,238]
 
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 6) then begin
-   if ((PS(i).ptype eq 6) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 6) then begin
+   if ((PS[i].ptype eq 6) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
          ; Determine name for new gif file and create GIF/window
          if keyword_set(GIF) then begin
             ; Write dataset name for each structure processed for overplotting s/c on
@@ -2041,19 +2275,19 @@ for i=0,n_elements(PS)-1 do begin
             ; Modify source name for SSCWEB DATASET label
             if(SSCWEB) then begin
                satname=strtrim(a.epoch.source_name,2)
-               PS(i).source= PS(i).source + '_' + satname
+               PS[i].source= PS[i].source + '_' + satname
             endif
             if(reportflag) then begin
-               printf, 1, 'DATASET=',PS(i).source
+               printf, 1, 'DATASET=',PS[i].source
             endif
-            print, 'DATASET=',PS(i).source
+            print, 'DATASET=',PS[i].source
 
-            if(i eq pwc(0)) then begin ; Remove this condition blk for single gifs
+            if(i eq pwc[0]) then begin ; Remove this condition blk for single gifs
                ; This condition will allow multiple s/c to be overploted
                if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
                if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
                if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-               GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+               GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
                gif_counter = gif_counter + 1
  
                ; Control size for projection
@@ -2075,14 +2309,14 @@ for i=0,n_elements(PS)-1 do begin
                ; Modify source name for SSCWEB DATASET label                                  
                ;if(SSCWEB) then begin
                ;satname=strtrim(a.epoch.source_name,2)
-               ;PS(i).source= PS(i).source + '_' + satname
+               ;PS[i].source= PS[i].source + '_' + satname
                ;endif
                ;
                ;if(reportflag) then begin
-               ;printf, 1, 'DATASET=',PS(i).source 
+               ;printf, 1, 'DATASET=',PS[i].source 
                ;printf, 1, 'GIF=',GIF
                ;endif
-               ;print, 'DATASET=',PS(i).source
+               ;print, 'DATASET=',PS[i].source
                ;print,'GIF=',GIF
             endif  ; Remove this condition for single gifs.
             ; This condition will allow multiple s/c to be overploted
@@ -2090,20 +2324,20 @@ for i=0,n_elements(PS)-1 do begin
             window,/FREE,XSIZE=xs,YSIZE=ys,TITLE='MAPPED PLOT'
          endelse
          ; Produce debug output if requested
-         if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' ... as MAPPED.'
+         if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' ... as MAPPED.'
          rng_val=[start_time,stop_time]
 
          ; Produce the mapped plots
          ;For overplot on single gif file 
-         ;if(i eq pwc(0)) then pmode=0 else if(pmode eq -1) then pmode=7
+         ;if(i eq pwc[0]) then pmode=0 else if(pmode eq -1) then pmode=7
 	 ; RCJ 12/20/2007  pmode is (number_of_satellite_traces_I_want - 1)
-         if(i eq pwc(0)) then pmode=0 else if(pmode eq -1) then pmode=11
+         if(i eq pwc[0]) then pmode=0 else if(pmode eq -1) then pmode=11
          if((n_elements(polon) ne 0) and (n_elements(polat) ne 0) and $
          (n_elements(rot) ne 0)) then begin
             vlat=fltarr(3)
-            vlat(0)=polat
-            vlat(1)=polon
-            vlat(2)=rot
+            vlat[0]=polat
+            vlat[1]=polon
+            vlat[2]=rot
          endif
 	 symcol=symcols[isymcol]
 	 isymcol=isymcol+1
@@ -2127,7 +2361,7 @@ for i=0,n_elements(PS)-1 do begin
    ; The following condition should be removed for separate single gif files  
    ; This will allow multiple s/c to be overploted
    if(pwcn gt 0) then begin
-      if(i eq pwc(pwcn-1)) then begin
+      if(i eq pwc[pwcn-1]) then begin
          if(reportflag) then begin
             printf, 1, 'GIF=',GIF
          endif
@@ -2146,12 +2380,12 @@ iorb=0
 orbit_trip=0
 a_id=-1 ; Reset structure id
 for i=0,n_elements(PS)-1 do begin
-   if (PS(i).ptype eq 5) then begin
+   if (PS[i].ptype eq 5) then begin
       orbit_trip=1
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
+      if (PS[i].snum ne a_id) then begin
          aa_lab='aa'+strtrim(string(iorb),2)
-         s=execute(aa_lab+'=a'+strtrim(string(PS(i).snum),2))
+         s=execute(aa_lab+'=a'+strtrim(string(PS[i].snum),2))
          if(iorb eq 0) then begin
             mega_aa=create_struct(aa_lab,aa0)
          endif else begin
@@ -2169,7 +2403,7 @@ for i=0,n_elements(PS)-1 do begin
             if(iorb eq 12) then temp_mg=create_struct(aa_lab,aa12)
             mega_aa=create_struct(mega_aa,temp_mg)
          endelse
-         a_id = PS(i).snum
+         a_id = PS[i].snum
          iorb=iorb+1
          ; Modify source name for SSCWEB DATASET label                                  
          if(SSCWEB) then begin
@@ -2177,11 +2411,11 @@ for i=0,n_elements(PS)-1 do begin
             if(n_elements(ys_ssc) ne 0) then ysize=ys_ssc ; Orbits xsize=ysize
             ;   satname=strtrim(temp_mg.epoch.source_name,2)
             x1=execute('satname='+aa_lab+'.epoch.source_name')
-            PS(i).source= PS(i).source + '_' + satname
+            PS[i].source= PS[i].source + '_' + satname
          endif
 
-         if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-         print, 'DATASET=',PS(i).source
+         if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+         print, 'DATASET=',PS[i].source
 
       endif
    endif
@@ -2198,7 +2432,7 @@ if(orbit_trip eq 1) then begin
    ;   ;endif else GIF=GIF+strtrim(string(gif_counter),2)
    ;   ; endif
    ;   ; For orbit 1 image can have multiple sources
-   ;   ; GIF=outdir+PS(i).source+'_'+pid+'_'+string(gif_counter)+'.gif'
+   ;   ; GIF=outdir+PS[i].source+'_'+pid+'_'+string(gif_counter)+'.gif'
    ;   if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
    ;   if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
    ;   if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
@@ -2218,21 +2452,24 @@ if(orbit_trip eq 1) then begin
       if(ps_counter ge 100) then psn=strtrim(string(ps_counter),2)
       out_ps=outdir+'ORBIT_'+pid+'_'+psn+'.eps'
       ;; Initialize window state and open the ps file
-      ;WS.ys = b + WS.ymargin(0) + WS.ymargin(1) ; add room for timeaxis
+      ;WS.ys = b + WS.ymargin[0] + WS.ymargin[1] ; add room for timeaxis
       ;;
       ;deviceopen,1,fileOutput=out_ps,/portrait,sizeWindow=[WS.xs,WS.ys]
       gif_ps_open=1L & ps_counter = ps_counter + 1
-      xsize=25000 & ysize=28000 ; RCJ Utter guesses
+;3/18/2010 TJK needed smaller x for 4 panel (ssc type) orbits - somehow making
+;the x dimension smaller males the 4 panels fit... go figure
+;xsize=25000 & ysize=28000 ; RCJ Utter guesses
+      xsize=21000 & ysize=28000 ; TJK seems to work better...
    endif
 
 ;Check to see if plotmaster is being called by ssc_plot, and
 ;Postscript option requested
 help, /traceback, output=trace_back
 if (n_elements(trace_back) gt 1) then begin
-  if (strcmp('ssc_plot',trace_back(n_elements(trace_back)-1), /fold_case) && keyword_set(PS)) then begin
+  if (strcmp('ssc_plot',trace_back[n_elements(trace_back)-1], /fold_case) && keyword_set(PS)) then begin
 
-    print, 'TJK DEBUG Requested size of orbit plot is ',xsize, ysize
-    print, 'TJK setting orb_vw to xy'
+;    print, 'TJK DEBUG Requested size of orbit plot is ',xsize, ysize
+;    print, 'TJK setting orb_vw to xy'
     orb_vw='xy'
   endif
 endif
@@ -2279,31 +2516,31 @@ endif
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all auroral image map plots
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 8) then begin
-   if ((PS(i).ptype eq 8) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 8) then begin
+   if ((PS[i].ptype eq 8) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as map images...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as map images...'
 
       ; Modify source name for SSCWEB DATASET label                                  
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
 
 ;Test for GPS - does work for Dieter's additional request
 ;     Continent = 0
@@ -2314,7 +2551,7 @@ for i=0,n_elements(PS)-1 do begin
       ; where it shouldn't be  RTB  4/98
       if(cdawebflag) then FRAME=0
       ; Produce the images
-      s = plot_map_images(a,PS(i).vname,CENTERLONLAT=CENTERLONLAT,$
+      s = plot_map_images(a,PS[i].vname,CENTERLONLAT=CENTERLONLAT,$
                  THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
                  CDAWEB=cdawebflag,GIF=GIF,REPORT=reportflag,$
                  TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
@@ -2337,31 +2574,31 @@ endfor ;for all mapped image plots
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all skymap plots (TWINS)
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 20) then begin
-   if ((PS(i).ptype eq 20) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 20) then begin
+   if ((PS[i].ptype eq 20) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
      endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
      endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as skymap images...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as skymap images...'
 
       ; Modify source name for SSCWEB DATASET label
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
      endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
 
       ; For CDAWEB set the FRAME=0. This will allow multiple structures w/
       ; image data to be processed otherwise
@@ -2369,7 +2606,7 @@ for i=0,n_elements(PS)-1 do begin
       ; where it shouldn't be  RTB  4/98
       if(cdawebflag) then FRAME=0
       ; Produce the images
-      s = plot_skymap(a,PS(i).vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
+      s = plot_skymap(a,PS[i].vname,THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
                  CDAWEB=cdawebflag,GIF=GIF,REPORT=reportflag,$
                  TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
                  DEBUG=debugflag,/COLORBAR)
@@ -2392,34 +2629,34 @@ endfor ;for all skymap image plots
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all skymap image movies
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 21) then begin
-   if ((PS(i).ptype eq 21) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 21) then begin
+   if ((PS[i].ptype eq 21) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
      endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
      endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as skymap movie images...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as skymap movie images...'
 
       ; Modify source name for SSCWEB DATASET label
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
      endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
 
       ; Produce the skymap movie file
-      s = movie_skymap(a,PS(i).vname,GIF=GIF,REPORT=reportflag,$
+      s = movie_skymap(a,PS[i].vname,GIF=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
                     xsize=xsize, ysize=ysize, movie_frame_rate=ps[i].movie_frame_rate,$
                     movie_loop=ps[i].movie_loop,LIMIT=limit_movie,$
@@ -2440,15 +2677,15 @@ endfor
 ;Generate all Plasmagram plots
 a_id=-1
 for i=0,n_elements(PS)-1 do begin  
-   ;if (PS(i).ptype eq 9) then begin ;look for all plasmagrams
-   if ((PS(i).ptype eq 9) and (plottype ne 'pscript')) then begin ;look for all plasmagrams
+   ;if (PS[i].ptype eq 9) then begin ;look for all plasmagrams
+   if ((PS[i].ptype eq 9) and (plottype ne 'pscript')) then begin ;look for all plasmagrams
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
 
       ; Produce debug output if requested.
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as plasmagram.'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as plasmagram.'
 
       ; Generate the plasmagram
       ; Determine name for new gif file and create GIF/X-window
@@ -2456,14 +2693,47 @@ for i=0,n_elements(PS)-1 do begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
       endif else deviceopen,0 ; producing XWINDOWS
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
 
-      s = plot_plasmagram(a,PS(i).vname,$
+      ; Get the index of the time variable associated with variable to be plotted
+      b = a.(PS[i].vnum).DEPEND_0 & c = tagindex(b[0],tag_names(a))
+
+      if (strpos(a.(c[0]).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
+         ;The following if statements are needed in the case where TSTART/TSTOP is not
+         ;used but the data is in epoch16 
+         if (n_elements(start_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, start_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         if (n_elements(stop_time16) eq 0) then begin ;convert the regular epoch to epoch16
+             cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+             cdf_epoch16, stop_time16, yr,mo,dd,hr,mm,ss,mil,0,0,0,/compute
+         endif
+         start_time = start_time16 & stop_time = stop_time16
+      endif
+
+      if (strpos(a.(c[0]).CDFTYPE, 'CDF_TIME_TT2000') ge 0) then begin
+      ;The following if statements are needed in the case where TSTART/TSTOP are not
+                                ;used but the data is in time TT2000
+                                ;instead of regular Epoch or Epoch16
+         if (n_elements(start_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, start_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, start_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+         endif
+         if (n_elements(stop_timett) eq 0) then begin ;convert the regular epoch to tt2000
+          cdf_epoch, stop_time, yr,mo,dd,hr,mm,ss,mil,/break
+          cdf_tt2000, stop_timett, yr,mo,dd,hr,mm,ss,mil,0,0,/compute
+         endif
+         start_time = start_timett & stop_time = stop_timett
+      endif
+
+
+      s = plot_plasmagram(a,PS[i].vname,$
                    GIF=GIF, /CDAWEB, TSTART=start_time,TSTOP=stop_time, $
 		   /colorbar, DEBUG=debugflag, thumbsize=thumbsize,$
 		   FRAME=FRAME, REPORT=reportflag, NONOISE=NONOISE)
@@ -2476,8 +2746,8 @@ for i=0,n_elements(PS)-1 do begin
          return, -1
       endif
       ; Update the state of the window
-      WS.pos(3) = WS.pos(3) - (pheight * PS(i).npanels) ; update Y corner
-      WS.pos(1) = WS.pos(1) - (pheight * PS(i).npanels) ; update Y origin
+      WS.pos[3] = WS.pos[3] - (pheight * PS[i].npanels) ; update Y corner
+      WS.pos[1] = WS.pos[1] - (pheight * PS[i].npanels) ; update Y origin
    endif
 endfor
 
@@ -2489,34 +2759,34 @@ a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all image plots for plasmagram
 ; movies
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 15) then begin
-   if ((PS(i).ptype eq 15) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 15) then begin
+   if ((PS[i].ptype eq 15) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as flux movie...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as flux movie...'
 
       ; Modify source name for SSCWEB DATASET label                                  
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
       ; Produce the images
  
-      s = plasma_movie(a,PS(i).vname,XSIZE=XSIZE,YSIZE=YSIZE,$
+      s = plasma_movie(a,PS[i].vname,XSIZE=XSIZE,YSIZE=YSIZE,$
                     CDAWEB=cdawebflag,GIF=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
                     movie_frame_rate=ps[i].movie_frame_rate,$
@@ -2538,34 +2808,34 @@ endfor
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate fuv images
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 16) then begin
-   if ((PS(i).ptype eq 16) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 16) then begin
+   if ((PS[i].ptype eq 16) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as flux image...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as flux image...'
 
       ; Modify source name for SSCWEB DATASET label                                  
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
       ; Produce the images
       print,'Calling plot_fuv_images. Gif = ',gif
-      s = plot_fuv_images(a,PS(i).vname,$
+      s = plot_fuv_images(a,PS[i].vname,$
                     CDAWEB=cdawebflag,GIF=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,NONOISE=NONOISE,$
                     DEBUG=debugflag,/COLORBAR)
@@ -2585,34 +2855,34 @@ endfor
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate fuv movies
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 17) then begin
-   if ((PS(i).ptype eq 17) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 17) then begin
+   if ((PS[i].ptype eq 17) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif' ; was 'mpg'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif' ; was 'mpg'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as fuv movie...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as fuv movie...'
 
       ; Modify source name for SSCWEB DATASET label                                  
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
       ; Produce the images
       ;print,'Calling fuv_movie. mpeg = ',gif
-      s = fuv_movie(a,PS(i).vname,$
+      s = fuv_movie(a,PS[i].vname,$
                     MPEG=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,$
                     movie_frame_rate=ps[i].movie_frame_rate,$
@@ -2633,52 +2903,52 @@ a_id=-1 ; Reset structure id
 ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 18) then begin
-   if ((PS(i).ptype eq 18) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 18) then begin
+   if ((PS[i].ptype eq 18) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       ;if keyword_set(GIF) then begin
       ;   if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
       ;   if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
       ;   if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-      ;   GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+      ;   GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
       ;   gif_counter = gif_counter + 1
       ;endif
       if plottype eq 'gif' then begin
         if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2) 
         if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2) 
         if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-        GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+        GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
         gif_ps_open=1L & gif_counter = gif_counter + 1
       endif
       if plottype eq 'pscript' then begin
         if(ps_counter lt 100) then psn='0'+strtrim(string(ps_counter),2) 
         if(ps_counter lt 10) then psn='00'+strtrim(string(ps_counter),2) 
         if(ps_counter ge 100) then psn=strtrim(string(ps_counter),2)
-        out_ps=outdir+PS(i).source+'_'+pid+'_'+psn+'.eps'
+        out_ps=outdir+PS[i].source+'_'+pid+'_'+psn+'.eps'
         gif_ps_open=1L & ps_counter = ps_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as wind plot...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as wind plot...'
 
       ; Modify source name for SSCWEB DATASET label                                  
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
 
       ; For CDAWEB set the FRAME=0. This will allow multiple structures w/ image
       ; data to be processed otherwise keyword_set(FRAME) is true even for structures
       ; where it shouldn't be  RTB  4/98
       if(cdawebflag) then FRAME=0
       ; Produce the images
-         s = plot_wind_map(a,PS(i).vname,$
+         s = plot_wind_map(a,PS[i].vname,$
                  THUMBSIZE=THUMBSIZE,FRAME=FRAME,$
                  CDAWEB=cdawebflag,GIF=GIF,ps=out_ps,REPORT=reportflag,$
                  TSTART=start_time,TSTOP=stop_time,$
@@ -2703,38 +2973,38 @@ endfor ;for all mapped image plots
 a_id=-1 ; Reset structure id
 ; Make a pass thru the plot script and generate all image plots for map movies
 for i=0,n_elements(PS)-1 do begin
-   ;if (PS(i).ptype eq 19) then begin
-   if ((PS(i).ptype eq 19) and (plottype ne 'pscript')) then begin
+   ;if (PS[i].ptype eq 19) then begin
+   if ((PS[i].ptype eq 19) and (plottype ne 'pscript')) then begin
       ; Ensure that 'a' holds the correct data structure
-      if (PS(i).snum ne a_id) then begin
-         s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+      if (PS[i].snum ne a_id) then begin
+         s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine name for new gif file and create GIF/window
       if keyword_set(GIF) then begin
          if(gif_counter lt 100) then gifn='0'+strtrim(string(gif_counter),2)
          if(gif_counter lt 10) then gifn='00'+strtrim(string(gif_counter),2)
          if(gif_counter ge 100) then gifn=strtrim(string(gif_counter),2)
-         ;GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.mpg'
-         GIF=outdir+PS(i).source+'_'+pid+'_'+gifn+'.gif'
+         ;GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.mpg'
+         GIF=outdir+PS[i].source+'_'+pid+'_'+gifn+'.gif'
          gif_counter = gif_counter + 1
       endif
       ; Produce debug output if requested
-      if keyword_set(DEBUG) then print,'Plotting ',PS(i).vname,' as movie...'
+      if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as movie...'
 
       ; Modify source name for SSCWEB DATASET label
       if(SSCWEB) then begin
          satname=strtrim(a.epoch.source_name,2)
-         PS(i).source= PS(i).source + '_' + satname
+         PS[i].source= PS[i].source + '_' + satname
       endif
 
-      if (reportflag eq 1) then printf, 1, 'DATASET=',PS(i).source
-      print, 'DATASET=',PS(i).source
+      if (reportflag eq 1) then printf, 1, 'DATASET=',PS[i].source
+      print, 'DATASET=',PS[i].source
       ; For CDAWEB set the FRAME=0. This will allow multiple structures w/ image
       ; data to be processed otherwise keyword_set(FRAME) is true even for structures
       ; where it shouldn't be  RTB  4/98
       if(cdawebflag) then FRAME=0
       ; Produce movie
-      s = movie_wind_map(a,PS(i).vname,$
+      s = movie_wind_map(a,PS[i].vname,$
                     CDAWEB=cdawebflag,mgif=GIF,REPORT=reportflag,$
                     TSTART=start_time,TSTOP=stop_time,$
 		    ; following line is for tidi.  15 orbits in one day, 29 points each 
@@ -2760,32 +3030,37 @@ a_id=-1 ; Reset structure id
 
 ;TJK - 2/14/2005 - handle the case where the values for data variable(s) are all fill.
 for i=0,n_elements(PS)-1 do begin
-   eflag = strpos(strupcase(PS(i).vname),'EPOCH') ;don't tell the user about epoch variables.
+   eflag = strpos(strupcase(PS[i].vname),'EPOCH') ;don't tell the user about epoch variables.
    ; Ensure that 'a' holds the correct data structure
-   if (PS(i).snum ne a_id) then begin
-      s=execute('a=a'+strtrim(string(PS(i).snum),2)) & a_id = PS(i).snum
+   if (PS[i].snum ne a_id) then begin
+      s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
    endif
-   ;j = PS(i).vname
+   ;j = PS[i].vname
    ;stat = execute('v_type = a.'+j+'.var_type')
    ; RCJ 02/25/2005  Changed this line to get the number instead
    ; of the name because a var called 'Ne' gave us a syntax error!
-   stat = execute('v_type = a.('+strtrim(string(ps(i).vnum),2)+').var_type')
-   ;print, 'TJK DEBUG: VARIABLE ',ps(i).vname,'  ',v_type
+   stat = execute('v_type = a.('+strtrim(string(ps[i].vnum),2)+').var_type')
+   stat = execute('c_type = a.('+strtrim(string(ps[i].vnum),2)+').cdftype')
+   ;print, 'TJK DEBUG: VARIABLE ',ps[i].vname,'  ',v_type
    ; RCJ 03/29/2006  The line below fails if there's no v_type
    ;if (strupcase(v_type) eq 'DATA' and stat) then begin
    if (stat ne 0) then begin
       if (strupcase(v_type) eq 'DATA') then begin
-        if (PS(i).ptype eq 0 and PS(i).npanels eq 0 and eflag eq -1)then begin
+        if (PS[i].ptype eq 0 and PS[i].npanels eq 0 and eflag eq -1)then begin
           if (n_elements(ds) eq 0) then begin
-            ds = PS(i).source
+            ds = PS[i].source
             print, 'DATASET=',ds
-            print, 'STATUS= ',PS(i).vname,' data are all fill: reselect time range.'
+	    if strupcase(c_type) eq 'CDF_CHAR' then $
+            print, 'STATUS= ',PS[i].vname,' is of CDF_CHAR type and is not plottable.' else $
+            print, 'STATUS= ',PS[i].vname,' data are all fill: reselect time range.'
           endif else begin
-	    if (PS(i).source ne ds) then begin
-              ds = PS(i).source
+	    if (PS[i].source ne ds) then begin
+              ds = PS[i].source
               print, 'DATASET=',ds
 	    endif
-	    print, 'STATUS= ',PS(i).vname,' data are all fill: reselect time range.'
+	    if strupcase(c_type) eq 'CDF_CHAR' then $
+	    print, 'STATUS= ',PS[i].vname,' is of CDF_CHAR type and is not plottable.' else $
+	    print, 'STATUS= ',PS[i].vname,' data are all fill: reselect time range.'
           endelse
         endif
       endif

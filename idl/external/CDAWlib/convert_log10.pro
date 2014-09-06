@@ -1,13 +1,19 @@
-;$Author: kenb $
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/convert_log10.pro,v 1.3 2004/03/03 22:21:37 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 8 $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/convert_log10.pro,v 1.5 2012/05/04 20:45:54 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;Functions: convert_log10, shiftdata_above_zero
 ;Purpose: to compute the virtual variables for several IMAGE cdf variables
 ;Author: Tami Kovalick, Raytheon ITSS, December 7, 2000
 ;Modification:
 ;
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 ;
 ;
 ;
@@ -28,10 +34,10 @@ function shiftdata_above_one, data, fillval
 ;TJK 3/1/2004 same as above	  zcase = where((data gt 0.0) and (data ne fillval),zc) ;find the min of the vals above 0.
 	  zcase = where((data gt 1.0) and (data ne fillval),zc) ;find the min of the vals above 0.
 	  if (zc gt 0) then begin
-	    newmin = min(data(zcase));
+	    newmin = min(data[zcase]);
 ;TJK 3/1/2004	    print, 'reassigning values le 0.0 to lowest data value above zero = ',newmin
 	    print, 'reassigning values le 1.0 to lowest data value above one = ',newmin
-	    data(scase) = newmin ;reassign all values that are "valid" but because they
+	    data[scase] = newmin ;reassign all values that are "valid" but because they
 		   	         ;fall below 0 (w/ log scaling), they would be lost otherwise.
 	  endif
 	endif 
@@ -50,9 +56,9 @@ function shiftdata_above_zero, data, fillval
 	if (sc gt 0) then begin
 	  zcase = where((data gt 0.0) and (data ne fillval),zc) ;find the min of the vals above 0.
 	  if (zc gt 0) then begin
-	    newmin = min(data(zcase));
+	    newmin = min(data[zcase]);
 	    print, 'reassigning values le 0.0 to lowest data value above zero = ',newmin
-	    data(scase) = newmin ;reassign all values that are "valid" but because they
+	    data[scase] = newmin ;reassign all values that are "valid" but because they
 		   	         ;fall below 0 (w/ log scaling), they would be lost otherwise.
 	  endif
 	endif 
@@ -71,7 +77,7 @@ function convert_log10, astruct, orig_names
 atags = tag_names(astruct) ;get the variable names
 vv_tagnames=strarr(1)
 vv_tagindx = vv_names(astruct,names=vv_tagnames) ;find the virtual vars
-if (vv_tagindx(0) lt 0) then return, -1
+if (vv_tagindx[0] lt 0) then return, -1
 
 ;print, 'In CONVERT_LOG10'
 
@@ -87,12 +93,12 @@ var_index = -1
 for ig=0, n_elements(vv_tagindx)-1 do begin ; RTB added 9/98
   if (var_index eq -1) then begin ;haven't found a variable that needs populating yet
 ;    print, 'DEBUG In loop checking if all vv.s have been converted '
-    vtags=tag_names(astruct.(vv_tagindx(ig))) 
+    vtags=tag_names(astruct.(vv_tagindx[ig])) 
     v = tagindex('DAT',vtags)
-    if (v(0) ne -1) then begin
-      im_val = astruct.(vv_tagindx(ig)).dat
+    if (v[0] ne -1) then begin
+      im_val = astruct.(vv_tagindx[ig]).dat
     endif else begin
-      if (astruct.(vv_tagindx(ig)).handle eq 0) then begin
+      if (astruct.(vv_tagindx[ig]).handle eq 0) then begin
          var_index = ig ; save the variable index of the next vv that needs converting
 ;	 print, '*** Set var_index = ',var_index
          ireturn=0
@@ -100,8 +106,8 @@ for ig=0, n_elements(vv_tagindx)-1 do begin ; RTB added 9/98
       im_val = 0
     endelse
     im_size = size(im_val)
-    ;print, vv_tagindx(ig), astruct.(vv_tagindx(ig)).handle
-    if (im_val(0) ne 0 or im_size(0) eq 3) then begin
+    ;print, vv_tagindx[ig], astruct.(vv_tagindx[ig]).handle
+    if (im_val[0] ne 0 or im_size[0] eq 3) then begin
       im_val = 0B ;free up space
       ireturn=0
     endif
@@ -116,14 +122,14 @@ if(ireturn) then return, astruct ; Return only if all orig_names are already
 ;that has been defined to need convert_log10.
 ;
 ;c_0 = astruct.(vv_tagindx(0)).COMPONENT_0 ; 1st vvs component var (real image var)
-c_0 = astruct.(vv_tagindx(var_index)).COMPONENT_0 ; Get the component var (points to the real image var)
+c_0 = astruct.(vv_tagindx[var_index]).COMPONENT_0 ; Get the component var (points to the real image var)
 
 if (c_0 ne '') then begin ;this should be the real image data - get the image data
   real_image = tagindex(c_0, atags)
   itags = tag_names(astruct.(real_image)) ;tags for the real Image data.
 
   d = tagindex('DAT',itags)
-    if (d(0) ne -1) then AllImage = astruct.(real_image).DAT $
+    if (d[0] ne -1) then AllImage = astruct.(real_image).DAT $
     else begin
       d = tagindex('HANDLE',itags)
       handle_value, astruct.(real_image).HANDLE, AllImage
@@ -140,7 +146,7 @@ im_size = size(AllImage)
 
   fillval =  -1.0e31
   fill_idx = tagindex('FILLVAL',itags)
-  if (fill_idx(0) ne -1) then fillval = astruct.(real_image).FILLVAL
+  if (fill_idx[0] ne -1) then fillval = astruct.(real_image).FILLVAL
 
 print, 'min = ',min(AllImage, max=maxval), 'max = ',maxval, ' before shift'
 AllImage = shiftdata_above_zero(AllImage, fillval)
@@ -149,7 +155,7 @@ print, 'min = ',min(AllImage, max=maxval), 'max = ',maxval, ' after shift'
 ;The following is suppose to test for whether there are many records or just a 
 ;single one.
 
-if (im_size(0) eq 3 or (im_size(0) eq 2 and no_images eq 0)) then begin 
+if (im_size[0] eq 3 or (im_size[0] eq 2 and no_images eq 0)) then begin 
 
   filldat = where(AllImage eq fillval, fwc) ; determine where the fill values are
   nfilldat = where(AllImage ne fillval, nfwc) ; determine where the good values are
@@ -157,10 +163,10 @@ if (im_size(0) eq 3 or (im_size(0) eq 2 and no_images eq 0)) then begin
 
   if (fwc gt 0 and nfwc gt 0) then begin ; if fill and good data found
 	j = 0L
-	i = nfilldat(j)
+	i = nfilldat[j]
 	while (j le nfwc-1) do begin
-	  i = nfilldat(j)
-          new_image(i) = alog10(AllImage(i)) 
+	  i = nfilldat[j]
+          new_image[i] = alog10(AllImage[i]) 
 	  j = j + 1
 	endwhile
   endif else begin ; no fill data to deal with
@@ -178,19 +184,19 @@ if (im_size(0) eq 3 or (im_size(0) eq 2 and no_images eq 0)) then begin
 
 ;for ll=0, n_elements(vv_tagindx)-1 do begin ;start the index at the current vv variable
 for ll=var_index, n_elements(vv_tagindx)-1 do begin
-  vartags = tag_names(astruct.(vv_tagindx(ll)))
+  vartags = tag_names(astruct.(vv_tagindx[ll]))
 ;11/5/04 - TJK - had to change FUNCTION to FUNCT for IDL6.* compatibility
 ;  findex = tagindex('FUNCTION', vartags) ; find the FUNCTION index number
   findex = tagindex('FUNCT', vartags) ; find the FUNCTION index number
   cindex = tagindex('COMPONENT_0', vartags) ; find the Component_0 value
 
-  if (findex(0) ne -1 and cindex(0) ne -1) then $
-     func_name=strlowcase(astruct.(vv_tagindx(ll)).(findex(0)))
-     next_0=astruct.(vv_tagindx(ll)).(cindex(0))
+  if (findex[0] ne -1 and cindex[0] ne -1) then $
+     func_name=strlowcase(astruct.(vv_tagindx[ll]).(findex[0]))
+     next_0=astruct.(vv_tagindx[ll]).(cindex[0])
   if(func_name eq 'convert_log10' and (strlowcase(next_0) eq strlowcase(c_0))) then begin
-  ;print, vv_tagnames(vv_tagindx(ll)), im_temp
-    if(astruct.(vv_tagindx(ll)).HANDLE eq 0) then begin
-      astruct.(vv_tagindx(ll)).HANDLE = im_temp
+  ;print, vv_tagnames(vv_tagindx[ll]), im_temp
+    if(astruct.(vv_tagindx[ll]).HANDLE eq 0) then begin
+      astruct.(vv_tagindx[ll]).HANDLE = im_temp
     endif
   endif
 endfor

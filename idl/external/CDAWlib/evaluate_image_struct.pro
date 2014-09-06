@@ -3,10 +3,10 @@
 ; RCJ 03/05/2003 Moved this fnc from write_mycdf.pro to here.
 FUNCTION ami_mystruct,a
 ds = size(a) & nds = n_elements(ds)
-if (ds(nds-2) ne 8) then return,0
+if (ds[nds-2] ne 8) then return,0
 for i=0,n_elements(tag_names(a))-1 do begin
   ds = size(a.(i)) & nds = n_elements(ds)
-  if (ds(nds-2) ne 8) then return,0
+  if (ds[nds-2] ne 8) then return,0
   tnames = tag_names(a.(i))
   w = where(tnames eq 'VARNAME',wc1) & w = where(tnames eq 'CDFTYPE',wc2)
   w = where(tnames eq 'HANDLE' ,wc3) & w = where(tnames eq 'DAT',wc4)
@@ -22,6 +22,12 @@ end
 ; Given the input data structure and variable name to be plotted as
 ; thumbnail images, determine the correct window size needed to plot
 ; all of the images.
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 FUNCTION evaluate_image_struct,a,vname,$
          THUMBSIZE=THUMBSIZE,XSIZE=XSIZE,COLORBAR=COLORBAR,$
@@ -38,13 +44,13 @@ endif
 w = where(tag_names(a) eq strupcase(vname),wc)
 if (wc eq 0) then begin
   print,'ERROR=No variable with the name:',vname,' in structure' & return,-1
-endif else vnum = w(0)
+endif else vnum = w[0]
 
 
 ; Size the image data in the input structure
 tn = tag_names(a.(vnum)) & w = where(tn eq 'DAT',wc)
 if wc ne 0 then i = size(a.(vnum).DAT) else i = a.(vnum).idlsize
-if i(0) eq 2 then nimages = 1 else nimages = i(i(0))
+if i[0] eq 2 then nimages = 1 else nimages = i[i[0]]
 firstframe = 0 & lastframe = nimages
 
 
@@ -66,14 +72,14 @@ if wc ne 0 then tdat = a.(tnum).DAT else handle_value,a.(tnum).HANDLE,tdat
 if (keyword_set(TSTART) or keyword_set(TSTOP)) then begin
   if keyword_set(TSTART) then begin
     w = where(tdat gt TSTART,wc)
-    if wc gt 0 then firstframe = w(0) $
+    if wc gt 0 then firstframe = w[0] $
     else begin
       print,'ERROR:No images frames after TSTART.' & return,-1
     endelse
   endif
   if keyword_set(TSTOP) then begin
     w = where(tdat le TSOP,wc)
-    if wc gt 0 then lastframe = w(wc-1) $
+    if wc gt 0 then lastframe = w[wc-1] $
     else begin
       print,'ERROR:No images frames before TSTOP.' & return,-1
     endelse
@@ -82,13 +88,13 @@ if (keyword_set(TSTART) or keyword_set(TSTOP)) then begin
 endif
 
 ; Determine the thumbnail sizes, checking if square or rectangle thumbnails
-if keyword_set(THUMBSIZE) then begin & i=size(THUMBSIZE) & j=i(n_elements(i)-2)
+if keyword_set(THUMBSIZE) then begin & i=size(THUMBSIZE) & j=i[n_elements(i)-2]
   if ((j eq 0)OR(j ge 6)) then begin
     print,'ERROR:THUMBSIZE keyword of illegal data type' & return,-1
   endif
-  if i(0) eq 0 then tsizes=[THUMBSIZE,THUMBSIZE]
-  if i(0) eq 1 then tsizes=[THUMBSIZE(0),THUMBSIZE(1)]
-  if i(0) ge 2 then begin
+  if i[0] eq 0 then tsizes=[THUMBSIZE,THUMBSIZE]
+  if i[0] eq 1 then tsizes=[THUMBSIZE[0],THUMBSIZE[1]]
+  if i[0] ge 2 then begin
     print,'ERROR:THUMBSIZE keyword of illegal array size' & return,-1
   endif
 endif else tsizes = [50,50] ; default thumbnail size
@@ -96,7 +102,7 @@ endif else tsizes = [50,50] ; default thumbnail size
 
 ; Determine width of display set via keyword or by default
 if keyword_set(COLORBAR) then xco = 80 else xco = 0
-if keyword_set(XSIZE) then begin & i=size(XSIZE) & j=i(n_elements(i)-2)
+if keyword_set(XSIZE) then begin & i=size(XSIZE) & j=i[n_elements(i)-2]
   if ((j eq 0)OR(j ge 6)) then begin
     print,'ERROR:XSIZE keyword of illegal data type' & return,-1
   endif else xs = XSIZE
@@ -104,14 +110,14 @@ endif else xs = 512 ; default window width
 
 
 ; Init other vars to accomodate timetag, title and subtitle fields
-timetag_height  = 12 & tsizes(1) = tsizes(1) + timetag_height
+timetag_height  = 12 & tsizes[1] = tsizes[1] + timetag_height
 title_height    = 15
 subtitle_height = 50 ;TJK change from 40 to 50.
 
  
 ; Compute the number of rows and columns required to display all images
-ncols = (xs-xco) / tsizes(0) & nrows = (nimages / ncols) + 1
-ys = (nrows * (tsizes(1) + timetag_height)) + title_height + subtitle_height
+ncols = (xs-xco) / tsizes[0] & nrows = (nimages / ncols) + 1
+ys = (nrows * (tsizes[1] + timetag_height)) + title_height + subtitle_height
 
 ; Return a structure containing all sizing information
 s = {vnum:vnum,tnum:tnum,tdat:tdat,nimages:nimages,xsize:xs,ysize:ys,$

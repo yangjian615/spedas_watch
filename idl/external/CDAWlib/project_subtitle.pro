@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
-;$Header: /home/cdaweb/dev/control/RCS/project_subtitle.pro,v 1.36 2007/06/01 19:01:14 johnson Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 15545 $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/project_subtitle.pro,v 1.38 2013/01/16 22:12:41 kovalick Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;+------------------------------------------------------------------------
 ; NAME: PROJECT_SUBTITLE
 ; PURPOSE: Examine the structure given by the input parameter, and return
@@ -28,7 +28,13 @@
 ;     10/14/98  T. Kovalick ; Added the acknowledgements line.
 ;     05/16/01  T. Kovalick ; Added carriage return after ISTP line since
 ;			      it was running of the page.
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 PRO project_subtitle, a, title, SSCWEB=SSCWEB, IMAGE=IMAGE, TIMETAG=TIMETAG,$
                       TCOLOR=TCOLOR,ps=ps
 
@@ -56,13 +62,13 @@ endif
 ; Generate the subtitle
 pi = ' ' & s='' & b = tagindex('PROJECT',tag_names(a))
 move_up = 0L
-if (b(0) ne -1) then begin
+if (b[0] ne -1) then begin
  if(n_elements(a.PROJECT) eq 1) then begin 
-  pr = break_mystring(a.PROJECT,'>')
+  pr = break_mystring(a.PROJECT,delimiter='>')
  endif else begin
-  pr = break_mystring(a.PROJECT(0),'>')
+  pr = break_mystring(a.PROJECT[0],delimiter='>')
  endelse
- if (pr(0) eq 'ISTP') then begin
+ if (pr[0] eq 'ISTP') then begin
     s = 'Key Parameter and Survey data (labels K0,K1,K2)'
     s = s + ' are preliminary browse data.' + '!C'
  endif ;ISTP case
@@ -70,11 +76,11 @@ if (b(0) ne -1) then begin
  ;put affiliation info. on the next line and set flag to move the line up.
  ;TJK add in code to get and display the PI and PI_AFFILIATION
  b = tagindex('PI_NAME',tag_names(a))
- if (b(0) ne -1) then begin
+ if (b[0] ne -1) then begin
     if(n_elements(a.PI_NAME) eq 1) then pi = a.PI_NAME
  endif
  b = tagindex('PI_AFFILIATION',tag_names(a))
- if (b(0) ne -1) then begin
+ if (b[0] ne -1) then begin
     if((n_elements(a.PI_AFFILIATION) eq 1) and (a.PI_AFFILIATION[0] ne "")) then begin
         ;if (strlen(pi)+strlen(a.pi_affiliation) gt 40) then begin
 	if keyword_set(ps) then lenlimit=35 else lenlimit=40
@@ -102,25 +108,29 @@ if (s ne '') then begin
       if keyword_set(TIMETAG) then begin
         d = size(TIMETAG) ; determine if time is a range or single time
         ;TJK 3/29/2004 - make the char size larger for frames from movie...
-        if d(0) eq 0 then begin
+        if d[0] eq 0 then begin
 	  ts = 'Frame time: ' + decode_cdfepoch(TIMETAG) 
           ;xyouts,!d.x_size/2,23L,ts,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c+.5,COLOR=TCOLOR
-          xyouts,!d.x_size/2,!d.y_ch_size*2.,ts,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c+.5,COLOR=TCOLOR
+          if (move_up) then xyouts,!d.x_size/2,!d.y_ch_size*4.,ts,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c+.5,COLOR=TCOLOR  else $
+             xyouts,!d.x_size/2,!d.y_ch_size*2.,ts,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c+.5,COLOR=TCOLOR
+
         endif else begin
-	  ts = 'Time Range: ' + decode_cdfepoch(TIMETAG(0)) + ' to ' + $
-                  decode_cdfepoch(TIMETAG(1))
+	  ts = 'Time Range: ' + decode_cdfepoch(TIMETAG[0]) + ' to ' + $
+                  decode_cdfepoch(TIMETAG[1])
           ;xyouts,!d.x_size/2,23L,ts,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR
+          if (move_up) then xyouts,!d.x_size/2,!d.y_ch_size*4.,ts,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR else $
           xyouts,!d.x_size/2,!d.y_ch_size*2.,ts,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR
 	endelse
 
-        ;xyouts,!d.x_size/2,13L,pi,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR
-	; RCJ 05/09/2007  Note: Bob's choice was to leave the lines
-	;    below out of the plot if plot is ps/pdf
-        if not keyword_set(ps) then xyouts,!d.x_size/2,!d.y_ch_size,pi,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR
-      endif
-      ;xyouts,!d.x_size/2,3L,s,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR
-      if not keyword_set(ps) then xyouts,!d.x_size/2,!d.y_ch_size/10,s,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR
-    endif else begin
+	; RCJ 05/09/2007  Note: Bob's choice was to leave the lines below out of the plot if plot is ps/pdf
+
+        if (not keyword_set(ps) and not move_up) then xyouts,!d.x_size/2,!d.y_ch_size,pi,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR else xyouts,!d.x_size/2,34L,pi,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,color=tcolor
+
+       endif ;if TIMETAG
+
+      if (not keyword_set(ps) and not move_up) then xyouts,!d.x_size/2,!d.y_ch_size/10,s,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR else xyouts,!d.x_size/2,!d.y_ch_size,s,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,color=tcolor
+
+     endif else begin ; else not IMAGE
        if keyword_set(ps) then begin
           ;if move_up then begin
           ;   xyouts,!d.x_size/2,!d.y_ch_size*2.75,pi,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,color=tcolor
@@ -146,7 +156,7 @@ if (s ne '') then begin
 				       ;space is limited
 
     s = ''
-    if (pr(0) eq 'ISTP') then begin
+    if (pr[0] eq 'ISTP') then begin
       s = 'Key Parameter and Survey data (labels K0,K1,K2) are '
       s = s + 'preliminary browse data.' + '!C'
     endif
@@ -156,9 +166,9 @@ if (s ne '') then begin
     if keyword_set(IMAGE) then begin
       if keyword_set(TIMETAG) then begin
         d = size(TIMETAG) ; determine if time is a range or single time
-        if d(0) eq 0 then ts = 'Frame time: ' + decode_cdfepoch(TIMETAG) $
-        else ts = 'Time Range: ' + decode_cdfepoch(TIMETAG(0)) + ' to ' + $
-                  decode_cdfepoch(TIMETAG(1))
+        if d[0] eq 0 then ts = 'Frame time: ' + decode_cdfepoch(TIMETAG) $
+        else ts = 'Time Range: ' + decode_cdfepoch(TIMETAG[0]) + ' to ' + $
+                  decode_cdfepoch(TIMETAG[1])
 	ts = ts + '; ' + gen_date
         ;xyouts,!d.x_size/2,23L,ts,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR
         ;xyouts,!d.x_size/2,13L,pi,/DEVICE,ALIGNMENT=0.5,CHARSIZE=c,COLOR=TCOLOR

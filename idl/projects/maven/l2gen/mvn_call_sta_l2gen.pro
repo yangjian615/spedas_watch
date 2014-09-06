@@ -5,7 +5,7 @@
 ; mvn_call_sta_l2gen
 ;INPUT:
 ; None -- the default is to read in a file
-;         /disks/data/maven/pfp/sta/l2/most_recent_l0_processed.txt
+;         /disks/data/maven/data/sci/sta/l2/most_recent_l0_processed.txt
 ;         and process all files after that time
 ;KEYWORDS:
 ; time_in = the time for which old files created *after* this date
@@ -27,8 +27,8 @@
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-30 16:00:20 -0700 (Mon, 30 Jun 2014) $
-; $LastChangedRevision: 15485 $
+; $LastChangedDate: 2014-09-04 11:20:05 -0700 (Thu, 04 Sep 2014) $
+; $LastChangedRevision: 15740 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
@@ -64,7 +64,8 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
         else: goto, SKIP_ALL
      endcase
   endif
-  If(keyword_set(out_dir)) Then odir = out_dir Else odir = '/disks/data/maven/pfp/'
+  If(keyword_set(out_dir)) Then odir = out_dir Else odir = '/disks/data/maven/data/sci/'
+
 ;--------------------------------
   instr = 'sta'
   ninstr = n_elements(instr)
@@ -104,7 +105,7 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
            Else: instr_dir = instrk
         Endcase
 ;Set up check directories, l0 is first
-        sdir = '/disks/data/maven/pfp/l0/*/*/mvn_pfp_???_l0_*.dat'
+        sdir = '/disks/data/maven/data/sci/pfp/l0/mvn_pfp_all_l0_*.dat'
         pfile = file_search(sdir)
         If(keyword_set(use_file4time)) Then Begin
  ;Get the file date

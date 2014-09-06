@@ -1,5 +1,5 @@
 ;-------------------------------------------------------------
-; $Id: loglevels.pro 8 2006-10-11 20:32:51Z kenb $
+; $Id: loglevels.pro 15739 2014-09-03 22:05:59Z nikos $
 ;+
 ; NAME:
 ;        LOGLEVELS (function)
@@ -111,7 +111,7 @@ function loglevels,range,min=mind,max=maxd,  $
     if (n_elements(range) eq 1) then range = [ range*0.001, range ]
  
     thisrange = double(range) > 1.D-100
-    thisrange = thisrange(sort(thisrange))
+    thisrange = thisrange[sort(thisrange)]
  
     ; set lower range to 3 decades below upper range if it is zero
     if (thisrange[0] lt 1.D-36) then thisrange[0] = thisrange[1]/1000. 
@@ -139,8 +139,9 @@ function loglevels,range,min=mind,max=maxd,  $
     mode = 0   ; return decades
     if (keyword_set(fine)) then mode = 1
     if ((lrange[1]-lrange[0]) le COARSE) then mode = 1
+
     if (thisrange[0] lt 1.D-15 OR thisrange[1] gt 5.D16) then mode = 0
- 
+
     if (mode) then begin
        ; make overall array
        labels = [ 1.D-15, 2.D-15, 5.D-15, 1.D-14, 2.D-14, 5.D-14, $
@@ -164,9 +165,12 @@ function loglevels,range,min=mind,max=maxd,  $
         llabels = alog10(labels)
         ind = where(llabels ge lrange[0] AND llabels le lrange[1])
  
-        ; if range values are too close, return original range
-        if (ind[0] lt 0) then return,range
- 
+        ; TJK 8/9/2013 if range values are too close return original range
+;        if (ind[0] lt 0) then return,range
+        if (((range[1]-range[0] lt 1) and (labels[ind[0]] ne 0.1D)) or ind[0] lt 0) then begin
+           print, 'LOGLEVELS: data range too small for log labels, possible log label was ',labels[ind[0]],' returning original range.' 
+           return,range
+        endif
         ; return reversed labels if range[0] gt range[1]
         if (range[0] gt range[1]) then $
            return,reverse(labels[min(ind):max(ind)]) $

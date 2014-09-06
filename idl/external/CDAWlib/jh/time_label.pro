@@ -31,6 +31,7 @@
 ;       R. Sterner, 22 Feb, 1991 --- Converted to IDL V2.
 ;       R. Sterner, 26 Feb, 1991 --- Renamed from make_time_labels.pro
 ;       Johns Hopkins University Applied Physics Laboratory.
+;       R. Sterner, 2010 Jun 04 --- Converted arrays from () to [].
 ;
 ; Copyright (C) 1988, Johns Hopkins University/Applied Physics Laboratory
 ; This software may be used, copied, or redistributed as long as it is not
@@ -58,22 +59,19 @@
 	  print,'   defaults to 1-Jan-2000.  When d$ is given in the'
 	  print,'   format string this just counts from day 1 up (to 31).'
 	  print,'   For a description of the time format string'
-	  print,'   see the routine dt_tm_mak.
+	  print,'   see the routine dt_tm_mak.'
 	  return,-1
 	endif
  
 	n = n_elements(v)
+ 
 	s = strarr(n)
  
 	if n_elements(form) eq 0 then form = 'h$:m$'
 	if n_elements(jd0) eq 0 then jd0 = 2451545
-;TJK 10/19/2009 - if asking for fraction of a second, "f", add a little
-;                 more precision for the THEMIS epoch16 values
-
-        if(strpos(form, 'f') gt -1) then dec = 4 else dec=3
-        
+ 
 	for i = 0, n-1 do begin
-	  s(i) = dt_tm_mak( jd0, v(i), form=form, decimal=dec)
+	  s[i] = dt_tm_mak( jd0, v[i], form=form)
 	endfor
  
 	return, s

@@ -1,8 +1,8 @@
-;$Author: jimm $                                                            
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/orb_mgr.pro,v 1.65 2008/02/14 21:08:42 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 7092 $
+;$Author: nikos $                                                            
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/orb_mgr.pro,v 1.69 2012/05/21 14:43:35 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 
 ;+                                                                            
 ; NAME: rmvar_strc.pro
@@ -19,9 +19,9 @@ ns_tags=n_tags(astrc)
 
  for k=0, ns_tags-1 do begin
 
-  if(namest(k) ne vname) then begin
-   if(k eq 0) then b=create_struct(namest(k),astrc.(k)) else begin
-     temp=create_struct(namest(k),astrc.(k))
+  if(namest[k] ne vname) then begin
+   if(k eq 0) then b=create_struct(namest[k],astrc.(k)) else begin
+     temp=create_struct(namest[k],astrc.(k))
      b=create_struct(b,temp)
    endelse
   endif
@@ -52,10 +52,10 @@ FUNCTION orb_handle, a
      if(n_elements(dat) gt 1) then dat=reform(dat)
      temp=create_struct('DAT',dat)
      temp1=create_struct(a.(k),temp)
-     temp2=create_struct(namest(k),temp1)
+     temp2=create_struct(namest[k],temp1)
      if(k eq 0) then b=temp2 else b=create_struct(b,temp2)
     endif else begin
-     temp2=create_struct(namest(k),a.(k))
+     temp2=create_struct(namest[k],a.(k))
      if(k eq 0) then b=temp2 else b=create_struct(b,temp2)
     endelse
 
@@ -71,7 +71,7 @@ FUNCTION evaluate_orbstruct, a
 
 ; Verify that the input variable is a structure
 b = size(a)
-if (b(n_elements(b)-2) ne 8) then begin
+if (b[n_elements(b)-2] ne 8) then begin
   print,'ERROR=Input parameter is not a valid structure.' & return,-1
 endif
 
@@ -81,14 +81,14 @@ atags = tag_names(a) ; get names of all attributes for structure
 ; attribute values.
 
 b = tagindex('DISPLAY_TYPE',atags)
-if (b(0) ne -1) then begin
-  c = break_mystring(a.(b(0)),delimiter='>')
+if (b[0] ne -1) then begin
+  c = break_mystring(a.(b[0]),delimiter='>')
   csize = size(c)
-  if (csize(1) eq 2)then begin
-    d = break_mystring(c(1), delimiter='=')
+  if (csize[1] eq 2)then begin
+    d = break_mystring(c[1], delimiter='=')
     dsize = size(d)
-    if (dsize(1) eq 2) then begin
-      if (strupcase(d(0)) eq 'COORD') then coord = strupcase(d(1))
+    if (dsize[1] eq 2) then begin
+      if (strupcase(d[0]) eq 'COORD') then coord = strupcase(d[1])
     endif
   endif 
 endif 
@@ -99,7 +99,7 @@ return, coord
 end  
 
 
-
+;----------------------------------------------------------------------
 
 function orb_mgr,m0, $
                  tstart=tstart,tstop=tstop,xsize=xsize,ysize=ysize, $
@@ -127,6 +127,12 @@ function orb_mgr,m0, $
 ;           Otherwise an error will result. eg. GSE_POS for both pre and
 ;           def. NOT GSE_POS for pre and GSM_POS for def. 
 ; 
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 out_names=strarr(10)
 
@@ -165,7 +171,7 @@ endif
 ; Insure m0 is an array and not a structure. If it is a structure, set ssc=0
 ain=size(m0)
 nain=n_elements(ain) 
-if(ain(nain-1) eq 8) then begin
+if(ain[nain-1] eq 8) then begin
  SSC=0
  print, "WARNING= switching from SSC to CDAW application"
 endif
@@ -195,7 +201,7 @@ for i=0, nstruct-1 do begin
 ;  if(NOT SSC) then a=orb_handle(a)
    a=orb_handle(a)
 ; patch for tstart
-  if(tstart eq 0.d0) then tstart=a.epoch.dat(0)
+  if(tstart eq 0.d0) then tstart=a.epoch.dat[0]
 ; Determine satellite names
   if(a.(0).project eq 'SSC') then begin
    tagnm=a.(0).source_name
@@ -204,12 +210,16 @@ for i=0, nstruct-1 do begin
    ch=''
    tagnm=''
    ii=0
-   while(ch ne '>') do begin
-    ch=strmid(tagtmp,ii,1)
-    ii=ii+1
-    tagnm=tagnm+ch
-   endwhile
-    tagnm=strmid(tagnm,0,(strlen(tagnm)-1))
+   ;TJK 2/25/2010 - add check for if there isn't a ">" in the
+   ;source_name, otherwise the code goes into an infinite loop
+   if (strpos(tagtmp, '>') gt 0)then begin
+     while(ch ne '>') do begin
+      ch=strmid(tagtmp,ii,1)
+      ii=ii+1
+      tagnm=tagnm+ch
+     endwhile
+     tagnm=strmid(tagnm,0,(strlen(tagnm)-1))
+   endif else tagnm = tagtmp
   endelse
 
 ;TJK 2/26/2002 - call replace_bad_chars to replace any "illegal" characters in
@@ -228,15 +238,15 @@ for i=0, nstruct-1 do begin
    if(coord ne ' ') then begin
 ;        print, 'Coordinate system = ',coord
 	coord = strupcase(coord)
-	if (coord eq 'GCI') then cs_bol(0) = 1
-	if (coord eq 'TOD') then cs_bol(1) = 1
-	if (coord eq 'J2000') then cs_bol(2) = 1
-	if (coord eq 'GEO') then cs_bol(3) = 1
-	if (coord eq 'GM') then cs_bol(4) = 1
-	if (coord eq 'GSE') then cs_bol(5) = 1
-	if (coord eq 'GSM') then cs_bol(6) = 1
-	if (coord eq 'SM') then cs_bol(7) = 1
-	if (coord eq 'HEC') then cs_bol(8) = 1
+	if (coord eq 'GCI') then cs_bol[0] = 1
+	if (coord eq 'TOD') then cs_bol[1] = 1
+	if (coord eq 'J2000') then cs_bol[2] = 1
+	if (coord eq 'GEO') then cs_bol[3] = 1
+	if (coord eq 'GM') then cs_bol[4] = 1
+	if (coord eq 'GSE') then cs_bol[5] = 1
+	if (coord eq 'GSM') then cs_bol[6] = 1
+	if (coord eq 'SM') then cs_bol[7] = 1
+	if (coord eq 'HEC') then cs_bol[8] = 1
    endif
 
     ;TJK added the following if statement so that these assumptions don't
@@ -245,30 +255,31 @@ for i=0, nstruct-1 do begin
 
     if(a.(0).project eq 'SSC') then begin
 
-     if(vnames(j) eq 'GCI_POS') then cs_bol(0)=1                               
-     if(vnames(j) eq 'XYZ_GCI') then cs_bol(0)=1
-     if(vnames(j) eq 'TOD_POS') then cs_bol(1)=1                              
-     if(vnames(j) eq 'XYZ_TOD') then cs_bol(1)=1
-     if(vnames(j) eq 'J2000_POS') then cs_bol(2)=1  
-     if(vnames(j) eq 'XYZ_J2000') then cs_bol(2)=1
-     if(vnames(j) eq 'GEO_POS') then cs_bol(3)=1                               
-     if(vnames(j) eq 'XYZ_GEO') then cs_bol(3)=1
-     if(vnames(j) eq 'GM_POS') then cs_bol(4)=1
-     if(vnames(j) eq 'XYZ_GM') then cs_bol(4)=1
-     if(vnames(j) eq 'GSE_POS') then cs_bol(5)=1
-     if(vnames(j) eq 'XYZ_GSE') then cs_bol(5)=1
-     if(vnames(j) eq 'GSM_POS') then cs_bol(6)=1                               
-     if(vnames(j) eq 'XYZ_GSM') then cs_bol(6)=1
-     if(vnames(j) eq 'SM_POS') then cs_bol(7)=1
-     if(vnames(j) eq 'XYZ_SM') then cs_bol(7)=1
-     if(vnames(j) eq 'HEC_POS') then cs_bol(8)=1                               
-     if(vnames(j) eq 'XYZ_HEC') then cs_bol(8)=1
+     if(vnames[j] eq 'GCI_POS') then cs_bol[0]=1                               
+     if(vnames[j] eq 'XYZ_GCI') then cs_bol[0]=1
+     if(vnames[j] eq 'TOD_POS') then cs_bol[1]=1                              
+     if(vnames[j] eq 'XYZ_TOD') then cs_bol[1]=1
+     if(vnames[j] eq 'J2000_POS') then cs_bol[2]=1  
+     if(vnames[j] eq 'XYZ_J2000') then cs_bol[2]=1
+     if(vnames[j] eq 'GEO_POS') then cs_bol[3]=1                               
+     if(vnames[j] eq 'XYZ_GEO') then cs_bol[3]=1
+     if(vnames[j] eq 'GM_POS') then cs_bol[4]=1
+     if(vnames[j] eq 'XYZ_GM') then cs_bol[4]=1
+     if(vnames[j] eq 'GSE_POS') then cs_bol[5]=1
+     if(vnames[j] eq 'XYZ_GSE') then cs_bol[5]=1
+     if(vnames[j] eq 'GSM_POS') then cs_bol[6]=1                               
+     if(vnames[j] eq 'XYZ_GSM') then cs_bol[6]=1
+     if(vnames[j] eq 'SM_POS') then cs_bol[7]=1
+     if(vnames[j] eq 'XYZ_SM') then cs_bol[7]=1
+     if(vnames[j] eq 'HEC_POS') then cs_bol[8]=1                               
+     if(vnames[j] eq 'XYZ_HEC') then cs_bol[8]=1
     endif
   endfor 
 
 ; Build final mega-structure
   temp=create_struct(tagnm,a)
   new_str=create_struct(new_str,temp)
+
   catch, error_stat
 ; Trap pre. + def. error
   if error_stat ne 0 then begin
@@ -300,8 +311,8 @@ endfor
 ; Loop through the # of coord. systems plotting each one on a separate page
 cs_names=['GCI','TOD','J2000','GEO','GM','GSE','GSM','SM','HEC']
 for l=0,8 do begin
- if(cs_bol(l) eq 1) then begin
-  crd_sys=cs_names(l)
+ if(cs_bol[l] eq 1) then begin
+  crd_sys=cs_names[l]
 
 ; Patch for panel and stacked orbit plots
    if(panel) then n_lp=n_elements(orb_vw)-1 else n_lp=0
@@ -310,7 +321,7 @@ for l=0,8 do begin
    for mm=0,n_lp do begin                 ; Re-assign view for each 
     if(panel) then begin                  ; stacked plot
        orb_vw=strarr(1)
-       orb_vw(0)=temp_arr(mm) 
+       orb_vw[0]=temp_arr[mm] 
     endif
      
     ; Open an X-window or GIF file depending on keywords
@@ -362,11 +373,15 @@ if (keyword_set(GIF) or keyword_set(ps))then begin
   top = 255
   bottom = 0
   tvlct, r_curr, g_curr, b_curr, /get
-  r_curr(0) = bottom & g_curr(0) = bottom & b_curr(0) = bottom
-  r_curr(!d.n_colors-1) = top & g_curr(!d.n_colors-1) = top
-  b_curr(!d.n_colors-1) = top
-  r_curr(!p.color) = top & g_curr(!p.color) = top
-  b_curr(!p.color) = top
+  r_curr[0] = bottom & g_curr[0] = bottom & b_curr[0] = bottom
+;TJK 8/16/2010 change from !d.n_colors to !d.table_size so
+;we won't have problems w/ different sized color tables.
+;  r_curr(!d.n_colors-1) = top & g_curr(!d.n_colors-1) = top
+;  b_curr(!d.n_colors-1) = top
+  r_curr[!d.table_size-1] = top & g_curr[!d.table_size-1] = top
+  b_curr[!d.table_size-1] = top
+  r_curr[!p.color] = top & g_curr[!p.color] = top
+  b_curr[!p.color] = top
   tvlct, r_curr, g_curr, b_curr
   deviceclose
   erase

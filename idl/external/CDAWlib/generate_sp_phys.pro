@@ -1,6 +1,12 @@
-@compile_inventory.pro
-;
+; Modifications:
 ; TJK - 11/6/2002 - split sp_phys catalog out since it takes so long to run.
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+@compile_inventory.pro
 ;
 ; Read the metadata file...
 a = ingest_database('/home/cdaweb/metadata/sp_phys_cdfmetafile.txt',DEBUG=DEBUG)
@@ -10,16 +16,28 @@ a = ingest_database('/home/cdaweb/metadata/sp_phys_cdfmetafile.txt',DEBUG=DEBUG)
 
 aa=a
 
-s=draw_inventory(a,TITLE='SPACE PHYSICS 1960-2010', /BIGPLOT,$
+s=draw_inventory(a,TITLE='SPACE PHYSICS 1960-2020', /BIGPLOT,$
 GIF='/home/cdaweb/metadata/sp_phys_cdfmetafile.gif', $
 /long_line, /wide_margin, $
-START_TIME='1960/01/01 00:00:00',STOP_TIME='2010/12/31 23:59:59',debug=debug)
+START_TIME='1960/01/01 00:00:00',STOP_TIME='2020/12/31 23:59:59',debug=debug)
+;
+;   Now every 5 years:
 ;
 a=aa
-s=draw_inventory(a,TITLE='SPACE PHYSICS 1969-1974', /FIVEYEAR,$
-GIF='/var/www/cdaweb/htdocs/sp_phys/avail_1969-1974.gif', $
+s=draw_inventory(a,TITLE='SPACE PHYSICS 1960-1964', /FIVEYEAR,$
+GIF='/var/www/cdaweb/htdocs/sp_phys/avail_1960-1964.gif', $
  /wide_margin, $
-START_TIME='1969/01/01 00:00:00',STOP_TIME='1974/12/31 23:59:59',debug=debug)
+START_TIME='1960/01/01 00:00:00',STOP_TIME='1964/12/31 23:59:59',debug=debug)
+a=aa
+s=draw_inventory(a,TITLE='SPACE PHYSICS 1965-1969', /FIVEYEAR,$
+GIF='/var/www/cdaweb/htdocs/sp_phys/avail_1965-1969.gif', $
+ /wide_margin, $
+START_TIME='1965/01/01 00:00:00',STOP_TIME='1969/12/31 23:59:59',debug=debug)
+a=aa
+s=draw_inventory(a,TITLE='SPACE PHYSICS 1970-1974', /FIVEYEAR,$
+GIF='/var/www/cdaweb/htdocs/sp_phys/avail_1970-1974.gif', $
+ /wide_margin, $
+START_TIME='1970/01/01 00:00:00',STOP_TIME='1974/12/31 23:59:59',debug=debug)
 a=aa
 s=draw_inventory(a,TITLE='SPACE PHYSICS 1975-1979', /FIVEYEAR,$
 GIF='/var/www/cdaweb/htdocs/sp_phys/avail_1975-1979.gif', $
@@ -65,6 +83,11 @@ s=draw_inventory(a,TITLE='SPACE PHYSICS 2010-2014', /FIVEYEAR,$
 GIF='/var/www/cdaweb/htdocs/sp_phys/avail_2010-2014.gif', $
  /wide_margin, $
 START_TIME='2010/01/01 00:00:00',STOP_TIME='2014/12/31 23:59:59',debug=debug)
+a=aa
+s=draw_inventory(a,TITLE='SPACE PHYSICS 2015-2020', /FIVEYEAR,$
+GIF='/var/www/cdaweb/htdocs/sp_phys/avail_2015-2020.gif', $
+ /wide_margin, $
+START_TIME='2015/01/01 00:00:00',STOP_TIME='2020/12/31 23:59:59',debug=debug)
 ;
 delvar, a,aa
 

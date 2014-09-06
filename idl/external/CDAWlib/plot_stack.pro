@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/plot_stack.pro,v 1.36 2009/07/22 17:54:01 kovalick Exp kovalick $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/plot_stack.pro,v 1.52 2014/04/29 19:09:06 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 7092 $
+;$Revision: 15739 $
 ;+------------------------------------------------------------------------
 ; NAME: PLOT_STACK
 ; PURPOSE: To generate a multiple line time series plot given the 
@@ -65,14 +65,21 @@ FUNCTION plot_stack, Xvar, Yvar, Zvar,$
                           IGNORE_DISPLAY_TYPE=IGNORE_DISPLAY_TYPE,$
                           NONOISE=NONOISE,DEBUG=DEBUG,REPORT=REPORT,$
 			  COLORBAR=COLORBAR, NOSUBTITLE=NOSUBTITLE, $
+			  SCATTER=SCATTER, REVERSE_ORDER=REVERSE_ORDER,$
 			  _EXTRA=EXTRAS
 
 
 ; Open report file if keyword is set
 if keyword_set(REPORT) then begin & reportflag=1L
-  a=size(REPORT) & if (a(n_elements(a)-2) eq 7) then $
+  a=size(REPORT) & if (a[n_elements(a)-2] eq 7) then $
   OPENW,1,REPORT,132,WIDTH=132
 endif else reportflag=0L
+
+if keyword_set(SCATTER) then begin
+  psym=2 & symsize=.25
+  endif else begin
+     psym=0 & symsize=1.0
+  endelse
 
 ; Verify that both Xvar and Yvar are present
 if (n_params() ne 3) then begin
@@ -81,75 +88,79 @@ endif
 
 ; Verify the type of the first parameter and retrieve the data
 a = size(Xvar)
-if (a(n_elements(a)-2) ne 8) then begin
+if (a[n_elements(a)-2] ne 8) then begin
   print,'ERROR=1st parameter to plot_stack not a structure' & return,-1
 endif else begin
   a = tagindex('DAT',tag_names(Xvar))
-  if (a(0) ne -1) then times = Xvar.DAT $
+  if (a[0] ne -1) then times = Xvar.DAT $
   else begin
     a = tagindex('HANDLE',tag_names(Xvar))
-    if (a(0) ne -1) then handle_value,Xvar.HANDLE,times $
+    if (a[0] ne -1) then handle_value,Xvar.HANDLE,times $
     else begin
       print,'ERROR=1st parameter does not have DAT or HANDLE tag' & return,-1
     endelse
     b = size(times)
-    if (b(n_elements(b)-2) ne 5) then begin
-      print,'ERROR=1st parameter datatype not CDF EPOCH' & return,-1
-    endif
+    ;TJK 4/26/2013 - add code to allow Epoch16 and TT2000 in addition to Epoch
+    if ((b[n_elements(b)-2] eq 5) or (b[n_elements(b)-2] eq 9) or $
+        (b[n_elements(b)-2] eq 14)) then begin
+        ;print, 'Epoch parameter ok' 
+     endif else begin 
+        print,'ERROR=1st parameter datatype not a CDF TIME related type' & return,-1
+    endelse
   endelse
 endelse
 szck=size(times)
-if(szck(szck(0)+2) ne 1) then $ ; RTB added to prevent reform(scalar)
+if(szck[szck[0]+2] ne 1) then $ ; RTB added to prevent reform(scalar)
        times = reform(times) ; eliminate any redundant dimensions
 
 ; Verify the type of the second parameter and retrieve the data
 a = size(Yvar)
-if (a(n_elements(a)-2) ne 8) then begin
+if (a[n_elements(a)-2] ne 8) then begin
   print,'ERROR=2nd parameter to plot_stack not a structure' & return,-1
 endif else begin
   YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
   a = tagindex('DAT',YTAGS)
-  if (a(0) ne -1) then THEDATA = Yvar.DAT $
+  if (a[0] ne -1) then THEDATA = Yvar.DAT $
   else begin
     a = tagindex('HANDLE',YTAGS)
-    if (a(0) ne -1) then handle_value,Yvar.HANDLE,THEDATA $
+    if (a[0] ne -1) then handle_value,Yvar.HANDLE,THEDATA $
     else begin
       print,'ERROR=2nd parameter does not have DAT or HANDLE tag' & return,-1
     endelse
   endelse
 endelse
 szck=size(thedata)
-if(szck(szck(0)+2) ne 1) then $ ; RTB added to prevent reform(scalar)
+if(szck[szck[0]+2] ne 1) then $ ; RTB added to prevent reform(scalar)
       thedata = reform(thedata) ; eliminate any redundant dimensions
 
 ; Verify the type of the third parameter and retrieve the data
 a = size(Zvar)
-if (a(n_elements(a)-2) ne 8) then begin
+if (a[n_elements(a)-2] ne 8) then begin
   print,'ERROR=3rd parameter to plot_stack not a structure' & return,-1
 endif else begin
   ZTAGS = tag_names(Zvar) ; avoid multiple calls to tag_names
   a = tagindex('DAT',ZTAGS)
-  if (a(0) ne -1) then THECOLOR = Zvar.DAT $
+  if (a[0] ne -1) then THECOLOR = Zvar.DAT $
   else begin
     a = tagindex('HANDLE',ZTAGS)
-    if (a(0) ne -1) then handle_value,Zvar.HANDLE,THECOLOR $
+    if (a[0] ne -1) then handle_value,Zvar.HANDLE,THECOLOR $
     else begin
       print,'ERROR=3rd parameter does not have DAT or HANDLE tag' & return,-1
     endelse
   endelse
 endelse
 szck=size(thecolor)
-if(szck(szck(0)+2) ne 1) then $ ; RTB added to prevent reform(scalar)
+if(szck[szck[0]+2] ne 1) then $ ; RTB added to prevent reform(scalar)
       thecolor = reform(thecolor) ; eliminate any redundant dimensions
 
 
 ; Verify type of data and determine the number of panels that will be plotted
 ; and which elements of the data array are to be plotted.
-a = size(thedata) & b = a(n_elements(a)-2) & thedata_size = a
+a = size(thedata) & b = a[n_elements(a)-2] & thedata_size = a
 if ((b eq 0) OR (b gt 5)) then begin
   print,'STATUS=datatype indicates that data is not plottable' & return,-1
 endif else begin
-  case a(0) of
+  case a[0] of
   0   : begin
 ;        print,'ERROR=Single data points are not plottable' & return,-1
         print,'STATUS=Re-select longer time interval. Single data points are not plottable' & return,-1
@@ -160,15 +171,15 @@ endif else begin
         print,'STATUS=Re-select longer time interval. Single data points are not plottable' & return,-1
         end
   2   : begin ; #panels determined by dimensionality or by display type
-        elist=indgen(a(1))
+        elist=indgen(a[1])
         if keyword_set(ELEMENTS) then elist = ELEMENTS $
         else begin
           if NOT keyword_set(IGNORE_DISPLAY_TYPE) then begin
             b = tagindex('DISPLAY_TYPE',YTAGS)
-            if (b(0) ne -1) then begin ; evaluate the display type
-              c = strupcase(Yvar.(b(0))) & c = break_mystring(c,delimiter='>')
-              if ((c(0) eq 'STACK_PLOT')AND(n_elements(c) gt 1)) then begin
-                d = break_mystring(c(1),delimiter=',')
+            if (b[0] ne -1) then begin ; evaluate the display type
+              c = strupcase(Yvar.(b[0])) & c = break_mystring(c,delimiter='>')
+              if ((c[0] eq 'STACK_PLOT')AND(n_elements(c) gt 1)) then begin
+                d = break_mystring(c[1],delimiter=',')
                 elist = long(d) & elist = elist -1
               endif
             endif
@@ -183,70 +194,190 @@ endelse
 num_plots = n_elements(elist)
 
 ; Determine the proper start and stop times of the plot
-tbegin = times(0) & tend = times(n_elements(times)-1) ; default to data
+tbegin = times[0] & tend = times[n_elements(times)-1] ; default to data
+;TJK replace this original code which handles just epoch w/ code belwo
+;if keyword_set(TSTART) then begin ; set tbegin
+;  tbegin = TSTART & a = size(TSTART)
+;  if (a[n_elements(a)-2] eq 7) then tbegin = encode_CDFEPOCH(TSTART)
+;endif
+;if keyword_set(TSTOP) then begin ; set tend
+;  tend = TSTOP & a = size(TSTOP)
+;  if (a[n_elements(a)-2] eq 7) then tend = encode_CDFEPOCH(TSTOP)
+;endif
+
 if keyword_set(TSTART) then begin ; set tbegin
-  tbegin = TSTART & a = size(TSTART)
-  if (a(n_elements(a)-2) eq 7) then tbegin = encode_CDFEPOCH(TSTART)
+  tbegin = TSTART & tbegin16 = TSTART & tbegintt = TSTART & a = size(TSTART)
+  if (a[n_elements(a)-2] eq 7) then begin ;if tstart is a string, convert it
+      split_ep=strsplit(TSTART,'.',/extract)
+      tbegin = encode_CDFEPOCH(TSTART)
+      tbegin16 = encode_CDFEPOCH(TSTART,/EPOCH16,msec=split_ep[1]);TJK added for use when data is epoch16 
+      tbegintt = encode_cdfepoch(TSTART, /TT2000, MSEC=split_ep[1]) ;TJK added for TT2000 time
+
+  endif
 endif
+
 if keyword_set(TSTOP) then begin ; set tend
-  tend = TSTOP & a = size(TSTOP)
-  if (a(n_elements(a)-2) eq 7) then tend = encode_CDFEPOCH(TSTOP)
+  tend = TSTOP & tend16 = TSTOP & tendtt = TSTOP & a = size(TSTOP)
+  if (a[n_elements(a)-2] eq 7) then begin ;if tstop is a string, convert it
+    split_ep=strsplit(TSTOP,'.',/extract)
+    tend = encode_CDFEPOCH(TSTOP)
+    tend16 = encode_CDFEPOCH(TSTOP,/EPOCH16,msec=split_ep[1]);TJK added for use when data is epoch16 
+    tendtt = encode_cdfepoch(TSTOP, /TT2000, MSEC=split_ep[1]) ;TJK added for TT2000 time
+  endif
 endif
 
 ; Compare the range of the time data to the requested start and stop times
 pad_front = 0L & pad_end = 0L
-if (tbegin lt times(0)) then begin
-  if keyword_set(DEBUG) then print,'Padding front of times...'
-  times = [tbegin,times] & pad_front = 1L
+;add more code to epoch16 and tt2000
+ep16 = 0 & eptt=0
+if (size(times[0],/tname) eq 'DCOMPLEX')then begin 
+    ep16 = 1
+    tend = tend16 
+    tbegin = tbegin16
+ endif
+if (size(times[0],/tname) eq 'LONG64')then begin 
+    eptt = 1
+    tend = tendtt 
+    tbegin = tbegintt
 endif
-if (tend gt times(n_elements(times)-1)) then begin
-  if keyword_set(DEBUG) then print,'Padding end of times...'
-  times = [times,tend] & pad_end = 1L
-endif
+
+print, 'DEBUG in plot_stack, ep16 and eptt = ',ep16, eptt
+
+if (!version.release ge '6.2' and (ep16 or eptt)) then begin
+  if (cdf_epoch_compare(times[0], tbegin)) then begin
+    if keyword_set(DEBUG) then print,'Padding front of times...'
+    times = [tbegin,times] & pad_front = 1L
+  endif
+  if (cdf_epoch_compare(tend, times[n_elements(times)-1])) then begin
+    if keyword_set(DEBUG) then print,'Padding end of times...'
+    times = [times,tend] & pad_end = 1L
+  endif
+endif else begin
+;print, 'tbegin, times0 timesN= ',tbegin, times[0], times[n_elements(times)-1]
+;print, 'size of times ',n_elements(times)
+  if (tbegin lt times[0]) then begin
+    if keyword_set(DEBUG) then print,'Padding front of times...'
+    times = [tbegin,times] & pad_front = 1L
+  endif
+  if (tend gt times[n_elements(times)-1]) then begin
+    if keyword_set(DEBUG) then print,'Padding end of times...'
+    times = [times,tend] & pad_end = 1L
+ endif
+endelse
 
 ; Determine the first and last data time points to be plotted
 rbegin = 0L & w = where(times ge tbegin,wc)
-if (wc gt 0) then rbegin = w(0)
+if (wc gt 0) then rbegin = w[0]
 rend = n_elements(times)-1 & w = where(times le tend,wc)
-if (wc gt 0) then rend = w(n_elements(w)-1)
+if (wc gt 0) then rend = w[n_elements(w)-1]
 if (rbegin ge rend) then begin
   print,'STATUS=No data within specified time range.' & return,-1
 endif
 
 if not (keyword_set(nosubtitle)) then begin
+  if (not eptt) then begin
    ; Create a subtitle for the plots showing the data start and stop times
-   CDF_EPOCH,tbegin,year,month,day,hour,minute,second,milli,/BREAK
-   subtitle = 'TIME RANGE='+strtrim(string(year),2)+'/'+strtrim(string(month),2)
-   subtitle = subtitle + '/' + strtrim(string(day),2) + ' to '
-   CDF_EPOCH,tend,year,month,day,hour,minute,second,milli,/BREAK
-   subtitle = subtitle + strtrim(string(year),2)+'/'+strtrim(string(month),2)
-   subtitle = subtitle + '/' + strtrim(string(day),2)
+    CDF_EPOCH,tbegin,byear,bmonth,bday,hour,minute,second,milli,/BREAK
+    CDF_EPOCH,tend,eyear,emonth,eday,hour,minute,second,milli,/BREAK
+ endif else begin ;if tt2000, can still call cdf_epoch but need to specifiy tointeger
+    CDF_EPOCH,tbegin,byear,bmonth,bday,hour,minute,second,milli,/TOINTEGER,/BREAK
+    CDF_EPOCH,tend,eyear,emonth,eday,hour,minute,second,milli,/TOINTEGER,/BREAK
+ endelse
+
+   ical,byear,doy,bmonth,bday,/idoy
+
+   subtitle = 'TIME RANGE='+strtrim(string(byear),2)+'/'+strtrim(string(bmonth),2)
+   subtitle = subtitle + '/' + strtrim(string(bday),2)  
+   subtitle = subtitle + ' (' + strtrim(string(doy),2) + ') to '
+
+   ical,eyear,doy,emonth,eday,/idoy
+   subtitle = subtitle + strtrim(string(eyear),2)+'/'+strtrim(string(emonth),2)
+   subtitle = subtitle + '/' + strtrim(string(eday),2)
+   subtitle = subtitle + ' (' + strtrim(string(doy),2) + ')'
+
 endif else subtitle=''   
 
+;REPLACE THIS NEXT SECTION W/ NEW CODE FOR Epoch16 and TT200
+;; Convert the time array into seconds since tbegin
+;CDF_EPOCH,tbegin,year,month,day,hour,minute,second,milli,/BREAK
+;CDF_EPOCH,a,year,month,day,0,0,0,0,/COMPUTE_EPOCH
+;times  = (times - a) / 1000
+;julday = ymd2jd(year,month,day)
+;
+;; Determine label for time axis based on time range
+;xranger = lonarr(2)
+;xranger[0] = (tbegin-a)/1000
+;xranger[1] = (tend-a)/1000
+;trange = xranger[1] - xranger[0]
+;if (trange le 60.0) then tform='h$:m$:s$.f$@y$ n$ d$' $
+;else tform='h$:m$:s$@y$ n$ d$'
+;END REPLACEMENT
+
+;Beginning of section of code that computes the beginning of the first
+;day requested.  From here on down, the times are adjusted relative to
+;this 1st day because the time plotting routines can't deal w/
+;our large "epoch" values.
+
 ; Convert the time array into seconds since tbegin
-CDF_EPOCH,tbegin,year,month,day,hour,minute,second,milli,/BREAK
-CDF_EPOCH,a,year,month,day,0,0,0,0,/COMPUTE_EPOCH
-times  = (times - a) / 1000
+if (not eptt) then begin
+  CDF_EPOCH,tbegin,year,month,day,hour,minute,second,milli,/BREAK
+  CDF_EPOCH,a,year,month,day,0,0,0,0,/COMPUTE_EPOCH ;a is the beginning of the day
+endif else begin
+  CDF_EPOCH,tbegin,year,month,day,hour,minute,second,milli,/BREAK, /TOINTEGER
+  CDF_EPOCH,a,year,month,day,0,0,0,0,/COMPUTE,/TT2000 ;a is the beginning of the day
+endelse
+
+if (ep16)then begin 
+   CDF_EPOCH16,b,year,month,day,0,0,0,0,0,0,0,/COMPUTE_EPOCH ;a for epoch16
+   if keyword_set(DEBUG) then tatime = systime(1)
+     ep_diff = cdf_epoch_diff (times, b, /micro_seconds)
+     temp2 = ep_diff/1000000.d0
+;   if keyword_set(DEBUG) then print, 'Took ',systime(1)-tatime, ' seconds to compute time difference WITH NEW cdf_epoch_diff'
+   times = temp2
+
+endif else if (eptt) then begin ;this is the computation for cdf_tt2000
+    times  = (times - a) / 1000000000.d0 ; int in seconds from first of day
+;    print, 'TT2000 beginning times = ',times[0:5]
+ endif else begin
+    times  = (times - a) / 1000.d0 ; double in seconds from first of day
+endelse
+
 julday = ymd2jd(year,month,day)
 
 ; Determine label for time axis based on time range
-xranger = lonarr(2)
-xranger(0) = (tbegin-a)/1000
-xranger(1) = (tend-a)/1000
-trange = xranger(1) - xranger(0)
-if (trange le 60.0) then tform='h$:m$:s$.f$@y$ n$ d$' $
+xranger = dblarr(2)
+if (ep16 or eptt) then begin
+  xranger[0] = times[0]
+  xranger[1] = times[n_elements(times)-1]
+;  print, 'times[0] =',times[0]
+endif else begin
+;TJK - 6/18/2010 - when 1st time gets set to zero, take the second
+;      time so that w/ small time ranges, the xranger will be more accurate.
+  xranger[0] = (tbegin-a)/1000
+  if ((tbegin-a) eq 0 and (n_elements(times) le 50)) then xranger[0] = times[1]
+  xranger[1] = (tend-a)/1000
+endelse
+trange = xranger[1] - xranger[0]
+;print, 'time range = ',trange
+;if (trange le 60.0) then tform='h$:m$:s$.f$@y$ n$ d$' $
+; RCJ 08/06/2007  Changed above to below, not sure it's best combination.
+; 
+;TJK 1/19/2011 - check to see if there's a decimal at all, if so, then want
+; the higher precision.
+;if (trange le 1.0) then tform='h$:m$:s$.f$@y$ n$ d$' $
+if (trange gt 0.0 and trange lt 1.0) then tform='h$:m$:s$.f$@y$ n$ d$' $
 else tform='h$:m$:s$@y$ n$ d$'
 
 ; Determine if a new window should be opened for the plots
 new_window = 1L ; initialize assuming a new window needs to be created
 if keyword_set(POSITION) then begin ; adding to existing plot
   a = size(POSITION) & b = n_elements(a)
-  if ((a(b-1) ne 4)OR(a(b-2) ne 3)) then begin
+  if ((a[b-1] ne 4)OR(a[b-2] ne 3)) then begin
     print,'ERROR=Invalid value for POSITION keyword' & return,-1
   endif
   if keyword_set(PANEL_HEIGHT) then begin ; verify it
     a = size(PANEL_HEIGHT) & b = n_elements(a)
-    if ((a(b-2) le 1)OR(a(b-2) gt 5)) then begin
+    if ((a[b-2] le 1)OR(a[b-2] gt 5)) then begin
       print,'ERROR=Invalid value for PANEL_HEIGHT keyword' & return,-1
     endif else psize = PANEL_HEIGHT
   endif else begin
@@ -270,14 +401,14 @@ if (new_window eq 1) then begin
 
   endif else begin ; generating an X-window
     a = lonarr(2) & DEVICE,GET_SCREEN_SIZE=a ; get device resolution
-    xs = (a(0)*0.66) & ys = (a(1)*0.66) ; compute defaults
+    xs = (a[0]*0.66) & ys = (a[1]*0.66) ; compute defaults
     if keyword_set(XSIZE) then xs = XSIZE ; override if keyword present
     if keyword_set(YSIZE) then ys = YSIZE ; override if keyword present
     if keyword_set(PANEL_HEIGHT) then begin
       psize = PANEL_HEIGHT
 ;TJK      ys = (psize * num_plots) + 100
       ys = psize + 200
-      if (ys gt a(1)) then begin
+      if (ys gt a[1]) then begin
         print,'ERROR=Computed window Ysize greater than device resolution'
         return,-1
       endif
@@ -293,26 +424,26 @@ endif
 if keyword_set(POSITION) then ppos = POSITION $
 else begin
   ppos    = fltarr(4)         ; create position array
-;TJK  ppos(0) = 100               ; default plot x origin
-;  ppos(2) = (xs - 40)         ; default plot x corner
-;  ppos(1) = (ys - 30) - psize ; 1st plot y origin
-;  ppos(3) = (ys - 30)         ; 1st plot y corner
+;TJK  ppos[0] = 100               ; default plot x origin
+;  ppos[2] = (xs - 40)         ; default plot x corner
+;  ppos[1] = (ys - 30) - psize ; 1st plot y origin
+;  ppos[3] = (ys - 30)         ; 1st plot y corner
 
 ;TJK redefined for stacked plot type
-  ppos(0) = 100               ; bottom left corner (x)
-  ppos(1) = 100	      	      ; bottom left corner (y)
-  ppos(2) = (xs - 40)         ; top right corner (x)
-  ppos(3) = (ys - 30)         ; top right corner (y)
-  if keyword_set(CDAWEB) then ppos(2) = xs - 100 ; set margin for spectrogram
+  ppos[0] = 100               ; bottom left corner (x)
+  ppos[1] = 100	      	      ; bottom left corner (y)
+  ppos[2] = (xs - 40)         ; top right corner (x)
+  ppos[3] = (ys - 30)         ; top right corner (y)
+  if keyword_set(CDAWEB) then ppos[2] = xs - 100 ; set margin for spectrogram
 endelse
 
 
 ; Determine the title for the window or gif file
 if (new_window eq 1) then begin
   a = tagindex('SOURCE_NAME',YTAGS)
-  if (a(0) ne -1) then b = Yvar.SOURCE_NAME else b = ''
+  if (a[0] ne -1) then b = Yvar.SOURCE_NAME else b = ''
   a = tagindex('DESCRIPTOR',YTAGS)
-  if (a(0) ne -1) then b = b + '  ' + Yvar.DESCRIPTOR
+  if (a[0] ne -1) then b = b + '  ' + Yvar.DESCRIPTOR
   window_title = b
 endif
 
@@ -328,7 +459,7 @@ endif
 ; Create the new window or the gif file
 if (new_window eq 1) then begin
   if keyword_set(GIF) then begin
-    a = size(GIF) & if (a(n_elements(a)-2) ne 7) then GIF = 'idl.gif'
+    a = size(GIF) & if (a[n_elements(a)-2] ne 7) then GIF = 'idl.gif'
 ;TJK commented out, should be handled by plotmaster since its merged w/ the
 ;time-series and spectrogram plots.
 ;    deviceopen,6,fileOutput=GIF,sizeWindow=[xs,ys]
@@ -348,19 +479,20 @@ endif
 
 ; adjust the margin for plots w/ a colorbar
 xmargin=!x.margin
-if COLORBAR then begin
- if (!x.omargin(1)+!x.margin(1)) lt 14 then !x.margin(1) = 14
- !x.margin(1) = 14
+;Either colorbar or numeric labels, we need this space to the right
+;if COLORBAR then begin
+ if (!x.omargin[1]+!x.margin[1]) lt 14 then !x.margin[1] = 14
+ !x.margin[1] = 14
  plot,[0,1],[0,1],/noerase,/nodata,xstyle=4,ystyle=4
-endif
+;endif
 
 
 ; Determine the fill value for the Y data and valid min and valid max values
 a = tagindex('FILLVAL',YTAGS)
-if (a(0) ne -1) then Yfillval = Yvar.FILLVAL else Yfillval = 1.0e31
-if (a(0) ne -1) then Zfillval = Zvar.FILLVAL else Zfillval = 1.0e31
+if (a[0] ne -1) then Yfillval = Yvar.FILLVAL else Yfillval = 1.0e31
+if (a[0] ne -1) then Zfillval = Zvar.FILLVAL else Zfillval = 1.0e31
   colr_dims = size(thecolor, /n_dimensions)
-print, 'DEBUG, stack_plot: number of dimensions in the color variable = ',colr_dims
+;print, 'DEBUG, stack_plot: number of dimensions in the color variable = ',colr_dims
 
 
 
@@ -373,17 +505,17 @@ print, 'DEBUG, stack_plot: number of dimensions in the color variable = ',colr_d
   ; screen out fill data from the data and the times array for
   ; the portions of the data specified in elist.
 
-  edata = thedata(elist,*)
+  edata = thedata[elist,*]
   all = where(edata ne Yfillval,no_fill)
-  mytimes = times(rbegin:rend)
+  mytimes = times[rbegin:rend]
   if (no_fill ne 0) then begin
-    scaledata = edata(all) & all=0
+    scaledata = edata[all] & all=0
   endif else begin
     if(no_fill eq 0) then begin
 	all=0
 	ylabel = ''
   	a = tagindex('FIELDNAM',YTAGS)
-  	if (a(0) ne -1) then ylabel = Yvar.(a(0))
+  	if (a[0] ne -1) then ylabel = Yvar.(a[0])
 	print, 'STATUS=No non-fill data to display for ',ylabel
 	return, -2 ;all data is fill, return a special return code
     endif
@@ -396,31 +528,31 @@ print, 'DEBUG, stack_plot: number of dimensions in the color variable = ',colr_d
   ; determine the proper scale for the Y axis
   ymax = 1.0 & ymin = 0.0 ; initialize to any value
   a = tagindex('VALIDMIN',YTAGS)
-  if (a(0) ne -1) then begin & b=size(Yvar.VALIDMIN)
-   if (string(Yvar.VALIDMIN(0)) ne '') then begin
-      if (b(0) eq 0) then ymin = Yvar.VALIDMIN $
-      else ymin = min(Yvar.VALIDMIN(elist))
+  if (a[0] ne -1) then begin & b=size(Yvar.VALIDMIN)
+   if (string(Yvar.VALIDMIN[0]) ne '') then begin
+      if (b[0] eq 0) then ymin = Yvar.VALIDMIN $
+      else ymin = min(Yvar.VALIDMIN[elist])
    endif
   endif
   a = tagindex('VALIDMAX',YTAGS)
-  if (a(0) ne -1) then begin & b=size(Yvar.VALIDMAX)
-   if (string(Yvar.VALIDMAX(0)) ne '') then begin
-     if (b(0) eq 0) then ymax = Yvar.VALIDMAX $
-     else ymax = max(Yvar.VALIDMAX(elist))
+  if (a[0] ne -1) then begin & b=size(Yvar.VALIDMAX)
+   if (string(Yvar.VALIDMAX[0]) ne '') then begin
+     if (b[0] eq 0) then ymax = Yvar.VALIDMAX $
+     else ymax = max(Yvar.VALIDMAX[elist])
    endif
   endif
   a = tagindex('SCALEMIN',YTAGS)
-  if (a(0) ne -1) then begin & b=size(Yvar.SCALEMIN)
-   if (string(Yvar.SCALEMIN(0)) ne '') then begin
-    if (b(0) eq 0) then ymin = Yvar.SCALEMIN $
-    else ymin = min(Yvar.SCALEMIN(elist))
+  if (a[0] ne -1) then begin & b=size(Yvar.SCALEMIN)
+   if (string(Yvar.SCALEMIN[0]) ne '') then begin
+    if (b[0] eq 0) then ymin = Yvar.SCALEMIN $
+    else ymin = min(Yvar.SCALEMIN[elist])
    endif
   endif
   a = tagindex('SCALEMAX',YTAGS)
-  if (a(0) ne -1) then begin & b=size(Yvar.SCALEMAX)
-   if (string(Yvar.SCALEMAX(0)) ne '') then begin
-     if (b(0) eq 0) then ymax = Yvar.SCALEMAX $
-     else ymax = max(Yvar.SCALEMAX(elist))
+  if (a[0] ne -1) then begin & b=size(Yvar.SCALEMAX)
+   if (string(Yvar.SCALEMAX[0]) ne '') then begin
+     if (b[0] eq 0) then ymax = Yvar.SCALEMAX $
+     else ymax = max(Yvar.SCALEMAX[elist])
    endif
   endif
 
@@ -436,7 +568,7 @@ if (keyword_set(DEBUG)) then print, 'all_ymin/max = ',all_ymin, all_ymax
       if keyword_set(DEBUG) then print,wc,' values outside VALIDMIN/MAX'
       w = where(((scaledata le ymax)AND(scaledata ge ymin)),wb)
       if (wb gt 0) then begin
-        scaledata=scaledata(w)
+        scaledata=scaledata[w]
       endif
     endif
 
@@ -451,7 +583,7 @@ if (keyword_set(DEBUG)) then print, 'after applied to data all_ymin/max = ',all_
   if ((all_ymax eq all_ymin) and (round(all_ymin,/L64) eq round(Yfillval,/L64))) then begin
     ylabel = ''
     a = tagindex('FIELDNAM',YTAGS)
-    if (a(0) ne -1) then ylabel = Yvar.(a(0))
+    if (a[0] ne -1) then ylabel = Yvar.(a[0])
     print, 'STATUS=All data is fill, please select another time range for ',ylabel  
    ;TJK 11/16/2006 - add code to make a blank white plot
    ;instead of the default black gif.
@@ -467,15 +599,15 @@ if (keyword_set(DEBUG)) then print, 'after applied to data all_ymin/max = ',all_
     all_ymin = all_ymin - 1.
   endif
 
-  yranger = fltarr(2) & yranger(0) = all_ymin & yranger(1) = all_ymax
+  yranger = fltarr(2) & yranger[0] = all_ymin & yranger[1] = all_ymax
 
   ; determine the yaxis scale type, natural or logarithmic
   yscaletype = 0L ; initialize assuming natural
   a = tagindex('SCALETYP',YTAGS)
-  if (a(0) ne -1) then begin
+  if (a[0] ne -1) then begin
     if (strupcase(Yvar.SCALETYP) eq 'LOG') then yscaletype = 1L
   endif
-  if ((yscaletype eq 1)AND(yranger(0) le 0)) then yranger(0) = 0.00001
+  if ((yscaletype eq 1)AND(yranger[0] le 0)) then yranger[0] = 0.00001
 
 
 ; clear out scaledata since its not used below
@@ -485,31 +617,37 @@ if (keyword_set(DEBUG)) then print, 'after applied to data all_ymin/max = ',all_
   ; determine the proper scale for the Z axis
   zmax = 1.0 & zmin = 0.0 ; initialize to any value
   a = tagindex('VALIDMIN',ZTAGS)
-  if (a(0) ne -1) then begin & b=size(Zvar.VALIDMIN)
-    if (b(0) eq 0) then zmin = Zvar.VALIDMIN $
+  if (a[0] ne -1) then begin & b=size(Zvar.VALIDMIN)
+    if (b[0] eq 0) then zmin = Zvar.VALIDMIN $
     else zmin = min(Zvar.VALIDMIN)
   endif
   a = tagindex('VALIDMAX',ZTAGS)
-   if (a(0) ne -1) then begin & b=size(Zvar.VALIDMAX)
-   if (b(0) eq 0) then zmax = Zvar.VALIDMAX $
+   if (a[0] ne -1) then begin & b=size(Zvar.VALIDMAX)
+   if (b[0] eq 0) then zmax = Zvar.VALIDMAX $
    else zmax = max(Zvar.VALIDMAX)
   endif
   a = tagindex('SCALEMIN',ZTAGS)
-  if (a(0) ne -1) then begin & b=size(Zvar.SCALEMIN)
-    if (b(0) eq 0) then zmin = Zvar.SCALEMIN $
-    else zmin = min(Zvar.SCALEMIN)
+  if (a[0] ne -1) then begin & b=size(Zvar.SCALEMIN)
+    if (string(Zvar.SCALEMIN[0]) ne '') then begin
+      if (b[0] eq 0) then zmin = Zvar.SCALEMIN $
+      else zmin = min(Zvar.SCALEMIN)
+    endif
   endif
   a = tagindex('SCALEMAX',ZTAGS)
-   if (a(0) ne -1) then begin & b=size(Zvar.SCALEMAX)
-   if (b(0) eq 0) then zmax = Zvar.SCALEMAX $
-   else zmax = max(Zvar.SCALEMAX)
+   if (a[0] ne -1) then begin & b=size(Zvar.SCALEMAX)
+    if (string(Zvar.SCALEMAX[0]) ne '') then begin
+      if (b[0] eq 0) then zmax = Zvar.SCALEMAX $
+      else zmax = max(Zvar.SCALEMAX)
+    endif
   endif
   ; determine the zaxis/color scale type, natural or logarithmic
-
-  zscaletype = 0L ; initialize assuming natural
+  ; TJK 4/21/2014 change default to LOG
+  zscaletype = 1L ; initialize assuming log
   a = tagindex('SCALETYP',ZTAGS)
-  if (a(0) ne -1) then begin
-    if (strupcase(Zvar.SCALETYP) eq 'LOG') then zscaletype = 1L
+  if (a[0] ne -1) then begin
+    if (string(Zvar.SCALETYP[0]) ne '') then begin
+      if (strupcase(Zvar.SCALETYP) eq 'LINEAR') then zscaletype = 0L
+    endif
   endif
 
 ;TJK 07/23/2009 - change the logic here to deal w/ record varying
@@ -518,20 +656,20 @@ if (keyword_set(DEBUG)) then print, 'after applied to data all_ymin/max = ',all_
 
   if (keyword_set(AUTO)) then begin ; autoscale the colorbar based on valid data values
     if (colr_dims eq 2) then begin
-        tmpcolor = thecolor(elist,*)
-        good_color = where(tmpcolor ne Zfillval,color_fill) 
+        tmpcolor = thecolor[elist,*]
+        good_color = where(((tmpcolor ne Zfillval) and (tmpcolor ge zmin) and (tmpcolor le zmax)),color_fill) 
     endif else begin
-        tmpcolor = thecolor(elist)
-        good_color = where(tmpcolor ne Zfillval,color_fill)
+        tmpcolor = thecolor[elist]
+        good_color = where(((tmpcolor ne Zfillval) and (tmpcolor ge zmin) and (tmpcolor le zmax)),color_fill)
     endelse
     if (color_fill gt 0) then begin ; cant autoscale if all fill data
-      zmax = 0.0 & zmin = min(tmpcolor(good_color),MAX=zmax)
-;      zmax = 0.0 & zmin = min(thecolor(elist),MAX=zmax)
+      zmax = 0.0 & zmin = min(tmpcolor[good_color],MAX=zmax)
+;      zmax = 0.0 & zmin = min(thecolor[elist],MAX=zmax)
 ;      if (zmin gt 0) then zmin = 0.0 ;TJK so color scale will work out...
     endif
   endif
 
-print, 'DEBUG, plot_stack: zmin and max = ',zmin, zmax
+;print, 'DEBUG, plot_stack: zmin and max = ',zmin, zmax
 
 ;*****
 ;10/06/2004 - TJK - for log scaled plots, we need to determine the minimum 
@@ -541,24 +679,24 @@ print, 'DEBUG, plot_stack: zmin and max = ',zmin, zmax
 ;determining "goodmin" value, which is then used below. 
 goodmin = -1 ; initialize 
 if (yscaletype) then begin ;if log scale
-  edata = thedata(elist,*)
+  edata = thedata[elist,*]
   w = where(edata ne Yfillval,non_fillcount)
   if (non_fillcount ne 0) then begin
-    gooddata = edata(w) 
+    gooddata = edata[w] 
   endif else w=0
 
   ; screen out data outside validmin and validmax values
   if ((NOT keyword_set(NOVALIDS))AND(non_fillcount gt 0)) then begin
     ; determine validmin and validmax values
     a = tagindex('VALIDMIN',YTAGS)
-    if (a(0) ne -1) then begin & b=size(Yvar.VALIDMIN)
-      if (b(0) eq 0) then Yvmin = Yvar.VALIDMIN $
-      else Yvmin = Yvar.VALIDMIN(elist(0))
+    if (a[0] ne -1) then begin & b=size(Yvar.VALIDMIN)
+      if (b[0] eq 0) then Yvmin = Yvar.VALIDMIN $
+      else Yvmin = Yvar.VALIDMIN[elist[0]]
     endif else Yvmin = 1.0e31
     a = tagindex('VALIDMAX',YTAGS)
-    if (a(0) ne -1) then begin & b=size(Yvar.VALIDMAX)
-      if (b(0) eq 0) then Yvmax = Yvar.VALIDMAX $
-      else Yvmax = Yvar.VALIDMAX(elist(0))
+    if (a[0] ne -1) then begin & b=size(Yvar.VALIDMAX)
+      if (b[0] eq 0) then Yvmax = Yvar.VALIDMAX $
+      else Yvmax = Yvar.VALIDMAX[elist[0]]
     endif else Yvmax = 1.0e31
     ; proceed with screening
     w = where(((gooddata gt Yvmax)OR(gooddata lt Yvmin)),wc)
@@ -566,7 +704,7 @@ if (yscaletype) then begin ;if log scale
       if keyword_set(DEBUG) then print,wc,' values outside VALIDMIN/MAX'
       w = where(((gooddata le Yvmax)AND(gooddata ge Yvmin)),wb)
       if (wb gt 0) then begin
-        gooddata=gooddata(w)
+        gooddata=gooddata[w]
       endif
     endif
   endif
@@ -582,7 +720,7 @@ if (yscaletype) then begin ;if log scale
     if (wc gt 0) then begin
       w = where(((gooddata le Sigmax)AND(gooddata ge Sigmin)),wb)
       if (wb gt 0) then begin
-        gooddata=gooddata(w)
+        gooddata=gooddata[w]
       endif
     endif
   endif
@@ -592,8 +730,8 @@ if (yscaletype) then begin ;if log scale
     if (wcle gt 0) then begin
       w = where(gooddata gt 0.0,wc)
       if (wc gt 0) then begin
-	goodmin = min(gooddata(w))/2 ;****finally have goodmin - use below
-        if (keyword_set(AUTO)) then yranger(0) = goodmin ;also set scalemin to this value
+	goodmin = min(gooddata[w])/2 ;****finally have goodmin - use below
+        if (keyword_set(AUTO)) then yranger[0] = goodmin ;also set scalemin to this value
       endif
     endif
   gooddata = 0; 
@@ -603,11 +741,27 @@ endif ;log scale
 
 ; TJK Change variable num_panels to num_plots...
 
-for i=0,num_plots-1 do begin
+; TJK 12/31/2013 - Bob wants the order in which the lines are plotted,
+;                  so set up code to accept a reverse_order keyword
+;                  and switch the order the code walks through the
+;                  data array.
+
+if keyword_set(REVERSE_ORDER) then begin
+   start = num_plots-1
+   stop = 0
+   incr = -1
+endif else begin
+   start = 0
+   stop = num_plots-1
+   incr = 1
+endelse
+
+;for i=0,num_plots-1 do begin
+for i=start, stop, incr do begin
 
   ; extract data for a single panel from the data array
-  if (thedata_size(0) eq 1) then mydata = thedata $
-  else mydata = thedata((elist(i)),*)
+  if (thedata_size[0] eq 1) then mydata = thedata $
+  else mydata = thedata[[elist[i]],*]
   mydata = reform(mydata) ; remove any extraneous dimensions
   ; pad the beginning and end of data if extra time points were added
   if (pad_front) then mydata = [Yfillval,mydata] ; add fill point to front
@@ -622,26 +776,26 @@ rrend=n_elements(mydata)
     return, -1
   endif
 
-  mytimes = times(rbegin:rend)  
-  mydata = mydata(rbegin:rend)
+  mytimes = times[rbegin:rend]  
+  mydata = mydata[rbegin:rend]
   ; screen out fill data from the data and the times array
   w = where(mydata ne Yfillval,non_fillcount)
   if (non_fillcount ne 0) then begin
-    mydata = mydata(w) & mytimes = mytimes(w) & w=0
+    mydata = mydata[w] & mytimes = mytimes[w] & w=0
   endif else w=0
 
   ; screen out data outside validmin and validmax values
   if ((NOT keyword_set(NOVALIDS))AND(non_fillcount gt 0)) then begin
     ; determine validmin and validmax values
     a = tagindex('VALIDMIN',YTAGS)
-    if (a(0) ne -1) then begin & b=size(Yvar.VALIDMIN)
-      if (b(0) eq 0) then Yvmin = Yvar.VALIDMIN $
-      else Yvmin = Yvar.VALIDMIN(elist(i))
+    if (a[0] ne -1) then begin & b=size(Yvar.VALIDMIN)
+      if (b[0] eq 0) then Yvmin = Yvar.VALIDMIN $
+      else Yvmin = Yvar.VALIDMIN[elist[i]]
     endif else Yvmin = 1.0e31
     a = tagindex('VALIDMAX',YTAGS)
-    if (a(0) ne -1) then begin & b=size(Yvar.VALIDMAX)
-      if (b(0) eq 0) then Yvmax = Yvar.VALIDMAX $
-      else Yvmax = Yvar.VALIDMAX(elist(i))
+    if (a[0] ne -1) then begin & b=size(Yvar.VALIDMAX)
+      if (b[0] eq 0) then Yvmax = Yvar.VALIDMAX $
+      else Yvmax = Yvar.VALIDMAX[elist[i]]
     endif else Yvmax = 1.0e31
     ; proceed with screening
     w = where(((mydata gt Yvmax)OR(mydata lt Yvmin)),wc)
@@ -649,7 +803,7 @@ rrend=n_elements(mydata)
       if keyword_set(DEBUG) then print,wc,' values outside VALIDMIN/MAX'
       w = where(((mydata le Yvmax)AND(mydata ge Yvmin)),wb)
       if (wb gt 0) then begin
-        mydata=mydata(w) & mytimes=mytimes(w)
+        mydata=mydata[w] & mytimes=mytimes[w]
       endif else begin ;all data outside validmin/max
           ;TJK 11/26/2007 - add code to make a blank white plot
           ;instead of the default black gif, so that if there are good panels,
@@ -657,7 +811,7 @@ rrend=n_elements(mydata)
           a = tagindex('FIELDNAM',YTAGS)
           ;only print the status message once for each variable
           if(n_elements(ytlabel) eq 0) then begin
-            if (a(0) ne -1) then ytlabel = Yvar.(a(0)) else ytlabel = ' '
+            if (a[0] ne -1) then ytlabel = Yvar.(a[0]) else ytlabel = ' '
             print, 'STATUS=All data from at least one element of ',ytlabel,' is fill'
           endif
 
@@ -681,7 +835,7 @@ rrend=n_elements(mydata)
       if keyword_set(DEBUG) then print,wc,' values outside 3-sigma...'
       w = where(((mydata le Sigmax)AND(mydata ge Sigmin)),wb)
       if (wb gt 0) then begin
-        mydata=mydata(w) & mytimes=mytimes(w)
+        mydata=mydata[w] & mytimes=mytimes[w]
       endif
     endif
   endif
@@ -693,12 +847,12 @@ rrend=n_elements(mydata)
     if (wcle gt 0) then begin
       w = where(mydata gt 0.0,wc)
       if (wc gt 0) then begin
-	wmin = min(mydata(w))
-	mydata(wle) = goodmin ;these goodmin values will be further reassigned in 
+	wmin = min(mydata[w])
+	mydata[wle] = goodmin ;these goodmin values will be further reassigned in 
 			      ;the plotting section below
 	w=0
 ;        if keyword_set(DEBUG) then print,'Screening non-positive values...'
-;        mydata = mydata(w) & mytimes = mytimes(w) & w=0
+;        mydata = mydata[w] & mytimes = mytimes[w] & w=0
       endif
     endif
   endif
@@ -707,23 +861,23 @@ rrend=n_elements(mydata)
   ylabel = '' & yunits = '' ; initialize
   if keyword_set(COMBINE) then begin
     a = tagindex('LOGICAL_SOURCE',YTAGS)
-    if (a(0) ne -1) then yds = strupcase(Yvar.(a(0)))
+    if (a[0] ne -1) then yds = strupcase(Yvar.(a[0]))
   endif
   a = tagindex('FIELDNAM',YTAGS)
-  if (a(0) ne -1) then ylabel = Yvar.(a(0))
+  if (a[0] ne -1) then ylabel = Yvar.(a[0])
   a = tagindex('LABLAXIS',YTAGS)
-  if (a(0) ne -1) then ylabel = Yvar.(a(0))
+  if (a[0] ne -1) then ylabel = Yvar.(a[0])
 ;don't want these for stack plots
 ;  a = tagindex('LABL_PTR_1',YTAGS)
-;  if (a(0) ne -1) then begin
-;    if (Yvar.(a(0))(0) ne '') then ylabel = Yvar.(a(0))(elist(i))
+;  if (a[0] ne -1) then begin
+;    if (Yvar.(a[0])[0] ne '') then ylabel = Yvar.(a[0])(elist(i))
 ;  endif
   a = tagindex('UNITS',YTAGS)
-  if (a(0) ne -1) then yunits = Yvar.(a(0))
+  if (a[0] ne -1) then yunits = Yvar.(a[0])
 ;don't want these for stack plots
 ;  a = tagindex('UNIT_PTR',YTAGS)
-;  if (a(0) ne -1) then begin
-;    if (Yvar.(a(0))(0) ne '') then yunits = Yvar.(a(0))(elist(i))
+;  if (a[0] ne -1) then begin
+;    if (Yvar.(a[0])[0] ne '') then yunits = Yvar.(a[0])(elist(i))
 ;  endif
 
   if (n_elements(yds) gt 0) then begin
@@ -749,18 +903,19 @@ rrend=n_elements(mydata)
 ;Determine the Color bar label
   zlabel = '' & zunits = '' ; initialize
   a = tagindex('FIELDNAM',ZTAGS)
-  if (a(0) ne -1) then zlabel = Zvar.(a(0)) $
+  if (a[0] ne -1) then zlabel = Zvar.(a[0]) $
   else zlabel = 'Energy'
 
   a = tagindex('UNITS',ZTAGS)
-  if (a(0) ne -1) then zunits = Zvar.(a(0))
+  if (a[0] ne -1) then zunits = Zvar.(a[0])
   a = tagindex('UNIT_PTR',ZTAGS)
-  if (a(0) ne -1) then begin
-    if (Zvar.(a(0))(0) ne '') then zunits = Zvar.(a(0))
+  if (a[0] ne -1) then begin
+    if (Zvar.(a[0])[0] ne '') then zunits = Zvar.(a[0])
   endif
   zlabel = zlabel + '!C' + zunits
   ; compare the size of the zaxis label to the panel height
   zcsize = 1.0 & zlength = max([strlen(zlabel),strlen(zunits)])
+
   if ((!d.x_ch_size * zlength) gt psize) then begin
     ratio    = float(!d.x_ch_size * zlength) / float(psize)
     zcsize = 1.0 - (ratio/8.0) + 0.1
@@ -776,22 +931,26 @@ rrend=n_elements(mydata)
 ;  endif
 
   ; generate an empty plot frame
-  if (i eq 0) then begin 
+;TJK 12/31/2013 to use the value of "start" value set above, because
+;now allow reverse order of plotting the lines.
+;we'er walking the data
+;  if (i eq 0) then begin 
+  if (i eq start) then begin 
     ;TJK 10/12/2004 - change ystyle to force exact axis range vs. allowing
     ;IDL to pick "nice" values.
     ;    plot,mytimes,mydata,/DEVICE,/NODATA,YTITLE=ylabel,YRANGE=yranger,YSTYLE=2,$
     ;TJK 10/28/2004 - change the logic again to use the IDL "nice" ymin and max scale values
     ;to determine a better value for the log min value when values le 0.0 are in the data.
     ;so 1st do a plot w/ no data and no scales w/ ytick_get keyword and then substitute
-    ;all values eq goodmin to the ytick(0) value, then make the plot w/ scales and ticks
+    ;all values eq goodmin to the ytick[0] value, then make the plot w/ scales and ticks
     ;using IDLs ymin and max returned in the 1st call.
 
     plot,mytimes,mydata,/DEVICE,/NODATA,YTITLE=ylabel,YRANGE=yranger,YSTYLE=2+4,$
        YLOG=yscaletype,XSTYLE=4+1,XRANGE=xranger,POSITION=ppos,$
        NOERASE=clear_plot,CHARSIZE=ycsize,_EXTRA=EXTRAS,ytick_get=yticks
     if (n_elements(yticks) gt 0) then begin
-      yranger(0) = min(yticks)
-      yranger(1) = max(yticks)
+      yranger[0] = min(yticks)
+      yranger[1] = max(yticks)
     endif
 
    plot,mytimes,mydata,/DEVICE,/NODATA,YTITLE=ylabel,YRANGE=yranger,YSTYLE=1,$
@@ -803,8 +962,8 @@ rrend=n_elements(mydata)
   if (goodmin ne -1) then begin
     wle = where(mydata eq goodmin, wcle)
     if (wcle gt 0) then begin
-	mydata(wle) = yticks(0)
-	if keyword_set(DEBUG) then print,'Log scaling - reassigning values le 0 to ',yticks(0)
+	mydata[wle] = yticks[0]
+	if keyword_set(DEBUG) then print,'Y Log scaling - reassigning values le 0 to lowest tick value above zero',yticks[0]
     endif
   endif
 
@@ -820,16 +979,16 @@ rrend=n_elements(mydata)
     colr_size = size(thecolor, /dimensions)
     clr = 0
     good_index = -1
-    while ((good_index eq -1) and (clr le colr_size(1)-1)) do begin
-       bad_clr = where(thecolor(elist,clr) eq Zfillval, n_fill)
+    while ((good_index eq -1) and (clr le colr_size[1]-1)) do begin
+       bad_clr = where(thecolor[elist,clr] eq Zfillval, n_fill)
        if (n_fill le 0) then good_index = clr else clr = clr + 1
    endwhile
-    print, 'DEBUG, stack_plot: color record being used is ',clr
-    colors = thecolor(elist,clr)
-    Zt = thecolor(elist,clr)
+;    print, 'DEBUG, stack_plot: color record being used is ',clr
+    colors = thecolor[elist,clr]
+    Zt = thecolor[elist,clr]
   endif else begin
-    colors = thecolor(elist)
-    Zt = thecolor(elist)
+    colors = thecolor[elist]
+    Zt = thecolor[elist]
   endelse
 
   if (zscaletype) then begin ;if log scaling the Z/color axis
@@ -839,7 +998,7 @@ rrend=n_elements(mydata)
     endif else begin
       Zt = colors*0; all 0's
       wh = where(colors gt 0, wc)
-      if (wc gt 0) then Zt(wh) = alog10(colors(wh))
+      if (wc gt 0) then Zt[wh] = alog10(colors[wh])
     endelse
 
     if (zmin le 0.) then minZ1 = 0. else minZ1 = alog10(zmin)
@@ -851,29 +1010,45 @@ rrend=n_elements(mydata)
   endelse
 
 
-  Zt = bytscl(Zt, min=minZ1, max=maxZ1, top=!d.n_colors-3)+1B
+  Zt = bytscl(Zt, min=minZ1, max=maxZ1, top=!d.table_size-3)+1B
 
-  color = Zt(i)	
-print, 'DEBUG, stack_plot: color of this line = ',color
+  color = Zt[i]	
+;print, 'DEBUG, stack_plot: color of this line = ',color
 
   ; if any plottable data exists then overplot the data into the frame
-
   if (non_fillcount ne 0) then begin
-    if (datagaps(0) eq -1) then oplot,mytimes,mydata, color=color $
+    if (datagaps[0] eq -1) then oplot,mytimes,mydata, color=color, psym=psym, symsize=symsize $
     else begin
       start = 0L ; overplot each data segment
       for j=0,n_elements(datagaps)-1 do begin
-        stop = datagaps(j) ; get last element of segment
-        oplot,mytimes(start:stop),mydata(start:stop), color=color
+        stop = datagaps[j] ; get last element of segment
+        oplot,mytimes[start:stop],mydata[start:stop], color=color, psym=psym, symsize=symsize
         start = stop + 1; reset start element for next oplot
       endfor
-      oplot,mytimes(start:*),mydata(start:*),color=color ; oplot last segment
+      oplot,mytimes[start:*],mydata[start:*],color=color, psym=psym, symsize=symsize ; oplot last segment
     endelse
-  endif
+
+;TJK 4/14/2014 set up position and plot colored label to the right instead of the colorbar
+;use the value of color before its been bytscaled
+
+  ;test to see if there's room for number labels vs. colorbar
+    if ((colorbar eq 0) and (num_plots gt 9 and psize eq 100) or (num_plots gt 18 and psize eq 200)) then begin
+       colorbar = 1
+       if keyword_set(DEBUG) then print, 'DEBUG There are',num_plots,'values on the Z axis which exceeds the available space: making colorbar'
+    endif
+    if (colorbar eq 0) then begin
+      zidx = strtrim(string(tmpcolor[i],format='(F0.1)'),2)+' ' ;energy val, keep just one decimal place
+     ;print the Z values horizontally
+      xl = ppos[2] + 6 ;Use ppos that's passed in to plot_stack
+      yl = ppos[3] - (10 + (i*!d.y_ch_size))
+      xyouts, xl, yl, zidx, color=color, /device
+    endif 
+ endif 
 
   ; Adjust plot position and flags for next plot
-;  ppos(3) = ppos(1) & ppos(1) = ppos(1) - psize & clear_plot=1
+;  ppos[3] = ppos[1] & ppos[1] = ppos[1] - psize & clear_plot=1
 endfor
+
 
 ;For stacked plots, Bob wants the colorbar reversed (smallest number on top
 ;largest on the bottom). So reverse cscale and use /reverse in colorbar call.
@@ -884,13 +1059,18 @@ if COLORBAR then begin
   offset = 0.01
   ctitle = zlabel
 
-  cpos=[!x.window(1)+offset,!y.window(0),$
-        !x.window(1)+offset+0.03, !y.window(1)]
+  cpos=[!x.window[1]+offset,!y.window[0],$
+        !x.window[1]+offset+0.03, !y.window[1]]
   colorbar, cscale, ctitle, logZ=zscaletype, cCharSize=zcsize, $
         position=cpos, fcolor=fcolor, /reverse
 
   !x.window = xwindow
-endif ; colorbar
+endif else begin ; else no colorbar
+;print the Z label vertically for numeric lables
+  xl = xl + (strlen(zidx)*!d.x_ch_size) + 8
+  yl = (ppos[3]+ppos[1])/2 
+  xyouts, xl, yl, zlabel, color=2, orientation=90, alignment=0.5, charsize=zcsize, /device
+endelse
 
 ; draw the time axis by default or if lastplot flag is specified
 if keyword_set(POSITION) then begin

@@ -49,7 +49,7 @@
 	lpyr = (((yr mod 4) eq 0) and ((yr mod 100) ne 0)) $
             or ((yr mod 400) eq 0) and (m ge 3)
  
-	dy = d + idays(m-1) + lpyr
+	dy = d + idays[m-1] + lpyr
 	return, dy
  
 	end

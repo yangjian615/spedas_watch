@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/vis.pro,v 1.3 1998/05/20 15:22:55 kovalick Exp baldwin $
-;$Locker: baldwin $
-;$Revision: 15545 $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/vis.pro,v 1.5 2012/05/03 14:32:26 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;----------------------------------------------------------
 ;This code was picked up from the polar vis web site mentioned 
 ;in their polar vis CDFs. http://eiger.physics.uiowa.edu/~vis/software/.
@@ -53,7 +53,7 @@ PRO XV_LOOKV_TO_GCI
    ROTATION = transpose(record.rotatn_matrix)
    LOOKV_GCI =  DBLARR(3,256,256,/NOZERO)
       FOR j=0,255 DO BEGIN
-        LOOKV_GCI(*,*,j) = ROTATION # LookVector(*,*,j)
+        LOOKV_GCI[*,*,j] = ROTATION # LookVector[*,*,j]
       END
 
 END
@@ -138,9 +138,9 @@ PRO COMPUTE_CRDS
    XV_LOOKV_TO_GCI
   ;
  orb=SC_POS
- LpixX=reform(LookV_GCI(0,*,*))
- LpixY=reform(LookV_GCI(1,*,*))
- LpixZ=reform(LookV_GCI(2,*,*))
+ LpixX=reform(LookV_GCI[0,*,*])
+ LpixY=reform(LookV_GCI[1,*,*])
+ LpixZ=reform(LookV_GCI[2,*,*])
  emis_hgt=AssumedAlt
  gclat=dblarr(256,256); GLATS
  gclon=dblarr(256,256); GLONS
@@ -155,6 +155,5 @@ PRO COMPUTE_CRDS
     
 END
 
-pro vis
-end
+
 

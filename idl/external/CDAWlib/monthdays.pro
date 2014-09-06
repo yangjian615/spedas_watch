@@ -47,9 +47,9 @@
  
 	; Correct DYS for leap-year.
 	IF (((YR MOD 4) EQ 0) AND ((YR MOD 100) NE 0)) $
-            OR ((YR MOD 400) EQ 0) THEN DYS(2) = 29
+            OR ((YR MOD 400) EQ 0) THEN DYS[2] = 29
  
 	IF M EQ 0 THEN RETURN, DYS
-	RETURN, DYS(M)
+	RETURN, DYS[M]
  
 	END

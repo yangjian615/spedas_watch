@@ -44,8 +44,13 @@
 ;                       so science data processing is not halted by missing
 ;                       or bad data.
 ;               Date:   January 9, 2001
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 ;-
-;-------------------------------------------------------------------
 function fuv_rotation_matrix,omega,theta,phi,scsv_x,scsv_y,scsv_z, $
 	sc_x,sc_y,sc_z,psi
 

@@ -74,7 +74,7 @@
         if(strpos(form, 'f') gt -1) then dec = 4 else dec=3
         
 	for i = 0, n-1 do begin
-	  s(i) = dt_tm_mak( jd0, v(i), form=form, decimal=dec)
+	  s[i] = dt_tm_mak( jd0, v[i], form=form, decimal=dec)
 	endfor
  
 	return, s

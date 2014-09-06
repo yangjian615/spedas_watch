@@ -19,6 +19,7 @@
 ;       R. Sterner. 31 Oct, 1988.
 ;       Johns Hopkins University Applied Physics Laboratory.
 ;       RES 18 Sep, 1989 --- converted to SUN
+;       R. Sterner, 2010 May 04 --- Converted arrays from () to [].
 ;
 ; Copyright (C) 1988, Johns Hopkins University/Applied Physics Laboratory
 ; This software may be used, copied, or redistributed as long as it is not
@@ -43,6 +44,6 @@
 		 'Wednesday','Thursday','Friday','Saturday']
  
 	NWD = ((YMD2JD(Y,M,D) + 1) MOD 7) + 1
-	RETURN, NAMES(NWD)
+	RETURN, NAMES[NWD]
  
 	END

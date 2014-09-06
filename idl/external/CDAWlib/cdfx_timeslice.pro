@@ -31,7 +31,7 @@ case etype of
                ; Perform the time subsetting
                widget_control,event.top,get_uvalue=a
                widget_control,/hourglass
-               b = timeslice_mystruct(a,info.time(v1),info.time(v2))
+               b = timeslice_mystruct(a,info.time[v1],info.time[v2])
                ; Create a new data object with the subsetted data
                cdfx_dataobject,b,GROUP=cdfxwindows.wid(0)
                ; Destroy the timeslice widget
@@ -43,11 +43,31 @@ case etype of
 
     2 : begin ; slider event
         if event.id eq info.slid1 then begin ; start time slider
-          s = decode_cdfepoch(info.time(event.value))
+          s = decode_cdfepoch(info.time[event.value],/incl_mmm)
           widget_control,info.labl1,set_value=s
         endif else begin ; stop time slider
-          s = decode_cdfepoch(info.time(event.value))
+          s = decode_cdfepoch(info.time[event.value],/incl_mmm)
           widget_control,info.labl2,set_value=s
+        endelse
+        end
+    3 : begin ; text event
+        if event.id eq info.labl1 then begin ; start time text
+          widget_control, info.labl1, get_value=tstart
+          case info.cdftype of 
+	     'CDF_TIME_TT2000': s = encode_cdfepoch(tstart,/tt2000)
+	     'CDF_EPOCH16': s = encode_cdfepoch(tstart,/epoch16)
+	     else: s = encode_cdfepoch(tstart)
+	  endcase   
+          widget_control,info.slid1,set_value=(where(info.time ge s))[0]
+        endif else begin ; stop time text
+          widget_control, info.labl2, get_value=tstop
+          case info.cdftype of 
+	     'CDF_TIME_TT2000': s = encode_cdfepoch(tstop,/tt2000)
+	     'CDF_EPOCH16': s = encode_cdfepoch(tstop,/epoch16)
+	     else: s = encode_cdfepoch(tstop)
+	  endcase
+	  thistime=(where(info.time le s))
+          widget_control,info.slid2,set_value=thistime[n_elements(thistime)-1]
         endelse
         end
     else : ; do nothing
@@ -58,6 +78,12 @@ end
 ;-----------------------------------------------------------------------------
 
 ; Provide a widget interface to subset the given structure by time
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 PRO cdfx_timeslice, a, GROUP=GROUP
 
 ; Point to the common block containing window information
@@ -66,8 +92,12 @@ COMMON cdfxcom, CDFxwindows, CDFxprefs ; include cdfx common
 ; Determine a variable that contains the timing information
 atags = tag_names(a) & tvar = -1
 for i=0,n_elements(atags)-1 do begin
-  btags = tag_names(a.(i)) & w = where(btags eq 'CDFTYPE',wc)
-  if (wc gt 0) then if (a.(i).CDFTYPE eq 'CDF_EPOCH') then tvar = i
+  btags = tag_names(a.(i)) 
+  w = where(btags eq 'CDFTYPE',wc)
+  ;if (wc gt 0) then if (a.(i).CDFTYPE eq 'CDF_EPOCH') then tvar = i
+  if (wc gt 0) then if ((a.(i).CDFTYPE eq 'CDF_EPOCH') or $
+                        (a.(i).CDFTYPE eq 'CDF_EPOCH16') or $
+			(a.(i).CDFTYPE eq 'CDF_TIME_TT2000') and a.(i).cdfrecvary eq 'VARY') then tvar = i
 endfor
 
 if tvar eq -1 then begin
@@ -92,15 +122,21 @@ endelse
 ; Validate the dimensionality of the time data
 ds = size(d)
 nds = n_elements(ds)
-if ds(0) ne 1 then begin
+if ds[0] ne 1 then begin
   ok = dialog_message(/error, 'timeslice:Epoch var is not an array!')
   return
-endif
+endif else begin
+  ;  RCJ 11/01/2012  If not 'double' and not 'long64' and not 'dcomplex'
+  if ((ds[nds-2] ne 5) and (ds[nds-2] ne 14) and (ds[nds-2] ne 9)) then begin
+            ok = dialog_message(/error, 'timeslice:Epoch var is not of a valid type!')
+            return
+  endif	    
+endelse
 
-if ds(nds-2) ne 5 then begin
-  ok = dialog_message(/error, 'timeslice:Epoch var is not DOUBLE float!')
-  return
-endif
+;if ds[nds-2] ne 5 then begin
+;  ok = dialog_message(/error, 'timeslice:Epoch var is not DOUBLE float!')
+;  return
+;endif
 
 nd = n_elements(d)
 
@@ -126,10 +162,12 @@ base2 = widget_base(base,/Row)
 base3 = widget_base(base,/Row,/frame)
 slid1 = widget_slider(base1,max=(nd-1),value=0,Title='Start Time',$
                       xsize=250,/drag)
-labl1 = widget_label(base1,value=decode_cdfepoch(d(0)))
+;labl1 = widget_label(base1,value=decode_cdfepoch(d[0]))
+labl1 = widget_text(base1,value=decode_cdfepoch(d[0],/incl_mmm),/edit)
 slid2 = widget_slider(base2,max=(nd-1),value=(nd-1),Title='Stop Time',$
                       xsize=250,/drag)
-labl2 = widget_label(base2,value=decode_cdfepoch(d(nd-1)))
+;labl2 = widget_label(base2,value=decode_cdfepoch(d[nd-1]))
+labl2 = widget_text(base2,value=decode_cdfepoch(d[nd-1],/incl_mmm),/edit)
 but3a = widget_button(base3,value='New Object')
 but3b = widget_button(base3,value='Cancel')
 but3c = widget_button(base3,value='Help')
@@ -140,7 +178,7 @@ add_cdfxwindow,wtitle,base
 ; Save the widget id's and time data for use in the event handler
 junk = {$
   slid1:slid1, labl1:labl1, slid2:slid2, labl2:labl2,$
-  save:but3a, cancel:but3b, help:but3c, time:d}
+  save:but3a, cancel:but3b, help:but3c, time:d, cdftype:a.(tvar).cdftype}
 child = widget_info(base,/child) ; get widget id of first child
 widget_control, child, set_uvalue=junk ; save widget ids and time data
 

@@ -1,6 +1,10 @@
-
-;-----------------------------------------------------------------------------
-
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 pro geo_to_apex, geoglat, geoglon, apexlat, apexlon, interpolate=interp
 
 ; Transform geographic coordinates to apex magnetic coordinates.
@@ -88,8 +92,8 @@ PRO geo_to_mag_cen, lat, lon, lat_mag, lon_mag, pole=pole
    ; Centered dipole model, used by 'studio.pro'
 
    if keyword_set(pole) then begin
-      lat_p = pole(0)*!dtor
-      lon_p = pole(1)*!dtor
+      lat_p = pole[0]*!dtor
+      lon_p = pole[1]*!dtor
    endif else begin
       lat_p=11*!dtor            ; geographic co-latitude of north pole
       lon_p=-70*!dtor           ; geographic longitude (east positive) of pole
@@ -107,7 +111,7 @@ PRO geo_to_mag_cen, lat, lon, lat_mag, lon_mag, pole=pole
    
                                 ;check for bad values of lon
    i=where(finite(lon_mag) lt 1, ii)
-   if ii gt 0 then lon_mag(i)=0
+   if ii gt 0 then lon_mag[i]=0
    
                                 ;convert back from radians to degrees
    lon_mag=lon_mag/!dtor
@@ -116,7 +120,7 @@ PRO geo_to_mag_cen, lat, lon, lat_mag, lon_mag, pole=pole
                                 ;??
    lm=atan( tan(lat_p), cos(lon_g-lon_p) )
    i=where(lat_g gt lm, ii)
-   if ii gt 0 then lon_mag(i)=180-lon_mag(i)
+   if ii gt 0 then lon_mag[i]=180-lon_mag[i]
    
                                 ;??
    lon_mag=360-((lon_mag + 180) mod 360)
@@ -154,8 +158,8 @@ pro geo_to_mag_ecc, geoglat, geoglon, mlat, mlon, epoch=epoch
     for lj = 0, ydim-1 do begin
       if glat[li,lj] lt 90.1  and  glat[li,lj] gt -90.1  and $
         glon[li,lj] lt 180.1  and  glon[li,lj] gt -180.1 then begin 
-         dum2 = float(glat(li,lj)) 
-         dum3 = float(glon(li,lj)) 
+         dum2 = float(glat[li,lj]) 
+         dum3 = float(glon[li,lj]) 
          opos = eccmlt(yr, doy, sod, galt, dum2, dum3)
       endif else begin
          opos = [99999.0, 99999.0, 99999.0]

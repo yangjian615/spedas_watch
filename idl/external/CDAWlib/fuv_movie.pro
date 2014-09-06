@@ -27,7 +27,13 @@
 ;       Rita C. Johnson, Jul/2001, based on movie_map_images.pro
 ;
 ; MODIFICATION HISTORY:
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION fuv_movie, astruct, vname, $
                       XSIZE=XSIZE, YSIZE=YSIZE, $
                       MPEG=MPEG, REPORT=REPORT,$
@@ -57,7 +63,7 @@ gif = mpeg ; kludge!!
 w = where(tag_names(astruct) eq strupcase(vname),wc)
 if (wc eq 0) then begin
    print,'ERROR=No variable with the name:',vname,' in param 1!' & return,-1
-endif else vnum = w(0)
+endif else vnum = w[0]
    
 ; Verify the type of the first parameter and retrieve the data
 a = size(astruct.(vnum))
@@ -65,10 +71,10 @@ if (a(n_elements(a)-2) ne 8) then begin
    print,'ERROR= 1st parameter to plot_images not a structure' & return,-1
 endif else begin
    a = tagindex('DAT',tag_names(astruct.(vnum)))
-   if (a(0) ne -1) then idat = astruct.(vnum).DAT $
+   if (a[0] ne -1) then idat = astruct.(vnum).DAT $
    else begin
       a = tagindex('HANDLE',tag_names(astruct.(vnum)))
-      if (a(0) ne -1) then handle_value,astruct.(vnum).HANDLE,idat $
+      if (a[0] ne -1) then handle_value,astruct.(vnum).HANDLE,idat $
       else begin
          print,'ERROR= 1st parameter does not have DAT or HANDLE tag' & return,-1
       endelse
@@ -77,13 +83,13 @@ endelse
 
 isize = size(idat)
 ; just in case we get a 1D array. I'm not sure there were any checks for this before.
-if (isize(0) eq 1) then begin
+if (isize[0] eq 1) then begin
    print, 'ERROR= 1D array found.  Need array to be 2D or 3D.'
    print, 'STATUS= 1D array found.  Need array to be 2D or 3D.'
    return, -1
 endif
 ; if array is 2D we have 1 image, if 3D we can make movie:
-if (isize(0) eq 2) then n_images=1 else n_images=isize(isize(0))
+if (isize[0] eq 2) then n_images=1 else n_images=isize(isize[0])
 
 ; Cannot produce movie out of a single frame:
 

@@ -1,15 +1,19 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/apply_qflag.pro,v 1.2 2000/03/09 20:25:24 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 7092 $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/apply_qflag.pro,v 1.5 2012/05/15 16:58:40 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;Function: Apply_qflag
 ;Purpose: To use the quality variable to "filter out bad Polar_h0_tim flux 
 ;data points"
 ;Author: Tami Kovalick, Raytheon ITSS, January 5, 2000
 ;Modification: TJK 3/9/00 added more variables.
 ;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
 ;
+;-------------------------------------------------------------------------------
 function apply_qflag, astruct, orig_names, index=index
 
 ;Input: astruct: the structure, created by read_myCDF that should
@@ -34,8 +38,8 @@ if keyword_set(index) then begin
   index = index
 endif else begin ;get the 1st vv
 
-  index = vv_tagindx(0)
-  if (vv_tagindx(0) lt 0) then return, -1
+  index = vv_tagindx[0]
+  if (vv_tagindx[0] lt 0) then return, -1
 
 endelse
 
@@ -52,7 +56,7 @@ if (c_0 ne '') then begin ;this should be the real data
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
   d = tagindex('DAT',itags)
-    if (d(0) ne -1) then  flux_data = astruct.(var_idx).DAT $
+    if (d[0] ne -1) then  flux_data = astruct.(var_idx).DAT $
     else begin
       d = tagindex('HANDLE',itags)
       handle_value, astruct.(var_idx).HANDLE, flux_data
@@ -64,18 +68,18 @@ endif else print, 'Flux variable not found'
 ;stop;TJK
 data_size = size(flux_data)
 
-;9/2/2008 - TJK - check for just one record, if found make it (1,*,*) and
+;9/2/2008 - TJK - check for just one record, if found make it [1,*,*] and
 ;           continue on.  Otherwise it gets thrown out.
-if (data_size(0) eq 2) then begin 
+if (data_size[0] eq 2) then begin 
   dims = size(flux_data, /dimensions)
-  tmp_flux = make_array(1,dims(0), dims(1))
-  tmp_flux(0,*,*) = flux_data
+  tmp_flux = make_array(1,dims[0], dims[1])
+  tmp_flux[0,*,*] = flux_data
   flux_data = tmp_flux
   data_size = size(flux_data)
 endif
 
 
-if (data_size(0) eq 3) then begin ;may need to change this test to fit the flux
+if (data_size[0] eq 3) then begin ;may need to change this test to fit the flux
 
 c_0 = astruct.(index).COMPONENT_1 ; should be the quality variable
 
@@ -84,7 +88,7 @@ if (c_0 ne '') then begin ;
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
   d = tagindex('DAT',itags)
-    if (d(0) ne -1) then  quality_data = astruct.(var_idx).DAT $
+    if (d[0] ne -1) then  quality_data = astruct.(var_idx).DAT $
     else begin
       d = tagindex('HANDLE',itags)
       handle_value, astruct.(var_idx).HANDLE, quality_data
@@ -102,48 +106,48 @@ endif else print, 'Quality variable not found'
 
  case (strlowcase(astruct.(index).COMPONENT_0)) of
       'flux_h': begin
-                        temp = where(quality_data(0,*) ge 4, badcnt)
+                        temp = where(quality_data[0,*] ge 4, badcnt)
 			if (badcnt ge 1) then begin
 			  print, 'found some bad flux_hq data ',badcnt, 'points'
-			  flux_data(*,*,temp) = fill_val
+			  flux_data[*,*,temp] = fill_val
 			endif
                         end
       'flux_o': begin
-                        temp = where(quality_data(1,*) ge 4, badcnt)
+                        temp = where(quality_data[1,*] ge 4, badcnt)
 			if (badcnt ge 1) then begin
 			  print, 'found some bad flux_oq data ',badcnt, 'points'
-			  flux_data(*,*,temp) = fill_val
+			  flux_data[*,*,temp] = fill_val
 			endif
                         end
       'flux_he_1': begin
-                        temp = where(quality_data(2,*) ge 4, badcnt)
-			if (badcnt ge 1) then flux_data(*,*,temp) = fill_val
+                        temp = where(quality_data[2,*] ge 4, badcnt)
+			if (badcnt ge 1) then flux_data[*,*,temp] = fill_val
                         end
       'flux_he_2': begin
-                        temp = where(quality_data(3,*) ge 4, badcnt)
-			if (badcnt ge 1) then flux_data(*,*,temp) = fill_val
+                        temp = where(quality_data[3,*] ge 4, badcnt)
+			if (badcnt ge 1) then flux_data[*,*,temp] = fill_val
                         end
       'sigma_h': begin
-                        temp = where(quality_data(0,*) ge 4, badcnt)
+                        temp = where(quality_data[0,*] ge 4, badcnt)
 			if (badcnt ge 1) then begin
 			  print, 'found some bad flux_hq data ',badcnt, 'points'
-			  flux_data(*,*,temp) = fill_val
+			  flux_data[*,*,temp] = fill_val
 			endif
                         end
       'sigma_o': begin
-                        temp = where(quality_data(1,*) ge 4, badcnt)
+                        temp = where(quality_data[1,*] ge 4, badcnt)
 			if (badcnt ge 1) then begin
 			  print, 'found some bad flux_oq data ',badcnt, 'points'
-			  flux_data(*,*,temp) = fill_val
+			  flux_data[*,*,temp] = fill_val
 			endif
                         end
       'sigma_he_1': begin
-                        temp = where(quality_data(2,*) ge 4, badcnt)
-			if (badcnt ge 1) then flux_data(*,*,temp) = fill_val
+                        temp = where(quality_data[2,*] ge 4, badcnt)
+			if (badcnt ge 1) then flux_data[*,*,temp] = fill_val
                         end
       'sigma_he_2': begin
-                        temp = where(quality_data(3,*) ge 4, badcnt)
-			if (badcnt ge 1) then flux_data(*,*,temp) = fill_val
+                        temp = where(quality_data[3,*] ge 4, badcnt)
+			if (badcnt ge 1) then flux_data[*,*,temp] = fill_val
                         end
 
 	else: print, 'WARNING= Variable, ',astruct.(index).COMPONENT_0,' not valid'

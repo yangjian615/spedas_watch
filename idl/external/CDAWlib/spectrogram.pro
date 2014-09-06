@@ -6,6 +6,7 @@ pro spectrogram, Z0, X0, Y0, X1, Y1, X2, Y2, $
         maxValue=maxValue, minValue=minValue, nResCol=nResCol, $
         noSkipGaps=noSkipGaps, noYSkipGaps=noYSkipGaps, $
         quick=quick, reduce=reduce, noclip=noclip, status=status, $
+	firstplot=firstplot, $
         _Extra=extra
 ;+
 ; NAME:
@@ -28,8 +29,8 @@ pro spectrogram, Z0, X0, Y0, X1, Y1, X2, Y2, $
 ;       Z:      2-dimensional data array; converted to float or double for NAN use
 ;
 ; OPTIONAL INPUTS:
-;       X:      1-dimensional data array of size Z(*,0) or 2-dim of size Z(*,*)
-;       Y:      1-dimensional data array of size Z(0,*) or 2-dim of size Z(*,*)
+;       X:      1-dimensional data array of size Z[*,0] or 2-dim of size Z[*,*]
+;       Y:      1-dimensional data array of size Z[0,*] or 2-dim of size Z[*,*]
 ;
 ;       Xmin:   1- or 2- dim array of X values for left side of each data box
 ;       Ymin:   1- or 2- dim array of Y values for bottom side of each data box
@@ -133,6 +134,11 @@ pro spectrogram, Z0, X0, Y0, X1, Y1, X2, Y2, $
 ;       2001 March 30   BC, added nResCol in place of fixed 2 colors
 ;       2001 April 27   BC, added additional fillValue checks and updated alog10(Z) section
 ;       2001 August 9   BC, added logY tick sections
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
 ;-
 
 common deviceTypeC, deviceType, file;required for inverting grayscale Postscript
@@ -157,7 +163,7 @@ if not keyword_set(logZ) then logZ = 0
 
 Z = 1.*reform(Z0) ; remove extraneous dimensions
 Zsize = size(Z)
-if (Zsize(0) ne 2) then begin
+if (Zsize[0] ne 2) then begin
    msgText = 'Requires 2-dimensional Z array'
    if doStatus then begin
       message, msgText, /info & status = -1L & return
@@ -167,32 +173,32 @@ endif
 case n_params(0) of
 
    1: begin ; Z only
-      Xmin = rebin(dindgen(Zsize(1)),Zsize(1),Zsize(2),/sample) & Xmax = Xmin + 1
-      Ymin = rebin(dindgen(1,Zsize(2)),Zsize(1),Zsize(2),/sample) & Ymax = Ymin + 1
+      Xmin = rebin(dindgen(Zsize[1]),Zsize[1],Zsize[2],/sample) & Xmax = Xmin + 1
+      Ymin = rebin(dindgen(1,Zsize[2]),Zsize[1],Zsize[2],/sample) & Ymax = Ymin + 1
    end ; Z only
    
    3: begin ; Z, X, Y
       X0 = 1.*reform(X0) & Y0 = 1.*reform(Y0) ; remove extraneous dimensions
       Vsize = size(X0) 
-      if not ((Vsize(Vsize(0)+2) eq Zsize(1)) or $
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'X must be of same size as Z(*,0) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[1]) or $
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'X must be of same size as Z[*,0] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(1)) then Xmin = X0 else $
-        Xmin = rebin(X0,Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[1]) then Xmin = X0 else $
+        Xmin = rebin(X0,Zsize[1],Zsize[2],/sample)
       Vsize = size(Y0)  
-      if not ((Vsize(Vsize(0)+2) eq Zsize(2)) or $
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Y must be of same size as Z(0,*) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[2]) or $
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Y must be of same size as Z[0,*] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(2)) then Ymin = Y0 else $
-        Ymin = rebin(reform(Y0,1,Zsize(2),/overwrite),Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[2]) then Ymin = Y0 else $
+        Ymin = rebin(reform(Y0,1,Zsize[2],/overwrite),Zsize[1],Zsize[2],/sample)
 
 
       ; added checks for fillVal, BC 2001Mar7
@@ -229,20 +235,20 @@ case n_params(0) of
       if keyword_set(centerX) then begin
          ;align_center, X, Xmin, Xmax ; 1 dim case
          Xmax = Xmin
-         for i = 0L, Zsize(2)-1 do begin
-            align_center, Xmin(*,i), Xmint, Xmaxt
-            Xmin(*,i) = Xmint & Xmax(*,i) = Xmaxt
+         for i = 0L, Zsize[2]-1 do begin
+            align_center, Xmin[*,i], Xmint, Xmaxt
+            Xmin[*,i] = Xmint & Xmax[*,i] = Xmaxt
          endfor ; i
       endif else begin ; shift min up to max array and add top value
          ; Scheme for aligning lower left corner of box on (X, Y) position
-         ;Xmax = [X(1:*), X(nX-1)*2 - X(nX-2)] ; add deltaX to last item; 1 dim case
+         ;Xmax = [X[1:*], X[nX-1]*2 - X[nX-2]] ; add deltaX to last item; 1 dim case
          Xmax = shift(Xmin,-1,0)        ; shift all elements in 1st dim to the left
          ; ####following assumes last 2 values in each row are real
          if logX then begin
-            ;###  Xmax(Zsize(1)-1,*)=alog10(10^(Xmin(Zsize(1)-1,*))*2 - 10^(Xmin(Zsize(1)-2,*)))
-            Xmax(Zsize(1)-1,*)=10^(alog10(Xmin(Zsize(1)-1,*))*2 - alog10(Xmin(Zsize(1)-2,*)))
+            ;###  Xmax[Zsize[1]-1,*]=alog10(10^(Xmin[Zsize[1]-1,*])*2 - 10^(Xmin[Zsize[1]-2,*]))
+            Xmax[Zsize[1]-1,*]=10^(alog10(Xmin[Zsize[1]-1,*])*2 - alog10(Xmin[Zsize[1]-2,*]))
          endif else begin
-            Xmax(Zsize(1)-1,*) = Xmin(Zsize(1)-1,*)*2 - Xmin(Zsize(1)-2,*)
+            Xmax[Zsize[1]-1,*] = Xmin[Zsize[1]-1,*]*2 - Xmin[Zsize[1]-2,*]
          endelse
          ; 2001 Mar 20 BC, new code for skipping NANs
          ; where Xmin has a real value and Xmax is NAN then set Xmax to next real Xmax up
@@ -261,32 +267,32 @@ case n_params(0) of
          if not keyword_set(noSkipGaps) then begin
             ;#### only uses first row of Xmin; assumes no fill data, no log spacing
             ;### really have to do this for every column
-            for i = 0L, Zsize(2)-1 do begin
-               gaps = findGaps(Xmin(*,i), 1.5, avg=avgDeltaX)
-               if (gaps(0) lt 0) then nGaps = 0 else nGaps = n_elements(gaps)
+            for i = 0L, Zsize[2]-1 do begin
+               gaps = findGaps(Xmin[*,i], 1.5, avg=avgDeltaX)
+               if (gaps[0] lt 0) then nGaps = 0 else nGaps = n_elements(gaps)
                if (nGaps gt 0) then for k = 0L, nGaps-1 do $
-                  Xmax(gaps(k),i) = Xmin(gaps(k),i) + avgDeltaX
+                  Xmax[gaps[k],i] = Xmin[gaps[k],i] + avgDeltaX
             endfor ; i
          endif ; noSkipGaps
       endelse
 
       if keyword_set(centerY) then begin
          Ymax = Ymin
-         for i = 0L, Zsize(1)-1 do begin
-            align_center, Ymin(i,*), Ymint, Ymaxt
-            Ymin(i,*) = Ymint & Ymax(i,*) = Ymaxt
+         for i = 0L, Zsize[1]-1 do begin
+            align_center, Ymin[i,*], Ymint, Ymaxt
+            Ymin[i,*] = Ymint & Ymax[i,*] = Ymaxt
          endfor ; i
       endif else begin ; shift min up to max array and add top value
          ; Scheme for aligning lower left corner of box on (X, Y) position
          Ymax = shift(Ymin,0,-1)        ; shift all elements in 2nd dim to the bottom
-         ;print,transpose(ymax(1,*)),' ***' ;RCJ
+         ;print,transpose(ymax[1,*]),' ***' ;RCJ
          ; ####following assumes last 2 values in each row are real
          if logY then begin
-         ;### Ymax(*,Zsize(2)-1)=alog10(10^(Ymin(*,Zsize(2)-1))*2 - 10^(Ymin(*,Zsize(2)-2)))
-           Ymax(*,Zsize(2)-1)=10^(alog10(Ymin(*,Zsize(2)-1))*2 - alog10(Ymin(*,Zsize(2)-2)))
-         ;print,transpose(ymax(1,*)) ;RCJ
+         ;### Ymax[*,Zsize[2]-1]=alog10(10^(Ymin[*,Zsize[2]-1])*2 - 10^(Ymin[*,Zsize[2]-2]))
+           Ymax[*,Zsize[2]-1]=10^(alog10(Ymin[*,Zsize[2]-1])*2 - alog10(Ymin[*,Zsize[2]-2]))
+         ;print,transpose(ymax[1,*]) ;RCJ
          endif else begin
-           Ymax(*,Zsize(2)-1) = Ymin(*,Zsize(2)-1)*2 - Ymin(*,Zsize(2)-2)
+           Ymax[*,Zsize[2]-1] = Ymin[*,Zsize[2]-1]*2 - Ymin[*,Zsize[2]-2]
          endelse
          ; 2001 Mar 20 BC, new code for skipping NANs
          ; where Xmin has a real value and Xmax is NAN then set Xmax to next real Xmax up
@@ -305,11 +311,11 @@ case n_params(0) of
          if not keyword_set(noYSkipGaps) then begin
             ;#### only uses first col of Ymin; assumes no fill data, no log spacing
             ;### really have to do this for every column
-            for i = 0L, Zsize(1)-1 do begin
-               gaps = findGaps(Ymin(i,0), 1.5, avg=avgDeltaY)
-               if (gaps(0) lt 0) then nGaps = 0 else nGaps = n_elements(gaps)
+            for i = 0L, Zsize[1]-1 do begin
+               gaps = findGaps(Ymin[i,0], 1.5, avg=avgDeltaY)
+               if (gaps[0] lt 0) then nGaps = 0 else nGaps = n_elements(gaps)
                if (nGaps gt 0) then for k = 0L, nGaps-1 do $
-                  Ymax(i,gaps(k)) = Ymin(i,gaps(k)) + avgDeltaY
+                  Ymax[i,gaps[k]] = Ymin[i,gaps[k]] + avgDeltaY
             endfor ; i
          endif ; noSkipGaps
       endelse
@@ -318,27 +324,27 @@ case n_params(0) of
       ;         ; Scheme for aligning lower left corner of box on (X, Y) position
       ;         ;Xmax = [X(1:*), X(nX-1)*2 - X(nX-2)] ; add deltaX to last item; 1 dim case
       ;         Xmax = shift(Xmin,-1,0)        ; shift all elements in 1st dim to the left
-      ;         Xmax(Zsize(1)-1,*) = Xmin(Zsize(1)-1,*)*2 - Xmin(Zsize(1)-2,*)
+      ;         Xmax(Zsize[1]-1,*) = Xmin(Zsize[1]-1,*)*2 - Xmin(Zsize[1]-2,*)
       ;         Ymax = shift(Ymin,0,-1)        ; shift all elements in 2nd dim to the bottom
-      ;         Ymax(*,Zsize(2)-1) = Ymin(*,Zsize(2)-1)*2 - Ymin(*,Zsize(2)-2)
+      ;         Ymax(*,Zsize[2]-1) = Ymin(*,Zsize[2]-1)*2 - Ymin(*,Zsize[2]-2)
       ;         if not keyword_set(noSkipGaps) then begin
       ;            ;#### only uses first row of Xmin; assumes no fill data
       ;            gaps = findGaps(Xmin(*,0), 1.5, avg=avgDeltaX)
-      ;            if (gaps(0) lt 0) then nGaps = 0 else nGaps = n_elements(gaps)
+      ;            if (gaps[0] lt 0) then nGaps = 0 else nGaps = n_elements(gaps)
       ;            if (nGaps gt 0) then for k = 0L, nGaps-1 do $
       ;                Xmax(gaps(k),*) = Xmin(gaps(k),*) + avgDeltaX
       ;         endif ; noSkipGaps
       ;      endif else begin ; center box
       ;         ;align_center, X, Xmin, Xmax ; 1 dim case
       ;         Xmax = Xmin
-      ;         for i = 0L, Zsize(2)-1 do begin
+      ;         for i = 0L, Zsize[2]-1 do begin
       ;            align_center, Xmin(*,i), Xmint, Xmaxt
       ;            Xmin(*,i) = Xmint & Xmax(*,i) = Xmaxt
       ;         endfor ; i
       ;         Ymax = Ymin
-      ;         for i = 0L, Zsize(1)-1 do begin
-      ;            align_center, Ymin(i,*), Ymint, Ymaxt
-      ;            Ymin(i,*) = Ymint & Ymax(i,*) = Ymaxt
+      ;         for i = 0L, Zsize[1]-1 do begin
+      ;            align_center, Ymin[i,*], Ymint, Ymaxt
+      ;            Ymin[i,*] = Ymint & Ymax[i,*] = Ymaxt
       ;         endfor ; i
       ;      endelse ; centering
 
@@ -348,45 +354,45 @@ case n_params(0) of
       X0 = 1.*reform(X0) & Y0 = 1.*reform(Y0) ; remove extraneous dimensions
       X1 = 1.*reform(X1) & Y1 = 1.*reform(Y1) ; remove extraneous dimensions
       Vsize = size(X0)  
-      if not ((Vsize(Vsize(0)+2) eq Zsize(1)) or $
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Xmin must be of same size as Z(*,0) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[1]) or $
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Xmin must be of same size as Z[*,0] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(1)) then Xmin = X0 else $
-         Xmin = rebin(X0,Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[1]) then Xmin = X0 else $
+         Xmin = rebin(X0,Zsize[1],Zsize[2],/sample)
       Vsize = size(Y0)
-      if not ((Vsize(Vsize(0)+2) eq Zsize(2)) or $
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Ymin must be of same size as Z(0,*) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[2]) or $
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Ymin must be of same size as Z[0,*] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(2)) then Ymin = Y0 else $
-         Ymin = rebin(reform(Y0,1,Zsize(2),/overwrite),Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[2]) then Ymin = Y0 else $
+         Ymin = rebin(reform(Y0,1,Zsize[2],/overwrite),Zsize[1],Zsize[2],/sample)
       Vsize = size(X1)
-      if not ((Vsize(Vsize(0)+2) eq Zsize(1)) or $
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Xmax must be of same size as Z(*,0) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[1]) or $
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Xmax must be of same size as Z[*,0] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(1)) then Xmax = X1 else $
-         Xmax = rebin(X1,Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[1]) then Xmax = X1 else $
+         Xmax = rebin(X1,Zsize[1],Zsize[2],/sample)
       Vsize = size(Y1)
-      if not ((Vsize(Vsize(0)+2) eq Zsize(2)) or $
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Ymax must be of same size as Z(0,*) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[2]) or $
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Ymax must be of same size as Z[0,*] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(2)) then Ymax = Y1 else $
-         Ymax = rebin(reform(Y1,1,Zsize(2),/overwrite),Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[2]) then Ymax = Y1 else $
+         Ymax = rebin(reform(Y1,1,Zsize[2],/overwrite),Zsize[1],Zsize[2],/sample)
    end ; Z, Xmin, Ymin, Xmax, Ymax
    
    7: begin ; Z, Xcenter, Ycenter, Xminus, Yminus, Xplus, Yplus
@@ -394,69 +400,69 @@ case n_params(0) of
       X1 = 1.*reform(X1) & Y1 = 1.*reform(Y1) ; remove extraneous dimensions
       X2 = 1.*reform(X2) & Y2 = 1.*reform(Y2) ; remove extraneous dimensions
       Vsize = size(X0)  
-      if not ((Vsize(Vsize(0)+2) eq Zsize(1)) or $
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Xcenter must be of same size as Z(*,0) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[1]) or $
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Xcenter must be of same size as Z(*,0) or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(1)) then Xcenter = X0 else $
-         Xcenter = rebin(X0,Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[1]) then Xcenter = X0 else $
+         Xcenter = rebin(X0,Zsize[1],Zsize[2],/sample)
       Vsize = size(Y0)
-      if not ((Vsize(Vsize(0)+2) eq Zsize(2)) or $
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Ycenter must be of same size as Z(0,*) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[2]) or $
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Ycenter must be of same size as Z[0,*] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(2)) then Ycenter = Y0 else $
-         Ycenter = rebin(reform(Y0,1,Zsize(2),/overwrite),Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[2]) then Ycenter = Y0 else $
+         Ycenter = rebin(reform(Y0,1,Zsize[2],/overwrite),Zsize[1],Zsize[2],/sample)
       Vsize = size(X1)
-      if not ((Vsize(Vsize(0)+2) eq Zsize(1)) or $
-      (Vsize(Vsize(0)+2) eq 1) or $ ; allow scalar
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Xminus must be of same size as Z(*,0) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[1]) or $
+      (Vsize[Vsize[0]+2] eq 1) or $ ; allow scalar
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Xminus must be of same size as Z[*,0] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(1)) then Xminus = X1 else $
-         Xminus = rebin(X1,Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[1]) then Xminus = X1 else $
+         Xminus = rebin(X1,Zsize[1],Zsize[2],/sample)
       Vsize = size(Y1)
-      if not ((Vsize(Vsize(0)+2) eq Zsize(2)) or $
-      (Vsize(Vsize(0)+2) eq 1) or $ ; allow scalar
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Yminus must be of same size as Z(0,*) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[2]) or $
+      (Vsize[Vsize[0]+2] eq 1) or $ ; allow scalar
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Yminus must be of same size as Z[0,*] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(2)) then Yminus = Y1 else $
-        Yminus = rebin(reform(Y1,1,Zsize(2),/overwrite),Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[2]) then Yminus = Y1 else $
+        Yminus = rebin(reform(Y1,1,Zsize[2],/overwrite),Zsize[1],Zsize[2],/sample)
       Vsize = size(X2)
-      if not ((Vsize(Vsize(0)+2) eq Zsize(1)) or $
-      (Vsize(Vsize(0)+2) eq 1) or $ ; allow scalar
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Xplus must be of same size as Z(*,0) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[1]) or $
+      (Vsize[Vsize[0]+2] eq 1) or $ ; allow scalar
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Xplus must be of same size as Z[*,0] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(1)) then Xplus = X2 else $
-         Xplus = rebin(X2,Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[1]) then Xplus = X2 else $
+         Xplus = rebin(X2,Zsize[1],Zsize[2],/sample)
       Vsize = size(Y2)
-      if not ((Vsize(Vsize(0)+2) eq Zsize(2)) or $
-      (Vsize(Vsize(0)+2) eq 1) or $ ; allow scalar
-      ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2)))) then begin
-         msgText = 'Yplus must be of same size as Z(0,*) or Z(*,*)'
+      if not ((Vsize[Vsize[0]+2] eq Zsize[2]) or $
+      (Vsize[Vsize[0]+2] eq 1) or $ ; allow scalar
+      ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2]))) then begin
+         msgText = 'Yplus must be of same size as Z[0,*] or Z[*,*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif
-      if not (Vsize(Vsize(0)+2) eq Zsize(2)) then Yplus = Y2 else $
-         Yplus = rebin(reform(Y2,1,Zsize(2),/overwrite),Zsize(1),Zsize(2),/sample)
+      if not (Vsize[Vsize[0]+2] eq Zsize[2]) then Yplus = Y2 else $
+         Yplus = rebin(reform(Y2,1,Zsize[2],/overwrite),Zsize[1],Zsize[2],/sample)
    
       ; remember X/Yminus and X/Yplus can be scalar as well as 2-dim arrays
       Xmin = Xcenter - Xminus & Xmax = Xcenter + Xplus
@@ -472,18 +478,18 @@ case n_params(0) of
 endcase
 
 ;##### remove "> 0." on next 30 lines for real Z < 0
-;if (n_elements(minValue) gt 0) then minZ = minValue(0) else minZ = min(Z,/nan) > 0.
-;if (n_elements(maxValue) gt 0) then maxZ = maxValue(0) else maxZ = max(Z,/nan) > 0.
-if (n_elements(minValue) gt 0) then minZ = minValue(0) else minZ = min(Z,/nan)
-if (n_elements(maxValue) gt 0) then maxZ = maxValue(0) else maxZ = max(Z,/nan)
+;if (n_elements(minValue) gt 0) then minZ = minValue[0] else minZ = min(Z,/nan) > 0.
+;if (n_elements(maxValue) gt 0) then maxZ = maxValue[0] else maxZ = max(Z,/nan) > 0.
+if (n_elements(minValue) gt 0) then minZ = minValue[0] else minZ = min(Z,/nan)
+if (n_elements(maxValue) gt 0) then maxZ = maxValue[0] else maxZ = max(Z,/nan)
 if (n_elements(fillValue) gt 0) then begin
-   fillZ = fillValue(0)
+   fillZ = fillValue[0]
    wn = where(Z eq fillZ, wnc)
    if wnc gt 0 then Z[wn] = !values.d_nan ; set to NAN
    wn = where(finite(Z), wnc) ; find non-NANs including XfillVal's
    if (wnc gt 0) then begin
-      if (n_elements(minValue) le 0) then minZ = min(Z(wn),/nan)
-      if (n_elements(maxValue) le 0) then maxZ = max(Z(wn),/nan)
+      if (n_elements(minValue) le 0) then minZ = min(Z[wn],/nan)
+      if (n_elements(maxValue) le 0) then maxZ = max(Z[wn],/nan)
    endif
    ; RCJ 02/15/02 'minZ - 1' -> 'minZ - 1.' in case minZ is unsigned number.
 endif else fillZ = minZ - 1.
@@ -499,17 +505,23 @@ if (wBadc gt 0) then begin
          ; RTB 11/96; check for ctitle first, BC 2001Mar7
          if n_elements(ctitle) gt 0 then parts=str_sep(ctitle,'!C') else parts=['']
          print,'ERROR= Instrument may be off '
-         print, 'STATUS= No good values to display for ',parts(0)
-         status=-1L
-         return
-         ;  plot, [0,1], [0,1], ytype=logY, /nodata, _Extra=extra
-         ;  message, msgText, /info & status = -1L & return
+         print, 'STATUS= No good values to display for ',parts[0]
+         ;status=-1L
+         ;return
+         if keyword_set(firstplot) then begin
+	    plot, [0,1], [0,1], ytype=logY, /nodata, _Extra=extra
+            xyouts,(extra.position[2]-extra.position[0])/2,$
+	      extra.position[1]+((extra.position[3]-extra.position[1])/2), $
+	      'No good values to display for '+parts[0],device=extra.device
+	 endif     
+         ;  message, msgText, /info 
+	  status = -1L & return
       endif else message, msgText
    endif
    ;if (n_elements(minValue) eq 0) then minZ=min(Z(wGood),/nan) > 0.
    ;if (n_elements(maxValue) eq 0) then maxZ=max(Z(wGood),/nan) > 0.
-   if (n_elements(minValue) le 0) then minZ=min(Z(wGood),/nan)
-   if (n_elements(maxValue) le 0) then maxZ=max(Z(wGood),/nan)
+   if (n_elements(minValue) le 0) then minZ=min(Z[wGood],/nan)
+   if (n_elements(maxValue) le 0) then maxZ=max(Z[wGood],/nan)
    ; RCJ 02/15/02 'minZ - 1' -> 'minZ - 1.' in case minZ is unsigned number.
    if (n_elements(fillValue) le 0) then fillZ = minZ - 1.
 endif
@@ -526,33 +538,33 @@ if (n_elements(cscale) ne 0) then begin
       endif else message, msgText
    endif
    if logZ then begin ; check if cscale is less than 0 and minValue
-      if (n_elements(minValue) ne 0) then minCscale = minValue(0) > 0 $
+      if (n_elements(minValue) ne 0) then minCscale = minValue[0] > 0 $
                                    else minCscale = 0
       wcs = where(cscale le minCscale, wcsc)
       if wcsc gt 0 then begin
          ws = where(Z gt minCscale, wsc)
-         if wsc gt 0 then cscale(wcs) = min(Z(ws),/nan) else cscale(wcs) = minCscale
+         if wsc gt 0 then cscale[wcs] = min(Z[ws],/nan) else cscale[wcs] = minCscale
       endif ; bad cscale
    endif ; logZ
    doCheck = 0
    if doCheck then begin ; check for exceeding maxValue or less than minValue
       if (n_elements(maxValue) ne 0) then begin
-         wcs = where(cscale gt maxValue(0), wcsc) ; #### could be "ge"
+         wcs = where(cscale gt maxValue[0], wcsc) ; #### could be "ge"
          if wcsc gt 0 then begin
-            ws = where(Z le maxValue(0), wsc) ; #### could be "lt"
-            if wsc gt 0 then cscale(wcs) = max(Z(ws),/nan) else cscale(wcs) = maxValue(0)
+            ws = where(Z le maxValue[0], wsc) ; #### could be "lt"
+            if wsc gt 0 then cscale[wcs] = max(Z[ws],/nan) else cscale[wcs] = maxValue[0]
          endif
       endif
       if (n_elements(minValue) ne 0) then begin
-         wcs = where(cscale lt minValue(0), wcsc) ; #### could be "le"
+         wcs = where(cscale lt minValue[0], wcsc) ; #### could be "le"
          if wcsc gt 0 then begin
-            ws = where(Z ge minValue(0), wsc) ; #### could be "gt"
-            if wsc gt 0 then cscale(wcs) = min(Z(ws),/nan) else cscale(wcs) = minValue(0)
+            ws = where(Z ge minValue[0], wsc) ; #### could be "gt"
+            if wsc gt 0 then cscale[wcs] = min(Z[ws],/nan) else cscale[wcs] = minValue[0]
          endif
       endif
    endif ; doCheck min/max Values in cscale
    minZ = min(cscale) & maxZ = max(cscale)
-   if (cscale(0) gt cscale(1)) then flipColorBar = 1
+   if (cscale[0] gt cscale[1]) then flipColorBar = 1
    ; RCJ 02/15/02 'minZ - 1' -> 'minZ - 1.' in case minZ is unsigned number.
    if (n_elements(fillValue) le 0) then fillZ = minZ - 1.
 endif else begin; colorBar without cscale
@@ -562,10 +574,16 @@ endif else begin; colorBar without cscale
    endif
 endelse
 
+; RCJ  11/22/2013  Remove this. Testing showed that making linear scale did not work well for rbspa_efw-l2_fbk
+;if (alog10(maxz)-alog10(minz)) lt 10 then begin
+;   logz=0
+;   print,'WARNING: Logarithmic scale converted to linear because scale is too small.'
+;endif   
+
 minZ1 = minZ & maxZ1 = maxZ
 Ztemp = Z
 ;TJK following seems to be irrelevant, removed 9/30/99
-;if (Zsize(Zsize(0)+1) ne 1) then begin ; not Byte array
+;if (Zsize(Zsize[0]+1) ne 1) then begin ; not Byte array
 
 if logZ then begin
    ;;   ztype = size(z, /type)
@@ -582,29 +600,33 @@ if logZ then begin
       ;      wh = where(Z gt 0, wc)
       Ztemp[wh] = !values.d_nan ; set to NAN
       wh = where(finite(Ztemp), wc)
-      if (wc gt 0) then Ztemp(wh) = alog10(Ztemp(wh))
+      if (wc gt 0) then Ztemp[wh] = alog10(Ztemp[wh])
    endelse
    
    if (minZ le 0.) then minZ1 = 0. else minZ1 = alog10(minZ)
    if (maxZ le 0.) then maxZ1 = 0. else maxZ1 = alog10(maxZ)
 endif
 
-Zt = bytscl(Ztemp, min=minZ1, max=maxZ1, top=!d.n_colors-nResCol-1, /nan)+1B
+;TJK port to IDL8.1
+;Zt = bytscl(Ztemp, min=minZ1, max=maxZ1, top=!d.n_colors-nResCol-1, /nan)+1B
+Zt = bytscl(Ztemp, min=minZ1, max=maxZ1, top=!d.table_size-nResCol-1, /nan)+1B
 ; reserve black and white at ends of colorscale
 
 ;TJK took out following line 9/30/99 
 ;endif
 
-if (wBadc gt 0) then Zt(wBad) = 0B ; minZ1
+if (wBadc gt 0) then Zt[wBad] = 0B ; minZ1
 
 if (n_elements(deviceType) ne 0) then if (deviceType eq 2) then $
-   Zt = (!d.n_colors-1B) - Zt ; invert grayscale for Postscript
-if flipColorBar then Zt = (!d.n_colors-1B) - Zt ; invert for inverted cscale
+;   Zt = (!d.n_colors-1B) - Zt ; invert grayscale for Postscript
+   Zt = (!d.color_table-1B) - Zt ; invert grayscale for Postscript
+;if flipColorBar then Zt = (!d.n_colors-1B) - Zt ; invert for inverted cscale
+if flipColorBar then Zt = (!d.color_table-1B) - Zt ; invert for inverted cscale
 
 xmargin = !x.margin
 ;ymargin = !y.margin
 
-if doColorBar then if (!x.omargin(1)+!x.margin(1)) lt 14 then !x.margin(1) = 14
+if doColorBar then if (!x.omargin[1]+!x.margin[1]) lt 14 then !x.margin[1] = 14
 
 ;pPosition = !p.position ; save for later
 ;w = where(pPosition eq 0, wc)
@@ -666,9 +688,9 @@ endif ; Yfillval
 ;if keyword_set(Yfillval) then begin
 ;   w = where(Ymin ne Yfillval, wc)
 ;   y = where(Ymax ne Yfillval, yc)
-;   if (wc eq yc) then if (wc ne 0) then Yminmax(0) = min([Ymin(w), Ymax(y)],$
+;   if (wc eq yc) then if (wc ne 0) then Yminmax[0] = min([Ymin[w], Ymax[y]],$
 ;        max=maxt) $
-;   else Yminmax(0) = min([Ymin, Ymax], max=maxt)
+;   else Yminmax[0] = min([Ymin, Ymax], max=maxt)
 ;CAK  Replaced lines above with lines below.
 ;    wmin = where(Ymin ne Yfillval, i)  &  if (i eq 0) then wmin = [0]
 ;    wmax = where(Ymax ne Yfillval, i)  &  if (i eq 0) then wmax = [0]
@@ -683,7 +705,7 @@ pmulti = !p.multi ; save so overwrite plot command will work
 
 ; if ymin has values < 0 then make logY=0 because shouldn't try to plot log of negative numbers:
 q=where(ymin lt 0)
-if (q(0) ne -1) then logY = 0 
+if (q[0] ne -1) then logY = 0 
 
 ;
 ; in order to have more tickmark labels when plotting in log scale,
@@ -693,27 +715,30 @@ if (q(0) ne -1) then logY = 0
 ; modifications and removed the call to axlabel.
 ; check for extra.ytitle, BC 2001Mar7
 ; removed section, BC 2001Aug9
+;TJK 8/16/2013 Make Y tickmarks point out so we can see then w/ dense data.
+!y.ticklen = -0.02
 if logY and (n_elements(extra) gt 0) then begin
    extra_names = tag_names(extra)
    w = where(strupcase(extra_names) eq 'YTITLE', wc)
    if wc gt 0 then begin
       hold_ytitle=extra.(w[0])
       extra.(w[0])=' '
-      plot, Xminmax, Yminmax, ytype=logY, /nodata, _Extra=extra, ytickformat='(a1)'
+      plot, Xminmax, Yminmax, ytype=logY, /nodata, _Extra=extra, ytickformat='(A1)'
    endif else plot, Xminmax, Yminmax, ytype=logY, /nodata, _Extra=extra
+
 endif else plot, Xminmax, Yminmax, ytype=logY, /nodata, _Extra=extra
 
 if logY then crange = 10^!y.crange 
 
 px=!x.window*!d.x_size
 py=!y.window*!d.y_size
-xWinsize=px(1)-px(0)
-yWinsize=py(1)-py(0)
+xWinsize=px[1]-px[0]
+yWinsize=py[1]-py[0]
 
 if keyword_set(quick) and ((!d.name eq 'X') or (!d.name eq 'Z') or $
 (!d.name eq 'WIN') or (!d.name eq 'MAC') or (!d.name eq 'SUN')) then begin
    ; quick and dirty plotting
-   tv,congrid(Zt,xWinsize,yWinsize),px(0),py(0)
+   tv,congrid(Zt,xWinsize,yWinsize),px[0],py[0]
 endif else begin
    skipX = 1L & avgDeltaX = 1
    ; RCJ 11/02/2007  Changing this condition. It's causing data to disappear 
@@ -721,20 +746,20 @@ endif else begin
    ;if keyword_set(reduce) and not (!d.flags and 1L) then begin 
    if keyword_set(reduce) then begin 
       ; not scalable pixels (Postscript)
-      gaps = findGaps(Xmin(*,0), 1.1, avg=avgDeltaX)
+      gaps = findGaps(Xmin[*,0], 1.1, avg=avgDeltaX)
       ; #### uses only first row of Xmin and assumes no fill data in Xmin
-      skipX = long((!x.crange(1)-!x.crange(0)) / avgDeltaX / xWinsize) $ ; -1?
-                > 1L < (Zsize(1)/2)
+      skipX = long((!x.crange[1]-!x.crange[0]) / avgDeltaX / xWinsize) $ ; -1?
+                > 1L < (Zsize[1]/2)
    endif ; reduce
-   if (n_elements(noclip) gt 0) then noclip = noclip(0) else noclip = 0
+   if (n_elements(noclip) gt 0) then noclip = noclip[0] else noclip = 0
 
-   for i = 0L, Zsize(1)-1, skipX do begin
-      for j = 0L, Zsize(2)-1 do begin
+   for i = 0L, Zsize[1]-1, skipX do begin
+      for j = 0L, Zsize[2]-1 do begin
          doPixel = 1 ; plot all data (no maximum value limit or below limit)
          ;##### why not use minZ, maxZ?
-         if (n_elements(maxValue) ne 0) then if (Z(i,j) gt maxValue(0)) then doPixel=0
-         if (n_elements(minValue) ne 0) then if (Z(i,j) lt minValue(0)) then doPixel=0
-         ;bc         if (n_elements(fillValue) ne 0) then if (Z(i,j) eq fillZ) then doPixel=0
+         if (n_elements(maxValue) ne 0) then if (Z[i,j] gt maxValue[0]) then doPixel=0
+         if (n_elements(minValue) ne 0) then if (Z[i,j] lt minValue[0]) then doPixel=0
+         ;bc         if (n_elements(fillValue) ne 0) then if (Z[i,j] eq fillZ) then doPixel=0
 
          ;if (Ymin(i,j) lt 0) then doPixel=0
          ;TJK changed 'le' to 'eq' 2/16/2001      if (n_elements(Yfillval) ne 0) then if (Ymin(i,j) le Yfillval) then doPixel=0
@@ -758,9 +783,9 @@ endif else begin
 
          if (doPixel) then begin
             ;don't assume that the y-axis starts with 0...
-            x = [0,1,1,0] * ((Xmax(i,j)+(skipX-1L)*avgDeltaX) - Xmin(i,j)) + Xmin(i,j)
-            y = [Ymin(i,j), Ymin(i,j), Ymax(i,j), Ymax(i,j)]
-            polyfill, x, y, color = Zt(i,j), noclip=noclip
+            x = [0,1,1,0] * ((Xmax[i,j]+(skipX-1L)*avgDeltaX) - Xmin[i,j]) + Xmin[i,j]
+            y = [Ymin[i,j], Ymin[i,j], Ymax[i,j], Ymax[i,j]]
+            polyfill, x, y, color = Zt[i,j], noclip=noclip
             ; #### problem when right on clip boundary? use noclip=1 for Z device
          endif
       endfor ; j
@@ -776,33 +801,37 @@ pmulti2 = !p.multi
 !p.multi = pmulti ; restore from before first plot command
 if logY then begin
    lblv=loglevels(crange)
+
    ; do not plot labels lt or gt crange. They tend to go over labels of other graphs.
    if (n_elements(lblv) ge 3) then begin
 ;TJK 6/27/2007 - check min being in the max position, which is legal
 ;                and means the user wants the axis values from highest
 ;                to lowest, etc.
-      if (crange(0) lt crange(1)) then begin
-        if lblv(0) lt crange(0) then lblv=lblv[1:*]
-        if lblv(n_elements(lblv)-1) gt crange(1) then lblv=lblv[0:n_elements(lblv)-2]
+      if (crange[0] lt crange[1]) then begin
+        if lblv[0] lt crange[0] then lblv=lblv[1:*]
+        if lblv[n_elements(lblv)-1] gt crange[1] then lblv=lblv[0:n_elements(lblv)-2]
       endif else begin ; crange values have been deliberately switched to plot the data upsidedown
-        if lblv(0) gt crange(0) then lblv=lblv[1:*]
-        if lblv(n_elements(lblv)-1) lt crange(1) then lblv=lblv[0:n_elements(lblv)-2]
+        if lblv[0] gt crange[0] then lblv=lblv[1:*]
+        if lblv[n_elements(lblv)-1] lt crange[1] then lblv=lblv[0:n_elements(lblv)-2]
       endelse
    endif   
 
    extra.ytitle=hold_ytitle
+!y.ticklen = -0.02
    plot,Xminmax, Yminmax, _Extra=extra, ytype=logY, /nodata, /noerase,$
       yticks=n_elements(lblv)-1,ytickv=lblv 
+; don't want yticks to be 0 or 1     yticks=n_elements(lblv)-1,ytickv=lblv 
+
    ;   lblv=loglevels(Yminmax) <- this is not correct! We really want crange so we are still within
    ;      specified validmin/max.  RCJ
    ;   RCJ. Ugly hack: 
    ;   if n_elements(lblv) ge 3 then begin
    ;      ; try to delete labels that are overlaping with labels from other graphs. RCJ 11/00
-   ;;      if lblv(0) le yminmax(0) then lblv=lblv[1:*]
-   ;      if lblv(0) lt crange(0) then lblv=lblv[1:*]
-   ;;      if yminmax(1) lt $
+   ;;      if lblv[0] le yminmax[0] then lblv=lblv[1:*]
+   ;      if lblv[0] lt crange[0] then lblv=lblv[1:*]
+   ;;      if yminmax[1] lt $
    ;;         (lblv(n_elements(lblv)-1)+(lblv(n_elements(lblv)-1)-lblv(n_elements(lblv)-2))/2) then $
-   ;      if crange(1) lt $
+   ;      if crange[1] lt $
    ;         (lblv(n_elements(lblv)-1)+(lblv(n_elements(lblv)-1)-lblv(n_elements(lblv)-2))/2) then $
    ;         lblv=lblv[0:n_elements(lblv)-2]
    ;   endif
@@ -810,25 +839,28 @@ if logY then begin
    ;   axlabel,lblv,format=fmt
    ; BC 2001Mar7 call plotlabel
    ;   if (n_elements(extra.position) gt 0) and (n_elements(extra.device) gt 0) then begin
-   ;      xyouts,extra.position(0)-60,extra.position(1)+50,hold_ytitle,device=extra.device, $
+   ;      xyouts,extra.position[0]-60,extra.position[1]+50,hold_ytitle,device=extra.device, $
    ;         charsize=extra.charsize, orientation=90, alignment=0.5
    ;   endif else plotlabel, hold_ytitle, /yaxis
    ;;;;;if n_elements(hold_ytitle) gt 0 then plotlabel, hold_ytitle, yaxis=0
    ;   plotlabel, ytitle, yaxis=0
 endif else begin
+!y.ticklen = -0.02 
    plot,Xminmax, Yminmax, _Extra=extra, ytype=logY, /nodata, /noerase
 endelse
 
 !p.multi = pmulti2 ; restore from after first plot command
+!y.ticklen = 0.0 ; reset RCJ 10/24/2013
 
 if doColorBar then begin
    if (n_elements(ctitle) le 0) then ctitle = ''
    if (n_elements(cCharSize) le 0) then cCharSize = 0.
    xwindow = !x.window
    offset = 0.01
+
    colorbar, cscale, ctitle, logZ=logZ, cCharSize=cCharSize, nResCol=nResCol, $
-        position=[!x.window(1)+offset,      !y.window(0),$
-                  !x.window(1)+offset+0.03, !y.window(1)]
+        position=[!x.window[1]+offset,      !y.window[0],$
+                  !x.window[1]+offset+0.03, !y.window[1]]
    !x.window = xwindow
 endif ; colorbar
 

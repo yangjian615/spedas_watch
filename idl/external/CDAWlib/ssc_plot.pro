@@ -1,14 +1,20 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/ssc_plot.pro,v 1.24 2008/02/06 20:34:17 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 7092 $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/ssc_plot.pro,v 1.27 2012/06/19 14:34:51 kovalick Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;
 ;+
 ; NAME: ssc_plot.pro
 ;
 ; PURPOSE: Calls read_myCDF and plotmaster for SSCWEB plots
 ;
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 FUNCTION ssc_plot, cdfnames, PID, OUTDIR
 
@@ -28,9 +34,9 @@ FUNCTION ssc_plot, cdfnames, PID, OUTDIR
 nbufs=n_elements(cdfnames)
 print, nbufs
 for i=0, nbufs-1 do begin 
- print, cdfnames(i) 
+ print, cdfnames[i] 
  vnames = ' ' 
- buf = read_myCDF(vnames, cdfnames(i), /ALL, /NODATASTRUCT)
+ buf = read_myCDF(vnames, cdfnames[i], /ALL, /NODATASTRUCT)
 
  w=execute('buf'+strtrim(string(i),2)+'=buf')
   if w ne 1 then begin

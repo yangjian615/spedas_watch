@@ -1,8 +1,8 @@
-;$Author: jimm $ 
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/Colorbar.pro,v 1.20 2006/09/08 20:32:07 kovalick Exp kovalick $
+;$Author: nikos $ 
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/Colorbar.pro,v 1.29 2014/08/08 19:43:17 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 7092 $
+;$Revision: 15739 $
 Pro Colorbar, scale, title, logZ=logZ, position=position, cCharSize=cCharSize,$
               fcolor=fcolor, reverse=reverse, image=image, nResCol=nResCol
 ;+ Terri Martin and Robert Candey
@@ -25,13 +25,19 @@ Pro Colorbar, scale, title, logZ=logZ, position=position, cCharSize=cCharSize,$
 ; Purpose:
 ; This procedure creates a colorbar for the right side of a spectrogram
 ; and image...
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 ;-
 common deviceTypeC, deviceType,file; required for inverting grayscale Postscript
 xsave = !x & ysave = !y & zsave = !z & psave = !p
 !p.multi = 0
 
 if (n_elements(position) ne 0) then positiont = position else $
-  positiont = [!x.window(1)+0.01, !y.window(0), !x.window(1)+0.04, !y.window(1)]
+  positiont = [!x.window[1]+0.01, !y.window[0], !x.window[1]+0.04, !y.window[1]]
 ;	positiont = [0.9, 0.1, 0.93, 0.9]
 if not keyword_set(logZ) then logZ=0
 if (n_elements(title) le 0) then title = ''
@@ -55,7 +61,7 @@ endif else begin
 ; alternative if cCharSize is undefined or le 0
   if !p.charsize gt 0. then fontsize = !p.charsize
   if !y.charsize gt 0. then fontsize = !y.charsize * fontsize
-  if (!p.multi(1)>!p.multi(2)) gt 2 then fontsize = fontsize/2.
+  if (!p.multi[1]>!p.multi[2]) gt 2 then fontsize = fontsize/2.
 endelse
 
 plot, [0., 1.], [0., 1.], position = positiont, $
@@ -63,12 +69,12 @@ plot, [0., 1.], [0., 1.], position = positiont, $
 ;axis, yaxis = 1, ystyle = 1, yrange = scale, ytype=logZ, ycharsize=fontsize, $
 ;	ytitle = title, ticklen = -0.02*0.78/0.04 ; adjust for narrow window
 
-if (abs(!x.window(1)-!x.window(0))*!d.x_size le 2) then begin
+if (abs(!x.window[1]-!x.window[0])*!d.x_size le 2) then begin
   message, 'Colorbar too narrow', /info
   !x = xsave & !y = ysave & !z = zsave & !p = psave ; restore original settings
   return
 endif
-colorStep = ceil(float(ncolors)/(abs(!y.window(1)-!y.window(0))*!d.y_size)) > 1L
+colorStep = ceil(float(ncolors)/(abs(!y.window[1]-!y.window[0])*!d.y_size)) > 1L
 ; could require 2 pixels per color; colorStep = colorStep * 2L
 nSteps = fix(nColors / colorStep) < nColors
 ;if (!d.name eq 'PS') 
@@ -84,18 +90,46 @@ for i = 0L, nSteps-1 do begin
   polyfill, [0.,1.,1.,0.], (i+[0.,0.,1.,1.])/nSteps, $
 	color=colors(i*colorStep), noclip=0
 endfor ; i
-;for i = 0L, nColors-1, colorStep do begin
-;  polyfill, [0.,1.,1.,0.], (i+[0.,0.,1.,1.])/nSteps, color=colors(i), noclip=0
-;endfor ; i
 
 ; replot so the box gets put back over the filled area
 plot, [0., 1.], [0., 1.], position = positiont, $
 	/nodata, /noerase, xstyle = 4, ystyle = 1+4
 ; adjust for narrow window
-
-
-  axis, yaxis = 1, ystyle = 1+4, yrange = scale, ytype=logZ, $
-  ycharsize=fontsize,color=fcolor,ytickname=replicate(' ',30),ytick_get=yticks
+; ystyle: 1=force exact axis range, 4=supress entire axis
+  
+;  RCJ  11/2013 small change to these lines: ytickformat does not depend on number of tick marks
+; and ytype seems to no longer be a valid keyword for axis.
+;Get the yticks from IDL for the specified scale (yrange)
+  axis, yaxis = 1, ystyle = 1+4, yrange = scale, ylog=logZ, $
+  ycharsize=fontsize,color=fcolor,ytickformat='(A1)',ytick_get=yticks
+  n_yticks = n_elements(yticks)
+;print, 'INFO: IDL default labels = ',yticks,' num lables ',n_yticks, 'for scale = ',scale
+  ordered = 1L
+  newticks = yticks
+  modticks = 0L ;set flag for when we're adjusting with the tick marks
+;if log and only one label
+  case1 = (logZ and n_yticks lt 2)
+;check to see if log scaled and 2 labels found and the scalemin and max are "inside" of the
+;yticks, e.g. scale = 2,3 and yticks =1,10 - we want to use 1,10 for log,
+;otherwise we get no labels/ticks
+  case2=0L
+  if(n_yticks eq 2) then case2 = (logZ and (scale(0) gt yticks(0)) and (scale(1) lt yticks(1)))
+  if (case1 or case2) then begin
+    modticks = 1L
+    tmpscale = scale
+    if (scale(1) lt scale[0]) then begin
+       ordered=0L ;case to handle stack plots which have min at the top, max at the bottom
+       tmpscale[0] = scale[1]  & tmpscale[1] = scale[0]
+    endif
+    newticks = loglevels(tmpscale) ;/coarse might work better in some cases 
+    if (n_elements(newticks) eq 1) then newticks = scale ;set them to scale passed in.
+;test, what would IDL give us when just asking for 3 ticks (specify 2)
+    axis, yaxis = 1, ystyle = 1+4, yrange = scale, ylog=logZ, yticks=2,$
+    ycharsize=fontsize,color=fcolor,ytickformat='(A1)',ytick_get=idlyticks
+;    print, 'INFO: IF forced 3 ticks: idlyticks would be= ',idlyticks,' num lables ',n_elements(idlyticks)
+  endif
+if not ordered then yticks = reverse(newticks) else yticks = newticks
+;print, 'INFO: using vals from loglevels: yticks = ',yticks,' num lables ',n_elements(yticks)
 
 if (keyword_set(IMAGE)) then begin ;adjust top axis label to be ">= number"
   ;get the tick labels for the color axis - this is a really klugy way
@@ -105,61 +139,52 @@ if (keyword_set(IMAGE)) then begin ;adjust top axis label to be ">= number"
 ;  axis, yaxis = 1, ystyle = 1+4, yrange = scale, ytype=logZ, $
 ;  ycharsize=fontsize,color=fcolor,ytickname=replicate(' ',30),ytick_get=yticks
 
-  ydim = size(yticks)
-  
   ;yticks = fix(yticks) ;convert to integers
   ;ychar_ticks = string(yticks)
   
   ; RCJ 12/11/00 replace 2 lines above with the following 'if' statement: 
   ; remove decimal if not needed:
+
   q=where(yticks-long(yticks) ne 0)
-  if (q(0) eq -1) then begin
+  if (q[0] eq -1) then begin
      yticks=long(yticks) ; turn them into integers
+     if (logZ) then ychar_ticks = string(yticks,format='(e20.1)') else $
      ychar_ticks = string(yticks)
   endif else begin
      ; RCJ 06/23/2003 Originally we only had the 'f20.1' line, but for numbers
      ; of the order of 10^-4 we needed the 'e' format. This may/may not be
      ; the best setup, depending on tests.
-     if (yticks[n_elements(yticks)-1]-yticks[0] le 1) then $
+     if (yticks[n_yticks-1]-yticks[0] le 1 or logZ) then $
         ychar_ticks = string(yticks,format='(e20.1)') else $
         ychar_ticks = string(yticks,format='(f20.1)')
   endelse
   
-  ychar_ticks = strtrim(ychar_ticks,2) ;trim off the blank spaced
+  ychar_ticks = strtrim(ychar_ticks,2) ;trim off the blanks
    
-  ychar_ticks(ydim(1)-1) = '>='+ychar_ticks(ydim(1)-1)
-  axis, yaxis = 1, ystyle = 1, yrange = scale, ytype=logZ,ycharsize=fontsize,$
+  ydim = size(yticks)
+  
+  ychar_ticks[ydim[1]-1] = '>='+ychar_ticks[ydim[1]-1]
+  ;axis, yaxis = 1, ystyle = 1, yrange = scale, ytype=logZ,ycharsize=fontsize,$
+  axis, yaxis = 1, ystyle = 1, yrange = scale, ylog=logZ,ycharsize=fontsize,$
       color=fcolor,ytitle = title, ticklen = -0.02*0.78/0.04, $
       ytickname=ychar_ticks
 
-endif else begin
-
-; For yrange lt 9 the log axis shows too few labeled tick marks. 
-; Force it to have 4 labeled tick marks by setting yticks=3.  RCJ 09/01
-;TJK 10/24/2005 - change the logic to look at the number of 
-; tick marks IDL has chosen based on the scale, vs. the range of the
-; scale.  Otherwise, plots that have small scale, but need the regular
-; log scaling don't come out right, e.g. timed_l1b_saber
-;
-;   if logZ and scale[1]-scale[0] lt 9 then begin   
-
-
-    if (logZ and (n_elements(yticks) lt 3)) then begin
-      print, 'DEBUG - Colorbar LogZ and demanding 3 ticks instead of IDL default of ',n_elements(yticks),' in this case'
-;TJK 3/22/2006 - changed ystyle from 1 to 2 to let IDL choose more
-;                reasonable log scale labels, vs. forcing the actual min/max
-;      axis, yaxis = 1, ystyle = 1, ytype=logZ, ycharsize=fontsize, $
-      axis, yaxis = 1, ystyle = 2, ytype=logZ, ycharsize=fontsize, $
+endif else begin ;for plot types besides IMAGE
+;TJK 8/8/2014 another attempt at getting more labels for log scaled plots
+   if (modticks) then begin
+      n_yticks = n_elements(yticks)
+;      print, 'INFO: specifying num ticks and tick values'
+;      print, 'INFO: yticks = ',yticks,' num lables ',n_yticks
+      axis, yaxis = 1, ystyle = 1,  ylog=logZ, ycharsize=fontsize, $
          color=fcolor,ytitle = title, ticklen = -0.02*0.78/0.04,$
-         yrange=scale 
-;TJK 9/8/2006 removed yticks=3 - don't force the number of ticks either (caused IDL to select
-;strange min/max numbers w/ small ranges, e.g. 0.025-2.1 
-
+         yrange=scale ,ytickv=yticks, yticks=n_yticks
    endif else begin
-      axis, yaxis = 1, ystyle = 1,  ytype=logZ, ycharsize=fontsize, $
+;      print, 'INFO: IDL default labels based on scale.'
+      axis, yaxis = 1, ystyle = 1,  ylog=logZ, ycharsize=fontsize, $
          color=fcolor,ytitle = title, ticklen = -0.02*0.78/0.04,$
          yrange=scale 
    endelse
+
 endelse
 
 !x = xsave & !y = ysave & !z = zsave & !p = psave ; restore original settings

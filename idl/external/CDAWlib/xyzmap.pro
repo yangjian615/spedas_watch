@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/xyzmap.pro,v 1.47 2007/12/20 16:42:49 johnson Exp johnson $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/xyzmap.pro,v 1.49 2012/05/08 15:38:10 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 7092 $
+;$Revision: 15739 $
 ;+
 ; NAME: XYZMAP.PRO  
 ;
@@ -59,7 +59,6 @@
 ;
 ;   none
 ;
-;-------------------------------------------------------------------
 ; History
 ;
 ;         1.0  R. Baldwin  HSTX     12/20/95 
@@ -74,8 +73,13 @@
 ;         1.2  R. Baldwin HSTX
 ;               Added orbit labeling code
 ;
-;-------------------------------------------------------------------
-
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 pro xyzmap,epoch,lat,lon,alt,station,vlat=vlat,iproj=iproj,$
 	   limit=limit, latdel=latdel,londel=londel,Ttitle=thetitle,$
            pmode=pmode,rng_val=rng_val,num_int=num_int,$
@@ -130,16 +134,16 @@ offset_int=0.02 ; TJK changed this from .05 to .03 ; RCJ changed .03 to .02
 ; pltsym=abs(pmode-1)  
  if(pmode eq 0) then pltsym=abs(pmode-1)  else pltsym=pmode-1 
 
-tmint=double((rng_val(1)-rng_val(0))/num_int)
+tmint=double((rng_val[1]-rng_val[0])/num_int)
 nlat=((n_elements(lat)-1)/num_int)
 time=double(0.0)
 if (strlen(lnlabel) eq 0) then lnlabel = 'line'
 imode=strtrim(string(pmode),2)
 
- if (rng_val(0) gt 0.0 and rng_val(0) gt 0.0) then begin
-;if (epoch(0) gt 0.0 and epoch(nt) gt 0.0) then begin
-  cdf_epoch, epoch(0), yr0,mo0,dy0,hr0,mn0,sc0,ml0,/break
-  cdf_epoch, epoch(n-1),yr1,mo1,dy1,hr1,mn1,sc1,ml1,/break
+ if (rng_val[0] gt 0.0 and rng_val[0] gt 0.0) then begin
+;if (epoch[0] gt 0.0 and epoch[nt] gt 0.0) then begin
+  cdf_epoch, epoch[0], yr0,mo0,dy0,hr0,mn0,sc0,ml0,/break
+  cdf_epoch, epoch[n-1],yr1,mo1,dy1,hr1,mn1,sc1,ml1,/break
   ical,yr0,doy0,mo0,dy0,/idoy
   ical,yr1,doy1,mo1,dy1,/idoy
 
@@ -175,25 +179,25 @@ endif else begin ; no time associated w/ the data, i.e. for station
 endelse
 
 ; Condition block for map_set or map_set,/noerase  
-   lat_max=limit(2)-limit(0)
-   lon_max=limit(3)-limit(1)
+   lat_max=limit[2]-limit[0]
+   lon_max=limit[3]-limit[1]
    lst=min(lat_max,lon_max)
 
   if(pmode eq 0) then begin
   if(nocont) then begin
-   map_set,vlat(0),vlat(1),vlat(2),PROJ=iproj,limit=limit,$
+   map_set,vlat[0],vlat[1],vlat[2],PROJ=iproj,limit=limit,$
            /grid,/label,latdel=latdel,londel=londel,$
            xmargin=xmargin,ymargin=ymargin,title=thetitle,$
            color=bkgrd,_extra=extras
   endif else begin
    if(lst le 50) then begin ; USE HIRES CONT. OUTLINES
     print, "High Res. Outlines Used"
-    map_set,vlat(0),vlat(1),vlat(2),PROJ=iproj,limit=limit,$
+    map_set,vlat[0],vlat[1],vlat[2],PROJ=iproj,limit=limit,$
            /grid,/label,/cont,/hires,latdel=latdel,londel=londel,$
            xmargin=xmargin,ymargin=ymargin,title=thetitle,$
            color=bkgrd,_extra=extras
    endif else begin
-    map_set,vlat(0),vlat(1),vlat(2),PROJ=iproj,limit=limit,$
+    map_set,vlat[0],vlat[1],vlat[2],PROJ=iproj,limit=limit,$
            /grid,/label,/cont,latdel=latdel,londel=londel,$
            xmargin=xmargin,ymargin=ymargin,title=thetitle,$
            color=bkgrd,_extra=extras
@@ -202,19 +206,19 @@ endelse
 ; THIS should work but it doent;  if(not nocont) then map_continents
   endif else begin
    if(nocont) then begin 
-     map_set,vlat(0),vlat(1),vlat(2),PROJ=iproj,limit=limit,$
+     map_set,vlat[0],vlat[1],vlat[2],PROJ=iproj,limit=limit,$
            /grid,/label,latdel=latdel,londel=londel,$
            xmargin=xmargin,ymargin=ymargin,title=thetitle,$
            color=bkgrd,/noerase,_extra=extras
    endif else begin
     if(lst le 50) then begin ; USE HIRES CONT. OUTLINES
      print, "High Res. Outlines Used"
-     map_set,vlat(0),vlat(1),vlat(2),PROJ=iproj,limit=limit,$
+     map_set,vlat[0],vlat[1],vlat[2],PROJ=iproj,limit=limit,$
            /grid,/label,/cont,/hires,latdel=latdel,londel=londel,$
            xmargin=xmargin,ymargin=ymargin,title=thetitle,$
            color=bkgrd,/noerase,_extra=extras
     endif else begin
-     map_set,vlat(0),vlat(1),vlat(2),PROJ=iproj,limit=limit,$
+     map_set,vlat[0],vlat[1],vlat[2],PROJ=iproj,limit=limit,$
            /grid,/label,/cont,latdel=latdel,londel=londel,$
            xmargin=xmargin,ymargin=ymargin,title=thetitle,$
            /noerase,color=bkgrd,_extra=extras
@@ -229,7 +233,7 @@ endelse
 ; Use of orbit date works; needs refinement for all intervals
   if(ptype eq 0) then begin
  
-   dif=(epoch(n-1)-epoch(0))/1000
+   dif=(epoch[n-1]-epoch[0])/1000
    ddif=dif/86400.0
 
    if(autolabel) then begin
@@ -266,9 +270,9 @@ endelse
   endif
 ; Remove nasty values from arrays which will hang IDL
     wc=where(abs(lon) gt 360.0,wc1)
-    if(wc1 gt 0) then lon(wc)=370.0
+    if(wc1 gt 0) then lon[wc]=370.0
     wc=where(abs(lat) gt 90.0,wc2)
-    if(wc2 gt 0) then lat(wc)=370.0
+    if(wc2 gt 0) then lat[wc]=370.0
 ; Plot trace
     ; RCJ 01/06/02 Added []'s here because oplot plots arrays and if
     ; lon and lat are made of only one value (not an array) we get an error
@@ -293,8 +297,8 @@ endelse
     if(pltsym eq 11) then sym='.'
     if(pltsym eq 12) then sym='!9V!X'
 
-    ;oplot,[1]*lon(0),[1]*lat(0),color=symcol,symsize=symsiz,psym=pltsym 
-    oplot,[1]*lon(0),[1]*lat(0),color=symcol,symsize=symsiz,psym=sym 
+    ;oplot,[1]*lon[0],[1]*lat[0],color=symcol,symsize=symsiz,psym=pltsym 
+    oplot,[1]*lon[0],[1]*lat[0],color=symcol,symsize=symsiz,psym=sym 
   endif
 
 ;if(ptype eq 0) then begin
@@ -345,14 +349,14 @@ endelse
      oplot,[lon],[lat],psym=5,color=symcol,symsize=symsiz
   endif else begin
    for i=0,n-1 do begin
-;    xyouts,lon(i),lat(i),station(i),color=symcol
+;    xyouts,lon[i],lat[i],station[i],color=symcol
      if(n_elements(limit) ne 0) then begin
-	if (lat(i) ge limit(0) and lat(i) le limit(2) and $
-	    lon(i) ge limit(1) and lon(i) le limit(3)) then begin
-          xyouts,lon(i),lat(i),station(i),charsize=symsiz,color=symcol
+	if (lat[i] ge limit[0] and lat[i] le limit[2] and $
+	    lon[i] ge limit[1] and lon[i] le limit[3]) then begin
+          xyouts,lon[i],lat[i],station[i],charsize=symsiz,color=symcol
         endif
      endif else begin
-	xyouts,lon(i),lat(i),station(i),charsize=symsiz,color=symcol
+	xyouts,lon[i],lat[i],station[i],charsize=symsiz,color=symcol
      endelse
      
    endfor

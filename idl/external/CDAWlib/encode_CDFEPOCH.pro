@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/encode_CDFEPOCH.pro,v 1.5 2007/08/06 19:49:35 johnson Exp johnson $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/encode_CDFEPOCH.pro,v 1.7 2012/02/07 17:24:12 kovalick Exp johnson $
 ;$Locker: johnson $
-;$Revision: 7092 $
+;$Revision: 15739 $
 ;+------------------------------------------------------------------------
 ; NAME: ENCODE_CDFEPOCH
 ; PURPOSE: 
@@ -14,12 +14,19 @@
 ; KEYWORD PARAMETERS:
 ;       epoch16 - if set, the value returned is double complex epoch16
 ;                 value
+;       tt2000 - if set, the value returned is a 8 byte integer tt200
+;                value
+;
 ;                 if not set, return the usual epoch double value
 ; OUTPUTS:
 ;       e = CDF epoch timetag (i.e. DOUBLE, millisecs since 0 A.D.)
 ;       if /epoch16 set, return an epoch16 value which is a double
 ;       complex.  Newly supported in IDL6.3 and CDF3.1 - added here
 ;       by TJK on 7/19/2006.
+;       if /tt2000 is set, return a tt2000 value which is an 8 byte
+;       int.  Newly support in CDF3.3.3 to support leap seconds...
+;       by TJK 8/22/2011.
+;
 ;
 ; AUTHOR:
 ;       Richard Burley, NASA/GSFC/Code 632.0, Feb 13, 1996
@@ -27,8 +34,14 @@
 ; MODIFICATION HISTORY:
 ;       8/20/96  : R. Burley     : Modify so that input parameter is not
 ;                                : changed by this function. 
-;-------------------------------------------------------------------------
-FUNCTION encode_CDFEPOCH, instring,EPOCH16=epoch16, $
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
+FUNCTION encode_CDFEPOCH, instring,EPOCH16=epoch16, TT2000=tt2000, $
 MSEC= MSEC, USEC= USEC, NSEC=NSEC, PSEC=PSEC
 
 ; Convert the yyyy/mm/dd hh:mm:ss string into a CDF Epoch time
@@ -49,17 +62,21 @@ f=0 & reads,estr,f,FORMAT='(I)' ; read the sec field from the string
 ; Perform TBD validation
 ;TJK 7/21/2006 add resolution keywords now supported in CDF3.1 and IDL6.3
 ;  msec=0 & usec = 0 & nsec = 0 & psec = 0 ; RCJ 08/06/2007 commented out
-  if (keyword_set(MSEC)) then msec = MSEC else msec = 0
-  if (keyword_set(USEC)) then usec = USEC else usec = 0
-  if (keyword_set(NSEC)) then nsec = NSEC else nsec = 0
-  if (keyword_set(PSEC)) then psec = PSEC else psec = 0
+  if (keyword_set(MSEC)) then msec = fix(MSEC) else msec = 0
+  if (keyword_set(USEC)) then usec = fix(USEC) else usec = 0
+  if (keyword_set(NSEC)) then nsec = fix(NSEC) else nsec = 0
+  if (keyword_set(PSEC)) then psec = fix(PSEC) else psec = 0
 
 ;TJK 7/21/2006 check for EPOCH16 and IDL version before making call
 if ((!version.release ge '6.2') and keyword_set(EPOCH16)) then begin
 ;initialize values 
   CDF_EPOCH16,etime,a,b,c,d,e,f,msec, usec, nsec, psec, /COMPUTE_EPOCH
 endif else begin
-  CDF_EPOCH,etime,a,b,c,d,e,f,msec,/COMPUTE_EPOCH
+   if (keyword_set(TT2000)) then begin
+      CDF_TT2000,etime,a,b,c,d,e,f,msec, usec, nsec, /COMPUTE
+   endif else begin
+    CDF_EPOCH,etime,a,b,c,d,e,f,msec,/COMPUTE_EPOCH
+   endelse
 endelse
 return,etime
 end

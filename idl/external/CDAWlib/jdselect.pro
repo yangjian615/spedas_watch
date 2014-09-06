@@ -61,13 +61,13 @@
  
 	;------  Loop through JDs looking for matches.  -------
 	for i = 0, n_elements(jdin)-1 do begin
-	  jd = jdin(i)
+	  jd = jdin[i]
 	  t = strupcase(dt_tm_mak(jd,form=frm))
-	  w = where(t(0) eq list, c)
+	  w = where(t[0] eq list, c)
 	  if c gt 0 then jd2 = [jd2,jd]
 	endfor
  
-	if n_elements(jd2) ge 2 then jd2 = jd2(1:*)
+	if n_elements(jd2) ge 2 then jd2 = jd2[1:*]
  
 	return, jd2
  

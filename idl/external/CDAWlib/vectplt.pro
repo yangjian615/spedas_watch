@@ -1,8 +1,8 @@
-;$Author: kenb $
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/vectplt.pro,v 1.12 2001/11/26 18:32:30 johnson Exp johnson $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/vectplt.pro,v 1.16 2012/05/18 21:33:37 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 8 $
+;$Revision: 15739 $
 ;+
 ; NAME: VECTPLT.PRO 
 ;
@@ -141,7 +141,7 @@ if mytimes.day lt 10 then dayst = '0'+dayst
  if(keyword_set(qmax)) then Qmax=qmax else qmax=4 
 
  if(n_elements(limit) ne 0) then begin
-      ymin=limit(0) & xmin=limit(1) & ylim=limit(2) & xlim=limit(3) 
+      ymin=limit[0] & xmin=limit[1] & ylim=limit[2] & xlim=limit[3] 
  endif else begin
      ymin=60. & xmin=-180. & ylim=90. & xlim=180. 
  endelse
@@ -174,24 +174,24 @@ endif
 		isoy=0L
 		FOR I=0,ICNT-1 DO BEGIN
 
-                 malts(i)=alt
-	         opos=cnvcoord(mlats(i),mlons(i),malts(i))
-		 mlats(i) = opos(0)
-		 mlons(i) = opos(1)
-		 mglons(i) = opos(1)
+                 malts[i]=alt
+	         opos=cnvcoord(mlats[i],mlons[i],malts[i])
+		 mlats[i] = opos[0]
+		 mlons[i] = opos[1]
+		 mglons[i] = opos[1]
 
-  		  temp = mytimes.times(i)+(mytimes.doy-1)*24*3600
+  		  temp = mytimes.times[i]+(mytimes.doy-1)*24*3600
                	  isoy = long(temp)
                   if( spole eq 0) then begin
-                    mlons(i) = 180.0 + 15.*mlt(mytimes.year,isoy,mlons(i))
+                    mlons[i] = 180.0 + 15.*mlt(mytimes.year,isoy,mlons[i])
                   endif else begin
-                    mlons(i) =  15.*mlt(mytimes.year,isoy,mlons(i))
+                    mlons[i] =  15.*mlt(mytimes.year,isoy,mlons[i])
                   endelse
-		  if mlons(i) gt 180. then mlons(i)=mlons(i)-360.
+		  if mlons[i] gt 180. then mlons[i]=mlons[i]-360.
 ; printf,4, mytimes.year,isoy,mytimes.times(i),mytimes.doy,mlons(i)
 		endfor
-                utalon = (mytimes.times(0)/3600.0)*15.0
-		zlon = mlons(0) - utalon 
+                utalon = (mytimes.times[0]/3600.0)*15.0
+		zlon = mlons[0] - utalon 
                 print, zlon,'0 UT',utalon
 		noonstr='0 UT'
         endif
@@ -199,23 +199,23 @@ endif
 ;               print, 'ECC ', mltin
                 sod=0L
 		for i=0,icnt-1 do begin
-                   malts(i)=malts(i)+6371.2
-                   sod = long(mytimes.times(i))
+                   malts[i]=malts[i]+6371.2
+                   sod = long(mytimes.times[i])
 ;printf, 4, mytimes.year,mytimes.doy,sod,malts(i),mlats(i),mlons(i),vest(i),$
 ;         vnrt(i),qflgs(i)
-         opos = eccmlt(mytimes.year,mytimes.doy,sod,malts(i),mlats(i),mlons(i))
-		   mglons(i) = opos(0)
-		   mlats(i) = opos(1)
-        	   mlons(i) = opos(2)
+         opos = eccmlt(mytimes.year,mytimes.doy,sod,malts[i],mlats[i],mlons[i])
+		   mglons[i] = opos[0]
+		   mlats[i] = opos[1]
+        	   mlons[i] = opos[2]
                         if( spole eq 0) then begin
-			  mlons(i)= 180.0 + mlons(i)*15.0
+			  mlons[i]= 180.0 + mlons[i]*15.0
                         endif else begin
-			  mlons(i)= mlons(i)*15.0
+			  mlons[i]= mlons[i]*15.0
     			endelse
-			iF mlons(i) gt 180. then mlons(i)=mlons(i)-360.
+			iF mlons[i] gt 180. then mlons[i]=mlons[i]-360.
 		endfor
                 utalon = (mytimes.times(0)/3600.0)*15.0
-                zlon = mlons(0) - utalon
+                zlon = mlons[0] - utalon
 ;               print, zlon,'0 UT',utalon
                 noonstr='0 UT'
 	endif
@@ -227,9 +227,9 @@ endif
          lats = mlats
          lons = mlons
          b_cont=vnrt
-         b_cont(*)=1
+         b_cont[*]=1
          b_data=b_cont 
-         b_data(*)=0
+         b_data[*]=0
          nvects = icnt
          b_mlat=mlats
          b_mlon=mglons
@@ -251,8 +251,8 @@ endif
 		lat = float(j)*bin_lat + ymin + bin_lat/2.
 		for i=0,nbin_lon-1 do begin
 			lon = float(i)*bin_lon + bin_lon/2.
-			lats(i+j*nbin_lon) = lat
-			lons(i+j*nbin_lon) = lon - 180.
+			lats[i+j*nbin_lon] = lat
+			lons[i+j*nbin_lon] = lon - 180.
 		endfor
 	endfor
 
@@ -271,20 +271,20 @@ endif
 ;       print, ymin, bin_lat, bin_lon, nbin_lon   
 
 	for i = 0,icnt-1 do begin
-		lat_bin = abs(fix((mlats(i)-ymin)/bin_lat))
-		lon_bin = fix((mlons(i)+180.)/bin_lon)
+		lat_bin = abs(fix((mlats[i]-ymin)/bin_lat))
+		lon_bin = fix((mlons[i]+180.)/bin_lon)
 		indx = fix(lon_bin + lat_bin*nbin_lon)
-		if qflgs(i) ge qmin and qflgs(i) le qmax then begin
-;               printf,4, indx,i,b_vest(indx),vest(i)
-			b_vest(indx) = b_vest(indx) + vest(i)
-			b_vnrt(indx) = b_vnrt(indx) + vnrt(i)
-			b_cont(indx) = b_cont(indx) + 1
- 			b_mlat(indx) = mlats(i)
-			b_mlon(indx) = mglons(i)
-			b_malt(indx) = malts(i)
+		if qflgs[i] ge qmin and qflgs[i] le qmax then begin
+;               printf,4, indx,i,b_vest[indx],vest(i)
+			b_vest[indx] = b_vest[indx] + vest[i]
+			b_vnrt[indx] = b_vnrt[indx] + vnrt[i]
+			b_cont[indx] = b_cont[indx] + 1
+ 			b_mlat[indx] = mlats[i]
+			b_mlon[indx] = mglons[i]
+			b_malt[indx] = malts[i]
 		endif
 
-		if qflgs(i) gt qmax then b_data(indx)=1
+		if qflgs[i] gt qmax then b_data[indx]=1
 
 	endfor
 
@@ -292,25 +292,25 @@ endif
         
         w = where(b_cont ne 0,wc)
         if( wc gt 0) then begin  
-             b_vest(w) = b_vest(w)/b_cont(w)
-             b_vnrt(w) = b_vnrt(w)/b_cont(w)
+             b_vest[w] = b_vest[w]/b_cont[w]
+             b_vnrt[w] = b_vnrt[w]/b_cont[w]
         endif
         
       endelse
 ; Compute angles
         w = where(b_vnrt ne 0,wc)
-        angs(w) = atan(b_vest(w),b_vnrt(w))
+        angs[w] = atan(b_vest[w],b_vnrt[w])
 
 ; Compute vector rotation angles for desired coordinate system
 ;       print, 'Computing angle adjustment'
         for i=0, nvects-1 do begin
-         if(b_cont(i) ne 0) then begin
-           b_rot(i)=angadj(mltin,mytimes.year,b_mlat(i),b_mlon(i),b_malt(i))
-           b_rot(i)=b_rot(i)*(3.141592/180.)
+         if(b_cont[i] ne 0) then begin
+           b_rot[i]=angadj(mltin,mytimes.year,b_mlat[i],b_mlon[i],b_malt[i])
+           b_rot[i]=b_rot[i]*(3.141592/180.)
          endif
         endfor
         w=where(b_rot ne 0, wc)
-	if(wc gt 0) then angs(w)=angs(w)-b_rot(w)
+	if(wc gt 0) then angs[w]=angs[w]-b_rot[w]
 
 ; Compute magnitudes
 	mags = sqrt(b_vest^2 + b_vnrt^2)
@@ -340,7 +340,7 @@ endelse
 ;     MLT scale
         for j=0,3 do begin
             tstr = strtrim(string(6*j),2)
-            if( spole eq 0) then begin
+            if(spole eq 0) then begin
                lon=-180+j*90 
                xyouts,lon,ymin-2,tstr,alignment=0.5
             endif else begin 
@@ -359,14 +359,14 @@ endelse
        for j=0,7 do begin
             utstr=strtrim(string(3*j),2)
             lon=zlon+j*45.0
-            if( spole eq 0) then lat=78. else lat=-78.
+            if(spole eq 0) then lat=78. else lat=-78.
             xyouts,lon,lat,utstr,alignment=0.5
        endfor
 ;    Make tick marks on both UT and MLT scales
        for j=0,23 do begin
         lon=zlon+j*15.
         olon=j*15
-        if( spole eq 0) then begin
+        if(spole eq 0) then begin
          plots,[lon,lon],[79.5,80.5]
          plots,[olon,olon],[ymin,(ymin+0.5)]
         endif else begin
@@ -375,7 +375,7 @@ endelse
         endelse
        endfor
 ; Axis
-         if( spole eq 0) then begin
+         if(spole eq 0) then begin
            utlat=replicate(80.0,360)
          endif else begin
            utlat=replicate(-80.0,360)
@@ -408,7 +408,7 @@ endelse
 	
 	arg = cos(bside)*cos(cside) + sin(bside)*sin(cside)*cos(ang)
 
-	if( arg lt -1)then arg=-1.
+	if(arg lt -1)then arg=-1.
 	if(arg gt 1)then arg=1.
 
 	aside = acos(arg)
@@ -416,7 +416,7 @@ endelse
 
 	arg = (cos(bside)-cos(aside)*cos(cside))/(sin(aside)*sin(cside))
 
-	if( arg lt -1)then arg=-1.
+	if(arg lt -1)then arg=-1.
 	if(arg gt 1)then arg=1.
 
 	bang = acos(arg)*180./3.141592
@@ -425,7 +425,7 @@ endelse
 
 	nx = convert_coord(clon,clat,/data,/to_normal)
 	ndx = convert_coord(tlon,tlat,/data,/to_normal)
-	delta = sqrt((ndx(0)-nx(0))^2+(ndx(1)-nx(1))^2)
+	delta = sqrt((ndx[0]-nx[0])^2+(ndx[1]-nx[1])^2)
 
 	side_scale = side_scale*.08/delta
 
@@ -446,26 +446,26 @@ endelse
 	bang = acos(arg)*180./3.141592
 
 	q = where (angs lt 0,icnt)
-		if icnt ne 0 then bang(q) = -1.*bang(q)
+		if icnt ne 0 then bang[q] = -1.*bang[q]
 	tlon = lons + bang
 
 	for i = 0,nvects-1 do begin
-		if lons(i) gt xmin and lons(i) lt xlim and $
-			lats(i) gt ymin and lats(i) lt ylim and $
-				b_cont(i) ne 0 then begin
+		if lons[i] gt xmin and lons[i] lt xlim and $
+			lats[i] gt ymin and lats[i] lt ylim and $
+				b_cont[i] ne 0 then begin
 
-;			ind    =  max(where(LVL le mags(i))) + 1
+;			ind    =  max(where(LVL le mags[i])) + 1
 	
-			plots,lons(i),lats(i),psym=8,symsize=symsiz,color=symcol
-			plots,[lons(i),tlon(i)],[lats(i),tlat(i)]$
+			plots,lons[i],lats[i],psym=8,symsize=symsiz,color=symcol
+			plots,[lons[i],tlon[i]],[lats[i],tlat[i]]$
 				,thick=lthik
 
 		endif
-		if lons(i) gt xmin and lons(i) lt xlim and $
-			lats(i) gt ymin and lats(i) lt ylim and $
-				b_data(i) ne 0 then begin
+		if lons[i] gt xmin and lons[i] lt xlim and $
+			lats[i] gt ymin and lats[i] lt ylim and $
+				b_data[i] ne 0 then begin
 
-			plots,lons(i),lats(i),psym=3
+			plots,lons[i],lats[i],psym=3
 
 		endif
 	endfor

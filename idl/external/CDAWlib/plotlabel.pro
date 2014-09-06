@@ -13,6 +13,12 @@ pro plotLabel, title, yaxis=yaxis, xaxis=xaxis, color=color, font=font, $
 ; charsize=charsize:    text character size (default=1.0)
 ; font=font:            text character font (default=-1 for Hershey fonts)
 ; thickness=thickness:  text character thickness (default=1.0)
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 if n_elements(color) eq 0 then color = !p.color
 if n_elements(font) eq 0 then font = !p.font
@@ -40,37 +46,37 @@ if n_elements(thickness) eq 0 then $
    if !p.charthick gt 0 then thickness = !p.charthick else thickness = 1.0
 
 if n_elements(xaxis) ne 0 then begin ; xaxis label
-   Xmid = (!x.window(1) - !x.window(0)) / 2. + !x.window(0)
+   Xmid = (!x.window[1] - !x.window[0]) / 2. + !x.window[0]
    if xaxis eq 1 then begin ; top label
-      ticklabelLen = 0.5 < (!y.omargin(1) + !y.margin(1)) ; characters
+      ticklabelLen = 0.5 < (!y.omargin[1] + !y.margin[1]) ; characters
       maxTside = (1.0 - (!d.x_ch_size * charsize * 1.1)/!d.y_size) < 1.0
-      Tside = (!y.window(1) + ticklength + $
+      Tside = (!y.window[1] + ticklength + $
         (!d.y_ch_size * tickLabelsize * tickLabelLen)/!d.y_size ) < maxTside
       xyouts, Xmid, Tside, title, alignment=0.5, charsize=charsize, $
         orientation=0, font=font, color=color, /normal
    endif else begin ; bottom label
-      ticklabelLen = 2.5 < (!y.omargin(0) + !y.margin(0)) ; characters
+      ticklabelLen = 2.5 < (!y.omargin[0] + !y.margin[0]) ; characters
       ;    minBside = ((!d.x_ch_size * charsize * 1.1)/!d.y_size) > 0.0
       minBside = 0.01
-      Bside = (!y.window(0) - ticklength - $
+      Bside = (!y.window[0] - ticklength - $
         (!d.y_ch_size * tickLabelsize * tickLabelLen)/!d.y_size ) > minBside
       xyouts, Xmid, Bside, title, alignment=0.5, charsize=charsize, $
          orientation=0, font=font, color=color, /normal
    endelse
 endif else begin ; yaxis label
-   Ymid = (!y.window(1) - !y.window(0)) / 2. + !y.window(0)
+   Ymid = (!y.window[1] - !y.window[0]) / 2. + !y.window[0]
    if n_elements(yaxis) ne 0 then if yaxis eq 1 then begin ; right label
-      ticklabelLen = 1.5 < (!x.omargin(1) + !x.margin(1)) ; characters
+      ticklabelLen = 1.5 < (!x.omargin[1] + !x.margin[1]) ; characters
       maxRside = (1.0 - (!d.y_ch_size * charsize * 1.1)/!d.x_size) < 1.0
-      Rside = (!x.window(1) + ticklength + $
+      Rside = (!x.window[1] + ticklength + $
         (!d.x_ch_size * tickLabelsize * tickLabelLen)/!d.x_size ) < maxRside
       xyouts, Rside, Ymid, title, alignment=0.5, charsize=charsize, $
          orientation=90, font=font, color=color, /normal
       ;       orientation=270, font=font, color=color, /normal
    endif else begin ; left label
-      ticklabelLen = 6.5 < (!x.omargin(0) + !x.margin(0)) ; characters
+      ticklabelLen = 6.5 < (!x.omargin[0] + !x.margin[0]) ; characters
       minLside = ((!d.y_ch_size * charsize * 1.1)/!d.x_size) > 0.0
-      Lside = (!x.window(0) - ticklength - $
+      Lside = (!x.window[0] - ticklength - $
          (!d.x_ch_size * tickLabelsize * tickLabelLen)/!d.x_size ) > minLside
       xyouts, Lside, Ymid, title, alignment=0.5, charsize=charsize, $
          orientation=90, font=font, color=color, /normal

@@ -1,8 +1,8 @@
-;$Author: jimm $ 
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/plot_skymap.pro,v 1.15 2009/12/03 18:39:24 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 7092 $
+;$Author: nikos $ 
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/plot_skymap.pro,v 1.20 2012/05/14 18:28:45 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;+------------------------------------------------------------------------
 ; NAME: PLOT_SKYMAP
 ; PURPOSE: To plot the image data with the TWINS project provided
@@ -40,18 +40,25 @@
 ;
 ; MODIFICATION HISTORY: Held in RCS
 ;
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION plot_skymap, astruct, vname, $
                       THUMBSIZE=THUMBSIZE, FRAME=FRAME, $
                       XSIZE=XSIZE, YSIZE=YSIZE, GIF=GIF, REPORT=REPORT,$
                       TSTART=TSTART,TSTOP=TSTOP,NONOISE=NONOISE,$
                       CDAWEB=CDAWEB,DEBUG=DEBUG,COLORBAR=COLORBAR, MOVIE=MOVIE
 
+!quiet = 1
 ; Determine the field number associated with the variable 'vname'
 w = where(tag_names(astruct) eq strupcase(vname),wc)
 if (wc eq 0) then begin
   print,'ERROR=No variable with the name:',vname,' in param 1!' & return,-1
-endif else vnum = w(0)
+endif else vnum = w[0]
 
 Zvar = astruct.(vnum)
 if keyword_set(COLORBAR) then COLORBAR=1L else COLORBAR=0L
@@ -60,7 +67,7 @@ if COLORBAR  then xco=80 else xco=0 ; No colorbar
 ; 
 ; Find & Parse DISPLAY_TYPE for keyword inclusion. 
   a = tagindex('DISPLAY_TYPE',tag_names(astruct.(vnum)))
-  if(a(0) ne -1) then display= astruct.(vnum).DISPLAY_TYPE $
+  if(a[0] ne -1) then display= astruct.(vnum).DISPLAY_TYPE $
   else begin
     print, 'ERROR= No DISPLAY_TYPE attribute for variable'
   endelse
@@ -71,7 +78,7 @@ if COLORBAR  then xco=80 else xco=0 ; No colorbar
 ; The DISPLAY_TYPE attribute may contain the THUMBSIZE  RTB
 ; The THUMBSIZE must be followed by the size in pixels of the images
   wc=where(keywords eq 'THUMBSIZE',wcn)
-  if(wcn ne 0) then THUMBSIZE = fix(keywords(wc(0)+1))
+  if(wcn ne 0) then THUMBSIZE = fix(keywords[wc[0]+1])
 
 ; Open report file if keyword is set
 ;if keyword_set(REPORT) then begin & reportflag=1L
@@ -82,14 +89,14 @@ if COLORBAR  then xco=80 else xco=0 ; No colorbar
 
 ; Verify the type of the first parameter and retrieve the data
 a = size(astruct.(vnum))
-if (a(n_elements(a)-2) ne 8) then begin
+if (a[n_elements(a)-2] ne 8) then begin
   print,'ERROR= 1st parameter to plot_images not a structure' & return,-1
 endif else begin
   a = tagindex('DAT',tag_names(astruct.(vnum)))
-  if (a(0) ne -1) then idat = astruct.(vnum).DAT $
+  if (a[0] ne -1) then idat = astruct.(vnum).DAT $
   else begin
     a = tagindex('HANDLE',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then handle_value,astruct.(vnum).HANDLE,idat $
+    if (a[0] ne -1) then handle_value,astruct.(vnum).HANDLE,idat $
     else begin
       print,'ERROR= 1st parameter does not have DAT or HANDLE tag' & return,-1
     endelse
@@ -98,12 +105,12 @@ endelse
 
 
 ; Determine which variable in the structure is the 'Epoch' data and retrieve it
-b = astruct.(vnum).DEPEND_0 & c = tagindex(b(0),tag_names(astruct))
+b = astruct.(vnum).DEPEND_0 & c = tagindex(b[0],tag_names(astruct))
 d = tagindex('DAT',tag_names(astruct.(c)))
-if (d(0) ne -1) then edat = astruct.(c).DAT $
+if (d[0] ne -1) then edat = astruct.(c).DAT $
 else begin
   d = tagindex('HANDLE',tag_names(astruct.(c)))
-  if (d(0) ne -1) then handle_value,astruct.(c).HANDLE,edat $
+  if (d[0] ne -1) then handle_value,astruct.(c).HANDLE,edat $
   else begin
     print,'ERROR= Time parameter does not have DAT or HANDLE tag' & return,-1
   endelse
@@ -114,56 +121,56 @@ endelse
 ;sun_posv_eci, mag_eci and prime_meridian_eci 
 ; I've set these a depend_1 through depend_5 - in the above order.
 
-b = astruct.(vnum).DEPEND_1 & c = tagindex(b(0),tag_names(astruct))
+b = astruct.(vnum).DEPEND_1 & c = tagindex(b[0],tag_names(astruct))
 d = tagindex('DAT',tag_names(astruct.(c)))
-if (d(0) ne -1) then sc_posv_re_eci_dat = astruct.(c).DAT $
+if (d[0] ne -1) then sc_posv_re_eci_dat = astruct.(c).DAT $
 else begin
   d = tagindex('HANDLE',tag_names(astruct.(c)))
-  if (d(0) ne -1) then handle_value,astruct.(c).HANDLE,sc_posv_re_eci_dat $
+  if (d[0] ne -1) then handle_value,astruct.(c).HANDLE,sc_posv_re_eci_dat $
   else begin
     print,'ERROR= No sc_posv_re_eci_dat DAT or HANDLE tag' & return,-1
   endelse
 endelse
 
-b = astruct.(vnum).DEPEND_2 & c = tagindex(b(0),tag_names(astruct))
+b = astruct.(vnum).DEPEND_2 & c = tagindex(b[0],tag_names(astruct))
 d = tagindex('DAT',tag_names(astruct.(c)))
-if (d(0) ne -1) then spin_axis_eci_dat = astruct.(c).DAT $
+if (d[0] ne -1) then spin_axis_eci_dat = astruct.(c).DAT $
 else begin
   d = tagindex('HANDLE',tag_names(astruct.(c)))
-  if (d(0) ne -1) then handle_value,astruct.(c).HANDLE,spin_axis_eci_dat $
+  if (d[0] ne -1) then handle_value,astruct.(c).HANDLE,spin_axis_eci_dat $
   else begin
     print,'ERROR= No spin_axis_eci_dat DAT or HANDLE tag' & return,-1
   endelse
 endelse
 
-b = astruct.(vnum).DEPEND_3 & c = tagindex(b(0),tag_names(astruct))
+b = astruct.(vnum).DEPEND_3 & c = tagindex(b[0],tag_names(astruct))
 d = tagindex('DAT',tag_names(astruct.(c)))
-if (d(0) ne -1) then sun_posv_eci_dat = astruct.(c).DAT $
+if (d[0] ne -1) then sun_posv_eci_dat = astruct.(c).DAT $
 else begin
   d = tagindex('HANDLE',tag_names(astruct.(c)))
-  if (d(0) ne -1) then handle_value,astruct.(c).HANDLE,sun_posv_eci_dat $
+  if (d[0] ne -1) then handle_value,astruct.(c).HANDLE,sun_posv_eci_dat $
   else begin
     print,'ERROR= No sun_posv_eci_dat DAT or HANDLE tag' & return,-1
   endelse
 endelse
 
-b = astruct.(vnum).DEPEND_4 & c = tagindex(b(0),tag_names(astruct))
+b = astruct.(vnum).DEPEND_4 & c = tagindex(b[0],tag_names(astruct))
 d = tagindex('DAT',tag_names(astruct.(c)))
-if (d(0) ne -1) then prime_meridian_eci_dat = astruct.(c).DAT $
+if (d[0] ne -1) then prime_meridian_eci_dat = astruct.(c).DAT $
 else begin
   d = tagindex('HANDLE',tag_names(astruct.(c)))
-  if (d(0) ne -1) then handle_value,astruct.(c).HANDLE,prime_meridian_eci_dat $
+  if (d[0] ne -1) then handle_value,astruct.(c).HANDLE,prime_meridian_eci_dat $
   else begin
     print,'ERROR= No prime_meridian_eci_dat DAT or HANDLE tag' & return,-1
   endelse
 endelse
 
-b = astruct.(vnum).DEPEND_5 & c = tagindex(b(0),tag_names(astruct))
+b = astruct.(vnum).DEPEND_5 & c = tagindex(b[0],tag_names(astruct))
 d = tagindex('DAT',tag_names(astruct.(c)))
-if (d(0) ne -1) then mag_eci_dat = astruct.(c).DAT $
+if (d[0] ne -1) then mag_eci_dat = astruct.(c).DAT $
 else begin
   d = tagindex('HANDLE',tag_names(astruct.(c)))
-  if (d(0) ne -1) then handle_value,astruct.(c).HANDLE,mag_eci_dat $
+  if (d[0] ne -1) then handle_value,astruct.(c).HANDLE,mag_eci_dat $
   else begin
     print,'ERROR= No mag_eci_dat DAT or HANDLE tag' & return,-1
   endelse
@@ -171,30 +178,33 @@ endelse
 
 b = astruct.(vnum).DEPEND_6 ;check for image_title
 if (b ne '') then begin
- c = tagindex(b(0),tag_names(astruct))
+ c = tagindex(b[0],tag_names(astruct))
  d = tagindex('DAT',tag_names(astruct.(c)))
- if (d(0) ne -1) then image_title = astruct.(c).DAT $
+ if (d[0] ne -1) then image_title = astruct.(c).DAT $
  else begin
    d = tagindex('HANDLE',tag_names(astruct.(c)))
-   if (d(0) ne -1) then handle_value,astruct.(c).HANDLE,image_title $
+   if (d[0] ne -1) then handle_value,astruct.(c).HANDLE,image_title $
    else begin
      print,'ERROR= No image_title specified in the DAT or HANDLE tag' & return,-1
    endelse
  endelse
 endif ;if depend_6 (image_title) exists
 
+;TJK - need to check the values of sc_posv_re_eci_dat to see if they
+;      are valid, if not, then call cdaweb_skymap w/ different values.
+
 ; Determine the title for the window or gif file
 
 a = tagindex('SOURCE_NAME',tag_names(astruct.(vnum)))
-if (a(0) ne -1) then begin
+if (a[0] ne -1) then begin
   sn = break_mystring(astruct.(vnum).SOURCE_NAME,delimiter='>')
-  b = sn(0)
+  b = sn[0]
 endif else b = ''
 a = tagindex('DESCRIPTOR',tag_names(astruct.(vnum)))
-if (a(0) ne -1) then b = b + '  ' + astruct.(vnum).DESCRIPTOR
+if (a[0] ne -1) then b = b + '  ' + astruct.(vnum).DESCRIPTOR
 
 a = tagindex('DATA_TYPE',tag_names(astruct.(vnum)))
-if (a(0) ne -1) then begin
+if (a[0] ne -1) then begin
    b = b + '  ' + astruct.(vnum).DATA_TYPE
    d_type = strupcase(str_sep((astruct.(vnum).DATA_TYPE),'>')) ;TJK added 4/2/02, used below
 endif
@@ -202,7 +212,7 @@ endif
 ;TJK added FIELDNAM as part of the title since we now have multiple image
 ;variables per datatype.
 a = tagindex('FIELDNAM',tag_names(astruct.(vnum)))
-if (a(0) ne -1) then b = b + ' ' + astruct.(vnum).FIELDNAM
+if (a[0] ne -1) then b = b + ' ' + astruct.(vnum).FIELDNAM
 
 
 window_title = b
@@ -212,7 +222,7 @@ if keyword_set(nonoise) then window_title=window_title+'!CConstrained values wit
 
 if(COLORBAR) then begin
  a=tagindex('UNITS',tag_names(astruct.(vnum)))
- if(a(0) ne -1) then ctitle = astruct.(vnum).UNITS else ctitle=''
+ if(a[0] ne -1) then ctitle = astruct.(vnum).UNITS else ctitle=''
 endif
 
 if keyword_set(XSIZE) then xs=XSIZE else xs=512
@@ -233,27 +243,27 @@ endif
 ; Determine if data is a single image, if so then set the frame
 ; keyword because a single thumbnail makes no sense
 isize = size(idat)
-if (isize(0) eq 2) then n_images=1 else n_images=isize(isize(0))
+if (isize[0] eq 2) then n_images=1 else n_images=isize[isize[0]]
 
 if (n_images eq 1) then FRAME=1
 
 if keyword_set(FRAME) then begin ; produce plot of a single frame
   if ((FRAME ge 1)AND(FRAME le n_images)) then begin ; valid frame value
-    idat = idat(*,*,(FRAME-1)) ; grab the frame
+    idat = idat[*,*,(FRAME-1)] ; grab the frame
     idat = reform(idat) ; remove extraneous dimensions
 
 ;5/7/01 - turns out the RPI images don't need to be rotated.  Left this code
 ;in because I'm sure we'll need to do this type of transpose/rotate for some
 ;other dataset that doesn't have square images...
-;    if(descriptor(0) eq 'RPI') then idat = transpose(idat) ;TJK 3/13/01
+;    if(descriptor[0] eq 'RPI') then idat = transpose(idat) ;TJK 3/13/01
 
 ; Vis images as sent to us are a reflection and a rotation from how the images
 ; are displayed on the vis home page.  RTB
-    ;if(descriptor(0) eq 'VIS') then idat=rotate(rotate(idat,5),3) ; RTB 9/98
-    if(descriptor(0) eq 'VIS') then idat=rotate(rotate(idat,5),2) ; RTB 9/98
+    ;if(descriptor[0] eq 'VIS') then idat=rotate(rotate(idat,5),3) ; RTB 9/98
+    if(descriptor[0] eq 'VIS') then idat=rotate(rotate(idat,5),2) ; RTB 9/98
 ; Fix UVI primary image orientation prior to 12/96;  RTB 11/10/98
-    if(descriptor(0) eq 'UVI') then begin
-     cdf_epoch, edat(FRAME-1), yr,mn,dy,hr,min,sec,milli,/break
+    if(descriptor[0] eq 'UVI') then begin
+     cdf_epoch, edat[FRAME-1], yr,mn,dy,hr,min,sec,milli,/break
      ical,yr,doy,mn,dy,/idoy
 ;TJK change to following per Bob's request 4/02/01 if (doy lt 337) then begin  
 
@@ -262,43 +272,43 @@ if keyword_set(FRAME) then begin ; produce plot of a single frame
       idat=rotate(idat,3)
       idat=transpose(idat)
      endif
-     if ((d_type(0) eq 'H2') or (d_type(0) eq 'H3')) then begin
+     if ((d_type[0] eq 'H2') or (d_type[0] eq 'H3')) then begin
       idat=transpose(idat)
      endif
     endif
 ; end UVI primary image fix
 
     isize = size(idat) ; get the dimensions of the image
-    r1 = 450./isize(1) ; determine ratio for first dimension
-    r2 = 450./isize(2) ; determine ratio for second dimension
-    ;r1 = ceil(500/isize(1)) ; determine ratio for first dimension
-    ;r2 = ceil(500/isize(2)) ; determine ratio for second dimension
-    xs = ceil(isize(1)*r1)+50 ; determine xsize of window
-    ys = ceil(isize(2)*r2)+15 ; determine ysize of window
-    ;idat = rebin(idat,(isize(1)*r1),(isize(2)*r2)) ; resize the image
-    idat = congrid(idat,(isize(1)*r1),(isize(2)*r2)) ; resize the image
+    r1 = 450./isize[1] ; determine ratio for first dimension
+    r2 = 450./isize[2] ; determine ratio for second dimension
+    ;r1 = ceil(500/isize[1]) ; determine ratio for first dimension
+    ;r2 = ceil(500/isize[2]) ; determine ratio for second dimension
+    xs = ceil(isize[1]*r1)+50 ; determine xsize of window
+    ys = ceil(isize[2]*r2)+15 ; determine ysize of window
+    ;idat = rebin(idat,(isize[1]*r1),(isize[2]*r2)) ; resize the image
+    idat = congrid(idat,(isize[1]*r1),(isize[2]*r2)) ; resize the image
 
 ; Begin changes 12/11 RTB
     ; determine validmin and validmax values
     a = tagindex('VALIDMIN',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
-      if (b(0) eq 0) then zvmin = astruct.(vnum).VALIDMIN $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
+      if (b[0] eq 0) then zvmin = astruct.(vnum).VALIDMIN $
       else begin
         zvmin = 0 ; default for image data
         print,'WARNING=Unable to determine validmin for ',vname
       endelse
     endif
     a = tagindex('VALIDMAX',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
-      if (b(0) eq 0) then zvmax = astruct.(vnum).VALIDMAX $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
+      if (b[0] eq 0) then zvmax = astruct.(vnum).VALIDMAX $
       else begin
         zvmax = 2000 ; guesstimate
         print,'WARNING=Unable to determine validmax for ',vname
       endelse
     endif
     a = tagindex('FILLVAL',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).FILLVAL)
-      if (b(0) eq 0) then zfill = astruct.(vnum).FILLVAL $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).FILLVAL)
+      if (b[0] eq 0) then zfill = astruct.(vnum).FILLVAL $
       else begin
         zfill = 2000 ; guesstimate
         print,'WARNING=Unable to determine Image fill value for ',vname
@@ -322,8 +332,8 @@ endif
     if wc gt 0 then begin
       if keyword_set(DEBUG) then print, 'Number of values below the valid min = ',wc
       print,'WARNING=setting ',wc,' fill values in image data to z validmin... ',zvmin
-;TJK change to zvmin instead of 0 12/14/2000      idat(w) = 0 ; set pixels to the black
-      idat(w) = zvmin ; set pixels to the zvmin (used to be 0)
+;TJK change to zvmin instead of 0 12/14/2000      idat[w] = 0 ; set pixels to the black
+      idat[w] = zvmin ; set pixels to the zvmin (used to be 0)
       if (zvmin le 0) then print, 'WARNING: Z validmin is <= zero '
       w = 0 ; free the data space
     endif
@@ -333,14 +343,14 @@ endif
     if wc gt 0 then begin
       if keyword_set(DEBUG) then print, 'Number of values above the valid max = ',wc
       if keyword_set(DEBUG) then print,'WARNING=setting ',wc,' fill values in image data to red...'
-;6/25/2004 see below         idat(w) = zvmax -1; set pixels to red
+;6/25/2004 see below         idat[w] = zvmax -1; set pixels to red
          ;TJK 6/25/2004 - added red_offset function to determine offset
          ;(to red) because of cases like log scaled timed guvi data
          ;where the diff is less than 1.
           diff = zvmax - zvmin
           coffset = red_offset(GIF=GIF,diff)
           print, 'diff = ',diff, ' coffset = ',coffset
-          idat(w) = zvmax - coffset; set pixels to red
+          idat[w] = zvmax - coffset; set pixels to red
 
       w = 0 ; free the data space
     endif
@@ -369,21 +379,21 @@ endif
       w = where((idat lt zvmin),wc)
       if wc gt 0 then begin
         print,'WARNING=filtering values less than 3-sigma from image data...'
-        idat(w) = zvmin ; set pixels to black
+        idat[w] = zvmin ; set pixels to black
         w = 0 ; free the data space
       endif
       w = where((idat gt zvmax),wc)
       if wc gt 0 then begin
         print,'WARNING=filtering values greater than 3-sigma from image data...'
 
-       ;6/24/2004idat(w) = zvmax -2; set pixels to red
+       ;6/24/2004idat[w] = zvmax -2; set pixels to red
        ;TJK 6/25/2004 - added red_offset function to determine offset
        ;(to red) because of cases like log scaled timed guvi data
        ;where the diff is less than 1.
         diff = zvmax - zvmin
         coffset = red_offset(GIF=GIF,diff)
         print, 'diff = ',diff, ' coffset = ',coffset
-        idat(w) = zvmax - coffset; set pixels to red
+        idat[w] = zvmax - coffset; set pixels to red
         w = 0 ; free the data space
       endif
      endif
@@ -393,7 +403,7 @@ endif
     idmin=min(idat) ; RTB 10/96
 
 if keyword_set(DEBUG) then begin
-	print, '!d.n_colors = ',!d.n_colors
+	print, '!d.table_size = ',!d.n_colors
 	print, 'min and max after filtering = ',idmin, ' ', idmax
 endif
 
@@ -409,10 +419,10 @@ endif
         b = tagindex('LOGICAL_SOURCE',atags)
         b1 = tagindex('LOGICAL_FILE_ID',atags)
         b2 = tagindex('Logical_file_id',atags)
-        if (b(0) ne -1) then psrce = strupcase(astruct.(vnum).LOGICAL_SOURCE)
-        if (b1(0) ne -1) then $
+        if (b[0] ne -1) then psrce = strupcase(astruct.(vnum).LOGICAL_SOURCE)
+        if (b1[0] ne -1) then $
           psrce = strupcase(strmid(astruct.(vnum).LOGICAL_FILE_ID,0,9))
-        if (b2(0) ne -1) then $
+        if (b2[0] ne -1) then $
           psrce = strupcase(strmid(astruct.(vnum).Logical_file_id,0,9))
 
         if not keyword_set(movie) then begin
@@ -437,33 +447,34 @@ endif
 
 xmargin=!x.margin
 if COLORBAR then begin 
- if (!x.omargin(1)+!x.margin(1)) lt 14 then !x.margin(1) = 14
- !x.margin(1) = 14
+ if (!x.omargin[1]+!x.margin[1]) lt 14 then !x.margin[1] = 14
+ !x.margin[1] = 14
  plot,[0,1],[0,1],/noerase,/nodata,xstyle=4,ystyle=4
 endif
 
 
-    idat = bytscl(idat,min=idmin, max=idmax, top=!d.n_colors-2)
+    idat = bytscl(idat,min=idmin, max=idmax, top=!d.table_size-2)
     
     if (vkluge eq 0) then begin ; blow up the image
         ; TJK don't use skymap colorbar for now
 
-        cdaweb_skymap, transpose(idat), sc_pos = sc_posv_re_eci_dat(*,(frame-1)), $
-          spin_axis=spin_axis_eci_dat(*,(frame-1)), sun_pos=sun_posv_eci_dat(*,(frame-1)), $
-          prime_meridian=prime_meridian_eci_dat(*,(frame-1)), mag = mag_eci_dat(*,(frame-1)), $
-          lonmin=-88, lonmax=268,latmin=4, latmax=88, colorbar=0, grid = 1,  $
+        cdaweb_skymap, transpose(idat), sc_pos = sc_posv_re_eci_dat[*,(frame-1)], $
+          spin_axis=spin_axis_eci_dat[*,(frame-1)], sun_pos=sun_posv_eci_dat[*,(frame-1)], $
+          prime_meridian=prime_meridian_eci_dat[*,(frame-1)], mag = mag_eci_dat[*,(frame-1)], $
+;          lonmin=-88, lonmax=268,latmin=4, latmax=88, colorbar=0, grid = 1,  $
+          colorbar=0, grid = 1,  $
           field=1, limb=1, sphere = 1, term=1, log=0, norotate=1, noerase=1,ctab=39, exobase=0,thumb=0
 
     endif else begin ; special case kluge for viking
         tv,idat,0,30,/DEVICE
-        acolor = !d.n_colors ; pick color for contouring
+        acolor = !d.table_size ; pick color for contouring
     endelse
     ; subtitle the plot
     ; for skymaps don't use the image start time, but instead use the
     ; image_title (see below).
     ;    project_subtitle,astruct.(0),window_title,/IMAGE,TIMETAG=edat(FRAME-1)
 
-    project_subtitle,astruct.(0),window_title;,/IMAGE,TIMETAG=edat(FRAME-1)
+    project_subtitle,astruct.(0),window_title;,/IMAGE,TIMETAG=edat[FRAME-1]
 
 ; RTB 10/96 add colorbar
 if COLORBAR then begin
@@ -474,18 +485,26 @@ if COLORBAR then begin
   offset = 0.01
 
   colorbar, cscale, ctitle, logZ=logZ, cCharSize=cCharSize, $
-        position=[!x.window(1)+offset,      !y.window(0),$
-                  !x.window(1)+offset+0.025, !y.window(1)],$
+        position=[!x.window[1]+offset,      !y.window[0],$
+                  !x.window[1]+offset+0.025, !y.window[1]],$
 ;try a little narrower to get the label in place
-;                  !x.window(1)+offset+0.03, !y.window(1)],$
+;                  !x.window[1]+offset+0.03, !y.window[1]],$
         fcolor=244, /image
   !x.window = xwindow
 endif ; colorbar
 
 ;print a label for the skymap; image_title should be the time range
-if (strlen(image_title(frame-1)) gt 10) then begin
-  xyouts,!d.x_size/2,((!d.y_ch_size*2)+10),image_title(frame-1),/DEVICE,ALIGNMENT=0.5,CHARSIZE=1.4,COLOR=244
-endif
+;TJK 2/26/2010 - in the single image case, image_title is an array of
+;1 character strings, so need to convert that w/ strjoin to be a
+;single string.
+if (n_images eq 1 )then begin
+  image_title = (strjoin(image_title, /single)) ;collapse it into 1 string.
+  if (strlen(image_title) gt 10) then xyouts,!d.x_size/2,((!d.y_ch_size*2)+10),image_title,/DEVICE,ALIGNMENT=0.5,CHARSIZE=1.4,COLOR=244
+endif else begin
+  if (strlen(image_title[frame-1]) gt 10) then  xyouts,!d.x_size/2,((!d.y_ch_size*2)+10),image_title[frame-1],/DEVICE,ALIGNMENT=0.5,CHARSIZE=1.4,COLOR=244
+
+endelse
+
 tsky = 'Polar res. 4 deg. Red=X=noon, Yellow=Y=dusk.'
 xyouts,!d.x_size/2,((!d.y_ch_size*2)+22),tsky,/DEVICE,ALIGNMENT=0.5,CHARSIZE=1.4,COLOR=244
 
@@ -499,10 +518,10 @@ endif else begin ; produce thumnails of all images
   if keyword_set(THUMBSIZE) then tsize = THUMBSIZE else tsize = 50
   
   isize = size(idat) ; determine the number of images in the data
-  if (isize(0) eq 2) then begin
-    nimages = 1 & npixels = double(isize(1)*isize(2))
+  if (isize[0] eq 2) then begin
+    nimages = 1 & npixels = double(isize[1]*isize[2])
   endif else begin
-    nimages = isize(isize(0)) & npixels = double(isize(1)*isize(2)*nimages)
+    nimages = isize[isize[0]] & npixels = double(isize[1]*isize[2]*nimages)
   endelse
 
   ; screen out frames which are outside time range, if any
@@ -511,23 +530,23 @@ endif else begin ; produce thumnails of all images
     w = where(edat ge TSTART,wc)
     if wc eq 0 then begin
       print,'ERROR=No image frames after requested start time.' & return,-1
-    endif else start_frame = w(0)
+    endif else start_frame = w[0]
   endelse
   if NOT keyword_set(TSTOP) then stop_frame = nimages $
   else begin
     w = where(edat le TSTOP,wc)
     if wc eq 0 then begin
       print,'ERROR=No image frames before requested stop time.' & return,-1
-    endif else stop_frame = w(wc-1)
+    endif else stop_frame = w[wc-1]
   endelse
   if (start_frame gt stop_frame) then no_data_avail = 1L $
   else begin
     no_data_avail = 0L
     if ((start_frame ne 0)OR(stop_frame ne nimages)) then begin
-      idat = idat(*,*,start_frame:stop_frame)
+      idat = idat[*,*,start_frame:stop_frame]
       isize = size(idat) ; determine the number of images in the data
-      if (isize(0) eq 2) then nimages = 1 else nimages = isize(isize(0))
-      edat = edat(start_frame:stop_frame)
+      if (isize[0] eq 2) then nimages = 1 else nimages = isize[isize[0]]
+      edat = edat[start_frame:stop_frame]
     endif
   endelse
 
@@ -543,24 +562,24 @@ endif else begin ; produce thumnails of all images
 ; Begin changes 12/11 RTB
 ;   ; determine validmin and validmax values
     a = tagindex('VALIDMIN',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
-      if (b(0) eq 0) then zvmin = astruct.(vnum).VALIDMIN $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
+      if (b[0] eq 0) then zvmin = astruct.(vnum).VALIDMIN $
       else begin
         zvmin = 0 ; default for image data
         print,'WARNING=Unable to determine validmin for ',vname
       endelse
     endif
     a = tagindex('VALIDMAX',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
-      if (b(0) eq 0) then zvmax = astruct.(vnum).VALIDMAX $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
+      if (b[0] eq 0) then zvmax = astruct.(vnum).VALIDMAX $
       else begin
         zvmax = 2000 ; guesstimate
         print,'WARNING=Unable to determine validmax for ',vname
       endelse
     endif
     a = tagindex('FILLVAL',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).FILLVAL)
-      if (b(0) eq 0) then zfill = astruct.(vnum).FILLVAL $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).FILLVAL)
+      if (b[0] eq 0) then zfill = astruct.(vnum).FILLVAL $
       else begin
         zfill = 2000 ; guesstimate
         print,'WARNING=Unable to determine Image fill value for ',vname
@@ -583,7 +602,7 @@ endif
     if wc gt 0 then begin
 ;      print,'WARNING=setting ',wc,' fill values in image data to black...'
       print,'WARNING=setting ',wc,' fill values in image data to z validmin... ',zvmin
-      idat(w) = zvmin ; set pixels to the zvmin (used to be 0)
+      idat[w] = zvmin ; set pixels to the zvmin (used to be 0)
       if (zvmin le 0) then print, 'WARNING: Z validmin is <= zero '
       w = 0 ; free the data space
       if wc eq npixels then print,'WARNING=All data outside min/max!!'
@@ -593,15 +612,15 @@ endif
     w = where((idat gt zvmax),wc)
     if wc gt 0 then begin
      if keyword_set(DEBUG) then print,'WARNING=setting ',wc,' fill values in image data to red...'
-;      print, 'values are: ',idat(w)
-;6/25/2004 see below         idat(w) = zvmax -1; set pixels to red
+;      print, 'values are: ',idat[w]
+;6/25/2004 see below         idat[w] = zvmax -1; set pixels to red
        ;TJK 6/25/2004 - added red_offset function to determine offset
        ;(to red) because of cases like log scaled timed guvi data
        ;where the diff is less than 1.
        diff = zvmax - zvmin
        coffset = red_offset(GIF=GIF,diff)
        print, 'diff = ',diff, ' coffset = ',coffset
-       idat(w) = zvmax - coffset; set pixels to red
+       idat[w] = zvmax - coffset; set pixels to red
       w = 0 ; free the data space
       if wc eq npixels then print,'WARNING=All data outside min/max!!'
    endif
@@ -636,20 +655,20 @@ endif
       w = where((idat lt zvmin),wc)
       if wc gt 0 then begin
         print,'WARNING=filtering values less than 3-sigma from image data...'
-        idat(w) = zvmin ; set pixels to black
+        idat[w] = zvmin ; set pixels to black
         w = 0 ; free the data space
       endif
       w = where((idat gt zvmax),wc)
       if wc gt 0 then begin
         print,'WARNING=filtering values greater than 3-sigma from image data...'
-;6/25/2004 see below         idat(w) = zvmax -1; set pixels to red
+;6/25/2004 see below         idat[w] = zvmax -1; set pixels to red
         ;TJK 6/25/2004 - added red_offset function to determine offset
         ;(to red) because of cases like log scaled timed guvi data
         ;where the diff is less than 1.
         diff = zvmax - zvmin
         coffset = red_offset(GIF=GIF,diff)
         print, 'diff = ',diff, ' coffset = ',coffset
-        idat(w) = zvmax - coffset; set pixels to red
+        idat[w] = zvmax - coffset; set pixels to red
         w = 0 ; free the data space
       endif
     endif
@@ -662,7 +681,7 @@ endif
     idmax=max(idat) & idmin=min(idat) ; RTB 10/96
 
 if keyword_set(DEBUG) then begin
-	print, '!d.n_colors = ',!d.n_colors
+	print, '!d.table_size = ',!d.table_size
 	print, 'min and max after filtering = ',idmin, ' ', idmax
 endif
 
@@ -690,19 +709,19 @@ endif
 
 xmargin=!x.margin
 if COLORBAR then begin
- if (!x.omargin(1)+!x.margin(1)) lt 14 then !x.margin(1) = 14
- !x.margin(1) = 14
+ if (!x.omargin[1]+!x.margin[1]) lt 14 then !x.margin[1] = 14
+ !x.margin[1] = 14
  plot,[0,1],[0,1],/noerase,/nodata,xstyle=4,ystyle=4
 endif
 
- idat = bytscl(idat,min=idmin, max=idmax, top=!d.n_colors-2)
+ idat = bytscl(idat,min=idmin, max=idmax, top=!d.table_size-2)
 
 ; generate the thumbnail plots
 
 ;TJK - 2/20/97 - if viking images then rotate them 270 degrees, otherwise
 ; leave them as is.
 
-if (vkluge)then for j=0,nimages-1 do idat(*,*,j) = rotate(idat(*,*,j),7)
+if (vkluge)then for j=0,nimages-1 do idat[*,*,j] = rotate(idat[*,*,j],7)
 
 
 ; Position each image individually to control layout
@@ -711,35 +730,35 @@ if (vkluge)then for j=0,nimages-1 do idat(*,*,j) = rotate(idat(*,*,j),7)
 
     for j=0,nimages-1 do begin
 
-; see above    if(descriptor(0) eq 'RPI') then idat(*,*,j) = transpose(idat(*,*,j)) ;TJK 3/13/01
+; see above    if(descriptor[0] eq 'RPI') then idat(*,*,j) = transpose(idat(*,*,j)) ;TJK 3/13/01
 
 ; if VIS rotate RTB 
 ; Vis images as sent to us are a reflection and a rotation from how the images
 ; are displayed on the vis home page. RTB
-     if(descriptor(0) eq 'VIS') then $ 
+     if(descriptor[0] eq 'VIS') then $ 
       ;idat(*,*,j)=rotate(rotate(idat(*,*,j),5),3) ; RTB 9/98
-      idat(*,*,j)=rotate(rotate(idat(*,*,j),5),2) ; RTB 9/98
+      idat[*,*,j]=rotate(rotate(idat[*,*,j],5),2) ; RTB 9/98
 ; UVI primary image fix for times prior to 12/96; RTB 11/98
-     if(descriptor(0) eq 'UVI') then begin 
-      cdf_epoch, edat(j), yr,mn,dy,hr,min,sec,milli,/break
+     if(descriptor[0] eq 'UVI') then begin 
+      cdf_epoch, edat[j], yr,mn,dy,hr,min,sec,milli,/break
       ical,yr,doy,mn,dy,/idoy
 
       ;TJK change to following per Bob's request 4/02/01 if (doy lt 337) then begin  
       if ((fix(yr) eq 1996) and (doy lt 337)) then begin
-        temp_dat=idat(*,*,j);
+        temp_dat=idat[*,*,j];
         temp_dat=rotate(temp_dat,3)
-        idat(*,*,j)=transpose(temp_dat)
+        idat[*,*,j]=transpose(temp_dat)
       endif
 
-      if ((d_type(0) eq 'H2') or (d_type(0) eq 'H3')) then begin
+      if ((d_type[0] eq 'H2') or (d_type[0] eq 'H3')) then begin
 	if (j eq 0 ) then begin
 	;set up an array to handle the "transposed images"
   	  dims = size(idat,/dimensions)
   	  if n_elements(dims) gt 2 then $
-	     idat2 = bytarr(dims(1),dims(0),dims(2)) else $
-	     idat2 = bytarr(dims(1),dims(0))
+	     idat2 = bytarr(dims[1],dims[0],dims[2]) else $
+	     idat2 = bytarr(dims[1],dims[0])
         endif
-        idat2(*,*,j)=transpose(idat(*,*,j))
+        idat2[*,*,j]=transpose(idat[*,*,j])
       endif
  
      endif ;if UVI data
@@ -791,14 +810,14 @@ if (vkluge)then for j=0,nimages-1 do idat(*,*,j) = rotate(idat(*,*,j),7)
 ;# End LF test
 ;TJK added the following to deal with UVI data that had to be put in array idat2 instead of idat
 ;4/9/2001
-    if ((d_type(0) eq 'H2') or (d_type(0) eq 'H3')) then begin
-     tmp_img=congrid(idat2(*,*,j),xpimg,ypimg) 
+    if ((d_type[0] eq 'H2') or (d_type[0] eq 'H3')) then begin
+     tmp_img=congrid(idat2[*,*,j],xpimg,ypimg) 
     endif else begin
-     tmp_img=congrid(idat(*,*,j),xpimg,ypimg) 
+     tmp_img=congrid(idat[*,*,j],xpimg,ypimg) 
     endelse
 
 
-     if(strupcase(descriptor(0)) eq 'TEC2HR') then begin
+     if(strupcase(descriptor[0]) eq 'TEC2HR') then begin
 ;       if keyword_set(DEBUG) then print, 'reversing data in the latitude dimension for GPS data'
        tmp_img = reverse(tmp_img,2)
     endif
@@ -809,28 +828,29 @@ if (vkluge)then for j=0,nimages-1 do idat(*,*,j) = rotate(idat(*,*,j),7)
     ;set up an array to handle the "transposed images"
         dims = size(idat,/dimensions)
         if n_elements(dims) gt 2 then $
-          idat2 = bytarr(dims(1),dims(0),dims(2)) else $
-	  idat2 = bytarr(dims(1),dims(0))
+          idat2 = bytarr(dims[1],dims[0],dims[2]) else $
+	  idat2 = bytarr(dims[1],dims[0])
     endif
-    idat2(*,*,j)=transpose(idat(*,*,j))
+    idat2[*,*,j]=transpose(idat[*,*,j])
 
-    cdaweb_skymap, idat2(*,*,j), sc_pos = sc_posv_re_eci_dat(*,j), $
-      spin_axis=spin_axis_eci_dat(*,j), sun_pos=sun_posv_eci_dat(*,j), $
-      prime_meridian=prime_meridian_eci_dat(*,j), mag = mag_eci_dat(*,j), $
-      lonmin=-88, lonmax=268,latmin=4, latmax=88, colorbar=0, grid = 1,  $
+    cdaweb_skymap, idat2[*,*,j], sc_pos = sc_posv_re_eci_dat[*,j], $
+      spin_axis=spin_axis_eci_dat[*,j], sun_pos=sun_posv_eci_dat[*,j], $
+      prime_meridian=prime_meridian_eci_dat[*,j], mag = mag_eci_dat[*,j], $
+;      lonmin=-88, lonmax=268,latmin=4, latmax=88, colorbar=0, grid = 1,  $
+      colorbar=0, grid = 1,  $
       field=1, limb=1, sphere = 1, term=1, log=0, norotate=1, noerase=1,$
       ctab=39, exobase=0, position=position, /thumb ;TJK added last two
 
 
-     foreground = !d.n_colors-1
+     foreground = !d.table_size-1
      white_background = 0
 
      ;tv,idat(*,*,j),xpos,ypos,/DEVICE
      ; Print time tag
      if (j eq 0) then begin
-        prevdate = decode_cdfepoch(edat(j)) ;TJK get date for this record
-     endif else prevdate = decode_cdfepoch(edat(j-1)) ;TJK get date for this record
-     edate = decode_cdfepoch(edat(j)) ;TJK get date for this record
+        prevdate = decode_cdfepoch(edat[j]) ;TJK get date for this record
+     endif else prevdate = decode_cdfepoch(edat[j-1]) ;TJK get date for this record
+     edate = decode_cdfepoch(edat[j]) ;TJK get date for this record
      shortdate = strmid(edate, 10, strlen(edate)) ; shorten it
      yyyymmdd = strmid(edate, 0,10) ; yyyymmdd portion of current
      prev_yyyymmdd = strmid(prevdate, 0,10) ; yyyymmdd portion of previous
@@ -872,9 +892,9 @@ if (vkluge)then for j=0,nimages-1 do idat(*,*,j) = rotate(idat(*,*,j),7)
       fname = GIF + '.sav' & save_mystruct,astruct,fname
     endif
     ; subtitle the plot
- ;  project_subtitle,astruct.(0),'',/IMAGE,TIMETAG=[edat(0),edat(nimages-1)]
+ ;  project_subtitle,astruct.(0),'',/IMAGE,TIMETAG=[edat[0],edat[nimages-1]]
     project_subtitle,astruct.(0),window_title,/IMAGE, $
-       TIMETAG=[edat(0),edat(nimages-1)]
+       TIMETAG=[edat[0],edat[nimages-1]]
 
 ; RTB 10/96 add colorbar
 if COLORBAR then begin
@@ -882,15 +902,15 @@ if COLORBAR then begin
    cscale = [idmin, idmax]  ; RTB 12/11
 ;  cscale = [zvmin, zvmax]
   xwindow = !x.window
-  !x.window(1)=0.858   ; added 10/98 RTB
+  !x.window[1]=0.858   ; added 10/98 RTB
   !y.window=[0.1,0.9]
   offset = 0.01
 
   colorbar, cscale, ctitle, logZ=0, cCharSize=cCharSize, $ 
-        position=[!x.window(1)+offset,      !y.window(0),$
-                  !x.window(1)+offset+0.025, !y.window(1)],$
+        position=[!x.window[1]+offset,      !y.window[0],$
+                  !x.window[1]+offset+0.025, !y.window[1]],$
 ;Try a little narrower to fit in the units
-;                 !x.window(1)+offset+0.03, !y.window(1)],$
+;                 !x.window[1]+offset+0.03, !y.window[1]],$
         fcolor=244, /image
 
   !x.window = xwindow

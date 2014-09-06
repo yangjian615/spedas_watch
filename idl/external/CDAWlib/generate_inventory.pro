@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/generate_inventory.pro,v 1.23 2009/04/08 18:45:08 johnson Exp johnson $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/generate_inventory.pro,v 1.24 2009/04/10 15:25:07 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 7092 $
+;$Revision: 15739 $
 ;---------------------------------------------------------------------------
 ;Modifications: 2/4/98 - T. Kovalick - modified this to do what the inventory function
 ;in inventory.pro use to do, so that I can free up memory w/ delvar (has to be
@@ -21,10 +21,10 @@ a = ingest_database('/home/cdaweb/metadata/istp_public_cdfmetafile.txt',DEBUG=DE
 
 aa=a
 
-s=draw_inventory(a,TITLE='Active Mission Data 1960-2010', $
+s=draw_inventory(a,TITLE='Active Mission Data 1960-2020', $
 GIF='/home/cdaweb/metadata/istp_public_cdfmetafile.gif',$
 /long_line, /wide_margin, $
-START_TIME='1960/01/01 00:00:00', STOP_TIME='2010/01/01 23:59:59', /BIGPLOT)
+START_TIME='1960/01/01 00:00:00', STOP_TIME='2020/01/01 23:59:59', /BIGPLOT)
 a=aa
 s=draw_inventory(a,TITLE='ISTP PUBLIC DATA 1990-1994', $
 GIF='/var/www/cdaweb/htdocs/istp_public/avail_1990-1994.gif',$
@@ -50,6 +50,11 @@ s=draw_inventory(a,TITLE='ISTP PUBLIC DATA 2010-2014', $
 GIF='/var/www/cdaweb/htdocs/istp_public/avail_2010-2014.gif',$
  /wide_margin, $
 START_TIME='2010/01/01 00:00:00', STOP_TIME='2014/12/31 23:59:59', /debug, /FIVEYEAR)
+a=aa
+s=draw_inventory(a,TITLE='ISTP PUBLIC DATA 2015-2020', $
+GIF='/var/www/cdaweb/htdocs/istp_public/avail_2015-2020.gif',$
+ /wide_margin, $
+START_TIME='2015/01/01 00:00:00', STOP_TIME='2020/12/31 23:59:59', /debug, /FIVEYEAR)
 ;
 delvar, a,aa
 

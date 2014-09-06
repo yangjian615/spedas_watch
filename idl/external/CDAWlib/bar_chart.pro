@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/bar_chart.pro,v 1.14 2009/04/09 17:27:09 johnson Exp johnson $
-;$Locker: johnson $
-;$Revision: 7092 $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/bar_chart.pro,v 1.17 2013/09/06 13:51:22 johnson Exp kovalick $
+;$Locker: kovalick $
+;$Revision: 15739 $
 ;-------------------------------------------------------------------------
 ; FUNCTION bar_chart, bar_names, bars, times, COLORS, BIGPLOT=BIGPLOT,
 ; FIVEYEAR=FIVEYEAR, COLORNEW=COLORNEW, long_line=long_line, wide_margin=wide_margin
@@ -12,7 +12,9 @@
 ;   long_line: 0/1  to draw a line between availability bar and dataset name.
 ;                   Best when it's difficult to tell what bar goes w/ what dataset
 ;                   because of the distance between them.
-;   wide_margin: 0/1  when need wider margin on left side because of long dataset names.
+;   wide_margin: 0/1/2  when need wider margin on left side because 
+;                       of long dataset names.  Extended to allow
+;                       value of 2 for half way between 0 and 1
 ;
 ; FUNDAMENTAL PROBLEM:  bar chart showing data availability needs two points
 ;                       to plot, (start and end), not just a single point like
@@ -20,7 +22,13 @@
 ;
 ; APPROACH:  a) Find first non-zero bars point.  Draw until next zero point.
 ;            b) repeat until done.
-;--------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION bar_chart,bar_names,bars,times,COLORS=COLORS,DEBUG=DEBUG,GIF=GIF,$
                   TITLE=TITLE,XSIZE=XSIZE,BIGPLOT=bigplot,FIVEYEAR=fiveyear,$
                   COLORNEW=colornew, long_line=long_line, wide_margin=wide_margin
@@ -33,20 +41,20 @@ print,'bar_chart parameter validation TBD.'
 ntags = n_elements(bar_names) & ntimes = n_elements(times)
 
 ; Create a subtitle for the plot showing the data start and stop times
-CDF_EPOCH,times(0),year,month,day,hour,minute,second,milli,/BREAK
+CDF_EPOCH,times[0],year,month,day,hour,minute,second,milli,/BREAK
 subtitle = 'TIME RANGE='+strtrim(string(year),2)+'/'+strtrim(string(month),2)
 subtitle = subtitle + '/' + strtrim(string(day),2) + ' to '
-CDF_EPOCH,times(ntimes-1),year,month,day,hour,minute,second,milli,/BREAK
+CDF_EPOCH,times[ntimes-1],year,month,day,hour,minute,second,milli,/BREAK
 subtitle = subtitle + strtrim(string(year),2)+'/'+strtrim(string(month),2)
 subtitle = subtitle + '/' + strtrim(string(day),2)
 
 ; Convert the time array into seconds since first time
-CDF_EPOCH,times(0),year,month,day,hour,minute,second,milli,/BREAK
+CDF_EPOCH,times[0],year,month,day,hour,minute,second,milli,/BREAK
 CDF_EPOCH,a,year,month,day,0,0,0,0,/COMPUTE_EPOCH
 secs   = (times - a) / 1000 & julday = ymd2jd(year,month,day)
 
 ; Determine label for time axis based on time range
-trange = secs(ntimes-1) - secs(0)
+trange = secs[ntimes-1] - secs[0]
 if (trange le 60.0) then tform='h$:m$:s$.f$@y$ n$ d$' $
 else if (trange le 86400L) then tform='h$:m$@y$ n$ d$'$
 ;else tform='n$ d$@y$'
@@ -69,11 +77,11 @@ endelse
 
 
 ; Create empty plot and frame it
-;plot,[0,1],[1,0],/nodata,xrange=[secs(0),secs(ntimes-1)],xmargin=[15,4],$ ; allow for date
-;plot,[0,1],[1,0],/nodata,xrange=[secs(0),secs(ntimes-1)],xmargin=[15,4],ymargin=[6,2],$
+;plot,[0,1],[1,0],/nodata,xrange=[secs[0],secs[ntimes-1]],xmargin=[15,4],$ ; allow for date
+;plot,[0,1],[1,0],/nodata,xrange=[secs[0],secs[ntimes-1]],xmargin=[15,4],ymargin=[6,2],$
 ; RCJ 12/11/2003 Changed xmargin to fit longer dataset names 
 
-;plot,[0,1],[1,0],/nodata,xrange=[secs(0),secs(ntimes-1)],xmargin=[17,4],ymargin=[6,4],$
+;plot,[0,1],[1,0],/nodata,xrange=[secs[0],secs[ntimes-1]],xmargin=[17,4],ymargin=[6,4],$
 ;       xstyle=5,xticklen=0.01,xthick=3.0, yrange=[0,ntags],ystyle=1,$
 
 print,'ntags = ', ntags
@@ -84,9 +92,18 @@ if (ytickm lt 1) then ytickm = ntags
 ;print, 'TJK DEBUG requesting ',ytickm,' y ticks'
 ; add ytickname set to blanks to over-ride the default numeric labels
 yticknames = make_array(ytickm+1, /string, value = ' ') 
+max_bar_len = max(strlen(bar_names))
 
-if keyword_set(wide_margin) then thisxmargin=[40,4] else thisxmargin=[20,4]
-plot,[0,1],[1,0],/nodata,xrange=[secs(0),secs(ntimes-1)],xmargin=thisxmargin,ymargin=[8,4],$
+;set the xmargin based on the max dataset length and the font
+;character size, instead of guessing!
+;thisxmargin=[20,4] ;set default
+;if keyword_set(wide_margin) then thisxmargin=[40,4] ;original wide_margin setting
+
+char_width = max([!p.charsize, 1.15]) ;1.15 seems to be better
+if (char_width le 0) then char_width = 1
+thisxmargin=[(max_bar_len*char_width),4] ;set default
+
+plot,[0,1],[1,0],/nodata,xrange=[secs[0],secs[ntimes-1]],xmargin=thisxmargin,ymargin=[8,4],$
        xstyle=5,xticklen=0.01,xthick=2.0, yrange=[0,ntags],ystyle=1,$
        yticklen=1.0, ytickname=yticknames, ythick=4.0, yticks=ytickm
 
@@ -94,8 +111,8 @@ plot,[0,1],[1,0],/nodata,xrange=[secs(0),secs(ntimes-1)],xmargin=thisxmargin,yma
 ;from 5 to 1 in order to see the grids.  Then had to add ytickname set
 ;to blanks to over-ride the default numeric labels
 
-plots,[secs(0),secs(0)],[0,ntags]
-plots,[secs(ntimes-1),secs(ntimes-1)],[0,ntags]
+plots,[secs[0],secs[0]],[0,ntags]
+plots,[secs[ntimes-1],secs[ntimes-1]],[0,ntags]
 
 c = 48 ;default color blue
 recent_data_color = 100 ; has to match the color set in ingest_database
@@ -103,14 +120,14 @@ recent_data_color = 100 ; has to match the color set in ingest_database
 maxl=max(strlen(bar_names))  ; if long_line=1 this will be needed further down
 ; Plot the inventory data
 for i=0,ntags-1 do begin ; process each dataset
-  bar = bars(i,*) & bar = reform(bar) & from=0L & to=0L & done=0L ;TJK c=max(bar)
+  bar = bars[i,*] & bar = reform(bar) & from=0L & to=0L & done=0L ;TJK c=max(bar)
   while done eq 0 do begin
-    w = where(bar(from:ntimes-1) ne 0,wc) ; find where next sub-bar starts
-    if wc gt 0 then begin & from = from + w(0)
-      u = where(bar(from:ntimes-1) eq 0,uc) ; find sub-bar end
-      if uc eq 0 then to=(ntimes-1) else to=from+(u(0)-1)
-      plots,([secs(from),secs(to)]),([1,1]*ntags-i),thick=8,color=c
-      if keyword_set(long_line) then plots,([secs(0),secs(ntimes-1)]),([1,1]*ntags-i),thick=1,color=c
+    w = where(bar[from:ntimes-1] ne 0,wc) ; find where next sub-bar starts
+    if wc gt 0 then begin & from = from + w[0]
+      u = where(bar[from:ntimes-1] eq 0,uc) ; find sub-bar end
+      if uc eq 0 then to=(ntimes-1) else to=from+(u[0]-1)
+      plots,([secs[from],secs[to]]),([1,1]*ntags-i),thick=8,color=c
+      if keyword_set(long_line) then plots,([secs[0],secs[ntimes-1]]),([1,1]*ntags-i),thick=1,color=c
     endif else done=1
     from = to+1 & if from eq ntimes then done=1
   endwhile
@@ -121,20 +138,20 @@ for i=0,ntags-1 do begin ; process each dataset
     from=0L & to=0L & done=0L ;TJK c=max(bar)
 
     while done eq 0 do begin
-      w = where((bar(from:ntimes-1) ne 0 and bar(from:ntimes-1) ne c),wc) ; find where next sub-bar starts
-      if wc gt 0 then begin & from = from + w(0)
-        u = where((bar(from:ntimes-1) eq 0) or (bar(from:ntimes-1) eq c),uc) ; find sub-bar end
+      w = where((bar[from:ntimes-1] ne 0 and bar[from:ntimes-1] ne c),wc) ; find where next sub-bar starts
+      if wc gt 0 then begin & from = from + w[0]
+        u = where((bar[from:ntimes-1] eq 0) or (bar[from:ntimes-1] eq c),uc) ; find sub-bar end
         if uc eq 0 then begin
           to=(ntimes-1) 
-;          print,'For ',bar_names(i), ' found some recent data ',from, to
-          plots,([secs(from),secs(to)]),([1,1]*ntags-i),thick=8,color=recent_data_color
+;          print,'For ',bar_names[i], ' found some recent data ',from, to
+          plots,([secs[from],secs[to]]),([1,1]*ntags-i),thick=8,color=recent_data_color
         endif else begin
-          to = from+(u(0)-1)
-          recent = where(bar(from:to) eq recent_data_color, rc) ;look inbetwen from and next 0
+          to = from+(u[0]-1)
+          recent = where(bar[from:to] eq recent_data_color, rc) ;look inbetwen from and next 0
           if (rc gt 0) then begin                                   ;for "recent" data
             to=from+(rc-1)
-;            print,'For ',bar_names(i), ' found some recent data ',from, to
-            plots,([secs(from),secs(to)]),([1,1]*ntags-i),thick=8,color=recent_data_color
+;            print,'For ',bar_names[i], ' found some recent data ',from, to
+            plots,([secs[from],secs[to]]),([1,1]*ntags-i),thick=8,color=recent_data_color
           endif
         endelse
       endif else done=1
@@ -144,9 +161,9 @@ for i=0,ntags-1 do begin ; process each dataset
 ;TJK end second loop
   ypos = convert_coord(([1,1]*ntags-i),/data,/to_device)
   if keyword_set(long_line) then begin
-     for j=strlen(bar_names(i)), maxl do bar_names(i)=bar_names(i)+'_'
-     xyouts,5,ypos(1),bar_names(i),/device,color=c
-  endif else xyouts,5,(ypos(1)-2),bar_names(i),/device,color=c
+     for j=strlen(bar_names[i]), maxl do bar_names[i]=bar_names[i]+'_'
+     xyouts,5,ypos[1],bar_names[i],/device,color=c
+  endif else xyouts,5,(ypos[1]-2),bar_names[i],/device,color=c
 endfor
 
 ; Title and subtitle the plot

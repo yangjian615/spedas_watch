@@ -83,6 +83,6 @@ for i=0L,n-1 do begin            ;do each point.
     xy1 = convert_coord(xx[i], up[i], /DATA, /TO_DEVICE)
     plots, [xy0[0] + [-w, w,0], xy1[0] + [0, -w, w]], $
       [replicate(xy0[1],3), replicate(xy1[1],3)], $
-      NOCLIP=!p.noclip, PSYM=0, /DEVICE
+      NOCLIP=!p.noclip, PSYM=0, color=60, /DEVICE
 endfor
 end

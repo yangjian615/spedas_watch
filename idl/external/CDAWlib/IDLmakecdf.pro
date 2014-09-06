@@ -5,6 +5,12 @@
 ;cdf variables by simply setting the pointer variables and then write the data out
 ;to the desired cdf w/ the write_data_to_cdf routine.
 ;
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 ;So a user's program might look like the following (w/o the comment characters):
 ;
 ;out_cdf = 'hk_test.cdf' 
@@ -127,17 +133,17 @@ Function read_master_cdf, master_cdf, output_cdf, debug=debug
 
 ;1st make a copy of the master into the requested output cdf
 cmd = strarr(3)
-cmd(0) = "cp"
-cmd(1) = master_cdf
-cmd(2) = output_cdf
+cmd[0] = "cp"
+cmd[1] = master_cdf
+cmd[2] = output_cdf
 spawn, cmd, /noshell
 ;
 ; now change the protection so that updates can be made to the new cdf
 ; HAL 8/1/2000
 ;
-cmd(0) = "chmod"
-cmd(1) = "+w"
-cmd(2) = output_cdf
+cmd[0] = "chmod"
+cmd[1] = "+w"
+cmd[2] = output_cdf
 spawn, cmd, /noshell
 
 
@@ -159,12 +165,12 @@ if keyword_set(debug) then print, 'Setting up an IDL structure for the following
 num_vars = n_elements(all_vars)
 
 for d = 0, num_vars-1 do begin
-  meta = create_struct('varname', all_vars(d)) 
+  meta = create_struct('varname', all_vars[d]) 
   ptr = create_struct('data',ptr_new(/allocate_heap))
   d_struct = create_struct(meta, ptr)
-  if (d eq 0) then  final = create_struct(all_vars(d),d_struct)
+  if (d eq 0) then  final = create_struct(all_vars[d],d_struct)
   if (d gt 0) then begin
-    d_struct = create_struct(all_vars(d),d_struct)
+    d_struct = create_struct(all_vars[d],d_struct)
     final = create_struct(final, d_struct)
   endif
 endfor
@@ -198,8 +204,9 @@ if (num_vars gt 0) then begin
 
   slash = rstrpos(logical_file_id, '/') ;find position of last '/'
   if (slash gt -1) then logical_file_id = strmid(logical_file_id,slash+1)
-  
-;  if (cdf_id gt 0) then begin ; cdf_id can be negative when file is successfully opened
+
+;TJK 08/12/2011 don't check this value, good values can be negative  
+;  if (cdf_id gt 0) then begin
     if keyword_set(debug) then print, 'Successfully opened CDF ',output_cdf
 
     ; need to change the logical_file_id global attribute here... check for

@@ -8,11 +8,17 @@ function findGaps, times, gapFactor, avgDeltaT=avgDeltaT, checkLog=checkLog
 ; 1996 October 22; RTB replaced STDEV w/ IDL MOMENT function
 ; 2001 March 21 BC, added check for NANs and log spacing
 ; 2001 August 10 BC, cleared illegal operand errors on where stmts due to NANs
-
+;
 ; NOTE: 'Times' is a general variable name. When this program as first written,
 ; it was aimed at the 'time' variable plotted on the x-axis but after BC's changes
 ; this became a more general routine, so now 'times' could be a y-axis variable, for
 ; example. RCJ 09/01
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 if (n_elements(gapFactor) le 0) then gapFactor = 1.5
 if (n_elements(times) lt 4) then return, -1L ; or message, 'Too few points'
@@ -31,7 +37,7 @@ if w0nanc gt 0 then begin
       if (abs(deltaT[w0nan[2]]-deltaT[w0nan[1]]) lt 1.e-6 * $
          min([deltaT[w0nan[2]], deltaT[w0nan[1]]])) then logT=1
    ;  if logT then deltaT(w0nan) = alog10(times1(1:*)) - alog10(times1)
-   if logT then deltaT(w0nan[1:*]) = alog10(times1[1:*]) - alog10(times1)
+   if logT then deltaT[w0nan[1:*]] = alog10(times1[1:*]) - alog10(times1)
    deltaT=deltaT[1:*]
    
    ;sd = stdev(deltaT, avgDeltaT) ;RTB replaced stdev w/ moment 10/96
@@ -45,12 +51,12 @@ if w0nanc gt 0 then begin
       gaps = where(abs(deltaT) gt abs(avgDeltaT * gapFactor))
    endif else begin
       tempsd=moment(deltaT,SDEV=sd,/nan)
-      avgDeltaT=tempsd(0)
+      avgDeltaT=tempsd[0]
       ; improve calculation of avgDeltaT
       nogaps = where(abs(deltaT) le abs(avgDeltaT * gapFactor), wc)
       if (wc gt 0) then begin  
          ; sd = stdev(deltaT(nogaps), avgDeltaT) ;RTB replaced stdev w/ moment 10/96
-         amn=min(deltaT(nogaps),max=amx,/nan)
+         amn=min(deltaT[nogaps],max=amx,/nan)
          if (amn eq amx) then begin
             avgDeltaT=amn
             gaps = where(abs(deltaT) gt abs(avgDeltaT * gapFactor),wc)
@@ -60,8 +66,8 @@ if w0nanc gt 0 then begin
             c=check_math() ; clear illegal floating point operand errors from where statements
             return, gaps
          endif
-         tempsd=moment(deltaT(nogaps),SDEV=sd,/nan)
-         avgDeltaT=tempsd(0)
+         tempsd=moment(deltaT[nogaps],SDEV=sd,/nan)
+         avgDeltaT=tempsd[0]
          ; #### why not "avgDeltaT=mean(deltaT,/nan)" ? expect most to be same
          if (abs(sd/avgDeltaT) gt 0.5) then avgDeltaT=median(deltaT) 
          if (abs(sd/avgDeltaT) gt 0.5) then message, /info, $

@@ -1,9 +1,9 @@
-;$Author: jimm $ 
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/plot_plasmagram.pro,v 1.49 2006/06/15 14:27:27 kovalick Exp kovalick $
+;$Author: nikos $ 
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/plot_plasmagram.pro,v 1.88 2014/04/01 19:38:09 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 7092 $
-;+------------------------------------------------------------------------
+;$Revision: 15739 $
+;+
 ; NAME: PLOT_PLASMAGRAM
 ; PURPOSE: To plot the image as a plasmagram given the data structure
 ;	   as returned from read_myCDF.pro
@@ -37,12 +37,15 @@
 ;	Based on plot_images.pro 
 ; MODIFICATION HISTORY:
 ;
-;-------------------------------------------------------------------------
 ;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
 ;
+;------------------------------------------------------------------
 ;
 ; FUNCTION evaluate_plasmastruct, a, atags, labels=labels, symsize=symsize,$
-; thumbsize=thumbsize
+; xsymsize=xsymsize, ysymsize=ysymsize, thumbsize=thumbsize
 ; PURPOSE: To evaluate the DISPLAY_TYPE attribute for the given variable
 ;	   if keyword labels is set, and if so find the label variables, 
 ;	   e.g. syntax will be plasmagram>labl=SM_position, labl=mode, etc.  
@@ -52,6 +55,10 @@
 ;	   plasmagram>symsize=1	
 ;	   if set, then return the value of symsize
 ;	   if no symsize is found, the value of 2 is returned.
+;           - 2/25/2014 change this to -1 so that the default in the
+;             plot_plasmagram code will be used.  Otherwise, the
+;             value in the master is getting overridden for ylog plots.
+;
 ; CALLING SEQUENCE:
 ;       out = evaluate_plasmastruct, a, atags, /labels, /symsize, /thumbsize
 ; INPUTS:
@@ -61,38 +68,42 @@
 ; KEYWORD PARAMETERS:
 ;	lables - indicates the routine should return the lables
 ;	symsize - indicates the routine should return the value of symsize
+;	xsymsize - indicates the routine should return the value of X symsize
+;	ysymsize - indicates the routine should return the value of Y symsize
 ;	thumsize - indicates the routine should return the thumbsize value
 ;
 FUNCTION evaluate_plasmastruct, a, atags, labels=labels, symsize=symsize,$
-thumbsize=thumbsize
+xsymsize=xsymsize, ysymsize=ysymsize, thumbsize=thumbsize
 ; determine if there's an display_type attribute for this structure
 ; and if so find the label variables, e.g. syntax will be 
 ; plasmagram>labl=SM_position, labl=mode, etc.  
 ;Return a structure w/ these variable names.
 ;
-;If symsize is set, return the symsize or default of 2.
+;If symsize is set, return the symsize or -1.
 ;
 ; Verify that the input variable is a structure
 b = size(a)
-if (b(n_elements(b)-2) ne 8) then begin
+if (b[n_elements(b)-2] ne 8) then begin
   print,'ERROR=Input parameter is not a valid structure.' & return,-1
 endif
 
 
 ; evaluate the display_type attribute values.
-if (keyword_set(symsize)) then sym_size = 2 ;set default
+if (keyword_set(symsize)) then sym_size = -1 ;set default
+if (keyword_set(xsymsize)) then x_size = -1 ;set default
+if (keyword_set(ysymsize)) then y_size = -1 ;set default
 ;TJK - 8/19/2003 changed from 40 to 50 to match thumbnail settings in 
 ;plotmaster... if (keyword_set(THUMBSIZE)) then thumb_size = 40; set default
 if (keyword_set(THUMBSIZE)) then thumb_size = 50; set default
 
 b = tagindex('DISPLAY_TYPE',atags)
-if (b(0) ne -1) then begin
-  c = break_mystring(a.(b(0)),delimiter='>')
+if (b[0] ne -1) then begin
+  c = break_mystring(a.(b[0]),delimiter='>')
   csize = size(c)
   rest = 1
   wc=where(c eq 'THUMBSIZE',wcn)
   if(wcn ne 0) then begin
-    thumb_size = fix(c(wc(0)+1))
+    thumb_size = fix(c[wc[0]+1])
     rest = 3
     if (keyword_set(THUMBSIZE)) then return, thumb_size
   endif
@@ -100,24 +111,30 @@ if (b(0) ne -1) then begin
   ;TJK 5/29/2003 add in "rest" variable, if THUMBSIZE is set, then the "rest"
   ;of the key=val values are shifted down by two
 
-  if (csize(1) ge 2)then begin
-    d = break_mystring(c(rest), delimiter=',')
+  if (csize[1] ge 2)then begin
+    d = break_mystring(c[rest], delimiter=',')
     if (n_elements(d) ge 1)then begin
       vars = make_array(n_elements(d),/string,value=' ')
       num_found = -1
       for i=0L, n_elements(d)-1 do begin
       ;look for all "labl" keywords
-        e = break_mystring(d(i), delimiter='=')
+        e = break_mystring(d[i], delimiter='=')
         if (n_elements(e) ge 1) then begin
 
 	  if keyword_set(labels) then begin
- 	    if (strpos(e(0),'labl',0) ne -1) then begin
+ 	    if (strpos(e[0],'labl',0) ne -1) then begin
 	      num_found=num_found+1
-              vars(num_found) =  e(1)
+              vars(num_found) =  e[1]
 	    endif
 	  endif else begin
 	    if keyword_set(symsize) then begin
-	      if (strpos(e(0),'symsize',0) ne -1) then sym_size = e(1)
+	      if (strpos(e[0],'symsize',0) ne -1) then sym_size = e[1]
+           endif
+	    if keyword_set(xsymsize) then begin
+	      if (strpos(e[0],'xsz',0) ne -1) then x_size = e[1]
+           endif
+	    if keyword_set(ysymsize) then begin
+	      if (strpos(e[0],'ysz',0) ne -1) then y_size = e[1]
 	    endif
 	  endelse
 
@@ -128,11 +145,13 @@ if (b(0) ne -1) then begin
   endif 
 endif 
 if keyword_set(symsize) then return, sym_size
+if keyword_set(xsymsize) then return, x_size
+if keyword_set(ysymsize) then return, y_size
 if keyword_set(thumbsize) then return, thumb_size
 
 if (num_found ge 0) then begin
   t = where(vars ne ' ', t_cnt) ; take out the possible blanks
-  if (t_cnt ge 1) then vars = vars(t) ; redefine vars
+  if (t_cnt ge 1) then vars = vars[t] ; redefine vars
 endif else begin
   vars = 'none'
 endelse
@@ -152,9 +171,27 @@ FUNCTION plot_plasmagram, astruct, zname, $
 ; Determine default x, y and z variables from depend attributes
 atags = tag_names(astruct)
 z_ax = tagindex(zname,atags) ;z axis
-b = astruct.(z_ax).DEPEND_0 & epoch = tagindex(b(0),atags) ;epoch
-b = astruct.(z_ax).DEPEND_1 & x_ax = tagindex(b(0),atags) ;x axis
-b = astruct.(z_ax).DEPEND_2 & y_ax = tagindex(b(0),atags) ;y axis
+b = astruct.(z_ax).DEPEND_0 & epoch = tagindex(b[0],atags) ;epoch
+b = astruct.(z_ax).DEPEND_1 & x_ax = tagindex(b[0],atags) ;x axis
+b = astruct.(z_ax).DEPEND_2 & y_ax = tagindex(b[0],atags) ;y axis
+
+;TJK 11/15/2012 - start using new attributes to allow us to switch the
+;                 depend attributes for use w/ CDAWeb w/in IDL
+alt = tagindex('ALT_CDAWEB_DEPEND_1',tag_names(astruct.(z_ax)))
+if (alt[0] ne -1) then begin
+   if (astruct.(z_ax).ALT_CDAWEB_DEPEND_1 ne '') then begin
+      b = astruct.(z_ax).ALT_CDAWEB_DEPEND_1 
+      x_ax = tagindex(b[0],atags) ;x axis
+   endif   
+endif
+alt = tagindex('ALT_CDAWEB_DEPEND_2',tag_names(astruct.(z_ax)))
+if (alt[0] ne -1) then begin
+   if (astruct.(z_ax).ALT_CDAWEB_DEPEND_2 ne '') then begin
+      b = astruct.(z_ax).ALT_CDAWEB_DEPEND_2 
+      y_ax = tagindex(b[0],atags) ;y axis
+   endif   
+endif
+
 estruct = astruct.(epoch)
 xstruct = astruct.(x_ax)
 ystruct = astruct.(y_ax)
@@ -163,7 +200,7 @@ zstruct = astruct.(z_ax)
 ;Look at the display_type to see if there are any special settings.
 ; Determine if the display type variable attribute is present for Z.
 b = tagindex('DISPLAY_TYPE',tag_names(astruct.(z_ax)))
-if (b(0) ne -1) then begin
+if (b[0] ne -1) then begin
 ; examine_spectrogram_dt looks at the DISPLAY_TYPE structure member in detail.
 ; for spectrograms and stacked time series the DISPLAY_TYPE can contain syntax
 ; like the following: SPECTROGRAM>y=flux(1),y=flux(3),y=flux(5),z=energy
@@ -172,17 +209,17 @@ if (b(0) ne -1) then begin
 
 e = examine_spectrogram_dt(astruct.(z_ax).DISPLAY_TYPE) & esize=size(e)
 
-  if (esize(n_elements(esize)-2) eq 8) then begin ; results confirmed
+  if (esize[n_elements(esize)-2] eq 8) then begin ; results confirmed
     if (e.x ne '') then x_ax = tagindex(e.x,atags)
     if (e.y ne '') then y_ax = tagindex(e.y,atags)
   endif
 endif
 
-
 vname = zstruct.VARNAME ; get the name of the image variable
 
  ;TJK 3/15/01 - added the check for the descriptor
 ; Check Descriptor Field for Instrument Specific Settings
+
 tip = tagindex('DESCRIPTOR',tag_names(zstruct))
 if (tip ne -1) then begin
   descriptor=str_sep(zstruct.descriptor,'>')
@@ -192,17 +229,17 @@ endif
 ;for labeling and determining the symbol size (since some of this data
 ;was recorded in log vs. linear scales. TJK 2/24/2003
 rpi = 0 ; clear flag
-if (descriptor(0) eq "RPI") then begin
+if (descriptor[0] eq "RPI") then begin
+  rpi = 1 ;set flag 
   a = tagindex('COMPONENT_1',tag_names(astruct.(z_ax)))
-  if(a(0) ne -1) then begin
-    rpi = 1 ;set flag 
-    d = astruct.(z_ax).COMPONENT_1 & p_ax = tagindex(d(0),atags) ;programspecs
+  if(a[0] ne -1) then begin
+    d = astruct.(z_ax).COMPONENT_1 & p_ax = tagindex(d[0],atags) ;programspecs
     pstruct = astruct.(p_ax)
     a = tagindex('DAT',tag_names(pstruct))
-    if (a(0) ne -1) then pdat = pstruct.DAT $
+    if (a[0] ne -1) then pdat = pstruct.DAT $
     else begin
       a = tagindex('HANDLE',tag_names(pstruct))
-      if (a(0) ne -1) then handle_value,pstruct.HANDLE,pdat $
+      if (a[0] ne -1) then handle_value,pstruct.HANDLE,pdat $
       else begin
         print,'ERROR= ProgramSpecs variable does not have DAT or HANDLE tag' & return,-1
       endelse
@@ -222,14 +259,14 @@ if COLORBAR  then xco=80 else xco=0 ; No colorbar
 
 ; Verify the type of the first parameter and retrieve the data
 a = size(zstruct)
-if (a(n_elements(a)-2) ne 8) then begin
+if (a[n_elements(a)-2] ne 8) then begin
   print,'ERROR= Z parameter to plot_plasmagram not a structure' & return,-1
 endif else begin
   a = tagindex('DAT',tag_names(zstruct))
-  if (a(0) ne -1) then idat = zstruct.DAT $
+  if (a[0] ne -1) then idat = zstruct.DAT $
   else begin
     a = tagindex('HANDLE',tag_names(zstruct))
-    if (a(0) ne -1) then handle_value,zstruct.HANDLE,idat $
+    if (a[0] ne -1) then handle_value,zstruct.HANDLE,idat $
     else begin
       print,'ERROR= Z parameter does not have DAT or HANDLE tag' & return,-1
     endelse
@@ -239,10 +276,10 @@ endelse
 ; Get 'Epoch' data and retrieve it
 
 d = tagindex('DAT',tag_names(estruct))
-if (d(0) ne -1) then edat = estruct.DAT $
+if (d[0] ne -1) then edat = estruct.DAT $
 else begin
   d = tagindex('HANDLE',tag_names(estruct))
-  if (d(0) ne -1) then handle_value,estruct.HANDLE,edat $
+  if (d[0] ne -1) then handle_value,estruct.HANDLE,edat $
   else begin
     print,'ERROR= Time parameter does not have DAT or HANDLE tag' & return,-1
   endelse
@@ -252,10 +289,10 @@ endelse
 
 xtags = tag_names(xstruct)
 d = tagindex('DAT',xtags)
-if (d(0) ne -1) then xdat = xstruct.DAT $
+if (d[0] ne -1) then xdat = xstruct.DAT $
 else begin
   d = tagindex('HANDLE',xtags)
-  if (d(0) ne -1) then handle_value,xstruct.HANDLE,xdat $
+  if (d[0] ne -1) then handle_value,xstruct.HANDLE,xdat $
   else begin
     print,'ERROR= X variable does not have DAT or HANDLE tag' & return,-1
   endelse
@@ -263,14 +300,14 @@ endelse
 
 xlog = 1L ; initialize assuming logarithmic
 a = tagindex('SCALETYP',xtags)
-if (a(0) ne -1) then begin
+if (a[0] ne -1) then begin
    if (strupcase(Xstruct.SCALETYP) eq 'LINEAR') then xlog = 0L
 endif
 
 ; determine validmin and validmax values for the x variable
 a = tagindex('VALIDMIN',xtags)
-if (a(0) ne -1) then begin & b=size(xstruct.VALIDMIN)
-  if (b(0) eq 0) then xvmin = xstruct.VALIDMIN $
+if (a[0] ne -1) then begin & b=size(xstruct.VALIDMIN)
+  if (b[0] eq 0) then xvmin = xstruct.VALIDMIN $
   else begin
     xvmin = 0 ; default for x data
     print,'WARNING=Unable to determine validmin for ',xstruct.varname
@@ -278,8 +315,8 @@ if (a(0) ne -1) then begin & b=size(xstruct.VALIDMIN)
 endif
 
 a = tagindex('VALIDMAX',xtags)
-if (a(0) ne -1) then begin & b=size(xstruct.VALIDMAX)
-  if (b(0) eq 0) then xvmax = xstruct.VALIDMAX $
+if (a[0] ne -1) then begin & b=size(xstruct.VALIDMAX)
+  if (b[0] eq 0) then xvmax = xstruct.VALIDMAX $
   else begin
     xvmax = 2000 ; guesstimate
     print,'WARNING=Unable to determine validmax for ',xstruct.varname
@@ -288,8 +325,8 @@ endif
 
 ;determine x axis label
 a = tagindex('LABLAXIS',xtags)
-if (a(0) ne -1) then begin & b=size(xstruct.LABLAXIS)
-  if (b(0) eq 0) then xtitle = xstruct.LABLAXIS $
+if (a[0] ne -1) then begin & b=size(xstruct.LABLAXIS)
+  if (b[0] eq 0) then xtitle = xstruct.LABLAXIS $
   else begin
     xtitle = ' x axis' ; default for x data
     print,'WARNING=Unable to determine xtitle for ',xstruct.varname
@@ -297,8 +334,8 @@ if (a(0) ne -1) then begin & b=size(xstruct.LABLAXIS)
 endif
 ;determine x axis units
 a = tagindex('UNITS',xtags)
-if (a(0) ne -1) then begin & b=size(xstruct.UNITS)
-  if (b(0) eq 0) then xtitle = xtitle + ' in '+ xstruct.UNITS $
+if (a[0] ne -1) then begin & b=size(xstruct.UNITS)
+  if (b[0] eq 0) then xtitle = xtitle + ' in '+ xstruct.UNITS $
   else begin
     xtitle = xtitle  ; default for x data
     print,'WARNING=Unable to determine units for ',xstruct.varname
@@ -310,10 +347,10 @@ endif
 
 ytags = tag_names(ystruct)
 d = tagindex('DAT',ytags)
-if (d(0) ne -1) then ydat = ystruct.DAT $
+if (d[0] ne -1) then ydat = ystruct.DAT $
 else begin
   d = tagindex('HANDLE',ytags)
-  if (d(0) ne -1) then handle_value,ystruct.HANDLE,ydat $
+  if (d[0] ne -1) then handle_value,ystruct.HANDLE,ydat $
   else begin
     print,'ERROR= Y variable does not have DAT or HANDLE tag' & return,-1
   endelse
@@ -321,14 +358,15 @@ endelse
 
 ylog = 1L ; initialize assuming logarithmic
 a = tagindex('SCALETYP',ytags)
-if (a(0) ne -1) then begin
+if (a[0] ne -1) then begin
    if (strupcase(Ystruct.SCALETYP) eq 'LINEAR') then ylog = 0L
 endif
 
+
 ; determine validmin and validmax values for the y variable
 a = tagindex('VALIDMIN',ytags)
-if (a(0) ne -1) then begin & b=size(ystruct.VALIDMIN)
-  if (b(0) eq 0) then yvmin = ystruct.VALIDMIN $
+if (a[0] ne -1) then begin & b=size(ystruct.VALIDMIN)
+  if (b[0] eq 0) then yvmin = ystruct.VALIDMIN $
   else begin
     yvmin = 0 ; default for y data
     print,'WARNING=Unable to determine validmin for ',ystruct.varname
@@ -336,19 +374,33 @@ if (a(0) ne -1) then begin & b=size(ystruct.VALIDMIN)
 endif
 
 a = tagindex('VALIDMAX',ytags)
-if (a(0) ne -1) then begin & b=size(ystruct.VALIDMAX)
-  if (b(0) eq 0) then yvmax = ystruct.VALIDMAX $
+if (a[0] ne -1) then begin & b=size(ystruct.VALIDMAX)
+  if (b[0] eq 0) then yvmax = ystruct.VALIDMAX $
   else begin
     yvmax = 2000 ; guesstimate
     print,'WARNING=Unable to determine validmax for ',ystruct.varname
   endelse
 endif
 
+yscales = -1 ; initialize flag
+; determine scalemin and scalemax values for the y variable
+a = tagindex('SCALEMIN',ytags)
+if (a[0] ne -1) then begin & b=size(ystruct.SCALEMIN)
+  if (b[0] eq 0) then begin
+     ysmin = ystruct.SCALEMIN 
+     if (ysmin ne '') then yscales = 1
+  endif
+endif
+
+a = tagindex('SCALEMAX',ytags)
+if (a[0] ne -1) then begin & b=size(ystruct.SCALEMAX)
+  if (b[0] eq 0) then ysmax = ystruct.SCALEMAX
+endif
 
 ;determine y axis label
 a = tagindex('LABLAXIS',ytags)
-if (a(0) ne -1) then begin & b=size(ystruct.LABLAXIS)
-  if (b(0) eq 0) then ytitle = ystruct.LABLAXIS $
+if (a[0] ne -1) then begin & b=size(ystruct.LABLAXIS)
+  if (b[0] eq 0) then ytitle = ystruct.LABLAXIS $
   else begin
     ytitle = ' y axis' ; default for x data
     print,'WARNING=Unable to determine ytitle for ',ystruct.varname
@@ -356,8 +408,8 @@ if (a(0) ne -1) then begin & b=size(ystruct.LABLAXIS)
 endif
 ;determine y axis units
 a = tagindex('UNITS',ytags)
-if (a(0) ne -1) then begin & b=size(ystruct.UNITS)
-  if (b(0) eq 0) then ytitle = ytitle + ' in '+ ystruct.UNITS $
+if (a[0] ne -1) then begin & b=size(ystruct.UNITS)
+  if (b[0] eq 0) then ytitle = ytitle + ' in '+ ystruct.UNITS $
   else begin
     ytitle = ytitle  ; default for y data
     print,'WARNING=Unable to determine units for ',ystruct.varname
@@ -371,31 +423,34 @@ ztags = tag_names(zstruct)
 ;if (a(0) ne -1) then fn = '> ' + zstruct.CATDESC else fn = ''
 ;TJK - change from using CATDESC to FIELDNAM, the former is too long
 a = tagindex('FIELDNAM',ztags)
-if (a(0) ne -1) then fn = '> ' + zstruct.FIELDNAM else fn = ''
+if (a[0] ne -1) then fn = '> ' + zstruct.FIELDNAM else fn = ''
 a = tagindex('SOURCE_NAME',ztags)
-if (a(0) ne -1) then begin
+if (a[0] ne -1) then begin
 sn = break_mystring(zstruct.SOURCE_NAME,delimiter='>')
-b = sn(0)
+b = sn[0]
 endif else b = ''
 a = tagindex('DESCRIPTOR',ztags)
-if (a(0) ne -1) then b = b + '  ' + zstruct.DESCRIPTOR
+if (a[0] ne -1) then b = b + '  ' + zstruct.DESCRIPTOR
 window_title = b + fn
+
+; if nonoise is set, make title say so
+if keyword_set(nonoise) then window_title = window_title+'!CFiltered to remove values >3-sigma from mean of all plotted values'
 
 ; Get extra labels from the display type - if it exists
 
 idx = -1 ;initialize idx
 label_vars = evaluate_plasmastruct(zstruct, ztags, /labels)
 thumbsize = evaluate_plasmastruct(zstruct, ztags, /thumbsize)
-if (n_elements(label_vars) ge 1 and label_vars(0) ne 'none') then begin ; get all of the extra label data
+if (n_elements(label_vars) ge 1 and label_vars[0] ne 'none') then begin ; get all of the extra label data
   for l = 0L, n_elements(label_vars)-1 do begin
     ;TJK insert code here to look for an "indexed" label variable, e.g. 3/20/2003
     ;ProgramSpecs(0), so we need to look for "("
     idx_flag = 0 ;initialize flag
-    d = break_mystring(label_vars(l),delimiter='(')
+    d = break_mystring(label_vars[l],delimiter='(')
     if (n_elements(d) eq 2) then begin
       idx_flag = 1 ;set flag, we have an index variable
-      label_vars(l) = d(0)
-      c = strmid(d(1),0,(strlen(d(1))-1)) ; remove closing quote
+      label_vars[l] = d[0]
+      c = strmid(d[1],0,(strlen(d[1])-1)) ; remove closing quote
       idx = long(c)
     endif  
 
@@ -405,10 +460,10 @@ if (n_elements(label_vars) ge 1 and label_vars(0) ne 'none') then begin ; get al
     
     comm=execute('ltags = tag_names(lstruct'+l_str+')')
     d = tagindex('DAT',ltags)
-    if (d(0) ne -1) then comm=execute('ldat = lstruct'+l_str+'.DAT') $
+    if (d[0] ne -1) then comm=execute('ldat = lstruct'+l_str+'.DAT') $
     else begin
       d = tagindex('HANDLE',ltags)
-      if (d(0) ne -1) then comm=execute('handle_value,lstruct'+l_str+'.HANDLE,ldat'+l_str) $
+      if (d[0] ne -1) then comm=execute('handle_value,lstruct'+l_str+'.HANDLE,ldat'+l_str) $
       else begin
         print,'ERROR= Label variable does not have DAT or HANDLE tag' & return,-1
       endelse
@@ -419,30 +474,30 @@ if (n_elements(label_vars) ge 1 and label_vars(0) ne 'none') then begin ; get al
     ;now get the fieldname that goes w/ this data
     comm = execute('ltitle'+l_str+'=''')
     a = tagindex('FIELDNAM',ltags)
-    if (a(0) ne -1) then comm = execute('ltitle'+l_str+' = lstruct'+l_str+'.FIELDNAM')
+    if (a[0] ne -1) then comm = execute('ltitle'+l_str+' = lstruct'+l_str+'.FIELDNAM')
 
     a = tagindex('LABLAXIS',ltags)
-    if (a(0) ne -1) then begin
+    if (a[0] ne -1) then begin
 	comm = execute('temp = lstruct'+l_str+'.LABLAXIS')
-	if(temp(0) ne '') then comm = execute('ltitle'+l_str+' = lstruct'+l_str+'.LABLAXIS')
+	if(temp[0] ne '') then comm = execute('ltitle'+l_str+' = lstruct'+l_str+'.LABLAXIS')
     endif
 
     a = tagindex('LABL_PTR_1',ltags)
-    if (a(0) ne -1) then begin
+    if (a[0] ne -1) then begin
 	comm = execute('temp = lstruct'+l_str+'.LABL_PTR_1')
-        if (temp(0) ne '') then comm = execute('ltitle'+l_str+' = lstruct'+l_str+'.LABL_PTR_1')
+        if (temp[0] ne '') then comm = execute('ltitle'+l_str+' = lstruct'+l_str+'.LABL_PTR_1')
     endif
 
     ;Need to add code here to deal w/ indexed label values - TJK - 3/20/2003
     if (idx_flag and (idx ge 0)) then begin
       comm = execute('title = strtrim(ltitle'+l_str+',2)')
-      comm = execute('ltitle'+l_str+' = title(idx)')
+      comm = execute('ltitle'+l_str+' = title[idx]')
       comm = execute('ldata = strtrim(ldat'+l_str+',2)')
       if (size(ldata, /n_dimensions) eq 2) then begin
-  	  comm = execute('ldat'+l_str+' = ldata(idx,*)')
+  	  comm = execute('ldat'+l_str+' = ldata[idx,*]')
           comm = execute('ldat'+l_str+' = reform(ldat'+l_str+')')
       endif else begin
-	  comm = execute('ldat'+l_str+' = ldata(idx)')
+	  comm = execute('ldat'+l_str+' = ldata[idx]')
       endelse
     endif
 
@@ -453,9 +508,9 @@ endif ;getting label data
 if(COLORBAR) then begin
  ctitle=''
  a = tagindex('LABLAXIS',ztags)
- if (a(0) ne -1) then ctitle = zstruct.LABLAXIS
+ if (a[0] ne -1) then ctitle = zstruct.LABLAXIS
  a=tagindex('UNITS',ztags)
- if(a(0) ne -1) then ctitle = ctitle + ' in ' + zstruct.UNITS 
+ if(a[0] ne -1) then ctitle = ctitle + ' in ' + zstruct.UNITS 
 endif
 
 if keyword_set(XSIZE) then xs=XSIZE else xs=560
@@ -464,23 +519,41 @@ if keyword_set(YSIZE) then ys=YSIZE else ys=560
 ; Determine if data is a single image, if so then set the frame
 ; keyword because a single thumbnail makes no sense
 isize = size(idat)
-if (isize(0) eq 2) then n_images=1 else n_images=isize(isize(0))
+if (isize[0] eq 2) then n_images=1 else n_images=isize(isize[0])
 
 if (n_images eq 1) then FRAME=1
 
 ;Produce blown up single image plot
 
 if keyword_set(FRAME) then begin ; produce plot of a single frame
+
+;print, 'size of idat before selecting just the one frame ',size(idat)
+
   if ((FRAME ge 1)AND(FRAME le n_images)) then begin ; valid frame value
-    idat = idat(*,*,(FRAME-1)) ; grab the frame
+    idat = idat[*,*,(FRAME-1)] ; grab the frame
     idat = reform(idat) ; remove extraneous dimensions
+
+
+;TJK 2/14/2012 - check the descriptor, if isis, we need to rotate 270
+;                deg. and since this is not a square image, must
+;                rotate image by image.
+    if(descriptor[0] eq 'MERGEDSTATIONS') then begin
+;print, 'found ISIS Mergedstation data, rotating 90 deg for plasmagrams'
+      ;set up an array to handle the "rotated images"
+       idat2 = rotate(idat[*,*], 4)
+       idat = idat2
+       idat2 = 0  ;clear this array out
+     endif ;if MERGEDSTATIONS
+
+;print, 'size of xdat before selecting just the one frame ',size(xdat)
     if (size(xdat, /n_dimensions) eq 2) then begin
-	 xdat = xdat(*,(FRAME-1)) ; grab just the one frame
+	 xdat = xdat[*,(FRAME-1)] ; grab just the one frame
     endif ;otherwise assume its only one dimension
     xdat = reform(xdat) ; remove extraneous dimensions
     if (size(ydat, /n_dimensions) eq 2) then begin
-    	ydat = ydat(*,(FRAME-1)) ; grab just the one frame
+    	ydat = ydat[*,(FRAME-1)] ; grab just the one frame
     endif ;otherwise assume its only one dimension
+
     ydat = reform(ydat) ; remove extraneous dimensions
     isize = size(idat) ; get the dimensions of the image
 
@@ -493,20 +566,18 @@ if (xlog eq 1L) then begin
     w = where(xdat gt amin,wc)
     if (wc gt 0) then begin
      if keyword_set(DEBUG) then print,'Screening X ',wc, 'non-positive values.'
-;     xdat = xdat(w) & idat = idat(*,w,*) & w=0
-     ;get the actual min value
-;     amin = min(xdat(w), max=xvmax) ;determine min/max w/o negative out of
-;TJK - Jan 23, 2003 corrected the lines below because the xvmin wasn't getting
-;	set to the correct value.
-     xvmin = min(xdat(w), max=xvmax) ;TJK corrected - determine min/max w/o negative out of
+     xvmin = min(xdat[w], max=xvmax) ;TJK corrected - determine min/max w/o negative out of
 				   ;range values
-;     if (xlog eq 1L and xvmin le 0) then xvmin = amin ;xvmin can't be zero
-     if (xlog eq 1L and xvmin le 0) then xvmin = .00001 ;TJK corrected  - xvmin can't be zero
+     if (xlog eq 1L and xvmin le 0) then xvmin = .0001 ;TJK corrected  - xvmin can't be zero
     endif
   endif
 endif else begin
+;print, 'DEBUG determining xmin and xmax'
+;print, 'max = ',max(xdat),'min = ',min(xdat)
+
+
   w = where((xdat gt xvmin and xdat lt xvmax), wc)
-  if (wc gt 0) then xvmin = min(xdat(w), max=xvmax)
+  if (wc gt 0) then xvmin = min(xdat[w], max=xvmax)
   if (wc le 0) then begin
 	xvmin = 0 & xvmax = 1
   endif
@@ -523,18 +594,13 @@ if (ylog eq 1L) then begin
     if (wc gt 0) then begin
      if keyword_set(DEBUG) then print,'Screening Y ',wc, 'non-positive values.'
        ;get the actual min value
-;TJK - Jan 23, 2003 corrected the lines below because the xvmin wasn't getting
-;	set to the correct value.
-;       amin = min(ydat(w), max=yvmax)
-       yvmin = min(ydat(w), max=yvmax)
-;       if (ylog eq 1L and yvmin le 0) then yvmin = amin ;yvmin can't be zero
+       yvmin = min(ydat[w], max=yvmax)
        if (ylog eq 1L and yvmin le 0) then yvmin = .0001 ;yvmin can't be zero
-;     ydat = ydat(w) & idat = idat(*,w,*) & w=0
     endif
   endif
 endif else begin
   w = where((ydat gt yvmin and ydat lt yvmax), wc)
-  if (wc gt 0) then yvmin = min(ydat(w), max=yvmax)
+  if (wc gt 0) then yvmin = min(ydat[w], max=yvmax)
   if (wc le 0) then begin
 	yvmin = 0 & yvmax = 1
   endif
@@ -542,61 +608,57 @@ endelse
 
 if keyword_set(DEBUG) then print, 'DEBUG, Y min and max scales = ',yvmin, yvmax
 
-
 ; Begin changes 12/11 RTB
     ; determine validmin and validmax values for the image
     a = tagindex('VALIDMIN',ztags)
-    if (a(0) ne -1) then begin & b=size(zstruct.VALIDMIN)
-      if (b(0) eq 0) then zvmin = zstruct.VALIDMIN $
+    if (a[0] ne -1) then begin & b=size(zstruct.VALIDMIN)
+      if (b[0] eq 0) then zvmin = zstruct.VALIDMIN $
       else begin
         zvmin = 0 ; default for image data
         print,'WARNING=Unable to determine validmin for ',vname
       endelse
     endif
     a = tagindex('VALIDMAX',ztags)
-    if (a(0) ne -1) then begin & b=size(zstruct.VALIDMAX)
-      if (b(0) eq 0) then zvmax = zstruct.VALIDMAX $
+    if (a[0] ne -1) then begin & b=size(zstruct.VALIDMAX)
+      if (b[0] eq 0) then zvmax = zstruct.VALIDMAX $
       else begin
         zvmax = 2000 ; guesstimate
         print,'WARNING=Unable to determine validmax for ',vname
       endelse
     endif
     a = tagindex('FILLVAL',tag_names(zstruct))
-    if (a(0) ne -1) then begin & b=size(zstruct.FILLVAL)
-      if (b(0) eq 0) then zfill = zstruct.FILLVAL $
+    if (a[0] ne -1) then begin & b=size(zstruct.FILLVAL)
+      if (b[0] eq 0) then zfill = zstruct.FILLVAL $
       else begin
         zfill = -1 ; guesstimate
         print,'WARNING=Unable to determine the fillval for ',vname
       endelse
-    endif
+   endif
+
 ;TJK added checking of the image scale type 6/2/2003 since we're now
 ;trying to use this for other datasets, e.g. wind 3dp...
    logz = 0L ; initialize assuming linear
    a = tagindex('SCALETYP',ztags)
-   if (a(0) ne -1) then begin
+   if (a[0] ne -1) then begin
       if (strupcase(Zstruct.SCALETYP) eq 'LOG') then logz = 1L
    endif
+;TJK 4/1/2014 - need to make any z values outside of validmin/max  eq
+;to fill, so that they don't scue all of the adjustments below.
 
-
-
-if keyword_set(DEBUG) then begin
-  print, 'Defined in CDF/master, valid min and max: ',zvmin, ' ',zvmax 
-  wmin = min(idat,MAX=wmax)
-  print, 'Actual min and max of image data',wmin,' ', wmax
-  print, 'Image fill value = ',zfill
-endif
+outofrange = where(idat lt zvmin or idat gt zvmax, ocnt)
+if (ocnt gt 0) then idat[outofrange] = zfill 
+if keyword_set(DEBUG) then print,'WARNING=Number of Z values outside of validmin/max range = ',ocnt
 
 ;TJK 8/19/2003 - new section of code added to deal w/ fill values and log scaling and low "valid" values
 ;a little differently than in the past...
 
-  fdat = where(idat ne zfill, fc)
+  fdat = where(idat ne zfill, fc) 
   if (fc gt 0) then begin
-    wmin = min(idat(fdat),MAX=wmax) ;do not include the fill value when determining the min/max
+    wmin = min(idat[fdat],MAX=wmax) ;do not include the fill value when determining the min/max
   endif else begin
-    if keyword_set(DEBUG) then print,'WARNING=No data found - all data is fill!!'
+    if keyword_set(DEBUG) then print,'WARNING=No data found - all data is fill or out of range!!'
     wmin=1 & wmax = 1.1
   endelse     
-
 
 ; special check for when Z log scaling - set all values
 ; less than or equal to 0, to the next lowest actual value.
@@ -606,24 +668,27 @@ endif
 	z = where((idat gt 0.0 and idat ne zfill), zc)
 	if (wc gt 0 and zc gt 0) then begin
 	  if keyword_set(DEBUG) then print, 'Z log scaling and min values being adjusted, '
-	  idat(w) = min(idat(z))
+          wmin = min(idat[z]) ;need to set wmin because its used lower down
+	  idat[w] = wmin
 	endif
     endif
-	  
+
     w = where(((idat lt zvmin) and (idat ne zfill)),wc)
     if wc gt 0 then begin
       if keyword_set(DEBUG) then print, 'Setting ',wc,' out of range values in image data to lowest data value= ', wmin
-      idat(w) = wmin ; set pixels to the lowest real value (for the current image)
+      idat[w] = wmin ; set pixels to the lowest real value (for the current image)
       w = 0 ; free the data space
-    endif
+   endif
 
-    w = where((idat eq zfill),wc)
-    if wc gt 0 then begin
-      if keyword_set(DEBUG) then print, 'Number of fill values found, Setting ',wc, ' values to 0(black)'
-      idat(w) = 0 ; set pixels to black
-      w = 0 ; free the data space
-    endif
-;TJK - end of 8/19/2003 mods.
+;reassign the fill values to a really low number to get them out of
+;the way - setting to zero or 0.1 isn't right still...
+;TJK 2/3/2014 - doing this differently down below
+;    w = where((idat eq zfill),wc)
+;    if wc gt 0 then begin
+;      if keyword_set(DEBUG) then print, 'Number of fill values found, Setting ',wc, ' values to 0 or 0.1 (black)'
+;      if (logz) then idat[w] = 0.1 else idat[w] = 0 ; set pixels to black
+;      w = 0 ; free the data space
+;    endif
 
 ;Don't take out the higher values, just scale them in.
 
@@ -636,10 +701,17 @@ endif
          ;where the diff is less than 1.
          diff = zvmax - zvmin
          coffset = red_offset(GIF=GIF,diff)
-         print, 'diff = ',diff, ' coffset = ',coffset
-         idat(w) = zvmax - coffset; set pixels to red
+;         print, 'diff = ',diff, ' coffset = ',coffset
+         idat[w] = zvmax - coffset; set pixels to red
       w = 0 ; free the data space
     endif
+
+if keyword_set(DEBUG) then begin
+  print, 'Defined in CDF/master, valid min and max: ',zvmin, ' ',zvmax 
+  wmin = min(idat,MAX=wmax)
+  print, 'Actual min and max of image data',wmin,' ', wmax
+  print, 'Image fill value = ',zfill
+endif
 
 
 ;TJK added this section to print out some statistics about the data distribution. 
@@ -666,7 +738,7 @@ endif
       w = where((idat lt zvmin),wc)
       if wc gt 0 then begin
         if keyword_set(DEBUG) then print,'WARNING=filtering values less than 3-sigma from image data...'
-        idat(w) = zvmin ; set pixels to black
+        idat[w] = zvmin ; set pixels to black
         w = 0 ; free the data space
       endif
       w = where((idat gt zvmax),wc)
@@ -678,18 +750,23 @@ endif
          ;where the diff is less than 1.
          diff = zvmax - zvmin
          coffset = red_offset(GIF=GIF,diff)
-         print, 'diff = ',diff, ' coffset = ',coffset
-         idat(w) = zvmax - coffset; set pixels to red
+         print, 'DEBUG diff = ',diff, ' coffset = ',coffset
+         idat[w] = zvmax - coffset; set pixels to red
         w = 0 ; free the data space
       endif
      endif
 
-    ; scale to maximize color spread
-    idmax=max(idat) 
-    idmin=min(idat) ; RTB 10/96
-
-;TJK - moved bytscl code down below the deviceopen block, so that the number of colors
-; is set BEFORE we use it...
+; scale to maximize color spread
+;determine the image min/max excluding the fill value
+    idmin = .00001
+    idmax = idmin+1
+    wfill = where((idat ne zfill),wcfill)
+    if (wcfill gt 0) then idmax=max(idat[wfill], /nan, min=idmin) else print, 'all image data is fill'
+;test to see if min/max are equal
+    if (idmin eq idmax) then begin
+       if (logz) then idmin = .00001 ; just in case its zero for log scales
+       idmax = idmin+1          ; add so the colobar will be happy
+    endif
 
     if keyword_set(GIF) then begin
 ; RTB 9/96 Retrieve the Data set name from the Logical source or
@@ -698,11 +775,13 @@ endif
 	b = tagindex('LOGICAL_SOURCE',atags)
 	b1 = tagindex('LOGICAL_FILE_ID',atags)
 	b2 = tagindex('Logical_file_id',atags)
-	if (b(0) ne -1) then psrce = strupcase(zstruct.LOGICAL_SOURCE)
-	if (b1(0) ne -1) then $
-	  psrce = strupcase(strmid(zstruct.LOGICAL_FILE_ID,0,9))
-	if (b2(0) ne -1) then $
-	  psrce = strupcase(strmid(zstruct.Logical_file_id,0,9))
+	if (b[0] ne -1) then psrce = strupcase(zstruct.LOGICAL_SOURCE)
+;TJK 11/2012 - just use logical_source, file_id isn't really
+;              appropriate, especially w/ the really long dataset names.
+;	if (b1[0] ne -1) then $
+;	  psrce = strupcase(zstruct.LOGICAL_FILE_ID)
+;	if (b2[0] ne -1) then $
+;	  psrce = strupcase(zstruct.Logical_file_id)
 
 
 ;TJK added MOVIE keyword so that the GIF name will not be overriden when
@@ -724,93 +803,125 @@ endif
       deviceopen,6,fileOutput=GIF,sizeWindow=[xs+xco,ys+30]
 
       if not keyword_set(MOVIE) then begin ;don't print out GIF name if MOVIE
+        ;print,'GIF=',GIF
+        split=strsplit(gif,'/',/extract)
+        outdir='/'
+        for k=0L,n_elements(split)-2 do outdir=outdir+split[k]+'/'
+        print, 'GIF_OUTDIR=',outdir
+        print, 'LONG_GIF=',split[k]
         if (reportflag eq 1) then begin
-          printf,1,'GIF=',GIF & close,1
+          ;printf,1,'GIF=',GIF & close,1
+	  printf,1,'GIF_OUTDIR=',outdir
+	  printf,1,'LONG_GIF=',split[k] & close,1
         endif
-        print,'GIF=',GIF
       endif
     endif else begin ; open the xwindow
       window,/FREE,XSIZE=xs+xco,YSIZE=ys+30,TITLE=window_title
     endelse
 
-;can't have these print statements here - they'll mess up the perl scripts that
-;decipher the output between thumbnails and blowups
-;if keyword_set(DEBUG) then begin
-;	print, '!d.n_colors = ',!d.n_colors
-;	print, 'min and max after filtering = ',idmin, ' ', idmax
-;endif
+;print, 'image values before the top values are removed ',idat
 
-;TJK - 6/28/04 - shouldn't need -8 anymore due to the better logic 
-;for determining the offset 
-;    idat = bytscl(idat,min=idmin, max=idmax, top=!d.n_colors-8)
-    idat = bytscl(idat,min=idmin, max=idmax, top=!d.n_colors-2)
+;find out which values in the original idat image data are fill or
+;outside validmin/max
+;set them to zero below the call to bytscal
+fill_idx = where((idat eq zfill),fillwc)
+image2 = idat ;hold on to original image data (still contains fill data at this point) 
+if (logZ) then begin ;if log convert data to log before bytscal, otherwise spread of data is lost
+   idat = alog(image2) ; log version(can contain nan)
+   logidmax=max(idat, /nan, min=logidmin) ; don't include nan or infinity
+   idat = bytscl(idat,min=logidmin, max=logidmax, top=!d.table_size-2)
+endif else begin
+   idat = bytscl(idat,min=idmin, max=idmax, top=!d.table_size-2)
+endelse
 
-if keyword_set(DEBUG) then begin
-	bytmin = min(idat, max=bytmax)
-;can't have this print statement here - they'll mess up the perl scripts that
-;decipher the output between thumbnails and blowups
-;	print, 'min and max after bytscl = ',bytmin, ' ', bytmax
-endif
-
+;2/3/2014 TJK Moved the check for fill data to set the index values to
+;zero AFTER the call to bytscl.  Trying to set the image values to
+;some appropriate small value before bytscl never works correctly.
+    if fillwc gt 0 then begin
+;      if keyword_set(DEBUG) then print, 'Number of fill values found, Setting ',fillwc, ' values to 0 (black)'
+      idat[fill_idx] = 0 ; set pixels to black (on scale of 0-255) 
+    endif
 
 ;save off the margins before mucking w/ them.
 xmargin=!x.margin
 ymargin=!y.margin
 default_right = 14 
-if (logz) then default_right = 20 ;TJK 8/19/2003 allow more room for log color scale label
-if COLORBAR then begin 
- if (!x.omargin(1)+!x.margin(1)) lt default_right then !x.margin(1) = default_right
- !x.margin(1) = default_right
- !x.margin(0) = 10 ;TJK make room for yaxis scales and lables
- !y.margin(0) = 6 ;TJK make room for xaxis bottom scales 
+if keyword_set(nonoise) then !y.margin[1] = 3 ;TJK make room for nonoise line of top title
 
- if (label_vars(0) ne 'none') then begin ; there are labels, set margins to allow 
+if (logz) then default_right = 20 ;TJK 8/19/2003 allow more room for log color scale label
+
+if COLORBAR then begin 
+ if (!x.omargin[1]+!x.margin[1]) lt default_right then !x.margin[1] = default_right
+ !x.margin[1] = default_right
+ !x.margin[0] = 10 ;TJK make room for yaxis scales and lables
+ !y.margin[0] = 8 ;TJK make room for xaxis bottom scales 
+
+ if (label_vars[0] ne 'none') then begin ; there are labels, set margins to allow 
 				  ; for them.
-   !y.margin(0) = 13 ;TJK make room for xaxis scales and lables
-   !y.margin(1) = 2 ;TJK make room for xaxis scales and top title
+   !y.margin[0] = 13 ;TJK make room for xaxis scales and lables
+   !y.margin[1] = 3 ;TJK make room for xaxis scales and top title
  endif
  plot,[0,1],[0,1],/noerase,/nodata,xstyle=4,ystyle=4
 endif
-
 
 ;TJK add in code to explicitly define the labels when doing log scales
 if (ylog eq 1) then begin
   lblv = loglevels([yvmin,yvmax])
   ;do not plot labels lt or gt min/max 
   if (n_elements(lblv) ge 3) then begin
-    if (lblv(0) lt yvmin) then lblv=lblv[1:*]
+    if (lblv[0] lt yvmin) then lblv=lblv[1:*]
     if (lblv(n_elements(lblv)-1) gt yvmax) then lblv=lblv[0:n_elements(lblv)-2]
   endif
-  axis, yaxis=0, color=!d.n_colors,ylog=ylog, /nodata, yrange=[yvmin,yvmax], $
+  axis, yaxis=0, color=!d.table_size,ylog=ylog, /nodata, yrange=[yvmin,yvmax], $
   ytitle=ytitle, ystyle=1+8, yticks=n_elements(lblv)-1, ytickv=lblv, /save
 endif else begin
-  axis, yaxis=0, color=!d.n_colors,ylog=ylog, /nodata, yrange=[yvmin,yvmax], $
-  ytitle=ytitle, ystyle=1+8, /save
+    if (yscales eq -1) then begin ;use validmin/max
+      axis, yaxis=0, color=!d.table_size,ylog=ylog, /nodata, yrange=[yvmin,yvmax], $
+        ytitle=ytitle, ystyle=1+8, /save
+;TJK 2/27/2012 - use scalemin/max if defined
+      endif else begin 
+      axis, yaxis=0, color=!d.table_size,ylog=ylog, /nodata, yrange=[ysmin,ysmax], $
+       ytitle=ytitle, ystyle=1+8, /save
+    endelse
 endelse
 
 if (xlog eq 1) then begin
   lblv = loglevels([xvmin,xvmax])
   ;do not plot labels lt or gt min/max 
   if (n_elements(lblv) ge 3) then begin
-    if (lblv(0) lt xvmin) then lblv=lblv[1:*]
+    if (lblv[0] lt xvmin) then lblv=lblv[1:*]
     if (lblv(n_elements(lblv)-1) gt xvmax) then lblv=lblv[0:n_elements(lblv)-2]
   endif
-  axis, xaxis=0, color=!d.n_colors, xlog=xlog, /nodata, xrange=[xvmin,xvmax], $
+  axis, xaxis=0, color=!d.table_size, xlog=xlog, /nodata, xrange=[xvmin,xvmax], $
   xtitle=xtitle, xstyle=1+8, xticks=n_elements(lblv)-1, xtickv=lblv, /save
 endif else begin
-  axis, xaxis=0, color=!d.n_colors, xlog=xlog, $
+  axis, xaxis=0, color=!d.table_size, xlog=xlog, $
   /nodata, xrange=[xvmin,xvmax], xtitle=xtitle, xstyle=1+8, /save
 endelse
 
-txmin = xdat(0) & txmax = xdat(0)
-tymin = ydat(0) & tymax = ydat(0)
+txmin = xdat[0] & txmax = xdat[0]
+tymin = ydat[0] & tymax = ydat[0]
 
 ;TJK make the symbol sizing adjustable.9/24/2001
 symbol = evaluate_plasmastruct(zstruct, ztags, /symsize)
+;TJK 2/25/2014 look for xsz=# in display_type
+x_symbol = evaluate_plasmastruct(zstruct, ztags, /xsymsize) 
+y_symbol = evaluate_plasmastruct(zstruct, ztags, /ysymsize)
 
-if (ylog eq 1L) then symbol = 2 ;TJK 2/27/2003 change from 1 to 2
-noclip=1
-case (symbol) of
+if (x_symbol gt 0 or y_symbol gt 0) then begin
+  ;set default xsym and ysym same as symbol 2 below
+  xsym = [-1.2,1.2,1.2,-1.2,-1.2] & ysym = [-1.4,-1.4,1.4,1.4,-1.4] 
+  ;if caller has set either xsz or ysz in the master cdf then adjust
+  if (x_symbol gt 0) then xsym = xsym*x_symbol
+  if (y_symbol gt 0) then ysym = ysym*y_symbol
+  noclip=0
+endif else begin
+
+  ;if ylog and no symbol size set, then go w/ 2, else use what's
+  ;set in the master cdf.
+  if (ylog eq 1L and symbol eq -1) then symbol = 2 ;TJK 2/27/2003 change from 1 to 2
+  noclip=1
+  case (symbol) of
   '1': begin
 	 xsym = [-.4,.4,.4,-.4,-.4] & ysym = [-.4,-.4,.4,.4,-.4]
        end
@@ -826,54 +937,82 @@ case (symbol) of
 	 xsym = [-3.2,3.2,3.2,-3.2,-3.2] & ysym = [-3.2,-3.2,3.2,3.2,-3.2]
 	 noclip = 0 ; setting no clip so that these really large boxes don't
 		    ; fall outside the axes.
+      end
+  '8': begin ;make this one for rbsp hope-pa-l3
+	 xsym = [-1.2,1.2,1.2,-1.2,-1.2] & ysym = [-8.4,-8.4,8.4,8.4,-8.4]
+	 noclip = 0 ; setting no clip so that these really large boxes don't
+		    ; fall outside the axes.
+      end
+  '28': begin ;make this one for Wind_sw-ion-dist_swe-farraday
+	 xsym = [-2.4,2.4,2.4,-2.4,-2.4] & ysym = [-8.4,-8.4,8.4,8.4,-8.4]
+	 noclip = 0 ; setting no clip so that these really large boxes don't
+		    ; fall outside the axes.
        end
   else:begin
-	xsym = [-.4,.4,.4,-.4,-.4] 
-	ysym = [-.4,-.4,.4,.4,-.4]
+	 xsym = [-1.2,1.2,1.2,-1.2,-1.2] & ysym = [-1.4,-1.4,1.4,1.4,-1.4]
+;	xsym = [-.4,.4,.4,-.4,-.4] change default to larger 
+;	ysym = [-.4,-.4,.4,.4,-.4]
        end
-endcase
+  endcase
+
+endelse
 
 log_lin = 0 ;set a default
+
 if (rpi) then begin ;if rpi flag is set then use the programspecs variable 
 		    ;(pdat) data to help define the symbol sizes used below.
-  log_lin = pdat(3,(frame-1))
+  if (n_elements(pdat) gt 0) then log_lin = pdat(3,(frame-1))
   xsym_temp = xsym
   ysym_temp = ysym
+  noclip = 0
 endif
+
+ysym_save = ysym
 
 for x=0L, n_elements(xdat)-1 do begin
   for y=0L, n_elements(ydat)-1 do begin
 
-    if ((idat(x,y) gt 0) and (xdat(x) ge xvmin) and (ydat(y) ge yvmin)) then begin
+;     print,'Plotting ', xdat[x], ydat[y],'original values',image[x,y], 'byte ',idat[x,y]
+
+    if ((idat[x,y] gt 0) and (xdat[x] ge xvmin) and (ydat[y] ge yvmin)) then begin
+;    if ((ilogdat[x,y] gt 0) and (xdat[x] ge xvmin) and (ydat[y] ge yvmin)) then begin
 ;Adjust size of symbol in the x direction
-	if((rpi) and (log_lin gt 0) and (xdat(x) ge 20) and (xdat(x) lt 30)) then begin
+	if((rpi) and (log_lin gt 0) and (xdat[x] ge 20) and (xdat[x] lt 30)) then begin
 	  xsym = xsym_temp*1.4
 	endif
-	if((rpi) and (log_lin gt 0) and (xdat(x) ge 30) and (xdat(x) lt 40)) then begin
+	if((rpi) and (log_lin gt 0) and (xdat[x] ge 30) and (xdat[x] lt 40)) then begin
 	  xsym = xsym_temp*1.6
 	endif
-	if((rpi) and (log_lin gt 0) and (xdat(x) ge 40) and (xdat(x) lt 50)) then begin
+	if((rpi) and (log_lin gt 0) and (xdat[x] ge 40) and (xdat[x] lt 50)) then begin
 	  xsym = xsym_temp*2.1
 	endif
-	if((rpi) and (log_lin gt 0) and (xdat(x) ge 50) and (xdat(x) lt 60)) then begin
+	if((rpi) and (log_lin gt 0) and (xdat[x] ge 50) and (xdat[x] lt 60)) then begin
 	  xsym = xsym_temp*2.5
 	endif
 
 ;Adjust size of symbol in the y direction
-	if((rpi) and (log_lin gt 0) and (ydat(y) ge 40) and (ydat(y) lt 50)) then begin
+	if((rpi) and (log_lin gt 0) and (ydat[y] ge 40) and (ydat[y] lt 50)) then begin
 	  ysym = ysym_temp*2.1
 	endif
-	if((rpi) and (log_lin gt 0) and (ydat(y) ge 50) and (ydat(y) lt 60)) then begin
+	if((rpi) and (log_lin gt 0) and (ydat[y] ge 50) and (ydat[y] lt 60)) then begin
 	  ysym = ysym_temp*2.5
 	endif
 
-	usersym, xsym, ysym, color=idat(x,y), /fill
-	plots, xdat(x),ydat(y), psym=8, noclip=noclip
-	if (xdat(x) lt txmin) then txmin = xdat(x)
- 	if (xdat(x) gt txmax) then txmax = xdat(x)
-	if (ydat(y) lt tymin) then tymin = ydat(y)
- 	if (ydat(y) gt tymax) then tymax = ydat(y)
-    endif
+;TJK 2/13/2014 Add logic to make top and bottom y symsize half
+;height (so they don't over plot the boxes below/above it
+;seems to cause problems        if ((y eq 0) or(y eq (n_elements(ydat) -1))) then ysym=ysym/2
+
+;if keyword_set(DEBUG) then  print, 'DEBUG: At X=',xdat[x],', Y=', ydat[y],' Color=', idat[x,y], ' value=',image[x,y]
+	usersym, xsym, ysym, color=idat[x,y], /fill
+	plots, xdat[x],ydat[y], psym=8, noclip=noclip
+	if (xdat[x] lt txmin) then txmin = xdat[x]
+ 	if (xdat[x] gt txmax) then txmax = xdat[x]
+	if (ydat[y] lt tymin) then tymin = ydat[y]
+ 	if (ydat[y] gt tymax) then tymax = ydat[y]
+
+        ysym=ysym_save ;reset ysym
+
+     endif ;else print, 'values out of range x,y, xdat, ydat, color = ',x, y, xdat[x], ydat[y], idat[x,y]
   endfor
 endfor
 
@@ -884,27 +1023,33 @@ if (ylog eq 1) then begin
   lblv = loglevels([yvmin,yvmax])
   ;do not plot labels lt or gt min/max 
   if (n_elements(lblv) ge 3) then begin
-    if (lblv(0) lt yvmin) then lblv=lblv[1:*]
+    if (lblv[0] lt yvmin) then lblv=lblv[1:*]
     if (lblv(n_elements(lblv)-1) gt yvmax) then lblv=lblv[0:n_elements(lblv)-2]
   endif
-  axis, yaxis=0, color=!d.n_colors,ylog=ylog, /nodata, yrange=[yvmin,yvmax], $
+  axis, yaxis=0, color=!d.table_size,ylog=ylog, /nodata, yrange=[yvmin,yvmax], $
   ytitle=ytitle, ystyle=1+8, yticks=n_elements(lblv)-1, ytickv=lblv, /save
 endif else begin
-  axis, yaxis=0, color=!d.n_colors,ylog=ylog, /nodata, yrange=[yvmin,yvmax], $
-  ytitle=ytitle, ystyle=1+8, /save
+    if (yscales eq -1) then begin ;use valimin/max
+        axis, yaxis=0, color=!d.table_size,ylog=ylog, /nodata, yrange=[yvmin,yvmax], $
+        ytitle=ytitle, ystyle=1+8, /save
+;TJK 2/27/2012 - use scalemin/max if defined
+    endif else begin
+      axis, yaxis=0, color=!d.table_size,ylog=ylog, /nodata, yrange=[ysmin,ysmax], $
+        ytitle=ytitle, ystyle=1+8, /save
+    endelse
 endelse
 
 if (xlog eq 1) then begin
   lblv = loglevels([xvmin,xvmax])
   ;do not plot labels lt or gt min/max 
   if (n_elements(lblv) ge 3) then begin
-    if (lblv(0) lt xvmin) then lblv=lblv[1:*]
+    if (lblv[0] lt xvmin) then lblv=lblv[1:*]
     if (lblv(n_elements(lblv)-1) gt xvmax) then lblv=lblv[0:n_elements(lblv)-2]
   endif
-  axis, xaxis=0, color=!d.n_colors, xlog=xlog, /nodata, xrange=[xvmin,xvmax], $
+  axis, xaxis=0, color=!d.table_size, xlog=xlog, /nodata, xrange=[xvmin,xvmax], $
   xtitle=xtitle, xstyle=1+8, xticks=n_elements(lblv)-1, xtickv=lblv, /save
 endif else begin
-  axis, xaxis=0, color=!d.n_colors, xlog=xlog, $
+  axis, xaxis=0, color=!d.table_size, xlog=xlog, $
   /nodata, xrange=[xvmin,xvmax], xtitle=xtitle, xstyle=1+8, /save
 endelse
 
@@ -921,7 +1066,7 @@ endelse
 num_columns=1
 x_fourth = !d.x_size/4
 extra_labels = 6 ;number of extra labels in each column
-if (n_elements(label_vars) ge 1 and label_vars(0) ne 'none') then begin ; print all of the extra label data
+if (n_elements(label_vars) ge 1 and label_vars[0] ne 'none') then begin ; print all of the extra label data
   if (n_elements(label_vars) ge extra_labels) then num_columns=2
 
   for l = 0L, n_elements(label_vars)-1 do begin
@@ -929,8 +1074,8 @@ if (n_elements(label_vars) ge 1 and label_vars(0) ne 'none') then begin ; print 
     l_str = strtrim(string(l),2);convert the index to string
     comm = execute('labl_val = ldat'+l_str)
     l_size = size(labl_val)
-    if (l_size(0) eq 2) then comm = execute('labl_val = ldat'+l_str+'(*,FRAME-1)')
-    if (l_size(0) eq 1) then comm = execute('labl_val = ldat'+l_str+'(FRAME-1)')
+    if (l_size[0] eq 2) then comm = execute('labl_val = ldat'+l_str+'(*,FRAME-1)')
+    if (l_size[0] eq 1) then comm = execute('labl_val = ldat'+l_str+'(FRAME-1)')
     if (not comm) then print, 'Error=execute for labels failed'
     
     ;now get the lablaxis that goes w/ this data
@@ -969,19 +1114,18 @@ if (n_elements(label_vars) ge 1 and label_vars(0) ne 'none') then begin ; print 
 endif ;printing label data
 
     ; subtitle the plot
-  ; project_subtitle,astruct.(0),'',/IMAGE,TIMETAG=edat(FRAME-1)
-    project_subtitle,zstruct,window_title,/IMAGE,TIMETAG=edat(FRAME-1)
+  ; project_subtitle,astruct.(0),'',/IMAGE,TIMETAG=edat[FRAME-1]
+    project_subtitle,zstruct,window_title,/IMAGE,TIMETAG=edat[FRAME-1]
 
 ; RTB 10/96 add colorbar
 if COLORBAR then begin
   if (n_elements(cCharSize) eq 0) then cCharSize = 0.
   cscale = [idmin, idmax] ; RTB 12/11
-; cscale = [zvmin, zvmax]
   xwindow = !x.window
   offset = 0.01
   colorbar, cscale, ctitle, logZ=logZ, cCharSize=cCharSize, $
-        position=[!x.window(1)+offset,      !y.window(0),$
-                  !x.window(1)+offset+0.03, !y.window(1)],$
+        position=[!x.window[1]+offset,      !y.window[0],$
+                  !x.window[1]+offset+0.03, !y.window[1]],$
         fcolor=244, /image
   !x.window = xwindow
 endif ; colorbar
@@ -995,13 +1139,31 @@ endif ; colorbar
 
 endif else begin ; Else, produce thumnails of all images
 
+;;;; rotate ISIS MERGEDData images 270 degress
+    if(descriptor[0] eq 'MERGEDSTATIONS') then begin
+;print, 'found ISIS Mergedstation data, rotating 270 deg'
+	for j=0,n_images-1 do begin
+          if (j eq 0 ) then begin
+            ;set up an array to handle the "rotated images"
+            dims = size(idat,/dimensions)
+            idat2 = bytarr(dims[1],dims[0],dims[2]); 
+	    idat2[*,*,j] = rotate(idat[*,*,j], 3)
+          endif else begin
+	    idat2[*,*,j] = rotate(idat[*,*,j],3)
+	  endelse
+        endfor
+	idat = idat2
+	idat2 = 0 ;clear this array out
+     endif ;if MERGEDSTATIONS
 
+
+;;;;;
   if keyword_set(THUMBSIZE) then tsize = THUMBSIZE else tsize = 50
   isize = size(idat) ; determine the number of images in the data
-  if (isize(0) eq 2) then begin
-    nimages = 1 & npixels = double(isize(1)*isize(2))
+  if (isize[0] eq 2) then begin
+    nimages = 1 & npixels = double(isize[1]*isize[2])
   endif else begin
-    nimages = isize(isize(0)) & npixels = double(isize(1)*isize(2)*nimages)
+    nimages = isize(isize[0]) & npixels = double(isize[1]*isize[2]*nimages)
   endelse
 
 ;TJK - 8/20/2003 add check for number of images gt 300 and large thumbnails - the
@@ -1018,7 +1180,7 @@ endif else begin ; Else, produce thumnails of all images
     w = where(edat ge TSTART,wc)
     if wc eq 0 then begin
       print,'ERROR=No image frames after requested start time.' & return,-1
-    endif else start_frame = w(0)
+    endif else start_frame = w[0]
   endelse
   if NOT keyword_set(TSTOP) then stop_frame = nimages $
   else begin
@@ -1031,10 +1193,10 @@ endif else begin ; Else, produce thumnails of all images
   else begin
     no_data_avail = 0L
     if ((start_frame ne 0)OR(stop_frame ne nimages)) then begin
-      idat = idat(*,*,start_frame:stop_frame)
+      idat = idat[*,*,start_frame:stop_frame]
       isize = size(idat) ; determine the number of images in the data
-      if (isize(0) eq 2) then nimages = 1 else nimages = isize(isize(0))
-      edat = edat(start_frame:stop_frame)
+      if (isize[0] eq 2) then nimages = 1 else nimages = isize[isize[0]]
+      edat = edat[start_frame:stop_frame]
     endif
   endelse
 
@@ -1049,56 +1211,58 @@ endif else begin ; Else, produce thumnails of all images
 ; Begin changes 12/11 RTB
 ;   ; determine validmin and validmax values
     a = tagindex('VALIDMIN',tag_names(zstruct))
-    if (a(0) ne -1) then begin & b=size(zstruct.VALIDMIN)
-      if (b(0) eq 0) then zvmin = zstruct.VALIDMIN $
+    if (a[0] ne -1) then begin & b=size(zstruct.VALIDMIN)
+      if (b[0] eq 0) then zvmin = zstruct.VALIDMIN $
       else begin
         zvmin = 0 ; default for image data
         print,'WARNING=Unable to determine validmin for ',vname
       endelse
     endif
     a = tagindex('VALIDMAX',tag_names(zstruct))
-    if (a(0) ne -1) then begin & b=size(zstruct.VALIDMAX)
-      if (b(0) eq 0) then zvmax = zstruct.VALIDMAX $
+    if (a[0] ne -1) then begin & b=size(zstruct.VALIDMAX)
+      if (b[0] eq 0) then zvmax = zstruct.VALIDMAX $
       else begin
         zvmax = 2000 ; guesstimate
         print,'WARNING=Unable to determine validmax for ',vname
       endelse
     endif
     a = tagindex('FILLVAL',tag_names(zstruct))
-    if (a(0) ne -1) then begin & b=size(zstruct.FILLVAL)
-      if (b(0) eq 0) then zfill = zstruct.FILLVAL $
+    if (a[0] ne -1) then begin & b=size(zstruct.FILLVAL)
+      if (b[0] eq 0) then zfill = zstruct.FILLVAL $
       else begin
         zfill = 2000 ; guesstimate
         print,'WARNING=Unable to determine the fillval for ',vname
       endelse
     endif
+
 ;TJK added checking of the image scale type 6/2/2003 since we're now
 ;trying to use this for other datasets, e.g. wind 3dp...
    logz = 0L ; initialize assuming linear
    a = tagindex('SCALETYP',ztags)
-   if (a(0) ne -1) then begin
+   if (a[0] ne -1) then begin
       if (strupcase(zstruct.SCALETYP) eq 'LOG') then logz = 1L
    endif
 
 ;   ; filter out data values outside validmin/validmax limits
 
+;TJK 4/1/2014 - need to make any z values outside of validmin/max  eq
+;to fill, so that they don't scue all of the adjustments below.
+
+outofrange = where(idat lt zvmin or idat gt zvmax, ocnt)
+if (ocnt gt 0) then idat[outofrange] = zfill 
+if keyword_set(DEBUG) then print,'WARNING=Number of Z values outside of validmin/max range = ',ocnt
+
 
   wmin = min(idat,MAX=wmax)
 
-if keyword_set(DEBUG) then begin
-  print, 'Image valid min and max: ',zvmin, ' ',zvmax 
-  print, 'Actual min and max of data',wmin,' ', wmax
-  print, 'Image fill values = ',zfill
-endif
 ;*****
 ;TJK 8/19/2003 - new section of code added to deal w/ fill values and log scaling and low "valid" values
 ;a little differently than in the past...
-
   fdat = where(idat ne zfill, fc)
   if (fc gt 0) then begin
-    wmin = min(idat(fdat),MAX=wmax) ;do not include the fill value when determining the min/max
+    wmin = min(idat[fdat],MAX=wmax) ;do not include the fill value when determining the min/max
   endif else begin
-    if keyword_set(DEBUG) then print,'WARNING=No data found - all data is fill!!'
+    if keyword_set(DEBUG) then print,'WARNING=No data found - all data is fill or out of range!!'
     wmin=1 & wmax = 1.1
   endelse     
 
@@ -1109,31 +1273,46 @@ endif
 	w = where((idat le 0.0 and idat ne zfill), wc)
 	z = where((idat gt 0.0 and idat ne zfill), zc)
 	if (wc gt 0 and zc gt 0) then begin
-	  if keyword_set(DEBUG) then print, 'Z log scaling and min values being adjusted, ', wc
-	  idat(w) = min(idat(z))
+	  if keyword_set(DEBUG) then print, 'Z log scaling and min values being adjusted, '
+	  wmin = min(idat[z])
+	  idat[w] = wmin
 	endif
     endif
-	  
+
     w = where(((idat lt zvmin) and (idat ne zfill)),wc)
     if wc gt 0 then begin
       if keyword_set(DEBUG) then print, 'Setting ',wc,' out of range values in image data to lowest data value= ', wmin
-      idat(w) = wmin ; set pixels to the lowest real value (for the current image)
+      idat[w] = wmin ; set pixels to the lowest real value (for the current image)
       w = 0 ; free the data space
     endif
 
-    w = where((idat eq zfill),wc)
-    if wc gt 0 then begin
-      if keyword_set(DEBUG) then print, 'Number of fill values found, Setting ',wc, ' values to 0(black)'
-      idat(w) = 0 ; set pixels to black
-      w = 0 ; free the data space
+;determine the image min/max excluding the fill value
+    wfill = where((idat ne zfill),wcfill)
+    if (wcfill gt 0) then idmax=max(idat[wfill], /nan, min=idmin) else print, 'all image data is fill'
+;test to see if min/max are equal
+    if (idmin eq idmax) then begin
+       if (logz) then idmin = .00001 ; just in case its zero for log scales
+       idmax = idmin+1          ; add so the colobar will be happy
     endif
+;print, 'debug idmin and max without fill ',idmin, idmax
+;stop;
+;2/3/2014 TJK changed this to the above code and then assign the
+;replacement value for the fill data down below the call to bytscl
+;    w = where((idat eq zfill),wc)
+;    if wc gt 0 then begin
+;      if keyword_set(DEBUG) then print, 'Number of fill values found, Setting ',wc, ' values to 0 or 0.1 (black)'
+;      if (logz) then idat[w] = 0.1 else idat[w] = 0 ; set pixels to black
+;      w = 0 ; free the data space
+;    endif
 
 ;TJK - end of 8/19/2003 changes
 ;****
 
-;TJK try not taking out the higher values and just scale them in.
+;Scale in the higher values instead of throwing them out (don't
+;include the fill values though).
 
-    w = where((idat gt zvmax),wc)
+    w = where((idat gt zvmax and idat ne zfill),wc)
+;    w = where((idat gt zvmax),wc)
     if wc gt 0 then begin
       if keyword_set(DEBUG) then print, 'Number of values above the valid max = ',wc, '. Setting them to red...'
 ;6/25/2004 see below         idat(w) = zvmax -1; set pixels to red
@@ -1143,11 +1322,16 @@ endif
       diff = zvmax - zvmin
       coffset = red_offset(GIF=GIF,diff)
       print, 'diff = ',diff, ' coffset = ',coffset
-      idat(w) = zvmax - coffset; set pixels to red
+      idat[w] = zvmax - coffset; set pixels to red
       w = 0 ; free the data space
       if wc eq npixels then print,'WARNING=All data outside min/max!!'
    endif
 
+if keyword_set(DEBUG) then begin
+  print, 'Image valid min and max: ',zvmin, ' ',zvmax 
+  print, 'Actual min and max of data',wmin,' ', wmax
+  print, 'Image fill values = ',zfill
+endif
 ;TJK added this section to print out some statistics about the data distribution. 
     if keyword_set(DEBUG) then begin
       print, 'Statistics about the data distribution'
@@ -1171,15 +1355,19 @@ endif
     ; rebin image data to fit thumbnail size
 ;    if (nimages eq 1) then idat = congrid(idat,tsize,tsize) $
 ;    else idat = congrid(idat,tsize,tsize,nimages)
-
+;help, idat
     if (nimages eq 1) then idat = congrid(idat,tsize,tsize,cubic=0) $
     else begin
        sidat=idat
-       idat=fltarr(tsize,tsize,nimages)
+       data_type = size(idat,/type)
+       ;make the same type of idat array as
+       ;the original vs. assuming float
+       ;otherwise, the comparison w/ zfill doesn't work!
+;       idat=fltarr(tsize,tsize,nimages)
+       idat=make_array(tsize,tsize,nimages,type=data_type)
        for ii=0L,nimages-1 do $
           idat[*,*,ii] = congrid(sidat[*,*,ii],tsize,tsize,cubic=0)
     endelse
-
 
     ; filter out data values outside 3-sigma for better color spread
     if keyword_set(NONOISE) then begin
@@ -1188,7 +1376,7 @@ endif
       w = where((idat lt zvmin),wc)
       if wc gt 0 then begin
         print,'WARNING=filtering values less than 3-sigma from image data...'
-        idat(w) = zvmin ; set pixels to black
+        idat[w] = zvmin ; set pixels to black
         w = 0 ; free the data space
       endif
       w = where((idat gt zvmax),wc)
@@ -1201,7 +1389,7 @@ endif
          diff = zvmax - zvmin
          coffset = red_offset(GIF=GIF,diff)
          print, 'diff = ',diff, ' coffset = ',coffset
-         idat(w) = zvmax - coffset; set pixels to red
+         idat[w] = zvmax - coffset; set pixels to red
         w = 0 ; free the data space
       endif
     endif
@@ -1211,7 +1399,7 @@ endif
 ;   else idat = congrid(idat,tsize,tsize,nimages)
 
     ; scale to maximize color spread
-    idmax=max(idat) & idmin=min(idat) ; RTB 10/96
+;TJK don't need here    idmax=max(idat) & idmin=min(idat) ; RTB 10/96
 
 ;TJK - moved bytscl code down below the deviceopen block, so that the number of colors
 ; is set BEFORE we use it...
@@ -1225,38 +1413,61 @@ endif
        if(reportflag eq 1) then printf,1,'IMAGE=',GIF
        print,'IMAGE=',GIF
       endif else begin
-       if(reportflag eq 1) then printf,1,'GIF=',GIF
-       print,'GIF=',GIF
+        split=strsplit(gif,'/',/extract)
+        outdir='/'
+        for k=0L,n_elements(split)-2 do outdir=outdir+split[k]+'/'
+        print, 'GIF_OUTDIR=',outdir
+        print, 'LONG_GIF=',split[k]
+       ;if(reportflag eq 1) then printf,1,'GIF=',GIF
+       if(reportflag eq 1) then begin
+          printf,1,'GIF_OUTDIR=',outdit
+          printf,1,'LONG_GIF=',split[k]
+       endif  
       endelse
   endif else begin ; open the xwindow
     window,/FREE,XSIZE=xs+xco+axis_size,YSIZE=ys+40+axis_size,TITLE=window_title
   endelse
 
-;can't have these print statements here - they'll mess up the perl scripts that
-;decipher the output between thumbnails and blowups
-;if keyword_set(DEBUG) then begin
-;	print, '!d.n_colors = ',!d.n_colors
-;	print, 'min and max after filtering = ',idmin, ' ', idmax
-;endif
+;*******2/3/2014 TJK new section
+;find out which values in the original idat image data are fill
+;set them to zero below the call to bytscal.
+fill_idx = where((idat eq zfill),fillwc)
 
-;TJK shouldn't need -8 due to the better logic for determining the color
-;offset (at the top of the scale)
-;    idat = bytscl(idat,min=idmin, max=idmax, top=!d.n_colors-8)
-    idat = bytscl(idat,min=idmin, max=idmax, top=!d.n_colors-2)
+image2 = idat ;hold on to original image data (still contains fill data at this point) 
+if (logZ) then begin ;if log, convert data to log before bytscl, otherwise spread of data is lost
+   idat = alog(image2) ; log version(can contain nan)
+   logidmax=max(idat, /nan, min=logidmin) ; don't include nan 
+   idat = bytscl(idat,min=logidmin, max=logidmax, top=!d.table_size-2)
+endif else begin
+   idat = bytscl(idat,min=idmin, max=idmax, top=!d.table_size-2)
+endelse
 
-if keyword_set(DEBUG) then begin
-	bytmin = min(idat, max=bytmax)
-;can't have this print statement here - it will mess up the perl scripts that
-;decipher the output between thumbnails and blowups
-;	print, 'min and max after bytscl = ',bytmin, ' ', bytmax
-endif
+;2/3/2014 TJK Moved the check for fill data to set the index values to
+;zero AFTER the call to bytscl.  Trying to set the image values to
+;some appropriate small value before bytscl never works correctly.
+    if fillwc gt 0 then begin
+;      if keyword_set(DEBUG) then print, 'Number of fill values found, Setting ',fillwc, ' values to 0 (black)'
+      idat[fill_idx] = 0 ; set pixels to black (on scale of 0-255) 
+    endif
+
+;********* end of new section
+
+
+;;TJK shouldn't need -8 due to the better logic for determining the color
+;;offset (at the top of the scale)
+;;    idat = bytscl(idat,min=idmin, max=idmax, top=!d.n_colors-8)
+;2/3/2014 changed this one line to the above new section because data
+;with a wide range that is plotted on a log scal was loosing all of it
+;high and low data in the bytscal conversion.  New code converts to
+;log before calling bytscl
+;    idat = bytscl(idat,min=idmin, max=idmax, top=!d.n_colors-2)
 
 xmargin=!x.margin
 ymargin=!y.margin
 
 if COLORBAR then begin
- if (!x.omargin(1)+!x.margin(1)) lt 10 then !x.margin(1) = 10
- !x.margin(1) = 3
+ if (!x.omargin[1]+!x.margin[1]) lt 10 then !x.margin[1] = 10
+ !x.margin[1] = 3
  plot,[0,1],[0,1],/noerase,/nodata,xstyle=4,ystyle=4
 endif
 
@@ -1318,13 +1529,12 @@ endif
 
 ;end of Rich's code for larger thumbnails
 
-     tv,idat(*,*,j),xpos,ypos,/DEVICE
+     tv,idat[*,*,j],xpos,ypos,/DEVICE
 
      edate = decode_cdfepoch(edat(j)) ;TJK get date for this record
      shortdate = strtrim(strmid(edate, 10, strlen(edate)), 2) ; shorten it
 							      ;& remove blanks
-
-     xyouts, xpos, ypos-10, shortdate, color=!d.n_colors-1, /DEVICE ;
+     xyouts, xpos, ypos-10, shortdate, color=!d.table_size-1, /DEVICE ;
 
      icol=icol+1
     endfor
@@ -1356,16 +1566,17 @@ endif
     endif
     ; subtitle the plot
     project_subtitle,zstruct,window_title,/IMAGE, $
-       TIMETAG=[edat(0),edat(nimages-1)]
+       TIMETAG=[edat[0],edat(nimages-1)]
 
 ; RTB 10/96 add colorbar
 if COLORBAR then begin
   if (n_elements(cCharSize) eq 0) then cCharSize = 0.
    cscale = [idmin, idmax]  ; RTB 12/11
+;print, 'DEBUG, colorscale min/max ',cscale
 ;  cscale = [zvmin, zvmax]
   xwindow = !x.window
 
-  !x.window(1)=0.858   ; TJK added these window sizes 5/4/01
+  !x.window[1]=0.858   ; TJK added these window sizes 5/4/01
   !y.window=[0.13,0.9]
 
   offset = 0.01 
@@ -1374,9 +1585,9 @@ if COLORBAR then begin
 ;TJK changed logz to take log scaling if specified in the master
 ;6/9/2003  colorbar, cscale, ctitle, logZ=0, cCharSize=cCharSize, $ 
 
-  colorbar, cscale, ctitle, logZ=logz, cCharSize=cCharSize, $ 
-        position=[!x.window(1)+offset,      !y.window(0),$
-                  !x.window(1)+offset+0.03, !y.window(1)],$
+ colorbar, cscale, ctitle, logZ=logz, cCharSize=cCharSize, $ 
+        position=[!x.window[1]+offset,      !y.window[0],$
+                  !x.window[1]+offset+0.03, !y.window[1]],$
         fcolor=244, /image
 
   !x.window = xwindow

@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/plot_maps.pro,v 1.27 2006/02/22 22:14:59 johnson Exp johnson $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/plot_maps.pro,v 1.31 2012/05/21 14:47:25 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 7092 $
+;$Revision: 15739 $
 ;+------------------------------------------------------------------------
 ; NAME: PLOT_MAPS
 ; PURPOSE: To plot the geographic maps in various map projections.
@@ -20,6 +20,12 @@
 ; projections:
 ; aitoff (15), az. equid. (6), cyl (8), gnom (5), lamb eq area (4)
 ; merc (9), molle (10), ortho (2), sinsusoidal (14), stero. (1)
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
   
 FUNCTION plot_maps,a,station=station,vlat=vlat,iproj=iproj,lim=lim,$
            latdel=latdel,londel=londel,Ttitle=thetitle,$
@@ -71,9 +77,9 @@ if(SSCWEB) then begin
       ;     lim(2)=90.0
       ;     lim(3)=180.0
       ;   endif
-      limit = [lim(0), lim(1), lim(2), lim(3)]
-      londel = fix((lim(3)-lim(1))/6)
-      latdel = fix((lim(2)-lim(0))/6)
+      limit = [lim[0], lim[1], lim[2], lim[3]]
+      londel = fix((lim[3]-lim[1])/6)
+      latdel = fix((lim[2]-lim[0])/6)
    endif
 endif else begin
    limit = [-90., -180., 90., 180.]
@@ -95,7 +101,7 @@ a=orb_handle(a)  ; Convert handles to data
 ; symcol=83  ; Commented out for overplots
 atags=tag_names(a)
 b = tagindex('GEO_LAT',atags)
-if (b(0) ne -1) then begin
+if (b[0] ne -1) then begin
    vfil=a.geo_lat.fillval
    epoch=a.epoch.dat
    lat=a.geo_lat.dat
@@ -103,9 +109,9 @@ if (b(0) ne -1) then begin
    lnlabel=strtrim(a.geo_lat.source_name,2)
    ; Remove fill-vals form array
    ;  q=where(lat ne vfil,count)
-   ;  epoch=epoch(q)
-   ;  lat=lat(q)
-   ;  lon=lon(q)
+   ;  epoch=epoch[q]
+   ;  lat=lat[q]
+   ;  lon=lon[q]
    count=n_elements(lon)
    alt=fltarr(count)
    cstation=strarr(count)
@@ -125,7 +131,7 @@ if (b(0) ne -1) then begin
 endif
 
 b = tagindex('NorthBtrace_GEO_LAT',atags)
-if (b(0) ne -1) then begin
+if (b[0] ne -1) then begin
    vfil=a.NorthBtrace_GEO_LAT.fillval
    epoch=a.epoch.dat
    lat=a.NorthBtrace_GEO_LAT.dat
@@ -133,9 +139,9 @@ if (b(0) ne -1) then begin
    lnlabel=strtrim(a.NorthBtrace_GEO_LAT.source_name,2)
    ; Remove fill-vals form array
    ;  q=where(lat ne vfil,count)
-   ;  epoch=epoch(q)
-   ;  lat=lat(q)
-   ;  lon=lon(q)
+   ;  epoch=epoch[q]
+   ;  lat=lat[q]
+   ;  lon=lon[q]
    count=(n_elements(lon))
    alt=fltarr(count)
    cstation=strarr(count)
@@ -155,7 +161,7 @@ if (b(0) ne -1) then begin
 endif                  
 
 b = tagindex('SouthBtrace_GEO_LAT',atags)
-if (b(0) ne -1) then begin
+if (b[0] ne -1) then begin
    vfil=a.SouthBtrace_GEO_LAT.fillval
    epoch=a.epoch.dat
    lat=a.SouthBtrace_GEO_LAT.dat
@@ -163,9 +169,9 @@ if (b(0) ne -1) then begin
    lnlabel=strtrim(a.SouthBtrace_GEO_LAT.source_name,2)
    ; Remove fill-vals form array
    ;  q=where(lat ne vfil,count)
-   ;  epoch=epoch(q)
-   ;  lat=lat(q)
-   ;  lon=lon(q)
+   ;  epoch=epoch[q]
+   ;  lat=lat[q]
+   ;  lon=lon[q]
    count=n_elements(lon)
    alt=fltarr(count)
    cstation=strarr(count)
@@ -185,7 +191,7 @@ if (b(0) ne -1) then begin
 endif                   
 
 b = tagindex('GM_LAT',atags)
-if (b(0) ne -1) then begin
+if (b[0] ne -1) then begin
    vfil=a.GM_LAT.fillval
    epoch=a.epoch.dat
    lat=a.GM_LAT.dat
@@ -193,9 +199,9 @@ if (b(0) ne -1) then begin
    lnlabel=strtrim(a.GM_LAT.source_name,2)
    ; Remove fill-vals form array
    ;  q=where(lat ne vfil,count)
-   ;  epoch=epoch(q)
-   ;  lat=lat(q)
-   ;  lon=lon(q)
+   ;  epoch=epoch[q]
+   ;  lat=lat[q]
+   ;  lon=lon[q]
    count=n_elements(lon)
    alt=fltarr(count)
    cstation=strarr(count)
@@ -215,7 +221,7 @@ if (b(0) ne -1) then begin
 endif
 
 b = tagindex('NorthBtrace_GM_LAT',atags)
-if (b(0) ne -1) then begin
+if (b[0] ne -1) then begin
    vfil=a.NorthBtrace_GM_LAT.fillval
    epoch=a.epoch.dat
    lat=a.NorthBtrace_GM_LAT.dat
@@ -223,9 +229,9 @@ if (b(0) ne -1) then begin
    lnlabel=strtrim(a.NorthBtrace_GM_LAT.source_name,2)
    ; Remove fill-vals form array
    ;  q=where(lat ne vfil,count)
-   ;  epoch=epoch(q)
-   ;  lat=lat(q)
-   ;  lon=lon(q)
+   ;  epoch=epoch[q]
+   ;  lat=lat[q]
+   ;  lon=lon[q]
    count=n_elements(lon)
    alt=fltarr(count)
    cstation=strarr(count)
@@ -245,7 +251,7 @@ if (b(0) ne -1) then begin
 endif                   
 
 b = tagindex('SouthBtrace_GM_LAT',atags)
-if (b(0) ne -1) then begin
+if (b[0] ne -1) then begin
    vfil=a.SouthBtrace_GM_LAT.fillval
    epoch=a.epoch.dat
    lat=a.SouthBtrace_GM_LAT.dat
@@ -253,9 +259,9 @@ if (b(0) ne -1) then begin
    lnlabel=strtrim(a.SouthBtrace_GM_LAT.source_name,2)
    ; Remove fill-vals form array
    ;  q=where(lat ne vfil,count)
-   ;  epoch=epoch(q)
-   ;  lat=lat(q)
-   ;  lon=lon(q)
+   ;  epoch=epoch[q]
+   ;  lat=lat[q]
+   ;  lon=lon[q]
    count=n_elements(lon)
    alt=fltarr(count)
    cstation=strarr(count)
@@ -275,7 +281,7 @@ if (b(0) ne -1) then begin
 endif                   
 
 b = tagindex('SM_LAT',atags)
-if (b(0) ne -1) then begin
+if (b[0] ne -1) then begin
    vfil=a.sm_lat.fillval
    epoch=a.epoch.dat
    lat=a.sm_lat.dat
@@ -283,9 +289,9 @@ if (b(0) ne -1) then begin
    lnlabel=strtrim(a.sm_lat.source_name,2)
    ; Remove fill-vals form array
    ;  q=where(lat ne vfil,count)
-   ;  epoch=epoch(q)
-   ;  lat=lat(q)
-   ;  lon=lon(q)
+   ;  epoch=epoch[q]
+   ;  lat=lat[q]
+   ;  lon=lon[q]
    count=n_elements(lon)
    alt=fltarr(count)
    cstation=strarr(count)
@@ -310,11 +316,11 @@ xyouts, 0.8,0.975,proj_nm,/norm,color=1,charsize=charsize
 if(station.num ne 0) then begin
    statcnt=station.num-1
    if(n_elements(limit) ne 0) then begin
-      wco=where((lats ge limit(0)) and (lats le limit(2)) and (lons ge limit(1)) and (lons le limit(3)),wcn)
+      wco=where((lats ge limit[0]) and (lats le limit[2]) and (lons ge limit[1]) and (lons le limit[3]),wcn)
       if(wcn gt 0) then begin
-         stations=stations(wco)
-         lats=lats(wco)
-         lons=lons(wco)
+         stations=stations[wco]
+         lats=lats[wco]
+         lons=lons[wco]
          statcnt=wcn-1
          ; RCJ 01/09/02 Added the 'else statcnt=-1' below. Note that if wco=-1
          ; then lats, lons and stations would not change and would be plotted
@@ -323,8 +329,8 @@ if(station.num ne 0) then begin
    endif
    ;RCJ 01/09/02 Moved the call to xyouts a few lines down. Loop is not needed.
    ;for i=0,statcnt do begin
-      ;;  xyouts,lons(i),lats(i),stations(i),color=symcol
-      ;xyouts,lons(i),lats(i),stations(i),charsize=charsize,color=1
+      ;;  xyouts,lons[i],lats[i],stations[i],color=symcol
+      ;xyouts,lons[i],lats[i],stations[i],charsize=charsize,color=1
    ;endfor
    ;if(n_elements(lats) ne 0) then $
    ;RCJ 01/09/02 Test the value of statcnt too
@@ -341,11 +347,15 @@ if(!D.name eq 'Z') then begin
    top = 255
    bottom = 0
    tvlct, r_curr, g_curr, b_curr, /get
-   r_curr(0) = bottom & g_curr(0) = bottom & b_curr(0) = bottom
-   r_curr(!d.n_colors-1) = top & g_curr(!d.n_colors-1) = top
-   b_curr(!d.n_colors-1) = top
-   r_curr(!p.color) = top & g_curr(!p.color) = top
-   b_curr(!p.color) = top
+   r_curr[0] = bottom & g_curr[0] = bottom & b_curr[0] = bottom
+   ;r_curr(!d.n_colors-1) = top & g_curr(!d.n_colors-1) = top
+   ;b_curr(!d.n_colors-1) = top
+   ;  RCJ 03/15/2011  As in orb_mgr.pro, n_colors -> table_size
+   ;      We are finding problems w/ 'out of range' indices for colortables.
+   r_curr[!d.table_size-1] = top & g_curr[!d.table_size-1] = top
+   b_curr[!d.table_size-1] = top
+   r_curr[!p.color] = top & g_curr[!p.color] = top
+   b_curr[!p.color] = top
    tvlct, r_curr, g_curr, b_curr
 endif
 

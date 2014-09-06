@@ -26,7 +26,12 @@ END
 ;       Rick Burley 
 ; MODIFICATION HISTORY:
 ;       RCJ 03/2001 - Added the functions fuv_trim2 and 3 to this routine. 
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 PRO fuv_read_epoch,epoch,year,month,day,hour,minute,second,millisecond $
               ,ut,doy,file_stub=file_stub

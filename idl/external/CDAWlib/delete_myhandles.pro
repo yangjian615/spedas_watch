@@ -1,9 +1,14 @@
-;$Author: kenb-mac $
-;$Date: 2007-01-24 14:23:38 -0800 (Wed, 24 Jan 2007) $
-;$Header: $
-;$Locker: $
-;$Revision: 225 $
-;-----------------------------------------------------------------------------
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/delete_myhandles.pro,v 1.1 2006/09/12 14:31:58 kovalick Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 ; Prior to destroying or deleting one of the anonymous structures, determine
 ; if any data handles exists, and if so, free them.
 

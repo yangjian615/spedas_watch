@@ -1,14 +1,20 @@
-;$Author: kenb $
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header:  $
-;$Locker: $
-;$Revision: 8 $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/region_filt.pro,v 1.3 2012/05/16 18:48:44 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;Function: region_filt
 ;Purpose: To filter each proton or ion variable by region number - for
 ;the IMP8 MIT dataset.
 ;Author: Tami Kovalick, QSS, September, 16, 2004
 ;Modification: 
 ;
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 ;
 function region_filt, astruct, orig_names, index=index
 
@@ -33,8 +39,8 @@ if keyword_set(index) then begin
   index = index
 endif else begin ;get the 1st vv
 
-  index = vv_tagindx(0)
-  if (vv_tagindx(0) lt 0) then return, -1
+  index = vv_tagindx[0]
+  if (vv_tagindx[0] lt 0) then return, -1
 
 endelse
 
@@ -51,7 +57,7 @@ if (c_0 ne '') then begin ;this should be the real data
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
   d = tagindex('DAT',itags)
-    if (d(0) ne -1) then  real_data = astruct.(var_idx).DAT $
+    if (d[0] ne -1) then  real_data = astruct.(var_idx).DAT $
     else begin
       d = tagindex('HANDLE',itags)
       handle_value, astruct.(var_idx).HANDLE, real_data
@@ -71,7 +77,7 @@ if (c_0 ne '') then begin ;
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
   d = tagindex('DAT',itags)
-    if (d(0) ne -1) then  quality_data = astruct.(var_idx).DAT $
+    if (d[0] ne -1) then  quality_data = astruct.(var_idx).DAT $
     else begin
       d = tagindex('HANDLE',itags)
       handle_value, astruct.(var_idx).HANDLE, region_data
@@ -84,7 +90,7 @@ if (c_0 ne '') then begin ;
 temp = where(region_data ne 1, cnt)
 if (cnt ge 1) then begin
   print, 'found regions we want to exclude ',cnt, 'points'
-  real_data(temp) = fill_val
+  real_data[temp] = fill_val
 endif
 
 

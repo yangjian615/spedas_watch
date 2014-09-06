@@ -1,8 +1,8 @@
 ;$author: $ 
-;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
-;$Header: /home/cdaweb/dev/control/RCS/plot_enaflux5.pro,v 1.13 2006/04/05 14:47:06 klipsch Exp $
-;$Locker:  $
-;$Revision: 15545 $;
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/plot_enaflux5.pro,v 1.17 2012/05/11 20:54:43 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $;
 ;
 ;------------------------------------------------------------------------- 
 ; NAME: plot_enaflux 
@@ -70,9 +70,13 @@
 ;			 4/24/2001 and again 6/19/2001
 ;       Richard Burley   NASA/GSFC/632 Enhanced reverseorder keyword to use
 ;                        6/22/2001     multiple values to apply multiple reversals.
-
-;-----------------------------------------------------------------------------
-
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION plot_enaflux3,etime,image,spin_angle,polar_angle,np,sc_pos_sm, $
 sc_spin_axis_sm,sc_pos_geo,geo_N_sm,nadir,GIF=GIF,WSIZE=WSIZE,$
                   NOCIRCLES=NOCIRCLES,NODIPOLES=NODIPOLES,NOEARTH=NOEARTH,$
@@ -86,7 +90,7 @@ cdf_epoch,etime,year,month,day,hour,minute,sec,/break
 
 ; Make sure a square image
 for i=0,np-1 do begin
-   if (spin_angle(i) ne polar_angle(i)) then begin
+   if (spin_angle[i] ne polar_angle[i]) then begin
       print,' Error: spin angles and polar angles are not the same.'
       return,-1
    endif
@@ -102,14 +106,14 @@ endif
 
 ; Set min/max dimension sizes
 
-pix_size=spin_angle(1)-spin_angle(0)
-x_min=spin_angle(0)-0.5*pix_size
-x_max=spin_angle(np-1)+0.5*pix_size
+pix_size=spin_angle[1]-spin_angle[0]
+x_min=spin_angle[0]-0.5*pix_size
+x_max=spin_angle[np-1]+0.5*pix_size
 y_min=x_min & y_max=x_max
 
 ; Make sure sc_pos_sm is perpendicular to sc_spin_axis_sm
 dotproduct=0.
-for i=0,2 do dotproduct=dotproduct+sc_pos_sm(i)*sc_spin_axis_sm(i)
+for i=0,2 do dotproduct=dotproduct+sc_pos_sm[i]*sc_spin_axis_sm[i]
 ; Note, RB loosened up the normal requirement from 1.e-4 to 1.e-3
 if (abs(dotproduct) gt 1.e-3) then begin
    print,' Error: spin axis not normal to the spacecraft position vector. Dotp=',dotproduct
@@ -121,22 +125,22 @@ endif
 ; vector.  For image looking outward from Earth, z-axis is pointed from the
 ; satellite to the Earth.
 x_sat=fltarr(3) & y_sat=fltarr(3) & z_sat=fltarr(3)
-rspin=sqrt(sc_spin_axis_sm(0)*sc_spin_axis_sm(0)+sc_spin_axis_sm(1)*  $
-           sc_spin_axis_sm(1)+sc_spin_axis_sm(2)*sc_spin_axis_sm(2))
-rs2=(sc_pos_sm(0)*sc_pos_sm(0)) + (sc_pos_sm(1)*sc_pos_sm(1)) + $
-    (sc_pos_sm(2)*sc_pos_sm(2))
+rspin=sqrt(sc_spin_axis_sm[0]*sc_spin_axis_sm[0]+sc_spin_axis_sm[1]*  $
+           sc_spin_axis_sm[1]+sc_spin_axis_sm[2]*sc_spin_axis_sm[2])
+rs2=(sc_pos_sm[0]*sc_pos_sm[0]) + (sc_pos_sm[1]*sc_pos_sm[1]) + $
+    (sc_pos_sm[2]*sc_pos_sm[2])
 rs=sqrt(rs2) & rs_tst=sqrt(rs2-1.)
-z_sat(*)=nadir*sc_pos_sm(*)/rs
+z_sat[*]=nadir*sc_pos_sm[*]/rs
 ; changed to -1 * sc_spin_axis on 2/16 by MC & RB
 ;y_sat(*)=sc_spin_axis_sm(*)/rspin
-y_sat(*)= (-1.0 * sc_spin_axis_sm(*))/rspin
+y_sat[*]= (-1.0 * sc_spin_axis_sm[*])/rspin
 
-x_sat(0)=y_sat(1)*z_sat(2)-y_sat(2)*z_sat(1)       ; x_sat = y_sat x z_sat
-x_sat(1)=y_sat(2)*z_sat(0)-y_sat(0)*z_sat(2)
-x_sat(2)=y_sat(0)*z_sat(1)-y_sat(1)*z_sat(0)
+x_sat[0]=y_sat[1]*z_sat[2]-y_sat[2]*z_sat[1]       ; x_sat = y_sat x z_sat
+x_sat[1]=y_sat[2]*z_sat[0]-y_sat[0]*z_sat[2]
+x_sat[2]=y_sat[0]*z_sat[1]-y_sat[1]*z_sat[0]
 
 ; Rotate satellite frame such that magnetic dipole axis is up (along y-axis)
-ang_rotate=atan(y_sat(2),x_sat(2))-!pi/2 ; angle between dipole axis & y_sat
+ang_rotate=atan(y_sat[2],x_sat[2])-!pi/2 ; angle between dipole axis & y_sat
 ;RB commented the following several lines out
 ;x_sat_new=fltarr(3) & y_sat_new=fltarr(3) & z_sat_new=fltarr(3)
 ;z_sat_new(*)=z_sat(*)
@@ -187,9 +191,9 @@ fcolor = float(ncolor)
 for i=0,np-1 do begin
    for j=0,np-1 do begin
 ; --- MCF begin comment out ---
-;      xn=spin_angle(i)*c_ang_rotate-spin_angle(j)*s_ang_rotate
+;      xn=spin_angle[i]*c_ang_rotate-spin_angle(j)*s_ang_rotate
 ;      xni=(xn-spin_angle(0))/pix_size
-;      yn=spin_angle(i)*s_ang_rotate+spin_angle(j)*c_ang_rotate
+;      yn=spin_angle[i]*s_ang_rotate+spin_angle(j)*c_ang_rotate
 ;      xnj=(yn-spin_angle(0))/pix_size
 ;      result=interpolate(image,[xni,xni],[xnj,xnj],missing=flx_min)
 ;      if (result(0,0) lt flx_min) then result(0,0)=flx_min
@@ -212,12 +216,12 @@ endfor
 x_wsize=600 & y_wsize=650 ; original sizes from meiching
 if keyword_set(WSIZE) then begin ; validate the keyword
   valid=1 & s=size(WSIZE) & ns=n_elements(s)
-  if (s(0) ne 1) or (s(1) ne 2) then valid = 0
-  if (s(ns-2) lt 2) or (s(ns-2) gt 3) then valid = 0
+  if (s[0] ne 1) or (s[1] ne 2) then valid = 0
+  if (s[ns-2] lt 2) or (s[ns-2] gt 3) then valid = 0
   if valid eq 1 then begin
     if (min(wsize) lt 40) or (max(wsize) gt 800) then valid = 0
   endif
-  if valid eq 1 then begin x_wsize=wsize(0) & y_wsize=wsize(1) & endif
+  if valid eq 1 then begin x_wsize=wsize[0] & y_wsize=wsize[1] & endif
 endif
 if keyword_set(NOBORDER) then begin
    im_size=fix(x_wsize/np)*np    ; make sure im_size is multiple of np
@@ -228,7 +232,7 @@ endif
 ; Plot image to Xwindow or GIF
 if keyword_set(GIF) then begin
   s = size(GIF)
-  if (s(n_elements(s)-2) ne 7) then GIF='idl.gif'
+  if (s[n_elements(s)-2] ne 7) then GIF='idl.gif'
   set_plot,'z'
   tvlct,red,green,blue,/get
 ;  loadct, 13
@@ -330,7 +334,7 @@ tv,c_image,sx/200,sy/200   ; display the image    ; MCF add ; RB, added division
 if not keyword_set(NOCOLORBAR) and not keyword_set(NOBORDER) then begin
   tempvar = bytarr(ncolor,2)
   for i=0,ncolor-1 do begin
-    tempvar(i,0) = i+1 & tempvar(i,1) = i+1
+    tempvar[i,0] = i+1 & tempvar[i,1] = i+1
   endfor
   color_bar=congrid(tempvar,ncolor,30)
   tv,color_bar,x0i,0.32*y0i
@@ -354,7 +358,7 @@ endif
 ; Calculate and draw circles at 3 and 6.6 Re at the equator and
 ; draw connections between them
 r=fltarr(3)      &   rp=r        ; MCF add
-three_hr=!pi/4. & ang0=atan(sc_pos_sm(1),sc_pos_sm(0))+!pi
+three_hr=!pi/4. & ang0=atan(sc_pos_sm[1],sc_pos_sm[0])+!pi
 del = 2.0 * !pi / npt & ncpt=16
 xc=fltarr(ncpt) & yc=fltarr(ncpt) & lt_lab=strarr(ncpt)
 for i=1,2 do begin & localtime0=0 ; init
@@ -364,17 +368,17 @@ for i=1,2 do begin & localtime0=0 ; init
         ang = ang0+ii*del 
 ;  	 xe = rc * cos(ang)			;MCF begin comment out
 ;        ye = rc * sin(ang) & r2=xe*xe+ye*ye
-;        re2=(sc_pos_sm(0)-xe)^2+(sc_pos_sm(1)-ye)^2+sc_pos_sm(2)^2
+;        re2=(sc_pos_sm[0]-xe)^2+(sc_pos_sm[1]-ye)^2+sc_pos_sm(2)^2
 ;        re=sqrt(re2) ; dist. ./. satellite. & equator
 ;        cosa=nadir*(rs2+re2-r2)/(2.*rs*re)
 ;        angl=acos(cosa)*180./!pi ;angle subtended in deg
-;        xd=xe*x_sat_new(0)+ye*x_sat_new(1)
-;        yd=xe*y_sat_new(0)+ye*y_sat_new(1)
+;        xd=xe*x_sat_new[0]+ye*x_sat_new[1]
+;        yd=xe*y_sat_new[0]+ye*y_sat_new[1]
 ;        rd=sqrt(xd*xd+yd*yd)			;MCF end comment out
-        r(0) = rc * cos(ang)                            ; MCF begin add
-        r(1) = rc * sin(ang)
-        r(2) = 0.
-        rp(*)=r(*)-sc_pos_sm(*)
+        r[0] = rc * cos(ang)                            ; MCF begin add
+        r[1] = rc * sin(ang)
+        r[2] = 0.
+        rp[*]=r[*]-sc_pos_sm[*]
         re=sqrt(total(rp*rp))               ; dist. ./. satellite. & equator
         xp=total(rp*x_sat)
         yp=total(rp*y_sat)
@@ -385,8 +389,8 @@ for i=1,2 do begin & localtime0=0 ; init
 
         if (angl gt e_rad or re lt rs_tst or nadir eq -1) then begin
            ibehind=-1 ; this point can be seen
-;           ic=ic+1 & e_x(ic)=xd*angl/rd & e_y(ic)=yd*angl/rd	;MCF comment out
-           ic=ic+1 & e_x(ic)=xd   & e_y(ic)=yd                ; MCF add
+;           ic=ic+1 & e_x[ic]=xd*angl/rd & e_y[ic]=yd*angl/rd	;MCF comment out
+           ic=ic+1 & e_x[ic]=xd   & e_y[ic]=yd                ; MCF add
         endif
 
         ang_o_3=fix(ang/three_hr) & test=three_hr*ang_o_3
@@ -395,13 +399,13 @@ for i=1,2 do begin & localtime0=0 ; init
            if (localtime lt 0)  then localtime=localtime+24
            if (localtime gt 24) then localtime=localtime-24
            if (icn eq (i-1) or localtime ne localtime0) then begin ;avoid reps
-              lt_lab(icn)=string(localtime,'(i2.2)')
+              lt_lab[icn]=string(localtime,'(i2.2)')
               if (ibehind eq -1) then begin
-                 xc(icn)=e_x(ic) & yc(icn)=e_y(ic)
+                 xc[icn]=e_x[ic] & yc[icn]=e_y[ic]
               endif else begin ; if behind earth, put point on earth rim
-;                 xc(icn)=xd*e_rad/rd & yc(icn)=yd*e_rad/rd replaced w/ following
+;                 xc[icn]=xd*e_rad/rd & yc[icn]=yd*e_rad/rd replaced w/ following
                  ; line on 12/28 based on email from mei-ching.
-                 xc(icn)=xd*e_rad/angl & yc(icn)=yd*e_rad/angl
+                 xc[icn]=xd*e_rad/angl & yc[icn]=yd*e_rad/angl
               endelse
               icn=icn+2
            endif
@@ -428,17 +432,17 @@ for i=1,2 do begin & localtime0=0 ; init
 
 ;if not keyword_set(NOCIRCLES) then oplot,e_x(0:ic),e_y(0:ic),color=mywhite  ; MCF add
 if not keyword_set(NOCIRCLES) then $
-  oplot, e_x(0:ic), e_y(0:ic), color=!d.table_size-1 
+  oplot, e_x[0:ic], e_y[0:ic], color=!d.table_size-1 
 
 endfor
 
 for i=0,14,2 do begin
    if not keyword_set(NOCIRCLES) then $
-     oplot, xc(i:i+1), yc(i:i+1), color=!d.table_size-1
-   labx=1.1*xc(i+1) & laby=1.1*yc(i+1)
+     oplot, xc[i:i+1], yc[i:i+1], color=!d.table_size-1
+   labx=1.1*xc[i+1] & laby=1.1*yc[i+1]
    if (abs(labx) le x_max and abs(laby) le x_max) then begin
        if not keyword_set(NOCIRCLES) then $
-         xyouts, labx, laby, lt_lab(i+1), color=!d.table_size-1
+         xyouts, labx, laby, lt_lab[i+1], color=!d.table_size-1
    endif
 endfor
 
@@ -458,7 +462,7 @@ for i=1,2 do begin
 ;MCF commented out
 ;                r=rc*sang*sang  & r2=r*r
 ;                xe=r*sang*cphi  & ye=r*sang*sphi & ze=r*cos(ang)
-;                re2=(sc_pos_sm(0)-xe)^2+(sc_pos_sm(1)-ye)^2+(sc_pos_sm(2)-ze)^2
+;                re2=(sc_pos_sm(0)-xe)^2+(sc_pos_sm(1)-ye)^2+(sc_pos_sm[2]-ze)^2
 ;                re=sqrt(re2)  ;dist. ./. sat. & fieldline
 ;                cosa=nadir*(rs2+re2-r2)/(2.*rs*re)
 ;                angl=acos(cosa)*180./!pi  ;angle subtended in deg
@@ -467,10 +471,10 @@ for i=1,2 do begin
 ;                rd=sqrt(xd*xd+yd*yd)
                 r1=rc*sang*sang   ; dipole fieldline equation  ; MCF begin add
                 r2=r1*r1
-                r(0)=r1*sang*cphi
-                r(1)=r1*sang*sphi
-                r(2)=r1*cos(ang)
-                rp(*)=r(*)-sc_pos_sm(*)
+                r[0]=r1*sang*cphi
+                r[1]=r1*sang*sphi
+                r[2]=r1*cos(ang)
+                rp[*]=r[*]-sc_pos_sm[*]
                 re=sqrt(total(rp*rp))    ; dist. ./. satellite.&fieldlines
                 xp=total(rp*x_sat)
                 yp=total(rp*y_sat)
@@ -481,7 +485,7 @@ for i=1,2 do begin
                 if (angl gt e_rad or re lt rs_tst or nadir eq -1) then begin
                    ic=ic+1 ; fieldline point can be seen
 ;                   e_x(ic)=xd*angl/rd & e_y(ic)=yd*angl/rd	;MCF comment out
-                   e_x(ic)=xd   & e_y(ic)=yd                ; MCF add
+                   e_x[ic]=xd   & e_y[ic]=yd                ; MCF add
                 endif
             endfor
 ;TJK, change color keyword value below to !d.n_colors-1 instead of zero
@@ -491,11 +495,11 @@ for i=1,2 do begin
             if not keyword_set(NODIPOLES) then begin
               if (ic gt 0)  then begin
                 if keyword_set(NOCIRCLES) then begin ; need to call plot
-                  plot,e_x(0:ic),e_y(0:ic),position=[x0,y0,x1,y1],$
+                  plot,e_x[0:ic],e_y[0:ic],position=[x0,y0,x1,y1],$
                          xrange=[x_min,x_max],yrange=[y_min,y_max],xticks=1+4,$
                          yticks=1+4,xstyle=1,ystyle=1,$
                          color=!d.table_size-1,/noerase
-                endif else oplot, e_x(0:ic),e_y(0:ic), color=!d.table_size-1
+                endif else oplot, e_x[0:ic],e_y[0:ic], color=!d.table_size-1
               endif
             endif
         endfor
@@ -546,7 +550,7 @@ del = 2.0 * !pi / npt
 if (nadir eq 1) then begin
    for ii = 0,npt do begin
       ang = float(ii) * del
-      e_x(ii) = e_rad * cos(ang) & e_y(ii) = e_rad * sin(ang)
+      e_x[ii] = e_rad * cos(ang) & e_y[ii] = e_rad * sin(ang)
    endfor
    if not keyword_set(NOEARTH) then begin
      if keyword_set(NOCIRCLES) then begin ; must call plot instead of oplot
@@ -560,14 +564,14 @@ if (nadir eq 1) then begin
 ;   ym=(y1+y0)/2. & e_rady=e_rad*(y1-y0)/(y_max-y_min)
    xm=(x1+x0)/2. & e_radx=e_rad*(x1-x0)*2/(180.+x_max-x_min)     ; MCF begin add
    ym=(y1+y0)/2. & e_rady=e_rad*(y1-y0)*2/(180.+y_max-y_min)     ; MCF end add
-   geo_lat=asin(sc_pos_geo(2)/rs)*180./!pi ; geographic lat (deg)
-   geo_lon=atan(sc_pos_geo(1),sc_pos_geo(0))*180./!pi ; geographic lon (deg)
+   geo_lat=asin(sc_pos_geo[2]/rs)*180./!pi ; geographic lat (deg)
+   geo_lon=atan(sc_pos_geo[1],sc_pos_geo[0])*180./!pi ; geographic lon (deg)
 ;MCF commented out
 ;   xN=geo_N_sm(0)*x_sat_new(0)+geo_N_sm(1)*x_sat_new(1)+geo_N_sm(2)*x_sat_new(2)
 ;   yN=geo_N_sm(0)*y_sat_new(0)+geo_N_sm(1)*y_sat_new(1)+geo_N_sm(2)*y_sat_new(2)
 ;   gamma=90. - atan(yN,xN)*180./!pi ; rotation in deg, clockwise from north
-   xN=geo_N_sm(0)*x_sat(0)+geo_N_sm(1)*x_sat(1)+geo_N_sm(2)*x_sat(2) ;MCF begin add
-   yN=geo_N_sm(0)*y_sat(0)+geo_N_sm(1)*y_sat(1)+geo_N_sm(2)*y_sat(2) 
+   xN=geo_N_sm[0]*x_sat[0]+geo_N_sm[1]*x_sat[1]+geo_N_sm[2]*x_sat[2] ;MCF begin add
+   yN=geo_N_sm[0]*y_sat[0]+geo_N_sm[1]*y_sat[1]+geo_N_sm[2]*y_sat[2] 
    gamma=ang_rotate_d+90.-atan(yN,xN)*180./!pi ; rotation(deg), clockwise from N
                                                                      ;MCF end add
    if not keyword_set(NOEARTH) then begin
@@ -582,7 +586,7 @@ endif
 if keyword_set(GIF) then begin
   xscale=!x.s & yscale=!y.s & bytemap=tvrd() & tvlct,r,g,b,/get
   s = size(GIF) & ns = n_elements(s)
-  if s(ns-2) eq 7 then gname = GIF else gname = 'idl.gif'
+  if s[ns-2] eq 7 then gname = GIF else gname = 'idl.gif'
   write_gif,gname,bytemap,r,g,b
   device,/close & set_plot,'X'
 endif
@@ -603,7 +607,7 @@ cdf_epoch,etime,2000,m,d,/compute & etime=etime+48600000
 np=32 & image=fltarr(np,np)
 spin_angle=intarr(np) & polar_angle=intarr(np)
 for i=0,31 do begin ; compute centers of 4x4 pixels
-   spin_angle(i)=-62+i*4 & polar_angle(i)=spin_angle(i)
+   spin_angle[i]=-62+i*4 & polar_angle[i]=spin_angle[i]
 endfor
 nadir=1 ; 1=earthward view, 0=anti-earthward view
 openr,1,imgfile
@@ -612,7 +616,7 @@ sc_spin_axis_sm=fltarr(3)   & s='' & readf,1,s & reads,s,sc_spin_axis_sm
 sc_pos_geo=fltarr(3)        & s='' & readf,1,s & reads,s,sc_pos_geo
 geo_N_sm=fltarr(3)          & s='' & readf,1,s & reads,s,geo_N_sm
 np=32 & image=fltarr(np,np) & s=strarr(205)    & readf,1,s & close,1
-s2='' & for i=0,204 do s2=s2+s(i)  & reads,s2,image
+s2='' & for i=0,204 do s2=s2+s[i]  & reads,s2,image
 s=plot_enaflux3(etime,image,spin_angle,polar_angle,np,sc_pos_sm,$
                 sc_spin_axis_sm,sc_pos_geo,geo_N_sm,nadir,$
                 GIF=GIF,WSIZE=WSIZE,NOCIRCLES=NOCIRCLES,NODIPOLES=NODIPOLES,$
@@ -637,7 +641,7 @@ FUNCTION plot_enaflux,etime,image,fov,resolution,sc_pos_gci,sc_spinaxis_gci,$
 year=0 & month=0 & day=0 & hour=0 & minute=0 & sec=0 ; init params for recalc
 recalc,year,day,hour,min,sec,epoch=etime ; setup conversion values
 ; Create scalar variables required when calling geopack routines
-xgci=sc_pos_gci(0) & ygci=sc_pos_gci(1) & zgci=sc_pos_gci(2)
+xgci=sc_pos_gci[0] & ygci=sc_pos_gci[1] & zgci=sc_pos_gci[2]
 xgse=0.0 & ygse=0.0 & zgse=0.0 & xgsm=0.0 & ygsm=0.0 & zgsm=0.0
 xsm=0.0 & ysm=0.0 & zsm=0.0 & xgeo=0.0 & ygeo = 0.0 & zgeo=0.0
 ;
@@ -655,7 +659,7 @@ sc_pos_geo = [xgeo,ygeo,zgeo] / 6378.14 ; convert to Re
 ; compute what spin_axis should be given the orbit described with right
 ; ascension of the ascending node and inclination.
 if keyword_set(ORBIT) then begin
-  raan = orbit(0) * !dtor & incl = orbit(1) * !dtor
+  raan = orbit[0] * !dtor & incl = orbit[1] * !dtor
   target_ra  = raan - (90.0 * !dtor) & target_dec = (90.0 * !dtor) - incl
   x  = cos(target_dec) * cos(target_ra)
   y  = cos(target_dec) * sin(target_ra)
@@ -665,7 +669,7 @@ if keyword_set(ORBIT) then begin
 endif
 
 ; Convert spacecraft spin axis unit vector from gci to sm.
-xgci=sc_spinaxis_gci(0) & ygci=sc_spinaxis_gci(1) & zgci=sc_spinaxis_gci(2)
+xgci=sc_spinaxis_gci[0] & ygci=sc_spinaxis_gci[1] & zgci=sc_spinaxis_gci[2]
 xgse=0.0 & ygse=0.0 & zgse=0.0 & xgsm=0.0 & ygsm=0.0 & zgsm=0.0
 xsm=0.0 & ysm=0.0 & zsm=0.0
 ; Convert spacecraft position vector from gci to sm
@@ -677,7 +681,7 @@ re = 6378.14 & sc_spinaxis_sm = [xsm/re,ysm/re,zsm/re]
 
 ; if producing debug output then output a dot product analysis
 if keyword_set(DEBUG) then begin
-  dot=fltarr(3) & for i=0,2 do dot(i) = sc_spinaxis_sm(i) * sc_pos_sm(i)
+  dot=fltarr(3) & for i=0,2 do dot[i] = sc_spinaxis_sm[i] * sc_pos_sm[i]
   print,'INFO>plot_enaflux>DOT(pos,spin)=',dot,' = ',total(dot)
 endif
  
@@ -688,18 +692,18 @@ geo_N_sm = [xsm,ysm,zsm] / re
 
 ; Determine the size of the image and verify that it is square
 s = size(image) & ns = n_elements(s)
-if s(0) ne 2 then begin
+if s[0] ne 2 then begin
   print,'ERROR>image parameter is not two dimensional' & return,-1
 endif
 
-if s(1) ne s(2) then begin
+if s[1] ne s[2] then begin
   if not keyword_set(REFORMER) then begin
     print,'ERROR>image parameter is not square and /REFORMER keyword not set'
     return,-1
   endif else begin
-    np = max([s(1),s(2)]) & image = reform(image,np,np)
+    np = max([s[1],s[2]]) & image = reform(image,np,np)
   endelse
-endif else np = s(1)
+endif else np = s[1]
 
 ; Given the field of view and angular resolution (both degrees) of the
 ; instrument which took the image, and assuming that the image is centered
@@ -713,8 +717,8 @@ endif else np = s(1)
 spin_angle = fltarr(np) & polar_angle = fltarr(np)
 start_spin_angle = -1. * fix(0.5 * fov)
 for i=0,np-1 do begin
-  spin_angle(i) = start_spin_angle + (i * resolution) + (0.5 * resolution)
-  polar_angle(i) = spin_angle(i) ; valid estimate because of square image
+  spin_angle[i] = start_spin_angle + (i * resolution) + (0.5 * resolution)
+  polar_angle[i] = spin_angle[i] ; valid estimate because of square image
 endfor
 
 ;
@@ -736,8 +740,7 @@ s = plot_enaflux3(etime,image,spin_angle,polar_angle,np,sc_pos_sm,$
 return,s
 end
 
-pro plot_enaflux5
-end
+
 
 
 

@@ -1,8 +1,8 @@
 ;$author: $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/cdaweb_skymap.pro,v 1.2 2009/11/12 22:13:09 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 7092 $ 
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/cdaweb_skymap.pro,v 1.8 2012/05/14 20:38:41 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $ 
 ;+------------------------------------------------------------------------
 ; NAME: CDAWeb_Skymap
 ; PURPOSE: This Skymap code was given to us by the TWINS project in
@@ -16,9 +16,9 @@
 ;
 ; CALLING SEQUENCE: (sample call from below, making large images)
 ;       
-;        cdaweb_skymap, image, sc_pos = sc_posv_re_eci_dat(*,(frame-1)), $
-;          spin_axis=spin_axis_eci_dat(*,(frame-1)), sun_pos=sun_posv_eci_dat(*,(frame-1)), $
-;          prime_meridian=prime_meridian_eci_dat(*,(frame-1)), lonmin=-88, lonmax=268,latmin=4, $
+;        cdaweb_skymap, image, sc_pos = sc_posv_re_eci_dat[*,(frame-1)], $
+;          spin_axis=spin_axis_eci_dat[*,(frame-1)], sun_pos=sun_posv_eci_dat[*,(frame-1)], $
+;          prime_meridian=prime_meridian_eci_dat[*,(frame-1)], lonmin=-88, lonmax=268,latmin=4, $
 ;          latmax=88, colorbar=0, grid = 1,  $
 ;          field=1, limb=1, sphere = 1, mag = mag, term=1, log=0, norotate=1, noerase=1,ctab=39, exobase=0
 
@@ -616,7 +616,14 @@ if not keyword_set(ps)   then ps   = 0
 if not keyword_set(ctab) then ctab = 0 ;grayscale
 if not keyword_set(annosize) then annosize = 1.0
 
-
+;TJK need to catch when sc_pos values aren't defined - plot w/o field 
+;lines,etc. as per Jillian's instructions
+if (sc_pos[0] eq -9.9999998e+30) then begin
+  print, 'WARNING=CDAWeb_skymap sc_pos is not set, setting field, limb and term to 0'
+  field = 0
+  limb = 0
+  terminator = 0
+endif
 
 if n_elements(sc_pos) ne 3 then begin 
     print, '%SKY.PRO: SC_POS must have three elements'
@@ -631,7 +638,7 @@ if n_params() lt 1 then begin
     return
 endif
 s = size(image)
-if s(0) lt 2 or s(0) gt 3 then begin 
+if s[0] lt 2 or s[0] gt 3 then begin 
     print, '%SKYMAP:Argument must have 2 or 3 dimensions'
     return
 endif
@@ -742,6 +749,7 @@ endif
 
 ;TJK 10/15/2009 - added this code to accept a position w/in a window
 ;                 so that we can make thumbnails... hopefully
+
 if keyword_set(thumb) then begin
 ;Have to switch to normalized coordinates - that's what this code uses 
 ;vs. device
@@ -767,6 +775,10 @@ endif else begin ;regular large plots
 ;print, 'clear out !p.position = ',!p.position
 ;print,  'clear out !p.region = ',!p.region
 
+;print, 'Above map_set call in cdaweb_skymap'
+;print, 'limit = ',limit
+;print, 'xmargin ',xmargin
+;print, 'ymargin ',ymargin
     map_set, p0lat, p0lon, rot, /azimuth, /iso, $
       limit = limit, xmargin = xmargin, ymargin = ymargin,  $
       /noborder, /noerase
@@ -779,14 +791,14 @@ box = 10
 ;; Filter the raw image
 if keyword_set(median) then begin 
     if keyword_set(true) then begin 
-        if (n_elements(image(0, *, 0)) mod 2 eq 0) and $
-          (n_elements(image(0, 0, *)) mod 2 eq 0) then even = 1
-        image(0, *, *) = median(reform(image(0, *, *)), 3, even = even) 
-        image(1, *, *) = median(reform(image(1, *, *)), 3, even = even) 
-        image(2, *, *) = median(reform(image(2, *, *)), 3, even = even) 
+        if (n_elements(image[0, *, 0]) mod 2 eq 0) and $
+          (n_elements(image[0, 0, *]) mod 2 eq 0) then even = 1
+        image[0, *, *] = median(reform(image[0, *, *]), 3, even = even) 
+        image[1, *, *] = median(reform(image[1, *, *]), 3, even = even) 
+        image[2, *, *] = median(reform(image[2, *, *]), 3, even = even) 
     endif else begin 
-        if (n_elements(image(*, 0)) mod 2 eq 0) and $
-          (n_elements(image(0, *)) mod 2 eq 0) then even = 1
+        if (n_elements(image[*, 0]) mod 2 eq 0) and $
+          (n_elements(image[0, *]) mod 2 eq 0) then even = 1
         image = median(image, 3, even = even) 
     endelse 
 endif 
@@ -794,9 +806,9 @@ if keyword_set(lee) then begin
     n = 2
     sig = .4
     if keyword_set(true) then begin  
-        image(0, *, *) = leefilt(reform(image(0, *, *)), n, sig) 
-        image(1, *, *) = leefilt(reform(image(1, *, *)), n, sig)
-        image(2, *, *) = leefilt(reform(image(2, *, *)), n, sig)
+        image[0, *, *] = leefilt(reform(image[0, *, *]), n, sig) 
+        image[1, *, *] = leefilt(reform(image[1, *, *]), n, sig)
+        image[2, *, *] = leefilt(reform(image[2, *, *]), n, sig)
     endif else $
       image = leefilt(image, n, sig)
 endif 
@@ -804,45 +816,60 @@ endif
 ;; Warp and display image
 ;; For 24-bit images
 if keyword_set(true) then begin 
-    r = map_image(reform(image(0, *, *)), sx, sy, xsize, ysize,  $
+    r = map_image(reform(image[0, *, *]), sx, sy, xsize, ysize,  $
                   latmin = latmin, latmax = latmax,  $
                   lonmin = lonmin, lonmax = lonmax, /compress)
-    g = map_image(reform(image(1, *, *)), sx, sy, xsize, ysize,  $
+    g = map_image(reform(image[1, *, *]), sx, sy, xsize, ysize,  $
                   latmin = latmin, latmax = latmax,  $
                   lonmin = lonmin, lonmax = lonmax, /compress)
-    b = map_image(reform(image(2, *, *)), sx, sy, xsize, ysize,  $
+    b = map_image(reform(image[2, *, *]), sx, sy, xsize, ysize,  $
                   latmin = latmin, latmax = latmax,  $
                   lonmin = lonmin, lonmax = lonmax, /compress)
-    wim = bytarr(3, n_elements(r(*, 0)), n_elements(r(0, *)) )
-    wim(0, *, *) = r
-    wim(1, *, *) = g
-    wim(2, *, *) = b
+    wim = bytarr(3, n_elements(r[*, 0]), n_elements(r[0, *]) )
+    wim[0, *, *] = r
+    wim[1, *, *] = g
+    wim[2, *, *] = b
 
 endif else begin 
     
     ;; Save the image to contour for later
-    if (n_elements(image(*, 0)) mod 2 eq 0) and $
-      (n_elements(image(0, *)) mod 2 eq 0) then even = 1
+    if (n_elements(image[*, 0]) mod 2 eq 0) and $
+      (n_elements(image[0, *]) mod 2 eq 0) then even = 1
 
+;print, 'sx, sy and xsize and ysize are undefined before this call'
+;print, 'above map_image calls latmin, latmax = ',latmin, latmax
+;print, 'above map_image calls lonmin, lonmax = ',lonmin, lonmax
     contourimage = median(image, 3, even = even) 
     contourimage = map_image(contourimage, sx, sy, xsize, ysize,  $
                              latmin = latmin, latmax = latmax,  $
                              lonmin = lonmin, lonmax = lonmax, /compress,  $
                              /bilinear)
-    contourimage = smooth(contourimage, box, /edge, /nan)
+;TJK changed from edge to edge_truncate because IDL8.1 offers 3 edge keywords
+;    contourimage = smooth(contourimage, box, /edge, /nan)
+    contourimage = smooth(contourimage, box, /edge_truncate, /nan)
     if keyword_set(log) then contourimage = alog10(contourimage+1e-6)
     
+;print,'After return from 1st map_image, sx and sy are ', sx, sy
+;print, 'above map_image calls xsize and ysize = ',xsize, ysize
+;print, 'above 2nd map_image calls latmin, latmax = ',latmin, latmax
+;print, 'above 2nd map_image calls lonmin, lonmax = ',lonmin, lonmax
     wim = map_image(image, sx, sy, xsize, ysize,  $
                     latmin = latmin, latmax = latmax,  $
                     lonmin = lonmin, lonmax = lonmax, /compress,  $
                     bilinear = bilinear, missing = 0) ;!p.background)
+;print,'After return from 2nd map_image, sx and sy are ', sx, sy
+;print, 'and xsize and ysize = ',xsize, ysize
+
 endelse 
 
 if min(image) lt 0 then print, '% SKYMAP: WARNING: Found pixels < 0.'
 
 ;; Top clip image
 ind = where(wim ge clip, cts)
-if cts gt 0 then wim(ind) = 0
+if cts gt 0 then begin
+;print, 'cliping/setting ',cts,' values to 0'
+wim[ind] = 0
+endif
 
 if keyword_set(log) then begin
     enamax = alog10(max > 1e-1)
@@ -880,14 +907,15 @@ endif
 if keyword_set(smooth) then begin 
     if smooth gt 1 then box = smooth $
     else box = 10
-    wim = smooth(TEMPORARY(wim), box, /edge, /nan)
+;TJK changed from edge to edge_truncate because IDL8.1 offers 3 edge keywords   ; wim = smooth(TEMPORARY(wim), box, /edge, /nan)
+ wim = smooth(TEMPORARY(wim), box, /edge_truncate, /nan)
 endif 
 
 ;; We bytscale WIM here, so that the IMAGE matrix always contains the
 ;; data values
 byteimage = bytscl(TEMPORARY(wim), min = enamin, max = enamax, top = top)
 ind = where(byteimage eq 0B, cts)
-if cts gt 0 then byteimage(ind) = !p.background
+if cts gt 0 then byteimage[ind] = !p.background
 if not keyword_set(noimage) then $ 
   tv, byteimage, sx, sy,  $
   xsize = xsize, ysize = ysize, true = true
@@ -910,7 +938,7 @@ if keyword_set(limb) then begin
                         prime_meridian = prime_meridian, /deg, $
                         earth = earth)
 
-    plots, eb(2, *), eb(1, *), thick = line_thick, /data;, linestyle=1
+    plots, eb[2, *], eb[1, *], thick = line_thick, /data;, linestyle=1
 endif
 
 if keyword_set(exobase) then begin  
@@ -918,7 +946,7 @@ if keyword_set(exobase) then begin
     eb = earth_boundary(sc_pos, spin_axis,  $
                         prime_meridian = prime_meridian, /deg,  $
                         radius = 1.+300./6378.)
-    plots, eb(2, *), eb(1, *)   ;, linestyle = 5
+    plots, eb[2, *], eb[1, *]   ;, linestyle = 5
 endif
 
 if keyword_set(terminator) then begin  
@@ -929,10 +957,10 @@ if keyword_set(terminator) then begin
 
     if n_elements(w) ge 2 then begin
         if annosize ge 4. then $
-          plots, w(2, *), w(1, *),  $
+          plots, w[2, *], w[1, *],  $
           noclip = 0, psym=2 $
         else $
-          plots, w(2, *), w(1, *),  $
+          plots, w[2, *], w[1, *],  $
           noclip = 0, linestyle=1
     endif
 endif
@@ -1006,6 +1034,11 @@ endif                           ;sunspot
 ;        seacolor = seacolor       ;, /pole, /foot
 ;  endif 
 
+;TJK add code to save off the colortable before these fieldlines and
+;others are drawn and then restore them at the bottom. Using a
+;different colortable than original, so purple is a different #.
+    tvlct, orig_r,orig_g,orig_b, /get
+
 if keyword_set(field) then begin  
 ;; Field lines
 ;  Red(color=254)=noon=12LocalTime. Yellow(90)=dusk=18LT.
@@ -1014,10 +1047,7 @@ if keyword_set(field) then begin
     l = [4, 8]
 
     flon = [0, 90, 180, 270]
-;TJK add code to save off the colortable before these fieldlines and
-;others are drawn and then restore them at the bottom. Using a
-;different colortable than original, so purple is a different #.
-    tvlct, orig_r,orig_g,orig_b, /get
+
 ;    purple = 253
     purple = 195
     tvlct, 180, 120, 200, purple
@@ -1026,9 +1056,9 @@ if keyword_set(field) then begin
 ;        if flon[j] eq 0 then ccolor = 254 $
         if flon[j] eq 0 then ccolor = 230 $ ;230 is red in CDAWeb
         else if flon[j] eq 90 then ccolor = purple else ccolor=!p.color
-        line = field_line(st, l(i), flon(j))
+        line = field_line(st, l[i], flon[j])
         if size(line, /n_dim) eq 2 then begin 
-            plots, line(2, *), line(1, *),  thick = line_thick, color=ccolor 
+            plots, line[2, *], line[1, *],  thick = line_thick, color=ccolor 
                                 ;if (flon[j] eq 90 ) then plots, line(2, *), line(1, *),  linestyle=1, thick = line_thick, color= !p.color
                                 ;if (flon[j] eq 0 ) then plots, line(2, *), line(1, *),  linestyle=1, thick = line_thick, color= !p.color
         endif else begin 

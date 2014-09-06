@@ -1,3 +1,9 @@
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 @compile_cdaweb
 
 ;NOTE to users please set the LD_LIBRARY_PATH to the appropriate directories
@@ -28,6 +34,7 @@
 .run jh/time_label.pro
 .run jh/ymd2jd.pro
 
+.compile cdaweb_xdisplayfile
 .compile cdfx_utils
 .compile cdfx_prefs
 .compile cdfx_windowlist

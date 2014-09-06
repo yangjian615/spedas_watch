@@ -88,15 +88,15 @@ PRO ic_gci_to_geo, orb_pos_time, transform_matrix
 ;   Fill the mean of date transformation matrix using the sin and cos
 ;    of the greenwich mean sidereal time
 ;
-	mean_matrix(0,0) = cos_gst
-	mean_matrix(0,1) = -sin_gst
-	mean_matrix(0,2) = 0
-	mean_matrix(1,0) = sin_gst
-	mean_matrix(1,1) = cos_gst
-	mean_matrix(1,2) = 0
-	mean_matrix(2,0) = 0
-	mean_matrix(2,1) = 0
-	mean_matrix(2,2) = 1
+	mean_matrix[0,0] = cos_gst
+	mean_matrix[0,1] = -sin_gst
+	mean_matrix[0,2] = 0
+	mean_matrix[1,0] = sin_gst
+	mean_matrix[1,1] = cos_gst
+	mean_matrix[1,2] = 0
+	mean_matrix[2,0] = 0
+	mean_matrix[2,1] = 0
+	mean_matrix[2,2] = 1
 
 	ic_conv_matrix,orb_pos_time, cmatrix
 
@@ -146,12 +146,12 @@ PRO ic_conv_matrix,orb_pos_time, cmatrix
         R = DOUBLE (1296000.0)
 
 
-;   Convert the given millisecond of day [orb_pos_time(1)] to second of day.
+;   Convert the given millisecond of day [orb_pos_time[1]] to second of day.
 ;   Convert the packed form into year and day-of-year
 
-      secs = (DOUBLE(orb_pos_time(1)))/DOUBLE(1000.0)
-      year = orb_pos_time(0)/1000
-      day  = orb_pos_time(0) MOD 1000
+      secs = (DOUBLE(orb_pos_time[1]))/DOUBLE(1000.0)
+      year = orb_pos_time[0]/1000
+      day  = orb_pos_time[0] MOD 1000
 
 ;
 ;   Calculate the julian date and the time in Julian centuries from J2000
@@ -197,15 +197,15 @@ PRO ic_conv_matrix,orb_pos_time, cmatrix
 ;    EQUINOX OF 1950 AND MEAN EQUATOR AND EQUINOX OF DATE. THIS        
 ;    MATRIX IS CALLED premat.                                          
 ;                                                                      
-      premat(0,0) = -sinzet*sinzee  + coszet*coszee*costhe              
-      premat(0,1) =  coszee*sinzet  + sinzee*costhe*coszet              
-      premat(0,2) =  sinthe*coszet                                      
-      premat(1,0) = -sinzee*coszet  - coszee*costhe*sinzet              
-      premat(1,1) =  coszee*coszet  - sinzee*costhe*sinzet              
-      premat(1,2) = -sinthe*sinzet                                      
-      premat(2,0) = -coszee*sinthe                                      
-      premat(2,1) = -sinzee*sinthe                                      
-      premat(2,2) =  costhe                                             
+      premat[0,0] = -sinzet*sinzee  + coszet*coszee*costhe              
+      premat[0,1] =  coszee*sinzet  + sinzee*costhe*coszet              
+      premat[0,2] =  sinthe*coszet                                      
+      premat[1,0] = -sinzee*coszet  - coszee*costhe*sinzet              
+      premat[1,1] =  coszee*coszet  - sinzee*costhe*sinzet              
+      premat[1,2] = -sinthe*sinzet                                      
+      premat[2,0] = -coszee*sinthe                                      
+      premat[2,1] = -sinzee*sinthe                                      
+      premat[2,2] =  costhe                                             
 
 ;    CALCULATE MEAN OBLIQUITY OF DATE (epso). WHERE TIME IS MEASURED IN
 ;    JULIAN CENTURIES FROM 2000.0.
@@ -225,15 +225,15 @@ PRO ic_conv_matrix,orb_pos_time, cmatrix
       sinepO=sin(epso)                             
       sinpsi=sin(delpsi)                           
 
-      nutmat(0,0)=cospsi                            
-      nutmat(1,0)=-sinpsi*cosepO                    
-      nutmat(2,0)=-sinpsi*sinepO                    
-      nutmat(0,1)=sinpsi*cosep                      
-      nutmat(1,1)=cospsi*cosep*cosepO+sinep*sinepO  
-      nutmat(2,1)=cospsi*cosep*sinepO-sinep*cosepO  
-      nutmat(0,2)=sinpsi*sinep                      
-      nutmat(1,2)=cospsi*sinep*cosepO-cosep*sinepO  
-      nutmat(2,2)=cospsi*sinep*sinepO+cosep*cosepO  
+      nutmat[0,0]=cospsi                            
+      nutmat[1,0]=-sinpsi*cosepO                    
+      nutmat[2,0]=-sinpsi*sinepO                    
+      nutmat[0,1]=sinpsi*cosep                      
+      nutmat[1,1]=cospsi*cosep*cosepO+sinep*sinepO  
+      nutmat[2,1]=cospsi*cosep*sinepO-sinep*cosepO  
+      nutmat[0,2]=sinpsi*sinep                      
+      nutmat[1,2]=cospsi*sinep*cosepO-cosep*sinepO  
+      nutmat[2,2]=cospsi*sinep*sinepO+cosep*cosepO  
 
 ;    CALCULATE ELEMENTS OF nutmat * premat.  THIS MATRIX IS THE 
 ;    ANALYTICALLY CALCULATED TRANSFORMATION MATRIX, WHICH WILL  
@@ -290,43 +290,43 @@ PRO ic_get_nut_angles,time,deleps,delpsi,eps
 ;    DE200 PLANETARY EPHEMERIS.
 
 
-      ifunar(0,0:79) = [0,0,2,-2,2, 0,2,-2,2,0, 2,2,2,0,2, 0,0,2,0,0, $
+      ifunar[0,0:79] = [0,0,2,-2,2, 0,2,-2,2,0, 2,2,2,0,2, 0,0,2,0,0, $
                 2,0,2,0,0, -2,-2,0,0,2, 2,0,2,2,0, 2,0,0,0,2, $
                 2,2,0,2,2,  2,2,0,0,2,  0,2,2,2,0, 2,0,2,2,0, $
                 0,2,0,-2,0, 0,2,2,2,0,  2,2,2,2,0, 0,0,2,0,0]
-      ifunar(0,80:105) = [2,2,0,2,2,  2,4,0,2,2,  0,4,2,2,2, 0,-2,2,0,-2, $
+      ifunar[0,80:105] = [2,2,0,2,2,  2,4,0,2,2,  0,4,2,2,2, 0,-2,2,0,-2, $
                 2,0,-2,0,2, 0]
 
-      ifunar(1,0:79) = [1,2,1,0,2, 0,1,1,2,0,  2,2,1,0,0, 0,1,2,1,1, $
+      ifunar[1,0:79] = [1,2,1,0,2, 0,1,1,2,0,  2,2,1,0,0, 0,1,2,1,1, $
                 1,1,1,0,0, 1,0,2,1,0,  2,0,1,2,0, 2,0,1,1,2, $
                 1,2,0,2,2, 0,1,1,1,1,  0,2,2,2,0, 2,1,1,1,1, $
                 0,1,0,0,0, 0,0,2,2,1,  2,2,2,1,1, 2,0,2,2,0]
-      ifunar(1,80:105) = [2,2,0,2,1, 2,2,0,1,2,  1,2,2,0,1, 1,1,2,0,0, $
+      ifunar[1,80:105] = [2,2,0,2,1, 2,2,0,1,2,  1,2,2,0,1, 1,1,2,0,0, $
                 1,1,0,0,2, 0]
 
-      ifunar(2,0:79) = [0,0,0,0,0, -1,-2,0,0,1,  1,-1,0,0,0, 2,1,2,-1,0, $
+      ifunar[2,0:79] = [0,0,0,0,0, -1,-2,0,0,1,  1,-1,0,0,0, 2,1,2,-1,0, $
                -1,0,1,0,1,  0,1,1,0,1,   0,0,0,0,0,  0,0,0,0,0, $
                 0,0,0,0,0,  0,0,0,0,0,	 1,1,-1,0,0, 0,0,0,0,0, $
                -1,0,1,0,0,  1,0,-1,-1,0, 0,-1,1,0,0, 0,0,0,0,0]
-      ifunar(2,80:105) = [0,0,0,1,0,  0,0,-1,0,0,  0,0,0,0,1, -1,0,0,1,0,	$
+      ifunar[2,80:105] = [0,0,0,1,0,  0,0,-1,0,0,  0,0,0,0,1, -1,0,0,1,0,	$
                -1,1,0,0,0,  1]
 
-      ifunar(3,0:79) = [0,0,-2,2,-2, 1,0,2,0,0,    0,0,0,2,0,   0,0,0,0,-2, $
+      ifunar[3,0:79] = [0,0,-2,2,-2, 1,0,2,0,0,    0,0,0,2,0,   0,0,0,0,-2, $
                 0,2,0,1,2,   0,0,0,-1,0,   0,1,0,1,1,  -1,0,1,-1,-1, $
                 1,0,2,1,2,   0,-1,-1,1,-1, 1,0,0,1,1,   2,0,0,1,0, $
                 1,2,0,1,0,   1,1,1,-1,-2,  3,0,1,-1,2,  1,3,0,-1,1]
-      ifunar(3,80:105) = [-2,-1,2,1,1, -2,-1,1,2,2,   1,0,3,1,0,  -1,0,0,0,1, $
+      ifunar[3,80:105] = [-2,-1,2,1,1, -2,-1,1,2,2,   1,0,3,1,0,  -1,0,0,0,1, $
                 0,1,1,2,0,   0]
 
-      ifunar(4,0:79) = [0,0,0,0,0,    -1,-2,0,-2,0, -2,-2,-2,-2,-2, 0,0,-2,0,2, $
+      ifunar[4,0:79] = [0,0,0,0,0,    -1,-2,0,-2,0, -2,-2,-2,-2,-2, 0,0,-2,0,2, $
                -2,-2,-2,-1,-2, 2,2,0,1,-2,   0,0,0,0,-2,    0,2,0,0,2, $
                 0,2,0,-2,0,    0,0,2,-2,2,  -2,0,0,2,2,    -2,2,2,-2,-2, $
                 0,0,-2,0,1,    0,0,0,2,0,    0,2,0,-2,0,    0,0,1,0,-4]
-      ifunar(4,80:105) = [2,4,-4,-2,2,   4,0,-2,-2,2,  2,-2,-2,-2,0,  2,0,-1,2,-2, $
+      ifunar[4,80:105] = [2,4,-4,-2,2,   4,0,-2,-2,2,  2,-2,-2,-2,0,  2,0,-1,2,-2, $
                 0,-2,2,2,4,    1]
 
 
-      isinco(0,0:79) = [-171996.,2062.,46.,11.,-3.,   -3.,-2.,1.,-13187.,1426.,	$
+      isinco[0,0:79] = [-171996.,2062.,46.,11.,-3.,   -3.,-2.,1.,-13187.,1426.,	$
                 -517.,217.,129.,48.,-22.,     17.,-15.,-16.,-12.,-6., $
                 -5.,4.,4.,-4.,1.,              1.,-1.,1.,1.,-1., $
                 -2274.,712.,-386.,-301.,-158., 123.,63.,63.,-58.,-59., $
@@ -334,16 +334,16 @@ PRO ic_get_nut_angles,time,deleps,delpsi,eps
                 -7.,7.,-7.,-8.,6.,             6.,-6.,-7.,6.,-5., $
                  5.,-5.,-4.,4.,-4.,           -3.,3.,-3.,-3.,-2., $
                 -3.,-3.,2.,-2.,2.,            -2.,2.,2.,1.,-1.]
-       isinco(0,80:105) = [1.,-2.,-1.,1.,-1.,           -1.,1.,1.,1.,-1., $
+       isinco[0,80:105] = [1.,-2.,-1.,1.,-1.,           -1.,1.,1.,1.,-1., $
                 -1.,1.,1.,-1.,1.,              1.,-1.,-1.,-1.,-1., $
                 -1.,-1.,-1.,1.,-1.,            1.]
 
-       isinco(1,0:38) = [-174.2,.2,0.,0.,0.,            0.,0.,0.,-1.6,-3.4, $
+       isinco[1,0:38] = [-174.2,.2,0.,0.,0.,            0.,0.,0.,-1.6,-3.4, $
                  1.2,-.5,.1,0.,0.,            -.1,0.,.1,0.,0., $
                  0.,0.,0.,0.,0.,               0.,0.,0.,0.,0., $
                -.2,.1,-.4,0.,0.,               0.,0.,.1,-.1]
 
-      icosco(0,0:79) = [92025.,-895.,-24.,0.,1.,   0.,1.,0.,5736.,54., $
+      icosco[0,0:79] = [92025.,-895.,-24.,0.,1.,   0.,1.,0.,5736.,54., $
                 224.,-95.,-70.,1.,0.,      0.,9.,7.,6.,3., $
                 3.,-2.,-2.,0.,0.,          0.,0.,0.,0.,0., $
                 977.,-7.,200.,129.,-1.,   -53.,-2.,-33.,32.,26., $
@@ -351,11 +351,11 @@ PRO ic_get_nut_angles,time,deleps,delpsi,eps
                 0.,-3.,3.,3.,0.,          -3.,3.,3.,-3.,3., $
                 0.,3.,0.,0.,0.,            0.,0.,1.,1.,1., $
                 1.,1.,-1.,1.,-1.,          1.,0.,-1.,-1.,0.]
-      icosco(0,80:105) = [-1.,1.,0.,-1.,1.,           1.,0.,0.,-1.,0., $
+      icosco[0,80:105] = [-1.,1.,0.,-1.,1.,           1.,0.,0.,-1.,0., $
                 0.,0.,0.,0.,0.,            0.,0.,0.,0.,0., $
                 0.,0.,0.,0.,0.,            0.]
 
-      icosco(1,0:33) = [8.9,.5,0.,0.,0.,           0.,0.,0.,-3.1,-.1, $
+      icosco[1,0:33] = [8.9,.5,0.,0.,0.,           0.,0.,0.,-3.1,-.1, $
                 -.6,.3,0.,0.,0.,           0.,0.,0.,0.,0., $
                  0.,0.,0.,0.,0.,           0.,0.,0.,0.,0.,	$
                -.5,0.,0.,-.1]
@@ -397,15 +397,15 @@ PRO ic_get_nut_angles,time,deleps,delpsi,eps
 ;    fund(4,1)= L
 ;    fund(5,1)= D
 	
-      fund(0,0)=str*(335778.877E0+(1342.0E0*R+295263.137E0)*time	$
+      fund[0,0]=str*(335778.877E0+(1342.0E0*R+295263.137E0)*time	$
       -13.257E0*T2+1.1E-2*T3)
-      fund(0,1)=str*(450160.280E0-(5.E0*R+482890.539E0)*time+	$
+      fund[0,1]=str*(450160.280E0-(5.E0*R+482890.539E0)*time+	$
       7.455E0*T2+8.0E-3*T3)
-      fund(0,2)=str*(1287099.804E0+(99.0E0*R+1292581.224E0)*time-	$
+      fund[0,2]=str*(1287099.804E0+(99.0E0*R+1292581.224E0)*time-	$
       5.77E-1*T2-1.2E-2*T3)
-      fund(0,3)=str*(485866.733E0+(1325.0E0*R+715922.633E0)*time+	$
+      fund[0,3]=str*(485866.733E0+(1325.0E0*R+715922.633E0)*time+	$
       31.310E0*T2+6.4E-2*T3)
-      fund(0,4)=str*(1072261.307E0+(1236.0E0*R+1105601.328E0)*time-	$
+      fund[0,4]=str*(1072261.307E0+(1236.0E0*R+1105601.328E0)*time-	$
       6.891E0*T2+1.9E-2*T3)
 
 
@@ -434,8 +434,8 @@ PRO ic_get_nut_angles,time,deleps,delpsi,eps
 ;        OF sincof * T AND coscof * T.  THESE COEFFICIENTS ARE IN UNITS
 ;        OF 0.0001 SECONDS OF ARC.                                     
 ;                                                                      
-      T(0,0)=DOUBLE(1.0)
-      T(0,1)=time       
+      T[0,0]=DOUBLE(1.0)
+      T[0,1]=time       
                          
 ;      cofcos = coscof # T
 ;      cofsin = sincof # T                       
@@ -458,8 +458,8 @@ PRO ic_get_nut_angles,time,deleps,delpsi,eps
       cose=cos(arg)
 
       FOR E=0,105 DO BEGIN
-         prodps=cofsin(0,E)*sinp(0,E)                                    
-         prodep=cofcos(0,E)*cose(0,E)                                    
+         prodps=cofsin[0,E]*sinp[0,E]                                    
+         prodep=cofcos[0,E]*cose[0,E]                                    
          sumpsi=sumpsi+prodps                                              
          sumeps=sumeps+prodep  
       ENDFOR
@@ -511,13 +511,13 @@ PRO ic_grnwch_sidereal,orb_pos_time, gst
         TWOPI = DOUBLE(6.283185307179586)      ;Two PI
 
 
-        year = orb_pos_time(0)/1000
-        day  = orb_pos_time(0) MOD 1000
+        year = orb_pos_time[0]/1000
+        day  = orb_pos_time[0] MOD 1000
 
 ;
-;   Convert the given millisecond of day [orb_pos_time(1)] to second of day.
+;   Convert the given millisecond of day [orb_pos_time[1]] to second of day.
 ;
-	secs = (DOUBLE(orb_pos_time(1)))/DOUBLE(1000.0)
+	secs = (DOUBLE(orb_pos_time[1]))/DOUBLE(1000.0)
 
 ;
 ;    Begin calculating the greenwich mean sidereal time **
@@ -543,5 +543,3 @@ PRO ic_grnwch_sidereal,orb_pos_time, gst
 	gst = gst + delpsi*cos(eps+deleps)
 
         END
-pro ic_gci_transf
-end

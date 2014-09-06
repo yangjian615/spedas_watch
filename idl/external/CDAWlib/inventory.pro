@@ -1,9 +1,14 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/inventory.pro,v 1.24 2009/04/08 18:51:11 johnson Exp johnson $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/inventory.pro,v 1.28 2013/09/06 17:17:22 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 7092 $
-;---------------------------------------------------------------------------
+;$Revision: 15739 $
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 FUNCTION striplabel,a
 
@@ -110,7 +115,7 @@ while (NOT EOF(1)) do begin ; read next dataset from file
      master_present = 0L
      if strpos(a,'MASTER') ne -1 then begin ; mastercdf found
        b=strsplit(a,'>',/extract)
-       if (b(1) ne '') then begin
+       if (b[1] ne '') then begin
          ; RCJ 12/11/2003 No longer want cdf_path and cdf_name
 	 ; so commented out most of what's below:
 	 ;
@@ -165,7 +170,7 @@ while (NOT EOF(1)) do begin ; read next dataset from file
      
      ;a=strtrim(a,2)
      b=strsplit(a,'=',/extract)
-     ncdfs=long(b(1))
+     ncdfs=long(b[1])
      ;TJK adding this to allocate the sizes of the cnames, cstarts,etc.
      ; arrays based on the number of cdfs actually present for a given datatype.
      ; RCJ 12/11/2003  No longer need cpaths or cnames
@@ -177,8 +182,8 @@ while (NOT EOF(1)) do begin ; read next dataset from file
      if (master_present) then begin
        ;cpaths(0) = cdf_path 
        ;cnames(0) = cdf_name
-       cstarts(0) = '2099/12/31 00:00:00' 
-       cstops(0) = '2099/12/31 00:00:00'    
+       cstarts[0] = '2099/12/31 00:00:00' 
+       cstops[0] = '2099/12/31 00:00:00'    
      endif
      if keyword_set(DEBUG) then print,'    reading ',ncdfs,' cdfs...'
      for i=0L,ncdfs-1 do begin ; read each cdf line
@@ -199,18 +204,18 @@ while (NOT EOF(1)) do begin ; read next dataset from file
        ;are exactly the same, then we don't want to include this CDF as a valid
        ;CDF. TJK 7/20/1999
 
-       if (b(1) ne b(2)) then begin
-         cstarts(i) = b(1)
-         cstops(i)  = b(2)
+       if (b[1] ne b[2]) then begin
+         cstarts(i) = b[1]
+         cstops(i)  = b[2]
 ;TJK 8/22/2005 - new section to record whether file has recently been
 ;                put on the system or not - we want to color code this
 ;                on the inventory plot
-         cdf_info = file_info(b(0)) ;file_info was added in IDL6.0/1, so not backward compatible.
+         cdf_info = file_info(b[0]) ;file_info was added in IDL6.0/1, so not backward compatible.
          cdf_date = bin_date(systime(0,cdf_info.mtime))
-         year = cdf_date(0)
-         mm = cdf_date(1)
+         year = cdf_date[0]
+         mm = cdf_date[1]
          if (((year eq 2003) and (mm gt 9)) or (year ge 2004)) then begin
-;DEBUG        print, 'file ', b(0), 'put on system since 2003 Sept: ',cdf_date
+;DEBUG        print, 'file ', b[0], 'put on system since 2003 Sept: ',cdf_date
              recent(i) = 1
          endif else recent(i) = 0
 
@@ -237,10 +242,15 @@ while (NOT EOF(1)) do begin ; read next dataset from file
 ;updated recently
 ;     BETA = create_struct('GATTRS',gattrs,'CSTARTS',cstarts,'CSTOPS',cstops)
      BETA = create_struct('GATTRS',gattrs,'CSTARTS',cstarts,'CSTOPS',cstops,'RECENT',recent)
+     
+     ; RCJ 02/2012  Some dataset names have '-' in them which is not allowed in idl structures, so replacing those with '_'
+     dset=strjoin(strsplit(gattrs.DATASET,'-',/extract),'_')
      if (DATASET_counter eq 0) then $
-       ALPHA = create_struct(gattrs.DATASET,temporary(BETA)) $
+       ;ALPHA = create_struct(gattrs.DATASET,temporary(BETA)) $
+       ALPHA = create_struct(dset,temporary(BETA)) $
      else begin
-       GAMMA = create_struct(gattrs.DATASET,temporary(BETA)) ; attach to logical source tag
+       ;GAMMA = create_struct(gattrs.DATASET,temporary(BETA)) ; attach to logical source tag
+       GAMMA = create_struct(dset,temporary(BETA)) ; attach to logical source tag
        ;commented out the clearing because they are causing
        ; "% Unable to free memory: freeing string memory. No such device or address"
        ;    beta = 0B; TJK clear out this structure
@@ -333,11 +343,11 @@ if (keyword_set(START_TIME) and keyword_set(STOP_TIME)) then begin
        b = a.(i).cstarts(w) 
        c = a.(i).cstops(w)
        time = a.(i).recent(w)
-       if (b(0) eq '') then begin ; b(0) is cstarts for mastercdf
+       if (b[0] eq '') then begin ; b[0] is cstarts for mastercdf
          use(i) = 0 
          m=0
        endif else begin
-         if (b(0) eq '2099/12/31 00:00:00') then m=1 else m=0
+         if (b[0] eq '2099/12/31 00:00:00') then m=1 else m=0
          if (m eq 1) and (n_elements(b) eq 1) then begin
             use(i) = 0 
          endif else begin
@@ -388,9 +398,9 @@ endif else begin ;start_time and stop_time keywords not specified
        b = a.(i).cstarts(w) 
        c = a.(i).cstops(w)
        time = a.(i).recent(w)
-       if (b(0) eq '') then use(i) = 0 $
+       if (b[0] eq '') then use(i) = 0 $
        else begin
-         if (b(0) eq '2099/12/31 00:00:00') then m=1 else m=0
+         if (b[0] eq '2099/12/31 00:00:00') then m=1 else m=0
          if (m eq 1) and (n_elements(b) eq 1) then use(i) = 0 $
          else begin
            use(i) = 1
@@ -488,8 +498,8 @@ for i=0L,ntags-1 do begin
     ; RCJ 09/30/02 Want to test c(0) too. This problem came up when we decided
     ; to have smaller range inventory plots. All b's were set to a new starting
     ; time before getting here so the condition never existed.
-    if (b(0) eq '2099/12/31 00:00:00') $
-    or (c(0) eq '2099/12/31 00:00:00') then begin
+    if (b[0] eq '2099/12/31 00:00:00') $
+    or (c[0] eq '2099/12/31 00:00:00') then begin
       ;sizeb = n_elements(b)-1 
       ;sizec = n_elements(c)-1
       b = b(1:n_elements(b)-1) 
@@ -560,7 +570,7 @@ for i=0L,ntags-1 do begin
     ; Fill in bar array for those days where data exists for current dataset
     save_color = color
     for j=0L, n_elements(e)-1 do begin
-      if ((e(j)-bjul) gt (f(j)-bjul)) then print, ' bad file ', j
+      if keyword_set(debug) then if ((e(j)-bjul) gt (f(j)-bjul)) then print, ' bad file ', j
       ;TJK try to assign a different color to new files
       if (time(j) eq 1) then color = 100 else color = save_color
       ;TJK put in following check - 5/5/1999
@@ -578,9 +588,10 @@ if keyword_set(FIVEYEAR) then print, 'DEBUG, FIVEYEAR being requested'
 if keyword_set(GIF) then begin
   myGIF=GIF 
   ; RCJ 12/11/2003. Added xsize=800
-  s = bar_chart(bar_names,bars,times,TITLE=mytitle,GIF=myGIF,xsize=800,BIGPLOT=bigplot,$
+  ; RCJ 05/27/2014  Changed: xsize=1100
+  s = bar_chart(bar_names,bars,times,TITLE=mytitle,GIF=myGIF,xsize=1100,BIGPLOT=bigplot,$
       FIVEYEAR=fiveyear,COLORNEW=colornew,long_line=long_line,wide_margin=wide_margin)
-endif else s = bar_chart(bar_names,bars,times,TITLE=mytitle,xsize=800,BIGPLOT=bigplot, $
+endif else s = bar_chart(bar_names,bars,times,TITLE=mytitle,xsize=1100,BIGPLOT=bigplot, $
                FIVEYEAR=fiveyear,COLORNEW=colornew,long_line=long_line,wide_margin=wide_margin)
 ;try to free up memory
 help, bars, times
@@ -652,9 +663,9 @@ for i=0L,n_elements(tag_names(a))-1 do begin
     b = a.(i).cstarts(w) 
     c = a.(i).cstops(w)
     ;print, 'b, c', b, c
-    if (b(0) eq '')AND(c(0) eq '') then use(i) = 0 $
+    if (b[0] eq '')AND(c[0] eq '') then use(i) = 0 $
     else begin
-      if (b(0) eq '2099/12/31 00:00:00') then m=1 else m=0
+      if (b[0] eq '2099/12/31 00:00:00') then m=1 else m=0
       if (m eq 1)AND(n_elements(b) eq 1) then use(i) = 0 $
       else begin
         use(i) = 1
@@ -698,9 +709,9 @@ for i=0L,n_elements(tag_names(a))-1 do begin
     b = a.(i).cstarts(w) 
     c = a.(i).cstops(w)
 ;	print, 'b, c', b, c
-    if (b(0) eq '')AND(c(0) eq '') then use(i) = 0 $
+    if (b[0] eq '')AND(c[0] eq '') then use(i) = 0 $
     else begin
-      if (b(0) eq '2099/12/31 00:00:00') then m=1 else m=0
+      if (b[0] eq '2099/12/31 00:00:00') then m=1 else m=0
       if (m eq 1)AND(n_elements(b) eq 1) then use(i) = 0 $
       else begin
         use(i) = 1
@@ -774,7 +785,7 @@ for i=0L,ntags-1 do begin
     w = where(a.(order(i)).cstarts ne '')
     b = a.(order(i)).cstarts(w) 
     c = a.(order(i)).cstops(w)
-    if (b(0) eq '2099/12/31 00:00:00') then begin
+    if (b[0] eq '2099/12/31 00:00:00') then begin
       sizeb = n_elements(b)-1 
       sizec = n_elements(c)-1
       b = b(1:sizeb) 
@@ -815,7 +826,7 @@ for i=0L,ntags-1 do begin
     endfor
     ; Fill in bar array for those days where data exists for current dataset
     for j=0L, n_elements(e)-1 do begin
-	if ((e(j)-bjul) gt (f(j)-bjul)) then print, ' bad file ', j
+	if keyword_set(debug) then if ((e(j)-bjul) gt (f(j)-bjul)) then print, ' bad file ', j
 ;TJK put in following check - 5/5/1999
       if ((e(j)-bjul) le (f(j)-bjul)) then bars(index,(e(j)-bjul):(f(j)-bjul)) = color
     endfor

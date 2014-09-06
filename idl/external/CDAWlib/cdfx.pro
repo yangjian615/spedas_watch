@@ -1,3 +1,58 @@
+function get_times_for_object,a
+
+; In order to plot or list all vars in an object we need the smallest time frame that will contain
+; all of the vars's data. Different resolutions, for example, cause problems.
+; Input is the structure a, output is a 2 element array containing start time and stop time.
+
+
+mega=parse_mydepend0(a)
+atags=tag_names(mega)
+;print,'mega.num = ',mega.num
+if (mega.num eq 1) then begin  ; only one depend_0
+  ;print,'only one depend0!!!!'
+  atags=tag_names(a)
+  for i=0,n_elements(atags)-1 do begin
+   ;print,' cdftype = ',a.(i).cdftype
+   if ((a.(i).cdftype eq 'CDF_EPOCH') or (a.(i).CDFTYPE eq 'CDF_EPOCH16') or $
+   (a.(i).CDFTYPE eq 'CDF_TIME_TT2000')) then begin
+     d=get_mydata(a,i)
+     tt=d
+     start_tt=tt[0]
+     end_tt=tt[n_elements(tt)-1]
+     this_time=i
+   endif    
+  endfor
+ ;help,d
+endif else begin  ;  have to compare time ranges and take time range in common, so both data can be plotted.
+ ; for example, if one is [4,5,6,7,8,9] and other is [2,3,4,5,6,7], final time will be [4,5,6,7]
+ handle_value,mega.(1).(0).handle,tt
+ start_tt=tt[0]
+ end_tt=tt[n_elements(tt)-1]
+ ;print,'start, end = ',start_tt, ' * ',end_tt
+ for j=2,mega.num-1 do begin
+   handle_value,mega.(j).(0).handle,tt
+   ;print,tt[0:10]
+   if tt[0] gt start_time then begin
+      start_tt=tt[0]
+      d=tt
+      this_time=j
+   endif
+   if tt[n_elements(tt)-1] lt stop_time then begin
+      end_tt=tt[n_elements(tt)-1]
+      d=tt
+      this_time=j
+   endif
+ endfor  
+ ;handle_value,a.epoch.handle,tt
+endelse
+;  recycling tt :
+tt=[start_tt,end_tt]
+
+return,tt	
+end
+
+;-----------------------------------------------------------------------------
+
 pro Restore_Objects_Event, event
 
 common cdfxcom, CDFxwindows, CDFxprefs ; include cdfx common
@@ -39,7 +94,7 @@ end
 PRO restore_dataobjects, GROUP=GROUP
 
 fnames = cdfx_file_search('*.sav')
-if fnames(0) eq '' then begin
+if fnames[0] eq '' then begin
   ok = dialog_message(/error, [$
     'No data objects found.  Cannot restore.', $
     '(CDFx objects are stored in .sav files in', $
@@ -92,7 +147,7 @@ widget_control, event.top, get_uvalue=a
 child = widget_info(event.top, /child)
 widget_control, child, get_uvalue=b
 widget_control, b.list, get_uvalue=vnames
-vname = str_sep(vnames(b.vnum), ' ')
+vname = str_sep(vnames[b.vnum], ' ')
 vname = strtrim(vname[0], 2)
 
 return, {orig:a, ti:tagindex(vname, tag_names(a)), $
@@ -106,7 +161,7 @@ pro cdfx_DataObject_Event, event
 common cdfxcom, CDFxwindows, CDFxprefs ; include cdfx common
 
 tnames = tag_names(event)
-if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
+if tnames[3] eq 'VALUE' then begin ; must be from pull down menu
   case event.value of
 
     'Object Actions>.Save Object.as IDL save file' : begin
@@ -117,8 +172,8 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
         widget_control,event.top,get_uvalue=a
         olabel=strtrim(olabel,2)
         s = break_mystring(olabel,delimiter=' ')
-        t = break_mystring(s(2),delimiter='/')
-        u = s(0)+'_'+t(0)+t(1)+t(2)+'.sav'
+        t = break_mystring(s[2],delimiter='/')
+        u = s[0]+'_'+t[0]+t[1]+t[2]+'.sav'
         print,'Creating the save file:',u
         save_mystruct,a,u
         a = 0  ; free memory
@@ -132,8 +187,8 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
         widget_control,event.top,get_uvalue=a
         olabel=strtrim(olabel,2)
         s = break_mystring(olabel,delimiter=' ')
-        t = break_mystring(s(2),delimiter='/')
-        u = s(0)+'_'+t(0)+t(1)+t(2)+'.cdf'
+        t = break_mystring(s[2],delimiter='/')
+        u = s[0]+'_'+t[0]+t[1]+t[2]+'.cdf'
         print,'Creating the cdf file:',u
 
 ;        s = cdfx_write_mycdf(a,u)  ;!!
@@ -146,8 +201,32 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
         widget_control,event.top,get_uvalue=a
         print,'Generating list file...'
         widget_control,/hourglass
-        s = list_mystruct(a,filename='cdfx.txt',/NOGATT,MAXRECS=950)
-        if s ne -1 then xdisplayfile,'cdfx.txt'
+        ;s = list_mystruct(a,filename='cdfx.txt',/NOGATT,MAXRECS=950)
+ 	;'RCJ 11/01/2012: Code below assumes var epoch is always present'
+	;handle_value,a.epoch.handle,tt
+	; RCJ 12/11/2012: not anymore. Now looking for depend_0
+	;print,'In cdfx. list object.'
+        tt=get_times_for_object(a)
+        parts1=strsplit(decode_cdfepoch(tt[0],/incl_mmm),'.',/extract)                ; want to get the msec part
+	parts2=strsplit(decode_cdfepoch(tt[1],/incl_mmm),'.',/extract ) ; want to get the msec part
+	; LIST_mystruct only accepts msec. No usec, nsec or psec
+	; RCJ 11/13/2012  Added 1 to stop_msec so we don't miss data. For example, if stop_msec=999
+	;   we miss the data for stop_msec=999.123, 999.567, 999.999 for example
+	cd,current=cwd
+        ;s = list_mystruct(a,filename='cdfx.txt',/NOGATT,MAXRECS=950,tstart=decode_cdfepoch(tt[0]), tstop=decode_cdfepoch(tt[n_elements(tt)-1]) )
+        ;s = list_mystruct(a,/novatt, /norv,filename=CDFxprefs.cdf_path+'cdfx.txt',tstart=decode_cdfepoch(tt[0]), $
+        s = list_mystruct(a,/novatt, /norv,filename=cwd+'/cdfx.txt',tstart=decode_cdfepoch(tt[0]), $
+	                  tstop=decode_cdfepoch(tt[1]),start_msec=parts1[1], stop_msec=parts2[1]+1 )
+        ;if s ne -1 then xdisplayfile,'cdfx.txt'
+	if s[0] eq 0 then begin
+	   ;xdisplayfile,'cdfx.txt'
+	   cdaweb_xdisplayfile,'cdfx.txt'
+	   ;resp = dialog_message(/info, $
+           ;  "Listing saved in file cdfx.txt")
+	endif else begin
+	   resp = dialog_message(/info, $
+             "Failed writing to file cdfx.txt")
+	endelse     
         end
 
     'Object Actions>.Time Filter'                  : begin
@@ -159,8 +238,17 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
     'Object Actions>.Plot Object.as an Xwindow'    : begin
         widget_control,/hourglass
         widget_control,event.top,get_uvalue=a
+        ;s = plotmaster(a, xsize=600, /cdaweb, /auto, /slow, /smooth,$
+        ;  debug=CDFxprefs.debug)
+	;'RCJ 11/01/2012: Code below assumes var epoch is always present'
+	;handle_value,a.epoch.handle,tt
+	;print,'In cdfx.pro, plot object xwindow.'
+        tt=get_times_for_object(a)
         s = plotmaster(a, xsize=600, /cdaweb, /auto, /slow, /smooth,$
-          debug=CDFxprefs.debug)
+             debug=CDFxprefs.debug, tstart=decode_cdfepoch(tt[0],/incl_mmm), $
+	     tstop=decode_cdfepoch(tt[1],/incl_mmm) )
+        if s ne 0 then $
+           rsp = dialog_message(/error, 'Unable to plot variable!')
         end
 
     'Object Actions>.Plot Object.as a GIF file': begin
@@ -169,11 +257,18 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
 	cd,current=cwd
         if strupcase(!version.os_family) eq 'WINDOWS' then $
 	    cwd=cwd+'\' else cwd=cwd+'/'
-	print,'does this path work under windows? writing gif under: ',cwd
+	;print,'does this path work under windows? writing gif under: ',cwd
+        ;s = plotmaster(a,xsize=600,/auto,/slow,/smooth,/GIF,/cdaweb,$
+        ;  outdir=cwd, debug=CDFxprefs.debug)
+        ;  ;outdir='./', debug=CDFxprefs.debug)
+	;'RCJ 11/01/2012: Code below assumes var epoch is always present'
+	;handle_value,a.epoch.handle,tt
+	;print,'In cdfx.pro, plot object gif.'
+        tt=get_times_for_object(a)
         s = plotmaster(a,xsize=600,/auto,/slow,/smooth,/GIF,/cdaweb,$
-          outdir=cwd, debug=CDFxprefs.debug)
-          ;outdir='./', debug=CDFxprefs.debug)
-       ok = dialog_message(/info, 'GIF image saved.')
+          outdir=cwd, debug=CDFxprefs.debug, tstart=decode_cdfepoch(tt[0],/incl_mmm), tstop=decode_cdfepoch(tt[1],/incl_mmm) )
+        if s ne 0 then rsp = dialog_message(/error, 'Unable to plot object!') else $
+	    ok = dialog_message(/info, 'GIF image saved.')
         end
 
     'Object Actions>.Close Object': begin
@@ -194,8 +289,8 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
 ;        child = widget_info(event.top,/child)
 ;        widget_control,child,get_uvalue=b
 ;        widget_control,b.list,get_uvalue=vnames
-;        vname = str_sep(vnames(b.vnum),' ')
-;        vname = strtrim(vname(0),2)
+;        vname = str_sep(vnames[b.vnum],' ')
+;        vname = strtrim(vname[0],2)
 
 	a = cdfx_object_from_event(event)
         cdfx_editvattrs, a.orig, a.vname, group=event.top
@@ -207,8 +302,8 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
 ;        child = widget_info(event.top,/child)
 ;        widget_control,child,get_uvalue=b
 ;        widget_control,b.list,get_uvalue=vnames
-;        vname = str_sep(vnames(b.vnum),' ')
-;        vname = strtrim(vname(0),2)
+;        vname = str_sep(vnames[b.vnum],' ')
+;        vname = strtrim(vname[0],2)
 ;        ti = tagindex(vname,tag_names(a))
 
 	a = cdfx_object_from_event(event)
@@ -217,16 +312,76 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
 
     'Variable Actions>.List Variable'        : begin
         a = cdfx_object_from_event(event)
-	s = list_mystruct(a.pruned, /novatt, /norv, file=a.vname+'.list')
-	resp = dialog_message(/info, $
-          "Listing saved in file '" + a.vname + ".list'")
+	;s = list_mystruct(a.pruned, /novatt, /norv, file=a.vname+'.list')
+	;resp = dialog_message(/info, $
+        ;  "Listing saved in file '" + a.vname + ".list'")
+	;'RCJ 11/01/2012: Code below assumes var epoch is always present'
+ 	;handle_value,a.pruned.epoch.handle,tt
+        ;print,'In cdfx, list variable.'
+	mega=parse_mydepend0(a.pruned)
+	handle_value,a.pruned.(mega.num).handle,tt
+	;help,tt
+        parts1=strsplit(decode_cdfepoch(tt[0],/incl_mmm),'.',/extract)                ; want to get the msec part
+	parts2=strsplit(decode_cdfepoch(tt[n_elements(tt)-1],/incl_mmm),'.',/extract ) ; want to get the msec part
+	; LIST_mystruct only accepts msec. No usec, nsec or psec
+	; RCJ 11/13/2012  Added 1 to stop_msec so we don't miss data. For example, if stop_msec=999
+	;   we miss the data for stop_msec=999.123, 999.567, 999.999 for example
+	cd, current=cwd
+	;s = list_mystruct(a.pruned, /novatt, /norv, file=a.vname+'.list',tstart=decode_cdfepoch(tt[0]), tstop=decode_cdfepoch(tt[n_elements(tt)-1]) )
+	;s = list_mystruct(a.pruned, /novatt, /norv, file=CDFxprefs.cdf_path+a.vname+'.list',tstart=decode_cdfepoch(tt[0]), $
+	s = list_mystruct(a.pruned, /novatt, /norv, file=cwd+'/'+a.vname+'.list',tstart=decode_cdfepoch(tt[0]), $
+	                  tstop=decode_cdfepoch(tt[n_elements(tt)-1]),start_msec=parts1[1], stop_msec=parts2[1]+1 )
+
+	;if s[0] eq 0 then begin
+	;   resp = dialog_message(/info, $
+        ;     "Listing saved in file '" + a.vname + ".list'")
+	;endif else begin
+	;   resp = dialog_message(/info, $
+        ;     "Failed writing to file '" + a.vname + ".list'")
+	;endelse     
+	if s[0] eq 0 then begin
+	   ;xdisplayfile,a.vname+'.list'
+	   cdaweb_xdisplayfile,a.vname+'.list'
+	   ;resp = dialog_message(/info, $
+           ;  "Listing saved in file '" + a.vname + ".list'")
+	endif else begin
+	   resp = dialog_message(/info, $
+             "Failed writing to file '" + a.vname + ".list'")
+	endelse     
 	end
 
-    'Variable Actions>.Plot Variable'        : begin
+    'Variable Actions>.Plot Variable.as an Xwindow'      : begin
         a = cdfx_object_from_event(event)
-        sts = plotmaster(a.pruned, /smooth, /cdaweb, /auto)
+        ;sts = plotmaster(a.pruned, /smooth, /cdaweb, /auto)
+	; 'RCJ 11/01/2012: Code below assumes var epoch is always present'
+	;handle_value,a.pruned.epoch.handle,tt
+        ;print,'In cdfx, plot variable.'
+	mega=parse_mydepend0(a.pruned)
+	handle_value,a.pruned.(mega.num).handle,tt
+        sts = plotmaster(a.pruned, xsize=600,/smooth, /slow,/cdaweb, /auto, $
+	   debug=CDFxprefs.debug,tstart=decode_cdfepoch(tt[0],/incl_mmm), tstop=decode_cdfepoch(tt[n_elements(tt)-1],/incl_mmm) )
         if sts ne 0 then $
           rsp = dialog_message(/error, 'Unable to plot variable!')
+        end
+
+    'Variable Actions>.Plot Variable.as a GIF file'        : begin
+        a = cdfx_object_from_event(event)
+        ;sts = plotmaster(a.pruned, /smooth, /cdaweb, /auto)
+	; 'RCJ 11/01/2012: Code below assumes var epoch is always present'
+        ;print,'In cdfx, plot variable.'
+	mega=parse_mydepend0(a.pruned)
+	handle_value,a.pruned.(mega.num).handle,tt
+	;help,tt
+	;handle_value,a.pruned.epoch.handle,tt
+        sts = plotmaster(a.pruned, xsize=600,/smooth, /slow,/cdaweb, /auto, /GIF, $
+	   debug=CDFxprefs.debug,tstart=decode_cdfepoch(tt[0],/incl_mmm), tstop=decode_cdfepoch(tt[n_elements(tt)-1],/incl_mmm) )
+        if sts ne 0 then rsp = dialog_message(/error, 'Unable to plot variable!') else $
+	   ok = dialog_message(/info, 'GIF image saved.') 
+        end
+
+    'Variable Actions>.Time Filter'                  : begin
+        a = cdfx_object_from_event(event)
+        cdfx_timeslice,a.pruned,GROUP=event.top
         end
 
     'Variable Actions>.XPlot Image Variable'        : begin
@@ -238,15 +393,15 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
           rsp = dialog_message(/error, 'Only images can be sent to XPLOT.')
         end
 
-    else : print,'UNKNOWN VALUE FOR PULLDOWN!'
+    else : print,'UNKNOWN VALUE FOR PULLDOWN MENU!'
   endcase
 endif
 
-if tnames(3) eq 'INDEX' then begin ; must be from variable list
+if tnames[3] eq 'INDEX' then begin ; must be from variable list
   widget_control, event.id, get_uvalue=vnames
   s = size(vnames)
 
-  if s(n_elements(s)-2) eq 7 then begin ; event is from the list
+  if s[n_elements(s)-2] eq 7 then begin ; event is from the list
     child = widget_info(event.top,/child) ; get widget id of first child
     widget_control,child,get_uvalue=b ; get the widget ids from first child
     b.vnum = event.index ; record which variable is selected
@@ -290,50 +445,97 @@ letter = determine_dataobject_letter()
 
 ; Create a string array holding all of the global attributes in structure
 atags = tag_names(a.(0)) & w=where(atags eq 'FIELDNAM') & gattrs='' & p='    '
-for i=1,w(0)-1 do begin
+for i=1,w[0]-1 do begin
   if (n_elements(a.(0).(i)) eq 1) then begin
-    val = atags(i) + ': ' + string(a.(0).(i))
-    if (gattrs(0) eq '') then gattrs = val else gattrs = [gattrs,val]
+    val = atags[i] + ': ' + string(a.(0).(i))
+    if (gattrs[0] eq '') then gattrs = val else gattrs = [gattrs,val]
   endif else begin
-    gattrs = [gattrs,(atags(i)+':')]
-    for j=0,n_elements(a.(0).(i))-1 do gattrs = [gattrs,p+string(a.(0).(i)(j))]
+    gattrs = [gattrs,(atags[i]+':')]
+    for j=0,n_elements(a.(0).(i))-1 do gattrs = [gattrs,p+string(a.(0).(i)[j])]
   endelse
 endfor
 
-; Determine a variable that contains the timing information
-atags = tag_names(a) & tvar = -1
+; Determine the variable(s) that contains the timing information
+;TJK 6/23/2010 make tvar an array of ints (size of the number of variables in a), 
+;because we might have several epoch/time variables and some of them
+;might not be good (might have fill in them) so we need to cycle
+;through the min/max values below to get a good set.
+;atags = tag_names(a) & tvar = -1 
+
+atags = tag_names(a) 
+tvar = make_array(n_tags(a), /int, value=-1) 
+j=0
+
 for i=0,n_elements(atags)-1 do begin
-  btags = tag_names(a.(i)) & w = where(btags eq 'CDFTYPE',wc)
+  btags = tag_names(a.(i)) 
+  ;print,'*** ',a.(i).CDFTYPE,'  *  ',a.(i).CDFRECVARY
+  w = where(btags eq 'CDFTYPE',wc)
   v = where(btags eq 'CDFRECVARY',vc) ;also check if record varies (because we
                                 ;now have datasets w/ several
                                 ;cdf_epoch variables, have to use the
                                 ;one that varies by record (THEMIS))
   if (wc gt 0 and v gt 0) then $
-    if (a.(i).CDFTYPE eq 'CDF_EPOCH' and (a.(i).CDFRECVARY eq 'VARY')) then tvar = i
-  if (wc gt 0 and v gt 0) then $
-    if (a.(i).CDFTYPE eq 'CDF_EPOCH16' and (a.(i).CDFRECVARY eq 'VARY')) then tvar = i
+    ;if (a.(i).CDFTYPE eq 'CDF_EPOCH' and (a.(i).CDFRECVARY eq 'VARY')) then begin
+    ; RCJ 11/01/2012 cdf_epoch16 and cdf_time_tt2000 also valid:
+    if (((a.(i).CDFTYPE eq 'CDF_EPOCH') or (a.(i).CDFTYPE eq 'CDF_EPOCH16') or $
+         (a.(i).CDFTYPE eq 'CDF_TIME_TT2000')) $
+        and (a.(i).CDFRECVARY eq 'VARY')) then begin
+      tvar[j] = i
+      j = j + 1
+    endif
+    ; RCJ 11/01/2012 This is included above 
+    ;if (wc gt 0 and v gt 0) then $
+    ;  if (a.(i).CDFTYPE eq 'CDF_EPOCH16' and (a.(i).CDFRECVARY eq 'VARY')) then begin
+    ;    tvar[j] = i
+    ;    j = j + 1
+    ;  endif
 endfor
 
+tvar_idx = where(tvar ne -1, t_num)
 
-if (tvar ne -1) then begin ; Determine the start and stop time of the data
-  d = get_mydata(a,tvar)
-  start_time = decode_cdfepoch(min(d))
-  stop_time  = decode_cdfepoch(max(d)) & d=0
+if (t_num gt -1) then begin ; Determine a good start and stop time of the data variables
+  i = 0 & out = 0
+  while (out eq 0) do begin
+    d = get_mydata(a,tvar(tvar_idx[i]))
+    ;start_time = decode_cdfepoch(min(d))
+    ;stop_time  = decode_cdfepoch(max(d))
+    ; RCJ 11/01/2012 Using 'case' to determine start/stop time:
+    case a.(tvar[tvar_idx[i]]).CDFTYPE of
+       'CDF_EPOCH16': begin
+                       start_time = decode_cdfepoch(min(d),/epoch16)
+                       stop_time  = decode_cdfepoch(max(d),/epoch16)
+                      end
+       'CDF_TIME_TT2000': begin
+                       start_time = decode_cdfepoch(min(d),/tt2000)
+                       stop_time  = decode_cdfepoch(max(d),/tt2000)
+                      end
+	else: begin	      
+           start_time = decode_cdfepoch(min(d),/incl_mmm)
+           stop_time  = decode_cdfepoch(max(d),/incl_mmm)
+	   end
+    endcase	   
+    i = i + 1
+    if (min(d) lt max(d)) then  out = 1  ;good set found
+    if (i eq t_num) then begin
+        out = 1                 ; ran out of time variables to check
+    endif
+    d=0
+  endwhile
 endif
 
 ; Create label for this object from logical source and start/stop time
 lsource = '' & atags = tag_names(a.(0)) ; get names of the epoch attributes
 w = where(atags eq 'LOGICAL_SOURCE',wc)
-if (wc gt 0) then lsource = lsource + a.(0).(w(0))
+if (wc gt 0) then lsource = lsource + a.(0).(w[0])
 if (strlen(lsource) le 1) then begin ; construct lsource from other info
   s = '' & t = '' & d = ''
   w = where(atags eq 'SOURCE_NAME',wc)
-  if (wc gt 0) then s = break_mystring(a.(0).(w(0)),delimiter='>')
+  if (wc gt 0) then s = break_mystring(a.(0).(w[0]),delimiter='>')
   w = where(atags eq 'DATA_TYPE',wc)
-  if (wc gt 0) then t = break_mystring(a.(0).(w(0)),delimiter='>')
+  if (wc gt 0) then t = break_mystring(a.(0).(w[0]),delimiter='>')
   w = where(atags eq 'DESCRIPTOR',wc)
-  if (wc gt 0) then d = break_mystring(a.(0).(w(0)),delimiter='>')
-  lsource = s(0) + '_' + t(0) + '_' + d(0)
+  if (wc gt 0) then d = break_mystring(a.(0).(w[0]),delimiter='>')
+  lsource = s[0] + '_' + t[0] + '_' + d[0]
 endif
 olabel = '   ' + lsource + ' from ' + start_time + ' till ' + stop_time + '   '
 
@@ -346,11 +548,23 @@ base2 = widget_base(base1,/Column)
 base3 = widget_base(base1,/Row)
 labl1 = widget_label(base2,value=olabel,/align_center)
 text1 = widget_text(base2,value=gattrs,/scroll,ysize=10,xsize=40)
-list1 = widget_list(base2,value=vnames,/frame,ysize=6,uvalue=vnames)
+;list1 = widget_list(base2,value=vnames,/frame,ysize=6,uvalue=vnames)
+list1 = widget_list(base2,value=vnames,/frame,ysize=(20<n_elements(vnames))>6,uvalue=vnames)
 but1  = widget_droplist(base3,uvalue=list1,$
                         value=['Show data vars','Show all vars'])
 junk1 =  {CW_PDMENU_S,flags:0,name:''}
-puld1 = [{CW_PDMENU_S,1,'Object Actions>'},$
+
+;  RCJ 12/03/2012   t_num gt 1 means there are more than one epoch var in this cdf.
+;  (See themis cdfs for an example. there are epoch, epoch16, etc in the same cdf.)
+; We will block time filtering, plotting, listing of the whole object:
+if t_num gt 1 then begin
+   puld1 = [{CW_PDMENU_S,1,'Object Actions>'},$
+         {CW_PDMENU_S,1,'Save Object'},$
+         {CW_PDMENU_S,0,'as IDL save file'},$
+         {CW_PDMENU_S,2,'as a CDF file'},$
+         {CW_PDMENU_S,2,'Close Object'}]
+endif else begin	 
+   puld1 = [{CW_PDMENU_S,1,'Object Actions>'},$
          {CW_PDMENU_S,1,'Save Object'},$
          {CW_PDMENU_S,0,'as IDL save file'},$
          {CW_PDMENU_S,2,'as a CDF file'},$
@@ -360,13 +574,24 @@ puld1 = [{CW_PDMENU_S,1,'Object Actions>'},$
          {CW_PDMENU_S,0,'List Object'},$
          {CW_PDMENU_S,0,'Time Filter'},$
          {CW_PDMENU_S,2,'Close Object'}]
+endelse
+	 
 but2  =   CW_PDMENU(base3,puld1,/return_full_name)
 puld2 = [{CW_PDMENU_S,1,'Variable Actions>'},$
          {CW_PDMENU_S,0,'Show/Edit vattrs'} ,$
          {CW_PDMENU_S,0,'Compute Statistics'} ,$
+         {CW_PDMENU_S,1,'Plot Variable'},$
+         {CW_PDMENU_S,0,'as an Xwindow'},$
+         {CW_PDMENU_S,2,'as a GIF file'},$
          {CW_PDMENU_S,0,'List Variable'},$
-         {CW_PDMENU_S,0,'Plot Variable'},$
+         {CW_PDMENU_S,0,'Time Filter'},$
          {CW_PDMENU_S,2,'XPlot Image Variable'}]
+;puld2 = [{CW_PDMENU_S,1,'Variable Actions>'},$
+;         {CW_PDMENU_S,0,'Show/Edit vattrs'} ,$
+;         {CW_PDMENU_S,0,'Compute Statistics'} ,$
+;         {CW_PDMENU_S,0,'List Variable'},$
+;         {CW_PDMENU_S,0,'Plot Variable'},$
+;         {CW_PDMENU_S,2,'XPlot Image Variable'}]
 but3  =   CW_PDMENU(base3,puld2,/return_full_name)
 
 ; Register this data object into the main window list
@@ -400,16 +625,16 @@ if wc lt 1 then begin
 end
 
 for i=0, wc-1 do begin
-  child = widget_info(CDFxwindows.wid(w[i]), /child)
+  child = widget_info(CDFxwindows.wid[w[i]], /child)
   widget_control, child, get_uvalue=info
   widget_control, info.labl, get_value=olabel
   widget_control, /hourglass
-  widget_control, CDFxwindows.wid(w[i]), get_uvalue=a
+  widget_control, CDFxwindows.wid[w[i]], get_uvalue=a
 
   olabel = strtrim(olabel, 2)
   s = break_mystring(olabel, delimiter=' ')
-  t = break_mystring(s(2), delimiter='/')
-  u = s(0)+'_'+t(0)+t(1)+t(2)+'.sav'
+  t = break_mystring(s[2], delimiter='/')
+  u = s[0]+'_'+t[0]+t[1]+t[2]+'.sav'
 
 ;  print, 'Creating the save file:', u
   save_mystruct, a, u
@@ -429,7 +654,7 @@ common cdfxcom, CDFxwindows, CDFxprefs ; include cdfx common
 ; Free any data held in handles before destroying the objects
 w = where(strpos(cdfxwindows.title,'Data Object') ne -1,wc)
 for i=0, wc-1 do begin
-  widget_control, cdfxwindows.wid(w(i)), get_uvalue=a
+  widget_control, cdfxwindows.wid[w[i]], get_uvalue=a
   delete_myhandles, a
 endfor
 
@@ -452,7 +677,7 @@ pro cdfx_MMenu_Event, event
 common cdfxcom, CDFxwindows, CDFxprefs ; include cdfx common
 
 tnames = tag_names(event)
-if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
+if tnames[3] eq 'VALUE' then begin ; must be from pull down menu
   case event.value of
     'Open a new Window >.Image Animator Window'   : begin
         widget_control,/hourglass
@@ -479,7 +704,7 @@ if tnames(3) eq 'VALUE' then begin ; must be from pull down menu
     else : print,'UNKNOWN VALUE FOR PULLDOWN!'
   endcase
 endif else begin ; must be a regular button or the draw widget
-  if tnames(3) eq 'TYPE' then begin ; must be the draw widget
+  if tnames[3] eq 'TYPE' then begin ; must be the draw widget
     if event.press ne 0 then begin
 ;!!    print,'CDFx Version 1.0     Date: 5/22/96'
     endif
@@ -491,19 +716,22 @@ endif else begin ; must be a regular button or the draw widget
       button_ids.but1 : begin ; Read CDF files
                         widget_control,/hourglass
 
-;                        a = xread_mycdf(/nodatastruct,debug=CDFxprefs.debug)
+                        ;a = xread_mycdf(/nodatastruct,debug=CDFxprefs.debug)
                         a = cdfx_opencdfs(gleader=button_ids.base01)
-
                         ; verify that 'a' is a structure
-                        b = size(a) & c = b(n_elements(b)-2)
-                        if (c eq 8) then begin
-                          ;print,'Generating data object...'
-                          widget_control,/hourglass
-                          cdfx_dataobject, a, GROUP=event.top
-                          a = 0 ; delete structure
-                        endif
+                        b = size(a) 
+			if b[0] ne 0 then begin ; if b[0]=0 then opening the cdf failed and a=-1
+			   c = b[n_elements(b)-2]
+                           ;if (c eq 8) then begin
+                           if ((c eq 8) and (tagindex('ERROR', tag_names(a)) eq -1)) then begin
+                             ;print,'Generating data object...'
+                             widget_control,/hourglass
+                             cdfx_dataobject, a, GROUP=event.top
+                             a = 0 ; delete structure
+                           endif else print,'CDFX: Found error in structure'
+			endif   
                         end
-
+ 
       button_ids.but2 : begin
                         widget_control,/hourglass
                         restore_dataobjects,GROUP=event.top
@@ -549,6 +777,13 @@ end
 ;-----------------------------------------------------------------------------
 
 pro cdfx, debug=debug
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+
 
 ; Create the common block containing window information
 common cdfxcom, CDFxwindows, CDFxprefs
@@ -595,9 +830,13 @@ endif
 CDFxprefs=CDFxprefs1
 
 ; Create the main menu
-base01 = widget_base(/Column,Title='CDFx',/frame,/base_align_center)
-drw1  = widget_draw(base01,xsize=131,ysize=126,/frame, retain=2)
-lbl = widget_label(base01, value = 'v0.525')
+;base01 = widget_base(/Column,Title='CDFx',/frame,/base_align_center)
+; Buttons are all the same width:
+base01 = widget_base(/Column,Title='CDFx',/frame)
+;drw1  = widget_draw(base01,xsize=131,ysize=126,/frame, retain=2)
+drw1  = widget_draw(base01,xsize=151,ysize=126,/frame, retain=2)
+;lbl = widget_label(base01, value = 'v0.525')
+lbl = widget_label(base01, value = 'v2.000')
 
 but1  = widget_button(base01,value='Read CDF files')
 but3  = widget_button(base01,value='Window List')

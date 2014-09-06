@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-07-10 10:01:21 -0700 (Thu, 10 Jul 2014) $
-;$Header: /home/cdaweb/dev/control/RCS/combined_subtitle.pro,v 1.15 2007/05/09 19:03:06 johnson Exp johnson $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/combined_subtitle.pro,v 1.17 2012/05/15 15:57:21 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 15545 $
+;$Revision: 15739 $
 ;+------------------------------------------------------------------------
 ; NAME: Combined_SUBTITLE
 ; PURPOSE: Take a prepared string for both the title and pi line  of the subtitle 
@@ -25,7 +25,12 @@
 ; MODIFICATION HISTORY: Initial version is a greatly modified version of 
 ; project_subtitle.
 ;
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 PRO combined_subtitle, a, pi_list, title, ps=ps
 
 ; write the title (at the top of the page) to the gif file
@@ -44,13 +49,13 @@ endelse
 ; Generate the subtitle
 
   pi = ' ' & s='' & b = tagindex('PROJECT',tag_names(a))
-  if (b(0) ne -1) then begin
+  if (b[0] ne -1) then begin
    if(n_elements(a.PROJECT) eq 1) then begin 
-    pr = break_mystring(a.PROJECT, ">") 
+    pr = break_mystring(a.PROJECT,delimiter='>')
    endif else begin
-    pr = break_mystring(a.PROJECT(0),">") 
+    pr = break_mystring(a.PROJECT[0],delimiter='>')
    endelse
-    if (pr(0) eq 'ISTP') then begin
+    if (pr[0] eq 'ISTP') then begin
       s = 'Key Parameter and Survey data (labels K0,K1,K2)'
       s = s + ' are preliminary browse data.' + '!C'
     endif ;ISTP case
@@ -59,11 +64,11 @@ endelse
 
 if (strlen(pi_list) lt 5) then begin
     b = tagindex('PI_NAME',tag_names(a))
-    if (b(0) ne -1) then begin
+    if (b[0] ne -1) then begin
      if(n_elements(a.PI_NAME) eq 1) then pi = a.PI_NAME
     endif
     b = tagindex('PI_AFFILIATION',tag_names(a))
-    if (b(0) ne -1) then begin
+    if (b[0] ne -1) then begin
       if((n_elements(a.PI_AFFILIATION) eq 1) and (a.PI_AFFILIATION[0] ne "")) then $
          pi = pi + ' at '+ a.PI_AFFILIATION 
     endif
@@ -96,7 +101,7 @@ if (c lt 0.75) then string_len = 160 else string_len = 145
 if (pi_len gt string_len) then begin
     pi_tmp = strsplit(pi, ' at ',/extract, /regex)
     ;put the 'at' words back into the strings
-    for t = 1, (n_elements(pi_tmp)-1) do pi_tmp(t) = ' at ' + pi_tmp(t)
+    for t = 1, (n_elements(pi_tmp)-1) do pi_tmp[t] = ' at ' + pi_tmp[t]
 
 ;Now merge some of the lines back together wherever possible (since we don't
 ;have a lot of room at the bottom of the plot.
@@ -104,20 +109,20 @@ if (pi_len gt string_len) then begin
     lines = make_array(n_elements(pi_tmp),/string, value='')
     l_num = 0L
     ds = 1L
-    lines(0) = pi_tmp(0)        ; initialize 1st line
+    lines[0] = pi_tmp[0]        ; initialize 1st line
     while (ds le (n_elements(pi_tmp)-1)) do begin 
-        if ((strlen(lines(l_num)) + strlen(pi_tmp(ds))) le string_len) then begin
-            lines(l_num) = lines(l_num) + pi_tmp(ds)
+        if ((strlen(lines[l_num]) + strlen(pi_tmp[ds])) le string_len) then begin
+            lines[l_num] = lines[l_num] + pi_tmp[ds]
         endif else begin
             l_num = l_num + 1
-            lines(l_num) = pi_tmp(ds)
+            lines[l_num] = pi_tmp[ds]
         endelse    
         ds = ds + 1
     endwhile
     ;put the carriage returns inbetween the lines and don't include the blanks
     goodlines = where(lines ne '', g_cnt)
-    pi_final = lines(goodlines(0)) ; initialize
-    for g = 1, g_cnt-1 do pi_final = pi_final + '!C' + lines(goodlines(g))
+    pi_final = lines(goodlines[0]) ; initialize
+    for g = 1, g_cnt-1 do pi_final = pi_final + '!C' + lines(goodlines[g])
     ;print, pi_final
     number_of_lines = g_cnt
 endif else begin
@@ -189,7 +194,7 @@ endelse
   if (c lt 0.75) then begin ;TJK added to handle label when
 				       ;space is limited
     s = ''
-    if (pr(0) eq 'ISTP') then begin
+    if (pr[0] eq 'ISTP') then begin
       s = 'Key Parameter and Survey data (labels K0,K1,K2) are '
       s = s + 'preliminary browse data.' + '!C'
     endif

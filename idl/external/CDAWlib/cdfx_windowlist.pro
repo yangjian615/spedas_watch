@@ -1,6 +1,11 @@
 ; Routines related to the CDFx window-list window.
-
-;-----------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 ; Register a window in our window-tracking list.
 
 pro add_cdfxwindow, title, wid
@@ -9,8 +14,8 @@ common cdfxcom, CDFxwindows, CDFxprefs ; include the cdfx common
 
 w = where(CDFxwindows.title eq '', wc)
 if (wc eq 0) then w = 0
-CDFxwindows.title[w(0)] = title
-CDFxwindows.wid[w(0)]   = wid
+CDFxwindows.title[w[0]] = title
+CDFxwindows.wid[w[0]]   = wid
 
 end
 

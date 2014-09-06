@@ -21,6 +21,12 @@
 ;			Structure names cannot start with a number in IDL5.3,
 ;			and we were getting errors in read_myCDF.
 ;
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 function replace_bad_chars, instring, repchar=repchar, found
 
@@ -69,18 +75,18 @@ endcase
 
 for i=0,n_elements(instring)-1 do begin
    for k=0L,n_elements(badChars)-1 do begin
-      outstring(i)=repchr(outstring(i),badChars[k],repchar)
+      outstring[i]=repchr(outstring[i],badChars[k],repchar)
    endfor
-   if (instring(i) ne outstring(i)) then found = 1L
+   if (instring[i] ne outstring[i]) then found = 1L
 endfor
 
 badnums=['0','1','2','3','4','5','6','7','8','9']
 
 for i=0,n_elements(outstring)-1 do begin
    for k=0L,n_elements(badnums)-1 do begin
-      if (strmid(outstring(i),0,1) eq badnums[k]) then outstring(i)='CDAW_'+outstring(i)
+      if (strmid(outstring[i],0,1) eq badnums[k]) then outstring[i]='CDAW_'+outstring[i]
    endfor
-   if (instring(i) ne outstring(i)) then found = 1L
+   if (instring[i] ne outstring[i]) then found = 1L
 endfor
 
 return, outstring

@@ -1,9 +1,15 @@
-;$Author: kenb $
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/compare_struct.pro,v 1.1 1996/08/09 14:04:26 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 8 $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/compare_struct.pro,v 1.3 2012/05/03 16:15:17 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ; Compare the two structures.  If they are the same return 1 else return 0
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 FUNCTION compare_struct, a, b
 same=1L & as=size(a) & bs=size(b) & na=n_elements(as) & nb=n_elements(bs)
 if (as(na-2) ne bs(nb-2)) then return,0 $ ; different types
@@ -16,7 +22,7 @@ else begin
     else begin ; compare each tag name and then each tag field
       i=0L & j=0L & nta = n_elements(ta)
       while ((i le (nta-1)) AND (same eq 1)) do begin
-        if (ta(i) ne tb(i)) then return,0 else i=i+1
+        if (ta[i] ne tb[i]) then return,0 else i=i+1
       endwhile
       while ((j le (nta-1)) AND (same eq 1)) do begin
         same = compare_struct(a.(j),b.(j)) & j=j+1

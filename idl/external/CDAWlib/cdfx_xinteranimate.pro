@@ -3,9 +3,9 @@ function get_mydatasize, a, var
 
 ; Determine the variable number
 s = size(var) & ns = n_elements(s) & atags = tag_names(a)
-if s(ns-2) eq 7 then begin
+if s[ns-2] eq 7 then begin
   w = where(atags eq var,wc)
-  if wc gt 0 then vnum = w(0) $
+  if wc gt 0 then vnum = w[0] $
   else begin
     print,'ERROR>get_mydata:named variable not in structure!' & return,-1
   endelse
@@ -47,42 +47,42 @@ case wtype of
         info.proceed : begin
             widget_control, info.xwid, get_value=width
             widget_control, info.ywid, get_value=height
-            width  = long(width)  & width  = width(0)
-            height = long(height) & height = height(0)
+            width  = long(width)  & width  = width[0]
+            height = long(height) & height = height[0]
 
             ; determine the name of the selected variable
             s = str_sep(info.vnames(info.vindex),':')
-            for i=0,n_elements(s)-1 do s(i)=strtrim(s(i),2)
-            w = where(cdfxwindows.title eq s(0),wc)
+            for i=0,n_elements(s)-1 do s[i]=strtrim(s[i],2)
+            w = where(cdfxwindows.title eq s[0],wc)
 
             if wc eq 0 then begin
               ok = dialog_message(/error, 'Data Object does not exist!')
               return
             endif else begin
-              widget_control, cdfxwindows.wid(w(0)), get_uvalue=a
+              widget_control, cdfxwindows.wid[w[0]], get_uvalue=a
               widget_control, /hourglass
 
               ; extract the validmin and validmax values
-              vnum = tagindex(s(1),tag_names(a))
+              vnum = tagindex(s[1],tag_names(a))
               b = tagindex('VALIDMIN',tag_names(a.(vnum)))
-              if (b(0) ne -1) then begin & c=size(a.(vnum).VALIDMIN)
-                if (c(0) eq 0) then zvmin = a.(vnum).VALIDMIN $
+              if (b[0] ne -1) then begin & c=size(a.(vnum).VALIDMIN)
+                if (c[0] eq 0) then zvmin = a.(vnum).VALIDMIN $
                 else begin
                   zvmin = 0 ; default for image data
-                  print,'WARNING>Unable to determine validmin for ',s(1)
+                  print,'WARNING>Unable to determine validmin for ',s[1]
                 endelse
               endif
               b = tagindex('VALIDMAX',tag_names(a.(vnum)))
-              if (b(0) ne -1) then begin & c=size(a.(vnum).VALIDMAX)
-                if (c(0) eq 0) then zvmax = a.(vnum).VALIDMAX $
+              if (b[0] ne -1) then begin & c=size(a.(vnum).VALIDMAX)
+                if (c[0] eq 0) then zvmax = a.(vnum).VALIDMAX $
                 else begin
                   zvmax = 2000 ; guestimate
-                  print,'WARNING>Unable to determine validmax for ',s(1)
+                  print,'WARNING>Unable to determine validmax for ',s[1]
                 endelse
               endif
 
               print,'Retrieving the image data...'
-              d = get_mydata(a,s(1)) ; extract the data from the structure
+              d = get_mydata(a,s[1]) ; extract the data from the structure
 
               ; Perform any requested data manipulations
               widget_control, info.valids, get_value=onoff
@@ -91,7 +91,7 @@ case wtype of
                 w = where(((d lt zvmin)OR(d gt zvmax)),wc)
                 if wc gt 0 then begin
                   print,'WARNING>filtering bad values from image data...'
-                  d(w) = 0 & w = 0 ; set pixels to black and free space
+                  d[w] = 0 & w = 0 ; set pixels to black and free space
                 endif
               endif
 
@@ -102,7 +102,7 @@ case wtype of
                 w = where(((d lt zvmin)OR(d gt zvmax)),wc)
                 if wc gt 0 then begin
                   print,'WARNING>filtering values > 3-sigma from image data...'
-                  d(w) = 0 & w = 0 ; set pixels to black and free space
+                  d[w] = 0 & w = 0 ; set pixels to black and free space
                 endif
               endif
 
@@ -113,23 +113,23 @@ case wtype of
               ;endif
 
               s = size(d) ; get the idl sizing info
-              if width ne s(1)  or  height ne s(2) then begin
+              if width ne s[1]  or  height ne s[2] then begin
                 print,'Resizing the image data...'
-                d = congrid(d,width,height,s(3))
+                d = congrid(d,width,height,s[3])
               endif
 
               widget_control, info.edges, get_value=onoff
               if onoff eq 0 then begin
                 print,'Performing edge enhancement...'
                 s = size(d)
-                for i=0,s(3)-1 do d(*,*,i) = roberts(temporary(d(*,*,i)))
+                for i=0,s[3]-1 do d[*,*,i] = roberts(temporary(d[*,*,i]))
               endif
 
               ; Show the animation
               print,'Loading image data into animation frames...'
-              xinteranimate, set=[width,height,s(3)]
-              for i=0,s(3)-1 do $
-                xinteranimate, frame=i, image=d(*,*,i)
+              xinteranimate, set=[width,height,s[3]]
+              for i=0,s[3]-1 do $
+                xinteranimate, frame=i, image=d[*,*,i]
               d = 0 ; delete the data now that it has been loaded
               xinteranimate, GROUP=info.group
               ; remove the current starter widget
@@ -152,15 +152,15 @@ case wtype of
   6 : begin ; list widget
       ; Get the idl size information for the selected variable
       s = str_sep(info.vnames(event.index),':') ; get object name and varname
-      for i=0,n_elements(s)-1 do s(i)=strtrim(s(i),2) ; trim blanks
-      w = where(cdfxwindows.title eq s(0),wc)
+      for i=0,n_elements(s)-1 do s[i]=strtrim(s[i],2) ; trim blanks
+      w = where(cdfxwindows.title eq s[0],wc)
       if wc eq 0 then begin
         print,'ERROR>Data Object containing variable does not exist!' & return
       endif else begin
-        widget_control,cdfxwindows.wid(w(0)),get_uvalue=a
-        isize = get_mydatasize(a,s(1)) ; get idl sizing information
-        widget_control, info.xwid, set_value=string(isize(1))
-        widget_control, info.ywid, set_value=string(isize(2))
+        widget_control,cdfxwindows.wid[w[0]],get_uvalue=a
+        isize = get_mydatasize(a,s[1]) ; get idl sizing information
+        widget_control, info.xwid, set_value=string(isize[1])
+        widget_control, info.ywid, set_value=string(isize[2])
         widget_control, info.xwid, sensitive=1
         widget_control, info.ywid, sensitive=1
       endelse
@@ -178,6 +178,12 @@ end
 ;-----------------------------------------------------------------------------
 
 pro cdfx_pre_xinteranimate, GROUP=GROUP
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 common cdfxcom, CDFxwindows, CDFxprefs ; include cdfx common
 
@@ -190,13 +196,13 @@ numvars = 0L ; initialize
 w = where(strpos(cdfxwindows.title,'Data Object') ne -1,wc)
 
 for i=0,wc-1 do begin ; examine every data object
-  widget_control,cdfxwindows.wid(w(i)),get_uvalue=a
+  widget_control,cdfxwindows.wid[w[i]],get_uvalue=a
   vnames = tag_names(a) & nvnames = n_elements(vnames)
   for j=0,nvnames-1 do begin ; examine each variable
     ; Retrieve the sizing information for the variable
     isize = get_mydatasize(a,j)
-    if isize(0) eq 3 then begin ; data dimensionality ok for xinteranimate
-      s = cdfxwindows.title(w(i)) + ' : ' + vnames(j)
+    if isize[0] eq 3 then begin ; data dimensionality ok for xinteranimate
+      s = cdfxwindows.title(w[i]) + ' : ' + vnames(j)
       if numvars eq 0 then text = s else text = [text,s]
       numvars = numvars + 1 ; increment variable counter
     endif

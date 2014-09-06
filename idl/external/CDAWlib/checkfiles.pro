@@ -9,6 +9,11 @@
 ;
 ;written by Tami Kovalick, March 1, 2001 
 ;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 ;
 pro checkfiles, plottype=plottype, indir=indir, outfile=outfile, debug=debug
 
@@ -30,10 +35,10 @@ printf, lun, 'Looking for variables with their display_type set to ',plottype
 
 for i = 0, n_elements(cdffiles)-1 do begin
   vars = ' '
-  buf = read_mycdf(vars,cdffiles(i),/all)
+  buf = read_mycdf(vars,cdffiles[i],/all)
 
   printf, lun, '        '
-  printf, lun,'Processing dataset ',cdffiles(i)
+  printf, lun,'Processing dataset ',cdffiles[i]
 
   if (n_tags(buf) ge 1) then begin
     for j = 0, n_tags(buf) - 1 do begin
@@ -64,8 +69,8 @@ for i = 0, n_elements(cdffiles)-1 do begin
 	  a = break_mystring(display_type, delimiter='>')
 	  asize = size(a)
 	  if (asize(1) eq 2) then begin
-	    printf, lun, 'display_type being reset to ',a(0)
-	    display_type = a(0)
+	    printf, lun, 'display_type being reset to ',a[0]
+	    display_type = a[0]
 	  endif
 
 	  if (strupcase(display_type) eq plottype) then begin
@@ -77,6 +82,10 @@ for i = 0, n_elements(cdffiles)-1 do begin
 	    ;now check the depend 1 for this variable
 	    index = tagindex('DEPEND_1',atags)
 	    if (index ge 0) then depend_1 = buf.(j).(index)
+	    ; RCJ 05/15/2013  But if alt_cdaweb_depend1 exists, use it for depend_1:
+	    index = tagindex('ALT_CDAWEB_DEPEND_1',atags)
+            if (index[0] ne -1) then if (buf.(j).(index) ne '') then depend_1= buf.(j).(index)
+
 	    if (depend_1 ne ' ') then begin
 	      comm = execute('depend_struct = buf.'+depend_1)
 	      vtags = tag_names(depend_struct)

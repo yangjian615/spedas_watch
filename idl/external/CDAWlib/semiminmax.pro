@@ -16,7 +16,13 @@
 ; MODIFICATION HISTORY:
 ;   10/96 R.Baldwin; replaced stdev w/ moment
 ;   03/99 R.Baldwin; added MODIFIED keyword
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 pro semiMinMax, y , ymin, ymax, MODIFIED=MODIFIED
 
 ;TJK modified on 12/18/2000 to put in a check so that ymin and ymax will never
@@ -59,11 +65,11 @@ res=moment(y,sdev=as)
 if(mod_flag) then begin
 ; Calculate Modified sigma taking into account the skewness and kurtosis 
 ; of the distribution
- as=res(1)*(1.+res(2)-0.01*(res(3)-3))  
+ as=res[1]*(1.+res[2]-0.01*(res[3]-3))  
  as=sqrt(abs(as))
 endif
 
-mean=res(0)
+mean=res[0]
 w = where(abs(y-mean) lt 3.*as, wc) ; use only points within 3 standard
 ;                                     deviations of the mean
 if (wc gt 0) then begin
@@ -75,7 +81,7 @@ if (wc gt 0) then begin
 ;  endfor
 ;print, 'time after for loop = ',systime()
 
-  Ymin = min(y(w), max=Ymax) 
+  Ymin = min(y[w], max=Ymax) 
 
 endif ; else begin
 ; Ymin = min(y, max=Ymax)

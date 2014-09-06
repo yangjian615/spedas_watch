@@ -1,8 +1,8 @@
 ;$author: $ 
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header: /home/cdaweb/dev/control/RCS/plot_fluximages.pro,v 1.24 2006/05/08 14:52:29 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 8 $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/plot_fluximages.pro,v 1.27 2012/05/14 18:28:02 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;+------------------------------------------------------------------------
 ; NAME: PLOT_FLUXIMAGES
 ; PURPOSE: To plot the image data given in the input parameter astruct.
@@ -38,7 +38,13 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION plot_fluximages, astruct, vname, $
                       THUMBSIZE=THUMBSIZE, FRAME=FRAME, $
                       XSIZE=XSIZE, YSIZE=YSIZE, GIF=GIF, REPORT=REPORT,$
@@ -50,7 +56,7 @@ FUNCTION plot_fluximages, astruct, vname, $
 w = where(tag_names(astruct) eq strupcase(vname),wc)
 if (wc eq 0) then begin
   print,'ERROR=No variable with the name:',vname,' in param 1!' & return,-1
-endif else vnum = w(0)
+endif else vnum = w[0]
 
 Zvar = astruct.(vnum)
 if keyword_set(COLORBAR) then COLORBAR=1L else COLORBAR=0L
@@ -61,7 +67,7 @@ if keyword_set(SMOOTH) then SMOOTH=1L else SMOOTH=0L
 
 ; Find & Parse DISPLAY_TYPE for keyword inclusion. 
   a = tagindex('DISPLAY_TYPE',tag_names(astruct.(vnum)))
-  if(a(0) ne -1) then display= astruct.(vnum).DISPLAY_TYPE $
+  if(a[0] ne -1) then display= astruct.(vnum).DISPLAY_TYPE $
   else begin
     print, 'ERROR= No DISPLAY_TYPE attribute for variable'
   endelse
@@ -72,7 +78,7 @@ if keyword_set(SMOOTH) then SMOOTH=1L else SMOOTH=0L
 ; The DISPLAY_TYPE attribute may contain the THUMBSIZE  RTB
 ; The THUMBSIZE must be followed by the size in pixels of the images
   wc=where(keywords eq 'THUMBSIZE',wcn)
-  if(wcn ne 0) then THUMBSIZE = fix(keywords(wc(0)+1))
+  if(wcn ne 0) then THUMBSIZE = fix(keywords[wc[0]+1])
 
 ; Open report file if keyword is set
 ;if keyword_set(REPORT) then begin & reportflag=1L
@@ -83,14 +89,14 @@ if keyword_set(SMOOTH) then SMOOTH=1L else SMOOTH=0L
 
 ; Verify the type of the first parameter and retrieve the data
 a = size(astruct.(vnum))
-if (a(n_elements(a)-2) ne 8) then begin
+if (a[n_elements(a)-2] ne 8) then begin
   print,'ERROR= 1st parameter to plot_images not a structure' & return,-1
 endif else begin
   a = tagindex('DAT',tag_names(astruct.(vnum)))
-  if (a(0) ne -1) then idat = astruct.(vnum).DAT $
+  if (a[0] ne -1) then idat = astruct.(vnum).DAT $
   else begin
     a = tagindex('HANDLE',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then handle_value,astruct.(vnum).HANDLE,idat $
+    if (a[0] ne -1) then handle_value,astruct.(vnum).HANDLE,idat $
     else begin
       print,'ERROR= 1st parameter does not have DAT or HANDLE tag' & return,-1
     endelse
@@ -98,12 +104,12 @@ endif else begin
 endelse
 
 ; Determine which variable in the structure is the 'Epoch' data and retrieve it
-b = astruct.(vnum).DEPEND_0 & c = tagindex(b(0),tag_names(astruct))
+b = astruct.(vnum).DEPEND_0 & c = tagindex(b[0],tag_names(astruct))
 d = tagindex('DAT',tag_names(astruct.(c)))
-if (d(0) ne -1) then edat = astruct.(c).DAT $
+if (d[0] ne -1) then edat = astruct.(c).DAT $
 else begin
   d = tagindex('HANDLE',tag_names(astruct.(c)))
-  if (d(0) ne -1) then handle_value,astruct.(c).HANDLE,edat $
+  if (d[0] ne -1) then handle_value,astruct.(c).HANDLE,edat $
   else begin
     print,'ERROR= Time parameter does not have DAT or HANDLE tag' & return,-1
   endelse
@@ -113,12 +119,12 @@ endelse
 var_names = tag_names(astruct)
 found = where('GCI_POS' eq var_names, fnd_cnt)
 if (fnd_cnt ge 1) then begin
- var_index = found(0)
+ var_index = found[0]
  d = tagindex('DAT',tag_names(astruct.(var_index)))
- if (d(0) ne -1) then pos_dat = astruct.(var_index).DAT $
+ if (d[0] ne -1) then pos_dat = astruct.(var_index).DAT $
  else begin
   d = tagindex('HANDLE',tag_names(astruct.(var_index)))
-  if (d(0) ne -1) then handle_value,astruct.(var_index).HANDLE,pos_dat $
+  if (d[0] ne -1) then handle_value,astruct.(var_index).HANDLE,pos_dat $
   else begin
     print,'ERROR= GCI_POS parameter does not have DAT or HANDLE tag' & return,-1
   endelse
@@ -129,12 +135,12 @@ endif
 var_names = tag_names(astruct)
 found = where('GCI_SPINAXIS' eq var_names, fnd_cnt)
 if (fnd_cnt ge 1) then begin
-  var_index = found(0)
+  var_index = found[0]
   d = tagindex('DAT',tag_names(astruct.(var_index)))
-  if (d(0) ne -1) then spin_dat = astruct.(var_index).DAT $
+  if (d[0] ne -1) then spin_dat = astruct.(var_index).DAT $
   else begin
     d = tagindex('HANDLE',tag_names(astruct.(var_index)))
-    if (d(0) ne -1) then handle_value,astruct.(var_index).HANDLE,spin_dat $
+    if (d[0] ne -1) then handle_value,astruct.(var_index).HANDLE,spin_dat $
     else begin
       print,'ERROR= GCI_SPINAXIS parameter does not have DAT or HANDLE tag' & return,-1
     endelse
@@ -144,20 +150,20 @@ endif
 ; Determine the title for the window or gif file
 
 a = tagindex('SOURCE_NAME',tag_names(astruct.(vnum)))
-if (a(0) ne -1) then begin
+if (a[0] ne -1) then begin
   sn = break_mystring(astruct.(vnum).SOURCE_NAME,delimiter='>')
-  b = sn(0)
+  b = sn[0]
 endif else b = ''
 a = tagindex('DESCRIPTOR',tag_names(astruct.(vnum)))
-if (a(0) ne -1) then b = b + '  ' + astruct.(vnum).DESCRIPTOR
+if (a[0] ne -1) then b = b + '  ' + astruct.(vnum).DESCRIPTOR
 
 a = tagindex('DATA_TYPE',tag_names(astruct.(vnum)))
-if (a(0) ne -1) then b = b + '  ' + astruct.(vnum).DATA_TYPE
+if (a[0] ne -1) then b = b + '  ' + astruct.(vnum).DATA_TYPE
 
 ;TJK added FIELDNAM as part of the title since we now have multiple image
 ;variables per datatype.
 a = tagindex('FIELDNAM',tag_names(astruct.(vnum)))
-if (a(0) ne -1) then b = b + ' ' + astruct.(vnum).FIELDNAM
+if (a[0] ne -1) then b = b + ' ' + astruct.(vnum).FIELDNAM
 
 
 window_title = b
@@ -165,7 +171,7 @@ window_title = b
 ; Determine title for colorbar
 if(COLORBAR) then begin
  a=tagindex('UNITS',tag_names(astruct.(vnum)))
- if(a(0) ne -1) then ctitle = astruct.(vnum).UNITS else ctitle=''
+ if(a[0] ne -1) then ctitle = astruct.(vnum).UNITS else ctitle=''
 endif
 
 if keyword_set(XSIZE) then xs=XSIZE else xs=512
@@ -190,44 +196,44 @@ endif
 ; Making LARGE single IMAGES here...
 
 isize = size(idat)
-if (isize(0) eq 2) then n_images=1 else n_images=isize(isize(0))
+if (isize[0] eq 2) then n_images=1 else n_images=isize[isize[0]]
 
 if (n_images eq 1) then FRAME=1
 
 if keyword_set(FRAME) then begin ; produce plot of a single frame
   if ((FRAME ge 1)AND(FRAME le n_images)) then begin ; valid frame value
-    idat = idat(*,*,(FRAME-1)) ; grab the frame
+    idat = idat[*,*,(FRAME-1)] ; grab the frame
     idat = reform(idat) ; remove extraneous dimensions
     if (vkluge)then idat = rotate(idat,7) ; TJK - this rotation desired for viking only.
 
     isize = size(idat) ; get the dimensions of the image
-    r1 = 450./isize(1) ; determine ratio for first dimension
-    r2 = 450./isize(2) ; determine ratio for second dimension
-    xs = ceil(isize(1)*r1)+50 ; determine xsize of window
-    ys = ceil(isize(2)*r2)+15 ; determine ysize of window
-    ;idat = rebin(idat,(isize(1)*r1),(isize(2)*r2)) ; resize the image
+    r1 = 450./isize[1] ; determine ratio for first dimension
+    r2 = 450./isize[2] ; determine ratio for second dimension
+    xs = ceil(isize[1]*r1)+50 ; determine xsize of window
+    ys = ceil(isize[2]*r2)+15 ; determine ysize of window
+    ;idat = rebin(idat,(isize[1]*r1),(isize[2]*r2)) ; resize the image
 
 ; Begin changes 12/11 RTB
     ; determine validmin and validmax values
     a = tagindex('VALIDMIN',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
-      if (b(0) eq 0) then zvmin = astruct.(vnum).VALIDMIN $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
+      if (b[0] eq 0) then zvmin = astruct.(vnum).VALIDMIN $
       else begin
         zvmin = 0 ; default for image data
         print,'WARNING=Unable to determine validmin for ',vname
       endelse
     endif
     a = tagindex('VALIDMAX',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
-      if (b(0) eq 0) then zvmax = astruct.(vnum).VALIDMAX $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
+      if (b[0] eq 0) then zvmax = astruct.(vnum).VALIDMAX $
       else begin
         zvmax = 2000 ; guesstimate
         print,'WARNING=Unable to determine validmax for ',vname
       endelse
     endif
     a = tagindex('FILLVAL',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).FILLVAL)
-      if (b(0) eq 0) then zfill = astruct.(vnum).FILLVAL $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).FILLVAL)
+      if (b[0] eq 0) then zfill = astruct.(vnum).FILLVAL $
       else begin
         zfill = 2000 ; guesstimate
         print,'WARNING=Unable to determine Image fill value for ',vname
@@ -251,8 +257,8 @@ endif
     if wc gt 0 then begin
       if keyword_set(DEBUG) then print, 'Number of values below the valid min = ',wc
       print,'WARNING=setting ',wc,' fill values in image data to zvmin...'
-;TJK change this to zvmin instead of 0      idat(w) = 0 ; set pixels to black
-      idat(w) = zvmin ; set pixels to zvmin
+;TJK change this to zvmin instead of 0      idat[w] = 0 ; set pixels to black
+      idat[w] = zvmin ; set pixels to zvmin
       w = 0 ; free the data space
     endif
 
@@ -265,7 +271,7 @@ endif
     if (wmax lt 1.0 ) then begin
 	w = where(idat le wmax, wc)
 	if wc gt 0 then begin
-	  idat(w) = 1.0
+	  idat[w] = 1.0
 	  if keyword_set(DEBUG) then print, 'valid max lt 1, setting data le to vmax to 1.0'
 	endif
     endif
@@ -276,15 +282,15 @@ endif
     if wc gt 0 then begin
       if keyword_set(DEBUG) then print, 'Number of values above the valid max = ',wc
       if keyword_set(DEBUG) then print,'WARNING=setting ',wc,' fill values in image data to red...'
-;      print, 'values are: ',idat(w)
-;6/25/2004 see below         idat(w) = zvmax -1; set pixels to red
+;      print, 'values are: ',idat[w]
+;6/25/2004 see below         idat[w] = zvmax -1; set pixels to red
        ;TJK 6/25/2004 - added red_offset function to determine offset
        ;(to red) because of cases like log scaled timed guvi data
        ;where the diff is less than 1.
        diff = zvmax - zvmin
        coffset = red_offset(GIF=GIF,diff)
        print, 'diff = ',diff, ' coffset = ',coffset
-       idat(w) = zvmax - coffset; set pixels to red
+       idat[w] = zvmax - coffset; set pixels to red
       w = 0 ; free the data space
     endif
 
@@ -313,20 +319,20 @@ endif
       w = where((idat lt zvmin),wc)
       if wc gt 0 then begin
         print,'WARNING=filtering values less than 3-sigma from image data...'
-        idat(w) = zvmin ; set pixels to black
+        idat[w] = zvmin ; set pixels to black
         w = 0 ; free the data space
       endif
       w = where((idat gt zvmax),wc)
       if wc gt 0 then begin
         print,'WARNING=filtering values greater than 3-sigma from image data...'
-;TJK 6/25/2004 - replace w/ code below        idat(w) = zvmax -2; set pixels to red
+;TJK 6/25/2004 - replace w/ code below        idat[w] = zvmax -2; set pixels to red
          ;TJK 6/25/2004 - added red_offset function to determine offset
          ;(to red) because of cases like log scaled timed guvi data
          ;where the diff is less than 1.
          diff = zvmax - zvmin
          coffset = red_offset(GIF=GIF,diff)
          print, 'diff = ',diff, ' coffset = ',coffset
-         idat(w) = zvmax - coffset; set pixels to red
+         idat[w] = zvmax - coffset; set pixels to red
         w = 0 ; free the data space
       endif
      endif
@@ -344,10 +350,10 @@ endif
       b = tagindex('LOGICAL_SOURCE',atags)
       b1 = tagindex('LOGICAL_FILE_ID',atags)
       b2 = tagindex('Logical_file_id',atags)
-      if (b(0) ne -1) then psrce = strupcase(astruct.(vnum).LOGICAL_SOURCE)
-      if (b1(0) ne -1) then $
+      if (b[0] ne -1) then psrce = strupcase(astruct.(vnum).LOGICAL_SOURCE)
+      if (b1[0] ne -1) then $
         psrce = strupcase(strmid(astruct.(vnum).LOGICAL_FILE_ID,0,9))
-      if (b2(0) ne -1) then $
+      if (b2[0] ne -1) then $
         psrce = strupcase(strmid(astruct.(vnum).Logical_file_id,0,9))
 
     ;print, 'DATASET=',psrce
@@ -364,8 +370,8 @@ endif
 xmargin=!x.margin
 
 if COLORBAR then begin 
- if (!x.omargin(1)+!x.margin(1)) lt 14 then !x.margin(1) = 14
- !x.margin(1) = 14
+ if (!x.omargin[1]+!x.margin[1]) lt 14 then !x.margin[1] = 14
+ !x.margin[1] = 14
 endif
 
     temp_gif = gif + strtrim(string(frame-1),2)
@@ -382,7 +388,7 @@ endif
 ;TJK - 7/13/01 - change smoothing again - use the smoothing for HENA only
 ;and use what Rick coded in plot_enaflux... at least for this go around.
 ;
-    case descriptor(0) of
+    case descriptor[0] of
 	'EUV' : begin
 		  spin = 84.0
 		  polar = 0.6
@@ -423,7 +429,7 @@ endif
 		  ;this is how Rick Burley creates his images so,... TJK
 		  itmp = idat
 		  idat = fltarr(12,12)
-		  idat = itmp(18:29,*)
+		  idat = itmp[18:29,*]
 		  spin = 96.0
 		  polar = 8.0
 		  nocolorbar = 1
@@ -448,15 +454,15 @@ endif
 
     ;determine the window size of just the image portion - it has to be square...
 
-    twin(0) = xs - (!x.margin(0)+!x.margin(1)) & twin(1) = ys - (!y.margin(0) + !y.margin(1))
+    twin[0] = xs - (!x.margin[0]+!x.margin[1]) & twin[1] = ys - (!y.margin[0] + !y.margin[1])
     tmax = max(twin)
     np = size(idat)
-    win(0)=fix(tmax/np(1))*np(1)    ; make sure win is multiple of the image
-    win(1) = win(0)
+    win[0]=fix(tmax/np[1])*np[1]    ; make sure win is multiple of the image
+    win[1] = win[0]
 print, 'asking for image size of ',win
 
-    stat = plot_enaflux(edat(FRAME-1),idat, spin, polar, pos_dat(*,FRAME-1), $
-	   spin_dat(*,FRAME-1), 1, wsize=win, DEBUG=DEBUG,$
+    stat = plot_enaflux(edat[FRAME-1],idat, spin, polar, pos_dat[*,FRAME-1], $
+	   spin_dat[*,FRAME-1], 1, wsize=win, DEBUG=DEBUG,$
   	   noborder=noborder, nocircles=nocircles, nodipole=nodipole, $
 	   nocolorbar=nocolorbar, smooth=smooth, gif=temp_gif, reverseorder=reverseorder)	
 ;TJK added smooth keyword because Rick added it in plot_enaflux 4/24/01
@@ -470,7 +476,7 @@ print, 'asking for image size of ',win
 
 ;open the final gif file
        if (gif) then begin
-          deviceopen,6,fileOutput=GIF,sizeWindow=[win(0)+xco,win(1)+35]
+          deviceopen,6,fileOutput=GIF,sizeWindow=[win[0]+xco,win[1]+35]
           if (reportflag eq 1) then begin
             printf,1,'I_GIF=',GIF & close,1
           endif
@@ -492,18 +498,19 @@ print, 'asking for image size of ',win
       xwindow = !x.window
       offset = 0.01
       colorbar, cscale, ctitle, logZ=logZ, cCharSize=cCharSize, $
-          position=[!x.window(1)+offset,      !y.window(0),$
-                    !x.window(1)+offset+0.03, !y.window(1)],$
+          position=[!x.window[1]+offset,      !y.window[0],$
+                    !x.window[1]+offset+0.03, !y.window[1]],$
           fcolor=244, /image
       !x.window = xwindow
     endif ; colorbar
 
-      acolor = !d.n_colors ; pick color for contouring
+;      acolor = !d.n_colors ; pick color for contouring
+      acolor = !d.table_size ; pick color for contouring
 
 
     ; subtitle the plot
     ; project_subtitle,astruct.(0),'',/IMAGE,TIMETAG=edat(FRAME-1)
-      project_subtitle,astruct.(0),window_title,/IMAGE,TIMETAG=edat(FRAME-1)
+      project_subtitle,astruct.(0),window_title,/IMAGE,TIMETAG=edat[FRAME-1]
 
   endif else begin ;if plot_enaflux returned a good image, else...
     print, 'plot_enaflux failed'
@@ -513,8 +520,8 @@ print, 'asking for image size of ',win
 	  deviceclose
 	  ;TJK added - delete temporary gif file
 	  cmd = strarr(2)
-	  cmd(0) = "rm"
-	  cmd(1) = temp_gif
+	  cmd[0] = "rm"
+	  cmd[1] = temp_gif
 	  spawn, cmd, /noshell
     endif
 
@@ -535,10 +542,10 @@ endif else begin ; produce thumnails of all images
   endif
 
   isize = size(idat) ; determine the number of images in the data
-  if (isize(0) eq 2) then begin
-    nimages = 1 & npixels = double(isize(1)*isize(2))
+  if (isize[0] eq 2) then begin
+    nimages = 1 & npixels = double(isize[1]*isize[2])
   endif else begin
-    nimages = isize(isize(0)) & npixels = double(isize(1)*isize(2)*nimages)
+    nimages = isize[isize[0]] & npixels = double(isize[1]*isize[2]*nimages)
   endelse
 
   ; screen out frames which are outside time range, if any
@@ -547,23 +554,23 @@ endif else begin ; produce thumnails of all images
     w = where(edat ge TSTART,wc)
     if wc eq 0 then begin
       print,'ERROR=No image frames after requested start time.' & return,-1
-    endif else start_frame = w(0)
+    endif else start_frame = w[0]
   endelse
   if NOT keyword_set(TSTOP) then stop_frame = nimages $
   else begin
     w = where(edat le TSTOP,wc)
     if wc eq 0 then begin
       print,'ERROR=No image frames before requested stop time.' & return,-1
-    endif else stop_frame = w(wc-1)
+    endif else stop_frame = w[wc-1]
   endelse
   if (start_frame gt stop_frame) then no_data_avail = 1L $
   else begin
     no_data_avail = 0L
     if ((start_frame ne 0)OR(stop_frame ne nimages)) then begin
-      idat = idat(*,*,start_frame:stop_frame)
+      idat = idat[*,*,start_frame:stop_frame]
       isize = size(idat) ; determine the number of images in the data
-      if (isize(0) eq 2) then nimages = 1 else nimages = isize(isize(0))
-      edat = edat(start_frame:stop_frame)
+      if (isize[0] eq 2) then nimages = 1 else nimages = isize[isize[0]]
+      edat = edat[start_frame:stop_frame]
     endif
   endelse
 
@@ -580,24 +587,24 @@ endif else begin ; produce thumnails of all images
 ; Begin changes 12/11 RTB
 ;   ; determine validmin and validmax values
     a = tagindex('VALIDMIN',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
-      if (b(0) eq 0) then zvmin = astruct.(vnum).VALIDMIN $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMIN)
+      if (b[0] eq 0) then zvmin = astruct.(vnum).VALIDMIN $
       else begin
         zvmin = 0 ; default for image data
         print,'WARNING=Unable to determine validmin for ',vname
       endelse
     endif
     a = tagindex('VALIDMAX',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
-      if (b(0) eq 0) then zvmax = astruct.(vnum).VALIDMAX $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).VALIDMAX)
+      if (b[0] eq 0) then zvmax = astruct.(vnum).VALIDMAX $
       else begin
         zvmax = 2000 ; guesstimate
         print,'WARNING=Unable to determine validmax for ',vname
       endelse
     endif
     a = tagindex('FILLVAL',tag_names(astruct.(vnum)))
-    if (a(0) ne -1) then begin & b=size(astruct.(vnum).FILLVAL)
-      if (b(0) eq 0) then zfill = astruct.(vnum).FILLVAL $
+    if (a[0] ne -1) then begin & b=size(astruct.(vnum).FILLVAL)
+      if (b[0] eq 0) then zfill = astruct.(vnum).FILLVAL $
       else begin
         zfill = 2000 ; guesstimate
         print,'WARNING=Unable to determine Image fill value for ',vname
@@ -609,7 +616,7 @@ endif else begin ; produce thumnails of all images
 ;    w = where(((idat lt zvmin)OR(idat gt zvmax)),wc)
 ;    if wc gt 0 then begin
 ;      print,'WARNING=filtering ',wc,' bad values from image data...'
-;      idat(w) = 0 ; set pixels to black
+;      idat[w] = 0 ; set pixels to black
 ;      w = 0 ; free the data space
 ;      if wc eq npixels then print,'WARNING=All data outside min/max!!'
 ;    endif
@@ -628,8 +635,8 @@ endif
     w = where((idat lt zvmin or idat eq zfill),wc)
     if wc gt 0 then begin
       print,'WARNING=setting ',wc,' fill values in image data to black...'
-;      idat(w) = 0 ; set pixels to black - TJK changed this on 12/21/2000 for IMAGE data
-      idat(w) = zvmin ; set pixels to validmin
+;      idat[w] = 0 ; set pixels to black - TJK changed this on 12/21/2000 for IMAGE data
+      idat[w] = zvmin ; set pixels to validmin
       w = 0 ; free the data space
       if wc eq npixels then print,'WARNING=All data outside min/max!!'
     endif
@@ -640,16 +647,16 @@ endif
 ;blank/black one).
 
     for t = 0, nimages-1 do begin
-      image = idat(*,*,t)
+      image = idat[*,*,t]
       image_max = max(image)
       if (image_max lt 1.0 ) then begin
 	w = where(image le image_max, wc)
 	if wc gt 0 then begin
-	  image(w) = 1.0
+	  image[w] = 1.0
 	  if keyword_set(DEBUG) then print, 'image max lt 1, setting data le to the image max to 1.0 for IMAGE # ',t
 	endif
       endif
-      idat(*,*,t) = image
+      idat[*,*,t] = image
     endfor
 
 
@@ -658,15 +665,15 @@ endif
     w = where((idat gt zvmax),wc)
     if wc gt 0 then begin
      if keyword_set(DEBUG) then print,'WARNING=setting ',wc,' fill values in image data to red...'
-;      print, 'values are: ',idat(w)
-;6/25/2004 see below         idat(w) = zvmax -1; set pixels to red
+;      print, 'values are: ',idat[w]
+;6/25/2004 see below         idat[w] = zvmax -1; set pixels to red
       ;TJK 6/25/2004 - added red_offset function to determine offset
       ;(to red) because of cases like log scaled timed guvi data
       ;where the diff is less than 1.
       diff = zvmax - zvmin
       coffset = red_offset(GIF=GIF,diff)
       print, 'diff = ',diff, ' coffset = ',coffset
-      idat(w) = zvmax - coffset; set pixels to red
+      idat[w] = zvmax - coffset; set pixels to red
       w = 0 ; free the data space
       if wc eq npixels then print,'WARNING=All data outside min/max!!'
    endif
@@ -701,20 +708,20 @@ endif
       w = where((idat lt zvmin),wc)
       if wc gt 0 then begin
         print,'WARNING=filtering values less than 3-sigma from image data...'
-        idat(w) = zvmin ; set pixels to black
+        idat[w] = zvmin ; set pixels to black
         w = 0 ; free the data space
       endif
       w = where((idat gt zvmax),wc)
       if wc gt 0 then begin
         print,'WARNING=filtering values greater than 3-sigma from image data...'
-;6/25/2004 see below         idat(w) = zvmax -1; set pixels to red
+;6/25/2004 see below         idat[w] = zvmax -1; set pixels to red
          ;TJK 6/25/2004 - added red_offset function to determine offset
          ;(to red) because of cases like log scaled timed guvi data
          ;where the diff is less than 1.
          diff = zvmax - zvmin
          coffset = red_offset(GIF=GIF,diff)
          print, 'diff = ',diff, ' coffset = ',coffset
-         idat(w) = zvmax - coffset; set pixels to red
+         idat[w] = zvmax - coffset; set pixels to red
         w = 0 ; free the data space
       endif
     endif
@@ -723,7 +730,8 @@ endif
     idmax=max(idat) & idmin=min(idat) ; RTB 10/96
 
 if keyword_set(DEBUG) then begin
-	print, '!d.n_colors = ',!d.n_colors
+;	print, '!d.n_colors = ',!d.n_colors
+	print, '!d.table_size = ',!d.table_size
 	print, 'min and max after filtering = ',idmin, ' ', idmax
 endif
 
@@ -746,7 +754,7 @@ endif
 ;a keyword to plot_enaflux for smoothing...  CDAWeb sets the smooth keyword
 ;so we'll just pass it through.
 
-   case descriptor(0) of
+   case descriptor[0] of
 	'EUV' : begin	
 		  spin = 84.0
 		  polar = 0.6
@@ -764,8 +772,8 @@ endif
 ;well for EUV.
 ;		  print, 'smoothing hena image data'
 ;		  for numgif = 0, nimages-1 do begin
-;		    itmp = idat(*,*,numgif)
-;		    idat(*,*,numgif) = smooth(itmp,5)
+;		    itmp = idat[*,*,numgif]
+;		    idat[*,*,numgif] = smooth(itmp,5)
 ;		  endfor
 		  spin = 120.0
 		  polar = 6.0
@@ -790,7 +798,7 @@ endif
 		  itmp = idat
 	    	  idat = fltarr(12,12,nimages)
  		  for numgif = 0, nimages-1 do begin
-		    idat(*,*,numgif) = itmp(18:29,*,numgif)
+		    idat[*,*,numgif] = itmp[18:29,*,numgif]
 		  endfor
 		  spin = 96.0
 		  polar = 8.0
@@ -813,8 +821,8 @@ for numgif = 0, nimages-1 do begin
   temp_gif = gif + strtrim(string(numgif),2)
 ;  print, 'Creating temp gif = ',temp_gif
 
-  stat = plot_enaflux(edat(numgif),idat(*,*,numgif), spin, polar, $
-	 pos_dat(*,numgif), spin_dat(*,numgif), 1, wsize=win, DEBUG=DEBUG,$
+  stat = plot_enaflux(edat[numgif],idat[*,*,numgif], spin, polar, $
+	 pos_dat[*,numgif], spin_dat[*,numgif], 1, wsize=win, DEBUG=DEBUG,$
 	 noborder=noborder, nocircles=nocircles, nodipole=nodipole, $
 	 nocolorbar=nocolorbar, smooth=smooth, gif=temp_gif, reverseorder=reverseorder)	
 
@@ -825,7 +833,7 @@ for numgif = 0, nimages-1 do begin
     ;store these temporary gif file names into a string array
     if (n_elements(temp_gifs) eq 0) then temp_gifs = temp_gif else temp_gifs = [temp_gifs,temp_gif]
   endif else begin
-    print, 'Gif not generated for gif number ',numgif,' and date ',edat(numgif) 
+    print, 'Gif not generated for gif number ',numgif,' and date ',edat[numgif] 
   endelse
 endfor
 
@@ -851,8 +859,8 @@ endfor
 
 xmargin=!x.margin
 if COLORBAR then begin
- if (!x.omargin(1)+!x.margin(1)) lt 14 then !x.margin(1) = 14
- !x.margin(1) = 14
+ if (!x.omargin[1]+!x.margin[1]) lt 14 then !x.margin[1] = 14
+ !x.margin[1] = 14
  plot,[0,1],[0,1],/noerase,/nodata,xstyle=4,ystyle=4
 endif
 
@@ -865,7 +873,7 @@ endif
 ;TJK - 2/20/97 - if viking images then rotate them 270 degrees, otherwise
 ; leave them as is.
 
-if (vkluge)then for j=0,nimages-1 do idat(*,*,j) = rotate(idat(*,*,j),7)
+if (vkluge)then for j=0,nimages-1 do idat[*,*,j] = rotate(idat[*,*,j],7)
 
 
 ; Position each image individually to control layout
@@ -926,16 +934,17 @@ if (vkluge)then for j=0,nimages-1 do idat(*,*,j) = rotate(idat(*,*,j),7)
 
 	
 ;     print, 'now read small image out of gif file named ',temp_gifs(j),' and put in the final file called',gif
-     read_gif,temp_gifs(j),a,r,g,b ; & tvlct,r,g,b  ; read the gif and load colors from it
+     read_gif,temp_gifs[j],a,r,g,b ; & tvlct,r,g,b  ; read the gif and load colors from it
      tv, a, xpos, ypos, /DEVICE
-     foreground = !d.n_colors-1
+;     foreground = !d.n_colors-1
+     foreground = !d.table_size-1
 
      ; Print time tag
      if (j eq 0) then begin
-         prevdate = decode_cdfepoch(edat(j)) ;TJK get date for this record
-     endif else prevdate = decode_cdfepoch(edat(j-1)) ;TJK get date for this record
+         prevdate = decode_cdfepoch(edat[j]) ;TJK get date for this record
+     endif else prevdate = decode_cdfepoch(edat[j-1]) ;TJK get date for this record
 
-     edate = decode_cdfepoch(edat(j)) ;TJK get date for this record
+     edate = decode_cdfepoch(edat[j]) ;TJK get date for this record
 ;
 ;TJK 3/10/2006 for large thumbnails, always print the longer date -
 ;Bob's request.
@@ -957,8 +966,8 @@ if (vkluge)then for j=0,nimages-1 do idat(*,*,j) = rotate(idat(*,*,j),7)
      icol=icol+1
      ;TJK - delete temporary gif files as they are written out to the big gif
      cmd = strarr(2)
-     cmd(0) = "rm"
-     cmd(1) = temp_gifs(j)
+     cmd[0] = "rm"
+     cmd[1] = temp_gifs[j]
      spawn, cmd, /noshell
 
   endfor
@@ -989,9 +998,9 @@ if (vkluge)then for j=0,nimages-1 do idat(*,*,j) = rotate(idat(*,*,j),7)
       fname = GIF + '.sav' & save_mystruct,astruct,fname
     endif
     ; subtitle the plot
- ;  project_subtitle,astruct.(0),'',/IMAGE,TIMETAG=[edat(0),edat(nimages-1)]
+ ;  project_subtitle,astruct.(0),'',/IMAGE,TIMETAG=[edat[0],edat[nimages-1]]
     project_subtitle,astruct.(0),window_title,/IMAGE, $
-       TIMETAG=[edat(0),edat(nimages-1)]
+       TIMETAG=[edat[0],edat[nimages-1]]
 
 ; RTB 10/96 add colorbar
 if COLORBAR then begin
@@ -999,12 +1008,12 @@ if COLORBAR then begin
    cscale = [idmin, idmax]  ; RTB 12/11
 ;  cscale = [zvmin, zvmax]
   xwindow = !x.window
-  !x.window(1)=0.858   ; added 10/98 RTB
+  !x.window[1]=0.858   ; added 10/98 RTB
   !y.window=[0.1,0.9]
   offset = 0.01
   colorbar, cscale, ctitle, logZ=0, cCharSize=cCharSize, $ 
-        position=[!x.window(1)+offset,      !y.window(0),$
-                  !x.window(1)+offset+0.03, !y.window(1)],$
+        position=[!x.window[1]+offset,      !y.window[0],$
+                  !x.window[1]+offset+0.03, !y.window[1]],$
         fcolor=244, /image
 
   !x.window = xwindow

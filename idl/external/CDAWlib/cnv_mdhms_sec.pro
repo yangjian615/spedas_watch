@@ -1,8 +1,8 @@
-;$Author: kenb $
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/cnv_mdhms_sec.pro,v 1.2 1996/08/09 17:09:57 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 8 $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/cnv_mdhms_sec.pro,v 1.5 2012/05/07 22:11:01 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Kile Baker & R.J.Barnes
 ;
@@ -64,33 +64,33 @@ mday=[31,28,31,30,31,30,31,31,30,31,30,31]
 
 if n_params() eq 1 then begin
 	sz = size(yr)
-	if (sz(0) eq 1) then begin
-		y = yr(0)
-		m = yr(1)
-		d = yr(2)
-		h = yr(3)
-		n = yr(4)
-		s = yr(5)
+	if (sz[0] eq 1) then begin
+		y = yr[0]
+		m = yr[1]
+		d = yr[2]
+		h = yr[3]
+		n = yr[4]
+		s = yr[5]
 	endif else begin
-		if (sz(1) eq 6) then begin
-			y=intarr(sz(2))
+		if (sz[1] eq 6) then begin
+			y=intarr(sz[2])
 			m=y & d=y & h=y & n=y & s=y
-			y = yr(0,*)
-			m = yr(1,*)
-			d = yr(2,*)
-			h = yr(3,*)
-			n = yr(4,*)
-			s = yr(5,*)
+			y = yr[0,*]
+			m = yr[1,*]
+			d = yr[2,*]
+			h = yr[3,*]
+			n = yr[4,*]
+			s = yr[5,*]
 		endif else begin 
-		  if sz(2) eq 6 then begin
-			y=intarr(sz(1))
+		  if sz[2] eq 6 then begin
+			y=intarr(sz[1])
 			m=y & d=y & h=y & n=y & s=y
-			y= yr(*,0)
-			m= yr(*,1)
-			d= yr(*,2)
-			h= yr(*,3)
-			n= yr(*,4)
-			s= yr(*,5)
+			y= yr[*,0]
+			m= yr[*,1]
+			d= yr[*,2]
+			h= yr[*,3]
+			n= yr[*,4]
+			s= yr[*,5]
 		  endif else begin
 			print,"input array must be 6 x n  or n x 6"
 			help,yr
@@ -107,11 +107,11 @@ endif else begin
 	s = sc
 endelse
 ;
-t = long(jday(m-1)+d - 1)
+t = long(jday[m-1]+d - 1)
 if (n_elements(m) gt 1) then begin
 	leap = where (m gt 2 AND ((y mod 4) EQ 0))
 	ls = size(leap)
-	if ls(0) ne 0 then t(leap)=t(leap)+1
+	if ls[0] ne 0 then t[leap]=t[leap]+1
 endif $
 else if (m gt 2) AND ((y mod 4) EQ 0) then t= t+1
 ;

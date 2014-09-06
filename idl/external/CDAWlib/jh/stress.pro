@@ -37,6 +37,8 @@
 ;       Converted to SUN 13 Aug, 1989 --- R. Sterner. (FOR loop change).
 ;       --- 8 Dec, 1992 added recursion so that OLDSS and NEWSS may be arrays
 ;       T.J.Harris, University of Adelaide.
+;       R. Sterner, 2010 Apr 29 --- Converted arrays from () to [].
+;       R. Sterner, 2010 Dec 20 --- Added some comments.
 ;
 ; Copyright (C) 1985, Johns Hopkins University/Applied Physics Laboratory
 ; This software may be used, copied, or redistributed as long as it is not
@@ -50,21 +52,21 @@
  
 	if (n_params(0) lt 3) or keyword_set(hlp) then begin
 	  print,' String edit by sub-string. Precede, Follow, Delete, Replace.'
-	  print,' new = stress(old,cmd,n,oldss,newss,ned)
+	  print,' new = stress(old,cmd,n,oldss,newss,ned)'
 	  print,'   old = string to edit.                               in'
 	  print,'   cmd = edit command:                                 in'
-	  print,"     'P' = precede.
-	  print,"     'F' = follow.
-	  print,"     'D' = delete.
-	  print,"     'R' = replace.
+	  print,"     'P' = precede."
+	  print,"     'F' = follow."
+	  print,"     'D' = delete."
+	  print,"     'R' = replace."
 	  print,'   n = occurrence number to process (0 = all).         in'
 	  print,'   oldss = reference substring.                        in'
-	  print,'   oldss may have any of the following forms:
-	  print,'     1. s	  a single substring.
-	  print,'     2. s...    start at substring s, end at end of string.
-	  print,'     3. ...e    from start of string to substring e.
-	  print,'     4. s...e   from subs s to subs e.
-	  print,'     5. ...     entire string.
+	  print,'   oldss may have any of the following forms:'
+	  print,'     1. s	  a single substring.'
+	  print,'     2. s...    start at substring s, end at end of string.'
+	  print,'     3. ...e    from start of string to substring e.'
+	  print,'     4. s...e   from subs s to subs e.'
+	  print,'     5. ...     entire string.'
 	  print,"   newss = substring to add. Not needed for 'D'        in"
 	  print,'   ned = number of occurrences actually changed.       out'
 	  print,'   new = resulting string after editing.               out'
@@ -72,44 +74,44 @@
 	  return, -1
 	endif
  
-	;--- if old_in an array then do the first element then call recursively
-	old = old_in(0)
-	if (n_elements(new_in) Gt 0) then new = new_in(0)
+	;--- If old_in an array then do the first element then call recursively
+	old = old_in[0]
+	if (n_elements(new_in) Gt 0) then new = new_in[0]
  
-	cmd = strupcase(cmdx)
-	pdot = strpos(old,'...')
-	ssl = strlen(old)
-	sstyp = 0
-	pos1 = -1
-	pos2 = -1
-	rstr = strng
-	if (pdot eq -1) then sstyp = 1
-;	IF ((PDOT>0) EQ SSL-3) THEN SSTYP = 2
-	if (pdot gt 0) and (pdot eq ssl-3) then sstyp = 2
-	if (pdot eq 0) and (ssl gt 3) then sstyp = 3
-	if (pdot gt 0) and (pdot lt ssl-3) then sstyp = 4
-	if (pdot eq 0) and (ssl eq 3) then sstyp = 5
+        ;---  Determine old substring form as listed in the help text above  ---
+	cmd = strupcase(cmdx)                   ; Upper case command.
+	pdot = strpos(old,'...')                ; Position of any ...
+	ssl = strlen(old)                       ; Length of oldss.
+	sstyp = 0                               ; oldss form unknown.
+	pos1 = -1                               ; ?
+	pos2 = -1                               ; ?
+	rstr = strng                            ; Working copy of string to edit.
+	if (pdot eq -1) then sstyp = 1                  ; s 
+	if (pdot gt 0) and (pdot eq ssl-3) then sstyp=2 ; s...
+	if (pdot eq 0) and (ssl gt 3) then sstyp=3      ; ...e
+	if (pdot gt 0) and (pdot lt ssl-3) then sstyp=4 ; s...e
+	if (pdot eq 0) and (ssl eq 3) then sstyp=5      ; ...
 	ned = 0		; Number of occurrences actually changed.
  
  
-	case sstyp of
-1:	  begin
+	case sstyp of                   ; Pick off start and end of subnstring.
+1:	  begin                                 ; s
 	    s = old
 	    e = ''
 	  end
-2:	  begin
+2:	  begin                                 ; s...
 	    s = strsub(old,0,ssl-4)
 	    e = ''
     	  end
-3:  	  begin
+3:  	  begin                                 ; ...e
 	    s = ''
 	    e = strsub(old,3,ssl-1)
 	  end
-4:  	  begin
+4:  	  begin                                 ; s...e
 	    s = strsub(old,0,pdot-1)
 	    e = strsub(old,pdot+3,ssl-1)
 	  end
-5:  	  begin
+5:  	  begin                                 ; ...
 	    s = ''
 	    e = ''
 	  end
@@ -124,36 +126,36 @@ loop:
 	for i = 1, nfor do begin
 	  pos = pos + 1
 	  case sstyp of
-    1:      pos = strpos(rstr,s,pos)
-    2:      pos = strpos(rstr,s,pos)
-    4:      pos = strpos(rstr,s,pos)
-    3:      pos = strpos(rstr,e,pos)
-    5:      pos = 0
+    1:      pos = strpos(rstr,s,pos)    ; s
+    2:      pos = strpos(rstr,s,pos)    ; s...
+    3:      pos = strpos(rstr,e,pos)    ; ...e
+    4:      pos = strpos(rstr,s,pos)    ; s...e
+    5:      pos = 0                     ; ...
 	  endcase
   	  if pos lt 0 then goto, done
 	endfor
  
 ;----------  Find substring # N END  ----------------
     	case sstyp of
-1:  	  begin
+1:  	  begin                         ; s
 	    pos1 = pos
 	    pos2 = pos + strlen(s) - 1
 	  end
-2:  	  begin
+2:  	  begin                         ; s...
 	    pos1 = pos
 	    pos2 = strlen(rstr) - 1
 	  end
-3:  	  begin
+3:  	  begin                         ; ...e
 	    pos1 = 0
 	    pos2 = pos + strlen(e) - 1
 	  end
-4:  	  begin
+4:  	  begin                         ; s...e
 	    pos1 = pos
 	    pos2 = strpos(rstr,e,pos+1)
 	    if (pos2 lt 0) then goto, done
 	    pos2 = pos2 + strlen(e) - 1
 	  end
-5:  	  begin
+5:  	  begin                         ; ...
 	    pos1 = 0
 	    pos2 = strlen(rstr) - 1
 	  end
@@ -196,8 +198,8 @@ done:
 	;--- if old_in an array then do the first element then call recursively
 	;--- and accumulate the results
 	if (n_elements(old_in) gt 1) then begin	;call again until done all
-		old = old_in(1:*)
-		if (n_elements(new_in) gt 1) then new = new_in(1:*)
+		old = old_in[1:*]
+		if (n_elements(new_in) gt 1) then new = new_in[1:*]
 		tmp = 0
 		rstr = stress(rstr,cmdx,n,old,new,tmp)
 		ned = ned+tmp

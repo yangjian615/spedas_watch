@@ -40,10 +40,13 @@ end
 ;-----------------------------------------------------------------------------
 ; Returns the minimum and maximum epoch values of the given CDF data files.
 
-function cdfx_time_range_of_files, fpaths
+function cdfx_time_range_of_files, fpaths, epoch_vartype=epoch_vartype
 
 rmin = 6.0e13 ; about 1900
 rmax = 7.0e13 ; about 2200
+
+a_rmin=[0]
+a_rmax=[0]
 
 for i = 0, n_elements(fpaths)-1 do begin
 ;TJK add check for master, don't look for time range in the masters
@@ -58,34 +61,40 @@ found = 0L ; initialize flag
     for varindex = 0, info.nzvars-1 do begin
       varname = (cdf_varinq(cdfid, varindex, /zvar)).name
 
-;TJK 12/7/2006 - change this to look for range_epoch variable 1st
-;since that's the only "good" epoch variable in the THEMIS cdfs
-;if not found, then look for a regular epoch variable.
-;    if stregex(varname, 'epoch.*|range_epoch', /bool, /fold) then begin
-      if stregex(varname, 'range_epoch', /bool, /fold) then begin
-        found = 1L
-        epoch = read_myvariable(varname, cdfid, vary, dtype, recs)
-        emin = epoch[0]
-        emax = epoch[n_elements(epoch)-1]
-;        print, emin,emax
-;TJK 4/30/2007 - only replace rmin/max w/ different epoch values (from
-;                the same cdf) if the new min/max are valid
-;TJK 5/15/2008 - change to ge instead of gt, since we have cdfs w/
-;                just one epoch and we want to show the cdfs time, vs.
-;                some strange start year like 1901...
-;
-;        if ((i eq 0) and (emax gt emin)) then begin
-        if ((i eq 0) and (emax ge emin)) then begin
-          rmin = emin
-          rmax = emax
-        endif else begin
-            rmin = min([rmin, emin])
-            rmax = max([rmax, emax])
-        endelse
+    ;TJK 12/7/2006 - change this to look for range_epoch variable 1st
+    ;since that's the only "good" epoch variable in the THEMIS cdfs
+    ;if not found, then look for a regular epoch variable.
+    ;    if stregex(varname, 'epoch.*|range_epoch', /bool, /fold) then begin
+    if stregex(varname, 'range_epoch', /bool, /fold) then begin
+       found = 1L
+       epoch = read_myvariable(varname, cdfid, vary, dtype, recs)
+       cdf_control,CDFid,VAR=varname,GET_VAR_INFO=vinfo2 ; inquire more about the var
+       if (vinfo2.maxrec ne -1) then begin ; ie, epoch var is not empty
+         emin = epoch[0]
+         emax = epoch[n_elements(epoch)-1]
+       endif	 
+       ;        print, emin,emax
+       ;TJK 4/30/2007 - only replace rmin/max w/ different epoch values (from
+       ;                the same cdf) if the new min/max are valid
+       ;TJK 5/15/2008 - change to ge instead of gt, since we have cdfs w/
+       ;                just one epoch and we want to show the cdfs time, vs.
+       ;                some strange start year like 1901... 
+       ;
+       ;        if ((i eq 0) and (emax gt emin)) then begin
+       if ((i eq 0) and (emax ge emin)) then begin
+          ;rmin = emin
+          ;rmax = emax
+          a_rmin = emin
+          a_rmax = emax
+       endif else begin
+          ;rmin = min([rmin, emin])
+          ;rmax = max([rmax, emax])
+          a_rmin = min([rmin, emin])
+          a_rmax = max([rmax, emax])
+       endelse
 
-       endif    
-     endfor
-  
+     endif    
+   endfor
     if (not found) then begin ;if range_epoch variable not found, look for
                           ;regular epochs
 
@@ -95,39 +104,56 @@ found = 0L ; initialize flag
         varname = varinfo.name
         vartype = varinfo.datatype
         varys = varinfo.recvar
-;TJK 12/15/2006 - determine that the epoch variable we want to use has
-;                 type cdf_epoch AND is record varying (THEMIS has
-;                 several epochs, so you can't just take the 1st one
-;                 that's cdf_epoch
-        if (stregex(vartype, 'cdf_epoch', /bool, /fold) and (varys eq 'VARY')) then begin
+        ;TJK 12/15/2006 - determine that the epoch variable we want to use has
+        ;                 type cdf_epoch AND is record varying (THEMIS has
+        ;                 several epochs, so you can't just take the 1st one
+        ;                 that's cdf_epoch
+        ; RCJ 11/01/2012  added cdf_epoch16, cdf_time_tt2000 below:
+        ;if (stregex(vartype, 'cdf_epoch', /bool, /fold) and (varys eq 'VARY')) then begin
+        if ((stregex(vartype, 'cdf_epoch', /bool, /fold)) or $
+	    (stregex(vartype, 'cdf_epoch16', /bool, /fold)) or $
+	    (stregex(vartype, 'cdf_time_tt2000', /bool, /fold)) $
+	    and (varys eq 'VARY')) then begin
 
-;print, 'DEBUG, found  regular epoch, varname = ',varname
+          ;print, 'DEBUG, found epoch, varname = ',varname
 
+	  epoch_vartype=vartype  ;  to be passed back to calling program
           epoch = read_myvariable(varname, cdfid, vary, dtype, recs)
-          emin = epoch[0]
-          emax = epoch[n_elements(epoch)-1]
-;TJK 4/30/2007 - only replace rmin/max w/ different epoch values (from
-;                the same cdf) if the new min/max are valid
-;TJK 5/15/2008 - change "gt" to "ge" to handle the case where we have
-;                one cdf w/ one record - we want the times shown on the
-;interface to at least be from the cdf, vs. a year like 1901.
+          cdf_control,CDFid,VAR=varname,GET_VAR_INFO=vinfo2 ; inquire more about the var
+          if (vinfo2.maxrec ne -1) then begin ; ie, epoch var is not empty
+            emin = epoch[0]
+            emax = epoch[n_elements(epoch)-1]
+          endif
+          ;TJK 4/30/2007 - only replace rmin/max w/ different epoch values (from
+          ;                the same cdf) if the new min/max are valid
+          ;TJK 5/15/2008 - change "gt" to "ge" to handle the case where we have
+          ;                one cdf w/ one record - we want the times shown on the
+          ;interface to at least be from the cdf, vs. a year like 1901.
           if ((i eq 0) and (emax ge emin)) then begin
             rmin = emin
             rmax = emax
+            a_rmin = [a_rmin,rmin]
+            a_rmax = [a_rmax,rmax]
           endif else begin
-;TJK 2/15/2008 add code to compare epoch vs. epoch16 values (can't do w/
-;min/max functions).  THEMIS has datasets w/ both epoch and epoch16s.
+            ;TJK 2/15/2008 add code to compare epoch vs. epoch16 values (can't do w/
+            ;min/max functions).  THEMIS has datasets w/ both epoch and epoch16s.
             if (!version.release ge '6.2') then begin
                 if (size(emin,/tname) eq 'DCOMPLEX')then begin
                     if (cdf_epoch_compare(rmin, emin) ge 0) then rmin = emin
                     if (cdf_epoch_compare(emax, rmax) ge 0) then rmax = emax
+                    a_rmin = [a_rmin,rmin]
+                    a_rmax = [a_rmax,rmax]
                 endif else begin
                   rmin = min([rmin, emin])
                   rmax = max([rmax, emax])
+                  a_rmin = [a_rmin, rmin]
+                  a_rmax = [a_rmax, rmax]
                 endelse
             endif else begin
                 rmin = min([rmin, emin])
                 rmax = max([rmax, emax])
+                a_rmin = [a_rmin,rmin]
+                a_rmax = [a_rmax,rmax]
             endelse
           endelse
 
@@ -140,6 +166,9 @@ found = 0L ; initialize flag
     cdf_close, cdfid
   endif
 endfor
+
+if n_elements(a_rmin) gt 1 then rmin=min(a_rmin[1:*]) else rmin=a_rmin
+if n_elements(a_rmax) gt 1 then rmax=max(a_rmax[1:*]) else rmax=a_rmax
 
 return, [rmin, rmax]
 end
@@ -161,7 +190,7 @@ for i = 0, n_elements(fpaths)-1 do begin
   fpath = fpaths[i]
 
   if not stregex(fpath, '.*_00000000_v[0-9]+[.]cdf$', /boolean, /fold) then begin
-    print,'This does not check for .CDF, only .cdf'
+    ;print,'This does not check for .CDF, only .cdf'
 
     ; then got data file, not a master
     cpaths = [cpaths, fpath] ; add it now
@@ -286,8 +315,21 @@ end
 ;-----------------------------------------------------------------------------
 
 function cdfx_opencdfs,gleader=gleader
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+
 
 common cdfxcom, CDFxwindows, CDFxprefs ; include cdfx common
+
+CATCH,error_status  ; added this to deal w/ errors coming from cdf_open
+if (error_status ne 0) then begin
+  print,'Error: ',!error_state.msg
+endif
+
 
 ; Get a set of CDF files from user.
 ;paths = dialog_pickfile(title='Choose CDF(s)',/multiple) ;/fix_filter, filter="*.cdf"
@@ -328,7 +370,9 @@ endif else $
 
 vnames = cdfx_uniq_sort(vnames)
 new_vnames = ['']
-vlist = ['']
+;vlist = ['']
+tmp_vlist = ['']
+fname=['']
 
 ;nvars  = n_elements(vnames)
 ;vlist  = strarr(nvars)
@@ -338,19 +382,50 @@ vlist = ['']
 for i=0, n_elements(vnames)-1 do begin ; construct the list of variables name
   vname = vnames[i]
 
-  vtype = cdfx_read_attr(cdfid, vname, 'VAR_TYPE')
-  if vtype eq ''  and  mcdfid ne -1 then $
-    vtype = cdfx_read_attr(mcdfid, vname, 'VAR_TYPE')
+  ;vtype = cdfx_read_attr(cdfid, vname, 'VAR_TYPE')
+  ;if vtype eq ''  and  mcdfid ne -1 then vtype = cdfx_read_attr(mcdfid, vname, 'VAR_TYPE')
+  ; RCJ 01/14/2013  I think the call below will ensure what's in the master cdf has priority
+  if mcdfid ne -1 then vtype = cdfx_read_attr(mcdfid, vname, 'VAR_TYPE') else $
+      vtype = cdfx_read_attr(cdfid, vname, 'VAR_TYPE')
 
-  fname = cdfx_read_attr(cdfid, vname, 'FIELDNAM')
-  if fname eq ''  and  mcdfid ne -1 then $
-    fname = cdfx_read_attr(mcdfid, vname, 'FIELDNAM') + ' (M)'
-
-  if vtype eq 'data'  or  vtype eq 'support_data' then begin
-    vlist = [vlist, string(format='(a25,a15,a50)', vname, vtype, fname)]
+  if vtype eq 'data'  then begin
+    tmp_vlist = [tmp_vlist, vname]
     new_vnames = [new_vnames, vname]
+    ;tmp_fname = cdfx_read_attr(cdfid, vname, 'CATDESC')
+    ;if tmp_fname eq ''  and  mcdfid ne -1 then tmp_fname = cdfx_read_attr(mcdfid, vname, 'CATDESC') + ' (M)'
+    ; RCJ 01/14/2013  I think the call below will ensure what's in the master cdf has priority
+    if mcdfid ne -1 then tmp_fname = cdfx_read_attr(mcdfid, vname, 'CATDESC') + ' (M)' else tmp_fname = cdfx_read_attr(cdfid, vname, 'CATDESC')
+    fname=[fname,tmp_fname]
   endif
+
+  ;fname = cdfx_read_attr(cdfid, vname, 'FIELDNAM')
+  ;if fname eq ''  and  mcdfid ne -1 then $
+  ;  fname = cdfx_read_attr(mcdfid, vname, 'FIELDNAM') + ' (M)'
+
+  ;if vtype eq 'data'  or  vtype eq 'support_data' then begin
+  ; RCJ 12/12/2012  Line below will make interface look more like
+  ;        CDAWeb selection page, where only 'data' vars are displayed.
+;  if vtype eq 'data'  then begin
+;    ;vlist = [vlist, string(format='(a25,a15,a50)', vname, vtype, fname)]
+;    ;vlist = [vlist, string(format='(a20,2x,a10,2x,a50)', vname, vtype, fname)]
+;    thisformat='(a'+strtrim(max(strlen(fname)),2) + ',2x,a'+strtrim(max(strlen(vname)),2)+')'
+;    print,'thisformat = ',thisformat
+;    vlist = [vlist, string(format=thisformat, fname,vname)]
+;    new_vnames = [new_vnames, vname]
+;  endif
+
 endfor
+
+fname=fname[1:*]
+tmp_vlist=tmp_vlist[1:*]
+vlist=''
+thisformat='(a-'+strtrim(max(strlen(fname)),2) + ',3x,a-'+strtrim(max(strlen(tmp_vlist)),2)+')'
+for i=0,n_elements(tmp_vlist)-1 do begin
+   vlist = [vlist, string(format=thisformat, fname[i],+'('+tmp_vlist[i])+')']
+endfor
+vlist = vlist[1:*]
+vnames = new_vnames[1:*]
+
 !quiet = 0
 ;TJK record the number of selectable variables for comparison down below
 total_vnames = n_elements(new_vnames)-1 ; -1 because the 1st elem. is blank
@@ -365,11 +440,9 @@ if n_elements(vlist) lt 2 then begin
   return, -1
 endif
 
-vlist = vlist[1:*]
-vnames = new_vnames[1:*]
 nvars = n_elements(vlist)
 
-trange = cdfx_time_range_of_files(cpaths)
+trange = cdfx_time_range_of_files(cpaths,epoch_vartype=epoch_vartype)
 tstart = cdfx_time_string_of_epoch(trange[0])
 tstop  = cdfx_time_string_of_epoch(trange[1])
 
@@ -382,7 +455,7 @@ base4	= widget_base(base3, /column, /frame)
 base2	= widget_base(base3, /column, /frame)
 
 w	= widget_label(base4, value='Time Interval')
-w	= widget_label(base4, value='(Format: YYYY/MM/DD hh:mm:ss)')
+w	= widget_label(base4, value='(Format: YYYY/MM/DD hh:mm:ss.mmm)')
 bstart	= widget_base(base4, /row)
 lstart	= widget_label(bstart, value='Start time:')
 bstop	= widget_base(base4, /row)
@@ -395,9 +468,13 @@ info = ptr_new({$
     set_value = lonarr(nvars), $
     label_top = strtrim(string(nvars), 2) + ' Variables', $
     y_scroll = (20 * !d.y_ch_size), $
-    x_scroll = (95 * !d.x_ch_size)), $
-  tStart:	widget_text(bstart, value=tstart, xsize=20, /editable), $
-  tStop:	widget_text(bstop , value=tstop , xsize=20, /editable), $
+    ;x_scroll = (95 * !d.x_ch_size)), $
+    x_scroll = (max(strlen(vlist)) * !d.x_ch_size)>(95 * !d.x_ch_size)), $
+  ;tStart:	widget_text(bstart, value=tstart, xsize=20, /editable), $
+  ;tStop:	widget_text(bstop , value=tstop , xsize=20, /editable), $
+  ; Increasing size for miliseconds:
+  tStart:	widget_text(bstart, value=tstart, xsize=23, /editable), $
+  tStop:	widget_text(bstop , value=tstop , xsize=23, /editable), $
   bProceed:	widget_button(base2, value='Proceed'), $
   bSelectAll:	widget_button(base2, value='Select All'), $
   bUnselectAll:	widget_button(base2, value='Unselect All'), $
@@ -428,16 +505,47 @@ if wc gt 0 then begin
 ;                otherwise we get all the variables all the time.
 
   if tstart eq "" or tstop eq "" then begin
-    if (total_vnames eq n_elements(vnames(w))) then $
+    if (total_vnames eq n_elements(vnames[w])) then $
       a = read_mycdf(' ', allpaths, /nodatastruct, ALL=2) else $
       a = read_mycdf(vnames[w], allpaths, /nodatastruct)
   endif else begin
-    if (total_vnames eq n_elements(vnames(w)))then $
+    split=strsplit(tstart,':',/extract)
+    split=strsplit(split[2],'.',/extract)
+    if split[1] ne '' then begin
+       startmsec=strmid(split[1],0,3)
+       startusec=strmid(split[1],3,3)
+       startnsec=strmid(split[1],6,3)
+       startpsec=strmid(split[1],9,3)
+    endif   
+    ;
+    split=strsplit(tstop,':',/extract)
+    split=strsplit(split[2],'.',/extract)
+    if split[1] ne '' then begin
+       stopmsec=strmid(split[1],0,3)+1
+       stopusec=strmid(split[1],3,3)
+       stopnsec=strmid(split[1],6,3)
+       stoppsec=strmid(split[1],9,3)
+    endif   
+    ;
+    if (total_vnames eq n_elements(vnames[w]))then $
       a = read_mycdf(' ', allpaths, /nodatastruct, ALL=2, $
-        tstart=tstart, tstop=tstop) else $
+        tstart=tstart, tstop=tstop, start_msec=startmsec,stop_msec=stopmsec, start_usec=startusec,stop_usec=stopusec,$
+	start_nsec=startnsec,stop_nsec=stopnsec, start_psec=startpsec,stop_psec=stoppsec) else $
       a = read_mycdf(vnames[w], allpaths, /nodatastruct, $
-        tstart=tstart, tstop=tstop)
+        tstart=tstart, tstop=tstop, start_msec=startmsec,stop_msec=stopmsec, start_usec=startusec,stop_usec=stopusec,$
+	start_nsec=startnsec,stop_nsec=stopnsec, start_psec=startpsec,stop_psec=stoppsec)
   endelse
+  ;if tstart eq "" or tstop eq "" then begin
+  ;  if (total_vnames eq n_elements(vnames[w])) then $
+  ;    a = read_mycdf(' ', allpaths, /nodatastruct, ALL=2) else $
+  ;    a = read_mycdf(vnames[w], allpaths, /nodatastruct)
+  ;endif else begin
+  ;  if (total_vnames eq n_elements(vnames[w]))then $
+  ;    a = read_mycdf(' ', allpaths, /nodatastruct, ALL=2, $
+  ;      tstart=tstart, tstop=tstop) else $
+  ;    a = read_mycdf(vnames[w], allpaths, /nodatastruct, $
+  ;      tstart=tstart, tstop=tstop)
+  ;endelse
 endif
 
 ptr_free, info

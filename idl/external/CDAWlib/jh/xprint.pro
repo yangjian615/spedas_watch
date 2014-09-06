@@ -58,6 +58,7 @@
 ;       R. Sterner, 30 Jul, 1993 --- coordinate system used only to set
 ;       initial point, not needed for each print.
 ;       Handle log axes.
+;       R. Sterner, 2010 May 04 --- Converted arrays from () to [].
 ;
 ; Copyright (C) 1989, Johns Hopkins University/Applied Physics Laboratory
 ; This software may be used, copied, or redistributed as long as it is not
@@ -99,7 +100,7 @@
 	  print,'     > 1 pixel per plot do CHARTHICK=[thk,step]'
 	  print,'     where step is in pixels (def=1).'
 	  print,'   DY=factor.  Adjust auto line space by this factor. '+$
-	    'On /INIT only.
+	    'On /INIT only.'
 	  print,'     Try DY=1.5 for PS plots with the printer fonts '+$
 	    '(not PSINIT,/VECT).'
 	  print,'   YSPACE=out return line spacing in Y.'
@@ -131,15 +132,15 @@
 	  if n_elements(charsize) ne 0 then size=charsize
 	  if n_elements(size) ne 0 then szc = size
 	  cthk = 1	; Default text thickness (pixels).
-	  if n_elements(charthick) gt 0 then cthk = charthick(0)
+	  if n_elements(charthick) gt 0 then cthk = charthick[0]
 	  cst = 1L	; Default thickness step size (pixels).
-	  if n_elements(charthick) gt 1 then cst = long(charthick(1))
+	  if n_elements(charthick) gt 1 then cst = long(charthick[1])
 	  clo = -long((cthk-1)/2) ; Thick text: step from clo to chi by cst.
 	  chi = long(cthk/2)
 	  ;------  Get pixel and line spacing in normalized coordinates  ---
 	  aa = convert_coord([0,1],[0,1], /dev, /to_norm)
-	  px = aa(0,1) - aa(0,0)
-	  py = aa(1,1) - aa(1,0)
+	  px = aa[0,1] - aa[0,0]
+	  py = aa[1,1] - aa[1,0]
 	  dy = py*!d.y_ch_size*szc
 	  if n_elements(dy2) gt 0 then dy = dy*dy2  ; Line spacing over-ride.
 	  yspace = dy				    ; Output line spacing.
@@ -148,7 +149,7 @@
 	  case 1 of
 keyword_set(device): begin			; Device.
 	      aa = convert_coord([p1],[p2], /dev, /to_norm)
-	      xc = aa(0)  & yc = aa(1)
+	      xc = aa[0]  & yc = aa[1]
 	    end
 keyword_set(norm): begin			; Normalized.
 	      xc = p1  & yc = p2
@@ -158,7 +159,7 @@ keyword_set(nwin): begin			; Normalized window.
 	    end
 else:       begin				; Data (def).
 	      aa = convert_coord([p1],[p2], /data, /to_norm)
-	      xc = aa(0)  & yc = aa(1)
+	      xc = aa[0]  & yc = aa[1]
 	    end
 	  endcase
 	  return

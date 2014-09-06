@@ -20,6 +20,7 @@
 ;       Johns Hopkins University Applied Physics Laboratory.
 ;       Added FIX 20 Dec, 1984 to avoid roundoff error.
 ;       changed it to LONG 8 Mar, 1985 to avoid integer overflows.
+;       R. Sterner, 2011 Jul 29 --- Handled the case where xlo eq xhi.
 ;
 ; Copyright (C) 1984, Johns Hopkins University/Applied Physics Laboratory
 ; This software may be used, copied, or redistributed as long as it is not
@@ -40,6 +41,7 @@
 	  return, -1
 	endif
  
+        if xlo eq xhi then return, xlo
 	return, xlo+xst*findgen(1+ long( (xhi-xlo)/xst) )
 
 	end

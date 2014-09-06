@@ -1,8 +1,8 @@
-;$Author: kenb $ 
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/plasma_movie.pro,v 1.10 2005/05/02 20:38:37 klipsch Exp klipsch $
-;$Locker: klipsch $
-;$Revision: 8 $
+;$Author: nikos $ 
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/plasma_movie.pro,v 1.12 2012/04/30 22:17:56 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ;+------------------------------------------------------------------------
 ; NAME: PLASMA_MOVIE
 ; PURPOSE: To plot plasmagram image data given in the input parameter astruct
@@ -31,7 +31,13 @@
 ;       Richard Baldwin, NASA/GSFC/Code 632.0, 
 ; MODIFICATION HISTORY:
 ;      09/30/98 : R. Baldwin   : Initial version 
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION plasma_movie, astruct, zname, $
                       XSIZE=XSIZE, YSIZE=YSIZE, GIF=GIF, REPORT=REPORT,$
                       TSTART=TSTART,TSTOP=TSTOP,NONOISE=NONOISE,$
@@ -71,14 +77,14 @@ if COLORBAR  then xco=80 else xco=0 ; No colorbar
 
 ; Verify the type of the first parameter and retrieve the data
 a = size(zstruct)
-if (a(n_elements(a)-2) ne 8) then begin
+if (a[n_elements(a)-2] ne 8) then begin
   print,'ERROR= Z parameter to plasma_movie not a structure' & return,-1
 endif else begin
   a = tagindex('DAT',tag_names(zstruct))
-  if (a(0) ne -1) then idat = zstruct.DAT $
+  if (a[0] ne -1) then idat = zstruct.DAT $
   else begin
     a = tagindex('HANDLE',tag_names(zstruct))
-    if (a(0) ne -1) then handle_value,zstruct.HANDLE,idat $
+    if (a[0] ne -1) then handle_value,zstruct.HANDLE,idat $
     else begin
       print,'ERROR= Z parameter does not have DAT or HANDLE tag' & return,-1
     endelse
@@ -95,7 +101,7 @@ if keyword_set(YSIZE) then ys=YSIZE else ys=512
 ; Determine if data is a single image, if so then set the frame
 ; keyword because a single thumbnail makes no sense
 isize = size(idat)
-if (isize(0) eq 2) then n_images=1 else n_images=isize(isize(0))
+if (isize[0] eq 2) then n_images=1 else n_images=isize[isize[0]]
 if (n_images eq 1) then FRAME=1
 
 if keyword_set(FRAME) then begin ; produce plot of a single frame
@@ -149,8 +155,8 @@ endif else begin ; produce movie of all images
 	device,/close
         ; delete temporary gif file
 	cmd = strarr(2)
-	cmd(0) = "rm"
-	cmd(1) = GIF1
+	cmd[0] = "rm"
+	cmd[1] = GIF1
 	spawn, cmd, /noshell
      endif
      ii = 0 ;clear out array

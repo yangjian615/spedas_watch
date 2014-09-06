@@ -5,24 +5,24 @@ FUNCTION find_valid_edge,arr,ind
    
    
 arr_sz=size(arr)
-if(arr_sz(0) ne 2) then begin
+if(arr_sz[0] ne 2) then begin
    print, "ERROR: array not 2-D; find_valid_edge"
    return, -1
 endif 
-brr=fltarr(arr_sz(1),arr_sz(2))
-brr(ind)=arr(ind)
+brr=fltarr(arr_sz[1],arr_sz[2])
+brr[ind]=arr[ind]
 irow=-1 
-for i=0, arr_sz(2)-1 do begin
-   wc=where(brr(*,i) ne 0.0,wcn)
+for i=0, arr_sz[2]-1 do begin
+   wc=where(brr[*,i] ne 0.0,wcn)
    if(wcn ne 0) then begin
       irow=irow+1
       if(irow eq 0) then begin
          f_row=i
-         p1=brr(wc(0),i)
-         p2=brr(wc(n_elements(wc)-1),i)
+         p1=brr[wc[0],i]
+         p2=brr[wc(n_elements(wc)-1),i]
       endif
-      p3=brr(wc(0),i)
-      p4=brr(wc(n_elements(wc)-1),i)
+      p3=brr[wc[0],i]
+      p4=brr[wc(n_elements(wc)-1),i]
    endif
 endfor
  
@@ -30,27 +30,33 @@ return, [p1,p2,p3,p4]
 
 end
 
-function avg, x
-  return, total(x)/float(n_elements(x))
-end
+;----------------------------------------------
+;function spdf_simple_avg, x
+;  return, total(x)/float(n_elements(x))
+;end
+
+;----------------------------------------------
 
 function doByteScale, Z2, minZ1, maxZ1, Zsize, wBad, flipColorBar, is1dim
 ;
 common deviceTypeC,deviceType,file;required for inverting grayscale Postscript
-if (Zsize(Zsize(0)+1) ne 1) then $ ; not Byte array
-   Zb = bytscl(Z2, min=minZ1, max=maxZ1, top=!d.n_colors-3)+1B else Zb = Z2
+if (Zsize[Zsize[0]+1] ne 1) then $ ; not Byte array
+;   Zb = bytscl(Z2, min=minZ1, max=maxZ1, top=!d.n_colors-3)+1B else Zb = Z2
+   Zb = bytscl(Z2, min=minZ1, max=maxZ1, top=!d.table_size-3)+1B else Zb = Z2
 ; reserve black and white at ends of colorscale
 ; replace bad values with 0 but keep 2-dim array
-if not is1dim then if (wBad(0) ge 0) then Zb(wBad) = 0B ; minZ1
+if not is1dim then if (wBad[0] ge 0) then Zb[wBad] = 0B ; minZ1
 if (n_elements(deviceType) ne 0) then if (deviceType eq 2) then $
-   Zb = (!d.n_colors-1B) - Zb ; invert grayscale for Postscript
-if flipColorBar then Zb = (!d.n_colors-1B) - Zb ; invert for inverted cscale
+;   Zb = (!d.n_colors-1B) - Zb ; invert grayscale for Postscript
+   Zb = (!d.table_size-1B) - Zb ; invert grayscale for Postscript
+;if flipColorBar then Zb = (!d.n_colors-1B) - Zb ; invert for inverted cscale
+if flipColorBar then Zb = (!d.table_size-1B) - Zb ; invert for inverted cscale
 return, Zb
 ;
 end ; doByteScale
 
 pro auroral_image, Z, Lon, Lat, centerLonLat=centerLonLat, title=title, $
-  centerPole=centerPole, continents=continent, nogrid=nogrid, nLat=nLat, $
+  centerPole=centerPole, continents=continents, nogrid=nogrid, nLat=nLat, $
   nLon=nLon, rangeLonLat=rangeLonLat, debug=debug, rotation=rotation, $
   nocolorbar=nocolorbar, ctitle=ctitle, cscale=cscale, cCharSize=cCharSize, $
   maxValue=maxValue, minValue=minValue, fillValue=fillValue, logZ=logZ, $
@@ -97,7 +103,7 @@ pro auroral_image, Z, Lon, Lat, centerLonLat=centerLonLat, title=title, $
 ;	  [minLat, minLon, maxLat, maxLon]  (Lat may be >90 or <-90 and 
 ;	  Lon may be >180 or <-180 for crossing poles and Dateline)
 ;		default is to plot the whole sphere (Earth)
-;	CONTINENT=continent: switch to plot continent outlines 
+;	CONTINENTs=continents: switch to plot continent outlines 
 ;	  (requires Lon and Lat in geographic coordinates)
 ;	TJK added the following on 12/12/2003 for vis lab requirements
 ;       FILL_CONT=fill continental outlines w/ solid color
@@ -171,7 +177,7 @@ pro auroral_image, Z, Lon, Lat, centerLonLat=centerLonLat, title=title, $
 ; 	Written by:	Emily A. Greene, Hughes STX, emily@xfiles.gsfc.nasa.gov
 ;	and Bobby Candey, NASA GSFC Code 632; Robert.M.Candey.1@gsfc.nasa.gov
 ;
-;  $Id: auroral_image.pro 7092 2010-01-12 20:18:45Z jimm $
+;  $Id: auroral_image.pro 15739 2014-09-03 22:05:59Z nikos $
 ;
 ;	1995 Sept 26	BC, original full copy
 ;	1995 Sept 29	BC, beta
@@ -208,13 +214,13 @@ status = 0L
 if (n_params(0) lt 1) then message, 'Auroral_image, Z, Lon, Lat'
 Z1 = reform(Z) ; remove extraneous dimensions
 Zsize = size(Z1)
-if ((Zsize(0) lt 1) or (Zsize(0) gt 2)) then begin
+if ((Zsize[0] lt 1) or (Zsize[0] gt 2)) then begin
    msgText = 'Requires 1- or 2-dimensional Z array'
    if doStatus then begin
       message, msgText, /info & status = -1L & return
    endif else message, msgText
 endif
-if (Zsize(0) eq 1) then is1dim = 1 else is1dim = 0
+if (Zsize[0] eq 1) then is1dim = 1 else is1dim = 0
 
 catch, error_status
 if error_status ne 0 then begin
@@ -231,20 +237,20 @@ endif
 case n_params(0) of
 1: begin ; Z only
    if (is1dim eq 0) then begin ; 2-dim
-      midZ = long(Zsize(2)/2)
+      midZ = long(Zsize[2]/2)
       Ltt = findgen(midZ)/midZ * 89. + 1
-      Lat1 = ([Ltt,90.,reverse(Ltt)])(0:Zsize(2)-1)
-      Lat1 = rebin(reform(Lat1,1,Zsize(2),/overwrite),Zsize(1),Zsize(2),/sample)
-      Lat1 = (Lat1 + (randomu(seed,Zsize(1),Zsize(2)) - 0.5)*2.) > 1 < 90
-      Lon1 = rebin(findgen(Zsize(1))/Zsize(1)*360.-180.,Zsize(1),Zsize(2),/sample)
-      Lon1 = (Lon1 + (randomu(seed,Zsize(1),Zsize(2)) - 0.5)*2.) > (-180) < 180
+      Lat1 = ([Ltt,90.,reverse(Ltt)])[0:Zsize[2]-1]
+      Lat1 = rebin(reform(Lat1,1,Zsize[2],/overwrite),Zsize[1],Zsize[2],/sample)
+      Lat1 = (Lat1 + (randomu(seed,Zsize[1],Zsize[2]) - 0.5)*2.) > 1 < 90
+      Lon1 = rebin(findgen(Zsize[1])/Zsize[1]*360.-180.,Zsize[1],Zsize[2],/sample)
+      Lon1 = (Lon1 + (randomu(seed,Zsize[1],Zsize[2]) - 0.5)*2.) > (-180) < 180
    endif else begin ; 1-dim
-      midZ = long(Zsize(1)/2)
+      midZ = long(Zsize[1]/2)
       Ltt = findgen(midZ)/midZ * 89. + 1
-      Lat1 = ([Ltt,90.,reverse(Ltt)])(0:Zsize(1)-1)
-      Lat1 = (Lat1 + (randomu(seed,Zsize(1)) - 0.5)*2.) > 1 < 90
-      Lon1 = findgen(Zsize(1))/Zsize(1)*360.-180.
-      Lon1 = (Lon1 + (randomu(seed,Zsize(1)) - 0.5)*2.) > (-180) < 180
+      Lat1 = ([Ltt,90.,reverse(Ltt)])[0:Zsize[1]-1]
+      Lat1 = (Lat1 + (randomu(seed,Zsize[1]) - 0.5)*2.) > 1 < 90
+      Lon1 = findgen(Zsize[1])/Zsize[1]*360.-180.
+      Lon1 = (Lon1 + (randomu(seed,Zsize[1]) - 0.5)*2.) > (-180) < 180
    endelse
 end ; Z only
 
@@ -252,18 +258,18 @@ end ; Z only
    Lat1 = 1.0*reform(Lat) & Lon1 = 1.0*reform(Lon) ; remove extraneous dimensions
    Vsize = size(Lat1) 
    if is1dim then begin
-      if n_elements(Lat1) ne Zsize(1) then begin
-         msgText = 'Lat must be of same size as Z(*)'
+      if n_elements(Lat1) ne Zsize[1] then begin
+         msgText = 'Lat must be of same size as Z[*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif ; else Lat1 agrees in size with Z
    endif else begin ; not 1-dim
-      if (n_elements(Lat1) eq Zsize(2)) then begin ; make 2-dim
-         Lat1 = rebin(reform(Lat1,1,Zsize(2),/overwrite),Zsize(1),Zsize(2),/sample)
+      if (n_elements(Lat1) eq Zsize[2]) then begin ; make 2-dim
+         Lat1 = rebin(reform(Lat1,1,Zsize[2],/overwrite),Zsize[1],Zsize[2],/sample)
       endif else begin
-         if not ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2))) then begin
-            msgText = 'Lat must be of same size as Z(0,*) or Z(*,*)'
+         if not ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2])) then begin
+            msgText = 'Lat must be of same size as Z[0,*] or Z[*,*]'
             if doStatus then begin
                message, msgText, /info & status = -1L & return
             endif else message, msgText
@@ -272,18 +278,18 @@ end ; Z only
    endelse
    Vsize = size(Lon1) 
    if is1dim then begin
-      if n_elements(Lon1) ne Zsize(1) then begin
-         msgText = 'Lon must be of same size as Z(*)'
+      if n_elements(Lon1) ne Zsize[1] then begin
+         msgText = 'Lon must be of same size as Z[*]'
          if doStatus then begin
             message, msgText, /info & status = -1L & return
          endif else message, msgText
       endif ; else Lon1 agrees in size with Z
    endif else begin ; not 1-dim
-      if (n_elements(Lon1) eq Zsize(1)) then begin ; make 2-dim
-         Lon1 = rebin(Lon1,Zsize(1),Zsize(2),/sample)
+      if (n_elements(Lon1) eq Zsize[1]) then begin ; make 2-dim
+         Lon1 = rebin(Lon1,Zsize[1],Zsize[2],/sample)
       endif else begin
-         if not ((Vsize(1) eq Zsize(1)) and (Vsize(2) eq Zsize(2))) then begin
-            msgText = 'Lon must be of same size as Z(*,0) or Z(*,*)'
+         if not ((Vsize[1] eq Zsize[1]) and (Vsize[2] eq Zsize[2])) then begin
+            msgText = 'Lon must be of same size as Z[*,0] or Z[*,*]'
             if doStatus then begin
                message, msgText, /info & status = -1L & return
             endif else message, msgText
@@ -301,18 +307,18 @@ else: begin
 endcase
 
 ;##### remove "> 0." on next 30 lines for real Z < 0
-;if (n_elements(minValue) gt 0) then minZ = minValue(0) else minZ = min(Z1) > 0.
-;if (n_elements(maxValue) gt 0) then maxZ = maxValue(0) else maxZ = max(Z1) > 0.
-if (n_elements(minValue) gt 0) then minZ = minValue(0) else minZ = min(Z1)
-if (n_elements(maxValue) gt 0) then maxZ = maxValue(0) else maxZ = max(Z1)
+;if (n_elements(minValue) gt 0) then minZ = minValue[0] else minZ = min(Z1) > 0.
+;if (n_elements(maxValue) gt 0) then maxZ = maxValue[0] else maxZ = max(Z1) > 0.
+if (n_elements(minValue) gt 0) then minZ = minValue[0] else minZ = min(Z1)
+if (n_elements(maxValue) gt 0) then maxZ = maxValue[0] else maxZ = max(Z1)
 if (n_elements(fillValue) gt 0) then begin
-   fillZ = fillValue(0)
+   fillZ = fillValue[0]
    wZfill = where(Z1 eq fillZ, wZfillc)
    if (wZfillc gt 0) then begin
       wnotZfill = where(Z1 ne fillZ, wnotZfillc)
       if (wnotZfillc gt 0) then begin
-         if (n_elements(minValue) le 0) then minZ = min(Z1(wnotZfill))
-         if (n_elements(maxValue) le 0) then maxZ = max(Z1(wnotZfill))
+         if (n_elements(minValue) le 0) then minZ = min(Z1[wnotZfill])
+         if (n_elements(maxValue) le 0) then maxZ = max(Z1[wnotZfill])
       endif
    endif
    ; RCJ 02/15/02 'minZ - 1' -> 'minZ - 1.' in case minZ is unsigned number.
@@ -352,10 +358,10 @@ if (wBadc gt 0) then begin
          return
       endelse
    endif
-   ;  if (n_elements(minValue) le 0) then minZ=min(Z1(wGood)) > 0.
-   ;  if (n_elements(maxValue) le 0) then maxZ=max(Z1(wGood)) > 0.
-   if (n_elements(minValue) le 0) then minZ=min(Z1(wGood)) 
-   if (n_elements(maxValue) le 0) then maxZ=max(Z1(wGood)) 
+   ;  if (n_elements(minValue) le 0) then minZ=min(Z1[wGood]) > 0.
+   ;  if (n_elements(maxValue) le 0) then maxZ=max(Z1[wGood]) > 0.
+   if (n_elements(minValue) le 0) then minZ=min(Z1[wGood]) 
+   if (n_elements(maxValue) le 0) then maxZ=max(Z1[wGood]) 
    ; RCJ 02/15/02 'minZ - 1' -> 'minZ - 1.' in case minZ is unsigned number.
    if (n_elements(fillValue) le 0) then fillZ = minZ - 1.
 endif
@@ -373,14 +379,14 @@ if (n_elements(cscale) ne 0) then begin
       endif else message, msgText
    endif
    if logZ then begin ; check if cscale is less than 0 and minZ
-      ;    if (n_elements(minValue) ne 0) then minCscale = minValue(0) > 0 $
-      if (n_elements(minValue) ne 0) then minCscale = minValue(0) $
+      ;    if (n_elements(minValue) ne 0) then minCscale = minValue[0] > 0 $
+      if (n_elements(minValue) ne 0) then minCscale = minValue[0] $
 				   else minCscale = 0
       ;    minCscale = minZ > 0
       wcs = where(cscale le minCscale, wcsc)
       if wcsc gt 0 then begin
          ws = where(Z1 gt minCscale, wsc)
-         if wsc gt 0 then cscale(wcs) = min(Z1(ws)) else cscale(wcs) = minCscale
+         if wsc gt 0 then cscale[wcs] = min(Z1[ws]) else cscale[wcs] = minCscale
       endif ; bad cscale
    endif ; logZ
    doCheck = 0
@@ -389,28 +395,28 @@ if (n_elements(cscale) ne 0) then begin
       ;    if (n_elements(maxZ) ne 0) then begin
       ;      wcs = where(cscale gt maxZ, wcsc) ; could be "ge"
       if (n_elements(maxValue) ne 0) then begin
-         wcs = where(cscale gt maxValue(0), wcsc) ; could be "ge"
+         wcs = where(cscale gt maxValue[0], wcsc) ; could be "ge"
          if wcsc gt 0 then begin
-            ws = where(Z1 le maxValue(0), wsc) ; could be "lt"
-            if wsc gt 0 then cscale(wcs) = max(Z1(ws)) else cscale(wcs)=maxValue(0)
+            ws = where(Z1 le maxValue[0], wsc) ; could be "lt"
+            if wsc gt 0 then cscale[wcs] = max(Z1[ws]) else cscale[wcs]=maxValue[0]
             ;        ws = where(Z1 le maxZ, wsc) ; could be "lt"
-            ;        if wsc gt 0 then cscale(wcs) = max(Z1(ws)) else cscale(wcs) = maxZ
+            ;        if wsc gt 0 then cscale[wcs] = max(Z1[ws]) else cscale[wcs] = maxZ
          endif
       endif
       ;    if (n_elements(minZ) ne 0) then begin
       ;      wcs = where(cscale lt minZ, wcsc) ; could be "le"
       if (n_elements(minValue) ne 0) then begin
-         wcs = where(cscale lt minValue(0), wcsc) ; could be "le"
+         wcs = where(cscale lt minValue[0], wcsc) ; could be "le"
          if wcsc gt 0 then begin
-            ws = where(Z1 ge minValue(0), wsc) ; could be "gt"
-            if wsc gt 0 then cscale(wcs) = min(Z1(ws)) else cscale(wcs)=minValue(0)
+            ws = where(Z1 ge minValue[0], wsc) ; could be "gt"
+            if wsc gt 0 then cscale[wcs] = min(Z1[ws]) else cscale[wcs]=minValue[0]
             ;        ws = where(Z1 ge minZ, wsc) ; could be "gt"
-            ;        if wsc gt 0 then cscale(wcs) = min(Z1(ws)) else cscale(wcs) = minZ
+            ;        if wsc gt 0 then cscale[wcs] = min(Z1[ws]) else cscale[wcs] = minZ
          endif
       endif
    endif ; doCheck min/max Z in cscale
    minZ = min(cscale) & maxZ = max(cscale)
-   if (cscale(0) gt cscale(1)) then flipColorBar = 1
+   if (cscale[0] gt cscale[1]) then flipColorBar = 1
    ; RCJ 02/15/02 'minZ - 1' -> 'minZ - 1.' in case minZ is unsigned number.
    if (n_elements(fillValue) le 0) then fillZ = minZ - 1.
 endif else begin; colorBar without cscale
@@ -430,25 +436,25 @@ if debug then message, /inform, string('DEBUG: minZ, maxZ = ', minZ, maxZ)
 ;(since we can't actually "turn off" a keyword once its set...
 compute_lonlat = 0
 if (n_elements(centerLonLat) gt 0) then begin
-  if (centerLonLat(0) eq -1 and centerLonLat(1) eq -1) then compute_lonlat = 1
+  if (centerLonLat[0] eq -1 and centerLonLat[1] eq -1) then compute_lonlat = 1
 endif 
 
 if (n_elements(centerLonLat) le 0 or compute_lonlat) then begin
 
-   if is1dim then centerLat = long(Lat1(Zsize(1)/2 - long(sqrt(Zsize(1))/2.))) $
+   if is1dim then centerLat = long(Lat1(Zsize[1]/2 - long(sqrt(Zsize[1])/2.))) $
    else begin
       ; Avoid bad lat values; test #1
-      ;      clat=extrac(Lat1,(Zsize(1)/2-5),(Zsize(2)/2-5),10,10) 
+      ;      clat=extrac(Lat1,(Zsize[1]/2-5),(Zsize[2]/2-5),10,10) 
       ;      wz=where(clat ne 0.0,wzn)
       ;      if(wzn ne 0) then centerLat=long(clat(wz(wzn/2))) else $  
-      ;      centerLat = long(Lat1(Zsize(1)/2,Zsize(2)/2))
+      ;      centerLat = long(Lat1(Zsize[1]/2,Zsize[2]/2))
       ; Avoid bad lat values; test #2
       ;    clat=Lat1
       ;    wn=where(clat gt 0.01, wzn)
       ;    ws=where(clat lt -0.01, wzs)
       ;    if(wzn ge wzs) then begin
       ;      if(wzn ne 0) then centerLat=long(clat(wn(wzn/2))) else $
-      ;       centerLat = long(Lat1(Zsize(1)/2,Zsize(2)/2))
+      ;       centerLat = long(Lat1(Zsize[1]/2,Zsize[2]/2))
       ;    endif else begin
       ;     if(wzs ne 0) then centerLat=long(clat(ws(wzs/2)))
       ;    endelse
@@ -461,57 +467,57 @@ if (n_elements(centerLonLat) le 0 or compute_lonlat) then begin
       ; Another idea would be to go in circles around the bad value looking
       ; for a valid lat.     Better ideas are welcome.
       ;
-      ;centerLat = long(Lat1(Zsize(1)/2,Zsize(2)/2))
-      dum1=zsize(1)
-      dum2=zsize(2)
-      centerLat = long(Lat1(dum1/2,dum2/2))
-      while (isbad(dum1/2,dum2/2) ne 0) and (dum1/2 lt zsize(1)) and (dum2/2 lt zsize(2)) do begin
+      ;centerLat = long(Lat1[Zsize[1]/2,Zsize[2]/2])
+      dum1=zsize[1]
+      dum2=zsize[2]
+      centerLat = long(Lat1[dum1/2,dum2/2])
+      while (isbad(dum1/2,dum2/2) ne 0) and (dum1/2 lt zsize[1]) and (dum2/2 lt zsize[2]) do begin
 	 dum1=dum1+1
 	 dum2=dum2+1
-         centerLat = long(Lat1(dum1/2,dum2/2))
+         centerLat = long(Lat1[dum1/2,dum2/2])
       endwhile
    endelse
    ; #### may want to do this next part all the time
    if (centerLat lt -90) or (centerLat gt 90.) then begin
       wGoodn=n_elements(wGood)
-      ;   clat=Lat1(wGood)
-      ;   if(wGoodn ne 0) then centerLat=long(clat(wGood(wGoodn/2))) else $
-      if(wGoodn ne 0) then centerLat=long(Lat1(wGood(wGoodn/2))) else $
+      ;   clat=Lat1[wGood]
+      ;   if(wGoodn ne 0) then centerLat=long(clat[wGood[wGoodn/2]]) else $
+      if(wGoodn ne 0) then centerLat=long(Lat1[wGood[wGoodn/2]]) else $
       print, 'ERROR=No valid centerLat point found'          
       ;    if debug then message, string('Bad centerLat = ', centerLat), /inform
-      ;    if (wBadc gt 0) then centerLat = 90. * sign(avg(Lat1(wGood))) else $
+      ;    if (wBadc gt 0) then centerLat = 90. * sign(avg(Lat1[wGood])) else $
       ;			 centerLat = 90. * sign(avg(Lat1))
    endif
 
    ; Pick valid longitude center of the map area
 
-   if is1dim then centerLon = long(Lon1(Zsize(1)/2 - long(sqrt(Zsize(1))/2.))) $
+   if is1dim then centerLon = long(Lon1[Zsize[1]/2 - long(sqrt(Zsize[1])/2.)]) $
    else begin
       ; Lon center 
-      ;     clon=extrac(Lon1,(Zsize(1)/2-5),(Zsize(2)/2-5),10,10)
+      ;     clon=extrac(Lon1,(Zsize[1]/2-5),(Zsize[2]/2-5),10,10)
       ;     wz=where(clon ne 0.0,wzn)
-      ;      if(wzn ne 0) then centerLon=long(clon(wz(wzn/2))) else $
-      ;      centerLon = long(Lon1(Zsize(1)/2,Zsize(2)/2))
+      ;      if(wzn ne 0) then centerLon=long(clon[wz[wzn/2]]) else $
+      ;      centerLon = long(Lon1(Zsize[1]/2,Zsize[2]/2))
       ; Lon center
       ;    clon=Lon1
       ;    wn=where(clon gt 0.01, wzn)
       ;    ws=where(clon lt -0.01, wzs)
       ;    if(wzn ge wzs) then begin
-      ;      if(wzn ne 0) then centerLon=long(clon(wn(wzn/2))) else $
-      ;       centerLon = long(Lon1(Zsize(1)/2,Zsize(2)/2))
+      ;      if(wzn ne 0) then centerLon=long(clon[wn[wzn/2]]) else $
+      ;       centerLon = long(Lon1(Zsize[1]/2,Zsize[2]/2))
       ;    endif else begin
-      ;     if(wzs ne 0) then centerLon=long(clon(ws(wzs/2)))
+      ;     if(wzs ne 0) then centerLon=long(clon[ws[wzs/2]])
       ;    endelse
       ;
       ; RCJ 04/01/2003. Take the same dum1 and dum2 from the calculation of centerlat
-      ;centerLon = long(Lon1(Zsize(1)/2,Zsize(2)/2))
+      ;centerLon = long(Lon1(Zsize[1]/2,Zsize[2]/2))
       centerLon = long(Lon1(dum1/2,dum2/2))
    endelse
    if (centerLon lt -180.) or (centerLon gt 180.) then begin
       wGoodn=n_elements(wGood)
-      ;   clon=Lon1(wGood)
+      ;   clon=Lon1[wGood]
       ;   if(wGoodn ne 0) then centerLon=long(clon(wGood(wGoodn/2))) else $
-      if(wGoodn ne 0) then centerLon=long(Lon1(wGood(wGoodn/2))) else $
+      if(wGoodn ne 0) then centerLon=long(Lon1[wGood[wGoodn/2]]) else $
       print, 'ERROR=No valid centerLon point found' 
    endif
 
@@ -533,8 +539,8 @@ endif else begin
       endif else message, msgText
    endif
 
-   centerLon = centerLonLat(0)
-   centerLat = centerLonLat(1)
+   centerLon = centerLonLat[0]
+   centerLat = centerLonLat[1]
    ; centerLat=10.0
    ; centerLon=65.0
 endelse
@@ -548,7 +554,7 @@ if keyword_set(centerPole) then begin ; define at closest pole
    ;TJK /2/4/09 use the rangelonlat value set for the latitude lower limit,
    ;otherwise we're stuck w/ -40 (for the south pole)
    if keyword_set(rangeLonLat) then begin  ;switched for S.Pole, otherwise continents don't show
-     lats = [rangeLonLat(0),rangeLonLat(2)] ;have to take the max of these two
+     lats = [rangeLonLat[0],rangeLonLat[2]] ;have to take the max of these two
      if (centerlat lt 0) then rangeLonLat=[centerLat,-180.0,max(lats),180.0] 
      ;if (centerlat lt 0) then rangeLonLat=[centerLat,-180.0,-40.0,180.0] 
    endif
@@ -570,10 +576,10 @@ if (n_elements(rangeLonLat) gt 0) then begin
          message, msgText, /info & status = -1L & return
       endif else message, msgText
    endif
-   minLon = rangeLonLat(1)
-   minLat = rangeLonLat(0)
-   maxLon = rangeLonLat(3)
-   maxLat = rangeLonLat(2)
+   minLon = rangeLonLat[1]
+   minLat = rangeLonLat[0]
+   maxLon = rangeLonLat[3]
+   maxLat = rangeLonLat[2]
 endif else begin
    minLat = (centerLat - 90.) > (-90.)   & maxLat = (centerLat + 90.) < (90.)
    if (abs(centerLat) lt 1.e-5) then begin ; near equator
@@ -595,13 +601,13 @@ if debug then message, /inform, 'DEBUG:minLon,minLat,maxLon,maxLat='+ $
   string(minLon,minLat,maxLon,maxLat, format='(f6.1,1x,f5.1,1x,f6.1,1x,f5.1)')
 
 ; Lat -90:90; Lon -180:180; rot -180:180 positive clockwise for map_set
-if n_elements(rotation) gt 0 then rotate1 = rotation(0) else rotate1 = 0.
+if n_elements(rotation) gt 0 then rotate1 = rotation[0] else rotate1 = 0.
 ; ### could try to compute a rotation matching original image, 2-dim case only
 
 minZ1 = minZ & maxZ1 = maxZ
 ; #### do log before or after interpolating???
 Z2 = Z1
-if (Zsize(Zsize(0)+1) ne 1) then begin ; not Byte array
+if (Zsize[Zsize[0]+1] ne 1) then begin ; not Byte array
    if logZ then begin
       wh = where(Z1 le 0, wc)
       if (wc eq 0) then begin
@@ -609,7 +615,7 @@ if (Zsize(Zsize(0)+1) ne 1) then begin ; not Byte array
       endif else begin
          Z2 = Z1*0 ; all 0's
          wh = where(Z1 gt 0, wc)
-         if (wc gt 0) then Z2(wh) = alog10(Z1(wh))
+         if (wc gt 0) then Z2[wh] = alog10(Z1[wh])
       endelse
       if (minZ le 0.) then minZ1 = 0. else minZ1 = alog10(minZ)
       if (maxZ le 0.) then maxZ1 = 0. else maxZ1 = alog10(maxZ)
@@ -617,7 +623,7 @@ if (Zsize(Zsize(0)+1) ne 1) then begin ; not Byte array
 endif
 ; RTB commented out next 1 lines, done in plot_map_images
 ;xmargin = !x.margin ; & ymargin = !y.margin
-if doColorBar then if (!x.omargin(1)+!x.margin(1)) lt 14 then !x.margin(1) = 14
+if doColorBar then if (!x.omargin[1]+!x.margin[1]) lt 14 then !x.margin[1] = 14
 
 ;;;pPosition = !p.position ; save for later
 ;;;w = where(pPosition eq 0, wc)
@@ -625,12 +631,12 @@ if doColorBar then if (!x.omargin(1)+!x.margin(1)) lt 14 then !x.margin(1) = 14
 ;;;    if (wc ne 4) then positiont = pPosition else $
 ;;;	positiont = [0.1, 0.1, 0.88, 0.9]
 
-;if n_elements(nLon) le 0 then nLon = 50 < Zsize(1)
-;if n_elements(nLat) le 0 then nLat = 50 < Zsize(2) ; ###?
-if n_elements(nLon) le 0 then if is1dim then nLon = long(sqrt(Zsize(1))) > 30 $
-					else nLon = Zsize(1) > 30
-if n_elements(nLat) le 0 then if is1dim then nLat = long(sqrt(Zsize(1))) > 30 $
-					else nLat = Zsize(2) > 30
+;if n_elements(nLon) le 0 then nLon = 50 < Zsize[1]
+;if n_elements(nLat) le 0 then nLat = 50 < Zsize[2] ; ###?
+if n_elements(nLon) le 0 then if is1dim then nLon = long(sqrt(Zsize[1])) > 30 $
+					else nLon = Zsize[1] > 30
+if n_elements(nLat) le 0 then if is1dim then nLat = long(sqrt(Zsize[1])) > 30 $
+					else nLat = Zsize[2] > 30
 
 tvlct, red1, green1, blue1, /get
 allColor = long(red1) + green1 + blue1
@@ -640,6 +646,13 @@ if (n_elements(mapColor) le 0) then mapColor = wWhite ; or !p.background
 if (n_elements(mapCharSize) le 0) then mapCharSize = 1.0
 if (n_elements(title) eq 0) then title = ''
 if (n_elements(altitude) le 0) then altitude=2.0 else altitude=altitude > 1.1
+;If title = ROTI15min , then set title to blank and
+;set box (for the world box grid to 1) - kludge, I know - TJK 1/8/2013
+box_gps = 0
+if (title eq 'roti15min') then begin
+   title=''
+   box_gps = 1
+endif
 
 if (n_elements(method) le 0) then begin
    method1 = "PL" ; plots default
@@ -659,8 +672,8 @@ if (method1 ne "TV") and (method1 ne "QU") then begin ; map setup
    if(method1 eq "MP") then begin
       lats=find_valid_edge(Lat1,wGood)
       lons=find_valid_edge(Lon1,wGood)
-      limitVec=[lats(0),lons(0),lats(1),lons(1),lats(2),lons(2),lats(3),lons(3)]
-      revLimit=[lats(0),lons(0),lats(1),lons(1),lats(2),lons(2),lats(3),lons(3)]
+      limitVec=[lats[0],lons[0],lats[1],lons[1],lats[2],lons[2],lats[3],lons[3]]
+      revLimit=[lats[0],lons[0],lats[1],lons[1],lats[2],lons[2],lats[3],lons[3]]
    endif
    ; ##### min/maxLon may have to exceed -180:180
    ; set up the map projection ; #### which default projection?
@@ -692,6 +705,7 @@ if (method1 ne "TV") and (method1 ne "QU") then begin ; map setup
      extra = {SYMSIZE : 0.5}
    endif
 
+
    if (n_elements(rangeLonLat) ne 4) then begin
       map_set, centerLat,centerLon,rotate1, proj=iproj, charsize=1.2*mapCharSize,$
          isotropic=isotropic, title=title, /noerase,  $ ; RTB added noerase & title
@@ -713,8 +727,10 @@ if (method1 ne "TV") and (method1 ne "QU") then begin ; map setup
 
    if keyword_set(nogrid) then extra = save_extra
 
-
-   if (keyword_set(continent) and keyword_set(fill_cont)) then $
+;TJK 3/3/2009 - the keyword being passed in is continents not continent...
+;   if (keyword_set(continent) and keyword_set(fill_cont)) then $
+;      map_continents, color=mapColor, /fill_continents 
+   if (keyword_set(continents) and keyword_set(fill_cont)) then $
       map_continents, color=mapColor, /fill_continents 
 
    if debug then message, /inform, 'DEBUG: revLimit = '+ $
@@ -726,14 +742,14 @@ case method1 of
       if not is1dim then return;  must be 1-D array
       ; remove bad values which reduces to 1-dim arrays
       if (wBadc gt 0) then begin
-         Lat1 = Lat1(wGood)  &  Lon1 = Lon1(wGood)  &  Z2 = Z2(wGood)
+         Lat1 = Lat1[wGood]  &  Lon1 = Lon1[wGood]  &  Z2 = Z2[wGood]
       endif
       ; convert points to normalized space
       pAll = convert_coord(Lon1, Lat1, /to_normal)
 
       for i=0L,n_elements(Lon1)-1 do begin
          ;convert to polar coordinates around current point
-         polar = CV_COORD(FROM_RECT=[(pAll(0,*) - pAll(0,i)), (pAll(1,*) - pAll(1,i))], /TO_POLAR, /degrees)
+         polar = CV_COORD(FROM_RECT=[(pAll[0,*] - pAll[0,i]), (pAll[1,*] - pAll[1,i])], /TO_POLAR, /degrees)
          ;  remove 0s and points too far away
          close = where (polar[1,*] gt 0. and polar[1,*] lt radius, count)
          ;  create a default circle, including close halfway values
@@ -746,33 +762,33 @@ case method1 of
          endelse
          ;  sort around circle in order
          sorted = sort(theta)
-         sorted = [sorted, sorted(0)]  ;make complete circle
+         sorted = [sorted, sorted[0]]  ;make complete circle
          ; remove default circle points within degrees of real point
          for j = 0L,n_elements(theta)-1 do begin
-            if ((theta(sorted(j+1)) - theta(sorted(j))) lt degrees) then begin
-               if (r(sorted(j)) eq radius/3.) then begin
-                  sorted(j) = -1
-                  ; print, "dropping ", j, r(sorted(j))
-               endif else if (r(sorted(j+1)) eq radius/3.) then begin
-                  sorted(j+1) = -1
+            if ((theta[sorted[j+1]] - theta[sorted[j]]) lt degrees) then begin
+               if (r[sorted[j]] eq radius/3.) then begin
+                  sorted[j] = -1
+                  ; print, "dropping ", j, r[sorted[j]]
+               endif else if (r[sorted[j+1]] eq radius/3.) then begin
+                  sorted[j+1] = -1
                   j = j + 1
-                  ; print, "dropping ", j+1, r(sorted(j+1))
+                  ; print, "dropping ", j+1, r[sorted[j+1]]
                endif
             endif
          endfor
          sorted = sorted(where(sorted ge 0)) ; remove -1s
          ; convert back to rectangular
-         buggy = transpose([[theta(sorted)], [r(sorted)]])
+         buggy = transpose([[theta[sorted]], [r[sorted]]])
          rect = CV_COORD(From_polar=buggy, /to_rect, /degrees)
-         Lon2 = rect[0,*] + pAll(0,i)
-         Lat2 = rect[1,*] + pAll(1,i)
+         Lon2 = rect[0,*] + pAll[0,i]
+         Lat2 = rect[1,*] + pAll[1,i]
     
          ; fix outside image problem
 	 good = where (lon2 le 1. and lon2 ge 0. and Lat2 le 1. and lat2 ge -1.)
 
          ; make an n-sided polygon with the n closest neighbors
          Zb = doByteScale([Z2[i]],minZ1,maxZ1,Zsize,wBad,flipColorBar,1)
-	 polyfill, Lon2(good), Lat2(good), color=Zb(0), /normal, noclip=0, _Extra=extra
+	 polyfill, Lon2[good], Lat2[good], color=Zb[0], /normal, noclip=0, _Extra=extra
       endfor
    end ; EAG method
 
@@ -807,17 +823,17 @@ case method1 of
             /nodata, xstyle=1+4, ystyle=1+4+16, _Extra=extra
          px = !x.window*!d.x_size
          py = !y.window*!d.y_size
-         xWinsize = px(1)-px(0)
-         yWinsize = py(1)-py(0)
+         xWinsize = px[1]-px[0]
+         yWinsize = py[1]-py[0]
          ; even scale???
-         xr = !x.crange(1) - !x.crange(0) ; data range in data coordinates
-         yr = !y.crange(1) - !y.crange(0)
+         xr = !x.crange[1] - !x.crange[0] ; data range in data coordinates
+         yr = !y.crange[1] - !y.crange[0]
          ratio = max([float(xr)/xWinSize, float(yr)/yWinSize])
          xWinSize = xr / ratio
          yWinSize = yr / ratio
          if (!d.flags and 1L) then $ ; scalable pixels (Postscript)
-            tv, Zb, px(0), py(0), xsize=xWinsize, ysize=yWinsize else $
-            tv, congrid(Zb,xWinsize,yWinsize), px(0), py(0)
+            tv, Zb, px[0], py[0], xsize=xWinsize, ysize=yWinsize else $
+            tv, congrid(Zb,xWinsize,yWinsize), px[0], py[0]
          ;  plot, [minLon, maxLon], [minLat, maxLat], $ ; position = positiont, $
          plot, [0, nLon], [0, nLat], $ ; position = positiont, $
             /nodata, xstyle=1+4, ystyle=1+4+16, _Extra=extra, /noerase
@@ -827,7 +843,7 @@ case method1 of
 
          ; remove bad values which reduces to 1-dim arrays
          if (wBadc gt 0) then begin
-            Lat1 = Lat1(wGood)  &  Lon1 = Lon1(wGood)  &  Z2 = Z2(wGood)
+            Lat1 = Lat1[wGood]  &  Lon1 = Lon1[wGood]  &  Z2 = Z2[wGood]
          endif
          Zb = doByteScale(Z2, minZ1, maxZ1, Zsize, wBad, flipColorBar, 1) ; is1dim
          nsides = 6 ; 16
@@ -836,17 +852,22 @@ case method1 of
          ; plot a black background circle before plotting data to remove distractions
          nsides = 720
          avec = findgen(nsides) * (!pi*2/nsides)
-         xavec = (!x.window(1)-!x.window(0))/2. * (1.+cos(avec)) + !x.window(0)
-         yavec = (!y.window(1)-!y.window(0))/2. * (1.+sin(avec)) + !y.window(0)
+         xavec = (!x.window[1]-!x.window[0])/2. * (1.+cos(avec)) + !x.window[0]
+         yavec = (!y.window[1]-!y.window[0])/2. * (1.+sin(avec)) + !y.window[0]
          ;   polyfill, xavec, yavec, color=wBlack, /normal ; black background
 
 ;         plots, Lon1, Lat1, color=Zb, psym=8, /clip, _Extra=extra 
 ;         ;plots, Lon1, Lat1, color=Zb, psym=8, noclip=0 ; , symsize=? 
 ;         plots, [0.0], [-90.0], color=!d.n_colors-1, psym=8, noclip=0, symsize=0.5 
 ;         plots, [0.0], [90.0], color=!d.n_colors-1, psym=8, noclip=0 ,symsize=0.5
-         plots, Lon1, Lat1, color=Zb, psym=8,  _Extra=extra 
-         plots, [0.0], [-90.0], color=!d.n_colors-1, psym=8, symsize=0.5 
-         plots, [0.0], [90.0], color=!d.n_colors-1, psym=8, symsize=0.5
+         ;plots, Lon1, Lat1, color=Zb, psym=8,  _Extra=extra 
+	 ; RCJ 06/20/2011 added noclip=0
+         plots, Lon1, Lat1, color=Zb, psym=8,  _Extra=extra , noclip=0
+
+;         plots, [0.0], [-90.0], color=!d.n_colors-1, psym=8, symsize=0.5 
+;         plots, [0.0], [90.0], color=!d.n_colors-1, psym=8, symsize=0.5
+         plots, [0.0], [-90.0], color=!d.table_size-1, psym=8, symsize=0.5 
+         plots, [0.0], [90.0], color=!d.table_size-1, psym=8, symsize=0.5
 
 
    end ; Plots method
@@ -854,7 +875,7 @@ case method1 of
    "MP": begin ; Map Overlay method
          ; remove bad values which reduces to 1-dim arrays
          if (wBadc gt 0) then begin
-            Lat1 = Lat1(wGood)  &  Lon1 = Lon1(wGood)  &  Z2 = Z2(wGood)
+            Lat1 = Lat1[wGood]  &  Lon1 = Lon1[wGood]  &  Z2 = Z2[wGood]
          endif
          Zb = doByteScale(Z2, minZ1, maxZ1, Zsize, wBad, flipColorBar, 1) ; is1dim
          nsides = 6 ; 16
@@ -863,20 +884,22 @@ case method1 of
          ; plot a black background circle before plotting data to remove distractions
          nsides = 720
          avec = findgen(nsides) * (!pi*2/nsides)
-         xavec = (!x.window(1)-!x.window(0))/2. * (1.+cos(avec)) + !x.window(0)
-         yavec = (!y.window(1)-!y.window(0))/2. * (1.+sin(avec)) + !y.window(0)
+         xavec = (!x.window[1]-!x.window[0])/2. * (1.+cos(avec)) + !x.window[0]
+         yavec = (!y.window[1]-!y.window[0])/2. * (1.+sin(avec)) + !y.window[0]
          ;   polyfill, xavec, yavec, color=wBlack, /normal ; black background
          plots, Lon1, Lat1, color=Zb, psym=8, /clip, _Extra=extra
          ;plots, Lon1, Lat1, color=Zb, psym=8, noclip=0 ; , symsize=?
-         plots, [0.0], [-90.0], color=!d.n_colors-1, psym=8, noclip=0, symsize=0.5
-         plots, [0.0], [90.0], color=!d.n_colors-1, psym=8, noclip=0 ,symsize=0.5
+;         plots, [0.0], [-90.0], color=!d.n_colors-1, psym=8, noclip=0, symsize=0.5
+;         plots, [0.0], [90.0], color=!d.n_colors-1, psym=8, noclip=0 ,symsize=0.5
+         plots, [0.0], [-90.0], color=!d.table_size-1, psym=8, noclip=0, symsize=0.5
+         plots, [0.0], [90.0], color=!d.table_size-1, psym=8, noclip=0 ,symsize=0.5
    end ; Plots method
 
    "PO": begin ; Polyfill method
          if is1dim then begin ; #### maybe 2-dim also??
          ; remove bad values which reduces to 1-dim arrays
          if (wBadc gt 0) then begin
-            Lat1 = Lat1(wGood)  &  Lon1 = Lon1(wGood)  &  Z2 = Z2(wGood)
+            Lat1 = Lat1[wGood]  &  Lon1 = Lon1[wGood]  &  Z2 = Z2[wGood]
          endif
          ;    triangulate, Lon1, Lat1, triangles, bounds, sphere=tridata, fvalue=Z2, $
          ;	/degrees, repeats = repeats, connectivity=list
@@ -887,47 +910,49 @@ case method1 of
          ; tridata.iadj(60900) ranges 0-10150
          ; repeats = [-1,-1] ; bounds is small array of indices < 10150
          ; triangles(3,20285)
-         ; list() where list(list(i):list(i+1)-1) has nodes adjacent to i
+         ; list() where list(list[i]:list[i+1]-1) has nodes adjacent to i
          ;    Zb = doByteScale(Z2, minZ1, maxZ1, Zsize, wBad, flipColorBar, 1)
          pAll = convert_coord(Lon1, Lat1, /data, /to_normal)
-         pLon = pAll(0,*) & pLat = pAll(1,*)
-         for i=0L,n_elements(triangles(0,*))-1 do begin
-            tri1 = triangles(*,i)
-            Lon3 = Lon1(tri1) & Lat3 = Lat1(tri1)
+         pLon = pAll[0,*] & pLat = pAll[1,*]
+         for i=0L,n_elements(triangles[0,*])-1 do begin
+            tri1 = triangles[*,i]
+            Lon3 = Lon1[tri1] & Lat3 = Lat1[tri1]
             ;### which average scheme is best?
             ;      Zb1   = avg(Zb(tri1)) ; average byte values
-            ;      Zb1   = Zb(tri1(0)) ; faster than avg and as accurate? only small bar
-            Zb1 = doByteScale([avg(Z2(tri1))],minZ1,maxZ1,Zsize,wBad,flipColorBar,1)
-            if (total(abs(pLon(tri1)-shift(pLon(tri1),1))) lt 0.1) and $ 
-	       (total(abs(pLat(tri1)-shift(pLat(tri1),1))) lt 0.1) then $
-	       polyfill, Lon3, Lat3, color=Zb1(0), noclip=0, _Extra=extra
+            ;      Zb1   = Zb(tri1[0]) ; faster than avg and as accurate? only small bar
+            ;Zb1 = doByteScale([spdf_simple_avg(Z2[tri1])],minZ1,maxZ1,Zsize,wBad,flipColorBar,1)
+            Zb1 = doByteScale([mean(Z2[tri1],/nan)],minZ1,maxZ1,Zsize,wBad,flipColorBar,1)
+            if (total(abs(pLon[tri1]-shift(pLon[tri1],1))) lt 0.1) and $ 
+	       (total(abs(pLat[tri1]-shift(pLat[tri1],1))) lt 0.1) then $
+	       polyfill, Lon3, Lat3, color=Zb1[0], noclip=0, _Extra=extra
          endfor
       endif else begin ; 2-dim
          Zb = doByteScale(Z2, minZ1, maxZ1, Zsize, wBad, flipColorBar, 0) ; is1dim
          ; remove bad values but keep 2-dim arrays
          pAll = convert_coord(Lon1, Lat1, /data, /to_normal)
-         pLon = pAll(0,*) & pLat = pAll(1,*)
-         for i=1L,Zsize(1)-1 do for j=1L,Zsize(2)-1 do begin
+         pLon = pAll[0,*] & pLat = pAll[1,*]
+         for i=1L,Zsize[1]-1 do for j=1L,Zsize[2]-1 do begin
             ; plot rhombus
-            indices = [(j-1)*Zsize(1)+(i-1), (j-1)*Zsize(1)+i, $
-		 j*Zsize(1)+i, j*Zsize(1)+(i-1)]
-            ;     Z3=Z2(indices) same as Z3 = [Z2(i-1,j-1), Z2(i,j-1), Z2(i,j), Z2(i-1,j)]
-            Lon3 = Lon1(indices) & Lat3 = Lat1(indices) & Z3 = Z2(indices)
-            pLon3 = pLon(indices) & pLat3 = pLat(indices)
+            indices = [(j-1)*Zsize[1]+(i-1), (j-1)*Zsize[1]+i, $
+		 j*Zsize[1]+i, j*Zsize[1]+(i-1)]
+            ;     Z3=Z2[indices] same as Z3 = [Z2[i-1,j-1], Z2[i,j-1], Z2[i,j], Z2[i-1,j]]
+            Lon3 = Lon1[indices] & Lat3 = Lat1[indices] & Z3 = Z2[indices]
+            pLon3 = pLon[indices] & pLat3 = pLat[indices]
             ; could split into 2 triangles with Zb1=Zb(i-1,j-1) and Zb1=Zb(i,j)
-            ;      indices3a = [(j-1)*Zsize(1)+(i-1), (j-1)*Zsize(1)+i, j*Zsize(1)+i]
-            ;      indices3b = [(j-1)*Zsize(1)+i, j*Zsize(1)+i, j*Zsize(1)+(i-1)]
+            ;      indices3a = [(j-1)*Zsize[1]+(i-1), (j-1)*Zsize[1]+i, j*Zsize[1]+i]
+            ;      indices3b = [(j-1)*Zsize[1]+i, j*Zsize[1]+i, j*Zsize[1]+(i-1)]
             ;      p = convert_coord(Lon3, Lat3, /data, /to_normal)
-            w = where((Zb(indices) le 0) or (Lon3 lt -180) or (Lon3 gt 180) or $
+            w = where((Zb[indices] le 0) or (Lon3 lt -180) or (Lon3 gt 180) or $
 				  (Lat3 lt -90) or (Lat3 gt 90) or $
 		(abs(pLon3-shift(pLon3,1)) gt 0.1) or $ 
 		(abs(pLat3-shift(pLat3,1)) gt 0.1), wc)
             if (wc le 0) then begin
                ; ### select one corner value or average?
                ;        Zb1 = Zb(i,j)
-               Zb1 = doByteScale([avg(Z3)], minZ1,maxZ1, Zsize, wBad, flipColorBar, 1)
+               ;Zb1 = doByteScale([spdf_simple_avg(Z3)], minZ1,maxZ1, Zsize, wBad, flipColorBar, 1)
+               Zb1 = doByteScale([mean(Z3,/nan)], minZ1,maxZ1, Zsize, wBad, flipColorBar, 1)
 	       ; is1dim
-               polyfill, Lon3, Lat3, color=Zb1(0), noclip=0 ;, thick=3
+               polyfill, Lon3, Lat3, color=Zb1[0], noclip=0 ;, thick=3
             endif
          endfor
 ;TJK 12/9/2008 Added the following 3 lines (copied from PL method section) to define the
@@ -935,15 +960,17 @@ case method1 of
          nsides = 6 ; 16
          avec = findgen(nsides) * (!pi*2/nsides)
          usersym, cos(avec), sin(avec), /fill
-         plots, [0.0], [-90.0], color=!d.n_colors-1, psym=8, noclip=0, symsize=0.5
-         plots, [0.0], [90.0], color=!d.n_colors-1, psym=8, noclip=0 ,symsize=0.5
+;         plots, [0.0], [-90.0], color=!d.n_colors-1, psym=8, noclip=0, symsize=0.5
+;         plots, [0.0], [90.0], color=!d.n_colors-1, psym=8, noclip=0 ,symsize=0.5
+         plots, [0.0], [-90.0], color=!d.table_size-1, psym=8, noclip=0, symsize=0.5
+         plots, [0.0], [90.0], color=!d.table_size-1, psym=8, noclip=0 ,symsize=0.5
       endelse ; 2-dim
    end ; Polyfill method
 
    "MA": begin ; Map_image method
          ; remove bad values which reduces to 1-dim arrays
          if (wBadc gt 0) then begin
-            Lat1 = Lat1(wGood)  &  Lon1 = Lon1(wGood)  &  Z2 = Z2(wGood)
+            Lat1 = Lat1[wGood]  &  Lon1 = Lon1[wGood]  &  Z2 = Z2[wGood]
          endif
          if keyword_set(slow) then begin & quintic = 1 & bilinear = 1 & endif $
 	    else begin & quintic = 0 & bilinear = 0 & endelse
@@ -975,8 +1002,8 @@ case method1 of
          ;#### need to do same thing for min/maxLat1 ?; need to do this for centerlat/lon
          ; this command warps the input image to the defined mapping
          ; ### mapimage = transpose(mapimage)
-         maxLon1 = revLimit(2) & minLon1 = revLimit(0) ; based on edges of mapimage
-         maxLat1 = revLimit(3) & minLat1 = revLimit(1)
+         maxLon1 = revLimit[2] & minLon1 = revLimit[0] ; based on edges of mapimage
+         maxLat1 = revLimit[3] & minLat1 = revLimit[1]
          image = map_image(mapimage, startx, starty, xWinsize, yWinsize, $
 	    latmin=minLat1, latmax=maxLat1, lonmin=minLon1, lonmax=maxLon1, $
  	    bilinear=bilinear, /whole_map, missing=!p.background)
@@ -994,20 +1021,20 @@ case method1 of
          ; suggested by Hermann Mannstein (h.mannstein@dlr.de)
          ; remove bad values which reduces to 1-dim arrays
          if (wBadc gt 0) then begin
-            Lat1 = Lat1(wGood)  &  Lon1 = Lon1(wGood)  &  Z2 = Z2(wGood)
+            Lat1 = Lat1[wGood]  &  Lon1 = Lon1[wGood]  &  Z2 = Z2[wGood]
          endif
-         maxLon1 = revLimit(2) & minLon1 = revLimit(0) ; based on edges of mapimage
-         maxLat1 = revLimit(3) & minLat1 = revLimit(1)
+         maxLon1 = revLimit[2] & minLon1 = revLimit[0] ; based on edges of mapimage
+         maxLat1 = revLimit[3] & minLat1 = revLimit[1]
          Zb = doByteScale(Z2, minZ1, maxZ1, Zsize, wBad, flipColorBar, 1) ; is1dim
          px = !x.window*!d.x_size
          py = !y.window*!d.y_size
-         xWinsize = px(1)-px(0)
-         yWinsize = py(1)-py(0)
+         xWinsize = px[1]-px[0]
+         yWinsize = py[1]-py[0]
 
          ;- create resampled byte image
          p = convert_coord(Lon1, Lat1, /data, /to_device )
          newimage = bytarr( !d.x_size, !d.y_size )
-         newimage( p( 0, * ), p( 1, * ) ) = Zb
+         newimage[ p[ 0, * ], p[ 1, * ] ] = Zb
          ;- get image coordinates of map projection corners
          ;  p = convert_coord( [minLon1,maxLon1], [minLat1,maxLat1], /data, /to_device )
          ;  if (p(0,0) gt 1.e+10) then p(0,0) = 0 ; off projection
@@ -1019,10 +1046,10 @@ case method1 of
          ;- fill holes in resampled image
          fill = dilate( newimage, replicate( 1, 2, 2 ), /gray )
          loc = where( newimage eq 0, wc )
-         if (wc gt 0) then newimage( loc ) = fill( loc )
+         if (wc gt 0) then newimage[ loc ] = fill[ loc ]
          fill = 0
          ;- display resampled image
-         tv, newimage, p( 0, 0 ), p( 1, 0 ), xsize=xWinsize, ysize=yWinsize
+         tv, newimage, p[ 0, 0 ], p[ 1, 0 ], xsize=xWinsize, ysize=yWinsize
    end ; Dilate method
 
    else: begin
@@ -1061,7 +1088,7 @@ if (method1 ne "TV") and (method1 ne "QU") then begin
 
 ;TJK 1/12/2009 - set up box labels for the GPS cylindrical plotted data
          box = 0 ; default, no box labels
-         if (method1 eq "PO" and iproj eq 8) then begin 
+         if ((method1 eq "PO" or box_gps) and iproj eq 8) then begin 
              box = 1
              if (tagindex('CHARSIZE',tag_names(extra)) ne -1) then extra.charsize=mapCharsize*1.2
          endif
@@ -1071,7 +1098,12 @@ if (method1 ne "TV") and (method1 ne "QU") then begin
 
 ;TJK 3/30/2004 - added use of mlinethick which is passed through "xtra" keyword
 ;and at this time just set in movie_map_images.pro
-   if (keyword_set(continent) and not keyword_set(fill_cont)) then begin	
+;TJK 3/3/2009 - the keyword being passed in is continents not continent...
+
+;   if (keyword_set(continent) and not keyword_set(fill_cont)) then begin	
+;	map_continents, color=mapColor, MLINETHICK=MLINETHICK
+;    endif
+   if (keyword_set(continents) and not keyword_set(fill_cont)) then begin	
 	map_continents, color=mapColor, MLINETHICK=MLINETHICK
    endif
 endif ; not TV or Quick
@@ -1081,8 +1113,8 @@ if doColorBar then begin
    if (n_elements(cCharSize) eq 0) then cCharSize = 0.
    offset = 0.01
    colorbar, cscale, ctitle, logZ=logZ, cCharSize=cCharSize, $
- 	position=[!x.window(1)+offset,      !y.window(0),$
- 		  !x.window(1)+offset+0.03, !y.window(1)]
+ 	position=[!x.window[1]+offset,      !y.window[0],$
+ 		  !x.window[1]+offset+0.03, !y.window[1]]
 endif ; colorbar
 
 ;!p.Position = pPosition ; restore

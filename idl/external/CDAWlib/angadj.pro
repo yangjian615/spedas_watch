@@ -1,8 +1,8 @@
-;$Author: kenb $
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/angadj.pro,v 1.1 1996/08/09 13:56:41 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 8 $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/angadj.pro,v 1.3 2012/05/03 16:12:52 johnson Exp johnson $
+;$Locker: johnson $
+;$Revision: 15739 $
 ; NAME:  ANGADJ.PRO 
 ;
 ; PURPOSE: computes angle between the geographic and geomagnetic coordinates
@@ -24,6 +24,12 @@
 ; SET VARIABLE:
 ;       irot  - direction of rotation 0 - geo2gmt  1 - gmt2geo
 ;       delta - increment used in angle calculation
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 function angadj,mltin,iyr,lat,lon,alt
   
@@ -42,8 +48,8 @@ function angadj,mltin,iyr,lat,lon,alt
       opos=cnvcoord(lat,lon,alt,/GEO)
       opos1=cnvcoord(lat1,lon1,alt,/GEO)
 
-      a=(abs(opos1(0)-opos(0)))*dr
-      b=(abs(opos1(1)-opos(1)))*dr
+      a=(abs(opos1[0]-opos[0]))*dr
+      b=(abs(opos1[1]-opos[1]))*dr
       rot=(atan(a,b))/dr
      endif
      if(mltin eq 0) then begin

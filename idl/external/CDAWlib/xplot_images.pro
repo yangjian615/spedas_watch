@@ -1,6 +1,13 @@
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION xanalyze_image,a,vname
 i = get_mydata(a,vname) & isize = size(i)
-window,/free,xsize=isize(1),ysize=isize(2)
+window,/free,xsize=isize[1],ysize=isize[2]
 wset,!d.window
 tv,i
 return,0
@@ -8,7 +15,7 @@ end
 
 PRO cdfx_Xplotimages_Event,event
 tnames = tag_names(event)
-if tnames(3) eq 'VALUE' then begin ; process button/pulldown event
+if tnames[3] eq 'VALUE' then begin ; process button/pulldown event
   case event.value of
     'Operations>.Analyze Selected Frame' : begin
       widget_control,/hourglass
@@ -29,13 +36,13 @@ if tnames(3) eq 'VALUE' then begin ; process button/pulldown event
   else : print,'Unknown value for xplot_images button!'
   endcase
 endif
-if tnames(3) eq 'TYPE' then begin ; process draw event
+if tnames[3] eq 'TYPE' then begin ; process draw event
   if event.type eq 1 then  begin  ; user has clicked in the drawing
     widget_control,event.top,get_uvalue=info ; retrieve widget info
     widget_control,info.draw,get_uvalue=s    ; retrieve display layout info
-    icol = fix(event.x / s.tsizes(0))        ; compute column number
+    icol = fix(event.x / s.tsizes[0])        ; compute column number
     if icol le s.ncols then begin            ; user has clicked within images
-      irow = fix((s.ysize-event.y) / (s.tsizes(1)+s.timetag_height))
+      irow = fix((s.ysize-event.y) / (s.tsizes[1]+s.timetag_height))
       if irow le s.nrows then begin          ; user has clicked within images
         frame = (irow*s.ncols)+icol          ; compute frame number
         if frame le s.nimages-1 then begin   ; valid frame number computed
@@ -62,7 +69,7 @@ FUNCTION xplot_images, a,vname,$
 ; Evaluate the input structure and determine the plotting space required
 s = evaluate_image_struct(a,vname,THUMBSIZE=THUMBSIZE,TSTART=TSTART,$
                           TSTOP=TSTOP,XSIZE=XSIZE,COLORBAR=COLORBAR)
-i = size(s) & if i(n_elements(i)-2) ne 8 then return,-1
+i = size(s) & if i[n_elements(i)-2] ne 8 then return,-1
 if keyword_set(DEBUG) then help,/struct,s
 tn = tag_names(a.(s.vnum))
 
@@ -84,28 +91,28 @@ if wc ne 0 then tdat = a.(s.tnum).DAT else handle_value,a.(s.tnum).HANDLE,tdat
 
 ; Perform time filtering if required
 if ((s.firstframe ne 0)or(s.lastframe ne s.nimages)) then begin
-  idat = idat(*,*,s.firstframe:s.lastframe-1)
-  tdat = tdat(s.firstframe:s.lastframe-1)
+  idat = idat[*,*,s.firstframe:s.lastframe-1]
+  tdat = tdat[s.firstframe:s.lastframe-1]
 endif
 
 ; Determine validmin and validmax values
 vmin = 0 & vmax = 10000 ; defaults
 w = where(tn eq 'VALIDMIN',wc)
 if wc ne 0 then begin & i = size(a.(s.vnum).VALIDMIN)
-  if i(0) eq 0 then vmin = a.(s.vnum).VALIDMIN
+  if i[0] eq 0 then vmin = a.(s.vnum).VALIDMIN
 endif
 w = where(tn eq 'VALIDMAX',wc)
 if wc ne 0 then begin & i = size(a.(s.vnum).VALIDMAX)
-  if i(0) eq 0 then vmax = a.(s.vnum).VALIDMAX
+  if i[0] eq 0 then vmax = a.(s.vnum).VALIDMAX
 endif
 
 ; Perform data validmin/max filtering to maximize color spread
-w = where(idat lt vmin,wc) & if wc gt 0 then idat(w) = 0       ; 'black'
-w = where(idat gt vmax,wc) & if wc gt 0 then idat(w) = vmax-1  ; 'red'
+w = where(idat lt vmin,wc) & if wc gt 0 then idat[w] = 0       ; 'black'
+w = where(idat gt vmax,wc) & if wc gt 0 then idat[w] = vmax-1  ; 'red'
 
 ; Rebin the data to the thumbnail size
-if s.nimages eq 1 then idat = congrid(idat,s.tsizes(0),s.tsizes(1)) $
-else idat = congrid(idat,s.tsizes(0),s.tsizes(1),s.nimages)
+if s.nimages eq 1 then idat = congrid(idat,s.tsizes[0],s.tsizes[1]) $
+else idat = congrid(idat,s.tsizes[0],s.tsizes[1],s.nimages)
 
 ; Filter data values outside 3-sigma for better color spread
 if keyword_set(NONOISE) then begin
@@ -114,13 +121,13 @@ if keyword_set(NONOISE) then begin
   sigminmax=three_sigma(idat)
   smin=sigminmax.(0)
   smax=sigminmax.(1)
-  w = where(idat lt smin,wc) & if wc gt 0 then idat(w) = smin   ; 'black'
-  w = where(idat gt smax,wc) & if wc gt 0 then idat(w) = smax-1 ; 'red'
+  w = where(idat lt smin,wc) & if wc gt 0 then idat[w] = smin   ; 'black'
+  w = where(idat gt smax,wc) & if wc gt 0 then idat[w] = smax-1 ; 'red'
 endif
 
 ; Bytescale to maximize the color spread
 idmax = max(idat) & idmin = min(idat)
-idat  = bytscl(idat,min=idmin,max=idmax,top=!d.n_colors-8)
+idat  = bytscl(idat,min=idmin,max=idmax,top=!d.table_size-8)
 
 ; Generate the Widget display
 base = widget_base(title=wtitle,/column)
@@ -143,19 +150,19 @@ widget_control,draw,get_value=windowid
 
 ; Draw the plot in the newly created draw widget
 wset,windowid & irow=0 & icol=0
-xpos = 0 & ypos = s.ysize - s.title_height - s.tsizes(1)
+xpos = 0 & ypos = s.ysize - s.title_height - s.tsizes[1]
 if keyword_set(COLORBAR) then begin
   !x.margin = 14 & plot,[0,1],[0,1],/noerase,/nodata,xstyle=4,ystyle=4
 endif
 for j=0,s.nimages-1 do begin
-  tv,idat(*,*,j),xpos,ypos,/device
-  tdate = decode_cdfepoch(tdat(j))
+  tv,idat[*,*,j],xpos,ypos,/device
+  tdate = decode_cdfepoch(tdat[j])
   shortdate = strmid(tdate,10,strlen(tdate))
-  xyouts,xpos,ypos-s.timetag_height+1,shortdate,color=!d.n_colors-1,/device
+  xyouts,xpos,ypos-s.timetag_height+1,shortdate,color=!d.table_size-1,/device
   ; recompute positions for next thumbnail
-  xpos = xpos + s.tsizes(0) & icol = icol + 1  
+  xpos = xpos + s.tsizes[0] & icol = icol + 1  
   if icol eq s.ncols then begin
-    icol=0 & xpos=0 & ypos = ypos - (s.tsizes(1) + s.timetag_height)
+    icol=0 & xpos=0 & ypos = ypos - (s.tsizes[1] + s.timetag_height)
   endif
 endfor
 
@@ -165,8 +172,8 @@ if keyword_set(COLORBAR) then begin
   if n_elements(cCharSize) eq 0 then cCharSize=0
   cscale = [idmin,idmax] & xwindow= !x.window & offset = 0.01
   colorbar,cscale,ctitle,logZ=0,cCharSize=cCharSize,$
-           position=[!x.window(1)+offset,     !y.window(0),$
-                     !x.window(1)+offset+0.03,!y.window(1)],$
+           position=[!x.window[1]+offset,     !y.window[0],$
+                     !x.window[1]+offset+0.03,!y.window[1]],$
            fcolor=244,/image
   !x.window=xwindow
 endif ; colorbar

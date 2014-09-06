@@ -1,5 +1,11 @@
 ; Add journal command write to a file
 ; Use in error message mailed to developers
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
  journal, '/home/cdaweb/tmp/ssc_journal_dev'
 ON_ERROR, 1
 ; s = execute("restore, '/home/rumba/cdaweb/lib/spdflib5.dat'") ; this was ops

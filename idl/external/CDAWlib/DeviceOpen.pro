@@ -1,8 +1,8 @@
-;$Author: jimm $
-;$Date: 2010-01-12 12:18:45 -0800 (Tue, 12 Jan 2010) $
-;$Header: /home/cdaweb/dev/control/RCS/DeviceOpen.pro,v 1.8 2007/02/27 14:57:40 johnson Exp johnson $
+;$Author: nikos $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/DeviceOpen.pro,v 1.10 2011/06/17 18:46:25 kovalick Exp johnson $
 ;$Locker: johnson $
-;$Revision: 7092 $
+;$Revision: 15739 $
 Pro DeviceOpen, device, portrait=portrait, fileOutput=fileOutput, $
 	sizeWindow=sizeWindow, COLORTAB=COLORTAB
 ;Terri Martin and Robert Candey, 26 July 1993
@@ -123,7 +123,8 @@ Case deviceType of
        device,/landscape,bits=4,font_size=12,/INCHES,$
 		YOFFSET=10.75,XSIZE=10.5,ysize=8,xoffset=0.25, file=file
      endelse
-     !p.background = !d.n_colors-1
+;     !p.background = !d.n_colors-1
+     !p.background = !d.table_size-1
      !p.color = 0
 ;     !p.background = 0
 ;     !p.color = !d.n_colors-1
@@ -171,7 +172,8 @@ print, "Don't forget to invert your data (!d.n_colors-1-bytscl(data)) for graysc
      set_plot,'z'
      device,set_resolution=sizeWindow,set_colors=240,set_char=[6,11], $
 	z_buffering=0
-     !p.background = !d.n_colors-1
+;     !p.background = !d.n_colors-1
+     !p.background = !d.table_size-1
 ;     !p.color = !d.n_colors-2
      !p.color = 0
      loadct,13
@@ -188,7 +190,8 @@ print, "Don't forget to invert your data (!d.n_colors-1-bytscl(data)) for graysc
      set_plot,'z'
      device,set_resolution=sizeWindow,set_colors=240,set_char=[6,11], $
 	z_buffering=0
-     !p.background = !d.n_colors-1
+;     !p.background = !d.n_colors-1
+     !p.background = !d.table_size-1
 ;     !p.color = !d.n_colors-2
      !p.color = 0
      if keyword_set(COLORTAB) then loadct,COLORTAB else loadct,13
@@ -205,7 +208,8 @@ print, "Don't forget to invert your data (!d.n_colors-1-bytscl(data)) for graysc
      set_plot,'z'
      device,set_resolution=sizeWindow,set_colors=240,set_char=[6,11], $
 	z_buffering=0
-     !p.background = !d.n_colors-1
+;     !p.background = !d.n_colors-1
+     !p.background = !d.table_size-1
 ;     !p.color = !d.n_colors-2
      !p.color = 0
      if keyword_set(COLORTAB) then loadct,COLORTAB else loadct,13
@@ -218,7 +222,8 @@ print, "Don't forget to invert your data (!d.n_colors-1-bytscl(data)) for graysc
     End            
   9: begin ; ION
      set_plot,'ION'
-     !p.background = !d.n_colors-1
+;     !p.background = !d.n_colors-1
+     !p.background = !d.table_size-1
 ;     !p.color = !d.n_colors-2
      !p.color = 0
      loadct,13
@@ -239,16 +244,17 @@ if (deviceType ne 3) and (deviceType ne 4) then begin
  ; munge color table to ensure black and white color
 ;  r_curr(!d.n_colors-2) = bottom & g_curr(!d.n_colors-2) = bottom
 ;  b_curr(!d.n_colors-2) = bottom
-  r_curr(0) = bottom & g_curr(0) = bottom & b_curr(0) = bottom
+  r_curr[0] = bottom & g_curr[0] = bottom & b_curr[0] = bottom
   ; background
 ;TJK 3/27/03 - replace !d.n_colors and !d.table_size, because various display devices have many more
 ;colors than the size of the color table...
 
 ;  r_curr(!d.n_colors-1) = top & g_curr(!d.n_colors-1) = top
 ;  b_curr(!d.n_colors-1) = top
-  r_curr(!d.table_size-1) = top & g_curr(!d.table_size-1) = top
-  b_curr(!d.table_size-1) = top
+  r_curr[!d.table_size-1] = top & g_curr[!d.table_size-1] = top
+  b_curr[!d.table_size-1] = top
   tvlct, r_curr, g_curr, b_curr
+
 endif
 return
 END ; deviceOpen

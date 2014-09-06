@@ -7,6 +7,12 @@ FUNCTION chk_leap_year,year
 ;    keywords:  none 
 ;    library routines:  none
 ;
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 return_val = 0
 
 ;divisible by 4 and not centurial year

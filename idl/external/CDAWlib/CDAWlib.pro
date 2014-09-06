@@ -1,14 +1,21 @@
 ;$author: kovalick $
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header: /home/cdaweb/dev/control/RCS/CDAWlib.pro,v 1.8 1998/06/11 12:48:38 kovalick Exp johnson $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/CDAWlib.pro,v 1.10 2012/06/20 15:47:32 kovalick Exp johnson $
 ;$Locker: johnson $
-;$Revision: 8 $;
+;$Revision: 15739 $;
 ;NOTE to user's please set the LD_LIBRARY_PATH to the appropriate directories
 ;on your system, the 1st should be the location of the idl executable, the
 ;second should be the name of a directory which can contain a version of
 ;this whole set of s/w in an IDL save file.
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 ;setenv, 'LD_LIBRARY_PATH=/ncf/alpha/lib/rsi/idl_4/bin/bin.alpha:/home/rumba/cdaweb/lib'
-setenv,'LD_LIBRARY_PATH=/usr/local/rsi/idl_6.1/bin/bin.linux.x86:/home/cdaweb/lib'
+;setenv,'LD_LIBRARY_PATH=/usr/local/rsi/idl_6.1/bin/bin.linux.x86:/home/cdaweb/lib'
+setenv,'LD_LIBRARY_PATH=/usr/local/itt/idl81/bin/bin.linux.x86:/home/cdaweb/lib'
 ;small subset of John Hopkins routines used by CDAWlib
 ;these files are kept in the jh subdirectory so they won't 
 ;be confused w/ our own utility routines.

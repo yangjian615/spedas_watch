@@ -1,8 +1,8 @@
 ;$author: baldwin $
-;$Date: 2006-10-11 13:32:51 -0700 (Wed, 11 Oct 2006) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/map_keywords.pro,v 1.30 2000/08/15 19:05:24 johnson Exp johnson $
+;$Date: 2014-09-03 15:05:59 -0700 (Wed, 03 Sep 2014) $
+;$Header: /home/cdaweb/dev/control/RCS/map_keywords.pro,v 1.32 2012/05/08 17:56:08 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 8 $
+;$Revision: 15739 $
 ;+------------------------------------------------------------------------
 ; NAME: MAP_KEYWORDS.PRO 
 ;
@@ -52,7 +52,13 @@
 ;       baldwin@nssdca.gsfc.nasa.gov    (301)286-7220
 ; MODIFICATION HISTORY:
 ;       8/30/96 : R. Baldwin   : Add error handling STATUS,DATASET,IMAGE,GIF 
-;-------------------------------------------------------------------------
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
 FUNCTION map_keywords, ORB_VW=ORB_VW, XUMN=XUMN, XUMX=XUMX, YUMN=YUMN, $
   YUMX=YUMX,ZUMN=ZUMN,ZUMX=ZUMX,RUMN=RUMN,RUMX=RUMX, DOYMARK=DOYMARK, $
   HRMARK=HRMARK, HRTICK=HRTICK, MNTICK=MNTICK,MNMARK=MNMARK,LNTHICK=LNTHICK,$
@@ -95,27 +101,27 @@ iscn=0
  while(NOT EOF(lun)) do begin 
   readf, lun, str_val
   parts = str_sep(str_val,'=')
-  key=strupcase(parts(0))
-  value=parts(1)
+  key=strupcase(parts[0])
+  value=parts[1]
   if(key eq 'LATMIN') then LIM=fltarr(4)
 ;  if(key eq 'STATION ') then begin
   case key of 
    'STATION' : begin
-     stations(iscn)=value
+     stations[iscn]=value
      readf, lun, str_val
      parts = str_sep(str_val,'=')
-     key1=strupcase(parts(0))
-     val1=parts(1)
-     if(key1 eq 'LAT') then lats(iscn)=float(val1) else begin 
+     key1=strupcase(parts[0])
+     val1=parts[1]
+     if(key1 eq 'LAT') then lats[iscn]=float(val1) else begin 
       printf, 1, 'STATUS=keyword file error'
       printf, 1, 'ERROR=Missing keyword in file error LAT'
      endelse
 
      readf, lun, str_val
      parts = str_sep(str_val,'=')
-     key2=strupcase(parts(0))
-     val2=parts(1)
-     if(key2 eq 'LON') then lons(iscn)=float(val2) else begin 
+     key2=strupcase(parts[0])
+     val2=parts[1]
+     if(key2 eq 'LON') then lons[iscn]=float(val2) else begin 
       printf, 1, 'STATUS=keyword file error'
       printf, 1, 'ERROR=Missing keyword in file error LON'
      endelse
@@ -130,10 +136,10 @@ iscn=0
    end
    'CHARSIZE' : CHTSIZE=value
    'TITLE' : TITLE=value
-   'LATMIN' : LIM(0)=value
-   'LONMIN' : LIM(1)=value
-   'LATMAX' : LIM(2)=value
-   'LONMAX' : LIM(3)=value
+   'LATMIN' : LIM[0]=value
+   'LONMIN' : LIM[1]=value
+   'LATMAX' : LIM[2]=value
+   'LONMAX' : LIM[3]=value
  ; endif else begin
     else: x1=execute(key+'='+value)
   endcase 
@@ -142,9 +148,9 @@ iscn=0
  if(iscn ne 0) then begin
   station.num=iscn
   ws=where(stations ne '',wsn)
-  fstat=stations(ws)
-  flat=lats(ws)
-  flon=lons(ws) 
+  fstat=stations[ws]
+  flat=lats[ws]
+  flon=lons[ws] 
   temp=create_struct('STATION',fstat,'LAT',flat,'LON',flon)
   station=create_struct(station,temp)
  endif
@@ -152,8 +158,8 @@ iscn=0
  free_lun, lun 
 
 ; Check map parameters
-; if(LIM(0) eq LIM(2)) then LIM(0)=-90. & LIM(2)=90.
-; if(LIM(1) eq LIM(3)) then LIM(1)=-180. & LIM(3)=180.
+; if(LIM[0] eq LIM[2]) then LIM[0]=-90. & LIM[2]=90.
+; if(LIM[1] eq LIM[3]) then LIM[1]=-180. & LIM[3]=180.
 if((n_elements(POLAT) ne 0) and (n_elements(ROT) eq 0)) then ROT=0
 if((n_elements(POLAT) ne 0) and (n_elements(POLON) eq 0)) then POLON=0
 if((n_elements(POLON) ne 0) and (n_elements(ROT) eq 0)) then ROT=0

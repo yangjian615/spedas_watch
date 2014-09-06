@@ -1,12 +1,17 @@
-;----------------------------------------------------------------------------------
-
+;
 ; Return the data for the given variable in the given structure
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 FUNCTION get_mydata,a,var
 ; Determine the variable number
 s = size(var)  
-if s(n_elements(s)-2) eq 7 then begin
+if s[n_elements(s)-2] eq 7 then begin
   w = where(tag_names(a) eq var)
-  if w[0] ne -1 then vnum = w(0) $
+  if w[0] ne -1 then vnum = w[0] $
   else begin
     print,'ERROR>get_mydata:named variable not in structure!' & return,-1
   endelse

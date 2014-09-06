@@ -87,10 +87,10 @@
 	;------  Handle pointers  -----------
 	if n_elements(pt) eq 0 then pt = 0
 	pflag = 0
-	if pt(0) gt 0 then begin
-	  if pt(0) eq 1 then pt=.03
-	  ht = pt(0)
-	  wd = pt(n_elements(pt)-1)
+	if pt[0] gt 0 then begin
+	  if pt[0] eq 1 then pt=.03
+	  ht = pt[0]
+	  wd = pt[n_elements(pt)-1]
 	  if n_elements(pt) eq 1 then wd = ht/2.
 	  pflag = 1
 	endif
@@ -110,17 +110,17 @@
 	    ;--------  Filled line pairs  -----------
 	    if n_elements(fill) ne 0 then begin
 	      if (i mod 2) eq 0 then begin
-	        x1 = xx(i) & x2 = xx((i+1)<(n-1))
-		y1 = yy(0) & y2 = yy(1)
+	        x1 = xx[i] & x2 = xx[(i+1)<(n-1)]
+		y1 = yy[0] & y2 = yy[1]
 		polyfill, /dev, [x1,x2,x2,x1],[y1,y1,y2,y2],color=fill
 	      endif
 	    ;---------  Single lines  ---------------
 	    endif else if pflag eq 0 then begin
- 	      plots,/device,[0,0]+xx(i),yy,linestyle=ls,color=clr,thick=thk
+ 	      plots,/device,[0,0]+xx[i],yy,linestyle=ls,color=clr,thick=thk
 	    ;---------  Pointers  -------------------
 	    endif else begin
 	      dx = round((!d.x_size-1)*wd/2.)
-	      dx = [-dx,0,dx]+xx(i)
+	      dx = [-dx,0,dx]+xx[i]
 	      dy = round((!d.y_size-1)*ht)
 	      y1 = [0,dy,0]
 	      y2 = !d.y_size-1 - [0,dy,0]
@@ -135,17 +135,17 @@
 	    ;--------  Filled line pairs  -----------
 	    if n_elements(fill) ne 0 then begin
 	      if (i mod 2) eq 0 then begin
-	        x1 = xx(i) & x2 = xx((i+1)<(n-1))
-		y1 = yy(0) & y2 = yy(1)
+	        x1 = xx[i] & x2 = xx[(i+1)<(n-1)]
+		y1 = yy[0] & y2 = yy[1]
 		polyfill, /norm, [x1,x2,x2,x1],[y1,y1,y2,y2],color=fill
 	      endif
 	    ;---------  Single lines  ---------------
 	    endif else if pflag eq 0 then begin
- 	      plots,/norm,[0,0]+xx(i),yy,linestyle=ls,color=clr,thick=thk
+ 	      plots,/norm,[0,0]+xx[i],yy,linestyle=ls,color=clr,thick=thk
 	    ;---------  Pointers  -------------------
 	    endif else begin
 	      dx = wd/2.
-	      dx = [-dx,0,dx]+xx(i)
+	      dx = [-dx,0,dx]+xx[i]
 	      dy = ht
 	      y1 = [0,dy,0]
 	      y2 = [1,1-dy,1]
@@ -162,22 +162,22 @@
 	      ;--------  Filled line pairs  -----------
 	      if n_elements(fill) ne 0 then begin
 	        if (i mod 2) eq 0 then begin
-	          x1 = xx(i) & x2 = xx((i+1)<(n-1))
+	          x1 = xx[i] & x2 = xx[(i+1)<(n-1)]
 	  	  y1 = min(yy)  &  y2 = max(yy)
   		  polyfill, [x1,x2,x2,x1],[y1,y1,y2,y2],color=fill,noclip=0
 	        endif
 	      ;---------  Single lines  ---------------
 	      endif else if pflag eq 0 then begin
- 	        oplot,[1.,1.]*xx(i),[min(yy),max(yy)],linestyle=ls,$
+ 	        oplot,[1.,1.]*xx[i],[min(yy),max(yy)],linestyle=ls,$
 		  color=clr, thick=thk
 	      ;---------  Pointers  -------------------
 	      endif else begin
-	        dx = (!x.crange(1)-!x.crange(0))*wd/2.
-		if !x.type eq 0 then dx=[-dx,0,dx]+xx(i) else $
-		  dx=10^([-dx,0,dx]+alog10(xx(i)))
-	        dy = (!y.crange(1)-!y.crange(0))*ht
-		y1 = [0,dy,0]+!y.crange(0)
-		y2 = [0,-dy,0]+!y.crange(1)
+	        dx = (!x.crange[1]-!x.crange[0])*wd/2.
+		if !x.type eq 0 then dx=[-dx,0,dx]+xx[i] else $
+		  dx=10^([-dx,0,dx]+alog10(xx[i]))
+	        dy = (!y.crange[1]-!y.crange[0])*ht
+		y1 = [0,dy,0]+!y.crange[0]
+		y2 = [0,-dy,0]+!y.crange[1]
 		if keyword_set(out) then begin
 		  y1 = y1-dy
 		  y2 = y2+dy
@@ -190,25 +190,25 @@
 	      ;--------  Filled line pairs  -----------
 	      if n_elements(fill) ne 0 then begin
 	        if (i mod 2) eq 0 then begin
-	          x1 = xx(i) & x2 = xx((i+1)<(n-1))
+	          x1 = xx[i] & x2 = xx[(i+1)<(n-1)]
 	  	  y1 = min(yy)  &  y2 = max(yy)
   		  polyfill, [x1,x2,x2,x1],10^[y1,y1,y2,y2],color=fill,noclip=0
 	        endif
 	      ;---------  Single lines  ---------------
 	      endif else if pflag eq 0 then begin
- 	        oplot,[1.,1.]*xx(i),10^[min(yy),max(yy)],linestyle=ls,$
+ 	        oplot,[1.,1.]*xx[i],10^[min(yy),max(yy)],linestyle=ls,$
 		  color=clr, thick=thk
 	      ;---------  Pointers  -------------------
 	      endif else begin
-	        dx = (!x.crange(1)-!x.crange(0))*wd/2.
-		if !x.type eq 0 then dx=[-dx,0,dx]+xx(i) else $
-		  dx=10^([-dx,0,dx]+alog10(xx(i)))
-	        dy = (!y.crange(1)-!y.crange(0))*ht
-		y1 = 10^([0,dy,0]+!y.crange(0))
-		y2 = 10^([0,-dy,0]+!y.crange(1))
+	        dx = (!x.crange[1]-!x.crange[0])*wd/2.
+		if !x.type eq 0 then dx=[-dx,0,dx]+xx[i] else $
+		  dx=10^([-dx,0,dx]+alog10(xx[i]))
+	        dy = (!y.crange[1]-!y.crange[0])*ht
+		y1 = 10^([0,dy,0]+!y.crange[0])
+		y2 = 10^([0,-dy,0]+!y.crange[1])
 		if keyword_set(out) then begin
-		  y1 = 10^([0,dy,0]-dy+!y.crange(0))
-		  y2 = 10^([0,-dy,0]+dy+!y.crange(1))
+		  y1 = 10^([0,dy,0]-dy+!y.crange[0])
+		  y2 = 10^([0,-dy,0]+dy+!y.crange[1])
 		endif
 	        if bflag then polyfill,dx,y1,col=clr
 	        if tflag then polyfill,dx,y2,col=clr

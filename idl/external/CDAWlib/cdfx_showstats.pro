@@ -8,6 +8,12 @@ end
 ;-----------------------------------------------------------------------------
 ; Compute and display pertinent statistical information about the variable
 ; contained in the structure a, in a non-editable text widget.
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
 
 pro cdfx_showstats, a, GROUP=GROUP
 
@@ -18,7 +24,7 @@ text = ''
 
 ; Verify that a is a record varying structure
 as = size(a) & nas = n_elements(as)
-if (as(nas-2) ne 8) then begin
+if (as[nas-2] ne 8) then begin
   ok = dialog_message(/error, 'showstats:input parameter is not a structure.')
   return
 endif else atags = tag_names(a)
@@ -56,11 +62,11 @@ endif
 ; Capture type and dimensionality information
 ;TJK 12/7/2006 - replace call to gethelp w/ call to help because
 ;it is obsolete and doesn't support dcomplex.
-;h = gethelp('d') & h = strtrim(strmid(h(0),1,strlen(h(0))-1),2)
-help, d, output=h & h = strtrim(strmid(h(0),1,strlen(h(0))-1),2)
-s = str_sep(h(0),'=') & text = 'Variable name : ' + a.VARNAME
-text = [text,('Variable type : ' + strtrim(s(0),2))]
-text = [text,('Dimensionality: ' + strtrim(s(1),2))]
+;h = gethelp('d') & h = strtrim(strmid(h[0],1,strlen(h[0])-1),2)
+help, d, output=h & h = strtrim(strmid(h[0],1,strlen(h[0])-1),2)
+s = str_sep(h[0],'=') & text = 'Variable name : ' + a.VARNAME
+text = [text,('Variable type : ' + strtrim(s[0],2))]
+text = [text,('Dimensionality: ' + strtrim(s[1],2))]
 
 ; Determine the fill value if one exists
 ti = tagindex('FILLVAL',tag_names(a))
@@ -69,9 +75,9 @@ s = 'fill value=' + string(fill)
 text = [text,' '] & text = [text,s]
 
 ; Compute statistics
-if ds(0) eq 1 then begin ; variable is record-varying scalar
+if ds[0] eq 1 then begin ; variable is record-varying scalar
   w = where(d eq fill,fc) & w = where(d ne fill,wc)
-  if (wc ne 0) then d = d(w) ; filter out fill values
+  if (wc ne 0) then d = d[w] ; filter out fill values
   dmin = min(d) & dmax = max(d)
   davg = total(d)/n_elements(d)
   text = [text,('fill count= ' + string(fc))]
@@ -80,9 +86,9 @@ if ds(0) eq 1 then begin ; variable is record-varying scalar
   text = [text,('average   = ' + string(davg))]
 endif
 
-if ds(0) eq 2 then begin ; variable is record-varying vector
+if ds[0] eq 2 then begin ; variable is record-varying vector
   w = where(d eq fill,fc) & w = where(d ne fill,wc)
-  if (wc ne 0) then e = d(w) ; filter out fill values
+  if (wc ne 0) then e = d[w] ; filter out fill values
   dmin = min(e) & dmax = max(e)
   davg = total(e)/n_elements(e) & e=0
   text = [text,('fill count= ' + strtrim(string(fc),2))]
@@ -91,9 +97,9 @@ if ds(0) eq 2 then begin ; variable is record-varying vector
   text = [text,('average   = ' + strtrim(string(davg),2))]
   text = [text,' '] & text = [text,' Element by Element Checking:']
   ; get stats for each element of vector
-  for i=0,ds(1)-1 do begin
-    e = d(i,*) & w = where(e eq fill,fc)
-    w = where(e ne fill,wc) & if (wc ne 0) then e = e(w) ; filter out fills
+  for i=0,ds[1]-1 do begin
+    e = d[i,*] & w = where(e eq fill,fc)
+    w = where(e ne fill,wc) & if (wc ne 0) then e = e[w] ; filter out fills
     dmin = min(e) & dmax = max(e) & davg = total(e)/n_elements(e) & e=0
     text = [text,('Element ' + strtrim(string(i+1),2))]
     text = [text,('   fill count= ' + strtrim(string(fc),2))]
@@ -103,7 +109,7 @@ if ds(0) eq 2 then begin ; variable is record-varying vector
   endfor
 endif
 
-if ds(0) ge 3 then begin ; variable is record-varying image
+if ds[0] ge 3 then begin ; variable is record-varying image
   ok = dialog_message(/error, $
     'Cannot produce stats for 3D+ variables!')
   return
