@@ -5,27 +5,34 @@
 ;INPUT:		
 ;
 ;KEYWORDS:
-;	all	0/1		if not set, then raw tplot structures are deleted
-;	units	string		select the units for generated tplot structures
-;	apids	strarr		if set, selectes subset of apids to generate tplot structures
-;	test	0/1		if set, prints out MLUT check
-;	gf_nor	0/1		if set, keyword for testing 
+;	all	0/1		if not set, deletes all currently stored STATIC tplot structures (mvn_sta* and mvn_STA*) before generating new structures
+;					generally this is only used for code diagnostics
+;	units	string		select the units for generated tplot structures - not working yet
+;	apids	strarr		if set, selectes subset of apids to generate tplot structures - not working yet
+;	test	0/1		if set, diagnostic tplot structures (APIDs: 2A,d6,d7,d8,d9,da) are made
+;					generates "mode" and "rate" tplot structures for all APIDs, 
+;						default only generates c6 mode and rate tplot structures
+;	gf_nor	0/1		if set, keyword for testing - not working yet
 ;
 ;
-;CREATED BY:	J. McFadden	2012/10/04
+;CREATED BY:	J. McFadden	2014/03/14
 ;VERSION:	1
-;LAST MODIFICATION:  2014/03/14
+;LAST MODIFICATION:  2014/09/08
 ;MOD HISTORY:
 ;
 ;
 ;-
 pro mvn_sta_l2_tplot,all=all,units=units,apids=apids,test=test,gf_nor=gf_nor
 
-;loadct2,43
-;cols=get_colors()
+cols=get_colors()
 
-
-if not keyword_set(all) then store_data,delete='mvn_sta_*'
+; Note: mvn_sta_l0_load.pro  generates 'mvn_STA_*'    tplot structures - raw apids
+;	mvn_sta_prod_cal.pro generates 'mvn_sta_XX_*  tplot structures where XX are capital letters
+;	mvn_sta_l2_load.pro  generates 'mvn_sta_yy_*' tplot structures where yy are lower case letters
+if not keyword_set(all) then begin
+	store_data,delete='mvn_STA_*'
+	store_data,delete='mvn_sta_*'
+endif
 
 ;declare all the common block arrays
 
@@ -52,11 +59,19 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	common mvn_da,mvn_da_ind,mvn_da_dat 
 	common mvn_db,mvn_db_ind,mvn_db_dat 
 
+; 2A
+	if size(mvn_2a_dat,/type) eq 8 and keyword_set(test) then begin
+
+
+	endif
+
 
 ; C0
 	if size(mvn_c0_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_c0_dat.time)
+		mode = mvn_c0_dat.mode
+		rate = mvn_c0_dat.rate
 		iswp = mvn_c0_dat.swp_ind
 		ieff = mvn_c0_dat.eff_ind
 		iatt = mvn_c0_dat.att_ind
@@ -89,6 +104,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_c0_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c0_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c0_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_c0_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_c0_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c0_tot',0,0,1
 			ylim,'mvn_sta_c0_P1A_E',.4,40000.,1
@@ -129,6 +146,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	if size(mvn_c2_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_c2_dat.time)
+		mode = mvn_c2_dat.mode
+		rate = mvn_c2_dat.rate
 		iswp = mvn_c2_dat.swp_ind
 		ieff = mvn_c2_dat.eff_ind
 		iatt = mvn_c2_dat.att_ind
@@ -161,6 +180,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_c2_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c2_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c2_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_c2_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_c2_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c2_tot',0,0,1
 			ylim,'mvn_sta_c2_P1D_E',.4,40000.,1
@@ -202,6 +223,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	if size(mvn_c4_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_c4_dat.time)
+		mode = mvn_c4_dat.mode
+		rate = mvn_c4_dat.rate
 		iswp = mvn_c4_dat.swp_ind
 		ieff = mvn_c4_dat.eff_ind
 		iatt = mvn_c4_dat.att_ind
@@ -234,6 +257,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_c4_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c4_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c4_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_c4_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_c4_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c4_tot',0,0,1
 			ylim,'mvn_sta_c4_P1D_E',.4,40000.,1
@@ -275,6 +300,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	if size(mvn_c6_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_c6_dat.time)
+		mode = mvn_c6_dat.mode
+		rate = mvn_c6_dat.rate
 		iswp = mvn_c6_dat.swp_ind
 		ieff = mvn_c6_dat.eff_ind
 		iatt = mvn_c6_dat.att_ind
@@ -307,6 +334,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_c6_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c6_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c6_att',data={x:time,y:iatt}
+			store_data,'mvn_sta_mode',data={x:time,y:mode}
+			store_data,'mvn_sta_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c6_tot',0,0,1
 			ylim,'mvn_sta_c6_P1D_E',.4,40000.,1
@@ -348,6 +377,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	if size(mvn_c8_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_c8_dat.time)
+		mode = mvn_c8_dat.mode
+		rate = mvn_c8_dat.rate
 		iswp = mvn_c8_dat.swp_ind
 		ieff = mvn_c8_dat.eff_ind
 		iatt = mvn_c8_dat.att_ind
@@ -380,6 +411,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_c8_D',data={x:time,y:total(eflux,2)/nenergy,v:theta}
 		store_data,'mvn_sta_c8_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c8_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_c8_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_c8_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c8_tot',0,0,1
 			ylim,'mvn_sta_c8_P2_E',.4,40000.,1
@@ -420,6 +453,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	if size(mvn_ca_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_ca_dat.time)
+		mode = mvn_ca_dat.mode
+		rate = mvn_ca_dat.rate
 		iswp = mvn_ca_dat.swp_ind
 		ieff = mvn_ca_dat.eff_ind
 		iatt = mvn_ca_dat.att_ind
@@ -448,7 +483,7 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		eflux = float(eflux)
 		if max(abs((eflux-mvn_ca_dat.eflux)/eflux)) gt 0. then print,'Error in ca eflux ',max(abs((eflux-mvn_ca_dat.eflux)/eflux))
 
-		store_data,'mvn_sta_ca_P3_E',data={x:time,y:total(data,3)/nbins,v:energy}
+		store_data,'mvn_sta_ca_P3_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_ca_P3_D',data={x:time,y:total(total(reform(data,npts,nenergy,ndef,nanode),4),2),v:theta}
 		store_data,'mvn_sta_ca_P3_A',data={x:time,y:total(total(reform(data,npts,nenergy,ndef,nanode),3),2),v:phi}
 		store_data,'mvn_sta_ca_tot',data={x:time,y:total(total(data,3),2)}
@@ -456,6 +491,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_ca_E',data={x:time,y:total(eflux,3)/nbins,v:energy}
 		store_data,'mvn_sta_ca_D',data={x:time,y:total(total(reform(eflux,npts,nenergy,ndef,nanode),4),2),v:theta}
 		store_data,'mvn_sta_ca_A',data={x:time,y:total(total(reform(eflux,npts,nenergy,ndef,nanode),3),2),v:phi}
+			if keyword_set(test) then store_data,'mvn_sta_ca_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_ca_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_ca_P3_E',.4,40000.,1
 			ylim,'mvn_sta_ca_P3_D',-50,50,0
@@ -506,10 +543,204 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 			options,'mvn_sta_ca_A',ztitle='eflux'
 	endif
 
+; CC
+	if size(mvn_cc_dat,/type) eq 8 then begin
+
+		npts = n_elements(mvn_cc_dat.time)
+		mode = mvn_cc_dat.mode
+		rate = mvn_cc_dat.rate
+		iswp = mvn_cc_dat.swp_ind
+		ieff = mvn_cc_dat.eff_ind
+		iatt = mvn_cc_dat.att_ind
+		mlut = mvn_cc_dat.mlut_ind
+		nenergy = mvn_cc_dat.nenergy
+		nbins = mvn_cc_dat.nbins
+		ndef = mvn_cc_dat.ndef
+		nanode = mvn_cc_dat.nanode
+		nmass = mvn_cc_dat.nmass
+
+		time = (mvn_cc_dat.time + mvn_cc_dat.end_time)/2.
+		data = mvn_cc_dat.data
+		eflux = mvn_cc_dat.eflux
+		energy = reform(mvn_cc_dat.energy[iswp,*,0,0])
+		mass = reform(total(mvn_cc_dat.mass_arr[mlut,*,0,*],2)/nenergy)
+		theta = total(reform(mvn_cc_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
+		phi = total(reform(mvn_cc_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
+
+		bkg = mvn_cc_dat.bkg
+		dead = mvn_cc_dat.dead
+		gf = reform(mvn_cc_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
+		            mvn_cc_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
+		            mvn_cc_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
+		            mvn_cc_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)$
+				#replicate(1.,nmass)
+		gf = mvn_cc_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
+		eff = mvn_cc_dat.eff[ieff,*,*,*]
+		dt = mvn_cc_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
+		eflux = (data-bkg)*dead/(gf*eff*dt)
+		eflux = float(eflux)
+		if max(abs((eflux-mvn_cc_dat.eflux)/eflux)) gt 0. then print,'Error in ce eflux ',max(abs((eflux-mvn_cc_dat.eflux)/eflux))
+
+		store_data,'mvn_sta_cc_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
+		store_data,'mvn_sta_cc_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
+		store_data,'mvn_sta_cc_P4B_M',data={x:time,y:total(total(data,3),2),v:mass}
+		store_data,'mvn_sta_cc_E',data={x:time,y:total(total(eflux,4),3)/nbins,v:energy}
+		store_data,'mvn_sta_cc_D',data={x:time,y:total(total(eflux,4),2),v:theta}
+		store_data,'mvn_sta_cc_M',data={x:time,y:total(total(eflux,3),2),v:mass}
+		store_data,'mvn_sta_cc_tot',data={x:time,y:total(total(total(data,4),3),2)}
+		store_data,'mvn_sta_cc_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_cc_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_cc_rate',data={x:time,y:rate}
+
+			ylim,'mvn_sta_cc_tot',0,0,1
+			ylim,'mvn_sta_cc_P4B_E',.4,40000.,1
+			ylim,'mvn_sta_cc_P4B_D',-50,50,0
+			ylim,'mvn_sta_cc_P4B_M',.5,100,1
+			ylim,'mvn_sta_cc_E',.4,40000.,1
+			ylim,'mvn_sta_cc_D',-50,50,0
+			ylim,'mvn_sta_cc_M',.5,100,1
+			ylim,'mvn_sta_cc_att',-1,5,0
+
+			zlim,'mvn_sta_cc_P4B_E',10,1.e5,1
+			zlim,'mvn_sta_cc_P4B_D',10,1.e5,1
+			zlim,'mvn_sta_cc_P4B_M',10,1.e5,1
+			zlim,'mvn_sta_cc_E',1.e3,1.e8,1
+			zlim,'mvn_sta_cc_D',1.e3,1.e8,1
+			zlim,'mvn_sta_cc_M',1.e3,1.e8,1
+
+			datagap=600.
+			options,'mvn_sta_cc_P4B_E',datagap=datagap
+			options,'mvn_sta_cc_P4B_D',datagap=datagap
+			options,'mvn_sta_cc_P4B_M',datagap=datagap
+			options,'mvn_sta_cc_E',datagap=datagap
+			options,'mvn_sta_cc_D',datagap=datagap
+			options,'mvn_sta_cc_M',datagap=datagap
+			options,'mvn_sta_cc_tot',datagap=datagap
+	
+			options,'mvn_sta_cc_P4B_E','spec',1
+			options,'mvn_sta_cc_P4B_D','spec',1
+			options,'mvn_sta_cc_P4B_M','spec',1
+			options,'mvn_sta_cc_E','spec',1
+			options,'mvn_sta_cc_D','spec',1
+			options,'mvn_sta_cc_M','spec',1
+
+			options,'mvn_sta_cc_P4B_E',ytitle='sta!CP4B-cc!C!CEnergy!CeV'
+			options,'mvn_sta_cc_P4B_D',ytitle='sta!CP4B-cc!C!CTheta!Cdeg'
+			options,'mvn_sta_cc_P4B_M',ytitle='sta!CP4B-cc!C!CMass!Camu'
+			options,'mvn_sta_cc_E',ytitle='sta!Ccc!C!CEnergy!CeV'
+			options,'mvn_sta_cc_D',ytitle='sta!Ccc!C!CTheta!Cdeg'
+			options,'mvn_sta_cc_M',ytitle='sta!Ccc!C!CMass!Camu'
+			options,'mvn_sta_cc_tot',ytitle='sta!Ccc!C!CCounts'
+			options,'mvn_sta_cc_att',ytitle='sta!Ccc!C!CAttenuator'
+
+			options,'mvn_sta_cc_E',ztitle='eflux'
+			options,'mvn_sta_cc_D',ztitle='eflux'
+			options,'mvn_sta_cc_M',ztitle='eflux'
+	endif
+
+
+; CD
+	if size(mvn_cd_dat,/type) eq 8 then begin
+
+		npts = n_elements(mvn_cd_dat.time)
+		mode = mvn_cd_dat.mode
+		rate = mvn_cd_dat.rate
+		iswp = mvn_cd_dat.swp_ind
+		ieff = mvn_cd_dat.eff_ind
+		iatt = mvn_cd_dat.att_ind
+		mlut = mvn_cd_dat.mlut_ind
+		nenergy = mvn_cd_dat.nenergy
+		nbins = mvn_cd_dat.nbins
+		ndef = mvn_cd_dat.ndef
+		nanode = mvn_cd_dat.nanode
+		nmass = mvn_cd_dat.nmass
+
+		time = (mvn_cd_dat.time + mvn_cd_dat.end_time)/2.
+		data = mvn_cd_dat.data
+		eflux = mvn_cd_dat.eflux
+		energy = reform(mvn_cd_dat.energy[iswp,*,0,0])
+		mass = reform(total(mvn_cd_dat.mass_arr[mlut,*,0,*],2)/nenergy)
+		theta = total(reform(mvn_cd_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
+		phi = total(reform(mvn_cd_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
+
+		bkg = mvn_cd_dat.bkg
+		dead = mvn_cd_dat.dead
+		gf = reform(mvn_cd_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
+		            mvn_cd_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
+		            mvn_cd_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
+		            mvn_cd_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)$
+				#replicate(1.,nmass)
+		gf = mvn_cd_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
+		eff = mvn_cd_dat.eff[ieff,*,*,*]
+		dt = mvn_cd_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
+		eflux = (data-bkg)*dead/(gf*eff*dt)
+		eflux = float(eflux)
+		if max(abs((eflux-mvn_cd_dat.eflux)/eflux)) gt 0. then print,'Error in ce eflux ',max(abs((eflux-mvn_cd_dat.eflux)/eflux))
+
+		store_data,'mvn_sta_cd_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
+		store_data,'mvn_sta_cd_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
+		store_data,'mvn_sta_cd_P4B_M',data={x:time,y:total(total(data,3),2),v:mass}
+		store_data,'mvn_sta_cd_E',data={x:time,y:total(total(eflux,4),3)/nbins,v:energy}
+		store_data,'mvn_sta_cd_D',data={x:time,y:total(total(eflux,4),2),v:theta}
+		store_data,'mvn_sta_cd_M',data={x:time,y:total(total(eflux,3),2),v:mass}
+		store_data,'mvn_sta_cd_tot',data={x:time,y:total(total(total(data,4),3),2)}
+		store_data,'mvn_sta_cd_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_cd_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_cd_rate',data={x:time,y:rate}
+
+			ylim,'mvn_sta_cd_tot',0,0,1
+			ylim,'mvn_sta_cd_P4B_E',.4,40000.,1
+			ylim,'mvn_sta_cd_P4B_D',-50,50,0
+			ylim,'mvn_sta_cd_P4B_M',.5,100,1
+			ylim,'mvn_sta_cd_E',.4,40000.,1
+			ylim,'mvn_sta_cd_D',-50,50,0
+			ylim,'mvn_sta_cd_M',.5,100,1
+			ylim,'mvn_sta_cd_att',-1,5,0
+
+			zlim,'mvn_sta_cd_P4B_E',10,1.e5,1
+			zlim,'mvn_sta_cd_P4B_D',10,1.e5,1
+			zlim,'mvn_sta_cd_P4B_M',10,1.e5,1
+			zlim,'mvn_sta_cd_E',1.e3,1.e8,1
+			zlim,'mvn_sta_cd_D',1.e3,1.e8,1
+			zlim,'mvn_sta_cd_M',1.e3,1.e8,1
+
+			datagap=600.
+			options,'mvn_sta_cd_P4B_E',datagap=datagap
+			options,'mvn_sta_cd_P4B_D',datagap=datagap
+			options,'mvn_sta_cd_P4B_M',datagap=datagap
+			options,'mvn_sta_cd_E',datagap=datagap
+			options,'mvn_sta_cd_D',datagap=datagap
+			options,'mvn_sta_cd_M',datagap=datagap
+			options,'mvn_sta_cd_tot',datagap=datagap
+	
+			options,'mvn_sta_cd_P4B_E','spec',1
+			options,'mvn_sta_cd_P4B_D','spec',1
+			options,'mvn_sta_cd_P4B_M','spec',1
+			options,'mvn_sta_cd_E','spec',1
+			options,'mvn_sta_cd_D','spec',1
+			options,'mvn_sta_cd_M','spec',1
+
+			options,'mvn_sta_cd_P4B_E',ytitle='sta!CP4B-cd!C!CEnergy!CeV'
+			options,'mvn_sta_cd_P4B_D',ytitle='sta!CP4B-cd!C!CTheta!Cdeg'
+			options,'mvn_sta_cd_P4B_M',ytitle='sta!CP4B-cd!C!CMass!Camu'
+			options,'mvn_sta_cd_E',ytitle='sta!Ccd!C!CEnergy!CeV'
+			options,'mvn_sta_cd_D',ytitle='sta!Ccd!C!CTheta!Cdeg'
+			options,'mvn_sta_cd_M',ytitle='sta!Ccd!C!CMass!Camu'
+			options,'mvn_sta_cd_tot',ytitle='sta!Ccd!C!CCounts'
+			options,'mvn_sta_cd_att',ytitle='sta!Ccd!C!CAttenuator'
+
+			options,'mvn_sta_cd_E',ztitle='eflux'
+			options,'mvn_sta_cd_D',ztitle='eflux'
+			options,'mvn_sta_cd_M',ztitle='eflux'
+	endif
+
+
 ; CE
 	if size(mvn_ce_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_ce_dat.time)
+		mode = mvn_ce_dat.mode
+		rate = mvn_ce_dat.rate
 		iswp = mvn_ce_dat.swp_ind
 		ieff = mvn_ce_dat.eff_ind
 		iatt = mvn_ce_dat.att_ind
@@ -542,7 +773,7 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		eflux = float(eflux)
 		if max(abs((eflux-mvn_ce_dat.eflux)/eflux)) gt 0. then print,'Error in ce eflux ',max(abs((eflux-mvn_ce_dat.eflux)/eflux))
 
-		store_data,'mvn_sta_ce_P4B_E',data={x:time,y:total(total(data,4),3)/nbins,v:energy}
+		store_data,'mvn_sta_ce_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_ce_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
 		store_data,'mvn_sta_ce_P4B_A',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),3),2),v:phi}
 		store_data,'mvn_sta_ce_P4B_M',data={x:time,y:total(total(data,3),2),v:mass}
@@ -552,6 +783,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_ce_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_ce_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_ce_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_ce_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_ce_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_ce_tot',0,0,1
 			ylim,'mvn_sta_ce_P4B_E',.4,40000.,1
@@ -614,6 +847,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	if size(mvn_cf_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_cf_dat.time)
+		mode = mvn_cf_dat.mode
+		rate = mvn_cf_dat.rate
 		iswp = mvn_cf_dat.swp_ind
 		ieff = mvn_cf_dat.eff_ind
 		iatt = mvn_cf_dat.att_ind
@@ -646,7 +881,7 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		eflux = float(eflux)
 		if max(abs((eflux-mvn_cf_dat.eflux)/eflux)) gt 0. then print,'Error in cf eflux ',max(abs((eflux-mvn_cf_dat.eflux)/eflux))
 
-		store_data,'mvn_sta_cf_P4B_E',data={x:time,y:total(total(data,4),3)/nbins,v:energy}
+		store_data,'mvn_sta_cf_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cf_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
 		store_data,'mvn_sta_cf_P4B_A',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),3),2),v:phi}
 		store_data,'mvn_sta_cf_P4B_M',data={x:time,y:total(total(data,3),2),v:mass}
@@ -656,6 +891,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_cf_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_cf_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_cf_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_cf_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_cf_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_cf_tot',0,0,1
 			ylim,'mvn_sta_cf_P4B_E',.4,40000.,1
@@ -718,6 +955,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	if size(mvn_d0_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_d0_dat.time)
+		mode = mvn_d0_dat.mode
+		rate = mvn_d0_dat.rate
 		iswp = mvn_d0_dat.swp_ind
 		ieff = mvn_d0_dat.eff_ind
 		iatt = mvn_d0_dat.att_ind
@@ -750,7 +989,7 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		eflux = float(eflux)
 		if max(abs((eflux-mvn_d0_dat.eflux)/eflux)) gt 0. then print,'Error in d0 eflux ',max(abs((eflux-mvn_d0_dat.eflux)/eflux))
 
-		store_data,'mvn_sta_d0_P4C_E',data={x:time,y:total(total(data,4),3)/nbins,v:energy}
+		store_data,'mvn_sta_d0_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d0_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
 		store_data,'mvn_sta_d0_P4C_A',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),3),2),v:phi}
 		store_data,'mvn_sta_d0_P4C_M',data={x:time,y:total(total(data,3),2),v:mass}
@@ -760,6 +999,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_d0_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_d0_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_d0_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_d0_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_d0_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_d0_tot',0,0,1
 			ylim,'mvn_sta_d0_P4C_E',.4,40000.,1
@@ -822,6 +1063,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	if size(mvn_d1_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_d1_dat.time)
+		mode = mvn_d1_dat.mode
+		rate = mvn_d1_dat.rate
 		iswp = mvn_d1_dat.swp_ind
 		ieff = mvn_d1_dat.eff_ind
 		iatt = mvn_d1_dat.att_ind
@@ -854,7 +1097,7 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		eflux = float(eflux)
 		if max(abs((eflux-mvn_d1_dat.eflux)/eflux)) gt 0. then print,'Error in d1 eflux ',max(abs((eflux-mvn_d1_dat.eflux)/eflux))
 
-		store_data,'mvn_sta_d1_P4C_E',data={x:time,y:total(total(data,4),3)/nbins,v:energy}
+		store_data,'mvn_sta_d1_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d1_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
 		store_data,'mvn_sta_d1_P4C_A',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),3),2),v:phi}
 		store_data,'mvn_sta_d1_P4C_M',data={x:time,y:total(total(data,3),2),v:mass}
@@ -864,6 +1107,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_d1_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_d1_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_d1_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_d1_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_d1_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_d1_tot',0,0,1
 			ylim,'mvn_sta_d1_P4C_E',.4,40000.,1
@@ -926,6 +1171,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	if size(mvn_d4_dat,/type) eq 8 then begin
 
 		npts = n_elements(mvn_d4_dat.time)
+		mode = mvn_d4_dat.mode
+		rate = mvn_d4_dat.rate
 		iswp = mvn_d4_dat.swp_ind
 		ieff = mvn_d4_dat.eff_ind
 		iatt = mvn_d4_dat.att_ind
@@ -965,6 +1212,8 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 		store_data,'mvn_sta_d4_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_d4_tot',data={x:time,y:total(total(data,4),3)}
 		store_data,'mvn_sta_d4_att',data={x:time,y:iatt}
+			if keyword_set(test) then store_data,'mvn_sta_d4_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_d4_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_d4_tot',0,0,1
 			ylim,'mvn_sta_d4_P4E_D',-50,50,0
@@ -1013,7 +1262,7 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	endif
 
 ; D6
-	if size(mvn_d6_dat,/type) eq 8 then begin
+	if size(mvn_d6_dat,/type) eq 8 and keyword_set(test) then begin
 
 		time = mvn_d6_dat.time
 
@@ -1058,7 +1307,7 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 	endif
 
 ; D7
-	if size(mvn_d7_dat,/type) eq 8 then begin
+	if size(mvn_d7_dat,/type) eq 8 and keyword_set(test) then begin
 
 		time = mvn_d7_dat.time
 		store_data,'mvn_sta_d7_data',data={x:time,y:1.*mvn_d7_dat.hkp_raw}
@@ -1070,7 +1319,216 @@ if not keyword_set(all) then store_data,delete='mvn_sta_*'
 
 	endif
 
+; D8
+	if size(mvn_d8_dat,/type) eq 8 and keyword_set(test) then begin
+
+		time = (mvn_d8_dat.time + mvn_d8_dat.end_time)/2.
+		data = mvn_d8_dat.rates
+
+		store_data,'mvn_sta_d8_R1_tot',data={x:time,y:data[*,4]*4.}
+
+		store_data,'mvn_sta_d8_R1_ABCD',data={x:time,y:data[*,0:3]}
+		store_data,'mvn_sta_d8_R1_RST',data={x:time,y:data[*,4]}
+		store_data,'mvn_sta_d8_R1_NoStart',data={x:time,y:data[*,5]}
+		store_data,'mvn_sta_d8_R1_Unqual',data={x:time,y:data[*,6]}
+		store_data,'mvn_sta_d8_R1_Qual',data={x:time,y:data[*,7]}
+		store_data,'mvn_sta_d8_R1_AnRej',data={x:time,y:data[*,8]}
+		store_data,'mvn_sta_d8_R1_MaRej',data={x:time,y:data[*,9]}
+		store_data,'mvn_sta_d8_R1_A&B',data={x:time,y:data[*,10]}
+		store_data,'mvn_sta_d8_R1_C&D',data={x:time,y:data[*,11]}
+
+		store_data,'mvn_sta_d8_R1_eff_start',data={x:time,y:data[*,7]/data[*,11]}
+		store_data,'mvn_sta_d8_R1_eff_stop',data={x:time,y:data[*,7]/data[*,10]}
+		store_data,'mvn_sta_d8_R1_eff',data={x:time,y:data[*,7]*data[*,7]/data[*,11]/data[*,10]}
+		store_data,'mvn_sta_d8_R1_eff_all',data=['mvn_sta_d8_R1_eff_start','mvn_sta_d8_R1_eff_stop','mvn_sta_d8_R1_eff']
+
+			ylim,'mvn_sta_d8*',100,1.e6,1
+			ylim,'mvn_sta_d8_R1_eff*',.01,1.1,1
+
+			options,'mvn_sta_d8*',datagap=7.
+
+			options,'mvn_sta_d8_R1_tot',ytitle='sta!Cd8!C!CCounts'
+			options,'mvn_sta_d8_R1_ABCD',ytitle='sta!Cd8!C!CABCD!CHz'
+			options,'mvn_sta_d8_R1_RST',ytitle='sta!Cd8!C!CRst!CHz'
+			options,'mvn_sta_d8_R1_NoStart',ytitle='sta!Cd8!C!CNoStart!CHz'
+			options,'mvn_sta_d8_R1_Unqual',ytitle='sta!Cd8!C!CUnQual!CHz'
+			options,'mvn_sta_d8_R1_Qual',ytitle='sta!Cd8!C!CQual!CHz'
+			options,'mvn_sta_d8_R1_AnRej',ytitle='sta!Cd8!C!CAnRej!CHz'
+			options,'mvn_sta_d8_R1_MaRej',ytitle='sta!Cd8!C!CMaRej!CHz'
+			options,'mvn_sta_d8_R1_A&B',ytitle='sta!Cd8!C!CA&B!CHz'
+			options,'mvn_sta_d8_R1_C&D',ytitle='sta!Cd8!C!CC&D!CHz'
+
+			options,'mvn_sta_d8_R1_eff_start',ytitle='sta!Cd8!C!CEff!CStart'
+			options,'mvn_sta_d8_R1_eff_stop',ytitle='sta!Cd8!C!CEff!CStop'
+			options,'mvn_sta_d8_R1_eff',ytitle='sta!Cd8!C!CEff'
+			options,'mvn_sta_d8_R1_eff_all',ytitle='sta!Cd8!C!CEff'
+
+			options,'mvn_sta_d8_R1_ABCD','colors',[cols.blue,cols.green,cols.yellow,cols.red]
+			options,'mvn_sta_d8_R1_eff_start',colors=cols.green
+			options,'mvn_sta_d8_R1_eff_stop',colors=cols.red
+
+	endif
+
+; D9
+	if size(mvn_d9_dat,/type) eq 8 and keyword_set(test) then begin
+
+		iswp = mvn_d9_dat.swp_ind
+
+		time = (mvn_d9_dat.time + mvn_d9_dat.end_time)/2.
+		delta_time = mvn_d9_dat.integ_t*64.
+		energy = reform(mvn_d9_dat.energy[iswp,*])
+		data = mvn_d9_dat.rates						
+
+		store_data,'mvn_sta_d9_R2',data={x:time,y:reform(data[*,4,*]),v:indgen(64)}
+		store_data,'mvn_sta_d9_R2_E',data={x:time,y:reform(data[*,4,*]),v:energy}
+		store_data,'mvn_sta_d9_R2_tot',data={x:time,y:total(reform(data[*,4,*]),2)/64*delta_time}
+		store_data,'mvn_sta_d9_R2_rate',data={x:time,y:total(reform(data[*,4,*]),2)/64}
+
+		store_data,'mvn_sta_d9_R2_ABCD',data={x:time,y:total(data[*,0:3,*],3)}
+		store_data,'mvn_sta_d9_R2_RST',data={x:time,y:total(data[*,4,*],3)}
+		store_data,'mvn_sta_d9_R2_NoStart',data={x:time,y:total(data[*,5,*],3)}
+		store_data,'mvn_sta_d9_R2_Unqual',data={x:time,y:total(data[*,6,*],3)}
+		store_data,'mvn_sta_d9_R2_Qual',data={x:time,y:total(data[*,7,*],3)}
+		store_data,'mvn_sta_d9_R2_AnRej',data={x:time,y:total(data[*,8,*],3)}
+		store_data,'mvn_sta_d9_R2_MaRej',data={x:time,y:total(data[*,9,*],3)}
+		store_data,'mvn_sta_d9_R2_A&B',data={x:time,y:total(data[*,10,*],3)}
+		store_data,'mvn_sta_d9_R2_C&D',data={x:time,y:total(data[*,11,*],3)}
+
+		store_data,'mvn_sta_d9_R2_eff_start',data={x:time,y:total(data[*,7,*],3)/total(data[*,11,*],3)}
+		store_data,'mvn_sta_d9_R2_eff_stop',data={x:time,y:total(data[*,7,*],3)/total(data[*,10,*],3)}
+		store_data,'mvn_sta_d9_R2_eff',data={x:time,y:total(data[*,7,*],3)^2/total(data[*,11,*],3)/total(data[*,10,*],3)}
+		store_data,'mvn_sta_d9_R2_eff_all',data=['mvn_sta_d9_R2_eff_start','mvn_sta_d9_R2_eff_stop','mvn_sta_d9_R2_eff']
+
+			ylim,'mvn_sta_d9_R2*',100,1.e5,1
+			ylim,'mvn_sta_d9_R2_eff*',.01,1.1,1
+			ylim,'mvn_sta_d9_R2',-1,64,0
+			ylim,'mvn_sta_d9_R2_E',.5,30000.,1
+			ylim,'mvn_sta_d9_R2_tot',1.e4,1.e6,1
+
+			zlim,'mvn_sta_d9_R2',1000.,1.e5,1					; may need better limits after next processing
+			zlim,'mvn_sta_d9_R2_E',1000.,1.e5,1
+
+			options,'mvn_sta_d9_R2*',datagap=150.
+	
+			options,'mvn_sta_d9_R2','spec',1
+			options,'mvn_sta_d9_R2_E','spec',1
+
+			options,'mvn_sta_d9_R2',ytitle='sta!Cd9!C!CEnergy!Cbin'
+			options,'mvn_sta_d9_R2_E',ytitle='sta!Cd9!C!CEnergy!CeV'
+			options,'mvn_sta_d9_R2_tot',ytitle='sta!Cd9!C!CCounts'
+
+			options,'mvn_sta_d9_R2',ztitle='rate'
+			options,'mvn_sta_d9_R2_E',ztitle='rate'
+
+			options,'mvn_sta_d9_R2_ABCD',ytitle='sta!Cd9!C!CABCD!CHz'
+			options,'mvn_sta_d9_R2_RST',ytitle='sta!Cd9!C!CRst!CHz'
+			options,'mvn_sta_d9_R2_NoStart',ytitle='sta!Cd9!C!CNoStart!CHz'
+			options,'mvn_sta_d9_R2_Unqual',ytitle='sta!Cd9!C!CUnQual!CHz'
+			options,'mvn_sta_d9_R2_Qual',ytitle='sta!Cd9!C!CQual!CHz'
+			options,'mvn_sta_d9_R2_AnRej',ytitle='sta!Cd9!C!CAnRej!CHz'
+			options,'mvn_sta_d9_R2_MaRej',ytitle='sta!Cd9!C!CMaRej!CHz'
+			options,'mvn_sta_d9_R2_A&B',ytitle='sta!Cd9!C!CA&B!CHz'
+			options,'mvn_sta_d9_R2_C&D',ytitle='sta!Cd9!C!CC&D!CHz'
+
+			options,'mvn_sta_d9_R2_eff_start',ytitle='sta!Cd9!C!CEff!CStart'
+			options,'mvn_sta_d9_R2_eff_stop',ytitle='sta!Cd9!C!CEff!CStop'
+			options,'mvn_sta_d9_R2_eff',ytitle='sta!Cd9!C!CEff'
+			options,'mvn_sta_d9_R2_eff_all',ytitle='sta!Cd9!C!CEff'
+
+			options,'mvn_sta_d9_R2_ABCD','colors',[cols.blue,cols.green,cols.yellow,cols.red]
+			options,'mvn_sta_d9_R2_eff_start',colors=cols.green
+			options,'mvn_sta_d9_R2_eff_stop',colors=cols.red
+
+	endif
+
+; DA
+	if size(mvn_da_dat,/type) eq 8 and keyword_set(test) then begin
+
+		iswp = mvn_da_dat.swp_ind
+
+		time = (mvn_da_dat.time + mvn_da_dat.end_time)/2.
+		energy = reform(mvn_da_dat.energy[iswp,*])
+		data = mvn_da_dat.rates	
+
+		store_data,'mvn_sta_da_R3',data={x:time,y:data,v:indgen(64)}
+		store_data,'mvn_sta_da_R3_E',data={x:time,y:data,v:energy}
+		store_data,'mvn_sta_da_R3_tot',data={x:time,y:total(data,2)/16}
+		store_data,'mvn_sta_da_R3_rate',data={x:time,y:total(data,2)/64}
+
+			ylim,'mvn_sta_da_R3',-1,64,0
+			ylim,'mvn_sta_da_R3_E',.5,30000.,1
+			ylim,'mvn_sta_da_R3_tot',100,1.e4,1
+			ylim,'mvn_sta_da_R3_rate',100,1.e4,1
+
+			zlim,'mvn_sta_da_R3',1.,1.e3,1	
+			zlim,'mvn_sta_da_R3_E',1.,1.e3,1
+
+			options,'mvn_sta_da_*',datagap=7.
+	
+			options,'mvn_sta_da_R3','spec',1
+			options,'mvn_sta_da_R3_E','spec',1
+
+			options,'mvn_sta_da_R3',ytitle='sta!Cda!C!CEnergy!Cbin'
+			options,'mvn_sta_da_R3_E',ytitle='sta!Cda!C!CEnergy!CeV'
+			options,'mvn_sta_da_R3_tot',ytitle='sta!Cda!C!CCounts'
+			options,'mvn_sta_da_R3_rate',ytitle='sta!Cda!C!CRate'
+
+			options,'mvn_sta_da_R3',ztitle='rate'
+			options,'mvn_sta_da_R3_E',ztitle='rate'
+
+	endif
+
+; DB
+	if size(mvn_db_dat,/type) eq 8 then begin
+
+		npts = n_elements(mvn_db_dat.time)
+		mode = mvn_db_dat.mode
+		rate = mvn_db_dat.rate
+		iswp = mvn_db_dat.swp_ind
+		tof = mvn_db_dat.tof
+
+		time = (mvn_db_dat.time + mvn_db_dat.end_time)/2.
+		data = mvn_db_dat.data
+		energy = reform(mvn_db_dat.energy[iswp,*])
+		erange = [energy[63],energy[0]]
+
+		dt = mvn_db_dat.integ_t
+
+		store_data,'mvn_sta_db',data={x:time,y:data,v:indgen(1024)}
+		store_data,'mvn_sta_db_tof',data={x:time,y:data,v:tof}
+
+		store_data,'mvn_sta_db_tot',data={x:time,y:total(data,2)}
+			if keyword_set(test) then store_data,'mvn_sta_db_mode',data={x:time,y:mode}
+			if keyword_set(test) then store_data,'mvn_sta_db_rate',data={x:time,y:rate}
+
+			ylim,'mvn_sta_db_tot',.1,10000,1
+			ylim,'mvn_sta_db',.5,1000,1
+			ylim,'mvn_sta_db_tof',0,100,0
+
+			zlim,'mvn_sta_db',1.,1.e4,1
+			zlim,'mvn_sta_db_tof',1.,1.e4,1
+
+			datagap=150.
+			options,'mvn_sta_db',datagap=datagap
+			options,'mvn_sta_db_tof',datagap=datagap
+			options,'mvn_sta_db_tot',datagap=datagap
+	
+			options,'mvn_sta_db','spec',1
+			options,'mvn_sta_db_tof','spec',1
+
+			options,'mvn_sta_db',ytitle='sta!Cdb!C!CTOF!Cbin'
+			options,'mvn_sta_db_tof',ytitle='sta!Cdb!C!CTOF!Cns'
+			options,'mvn_sta_db_tot',ytitle='sta!Cdb!C!CCounts'
+
+			options,'mvn_sta_db',ztitle='counts'
+			options,'mvn_sta_db_tof',ztitle='counts'
+	endif
+
+; General
+
 	options,'mvn_sta*',no_interp=1
+	ylim,'*mode',-1,5,0
+	ylim,'*rate',-1,7,0
 
 end
 

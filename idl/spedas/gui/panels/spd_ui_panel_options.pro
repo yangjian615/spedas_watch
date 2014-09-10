@@ -16,8 +16,8 @@
 ;are issued for invalid entries. This avoids the issue of the text overwriting in spinners as the user types if values aren't valid.
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-07-24 17:28:25 -0700 (Thu, 24 Jul 2014) $
-;$LastChangedRevision: 15606 $
+;$LastChangedDate: 2014-09-08 12:37:22 -0700 (Mon, 08 Sep 2014) $
+;$LastChangedRevision: 15744 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_panel_options.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -223,19 +223,28 @@ pro spd_ui_panel_options_set_dims, origWindow, cWindow, panelObjs
 end
 
 ; procedure to update all relevant settings when the set all panels button is checked
-; this does not change the title of the panels any more, to do so we need panelSettings->SetProperty, titleobj=titleobj->copy()
+; the title of the panels is preserved, everything else is copied
 pro spd_ui_panel_options_set_all, tlb, state=state, panelSettings=panelSettings
 
   panelSettings->GetProperty, titleobj=titleobj, titlemargin=titlemargin, $
     backgroundcolor=backgroundcolor, framecolor=framecolor, $
     framethick=framethick
   npanels = n_elements(state.panelobjs)
+  
   for i=0,npanels-1 do begin
-    state.panelobjs[i]->GetProperty, settings=panelSettings
-    panelSettings->SetProperty,titlemargin=titlemargin, $
+    state.panelobjs[i]->GetProperty, settings=panelSettings1
+    
+    ; The following code preserves the panel title text, but copies all other properties
+    panelSettings1->GetProperty,titleobj=titleobj1
+    titleobj1->GetProperty,value=titletext1 ; that's the current title text, we don't want to change this
+    titleObj2 = titleObj->Copy()
+    titleObj2->SetProperty,value=titletext1 ; do not change title text
+    
+    ; Now set the panel to new properties and save it into state object
+    panelSettings1->SetProperty,titleobj=titleObj2,titlemargin=titlemargin, $
       backgroundcolor=backgroundcolor, framecolor=framecolor, $
-      framethick=framethick
-    state.panelobjs[i]->SetProperty, settings=panelSettings
+      framethick=framethick  
+    state.panelobjs[i]->SetProperty, settings=panelSettings1
   endfor
   
 end

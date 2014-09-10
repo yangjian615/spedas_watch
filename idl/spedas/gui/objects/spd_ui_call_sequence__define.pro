@@ -38,9 +38,9 @@
 ;       or data processing calls. 
 ; 
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-06-10 19:38:56 -0700 (Tue, 10 Jun 2014) $
-;$LastChangedRevision: 15346 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-09-08 12:25:59 -0700 (Mon, 08 Sep 2014) $
+;$LastChangedRevision: 15743 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_call_sequence__define.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -692,7 +692,7 @@ pro spd_ui_call_sequence::BuildFromDomElement,element
   if ~is_num(fxarray) then begin
   
     call_list = ptrarr(n_elements(fxarray))
-  
+
     for i = 0,n_elements(fxarray)-1 do begin
     
       fxitem = fxarray[i]
@@ -712,7 +712,7 @@ pro spd_ui_call_sequence::BuildFromDomElement,element
 
       call_list[element] = ptr_new(str)
       
-    endfor
+    endfor 
  
     self->setCalls,call_list
   
@@ -856,12 +856,12 @@ pro spd_ui_call_sequence::addXMLDomString,item,parent
   endif
   
   self->appendXMLNewline,parent
-
+  
   for i = 0,n_elements(item)-1 do begin
-
+  
     self->appendXMLElement,'string',string(item[i],format='(A)'),parent,attribute='element',value=strtrim(string(i),2)
     self->appendXMLNewline,parent
-
+  
   endfor
 
 end
@@ -934,7 +934,7 @@ pro spd_ui_call_sequence::readDomString,doctree,out=out,fail=fail,element=elemen
     child = doctree->getChildNodes()
   
     item = child->item(0)
-
+    
     out = item->getdata()
   endif else begin
     out = ''
@@ -1041,7 +1041,9 @@ pro spd_ui_call_sequence::readDomStruct,doctree,out=out,fail=fail,element=elemen
       endif
   
       if ~keyword_set(currentatt) then begin
-        currentatt = replicate(val,n_elements(childarr))
+        ; if childarr only contains a single element, treat currentatt as a scalar, otherwise create
+        ; an array with enough room for each value in childarr
+        if n_elements(childarr) eq 1 then currentatt = val else currentatt = replicate(val,n_elements(childarr))
         
         ;currentatt[child_element] = val
       endif else begin
@@ -1056,7 +1058,7 @@ pro spd_ui_call_sequence::readDomStruct,doctree,out=out,fail=fail,element=elemen
       endelse 
   
     endfor
-    
+
     if ~keyword_set(out) then begin
       out = create_struct(name,currentatt)
     endif else begin
@@ -1075,7 +1077,7 @@ end
 function spd_ui_call_sequence::getNodeArray,nodelist
 
   compile_opt idl2
-
+  
   length = nodelist->getlength()
   
   for i = 0,length-1 do begin

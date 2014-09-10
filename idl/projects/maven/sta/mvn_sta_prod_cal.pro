@@ -22,7 +22,6 @@
 ; TBDs to make the code consistent with SIS:
 ;
 ;	tbd	check that corrections to gf and integ_t have not screw up program
-;	tbd	scale integ_t to account for settling time (x 3.8912/4 = .972)
 ;	tbd	may need to change the code that throws away extra data at end of file
 
 ;	fix	eff array
@@ -33,10 +32,7 @@
 ;	mod	data_names
 ;	mod	bkg so it varies with time (it will contain the estimated straggling counts)
 ;	mod	dead so it varies with time 
-;	add	d2,d3 common blocks
 ;	
-;	make 	a decommutator for apid d6 - events data
-;	need 	a routine to get other time besides unix time - davin code
 ;	change	"test" keyword -- may have conflicts
 ;	add	quality flag -> multi-bit parameter with test pulser, diagnostic and compression coded
 ;		develop an algorithm for quality flag that qualifies high count rate and mode changes
@@ -161,6 +157,11 @@ decomp19[128:255]=$
 	scale = 1.046							; energy correction, produces the proper energy scaling for SLUT tables
 	def_scale = 43./45.						; angle correction, produces the proper deflection angle scaling for SLUT tables
 ;	energy constant = 7.51715 * scale = 7.863			; ground calibration value for energy constant
+
+	dt_cor = 3.89/4.						; scale integ_t to account for settling time
+									; p.7 of MAVEN_PF_STATIC_012Q_FPGA_Specification.pdf
+									; (62.2 ms - 1.4 ms) x 64 = 3.89 sec
+
 
 ; according to Jasper Halekas, deflection only impacts sensitivity with attenuators out.
 
@@ -1263,7 +1264,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -1551,7 +1552,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -1796,7 +1797,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -2054,7 +2055,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -2333,7 +2334,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -2603,7 +2604,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -2865,7 +2866,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -3125,7 +3126,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -3392,7 +3393,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -3659,7 +3660,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -3926,7 +3927,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -4203,7 +4204,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -4468,7 +4469,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -4733,7 +4734,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -5005,7 +5006,7 @@ if not keyword_set(apids) or test then begin
 		time:			tt1,					$
 		end_time:		tt2,					$
 		delta_t:		tt2-tt1,				$
-		integ_t: 		(tt2-tt1)/(nenergy*ndef),		$	
+		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -5376,7 +5377,7 @@ if not keyword_set(apids) or test then begin
 			rt2 = (md.y[0:nn-1] and 112)/16
 
 		get_data,'mvn_STA_D8_AVG',data=cavg
-		avg = cavg.y and replicate(7,nn)
+		avg = 2^(cavg.y and replicate(7,nn))
 		sum = (cavg.y and replicate(8,nn))/8
 			avg2 = sum*avg > 1
 
@@ -5440,7 +5441,8 @@ if not keyword_set(apids) or test then begin
 
    if size(/type,t) eq 8 and nn ge 1 then begin
 
-	rates = tmp/((tt2-tt1)#replicate(1.,12))
+	integ_time = (tt2-tt1)*dt_cor
+	rates = tmp/(integ_time#replicate(1.,12))
 	rate_labels = ['R1_Time_A','R1_Time_B','R1_Time_C','R1_Time_D','R1_Time_RST','R1_Time_NoStart',$
 		'R1_Time_Unqual','R1_Time_Qual','R1_Time_AnRej','R1_Time_MaRej','R1_Time_A&B','R1_Time_C&D']
 
@@ -5454,7 +5456,7 @@ if not keyword_set(apids) or test then begin
 
 		time:			tt1,					$
 		end_time:		tt2,					$
-		integ_t: 		(tt2-tt1),				$	
+		integ_t: 		integ_time,				$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -5507,7 +5509,7 @@ if not keyword_set(apids) or test then begin
 
 
 		get_data,'mvn_STA_D9_AVG',data=cavg
-		avg = cavg.y and replicate(7,nn)
+		avg = 2^(cavg.y and replicate(7,nn))
 		sum = (cavg.y and replicate(8,nn))/8
 			avg2 = sum*avg > 1
 
@@ -5617,9 +5619,10 @@ if not keyword_set(apids) or test then begin
 
    if size(/type,t) eq 8 and nn ge 1 then begin
 
-	rates = tmp2/(((tt2-tt1)/64.)#replicate(1.,12*64))
-	rate_labels = ['R1_Time_A','R1_Time_B','R1_Time_C','R1_Time_D','R1_Time_RST','R1_Time_NoStart',$
-		'R1_Time_Unqual','R1_Time_Qual','R1_Time_AnRej','R1_Time_MaRej','R1_Time_A&B','R1_Time_C&D']
+	integ_time = ((tt2-tt1)/64.)*dt_cor
+	rates = tmp2/(integ_time#replicate(1.,12*64))	
+	rate_labels = ['R2_Time_A','R2_Time_B','R2_Time_C','R2_Time_D','R2_Time_RST','R2_Time_NoStart',$
+		'R2_Time_Unqual','R2_Time_Qual','R2_Time_AnRej','R2_Time_MaRej','R2_Time_A&B','R2_Time_C&D']
 
 	d9_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
@@ -5631,7 +5634,7 @@ if not keyword_set(apids) or test then begin
 
 		time:			tt1,					$
 		end_time:		tt2,					$
-		integ_t: 		(tt2-tt1)/64.,				$	
+		integ_t: 		integ_time,				$	
 
 		md:			md1,					$
 		mode:			md2,					$
@@ -5802,10 +5805,11 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 
 ;	this code assumes we never change the DA apid rate packets -- which is the current plan
 
-	rate_channel = replicate(4,tm)			; eventually may want this variable, since it is selectable, but there are no plans to ever change it
-	rates = da2/(4.*64)				; this assumes we never change the data rate for this apid
-	rate_labels = ['R1_Time_A','R1_Time_B','R1_Time_C','R1_Time_D','R1_Time_RST','R1_Time_NoStart',$
-		'R1_Time_Unqual','R1_Time_Qual','R1_Time_AnRej','R1_Time_MaRej','R1_Time_A&B','R1_Time_C&D']
+	rate_channel = replicate(4,tm)					; this should be determined from header bits, but there are no plans to ever change it
+	integ_time = (replicate(4.d,tm)/64.)*dt_cor			; if data rate for this apid ever changes, then determine integ_time from header
+	rates = da2/integ_time	
+	rate_labels = ['R3_Time_A','R3_Time_B','R3_Time_C','R3_Time_D','R3_Time_RST','R3_Time_NoStart',$
+		'R3_Time_Unqual','R3_Time_Qual','R3_Time_AnRej','R3_Time_MaRej','R3_Time_A&B','R3_Time_C&D']
 
 	da_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
@@ -5817,7 +5821,7 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 
 		time:			tt8-2.,					$
 		end_time:		tt8+2.,					$
-		integ_t: 		replicate(4.,tm),			$	
+		integ_t: 		integ_time,				$	
 
 		md:			md1_2,					$
 		mode:			md2_2,					$
@@ -5927,7 +5931,7 @@ if not keyword_set(apids) or test then begin
 
 		time:			tt1,					$
 		end_time:		tt2,					$
-		integ_t: 		(tt2-tt1),				$	
+		integ_t: 		(tt2-tt1)*dt_cor,			$	
 
 ; note nswp and ntof are part of cdf support data but are not explicity in the common blocks - may need to add it to most common blocks
 ;		nswp:			n_swp,					$
