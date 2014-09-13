@@ -63,8 +63,8 @@
 ;HISTORY:
 ; 19-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-16 17:17:57 -0700 (Mon, 16 Jun 2014) $
-; $LastChangedRevision: 15383 $
+; $LastChangedDate: 2014-09-11 12:38:13 -0700 (Thu, 11 Sep 2014) $
+; $LastChangedRevision: 15754 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_cmn_tclip.pro $
 ;-
 Function mvn_sta_cmn_tclip, dat1, trange
@@ -117,6 +117,7 @@ Function mvn_sta_cmn_tclip, dat1, trange
         Endelse
      Endelse
   Endfor
+
   Return, dat
 End
 

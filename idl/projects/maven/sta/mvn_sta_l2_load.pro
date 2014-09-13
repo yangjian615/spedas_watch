@@ -27,8 +27,8 @@
 ;HISTORY:
 ; 16-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-08-27 15:28:36 -0700 (Wed, 27 Aug 2014) $
-; $LastChangedRevision: 15717 $
+; $LastChangedDate: 2014-09-11 12:43:54 -0700 (Thu, 11 Sep 2014) $
+; $LastChangedRevision: 15755 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_l2_load.pro $
 ;-
 Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_pass = user_pass, no_time_clip = no_time_clip, _extra = _extra

@@ -5807,7 +5807,7 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 
 	rate_channel = replicate(4,tm)					; this should be determined from header bits, but there are no plans to ever change it
 	integ_time = (replicate(4.d,tm)/64.)*dt_cor			; if data rate for this apid ever changes, then determine integ_time from header
-	rates = da2/integ_time	
+	rates = da2/(integ_time#replicate(1.,64))	
 	rate_labels = ['R3_Time_A','R3_Time_B','R3_Time_C','R3_Time_D','R3_Time_RST','R3_Time_NoStart',$
 		'R3_Time_Unqual','R3_Time_Qual','R3_Time_AnRej','R3_Time_MaRej','R3_Time_A&B','R3_Time_C&D']
 

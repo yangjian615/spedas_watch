@@ -36,6 +36,8 @@ endif
 
 ;declare all the common block arrays
 
+	common mvn_2a,mvn_2a_ind,mvn_2a_dat 
+
 	common mvn_c0,mvn_c0_ind,mvn_c0_dat 
 	common mvn_c2,mvn_c2_ind,mvn_c2_dat 
 	common mvn_c4,mvn_c4_ind,mvn_c4_dat 
@@ -62,9 +64,33 @@ endif
 ; 2A
 	if size(mvn_2a_dat,/type) eq 8 and keyword_set(test) then begin
 
+		for i=0,98 do begin
+			name = 'mvn_sta_2a_'+mvn_2a_dat.hkp_labels[i]
+			store_data,name,data={x:mvn_2a_dat.time,y:reform(mvn_2a_dat.hkp[*,i])}
+			options,name,ytitle=mvn_2a_dat.hkp_labels[i]
+		endfor
+
+		ylim,'mvn_sta_2a_Temp_Dig',0,60,0
+		ylim,'mvn_sta_2a_Imon_ADC5V',30,36,0
+		ylim,'mvn_sta_2a_+5V_D',4.9,5.2,0
+		ylim,'mvn_sta_2a_+3.3V_D',3.2,3.4,0
+		ylim,'mvn_sta_2a_+5V_A',4.9,5.2,0
+		ylim,'mvn_sta_2a_-5V_A',-5.3,-5.0,0
+		ylim,'mvn_sta_2a_+12V_A',11.9,12.3,0
+		ylim,'mvn_sta_2a_Temp_FPGA',0,60,0
+		ylim,'mvn_sta_2a_Temp_LVPS',0,60,0
+
+		get_data,'mvn_sta_2a_Vmon_Swp',data=tmp
+		store_data,'mvn_sta_2a_Vmon_Swp_minus',data={x:tmp.x,y:-tmp.y}
+		ylim,'mvn_sta_2a_Vmon_Swp_minus',.1,10000.,1
+		ylim,'mvn_sta_2a_Vmon_Def1',.1,10000.,1
+		ylim,'mvn_sta_2a_Vmon_Def2',.1,10000.,1
+
+		ylim,'mvn_sta_2a_R3Rate',-1,12,0
+
+		options,'mvn_sta_2a*',datagap=100.
 
 	endif
-
 
 ; C0
 	if size(mvn_c0_dat,/type) eq 8 then begin
@@ -81,22 +107,25 @@ endif
 
 		time = (mvn_c0_dat.time + mvn_c0_dat.end_time)/2.
 		data = mvn_c0_dat.data
-		eflux = mvn_c0_dat.eflux
 		energy = reform(mvn_c0_dat.energy[iswp,*,0])
 		mass = total(mvn_c0_dat.mass_arr[mlut,*,*],2)/nenergy
 
-		bkg = mvn_c0_dat.bkg
-		dead = mvn_c0_dat.dead
-		gf = reform(mvn_c0_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
+		str_element,mvn_c0_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_c0_dat.bkg
+			dead = mvn_c0_dat.dead
+			gf = reform(mvn_c0_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
 		            mvn_c0_dat.gf[iswp,*,1]*(iatt eq 1)#replicate(1.,nenergy) +$
 		            mvn_c0_dat.gf[iswp,*,2]*(iatt eq 2)#replicate(1.,nenergy) +$
 		            mvn_c0_dat.gf[iswp,*,3]*(iatt eq 3)#replicate(1.,nenergy), npts*nenergy)#replicate(1.,nmass)
-		gf = mvn_c0_dat.geom_factor*reform(gf,npts,nenergy,nmass)
-		eff = mvn_c0_dat.eff[ieff,*,*]
-		dt = mvn_c0_dat.integ_t#replicate(1.,nenergy*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_c0_dat.eflux)/eflux)) gt 0. then print,'Error in c0 eflux ',max(abs((eflux-mvn_c0_dat.eflux)/eflux))
+			gf = mvn_c0_dat.geom_factor*reform(gf,npts,nenergy,nmass)
+			eff = mvn_c0_dat.eff[ieff,*,*]
+			dt = mvn_c0_dat.integ_t#replicate(1.,nenergy*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_c0_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c0 eflux ',max(abs((eflux-mvn_c0_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c0_P1A_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c0_P1A_M',data={x:time,y:total(data,2),v:mass}
@@ -119,12 +148,7 @@ endif
 			zlim,'mvn_sta_c0_E',1.e3,1.e8,1
 			zlim,'mvn_sta_c0_M',1.e3,1.e8,1
 
-			datagap=7.
-			options,'mvn_sta_c0_P1A_E',datagap=datagap
-			options,'mvn_sta_c0_P1A_M',datagap=datagap
-			options,'mvn_sta_c0_E',datagap=datagap
-			options,'mvn_sta_c0_M',datagap=datagap
-			options,'mvn_sta_c0_tot',datagap=datagap
+			options,'mvn_sta_c0*',datagap=7.
 	
 			options,'mvn_sta_c0_P1A_E','spec',1
 			options,'mvn_sta_c0_P1A_M','spec',1
@@ -157,22 +181,25 @@ endif
 
 		time = (mvn_c2_dat.time + mvn_c2_dat.end_time)/2.
 		data = mvn_c2_dat.data
-		eflux = mvn_c2_dat.eflux
 		energy = reform(mvn_c2_dat.energy[iswp,*,0])
 		mass = total(mvn_c2_dat.mass_arr[mlut,*,*],2)/nenergy
 
-		bkg = mvn_c2_dat.bkg
-		dead = mvn_c2_dat.dead
-		gf = reform(mvn_c2_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
+		str_element,mvn_c2_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_c2_dat.bkg
+			dead = mvn_c2_dat.dead
+			gf = reform(mvn_c2_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
 		            mvn_c2_dat.gf[iswp,*,1]*(iatt eq 1)#replicate(1.,nenergy) +$
 		            mvn_c2_dat.gf[iswp,*,2]*(iatt eq 2)#replicate(1.,nenergy) +$
 		            mvn_c2_dat.gf[iswp,*,3]*(iatt eq 3)#replicate(1.,nenergy), npts*nenergy)#replicate(1.,nmass)
-		gf = mvn_c2_dat.geom_factor*reform(gf,npts,nenergy,nmass)
-		eff = mvn_c2_dat.eff[ieff,*,*]
-		dt = mvn_c2_dat.integ_t#replicate(1.,nenergy*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_c2_dat.eflux)/eflux)) gt 0. then print,'Error in c2 eflux ',max(abs((eflux-mvn_c2_dat.eflux)/eflux))
+			gf = mvn_c2_dat.geom_factor*reform(gf,npts,nenergy,nmass)
+			eff = mvn_c2_dat.eff[ieff,*,*]
+			dt = mvn_c2_dat.integ_t#replicate(1.,nenergy*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_c2_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c2 eflux ',max(abs((eflux-mvn_c2_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c2_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c2_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -234,22 +261,25 @@ endif
 
 		time = (mvn_c4_dat.time + mvn_c4_dat.end_time)/2.
 		data = mvn_c4_dat.data
-		eflux = mvn_c4_dat.eflux
 		energy = reform(mvn_c4_dat.energy[iswp,*,0])
 		mass = total(mvn_c4_dat.mass_arr[mlut,*,*],2)/nenergy
 
-		bkg = mvn_c4_dat.bkg
-		dead = mvn_c4_dat.dead
-		gf = reform(mvn_c4_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
+		str_element,mvn_c4_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_c4_dat.bkg
+			dead = mvn_c4_dat.dead
+			gf = reform(mvn_c4_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
 		            mvn_c4_dat.gf[iswp,*,1]*(iatt eq 1)#replicate(1.,nenergy) +$
 		            mvn_c4_dat.gf[iswp,*,2]*(iatt eq 2)#replicate(1.,nenergy) +$
 		            mvn_c4_dat.gf[iswp,*,3]*(iatt eq 3)#replicate(1.,nenergy), npts*nenergy)#replicate(1.,nmass)
-		gf = mvn_c4_dat.geom_factor*reform(gf,npts,nenergy,nmass)
-		eff = mvn_c4_dat.eff[ieff,*,*]
-		dt = mvn_c4_dat.integ_t#replicate(1.,nenergy*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_c4_dat.eflux)/eflux)) gt 0. then print,'Error in c4 eflux ',max(abs((eflux-mvn_c4_dat.eflux)/eflux))
+			gf = mvn_c4_dat.geom_factor*reform(gf,npts,nenergy,nmass)
+			eff = mvn_c4_dat.eff[ieff,*,*]
+			dt = mvn_c4_dat.integ_t#replicate(1.,nenergy*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_c4_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c4 eflux ',max(abs((eflux-mvn_c4_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c4_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c4_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -311,22 +341,25 @@ endif
 
 		time = (mvn_c6_dat.time + mvn_c6_dat.end_time)/2.
 		data = mvn_c6_dat.data
-		eflux = mvn_c6_dat.eflux
 		energy = reform(mvn_c6_dat.energy[iswp,*,0])
 		mass = total(mvn_c6_dat.mass_arr[mlut,*,*],2)/nenergy
 
-		bkg = mvn_c6_dat.bkg
-		dead = mvn_c6_dat.dead
-		gf = reform(mvn_c6_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
+		str_element,mvn_c6_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_c6_dat.bkg
+			dead = mvn_c6_dat.dead
+			gf = reform(mvn_c6_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
 		            mvn_c6_dat.gf[iswp,*,1]*(iatt eq 1)#replicate(1.,nenergy) +$
 		            mvn_c6_dat.gf[iswp,*,2]*(iatt eq 2)#replicate(1.,nenergy) +$
 		            mvn_c6_dat.gf[iswp,*,3]*(iatt eq 3)#replicate(1.,nenergy), npts*nenergy)#replicate(1.,nmass)
-		gf = mvn_c6_dat.geom_factor*reform(gf,npts,nenergy,nmass)
-		eff = mvn_c6_dat.eff[ieff,*,*]
-		dt = mvn_c6_dat.integ_t#replicate(1.,nenergy*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_c6_dat.eflux)/eflux)) gt 0. then print,'Error in c6 eflux ',max(abs((eflux-mvn_c6_dat.eflux)/eflux))
+			gf = mvn_c6_dat.geom_factor*reform(gf,npts,nenergy,nmass)
+			eff = mvn_c6_dat.eff[ieff,*,*]
+			dt = mvn_c6_dat.integ_t#replicate(1.,nenergy*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_c6_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c6 eflux ',max(abs((eflux-mvn_c6_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c6_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c6_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -388,22 +421,25 @@ endif
 
 		time = (mvn_c8_dat.time + mvn_c8_dat.end_time)/2.
 		data = mvn_c8_dat.data
-		eflux = mvn_c8_dat.eflux
 		energy = reform(mvn_c8_dat.energy[iswp,*,0])
 		theta = reform(mvn_c8_dat.theta[mlut,nenergy-1,*])
 
-		bkg = mvn_c8_dat.bkg
-		dead = mvn_c8_dat.dead
-		gf = reform(mvn_c8_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*ndef) +$
+		str_element,mvn_c8_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_c8_dat.bkg
+			dead = mvn_c8_dat.dead
+			gf = reform(mvn_c8_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*ndef) +$
 		            mvn_c8_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*ndef) +$
 		            mvn_c8_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*ndef) +$
 		            mvn_c8_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*ndef), npts,nenergy,ndef)
-		gf = mvn_c8_dat.geom_factor*gf
-		eff = mvn_c8_dat.eff[ieff,*,*]
-		dt = mvn_c8_dat.integ_t#replicate(1.,nenergy*ndef)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_c8_dat.eflux)/eflux)) gt 0. then print,'Error in c8 eflux ',max(abs((eflux-mvn_c8_dat.eflux)/eflux))
+			gf = mvn_c8_dat.geom_factor*gf
+			eff = mvn_c8_dat.eff[ieff,*,*]
+			dt = mvn_c8_dat.integ_t#replicate(1.,nenergy*ndef)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_c8_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c8 eflux ',max(abs((eflux-mvn_c8_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c8_P2_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c8_P2_D',data={x:time,y:total(data,2),v:theta}
@@ -465,23 +501,26 @@ endif
 
 		time = (mvn_ca_dat.time + mvn_ca_dat.end_time)/2.
 		data = mvn_ca_dat.data
-		eflux = mvn_ca_dat.eflux
 		energy = reform(mvn_ca_dat.energy[iswp,*,0])
 		theta = total(reform(mvn_ca_dat.theta[iswp,nenergy-1,*],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_ca_dat.phi[iswp,nenergy-1,*],npts,ndef,nanode),2)/ndef
 
-		bkg = mvn_ca_dat.bkg
-		dead = mvn_ca_dat.dead
-		gf = reform(mvn_ca_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
+		str_element,mvn_ca_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_ca_dat.bkg
+			dead = mvn_ca_dat.dead
+			gf = reform(mvn_ca_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
 		            mvn_ca_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
 		            mvn_ca_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
 		            mvn_ca_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)
-		gf = mvn_ca_dat.geom_factor*reform(gf,npts,nenergy,nbins)
-		eff = mvn_ca_dat.eff[ieff,*,*]
-		dt = mvn_ca_dat.integ_t#replicate(1.,nenergy*nbins)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_ca_dat.eflux)/eflux)) gt 0. then print,'Error in ca eflux ',max(abs((eflux-mvn_ca_dat.eflux)/eflux))
+			gf = mvn_ca_dat.geom_factor*reform(gf,npts,nenergy,nbins)
+			eff = mvn_ca_dat.eff[ieff,*,*]
+			dt = mvn_ca_dat.integ_t#replicate(1.,nenergy*nbins)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_ca_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in ca eflux ',max(abs((eflux-mvn_ca_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_ca_P3_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_ca_P3_D',data={x:time,y:total(total(reform(data,npts,nenergy,ndef,nanode),4),2),v:theta}
@@ -561,25 +600,28 @@ endif
 
 		time = (mvn_cc_dat.time + mvn_cc_dat.end_time)/2.
 		data = mvn_cc_dat.data
-		eflux = mvn_cc_dat.eflux
 		energy = reform(mvn_cc_dat.energy[iswp,*,0,0])
 		mass = reform(total(mvn_cc_dat.mass_arr[mlut,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_cc_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cc_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
-		bkg = mvn_cc_dat.bkg
-		dead = mvn_cc_dat.dead
-		gf = reform(mvn_cc_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
+		str_element,mvn_cc_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_cc_dat.bkg
+			dead = mvn_cc_dat.dead
+			gf = reform(mvn_cc_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
 		            mvn_cc_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
 		            mvn_cc_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
 		            mvn_cc_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)$
 				#replicate(1.,nmass)
-		gf = mvn_cc_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
-		eff = mvn_cc_dat.eff[ieff,*,*,*]
-		dt = mvn_cc_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_cc_dat.eflux)/eflux)) gt 0. then print,'Error in ce eflux ',max(abs((eflux-mvn_cc_dat.eflux)/eflux))
+			gf = mvn_cc_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
+			eff = mvn_cc_dat.eff[ieff,*,*,*]
+			dt = mvn_cc_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_cc_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in cc eflux ',max(abs((eflux-mvn_cc_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_cc_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cc_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
@@ -657,25 +699,28 @@ endif
 
 		time = (mvn_cd_dat.time + mvn_cd_dat.end_time)/2.
 		data = mvn_cd_dat.data
-		eflux = mvn_cd_dat.eflux
 		energy = reform(mvn_cd_dat.energy[iswp,*,0,0])
 		mass = reform(total(mvn_cd_dat.mass_arr[mlut,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_cd_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cd_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
-		bkg = mvn_cd_dat.bkg
-		dead = mvn_cd_dat.dead
-		gf = reform(mvn_cd_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
+		str_element,mvn_cd_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_cd_dat.bkg
+			dead = mvn_cd_dat.dead
+			gf = reform(mvn_cd_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
 		            mvn_cd_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
 		            mvn_cd_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
 		            mvn_cd_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)$
 				#replicate(1.,nmass)
-		gf = mvn_cd_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
-		eff = mvn_cd_dat.eff[ieff,*,*,*]
-		dt = mvn_cd_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_cd_dat.eflux)/eflux)) gt 0. then print,'Error in ce eflux ',max(abs((eflux-mvn_cd_dat.eflux)/eflux))
+			gf = mvn_cd_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
+			eff = mvn_cd_dat.eff[ieff,*,*,*]
+			dt = mvn_cd_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_cd_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in cd eflux ',max(abs((eflux-mvn_cd_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_cd_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cd_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
@@ -753,25 +798,28 @@ endif
 
 		time = (mvn_ce_dat.time + mvn_ce_dat.end_time)/2.
 		data = mvn_ce_dat.data
-		eflux = mvn_ce_dat.eflux
 		energy = reform(mvn_ce_dat.energy[iswp,*,0,0])
 		mass = reform(total(mvn_ce_dat.mass_arr[mlut,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_ce_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_ce_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
-		bkg = mvn_ce_dat.bkg
-		dead = mvn_ce_dat.dead
-		gf = reform(mvn_ce_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
+		str_element,mvn_ce_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_ce_dat.bkg
+			dead = mvn_ce_dat.dead
+			gf = reform(mvn_ce_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
 		            mvn_ce_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
 		            mvn_ce_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
 		            mvn_ce_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)$
 				#replicate(1.,nmass)
-		gf = mvn_ce_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
-		eff = mvn_ce_dat.eff[ieff,*,*,*]
-		dt = mvn_ce_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_ce_dat.eflux)/eflux)) gt 0. then print,'Error in ce eflux ',max(abs((eflux-mvn_ce_dat.eflux)/eflux))
+			gf = mvn_ce_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
+			eff = mvn_ce_dat.eff[ieff,*,*,*]
+			dt = mvn_ce_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_ce_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in ce eflux ',max(abs((eflux-mvn_ce_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_ce_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_ce_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -861,25 +909,28 @@ endif
 
 		time = (mvn_cf_dat.time + mvn_cf_dat.end_time)/2.
 		data = mvn_cf_dat.data
-		eflux = mvn_cf_dat.eflux
 		energy = reform(mvn_cf_dat.energy[iswp,*,0,0])
 		mass = reform(total(mvn_cf_dat.mass_arr[mlut,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_cf_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cf_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
-		bkg = mvn_cf_dat.bkg
-		dead = mvn_cf_dat.dead
-		gf = reform(mvn_cf_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
+		str_element,mvn_cf_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_cf_dat.bkg
+			dead = mvn_cf_dat.dead
+			gf = reform(mvn_cf_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
 		            mvn_cf_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
 		            mvn_cf_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
 		            mvn_cf_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)$
 				#replicate(1.,nmass)
-		gf = mvn_cf_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
-		eff = mvn_cf_dat.eff[ieff,*,*,*]
-		dt = mvn_cf_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_cf_dat.eflux)/eflux)) gt 0. then print,'Error in cf eflux ',max(abs((eflux-mvn_cf_dat.eflux)/eflux))
+			gf = mvn_cf_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
+			eff = mvn_cf_dat.eff[ieff,*,*,*]
+			dt = mvn_cf_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_cf_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in cf eflux ',max(abs((eflux-mvn_cf_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_cf_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cf_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -969,25 +1020,28 @@ endif
 
 		time = (mvn_d0_dat.time + mvn_d0_dat.end_time)/2.
 		data = mvn_d0_dat.data
-		eflux = mvn_d0_dat.eflux
 		energy = reform(mvn_d0_dat.energy[iswp,*,0,0])
 		mass = reform(total(mvn_d0_dat.mass_arr[mlut,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_d0_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d0_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
-		bkg = mvn_d0_dat.bkg
-		dead = mvn_d0_dat.dead
-		gf = reform(mvn_d0_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
+		str_element,mvn_d0_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_d0_dat.bkg
+			dead = mvn_d0_dat.dead
+			gf = reform(mvn_d0_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
 		            mvn_d0_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
 		            mvn_d0_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
 		            mvn_d0_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)$
 				#replicate(1.,nmass)
-		gf = mvn_d0_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
-		eff = mvn_d0_dat.eff[ieff,*,*,*]
-		dt = mvn_d0_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_d0_dat.eflux)/eflux)) gt 0. then print,'Error in d0 eflux ',max(abs((eflux-mvn_d0_dat.eflux)/eflux))
+			gf = mvn_d0_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
+			eff = mvn_d0_dat.eff[ieff,*,*,*]
+			dt = mvn_d0_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_d0_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in d0 eflux ',max(abs((eflux-mvn_d0_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_d0_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d0_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1077,25 +1131,28 @@ endif
 
 		time = (mvn_d1_dat.time + mvn_d1_dat.end_time)/2.
 		data = mvn_d1_dat.data
-		eflux = mvn_d1_dat.eflux
 		energy = reform(mvn_d1_dat.energy[iswp,*,0,0])
 		mass = reform(total(mvn_d1_dat.mass_arr[mlut,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_d1_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d1_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
-		bkg = mvn_d1_dat.bkg
-		dead = mvn_d1_dat.dead
-		gf = reform(mvn_d1_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
+		str_element,mvn_d1_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_d1_dat.bkg
+			dead = mvn_d1_dat.dead
+			gf = reform(mvn_d1_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
 		            mvn_d1_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
 		            mvn_d1_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
 		            mvn_d1_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)$
 				#replicate(1.,nmass)
-		gf = mvn_d1_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
-		eff = mvn_d1_dat.eff[ieff,*,*,*]
-		dt = mvn_d1_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_d1_dat.eflux)/eflux)) gt 0. then print,'Error in d1 eflux ',max(abs((eflux-mvn_d1_dat.eflux)/eflux))
+			gf = mvn_d1_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
+			eff = mvn_d1_dat.eff[ieff,*,*,*]
+			dt = mvn_d1_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_d1_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in d1 eflux ',max(abs((eflux-mvn_d1_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_d1_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d1_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1185,24 +1242,27 @@ endif
 
 		time = (mvn_d4_dat.time + mvn_d4_dat.end_time)/2.
 		data = mvn_d4_dat.data
-		eflux = mvn_d4_dat.eflux
 		mass = reform(total(mvn_d4_dat.mass_arr[mlut,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_d4_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d4_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
-		bkg = mvn_d4_dat.bkg
-		dead = mvn_d4_dat.dead
-		gf = reform(mvn_d4_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nbins) +$
+		str_element,mvn_d4_dat,'eflux',success=success
+		if test or not success then begin
+			bkg = mvn_d4_dat.bkg
+			dead = mvn_d4_dat.dead
+			gf = reform(mvn_d4_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nbins) +$
 		            mvn_d4_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nbins) +$
 		            mvn_d4_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nbins) +$
 		            mvn_d4_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nbins), npts*nbins)$
 				#replicate(1.,nmass)
-		gf = mvn_d4_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
-		eff = mvn_d4_dat.eff[ieff,*,*,*]
-		dt = mvn_d4_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
-		eflux = (data-bkg)*dead/(gf*eff*dt)
-		eflux = float(eflux)
-		if max(abs((eflux-mvn_d4_dat.eflux)/eflux)) gt 0. then print,'Error in d4 eflux ',max(abs((eflux-mvn_d4_dat.eflux)/eflux))
+			gf = mvn_d4_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
+			eff = mvn_d4_dat.eff[ieff,*,*,*]
+			dt = mvn_d4_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
+			eflux2 = (data-bkg)*dead/(gf*eff*dt)
+			eflux2 = float(eflux2)
+		endif
+		if success then eflux = mvn_d4_dat.eflux else eflux = eflux2
+		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in d4 eflux ',max(abs((eflux-mvn_d4_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_d4_P4E_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
 		store_data,'mvn_sta_d4_P4E_A',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),3),2),v:phi}
@@ -1281,13 +1341,13 @@ endif
 			ev5 = (event_code and 16)/16*5
 			ev6 = (event_code and 32)/32*6
 			ev_cd = [[ev1],[ev2],[ev3],[ev4],[ev5],[ev6]]
-		store_data,'mvn_sta_d6_tdc1',data={x:time_unix,y:tdc_1+1}
-		store_data,'mvn_sta_d6_tdc2',data={x:time_unix,y:tdc_2+1}
-		store_data,'mvn_sta_d6_tdc3',data={x:time_unix,y:tdc_3*(-2*ev1+1)}
-		store_data,'mvn_sta_d6_tdc4',data={x:time_unix,y:tdc_4*(-ev2+1)}
-		store_data,'mvn_sta_d6_ev',data={x:time_unix,y:ev_cd,v:[1,2,3,4,5,6]}
-		store_data,'mvn_sta_d6_cy',data={x:time_unix,y:cyclestep}
-		store_data,'mvn_sta_d6_en',data={x:time_unix,y:energy}
+		store_data,'mvn_sta_d6_tdc1',data={x:time,y:tdc_1+1}
+		store_data,'mvn_sta_d6_tdc2',data={x:time,y:tdc_2+1}
+		store_data,'mvn_sta_d6_tdc3',data={x:time,y:tdc_3*(-2*ev1+1)}
+		store_data,'mvn_sta_d6_tdc4',data={x:time,y:tdc_4*(-ev2+1)}
+		store_data,'mvn_sta_d6_ev',data={x:time,y:ev_cd,v:[1,2,3,4,5,6]}
+		store_data,'mvn_sta_d6_cy',data={x:time,y:cyclestep}
+		store_data,'mvn_sta_d6_en',data={x:time,y:energy}
 
 		ylim,'mvn_sta_d6_tdc1',.5,1024,1
 		ylim,'mvn_sta_d6_tdc2',.5,1024,1
@@ -1326,6 +1386,7 @@ endif
 		data = mvn_d8_dat.rates
 
 		store_data,'mvn_sta_d8_R1_tot',data={x:time,y:data[*,4]*4.}
+		store_data,'mvn_sta_d8_R1_hz',data={x:time,y:data[*,4]}
 
 		store_data,'mvn_sta_d8_R1_ABCD',data={x:time,y:data[*,0:3]}
 		store_data,'mvn_sta_d8_R1_RST',data={x:time,y:data[*,4]}
@@ -1342,12 +1403,14 @@ endif
 		store_data,'mvn_sta_d8_R1_eff',data={x:time,y:data[*,7]*data[*,7]/data[*,11]/data[*,10]}
 		store_data,'mvn_sta_d8_R1_eff_all',data=['mvn_sta_d8_R1_eff_start','mvn_sta_d8_R1_eff_stop','mvn_sta_d8_R1_eff']
 
-			ylim,'mvn_sta_d8*',100,1.e6,1
+			ylim,'mvn_sta_d8*',100,1.e5,1
 			ylim,'mvn_sta_d8_R1_eff*',.01,1.1,1
 
 			options,'mvn_sta_d8*',datagap=7.
 
 			options,'mvn_sta_d8_R1_tot',ytitle='sta!Cd8!C!CCounts'
+			options,'mvn_sta_d8_R1_hz',ytitle='sta!Cd8!C!CRate!CHz'
+
 			options,'mvn_sta_d8_R1_ABCD',ytitle='sta!Cd8!C!CABCD!CHz'
 			options,'mvn_sta_d8_R1_RST',ytitle='sta!Cd8!C!CRst!CHz'
 			options,'mvn_sta_d8_R1_NoStart',ytitle='sta!Cd8!C!CNoStart!CHz'
@@ -1382,7 +1445,7 @@ endif
 		store_data,'mvn_sta_d9_R2',data={x:time,y:reform(data[*,4,*]),v:indgen(64)}
 		store_data,'mvn_sta_d9_R2_E',data={x:time,y:reform(data[*,4,*]),v:energy}
 		store_data,'mvn_sta_d9_R2_tot',data={x:time,y:total(reform(data[*,4,*]),2)/64*delta_time}
-		store_data,'mvn_sta_d9_R2_rate',data={x:time,y:total(reform(data[*,4,*]),2)/64}
+		store_data,'mvn_sta_d9_R2_hz',data={x:time,y:total(reform(data[*,4,*]),2)/64}
 
 		store_data,'mvn_sta_d9_R2_ABCD',data={x:time,y:total(data[*,0:3,*],3)}
 		store_data,'mvn_sta_d9_R2_RST',data={x:time,y:total(data[*,4,*],3)}
@@ -1403,10 +1466,11 @@ endif
 			ylim,'mvn_sta_d9_R2_eff*',.01,1.1,1
 			ylim,'mvn_sta_d9_R2',-1,64,0
 			ylim,'mvn_sta_d9_R2_E',.5,30000.,1
-			ylim,'mvn_sta_d9_R2_tot',1.e4,1.e6,1
+			ylim,'mvn_sta_d9_R2_tot',1.e4,1.e7,1
+			ylim,'mvn_sta_d9_R2_hz',1.e2,1.e5,1
 
-			zlim,'mvn_sta_d9_R2',1000.,1.e5,1					; may need better limits after next processing
-			zlim,'mvn_sta_d9_R2_E',1000.,1.e5,1
+			zlim,'mvn_sta_d9_R2',100.,1.e5,1	
+			zlim,'mvn_sta_d9_R2_E',100.,1.e5,1
 
 			options,'mvn_sta_d9_R2*',datagap=150.
 	
@@ -1416,6 +1480,7 @@ endif
 			options,'mvn_sta_d9_R2',ytitle='sta!Cd9!C!CEnergy!Cbin'
 			options,'mvn_sta_d9_R2_E',ytitle='sta!Cd9!C!CEnergy!CeV'
 			options,'mvn_sta_d9_R2_tot',ytitle='sta!Cd9!C!CCounts'
+			options,'mvn_sta_d9_R2_hz',ytitle='sta!Cd9!C!CRate!CHz'
 
 			options,'mvn_sta_d9_R2',ztitle='rate'
 			options,'mvn_sta_d9_R2_E',ztitle='rate'
@@ -1453,15 +1518,15 @@ endif
 		store_data,'mvn_sta_da_R3',data={x:time,y:data,v:indgen(64)}
 		store_data,'mvn_sta_da_R3_E',data={x:time,y:data,v:energy}
 		store_data,'mvn_sta_da_R3_tot',data={x:time,y:total(data,2)/16}
-		store_data,'mvn_sta_da_R3_rate',data={x:time,y:total(data,2)/64}
+		store_data,'mvn_sta_da_R3_hz',data={x:time,y:total(data,2)/64}
 
 			ylim,'mvn_sta_da_R3',-1,64,0
 			ylim,'mvn_sta_da_R3_E',.5,30000.,1
-			ylim,'mvn_sta_da_R3_tot',100,1.e4,1
-			ylim,'mvn_sta_da_R3_rate',100,1.e4,1
+			ylim,'mvn_sta_da_R3_tot',100,1.e5,1
+			ylim,'mvn_sta_da_R3_hz',100,1.e5,1
 
-			zlim,'mvn_sta_da_R3',1.,1.e3,1	
-			zlim,'mvn_sta_da_R3_E',1.,1.e3,1
+			zlim,'mvn_sta_da_R3',100.,1.e5,1	
+			zlim,'mvn_sta_da_R3_E',100.,1.e5,1
 
 			options,'mvn_sta_da_*',datagap=7.
 	
@@ -1471,7 +1536,7 @@ endif
 			options,'mvn_sta_da_R3',ytitle='sta!Cda!C!CEnergy!Cbin'
 			options,'mvn_sta_da_R3_E',ytitle='sta!Cda!C!CEnergy!CeV'
 			options,'mvn_sta_da_R3_tot',ytitle='sta!Cda!C!CCounts'
-			options,'mvn_sta_da_R3_rate',ytitle='sta!Cda!C!CRate'
+			options,'mvn_sta_da_R3_hz',ytitle='sta!Cda!C!CRate!CHz'
 
 			options,'mvn_sta_da_R3',ztitle='rate'
 			options,'mvn_sta_da_R3_E',ztitle='rate'
