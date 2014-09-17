@@ -495,23 +495,27 @@ endif else begin
 			vaf1 = -1.*reform(tmp1.y[*,0])
 			vaf2 = -1.*reform(tmp1.y[*,1])
 			vaf3 = -1.*reform(tmp1.y[*,2])
-			vaf4 = -1.*reform(tmp1.y[*,3])
-			ind1 = where(bad_frac lt 3.*vaf1/(vaf2+vaf3+vaf4),cnt1)
-			ind2 = where(bad_frac lt 3.*vaf2/(vaf1+vaf3+vaf4),cnt2)
-			ind3 = where(bad_frac lt 3.*vaf3/(vaf4+vaf1+vaf2),cnt3)
-			ind4 = where(bad_frac lt 3.*vaf4/(vaf3+vaf1+vaf2),cnt4)
-			if cnt1 gt 0 then vaf1[ind1]=vaf2[ind1]
-			if cnt2 gt 0 then vaf2[ind2]=vaf1[ind2]
-			if cnt3 gt 0 then vaf3[ind3]=vaf4[ind3]
-			if cnt4 gt 0 then vaf4[ind4]=vaf3[ind4]
-			vaf12 = (vaf1+vaf2)/2.
-			vaf34 = (vaf3+vaf4)/2.
-			ind5 = where(vaf12/vaf34 gt bad_frac and vaf34 gt 1.,cnt5) 
-			if cnt5 gt 0 then vaf12[ind5]=vaf34[ind5]		
-			ind6 = where(vaf34/vaf12 gt bad_frac and vaf12 gt 1.,cnt6) 
-			if cnt6 gt 0 then vaf34[ind6]=vaf12[ind6]		
-			vaf1234 = (vaf12+vaf34)/2.
-			dprint, 'Bad point counts=',cnt1,cnt2,cnt3,cnt4,cnt5,cnt6
+                        vaf4 = -1.*reform(tmp1.y[*,3])
+
+;2014-09-15, jmm, replaced this whole bad points section with code
+;that gets rid of any point that is bad for any one of v1, v2, v3, or
+;v4. The original code block keeps bad points if all four are bad...
+;			ind1 = where(bad_frac lt 3.*vaf1/(vaf2+vaf3+vaf4),cnt1);
+;			ind2 = where(bad_frac lt 3.*vaf2/(vaf1+vaf3+vaf4),cnt2)
+;			ind3 = where(bad_frac lt 3.*vaf3/(vaf4+vaf1+vaf2),cnt3)
+;			ind4 = where(bad_frac lt 3.*vaf4/(vaf3+vaf1+vaf2),cnt4)
+;			if cnt1 gt 0 then vaf1[ind1]=vaf2[ind1]
+;			if cnt2 gt 0 then vaf2[ind2]=vaf1[ind2] ;If both 1 and 2 are bad, then v2 is kept?
+;			if cnt3 gt 0 then vaf3[ind3]=vaf4[ind3]
+;			if cnt4 gt 0 then vaf4[ind4]=vaf3[ind4]
+;			vaf12 = (vaf1+vaf2)/2.
+;			vaf34 = (vaf3+vaf4)/2.
+;			ind5 = where(vaf12/vaf34 gt bad_frac and vaf34 gt 1.,cnt5) 
+;			if cnt5 gt 0 then vaf12[ind5]=vaf34[ind5]		
+;			ind6 = where(vaf34/vaf12 gt bad_frac and vaf12 gt 1.,cnt6) 
+;			if cnt6 gt 0 then vaf34[ind6]=vaf12[ind6]		
+;			vaf1234 = (vaf12+vaf34)/2.
+;			dprint, 'Bad point counts=',cnt1,cnt2,cnt3,cnt4,cnt5,cnt6
 
 ;			vaf1234_3a=time_average(tmp1.x,vaf1234,resolution=avg_spin_period,newtime=newtime)
 ;			ind = where(finite(vaf1234_3a))
@@ -520,9 +524,22 @@ endif else begin
 ;			if keyword_set(make_plot) then store_data,'th'+sc+'_vaf1234_3a_pot',data={x:newtime,y:vaf1234_3a}
 
 
-			vaf1234_3s=smooth_in_time(vaf1234,tmp1.x,avg_spin_period)
-			if keyword_set(make_plot) then store_data,'th'+sc+'_vaf1234_3s_pot',data={x:tmp1.x,y:vaf1234_3s}
+                        ok_pts = where(3.*vaf1/(vaf2+vaf3+vaf4) Lt bad_frac And 3.*vaf2/(vaf1+vaf3+vaf4) Lt bad_frac And $
+                                       3.*vaf3/(vaf4+vaf1+vaf2) Lt bad_frac And 3.*vaf4/(vaf3+vaf1+vaf2) Lt bad_frac, nok)       
 
+                        dprint, 'Ok point count = ', nok, ' of total =', n_elements(vaf1)
+                        If(nok Gt 0) then Begin
+                           vaf1234 = (vaf1[ok_pts]+vaf2[ok_pts]+vaf3[ok_pts]+vaf4[ok_Pts])/4.0
+                           t1234 = tmp1.x[ok_pts]
+                        Endif Else Begin
+                           dprint, 'No good VAF data'
+                           vaf1234 = vaf1 & vaf1234[*] = min_pot
+                           t1234 = tmp1.x
+                        Endelse
+
+                        vaf1234_3s=smooth_in_time(vaf1234, t1234, avg_spin_period)
+                        if keyword_set(make_plot) then store_data,'th'+sc+'_vaf1234_3s_pot',data={x:t1234,y:vaf1234_3s}
+ 
 			if keyword_set(make_plot) then store_data,'th'+sc+'_mom_pot',data={x:time,y:scpot}
       
       ; Previously we were trying to combine on-board data (pxxm) with ground data (vaf)
@@ -531,10 +548,43 @@ endif else begin
       ; So, at this point we prefer
       ; 1) the vaf data when available, averaged over 3s
       ; or 2) the on-board values when this is not available
+                        if index ne 0 then begin
+;here we have both types of data
+                           t3 = [time, t1234]
+                           d3 = [scpot, vaf1234_3s]
+;The source flag is 1 for MOM data, 0 for VAF data
+                           source3 = [1+bytarr(n_elements(time)), bytarr(n_elements(t1234))]
+                           s = bsort(t3)
+                           time = t3[s]
+                           scpot = d3[s]
+                           source = source3[s]
+;Now remove all of the source = 1 points that are bracketed by source
+;= 0 points, this will remove the spikes in the final product
+;Carefully do this, but only if there are more than 3 points,
+;otherwise this will be a problem
+                           nsource = n_elements(source)
+                           If(nsource Gt 3) Then Begin
+                              keep = bytarr(nsource)+1
+                              s1 = where(source Eq 1, ns1)
+                              For j = 0, ns1-1 Do Begin
+;drop first or last point if it is MOM data and has VAF data nearby
+                                 s1j = s1[j] ;is the index of this source=1 point in the full array
+                                 If(s1j Eq 0) Then Begin
+                                    If(source[s1j+1] Eq 0 && (time[s1j+1]-time[s1j]) Lt 6.0) Then keep[s1j] = 0b
+                                 Endif Else If(s1j Eq nsource-1) Then begin
+                                    If(source[s1j-1] Eq 0 && (time[s1j]-time[s1j-1]) Lt 6.0) Then keep[s1j] = 0b
+                                 Endif Else Begin
+                                    If(source[s1j+1] Eq 0 && source[s1j-1] Eq 0 && $
+                                       (time[s1j+1]-time[s1j]) Lt 6.0 && (time[s1j]-time[s1j-1]) Lt 6.0) Then keep[s1j] = 0b
+                                 Endelse
+                              Endfor
+                           Endif
+                        endif else begin
+                           time = t1234
+                           scpot=vaf1234_3s
+                        endelse
+                endif
 
-      time=tmp1.x
-      scpot=vaf1234_3s
-      
 ;			if index ne 0 then begin
 ;;				t3 = [time,newtime]
 ;;				d3 = [scpot,vaf1234_3a]
@@ -549,10 +599,11 @@ endif else begin
 ;				time = tmp1.x  		; bug fix by Jim McTiernan, failed when no mom data existed
 ;				scpot=vaf1234_3s
 ;			endelse
-		endif
 
-		scpot=(scale*(scpot+offset)) > min_pot
-		store_data,'th'+probes[i]+'_esa_pot',data={x:time,y:scpot}
+
+                scpot=(scale*(scpot+offset)) > min_pot
+                store_data,'th'+probes[i]+'_esa_pot',data={x:time,y:scpot}
+;End of default block
 	endif else if string(efi_datatype) eq 'mom' then begin
 
 		thm_load_mom,probe=probes[i], trange=trange

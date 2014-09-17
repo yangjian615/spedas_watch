@@ -80,8 +80,8 @@
 ;                     PFDPU EEPROM dump.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:45:12 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15671 $
+; $LastChangedDate: 2014-09-13 13:33:56 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15776 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sweep.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-01-03
@@ -93,7 +93,7 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
 
   @mvn_swe_com
 
-  if (data_type(swe_Ka) ne 4) then mvn_swe_calib
+  if (data_type(swe_Ka) ne 4) then swe_Ka = 6.17
   if (data_type(tabnum) eq 0) then tabnum = 0
   if (data_type(chksum) ne 0) then tabnum = mvn_swe_tabnum(chksum)
   if keyword_set(old_def) then old_def = 1 else old_def = 0

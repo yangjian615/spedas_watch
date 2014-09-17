@@ -15,14 +15,14 @@
 ;    LIST:          List all configuration changes.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:38:22 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15660 $
+; $LastChangedDate: 2014-09-14 13:47:47 -0700 (Sun, 14 Sep 2014) $
+; $LastChangedRevision: 15787 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
 ;FILE: mvn_swe_config.pro
 ;-
-pro mvn_swe_config, list=list
+pro mvn_swe_config, list=list, timebar=timebar
 
   @mvn_swe_com
 
@@ -83,6 +83,10 @@ pro mvn_swe_config, list=list
     print,time_string(t_swp[1]),' --> sweep tables 5 and 6 upload (TBD)'
     print,time_string(t_mtx[2]),' --> boom deploy (TBD)'
   endif
+
+; Overplot dotted time bars on the current tplot window (assumed to exist)
+
+  if keyword_set(timebar) then timebar, t_cfg, line=1
 
   return
 

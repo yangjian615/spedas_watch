@@ -29,8 +29,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:49:36 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15677 $
+; $LastChangedDate: 2014-09-13 13:30:50 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15772 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n3d.pro $
 ;
 ;-
@@ -54,26 +54,21 @@ pro mvn_swe_n3d, EBINS=ebins, ABINS=abins, DBINS=dbins, pans=pans, archive=archi
   endif
   
   if keyword_set(archive) then aflg = 1 else aflg = 0
-  
-  c = 2.99792458D5                ; velocity of light [km/s]
-  mass = (5.10998910D5)/(c*c)     ; electron rest mass [eV/(km/s)^2]    
-  units = 'eflux'
-  
+    
   if (aflg) then t = swe_3d_arc.time else t = swe_3d.time
   npts = n_elements(t)
   density = fltarr(npts)
   
   for i=0L,(npts-1L) do begin
-    ddd = mvn_swe_get3d(t[i],archive=aflg)
-    str_element,ddd,'mass',mass,/add
+    ddd = mvn_swe_get3d(t[i],archive=aflg,units='eflux')
     density[i] = swe_n_3d(ddd,ebins=ebins,abins=abins,dbins=dbins)
   endfor
   
 ; Create TPLOT variables
 
-  store_data,'swe_density',data={x:t, y:density}
-  options,'swe_density','ytitle','Ne (1/cc)'
-  pans = ['swe_density']
+  store_data,'swe_3d_n',data={x:t, y:density}
+  options,'swe_3d_n','ytitle','Ne (1/cc)'
+  pans = ['swe_3d_n']
   
   return
 

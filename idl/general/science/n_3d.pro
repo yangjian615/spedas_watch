@@ -102,7 +102,7 @@ if ind ge 0 then begin
 endif else begin
 	if ndimen(dtheta) eq 1 then dtheta=replicate(1.,na)#dtheta
 	if ndimen(dphi) eq 1 then dphi=replicate(1.,na)#dphi
-	domega=2.*dphi*sin(theta)*sin(.5*dtheta)
+	domega=2.*dphi*cos(theta)*sin(.5*dtheta)
 endelse
 
 sumdata = total(data*domega,2)

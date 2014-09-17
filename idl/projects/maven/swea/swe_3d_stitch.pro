@@ -12,8 +12,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-03-30 17:42:36 -0700 (Sun, 30 Mar 2014) $
-; $LastChangedRevision: 14699 $
+; $LastChangedDate: 2014-09-13 13:34:10 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15777 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_stitch.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -30,7 +30,8 @@ pro swe_3d_stitch
          period : 0B            , $
          npkt   : 0B            , $
          lut    : 0B            , $
-         data   : fltarr(80,64)    }
+         data   : fltarr(80,64) , $
+         var    : fltarr(80,64)    }
 
   if (data_type(a0) eq 8) then begin
     npkt = n_elements(a0)
@@ -55,6 +56,7 @@ pro swe_3d_stitch
           if (e0[istart[i]+j] eq j) then begin
             k = j*16
             swe_3d[i].data[*,k:(k+15)] = a0[istart[i]+j].data
+            swe_3d[i].var[*,k:(k+15)] = a0[istart[i]+j].var
           endif else print,"A0 frame out of order: ",istart[i] + j
         endfor
       endif else print,"A0 not enough frames left: ",istart[i]
@@ -90,6 +92,7 @@ pro swe_3d_stitch
             if (e0[istart[i]+j] eq j) then begin
               k = j*16
               swe_3d_arc[i].data[*,k:(k+15)] = a1[istart[i]+j].data
+              swe_3d_arc[i].var[*,k:(k+15)] = a1[istart[i]+j].var
             endif else print,"A1 frame out of order: ",istart[i] + j,"  ",j,"  ",nframes[i]
           endfor
         endif else print,"A1 frames have different time tags: ",istart[i],"  ",time_string(tstart[i])

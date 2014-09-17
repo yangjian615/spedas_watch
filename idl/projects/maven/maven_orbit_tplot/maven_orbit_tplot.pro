@@ -44,23 +44,21 @@
 ;       RESULT:   Named variable to hold the ephemeris.
 ;
 ;       DATE:     Ephemeris version date.  Several predict spk kernels have been
-;                 generated.  The latest was created on 07oct13; however, this
-;                 only covers the science phase.  The 28oct11 ephemeris is dated 
-;                 but includes transition and extended mission.
-;
-;       TRANSITION: Alternate method of choosing the 28oct11 ephemeris.
+;                 generated.  The latest was created on 21aug14 and covers the
+;                 transition and science phases.  The 28oct11 ephemeris is dated 
+;                 but includes an extended mission.
 ;
 ;       EXTENDED: Alternate method of choosing the 28oct11 ephemeris.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-05-07 09:01:20 -0700 (Wed, 07 May 2014) $
-; $LastChangedRevision: 15062 $
+; $LastChangedDate: 2014-09-13 13:53:27 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15786 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, date=date, $
-                       transition=transition, extended=extended
+                       extended=extended, eph=eph
 
   common mav_orb_tplt, time, ss, wind, sheath, pileup, wake, sza, torb, period, lon, lat, hgt, mex
 
@@ -71,8 +69,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   rootdir = 'maven/anc/spice/sav/'
   
-  if (keyword_set(transition) or keyword_set(extended)) then date = '28oct11'
-  if (data_type(date) ne 7) then date = '07oct13' else date = date[0]
+  if (keyword_set(extended)) then date = '28oct11'
+  if (size(date,/type) ne 7) then date = '21aug14' else date = date[0]
 
 ; Restore the orbit ephemeris
 
@@ -102,6 +100,18 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     
     lon = 0.  ; no GEO coordinates for MEX
     lat = 0.
+    
+    mso_x = fltarr(n_elements(mex.x),3)
+    mso_x[*,0] = mex.x
+    mso_x[*,1] = mex.y
+    mso_x[*,2] = mex.z
+    
+    mso_v = mso_x
+    mso_v[*,0] = mex.vx
+    mso_v[*,1] = mex.vy
+    mso_v[*,2] = mex.vz
+
+    eph = {time:time, mso_x:mso_x, mso_v:mso_v}
 
   endif else begin
     pathname = rootdir + 'maven_orb_mso_' + date + '.sav'
@@ -127,6 +137,16 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     s = sqrt(y*y + z*z)
     sza = atan(s,x)
     
+    mso_x = fltarr(n_elements(maven.x),3)
+    mso_x[*,0] = maven.x
+    mso_x[*,1] = maven.y
+    mso_x[*,2] = maven.z
+    
+    mso_v = mso_x
+    mso_v[*,0] = maven.vx
+    mso_v[*,1] = maven.vy
+    mso_v[*,2] = maven.vz
+    
     maven = 0
 
     pathname = rootdir + 'maven_orb_geo_' + date + '.sav'
@@ -144,8 +164,20 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     
     indx = where(lon lt 0., count)
     if (count gt 0L) then lon[indx] = lon[indx] + 360.
+    
+    geo_x = fltarr(n_elements(maven_g.x),3)
+    geo_x[*,0] = maven_g.x
+    geo_x[*,1] = maven_g.y
+    geo_x[*,2] = maven_g.z
+    
+    geo_v = mso_x
+    geo_v[*,0] = maven_g.vx
+    geo_v[*,1] = maven_g.vy
+    geo_v[*,2] = maven_g.vz
 
     maven_g = 0
+    
+    eph = {time:time, mso_x:mso_x, mso_v:mso_v, geo_x:geo_x, geo_v:geo_v}
 
   endelse
   

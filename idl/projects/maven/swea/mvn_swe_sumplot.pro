@@ -51,8 +51,8 @@
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:44:22 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15670 $
+; $LastChangedDate: 2014-09-15 11:33:00 -0700 (Mon, 15 Sep 2014) $
+; $LastChangedRevision: 15792 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -512,7 +512,7 @@ pro mvn_swe_sumplot, vnorm=vnorm, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=
 ; Energy Spectra, Survey (APID A4)
 
   if (data_type(a4) eq 8) then begin
-    if (data_type(mvn_swe_engy) ne 8) then mvn_swe_getspec
+    if (data_type(mvn_swe_engy) ne 8) then mvn_swe_makespec
     mvn_swe_convert_units, mvn_swe_engy, eunits
 
     x = mvn_swe_engy.time
@@ -573,7 +573,7 @@ pro mvn_swe_sumplot, vnorm=vnorm, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=
 ; Energy Spectra, Archive (APID A5)
 
   if (data_type(a5) eq 8) then begin
-    if (data_type(mvn_swe_engy_arc) ne 8) then mvn_swe_getspec
+    if (data_type(mvn_swe_engy_arc) ne 8) then mvn_swe_makespec
     mvn_swe_convert_units, mvn_swe_engy_arc, eunits
 
     x = mvn_swe_engy_arc.time

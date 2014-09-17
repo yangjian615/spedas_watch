@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:40:58 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15664 $
+; $LastChangedDate: 2014-09-13 13:28:09 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15768 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -179,6 +179,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
 ; first two dimensions of pkt.data.)
   
     counts = transpose(pkt.data[*,indgen(64)/(2^pkt.group)])
+    var = transpose(pkt.var[*,indgen(64)/(2^pkt.group)])
 
 ; Calculate the deadtime correction, since the units are conveniently COUNTS.
 ; This makes it possible to convert back and forth between RATE, COUNTS and 
@@ -223,6 +224,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
 ; And last, but not least, the data
 
     pad[n].data = counts                       ; raw counts
+    pad[n].var = var                           ; variance
 
 ; Validate the data
 
@@ -263,6 +265,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
     padsum.bkg = mean(pad.bkg)
     
     padsum.data = total(pad.data/pad.dtc,3)  ; corrected counts
+    padsum.var = total(pad.var/pad.dtc,3)    ; variance
     padsum.dtc = 1.         ; summing corrected counts is not reversible
     
     pad = padsum

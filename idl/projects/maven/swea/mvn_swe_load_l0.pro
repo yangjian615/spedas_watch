@@ -57,8 +57,8 @@
 ;       SUMPLOT:       Create a summary plot of the loaded data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:42:03 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15666 $
+; $LastChangedDate: 2014-09-15 11:33:00 -0700 (Mon, 15 Sep 2014) $
+; $LastChangedRevision: 15792 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -108,11 +108,30 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
   if (data_type(decom) eq 0) then begin
 
 ; Decompression: 19-to-8
+;   16-bit instrument messages are summed into 19-bit counters 
+;   in the PFDPU.  These 19-bit values are rounded down onboard
+;   to fit into the 8-bit compression scheme, so each compressed
+;   value corresponds to a range of possible counts.  I take the
+;   middle of each range for decompression, so there are half 
+;   counts.  This is less than a ~3% (systematic) correction.
+;
+;   Compression introduces digitization noise, which dominates
+;   the variance at high count rates.  I treat digitization noise
+;   as additive white noise.
 
     decom = fltarr(16,16)
     decom[0,*] = findgen(16)
     decom[1,*] = 16. + findgen(16)
     for i=2,15 do decom[i,*] = 2.*decom[(i-1),*]
+    
+    d_floor = reform(transpose(decom),256)        ; FSW rounds down
+    d_ceil = shift(d_floor,-1) - 1.
+    d_ceil[255] = 2.^19. - 1.                     ; 19-bit counter max
+    d_mid = (d_ceil + d_floor)/2.                 ; mid-point
+    d_var = d_mid + ((d_ceil - d_floor)^2.)/12.   ; variance w/ dig. noise
+    
+    decom = d_mid  ; decompressed counts
+    devar = d_var  ; variance w/ digitization noise
 
 ; Housekeeping conversions
 
@@ -230,6 +249,10 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 ; Define the 3D, PAD, and SPEC data structures
 
   mvn_swe_struct
+
+; Extract energy spectra
+
+  mvn_swe_makespec
 
 ; Create a summary plot
 

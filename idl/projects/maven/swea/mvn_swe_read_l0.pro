@@ -54,8 +54,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-05-21 11:52:49 -0700 (Wed, 21 May 2014) $
-; $LastChangedRevision: 15190 $
+; $LastChangedDate: 2014-09-13 13:31:28 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15773 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -252,7 +252,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
               RSTLMT  : 0B            , $    ; Reset if no message in seconds
               RSTSEC  : 0B            , $    ; Reset seconds since last message
               MUX     : bytarr(4)     , $    ; Fast Housekeeping MUX 0-3
-              DSF     : uintarr(6)    , $    ; Deflection scale factor 0-5
+              DSF     : fltarr(6)     , $    ; Deflection scale factor 0-5
               SSCTL   : 0U            , $    ; Active LUT
               SIFCTL  : bytarr(16)    , $    ; SIF control register
               MCPDAC  : 0U            , $    ; MCP DAC
@@ -271,7 +271,8 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
               period  : 0B            , $    ; sampling interval (2*2^period sec)
               lut     : 0B            , $    ; LUT in use (0-7)
               e0      : 0             , $    ; starting energy step (0, 16, 32, 48)
-              data    : fltarr(80,16)    }   ; data array (80A x 16E)
+              data    : fltarr(80,16) , $    ; data array (80A x 16E)
+              var     : fltarr(80,16)    }   ; variance array (80A x 16E)
 
   pad_str =  {time    : 0D            , $    ; packet unix time
               met     : 0D            , $    ; packet mission elapsed time
@@ -284,7 +285,8 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
               period  : 0B            , $    ; sampling interval (2*2^period sec)
               Baz     : 0B            , $    ; magnetic field azimuth (0-255)
               Bel     : 0B            , $    ; magnetic field elevation (0-39)
-              data    : fltarr(16,64)    }   ; data array (16A x 64E)
+              data    : fltarr(16,64) , $    ; data array (16A x 64E)
+              var     : fltarr(16,64)    }   ; variance array (16A x 64E)
 
   engy_str = {time    : 0D            , $    ; packet unix time
               met     : 0D            , $    ; packet mission elapsed time
@@ -296,7 +298,8 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
               smode   : 0B            , $    ; summing mode (0 = off, 1 = on)
               period  : 0B            , $    ; sampling interval (2*2^period sec)
               lut     : 0B            , $    ; LUT in use (0-7)
-              data    : fltarr(64,16)    }   ; data array (64E x 16T)
+              data    : fltarr(64,16) , $    ; data array (64E x 16T)
+              var     : fltarr(64,16)    }   ; variance array (64E x 16T)
 
   fhsk_str = {time    : 0D            , $    ; packet unix time
               met     : 0D            , $    ; packet mission elapsed time
@@ -461,12 +464,12 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  swe_hsk[k].MUX[1]    = pkt[75]
 	  swe_hsk[k].MUX[2]    = pkt[76]
 	  swe_hsk[k].MUX[3]    = pkt[77]
-      swe_hsk[k].DSF[0]    = uint(pkt[78])*256 + uint(pkt[79])
-	  swe_hsk[k].DSF[1]    = uint(pkt[80])*256 + uint(pkt[81])
-	  swe_hsk[k].DSF[2]    = uint(pkt[82])*256 + uint(pkt[83])
-	  swe_hsk[k].DSF[3]    = uint(pkt[84])*256 + uint(pkt[85])
-	  swe_hsk[k].DSF[4]    = uint(pkt[86])*256 + uint(pkt[87])
-	  swe_hsk[k].DSF[5]    = uint(pkt[88])*256 + uint(pkt[89])
+      swe_hsk[k].DSF[0]    = float(uint(pkt[78])*256 + uint(pkt[79]))/4096.
+	  swe_hsk[k].DSF[1]    = float(uint(pkt[80])*256 + uint(pkt[81]))/4096.
+	  swe_hsk[k].DSF[2]    = float(uint(pkt[82])*256 + uint(pkt[83]))/4096.
+	  swe_hsk[k].DSF[3]    = float(uint(pkt[84])*256 + uint(pkt[85]))/4096.
+	  swe_hsk[k].DSF[4]    = float(uint(pkt[86])*256 + uint(pkt[87]))/4096.
+	  swe_hsk[k].DSF[5]    = float(uint(pkt[88])*256 + uint(pkt[89]))/4096.
 
 ; LUT, Checksums, Command Counter, and Digital Housekeeping (bytes 92-109)
 			   
@@ -549,8 +552,8 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	   
 	  a0[k].e0     = mvn_swe_getbits(pkt[15],[1,0])      ; last 2 bits
 			   
-	  counters = decom[pkt[16:1295]/16B, pkt[16:1295] mod 16B]
-	  a0[k].data = reform(counters,80,16)
+	  a0[k].data = reform(decom[pkt[16:1295]],80,16)     ; counts
+	  a0[k].var  = reform(devar[pkt[16:1295]],80,16)     ; variance
 
 	endelse
 
@@ -615,9 +618,9 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  a1[k].lut    = mvn_swe_getbits(pkt[14],[2,0])      ; last 3 bits
 			   
 	  a1[k].e0     = mvn_swe_getbits(pkt[15],[1,0])      ; last 2 bits
-			   
-	  counters = decom[pkt[16:1295]/16B, pkt[16:1295] mod 16B]
-	  a1[k].data = reform(counters,80,16)
+
+	  a1[k].data = reform(decom[pkt[16:1295]],80,16)     ; counts
+	  a1[k].var  = reform(devar[pkt[16:1295]],80,16)     ; variance
 
 	endelse
 
@@ -686,8 +689,8 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  bmax = 16*n_e + 15
 
 	  if ((bmax+1) eq n_elements(pkt)) then begin
-	    counters = decom[pkt[16:bmax]/16B, pkt[16:bmax] mod 16B]
-		a2[k].data[*,0:(n_e-1)] = reform(counters,16,n_e)
+        a2[k].data[*,0:(n_e-1)] = reform(decom[pkt[16:bmax]],16,n_e)  ; counts
+        a2[k].var[*,0:(n_e-1)]  = reform(devar[pkt[16:bmax]],16,n_e)  ; variance
 	  endif else begin
 	    print, "Bad A2 packet: ",n,format='(a,Z)'
 	    a2[k].addr = -1L
@@ -760,8 +763,8 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  bmax = 16*n_e + 15
 
 	  if ((bmax+1) eq n_elements(pkt)) then begin
-	    counters = decom[pkt[16:bmax]/16B, pkt[16:bmax] mod 16B]
-		a3[k].data[*,0:(n_e-1)] = reform(counters,16,n_e)
+        a3[k].data[*,0:(n_e-1)] = reform(decom[pkt[16:bmax]],16,n_e)  ; counts
+        a3[k].var[*,0:(n_e-1)]  = reform(devar[pkt[16:bmax]],16,n_e)  ; variance
 	  endif else begin
 	    print, "Bad A3 packet: ",n,format='(a,Z)'
 	    a3[k].addr = -1L
@@ -829,8 +832,8 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 			   
 	  a4[k].lut    = mvn_swe_getbits(pkt[14],[2,0])       ; last 3 bits
 							  
-	  counters = decom[pkt[16:1039]/16B, pkt[16:1039] mod 16B]
-	  a4[k].data = reform(counters,64,16)
+	  a4[k].data = reform(decom[pkt[16:1039]],64,16)      ; counts
+	  a4[k].var  = reform(devar[pkt[16:1039]],64,16)      ; variance
 
 	endelse
 
@@ -894,8 +897,8 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 			   
 	  a5[k].lut    = mvn_swe_getbits(pkt[14],[2,0])       ; last 3 bits
 							  
-	  counters = decom[pkt[16:1039]/16B, pkt[16:1039] mod 16B]
-	  a5[k].data = reform(counters,64,16)
+	  a5[k].data = reform(decom[pkt[16:1039]],64,16)      ; counts
+	  a5[k].var  = reform(devar[pkt[16:1039]],64,16)      ; variance
 
 	endelse
 

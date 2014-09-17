@@ -38,14 +38,14 @@
 ;   none - result is returned via POTENTIAL keyword or as TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:43:05 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15668 $
+; $LastChangedDate: 2014-09-13 13:32:43 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15774 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
 pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, esmo=esmo, fudge=fudge, $
-                    pans=pans, overlay=overlay
+                    pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins
 
   compile_opt idl2
   
@@ -62,17 +62,49 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, esmo=esmo, fudge=fu
   if not keyword_set(psmo) then psmo = 1
   if not keyword_set(esmo) then esmo = 1
   if not keyword_set(fudge) then fudge = 1.
+  if keyword_set(ddd) then dflg = 1 else dflg = 0
+  if not keyword_set(abins) then abins = replicate(1B, 16)
+  if not keyword_set(dbins) then dbins = replicate(1B, 6)
+  
+  if (dflg) then begin
+    t = swe_3d.time
+    npts = n_elements(t)
+    obins = reform(abins # dbins, 96)
+    indx = where(obins eq 1B, ocnt)
+    onorm = float(ocnt)
+    obins = replicate(1B, 64) # obins
+    e = fltarr(64,npts)
+    f = e
     
-  old_units = mvn_swe_engy[0].units_name
-  mvn_swe_convert_units, mvn_swe_engy, 'crate'
+    for i=0L,(npts-1L) do begin
+      ddd = mvn_swe_get3d(t[i], units='eflux')
+      e[*,i] = ddd.energy[*,0]
+      f[*,i] = total(ddd.data * obins, 2)/onorm
+    endfor
 
-  npts = n_elements(mvn_swe_engy.time)
-  e = mvn_swe_engy.energy
-  f = mvn_swe_engy.data
+  endif else begin
+    
+    old_units = mvn_swe_engy[0].units_name
+    mvn_swe_convert_units, mvn_swe_engy, 'eflux'
+
+    t = mvn_swe_engy.time
+    npts = n_elements(t)
+    e = mvn_swe_engy.energy
+    f = mvn_swe_engy.data
+
+  endelse
   
   indx = where(e[*,0] lt 60., n_e)
   e = e[indx,*]
   f = alog10(f[indx,*])
+
+; Filter out bad spectra
+
+  gndx = round(total(finite(f),1))
+  gndx = where(gndx eq n_e, npts)
+  t = t[gndx]
+  e = e[*,gndx]
+  f = f[*,gndx]
 
 ; Take first and second derivatives of log(eflux) w.r.t. log(E)
 
@@ -119,48 +151,52 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, esmo=esmo, fudge=fu
   endfor
 
   phi = smooth(phi*fudge,psmo,/nan)
-  mvn_swe_engy.sc_pot = phi
 
-  mvn_swe_convert_units, mvn_swe_engy, old_units
+  if (not dflg) then begin
+    mvn_swe_engy[gndx].sc_pot = phi
+    mvn_swe_convert_units, mvn_swe_engy, old_units
+  endif else begin
+    mvn_swe_engy.sc_pot = interpol(phi,t,mvn_swe_engy.time)
+  endelse
   
   swe_sc_pot = replicate(swe_pot_struct, npts)
-  swe_sc_pot.time = mvn_swe_engy.time
+  swe_sc_pot.time = t
   swe_sc_pot.potential = phi
   swe_sc_pot.valid = 1
 
 ; Make tplot variables
   
-  store_data,'df',data={x:mvn_swe_engy.time, y:transpose(dfs), v:transpose(ee)}
+  store_data,'df',data={x:t, y:transpose(dfs), v:transpose(ee)}
   options,'df','spec',1
   ylim,'df',0,30,0
   zlim,'df',0,0,0
   
-  store_data,'d2f',data={x:mvn_swe_engy.time, y:transpose(d2fs), v:transpose(ee)}
+  store_data,'d2f',data={x:t, y:transpose(d2fs), v:transpose(ee)}
   options,'d2f','spec',1
   ylim,'d2f',0,30,0
   zlim,'d2f',0,0,0
 
-  store_data,'phi',data={x:mvn_swe_engy.time, y:phi}
-  options,'phi','thick',2
-  options,'phi','color',0
+  pot = {x:t, y:phi}  
+  store_data,'mvn_swe_sc_pot',data=pot
+  pans = 'mvn_swe_sc_pot'
 
-  store_data,'Potential',data=['d2f','phi']
+  store_data,'Potential',data=['d2f','mvn_swe_sc_pot']
   ylim,'Potential',0,30,0
-  
-  pans = 'Potential'
 
   if keyword_set(overlay) then begin
+    str_element,pot,'thick',2,/add
+    str_element,pot,'color',0,/add
+    store_data,'swe_pot_overlay',data=pot
+    store_data,'swe_a4_pot',data=['swe_a4','swe_pot_overlay']
+    ylim,'swe_a4_pot',3,5000,1
+
     tplot_options, get=opt
     i = (where(opt.varnames eq 'swe_a4'))[0]
-    if (i ne -1) then begin
-      store_data,'swe_a4_pot',data=['swe_a4','phi']
-      ylim,'swe_a4_pot',3,5000,1
-      opt.varnames[i] = 'swe_a4_pot'
-      tplot, opt.varnames
-    endif else begin
-      i = (where(opt.varnames eq 'swe_a4_pot'))[0]
-      if (i ne -1) then tplot
-    endelse
+    if (i ne -1) then opt.varnames[i] = 'swe_a4_pot'
+    i = (where(opt.varnames eq 'swe_a4_pot'))[0]
+    if (i eq -1) then opt.varnames = [opt.varnames, 'swe_a4_pot']
+
+    tplot, opt.varnames
   endif
 
   return

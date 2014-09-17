@@ -8,29 +8,39 @@
 ;CALLING SEQUENCE:
 ;	MVN_SWIA_LOAD_L0_DATA, Files, /TPLOT, /SYNC
 ;INPUTS:
-;	Files: An array of filenames containing PF Level 0 data
+;	Files: An array of filenames containing PF Level 0 data (not needed if using file_retrieve)
 ;KEYWORDS:
 ;	TPLOT: Produce Tplot variables
 ;	SYNC: Sync on the spacecraft header and checksum (speeds performance greatly)
 ;	QLEVEL: Set this keyword to not plot moments or spectra with a low quality flag
 ;		or decommutation quality flag.  Default cutoff = 0.5
+;	PATH: Set the default data path for file_retrieve functionality if different from standard
+;	TRANGE: Set the time range for files to load, if using file_retrieve capability
+;		(otherwise the 'timerange' routine will be invoked to determine this)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-04-11 13:42:27 -0700 (Fri, 11 Apr 2014) $
-; $LastChangedRevision: 14811 $
+; $LastChangedDate: 2014-09-15 14:35:43 -0700 (Mon, 15 Sep 2014) $
+; $LastChangedRevision: 15797 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l0_data.pro $
 ;
 ;-
 
-pro mvn_swia_load_l0_data, files, tplot = tplot, sync = sync, qlevel = qlevel
+pro mvn_swia_load_l0_data, files, tplot = tplot, sync = sync, qlevel = qlevel, trange = trange, path = path
 
 compile_opt idl2
 
 common mvn_swia_data, info_str, swihsk, swics, swica, swifs, swifa, swim, swis
 
+if not keyword_set(path) then path = 'maven/data/sci/pfp/l0/mvn_pfp_all_l0_YYYYMMDD_v???.dat'
+
 if not keyword_set(qlevel) then qlevel = 0.5
 
 nfiles = n_elements(files)
+
+if nfiles eq 0 then begin
+	files = mvn_pfp_file_retrieve(path, /daily, trange = trange)
+	nfiles = n_elements(files)
+endif
 
 print,'Reading File: ',files[0]
 
@@ -105,13 +115,13 @@ if n_elements(apid86) gt 0 then mvn_swia_make_swis_str, apid86, info_str, swis
 
 ;kluge fix for coarse attenuator state
 
-if n_elements(swics) gt 0 and n_elements(swis) gt 0 then begin
+if n_elements(swics) gt 1 and n_elements(swis) gt 0 then begin
 	waswitch = where(swics.atten_state ne shift(swics.atten_state,1) or swics.atten_state ne shift(swics.atten_state,-1),nw)
 	if nw gt 0 then swics[waswitch].atten_state = round(interpol(swis.atten_state,swis.time_unix,swics[waswitch].time_unix))
 	print,'Fixing Coarse Atten State, ',nw
 endif
 
-if n_elements(swica) gt 0 and n_elements(swis) gt 0 then begin
+if n_elements(swica) gt 1 and n_elements(swis) gt 0 then begin
 	waswitch = where(swica.atten_state ne shift(swica.atten_state,1) or swica.atten_state ne shift(swica.atten_state,-1),nw)
 	if nw gt 0 then swica[waswitch].atten_state = round(interpol(swis.atten_state,swis.time_unix,swica[waswitch].time_unix))
 	print,'Fixing Coarse Atten State, ',nw
@@ -119,13 +129,13 @@ endif
 
 ;kluge fix for fine attenuator state
 
-if n_elements(swifs) gt 0 and n_elements(swis) gt 0 then begin
+if n_elements(swifs) gt 1 and n_elements(swis) gt 0 then begin
 	waswitch = where(swifs.atten_state ne shift(swifs.atten_state,1) or swifs.atten_state ne shift(swifs.atten_state,-1),nw)
 	if nw gt 0 then swifs[waswitch].atten_state = round(interpol(swis.atten_state,swis.time_unix,swifs[waswitch].time_unix))
 	print,'Fixing Fine Atten State, ',nw
 endif
 
-if n_elements(swifa) gt 0 and n_elements(swis) gt 0 then begin
+if n_elements(swifa) gt 1 and n_elements(swis) gt 0 then begin
 	waswitch = where(swifa.atten_state ne shift(swifa.atten_state,1) or swifa.atten_state ne shift(swifa.atten_state,-1),nw)
 	if nw gt 0 then swifa[waswitch].atten_state = round(interpol(swis.atten_state,swis.time_unix,swifa[waswitch].time_unix))
 	print,'Fixing Fine Atten State, ',nw
@@ -148,7 +158,7 @@ if keyword_set(tplot) then begin
 
 	endif
 
-	if n_elements(swics) gt 0 then begin
+	if n_elements(swics) gt 1 then begin
 
 		ctime = swics.time_unix +4.0*swics.num_accum/2	;center time of sample/sum
 
@@ -172,7 +182,7 @@ if keyword_set(tplot) then begin
 
 	endif
 
-	if n_elements(swica) gt 0 then begin
+	if n_elements(swica) gt 1 then begin
 		ctime = swica.time_unix +4.0*swica.num_accum/2	;center time of sample/sum
 
 		espec = transpose(total(total(swica.data,2),2))
@@ -196,7 +206,7 @@ if keyword_set(tplot) then begin
 
 	endif
 
-	if n_elements(swifs) gt 0 then begin
+	if n_elements(swifs) gt 1 then begin
 		ctime = swifs.time_unix + 2.0				;center time of sample
 		nsw = n_elements(swifs)
 
@@ -219,7 +229,7 @@ if keyword_set(tplot) then begin
 
 	endif
 
-	if n_elements(swifa) gt 0 then begin
+	if n_elements(swifa) gt 1 then begin
 		ctime = swifa.time_unix + 2.0				;center time of sample
 		nsw = n_elements(swifa)
 
@@ -243,7 +253,7 @@ if keyword_set(tplot) then begin
 
 	endif
 	
-	if n_elements(swim) gt 0 then begin
+	if n_elements(swim) gt 1 then begin
 		w = where(swim.quality_flag ge qlevel and swim.decom_flag ge qlevel)
 		ctime = swim[w].time_unix + 2.0				;center time of sample
 
@@ -259,7 +269,7 @@ if keyword_set(tplot) then begin
 
 	endif
 
-	if n_elements(swis) gt 0 then begin
+	if n_elements(swis) gt 1 then begin
 		w = where(swis.decom_flag ge qlevel)
 		ctime = swis[w].time_unix + 4.0*swis[w].num_accum/2		;center time of sample
 		energies = transpose(info_str[swis[w].info_index].energy_coarse)

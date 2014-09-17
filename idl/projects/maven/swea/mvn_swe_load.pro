@@ -56,27 +56,51 @@
 ;
 ;       RESET:         Clear the data common block before loading new data.
 ;
+;       TSHIFT:        Shift all times by this amount.  Default = 0D.  This is useful
+;                      to compare FlatSat runs with predict ephemerides.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:41:38 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15665 $
+; $LastChangedDate: 2014-09-15 11:33:00 -0700 (Mon, 15 Sep 2014) $
+; $LastChangedRevision: 15792 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load.pro $
 ;
 ;CREATED BY:    David L. Mitchell  06-26-11
 ;FILE: mvn_swe_load.pro
 ;-
 pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, reset=reset, $
-                  telemetry=tlm, nodupe=nodupe
+                  telemetry=tlm, nodupe=nodupe, tshift=tshift, sumplot=sumplot
 
   @mvn_swe_com
+  
+  if not keyword_set(tshift) then tshift = 0D
 
   if (data_type(decom) eq 0) then begin
 
 ; Decompression: 19-to-8
+;   16-bit instrument messages are summed into 19-bit counters 
+;   in the PFDPU.  These 19-bit values are rounded down onboard
+;   to fit into the 8-bit compression scheme, so each compressed
+;   value corresponds to a range of possible counts.  I take the
+;   middle of each range for decompression, so there are half 
+;   counts.  This is less than a ~3% (systematic) correction.
+;
+;   Compression introduces digitization noise, which dominates
+;   the variance at high count rates.  I treat digitization noise
+;   as additive white noise.
 
     decom = fltarr(16,16)
     decom[0,*] = findgen(16)
     decom[1,*] = 16. + findgen(16)
     for i=2,15 do decom[i,*] = 2.*decom[(i-1),*]
+    
+    d_floor = reform(transpose(decom),256)        ; FSW rounds down
+    d_ceil = shift(d_floor,-1) - 1.
+    d_ceil[255] = 2.^19. - 1.                     ; 19-bit counter max
+    d_mid = (d_ceil + d_floor)/2.                 ; mid-point
+    d_var = d_mid + ((d_ceil - d_floor)^2.)/12.   ; variance w/ dig. noise
+    
+    decom = d_mid  ; decompressed counts
+    devar = d_var  ; variance w/ digitization noise
 
 ; Housekeeping conversions
 
@@ -270,7 +294,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
               RSTLMT  : 0B            , $    ; Reset if no message in seconds
               RSTSEC  : 0B            , $    ; Reset seconds since last message
               MUX     : bytarr(4)     , $    ; Fast Housekeeping MUX 0-3
-              DSF     : uintarr(6)    , $    ; Deflection scale factor 0-5
+              DSF     : fltarr(6)     , $    ; Deflection scale factor 0-5
               SSCTL   : 0U            , $    ; Active LUT
               SIFCTL  : bytarr(16)    , $    ; SIF control register
               MCPDAC  : 0U            , $    ; MCP DAC
@@ -289,7 +313,8 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
               period  : 0B            , $    ; sampling interval (2*2^period sec)
               lut     : 0B            , $    ; LUT in use (0-7)
               e0      : 0B            , $    ; starting energy frame (0, 1, 2, 3)
-              data    : fltarr(80,16)    }   ; data array (80A x 16E)
+              data    : fltarr(80,16) , $    ; data array (80A x 16E)
+              var     : fltarr(80,16)    }   ; variance (80A x 16E)
 
   pad_str =  {time    : 0D            , $    ; packet time
               met     : 0D            , $    ; packet mission elapsed time
@@ -302,7 +327,8 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
               period  : 0B            , $    ; sampling interval (2*2^period sec)
               Baz     : 0.            , $    ; magnetic field azimuth (0-255)
               Bel     : 0.            , $    ; magnetic field elevation (0-40)
-              data    : fltarr(16,64)    }   ; data array (16A x 64E)
+              data    : fltarr(16,64) , $    ; data array (16A x 64E)
+              var     : fltarr(16,64)    }   ; variance (16A x 64E)
 
   engy_str = {time    : 0D            , $    ; packet time
               met     : 0D            , $    ; packet mission elapsed time
@@ -314,7 +340,8 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
               smode   : 0B            , $    ; summing mode (0 = off, 1 = on)
               period  : 0B            , $    ; sampling interval (2*2^period sec)
               lut     : 0B            , $    ; LUT in use (0-7)
-              data    : fltarr(64,16)    }   ; data array (64E x 16T)
+              data    : fltarr(64,16) , $    ; data array (64E x 16T)
+              var     : fltarr(64,16)    }   ; variance (64E x 16T)
 
   fhsk_str = {time    : 0D            , $    ; packet time
               met     : 0D            , $    ; packet mission elapsed time
@@ -333,7 +360,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
   maxlen = 2048
 
   bad_str = {time     : 0D            , $    ; packet time
-             met     : 0D             , $    ; packet mission elapsed time
+             met      : 0D            , $    ; packet mission elapsed time
              addr     : 0L            , $    ; packet address
              npkt     : 0B            , $    ; packet counter
              plen     : 0             , $    ; packet length
@@ -404,7 +431,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
 
                  bad_str.met = double(ccsds[3])*65536D + double(ccsds[4])
 
-                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met) + tshift
 
                  badpkt = [temporary(badpkt), bad_str]
 
@@ -427,7 +454,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  swe_hsk[i_28].plen = ccsds[2]
                
                  swe_hsk[i_28].met = double(ccsds[3])*65536D + double(ccsds[4])
-                 swe_hsk[i_28].time = mvn_spc_met_to_unixtime(swe_hsk[i_28].met)
+                 swe_hsk[i_28].time = mvn_spc_met_to_unixtime(swe_hsk[i_28].met) + tshift
 
 ; SWEA Analog Housekeeping (bytes 10-57)
 
@@ -485,12 +512,12 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  swe_hsk[i_28].MUX[1]    = pkt[75]
                  swe_hsk[i_28].MUX[2]    = pkt[76]
                  swe_hsk[i_28].MUX[3]    = pkt[77]
-                 swe_hsk[i_28].DSF[0]    = uint(pkt[78])*256 + uint(pkt[79])
-                 swe_hsk[i_28].DSF[1]    = uint(pkt[80])*256 + uint(pkt[81])
-                 swe_hsk[i_28].DSF[2]    = uint(pkt[82])*256 + uint(pkt[83])
-                 swe_hsk[i_28].DSF[3]    = uint(pkt[84])*256 + uint(pkt[85])
-                 swe_hsk[i_28].DSF[4]    = uint(pkt[86])*256 + uint(pkt[87])
-                 swe_hsk[i_28].DSF[5]    = uint(pkt[88])*256 + uint(pkt[89])
+                 swe_hsk[i_28].DSF[0]    = float(uint(pkt[78])*256 + uint(pkt[79]))/4096.
+                 swe_hsk[i_28].DSF[1]    = float(uint(pkt[80])*256 + uint(pkt[81]))/4096.
+                 swe_hsk[i_28].DSF[2]    = float(uint(pkt[82])*256 + uint(pkt[83]))/4096.
+                 swe_hsk[i_28].DSF[3]    = float(uint(pkt[84])*256 + uint(pkt[85]))/4096.
+                 swe_hsk[i_28].DSF[4]    = float(uint(pkt[86])*256 + uint(pkt[87]))/4096.
+                 swe_hsk[i_28].DSF[5]    = float(uint(pkt[88])*256 + uint(pkt[89]))/4096.
 
 ; LUT, Checksums, Command Counter, and Digital Housekeeping (bytes 92-109)
                
@@ -529,7 +556,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  bad_str.met = clock + subsecs
-                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met) + tshift
 
                  badpkt = [temporary(badpkt), bad_str]
 
@@ -543,7 +570,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  a0[i_a0].met    = clock + subsecs
-                 a0[i_A0].time   = mvn_spc_met_to_unixtime(a0[i_a0].met)
+                 a0[i_A0].time   = mvn_spc_met_to_unixtime(a0[i_a0].met) + tshift
 
                  a0[i_A0].cflg   = mvn_swe_getbits(pkt[12],7)          ; first bit
                  a0[i_A0].modeID = mvn_swe_getbits(pkt[12],[6,0])      ; last 7 bits
@@ -556,8 +583,8 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                
                  a0[i_A0].e0     = mvn_swe_getbits(pkt[15],[1,0])      ; last 2 bits
                
-                 counters = decom[pkt[16:1295]/16B, pkt[16:1295] mod 16B]
-                 a0[i_A0].data = reform(counters,80,16)
+                 a0[i_A0].data = reform(decom[pkt[16:1295]],80,16)
+                 a0[i_A0].var  = reform(devar[pkt[16:1295]],80,16)
 
                  i_A0++
                endelse
@@ -582,7 +609,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  bad_str.met = clock + subsecs
-                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met) + tshift
 
                  badpkt = [temporary(badpkt), bad_str]
 
@@ -596,7 +623,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  a1[i_a1].met    = clock + subsecs
-                 a1[i_A1].time   = mvn_spc_met_to_unixtime(a1[i_a1].met)
+                 a1[i_A1].time   = mvn_spc_met_to_unixtime(a1[i_a1].met) + tshift
 
                  a1[i_A1].cflg   = mvn_swe_getbits(pkt[12],7)          ; first bit
                  a1[i_A1].modeID = mvn_swe_getbits(pkt[12],[6,0])      ; last 7 bits
@@ -609,8 +636,8 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                
                  a1[i_A1].e0     = mvn_swe_getbits(pkt[15],[1,0])      ; last 2 bits
                
-                 counters = decom[pkt[16:1295]/16B, pkt[16:1295] mod 16B]
-                 a1[i_A1].data = reform(counters,80,16)
+                 a1[i_A1].data = reform(decom[pkt[16:1295]],80,16)
+                 a1[i_A1].var  = reform(devar[pkt[16:1295]],80,16)
 
                  i_A1++
                endelse
@@ -635,7 +662,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  bad_str.met = clock + subsecs
-                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met) + tshift
 
                  badpkt = [temporary(badpkt), bad_str]
 
@@ -649,7 +676,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  a2[i_a2].met    = clock + subsecs
-                 a2[i_A2].time   = mvn_spc_met_to_unixtime(a2[i_a2].met)
+                 a2[i_A2].time   = mvn_spc_met_to_unixtime(a2[i_a2].met) + tshift
 
                  a2[i_A2].cflg   = mvn_swe_getbits(pkt[12],7)            ; first bit
                  a2[i_A2].modeID = mvn_swe_getbits(pkt[12],[6,0])        ; last 7 bits
@@ -665,8 +692,8 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  bmax = 16*n_e + 15
 
 	         if ((bmax+1) eq n_elements(pkt)) then begin
-                   counters = decom[pkt[16:bmax]/16B, pkt[16:bmax] mod 16B]
-                   a2[i_A2].data[*,0:(n_e-1)] = reform(counters,16,n_e)
+                   a2[i_A2].data[*,0:(n_e-1)] = reform(decom[pkt[16:bmax]],16,n_e)
+                   a2[i_A2].var[*,0:(n_e-1)]  = reform(devar[pkt[16:bmax]],16,n_e)
                
                    i_A2++
                  endif else print, "Bad A2 packet: ",n,format='(a,Z)'
@@ -692,7 +719,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  bad_str.met = clock + subsecs
-                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met) + tshift
 
                  badpkt = [temporary(badpkt), bad_str]
 
@@ -706,7 +733,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  a3[i_a3].met    = clock + subsecs
-                 a3[i_A3].time   = mvn_spc_met_to_unixtime(a3[i_a3].met)
+                 a3[i_A3].time   = mvn_spc_met_to_unixtime(a3[i_a3].met) + tshift
 
                  a3[i_A3].cflg   = mvn_swe_getbits(pkt[12],7)            ; first bit
                  a3[i_A3].modeID = mvn_swe_getbits(pkt[12],[6,0])        ; last 7 bits
@@ -722,8 +749,8 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  bmax = 16*n_e + 15
 
 	         if ((bmax+1) eq n_elements(pkt)) then begin
-                   counters = decom[pkt[16:bmax]/16B, pkt[16:bmax] mod 16B]
-                   a3[i_A3].data[*,0:(n_e-1)] = reform(counters,16,n_e)
+                   a3[i_A3].data[*,0:(n_e-1)] = reform(decom[pkt[16:bmax]],16,n_e)
+                   a3[i_A3].var[*,0:(n_e-1)]  = reform(devar[pkt[16:bmax]],16,n_e)
 
                    i_A3++
                  endif else print, "Bad A3 packet: ",n,format='(a,Z)'
@@ -749,7 +776,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  bad_str.met = clock + subsecs
-                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met) + tshift
 
                  badpkt = [temporary(badpkt), bad_str]
 
@@ -763,7 +790,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  a4[i_a4].met    = clock + subsecs
-                 a4[i_A4].time   = mvn_spc_met_to_unixtime(a4[i_a4].met)
+                 a4[i_A4].time   = mvn_spc_met_to_unixtime(a4[i_a4].met) + tshift
 
                  a4[i_A4].cflg   = mvn_swe_getbits(pkt[12],7)           ; first bit
                  a4[i_A4].modeID = mvn_swe_getbits(pkt[12],[6,0])       ; last 7 bits
@@ -774,8 +801,8 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                
                  a4[i_A4].lut    = mvn_swe_getbits(pkt[14],[2,0])       ; last 3 bits
                               
-                 counters = decom[pkt[16:1039]/16B, pkt[16:1039] mod 16B]
-                 a4[i_A4].data = reform(counters,64,16)
+                 a4[i_A4].data = reform(decom[pkt[16:1039]],64,16)
+                 a4[i_A4].var  = reform(devar[pkt[16:1039]],64,16)
 
                  i_A4++
                endelse
@@ -800,7 +827,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  bad_str.met = clock + subsecs
-                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met) + tshift
 
                  badpkt = [temporary(badpkt), bad_str]
 
@@ -814,7 +841,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  a5[i_a5].met    = clock + subsecs
-                 a5[i_A5].time   = mvn_spc_met_to_unixtime(a5[i_a5].met)
+                 a5[i_A5].time   = mvn_spc_met_to_unixtime(a5[i_a5].met) + tshift
 
                  a5[i_A5].cflg   = mvn_swe_getbits(pkt[12],7)           ; first bit
                  a5[i_A5].modeID = mvn_swe_getbits(pkt[12],[6,0])       ; last 7 bits
@@ -825,8 +852,8 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                
                  a5[i_A5].lut    = mvn_swe_getbits(pkt[14],[2,0])       ; last 3 bits
                               
-                 counters = decom[pkt[16:1039]/16B, pkt[16:1039] mod 16B]
-                 a5[i_A5].data = reform(counters,64,16)
+                 a5[i_A5].data = reform(decom[pkt[16:1039]],64,16)
+                 a5[i_A5].var  = reform(devar[pkt[16:1039]],64,16)
 
                  i_A5++
                endelse
@@ -851,7 +878,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  bad_str.met = clock + subsecs
-                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+                 bad_str.time = mvn_spc_met_to_unixtime(bad_str.met) + tshift
 
                  badpkt = [temporary(badpkt), bad_str]
 
@@ -865,7 +892,7 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
                  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
                  a6[i_a6].met  = clock + subsecs
-                 a6[i_A6].time = mvn_spc_met_to_unixtime(a6[i_a6].met)
+                 a6[i_A6].time = mvn_spc_met_to_unixtime(a6[i_a6].met) + tshift
 
                  a6[i_A6].cflg = mvn_swe_getbits(pkt[12],7)        ; first bit
 
@@ -1106,6 +1133,14 @@ pro mvn_swe_load, filename, cblock=cblock, badpkt=badpkt, maxbytes=maxbytes, res
 ; Define the 3D, PAD, and SPEC data structures
 
   mvn_swe_struct
+
+; Extract energy spectra
+
+  mvn_swe_makespec
+
+; Create a summary plot
+
+  if keyword_set(sumplot) then mvn_swe_sumplot
 
   return
 

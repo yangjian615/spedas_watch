@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:43:26 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15669 $
+; $LastChangedDate: 2014-09-13 13:33:02 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15775 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -55,7 +55,8 @@ pro mvn_swe_struct
                    magf            : fltarr(3)               , $  ; magnetic field
                    v_flow          : fltarr(3)               , $  ; bulk flow velocity
                    bkg             : 0.                      , $  ; background
-                   data            : fltarr(n_e,n_a)            }
+                   data            : fltarr(n_e,n_a)         , $  ; data
+                   var             : fltarr(n_e,n_a)            } ; variance
 
 ; Define PAD data structure
 ;  The magnetic field appears twice.  Baz and Bel are the magnetic field angles in SWEA coordinates
@@ -101,7 +102,8 @@ pro mvn_swe_struct
                     magf            : fltarr(3)               , $  ; magnetic field
                     v_flow          : fltarr(3)               , $  ; bulk flow velocity
                     bkg             : 0.                      , $  ; background
-                    data            : fltarr(n_e,n_az)           }
+                    data            : fltarr(n_e,n_az)        , $  ; data
+                    var             : fltarr(n_e,n_az)           } ; variance
 
 ; Define Energy Spectrum data structure
 
@@ -127,7 +129,8 @@ pro mvn_swe_struct
                      sc_pot          : 0.                      , $  ; spacecract potential
                      magf            : fltarr(3)               , $  ; magnetic field
                      bkg             : 0.                      , $  ; background
-                     data            : fltarr(n_e)                }
+                     data            : fltarr(n_e)             , $  ; data
+                     var             : fltarr(n_e)                } ; variance
 
 ; Define Magnetic Field data structure
 

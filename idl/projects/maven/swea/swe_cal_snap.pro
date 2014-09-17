@@ -26,8 +26,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-05-13 20:46:17 -0700 (Tue, 13 May 2014) $
-; $LastChangedRevision: 15125 $
+; $LastChangedDate: 2014-09-15 11:33:00 -0700 (Mon, 15 Sep 2014) $
+; $LastChangedRevision: 15792 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_cal_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -43,7 +43,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   
   if keyword_set(spec) then begin
-    if (data_type(mvn_swe_engy) ne 8) then mvn_swe_getspec
+    if (data_type(mvn_swe_engy) ne 8) then mvn_swe_makespec
   endif
 
 ; Put up snapshot window
@@ -52,7 +52,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
 
   if (data_type(Dopt) ne 8) then swe_snap_layout, 0
 
-  window, /free, xsize=1440, ysize=900, xpos=Dopt.xpos, ypos=Dopt.ypos
+  window, /free, xsize=1440, ysize=850, xpos=240, ypos=-860
   Cwin = !d.window
 
   limits = {no_interp:1, xrange:[3,5000], xstyle:1, yrange:[0,95], ystyle:1, $
@@ -92,6 +92,8 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
         z3 = dat.eff
         z4 = dat.dtc
         
+        dz2 = max(abs(z2 - z2[0]))
+        
         limits.xrange = [min(x),max(x)]
         limits.yrange = [min(y),max(y)]
 
@@ -103,7 +105,11 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
         limits.title = 'Geometric Factor'
         limits.zlog = 0
         limits.ztitle = ''
-        specplot,x,y,z2,limits=limits
+        if (dz2 lt 1e-5) then begin
+          plot_oi,x,z2[*,0], xrange=limits.xrange, xstyle=limits.xstyle, $
+            xmargin=limits.xmargin, xtitle=limits.xtitle, ytitle='Geometric Factor', $
+            charsize=limits.charsize, title=limits.title
+        endif else specplot,x,y,z2,limits=limits
         limits.title = 'MCP Efficiency'
         specplot,x,y,z3,limits=limits
         limits.title = 'Deadtime Correction'
@@ -124,6 +130,8 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
         z3 = dat.eff
         z4 = dat.dtc
         
+        dz2 = max(abs(z2 - z2[0]))
+        
         limits.xrange = [min(x),max(x)]
         limits.yrange = [min(y),max(y)]
 
@@ -135,7 +143,11 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
         limits.title = 'Geometric Factor'
         limits.zlog = 0
         limits.ztitle = ''
-        specplot,x,y,z2,limits=limits
+        if (dz2 lt 1e-5) then begin
+          plot_oi,x,z2[*,0], xrange=limits.xrange, xstyle=limits.xstyle, $
+            xmargin=limits.xmargin, xtitle=limits.xtitle, ytitle='Geometric Factor', $
+            charsize=limits.charsize, title=limits.title
+        endif else specplot,x,y,z2,limits=limits
         limits.title = 'MCP Efficiency'
         specplot,x,y,z3,limits=limits
         limits.title = 'Deadtime Correction'

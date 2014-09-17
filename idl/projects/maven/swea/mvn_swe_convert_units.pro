@@ -8,16 +8,16 @@
 ;CALLING SEQUENCE: 
 ;	mvn_swe_convert_units, data, units, SCALE=SCALE
 ;INPUTS: 
-;	Data: A 3d data structure for SWEA
-;	Units: Units to conver the structure to
+;	Data: A 3D, PAD, or SPEC data structure for SWEA
+;	Units: Units to convert the structure to
 ;KEYWORDS:
 ;	SCALE: Returns an array of conversion factors used
 ;OUTPUTS:
 ;	Returns the same data structure in the new units
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:38:48 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15661 $
+; $LastChangedDate: 2014-09-13 13:27:09 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15766 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_convert_units.pro $
 ;
 ;-
@@ -76,6 +76,7 @@ pro mvn_swe_convert_units, data, units, scale=scale
 
   data.units_name = units
   data.data = data.data * scale
+  data.var = data.var * scale
 
   return
 

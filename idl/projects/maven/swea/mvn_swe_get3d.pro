@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:40:24 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15663 $
+; $LastChangedDate: 2014-09-13 13:27:46 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15767 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -197,20 +197,33 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
 ; first two dimensions of pkt.data.)
 
     rawcnts = transpose(pkt.data)     ; [64,32,16] energies X 80 angles
+    rawvar = transpose(pkt.var)       ; [64,32,16] energies X 80 angles
+
     counts = fltarr(64,96)            ; 64 energies X 96 angles
+    var = fltarr(64,96)               ; 64 energies X 96 angles
 
     for i=0,15 do begin                       ; duplicate azimuth bins at high elev.
       k = i/2                                 ; (stored first in raw data array)
       counts[*,i] = rawcnts[*,k]
       counts[*,(i+80)] = rawcnts[*,(k+8)]
+      var[*,i] = rawvar[*,k]
+      var[*,(i+80)] = rawvar[*,(k+8)]
     endfor
     counts[*,16:79] = rawcnts[*,16:79]        ; copy mid-elevations straight over
+    var[*,16:79] = rawvar[*,16:79]
 
     rawcnts = counts                          ; get ready to duplicate energy bins
+    rawvar = var
 
     case g of
-      1 : for i=0,63 do counts[i,*] = rawcnts[i/2,*]
-      2 : for i=0,63 do counts[i,*] = rawcnts[i/4,*]
+      1 : for i=0,63 do begin
+            counts[i,*] = rawcnts[i/2,*]
+            var[i,*] = rawvar[i/2,*]
+          endfor
+      2 : for i=0,63 do begin
+            counts[i,*] = rawcnts[i/4,*]
+            var[i,*] = rawvar[i/4,*]
+          endfor
       else : ; do nothing
     endcase
 
@@ -244,6 +257,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
 ; And last, but not least, the data
 
     ddd[n].data = counts                       ; raw counts
+    ddd[n].var = var                           ; variance
 
 ; Validate the data
 
@@ -278,6 +292,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
     dddsum.bkg = mean(ddd.bkg)
     
     dddsum.data = total(ddd.data/ddd.dtc,3)  ; corrected counts
+    dddsum.var = total(ddd.var/ddd.dtc,3)    ; variance
     dddsum.dtc = 1.         ; summing corrected counts is not reversible
     
     ddd = dddsum    

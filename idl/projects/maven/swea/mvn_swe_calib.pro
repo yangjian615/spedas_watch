@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-06-11 12:26:13 -0700 (Wed, 11 Jun 2014) $
-; $LastChangedRevision: 15348 $
+; $LastChangedDate: 2014-09-13 13:25:55 -0700 (Sat, 13 Sep 2014) $
+; $LastChangedRevision: 15764 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -230,13 +230,26 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
   swe_padlut = lut
 
 ; Geometric Factor
-;   The nominal geometric factor is 0.009 (IRAP calibration).  When using V0,
+;   Simulations give a geometric factor of 0.032 (ignoring grids, posts, MCP 
+;   efficiency, scattering, and fringing fields).
+;
+;      posts          : 0.84  (7 deg per post * 8 posts)
+;      entrance grid  : 0.70  (for both grids combined)
+;      exit grid      : 0.90
+;      MCP Efficiency : 0.75  (nominal, energy dependent)
+;    -------------------------
+;      product        : 0.40
+;
+;   Total estimated geometric factor from simulations: 0.032 * 0.4 = 0.013
+;
+;   The measured geometric factor is 0.009 (IRAP calibration).  When using V0,
 ;   deceleration of the incoming electrons effectively reduces the geometric
 ;   factor in an energy dependent manner (see mvn_swe_sweep for details).
 ;   This geometric factor includes the absolute MCP efficiency, since it is 
 ;   based on analyzer measurements in a calibrated beam.
 
   geom_factor = 0.009/16.            ; geometric factor per anode (cm2-ster-eV/eV)
+  geom_factor = geom_factor/2.9      ; scale factor from cross calibration
 
   swe_gf = replicate(!values.f_nan,64,3)
 

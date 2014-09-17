@@ -9,11 +9,12 @@
 ;CALLING SEQUENCE:
 ;	MVN_SWIA_LOAD_L2_DATA, /TPLOT, /LOADALL, /EFLUX, TRANGE = TRANGE
 ;INPUTS:
-;	Files: An array of filenames containing PF Level 2 data, by default just the dates in 'YYYYMMDD' format
+;	Files: An array of filenames containing PF Level 2 data, by default just the dates in 'YYYYMMDD' format 
+;	      (not needed if using file_retrieve functionality)
 ;KEYWORDS:
-;	PATH: Directory path for level 2 files (default '/disks/data/maven/data/sci/swi/l2/')
-;	VERSION: Software version number to put in file (default '000')
-;	REVISION: Data version number to put in file (default '000')
+;	PATH: Directory path for SWIA level 2 files (default 'maven/data/sci/swi/l2/')
+;	VERSION: Software version number to put in file (defaults to most recent)
+;	REVISION: Data version number to put in file (defaults to most recent)
 ;	TPLOT: Produce Tplot variables
 ;	QLEVEL: Set this keyword to not plot moments or spectra with a low quality flag
 ;		or decommutation quality flag.  Default cutoff = 0.5
@@ -22,12 +23,13 @@
 ;	LOADFINE: Load fine resolution 3d data (survey + archive)
 ;	LOADCOARSE: Load coarse resolution 3d data (survey + archive)
 ;	LOADALL: Load all data for a given day or days
-;	TRANGE: Load data for all files within given range (one day granularity, supercedes file list)
+;	TRANGE: Load data for all files within given range (one day granularity, 
+;	        supercedes file list, if not set then 'timerange' will be called)
 ;	EFLUX: Load eflux data instead of counts for 3ds and spectra
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-08-29 11:31:03 -0700 (Fri, 29 Aug 2014) $
-; $LastChangedRevision: 15724 $
+; $LastChangedDate: 2014-09-15 14:20:18 -0700 (Mon, 15 Sep 2014) $
+; $LastChangedRevision: 15796 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l2_data.pro $
 ;
 ;-
@@ -36,7 +38,6 @@ pro mvn_swia_load_l2_data, files, path = path, version = version, revision = rev
 
 ;FIXME: Figure out valid time ranges for /novary stuff in info_str
 ;FIXME: Might want to make sure everything is sorted in time after loading
-;FIXME: Automatically find most recent version/revision?
 
 compile_opt idl2
 
@@ -51,22 +52,23 @@ if keyword_set(loadall) then begin
 endif
 
 
-if not keyword_set(path) then path = '/disks/data/maven/data/sci/swi/l2/'
-if not keyword_set(version) then version = '000'
-if not keyword_set(revision) then revision = '000'
+if not keyword_set(path) then path = 'maven/data/sci/swi/l2/'
+if not keyword_set(version) then version = '***'
+if not keyword_set(revision) then revision = '***'
 if keyword_set(eflux) then units = 'eflux' else units = 'counts'
 
 if not keyword_set(qlevel) then qlevel = 0.5
 
-if keyword_set(trange) then begin
-	trange = time_double(trange)
+nfiles = n_elements(files)
+
+if nfiles eq 0 then begin
+	trange = timerange(trange)
 	days = (trange[1]-trange[0])/(24.*3600)
 	t0 = time_double(strmid(time_string(trange[0]),0,10))
 	dates = time_string(t0 + indgen(days)*24.d*3600, format = 6)
 	files = strmid(dates, 0, 8)
+	nfiles = n_elements(files)
 endif
-
-nfiles = n_elements(files)
 
 
 mvn_swia_make_info_str,info_str
@@ -133,17 +135,21 @@ for i = 0,nfiles-1 do begin
 
 	yyyy = strmid(files[i],0,4)
 	mm = strmid(files[i],4,2)
-	dd = strmid(files[i],6,2)
 
-	fine_svy_file = path+yyyy+'/'+mm+'/mvn_swi_l2_finesvy3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf'
-	fine_arc_file = path+yyyy+'/'+mm+'/mvn_swi_l2_finearc3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf'
-	coarse_svy_file = path+yyyy+'/'+mm+'/mvn_swi_l2_coarsesvy3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf'
-	coarse_arc_file = path+yyyy+'/'+mm+'/mvn_swi_l2_coarsearc3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf'
-	spec_file = path+yyyy+'/'+mm+'/mvn_swi_l2_onboardsvyspec_'+files[i]+'_v'+version+'_r'+revision+'.cdf'
-	mom_file = path+yyyy+'/'+mm+'/mvn_swi_l2_onboardsvymom_'+files[i]+'_v'+version+'_r'+revision+'.cdf'
+	if keyword_set(loadfine) then begin
+		fine_svy_file = mvn_pfp_file_retrieve(path+yyyy+'/'+'/mvn_swi_l2_finesvy3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
+		fine_arc_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_finearc3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
+	endif
 
-	result = file_search(fine_svy_file)
-	if keyword_set(loadfine) and result ne '' then begin
+	if keyword_set(loadcoarse) then begin
+		coarse_svy_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_coarsesvy3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
+		coarse_arc_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_coarsearc3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
+	endif
+
+	if keyword_set(loadspec) then spec_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_onboardsvyspec_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
+	if keyword_set(loadmom) then mom_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_onboardsvymom_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
+
+	if keyword_set(loadfine) and n_elements(fine_svy_file) gt 0 then begin
 		print,'Fine Survey'
 		id = cdf_open(fine_svy_file,/readonly)
 		cdf_varget,id,'Num_Dists',nrec,/zvariable
@@ -205,8 +211,7 @@ for i = 0,nfiles-1 do begin
 	endif else print,'No Fine Survey'
 
 
-	result = file_search(fine_arc_file)
-	if keyword_set(loadfine) and result ne '' then begin
+	if keyword_set(loadfine) and n_elements(fine_arc_file) gt 0 then begin
 		print,'Fine Archive'
 		id = cdf_open(fine_arc_file,/readonly)
 		cdf_varget,id,'Num_Dists',nrec,/zvariable
@@ -268,8 +273,7 @@ for i = 0,nfiles-1 do begin
 	endif else print,'No Fine Archive'
 
 
-	result = file_search(coarse_svy_file)
-	if keyword_set(loadcoarse) and result ne '' then begin
+	if keyword_set(loadcoarse) and n_elements(coarse_svy_file) gt 0 then begin
 		print,'Coarse Survey'
 		id = cdf_open(coarse_svy_file,/readonly)
 		cdf_varget,id,'Num_Dists',nrec,/zvariable
@@ -328,8 +332,7 @@ for i = 0,nfiles-1 do begin
 	endif else print,'No Coarse Survey'
 
 
-	result = file_search(coarse_arc_file)
-	if keyword_set(loadcoarse) and result ne '' then begin
+	if keyword_set(loadcoarse) and n_elements(coarse_arc_file) gt 0 then begin
 		print,'Coarse Archive'
 		id = cdf_open(coarse_arc_file,/readonly)
 		cdf_varget,id,'Num_Dists',nrec,/zvariable
@@ -388,8 +391,7 @@ for i = 0,nfiles-1 do begin
 	endif else print,'No Coarse Archive'
 
 
-	result = file_search(spec_file)
-	if keyword_set(loadspec) and result ne '' then begin
+	if keyword_set(loadspec) and n_elements(spec_file) gt 0 then begin
 		print,'Spectra'
 		id = cdf_open(spec_file,/readonly)
 		cdf_varget,id,'Num_Spec',nrec,/zvariable
@@ -434,8 +436,7 @@ for i = 0,nfiles-1 do begin
 	endif else print,'No Spectra'
 
 
-	result = file_search(mom_file)
-	if keyword_set(loadmom) and result ne '' then begin
+	if keyword_set(loadmom) and n_elements(mom_file) gt 0 then begin
 		print,'Moments'
 		id = cdf_open(mom_file,/readonly)
 		cdf_varget,id,'Num_Mom',nrec,/zvariable
