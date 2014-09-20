@@ -20,7 +20,7 @@
 ;	POTENTIAL: Returns a time-ordered array of spacecraft potentials
 ;
 ;   ERANGE:    Energy range over which to search for the potential.
-;              Default = [4.,15.]
+;              Default = [3.,15.]
 ;
 ;   PSMO:      Smoothing parameter for the derived potentials.
 ;
@@ -30,6 +30,17 @@
 ;   FUDGE:     Multiply the derived potential by this fudge factor.
 ;              (for calibration against LPW).  Default = 1.
 ;
+;   DDD:       Use 3D data to calculate potential.  Allows bin masking,
+;              but lower cadence and typically lower energy resolution.
+;
+;   ABINS:     When using 3D spectra, specify which anode bins to 
+;              include in the analysis: 0 = no, 1 = yes.
+;              Default = replicate(1,16)
+;
+;   DBINS:     When using 3D spectra, specify which deflection bins to
+;              include in the analysis: 0 = no, 1 = yes.
+;              Default = replicate(1,6)
+;
 ;   PANS:      Named varible to hold the tplot panels created.
 ;
 ;   OVERLAY:   Overlay the result on the energy spectrogram.
@@ -38,8 +49,8 @@
 ;   none - result is returned via POTENTIAL keyword or as TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-13 13:32:43 -0700 (Sat, 13 Sep 2014) $
-; $LastChangedRevision: 15774 $
+; $LastChangedDate: 2014-09-16 09:33:00 -0700 (Tue, 16 Sep 2014) $
+; $LastChangedRevision: 15803 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -57,7 +68,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, esmo=esmo, fudge=fu
     return
   endif
   
-  if not keyword_set(erange) then erange = [4.,15.]
+  if not keyword_set(erange) then erange = [3.,15.]
   erange = float(erange[sort(erange)])
   if not keyword_set(psmo) then psmo = 1
   if not keyword_set(esmo) then esmo = 1

@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-13 13:27:46 -0700 (Sat, 13 Sep 2014) $
-; $LastChangedRevision: 15767 $
+; $LastChangedDate: 2014-09-16 16:57:59 -0700 (Tue, 16 Sep 2014) $
+; $LastChangedRevision: 15810 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -163,9 +163,16 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
 ; Relative MCP efficiency.  Depends on energy and azimuth (anode).
 ;   Energy term is MCP efficiency (from literature); azimuth term
 ;   is MCP gain variations and geometric blockage from ribs.
+;   Average the azimuth sensitivity in adjacent anode bins at the
+;   maximum upward and downward deflections.
 
     eff_arr = swe_mcp_eff[*,*,g]
     for i=0,95 do ddd[n].eff[*,i] = eff_arr[*,(i mod 16)]
+    
+    i = 2*indgen(8)
+    i = [i,i+80]
+    ddd[n].eff[*,i] = (ddd[n].eff[*,i] + ddd[n].eff[*,i+1])/2.
+    ddd[n].eff[*,i+1] = ddd[n].eff[*,i]
 
 ; Fill in the elevation array (units = deg)
 

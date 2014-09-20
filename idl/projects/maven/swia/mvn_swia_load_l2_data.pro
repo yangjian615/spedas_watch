@@ -26,15 +26,16 @@
 ;	TRANGE: Load data for all files within given range (one day granularity, 
 ;	        supercedes file list, if not set then 'timerange' will be called)
 ;	EFLUX: Load eflux data instead of counts for 3ds and spectra
+;	NO_SERVER: If set, will not go looking for files remotely
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-09-15 14:20:18 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15796 $
+; $LastChangedDate: 2014-09-18 05:06:01 -0700 (Thu, 18 Sep 2014) $
+; $LastChangedRevision: 15818 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l2_data.pro $
 ;
 ;-
 
-pro mvn_swia_load_l2_data, files, path = path, version = version, revision = revision, tplot = tplot, qlevel = qlevel, loadmom = loadmom, loadspec = loadspec, loadfine = loadfine, loadcoarse = loadcoarse, loadall = loadall, trange = trange, eflux = eflux
+pro mvn_swia_load_l2_data, files, path = path, version = version, revision = revision, tplot = tplot, qlevel = qlevel, loadmom = loadmom, loadspec = loadspec, loadfine = loadfine, loadcoarse = loadcoarse, loadall = loadall, trange = trange, eflux = eflux, no_server = no_server
 
 ;FIXME: Figure out valid time ranges for /novary stuff in info_str
 ;FIXME: Might want to make sure everything is sorted in time after loading
@@ -53,8 +54,8 @@ endif
 
 
 if not keyword_set(path) then path = 'maven/data/sci/swi/l2/'
-if not keyword_set(version) then version = '***'
-if not keyword_set(revision) then revision = '***'
+if not keyword_set(version) then version = '**'
+if not keyword_set(revision) then revision = '**'
 if keyword_set(eflux) then units = 'eflux' else units = 'counts'
 
 if not keyword_set(qlevel) then qlevel = 0.5
@@ -128,6 +129,13 @@ swifa = 0
 swim = 0
 swis = 0
 
+fine_svy_file = ''
+fine_arc_file = ''
+coarse_svy_file = ''
+coarse_arc_file = ''
+spec_file = ''
+mom_file = ''
+
 for i = 0,nfiles-1 do begin
 
 
@@ -137,22 +145,22 @@ for i = 0,nfiles-1 do begin
 	mm = strmid(files[i],4,2)
 
 	if keyword_set(loadfine) then begin
-		fine_svy_file = mvn_pfp_file_retrieve(path+yyyy+'/'+'/mvn_swi_l2_finesvy3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
-		fine_arc_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_finearc3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
+		fine_svy_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_finesvy3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf',no_server=no_server,/valid_only)
+		fine_arc_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_finearc3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf',no_server=no_server,/valid_only)
 	endif
 
 	if keyword_set(loadcoarse) then begin
-		coarse_svy_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_coarsesvy3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
-		coarse_arc_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_coarsearc3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
+		coarse_svy_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_coarsesvy3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf',no_server=no_server,/valid_only)
+		coarse_arc_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_coarsearc3d_'+files[i]+'_v'+version+'_r'+revision+'.cdf',no_server=no_server,/valid_only)
 	endif
 
-	if keyword_set(loadspec) then spec_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_onboardsvyspec_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
-	if keyword_set(loadmom) then mom_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_onboardsvymom_'+files[i]+'_v'+version+'_r'+revision+'.cdf')
+	if keyword_set(loadspec) then spec_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_onboardsvyspec_'+files[i]+'_v'+version+'_r'+revision+'.cdf',no_server=no_server,/valid_only)
+	if keyword_set(loadmom) then mom_file = mvn_pfp_file_retrieve(path+yyyy+'/'+mm+'/mvn_swi_l2_onboardsvymom_'+files[i]+'_v'+version+'_r'+revision+'.cdf',no_server=no_server,/valid_only)
 
-	if keyword_set(loadfine) and n_elements(fine_svy_file) gt 0 then begin
+	if keyword_set(loadfine) and fine_svy_file ne '' then begin
 		print,'Fine Survey'
 		id = cdf_open(fine_svy_file,/readonly)
-		cdf_varget,id,'Num_Dists',nrec,/zvariable
+		cdf_varget,id,'num_dists',nrec,/zvariable
 		
 		if i eq 0 or n_elements(swifs) lt 2 then begin
 			offset = 0L
@@ -162,59 +170,59 @@ for i = 0,nfiles-1 do begin
 			swifs = [swifs,replicate(swif_str,nrec)]
 		endelse
 
-		cdf_varget,id,'Time_Unix',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_unix',output,rec_count = nrec,/zvariable
 		swifs[offset:offset+nrec-1].time_unix = reform(output)
-		cdf_varget,id,'Time_MET',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_met',output,rec_count = nrec,/zvariable
 		swifs[offset:offset+nrec-1].time_met = reform(output)
-		cdf_varget,id,'Atten_State',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'atten_state',output,rec_count = nrec,/zvariable
 		swifs[offset:offset+nrec-1].atten_state = reform(output)
-		cdf_varget,id,'Grouping',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'grouping',output,rec_count = nrec,/zvariable
 		swifs[offset:offset+nrec-1].grouping = reform(output)
-		cdf_varget,id,'Estep_First',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'estep_first',output,rec_count = nrec,/zvariable
 		swifs[offset:offset+nrec-1].estep_first = reform(output)
-		cdf_varget,id,'Dstep_First',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'dstep_first',output,rec_count = nrec,/zvariable
 		swifs[offset:offset+nrec-1].dstep_first = reform(output)
 
 		if keyword_set(eflux) then begin
-			cdf_varget,id,'Diff_En_Fluxes',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'diff_en_fluxes',output,rec_count = nrec,/zvariable
 		endif else begin
-			cdf_varget,id,'Counts',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'counts',output,rec_count = nrec,/zvariable
 		endelse
 		swifs[offset:offset+nrec-1].data = output
 
 		swifs[offset:offset+nrec-1].info_index = i
 
-		cdf_varget,id,'Geom_Factor',output,/zvariable
+		cdf_varget,id,'geom_factor',output,/zvariable
 		info_str[i].geom = output
-		cdf_varget,id,'De_Over_E_Fine',output,/zvariable
+		cdf_varget,id,'de_over_e_fine',output,/zvariable
 		info_str[i].deovere_fine = output
-		cdf_varget,id,'Accum_Time_Fine',output,/zvariable
+		cdf_varget,id,'accum_time_fine',output,/zvariable
 		info_str[i].dt_int = output
-		cdf_varget,id,'Energy_Fine',output,/zvariable
+		cdf_varget,id,'energy_fine',output,/zvariable
 		info_str[i].energy_fine = output
-		cdf_varget,id,'Theta_Fine',output,/zvariable
+		cdf_varget,id,'theta_fine',output,/zvariable
 		info_str[i].theta_fine = output
-		cdf_varget,id,'Theta_Atten_Fine',output,/zvariable
+		cdf_varget,id,'theta_atten_fine',output,/zvariable
 		info_str[i].theta_fine_atten = output
-		cdf_varget,id,'G_Theta_Fine',output,/zvariable
+		cdf_varget,id,'g_theta_fine',output,/zvariable
 		info_str[i].g_th_fine = output
-		cdf_varget,id,'G_Theta_Atten_Fine',output,/zvariable
+		cdf_varget,id,'g_theta_atten_fine',output,/zvariable
 		info_str[i].g_th_fine_atten = output
-		cdf_varget,id,'Phi_Fine',output,/zvariable
+		cdf_varget,id,'phi_fine',output,/zvariable
 		info_str[i].phi_fine = output
-		cdf_varget,id,'G_Phi_Fine',output,/zvariable
+		cdf_varget,id,'g_phi_fine',output,/zvariable
 		info_str[i].geom_fine = output
-		cdf_varget,id,'G_Phi_Atten_Fine',output,/zvariable
+		cdf_varget,id,'g_phi_atten_fine',output,/zvariable
 		info_str[i].geom_fine_atten = output
 
 		cdf_close,id
 	endif else print,'No Fine Survey'
 
 
-	if keyword_set(loadfine) and n_elements(fine_arc_file) gt 0 then begin
+	if keyword_set(loadfine) and fine_arc_file ne '' then begin
 		print,'Fine Archive'
 		id = cdf_open(fine_arc_file,/readonly)
-		cdf_varget,id,'Num_Dists',nrec,/zvariable
+		cdf_varget,id,'num_dists',nrec,/zvariable
 		
 		if i eq 0 or n_elements(swifa) lt 2 then begin
 			offset = 0L
@@ -224,59 +232,59 @@ for i = 0,nfiles-1 do begin
 			swifa = [swifa,replicate(swif_str,nrec)]
 		endelse
 
-		cdf_varget,id,'Time_Unix',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_unix',output,rec_count = nrec,/zvariable
 		swifa[offset:offset+nrec-1].time_unix = reform(output)
-		cdf_varget,id,'Time_MET',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_met',output,rec_count = nrec,/zvariable
 		swifa[offset:offset+nrec-1].time_met = reform(output)
-		cdf_varget,id,'Atten_State',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'atten_state',output,rec_count = nrec,/zvariable
 		swifa[offset:offset+nrec-1].atten_state = reform(output)
-		cdf_varget,id,'Grouping',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'grouping',output,rec_count = nrec,/zvariable
 		swifa[offset:offset+nrec-1].grouping = reform(output)
-		cdf_varget,id,'Estep_First',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'estep_first',output,rec_count = nrec,/zvariable
 		swifa[offset:offset+nrec-1].estep_first = reform(output)
-		cdf_varget,id,'Dstep_First',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'dstep_first',output,rec_count = nrec,/zvariable
 		swifa[offset:offset+nrec-1].dstep_first = reform(output)
 
 		if keyword_set(eflux) then begin
-			cdf_varget,id,'Diff_En_Fluxes',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'diff_en_fluxes',output,rec_count = nrec,/zvariable
 		endif else begin
-			cdf_varget,id,'Counts',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'counts',output,rec_count = nrec,/zvariable
 		endelse
 		swifa[offset:offset+nrec-1].data = output
 
 		swifa[offset:offset+nrec-1].info_index = i
 
-		cdf_varget,id,'Geom_Factor',output,/zvariable
+		cdf_varget,id,'geom_factor',output,/zvariable
 		info_str[i].geom = output
-		cdf_varget,id,'De_Over_E_Fine',output,/zvariable
+		cdf_varget,id,'de_over_e_fine',output,/zvariable
 		info_str[i].deovere_fine = output
-		cdf_varget,id,'Accum_Time_Fine',output,/zvariable
+		cdf_varget,id,'accum_time_fine',output,/zvariable
 		info_str[i].dt_int = output
-		cdf_varget,id,'Energy_Fine',output,/zvariable
+		cdf_varget,id,'energy_fine',output,/zvariable
 		info_str[i].energy_fine = output
-		cdf_varget,id,'Theta_Fine',output,/zvariable
+		cdf_varget,id,'theta_fine',output,/zvariable
 		info_str[i].theta_fine = output
-		cdf_varget,id,'Theta_Atten_Fine',output,/zvariable
+		cdf_varget,id,'theta_atten_fine',output,/zvariable
 		info_str[i].theta_fine_atten = output
-		cdf_varget,id,'G_Theta_Fine',output,/zvariable
+		cdf_varget,id,'g_theta_fine',output,/zvariable
 		info_str[i].g_th_fine = output
-		cdf_varget,id,'G_Theta_Atten_Fine',output,/zvariable
+		cdf_varget,id,'g_theta_atten_fine',output,/zvariable
 		info_str[i].g_th_fine_atten = output
-		cdf_varget,id,'Phi_Fine',output,/zvariable
+		cdf_varget,id,'phi_fine',output,/zvariable
 		info_str[i].phi_fine = output
-		cdf_varget,id,'G_Phi_Fine',output,/zvariable
+		cdf_varget,id,'g_phi_fine',output,/zvariable
 		info_str[i].geom_fine = output
-		cdf_varget,id,'G_Phi_Atten_Fine',output,/zvariable
+		cdf_varget,id,'g_phi_atten_fine',output,/zvariable
 		info_str[i].geom_fine_atten = output
 
 		cdf_close,id
 	endif else print,'No Fine Archive'
 
 
-	if keyword_set(loadcoarse) and n_elements(coarse_svy_file) gt 0 then begin
+	if keyword_set(loadcoarse) and coarse_svy_file ne '' then begin
 		print,'Coarse Survey'
 		id = cdf_open(coarse_svy_file,/readonly)
-		cdf_varget,id,'Num_Dists',nrec,/zvariable
+		cdf_varget,id,'num_dists',nrec,/zvariable
 		
 		if i eq 0 or n_elements(swics) lt 2 then begin
 			offset = 0L
@@ -286,56 +294,56 @@ for i = 0,nfiles-1 do begin
 			swics = [swics,replicate(swic_str,nrec)]
 		endelse
 
-		cdf_varget,id,'Time_Unix',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_unix',output,rec_count = nrec,/zvariable
 		swics[offset:offset+nrec-1].time_unix = reform(output)
-		cdf_varget,id,'Time_MET',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_met',output,rec_count = nrec,/zvariable
 		swics[offset:offset+nrec-1].time_met = reform(output)
-		cdf_varget,id,'Atten_State',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'atten_state',output,rec_count = nrec,/zvariable
 		swics[offset:offset+nrec-1].atten_state = reform(output)
-		cdf_varget,id,'Grouping',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'grouping',output,rec_count = nrec,/zvariable
 		swics[offset:offset+nrec-1].grouping = reform(output)
-		cdf_varget,id,'Num_Accum',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'num_accum',output,rec_count = nrec,/zvariable
 		swics[offset:offset+nrec-1].num_accum = reform(output)
 		if keyword_set(eflux) then begin
-			cdf_varget,id,'Diff_En_Fluxes',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'diff_en_fluxes',output,rec_count = nrec,/zvariable
 		endif else begin
-			cdf_varget,id,'Counts',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'counts',output,rec_count = nrec,/zvariable
 		endelse
 		swics[offset:offset+nrec-1].data = output
 
 		swics[offset:offset+nrec-1].info_index = i
 
-		cdf_varget,id,'Geom_Factor',output,/zvariable
+		cdf_varget,id,'geom_factor',output,/zvariable
 		info_str[i].geom = output
-		cdf_varget,id,'De_Over_E_Coarse',output,/zvariable
+		cdf_varget,id,'de_over_e_coarse',output,/zvariable
 		info_str[i].deovere_coarse = output
-		cdf_varget,id,'Accum_Time_Coarse',output,/zvariable
+		cdf_varget,id,'accum_time_coarse',output,/zvariable
 		info_str[i].dt_int = output/12
-		cdf_varget,id,'Energy_Coarse',output,/zvariable
+		cdf_varget,id,'energy_coarse',output,/zvariable
 		info_str[i].energy_coarse = output
-		cdf_varget,id,'Theta_Coarse',output,/zvariable
+		cdf_varget,id,'theta_coarse',output,/zvariable
 		info_str[i].theta_coarse = output
-		cdf_varget,id,'Theta_Atten_Coarse',output,/zvariable
+		cdf_varget,id,'theta_atten_coarse',output,/zvariable
 		info_str[i].theta_coarse_atten = output
-		cdf_varget,id,'G_Theta_Coarse',output,/zvariable
+		cdf_varget,id,'g_theta_coarse',output,/zvariable
 		info_str[i].g_th_coarse = output
-		cdf_varget,id,'G_Theta_Atten_Coarse',output,/zvariable
+		cdf_varget,id,'g_theta_atten_coarse',output,/zvariable
 		info_str[i].g_th_coarse_atten = output
-		cdf_varget,id,'Phi_Coarse',output,/zvariable
+		cdf_varget,id,'phi_coarse',output,/zvariable
 		info_str[i].phi_coarse = output
-		cdf_varget,id,'G_Phi_Coarse',output,/zvariable
+		cdf_varget,id,'g_phi_coarse',output,/zvariable
 		info_str[i].geom_coarse = output
-		cdf_varget,id,'G_Phi_Atten_Coarse',output,/zvariable
+		cdf_varget,id,'g_phi_atten_coarse',output,/zvariable
 		info_str[i].geom_coarse_atten = output
 
 		cdf_close,id
 	endif else print,'No Coarse Survey'
 
 
-	if keyword_set(loadcoarse) and n_elements(coarse_arc_file) gt 0 then begin
+	if keyword_set(loadcoarse) and coarse_arc_file ne '' then begin
 		print,'Coarse Archive'
 		id = cdf_open(coarse_arc_file,/readonly)
-		cdf_varget,id,'Num_Dists',nrec,/zvariable
+		cdf_varget,id,'num_dists',nrec,/zvariable
 		
 		if i eq 0 or n_elements(swica) lt 2 then begin
 			offset = 0L
@@ -345,56 +353,56 @@ for i = 0,nfiles-1 do begin
 			swica = [swica,replicate(swic_str,nrec)]
 		endelse
 
-		cdf_varget,id,'Time_Unix',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_unix',output,rec_count = nrec,/zvariable
 		swica[offset:offset+nrec-1].time_unix = reform(output)
-		cdf_varget,id,'Time_MET',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_met',output,rec_count = nrec,/zvariable
 		swica[offset:offset+nrec-1].time_met = reform(output)
-		cdf_varget,id,'Atten_State',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'atten_state',output,rec_count = nrec,/zvariable
 		swica[offset:offset+nrec-1].atten_state = reform(output)
-		cdf_varget,id,'Grouping',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'grouping',output,rec_count = nrec,/zvariable
 		swica[offset:offset+nrec-1].grouping = reform(output)
-		cdf_varget,id,'Num_Accum',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'num_accum',output,rec_count = nrec,/zvariable
 		swica[offset:offset+nrec-1].num_accum = reform(output)
 		if keyword_set(eflux) then begin
-			cdf_varget,id,'Diff_En_Fluxes',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'diff_en_fluxes',output,rec_count = nrec,/zvariable
 		endif else begin
-			cdf_varget,id,'Counts',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'counts',output,rec_count = nrec,/zvariable
 		endelse
 		swica[offset:offset+nrec-1].data = output
 
 		swica[offset:offset+nrec-1].info_index = i
 
-		cdf_varget,id,'Geom_Factor',output,/zvariable
+		cdf_varget,id,'geom_factor',output,/zvariable
 		info_str[i].geom = output
-		cdf_varget,id,'De_Over_E_Coarse',output,/zvariable
+		cdf_varget,id,'de_over_e_coarse',output,/zvariable
 		info_str[i].deovere_coarse = output
-		cdf_varget,id,'Accum_Time_Coarse',output,/zvariable
+		cdf_varget,id,'accum_time_coarse',output,/zvariable
 		info_str[i].dt_int = output/12
-		cdf_varget,id,'Energy_Coarse',output,/zvariable
+		cdf_varget,id,'energy_coarse',output,/zvariable
 		info_str[i].energy_coarse = output
-		cdf_varget,id,'Theta_Coarse',output,/zvariable
+		cdf_varget,id,'theta_coarse',output,/zvariable
 		info_str[i].theta_coarse = output
-		cdf_varget,id,'Theta_Atten_Coarse',output,/zvariable
+		cdf_varget,id,'theta_atten_coarse',output,/zvariable
 		info_str[i].theta_coarse_atten = output
-		cdf_varget,id,'G_Theta_Coarse',output,/zvariable
+		cdf_varget,id,'g_theta_coarse',output,/zvariable
 		info_str[i].g_th_coarse = output
-		cdf_varget,id,'G_Theta_Atten_Coarse',output,/zvariable
+		cdf_varget,id,'g_theta_atten_coarse',output,/zvariable
 		info_str[i].g_th_coarse_atten = output
-		cdf_varget,id,'Phi_Coarse',output,/zvariable
+		cdf_varget,id,'phi_coarse',output,/zvariable
 		info_str[i].phi_coarse = output
-		cdf_varget,id,'G_Phi_Coarse',output,/zvariable
+		cdf_varget,id,'g_phi_coarse',output,/zvariable
 		info_str[i].geom_coarse = output
-		cdf_varget,id,'G_Phi_Atten_Coarse',output,/zvariable
+		cdf_varget,id,'g_phi_atten_coarse',output,/zvariable
 		info_str[i].geom_coarse_atten = output
 
 		cdf_close,id
 	endif else print,'No Coarse Archive'
 
 
-	if keyword_set(loadspec) and n_elements(spec_file) gt 0 then begin
+	if keyword_set(loadspec) and spec_file ne '' then begin
 		print,'Spectra'
 		id = cdf_open(spec_file,/readonly)
-		cdf_varget,id,'Num_Spec',nrec,/zvariable
+		cdf_varget,id,'num_spec',nrec,/zvariable
 		
 		if i eq 0 or n_elements(swis) lt 2 then begin
 			offset = 0L
@@ -404,42 +412,42 @@ for i = 0,nfiles-1 do begin
 			swis = [swis,replicate(swis_str,nrec)]
 		endelse
 
-		cdf_varget,id,'Time_Unix',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_unix',output,rec_count = nrec,/zvariable
 		swis[offset:offset+nrec-1].time_unix = reform(output)
-		cdf_varget,id,'Time_MET',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_met',output,rec_count = nrec,/zvariable
 		swis[offset:offset+nrec-1].time_met = reform(output)
-		cdf_varget,id,'Atten_State',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'atten_state',output,rec_count = nrec,/zvariable
 		swis[offset:offset+nrec-1].atten_state = reform(output)
-		cdf_varget,id,'Decom_Flag',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'decom_flag',output,rec_count = nrec,/zvariable
 		swis[offset:offset+nrec-1].decom_flag = reform(output)
-		cdf_varget,id,'Num_Accum',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'num_accum',output,rec_count = nrec,/zvariable
 		swis[offset:offset+nrec-1].num_accum = reform(output)
 		if keyword_set(eflux) then begin
-			cdf_varget,id,'Spectra_Diff_En_Fluxes',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'spectra_diff_en_fluxes',output,rec_count = nrec,/zvariable
 		endif else begin
-			cdf_varget,id,'Spectra_Counts',output,rec_count = nrec,/zvariable
+			cdf_varget,id,'spectra_counts',output,rec_count = nrec,/zvariable
 		endelse
 		swis[offset:offset+nrec-1].data = output
 
 		swis[offset:offset+nrec-1].info_index = i
 
-		cdf_varget,id,'Geom_Factor',output,/zvariable
+		cdf_varget,id,'geom_factor',output,/zvariable
 		info_str[i].geom = output
-		cdf_varget,id,'De_Over_E_Spectra',output,/zvariable
+		cdf_varget,id,'de_over_e_spectra',output,/zvariable
 		info_str[i].deovere_coarse = output
-		cdf_varget,id,'Accum_Time_Spectra',output,/zvariable
+		cdf_varget,id,'accum_time_spectra',output,/zvariable
 		info_str[i].dt_int = output/12/64
-		cdf_varget,id,'Energy_Spectra',output,/zvariable
+		cdf_varget,id,'energy_spectra',output,/zvariable
 		info_str[i].energy_coarse = output
 
 		cdf_close,id
 	endif else print,'No Spectra'
 
 
-	if keyword_set(loadmom) and n_elements(mom_file) gt 0 then begin
+	if keyword_set(loadmom) and mom_file ne '' then begin
 		print,'Moments'
 		id = cdf_open(mom_file,/readonly)
-		cdf_varget,id,'Num_Mom',nrec,/zvariable
+		cdf_varget,id,'num_mom',nrec,/zvariable
 		
 		if i eq 0 or n_elements(swim) lt 2 then begin
 			offset = 0L
@@ -449,29 +457,29 @@ for i = 0,nfiles-1 do begin
 			swim = [swim,replicate(swim_str,nrec)]
 		endelse
 
-		cdf_varget,id,'Time_Unix',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_unix',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].time_unix = reform(output)
-		cdf_varget,id,'Time_MET',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'time_met',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].time_met = reform(output)
-		cdf_varget,id,'Atten_State',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'atten_state',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].atten_state = reform(output)
-		cdf_varget,id,'Telem_Mode',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'telem_mode',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].swi_mode = reform(output)
-		cdf_varget,id,'Decom_Flag',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'decom_flag',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].decom_flag = reform(output)
-		cdf_varget,id,'Quality_Flag',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'quality_flag',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].quality_flag = reform(output)
-		cdf_varget,id,'Density',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'density',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].density = reform(output)
-		cdf_varget,id,'Velocity',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'velocity',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].velocity = output
-		cdf_varget,id,'Velocity_MSO',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'velocity_mso',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].velocity_mso = output
-		cdf_varget,id,'Temperature',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'temperature',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].temperature = output
-		cdf_varget,id,'Temperature_MSO',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'temperature_mso',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].temperature_mso = output
-		cdf_varget,id,'Pressure',output,rec_count = nrec,/zvariable
+		cdf_varget,id,'pressure',output,rec_count = nrec,/zvariable
 		swim[offset:offset+nrec-1].pressure = output
 
 		swim[offset:offset+nrec-1].info_index = i
@@ -510,7 +518,7 @@ if keyword_set(tplot) then begin
 		if keyword_set(eflux) then begin
 			store_data,'mvn_swics_en_eflux',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin	
-			store_data,'mvn_swics_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swics_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swics.data,1),1))
 			phis = transpose(info_str[swics.info_index].phi_coarse)
@@ -519,12 +527,12 @@ if keyword_set(tplot) then begin
 				phis[i,*] = phis[i,s]
 				phspec[i,*] = phspec[i,s]
 			endfor
-			store_data,'mvn_swics_ph_counts',data = {x:ctime, y: phspec, v:phis, zlog:0, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swics_ph_counts',data = {x:ctime, y: phspec, v:phis, zlog:0, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 
 			thspec = transpose(total(total(swics.data,3),1))
 			thetas = transpose(info_str[swics.info_index].theta_coarse[47,*,*])
-			store_data,'mvn_swics_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swics_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 		endelse
 	endif
@@ -538,7 +546,7 @@ if keyword_set(tplot) then begin
 		if keyword_set(eflux) then begin
 			store_data,'mvn_swica_en_eflux',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin	
-			store_data,'mvn_swica_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swica_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swica.data,1),1))
 			phis = transpose(info_str[swica.info_index].phi_coarse)
@@ -547,12 +555,12 @@ if keyword_set(tplot) then begin
 				phis[i,*] = phis[i,s]
 				phspec[i,*] = phspec[i,s]
 			endfor
-			store_data,'mvn_swica_ph_counts',data = {x:ctime, y: phspec, v:phis, zlog:0, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swica_ph_counts',data = {x:ctime, y: phspec, v:phis, zlog:0, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 
 			thspec = transpose(total(total(swica.data,3),1))
 			thetas = transpose(info_str[swica.info_index].theta_coarse[47,*,*])
-			store_data,'mvn_swica_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swica_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 		endelse
 
@@ -569,18 +577,18 @@ if keyword_set(tplot) then begin
 		if keyword_set(eflux) then begin
 			store_data,'mvn_swifs_en_eflux',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin
-			store_data,'mvn_swifs_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swifs_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swifs.data,1),1))
 			phis = transpose(info_str[swifs.info_index].phi_fine)
-			store_data,'mvn_swifs_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swifs_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 
 			thspec = transpose(total(total(swifs.data,3),1))
 			theta_all = transpose(info_str[swifs.info_index].theta_fine[95,*,*])
 			thetas = fltarr(nsw,12)
 			for i = 0,nsw-1 do thetas[i,*] = theta_all[i,swifs[i].dstep_first:swifs[i].dstep_first+11]
-			store_data,'mvn_swifs_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swifs_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 		endelse
 	endif
 
@@ -596,18 +604,18 @@ if keyword_set(tplot) then begin
 		if keyword_set(eflux) then begin
 			store_data,'mvn_swifa_en_eflux',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin
-			store_data,'mvn_swifa_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swifa_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swifa.data,1),1))
 			phis = transpose(info_str[swifa.info_index].phi_fine)
-			store_data,'mvn_swifa_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swifa_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 
 			thspec = transpose(total(total(swifa.data,3),1))
 			theta_all = transpose(info_str[swifa.info_index].theta_fine[95,*,*])
 			thetas = fltarr(nsw,12)
 			for i = 0,nsw-1 do thetas[i,*] = theta_all[i,swifa[i].dstep_first:swifa[i].dstep_first+11]
-			store_data,'mvn_swifa_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swifa_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 		endelse
 
 	endif
@@ -616,14 +624,14 @@ if keyword_set(tplot) then begin
 		w = where(swim.quality_flag ge qlevel and swim.decom_flag ge qlevel)
 		ctime = swim[w].time_unix + 2.0				;center time of sample
 
-		store_data,'mvn_swim_density',data = {x:ctime,y:swim[w].density,ytitle:'SWIA!cDensity!c[cm!E-3!N]'}
-		store_data,'mvn_swim_velocity',data = {x:ctime,y:transpose(swim[w].velocity),v:[0,1,2],labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cVelocity!c[km/s]'}
-		store_data,'mvn_swim_velocity_MSO',data = {x:ctime,y:transpose(swim[w].velocity_mso),v:[0,1,2],labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cVelocity!c[km/s]'}
+		store_data,'mvn_swim_density',data = {x:ctime,y:swim[w].density,ytitle:'SWIA!cdensity!c[cm!E-3!N]'}
+		store_data,'mvn_swim_velocity',data = {x:ctime,y:transpose(swim[w].velocity),v:[0,1,2],labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cvelocity!c[km/s]'}
+		store_data,'mvn_swim_velocity_mso',data = {x:ctime,y:transpose(swim[w].velocity_mso),v:[0,1,2],labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cvelocity!c[km/s]'}
 
-		store_data,'mvn_swim_pressure',data = {x:ctime,y:transpose(swim[w].pressure), v:[0,1,2,3,4,5], labels: ['Pxx','Pyy','Pzz','Pxy','Pxz','Pyz'], labflag:1, ytitle: 'SWIA!cPressure!c[eV/cm!E3!N]'}
+		store_data,'mvn_swim_pressure',data = {x:ctime,y:transpose(swim[w].pressure), v:[0,1,2,3,4,5], labels: ['Pxx','Pyy','Pzz','Pxy','Pxz','Pyz'], labflag:1, ytitle: 'SWIA!cpressure!c[eV/cm!E3!N]'}
 
-		store_data, 'mvn_swim_temperature', data = {x:ctime,y:transpose(swim[w].temperature), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!cTemperature!c[eV]'}
-		store_data, 'mvn_swim_temperature_MSO', data = {x:ctime,y:transpose(swim[w].temperature_mso), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!cTemperature!c[eV]'}
+		store_data, 'mvn_swim_temperature', data = {x:ctime,y:transpose(swim[w].temperature), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!ctemperature!c[eV]'}
+		store_data, 'mvn_swim_temperature_mso', data = {x:ctime,y:transpose(swim[w].temperature_mso), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!ctemperature!c[eV]'}
 
 	endif
 
@@ -635,7 +643,7 @@ if keyword_set(tplot) then begin
 		if keyword_set(eflux) then begin
 			store_data,'mvn_swis_en_eflux',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin
-			store_data,'mvn_swis_en_counts',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swis_en_counts',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 		endelse
 	endif
 

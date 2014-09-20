@@ -42,8 +42,8 @@
 ; Version:
 ;
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2014-06-02 09:07:12 -0700 (Mon, 02 Jun 2014) $
-; $LastChangedRevision: 15281 $
+; $LastChangedDate: 2014-09-17 14:33:45 -0700 (Wed, 17 Sep 2014) $
+; $LastChangedRevision: 15817 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_efw_deconvol_inst_resp.pro $
 ;-
 
@@ -141,7 +141,10 @@ FOR ib=0L, nbursts-1 DO BEGIN
   Eyf = Ey 
   Ezf = Ez 
   b_length = 8 * kernel_length
-  while b_length gt nt_burst do b_length /= 2
+ 
+
+
+ while b_length gt nt_burst do b_length /= 2
 ;   print, 'b_length = ', b_length
 
   ; Remove NaNs
@@ -157,12 +160,12 @@ FOR ib=0L, nbursts-1 DO BEGIN
   Eyf = [Eyf, fltarr(kernel_length/2)]
   Ezf = [Ezf, fltarr(kernel_length/2)]
 
-	  ;-- Deconvolve transfer function
-	if b_length > kernel_length then begin
-	  Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
-	  Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
-	  Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)
-	endif
+  ;-- Deconvolve transfer function
+  if b_length gt kernel_length then begin
+     Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
+     Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
+     Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)
+  endif
 
   ;-- Remove the padding
   Exf = Exf[0:nt_burst-1]
@@ -287,7 +290,7 @@ FOR ib=0L, nbursts-1 DO BEGIN
   Ezf = [Ezf, fltarr(kernel_length/2)]
 
 	;-- Deconvolve transfer function
-	if b_length > kernel_length then begin
+	if b_length gt kernel_length then begin
 		Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
 		Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
 		Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)
@@ -387,6 +390,7 @@ FOR ib=0L, nbursts-1 DO BEGIN
   Ez = E.y[ista:iend,2]
   nt_burst = n_elements(t)
 
+
   if nt_burst lt kernel_length then begin
      dprint, 'Burst #', string(ib, form='(I0)'), ' is too short. Skipping...'
      print, ''
@@ -399,6 +403,8 @@ FOR ib=0L, nbursts-1 DO BEGIN
   indz = where(finite(Ez), nindz)
   if nindx le nt_burst/2. or nindy le nt_burst/2. or nindz le nt_burst/2. $
     then begin
+
+
     dprint, 'Burst #', string(ib, form='(I0)'), ' has too many NaNs. ', $
       'Skipping...'
     continue
@@ -409,9 +415,12 @@ FOR ib=0L, nbursts-1 DO BEGIN
   Exf = Ex 
   Eyf = Ey 
   Ezf = Ez 
+
+
   b_length = 8 * kernel_length
   while b_length gt nt_burst do b_length /= 2
 ;   print, 'b_length = ', b_length
+
 
   ; Remove NaNs
   indx = where(finite(Exf), nindx)
@@ -428,7 +437,9 @@ FOR ib=0L, nbursts-1 DO BEGIN
 
 
 	;-- Deconvolve transfer function
-	if b_length > kernel_length then begin
+	if b_length gt kernel_length then begin
+
+
 	  Exf = shift(blk_con(E12_resp, Exf, b_length=b_length),-kernel_length/2)
 	  Eyf = shift(blk_con(E34_resp, Eyf, b_length=b_length),-kernel_length/2)
 	  Ezf = shift(blk_con(E56_resp, Ezf, b_length=b_length),-kernel_length/2)

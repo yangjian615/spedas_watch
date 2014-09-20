@@ -5,8 +5,8 @@
 ; displayed using doc_library.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-15 11:34:36 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15793 $
+; $LastChangedDate: 2014-09-16 09:34:08 -0700 (Tue, 16 Sep 2014) $
+; $LastChangedRevision: 15805 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crib.pro $
 ;--------------------------------------------------------------------
 ;
@@ -31,7 +31,7 @@ mvn_swe_sumplot
 ; It is fast, but uses only nominal calibrations and the timing might be 
 ; a few seconds off.  Otherwise use the MAG quicklook software provided 
 ; by the MAG team.  The current version is quite slow and has a known 
-; timing error.
+; timing error.  Data are loaded into tplot variables.
 
 swe_getmag_ql, trange, both=1, smo=1, /davin
 
@@ -41,6 +41,9 @@ swe_getmag_ql, trange, both=1, smo=1, /davin
 swe_3d_strahl_dir, pans=pans
 
 ; Calculate the spacecraft potential from SPEC data
+;   This is a semi-empirical method with a fudge factor based on 
+;   experience in previous missions.  This will be refined as we
+;   get cross calibrations with LPW, SWIA, and STATIC.
 
 mvn_swe_sc_pot, /overlay, erange=[3,15], psmo=11, fudge=0.90
 
@@ -52,7 +55,10 @@ mvn_swe_sc_pot, /overlay, erange=[3,15], psmo=3, fudge=0.90, $
                 /ddd, dbins=[0,0,0,1,1,1]
 
 ; Determine the direction of the Sun in SWEA coordinates
-; (Requires SPICE.)
+;   Requires SPICE.  There are several instances when the S/C
+;   Z axis is not pointing at the Sun (some periapsis modes,
+;   comm passes, MAG rolls).  When the sensor head is illuminated,
+;   increased photoelectron background can occur.
 
 mvn_swe_sundir, pans=pans
 
@@ -77,8 +83,9 @@ dbins = [0,0,0,1,1,1]      ; turn off lower 3 deflector bins
 mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins
 
 ; Estimate electron density and temperature from fitting the core to
-; a Maxwell-Boltzmann distribution and taking a moment to estimate the
-; contribution from the halo.  Corrects for scattered electrons.
+; a Maxwell-Boltzmann distribution and taking a moment over energies
+; above the core to estimate the contribution from the halo.  This 
+; corrects for scattered electrons.
 
 mvn_swe_n1d, pans=pans
 
@@ -89,9 +96,9 @@ mvn_swe_n1d, pans=pans
 ;   changing magnetic field.)  The structure element "var" keeps
 ;   track of counting statistics, including digitization noise.
 
-swe_engy_snap,units='eflux',/mb,spec=spec,/sum
+swe_engy_snap,units='eflux',/mb,spec=spec
 swe_pad_snap,units='eflux',energy=130,pad=pad
-swe_3d_snap,spec=1,ddd=ddd,energy=130,/symdir
+swe_3d_snap,/spec,/symdir,energy=130,ddd=ddd
 
 ;
 ; Get 3D, PAD, or SPEC data at a specified time or array of times.

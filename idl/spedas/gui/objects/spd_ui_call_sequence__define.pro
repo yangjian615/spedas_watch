@@ -38,9 +38,9 @@
 ;       or data processing calls. 
 ; 
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-09-08 12:25:59 -0700 (Mon, 08 Sep 2014) $
-;$LastChangedRevision: 15743 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-09-18 15:37:02 -0700 (Thu, 18 Sep 2014) $
+;$LastChangedRevision: 15824 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_call_sequence__define.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -772,7 +772,7 @@ pro spd_ui_call_sequence::addXMLDomStruct,item,parent,index_override=index_overr
     if (n_elements(index_override) NE 0) then begin
       index=index_override
     endif else begin
-      index=i
+      index=self->scalar_element_fix(item,i)
     endelse
     element->setattribute,'element',strtrim(string(index),2)
       
@@ -814,10 +814,10 @@ pro spd_ui_call_sequence::addXMLDomInt,item,parent
   endif
   
   self->appendXMLNewline,parent
-  
+ 
   for i = 0,n_elements(item)-1 do begin
   
-    self->appendXMLElement,'int',strtrim(string(item[i],format='(I)'),2),parent,attribute='element',value=strtrim(string(i),2)
+    self->appendXMLElement,'int',strtrim(string(item[i],format='(I)'),2),parent,attribute='element',value=strtrim(string(self->scalar_element_fix(item,i)),2)
     self->appendXMLNewline,parent
   
   endfor
@@ -838,7 +838,7 @@ pro spd_ui_call_sequence::addXMLDomFloat,item,parent
   
   for i = 0,n_elements(item)-1 do begin
   
-    self->appendXMLElement,'float',strtrim(string(item[i],format='(E21.13)'),2),parent,attribute='element',value=strtrim(string(i),2)
+    self->appendXMLElement,'float',strtrim(string(item[i],format='(E21.13)'),2),parent,attribute='element',value=strtrim(string(self->scalar_element_fix(item,i)),2)
     self->appendXMLNewline,parent
   
   endfor
@@ -859,7 +859,7 @@ pro spd_ui_call_sequence::addXMLDomString,item,parent
   
   for i = 0,n_elements(item)-1 do begin
   
-    self->appendXMLElement,'string',string(item[i],format='(A)'),parent,attribute='element',value=strtrim(string(i),2)
+    self->appendXMLElement,'string',string(item[i],format='(A)'),parent,attribute='element',value=strtrim(string(self->scalar_element_fix(item,i)),2)
     self->appendXMLNewline,parent
   
   endfor
@@ -1040,11 +1040,12 @@ pro spd_ui_call_sequence::readDomStruct,doctree,out=out,fail=fail,element=elemen
         return
       endif
   
-      if ~keyword_set(currentatt) then begin
+      if child_element eq -1 then begin
+        currentatt=val
+      endif else if ~keyword_set(currentatt) then begin
         ; if childarr only contains a single element, treat currentatt as a scalar, otherwise create
         ; an array with enough room for each value in childarr
         if n_elements(childarr) eq 1 then currentatt = val else currentatt = replicate(val,n_elements(childarr))
-        
         ;currentatt[child_element] = val
       endif else begin
       
@@ -1127,6 +1128,12 @@ function spd_ui_call_sequence::init,loadedData
   endelse
 
   return,1
+
+end
+
+function spd_ui_call_sequence::scalar_element_fix,item,index
+
+  return,size(item,/n_dimensions) eq 0?-1L:index
 
 end
 
