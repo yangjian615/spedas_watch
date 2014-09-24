@@ -49,6 +49,9 @@
 ;       LATEST:        Ignore trange (if present), and load all data within the
 ;                      LATEST days leading up to the current date.
 ;
+;       CDRIFT:        Correct for spacecraft clock drift using SPICE.
+;                      Default = 1 (yes).
+;
 ;       MAXBYTES:      Maximum number of bytes to process.  Default is all data
 ;                      within specified time range.
 ;
@@ -57,15 +60,15 @@
 ;       SUMPLOT:       Create a summary plot of the loaded data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-15 11:33:00 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15792 $
+; $LastChangedDate: 2014-09-22 17:19:26 -0700 (Mon, 22 Sep 2014) $
+; $LastChangedRevision: 15838 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mvn_swe_load_l0.pro
 ;-
 pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
-                             sumplot=sumplot
+                             cdrift=cdrift, sumplot=sumplot
 
   @mvn_swe_com
   
@@ -77,6 +80,10 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
     tmin = tmax - (double(latest[0])*86400D)
     trange = [tmin, tmax]
   endif
+  
+  if (size(cdrift,/type) eq 0) then cdrift = 1
+  dflg = cdrift  ; correct for spacecraft clock drift
+  dflg = 0       ; turn off for now
 
 ; Get file names associated with trange or from one or more named
 ; file(s).  If you specify a time range and are working off-site, 
@@ -168,6 +175,10 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
     swe_dt = 2D^(dindgen(6) + 1D)  ; sample interval (sec) for period=0,1,2,3,4,5
 
   endif
+
+; Initialize SPICE
+
+;  mvn_swe_spice_init, trange=trange, /silent
   
 ; Read in the telemetry file and store the packets in a byte array
 
@@ -177,9 +188,9 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
     if (i eq 0) then begin
       mvn_swe_clear
       badpkt = 0
-      mvn_swe_read_l0, file[i], trange=trange, maxbytes=maxbytes, badpkt=badpkt
+      mvn_swe_read_l0, file[i], trange=trange, maxbytes=maxbytes, badpkt=badpkt, cdrift=dflg
     endif else begin
-      mvn_swe_read_l0, file[i], trange=trange, maxbytes=maxbytes, badpkt=badpkt, /append
+      mvn_swe_read_l0, file[i], trange=trange, maxbytes=maxbytes, badpkt=badpkt, cdrift=dflg, /append
     endelse
 
   endfor

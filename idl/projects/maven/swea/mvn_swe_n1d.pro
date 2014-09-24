@@ -22,8 +22,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-15 11:33:00 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15792 $
+; $LastChangedDate: 2014-09-22 09:49:34 -0700 (Mon, 22 Sep 2014) $
+; $LastChangedRevision: 15832 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-
@@ -34,7 +34,7 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins
 
   @mvn_swe_com
 
-  mass = 5.6856297d-06             ; electron rest mass [eV/(km/s)^2]
+  mass = mass_e                    ; electron rest mass [eV/(km/s)^2]
   c1 = (mass/(2D*!dpi))^1.5D
   c2 = (2d5/(mass*mass))
   c3 = 4D*!dpi*1d-5*sqrt(mass/2D)  ; assume isotropic electron distribution

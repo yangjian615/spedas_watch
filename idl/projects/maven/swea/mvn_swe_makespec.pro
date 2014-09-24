@@ -16,8 +16,8 @@
 ;       UNITS:    Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-15 11:32:21 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15791 $
+; $LastChangedDate: 2014-09-22 09:49:34 -0700 (Mon, 22 Sep 2014) $
+; $LastChangedRevision: 15832 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makespec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -93,6 +93,10 @@ pro mvn_swe_makespec, sum=sum, units=units
     
     mvn_swe_engy.dtc = dtc                ; corrected count rate = rate/dtc
 
+; Electron rest mass [eV/(km/s)^2]
+
+    mvn_swe_engy.mass = mass_e
+
 ; Validate the data
     
     mvn_swe_engy.valid = 1B               ; Yep, it's valid.
@@ -157,6 +161,10 @@ pro mvn_swe_makespec, sum=sum, units=units
     if (count gt 0L) then dtc[indx] = !values.f_nan
     
     mvn_swe_engy_arc.dtc = dtc                ; corrected count rate = rate/dtc
+
+; Electron rest mass [eV/(km/s)^2]
+
+    mvn_swe_engy_arc.mass = mass_e
 
 ; Validate the data
     

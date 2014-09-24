@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-16 16:57:59 -0700 (Tue, 16 Sep 2014) $
-; $LastChangedRevision: 15810 $
+; $LastChangedDate: 2014-09-22 09:49:34 -0700 (Mon, 22 Sep 2014) $
+; $LastChangedRevision: 15832 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -260,6 +260,10 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
       if (dt lt ddd[n].delta_t) then ddd[n].sc_pot = swe_sc_pot[i].potential $
                                 else ddd[n].sc_pot = !values.f_nan
     endif
+
+; Electron rest mass [eV/(km/s)^2]
+
+    ddd[n].mass = mass_e
 
 ; And last, but not least, the data
 

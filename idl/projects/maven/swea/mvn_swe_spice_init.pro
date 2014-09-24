@@ -15,13 +15,13 @@
 ;    LIST:          If set, list the kernels in use.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:49:36 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15677 $
+; $LastChangedDate: 2014-09-22 14:20:06 -0700 (Mon, 22 Sep 2014) $
+; $LastChangedRevision: 15834 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_spice_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
-pro mvn_swe_spice_init, trange=trange, list=list
+pro mvn_swe_spice_init, trange=trange, list=list, silent=silent
 
   @mvn_swe_com
 
@@ -31,15 +31,15 @@ pro mvn_swe_spice_init, trange=trange, list=list
       return
     endif
     
-    tmin = min(mvn_swe_engy.time, max=tmax)
-    trange = [tmin, tmax]
-  endif  
-
-  swe_kernels = mvn_spice_kernels(/all,/load,trange=trange,verbose=1)
-  
-  if keyword_set(list) then begin
-    for i=0,(n_elements(swe_kernels)-1) do print, file_basename(swe_kernels[i])
+    trange = minmax(mvn_swe_engy.time)
   endif
+  
+  if keyword_set(silent) then verbose = -1 else verbose = 1
+
+  swe_kernels = mvn_spice_kernels(/all,/load,trange=trange,verbose=verbose)
+  n_ker = n_elements(swe_kernels)
+  
+  if keyword_set(list) then for i=0,(n_ker-1) do print, file_basename(swe_kernels[i])
 
   return
 

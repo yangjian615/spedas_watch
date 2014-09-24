@@ -45,6 +45,9 @@
 ;KEYWORDS:
 ;       TRANGE:        Only keep packets within this time range.
 ;
+;       CDRIFT:        Correct for spacecraft clock drift using SPICE.
+;                      Default = 1 (yes).
+;
 ;       MAXBYTES:      Maximum number of bytes to process.  Default is entire file.
 ;
 ;       BADPKT:        An array of structures providing details of bad packets.
@@ -54,15 +57,15 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-13 13:31:28 -0700 (Sat, 13 Sep 2014) $
-; $LastChangedRevision: 15773 $
+; $LastChangedDate: 2014-09-22 17:19:26 -0700 (Mon, 22 Sep 2014) $
+; $LastChangedRevision: 15838 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mvn_swe_read_l0.pro
 ;-
-pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, $
-                     append=append, verbose=verbose
+pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, $
+                     badpkt=badpkt, append=append, verbose=verbose
 
   @mvn_swe_com
 
@@ -73,6 +76,9 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
     tstart = min(time_double(trange), max=tstop)
     tflg = 1
   endif else tflg = 0
+  
+  if (size(cdrift,/type) eq 0) then cdrift = 1
+  dflg = cdrift  ; correct for spacecraft clock drift
 
 ; Read in the telemetry file and store the packets in a byte array
 
@@ -383,7 +389,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  bad_str.plen = plen
 
 	  bad_str.met = double(ccsds[3])*65536D + double(ccsds[4])
-	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met,correct=dflg)
 
 	  badpkt = [temporary(badpkt), bad_str]
 
@@ -406,7 +412,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  swe_hsk[k].plen = ccsds[2]
 			   
 	  swe_hsk[k].met  = double(ccsds[3])*65536D + double(ccsds[4])
-	  swe_hsk[k].time = mvn_spc_met_to_unixtime(swe_hsk[k].met)
+	  swe_hsk[k].time = mvn_spc_met_to_unixtime(swe_hsk[k].met,correct=dflg)
 
 ; SWEA Analog Housekeeping (bytes 10-57)
 
@@ -525,7 +531,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       bad_str.met = clock + subsecs
-	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met,correct=dflg)
 
 	  badpkt = [temporary(badpkt), bad_str]
 
@@ -539,7 +545,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       a0[k].met    = clock + subsecs
-	  a0[k].time   = mvn_spc_met_to_unixtime(a0[k].met)
+	  a0[k].time   = mvn_spc_met_to_unixtime(a0[k].met,correct=dflg)
 
 	  a0[k].cflg   = mvn_swe_getbits(pkt[12],7)          ; first bit
 	  a0[k].modeID = mvn_swe_getbits(pkt[12],[6,0])      ; last 7 bits
@@ -592,7 +598,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       bad_str.met = clock + subsecs
-	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met,correct=dflg)
 
 	  badpkt = [temporary(badpkt), bad_str]
 
@@ -606,7 +612,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       a1[k].met    = clock + subsecs
-	  a1[k].time   = mvn_spc_met_to_unixtime(a1[k].met)
+	  a1[k].time   = mvn_spc_met_to_unixtime(a1[k].met,correct=dflg)
 
 	  a1[k].cflg   = mvn_swe_getbits(pkt[12],7)          ; first bit
 	  a1[k].modeID = mvn_swe_getbits(pkt[12],[6,0])      ; last 7 bits
@@ -659,7 +665,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       bad_str.met = clock + subsecs
-	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met,correct=dflg)
 
 	  badpkt = [temporary(badpkt), bad_str]
 
@@ -673,7 +679,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       a2[k].met    = clock + subsecs
-	  a2[k].time   = mvn_spc_met_to_unixtime(a2[k].met)
+	  a2[k].time   = mvn_spc_met_to_unixtime(a2[k].met,correct=dflg)
 
 	  a2[k].cflg   = mvn_swe_getbits(pkt[12],7)            ; first bit
 	  a2[k].modeID = mvn_swe_getbits(pkt[12],[6,0])        ; last 7 bits
@@ -733,7 +739,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       bad_str.met = clock + subsecs
-	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met,correct=dflg)
 
 	  badpkt = [temporary(badpkt), bad_str]
 
@@ -747,7 +753,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       a3[k].met    = clock + subsecs
-	  a3[k].time   = mvn_spc_met_to_unixtime(a3[k].met)
+	  a3[k].time   = mvn_spc_met_to_unixtime(a3[k].met,correct=dflg)
 
 	  a3[k].cflg   = mvn_swe_getbits(pkt[12],7)            ; first bit
 	  a3[k].modeID = mvn_swe_getbits(pkt[12],[6,0])        ; last 7 bits
@@ -807,7 +813,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       bad_str.met = clock + subsecs
-	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met,correct=dflg)
 
 	  badpkt = [temporary(badpkt), bad_str]
 
@@ -821,7 +827,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       a4[k].met    = clock + subsecs
-	  a4[k].time   = mvn_spc_met_to_unixtime(a4[k].met)
+	  a4[k].time   = mvn_spc_met_to_unixtime(a4[k].met,correct=dflg)
 
 	  a4[k].cflg   = mvn_swe_getbits(pkt[12],7)           ; first bit
 	  a4[k].modeID = mvn_swe_getbits(pkt[12],[6,0])       ; last 7 bits
@@ -872,7 +878,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       bad_str.met = clock + subsecs
-	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met,correct=dflg)
 
 	  badpkt = [temporary(badpkt), bad_str]
 
@@ -886,7 +892,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       a5[k].met    = clock + subsecs
-	  a5[k].time   = mvn_spc_met_to_unixtime(a5[k].met)
+	  a5[k].time   = mvn_spc_met_to_unixtime(a5[k].met,correct=dflg)
 
 	  a5[k].cflg   = mvn_swe_getbits(pkt[12],7)           ; first bit
 	  a5[k].modeID = mvn_swe_getbits(pkt[12],[6,0])       ; last 7 bits
@@ -937,7 +943,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       bad_str.met = clock + subsecs
-	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met)
+	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met,correct=dflg)
 
 	  badpkt = [temporary(badpkt), bad_str]
 
@@ -951,7 +957,7 @@ pro mvn_swe_read_l0, filename, trange=trange, maxbytes=maxbytes, badpkt=badpkt, 
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
       a6[k].met    = clock + subsecs
-	  a6[k].time = mvn_spc_met_to_unixtime(a6[k].met)
+	  a6[k].time = mvn_spc_met_to_unixtime(a6[k].met,correct=dflg)
 
 	  a6[k].cflg = mvn_swe_getbits(pkt[12],7)        ; first bit
 

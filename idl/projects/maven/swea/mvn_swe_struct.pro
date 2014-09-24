@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-13 13:33:02 -0700 (Sat, 13 Sep 2014) $
-; $LastChangedRevision: 15775 $
+; $LastChangedDate: 2014-09-22 09:49:34 -0700 (Mon, 22 Sep 2014) $
+; $LastChangedRevision: 15832 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -51,6 +51,7 @@ pro mvn_swe_struct
                    domega          : fltarr(n_e,n_a)         , $  ; solid angle
                    gf              : fltarr(n_e,n_a)         , $  ; geometric factor per energy/angle bin
                    dtc             : fltarr(n_e,n_a)         , $  ; dead time correction
+                   mass            : 0.                      , $  ; electron rest mass [eV/(km/s)^2]
                    sc_pot          : 0.                      , $  ; spacecract potential
                    magf            : fltarr(3)               , $  ; magnetic field
                    v_flow          : fltarr(3)               , $  ; bulk flow velocity
@@ -93,6 +94,7 @@ pro mvn_swe_struct
                     domega          : fltarr(n_e,n_az)        , $  ; solid angle
                     gf              : fltarr(n_e,n_az)        , $  ; geometric factor
                     dtc             : fltarr(n_e,n_az)        , $  ; dead time correction
+                    mass            : 0.                      , $  ; electron rest mass [eV/(km/s)^2]
                     sc_pot          : 0.                      , $  ; spacecract potential
                     Baz             : 0.                      , $  ; magnetic field azimuth in SWEA coord.
                     Bel             : 0.                      , $  ; magnetic field elevation in SWEA coord.
@@ -126,6 +128,7 @@ pro mvn_swe_struct
 		             eff             : fltarr(n_e)             , $  ; MCP efficiency
                      gf              : fltarr(n_e)             , $  ; geometric factor
                      dtc             : fltarr(n_e)             , $  ; dead time correction
+                     mass            : 0.                      , $  ; electron rest mass [eV/(km/s)^2]
                      sc_pot          : 0.                      , $  ; spacecract potential
                      magf            : fltarr(3)               , $  ; magnetic field
                      bkg             : 0.                      , $  ; background

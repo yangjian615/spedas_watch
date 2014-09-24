@@ -45,10 +45,10 @@ Function pp2spectrogram, pp
      otp[*, j] = interpol(pp.counts_per_second[this_mass], pp.time[this_mass], tmid)
      otp[*, j] = otp[*, j] > 1.0e-6
 ;Apply attenuation here:
-;     If(mass_arr[j] Le 150.0) Then att = 1.0 $
-;     Else If(mass_arr[j] Gt 150.0 And mass_arr[j] Le 300.0) Then att = 10.0 $
-;     Else att = 100.0
-;     otp[*, j] = otp[*, j]*att
+     If(mass_arr[j] Le 150.0) Then att = 1.0 $
+     Else If(mass_arr[j] Gt 150.0 And mass_arr[j] Le 300.0) Then att = 10.0 $
+     Else att = 100.0
+     otp[*, j] = otp[*, j]*att
   Endfor
 ;Now contract into 1 second resolution; the way that tmid is
 ;calculated should ensure that all that is needed is a reforming and
@@ -64,11 +64,11 @@ End
 
 ;+
 ;NAME:
-; mvn_read_ngims_csv
+; mvn_ngi_read_csv
 ;PURPOSE:
 ; Reads an NGIMS csv file
 ;CALLING SEQUENCE:
-; p = mvn_read_ngims_csv(filename)
+; p = mvn_ngi_read_csv(filename)
 ;INPUT:
 ; filename = the input file name, full path.
 ;OUTPUT:
@@ -100,6 +100,8 @@ End
 ;masses can come in any order
 ;a given mass can be present with multiple attenuation factors
 ;
+;Noete that the most recent test file has masses up to the
+;400's so I assumet aht this is fixed... jmm, 2014-09-22
 ;masses can come with 1-amu resolution or fractional (~0.1-amu) resolution
 ;     - for fractional resolution, take all masses within 0.5 amu of an
 ;           integer, and take the peak count rate in that range
@@ -116,11 +118,11 @@ End
 ;HISTORY:
 ; 2014-07-28, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-08-26 14:34:10 -0700 (Tue, 26 Aug 2014) $
-; $LastChangedRevision: 15706 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_read_ngims_csv.pro $
+; $LastChangedDate: 2014-09-22 15:36:50 -0700 (Mon, 22 Sep 2014) $
+; $LastChangedRevision: 15837 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ngi_read_csv.pro $
 ;-
-Function mvn_read_ngims_csv, filename, tplot_vars, tplot_spec
+Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
 
   filex = file_search(filename)
   If(~is_string(filex)) Then Begin
@@ -128,25 +130,35 @@ Function mvn_read_ngims_csv, filename, tplot_vars, tplot_spec
      Return, -1
   Endif
 
-  p0 = read_csv(filex)
+  p0 = read_csv(filex, header = h0)
   If(~is_struct(p0)) Then Begin
      dprint, 'Bad File: '+filex
      Return, -1
   Endif
 
+;New version, now read_csv returns a header, and has numbers in the
+;first column, the structure tags will come from the header now
+
 ;Assume that the first column is 'TIME', and get the columns
 ;definitions
-  xstart = where(strupcase(p0.field01) Eq 'TIME')
+;  xstart = where(strupcase(p0.field01) Eq 'TIME')
 ;Just build up the output structure using str_element
   tags0 = tag_names(p0)
   ntags = n_elements(tags0)
   varcount = 0
   For j = 0, ntags-1 Do Begin
      tagj = p0.(j)
-     tj_name = strupcase(tagj[xstart])
-     tj_val = tagj[xstart+1:*]
+;     tj_name = strupcase(tagj[xstart])
+     tj_name = h0[j]
+     tj_val = tagj;[xstart:*]
      If(tj_name Eq 'TIME') Then Begin
-        tj_val = mvn_spc_met_to_unixtime(double(tj_val))
+;You need a timespan, so that mvn_spc_met_to_unixtime works correctly
+        met_range = minmax(double(tj_val))
+        ut_range = mvn_spc_met_to_unixtime(met_range, correct_clockdrift = 0)
+        one_day = 24.0*3600.0d0
+        dtr = ceil((ut_range[1]-ut_range[0])/one_day)
+        timespan, time_string(ut_range[0], precision = -3), dtr 
+        tj_val = mvn_spc_met_to_unixtime(double(tj_val), /correct_clock)
      Endif Else If(tj_name Ne 'SCRIPT' And tj_name Ne 'MODE') Then Begin
         tj_val = float(tj_val)
      Endif
@@ -159,7 +171,7 @@ Function mvn_read_ngims_csv, filename, tplot_vars, tplot_spec
      If(j Eq 0) Then Begin
         time = tj_val
      Endif Else Begin
-        tj_vname = 'mvn_ngims_'+strlowcase(tj_name[0])
+        tj_vname = 'mvn_ngi_'+strlowcase(tj_name[0])
         nj = n_elements(tj_val)
         If(tj_name Eq 'SCRIPT' Or tj_name Eq 'MODE') Then Begin
            ss = bsort(tj_val)
@@ -227,19 +239,19 @@ Function mvn_read_ngims_csv, filename, tplot_vars, tplot_spec
      Case modes[j] Of
         'csn': Begin
            pcsn = pp2spectrogram(temporary(pp))
-           store_data, 'mvn_ngims_csn', data = pcsn, dlimits = dl
+           store_data, 'mvn_ngi_csn', data = pcsn, dlimits = dl
         End
         'osnt': Begin
            posnt = pp2spectrogram(temporary(pp))
-           store_data, 'mvn_ngims_osnt', data = posnt, dlimits = dl
+           store_data, 'mvn_ngi_osnt', data = posnt, dlimits = dl
         End
         'osnb': Begin
            posnb = pp2spectrogram(temporary(pp))
-           store_data, 'mvn_ngims_osnb', data = posnb, dlimits = dl
+           store_data, 'mvn_ngi_osnb', data = posnb, dlimits = dl
         End
         'osi': Begin
            posi = pp2spectrogram(temporary(pp))
-           store_data, 'mvn_ngims_osi', data = posi, dlimits = dl
+           store_data, 'mvn_ngi_osi', data = posi, dlimits = dl
         End
 
      Endcase
