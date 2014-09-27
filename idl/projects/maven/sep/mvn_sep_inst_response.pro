@@ -16,7 +16,7 @@ end
 
 function mvn_sep_inst_response_retrieve,pathnames,age_limit=age_limit
 pdunn = file_retrieve(/struct)
-if ~keyword_set(age_limit) then age_limit=3600*4
+if ~keyword_set(age_limit) then age_limit=900 ; 3600*4
 pdunn.min_age_limit=age_limit
 pdunn.local_data_dir = '~/data/pdunn/'
 pdunn.remote_data_dir = 'http://sprg.ssl.berkeley.edu/~pdunn/'
@@ -46,15 +46,23 @@ fmt = {event:0L,einc:0.,pos:[0.,0.,0.],dir:[0.,0.,0.],edep:[[0.,0.,0.],[0.,0.,0.
 ;#    Event  |  (keV)  |  Pos_x     Pos_y     Pos_z    |  Dir_x     Dir_y     Dir_z    |     AF        AT        AO        BF        BT        BO     Total
 npart=0
 data=0
+;e_inc_num=0.
+;if keyword_set(xbinsize) then begin
+;endif
+
 for i=0,n_elements(files)-1 do begin
   file = files[i]
   d = read_asc(file,simstat,format=fmt)
+  ns = max(d.event)     ; estimate of number of test particles
   descfile = str_sub(file,'.dat','.txt')
-  ns = max(d.event)
+  if file_test(/regular,descfile) then printdat,read_asc(descfile,simstat)
+ ; str_element,simstat,'numberofparticles',ns
   dprint,dlevel=2,'Loaded',n_elements(d),' data samples out of ',ns,' in ',file
-  npart += ns
-  append_array,data,d
-  printdat,read_asc(descfile,simstat)
+  npart += ns     
+  append_array,data,d 
+;  if keyword_set(xbinsize) then begin
+;      e_inc_num += 
+;  endif
 endfor
 
 data.edep = reverse(data.edep,1)   ; switch order to O T F
@@ -79,30 +87,10 @@ if keyword_set(dosymm) then begin
     simstat.sim_area *= 2
     simstat.npart *=2
 endif
+
+;str_element,/add,simstat,'data',data
 end
 
-;
-;pro mvn_sep_response_simulation1_load,type,data=data,simstat=simstat
-;if ~keyword_set(data) or ~keyword_set(simstat) then begin
-;if type eq -1 then begin
-; mvn_sep_read_mult_sim_files,data_e1AF,simstat=simstat,pathname='results/mvn_sep_e-_AF.dat',type=type
-; mvn_sep_read_mult_sim_files,data_e1AO,simstat=simstat,pathname='results/mvn_sep_e-_AO.dat',type=type
-; data_e1BF = MVN_SEP_SIM_ROTATE_BY_180(data_e1AF)   ; proxy for the B side - Use until the full detector is simulated.
-; data_e1BO = MVN_SEP_SIM_ROTATE_BY_180(data_e1AO)
-; data = [data_e1af,data_e1bo,data_e1AO,data_e1BF] 
-; str_element,/add,simstat,'desc','Electrons'
-;endif 
-;if type eq 1  then begin
-; mvn_sep_read_mult_sim_files,data_p1af,simstat=simstat,pathname='results/mvn_sep_proton_AF.dat',type=type
-; mvn_sep_read_mult_sim_files,data_p1AO,simstat=simstat,pathname='results/mvn_sep_proton_AO.dat',type=type
-; data_p1BF = MVN_SEP_SIM_ROTATE_BY_180(data_p1AF)
-; data_p1BO = MVN_SEP_SIM_ROTATE_BY_180(data_p1AO)
-; data = [data_p1af,data_p1bo,data_p1AO,data_p1BF]  
-; str_element,/add,simstat,'desc','Protons'
-;endif
-;endif
-;end
-;
 
 function reform2,vec
 if n_elements(vec) eq 1 then return, vec[0]
@@ -139,7 +127,7 @@ end
 ; Purpose: Returns the quaternion that provides the smallest angle rotation that transforms V1 into V1_prime.
 ;      If V1_prime is not provided it is assumed to be [0,0,1]
 ;      Use QUATERNION_ROTATION to perform the rotaton.
-:-
+;-
 function get_quaternion,v1,newv,last_index=last_index   
 if not keyword_set(newv) then newv = [0,0,1.d]      ; z-axis by default
 dim_v1 = size(/dimen,v1)
@@ -257,6 +245,7 @@ end
 
 
 function mvn_sep_adc_calibration
+;message,'obsolete.  Contained within mvn_sep_lut2map.pro'
 adc_scale =  [[[ 43.77, 38.49, 41.13 ] ,  $  ;1A          O T F
                [ 41.97, 40.29, 42.28 ]] ,  $  ;1B
               [[ 40.25, 44.08, 43.90 ] ,  $  ;2A
@@ -265,94 +254,94 @@ adc_scale = adc_scale / 59.5
 return,adc_scale
 end
 
-
-function mvn_sep_response_flux_to_bin_cr,b,response=r,parameter=par,omega=omega
-if n_elements(omega) eq 0 then omega = [0,1]
-;n_omega = n_elements(omega)
-;n_einc  = n_elements(r.e_inc)
-;n_bins
-;types = [0,1]
-flux =  func(r.e_inc,omega,param=par)
-flux_dim = size(/dimen,flux)
-resp = r.bin3
-resp_dim = size(/dimen,resp)
-
-de_inc = (r.xlog) ? (r.e_inc * r.xbinsize  * alog(10)) : r.xbinsize
-de_inc = de_inc # replicate(1,flux_dim[1])
-de_flux = de_inc * flux
-
-;printdat,de_inc,de_flux
-resp = reform(resp,resp_dim[0]*resp_dim[1],resp_dim[2])
-de_flux = reform(de_flux,flux_dim[0] * flux_dim[1])
-;printdat,resp,de_flux
-CR = resp ## de_flux
-CR *=  (r.area_cm2 / r.nd)
-if keyword_set(b) then CR=CR[b]
-return,reform(CR)
-end
-
-
-
-function particle_flux,energy,omega,parameter=par,response=r,dflux50=dflux50,name=name
-if n_elements(omega) eq 0 then omega=[0,1]
-if ~keyword_set(par) || keyword_set(r) then begin
-    if ~keyword_set(r) then r=0
-    if ~keyword_set(name) then name = ''
-    if ~keyword_set(dflux50) then dflux50 = 100.
-    nrg = 10.^[1.5,2,2.5,3,3.5,4,4.5,6.]
-    flx = dflux50 * (nrg/50.)^(-3)
-    flux = spline_fit3(nrg,nrg,flx,/xlog,/ylog,par =pflux)
-    par = {func:'particle_flux', $
-           name:name, $
-           spec:replicate(pflux,n_elements(omega)) , $
-           response:r,  $
-           units_name:'flux'}
-    par.spec[1].ys -= .1
-    if n_params() eq 0 then return,par
-    printdat,par
-endif    
-fluxes=fltarr(n_elements(energy),n_elements(omega))
-for i=0,n_elements(omega)-1 do begin
-  fluxes[*,i] = spline_fit3(energy,param=par.spec[omega[i]])
-endfor
-return,fluxes
-end
+;
+;function mvn_sep_response_flux_to_bin_cr,b,omega,pnum,response=r,parameter=par  ;,omega=omega
+;if n_elements(omega) eq 0 then omega = [0,1]
+;;n_omega = n_elements(omega)
+;;n_einc  = n_elements(r.e_inc)
+;;n_bins
+;;types = [0,1]
+;flux =  func(r.e_inc,omega,param=par)
+;flux_dim = size(/dimen,flux)
+;resp = r.bin3
+;resp_dim = size(/dimen,resp)
+;
+;de_inc = (r.xlog) ? (r.e_inc * r.xbinsize  * alog(10)) : r.xbinsize
+;de_inc = de_inc # replicate(1,flux_dim[1])
+;de_flux = de_inc * flux
+;
+;;printdat,de_inc,de_flux
+;resp = reform(resp,resp_dim[0]*resp_dim[1],resp_dim[2])
+;de_flux = reform(de_flux,flux_dim[0] * flux_dim[1])
+;;printdat,resp,de_flux
+;CR = resp ## de_flux
+;CR *=  (r.area_cm2 / r.nd)
+;if keyword_set(b) then CR=CR[b]
+;return,reform(CR)
+;end
+;
 
 
+;function particle_flux,energy,omega,parameter=par,response=r,dflux50=dflux50,name=name
+;if n_elements(omega) eq 0 then omega=[0,1]
+;if ~keyword_set(par) || keyword_set(r) then begin
+;    if ~keyword_set(r) then r=0
+;    if ~keyword_set(name) then name = ''
+;    if ~keyword_set(dflux50) then dflux50 = 100.
+;    nrg = 10.^[1.5,2,2.5,3,3.5,4,4.5,6.]
+;    flx = dflux50 * (nrg/50.)^(-3)
+;    flux = spline_fit3(nrg,nrg,flx,/xlog,/ylog,par =pflux)
+;    par = {func:'particle_flux', $
+;           name:name, $
+;           spec:replicate(pflux,n_elements(omega)) , $
+;           response:r,  $
+;           units_name:'flux'}
+;    par.spec[1].ys -= .1
+;    if n_params() eq 0 then return,par
+;    printdat,par
+;endif    
+;fluxes=fltarr(n_elements(energy),n_elements(omega))
+;for i=0,n_elements(omega)-1 do begin
+;  fluxes[*,i] = spline_fit3(energy,param=par.spec[omega[i]])
+;endfor
+;return,fluxes
+;end
 
 
-function all_flux,energy,omega,parameter=par,Electron_response=re,Proton_response=rp,species=species
-if ~keyword_set(species) then species=''
-if n_elements(omega) eq 0 then omega=[0,1]
-if ~keyword_set(par) || keyword_set(re) || keyword_set(rp) then begin
-    electron = particle_flux(response=re,name='Electron',dflux50=.5)
-    proton   = particle_flux(response=rp,name='Proton',dflux50=10.)
-    par ={func:'all_flux', pts:{electron:electron, Proton:proton}, units:'CR' }
-    if n_params() eq 0 then return,par
-endif
-dt = size(/type,energy)
-if (dt eq 4) || (dt eq 5) then begin
-   el_flux = func(energy,omega,param=par.pts.electron)
-   pr_flux = func(energy,omega,param=par.pts.proton)
-   if species eq 'electron' then return,el_flux
-   if species eq 'proton' then return,pr_flux
-   return,el_flux + pr_flux
-endif
-;if n_params() eq 0 then energy=par.pts.electron.response.e_inc
 
-if 1 || par.units eq 'CR' then begin
-   cr_e = mvn_sep_response_flux_to_bin_CR(param=par.pts.electron,response=par.pts.electron.response)
-   if species eq 'electron' then return,cr_e
-   cr_p = mvn_sep_response_flux_to_bin_CR(param=par.pts.proton  ,response=par.pts.proton.response)
-   if species eq 'proton' then return,cr_p
-   cr_t = cr_p+ cr_e
-endif
-
-if dt eq 2  or dt eq 1 or dt eq 3 then return, cr_t[energy]    ; energy is the index
-
-return,cr_t
-
-end
+;
+;function all_flux,energy,omega,parameter=par,Electron_response=re,Proton_response=rp,species=species
+;if ~keyword_set(species) then species=''
+;if n_elements(omega) eq 0 then omega=[0,1]
+;if ~keyword_set(par) || keyword_set(re) || keyword_set(rp) then begin
+;    electron = particle_flux(response=re,name='Electron',dflux50=.5)
+;    proton   = particle_flux(response=rp,name='Proton',dflux50=10.)
+;    par ={func:'all_flux', pts:{electron:electron, Proton:proton}, units:'CR' }
+;    if n_params() eq 0 then return,par
+;endif
+;dt = size(/type,energy)
+;if (dt eq 4) || (dt eq 5) then begin
+;   el_flux = func(energy,omega,param=par.pts.electron)
+;   pr_flux = func(energy,omega,param=par.pts.proton)
+;   if species eq 'electron' then return,el_flux
+;   if species eq 'proton' then return,pr_flux
+;   return,el_flux + pr_flux
+;endif
+;;if n_params() eq 0 then energy=par.pts.electron.response.e_inc
+;
+;if 1 || par.units eq 'CR' then begin
+;   cr_e = mvn_sep_response_flux_to_bin_CR(param=par.pts.electron,response=par.pts.electron.response)
+;   if species eq 'electron' then return,cr_e
+;   cr_p = mvn_sep_response_flux_to_bin_CR(param=par.pts.proton  ,response=par.pts.proton.response)
+;   if species eq 'proton' then return,cr_p
+;   cr_t = cr_p+ cr_e
+;endif
+;
+;if dt eq 2  or dt eq 1 or dt eq 3 then return, cr_t[energy]    ; energy is the index
+;
+;return,cr_t
+;
+;end
 
 
 
@@ -403,11 +392,14 @@ endfor
 !p.multi=0
 end
 
-pro mvn_sep_response_plot_gf,r,window=win,ylog=ylog,xrange=xrange
+pro mvn_sep_response_plot_gf,r,window=win,ylog=ylog,xrange=xrange  ;,face=face
 ;            x O  T OT  F  OF  FT FTO   Total
    colors = [0,2, 4, 1, 6,  5,  3, 0,   5]
    linestyle = [0,2]
    yrange = [0,2]
+   if ~keyword_set(face) then face=0
+   face_str = (['Aft','Both','Front'])[face+1]
+   face_str=''
    
    if keyword_set(win) then     wi,win,/show,wsize=[600,600]
    if keyword_set(ylog) then yrange=[.0001,100]
@@ -415,7 +407,7 @@ pro mvn_sep_response_plot_gf,r,window=win,ylog=ylog,xrange=xrange
    einc = r.e_inc
    str_element,r,'xbinrange',xrange
    if not keyword_set(xrange) then xrange = minmax(einc)
-   title = r.desc+' '+r.particle_name
+   title = r.desc+' '+r.particle_name+' '+face_str
    for side=0,1 do begin
      ls = linestyle[side]
      G = total( total(r.G4[*,*,*,side],3), 2) 
@@ -460,17 +452,22 @@ end
 
 
 ; ADC bin Response  MATRIX
-pro mvn_sep_response_bin_matrix_plot,r,window=win
+pro mvn_sep_response_bin_matrix_plot_old,r,window=win,face=face
 if keyword_set(win) then     wi,win,/show,wsize=[500,800],icon=0
 xrange = r.xbinrange
+if n_elements(face) eq 0 then face=0
+face_str = (['Aft','Both','Front'])[face+1]
 
-title= r.desc+' '+r.particle_name+' ('+r.mapname+')'
+title= r.desc+' '+r.particle_name+' ('+r.mapname+') '+face_str
 zrange = minmax(float(r.bin3[*,*,0:255]) ,/pos)
 str_element,r,'fdesc',subtitle
 options,lim,xlog=1,xrange=xrange,yrange=[-1,260],/xstyle,/ystyle,xmargin=[10,10],/zlog,zrange=zrange,/no_interp,xtitle='Incident Energy (keV)',ytitle='Bin Number',title=title,subtitle=subtitle
-if not keyword_set(ok1) then ok1 = 1
-specplot,r.e_inc,r.bin_val,total(/pres,r.bin3,2),limit=lim
-bmap = mvn_sep_lut2map(lut=r.lut)
+;if not keyword_set(ok1) then ok1 = 1
+if keyword_set(face) then z = reform( r.bin3[*, face lt 0, *] ) else z = total(/pres,r.bin3,2)
+specplot,r.e_inc,r.bin_val,z,limit=lim
+;bmap = mvn_sep_lut2map(mapnum=r.mapnum)
+bmap = mvn_sep_lut2map(mapnum=r.mapnum,sensor=r.sensornum)
+;bmap = r.bmap
 for tid=0,1 do begin
   for fto=1,7 do begin
      w = where(bmap.tid eq tid and bmap.fto eq fto,nw)
@@ -486,18 +483,71 @@ endfor
 end
 
 
-pro mvn_sep_response_each_bin,r,bins=bins0,window=win,ylog=ylog
+; ADC bin Response  MATRIX (transposed)
+pro mvn_sep_response_bin_matrix_plot,r,window=win,face=face,transpose=transpose,overplot=overplot,energy_range=ei_range,zlog=zlog
+if n_elements(zlog) eq 0 then zlog=1
+if ~keyword_set(ei_range) then ei_range = minmax(r.e_inc)
+bin_range = [-2,260]
+if n_elements(face) eq 0 then face=0
+face_str = (['Aft','Both','Front'])[face+1]
+title= r.desc+' '+r.particle_name+' ('+r.mapname+') '+face_str
+resp_matrix = float(r.bin3[*,*,0:255] )   * (r.sim_area /100 / r.nd * 3.14)
+zrange = minmax(resp_matrix ,/pos)
+if keyword_set(face) then z = reform( resp_matrix[*, face lt 0, *] ) else z = total(/pres,resp_matrix,2)
+str_element,r,'fdesc',subtitle
+if keyword_set(transpose) then begin
+  options,lim,ylog=1,xrange=bin_range,yrange=ei_range,/xstyle,/ystyle,xmargin=[10,10],zlog=zlog,zrange=zrange,/no_interp,ytitle='Incident Energy (keV)',xtitle='Bin Number',title=title
+  if keyword_set(win) then     wi,win,/show,wsize=[1300,800],icon=0
+  x = indgen(256)
+  y = r.e_inc
+  z = transpose(z)
+endif else begin
+  options,lim,xlog=1,xrange=ei_range,yrange=bin_range,/xstyle,/ystyle,xmargin=[10,10],zlog=zlog,zrange=zrange,/no_interp,xtitle='Incident Energy (keV)',ytitle='Bin Number',title=title,subtitle=subtitle
+  if keyword_set(win) then     wi,win,/show,wsize=[500,800],icon=0
+  y = indgen(256)
+  x = r.e_inc
+endelse
+;if not keyword_set(ok1) then ok1 = 1
+specplot,x,y,z,limit=lim
+overplot=get_plot_state()
+bmap = mvn_sep_get_bmap(r.mapnum,r.sensornum)
+;bmap = r.bmap
+labpos1 = 5.
+labpos2 = 8.
+for tid=0,1 do begin
+  for fto=1,7 do begin
+     w = where(bmap.tid eq tid and bmap.fto eq fto,nw)
+     if nw gt 0 then begin
+        b = bmap[w].bin
+        bmap0 = bmap[w[0]]
+        if keyword_set(transpose) then begin
+          oplot,b,b*0.+ labpos1,psym=bmap0.psym,symsize=.5,color=bmap0.color
+          xyouts,average(b),labpos2,' '+bmap0.name,color=bmap0.color  ,align=.5      
+        endif else begin
+          oplot,b*0.+ ei_range[0]*1.5,b,psym=bmap0.psym,symsize=.5,color=bmap0.color
+          xyouts,ei_range[0]*1.5,average(b),' '+bmap0.name,color=bmap0.color        
+        endelse
+     endif
+  endfor
+endfor
+
+end
+
+
+pro mvn_sep_response_each_bin,r,bins=bins0,window=win,ylog=ylog,omega=omega
+if n_elements(omega) eq 0 then omega=0
 if keyword_set(win) then     wi,win,/show,wsize=[1200,500],icon=0
-bmap = mvn_sep_lut2map(lut=r.lut)
+;bmap = mvn_sep_lut2map(mapnum=r.mapnum)
+bmap =r.bmap
 einc = r.e_inc
 wght = 1/einc^2
-yrange = minmax(r.bin2,pos=ylog)
+yrange = minmax(r.bin3,pos=ylog)
 title= r.desc+' ('+r.mapname+')'
 plot,/nodata,minmax(einc,/pos),yrange,/xlog,ylog=ylog,xtitle='Incident Energy (keV)',ytitle='GF',title=title
 bins = keyword_set(bins0) ? bins0 : indgen(256)
 for i=0,n_elements(bins)-1 do begin
    bin=bins[i]
-   dgf = r.bin2[*,bin] 
+   dgf = r.bin3[*,omega,bin] 
    oplot,einc,dgf > yrange[0]/2.,color=bmap[bin].color,psym=-bmap[bin].psym,symsize=1
    if keyword_set(bins0) then begin
       dgf_max = max(dgf,emx)
@@ -510,13 +560,15 @@ endfor
 
 end
 
-pro mvn_sep_response_each_bin_GF,r,bins=bins0,sbins=sbins,window=win,ylog=ylog,overplot=overplot
+pro mvn_sep_response_each_bin_GF,r,bins=bins0,sbins=sbins,window=win,ylog=ylog,overplot=overplot,omega=omega
+if n_elements(omega) eq 0 then omega=0
 if keyword_set(win) then     wi,win,/show,wsize=[1200,600],icon=0
-bmap = mvn_sep_lut2map(lut=r.lut)
+
+bmap = r.bmap
 e_inc = r.e_inc
 de_inc = (r.xlog) ? (r.e_inc * r.xbinsize  * alog(10)) : r.xbinsize
 wght = 1/e_inc^2
-yrange = minmax(r.bin2,pos=ylog)
+yrange = minmax(r.bin3,pos=ylog)
 yrange = [.8,1e6]
 title= r.desc+' ('+r.mapname+')'
 if ~keyword_set(overplot) then plot,/nodata,minmax(e_inc,/pos),yrange,ystyle=1,/xlog,ylog=ylog,xtitle='Incident Energy (keV)',ytitle='GF',title=title
@@ -524,8 +576,8 @@ overplot = 1
 bins = keyword_set(bins0) ? bins0 : indgen(256)
 for i=0,n_elements(bins)-1 do begin
    bin=bins[i]
-   dgf = r.bin2[*,bin] 
-;   oplot,e_inc,dgf > yrange[0]/2.,color=bmap[bin].color,psym=-bmap[bin].psym,symsize=1
+   dgf = r.bin3[*,omega,bin] 
+   oplot,e_inc,dgf > yrange[0]/2.,color=bmap[bin].color,psym=-bmap[bin].psym,symsize=1
       dgf_max = max(dgf,emx)
       einc_avg = average(dgf*e_inc*wght)/average(dgf*wght)
       einc_max = e_inc[emx]      
@@ -557,7 +609,10 @@ end
 
 
 function mvn_sep_response_spectra,r,fluxfunc
-bmap =  mvn_sep_lut2map(lut=r.lut)
+message,'Obsolete'
+;bmap =  mvn_sep_lut2map(lut=r.lut)
+;bmap =  mvn_sep_lut2map(mapnum=r.mapnum)
+bmap = r.bmap
 scl = [ [[0.],[0.]] ,1/ r.adc_scale ]
 remap = [0,1,2,1,3,0,3,2]
 ftot_scale = scl[remap,*]           ; X O T OT F FO FT FTO
@@ -569,13 +624,12 @@ bmap.dx = bmap.num * escale[bmap.fto,bmap.tid]
  
 end
 
-;
-;pro mvn_sep_spectra_plot,bmap
-;end
-;
-
-pro mvn_sep_inst_bin_response,simstat,data,mapnum=mapnum,new_seed=new_seed,noise_level=noise_level
+pro mvn_sep_inst_bin_response,simstat,data,new_seed=new_seed,noise_level=noise_level,mapnum=mapnum,bmap=bmap
 ;common mvn_sep_inst_bin_response_com , seed
+if size(/type,simstat) ne 8  then begin
+   undefine,data
+   return
+endif
 if n_elements(new_seed) ne 0 then seed = new_seed
 str_element,/add,simstat,'seed',new_seed
 n = n_elements(data)
@@ -583,21 +637,22 @@ if n le 1 then begin
    dprint,'Must have at least 2 successful events'
    return
 endif
-str_element,simstat,'sensornum',sensornum
+;str_element,simstat,'sensornum',sensornum
+sensornum = simstat.sensornum
 if ~keyword_set(mapnum) then str_element,simstat,'mapnum',mapnum
 if ~keyword_set(noise_level) then str_element,simstat,'noise_level',noise_level
 if n_elements(noise_level) ne 1 then noise_level=1.
-if n_elements(sensornum) ne 1 then sensornum=0
+;if n_elements(sensornum) ne 1 then sensornum=1
 if n_elements(mapnum) ne 1 then mapnum = 8
 noise_rms = noise_level * [[2.,3.,2.],[2.,3.,2.]]   ; noise O T F in kev 
 adc_scale = mvn_sep_adc_calibration()
-adc_scale = adc_scale[*,*,sensornum]
+;adc_scale = adc_scale[*,*,sensornum]
 threshold = noise_rms * 5   ; 5 sigma threshold
 shft = [1,1,1,2,1,1,2,4]
 if keyword_set(mapnum) then begin
   lut = mvn_sep_create_lut(mapnum=mapnum)
   mapname = mvn_sep_mapnum_to_mapname(mapnum)
-  bmap = mvn_sep_lut2map(lut=lut)
+  bmap = mvn_sep_lut2map(lut=lut,sensor=sensornum)
   lut = fix( reform(lut,4096,2,8) )
   lut[*,*,0] = 256                 ;  not triggered (not detected)
   lut[*,*,5] = 257                 ;  FO event  (not handled correctly yet)
@@ -615,7 +670,7 @@ for side=0,1 do begin
    fto3 = em3 gt (threshold[*,side] # one_n)           ; determine FTO pattern  based on # above  threshold
    em3 = em3 * fto3                                             ; clear untriggered channels
    em  = total(em3,1)                                           ; total energy in all 3 triggered channels
-   scl3 = (adc_scale[*,side,sensornum] # one_n)            
+   scl3 = (adc_scale[*,side,sensornum-1] # one_n)            
    adc3 = long(em3 * scl3)  <  4095
    ftocode = reform(fto3 ## [1,2,4])                        ; This does not properly account for FO events!!
    adc = total(/pres,adc3,1) / shft[ftocode]    ; FT and OT  adc values are divided by 2,  FTO are divided by 4
@@ -633,7 +688,8 @@ endfor
 str_element,/add,simstat,'noise_level',noise_level
 str_element,/add,simstat,'mapnum',mapnum
 str_element,/add,simstat,'mapname',mapname
-str_element,/add,simstat,'lut',lut
+;str_element,/add,simstat,'lut',lut
+;str_element,/add,simstat,'bmap',bmap
 
 end
 
@@ -742,8 +798,9 @@ if keyword_set(O_det)  then ok = ok and (data.pos[0]*data.pos[1] gt 0)
 if keyword_set(erange) then ok = ok and (data.einc ge erange[0] and data.einc lt erange[1])
 if keyword_set(derange) then ok = ok and (data.e_tot ge derange[0] and data.e_tot lt derange[1])
 if keyword_set(detname) then begin
-   str_element,simstat,'bmap',bmap
-   if ~keyword_set(bmap) then   bmap = mvn_sep_lut2map(lut=simstat.lut)
+;   str_element,simstat,'bmap',bmap
+   bmap = simstat.bmap
+;   if ~keyword_set(bmap) then   bmap = mvn_sep_lut2map(lut=simstat.lut)
    bins = where( strmatch(bmap.name,detname) ,nbins)
    ok1 = 0
    for side=0,1 do for b=0,nbins-1 do ok1 = ok1 or (data.bin[side] eq bins[b])
@@ -763,13 +820,13 @@ end
 
 
 
-function mvn_sep_inst_response,simstat,data0,mapnum=mapnum ,noise_level=noise_level,filter=filter
+function mvn_sep_inst_response,simstat,data0,mapnum=mapnum ,noise_level=noise_level,filter=filter ,bmap=bmap
 if n_elements(data0) le 1 then begin
    dprint,'Must have at least 2 successful events'
    return,0
 endif
 
-mvn_sep_inst_bin_response,simstat,data0,mapnum=mapnum,noise_level=noise_level
+mvn_sep_inst_bin_response,simstat,data0,mapnum=mapnum,noise_level=noise_level  ,bmap=bmap
 
 w= where( mvn_sep_response_data_filter(simstat,data0,_extra=filter,filter=out_filter),nw)
 if nw le 1 then begin
@@ -800,7 +857,7 @@ area_cm2 = area_mm2/100.
 ;if n_elements(noise_level) ne 1 then noise_level=1.
 ;if n_elements(sensornum) ne 1 then sensornum=0
 ;if n_elements(type) ne 1 then type=0               ;  -1: electrons,  1:protons,   2:???
-if ~keyword_set(xbinsize) then xbinsize= .02
+if ~keyword_set(xbinsize) then xbinsize= .025
 if ~keyword_set(ybinsize) then ybinsize= xbinsize
 
 srange =  simlog ? alog10(simrange) : simrange
@@ -810,7 +867,7 @@ xlog=1
 ylog=1
 xbinrange = brange
 ybinrange = brange
-n = n_elements(data)
+ndata = n_elements(data)
 ND = npart * xbinsize / (srange[1] - srange[0])
 nx_einc = long((xlog ? alog10(xbinrange[1]/xbinrange[0]) : xbinrange[1]-xbinrange[0]) / xbinsize)
 ny_emeas= long((ylog ? alog10(ybinrange[1]/ybinrange[0]) : ybinrange[1]-ybinrange[0]) / ybinsize)
@@ -826,9 +883,9 @@ ei_val = ( (indgen(nx_einc)+.5d) *xbinsize) + xs0
 if xlog then ei_val = 10.d^ ei_val
 em_val = ( (indgen(ny_emeas)+.5d) *ybinsize) + ys0
 if ylog then em_val = 10.d^ em_val
-if n ne 0 then begin
+if ndata ne 0 then begin
   einc = data.einc
-  one_n = replicate(1,n)
+  one_n = replicate(1,ndata)
   for side=0,1 do begin
      ftocode = data.fto[side]
      adc_bin = data.bin[side]
@@ -854,8 +911,10 @@ if n ne 0 then begin
   endfor
 endif
 
+
 response= simstat
-str_element,/add,response,'n',n
+str_element,/add,response,'bmap',bmap
+str_element,/add,response,'ndata',ndata
 str_element,/add,response,'nd',nd
 str_element,/add,response,'xlog',xlog
 str_element,/add,response,'ylog',ylog
@@ -867,7 +926,10 @@ str_element,/add,response,'e_inc',ei_val
 str_element,/add,response,'e_meas',em_val
 str_element,/add,response,'G4',g4
 str_element,/add,response,'bin3',adcbin_hist
+str_element,/add,response,'GB3' , adcbin_hist *  (r.sim_area /100 / r.nd * 3.14)
 str_element,/add,response,'bin_val',bin_val
+peakeinc = mvn_sep_inst_response_peakeinc(response,width=30)
+str_element,/add,response,'peakeinc',peakeinc
 str_element,/add,response,'fdesc',fdesc
 str_element,/add,response,'filter',out_filter
 
@@ -985,8 +1047,8 @@ plot,_extra=lim,[0,1],/nodata
    options,lim,/zlog,zrange=minmax(/pos,zv)    ,/no_interp  
    specplot,xv,yv,zv,limit=lim
 ;   printdat,xv,yv,zv,xbinsize,ybinsize
-
 end
+
 
 
 pro makeallpngs,name
@@ -1005,14 +1067,18 @@ mvn_sep_response_omega_plot,data,simstat=simstat,window=win++,_extra=f ,binscale
 
 ;we= where( mvn_sep_response_data_filter(simstat,data,_extra=f,filter=f2),nwe)
 resp = mvn_sep_inst_response(simstat,data,filter=f)
-printdat,resp
+;printdat,resp
 if ~keyword_set(resp) then stop
 
 mvn_sep_response_matrix_plots,resp,window=win++
-mvn_sep_response_bin_matrix_plot,resp,window=win++
+;mvn_sep_response_bin_matrix_plot,resp,window=win++ ,face=0         ; both faces
+mvn_sep_response_bin_matrix_plot,resp,window=win++ ,face=-1
+mvn_sep_response_bin_matrix_plot,resp,window=win++ ,face=+1
 mvn_sep_response_plot_gf,resp,window=win++,/ylog
 
 end
+
+
 
 
 
@@ -1030,14 +1096,11 @@ if 0 then $
 ;testrun = 'Geom1_front'
 ;testrun = 'Geom1_back'
 ;testrun = '4pi_sim'
-if not keyword_set(testrun) then testrun = 'Geom1_front'
-
+if not keyword_set(testrun) then testrun = 'run03_sep2'
+undefine,resp_e0,resp_p0,resp_g0,resp_e1,resp_p1,resp_g1,bmap
 
 if ~keyword_set(ltestrun) || ltestrun ne testrun then begin
-  simstat_e = 0
-  simstat_p = 0
-  simstat_g = 0
-  simstat_Ox= 0
+  undefine,  simstat_e,  simstat_p ,  simstat_g ,  simstat_Ox
 endif
 ltestrun =testrun
 case testrun of 
@@ -1156,7 +1219,76 @@ end
 mvn_sep_read_mult_sim_files,simstat_g,data_g,pathnames='results2/results/geometric_factor/mvn_sep_gamma_back_side_open_.dat',type=0
 end
 
+
+'run03_sep1':begin
+mvn_sep_read_mult_sim_files,simstat_e,pathnames='results2/results/4PI/run03/mvn_sep1_e-_atten0_seed??_.dat',type=-1,data_e
+mvn_sep_read_mult_sim_files,simstat_p,pathnames='results2/results/4PI/run03/mvn_sep1_proton_atten0_seed??_.dat',type=+1,data_p
+mvn_sep_read_mult_sim_files,simstat_g,pathnames='results2/results/4PI/run03/mvn_sep1_gamma_atten0_seed??_.dat',type=0,data_g 
+resp_e0 = mvn_sep_inst_response(simstat_e,data_e,mapnum=mapnum,bmap=bmap)
+resp_p0 = mvn_sep_inst_response(simstat_p,data_p,mapnum=mapnum,bmap=bmap)
+resp_g0 = mvn_sep_inst_response(simstat_g,data_g,mapnum=mapnum,bmap=bmap)
+mvn_sep_read_mult_sim_files,simstat_e1,data_e1,pathnames='results2/results/4PI/run03/mvn_sep1_e-_atten1_seed??_.dat',type=-1
+mvn_sep_read_mult_sim_files,simstat_p1,data_p1,pathnames='results2/results/4PI/run03/mvn_sep1_proton_atten1_seed??_.dat',type=+1
+mvn_sep_read_mult_sim_files,simstat_g1,data_g1 ,pathnames='results2/results/4PI/run03/mvn_sep1_gamma_atten1_seed??_.dat',type=0
+resp_e1 = mvn_sep_inst_response(simstat_e1,data_e1,mapnum=mapnum,bmap=bmap)
+resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)
+resp_g1 = mvn_sep_inst_response(simstat_g1,data_g1,mapnum=mapnum,bmap=bmap)
+end
+
+
+'run03_sep2':begin
+mvn_sep_read_mult_sim_files,simstat_e,pathnames='results2/results/4PI/run03/mvn_sep2_e-_atten0_seed??_.dat',type=-1,data_e
+mvn_sep_read_mult_sim_files,simstat_p,pathnames='results2/results/4PI/run03/mvn_sep2_proton_atten0_seed??_.dat',type=+1,data_p
+mvn_sep_read_mult_sim_files,simstat_g,pathnames='results2/results/4PI/run03/mvn_sep2_gamma_atten0_seed??_.dat',type=0,data_g 
+resp_e0 = mvn_sep_inst_response(simstat_e,data_e,mapnum=mapnum,bmap=bmap)
+resp_p0 = mvn_sep_inst_response(simstat_p,data_p,mapnum=mapnum,bmap=bmap)
+resp_g0 = mvn_sep_inst_response(simstat_g,data_g,mapnum=mapnum,bmap=bmap)
+mvn_sep_read_mult_sim_files,simstat_e1,data_e1,pathnames='results2/results/4PI/run03/mvn_sep2_e-_atten1_seed??_.dat',type=-1
+mvn_sep_read_mult_sim_files,simstat_p1,data_p1,pathnames='results2/results/4PI/run03/mvn_sep2_proton_atten1_seed??_.dat',type=+1
+mvn_sep_read_mult_sim_files,simstat_g1,data_g1 ,pathnames='results2/results/4PI/run03/mvn_sep2_gamma_atten1_seed??_.dat',type=0
+resp_e1 = mvn_sep_inst_response(simstat_e1,data_e1,mapnum=mapnum,bmap=bmap)
+resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)
+resp_g1 = mvn_sep_inst_response(simstat_g1,data_g1,mapnum=mapnum,bmap=bmap)
+end
+
+
+'run04_sep1':begin
+mvn_sep_read_mult_sim_files,simstat_e,pathnames='results2/results/4PI/run04/mvn_sep1_e-_atten0_seed??_.dat',type=-1,data_e
+mvn_sep_read_mult_sim_files,simstat_p,pathnames='results2/results/4PI/run04/mvn_sep1_proton_atten0_seed??_.dat',type=+1,data_p
+;mvn_sep_read_mult_sim_files,simstat_g,pathnames='results2/results/4PI/run04/mvn_sep1_gamma_atten0_seed??_.dat',type=0,data_g 
+resp_e0 = mvn_sep_inst_response(simstat_e,data_e,mapnum=mapnum,bmap=bmap)
+resp_p0 = mvn_sep_inst_response(simstat_p,data_p,mapnum=mapnum,bmap=bmap)
+;resp_g0 = mvn_sep_inst_response(simstat_g,data_g,mapnum=mapnum,bmap=bmap)
+mvn_sep_read_mult_sim_files,simstat_e1,data_e1,pathnames='results2/results/4PI/run04/mvn_sep1_e-_atten1_seed??_.dat',type=-1
+mvn_sep_read_mult_sim_files,simstat_p1,data_p1,pathnames='results2/results/4PI/run04/mvn_sep1_proton_atten1_seed??_.dat',type=+1
+;mvn_sep_read_mult_sim_files,simstat_g1,data_g1 ,pathnames='results2/results/4PI/run04/mvn_sep1_gamma_atten1_seed??_.dat',type=0
+resp_e1 = mvn_sep_inst_response(simstat_e1,data_e1,mapnum=mapnum,bmap=bmap)
+resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)
+;resp_g1 = mvn_sep_inst_response(simstat_g1,data_g1,mapnum=mapnum,bmap=bmap)
+end
+
+
+
+'run04_sep2':begin
+mvn_sep_read_mult_sim_files,simstat_e,pathnames='results2/results/4PI/run04/mvn_sep2_e-_atten0_seed??_.dat',type=-1,data_e
+mvn_sep_read_mult_sim_files,simstat_p,pathnames='results2/results/4PI/run04/mvn_sep2_proton_atten0_seed??_.dat',type=+1,data_p
+;mvn_sep_read_mult_sim_files,simstat_g,pathnames='results2/results/4PI/run04/mvn_sep2_gamma_atten0_seed??_.dat',type=0,data_g 
+resp_e0 = mvn_sep_inst_response(simstat_e,data_e,mapnum=mapnum,bmap=bmap)
+resp_p0 = mvn_sep_inst_response(simstat_p,data_p,mapnum=mapnum,bmap=bmap)
+;resp_g0 = mvn_sep_inst_response(simstat_g,data_g,mapnum=mapnum,bmap=bmap)
+mvn_sep_read_mult_sim_files,simstat_e1,data_e1,pathnames='results2/results/4PI/run04/mvn_sep2_e-_atten1_seed??_.dat',type=-1
+mvn_sep_read_mult_sim_files,simstat_p1,data_p1,pathnames='results2/results/4PI/run04/mvn_sep2_proton_atten1_seed??_.dat',type=+1
+;mvn_sep_read_mult_sim_files,simstat_g1,data_g1 ,pathnames='results2/results/4PI/run04/mvn_sep2_gamma_atten1_seed??_.dat',type=0
+resp_e1 = mvn_sep_inst_response(simstat_e1,data_e1,mapnum=mapnum,bmap=bmap)
+resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)
+;resp_g1 = mvn_sep_inst_response(simstat_g1,data_g1,mapnum=mapnum,bmap=bmap)
+end
+
+
 endcase
+
+filename = testrun+'_response-map-'+strtrim(mapnum,2)+'.sav'
+save,file=filename,resp_e0,resp_p0,resp_g0,resp_e1,resp_p1,resp_g1,bmap,mapnum
 
 
 undefine,f
@@ -1177,21 +1309,34 @@ str_element,/add,f,'impact_bmin',impact_bmin
 str_element,/add,f,'impact_pos',impact_pos
 printdat,f,output=s,/val
 fdesc = strjoin(strcompress(s,/remove_all),', ')
-printdat,fdesc,/val
+dprint,fdesc ;,/val
 
-if 1 then begin
-mvn_sep_inst_bin_response,simstat_e,data_e1,mapnum=mapnum,noise_level=noise_level
-mvn_sep_inst_bin_response,simstat_p,data_p1,mapnum=mapnum,noise_level=noise_level
+if 0 then begin
+mvn_sep_inst_bin_response,simstat_e,data_e,mapnum=mapnum,noise_level=noise_level
+mvn_sep_inst_bin_response,simstat_p,data_p,mapnum=mapnum,noise_level=noise_level
 mvn_sep_inst_bin_response,simstat_g,data_g,mapnum=mapnum,noise_level=noise_level
 ;printdat,data_p1,simstat_p
 
 ;ok = mvn_sep_response_data_filter(simstat_e,data_e1,_extra=f,filter=f)
 win=0
-mvn_sep_response_plots,simstat_e,data_e1,window=win,filter=f
-mvn_sep_response_plots,simstat_p,data_p1,window=win,filter=f
+mvn_sep_response_plots,simstat_e,data_e,window=win,filter=f
+mvn_sep_response_plots,simstat_p,data_p,window=win,filter=f
 mvn_sep_response_plots,simstat_g,data_g,window=win,filter=f
 
 wi,0
+endif
+
+if 0 then begin
+resp=resp_p0
+bmap =resp.bmap
+omega=0
+over=0
+bins0 = where(strmatch(bmap.name,'B-O'))
+;mvn_sep_response_each_bin,resp_p0,bins=bins0,window=20,ylog=1,omega=omega
+mvn_sep_response_each_bin_GF,resp_p0,bins=bins0,window=20,ylog=1,omega=omega,over=over
+endif
+
+
 
 if 0 then begin
 erange=[0,0]
@@ -1200,176 +1345,7 @@ plot,[1,1],/nodata,xrange=[1,1e4],yrange=[1,1e4],/xlog,/ylog
 ;oplot,data_e1[w].edep[0,0],data_e1[w].edep[1,0],psym=3
 color = bytescale(data_e1[w].einc,range=[500,1e4],/log)
 plots,data_e1[w].edep[2,0],data_e1[w].edep[1,0],psym=4,color=color,symsize=.3
-endif
+endif 
 
 
-
-endif else begin
-
-;
-;if 1 then begin
-;;erange = [1,1e6]
-;;ok = mvn_sep_response_data_filter(simstat,data,/col_af,/det_af,/minus_zdir,filter=f)
-;;data = data_e1
-;;ok = mvn_sep_response_data_filter(simstat,data,/minus_zdir,erange=erange,filter=f)
-;;printdat,f
-;mvn_sep_response_aperture_plot,data_e1,window=15,_extra=f,binscale=binscale,simstat=simstat_e
-;mvn_sep_response_aperture_plot,data_p1,window=16,_extra=f,binscale=binscale,simstat=simstat_p
-;;crosshairs
-;mvn_sep_response_omega_plot,window=17,data_e1,_extra=f,binscale=binscale,simstat=simstat_e
-;mvn_sep_response_omega_plot,window=18,data_p1,_extra=f,binscale=binscale,simstat=simstat_p
-;;printdat,f
-;endif
-
-
-if not keyword_set(mapnum) then mapnum=8
-
-
-;
-;if 1 then begin
-;
-;we= where( mvn_sep_response_data_filter(simstat,data_e1,_extra=f,filter=f2,desc=desc),nwe)
-;resp = mvn_sep_inst_response(data_e1[we],seed=seed,simstat=simstat_e,mapnum=mapnum,noise_level=noise_level)
-;resp.desc += desc
-;mvn_sep_response_matrix_plots,resp,window=1
-;mvn_sep_response_plot_gf,resp,win=3,/ylog
-;mvn_sep_response_bin_matrix_plot,resp,window=5
-;
-;wp= where( mvn_sep_response_data_filter(simstat,data_p1,_extra=f,filter=f2,desc=desc),nwp)
-;resp = mvn_sep_inst_response(data_p1[wp],seed=seed,simstat=simstat_p,mapnum=mapnum,noise_level=noise_level)
-;resp.desc += desc 
-;mvn_sep_response_matrix_plots,resp,window=2
-;mvn_sep_response_plot_gf,resp,win=4,/ylog
-;mvn_sep_response_bin_matrix_plot,resp,window=6
-;endif
-;
-
-
-;if ~keyword_set(mapnum_last) || (mapnum ne mapnum_last) then begin
-;if 0 then begin
-;  wp= where( mvn_sep_response_data_filter(simstat_p,data_p1,_extra=f))
-;  we= where( mvn_sep_response_data_filter(simstat_e,data_e1,_extra=f,filter=f2))
-;  printdat,f2
-;  r_e1_frnt = mvn_sep_inst_response(data_e1[we],seed=seed,simstat=simstat_e,mapnum=mapnum,noise=noise_level)
-;  r_p1_frnt = mvn_sep_inst_response(data_p1[wp],seed=seed,simstat=simstat_p,mapnum=mapnum,noise=noise_level)
-;endif
-;re1 = mvn_sep_inst_response(data_e1,seed=seed,simstat=simstat_e,mapnum=mapnum,noise_level=noise_level,/add)
-;rp1 = mvn_sep_inst_response(data_p1,seed=seed,simstat=simstat_p,mapnum=mapnum,noise_level=noise_level,/add)
-;mapnum_last = mapnum
-;endif
-
-par = all_flux(electron_response=re1,proton_response=rp1)
-bmap = mvn_sep_lut2map(mapnum=mapnum)
-
-
-if 0 then begin
-
-bins = indgen(8)*16+9
-bins = indgen(16)*2+48   ; A-F  front
-bins = indgen(16)*2+128
-bins=indgen(256)
-ok = strmatch(bmap.name,'B*O*') 
-;ok = ok and (indgen(256) mod 4 eq 0)  ;  every other bin
-bins = where(ok)
-mvn_sep_response_each_bin,r_e1_frnt,window= 9,/ylog,bins=bins
-mvn_sep_response_each_bin,r_p1_frnt,window=10,/ylog,bins=bins
-
-
-ok = strmatch(bmap.name,'B*O*') 
-;ok = ok and (indgen(256) mod 4 eq 0)  ;  every other bin
-sbins = where(ok)
-mvn_sep_response_each_bin_gf,r_e1_frnt,window=11,/ylog,bins=bins,sbins=sbins
-mvn_sep_response_each_bin_gf,r_p1_frnt,window=12,/ylog,bins=bins,sbins=sbins
-
-endif
-
-
-
-;
-;if ~keyword_set(par) then begin
-;energy = dgen(250,range=[1,1e5],/log)
-;flux = particle_flux(energy,[0,1],parameter=par)
-;;if ~ keyword_set(nrg) or ~keyword_set(flx) then crosshairs,nrg,flx
-;;xv = dgen()
-;;yv = particle_flux(xv,nrg,flx,param=par)
-;;oplot,xv,yv
-;;oplot,nrg,flx,/psym
-;endif
-;
-
-if 0 then begin
-mvn_sep_response_plot,rp1,win=8,/ylog,fluxfunc=par
-xv = r_p1_frnt.e_inc
-if keyword_set(par) then pf,par;,psym=-4,symsize=.5    ; oplot,xv,func(xv,par=par),psym=-4,symsize=.5
-mvn_sep_response_plot,re1,win=7,/ylog,fluxfunc=par
-if keyword_set(par) then pf,par;,psym=-4,symsize=.5    ; oplot,xv,func(xv,par=par),psym=-4,symsize=.5
-endif
-
-if 0 then begin
-if not keyword_set(par0) then par0=par
-wi,13,wsize = [500,700],/show
-flim=0
-options,flim,xtitle='Energy',ytitle='Particle E Flux'
-xlim,flim,10,1e6,1
-ylim,flim,.001,1e5,1
-box,flim
-xv =  dgen(range=[20,1e6],/log)
-e=xv
-oplot,xv,e*all_flux(xv,0,param=par0,species='electron'),color=6
-oplot,xv,e*all_flux(xv,1,param=par0,species='electron'),color=4
-print,par0.pts.electron.spec.ys
-oplot,xv,e*all_flux(xv,0,param=par0,species='proton'),color=2
-oplot,xv,e*all_flux(xv,1,param=par0,species='proton'),color=1
-print,par0.pts.proton.spec.ys
-
-e=10^par0.pts.proton.spec.xs
-oplot,e,e*10.^par0.pts.proton.spec.ys,/psym
-oplot,e,e*10.^par0.pts.electron.spec.ys,/psym
-
-
-
-wi,14,wsize = [1200,500],/show
-cr_e = all_flux(param=par0,species = 'electron')
-cr_p = all_flux(param=par0,species = 'proton')
-cr_t = all_flux(param=par0)
-
-
-if 0 then begin
-names = 'pts.proton.spec.ys[0,1,2]'
-names = 'pts.electron.spec.ys[0,1,2]'
-i = where( strmatch(bmap.name,'?-F')  and bmap.x gt  10)
-i = where( strmatch(bmap.name,'?-O')  and bmap.x gt  10)
-i = where( strmatch(bmap.name,'?-[OF]')  and bmap.x gt  10)
-fit,i,ds[i],param=par0,names=names,/logfit
-endif
-
-
-
-if 0 then begin
-cr_e = mvn_sep_response_flux_to_bin_CR(response=re,param=par)
-cr_p = mvn_sep_response_flux_to_bin_CR(response=rp,param=par)
-endif
-
-
-plot,cr_t,/ylog,yrange=[.00001,1e3],xrange=[-1,260],psym=10,/xstyle,/ystyle,title= 'All',xtitle='Bin Number',ytitle='Count Rate'
-if keyword_set(ind) then   oplot,ind,cr_t[ind],psym=4,symsize=.5
-
-oplot,cr_p,color=2,psym=10
-oplot,cr_e,color=6,psym=10
-if keyword_set(ds) then oplot,ds,psym=10,color=4
-
-
-for side=0,1 do begin
-  for fto=1,7 do begin
-     w = where(bmap.fto eq fto and bmap.tid eq side,nw)
-     if nw ne 0 then begin
-       print,bmap[w[0]].name,total(cr_e[w],/pres),total(cr_p[w],/pres),total(/pres,cr_t[w]),format='(a-8,f8.2,f8.2,f8.2)'
-     endif
-  endfor
-endfor
-
-endif
-
-
-endelse
 end

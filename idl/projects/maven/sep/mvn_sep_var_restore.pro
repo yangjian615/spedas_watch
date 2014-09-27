@@ -1,6 +1,8 @@
 pro mvn_sep_var_restore,pathname,trange=trange,verbose=verbose
 
-common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise ,sep1_memdump,sep2_memdump
+    common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
+    ,sep1_memdump,sep2_memdump  ,mag1_hkp_f0,mag2_hkp_f0
+
 
 trange = timerange(trange)
 ;res = 86400.d
@@ -27,8 +29,8 @@ for i=0,n_elements(files)-1 do begin
   mav_gse_structure_append  ,sep2_svy  , s2_svy
   mav_gse_structure_append  ,sep2_arc  , s2_arc
   mav_gse_structure_append  ,sep2_noise, s2_nse
-  mav_gse_structure_append  ,mag1_hkp  , m1_hkp
-  mav_gse_structure_append  ,mag2_hkp  , m2_hkp
+  mav_gse_structure_append  ,mag1_hkp_f0  , m1_hkp
+  mav_gse_structure_append  ,mag2_hkp_f0  , m2_hkp
   
 endfor
 mvn_sep_handler,/finish

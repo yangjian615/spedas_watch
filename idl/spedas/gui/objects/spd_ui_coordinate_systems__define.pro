@@ -44,8 +44,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-04-30 16:25:15 -0700 (Wed, 30 Apr 2014) $
-;$LastChangedRevision: 14982 $
+;$LastChangedDate: 2014-09-25 16:30:09 -0700 (Thu, 25 Sep 2014) $
+;$LastChangedRevision: 15868 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_coordinate_systems__define.pro $
 ;-
 
@@ -89,8 +89,8 @@ function spd_ui_coordinate_systems::init
 
     ; coordinate systems valid for FIT/ESA/SCM instruments
     ; As of 4/2014, this should be used for the SCM instrument - egrimes
-    fit_esa_load_list = ['dsl', 'gsm', 'gse']
-   
+    fit_esa_load_list = ['dsl',  'gse', 'gsm']
+    
     ; coordinate systems that require position data for transformations
     pos_data_req = ['sel', 'sse']
     

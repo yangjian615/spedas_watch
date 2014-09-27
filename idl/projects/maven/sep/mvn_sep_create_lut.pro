@@ -132,6 +132,53 @@ case mapname of
   
   end
 
+'Flight3': begin   ; mapnum=9
+  startbin = 0
+;  bw=round(exp(i/3.63)/3.))
+;  BW32 = [7,2,2,2,3,4,5,6,7,9,11,13,15,19,23,29,35,42,53,64,79,96,118,144,176,216,268,326,400,490,600,832]
+  BW_O = [4+ 2, 1, 1, 1, 1, 2, 2, 3, 4, 5, 7, 9, 12, 16, 21, 27, 36, 47, 63, 82, 108, 143, 188, 248, 327, 430, 566, 746, 984+ 9 ,1]
+  BW_F = BW_O
+  ;       0  1  2  3  4  5  6  7  8  9  10 11 12 13  14  15  16  17  18  19  20   21   22   23   24   25   26   27   28   29 30 31
+;  BW16 = total(/preserve,reform(bw32,2,16),1)
+;  BW16 = [6,  2,  2,  4,  7,  12,  21,  37,   63,  110, 190   , 331 ,  575,  996,    1730,   10]
+  BW_T  = [6+  2,  2,  4,  7,  12,  21,  37,   63,  110+ 190   , 331 +  575,  996,    1730+   10]
+
+;  BW16 = [6,  2,  2,  4,  7,  12,  21,  37,   63,     110,     190   , 331 ,  575,    996,      1730,      10]
+  BW_OT = [6+  2,  2,  4,  7,  12,  21,  37,   27,36,  47,63,   190   , 331 ,  575,  429,567,   746,984 ,   10]
+  BW_FT = BW_OT
+
+;  BW16 = [6,  2,  2,  4,  7,  12,  21,  37,      63,     110,     190   , 331 ,    575,    996,      1730,      10]
+  BW_FTO= [6+  2,  2,  4,  7,  12,  21,  16,21,   27,36,  110,     190   , 331 ,  248,327,  429,567,  1730+10]
+  
+;  if n_elements() ne 32 then Message,'Wrong number of elements'
+;  if total(BW32,/preserve) ne 4096 then message,'Bin error'
+  
+  startbin = 0
+  mvn_sep_fill_lut,lut,startbin,TIDs=[0,1],ftos=[0,5],binwidth=4096,inc=0
+  startbin = 0
+  
+  mvn_sep_fill_lut,lut,startbin,TID=0,fto=1,binwidth=bw_O
+  mvn_sep_fill_lut,lut,startbin,TID=0,fto=2,binwidth=bw_T
+  mvn_sep_fill_lut,lut,startbin,TID=0,fto=4,binwidth=bw_F
+  mvn_sep_fill_lut,lut,startbin,TID=0,fto=3,binwidth=bw_OT
+  mvn_sep_fill_lut,lut,startbin,TID=0,fto=6,binwidth=bw_FT
+  mvn_sep_fill_lut,lut,startbin,TID=0,fto=7,binwidth=bw_FTO
+
+  mvn_sep_fill_lut,lut,startbin,TID=1,fto=1,binwidth=bw_O
+  mvn_sep_fill_lut,lut,startbin,TID=1,fto=2,binwidth=bw_T
+  mvn_sep_fill_lut,lut,startbin,TID=1,fto=4,binwidth=bw_F
+  mvn_sep_fill_lut,lut,startbin,TID=1,fto=3,binwidth=bw_OT
+  mvn_sep_fill_lut,lut,startbin,TID=1,fto=6,binwidth=bw_FT
+  mvn_sep_fill_lut,lut,startbin,TID=1,fto=7,binwidth=bw_FTO
+  chksum = total(/preserve,lut)
+  printdat,chksum,/hex
+  correction = 'AA'x - chksum
+  lut[0] = correction
+  printdat,varname='checksum',total(/preserve,lut),/hex
+  
+  end
+
+
 'fullstack0': begin
   mvn_sep_fill_lut_basemap,lut
   startbin = 0

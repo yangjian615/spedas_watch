@@ -51,24 +51,26 @@
 ;		on the description of the polarization states
 ;		of waves' Geophys. J. R. Astr. Soc. (1980) v61 115-130
 ;
-;         Wavenormal Angle:
-;		the angle between the direction of minimum
-;		variance calculated from the complex off diagonal
-;		elements of the spectral matrix and the Z direction
-;		of the input
-;		ac field data. For magnetic field data in
-;		field aligned coordinates this is the
-;		wavenormal angle assuming a plane wave.
+;   Wavenormal Angle:
+;     The angle between the direction of minimum variance
+;     calculated from the complex off diagonal elements of the
+;     spectral matrix and the Z direction of the input ac field data.
+;     for magnetic field data in field aligned coordinates this is the
+;     wavenormal angle assuming a plane wave. See:
+;     Means, J. D. (1972), Use of the three-dimensional covariance
+;     matrix in analyzing the polarization properties of plane waves,
+;     J. Geophys. Res., 77(28), 5551-5559,
+;     doi:10.1029/JA077i028p05551.
 ;
-;         Ellipticity:The ratio (minor axis)/(major axis) of the
-;		ellipse transcribed by the field variations of the
-;		components transverse to the Z direction. The sign
-;		indicates the direction of rotation of the field vector in
-;  		the plane. Negative signs refer to left-handed
-;		rotation about the Z direction. In the field
-;		aligned coordinate system these signs refer to
-;		plasma waves of left and right handed
-;		polarisation.
+;   Ellipticity:
+;     The ratio (minor axis)/(major axis) of the ellipse transcribed
+;     by the field variations of the components transverse to the
+;     Z direction (Samson and Olson, 1980). The sign indicates
+;     the direction of rotation of the field vector in the plane (cf.
+;     Means, (1972)).
+;     Negative signs refer to left-handed rotation about the Z
+;     direction. In the field aligned coordinate system these signs
+;     refer to plasma waves of left and right handed polarization.
 ;
 ;         Helicity:Similar to Ellipticity except defined in terms of the
 ;	direction of minimum variance instead of Z. Stricltly the Helicity
@@ -98,8 +100,8 @@
 ;	 100%. Remembercomparing two straight lines yields 100% polarisation.
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-10-10 12:43:37 -0700 (Thu, 10 Oct 2013) $
-; $LastChangedRevision: 13299 $
+; $LastChangedDate: 2014-09-23 16:57:26 -0700 (Tue, 23 Sep 2014) $
+; $LastChangedRevision: 15847 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/wavpol/twavpol.pro $
 ;-
 pro twavpol,tvarname,prefix = prefix, error=error, freqline = freqline, timeline = timeline,$

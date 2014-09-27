@@ -9,6 +9,7 @@ if ~keyword_set(mapname) && keyword_set(mapnum) && size(/type,mapnum) le 3 then 
    4:     mapname='ATLO'
    6:     mapname='Flight1'
    8:     mapname='Flight2'
+   9:     mapname='Flight3'
    25:    mapname='SEP-A-O-alpha_low'
    24:    mapname='SEP-A-O-alpha'
    52:    mapname='SEP-A-F-alpha'

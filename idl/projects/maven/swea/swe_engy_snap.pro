@@ -42,8 +42,8 @@
 ;       DBINS:         Deflector bin mask (6 elements: 0=off, 1=on).  Default = all on.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-15 11:33:00 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15792 $
+; $LastChangedDate: 2014-09-24 13:24:28 -0700 (Wed, 24 Sep 2014) $
+; $LastChangedRevision: 15856 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -168,7 +168,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     psym = 10
 
     plot_oo,x,y,yrange=yrange,/ysty,xtitle='Energy (eV)',ytitle=ytitle, $
-            charsize=1.4,psym=psym
+            charsize=1.4,psym=psym,title=time_string(spec.time)
 
     if (dflg) then begin
       if (npts gt 1) then ddd = mvn_swe_get3d([tmin,tmax],/all,/sum) $
@@ -219,25 +219,26 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
         fit,E1[ikap],F1[ikap],func='swe_maxbol',par=p,names='N T K_N',/silent
         fit,E1[ikap],F1[ikap],func='swe_maxbol',par=p,names='N T K_N K_VH',/silent
 ;        fit,E1[indx],F1[indx],func='swe_maxbol',par=p,names='N T K_N K_VH K_K',/silent
+
+        N_tot = p.n + p.k_n
         pk = p
         pk.n = 0.
         oplot,E1[ikap],swe_maxbol(E1[ikap],par=pk),color=3
-      endif
+      endif else begin
+        dE = E1
+        dE[0] = abs(E1[1] - E1[0])
+        for i=1,62 do dE[i] = abs(E1[i+1] - E1[i-1])/2.
+        dE[63] = abs(E1[63] - E1[62])
 
-      dE = E1
-      dE[0] = abs(E1[1] - E1[0])
-      for i=1,62 do dE[i] = abs(E1[i+1] - E1[i-1])/2.
-      dE[63] = abs(E1[63] - E1[62])
+        j = where(E1 gt Epeak*2., n_e)
+        E_halo = E1[j]
+        F_halo = F1[j] - swe_maxbol(E_halo, par=p)
+        oplot,E_halo,F_halo,color=1,psym=10
+        prat = (p.pot/E_halo) < 1.
 
-      j = where(E1 gt Epeak*2., n_e)
-      E_halo = E1[j]
-      F_halo = F1[j] - swe_maxbol(E_halo, par=p)
-      oplot,E_halo,F_halo,color=1,psym=10
-      prat = (p.pot/E_halo) < 1.
-
-      N_halo = c3*total(dE[j]*sqrt(1. - prat)*(E_halo^(-1.5))*F_halo)
-
-      if (kap) then N_tot = p.n + p.k_n else N_tot = N_core + N_halo
+        N_halo = c3*total(dE[j]*sqrt(1. - prat)*(E_halo^(-1.5))*F_halo)
+        N_tot = N_core + N_halo
+      endelse
 
       jndx = where(E1 gt spec.sc_pot)
       col = 4
@@ -250,7 +251,9 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
         xyouts,0.73,0.81,string(p.k_n,format='("Nh = ",f5.2)'),color=3,charsize=1.2,/norm
         xyouts,0.73,0.78,string(p.k_vh,format='("Vh = ",f6.0)'),color=3,charsize=1.2,/norm
         xyouts,0.73,0.75,string(p.k_k,format='("k = ",f5.2)'),color=3,charsize=1.2,/norm        
-      endif
+      endif else begin
+        xyouts,0.73,0.81,string(N_halo,format='("Nh = ",f5.2)'),color=1,charsize=1.2,/norm
+      endelse
 
       if (scat) then begin
         kndx = where((E1 gt phi) and (E1 lt Epeak))

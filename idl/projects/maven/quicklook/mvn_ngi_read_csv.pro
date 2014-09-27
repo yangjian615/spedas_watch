@@ -18,47 +18,48 @@
 ;   EM1_VOLTAGE     FLOAT     Array[19686]
 ;   EM2_VOLTAGE     FLOAT     Array[19686]
 ; and returns a structure of counts_per_second(nmass, ntimes), with
-; one second time resolution that can be plotted easily. First,
-; interpolate to 0.1 time resolution, then average over seconds.
-Function pp2spectrogram, pp
+; one minute time resolution that can be plotted easily. Set the time
+; range if you need for all spectrograms to end up on the same time
+; array.
+Function pp2spectrogram, pp, time_range = time_range
 
 ;Get a mass array
   m0 = min(pp.mass, max = m1)
   mass_arr = m0+indgen(m1-m0+1)
   nmass = n_elements(mass_arr)
-;Get a time array, start at one second boundaries, with 0.1 second
-;time resolution, ntx is the number of time points per second
-  ntx = 10
-  dt = 1.0/float(ntx)
-  t0 = double(long64(pp.time[0]))
-  tsec = ceil(max(pp.time) - t0)
-  nt = tsec*ntx+1
+
+;Get a time array, 10 second time resolution
+  ntx = 6
+  dt = 60.0/float(ntx)
+  If(n_elements(time_range) Eq 2) Then Begin
+     t00 = time_range[0]
+     t01 = time_range[1]
+  Endif Else t00 = min(pp.time, max = t01)
+     
+  t0 = double(long64(t00))
+  nt = ceil((t01-t0)/dt)
   time_array = t0+dt*dindgen(nt)
   tmid = 0.5*(time_array+time_array[1:*])
   ntmid = n_elements(tmid)
+
 ;Output array
   otp = fltarr(ntmid, nmass)
   For j = 0, nmass-1 Do Begin
 ;Here all you need is to interpolate for each mass
      this_mass = where(pp.mass Eq mass_arr[j], nj)
      If(nj Eq 0) Then Continue
-     otp[*, j] = interpol(pp.counts_per_second[this_mass], pp.time[this_mass], tmid)
-     otp[*, j] = otp[*, j] > 1.0e-6
+;degap the data  first
+     xdegap, 600.0, 10.0, pp.time[this_mass], pp.counts_per_second[this_mass], ct_out, y_out, /twonanpergap
+     otp[*, j] = interpol(y_out, ct_out, tmid)
 ;Apply attenuation here:
      If(mass_arr[j] Le 150.0) Then att = 1.0 $
      Else If(mass_arr[j] Gt 150.0 And mass_arr[j] Le 300.0) Then att = 10.0 $
      Else att = 100.0
      otp[*, j] = otp[*, j]*att
+;     otp[*, j] = otp[*, j] > 1.0e-2
   Endfor
-;Now contract into 1 second resolution; the way that tmid is
-;calculated should ensure that all that is needed is a reforming and
-;totaling, ntmid/ntx has to be an integer value
-  y = reform(otp, ntx, ntmid/ntx, nmass)
-  y = total(y, 1)/ntx
 
-;Here's the time_array
-  x = t0+dindgen(ntmid/ntx)
-Return, {x:x, y:y, v:mass_arr}
+Return, {x:tmid, y:otp, v:mass_arr}
 
 End
 
@@ -118,8 +119,8 @@ End
 ;HISTORY:
 ; 2014-07-28, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-22 15:36:50 -0700 (Mon, 22 Sep 2014) $
-; $LastChangedRevision: 15837 $
+; $LastChangedDate: 2014-09-24 13:45:58 -0700 (Wed, 24 Sep 2014) $
+; $LastChangedRevision: 15857 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ngi_read_csv.pro $
 ;-
 Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
@@ -153,12 +154,13 @@ Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
      tj_val = tagj;[xstart:*]
      If(tj_name Eq 'TIME') Then Begin
 ;You need a timespan, so that mvn_spc_met_to_unixtime works correctly
-        met_range = minmax(double(tj_val))
-        ut_range = mvn_spc_met_to_unixtime(met_range, correct_clockdrift = 0)
-        one_day = 24.0*3600.0d0
-        dtr = ceil((ut_range[1]-ut_range[0])/one_day)
-        timespan, time_string(ut_range[0], precision = -3), dtr 
-        tj_val = mvn_spc_met_to_unixtime(double(tj_val), /correct_clock)
+;        met_range = minmax(double(tj_val))
+;        ut_range = mvn_spc_met_to_unixtime(met_range, correct_clockdrift = 0)
+;        one_day = 24.0*3600.0d0
+;        dtr = ceil((ut_range[1]-ut_range[0])/one_day)
+;        timespan, time_string(ut_range[0], precision = -3), dtr 
+;        tj_val = mvn_spc_met_to_unixtime(double(tj_val),/correct_clock)
+        tj_val = mvn_spc_met_to_unixtime(double(tj_val))
      Endif Else If(tj_name Ne 'SCRIPT' And tj_name Ne 'MODE') Then Begin
         tj_val = float(tj_val)
      Endif
@@ -227,7 +229,8 @@ Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
 ;split into modes, and create a tplot spectrogram for each mode
   modes = ['csn', 'osnt', 'osnb', 'osi']
   pcsn = -1 & posnt = -1 & posnb = -1 & posi = -1
-  dl = {units:'CPS', ztitle:'CPS', ytitle:'Mass (amu)', spec:1, log:1, ylog:0, zlog:1}
+  dl = {units:'CPS', ztitle:'CPS', ysubtitle:'amu', spec:1, log:1, ylog:0, zlog:1}
+  oti = minmax(pnew.time)
   For j = 0, n_elements(modes)-1 Do Begin
      this_mode = where(pnew.mode Eq modes[j], nj)
      If(nj Eq 0) Then continue
@@ -240,18 +243,22 @@ Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
         'csn': Begin
            pcsn = pp2spectrogram(temporary(pp))
            store_data, 'mvn_ngi_csn', data = pcsn, dlimits = dl
+           options, 'mvn_ngi_csn', 'ytitle', 'ngi_csn'
         End
         'osnt': Begin
            posnt = pp2spectrogram(temporary(pp))
            store_data, 'mvn_ngi_osnt', data = posnt, dlimits = dl
+           options, 'mvn_ngi_osnt', 'ytitle', 'ngi_osnt'
         End
         'osnb': Begin
            posnb = pp2spectrogram(temporary(pp))
            store_data, 'mvn_ngi_osnb', data = posnb, dlimits = dl
+           options, 'mvn_ngi_osnb', 'ytitle', 'ngi_osnb'
         End
         'osi': Begin
            posi = pp2spectrogram(temporary(pp))
            store_data, 'mvn_ngi_osi', data = posi, dlimits = dl
+           options, 'mvn_ngi_osi', 'ytitle', 'ngi_osi'
         End
 
      Endcase

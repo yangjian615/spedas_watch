@@ -51,8 +51,8 @@
 ;       EXTENDED: Alternate method of choosing the 28oct11 ephemeris.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-13 13:53:27 -0700 (Sat, 13 Sep 2014) $
-; $LastChangedRevision: 15786 $
+; $LastChangedDate: 2014-09-24 17:17:37 -0700 (Wed, 24 Sep 2014) $
+; $LastChangedRevision: 15860 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -77,7 +77,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   if (domex) then begin
     pathname = rootdir + 'mex_traj_mso_june2010.sav'
     file = mvn_pfp_file_retrieve(pathname)
-    if (findfile(file[0]) eq '') then begin
+    finfo = file_info(file)
+    if (~finfo.exists) then begin
       print,"File not found: ",pathname
       return
     endif
@@ -116,7 +117,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   endif else begin
     pathname = rootdir + 'maven_orb_mso_' + date + '.sav'
     file = mvn_pfp_file_retrieve(pathname)
-    if (findfile(file[0]) eq '') then begin
+    finfo = file_info(file)
+    if (~finfo.exists) then begin
       print,"File not found: ",pathname
       return
     endif
@@ -151,7 +153,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
     pathname = rootdir + 'maven_orb_geo_' + date + '.sav'
     file = mvn_pfp_file_retrieve(pathname)
-    if (findfile(file[0]) eq '') then begin
+    finfo = file_info(file)
+    if (~finfo.exists) then begin
       print,"File not found: ",pathname
       return
     endif

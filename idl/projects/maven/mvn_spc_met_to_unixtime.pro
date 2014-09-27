@@ -5,9 +5,9 @@
 ;see also:  "mvn_spc_unixtime_to_met" for the reverse conversion
 ; This routine is in the process of being modified to use SPICE Kernels to correct for clock drift as needed.
 ; Author: Davin Larson
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-03-05 14:37:22 -0800 (Wed, 05 Mar 2014) $
-; $LastChangedRevision: 14505 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2014-09-23 10:02:10 -0700 (Tue, 23 Sep 2014) $
+; $LastChangedRevision: 15840 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mvn_spc_met_to_unixtime.pro $
 ;-
 function mvn_spc_met_to_unixtime,input,reverse=reverse,correct_clockdrift=correct_clockdrift  ; ,reset=reset   ;,prelaunch = prelaunch
@@ -19,27 +19,27 @@ if n_elements(correct_clockdrift) eq 1 then begin
   cor_clkdrift = correct_clockdrift
 endif
 
-if getenv('USER') ne 'davin_' then cor_clkdrift =0
-
-if  0 && n_elements(kernel_verified) eq 0 || keyword_set(reset) then begin   ; check for cspice first
-   if spice_test() then begin
-      tls = spice_standard_kernels('LEAP')
-      sclk = mvn_spice_kernels(['STD','SCK'],/load)
-      if keyword_set(sclk)  then begin
-         kernel_verified = 1
+if keyword_set(cor_clkdrift) then begin
+   if  n_elements(kernel_verified) eq 0 || keyword_set(reset) then begin ; check for cspice first
+      if spice_test() then begin
+         tls = spice_standard_kernels(/load) ;jmm, 22-sep-2014
+         sclk = mvn_spice_kernels(['STD','SCK'],/load)
+         if keyword_set(sclk)  then begin
+            kernel_verified = 1
+         endif else begin
+            kernel_verified = 0
+            dprint,dlevel=2,'ICY is not installed.'
+            dprint,dlevel=2,'Times are subject to spacecraft clock drift.'
+            prelaunch = 1
+         endelse
       endif else begin
          kernel_verified = 0
-         dprint,dlevel=2,'ICY is not installed.'
-         dprint,dlevel=2,'Times are subject to spacecraft clock drift.'
          prelaunch = 1
-      endelse
-   endif else begin
-      kernel_verified = 0
-      prelaunch = 1
-   endelse 
-   reset=0
-   time_verified = systime(1)
-endif 
+      endelse 
+      reset=0
+      time_verified = systime(1)
+   endif 
+endif else cor_clkdrift = 0b ;need to set this to avoid crash at line 66, jmm, 22-sep-2014
       
 
 if n_elements(input) eq 0 then message,'Must provide input'

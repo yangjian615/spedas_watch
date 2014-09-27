@@ -19,10 +19,10 @@
 ;HISTORY:
 ; 16-jul-2013, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-05-12 10:50:00 -0700 (Mon, 12 May 2014) $
-; $LastChangedRevision: 15100 $
+; $LastChangedDate: 2014-09-23 17:17:05 -0700 (Tue, 23 Sep 2014) $
+; $LastChangedRevision: 15852 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_load_all_qlook.pro $
-Pro mvn_load_all_qlook, date = date, l0_input_file = l0_input_file, $
+Pro mvn_load_all_qlook, date_in = date_in, l0_input_file = l0_input_file, $
                         device = device, _extra=_extra
 
 ;Hold load position for error handling
@@ -62,8 +62,12 @@ If(error_status Ne 0) Then Begin
       print, 'Skipped STA Load: '+filex
       Goto, skip_sta
     End
+    'ngi':Begin
+      print, 'Skipped NGIMS Load: '+filex
+      Goto, skip_ngi
+    End
     Else: Begin
-      print, 'MVN_OVER_SHELL exiting with no clue'
+      print, 'MVN_LOAD_ALL_QLOOK exiting with no clue'
     End
   Endcase
 Endif
@@ -75,11 +79,28 @@ mvn_qlook_init, device = device
 ;Load all of the data
 If(keyword_set(l0_input_file)) Then Begin
    filex = l0_input_file[0]
-Endif Else If(keyword_set(date)) Then Begin
-   filex = mvn_l0_db2file(date)
+Endif Else If(keyword_set(date_in)) Then Begin
+   filex = mvn_l0_db2file(date_in)
 Endif Else Begin
-   message, /info, 'Need to set data or l0_input_file keyword'
+   message, /info, 'Need to set date or l0_input_file keyword'
 Endelse
+
+;Here you have a filename, some of these inputs require a time span or
+;date, extract the date from the filename
+If(is_string(filex)) Then Begin
+   p1  = strsplit(file_basename(filex), '_',/extract)
+   date = p1[4]
+Endif Else Begin
+   dprint, 'Missing Input File, Returning'
+   Return
+Endelse
+yyyy = strmid(date, 0, 4)
+mm = strmid(date, 4, 2)
+dd = strmid(date, 6, 2)
+date_str = yyyy+'-'+mm+'-'+dd
+d0 = time_double(date_str)
+time_range = d0+[0.0, 86400.0]
+timespan, d0, 1 
 
 If(~is_string(filex)) Then message, 'No file found:'
 
@@ -139,16 +160,8 @@ mvn_pfp_l0_file_read, file=filex, /sep
 skip_sep:
 
 load_position = 'swe'
+
 ;SWE data, may need a time range
-If(is_string(filex)) Then Begin
-   p1  = strsplit(file_basename(filex), '_',/extract)
-   date = p1[4]
-   d0 = time_double(strmid(date,0,4)+'-'+strmid(date,4,2)+'-'+strmid(date,6,2))
-   time_range = d0+[0.0, 86400.0]
-Endif Else If(n_elements(date) Gt 0) Then Begin
-   d0 = time_double(date[0])
-   time_range = d0+[0.0, 86400.0]
-Endif Else time_range = [0.0d0, 0.0d0]
 mvn_swe_load_l0, time_range, filename = filex
 mvn_swe_ql
 
@@ -168,14 +181,16 @@ skip_swia:
 
 load_position = 'sta'
 ;STA data
-;I need a timespan here
-p1  = strsplit(file_basename(filex), '_',/extract)
-date = p1[4]
-d0 = time_double(strmid(date,0,4)+'-'+strmid(date,4,2)+'-'+strmid(date,6,2))
-timespan, d0, 1
 mvn_sta_gen_ql, file = filex
 
 skip_sta:
+
+;Load MGIMS data, if available, 
+load_position = 'ngi'
+ngi_file = '/disks/data/maven/data/sci/ngi/ql/'+yyyy+'/'+mm+'/'+'mvn_ngi_ql_'+date+'.csv'
+ppp = mvn_ngi_read_csv(ngi_file)
+
+skip_ngi:
 
 mvn_qlook_init, device = device
 

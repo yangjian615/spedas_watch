@@ -29,8 +29,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-05-12 12:43:45 -0700 (Mon, 12 May 2014) $
-; $LastChangedRevision: 15102 $
+; $LastChangedDate: 2014-09-24 16:28:39 -0700 (Wed, 24 Sep 2014) $
+; $LastChangedRevision: 15859 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_over_shell.pro $
 ;-
 Pro mvn_over_shell, date = date, $
@@ -142,7 +142,7 @@ While start_date+86400.*i Le end_date Do Begin
        pdir = plot_dir 
        direct_to_dbase = 0b
     Endif Else Begin
-       pdir = '/disks/data/maven/pfp/'
+       pdir = '/disks/data/maven/data/sci/'
        direct_to_dbase = 1b
     Endelse
 
@@ -150,7 +150,7 @@ While start_date+86400.*i Le end_date Do Begin
     If(do_over[0] Ne -1) Then Begin
         load_position = 'over'
         If(keyword_set(xxx)) Then noload_data = 1 Else noload_data = 0
-        If(direct_to_dbase) Then pdir1 = pdir+'gen/ql/'+yyyy+'/'+mmmm+'/' $
+        If(direct_to_dbase) Then pdir1 = pdir+'pfp/ql/'+yyyy+'/'+ $
         Else pdir1 = pdir
         If(~is_string(file_search(pdir1))) Then file_mkdir, pdir1
         mvn_gen_overplot, date = datein, /makepng, device = 'z', $
@@ -160,7 +160,7 @@ While start_date+86400.*i Le end_date Do Begin
     do_lpw = where(instx Eq 'lpw')
     If(do_lpw[0] Ne -1) Then Begin
         load_position = 'lpw'
-        If(direct_to_dbase) Then pdir1 = pdir+'lpw/ql/'+yyyy+'/'+mmmm+'/' $
+        If(direct_to_dbase) Then pdir1 = pdir+'lpw/ql/'+yyyy+'/'+ $
         Else pdir1 = pdir
         If(~is_string(file_search(pdir1))) Then file_mkdir, pdir1
         mvn_lpw_overplot, date = datein, /makepng, device = 'z', $
@@ -170,7 +170,7 @@ While start_date+86400.*i Le end_date Do Begin
     do_mag = where(instx Eq 'mag')
     If(do_mag[0] Ne -1) Then Begin
         load_position = 'mag'
-        If(direct_to_dbase) Then pdir1 = pdir+'mag/ql/'+yyyy+'/'+mmmm+'/' $
+        If(direct_to_dbase) Then pdir1 = pdir+'mag/ql/'+yyyy+'/'+ $
         Else pdir1 = pdir
         If(~is_string(file_search(pdir1))) Then file_mkdir, pdir1
         mvn_mag_overplot, date = datein, /makepng, device = 'z', $
@@ -180,7 +180,7 @@ While start_date+86400.*i Le end_date Do Begin
     do_sep = where(instx Eq 'sep')
     If(do_sep[0] Ne -1) Then Begin
         load_position = 'sep'
-        If(direct_to_dbase) Then pdir1 = pdir+'sep/ql/'+yyyy+'/'+mmmm+'/' $
+        If(direct_to_dbase) Then pdir1 = pdir+'sep/ql/'+yyyy+'/'+ $
         Else pdir1 = pdir
         If(~is_string(file_search(pdir1))) Then file_mkdir, pdir1
         mvn_sep_overplot, date = datein, /makepng, device = 'z', $
@@ -190,7 +190,7 @@ While start_date+86400.*i Le end_date Do Begin
     do_sta = where(instx Eq 'sta')
     If(do_sta[0] Ne -1) Then Begin
         load_position = 'sta'
-        If(direct_to_dbase) Then pdir1 = pdir+'sta/ql/'+yyyy+'/'+mmmm+'/' $
+        If(direct_to_dbase) Then pdir1 = pdir+'sta/ql/'+yyyy+'/'+ $
         Else pdir1 = pdir
         If(~is_string(file_search(pdir1))) Then file_mkdir, pdir1
         mvn_sta_overplot, date = datein, /makepng, device = 'z', $
@@ -200,7 +200,7 @@ While start_date+86400.*i Le end_date Do Begin
     do_swe = where(instx Eq 'swe')
     If(do_swe[0] Ne -1) Then Begin
         load_position = 'swe'
-        If(direct_to_dbase) Then pdir1 = pdir+'swe/ql/'+yyyy+'/'+mmmm+'/' $
+        If(direct_to_dbase) Then pdir1 = pdir+'swe/ql/'+yyyy+'/'+ $
         Else pdir1 = pdir
         If(~is_string(file_search(pdir1))) Then file_mkdir, pdir1
         mvn_swe_overplot, date = datein, /makepng, device = 'z', $
@@ -210,7 +210,7 @@ While start_date+86400.*i Le end_date Do Begin
     do_swia = where(instx Eq 'swia')
     If(do_swia[0] Ne -1) Then Begin
         load_position = 'swia'
-        If(direct_to_dbase) Then pdir1 = pdir+'swi/ql/'+yyyy+'/'+mmmm+'/' $
+        If(direct_to_dbase) Then pdir1 = pdir+'swi/ql/'+yyyy+'/'+ $
         Else pdir1 = pdir
         If(~is_string(file_search(pdir1))) Then file_mkdir, pdir1
         mvn_swia_overplot, date = datein, /makepng, device = 'z', $

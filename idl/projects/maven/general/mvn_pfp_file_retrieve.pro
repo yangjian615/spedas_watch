@@ -36,13 +36,14 @@ tstart = systime(1)
 if keyword_set(recent) then trange = systime(1) - [recent,0] * 86400d ;    Obtain the last N*24 hours
 
 if keyword_set(L0) || ~keyword_set(pathname) then begin   ; default location of L0 files
-   pathname = 'maven/pfp/l0/YYYY/MM/mvn_pfp_all_l0_YYYYMMDD_v???.dat'
+;   pathname = 'maven/pfp/l0/YYYY/MM/mvn_pfp_all_l0_YYYYMMDD_v???.dat'
+   pathname = 'maven/data/sci/pfp/l0_all/YYYY/MM/mvn_pfp_all_l0_YYYYMMDD_v???.dat'
    daily_names=1
    last_version =1
 endif
 
 if keyword_set(insitu_kp_cdf) then begin
-   pathname = 'maven/kp/insitu/sample_insitu_kp/mvn_pfp_l2_keyparam_YYYYMMDD_v??_r??.cdf'
+   pathname = 'maven/data/sci/kp/insitu/sample_insitu_kp/mvn_pfp_l2_keyparam_YYYYMMDD_v??_r??.cdf'
    daily_names = 1
    last_version=1
 endif
@@ -51,7 +52,10 @@ if keyword_set(remote_kp_cdf) then begin
    pathname = 'maven/kp/remote/sample_iuvs_kp/mvn_rs_kp_YYYYMMDDThh????_v???_r???.cdf'
    hourly_names = 1
    last_version=1
+   valid_only=1
 endif
+
+
 
 
 

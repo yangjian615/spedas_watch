@@ -9,7 +9,8 @@ if keyword_set(wnd) then begin
     mx = max(d,b)
     i1 = (b-wnd) > 0
     i2 = (b+wnd) < (n_elements(d)-1)
-    pk = find_peak(d[i1:i2],cbins[i1:i2],threshold=threshold,window=wnd)
+;    dprint,wnd
+    pk = find_peak(d[i1:i2],cbins[i1:i2],threshold=threshold)
     return,pk
 endif
 if keyword_set(threshold) then begin
@@ -449,19 +450,20 @@ ptrs= sep_all_ptrs[w]
 datap = ptrs.x
 num = n_elements(*datap)
 if keyword_set(trange) then begin
-    tr = minmax( time_double( trange)) 
-    t = (*datap).time
-    if tr[0] eq tr[1] then begin
-       test = t le tr[0] 
-       w = where(test,nw)
-       num = 1
-       if nw ne 0 then    w = w[nw-1]  else num = 0
-    endif else begin
-       test = t ge tr[0] and  t lt tr[1]
-       w = where( test ,num)
-    endelse
+    trr = minmax( time_double( trange)) 
+    tr = (*datap).trange
+    w = where( (tr[0,*] le trr[1]) and (tr[1,*] gt trr[0] ) ,num)   
+;    if tr[0] eq tr[1] then begin
+;       test = t le tr[0] 
+;       w = where(test,nw)
+;       num = 1
+;       if nw ne 0 then    w = w[nw-1]  else num = 0
+;    endif else begin
+;       test = t ge tr[0] and  t lt tr[1]
+;       w = where( test ,num)
+;    endelse
     if num eq 0 then begin
-        dprint,'No ',dataname,' data found in time range: '+strjoin(time_string(tr),' - ')
+        dprint,'No ',dataname,' data found in time range: '+strjoin(time_string(trr),' - ')
     endif else begin
         data = (*datap)[w]       
     endelse
@@ -542,16 +544,16 @@ pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_
            sep2_last_hkp = 0
            sep1_avg = 0
            sep2_avg = 0
-           lastmem1=0
-           lastmem2=0
+ ;          lastmem1=0
+ ;          lastmem2=0
            clear = keyword_set(reset)
         endif
         if n_elements(set_manage) ne 0 then manage=set_manage
         if n_elements(set_realtime) ne 0 then realtime=set_realtime
         if keyword_set(debug) then begin
            dprint,phelp=debug,manage,realtime
-           if (sepn and 1) ne 0 then dprint,phelp=debug,sep1_hkp,sep1_svy
-           if (sepn and 2) ne 0 then dprint,phelp=debug,sep2_hkp,sep2_svy 
+           if (sepn and 1) ne 0 then dprint,phelp=debug,sep1_hkp,sep1_svy,sep1_memdump,lastmem1
+           if (sepn and 2) ne 0 then dprint,phelp=debug,sep2_hkp,sep2_svy ,sep2_memdump,lastmem2
            return
         endif        
         dprint,dlevel=2,'SEP handler: ' , keyword_set(clear) ? 'Clearing Data' : 'Finalizing'
@@ -567,8 +569,8 @@ pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_
         if (sepn and 2) ne 0 then mav_gse_structure_append, clear=clear,  sep2_arc,   tname=prefix+'sep2_arc' , tags= svy_tags ; 'DATA ATT MAPID COUNTS_TOTAL'
         if (sepn and 1) ne 0 then mav_gse_structure_append, clear=clear,  sep1_noise, tname=prefix+'sep1_noise', tags= noise_tags ;'BASELINE SIGMA DATA TOT'
         if (sepn and 2) ne 0 then mav_gse_structure_append, clear=clear,  sep2_noise, tname=prefix+'sep2_noise', tags= noise_tags ;'BASELINE SIGMA DATA TOT'
-        if (sepn and 1) ne 0 then mav_gse_structure_append, clear=clear,  sep1_memdump   ; don't create any tplot variables for this
-        if (sepn and 2) ne 0 then mav_gse_structure_append, clear=clear,  sep2_memdump
+        if (sepn and 1) ne 0 then mav_gse_structure_append, clear=clear,  sep1_memdump , tname = prefix+'sep1_mem'    ; don't create any tplot variables for this
+        if (sepn and 2) ne 0 then mav_gse_structure_append, clear=clear,  sep2_memdump , tname = prefix+'sep2_mem' 
         if (magnum and 1) ne 0 then   mav_gse_structure_append, clear=clear,  mag1_hkp_f0   ,    tname= 'mvn_mag1_hkp' , tags = mag_tags
         if (magnum and 2) ne 0 then   mav_gse_structure_append, clear=clear,  mag2_hkp_f0   ,    tname= 'mvn_mag2_hkp' , tags = mag_tags
         sep_all_ptrs = 0
@@ -631,8 +633,8 @@ pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_
       '79'x: mav_gse_structure_append  ,sep2_noise, realtime=realtime, tname=prefix+'sep2_noise',mvn_apid_sep_noise_decom(ccsds)
       '7c'x: mav_gse_structure_append  ,sep1_memdump, realtime=realtime, tname=prefix+'sep1_memdump',mvn_apid_sep_memdump_decom(ccsds,lastmem=lastmem1)
       '7d'x: mav_gse_structure_append  ,sep2_memdump, realtime=realtime, tname=prefix+'sep2_memdump',mvn_apid_sep_memdump_decom(ccsds,lastmem=lastmem2)
-      '7c'x: mav_gse_structure_append  ,sep1_memdump, realtime=realtime, tname=prefix+'sep1_memdump',mvn_apid_sep_memdump_decom(ccsds,lastmem=lastmem1)
-      '7d'x: mav_gse_structure_append  ,sep2_memdump, realtime=realtime, tname=prefix+'sep2_memdump',mvn_apid_sep_memdump_decom(ccsds,lastmem=lastmem2)
+ ;     '7c'x: mav_gse_structure_append  ,sep1_memdump, realtime=realtime, tname=prefix+'sep1_memdump',mvn_apid_sep_memdump_decom(ccsds,lastmem=lastmem1)
+ ;     '7d'x: mav_gse_structure_append  ,sep2_memdump, realtime=realtime, tname=prefix+'sep2_memdump',mvn_apid_sep_memdump_decom(ccsds,lastmem=lastmem2)
       '26'x: mav_gse_structure_append  ,mag1_hkp_f0, realtime=realtime, tname=prefix+'mag1_hkp',mvn_mag_hkp_decom_f0(ccsds)
       '27'x: mav_gse_structure_append  ,mag2_hkp_f0, realtime=realtime, tname=prefix+'mag2_hkp',mvn_mag_hkp_decom_f0(ccsds)
        else: return    ; Do nothing if not a SEP packet
@@ -644,11 +646,12 @@ end
 
 pro mvn_sep_verify_mem
 ;mem = 
-mvn_sep_extract_data,'mvn_sep1_memdump',data
-lut = mvn_sep_create_lut(mapnum=8)
+mvn_sep_extract_data,'mvn_sep1_mem',data
+printdat,data
+lut = mvn_sep_create_lut(mapnum=9)
 printdat,where( lut ne data.map) 
-mvn_sep_extract_data,'mvn_sep2_memdump',data
-lut = mvn_sep_create_lut(mapnum=8)
+mvn_sep_extract_data,'mvn_sep2_mem',data
+lut = mvn_sep_create_lut(mapnum=9)
 printdat,where( lut ne data.map) 
 
 
