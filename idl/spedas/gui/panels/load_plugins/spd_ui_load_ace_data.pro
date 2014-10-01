@@ -7,9 +7,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-09-29 12:02:30 -0700 (Mon, 29 Sep 2014) $
+;$LastChangedRevision: 15876 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/load_plugins/spd_ui_load_ace_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -254,7 +254,7 @@ pro spd_ui_load_ace_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeR
                                               
   typeArray = ptrarr(2)
   
-  typeArray[0] = ptr_new(['k0','h0','h1','h2'])
+  typeArray[0] = ptr_new(['k0','h0','h1','h2', 'h3'])
   typeArray[1] = ptr_new(['k0','k1','h0','h2'])
                                      
   dataBase = widget_base(selectionBase,/row)
@@ -270,17 +270,19 @@ pro spd_ui_load_ace_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeR
   widget_control,typeList,set_list_select=0
   
   paramArray = ptrarr(2)
-  paramArray[0] = ptr_new(ptrarr(4))
-  paramArray[1] = ptr_new(ptrarr(4))
+  paramArray[0] = ptr_new(ptrarr(5))
+  paramArray[1] = ptr_new(ptrarr(5))
   
   (*paramArray[0])[0] = ptr_new(['*','Weight','Magnitude','BGSEc'])
   (*paramArray[0])[1] = ptr_new(['*','Magnitude','BGSEc','BGSM','dBrms','Q_FLAG','SC_pos_GSE','SC_pos_GSM'])
   (*paramArray[0])[2] = ptr_new(['*','Magnitude','BGSEc','BGSM','Q_FLAG','SC_pos_GSE','SC_pos_GSM'])
   (*paramArray[0])[3] = ptr_new(['*','Magnitude','BGSEc','BGSM','Q_FLAG','SC_pos_GSE','SC_pos_GSM'])
+  (*paramArray[0])[4] = ptr_new(['*','Magnitude','BRTN','BGSEc','BGSM','Q_FLAG'])
   (*paramArray[1])[0] = ptr_new(['*','Np','Vp','He_ratio','Tpr'])
   (*paramArray[1])[1] = ptr_new(['*','Np','Vp','He_ratio','Tpr'])
   (*paramArray[1])[2] = ptr_new(['*','Np','Vp','Tpr','alpha_ratio','V_GSE','V_RTN','V_GSM','SC_pos_GSE','SC_pos_GSM'])
   (*paramArray[1])[3] = ptr_new(['*','Np','Vp','Tpr','alpha_ratio','V_GSE','V_RTN','V_GSM','SC_pos_GSE','SC_pos_GSM'])
+  (*paramArray[1])[4] = ptr_new(['*','Np','Vp','Tpr','alpha_ratio','V_GSE','V_RTN','V_GSM','SC_pos_GSE','SC_pos_GSM'])
                                                                 
   paramBase = widget_base(dataBase,/col)
   paramLabel = widget_label(paramBase,value='Parameter(s):')

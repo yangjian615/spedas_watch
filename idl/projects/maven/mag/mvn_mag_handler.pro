@@ -3,9 +3,9 @@
 ;Purpose: 
 ; Author: Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2013-03-07 12:55:04 -0800 (Thu, 07 Mar 2013) $
-; $LastChangedRevision: 11745 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu:36867/repos/idl_socware/trunk/projects/maven/mag/mav_apid_mag_handler.pro $
+; $LastChangedDate: 2014-09-29 12:07:25 -0700 (Mon, 29 Sep 2014) $
+; $LastChangedRevision: 15877 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_handler.pro $
 ; 
 ;-
 
@@ -38,10 +38,10 @@ time_f2: data2[7], $
 time_f3: data2[8], $
 F_MET: data2[6] * 2d^16 + data2[7] + data2[8]/2d^16, $
 status_flag: data2[9], $
-xtest: data2[10] * 0.016115, $
-ytest: data2[11] * 0.016115, $
-ztest: data2[12] * 0.016115, $
-RTEST: data2[13] * 0.016115, $
+xtest: fix(data2[10]) * 0.016115, $
+ytest: fix(data2[11]) * 0.016115, $
+ztest: fix(data2[12]) * 0.016115, $
+RTEST: fix(data2[13]) * 0.016115, $
 VCALMON: data2[14] * 0.000392, $
 P82VMON: data2[15] * 0.000392, $
 M82VMON: data2[16] * 0.000392, $
@@ -218,10 +218,39 @@ end
 
 
 
+pro mvn_mag_var_save,filename,pathname=pathname,trange=trange,prereq_info=prereq_info
+common mav_apid_mag_handler_com,manage,realtime,mag1_hkp,mag2_hkp,mag1_svy,mag2_svy,mag1_svy_misc,mag2_svy_misc,mag1_arc,mag2_arc,mag1_arc_misc,mag2_arc_misc
+
+if not keyword_set(filename) then begin
+  if not keyword_set(trange) then trange = minmax((*(mag1_svy.x)).time)
+  res = 86400.d
+  days =  round( time_double(trange )/res)
+  ndays = days[1]-days[0]
+  tr = days * res
+  if not keyword_set(pathname) then pathname =  'maven/pfp/mag/l1/.sav/YYYY/MM/mvn_mag_l1_YYYYMMDD_$NDAY.sav' 
+  pn = str_sub(pathname, '$NDAY', strtrim(ndays,2)+'day')
+  filename = mvn_pfp_file_retrieve(pn,/daily,trange=tr[0],source=source,verbose=verbose,/create_dir)
+endif
+
+sw_version = mvn_sep_sw_version()
+if keyword_set(mag1_hkp) then m1_hkp = *mag1_hkp.x
+if keyword_set(mag1_svy) then m1_svy = *mag1_svy.x
+if keyword_set(mag1_arc) then m1_arc = *mag1_arc.x
+;if keyword_set(mag1_noise) then m1_nse = *sep1_noise.x 
+if keyword_set(mag2_hkp) then m2_hkp = *mag2_hkp.x
+if keyword_set(mag2_svy) then m2_svy = *mag2_svy.x
+if keyword_set(mag2_arc) then m2_arc = *mag2_arc.x
+;if keyword_set(mag2_noise) then m2_nse = *sep2_noise.x
+file_mkdir2,file_dirname(filename)  
+save,filename=filename,verbose=verbose,m1_hkp,m1_svy,m1_arc,m2_hkp,m2_svy,m2_arc,sw_version,prereq_info
+end
 
 
 
-pro mvn_mag_handler,ccsds,decom=decom,reset=reset,debug=debug,set_realtime=set_realtime,clear=clear,$
+
+
+
+pro mvn_mag_handler,ccsds,decom=decom,reset=reset,debug=debug,set_realtime=set_realtime,set_manage=set_manage,clear=clear,$
        offset1=offset1,hkp_tags=hkp_tags,svy_tags=svy_tags,arc_tags=arc_tags,magnum=magnum,finish=finish,  $
        mag1_svy=m1_svy
 
@@ -234,6 +263,7 @@ pro mvn_mag_handler,ccsds,decom=decom,reset=reset,debug=debug,set_realtime=set_r
            clear = keyword_set(reset)
         endif
         if n_elements(set_realtime) ne 0 then realtime=set_realtime
+        if n_elements(set_manage) ne 0 then manage=set_manage
         if arg_present(m1_svy) then m1_svy=*(mag1_svy.x)
         if arg_present(m2_svy) then m2_svy=*(mag2_svy.x)
         if arg_present(m1_hkp) then m1_hkp=*(mag1_hkp.x)
@@ -264,20 +294,20 @@ pro mvn_mag_handler,ccsds,decom=decom,reset=reset,debug=debug,set_realtime=set_r
        ;   do other stuff here        
         endif
         if keyword_set(offset1) then begin   ;  must be in highest gain setting
-           if n_elements(offset1) ne 3 then offset1 = [29, 17, -65] * 256.*2 / 2d^15
+           if n_elements(offset1) ne 3 then offset1 = -[29, 17, -65] * 256.*2 / 2d^15  
            if keyword_set(mag1_svy) then begin
              p = mag1_svy.x
              store_data,'mvn_mag1_svy_Bcor',(*p).time, transpose((*P).braw + (offset1 # replicate(1,n_elements((*p).time) ) )) ,dlim={spice_frame:'MAVEN_MAG1'}
            endif
            if keyword_set(mag1_arc) then begin
              p = mag1_arc.x
-             store_data,'mvn_mag1_arc_Bcor',(*p).time, transpose((*P).braw + (offset1 # replicate(1,n_elements((*p).time) ) )) 
+             store_data,'mvn_mag1_arc_Bcor',(*p).time, transpose((*P).braw + (offset1 # replicate(1,n_elements((*p).time) ) )) ,dlim={spice_frame:'MAVEN_MAG1'}
            endif             
         endif
         return
     endif
     if not keyword_set(manage) then return
-;    dprint,dlevel=4,'Mag handler'    ;  Append new packets here.
+    dprint,dlevel=3,'Mag handler',ccsds.apid    ;  Append new packets here.
     Case ccsds.apid of
       '26'x: mav_gse_structure_append  ,mag1_hkp, realtime=realtime, tname='mag1_hkp',mvn_mag_hkp_decom(ccsds)
       '27'x: mav_gse_structure_append  ,mag2_hkp, realtime=realtime, tname='mag2_hkp',mvn_mag_hkp_decom(ccsds)

@@ -36,6 +36,7 @@ if datatype eq 'k0'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_k0/YYYY/ac
 if datatype eq 'h0'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h0/YYYY/ac_h0_mfi_YYYYMMDD_v05.cdf'
 if datatype eq 'h1'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h1/YYYY/ac_h1_mfi_YYYYMMDD_v05.cdf'
 if datatype eq 'h2'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h2/YYYY/ac_h2_mfi_YYYYMMDD_v05.cdf'
+if datatype eq 'h3'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h3/YYYY/ac_h3_mfi_YYYYMMDD_v01.cdf'
 
 if not keyword_set(varformat) then begin
    varformat = '*'

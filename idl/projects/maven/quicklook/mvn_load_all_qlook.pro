@@ -19,8 +19,8 @@
 ;HISTORY:
 ; 16-jul-2013, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-23 17:17:05 -0700 (Tue, 23 Sep 2014) $
-; $LastChangedRevision: 15852 $
+; $LastChangedDate: 2014-09-29 15:16:52 -0700 (Mon, 29 Sep 2014) $
+; $LastChangedRevision: 15878 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_load_all_qlook.pro $
 Pro mvn_load_all_qlook, date_in = date_in, l0_input_file = l0_input_file, $
                         device = device, _extra=_extra
@@ -114,42 +114,21 @@ skip_lpw:
 
 load_position = 'mag'
 
-;MAG data
-mdatafile = file_basename(filex)
-minput_path = file_dirname(filex)
-mdata_output_path = './'         ;still used, but may not be used later
-mplot_save_path='.'              ;not used here
-mvn_mag_ql, datafile=mdatafile, input_path=minput_path, $
-            data_output_path=mdata_output_path, plot_save_path=mplot_save_path, $
-            /tsmake, /mag1, /tplot, out_varname = out_varname, pkt_type = 'ccsds',$
-            /delete_save_file
-mvn_mag_ql, datafile=mdatafile, input_path=minput_path, $
-            data_output_path=mdata_output_path, plot_save_path=mplot_save_path, $
-            /tsmake, /mag2, /tplot, out_varname = out_varname, pkt_type = 'ccsds',$
-            /delete_save_file
-
-;If(is_struct(d)) Then Begin 
-;drop bad time tags here, may not be necessary later, jmm, 2013-12-02
-;    ok = where(d.x Gt time_double('2013'), nok)
-;    If(nok Gt 0) Then Begin
-;        xok = d.x[ok]
-;        yok = d.y[ok, *]
-;        db2 = sqrt(total(yok, 2))
-;        y1 = fltarr(nok, 4)
-;        y1[*,0:2] = yok
-;        y1[*,3] = db2
-;        d1 = {x:xok, y:y1}
-;        dl1 = dl
-;        str_element, dl1, 'colors', [2, 4, 6, 0], /add_replace
-;        str_element, dl1, 'labels', ['x','y','z','T'], /add_replace
-;Despike this data, if necessary
-;        For k = 0, n_elements(d1.y[0,*])-1 Do Begin
-;            d1yk = simple_despike_1d(d1.y[*, k], width = 10)
-;            d1.y[*, k] = d1yk
-;        Endfor
-;        store_data, 'mvn_ql_magplustot', data=d1, dlimits=dl1
-;    Endif
-;Endif
+;MAG data, switched dcommutation, jmm, 29-sep-2014
+mvn_pfp_l0_file_read, file = filex, /mag
+magvar0 = ['mvn_mag1_svy_BAVG', 'mvn_mag2_svy_BAVG']
+magvar1 = ['mvn_ql_mag1', 'mvn_ql_mag2']
+For j = 0, 1 Do Begin
+   get_data, magvar0[j], data = dj
+   If(is_struct(dj)) Then Begin
+      copy_data, magvar0[j], magvar1[j]
+;units and coordinate system?
+      data_att = {units:'nT', coord_sys:'Sensor'}
+      dlimits = {spec:0, log:0, colors:[2, 4, 6], labels: ['x', 'y', 'z'],  $
+                 labflag:1, color_table:39, data_att:data_att}
+      store_data, magvar1[j], dlimits = dlimits
+   Endif
+Endfor
 
 skip_mag:
 

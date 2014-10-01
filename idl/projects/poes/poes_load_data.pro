@@ -33,10 +33,27 @@
 ;             /downloadonly: Download the file but don't read it  
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-09-25 15:08:20 -0700 (Thu, 25 Sep 2014) $
-; $LastChangedRevision: 15867 $
+; $LastChangedDate: 2014-09-26 15:05:05 -0700 (Fri, 26 Sep 2014) $
+; $LastChangedRevision: 15873 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_load_data.pro $
 ;-
+
+; split tplot variable containing data for two telescopes into 
+; two tplot variables - one for each telescope
+pro poes_split_telescope_data, name, telescope_angles, tplotnames = tplotnames
+    get_data, name, data=the_data, dlimits=the_dlimits
+    if is_struct(the_data) && is_struct(the_dlimits) then begin
+        store_data, name+'_tel'+telescope_angles[0], data={x: the_data.X, y: reform(the_data.Y[*,0,*])}, dlimits=the_dlimits
+        store_data, name+'_tel'+telescope_angles[1], data={x: the_data.X, y: reform(the_data.Y[*,1,*])}, dlimits=the_dlimits
+    
+        del_data, name
+        ; add the new tplot variables to tplotnames, so we can time clip them.
+        append_array, tplotnames, name+'_tel'+telescope_angles[0]
+        append_array, tplotnames, name+'_tel'+telescope_angles[1]
+    endif else begin
+        dprint, dlevel=0, 'Error splitting the telescope data for ', name, '. Invalid data or dlimits structure.'
+    endelse
+end
 
 pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffix = suffix, $
                     downloadonly = downloadonly, verbose = verbose, noephem = noephem
@@ -54,7 +71,7 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
         return
     endif
 
-    if not keyword_set(datatype) then datatype = 'all'
+    if not keyword_set(datatype) then datatype = '*'
     if not keyword_set(probes) then probes = ['noaa19'] 
     if not keyword_set(source) then source = !poes
     if (keyword_set(trange) && n_elements(trange) eq 2) $
@@ -76,7 +93,7 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
     endfor
     
     for j = 0, n_elements(datatype)-1 do begin
-        if datatype[j] eq 'all' then varformat = '*' else begin
+        if datatype[j] eq '*' then varformat = '*' else begin
             case datatype[j] of 
                 ; TED electron integral energy flux
                 'ted_ele_eflux': append_array, varformat, 'ted_ele_*_eflux'
@@ -128,12 +145,40 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
         files = file_retrieve(relpathnames, _extra=source, /last_version)
         
         if keyword_set(downloadonly) then continue
-        poes_cdf2tplot, files, prefix = prefix_array[j]+'_', suffix = suffix, verbose = verbose, /load_labels, tplotnames=tplotnames, varformat = varformat
+        poes_cdf2tplot, files, prefix = prefix_array[j]+'_', suffix = suffix, verbose = verbose, $
+            /load_labels, tplotnames=tplotnames, varformat = varformat
     endfor
 
     ; make sure some tplot variables were loaded
     tn_list_after = tnames('*')
     new_tnames = ssl_set_complement([tn_list_before], [tn_list_after])
+    
+    ; check for data types with data for multiple telescopes in a single tplot variable. 
+    for prefix_idx = 0, n_elements(prefix_array)-1 do begin
+        mep_ele_flux = where(new_tnames eq prefix_array[prefix_idx]+'_mep_ele_flux', ele_count)
+        if ele_count ne 0 then begin
+            poes_split_telescope_data, prefix_array[prefix_idx]+'_mep_ele_flux', ['0', '90'], tplotnames = tplotnames
+            poes_split_telescope_data, prefix_array[prefix_idx]+'_mep_ele_flux_err', ['0', '90'], tplotnames = tplotnames
+        endif
+
+        mep_pro_flux = where(new_tnames eq prefix_array[prefix_idx]+'_mep_pro_flux', pro_count)
+        if pro_count ne 0 then begin
+            poes_split_telescope_data, prefix_array[prefix_idx]+'_mep_pro_flux', ['0', '90'], tplotnames = tplotnames
+            poes_split_telescope_data, prefix_array[prefix_idx]+'_mep_pro_flux_err', ['0', '90'], tplotnames = tplotnames
+        endif
+        
+        ted_ele_flux = where(new_tnames eq prefix_array[prefix_idx]+'_ted_ele_flux', ele_count)
+        if ele_count ne 0 then begin
+            poes_split_telescope_data, prefix_array[prefix_idx]+'_ted_ele_flux', ['0', '30'], tplotnames = tplotnames
+            poes_split_telescope_data, prefix_array[prefix_idx]+'_ted_ele_flux_err', ['0', '30'], tplotnames = tplotnames
+        endif
+
+        ted_pro_flux = where(new_tnames eq prefix_array[prefix_idx]+'_ted_pro_flux', pro_count)
+        if pro_count ne 0 then begin
+            poes_split_telescope_data, prefix_array[prefix_idx]+'_ted_pro_flux', ['0', '30'], tplotnames = tplotnames
+            poes_split_telescope_data, prefix_array[prefix_idx]+'_ted_pro_flux_err', ['0', '30'], tplotnames = tplotnames
+        endif
+    endfor
 
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin

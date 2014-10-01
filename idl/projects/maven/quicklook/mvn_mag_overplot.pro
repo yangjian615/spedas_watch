@@ -31,8 +31,8 @@
 ; Changed to call mvn_mag_ql_tsmaker2, 2014-03-21, may switch back
 ; next week
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-04-16 15:46:37 -0700 (Wed, 16 Apr 2014) $
-; $LastChangedRevision: 14839 $
+; $LastChangedDate: 2014-09-29 15:16:52 -0700 (Mon, 29 Sep 2014) $
+; $LastChangedRevision: 15878 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_mag_overplot.pro $
 Pro mvn_mag_overplot, date = date, time_range = time_range, $
                       makepng=makepng, device = device, directory = directory, $
@@ -48,26 +48,25 @@ Endif Else Begin
    filex = mvn_l0_db2file(date)
 Endelse
 If(~keyword_set(noload_data)) Then Begin
-    datafile = file_basename(filex)
-    input_path = file_dirname(filex)
-    data_output_path = './'     ;still used, but may not be used later
-    plot_save_path='.'          ;not used here
-
-    mvn_mag_ql, datafile=datafile, input_path=input_path, $
-                data_output_path=data_output_path, plot_save_path=plot_save_path, $
-                /tsmake, /mag1, /tplot, out_varname = out_varname1, $
-                pkt_type = 'ccsds', /delete_save_file
+    mvn_pfp_l0_file_read, file = filex, /mag
+    magvar0 = ['mvn_mag1_svy_BAVG', 'mvn_mag2_svy_BAVG']
+    magvar1 = ['mvn_ql_mag1', 'mvn_ql_mag2']
+    For j = 0, 1 Do Begin
+       get_data, magvar0[j], data = dj
+       If(is_struct(dj)) Then Begin
+          copy_data, magvar0[j], magvar1[j]
+;units and coordinate system?
+          data_att = {units:'nT', coord_sys:'Sensor'}
+          dlimits = {spec:0, log:0, colors:[2, 4, 6], labels: ['x', 'y', 'z'],  $
+                     labflag:1, color_table:39, data_att:data_att}
+          store_data, magvar1[j], dlimits = dlimits
+       Endif
+    Endfor
     
-    mvn_mag_ql, datafile=datafile, input_path=input_path, $
-                data_output_path=data_output_path, plot_save_path=plot_save_path, $
-                /tsmake, /mag2, /tplot, out_varname = out_varname2, $
-                pkt_type = 'ccsds', /delete_save_file
-    
-    varlist = [out_varname1, out_varname2]
+    varlist = ['mvn_ql_mag1', 'mvn_ql_mag2']
 ;You need a time range for the data, Assuming that everything comes
 ;from one kind of packet, you should be ok, but check all variables
 ;just in case
-
     varlist = mvn_qlook_vcheck(varlist, tr = tr)
     If(varlist[0] Eq '') Then Begin
         dprint, 'No data, Returning'

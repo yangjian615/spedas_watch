@@ -670,16 +670,23 @@ if ~keyword_set(overplot) then begin
      dprint,'Option: markends is deprecated, you can control the placement of ticks using all the standard commands from plot.'
    endif
    
-   extract_tags,_extra,{xrange:[min_x,max_x]} ;xrange is now sent to plot through _extra
+   if is_struct(_extra) then begin
+     _extra_plot=_extra
+   endif
+   
+   ;xrange is now sent to plot through _extra
+   ;helps make it so we can use time_ticks
+   ;but since this mutates _extra, we need to use a copy(so we correctly preserve replotting) 
+   extract_tags,_extra_plot,{xrange:[min_x,max_x]} 
    
    if keyword_set(xistime) then begin
       x_time_setup = time_ticks([min_x,max_x],x_time_offset,xtitle=xtitle)
       x_time_setup.xtickv+=x_time_offset
-      extract_tags,_extra,x_time_setup,/preserve ;merge time_settings into other settings
+      extract_tags,_extra_plot,x_time_setup,/preserve ;merge time_settings into other settings
    endif
       
    plot,[min_x,max_x],[min_y,max_y],yrange=[min_y,max_y],title=title,xtitle=xtitle,ytitle=ytitle, pos=pos,$
-           _extra = _extra,/nodata,noerase=noerase,xlog=xlog,ylog=ylog,isotropic=0,ticklen=ticklen,xstyle=1,ystyle=1,xtick_get=xtick_get,$
+           _extra = _extra_plot,/nodata,noerase=noerase,xlog=xlog,ylog=ylog,isotropic=0,ticklen=ticklen,xstyle=1,ystyle=1,xtick_get=xtick_get,$
            ytick_get=ytick_get
            
    if arg_present(get_plot_pos) then begin
