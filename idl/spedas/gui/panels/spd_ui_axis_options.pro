@@ -23,8 +23,8 @@
 ;If we could work out why the panel title combobox worked there it would be better to fix axis label title to match rather than truncating.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-29 14:42:00 -0700 (Thu, 29 May 2014) $
-;$LastChangedRevision: 15262 $
+;$LastChangedDate: 2014-09-30 09:09:23 -0700 (Tue, 30 Sep 2014) $
+;$LastChangedRevision: 15881 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_axis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -4501,7 +4501,11 @@ centerTLB, tlb
 Widget_Control, tlb, /realize
 statusBar->Draw
 
-drawObject->update,windowStorage,loadedData
+; the following call to update was commented out 9/30/2014
+; by Eric Grimes; seems unnecessary, and calls to 
+; the update method of the draw object are very expensive
+;drawObject->update,windowStorage,loadedData
+
 spd_ui_update_axis_from_draw,drawObject,panels
 spd_ui_init_axis_window, tlb
 

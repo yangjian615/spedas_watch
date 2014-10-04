@@ -15,9 +15,9 @@
 ; none
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-05-27 16:29:10 -0700 (Tue, 27 May 2014) $
-;$LastChangedRevision: 15236 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-09-30 10:06:42 -0700 (Tue, 30 Sep 2014) $
+;$LastChangedRevision: 15884 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_calculate.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -137,6 +137,9 @@ PRO spd_ui_calculate_event, event
     Exit_Sequence:
     widget_control,state.programText,get_value=text
     state.settings->setProperty,text=text,name=state.programName,path=state.programPath
+    ;Update the draw object to refresh any plots
+    state.drawobject->update, state.windowStorage, state.loadeddata
+    state.drawobject->draw
     state.historyWin->update,'Calculate Widget Killed'
     state.tlb_statusbar->update, 'Calculate Widget Killed'
     if obj_valid(state.insertTree) then begin
@@ -165,6 +168,9 @@ PRO spd_ui_calculate_event, event
   
   CASE uval OF
     'OK': begin
+      ;Update the draw object to refresh any plots
+      state.drawobject->update, state.windowStorage, state.loadeddata
+      state.drawobject->draw
       state.historyWin->update,'Calculate Widget Closed'
       state.tlb_statusbar->update, 'Calculate Widget Closed'
       widget_control,state.programText,get_value=text
@@ -732,6 +738,8 @@ Pro spd_ui_calculate, gui_id,loadedData,settings,historywin,treeCopyPtr,call_seq
            treeCopyPtr:treeCopyPtr, $
            call_sequence:call_sequence, $
            tlb_statusBar:tlb_statusBar, $
+           drawObject: drawObject, $
+           windowStorage: windowStorage, $
            listinFocus:0, $ ; 0 for default/data tree, 1 for functions list, 2 for operators list and 3 for constants
            strtoadd:'' $ ; keep track of string to add to the program
            }
@@ -756,10 +764,13 @@ Pro spd_ui_calculate, gui_id,loadedData,settings,historywin,treeCopyPtr,call_seq
   
   XManager, 'spd_ui_calculate', tlb, /No_Block
 
+; the following call to update/draw was commented out 9/30/2014
+; by Eric Grimes; seems unnecessary, and calls to 
+; the update method of the draw object are very expensive
   ;Update the draw object to refresh any plots
-  drawobject->update, windowStorage, loadeddata
-  drawobject->draw
-  scrollbar->update
+ ; drawobject->update, windowStorage, loadeddata
+ ; drawobject->draw
+  ;scrollbar->update
   
 
   historyWin->update,'Calculate panel closed'

@@ -31,7 +31,8 @@ common mvn_spice_kernels_com,   kernels,retrievetime,tranges
     naif = spice_file_source(preserve_mtime=1,valid_only=valid_only)
  ;   sprg = mvn_file_source()
 all=1
-    if keyword_set(all) then names=['STD','SCK','FRM','IK','POS','ATT']
+if keyword_set(sck) then names = ['STD','SCK']
+if keyword_set(all) then names=['STD','SCK','FRM','IK','POS','ATT']
 if keyword_set(reset) then kernels=0
 ct = systime(1)
 waittime = 10.                 ; search no more often than this number of seconds
@@ -66,23 +67,32 @@ if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
                append_array,kernels,  this_dir+'kernels/ik/maven_swia.ti'  
                end
      'POS':  begin     ; Spacecraft position
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od003a_131118-131219_v1.bsp',_extra=source)
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od006a_131121-140301_v1.bsp',_extra=source)    ; spacecraft position
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od008b_131220-141002_v2.bsp',_extra=source)
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od013a_140125-141002_tcm2final_v1.bsp',_extra=source)  
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od015a_140215-141012_moiprelim_v1.bsp',_extra=source)  
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od????_??????-??????_*.bsp',_extra=source,/last_version)  
+;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od003a_131118-131219_v1.bsp',_extra=source)
+;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od006a_131121-140301_v1.bsp',_extra=source)    ; spacecraft position
+;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od008b_131220-141002_v2.bsp',_extra=source)
+;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od013a_140125-141002_tcm2final_v1.bsp',_extra=source)  
+;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od015a_140215-141012_moiprelim_v1.bsp',_extra=source)  
+               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_131118-140811_rec_v1.bsp',_extra=source)  
+               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_od030b_140708-140927_plm1-10.0_final_v1.bsp',_extra=source)
+               if 0 then begin
+               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00001-00002_00032_v1.bsp',_extra=source)
+               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00004-00004_00026_v1.bsp',_extra=source)
+               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_?????-?????_?????_v?.bsp',_extra=source,/last_version)
+               endif else begin
+               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb.bsp',_extra=source,/last_version)
+               endelse
+ ;              append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od????_??????-??????_*.bsp',_extra=source,/last_version)  
 ;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/de430s.bsp',_extra=source)                      ;  Like de430 but over limited time range (1995-2035)  
              end
-     'ATT':  begin      ; Spacecraft Attitude
+     'ATT':  begin      ; Spacecraft Attitude  (CK)
 ;               attkern =  file_retrieve('MAVEN/kernels/ck/mvn_sc_rec_??????_??????_v0?.bc' ,_extra=source)   ;SC Attitude ???  
 ;                attformat = 'MAVEN/kernels/ck/mvn_sc_rec_??????_??????_v0?.bc'  ; use this line to get all files
                attformat = 'MAVEN/kernels/ck/mvn_sc_rec_yyMMDD_*_v0?.bc'  ; use this line to get all files in time range
                tr= timerange(trange) + [-3,1] * 3600d*24
-               attkern = mvn_pfp_file_retrieve(attformat ,source=source, trange=tr,last_version=1,/daily_names)   ;SC Attitude ???  
+               attkern = mvn_pfp_file_retrieve(attformat ,source=source, trange=tr,/daily_names)  ;,last_version=1)   ;SC Attitude ???  
                append_array,kernels,  attkern  ;SC Attitude ???  
-               append_array,kernels, file_retrieve('MAVEN/misc/app/mvn_app_nom_131118_141031_v1.bc',_extra=source)
 ;               append_array,kernels, file_retrieve('MAVEN/misc/app/maven_app_home_v1.bc',_extra=source)
+               append_array,kernels, file_retrieve('MAVEN/misc/app/mvn_app_nom_131118_141031_v1.bc',_extra=source)
             end 
            
       endcase

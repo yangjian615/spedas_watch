@@ -14,9 +14,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-15 10:23:02 -0700 (Thu, 15 May 2014) $
-;$LastChangedRevision: 15139 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-09-30 09:45:04 -0700 (Tue, 30 Sep 2014) $
+;$LastChangedRevision: 15883 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_zaxis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -1754,9 +1754,12 @@ PRO spd_ui_zaxis_options, gui_id, windowStorage, zaxisSettings, drawObject, load
   
   Widget_Control, tlb, Get_UValue=state, /No_Copy
   
+; the following call to update was commented out 9/30/2014
+; by Eric Grimes; seems unnecessary, and calls to 
+; the update method of the draw object are very expensive
   ;guarantee accurate settings are presented in panel
-  state.drawObject->update, state.windowStorage, state.loadedData
-  state.drawObject->draw
+ ; state.drawObject->update, state.windowStorage, state.loadedData
+ ; state.drawObject->draw
   spd_ui_update_zaxis_from_draw,state.panels,state.drawObject,state.historyWin
   
   spd_ui_zaxis_init_color, State=state

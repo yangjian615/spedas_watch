@@ -23,8 +23,8 @@
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-16 09:33:23 -0700 (Tue, 16 Sep 2014) $
-; $LastChangedRevision: 15804 $
+; $LastChangedDate: 2014-10-01 11:15:28 -0700 (Wed, 01 Oct 2014) $
+; $LastChangedRevision: 15895 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -43,6 +43,10 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
   tmin = min(time_double(time), max=tmax)
 
   if keyword_set(archive) then begin
+    if (size(mvn_swe_engy_arc, /type) ne 8) then begin
+      print, "No SPEC archive data."
+      return, 0
+    endif
     if (npts gt 1) then begin
       iref = where((mvn_swe_engy_arc.time ge tmin) and $
                    (mvn_swe_engy_arc.time le tmax), count)
@@ -56,6 +60,10 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
     endif
     spec = mvn_swe_engy_arc[iref]
   endif else begin
+    if (size(mvn_swe_engy, /type) ne 8) then begin
+      print, "No SPEC survey data."
+      return, 0
+    endif
     if (npts gt 1) then begin
       iref = where((mvn_swe_engy.time ge tmin) and $
                    (mvn_swe_engy.time le tmax), count)

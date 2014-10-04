@@ -15,15 +15,15 @@
 ;(lphilpott 06/2011) Delayed the handling of spinner events until user clicks OK/APPLY/SET ALL or changes panel. Dialog messages
 ;are issued for invalid entries. This avoids the issue of the text overwriting in spinners as the user types if values aren't valid.
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-09-08 12:37:22 -0700 (Mon, 08 Sep 2014) $
-;$LastChangedRevision: 15744 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-09-30 08:58:51 -0700 (Tue, 30 Sep 2014) $
+;$LastChangedRevision: 15880 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_panel_options.pro $
 ;
 ;--------------------------------------------------------------------------------
 
 
-pro spd_ui_panel_update,tlb,state=state
+pro spd_ui_panel_update,tlb,state=state, nodraw=nodraw
 
   compile_opt idl2, hidden
   
@@ -38,20 +38,22 @@ pro spd_ui_panel_update,tlb,state=state
   ;make sure settings are copied
   spd_ui_init_panel_options,tlb,state=state
   
-  ;now update
-  state.drawObject->update,state.windowStorage,state.loadedData, errmsg=errmsg
-  ; Issue a dialog message to user if an important error has occured.
-  ; Note: not every drawObject error will return an errmsg structure.
-  if keyword_set(errmsg) then begin
-    if in_set('TYPE', tag_names(errmsg)) then begin
-      if strupcase(errmsg.type) eq 'ERROR' then begin
-        if in_set('VALUE', tag_names(errmsg)) then begin
-          ok = dialog_message('Error: '+errmsg.value,/center)
+  if ~keyword_set(nodraw) then begin
+      ;now update
+      state.drawObject->update,state.windowStorage,state.loadedData, errmsg=errmsg
+      ; Issue a dialog message to user if an important error has occured.
+      ; Note: not every drawObject error will return an errmsg structure.
+      if keyword_set(errmsg) then begin
+        if in_set('TYPE', tag_names(errmsg)) then begin
+          if strupcase(errmsg.type) eq 'ERROR' then begin
+            if in_set('VALUE', tag_names(errmsg)) then begin
+              ok = dialog_message('Error: '+errmsg.value,/center)
+            endif
+          endif
         endif
       endif
-    endif
+      state.drawObject->draw
   endif
-  state.drawObject->draw
   
   ;now update panel coordinates with current info
   for i = 0,n_elements(state.panelObjs)-1 do begin
@@ -962,7 +964,7 @@ PRO spd_ui_panel_options, gui_id, windowStorage, loadedData, historyWin, $
   centertlb, tlb
   widget_control, tlb, /Realize
   
-  spd_ui_panel_update,tlb
+  spd_ui_panel_update,tlb, /nodraw
   
   historyWin->update,'SPD_UI_PANEL_OPTIONS: Widget started'
   

@@ -18,6 +18,7 @@
 ;   your machine spec and data amount.)
 ;
 ;KEYWORDS:
+;   SILENT:    Minimize to show the processing information in the terminal.
 ;   MASK:      Mask the expected angular bins whose field of view is
 ;              blocked by the spacecraft body and solar
 ;              paddles. Automatically identifying the mission phases
@@ -62,20 +63,92 @@
 ;
 ;   TPLOT:     Explicitly set to make a tplot variable.
 ;
+;   MAP3D:     Take into account the pitch angle width even for 3D
+;              data. This keyword only works 3D data. The mapping
+;              method is based on 'mvn_swe_padmap'.
+;
 ;CREATED BY: 
 ;	Takuya Hara
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-09-24 13:03:55 -0700 (Wed, 24 Sep 2014) $
-; $LastChangedRevision: 15855 $
+; $LastChangedDate: 2014-09-30 16:31:10 -0700 (Tue, 30 Sep 2014) $
+; $LastChangedRevision: 15890 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
+FUNCTION mvn_swe_pad_resample_map3d, var
+  @mvn_swe_com
+  ddd = var
+  str_element, ddd, 'magf', success=ok
+  
+  IF (ok) THEN BEGIN
+     magf = ddd.magf
+     magf /= SQRT(TOTAL(magf*magf))
+     
+     group = ddd.group
+     Baz = ATAN(magf[1], magf[0])
+     IF Baz LT 0. THEN Baz += 2.*!DPI
+     Bel = ASIN(magf[2])
+     
+     FOR jel=0, 5 DO BEGIN
+        append_array, i, INDGEN(16)
+        append_array, j, REPLICATE(jel, 16)
+     ENDFOR 
+     k = j*16 + i
+     
+     ddtor = !dpi/180D
+     ddtors = REPLICATE(ddtor, 64)
+     n = 17                     ; patch size - odd integer
+     
+     daz = DOUBLE((INDGEN(n*n) MOD n) - (n-1)/2)/DOUBLE(n-1) # DOUBLE(swe_daz[i])
+     Saz = REFORM(REPLICATE(1D,n*n) # DOUBLE(swe_az[i]) + daz, n*n*96) # ddtors
+     
+     Sel = dblarr(n*n*96, 64)
+     FOR m=0,63 DO BEGIN
+        del = reform(replicate(1D,n) # double(indgen(n) - (n-1)/2)/double(n-1), n*n) # double(swe_del[j,m,group])
+        Sel[*,m] = reform(replicate(1D,n*n) # double(swe_el[j,m,group]) + del, n*n*96)
+     ENDFOR
+     Sel = Sel*ddtor
+     
+     Saz = REFORM(Saz, n*n, 96, 64) ; nxn az-el patch, 96 pitch angle bins, 64 energies
+     Sel = REFORM(Sel, n*n, 96, 64)
+     pam = ACOS(COS(Saz - Baz)*COS(Sel)*COS(Bel) + SIN(Sel)*SIN(Bel))
+     
+     pa = TOTAL(pam, 1)/FLOAT(n*n) ; mean pitch angle
+     pa_min = MIN(pam, dim=1)      ; minimum pitch angle
+     pa_max = MAX(pam, dim=1)      ; maximum pitch angle
+     dpa = pa_max - pa_min         ; pitch angle range
+     
+; Package the result
+     
+     pam = { pa     : FLOAT(pa)     , $ ; mean pitch angles (radians)
+             dpa    : FLOAT(dpa)    , $ ; pitch angle widths (radians)
+             pa_min : FLOAT(pa_min) , $ ; minimum pitch angle (radians)
+             pa_max : FLOAT(pa_max) , $ ; maximum pitch angle (radians)
+             iaz    : i             , $ ; anode bin (0-15)
+             jel    : j             , $ ; deflector bin (0-5)
+             k3d    : k             , $ ; 3D angle bin (0-95)
+             Baz    : FLOAT(Baz)    , $ ; Baz in SWEA coord. (radians)
+             Bel    : FLOAT(Bel)      } ; Bel in SWEA coord. (radians)
+     
+     str_element, ddd, 'pa', TRANSPOSE(FLOAT(pa)), /add
+     str_element, ddd, 'dpa', TRANSPOSE(FLOAT(dpa)), /add
+     str_element, ddd, 'pa_min', TRANSPOSE(FLOAT(pa_min)), /add
+     str_element, ddd, 'pa_max', TRANSPOSE(FLOAT(pa_max)), /add
+     str_element, ddd, 'iaz', i, /add
+     str_element, ddd, 'jel', j, /add
+     str_element, ddd, 'k3d', k, /add
+     str_element, ddd, 'Baz', FLOAT(Baz), /add
+     str_element, ddd, 'Bel', FLOAT(Bel), /add
+  ENDIF ELSE pam = 0
+  RETURN, ddd
+END
+
 PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
                           nbins=nbins, abins=abins, dbins=dbins, archive=archive, $
                           pans=pans, window=wnum, result=result, $
                           units=units, erange=erange, normal=normal, _extra=extra, $
-                          snap=plot, tplot=tplot
+                          snap=plot, tplot=tplot, map3d=map3d
   COMPILE_OPT idl2
   @mvn_swe_com
 
@@ -179,6 +252,8 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
 
   plim = {noiso: 1, zlog: 1, charsize: 1.3, xticks: 6, xminor: 3, xrange: [0., 180.], ylog: 1}
   start = SYSTIME(/sec)
+  cet = 0.d0
+  IF keyword_set(silent) THEN prt = 0 ELSE prt = 1
   FOR i=0L, ndat-1L DO BEGIN
      IF keyword_set(dtype) THEN BEGIN
         ddd = mvn_swe_get3d(dat[idx[i]].time, units=units, archive=archive)
@@ -188,6 +263,8 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         
         energy = average(ddd.energy, 2)
         ddd.data *= REBIN(TRANSPOSE(obins), ddd.nenergy, ddd.nbins)
+        IF keyword_set(map3d) THEN $
+           ddd = mvn_swe_pad_resample_map3d(ddd)
      ENDIF ELSE BEGIN
         pad = mvn_swe_getpad(dat[idx[i]].time, units=units, archive=archive)
         dname = pad.data_name
@@ -220,8 +297,8 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         edx = INDGEN(nene)
      ENDELSE 
 
-     
      IF i EQ 0L THEN BEGIN
+        t0 = SYSTIME(/sec)
         dformat = {time: 0.d0, xax: FLTARR(nbins), $
                    index: FLTARR(nene, nbins), $
                    avg: FLTARR(nene, nbins), $
@@ -229,9 +306,15 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
                    nbins: FLTARR(nene, nbins)}
         
         result = REPLICATE(dformat, ndat)
+        dt = SYSTIME(/sec) - t0
+        undefine, t0
      ENDIF 
-    
+
      pa = dformat
+     IF keyword_set(map3d) THEN BEGIN
+        pad = ddd
+        GOTO, pad_resample
+     ENDIF 
      IF keyword_set(dtype) THEN BEGIN
         angle = FLTARR(nene, ddd.nbins)
         FOR j=0, nene-1 DO FOR k=0, ddd.nbins-1 DO BEGIN
@@ -274,13 +357,14 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         pa.avg = data
         pa.xax = xax
      ENDIF ELSE BEGIN
+        pad_resample:
         pa.time = pad.time
         xax = (0.5*(180./nbins) + FINDGEN(nbins) * (180./nbins)) * !DTOR
         tot = DBLARR(nbins)
         index = tot
         ; Resampling
         FOR j=0, nene-1 DO BEGIN
-           FOR k=0, 15 DO BEGIN
+           FOR k=0, pad.nbins-1 DO BEGIN
               l = WHERE(~FINITE(pad.data[edx[j], k]), cnt)
               IF cnt EQ 0 THEN BEGIN
                  l = WHERE(xax GE pad.pa[edx[j], k] - (pad.dpa[edx[j], k]/2.) AND $
@@ -295,8 +379,8 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
            undefine, k
            pa.avg[j, *] = tot / index
            pa.nbins[j, *] = index
-           k = WHERE(index LT 0., cnt)
-           
+           k = WHERE(index LE 0., cnt)
+
            pa.index[j, *] = LONG(index / index)
            IF cnt GT 0 THEN pa.index[j, k] = 0
            undefine, k, cnt
@@ -308,14 +392,32 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
      undefine, pa, data, xax
      undefine, ddd, pad, magf
 
-     IF ndat GT 1 THEN $
-        print, format='(a, a, a, f6.2, a, f5.1, a, $)', $
-               '      ', fifb, ptrace() + 'Resampling pitch angle distribution from ' + $
-               dname + ' data is ', FLOAT(i)/FLOAT(ndat-1L)*100., ' % complete (Elapsed time: ', $
-               SYSTIME(/sec)-start, ' sec).'
+     IF ndat GT 1 THEN BEGIN
+        IF keyword_set(silent) THEN BEGIN
+           IF i GT 0L THEN IF SYSTIME(/sec)-start GT cet THEN BEGIN
+              prt = 1
+              cet += dcet
+           ENDIF 
+        ENDIF
+        IF i EQ ndat-1L THEN prt = 1
+        IF i EQ 0L THEN BEGIN
+           dcet = ((SYSTIME(/sec)-start-dt)*DOUBLE(ndat-1L))/5.
+           cet = +dcet
+           print, ptrace()
+           print, '  Resampling Start (Expected time needed to complete: ' + $
+                  STRING(5.*dcet, '(f0.1)') + ' sec).'
+        ENDIF ELSE BEGIN
+           IF prt EQ 1 THEN $
+              print, format='(a, a, a, f6.2, a, f5.1, a, $)', $
+                     '      ', fifb, '  Resampling pitch angle distribution from ' + $
+                     dname + ' data is ', FLOAT(i)/FLOAT(ndat-1L)*100., ' % complete (Elapsed time: ', $
+                     SYSTIME(/sec)-start, ' sec).' 
+        ENDELSE 
+        IF keyword_set(silent) THEN prt = 0
+     ENDIF  
   ENDFOR
   undefine, i
-  IF ndat Gt 1 THEN PRINT, ' '
+  IF ndat GT 1 THEN PRINT, ' '
 
   CASE units OF
      'counts': ztit = 'Counts / Samples'
@@ -332,10 +434,10 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
      tit = dname + '!C' + time_string(MIN(result.time))
      IF ndat GT 1 THEN BEGIN
         tit += ' - ' + time_string(MAX(result.time))
-        zdata = TRANSPOSE(TOTAL(result.avg, 3) / TOTAL(result.index, 3)) 
+        zdata = TRANSPOSE(TOTAL(result.avg, 3, /nan) / TOTAL(result.index, 3, /nan)) 
         xax = average(result.xax, 2)
         
-        index = TRANSPOSE(TOTAL(result.index, 3))
+        index = TRANSPOSE(TOTAL(result.index, 3, /nan))
         i = WHERE(index GE 1, cnt)
         IF cnt GT 0 THEN index[i] = 1
         undefine, i, cnt
@@ -384,7 +486,7 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         zrange = [10.^(davg - dstd*2.), 10.^(davg + dstd*2.)]
      ENDELSE 
 
-     pans = 'mvn_swe_pad_resample'
+     IF NOT keyword_set(pans) THEN pans = 'mvn_swe_pad_resample'
      store_data, pans, $
                  data={x: result.time, y: data, v: TRANSPOSE(result.xax)}, $
                  dlim={spec: 1, yrange: [0., 180.], ystyle: 1, yticks: 6, yminor: 3, $
