@@ -7,9 +7,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-09-25 14:45:37 -0700 (Thu, 25 Sep 2014) $
-;$LastChangedRevision: 15863 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-10-03 11:52:30 -0700 (Fri, 03 Oct 2014) $
+;$LastChangedRevision: 15915 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/spd_ui_load_poes_import.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ pro spd_ui_load_poes_import,     $
       if strmid(overwrite_selection, 0, 2) eq 'no' then continue
 
       ; this statement adds the variable to the loadedData object
-      result = loadedData->add(new_vars[i])
+      result = loadedData->add(new_vars[i],mission='POES',observatory=probe,instrument=datatype)
       
       ; report errors to the status bar and add them to the history window
       if ~result then begin

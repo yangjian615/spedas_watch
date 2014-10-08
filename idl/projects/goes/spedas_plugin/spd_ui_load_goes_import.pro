@@ -7,9 +7,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-03 12:32:20 -0700 (Thu, 03 Jul 2014) $
-;$LastChangedRevision: 15503 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-10-03 11:45:02 -0700 (Fri, 03 Oct 2014) $
+;$LastChangedRevision: 15914 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/spedas_plugin/spd_ui_load_goes_import.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -81,7 +81,7 @@ pro spd_ui_load_goes_import,     $
       if strmid(overwrite_selection, 0, 2) eq 'no' then continue
 
       ; this statement adds the variable to the loadedData object
-      result = loadedData->add(new_vars[i])
+      result = loadedData->add(new_vars[i],mission='GOES',observatory='G'+probe,instrument=datatype)
       
       ; report errors to the status bar and add them to the history window
       if ~result then begin

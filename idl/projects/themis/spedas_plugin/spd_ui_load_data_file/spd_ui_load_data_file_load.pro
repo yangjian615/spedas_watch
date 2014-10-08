@@ -139,20 +139,30 @@ pro spd_ui_load_data_file_load, state, event
   raw_id = widget_info(state.tab_id,find_by_uname='raw_data')
   raw = widget_info(raw_id,/button_set)
 
-  spd_ui_load_data2obj, t0, t1, dtype = dtype, $
-                              outcoord = outcoord, $
-                              observ = *state.observ, $
-                              raw=raw,$ 
-                              loadedData = state.loadedData, $
-                              historywin = state.historyWin, $
-                              statustext = state.statusText, $
-                              state_gui_id = state.tab_id, $ ;using tab id so that overwrite messages will layer correctly
-                              loadedVarList = loadedVarList,$
-                              overwrite_selections=overwrite_selections
-     
-  ; store load_data2obj call on windowStorage
-  state.callSequence->addloadcall, t0, t1, dtype, *state.observ, outcoord,raw,overwrite_selections
+  loadStruct = {$
+    st_time:t0,$
+    en_time:t1,$
+    dtype:dtype,$
+    outcoord:outcoord,$
+    observ:*state.observ,$
+    raw:raw}
+    
 
+  spd_ui_load_data2obj, loadStruct,$ 
+                        state.loadedData, $
+                        state.statusText, $
+                        state.historyWin,$
+                        state.tab_id,$
+                        loadedVarList=loadedVarList,$
+                        overwrite_selections=overwrite_selections
+                       
+  
+  callSeqStruct = {type:'loadapidata',$
+                  subtype:'spd_ui_load_data2obj',$
+                  loadStruc:loadStruct,$
+                  overwrite_selections:overwrite_selections}
+
+  state.callSequence->addSt,callSeqStruct
  
   if is_string(loadedVarList) then begin
   

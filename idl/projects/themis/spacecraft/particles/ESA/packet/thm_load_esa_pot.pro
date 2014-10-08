@@ -47,7 +47,7 @@
 ;	
 ;-
 
-pro thm_load_esa_pot,sc=sc,probe=probe,themishome=themishome,datatype=datatype,efi_datatype=efi_datatype,pot_scale=pot_scale,offset=offset,min_pot=min_pot,make_plot=make_plot,trange=trange,min_pot_trange=min_pot_trange
+pro thm_load_esa_pot,sc=sc,probe=probe,themishome=themishome,datatype=datatype,efi_datatype=efi_datatype,pot_scale=pot_scale,offset=offset,min_pot=min_pot,make_plot=make_plot,trange=trange,min_pot_trange=min_pot_trange, use_vaf_offset=use_vaf_offset
 
 ; booms are not fully deployed before the following dates, set pot to zero
 ;	TH-C	07-05-15
@@ -566,6 +566,7 @@ endif else begin
                            If(nsource Gt 3) Then Begin
                               keep = bytarr(nsource)+1
                               s1 = where(source Eq 1, ns1)
+                              If(keyword_set(use_vaf_offset)) Then nvaf_offset = 0
                               For j = 0, ns1-1 Do Begin
 ;drop first or last point if it is MOM data and has VAF data nearby
                                  s1j = s1[j] ;is the index of this source=1 point in the full array
@@ -575,10 +576,31 @@ endif else begin
                                     If(source[s1j-1] Eq 0 && (time[s1j]-time[s1j-1]) Lt 6.0) Then keep[s1j] = 0b
                                  Endif Else Begin
                                     If(source[s1j+1] Eq 0 && source[s1j-1] Eq 0 && $
-                                       (time[s1j+1]-time[s1j]) Lt 6.0 && (time[s1j]-time[s1j-1]) Lt 6.0) Then keep[s1j] = 0b
+                                       (time[s1j+1]-time[s1j]) Lt 6.0 && (time[s1j]-time[s1j-1]) Lt 6.0) Then Begin
+                                       keep[s1j] = 0b
+                                       If(keyword_set(use_vaf_offset)) Then Begin
+                                          aa = (time[s1j]-time[s1j-1])/(time[s1j+1]-time[s1j-1])
+                                          scp_test = scpot[s1j-1]*(1.0-aa)+scpot[s1j+1]*aa-scpot[s1j]
+                                          If(nvaf_offset Eq 0) Then vaf_offset = scp_test $
+                                          Else vaf_offset = [vaf_offset, scp_test]
+                                          nvaf_offset = nvaf_offset+1
+                                       Endif
+                                    Endif
                                  Endelse
                               Endfor
                            Endif
+                           ok_source = where(keep Eq 1, nok_source)
+                           If(nok_source Gt 0) Then Begin
+                              time = time[ok_source]
+                              scpot = scpot[ok_source]
+                              source = source[ok_source]
+                              If(keyword_set(use_vaf_offset) && nvaf_offset Gt 0) Then Begin
+                                 s11 = where(source Eq 1, ns11)
+                                 If(ns11 Gt 0) Then scpot(s11)=scpot(s11)+median(vaf_offset)
+                              Endif
+                           Endif Else Begin
+                              dprint, 'No good scpot points after source check'
+                           Endelse
                         endif else begin
                            time = t1234
                            scpot=vaf1234_3s

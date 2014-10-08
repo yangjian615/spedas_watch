@@ -6,17 +6,19 @@
 ;    
 ;NOTES:
 ;  A lot of features aren't shown here.  This crib is intended to Keep It Simple.
+;  
+;  Examples on SST specific sun decontamination options can be found in thm_crib_sst.pro
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-05 16:56:44 -0800 (Wed, 05 Mar 2014) $
-;$LastChangedRevision: 14507 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-10-06 16:09:51 -0700 (Mon, 06 Oct 2014) $
+;$LastChangedRevision: 15936 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_products.pro $
 ;-
 
  compile_opt idl2
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 1, ESA energy eflux spectra, theta(spacecraft spin-axis latitude, eflux), phi(spacecraft spin-axis latitutde, eflux)
+;Example 1, ESA energy eflux spectra
 ;----------------------------------------------------------------------------------------------------------------------------
 
 probe='a'
@@ -29,12 +31,12 @@ thm_part_load,probe=probe,trange=trange,datatype=datatype
 
 thm_part_products,probe=probe,datatype=datatype,trange=trange 
 
-tplot,['tha_peif_eflux_energy','tha_peif_eflux_theta','tha_peif_eflux_phi']
+tplot,'tha_peif_eflux_energy'
 
 stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 2, SST energy eflux spectra, theta(spacecraft spin-axis latitude, eflux), phi(spacecraft spin-axis latitutde, eflux)
+;Example 2, SST energy eflux spectra
 ;----------------------------------------------------------------------------------------------------------------------------
 
 probe='a'
@@ -47,12 +49,30 @@ thm_part_load,probe=probe,trange=trange,datatype=datatype
 
 thm_part_products,probe=probe,datatype=datatype,trange=trange
 
-tplot,['tha_psif_eflux_energy','tha_psif_eflux_theta','tha_psif_eflux_phi']
+tplot,'tha_psif_eflux_energy'
 
 stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 3:  pitch angle and gyrophase
+;Example 3, Energy, Theta, & Phi in one call
+;----------------------------------------------------------------------------------------------------------------------------
+
+probe='a'
+datatype='peif'
+trange=['2008-02-23','2008-02-24']
+timespan,trange
+
+;loads particle data for data type
+thm_part_load,probe=probe,trange=trange,datatype=datatype,outputs='energy phi theta'
+
+thm_part_products,probe=probe,datatype=datatype,trange=trange
+
+tplot,['tha_peif_eflux_energy','tha_peif_eflux_theta','tha_peif_eflux_phi']
+
+stop
+
+;----------------------------------------------------------------------------------------------------------------------------
+;Example 4:  pitch angle and gyrophase
 ;----------------------------------------------------------------------------------------------------------------------------
 
 probe='a'
@@ -74,7 +94,7 @@ tplot,['tha_peif_eflux_gyro','tha_peif_eflux_pa']
 stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 4: moments
+;Example 5: moments
 ;----------------------------------------------------------------------------------------------------------------------------
 
 probe='a'
@@ -99,7 +119,7 @@ tplot,['tha_peef_density','tha_peef_velocity','tha_peef_t3']
 stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 5: ESA Background Removal
+;Example 6: ESA Background Removal
 ;----------------------------------------------------------------------------------------------------------------------------
 
 probe='a'
@@ -124,7 +144,7 @@ tplot,['tha_peef_density','tha_peef_velocity','tha_peef_t3','tha_peef_eflux_pa',
 stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 6: Specifying non-default support parameters for moments
+;Example 7: Specifying non-default support parameters for moments
 ;----------------------------------------------------------------------------------------------------------------------------
  
 
@@ -151,7 +171,7 @@ tplot,['tha_peef_density','tha_peef_velocity','tha_peef_t3','tha_peef_eflux_pa',
 stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 7:  Specifying alternate field aligned coordinate systems
+;Example 8:  Specifying alternate field aligned coordinate systems
 ;----------------------------------------------------------------------------------------------------------------------------
 
 probe='a'
@@ -173,7 +193,7 @@ tplot,['tha_peif_eflux_gyro','tha_peif_eflux_pa']
 stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 8:  Energy spectra with field aligned angle limits
+;Example 9:  Energy spectra with field aligned angle limits
 ;----------------------------------------------------------------------------------------------------------------------------
 
 probe='a'
@@ -196,7 +216,7 @@ tplot,['tha_peef_eflux_pa','tha_peef_eflux_energy']
 stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 9:  Product restricted to particular energy range 
+;Example 10:  Product restricted to particular energy range 
 ;----------------------------------------------------------------------------------------------------------------------------
 
 probe='a'
@@ -207,7 +227,7 @@ timespan,trange
 ;loads particle data for data type
 thm_part_load,probe=probe,trange=trange,datatype=datatype
 
-thm_part_products,probe=probe,datatype=datatype,trange=trange,energy=[10,40000] ;eV
+thm_part_products,probe=probe,datatype=datatype,trange=trange,outputs='energy theta phi',energy=[10,40000] ;eV
 
 tplot,['tha_peif_eflux_energy','tha_peif_eflux_theta','tha_peif_eflux_phi']
 

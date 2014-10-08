@@ -33,10 +33,10 @@
 ;           
 ;Keywords:
 ;  sst_sun_bins:  The bin numbers that should be flagged as contaminated by sun and interpolated
-;  sst_method_clean: how to decontaminate the sst data.  Right now the only option is 'manual', but selects a good set of default sst_sun_bins, if now user specified.
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-01-10 18:02:25 -0800 (Fri, 10 Jan 2014) $
-;$LastChangedRevision: 13850 $
+;  sst_method_clean: how to decontaminate the sst data.  Right now the only option is 'manual', but selects a good set of default sst_sun_bins, if not user specified.
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-10-06 10:27:08 -0700 (Mon, 06 Oct 2014) $
+;$LastChangedRevision: 15926 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_sst.pro $
 ;-
 

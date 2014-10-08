@@ -235,6 +235,10 @@ end
 ;NOTES:       If you use the keyword EXACT, ctime may run noticeablly slower.
 ;         Reduce the number of time you cross panels, especially with
 ;         tplots of large data sets.
+;Mac Os users:
+;         You might need to set preferences on your X11 display:
+;         Within X11 program go to X11 -> preferences -> Windows: check box labeled "Click=through Inactive Windows"
+;         also:                    X11 -> preferences -> Input:  check box labeled "Emulate three button mouse" 
 ;SEE ALSO:  "crosshairs"
 ;
 ;CREATED BY:    Davin Larson & Frank Marcoline

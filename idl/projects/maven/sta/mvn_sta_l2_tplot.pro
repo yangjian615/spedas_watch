@@ -65,9 +65,10 @@ endif
 	if size(mvn_2a_dat,/type) eq 8 and keyword_set(test) then begin
 
 		for i=0,98 do begin
-			name = 'mvn_sta_2a_'+mvn_2a_dat.hkp_labels[i]
+			label = strtrim(strcompress(mvn_2a_dat.hkp_labels[i]),1)
+			name = 'mvn_sta_2a_'+ label
 			store_data,name,data={x:mvn_2a_dat.time,y:reform(mvn_2a_dat.hkp[*,i])}
-			options,name,ytitle=mvn_2a_dat.hkp_labels[i]
+			options,name,ytitle=label
 		endfor
 
 		ylim,'mvn_sta_2a_Temp_Dig',0,60,0
@@ -77,6 +78,7 @@ endif
 		ylim,'mvn_sta_2a_+5V_A',4.9,5.2,0
 		ylim,'mvn_sta_2a_-5V_A',-5.3,-5.0,0
 		ylim,'mvn_sta_2a_+12V_A',11.9,12.3,0
+		ylim,'mvn_sta_2a_+28V',24,30,0
 		ylim,'mvn_sta_2a_Temp_FPGA',0,60,0
 		ylim,'mvn_sta_2a_Temp_LVPS',0,60,0
 
@@ -87,6 +89,7 @@ endif
 		ylim,'mvn_sta_2a_Vmon_Def2',.1,10000.,1
 
 		ylim,'mvn_sta_2a_R3Rate',-1,12,0
+		ylim,'mvn_sta_2a_LUTADR*',-1,20,0
 
 		options,'mvn_sta_2a*',datagap=100.
 
@@ -367,8 +370,8 @@ endif
 		store_data,'mvn_sta_c6_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c6_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c6_att',data={x:time,y:iatt}
-			store_data,'mvn_sta_mode',data={x:time,y:mode}
-			store_data,'mvn_sta_rate',data={x:time,y:rate}
+			store_data,'mvn_sta_c6_mode',data={x:time,y:mode}
+			store_data,'mvn_sta_c6_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c6_tot',0,0,1
 			ylim,'mvn_sta_c6_P1D_E',.4,40000.,1
@@ -376,6 +379,8 @@ endif
 			ylim,'mvn_sta_c6_E',.4,40000.,1
 			ylim,'mvn_sta_c6_M',.5,100.,1
 			ylim,'mvn_sta_c6_att',-1,5,0
+			ylim,'mvn_sta_c6_mode',-1,7,0
+			ylim,'mvn_sta_c6_rate',-1,7,0
 
 			zlim,'mvn_sta_c6_P1D_E',1,1.e4,1
 			zlim,'mvn_sta_c6_P1D_M',1,1.e4,1

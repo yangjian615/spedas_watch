@@ -11,7 +11,7 @@
 ; 
 ;Methods:
 ;  addloadcall: This method should be called in load spedas data, every time 
-;               'spd_ui_load_data2obj' is called
+;               'spd_ui_load_data2obj' is called(DEPRECATED, use addSt(), with type:'loadapidata')
 ;  getCalls:  This method returns the list of stored function calls as an
 ;             array of pointers to structs
 ;  setCalls: This method stores an array of pointers to structs that represent
@@ -39,37 +39,41 @@
 ; 
 ;HISTORY:
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-09-18 15:37:02 -0700 (Thu, 18 Sep 2014) $
-;$LastChangedRevision: 15824 $
+;$LastChangedDate: 2014-10-03 18:18:23 -0700 (Fri, 03 Oct 2014) $
+;$LastChangedRevision: 15925 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_call_sequence__define.pro $
 ;
 ;--------------------------------------------------------------------------------
 
 
+;DEPRECATED replaced with addSt/loadapidata call
+; Code left for reference, in case we find any need for it
+;  If you see this code and the SPEDAS release is 2.0 or greater, delete this
+;  
 ;this routine adds load routine calls to the list
-pro spd_ui_call_sequence::addloadcall,st_time0, $
-                                      en_time0, $
-                                      dtype, $
-                                      observ, $
-                                      outcoord,$
-                                      raw,$
-                                      overwrite_selections
-   
-   compile_opt idl2
-  
-  in_st = {type:'loadspedasdata', $
-           st_time:st_time0,$
-           en_time:en_time0,$
-           dtype:dtype,$
-           observ:observ,$
-           outcoord:outcoord,$
-           raw:raw,$
-           overwrite_selections:overwrite_selections}
-           
-  self->addSt,in_st 
-                     
-                     
-end
+;pro spd_ui_call_sequence::addloadcall,st_time0, $
+;                                      en_time0, $
+;                                      dtype, $
+;                                      observ, $
+;                                      outcoord,$
+;                                      raw,$
+;                                      overwrite_selections
+;   
+;   compile_opt idl2
+;  
+;  in_st = {type:'loadspedasdata', $
+;           st_time:st_time0,$
+;           en_time:en_time0,$
+;           dtype:dtype,$
+;           observ:observ,$
+;           outcoord:outcoord,$
+;           raw:raw,$
+;           overwrite_selections:overwrite_selections}
+;           
+;  self->addSt,in_st 
+;                     
+;                     
+;end
 
 ;this routine adds goes load routine calls to the list 
 ;pro spd_ui_call_sequence::addloadgoes,$
@@ -401,20 +405,25 @@ pro spd_ui_call_sequence::reCall,historywin=historywin,statustext=statustext,gui
 
     st = *calls[i]
     
-    if st.type eq 'loadspedasdata' then begin    
-      spd_ui_load_data2obj,st.st_time,$
-                               st.en_time,$
-                               dtype=st.dtype,$
-                               outcoord=st.outcoord[0],$
-                               observ=st.observ,$
-                               raw=st.raw,$
-                               loadedData=self.loadedData,$
-                               historywin=historywin,$
-                               statustext=statustext,$
-                               state_gui_id=guiID,$
-                               overwrite_selections=st.overwrite_selections,$
-                               /replay    
-    endif else if st.type eq 'deletespedasdata' then begin
+;DEPRECATED replaced with loadapidata call
+; Code left for reference, in case we find any need for it
+;  If you see this code and the SPEDAS release is 2.0 or greater, delete this
+;    if st.type eq 'loadspedasdata' then begin    
+;      spd_ui_load_data2obj,st.st_time,$
+;                               st.en_time,$
+;                               dtype=st.dtype,$
+;                               outcoord=st.outcoord[0],$
+;                               observ=st.observ,$
+;                               raw=st.raw,$
+;                               loadedData=self.loadedData,$
+;                               historywin=historywin,$
+;                               statustext=statustext,$
+;                               state_gui_id=guiID,$
+;                               overwrite_selections=st.overwrite_selections,$
+;                               /replay    
+;    endif else 
+    
+    if st.type eq 'deletespedasdata' then begin
       removed = self.loadedData->remove(st.groupname[0])
     endif else if st.type eq 'loadapidata' then begin  
       call_procedure, st.subtype[0],$

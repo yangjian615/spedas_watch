@@ -8,9 +8,9 @@
 ;Author: Davin Larson
 ;
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2014-08-26 11:01:56 -0700 (Tue, 26 Aug 2014) $
-; $LastChangedRevision: 15705 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2014-10-06 16:09:51 -0700 (Mon, 06 Oct 2014) $
+; $LastChangedRevision: 15936 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_sst.pro $
 ;-
 ;
@@ -56,7 +56,7 @@ thm_part_load,probe=probe,trange=trange,datatype=datatype
 
 ;  manual sun decontamination with SST (bin numbers)
 ; Bin numbers specified in this example are the current default
-thm_part_products,probe=probe,datatype=datatype,trange=trange,sst_sun_bins=[0,8,16,24,32,33,34,40,47,48,49,50,55,56,57] 
+thm_part_products,probe=probe,datatype=datatype,trange=trange,sst_sun_bins=[0,8,16,24,32,33,34,40,47,48,49,50,55,56,57],outputs='energy theta phi'
 
 tplot,['th'+probe+'_psif_eflux_energy','th'+probe+'_psif_eflux_theta','th'+probe+'_psif_eflux_phi']
 
@@ -85,7 +85,7 @@ edit3dbins,thm_part_dist('th'+probe+'_psif',time_double('2010-06-05/12:00:00'),/
 stop
 
 ;use bins in data
-thm_part_products,probe=probe,datatype=datatype,trange=trange,sst_sun_bins=where(~bins)
+thm_part_products,probe=probe,datatype=datatype,trange=trange,sst_sun_bins=where(~bins),outputs='energy theta phi'
 
 tplot,['th'+probe+'_psif_eflux_energy','th'+probe+'_psif_eflux_theta','th'+probe+'_psif_eflux_phi']
 end

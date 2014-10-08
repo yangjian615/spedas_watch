@@ -21,6 +21,9 @@
 ;
 ; TBDs to make the code consistent with SIS:
 ;
+;	tbd	add dead3 to the SIS documentation
+;	tbd	current code uses swp2gfan and swp2gfdf to help approximate gf for omni-directional apids - c0,c2,c4,c6
+;			need to check whether this properly handles theta and azimuthal angle ranges
 ;	tbd	check that corrections to gf and integ_t have not screw up program
 ;	tbd	may need to change the code that throws away extra data at end of file
 
@@ -278,13 +281,22 @@ mhist_tof = (findgen(1024)+tof_offset)/b_ns				; need to decide if we want that 
 
 ;************************************************************************************************ 
 ;************************************************************************************************ 
-
-; We need a correction for qual/total  -- a form of dead time due to start droop
-; valid   events have 480 ns + 20 ns = 500 ns dead time, 20 ns jitter
-; invalid events have 720 ns + 20 ns = 740 ns dead time, 20 ns jitter
-
-dead1 = 500. 
-dead2 = 740.
+; Dead Time corrections - see MAVEN_PF_STATIC_012Q_FPGA_Specification.pdf
+;	EVTOUT in CTM (0x40 command or cmd.STA_EVPCTL) is called Event Timeout (TOINT) in MAVEN_PF_STATIC_012Q_FPGA_Specification.pdf 
+;	timing jitter is assumed to be +20 ns since the event could have occurred anywhere in the previous 40ns interval
+; 	cmd.STA_EVPCTL(ABINMODE=0, MBINMODE=0, P4SEL=1, STOPFIRSTOK=0, EVTOUT=3, NUMEVENTS=3)  
+;	cmd.STA_EVPFMRCTL(TIMERSTDUR=0x0a)  - 
+; valid   events 		480 ns + 20 ns = 500 ns dead time, 20 ns jitter		(Conversion Time) + 40ns*(EVTOUT+1) 	+ jitter 	200  + 40*4  + 20	= 380 ns
+; invalid events 		720 ns + 20 ns = 740 ns dead time, 20 ns jitter		40ns*(EVTOUT+1) + 40ns*TIMERSTDUR 	+ jitter	40*4 + 40*11 + 20 	= 620 ns
+; stop no start events		440 ns + 20 ns = 460 ns dead time, 20 ns jitter		40ns*(TIMERSTDUR+1) 			+ jitter	40*11        + 20	= 440 ns
+;
+; We also need a correction for qual/total  -- a form of dead time due to start droop
+; ??????????????????????????????????????????
+;dead1 = 500. 
+;dead2 = 740.
+dead1 = 420. 
+dead2 = 660.
+dead3 = 460.
 
 ;************************************************************************************************ 
 ;************************************************************************************************ 
@@ -435,6 +447,7 @@ def_eff = .285		; early mission solar wind proton efficiency
 	swp2mlut = [0,0,0,3,3,1,1,4,4]									; MLUT table associated with each SLUT sweep table
 
 ; iswp to anode & def range for geometric factor considerations
+;    these are needed to help approximate gf for omindirectional data - apid c0,c2,c4,c6
 	swp2gfan = intarr(n_swp,2)									; For data averaged over anode, swp2gfan gives the assumed anode range for most counts 
 	swp2gfdf = intarr(n_swp,2)									; For data averaged over def step, swp2gfdf gives the assumed def range for most counts 
 	swp2gfan[*,0] = [7,7,6,0,0,7,6,0,0]								;   Used for APIDs with anode compressed data
@@ -1233,10 +1246,15 @@ if not keyword_set(apids) or test then begin
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
 	if first_t lt time_double('2014-09-01/0') then begin
-		gf2[3:4,*,2]=gf2[3:4,*,2]/50.
-		gf2[3:4,*,3]=gf2[3:4,*,3]/50.
-		gf2[7:8,*,2]=gf2[3:4,*,2]/50.
-		gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+		if gf_nor then begin
+			for i=0,n_swp-1 do gf2[i,*,2]=gf2[i,*,2]/50.
+			for i=0,n_swp-1 do gf2[i,*,3]=gf2[i,*,3]/50.
+		endif else begin
+			gf2[3:4,*,2]=gf2[3:4,*,2]/50.
+			gf2[3:4,*,3]=gf2[3:4,*,3]/50.
+			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
+			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+		endelse
 	endif
 
 ; ??????? i think the above line should sum over anodes and average over deflections so that the integ_t can reflect the dead time correctly
@@ -1295,6 +1313,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -1384,20 +1403,24 @@ if not keyword_set(apids) or test then begin
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			ind0 = where (md2[0:nn-2] ne md2[1:nn-1],count) 
-			if count gt 0 then begin
-				for i=0,count-1 do begin
-					j0=0>(ind0[i]-8)
-					j1=(nn-1)<(ind0[i]+8)
-					for j=j0,j1 do begin
-						tmpmin = min(abs(md6.x - tt[j]),ind6)
-						if tmpmin lt 1. and md6.y[ind6] ne md2[j] then begin
-							md2[j]=md6.y[ind6]
-							rt2[j]=rt6.y[ind6]
-						endif 
-					endfor
-				endfor
-			endif
+			md2 = interp(md6.y,md6.x,tt)
+			rt2 = interp(rt6.y,rt6.x,tt)
+
+;			ind0 = where (md2[0:nn-2] ne md2[1:nn-1],count) 
+;			if count gt 0 then begin
+;				for i=0,count-1 do begin
+;					j0=0>(ind0[i]-8)
+;					j1=(nn-1)<(ind0[i]+8)
+;					for j=j0,j1 do begin
+;						tmpmin = min(abs(md6.x - tt[j]),ind6)
+;						if tmpmin lt 1. and md6.y[ind6] ne md2[j] then begin
+;							md2[j]=md6.y[ind6]
+;							rt2[j]=rt6.y[ind6]
+;						endif 
+;					endfor
+;				endfor
+;			endif
+
 		endif
 		md1 = rt2*16+md2	 
 
@@ -1523,10 +1546,15 @@ if not keyword_set(apids) or test then begin
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
 	if first_t lt time_double('2014-09-01/0') then begin
-		gf2[3:4,*,2]=gf2[3:4,*,2]/50.
-		gf2[3:4,*,3]=gf2[3:4,*,3]/50.
-		gf2[7:8,*,2]=gf2[3:4,*,2]/50.
-		gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+		if gf_nor then begin
+			for i=0,n_swp-1 do gf2[i,*,2]=gf2[i,*,2]/50.
+			for i=0,n_swp-1 do gf2[i,*,3]=gf2[i,*,3]/50.
+		endif else begin
+			gf2[3:4,*,2]=gf2[3:4,*,2]/50.
+			gf2[3:4,*,3]=gf2[3:4,*,3]/50.
+			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
+			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+		endelse
 	endif
 
 ; the following line need to be fixed ?????????????????????????????
@@ -1584,6 +1612,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -1653,20 +1682,28 @@ if not keyword_set(apids) or test then begin
 				endfor
 			endif
 
-; old correction for out of phase headers
+;	correct C2 mode transitions using C6 data if it is available
 
-;			ind = where(avg2[0:nn-2] gt avg2[1:nn-1],nch)	
-;			ind = where(avg2[0:nn-2] ne avg2[1:nn-1],nch)
-;			if nch gt 0 then begin							; this is required because config headers are out of phase w/ data
-;				avg2[ind+1]=avg2[ind]
-;				md2[ind+1]=md2[ind]
-;				rt2[ind+1]=rt2[ind]
-;				md1[ind+1]=md1[ind]
-;			endif
+		get_data,'mvn_sta_C6_mode',data=md6
+		if size(/type,md6) eq 8 then begin
+			get_data,'mvn_sta_C6_rate',data=rt6
+			ind0 = where (md2[0:nn-2] ne md2[1:nn-1],count) 
+			if count gt 0 then begin
+				for i=0,count-1 do begin
+					j0=0>(ind0[i]-8)
+					j1=(nn-1)<(ind0[i]+8)
+					for j=j0,j1 do begin
+						tmpmin = min(abs(md6.x - tt[j]),ind6)
+						if tmpmin lt 1. and md6.y[ind6] ne md2[j] then begin
+							md2[j]=md6.y[ind6]
+							rt2[j]=rt6.y[ind6]
+						endif 
+					endfor
+				endfor
+			endif
+		endif
+		md1 = rt2*16+md2	 
 
-
-;		tt1 = tt - sum*2.*avg								; corrected timing for averaging, kluge for header mismatch
-;		tt2 = tt + sum*2.*avg
 		tt1 = tt - 2.*avg2 								; corrected timing for averaging, kluge for header mismatch
 		tt2 = tt + 2.*avg2 
 		if nn gt 2 then begin
@@ -1768,10 +1805,15 @@ if not keyword_set(apids) or test then begin
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
 	if first_t lt time_double('2014-09-01/0') then begin
-		gf2[3:4,*,2]=gf2[3:4,*,2]/50.
-		gf2[3:4,*,3]=gf2[3:4,*,3]/50.
-		gf2[7:8,*,2]=gf2[3:4,*,2]/50.
-		gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+		if gf_nor then begin
+			for i=0,n_swp-1 do gf2[i,*,2]=gf2[i,*,2]/50.
+			for i=0,n_swp-1 do gf2[i,*,3]=gf2[i,*,3]/50.
+		endif else begin
+			gf2[3:4,*,2]=gf2[3:4,*,2]/50.
+			gf2[3:4,*,3]=gf2[3:4,*,3]/50.
+			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
+			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+		endelse
 	endif
 
 ; the following line need to be fixed ?????????????????????????????
@@ -1828,6 +1870,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -1899,7 +1942,8 @@ if not keyword_set(apids) or test then begin
 			endfor
 		endif
 
-;	correct C4 mode transitions using C6 data if it is available
+;	correct C4 mode transitions using C6 data if it is available (very unlikely)
+
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
@@ -2026,10 +2070,15 @@ if not keyword_set(apids) or test then begin
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
 	if first_t lt time_double('2014-09-01/0') then begin
-		gf2[3:4,*,2]=gf2[3:4,*,2]/50.
-		gf2[3:4,*,3]=gf2[3:4,*,3]/50.
-		gf2[7:8,*,2]=gf2[3:4,*,2]/50.
-		gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+		if gf_nor then begin
+			for i=0,n_swp-1 do gf2[i,*,2]=gf2[i,*,2]/50.
+			for i=0,n_swp-1 do gf2[i,*,3]=gf2[i,*,3]/50.
+		endif else begin
+			gf2[3:4,*,2]=gf2[3:4,*,2]/50.
+			gf2[3:4,*,3]=gf2[3:4,*,3]/50.
+			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
+			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+		endelse
 	endif
 
 ; the following line need to be fixed ?????????????????????????????
@@ -2087,6 +2136,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -2174,20 +2224,24 @@ if not keyword_set(apids) or test then begin
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			ind0 = where (md2[0:nn-2] ne md2[1:nn-1],count) 
-			if count gt 0 then begin
-				for i=0,count-1 do begin
-					j0=0>(ind0[i]-8)
-					j1=(nn-1)<(ind0[i]+8)
-					for j=j0,j1 do begin
-						tmpmin = min(abs(md6.x - tt[j]),ind6)
-						if tmpmin lt 1. and md6.y[ind6] ne md2[j] then begin
-							md2[j]=md6.y[ind6]
-							rt2[j]=rt6.y[ind6]
-						endif 
-					endfor
-				endfor
-			endif
+			md2 = interp(md6.y,md6.x,tt)
+			rt2 = interp(rt6.y,rt6.x,tt)
+
+;			ind0 = where (md2[0:nn-2] ne md2[1:nn-1],count) 
+;			if count gt 0 then begin
+;				for i=0,count-1 do begin
+;					j0=0>(ind0[i]-8)
+;					j1=(nn-1)<(ind0[i]+8)
+;					for j=j0,j1 do begin
+;						tmpmin = min(abs(md6.x - tt[j]),ind6)
+;						if tmpmin lt 1. and md6.y[ind6] ne md2[j] then begin
+;							md2[j]=md6.y[ind6]
+;							rt2[j]=rt6.y[ind6]
+;						endif 
+;					endfor
+;				endfor
+;			endif
+
 		endif
 		md1 = rt2*16+md2	 
 
@@ -2365,6 +2419,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -2452,20 +2507,24 @@ if not keyword_set(apids) or test then begin
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			ind0 = where (md2[0:nn-2] ne md2[1:nn-1],count) 
-			if count gt 0 then begin
-				for i=0,count-1 do begin
-					j0=0>(ind0[i]-8)
-					j1=(nn-1)<(ind0[i]+8)
-					for j=j0,j1 do begin
-						tmpmin = min(abs(md6.x - tt[j]),ind6)
-						if tmpmin lt 1. and md6.y[ind6] ne md2[j] then begin
-							md2[j]=md6.y[ind6]
-							rt2[j]=rt6.y[ind6]
-						endif 
-					endfor
-				endfor
-			endif
+			md2 = interp(md6.y,md6.x,tt)
+			rt2 = interp(rt6.y,rt6.x,tt)
+;		   if 0 then begin
+;			ind0 = where (md2[0:nn-2] ne md2[1:nn-1],count) 
+;			if count gt 0 then begin
+;				for i=0,count-1 do begin
+;					j0=0>(ind0[i]-8)
+;					j1=(nn-1)<(ind0[i]+8)
+;					for j=j0,j1 do begin
+;						tmpmin = min(abs(md6.x - tt[j]),ind6)
+;						if tmpmin lt 1. and md6.y[ind6] ne md2[j] then begin
+;							md2[j]=md6.y[ind6]
+;							rt2[j]=rt6.y[ind6]
+;						endif 
+;					endfor
+;				endfor
+;			endif
+;		   endif
 		endif
 		md1 = rt2*16+md2	 
 
@@ -2635,6 +2694,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -2897,6 +2957,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -3157,6 +3218,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -3424,6 +3486,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -3691,6 +3754,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -3958,6 +4022,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -4235,6 +4300,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -4500,6 +4566,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -4765,6 +4832,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$
@@ -5037,6 +5105,7 @@ if not keyword_set(apids) or test then begin
 		geom_factor: 		geom_factor,				$
 		dead1: 			dead1,					$
 		dead2: 			dead2,					$
+		dead3: 			dead3,					$
 
 		nmass:			nmass,					$
 		mass: 			1.0438871e-02, 				$

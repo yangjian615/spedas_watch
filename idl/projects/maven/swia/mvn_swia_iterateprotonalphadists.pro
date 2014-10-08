@@ -5,9 +5,8 @@
 ;	Routine to compute approximately the proton and alpha moments from fine 
 ;	distributions, using a fit routine based on the SWIA energy/angle response.
 ; 	Intended to be appropriate for use when distributions are hot.  This routine 
-;	is still very experimental and should be used with caution. In particular, it 
-;	will not work well when the deflection angle is high, or when parts of phase
-;	space are not covered. 
+;	is still very experimental and should be used with caution. Currently working to
+;	adapt it to use simulated instrument response. 
 ;AUTHOR: 
 ;	Jasper Halekas
 ;CALLING SEQUENCE:
@@ -19,13 +18,17 @@
 ;	NREPS: Number of iterations (default 4)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-07-17 10:25:53 -0700 (Thu, 17 Jul 2014) $
-; $LastChangedRevision: 15584 $
+; $LastChangedDate: 2014-10-03 12:15:37 -0700 (Fri, 03 Oct 2014) $
+; $LastChangedRevision: 15916 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_iterateprotonalphadists.pro $
 ;
 ;-
 
+@mvn_swia_protonalphamoms
+
 pro mvn_swia_protonalphadist, dat, ndat, protonparams = protonparams, alphaparams = alphaparams
+
+restore,'~jhalekas/Documents/Work/Research/SWIA/mdl/allgresparr.sav'
 
 compile_opt idl2
 
@@ -131,16 +134,21 @@ sigk = ck*0.022
 for i = 0,dat.nenergy-1 do begin
 	for j = 0,dat.nbins-1 do begin
 		emult = 7.8/dat.energy[i,j]
+		thbin = j mod 12
 		cth = dat.theta[i,j]
-		sigth = 1.75   ; 2.5 would be right w/out the finite size theta bins
 		phbin = floor(j/12)
-		
-		a = cos(ang)*cos(ang)/2 * 1/(sigk^2) + sin(ang)*sin(ang)/2 * 1/(sigth^2)
-		b = sin(2*ang)/4 * 1/(sigk^2) - sin(2*ang)/4 * 1/(sigth^2)
-		c = sin(ang)*sin(ang)/2 * 1/(sigk^2) + cos(ang)*cos(ang)/2 * 1/(sigth^2)
 
-		resp = exp(-1*(a*(emult*energy[*,*,phbin]-ck)^2 + 2*b*(emult*energy[*,*,phbin]-ck)*(theta[*,*,phbin]-cth) + c*(theta[*,*,phbin]-cth)^2))
-		ndat.data[i,j] = total(resp*tdata[*,*,phbin])/total(resp)
+		mindth = min(abs(cth-allx[20,*]),minthi)
+
+		rth = allx[*,minthi]
+		re = ally[*,minthi]/emult
+		rg = allg[*,*,minthi]
+
+		indx = interpol(indgen(41),rth,theta[*,*,phbin])
+		indy = interpol(indgen(51),re,energy[*,*,phbin])
+		resp = interpolate(rg,indx,indy,missing=0)
+		ndat.data[i,j] = total(resp*tdata[*,*,phbin],/nan)/total(resp,/nan)
+
 	endfor
 endfor
 

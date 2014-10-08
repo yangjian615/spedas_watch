@@ -17,9 +17,9 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-08-18 17:02:28 -0700 (Mon, 18 Aug 2014) $
-;$LastChangedRevision: 15685 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-10-06 16:09:51 -0700 (Mon, 06 Oct 2014) $
+;$LastChangedRevision: 15936 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -48,7 +48,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
                      
                      get_error=get_error, $ ;flag to return error estimates (*_sigma variables)
                      
-                     ;gui-related keywords disabled for now(uniform error helper?)
+                     ;Next two keywords(gui-related) disabled for now(uniform error helper?)
                      gui_statusBar=gui_statusBar, $
                      gui_historyWin=gui_historyWin, $
                      
@@ -57,8 +57,10 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
                      mag_name=mag_name, $ ;tplot variable containing magnetic field data for moments and FAC transformations 
                      sc_pot_name=sc_pot_name, $ ;tplot variable containing spacecraft potential data for moments
                      pos_name=pos_name, $ ;tplot variable containing spacecraft position for FAC transformations
-                     
-                     sst_sun_bins=sst_sun_bins,$ ; which sst bins to decontaminate(list of bins numbers, no mask array)
+                  
+                     ;see thm_pgs_clean_sst.pro to see how decontamination is done for SST 
+                     ;see thm_crib_sst.pro for examples on using the decontamination keywords
+                     sst_sun_bins=sst_sun_bins,$ ; which sst bins to decontaminate(list of bins numbers, not the old mask array)
                      sst_method_clean=sst_method_clean,$ ;how to decontaminate sst data (default/only: manual)
                      
                      dist_array=dist_array, $ ;use to pass in data from thm_part_dist_array, useful if you want to modify the data before spectra generation
@@ -144,7 +146,8 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
   endif
 
   if undefined(outputs) then begin
-    outputs = ['energy','phi','theta'] ;default to energy phi theta
+    ;outputs = ['energy','phi','theta'] ;default to energy phi theta
+    outputs = ['energy'] ;default changed at vassilis's request
   endif
   
   outputs_lc = strlowcase(outputs)

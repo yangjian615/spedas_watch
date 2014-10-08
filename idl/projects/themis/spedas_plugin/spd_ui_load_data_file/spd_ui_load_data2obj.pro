@@ -39,9 +39,9 @@
 ;HISTORY:
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-03 15:18:14 -0700 (Thu, 03 Jul 2014) $
-;$LastChangedRevision: 15510 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-10-03 18:15:20 -0700 (Fri, 03 Oct 2014) $
+;$LastChangedRevision: 15924 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data2obj.pro $
 ;
 ;-
@@ -102,21 +102,30 @@ end
 ;NOTE, this routine is called in several places.
 ;If you change these arguments, make sure to search the distribution
 ;and update the code in all instances where it is called.
-pro spd_ui_load_data2obj, st_time, en_time, $
-                              dtype = dtype0, $
-                              observ=observ, $
-                              scm_cal = scm_cal, $    ; not used now but might be later
-                              outcoord=outcoord, $
-                              raw=raw,$
-                              loadedData=loadedData, $
-                              historyWin=historyWin, $
-                              statusText=statusText, $
-                              state_gui_id=state_gui_id,$
-                              loadedVarList=loadedVarList,$  ; returns a list of the variables that were loaded
-                              replay=replay,$
-                              overwrite_selections=overwrite_selections ;allows replay of user overwrite selections from spedas document
+pro spd_ui_load_data2obj,$
+  loadStruct,$
+  loadedData,$
+  statusBar,$
+  historyWin,$
+  state_gui_id,$
+  loadedVarList=loadedVarList,$
+  replay=replay,$
+  overwrite_selections=overwrite_selections
 
   Compile_Opt idl2, hidden
+  
+  st_time = loadStruct.st_time
+  en_time = loadStruct.en_time
+  dtype0 = loadStruct.dtype
+  observ = loadStruct.observ
+  ;scm_cal = loadStruct.scm_cal (doesn't appear to be used in any existing calls, may want to deprecate)
+  outcoord = loadStruct.outcoord
+  raw = loadStruct.raw
+ 
+  statusText=statusBar
+  ;state_gui_id =parentWidgetId
+
+
   
   thm_init
  
