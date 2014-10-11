@@ -9,7 +9,7 @@
 ;CALLING SEQUENCE:
 ; mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression
 ;INPUT:
-; otp_struct = the structure toy output in CDF_LOAD_VARS format.
+; otp_struct = the structure to output in CDF_LOAD_VARS format.
 ; fullfile0 = the full-path filename for the revisionless cdf file
 ;OUTPUT:
 ; No explicit output, the revisioned file is written, an md5 sum file
@@ -20,8 +20,8 @@
 ;HISTORY:
 ; 22-jul-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-10 12:20:31 -0700 (Wed, 10 Sep 2014) $
-; $LastChangedRevision: 15751 $
+; $LastChangedDate: 2014-10-08 13:06:06 -0700 (Wed, 08 Oct 2014) $
+; $LastChangedRevision: 15946 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_l2file_save.pro $
 ;-
 Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression
@@ -47,19 +47,22 @@ Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compress
   file = file_basename(fullfile)
   file_id = file_basename(file, '.cdf')
   otp_struct.filename = file
-  otp_struct.g_attributes.logical_file_id = file_id
   ppp = strsplit(file_id, '_', /extract)
+  app_id = strmid(ppp[3], 0, 2)
 ;only mvn_sta_l2_app_id_etc here, no date
   otp_struct.g_attributes.logical_source = strjoin(ppp[0:3], '_')
+;File id has the date and sw version
+  otp_struct.g_attributes.logical_file_id = strjoin(ppp[0:5], '_')
+
 ;Add compression, 2014-05-27, changed to touch all files with
 ;cdfconvert, 2014-06-10
 ;Creates an md5sum of the uncompressed file, and saves it in the same
 ;path, 2014-07-07
-  dummy = cdf_save_vars2(otp_struct, fullfile)
+  dummy = cdf_save_vars2(otp_struct, fullfile, /no_file_id_update)
   spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:none -delete'
 
   md5file = ssw_str_replace(fullfile, '.cdf', '.md5')
-  If(file_exist(md5file)) Then file_delete, md5file
+  If(is_string(file_search(md5file))) Then file_delete, md5file
   spawn, 'md5sum '+fullfile+' > '+md5file
 
 ;Extract the md5 sum, and replace the filename in the file, because
@@ -86,7 +89,7 @@ Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compress
      For j = 0, ndel-1 Do Begin
         file_delete, delfiles[j]
         del_md5filej = ssw_str_replace(delfiles[j], '.cdf', '.md5')
-        If(file_exist(del_md5filej)) Then file_delete, del_md5filej
+        If(is_string(file_search(del_md5filej))) Then file_delete, del_md5filej
      Endfor
   Endif
 

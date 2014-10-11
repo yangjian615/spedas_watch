@@ -15,8 +15,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-08-29 14:10:43 -0700 (Fri, 29 Aug 2014) $
-; $LastChangedRevision: 15729 $
+; $LastChangedDate: 2014-10-08 16:57:15 -0700 (Wed, 08 Oct 2014) $
+; $LastChangedRevision: 15950 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -24,6 +24,113 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
 
 ;Run in Z buffer
   set_plot,'z'
+
+  load_position = 'init'
+  catch, error_status
+  
+  if error_status ne 0 then begin
+     print, '%MVN_STA_L2GEN: Got Error Message'
+     help, /last_message, output = err_msg
+     For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
+     case load_position of
+        'init':begin
+           print, 'Problem with initialization'
+           goto, skip_db
+        end
+        '2A':begin
+           print, 'Problem in '+load_position
+           goto, skip_2a
+        end
+        'C0':begin
+           print, 'Problem in '+load_position
+           goto, skip_c0
+        end
+        'C2':begin
+           print, 'Problem in '+load_position
+           goto, skip_c2
+        end
+        'C4':begin
+           print, 'Problem in '+load_position
+           goto, skip_c4
+        end
+        'C6':begin
+           print, 'Problem in '+load_position
+           goto, skip_c6
+        end
+        'C8':begin
+           print, 'Problem in '+load_position
+           goto, skip_c8
+        end
+        'CA':begin
+           print, 'Problem in '+load_position
+           goto, skip_ca
+        end
+        'CC':begin
+           print, 'Problem in '+load_position
+           goto, skip_cc
+        end
+        'CD':begin
+           print, 'Problem in '+load_position
+           goto, skip_cd
+        end
+        'CE':begin
+           print, 'Problem in '+load_position
+           goto, skip_ce
+        end
+        'CF':begin
+           print, 'Problem in '+load_position
+           goto, skip_cf
+        end
+        'D0':begin
+           print, 'Problem in '+load_position
+           goto, skip_d0
+        end
+        'D1':begin
+           print, 'Problem in '+load_position
+           goto, skip_d1
+        end
+        'D2':begin
+           print, 'Problem in '+load_position
+           goto, skip_d2
+        end
+        'D3':begin
+           print, 'Problem in '+load_position
+           goto, skip_d3
+        end
+        'D4':begin
+           print, 'Problem in '+load_position
+           goto, skip_d4
+        end
+        'D6':begin
+           print, 'Problem in '+load_position
+           goto, skip_d6
+        end
+        'D7':begin
+           print, 'Problem in '+load_position
+           goto, skip_d7
+        end
+        'D8':begin
+           print, 'Problem in '+load_position
+           goto, skip_d8
+        end
+        'D9':begin
+           print, 'Problem in '+load_position
+           goto, skip_d9
+        end
+        'DA':begin
+           print, 'Problem in '+load_position
+           goto, skip_da
+        end
+        'DB':begin
+           print, 'Problem in '+load_position
+           goto, skip_db
+        end
+       else: goto, skip_db
+     endcase
+  endif
+
+
+
 ;First load the data
   If(keyword_set(l0_input_file)) Then Begin
      filex = file_search(l0_input_file[0])
@@ -136,50 +243,74 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   Endif
 
 ;Write the files
-  Print, '2A'
+  load_position = '2A' & Print, load_position
   mvn_sta_cmn_2a_l2gen, mvn_2a_dat, directory = dir_out, _extra = _extra
-  Print, 'C0'
+  skip_2a:
+  load_position = 'C0' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_c0_dat, directory = dir_out, _extra = _extra
-  Print, 'C2'
+  skip_c0:
+  load_position = 'C2' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_c2_dat, directory = dir_out, _extra = _extra
-  Print, 'C4'
+  skip_c2:
+  load_position = 'C4' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_c4_dat, directory = dir_out, _extra = _extra
-  Print, 'C6'
+  skip_c4:
+  load_position = 'C6' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_c6_dat, directory = dir_out, _extra = _extra
-  Print, 'C8'
+  skip_c6:
+  load_position = 'C8' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_c8_dat, directory = dir_out, _extra = _extra
-  Print, 'CA'
+  skip_c8:
+  load_position = 'CA' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_ca_dat, directory = dir_out, _extra = _extra
-  Print, 'CC'
+  skip_ca:
+  load_position = 'CC' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_cc_dat, directory = dir_out, _extra = _extra
-  Print, 'CD'
+  skip_cc:
+  load_position = 'CD' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_cd_dat, directory = dir_out, _extra = _extra
-  Print, 'CE'
+  skip_cd:
+  load_position = 'CE' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_ce_dat, directory = dir_out, _extra = _extra
-  Print, 'CF'
+  skip_ce:
+  load_position = 'CF' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_cf_dat, directory = dir_out, _extra = _extra
-  Print, 'D0'
+  skip_cf:
+  load_position = 'D0' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_d0_dat, directory = dir_out, _extra = _extra
-  Print, 'D1'
+  skip_d0:
+  load_position = 'D1' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_d1_dat, directory = dir_out, _extra = _extra
-  Print, 'D2'
+  skip_d1:
+  load_position = 'D2' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_d2_dat, directory = dir_out, _extra = _extra
-  Print, 'D3'
+  skip_d2:
+  load_position = 'D3' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_d3_dat, directory = dir_out, _extra = _extra
-  Print, 'D4'
+  skip_d3:
+  load_position = 'D4' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_d4_dat, directory = dir_out, _extra = _extra
-  Print, 'D6'
+  skip_d4:
+  load_position = 'D6' & Print, load_position
   mvn_sta_cmn_d6_l2gen, mvn_d6_dat, directory = dir_out, _extra = _extra
-  Print, 'D7'
+  skip_d6:
+  load_position = 'D7' & Print, load_position
   mvn_sta_cmn_d7_l2gen, mvn_d7_dat, directory = dir_out, _extra = _extra
-  Print, 'D8'
+  skip_d7:
+  load_position = 'D8' & Print, load_position
   mvn_sta_cmn_d89a_l2gen, mvn_d8_dat, directory = dir_out, _extra = _extra
-  Print, 'D9'
+  skip_d8:
+  load_position = 'D9' & Print, load_position
   mvn_sta_cmn_d89a_l2gen, mvn_d9_dat, directory = dir_out, _extra = _extra
-  Print, 'DA'
+  skip_d9:
+  load_position = 'DA' & Print, load_position
   mvn_sta_cmn_d89a_l2gen, mvn_da_dat, directory = dir_out, _extra = _extra
-  Print, 'DB'
+  skip_da:
+  load_position = 'DB' & Print, load_position
   mvn_sta_cmn_db_l2gen, mvn_db_dat, directory = dir_out, _extra = _extra
+  skip_db:
+  print, 'All App_ids finished'
+  Return
 
 End
 

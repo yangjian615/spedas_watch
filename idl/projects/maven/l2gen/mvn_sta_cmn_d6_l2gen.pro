@@ -49,8 +49,8 @@
 ;HISTORY:
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-08-30 11:27:28 -0700 (Sat, 30 Aug 2014) $
-; $LastChangedRevision: 15734 $
+; $LastChangedDate: 2014-10-08 16:57:15 -0700 (Wed, 08 Oct 2014) $
+; $LastChangedRevision: 15950 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_d6_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -67,10 +67,10 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 ;First, global attributes
   global_att = {Title:'MAVEN STATIC Ion Spectra', $
                 Project:'MAVEN', $
-                Source_name:'MAVEN>Mars Atmosphere and Volatile Evolution Mission', $
+                Source_name:'MVN>Mars Atmosphere and Volatile Evolution Mission', $
                 Discipline:'Space Physics>Planetary Physics>Particles', $
-                Data_type:'CAL>Calibration', $
-                Descriptor:'STATIC> Supra-Thermal Thermal Ion Composition Particle Distributions', $
+                Data_type:'l2_d6-events>Level 2 Events data', $
+                Descriptor:'STA> Supra-Thermal Thermal Ion Composition Particle Distributions', $
                 Data_version:'0', $
                 File_naming_convention: 'source_descriptor_datatype_yyyyMMdd', $
                 PI_name:'J. P. McFadden', $
@@ -100,8 +100,7 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
   apid = strlowcase(cmn_dat.apid)
 
 ; Here are variable names, type, catdesc, and lablaxis, from the SIS
-  rv_vt =  [['EPOCH', 'EPOCH', 'Spacecraft event time for this data record (UTC Epoch time from 01-Jan-0000 00:00:00.000 without leap seconds), one element per ion distribution (NUM_DISTS elements)', 'EPOCH'], $
-            ['TIME_TT2000', 'TT2000', 'UTC time from 01-Jan-2000 12:00:00.000 including leap seconds), one element per ion distribution (NUM_DISTS elements)', 'TT2000'], $
+  rv_vt =  [['EPOCH', 'TT2000', 'UTC time from 01-Jan-2000 12:00:00.000 including leap seconds), one element per ion distribution (NUM_DISTS elements)', 'TT2000'], $
             ['TIME_MET', 'DOUBLE', 'Mission elapsed time for this data record, one element per ion distribution (NUM_DISTS elements)', 'Mission Elapsed Time'], $
             ['TIME_EPHEMERIS', 'DOUBLE', 'Time used by SPICE program (NUM_DISTS elements)', 'SPICE Ephemeris Time'], $
             ['TIME_UNIX', 'DOUBLE', 'Unix time (elapsed seconds since 1970-01-01/00:00 without leap seconds) for this data record, one element per ion distribution. This time is the center time of data collection. (NUM_DISTS elements)', 'Unix Time'], $
@@ -120,7 +119,7 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 ;No need for lablaxis values here, just use the name
   nv_vt = [['PROJECT_NAME', 'STRING', 'MAVEN'], $
            ['SPACECRAFT', 'STRING', '0'], $
-           ['DATA_NAME', 'STRING', 'XX YYY where XX is the APID and YYY is the array abbreviation (64e2m, 32e32m,… etc.)'], $
+           ['DATA_NAME', 'STRING', 'XX YYY where XX is the APID and YYY is the array abbreviation (64e2m, 32e32m, etc.)'], $
            ['APID', 'STRING', 'XX, where XX is the APID'], $
            ['NUM_DISTS', 'INTEGER', 'Number of measurements or times in the file'], $
            ['TDC1_CONV', 'FLOAT', 'Conversion factor for TDC1 '], $
@@ -150,6 +149,15 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 
 ;Use center time for time variables
   center_time = cmn_dat.time
+
+;Grab the date, and clip anything plus or minus 10 minutes from the
+;start or end of the date
+  date = time_string(median(center_time), precision=-3, format=6)
+  trange = time_double(date)+[-600.0d0, 87000.0d0]
+  cmn_dat = mvn_sta_cmn_tclip(temporary(cmn_dat), trange)
+
+;Reset center time
+  center_time = cmn_dat.time
   num_dists = n_elements(center_time)
 
 ;Initialize
@@ -171,10 +179,6 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 ;Case by case basis
         Case vj of
            'epoch': Begin
-              dvar = time_epoch(center_time)
-              is_tvar = 1b
-           End
-           'time_tt2000': Begin
               dvar = double(long64((add_tt2000_offset(center_time)-time_double('2000-01-01/12:00'))*1e9))
               is_tvar = 1b
            End
@@ -204,8 +208,7 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 
      cdf_type = idl2cdftype(dvar, format_out = fmt, fillval_out = fll, validmin_out = vmn, validmax_out = vmx)
 ;Change types for CDF time variables
-     If(vj eq 'epoch') Then cdf_type = 'CDF_EPOCH' $
-     Else If(vj eq 'time_tt2000') Then cdf_type = 'CDF_TIME_TT2000'
+     If(vj eq 'epoch') Then cdf_type = 'CDF_TIME_TT2000'
 
      dtype = size(dvar, /type)
 ;variable attributes here, but only the string attributes, the others
@@ -220,37 +223,26 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
              form_ptr:'NA', monoton:'NA'}
 
 ;fix fill vals, valid mins and valid max's here
+     str_element, vatt, 'fillval', fll, /add
+     str_element, vatt, 'format', fmt, /add
      If(vj Eq 'epoch') Then Begin
-        xtime = time_double('9999-12-31/23:59:59.999')
-        str_element, vatt, 'fillval', time_epoch(xtime), /add
-        str_element, vatt, 'validmin', epoch_range[0], /add
-        str_element, vatt, 'validmax', epoch_range[1], /add
-     Endif Else If(vj Eq 'time_tt2000') Then Begin
         xtime = time_double('9999-12-31/23:59:59.999')
         xtime = long64((add_tt2000_offset(xtime)-time_double('2000-01-01/12:00'))*1e9)
         str_element, vatt, 'fillval', xtime, /add
         str_element, vatt, 'validmin', tt2000_range[0], /add
         str_element, vatt, 'validmax', tt2000_range[1], /add
      Endif Else If(vj Eq 'time_met') Then Begin
-        xtime = time_double('9999-12-31/23:59:59.999')-time_double('2013-11-18/00:00')
-        str_element, vatt, 'fillval', xtime, /add
         str_element, vatt, 'validmin', met_range[0], /add
         str_element, vatt, 'validmax', met_range[1], /add
      Endif Else If(vj Eq 'time_ephemeris') Then Begin
-        xtime = time_double('9999-12-31/23:59:59.999')
-        str_element, vatt, 'fillval', time_ephemeris(xtime), /add
         str_element, vatt, 'validmin', et_range[0], /add
         str_element, vatt, 'validmax', et_range[1], /add
      Endif Else If(vj Eq 'time_unix') Then Begin
-        xtime = time_double('9999-12-31/23:59:59.999')
-        str_element, vatt, 'fillval', xtime, /add
         str_element, vatt, 'validmin', date_range[0], /add
         str_element, vatt, 'validmax', date_range[1], /add
      Endif Else Begin
-        str_element, vatt, 'fillval', fll, /add
         str_element, vatt, 'validmin', vmn, /add
         str_element, vatt, 'validmax', vmx, /add
-        str_element, vatt, 'format', fmt, /add
 ;scalemin and scalemax depend on the variable's values
         str_element, vatt, 'scalemin', vmn, /add
         str_element, vatt, 'scalemax', vmx, /add
@@ -276,14 +268,14 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      vatt.fieldnam = rv_vt[3, j] ;shorter name
 ;Units
      If(is_tvar) Then Begin ;Time variables
-        If(vj Eq 'time_tt2000') Then vatt.units = 'nanosec' Else vatt.units = 'sec'
+        If(vj Eq 'epoch') Then vatt.units = 'nanosec' Else vatt.units = 'sec'
      Endif Else Begin
         If(vj Eq 'data') Then vatt.units = 'counts'
      Endelse
 
 ;Depends and labels
      vatt.depend_time = 'time_unix'
-     vatt.depend_0 = 'time_tt2000'
+     vatt.depend_0 = 'epoch'
      vatt.lablaxis = rv_vt[3, j]
 
 ;Time variables are monotonically increasing:
@@ -350,7 +342,7 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 ;variable attributes here, but only the string attributes, the others
 ;depend on the data type
      vatt = {catdesc:'NA', fieldnam:'NA', $
-             units:'NA', var_type:'support_data', $
+             units:'NA', var_type:'metadata', $
              coordinate_system:'sensor'}
      str_element, vatt, 'format', fmt, /add
 ;Don't need mins and maxes for string variables
@@ -399,11 +391,17 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
          majority:'ROW_MAJOR', maxrec:-1,$
          nvars:0, nzvars:nvars, natts:natts, dim:lonarr(1)}
 
+;time resolution and UTC start and end
   If(num_dists Gt 0) Then Begin
      tres = 86400.0/num_dists
      tres = strcompress(string(tres, format = '(f8.1)'))+' sec'
   Endif Else tres = '   0.0 sec'
   global_att.time_resolution = tres
+
+  date0 = time_string(date)
+  date1 = time_string(time_double(date0)+86400.0d0)
+  str_element, global_att, 'UTC_START_TIME', date0, /add
+  str_element, global_att, 'UTC_END_TIME', date1, /add
 
   otp_struct = {filename:'', g_attributes:global_att, inq:inq, nv:nvars, vars:vstr}
 
@@ -418,10 +416,6 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
   Endif Else dir = './'
 
   ext = strcompress(strlowcase(cmn_dat.apid), /remove_all)+'-events'
-
-;date can be complicated, I'm guessing that the median center
-;time will work best
-  date = time_string(median(center_time), precision=-3, format=6)
 
   file0 = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
   fullfile0 = dir+file0

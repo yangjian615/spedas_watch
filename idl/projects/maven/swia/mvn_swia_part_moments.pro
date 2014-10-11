@@ -11,21 +11,28 @@
 ;KEYWORDS:
 ;	TYPE: Array of types to calculate moments for, out of ['CS','CA','FS','FA','S']
 ;		(Coarse survey/archive, Fine survey/archive) - Defaults to all types
+;	PHRANGE: Phi range to produce moments for (default 0-360)
+;	THRANGE: Theta range to produce moments for (default -50 - 50)
+;	ERANGE: Energy range to produce moments for (default 0-30000)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2013-12-17 11:37:06 -0800 (Tue, 17 Dec 2013) $
-; $LastChangedRevision: 13696 $
+; $LastChangedDate: 2014-10-09 06:30:49 -0700 (Thu, 09 Oct 2014) $
+; $LastChangedRevision: 15952 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_part_moments.pro $
 ;
 ;-
 
-pro mvn_swia_part_moments, type = type
+pro mvn_swia_part_moments, type = type, phrange = phrange, thrange =thrange, erange = erange,verbose = verbose
 
 compile_opt idl2
 
 common mvn_swia_data
 
 if not keyword_set(type) then type = ['ca','cs','fa','fs','s']
+if not keyword_set(phrange) then phrange = [0,360]
+if not keyword_set(thrange) then thrange = [-50,50]
+if not keyword_set(erange) then erange = [0,30000]
+
 
 w = where(strupcase(type) eq 'FS',nw)
 
@@ -50,6 +57,10 @@ if nw gt 0 and n_elements(swifs) gt 0 then begin
 			dat = mvn_swia_get_3df(index = i, start = start)
 			
 			dat = conv_units(dat,'eflux')
+
+			excl = where(dat.phi lt phrange[0] or dat.phi gt phrange[1] or dat.theta lt thrange[0] or dat.theta gt thrange[1] or dat.energy lt erange[0] or dat.energy gt erange[1],nexcl)
+			if nexcl gt 0 then dat.data[excl] = 0
+			if keyword_set(verbose) then print,'Excluding ',nexcl
 
 			energies[i,*] = total(dat.energy*dat.domega,2)/total(dat.domega,2)
 			efluxes[i,*] = total(dat.data*dat.domega,2)/total(dat.domega,2)
@@ -100,6 +111,9 @@ if nw gt 0 and n_elements(swifa) gt 0 then begin
 			dat = mvn_swia_get_3df(index = i,/archive, start = start)
 			
 			dat = conv_units(dat,'eflux')
+			excl = where(dat.phi lt phrange[0] or dat.phi gt phrange[1] or dat.theta lt thrange[0] or dat.theta gt thrange[1] or dat.energy lt erange[0] or dat.energy gt erange[1],nexcl)
+			if nexcl gt 0 then dat.data[excl] = 0
+			if keyword_set(verbose) then print,'Excluding ',nexcl
 
 			energies[i,*] = total(dat.energy*dat.domega,2)/total(dat.domega,2)
 			efluxes[i,*] = total(dat.data*dat.domega,2)/total(dat.domega,2)
@@ -152,6 +166,10 @@ if nw gt 0 and n_elements(swics) gt 0 then begin
 			
 			dat = conv_units(dat,'eflux')
 
+			excl = where(dat.phi lt phrange[0] or dat.phi gt phrange[1] or dat.theta lt thrange[0] or dat.theta gt thrange[1] or dat.energy lt erange[0] or dat.energy gt erange[1],nexcl)
+			if nexcl gt 0 then dat.data[excl] = 0
+			if keyword_set(verbose) then print,'Excluding ',nexcl
+
 			energies[i,*] = total(dat.energy*dat.domega,2)/total(dat.domega,2)
 			efluxes[i,*] = total(dat.data*dat.domega,2)/total(dat.domega,2)
 
@@ -201,6 +219,10 @@ if nw gt 0 and n_elements(swica) gt 0 then begin
 			dat = mvn_swia_get_3dc(index = i,/archive, start = start)
 			
 			dat = conv_units(dat,'eflux')
+
+			excl = where(dat.phi lt phrange[0] or dat.phi gt phrange[1] or dat.theta lt thrange[0] or dat.theta gt thrange[1] or dat.energy lt erange[0] or dat.energy gt erange[1],nexcl)
+			if nexcl gt 0 then dat.data[excl] = 0
+			if keyword_set(verbose) then print,'Excluding ',nexcl
 
 			energies[i,*] = total(dat.energy*dat.domega,2)/total(dat.domega,2)
 			efluxes[i,*] = total(dat.data*dat.domega,2)/total(dat.domega,2)
@@ -256,6 +278,9 @@ if nw gt 0 and n_elements(swis) gt 0 then begin
 			dat = mvn_swia_get_3ds(index = i, start = start)
 			
 			dat = conv_units(dat,'eflux')
+			excl = where(dat.energy lt erange[0] or dat.energy gt erange[1],nexcl)
+			if nexcl gt 0 then dat.data[excl] = 0
+			if keyword_set(verbose) then print,'Excluding ',nexcl
 
 			energies[i,*] = dat.energy
 			efluxes[i,*] = dat.data

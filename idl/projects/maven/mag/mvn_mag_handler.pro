@@ -3,8 +3,8 @@
 ;Purpose: 
 ; Author: Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-09-29 12:07:25 -0700 (Mon, 29 Sep 2014) $
-; $LastChangedRevision: 15877 $
+; $LastChangedDate: 2014-10-07 15:08:28 -0700 (Tue, 07 Oct 2014) $
+; $LastChangedRevision: 15940 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_handler.pro $
 ; 
 ;-
@@ -294,12 +294,12 @@ pro mvn_mag_handler,ccsds,decom=decom,reset=reset,debug=debug,set_realtime=set_r
        ;   do other stuff here        
         endif
         if keyword_set(offset1) then begin   ;  must be in highest gain setting
-           if n_elements(offset1) ne 3 then offset1 = -[29, 17, -65] * 256.*2 / 2d^15  
-           if keyword_set(mag1_svy) then begin
+           if n_elements(offset1) ne 3 then offset1 =[-0.47123703, 1.3987961, 1.3944077]                      ; oldvalue = -[29, 17, -65] * 256.*2 / 2d^15  
+           if keyword_set(mag1_svy) && ptr_valid(mag1_svy.x) && keyword_set( *(mag1_svy.x)) then begin
              p = mag1_svy.x
              store_data,'mvn_mag1_svy_Bcor',(*p).time, transpose((*P).braw + (offset1 # replicate(1,n_elements((*p).time) ) )) ,dlim={spice_frame:'MAVEN_MAG1'}
            endif
-           if keyword_set(mag1_arc) then begin
+           if keyword_set(mag1_arc) && ptr_valid(mag1_arc.x) && keyword_set( *(mag1_arc.x)) then begin
              p = mag1_arc.x
              store_data,'mvn_mag1_arc_Bcor',(*p).time, transpose((*P).braw + (offset1 # replicate(1,n_elements((*p).time) ) )) ,dlim={spice_frame:'MAVEN_MAG1'}
            endif             

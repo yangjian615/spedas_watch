@@ -16,8 +16,8 @@
 ;HISTORY:
 ; 16-jun-2014,jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-08-30 11:28:42 -0700 (Sat, 30 Aug 2014) $
-; $LastChangedRevision: 15735 $
+; $LastChangedDate: 2014-10-08 16:58:19 -0700 (Wed, 08 Oct 2014) $
+; $LastChangedRevision: 15951 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_cmn_l2vararr.pro $
 ;-
 Function mvn_sta_cmn_l2vararr, apid
@@ -62,6 +62,7 @@ Function mvn_sta_cmn_l2vararr, apid
              ['GEOM_FACTOR', 'GEOM_FACTOR', 'N'], $
              ['DEAD1', 'DEAD_TIME_1', 'N'], $
              ['DEAD2', 'DEAD_TIME_2', 'N'], $
+             ['DEAD3', 'DEAD_TIME_3', 'N'], $
              ['NMASS', 'NMASS', 'N'], $
              ['MASS', 'MASS', 'N'], $
              ['MASS_ARR', 'MASS_ARR', 'N'], $

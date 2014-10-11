@@ -176,10 +176,10 @@ message,"Done rotating emfisis data...",/continue
 	get_data,rbspx+'_efw_esvy_mgse_vxb_removed_spinfit', data = d
 
 	if is_struct(d) then begin
-	;	d.y[*, 1] *= 1.05d
-	;	d.y[*, 2] *= 1.05d
-		d.y[*, 1] *= 1d
-		d.y[*, 2] *= 1d
+		d.y[*, 1] *= 0.947d   ;found by S. Thaller
+		d.y[*, 2] *= 0.947d
+		;; d.y[*, 1] *= 1d
+		;; d.y[*, 2] *= 1d
 		store_data,rbspx+'_efw_esvy_mgse_vxb_removed_spinfit', data = d
 	endif
 

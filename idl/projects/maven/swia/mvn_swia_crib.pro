@@ -11,8 +11,8 @@
 ;AUTHOR:	J. Halekas	
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-09-19 06:45:29 -0700 (Fri, 19 Sep 2014) $
-; $LastChangedRevision: 15827 $
+; $LastChangedDate: 2014-10-09 11:27:40 -0700 (Thu, 09 Oct 2014) $
+; $LastChangedRevision: 15955 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_crib.pro $
 ;
 ;-
@@ -84,6 +84,18 @@
 
 	plot3d_new,csdat
 	spec3d,csdat
+
+;Compute moments for all the 3-d distributions (and spectra)
+
+	mvn_swia_part_moments
+
+;Do it just for fine distributions
+
+	mvn_swia_part_moments, type = ['fs','fa']
+
+;Do it for a constrained energy, phi, theta, range
+
+	mvn_swia_part_moments, erange = [100,200], phrange  = [160,200], thrange = [-20,20]
 
 ; compute separate proton and alpha moments (in instrument coordinates) from fine distributions using simple energy bisection and partial moment computation (takes awhile)
 

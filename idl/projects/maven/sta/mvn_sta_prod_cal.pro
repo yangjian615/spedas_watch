@@ -41,7 +41,7 @@
 ;		develop an algorithm for quality flag that qualifies high count rate and mode changes
 ;
 ;-
-pro mvn_sta_prod_cal,all=all,units=units,apids=apids,test=test,gf_nor=gf_nor
+pro mvn_sta_prod_cal,all=all,units=units,apids=apids,test=test,gf_nor=gf_nor,ignore=ignore
 
 ; determine the first time in the data, could be used in determining which SLUT/MLUT table was loaded
    if not keyword_set(first_t) then begin				; for testing
@@ -1246,7 +1246,7 @@ if not keyword_set(apids) or test then begin
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
 	if first_t lt time_double('2014-09-01/0') then begin
-		if gf_nor then begin
+		if keyword_set(gf_nor) then begin
 			for i=0,n_swp-1 do gf2[i,*,2]=gf2[i,*,2]/50.
 			for i=0,n_swp-1 do gf2[i,*,3]=gf2[i,*,3]/50.
 		endif else begin
@@ -1546,7 +1546,7 @@ if not keyword_set(apids) or test then begin
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
 	if first_t lt time_double('2014-09-01/0') then begin
-		if gf_nor then begin
+		if keyword_set(gf_nor) then begin
 			for i=0,n_swp-1 do gf2[i,*,2]=gf2[i,*,2]/50.
 			for i=0,n_swp-1 do gf2[i,*,3]=gf2[i,*,3]/50.
 		endif else begin
@@ -1805,7 +1805,7 @@ if not keyword_set(apids) or test then begin
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
 	if first_t lt time_double('2014-09-01/0') then begin
-		if gf_nor then begin
+		if keyword_set(gf_nor) then begin
 			for i=0,n_swp-1 do gf2[i,*,2]=gf2[i,*,2]/50.
 			for i=0,n_swp-1 do gf2[i,*,3]=gf2[i,*,3]/50.
 		endif else begin
@@ -2070,7 +2070,7 @@ if not keyword_set(apids) or test then begin
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
 	if first_t lt time_double('2014-09-01/0') then begin
-		if gf_nor then begin
+		if keyword_set(gf_nor) then begin
 			for i=0,n_swp-1 do gf2[i,*,2]=gf2[i,*,2]/50.
 			for i=0,n_swp-1 do gf2[i,*,3]=gf2[i,*,3]/50.
 		endif else begin
@@ -5137,6 +5137,8 @@ endif
 
 ; this section is new code 
 
+if not keyword_set(ignore) then begin
+
 if keyword_set(apids) then test = fix((total(apids eq 'd6') + total(apids eq 'D6')) < 1) else test=0
 if not keyword_set(apids) or test then begin
 
@@ -5326,6 +5328,7 @@ if not keyword_set(apids) or test then begin
    endif
 endif
 
+endif
 
 ;***************************************************************************************************************
 ; APID D7
@@ -5550,6 +5553,7 @@ endif
 ;***************************************************************************************************************
 ; APID D9
 
+if not keyword_set(ignore) then begin
 
 if keyword_set(apids) then test = fix((total(apids eq 'd9') + total(apids eq 'D9')) < 1) else test=0
 if not keyword_set(apids) or test then begin
@@ -5724,6 +5728,7 @@ if not keyword_set(apids) or test then begin
    endif
 endif
 
+endif
 
 ;***************************************************************************************************************
 ; APID DA

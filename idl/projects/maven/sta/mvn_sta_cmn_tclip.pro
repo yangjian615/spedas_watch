@@ -63,8 +63,8 @@
 ;HISTORY:
 ; 19-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-11 12:38:13 -0700 (Thu, 11 Sep 2014) $
-; $LastChangedRevision: 15754 $
+; $LastChangedDate: 2014-10-09 15:56:05 -0700 (Thu, 09 Oct 2014) $
+; $LastChangedRevision: 15966 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_cmn_tclip.pro $
 ;-
 Function mvn_sta_cmn_tclip, dat1, trange
@@ -102,8 +102,7 @@ Function mvn_sta_cmn_tclip, dat1, trange
   For j = 0, nvar-1 Do Begin
      x1 = where(tags1 Eq rv_arr[0, j], nx1)
      If(nx1 Eq 0) Then Begin
-        dprint, dlev = [0], 'Missing tag: '+rv_arr[0, j]
-        Return, -1
+        dprint, 'Ignoring missing tag: '+rv_arr[0, j]
      Endif Else Begin
         If(rv_arr[2, j] Eq 'N') Then Begin
            If(count Eq 0) Then undefine, dat

@@ -30,7 +30,7 @@
 ;   EFF_IND         INT       Array[21600]
 ;   ATT_IND         INT       Array[21600]
 ;   NENERGY         INT             32
-;   ENERGY          FLOAT     Array[9, 32, 64]                                              
+;   ENERGY          FLOAT     Array[9, 32, 64]
 ;   DENERGY         FLOAT     Array[9, 32, 64]
 ;   NBINS           INT              1
 ;   BINS            INT       Array[1]
@@ -51,7 +51,7 @@
 ;   TWT_ARR         FLOAT     Array[5, 32, 64]
 ;   CHARGE          FLOAT           1.00000
 ;   SC_POT          FLOAT     Array[21600]
-;   MAGF            FLOAT     Array[21600, 3]                                               
+;   MAGF            FLOAT     Array[21600, 3]
 ;   QUAT_SC         FLOAT     Array[21600, 4]
 ;   QUAT_MSO        FLOAT     Array[21600, 4]
 ;   BINS_SC         LONG      Array[21600]
@@ -68,8 +68,8 @@
 ;HISTORY:
 ; 2014-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-16 17:17:57 -0700 (Mon, 16 Jun 2014) $
-; $LastChangedRevision: 15383 $
+; $LastChangedDate: 2014-10-09 15:58:03 -0700 (Thu, 09 Oct 2014) $
+; $LastChangedRevision: 15967 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_cmn_l2read.pro $
 ;-
 Function mvn_sta_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra = _extra

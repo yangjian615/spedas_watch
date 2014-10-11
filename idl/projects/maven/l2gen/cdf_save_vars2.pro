@@ -35,14 +35,14 @@
 ;and if you are using Solaris you need to be in 32-bit mode NOT 64-bit
 ;(ie, idl -32)
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-23 08:51:38 -0700 (Mon, 23 Jun 2014) $
-; $LastChangedRevision: 15404 $
+; $LastChangedDate: 2014-10-08 12:48:22 -0700 (Wed, 08 Oct 2014) $
+; $LastChangedRevision: 15945 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/cdf_save_vars2.pro $
 ;-
 
 ;------------------------------------------------------------------------------------------
 
-function cdf_save_vars2, cdf_structure, new_cdf_name, set_compression=set_compression, set_gzip_level=set_gzip_level
+function cdf_save_vars2, cdf_structure, new_cdf_name, set_compression=set_compression, set_gzip_level=set_gzip_level, no_file_id_update=no_file_id_update
 
 ;check input
 ;-----------
@@ -73,7 +73,7 @@ function cdf_save_vars2, cdf_structure, new_cdf_name, set_compression=set_compre
 
 ;add global attributes
 ;---------------------
-
+  print, cdf_structure.g_attributes.data_type
   ga_names=tag_names(cdf_structure.g_attributes)
 
 ;make names ISTP compliant
@@ -86,13 +86,16 @@ function cdf_save_vars2, cdf_structure, new_cdf_name, set_compression=set_compre
   if index[0] ne -1 then ga[index]=strupcase(strmid(ga_names[index],0,4))+strlowcase(strmid(ga_names[index],4))
   ga_names_istp_compliant=ga
 
-;update logical_file_id (these checks are copied from write_data_to_cdf in IDLmakecdf)
-  logical_file_id = file
-  period = rstrpos(logical_file_id, '.') ;find position of last '.'
-  if (period gt -1) then logical_file_id = strmid(file,0,period)
-  slash = rstrpos(logical_file_id, '/') ;find position of last '/'
-  if (slash gt -1) then logical_file_id = strmid(logical_file_id,slash+1)
-  cdf_structure.g_attributes.logical_file_id=logical_file_id
+;update logical_file_id (these checks are copied from
+;write_data_to_cdf in IDLmakecdf)
+  If(~keyword_set(no_file_id_update)) Then Begin
+     logical_file_id = file
+     period = rstrpos(logical_file_id, '.') ;find position of last '.'
+     if (period gt -1) then logical_file_id = strmid(file,0,period)
+     slash = rstrpos(logical_file_id, '/') ;find position of last '/'
+     if (slash gt -1) then logical_file_id = strmid(logical_file_id,slash+1)
+     cdf_structure.g_attributes.logical_file_id=logical_file_id
+  Endif
 
   for i=0,n_elements(ga_names_istp_compliant)-1 do begin
 

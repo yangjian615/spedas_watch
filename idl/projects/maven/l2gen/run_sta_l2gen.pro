@@ -15,8 +15,8 @@
 ;HISTORY:
 ; 25-jun-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-27 15:03:05 -0700 (Fri, 27 Jun 2014) $
-; $LastChangedRevision: 15460 $
+; $LastChangedDate: 2014-10-08 12:48:22 -0700 (Wed, 08 Oct 2014) $
+; $LastChangedRevision: 15945 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/run_sta_l2gen.pro $
 ;-
 
@@ -26,6 +26,7 @@ Pro run_sta_l2gen
   If(is_string(test_file[0])) Then Begin
      message, /info, 'Lock file /tmp/STAL2lock.txt Exists, Returning'
   Endif Else Begin
+     test_file = '/tmp/STAL2lock.txt'
      file_touch, test_file[0]
      mvn_call_sta_l2gen
      message, /info, 'Removing Lock file /tmp/STAL2lock.txt'

@@ -121,9 +121,10 @@ End
 ; tt200 attribute types
 ; 7-7-2014, jmm, deleted no_cdfconvert option, added md5sum
 ; 22-jul-2014, jmm, added revisoining
+; 2-oct-2014, jmm, ISTP compliance
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-08-29 14:10:43 -0700 (Fri, 29 Aug 2014) $
-; $LastChangedRevision: 15729 $
+; $LastChangedDate: 2014-10-09 14:28:19 -0700 (Thu, 09 Oct 2014) $
+; $LastChangedRevision: 15964 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -140,10 +141,10 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 ;First, global attributes
   global_att = {Title:'MAVEN STATIC Ion Spectra', $
                 Project:'MAVEN', $
-                Source_name:'MAVEN>Mars Atmosphere and Volatile Evolution Mission', $
+                Source_name:'MVN>Mars Atmosphere and Volatile Evolution Mission', $
                 Discipline:'Space Physics>Planetary Physics>Particles', $
-                Data_type:'CAL>Calibration', $
-                Descriptor:'STATIC> Supra-Thermal Thermal Ion Composition Particle Distributions', $
+                Data_type:'CAL>Calibrated', $
+                Descriptor:'STA>Supra-Thermal Thermal Ion Composition Particle Distributions', $
                 Data_version:'0', $
                 File_naming_convention: 'source_descriptor_datatype_yyyyMMdd', $
                 PI_name:'J. P. McFadden', $
@@ -178,28 +179,27 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
   Endelse
 
 ; Here are variable names, type, catdesc, and lablaxis, from the SIS
-  rv_vt =  [['EPOCH', 'EPOCH', 'Spacecraft event time for this data record (UTC Epoch time from 01-Jan-0000 00:00:00.000 without leap seconds), one element per ion distribution (NUM_DISTS elements)', 'EPOCH'], $
-            ['TIME_TT2000', 'TT2000', 'UTC time from 01-Jan-2000 12:00:00.000 including leap seconds), one element per ion distribution (NUM_DISTS elements)', 'TT2000'], $
+  rv_vt =  [['EPOCH', 'TT2000', 'UTC time from 01-Jan-2000 12:00:00.000 including leap seconds), one element per ion distribution (NUM_DISTS elements)', 'TT2000'], $
             ['TIME_MET', 'DOUBLE', 'Mission elapsed time for this data record, one element per ion distribution (NUM_DISTS elements)', 'Mission Elapsed Time'], $
             ['TIME_EPHEMERIS', 'DOUBLE', 'Time used by SPICE program (NUM_DISTS elements)', 'SPICE Ephemeris Time'], $
             ['TIME_UNIX', 'DOUBLE', 'Unix time (elapsed seconds since 1970-01-01/00:00 without leap seconds) for this data record, one element per ion distribution. This time is the center time of data collection. (NUM_DISTS elements)', 'Unix Time'], $
             ['TIME_START', 'DOUBLE', 'Unix time at the start of data collection. (NUM_DISTS elements)', 'Interval start time (unix)'], $
             ['TIME_END', 'DOUBLE', 'Unix time at the end of data collection. (NUM_DISTS elements)', 'Interval end time (unix)'], $
-            ['TIME_DELTA', 'DOUBLE', 'Averaging time. (TIME_DELTA = TIME_END – TIME_START). (NUM_DISTS elements).', 'Averaging time'], $
-            ['TIME_INTEG', 'DOUBLE', 'Integration time. (TIME_DELTA / N_ENERGY). (NUM_DISTS elements).', 'Integration time'], $
+            ['TIME_DELTA', 'DOUBLE', 'Averaging time. (TIME_END - TIME_START). (NUM_DISTS elements).', 'Averaging time'], $
+            ['TIME_INTEG', 'DOUBLE', 'Integration time. (TIME_DELTA/N_ENERGY). (NUM_DISTS elements).', 'Integration time'], $
             ['VALID', 'INTEGER', 'Validity flag codes valid data (bit 0), test pulser on (bit 1), diagnostic mode (bit 2), data compression type (bit 3-4), packet compression (bit 5) (NUM_DISTS elements)', ' Valid flag'], $
             ['MD', 'INTEGER', 'Mode byte in packet header. (NUM_DISTS elements)', 'Mode byte'], $
             ['MODE', 'INTEGER', 'Decoded mode number. (NUM_DISTS elements)', 'Mode number'], $
             ['RATE', 'INTEGER', 'Decoded telemetry rate number. (NUM_DISTS elements)', 'Telemetry rate number'], $
-            ['SWP_IND', 'INTEGER', 'Index that identifies the energy and deflector sweep look up tables (LUT) for the sensor. SWP_IND is an index that selects the following support data arrays: ENERGY, DENERGY, THETA, DTHETA, PHI, DPHI, DOMEGA, GF and MASS_ARR. (NUM_DISTS elements), EN_IND ≤ NSWP', 'Sweep index'], $
-            ['MLUT_IND', 'INTEGER', 'Index that identifies the onboard mass look up table (MLUT). MLUT_IND is an index that selects the following support data: TOF_ARR. (NUM_DISTS elements) MLUT ≤ NMLUT', 'MLUT index'], $
-            ['EFF_IND', 'INTEGER', 'Index that identifies the efficiency calibration table to be used. EFF_IND is an index that selects the following support data: EFF. (NUM_DISTS elements) EFF_IND ≤ NEFF', 'Efficiency index'], $
+            ['SWP_IND', 'INTEGER', 'Index that identifies the energy and deflector sweep look up tables (LUT) for the sensor. SWP_IND is an index that selects the following support data arrays: ENERGY, DENERGY, THETA, DTHETA, PHI, DPHI, DOMEGA, GF and MASS_ARR. (NUM_DISTS elements), SWP_IND Le NSWP', 'Sweep index'], $
+            ['MLUT_IND', 'INTEGER', 'Index that identifies the onboard mass look up table (MLUT). MLUT_IND is an index that selects the following support data: TOF_ARR. (NUM_DISTS elements) MLUT Le NMLUT', 'MLUT index'], $
+            ['EFF_IND', 'INTEGER', 'Index that identifies the efficiency calibration table to be used. EFF_IND is an index that selects the following support data: EFF. (NUM_DISTS elements) EFF_IND Le NEFF', 'Efficiency index'], $
             ['ATT_IND', 'INTEGER', 'Index that identifies the attenuator state (0 = no attenuation, 1 = electrostatic attenuation, 2 = mechanical attenuation, 3 = mechanical and electrostatic attenuation). (NUM_DISTS elements)', 'Attenuator state'], $
             ['SC_POT', 'FLOAT', 'Spacecraft potential (NUM_DISTS elements)', 'Spacecraft potential'], $
             ['MAGF', 'FLOAT', 'Magnetic field vector with dimension (NUM_DISTS, 3)', 'Magnetic field'], $
             ['QUAT_SC', 'FLOAT', 'Quaternion elements to rotate from STATIC coordinates (same as APP coordinates) to SC coordinates (NUM_DISTS, 3)', 'Quaternion to SC'], $
             ['QUAT_MSO', 'FLOAT', 'Quaternion elements to rotate from STATIC coordinates (same as APP coordinates) to MSO coordinates (NUM_DISTS, 3)', 'Quaternion to MSO'], $
-            ['BINS_SC', 'INTEGER', 'Integer array of 1s and 0s with dimension (NUM_DISTS, NBINS) with 0s used to identify angle bins that include spacecraft surfaces. If NBINS=1, then BINS_SC is used to identify those times, value=0, when the spacecraft is in STATIC’s FOV.', 'Bins flag'], $
+            ['BINS_SC', 'INTEGER', 'Integer array of 1s and 0s with dimension (NUM_DISTS, NBINS) with 0s used to identify angle bins that include spacecraft surfaces. If NBINS=1, then BINS_SC is used to identify those times, value=0, when the spacecraft is in STATICs FOV.', 'Bins flag'], $
             ['POS_SC_MSO', 'FLOAT', 'Spacecraft position in MSO coordinates with dimension (NUM_DISTS, 3)', 'SC position MSO'], $
             ['BKG', 'FLOAT', 'Background counts array with dimensions (NUM_DISTS, '+nenbnm+')', 'Background counts'], $
             ['DEAD', 'FLOAT', 'Dead time correction array with dimensions (NUM_DISTS, '+nenbnm+'), values 0.0 to 1.0, divide by this to correct.', 'Dead_time correction'], $
@@ -212,7 +212,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 ;No need for lablaxis values here, just use the name
   nv_vt = [['PROJECT_NAME', 'STRING', 'MAVEN'], $
            ['SPACECRAFT', 'STRING', '0'], $
-           ['DATA_NAME', 'STRING', 'XX YYY where XX is the APID and YYY is the array abbreviation (64e2m, 32e32m,… etc.)'], $
+           ['DATA_NAME', 'STRING', 'XX YYY where XX is the APID and YYY is the array abbreviation (64e2m, 32e32m, etc.)'], $
            ['APID', 'STRING', 'XX, where XX is the APID'], $
            ['UNITS_NAME', 'STRING', 'eflux'], $
            ['UNITS_PROCEDURE', 'STRING', 'mvn_convert_sta_units, name of IDL routine used for units conversion '], $
@@ -222,10 +222,10 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
            ['NMASS', 'INTEGER', 'Number of mass bins'], $
            ['NDEF', 'INTEGER', 'Number of deflector angle bins'], $
            ['NANODE', 'INTEGER', 'Number of anode bins'], $
-           ['NATT', 'INTEGER', 'Number of attenuator states –4'], $
-           ['NSWP', 'INTEGER', 'Number of sweep tables – will increase over mission as new sweep modes are added'], $
-           ['NEFF', 'INTEGER', 'Number of efficiency arrays – will increase over mission as sensor degrades'], $
-           ['NMLUT', 'INTEGER', 'Number of MLUT tables – will increase over mission as new modes are developed'], $
+           ['NATT', 'INTEGER', 'Number of attenuator states: 4 '], $
+           ['NSWP', 'INTEGER', 'Number of sweep tables - will increase over mission as new sweep modes are added'], $
+           ['NEFF', 'INTEGER', 'Number of efficiency arrays - will increase over mission as sensor degrades'], $
+           ['NMLUT', 'INTEGER', 'Number of MLUT tables - will increase over mission as new modes are developed'], $
            ['BINS', 'INTEGER', 'Array with dimension NBINS containing 1 OR 0 used to flag bad solid angle bins'], $
            ['ENERGY', 'FLOAT', 'Energy array with dimension (NSWP, '+nenbnm+')'], $
            ['DENERGY', 'FLOAT', 'Delta Energy array with dimension (NSWP,  '+nenbnm+')'], $
@@ -243,7 +243,8 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
            ['MASS', 'FLOAT', 'Proton mass (0.01044) in units of MeV/c2'], $
            ['CHARGE', 'FLOAT', 'Proton charge (1)'], $
            ['DEAD_TIME_1', 'FLOAT', 'Dead time for processed events. Dead time corrections are generally not necessary. Corrections require use of STATIC APID DA rate packets.'], $
-           ['DEAD_TIME_2', 'FLOAT', 'Dead time for rejected events. Dead time corrections are generally not necessary. Corrections require use of STATIC APID DA rate packets.']]
+           ['DEAD_TIME_2', 'FLOAT', 'Dead time for rejected events. Dead time corrections are generally not necessary. Corrections require use of STATIC APID DA rate packets.'], $
+           ['DEAD_TIME_3', 'FLOAT', 'Dead time for stop-no-start events. Dead time corrections are generally not necessary. Corrections require use of STATIC APID DA rate packets.']]
 ;Use Lower case for variable names
   nv_vt[0, *] = strlowcase(nv_vt[0, *])
 
@@ -256,6 +257,15 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
   tt2000_range = long64((add_tt2000_offset(date_range)-time_double('2000-01-01/12:00'))*1e9)
 
 ;Use center time for time variables
+  center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
+
+;Grab the date, and clip anything plus or minus 10 minutes from the
+;start or end of the date
+  date = time_string(median(center_time), precision=-3, format=6)
+  trange = time_double(date)+[-600.0d0, 87000.0d0]
+  cmn_dat = mvn_sta_cmn_tclip(temporary(cmn_dat), trange)
+
+;Reset center time
   center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
   num_dists = n_elements(center_time)
 
@@ -277,10 +287,6 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 ;Case by case basis
         Case vj of
            'epoch': Begin
-              dvar = time_epoch(center_time)
-              is_tvar = 1b
-           End
-           'time_tt2000': Begin
               dvar = double(long64((add_tt2000_offset(center_time)-time_double('2000-01-01/12:00'))*1e9))
               is_tvar = 1b
            End
@@ -319,8 +325,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 
      cdf_type = idl2cdftype(dvar, format_out = fmt, fillval_out = fll, validmin_out = vmn, validmax_out = vmx)
 ;Change types for CDF time variables
-     If(vj eq 'epoch') Then cdf_type = 'CDF_EPOCH' $
-     Else If(vj eq 'time_tt2000') Then cdf_type = 'CDF_TIME_TT2000'
+     If(vj eq 'epoch') Then cdf_type = 'CDF_TIME_TT2000'
 
      dtype = size(dvar, /type)
 ;variable attributes here, but only the string attributes, the others
@@ -335,37 +340,26 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
              form_ptr:'NA', monoton:'NA',var_notes:'None'}
 
 ;fix fill vals, valid mins and valid max's here
+     str_element, vatt, 'fillval', fll, /add
+     str_element, vatt, 'format', fmt, /add
      If(vj Eq 'epoch') Then Begin
         xtime = time_double('9999-12-31/23:59:59.999')
-        str_element, vatt, 'fillval', time_epoch(xtime), /add
-        str_element, vatt, 'validmin', epoch_range[0], /add
-        str_element, vatt, 'validmax', epoch_range[1], /add
-     Endif Else If(vj Eq 'time_tt2000') Then Begin
-        xtime = time_double('9999-12-31/23:59:59.999')
         xtime = long64((add_tt2000_offset(xtime)-time_double('2000-01-01/12:00'))*1e9)
-        str_element, vatt, 'fillval', xtime, /add
+        str_element, vatt, 'fillval', xtime, /add_replace
         str_element, vatt, 'validmin', tt2000_range[0], /add
         str_element, vatt, 'validmax', tt2000_range[1], /add
      Endif Else If(vj Eq 'time_met') Then Begin
-        xtime = time_double('9999-12-31/23:59:59.999')-time_double('2013-11-18/00:00')
-        str_element, vatt, 'fillval', xtime, /add
         str_element, vatt, 'validmin', met_range[0], /add
         str_element, vatt, 'validmax', met_range[1], /add
      Endif Else If(vj Eq 'time_ephemeris') Then Begin
-        xtime = time_double('9999-12-31/23:59:59.999')
-        str_element, vatt, 'fillval', time_ephemeris(xtime), /add
         str_element, vatt, 'validmin', et_range[0], /add
         str_element, vatt, 'validmax', et_range[1], /add
      Endif Else If(vj Eq 'time_unix' Or vj Eq 'time_start' Or vj Eq 'time_end') Then Begin
-        xtime = time_double('9999-12-31/23:59:59.999')
-        str_element, vatt, 'fillval', xtime, /add
         str_element, vatt, 'validmin', date_range[0], /add
         str_element, vatt, 'validmax', date_range[1], /add
      Endif Else Begin
-        str_element, vatt, 'fillval', fll, /add
         str_element, vatt, 'validmin', vmn, /add
         str_element, vatt, 'validmax', vmx, /add
-        str_element, vatt, 'format', fmt, /add
 ;scalemin and scalemax depend on the variable's values
         str_element, vatt, 'scalemin', vmn, /add
         str_element, vatt, 'scalemax', vmx, /add
@@ -391,7 +385,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
      vatt.fieldnam = rv_vt[3, j] ;shorter name
 ;Units
      If(is_tvar) Then Begin ;Time variables
-        If(vj Eq 'time_tt2000') Then vatt.units = 'nanosec' Else vatt.units = 'sec'
+        If(vj Eq 'epoch') Then vatt.units = 'nanosec' Else vatt.units = 'sec'
      Endif Else Begin
         If(strpos(vj, 'time') Ne -1) Then vatt.units = 'sec' $ ;time interval sizes
         Else If(vj Eq 'sc_pot') Then vatt.units = 'volts' $
@@ -402,7 +396,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 
 ;Depends and labels
      vatt.depend_time = 'time_unix'
-     vatt.depend_0 = 'time_tt2000'
+     vatt.depend_0 = 'epoch'
      vatt.lablaxis = rv_vt[3, j]
 
 ;Assign labels and components for vectors
@@ -420,17 +414,24 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
         vatt.labl_ptr_1 = 'quat_mso_labl'
      Endif Else IF(vj Eq 'data' Or vj Eq 'bkg' Or vj Eq 'eflux' Or vj Eq 'dead') Then Begin
        If(cmn_dat.nbins Eq 1) Then Begin
-           vatt.depend_1 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nenergy))
-           vatt.depend_2 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nmass))
-           vatt.labl_ptr_1 = vj+'_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))
-           vatt.labl_ptr_2 = vj+'_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass))
+;For ISTP compliance, it looks as if the depend's are switched,
+;probably because we transpose it all in the file
+           vatt.depend_2 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nenergy))
+           vatt.depend_1 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nmass))
+           vatt.labl_ptr_2 = vj+'_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))
+           vatt.labl_ptr_1 = vj+'_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass))
+        Endif Else If(cmn_dat.nmass Eq 1) Then Begin
+           vatt.depend_2 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nenergy))
+           vatt.depend_1 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nbins))
+           vatt.labl_ptr_2 = vj+'_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))
+           vatt.labl_ptr_1 = vj+'_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins))
         Endif Else Begin
-           vatt.depend_1 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nenergy))
+           vatt.depend_3 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nenergy))
            vatt.depend_2 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nbins))
-           vatt.depend_3 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nmass))
-           vatt.labl_ptr_1 = vj+'_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))
+           vatt.depend_1 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nmass))
+           vatt.labl_ptr_3 = vj+'_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))
            vatt.labl_ptr_2 = vj+'_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins))
-           vatt.labl_ptr_3 = vj+'_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass))
+           vatt.labl_ptr_1 = vj+'_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass))
         Endelse
      Endif
  
@@ -441,6 +442,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
      vatt_tags = tag_names(vatt)
      nvatt_tags = n_elements(vatt_tags)
      rm_tag = bytarr(nvatt_tags)
+
      For k = 0, nvatt_tags-1 Do Begin
         If(is_string(vatt.(k)) && vatt.(k) Eq 'NA') Then rm_tag[k] = 1b
      Endfor
@@ -479,6 +481,8 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
      Have_tag = where(cvars Eq vj, nhave_tag)
      If(nhave_tag Gt 0) Then Begin
         dvar = cmn_dat.(have_tag)
+;Set any 1d array value to a scalar, for ISTP
+        If(n_elements(dvar) Eq 1) Then dvar = dvar[0]
      Endif Else Begin
 ;Case by case basis
         Case vj of
@@ -503,6 +507,9 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
            'dead_time_2': Begin
               dvar = cmn_dat.dead2
            End
+           'dead_time_3': Begin
+              dvar = cmn_dat.dead3
+           End
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for.'
            End
@@ -511,9 +518,9 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
      cdf_type = idl2cdftype(dvar, format_out = fmt, fillval_out = fll, validmin_out = vmn, validmax_out = vmx)
      dtype = size(dvar, /type)
 ;variable attributes here, but only the string attributes, the others
-;depend on the data type
+;depend on the data type, note that these are metadata, not support_data
      vatt = {catdesc:'NA', fieldnam:'NA', $
-             units:'NA', var_type:'support_data', $
+             units:'NA', var_type:'metadata', $
              coordinate_system:'sensor'}
      str_element, vatt, 'format', fmt, /add
 ;Don't need mins and maxes for string variables
@@ -560,8 +567,11 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
      count = count+1
   Endfor
      
-;Now compnos, need 3, 4, nenergy, nbin, nmass, but only unique ones
-  ext_compno = [3, 4, cmn_dat.nenergy, cmn_dat.nbins, cmn_dat.nmass]
+;Now compnos, need 3, 4, nenergy, nbin, nmass, but only unique ones,
+;and you only need compno_1 if nenergy is 1
+  ext_compno = [3, 4, cmn_dat.nenergy]
+  If(cmn_dat.nbins Gt 1) Then ext_compno = [ext_compno, cmn_dat.nbins]
+  If(cmn_dat.nmass Gt 1) Then ext_compno = [ext_compno, cmn_dat.nmass]
   ss0 = sort(ext_compno)
   ext_compno = ext_compno(ss0)
   ss = uniq(ext_compno)
@@ -579,6 +589,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
               validmax:255, var_type:'metadata'}
 ;Also a data array
      dvar = 1+indgen(nj)
+
 ;Create and fill the variable structure
      vsj = {name:'', num:0, is_zvar:1, datatype:'', $
             type:0, numattr: -1, numelem: 1, recvary: 0b, $
@@ -603,17 +614,23 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 ;Labels now
   lablvars = ['magf_labl', 'pos_sc_mso_labl', 'quat_sc_labl', 'quat_mso_labl', $
               'data_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy)), $
-              'data_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins)), $
-              'data_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass)), $
               'bkg_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy)), $
-              'bkg_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins)), $
-              'bkg_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass)), $
               'eflux_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy)), $
+              'dead_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))]
+  If(cmn_dat.nbins Gt 1) Then Begin
+     lablvars = [lablvars, $
+              'data_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins)), $
+              'bkg_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins)), $
               'eflux_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins)), $
+              'dead_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins))]
+  Endif
+  If(cmn_dat.nmass Gt 1) Then Begin
+     lablvars = [lablvars, $
+              'data_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass)), $
+              'bkg_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass)), $
               'eflux_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass)), $
-              'dead_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy)), $
-              'dead_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins)), $
               'dead_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass))]
+  Endif
 
   For j = 0, n_elements(lablvars)-1 Do Begin
      vj = lablvars[j]
@@ -638,6 +655,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
         End
      Endcase
      ndv = n_elements(dvar)
+
      numelem = strlen(dvar[ndv-1]) ;needed for numrec
      fmt = 'A'+strcompress(/remove_all, string(numelem))
 
@@ -675,11 +693,17 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
          majority:'ROW_MAJOR', maxrec:-1,$
          nvars:0, nzvars:nvars, natts:natts, dim:lonarr(1)}
 
+;time resolution and UTC start and end
   If(num_dists Gt 0) Then Begin
      tres = 86400.0/num_dists
      tres = strcompress(string(tres, format = '(f8.1)'))+' sec'
   Endif Else tres = '   0.0 sec'
   global_att.time_resolution = tres
+
+  date0 = time_string(date)
+  date1 = time_string(time_double(date0)+86400.0d0)
+  str_element, global_att, 'UTC_START_TIME', date0, /add
+  str_element, global_att, 'UTC_END_TIME', date1, /add
 
   otp_struct = {filename:'', g_attributes:global_att, inq:inq, nv:nvars, vars:vstr}
 
@@ -699,12 +723,18 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
   If(cmn_dat.nanode Gt 1) Then astring = strcompress(/remove_all, string(cmn_dat.nanode))+'a' Else astring = ''
 
   ext = strcompress(strlowcase(cmn_dat.apid), /remove_all)+'-'+estring+dstring+astring+mstring
-;date can be complicated, I'm guessing that the median center
-;time will work best
-  date = time_string(median(center_time), precision=-3, format=6)
 
   file0 = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
   fullfile0 = dir+file0
+
+;Fix ISTP compliance for data types here, 
+  ext1_arr = [strcompress(/remove_all, string(cmn_dat.nenergy))+' Energies', $
+              strcompress(/remove_all, string(cmn_dat.ndef))+' Deflector Angle bins', $
+              strcompress(/remove_all, string(cmn_dat.nanode))+' Anode bins', $
+              strcompress(/remove_all, string(cmn_dat.nmass))+' Masses']
+
+
+  otp_struct.g_attributes.data_type = 'l2_'+ext+'>Level 2 data, APID: '+cmn_dat.apid+', '+strjoin(ext1_arr, ', ')
 
 ;save the file -- full database management
   mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression

@@ -19,8 +19,8 @@
 ;		(otherwise the 'timerange' routine will be invoked to determine this)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-09-15 14:35:43 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15797 $
+; $LastChangedDate: 2014-10-09 13:56:32 -0700 (Thu, 09 Oct 2014) $
+; $LastChangedRevision: 15957 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l0_data.pro $
 ;
 ;-
@@ -173,12 +173,12 @@ if keyword_set(tplot) then begin
 			phis[i,*] = phis[i,s]
 			phspec[i,*] = phspec[i,s]
 		endfor
-		store_data,'mvn_swics_ph_counts',data = {x:ctime, y: phspec, v:phis, zlog:0, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		store_data,'mvn_swics_ph_counts',data = {x:ctime, y: phspec, v:phis, zlog:0, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 
 		thspec = transpose(total(total(swics.data,3),1))
 		thetas = transpose(info_str[swics.info_index].theta_coarse[47,*,*])
-		store_data,'mvn_swics_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		store_data,'mvn_swics_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 	endif
 
@@ -196,12 +196,12 @@ if keyword_set(tplot) then begin
 			phis[i,*] = phis[i,s]
 			phspec[i,*] = phspec[i,s]
 		endfor
-		store_data,'mvn_swica_ph_counts',data = {x:ctime, y: phspec, v: phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		store_data,'mvn_swica_ph_counts',data = {x:ctime, y: phspec, v: phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 
 		thspec = transpose(total(total(swica.data,3),1))
 		thetas = transpose(info_str[swica.info_index].theta_coarse[47,*,*])
-		store_data,'mvn_swica_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		store_data,'mvn_swica_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 
 	endif
@@ -218,14 +218,14 @@ if keyword_set(tplot) then begin
 
 		phspec = transpose(total(total(swifs.data,1),1))
 		phis = transpose(info_str[swifs.info_index].phi_fine)
-		store_data,'mvn_swifs_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		store_data,'mvn_swifs_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 
 		thspec = transpose(total(total(swifs.data,3),1))
 		theta_all = transpose(info_str[swifs.info_index].theta_fine[95,*,*])
 		thetas = fltarr(nsw,12)
 		for i = 0,nsw-1 do thetas[i,*] = theta_all[i,swifs[i].dstep_first:swifs[i].dstep_first+11]
-		store_data,'mvn_swifs_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		store_data,'mvn_swifs_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 	endif
 
@@ -241,14 +241,14 @@ if keyword_set(tplot) then begin
 
 		phspec = transpose(total(total(swifa.data,1),1))
 		phis = transpose(info_str[swifa.info_index].phi_fine)
-		store_data,'mvn_swifa_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		store_data,'mvn_swifa_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 
 		thspec = transpose(total(total(swifa.data,3),1))
 		theta_all = transpose(info_str[swifa.info_index].theta_fine[95,*,*])
 		thetas = fltarr(nsw,12)
 		for i = 0,nsw-1 do thetas[i,*] = theta_all[i,swifa[i].dstep_first:swifa[i].dstep_first+11]
-		store_data,'mvn_swifa_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		store_data,'mvn_swifa_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 
 	endif
