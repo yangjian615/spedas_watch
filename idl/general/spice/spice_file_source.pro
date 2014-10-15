@@ -41,7 +41,7 @@ if not keyword_set(psource) then begin
 ;    psource.no_update = 1
     psource.verbose=3
     psource.min_age_limit=3600  ; one hour delay before checking again
-    str_element,/add,psource,'LAST_VERSION',1        
+;    str_element,/add,psource,'LAST_VERSION',1        
 endif
 
 if size(/type,default_source) eq 8 then  source= default_source  else source = psource

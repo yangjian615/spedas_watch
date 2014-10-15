@@ -15,8 +15,8 @@
 ;    LIST:          List all configuration changes.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-14 13:47:47 -0700 (Sun, 14 Sep 2014) $
-; $LastChangedRevision: 15787 $
+; $LastChangedDate: 2014-10-13 12:32:14 -0700 (Mon, 13 Oct 2014) $
+; $LastChangedRevision: 15985 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -66,7 +66,7 @@ pro mvn_swe_config, list=list, timebar=timebar
 ; Deployed MAG1-to-SWE rotation matrix, with corrected MICD.
 ; Scheduled for transition (Oct 2014).
 
-  t_mtx = [t_mtx, time_double('2014-10-11/12:00:00')]  ; deployed boom matrix upload (TBD)
+  t_mtx = [t_mtx, time_double('2014-10-10/15:08:40')]  ; deployed boom matrix upload (TBD)
 
 ; Gather all the configuration change times into one variable (for timebar).
 

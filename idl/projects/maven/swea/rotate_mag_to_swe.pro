@@ -19,16 +19,18 @@
 ;       STOW:     Calculate the transformation for a stowed SWEA boom.
 ;                 Default assumes a deployed boom.
 ;
+;       PAYLOAD:  Input vectors are in payload coordinates.
+;
 ;       INVERSE:  Reverse the rotation: swe to mag coordinates.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:45:39 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15672 $
+; $LastChangedDate: 2014-10-13 12:33:38 -0700 (Mon, 13 Oct 2014) $
+; $LastChangedRevision: 15986 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/rotate_mag_to_swe.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
-function rotate_mag_to_swe, v_in, magu=magu, stow=stow, inverse=inverse
+function rotate_mag_to_swe, v_in, magu=magu, stow=stow, inverse=inverse, payload=payload
   
   if (data_type(v_in) eq 0) then begin
     print,"You must specify an N x 3 input array."
@@ -47,6 +49,7 @@ function rotate_mag_to_swe, v_in, magu=magu, stow=stow, inverse=inverse
   
   if not keyword_set(magu) then magu = 1
   if keyword_set(stow) then stow = 1 else stow = 0
+  if keyword_set(payload) then pl = 1 else pl = 0
 
 ; MAG-1 is the located at the end of the +Y solar panel.  +X_mag1 is aligned with
 ; +X_sc.  There is a -20 degree rotation about X_mag1 to transform MAG1 coordinates
@@ -82,7 +85,7 @@ function rotate_mag_to_swe, v_in, magu=magu, stow=stow, inverse=inverse
 ; Rotate by 180 degrees about Zmag2 = Z_sc to transform MAG2 coordinates to spacecraft
 ; coordinates: X -> -X ; Y -> -Y.  Skip this rotation for MAG1.
 
-  if (magu eq 2) then delta = 180.*!dtor else delta = 0.
+  if ((magu eq 2) and (pl eq 0)) then delta = 180.*!dtor else delta = 0.
 
   rot3 = fltarr(3,3)
   rot3[*,0] = [ cos(delta),  sin(delta),          0. ]
@@ -92,7 +95,7 @@ function rotate_mag_to_swe, v_in, magu=magu, stow=stow, inverse=inverse
 ; Rotate about X_mag by -20 degrees (angle between inner and outer solar panels
 ; to form "gull wing")
 
-  beta = -20.*!dtor
+  if (pl) then beta = 0. else beta = -20.*!dtor
   
   rot4 = fltarr(3,3)
   rot4[*,0] = [         1.,          0.,          0. ]

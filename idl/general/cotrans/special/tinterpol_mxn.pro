@@ -36,26 +36,28 @@
 ;            Use only newname or suffix or overwrite. If you combine
 ;            them the naming behavior may be erratic
 ;
-;            /LINEAR = pass this argument to specify linear
+;            /LINEAR = set this keyword to specify linear
 ;            interpolation(this is the default behavior)
 ;            
-;            /QUADRATIC = pass this argument to specify quadratic
+;            /QUADRATIC = set this keyword to specify quadratic
 ;            interpolation
 ;            
-;            /SPLINE = pass this argument to specify spline
+;            /SPLINE = set this keyword to specify spline
 ;            interpolation
 ;            
-;            /NEAREST_NEIGHBOR = pass this argument to specify repeat
+;            /NEAREST_NEIGHBOR = set this keyowrd to specify repeat
 ;            nearest neighbor 'interpolation' 
 ;            
-;            /NO_EXTRAPOLATE = pass this argument to prevent
+;            /NO_EXTRAPOLATE = set this keyword to prevent
 ;            extrapolation of data values in V passed it's start and
 ;            end points
 ;            
-;            /NAN_EXTRAPOLATE = pass this argument to extrapolate past
+;            /NAN_EXTRAPOLATE = set this keyword to extrapolate past
 ;            the endpoints using NaNs as a fill value
 ;            
-;            /REPEAT_EXTRAPOLATE = pass this argument to repeat nearest value past the endpoints
+;            /REPEAT_EXTRAPOLATE = set this keyword to repeat nearest value past the endpoints
+;            
+;            /IGNORE_NANS = set this keyword to remove nans in the data before interpolation
 ;
 ;            ERROR(optional): named variable in which to return the error state
 ;            of the computation.  1 = success 0 = failure
@@ -91,8 +93,8 @@
 ; 
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-12-19 16:54:40 -0800 (Thu, 19 Dec 2013) $
-; $LastChangedRevision: 13712 $
+; $LastChangedDate: 2014-10-13 10:55:09 -0700 (Mon, 13 Oct 2014) $
+; $LastChangedRevision: 15982 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/tinterpol_mxn.pro $
 ;-
 
@@ -143,7 +145,7 @@ end
 
 ;helper function
 ;actually does the bulk of the work
-function ctv_interpol_vec_mxn,v,x,u,nearest_neighbor=nearest_neighbor,_extra=_extra
+function ctv_interpol_vec_mxn,v,x,u,nearest_neighbor=nearest_neighbor,ignore_nans=ignore_nans,_extra=_extra
 
 COMPILE_OPT HIDDEN
 
@@ -211,11 +213,11 @@ for i = 0,product-1L do begin
     if not keyword_set(u) then begin
       if keyword_set(nearest_neighbor) then begin
         out[idx1] = congrid( v[idx2],n)
-      endif else out[idx1] = interpol(v[idx2],n,_extra=_extra) 
+      endif else out[idx1] = interpol(v[idx2],n,nan=ignore_nans,_extra=_extra) 
     endif else begin
       if keyword_set(nearest_neighbor) then begin
         out[idx1] = ctv_nearestneighbor(v[idx2],x,u)
-      endif else out[idx1] = interpol(v[idx2],x,u,_extra=_extra)
+      endif else out[idx1] = interpol(v[idx2],x,u,nan=ignore_nans,_extra=_extra)
     endelse
 
 endfor
@@ -269,7 +271,18 @@ pro ctv_nan_fill_idx,dat,idx
 
 end
 
-pro tinterpol_mxn, xv_tvar, uz_tvar, newname = newname,no_extrapolate = no_extrapolate,nan_extrapolate=nan_extrapolate,repeat_extrapolate=repeat_extrapolate,error=error,suffix=suffix,overwrite=overwrite,nearest_neighbor=nearest_neighbor,out=out_d,  _extra = _extra
+pro tinterpol_mxn, xv_tvar, uz_tvar,$
+                  newname = newname,$
+                  no_extrapolate = no_extrapolate,$
+                  nan_extrapolate=nan_extrapolate,$
+                  repeat_extrapolate=repeat_extrapolate,$
+                  error=error,$
+                  suffix=suffix,$
+                  overwrite=overwrite,$
+                  nearest_neighbor=nearest_neighbor,$
+                  ignore_nans=ignore_nans,$
+                  out=out_d,$
+                  _extra = _extra
 
 error=0
 
@@ -369,7 +382,7 @@ for i = 0, n_elements(tn) -1L do begin
      
    endif
 
-   out_d_y = ctv_interpol_vec_mxn(in_d.y, in_d.x, match_d_x,nearest_neighbor=nearest_neighbor, _extra = _extra)
+   out_d_y = ctv_interpol_vec_mxn(in_d.y, in_d.x, match_d_x,nearest_neighbor=nearest_neighbor,ignore_nans=ignore_nans, _extra = _extra)
 
    if(size(out_d_y,/n_dim) eq 0 && out_d_y[0] eq -1L) then begin
 
@@ -401,7 +414,7 @@ for i = 0, n_elements(tn) -1L do begin
      
      if is_num(in_d.v) && n_elements(v_dim) eq n_elements(y_dim) && v_dim[0] eq y_dim[0] then begin
      
-       out_d_v = ctv_interpol_vec_mxn(in_d.v, in_d.x, match_d_x,nearest_neighbor=nearest_neighbor, _extra = _extra)
+       out_d_v = ctv_interpol_vec_mxn(in_d.v, in_d.x, match_d_x,nearest_neighbor=nearest_neighbor,ignore_nans=ignore_nans, _extra = _extra)
        
        if(size(out_d_y,/n_dim) eq 0 && out_d_y[0] eq -1L) then begin
        

@@ -56,7 +56,7 @@ endif
 if keyword_set(testall) then begin
 mk = mvn_spice_kernels(/all,/load,verbose=1)
 frame='ECLIPJ2000'
-scale = 149.6e6
+scale = 149.6e6   ; 1AU in km
 timespan,'13-1-1',365*2
 dprint,'Create some TPLOT variables with position data and then plot it.'
 spice_position_to_tplot,'MAVEN','SUN',frame=frame,res=3600d*24,scale=scale,name=n1
@@ -77,7 +77,7 @@ spice_position_to_tplot,'MAVEN','MARS',frame='MSO',res=3600d,scale=scale,name=n1
 
 endif
 
-if getenv('USER') eq 'davin' then def_frame = 'MAVEN_SO'
+if getenv('USER') eq 'davin' then def_frame = 'MAVEN_SSO'
 if not keyword_set(def_frame) then def_frame = 'MAVEN_MSO'
 
 ;  Tplot routines
@@ -100,7 +100,7 @@ timespan,tr
 mk = mvn_spice_kernels(/all,/load,trange=timerange())
 tr=0
 
-spice_qrot_to_tplot,'MAVEN_SPACECRAFT',def_frame,get_omega=3,res=3600d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .1 *!pi/180  ; 1 degree error
+spice_qrot_to_tplot,'MAVEN_SPACECRAFT',def_frame,get_omega=3,res=3600d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .5 *!pi/180  ; .5 degree error
 ;  split_vec,tn[0]
 xyz_to_polar,tn[2],tplotnames=tnr   
 ylim,tnr[0],1,1,1

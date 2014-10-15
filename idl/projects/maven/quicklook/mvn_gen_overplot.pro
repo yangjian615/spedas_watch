@@ -57,8 +57,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-23 17:14:33 -0700 (Tue, 23 Sep 2014) $
-; $LastChangedRevision: 15849 $
+; $LastChangedDate: 2014-10-10 15:40:31 -0700 (Fri, 10 Oct 2014) $
+; $LastChangedRevision: 15978 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_overplot.pro $
 ;-
 Pro mvn_gen_overplot, date = date, time_range = time_range, $
@@ -101,17 +101,26 @@ If(is_string(dddd)) Then Begin
     If(cj Gt 0) Then Begin
        y = total(temporary(y), 2)/float(ndddd)
        store_data, 'scpot_av', data = {x:x, y:y}
+       store_data, 'minus_scpot_av', data = {x:x, y:-y}
        cc = get_colors()
        swe_v1 = scpot_overlay('scpot_av', 'swe_espec', sc_line_color  = cc.white)
        if(is_string(swe_v1)) then begin ;if this fails, then options creates a structure
           options, swe_v1, 'yrange', [5.0, 5000.0]
           options, swe_v1, 'ystyle', 1
-       endif else swe_v1 = 'swe_espec'
-       swi_v = scpot_overlay('scpot_av', 'mvn_swis_en_counts', sc_line_color  = cc.white)
+       endif else begin
+          swe_v1 = 'swe_espec'
+          options, swe_v1, 'yrange', [5.0, 5000.0]
+          options, swe_v1, 'ystyle', 1
+       endelse
+       swi_v = scpot_overlay('minus_scpot_av', 'mvn_swis_en_counts', sc_line_color  = cc.white)
        if(is_string(swi_v)) then begin
           options, swi_v, 'yrange', [5.0, 50000.0]
           options, swi_v, 'ystyle', 1
-       endif else swi_v = 'mvn_swis_en_counts'
+       endif else begin
+          swi_v = 'mvn_swis_en_counts'
+          options, swi_v, 'yrange', [5.0, 50000.0]
+          options, swi_v, 'ystyle', 1
+       endelse
     Endif Else Begin
        swe_v1 = 'swe_espec'
        swi_v = 'mvn_swis_en_counts'
@@ -120,7 +129,6 @@ Endif Else Begin
     swe_v1 = 'swe_espec'
     swi_v = 'mvn_swis_en_counts'
 Endelse
-
 
 varlist=[swe_v1, 'swe_pad', swi_v, 'mvn_sta_C0_P1A_E','mvn_sta_C6_P1D_M', $
          'mvn_SEPS_QL', 'mvn_lpw_euv_ql','mvn_lpw_wave_spec_ql', $

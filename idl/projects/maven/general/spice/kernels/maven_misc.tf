@@ -72,6 +72,34 @@ MAVEN Frames
 
    \begintext
 
+      SUNZ               rel.to J2000         DYNAMIC        -202913
+
+   \begindata
+
+      FRAME_SUNZ              =  -202913
+      FRAME_-202913_NAME           = 'SUNZ'
+      FRAME_-202913_CLASS          =  5
+      FRAME_-202913_CLASS_ID       =  -202913
+      FRAME_-202913_CENTER         =  499
+      FRAME_-202913_RELATIVE       = 'J2000'
+      FRAME_-202913_DEF_STYLE      = 'PARAMETERIZED'
+      FRAME_-202913_FAMILY         = 'TWO-VECTOR'
+      FRAME_-202913_PRI_AXIS       = 'Z'
+      FRAME_-202913_PRI_VECTOR_DEF = 'OBSERVER_TARGET_POSITION'
+      FRAME_-202913_PRI_OBSERVER   = 'MARS'
+      FRAME_-202913_PRI_TARGET     = 'SUN'
+      FRAME_-202913_PRI_ABCORR     = 'NONE'
+      FRAME_-202913_SEC_AXIS       = 'Y'
+      FRAME_-202913_SEC_VECTOR_DEF = 'OBSERVER_TARGET_VELOCITY'
+      FRAME_-202913_SEC_OBSERVER   = 'MARS'
+      FRAME_-202913_SEC_TARGET     = 'SUN'
+      FRAME_-202913_SEC_ABCORR     = 'NONE'
+      FRAME_-202913_SEC_FRAME      = 'J2000'
+
+   \begintext
+
+
+
    Spacecraft frame:
    -----------------
       MAVEN_SPACECRAFT        rel.to MME_2000      CK             -202000
@@ -298,6 +326,9 @@ MAVEN NAIF ID Codes -- Definitions
    
       NAIF_BODY_NAME += ( 'MAVEN_SCALT'                  )
       NAIF_BODY_CODE += ( -202050                        )
+
+      NAIF_BODY_NAME += ( 'SUNZ'                  )
+      NAIF_BODY_CODE += ( -202913                        )
 
       NAIF_BODY_NAME += ( 'MAVEN_MAG1'                     )
       NAIF_BODY_CODE += ( -202311                          )

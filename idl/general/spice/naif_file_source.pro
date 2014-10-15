@@ -1,5 +1,7 @@
 function naif_file_source
 
+message,'this routine has been depracated'
+
 source = file_retrieve(/struct)
 source.remote_data_dir = 'http://naif.jpl.nasa.gov/pub/naif/'
 source.local_data_dir  += 'misc/spice/naif/'

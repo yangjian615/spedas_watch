@@ -41,16 +41,18 @@
 ;
 ;       DBINS:         Deflector bin mask (6 elements: 0=off, 1=on).  Default = all on.
 ;
+;       NOERASE:       Overplot all spectra after the first.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-24 13:24:28 -0700 (Wed, 24 Sep 2014) $
-; $LastChangedRevision: 15856 $
+; $LastChangedDate: 2014-10-13 12:34:14 -0700 (Mon, 13 Oct 2014) $
+; $LastChangedRevision: 15987 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
                    ddd=ddd, abins=abins, dbins=dbins, sum=sum, pot=pot, pdiag=pdiag, $
-                   pxlim=pxlim, mb=mb, kap=kap, scat=scat
+                   pxlim=pxlim, mb=mb, kap=kap, scat=scat, noerase=noerase
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -66,6 +68,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   if keyword_set(ddd) then dflg = 1 else dflg = 0
   if not keyword_set(abins) then abins = replicate(1, 16)
   if not keyword_set(dbins) then dbins = replicate(1, 6)
+  if keyword_set(noerase) then oflg = 0 else oflg = 1
   
   obins = reform(abins # dbins, 96)
   indx = where(obins eq 1, onorm)
@@ -154,6 +157,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   endcase
 
   if (hflg) then dt = min(abs(swe_hsk.time - spec.time), jref)  ; closest HSK
+  
+  first = 1
 
   while (ok) do begin
 
@@ -167,8 +172,9 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
 
     psym = 10
 
-    plot_oo,x,y,yrange=yrange,/ysty,xtitle='Energy (eV)',ytitle=ytitle, $
-            charsize=1.4,psym=psym,title=time_string(spec.time)
+    if (first or oflg) then plot_oo,x,y,yrange=yrange,/ysty,xtitle='Energy (eV)',ytitle=ytitle, $
+            charsize=1.4,psym=psym,title=time_string(spec.time) $
+                       else oplot,x,y,psym=psym
 
     if (dflg) then begin
       if (npts gt 1) then ddd = mvn_swe_get3d([tmin,tmax],/all,/sum) $
@@ -353,6 +359,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     endif
 
 ; Get the next button press
+
+    first = 0
 
     wset,Twin
     ctime2,trange,npoints=npts,/silent,button=button

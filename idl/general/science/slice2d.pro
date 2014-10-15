@@ -63,8 +63,8 @@
 ;       Modified from 'thm_esa_slice2d'
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2014-10-09 14:27:09 -0700 (Thu, 09 Oct 2014) $
-; $LastChangedRevision: 15963 $
+; $LastChangedDate: 2014-10-10 08:17:06 -0700 (Fri, 10 Oct 2014) $
+; $LastChangedRevision: 15972 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
@@ -232,7 +232,7 @@ if rotation eq 'xy' then rot = thm_cal_rot( [1,0,0], [0,1,0] )
 if rotation eq 'xz' then rot = thm_cal_rot( [1,0,0], [0,0,1] )
 if rotation eq 'yz' then rot = thm_cal_rot( [0,1,0], [0,0,1] )
 if rotation eq 'perp' then begin
-   rot = thm_cal_rot( crossp(bvec,crossp(bvec,vvec)), crossp(bvec,vvec) )
+   rot = thm_cal_rot( crossp(crossp(bvec,vvec),bvec), crossp(bvec,vvec) )
 endif
 if rotation eq 'perp_xy' then begin
    rot = thm_cal_rot( crossp(crossp(bvec,[1,0,0]),bvec), crossp(crossp(bvec,[0,1,0]),bvec) )

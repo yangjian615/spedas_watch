@@ -17,8 +17,8 @@
 ;	Returns a standard 3-d data structure that will work with plot3d, spec3d, n_3d, etc.
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2013-06-18 21:19:24 -0700 (Tue, 18 Jun 2013) $
-; $LastChangedRevision: 12551 $
+; $LastChangedDate: 2014-10-10 06:40:29 -0700 (Fri, 10 Oct 2014) $
+; $LastChangedRevision: 15971 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_get_3df.pro $
 ;
 ;-
@@ -45,6 +45,9 @@ if keyword_set(archive) then begin
 	infind = swifa[index].info_index
 	estepf = swifa[index].estep_first
 	dstepf = swifa[index].dstep_first
+
+	str_element,swifa,'magf',value, success = success
+	if success then magf = swifa[index].magf else magf = [1.,0,0]
 endif else begin
 	startt = swifs[index].time_unix
 	data = swifs[index].data
@@ -53,6 +56,8 @@ endif else begin
 	infind = swifs[index].info_index
 	estepf = swifs[index].estep_first
 	dstepf = swifs[index].dstep_first
+	str_element,swifs,'magf',value, success = success
+	if success then magf = swifs[index].magf else magf = [1.,0,0]
 endelse
 
 nanode = 10
@@ -108,7 +113,6 @@ eff = reform(eff,nenergy,nbins)
 domega=2.*(dphi/!radeg)*cos(theta/!radeg)*sin(.5*dtheta/!radeg)
 
 scpot = 0.
-magf = [1.,0,0]
 
 dat = 	{data_name:		'SWIA Fine', 			$
 	valid: 			1, 				$

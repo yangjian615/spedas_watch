@@ -29,9 +29,9 @@
 ;Notes:
 ;  Get operation performed before set. 
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-05 18:12:35 -0700 (Mon, 05 May 2014) $
-;$LastChangedRevision: 15053 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-10-13 10:38:28 -0700 (Mon, 13 Oct 2014) $
+;$LastChangedRevision: 15979 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_trange.pro $
 ;
 ;-
@@ -107,7 +107,9 @@ pro thm_part_trange, probe_in, datatype_in, get=get, set=set, sst_cal=sst_cal
   ;use separate range for sst_cal
   if keyword_set(sst_cal) then begin
     if stregex(datatype, 'ps[ei][frb]', /bool) then begin
+      sst_cal_tvarname = 'th'+probe+'_'+datatype+'_data'
       datatype += '_cal'
+     
     endif
   endif
 
@@ -122,8 +124,19 @@ pro thm_part_trange, probe_in, datatype_in, get=get, set=set, sst_cal=sst_cal
       ;get value
       if arg_present(get) then begin
         get = times.(pidx).(didx)
+        
+         ;since SST calibrated data is a tplot variable, you can't assume it will still be around  
+        if ~undefined(sst_cal_tvarname) then begin
+          get_data,sst_cal_tvarname,data=d
+          ;just checks if variable is present.  More elaborate checks are possible, 
+          ;  but since the sst_cal variables are quite hard to work with, 
+          ;  it is pretty safe to assume that any modifying will be doing so at their own risk.  
+          if ~is_struct(d) then begin
+            undefine,get
+          endif
+        endif
       endif
-      
+          
       ;set value
       if ~undefined(set) then begin
         temp = times.(pidx).(didx)        ;struct_assign needs named var

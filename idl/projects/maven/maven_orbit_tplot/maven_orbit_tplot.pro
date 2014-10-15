@@ -8,7 +8,7 @@
 ;  MPB from Trotignon et al. (PSS 54, 357-369, 2006).  The wake region is simply the 
 ;  optical shadow in MSO coordinates (sqrt(y*y + z*z) < Rm ; x < 0).
 ;
-; The available coordinate frames are:
+;  The available coordinate frames are:
 ;
 ;   GEO = body-fixed Mars geographic coordinates (non-inertial) = IAU_MARS
 ;
@@ -41,24 +41,34 @@
 ;       IALT:     Ionopause altitude.  Highly variable, but nominally ~400 km.
 ;                 For display only - not included in statistics.
 ;
-;       RESULT:   Named variable to hold the ephemeris.
+;       RESULT:   Named variable to hold the MSO ephemeris with some calculated
+;                 quantities.
+;
+;       EPH:      Named variable to hold the MSO and GEO state vectors.
 ;
 ;       DATE:     Ephemeris version date.  Several predict spk kernels have been
 ;                 generated.  The latest was created on 21aug14 and covers the
 ;                 transition and science phases.  The 28oct11 ephemeris is dated 
 ;                 but includes an extended mission.
 ;
+;       CURRENT:  Load the ephemeris from MOI to the current date + 2 weeks.  This
+;                 uses reconstructed SPK kernels, as available, then predicts.
+;
 ;       EXTENDED: Alternate method of choosing the 28oct11 ephemeris.
 ;
+;       LOADONLY: Create the TPLOT variables, but do not plot.
+;
+;       VARS:     Array of TPLOT variables created.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-24 17:17:37 -0700 (Wed, 24 Sep 2014) $
-; $LastChangedRevision: 15860 $
+; $LastChangedDate: 2014-10-13 12:31:19 -0700 (Mon, 13 Oct 2014) $
+; $LastChangedRevision: 15984 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, date=date, $
-                       extended=extended, eph=eph
+                       extended=extended, eph=eph, current=current, loadonly=loadonly, vars=vars
 
   common mav_orb_tplt, time, ss, wind, sheath, pileup, wake, sza, torb, period, lon, lat, hgt, mex
 
@@ -70,6 +80,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   rootdir = 'maven/anc/spice/sav/'
   
   if (keyword_set(extended)) then date = '28oct11'
+  if (keyword_set(current)) then date = 'current'
   if (size(date,/type) ne 7) then date = '21aug14' else date = date[0]
 
 ; Restore the orbit ephemeris
@@ -509,11 +520,15 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
 ; Put up the plot
 
-  Twin = 28
-  window, Twin, xsize=900, ysize=700
-  tplot_options,'charsize',1.2
-  timespan,[tmin,tmax],/sec
-  tplot,['alt2','stat','sza']
+  vars = ['alt2','stat','sza','period','palt','lon','lat']
+
+  if not keyword_set(loadonly) then begin
+    Twin = 28
+    window, Twin, xsize=900, ysize=700
+    tplot_options,'charsize',1.2
+    timespan,[tmin,tmax],/sec
+    tplot,vars[0:2]
+  endif
 
   return
 

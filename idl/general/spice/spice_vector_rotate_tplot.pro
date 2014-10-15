@@ -42,6 +42,7 @@ for i=0,n-1 do begin
        vals = vals[ind,*]
    endif
    vector_prime = spice_vector_rotate(transpose(vals),time,from_frame,to_frame,check_objects=co,verbose=verbose)
+;   vector_pr///ime = spice_vector_rotate(transpose(vals),time,to_frame,from_frame,check_objects=co,verbose=verbose)
    alim.spice_frame = to_frame
    store_data,newname,time,transpose(vector_prime),dlimit=alim
 endfor

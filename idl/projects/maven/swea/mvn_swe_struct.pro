@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-22 09:49:34 -0700 (Mon, 22 Sep 2014) $
-; $LastChangedRevision: 15832 $
+; $LastChangedDate: 2014-10-13 12:58:04 -0700 (Mon, 13 Oct 2014) $
+; $LastChangedRevision: 15989 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -141,6 +141,7 @@ pro mvn_swe_struct
                     data_name       : 'SWEA PAD MAG'          , $
                     units_name      : 'nT'                    , $
                     frame           : 'swea'                  , $
+                    level           : 0B                      , $
                     valid           : 0B                      , $
                     time            : 0D                      , $  ; unix time
                     Bamp            : 0.                      , $  ; amplitude (nT)

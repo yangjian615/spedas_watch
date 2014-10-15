@@ -17,8 +17,8 @@
 ;	Returns a standard 3-d data structure that will work with plot3d, spec3d, n_3d, etc.
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2013-06-18 21:19:24 -0700 (Tue, 18 Jun 2013) $
-; $LastChangedRevision: 12551 $
+; $LastChangedDate: 2014-10-10 06:40:29 -0700 (Fri, 10 Oct 2014) $
+; $LastChangedRevision: 15971 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_get_3dc.pro $
 ;
 ;-
@@ -44,6 +44,8 @@ if keyword_set(archive) then begin
 	units = swica[index].units
 	atten = swica[index].atten_state
 	infind = swica[index].info_index
+	str_element,swica,'magf',value, success = success
+	if success then magf = swica[index].magf else magf = [1.,0,0]
 endif else begin
 	startt = swics[index].time_unix
 	data = swics[index].data
@@ -51,6 +53,8 @@ endif else begin
 	units = swics[index].units
 	atten = swics[index].atten_state
 	infind = swics[index].info_index
+	str_element,swics,'magf',value, success = success
+	if success then magf = swics[index].magf else magf = [1.,0,0]
 endelse
 
 nanode = 16
@@ -106,7 +110,6 @@ eff = reform(eff,nenergy,nbins)
 domega=2.*(dphi/!radeg)*cos(theta/!radeg)*sin(.5*dtheta/!radeg)
 
 scpot = 0.
-magf = [1.,0,0]
 
 dat = 	{data_name:		'SWIA Coarse', 			$
 	valid: 			1, 				$

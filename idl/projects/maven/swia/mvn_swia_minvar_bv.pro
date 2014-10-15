@@ -14,15 +14,15 @@
 ;AUTHOR:	J. Halekas	
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-09 11:47:24 -0700 (Thu, 09 Oct 2014) $
-; $LastChangedRevision: 15956 $
+; $LastChangedDate: 2014-10-10 05:59:34 -0700 (Fri, 10 Oct 2014) $
+; $LastChangedRevision: 15970 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_minvar_bv.pro $
 ;
 ;-
 
 pro mvn_swia_minvar_bv, bdata = bdata, vdata = vdata, trange = trange
 
-if not keyword_set(bdata) then bdata = 'mvn_mag1_svy_BAVG_MAVEN_MSO'
+if not keyword_set(bdata) then bdata = 'mvn_mag1_pl_ql_MAVEN_MSO'
 if not keyword_set(vdata) then vdata = 'mvn_swim_velocity_mso'
 
 if not keyword_set(trange) then ctime,trange,npoints = 2

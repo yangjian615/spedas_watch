@@ -28,7 +28,7 @@ common mvn_spice_kernels_com,   kernels,retrievetime,tranges
     tb = scope_traceback(/structure)
     this_dir = file_dirname(tb[n_elements(tb)-1].filename)+'/'   ; the directory this file resides in (determined at run time)
 
-    naif = spice_file_source(preserve_mtime=1,valid_only=valid_only)
+    naif = spice_file_source(preserve_mtime=1,valid_only=valid_only,last_version=0)
  ;   sprg = mvn_file_source()
 all=1
 if keyword_set(sck) then names = ['STD','SCK']

@@ -19,8 +19,8 @@
 ;		(otherwise the 'timerange' routine will be invoked to determine this)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-09 13:56:32 -0700 (Thu, 09 Oct 2014) $
-; $LastChangedRevision: 15957 $
+; $LastChangedDate: 2014-10-10 05:38:11 -0700 (Fri, 10 Oct 2014) $
+; $LastChangedRevision: 15969 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l0_data.pro $
 ;
 ;-
@@ -173,12 +173,12 @@ if keyword_set(tplot) then begin
 			phis[i,*] = phis[i,s]
 			phspec[i,*] = phspec[i,s]
 		endfor
-		store_data,'mvn_swics_ph_counts',data = {x:ctime, y: phspec, v:phis, zlog:0, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
+		store_data,'mvn_swics_ph_counts',data = {x:ctime, y: phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 
 		thspec = transpose(total(total(swics.data,3),1))
 		thetas = transpose(info_str[swics.info_index].theta_coarse[47,*,*])
-		store_data,'mvn_swics_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
+		store_data,'mvn_swics_th_counts',data = {x:ctime,y:thspec,v:thetas,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 	endif
 
@@ -201,7 +201,7 @@ if keyword_set(tplot) then begin
 
 		thspec = transpose(total(total(swica.data,3),1))
 		thetas = transpose(info_str[swica.info_index].theta_coarse[47,*,*])
-		store_data,'mvn_swica_th_counts',data = {x:ctime,y:thspec,v:thetas,zlog:0,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
+		store_data,'mvn_swica_th_counts',data = {x:ctime,y:thspec,v:thetas,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!cCounts',zlog:1}, dlimits = {datagap:180}
 
 
 	endif

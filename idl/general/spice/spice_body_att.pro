@@ -29,7 +29,9 @@ endelse
 res = replicate(!values.d_nan,3,3,ns)
 if nind ne 0 then begin
 ;     cspice_pxform,spice_bod2s(from),spice_bod2s(to),et[ind],temp    ; 3 element position? (online documentation is misleading)
+     dprint,dlevel=3,verbose=verbose,'Starting cspice_pxform for ',nIND, ' time steps'
      cspice_pxform,from,to,et[ind],temp    ; 3 element position? (online documentation is misleading)
+     dprint,dlevel=3,verbose=verbose,'Completed cspice_pxform'
  ;    cspice_spkpos,body_name,et[ind],frame,abcorr,obs_name, pos2, ltime2
      res[*,*,ind] = temp
 endif else dprint,verbose=verbose,'No Valid CK frame for: ',check_objects

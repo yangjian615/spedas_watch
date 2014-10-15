@@ -11,8 +11,8 @@
 ; Thaller's density calibrations to EMFISIS upper hybrid line
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-10-09 08:18:58 -0700 (Thu, 09 Oct 2014) $
-;   $LastChangedRevision: 15953 $
+;   $LastChangedDate: 2014-10-10 12:43:31 -0700 (Fri, 10 Oct 2014) $
+;   $LastChangedRevision: 15975 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/calibration_files/rbsp_efw_density_fit_from_uh_line.pro $
 ;-
 
@@ -32,7 +32,7 @@ pro rbsp_efw_density_fit_from_uh_line,sc_potential,newname=newname
 ;GENERIC CALIBRATION FOR MOST RECENT TIMES (BE SURE TO UPDATE THIS....)
      tst = where(times ge time_double('2014-07-01/00:00:00'))
      if tst[0] ne -1 then begin
-        denstmp14 = 8725.1578*exp(v*4.0412565)+205.79788*exp(v*0.82851517) ; June 1, 2014    
+        denstmp = 8725.1578*exp(v*4.0412565)+205.79788*exp(v*0.82851517) ; June 1, 2014    
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
@@ -40,35 +40,35 @@ pro rbsp_efw_density_fit_from_uh_line,sc_potential,newname=newname
 
      tst = where(times ge time_double('2014-04-10/00:00:00') AND times lt time_double('2014-07-01/00:00:00')) 
      if tst[0] ne -1 then begin
-        denstmp14 = 8725.1578*exp(v*4.0412565)+205.79788*exp(v*0.82851517) ; June 1, 2014    
+        denstmp = 8725.1578*exp(v*4.0412565)+205.79788*exp(v*0.82851517) ; June 1, 2014    
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
 
      tst = where(times ge time_double('2014-03-02/00:00:00') AND times lt time_double('2014-04-10/00:00:00'))
      if tst[0] ne -1 then begin
-        denstmp14 = 9487.0458*exp(v*3.1599373)+164.07663*exp(v*0.51572132) ;Mar 12,13,14, 2014    
+        denstmp = 9487.0458*exp(v*3.1599373)+164.07663*exp(v*0.51572132) ;Mar 12,13,14, 2014    
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
 
      tst = where(times ge time_double('2014-02-02/00:00:00') AND times lt time_double('2014-03-02/00:00:00'))
      if tst[0] ne -1 then begin
-        denstmp14 = 11838.774*exp(v*3.2366900)+146.10501*exp(v*0.52979420) ;Feb 12,13,14, 2014
+        denstmp = 11838.774*exp(v*3.2366900)+146.10501*exp(v*0.52979420) ;Feb 12,13,14, 2014
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
 
      tst = where(times ge time_double('2013-11-15/00:00:00') AND times lt time_double('2014-02-02/00:00:00'))
      if tst[0] ne -1 then begin
-        denstmp14 = 7354.3897*exp(v*2.8454878)+96.123628*exp(v*0.43020781) ;Jan 3 , 2014
+        denstmp = 7354.3897*exp(v*2.8454878)+96.123628*exp(v*0.43020781) ;Jan 3 , 2014
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
 
      tst = where(times ge time_double('2013-08-15/00:00:00') AND times lt time_double('2013-11-15/00:00:00'))
      if tst[0] ne -1 then begin
-        denstmp13 = 8860.1926*exp(v*4.0369044)+481.88790*exp(v*0.98777916) ;Oct 8, 2013 
+        denstmp = 8860.1926*exp(v*4.0369044)+481.88790*exp(v*0.98777916) ;Oct 8, 2013 
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
@@ -117,7 +117,7 @@ pro rbsp_efw_density_fit_from_uh_line,sc_potential,newname=newname
 
      tst = where(times ge time_double('2013-01-08/01:00:00') AND times lt time_double('2013-02-01/03:00:00'))
      if tst[0] ne -1 then begin
-        denstmp2= 3378*exp(v/0.319)+39.3*exp(v/2.13) ;jan 21,22,23
+        denstmp= 3378*exp(v/0.319)+39.3*exp(v/2.13) ;jan 21,22,23
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
@@ -131,7 +131,7 @@ pro rbsp_efw_density_fit_from_uh_line,sc_potential,newname=newname
 
      tst = where(times ge time_double('2012-12-05/07:44:00') AND times lt time_double('2012-12-19/07:30:00'))
      if tst[0] ne -1 then begin
-        denstmp2= 3096.0876*exp(v*2.9306241)+31.480371*exp(v*0.34482206) ;for Dec 6,7,8
+        denstmp= 3096.0876*exp(v*2.9306241)+31.480371*exp(v*0.34482206) ;for Dec 6,7,8
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
