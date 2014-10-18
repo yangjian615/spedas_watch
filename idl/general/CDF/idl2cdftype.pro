@@ -71,8 +71,8 @@
 ;HISTORY:
 ; 26-nov-2013, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-05-23 12:24:27 -0700 (Fri, 23 May 2014) $
-; $LastChangedRevision: 15221 $
+; $LastChangedDate: 2014-10-14 11:39:46 -0700 (Tue, 14 Oct 2014) $
+; $LastChangedRevision: 15992 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/idl2cdftype.pro $
 ;-
 Function idl2cdftype, var, format_out=format_out, fillval_out=fillval_out, $
@@ -91,30 +91,30 @@ Case(size(var, /type)) Of        ;text code for type
     2: Begin
        otp = 'CDF_INT2'
        format_out = 'I6'
-       fillval_out = -32767     ;note that CDF changes -32768 to 4 bytes, CDF_INT4
+       fillval_out = fix(-32768)     ;note that IDL changes -32768 to 4 bytes, CDF_INT4
        validmin_out = -32767
        validmax_out = 32767
     End
     3: Begin
        otp = 'CDF_INT4'
        format_out = 'I11'
-       fillval_out = -2147483647 ;same here, a vaild IDL value is bad for CDF
+       fillval_out = long(-2147483648) ;same here, 
        validmin_out = -2147483647
        validmax_out = 2147483647
     End
     4: Begin
        otp = 'CDF_FLOAT'
        format_out = 'E13.6'
-       fillval_out = !values.f_nan
-       validmin_out = -1.0e38
-       validmax_out = 1.0e38
+       fillval_out = -1.0e31
+       validmin_out = -1.0e31
+       validmax_out = 1.0e31
     End
     5: Begin
        otp = 'CDF_DOUBLE'
        format_out = 'E25.18'
-       fillval_out = !values.f_nan
-       validmin_out = -1.0e308
-       validmax_out = 1.0e308
+       fillval_out = double(-1.0d31)
+       validmin_out = double(-1.0d31)
+       validmax_out = double(1.0d31)
     End
     7: Begin
        otp = 'CDF_CHAR'
@@ -140,7 +140,7 @@ Case(size(var, /type)) Of        ;text code for type
     14: Begin
        otp = 'CDF_INT8'
        format_out = 'I21'
-       fillval_out = -9223372036854775807
+       fillval_out = long64(-9223372036854775808)
        validmin_out = -9223372036854775807
        validmax_out =  9223372036854775807
     End

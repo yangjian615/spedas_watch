@@ -18,6 +18,7 @@ GOES, spd_ui_load_goes_data, GOES: Load Data
 WIND, spd_ui_load_wind_data, WIND: Load Data
 ACE, spd_ui_load_ace_data, ACE: Load Data
 FAST, spd_ui_load_fast_data, FAST: Load Data
+BARREL, spd_ui_load_barrel_data, BARREL: Load Data
 IUGONET, iug_ui_load_data, IUGONET: Load Data
 OMNI, spd_ui_load_omni_data, OMNI: Load Data
 Geomagnetic/Solar Indices, spd_ui_load_indices, Geomagnetic & Solar Indices: Load Data

@@ -57,8 +57,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-10 15:40:31 -0700 (Fri, 10 Oct 2014) $
-; $LastChangedRevision: 15978 $
+; $LastChangedDate: 2014-10-15 15:25:34 -0700 (Wed, 15 Oct 2014) $
+; $LastChangedRevision: 16001 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_overplot.pro $
 ;-
 Pro mvn_gen_overplot, date = date, time_range = time_range, $
@@ -154,6 +154,14 @@ options, 'mvn_lpw_euv_temp_C', 'ysubtitle', '(raw)'
 options, 'mvn_lpw_euv', 'ysubtitle', '(raw)'
 options, 'mvn_ql_mag1', 'ytitle', 'MAG-B1'
 
+options, 'mvn_lpw_euv_ql', 'ytitle', 'EUV'
+options, 'mvn_lpw_euv_ql', 'ysubtitle', 'diodes'
+
+options, 'mvn_lpw_wave_spec_ql', 'ytitle', 'LPW Wave'
+options, 'mvn_lpw_wave_spec_ql', 'ysubtitle', '(Hz)'
+
+options, 'mvn_lpw_IV1_pasV2_ql', 'ytitle', 'LPW I-V'
+options, 'mvn_lpw_IV1_pasV2_ql', 'ysubtitle', '(V)'
 
 varlist = mvn_qlook_vcheck(varlist, tr = tr, /blankp)
 If(varlist[0] Eq '')  Then Begin

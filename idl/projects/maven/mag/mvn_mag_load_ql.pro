@@ -22,9 +22,9 @@
 ;
 ;       VAR:           Name of TPLOT variable created.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-09 18:57:33 -0700 (Thu, 09 Oct 2014) $
-; $LastChangedRevision: 15968 $
+; $LastChangedBy: jhalekas $
+; $LastChangedDate: 2014-10-16 09:29:05 -0700 (Thu, 16 Oct 2014) $
+; $LastChangedRevision: 16004 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load_ql.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2014/10/09
@@ -126,9 +126,9 @@ pro mvn_mag_load_ql, trange, filename=filename, var=var
 ; Store the result as a TPLOT variable
   
   var = 'mvn_mag1_pl_ql'
-  store_data,var,data={x:time, y:magf, v:[0,1,2], spice_frame:'MAVEN_SPACECRAFT', $
-                       spice_master_frame:'MAVEN_SPACECRAFT', labels:['X','Y','Z'], $
-                       labflag:1}
+  store_data,var,data={x:time, y:magf, v:[0,1,2], labels:['X','Y','Z'], $
+                       labflag:1}, limits = {SPICE_FRAME:'MAVEN_SPACECRAFT', $
+                       SPICE_MASTER_FRAME:'MAVEN_SPACECRAFT'}
 
   return
 

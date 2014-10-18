@@ -11,8 +11,8 @@
 ;AUTHOR:	J. Halekas	
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-09 11:27:40 -0700 (Thu, 09 Oct 2014) $
-; $LastChangedRevision: 15955 $
+; $LastChangedDate: 2014-10-16 08:41:12 -0700 (Thu, 16 Oct 2014) $
+; $LastChangedRevision: 16003 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_crib.pro $
 ;
 ;-
@@ -104,5 +104,14 @@
 ; compute separate proton and alpha moments from a single fine distribution (need to compile the wrapper mvn_swia_protonalphamoms first with '.r mvn_swia_protonalphamoms' if you haven't previously run)
 
 	mvn_swia_protonalphamom, dat = fsdat, n1,t1,v1, n2,t2,v2,/plot
+
+; load level 0 data (useful if L2 processing not complete)
+; set /sync keyword for most efficient load
+; will automatically select data range and find files if the 'files' variable isn't provided or 'trange' keyword is not set
+
+	mvn_swia_load_l0_data,files,/tplot,/sync
+	mvn_swia_load_l0_data,/tplot,/sync, trange = ['2014-10-14','2014-10-15']
+	mvn_swia_load_l0_data,/tplot,/sync
+
 
 

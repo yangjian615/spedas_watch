@@ -53,6 +53,7 @@
 ;
 ;       CURRENT:  Load the ephemeris from MOI to the current date + 2 weeks.  This
 ;                 uses reconstructed SPK kernels, as available, then predicts.
+;                 This is the default.
 ;
 ;       EXTENDED: Alternate method of choosing the 28oct11 ephemeris.
 ;
@@ -61,8 +62,8 @@
 ;       VARS:     Array of TPLOT variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-13 12:31:19 -0700 (Mon, 13 Oct 2014) $
-; $LastChangedRevision: 15984 $
+; $LastChangedDate: 2014-10-16 14:04:52 -0700 (Thu, 16 Oct 2014) $
+; $LastChangedRevision: 16005 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -79,10 +80,10 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   rootdir = 'maven/anc/spice/sav/'
   
+  if (size(date,/type) eq 7) then date = date[0]
   if (keyword_set(extended)) then date = '28oct11'
-  if (keyword_set(current)) then date = 'current'
-  if (size(date,/type) ne 7) then date = '21aug14' else date = date[0]
-
+  if (size(date,/type) eq 0) then date = 'current'
+  
 ; Restore the orbit ephemeris
 
   if (domex) then begin
@@ -92,7 +93,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     if (~finfo.exists) then begin
       print,"File not found: ",pathname
       return
-    endif
+    endif else print, "Using ephemeris: ", file_basename(file[0])
 
     restore, file[0]
     
@@ -132,7 +133,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     if (~finfo.exists) then begin
       print,"File not found: ",pathname
       return
-    endif
+    endif else print, "Using ephemeris: ", file_basename(file[0])
 
     restore, file[0]
 
@@ -168,7 +169,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     if (~finfo.exists) then begin
       print,"File not found: ",pathname
       return
-    endif
+    endif else print, "Using ephemeris: ", file_basename(file[0])
 
     restore, file[0]
 

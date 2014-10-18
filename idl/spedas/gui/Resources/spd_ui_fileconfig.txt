@@ -15,4 +15,5 @@ THEMIS, themis_fileconfig
 GOES, goes_fileconfig
 WIND, wind_fileconfig
 ISTP, spd_ui_istp_fileconfig
+BARREL, barrel_fileconfig
 ; YYY, spd_ui_yyy_fileconfig 

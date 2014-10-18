@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-10-06 16:09:51 -0700 (Mon, 06 Oct 2014) $
-; $LastChangedRevision: 15936 $
+; $LastChangedDate: 2014-10-14 10:44:04 -0700 (Tue, 14 Oct 2014) $
+; $LastChangedRevision: 15991 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_sst.pro $
 ;-
 ;
@@ -80,7 +80,7 @@ edit3dbins,thm_part_dist('th'+probe+'_psif',time_double('2010-06-05/12:00:00'),/
 stop
 
 ;see removed bins
-edit3dbins,thm_part_dist('th'+probe+'_psif',time_double('2010-06-05/12:00:00'),/sst_cal,sst_sun_bins=bins,method_clean='manual')
+edit3dbins,thm_part_dist('th'+probe+'_psif',time_double('2010-06-05/12:00:00'),/sst_cal,sun_bins=bins,method_clean='manual'),bins
 
 stop
 
