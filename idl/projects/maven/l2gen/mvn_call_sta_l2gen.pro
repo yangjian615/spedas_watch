@@ -24,11 +24,15 @@
 ; search_time_range = if set, then use this time range to find files
 ;                     to be processed, instead of just before or after
 ;                     time. 
+; use_l2_files = if set, then use L2 files as input, and not
+;                L0's. Note that L0 is still used for file
+;                searching, so you might want to use this with the
+;                days_in option. (passed through to mvn_sta_l2gen.pro)
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-04 11:20:05 -0700 (Thu, 04 Sep 2014) $
-; $LastChangedRevision: 15740 $
+; $LastChangedDate: 2014-10-20 12:38:05 -0700 (Mon, 20 Oct 2014) $
+; $LastChangedRevision: 16013 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $

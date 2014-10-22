@@ -22,9 +22,9 @@
 ;
 ;       VAR:           Name of TPLOT variable created.
 ;
-; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-16 09:29:05 -0700 (Thu, 16 Oct 2014) $
-; $LastChangedRevision: 16004 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2014-10-17 15:02:18 -0700 (Fri, 17 Oct 2014) $
+; $LastChangedRevision: 16009 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load_ql.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2014/10/09
@@ -36,12 +36,12 @@ pro mvn_mag_load_ql, trange, filename=filename, var=var
 ; then the files are downloaded to your local machine, which might
 ; take a while.
 
-  if (data_type(filename) eq 7) then begin
+  if (size(filename,/type) eq 7) then begin
     file = filename
     nfiles = n_elements(file)
     trange = 0
   endif else begin
-    if (data_type(trange) eq 0) then begin
+    if (size(trange,/type) eq 0) then begin
       print,"You must specify a file name or time range."
       return
     endif

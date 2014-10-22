@@ -1487,8 +1487,8 @@ if not keyword_set(apids) or test then begin
 		ylim,'mvn_sta_C0_P1A_tot',0,0,1
 		ylim,'mvn_sta_C0_P1A_E',.4,40000.,1
 		ylim,'mvn_sta_C0_P1A_M',.5,100,1
-		ylim,'mvn_sta_C0_P1A_E_M0',0,64,0
-		ylim,'mvn_sta_C0_P1A_E_M1',0,64,0
+		ylim,'mvn_sta_C0_P1A_E_M0',.4,40000.,1
+		ylim,'mvn_sta_C0_P1A_E_M1',.4,40000.,1
 		zlim,'mvn_sta_C0_P1A_E',1,1.e3,1
 		zlim,'mvn_sta_C0_P1A_M',1,1.e3,1
 		zlim,'mvn_sta_C0_P1A_E_M0',1,1.e3,1

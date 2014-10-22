@@ -85,7 +85,8 @@ nmass = mdat.nmass
 if not keyword_set(title) then begin
     title = mdat.project_name+'  '+mdat.data_name+' ' + $
       mdat.units_name 
-    title = title + '!C'+time_string((mdat.time+mdat.end_time)/2.)
+;    title = title + '!C'+time_string((mdat.time+mdat.end_time)/2.)
+    title = title + '!C'+time_string(mdat.time)+'-'+strmid(time_string(mdat.end_time),11,8)
 endif else if title eq '1' then begin
 	title = '' + time_string((mdat.time+mdat.end_time)/2.) 
 endif

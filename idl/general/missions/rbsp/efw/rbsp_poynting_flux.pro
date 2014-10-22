@@ -28,6 +28,13 @@
 ;
 ;   NOTES:     DO NOT INPUT DATA WITH SIGNIFICANT GAPS
 ;
+;********************************************************************
+;             Tested on Van Allen Probes chorus from EFW's B1
+;             data on 2014-08-27 at ~07:42 on probe A. A is at +20
+;             mlat and the Pflux indicates propagation away from eq
+;             with magnitude values consistent with those in Li et
+;             al., 2013 and Santolik et al., 2010
+;********************************************************************
 ;			 Poynting flux coord system
 ;   		 	P1mgse = Bmgse x xhat_mgse  (xhat_mgse is spin axis component)
 ;				P2mgse = Bmgse x P1mgse

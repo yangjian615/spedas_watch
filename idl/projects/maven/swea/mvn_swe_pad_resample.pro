@@ -24,9 +24,8 @@
 ;              paddles. Automatically identifying the mission phases
 ;              (cruise or science mapping).
 ;
-;   STOW:      (A little bit obsolete keyword). Mask the angular bins
-;              whose field of view is blocked during the cruise
-;              phase. 
+;   STOW:      (Obsolete). Mask the angular bins whose field of view
+;              is blocked before the boom deploy. 
 ;
 ;   DDD:       Use 3D data to resample pitch angle distribution.
 ;
@@ -67,16 +66,38 @@
 ;              data. This keyword only works 3D data. The mapping
 ;              method is based on 'mvn_swe_padmap'.
 ;
+;   SWIA:      Resampling PAD in the plasma rest frame, assuming to
+;              the charge nuetrality. Shifted velocity is taken from
+;              the SWIA Course data. So this keyword only works after
+;              loading (restoring) the SWIA data into the memory.  
+;
+;   MBINS:     Specify which angular (both anode and deflection) bins
+;              to include in the analysis: 0 = no, 1 = yes.
+;              Default = replicate(1, 96)
+;
+;   SC_POT:    Account for the spacecraft potential correction.
+;              (Not working yet)
+;  
+;   SYMDIR:    Instead of the observed magnetic field vector, use the
+;              symmetry direction of the (strahl) electron distribution.
+;              The symmetry direction is calculated via 'swe_3d_strahl_dir'.
+;
+;   INTERPOLATE: When you try to resample the pitch angle distribtion
+;                in the plasma rest frame, it calculates non-zero
+;                value to have the data evaluated (interpolated) at
+;                the original energy steps. This keyword is associated
+;                with 'convert_vframe'.
+;
 ;CREATED BY: 
 ;	Takuya Hara
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-09-30 16:31:10 -0700 (Tue, 30 Sep 2014) $
-; $LastChangedRevision: 15890 $
+; $LastChangedDate: 2014-10-20 15:04:33 -0700 (Mon, 20 Oct 2014) $
+; $LastChangedRevision: 16016 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
-FUNCTION mvn_swe_pad_resample_map3d, var
+FUNCTION mvn_swe_pad_resample_map3d, var, prf=prf
   @mvn_swe_com
   ddd = var
   str_element, ddd, 'magf', success=ok
@@ -99,18 +120,29 @@ FUNCTION mvn_swe_pad_resample_map3d, var
      ddtor = !dpi/180D
      ddtors = REPLICATE(ddtor, 64)
      n = 17                     ; patch size - odd integer
-     
-     daz = DOUBLE((INDGEN(n*n) MOD n) - (n-1)/2)/DOUBLE(n-1) # DOUBLE(swe_daz[i])
-     Saz = REFORM(REPLICATE(1D,n*n) # DOUBLE(swe_az[i]) + daz, n*n*96) # ddtors
-     
+
+     IF NOT keyword_set(prf) THEN BEGIN
+        daz = DOUBLE((INDGEN(n*n) MOD n) - (n-1)/2)/DOUBLE(n-1) # DOUBLE(swe_daz[i])
+        Saz = REFORM(REPLICATE(1D,n*n) # DOUBLE(swe_az[i]) + daz, n*n*96) # ddtors
+     ENDIF ELSE BEGIN
+        Saz = DBLARR(n*n*96, 64)
+        daz = DOUBLE((INDGEN(n*n) MOD n) - (n-1)/2)/DOUBLE(n-1) # DOUBLE(swe_daz[i])
+        ;; daz = reform(replicate(1D,n) # double(indgen(n) - (n-1)/2)/double(n-1), n*n) # double(swe_daz[i])
+        FOR m=0, 63 DO $
+           Saz[*, m] = reform(replicate(1D,n*n) # double(REFORM(ddd.phi[m, *])) + daz, n*n*96)
+        Saz *= ddtor
+     ENDELSE 
+
      Sel = dblarr(n*n*96, 64)
      FOR m=0,63 DO BEGIN
         del = reform(replicate(1D,n) # double(indgen(n) - (n-1)/2)/double(n-1), n*n) # double(swe_del[j,m,group])
-        Sel[*,m] = reform(replicate(1D,n*n) # double(swe_el[j,m,group]) + del, n*n*96)
-     ENDFOR
+        IF NOT keyword_set(prf) THEN $
+           Sel[*,m] = reform(replicate(1D,n*n) # double(swe_el[j,m,group]) + del, n*n*96) $
+        ELSE Sel[*,m] = reform(replicate(1D,n*n) # double(REFORM(ddd.theta[m, *])) + del, n*n*96)
+     ENDFOR 
      Sel = Sel*ddtor
-     
-     Saz = REFORM(Saz, n*n, 96, 64) ; nxn az-el patch, 96 pitch angle bins, 64 energies
+
+     Saz = REFORM(Saz, n*n, 96, 64) ; nxn az-el patch, 96 pitch angle bins, 64 energies     
      Sel = REFORM(Sel, n*n, 96, 64)
      pam = ACOS(COS(Saz - Baz)*COS(Sel)*COS(Bel) + SIN(Sel)*SIN(Bel))
      
@@ -144,14 +176,127 @@ FUNCTION mvn_swe_pad_resample_map3d, var
   RETURN, ddd
 END
 
+; Resampling PAD in the plasma rest frame.
+FUNCTION mvn_swe_pad_resample_prf, var, type, archive=archive, silent=silent, energy=energy, $
+                                   map3d=map3d, dformat=dformat, nbins=nbins, nene=nene, edx=edx
+  nan = !values.f_nan
+  swe = var
+  dtype = type
+  ;; energy = average(swe.energy, 2)
+  result = dformat
+
+  ;; swe = mvn_swe_3d_shift(swe, silent=silent, archive=archive, /swia)
+  ;; IF (dtype EQ 1) AND (keyword_set(map3d)) THEN BEGIN
+  ;;    swe = mvn_swe_pad_resample_map3d(swe, /prf)
+  ;;    dtype = 0
+  ;; ENDIF 
+  IF (dtype EQ 1) AND (keyword_set(map3d)) THEN dtype = 0
+  result.time = swe.time
+  ;; xax = (0.5*(180./nbins) + FINDGEN(nbins) * (180./nbins))*!DTOR
+
+  dx = (180./nbins) * !DTOR
+  dy = MEAN(ALOG10(energy[0:swe.nenergy-2]) - ALOG10(energy[1:swe.nenergy-1]))
+
+  xrange = [0., 180.] * !DTOR
+  yrange = minmax(ALOG10(energy)) + (dy/2.)*[-1., 1.]
+  IF NOT keyword_set(dtype) THEN BEGIN
+     tot = DBLARR(nbins, swe.nenergy)
+     tot[*] = 0.
+     index = tot
+     
+     idx = WHERE(FINITE(swe.data), cnt)
+     IF cnt GT 0 THEN BEGIN
+        ; ! Causion ! 
+        ; Energy order is from low to high through 'histbins2d'.
+        hist = histbins2d(REFORM(swe.pa), REFORM(ALOG10(swe.energy)), xax, yax,    $
+                          xrange=xrange, yrange=yrange, xbinsize=dx, ybinsize=dy, reverse=ri )
+        undefine, cnt
+        FOR i=0L, nbins*swe.nenergy-1L DO BEGIN
+           it = ARRAY_INDICES(hist, i)
+           IF ri[i] NE ri[i+1L] THEN BEGIN
+              j = ARRAY_INDICES(swe.data, ri[ri[i]:ri[i+1L]-1L])
+              
+              npts = N_ELEMENTS(j[0, *])
+              FOR k=0L, npts-1L DO BEGIN
+                 idx = WHERE(FINITE(swe.data[j[0, k], j[1, k]]), cnt)
+                 IF cnt GT 0 THEN BEGIN
+                    undefine, cnt
+                    l = WHERE(xax GE swe.pa_min[j[0, k], j[1, k]] AND $
+                              xax LE swe.pa_max[j[0, k], j[1, k]], cnt)
+                    IF cnt GT 0 THEN BEGIN
+                       tot[l, it[1]] = tot[l, it[1]] + swe.data[j[0, k], j[1, k]]
+                       index[l, it[1]] = index[l, it[1]] + 1.
+                    ENDIF 
+                    undefine, l
+                 ENDIF 
+                 undefine, idx, cnt
+              ENDFOR 
+              undefine, j, k, npts
+           ENDIF 
+           undefine, it
+        ENDFOR
+        undefine, i
+     ENDIF ELSE tot[*] = nan
+  ENDIF ELSE BEGIN
+  ENDELSE 
+  undefine, idx, cnt
+
+  ; Energy order is from high to low.
+  tot = TRANSPOSE(REVERSE(tot, 2))
+  index = TRANSPOSE(REVERSE(index, 2))
+  tot = tot[edx, *]
+  index = index[edx, *]
+
+  result.avg = tot / index
+  result.nbins = index
+
+  idx = WHERE(index LE 0., cnt)
+  result.index = LONG(index / index)
+  IF cnt GT 0 THEN result.index[idx] = 0
+  
+  result.xax = xax * !RADEG
+  undefine, tot, index  
+  RETURN, result
+END
+; Converts the data to the plasma rest frame.
+FUNCTION mvn_swe_pad_resample_swia, var, archive=archive, silent=silent, $
+                                    sc_pot=sc_pot, interpolate=interpolate
+  COMPILE_OPT idl2
+  @mvn_swe_com
+
+  edat = var
+  time = edat.time
+  unit = edat.units_name
+  idat = mvn_swia_get_3dc(time, archive=archive)
+  ivel = v_3d(idat)             ; SWIA coordiate system
+
+  IF time LT t_mtx[2] THEN fswe = 'MAVEN_SWEA_STOW' $
+  ELSE fswe = 'MAVEN_SWEA'
+  
+  ;; Converting to the SWEA coordinate system. ;;
+  vel = spice_vector_rotate(ivel, time, 'MAVEN_SWIA', fswe, $
+                            check_objects='MAVEN_SPACECRAFT', verbose=1)
+  ;IF NOT keyword_set(silent) THEN dprint, 'Shifted bulk velocity [km/s]: ', vel
+  IF N_ELEMENTS(WHERE(~FINITE(vel))) EQ 3 THEN BEGIN
+     dprint, 'Cannot convert the SWEA frame due to the lack of SPICE/Kernels.'
+     vel = [0., 0., 0.]
+     data = edat
+  ENDIF ELSE $
+     data = convert_vframe(edat, vel, sc_pot=sc_pot, interpolat=interpolate)
+
+  mvn_swe_convert_units, data, unit
+  RETURN, data
+END
+; Main routine
 PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
                           nbins=nbins, abins=abins, dbins=dbins, archive=archive, $
                           pans=pans, window=wnum, result=result, $
                           units=units, erange=erange, normal=normal, _extra=extra, $
-                          snap=plot, tplot=tplot, map3d=map3d
+                          snap=plot, tplot=tplot, map3d=map3d, swia=swia, $
+                          mbins=mbins, sc_pot=sc_pot, symdir=symdir, interpolate=interpolate
+
   COMPILE_OPT idl2
   @mvn_swe_com
-
   nan = !values.f_nan 
   ;; fifb = fifteenb()
   fifb = string("15b) ;"
@@ -190,7 +335,18 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
            dat = swe_3d
            archive = 0
         ENDIF 
-     ENDIF   
+     ENDIF
+
+     IF keyword_set(symdir) THEN BEGIN
+        swe_3d_strahl_dir, result=strahl, archive=archive
+        
+        idx = NN(dat.time, strahl.time)
+        magf = [ [COS(strahl.theta[idx]*!DTOR) * COS(strahl.phi[idx]*!DTOR)], $
+                 [COS(strahl.theta[idx]*!DTOR) * SIN(strahl.phi[idx]*!DTOR)], $
+                 [SIN(strahl.theta[idx]*!DTOR)] ]
+        str_element, strahl, 'magf', magf, /add
+        undefine, magf
+     ENDIF 
   ENDELSE
 
   IF SIZE(var, /type) NE 0 THEN BEGIN
@@ -223,7 +379,7 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
 
      IF SIZE(tplot, /type) EQ 0 THEN tplot = 1
   ENDELSE 
-
+  IF keyword_set(swia) THEN mk = mvn_spice_kernels(/load, /all, trange=trange, verbose=silent)
   IF NOT keyword_set(units) THEN units = 'eflux'
   IF NOT keyword_set(nbins) THEN nbins = 128.
   IF NOT keyword_set(wnum) THEN wnum = 0
@@ -232,44 +388,77 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
   IF NOT keyword_set(abins) THEN abins = REPLICATE(1., 16)
   IF NOT keyword_set(dbins) THEN dbins = REPLICATE(1., 6)
   obins = REFORM(abins # dbins, 96)
-  IF keyword_set(mask) THEN BEGIN
-     IF MAX(trange) LT t_mtx[2] THEN stow = 1
-
-     IF keyword_set(stow) THEN BEGIN
-        mdbins = [0., 0., 0., 1., 1., 1.]
-        mabins = REPLICATE(1., 16)
-     ENDIF ELSE BEGIN
-        ;; Need to modify.
-     ENDELSE 
-     
-     mobins = REFORM(mabins # mdbins, 96)
-  ENDIF ELSE mobins = REPLICATE(1., 96)
-  obins *= mobins
-
   i = WHERE(obins EQ 0., cnt)
   IF cnt GT 0 THEN obins[i] = nan
   undefine, i, cnt
 
-  plim = {noiso: 1, zlog: 1, charsize: 1.3, xticks: 6, xminor: 3, xrange: [0., 180.], ylog: 1}
+  stow = INTARR(ndat)
+  stow[*] = 0
+  IF keyword_set(mask) THEN BEGIN
+     mobins = FLTARR(96, 2)
+     mdbins = [0., 0., 0., 1., 1., 1.]
+     mabins = REPLICATE(1., 16)
+
+     mobins[*, 1] = REFORM(mabins # mdbins, 96)
+     mobins[*, 0] = 1.
+     mobins[0:3, 0] = 0.
+     mobins[16:19, 0] = 0.
+     i = WHERE(dat[idx].time LT t_mtx[2], cnt)
+     IF cnt GT 0 THEN stow[i] = 1
+     undefine, i, cnt
+     ;; IF MAX(trange) LT t_mtx[2] THEN stow = 1
+        
+     ;; IF keyword_set(stow) THEN BEGIN
+     ;;    mdbins = [0., 0., 0., 1., 1., 1.]
+     ;;    mabins = REPLICATE(1., 16)
+     ;;    mobins = REFORM(mabins # mdbins, 96)
+     ;; ENDIF ELSE BEGIN
+     ;;    ;; Need to modify.
+     ;;    mobins = REPLICATE(1., 96)
+     ;;    mobins[0:3] = 0.
+     ;;    mobins[16:19] = 0.
+     ;; ENDELSE 
+  ENDIF ELSE IF keyword_set(mbins) THEN BEGIN
+     IF N_ELEMENTS(mbins) EQ 96 THEN mobins = mbins $
+     ELSE BEGIN
+        dprint, 'You should input 96 elements of array to mask.'
+        mobins = REPLICATE(1., 96)
+     ENDELSE 
+  ENDIF ELSE mobins = REPLICATE(1., 96)
+  i = WHERE(mobins EQ 0., cnt)
+  IF cnt GT 0 THEN mobins[i] = nan
+  undefine, i, cnt
+
+  IF STRLOWCASE(!version.os_family) EQ 'windows' THEN chsz = 1. ELSE chsz = 1.3
+  plim = {noiso: 1, zlog: 1, charsize: chsz, xticks: 6, xminor: 3, xrange: [0., 180.], ylog: 1}
   start = SYSTIME(/sec)
   cet = 0.d0
   IF keyword_set(silent) THEN prt = 0 ELSE prt = 1
   FOR i=0L, ndat-1L DO BEGIN
      IF keyword_set(dtype) THEN BEGIN
         ddd = mvn_swe_get3d(dat[idx[i]].time, units=units, archive=archive)
+        energy = average(ddd.energy, 2)
+        IF keyword_set(swia) THEN $
+           ddd = mvn_swe_pad_resample_swia(ddd, archive=archive, interpolate=interpolate, $
+                                           silent=silent, sc_pot=sc_pot)
+        
+        IF keyword_set(symdir) THEN $
+           ddd.magf = strahl.magf[NN(strahl.time, ddd.time), *]
+     
         dname = ddd.data_name
         magf = ddd.magf
         magf /= SQRT(TOTAL(magf * magf))
         
-        energy = average(ddd.energy, 2)
-        ddd.data *= REBIN(TRANSPOSE(obins), ddd.nenergy, ddd.nbins)
+        ;; ddd.data *= REBIN(TRANSPOSE(obins), ddd.nenergy, ddd.nbins)
+        ddd.data *= REBIN(TRANSPOSE(obins*mobins[*, stow[i]]), ddd.nenergy, ddd.nbins)
         IF keyword_set(map3d) THEN $
-           ddd = mvn_swe_pad_resample_map3d(ddd)
+           ddd = mvn_swe_pad_resample_map3d(ddd, prf=interpolate)
      ENDIF ELSE BEGIN
         pad = mvn_swe_getpad(dat[idx[i]].time, units=units, archive=archive)
         dname = pad.data_name
         energy = average(pad.energy, 2)
-        pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]), pad.nenergy, pad.nbins)
+        ;; pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]), pad.nenergy, pad.nbins)
+        pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]*mobins[pad.k3d, stow[i]]), pad.nenergy, pad.nbins)
      ENDELSE 
         
      IF keyword_set(erange) THEN BEGIN
@@ -358,6 +547,11 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         pa.xax = xax
      ENDIF ELSE BEGIN
         pad_resample:
+        ;; IF keyword_set(swia) THEN $
+        IF NOT keyword_set(interpolate) THEN $
+           pa = mvn_swe_pad_resample_prf(pad, dtype, silent=silent, archive=archive, map3d=map3d, $
+                                         nbins=nbins, nene=nene, edx=edx, dformat=dformat, energy=energy) $
+        ELSE BEGIN
         pa.time = pad.time
         xax = (0.5*(180./nbins) + FINDGEN(nbins) * (180./nbins)) * !DTOR
         tot = DBLARR(nbins)
@@ -387,6 +581,7 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         ENDFOR  
         pa.xax = xax * !RADEG
         undefine, tot, index
+     ENDELSE 
      ENDELSE  
      result[i] = pa
      undefine, pa, data, xax
@@ -447,20 +642,22 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         
         index = TRANSPOSE(result.index)
      ENDELSE 
-
+     ;; stop
      IF keyword_set(normal) THEN BEGIN
         zdata /= REBIN(TRANSPOSE(average(zdata, 1, /nan)), nbins, nene)
-        
+
         i = WHERE(index EQ 0, cnt)
         IF cnt GT 0 THEN zdata[i] = nan
         undefine, i, cnt
 
-        str_element, plim, 'zrange', [0.1, 10.], /add        
+        ;; str_element, plim, 'zrange', [0.1, 10.], /add        
+        str_element, plim, 'zrange', [0.5, 1.5], /add
+        str_element, plim, 'zlog', 0, /add_replace
      ENDIF
 
      plotxyz, xax, energy[edx], zdata, wi=wnum, _extra=plim, $
               xtit='Pitch Angle [deg]', ytit='Energy [eV]', ztit=ztit, $
-              yrange=minmax(energy), title=tit
+              yrange=minmax(energy), title=tit, xmargin=[0.15, 0.17], ymargin=[0.10, 0.09]
   ENDIF 
 
   IF keyword_set(tplot) THEN BEGIN

@@ -87,12 +87,19 @@ if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
      'ATT':  begin      ; Spacecraft Attitude  (CK)
 ;               attkern =  file_retrieve('MAVEN/kernels/ck/mvn_sc_rec_??????_??????_v0?.bc' ,_extra=source)   ;SC Attitude ???  
 ;                attformat = 'MAVEN/kernels/ck/mvn_sc_rec_??????_??????_v0?.bc'  ; use this line to get all files
+
                attformat = 'MAVEN/kernels/ck/mvn_sc_rec_yyMMDD_*_v0?.bc'  ; use this line to get all files in time range
                tr= timerange(trange) + [-3,1] * 3600d*24
                attkern = mvn_pfp_file_retrieve(attformat ,source=source, trange=tr,/daily_names)  ;,last_version=1)   ;SC Attitude ???  
                append_array,kernels,  attkern  ;SC Attitude ???  
+
 ;               append_array,kernels, file_retrieve('MAVEN/misc/app/maven_app_home_v1.bc',_extra=source)
                append_array,kernels, file_retrieve('MAVEN/misc/app/mvn_app_nom_131118_141031_v1.bc',_extra=source)
+
+               appformat = 'MAVEN/kernels/ck/mvn_app_rec_yyMMDD_*_v0?.bc'  ; use this line to get all files in time range
+               appkern = mvn_pfp_file_retrieve(appformat ,source=source, trange=tr,/daily_names)  ;,last_version=1)   ;APP Attitude ???  
+                append_array,kernels,  appkern  ;APP Attitude ???  
+
             end 
            
       endcase

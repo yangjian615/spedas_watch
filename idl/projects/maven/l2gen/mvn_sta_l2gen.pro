@@ -12,15 +12,18 @@
 ; date = If set, the input date.
 ; l0_input_file = A filename for an input file, if this is set, the
 ;                 date and time_range keywords are ignored.
+; use_l2_files = If set, use current L2 files as input, and not
+;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-08 16:57:15 -0700 (Wed, 08 Oct 2014) $
-; $LastChangedRevision: 15950 $
+; $LastChangedDate: 2014-10-20 12:38:05 -0700 (Mon, 20 Oct 2014) $
+; $LastChangedRevision: 16013 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
-                   directory = directory, xxx = xxx, yyy =yyy, _extra = _extra
+                   directory = directory, use_l2_files = use_L2_files, $
+                   xxx = xxx, yyy = yyy, _extra = _extra
 
 ;Run in Z buffer
   set_plot,'z'
@@ -129,8 +132,6 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      endcase
   endif
 
-
-
 ;First load the data
   If(keyword_set(l0_input_file)) Then Begin
      filex = file_search(l0_input_file[0])
@@ -138,7 +139,7 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      filex = mvn_l0_db2file(date)
   Endelse
   If(~is_string(filex)) Then Begin
-     dprint, 'No Input file available: '
+     dprint, 'No L0 file available: '
      If(keyword_set(l0_input_file)) Then Begin
         dprint, l0_input_file[0]
      Endif Else Begin
@@ -146,13 +147,11 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      Endelse
      Return
   Endif
-  If(~keyword_set(noload_data)) Then Begin
-;I need a timespan here
-     p1  = strsplit(file_basename(filex), '_',/extract)
-     d0 = time_double(time_string(p1[4]))
-     timespan, d0, 1
-;     mvn_sta_gen_ql, file = filex ;, pathname=file_dirname(filex), file=file_basename(filex)
-  Endif
+
+;date and timespan
+  p1  = strsplit(file_basename(filex), '_',/extract)
+  d0 = time_double(time_string(p1[4]))
+  timespan, d0, 1
 
   datein = time_string(date)
   yyyy = strmid(datein, 0, 4)
@@ -168,8 +167,14 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   Endelse
   If(~is_string(file_search(dir_out))) Then file_mkdir, dir_out
 
-;load l0 data
-  mvn_sta_l0_load, files = filex
+;load l0 data, or L2 data
+  If(keyword_set(use_l2_files)) Then Begin
+;use no_time_clip to get all data, mvn_sta_l2_load will fill all of
+;the common blocks
+     mvn_sta_l2_load, /no_time_clip
+  Endif Else Begin
+     mvn_sta_l0_load, files = filex
+  Endelse
 
 ;define the common blocks
   common mvn_2a, mvn_2a_ind, mvn_2a_dat ;this one is HKP data
