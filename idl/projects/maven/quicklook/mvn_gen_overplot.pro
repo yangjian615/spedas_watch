@@ -57,8 +57,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-15 15:25:34 -0700 (Wed, 15 Oct 2014) $
-; $LastChangedRevision: 16001 $
+; $LastChangedDate: 2014-10-22 20:22:49 -0700 (Wed, 22 Oct 2014) $
+; $LastChangedRevision: 16023 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_overplot.pro $
 ;-
 Pro mvn_gen_overplot, date = date, time_range = time_range, $
@@ -82,52 +82,34 @@ Endif
 ;Re-init here
 mvn_qlook_init, device = device
 
-;Create a sc potential variable to overplot
-get_data, 'SC_pot', data = dddd
-If(is_string(dddd)) Then Begin
-    ndddd = n_elements(dddd)
-    cj = 0
-    For j = 0, ndddd-1 Do Begin
-       get_data, dddd[j], data = dj
-       If(is_struct(dj)) Then Begin
-          If(cj Eq 0) Then Begin
-             y = replicate(dj.y[0], n_elements(dj.y), ndddd)
-             x = dj.x
-             y[*, 0] = dj.y
-          Endif Else y[*, j] = data_cut(dddd[j], x)
-          cj = cj+1
-       Endif 
-    Endfor
-    If(cj Gt 0) Then Begin
-       y = total(temporary(y), 2)/float(ndddd)
-       store_data, 'scpot_av', data = {x:x, y:y}
-       store_data, 'minus_scpot_av', data = {x:x, y:-y}
-       cc = get_colors()
-       swe_v1 = scpot_overlay('scpot_av', 'swe_espec', sc_line_color  = cc.white)
-       if(is_string(swe_v1)) then begin ;if this fails, then options creates a structure
-          options, swe_v1, 'yrange', [5.0, 5000.0]
-          options, swe_v1, 'ystyle', 1
-       endif else begin
-          swe_v1 = 'swe_espec'
-          options, swe_v1, 'yrange', [5.0, 5000.0]
-          options, swe_v1, 'ystyle', 1
-       endelse
-       swi_v = scpot_overlay('minus_scpot_av', 'mvn_swis_en_counts', sc_line_color  = cc.white)
-       if(is_string(swi_v)) then begin
-          options, swi_v, 'yrange', [5.0, 50000.0]
-          options, swi_v, 'ystyle', 1
-       endif else begin
-          swi_v = 'mvn_swis_en_counts'
-          options, swi_v, 'yrange', [5.0, 50000.0]
-          options, swi_v, 'ystyle', 1
-       endelse
-    Endif Else Begin
-       swe_v1 = 'swe_espec'
-       swi_v = 'mvn_swis_en_counts'
-    Endelse
+;Create a sc potential variable to overplot, this one seems to give
+;the best results
+get_data, 'mvn_lpw_pas_V1', data = dddd
+If(is_struct(dddd)) Then Begin
+   store_data, 'scpot_av', data = {x:dddd.x, y:dddd.y}
+   store_data, 'minus_scpot_av', data = {x:dddd.x, y:-dddd.y}
+   cc = get_colors()
+   swe_v1 = scpot_overlay('scpot_av', 'swe_espec', sc_line_color  = cc.white)
+   if(is_string(swe_v1)) then begin ;if this fails, then options creates a structure
+      options, swe_v1, 'yrange', [5.0, 5000.0]
+      options, swe_v1, 'ystyle', 1
+   endif else begin
+      swe_v1 = 'swe_espec'
+      options, swe_v1, 'yrange', [5.0, 5000.0]
+      options, swe_v1, 'ystyle', 1
+   endelse
+   swi_v = scpot_overlay('minus_scpot_av', 'mvn_swis_en_counts', sc_line_color  = cc.white)
+   if(is_string(swi_v)) then begin
+      options, swi_v, 'yrange', [5.0, 50000.0]
+      options, swi_v, 'ystyle', 1
+   endif else begin
+      swi_v = 'mvn_swis_en_counts'
+      options, swi_v, 'yrange', [5.0, 50000.0]
+      options, swi_v, 'ystyle', 1
+   endelse
 Endif Else Begin
-    swe_v1 = 'swe_espec'
-    swi_v = 'mvn_swis_en_counts'
+   swe_v1 = 'swe_espec'
+   swi_v = 'mvn_swis_en_counts'
 Endelse
 
 varlist=[swe_v1, 'swe_pad', swi_v, 'mvn_sta_C0_P1A_E','mvn_sta_C6_P1D_M', $
@@ -187,6 +169,7 @@ If(keyword_set(makepng)) Then Begin
     tr = tr > d0
     fname = pdir+mvn_qlook_filename('pfp', tr, _extra=_extra)
     makepng, fname
+;    mvn_gen_multipngplot, fname, directory = pdir
 Endif
 
 Return

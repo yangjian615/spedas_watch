@@ -15,6 +15,7 @@
 THEMIS, spd_ui_load_data_file, THEMIS: Load Ground and Probe Data
 THEMIS Derived Spectra, spd_ui_part_getspec_options, THEMIS: Load Derived Particle Energy and Angular Spectra
 GOES, spd_ui_load_goes_data, GOES: Load Data
+POES, spd_ui_load_poes_data, POES: Load Data
 WIND, spd_ui_load_wind_data, WIND: Load Data
 ACE, spd_ui_load_ace_data, ACE: Load Data
 FAST, spd_ui_load_fast_data, FAST: Load Data

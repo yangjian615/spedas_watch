@@ -91,7 +91,7 @@ pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplo
 		get_data,rbspx+'_emfisis_l3_4sec_gse_Mag',data=dd
 
 		if ~is_struct(dd) then begin
-			print,'*****  NO EMFISIS L3 DATA TO LOAD *****
+			print,'*****  NO EMFISIS L3 DATA TO LOAD *****'
 			print,'exiting rbsp_efw_DCfield_removal_crib.pro'
 			return
 		endif

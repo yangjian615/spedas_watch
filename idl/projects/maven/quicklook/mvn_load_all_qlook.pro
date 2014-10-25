@@ -19,8 +19,8 @@
 ;HISTORY:
 ; 16-jul-2013, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-29 15:16:52 -0700 (Mon, 29 Sep 2014) $
-; $LastChangedRevision: 15878 $
+; $LastChangedDate: 2014-10-21 16:11:15 -0700 (Tue, 21 Oct 2014) $
+; $LastChangedRevision: 16018 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_load_all_qlook.pro $
 Pro mvn_load_all_qlook, date_in = date_in, l0_input_file = l0_input_file, $
                         device = device, _extra=_extra
@@ -166,7 +166,7 @@ skip_sta:
 
 ;Load MGIMS data, if available, 
 load_position = 'ngi'
-ngi_file = '/disks/data/maven/data/sci/ngi/ql/'+yyyy+'/'+mm+'/'+'mvn_ngi_ql_'+date+'.csv'
+ngi_file = '/disks/data/maven/data/sci/ngi/ql/mvn_ngi_ql_'+date+'.csv'
 ppp = mvn_ngi_read_csv(ngi_file)
 
 skip_ngi:

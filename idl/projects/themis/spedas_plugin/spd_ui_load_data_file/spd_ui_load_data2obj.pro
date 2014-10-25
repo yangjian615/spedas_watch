@@ -40,8 +40,8 @@
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-10-03 18:15:20 -0700 (Fri, 03 Oct 2014) $
-;$LastChangedRevision: 15924 $
+;$LastChangedDate: 2014-10-23 19:08:21 -0700 (Thu, 23 Oct 2014) $
+;$LastChangedRevision: 16029 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data2obj.pro $
 ;
 ;-
@@ -743,7 +743,8 @@ pro spd_ui_load_data2obj,$
         ; check if data is already loaded, if so query the user on whether they want to overwrite data
         spd_ui_check_overwrite_data,otp[k],loadedData,state_gui_id,statusText,historyWin,clobber,overwrite_count,$
                                  replay=replay,overwrite_selections=overwrite_selections
-        if strmid(clobber, 0, 2) eq 'no' then begin
+                                 
+        if strmid(clobber, 0, 2) eq 'no' and  loadedData->isParent(otp[k] )then begin
             ; compare with owrite_names and don't delete if it exists
             if n_overwrite eq 0 then begin
               store_data, delete=otp[k]

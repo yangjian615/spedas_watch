@@ -92,8 +92,8 @@
 ;	Takuya Hara
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-10-20 15:04:33 -0700 (Mon, 20 Oct 2014) $
-; $LastChangedRevision: 16016 $
+; $LastChangedDate: 2014-10-21 19:58:30 -0700 (Tue, 21 Oct 2014) $
+; $LastChangedRevision: 16020 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -548,7 +548,7 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
      ENDIF ELSE BEGIN
         pad_resample:
         ;; IF keyword_set(swia) THEN $
-        IF NOT keyword_set(interpolate) THEN $
+        IF NOT keyword_set(interpolate) AND keyword_set(swia) THEN $
            pa = mvn_swe_pad_resample_prf(pad, dtype, silent=silent, archive=archive, map3d=map3d, $
                                          nbins=nbins, nene=nene, edx=edx, dformat=dformat, energy=energy) $
         ELSE BEGIN

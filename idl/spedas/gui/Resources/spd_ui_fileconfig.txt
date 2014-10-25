@@ -13,6 +13,7 @@
 SPEDAS, spd_ui_spedas_fileconfig 
 THEMIS, themis_fileconfig
 GOES, goes_fileconfig
+POES, spd_ui_poes_fileconfig
 WIND, wind_fileconfig
 ISTP, spd_ui_istp_fileconfig
 BARREL, barrel_fileconfig

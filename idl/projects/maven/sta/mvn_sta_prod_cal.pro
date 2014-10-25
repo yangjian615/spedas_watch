@@ -1239,9 +1239,11 @@ if not keyword_set(apids) or test then begin
 
 ;	gf[n_swp,64,16,16,4]
 	gf2 = fltarr(n_swp,nenergy,4)
-	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)
-;	for i=0,n_swp-1 do gf2[i,*,*] = total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(swp2gfdf[i,1]-swp2gfdf[i,0]+1.)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
-	for i=0,n_swp-1 do gf2[i,*,*] = total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(avg_nrg*avg_def)
+;	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)/avg_nrg
+;	for i=0,n_swp-1 do gf2[i,*,*] = total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/avg_def
+; correction 10-21-2014
+	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)/avg_nrg
+	for i=0,n_swp-1 do gf2[i,*,*] = avg_an*total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(swp2gfdf[i,1]-swp2gfdf[i,0]+1.)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
 
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
@@ -1539,9 +1541,9 @@ if not keyword_set(apids) or test then begin
 
 ;	gf[n_swp,64,16,16,4]
 	gf2 = fltarr(n_swp,nenergy,4)
-	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)
-;	for i=0,n_swp-1 do gf2[i,*,*] = total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(swp2gfdf[i,1]-swp2gfdf[i,0]+1.)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
-	for i=0,n_swp-1 do gf2[i,*,*] = total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(avg_nrg*avg_def)
+	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)/avg_nrg
+	for i=0,n_swp-1 do gf2[i,*,*] = avg_an*total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(swp2gfdf[i,1]-swp2gfdf[i,0]+1.)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
+
 
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
@@ -1798,9 +1800,9 @@ if not keyword_set(apids) or test then begin
 
 ;	gf[n_swp,64,16,16,4]
 	gf2 = fltarr(n_swp,nenergy,4)
-	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)
-;	for i=0,n_swp-1 do gf2[i,*,*] = total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(swp2gfdf[i,1]-swp2gfdf[i,0]+1.)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
-	for i=0,n_swp-1 do gf2[i,*,*] = total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(avg_nrg*avg_def)
+	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)/avg_nrg
+	for i=0,n_swp-1 do gf2[i,*,*] = avg_an*total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(swp2gfdf[i,1]-swp2gfdf[i,0]+1.)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
+
 
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
@@ -2064,8 +2066,8 @@ if not keyword_set(apids) or test then begin
 
 ;	gf[n_swp,64,16,16,4]
 	gf2 = fltarr(n_swp,nenergy,4)
-	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)
-	for i=0,n_swp-1 do gf2[i,*,*] = total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(avg_nrg*avg_def)
+	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)/avg_nrg
+	for i=0,n_swp-1 do gf2[i,*,*] = avg_an*total(total(gf1[i,*,swp2gfdf[i,0]:swp2gfdf[i,1],swp2gfan[i,0]:swp2gfan[i,1],*],3),3)/(swp2gfdf[i,1]-swp2gfdf[i,0]+1.)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
 
 ; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
 ;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
@@ -2344,7 +2346,13 @@ if not keyword_set(apids) or test then begin
 
 ;	gf[n_swp,64,16,16,4]	sum geometric factor over energy, deflection and anode, why is there a normalization???????				; gf[iswp,en,def,an,att]
 ;	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/avg_nrg/avg_def			;
-	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,ndef,16,4),5),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
+
+;	gf2 = avg_an*reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,ndef,16,4),5),2),n_swp,nenergy,nbins,4)/avg_nrg			;
+
+	gf2 = fltarr(n_swp,nenergy,ndef,4)
+	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)/avg_nrg
+	for i=0,n_swp-1 do gf2[i,*,*,*] = avg_an*total(gf1[i,*,*,swp2gfan[i,0]:swp2gfan[i,1],*],4)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
+
 
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2=reform(eff2,128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(nn)
@@ -2364,7 +2372,7 @@ if not keyword_set(apids) or test then begin
 
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 	phi = 0.
 	dphi = 360.
 	domega = dphi*dtheta/!radeg^2 
@@ -2623,6 +2631,7 @@ if not keyword_set(apids) or test then begin
 ;	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/avg_nrg/avg_def			;
 	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
 
+
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins) & eff2[*]=def_eff  & eff_ind=intarr(nn)
 
@@ -2639,12 +2648,12 @@ if not keyword_set(apids) or test then begin
 
 ; check the following????????????  - bug in theta - off by factor of 3???
 ;	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins)/avg_nrg/avg_def
-;	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins)/avg_nrg
+;	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins)/avg_nrg
 ;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins)
 ;	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode),n_swp,nenergy,nbins)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins),n_swp,nenergy,nbins)/avg_nrg*avg_def
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins),n_swp,nenergy,nbins)/avg_nrg*avg_def
 	phi = 22.5*reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp,nenergy,nbins)
 	dphi = fltarr(n_swp,nenergy,nbins) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
@@ -2769,6 +2778,7 @@ if not keyword_set(apids) or test then begin
 ;			ind1 = where(tt[0:nn-1-np] eq tt[np-1:nn-2],ndis1)					; make sure there are "np" packets in a row with same time, old code w/ error
 			ind1 = where(tt[0:nn-np] eq tt[np-1:nn-1],ndis1)					; make sure there are "np" packets in a row with same time, changed 20140106
 
+if ndis1 gt 1 then begin											; kluge for real time data stream which is missing too many packets
 
 			ind2 = where(tt[ind1[0:ndis1-1]] le tt[[ind1[1:ndis1-1],ind1[ndis1-1]]],ndis)		; throw out any np-packet group that is out of time order, changed 20140106
 			ind  = ind1[ind2] 						
@@ -2888,7 +2898,12 @@ if not keyword_set(apids) or test then begin
 
 ;	gf[n_swp,64,16,16,4]	sum geometric factor over energy, deflection and anode, why is there a normalization???????				; gf[iswp,en,def,an,att]
 ;	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/avg_nrg/avg_def			;
-	gf2 = reform(total(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),6),4),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
+
+	gf2 = fltarr(n_swp,nenergy,ndef,4)
+	gf1 = total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2)/(avg_nrg*avg_def)
+	for i=0,n_swp-1 do gf2[i,*,*,*] = avg_an*total(gf1[i,*,*,swp2gfan[i,0]:swp2gfan[i,1],*],4)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
+
+
 
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
@@ -2906,7 +2921,7 @@ if not keyword_set(apids) or test then begin
 
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 ;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	phi = fltarr(n_swp,nenergy,nbins,nmass) & phi[*]=0.
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi[*]=22.5
@@ -2981,6 +2996,8 @@ if not keyword_set(apids) or test then begin
 		common mvn_cc,mvn_cc_ind,mvn_cc_dat & mvn_cc_dat=cc_dat & mvn_cc_ind=0l
 
    endif
+
+endif
 endif
 
 
@@ -3149,7 +3166,11 @@ if not keyword_set(apids) or test then begin
 
 ;	gf[n_swp,64,16,16,4]	sum geometric factor over energy, deflection and anode, why is there a normalization???????				; gf[iswp,en,def,an,att]
 ;	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/avg_nrg/avg_def			;
-	gf2 = reform(total(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),6),4),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
+;	gf2 = reform(total(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),6),4),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
+
+	gf2 = fltarr(n_swp,nenergy,ndef,4)
+	gf1 = total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2)/(avg_nrg*avg_def)
+	for i=0,n_swp-1 do gf2[i,*,*,*] = avg_an*total(gf1[i,*,*,swp2gfan[i,0]:swp2gfan[i,1],*],4)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
 
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
@@ -3167,7 +3188,7 @@ if not keyword_set(apids) or test then begin
 
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 ;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	phi = fltarr(n_swp,nenergy,nbins,nmass) & phi[*]=0.
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
@@ -3420,6 +3441,7 @@ if not keyword_set(apids) or test then begin
 ;	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/avg_nrg/avg_def			;
 	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
 
+
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
@@ -3436,7 +3458,7 @@ if not keyword_set(apids) or test then begin
 
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
@@ -3704,7 +3726,7 @@ if not keyword_set(apids) or test then begin
 
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
@@ -3972,7 +3994,7 @@ if not keyword_set(apids) or test then begin
 
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
@@ -4250,7 +4272,7 @@ if not keyword_set(apids) or test then begin
 ; the following uses def(n_swp,64,16) to generate theta and phi arrays that depend on iswp(md1)
 
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
@@ -4490,7 +4512,8 @@ if not keyword_set(apids) or test then begin
 
 ;	gf[n_swp,64,16,16,4]	sum geometric factor over energy, deflection and anode, why is there a normalization???????				; gf[iswp,en,def,an,att]
 ;	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/avg_nrg/avg_def			;
-	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
+;	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
+	gf2 = reform(total(reform(gf[*,*,7,*,*],n_swp,avg_nrg,nenergy,16,4),2),n_swp,nenergy,nbins,4)/avg_nrg			;
 
 ; junk dna
 ;	gf2 = fltarr(n_swp,nenergy,ndef,nanode,4)
@@ -4515,7 +4538,7 @@ if not keyword_set(apids) or test then begin
 ; the following uses def(n_swp,64,16) to generate theta and phi arrays that depend on iswp(md1)
 
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def 
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def 
 	dtheta = dtheta > 6.
 	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
@@ -4756,7 +4779,8 @@ if not keyword_set(apids) or test then begin
 
 ;	gf[n_swp,64,16,16,4]	sum geometric factor over energy, deflection and anode, why is there a normalization???????				; gf[iswp,en,def,an,att]
 ;	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/avg_nrg/avg_def			;
-	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
+;	gf2 = reform(total(total(reform(gf,n_swp,avg_nrg,nenergy,avg_def,ndef,16,4),4),2),n_swp,nenergy,nbins,4)/(avg_nrg*avg_def)			;
+	gf2 = reform(total(reform(gf[*,*,7,*,*],n_swp,avg_nrg,nenergy,16,4),2),n_swp,nenergy,nbins,4)/avg_nrg			;
 
 ; junk dna
 ;	gf2 = fltarr(n_swp,nenergy,ndef,nanode,4)
@@ -4781,7 +4805,7 @@ if not keyword_set(apids) or test then begin
 ; the following uses def(n_swp,64,16) to generate theta and phi arrays that depend on iswp(md1)
 
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def 
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def 
 	dtheta = dtheta > 6.
 	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
@@ -5055,7 +5079,7 @@ if not keyword_set(apids) or test then begin
 ; the following uses def(n_swp,64,16) to generate theta and phi arrays that depend on iswp(md1)
 
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
-	dtheta = reform(reform(total(reform((def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2

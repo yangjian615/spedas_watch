@@ -15,16 +15,13 @@
 	rbsp_efw_init
 	!rbsp_efw.user_agent = ''   ;for faster data downloads
 
-	date = '2012-10-14'   ;Wave at 4 Hz
-	t0 = time_double(date + '/05:00')
-	t1 = time_double(date + '/07:00')
+        date = '2014-05-12'     ;chorus
+	t0 = time_double(date + '/10:00')
+	t1 = time_double(date + '/12:30')
+        probe = 'b'
 
-	;date = '2013-03-01'   
-	;date = '2013-02-26'   
+
 	timespan,date
-
-
-	probe='a'
 	rbspx = 'rbsp'+probe
 
 
@@ -37,12 +34,12 @@
 
 ;Load spice stuff
 
-	if ~keyword_set(no_spice_load) then rbsp_load_spice_kernels
+;;	rbsp_load_spice_kernels
 
 	;Get antenna pointing direction and stuff
+	rbsp_efw_position_velocity_crib,/noplot
 	rbsp_load_state,probe=probe,/no_spice_load,datatype=['spinper','spinphase','mat_dsc','Lvec'] 
 
-	rbsp_efw_position_velocity_crib,/no_spice_load,/noplot
 
 	get_data,rbspx+'_spinaxis_direction_gse',data=wsc_GSE	
 
@@ -84,6 +81,8 @@
 	rbsp_load_efw_esvy_mgse,probe=probe,/no_spice_load
 
 	
+	rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['mscb'+bt]
+	rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['vb'+bt]
 
 
 ;---------------------------------------------------------
@@ -100,19 +99,21 @@
 ;Get Poynting flux
 ;----------------------------------------------------------
 
-	;Tlong = 40.  ;seconds
-	;Tshort = 1. 
+	Tlong = 60.*20.  ;seconds
+	Tshort = 60.*0.3 
 
 	;EMIC waves
-	Tlong = 1.  	   ;0.1 Hz
-	Tshort = 0.125       ;8 Hz
+	;Tlong = 1.  	   ;0.1 Hz
+	;Tshort = 0.125       ;8 Hz
 
 	;EMIC waves
 ;	Tlong = 2.  ;seconds
 ;	Tshort = 0.2 
 
+     
+	rbsp_detrend,[rbspx+'_Mag_mgse_r',rbspx+'_efw_esvy_mgse_r'],60.*30.
 
-	rbsp_poynting_flux,rbspx+'_Mag_mgse_r',rbspx+'_efw_esvy_mgse_r',Tshort,Tlong
+	rbsp_poynting_flux,rbspx+'_Mag_mgse_r_detrend',rbspx+'_efw_esvy_mgse_r_detrend',Tshort,Tlong
 
 	copy_data,'pftst_nospinaxis_perp',rbspx+'_pftst_nospinaxis_perp'
 	copy_data,'pftst_nospinaxis_para',rbspx+'_pftst_nospinaxis_para'
@@ -148,4 +149,67 @@
 
 
 	tplot,[rbspx+'_pftst_nospinaxis_para',rbspx+'_pftst_nospinaxis_perp']
+
+
+
+
+
+
+;**************************************************
+;Call rbsp_efw_poynting_spec.pro
+;**************************************************
+
+
+rbsp_efw_poynting_spec,'Ew_pftst','Bw_pftst'
+
+
+
+
+
+
+
+
+
+tmpy = where(ppara_specp.y gt minv)
+if tmpy[0] ne -1 then ppara_specp.y[tmpy] = 2
+
+;------------------------------
+;blue - downwards Poynting flux
+;------------------------------
+
+tmpy = where(ppara_specn.y gt minv)
+if tmpy[0] ne -1 then ppara_specn.y[tmpy] = 1
+
+
+
+;Combine the upwards and downwards parallel spectra
+;pparab = ppara_specp.y > ppara_specn.y
+pparab = ppara_specp.y + ppara_specn.y
+
+
+store_data,'pparab',data={x:time_index2,y:pparab,v:freq_bins2}
+options,'pparab','spec',1
+ylim,'pparab',10.,4000.,0
+ylim,'rbsp'+probe+'_pflux_nospinaxis_para',0,0
+ylim,['rbsp'+probe+'_pflux_nospinaxis_para_SPEC'],10.,4000.,0
+zlim,['rbsp'+probe+'_pflux_nospinaxis_para_SPEC'],maxs/10d^5,maxs,1
+zlim,'pparab',0,3
+options,'rbsp'+probe+'_pflux_nospinaxis_para_SPEC','spec',1
+
+
+;Red = upwards Pflux
+;Blue = downwards
+;Green = could be either upwards or downwards
+tplot,['pparab',$
+       'rbsp'+probe+'_pflux_nospinaxis_para',$
+       'rbsp'+probe+'_pflux_nospinaxis_para_SPEC',$
+       'rbsp'+probe+'_efw_mscb'+bt+'_mgse',$
+       'rbsp'+probe+'_efw_eb'+bt+'_mgse']
+
+
+
+
+
+
+
 

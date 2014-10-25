@@ -119,8 +119,8 @@ End
 ;HISTORY:
 ; 2014-07-28, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-24 13:45:58 -0700 (Wed, 24 Sep 2014) $
-; $LastChangedRevision: 15857 $
+; $LastChangedDate: 2014-10-21 17:01:59 -0700 (Tue, 21 Oct 2014) $
+; $LastChangedRevision: 16019 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ngi_read_csv.pro $
 ;-
 Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
@@ -227,10 +227,11 @@ Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
      Endif
   Endfor
 ;split into modes, and create a tplot spectrogram for each mode
-  modes = ['csn', 'osnt', 'osnb', 'osi']
+  modes = ['csn', 'osnt', 'osnb', 'osion']
   pcsn = -1 & posnt = -1 & posnb = -1 & posi = -1
   dl = {units:'CPS', ztitle:'CPS', ysubtitle:'amu', spec:1, log:1, ylog:0, zlog:1}
   oti = minmax(pnew.time)
+
   For j = 0, n_elements(modes)-1 Do Begin
      this_mode = where(pnew.mode Eq modes[j], nj)
      If(nj Eq 0) Then continue
@@ -255,7 +256,7 @@ Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
            store_data, 'mvn_ngi_osnb', data = posnb, dlimits = dl
            options, 'mvn_ngi_osnb', 'ytitle', 'ngi_osnb'
         End
-        'osi': Begin
+        'osion': Begin
            posi = pp2spectrogram(temporary(pp))
            store_data, 'mvn_ngi_osi', data = posi, dlimits = dl
            options, 'mvn_ngi_osi', 'ytitle', 'ngi_osi'
