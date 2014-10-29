@@ -200,7 +200,7 @@ function spd_ui_deflag_options, gui_id, statusbar, historywin
                                ' value is used near edges. No extrapolation.')
 
   flagbutton = widget_button(obBase, value='Set Flag:', uval='FLAGB', $
-                             tooltip='The finite value to remove. Default'+ $
+                             tooltip='The finite value to remove (all values greater than 0.98 of this value will be removed). Default'+ $
                              ' is 6.8792e28 if not set.  NaNs and infinity'+ $
                              ' are always removed.' )
   maxgapbutton = widget_button(obBase, value='Set Maximum Gap:', uval='MAXGAPB', $

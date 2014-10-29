@@ -17,6 +17,7 @@
 ;					nb = dat.ntheta
 ;	BINS:	bytarr(na,nb),	optional, energy/angle bins array for integration
 ;					0,1=exclude,include
+;	MASS:	intarr(nm)	optional, 
 ;PURPOSE:
 ;	Returns the density of a beam in units of km/s
 ;NOTES:	

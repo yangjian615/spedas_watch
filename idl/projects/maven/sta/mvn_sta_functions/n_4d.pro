@@ -30,11 +30,9 @@
 ;-
 function n_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q
 
-density = 0.
-
 if dat2.valid eq 0 then begin
   print,'Invalid Data'
-  return, density
+  return, 0
 endif
 
 dat = conv_units(dat2,"counts")		; initially use counts

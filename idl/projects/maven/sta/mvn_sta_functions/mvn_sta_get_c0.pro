@@ -104,11 +104,11 @@ dat = 		{project_name:		all_dat.project_name,			$
 		ndef:			all_dat.ndef,				$
 		nanode:			all_dat.nanode,				$
 
-		theta: 			all_dat.theta,  			$
-		dtheta: 		all_dat.dtheta,  			$
-		phi: 			all_dat.phi,  				$
-		dphi: 			all_dat.dphi,	  			$
-		domega: 		all_dat.domega,  			$
+		theta: 			reform(all_dat.theta[swp_ind,*,*]),  	$
+		dtheta: 		reform(all_dat.dtheta[swp_ind,*,*]),  	$
+		phi: 			reform(all_dat.phi[swp_ind,*,*]),  	$
+		dphi: 			reform(all_dat.dphi[swp_ind,*,*]),	$
+		domega: 		reform(all_dat.domega[swp_ind,*,*]),  	$
 
 		gf: 			gf2,					$
 		eff: 			reform(all_dat.eff[eff_ind,*,*]), 	$

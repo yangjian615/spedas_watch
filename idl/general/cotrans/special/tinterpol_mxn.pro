@@ -93,8 +93,8 @@
 ; 
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-10-13 10:55:09 -0700 (Mon, 13 Oct 2014) $
-; $LastChangedRevision: 15982 $
+; $LastChangedDate: 2014-10-27 10:04:09 -0700 (Mon, 27 Oct 2014) $
+; $LastChangedRevision: 16038 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/tinterpol_mxn.pro $
 ;-
 
@@ -213,11 +213,19 @@ for i = 0,product-1L do begin
     if not keyword_set(u) then begin
       if keyword_set(nearest_neighbor) then begin
         out[idx1] = congrid( v[idx2],n)
-      endif else out[idx1] = interpol(v[idx2],n,nan=ignore_nans,_extra=_extra) 
+      endif else begin
+         ;temporarily disabled until we can come up with a solution that works for IDL 7 or earlier. pcruce 2014-10-27
+         ;out[idx1] = interpol(v[idx2],n,nan=ignore_nans,_extra=_extra)
+         out[idx1] = interpol(v[idx2],n,_extra=_extra)
+      endelse
     endif else begin
       if keyword_set(nearest_neighbor) then begin
         out[idx1] = ctv_nearestneighbor(v[idx2],x,u)
-      endif else out[idx1] = interpol(v[idx2],x,u,nan=ignore_nans,_extra=_extra)
+      endif else begin
+        ;temporarily disabled until we can come up with a solution that works for IDL 7 or earlier. pcruce 2014-10-27
+        ;out[idx1] = interpol(v[idx2],x,u,nan=ignore_nans,_extra=_extra)
+        out[idx1] = interpol(v[idx2],x,u,_extra=_extra)
+      endelse
     endelse
 
 endfor

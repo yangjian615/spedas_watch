@@ -31,8 +31,8 @@
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-20 12:38:05 -0700 (Mon, 20 Oct 2014) $
-; $LastChangedRevision: 16013 $
+; $LastChangedDate: 2014-10-24 14:45:00 -0700 (Fri, 24 Oct 2014) $
+; $LastChangedRevision: 16036 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
@@ -164,6 +164,11 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
            timei0 = timep_do[i]
            timei = strmid(timei0, 0, 4)+$
                    '-'+strmid(timei0, 4, 2)+'-'+strmid(timei0, 6, 2)
+;Don't process any files with dates prior to 2013-12-04
+           If(time_double(timei) Lt time_double('2013-12-04')) Then Begin
+              dprint, 'Not processing: '+timei
+              Continue
+           Endif
            yr = strmid(timei0, 0, 4)
            mo = strmid(timei0, 4, 2)
 ;filei_dir is the output directory, not necessarily the search

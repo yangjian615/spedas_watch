@@ -21,17 +21,17 @@
 ;HISTORY:
 ; 2014-10-13, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-15 13:39:18 -0700 (Wed, 15 Oct 2014) $
-; $LastChangedRevision: 16000 $
+; $LastChangedDate: 2014-10-27 12:53:44 -0700 (Mon, 27 Oct 2014) $
+; $LastChangedRevision: 16041 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_efi_sdt_test.pro $
 ;-
 Pro thm_efi_sdt_test, probe = probe, trange = trange, $
-                      ibais_ddt_thereshold = ibias_ddt_threshold, $
+                      ibias_ddt = ibias_ddt, $
                       _extra=_extra
   
 
-  If(keyword_set(ibias_ddt_threshold)) Then ibdt = ibias_ddt_thereshold $
-  Else ibdt = 25.0
+  If(keyword_set(ibias_ddt)) Then ibdt = ibias_ddt $
+  Else ibdt = 12.5
 
   If (keyword_set(trange) && n_elements(trange) Eq 2) $
   Then tr = timerange(trange) $

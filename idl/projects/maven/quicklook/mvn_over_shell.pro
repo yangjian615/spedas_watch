@@ -15,7 +15,7 @@
 ; No explicit outputs, just plots
 ;KEYWORDS:
 ; date = start date for process, default is today
-; num_days = number of days to process
+; num_days = number of days to process, default is 1
 ; instr_to_process = which instruments, or plopt types, currently one
 ;                    of: ['over', 'lpw', 'mag', 'sep', 'sta', 'swe', 'swia']
 ; plot_dir = the output directory. The deafult is to write files to:
@@ -29,8 +29,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-29 15:16:52 -0700 (Mon, 29 Sep 2014) $
-; $LastChangedRevision: 15878 $
+; $LastChangedDate: 2014-10-27 13:33:32 -0700 (Mon, 27 Oct 2014) $
+; $LastChangedRevision: 16042 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_over_shell.pro $
 ;-
 Pro mvn_over_shell, date = date, $
@@ -112,7 +112,7 @@ Endif Else Begin
     If(Not keyword_set(date)) Then $
       date = time_string(systime(/seconds), precision = -3)
     If(keyword_set(start_date)) Then start_date = time_double(start_date) Else Begin
-        If(keyword_set(num_days)) Then ndays = num_days Else ndays = 5
+        If(keyword_set(num_days)) Then ndays = num_days Else ndays = 1
         start_date = time_double(date)-86400.*(ndays-1)
     Endelse
     If(keyword_set(end_date)) Then end_date = time_double(end_date) $

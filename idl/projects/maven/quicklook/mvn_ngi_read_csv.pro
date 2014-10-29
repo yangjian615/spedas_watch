@@ -24,9 +24,13 @@
 Function pp2spectrogram, pp, time_range = time_range
 
 ;Get a mass array
-  m0 = min(pp.mass, max = m1)
+  m0 = min(fix(pp.mass), max = m1)
   mass_arr = m0+indgen(m1-m0+1)
   nmass = n_elements(mass_arr)
+
+;masses out from 1 to 150
+  nout = 150
+  mass_arr_out = 1+indgen(150)
 
 ;Get a time array, 10 second time resolution
   ntx = 6
@@ -43,23 +47,25 @@ Function pp2spectrogram, pp, time_range = time_range
   ntmid = n_elements(tmid)
 
 ;Output array
-  otp = fltarr(ntmid, nmass)
+  otp = fltarr(ntmid, nout)
   For j = 0, nmass-1 Do Begin
+     k = where(mass_arr_out Eq (mass_arr[j] mod 150), nk)
+     If(nk Eq 0) Then Continue
 ;Here all you need is to interpolate for each mass
      this_mass = where(pp.mass Eq mass_arr[j], nj)
      If(nj Eq 0) Then Continue
 ;degap the data  first
      xdegap, 600.0, 10.0, pp.time[this_mass], pp.counts_per_second[this_mass], ct_out, y_out, /twonanpergap
-     otp[*, j] = interpol(y_out, ct_out, tmid)
+     otpj = interpol(y_out, ct_out, tmid)
 ;Apply attenuation here:
      If(mass_arr[j] Le 150.0) Then att = 1.0 $
      Else If(mass_arr[j] Gt 150.0 And mass_arr[j] Le 300.0) Then att = 10.0 $
      Else att = 100.0
-     otp[*, j] = otp[*, j]*att
-;     otp[*, j] = otp[*, j] > 1.0e-2
+     otpj = otpj*att
+     otp[*, k] = otp[*, k]+otpj
   Endfor
 
-Return, {x:tmid, y:otp, v:mass_arr}
+Return, {x:tmid, y:otp, v:mass_arr_out}
 
 End
 
@@ -119,8 +125,8 @@ End
 ;HISTORY:
 ; 2014-07-28, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-21 17:01:59 -0700 (Tue, 21 Oct 2014) $
-; $LastChangedRevision: 16019 $
+; $LastChangedDate: 2014-10-24 13:24:03 -0700 (Fri, 24 Oct 2014) $
+; $LastChangedRevision: 16035 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ngi_read_csv.pro $
 ;-
 Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
@@ -264,7 +270,7 @@ Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
 
      Endcase
   Endfor
-  
+
   Return, pnew
 
 End

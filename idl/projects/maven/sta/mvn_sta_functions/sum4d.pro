@@ -12,6 +12,7 @@
 ;-
 
 
+
 function  sum4d, d1,d2
 if size(/type,d1) ne 8 then return,d2
 if d2.valid eq 0 then return,d1
@@ -22,14 +23,17 @@ if d1.data_name ne d2.data_name or d1.mode ne d2.mode then begin
 endif
 sum = d1
 sum.data = sum.data+d2.data
-sum.delta_t =  d1.delta_t + d2.delta_t
+;sum.delta_t =  d1.delta_t + d2.delta_t
 sum.integ_t =  d1.integ_t + d2.integ_t
 sum.end_time = d1.end_time > d2.end_time
 sum.time     = d1.time     < d2.time
 sum.valid  = d1.valid and d2.valid
 
+value=0 & str_element,sum,'delta_t',value
+	if n_elements(value) gt 1 then sum.delta_t= (d1.delta_t + d2.delta_t)
 value=0 & str_element,sum,'sc_pot',value
-	if value le 0 or value ge 0 then sum.sc_pot= (d1.sc_pot*d1.integ_t + d2.sc_pot*d2.integ_t)/sum.integ_t
+;	if value le 0 or value ge 0 then sum.sc_pot= (d1.sc_pot*d1.integ_t + d2.sc_pot*d2.integ_t)/sum.integ_t
+	if n_elements(value) gt 1 then sum.sc_pot= (d1.sc_pot*d1.integ_t + d2.sc_pot*d2.integ_t)/sum.integ_t
 value=0 & str_element,sum,'b_gse',value
 	if n_elements(value) gt 1 then sum.b_gse= (d1.b_gse*d1.integ_t + d2.b_gse*d2.integ_t)/sum.integ_t
 value=0 & str_element,sum,'magf',value

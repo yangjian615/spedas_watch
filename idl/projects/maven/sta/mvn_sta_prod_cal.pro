@@ -1270,6 +1270,12 @@ if not keyword_set(apids) or test then begin
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
 
+	theta = fltarr(n_swp,nenergy,nmass) & theta[*]=0.
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0)),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nmass),n_swp,nenergy,nmass)/avg_nrg
+	phi = fltarr(n_swp,nenergy,nmass) & phi[*]=0.
+	dphi = fltarr(n_swp,nenergy,nmass) & dphi(*)=360.
+	domega = dphi*dtheta/!radeg^2
+
 	c6_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
 ;		data_name:		'C6 Energy-Mass', 			$
@@ -1303,11 +1309,11 @@ if not keyword_set(apids) or test then begin
 		ndef:			ndef,					$
 		nanode:			nanode,					$
 
-		theta: 			0.,  					$
-		dtheta: 		90.,  					$
-		phi: 			0.,  					$
-		dphi: 			360., 					$
-		domega: 		2.^.5*2.*!pi,  				$
+		theta: 			theta,  				$
+		dtheta: 		dtheta,  				$
+		phi: 			phi,  					$
+		dphi: 			dphi, 					$
+		domega: 		domega,  				$
 
 		gf: 			gf2, 					$
 		eff: 			eff2,	 				$
@@ -1567,6 +1573,11 @@ if not keyword_set(apids) or test then begin
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
 
+	theta = fltarr(n_swp,nenergy,nmass) & theta[*]=0.
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0)),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nmass),n_swp,nenergy,nmass)/avg_nrg
+	phi = fltarr(n_swp,nenergy,nmass) & phi[*]=0.
+	dphi = fltarr(n_swp,nenergy,nmass) & dphi(*)=360.
+	domega = dphi*dtheta/!radeg^2
 
 	c0_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
@@ -1601,12 +1612,11 @@ if not keyword_set(apids) or test then begin
 		ndef:			ndef,					$
 		nanode:			nanode,					$
 
-;  this may need fixing??????????????????
-		theta: 			0.,  					$
-		dtheta: 		90.,  					$
-		phi: 			0.,  					$
-		dphi: 			360., 					$
-		domega: 		2.^.5*2.*!pi,  				$
+		theta: 			theta,  				$
+		dtheta: 		dtheta,  				$
+		phi: 			phi,  					$
+		dphi: 			dphi, 					$
+		domega: 		domega,  				$
 
 		gf: 			gf2, 					$
 		eff: 			eff2,	 				$
@@ -1826,6 +1836,11 @@ if not keyword_set(apids) or test then begin
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
 
+	theta = fltarr(n_swp,nenergy,nmass) & theta[*]=0.
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0)),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nmass),n_swp,nenergy,nmass)/avg_nrg
+	phi = fltarr(n_swp,nenergy,nmass) & phi[*]=0.
+	dphi = fltarr(n_swp,nenergy,nmass) & dphi(*)=360.
+	domega = dphi*dtheta/!radeg^2
 
 	c2_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
@@ -1860,11 +1875,11 @@ if not keyword_set(apids) or test then begin
 		ndef:			ndef,					$
 		nanode:			nanode,					$
 
-		theta: 			0.,  					$
-		dtheta: 		90.,  					$
-		phi: 			0.,  					$
-		dphi: 			360., 					$
-		domega: 		2.^.5*2.*!pi,  				$
+		theta: 			theta,  				$
+		dtheta: 		dtheta,  				$
+		phi: 			phi,  					$
+		dphi: 			dphi, 					$
+		domega: 		domega,  				$
 
 		gf: 			gf2, 					$
 		eff: 			eff2,	 				$
@@ -2091,6 +2106,11 @@ if not keyword_set(apids) or test then begin
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
 
+	theta = fltarr(n_swp,nenergy,nmass) & theta[*]=0.
+	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0)),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nmass),n_swp,nenergy,nmass)/avg_nrg
+	phi = fltarr(n_swp,nenergy,nmass) & phi[*]=0.
+	dphi = fltarr(n_swp,nenergy,nmass) & dphi(*)=360.
+	domega = dphi*dtheta/!radeg^2
 
 	c4_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
@@ -2125,12 +2145,11 @@ if not keyword_set(apids) or test then begin
 		ndef:			ndef,					$
 		nanode:			nanode,					$
 
-;  this may need fixing??????????????????
-		theta: 			0.,  					$
-		dtheta: 		90.,  					$
-		phi: 			0.,  					$
-		dphi: 			360., 					$
-		domega: 		2.^.5*2.*!pi,  				$
+		theta: 			theta,  				$
+		dtheta: 		dtheta,  				$
+		phi: 			phi,  					$
+		dphi: 			dphi, 					$
+		domega: 		domega,  				$
 
 		gf: 			gf2, 					$
 		eff: 			eff2,	 				$
@@ -2373,9 +2392,12 @@ if not keyword_set(apids) or test then begin
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
-	phi = 0.
-	dphi = 360.
+;	phi = 0.
+;	dphi = 360.
+	phi = fltarr(n_swp,nenergy,nbins,nmass) & phi[*]=0.
+	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=360.
 	domega = dphi*dtheta/!radeg^2 
+
 
 ;	print,n_swp,nenergy,nbins,nmass
 ; don't know why this line won't work
@@ -2924,7 +2946,7 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 ;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	phi = fltarr(n_swp,nenergy,nbins,nmass) & phi[*]=0.
-	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi[*]=22.5
+	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi[*]=360.
 	domega = dphi*dtheta/!radeg^2
 
 	cc_dat= {project_name:		'MAVEN',				$
@@ -3191,7 +3213,7 @@ if not keyword_set(apids) or test then begin
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
 ;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	phi = fltarr(n_swp,nenergy,nbins,nmass) & phi[*]=0.
-	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
+	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=360.
 	domega = dphi*dtheta/!radeg^2
 
 	cd_dat= {project_name:		'MAVEN',				$
