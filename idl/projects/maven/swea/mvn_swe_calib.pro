@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-22 09:49:34 -0700 (Mon, 22 Sep 2014) $
-; $LastChangedRevision: 15832 $
+; $LastChangedDate: 2014-10-28 10:17:11 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16045 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -87,7 +87,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
   endif
 
   if (not ok) then begin
-    if (data_type(swe_hsk) eq 8) then begin
+    if (size(swe_hsk,/type) eq 8) then begin
       nhsk = n_elements(swe_hsk)
       lutnum = swe_hsk.ssctl      ; active LUT number
       swe_chksum = bytarr(nhsk)   ; checksum of active LUT

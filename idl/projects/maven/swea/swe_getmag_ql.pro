@@ -34,8 +34,8 @@
 ;                      Default is to use Davin's decommutator.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-13 12:57:34 -0700 (Mon, 13 Oct 2014) $
-; $LastChangedRevision: 15988 $
+; $LastChangedDate: 2014-10-28 10:22:57 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16055 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_getmag_ql.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
@@ -85,51 +85,62 @@ pro swe_getmag_ql, trange, filename=filename, toff=toff, sts=sts
 
 ; Load MAG data
 
-  if (sflg) then begin
-    domag1 = 1
-    domag2 = 0  ; sts quicklook files contain no MAG2 data
+  t1 = [0D]
+  B1x = [0.]
+  B1y = [0.]
+  B1z = [0.]
 
-    mvn_mag_load_ql, file=file, var=var
+  t2 = [0D]
+  B2x = [0.]
+  B2y = [0.]
+  B2z = [0.]
 
-    get_data, var, data=mag1
-    t1 = mag1.x
-    B1x = mag1.y[*,0]
-    B1y = mag1.y[*,1]
-    B1z = mag1.y[*,2]
-    mag1 = 0
+  for i=0,(nfiles-1) do begin
+    if (sflg) then begin
+      domag1 = 1
+      domag2 = 0  ; sts quicklook files contain no MAG2 data
 
-    pl = 1
-  endif else begin
-    domag1 = 1
-    domag2 = 1  ; MAG2 comes for free
+      mvn_mag_load_ql, file=file, var=var
 
-    mvn_pfp_l0_file_read, file=file, /mag
+      get_data, var, data=mag1
+      t1 = [temporary(t1), mag1.x]
+      B1x = [temporary(B1x), mag1.y[*,0]]
+      B1y = [temporary(B1y), mag1.y[*,1]]
+      B1z = [temporary(B1z), mag1.y[*,2]]
+      mag1 = 0
 
-    options,'mvn_mag1_svy_BAVG',spice_frame='MAVEN_MAG1', $
-            spice_master_frame='MAVEN_SPACECRAFT'
-    options,'mvn_mag2_svy_BAVG',spice_frame='MAVEN_MAG2', $
-            spice_master_frame='MAVEN_SPACECRAFT'
+      pl = 1
+    endif else begin
+      domag1 = 1
+      domag2 = 1  ; MAG2 comes for free
 
-    get_data,'mvn_mag1_svy_BAVG',data=mag1
-    t1 = mag1.x
-    B1x = mag1.y[*,0]
-    B1y = mag1.y[*,1]
-    B1z = mag1.y[*,2]
-    mag1 = 0
+      mvn_pfp_l0_file_read, file=file, /mag
 
-    get_data,'mvn_mag2_svy_BAVG',data=mag2
-    t2 = mag2.x
-    B2x = mag2.y[*,0]
-    B2y = mag2.y[*,1]
-    B2z = mag2.y[*,2]
-    mag2 = 0
+      get_data,'mvn_mag1_svy_BAVG',data=mag1
+    
+      t1 = [temporary(t1), mag1.x]
+      B1x = [temporary(B1x), mag1.y[*,0]]
+      B1y = [temporary(B1y), mag1.y[*,1]]
+      B1z = [temporary(B1z), mag1.y[*,2]]
+      mag1 = 0
 
-    pl = 0
-  endelse
+      get_data,'mvn_mag2_svy_BAVG',data=mag2
+    
+      t2 = [temporary(t2), mag2.x]
+      B2x = [temporary(B2x), mag2.y[*,0]]
+      B2y = [temporary(B2y), mag2.y[*,1]]
+      B2z = [temporary(B2z), mag2.y[*,2]]
+      mag2 = 0
+
+      pl = 0
+    endelse
+  endfor
 
 ; Trim data to requested time range
   
-  if (size(tmin,/type) eq 5) then begin
+  if (domag1) then begin
+    if (size(tmin,/type) ne 5) then tmin = min(t1[1:*], max=tmax)
+
     indx = where((t1 ge tmin) and (t1 le tmax), count)
     if (count gt 0L) then begin
       mag1 = {x:dblarr(count), y:fltarr(count,3)}
@@ -141,20 +152,22 @@ pro swe_getmag_ql, trange, filename=filename, toff=toff, sts=sts
       mag1 = 0
       domag1 = 0
     endelse
+  endif
 
-    if (domag2) then begin
-      indx = where((t2 ge tmin) and (t2 le tmax), count)
-      if (count gt 0L) then begin
-        mag2 = {x:dblarr(count), y:fltarr(count,3)}
-        mag2.x = temporary(t2[indx])
-        mag2.y[*,0] = temporary(B2x[indx])
-        mag2.y[*,1] = temporary(B2y[indx])
-        mag2.y[*,2] = temporary(B2z[indx])
-      endif else begin
-        mag2 = 0
-        domag2 = 0
-      endelse
-    endif
+  if (domag2) then begin
+    if (size(tmin,/type) ne 5) then tmin = min(t2[1:*], max=tmax)
+
+    indx = where((t2 ge tmin) and (t2 le tmax), count)
+    if (count gt 0L) then begin
+      mag2 = {x:dblarr(count), y:fltarr(count,3)}
+      mag2.x = temporary(t2[indx])
+      mag2.y[*,0] = temporary(B2x[indx])
+      mag2.y[*,1] = temporary(B2y[indx])
+      mag2.y[*,2] = temporary(B2z[indx])
+    endif else begin
+      mag2 = 0
+      domag2 = 0
+    endelse
   endif
 
 ; Rotate to SWEA coordinates

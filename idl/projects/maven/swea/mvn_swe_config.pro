@@ -15,8 +15,8 @@
 ;    LIST:          List all configuration changes.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-13 12:32:14 -0700 (Mon, 13 Oct 2014) $
-; $LastChangedRevision: 15985 $
+; $LastChangedDate: 2014-10-28 10:18:06 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16047 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -59,18 +59,20 @@ pro mvn_swe_config, list=list, timebar=timebar
 
 ; Sweep table update.  Replace tables 3 and 4 with tables 5 and 6, respectively.
 ; Tables 5 and 6 are used for all data from transition onward.
-; Scheduled for transition (Oct 2014).
 
-  t_swp = [t_swp, time_double('2014-10-06/12:00:00')]  ; sweep table 5 and 6 upload (TBD)
+  t_swp = [t_swp, time_double('2014-10-06/12:00:00')]  ; sweep table 5 and 6 upload
 
 ; Deployed MAG1-to-SWE rotation matrix, with corrected MICD.
-; Scheduled for transition (Oct 2014).
 
-  t_mtx = [t_mtx, time_double('2014-10-10/15:08:40')]  ; deployed boom matrix upload (TBD)
+  t_mtx = [t_mtx, time_double('2014-10-10/15:08:40')]  ; deployed boom matrix upload
+
+; MCP bias adjustments.
+
+  t_mcp = time_double('2014-10-17/02:26:41')  ; bias adjustment (2500 -> 2600 V)
 
 ; Gather all the configuration change times into one variable (for timebar).
 
-  t_cfg = [t_swp, t_mtx, t_dsf]
+  t_cfg = [t_swp, t_mtx, t_dsf, t_mcp]
 
 ; List configuration changes
 
@@ -80,8 +82,9 @@ pro mvn_swe_config, list=list, timebar=timebar
     print,time_string(t_dsf[0]),' --> deflection scale factor update #1 (with error)'
     print,time_string(t_dsf[1]),' --> deflection scale factor update #2 (correct)'
     print,time_string(t_mtx[1]),' --> stowed boom matrix upload #2 (correct MICD)'
-    print,time_string(t_swp[1]),' --> sweep tables 5 and 6 upload (TBD)'
-    print,time_string(t_mtx[2]),' --> boom deploy (TBD)'
+    print,time_string(t_swp[1]),' --> sweep tables 5 and 6 upload'
+    print,time_string(t_mtx[2]),' --> boom deploy'
+    print,time_string(t_mcp[0]),' --> MCP bias adjustment (2500 -> 2600 V)'
   endif
 
 ; Overplot dotted time bars on the current tplot window (assumed to exist)

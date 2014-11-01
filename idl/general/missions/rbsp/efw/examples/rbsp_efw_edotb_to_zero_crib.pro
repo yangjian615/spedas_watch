@@ -1,4 +1,5 @@
 ;Crib sheet to calculate the RBSP spin-axis Efield under the assumption that E*B=0. 
+;
 ;Bad E*B=0 data are removed
 ;
 ;

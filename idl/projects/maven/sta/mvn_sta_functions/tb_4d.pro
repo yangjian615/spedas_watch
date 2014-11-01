@@ -73,12 +73,13 @@ if keyword_set(q) then charge=q
 energy=(dat.energy+charge*dat.sc_pot/abs(charge))>0.		; energy/charge analyzer, require positive energy
 
 v = (2.*energy*charge)^.5		; km/s
+v = v>0.001
 
 ; note fv^2dv = C/v^4 * v^3 *dv/v ~ C/v
 
 if keyword_set(ms) then begin
-	vavg = total(data)/(total(data/v)+1.e-10)
-	vth2  = total((v-vavg)^2*data/v)/(total(data/v)+1.e-20)
+	vavg = total(data)/(total(data/v)>1.e-20)
+	vth2  = total((v-vavg)^2*data/v)/(total(data/v)>1.e-20)
 endif else begin
 	vavg = total(data,1)/(total(data/v,1)>1.e-20)
 	vth2  = total((v-vavg)^2*data/v,1)/(total(data/v,1)>1.e-20)

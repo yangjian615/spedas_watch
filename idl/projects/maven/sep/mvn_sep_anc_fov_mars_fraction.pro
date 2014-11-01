@@ -2,7 +2,7 @@
 
 ; Keyword DANG is the resolution, in DEGREES, of the mesh used to calculate this fraction
 
-Function mvn_sep_anc_fov_mars_fraction, times,dang = dang
+Function mvn_sep_anc_fov_mars_fraction, times,dang = dang, check_objects = check_objects
   if not keyword_set (dang) then dang = 1.5
   et = time_ephemeris(times)
   nt = n_elements (times)
@@ -14,8 +14,16 @@ Function mvn_sep_anc_fov_mars_fraction, times,dang = dang
   FOV_names = tag_names (FOV_ID)
   max_bounds = 4; the maximum number of FOV boundary vectors to return.  For SEP, they are rectangles so 4 makes sense.
   
-  fraction_FOV_Mars = fltarr(nt, 4)
-  fraction_FOV_sunlit_Mars = fltarr(nt, 4)
+  fraction_FOV_Mars = fltarr(nt, 4)*sqrt(-5.5)
+  fraction_FOV_sunlit_Mars = fltarr(nt, 4)*sqrt(-5.5)
+  if keyword_set(check_objects) then begin
+  time_valid = spice_valid_times(et,object=check_objects) 
+    printdat,check_objects,time_valid
+    ind = where(time_valid ne 0,nind)
+  endif else begin
+ ; nind = ns
+    ind = lindgen((nind = nt))
+  endelse
   for J = 0, 3 do begin
 ; get the boundaries of the FOV    
     cspice_getfov, FOV_ID_array [J*2], max_bounds, shape, frame, bsight, bounds
@@ -51,10 +59,10 @@ Function mvn_sep_anc_fov_mars_fraction, times,dang = dang
 
     intercept_Mars = bytarr(nphi, ntheta) ; i.e. does it intercept Mars?
     cos_sza_intercept = fltarr(nphi, ntheta) ; if it does, how well illuminated is the surface?
-    for i = 0, ntimes -1 do begin   
+    for i = 0, n_elements (ind) -1 do begin   
       for M = 0, ntheta*1L*nphi - 1 do begin & $
-; 'intercept' is 1 if the rate intercepts the planet.  0 if not
-        cspice_sincpt, 'Ellipsoid', 'MARS',et[i], 'IAU_MARS', 'NONE', 'MAVEN', FOV_frame [J*2], $
+; 'intercept' is 1 if the ray intercepts the planet.  0 if not
+        cspice_sincpt, 'Ellipsoid', 'MARS',et[ind[i]], 'IAU_MARS', 'NONE', 'MAVEN', FOV_frame [J*2], $
           [x2d[M], y2d[M],z2d [M]], spoint,trgepc, srfvec, intercept& $
         intercept_Mars [M] = intercept & $
         if intercept then begin 
@@ -63,14 +71,14 @@ Function mvn_sep_anc_fov_mars_fraction, times,dang = dang
           cos_sza_intercept [M] = (solar_zenith_angle lt !pi/2)*cos(solar_zenith_angle)
         endif
       endfor  
-      print, time_string (times[i]), ' done' 
-      fraction_FOV_Mars [i,J] = total (intercept_Mars*weighting_array_2d)/total (weighting_array_2d)
-      fraction_FOV_sunlit_Mars [i, J] = total (cos_sza_intercept*weighting_array_2d)/total(weighting_array_2d)
+      print, time_string (times[ind[i]]), ' done' 
+      fraction_FOV_Mars [ind[i],J] = total (intercept_Mars*weighting_array_2d)/total (weighting_array_2d)
+      fraction_FOV_sunlit_Mars [ind[i], J] = total (cos_sza_intercept*weighting_array_2d)/total(weighting_array_2d)
     endfor
   endfor  
   answer = $
       {times: times, $
        FOV_order: ['SEP1_front', 'SEP1_back','SEP2_front', 'SEP1_back'], $
        fraction_FOV_Mars: fraction_FOV_Mars, fraction_FOV_sunlit_Mars: fraction_FOV_sunlit_Mars}
-       
+  return, answer
 end

@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-22 09:49:34 -0700 (Mon, 22 Sep 2014) $
-; $LastChangedRevision: 15832 $
+; $LastChangedDate: 2014-10-28 10:18:45 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16048 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -245,7 +245,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
     if (count gt 0L) then dtc[indx] = !values.f_nan
 
     ddd[n].dtc = dtc                           ; corrected count rate = rate/dtc
-
+    
 ; Insert MAG1 data, if available
 
     if (addmag) then begin
@@ -280,6 +280,11 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
     ddd[n].valid = 1B                          ; Yep, it's valid.
 
   endfor
+
+; Adjust MCP efficiency for bias adjustments
+
+  indx = where(ddd.time gt t_mcp[0], count)
+  if (count gt 0L) then ddd[indx].eff = ddd[indx].eff * 1.5
 
 ; Sum the data.  This is done by summing raw counts corrected by deadtime
 ; and then setting dtc to unity.  Also, note that summed 3D's can be 

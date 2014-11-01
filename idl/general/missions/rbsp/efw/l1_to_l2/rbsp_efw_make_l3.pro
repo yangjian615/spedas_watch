@@ -13,9 +13,9 @@
 ;
 ; HISTORY: Created by Aaron W Breneman, May 2014
 ; VERSION: 
-;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-10-23 14:25:26 -0700 (Thu, 23 Oct 2014) $
-;   $LastChangedRevision: 16027 $
+;   $LastChangedBy: kersten $
+;   $LastChangedDate: 2014-10-28 13:13:37 -0700 (Tue, 28 Oct 2014) $
+;   $LastChangedRevision: 16070 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l3.pro $
 ;-
 
@@ -67,7 +67,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,type=type,testing=tes
                                 ; Use local skeleton
   if keyword_set(testing) then begin
      source_file='~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/' + skeleton
-  endif else source_file='/Volumes/UserA/user_homes/kersten/RBSP_l2/'+skeleton
+  endif else source_file='/Volumes/UserA/user_homes/kersten/Code/tdas_svn_daily/general/missions/rbsp/efw/l1_to_l2/'+skeleton
 
 
 
@@ -389,6 +389,18 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,type=type,testing=tes
      endfor
   endif
 
+;--------------------------------------------------
+;Determine maneuver times
+;--------------------------------------------------
+
+  m = rbsp_load_maneuver_file(sc,date)
+  if is_struct(m) then begin
+     for bb=0,n_elements(m.m0)-1 do begin
+        goo = where((times ge m.m0[bb]) and (times le m.m1[bb]))
+        if goo[0] ne -1 then flag_arr[goo,2] = 1
+     endfor
+  endif
+
 
 ;--------------------------------------------------
 ;Determine times of bias sweeps
@@ -469,7 +481,10 @@ bias_sweep_flag = bias_sweep.y
   flag_arr[*,15] = charging_flag ;charging
   
 
-;Change values of the above arrays that are "fill_val" to 0
+;--------------------------------------------------
+;Change values of certain arrays that are "fill_val" to 0
+;--------------------------------------------------
+
   goo = where(flag_arr[*,3] eq fill_val)   ;bias sweep
   if goo[0] ne -1 then flag_arr[goo,3] = 0
 
@@ -485,6 +500,9 @@ bias_sweep_flag = bias_sweep.y
   goo = where(flag_arr[*,1] eq fill_val)  ;eclipse
   if goo[0] ne -1 then flag_arr[goo,1] = 0
 
+  goo = where(flag_arr[*,2] eq fill_val)  ;maneuver
+  if goo[0] ne -1 then flag_arr[goo,2] = 0
+
 
 
 ;--------------------------------------------------
@@ -493,12 +511,13 @@ bias_sweep_flag = bias_sweep.y
 ;Conditions for throwing global flag
 ;..........any of the v1-v4 saturation flags are thrown
 ;..........the eclipse flag is thrown
-;..........maneuver (NOT YET IMPLEMENTED!!!!!)
+;..........maneuver
 ;..........charging flag thrown
 ;..........antenna deploy
 ;..........bias sweep
 
   flag_arr[*,0] = 0
+
   goo = where((flag_arr[*,5] eq 1) or (flag_arr[*,6] eq 1) or (flag_arr[*,7] eq 1) or (flag_arr[*,8] eq 1))
   if goo[0] ne -1 then flag_arr[goo,0] = 1   ;v1-v4 saturation
 
@@ -512,6 +531,9 @@ bias_sweep_flag = bias_sweep.y
   if goo[0] ne -1 then flag_arr[goo,0] = 1
   
   goo = where(flag_arr[*,4] eq 1)  ;antenna deploy
+  if goo[0] ne -1 then flag_arr[goo,0] = 1
+
+  goo = where(flag_arr[*,2] eq 1)  ;maneuver
   if goo[0] ne -1 then flag_arr[goo,0] = 1
 
 

@@ -22,13 +22,13 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-22 09:49:34 -0700 (Mon, 22 Sep 2014) $
-; $LastChangedRevision: 15832 $
+; $LastChangedDate: 2014-10-28 10:20:22 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16052 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-
 
-pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins
+pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
 
   compile_opt idl2
 
@@ -38,6 +38,8 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins
   c1 = (mass/(2D*!dpi))^1.5D
   c2 = (2d5/(mass*mass))
   c3 = 4D*!dpi*1d-5*sqrt(mass/2D)  ; assume isotropic electron distribution
+  
+  if keyword_set(mom) then mom = 1 else mom = 0
 
 ; Get energy spectra from SPEC or 3D distributions
 
@@ -117,29 +119,45 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins
     j = where(E gt Emin[i], count)
 
     if (count gt 0L) then begin
-      p = swe_maxbol()
-      p.pot = sc_pot[i]
-      Fmax = max(F[j],k,/nan)
-      Emax = E[j[k]]
-      p.t = Emax/2.
-      p.n = Fmax/(4.*c1*c2*sqrt(p.t)*exp((p.pot/p.t) - 2.))
-      Elo = Emax*0.8 < ((Emax/2.) > Emin[i])
-      j = where((E gt Elo) and (E lt Emax*3.))
+      if (mom) then begin
+        phi = sc_pot[i]
+        if (n_elements(erange) gt 1) then begin
+          Emin = min(erange, max=Emax)
+          j = where((E ge Emin) and (E le Emax), n_e)
+        endif else j = where(E gt phi, n_e)
 
-      fit,E[j],F[j],dy=S[j],func='swe_maxbol',par=p,names='N T',p_sigma=sig,/silent
+        prat = (phi/E[j]) < 1.
+        dens[i] = c3*total(dE[j]*sqrt(1. - prat)*(E[j]^(-1.5))*F[j])
 
-      j = where(E gt Emax*2.)
-      E_halo = E[j]
-      F_halo = F[j] - swe_maxbol(E_halo, par=p)
-      prat = (p.pot/E_halo) < 1.
+        Fmax = max(F[j],k,/nan)
+        Emax = E[j[k]]
+        temp[i] = Emax/2.
+        
+      endif else begin
+        p = swe_maxbol()
+        p.pot = sc_pot[i]
+        Fmax = max(F[j],k,/nan)
+        Emax = E[j[k]]
+        p.t = Emax/2.
+        p.n = Fmax/(4.*c1*c2*sqrt(p.t)*exp((p.pot/p.t) - 2.))
+        Elo = Emax*0.8 < ((Emax/2.) > Emin[i])
+        j = where((E gt Elo) and (E lt Emax*3.))
 
-      N_halo = c3*total(dE[j]*sqrt(1. - prat)*(E_halo^(-1.5))*F_halo)
+        fit,E[j],F[j],dy=S[j],func='swe_maxbol',par=p,names='N T',p_sigma=sig,/silent
 
-      dens[i] = p.n + N_halo
-      temp[i] = p.t
+        j = where(E gt Emax*2.)
+        E_halo = E[j]
+        F_halo = F[j] - swe_maxbol(E_halo, par=p)
+        prat = (p.pot/E_halo) < 1.
+
+        N_halo = c3*total(dE[j]*sqrt(1. - prat)*(E_halo^(-1.5))*F_halo)
+
+        dens[i] = p.n + N_halo
+        temp[i] = p.t
       
-      dsig[i] = sig[0]
-      tsig[i] = sig[1]
+        dsig[i] = sig[0]
+        tsig[i] = sig[1]
+      endelse
     endif else begin
       dens[i] = !values.f_nan
       temp[i] = !values.f_nan

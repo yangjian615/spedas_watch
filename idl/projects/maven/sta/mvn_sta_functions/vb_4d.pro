@@ -70,11 +70,23 @@ endif
 
 charge=dat.charge
 if keyword_set(q) then charge=q
-energy=(dat.energy+charge*dat.sc_pot/abs(charge))>0.		; energy/charge analyzer, require positive energy
+
+if 1 then begin
+	energy=(dat.energy+charge*dat.sc_pot/abs(charge))>0.		; energy/charge analyzer, problems for low energy steps
+endif else begin
+	energy=(dat.energy+charge*dat.sc_pot/abs(charge))		; energy/charge analyzer, require positive energy
+	en_jitter = 0.00
+	de = dat.denergy > en_jitter
+	ind = where(energy lt de/2.,nind)
+	if nind gt 0 then energy[ind] = (energy[ind] + de[ind]/2.) > 0.
+endelse
 
 if keyword_set(mi) then v = (2.*energy/(dat.mass*mi))^.5 else v = (2.*energy/mass)^.5	; km/s  note - mass=mass/charge, energy=energy/charge, charge cancels
 
 ; note fv^2dv = C/v^4 * v^3 *dv/v ~ C/v
+
+v = v>.001
+;print,v[*,0]
 
 if keyword_set(ms) then begin
 	vavg = total(data)/(total(data/v)>1.e-20)

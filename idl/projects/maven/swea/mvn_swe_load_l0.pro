@@ -50,30 +50,34 @@
 ;                      LATEST days leading up to the current date.
 ;
 ;       CDRIFT:        Correct for spacecraft clock drift using SPICE.
-;                      Default = 1 (yes).
+;                      Default = 1 (yes). - DISABLED FOR NOW.
 ;
 ;       MAXBYTES:      Maximum number of bytes to process.  Default is all data
 ;                      within specified time range.
 ;
 ;       BADPKT:        An array of structures providing details of bad packets.
 ;
+;       STATUS:        Report statistics of data actually loaded.
+;
 ;       SUMPLOT:       Create a summary plot of the loaded data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-22 17:19:26 -0700 (Mon, 22 Sep 2014) $
-; $LastChangedRevision: 15838 $
+; $LastChangedDate: 2014-10-28 10:19:43 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16050 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mvn_swe_load_l0.pro
 ;-
 pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
-                             cdrift=cdrift, sumplot=sumplot
+                             cdrift=cdrift, sumplot=sumplot, status=status
 
   @mvn_swe_com
   
   if not keyword_set(maxbytes) then maxbytes = 0
   nodupe = 1
+  
+  if keyword_set(status) then silent = 0 else silent = 1
   
   if keyword_set(latest) then begin
     tmax = double(ceil(systime(/sec,/utc)/86400D))*86400D
@@ -194,6 +198,20 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
     endelse
 
   endfor
+
+; Check to see if data were actually loaded
+
+  mvn_swe_stat, npkt=npkt, silent=silent
+  
+  if (total(npkt) eq 0L) then begin
+    print,"No data were loaded!"
+    return
+  endif
+  
+  if (npkt[7] eq 0L) then begin
+    print,"No SWEA housekeeping!"
+    return
+  endif
 
 ; Stitch together 3D packets
   

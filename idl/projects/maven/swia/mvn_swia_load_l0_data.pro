@@ -19,8 +19,8 @@
 ;		(otherwise the 'timerange' routine will be invoked to determine this)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-10 05:38:11 -0700 (Fri, 10 Oct 2014) $
-; $LastChangedRevision: 15969 $
+; $LastChangedDate: 2014-10-29 17:37:03 -0700 (Wed, 29 Oct 2014) $
+; $LastChangedRevision: 16084 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l0_data.pro $
 ;
 ;-
@@ -258,13 +258,13 @@ if keyword_set(tplot) then begin
 		ctime = swim[w].time_unix + 2.0				;center time of sample
 
 		store_data,'mvn_swim_density',data = {x:ctime,y:swim[w].density,ytitle:'SWIA!cDensity!c[cm!E-3!N]'}
-		store_data,'mvn_swim_velocity',data = {x:ctime,y:transpose(swim[w].velocity),v:[0,1,2],labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cVelocity!c[km/s]'}
+		store_data,'mvn_swim_velocity',data = {x:ctime,y:transpose(swim[w].velocity),v:[0,1,2],labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cVelocity!c[km/s]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
 
-		store_data,'mvn_swim_pressure',data = {x:ctime,y:transpose(swim[w].pressure), v:[0,1,2,3,4,5], labels: ['Pxx','Pyy','Pzz','Pxy','Pxz','Pyz'], labflag:1, ytitle: 'SWIA!cPressure!c[eV/cm!E3!N]'}
+		store_data,'mvn_swim_pressure',data = {x:ctime,y:transpose(swim[w].pressure), v:[0,1,2,3,4,5], labels: ['Pxx','Pyy','Pzz','Pxy','Pxz','Pyz'], labflag:1, ytitle: 'SWIA!cPressure!c[eV/cm!E3!N]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
 
-		store_data, 'mvn_swim_temperature', data = {x:ctime,y:transpose(swim[w].temperature), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!cTemperature!c[eV]'}
+		store_data, 'mvn_swim_temperature', data = {x:ctime,y:transpose(swim[w].temperature), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!cTemperature!c[eV]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
 
-		store_data,'mvn_swim_heatflux', data = {x:ctime,y:transpose(swim[w].heat_flux), v:[0,1,2], labels: ['Qx','Qy','Qz'], labflag:1, ytitle: 'SWIA!cHeat Flux!c[ergs/cm!E2!N s]'}
+		store_data,'mvn_swim_heatflux', data = {x:ctime,y:transpose(swim[w].heat_flux), v:[0,1,2], labels: ['Qx','Qy','Qz'], labflag:1, ytitle: 'SWIA!cHeat Flux!c[ergs/cm!E2!N s]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
 
 
 	endif

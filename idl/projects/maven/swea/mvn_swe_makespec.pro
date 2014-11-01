@@ -16,8 +16,8 @@
 ;       UNITS:    Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-22 09:49:34 -0700 (Mon, 22 Sep 2014) $
-; $LastChangedRevision: 15832 $
+; $LastChangedDate: 2014-10-28 10:19:56 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16051 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makespec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -93,6 +93,11 @@ pro mvn_swe_makespec, sum=sum, units=units
     
     mvn_swe_engy.dtc = dtc                ; corrected count rate = rate/dtc
 
+; Adjust MCP efficiency for bias increases
+
+  indx = where(mvn_swe_engy.time gt t_mcp[0], count)
+  if (count gt 0L) then mvn_swe_engy[indx].eff = mvn_swe_engy[indx].eff * 1.5
+
 ; Electron rest mass [eV/(km/s)^2]
 
     mvn_swe_engy.mass = mass_e
@@ -161,6 +166,11 @@ pro mvn_swe_makespec, sum=sum, units=units
     if (count gt 0L) then dtc[indx] = !values.f_nan
     
     mvn_swe_engy_arc.dtc = dtc                ; corrected count rate = rate/dtc
+
+; Adjust MCP efficiency for bias increases
+
+  indx = where(mvn_swe_engy_arc.time gt t_mcp[0], count)
+  if (count gt 0L) then mvn_swe_engy_arc[indx].eff = mvn_swe_engy_arc[indx].eff * 1.5
 
 ; Electron rest mass [eV/(km/s)^2]
 

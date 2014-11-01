@@ -111,7 +111,7 @@ endif
 		time = (mvn_c0_dat.time + mvn_c0_dat.end_time)/2.
 		data = mvn_c0_dat.data
 		energy = reform(mvn_c0_dat.energy[iswp,*,0])
-		mass = total(mvn_c0_dat.mass_arr[mlut,*,*],2)/nenergy
+		mass = total(mvn_c0_dat.mass_arr[iswp,*,*],2)/nenergy
 
 		str_element,mvn_c0_dat,'eflux',success=success
 		if test or not success then begin
@@ -198,7 +198,7 @@ endif
 		time = (mvn_c2_dat.time + mvn_c2_dat.end_time)/2.
 		data = mvn_c2_dat.data
 		energy = reform(mvn_c2_dat.energy[iswp,*,0])
-		mass = total(mvn_c2_dat.mass_arr[mlut,*,*],2)/nenergy
+		mass = total(mvn_c2_dat.mass_arr[iswp,*,*],2)/nenergy
 
 		str_element,mvn_c2_dat,'eflux',success=success
 		if test or not success then begin
@@ -278,7 +278,7 @@ endif
 		time = (mvn_c4_dat.time + mvn_c4_dat.end_time)/2.
 		data = mvn_c4_dat.data
 		energy = reform(mvn_c4_dat.energy[iswp,*,0])
-		mass = total(mvn_c4_dat.mass_arr[mlut,*,*],2)/nenergy
+		mass = total(mvn_c4_dat.mass_arr[iswp,*,*],2)/nenergy
 
 		str_element,mvn_c4_dat,'eflux',success=success
 		if test or not success then begin
@@ -358,7 +358,7 @@ endif
 		time = (mvn_c6_dat.time + mvn_c6_dat.end_time)/2.
 		data = mvn_c6_dat.data
 		energy = reform(mvn_c6_dat.energy[iswp,*,0])
-		mass = total(mvn_c6_dat.mass_arr[mlut,*,*],2)/nenergy
+		mass = total(mvn_c6_dat.mass_arr[iswp,*,*],2)/nenergy
 
 		str_element,mvn_c6_dat,'eflux',success=success
 		if test or not success then begin
@@ -440,7 +440,7 @@ endif
 		time = (mvn_c8_dat.time + mvn_c8_dat.end_time)/2.
 		data = mvn_c8_dat.data
 		energy = reform(mvn_c8_dat.energy[iswp,*,0])
-		theta = reform(mvn_c8_dat.theta[mlut,nenergy-1,*])
+		theta = reform(mvn_c8_dat.theta[iswp,nenergy-1,*])
 
 		str_element,mvn_c8_dat,'eflux',success=success
 		if test or not success then begin
@@ -619,7 +619,7 @@ endif
 		time = (mvn_cc_dat.time + mvn_cc_dat.end_time)/2.
 		data = mvn_cc_dat.data
 		energy = reform(mvn_cc_dat.energy[iswp,*,0,0])
-		mass = reform(total(mvn_cc_dat.mass_arr[mlut,*,0,*],2)/nenergy)
+		mass = reform(total(mvn_cc_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_cc_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cc_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
@@ -718,7 +718,7 @@ endif
 		time = (mvn_cd_dat.time + mvn_cd_dat.end_time)/2.
 		data = mvn_cd_dat.data
 		energy = reform(mvn_cd_dat.energy[iswp,*,0,0])
-		mass = reform(total(mvn_cd_dat.mass_arr[mlut,*,0,*],2)/nenergy)
+		mass = reform(total(mvn_cd_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_cd_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cd_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
@@ -817,7 +817,7 @@ endif
 		time = (mvn_ce_dat.time + mvn_ce_dat.end_time)/2.
 		data = mvn_ce_dat.data
 		energy = reform(mvn_ce_dat.energy[iswp,*,0,0])
-		mass = reform(total(mvn_ce_dat.mass_arr[mlut,*,0,*],2)/nenergy)
+		mass = reform(total(mvn_ce_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_ce_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_ce_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
@@ -928,7 +928,7 @@ endif
 		time = (mvn_cf_dat.time + mvn_cf_dat.end_time)/2.
 		data = mvn_cf_dat.data
 		energy = reform(mvn_cf_dat.energy[iswp,*,0,0])
-		mass = reform(total(mvn_cf_dat.mass_arr[mlut,*,0,*],2)/nenergy)
+		mass = reform(total(mvn_cf_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_cf_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cf_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
@@ -1039,7 +1039,7 @@ endif
 		time = (mvn_d0_dat.time + mvn_d0_dat.end_time)/2.
 		data = mvn_d0_dat.data
 		energy = reform(mvn_d0_dat.energy[iswp,*,0,0])
-		mass = reform(total(mvn_d0_dat.mass_arr[mlut,*,0,*],2)/nenergy)
+		mass = reform(total(mvn_d0_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_d0_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d0_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
@@ -1150,7 +1150,7 @@ endif
 		time = (mvn_d1_dat.time + mvn_d1_dat.end_time)/2.
 		data = mvn_d1_dat.data
 		energy = reform(mvn_d1_dat.energy[iswp,*,0,0])
-		mass = reform(total(mvn_d1_dat.mass_arr[mlut,*,0,*],2)/nenergy)
+		mass = reform(total(mvn_d1_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_d1_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d1_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
@@ -1260,7 +1260,7 @@ endif
 
 		time = (mvn_d4_dat.time + mvn_d4_dat.end_time)/2.
 		data = mvn_d4_dat.data
-		mass = reform(total(mvn_d4_dat.mass_arr[mlut,*,0,*],2)/nenergy)
+		mass = reform(total(mvn_d4_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_d4_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d4_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 

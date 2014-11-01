@@ -125,8 +125,8 @@ End
 ;HISTORY:
 ; 2014-07-28, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-24 13:24:03 -0700 (Fri, 24 Oct 2014) $
-; $LastChangedRevision: 16035 $
+; $LastChangedDate: 2014-10-28 10:54:21 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16057 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ngi_read_csv.pro $
 ;-
 Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
@@ -142,6 +142,12 @@ Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
      dprint, 'Bad File: '+filex
      Return, -1
   Endif
+
+;Extract the file date, and set a timespan
+  filex0 = file_basename(filex, '.csv')
+  alpx = strsplit(filex0[0], '_', /extract)
+  date = time_string(alpx[3], precision = -3)
+  timespan, date, 1
 
 ;New version, now read_csv returns a header, and has numbers in the
 ;first column, the structure tags will come from the header now
@@ -159,13 +165,6 @@ Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
      tj_name = h0[j]
      tj_val = tagj;[xstart:*]
      If(tj_name Eq 'TIME') Then Begin
-;You need a timespan, so that mvn_spc_met_to_unixtime works correctly
-;        met_range = minmax(double(tj_val))
-;        ut_range = mvn_spc_met_to_unixtime(met_range, correct_clockdrift = 0)
-;        one_day = 24.0*3600.0d0
-;        dtr = ceil((ut_range[1]-ut_range[0])/one_day)
-;        timespan, time_string(ut_range[0], precision = -3), dtr 
-;        tj_val = mvn_spc_met_to_unixtime(double(tj_val),/correct_clock)
         tj_val = mvn_spc_met_to_unixtime(double(tj_val))
      Endif Else If(tj_name Ne 'SCRIPT' And tj_name Ne 'MODE') Then Begin
         tj_val = float(tj_val)

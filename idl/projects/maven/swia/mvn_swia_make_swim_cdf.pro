@@ -12,8 +12,8 @@
 ;	DATA_VERSION: Data version to put in file (default = '1')
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-09-18 05:14:21 -0700 (Thu, 18 Sep 2014) $
-; $LastChangedRevision: 15819 $
+; $LastChangedDate: 2014-10-28 11:45:50 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16058 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_swim_cdf.pro $
 ;
 ;-
@@ -72,6 +72,11 @@ id13 = cdf_attcreate(fileid,'PI_affiliation',/global_scope)
 id14 = cdf_attcreate(fileid,'Instrument_type',/global_scope)
 id15 = cdf_attcreate(fileid,'Mission_group',/global_scope)
 id16 = cdf_attcreate(fileid,'Parents',/global_scope)
+id17 = cdf_attcreate(fileid,'PDS_collection_id',/global_scope)
+id18 = cdf_attcreate(fileid,'PDS_start_time',/global_scope)
+id19 = cdf_attcreate(fileid,'PDS_stop_time',/global_scope)
+id20 = cdf_attcreate(fileid,'PDS_sclk_start_count',/global_scope)
+id21 = cdf_attcreate(fileid,'PDS_sclk_stop_count',/global_scope)
 
 
 cdf_attput,fileid,'TITLE',0,'MAVEN SWIA Onboard Moments'
@@ -91,6 +96,11 @@ cdf_attput,fileid,'PI_affiliation',0,'U Iowa'
 cdf_attput,fileid,'Instrument_type',0,'Plasma and Solar Wind'
 cdf_attput,fileid,'Mission_group',0,'MAVEN'
 cdf_attput,fileid,'Parents',0,'None'
+cdf_attput,fileid,'PDS_collection_id',0,'urn:nasa:pds:maven.swia.calibrated:data.onboard_svy_mom'
+cdf_attput,fileid,'PDS_start_time',0,time_string(data[0].time_unix,tformat = 'YYYY-MM-DDThh:mm:ss.fffZ')
+cdf_attput,fileid,'PDS_stop_time',0,time_string(data[nrec-1].time_unix,tformat = 'YYYY-MM-DDThh:mm:ss.fffZ')
+cdf_attput,fileid,'PDS_sclk_start_count',0,data[0].time_met
+cdf_attput,fileid,'PDS_sclk_stop_count',0,data[nrec-1].time_met
 
 
 dummy = cdf_attcreate(fileid,'FIELDNAM',/variable_scope)

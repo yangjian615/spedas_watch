@@ -5,19 +5,30 @@
 ; potential. Calibrations from the UH line are updated every few weeks
 ; INPUT: sc_potential - name of tplot variable (string) that contains the quantity (V1+V2)/2
 ; OUTPUT: tplot variable of density
-; KEYWORDS: newname -> name of output density tplot variable. Defaults
-; to 'density'
+; KEYWORDS: sc -> 'a' or 'b'
+;           newname -> name of output density tplot variable. Defaults
+;                 to 'density'
+;         dmin, dmax -> min and max allowable density values. Values
+;            outside of these limits are set to NaN or setval if set
+;         setval -> value to set density to if it is outside dmin,
+;         dmax range
+;
 ; HISTORY: Written by Aaron W Breneman (UMN), based on Scott
 ; Thaller's density calibrations to EMFISIS upper hybrid line
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-10-10 12:43:31 -0700 (Fri, 10 Oct 2014) $
-;   $LastChangedRevision: 15975 $
+;   $LastChangedDate: 2014-10-28 11:47:06 -0700 (Tue, 28 Oct 2014) $
+;   $LastChangedRevision: 16059 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/calibration_files/rbsp_efw_density_fit_from_uh_line.pro $
 ;-
 
 
-pro rbsp_efw_density_fit_from_uh_line,sc_potential,newname=newname
+; RBSP B desnity fits for Oct 2013, Feb and Mar 2014
+
+
+
+
+pro rbsp_efw_density_fit_from_uh_line,sc_potential,sc,newname=newname,dmin=dmin,dmax=dmax,setval=setval
 
   get_data,sc_potential,data=pot
 
@@ -47,14 +58,16 @@ pro rbsp_efw_density_fit_from_uh_line,sc_potential,newname=newname
 
      tst = where(times ge time_double('2014-03-02/00:00:00') AND times lt time_double('2014-04-10/00:00:00'))
      if tst[0] ne -1 then begin
-        denstmp = 9487.0458*exp(v*3.1599373)+164.07663*exp(v*0.51572132) ;Mar 12,13,14, 2014    
+        if sc eq 'a' then denstmp = 9487.0458*exp(v*3.1599373)+164.07663*exp(v*0.51572132) ;Mar 12,13,14, 2014    
+        if sc eq 'b' then denstmp = 5059.1326*exp(v*3.1960440)+97.932549*exp(v*0.49372449) ; Mar 2014 12-14 RBSPb
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
 
      tst = where(times ge time_double('2014-02-02/00:00:00') AND times lt time_double('2014-03-02/00:00:00'))
      if tst[0] ne -1 then begin
-        denstmp = 11838.774*exp(v*3.2366900)+146.10501*exp(v*0.52979420) ;Feb 12,13,14, 2014
+        if sc eq 'a' then denstmp = 11838.774*exp(v*3.2366900)+146.10501*exp(v*0.52979420) ;Feb 12,13,14, 2014
+        if sc eq 'b' then denstmp = 8628.6284*exp(v*3.4245489)+117.83428*exp(v*0.54272236) ; feb 12, 13 RBSP b
         den[tst] = denstmp[tst]
         timesf[tst] = times[tst]
      endif
@@ -66,7 +79,14 @@ pro rbsp_efw_density_fit_from_uh_line,sc_potential,newname=newname
         timesf[tst] = times[tst]
      endif
 
-     tst = where(times ge time_double('2013-08-15/00:00:00') AND times lt time_double('2013-11-15/00:00:00'))
+     tst = where(times ge time_double('2013-10-01/00:00:00') AND times lt time_double('2013-11-01/00:00:00'))
+     if tst[0] ne -1 then begin
+        denstmp = 4300.7185*exp(v*2.9569220)+85.003322*exp(v*0.50856921) ;Oct 11-12 2013 RBSP B
+        den[tst] = denstmp[tst]
+        timesf[tst] = times[tst]
+     endif
+
+     tst = where(times ge time_double('2013-08-15/00:00:00') AND times lt time_double('2013-10-01/00:00:00'))
      if tst[0] ne -1 then begin
         denstmp = 8860.1926*exp(v*4.0369044)+481.88790*exp(v*0.98777916) ;Oct 8, 2013 
         den[tst] = denstmp[tst]
@@ -171,6 +191,25 @@ pro rbsp_efw_density_fit_from_uh_line,sc_potential,newname=newname
         timesf[tst] = times[tst]
      endif
 
+
+
+
+;--------------------------------------------------
+;If set, remove density values below and above dmin and dmax
+;--------------------------------------------------
+
+     if keyword_set(dmin) then begin
+        goo = where(den lt dmin)
+        if goo[0] ne -1 then begin
+           if ~keyword_set(setval) then den[goo] = !values.f_nan else den[goo] = setval
+        endif
+     endif
+     if keyword_set(dmax) then begin
+        goo = where(den gt dmax)
+        if goo[0] ne -1 then begin
+           if ~keyword_set(setval) then den[goo] = !values.f_nan else den[goo] = setval
+        endif
+     endif
 
 
      if keyword_set(newname) then store_data,newname,data={x:timesf,y:den} else store_data,'density',data={x:timesf,y:den}

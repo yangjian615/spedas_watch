@@ -9,6 +9,9 @@
 ;					0,1=exclude,include
 ;	DBINS:	bytarr(6),	optional, deflector bins array for integration
 ;					0,1=exclude,include
+;
+;   OBINS:  bytarr(96), optional, solid angle bins for integration
+;                   0,1=exclude,include
 ;PURPOSE:
 ;	Returns the density, n, 1/cm^3
 ;

@@ -68,8 +68,8 @@
 ;HISTORY:
 ; 2014-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-09 15:58:03 -0700 (Thu, 09 Oct 2014) $
-; $LastChangedRevision: 15967 $
+; $LastChangedDate: 2014-10-28 16:00:29 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16076 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_cmn_l2read.pro $
 ;-
 Function mvn_sta_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra = _extra

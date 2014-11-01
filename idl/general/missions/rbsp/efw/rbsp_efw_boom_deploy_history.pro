@@ -35,8 +35,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2013-05-17 15:00:27 -0700 (Fri, 17 May 2013) $
-; $LastChangedRevision: 12365 $
+; $LastChangedDate: 2014-10-28 13:46:07 -0700 (Tue, 28 Oct 2014) $
+; $LastChangedRevision: 16071 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_efw_boom_deploy_history.pro $
 ;
 ;-
@@ -45,6 +45,7 @@
 
 function rbsp_efw_boom_deploy_history,datetime,allvals=av
 
+dt2 = time_double(datetime)
 
 ;------------------------------------------------------------------------------------
 ;RBSPA
@@ -53,6 +54,7 @@ function rbsp_efw_boom_deploy_history,datetime,allvals=av
 deploystartA12 = '2012-09-13/19:44:10'
 deployendA12   = '2012-09-13/19:57:47'
 lengthA12 = 4
+
 ;13-SEP-2012	19:44:10	sTART DEPLOY 1-2 BOOMS TO 4-M STROKE, 84 CLICKS	SPIN RATE	SPIN RATE 7.04 RPM
 ;13-SEP-2012	19:57:47	END DEPLOY 1-2 BOOMS TO 4-M STROKE	SPIN RATE 6.97 RPM
 
@@ -439,21 +441,29 @@ lengthB6 = [lengthB6,5.71]
 
 ;Structure with all mission values
 av = {deploystartA12:deploystartA12,$
-		  deploystartA34:deploystartA34,$
-		  deploystartA5:deploystartA5,$
-		  deploystartA6:deploystartA6,$
-		  lengthA12:lengthA12,$
-		  lengthA34:lengthA34,$
-		  lengthA5:lengthA5,$
-		  lengthA6:lengthA6,$
-		  deploystartB12:deploystartB12,$
-		  deploystartB34:deploystartB34,$
-		  deploystartB5:deploystartB5,$
-		  deploystartB6:deploystartB6,$
-  		  lengthB12:lengthB12,$
-		  lengthB34:lengthB34,$
-		  lengthB5:lengthB5,$
-		  lengthB6:lengthB6}
+      deploystartA34:deploystartA34,$
+      deploystartA5:deploystartA5,$
+      deploystartA6:deploystartA6,$
+      deployendA12:deployendA12,$
+      deployendA34:deployendA34,$
+      deployendA5:deployendA5,$
+      deployendA6:deployendA6,$
+      lengthA12:lengthA12,$
+      lengthA34:lengthA34,$
+      lengthA5:lengthA5,$
+      lengthA6:lengthA6,$
+      deploystartB12:deploystartB12,$
+      deploystartB34:deploystartB34,$
+      deploystartB5:deploystartB5,$
+      deploystartB6:deploystartB6,$
+      deployendB12:deployendB12,$
+      deployendB34:deployendB34,$
+      deployendB5:deployendB5,$
+      deployendB6:deployendB6,$
+      lengthB12:lengthB12,$
+      lengthB34:lengthB34,$
+      lengthB5:lengthB5,$
+      lengthB6:lengthB6}
 
 
 
@@ -525,12 +535,12 @@ if blength_B5 ne -1 and blength_B6 eq -1 then blength_B56 = blength_B5 + 1.2 + 0
 
 
 lengths = {datetime:datetime,$
-			A12:blength_A12,$
-			A34:blength_A34,$
-			B12:blength_B12,$
-			B34:blength_B34,$
-			A56:blength_A56,$
-			B56:blength_B56}
+           A12:blength_A12,$
+           A34:blength_A34,$
+           B12:blength_B12,$
+           B34:blength_B34,$
+           A56:blength_A56,$
+           B56:blength_B56}
 
 
 return,lengths
