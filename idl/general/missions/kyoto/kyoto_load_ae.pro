@@ -88,9 +88,21 @@ pro kyoto_load_ae ,trange=trange, $
   axtime=allaxtime, $
   verbose=verbose, $
   datatype=datatype, $     ;Input/output -- will clean inputs or show default.
-  no_server=no_server ; use only locally available data, ie don't download data
-  ;source=source
+  no_server=no_server, $ ; use only locally available data, ie don't download data
+  local_data_dir=local_data_dir, $
+  remote_data_dir = remote_data_dir
+  
+;**************************
+;Load 'remote_data_dir' default:
+;**************************
+if ~keyword_set(remote_data_dir) then remote_data_dir='http://wdc.kugi.kyoto-u.ac.jp/' 
+if STRLEN(remote_data_dir) gt 0 then if STRMID(remote_data_dir, STRLEN(remote_data_dir)-1, 1) ne "/" then remote_data_dir = remote_data_dir + "/" 
 
+;**************************
+;Load 'local_data_dir' default:
+;**************************
+if ~keyword_set(local_data_dir) then local_data_dir=root_data_dir() + 'geom_indices' + path_sep()
+if STRLEN(local_data_dir) gt 0 then if STRMID(local_data_dir, STRLEN(local_data_dir)-1, 1) ne path_sep() then local_data_dir = local_data_dir + path_sep()
 
 ;******************
 ;VERBOSE kw defaut:
@@ -154,10 +166,10 @@ if ~size(fns,/type) then begin
     ;===============================
     source = file_retrieve(/struct)
     source.verbose=verbose
-    source.local_data_dir = root_data_dir() + 'geom_indices/kyoto/a'+ $
+    source.local_data_dir = local_data_dir + 'kyoto/a'+ $
       strmid(datatype[i],1,1)+'/'
     source.remote_data_dir = $
-      'http://wdc.kugi.kyoto-u.ac.jp/a'+ $
+      remote_data_dir + 'a'+ $
     ;    strmid(datatype[i],1,1)+ $
       'e'+ $
       '_provisional/'

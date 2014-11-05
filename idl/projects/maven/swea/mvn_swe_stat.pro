@@ -11,8 +11,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:21:32 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16053 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_stat.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -21,14 +21,14 @@ pro mvn_swe_stat, npkt=npkt, silent=silent
 
   @mvn_swe_com
   
-  if (data_type(swe_hsk) eq 8) then n_hsk = n_elements(swe_hsk) else n_hsk = 0L
-  if (data_type(swe_3d) eq 8) then n_a0 = n_elements(swe_3d) else n_a0 = 0L
-  if (data_type(swe_3d_arc) eq 8) then n_a1 = n_elements(swe_3d_arc) else n_a1 = 0L
-  if (data_type(a2) eq 8) then n_a2 = n_elements(a2) else n_a2 = 0L
-  if (data_type(a3) eq 8) then n_a3 = n_elements(a3) else n_a3 = 0L
-  if (data_type(a4) eq 8) then n_a4 = n_elements(a4) else n_a4 = 0L
-  if (data_type(a5) eq 8) then n_a5 = n_elements(a5) else n_a5 = 0L
-  if (data_type(a6) eq 8) then n_a6 = n_elements(a6) else n_a6 = 0L
+  if (size(swe_hsk,/type) eq 8) then n_hsk = n_elements(swe_hsk) else n_hsk = 0L
+  if (size(swe_3d,/type) eq 8) then n_a0 = n_elements(swe_3d) else n_a0 = 0L
+  if (size(swe_3d_arc,/type) eq 8) then n_a1 = n_elements(swe_3d_arc) else n_a1 = 0L
+  if (size(a2,/type) eq 8) then n_a2 = n_elements(a2) else n_a2 = 0L
+  if (size(a3,/type) eq 8) then n_a3 = n_elements(a3) else n_a3 = 0L
+  if (size(a4,/type) eq 8) then n_a4 = n_elements(a4) else n_a4 = 0L
+  if (size(a5,/type) eq 8) then n_a5 = n_elements(a5) else n_a5 = 0L
+  if (size(a6,/type) eq 8) then n_a6 = n_elements(a6) else n_a6 = 0L
   
   npkt = [n_a0, n_a1, n_a2, n_a3, n_a4, n_a5, n_a6, n_hsk]
 

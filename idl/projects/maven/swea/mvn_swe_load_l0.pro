@@ -62,8 +62,8 @@
 ;       SUMPLOT:       Create a summary plot of the loaded data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:19:43 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16050 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -94,12 +94,12 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 ; then the files are downloaded to your local machine, which might
 ; take a while.
 
-  if (data_type(filename) eq 7) then begin
+  if (size(filename,/type) eq 7) then begin
     file = filename
     nfiles = n_elements(file)
     trange = 0
   endif else begin
-    if (data_type(trange) eq 0) then begin
+    if (size(trange,/type) eq 0) then begin
       print,"You must specify a file name or time range."
       return
     endif
@@ -116,7 +116,7 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
 ; Define telemetry conversion factors
 
-  if (data_type(decom) eq 0) then begin
+  if (size(decom,/type) eq 0) then begin
 
 ; Decompression: 19-to-8
 ;   16-bit instrument messages are summed into 19-bit counters 
@@ -139,7 +139,8 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
     d_ceil = shift(d_floor,-1) - 1.
     d_ceil[255] = 2.^19. - 1.                     ; 19-bit counter max
     d_mid = (d_ceil + d_floor)/2.                 ; mid-point
-    d_var = d_mid + ((d_ceil - d_floor)^2.)/12.   ; variance w/ dig. noise
+    n_pts = d_ceil - d_floor + 1.                 ; number of values in range
+    d_var = d_mid + (n_pts^2. - 1.)/12.           ; variance w/ dig. noise
     
     decom = d_mid  ; decompressed counts
     devar = d_var  ; variance w/ digitization noise
@@ -221,46 +222,46 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
   if keyword_set(nodupe) then begin
 
-    if (data_type(swe_hsk) eq 8) then begin
+    if (size(swe_hsk,/type) eq 8) then begin
       indx = uniq(swe_hsk.met,sort(swe_hsk.met))
       swe_hsk = temporary(swe_hsk[indx])
     endif
 
-    if (data_type(swe_3d) eq 8) then begin
+    if (size(swe_3d,/type) eq 8) then begin
       if (n_elements(swe_3d) gt 0L) then begin
         indx = uniq(swe_3d.met,sort(swe_3d.met))
         swe_3d = temporary(swe_3d[indx])
       endif
     endif
 
-    if (data_type(swe_3d_arc) eq 8) then begin
+    if (size(swe_3d_arc,/type) eq 8) then begin
       if (n_elements(swe_3d_arc) gt 0L) then begin
         indx = uniq(swe_3d_arc.met,sort(swe_3d_arc.met))
         swe_3d_arc = temporary(swe_3d_arc[indx])
       endif
     endif
 
-    if (data_type(a2) eq 8) then begin
+    if (size(a2,/type) eq 8) then begin
       indx = uniq(a2.met,sort(a2.met))
       a2 = temporary(a2[indx])
     endif
 
-    if (data_type(a3) eq 8) then begin
+    if (size(a3,/type) eq 8) then begin
       indx = uniq(a3.met,sort(a3.met))
       a3 = temporary(a3[indx])
     endif
 
-    if (data_type(a4) eq 8) then begin
+    if (size(a4,/type) eq 8) then begin
       indx = uniq(a4.met,sort(a4.met))
       a4 = temporary(a4[indx])
     endif
 
-    if (data_type(a5) eq 8) then begin
+    if (size(a5,/type) eq 8) then begin
       indx = uniq(a5.met,sort(a5.met))
       a5 = temporary(a5[indx])
     endif
 
-    if (data_type(a6) eq 8) then begin
+    if (size(a6,/type) eq 8) then begin
       indx = uniq(a6.met,sort(a6.met))
       a6 = temporary(a6[indx])
     endif

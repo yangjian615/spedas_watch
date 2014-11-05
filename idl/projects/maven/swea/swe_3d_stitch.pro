@@ -12,8 +12,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-13 13:34:10 -0700 (Sat, 13 Sep 2014) $
-; $LastChangedRevision: 15777 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_stitch.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -33,7 +33,7 @@ pro swe_3d_stitch
          data   : fltarr(80,64) , $
          var    : fltarr(80,64)    }
 
-  if (data_type(a0) eq 8) then begin
+  if (size(a0,/type) eq 8) then begin
     npkt = n_elements(a0)
 
     e0 = a0.e0                     ; frame counter
@@ -64,7 +64,7 @@ pro swe_3d_stitch
 
   endif
   
-  if (data_type(a1) eq 8) then begin
+  if (size(a1,/type) eq 8) then begin
     npkt = n_elements(a1)
 
     e0 = a1.e0                     ; frame counter

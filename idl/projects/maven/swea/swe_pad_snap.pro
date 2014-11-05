@@ -34,8 +34,8 @@
 ;
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:17:25 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15565 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -48,7 +48,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
-  if (data_type(units) ne 7) then units = 'crate'
+  if (size(units,/type) ne 7) then units = 'crate'
   if keyword_set(energy) then sflg = 1 else sflg = 0
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   if not keyword_set(zrange) then zrange = 0
@@ -71,7 +71,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
   Twin = !d.window
 
-  if (data_type(Dopt) ne 8) then swe_snap_layout, 0
+  if (size(Dopt,/type) ne 8) then swe_snap_layout, 0
 
   window, /free, xsize=Popt.xsize, ysize=Popt.ysize, xpos=Popt.xpos, ypos=Popt.ypos
   Pwin = !d.window
@@ -101,7 +101,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   wset,Twin
   ctime2,trange,npoints=npts,/silent,button=button
 
-  if (data_type(trange) eq 2) then begin  ; Abort before first time select.
+  if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
     wdelete,Pwin                          ; Don't keep empty windows.
     if (sflg) then wdelete,Nwin
     wset,Twin
@@ -118,7 +118,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
     pad = mvn_swe_getpad(trange,archive=aflg,all=doall,/sum,units=units)
 
-    if (data_type(pad) eq 8) then begin
+    if (size(pad,/type) eq 8) then begin
       title = string(time_string(pad.time), pad.Baz*!radeg, pad.Bel*!radeg, $
                      format='(a19,5x,"Baz = ",f5.1,3x,"Bel = ",f5.1)')
       str_element,limits,'title',title,/add
@@ -203,7 +203,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
     wset,Twin
     ctime2,trange,npoints=npts,/silent,button=button
-    if (data_type(trange) eq 5) then ok = 1 else ok = 0
+    if (size(trange,/type) eq 5) then ok = 1 else ok = 0
 
   endwhile
 

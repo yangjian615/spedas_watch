@@ -25,8 +25,8 @@
 ;                  plot size and position.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-04-19 14:49:36 -0700 (Sat, 19 Apr 2014) $
-; $LastChangedRevision: 14882 $
+; $LastChangedDate: 2014-10-31 14:24:42 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16108 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mhd_orbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  04-02-03
@@ -40,9 +40,9 @@ pro mhd_orbit, lon, lat, lon_sc, lat_sc, psym=psym, lstyle=lstyle, $
   owin = 30
   csize = 1.2
   
-  if (data_type(psym) eq 0)   then psym = 1   else psym = fix(psym)
-  if (data_type(lstyle) eq 0) then lstyle = 0 else lstyle = fix(lstyle)
-  if (data_type(color) eq 0)  then color = 2  else color = fix(color)
+  if (size(psym,/type) eq 0)   then psym = 1   else psym = fix(psym)
+  if (size(lstyle,/type) eq 0) then lstyle = 0 else lstyle = fix(lstyle)
+  if (size(color,/type) eq 0)  then color = 2  else color = fix(color)
 
   a = 2.0
   phi = findgen(49)*(2.*!pi/49)
@@ -50,7 +50,7 @@ pro mhd_orbit, lon, lat, lon_sc, lat_sc, psym=psym, lstyle=lstyle, $
 
   if (psym gt 7) then psym = 8
 
-  if ((data_type(img) eq 0) or keyword_set(reset)) then begin
+  if ((size(img,/type) eq 0) or keyword_set(reset)) then begin
     if keyword_set(xz) then fname = file_which('mhd_xz_c.bmp') $
                        else fname = file_which('mhd_xy_c.bmp')
 
@@ -85,7 +85,7 @@ pro mhd_orbit, lon, lat, lon_sc, lat_sc, psym=psym, lstyle=lstyle, $
 
   oplot,[lon],[lat],psym=psym,color=color,linestyle=lstyle,thick=2,symsize=1.4
 
-  if (data_type(lon_sc) gt 0) then begin
+  if (size(lon_sc,/type) gt 0) then begin
     oplot, [lon_sc], [lat_sc], psym=8, color=0
   endif
 

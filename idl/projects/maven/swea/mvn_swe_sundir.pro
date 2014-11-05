@@ -16,8 +16,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:49:36 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15677 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -26,8 +26,8 @@ pro mvn_swe_sundir, trange, dt=dt, pans=pans
 
   @mvn_swe_com
 
-  if (data_type(trange) eq 0) then begin
-    if (data_type(mvn_swe_engy) ne 8) then begin
+  if (size(trange,/type) eq 0) then begin
+    if (size(mvn_swe_engy,/type) ne 8) then begin
       print,"You must specify a time range or load data first."
       return
     endif

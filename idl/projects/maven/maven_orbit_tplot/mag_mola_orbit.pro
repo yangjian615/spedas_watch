@@ -30,8 +30,8 @@
 ;       BIG:       Use a 1000x500 MAG-MOLA image.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-05-05 11:03:27 -0700 (Mon, 05 May 2014) $
-; $LastChangedRevision: 15046 $
+; $LastChangedDate: 2014-10-31 14:24:42 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16108 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mag_mola_orbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  04-02-03
@@ -58,7 +58,7 @@ pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
     usersym,a*cos(phi),a*sin(phi),/fill
   endif
 
-  if ((data_type(img) eq 0) or keyword_set(reset)) then begin
+  if ((size(img,/type) eq 0) or keyword_set(reset)) then begin
     if keyword_set(big) then fname = file_which('MAG_MOLA_lg.bmp') $
                         else fname = file_which('MAG_MOLA.bmp')
 

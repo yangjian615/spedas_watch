@@ -15,8 +15,8 @@
 ;    LIST:          If set, list the kernels in use.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-22 14:20:06 -0700 (Mon, 22 Sep 2014) $
-; $LastChangedRevision: 15834 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_spice_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -25,8 +25,8 @@ pro mvn_swe_spice_init, trange=trange, list=list, silent=silent
 
   @mvn_swe_com
 
-  if (data_type(trange) eq 0) then begin
-    if (data_type(mvn_swe_engy) ne 8) then begin
+  if (size(trange,/type) eq 0) then begin
+    if (size(mvn_swe_engy,/type) ne 8) then begin
       print,"You must specify a time range or load data first."
       return
     endif

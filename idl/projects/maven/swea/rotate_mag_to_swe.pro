@@ -24,15 +24,15 @@
 ;       INVERSE:  Reverse the rotation: swe to mag coordinates.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-13 12:33:38 -0700 (Mon, 13 Oct 2014) $
-; $LastChangedRevision: 15986 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/rotate_mag_to_swe.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
 function rotate_mag_to_swe, v_in, magu=magu, stow=stow, inverse=inverse, payload=payload
   
-  if (data_type(v_in) eq 0) then begin
+  if (size(v_in,/type) eq 0) then begin
     print,"You must specify an N x 3 input array."
     return, 0
   endif

@@ -20,8 +20,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-15 12:58:24 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15795 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_snap_layout.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -30,7 +30,7 @@ pro swe_snap_layout, layout
 
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
   
-  if (data_type(layout) eq 0) then begin
+  if (size(layout,/type) eq 0) then begin
     print,"Hardware-dependent positions for snapshot windows (optional)."
     print,"  0 --> Default.  No fixed window positions."
     print,"  1 --> Macbook 1440x900 with Dell 1920x1200 (above)"

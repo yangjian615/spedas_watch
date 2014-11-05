@@ -83,18 +83,22 @@ endelse
 
 if keyword_set(mi) then v = (2.*energy/(dat.mass*mi))^.5 else v = (2.*energy/mass)^.5	; km/s  note - mass=mass/charge, energy=energy/charge, charge cancels
 
-; note fv^2dv = C/v^4 * v^3 *dv/v ~ C/v
+v = v>.001			; eliminate values too close to zero
 
-v = v>.001
-;print,v[*,0]
+; Note 	f ~ Counts/v^4 = C/v^4 
+; 	dv/v = constant for logrithmic sweep
+;	vd = integral(fv v^2dv)/integral(f v^2dv) = sum(C/v^4 * v^4 *dv/v)/sum(C/v^4 * v^3 *dv/v) = sum(C)/sum(C/v)
+
+;print,total(data)
+;print,minmax(data/v)
 
 if keyword_set(ms) then begin
-	vavg = total(data)/(total(data/v)>1.e-20)
+	vd = total(data)/total((data/v)>1.e-20)
 endif else begin
-	vavg = total(data,1)/(total(data/v,1)>1.e-20)
+	vd = total(data,1)/total((data/v)>1.e-20,1)
 endelse
 
-return, vavg
+return, vd
 
 end
 

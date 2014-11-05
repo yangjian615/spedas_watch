@@ -10,10 +10,10 @@
 ;  the data set to be loaded or some may not be needed. 
 ;
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-14 13:15:26 -0700 (Wed, 14 May 2014) $
-;$LastChangedRevision: 15138 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/load_plugins/spd_ui_load_omni_data.pro $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-11-03 11:56:50 -0800 (Mon, 03 Nov 2014) $
+;$LastChangedRevision: 16127 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spd_ui_load_omni_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 pro spd_ui_load_omni_data_event,event

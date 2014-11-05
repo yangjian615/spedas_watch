@@ -111,7 +111,7 @@ if keyword_set(twt) then zdat = zdat/mdat.twt_arr
 
 if keyword_set(vel) then begin
 ;	str_element,limits,'velocity',value=vel
-    xdat = velocity(mdat.energy,mdat.mass)
+    xdat = velocity(mdat.energy,mdat.mass*mdat.mass_arr)
         if not keyword_set(xtitle) then xtitle = 'Velocity (km/s)'
 endif else begin
     xdat = mdat.energy
@@ -128,6 +128,7 @@ endelse
     xmin=.9*min(xdat(*,0))-1. > .1
     xmax=1.1*max(xdat(*,0))
 	if keyword_set(vel) then xmax = xmax > 100.
+	if keyword_set(vel) then xmin = 1
     xrange=[xmin,xmax]
     xstyle=1
     if not keyword_set(xlin) then xlog=1 else xlog=0

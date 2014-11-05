@@ -31,8 +31,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:46:25 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15674 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_strahl_dir.pro $
 ;
 ;-
@@ -49,12 +49,12 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
   if keyword_set(archive) then aflg = 1 else aflg = 0
 
   if (aflg) then begin
-    if (data_type(swe_3d_arc) ne 8) then begin
+    if (size(swe_3d_arc,/type) ne 8) then begin
       print,"No 3D archive data loaded."
       return
     endif
   endif else begin
-    if (data_type(swe_3d) ne 8) then begin
+    if (size(swe_3d,/type) ne 8) then begin
       print,"No 3D survey data loaded."
       return
     endif

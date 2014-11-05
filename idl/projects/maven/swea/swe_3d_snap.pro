@@ -59,8 +59,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-08-08 12:46:09 -0700 (Fri, 08 Aug 2014) $
-; $LastChangedRevision: 15673 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -74,7 +74,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
-  if (data_type(units) ne 7) then units = 'crate'
+  if (size(units,/type) ne 7) then units = 'crate'
   
   case strupcase(units) of
     'COUNTS' : yrange = [1.,1.e5]
@@ -104,7 +104,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   if keyword_set(spec) then sflg = 1 else sflg = 0
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   if keyword_set(padmag) then pflg = 1 else pflg = 0
-  if (data_type(ebins) eq 0) then ebins = reverse(4*indgen(16))
+  if (size(ebins,/type) eq 0) then ebins = reverse(4*indgen(16))
   if not keyword_set(symenergy) then symenergy = 130.
   if not keyword_set(pow) then pow = 3.
   if keyword_set(symdiag) then dflg = 1 else dflg = 0
@@ -140,7 +140,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
   Twin = !d.window
 
-  if (data_type(Dopt) ne 8) then swe_snap_layout, 0
+  if (size(Dopt,/type) ne 8) then swe_snap_layout, 0
 
   window, /free, xsize=Dopt.xsize, ysize=Dopt.ysize, xpos=Dopt.xpos, ypos=Dopt.ypos
   Dwin = !d.window
@@ -162,7 +162,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   wset,Twin
   ctime2,trange,npoints=npts,/silent,button=button
 
-  if (data_type(trange) eq 2) then begin  ; Abort before first time select.
+  if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
     wdelete,Dwin                          ; Don't keep empty windows.
     if (sflg) then wdelete,Swin
     if (dflg) then wdelete,Fwin
@@ -180,7 +180,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
     ddd = mvn_swe_get3d(trange,archive=aflg,all=doall,/sum,units=units)
 
-    if (data_type(ddd) eq 8) then begin
+    if (size(ddd,/type) eq 8) then begin
     
       if keyword_set(energy) then begin
         n_e = n_elements(energy)
@@ -286,7 +286,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
     wset,Twin
     ctime2,trange,npoints=npts,/silent,button=button
-    if (data_type(trange) eq 5) then ok = 1 else ok = 0
+    if (size(trange,/type) eq 5) then ok = 1 else ok = 0
 
   endwhile
 

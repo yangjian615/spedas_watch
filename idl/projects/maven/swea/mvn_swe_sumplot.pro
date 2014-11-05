@@ -51,8 +51,8 @@
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:21:57 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16054 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -69,7 +69,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   if not keyword_set(pad_e) then pad_e = 280.
   if not keyword_set(smo) then smo = 1
   if keyword_set(a4_sum) then a4_sum = 1 else a4_sum = 0
-  if (data_type(eunits) ne 7) then eunits = 'crate'
+  if (size(eunits,/type) ne 7) then eunits = 'crate'
   if keyword_set(tfirst) then tfirst = time_double(tfirst) else tfirst = 0D
   if keyword_set(timing) then tflg = 1 else tflg = 0
   if keyword_set(png) then dopng = 1 else dopng = 0
@@ -150,7 +150,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 ;    15    Sweep Enable
 ; ------------------------------------------------------------
 
-  if (data_type(swe_hsk) eq 8) then begin
+  if (size(swe_hsk,/type) eq 8) then begin
     tmin = min(swe_hsk.time, max=tmax)
     tsp = [tsp, tmin, tmax]
 
@@ -282,7 +282,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 ; Don't plot data (which is done with swe_3d_snap), just plot packet stats
 
 
-  if (data_type(a0) eq 8) then begin      
+  if (size(a0,/type) eq 8) then begin      
     tmin = min(a0.time, max=tmax)
     tsp = [tsp, tmin, tmax]
 
@@ -312,7 +312,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 ; Don't plot data (which is done with swe_3d_snap), just plot packet stats
 
 
-  if (data_type(a1) eq 8) then begin
+  if (size(a1,/type) eq 8) then begin
     tmin = min(a1.time, max=tmax)
     tsp = [tsp, tmin, tmax]
 
@@ -341,7 +341,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
 ; PAD Spectra, Survey (APID A2)
 
-  if (data_type(a2) eq 8) then begin
+  if (size(a2,/type) eq 8) then begin
     tmin = min(a2.time, max=tmax)
     tsp = [tsp, tmin, tmax]
 
@@ -425,7 +425,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
 ; PAD Spectra, Archive (APID A3)
  
-  if (data_type(a3) eq 8) then begin
+  if (size(a3,/type) eq 8) then begin
     tmin = min(a3.time, max=tmax)
     tsp = [tsp, tmin, tmax]
 
@@ -511,8 +511,8 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
 ; Energy Spectra, Survey (APID A4)
 
-  if (data_type(a4) eq 8) then begin
-    if (data_type(mvn_swe_engy) ne 8) then mvn_swe_makespec
+  if (size(a4,/type) eq 8) then begin
+    if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_makespec
     mvn_swe_convert_units, mvn_swe_engy, eunits
 
     x = mvn_swe_engy.time
@@ -572,8 +572,8 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
 ; Energy Spectra, Archive (APID A5)
 
-  if (data_type(a5) eq 8) then begin
-    if (data_type(mvn_swe_engy_arc) ne 8) then mvn_swe_makespec
+  if (size(a5,/type) eq 8) then begin
+    if (size(mvn_swe_engy_arc,/type) ne 8) then mvn_swe_makespec
     mvn_swe_convert_units, mvn_swe_engy_arc, eunits
 
     x = mvn_swe_engy_arc.time
@@ -634,7 +634,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
 ; For A6, just plot the packet times.
 
-  if (data_type(a6) eq 8) then begin      
+  if (size(a6,/type) eq 8) then begin      
     tmin = min(a6.time, max=tmax)
     tsp = [tsp, tmin, tmax]
 
@@ -728,9 +728,9 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     timefit,[tmin,tmax]
   endelse
   
-  if (data_type(title) eq 7) then tplot_options,'title',title
+  if (size(title,/type) eq 7) then tplot_options,'title',title
 
-  if (data_type(hsk) eq 7) then pans = [pans, strupcase(hsk)]
+  if (size(hsk,/type) eq 7) then pans = [pans, strupcase(hsk)]
   
   if (n_elements(pans) eq 1) then begin
     print,"Nothing to plot!"

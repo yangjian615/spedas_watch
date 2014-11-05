@@ -93,8 +93,8 @@
 ; 
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-10-27 10:04:09 -0700 (Mon, 27 Oct 2014) $
-; $LastChangedRevision: 16038 $
+; $LastChangedDate: 2014-10-31 10:31:56 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16099 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/tinterpol_mxn.pro $
 ;-
 
@@ -216,7 +216,16 @@ for i = 0,product-1L do begin
       endif else begin
          ;temporarily disabled until we can come up with a solution that works for IDL 7 or earlier. pcruce 2014-10-27
          ;out[idx1] = interpol(v[idx2],n,nan=ignore_nans,_extra=_extra)
-         out[idx1] = interpol(v[idx2],n,_extra=_extra)
+         if keyword_set(ignore_nans) then begin
+           idx3 = where(~finite(v[idx2],/nan),c)
+           if c gt 0 then begin
+             out[idx1] = interpol(v[idx2[idx3]],n,_extra=_extra)
+           endif else begin ;if data is all NANs, you get all NANs
+             out[idx1] = interpol(v[idx2],n,_extra=_extra)
+           endelse
+         endif else begin
+           out[idx1] = interpol(v[idx2],n,_extra=_extra)
+         endelse
       endelse
     endif else begin
       if keyword_set(nearest_neighbor) then begin
@@ -224,7 +233,16 @@ for i = 0,product-1L do begin
       endif else begin
         ;temporarily disabled until we can come up with a solution that works for IDL 7 or earlier. pcruce 2014-10-27
         ;out[idx1] = interpol(v[idx2],x,u,nan=ignore_nans,_extra=_extra)
-        out[idx1] = interpol(v[idx2],x,u,_extra=_extra)
+        if keyword_set(ignore_nans) then begin
+          idx3 = where(~finite(v[idx2],/nan),c)
+          if c gt 0 then begin
+            out[idx1] = interpol(v[idx2[idx3]],x[idx3],u,_extra=_extra)
+          endif else begin ;if data is all NANs, you get all NANs
+            out[idx1] = interpol(v[idx2],x,u,_extra=_extra)
+          endelse
+        endif else begin
+          out[idx1] = interpol(v[idx2],x,u,_extra=_extra)
+        endelse
       endelse
     endelse
 

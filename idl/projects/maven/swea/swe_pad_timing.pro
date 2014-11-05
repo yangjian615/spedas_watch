@@ -12,9 +12,9 @@
 ;       TRANGE:       Time range for processing, in any format
 ;                     accepted by time_double().
 ;
-; $LastChangedBy: dmitchell_deimos $
-; $LastChangedDate: 2013-07-09 13:21:43 -0700 (Tue, 09 Jul 2013) $
-; $LastChangedRevision: 12645 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_timing.pro $
 ;
 ;CREATED BY:    David L. Mitchell  06-25-13
@@ -24,7 +24,7 @@ pro swe_pad_timing, trange=trange
 
   @mvn_swe_com
 
-  if (data_type(a2) eq 8) then begin
+  if (size(a2,/type) eq 8) then begin
 
     if keyword_set(trange) then begin
       tmin = min(time_double(trange),max=tmax)
@@ -82,7 +82,7 @@ pro swe_pad_timing, trange=trange
 
   endif else print,"No A2 data to process."
 
-  if (data_type(a3) eq 8) then begin
+  if (size(a3,/type) eq 8) then begin
 
     if keyword_set(trange) then begin
       tmin = min(time_double(trange),max=tmax)

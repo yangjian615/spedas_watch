@@ -115,8 +115,8 @@
 ;       PS:        Postscript plots are produced for OPLOT and TPLOT.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-04-21 15:18:38 -0700 (Mon, 21 Apr 2014) $
-; $LastChangedRevision: 14904 $
+; $LastChangedDate: 2014-10-31 14:21:01 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16107 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/morbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell
@@ -125,14 +125,14 @@ pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
                    norbit=norbit, oplot=oplot, tplot=tplot, orient=orient, $
                    flythru=flythru, shock=shock, ps=ps, xyrange=xyrange
 
-  if (data_type(param) ne 8) then begin
+  if (size(param,/type) ne 8) then begin
     print, 'You must specify an orbit parameter structure.'
     return
   endif
 
   dtor = !dpi/180D
 
-  if (data_type(orient) eq 8) then begin
+  if (size(orient,/type) eq 8) then begin
     str_element, orient, 'lon', lon, success=ok
     if (ok) then lon = double(lon)*dtor else lon = 0D
 
@@ -164,7 +164,7 @@ pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
   lat = replicate(1.,nlon) # lat  
   swfrac = replicate(0.,nlon,nlat)
 
-  if (data_type(planet) eq 8) then begin
+  if (size(planet,/type) eq 8) then begin
     str_element, planet, 'mass', M, success=ok
     if (not ok) then begin
       print, 'You must specify the planet''s mass (g).'
@@ -185,7 +185,7 @@ pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
     planet = 'USERDEF'
   endif
 
-  if (data_type(planet) ne 7) then planet = 'MARS' $
+  if (size(planet,/type) ne 7) then planet = 'MARS' $
                               else planet = strupcase(planet)
 
   if not keyword_set(norbit) then norbit = 1D else norbit = double(norbit)
@@ -205,12 +205,12 @@ pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
 
   wsave = !d.window
 
-  if (data_type(oplot) ne 0) then begin
+  if (size(oplot,/type) ne 0) then begin
     oflg = 1
     window,oplot,xsize=326,ysize=920,xpos=25,ypos=25
   endif else oflg = 0
 
-  if (data_type(tplot) ne 0) then begin
+  if (size(tplot,/type) ne 0) then begin
     tflg = 1
     if (oflg) then if (tplot eq oplot) then tplot = oplot + 1
     window,tplot,xsize=720,ysize=500
@@ -514,7 +514,7 @@ OSHAPE:
 
 ; Output the fly-through to a text file
 
-    if (data_type(flythru) eq 7) then begin
+    if (size(flythru,/type) eq 7) then begin
 
       openw, lun, flythru, /get_lun
 

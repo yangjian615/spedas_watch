@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-08-18 16:33:36 -0700 (Mon, 18 Aug 2014) $
-;$LastChangedRevision: 15683 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-10-31 09:20:08 -0700 (Fri, 31 Oct 2014) $
+;$LastChangedRevision: 16092 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -281,8 +281,12 @@ PRO spd_gui_event, event
     END
   
     'LOADCDAWEB': BEGIN
-      info.windowStorage->getProperty,callsequence=callsequence
-      spd_ui_spdfcdawebchooser, historyWin=info.historyWin, GROUP_LEADER = info.master,timeRangeObj=info.loadtr,callsequence=callsequence
+      if cdf_version_test() ne 0 then begin
+          info.windowStorage->getProperty,callsequence=callsequence
+          spd_ui_spdfcdawebchooser, historyWin=info.historyWin, GROUP_LEADER = info.master,timeRangeObj=info.loadtr,callsequence=callsequence
+      endif else begin
+          spd_ui_message, 'The CDF library is out-of-date. To install the required patch, see: http://cdf.gsfc.nasa.gov/html/cdf_patch_for_idl.html', hw=info.historyWin, sb=info.statusBar, /dialog
+      endelse
     END
     
     'LOADCDF': BEGIN

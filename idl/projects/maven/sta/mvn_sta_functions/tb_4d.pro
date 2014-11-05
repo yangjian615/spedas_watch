@@ -50,13 +50,6 @@ endif
 if keyword_set(ms) then begin
 	ind = where(dat.mass_arr lt ms[0] or dat.mass_arr gt ms[1],count)
 	if count ne 0 then data[ind]=0.
-; 	the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements
-	if dat.time lt time_double('14-10-1') then begin
-		tcnts = total(data,2)
-		maxcnt = max(tcnts,mind)
-		data[0:(mind-nne>0),*]=0.
-		data[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
-	endif	
 endif
 
 ; the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements
@@ -72,17 +65,23 @@ charge=dat.charge
 if keyword_set(q) then charge=q
 energy=(dat.energy+charge*dat.sc_pot/abs(charge))>0.		; energy/charge analyzer, require positive energy
 
+; Note - we don't need to divide by mass
+
 v = (2.*energy*charge)^.5		; km/s
 v = v>0.001
 
-; note fv^2dv = C/v^4 * v^3 *dv/v ~ C/v
+; Notes	f ~ Counts/v^4 = C/v^4 
+; 	dv/v = constant for logrithmic sweep
+;	vd = integral(fv v^2dv)/integral(f v^2dv) = sum(C/v^4 * v^4 *dv/v)/sum(C/v^4 * v^3 *dv/v) = sum(C)/sum(C/v)
+;	vth^2 = integral(f(v-vd)^2 v^2dv)/integral(f v^2dv) = sum(C/v^4 * (v-vd)^2 * v^3 *dv/v)/sum(C/v^4 * v^3 *dv/v) = sum(C/v * (v-vd)^2)/sum(C/v)
 
 if keyword_set(ms) then begin
-	vavg = total(data)/(total(data/v)>1.e-20)
-	vth2  = total((v-vavg)^2*data/v)/(total(data/v)>1.e-20)
+	vd = total(data)/(total(data/v)>1.e-20)
+	if keyword_set(mi) then if mi lt 1.5 then vd=0
+	vth2  = total((v-vd)^2*data/v)/(total(data/v)>1.e-20)
 endif else begin
-	vavg = total(data,1)/(total(data/v,1)>1.e-20)
-	vth2  = total((v-vavg)^2*data/v,1)/(total(data/v,1)>1.e-20)
+	vd = total(data,1)/(total(data/v,1)>1.e-20)
+	vth2  = total((v-vd)^2*data/v,1)/(total(data/v,1)>1.e-20)
 endelse
 
 return, vth2/2.

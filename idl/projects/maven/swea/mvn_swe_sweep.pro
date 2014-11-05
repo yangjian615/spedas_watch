@@ -80,8 +80,8 @@
 ;                     PFDPU EEPROM dump.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-13 13:33:56 -0700 (Sat, 13 Sep 2014) $
-; $LastChangedRevision: 15776 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sweep.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-01-03
@@ -93,9 +93,9 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
 
   @mvn_swe_com
 
-  if (data_type(swe_Ka) ne 4) then swe_Ka = 6.17
-  if (data_type(tabnum) eq 0) then tabnum = 0
-  if (data_type(chksum) ne 0) then tabnum = mvn_swe_tabnum(chksum)
+  if (size(swe_Ka,/type) ne 4) then swe_Ka = 6.17
+  if (size(tabnum,/type) eq 0) then tabnum = 0
+  if (size(chksum,/type) ne 0) then tabnum = mvn_swe_tabnum(chksum)
   if keyword_set(old_def) then old_def = 1 else old_def = 0
   if not keyword_set(V0tweak) then V0tweak = {gain:1.04, offset:0.}
 
@@ -168,12 +168,12 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
 
 ; Maximum value of Vd/Va (controls maximum deflection angle)
 
-  if (data_type(Xmax) eq 0) then maxdefx = 6D else maxdefx = double(Xmax)
+  if (size(Xmax,/type) eq 0) then maxdefx = 6D else maxdefx = double(Xmax)
 
 ; Control of V0 (affects energy resolution and geometric factor)
 ;   This keyword should be 0 or 1.  Intermediate values are not useful.
 
-  if (data_type(V0scale) eq 0) then V0scale = 1D else V0scale = double(V0scale)
+  if (size(V0scale,/type) eq 0) then V0scale = 1D else V0scale = double(V0scale)
 
 ; Sweep constants
 
@@ -469,7 +469,7 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
     wset,twin
   endif
   
-  if (data_type(dumpfile) eq 7) then begin
+  if (size(dumpfile,/type) eq 7) then begin
     openw, lun, dumpfile, /get_lun
     
     msb = cmd_def2 / 256

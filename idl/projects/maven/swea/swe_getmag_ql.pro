@@ -34,8 +34,8 @@
 ;                      Default is to use Davin's decommutator.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:22:57 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16055 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_getmag_ql.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
@@ -54,13 +54,13 @@ pro swe_getmag_ql, trange, filename=filename, toff=toff, sts=sts
 ; then the files are downloaded to your local machine, which might
 ; take a while.
 
-  if (data_type(filename) eq 7) then begin
+  if (size(filename,/type) eq 7) then begin
     file = filename
     nfiles = n_elements(file)
     trange = 0
   endif else begin
-    if (data_type(trange) eq 0) then begin
-      if (data_type(mvn_swe_engy) ne 8) then begin
+    if (size(trange,/type) eq 0) then begin
+      if (size(mvn_swe_engy,/type) ne 8) then begin
         print,"You must load SWEA data or specify a file name or time range."
         return
       endif
@@ -217,7 +217,7 @@ pro swe_getmag_ql, trange, filename=filename, toff=toff, sts=sts
 
 ; Store the results in TPLOT and the SWEA common block
 
-  if (data_type(swe_mag_struct) ne 8) then mvn_swe_struct
+  if (size(swe_mag_struct,/type) ne 8) then mvn_swe_struct
 
   if (domag1) then begin
     store_data,'mvn_ql_mag1',data=mag1
@@ -277,7 +277,7 @@ pro swe_getmag_ql, trange, filename=filename, toff=toff, sts=sts
 
     get_data,'swe_mag_svy',data=foo
   
-    if (data_type(foo) eq 8) then begin
+    if (size(foo,/type) eq 8) then begin
       store_data,'Sphi',data={x:foo.x, y:foo.y[*,0]}
       store_data,'Sthe',data={x:foo.x, y:foo.y[*,1]-90.}
       store_data,'PAD_Phi',data=['Bphi1','Sphi']

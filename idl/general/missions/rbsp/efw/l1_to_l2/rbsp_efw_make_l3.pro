@@ -13,9 +13,9 @@
 ;
 ; HISTORY: Created by Aaron W Breneman, May 2014
 ; VERSION: 
-;   $LastChangedBy: kersten $
-;   $LastChangedDate: 2014-10-28 13:13:37 -0700 (Tue, 28 Oct 2014) $
-;   $LastChangedRevision: 16070 $
+;   $LastChangedBy: aaronbreneman $
+;   $LastChangedDate: 2014-11-03 09:47:37 -0800 (Mon, 03 Nov 2014) $
+;   $LastChangedRevision: 16122 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l3.pro $
 ;-
 
@@ -408,15 +408,19 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,type=type,testing=tes
 
 
 get_data, 'rbsp'+sc+'_efw_hsk_beb_analog_CONFIG0', data = BEB_config
-bias_sweep = intarr(n_elements(BEB_config.x))
-boo = where(BEB_config.y eq 64)
-if boo[0] ne -1 then bias_sweep[boo] = 1
-store_data,'bias_sweep',data={x:BEB_config.x,y:bias_sweep}
-tinterpol_mxn,'bias_sweep',times
-;; ylim,['bias_sweep','bias_sweep_interp'],0,1.5
-;; tplot,['bias_sweep','bias_sweep_interp']
-get_data,'bias_sweep_interp',data=bias_sweep
-bias_sweep_flag = bias_sweep.y
+if is_struct(BEB_config) then begin
+	bias_sweep = intarr(n_elements(BEB_config.x))
+	boo = where(BEB_config.y eq 64)
+	if boo[0] ne -1 then bias_sweep[boo] = 1
+	store_data,'bias_sweep',data={x:BEB_config.x,y:bias_sweep}
+	tinterpol_mxn,'bias_sweep',times
+	;; ylim,['bias_sweep','bias_sweep_interp'],0,1.5
+	;; tplot,['bias_sweep','bias_sweep_interp']
+	get_data,'bias_sweep_interp',data=bias_sweep
+	bias_sweep_flag = bias_sweep.y
+endif else begin
+	bias_sweep_flag = replicate(fill_val,n_elements(times))
+endelse
 
 
 ;------------------------------------------------

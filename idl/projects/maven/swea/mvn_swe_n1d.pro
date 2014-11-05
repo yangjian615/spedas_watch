@@ -1,4 +1,37 @@
 ;+
+;FUNCTION  parabola(x,par=p)
+;PURPOSE:
+;   Evaluates a (2nd degree) polynomial (can be used with "FIT")
+;-
+
+function parabola, x,  $
+    parameters=p,  p_names = p_names, pder_values= pder_values
+
+if not keyword_set(p) then $
+   p = {func:'parabola', a:0D, b:1D, x0:0D}
+
+if n_params() eq 0 then return,p
+
+y = x - p.x0
+f = p.a + p.b*y*y
+
+if keyword_set(p_names) then begin
+   np = n_elements(p_names)
+   nd = n_elements(f)
+   pder_values = dblarr(nd,np)
+   for i=0,np-1 do begin
+      case strupcase(p_names(i)) of
+          'X0': pder_values[*,i] = -2.*p.b*y
+          'B' : pder_values[*,i] = y*y
+          'A' : pder_values[*,i] = 1.
+      endcase
+   endfor
+endif
+
+return,f
+end
+
+;+
 ;PROCEDURE: 
 ;	mvn_swe_n1d
 ;PURPOSE:
@@ -22,8 +55,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:20:22 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16052 $
+; $LastChangedDate: 2014-11-02 14:57:11 -0800 (Sun, 02 Nov 2014) $
+; $LastChangedRevision: 16117 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-
@@ -45,7 +78,7 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
 
   if keyword_set(ddd) then begin
 
-    if (data_type(swe_3d) ne 8) then begin
+    if (size(swe_3d,/type) ne 8) then begin
       print,"No 3D data."
       return
     endif
@@ -84,7 +117,7 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
 
   endif else begin
 
-    if (data_type(mvn_swe_engy) ne 8) then mvn_swe_makespec
+    if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_makespec
 
     t = mvn_swe_engy.time
     npts = n_elements(t)
@@ -103,44 +136,83 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
     sc_pot = mvn_swe_engy.sc_pot
   endelse
 
+  mvn_swe_shape_par
+  get_data,'mvn_swe_shape_par',data=par
+  par = interpol(par.y, par.x, t)
+
   E = energy[*,0]
   dE = E
   dE[0] = abs(E[1] - E[0])
   for i=1,62 do dE[i] = abs(E[i+1] - E[i-1])/2.
   dE[63] = abs(E[63] - E[62])
 
-  Emin = 2.*sc_pot
-
-  sdev = eflux * (sqrt(sig2)/(cnts > 1.))
+  sdev = sqrt(sig2)
 
   for i=0L,(npts-1L) do begin
     F = eflux[*,i]
     S = sdev[*,i]
-    j = where(E gt Emin[i], count)
+    pot = sc_pot[i]
 
-    if (count gt 0L) then begin
-      if (mom) then begin
-        phi = sc_pot[i]
-        if (n_elements(erange) gt 1) then begin
-          Emin = min(erange, max=Emax)
-          j = where((E ge Emin) and (E le Emax), n_e)
-        endif else j = where(E gt phi, n_e)
+    if (finite(pot)) then begin
+      if (n_elements(erange) gt 1) then begin
+        Emin = min(erange, max=Emax)
+        j = where((E ge Emin) and (E le Emax), n_e)
+      endif else begin
+        j = where(E gt pot, n_e)
+        j1 = max(j)
+        Fmax = max(F[0:j1],jmax,/nan)
+        Fmin = min(F[jmax:j1],jmin,/nan)
+        j = where(E ge E[jmin+jmax], n_e)
+      endelse
+    endif else n_e = 0
 
-        prat = (phi/E[j]) < 1.
+    if (mom) then begin
+      if (n_e gt 0) then begin
+        prat = (pot/E[j]) < 1.
         dens[i] = c3*total(dE[j]*sqrt(1. - prat)*(E[j]^(-1.5))*F[j])
+        dsig[i] = sqrt(c3*total(dE[j]*sqrt(1. - prat)*(E[j]^(-1.5))*(S[j]*S[j])))
+      endif else begin
+        dens[i] = !values.f_nan
+        dsig[i] = !values.f_nan
+        j = indgen(64)
+      endelse
 
+      if (par[i] gt 2.5) then begin
         Fmax = max(F[j],k,/nan)
         Emax = E[j[k]]
-        temp[i] = Emax/2.
         
+        nfit = 5
+        nmid = (nfit - 1)/2
+        kndx = k + indgen(nfit) - nmid
+        x = E[j[kndx]]
+        y = F[j[kndx]]
+        dy = S[j[kndx]]
+        p = parabola()
+        p.a = y[nmid]
+        p.b = 0.5*(y[nmid+1] - 2.*y[nmid] + y[nmid-1])/(x[nmid] - x[nmid-1])^2.
+        p.x0 = x[nmid]
+        fit,x,y,dy=dy,func='parabola',par=p,names='A B X0',p_sigma=sig,/silent
+
+        if (p.x0 gt min(x)) then begin
+          temp[i] = p.x0/2.
+          tsig[i] = dE[j[k]]/6. ; 1/3 of an energy bin width
+        endif else begin
+          temp[i] = !values.f_nan
+          tsig[i] = !values.f_nan
+        endelse
       endif else begin
+        temp[i] = !values.f_nan
+        tsig[i] = !values.f_nan
+      endelse
+    endif else begin
+      if (n_e gt 0) then begin
         p = swe_maxbol()
-        p.pot = sc_pot[i]
+        p.pot = pot
         Fmax = max(F[j],k,/nan)
         Emax = E[j[k]]
         p.t = Emax/2.
         p.n = Fmax/(4.*c1*c2*sqrt(p.t)*exp((p.pot/p.t) - 2.))
-        Elo = Emax*0.8 < ((Emax/2.) > Emin[i])
+        Elo = Emax*0.8 < ((Emax/2.) > pot)
         j = where((E gt Elo) and (E lt Emax*3.))
 
         fit,E[j],F[j],dy=S[j],func='swe_maxbol',par=p,names='N T',p_sigma=sig,/silent
@@ -157,10 +229,12 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
       
         dsig[i] = sig[0]
         tsig[i] = sig[1]
+      endif else begin
+        dens[i] = !values.f_nan
+        temp[i] = !values.f_nan
+        dsig[i] = !values.f_nan
+        tsig[i] = !values.f_nan
       endelse
-    endif else begin
-      dens[i] = !values.f_nan
-      temp[i] = !values.f_nan
     endelse
     
   endfor
@@ -174,10 +248,12 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
   ddata = {x:t, y:dens, dy:dsig, ytitle:'Ne [cm!u-3!n]'}
   store_data,dname,data=ddata
   options,dname,'ynozero',1
+  options,dname,'psym',3
 
   tdata = {x:t, y:temp, dy:tsig, ytitle:'Te [eV]'}
   store_data,tname,data=tdata
   options,tname,'ynozero',1
+  options,tname,'psym',3
 
   pans = [dname, tname]
   

@@ -19,8 +19,8 @@
 ;		(otherwise the 'timerange' routine will be invoked to determine this)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-29 17:37:03 -0700 (Wed, 29 Oct 2014) $
-; $LastChangedRevision: 16084 $
+; $LastChangedDate: 2014-11-03 05:34:26 -0800 (Mon, 03 Nov 2014) $
+; $LastChangedRevision: 16120 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l0_data.pro $
 ;
 ;-
@@ -38,8 +38,14 @@ if not keyword_set(qlevel) then qlevel = 0.5
 nfiles = n_elements(files)
 
 if nfiles eq 0 then begin
-	files = mvn_pfp_file_retrieve(path, /daily, trange = trange)
-	nfiles = n_elements(files)
+	files = mvn_pfp_file_retrieve(path, /daily, trange = trange,/valid_only)
+	w = where(files ne '',nfiles)
+	if nfiles gt 0 then files = files[w]
+endif
+
+if nfiles eq 0 then begin
+	print,'ERROR: No Files Found'
+	return
 endif
 
 print,'Reading File: ',files[0]

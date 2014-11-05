@@ -16,8 +16,8 @@
 ;       UNITS:    Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:19:56 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16051 $
+; $LastChangedDate: 2014-10-31 12:37:42 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16101 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makespec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -31,7 +31,7 @@ pro mvn_swe_makespec, sum=sum, units=units
 
 ; Define the 3D, PAD, and SPEC data structures
 
-  if (data_type(mvn_swe_engy) ne 8) then mvn_swe_struct
+  if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_struct
 
 ; Get the deflection scale factors from the housekeeping (APID 28)
 
@@ -39,7 +39,7 @@ pro mvn_swe_makespec, sum=sum, units=units
 
 ; SWEA SPEC survey data
 
-  if (data_type(a4) ne 8) then begin
+  if (size(a4,/type) ne 8) then begin
     print,"No SPEC survey data."
   endif else begin
     npkt = n_elements(a4)         ; number of packets
@@ -106,13 +106,13 @@ pro mvn_swe_makespec, sum=sum, units=units
     
     mvn_swe_engy.valid = 1B               ; Yep, it's valid.
   
-    if (data_type(units) eq 7) then mvn_swe_convert_units, mvn_swe_engy, units
+    if (size(units,/type) eq 7) then mvn_swe_convert_units, mvn_swe_engy, units
 
   endelse
 
 ; SWEA SPEC archive data
 
-  if (data_type(a5) ne 8) then begin
+  if (size(a5,/type) ne 8) then begin
     print,"No SPEC archive data."
   endif else begin
     npkt = n_elements(a5)                 ; number of packets
@@ -180,7 +180,7 @@ pro mvn_swe_makespec, sum=sum, units=units
     
     mvn_swe_engy_arc.valid = 1B               ; Yep, it's valid.
   
-    if (data_type(units) eq 7) then mvn_swe_convert_units, mvn_swe_engy_arc, units
+    if (size(units,/type) eq 7) then mvn_swe_convert_units, mvn_swe_engy_arc, units
 
   endelse
 

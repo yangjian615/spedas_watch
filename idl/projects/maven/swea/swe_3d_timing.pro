@@ -14,9 +14,9 @@
 ;
 ;       ANODE:        Anode number to process.
 ;
-; $LastChangedBy: dmitchell_deimos $
-; $LastChangedDate: 2013-07-09 13:22:13 -0700 (Tue, 09 Jul 2013) $
-; $LastChangedRevision: 12646 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_timing.pro $
 ;
 ;CREATED BY:    David L. Mitchell  06-25-13
@@ -26,7 +26,7 @@ pro swe_3d_timing, trange=trange, anode=anode
 
   @mvn_swe_com
 
-  if (data_type(swe_3d) eq 8) then begin
+  if (size(swe_3d,/type) eq 8) then begin
 
     if keyword_set(trange) then begin
       tmin = min(time_double(trange),max=tmax)
@@ -156,7 +156,7 @@ pro swe_3d_timing, trange=trange, anode=anode
 
   endif else print,"No A0 data to process."
 
-  if (data_type(swe_3d_arc) eq 8) then begin
+  if (size(swe_3d_arc,/type) eq 8) then begin
 
     if keyword_set(trange) then begin
       tmin = min(time_double(trange),max=tmax)

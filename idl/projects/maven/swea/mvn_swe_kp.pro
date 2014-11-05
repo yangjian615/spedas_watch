@@ -14,8 +14,13 @@
 ;KEYWORDS:
 ;   PANS:      Named variable to return tplot variables created
 ;
+;   MOM:       Calculate density using a moment.
+;
 ;   DDD:       Calculate density from 3D distributions (allows bin
-;              masking).  Default is to use SPEC data.
+;              masking).  Default is to use SPEC data.  This option fits
+;              a Maxwell-Boltzmann distribution to the core and performs
+;              a moment calculation for the halo.  This provides corrections
+;              for both spacecraft potential and scattered photoelectrons.
 ;
 ;   ABINS:     Anode bin mask - 16-element byte array (0 = off, 1 = on)
 ;              (Only effective if DDD is set.)
@@ -26,13 +31,13 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-13 13:37:46 -0700 (Sat, 13 Sep 2014) $
-; $LastChangedRevision: 15783 $
+; $LastChangedDate: 2014-11-02 14:53:27 -0800 (Sun, 02 Nov 2014) $
+; $LastChangedRevision: 16116 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_kp.pro $
 ;
 ;-
 
-pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins
+pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mom=mom
 
   compile_opt idl2
 
@@ -41,10 +46,12 @@ pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins
 ; Process keywords
 
   if keyword_set(ddd) then ddd = 1 else ddd = 0
-  if not keyword_set(abins) then abins = replicate(1B, 16)
-  if not keyword_set(dbins) then dbins = replicate(1B, 6)
-
-  kp_path = getenv('ROOT_DATA_DIR') + 'maven/pfp/swe/kp'
+  if keyword_set(mom) then mom = 1 else mom = 0
+  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+  if (n_elements(dbins) ne 6) then dbins = replicate(1B, 6)
+  if (n_elements(obins) ne 96) then obins = reform(abins # dbins, 96)
+  
+  kp_path = getenv('ROOT_DATA_DIR') + 'maven/data/sci/swe/kp'
   froot = 'mvn_swe_kp_'
   
   finfo = file_info(kp_path)
@@ -74,13 +81,20 @@ pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins
 
     mvn_swe_load_l0, [t1,t2]
 
+; Calculate the energy shape parameter
+
+    mvn_swe_shape_par, pans=pans
+
 ; Calculate the spacecraft potential
 
-    mvn_swe_sc_pot, erange=[3,15], psmo=11, fudge=0.90
+    mvn_swe_sc_pot
 
 ; Calculate the density and temperature
 
-    mvn_swe_n1d, ddd=ddd, abins=abins, dbins=dbins, pans=pans
+    if (ddd) then mvn_swe_n3d, obins=obins, pans=more_pans $
+             else mvn_swe_n1d, mom=mom, pans=more_pans
+    
+    pans = [pans, more_pans]
 
 ; Determine the parallel and anti-parallel energy fluxes
 ;   Exclude bins that straddle 90 degrees pitch angle
@@ -201,40 +215,6 @@ pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins
   
     pans = [pans, 'mvn_swe_efpos_5_100', 'mvn_swe_efpos_100_500', 'mvn_swe_efpos_500_1000', $
                   'mvn_swe_efneg_5_100', 'mvn_swe_efneg_100_500', 'mvn_swe_efneg_500_1000'   ]
-
-; Calculate electron energy shape parameter
-
-    e1 = 500.   ; Auger (K-shell) electrons from CO2
-    r1_sw = 2.
-    r1_io = 1.
-
-    e2 = 60.    ; sharp feature in ionospheric photoelectron spectrum
-    r2_sw = 2.
-    r2_io = 5.
-
-    old_units = mvn_swe_engy[0].units_name
-    mvn_swe_convert_units, mvn_swe_engy, 'flux'
-
-    npts = n_elements(mvn_swe_engy)
-    energy = mvn_swe_engy.energy - (replicate(1., 64) # mvn_swe_engy.sc_pot)
-    r1 = fltarr(npts)
-    r2 = r1
-
-    for i=0L,(npts-1L) do begin
-      de = min(abs(energy[*,i] - e1), j)
-      r1[i] = mvn_swe_engy[i].data[j+1] / mvn_swe_engy[i].data[j]
-
-      de = min(abs(energy[*,i] - e2), j)
-      r2[i] = mvn_swe_engy[i].data[j+1] / mvn_swe_engy[i].data[j-1]
-    endfor
-  
-    iflg = (r2 - r2_sw)/(r2_io - r2_sw)
-    iflg = (iflg > 0.) < 1.
-    store_data,'mvn_swe_shape_par',data={x:mvn_swe_engy.time, y:iflg, yrange:[0,1]}
-  
-    pans = [pans, 'mvn_swe_shape_par']
-  
-    mvn_swe_convert_units, mvn_swe_engy, old_units
 
 ; Store the results in tplot save/restore file(s)
 

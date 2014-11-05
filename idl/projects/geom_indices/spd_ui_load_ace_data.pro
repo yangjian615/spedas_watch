@@ -8,9 +8,9 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-09-29 12:02:30 -0700 (Mon, 29 Sep 2014) $
-;$LastChangedRevision: 15876 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/load_plugins/spd_ui_load_ace_data.pro $
+;$LastChangedDate: 2014-11-03 11:56:50 -0800 (Mon, 03 Nov 2014) $
+;$LastChangedRevision: 16127 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spd_ui_load_ace_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 

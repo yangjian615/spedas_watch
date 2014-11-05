@@ -5,8 +5,8 @@
 ; displayed using doc_library.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-16 09:34:08 -0700 (Tue, 16 Sep 2014) $
-; $LastChangedRevision: 15805 $
+; $LastChangedDate: 2014-10-31 14:58:28 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16111 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crib.pro $
 ;--------------------------------------------------------------------
 ;
@@ -14,6 +14,9 @@
 ;
 ; Load L0 data by unix time range into a common block
 ;   See the cruise catalog for some interesting times.
+;   Note: trange can be in any format accepted by time_double(), and
+;   it can have multiple dimensions, as long as it has at least two
+;   elements.
 
 trange = ['2014-05-02','2014-05-03']
 mvn_swe_load_l0, trange, /sumplot
@@ -27,13 +30,11 @@ mvn_swe_sumplot
 
 ;
 ; Load MAG data, rotate to SWEA coordinates, and smooth to SWEA PAD 
-; resolution (1-sec averages).  Set keyword DAVIN to use his MAG loader.
-; It is fast, but uses only nominal calibrations and the timing might be 
-; a few seconds off.  Otherwise use the MAG quicklook software provided 
-; by the MAG team.  The current version is quite slow and has a known 
-; timing error.  Data are loaded into tplot variables.
+; resolution (2-sec averages).  Set keyword STS to use MAG quicklook
+; sts files.  Otherwise use Davin's MAG decommutator, which works
+; from L0 data files.  Data are loaded into tplot variables.
 
-swe_getmag_ql, trange, both=1, smo=1, /davin
+swe_getmag_ql, /sts
 
 ; Calculate the electron distribution symmetry direction.  Return new
 ; tplot variables in keyword pans.
@@ -43,16 +44,15 @@ swe_3d_strahl_dir, pans=pans
 ; Calculate the spacecraft potential from SPEC data
 ;   This is a semi-empirical method with a fudge factor based on 
 ;   experience in previous missions.  This will be refined as we
-;   get cross calibrations with LPW, SWIA, and STATIC.
+;   get cross calibrations with LPW, SWIA, and STATIC.  See
 
-mvn_swe_sc_pot, /overlay, erange=[3,15], psmo=11, fudge=0.90
+mvn_swe_sc_pot, /overlay
 
 ; Calculate the spacecraft potential from 3D data
 ;   Allows bin masking, but has a lower cadence and can be less 
 ;   accurate because of energy bin summing.
 
-mvn_swe_sc_pot, /overlay, erange=[3,15], psmo=3, fudge=0.90, $
-                /ddd, dbins=[0,0,0,1,1,1]
+mvn_swe_sc_pot, /overlay, /ddd, dbins=[0,0,0,1,1,1]
 
 ; Determine the direction of the Sun in SWEA coordinates
 ;   Requires SPICE.  There are several instances when the S/C
@@ -73,10 +73,10 @@ ebins = replicate(1B, 64)
 ; ebins[indx] = 0B         ; turn off energies < 20 eV
 
 abins = replicate(1B, 16)  ; all anodes on
-abins[6:13] = 0B           ; anti-solar wind direction
+; abins[6:13] = 0B           ; anti-solar wind direction
 
-abins = replicate(0B, 16)  ; all anodes off
-abins[6:13] = 1B           ; solar wind direction
+; abins = replicate(0B, 16)  ; all anodes off
+; abins[6:13] = 1B           ; solar wind direction
 
 dbins = [0,0,0,1,1,1]      ; turn off lower 3 deflector bins
 
@@ -89,6 +89,24 @@ mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins
 
 mvn_swe_n1d, pans=pans
 
+; Estimate electron density and temperature from 1D moment.  Works in
+; the post-shock region, where the distribution is not Maxwellian.  Be
+; sure to run mvn_swe_sc_pot first!
+
+mvn_swe_n1d, /mom, pans=pans
+
+;
+; Resample the pitch angle distributions for a nicer plot
+
+
+mvn_swe_pad_resample, nbins=128., erange=[100., 150.], /norm, /mask
+
+;
+; Calculate pitch angle distributions from 3D distributions
+
+mvn_swe_pad_resample, nbins=128., erange=[100., 150.], /norm, /mask, $
+                     /ddd, /map3d
+
 ;
 ; Snapshots selected by the cursor in the tplot window
 ;   Return data by keyword (ddd, pad, spec) at the last place clicked
@@ -96,9 +114,9 @@ mvn_swe_n1d, pans=pans
 ;   changing magnetic field.)  The structure element "var" keeps
 ;   track of counting statistics, including digitization noise.
 
-swe_engy_snap,units='eflux',/mb,spec=spec
+swe_engy_snap,units='crate',mb=0,pot=1,mom=1,spec=spec
 swe_pad_snap,units='eflux',energy=130,pad=pad
-swe_3d_snap,/spec,/symdir,energy=130,ddd=ddd
+swe_3d_snap,/spec,/symdir,energy=130,ddd=ddd,smo=[5,3,1]
 
 ;
 ; Get 3D, PAD, or SPEC data at a specified time or array of times.

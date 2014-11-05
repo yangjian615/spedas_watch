@@ -16,8 +16,8 @@
 ;       PAD_E:        Energy for plotting PAD's.  Default = 280 eV.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-15 11:33:00 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15792 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_ql.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-30-13
@@ -34,8 +34,8 @@ pro mvn_swe_ql, names=names, pad_e=pad_e
 
 ; Energy Spectra (APID A4)
 
-  if (data_type(a4) eq 8) then begin
-    if (data_type(mvn_swe_engy) ne 8) then mvn_swe_makespec, units='eflux'
+  if (size(a4,/type) eq 8) then begin
+    if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_makespec, units='eflux'
 
     x = mvn_swe_engy.time
     y = transpose(mvn_swe_engy.data)
@@ -61,7 +61,7 @@ pro mvn_swe_ql, names=names, pad_e=pad_e
 ;   This is a simplified, quick conversion.  See mvn_swe_getpad for the full
 ;   conversion.
   
-  if (data_type(a2) eq 8) then begin
+  if (size(a2,/type) eq 8) then begin
     n_e = swe_ne[a2.group]               ; number of energy channels
     dt = 2D*swe_duty/(6D*double(n_e))    ; integration time for each energy/deflector bin
                                          ; each PAD bin accumulates for one deflector bin

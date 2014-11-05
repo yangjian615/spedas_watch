@@ -34,8 +34,8 @@ if dat2.valid eq 0 then begin
 	return, 0
 endif
 
-if dat2.apid ne 'C8' and dat2.apid ne 'CA' then begin
-	print,'Invalid Data: Data must be Maven APID C8 or CA'
+if dat2.apid ne 'c8' and dat2.apid ne 'ca' then begin
+	print,'Invalid Data: Data must be Maven APID c8 or ca'
 	return, 0
 endif
 

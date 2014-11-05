@@ -17,8 +17,8 @@
 ;                     Angular offsets are for reference only.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-05-28 17:11:18 -0700 (Wed, 28 May 2014) $
-; $LastChangedRevision: 15251 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/fit_pad_mag.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -27,17 +27,17 @@ pro fit_pad_mag, trange=trange, result=result
 
   @mvn_swe_com
   
-  if (data_type(a2) ne 8) then begin
+  if (size(a2,/type) ne 8) then begin
     print,"No PAD data."
     return
   endif
   
-  if (data_type(swe_mag1) ne 8) then begin
+  if (size(swe_mag1,/type) ne 8) then begin
     print,"No MAG1 data."
     return
   endif
   
-  if (data_type(swe_mag2) eq 8) then domag2 = 1 else domag2 = 0
+  if (size(swe_mag2,/type) eq 8) then domag2 = 1 else domag2 = 0
 
   if not keyword_set(trange) then tmin = min(swe_mag1.time, max=tmax) $
                              else tmin = min(trange, max=tmax)

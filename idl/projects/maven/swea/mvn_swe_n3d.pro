@@ -2,40 +2,24 @@
 ;PROCEDURE: 
 ;	mvn_swe_n3d
 ;PURPOSE:
-;	Determines density from a 3D distribution.  Wrapper for McFadden's n_3d.pro.
+;	Determines density from a 3D distribution.  Adapted from McFadden's n_3d.pro.
 ;AUTHOR: 
 ;	David L. Mitchell
 ;CALLING SEQUENCE: 
 ;	mvn_swe_n3d
 ;INPUTS: 
 ;KEYWORDS:
-;	ENERGY:	fltarr(2),	optional, min,max energy range for integration
-;	ERANGE:	fltarr(2),	optional, min,max energy bin numbers for integration
-;	EBINS:	bytarr(na),	optional, energy bins array for integration
-;					0,1=exclude,include,  
-;					na = dat.nenergy
-;	ANGLE:	fltarr(2,2),	optional, angle range for integration
-;				theta min,max (0,0),(1,0) -90<theta<90 
-;				phi   min,max (0,1),(1,1)   0<phi<360 
-;	ARANGE:	fltarr(2),	optional, min,max angle bin numbers for integration
-;	BINS:	bytarr(nb),	optional, angle bins array for integration
-;					0,1=exclude,include,  
-;					nb = dat.ntheta
-;	BINS:	bytarr(na,nb),	optional, energy/angle bins array for integration
-;					0,1=exclude,include
-;
-;   POTENTIAL: Spacecraft potential.
 ;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-13 13:30:50 -0700 (Sat, 13 Sep 2014) $
-; $LastChangedRevision: 15772 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n3d.pro $
 ;
 ;-
 
-pro mvn_swe_n3d, EBINS=ebins, ABINS=abins, DBINS=dbins, pans=pans, archive=archive
+pro mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins, pans=pans, archive=archive
 
   compile_opt idl2
 
@@ -43,12 +27,12 @@ pro mvn_swe_n3d, EBINS=ebins, ABINS=abins, DBINS=dbins, pans=pans, archive=archi
   
 ; Make sure data are loaded
 
-  if (data_type(swe_3d) ne 8) then begin
+  if (size(swe_3d,/type) ne 8) then begin
     print,"Load SWEA data first.  Use mvn_swe_load_l0."
     return
   endif
   
-  if (data_type(swe_sc_pot) ne 8) then begin
+  if (size(swe_sc_pot,/type) ne 8) then begin
     print,"No spacecraft potential.  Use mvn_swe_sc_pot."
     return
   endif

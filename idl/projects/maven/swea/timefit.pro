@@ -28,17 +28,17 @@
 ;       DAY:       PAD units are days.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-03-27 12:07:40 -0700 (Thu, 27 Mar 2014) $
-; $LastChangedRevision: 14682 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/timefit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  07-06-14
 ;-
 pro timefit, time, var=var, pad=pad, min=min, hour=hour, day=day
 
-  if (data_type(var) ne 0) then begin
+  if (size(var,/type) ne 0) then begin
     get_data,var,data=dat
-    if (data_type(dat) ne 8) then begin
+    if (size(dat,/type) ne 8) then begin
       print,"Tplot variable ",var," not found."
       print,"Can't get time."
       return
@@ -47,7 +47,7 @@ pro timefit, time, var=var, pad=pad, min=min, hour=hour, day=day
     time = dat.x
   endif
   
-  if (data_type(time) eq 0) then return
+  if (size(time,/type) eq 0) then return
 
   tmin = min(time_double(time), max=tmax)
 

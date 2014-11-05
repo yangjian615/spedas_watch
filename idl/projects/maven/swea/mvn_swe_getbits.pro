@@ -18,8 +18,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2013-04-24 12:38:35 -0700 (Wed, 24 Apr 2013) $
-; $LastChangedRevision: 12155 $
+; $LastChangedDate: 2014-10-31 12:38:38 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16103 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getbits.pro $
 ;
 ;CREATED BY:    David L. Mitchell  08-29-11
@@ -31,7 +31,7 @@ function mvn_swe_getbits, word, bitrange
 
   common bitcom, bitval
   
-  if (data_type(bitval) eq 0) then bitval = 2L^lindgen(17)
+  if (size(bitval,/type) eq 0) then bitval = 2L^lindgen(17)
 
   LSB = min(long(bitrange), max=MSB)
 

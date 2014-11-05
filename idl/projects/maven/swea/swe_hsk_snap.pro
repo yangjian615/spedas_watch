@@ -12,8 +12,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-03-30 18:01:23 -0700 (Sun, 30 Mar 2014) $
-; $LastChangedRevision: 14705 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_hsk_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-25-12
@@ -22,7 +22,7 @@ pro swe_hsk_snap
 
   @mvn_swe_com
 
-  if (data_type(swe_hsk) ne 8) then begin
+  if (size(swe_hsk,/type) ne 8) then begin
     print,"No valid HSK structure in common block."
     return
   endif
@@ -55,7 +55,7 @@ pro swe_hsk_snap
   wset,Twin
   ctime2,trange,npoints=1,/silent,button=button
 
-  if (data_type(trange) eq 2) then begin
+  if (size(trange,/type) eq 2) then begin
     wdelete,Hwin
     wset,Twin
     return
@@ -126,7 +126,7 @@ pro swe_hsk_snap
     wset,Twin
     ctime2,trange,npoints=1,/silent,button=button
 
-    if (data_type(trange) eq 5) then begin
+    if (size(trange,/type) eq 5) then begin
       dt = min(abs(hsk.time - trange[0]), j)
       ok = 1
     endif else ok = 0

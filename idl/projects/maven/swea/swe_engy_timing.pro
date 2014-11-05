@@ -10,9 +10,9 @@
 ;
 ;KEYWORDS:
 ;
-; $LastChangedBy: dmitchell_deimos $
-; $LastChangedDate: 2013-07-09 13:21:13 -0700 (Tue, 09 Jul 2013) $
-; $LastChangedRevision: 12644 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_timing.pro $
 ;
 ;CREATED BY:    David L. Mitchell  06-25-13
@@ -22,7 +22,7 @@ pro swe_engy_timing
 
   @mvn_swe_com
 
-  if (data_type(a4) eq 8) then begin
+  if (size(a4,/type) eq 8) then begin
 
     nspec = 16L*n_elements(a4)
     edat = reform(a4.data,64L*nspec)
@@ -34,6 +34,7 @@ pro swe_engy_timing
 
     period = 2D^a4.period
     toff = 2D*dindgen(16)
+
     for j=0L,(nspec-1L) do begin
       etime[*,j] = tsam + a4[j/16L].time + period[j/16L]*toff[j mod 16L]
 ;      if (a4[j/16L].smode) then etime[*,j] = etime[*,j] + (period[j/16L] - 1D)
@@ -48,7 +49,7 @@ pro swe_engy_timing
 
   endif else print,"No A4 data to process."
 
-  if (data_type(a5) eq 8) then begin
+  if (size(a5,/type) eq 8) then begin
 
     nspec = 16L*n_elements(a5)
     edat = reform(a5.data,64L*nspec)
@@ -60,6 +61,7 @@ pro swe_engy_timing
 
     period = 2D^a5.period
     toff = 2D*dindgen(16)
+
     for j=0L,(nspec-1L) do begin
       etime[*,j] = tsam + a5[j/16L].time + period[j/16L]*toff[j mod 16L]
 ;      if (a5[j/16L].smode) then etime[*,j] = etime[*,j] + (period[j/16L] - 1D)

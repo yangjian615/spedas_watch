@@ -34,6 +34,25 @@
 ;
 ;       PXLIM:         X limits (Volts) for diagnostic plot.
 ;
+;       MB:            Perform a Maxwell-Boltzmann fit to determine density and 
+;                      temperature.  Uses a moment calculation to determine the
+;                      halo density, which is defined as the high energy residual
+;                      after subtracting the best-fit Maxwell-Boltzmann.
+;
+;       KAP:           Instead of the halo moment calculation, fit the halo with
+;                      a kappa function to estimate halo density.
+;
+;       MOM:           Instead of fitting the core with a Maxwell-Boltzmann, use
+;                      a moment calculation for all energies above the spacecraft
+;                      potential.
+;
+;       ERANGE:        Energy range for computing the moment.  Only effective when
+;                      keyword MOM is set.
+;
+;       SCAT:          Plot the scattered photoelectron population, which is defined
+;                      as the low-energy residual after subtracting the best-fit
+;                      Maxwell-Boltzmann.
+;
 ;       DDD:           Create an energy spectrum from the nearest 3D spectrum and
 ;                      plot for comparison.
 ;
@@ -44,15 +63,16 @@
 ;       NOERASE:       Overplot all spectra after the first.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-13 12:34:14 -0700 (Mon, 13 Oct 2014) $
-; $LastChangedRevision: 15987 $
+; $LastChangedDate: 2014-11-02 14:44:54 -0800 (Sun, 02 Nov 2014) $
+; $LastChangedRevision: 16114 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
                    ddd=ddd, abins=abins, dbins=dbins, sum=sum, pot=pot, pdiag=pdiag, $
-                   pxlim=pxlim, mb=mb, kap=kap, scat=scat, noerase=noerase
+                   pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
+                   noerase=noerase, thresh=thresh, scp=scp
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -69,6 +89,23 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   if not keyword_set(abins) then abins = replicate(1, 16)
   if not keyword_set(dbins) then dbins = replicate(1, 6)
   if keyword_set(noerase) then oflg = 0 else oflg = 1
+  if not keyword_set(scp) then scp = 0. else scp = float(scp[0])
+
+  case n_elements(thresh) of
+    0    : thresh = [0.05, 0.025, 1.8]
+    1    : thresh = [float(thresh), 0.025, 1.8]
+    2    : thresh = [float(thresh), 1.8]
+    else : thresh = float(thresh[0:2])
+  endcase
+
+  get_data,'mvn_swe_shape_par',data=par
+  if (size(par,/type) ne 8) then begin
+    mvn_swe_shape_par
+    get_data,'mvn_swe_shape_par',data=par
+  endif
+
+  get_data,'alt',data=alt
+  if (size(alt,/type) eq 8) then doalt = 1 else doalt = 0
   
   obins = reform(abins # dbins, 96)
   indx = where(obins eq 1, onorm)
@@ -83,6 +120,13 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     dopot = 1
   endif else mb = 0
   if keyword_set(kap) then kap = 1 else kap = 0
+
+  if keyword_set(mom) then begin
+    mom = 1
+    dopot = 1
+    mb = 0
+    kap = 0
+  endif else mom = 0
 
   if keyword_set(pdiag) then begin
     get_data,'df',data=df
@@ -159,13 +203,16 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   if (hflg) then dt = min(abs(swe_hsk.time - spec.time), jref)  ; closest HSK
   
   first = 1
+  xs = 0.71
+  dys = 0.03
 
   while (ok) do begin
 
     x = spec.energy
     y = spec.data
     phi = spec.sc_pot
-        
+    ys = 0.90
+
     wset, Ewin
 
 ; Put up an Energy Spectrum
@@ -185,7 +232,16 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       oplot,ddd.energy[*,0],spec3d,psym=psym,color=4
     endif
 
-    if (dopot) then oplot,[phi,phi],yrange,line=2,color=6
+    if (dopot) then begin
+      if (finite(phi)) then pot = phi else pot = scp
+      oplot,[pot,pot],yrange,line=2,color=6
+    endif
+    
+    if (doalt) then begin
+      dt = min(abs(alt.x - spec.time), aref)
+      xyouts,xs,ys,string(alt.y[aref], format='("ALT = ",f6.1)'),charsize=1.2,/norm
+      ys -= dys
+    endif
     
     if (mb) then begin
       E1 = spec.energy
@@ -196,9 +252,9 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       sig2 = counts.var  ; variance w/ digitization noise
       sdev = F1 * (sqrt(sig2)/(cnts > 1.))
 
-      indx = where(E1 gt 2.*phi)
       p = swe_maxbol()
-      p.pot = phi
+      if (finite(phi)) then p.pot = phi else p.pot = scp
+      indx = where(E1 gt 2.*p.pot)
       Fpeak = max(F1[indx],k,/nan)
       Epeak = E1[indx[k]]
       p.t = Epeak/2.
@@ -246,19 +302,26 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
         N_tot = N_core + N_halo
       endelse
 
-      jndx = where(E1 gt spec.sc_pot)
+      jndx = where(E1 gt p.pot)
       col = 4
       oplot,E1[jndx],swe_maxbol(E1[jndx],par=p),color=col,line=1
       oplot,E1[imb],swe_maxbol(E1[imb],par=p),color=col,thick=2
-      xyouts,0.73,0.90,string(N_tot,format='("N = ",f5.2)'),color=col,charsize=1.2,/norm
-      xyouts,0.73,0.87,string(p.T,format='("T = ",f5.2)'),color=col,charsize=1.2,/norm
-      xyouts,0.73,0.84,string(p.pot,format='("V = ",f5.2)'),color=6,charsize=1.2,/norm
+      xyouts,xs,ys,string(N_tot,format='("N = ",f5.2)'),color=col,charsize=1.2,/norm
+      ys -= dys
+      xyouts,xs,ys,string(p.T,format='("T = ",f5.2)'),color=col,charsize=1.2,/norm
+      ys -= dys
+      xyouts,xs,ys,string(p.pot,format='("V = ",f5.2)'),color=6,charsize=1.2,/norm
+      ys -= dys
       if (kap) then begin
-        xyouts,0.73,0.81,string(p.k_n,format='("Nh = ",f5.2)'),color=3,charsize=1.2,/norm
-        xyouts,0.73,0.78,string(p.k_vh,format='("Vh = ",f6.0)'),color=3,charsize=1.2,/norm
-        xyouts,0.73,0.75,string(p.k_k,format='("k = ",f5.2)'),color=3,charsize=1.2,/norm        
+        xyouts,xs,ys,string(p.k_n,format='("Nh = ",f5.2)'),color=3,charsize=1.2,/norm
+        ys -= dys
+        xyouts,xs,ys,string(p.k_vh,format='("Vh = ",f6.0)'),color=3,charsize=1.2,/norm
+        ys -= dys
+        xyouts,xs,ys,string(p.k_k,format='("k = ",f5.2)'),color=3,charsize=1.2,/norm        
+        ys -= dys
       endif else begin
-        xyouts,0.73,0.81,string(N_halo,format='("Nh = ",f5.2)'),color=1,charsize=1.2,/norm
+        xyouts,xs,ys,string(N_halo,format='("Nh = ",f5.2)'),color=1,charsize=1.2,/norm
+        ys -= dys
       endelse
 
       if (scat) then begin
@@ -266,12 +329,49 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
         oplot,E1[kndx],(F1[kndx] - swe_maxbol(E1[kndx], par=p)),color=5,psym=10
       endif
     endif
+      
+    if (mom) then begin
+      E1 = spec.energy
+      F1 = spec.data
+
+      dE = E1
+      dE[0] = abs(E1[1] - E1[0])
+      for i=1,62 do dE[i] = abs(E1[i+1] - E1[i-1])/2.
+      dE[63] = abs(E1[63] - E1[62])
+
+      if (n_elements(erange) gt 1) then begin
+        Emin = min(erange, max=Emax)
+        j = where((E1 ge Emin) and (E1 le Emax), n_e)
+      endif else begin
+        if finite(phi) then pot = phi else pot = scp
+        j = where(E1 gt pot, n_e)
+        j1 = max(j)
+        Fmax = max(F1[0:j1],jmax,/nan)
+        Fmin = min(F1[jmax:j1],jmin,/nan)
+        j = where(E1 ge E1[jmin+jmax], n_e)
+      endelse
+
+      oplot,E1[j],F1[j],color=1,psym=10
+      prat = (pot/E1[j]) < 1.
+
+      N_tot = c3*total(dE[j]*sqrt(1. - prat)*(E1[j]^(-1.5))*F1[j])
+
+      Fmax = max(F1[j],k,/nan)
+      Emax = E1[j[k]]
+      temp = Emax/2.
+
+      xyouts,xs,ys,string(N_tot,format='("N = ",f6.2)'),color=1,charsize=1.2,/norm
+      ys -= dys
+      xyouts,xs,ys,string(temp,format='("T = ",f6.2)'),color=1,charsize=1.2,/norm
+      ys -= dys
+      xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=6,charsize=1.2,/norm
+      ys -= dys
+    endif
     
     if (pflg) then begin
       wset, Pwin
       
-      if not keyword_set(pxlim) then xlim = [0,30]
-      xlim = [min(xlim),max(xlim)]
+      if not keyword_set(pxlim) then xlim = [0.,30.] else xlim = minmax(pxlim)
 
       indx = where((df.v ge xlim[0]) and (df.v le xlim[1]))
       ymin = min(df.y[indx],/nan) < min(d2f.y[indx],/nan)
@@ -283,14 +383,36 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       py = reform(df.y[kref,*])
       py2 = reform(d2f.y[kref,*])
       
+      zcross = py2 * shift(py2,1)
+      zcross[0] = 1.
+      indx = where((zcross lt 0.) and (py gt thresh[0]), ncross)
+      
       title = string(spec.sc_pot,format='("Potential = ",f5.1," V")')
       plot,px,py,xtitle='Potential (V)',ytitle='dF and d2F',$
                   xrange=xlim,/xsty,yrange=ylim,/ysty,title=title,charsize=1.4
       oplot,[spec.sc_pot,spec.sc_pot],ylim,line=2,color=6
       oplot,px,py2,color=4
-      pmax = max(py2,i)
-      oplot,[px[i],px[i]],ylim,line=2,color=4
       oplot,xlim,[0,0],line=2
+      oplot,xlim,[thresh[0],thresh[0]],line=2,color=5      
+      oplot,xlim,[thresh[1],thresh[1]],line=2,color=5      
+
+      if (ncross gt 0L) then begin
+        pymax = max(py[indx],k)
+        py2max = max(py2[0L:indx[k]])
+        
+        dt = min(abs(spec.time - par.x), sndx)
+        par_y = par.y[sndx]
+        
+        if ((py2max gt thresh[1]) and (par_y gt thresh[2])) then k = indx[k] else k = -1
+
+        for j=0,(ncross-1) do oplot,[px[indx[j]],px[indx[j]]],ylim,color=2
+
+        if (k gt 0) then begin
+          xyouts,xs,0.90,string(px[k],format='("V = ",f6.2)'),color=6,charsize=1.2,/norm
+          oplot,[px[k],px[k]],ylim,color=6,line=2
+        endif
+
+      endif
 
     endif
 

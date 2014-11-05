@@ -4,8 +4,8 @@
 ;  A version of ctime.  May become obsolete.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-05-15 13:42:36 -0700 (Thu, 15 May 2014) $
-; $LastChangedRevision: 15142 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/ctime2.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -305,12 +305,12 @@ if not keyword_set(noshow) then wshow,icon=0 ;open the window
 
 
 ;;;;;; check keywords and set defaults
-if data_type(sleep) eq 0    then sleep  = 0.01 ;if not set: 0.01, if set 0: 0
+if size(sleep,/type) eq 0    then sleep  = 0.01 ;if not set: 0.01, if set 0: 0
 if not keyword_set(exact)   then exact  = 0    else exact  = 1
 if not keyword_set(npoints) then max    = 2000 else max    = npoints > 1
 if not keyword_set(silent)  then silent = 0
 if not silent then begin 
-  if data_type(prompt) ne 7 then $
+  if size(prompt,/type) ne 7 then $
     prompt='Use button 1 to select time, 2 to record time, and 3 to quit.'
   prompt2 = ' point         name:             date/time              yvalue'
   if exact then begin

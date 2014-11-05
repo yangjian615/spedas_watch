@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:18:45 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16048 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -33,7 +33,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
 
   @mvn_swe_com
 
-  if (data_type(time) eq 0) then begin
+  if (size(time,/type) eq 0) then begin
     print,"You must specify a time."
     return, 0
   endif
@@ -41,7 +41,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
   time = time_double(time)
   
   if keyword_set(archive) then begin
-    if (data_type(swe_3d_arc) ne 8) then begin
+    if (size(swe_3d_arc,/type) ne 8) then begin
       print,"No 3D archive data."
       return, 0
     endif
@@ -63,7 +63,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
     
     aflg = 1
   endif else begin
-    if (data_type(swe_3d) ne 8) then begin
+    if (size(swe_3d,/type) ne 8) then begin
       print,"No 3D survey data."
       return, 0
     endif
@@ -86,8 +86,8 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
     aflg = 0
   endelse
   
-  if (data_type(swe_mag1) eq 8) then addmag = 1 else addmag = 0
-  if (data_type(swe_sc_pot) eq 8) then addpot = 1 else addpot = 0
+  if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
+  if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
 
 ; Locate the 3D data closest to the desired time
 
@@ -314,7 +314,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
     ddd = dddsum    
   endif
   
-  if (data_type(units) eq 7) then mvn_swe_convert_units, ddd, units
+  if (size(units,/type) eq 7) then mvn_swe_convert_units, ddd, units
 
   return, ddd
 

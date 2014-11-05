@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:19:01 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16049 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -33,7 +33,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
 
   @mvn_swe_com
 
-  if (data_type(time) eq 0) then begin
+  if (size(time,/type) eq 0) then begin
     print,"You must specify a time."
     return, 0
   endif
@@ -41,7 +41,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
   time = time_double(time)
   
   if keyword_set(archive) then begin
-    if (data_type(a3) ne 8) then begin
+    if (size(a3,/type) ne 8) then begin
       print,"No PAD archive data."
       return, 0
     endif
@@ -63,7 +63,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
     
     aflg = 1
   endif else begin
-    if (data_type(a2) ne 8) then begin
+    if (size(a2,/type) ne 8) then begin
       print,"No PAD survey data."
       return, 0
     endif
@@ -86,8 +86,8 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
     aflg = 0
   endelse
   
-  if (data_type(swe_mag1) eq 8) then addmag = 1 else addmag = 0
-  if (data_type(swe_sc_pot) eq 8) then addpot = 1 else addpot = 0
+  if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
+  if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
 
 ; Locate the PAD data closest to the desired time
 
@@ -280,7 +280,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
     pad = padsum
   endif
   
-  if (data_type(units) eq 7) then mvn_swe_convert_units, pad, units
+  if (size(units,/type) eq 7) then mvn_swe_convert_units, pad, units
 
   return, pad
 

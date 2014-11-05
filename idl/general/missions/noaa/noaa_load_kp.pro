@@ -1,15 +1,15 @@
 ;+
-;; Name:
+;NAME:
 ;    noaa_load_kp
 ;
-; Purpose:
+;PURPOSE:
 ;    Loads local Kp/Ap index data into tplot variables. If data doesn't exist locally, the code
 ;    downloads the data from the THEMIS mirror of NOAA STP's data
 ;
-; Syntax:
+;SYNTAX:
 ;    noaa_load_kp, [, trange = trange]
 ;                 
-; Keywords:
+;KEYWORDS:
 ;    trange: time range to load
 ;    kp_mirror: http server where mirrored Kp/Ap data lives
 ;    remote_kp_dir: directory where the Kp/Ap data lives on the mirror server
@@ -18,11 +18,13 @@
 ;          'kp', 'ap', 'sol_rot_num', 'sol_rot_day', 'kp_sum', 'ap_mean', 
 ;          'cp', 'c9', 'sunspot_number', 'solar_radio_flux', 'flux_qualifier'
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-05-28 14:52:30 -0700 (Wed, 28 May 2014) $
-; $LastChangedRevision: 15250 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/noaa/noaa_load_kp.pro $
-;-f
+;HISTORY:
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-11-03 12:06:03 -0800 (Mon, 03 Nov 2014) $
+;$LastChangedRevision: 16129 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/noaa/noaa_load_kp.pro $
+;-
+
 function kp_return_fraction, value
     kp_lhs = floor(value/10.)
     kp_rhs_times_3 = value mod 10
@@ -33,8 +35,10 @@ pro noaa_load_kp, trange = trange, kp_mirror = kp_mirror, remote_kp_dir=remote_k
                   local_kp_dir = local_kp_dir, datatype = datatype
     if ~keyword_set(trange) then get_timespan, trange
     if ~keyword_set(kp_mirror) then kp_mirror = 'http://themis-data.igpp.ucla.edu/'
-    if ~keyword_set(local_kp_dir) then file_prefix = root_data_dir() + 'geom_indices\' $
-        else file_prefix = local_kp_dir
+    if STRLEN(kp_mirror) gt 0 then if STRMID(kp_mirror, STRLEN(kp_mirror)-1, 1) ne "/" then kp_mirror = kp_mirror + "/"
+    if ~keyword_set(local_kp_dir) then file_prefix = root_data_dir() + 'geom_indices' + path_sep() $
+        else file_prefix = local_kp_dir        
+    if STRLEN(file_prefix) gt 0 then if STRMID(file_prefix, STRLEN(file_prefix)-1, 1) ne path_sep() then file_prefix = file_prefix + path_sep()    
     if ~keyword_set(remote_kp_dir) then remote_kp_dir = 'thg/mirrors/kp/noaa/'
     
     starttime = time_struct(trange[0])

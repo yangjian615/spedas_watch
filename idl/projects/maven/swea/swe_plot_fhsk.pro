@@ -22,7 +22,7 @@ pro swe_plot_fhsk
   Twin = !d.window
   tplot_options,get=opt
   
-  if (data_type(a6) ne 8) then begin
+  if (size(a6,/type) ne 8) then begin
     print,"No fast housekeeping data."
     return
   endif

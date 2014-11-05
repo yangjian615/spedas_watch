@@ -26,8 +26,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-15 11:33:00 -0700 (Mon, 15 Sep 2014) $
-; $LastChangedRevision: 15792 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_cal_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -43,14 +43,14 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   
   if keyword_set(spec) then begin
-    if (data_type(mvn_swe_engy) ne 8) then mvn_swe_makespec
+    if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_makespec
   endif
 
 ; Put up snapshot window
 
   Twin = !d.window
 
-  if (data_type(Dopt) ne 8) then swe_snap_layout, 0
+  if (size(Dopt,/type) ne 8) then swe_snap_layout, 0
 
   window, /free, xsize=1440, ysize=850, xpos=240, ypos=-860
   Cwin = !d.window
@@ -66,7 +66,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
   wset,Twin
   ctime2,trange,npoints=1,/silent,button=button
 
-  if (data_type(trange) eq 2) then begin  ; Abort before first time select.
+  if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
     wdelete,Cwin                          ; Don't keep empty windows.
     wset,Twin
     return
@@ -84,7 +84,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
       dat = mvn_swe_get3d(trange[0],archive=aflg)
       mvn_swe_convert_units, dat, units
 
-      if (data_type(dat) eq 8) then begin
+      if (size(dat,/type) eq 8) then begin
         x = dat.energy[*,0]
         y = findgen(dat.nbins)
         z1 = dat.data
@@ -122,7 +122,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
       dat = mvn_swe_getpad(trange[0],archive=aflg)
       mvn_swe_convert_units, dat, units
 
-      if (data_type(dat) eq 8) then begin
+      if (size(dat,/type) eq 8) then begin
         x = dat.energy[*,0]
         y = findgen(dat.nbins)
         z1 = dat.data
@@ -165,7 +165,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
         dat = mvn_swe_engy[k]
       endelse
 
-      if (data_type(dat) eq 8) then begin
+      if (size(dat,/type) eq 8) then begin
         mvn_swe_convert_units, dat, units
 
         x = dat.energy
@@ -188,7 +188,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
 
     wset,Twin
     ctime2,trange,npoints=1,/silent,button=button
-    if (data_type(trange) eq 5) then ok = 1 else ok = 0
+    if (size(trange,/type) eq 5) then ok = 1 else ok = 0
 
   endwhile
 

@@ -65,12 +65,12 @@ pro swe_a2_snap, layout=layout, model=model, ddd=ddd, keepwins=keepwins, zrange=
   endif else nflg = 0
 
   if (aflg) then begin
-    if (data_type(A3) ne 8) then begin
+    if (size(A3,/type) ne 8) then begin
       print,"No valid PAD survey data."
       return
     endif
   endif else begin
-    if (data_type(A2) ne 8) then begin
+    if (size(A2,/type) ne 8) then begin
       print,"No valid PAD archive data."
       return
     endif
@@ -78,12 +78,12 @@ pro swe_a2_snap, layout=layout, model=model, ddd=ddd, keepwins=keepwins, zrange=
 
   if keyword_set(model) then mflg=1 else mflg=0
   if keyword_set(ddd)   then dflg=1 else dflg=0
-  if (data_type(swe_hsk) ne 8) then hflg = 0 else hflg = 1
+  if (size(swe_hsk,/type) ne 8) then hflg = 0 else hflg = 1
 
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
 
-  if (data_type(zrange) eq 0) then zrange = [1.,3000.]
-  if (data_type(zlog) eq 0) then zlog = 1
+  if (size(zrange,/type) eq 0) then zrange = [1.,3000.]
+  if (size(zlog,/type) eq 0) then zlog = 1
 
   gudsum = ['C0'X, 'DE'X]
 
@@ -207,7 +207,7 @@ pro swe_a2_snap, layout=layout, model=model, ddd=ddd, keepwins=keepwins, zrange=
   wset,Twin
   ctime2,trange,npoints=1,/silent,button=button
 
-  if (data_type(trange) eq 2) then begin
+  if (size(trange,/type) eq 2) then begin
     wdelete,Swin
     if (hflg) then wdelete,Hwin
     if (mflg) then wdelete,Mwin
@@ -416,7 +416,7 @@ pro swe_a2_snap, layout=layout, model=model, ddd=ddd, keepwins=keepwins, zrange=
     wset,Twin
     ctime2,trange,npoints=1,/silent,button=button
 
-    if (data_type(trange) eq 5) then begin
+    if (size(trange,/type) eq 5) then begin
       if (aflg) then dt = min(abs(a3.time - trange[0]), iref) $
                 else dt = min(abs(a2.time - trange[0]), iref)
       if (hflg) then dt = min(abs(swe_hsk.time - trange[0]), jref)

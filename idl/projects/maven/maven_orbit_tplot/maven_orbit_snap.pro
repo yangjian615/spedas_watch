@@ -46,8 +46,8 @@
 ;       KEEP:     Do not kill the plot windows on exit.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-05-05 11:03:27 -0700 (Mon, 05 May 2014) $
-; $LastChangedRevision: 15046 $
+; $LastChangedDate: 2014-10-31 14:24:42 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16108 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -77,10 +77,10 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
   if keyword_set(hybrid) then begin
     if (hybrid eq 1) then begin
-      hybrid_orbit, [-10.], [-10.], /reset, /xz
+      hybrid_orbit_new, [-10.], [-10.], /reset, /xz
       bflg = 1
     endif else begin
-      hybrid_orbit, [-10.], [-10.], /reset, /xz, /flip
+      hybrid_orbit_new, [-10.], [-10.], /reset, /xz, /flip
       bflg = 2
     endelse
   endif else bflg = 0
@@ -143,7 +143,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   wset,Twin
   ctime2,trange,npoints=1,/silent,button=button
 
-  if (data_type(trange) eq 2) then begin
+  if (size(trange,/type) eq 2) then begin
     wdelete,Owin
     wset,Twin
     return
@@ -550,8 +550,8 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
       if (pflg) then i = imid else i = imin
 
-      if (bflg eq 1) then hybrid_orbit, x, z, x[i], z[i], color=255, psym=0, /xz $
-                     else hybrid_orbit, x, z, x[i], z[i], color=255, psym=0, /xz, /flip
+      if (bflg eq 1) then hybrid_orbit_new, x, z, x[i], z[i], color=255, psym=0, /xz $
+                     else hybrid_orbit_new, x, z, x[i], z[i], color=255, psym=0, /xz, /flip
     endif
 
 ; Put up Mars orbit
@@ -567,7 +567,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     wset,Twin
     ctime2,trange,npoints=1,/silent,button=button
 
-    if (data_type(trange) eq 5) then begin
+    if (size(trange,/type) eq 5) then begin
       tref = trange[0]
       dt = min(abs(time - tref), iref)
       ok = 1

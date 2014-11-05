@@ -23,8 +23,8 @@
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-01 11:15:28 -0700 (Wed, 01 Oct 2014) $
-; $LastChangedRevision: 15895 $
+; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -34,7 +34,7 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
 
   @mvn_swe_com  
 
-  if (data_type(time) eq 0) then begin
+  if (size(time,/type) eq 0) then begin
     print,"You must specify a time."
     return, 0
   endif

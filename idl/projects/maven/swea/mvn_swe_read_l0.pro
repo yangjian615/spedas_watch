@@ -57,8 +57,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-09-22 17:19:26 -0700 (Mon, 22 Sep 2014) $
-; $LastChangedRevision: 15838 $
+; $LastChangedDate: 2014-10-31 12:42:29 -0700 (Fri, 31 Oct 2014) $
+; $LastChangedRevision: 16104 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -359,7 +359,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 ; Pass through the telemetry and decommute
 
   n = 0L
-  if (data_type(badpkt) ne 8) then badpkt = replicate(bad_str,1)
+  if (size(badpkt,/type) ne 8) then badpkt = replicate(bad_str,1)
 
 ; Housekeeping (APID 28)
 
@@ -1192,14 +1192,14 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 ; Append to previously loaded data
 
   if keyword_set(append) then begin
-    if (data_type(swe_hsk_s) eq 8) then swe_hsk = [temporary(swe_hsk_s), temporary(swe_hsk)]
-    if (data_type(a0_s) eq 8) then a0 = [temporary(a0_s), temporary(a0)]
-    if (data_type(a1_s) eq 8) then a1 = [temporary(a1_s), temporary(a1)]
-    if (data_type(a2_s) eq 8) then a2 = [temporary(a2_s), temporary(a2)]
-    if (data_type(a3_s) eq 8) then a3 = [temporary(a3_s), temporary(a3)]
-    if (data_type(a4_s) eq 8) then a4 = [temporary(a4_s), temporary(a4)]
-    if (data_type(a5_s) eq 8) then a5 = [temporary(a5_s), temporary(a5)]
-    if (data_type(a6_s) eq 8) then a6 = [temporary(a6_s), temporary(a6)]
+    if (size(swe_hsk_s,/type) eq 8) then swe_hsk = [temporary(swe_hsk_s), temporary(swe_hsk)]
+    if (size(a0_s,/type) eq 8) then a0 = [temporary(a0_s), temporary(a0)]
+    if (size(a1_s,/type) eq 8) then a1 = [temporary(a1_s), temporary(a1)]
+    if (size(a2_s,/type) eq 8) then a2 = [temporary(a2_s), temporary(a2)]
+    if (size(a3_s,/type) eq 8) then a3 = [temporary(a3_s), temporary(a3)]
+    if (size(a4_s,/type) eq 8) then a4 = [temporary(a4_s), temporary(a4)]
+    if (size(a5_s,/type) eq 8) then a5 = [temporary(a5_s), temporary(a5)]
+    if (size(a6_s,/type) eq 8) then a6 = [temporary(a6_s), temporary(a6)]
   endif
 
   return

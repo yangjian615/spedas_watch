@@ -64,8 +64,21 @@ pro kyoto_load_dst ,trange=trange, $
   datatype=datatype, $     ;Input/output -- will clean inputs or show default.
   ;source=source
   no_server=no_server, $ ;This functions the same as a no_download (obsolete) keyword would 
-  apply_time_clip=apply_time_clip ; This clips the tplot variable to the time specified in trange (this is not necessary if time
-                                  ; specified using timespan.
+  apply_time_clip=apply_time_clip, $ ; This clips the tplot variable to the time specified in trange (this is not necessary if time specified using timespan.
+  local_data_dir=local_data_dir, $
+  remote_data_dir = remote_data_dir
+  
+;**************************
+;Load 'remote_data_dir' default:
+;**************************
+if ~keyword_set(remote_data_dir) then remote_data_dir='http://wdc.kugi.kyoto-u.ac.jp/'  
+if STRLEN(remote_data_dir) gt 0 then if STRMID(remote_data_dir, STRLEN(remote_data_dir)-1, 1) ne "/" then remote_data_dir = remote_data_dir + "/"
+
+;**************************
+;Load 'local_data_dir' default:
+;**************************
+if ~keyword_set(local_data_dir) then local_data_dir=root_data_dir() + 'geom_indices' + path_sep()
+if STRLEN(local_data_dir) gt 0 then if STRMID(local_data_dir, STRLEN(local_data_dir)-1, 1) ne path_sep() then local_data_dir = local_data_dir + path_sep()
 
 ;******************
 ;VERBOSE kw defaut:
@@ -118,8 +131,8 @@ if ~size(fns,/type) then begin
     
   ;Define FILE_RETRIEVE structure for Final data:
   ;====================================================
-  source.local_data_dir = root_data_dir() + 'geom_indices/kyoto/dst/'
-  source.remote_data_dir = 'http://wdc.kugi.kyoto-u.ac.jp/dst_final/'
+  source.local_data_dir = local_data_dir+ 'dst/'
+  source.remote_data_dir = remote_data_dir + 'dst_final/'
 
   ;Get files and local paths, and concatenate local paths:
   ;=======================================================
@@ -127,7 +140,7 @@ if ~size(fns,/type) then begin
 
   ;Define FILE_RETRIEVE structure for Provisional data:
   ;====================================================
-  source.remote_data_dir = 'http://wdc.kugi.kyoto-u.ac.jp/dst_provisional/'
+  source.remote_data_dir = remote_data_dir + 'dst_provisional/'
 
   ;Get files and local paths, and concatenate local paths:
   ;=======================================================
@@ -135,7 +148,7 @@ if ~size(fns,/type) then begin
 
   ;Redefine FILE_RETRIEVE structure for Real Time data:
   ;====================================================
-  source.remote_data_dir = 'http://wdc.kugi.kyoto-u.ac.jp/dst_realtime/'
+  source.remote_data_dir = remote_data_dir + 'dst_realtime/'
 
   ;Get files and local paths, and concatenate local paths:
   ;=======================================================

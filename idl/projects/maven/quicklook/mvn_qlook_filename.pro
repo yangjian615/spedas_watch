@@ -30,6 +30,9 @@ Function mvn_qlook_filename, instrument, time_range, date_only = date_only, $
   start_hour = strmid(trs[0], 8, 2)
   end_hour = strmid(trs[1], 8, 2)
 
+;Obsolete date_only keyword
+  date_only = 1b
+
   If(keyword_set(date_only)) Then date_ext = date $
   Else date_ext = date+'_'+start_hour+end_hour
 

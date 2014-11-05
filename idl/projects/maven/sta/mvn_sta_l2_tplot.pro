@@ -114,7 +114,7 @@ endif
 		mass = total(mvn_c0_dat.mass_arr[iswp,*,*],2)/nenergy
 
 		str_element,mvn_c0_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_c0_dat.bkg
 			dead = mvn_c0_dat.dead
 			gf = reform(mvn_c0_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
@@ -128,7 +128,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_c0_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c0 eflux ',max(abs((eflux-mvn_c0_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c0 eflux ',max(abs((eflux-mvn_c0_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c0_P1A_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c0_P1A_H_E',data={x:time,y:reform( (data[*,*,1]-0.006*data[*,*,0]/(1.-(data[*,*,0]/1200.<.9))) >0.),v:energy}
@@ -201,7 +201,7 @@ endif
 		mass = total(mvn_c2_dat.mass_arr[iswp,*,*],2)/nenergy
 
 		str_element,mvn_c2_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_c2_dat.bkg
 			dead = mvn_c2_dat.dead
 			gf = reform(mvn_c2_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
@@ -215,7 +215,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_c2_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c2 eflux ',max(abs((eflux-mvn_c2_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c2 eflux ',max(abs((eflux-mvn_c2_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c2_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c2_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -281,7 +281,7 @@ endif
 		mass = total(mvn_c4_dat.mass_arr[iswp,*,*],2)/nenergy
 
 		str_element,mvn_c4_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_c4_dat.bkg
 			dead = mvn_c4_dat.dead
 			gf = reform(mvn_c4_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
@@ -295,7 +295,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_c4_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c4 eflux ',max(abs((eflux-mvn_c4_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c4 eflux ',max(abs((eflux-mvn_c4_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c4_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c4_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -361,7 +361,7 @@ endif
 		mass = total(mvn_c6_dat.mass_arr[iswp,*,*],2)/nenergy
 
 		str_element,mvn_c6_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_c6_dat.bkg
 			dead = mvn_c6_dat.dead
 			gf = reform(mvn_c6_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
@@ -375,7 +375,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_c6_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c6 eflux ',max(abs((eflux-mvn_c6_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c6 eflux ',max(abs((eflux-mvn_c6_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c6_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c6_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -443,7 +443,7 @@ endif
 		theta = reform(mvn_c8_dat.theta[iswp,nenergy-1,*])
 
 		str_element,mvn_c8_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_c8_dat.bkg
 			dead = mvn_c8_dat.dead
 			gf = reform(mvn_c8_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*ndef) +$
@@ -457,7 +457,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_c8_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c8 eflux ',max(abs((eflux-mvn_c8_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in c8 eflux ',max(abs((eflux-mvn_c8_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_c8_P2_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c8_P2_D',data={x:time,y:total(data,2),v:theta}
@@ -524,7 +524,7 @@ endif
 		phi = total(reform(mvn_ca_dat.phi[iswp,nenergy-1,*],npts,ndef,nanode),2)/ndef
 
 		str_element,mvn_ca_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_ca_dat.bkg
 			dead = mvn_ca_dat.dead
 			gf = reform(mvn_ca_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
@@ -538,7 +538,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_ca_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in ca eflux ',max(abs((eflux-mvn_ca_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in ca eflux ',max(abs((eflux-mvn_ca_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_ca_P3_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_ca_P3_D',data={x:time,y:total(total(reform(data,npts,nenergy,ndef,nanode),4),2),v:theta}
@@ -624,7 +624,7 @@ endif
 		phi = total(reform(mvn_cc_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
 		str_element,mvn_cc_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_cc_dat.bkg
 			dead = mvn_cc_dat.dead
 			gf = reform(mvn_cc_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
@@ -639,7 +639,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_cc_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in cc eflux ',max(abs((eflux-mvn_cc_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in cc eflux ',max(abs((eflux-mvn_cc_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_cc_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cc_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
@@ -723,7 +723,7 @@ endif
 		phi = total(reform(mvn_cd_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
 		str_element,mvn_cd_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_cd_dat.bkg
 			dead = mvn_cd_dat.dead
 			gf = reform(mvn_cd_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
@@ -738,7 +738,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_cd_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in cd eflux ',max(abs((eflux-mvn_cd_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in cd eflux ',max(abs((eflux-mvn_cd_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_cd_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cd_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
@@ -822,7 +822,7 @@ endif
 		phi = total(reform(mvn_ce_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
 		str_element,mvn_ce_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_ce_dat.bkg
 			dead = mvn_ce_dat.dead
 			gf = reform(mvn_ce_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
@@ -837,7 +837,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_ce_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in ce eflux ',max(abs((eflux-mvn_ce_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in ce eflux ',max(abs((eflux-mvn_ce_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_ce_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_ce_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -933,7 +933,7 @@ endif
 		phi = total(reform(mvn_cf_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
 		str_element,mvn_cf_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_cf_dat.bkg
 			dead = mvn_cf_dat.dead
 			gf = reform(mvn_cf_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
@@ -948,7 +948,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_cf_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in cf eflux ',max(abs((eflux-mvn_cf_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in cf eflux ',max(abs((eflux-mvn_cf_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_cf_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cf_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1044,7 +1044,7 @@ endif
 		phi = total(reform(mvn_d0_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
 		str_element,mvn_d0_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_d0_dat.bkg
 			dead = mvn_d0_dat.dead
 			gf = reform(mvn_d0_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
@@ -1059,7 +1059,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_d0_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in d0 eflux ',max(abs((eflux-mvn_d0_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in d0 eflux ',max(abs((eflux-mvn_d0_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_d0_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d0_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1155,7 +1155,7 @@ endif
 		phi = total(reform(mvn_d1_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
 		str_element,mvn_d1_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_d1_dat.bkg
 			dead = mvn_d1_dat.dead
 			gf = reform(mvn_d1_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
@@ -1170,7 +1170,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_d1_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in d1 eflux ',max(abs((eflux-mvn_d1_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in d1 eflux ',max(abs((eflux-mvn_d1_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_d1_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d1_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1265,7 +1265,7 @@ endif
 		phi = total(reform(mvn_d4_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 
 		str_element,mvn_d4_dat,'eflux',success=success
-		if test or not success then begin
+		if keyword_set(test) or not success then begin
 			bkg = mvn_d4_dat.bkg
 			dead = mvn_d4_dat.dead
 			gf = reform(mvn_d4_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nbins) +$
@@ -1280,7 +1280,7 @@ endif
 			eflux2 = float(eflux2)
 		endif
 		if success then eflux = mvn_d4_dat.eflux else eflux = eflux2
-		if test then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in d4 eflux ',max(abs((eflux-mvn_d4_dat.eflux)/eflux))
+		if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in d4 eflux ',max(abs((eflux-mvn_d4_dat.eflux)/eflux))
 
 		store_data,'mvn_sta_d4_P4E_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
 		store_data,'mvn_sta_d4_P4E_A',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),3),2),v:phi}
@@ -1619,6 +1619,176 @@ endif
 	options,'mvn_sta*',no_interp=1
 	ylim,'*mode',-1,5,0
 	ylim,'*rate',-1,7,0
+
+
+;***************************************************************************************************************
+;***************************************************************************************************************
+
+; form combined plots
+
+;   Mixed product plots
+
+	tt1=0 & tt2=0 & tt3=0
+	get_data,'mvn_sta_ca_P3_A',data=t1
+	get_data,'mvn_sta_d4_P4E_A',data=t2
+	get_data,'mvn_sta_d2_P4D_A',data=t3
+	if size(/type,t1) eq 8 then tt1=1
+	if size(/type,t2) eq 8 then tt2=1
+	if size(/type,t3) eq 8 then tt3=1
+	if (tt1) then store_data,'mvn_sta_A',data=['mvn_sta_ca_P3_A'] 
+	if (tt2) then store_data,'mvn_sta_A',data=['mvn_sta_d4_P4E_A']
+	if (tt3) then store_data,'mvn_sta_A',data=['mvn_sta_d2_P4D_A'] 
+	if (tt1 and tt2) then store_data,'mvn_sta_A',data=['mvn_sta_ca_P3_A','mvn_sta_d4_P4E_A']
+	if (tt1 and tt3) then store_data,'mvn_sta_A',data=['mvn_sta_ca_P3_A','mvn_sta_d2_P4D_A']
+	if (tt2 and tt3) then store_data,'mvn_sta_A',data=['mvn_sta_d4_P4E_A','mvn_sta_d2_P4D_A']
+	if (tt1 and tt2 and tt3) then store_data,'mvn_sta_A',data=['mvn_sta_ca_P3_A','mvn_sta_d4_P4E_A','mvn_sta_d2_P4D_A']
+		ylim,'mvn_sta_A',-180,200,0
+		zlim,'mvn_sta_A',1,1.e4,1
+		options,'mvn_sta_A','spec',1
+		options,'mvn_sta_A',ytitle='sta!C!CAnode!Cphi'
+
+	tt1=0 & tt2=0 
+	get_data,'mvn_sta_c8_P2_D',data=t1
+	get_data,'mvn_sta_d4_P4E_D',data=t2
+	if size(/type,t1) eq 8 then tt1=1
+	if size(/type,t2) eq 8 then tt2=1
+	if (tt1) then store_data,'mvn_sta_D',data=['mvn_sta_c8_P2_D']
+	if (tt2) then store_data,'mvn_sta_D',data=['mvn_sta_d4_P4E_D']
+	if (tt1 and tt2) then store_data,'mvn_sta_D',data=['mvn_sta_d4_P4E_D','mvn_sta_c8_P2_D']
+		ylim,'mvn_sta_D',-45,45,0
+		zlim,'mvn_sta_D',1,1.e4,1
+		options,'mvn_sta_D','spec',1
+		options,'mvn_sta_D',ytitle='sta!C!CDef!Ctheta'
+
+;    P4 Survey combined plots
+
+	tt1=0 & tt2=0 & tt3=0 & tt4=0
+	get_data,'mvn_sta_cc_P4A_E',data=t1
+	get_data,'mvn_sta_ce_P4B_E',data=t2
+	get_data,'mvn_sta_d0_P4C_E',data=t3
+	get_data,'mvn_sta_d2_P4D_E',data=t4
+	if size(/type,t1) eq 8 then tt1=1
+	if size(/type,t2) eq 8 then tt2=1
+	if size(/type,t3) eq 8 then tt3=1
+	if size(/type,t4) eq 8 then tt4=1
+	if tt1 or tt2 or tt3 or tt4 then begin
+		store_data,'mvn_sta_P4_E',data=['mvn_sta_cc_P4A_E','mvn_sta_ce_P4B_E','mvn_sta_d0_P4C_E','mvn_sta_d2_P4D_E']
+		ylim,'mvn_sta_P4_E',.4,40000.,1
+		zlim,'mvn_sta_P4_E',1,1.e5,1
+		options,'mvn_sta_P4_E',ytitle='sta!CP4 !CEnergy!CeV'
+	endif
+
+	tt1=0 & tt2=0 & tt3=0 & tt4=0
+	get_data,'mvn_sta_cc_P4A_M',data=t1
+	get_data,'mvn_sta_ce_P4B_M',data=t2
+	get_data,'mvn_sta_d0_P4C_M',data=t3
+	get_data,'mvn_sta_d2_P4D_M',data=t4
+	if size(/type,t1) eq 8 then tt1=1
+	if size(/type,t2) eq 8 then tt2=1
+	if size(/type,t3) eq 8 then tt3=1
+	if size(/type,t4) eq 8 then tt4=1
+	if tt1 or tt2 or tt3 or tt4 then begin
+		store_data,'mvn_sta_P4_M',data=['mvn_sta_cc_P4A_M','mvn_sta_ce_P4B_M','mvn_sta_d0_P4C_M','mvn_sta_d2_P4D_M']
+		ylim,'mvn_sta_P4_M',.5,100,1
+		zlim,'mvn_sta_P4_M',1,1.e5,1
+		options,'mvn_sta_P4_M',ytitle='sta!CP4 !CMass!Camu'
+	endif
+
+
+	tt1=0 & tt2=0 & tt3=0 
+	get_data,'mvn_sta_cc_P4A_D',data=t1
+	get_data,'mvn_sta_ce_P4B_D',data=t2
+	get_data,'mvn_sta_d0_P4C_D',data=t3
+	if size(/type,t1) eq 8 then tt1=1
+	if size(/type,t2) eq 8 then tt2=1
+	if size(/type,t3) eq 8 then tt3=1
+	if tt1 or tt2 or tt3 then begin
+		store_data,'mvn_sta_P4_D',data=['mvn_sta_cc_P4A_D','mvn_sta_ce_P4B_D','mvn_sta_d0_P4C_D']
+		ylim,'mvn_sta_P4_D',-45,45,0
+		zlim,'mvn_sta_P4_D',1,1.e5,1
+		options,'mvn_sta_P4_D',ytitle='sta!CP4 !CDef!Ctheta'
+	endif
+
+
+	tt2=0 & tt3=0 & tt4=0
+	get_data,'mvn_sta_ce_P4B_A',data=t2
+	get_data,'mvn_sta_d0_P4C_A',data=t3
+	get_data,'mvn_sta_d2_P4D_A',data=t4
+	if size(/type,t2) eq 8 then tt2=1
+	if size(/type,t3) eq 8 then tt3=1
+	if size(/type,t4) eq 8 then tt4=1
+	if tt2 or tt3 or tt4 then begin
+		store_data,'mvn_sta_P4_A',data=['mvn_sta_ce_P4B_A','mvn_sta_d0_P4C_A','mvn_sta_d2_P4D_A']
+		ylim,'mvn_sta_P4_A',-180,200,0
+		zlim,'mvn_sta_P4_A',1,1.e5,1
+		options,'mvn_sta_P4_A',ytitle='sta!CP4 !CAnode!Cphi'
+	endif
+
+;   P4 Archive combined plots
+
+	tt1=0 & tt2=0 & tt3=0 & tt4=0
+	get_data,'mvn_sta_cd_P4A_E',data=t1
+	get_data,'mvn_sta_cf_P4B_E',data=t2
+	get_data,'mvn_sta_d1_P4C_E',data=t3
+	get_data,'mvn_sta_d3_P4D_E',data=t4
+	if size(/type,t1) eq 8 then tt1=1
+	if size(/type,t2) eq 8 then tt2=1
+	if size(/type,t3) eq 8 then tt3=1
+	if size(/type,t4) eq 8 then tt4=1
+	if tt1 or tt2 or tt3 or tt4 then begin
+		store_data,'mvn_sta_P4_arc_E',data=['mvn_sta_cd_P4A_E','mvn_sta_cf_P4B_E','mvn_sta_d1_P4C_E','mvn_sta_d3_P4D_E']
+		ylim,'mvn_sta_P4_arc_E',.4,40000.,1
+		ylim,'mvn_sta_P4_arc_E',1,1.e4,1
+		options,'mvn_sta_P4_arc_E',ytitle='sta!CP4 arc !CEnergy!CeV'
+	endif
+
+	tt1=0 & tt2=0 & tt3=0 & tt4=0
+	get_data,'mvn_sta_cd_P4A_M',data=t1
+	get_data,'mvn_sta_cf_P4B_M',data=t2
+	get_data,'mvn_sta_d1_P4C_M',data=t3
+	get_data,'mvn_sta_d3_P4D_M',data=t4
+	if size(/type,t1) eq 8 then tt1=1
+	if size(/type,t2) eq 8 then tt2=1
+	if size(/type,t3) eq 8 then tt3=1
+	if size(/type,t4) eq 8 then tt4=1
+	if tt1 or tt2 or tt3 or tt4 then begin
+		store_data,'mvn_sta_P4_arc_M',data=['mvn_sta_cd_P4A_M','mvn_sta_cf_P4B_M','mvn_sta_d1_P4C_M','mvn_sta_d3_P4D_M']
+		ylim,'mvn_sta_P4_arc_M',.5,100,1
+		zlim,'mvn_sta_P4_arc_M',1,1.e4,1
+		options,'mvn_sta_P4_arc_M',ytitle='sta!CP4 arc !CMass!Camu'
+	endif
+
+
+	tt1=0 & tt2=0 & tt3=0 
+	get_data,'mvn_sta_cd_P4A_D',data=t1
+	get_data,'mvn_sta_cf_P4B_D',data=t2
+	get_data,'mvn_sta_d1_P4C_D',data=t3
+	if size(/type,t1) eq 8 then tt1=1
+	if size(/type,t2) eq 8 then tt2=1
+	if size(/type,t3) eq 8 then tt3=1
+	if tt1 or tt2 or tt3 then begin
+		store_data,'mvn_sta_P4_arc_D',data=['mvn_sta_cd_P4A_D','mvn_sta_cf_P4B_D','mvn_sta_d1_P4C_D']
+		ylim,'mvn_sta_P4_arc_D',-45,45,0
+		zlim,'mvn_sta_P4_arc_D',1,1.e5,1
+		options,'mvn_sta_P4_arc_D',ytitle='sta!CP4 arc!CDef!Ctheta'
+	endif
+
+
+	tt2=0 & tt3=0 & tt4=0
+	get_data,'mvn_sta_cf_P4B_A',data=t2
+	get_data,'mvn_sta_d1_P4C_A',data=t3
+	get_data,'mvn_sta_d3_P4D_A',data=t4
+	if size(/type,t2) eq 8 then tt2=1
+	if size(/type,t3) eq 8 then tt3=1
+	if size(/type,t4) eq 8 then tt4=1
+	if tt2 or tt3 or tt4 then begin
+		store_data,'mvn_sta_P4_arc_A',data=['mvn_sta_cf_P4B_A','mvn_sta_d1_P4C_A','mvn_sta_d3_P4D_A']
+		ylim,'mvn_sta_P4_arc_A',-180,200,0
+		options,'mvn_sta_P4_arc_A',ytitle='sta!CP4 arc !CAnode!Cphi'
+	endif
+
+
+
 
 end
 
