@@ -58,9 +58,9 @@
 ;                  if not there
 ; 2013-02-27, jmm, Added comment to test SVN commit
 ;
-;$LastChangedBy: davin $
-;$LastChangedDate: 2014-02-06 00:16:32 -0800 (Thu, 06 Feb 2014) $
-;$LastChangedRevision: 14169 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
+;$LastChangedRevision: 16146 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_init.pro $
 ;-
 pro thm_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
@@ -143,7 +143,10 @@ secs = floor(dt)
 print,ptrace()
 print,days,hours,mins,secs,format= '("THEMIS countdown:",i4," Days, ",i02," Hours, ",i02," Minutes, ",i02," Seconds since launch")'
 
-
+;debugging fix?
+if !version.release ge '8.3' then begin
+  !debug_process_events = 0
+endif
 
 end
 

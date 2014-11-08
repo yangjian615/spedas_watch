@@ -6,9 +6,9 @@
 ;  Generates the tab that loads BARREL data for the SPEDAS GUI.
 ;
 ;HISTORY:
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-10-15 10:48:52 -0700 (Wed, 15 Oct 2014) $
-;$LastChangedRevision: 15994 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
+;$LastChangedRevision: 16146 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/barrel/spedas_plugin/spd_ui_load_barrel_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -22,6 +22,10 @@ pro spd_ui_load_barrel_data_event,event
   IF (err_xxx NE 0) THEN BEGIN
     Catch, /Cancel
     Help, /Last_Message, Output = err_msg
+    Print, 'Error--See history'
+    ok=error_message('An unknown error occured and the window must be datatypetarted. See console for details.',$
+      /noname, /center, title='Error in Load Data')
+      
     if is_struct(state) then begin
       ;send error message
       FOR j = 0, N_Elements(err_msg)-1 DO state.historywin->update,err_msg[j]
@@ -39,9 +43,7 @@ pro spd_ui_load_barrel_data_event,event
       Widget_Control, event.TOP, Set_UValue=state, /No_Copy
 
     endif
-    Print, 'Error--See history'
-    ok=error_message('An unknown error occured and the window must be datatypetarted. See console for details.',$
-      /noname, /center, title='Error in Load Data')
+   
 
     widget_control, event.top,/destroy
 
@@ -297,9 +299,9 @@ pro spd_ui_load_barrel_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,ti
   CLEARDATATYPEButton = widget_button(datatypeBase,value='Clear Data Type',uvalue='CLEARDATATYPE',ToolTip='Deselect all data types')
 
   availability_str = 'Data Availability Notes: ' +  string(10B) + string(10B) + $
-    '2012-2013: data is available between 2013-01-01 and 2013-02-16 (depending on payload ID)'  +  string(10B) + string(10B) + $
-    '2013-2014: data is available between 2013-12-27 and 2014-02-11 (depending on payload ID)'
-  availabilityLabel = widget_label(leftBase, value=availability_str, /align_center, XSIZE=300, YSIZE=100, UNITS=0)
+    '2012-2013: data is available between 2013-01-01 and 2013-02-16'  +  string(10B) + string(10B) + $
+    '2013-2014: data is available between 2013-12-27 and 2014-02-11'  +  string(10B) + string(10B) + '(also depends on payload ID)'
+  availabilityLabel = widget_label(leftBase, value=availability_str, /align_center, scr_xsize=400, scr_ysize=100, UNITS=0)
 
   state = {baseid:topBase,$
     loadTree:loadTree,$

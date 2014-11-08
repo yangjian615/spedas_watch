@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-10-31 09:20:08 -0700 (Fri, 31 Oct 2014) $
-;$LastChangedRevision: 16092 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-11-06 19:33:14 -0800 (Thu, 06 Nov 2014) $
+;$LastChangedRevision: 16147 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -49,14 +49,17 @@ PRO spd_gui_event, event
       ; allow for cursor events again after crash
       info.drawDisabled = 0
       x=info.master
-      if obj_valid(info.historywin) then begin
-        spd_gui_error,x,info.historywin
-      endif
+ 
       if widget_valid(event.top) then begin
         widget_control, event.top, set_uval = info, /no_copy
       endif else begin
         print,'Potentially catastrophic error.  You may want to terminate the gui by selecting run->terminate'
       endelse
+      
+      if obj_valid(info.historywin) then begin
+        spd_gui_error,x,info.historywin
+      endif
+      
     Endif else begin
       print,'Potentially catastrophic error.  You may want to terminate the gui by selecting run->terminate'
     endelse

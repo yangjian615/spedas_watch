@@ -18,9 +18,9 @@
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ;Written by Hannes Schwarzl
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 
@@ -107,9 +107,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 
@@ -169,9 +169,9 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ;Written by Hannes Schwarzl
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 
@@ -229,9 +229,9 @@ end
 ;Notes:
 ;
 ;Written by Patrick Cruce(pcruce@igpp.ucla.edu)
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 
@@ -282,9 +282,9 @@ end
 ;Notes:
 ;
 ;Written by Cindy Russell(clrussell@igpp.ucla.edu)
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 
@@ -341,9 +341,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 
@@ -391,9 +391,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 
@@ -445,9 +445,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 
@@ -495,9 +495,9 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 
@@ -546,9 +546,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 
@@ -597,9 +597,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 
@@ -646,9 +646,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 pro subGEI2GEO,TIMES,DATA_in,DATA_out
@@ -688,9 +688,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 pro subGEO2GEI,TIMES,DATA_in,DATA_out
@@ -729,9 +729,9 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 pro subGEO2MAG,TIMES,DATA_in,DATA_out
@@ -760,9 +760,9 @@ END
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 pro subMAG2GEO,TIMES,DATA_in,DATA_out
@@ -796,9 +796,9 @@ END
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
@@ -862,9 +862,17 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
       sob=sin(obliq)
       cob=cos(obliq)
 
-;     precession of declination (about 0.0056 deg.)
+; *** Aberration due to Earth's motion around the sun (about 0.0056 deg)
+;
+; Per Chris Russell's email of 2014-11-05:
+; "The 0.005686 degrees is clearly defined in Bob Strangeway's email as 
+; the aberration due to Earth's motion around the sun. This is proportional 
+; to the speed of the earth divided by the speed of light. You can easily 
+; calculate this number yourself. The original number (Mead and mine) are 
+; correct."
+; JWL 2014-11-05
 
-      pre= (0.0055686 - 0.025e-4*t)*pisd
+      pre= (0.005686 - 0.025e-4*t)*pisd
 
 ; *** declination of the sun
 
@@ -896,9 +904,9 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
       pro tgeigse_vect,iyear,idoy,ih,im,is,xgei,ygei,zgei,xgse,ygse,zgse
@@ -950,9 +958,9 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
       pro tgsegei_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgei,ygei,zgei
@@ -1005,9 +1013,9 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 
@@ -1085,9 +1093,9 @@ END
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
@@ -1163,9 +1171,9 @@ pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
@@ -1222,9 +1230,9 @@ pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
 pro tsmgsm_vect,iyear,idoy,ih,im,is,xsm,ysm,zsm,xgsm,ygsm,zgsm
@@ -1280,9 +1288,9 @@ pro tsmgsm_vect,iyear,idoy,ih,im,is,xsm,ysm,zsm,xgsm,ygsm,zgsm
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ;
 ; faster algorithm (for loop across all points avoided) Hannes 05/25/2007
 ;
@@ -1376,9 +1384,9 @@ PRO cdipdir_vect,iyear,idoy,gd1,gd2,gd3
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-25 15:47:19 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14435 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16140 $
 ; $URL $
 ;-
       pro cdipdir,iyear,idoy,d1,d2,d3

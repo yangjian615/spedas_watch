@@ -11,15 +11,16 @@
 ;	MVN_SWIA_INST2MSO
 ;INPUTS:
 ;KEYWORDS:
+;	LOAD: if set, load (and unload) the spice kernels
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-07-14 15:34:27 -0700 (Mon, 14 Jul 2014) $
-; $LastChangedRevision: 15577 $
+; $LastChangedDate: 2014-11-05 18:09:10 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16142 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_inst2mso.pro $
 ;
 ;-
 
-pro mvn_swia_inst2mso
+pro mvn_swia_inst2mso, load = load
 
 compile_opt idl2
 
@@ -29,7 +30,7 @@ common mvn_swia_data
 unixt = swim.time_unix
 trange = [min(unixt),max(unixt)]
 
-kernels = mvn_spice_kernels(trange=trange,/load)
+if keyword_set(load) then kernels = mvn_spice_kernels(trange=trange,/load)
 
 
 et = time_ephemeris(unixt)
@@ -48,7 +49,7 @@ for i = 0,nt-1 do begin
 endfor
 
 
-cspice_unload, kernels
+if keyword_set(load) then cspice_unload, kernels
 
 store_data,'crmat',data = {x:swim.time_unix,y:crmat}
 

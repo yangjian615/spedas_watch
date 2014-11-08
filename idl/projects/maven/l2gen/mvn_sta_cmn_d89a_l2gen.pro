@@ -37,8 +37,8 @@
 ;HISTORY:
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-08 16:57:15 -0700 (Wed, 08 Oct 2014) $
-; $LastChangedRevision: 15950 $
+; $LastChangedDate: 2014-11-06 13:05:22 -0800 (Thu, 06 Nov 2014) $
+; $LastChangedRevision: 16144 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_d89a_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_d89a_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -53,32 +53,37 @@ Pro mvn_sta_cmn_d89a_l2gen, cmn_dat, otp_struct = otp_struct, directory = direct
      Return
   Endif
 ;First, global attributes
-  global_att = {Title:'MAVEN STATIC Ion Spectra', $
-                Project:'MAVEN', $
-                Source_name:'MVN>Mars Atmosphere and Volatile Evolution Mission', $
-                Discipline:'Space Physics>Planetary Physics>Particles', $
-                Data_type:'CAL>Calibration', $
-                Descriptor:'STA> Supra-Thermal Thermal Ion Composition Particle Distributions', $
+  global_att = {Acknowledgment:'None', $
+                Data_type:'CAL>Calibrated', $
                 Data_version:'0', $
-                File_naming_convention: 'source_descriptor_datatype_yyyyMMdd', $
-                PI_name:'J. P. McFadden', $
-                PI_affiliation:'U.C. Berkeley Space Sciences Laboratory', $
-                TEXT:'STATIC> Supra-Thermal And Thermal Ion Composition Particle Distributions', $
-                Instrument_type:'Particles (space)' , $
-                Mission_group:'MAVEN' , $
-                Logical_source:'urn:nasa:pds:maven.static.c:data.c6_2e64m' , $
-                Logical_file_id:'mvn_sta_l2_c6_00000000_v00_r00.cdf' , $
-                Logical_source_description:'Supra-Thermal And Thermal Ion Composition Particle Distributions', $
-                Rules_of_use:'Open Data for Scientific Use' , $
+                Descriptor:'STATIC>Supra-Thermal Thermal Ion Composition Particle Distributions', $
+                Discipline:'Space Physics>Planetary Physics>Particles', $
+                File_naming_convention: 'mvn_descriptor_datatype_yyyyMMdd', $
                 Generated_by:'MAVEN SOC' , $
                 Generation_date:'2014-04-28' , $
-                MODS:'Rev-1 2014-04-28' , $
+                HTTP_LINK:'http://lasp.colorado.edu/home/maven/', $
+                Instrument_type:'Particles (space)' , $
                 LINK_TEXT:'General Information about the MAVEN mission' , $
                 LINK_TITLE:'MAVEN home page' , $
-                HTTP_LINK:'http://lasp.colorado.edu/home/maven/', $
-                Acknowledgment:'None', $
+                Logical_file_id:'mvn_sta_l2_c6_00000000_v00_r00.cdf' , $
+                Logical_source:'urn:nasa:pds:maven.static.c:data.c6_2e64m' , $
+                Logical_source_description:'MAVEN Supra-Thermal And Thermal Ion Composition Particle Distributions', $
+                Mission_group:'MAVEN' , $
+                MODS:'Rev-1 2014-04-28' , $
+                PI_name:'J. P. McFadden', $
+                PI_affiliation:'U.C. Berkeley Space Sciences Laboratory', $
+                PDS_collection_id:'MAVEN', $
+                PDS_sclk_start_count:'YYYY-MM-DDThh:mm:ss.sssZ', $
+                PDS_sclk_stop_count:'YYYY-MM-DDThh:mm:ss.sssZ', $
+                PDS_start_time:'', $
+                PDS_stop_time:'', $
+                Planet:'Mars', $
+                Project:'MAVEN', $
+                Rules_of_use:'Open Data for Scientific Use' , $
+                Source_name:'MAVEN>Mars Atmosphere and Volatile Evolution Mission', $
+                TEXT:'STATIC>Supra-Thermal And Thermal Ion Composition Particle Distributions', $
                 Time_resolution:'4 sec', $
-                ADID_ref:'-'}
+                Title:'MAVEN STATIC Ion Spectra'}
 
 ;Now variables and attributes
   cvars = strlowcase(tag_names(cmn_dat))
@@ -139,6 +144,22 @@ Pro mvn_sta_cmn_d89a_l2gen, cmn_dat, otp_struct = otp_struct, directory = direct
   center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
   num_dists = n_elements(center_time)
 
+;Handle clock drift here, define a timespan
+  timespan, date, 1
+;met_center at the spacecraft
+  met_center = mvn_spc_met_to_unixtime(center_time, /reverse, $
+                                       correct_clockdrift = 0)
+;shifted center_time
+  center_time = mvn_spc_met_to_unixtime(met_center, /correct_clockdrift)
+;Shift start and end times
+  met_time = mvn_spc_met_to_unixtime(cmn_dat.time, /reverse, $
+                                       correct_clockdrift = 0)
+  cmn_dat.time = mvn_spc_met_to_unixtime(met_time, /correct_clockdrift)
+
+  met_end_time = mvn_spc_met_to_unixtime(cmn_dat.end_time, /reverse, $
+                                       correct_clockdrift = 0)
+  cmn_dat.end_time = mvn_spc_met_to_unixtime(met_end_time, /correct_clockdrift)
+
 ;Initialize
   otp_struct = -1
   count = 0L
@@ -162,7 +183,7 @@ Pro mvn_sta_cmn_d89a_l2gen, cmn_dat, otp_struct = otp_struct, directory = direct
               is_tvar = 1b
            End
            'time_met': Begin
-              dvar = mvn_spc_met_to_unixtime(center_time, /reverse)
+              dvar = met_center
               is_tvar = 1b
            End
            'time_ephemeris': Begin
@@ -490,10 +511,13 @@ Pro mvn_sta_cmn_d89a_l2gen, cmn_dat, otp_struct = otp_struct, directory = direct
   Endif Else tres = '   0.0 sec'
   global_att.time_resolution = tres
 
-  date0 = time_string(date)
-  date1 = time_string(time_double(date0)+86400.0d0)
-  str_element, global_att, 'UTC_START_TIME', date0, /add
-  str_element, global_att, 'UTC_END_TIME', date1, /add
+;times for PDS attributes
+  PDS_time = time_string(minmax(center_time), tformat='YYYY-MM-DDThh:mm:ss.fffZ')
+  PDS_met =  mvn_spc_met_to_unixtime(minmax(center_time), /reverse)
+  global_att.PDS_sclk_start_count = pds_time[0]
+  global_att.PDS_sclk_stop_count = pds_time[1]
+  global_att.PDS_start_time = string(pds_met[0])
+  global_att.PDS_stop_time = string(pds_met[1])
 
   otp_struct = {filename:'', g_attributes:global_att, inq:inq, nv:nvars, vars:vstr}
 

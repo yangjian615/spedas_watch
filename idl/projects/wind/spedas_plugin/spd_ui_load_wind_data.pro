@@ -7,9 +7,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-03 12:32:48 -0700 (Thu, 03 Jul 2014) $
-;$LastChangedRevision: 15504 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
+;$LastChangedRevision: 16146 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/wind/spedas_plugin/spd_ui_load_wind_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -22,6 +22,11 @@ pro spd_ui_load_wind_data_event,event
   IF (err_xxx NE 0) THEN BEGIN
     Catch, /Cancel
     Help, /Last_Message, Output = err_msg
+    
+    Print, 'Error--See history'
+    ok=error_message('An unknown error occured and the window must be restarted. See console for details.',$
+      /noname, /center, title='Error in Load Data')
+      
     if is_struct(state) then begin
       ;send error message
       FOR j = 0, N_Elements(err_msg)-1 DO state.historywin->update,err_msg[j]
@@ -39,9 +44,7 @@ pro spd_ui_load_wind_data_event,event
       Widget_Control, event.TOP, Set_UValue=state, /No_Copy
       
     endif
-    Print, 'Error--See history'
-    ok=error_message('An unknown error occured and the window must be restarted. See console for details.',$
-       /noname, /center, title='Error in Load Data')
+  
 
     widget_control, event.top,/destroy
   

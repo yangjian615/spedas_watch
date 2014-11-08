@@ -19,8 +19,8 @@
 ;  Should be called in all idl geopack wrapper routines
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-10-31 12:54:36 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16105 $
+; $LastChangedDate: 2014-11-04 10:10:32 -0800 (Tue, 04 Nov 2014) $
+; $LastChangedRevision: 16132 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/igp_test.pro $
 ;-
 
@@ -36,13 +36,13 @@ function igp_test, geopack_2008=geopack_2008
     ; check that the Geopack DLM is installed
     if(filter[0] eq -1) then begin
       message, /continue, 'Required module IDL/GEOPACK not installed'
-      message, /continue, 'To install geopack please download a copy'
+      message, /continue, 'To install GEOPACK please download a copy'
       message, /continue, 'Place the module binary and the .dlm in:'
       message, /continue, !DLM_PATH
       message, /continue, 'and restart IDL to install the package'
       message, /continue, 'more detailed installation instructions'
-      message, /continue, 'can be found on the Geopack DLM web site (http://ampere.jhuapl.edu/code/idl_geopack.html), or'
-      message, /continue, 'in the Themis software distribution at'
+      message, /continue, 'can be found on the GEOPACK DLM web site (http://ampere.jhuapl.edu/code/idl_geopack.html), or'
+      message, /continue, 'in the SPEDAS software distribution at'
       message, /continue, 'external/IDL_GEOPACK/README.txt'
       return, 0
     endif
@@ -53,15 +53,15 @@ function igp_test, geopack_2008=geopack_2008
     version_num_pieces = strsplit(version_num, '.', /extract)
     if version_num_pieces[0] lt version_geopack08[0] || $
       (version_num_pieces[0] eq version_geopack08[0] && version_num_pieces[1] lt version_geopack08[1]) then begin
-      message, /continue, 'Old version of Geopack found'
-      message, /continue, 'Version 9.2+ expected when using the Geopack 2008 keyword'
+      message, /continue, 'Old version of IDL/GEOPACK found'
+      message, /continue, 'Version 9.0+ expected when using the GEOPACK 2008 keyword'
       message,/continue, 'Please download the newest version and'
       message, /continue, 'place the binary(.dll,.so,.etc..) and the .dlm in:'
       message, /continue, !DLM_PATH
       message, /continue, 'then restart IDL to install the package'
       message, /continue, 'More detailed installation instructions'
-      message, /continue, 'can be found on the Geopack DLM web site (http://ampere.jhuapl.edu/code/idl_geopack.html), or'
-      message, /continue, 'in the Themis software distribution at'
+      message, /continue, 'can be found on the GEOPACK DLM web site (http://ampere.jhuapl.edu/code/idl_geopack.html), or'
+      message, /continue, 'in the SPEDAS software distribution at'
       message, /continue, 'external/IDL_GEOPACK/README.txt'
       return, 0
     endif
@@ -77,7 +77,17 @@ function igp_test, geopack_2008=geopack_2008
     if geopack_dlm_error ne 0 then begin
         catch, /cancel
         help, /last_message, output=err_msg
-        message, /continue, 'The Geopack DLM was found, but there was a problem loading it.'
+
+        message, /continue, 'There was a problem loading IDL/GEOPACK. '
+        message, /continue, 'To install GEOPACK please download a copy'
+        message, /continue, 'Place the module binary and the .dlm in:'
+        message, /continue, !DLM_PATH
+        message, /continue, 'and restart IDL to install the package'
+        message, /continue, 'more detailed installation instructions'
+        message, /continue, 'can be found on the GEOPACK DLM web site (http://ampere.jhuapl.edu/code/idl_geopack.html), or'
+        message, /continue, 'in the SPEDAS software distribution at'
+        message, /continue, 'external/IDL_GEOPACK/README.txt'
+      
         for line_num=0, n_elements(err_msg)-1 do begin
             message, /continue, err_msg[line_num]
         endfor

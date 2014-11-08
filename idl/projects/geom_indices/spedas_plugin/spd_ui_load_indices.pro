@@ -7,9 +7,9 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-11-03 11:56:50 -0800 (Mon, 03 Nov 2014) $
-;$LastChangedRevision: 16127 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spd_ui_load_indices.pro $
+;$LastChangedDate: 2014-11-05 11:20:01 -0800 (Wed, 05 Nov 2014) $
+;$LastChangedRevision: 16137 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spedas_plugin/spd_ui_load_indices.pro $
 ;
 ;--------------------------------------------------------------------------------
 pro spd_ui_load_indices_event,event

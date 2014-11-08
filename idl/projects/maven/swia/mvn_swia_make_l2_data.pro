@@ -18,8 +18,8 @@
 ;	OPATH: Hardwire the output path for L2 files (mainly for testing)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-09-18 05:06:01 -0700 (Thu, 18 Sep 2014) $
-; $LastChangedRevision: 15818 $
+; $LastChangedDate: 2014-11-05 18:09:10 -0800 (Wed, 05 Nov 2014) $
+; $LastChangedRevision: 16142 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_l2_data.pro $
 ;
 ;-
@@ -31,6 +31,8 @@ pro mvn_swia_make_l2_data, startdate = startdate, days = days,version = version,
 compile_opt idl2
 
 common mvn_swia_data
+
+timespan, startdate, days
 
 if not keyword_set(version) then version = '00'
 if not keyword_set(revision) then revision = '00'

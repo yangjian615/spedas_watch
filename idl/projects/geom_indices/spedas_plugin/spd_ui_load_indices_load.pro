@@ -7,14 +7,13 @@
 ;  from the GUI
 ;
 ;  
-;HISTORY:
+;REVISION HISTORY:
 ;
-;;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-11-03 11:56:50 -0800 (Mon, 03 Nov 2014) $
-;$LastChangedRevision: 16127 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spd_ui_load_indices_load.pro $
-;
-;--------------------------------------------------------------------------------
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-11-05 11:21:52 -0800 (Wed, 05 Nov 2014) $
+;$LastChangedRevision: 16138 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spedas_plugin/spd_ui_load_indices_load.pro $
+;-
 
 pro spd_ui_load_indices_load,$
                          loadStruc,$
@@ -34,6 +33,12 @@ pro spd_ui_load_indices_load,$
   overwrite_selection=''
   overwrite_count = 0
   mission = 'Geomagnetic Indices'
+  
+  geom_indices_init  
+  local_data_dir=!geom_indices.local_data_dir
+  remote_data_dir_noaa=!geom_indices.remote_data_dir_noaa
+  remote_data_dir_kyoto_ae=!geom_indices.remote_data_dir_kyoto_ae
+  remote_data_rit_kyoto_kp=!geom_indices.remote_data_dir_kyoto_dst
   
   if ~keyword_set(replay) then begin
     overwrite_selections = ''
@@ -68,7 +73,7 @@ pro spd_ui_load_indices_load,$
               endif else begin ; *
                   datatype = ['ap', 'ap_mean']
               endelse
-              noaa_load_kp, trange = ntrange, datatype = datatype
+              noaa_load_kp, trange = ntrange, datatype = datatype, local_kp_dir=local_data_dir, kp_mirror=remote_data_dir_noaa
           end
           'AE': begin
               observatory = 'Kyoto'
@@ -88,7 +93,7 @@ pro spd_ui_load_indices_load,$
               endif else begin ; *
                   datatype = ['ae','ao','au','al','ax']
               endelse
-              kyoto_load_ae, trange = ntrange, datatype = datatype
+              kyoto_load_ae, trange = ntrange, datatype = datatype, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir_kyoto_ae
           end
           'Cp': begin
               observatory = 'NOAA'
@@ -98,7 +103,7 @@ pro spd_ui_load_indices_load,$
               if indextype eq 'Cp' then begin ; currently the only option for this index
                   datatype = 'cp'
               endif
-              noaa_load_kp, trange = ntrange, datatype = datatype
+              noaa_load_kp, trange = ntrange, datatype = datatype, local_kp_dir=local_data_dir, kp_mirror=remote_data_dir_noaa
           end
           'C9': begin
               observatory = 'NOAA'
@@ -108,7 +113,7 @@ pro spd_ui_load_indices_load,$
               if indextype eq 'C9' then begin ; currently the only option for this index
                   datatype = 'c9'
               endif
-              noaa_load_kp, trange = ntrange, datatype = datatype
+              noaa_load_kp, trange = ntrange, datatype = datatype, local_kp_dir=local_data_dir, kp_mirror=remote_data_dir_noaa
           end
           'Dst': begin
               observatory = 'Kyoto'
@@ -124,7 +129,7 @@ pro spd_ui_load_indices_load,$
               endif else begin ; *
                 datatype = ['dst']
               endelse
-              kyoto_load_dst, trange = ntrange, datatype = datatype, /apply_time_clip
+              kyoto_load_dst, trange = ntrange, datatype = datatype, /apply_time_clip, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir_kyoto_dst
           end
           'F10.7': begin
               observatory = 'NOAA'
@@ -134,7 +139,7 @@ pro spd_ui_load_indices_load,$
               if indextype[i] eq 'F10.7' then begin ; only option for this index
                   datatype = 'f10.7'
               endif
-              noaa_load_kp, trange = ntrange, datatype = datatype
+              noaa_load_kp, trange = ntrange, datatype = datatype, local_kp_dir=local_data_dir, kp_mirror=remote_data_dir_noaa
           end
           'Kp': begin
               observatory = 'NOAA'
@@ -148,7 +153,7 @@ pro spd_ui_load_indices_load,$
               endif else begin ; *
                   datatype = ['kp', 'kp_sum']
               endelse
-              noaa_load_kp, trange = ntrange, datatype = datatype
+              noaa_load_kp, trange = ntrange, datatype = datatype, local_kp_dir=local_data_dir, kp_mirror=remote_data_dir_noaa
           end
           'Solar rotation #': begin
               observatory = 'NOAA'
@@ -158,7 +163,7 @@ pro spd_ui_load_indices_load,$
               if indextype[i] eq 'Solar rotation #' then begin ; only option for this index
                   datatype = 'sol_rot_num'
               endif 
-              noaa_load_kp, trange = ntrange, datatype = datatype
+              noaa_load_kp, trange = ntrange, datatype = datatype, local_kp_dir=local_data_dir, kp_mirror=remote_data_dir_noaa
           end
           'Solar rotation day': begin
               observatory = 'NOAA'
@@ -168,7 +173,7 @@ pro spd_ui_load_indices_load,$
               if indextype[i] eq 'Solar rotation day' then begin ; only option for this index
                   datatype = 'sol_rot_day'
               endif
-              noaa_load_kp, trange = ntrange, datatype = datatype
+              noaa_load_kp, trange = ntrange, datatype = datatype, local_kp_dir=local_data_dir, kp_mirror=remote_data_dir_noaa
           end
           'Sunspot #': begin
               observatory = 'NOAA'
@@ -178,7 +183,7 @@ pro spd_ui_load_indices_load,$
               if indextype[i] eq 'Sunspot #' then begin ; only option for this index
                   datatype = 'sunspot_number'
               endif
-              noaa_load_kp, trange = ntrange, datatype = datatype
+              noaa_load_kp, trange = ntrange, datatype = datatype, local_kp_dir=local_data_dir, kp_mirror=remote_data_dir_noaa
           end
           'SYM/ASY': begin
               observatory = 'ISTP'

@@ -122,9 +122,11 @@ End
 ; 7-7-2014, jmm, deleted no_cdfconvert option, added md5sum
 ; 22-jul-2014, jmm, added revisoining
 ; 2-oct-2014, jmm, ISTP compliance
+; 1-nov-2014, jmm, PDS compliance
+; 6-nov-2014, jmm, Corrects clock drift 
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-03 16:18:58 -0800 (Mon, 03 Nov 2014) $
-; $LastChangedRevision: 16130 $
+; $LastChangedDate: 2014-11-06 13:05:22 -0800 (Thu, 06 Nov 2014) $
+; $LastChangedRevision: 16144 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -263,7 +265,6 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 
 ;Use center time for time variables
   center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
-
 ;Grab the date, and clip anything plus or minus 10 minutes from the
 ;start or end of the date
   date = time_string(median(center_time), precision=-3, format=6)
@@ -273,6 +274,22 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 ;Reset center time
   center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
   num_dists = n_elements(center_time)
+
+;Handle clock drift here, define a timespan
+  timespan, date, 1
+;met_center at the spacecraft
+  met_center = mvn_spc_met_to_unixtime(center_time, /reverse, $
+                                       correct_clockdrift = 0)
+;shifted center_time
+  center_time = mvn_spc_met_to_unixtime(met_center, /correct_clockdrift)
+;Shift start and end times
+  met_time = mvn_spc_met_to_unixtime(cmn_dat.time, /reverse, $
+                                       correct_clockdrift = 0)
+  cmn_dat.time = mvn_spc_met_to_unixtime(met_time, /correct_clockdrift)
+
+  met_end_time = mvn_spc_met_to_unixtime(cmn_dat.end_time, /reverse, $
+                                       correct_clockdrift = 0)
+  cmn_dat.end_time = mvn_spc_met_to_unixtime(met_end_time, /correct_clockdrift)
 
 ;Initialize
   otp_struct = -1
@@ -296,7 +313,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
               is_tvar = 1b
            End
            'time_met': Begin
-              dvar = mvn_spc_met_to_unixtime(center_time, /reverse)
+              dvar = met_center
               is_tvar = 1b
            End
            'time_ephemeris': Begin
