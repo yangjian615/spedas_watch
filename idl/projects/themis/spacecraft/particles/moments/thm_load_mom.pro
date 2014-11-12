@@ -42,13 +42,6 @@
 ;  /dead_time_correct: If set, then calculate dead time correction
 ;                      based on ESA moments, this is the default
 ;                      for L2 input
-;  /no_dead_time_correct: If set, do not calculate a dead time
-;                         correction based on ESA ground-based
-;                         moments, this is the default for L1
-;                         data. If both the no_dead and dead
-;                         keywords are set, then NO correction is
-;                         applied.
-
 ;Example:
 ;   thm_load_mom,/get_suppport_data,probe=['a', 'b']
 ;Notes:
@@ -67,9 +60,9 @@
 ;  potential, and efficiency.
 ;
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2014-05-21 17:16:07 -0700 (Wed, 21 May 2014) $
-; $LastChangedRevision: 15201 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2014-11-07 09:26:19 -0800 (Fri, 07 Nov 2014) $
+; $LastChangedRevision: 16148 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
@@ -584,7 +577,7 @@ pro thm_load_mom, probe = probe, datatype = datatype, trange = trange, all = all
                   source_options = source, type = type, $
                   progobj = progobj, files = files, no_time_clip = no_time_clip, $
                   true_dsl = true_dsl, use_eclipse_corrections = use_eclipse_corrections, $
-                  no_dead_time_correct = no_dead_time_correct, dead_time_correct = dead_time_correct
+                  dead_time_correct = dead_time_correct
 
 compile_opt idl2
 
@@ -627,9 +620,7 @@ if (lvl eq 'l2') or (lvl eq 'l1' and keyword_set(valid_names)) then begin
     trange = trange, level = lvl, verbose = verbose, $
     downloadonly = downloadonly, valid_names = valid_names, $
     source_options = source_options, progobj = progobj, files = files, $
-    suffix = suffix, no_time_clip = no_time_clip, $
-    no_dead_time_correct = no_dead_time_correct, $
-    dead_time_correct = dead_time_correct
+    suffix = suffix, no_time_clip = no_time_clip
   return
 endif
 
@@ -817,8 +808,7 @@ for s=0,n_elements(probes)-1 do begin
      endelse
 ;Apply dead time correction, if asked for
      If(keyword_set(dead_time_correct)) Then Begin
-         If(~keyword_set(no_dead_time_correct)) Then thm_apply_esa_mom_dtc, probe = probes[s], $
-           trange = trange, in_suffix = suffix
+        thm_apply_esa_mom_dtc, probe = probes[s], trange = trange, in_suffix = suffix
      Endif
 endfor
 

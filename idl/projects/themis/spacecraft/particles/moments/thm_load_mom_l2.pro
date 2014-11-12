@@ -26,16 +26,15 @@
 ;   thm_load_mom,/get_suppport_data,probe=['a', 'b']
 ;Notes:
 ;  Temporary version, to avoid conflicts, but can read Level 2 data, jmm
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-06-19 16:27:38 -0700 (Tue, 19 Jun 2012) $
-; $LastChangedRevision: 10597 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2014-11-07 09:26:19 -0800 (Fri, 07 Nov 2014) $
+; $LastChangedRevision: 16148 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom_l2.pro $
 ;-
 pro thm_load_mom_l2, probe = probe, datatype = datatype, trange = trange, $
                      level = level, verbose = verbose, downloadonly = downloadonly, $
                      valid_names = valid_names, source_options = source, progobj = progobj,$
-                     raw = raw, files = files, suffix = suffix, no_time_clip = no_time_clip, $
-                     no_dead_time_correct = no_dead_time_correct, dead_time_correct = dead_time_correct
+                     raw = raw, files = files, suffix = suffix, no_time_clip = no_time_clip
 
 thm_init
 
@@ -139,8 +138,6 @@ for s = 0, n_elements(probes)-1 do begin
       Endif
     Endfor
   Endif
-  If(~keyword_set(no_dead_time_correct)) Then thm_apply_esa_mom_dtc, probe = probes[s], $
-    trange = trange, in_suffix = suffix
 
 endfor
 

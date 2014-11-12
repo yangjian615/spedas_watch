@@ -20,8 +20,8 @@
 ;HISTORY:
 ; 22-jul-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-08 13:06:06 -0700 (Wed, 08 Oct 2014) $
-; $LastChangedRevision: 15946 $
+; $LastChangedDate: 2014-11-10 16:19:26 -0800 (Mon, 10 Nov 2014) $
+; $LastChangedRevision: 16163 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_l2file_save.pro $
 ;-
 Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression
@@ -58,27 +58,42 @@ Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compress
 ;cdfconvert, 2014-06-10
 ;Creates an md5sum of the uncompressed file, and saves it in the same
 ;path, 2014-07-07
-  dummy = cdf_save_vars2(otp_struct, fullfile, /no_file_id_update)
-  spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:none -delete'
+;Now do all of the work in /tmp, because
+;cdfconvert over the network is killing my computer, 2014-11-07, jmm
+;make a directory for the file
+;Have a backup for bad temp directories, so that /tmp isn't deleted
+  If(n_elements(ppp) Eq 7 && strlen(ppp[4]) Eq 8) Then temp_dir =  '/tmp/'+ppp[4] $
+  Else temp_dir = '/tmp/YYYYMMDD'
+  file_mkdir, temp_dir
+  fullfilex = temp_dir+'/'+file
+
+  dummy = cdf_save_vars2(otp_struct, fullfilex, /no_file_id_update)
+  spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfilex+' '+fullfilex+' -compression cdf:none -delete'
 
   md5file = ssw_str_replace(fullfile, '.cdf', '.md5')
-  If(is_string(file_search(md5file))) Then file_delete, md5file
-  spawn, 'md5sum '+fullfile+' > '+md5file
+  md5filex = ssw_str_replace(fullfilex, '.cdf', '.md5')
+  If(is_string(file_search(md5filex))) Then file_delete, md5filex
+  spawn, 'md5sum '+fullfilex+' > '+md5filex
 
 ;Extract the md5 sum, and replace the filename in the file, because
 ;you do not want the path name, yuck
   md5str = strarr(1)
-  openr, unit, md5file, /get_lun 
+  openr, unit, md5filex, /get_lun 
   readf, unit, md5str
   free_lun, unit
   ppp = strsplit(md5str[0], /extract)
-  openw, unit, md5file, /get_lun
+  openw, unit, md5filex, /get_lun
   printf, unit, ppp[0], '  ', file
   free_lun, unit
 
   If(~keyword_set(no_compression)) Then Begin
-     spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:gzip.5 -delete'
+     spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfilex+' '+fullfilex+' -compression cdf:gzip.5 -delete'
   Endif
+
+;move the files to the output directory
+  dir = file_dirname(fullfile)
+  file_move, fullfilex, fullfile, /overwrite
+  file_move, md5filex, md5file, /overwrite
 
 ;Delete files, fullfile0 is a link if it exists, but must be re-linked
   If(is_string(file_search(fullfile0))) Then file_delete, fullfile0
@@ -92,6 +107,9 @@ Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compress
         If(is_string(file_search(del_md5filej))) Then file_delete, del_md5filej
      Endfor
   Endif
+
+;delete temporary directory
+  file_delete, temp_dir, /recursive
 
 ;Link revisionless file:
   spawn, 'ln '+fullfile+' '+fullfile0

@@ -85,9 +85,9 @@
 ;	 frequency where the polarisation approaches
 ;	 100%. Remembercomparing two straight lines yields 100% polarisation.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-09-23 16:57:26 -0700 (Tue, 23 Sep 2014) $
-; $LastChangedRevision: 15847 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2014-11-07 16:36:07 -0800 (Fri, 07 Nov 2014) $
+; $LastChangedRevision: 16154 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/wavpol/wavpol.pro $
 ;-
 pro wavpol,ct,Bx,By,Bz,timeline,freqline,powspec,degpol,waveangle,elliptict,helict,pspec3,$
@@ -179,7 +179,7 @@ print,' '
 dprint,  'Total number of steps',nosteps
 print,' '
 counter_start = 0
-for j=0,(nosteps-1) do begin
+for j=0L,(nosteps-1) do begin
 
 if 10*double(j)/(nosteps-1) gt (counter_start+1) then begin
   dprint, strtrim(100*double(j)/(nosteps-1),2) + ' % Complete '

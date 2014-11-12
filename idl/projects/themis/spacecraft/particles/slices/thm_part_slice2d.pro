@@ -414,13 +414,10 @@ sunvec = thm_part_slice2d_getsun(ds, trange=trange, fail=fail)
 
 ; Extract data from structures
 ;  -apply energy limits
-;  -apply count threshold
 ;  -average date over time window
 ;  -output r, phi, theta and dr, dphi, dtheta arrays
-;  -get support data
 ;------------------------------------------------------------
-thm_part_slice2d_getdata, ds, units=units, trange=trange, regrid=regrid, erange=erange, $
-                 count_threshold=count_threshold, subtract_counts=subtract_counts, energy=energy, $ 
+thm_part_slice2d_getdata, ds, units=units, trange=trange, regrid=regrid, erange=erange, energy=energy, $ 
                  data=datapoints, rad=rad, phi=phi, theta=theta, dr=dr, dp=dp, dt=dt, $
                  fail=fail, _extra=_extra
 if keyword_set(fail) then return
@@ -441,7 +438,7 @@ idx = where(datapoints gt 0,n)
 if n gt 0 then begin
   dmoms = moment(alog10(datapoints[idx]),maxmom=2)
   min = 10^(dmoms[0] - 2*sqrt(dmoms[1])) ;ignore if < mean - 2*sigma 
-  drange = minmax(datapoints,min_value=min)
+  drange = minmax(datapoints[idx],min_value=min)
 endif else begin
   drange = [0,0.]
 endelse

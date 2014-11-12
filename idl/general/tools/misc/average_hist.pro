@@ -1,6 +1,7 @@
 ;+
 ;FUNCTION average_hist(d,x [,STDEV=stdev])
 ;returns the average of d binned according to x
+;See "HISTBINS" for a description of keywords
 ;USAGE:
 ;assuming:
 ;  x = randomu(seed,1000)*10
@@ -23,6 +24,7 @@ function average_hist,a,x,stdev=std,log=log, $
   range=range,binsize=binsize,nbins=nbins,xbins=xbins,$
   binval=bins, minimum=minimum,shift=shft,nan=rnan,$
   histogram=h,reverse=ri
+  
 if keyword_set(x) then begin
   if n_elements(x) ne n_elements(a) then message,'Inputs must have same number of elements'
   bins = histbins(x,xbins,log=log,range=range,nbins=nbins,binsize=binsize,/retbins,shift=shft)

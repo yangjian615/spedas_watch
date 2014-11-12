@@ -27,8 +27,8 @@
 ;HISTORY:
 ; 16-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-11 12:43:54 -0700 (Thu, 11 Sep 2014) $
-; $LastChangedRevision: 15755 $
+; $LastChangedDate: 2014-11-10 15:20:26 -0800 (Mon, 10 Nov 2014) $
+; $LastChangedRevision: 16161 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_l2_load.pro $
 ;-
 Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_pass = user_pass, no_time_clip = no_time_clip, _extra = _extra
@@ -60,13 +60,13 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
            If(a1 Eq 'c') Then Begin
               aj = a1+['0','2','4','6','8','a','c','d','e','f']
            Endif Else If(a1 Eq 'd') Then Begin
-              aj = a1+['0', '1', '4', '8', '9', 'a', 'b']
+              aj = a1+['0', '1', '4', '6', '7', '8', '9', 'a', 'b']
            Endif Else aj = '2a'
         Endif Else aj = app_id[j]
         app_id1 = [app_id1, aj]
      Endfor
      If(n_elements(app_id1) Gt 1) Then app_id = app_id1[1:*] Else Begin
-        app_id = ['2a', 'c'+['0','2','4','6','8','a','c','d','e','f'], 'd'+['0', '1', '4', '8', '9', 'a', 'b']]
+        app_id = ['2a', 'c'+['0','2','4','6','8','a','c','d','e','f'], 'd'+['0', '1', '4', '6', '7', '8', '9', 'a', 'b']]
      Endelse
      napp_id = n_elements(app_id)
 ;FIles for all days and app_ids

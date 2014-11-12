@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-03 14:09:43 -0800 (Tue, 03 Dec 2013) $
-;$LastChangedRevision: 13616 $
+;$LastChangedDate: 2014-11-07 18:26:20 -0800 (Fri, 07 Nov 2014) $
+;$LastChangedRevision: 16155 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getsphere.pro $
 ;
 ;-
@@ -44,9 +44,15 @@ pro thm_part_slice2d_getsphere, dist, data=data, energy=energy, $
   thm_part_slice2d_const, c=c
 
 
-  ;get data
+  ;Copy data
   data = dist.data
 
+  ;Strip NaNs. They will invalidate a bin when it is summed and IDL's 
+  ;contour routine makes no distinction between NaNs and 0s.
+  nan_idx = where(~finite(data),nnan)
+  if nnan gt 0 then begin
+    data[nan_idx] = 0.
+  endif  
 
   ;Calculate bin centers/widths in spherical coordinates. This only
   ;needs to be done once for an array of data structures if the 

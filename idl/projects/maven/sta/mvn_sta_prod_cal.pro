@@ -482,8 +482,10 @@ endif								;
 
 ;   The following will require an inflight calibration for tuning to exact values
 ;	mec = [1.00,1.00,1.00,0.30,.040,.010,.010,.010,.010,.010,.020,0.10,1.00,1.00,1.00,1.00]			; ground calibration approximate value of mec = mgf*bgf
+	attM = 0.02												; inflight calibration - first approximation
+
 	agf = [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00]			; anode dependent gf - grid attenuation, active foil area
-	mgf = [1.00,1.00,1.00,0.30,.040,.010,.010,.010,.010,.010,.040,0.30,1.00,1.00,1.00,1.00]			; mech gf attenuator variation with anode
+	mgf = [1.00,1.00,1.00,0.30,.050,attM,attM,attM,attM,attM,.050,0.30,1.00,1.00,1.00,1.00]			; mech gf attenuator variation with anode
 	bgf = [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,.775,.325,.775,1.00,1.00,1.00]			; blocked anode 11 response
 	egf = [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00]*e_att		; electrostatic gf attenuation, e_att ~ 0.1
 
@@ -1287,7 +1289,7 @@ print,'Processing apid c6'
 			store_data,'mvn_sta_C6_P1D_all',data={x:tdis,y:reform(tmp,ndis,npts),v:indgen(npts)}
 
 			ylim,'mvn_sta_C6_P1D_tot',0,0,1
-			ylim,'mvn_sta_C6_P1D_E',.4,40000.,1
+			ylim,'mvn_sta_C6_P1D_E',.1,40000.,1
 			ylim,'mvn_sta_C6_P1D_M',.5,100.,1
 
 			zlim,'mvn_sta_C6_P1D_E',1,1.e3,1
@@ -1545,6 +1547,11 @@ print,'Processing apid c0'
 			endfor
 		endif
 
+;	correct C0 attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tt))
+
+
 		store_data,'mvn_sta_C0_mode',data={x:tt,y:md2}					; corrected modes
 			ylim,'mvn_sta_C0_mode',-1,8,0
 		store_data,'mvn_sta_C0_rate',data={x:tt,y:rt2}					; corrected modes
@@ -1572,7 +1579,7 @@ print,'Processing apid c0'
 ;		store_data,'mvn_sta_C0_E_eflx',data={x:tt,y:reform(total(tmp,3),nn,64),v:energy}
 
 		ylim,'mvn_sta_C0_P1A_tot',0,0,1
-		ylim,'mvn_sta_C0_P1A_E',.4,40000.,1
+		ylim,'mvn_sta_C0_P1A_E',.1,40000.,1
 		ylim,'mvn_sta_C0_P1A_M',.5,100,1
 		ylim,'mvn_sta_C0_P1A_E_M0',.4,40000.,1
 		ylim,'mvn_sta_C0_P1A_E_M1',.4,40000.,1
@@ -2365,6 +2372,10 @@ print,'Processing apid c8'
 			endfor
 		endif
 
+;	correct C8 attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tt))
+
 		store_data,'mvn_sta_C8_mode',data={x:tt,y:md2}
 			ylim,'mvn_sta_C8_mode',-1,8,0
 		store_data,'mvn_sta_C8_rate',data={x:tt,y:rt2}					; corrected modes
@@ -2628,6 +2639,10 @@ print,'Processing apid ca'
 				if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
 			endfor
 		endif
+
+;	correct CA attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tt))
 
 		store_data,'mvn_sta_CA_mode',data={x:tt,y:md2}
 			ylim,'mvn_sta_CA_mode',-1,8,0
@@ -3177,6 +3192,10 @@ print,'Processing apid cd'
 				endfor
 			endif
 
+;	correct CD attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
+
 			store_data,'mvn_sta_CD_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_CD_mode',-1,6,0
 			store_data,'mvn_sta_CD_att',data={x:tdis,y:att0}
@@ -3724,6 +3743,10 @@ print,'Processing apid cf'
 					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
 				endfor
 			endif
+
+;	correct CF attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
 
 			store_data,'mvn_sta_CF_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_CF_mode',-1,6,0
@@ -4274,6 +4297,10 @@ print,'Processing apid d1'
 					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
 				endfor
 			endif
+
+;	correct D0 attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
 
 			store_data,'mvn_sta_D1_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_D1_mode',-1,6,0
@@ -4826,6 +4853,10 @@ print,'Processing apid d3'
 				endfor
 			endif
 
+;	correct D3 attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
+
 			store_data,'mvn_sta_D3_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_D3_mode',-1,6,0
 			store_data,'mvn_sta_D3_att',data={x:tdis,y:att0}
@@ -5067,26 +5098,26 @@ print,'Processing apid d4'
 				tt = tt3
 			endif
 
-;	correct D4 mode transitions using C6 data if it is available
-		get_data,'mvn_sta_C6_mode',data=md6
-		if size(/type,md6) eq 8 then begin
-			get_data,'mvn_sta_C6_rate',data=rt6
-			ind0 = where (md2[0:nn-2] ne md2[1:nn-1],count) 
-			if count gt 0 then begin
-				for i=0,count-1 do begin
-					j0=0>(ind0[i]-8)
-					j1=(nn-1)<(ind0[i]+8)
-					for j=j0,j1 do begin
-						tmpmin = min(abs(md6.x - tt[j]),ind6)
-						if tmpmin lt 1. and md6.y[ind6] ne md2[j] then begin
-							md2[j]=md6.y[ind6]
-							rt2[j]=rt6.y[ind6]
-						endif 
-					endfor
-				endfor
-			endif
-		endif
-		md1 = rt2*16+md2	 
+;	correct D4 mode transitions using C6 data if it is available -- old code??????
+;		get_data,'mvn_sta_C6_mode',data=md6
+;		if size(/type,md6) eq 8 then begin
+;			get_data,'mvn_sta_C6_rate',data=rt6
+;			ind0 = where (md2[0:nn-2] ne md2[1:nn-1],count) 
+;			if count gt 0 then begin
+;				for i=0,count-1 do begin
+;					j0=0>(ind0[i]-8)
+;					j1=(nn-1)<(ind0[i]+8)
+;					for j=j0,j1 do begin
+;						tmpmin = min(abs(md6.x - tt[j]),ind6)
+;						if tmpmin lt 1. and md6.y[ind6] ne md2[j] then begin
+;							md2[j]=md6.y[ind6]
+;							rt2[j]=rt6.y[ind6]
+;						endif 
+;					endfor
+;				endfor
+;			endif
+;		endif
+;		md1 = rt2*16+md2	 
 
 		get_data,'mvn_STA_D4_ATTEN',data=catt						; attenuator state
 		att1 = (catt.y[0:nn-1] and replicate(192,nn))/64
@@ -5110,6 +5141,10 @@ print,'Processing apid d4'
 				att0[inds-nmax+1:inds-nmax+1+iww+idelay] = att1[inds]		; use ww and interal delays to correct att at previous value
 			endfor
 		endif
+
+;	correct C8 attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tt))
 
 		store_data,'mvn_sta_D4_mode',data={x:tt,y:md2}					; corrected modes
 			ylim,'mvn_sta_D4_mode',-1,8,0
@@ -6268,7 +6303,7 @@ endif
 	if size(/type,t4) eq 8 then tt4=1
 	if tt1 or tt2 or tt3 or tt4 then begin
 		store_data,'mvn_sta_P4_E',data=['mvn_sta_CC_P4A_E','mvn_sta_CE_P4B_E','mvn_sta_D0_P4C_E','mvn_sta_D2_P4D_E']
-		ylim,'mvn_sta_P4_E',.4,40000.,1
+		ylim,'mvn_sta_P4_E',.1,40000.,1
 		zlim,'mvn_sta_P4_E',1,1.e5,1
 		options,'mvn_sta_P4_E',ytitle='sta!CP4 !CEnergy!CeV'
 	endif
@@ -6333,7 +6368,7 @@ endif
 	if tt1 or tt2 or tt3 or tt4 then begin
 		store_data,'mvn_sta_P4_arc_E',data=['mvn_sta_CD_P4A_E','mvn_sta_CF_P4B_E','mvn_sta_D1_P4C_E','mvn_sta_D3_P4D_E']
 		ylim,'mvn_sta_P4_arc_E',.4,40000.,1
-		ylim,'mvn_sta_P4_arc_E',1,1.e4,1
+		ylim,'mvn_sta_P4_arc_E',.1,1.e4,1
 		options,'mvn_sta_P4_arc_E',ytitle='sta!CP4 arc !CEnergy!CeV'
 	endif
 

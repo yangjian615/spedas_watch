@@ -18,7 +18,7 @@
 ;                      ted_pro_eflux_bg: TED proton background integral energy flux, both telescopes, low (50-1000 eV) and high energy (1-20 keV)
 ;                      ted_pitch_angles: TED pitch angles (at satellite and foot of field line)
 ;                      ted_ifc_flag: TED IFC flag (0=off, 1=on)
-;                           
+;
 ;                    ---- Medium Energy Proton and Electron Detector ----
 ;                      mep_ele_flux: MEPED electron integral flux, in energy for each telescope
 ;                      mep_pro_flux: MEPED proton differential flux, in energy for each telescope
@@ -33,8 +33,8 @@
 ;             /downloadonly: Download the file but don't read it  
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-09-26 15:05:05 -0700 (Fri, 26 Sep 2014) $
-; $LastChangedRevision: 15873 $
+; $LastChangedDate: 2014-11-07 10:41:52 -0800 (Fri, 07 Nov 2014) $
+; $LastChangedRevision: 16150 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_load_data.pro $
 ;-
 
@@ -43,6 +43,8 @@
 pro poes_split_telescope_data, name, telescope_angles, tplotnames = tplotnames
     get_data, name, data=the_data, dlimits=the_dlimits
     if is_struct(the_data) && is_struct(the_dlimits) then begin
+        ; modify the dlimits struct with metadata for the new tplot variables
+        str_element, the_dlimits, 'labels', ['30-80 keV', '80-240 keV', '240-800 keV', '2500-6900 keV'], /add_replace
         store_data, name+'_tel'+telescope_angles[0], data={x: the_data.X, y: reform(the_data.Y[*,0,*])}, dlimits=the_dlimits
         store_data, name+'_tel'+telescope_angles[1], data={x: the_data.X, y: reform(the_data.Y[*,1,*])}, dlimits=the_dlimits
     
@@ -51,8 +53,136 @@ pro poes_split_telescope_data, name, telescope_angles, tplotnames = tplotnames
         append_array, tplotnames, name+'_tel'+telescope_angles[0]
         append_array, tplotnames, name+'_tel'+telescope_angles[1]
     endif else begin
-        dprint, dlevel=0, 'Error splitting the telescope data for ', name, '. Invalid data or dlimits structure.'
+        dprint, dlevel=0, 'Error splitting the telescope data for '+name+'. Invalid tplot variable?'
     endelse
+end
+
+pro poes_fix_metadata, tplotnames, prefix = prefix
+    if undefined(prefix) then prefix = ''
+    
+    ; loop through each tplot name, set the metadata for variables based on their name
+    for name_idx = 0, n_elements(tplotnames)-1 do begin
+        tplot_name = tplotnames[name_idx]
+        case tplot_name of
+            prefix + '_' + 'ted_ele_tel0_low_eflux': begin ; 0 deg telescope, low e- eflux
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
+                options, /def, tplot_name, 'labels', '0 deg, 50-1000 eV'
+                options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
+            end
+            prefix + '_' + 'ted_ele_tel30_low_eflux': begin ; 30 deg telescope, low e- eflux
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
+                options, /def, tplot_name, 'labels', '30 deg, 50-1000 eV'
+                options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
+            end
+            prefix + '_' + 'ted_ele_tel0_hi_eflux': begin ; 0 deg telescope, high e- eflux
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
+                options, /def, tplot_name, 'labels', '0 deg, 1-20 keV'
+                options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
+            end
+            prefix + '_' + 'ted_ele_tel30_hi_eflux': begin ; 30 deg telescope, high e- eflux
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
+                options, /def, tplot_name, 'labels', '30 deg, 1-20 keV'
+                options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
+            end
+            prefix + '_' + 'ted_pro_tel0_low_eflux': begin ; 0 deg telescope, low p+ eflux
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
+                options, /def, tplot_name, 'labels', '0 deg, 50-1000 eV'
+                options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
+            end
+            prefix + '_' + 'ted_pro_tel30_low_eflux': begin ; 30 deg telescope, low p+ eflux
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
+                options, /def, tplot_name, 'labels', '30 deg, 50-1000 eV'
+                options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
+            end
+            prefix + '_' + 'ted_pro_tel0_hi_eflux': begin ; 0 deg telescope, high p+ eflux
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
+                options, /def, tplot_name, 'labels', '0 deg, 1-20 keV'
+                options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
+            end
+            prefix + '_' + 'ted_pro_tel30_hi_eflux': begin ; 30 deg telescope, high p+ eflux
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
+                options, /def, tplot_name, 'labels', '30 deg, 1-20 keV'
+                options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
+            end
+            prefix + '_' + 'ted_alpha_0_sat': begin ; pitch angle at 0 deg telescope, at the satellite
+                options, /def, tplot_name, 'ytitle', 'TED_pitch angle_satellite'
+                options, /def, tplot_name, 'ysubtitle', '[degrees]'
+            end
+            prefix + '_' + 'ted_alpha_30_sat': begin ; pitch angle at 30 deg telescope, at the satellite
+                options, /def, tplot_name, 'ytitle', 'TED_pitch angle_satellite'
+                options, /def, tplot_name, 'ysubtitle', '[degrees]'
+            end
+            prefix + '_' + 'ted_alpha_0_foot': begin ; pitch angle at 0 deg telescope, mapped to foot of field line
+                options, /def, tplot_name, 'ytitle', 'TED_pitch angle_footprint'
+                options, /def, tplot_name, 'ysubtitle', '[degrees]'
+            end
+            prefix + '_' + 'ted_alpha_30_foot': begin ; pitch angle at the 30 deg telescope, mapped to foot of field line
+                options, /def, tplot_name, 'ytitle', 'TED_pitch angle_footprint'
+                options, /def, tplot_name, 'ysubtitle', '[degrees]'
+            end
+            prefix + '_' + 'ted_ele_max_flux_tel0': begin ; maximum differential e- flux, 0 deg telescope
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Max_Electron_Differential_Flux'
+                options, /def, tplot_name, 'labels', '0 deg telescope'
+                options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-eV]'
+            end
+            prefix + '_' + 'ted_ele_max_flux_tel30': begin ; maximum differential e- flux, 30 deg telescope
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Max_Electron_Differential_Flux'
+                options, /def, tplot_name, 'labels', '30 deg telescope'
+                options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-eV]'
+            end
+            prefix + '_' + 'ted_pro_max_flux_tel0': begin ; max differential p+ flux, 0 deg telescope
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Max_Proton_Differential_Flux'
+                options, /def, tplot_name, 'labels', '0 deg telescope'
+                options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-eV]'
+            end
+            prefix + '_' + 'ted_pro_max_flux_tel30': begin ; max differential p+ flux, 30 deg telescope
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Max_Proton_Differential_Flux'
+                options, /def, tplot_name, 'labels', '30 deg telescope'
+                options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-eV]'
+            end 
+            prefix + '_' + 'mep_pro_flux_p6': begin ; p+ integral flux, >6174 keV, contaminated by electrons
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Proton_Integral_Flux'
+                options, /def, tplot_name, 'labels', '>6174 keV'
+                options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str]'
+            end
+            prefix + '_' + 'mep_omni_flux': begin ; omni-directional p+ flux (MeV)
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'ytitle', 'Omni-directional_Proton_Flux'
+                options, /def, tplot_name, 'labels', ['25 MeV', '50 MeV', '100 MeV']
+                options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-MeV]'
+            end
+            prefix + '_' + 'meped_alpha_0_sat': begin ; pitch angles at the satellite, 0 deg detector
+                options, /def, tplot_name, 'ytitle', 'MEPED_pitch angle_satellite'
+                options, /def, tplot_name, 'ysubtitle', '[degrees]'
+            end
+            prefix + '_' + 'meped_alpha_90_sat': begin ; pitch angles at the satellite, 90 deg detector
+                options, /def, tplot_name, 'ytitle', 'MEPED_pitch angle_satellite'
+                options, /def, tplot_name, 'ysubtitle', '[degrees]'
+            end
+            prefix + '_' + 'meped_alpha_0_foot': begin ; pitch angles at the field foot print, 0 deg detector
+                options, /def, tplot_name, 'ytitle', 'MEPED_pitch angle_footprint'
+                options, /def, tplot_name, 'ysubtitle', '[degrees]'
+            end
+            prefix + '_' + 'meped_alpha_90_foot': begin ; pitch angles at teh field foot print, 90 deg detector
+                options, /def, tplot_name, 'ytitle', 'MEPED_pitch angle_footprint'
+                options, /def, tplot_name, 'ysubtitle', '[degrees]'
+            end
+        else: ; don't complain if this isn't a POES variable that needs its metadata fixed
+        endcase
+    endfor
 end
 
 pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffix = suffix, $
@@ -145,40 +275,51 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
         files = file_retrieve(relpathnames, _extra=source, /last_version)
         
         if keyword_set(downloadonly) then continue
+        ; warning: using /get_support_data with cdf2tplot will cause cdf2tplot to ignore the varformat keyword
         poes_cdf2tplot, files, prefix = prefix_array[j]+'_', suffix = suffix, verbose = verbose, $
-            /load_labels, tplotnames=tplotnames, varformat = varformat
+            tplotnames=tplotnames, varformat = varformat, /load_labels
+            
+        ; check for data types with data for multiple telescopes in a single tplot variable. 
+        mep_telescopes = ['0', '90']
+        mep_ele_flux = where(tplotnames eq prefix_array[j]+'_mep_ele_flux', ele_count)
+        if ele_count ne 0 then begin
+            poes_split_telescope_data, prefix_array[j]+'_mep_ele_flux', mep_telescopes, tplotnames = tplotnames
+            poes_split_telescope_data, prefix_array[j]+'_mep_ele_flux_err', mep_telescopes, tplotnames = tplotnames
+        endif
+
+        mep_pro_flux = where(tplotnames eq prefix_array[j]+'_mep_pro_flux', pro_count)
+        if pro_count ne 0 then begin
+            poes_split_telescope_data, prefix_array[j]+'_mep_pro_flux', mep_telescopes, tplotnames = tplotnames
+            poes_split_telescope_data, prefix_array[j]+'_mep_pro_flux_err', mep_telescopes, tplotnames = tplotnames
+        endif
+        
+        ted_telescopes = ['0', '30']
+        ted_ele_flux = where(tplotnames eq prefix_array[j]+'_ted_ele_flux', ele_count)
+        if ele_count ne 0 then begin
+            poes_split_telescope_data, prefix_array[j]+'_ted_ele_flux', ted_telescopes, tplotnames = tplotnames
+            poes_split_telescope_data, prefix_array[j]+'_ted_ele_flux_err', ted_telescopes, tplotnames = tplotnames
+        endif
+
+        ted_pro_flux = where(tplotnames eq prefix_array[j]+'_ted_pro_flux', pro_count)
+        if pro_count ne 0 then begin
+            poes_split_telescope_data, prefix_array[j]+'_ted_pro_flux', ted_telescopes, tplotnames = tplotnames
+            poes_split_telescope_data, prefix_array[j]+'_ted_pro_flux_err', ted_telescopes, tplotnames = tplotnames
+        endif
+        
+        ; fix the metadata for the newly loaded tplot variables (labels, etc) 
+        poes_fix_metadata, tplotnames, prefix = prefix_array[j]
+
     endfor
 
     ; make sure some tplot variables were loaded
     tn_list_after = tnames('*')
     new_tnames = ssl_set_complement([tn_list_before], [tn_list_after])
     
-    ; check for data types with data for multiple telescopes in a single tplot variable. 
-    for prefix_idx = 0, n_elements(prefix_array)-1 do begin
-        mep_ele_flux = where(new_tnames eq prefix_array[prefix_idx]+'_mep_ele_flux', ele_count)
-        if ele_count ne 0 then begin
-            poes_split_telescope_data, prefix_array[prefix_idx]+'_mep_ele_flux', ['0', '90'], tplotnames = tplotnames
-            poes_split_telescope_data, prefix_array[prefix_idx]+'_mep_ele_flux_err', ['0', '90'], tplotnames = tplotnames
-        endif
-
-        mep_pro_flux = where(new_tnames eq prefix_array[prefix_idx]+'_mep_pro_flux', pro_count)
-        if pro_count ne 0 then begin
-            poes_split_telescope_data, prefix_array[prefix_idx]+'_mep_pro_flux', ['0', '90'], tplotnames = tplotnames
-            poes_split_telescope_data, prefix_array[prefix_idx]+'_mep_pro_flux_err', ['0', '90'], tplotnames = tplotnames
-        endif
-        
-        ted_ele_flux = where(new_tnames eq prefix_array[prefix_idx]+'_ted_ele_flux', ele_count)
-        if ele_count ne 0 then begin
-            poes_split_telescope_data, prefix_array[prefix_idx]+'_ted_ele_flux', ['0', '30'], tplotnames = tplotnames
-            poes_split_telescope_data, prefix_array[prefix_idx]+'_ted_ele_flux_err', ['0', '30'], tplotnames = tplotnames
-        endif
-
-        ted_pro_flux = where(new_tnames eq prefix_array[prefix_idx]+'_ted_pro_flux', pro_count)
-        if pro_count ne 0 then begin
-            poes_split_telescope_data, prefix_array[prefix_idx]+'_ted_pro_flux', ['0', '30'], tplotnames = tplotnames
-            poes_split_telescope_data, prefix_array[prefix_idx]+'_ted_pro_flux_err', ['0', '30'], tplotnames = tplotnames
-        endif
-    endfor
+    ; check that some data was loaded
+    if n_elements(new_tnames) eq 1 && is_num(new_tnames) then begin
+        dprint, dlevel = 1, 'No new data was loaded.'
+        return
+    endif
 
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin

@@ -49,8 +49,8 @@
 ;HISTORY:
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-06 13:05:22 -0800 (Thu, 06 Nov 2014) $
-; $LastChangedRevision: 16144 $
+; $LastChangedDate: 2014-11-10 14:01:32 -0800 (Mon, 10 Nov 2014) $
+; $LastChangedRevision: 16159 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_d6_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -162,14 +162,9 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 ;Reset center time
   center_time = cmn_dat.time
   num_dists = n_elements(center_time)
-
-;Handle clock drift here, define a timespan
-  timespan, date, 1
 ;met_center at the spacecraft
-  met_center = mvn_spc_met_to_unixtime(center_time, /reverse, $
-                                       correct_clockdrift = 0)
-;shifted center_time
-  center_time = mvn_spc_met_to_unixtime(met_center, /correct_clockdrift)
+  timespan, date, 1
+  met_center = mvn_spc_met_to_unixtime(center_time, /reverse)
 
 ;Initialize
   otp_struct = -1

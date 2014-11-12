@@ -13,7 +13,7 @@
 ;NOTE:
 ;   XBINS is an output, not an input!
 ;Keywords:  (All optional)  Defaults are based on the size and range of input.
-;   BINSIZE:  Size of bins.
+;   BINSIZE:  Size of bins.  (recommend double precision!)
 ;   NBINS: force the output array to have this number of elements. (Use with RANGE)
 ;   RANGE: Limits of histogram
 ;   SHIFT :  Keyword that controls the location of bin edges.
@@ -21,11 +21,12 @@
 ;   NORMALIZE: Set keyword to return a normalized histogram (probability distribution).
 ;   REVERSE:  See REVERSE keyword for histogram
 ;   RETBINS:  If set then an array of bins (same size as r) is returned instead.
+;   EXTEND_RANGE:   if set then the range is extended on either end,  (no effect if range is set)
 ;See also: "average_hist", "histbins2d"
 ;
 ;-
 function histbins,x,xbins, shift=shift, range=range, binsize=binsize, log=log, $
-    nbins=nbins, anbins=anbins, retbins=retbins, reverse=ri, normalize=normalize
+    nbins=nbins, anbins=anbins, retbins=retbins, reverse=ri, normalize=normalize, extend_range=extend_range
 
   lg = keyword_set(log)
   bad  = where(finite(x) eq 0,nbad)
@@ -50,10 +51,12 @@ function histbins,x,xbins, shift=shift, range=range, binsize=binsize, log=log, $
   endif
 
   if not range_defined then begin   ; this should allow an empty bin on either side of the distribution
+     if keyword_set(extend_range) then exrange = [-1,1] else exrange = [0,0]
      if keyword_set(shift) then $
-       nrange = (floor(rg/binsize) + [-1,2])*binsize $
+       nrange = (floor(rg/binsize) + [0,1] + exrange)*binsize $
      else $
-       nrange = (floor(rg/binsize + .5d) + [-1.5d,1.5d])*binsize
+       nrange = (floor(rg/binsize + .5d) + [-.5d,.5d] + exrange)*binsize
+     if keyword_set(extend) then nrange
   endif else nrange = ((lg ? alog10(range) : range))
   
   ; might want to force nrange to be a float here!!
