@@ -195,7 +195,21 @@ pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplo
 
 
 	copy_data,'pos_gsm_b'+model,rbspx+'_mag_gsm_'+model
+
+        ;model output can be choppy (some problem within t89.pro). Smooth it here
+        get_data,posname,data=dd
+        dt = dd.x[1] - dd.x[0]
+        rbsp_detrend,rbspx+'_mag_gsm_'+model,dt/8.
+        store_data,rbspx+'_mag_gsm_'+model,/delete
+        copy_data,rbspx+'_mag_gsm_'+model+'_smoothed',rbspx+'_mag_gsm_'+model
+
+;; ;Test smoothing and compare to original
+;;         rbsp_detrend,rbspx+'_mag_gsm_'+model,dt/8.
+;;         tplot,[rbspx+'_mag_gsm_t89_smoothed',rbspx+'_mag_gsm_t89_smoothed_smoothed']
+;;         rbsp_detrend,[rbspx+'_mag_gsm_t89_smoothed',rbspx+'_mag_gsm_t89_smoothed_smoothed'],60.*2.
 	
+;;         ylim,[rbspx+'_mag_gsm_t89_smoothed',rbspx+'_mag_gsm_t89_smoothed_smoothed']+'_detrend',-200,200
+;;         tplot,[rbspx+'_mag_gsm_t89_smoothed',rbspx+'_mag_gsm_t89_smoothed_smoothed']+'_detrend'
 
 
 	;Transform the GSM mag model to GSE
@@ -208,6 +222,10 @@ pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplo
 
 	rbsp_gse2mgse,rbspx+'_mag_gse_'+model,reform(wsc_GSE_tmp3),newname=rbspx+'_mag_mgse_'+model
 
+
+        ;; tinterpol_mxn,rbspx+'_mag_gsm_'+model,rbspx+'_mag_gsm_for_subtract',newname=rbspx+'_mag_gsm_'+model
+        ;; tinterpol_mxn,rbspx+'_mag_mgse_'+model,rbspx+'_mag_mgse_for_subtract',newname=rbspx+'_mag_mgse_'+model
+        ;; tinterpol_mxn,rbspx+'_mag_gse_'+model,rbspx+'_mag_gse_for_subtract',newname=rbspx+'_mag_gse_'+model
 
 
 

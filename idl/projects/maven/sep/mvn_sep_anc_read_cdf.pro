@@ -19,9 +19,9 @@ pro mvn_sep_anc_read_cdf, file, tplot = tplot, sep_ancillary = sep_ancillary
  inf = sqrt(-7.7)
  
 ;epoch time.
- epoch = *cdfi.vars[0].dataptr
+ epoch = *cdfi.vars[1].dataptr
 ; UNIX time
- times = *cdfi.vars[3].dataptr
+ times = *cdfi.vars[0].dataptr
  
  nt = n_elements (times)
 ; here we define the tags for the ancillary/ephemeris data structure.

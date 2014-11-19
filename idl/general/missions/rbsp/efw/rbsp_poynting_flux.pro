@@ -206,7 +206,7 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
 
      if ~keyword_set(method2) then begin
 
-        goo = sample_rate(times,out_med_avg=medavg)
+        goo = rbsp_sample_rate(times,out_med_avg=medavg)
         rate = medavg[0]
 
                                 ;Find lower and upper periods for smoothing

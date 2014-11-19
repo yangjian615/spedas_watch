@@ -571,18 +571,23 @@ endif else begin
 ;drop first or last point if it is MOM data and has VAF data nearby
                                  s1j = s1[j] ;is the index of this source=1 point in the full array
                                  If(s1j Eq 0) Then Begin
-                                    If(source[s1j+1] Eq 0 && (time[s1j+1]-time[s1j]) Lt 6.0) Then keep[s1j] = 0b
+                                    If(source[s1j+1] Eq 0 && (time[s1j+1]-time[s1j]) Lt 120.0) Then keep[s1j] = 0b
                                  Endif Else If(s1j Eq nsource-1) Then begin
-                                    If(source[s1j-1] Eq 0 && (time[s1j]-time[s1j-1]) Lt 6.0) Then keep[s1j] = 0b
+                                    If(source[s1j-1] Eq 0 && (time[s1j]-time[s1j-1]) Lt 120.0) Then keep[s1j] = 0b
                                  Endif Else Begin
                                     If(source[s1j+1] Eq 0 && source[s1j-1] Eq 0 && $
-                                       (time[s1j+1]-time[s1j]) Lt 6.0 && (time[s1j]-time[s1j-1]) Lt 6.0) Then Begin
+                                       (time[s1j+1]-time[s1j]) Lt 120.0 && (time[s1j]-time[s1j-1]) Lt 120.0) Then Begin
                                        keep[s1j] = 0b
                                        If(keyword_set(use_vaf_offset)) Then Begin
                                           aa = (time[s1j]-time[s1j-1])/(time[s1j+1]-time[s1j-1])
                                           scp_test = scpot[s1j-1]*(1.0-aa)+scpot[s1j+1]*aa-scpot[s1j]
-                                          If(nvaf_offset Eq 0) Then vaf_offset = scp_test $
-                                          Else vaf_offset = [vaf_offset, scp_test]
+                                          If(nvaf_offset Eq 0) Then Begin
+                                             vaf_offset = scp_test
+                                             tvaf_offset = time[s1j]
+                                          Endif Else Begin
+                                             vaf_offset = [vaf_offset, scp_test]
+                                             tvaf_offset = [tvaf_offset, time[s1j]]
+                                          Endelse
                                           nvaf_offset = nvaf_offset+1
                                        Endif
                                     Endif
@@ -595,8 +600,19 @@ endif else begin
                               scpot = scpot[ok_source]
                               source = source[ok_source]
                               If(keyword_set(use_vaf_offset) && nvaf_offset Gt 0) Then Begin
+;Get a smoothed, interpolated vaf_offset, if you have enough data
                                  s11 = where(source Eq 1, ns11)
-                                 If(ns11 Gt 0) Then scpot(s11)=scpot(s11)+median(vaf_offset)
+                                 If(ns11 Gt 0) Then Begin
+                                    If(nvaf_offset Gt 10 && use_vaf_offset[0] Ne 2) Then Begin
+                                       vaf_offset0 = vaf_offset
+                                       vaf_offset = simple_despike_1d(vaf_offset, threshold = 1.0)
+                                       vaf_offset = smooth_in_time(vaf_offset, tvaf_offset, 120.0)
+;extrapolation could be a problem, so keep min and max values 
+                                       vaf_offset_limits = minmax(vaf_offset)
+                                       vaf_offset_s11 = (interpol(vaf_offset, tvaf_offset, time[s11]) > vaf_offset_limits[0]) < vaf_offset_limits[1]
+                                       scpot[s11] = scpot[s11]+vaf_offset_s11
+                                    Endif Else scpot[s11]=scpot[s11]+median(vaf_offset)
+                                 Endif
                               Endif
                            Endif Else Begin
                               dprint, 'No good scpot points after source check'

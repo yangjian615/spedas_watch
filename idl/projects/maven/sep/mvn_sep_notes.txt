@@ -27,9 +27,15 @@
 2014-05-06           ,  Clean SEP with electrons and no ions
 2014-05-07           ,  Noise measurement commanded off - Looking for interference with T measurement Should turn back on one week later
 
+2014-07-14/10:00     , few hours with low energy ions.  Probably not PUO because they are observed in all look directions
+ 
+2014-07-16/21:18           ,  All instruments turned off to prepare for MOI
 
 2014-09-22/01:40     ,  MOI  - start of 35 hour orbits
-2014-10-19/18:31     ,  Comet Siding Spring CA time
+2014-10-19/18:31     ,  Comet Siding Spring CA time,   High energy ion flux drops out at this time
 2014-10-19/20:04     ,  Expected Peak Dust flux from Siding Spring encounter
 
-; cksmrg -k /disks/data/misc/spice/naif/MAVEN/kernels/sclk/MVN_SCLKSCET.00004.tsc /disks/data/misc/spice/naif/generic_kernels/lsk/naif0010.tls /disks/data/misc/spice/naif/MAVEN/kernels/fk/maven_v03.tf -I mvn_sc_mon_201403.bc -O mvn_sc_mrg3_201403.bc -S "Merged data" -F "New Data" -B -202000 -R -202901 -A KEEP -T 96 hours
+2014-10-20/21:40     ,  Nice 10 second period oscillations in SEP1_B-O detector
+
+
+2014-11-09/05:21     , Start of SEP APP scan #2  - Really great flux oscillations at ~10 second period.

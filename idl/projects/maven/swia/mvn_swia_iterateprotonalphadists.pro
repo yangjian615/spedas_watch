@@ -18,8 +18,8 @@
 ;	NREPS: Number of iterations (default 4)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-03 12:15:37 -0700 (Fri, 03 Oct 2014) $
-; $LastChangedRevision: 15916 $
+; $LastChangedDate: 2014-11-17 08:38:14 -0800 (Mon, 17 Nov 2014) $
+; $LastChangedRevision: 16193 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_iterateprotonalphadists.pro $
 ;
 ;-
@@ -28,7 +28,7 @@
 
 pro mvn_swia_protonalphadist, dat, ndat, protonparams = protonparams, alphaparams = alphaparams
 
-restore,'~jhalekas/Documents/Work/Research/SWIA/mdl/allgresparr.sav'
+restore,'~jazzman/swia/mdl/allgresparr.sav'
 
 compile_opt idl2
 

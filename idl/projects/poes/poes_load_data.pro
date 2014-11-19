@@ -33,8 +33,8 @@
 ;             /downloadonly: Download the file but don't read it  
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-11-07 10:41:52 -0800 (Fri, 07 Nov 2014) $
-; $LastChangedRevision: 16150 $
+; $LastChangedDate: 2014-11-14 10:13:31 -0800 (Fri, 14 Nov 2014) $
+; $LastChangedRevision: 16184 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_load_data.pro $
 ;-
 
@@ -65,51 +65,55 @@ pro poes_fix_metadata, tplotnames, prefix = prefix
         tplot_name = tplotnames[name_idx]
         case tplot_name of
             prefix + '_' + 'ted_ele_tel0_low_eflux': begin ; 0 deg telescope, low e- eflux
+                options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '0 deg, 50-1000 eV'
+                options, /def, tplot_name, 'labels', '0 deg_50-1000 eV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_ele_tel30_low_eflux': begin ; 30 deg telescope, low e- eflux
+                options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '30 deg, 50-1000 eV'
+                options, /def, tplot_name, 'labels', '30 deg_50-1000 eV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_ele_tel0_hi_eflux': begin ; 0 deg telescope, high e- eflux
+                options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '0 deg, 1-20 keV'
+                options, /def, tplot_name, 'labels', '0 deg_1-20 keV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_ele_tel30_hi_eflux': begin ; 30 deg telescope, high e- eflux
+                options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '30 deg, 1-20 keV'
+                options, /def, tplot_name, 'labels', '30 deg_1-20 keV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_pro_tel0_low_eflux': begin ; 0 deg telescope, low p+ eflux
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '0 deg, 50-1000 eV'
+                options, /def, tplot_name, 'labels', '0 deg_50-1000 eV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_pro_tel30_low_eflux': begin ; 30 deg telescope, low p+ eflux
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '30 deg, 50-1000 eV'
+                options, /def, tplot_name, 'labels', '30 deg_50-1000 eV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_pro_tel0_hi_eflux': begin ; 0 deg telescope, high p+ eflux
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '0 deg, 1-20 keV'
+                options, /def, tplot_name, 'labels', '0 deg_1-20 keV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_pro_tel30_hi_eflux': begin ; 30 deg telescope, high p+ eflux
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '30 deg, 1-20 keV'
+                options, /def, tplot_name, 'labels', '30 deg_1-20 keV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_alpha_0_sat': begin ; pitch angle at 0 deg telescope, at the satellite
@@ -131,25 +135,25 @@ pro poes_fix_metadata, tplotnames, prefix = prefix
             prefix + '_' + 'ted_ele_max_flux_tel0': begin ; maximum differential e- flux, 0 deg telescope
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Max_Electron_Differential_Flux'
-                options, /def, tplot_name, 'labels', '0 deg telescope'
+                options, /def, tplot_name, 'labels', '0 deg_telescope'
                 options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-eV]'
             end
             prefix + '_' + 'ted_ele_max_flux_tel30': begin ; maximum differential e- flux, 30 deg telescope
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Max_Electron_Differential_Flux'
-                options, /def, tplot_name, 'labels', '30 deg telescope'
+                options, /def, tplot_name, 'labels', '30 deg_telescope'
                 options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-eV]'
             end
             prefix + '_' + 'ted_pro_max_flux_tel0': begin ; max differential p+ flux, 0 deg telescope
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Max_Proton_Differential_Flux'
-                options, /def, tplot_name, 'labels', '0 deg telescope'
+                options, /def, tplot_name, 'labels', '0 deg_telescope'
                 options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-eV]'
             end
             prefix + '_' + 'ted_pro_max_flux_tel30': begin ; max differential p+ flux, 30 deg telescope
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'ytitle', 'Max_Proton_Differential_Flux'
-                options, /def, tplot_name, 'labels', '30 deg telescope'
+                options, /def, tplot_name, 'labels', '30 deg_telescope'
                 options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-eV]'
             end 
             prefix + '_' + 'mep_pro_flux_p6': begin ; p+ integral flux, >6174 keV, contaminated by electrons

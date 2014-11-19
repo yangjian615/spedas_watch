@@ -24,14 +24,13 @@
 ;	tbd	add dead3 to the SIS documentation
 ;	tbd	current code uses swp2gfan and swp2gfdf to help approximate gf for omni-directional apids - c0,c2,c4,c6
 ;			need to check whether this properly handles theta and azimuthal angle ranges
-;	tbd	check that corrections to gf and integ_t have not screw up program
+;	tbd	correct program for leakage by electrostatic attenuator at low energy
 ;	tbd	may need to change the code that throws away extra data at end of file
 
 ;	fix	eff array
 ;	add	eff_ind coding from time and swp_ind
 ;	mod	eff dimension
 
-;	add	natt,nswp,neff,nmlut
 ;	mod	data_names
 ;	mod	bkg so it varies with time (it will contain the estimated straggling counts)
 ;	mod	dead so it varies with time 
@@ -1750,6 +1749,7 @@ print,'Processing apid c2'
 		npts=1024									; 32Ex1Dx1Ax32M
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
+	if nn ge 2 then begin
 
 		get_data,'mvn_STA_C2_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
@@ -1867,12 +1867,12 @@ print,'Processing apid c2'
 		options,'mvn_sta_C2_P1B_M','spec',1
 		options,'mvn_sta_C2_P1B_E',ytitle='sta!CP1B-C2!C!CEnergy!CeV'
 		options,'mvn_sta_C2_P1B_M',ytitle='sta!CP1B-C2!C!CMass!Camu'
-
+	endif
 	endif
 
 ; Make C2 common block
 
-   if size(/type,t) eq 8 and nn ge 1 then begin
+   if size(/type,t) eq 8 and nn ge 2 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -2014,6 +2014,7 @@ print,'Processing apid c4'
 		npts=256									; 4Ex1Dx1Ax64M
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
+	if nn ge 2 then begin
 
 		get_data,'mvn_STA_C4_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
@@ -2141,10 +2142,11 @@ print,'Processing apid c4'
 		options,'mvn_sta_C4_P1C_E',ytitle='sta!CP1C-C4!C!CEnergy!CeV'
 		options,'mvn_sta_C4_P1C_M',ytitle='sta!CP1C-C4!C!CMass!Camu'
 	endif
+	endif
 
 ; Make C4 common block
 
-   if size(/type,t) eq 8 and nn ge 1 then begin
+   if size(/type,t) eq 8 and nn ge 2 then begin
 
 	nenergy = 4
 	avg_nrg = 64/nenergy

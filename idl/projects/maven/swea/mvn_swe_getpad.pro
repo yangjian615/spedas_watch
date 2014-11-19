@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2014-11-17 16:49:19 -0800 (Mon, 17 Nov 2014) $
+; $LastChangedRevision: 16206 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -147,8 +147,12 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
 ; now, I will not include elevation variation.
 
     pad[n].group = pkt.group
-    pad[n].energy = swe_swp[*,pkt.group] # replicate(1.,16)
-    pad[n].denergy = transpose(swe_de[pam.jel,*,pkt.group])
+    energy = swe_swp[*,0] # replicate(1.,16)
+    pad[n].energy = energy
+    
+    pad[n].denergy[0,*] = abs(energy[0,*] - energy[1,*])
+    for i=1,62 do pad[n].denergy[i,*] = abs(energy[i-1,*] - energy[i+1,*])/2.
+    pad[n].denergy[63,*] = abs(energy[62,*] - energy[63,*])
 
 ; Geometric factor.  When using V0, the geometric factor is a function of
 ; energy.  There is also variation in azimuth and elevation.
@@ -188,7 +192,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
     rate = counts/(swe_integ_t*pad[n].dt_arr)  ; raw count rate
     dtc = 1. - rate*swe_dead
 
-    indx = where(dtc lt 0.2, count)            ; maximum 5x deadtime correction
+    indx = where(dtc lt swe_min_dtc, count)    ; maximum deadtime correction
     if (count gt 0L) then dtc[indx] = !values.f_nan
     
     pad[n].dtc = dtc                           ; corrected count rate = rate/dtc

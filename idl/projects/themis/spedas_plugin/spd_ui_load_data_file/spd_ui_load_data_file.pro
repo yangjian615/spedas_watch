@@ -26,9 +26,9 @@
 ;NOTES:
 ;  
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-01 20:07:45 -0700 (Tue, 01 Jul 2014) $
-;$LastChangedRevision: 15500 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-11-12 17:32:04 -0800 (Wed, 12 Nov 2014) $
+;$LastChangedRevision: 16176 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file.pro $
 ;
 ;-
@@ -298,14 +298,14 @@ pro spd_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
   
   observLabel = Widget_Label(o1ListBase, Value=observ_label, /align_left)
   observList = Widget_List(o1ListBase, Value=*validobserv, uval='OBSERV_LIST', $
-                         /Multiple, XSize=16, YSize=11)
+                         /Multiple, scr_xsize=100, scr_ysize=185)
   
   level1Label = Widget_Label(level1Base, Value='Level 1:', /align_left)
-  level1List = Widget_List(level1Base, Value=*dlist1, XSize=16, /Multiple, YSize=11, $
+  level1List = Widget_List(level1Base, Value=*dlist1, scr_xsize=120, /Multiple, scr_ysize=185, $
                            Uvalue='LEVEL1')
   
   level2Label = Widget_Label(level2Base, Value='Level 2:', /align_left)
-  level2List = Widget_List(level2Base, Value=*dlist2, /Multiple, XSize=16, YSize=11, $
+  level2List = Widget_List(level2Base, Value=*dlist2, /Multiple, scr_xsize=120, scr_ysize=185, $
                            Uvalue='LEVEL2')
                            
   ;validCoords = [ ' DSL ', ' GSM ', ' SPG  ', ' SSL ',' GSE ', ' GEI ']

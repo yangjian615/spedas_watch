@@ -19,9 +19,9 @@
 ;
 ;
 ; VERSION:
-; $LastChangedBy: kersten $
-; $LastChangedDate: 2013-11-26 08:34:58 -0800 (Tue, 26 Nov 2013) $
-; $LastChangedRevision: 13591 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2014-11-14 12:25:50 -0800 (Fri, 14 Nov 2014) $
+; $LastChangedRevision: 16186 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_corotation_efield.pro $
 ;
 ;-
@@ -83,10 +83,12 @@ pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load
 		rbsp_uvw_to_mgse,probe,'rbsp'+probe+'_emfisis_quicklook_Mag_tmp',/no_spice_load
 
 
+                time4 = time_string(time3) ;put into yyyy-mm-dd/hh:mm:ss format
+
 		get_data,'rbsp'+probe+'_emfisis_quicklook_Mag_tmp_mgse',data=Bmag
-		wsc_gsetmp = [[interpol(wsc_GSE[0,*],time_double(time3),Bmag.x)],$
-					[interpol(wsc_GSE[1,*],time_double(time3),Bmag.x)],$
-					[interpol(wsc_GSE[2,*],time_double(time3),Bmag.x)]]
+		wsc_gsetmp = [[interpol(wsc_GSE[0,*],time_double(time4),Bmag.x)],$
+					[interpol(wsc_GSE[1,*],time_double(time4),Bmag.x)],$
+					[interpol(wsc_GSE[2,*],time_double(time4),Bmag.x)]]
 
 		rbsp_mgse2gse,'rbsp'+probe+'_emfisis_quicklook_Mag_tmp_mgse',wsc_gsetmp,probe=probe,/no_spice_load,newname='rbsp'+probe+'_emfisis_quicklook_Mag_gse'
 
@@ -163,12 +165,12 @@ pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load
 		return
 	endif
 
-
+        time4 = time_string(time3) ;put into yyyy-mm-dd/hh:mm:ss format
 
 	;put the pointing direction on the same timestamps as the Efield data
-	wsc_GSE2 = [[interpol(wsc_GSE[0,*],time_double(time3),Ecoro.x)],$
-				[interpol(wsc_GSE[1,*],time_double(time3),Ecoro.x)],$
-				[interpol(wsc_GSE[2,*],time_double(time3),Ecoro.x)]]
+	wsc_GSE2 = [[interpol(wsc_GSE[0,*],time_double(time4),Ecoro.x)],$
+				[interpol(wsc_GSE[1,*],time_double(time4),Ecoro.x)],$
+				[interpol(wsc_GSE[2,*],time_double(time4),Ecoro.x)]]
 	if is_struct(Ecoro) then rbsp_gse2mgse,'rbsp'+probe+'_E_coro_gse',reform(wsc_GSE2),newname='rbsp'+probe+'_E_coro_mgse'
 	if is_struct(Ecoro) then rbsp_gse2mgse,'rbsp'+probe+'_state_vel_coro_gse',reform(wsc_GSE2),newname='rbsp'+probe+'_state_vel_coro_mgse'
 

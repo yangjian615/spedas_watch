@@ -52,6 +52,7 @@ pro rbsp_efw_position_velocity_crib,no_spice_load=no_spice_load,noplot=noplot,no
 	strput,time3,'T',10 ; convert TPLOT time string 'yyyy-mm-dd/hh:mm:ss.msec' to ISO 'yyyy-mm-ddThh:mm:ss.msec'
 	cspice_str2et,time3,et2 ; convert ISO time string to SPICE ET
 
+
 	cspice_pxform,'RBSPA_SCIENCE','GSE',et2,pxforma
 	cspice_pxform,'RBSPB_SCIENCE','GSE',et2,pxformb
 
@@ -63,23 +64,26 @@ pro rbsp_efw_position_velocity_crib,no_spice_load=no_spice_load,noplot=noplot,no
 	for qq=0l,ntimes-1 do wsc_GSEa[*,qq] = pxforma[*,*,qq] ## wsc[*,qq]
 	for qq=0l,ntimes-1 do wsc_GSEb[*,qq] = pxformb[*,*,qq] ## wsc[*,qq]
 
-	store_data,'rbspa_spinaxis_direction_gse',data={x:time_double(time3),y:transpose(wsc_GSEa)}
-	store_data,'rbspb_spinaxis_direction_gse',data={x:time_double(time3),y:transpose(wsc_GSEb)}
+
+        time4 = time_string(time3)
+
+	store_data,'rbspa_spinaxis_direction_gse',data={x:time_double(time4),y:transpose(wsc_GSEa)}
+	store_data,'rbspb_spinaxis_direction_gse',data={x:time_double(time4),y:transpose(wsc_GSEb)}
 
 
 
 ;Transform velocity to MGSE 
 
 	get_data,'rbspa_state_vel_gse',data=tmpp
-	wsc_GSE_tmp = [[interpol(wsc_GSEa[0,*],time_double(time3),tmpp.x)],$
-				   [interpol(wsc_GSEa[1,*],time_double(time3),tmpp.x)],$
-				   [interpol(wsc_GSEa[2,*],time_double(time3),tmpp.x)]]
+	wsc_GSE_tmp = [[interpol(wsc_GSEa[0,*],time_double(time4),tmpp.x)],$
+				   [interpol(wsc_GSEa[1,*],time_double(time4),tmpp.x)],$
+				   [interpol(wsc_GSEa[2,*],time_double(time4),tmpp.x)]]
 	rbsp_gse2mgse,'rbspa_state_vel_gse',reform(wsc_GSE_tmp),newname='rbspa_state_vel_mgse'
 
 	get_data,'rbspb_state_vel_gse',data=tmpp
-	wsc_GSE_tmp = [[interpol(wsc_GSEb[0,*],time_double(time3),tmpp.x)],$
-				   [interpol(wsc_GSEb[1,*],time_double(time3),tmpp.x)],$
-				   [interpol(wsc_GSEb[2,*],time_double(time3),tmpp.x)]]
+	wsc_GSE_tmp = [[interpol(wsc_GSEb[0,*],time_double(time4),tmpp.x)],$
+				   [interpol(wsc_GSEb[1,*],time_double(time4),tmpp.x)],$
+				   [interpol(wsc_GSEb[2,*],time_double(time4),tmpp.x)]]
 	rbsp_gse2mgse,'rbspb_state_vel_gse',reform(wsc_GSE_tmp),newname='rbspb_state_vel_mgse'
 
 

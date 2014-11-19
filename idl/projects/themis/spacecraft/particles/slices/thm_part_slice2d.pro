@@ -241,6 +241,7 @@ pro thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
                       xgrid=xgrid, ygrid=ygrid, slice_info=slice_info, $
                       onecount=onecount, $
                     ; Other
+                      fix_counts=fix_counts, $
                       msg_obj=msg_obj, fail=fail, $
                       _extra = _extra
 
@@ -419,7 +420,7 @@ sunvec = thm_part_slice2d_getsun(ds, trange=trange, fail=fail)
 ;------------------------------------------------------------
 thm_part_slice2d_getdata, ds, units=units, trange=trange, regrid=regrid, erange=erange, energy=energy, $ 
                  data=datapoints, rad=rad, phi=phi, theta=theta, dr=dr, dp=dp, dt=dt, $
-                 fail=fail, _extra=_extra
+                 fix_counts=fix_counts, fail=fail, _extra=_extra
 if keyword_set(fail) then return
 
 
@@ -576,6 +577,62 @@ if keyword_set(smooth) then begin
   thm_part_slice2d_smooth, part_slice, smooth
 endif
 
+
+
+; If this run was used to calculate a flat-count slice then return through the same var
+if keyword_set(fix_counts) then begin
+  fix_counts = part_slice
+  return
+endif
+
+
+; Apply count threshold/subtraction
+; This will create a copy of the slice with all bins set to the specified
+; threshold and use it for masking/subtraction. 
+if keyword_set(count_threshold) or keyword_set(subtract_counts) then begin
+
+  fix_counts = keyword_set(subtract_counts) ? subtract_counts:count_threshold
+
+  thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
+    ; Use a flat distribution at N counts
+    fix_counts=fix_counts, $
+    ; Time
+    timewin=timewin, slice_time=slice_time_in, center_time=center_time, $
+    ; Range
+    erange=erange, thetarange=thetarange, zdirrange=zdirrange, $
+    ; Orientations
+    coord=coord_in, rotation=rotation, slice_x=slice_x, slice_norm=slice_z,  displacement=displacement_in, $
+    ; Support Data
+    mag_data=mag_data, vel_data=vel_data, $
+    ; Type
+    type=type, two_d_interp=two_d_interp, three_d_interp=three_d_interp, $
+    ; Other
+    units=units, resolution=resolution, average_angle=average_angle, smooth=smooth, $
+    subtract_bulk=subtract_bulk, regrid=regrid_in, slice_width=slice_width, log=log, energy=energy, $
+    fail=fail
+
+  if ~array_equal(size(/dim,part_slice),size(/dim,fix_counts)) and ~keyword_set(fail) then begin
+    fail = 'Dimension of reference slice do not match data'
+  endif
+
+  if keyword_set(fail) then begin
+    fail = 'Error calculating count threshold:  ' + fail
+    dprint, dlevel=1, fail
+    return
+  endif
+  
+  if keyword_set(subtract_counts) then begin
+    part_slice = (part_slice - fix_counts) > 0
+  endif
+  
+  if keyword_set(count_threshold) then begin
+    btidx = where(part_slice lt fix_counts,nbt)
+    if nbt gt 0 then begin
+      part_slice[btidx] = 0
+    endif
+  endif
+
+endif
 
 
 ; Pass out slice information for plotting

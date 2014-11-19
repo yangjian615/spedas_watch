@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:17:11 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16045 $
+; $LastChangedDate: 2014-11-17 16:48:26 -0800 (Mon, 17 Nov 2014) $
+; $LastChangedRevision: 16204 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -362,6 +362,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 ; the deadtime correction is different for APID's A4 and A5.
 
   swe_dead = 2.8e-6              ; IRAP calibration, one MCP-Anode-Preamp chain
+  swe_min_dtc = 0.25             ; max 4x deadtime correction
 
 ; Electron rest mass
 

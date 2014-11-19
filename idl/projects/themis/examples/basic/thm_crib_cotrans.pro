@@ -12,10 +12,17 @@
 ;
 ; Notes:
 ; None.
+; 
+; See Also:
+;    examples/advanced/thm_crib_fac.pro (field aligned coordinate systems)
+;    examples/advanced/thm_crib_mva.pro (minimum variance coordinate systems)
+;    examples/advanced/thm_crib_rxy.pro (radial position coordinate systems)
+;    examples/advanced/thm_crib_slp_sse.pro (selenocentric coordinate systems)
+;    
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedDate: 2014-11-17 12:29:10 -0800 (Mon, 17 Nov 2014) $
+; $LastChangedRevision: 16201 $
 ; $URL $
 ;-
 
@@ -127,5 +134,19 @@ oplot, pos_gei[*,0], pos_gei[*,1], color=150
 oplot, pos_gse.y[*,0], pos_gse.y[*,1], color=30
 
 print, 'This is a plot of the coordinate transforms using cotrans with array data'
+stop
+
+;****************************************************************
+; Many THEMIS load routines can automatically generate
+; Your desired output coordinates
+;****************************************************************
+
+thm_load_fgm,probe='a',coord='mag'
+thm_load_efi,probe='a',coord='gei'
+thm_load_fit,probe='a',coord='gsm'
+;etc...
+
+print,'Data loaded and transformed automatically'
+stop
 
 END

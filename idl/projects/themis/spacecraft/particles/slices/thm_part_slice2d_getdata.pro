@@ -34,14 +34,14 @@
 ;  2012-12-21 - 2013-07-02 count threshold applied before averaging
 ; 
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-11-07 18:26:20 -0800 (Fri, 07 Nov 2014) $
-;$LastChangedRevision: 16155 $
+;$LastChangedDate: 2014-11-13 17:20:09 -0800 (Thu, 13 Nov 2014) $
+;$LastChangedRevision: 16181 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getdata.pro $
 ;-
 
 pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $ 
                              regrid=regrid, erange=erange, energy=energy, $
-                             sst_sun_bins=sst_sun_bins, $
+                             sst_sun_bins=sst_sun_bins, fix_counts=fix_counts, $
                              rad=rad_out, phi=phi_out, theta=theta_out, $
                              dp=dp_out, dt=dt_out, dr=dr_out, $
                              data=data_out, $
@@ -88,6 +88,16 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
       thm_part_apply_eclipse, dist, eclipse=eclipse
       
       
+      ;Set counts to requested value.  This is for recursive calls
+      ;with count_threshold/subtract_counts options
+      if ~undefined(fix_counts) then begin
+        if strlowcase(dist.units_name) ne 'counts' then begin
+          fail = 'Data is not in counts, cannot determine '+strtrim(fix_counts,2)+'-count distribution'
+          return
+        endif
+        dist.data[*] = float(fix_counts)
+      endif 
+      
       ;If this sample's angle or energy bins or mass differ from last then
       ;collate any aggregated data and continue 
       if ~thm_part_checkbins(dist, last) then begin 
@@ -102,11 +112,6 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
           phi_out = phi_out, dp_out = dp_out, $
           theta_out = theta_out, dt_out = dt_out, $
           
-          reference_dist = dist, $
-          units = units, $
-          regrid = regrid, $
-          subtract_counts = subtract_counts, $
-          count_threshold = count_threshold, $
           fail = fail
         if keyword_set(fail) then return
       endif
@@ -194,13 +199,9 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
     rad_out = rad_out, dr_out = dr_out, $
     phi_out = phi_out, dp_out = dp_out, $
     theta_out = theta_out, dt_out = dt_out, $
-    
-    reference_dist = dist, $
-    units = units, $
-    regrid = regrid, $
-    subtract_counts = subtract_counts, $
-    count_threshold = count_threshold, $
+
     fail = fail
+
     
   if keyword_set(fail) then return
   

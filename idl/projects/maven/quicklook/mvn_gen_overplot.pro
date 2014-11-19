@@ -57,8 +57,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-22 20:22:49 -0700 (Wed, 22 Oct 2014) $
-; $LastChangedRevision: 16023 $
+; $LastChangedDate: 2014-11-12 15:05:40 -0800 (Wed, 12 Nov 2014) $
+; $LastChangedRevision: 16172 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_overplot.pro $
 ;-
 Pro mvn_gen_overplot, date = date, time_range = time_range, $
@@ -89,7 +89,7 @@ If(is_struct(dddd)) Then Begin
    store_data, 'scpot_av', data = {x:dddd.x, y:dddd.y}
    store_data, 'minus_scpot_av', data = {x:dddd.x, y:-dddd.y}
    cc = get_colors()
-   swe_v1 = scpot_overlay('scpot_av', 'swe_espec', sc_line_color  = cc.white)
+   swe_v1 = scpot_overlay('scpot_av', 'swe_espec', sc_line_color  = cc.black)
    if(is_string(swe_v1)) then begin ;if this fails, then options creates a structure
       options, swe_v1, 'yrange', [5.0, 5000.0]
       options, swe_v1, 'ystyle', 1

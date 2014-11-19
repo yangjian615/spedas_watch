@@ -15,9 +15,9 @@
 ;OUTPUT:
 ; None
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-05-23 11:23:25 -0700 (Fri, 23 May 2014) $
-;$LastChangedRevision: 15219 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2014-11-12 17:05:47 -0800 (Wed, 12 Nov 2014) $
+;$LastChangedRevision: 16175 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file_itype_sel.pro $
 ;-
 pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
@@ -206,6 +206,9 @@ pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
   state.validobserv = ptr_new(validobserv)
   if ptr_valid(state.validobservlist) then ptr_free, state.validobservlist
   state.validobservlist = ptr_new(validobservlist)
+  
+  dlist1_all = dlist1_all[sort(dlist1_all)]
+  dlist2_all = dlist2_all[sort(dlist2_all)]  
   
   dlist1 = dlist1_all & dlist2 = dlist2_all
 

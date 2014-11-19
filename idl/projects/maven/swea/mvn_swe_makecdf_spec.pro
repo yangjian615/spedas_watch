@@ -16,15 +16,16 @@
 ;   VERSION: integer; software version - should be hardcoded when/if software changes
 ; HISTORY:
 ;   created by Matt Fillingim (with code stolen from JH and RL)
+;   Added directory keyword, and deletion of old files, jmm, 2014-11-14
 ; VERSION:
-;   $LastChangedBy: mattf $
-;   $LastChangedDate: 2014-11-10 15:22:21 -0800 (Mon, 10 Nov 2014) $
-;   $LastChangedRevision: 16162 $
+;   $LastChangedBy: jimm $
+;   $LastChangedDate: 2014-11-14 17:24:23 -0800 (Fri, 14 Nov 2014) $
+;   $LastChangedRevision: 16192 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_spec.pro $
 ;
 ;-
 
-pro mvn_swe_makecdf_spec, data, file = file, version = version
+pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = directory
 
 @mvn_swe_com
 
@@ -65,6 +66,8 @@ yyyymmdd = yyyy + mm + dd
 if (not keyword_set(file)) then begin
 
 ; hardcoded data directory path
+; Added directory keyword, for testing, jmm, 2014-11-14
+  if (keyword_set(directory)) then path = directory[0] else $
   path = '/disks/data/maven/data/sci/swe/l2/' + yyyy + '/' + mm + '/'
 
 ; create file name using SIS convention
@@ -556,5 +559,8 @@ cdf_attput, fileid, 'CATDESC',  'num_spec', $
 cdf_varput, fileid, 'num_spec', nrec
 
 cdf_close,fileid
+
+;Delete old files, jmm, 2014-11-14
+if (nfiles Gt 0) then for j = 0, nfiles-1 do file_delete, file_list[j]
 
 end

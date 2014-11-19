@@ -5,7 +5,7 @@
 ;       Plots 2D slice for the times and data types selected by cursor.
 ;       Hold down the left mouse button and slide for a movie effect.
 ; CALLING SEQUENCE:
-;       mvn_swia_snap
+;       mvn_swia_slice2d_snap
 ; INPUTS:
 ;       
 ; KEYWORDS:
@@ -15,8 +15,8 @@
 ;       Yuki Harada on 2014-10-10
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2014-10-10 10:27:10 -0700 (Fri, 10 Oct 2014) $
-; $LastChangedRevision: 15974 $
+; $LastChangedDate: 2014-11-17 10:52:38 -0800 (Mon, 17 Nov 2014) $
+; $LastChangedRevision: 16198 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_slice2d_snap.pro $
 ;-
 

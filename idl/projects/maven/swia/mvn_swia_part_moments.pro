@@ -17,8 +17,8 @@
 ;	MAGT3: Produce temperature in magnetic field coordinates (you need to have run 'mvn_swia_add_magf' first)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-10 08:45:32 -0700 (Fri, 10 Oct 2014) $
-; $LastChangedRevision: 15973 $
+; $LastChangedDate: 2014-11-14 14:00:10 -0800 (Fri, 14 Nov 2014) $
+; $LastChangedRevision: 16187 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_part_moments.pro $
 ;
 ;-
@@ -37,7 +37,7 @@ if not keyword_set(erange) then erange = [0,30000]
 
 w = where(strupcase(type) eq 'FS',nw)
 
-if nw gt 0 and n_elements(swifs) gt 0 then begin
+if nw gt 0 and n_elements(swifs) gt 1 then begin
 	ctime = swifs.time_unix + 2.0
 	nt = n_elements(ctime)
 	
@@ -95,7 +95,7 @@ endif
 
 w = where(strupcase(type) eq 'FA',nw)
 
-if nw gt 0 and n_elements(swifa) gt 0 then begin
+if nw gt 0 and n_elements(swifa) gt 1 then begin
 	ctime = swifa.time_unix + 2.0
 	nt = n_elements(ctime)
 	
@@ -152,7 +152,7 @@ endif
 
 w = where(strupcase(type) eq 'CS',nw)
 
-if nw gt 0 and n_elements(swics) gt 0 then begin
+if nw gt 0 and n_elements(swics) gt 1 then begin
 	ctime = swics.time_unix + 4.0*swics.num_accum/2
 	nt = n_elements(ctime)
 	
@@ -209,7 +209,7 @@ endif
 
 w = where(strupcase(type) eq 'CA',nw)
 
-if nw gt 0 and n_elements(swica) gt 0 then begin
+if nw gt 0 and n_elements(swica) gt 1 then begin
 	ctime = swica.time_unix + 4.0*swica.num_accum/2
 	nt = n_elements(ctime)
 	
@@ -275,7 +275,7 @@ w = where(strupcase(type) eq 'S',nw)
 ; solar wind and all the counts are in the attenuated direction, which should be pretty 
 ; good for most realistic cases.  
 
-if nw gt 0 and n_elements(swis) gt 0 then begin
+if nw gt 0 and n_elements(swis) gt 1 then begin
 	ctime = swis.time_unix + 4.0*swis.num_accum/2
 	nt = n_elements(ctime)
 	
