@@ -52,9 +52,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-03-05 09:18:01 -0800 (Wed, 05 Mar 2014) $
-;$LastChangedRevision: 14499 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2014-11-18 16:47:42 -0800 (Tue, 18 Nov 2014) $
+;$LastChangedRevision: 16236 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -324,7 +324,14 @@ FUNCTION spd_ui_loaded_data::addData,in_name,d,limit=l,dlimit=dl,file=file, miss
         dyaxis = {x:d.x,y:d.v}
       endif else if ndimen(d.v) eq 1 || ndimen(d.v) eq 0 then begin
         if ndimen(d.y) eq 1 then begin
-          dyaxis = {x:d.x,y:rebin([d.v],n_elements(d.x))}
+          if n_elements(d.v) eq 1 then begin
+            dyaxis = {x:d.x,y:rebin([d.v],n_elements(d.x))}
+          endif else if n_elements(d.v) eq n_elements(d.x) then begin
+            dyaxis = {x:d.x,y:d.v}
+          endif else begin
+            ok = error_message('Malformed tplot variable, d.v has ambiguous number of elements',/traceback,/center,title='Data Load Error')
+            return,0
+          endelse
         endif else begin
           dyaxis = {x:d.x,y:transpose(rebin([d.v],n_elements(d.v),n_elements(d.x)))}
         endelse

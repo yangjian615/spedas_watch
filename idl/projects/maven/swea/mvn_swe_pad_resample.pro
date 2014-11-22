@@ -76,7 +76,7 @@
 ;              Default = replicate(1, 96)
 ;
 ;   SC_POT:    Account for the spacecraft potential correction.
-;              (Not working yet)
+;              (Not completely activated yet)
 ;  
 ;   SYMDIR:    Instead of the observed magnetic field vector, use the
 ;              symmetry direction of the (strahl) electron distribution.
@@ -88,12 +88,37 @@
 ;                the original energy steps. This keyword is associated
 ;                with 'convert_vframe'.
 ;
+;   CUT:       Plot the pitch-angle-sorted 1d spectra for each energy step.
+;              It is an optional plot.
+;
+;   SPEC:      Plot the pitch-angle-selected 1d energy spectra. 
+;              In the default settings, 5 pitch angle bands are selected.
+;                 - quasi-parallel (0-30 deg),
+;                 - quasi-perpendicular (75-105 deg),
+;                 - quasi-antiparallel (150-180 deg),
+;                 - 2 obliquenesses (30-75, 105-150 deg).
+;              It is also an optional plot.
+;
+;   PSTYLE:    It means "plot style". This keyword allows
+;              specification which plots you want to show.
+;              Each option is described as follows:
+;              - 1: Plots the snapshot(, equivalent to the "snap" keyword.)
+;              - 2: Generates the tplot variable(, equivalent to the "tplot" keyword.)
+;              - 4: Plots the pitch-angle-sorted 1d spectra(, equivalent to the "cut" keyword.)
+;              - 8: Plots the pitch-angle-selected 1d energy spectra(, equivalent to the "spec" keyword.)
+;              Note that this keyword is set bitwise, so multiple
+;              effects can be achieved by adding values together. For
+;              example, to plot the snapshot (value 1) and to generate
+;              the tplot variable (value 2), set the PSTYLE keyword to
+;              1+2, or 3. This basic idea is same as that
+;              [x][y][z]style keyword included in default PLOT options.
+;
 ;CREATED BY: 
 ;	Takuya Hara
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-10-21 19:58:30 -0700 (Tue, 21 Oct 2014) $
-; $LastChangedRevision: 16020 $
+; $LastChangedDate: 2014-11-18 13:06:38 -0800 (Tue, 18 Nov 2014) $
+; $LastChangedRevision: 16222 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -287,14 +312,33 @@ FUNCTION mvn_swe_pad_resample_swia, var, archive=archive, silent=silent, $
   mvn_swe_convert_units, data, unit
   RETURN, data
 END
+FUNCTION mvn_swe_pad_resample_cscale, data, mincol=mincol, maxcol=maxcol, mindat=mindat, maxdat=maxdat
+  IF n_elements(mincol) EQ 0 THEN mincol = 0
+  IF n_elements(maxcol) EQ 0 THEN maxcol = 255
+  IF n_elements(mindat) EQ 0 THEN mindat = MIN(data, /nan)
+  IF n_elements(maxdat) EQ 0 THEN maxdat = MAX(data, /nan)
+
+  colrange = maxcol - mincol
+  datrange = maxdat - mindat
+
+  lodata = WHERE(data LT mindat, locount)
+  hidata = WHERE(data GT maxdat, hicount)
+
+  dat = data                    ; Copy data
+
+  IF locount NE 0 THEN dat[lodata] = mindat
+  IF hicount NE 0 THEN dat[hidata] = maxdat
+
+  RETURN, (dat - mindat) * colrange/FLOAT(datrange) + mincol
+END 
 ; Main routine
 PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
                           nbins=nbins, abins=abins, dbins=dbins, archive=archive, $
-                          pans=pans, window=wnum, result=result, $
+                          pans=pans, window=wi, result=result, $
                           units=units, erange=erange, normal=normal, _extra=extra, $
                           snap=plot, tplot=tplot, map3d=map3d, swia=swia, $
-                          mbins=mbins, sc_pot=sc_pot, symdir=symdir, interpolate=interpolate
-
+                          mbins=mbins, sc_pot=sc_pot, symdir=symdir, interpolate=interpolate, $
+                          cut=cut, spec=spec, pstyle=pstyle
   COMPILE_OPT idl2
   @mvn_swe_com
   nan = !values.f_nan 
@@ -312,7 +356,7 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
      RETURN
   ENDIF 
 
-  IF keyword_set(ddd) THEN dtype = 1
+  IF keyword_set(ddd) OR keyword_set(map3d) THEN dtype = 1
   IF keyword_set(pad) THEN dtype = 0
   IF SIZE(dtype, /type) EQ 0 THEN dtype = 0
 
@@ -382,8 +426,18 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
   IF keyword_set(swia) THEN mk = mvn_spice_kernels(/load, /all, trange=trange, verbose=silent)
   IF NOT keyword_set(units) THEN units = 'eflux'
   IF NOT keyword_set(nbins) THEN nbins = 128.
-  IF NOT keyword_set(wnum) THEN wnum = 0
+  IF NOT keyword_set(wi) THEN wnum = 0 ELSE wnum = wi
   IF NOT keyword_set(erange) AND keyword_set(tplot) THEN erange = 280.
+
+  IF SIZE(pstyle, /type) EQ 0 THEN BEGIN
+     pstyle = 0
+     IF keyword_set(plot) THEN IF plot GT 0 THEN pstyle += 1
+     IF keyword_set(tplot) THEN IF tplot GT 0 THEN pstyle += 2
+     IF keyword_set(cut) THEN IF cut GT 0 THEN pstyle += 4
+     IF keyword_set(spec) THEN IF spec GT 0 THEN pstyle += 8
+  ENDIF
+  pflg = BYTARR(4)
+  FOR i=0, 3 DO pflg[i] = (pstyle AND 2L^i)/2L^i
 
   IF NOT keyword_set(abins) THEN abins = REPLICATE(1., 16)
   IF NOT keyword_set(dbins) THEN dbins = REPLICATE(1., 6)
@@ -406,18 +460,6 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
      i = WHERE(dat[idx].time LT t_mtx[2], cnt)
      IF cnt GT 0 THEN stow[i] = 1
      undefine, i, cnt
-     ;; IF MAX(trange) LT t_mtx[2] THEN stow = 1
-        
-     ;; IF keyword_set(stow) THEN BEGIN
-     ;;    mdbins = [0., 0., 0., 1., 1., 1.]
-     ;;    mabins = REPLICATE(1., 16)
-     ;;    mobins = REFORM(mabins # mdbins, 96)
-     ;; ENDIF ELSE BEGIN
-     ;;    ;; Need to modify.
-     ;;    mobins = REPLICATE(1., 96)
-     ;;    mobins[0:3] = 0.
-     ;;    mobins[16:19] = 0.
-     ;; ENDELSE 
   ENDIF ELSE IF keyword_set(mbins) THEN BEGIN
      IF N_ELEMENTS(mbins) EQ 96 THEN mobins = mbins $
      ELSE BEGIN
@@ -438,7 +480,8 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
      IF keyword_set(dtype) THEN BEGIN
         ddd = mvn_swe_get3d(dat[idx[i]].time, units=units, archive=archive)
         energy = average(ddd.energy, 2)
-        IF keyword_set(swia) THEN $
+
+        IF keyword_set(swia) OR keyword_set(sc_pot) THEN $
            ddd = mvn_swe_pad_resample_swia(ddd, archive=archive, interpolate=interpolate, $
                                            silent=silent, sc_pot=sc_pot)
         
@@ -459,6 +502,18 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         energy = average(pad.energy, 2)
         ;; pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]), pad.nenergy, pad.nbins)
         pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]*mobins[pad.k3d, stow[i]]), pad.nenergy, pad.nbins)
+        block = WHERE(~FINITE(obins[pad.k3d]*mobins[pad.k3d, stow[i]]), nblock)
+        IF nblock GT 0 THEN BEGIN
+           tblk = 'Removed anode bin(s) data due to the FOV blockage: ['
+           FOR iblk=0, nblock-1 DO BEGIN
+              tblk += STRING(block[iblk], '(I0)')
+              IF iblk NE nblock-1 THEN tblk += ', '
+           ENDFOR 
+           tblk += ']'
+           dprint, tblk, dlevel=2, verbose=3-silent
+           undefine, iblk, tblk
+        ENDIF 
+        undefine, block, nblock
      ENDELSE 
         
      IF keyword_set(erange) THEN BEGIN
@@ -552,36 +607,38 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
            pa = mvn_swe_pad_resample_prf(pad, dtype, silent=silent, archive=archive, map3d=map3d, $
                                          nbins=nbins, nene=nene, edx=edx, dformat=dformat, energy=energy) $
         ELSE BEGIN
-        pa.time = pad.time
-        xax = (0.5*(180./nbins) + FINDGEN(nbins) * (180./nbins)) * !DTOR
-        tot = DBLARR(nbins)
-        index = tot
-        ; Resampling
-        FOR j=0, nene-1 DO BEGIN
-           FOR k=0, pad.nbins-1 DO BEGIN
-              l = WHERE(~FINITE(pad.data[edx[j], k]), cnt)
-              IF cnt EQ 0 THEN BEGIN
-                 l = WHERE(xax GE pad.pa[edx[j], k] - (pad.dpa[edx[j], k]/2.) AND $
-                           xax LE pad.pa[edx[j], k] + (pad.dpa[edx[j], k]/2.), cnt)
-                 IF cnt GT 0 THEN BEGIN
-                    tot[l] = tot[l] + pad.data[edx[j], k]
-                    index[l] = index[l] + 1.
+           pa.time = pad.time
+           xax = (0.5*(180./nbins) + FINDGEN(nbins) * (180./nbins)) * !DTOR
+           ; Resampling
+           FOR j=0, nene-1 DO BEGIN
+              tot = DBLARR(nbins)
+              index = tot
+              FOR k=0, pad.nbins-1 DO BEGIN
+                 l = WHERE(~FINITE(pad.data[edx[j], k]), cnt)
+                 IF cnt EQ 0 THEN BEGIN
+                    l = WHERE(xax GE pad.pa[edx[j], k] - (pad.dpa[edx[j], k]/2.) AND $
+                              xax LE pad.pa[edx[j], k] + (pad.dpa[edx[j], k]/2.), cnt)
+                    IF cnt GT 0 THEN BEGIN
+                       tot[l] = tot[l] + pad.data[edx[j], k]
+                       index[l] = index[l] + 1.
+                    ENDIF 
                  ENDIF 
-              ENDIF 
-              undefine, l, cnt
-           ENDFOR 
-           undefine, k
-           pa.avg[j, *] = tot / index
-           pa.nbins[j, *] = index
-           k = WHERE(index LE 0., cnt)
+                 undefine, l, cnt
+              ENDFOR 
+              undefine, k
 
-           pa.index[j, *] = LONG(index / index)
-           IF cnt GT 0 THEN pa.index[j, k] = 0
-           undefine, k, cnt
-        ENDFOR  
-        pa.xax = xax * !RADEG
-        undefine, tot, index
-     ENDELSE 
+              pa.avg[j, *] = tot / index
+              pa.nbins[j, *] = index
+              k = WHERE(index LE 0., cnt)
+              
+              pa.index[j, *] = LONG(index / index)
+              IF cnt GT 0 THEN pa.index[j, k] = 0
+              undefine, k, cnt
+              undefine, tot, index
+           ENDFOR  
+           pa.xax = xax * !RADEG
+           undefine, tot, index
+        ENDELSE 
      ENDELSE  
      result[i] = pa
      undefine, pa, data, xax
@@ -615,17 +672,17 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
   IF ndat GT 1 THEN PRINT, ' '
 
   CASE units OF
-     'counts': ztit = 'Counts / Samples'
-     'crate' : ztit = 'CRATE'
-     'eflux' : ztit = 'EFLUX'
-     'flux'  : ztit = 'FLUX'
-     'df'    : ztit = 'Distribution Function'
-     ELSE    : ztit = 'Unknown Units' 
+     'counts': oztit = 'Counts / Samples'
+     'crate' : oztit = 'CRATE'
+     'eflux' : oztit = 'EFLUX'
+     'flux'  : oztit = 'FLUX'
+     'df'    : oztit = 'Distribution Function'
+     ELSE    : oztit = 'Unknown Units' 
   ENDCASE 
   IF keyword_set(normal) THEN $
-     ztit = 'Normalized ' + ztit
+     ztit = 'Normalized ' + oztit ELSE ztit = oztit
 
-  IF keyword_set(plot) THEN BEGIN
+  IF (pflg[0]) OR (pflg[2]) OR (pflg[3]) THEN BEGIN
      tit = dname + '!C' + time_string(MIN(result.time))
      IF ndat GT 1 THEN BEGIN
         tit += ' - ' + time_string(MAX(result.time))
@@ -642,9 +699,11 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         
         index = TRANSPOSE(result.index)
      ENDELSE 
-     ;; stop
+
+     nfct = average(zdata, 1, /nan)
      IF keyword_set(normal) THEN BEGIN
-        zdata /= REBIN(TRANSPOSE(average(zdata, 1, /nan)), nbins, nene)
+        ;; zdata /= REBIN(TRANSPOSE(average(zdata, 1, /nan)), nbins, nene)
+        zdata /= REBIN(TRANSPOSE(nfct), nbins, nene)
 
         i = WHERE(index EQ 0, cnt)
         IF cnt GT 0 THEN zdata[i] = nan
@@ -654,20 +713,26 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         str_element, plim, 'zrange', [0.5, 1.5], /add
         str_element, plim, 'zlog', 0, /add_replace
      ENDIF
+  ENDIF 
 
+  IF (pflg[0]) THEN BEGIN       ; Plot snapshot section.
      plotxyz, xax, energy[edx], zdata, wi=wnum, _extra=plim, $
               xtit='Pitch Angle [deg]', ytit='Energy [eV]', ztit=ztit, $
               yrange=minmax(energy), title=tit, xmargin=[0.15, 0.17], ymargin=[0.10, 0.09]
+     wnum += 1
   ENDIF 
 
-  IF keyword_set(tplot) THEN BEGIN
+  ;; IF keyword_set(tplot) THEN BEGIN
+  IF (pflg[1]) THEN BEGIN       ; Generate a tplot valiable section
      ytit = 'SWE PAD!C('
      IF nene EQ 1 THEN ytit += STRING(energy[edx[0]], '(f0.1)') + ' eV)' $
      ELSE ytit += STRING(MIN(energy[edx]), '(f0.1)') + ' - ' + STRING(MAX(energy[edx]), '(f0.1)') + ' eV)' 
 
      data = TRANSPOSE(average(result.avg, 1, /nan))
+     nfactor = average(data, 2, /nan)
      IF keyword_set(normal) THEN BEGIN
-        data /= REBIN(average(data, 2, /nan), ndat, nbins)
+        data /= REBIN(nfactor, ndat, nbins)
+;        data /= REBIN(average(data, 2, /nan), ndat, nbins)
         index = TRANSPOSE(average(result.index, 1))
         index[WHERE(index EQ 0.)] = nan
         index[WHERE(FINITE(index))] = 1.
@@ -685,9 +750,73 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
 
      IF NOT keyword_set(pans) THEN pans = 'mvn_swe_pad_resample'
      store_data, pans, $
-                 data={x: result.time, y: data, v: TRANSPOSE(result.xax)}, $
+                 data={x: result.time, y: data, v: TRANSPOSE(result.xax), nfactor: nfactor}, $
                  dlim={spec: 1, yrange: [0., 180.], ystyle: 1, yticks: 6, yminor: 3, $
                        ytitle: ytit, ysubtitle: '[deg]', ztitle: ztit, zlog: zlog, zrange: zrange}
+
   ENDIF 
+  ;; plim = {noiso: 1, zlog: 1, charsize: chsz, xticks: 6, xminor: 3, xrange: [0., 180.], ylog: 1}  
+
+  IF (pflg[2]) OR (pflg[3]) THEN BEGIN 
+     pos = [0.15, 0.10, 0.83, 0.91]
+     pbar = pos
+     pbar[0] = pos[2] + (pos[2]-pos[0])*.05  
+     pbar[2] = pos[2] + (pos[2]-pos[0])*.1
+     
+     IF NOT keyword_set(normal) THEN $
+        spec = mvn_swe_getspec(trange, /sum, archive=archive, units=units, yrange=yrange) $
+     ELSE yrange = [0.1, 10.]
+     undefine, spec
+  ENDIF 
+
+  IF (pflg[2]) THEN BEGIN       ; Plot pitch-angle-sorted 1-d spectra.
+     ;; lc = colorscale(ALOG10(energy), mincol=7, maxcol=254, mindat=MIN(ALOG10(energy)), maxdat=MAX(ALOG10(energy)))
+     lc = mvn_swe_pad_resample_cscale(ALOG10(energy), mincol=7, maxcol=254, $
+                                      mindat=MIN(ALOG10(energy)), maxdat=MAX(ALOG10(energy)))
+     wi, wnum, wsize=[640, 512]
+     PLOT_IO, /nodata, [0., 180.], yrange, charsize=chsz, xticks=6, xminor=3, $
+              xrange=[0., 180.], /xstyle, yrange=yrange, /ystyle, xtitle='Pitch Angle [deg]', $
+              ytitle=ztit, title=tit, pos=pos
+     FOR i=0, N_ELEMENTS(edx)-1 DO $
+        OPLOT, xax, zdata[*, i], psym=10, color=lc[edx[i]]
+     
+     draw_color_scale, range=minmax(energy), /log, charsize=chsz, pos=pbar, $
+                       brange=[7, 254], ytitle='Energy [eV]'
+     wnum += 1
+  ENDIF 
+
+  IF (pflg[3]) THEN BEGIN       ; Plot pitch-angle-selected 1-d energy spectra.
+     ;; lc = colorscale(xax, mincol=7, maxcol=254, mindat=0., maxdat=180.)
+     angle = [15., 52.5, 90., 127.5, 165.]
+     lc = mvn_swe_pad_resample_cscale(angle, mincol=7, maxcol=254, mindat=0., maxdat=180.)
+
+     wi, wnum, wsize=[640, 512]
+
+     spec = mvn_swe_getspec(trange, /sum, archive=archive, units=units, yrange=yrange) 
+     PLOT_OO, /nodata, minmax(energy), yrange, charsize=chsz, $
+              xrange=minmax(energy), /xstyle, yrange=yrange, /ystyle, xtitle='Energy [eV]', $
+              ytitle=oztit, title=tit, pos=pos
+
+     IF keyword_set(normal) THEN zdata2 = zdata * REBIN(TRANSPOSE(nfct), nbins, nene) ELSE zdata2 = zdata
+     
+     ;; FOR i=0, nbins-1 DO $
+     ;;    OPLOT, energy, zdata2[i, *], psym=10, color=lc[i]
+     FOR i=0, N_ELEMENTS(lc)-1 DO BEGIN
+        IF (i MOD 2) EQ 0 THEN j = WHERE(xax GE angle[i] - 15. AND xax LE angle[i] + 15.) $
+        ELSE j = WHERE(xax GE angle[i] - 22.5 AND xax LE angle[i] + 22.5) 
+
+        zavg = average(zdata2[j, *], 1, stdev=zdev, /nan)
+        ;; oploterror, energy, zavg, zdev, color=lc[i], errcolor=lc[i], psym=10
+        OPLOT, energy, zavg, color=lc[i], psym=10
+        FOR k=0, N_ELEMENTS(energy)-1 DO $ ; Draws error bars.
+           plots, [energy[k], energy[k]], [zavg[k]-zdev[k], zavg[k]+zdev[k]], color=lc[i]
+
+        undefine, zavg, zdev, j, k
+     ENDFOR 
+     draw_color_scale, range=[0., 180.], charsize=chsz, pos=pbar, $
+                       brange=[7, 254], ytitle='Pitch Angle [deg]', yticks=6, xminor=3
+     undefine, spec
+  ENDIF 
+
   RETURN
 END

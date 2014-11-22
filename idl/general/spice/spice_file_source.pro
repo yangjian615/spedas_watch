@@ -39,7 +39,7 @@ if not keyword_set(psource) then begin
     psource.archive_dir = 'archive/'  ; archive directory
     psource.preserve_mtime = 1
 ;    psource.no_update = 1
-    psource.verbose=3
+    psource.verbose=2
     psource.min_age_limit=3600  ; one hour delay before checking again
 ;    str_element,/add,psource,'LAST_VERSION',1        
 endif

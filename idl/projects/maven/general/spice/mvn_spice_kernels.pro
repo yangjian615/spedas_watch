@@ -12,27 +12,28 @@
 ;    Not implemented yet.  currently retrieves ALL files
 ;KEYWORDS:
 ; LOAD:   Set keyword to also load file
-; TRANGE:  Set keyword to UT timerange to provide range of needed files.   
+; TRANGE:  Set keyword to UT timerange to provide range of needed files. 
+; RECONSTRUCT: If set, then only kernels with reconstructed data (no predicts) are returned.
 ;OUTPUT:
 ; fully qualified kernel filename(s)
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-01-21 17:01:02 -0800 (Tue, 21 Jan 2014) $
-; $LastChangedRevision: 13960 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu:36867/repos/idl_socware/trunk/projects/maven/general/mvn_file_source.pro $
+; $LastChangedDate: 2014-11-19 10:33:12 -0800 (Wed, 19 Nov 2014) $
+; $LastChangedRevision: 16238 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
-function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only
+function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear,reconstruct=reconstruct
 
 common mvn_spice_kernels_com,   kernels,retrievetime,tranges
     if spice_test() eq 0 then return,''
     tb = scope_traceback(/structure)
     this_dir = file_dirname(tb[n_elements(tb)-1].filename)+'/'   ; the directory this file resides in (determined at run time)
 
-    naif = spice_file_source(preserve_mtime=1,valid_only=valid_only,last_version=0)
+    naif = spice_file_source(preserve_mtime=1,valid_only=valid_only)
  ;   sprg = mvn_file_source()
-all=1
+;all=1
 if keyword_set(sck) then names = ['STD','SCK']
-if keyword_set(all) then names=['STD','SCK','FRM','IK','POS','ATT']
+if keyword_set(all) or not keyword_set(names) then names=['STD','SCK','FRM','IK','SPK','CK']
 if keyword_set(reset) then kernels=0
 ct = systime(1)
 waittime = 10.                 ; search no more often than this number of seconds
@@ -45,7 +46,7 @@ if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
       case strupcase(names[i]) of 
      'STD':    begin
                append_array,kernels,  spice_standard_kernels(source=source,/mars)          ;  "Standard" kernels
-               append_array,kernels,  file_retrieve('generic_kernels/spk/comets/siding_spring_v?.bsp',_extra=source,/last_version)
+;               append_array,kernels,  file_retrieve('generic_kernels/spk/comets/siding_spring_v?.bsp',_extra=source,/last_version)
                end
      'SCK':    append_array,kernels,  file_retrieve('MAVEN/kernels/sclk/MVN_SCLKSCET.000??.tsc',_extra=source,/last_version)           ; spacecraft time
      'FRM':    begin                                                                                                            ; Frame kernels
@@ -66,30 +67,27 @@ if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
                append_array,kernels,  this_dir+'kernels/ik/maven_swea.ti'  
                append_array,kernels,  this_dir+'kernels/ik/maven_swia.ti'  
                end
-     'POS':  begin     ; Spacecraft position
-;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od003a_131118-131219_v1.bsp',_extra=source)
-;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od006a_131121-140301_v1.bsp',_extra=source)    ; spacecraft position
-;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od008b_131220-141002_v2.bsp',_extra=source)
-;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od013a_140125-141002_tcm2final_v1.bsp',_extra=source)  
-;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od015a_140215-141012_moiprelim_v1.bsp',_extra=source)  
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_131118-140811_rec_v1.bsp',_extra=source)  
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_od030b_140708-140927_plm1-10.0_final_v1.bsp',_extra=source)
-               if 0 then begin
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00001-00002_00032_v1.bsp',_extra=source)
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00004-00004_00026_v1.bsp',_extra=source)
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_?????-?????_?????_v?.bsp',_extra=source,/last_version)
+     'SPK':  begin     ; Spacecraft position   
+               tr= timerange(trange)   ; + [-1,1] * 3600d*24
+               ;   load if (tr[0] lt trf[1]) && (tr[1] gt trf[0])
+               if (tr[1] ge time_double('2013-11-18')) && (tr[0] le time_double('2014-08-11'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_131118-140811_rec_v?.bsp',_extra=source)  
+               if keyword_set(reconstruct) then begin
+                  append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb_rec.bsp',_extra=source)   
+;                  if (tr[1] ge mvn_orbit_num(orbnum=1))   && (tr[0] le mvn_orbit_num(orbnum=83))   then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00001-00083_rec_v?.bsp',_extra=source)
+;                  if (tr[1] ge mvn_orbit_num(orbnum=82))  && (tr[0] le mvn_orbit_num(orbnum=120))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00082-00120_rec_v?.bsp',_extra=source)
+;                  if (tr[1] ge mvn_orbit_num(orbnum=119)) && (tr[0] le mvn_orbit_num(orbnum=183))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00119-00183_rec_v?.bsp',_extra=source)
                endif else begin
-               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb.bsp',_extra=source,/last_version)
+                  if (tr[1] ge time_double('2014-07-08')) && (tr[0] le time_double('2014-09-22'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_od030b_140708-140927_plm1-10.0_final_v1.bsp',_extra=source)
+                  append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb.bsp',_extra=source)    
+                  append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb_rec.bsp',_extra=source)   
                endelse
- ;              append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_od????_??????-??????_*.bsp',_extra=source,/last_version)  
-;               append_array,kernels,  file_retrieve('MAVEN/kernels/spk/de430s.bsp',_extra=source)                      ;  Like de430 but over limited time range (1995-2035)  
              end
-     'ATT':  begin      ; Spacecraft Attitude  (CK)
+     'CK':  begin      ; Spacecraft Attitude  (CK)
 ;               attkern =  file_retrieve('MAVEN/kernels/ck/mvn_sc_rec_??????_??????_v0?.bc' ,_extra=source)   ;SC Attitude ???  
 ;                attformat = 'MAVEN/kernels/ck/mvn_sc_rec_??????_??????_v0?.bc'  ; use this line to get all files
 
                attformat = 'MAVEN/kernels/ck/mvn_sc_rec_yyMMDD_*_v0?.bc'  ; use this line to get all files in time range
-               tr= timerange(trange) + [-3,1] * 3600d*24
+               tr= timerange(trange) + [-1,1] * 3600d*24
                attkern = mvn_pfp_file_retrieve(attformat ,source=source, trange=tr,/daily_names)  ;,last_version=1)   ;SC Attitude ???  
                append_array,kernels,  attkern  ;SC Attitude ???  
 
@@ -107,6 +105,7 @@ if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
     retrievetime = ct
  ;   kernels = file_search(kernels)
 endif
+if keyword_set(clear) then cspice_kclear
 if keyword_set(load) then    spice_kernel_load,kernels
 return,kernels
 

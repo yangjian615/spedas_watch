@@ -6,7 +6,7 @@
 ;AUTHOR: 
 ;	Jasper Halekas
 ;CALLING SEQUENCE:
-;	MVN_SWIA_MAKE_L2_DATA, STARTDATE = STARTDATE, DAYS = DAYS, VERSION = VERSION, REVISION = REVISION, TYPE = TYPE
+;	MVN_SWIA_MAKE_L2_DATA, STARTDATE = STARTDATE, DAYS = DAYS, VERSION = VERSION, REVISION = REVISION, TYPE = TYPE, KLOAD = KLOAD
 ;INPUTS:
 ;KEYWORDS:
 ;	STARTDATE: Starting date to process
@@ -16,23 +16,26 @@
 ;	TYPE: 'svy' or 'arc' (default = 'svy')
 ;	L0_FILE_PATH: Hardwire the path to the L0 files (mainly for testing)
 ;	OPATH: Hardwire the output path for L2 files (mainly for testing)
+;	KLOAD: Load all the relevant spice kernels if set
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-05 18:09:10 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16142 $
+; $LastChangedDate: 2014-11-19 14:08:54 -0800 (Wed, 19 Nov 2014) $
+; $LastChangedRevision: 16244 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_l2_data.pro $
 ;
 ;-
 
 @mvn_swia_load_l2_data
 
-pro mvn_swia_make_l2_data, startdate = startdate, days = days,version = version, revision = revision, type = type, l0_file_path = l0_file_path, opath = opath
+pro mvn_swia_make_l2_data, startdate = startdate, days = days,version = version, revision = revision, type = type, l0_file_path = l0_file_path, opath = opath, kload = kload
 
 compile_opt idl2
 
 common mvn_swia_data
 
 timespan, startdate, days
+
+if keyword_set(kload) then mk = mvn_spice_kernels(/all,/load,/reset)
 
 if not keyword_set(version) then version = '00'
 if not keyword_set(revision) then revision = '00'

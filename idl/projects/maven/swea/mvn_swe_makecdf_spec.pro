@@ -19,8 +19,8 @@
 ;   Added directory keyword, and deletion of old files, jmm, 2014-11-14
 ; VERSION:
 ;   $LastChangedBy: jimm $
-;   $LastChangedDate: 2014-11-14 17:24:23 -0800 (Fri, 14 Nov 2014) $
-;   $LastChangedRevision: 16192 $
+;   $LastChangedDate: 2014-11-18 11:17:02 -0800 (Tue, 18 Nov 2014) $
+;   $LastChangedRevision: 16210 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_spec.pro $
 ;
 ;-
@@ -69,6 +69,7 @@ if (not keyword_set(file)) then begin
 ; Added directory keyword, for testing, jmm, 2014-11-14
   if (keyword_set(directory)) then path = directory[0] else $
   path = '/disks/data/maven/data/sci/swe/l2/' + yyyy + '/' + mm + '/'
+  if (n_elements(file_search(path)) Eq 0) then file_mkdir2, path, mode = '0774'o
 
 ; create file name using SIS convention
   file = 'mvn_swe_l2_' + tag + 'spec_' + yyyymmdd

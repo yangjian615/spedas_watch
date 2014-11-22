@@ -2,7 +2,9 @@
 ;PROCEDURE: 
 ;	MVN_SWIA_REGID
 ;PURPOSE: 
-;	Routine to plot whiskers of any quantity (default: magnetic field) on the orbit
+;	Routine to determine region of the Mars environment from SWIA and MAG data.
+;	Will probably have to futz with the logic in this once I change the energy sweep.
+;	Change (v<100) to (v<100 or n < 0.5)
 ;AUTHOR: 
 ;	Jasper Halekas
 ;CALLING SEQUENCE:
@@ -12,15 +14,17 @@
 ;	TR: Time range (uses current tplot if not set)
 ;	BDATA: Magnetic field data (needs to be in MSO)
 ;	PDATA: Position data (needs to be in MSO)
+;OUTPUTS:
+;	REGOUT: Tplot structure containing region IDs
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-17 19:21:03 -0800 (Mon, 17 Nov 2014) $
-; $LastChangedRevision: 16208 $
+; $LastChangedDate: 2014-11-20 11:57:22 -0800 (Thu, 20 Nov 2014) $
+; $LastChangedRevision: 16254 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_regid.pro $
 ;
 ;-
 
-pro mvn_swia_regid, tr = tr
+pro mvn_swia_regid, tr = tr, bdata = bdata, pdata = pdata, regout
 
 
 RM = 3397.
@@ -84,7 +88,7 @@ regid = fltarr(nel)
 temp = total(swim[w].temperature,1)/3
 vel = sqrt(total(swim[w].velocity*swim[w].velocity,1))
 
-w = where(vel gt 200 and (temp/vel lt 0.075 and magstd/mag lt 0.15) and alt gt 500)
+w = where(vel gt 200 and (temp/vel lt 0.05 and magstd/mag lt 0.15) and alt gt 500)
 regid(w) = 1	;Solar Wind
 
 w = where(vel gt 200 and (temp/vel gt 0.1 or magstd/mag gt 0.25) and alt gt 300)
@@ -99,7 +103,9 @@ regid(w) = 4 ;Periapsis Dayside Ionosphere
 w = where(vel lt 200 and magstd/mag lt 0.1 and abs(magx/mag) gt 0.9 and ux lt 0 and alt gt 300)
 regid(w) = 5	;Tail Lobe
 
-store_data,'regid',data = {x:time,y:[[regid],[regid]],v:[0,1],spec:1},limits = {panel_size:0.1, no_interp:1}
+regout = {x:time,y:[[regid],[regid]],v:[0,1],spec:1}
+
+store_data,'regid',data = regout,limits = {panel_size:0.1, no_interp:1}
 
 
 end

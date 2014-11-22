@@ -61,12 +61,20 @@ for i2 = 0,n_elements(kernels)-1 do begin
       ;; the contents of the ID code set, find the coverage for
       ;; each item in the set, and display the coverage.
       n_objs = keyword_set(ids) ? cspice_card(ids) : 0
-      dprint,dlevel=dlevel,verbose=verbose, '============= ',type,' ==========================='
-      dprint,dlevel=dlevel,verbose=verbose,kernel
+      dprint,dlevel=dlevel,verbose=verbose, '=== '+type+' === '+kernel
+ ;     dprint,dlevel=dlevel,verbose=verbose,kernel
       for i=0, n_objs-1 do begin
          ;;  Find the coverage window for the current object, 'i'.
          ;;  Empty the coverage window each time 
          ;;  so we don't include data for the previous object.
+         catch,error_status
+         if error_status ne 0 then begin
+            printdat,!error_state
+            dprint,dlevel=1,verbose=verbose,'Something is wrong with file: '+kernel+' Skipping Object:'+string(obj)
+            error_status = 0
+            continue
+         endif
+         
          obj = ids.base[ ids.data + i ]
          cspice_scard, 0L, cover
 ;         cspice_ckcov, CK, obj,  SPICEFALSE, 'INTERVAL', 0.D, 'TDB', cover 
@@ -101,6 +109,9 @@ for i2 = 0,n_elements(kernels)-1 do begin
 endfor
 append_array,stats,index=nstats,/done
 return,stats
+ski_error:  
+
+
 end
 
 

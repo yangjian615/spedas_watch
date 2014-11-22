@@ -32,7 +32,7 @@ nreps = 0
 repeat   begin
    qatt =  spice_body_att(frame1,frame2,ut,/quaternion,fix_qsign=fix_qsign,baserot=baserot,check_objects=check_objects) 
    if keyword_set(error) || keyword_set(derror) then begin
-      if nreps++ gt 12 then break
+      if nreps++ gt 5 then break
       del_qatt = sqrt(total( (shift(qatt,0,-1) - shift(qatt,0,1))^2,1))
 ;      del_qatt = sqrt(total( (qatt - shift(qatt,0,1))^2,1))
 ;      printdat,del_qatt

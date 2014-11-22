@@ -422,6 +422,7 @@ def_eff = .285		; early mission solar wind proton efficiency
 	conf2swp[17,0:4]=[0,1,2,3,4]							; LEO to MOI values
 	if first_t gt time_double('2014-03-10/0') then conf2swp[17,0:4]=[5,5,6,3,4]	; Cruciform values loaded
 	conf2swp[1,0:4]=[5,5,6,7,8]							; MOI values expected
+	conf2swp[2,0:6]=[9,9,10,11,12,13,14]						; Protect mode eprom load - sometime after 20141120
 
 ; SLUT parameters for each STATIC energy sweep table
 ; Note - slut parameters must be corrected to actual calibration sweep & deflection values with "scale" and "def_scale"
@@ -636,11 +637,11 @@ endif
 ; The following replaces the md2mlut map
 ;    conf2mlut[config4,md2], where md2 is the lower nibble of the header mode, and config4 is from housekeeping
 	conf2mlut = intarr(256,16)
-	conf2mlut[0,0:4]=[0,0,0,2,2]							; pre-delivery
-	conf2mlut[17,0:4]=[0,0,0,2,2]							; LEO
-	if first_t gt time_double('2014-03-10/0') then conf2mlut[17,0:4]=[1,1,1,3,3]	; Cruciform
-	conf2mlut[1,0:4]=[1,1,1,4,4]							; MOI
-	conf2mlut[2,0:6]=[1,1,1,5,5,5,6]						; Protect modes after s/c charging problems
+	conf2mlut[0,0:4]=[0,0,0,2,2]								; pre-delivery
+	conf2mlut[17,0:4]=[0,0,0,2,2]								; LEO
+	if first_t gt time_double('2014-03-10/0') then conf2mlut[17,0:4]=[1,1,1,3,3]		; Cruciform
+	conf2mlut[1,0:4]=[1,1,1,4,4]								; MOI
+	conf2mlut[2,0:6]=[1,1,1,5,5,5,6]							; Protect modes after s/c charging problems
 
 ; Obsolete: Create ModeID to MLUT table map - this tells what MLUT table is used for each mode
 ; 	ModeID = 8*rate+mode
@@ -963,6 +964,8 @@ endif
 	tof[2,*,*] = mind2tof2 	
 	tof[3,*,*] = mind2tof3 	
 	tof[4,*,*] = mind2tof4 	
+	tof[5,*,*] = mind2tof5 	
+	tof[6,*,*] = mind2tof6 	
 
 	twt = fltarr(n_mlut,64,64)
 	twt[0,*,*] = mind2twt0 	
@@ -970,6 +973,8 @@ endif
 	twt[2,*,*] = mind2twt2 	
 	twt[3,*,*] = mind2twt3 	
 	twt[4,*,*] = mind2twt4 	
+	twt[5,*,*] = mind2twt5 	
+	twt[6,*,*] = mind2twt6 	
 
 ; Generate tof/mass tables
 ;    Assume the foil mass loss is (500+M*1000/8) eV = 500+125*M
@@ -1171,7 +1176,7 @@ print,'Processing apid c6'
 		dd=t.y[0:nn-1,*] 
 
 ; the following "if" makes sure there are at least two measurements so the out-of-order time correction works
-	   if nn ge 2*np then begin
+	if nn ge 2*np then begin
 
 		get_data,'mvn_STA_C6_DIAG',data=diag
 ;		en = (diag.y[0:nn-1] AND 15)
@@ -1263,7 +1268,7 @@ print,'Processing apid c6'
 			endif
 
 			store_data,'mvn_sta_C6_mode',data={x:tdis,y:md2}
-				ylim,'mvn_sta_C6_mode',-1,6,0
+				ylim,'mvn_sta_C6_mode',-1,7,0
 			store_data,'mvn_sta_C6_rate',data={x:tdis,y:rt2}					; corrected modes
 				ylim,'mvn_sta_C6_rate',-1,8,0
 			store_data,'mvn_sta_C6_data_rate',data={x:tdis,y:rt2rate[rt2]}					; corrected modes
@@ -1304,12 +1309,12 @@ print,'Processing apid c6'
 			options,'mvn_sta_C6_P1D_E',ytitle='sta!CP1D-C6!C!CEnergy!CeV'
 			options,'mvn_sta_C6_P1D_M',ytitle='sta!CP1D-C6!C!CMass!Camu'
 		endif
-	   endif
+	endif
 	endif
 
 ; Make C6 common block
 
-   if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 2 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -1360,7 +1365,8 @@ print,'Processing apid c6'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -1456,6 +1462,7 @@ print,'Processing apid c0'
 		npts=128									; 64Ex1Dx1Ax2M
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
+	if nn ge 2 then begin
 
 ;		correct half second jitter in header times, assumes times always delayed by .5, assumes C0 has 4 sec cadence
 			time = tt
@@ -1604,10 +1611,11 @@ print,'Processing apid c0'
 		options,'mvn_sta_C0_P1A_E_M0',ytitle='sta!CP1A-C0!CH+He+!C!CEnergy!CeV'
 		options,'mvn_sta_C0_P1A_E_M1',ytitle='sta!CP1A-C0!CO+O2+!C!CEnergy!CeV'
 	endif
+	endif
 
 ; Make C0 common block
 
-   if size(/type,t) eq 8 and nn ge 1 then begin
+   if size(/type,t) eq 8 and nn ge 2 then begin
 
 	nenergy = 64
 	avg_nrg = 64/nenergy
@@ -1653,7 +1661,8 @@ print,'Processing apid c0'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nmass) & eff2[*]=def_eff  & eff_ind=intarr(nn)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -1918,7 +1927,8 @@ print,'Processing apid c2'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nmass) & eff2[*]=def_eff  & eff_ind=intarr(nn)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -2104,7 +2114,7 @@ print,'Processing apid c4'
 		endif
 
 		store_data,'mvn_sta_C4_mode',data={x:tt,y:md2}
-			ylim,'mvn_sta_C4_mode',-1,6,0
+			ylim,'mvn_sta_C4_mode',-1,7,0
 		store_data,'mvn_sta_C4_rate',data={x:tt,y:rt2}					; corrected modes
 			ylim,'mvn_sta_C4_rate',-1,8,0
 		store_data,'mvn_sta_C4_att',data={x:tt,y:att0}
@@ -2191,7 +2201,8 @@ print,'Processing apid c4'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nmass) & eff2[*]=def_eff  & eff_ind=intarr(nn)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -2287,6 +2298,7 @@ print,'Processing apid c8'
 		npts=512									; 32Ex16Dx1Ax1M
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
+	if nn ge 2 then begin
 
 ;		correct half second jitter in header times, assumes times always delayed by .5, assumes C0 has 4 sec cadence
 			time = tt
@@ -2412,10 +2424,11 @@ print,'Processing apid c8'
 		options,'mvn_sta_C8_P2_E',ytitle='sta!CP2-C8!C!CEnergy!CeV'
 		options,'mvn_sta_C8_P2_D',ytitle='sta!CP2-C8!C!CDef!Ctheta'
 	endif
+	endif
 
 ; Make C8 common block
 
-   if size(/type,t) eq 8 and nn ge 1 then begin
+   if size(/type,t) eq 8 and nn ge 2 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -2455,7 +2468,8 @@ print,'Processing apid c8'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2=reform(eff2,128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(nn)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -2569,6 +2583,7 @@ print,'Processing apid ca'
 		npts=1024									; 16Ex4Dx16Ax1M
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
+	if nn ge 2 then begin
 
 ;		correct half second jitter in header times, assumes times always delayed by .5, assumes CA has 4 sec cadence
 			time = tt
@@ -2686,11 +2701,12 @@ print,'Processing apid ca'
 		options,'mvn_sta_CA_P3_D',ytitle='sta!CP3-CA!C!CDef!Ctheta'
 		options,'mvn_sta_CA_P3_A',ytitle='sta!CP3-CA!C!CAnode!Cphi'
 	endif
+	endif
 
 
 ; Make CA common block
 
-   if size(/type,t) eq 8 and nn ge 1 then begin
+   if size(/type,t) eq 8 and nn ge 2 then begin
 
 	nenergy = 16									; 16Ex4Dx16Ax1M
 	avg_nrg = 64/nenergy
@@ -2725,7 +2741,8 @@ print,'Processing apid ca'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins) & eff2[*]=def_eff  & eff_ind=intarr(nn)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -2842,7 +2859,7 @@ print,'Processing apid cc'
 ;			might occur if an averaging time is changed and the change does not occur on the correct 2^n boundary
 
 ; the following "if" makes sure there are at least two measurements so the out-of-order time correction works
-	   if nn ge 2*np then begin
+	if nn ge 2*np then begin
 
 		ind = where (tt[0:nn-1-np] gt tt[np:nn-1],nind)							
 		if nind gt 0 then begin					
@@ -2915,7 +2932,7 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 			endif
 
 			store_data,'mvn_sta_CC_mode',data={x:tdis,y:md2}
-				ylim,'mvn_sta_CC_mode',-1,6,0
+				ylim,'mvn_sta_CC_mode',-1,7,0
 			store_data,'mvn_sta_CC_att',data={x:tdis,y:att0}
 				ylim,'mvn_sta_CC_att',-1,4,0
 
@@ -2954,13 +2971,13 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 			options,'mvn_sta_CC_P4A_D',ytitle='sta!CP4A-CC!C!CDef!Ctheta'
 			options,'mvn_sta_CC_P4A_M',ytitle='sta!CP4A-CC!C!Mass!Camu'
 		endif
-	   endif
+	endif
 	endif
 
 
 ; Make CC common block
 
-   if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 2 then begin
 
 	nenergy = 32							; 32Ex8Dx1Ax32M
 	avg_nrg = 64/nenergy
@@ -2999,7 +3016,8 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -3113,7 +3131,7 @@ print,'Processing apid cd'
 ;			might occur if an averaging time is changed and the change does not occur on the correct 2^n boundary
 
 ; the following "if" makes sure there are at least two measurements so the out-of-order time correction works
-	   if nn ge 2*np then begin
+	if nn ge 2*np then begin
 
 		ind = where (tt[0:nn-1-np] gt tt[np:nn-1],nind)							
 		if nind gt 0 then begin					
@@ -3199,7 +3217,7 @@ print,'Processing apid cd'
 		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
 
 			store_data,'mvn_sta_CD_mode',data={x:tdis,y:md2}
-				ylim,'mvn_sta_CD_mode',-1,6,0
+				ylim,'mvn_sta_CD_mode',-1,7,0
 			store_data,'mvn_sta_CD_att',data={x:tdis,y:att0}
 				ylim,'mvn_sta_CD_att',-1,4,0
 
@@ -3238,13 +3256,13 @@ print,'Processing apid cd'
 			options,'mvn_sta_CD_P4A_D',ytitle='sta!CP4A-CD!C!CDef!Ctheta'
 			options,'mvn_sta_CD_P4A_M',ytitle='sta!CP4A-CD!C!CMass!Camu'
 		endif
-	   endif
+	endif
 	endif
 
 
 ; Make CD common block
 
-   if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 2 then begin
 
 	nenergy = 32							; 32Ex8Dx1Ax32M
 	avg_nrg = 64/nenergy
@@ -3282,7 +3300,8 @@ print,'Processing apid cd'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -3395,7 +3414,7 @@ print,'Processing apid ce'
 ;			might occur if an averaging time is changed and the change does not occur on the correct 2^n boundary
 
 ; the following "if" makes sure there are at least two measurements so the out-of-order time correction works
-	   if nn ge 2*np then begin
+	if nn ge 2*np then begin
 
 		ind = where (tt[0:nn-1-np] gt tt[np:nn-1],nind)							
 		if nind gt 0 then begin					
@@ -3467,7 +3486,7 @@ print,'Processing apid ce'
 			endif
 
 			store_data,'mvn_sta_CE_mode',data={x:tdis,y:md2}
-				ylim,'mvn_sta_CE_mode',-1,6,0
+				ylim,'mvn_sta_CE_mode',-1,7,0
 			store_data,'mvn_sta_CE_att',data={x:tdis,y:att0}
 				ylim,'mvn_sta_CE_att',-1,4,0
 
@@ -3512,13 +3531,13 @@ print,'Processing apid ce'
 			options,'mvn_sta_CE_P4B_A',ytitle='sta!CP4B-CE!C!CAnode!Cphi'
 			options,'mvn_sta_CE_P4B_M',ytitle='sta!CP4B-CE!C!CMass!Camu'
 		endif
-	   endif
+	endif
 	endif
 
 
 ; Make CE common block
 
-   if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 2 then begin
 
 	nenergy = 16							; 16Ex4Dx16Ax16M
 	avg_nrg = 64/nenergy
@@ -3553,7 +3572,8 @@ print,'Processing apid ce'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -3665,7 +3685,7 @@ print,'Processing apid cf'
 ;			might occur if an averaging time is changed and the change does not occur on the correct 2^n boundary
 
 ; the following "if" makes sure there are at least two measurements so the out-of-order time correction works
-	   if nn ge 2*np then begin
+	if nn ge 2*np then begin
 
 		ind = where (tt[0:nn-1-np] gt tt[np:nn-1],nind)							
 		if nind gt 0 then begin					
@@ -3751,7 +3771,7 @@ print,'Processing apid cf'
 		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
 
 			store_data,'mvn_sta_CF_mode',data={x:tdis,y:md2}
-				ylim,'mvn_sta_CF_mode',-1,6,0
+				ylim,'mvn_sta_CF_mode',-1,7,0
 			store_data,'mvn_sta_CF_att',data={x:tdis,y:att0}
 				ylim,'mvn_sta_CF_att',-1,4,0
 
@@ -3796,13 +3816,13 @@ print,'Processing apid cf'
 			options,'mvn_sta_CF_P4B_A',ytitle='sta!CP4B-CF!C!CAnode!Cphi'
 			options,'mvn_sta_CF_P4B_M',ytitle='sta!CP4B-CF!C!CMass!Camu'
 		endif
-	   endif
+	endif
 	endif
 
 
 ; Make CF common block
 
-   if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 2 then begin
 
 	nenergy = 16							; 16Ex4Dx16Ax16M
 	avg_nrg = 64/nenergy
@@ -3836,7 +3856,8 @@ print,'Processing apid cf'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -3947,7 +3968,7 @@ print,'Processing apid d0'
 ;			might occur if an averaging time is changed and the change does not occur on the correct 2^n boundary
 
 ; the following "if" makes sure there are at least two measurements so the out-of-order time correction works
-	   if nn ge 2*np then begin
+	if nn ge 2*np then begin
 
 		ind = where (tt[0:nn-1-np] gt tt[np:nn-1],nind)							
 		if nind gt 0 then begin									; out of seq data should not occur for normal mode changes
@@ -4019,7 +4040,7 @@ print,'Processing apid d0'
 			endif
 
 			store_data,'mvn_sta_D0_mode',data={x:tdis,y:md2}
-				ylim,'mvn_sta_D0_mode',-1,6,0
+				ylim,'mvn_sta_D0_mode',-1,7,0
 			store_data,'mvn_sta_D0_att',data={x:tdis,y:att0}
 				ylim,'mvn_sta_D0_att',-1,4,0
 
@@ -4064,13 +4085,13 @@ print,'Processing apid d0'
 			options,'mvn_sta_D0_P4C_A',ytitle='sta!CP4C-D0!C!CAnode!Cphi'
 			options,'mvn_sta_D0_P4C_M',ytitle='sta!CP4C-D0!C!CMass!Camu'
 		endif
-	   endif
+	endif
 	endif
 
 
 ; Make D0 common block
 
-   if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 2 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -4104,7 +4125,8 @@ print,'Processing apid d0'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -4216,7 +4238,7 @@ print,'Processing apid d1'
 ;			might occur if an averaging time is changed and the change does not occur on the correct 2^n boundary
 
 ; the following "if" makes sure there are at least two measurements so the out-of-order time correction works
-	   if nn ge 2*np then begin
+	if nn ge 2*np then begin
 
 		ind = where (tt[0:nn-1-np] gt tt[np:nn-1],nind)							
 		if nind gt 0 then begin					
@@ -4305,7 +4327,7 @@ print,'Processing apid d1'
 		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
 
 			store_data,'mvn_sta_D1_mode',data={x:tdis,y:md2}
-				ylim,'mvn_sta_D1_mode',-1,6,0
+				ylim,'mvn_sta_D1_mode',-1,7,0
 			store_data,'mvn_sta_D1_att',data={x:tdis,y:att0}
 				ylim,'mvn_sta_D1_att',-1,4,0
 
@@ -4350,13 +4372,13 @@ print,'Processing apid d1'
 			options,'mvn_sta_D1_P4C_A',ytitle='sta!CP4C-D1!C!CAnode!Cphi'
 			options,'mvn_sta_D1_P4C_M',ytitle='sta!CP4C-D1!C!CMass!Camu'
 		endif
-	   endif
+	endif
 	endif
 
 
 ; Make D1 common block
 
-   if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 2 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -4398,7 +4420,8 @@ print,'Processing apid d1'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -4509,7 +4532,7 @@ print,'Processing apid d2'
 ;			might occur if an averaging time is changed and the change does not occur on the correct 2^n boundary
 
 ; the following "if" makes sure there are at least two measurements so the out-of-order time correction works
-	   if nn ge 2*np then begin
+	if nn ge 2*np then begin
 
 		ind = where (tt[0:nn-1-np] gt tt[np:nn-1],nind)							
 		if nind gt 0 then begin					
@@ -4578,7 +4601,7 @@ print,'Processing apid d2'
 			endif
 
 			store_data,'mvn_sta_D2_mode',data={x:tdis,y:md2}
-				ylim,'mvn_sta_D2_mode',-1,6,0
+				ylim,'mvn_sta_D2_mode',-1,7,0
 			store_data,'mvn_sta_D2_att',data={x:tdis,y:att0}
 				ylim,'mvn_sta_D2_att',-1,4,0
 
@@ -4616,13 +4639,13 @@ print,'Processing apid d2'
 			options,'mvn_sta_D2_P4D_A',ytitle='sta!CP4D-D2!C!CAnode!Cphi'
 			options,'mvn_sta_D2_P4D_M',ytitle='sta!CP4D-D2!C!CMass!Camu'
 		endif
-	   endif
+	endif
 	endif
 
 
 ; Make D2 common block
 
-   if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 2 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -4665,7 +4688,8 @@ print,'Processing apid d2'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -4777,7 +4801,7 @@ print,'Processing apid d3'
 ;			might occur if an averaging time is changed and the change does not occur on the correct 2^n boundary
 
 ; the following "if" makes sure there are at least two measurements so the out-of-order time correction works
-	   if nn ge 2*np then begin
+	if nn ge 2*np then begin
 
 		ind = where (tt[0:nn-1-np] gt tt[np:nn-1],nind)							
 		if nind gt 0 then begin					
@@ -4860,7 +4884,7 @@ print,'Processing apid d3'
 		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
 
 			store_data,'mvn_sta_D3_mode',data={x:tdis,y:md2}
-				ylim,'mvn_sta_D3_mode',-1,6,0
+				ylim,'mvn_sta_D3_mode',-1,7,0
 			store_data,'mvn_sta_D3_att',data={x:tdis,y:att0}
 				ylim,'mvn_sta_D3_att',-1,4,0
 
@@ -4898,13 +4922,13 @@ print,'Processing apid d3'
 			options,'mvn_sta_D3_P4D_A',ytitle='sta!CP4D-D3!C!CAnode!Cphi'
 			options,'mvn_sta_D3_P4D_M',ytitle='sta!CP4D-D3!C!CMass!Camu'
 		endif
-	   endif
+	endif
 	endif
 
 
 ; Make D3 common block
 
-   if size(/type,t) eq 8 and ndis ge 1 then begin
+   if size(/type,t) eq 8 and ndis ge 2 then begin
 
 	nenergy = 32
 	avg_nrg = 64/nenergy
@@ -4947,7 +4971,8 @@ print,'Processing apid d3'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(ndis)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -5051,6 +5076,7 @@ print,'Processing apid d4'
 		npts=128									; 1Ex4Dx16Ax2M
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
+	if nn ge 2 then begin
 
 		get_data,'mvn_STA_D4_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
@@ -5190,11 +5216,12 @@ print,'Processing apid d4'
 		options,'mvn_sta_D4_P4E_A',ytitle='sta!CP4E-D4!C!CAnode!Cphi'
 		options,'mvn_sta_D4_P4E_M',ytitle='sta!CP4E-D4!C!CMass!Camu'
 	endif
+	endif
 
 
 ; Make D4 common block
 
-   if size(/type,t) eq 8 and nn ge 1 then begin
+   if size(/type,t) eq 8 and nn ge 2 then begin
 
 	nenergy = 1
 	avg_nrg = 64/nenergy
@@ -5236,7 +5263,8 @@ print,'Processing apid d4'
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nbins,nmass) & eff2[*]=def_eff  & eff_ind=intarr(nn)
 
-	mlut = md2mlut(md1)
+;	mlut = md2mlut(md1)
+	mlut = swp2mlut(swp_ind)
 	mass_arr=total(total(reform(mas,n_swp,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	tof_arr=total(total(reform(tof,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/(64./nmass)/avg_nrg
 	twt_arr=total(total(reform(twt,n_mlut,avg_nrg,nenergy,64/nmass,nmass),4),2)/avg_nrg
@@ -5349,7 +5377,8 @@ print,'Processing apid d6'
 		get_data,'mvn_STA_D6_DIAG',data=di
 			mm = di.y and 63
 			ind1 = where(mm eq 0)
-			ind2 = where(mm[ind1+47] eq 47)
+			ind2 = where(mm[ind1+47] eq 47,ndis)
+	if ndis gt 0 then begin
 			ind1 = ind1[ind2]
 			n_events = n_elements(ind1)
 			if n_events ne npkts/48 then print,'Error 1 - D6 packets were missing'
@@ -5477,11 +5506,12 @@ print,'Processing apid d6'
 		options,'mvn_sta_D6_en',psym=3
 
 	endif
+	endif
 
 
 ; Make D6 common block
 
-   if size(/type,t) eq 8 and iy gt 1 then begin
+   if size(/type,t) eq 8 and ndis gt 0 and iy gt 1 then begin
 
 	d6_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
@@ -5667,7 +5697,7 @@ print,'Processing apid d8'
 		endif
 
 		store_data,'mvn_sta_D8_mode',data={x:tt,y:md2}
-			ylim,'mvn_sta_D8_mode',-1,6,0
+			ylim,'mvn_sta_D8_mode',-1,7,0
 
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
 
@@ -5789,7 +5819,7 @@ print,'Processing apid d9'
 		tt2 = tt + 2.*avg2 
 
 		store_data,'mvn_sta_D9_mode',data={x:tt,y:md2}
-			ylim,'mvn_sta_D9_mode',-1,6,0
+			ylim,'mvn_sta_D9_mode',-1,7,0
 
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
 
@@ -6036,7 +6066,7 @@ print,'Processing apid da'
 		store_data,'mvn_sta_DA_R3_T',data={x:tt3[in3],y:da3[in3]}
 			ylim,'mvn_sta_DA_R3_T',0,0,1
 			options,'mvn_sta_DA_R3_T',datagap=64.
-			options,'mvn_sta_DA_R3_T',psym=1
+;			options,'mvn_sta_DA_R3_T',psym=1
 
 ;	this section makes energy sweeps out of DA data
 
@@ -6092,7 +6122,7 @@ print,'Processing apid da'
 			options,'mvn_sta_DA_R3_tot',psym=-1
 
 		store_data,'mvn_sta_DA_R3_mode',data={x:tt8[0:n-1],y:md2_2[0:n-1]}
-			ylim,'mvn_sta_DA_R3_mode',-1,6,0
+			ylim,'mvn_sta_DA_R3_mode',-1,7,0
 
 	endif
 
@@ -6156,6 +6186,7 @@ print,'Processing apid db'
 		npts=1024									; 1024M
 		ind = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
+	if nn ge 2 then begin
 
 		get_data,'mvn_STA_DB_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
@@ -6173,7 +6204,7 @@ print,'Processing apid db'
 		tt2 = tt + 2.*avg2 
 
 		store_data,'mvn_sta_DB_mode',data={x:tt,y:md2}
-			ylim,'mvn_sta_DB_mode',-1,6,0
+			ylim,'mvn_sta_DB_mode',-1,7,0
 
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
 
@@ -6214,11 +6245,12 @@ print,'Processing apid db'
 
 
 	endif
+	endif
 
 
 ; Make DB common block
 
-   if size(/type,t) eq 8 and nn ge 1 then begin
+   if size(/type,t) eq 8 and nn ge 2 then begin
 
 	db_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$

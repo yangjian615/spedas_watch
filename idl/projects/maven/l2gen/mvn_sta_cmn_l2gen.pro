@@ -13,28 +13,28 @@ Function temp_mvn_sta_eflux, cmn_dat
   ndef = cmn_dat.ndef
   nanode = cmn_dat.nanode
   If(apid Eq 'C0' Or apid Eq 'C2' Or apid Eq 'C4' Or apid Eq 'C6') Then Begin
-     gf = reform(cmn_dat.gf[iswp,*,0]*(iatt eq 0)#replicate(1.,nenergy) +$
-                 cmn_dat.gf[iswp,*,1]*(iatt eq 1)#replicate(1.,nenergy) +$
-                 cmn_dat.gf[iswp,*,2]*(iatt eq 2)#replicate(1.,nenergy) +$
-                 cmn_dat.gf[iswp,*,3]*(iatt eq 3)#replicate(1.,nenergy), npts*nenergy)#replicate(1.,nmass)
+     gf = reform(cmn_dat.gf[iswp,*,0]*((iatt eq 0)#replicate(1.,nenergy)) +$
+                 cmn_dat.gf[iswp,*,1]*((iatt eq 1)#replicate(1.,nenergy)) +$
+                 cmn_dat.gf[iswp,*,2]*((iatt eq 2)#replicate(1.,nenergy)) +$
+                 cmn_dat.gf[iswp,*,3]*((iatt eq 3)#replicate(1.,nenergy)), npts*nenergy)#replicate(1.,nmass)
      gf = cmn_dat.geom_factor*reform(gf,npts,nenergy,nmass)
      eff = cmn_dat.eff[ieff,*,*]
      dt = cmn_dat.integ_t#replicate(1.,nenergy*nmass)
      eflux = (cmn_dat.data-cmn_dat.bkg)*cmn_dat.dead/(gf*eff*dt)
   Endif Else If(apid Eq 'C8' Or apid Eq 'CA') Then Begin
-     gf = reform(cmn_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
-                 cmn_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
-                 cmn_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
-                 cmn_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts,nenergy,nbins)
+     gf = reform(cmn_dat.gf[iswp,*,*,0]*((iatt eq 0)#replicate(1.,nenergy*nbins)) +$
+                 cmn_dat.gf[iswp,*,*,1]*((iatt eq 1)#replicate(1.,nenergy*nbins)) +$
+                 cmn_dat.gf[iswp,*,*,2]*((iatt eq 2)#replicate(1.,nenergy*nbins)) +$
+                 cmn_dat.gf[iswp,*,*,3]*((iatt eq 3)#replicate(1.,nenergy*nbins)), npts,nenergy,nbins)
      gf = cmn_dat.geom_factor*gf
      eff = cmn_dat.eff[ieff,*,*]
      dt = cmn_dat.integ_t#replicate(1.,nenergy*nbins)
      eflux = (cmn_dat.data-cmn_dat.bkg)*cmn_dat.dead/(gf*eff*dt)
   Endif Else Begin
-     gf = reform(cmn_dat.gf[iswp,*,*,0]*(iatt eq 0)#replicate(1.,nenergy*nbins) +$
-                 cmn_dat.gf[iswp,*,*,1]*(iatt eq 1)#replicate(1.,nenergy*nbins) +$
-                 cmn_dat.gf[iswp,*,*,2]*(iatt eq 2)#replicate(1.,nenergy*nbins) +$
-                 cmn_dat.gf[iswp,*,*,3]*(iatt eq 3)#replicate(1.,nenergy*nbins), npts*nenergy*nbins)$
+     gf = reform(cmn_dat.gf[iswp,*,*,0]*((iatt eq 0)#replicate(1.,nenergy*nbins)) +$
+                 cmn_dat.gf[iswp,*,*,1]*((iatt eq 1)#replicate(1.,nenergy*nbins)) +$
+                 cmn_dat.gf[iswp,*,*,2]*((iatt eq 2)#replicate(1.,nenergy*nbins)) +$
+                 cmn_dat.gf[iswp,*,*,3]*((iatt eq 3)#replicate(1.,nenergy*nbins)), npts*nenergy*nbins)$
           #replicate(1.,nmass)
      gf = cmn_dat.geom_factor*reform(gf,npts,nenergy,nbins,nmass)
      eff = cmn_dat.eff[ieff,*,*,*]
@@ -125,8 +125,8 @@ End
 ; 1-nov-2014, jmm, PDS compliance
 ; 6-nov-2014, jmm, Corrects clock drift 
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-10 14:01:32 -0800 (Mon, 10 Nov 2014) $
-; $LastChangedRevision: 16159 $
+; $LastChangedDate: 2014-11-18 10:32:03 -0800 (Tue, 18 Nov 2014) $
+; $LastChangedRevision: 16209 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $

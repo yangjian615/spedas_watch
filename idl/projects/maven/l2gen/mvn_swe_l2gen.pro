@@ -15,8 +15,8 @@
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14, jmm,
 ; jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-14 14:24:24 -0800 (Fri, 14 Nov 2014) $
-; $LastChangedRevision: 16189 $
+; $LastChangedDate: 2014-11-18 14:34:02 -0800 (Tue, 18 Nov 2014) $
+; $LastChangedRevision: 16227 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
 Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
@@ -36,7 +36,7 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
   trange = [t_start, t_end]
   trange_str = time_string(trange)
 ;You need a timespan, so that the clock drift doesn't prompt for one
-  timespan, tstart, 1
+  timespan, t_start, 1
 ; get SPICE kernels
   mvn_swe_spice_init, trange = trange
 

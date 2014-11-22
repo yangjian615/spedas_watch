@@ -17,14 +17,18 @@
 ; linked to the revsioned file 
 ;KEYWORDS:
 ; no_compression = if set, skip the compression step
+; temp_dir = if set, output files into subdirectories of this dir,
+;            then move to final destination. The default is
+;            '/mydisks/home/maven/', don't forget the slash
 ;HISTORY:
 ; 22-jul-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-10 16:19:26 -0800 (Mon, 10 Nov 2014) $
-; $LastChangedRevision: 16163 $
+; $LastChangedDate: 2014-11-18 10:32:03 -0800 (Tue, 18 Nov 2014) $
+; $LastChangedRevision: 16209 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_l2file_save.pro $
 ;-
-Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression
+Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, temp_dir = temp_dir, $
+                             no_compression = no_compression, _extra = _extra
 
   If(~is_struct(otp_struct)) Then Begin
      dprint, 'Bad structure input '
@@ -62,10 +66,11 @@ Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compress
 ;cdfconvert over the network is killing my computer, 2014-11-07, jmm
 ;make a directory for the file
 ;Have a backup for bad temp directories, so that /tmp isn't deleted
-  If(n_elements(ppp) Eq 7 && strlen(ppp[4]) Eq 8) Then temp_dir =  '/tmp/'+ppp[4] $
-  Else temp_dir = '/tmp/YYYYMMDD'
-  file_mkdir, temp_dir
-  fullfilex = temp_dir+'/'+file
+  If(keyword_set(temp_dir)) Then tdir = temp_dir Else tdir = '/mydisks/home/maven/'
+  If(n_elements(ppp) Eq 7 && strlen(ppp[4]) Eq 8) Then tdir_out =  tdir+ppp[4] $
+  Else tdir_out = tdir+'YYYYMMDD'
+  file_mkdir, tdir_out
+  fullfilex = tdir_out+'/'+file
 
   dummy = cdf_save_vars2(otp_struct, fullfilex, /no_file_id_update)
   spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfilex+' '+fullfilex+' -compression cdf:none -delete'
@@ -109,7 +114,7 @@ Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compress
   Endif
 
 ;delete temporary directory
-  file_delete, temp_dir, /recursive
+  file_delete, tdir_out, /recursive
 
 ;Link revisionless file:
   spawn, 'ln '+fullfile+' '+fullfile0

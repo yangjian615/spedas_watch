@@ -3,12 +3,21 @@
 function mvn_sep_anc_data, trange = trange, delta_t = delta_t ,load_kernels=load_kernels,maven_kernels = maven_kernels
 
   if not keyword_set (delta_t) then delta_t = 32
-   
+  if keyword_set(load_kernels) then maven_kernels = mvn_spice_kernels(trange = tr,/load,/all) 
+ 
   tr = timerange(trange)
   total_time = tr[1] - tr[0]
   ntimes =ceil(total_time/delta_t)
   times = tr[0] + delta_t*dindgen(ntimes)
   et = time_ephemeris(times)
+  objects = ['MAVEN_SC_BUS', 'MARS']
+  time_valid = spice_valid_times(et,object=objects) 
+  printdat,check_objects,time_valid
+  ind = where(time_valid ne 0,nind)
+  if ind[0] eq -1 then begin
+    print, 'SPICE kernels are missing for all the requested times.'
+    return,0
+  endif 
 
 ;here we define the tags for the ancillary/ephemeris data structure.  This should have exactly the same
 ; format as the same structure in mvn_sep_read_l2_anc_cdf
@@ -62,10 +71,10 @@ function mvn_sep_anc_data, trange = trange, delta_t = delta_t ,load_kernels=load
                     spacecraft_local_time:0d}
                     
   SEP_ancillary = replicate (SEP_ancillarya,ntimes)
-  if keyword_set(load_kernels) then maven_kernels = mvn_spice_kernels(trange = tr,/load,/valid) 
   
 
   tmp_MSO = mvn_sep_anc_look_directions(utc = times, coordinate_frame = 'MAVEN_MSO')
+  ;maven_kernels = mvn_spice_kernels(trange = tr,/load,/all) 
   tmp_SSO = mvn_sep_anc_look_directions(utc = times, coordinate_frame = 'MAVEN_SSO')
   tmp_GEO = mvn_sep_anc_look_directions(utc = times, coordinate_frame = 'IAU_MARS')
   
@@ -84,6 +93,7 @@ function mvn_sep_anc_data, trange = trange, delta_t = delta_t ,load_kernels=load
   ram_angle_SEP2_reverse = separation_angle(MAVEN_velocity_MSO,tmp_MSO.look_direction_SEP2_reverse)
 
 ; calculate the quaternions for the rotations between the SEP coordinate systems and the relevant Mars ones
+  ; maven_kernels = mvn_spice_kernels(trange = tr,/load,/all) 
    qrot_SEP1_to_MSO =  spice_body_att('MAVEN_SEP1','MAVEN_MSO',times,/quaternion,check_object='MAVEN_SC_BUS') 
    qrot_SEP1_to_SSO =  spice_body_att('MAVEN_SEP1','MAVEN_SSO',times,/quaternion,check_object='MAVEN_SC_BUS') 
    qrot_SEP1_to_GEO =  spice_body_att('MAVEN_SEP1','IAU_MARS',times,/quaternion,check_object='MAVEN_SC_BUS') 
@@ -106,7 +116,8 @@ function mvn_sep_anc_data, trange = trange, delta_t = delta_t ,load_kernels=load
   fraction_4pi = 0.5*(1.0 - sqrt(1.0 - (Mars_mean_radius/spacecraft_radius)^ 2.0))
   
 ; fraction of each FOV taken up by Mars and sunlit Mars.  Don't bother when during cruise
-  if mean(fraction_4pi,/nan) gt 1e-3 then fraction = mvn_sep_anc_fov_mars_fraction(times,dang = 1.0) else $
+  if mean(fraction_4pi,/nan) gt 1e-3 then fraction = mvn_sep_anc_fov_mars_fraction(times,dang = 1.0,$
+    check_objects = ['MAVEN_SC_BUS']) else $
   fraction = {fraction_FOV_Mars: fltarr(ntimes, 4), fraction_FOV_sunlit_Mars: fltarr(ntimes, 4)}
   
 ; calculate geographic longitude, latitude

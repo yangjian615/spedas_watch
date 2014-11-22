@@ -75,7 +75,6 @@ endif else tmp2 = tmp
 ; scale to new units
 data.units_name = units
 if find_str_element(data,'ddata') ge 0 then data.ddata = scale * tmp2^.5
-
 data.data = scale * tmp2
 
 return

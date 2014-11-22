@@ -31,8 +31,8 @@
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-14 14:30:06 -0800 (Fri, 14 Nov 2014) $
-; $LastChangedRevision: 16190 $
+; $LastChangedDate: 2014-11-19 10:38:49 -0800 (Wed, 19 Nov 2014) $
+; $LastChangedRevision: 16239 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_swe_l2gen.pro $
 ;-
 Pro mvn_call_swe_l2gen, time_in = time_in, $
@@ -76,23 +76,25 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
   btime_set_from_file = 0b      ;need this to handle defaults correctly
   times_of_procfiles = 0.0d0
   If(keyword_set(time_in)) Then btime = time_double(time_in) Else Begin
-     timefile = file_search(odir+'swe/l2/most_recent_l0_processed.txt')
-     If(is_string(timefile[0])) Then Begin
-        openr, unit, timefile[0], /get_lun
-        btime = strarr(1)
-        readf, unit, btime
-        free_lun, unit
-        btime = time_double(btime[0])
-        btime_set_from_file = 1b ;only reset the time if you input it
+     If(~keyword_set(days_in)) Then Begin
+        timefile = file_search(odir+'swe/l2/most_recent_l0_processed.txt')
+        If(is_string(timefile[0])) Then Begin
+           openr, unit, timefile[0], /get_lun
+           btime = strarr(1)
+           readf, unit, btime
+           free_lun, unit
+           btime = time_double(btime[0])
+           btime_set_from_file = 1b ;only reset the time if you input it
 ;sanity check
-        If(btime lt time_double('2013-10-13') Or btime Gt systime(/sec)+24.0*3600.0d0) Then Begin
-           dprint, 'bad input time?'
+           If(btime lt time_double('2013-10-13') Or btime Gt systime(/sec)+24.0*3600.0d0) Then Begin
+              dprint, 'bad input time?'
+              Return
+           Endif
+        Endif Else Begin
+           dprint, 'Missing Input time file?'
            Return
-        Endif
-     Endif Else Begin
-        dprint, 'Missing Input time file?'
-        Return
-     Endelse
+        Endelse
+     Endif
   Endelse
      
 ;For each instrument
