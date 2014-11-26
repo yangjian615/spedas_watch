@@ -36,8 +36,8 @@
 ;                with the same # of elements as pathnames/newpathnames
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-04-18 13:26:55 -0700 (Fri, 18 Apr 2014) $
-;$LastChangedRevision: 14865 $
+;$LastChangedDate: 2014-11-23 08:48:32 -0800 (Sun, 23 Nov 2014) $
+;$LastChangedRevision: 16277 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_retrieve.pro $
 ;-
 function file_retrieve,pathnames, newpathnames, structure_format=structure_format,  $
@@ -64,7 +64,7 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     no_clobber=no_clobber, ignore_filesize=ignore_filesize, $
     verbose=verbose,progress=progress,progobj=progobj
 
-dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 14865 2014-04-18 20:26:55Z davin-mac $'
+dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 16277 2014-11-23 16:48:32Z davin-mac $'
 if keyword_set(structure_format) then begin
    user_agent =  'FILE_RETRIEVE: IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
    str= {   $
@@ -147,7 +147,12 @@ if keyword_set(remote_data_dir) and  not (keyword_set(no_server) or keyword_set(
                user_agent=user_agent, user_pass=user_pass, $
                preserve_mtime = preserve_mtime, restore_mtime=restore_mtime, $
                file_mode=file_mode,dir_mode=dir_mode,last_version=last_version, $
-               min_age_limit=min_age_limit,force_download=force_download
+               min_age_limit=min_age_limit,force_download=force_download, $
+               error =error
+             if keyword_set(error) then begin
+                 dprint,dlevel=1,verbose=verbose,'Network Connection Error detected- Will use local copies only. ',error
+                 break
+             endif  
              if url_info[0].io_error ne 0 then begin
                dprint, "File or URL i/o error detected.  See !error_state for more info"
                printdat,!error_state

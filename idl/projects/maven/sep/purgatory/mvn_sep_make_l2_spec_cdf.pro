@@ -1,11 +1,11 @@
 ;+
 ;PROCEDURE: 
-;	MVN_SEP_MAKE_L2_CDF
+;	MVN_SEP_MAKE_SPEC_L2_CDF
 ;PURPOSE: 
 ;	Routine to produce deconvoluted energetic electron and ion spectra
 ;AUTHOR: 
 ;	Robert Lillis (rlillis@ssl.Berkeley.edu)
-;	Modified by D. Larson
+; Revisions by D Larson
 ;CALLING SEQUENCE:
 ;	MVN_SEP_MAKE_L2_CDF, FILE=FILE, /ARCHIVE, DATA_VERSION = DATA_VERSION
 ;KEYWORDS:
@@ -13,12 +13,12 @@
 ;	ARCHIVE: If set, produce a file with archive data rather than survey (default)
 ;	DATA_VERSION: Data version to put in file (default = '1')
 ;
-; this function assumes the existence of 2 structures: "sep_vary" and "sep_novary" 
-; sep_novary should have the following tags:
+; this function assumes the existence of 2 structures: "sep_data" and "sep_info" 
+; sep_info should have the following tags:
 ; 1) ion_energy - an array of 16 (TBR) ion energies 
 ; 2) electron_energy -an array of 8 (TBR) electron energies
 ;
-; sep_vary should be an array of structures and have the following tags:
+; sep_data should be an array of structures and have the following tags:
 ; 1) time_UNIX
 ; 2) time_MET
 ; 3) Delta_t - the number of 1-second accumulations per spectrum
@@ -28,23 +28,24 @@
 ; 7) Look_Directions - 4 x 3-element array of unit vectors of each of the four FOVs in Mars-solar-orbital coordinates.
 
 
-pro mvn_sep_make_l2_cdf, sep_vary, sep_novary, global_attribute_names = global_attribute_names, $
-  global_attribute_values = global_attribute_values, rawdat_sep1 = rawdat_sep1, rawdat_sep2 = rawdat_sep2, bmaps=bmaps, $
+pro mvn_sep_make_spec_l2_cdf, sep_data, sep_info, global_attribute_names = global_attribute_names, $
+  global_attribute_values = global_attribute_values, $
+;  rawdat_sep1 = rawdat_sep1, rawdat_sep2 = rawdat_sep2, bmaps=bmaps, $
   file = file, archive = archive, data_version = data_version
 
 if not keyword_set(data_version) then data_version = '1'
 
 if not keyword_set(file) then file = 'test.cdf'
 
-nrec = n_elements(sep_vary)
-n_electron_energy =n_elements (sep_novary.electron_energy)
-n_ion_energy = n_elements (sep_novary.ion_energy)
+nrec = n_elements(sep_data)
+n_electron_energy =n_elements (sep_info.electron_energy)
+n_ion_energy = n_elements (sep_info.ion_energy)
 
 cdf_leap_second_init
 
-date_range = time_double(['2000-1-1','2030-1-1'])
+date_range = time_double(['2010-1-1','2030-1-1'])
 
-met_range = [0, 100d*86400L*365]
+met_range = [0d, 100d*86400.*365]
 
 
 ;date_range - time_double('2000-01-01/12:00')
@@ -52,20 +53,17 @@ epoch_range = time_epoch(date_range)
 tt2000_range = long64((add_tt2000_offset(date_range)-time_double('2000-01-01/12:00'))*1e9)
 
 
-epoch = time_epoch(sep_vary.time)
-timett2000 = long64((add_tt2000_offset(sep_vary.time)-time_double('2000-01-01/12:00'))*1e9)
+epoch = time_epoch(sep_data.time)
+timett2000 = long64((add_tt2000_offset(sep_data.time)-time_double('2000-01-01/12:00'))*1e9)
 
 fileid = cdf_create(file,/single_file,/network_encoding,/clobber)
 
 
 ;FIX ME: make sure the variables associated with raw counts are produced.  Currently they are not.
 
-varlist = ['Epoch','Time_TT2000','Time_MET','Time_Unix','Atten_State',$
+varlist = strupcase( ['Epoch','Time_TT2000','Time_MET','Time_Unix','Atten_State',$
            'Accumulation_Time', 'Look_Directions', $
-           'Electron_Energy_Flux', 'Ion_Energy_Flux','Electron_Energy', 'Ion_Energy',$
-          'Num_Spectra', $
-           'SEP1_Raw_Counts','SEP1_TID_FTO_Pattern','SEP1_Raw_Energy', 'SEP1_Raw_delta_Energy', $
-          'SEP2_Raw_Counts','SEP2_TID_FTO_Pattern','SEP2_Raw_Energy', 'SEP2_Raw_delta_Energy']
+           'Electron_Energy_Flux', 'Ion_Energy_Flux','Electron_Energy', 'Ion_Energy'])
 nvars = n_elements(varlist)
 
 
@@ -175,13 +173,13 @@ cdf_attput,fileid,'FILLVAL',varid,-1.0e30,/ZVARIABLE
 cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
 cdf_attput,fileid,'VALIDMIN','Time_MET',met_range[0],/ZVARIABLE
 cdf_attput,fileid,'VALIDMAX','Time_MET',met_range[1],/ZVARIABLE
-cdf_attput,fileid,'SCALEMIN','Time_MET',sep_vary[0].met,/ZVARIABLE
-cdf_attput,fileid,'SCALEMAX','Time_MET',sep_vary[nrec-1].met,/ZVARIABLE
+cdf_attput,fileid,'SCALEMIN','Time_MET',sep_data[0].met,/ZVARIABLE
+cdf_attput,fileid,'SCALEMAX','Time_MET',sep_data[nrec-1].met,/ZVARIABLE
 cdf_attput,fileid,'UNITS','Time_MET','s',/ZVARIABLE
 cdf_attput,fileid,'MONOTON','Time_MET','INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC','Time_MET','Time, middle of sample, in raw mission elapsed time',/ZVARIABLE
 
-cdf_varput,fileid,'Time_MET',sep_vary.met
+cdf_varput,fileid,'Time_MET',sep_data.met
 
 
 ;Unix Time
@@ -195,13 +193,13 @@ cdf_attput,fileid,'FILLVAL',varid,-1.0e30,/ZVARIABLE
 cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
 cdf_attput,fileid,'VALIDMIN','Time_Unix',date_range[0],/ZVARIABLE
 cdf_attput,fileid,'VALIDMAX','Time_Unix',date_range[1],/ZVARIABLE
-cdf_attput,fileid,'SCALEMIN','Time_Unix',sep_vary[0].time,/ZVARIABLE
-cdf_attput,fileid,'SCALEMAX','Time_Unix',sep_vary[nrec-1].time,/ZVARIABLE
+cdf_attput,fileid,'SCALEMIN','Time_Unix',sep_data[0].time,/ZVARIABLE
+cdf_attput,fileid,'SCALEMAX','Time_Unix',sep_data[nrec-1].time,/ZVARIABLE
 cdf_attput,fileid,'UNITS','Time_Unix','s',/ZVARIABLE
 cdf_attput,fileid,'MONOTON','Time_Unix','INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC','Time_Unix','Time, middle of sample, in Unix time',/ZVARIABLE
 
-cdf_varput,fileid,'Time_Unix',sep_vary.time
+cdf_varput,fileid,'Time_Unix',sep_data.time
 
 
 ;Attenuator State
@@ -221,7 +219,7 @@ cdf_attput,fileid,'SCALEMAX','Atten_State',2,/ZVARIABLE
 cdf_attput,fileid,'CATDESC','Atten_State','Attenuator state for each of the four look directions, 1 = open, 0 = closed',/ZVARIABLE
 cdf_attput,fileid,'DEPEND_0','Atten_State','Epoch',/ZVARIABLE
 
-cdf_varput,fileid,'Atten_State',sep_vary.atten_state
+cdf_varput,fileid,'Atten_State',sep_data.atten_state
 
 ; Accumulation Time
 varid = cdf_varcreate(fileid, varlist[5], /CDF_INT2, /REC_VARY,/ZVARIABLE)
@@ -238,7 +236,7 @@ cdf_attput,fileid,'SCALEMAX','Accumulation_Time',8192,/ZVARIABLE
 cdf_attput,fileid,'CATDESC','Accumulation_Time','Number of 1-second accumulations contained within this data sample.',/ZVARIABLE
 cdf_attput,fileid,'DEPEND_0','Accumulation_Time','Epoch',/ZVARIABLE
 
-cdf_varput,fileid,'Accumulation_Time',sep_vary.delta_time
+cdf_varput,fileid,'Accumulation_Time',sep_data.delta_time
 
 
 ;Look directions. Comment out for now.
@@ -260,7 +258,7 @@ cdf_attput,fileid,'UNITS','Look_Directions','Unit vector, MSO',/ZVARIABLE
 cdf_attput,fileid,'CATDESC','Look_Directions','Geometric center of each of the 4 fields of view of the SEP sensors',/ZVARIABLE
 cdf_attput,fileid,'DEPEND_0','Look_Directions','Epoch',/ZVARIABLE
 
-;cdf_varput,fileid,'Look_Directions',sep_vary.Look_Directions
+;cdf_varput,fileid,'Look_Directions',sep_data.Look_Directions
 
 
 ; Electron Energy Flux
@@ -282,7 +280,7 @@ cdf_attput,fileid,'UNITS','Electron_Energy_Flux','keV/(cm^2 second steradian keV
 cdf_attput,fileid,'CATDESC','Electron_Energy_Flux','Electron differential energy flux in each of the four look directions',/ZVARIABLE
 cdf_attput,fileid,'DEPEND_0','Electron_Energy_Flux','Epoch',/ZVARIABLE
 
-cdf_varput,fileid,'Electron_Energy_Flux',sep_vary.electron_energy_flux
+cdf_varput,fileid,'Electron_Energy_Flux',sep_data.electron_energy_flux
 
 ; Ion Energy Flux
 
@@ -303,7 +301,7 @@ cdf_attput,fileid,'UNITS','Ion_Energy_Flux','keV/(cm^2 second steradian keV)',/Z
 cdf_attput,fileid,'CATDESC','Ion_Energy_Flux','Ion differential energy flux in each of the four look directions',/ZVARIABLE
 cdf_attput,fileid,'DEPEND_0','Ion_Energy_Flux','Epoch',/ZVARIABLE
 
-cdf_varput,fileid,'Ion_Energy_Flux',sep_vary.ion_energy_flux
+cdf_varput,fileid,'Ion_Energy_Flux',sep_data.ion_energy_flux
 
 ;Electron Energy
 
@@ -324,7 +322,7 @@ cdf_attput,fileid,'SCALEMAX','Electron_Energy',1e3,/ZVARIABLE
 cdf_attput,fileid,'UNITS','Electron_Energy','keV',/ZVARIABLE
 cdf_attput,fileid,'CATDESC','Electron_Energy','Electron energy table',/ZVARIABLE
 
-cdf_varput,fileid,'Electron_Energy',sep_novary.electron_energy
+cdf_varput,fileid,'Electron_Energy',sep_info.electron_energy
 
 ;Ion Energy
 
@@ -345,28 +343,9 @@ cdf_attput,fileid,'SCALEMAX','Ion_Energy',2e4,/ZVARIABLE
 cdf_attput,fileid,'UNITS','Ion_Energy','keV',/ZVARIABLE
 cdf_attput,fileid,'CATDESC','Ion_Energy','Ion energy table',/ZVARIABLE
 
-cdf_varput,fileid,'Ion_Energy',sep_novary.ion_energy
+cdf_varput,fileid,'Ion_Energy',sep_info.ion_energy
 
 
-
-
-;Number of Spectra
-
-if 0 then begin
-varid = cdf_varcreate(fileid, varlist[11], /CDF_INT2, /REC_NOVARY,/ZVARIABLE)
-cdf_attput,fileid,'FIELDNAM',varid,varlist[11],/ZVARIABLE
-cdf_attput,fileid,'FORMAT',varid,'I7',/ZVARIABLE
-cdf_attput,fileid,'LABLAXIS',varid,varlist[11],/ZVARIABLE
-cdf_attput,fileid,'VAR_TYPE',varid,'support_data',/ZVARIABLE
-cdf_attput,fileid,'FILLVAL',varid,-32767,/ZVARIABLE
-cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
-cdf_attput,fileid,'VALIDMIN','Num_Spectra',0,/ZVARIABLE
-cdf_attput,fileid,'VALIDMAX','Num_Spectra',86400,/ZVARIABLE
-cdf_attput,fileid,'SCALEMIN','Num_Spectra',0,/ZVARIABLE
-cdf_attput,fileid,'SCALEMAX','Num_Spectra',86400,/ZVARIABLE
-cdf_attput,fileid,'CATDESC','Num_Spectra','Number of Fine Distributions in File',/ZVARIABLE
-cdf_varput,fileid,'Num_Spectra',nrec
-endif
 
 
 cdf_close,fileid

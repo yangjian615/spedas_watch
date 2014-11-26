@@ -59,7 +59,7 @@ Function mvn_sep_anc_fov_mars_fraction, times,dang = dang, check_objects = check
 
     intercept_Mars = bytarr(nphi, ntheta) ; i.e. does it intercept Mars?
     cos_sza_intercept = fltarr(nphi, ntheta) ; if it does, how well illuminated is the surface?
-    for i = 0, n_elements (ind) -1 do begin   
+    for i = 0L, n_elements (ind) -1 do begin   
       for M = 0, ntheta*1L*nphi - 1 do begin & $
 ; 'intercept' is 1 if the ray intercepts the planet.  0 if not
         cspice_sincpt, 'Ellipsoid', 'MARS',et[ind[i]], 'IAU_MARS', 'NONE', 'MAVEN', FOV_frame [J*2], $

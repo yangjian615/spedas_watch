@@ -161,16 +161,16 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom
                  tags eq 'MAGF',cc)
         if cc eq 2 then begin
            temp=execute('utc=time_string(mvn_'+apid[api]+'_dat.time)')
-           if keyword_set(frame) then rot=spice_body_att('MAVEN_SPACECRAFT',frame,utc,check_objects='MAVEN_SPACECRAFT') $
-           else rot=fltarr(3,3)+1.
            nn=n_elements(utc)
            apid_time=time_double(utc)
            xx=interpol(magf[*,0],time,apid_time)
            yy=interpol(magf[*,1],time,apid_time)
            zz=interpol(magf[*,2],time,apid_time)
            vec=transpose([[xx],[yy],[zz]])
-           ;cspice_recsph, magf_sta_c6, r, phi, theta
-           newvec=spice_vector_rotate(vec,utc,'MAVEN_SPACECRAFT','MAVEN_STATIC',check_objects='MAVEN_SPACECRAFT')
+           newvec=spice_vector_rotate(vec,utc,$
+                                      'MAVEN_SPACECRAFT',$
+                                      'MAVEN_STATIC',$
+                                      check_objects='MAVEN_SPACECRAFT')
            vec=transpose(newvec)
            if keyword_set(stacom) then begin
               temp=execute('mvn_'+apid[api]+'_dat.magf[*,0]=vec[*,0]')
@@ -180,6 +180,7 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom
            if apid[api] eq 'c6' then begin
               time_sta_c6=apid_time
               magf_sta_c6=vec
+              cspice_recsph, transpose(magf_sta_c6), r, phi, theta
            endif
         endif
      endif
@@ -193,6 +194,16 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom
 
   ;-------------------------------------------------------------------------
   ;Tplot  
+  var = 'mvn_mag1_sta_phi'
+  store_data,var,data={x:time, y:phi, v:[0], labels:['phi'], $
+                       labflag:1}, limits = {SPICE_FRAME:'MAVEN_STATIC', $
+                       SPICE_MASTER_FRAME:'MAVEN_SPACECRAFT'}
+
+  var = 'mvn_mag1_sta_theta'
+  store_data,var,data={x:time, y:theta, v:[0], labels:['theta'], $
+                       labflag:1}, limits = {SPICE_FRAME:'MAVEN_STATIC', $
+                       SPICE_MASTER_FRAME:'MAVEN_SPACECRAFT'}
+
   var = 'mvn_mag1_pl_full'
   store_data,var,data={x:time, y:magf, v:[0,1,2], labels:['X','Y','Z'], $
                        labflag:1}, limits = {SPICE_FRAME:'MAVEN_SPACECRAFT', $

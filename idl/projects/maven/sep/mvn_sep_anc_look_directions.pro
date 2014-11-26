@@ -44,10 +44,16 @@ SEP2_back_look_direction = $
   spice_vector_rotate(SEP_FOV_back,times,et=et,'MAVEN_SEP2',coordinate_frame,check_objects='MAVEN_SC_BUS')
 
   if keyword_set (clear) then cspice_kclear; this clears away and unloads all kernels
+;return, {time: times, $
+;         SEP1_front_look_direction:SEP1_front_look_direction, $
+;         SEP1_back_look_direction:SEP1_back_look_direction, $
+;         SEP2_front_look_direction:SEP2_front_look_direction, $
+;         SEP2_back_look_direction:SEP2_back_look_direction}
 return, {time: times, $
-         SEP1_front_look_direction:SEP1_front_look_direction, $
-         SEP1_back_look_direction:SEP1_back_look_direction, $
-         SEP2_front_look_direction:SEP2_front_look_direction, $
-         SEP2_back_look_direction:SEP2_back_look_direction}
+         look_direction_SEP1_forward:SEP1_front_look_direction, $
+         look_direction_SEP1_reverse:SEP1_back_look_direction, $
+         look_direction_SEP2_forward:SEP2_front_look_direction, $
+         look_direction_SEP2_reverse:SEP2_back_look_direction}
+
 end
  

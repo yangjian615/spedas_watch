@@ -1,45 +1,56 @@
 ;+
-;procedure:  thm_crib_esa_bgnd_remove
+;Procedure:
+;  thm_crib_esa_bgnd_remove
 ;
-;purpose: Cleanup ESA background.
+;Purpose:
+;  Demonstrate examples of background contamination removel from ESA particle data.
 ;
-; This demonstrates the cleanup process for your event.
-; Note you have to use the get routines I sent you that
-; implement the bgnd_remove keyword. You simply replace the
-; old ones with these ones in your thm idl directory.
-; 
-; Crib provided by Vassilis
+;Notes:
+;  This crib is an updated version of Vassilis's original thm_crib_esa_bgnd_remove.
+;       
+;See also:
+;  thm_crib_esa
+;  thm_crib_part_products
 ;
-;usage:
-; .run thm_crib_esa_bgnd_remove
-; 
-; SEE ALSO:
-;   thm_part_moments
-;   thm_part_getspec
-;   thm_esa_bgnd_remove
-;   get_th?_pe??.pro
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 10:56:58 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13080 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_esa_bgnd_remove.pro $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-11-24 16:22:50 -0800 (Mon, 24 Nov 2014) $
+;$LastChangedRevision: 16294 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_esa_bgnd_remove.pro $
 ;
 ;-
+
+
+;---------------------------------------------------------------------------
+; Set time range and load support data.
+; 
+; By default thm_part_products will look for tplot variables containing:
+;   Spacecraft Potential:  "th?_pxxm_pot"
+;         Magnetic Field:  "th?_fgs"
+;---------------------------------------------------------------------------
+
+;time range
 timespan,'8 6 15/08:00',4,/hours
 trange=['8 6 15/08:00','8 6 15/12:00']
-;
-sc='d'
-thm_load_state,probe=sc,/get_supp
-thm_load_fit,probe=sc,data='fgs',coord='gsm',suff='_gsm'
-thm_load_fit,probe=sc,data='fgs',coord='dsl',suff='_dsl'
-thm_load_mom,probe=sc ; L2: onboard processed moms
-thm_load_esa,probe=sc ; L2: ground processed gmoms, omni spectra
-ylim,'thd_pe??_en_eflux',5,30000,1
-; load L0 omni spectra, all ESA data in memory
-thm_load_esa_pkt,probe=sc
 
-;
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;probe
+probe = 'd'
+
+;load support data
+thm_load_state, probe=probe, /get_support
+thm_load_fit, probe=probe, data='fgs', coord='dsl'
+
+;load data for comparison
+thm_load_fit, probe=probe, data='fgs', coord='gsm', suffix='_gsm'
+thm_load_mom, probe=probe ; L2: onboard processed moms
+thm_load_esa, probe=probe ; L2: ground processed gmoms, omni spectra
+ylim,'thd_pe??_en_eflux',5,30000,1
+
+;load uncalibrated (l0) particle data into memory 
+thm_part_load, probe=probe, datatype='pe??'
+
+
+;---------------------------------------------------------------------------
 ; There are various ways of using the keyword /bgnd_remove
 ; One way is for producing moments and spectra (together in one call)
 ; Note that this time we did not have full distribution functions - FDFs- at
@@ -48,26 +59,54 @@ thm_load_esa_pkt,probe=sc
 ; Also note that FDFs are 3s snapshots, not 5min averages, so the statistics are no
 ; better than 3s cadence FDFs. From those you can produce reasonable temperature
 ; and density assuming isotropy and also spectra with removed background. See below:
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-trange=['8 6 15/08:00','8 6 15/12:00']
-thm_part_moments, probe = sc, instrum = 'peir', scpot_suffix = '_pxxm_pot', $
-trange=trange,erange=[0,31],mag_suffix = '_fgs_dsl', tplotnames = tn, $
-verbose = 2; new names are output into tn
-;
-calc," 'thd_peir_en_eflux_before'='thd_peir_en_eflux' "
-;
-thm_part_moments, probe = sc, instrum = 'peir', scpot_suffix = '_pxxm_pot', $
-trange=trange,erange=[0,31],mag_suffix = '_fgs_dsl', tplotnames = tn, $
-verbose = 2, /bgnd_remove ; new names are output into tn
-calc," 'thd_peir_en_eflux_after'='thd_peir_en_eflux' "
-;
-tplot,'thd_peir_en_eflux_before thd_peir_en_eflux_after'
+;---------------------------------------------------------------------------
+
+;disable background removal for comparison
+thm_part_products, probe=probe, datatype='peir', trange=trange, $ 
+                   suffix='_before', esa_bgnd_remove=0
+
+thm_part_products, probe=probe, datatype='peir', trange=trange, $ 
+                   suffix='_after'
+
+zlim,'thd_peir_eflux_energy*',1.e5,1.e7,1 ; fix eflux limits
+
+tplot, 'thd_peir_eflux_energy_before thd_peir_eflux_energy_after'
+
 
 stop
 
+
+;---------------------------------------------------------------------------
+; Settings for background removal can be tweaked using keywords:
+; 
+;   BGND_TYPE: This specifies the method by which the background is determined.
+;                "anode" - The data is divided into 16 theta bins. A background
+;                           value is calculated for each bin.
+;                "omni" - A background value is calculated for each energy.
+;                "angle" - A background value is calculated for each look direction
+;   BGND_NPOINTS: Specifies the number of smallet points to average over to 
+;                 determine the background for a region.
+;   BGND_SCALE: Arbitrary factor to multiply the background by before it is 
+;               subtracted.
 ;
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Defaults values:
+;   bgnd_type = "anode"
+;   bgnd_npoints = 3
+;   bgnd_scale = 1.
+;---------------------------------------------------------------------------
+
+thm_part_products, probe=probe, datatype='peir', trange=trange, $
+                   bgnd_npoints=1, bgnd_scale=1.02, bgnd_type='angle' 
+                   suffix='_after2'
+
+zlim,'thd_peir_eflux_energy*',1.e5,1.e7,1 ; fix eflux limits
+
+tplot, 'thd_peir_eflux_energy*'
+
+stop
+
+
+;---------------------------------------------------------------------------
 ; You can do the same thing with full distribution functions FDFs. See below.
 ; When you look at the spectrum, you can see the subtraction resulted in
 ; a cleaned up spectrum that still has some noise. The reason is that
@@ -76,115 +115,61 @@ stop
 ; high variance and the minimum is below the most likely value.
 ; The RDFs though have more robust estimates of the background because
 ; they are averages over all angles.
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-trange=['8 6 15/08:00','8 6 15/12:00']
-thm_part_moments, probe = sc, instrum = 'peif', scpot_suffix = '_pxxm_pot', $
-trange=trange,erange=[0,31],mag_suffix = '_fgs_dsl', tplotnames = tn, $
-verbose = 2; new names are output into tn
-;
-calc," 'thd_peif_en_eflux_before'='thd_peif_en_eflux' "
-;
-thm_part_moments, probe = sc, instrum = 'peif', scpot_suffix = '_pxxm_pot', $
-trange=trange,erange=[0,31],mag_suffix = '_fgs_dsl', tplotnames = tn, $
-verbose = 2, /bgnd_remove ; new names are output into tn
-calc," 'thd_peif_en_eflux_after'='thd_peif_en_eflux' "
-;
-tplot,'thd_peif_en_eflux_before thd_peif_en_eflux_after'
+;---------------------------------------------------------------------------
+
+;disable background removal for comparison
+thm_part_products, probe=probe, datatype='peif', trange=trange, $ 
+                   sc_pot_name='thd_pxxm_pot', mag_name='_fgs_dsl', $
+                   suffix='_before', esa_bgnd_remove=0
+
+thm_part_products, probe=probe, datatype='peif', trange=trange, $ 
+                   sc_pot_name='thd_pxxm_pot', mag_name='_fgs_dsl', $
+                   suffix='_after'
+
+zlim,'thd_peif_eflux_energy*',1.e5,1.e7,1 ; fix eflux limits
+;ylim,'thd_peif_eflux_energy*',5.,30000.,1 ; fix energy limits
+
+tplot, 'thd_peif_eflux_energy_before thd_peif_eflux_energy_after'
 
 stop
 
-;
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Now lets see how to use the /bgnd_remove keyword for producing ANGULAR
-; spectra with thm_part_getspec. (Note you can also do energy spectra
-; restricting any look direction.)
-;
-; First try again to produce a familar spectrum, but with
-; the keyword /bgnd_remove. Try FDFs.
-; You can see the spectra are identical to what was obtained above
-; with a slightly different routine; the underlying implementation is same.
-; Here you can restrict the espectrum's angle phi, thera, or pa or gyrophase 
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-trange=['8 6 15/08:00','8 6 15/12:00']
-thm_part_getspec,probe=sc, trange=trange, theta=[-90,90], phi=[0,360], $
-data_type=['peif'], /energy, tplotsuffix='_after2',/bgnd_remove
-;
-trange=['8 6 15/08:00','8 6 15/12:00']
-thm_part_getspec,probe=sc, trange=trange, theta=[-90,90], phi=[0,360], $
-data_type=['peif'], /energy, tplotsuffix='_after2',/bgnd_remove
-;
-; Also do RDFs for ions and electrons
-;
-trange=['8 6 15/08:00','8 6 15/12:00']
-thm_part_getspec,probe=sc, trange=trange, theta=[-90,90], phi=[0,360], $
-data_type=['peir'], /energy, tplotsuffix='_after2',/bgnd_remove
-;
-trange=['8 6 15/08:00','8 6 15/12:00']
-thm_part_getspec,probe=sc, trange=trange, theta=[-90,90], phi=[0,360], $
-data_type=['peer'], /energy, tplotsuffix='_after2',/bgnd_remove
-;
-zlim,'thd_peif_en_eflux*',1.e5,1.e7,1 ; fix eflux limits
-ylim,'thd_peif_en_eflux*',5.,30000.,1 ; fix energy limits
-tplot,'thd_peif_en_eflux_before thd_peif_en_eflux_after thd_peif_en_eflux_after2'
-tplot,'thd_peir_en_eflux_before thd_peir_en_eflux_after thd_peir_en_eflux_after2'    
-tlimit,trange
+
+;---------------------------------------------------------------------------
+; Background removal for angular spectra.
+;---------------------------------------------------------------------------
+
+;peif phi
+thm_part_products, probe=probe, datatype='peif', trange=trange, $
+                   theta=[-45,45], phi=[0,360], energy=[5000.,15000.], $
+                   output='phi', suffix='_before', esa_bgnd_remove=0
+
+thm_part_products, probe=probe, datatype='peif', trange=trange, $
+                   theta=[-45,45], phi=[0,360], energy=[5000.,15000.], $
+                   output='phi', suffix='_after'
+
+;peif pitch angle
+thm_part_products, probe=probe, datatype='peif', trange=trange, $
+                   energy=[5000.,15000.], output='pa', suffix='_before', $
+                   esa_bgnd_remove=0
+
+thm_part_products, probe=probe, datatype='peif', trange=trange, $
+                   energy=[5000.,15000.], output='pa', suffix='_after'
+
+;peef phi
+thm_part_products, probe=probe, datatype='peef', trange=trange, $
+                   theta=[-45,45], phi=[0,360], energy=[2000.,8000.], $
+                   output='phi', suffix='_before', esa_bgnd_remove=0
+
+thm_part_products, probe=probe, datatype='peef', trange=trange, $
+                   theta=[-45,45], phi=[0,360], energy=[2000.,8000.], $
+                   output='phi', suffix='_after'
+                   
+
+zlim,'thd_peif_eflux_*',1.e5,1.e7,1 ; fix eflux limits
+
+tplot, 'thd_fgs_gsm  thd_peif_eflux_phi*  thd_peif_eflux_pa* thd_peef_eflux_phi*'
 
 stop
 
-;
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Now lets implement the bgnd_removal on energy and angular spectra of
-; previous plot. I will simply add the keyword /bgnd_remove to the crib1.pro
-; so you can compare with that. 
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-thm_part_getspec,probe=sc, trange=trange, theta=[-45,45], phi=[0,360], $
-data_type=['peif'], start_angle=0, angle='phi', $
-tplotsuffix='_eq2', erange=[5000.,15000.], /bgnd_remove
-zlim,'thd_peif_an_eflux_phi_eq2',1.e5,1.e7,1
-;
-thm_part_getspec,probe=sc, trange=trange, $
-data_type=['peif'], angle='pa', $
-tplotsuffix='_eq2', erange=[5000.,15000.], /bgnd_rem
-;
-thm_part_getspec,probe=sc, trange=trange, $
-data_type=['peif'], angle='pa', $
-tplotsuffix='_eq_norm2', erange=[5000.,15000.],/norm, /bgnd_rem
-;
-thm_part_getspec,probe=sc, trange=trange, theta=[-45,45], phi=[0,360], $
-data_type=['peef'], start_angle=0, angle='phi', $
-tplotsuffix='_eq2', erange=[2000.,8000.], /bgnd_rem
-;
-thm_part_getspec,probe=sc, trange=trange, $
-data_type=['peef'], angle='pa', $
-tplotsuffix='_eq2', erange=[2000.,8000.], /bgnd_rem
-;
-thm_part_getspec,probe=sc, trange=trange, $
-data_type=['peef'], angle='pa', $
-tplotsuffix='_eq_norm2', erange=[2000.,8000.],/norm, /bgnd_rem
-;
-tplot,'thd_fgs_gsm thd_peir_en_eflux_after2 thd_peif_an_eflux_phi_eq2 ' + $
-      'thd_peif_an_eflux_pa_eq2 thd_peif_an_eflux_pa_eq_norm2 thd_peer_en_eflux_after2 ' + $
-      'thd_peef_an_eflux_phi_eq2 thd_peef_an_eflux_phi_eq_norm2'
-;
-tlimit,trange
-;
-
-stop
-
-;
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Default settings for bgnd_remove can be tweaked using keywords:
-; bgnd_type,bgnd_npoints,bgnd_scale
-; For example...
-; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-
-thm_part_moments, probe = sc, instrum = 'peir', scpot_suffix = '_pxxm_pot', $
-  trange=trange,erange=[0,31],mag_suffix = '_fgs_dsl', tplotsuffix='_after3', $
-  /bgnd_remove,bgnd_npoints=1,bgnd_scale=1.02,bgnd_type='angle'  ;valid types are 'omni','angle','anode'
-  
-  tplot,'thd_peir_en_eflux_*'
 
 end

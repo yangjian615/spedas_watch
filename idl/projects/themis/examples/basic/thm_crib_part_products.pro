@@ -9,9 +9,9 @@
 ;  
 ;  Examples on SST specific sun decontamination options can be found in thm_crib_sst.pro
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-10-06 16:09:51 -0700 (Mon, 06 Oct 2014) $
-;$LastChangedRevision: 15936 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-11-24 16:53:19 -0800 (Mon, 24 Nov 2014) $
+;$LastChangedRevision: 16295 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_products.pro $
 ;-
 
@@ -120,6 +120,7 @@ stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
 ;Example 6: ESA Background Removal
+;  - For more examples see thm_crib_esa_bgnd_remove
 ;----------------------------------------------------------------------------------------------------------------------------
 
 probe='a'
@@ -230,6 +231,33 @@ thm_part_load,probe=probe,trange=trange,datatype=datatype
 thm_part_products,probe=probe,datatype=datatype,trange=trange,outputs='energy theta phi',energy=[10,40000] ;eV
 
 tplot,['tha_peif_eflux_energy','tha_peif_eflux_theta','tha_peif_eflux_phi']
+
+stop
+
+;----------------------------------------------------------------------------------------------------------------------------
+;Example 11:  Eclipse corrections
+;----------------------------------------------------------------------------------------------------------------------------
+
+probe='b'
+datatype='peif'
+trange='2010-02-13/'+['08:00','10:00']
+timespan,trange
+
+;load data as usual
+thm_part_load,probe=probe,trange=trange,datatype=datatype
+
+thm_part_products,probe=probe,datatype=datatype,trange=trange,outputs='phi moments'
+
+;load data with eclipse corrections
+;  use_eclipse_corrections = 0  No corrections are loaded (default).
+;                          = 1  Load partial corrections (not recommended)
+;                          = 2  Load full corrections.
+thm_part_load,probe=probe,trange=trange,datatype=datatype, use_eclipse_corrections=2
+
+thm_part_products,probe=probe,datatype=datatype,trange=trange,outputs='phi moments', suffix='_corrected'
+
+tplot,['thb_peif_eflux_phi','thb_peif_eflux_phi_corrected', $
+       'thb_peif_velocity', 'thb_peif_velocity_corrected']
 
 stop
 

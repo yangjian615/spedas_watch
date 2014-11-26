@@ -98,6 +98,8 @@ for num = 0,n_elements(cdf_files)-1 do begin
             'CDF_UCHAR' :   value = 0b
             'CDF_BYTE'	:   value = 0b
             'CDF_EPOCH' :   value = !values.d_nan
+            'CDF_INT8' : value = 0LL
+            'CDF_TIME_TT2000' : value = 0LL
             else        :   message ,'Invalid type,  please fix source...'
           endcase
           if ndim gt 0 then val = make_array(value=value,dim=dim)   $

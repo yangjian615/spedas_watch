@@ -17,15 +17,17 @@
 ;	PATH: Set the default data path for file_retrieve functionality if different from standard
 ;	TRANGE: Set the time range for files to load, if using file_retrieve capability
 ;		(otherwise the 'timerange' routine will be invoked to determine this)
+;	OLDCAL: Use old calibration factors appropriate for original table
+;		(appropriate before ~11/25/2014)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-03 05:34:26 -0800 (Mon, 03 Nov 2014) $
-; $LastChangedRevision: 16120 $
+; $LastChangedDate: 2014-11-24 13:27:56 -0800 (Mon, 24 Nov 2014) $
+; $LastChangedRevision: 16290 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l0_data.pro $
 ;
 ;-
 
-pro mvn_swia_load_l0_data, files, tplot = tplot, sync = sync, qlevel = qlevel, trange = trange, path = path
+pro mvn_swia_load_l0_data, files, tplot = tplot, sync = sync, qlevel = qlevel, trange = trange, path = path, oldcal = oldcal
 
 compile_opt idl2
 
@@ -102,7 +104,15 @@ if nfiles gt 1 then begin
 endif
 
 
-mvn_swia_make_info_str, info_str
+if keyword_set(oldcal) then begin
+	print,'Using Calibration Factors for 5 eV - 25 keV sweep (Valid before 11/20/2014)'
+	print,'If your table does match your time range, this program will crash'
+	mvn_swia_make_info_str, info_str
+endif else begin
+	print,'Using Calibration Factors for 25 eV - 25 keV sweep (Valid after 11/20/2014)'
+	print,'If your table does match your time range, this program will crash'
+	mvn_swia_make_info_str_2,info_str
+endelse
 
 if n_elements(apid29) gt 0 then mvn_swia_make_swihsk_str, apid29, swihsk
 

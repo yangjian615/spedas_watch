@@ -19,7 +19,7 @@ pro mvn_sta_ephemeris_load,frame=frame,verbose=verbose
 
   
 
-  if keyword_set(verbose) then print, 'Loading STATIC Ephemeris...'                                
+  if keyword_set(verbose) then print, 'Loading STATIC Ephemeris...'
   if ~keyword_set(frame) then frame='MAVEN_STATIC'                              
 
 
@@ -67,7 +67,7 @@ pro mvn_sta_ephemeris_load,frame=frame,verbose=verbose
   ;Load ephemeris and create tplot structures
   for api=0, nn_apid-1 do begin
      temp=execute('nn1=size(mvn_'+apid[api]+'_dat,/type)')
-     if nn1 ne 0 then begin
+     if nn1 ne 0 then begin        
         temp=execute('tt=tag_names(mvn_'+apid[api]+'_dat)')
         temp=where(tt eq 'POS_SC_MSO' or $
                    tt eq 'QUAT_SC' or $
@@ -75,9 +75,12 @@ pro mvn_sta_ephemeris_load,frame=frame,verbose=verbose
         if nn2 eq 3 then begin
            temp=execute('utc=time_string(mvn_'+apid[api]+'_dat.time)')
            cspice_str2et, utc,et
-           pos=spice_body_pos('MAVEN','MARS',frame='MSO',utc=utc,check_objects='MAVEN_SPACECRAFT') 
-           quat_sc =spice_body_att('MAVEN_STATIC','MAVEN_SPACECRAFT',utc,/quaternion,check_objects='MAVEN_SPACECRAFT') 
-           quat_mso=spice_body_att('MAVEN_STATIC','MAVEN_MSO'       ,utc,/quaternion,check_objects='MAVEN_SPACECRAFT') 
+           pos=spice_body_pos('MAVEN','MARS',frame='MSO',$
+                              utc=utc,check_objects='MAVEN_SPACECRAFT') 
+           quat_sc =spice_body_att('MAVEN_STATIC','MAVEN_SPACECRAFT',$
+                                   utc,/quaternion,check_objects='MAVEN_SPACECRAFT') 
+           quat_mso=spice_body_att('MAVEN_STATIC','MAVEN_MSO',$
+                                   utc,/quaternion,check_objects='MAVEN_SPACECRAFT') 
            temp=execute('mvn_'+apid[api]+'_dat.QUAT_SC=quat_sc')
            temp=execute('mvn_'+apid[api]+'_dat.QUAT_MSO=quat_mso')
            temp=execute('mvn_'+apid[api]+'_dat.POS_SC_MSO=pos')
@@ -85,7 +88,7 @@ pro mvn_sta_ephemeris_load,frame=frame,verbose=verbose
      endif
   endfor
 
-
+  stop
   ;-------------------------------------------------------------------------
   ;Clear kernels
   cspice_kclear

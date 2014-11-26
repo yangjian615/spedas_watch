@@ -5,12 +5,12 @@
 ;       Makes directional E-t spectrograms in the specified frame from SWIA Coarse data.
 ;       6 tplot variables will be generated: +X, -X, +Y, -Y, +Z, and -Z.
 ; CALLING SEQUENCE:
-;       mvn_swia_dirEt
+;       mvn_swia_diret
 ; INPUTS:
 ;       None (SWIA data and SPICE kernels need to be loaded)
 ; KEYWORDS:
 ;       all optional
-;       FRAME: specifies the frame (Def: MSO)
+;       FRAME: specifies the frame (Def: 'MSO')
 ;       UNITS: specifies the units ('eflux', 'counts', etc.) (Def: 'eflux')
 ;       ARCHIVE: uses archive data instead of survey
 ;       THLD_THETA: theta_v > thld_theta => +Z,
@@ -21,8 +21,8 @@
 ;       Yuki Harada on 2014-11-20
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2014-11-20 15:40:01 -0800 (Thu, 20 Nov 2014) $
-; $LastChangedRevision: 16258 $
+; $LastChangedDate: 2014-11-24 17:06:29 -0800 (Mon, 24 Nov 2014) $
+; $LastChangedRevision: 16297 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_diret.pro $
 ;-
 
@@ -37,7 +37,7 @@ pro mvn_swia_diret, frame=frame, units=units, archive=archive, thld_theta=thld_t
   if keyword_set(trange) then begin
      idx = where(time ge trange[0] and time le trange[1], idx_cnt)
      if idx_cnt gt 0 then time = time[idx] else begin
-        dprint,dlevel=2,verbose=verbose,'No data in the specified time range.'
+        dprint,dlevel=1,verbose=verbose,'No data in the specified time range.'
         return
      endelse
   endif
@@ -58,7 +58,7 @@ pro mvn_swia_diret, frame=frame, units=units, archive=archive, thld_theta=thld_t
   pZ_new = fltarr(n_elements(time),3)
 
   for i=0ll,n_elements(time)-1 do begin ;- time loop
-     if i mod 1000 eq 0 then print,'mvn_swia_dirEt:',i,' /',n_elements(time)
+     if i mod 1000 eq 0 then dprint,dlevel=1,verbose=verbose,i,' /',n_elements(time)
      d = mvn_swia_get_3dc(time[i],archive=archive)
      d = conv_units(d,units)
      center_time[i] = (d.time+d.end_time)/2.d

@@ -18,8 +18,8 @@
 ;  TODO: Accept multiple arguments, loop
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-10-06 16:09:51 -0700 (Mon, 06 Oct 2014) $
-;$LastChangedRevision: 15936 $
+;$LastChangedDate: 2014-11-21 17:01:34 -0800 (Fri, 21 Nov 2014) $
+;$LastChangedRevision: 16267 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -228,6 +228,16 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     pos_name = 'th'+probe_lc+'_state_pos'
   endif
   
+  if is_struct(ex) then begin
+    if in_set(strlowcase(tag_names(ex)),'scpot') then begin
+      dprint,'ERROR: scpot keyword is deprecated.  Please use sc_pot_name'
+      return
+    endif else if in_set(strlowcase(tag_names(ex)),'scpot_suffix') then begin
+      dprint,'ERROR: scpot_suffix keyword is deprecated.  Please use sc_pot_name'
+      return
+    endif
+  endif
+  
   if undefined(sc_pot_name) then begin
     sc_pot_name = 'th'+probe_lc+'_pxxm_pot' 
   endif
@@ -293,8 +303,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     thm_pgs_make_fac,times,mag_name,pos_name,probe_lc,fac_output=fac_matrix,fac_type=fac_type_lc
   endif
   
-  
-  if in_set(outputs_lc,'moments') then begin
+   if in_set(outputs_lc,'moments') then begin
     if units_lc ne 'eflux' then begin
       dprint,dlevel=1,'Warning: Moments can only be calculated if data is in eflux.  Skipping product.'
       outputs_lc[where(outputs_lc eq 'moments')] = ''

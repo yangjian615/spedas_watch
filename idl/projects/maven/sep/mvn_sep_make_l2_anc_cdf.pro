@@ -6,8 +6,8 @@
 ; Acts as a timestamp file to trigger the regeneration of SEP data products. Also provides Software Version info for the MAVEN SEP instrument.  
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-06-04 13:04:11 -0700 (Wed, 04 Jun 2014) $
-; $LastChangedRevision: 15307 $
+; $LastChangedDate: 2014-11-23 10:19:14 -0800 (Sun, 23 Nov 2014) $
+; $LastChangedRevision: 16286 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sep/mvn_sep_make_l2_anc_cdf.pro $
 ;-
 function mvn_sep_anc_sw_version
@@ -23,8 +23,8 @@ sw_structure = {  $
   sw_runtime : time_string(systime(1))  , $
   sw_runby :  getenv('LOGNAME') , $
   svn_changedby : '$LastChangedBy: davin-mac $' , $
-  svn_changedate: '$LastChangedDate: 2014-06-04 13:04:11 -0700 (Wed, 04 Jun 2014) $' , $
-  svn_revision : '$LastChangedRevision: 15307 $' }
+  svn_changedate: '$LastChangedDate: 2014-11-23 10:19:14 -0800 (Sun, 23 Nov 2014) $' , $
+  svn_revision : '$LastChangedRevision: 16286 $' }
 return,sw_structure
 end
 
@@ -48,8 +48,8 @@ end
 ;	FILE: Output file name
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-06-04 13:04:11 -0700 (Wed, 04 Jun 2014) $
-; $LastChangedRevision: 15307 $
+; $LastChangedDate: 2014-11-23 10:19:14 -0800 (Sun, 23 Nov 2014) $
+; $LastChangedRevision: 16286 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sep/mvn_sep_make_l2_anc_cdf.pro $
 
 
@@ -117,7 +117,7 @@ cdf_attput,fileid,'Descriptor',0,'SEP>Solar Energetic Particle Experiment'
 cdf_attput,fileid,'Data_type',0,'Support data'
 cdf_attput,fileid,'Data_version',0,data_version
 cdf_attput,fileid,'TEXT',0,'MAVEN SEP ancillary and ephemeris data'
-cdf_attput,fileid,'Mods',0,'Revision 0'
+cdf_attput,fileid,'Mods',0,'None'
 cdf_attput,fileid,'Logical_file_id',0,file
 cdf_attput,fileid,'Logical_source',0,'SEP.ancillary'
 cdf_attput,fileid,'Logical_source_description',0,'SEP ancillary and ephemeris data'

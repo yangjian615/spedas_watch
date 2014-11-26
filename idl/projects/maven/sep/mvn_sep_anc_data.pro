@@ -1,14 +1,16 @@
 ; This file will eventually calculate all of the necessary ancillary data that does not go into the SEP level II CDF files
 
-function mvn_sep_anc_data, trange = trange, delta_t = delta_t ,load_kernels=load_kernels,maven_kernels = maven_kernels
+function mvn_sep_anc_data, trange = trange, delta_t = delta_t ,load_kernels=load_kernels,maven_kernels = maven_kernels, utc=times
 
   if not keyword_set (delta_t) then delta_t = 32
   if keyword_set(load_kernels) then maven_kernels = mvn_spice_kernels(trange = tr,/load,/all) 
  
+if ~keyword_set(times) then begin
   tr = timerange(trange)
   total_time = tr[1] - tr[0]
   ntimes =ceil(total_time/delta_t)
   times = tr[0] + delta_t*dindgen(ntimes)
+endif
   et = time_ephemeris(times)
   objects = ['MAVEN_SC_BUS', 'MARS']
   time_valid = spice_valid_times(et,object=objects) 

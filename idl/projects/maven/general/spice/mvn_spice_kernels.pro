@@ -18,8 +18,8 @@
 ; fully qualified kernel filename(s)
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-11-19 10:33:12 -0800 (Wed, 19 Nov 2014) $
-; $LastChangedRevision: 16238 $
+; $LastChangedDate: 2014-11-21 13:38:08 -0800 (Fri, 21 Nov 2014) $
+; $LastChangedRevision: 16266 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear,reconstruct=reconstruct
@@ -37,7 +37,7 @@ if keyword_set(all) or not keyword_set(names) then names=['STD','SCK','FRM','IK'
 if keyword_set(reset) then kernels=0
 ct = systime(1)
 waittime = 10.                 ; search no more often than this number of seconds
-if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin   
+if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin   
     if ~keyword_set(source) then     source=naif
 ;    source.no_update=1
     if keyword_set(verbose) then source.verbose = verbose
@@ -48,6 +48,7 @@ if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
                append_array,kernels,  spice_standard_kernels(source=source,/mars)          ;  "Standard" kernels
 ;               append_array,kernels,  file_retrieve('generic_kernels/spk/comets/siding_spring_v?.bsp',_extra=source,/last_version)
                end
+     'LSK':    append_array,kernels,  file_retrieve('generic_kernels/lsk/naif0010.tls',_extra=source) 
      'SCK':    append_array,kernels,  file_retrieve('MAVEN/kernels/sclk/MVN_SCLKSCET.000??.tsc',_extra=source,/last_version)           ; spacecraft time
      'FRM':    begin                                                                                                            ; Frame kernels
 ;               append_array,kernels,  file_retrieve('MAVEN/kernels/fk/maven_v??*.tf',_extra=source,/last)                

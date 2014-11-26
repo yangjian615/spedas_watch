@@ -8,8 +8,8 @@ if keyword_set(init) then begin
   if init lt 0 then trange0 = [time_double('2013-12-5'), systime(1) ]
 endif else trange0 = timerange(trange0)
 
-if ~keyword_set(plotformat) then plotformat = 'maven/pfp/sep/plots/YYYY/MM/$NDAY/$PLOT/mvn_sep_$PLOT_YYYYMMDD_$NDAY.png'
-L1_fileformat =  'maven/pfp/sep/l1/sav/YYYY/MM/mvn_sep_l1_YYYYMMDD_$NDAY.sav' 
+if ~keyword_set(plotformat) then plotformat = 'maven/data/sci/sep/plots/YYYY/MM/$NDAY/$PLOT/mvn_sep_$PLOT_YYYYMMDD_$NDAY.png'
+L1_fileformat =  'maven/data/sci/sep/l1/sav/YYYY/MM/mvn_sep_l1_YYYYMMDD_$NDAY.sav' 
 
 ndaysload =1
 L1fmt = str_sub(L1_fileformat, '$NDAY', strtrim(ndaysload,2)+'day')
@@ -39,7 +39,7 @@ for i=0L,nd-1 do begin
        append_array, prereq_files, mk_files
   endif
 
-  L1_filename = mvn_pfp_file_retrieve(L1fmt,/daily,trange=tr[0],source=source,verbose=verbose)
+  L1_filename = mvn_pfp_file_retrieve(L1fmt,/daily,trange=tr[0],source=source,verbose=verbose,create_dir=1)
 
   prereq_info = file_info(prereq_files)
   prereq_timestamp = max([prereq_info.mtime, prereq_info.ctime])
@@ -57,7 +57,7 @@ for i=0L,nd-1 do begin
 
 ;  ndays = round( (tr[1]-tr[0])/res )
   pf = str_sub(plotformat,'$NDAY',strtrim(ndaysload,2)+'day')
-  fname = mvn_pfp_file_retrieve(pf,trange=tr[0],no_server=1,valid_only=0,/daily_names)   ; generate plot file names - (doesn't matter if they exist)
+  fname = mvn_pfp_file_retrieve(pf,trange=tr[0],no_server=1,create_dir=1,valid_only=0,/daily_names)   ; generate plot file names - (doesn't matter if they exist)
 
   if 1 then begin
     tplot,trange=tr  ;tlimit,tr   ; cluge to set time - there should be an option in tlimit to not make a plot
@@ -75,6 +75,7 @@ for i=0L,nd-1 do begin
   endif
   endfor
   
+  timestamp = 0  ; temporarily disable
   if  keyword_set(timestamp) then begin  ; should only be run if there is at least one new daily file
      trange = systime(1) + 86400d *[-28,0]          ; last 28 days
      mvn_sep_var_restore,trange=trange
@@ -99,6 +100,7 @@ for i=0L,nd-1 do begin
      mvn_sep_tplot,'sum',filename=fname,if_older_than=timestamp
   endif
   
+  if 0 then begin
   
   ;28 day plots...
   res28 = 28d * 24* 3600
@@ -112,7 +114,8 @@ for i=0L,nd-1 do begin
         dprint,'Make new plot: ' ,plot_info.name
      endif
    endfor
-  
+   
+  endif
 
 end
 

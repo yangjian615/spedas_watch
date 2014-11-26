@@ -6,7 +6,7 @@
 ;AUTHOR: 
 ;	Jasper Halekas
 ;CALLING SEQUENCE:
-;	MVN_SWIA_MAKE_L2_DATA, STARTDATE = STARTDATE, DAYS = DAYS, VERSION = VERSION, REVISION = REVISION, TYPE = TYPE, KLOAD = KLOAD
+;	MVN_SWIA_MAKE_L2_DATA, STARTDATE = STARTDATE, DAYS = DAYS, VERSION = VERSION, REVISION = REVISION, TYPE = TYPE, KLOAD = KLOAD, OLDCAL = OLDCAL
 ;INPUTS:
 ;KEYWORDS:
 ;	STARTDATE: Starting date to process
@@ -17,17 +17,18 @@
 ;	L0_FILE_PATH: Hardwire the path to the L0 files (mainly for testing)
 ;	OPATH: Hardwire the output path for L2 files (mainly for testing)
 ;	KLOAD: Load all the relevant spice kernels if set
+;	OLDCAL: Use old calibration factors appropriate for original table
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-19 14:08:54 -0800 (Wed, 19 Nov 2014) $
-; $LastChangedRevision: 16244 $
+; $LastChangedDate: 2014-11-24 13:15:31 -0800 (Mon, 24 Nov 2014) $
+; $LastChangedRevision: 16288 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_l2_data.pro $
 ;
 ;-
 
 @mvn_swia_load_l2_data
 
-pro mvn_swia_make_l2_data, startdate = startdate, days = days,version = version, revision = revision, type = type, l0_file_path = l0_file_path, opath = opath, kload = kload
+pro mvn_swia_make_l2_data, startdate = startdate, days = days,version = version, revision = revision, type = type, l0_file_path = l0_file_path, opath = opath, kload = kload, oldcal = oldcal
 
 compile_opt idl2
 
@@ -78,7 +79,7 @@ for i = 0,days-1 do begin
 
 	filex = mvn_l0_db2file(date,l0_file_type = ftype,l0_file_path=l0_file_path)
 	
-	if filex ne '' then mvn_swia_load_l0_data,filex,/tplot,/sync,qlevel = 0.0001
+	if filex ne '' then mvn_swia_load_l0_data,filex,/tplot,/sync,qlevel = 0.0001, oldcal= oldcal
 	
 	if n_elements(swics) gt 1 then begin
 		if swics[0].time_unix ne ct0 then begin

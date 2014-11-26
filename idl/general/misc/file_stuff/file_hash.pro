@@ -34,6 +34,7 @@ endif
 
 commands = hash_executable
    
+outputs = ''
 for i=0,n_elements(files)-1 do begin
 file = files[i]
 if keyword_set(hash_error) then output ='HashNotAvailable  '+ file else begin
@@ -51,11 +52,13 @@ endelse
 output =output[0]
 if keyword_set(mtime_format) or keyword_set(add_mtime) then begin
    stat = file_info(file)
-   output = time_string(stat.mtime,tformat=mtime_format)+'  '+output
+   output = time_string(stat.mtime,tformat=mtime_format)+string(stat.size,format='(i11)')+' '+output
 endif
 if keyword_set(output) then dprint,dlevel=3,verbose=verbose,output
 append_array,outputs,output
 endfor
+
+if n_elements(files) eq 1 then outputs=outputs[0]
 
 return,outputs
 end

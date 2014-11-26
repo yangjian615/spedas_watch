@@ -49,6 +49,8 @@ subsec = data[0]*256 + data[1]
 ccode = data[2]
 mapid = data[3]
 
+duration = 0u
+
 ;printdat,ccode,hex=1
 ddata = mvn_pfp_log_decomp(ddata,ccode)
 
@@ -67,9 +69,12 @@ dprint,dlevel=4,p.s
 
 noise = {  $
     time: ccsds.time, $
+    met: ccsds.met, $
     tdiff: ccsds.time_diff, $
+    duration: duration, $
     ccode:ccode,  $
     mapid:mapid,  $
+    noise_res:noise_res,  $
     tot:p.a  ,  $
     baseline:p.x0  ,  $
     sigma:p.s,  $
@@ -482,9 +487,13 @@ end
 
 
 
-pro mvn_sep_var_save,filename,pathname=pathname,trange=trange,prereq_info=prereq_info
+pro mvn_sep_var_save,filename,pathname=pathname,trange=trange,prereq_info=prereq_info,verbose=verbose
 common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
  ,sep1_memdump,sep2_memdump,mag1_hkp_f0,mag2_hkp_f0
+ 
+ 
+common mvn_apid_misc_handler_com   ,manage,realtime,apid20x,apid21x,apid22x,apid23x,apid24x,apid25x   ; from mvn_pfdpu_handler
+ 
 
 if not keyword_set(filename) then begin
   if not keyword_set(trange) then trange = minmax((*(sep1_svy.x)).time)
@@ -495,12 +504,15 @@ if not keyword_set(filename) then begin
   if not keyword_set(pathname) then pathname =  'maven/pfp/sep/l1/sav/YYYY/MM/mvn_sep_l1_YYYYMMDD_$NDAY.sav' 
   pn = str_sub(pathname, '$NDAY', strtrim(ndays,2)+'day')
   filename = mvn_pfp_file_retrieve(pn,/daily,trange=tr[0],source=source,verbose=verbose,/create_dir)
+  dprint,dlevel=2,verbose=verbose,'Creating: ',filename
 endif
 
 if 1 then begin
  ; undefine, s1_hkp,s1_svy,s1_arc,s1_nse   
  ; undefine, s2_hkp,s2_svy,s2_arc,s2_nse
   sw_version = mvn_sep_sw_version()
+  spice_kernels = spice_test('*')
+  spice_info = file_hash(/add_mtime,spice_kernels)
   if keyword_set(sep1_hkp) then s1_hkp = *sep1_hkp.x
   if keyword_set(sep1_svy) then s1_svy = *sep1_svy.x
   if keyword_set(sep1_arc) then s1_arc = *sep1_arc.x
@@ -511,9 +523,16 @@ if 1 then begin
   if keyword_set(sep2_noise) then s2_nse = *sep2_noise.x
   if keyword_set(mag1_hkp_f0) then m1_hkp = *mag1_hkp_f0.x
   if keyword_set(mag2_hkp_f0) then m2_hkp = *mag2_hkp_f0.x
+  
+  if keyword_set(apid20x) then ap20 = *apid20x.x
+  if keyword_set(apid21x) then ap21 = *apid21x.x
+  if keyword_set(apid22x) then ap22 = *apid22x.x
+  if keyword_set(apid23x) then ap23 = *apid23x.x
+  if keyword_set(apid24x) then ap24 = *apid24x.x
+  if keyword_set(apid25x) then ap25 = *apid25x.x
 
   file_mkdir2,file_dirname(filename)  
-  save,filename=filename,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,sw_version,prereq_info
+  save,filename=filename,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,sw_version,prereq_info,spice_info,ap20,ap21,ap22,ap23,ap24,ap25
 endif else begin
   save,verbose=verbose,filename=filename,sep_all_ptrs,sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise,sep1_memdump,sep2_memdump
 endelse
@@ -552,8 +571,8 @@ pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_
         if n_elements(set_realtime) ne 0 then realtime=set_realtime
         if keyword_set(debug) then begin
            dprint,phelp=debug,manage,realtime
-           if (sepn and 1) ne 0 then dprint,phelp=debug,sep1_hkp,sep1_svy,sep1_memdump,lastmem1
-           if (sepn and 2) ne 0 then dprint,phelp=debug,sep2_hkp,sep2_svy ,sep2_memdump,lastmem2
+           if (sepn and 1) ne 0 then dprint,phelp=debug,sep1_hkp,sep1_svy,sep1_arc,sep1_memdump,lastmem1
+           if (sepn and 2) ne 0 then dprint,phelp=debug,sep2_hkp,sep2_svy,sep2_arc ,sep2_memdump,lastmem2
            return
         endif        
         dprint,dlevel=2,'SEP handler: ' , keyword_set(clear) ? 'Clearing Data' : 'Finalizing'

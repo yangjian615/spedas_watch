@@ -32,6 +32,7 @@
 ;            We suggest placing them on a partition that is not backed up
 ;     4)  File storage space can be shared with other users if a commonly accessible data directory is chosen.
 ;     5)  Use a temporary directory if you do not want to permanently store these cached files.
+;     6)  The root data directory should be writable by all.
 ;
 ;This routine is called by:
 ;    wind_init
@@ -42,8 +43,8 @@
 ;
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-03-24 01:27:36 -0700 (Mon, 24 Mar 2014) $
-;$LastChangedRevision: 14646 $
+;$LastChangedDate: 2014-11-23 08:38:23 -0800 (Sun, 23 Nov 2014) $
+;$LastChangedRevision: 16274 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/root_data_dir.pro $
 ;-
 

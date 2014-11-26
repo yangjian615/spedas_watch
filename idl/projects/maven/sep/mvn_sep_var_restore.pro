@@ -11,7 +11,7 @@ trange = timerange(trange)
 ;tr = days * res
 
 ndays=1
-if not keyword_set(pathname) then pathname =  'maven/pfp/sep/l1/sav/YYYY/MM/mvn_sep_l1_YYYYMMDD_$NDAY.sav' 
+if not keyword_set(pathname) then pathname =  'maven/data/sci/sep/l1/sav/YYYY/MM/mvn_sep_l1_YYYYMMDD_$NDAY.sav' 
 pn = str_sub(pathname, '$NDAY', strtrim(ndays,2) +'day')
 files = mvn_pfp_file_retrieve(pn,/daily,trange=trange,source=source,verbose=verbose,/valid_only,no_update=0,last_version=0)
 

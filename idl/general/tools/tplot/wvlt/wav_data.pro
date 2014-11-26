@@ -6,8 +6,8 @@
 ;  Author: Davin Larson
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-08-01 09:47:54 -0700 (Fri, 01 Aug 2014) $
-;$LastChangedRevision: 15646 $
+;$LastChangedDate: 2014-11-22 07:23:29 -0800 (Sat, 22 Nov 2014) $
+;$LastChangedRevision: 16271 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/wvlt/wav_data.pro $
 ;
 ;-
@@ -111,7 +111,7 @@ for j=0,jv do begin
   if use_rotmat then rot=reform(rotmats[*,j,*,*]) $
   else begin
     for k=0,2 do $
-       rot[*,k,2] = smooth(B[*,k],wid[j] < (nt-1),/edge)
+       rot[*,k,2] = smooth(B[*,k],wid[j] < (nt-1),/edge_truncate)
     rot[*,*,2] = rot[*,*,2] / (sqrt(total(rot[*,*,2]^2,2)) # [1,1,1] )
     rot[*,*,1] = crossp2(rot[*,*,2],xdir)
     rot[*,*,1] = rot[*,*,1] / (sqrt(total(rot[*,*,1]^2,2)) # [1,1,1] )

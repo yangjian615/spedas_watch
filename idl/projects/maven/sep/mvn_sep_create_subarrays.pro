@@ -16,7 +16,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
 ;   smooth=1
    
    geoms = [!values.f_nan,.1,.001,!values.f_nan]        ; cm2-ster         ; temporary kludge
-   geoms = [!values.f_nan,.18, .18, !values.f_nan]
+   geoms = [!values.f_nan,.18, .0018, !values.f_nan]
   ; geoms = [!values.f_nan,.1,.1,!values.f_nan]
    if keyword_set(smpar) then smooth=1
    if size(/type,data_str) eq 7 then begin                     ; input is a string
@@ -116,7 +116,7 @@ printdat,sepn,sensnum
                          tdata = total(data * (replicate(1,nt) # denergy),2)
                      end
            'eflux'   : begin
-                         znorm = dt # (geom * eff * denergy/energy)
+                         znorm = (geom *dt) # ( eff * denergy/energy)
                          data = cnts / znorm
                          spec = 1
                          zrange = [1.,1e5]
@@ -130,7 +130,7 @@ printdat,sepn,sensnum
 ;          rnorm[*,d] = ((nw gt 1) ? total(tdata,2) : tdata)
           tempdata = {x:ptr_new(t),y:ptr_new(data,/no_copy),v:ptr_new(vals,/no_copy),znorm:ptr_new(znorm,/no_copy),map:ptr_new(bmap)}
           store_data,tname+'_'+cname+'_'+zname+'_'+yval,data=tempdata, dlimit={spec:spec,ystyle:1,zrange:zrange,ylog:ylog,zlog:1,$
-             labels:energy_label,labflag:-1 ,panel_size:.5+nw/20.,ztitle:units}
+             labels:energy_label,labflag:-1 ,panel_size:.5+nw/20.,ztitle:units,colors:'mybycygyry'}
        endfor
 ;       tempdata = {x:ptr_new(t),y:ptr_new(rdata/rnorm,/no_copy),znorm:ptr_new(dt # replicate(1.,6),/no_copy),map:ptr_new(bmap)}
        tempdata = {x:ptr_new(t),y:ptr_new(rdata,/no_copy),map:ptr_new(bmap)}

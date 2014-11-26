@@ -251,9 +251,12 @@ end
 
 if  ~keyword_set(recbase) then begin
     recorder,recbase,host='128.32.13.158',port=2025,exec_proc='gseos_cmnblk_bhandler',destination='~/RealTime/CMNBLK_YYYYMMDD_hhmmss.dat'
-    mav_apid_sep_handler,/reset
-    mav_apid_mag_handler,/reset
-    exec,tplotbase,  exec_text=["tplot,verbose=0,wshow=0,trange=systime(1)+[-.95,.05]*60* 10",'timebar,systime(1)']
+;    mav_apid_sep_handler,/reset
+;    mav_apid_mag_handler,/reset
+    mvn_sep_handler,/reset,/set_realtime
+    mvn_mag_handler,/reset,/set_realtime
+;    mvn_apid_mag_handler,/reset
+    exec,tplotbase,  exec_text=["tplot,verbose=0,wshow=0,trange=systime(1)+[-.95,.05]*60* 20",'timebar,systime(1)']
 ;    exec,tekbase,  exec_text="tek_screen_shot,prefix='tek/',window=8"
     dprint,recbase,tekbase,tplotbase,/phelp
 endif
@@ -384,3 +387,65 @@ end
 
 
 ; .edit mav_sep_dap_calibrate
+
+
+
+if 0 then begin
+
+
+orbdata = mvn_orbit_num()
+store_data,'orbnum',orbdata.peri_time,orbdata.num,dlimit={ytitle:'Orbit'}
+tplot,var_label='orbnum'
+
+
+mk = mvn_spice_kernels(/all,/load,verbose=1,trange=tr)
+frame='MSO'
+scale = 3390.   ; mars radius in km
+dprint,'Create some TPLOT variables with position data and then plot it.'
+spice_position_to_tplot,'MAVEN','Mars',frame='MSO',res=300d,scale=1000.,name=n1  ,trange=[time_double('2014-9-22'),systime(1)+1e5]
+xyz_to_polar,n1
+;spice_position_to_tplot,'Earth','SUN',frame=frame,res=3600d*24,scale=scale,name=n2
+;spice_position_to_tplot,'MARS','SUN',frame=frame,res=3600d*24,scale=scale,name=n3
+;store_data,'POS',data=[n1,n2,n3]
+
+
+maven_orbit_tplot
+
+maven_orbit_snap, /prec
+
+MAG1_offset_hg   = [0.451950, 0.258110, -1.01687]
+MAG1_offset_lg   = [0.462475, 0.542162, -0.956552]
+
+
+mag1_offset_xx  = [-0.47123703, 1.3987961, 1.3944077]
+
+spice_qrot_to_tplot,'MAVEN_SPACECRAFT','MSO',get_omega=3,res=30d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .5 *!pi/180  ; .5 degree error
+spice_qrot_to_tplot,'MAVEN_SPACECRAFT','MAVEN_APP',get_omega=3,res=30d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .5 *!pi/180  ; .5 degree error
+
+mvn_mag_handler,offset1=1 ;  = mag1_offset_xx
+SPICE_VECTOR_ROTATE_TPLOT,'mvn_mag1_svy_Bcor','MSO',check_objects='maven_spacecraft'
+
+options,'mvn_mag1_svy_BAVG',spice_frame='MAVEN_MAG1'
+SPICE_VECTOR_ROTATE_TPLOT,'mvn_mag1_svy_BAVG','MSO',check_objects='maven_spacecraft'
+
+
+
+options,'MAG_STS',spice_frame='MAVEN_SPACECRAFT'
+
+
+SPICE_VECTOR_ROTATE_TPLOT,'MAG_STS','MAVEN_MAG1',check_objects='maven_spacecraft'
+SPICE_VECTOR_ROTATE_TPLOT,'MAG_STS','MAVEN_MSO',check_objects='maven_spacecraft'
+
+t='2014-9-23'
+q_msc_to_mag1 =spice_body_att('maven_spacecraft','maven_mag1',t,/quat) 
+q_mag1_to_MSC =spice_body_att('maven_mag1','maven_spacecraft',t,/quat) 
+q_mag2_to_MSC =spice_body_att('maven_mag2','maven_spacecraft',t,/quat) 
+
+;spice_vector_rotate,
+
+spice_vector_rotate_tplot,'mvn_mag?_svy_BRAW',def_frame,verbose=3,trange=tr
+
+
+endif
+
+

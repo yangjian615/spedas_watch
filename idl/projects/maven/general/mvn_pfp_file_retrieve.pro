@@ -9,6 +9,7 @@
 ;   files = mvn_pfp_file_retrieve('maven/pfp/l0/YYYY/MM/mvn_pfp_all_l0_YYYYMMDD_v???.dat',/daily_names)   ; get L0 files for user defined time span
 ;   files = mvn_pfp_file_retrieve(pathname,/daily_names,trange=trange)  ; set time range
 ;Keywords:  (All are optional - none are recommended)
+; L0:   set to 1 to return PFP L0 files
 ; DAILY_NAMES : resolution (in days) for generating file names. 
 ;         YYYY, yy, MM, DD,  hh,  mm, ss, .f, DOY, DOW, TDIFF are special characters that will be substituted with the appropriate date/time field
 ;         Be especially careful of extensions that begin with '.f' since these will be translated into a fractional second. 
@@ -16,6 +17,7 @@
 ; TRANGE : two element vector containing start and end times (UNIX_TIME or UT string).  if not present then timerange() is called to obtain the limits.
 ; SOURCE:  alternate file source.   Default is whatever is return by the function:  mvn_file_source()    (see "mvn_file_source" for more info)
 ; FILES:  if provided these will be passed through as output.
+; VALID_ONLY:  Set to 1 to prevent non existent files from being returned.
 ;
 ; KEYWORDS Passed on to "FILE_RETRIEVE":
 ; LAST_VERSION : [0,1]  if set then only the last matching file is returned.  (Default is defined by source)
@@ -54,9 +56,6 @@ if keyword_set(remote_kp_cdf) then begin
    last_version=1
    valid_only=1
 endif
-
-
-
 
 
 if keyword_set(daily_names) then res = round(24*3600L * daily_names)

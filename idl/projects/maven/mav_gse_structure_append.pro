@@ -31,7 +31,7 @@ pro mav_gse_structure_append,ptrs,str,tname=tname,tags=tagsformat,realtime=realt
                 if  (nstr gt 1 && (n_elements(dim) eq 2 )) then begin
                     yvalue=transpose(yvalue)
                     vvalue=findgen(dim[0])
-                       dprint,/phelp,tname+'_'+tags[i],time,yvalue,time_dim,dim,dlevel=3
+                       dprint,/phelp,tname+'_'+tags[i],time,yvalue,time_dim,dim,dlevel=4
                 endif
                 if strpos(tags[i],'FLAG') ge 0 then dlim =struct(dlim,tplot_routine='bitplot',colors='bmgr',panel_size=.4)
                 if keyword_set(gap) then $

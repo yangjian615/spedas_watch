@@ -127,8 +127,8 @@
  ;   Sep 2009    - Fixed user-agent
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2014-08-01 08:52:35 -0700 (Fri, 01 Aug 2014) $
- ; $LastChangedRevision: 15639 $
+ ; $LastChangedDate: 2014-11-23 08:48:32 -0800 (Sun, 23 Nov 2014) $
+ ; $LastChangedRevision: 16277 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -504,7 +504,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 15639 2014-08-01 15:52:35Z davin-mac $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 16277 2014-11-23 16:48:32Z davin-mac $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -854,7 +854,7 @@ end
            endif
          endif
          
-         if lcl.size ne url_info.size && not keyword_set(ascii_mode) then begin
+         if (lcl.size ne url_info.size) && (~ keyword_set(ascii_mode)) then begin
            if keyword_set(no_clobber) then $
              dprint,dlevel=1,verbose=verbose,url_info.size/mb,lcl.size/mb, file_basename(localname), format='("Warning! Different file sizes: Remote=",f0.3," MB, Local=",f0.3," MB file: ",a)'
            if not keyword_set(ignore_filesize) then download_file = 1
@@ -908,13 +908,13 @@ end
              dt = t1-t0
              b += buffsize
              percent = 100.*float(nb)/url_info.size
-             if (dt gt 5.) and (nb lt url_info.size) then begin   ; Wait 5 seconds between updates.
+             if (dt gt 10.) and (nb lt url_info.size) then begin   ; Wait 10 seconds between updates.
                rate = b/mb/dt                             ; This will only display if the filesize (url_info.size) is greater than MAXB
                eta = (url_info.size-nb)/mb/rate +t1 - tstart
                messstr = string(format='("  ",f5.1," %  (",f0.0,"/",f0.0," secs)  @ ",f0.2," MB/s  File: ",a)', percent, t1-tstart,eta, rate,file_basename(localname) ,/print)
                t0 = t1
                b =0l
-               dprint,dlevel=1,verbose=verbose,messstr    &  wait,.01
+               dprint,dlevel=2,verbose=verbose,messstr    &  wait,.01
                if obj_valid(progobj)  then begin
                  progobj->update,percent,text=messstr
                  if progobj->checkcancel() then message,'Download cancelled by user',/ioerror

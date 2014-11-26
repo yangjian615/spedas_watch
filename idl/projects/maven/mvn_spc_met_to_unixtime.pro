@@ -5,14 +5,14 @@
 ;see also:  "mvn_spc_unixtime_to_met" for the reverse conversion
 ; This routine is in the process of being modified to use SPICE Kernels to correct for clock drift as needed.
 ; Author: Davin Larson
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-05 14:37:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16141 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2014-11-21 12:32:34 -0800 (Fri, 21 Nov 2014) $
+; $LastChangedRevision: 16265 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mvn_spc_met_to_unixtime.pro $
 ;-
-function mvn_spc_met_to_unixtime,input,reverse=reverse,correct_clockdrift=correct_clockdrift  ; ,reset=reset   ;,prelaunch = prelaunch
+function mvn_spc_met_to_unixtime,input,reverse=reverse,correct_clockdrift=correct_clockdrift   ,reset=reset   ;,prelaunch = prelaunch
 
-common mvn_spc_met_to_unixtime_com, cor_clkdrift, icy_installed  , kernel_verified, time_verified, sclk
+common mvn_spc_met_to_unixtime_com, cor_clkdrift, icy_installed  , kernel_verified, time_verified, sclk,tls
 
 ;Set clockdrift by default
 if n_elements(correct_clockdrift) eq 1 then begin
@@ -22,8 +22,9 @@ endif else cor_clkdrift = 1b
 if keyword_set(cor_clkdrift) then begin
    if  n_elements(kernel_verified) eq 0 || keyword_set(reset) then begin ; check for cspice first
       if spice_test() then begin
-         tls = spice_standard_kernels(/load) ;jmm, 22-sep-2014
-         sclk = mvn_spice_kernels(['STD','SCK'],/load)
+ ;       tls = spice_standard_kernels(/load) ;jmm, 22-sep-2014;  DEL, tls  included in call on next line
+         tls  = mvn_spice_kernels('LSK',/load)  ; getting only the LSK file
+         sclk = mvn_spice_kernels('SCK',/load)
          if keyword_set(sclk)  then begin
             kernel_verified = 1
          endif else begin

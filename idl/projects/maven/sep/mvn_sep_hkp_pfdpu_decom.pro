@@ -3,6 +3,7 @@
 function mvn_sep_hkp_pfdpu_decom,pkt,last_hkp=last_hkp,memstate=memstate,gap=gap
    if pkt.valid eq 0 then return, fill_nan(last_hkp)
    time = pkt.time
+   met = pkt.met
    dtime =  0d   ; msg.time - last_hkp.time
    seq_dcntr = 0 ;
    if keyword_set(last_hkp) then begin
@@ -91,6 +92,9 @@ function mvn_sep_hkp_pfdpu_decom,pkt,last_hkp=last_hkp,memstate=memstate,gap=gap
    par_s2 = par_s1
 
    sephkp = {time :      time,      $
+             met: met,  $
+             et:  !values.d_nan,  $
+             f0:  0UL,  $
              dtime :    dtime,  $
              seq_cntr: seq_cntr, $
              seq_dcntr: seq_dcntr, $
