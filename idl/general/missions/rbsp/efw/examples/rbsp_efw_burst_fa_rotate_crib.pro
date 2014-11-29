@@ -8,29 +8,10 @@
 ; HISTORY: Created by Aaron W Breneman, Univ. Minnesota  4/10/2014
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-11-11 15:58:30 -0800 (Tue, 11 Nov 2014) $
-;   $LastChangedRevision: 16165 $
+;   $LastChangedDate: 2014-11-26 13:19:44 -0800 (Wed, 26 Nov 2014) $
+;   $LastChangedRevision: 16313 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/examples/rbsp_efw_burst_fa_rotate_crib.pro $
 ;-
-
-
-
-
-;Issues to fix
-
-
-;; Ringing due to bp filter
-
-;; eb bp is the same as mscb bp variable
-
-
-;; min var transformation  |----|
-;; 						      |----|
-
-;; vs
-
-;;  |----|
-;;  	|----|
 
 
 ;B1 test date
@@ -61,7 +42,7 @@ fileroot = '~/Desktop/code/Aaron/datafiles/'
 
 
 ;********************
-start_after_step = 0
+start_after_step = 0.
 
 ;choose where down the line to load data. Every step builds on
 ;previous steps.
@@ -70,22 +51,22 @@ start_after_step = 0
 ;..........saves as filename=fileroot+fn + '.tplot'
 ;step 2 -> divides data into chunks and bandpasses if requested
 ;..........saves as filename=fileroot+fn + '_chunk.tplot'
-;step 3 -> calculates pflux
-;..........saves as filename=fileroot+fn + '_pflux.tplot'
-;step 4 -> rotate into FA coord (rotation is optional, but must do
+;step 3 -> rotate into FA coord (rotation is optional, but must do
 ;this step anyways)
 ;..........saves as filename=fileroot+fn + '_fa.tplot'
-;step 5 -> Chasten crib
+;step 4 -> Chasten crib
 ;..........saves as filename=fileroot+fn + '_chasten.tplot'
+;step 5 -> calculates pflux
+;..........saves as filename=fileroot+fn + '_pflux.tplot'
 ;********************
 
 
 
 ;set filename. If loading data, set to file to load.
 ;Otherwise set to the file to be saved. 
-fn = 'burst_crib_b2_a_20140827'
+;fn = 'burst_crib_b2_a_20140827'
 ;fn = 'burst_crib_b1_b_20140827'
-;fn = 'burst_crib_b2_a_20140123'
+fn = 'burst_crib_b2_a_20140123'
 ;;fn = 'burst_crib_b1_a_20140716'
 
 
@@ -131,20 +112,29 @@ if start_after_step eq 0 then begin
    
    bt = '2'                     ;burst 1 or 2
 
-   date = '2014-08-27'
+;   date = '2014-08-27'
+   date = '2014-01-23'
    timespan,date
+   tr = timerange()
                                 ;Define timerange for loading of burst waveform
                                 ;(CURRENTLY NEED AT LEAST 1 SEC OF BURST FOR MGSE TRANSFORMATION TO WORK!!!)
    ;; t0 = date + '/06:00'  ;2014-07-16 B1
    ;; t1 = date + '/08:00'
 
    ;bt=2
-  t0 = date + '/13:00'
-  t1 = date + '/14:00'
+  ;; t0 = date + '/13:00'
+  ;; t1 = date + '/14:00'
+
+   ;bt=2
+  t0 = date + '/05:17'
+  t1 = date + '/05:19'
+
 
 ;; ;bt=1  (2014-08-27, probe b)
 ;;    t0 = date + '/14:00'
 ;;    t1 = date + '/14:30'
+
+
 
 
    probe='a'
@@ -160,14 +150,8 @@ if start_after_step eq 0 then begin
 ;--------------------------------------------------------------------------------
 
 
-                                ;Load spice kernels and get antenna pointing direction
-;	rbsp_load_spice_kernels
-
    rbsp_efw_position_velocity_crib,/noplot
    store_data,'*both*',/delete
-
-   get_data,rbspx+'_spinaxis_direction_gse',data=wsc_GSE	
-
 
 
 ;------------------------------------------------------
@@ -176,19 +160,14 @@ if start_after_step eq 0 then begin
 
                                 ;Load EMFISIS data (defaults to 'hires', but can also choose '1sec' or '4sec')
    rbsp_load_emfisis,probe=probe,coord='gse',cadence='hires',level='l3'
-                                ;rbsp_load_emfisis,probe=probe,coord='gse',cadence='4sec',level='l3'
 
+   store_data,[rbspx+'_emfisis_l3_hires_gse_delta',rbspx+'_emfisis_l3_hires_gse_lambda',rbspx+'_emfisis_l3_hires_gse_coordinates'],/delete
 
-                                ;Transform the Mag data to MGSE coordinates
-   get_data,rbspx+'_emfisis_l3_hires_gse_Mag',data=tmpp
-                                ;get_data,rbspx+'_emfisis_l3_4sec_gse_Mag',data=tmpp
-
-   wsc_GSE_tmp = [[interpol(wsc_GSE.y[*,0],wsc_GSE.x,tmpp.x)],$
-                  [interpol(wsc_GSE.y[*,1],wsc_GSE.x,tmpp.x)],$
-                  [interpol(wsc_GSE.y[*,2],wsc_GSE.x,tmpp.x)]]
+   tinterpol_mxn,rbspx+'_spinaxis_direction_gse',rbspx+'_emfisis_l3_hires_gse_Mag'
+   get_data,rbspx+'_spinaxis_direction_gse_interp',data=wsc_GSE_tmp
+   wsc_GSE_tmp = wsc_GSE_tmp.y
 
    rbsp_gse2mgse,rbspx+'_emfisis_l3_hires_gse_Mag',reform(wsc_GSE_tmp),newname=rbspx+'_Mag_mgse'
-                                ;rbsp_gse2mgse,rbspx+'_emfisis_l3_4sec_gse_Mag',reform(wsc_GSE_tmp),newname=rbspx+'_Mag_mgse'
 
 
 ;----------------------------------------------------------
@@ -200,22 +179,28 @@ if start_after_step eq 0 then begin
 
 
    rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['mscb'+bt]
-   rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['vb'+bt]
    rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['eb'+bt]
-   
+   ;load Vburst if there is no Eburst
+   if tdexists(rbspx+'_efw_eb'+bt,tr[0],tr[1]) then rbsp_load_efw_waveform_partial,probe=probe,$
+      type='calibrated',datatype=['vb'+bt]
+
+
+   store_data,[rbspx+'_efw_eb'+bt+'_ccsds_data_BEB_config',rbspx+'_efw_eb'+bt+'_ccsds_data_DFB_config',$
+               rbspx+'_efw_mscb'+bt+'_ccsds_data_BEB_config',rbspx+'_efw_mscb'+bt+'_ccsds_data_DFB_config',$
+               rbspx+'_efw_vb'+bt+'_ccsds_data_BEB_config',rbspx+'_efw_vb'+bt+'_ccsds_data_DFB_config'],/delete
+
 
    copy_data,rbspx+'_efw_mscb'+bt,rbspx+'_efw_mscb'+bt+'_uvw'
    store_data,rbspx+'_efw_mscb'+bt,/delete
    
-
 
                                 ;--------------------------------------------------
                                 ;Check to see if there is Eburst
                                 ;data. Otherwise, create it from
                                 ;Vburst data
 
-   get_data,rbspx+'_efw_eb'+bt,data=eburst
-   if ~is_struct(eburst) then begin
+
+   if tdexists(rbspx+'_efw_eb'+bt,tr[0],tr[1]) then begin
 
                                 ;Create E-field variables (mV/m)
       trange = timerange()
@@ -240,14 +225,17 @@ if start_after_step eq 0 then begin
       
       eb = [[e12],[e34],[e56]]
       store_data,rbspx+'_efw_eb'+bt+'_uvw',data={x:dd.x,y:eb}
-
+      
 
    endif else begin
       copy_data,rbspx+'_efw_eb'+bt,rbspx+'_efw_eb'+bt+'_uvw'
+
       get_data,rbspx+'_efw_eb'+bt+'_uvw',data=tmp
       if e56_zero then tmp.y[*,2] = 0.
       store_data,rbspx+'_efw_eb'+bt+'_uvw',data=tmp
    endelse
+
+   store_data,rbspx+'_efw_eb'+bt,/delete
 
 
    tplot,[rbspx+'_efw_eb'+bt+'_uvw',rbspx+'_efw_mscb'+bt+'_uvw']
@@ -255,19 +243,22 @@ if start_after_step eq 0 then begin
                                 ;Convert from UVW (spinning sc) to MGSE coord
    rbsp_uvw_to_mgse,probe,rbspx+'_efw_mscb'+bt+'_uvw',/no_spice_load,/nointerp,/no_offset	
    rbsp_uvw_to_mgse,probe,rbspx+'_efw_eb'+bt+'_uvw',/no_spice_load,/nointerp,/no_offset	
-   
+
+
+
    copy_data,rbspx+'_efw_eb'+bt+'_uvw_mgse',rbspx+'_efw_eb'+bt+'_mgse'
    copy_data,rbspx+'_efw_mscb'+bt+'_uvw_mgse',rbspx+'_efw_mscb'+bt+'_mgse'
 
-   tplot,[rbspx+'_efw_eb'+bt+'_mgse',rbspx+'_efw_mscb'+bt+'_mgse']
+
+;   tplot,[rbspx+'_efw_eb'+bt+'_mgse',rbspx+'_efw_mscb'+bt+'_mgse']
 
    split_vec,rbspx+'_efw_eb'+bt+'_mgse'
    split_vec,rbspx+'_efw_mscb'+bt+'_mgse'
 
                                 ;Check to see how things look (MGSEx is spin axis)
-   tplot,[rbspx+'_efw_eb'+bt+'_mgse_x',rbspx+'_efw_eb'+bt+'_mgse_y',rbspx+'_efw_eb'+bt+'_mgse_z']
+;   tplot,[rbspx+'_efw_eb'+bt+'_mgse_x',rbspx+'_efw_eb'+bt+'_mgse_y',rbspx+'_efw_eb'+bt+'_mgse_z']
 ;stop
-   tplot,[rbspx+'_efw_mscb'+bt+'_mgse_x',rbspx+'_efw_mscb'+bt+'_mgse_y',rbspx+'_efw_mscb'+bt+'_mgse_z']
+;   tplot,[rbspx+'_efw_mscb'+bt+'_mgse_x',rbspx+'_efw_mscb'+bt+'_mgse_y',rbspx+'_efw_mscb'+bt+'_mgse_z']
 ;stop
 
 
@@ -305,8 +296,6 @@ endif
 
 ;----------------------------------------------------------------------------------------------------
 ;Bandpass data or load bandpassed data
-
-
 
 
 ;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -467,6 +456,473 @@ endif
 
 
 
+;--------------------------------------------------
+;Rotate each chunk to FA coord
+;--------------------------------------------------
+
+
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+if start_after_step eq 3 then begin
+   tplot_restore,filename=fileroot+fn + '_fa.tplot'
+   restore,fileroot+fn+'_fa.idl'
+endif
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+if ~nostop then if start_after_step le 3 then stop
+if start_after_step lt 3 then begin
+
+   if rotate_to_fa then begin
+
+      BurstE = [[0.],[0.],[0.]]
+      BurstB = [[0.],[0.],[0.]]
+      BursttimesE = 0d
+      BursttimesB = 0d
+
+      theta_kbE = 0.
+      thetatimesE = 0d
+      dtheta_kbE = 0.
+      eigsE = [[0.],[0.],[0.]]
+      emax2eintE = 0.
+      eint2eminE = 0.
+      emax_vecE = [[0.],[0.],[0.]]
+      eint_vecE = [[0.],[0.],[0.]]
+      emin_vecE = [[0.],[0.],[0.]]
+
+      theta_kbB = 0.
+      thetatimesB = 0d
+      dtheta_kbB = 0.
+      eigsB = [[0.],[0.],[0.]]
+      emax2eintB = 0.
+      eint2eminB = 0.
+      emax_vecB = [[0.],[0.],[0.]]
+      eint_vecB = [[0.],[0.],[0.]]
+      emin_vecB = [[0.],[0.],[0.]]
+
+
+      for i=0,nchunks-1 do begin
+
+         t0z = varr.x[chunkL[i]]
+         t1z = varr.x[chunkR[i]]
+
+         ve = tsample(varE_s2,[t0z,t1z],times=te)
+         vb = tsample(varM_s2,[t0z,t1z],times=tb)
+         vm = tsample(rbspx+'_Mag_mgse',[t0z,t1z],times=tm)
+
+         store_data,varE_s2+'_tmp',data={x:te,y:ve}
+         store_data,varM_s2+'_tmp',data={x:tb,y:vb}
+         tinterpol_mxn,varM_s2+'_tmp',varE_s2+'_tmp',newname=varM_s2+'_tmp'
+         store_data,rbspx+'_Mag_mgse_tmp',data={x:tm,y:vm}
+         
+
+         tplot,[varE_s2+'_tmp',varM_s2+'_tmp',rbspx+'_Mag_mgse_tmp'],trange=[t0z,t1z]
+
+
+                                ;Efield: Rotate each chunk to FA/minvar coord
+         fa = rbsp_rotate_field_2_vec(varE_s2+'_tmp',rbspx+'_Mag_mgse_tmp')
+         get_data,varE_s2+'_tmp_FA_minvar',data=dtmp
+         BurstE = [BurstE,dtmp.y]
+         BursttimesE = [BursttimesE,dtmp.x]
+
+         get_data,'theta_kb',data=dtmp
+         theta_kbE = [theta_kbE,dtmp.y]
+         thetatimesE = [thetatimesE,dtmp.x]
+         get_data,'dtheta_kb',data=dtmp
+         dtheta_kbE = [dtheta_kbE,dtmp.y]
+         get_data,'emax2eint',data=dtmp
+         emax2eintE = [emax2eintE,dtmp.y]
+         get_data,'eint2emin',data=dtmp
+         eint2eminE = [eint2eminE,dtmp.y]
+         get_data,'minvar_eigenvalues',data=dtmp
+         eigsE = [eigsE,dtmp.y]
+         get_data,'emax_vec_minvar',data=dtmp
+         emax_vecE = [emax_vecE,dtmp.y]
+         get_data,'eint_vec_minvar',data=dtmp
+         eint_vecE = [eint_vecE,dtmp.y]
+         get_data,'emin_vec_minvar',data=dtmp
+         emin_vecE = [emin_vecE,dtmp.y]
+
+
+                                ;Bfield: Rotate each chunk to FA/minvar coord
+         fa = rbsp_rotate_field_2_vec(varM_s2+'_tmp',rbspx+'_Mag_mgse_tmp')
+
+
+
+
+         get_data,varM_s2+'_tmp_FA_minvar',data=dtmp
+         BurstB = [BurstB,dtmp.y]
+         BursttimesB = [BursttimesB,dtmp.x]
+
+         get_data,'theta_kb',data=dtmp
+         theta_kbB = [theta_kbB,dtmp.y]
+         thetatimesB = [thetatimesB,dtmp.x]
+         get_data,'dtheta_kb',data=dtmp
+         dtheta_kbB = [dtheta_kbB,dtmp.y]
+         get_data,'emax2eint',data=dtmp
+         emax2eintB = [emax2eintB,dtmp.y]
+         get_data,'eint2emin',data=dtmp
+         eint2eminB = [eint2eminB,dtmp.y]
+         get_data,'minvar_eigenvalues',data=dtmp
+         eigsB = [eigsB,dtmp.y]
+         get_data,'emax_vec_minvar',data=dtmp
+         emax_vecB = [emax_vecB,dtmp.y]
+         get_data,'eint_vec_minvar',data=dtmp
+         eint_vecB = [eint_vecB,dtmp.y]
+         get_data,'emin_vec_minvar',data=dtmp
+         emin_vecB = [emin_vecB,dtmp.y]
+
+         tplot,[varE_s2+'_tmp_FA_minvar',varM_s2+'_tmp_FA_minvar',rbspx+'_Mag_mgse_tmp']
+
+
+      endfor
+
+      varE_s4 = varE_s2 + '_FA_minvar'
+      varM_s4 = varM_s2 + '_FA_minvar'
+
+
+ 
+                                ;Store the field-aligned burst data
+      nn = n_elements(BursttimesE)-1
+      store_data,varE_s4,data={x:BursttimesE[1:nn],y:BurstE[1:nn,*]}
+      nn = n_elements(BursttimesB)-1
+      store_data,varM_s4,data={x:BursttimesB[1:nn],y:BurstB[1:nn,*]}
+
+      tplot,[varE_s4,varM_s4]
+
+      ;; ;Store the minvar analysis variables
+      nn = n_elements(thetatimesB)-1
+      store_data,varM_s4+'_theta_kb',data={x:thetatimesB[1:nn],y:theta_kbB[1:nn]}
+      store_data,varM_s4+'_dtheta_kb',data={x:thetatimesB[1:nn],y:dtheta_kbB[1:nn]}
+      store_data,varM_s4+'_emax2eint',data={x:thetatimesB[1:nn],y:emax2eintB[1:nn]}
+      store_data,varM_s4+'_eint2emin',data={x:thetatimesB[1:nn],y:eint2eminB[1:nn]}
+;      store_data,varM_s4+'_minvar_eigenvalues',data={x:thetatimesB[1:nn],y:eigsB[1:nn]}
+      store_data,varM_s4+'_emax_vec',data={x:thetatimesB[1:nn],y:emax_vecB[1:nn]}
+      store_data,varM_s4+'_eint_vec',data={x:thetatimesB[1:nn],y:eint_vecB[1:nn]}
+      store_data,varM_s4+'_emin_vec',data={x:thetatimesB[1:nn],y:emin_vecB[1:nn]}
+
+      nn = n_elements(thetatimesE)-1
+      store_data,varE_s4+'_theta_kb',data={x:thetatimesE[1:nn],y:theta_kbE[1:nn]}
+      store_data,varE_s4+'_dtheta_kb',data={x:thetatimesE[1:nn],y:dtheta_kbE[1:nn]}
+      store_data,varE_s4+'_emax2eint',data={x:thetatimesE[1:nn],y:emax2eintE[1:nn]}
+      store_data,varE_s4+'_eint2emin',data={x:thetatimesE[1:nn],y:eint2eminE[1:nn]}
+ ;     store_data,varE_s4+'_minvar_eigenvalues',data={x:thetatimesE[1:nn],y:eigsE[1:nn]}
+      store_data,varE_s4+'_emax_vec',data={x:thetatimesE[1:nn],y:emax_vecE[1:nn]}
+      store_data,varE_s4+'_eint_vec',data={x:thetatimesE[1:nn],y:eint_vecE[1:nn]}
+      store_data,varE_s4+'_emin_vec',data={x:thetatimesE[1:nn],y:emin_vecE[1:nn]}
+
+      options,varM_s4+'_theta_kb','ytitle',rbspx+ '!CWave normal!Cangle'
+      options,varM_s4+'_dtheta_kb','ytitle',rbspx+'!CWave normal!Cangle!Cuncertainty'
+      options,varE_s4+'_theta_kb','ytitle',rbspx+ '!CWave normal!Cangle'
+      options,varE_s4+'_dtheta_kb','ytitle',rbspx+'!CWave normal!Cangle!Cuncertainty'
+      
+      tplot,[varE_s4,varE_s4+'_theta_kb',varE_s4+'_emax2eint',varE_s4+'_eint2emin']
+      tplot,[varM_s4,varM_s4+'_theta_kb',varM_s4+'_emax2eint',varM_s4+'_eint2emin']
+
+ 
+
+   endif
+
+
+   store_data,tnames('*tmp*'),/delete
+   store_data,['pflux_para','pflux_perp1','pflux_perp2','pflux_nospinaxis_para',$
+               'pflux_nospinaxis_perp'],/delete
+
+   store_data,[rbspx+'_pflux_para',rbspx+'_pflux_perp?'],/delete
+   store_data,['emax_vec_minvar','eint_vec_minvar','emin_vec_minvar',$
+               'minvar_eigenvalues','emax2eint','eint2emin','theta_kb','dtheta_kb'],/delete
+
+   undefine,burstb,burste,bursttimesb,bursttimese,dtheta_kbb,dtheta_kbe,dtmp,eigsb,eigse,eint2eminb
+   undefine,eint2emine,eint_vecb,eint_vece,emax2eintb,emax2einte,emax_vecb,emax_vece,emin_vecb,emin_vece
+   undefine,fa,tb,te,thetatimesb,thetatimese,theta_kbb,theta_kbe,vb,ve,vm
+
+
+   start_after_step += 1
+   tplot_save,'*',filename=fileroot+fn+'_fa'
+   save,filename=fileroot+fn+'_fa.idl'
+
+endif
+
+
+
+
+;------------------------------------------------------------------
+;Run Chasten's routine for both E and B
+;------------------------------------------------------------------
+
+
+
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+if start_after_step eq 4 then begin
+   tplot_restore,filename=fileroot+fn + '_chasten.tplot'
+   restore,fileroot+fn+'_chasten.idl'
+endif
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+if ~nostop then if start_after_step le 4 then stop
+if start_after_step lt 4 then begin
+
+   get_data,varE_s4,data=varr
+
+                                ;Separate the bursts by comparing the delta-time b/t each
+                                ;data point to 1/samplerate
+
+   dt = varr.x - shift(varr.x,1)
+   dt = dt[1:n_elements(dt)-1]
+
+   sr = rbsp_sample_rate(varr.x,out_med_av=medavg)
+;	store_data,varE_s4+'_samplerate',data={x:varr.x,y:sr}
+;	store_data,varE_s4+'_samplerate_diff',data={x:varr.x,y:abs(sr-medavg[0])}
+                                ;tplot,[varE_s4,varE_s4+'_samplerate',varE_s4+'_samplerate_diff']
+   
+
+   threshold = 1/medavg
+   goo = where(abs(dt) ge 2*threshold[1])
+
+   b = 0L
+   q = 0L
+   
+                                ;left and right location of each burst chunk
+   chunkL = [0,goo+1]
+   chunkR = [goo-1,n_elements(sr)-1]
+
+                                ;Get rid of abnormally small chunks. These sometimes occur if there is a small
+                                ;gap in the data. 
+
+   chunkduration = (chunkR - chunkL)/medavg[1]
+   
+   goo = where(chunkduration ge minduration)
+   chunkL = chunkL[goo]
+   chunkR = chunkR[goo]
+   nchunks = n_elements(goo)
+
+   print,'Duration (sec) of each chunk: ',(chunkR - chunkL)/medavg[1]
+
+   BurstE = [[0.],[0.],[0.]]
+   BurstB = [[0.],[0.],[0.]]
+   Bursttimes = 0d
+
+   for i=0,nchunks-1 do begin
+
+      t0z = varr.x[chunkL[i]]
+      t1z = varr.x[chunkR[i]]
+
+      ve = tsample(varE_s4,[t0z,t1z],times=te)
+      vb = tsample(varM_s4,[t0z,t1z],times=tb)
+      vm = tsample(rbspx+'_Mag_mgse',[t0z,t1z],times=tm)
+
+      store_data,varE_s4+'_tmp',data={x:te,y:ve}
+      store_data,varM_s4+'_tmp',data={x:tb,y:vb}
+      tinterpol_mxn,varM_s4+'_tmp',varE_s4+'_tmp',newname=varM_s4+'_tmp'
+      store_data,rbspx+'_Mag_mgse_tmp',data={x:tm,y:vm}
+
+      get_data,varE_s4+'_tmp',data=dtmp
+      BurstE = [BurstE,dtmp.y]
+      get_data,varM_s4+'_tmp',data=dtmp
+      BurstB = [BurstB,dtmp.y]
+      Bursttimes = [Bursttimes,dtmp.x]
+
+
+      
+                                ;Bfield: Run Chaston crib on each chunk	
+      twavpol,varM_s4+'_tmp',prefix='tmp'
+                                ;twavpol,varM_s4+'_tmp',prefix='tmp',nopfft=16448,steplength=4112
+                                ;twavpol,varM_s4+'_tmp',prefix='tmp',nopfft=16448,steplength=4096
+
+                                ;Find the size of returned data
+      get_data,'tmp'+'_waveangle',data=dtmp
+      sz = n_elements(dtmp.v)
+
+      if i eq 0 then begin
+         waveangleB = replicate(0.,[1,sz])
+         degpolB = replicate(0.,[1,sz])
+         elliptictB = replicate(0.,[1,sz])
+         helicitB = replicate(0.,[1,sz])
+         pspec3B = replicate(0.,[1,sz,3])
+         chastontimesB = 0d
+      endif
+
+                                ;change wave normal angle to degrees
+      get_data,'tmp'+'_waveangle',data=dtmp
+      dtmp.y = dtmp.y/!dtor	
+      waveangleB = [waveangleB,dtmp.y]
+      chastontimesB = [chastontimesB,dtmp.x]		
+      
+      get_data,'tmp'+'_degpol',data=dtmp
+      degpolB = [degpolB,dtmp.y]
+      get_data,'tmp'+'_elliptict',data=dtmp
+      elliptictB = [elliptictB,dtmp.y]
+      get_data,'tmp'+'_helict',data=dtmp
+      helicitB = [helicitB,dtmp.y]
+      get_data,'tmp'+'_pspec3',data=dtmp
+      pspec3B = [pspec3B,dtmp.y]
+      if i eq 0 then freqvalsB = dtmp.v
+      
+
+
+                                ;Efield: Run Chaston crib on each chunk	
+      twavpol,varE_s4+'_tmp',prefix='tmp'
+                                ;twavpol,varE_s4+'_tmp_FA',prefix='tmp',nopfft=16448,steplength=4112
+                                ;twavpol,varE_s4+'_tmp_FA',prefix='tmp',nopfft=16448,steplength=4096
+
+
+      if i eq 0 then begin
+         waveangleE = replicate(0.,[1,sz])
+         degpolE = replicate(0.,[1,sz])
+         elliptictE = replicate(0.,[1,sz])
+         helicitE = replicate(0.,[1,sz])
+         pspec3E = replicate(0.,[1,sz,3])
+         chastontimesE = 0d
+      endif
+
+                                ;change wave normal angle to degrees
+      get_data,'tmp'+'_waveangle',data=dtmp
+      dtmp.y = dtmp.y/!dtor	
+      waveangleE = [waveangleE,dtmp.y]
+      chastontimesE = [chastontimesE,dtmp.x]		
+      
+      
+      get_data,'tmp'+'_degpol',data=dtmp
+      degpolE = [degpolE,dtmp.y]
+      get_data,'tmp'+'_elliptict',data=dtmp
+      elliptictE = [elliptictE,dtmp.y]
+      get_data,'tmp'+'_helict',data=dtmp
+      helicitE = [helicitE,dtmp.y]
+      get_data,'tmp'+'_pspec3',data=dtmp
+      pspec3E = [pspec3E,dtmp.y]
+      if i eq 0 then freqvalsE = dtmp.v
+
+   endfor
+
+
+
+                                ;Store the field-aligned burst data
+   nn = n_elements(bursttimes)-1
+   store_data,varM_s4,data={x:Bursttimes[1:nn],y:BurstB[1:nn,*]}
+   store_data,varE_s4,data={x:Bursttimes[1:nn],y:BurstE[1:nn,*]}
+
+
+                                ;Store the Chaston crib variables
+   nn = n_elements(chastontimesB)-1
+   store_data,varM_s4+'_theta_kb_chaston',data={x:chastontimesB[1:nn],y:waveangleB[1:nn,*],v:freqvalsB}
+   store_data,varM_s4+'_degpol_chaston',data={x:chastontimesB[1:nn],y:degpolB[1:nn,*],v:freqvalsB}
+   store_data,varM_s4+'_elliptict_chaston',data={x:chastontimesB[1:nn],y:elliptictB[1:nn,*],v:freqvalsB}
+   store_data,varM_s4+'_helict_chaston',data={x:chastontimesB[1:nn],y:helicitB[1:nn,*],v:freqvalsB}
+   store_data,varM_s4+'_pspec3_chaston',data={x:chastontimesB[1:nn],y:pspec3B[1:nn,*,*],v:freqvalsB}
+
+
+   nn = n_elements(chastontimesE)-1
+   store_data,varE_s4+'_theta_kb_chaston',data={x:chastontimesE[1:nn],y:waveangleE[1:nn,*],v:freqvalsE}
+   store_data,varE_s4+'_degpol_chaston',data={x:chastontimesE[1:nn],y:degpolE[1:nn,*],v:freqvalsE}
+   store_data,varE_s4+'_elliptict_chaston',data={x:chastontimesE[1:nn],y:elliptictE[1:nn,*],v:freqvalsE}
+   store_data,varE_s4+'_helict_chaston',data={x:chastontimesE[1:nn],y:helicitE[1:nn,*],v:freqvalsE}
+   store_data,varE_s4+'_pspec3_chaston',data={x:chastontimesE[1:nn],y:pspec3E[1:nn,*,*],v:freqvalsE}
+
+
+
+   ylim,[varM_s4+'_degpol_chaston',$
+         varM_s4+'_theta_kb_chaston',$
+         varM_s4+'_elliptict_chaston',$
+         varM_s4+'_helict_chaston',$
+         varM_s4+'_pspec3_chaston'],100,8000,1
+
+   zlim,varM_s4+'_waveangle_chaston',0,90,0
+   zlim,varM_s4+'_pspec3_chaston',1d-9,1d-4,1
+
+   ylim,[varE_s4+'_degpol_chaston',$
+         varE_s4+'_theta_kb_chaston',$
+         varE_s4+'_elliptict_chaston',$
+         varE_s4+'_helict_chaston',$
+         varE_s4+'_pspec3_chaston'],100,8000,1
+
+   zlim,varE_s4+'_waveangle_chaston',0,90,0
+   zlim,varE_s4+'_pspec3_chaston',1d-9,1d-4,1
+
+
+
+
+                                ;eliminate data under a certain deg of polarization threshold
+   minpol = 0.7
+
+   get_data,varM_s4+'_degpol_chaston',data=degp
+   goo = where(degp.y le minpol)
+   if goo[0] ne -1 then degp.y[goo] = !values.f_nan
+   store_data,varM_s4+'_degpol_chaston',data=degp
+   get_data,varM_s4+'_theta_kb_chaston',data=tmp
+   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+   store_data,varM_s4+'_theta_kb_chaston',data=tmp
+   get_data,varM_s4+'_elliptict_chaston',data=tmp
+   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+   store_data,varM_s4+'_elliptict_chaston',data=tmp
+   get_data,varM_s4+'_helict_chaston',data=tmp
+   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+   store_data,varM_s4+'_helict_chaston',data=tmp
+
+
+   get_data,varE_s4+'_degpol_chaston',data=degp
+   goo = where(degp.y le minpol)
+   if goo[0] ne -1 then degp.y[goo] = !values.f_nan
+   store_data,varE_s4+'_degpol_chaston',data=degp
+   get_data,varE_s4+'_theta_kb_chaston',data=tmp
+   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+   store_data,varE_s4+'_theta_kb_chaston',data=tmp
+   get_data,varE_s4+'_elliptict_chaston',data=tmp
+   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+   store_data,varE_s4+'_elliptict_chaston',data=tmp
+   get_data,varE_s4+'_helict_chaston',data=tmp
+   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
+   store_data,varE_s4+'_helict_chaston',data=tmp
+
+
+
+
+   options,[varM_s4+'_degpol_chaston',$
+            varM_s4+'_theta_kb_chaston',$
+            varM_s4+'_elliptict_chaston',$
+            varM_s4+'_helict_chaston',$
+            varM_s4+'_pspec3_chaston'],'spec',1
+
+   options,[varE_s4+'_degpol_chaston',$
+            varE_s4+'_theta_kb_chaston',$
+            varE_s4+'_elliptict_chaston',$
+            varE_s4+'_helict_chaston',$
+            varE_s4+'_pspec3_chaston'],'spec',1
+
+
+   tplot,[varE_s4,$
+          varE_s4+'_pspec3_chaston',$
+          varE_s4+'_degpol_chaston',$
+          varE_s4+'_theta_kb_chaston',$
+          varE_s4+'_elliptict_chaston',$
+          varE_s4+'_helict_chaston']
+
+
+   tplot,[varM_s4,$
+          varM_s4+'_pspec3_chaston',$
+          varM_s4+'_degpol_chaston',$
+          varM_s4+'_theta_kb_chaston',$
+          varM_s4+'_elliptict_chaston',$
+          varM_s4+'_helict_chaston']
+
+
+                                ;remove unnecessary variables
+   store_data,['theta_kb','dtheta_kb','minvar_eigenvalues','emax2eint','eint2emin','emax_vec_minvar','eint_vec_minvar','emin_vec_minvar'],/delete
+
+   store_data,'*tmp*',/delete
+   undefine,burstb,burste,bursttimes,chastontimesb,chastontimese,degpolb,degpole,dt,dtmp
+   undefine,elliptictb,ellipticte,goo,helicitb,helicite,powspecb,powspece,pspec3b,pspec3e,sr
+   undefine,tb,te,tmp,vb,ve,vm,waveangleb,waveanglee
+
+
+   start_after_step += 1
+   tplot_save,'*',filename=fileroot+fn+'_chasten'
+   save,filename=fileroot+fn+'_chasten.idl'
+
+
+if ~nostop then stop
+
+endif
+
+
+
 ;-----------------------------------------------------------------------------------
 ;Calculate Poynting flux for each chunk
 ;If requested, plot spectral Pflux
@@ -490,14 +946,16 @@ endif
 ;			 		pflux_nospinaxis_para
 ;
 
+
+
 ;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-if start_after_step eq 3 then begin
+if start_after_step eq 5 then begin
    tplot_restore,filename=fileroot+fn + '_pflux.tplot'
    restore,fileroot+fn+'_pflux.idl'
 endif
 ;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-if ~nostop then if start_after_step le 3 then stop
-if start_after_step lt 3 then begin
+if ~nostop then if start_after_step le 5 then stop
+if start_after_step lt 5 then begin
 
    tinterpol_mxn,rbspx+'_state_mlat',varr.x
 
@@ -531,11 +989,11 @@ if start_after_step lt 3 then begin
 
       store_data,varE_s2 +'_tmp',data={x:te,y:ve}
       store_data,varM_s2 +'_tmp',data={x:tb,y:vb}
+      tinterpol_mxn,varM_s2+'_tmp',varE_s2+'_tmp',newname=varM_s2+'_tmp'
       store_data,rbspx+'_Mag_mgse_tmp',data={x:tm,y:vm}
       
 
-      tplot,[varE_s2+'_tmp',varM_s2+'_tmp',rbspx+'_Mag_mgse_tmp']
-      tlimit,t0z,t1z
+      tplot,[varE_s2+'_tmp',varM_s2+'_tmp',rbspx+'_Mag_mgse_tmp'],trange=[t0z,t1z]
 
 
                                 ;If pflux_spec keyword is set then
@@ -554,15 +1012,15 @@ if start_after_step lt 3 then begin
          				df2,fmin2,fmax2,min_sf=1000.,/noplot
          				
          tplot,[varE_s2+'_tmp',varM_s2+'_tmp','ppara_p','ppara_n','ppara_b',rbspx+'_state_mlat_interp']
-       get_data,'ppara_p',data=dtmp
-      ppara_p = [ppara_p,dtmp.y]
-      get_data,'ppara_n',data=dtmp
-      ppara_n = [ppara_n,dtmp.y]
-      get_data,'ppara_b',data=dtmp
-      ppara_b = [ppara_b,dtmp.y]
-      if i eq 0 then freqbins = dtmp.v
+         get_data,'ppara_p',data=dtmp
+         ppara_p = [ppara_p,dtmp.y]
+         get_data,'ppara_n',data=dtmp
+         ppara_n = [ppara_n,dtmp.y]
+         get_data,'ppara_b',data=dtmp
+         ppara_b = [ppara_b,dtmp.y]
+         if i eq 0 then freqbins = dtmp.v
 
-     endif 
+      endif 
       
       
     	;Even if option to run rbsp_poynting_spec is set, we still want to run
@@ -576,6 +1034,12 @@ if start_after_step lt 3 then begin
             Bo=rbspx+'_Mag_mgse_tmp'
     
     
+         store_data,rbspx+'_efw_eb'+bt+'_mgse_bp_tmp_interp'
+         store_data,'*iono*',/delete
+         store_data,[rbspx+'_efw_eb'+bt+'_mgse_bp_tmp',rbspx+'_efw_mscb'+bt+'_mgse_bp_tmp',$
+                     rbspx+'_Mag_mgse_tmp',rbspx+'_Mag_mgse_tmp_interp',rbspx+'_efw_mscb'+bt+'_mgse_bp_tmp_interp',$
+                     rbspx+'_efw_eb'+bt+'_mgse_bp_tmp_interp'],/delete
+
 
 
       get_data,'pflux_Bw',data=dtmp
@@ -612,34 +1076,37 @@ if start_after_step lt 3 then begin
    store_data,rbspx+'_pflux_perp2',data={x:Bursttimes[1:nn],y:pflux_perp2[1:nn]}
 
 
-	if keyword_set(pflux_spec) then begin
-   store_data,rbspx+'_pflux_spec_ppara_p',data={x:Bursttimes[1:nn],y:ppara_p[1:nn,*],v:freqbins}
-   store_data,rbspx+'_pflux_spec_ppara_n',data={x:Bursttimes[1:nn],y:ppara_n[1:nn,*],v:freqbins}
-   store_data,rbspx+'_pflux_spec_ppara_b',data={x:Bursttimes[1:nn],y:ppara_b[1:nn,*],v:freqbins}
-
-
-   options,rbspx+'_pflux_spec_ppara_?','spec',1
-   zlim,rbspx+'_pflux_spec_ppara_p',max(ppara_p)/1d4,max(ppara_p),1
-   zlim,rbspx+'_pflux_spec_ppara_n',max(ppara_n)/1d4,max(ppara_n),1
-
-	;Remove gaps in spectral data
-	
-	;First fix the structure form. There's a bunch of other crap in here that confuses
-	;tplot_removegaps.pro
-	get_data,rbspx+'_pflux_spec_ppara_p',data=du
-	store_data,rbspx+'_pflux_spec_ppara_p',data={x:du.x,y:du.y,v:du.v}	
-	get_data,rbspx+'_pflux_spec_ppara_n',data=du
-	store_data,rbspx+'_pflux_spec_ppara_n',data={x:du.x,y:du.y,v:du.v}	
-	get_data,rbspx+'_pflux_spec_ppara_b',data=du
-	store_data,rbspx+'_pflux_spec_ppara_b',data={x:du.x,y:du.y,v:du.v}	
-
-	tplot_removegaps,rbspx+'_pflux_spec_ppara_p'
-	tplot_removegaps,rbspx+'_pflux_spec_ppara_n'
-	tplot_removegaps,rbspx+'_pflux_spec_ppara_b'
-
-
-	endif   
-
+   if keyword_set(pflux_spec) then begin
+      store_data,rbspx+'_pflux_spec_ppara_plusBo',data={x:Bursttimes[1:nn],y:ppara_p[1:nn,*],v:freqbins}
+      store_data,rbspx+'_pflux_spec_ppara_minusBo',data={x:Bursttimes[1:nn],y:ppara_n[1:nn,*],v:freqbins}
+      store_data,rbspx+'_pflux_spec_ppara_binaryBo',data={x:Bursttimes[1:nn],y:ppara_b[1:nn,*],v:freqbins}
+      
+      
+      options,rbspx+'_pflux_spec_ppara_?','spec',1
+      zlim,rbspx+'_pflux_spec_ppara_plusBo',max(ppara_p)/1d4,max(ppara_p),1
+      zlim,rbspx+'_pflux_spec_ppara_minusBo',max(ppara_n)/1d4,max(ppara_n),1
+      
+                                ;Remove gaps in spectral data
+      
+                                ;First fix the structure form. There's a bunch of other crap in here that confuses
+                                ;tplot_removegaps.pro
+      get_data,rbspx+'_pflux_spec_ppara_plusBo',data=du
+      store_data,rbspx+'_pflux_spec_ppara_plusBo',data={x:du.x,y:du.y,v:du.v}	
+      get_data,rbspx+'_pflux_spec_ppara_minusBo',data=du
+      store_data,rbspx+'_pflux_spec_ppara_minusBo',data={x:du.x,y:du.y,v:du.v}	
+      get_data,rbspx+'_pflux_spec_ppara_binaryBo',data=du
+      store_data,rbspx+'_pflux_spec_ppara_binaryBo',data={x:du.x,y:du.y,v:du.v}	
+      
+      tplot_removegaps,rbspx+'_pflux_spec_ppara_plusBo'
+      tplot_removegaps,rbspx+'_pflux_spec_ppara_minusBo'
+      tplot_removegaps,rbspx+'_pflux_spec_ppara_binaryBo'
+      
+      options,[rbspx+'_pflux_spec_ppara_plusBo',$
+               rbspx+'_pflux_spec_ppara_minusBo',$
+               rbspx+'_pflux_spec_ppara_binaryBo'],'spec',1
+      
+   endif   
+   
    ylim,['rbsp'+probe+'_pflux_nospinaxis_para','rbsp'+probe+'_pflux_nospinaxis_perp'],-1d-5,1d-5
 
 
@@ -698,490 +1165,6 @@ endif
 
 
 
-;--------------------------------------------------
-;Rotate each chunk to FA coord
-;--------------------------------------------------
-
-
-;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-if start_after_step eq 4 then begin
-   tplot_restore,filename=fileroot+fn + '_fa.tplot'
-   restore,fileroot+fn+'_fa.idl'
-endif
-;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-if ~nostop then if start_after_step le 4 then stop
-if start_after_step lt 4 then begin
-
-   if rotate_to_fa then begin
-
-      BurstE = [[0.],[0.],[0.]]
-      BurstB = [[0.],[0.],[0.]]
-      BursttimesE = 0d
-      BursttimesB = 0d
-
-      theta_kbE = 0.
-      thetatimesE = 0d
-      dtheta_kbE = 0.
-      eigsE = [[0.],[0.],[0.]]
-      emax2eintE = 0.
-      eint2eminE = 0.
-      emax_vecE = [[0.],[0.],[0.]]
-      eint_vecE = [[0.],[0.],[0.]]
-      emin_vecE = [[0.],[0.],[0.]]
-
-      theta_kbB = 0.
-      thetatimesB = 0d
-      dtheta_kbB = 0.
-      eigsB = [[0.],[0.],[0.]]
-      emax2eintB = 0.
-      eint2eminB = 0.
-      emax_vecB = [[0.],[0.],[0.]]
-      eint_vecB = [[0.],[0.],[0.]]
-      emin_vecB = [[0.],[0.],[0.]]
-
-
-      for i=0,nchunks-1 do begin
-
-         t0z = varr.x[chunkL[i]]
-         t1z = varr.x[chunkR[i]]
-
-         ve = tsample(varE_s2,[t0z,t1z],times=te)
-         vb = tsample(varM_s2,[t0z,t1z],times=tb)
-         vm = tsample(rbspx+'_Mag_mgse',[t0z,t1z],times=tm)
-
-         store_data,varE_s2+'_tmp',data={x:te,y:ve}
-         store_data,varM_s2+'_tmp',data={x:tb,y:vb}
-         store_data,rbspx+'_Mag_mgse_tmp',data={x:tm,y:vm}
-         
-
-         tplot,[varE_s2+'_tmp',varM_s2+'_tmp',rbspx+'_Mag_mgse_tmp']
-         tlimit,t0z,t1z
-
-                                ;Efield: Rotate each chunk to FA/minvar coord
-         fa = rbsp_rotate_field_2_vec(varE_s2+'_tmp',rbspx+'_Mag_mgse_tmp')
-         get_data,varE_s2+'_tmp_FA_minvar',data=dtmp
-         BurstE = [BurstE,dtmp.y]
-         BursttimesE = [BursttimesE,dtmp.x]
-
-         get_data,'theta_kb',data=dtmp
-         theta_kbE = [theta_kbE,dtmp.y]
-         thetatimesE = [thetatimesE,dtmp.x]
-         get_data,'dtheta_kb',data=dtmp
-         dtheta_kbE = [dtheta_kbE,dtmp.y]
-         get_data,'emax2eint',data=dtmp
-         emax2eintE = [emax2eintE,dtmp.y]
-         get_data,'eint2emin',data=dtmp
-         eint2eminE = [eint2eminE,dtmp.y]
-         get_data,'minvar_eigenvalues',data=dtmp
-         eigsE = [eigsE,dtmp.y]
-         get_data,'emax_vec_minvar',data=dtmp
-         emax_vecE = [emax_vecE,dtmp.y]
-         get_data,'eint_vec_minvar',data=dtmp
-         eint_vecE = [eint_vecE,dtmp.y]
-         get_data,'emin_vec_minvar',data=dtmp
-         emin_vecE = [emin_vecE,dtmp.y]
-
-
-                                ;Bfield: Rotate each chunk to FA/minvar coord
-         fa = rbsp_rotate_field_2_vec(varM_s2+'_tmp',rbspx+'_Mag_mgse_tmp')
-         get_data,varM_s2+'_tmp_FA_minvar',data=dtmp
-         BurstB = [BurstB,dtmp.y]
-         BursttimesB = [BursttimesB,dtmp.x]
-
-         get_data,'theta_kb',data=dtmp
-         theta_kbB = [theta_kbB,dtmp.y]
-         thetatimesB = [thetatimesB,dtmp.x]
-         get_data,'dtheta_kb',data=dtmp
-         dtheta_kbB = [dtheta_kbB,dtmp.y]
-         get_data,'emax2eint',data=dtmp
-         emax2eintB = [emax2eintB,dtmp.y]
-         get_data,'eint2emin',data=dtmp
-         eint2eminB = [eint2eminB,dtmp.y]
-         get_data,'minvar_eigenvalues',data=dtmp
-         eigsB = [eigsB,dtmp.y]
-         get_data,'emax_vec_minvar',data=dtmp
-         emax_vecB = [emax_vecB,dtmp.y]
-         get_data,'eint_vec_minvar',data=dtmp
-         eint_vecB = [eint_vecB,dtmp.y]
-         get_data,'emin_vec_minvar',data=dtmp
-         emin_vecB = [emin_vecB,dtmp.y]
-
-         tplot,[varE_s2+'_tmp_FA_minvar',varM_s2+'_tmp_FA_minvar',rbspx+'_Mag_mgse_tmp']
-
-
-      endfor
-
-      varE_s4 = varE_s2 + '_FA_minvar'
-      varM_s4 = varM_s2 + '_FA_minvar'
-
-                                ;Store the field-aligned burst data
-      nn = n_elements(BursttimesE)-1
-      store_data,varE_s4,data={x:BursttimesE[1:nn],y:BurstE[1:nn,*]}
-      nn = n_elements(BursttimesB)-1
-      store_data,varM_s4,data={x:BursttimesB[1:nn],y:BurstB[1:nn,*]}
-
-      tplot,[varE_s4,varM_s4]
-
-      ;; ;Store the minvar analysis variables
-      nn = n_elements(thetatimesB)-1
-      store_data,varM_s4+'_theta_kb',data={x:thetatimesB[1:nn],y:theta_kbB[1:nn]}
-      store_data,varM_s4+'_dtheta_kb',data={x:thetatimesB[1:nn],y:dtheta_kbB[1:nn]}
-      store_data,varM_s4+'_emax2eint',data={x:thetatimesB[1:nn],y:emax2eintB[1:nn]}
-      store_data,varM_s4+'_eint2emin',data={x:thetatimesB[1:nn],y:eint2eminB[1:nn]}
-      store_data,varM_s4+'_minvar_eigenvalues',data={x:thetatimesB[1:nn],y:eigsB[1:nn]}
-      store_data,varM_s4+'_emax_vec',data={x:thetatimesB[1:nn],y:emax_vecB[1:nn]}
-      store_data,varM_s4+'_eint_vec',data={x:thetatimesB[1:nn],y:eint_vecB[1:nn]}
-      store_data,varM_s4+'_emin_vec',data={x:thetatimesB[1:nn],y:emin_vecB[1:nn]}
-
-      nn = n_elements(thetatimesE)-1
-      store_data,varE_s4+'_theta_kb',data={x:thetatimesE[1:nn],y:theta_kbE[1:nn]}
-      store_data,varE_s4+'_dtheta_kb',data={x:thetatimesE[1:nn],y:dtheta_kbE[1:nn]}
-      store_data,varE_s4+'_emax2eint',data={x:thetatimesE[1:nn],y:emax2eintE[1:nn]}
-      store_data,varE_s4+'_eint2emin',data={x:thetatimesE[1:nn],y:eint2eminE[1:nn]}
-      store_data,varE_s4+'_minvar_eigenvalues',data={x:thetatimesE[1:nn],y:eigsE[1:nn]}
-      store_data,varE_s4+'_emax_vec',data={x:thetatimesE[1:nn],y:emax_vecE[1:nn]}
-      store_data,varE_s4+'_eint_vec',data={x:thetatimesE[1:nn],y:eint_vecE[1:nn]}
-      store_data,varE_s4+'_emin_vec',data={x:thetatimesE[1:nn],y:emin_vecE[1:nn]}
-
-      options,varM_s4+'_theta_kb','ytitle',rbspx+ '!CWave normal!Cangle'
-      options,varM_s4+'_dtheta_kb','ytitle',rbspx+'!CWave normal!Cangle!Cuncertainty'
-      options,varE_s4+'_theta_kb','ytitle',rbspx+ '!CWave normal!Cangle'
-      options,varE_s4+'_dtheta_kb','ytitle',rbspx+'!CWave normal!Cangle!Cuncertainty'
-      
-      tplot,[varE_s4,varE_s4+'_theta_kb',varE_s4+'_emax2eint',varE_s4+'_eint2emin']
-      tplot,[varM_s4,varM_s4+'_theta_kb',varM_s4+'_emax2eint',varM_s4+'_eint2emin']
-
- 
-
-   endif
-
-
-   store_data,tnames('*tmp*'),/delete
-   store_data,['pflux_para','pflux_perp1','pflux_perp2','pflux_nospinaxis_para',$
-               'pflux_nospinaxis_perp'],/delete
-
-   store_data,[rbspx+'_pflux_para',rbspx+'_pflux_perp?'],/delete
-   store_data,['emax_vec_minvar','eint_vec_minvar','emin_vec_minvar',$
-               'minvar_eigenvalues','emax2eint','eint2emin','theta_kb','dtheta_kb'],/delete
-
-   undefine,burstb,burste,bursttimesb,bursttimese,dtheta_kbb,dtheta_kbe,dtmp,eigsb,eigse,eint2eminb
-   undefine,eint2emine,eint_vecb,eint_vece,emax2eintb,emax2einte,emax_vecb,emax_vece,emin_vecb,emin_vece
-   undefine,fa,tb,te,thetatimesb,thetatimese,theta_kbb,theta_kbe,vb,ve,vm
-
-
-   start_after_step += 1
-   tplot_save,'*',filename=fileroot+fn+'_fa'
-   save,filename=fileroot+fn+'_fa.idl'
-
-endif
-
-
-
-;------------------------------------------------------------------
-;Run Chasten's routine for both E and B
-;------------------------------------------------------------------
-
-
-;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-if start_after_step eq 5 then begin
-   tplot_restore,filename=fileroot+fn + '_chasten.tplot'
-   restore,fileroot+fn+'_chasten.idl'
-endif
-;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-if ~nostop then if start_after_step le 5 then stop
-if start_after_step lt 5 then begin
-
-   get_data,varE_s4,data=varr
-
-                                ;Separate the bursts by comparing the delta-time b/t each
-                                ;data point to 1/samplerate
-
-   dt = varr.x - shift(varr.x,1)
-   dt = dt[1:n_elements(dt)-1]
-
-   sr = rbsp_sample_rate(varr.x,out_med_av=medavg)
-;	store_data,varE_s4+'_samplerate',data={x:varr.x,y:sr}
-;	store_data,varE_s4+'_samplerate_diff',data={x:varr.x,y:abs(sr-medavg[0])}
-                                ;tplot,[varE_s4,varE_s4+'_samplerate',varE_s4+'_samplerate_diff']
-   
-
-   threshold = 1/medavg
-   goo = where(abs(dt) ge 2*threshold[1])
-
-   b = 0L
-   q = 0L
-   
-                                ;left and right location of each burst chunk
-   chunkL = [0,goo+1]
-   chunkR = [goo-1,n_elements(sr)-1]
-
-                                ;Get rid of abnormally small chunks. These sometimes occur if there is a small
-                                ;gap in the data. 
-
-   chunkduration = (chunkR - chunkL)/medavg[1]
-   
-   goo = where(chunkduration ge minduration)
-   chunkL = chunkL[goo]
-   chunkR = chunkR[goo]
-   nchunks = n_elements(goo)
-
-   print,'Duration (sec) of each chunk: ',(chunkR - chunkL)/medavg[1]
-
-   BurstE = [[0.],[0.],[0.]]
-   BurstB = [[0.],[0.],[0.]]
-   Bursttimes = 0d
-
-   for i=0,nchunks-1 do begin
-
-      t0z = varr.x[chunkL[i]]
-      t1z = varr.x[chunkR[i]]
-
-      ve = tsample(varE_s4,[t0z,t1z],times=te)
-      vb = tsample(varM_s4,[t0z,t1z],times=tb)
-      vm = tsample(rbspx+'_Mag_mgse',[t0z,t1z],times=tm)
-
-      store_data,varE_s4+'_tmp',data={x:te,y:ve}
-      store_data,varM_s4+'_tmp',data={x:tb,y:vb}
-      store_data,rbspx+'_Mag_mgse_tmp',data={x:tm,y:vm}
-
-      get_data,varE_s4+'_tmp',data=dtmp
-      BurstE = [BurstE,dtmp.y]
-      get_data,varM_s4+'_tmp',data=dtmp
-      BurstB = [BurstB,dtmp.y]
-      Bursttimes = [Bursttimes,dtmp.x]
-
-
-                                ;-------
-      
-                                ;Bfield: Run Chaston crib on each chunk	
-      twavpol,varM_s4+'_tmp',prefix='tmp'
-                                ;twavpol,varM_s4+'_tmp',prefix='tmp',nopfft=16448,steplength=4112
-                                ;twavpol,varM_s4+'_tmp',prefix='tmp',nopfft=16448,steplength=4096
-
-
-                                ;Find the size of returned data
-      get_data,'tmp'+'_waveangle',data=dtmp
-      sz = n_elements(dtmp.v)
-
-      if i eq 0 then begin
-         waveangleB = replicate(0.,[1,sz])
-         powspecB = replicate(0.,[1,sz]) 
-         degpolB = replicate(0.,[1,sz])
-         elliptictB = replicate(0.,[1,sz])
-         helicitB = replicate(0.,[1,sz])
-         pspec3B = replicate(0.,[1,sz,3])
-         chastontimesB = 0d
-      endif
-
-                                ;change wave normal angle to degrees
-      get_data,'tmp'+'_waveangle',data=dtmp
-      dtmp.y = dtmp.y/!dtor	
-      waveangleB = [waveangleB,dtmp.y]
-      chastontimesB = [chastontimesB,dtmp.x]		
-      
-      get_data,'tmp'+'_powspec',data=dtmp
-      powspecB = [powspecB,dtmp.y]
-      get_data,'tmp'+'_degpol',data=dtmp
-      degpolB = [degpolB,dtmp.y]
-      get_data,'tmp'+'_elliptict',data=dtmp
-      elliptictB = [elliptictB,dtmp.y]
-      get_data,'tmp'+'_helict',data=dtmp
-      helicitB = [helicitB,dtmp.y]
-      get_data,'tmp'+'_pspec3',data=dtmp
-      pspec3B = [pspec3B,dtmp.y]
-      if i eq 0 then freqvalsB = dtmp.v
-      
-
-
-                                ;Efield: Run Chaston crib on each chunk	
-      twavpol,varE_s4+'_tmp',prefix='tmp'
-                                ;twavpol,varE_s4+'_tmp_FA',prefix='tmp',nopfft=16448,steplength=4112
-                                ;twavpol,varE_s4+'_tmp_FA',prefix='tmp',nopfft=16448,steplength=4096
-
-
-
-      if i eq 0 then begin
-         waveangleE = replicate(0.,[1,sz])
-         powspecE = replicate(0.,[1,sz]) 
-         degpolE = replicate(0.,[1,sz])
-         elliptictE = replicate(0.,[1,sz])
-         helicitE = replicate(0.,[1,sz])
-         pspec3E = replicate(0.,[1,sz,3])
-         chastontimesE = 0d
-      endif
-
-                                ;change wave normal angle to degrees
-      get_data,'tmp'+'_waveangle',data=dtmp
-      dtmp.y = dtmp.y/!dtor	
-      waveangleE = [waveangleE,dtmp.y]
-      chastontimesE = [chastontimesE,dtmp.x]		
-      
-      
-      get_data,'tmp'+'_powspec',data=dtmp
-      powspecE = [powspecE,dtmp.y]
-      get_data,'tmp'+'_degpol',data=dtmp
-      degpolE = [degpolE,dtmp.y]
-      get_data,'tmp'+'_elliptict',data=dtmp
-      elliptictE = [elliptictE,dtmp.y]
-      get_data,'tmp'+'_helict',data=dtmp
-      helicitE = [helicitE,dtmp.y]
-      get_data,'tmp'+'_pspec3',data=dtmp
-      pspec3E = [pspec3E,dtmp.y]
-      if i eq 0 then freqvalsE = dtmp.v
-
-   endfor
-
-
-
-                                ;Store the field-aligned burst data
-   nn = n_elements(bursttimes)-1
-   store_data,varM_s4,data={x:Bursttimes[1:nn],y:BurstB[1:nn,*]}
-   store_data,varE_s4,data={x:Bursttimes[1:nn],y:BurstE[1:nn,*]}
-
-
-                                ;Store the Chaston crib variables
-   nn = n_elements(chastontimesB)-1
-   store_data,varM_s4+'_theta_kb_chaston',data={x:chastontimesB[1:nn],y:waveangleB[1:nn,*],v:freqvalsB}
-   store_data,varM_s4+'_powspec_chaston',data={x:chastontimesB[1:nn],y:powspecB[1:nn,*],v:freqvalsB}
-   store_data,varM_s4+'_degpol_chaston',data={x:chastontimesB[1:nn],y:degpolB[1:nn,*],v:freqvalsB}
-   store_data,varM_s4+'_elliptict_chaston',data={x:chastontimesB[1:nn],y:elliptictB[1:nn,*],v:freqvalsB}
-   store_data,varM_s4+'_helict_chaston',data={x:chastontimesB[1:nn],y:helicitB[1:nn,*],v:freqvalsB}
-   store_data,varM_s4+'_pspec3_chaston',data={x:chastontimesB[1:nn],y:pspec3B[1:nn,*,*],v:freqvalsB}
-
-
-   nn = n_elements(chastontimesE)-1
-   store_data,varE_s4+'_theta_kb_chaston',data={x:chastontimesE[1:nn],y:waveangleE[1:nn,*],v:freqvalsE}
-   store_data,varE_s4+'_powspec_chaston',data={x:chastontimesE[1:nn],y:powspecE[1:nn,*],v:freqvalsE}
-   store_data,varE_s4+'_degpol_chaston',data={x:chastontimesE[1:nn],y:degpolE[1:nn,*],v:freqvalsE}
-   store_data,varE_s4+'_elliptict_chaston',data={x:chastontimesE[1:nn],y:elliptictE[1:nn,*],v:freqvalsE}
-   store_data,varE_s4+'_helict_chaston',data={x:chastontimesE[1:nn],y:helicitE[1:nn,*],v:freqvalsE}
-   store_data,varE_s4+'_pspec3_chaston',data={x:chastontimesE[1:nn],y:pspec3E[1:nn,*,*],v:freqvalsE}
-
-
-
-   ylim,[varM_s4+'_powspec_chaston',$
-         varM_s4+'_degpol_chaston',$
-         varM_s4+'_theta_kb_chaston',$
-         varM_s4+'_elliptict_chaston',$
-         varM_s4+'_helict_chaston',$
-         varM_s4+'_pspec3_chaston'],100,8000,1
-
-   zlim,varM_s4+'_waveangle_chaston',0,90,0
-   zlim,varM_s4+'_powspec_chaston',1d-9,1d-4,1
-   zlim,varM_s4+'_pspec3_chaston',1d-9,1d-4,1
-
-   ylim,[varE_s4+'_powspec_chaston',$
-         varE_s4+'_degpol_chaston',$
-         varE_s4+'_theta_kb_chaston',$
-         varE_s4+'_elliptict_chaston',$
-         varE_s4+'_helict_chaston',$
-         varE_s4+'_pspec3_chaston'],100,8000,1
-
-   zlim,varE_s4+'_waveangle_chaston',0,90,0
-   zlim,varE_s4+'_powspec_chaston',1d-9,1d-4,1
-   zlim,varE_s4+'_pspec3_chaston',1d-9,1d-4,1
-
-
-
-
-                                ;eliminate data under a certain deg of polarization threshold
-   minpol = 0.5
-
-   get_data,varM_s4+'_degpol_chaston',data=degp
-   goo = where(degp.y le minpol)
-   if goo[0] ne -1 then degp.y[goo] = !values.f_nan
-   store_data,varM_s4+'_degpol_chaston',data=degp
-   get_data,varM_s4+'_powspec_chaston',data=tmp
-   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
-   store_data,varM_s4+'_powspec_chaston',data=tmp
-   get_data,varM_s4+'_theta_kb_chaston',data=tmp
-   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
-   store_data,varM_s4+'_theta_kb_chaston',data=tmp
-   get_data,varM_s4+'_elliptict_chaston',data=tmp
-   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
-   store_data,varM_s4+'_elliptict_chaston',data=tmp
-   get_data,varM_s4+'_helict_chaston',data=tmp
-   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
-   store_data,varM_s4+'_helict_chaston',data=tmp
-
-
-   get_data,varE_s4+'_degpol_chaston',data=degp
-   goo = where(degp.y le minpol)
-   if goo[0] ne -1 then degp.y[goo] = !values.f_nan
-   store_data,varE_s4+'_degpol_chaston',data=degp
-   get_data,varE_s4+'_powspec_chaston',data=tmp
-   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
-   store_data,varE_s4+'_powspec_chaston',data=tmp
-   get_data,varE_s4+'_theta_kb_chaston',data=tmp
-   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
-   store_data,varE_s4+'_theta_kb_chaston',data=tmp
-   get_data,varE_s4+'_elliptict_chaston',data=tmp
-   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
-   store_data,varE_s4+'_elliptict_chaston',data=tmp
-   get_data,varE_s4+'_helict_chaston',data=tmp
-   if goo[0] ne -1 then tmp.y[goo] = !values.f_nan
-   store_data,varE_s4+'_helict_chaston',data=tmp
-
-
-
-
-   options,[varM_s4+'_powspec_chaston',$
-            varM_s4+'_degpol_chaston',$
-            varM_s4+'_theta_kb_chaston',$
-            varM_s4+'_elliptict_chaston',$
-            varM_s4+'_helict_chaston',$
-            varM_s4+'_pspec3_chaston'],'spec',1
-
-   options,[varE_s4+'_powspec_chaston',$
-            varE_s4+'_degpol_chaston',$
-            varE_s4+'_theta_kb_chaston',$
-            varE_s4+'_elliptict_chaston',$
-            varE_s4+'_helict_chaston',$
-            varE_s4+'_pspec3_chaston'],'spec',1
-
-
-
-
-   tplot,[varE_s4,$
-          varE_s4+'_powspec_chaston',$
-          varE_s4+'_degpol_chaston',$
-          varE_s4+'_theta_kb_chaston',$
-          varE_s4+'_elliptict_chaston',$
-          varE_s4+'_helict_chaston',$
-          varE_s4+'_pspec3_chaston']
-
-
-   tplot,[varM_s4,$
-          varM_s4+'_powspec_chaston',$
-          varM_s4+'_degpol_chaston',$
-          varM_s4+'_theta_kb_chaston',$
-          varM_s4+'_elliptict_chaston',$
-          varM_s4+'_helict_chaston',$
-          varM_s4+'_pspec3_chaston']
-
-
-                                ;remove unnecessary variables
-   store_data,['theta_kb','dtheta_kb','minvar_eigenvalues','emax2eint','eint2emin','emax_vec_minvar','eint_vec_minvar','emin_vec_minvar'],/delete
-
-   store_data,'*tmp*',/delete
-   undefine,burstb,burste,bursttimes,chastontimesb,chastontimese,degpolb,degpole,dt,dtmp
-   undefine,elliptictb,ellipticte,goo,helicitb,helicite,powspecb,powspece,pspec3b,pspec3e,sr
-   undefine,tb,te,tmp,vb,ve,vm,waveangleb,waveanglee
-
-
-   start_after_step += 1
-   tplot_save,'*',filename=fileroot+fn+'_chasten'
-   save,filename=fileroot+fn+'_chasten.idl'
-
-
-if ~nostop then stop
-
-endif
-
-
-
 
 ;-----------------------------------------------------
 ;PLOT CROSS-CORRELATIONS
@@ -1199,6 +1182,7 @@ for i=0,nchunks-1 do begin
 
    store_data,varE_s4+'_tmp',data={x:te,y:ve}
    store_data,varM_s4+'_tmp',data={x:tb,y:vb}
+   tinterpol_mxn,varM_s4+'_tmp',varE_s4+'_tmp',newname=varM_s4+'_tmp'
    store_data,rbspx+'_Mag_mgse_tmp',data={x:tm,y:vm}
 
    ;; get_data,varE+'_tmp',data=dtmp
@@ -1227,6 +1211,8 @@ for i=0,nchunks-1 do begin
    Time_rbsp=strmid(time_string(t0z),0,10)+'_'+strmid(time_string(t0z),11,2)+strmid(time_string(t0z),14,2)+$
              'UT'+'_to_'+strmid(time_string(t1),0,10)+'_'+strmid(time_string(t1),11,2)+strmid(time_string(t1),14,2)+'UT'
 
+
+
    freqplotrange = [0,4000]         ;Hz
 
 ;Plot the cross-phase and coherence in a .ps file
@@ -1246,27 +1232,31 @@ endfor
 
 store_data,'*tmp*',/delete
 
-stop
 
 ;--------------------------------------------------
 ;TEST RESULTS
 ;--------------------------------------------------
 
-ylim,[rbspx+'_pflux_spec_ppara_p',$
-rbspx+'_pflux_spec_ppara_n',$
-rbspx+'_pflux_spec_ppara_b',$
-rbspx+'_efw_mscb2_mgse_bp_FA_minvar_pspec3_chaston'],400,4000,1
 
+ylim,[rbspx+'_pflux_spec_ppara_plusBo',$
+      rbspx+'_pflux_spec_ppara_minusBo',$
+      rbspx+'_pflux_spec_ppara_binaryBo'],400,4000,1
+
+ylim,'*chaston*',400,4000,1
+
+ylim,rbspx+'_state_mlat_interp',-25,25
 !p.charsize = 1
 tplot,[rbspx+'_efw_eb'+bt+'_mgse_bp_FA_minvar',$
-rbspx+'_efw_mscb2_mgse_bp_FA_minvar_pspec3_chaston',$
-rbspx+'_efw_mscb'+bt+'_mgse_bp_FA_minvar_theta_kb_chaston',$
-rbspx+'_efw_mscb'+bt+'_mgse_bp_FA_minvar_theta_kb',$
-rbspx+'_pflux_nospinaxis_para',$
-rbspx+'_state_mlat_interp',$
-rbspx+'_pflux_spec_ppara_p',$
-rbspx+'_pflux_spec_ppara_n',$
-rbspx+'_pflux_spec_ppara_b']
+       rbspx+'_efw_mscb'+bt+'_mgse_bp_FA_minvar',$
+       rbspx+'_efw_mscb2_mgse_bp_FA_minvar_degpol_chaston',$
+       rbspx+'_efw_mscb2_mgse_bp_FA_minvar_pspec3_chaston',$
+       rbspx+'_efw_mscb'+bt+'_mgse_bp_FA_minvar_theta_kb_chaston',$
+       rbspx+'_efw_mscb'+bt+'_mgse_bp_FA_minvar_theta_kb',$
+       rbspx+'_pflux_nospinaxis_para',$
+       rbspx+'_state_mlat_interp',$
+       rbspx+'_pflux_spec_ppara_plusBo',$
+       rbspx+'_pflux_spec_ppara_minusBo',$
+       rbspx+'_pflux_spec_ppara_binaryBo']
 
 tlimit,t0z,t1z
 

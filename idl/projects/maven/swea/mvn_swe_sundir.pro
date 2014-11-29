@@ -16,8 +16,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2014-11-26 17:13:26 -0800 (Wed, 26 Nov 2014) $
+; $LastChangedRevision: 16317 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -35,8 +35,6 @@ pro mvn_swe_sundir, trange, dt=dt, pans=pans
   endif else tmin = min(time_double(trange), max=tmax)
   
   if not keyword_set(dt) then dt = 1D else dt = double(dt[0])
-
-  mvn_swe_spice_init, trange=[tmin,tmax]
   
   if (tmax lt t_mtx[2]) then begin
     print,"Using stowed SWEA frame."

@@ -32,17 +32,20 @@
 ;
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
+;       DIR:           If set, show some useful information with
+;                      respect to the observed vector magnetic field
+;                      in the MSO and LGEO(local geographic coordinate). 
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2014-11-26 12:02:05 -0800 (Wed, 26 Nov 2014) $
+; $LastChangedRevision: 16312 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
-                  label=label, smo=smo
+                  label=label, smo=smo, dir=dir
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -72,12 +75,12 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   Twin = !d.window
 
   if (size(Dopt,/type) ne 8) then swe_snap_layout, 0
-
+  IF keyword_set(dir) THEN wdy = 0.075*Nopt.ysize ELSE wdy = 0.
   window, /free, xsize=Popt.xsize, ysize=Popt.ysize, xpos=Popt.xpos, ypos=Popt.ypos
   Pwin = !d.window
 
   if (sflg) then begin
-    window, /free, xsize=Nopt.xsize, ysize=Nopt.ysize, xpos=Nopt.xpos, ypos=Nopt.ypos
+    window, /free, xsize=Nopt.xsize, ysize=Nopt.ysize + wdy, xpos=Nopt.xpos, ypos=Nopt.ypos
     Nwin = !d.window
   endif
   
@@ -108,6 +111,10 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     return
   endif
   
+  IF keyword_set(dir) THEN $
+     IF (aflg) THEN get_mvn_eph, a3.time, pos, verbose=-1 $
+     ELSE get_mvn_eph, a2.time, pos, verbose=-1 
+
   ok = 1
 
   while (ok) do begin
@@ -117,7 +124,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     wset, Pwin
 
     pad = mvn_swe_getpad(trange,archive=aflg,all=doall,/sum,units=units)
-
+    
     if (size(pad,/type) eq 8) then begin
       title = string(time_string(pad.time), pad.Baz*!radeg, pad.Bel*!radeg, $
                      format='(a19,5x,"Baz = ",f5.1,3x,"Bel = ",f5.1)')
@@ -158,7 +165,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
         plot_io,[-1.],[0.1],psym=3,xtitle='Pitch Angle (deg)',ytitle='Normalized', $
                 yrange=[0.1,10.],ystyle=1,xrange=[0,180],xstyle=1,xticks=6,xminor=3, $
-                title=string(energy,format='("Energy = ",f6.1," eV")'), charsize=1.4
+                title=string(energy,format='("Energy = ",f6.1," eV")'), charsize=1.4, $
+                pos=[0.140005, 0.124449 - (wdy/4000.), 0.958005, 0.937783 - (wdy/525.)]
 
         for j=0,15 do oplot,[ylo[j],yhi[j]],[zi[j],zi[j]],color=col[j]
         oplot,y[i,0:7],zi[0:7],linestyle=1,color=2
@@ -175,6 +183,83 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           for j=8,15 do xyouts,(ylo[j]+yhi[j])/2.,0.15,alab[j],color=6,align=0.5
           for j=8,15 do xyouts,(ylo[j]+yhi[j])/2.,0.13,dlab[j],color=6,align=0.5
         endif
+
+        IF keyword_set(dir) THEN BEGIN
+           et = time_ephemeris(pad.time)
+           objects = ['MARS', 'MAVEN_SPACECRAFT']
+           valid = spice_valid_times(et, object=objects, /no_ignore)
+           IF valid EQ 0B THEN BEGIN
+              dprint, 'SPICE/kernels are invalid.'
+              if (kflg) then begin
+                 wdelete, Pwin
+                 if (sflg) then wdelete, Nwin
+                 if (dflg) then wdelete, Cwin
+              endif
+              
+              wset, Twin
+              RETURN
+           ENDIF
+           undefine, et, objects
+
+           IF pad.time LT t_mtx[2] THEN fswe = 'MAVEN_SWEA_STOW' $
+           ELSE fswe = 'MAVEN_SWEA'
+           bmso = REFORM(spice_vector_rotate(pad.magf, pad.time, fswe, 'MAVEN_MSO', verbose=-1))
+           bmso /= SQRT(TOTAL(bmso*bmso))
+           
+           ;get_mvn_eph, pad.time, pos, /silent
+           idx = nn(pos.time, pad.time)
+           lat = pos[idx].lat
+           lon = pos[idx].elon
+           
+           mtx = DBLARR(3, 3)
+           mtx[0, 0] = -SIN(lon)
+           mtx[1, 0] =  COS(lon)
+           mtx[2, 0] =  0.d0
+           mtx[0, 1] = -COS(lon) * SIN(lat)
+           mtx[1, 1] = -SIN(lon) * SIN(lat)
+           mtx[2, 1] =  COS(lat)
+           mtx[0, 2] =  COS(lon) * COS(lat)
+           mtx[1, 2] =  SIN(lon) * COS(lat)
+           mtx[2, 2] =  SIN(lat)
+           bgeo = TRANSPOSE(mtx ## TRANSPOSE(bmso))
+
+           IF bmso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
+           IF bgeo[2] GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
+           IF -bmso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
+           IF -bgeo[2] GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
+           
+           bperp = [bmso[1], bmso[2], -bgeo[0], -bgeo[1]]
+           FOR j=0, 3 DO $
+              IF bperp[j] GT 0. THEN append_array, dircol, 6 ELSE append_array, dircol, 2
+           FOR j=0, 3 DO $
+              XYOUTS, 17.5+45.*j, 15., dirname[j], color=dircol[j], charsize=1.3, /data
+
+           undefine, dircol
+           PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.299061, 0.886156, 0.39075, 1.], $
+                 /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
+           OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
+           angle = ATAN(bmso[2], bmso[1])
+           IF bmso[0] GT 0. THEN dircol = 6 ELSE dircol = 2
+           ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
+           XYOUTS, 0., 0., 'MSO', /data, alignment=0.5
+           XYOUTS, 0., 0.5, 'Z', /data, alignment=0.5
+           XYOUTS, 0.6, 0., 'Y', /data, alignment=0.5
+
+           undefine, dircol
+           PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.708061, 0.886156, 0.799705, 1.], $
+                 /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
+           OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
+           angle = ATAN(-bgeo[1], -bgeo[0])
+           IF -bgeo[2] GT 0. THEN dircol = 6 ELSE dircol = 2
+           ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
+           XYOUTS, 0., 0., 'GEO', /data, alignment=0.5
+           XYOUTS, 0., 0.5, 'N', /data, alignment=0.5
+           XYOUTS, 0.6, 0., 'E', /data, alignment=0.5
+
+           undefine, bmso, bgeo, bperp, angle
+           undefine, idx, lat, lon, mtx
+           undefine, dirname, dircol
+        ENDIF  
 
         if (dflg) then begin
           ddd = mvn_swe_get3d(pad.time,archive=aflg,units=units)

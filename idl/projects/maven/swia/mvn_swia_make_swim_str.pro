@@ -6,7 +6,7 @@
 ;AUTHOR: 
 ;	Jasper Halekas
 ;CALLING SEQUENCE:
-;	MVN_SWIA_MAKE_SWIS_STR, Packets, Info, Swim_Str_Array
+;	MVN_SWIA_MAKE_SWIM_STR, Packets, Info, Swim_Str_Array
 ;INPUTS:
 ;	Packets: An array of structures containing individual APID85 packets
 ;	Info: An array of structures containing information needed to convert to physical units
@@ -14,8 +14,8 @@
 ;	Swim_Str_Array: An array of structures containing moments in real units
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-04-11 13:42:27 -0700 (Fri, 11 Apr 2014) $
-; $LastChangedRevision: 14811 $
+; $LastChangedDate: 2014-11-25 12:07:32 -0800 (Tue, 25 Nov 2014) $
+; $LastChangedRevision: 16301 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_swim_str.pro $
 ;
 ;-
@@ -28,10 +28,6 @@ INTCONST = 7.22457e-7
 MASS = 1.67022e-24
 
 met = packets.clock1*65536.d + packets.clock2 + packets.subsec/65536.d
-
-w = where(packets.swimode eq 0)
-
-;if w(0) ne -1 then met(w) = met(w) - 4.0 	Shift for fine distribution delay before FSW fix
 
 unixt = mvn_spc_met_to_unixtime(met)
 
@@ -81,6 +77,27 @@ winr = where(swim_str_array.time_unix ge info[swim_str_array.info_index].valid_t
 swim_str_array = swim_str_array[winr]
 momouts = momouts[winr,*]
 
+deltat = swim_str_array.time_unix-shift(swim_str_array.time_unix,1)
+wt0 = where(deltat gt -0.1 and deltat lt 0.1,nwt0)
+wwt0 = where(wt0 ge 2,nwt0)
+wt0 = wt0[wwt0]
+
+;fix packets that got flipped in time by sort
+
+if nwt0 gt 0 then begin
+	for i = 0,nwt0-1 do begin
+		if swim_str_array[wt0[i]-1].swi_mode ne swim_str_array[wt0[i]-2].swi_mode then begin
+			temp = swim_str_array[wt0[i]]
+			tempmom = momouts[wt0[i],*]
+			swim_str_array[wt0[i]] = swim_str_array[wt0[i]-1]
+			momouts[wt0[i],*] = momouts[wt0[i]-1,*]
+			swim_str_array[wt0[i]-1] = temp
+			momouts[wt0[i]-1,*] = tempmom
+			swim_str_array[wt0[i]].time_unix = swim_str_array[wt0[i]-1].time_unix + 1e-6
+		endif
+	endfor
+endif
+			
 
 mf_c = info[swim_str_array.info_index].mf_coarse
 sf_c = info[swim_str_array.info_index].sf_coarse

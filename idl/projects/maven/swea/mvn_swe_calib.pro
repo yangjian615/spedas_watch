@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-17 16:48:26 -0800 (Mon, 17 Nov 2014) $
-; $LastChangedRevision: 16204 $
+; $LastChangedDate: 2014-11-26 17:16:52 -0800 (Wed, 26 Nov 2014) $
+; $LastChangedRevision: 16323 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -62,6 +62,10 @@
 pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 
   @mvn_swe_com
+
+; Set the SWEA Ground Software Version
+
+    mvn_swe_version = 1
 
 ; Find the first valid LUT
 ;   chksum =   0B means SWEA has just powered on

@@ -19,8 +19,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-24 14:15:57 -0800 (Mon, 24 Nov 2014) $
-; $LastChangedRevision: 16291 $
+; $LastChangedDate: 2014-11-26 17:17:48 -0800 (Wed, 26 Nov 2014) $
+; $LastChangedRevision: 16324 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -28,8 +28,12 @@
 pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app
 
   if (size(trange,/type) eq 0) then begin
-    print,"You must specify a time range."
-    return
+    tplot_options, get=opt
+    trange = minmax(opt.trange_full)
+    if (max(trange) eq 0D) then begin
+      print,"You must load data or specify a time range."
+      return
+    endif
   endif
   tmin = min(time_double(trange), max=tmax)
   
@@ -38,7 +42,10 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app
   if keyword_set(app) then to_frame = 'MAVEN_APP' $
                       else to_frame = 'MAVEN_SPACECRAFT'
 
-  mvn_swe_spice_init, trange=[tmin,tmax]
+  mk = spice_test('*')
+  indx = where(mk ne '', count)
+  if (count eq 0) then mvn_swe_spice_init, trange=[tmin,tmax]
+
   maven_orbit_tplot, /loadonly, /current, eph=eph
 
 ; Spacecraft velocity in IAU_MARS frame

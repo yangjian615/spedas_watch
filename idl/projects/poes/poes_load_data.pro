@@ -33,8 +33,8 @@
 ;             /downloadonly: Download the file but don't read it  
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-11-14 10:13:31 -0800 (Fri, 14 Nov 2014) $
-; $LastChangedRevision: 16184 $
+; $LastChangedDate: 2014-11-26 11:02:39 -0800 (Wed, 26 Nov 2014) $
+; $LastChangedRevision: 16306 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_load_data.pro $
 ;-
 
@@ -44,7 +44,7 @@ pro poes_split_telescope_data, name, telescope_angles, tplotnames = tplotnames
     get_data, name, data=the_data, dlimits=the_dlimits
     if is_struct(the_data) && is_struct(the_dlimits) then begin
         ; modify the dlimits struct with metadata for the new tplot variables
-        str_element, the_dlimits, 'labels', ['30-80 keV', '80-240 keV', '240-800 keV', '2500-6900 keV'], /add_replace
+
         store_data, name+'_tel'+telescope_angles[0], data={x: the_data.X, y: reform(the_data.Y[*,0,*])}, dlimits=the_dlimits
         store_data, name+'_tel'+telescope_angles[1], data={x: the_data.X, y: reform(the_data.Y[*,1,*])}, dlimits=the_dlimits
     
@@ -67,53 +67,65 @@ pro poes_fix_metadata, tplotnames, prefix = prefix
             prefix + '_' + 'ted_ele_tel0_low_eflux': begin ; 0 deg telescope, low e- eflux
                 options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
-                options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '0 deg_50-1000 eV'
+                options, /def, tplot_name, 'colors', [2,4]
+                options, /def, tplot_name, 'lazy_ytitle', 0
+                options, /def, tplot_name, 'ytitle', 'Electron Integral!CEnergy Flux!C0deg telescope'
+                options, /def, tplot_name, 'labels', '50-1000 eV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_ele_tel30_low_eflux': begin ; 30 deg telescope, low e- eflux
                 options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
-                options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '30 deg_50-1000 eV'
+                options, /def, tplot_name, 'colors', [2,4]
+                options, /def, tplot_name, 'lazy_ytitle', 0
+                options, /def, tplot_name, 'ytitle', 'Electron Integral!CEnergy Flux!C30deg telescope'
+                options, /def, tplot_name, 'labels', '50-1000 eV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_ele_tel0_hi_eflux': begin ; 0 deg telescope, high e- eflux
                 options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
-                options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '0 deg_1-20 keV'
+                options, /def, tplot_name, 'colors', [2,4]
+                options, /def, tplot_name, 'lazy_ytitle', 0
+                options, /def, tplot_name, 'ytitle', 'Electron Integral!CEnergy Flux!C0deg telescope'
+                options, /def, tplot_name, 'labels', '1-20 keV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_ele_tel30_hi_eflux': begin ; 30 deg telescope, high e- eflux
                 options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
-                options, /def, tplot_name, 'ytitle', 'Electron_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '30 deg_1-20 keV'
+                options, /def, tplot_name, 'colors', [2,4]
+                options, /def, tplot_name, 'lazy_ytitle', 0
+                options, /def, tplot_name, 'ytitle', 'Electron Integral!CEnergy Flux!C30deg telescope'
+                options, /def, tplot_name, 'labels', '1-20 keV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_pro_tel0_low_eflux': begin ; 0 deg telescope, low p+ eflux
+                options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
-                options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '0 deg_50-1000 eV'
+                options, /def, tplot_name, 'ytitle', 'Proton Integral!CEnergy Flux!C0deg telescope'
+                options, /def, tplot_name, 'labels', '50-1000 eV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_pro_tel30_low_eflux': begin ; 30 deg telescope, low p+ eflux
+                options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
-                options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '30 deg_50-1000 eV'
+                options, /def, tplot_name, 'ytitle', 'Proton Integral!CEnergy Flux!C30deg telescope'
+                options, /def, tplot_name, 'labels', '50-1000 eV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_pro_tel0_hi_eflux': begin ; 0 deg telescope, high p+ eflux
+                options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
-                options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '0 deg_1-20 keV'
+                options, /def, tplot_name, 'ytitle', 'Proton Integral!CEnerg Flux!C0deg telescope'
+                options, /def, tplot_name, 'labels', '1-20 keV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_pro_tel30_hi_eflux': begin ; 30 deg telescope, high p+ eflux
+                options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
-                options, /def, tplot_name, 'ytitle', 'Proton_Integral_Energy_Flux'
-                options, /def, tplot_name, 'labels', '30 deg_1-20 keV'
+                options, /def, tplot_name, 'ytitle', 'Proton Integral!CEnergy Flux!C30deg telescope'
+                options, /def, tplot_name, 'labels', '1-20 keV'
                 options, /def, tplot_name, 'ysubtitle', '[mW/m!U2!N-str]'
             end
             prefix + '_' + 'ted_alpha_0_sat': begin ; pitch angle at 0 deg telescope, at the satellite
@@ -167,6 +179,33 @@ pro poes_fix_metadata, tplotnames, prefix = prefix
                 options, /def, tplot_name, 'ytitle', 'Omni-directional_Proton_Flux'
                 options, /def, tplot_name, 'labels', ['25 MeV', '50 MeV', '100 MeV']
                 options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-MeV]'
+            end
+            prefix + '_' + 'mep_ele_flux_tel0': begin
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'labels', ['40 keV', '130 keV', '287 keV', '612 keV']
+                options, /def, tplot_name, 'ytitle', 'MEPED!CElectron Flux!C0deg telescope'
+            end
+            prefix + '_' + 'mep_ele_flux_tel90': begin
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'labels', ['40 keV', '130 keV', '287 keV', '612 keV']
+                options, /def, tplot_name, 'ytitle', 'MEPED!CElectron Flux!C90deg telescope'
+            
+            end
+            prefix + '_' + 'mep_pro_flux_tel0': begin
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'labels', ['30-80 keV', '80-240 keV', '240-800 keV', '2500-6900 keV', '> 6900 keV']
+                options, /def, tplot_name, 'ytitle', 'MEPED!CProton Flux!C0deg telescope'
+            
+            end
+            prefix + '_' + 'mep_pro_flux_tel90': begin
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'labels', ['30-80 keV', '80-240 keV', '240-800 keV', '2500-6900 keV', '> 6900 keV']
+                options, /def, tplot_name, 'ytitle', 'MEPED!CProton Flux!C90deg telescope'
+            
             end
             prefix + '_' + 'meped_alpha_0_sat': begin ; pitch angles at the satellite, 0 deg detector
                 options, /def, tplot_name, 'ytitle', 'MEPED_pitch angle_satellite'
@@ -273,6 +312,17 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
         endelse
     endfor
     
+    ; load ephemeris data
+    if undefined(noephem) then begin
+        append_array, varformat, 'mag_lat_sat'
+        append_array, varformat, 'mag_lon_sat'
+        append_array, varformat, 'l_igrf'
+        append_array, varformat, 'mlt'
+    endif
+    
+    ; MEPED electron flux energies????
+    append_array, varformat, 'mep_*_energies'
+    
     for j = 0, n_elements(pathformat)-1 do begin
         relpathnames = file_dailynames(file_format=pathformat[j], trange=tr, /unique)
 
@@ -282,7 +332,7 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
         ; warning: using /get_support_data with cdf2tplot will cause cdf2tplot to ignore the varformat keyword
         poes_cdf2tplot, files, prefix = prefix_array[j]+'_', suffix = suffix, verbose = verbose, $
             tplotnames=tplotnames, varformat = varformat, /load_labels
-            
+        
         ; check for data types with data for multiple telescopes in a single tplot variable. 
         mep_telescopes = ['0', '90']
         mep_ele_flux = where(tplotnames eq prefix_array[j]+'_mep_ele_flux', ele_count)

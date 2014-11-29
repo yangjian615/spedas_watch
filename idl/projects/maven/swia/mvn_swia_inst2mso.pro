@@ -14,8 +14,8 @@
 ;	LOAD: if set, load (and unload) the spice kernels
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-05 18:09:10 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16142 $
+; $LastChangedDate: 2014-11-25 12:07:32 -0800 (Tue, 25 Nov 2014) $
+; $LastChangedRevision: 16301 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_inst2mso.pro $
 ;
 ;-
@@ -54,7 +54,7 @@ if keyword_set(load) then cspice_unload, kernels
 store_data,'crmat',data = {x:swim.time_unix,y:crmat}
 
 
-tvector_rotate,'crmat','mvn_swim_velocity',suffix = '_mso',/vector_skip
+tvector_rotate,'crmat','mvn_swim_velocity',suffix = '_mso',/vector_skip,/matrix_skip
 
 get_data,'mvn_swim_pressure',data = pr
 get_data,'mvn_swim_density',data = dens

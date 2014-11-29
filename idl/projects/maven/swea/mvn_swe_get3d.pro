@@ -22,8 +22,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-17 16:48:44 -0800 (Mon, 17 Nov 2014) $
-; $LastChangedRevision: 16205 $
+; $LastChangedDate: 2014-11-26 17:16:16 -0800 (Wed, 26 Nov 2014) $
+; $LastChangedRevision: 16321 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -155,7 +155,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
 ; Geometric factor.  When using V0, the geometric factor is a function of
 ; energy.  There is also variation in elevation.
 
-    egf = swe_gf[*,*,g]   ; energy-dependent term (V0)
+    egf = swe_gf[*,*,g]   ; energy-dependent term (when V0 is non-zero)
     dgf = swe_dgf[*,*,g]  ; elevation-dependent term
 
     for i=0,95 do ddd[n].gf[*,i] = egf[*,(i mod 16)] * dgf[*,(i/16)]

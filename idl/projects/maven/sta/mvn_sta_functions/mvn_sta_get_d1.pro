@@ -117,7 +117,9 @@ dat = 		{project_name:		all_dat.project_name,			$
 		eff: 			reform(all_dat.eff[eff_ind,*,*,*]),	$
 
 		geom_factor: 		all_dat.geom_factor, 			$
-;		dead: 			all_dat.dead,				$
+		dead1: 			all_dat.dead1,				$
+		dead2: 			all_dat.dead2,				$
+		dead3: 			all_dat.dead3,				$
 
 		nmass:			nmass,					$
 		mass: 			all_dat.mass, 				$
@@ -134,6 +136,7 @@ dat = 		{project_name:		all_dat.project_name,			$
 		pos_sc_mso:		reform(all_dat.pos_sc_mso[ind,*]),	$
 
 		bkg:	 		reform(all_dat.bkg[ind,*,*,*]),		$
+		dead:	 		reform(all_dat.dead[ind,*,*,*]),	$
 
 		data: 			reform(all_dat.data[ind,*,*,*])}
 

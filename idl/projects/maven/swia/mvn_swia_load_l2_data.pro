@@ -29,8 +29,8 @@
 ;	NO_SERVER: If set, will not go looking for files remotely
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-29 17:37:03 -0700 (Wed, 29 Oct 2014) $
-; $LastChangedRevision: 16084 $
+; $LastChangedDate: 2014-11-25 08:56:05 -0800 (Tue, 25 Nov 2014) $
+; $LastChangedRevision: 16299 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l2_data.pro $
 ;
 ;-
@@ -633,6 +633,14 @@ if keyword_set(tplot) then begin
 		store_data, 'mvn_swim_temperature', data = {x:ctime,y:transpose(swim[w].temperature), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!ctemperature!c[eV]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
 		store_data, 'mvn_swim_temperature_mso', data = {x:ctime,y:transpose(swim[w].temperature_mso), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!ctemperature!c[eV]'}, limits = {SPICE_FRAME: 'MAVEN_MSO'}
 
+		store_data, 'mvn_swim_quality_flag',data = {x:swim.time_unix+2.0,y:[[swim.quality_flag],[swim.quality_flag]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Qual'}
+
+		store_data, 'mvn_swim_decom_flag',data = {x:swim.time_unix+2.0,y:[[swim.decom_flag],[swim.decom_flag]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Decom'}
+
+		store_data, 'mvn_swim_atten_state',data = {x:swim.time_unix+2.0,y:[[swim.atten_state],[swim.atten_state]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,2],ytitle:'Atten'}
+
+		store_data, 'mvn_swim_swi_mode',data = {x:swim.time_unix+2.0,y:[[swim.swi_mode],[swim.swi_mode]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Mode'}
+
 	endif
 
 	if n_elements(swis) gt 1 then begin
@@ -645,6 +653,9 @@ if keyword_set(tplot) then begin
 		endif else begin
 			store_data,'mvn_swis_en_counts',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 		endelse
+
+		store_data, 'mvn_swis_decom_flag',data = {x:swis.time_unix+4.0*swis.num_accum/2,y:[[swis.decom_flag],[swis.decom_flag]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Decom'}
+
 	endif
 
 endif

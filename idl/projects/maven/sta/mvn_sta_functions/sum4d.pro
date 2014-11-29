@@ -24,6 +24,7 @@ endif
 sum = d1
 sum.data = sum.data+d2.data
 ;sum.delta_t =  d1.delta_t + d2.delta_t
+sum.delta_t =  d2.end_time - d1.time
 sum.integ_t =  d1.integ_t + d2.integ_t
 sum.end_time = d1.end_time > d2.end_time
 sum.time     = d1.time     < d2.time
@@ -50,6 +51,8 @@ value=0 & str_element,sum,'bkg',value
 	if n_elements(value) gt 1 then sum.bkg= (d1.bkg + d2.bkg)
 value=0 & str_element,sum,'bins_sc',value
 	if n_elements(value) gt 1 then sum.bins_sc= (d1.bins_sc and d2.bins_sc)
+value=0 & str_element,sum,'dead',value
+	if n_elements(value) gt 1 then sum.dead= (d1.integ_t*d1.dead^2 + d2.integ_t*d2.dead^2)/(d1.integ_t*d1.dead + d2.integ_t*d2.dead)
 
 ;print,'test'
 return, sum

@@ -19,8 +19,8 @@
 ;   Added directory keyword, jmm, 2104-11-14
 ; VERSION:
 ;   $LastChangedBy: jimm $
-;   $LastChangedDate: 2014-11-18 11:17:02 -0800 (Tue, 18 Nov 2014) $
-;   $LastChangedRevision: 16210 $
+;   $LastChangedDate: 2014-11-26 13:47:48 -0800 (Wed, 26 Nov 2014) $
+;   $LastChangedRevision: 16314 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_pad.pro $
 ;
 ;-
@@ -658,8 +658,17 @@ cdf_varput, fileid, 'num_dists', nrec
 
 cdf_close,fileid
 
-;Delete old files, jmm, 2014-11-14
-if (nfiles Gt 0) then for j = 0, nfiles-1 do file_delete, file_list[j]
-  
+; compression, and md5
+mvn_l2file_compress, file
+
+;Delete old files, jmm, 2014-11-14, include md5's, jmm, 2014-11-25
+if (nfiles Gt 0) then begin
+   for j = 0, nfiles-1 do begin
+      file_delete, file_list[j]
+      md5j = file_dirname(file_list[j])+'/'+$
+             file_basename(file_list[j], '.cdf')+'.md5'
+      if(keyword_set(file_search(md5j))) then file_delete, md5j
+   endfor
+endif
 
 end

@@ -21,8 +21,8 @@
 ;		(appropriate before ~11/25/2014)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-24 13:27:56 -0800 (Mon, 24 Nov 2014) $
-; $LastChangedRevision: 16290 $
+; $LastChangedDate: 2014-11-25 12:07:32 -0800 (Tue, 25 Nov 2014) $
+; $LastChangedRevision: 16301 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l0_data.pro $
 ;
 ;-
@@ -106,11 +106,11 @@ endif
 
 if keyword_set(oldcal) then begin
 	print,'Using Calibration Factors for 5 eV - 25 keV sweep (Valid before 11/20/2014)'
-	print,'If your table does match your time range, this program will crash'
+	print,'If your table does not match your time range, this program will crash'
 	mvn_swia_make_info_str, info_str
 endif else begin
 	print,'Using Calibration Factors for 25 eV - 25 keV sweep (Valid after 11/20/2014)'
-	print,'If your table does match your time range, this program will crash'
+	print,'If your table does not match your time range, this program will crash'
 	mvn_swia_make_info_str_2,info_str
 endelse
 

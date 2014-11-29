@@ -88,7 +88,7 @@ pro mvn_sta_ephemeris_load,frame=frame,verbose=verbose
      endif
   endfor
 
-  stop
+
   ;-------------------------------------------------------------------------
   ;Clear kernels
   cspice_kclear

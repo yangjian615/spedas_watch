@@ -46,7 +46,7 @@
 ;       TRANGE:        Only keep packets within this time range.
 ;
 ;       CDRIFT:        Correct for spacecraft clock drift using SPICE.
-;                      Default = 1 (yes).
+;                      Default = 0 (no).
 ;
 ;       MAXBYTES:      Maximum number of bytes to process.  Default is entire file.
 ;
@@ -57,8 +57,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 12:42:29 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16104 $
+; $LastChangedDate: 2014-11-26 17:15:30 -0800 (Wed, 26 Nov 2014) $
+; $LastChangedRevision: 16319 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -77,8 +77,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
     tflg = 1
   endif else tflg = 0
   
-  if (size(cdrift,/type) eq 0) then cdrift = 1
-  dflg = cdrift  ; correct for spacecraft clock drift
+  if keyword_set(cdrift) then dflg = 1 else dflg = 0
 
 ; Read in the telemetry file and store the packets in a byte array
 

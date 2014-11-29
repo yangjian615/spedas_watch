@@ -114,16 +114,18 @@ dat = 		{project_name:		all_dat.project_name,			$
 		domega: 		reform(all_dat.domega[swp_ind,*,*,*]),  $
 
 		gf: 			gf2,					$
-		eff: 			reform(all_dat.eff[eff_ind,*,*,*]),	 	$
+		eff: 			reform(all_dat.eff[eff_ind,*,*,*]),	$
 
 		geom_factor: 		all_dat.geom_factor, 			$
-;		dead: 			all_dat.dead,				$
+		dead1: 			all_dat.dead1,				$
+		dead2: 			all_dat.dead2,				$
+		dead3: 			all_dat.dead3,				$
 
 		nmass:			nmass,					$
 		mass: 			all_dat.mass, 				$
 		mass_arr: 		reform(all_dat.mass_arr[swp_ind,*,*,*]),$
-		tof_arr: 		reform(all_dat.tof_arr[mlut_ind,*,*,*]), 	$
-		twt_arr: 		reform(all_dat.twt_arr[mlut_ind,*,*,*]), 	$
+		tof_arr: 		reform(all_dat.tof_arr[mlut_ind,*,*,*]),$
+		twt_arr: 		reform(all_dat.twt_arr[mlut_ind,*,*,*]),$
 
 		charge: 		all_dat.charge, 			$
 		sc_pot: 		all_dat.sc_pot[ind], 			$
@@ -134,6 +136,7 @@ dat = 		{project_name:		all_dat.project_name,			$
 		pos_sc_mso:		reform(all_dat.pos_sc_mso[ind,*]),	$
 
 		bkg:	 		reform(all_dat.bkg[ind,*,*,*]),		$
+		dead:	 		reform(all_dat.dead[ind,*,*,*]),	$
 
 		data: 			reform(all_dat.data[ind,*,*,*])}
 

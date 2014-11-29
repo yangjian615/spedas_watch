@@ -9,12 +9,13 @@ if strupcase(units) eq strupcase(data.units_name) then return
 n_m = data.nmass
 n_e = data.nenergy						; number of energies
 nbins=data.nbins						; number of bins
-rate_corr = 1024/n_e/data.ndef
+;rate_corr = 1024/n_e/data.ndef					; not sure why this was here???????
+rate_corr = 1.							; eliminate this later
 energy = data.energy          					; in eV                (n_e,nbins,n_m)
 gf = data.geom_factor*data.gf*data.eff
 dt = data.integ_t
 mass = data.mass*data.mass_arr
-;dead = data.dead		; dead time, (sec) 0.5 usec for STATIC
+dead = data.dead						; dead time array usec for STATIC
 
 case strupcase(data.units_name) of 
 ;'COMPRESSED' :  scale = 1.d						
@@ -35,11 +36,7 @@ tmp=data.data
 tmp = scale * tmp
 
 ; take out dead time correction
-; ignore dead time for now
-if strupcase(data.units_name) ne 'COUNTS' and strupcase(data.units_name) ne 'RATE' then $
-	tmp = dt*tmp
-;	tmp = round(dt*tmp/(1.+tmp*dead/dt_arr))
-;	tmp = (dt*tmp/(1.+tmp*dead/dt_arr))
+if strupcase(data.units_name) ne 'COUNTS' and strupcase(data.units_name) ne 'RATE' then tmp = tmp/dead
 
 scale = 0
 case strupcase(units) of
@@ -57,25 +54,12 @@ else: begin
 endcase
 
 ; dead time correct data if not counts or rate
-; ignore dead time for now
-if strupcase(units) ne 'COUNTS' and strupcase(units) ne 'RATE' then begin
-	denom = 1.
-;	denom = 1.- dead/dt_arr*tmp/dt
-;	void = where(denom lt .1,count)
-;	if count gt 0 then begin
-;		dprint,dlevel=1,min(denom,ind)
-;		denom = denom>.1 
-;		dprint,dlevel=1,' Error: convert_peace_units dead time error.'
-;		dprint,dlevel=1,' Dead time correction limited to x10 for ',count,' bins'
-;		dprint,dlevel=1,' Time= ',time_string(data.time,/msec)
-;	endif
-	tmp2 = tmp/denom
-endif else tmp2 = tmp
+if strupcase(units) ne 'COUNTS' and strupcase(units) ne 'RATE' then tmp=tmp*dead
 
 ; scale to new units
 data.units_name = units
-if find_str_element(data,'ddata') ge 0 then data.ddata = scale * tmp2^.5
-data.data = scale * tmp2
+if find_str_element(data,'ddata') ge 0 then data.ddata = scale * tmp^.5
+data.data = scale * tmp
 
 return
 end

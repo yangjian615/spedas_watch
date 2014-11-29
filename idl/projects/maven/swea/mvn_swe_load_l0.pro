@@ -50,7 +50,7 @@
 ;                      LATEST days leading up to the current date.
 ;
 ;       CDRIFT:        Correct for spacecraft clock drift using SPICE.
-;                      Default = 1 (yes). - DISABLED FOR NOW.
+;                      Default = 1 (yes).
 ;
 ;       MAXBYTES:      Maximum number of bytes to process.  Default is all data
 ;                      within specified time range.
@@ -62,8 +62,8 @@
 ;       SUMPLOT:       Create a summary plot of the loaded data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2014-11-26 17:15:46 -0800 (Wed, 26 Nov 2014) $
+; $LastChangedRevision: 16320 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -73,21 +73,20 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
                              cdrift=cdrift, sumplot=sumplot, status=status
 
   @mvn_swe_com
-  
+
   if not keyword_set(maxbytes) then maxbytes = 0
   nodupe = 1
+  oneday = 86400D
   
   if keyword_set(status) then silent = 0 else silent = 1
   
   if keyword_set(latest) then begin
-    tmax = double(ceil(systime(/sec,/utc)/86400D))*86400D
-    tmin = tmax - (double(latest[0])*86400D)
+    tmax = double(ceil(systime(/sec,/utc)/oneday))*oneday
+    tmin = tmax - (double(latest[0])*oneday)
     trange = [tmin, tmax]
   endif
   
-  if (size(cdrift,/type) eq 0) then cdrift = 1
-  dflg = cdrift  ; correct for spacecraft clock drift
-  dflg = 0       ; turn off for now
+  if (size(cdrift, /type) eq 0) then dflg = 1 else dflg = keyword_set(cdrift)
 
 ; Get file names associated with trange or from one or more named
 ; file(s).  If you specify a time range and are working off-site, 
@@ -113,6 +112,27 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
   for j=0,(n-1) do print,"File not found: ",file[jndx[j]]  
   if (nfiles eq 0) then return
   file = file[indx]
+
+; If time range is undefined, get it from the file name(s)
+
+  if (size(trange,/type) eq 0) then begin
+    trange = [0D]
+    for i=0,(nfiles-1) do begin
+      fbase = file_basename(file[i])
+      yyyy = strmid(fbase,16,4,/reverse)
+      mm = strmid(fbase,12,2,/reverse)
+      dd = strmid(fbase,10,2,/reverse)
+      t0 = time_double(yyyy + '-' + mm + '-' + dd)
+      trange = [trange, t0, (t0 + oneday)]
+    endfor
+    trange = minmax(trange[1:*])
+  endif
+  
+  timespan, trange
+
+; Initialize SPICE
+
+  mvn_swe_spice_init, trange=trange
 
 ; Define telemetry conversion factors
 
@@ -180,10 +200,6 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
     swe_dt = 2D^(dindgen(6) + 1D)  ; sample interval (sec) for period=0,1,2,3,4,5
 
   endif
-
-; Initialize SPICE
-
-;  mvn_swe_spice_init, trange=trange, /silent
   
 ; Read in the telemetry file and store the packets in a byte array
 

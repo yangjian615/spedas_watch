@@ -15,8 +15,8 @@
 ;       Yuki Harada on 2014-10-10
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2014-11-17 10:52:38 -0800 (Mon, 17 Nov 2014) $
-; $LastChangedRevision: 16198 $
+; $LastChangedDate: 2014-11-26 11:31:35 -0800 (Wed, 26 Nov 2014) $
+; $LastChangedRevision: 16308 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_slice2d_snap.pro $
 ;-
 
@@ -37,7 +37,7 @@ Dwin = !d.window
 print, 'Use button 1 to select time; button 3 to quit.'
 
 wset,Twin
-tplot
+;tplot
 ctime,t,npoints=1,/silent,vname=vname
 
 ok = 1
@@ -55,11 +55,9 @@ while (ok) do begin
 
    endif
 
-   wset,0
+   wset,Twin
    ctime,t,npoints=1,/silent,vname=vname
    if (data_type(t) eq 5) then ok = 1 else ok = 0
 endwhile
-
-
 
 end

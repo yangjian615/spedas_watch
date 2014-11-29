@@ -132,13 +132,13 @@ function spd_ui_part_getspec_check_input, state, uname, namestring, $
   
   ;if number is valid check against min & max values
   if finite(value,/nan) then begin
-    msg = 'Invalid '+strlowcase(namestring)+' entered; value reset.'
-  endif else if size(/type,min) gt 0 && value lt min then begin
+    msg = 'Invalid '+strlowcase(namestring)+'.'
+  endif else if ~undefined(min) && value lt min then begin
     msg = namestring+' must be greater than or equal to ' + $
-                      strtrim(string(min),1) + '; value reset.'
-  endif else if size(/type,max) gt 0 && value gt max then begin
+                      strtrim(string(min),1) + '.'
+  endif else if ~undefined(max) && value gt max then begin
     msg = namestring+' must be less than or equal to ' + $
-                      strtrim(string(min),1) + '; value reset.'
+                      strtrim(string(max),1) + '.'
   endif else begin
     ;if we made it here then we're good to go
     return, 1
@@ -187,9 +187,11 @@ end
 ;    valid input and stores valid entries.
 ;  -If the input is invalid the widgets will be reset
 ;   
-pro spd_ui_part_getspec_set_values, state
+pro spd_ui_part_getspec_set_values, state, error=error
 
     compile_opt idl2, hidden
+
+  error= 1b
 
   tlb = state.tab_id
 
@@ -198,52 +200,42 @@ pro spd_ui_part_getspec_set_values, state
   a0 = spd_ui_part_getspec_check_input(state,'phi_min','Phi min',min=0,max=360,value=pmin)
   a1 = spd_ui_part_getspec_check_input(state,'phi_max','Phi max',min=0,max=360,value=pmax)
   if ~a0 || ~a1 then begin
-    spd_ui_part_getspec_reset_widget, state,['phi_min','phi_max']
-  endif else begin
-    spd_ui_part_getspec_set_value, state, ['phi_min','phi_max']
-  endelse
+    return
+  endif
 
 
   ;check start angle
   a3 = spd_ui_part_getspec_check_input(state,'start_angle','Start angle',value=sa)
-  if a3 then begin
-    spd_ui_part_getspec_set_value, state, 'start_angle'
-  endif else begin
-    spd_ui_part_getspec_reset_widget, state, 'start_angle'
-  endelse
+  if ~a3 then begin
+    return
+  endif
 
 
   ;check theta input
   a0 = spd_ui_part_getspec_check_input(state,'theta_min','Theta min',min=-90,max=90,value=tmin)
   a1 = spd_ui_part_getspec_check_input(state,'theta_max','Theta max',min=-90,max=90,value=tmax)
   if ~a0 || ~a1 || tmin ge tmax then begin
-    if a0 && a1 && tmin ge tmax then x=dialog_message('Theta minimum must be less than maximum; values reset.',/center)
-    spd_ui_part_getspec_reset_widget, state,['theta_min','theta_max']
-  endif else begin
-    spd_ui_part_getspec_set_value, state, ['theta_min','theta_max']
-  endelse
+    if a0 && a1 && tmin ge tmax then x=dialog_message('Theta minimum must be less than maximum.',/center)
+    return
+  endif
 
 
   ;check pitch angle input
   a0 = spd_ui_part_getspec_check_input(state,'pa_min','Pitch Angle min',min=0,max=180,value=pamin)
   a1 = spd_ui_part_getspec_check_input(state,'pa_max','Pitch Angle max',min=0,max=180,value=pamax)
   if ~a0 || ~a1 || pamin ge pamax then begin
-    if a0 && a1 && pamin ge pamax then x=dialog_message('Pitch angle minimum must be less than maximum; values reset.',/center)
-    spd_ui_part_getspec_reset_widget, state,['pa_min','pa_max']
-  endif else begin
-    spd_ui_part_getspec_set_value, state, ['pa_min','pa_max']
-  endelse
+    if a0 && a1 && pamin ge pamax then x=dialog_message('Pitch angle minimum must be less than maximum.',/center)
+    return
+  endif
 
 
   ;check gyrophase input
   a0 = spd_ui_part_getspec_check_input(state,'gyro_min','Gyrophase min',min=0,max=360,value=gvmin)
   a1 = spd_ui_part_getspec_check_input(state,'gyro_max','Gyrophase max',min=0,max=360,value=gvmax)
   if ~a0 || ~a1 || gvmin ge gvmax then begin
-    if a0 && a1 && gvmin ge gvmax then x=dialog_message('Gyrophase minimum must be less than maximum; values reset.',/center)
-    spd_ui_part_getspec_reset_widget, state,['gyro_min','gyro_max']
-  endif else begin
-    spd_ui_part_getspec_set_value, state, ['gyro_min','gyro_max']
-  endelse
+    if a0 && a1 && gvmin ge gvmax then x=dialog_message('Gyrophase minimum must be less than maximum.',/center)
+    return
+  endif
 
 
   ;check energy limit input if option is selected
@@ -252,27 +244,32 @@ pro spd_ui_part_getspec_set_values, state
     e0 = spd_ui_part_getspec_check_input(state,'energy_min','Energy min',min=0,value=emin)
     e1 = spd_ui_part_getspec_check_input(state,'energy_max','Energy max',min=0,value=emax)
     if ~e0 || ~e1 || emin ge emax then begin
-      if e0 && e1 && emin ge emax then x=dialog_message('Phi minimun must be less than maximum; values reset.',/center)
-      spd_ui_part_getspec_reset_widget, state,['energy_min','energy_max']
-    endif else begin
-      spd_ui_part_getspec_set_value, state, ['energy_min','energy_max']
-    endelse
+      if e0 && e1 && emin ge emax then x=dialog_message('Phi minimun must be less than maximum.',/center)
+      return
+    endif
   endif
 
 
   ;check regrid input
   r0 = spd_ui_part_getspec_check_input(state,'regrid_phi','Regrid dimension (long)',min=4)
   r1 = spd_ui_part_getspec_check_input(state,'regrid_theta','Regrid dimension (lat)',min=2)
-  if r0 then begin
-    spd_ui_part_getspec_set_value, state, 'regrid_phi'
-  endif else begin
-    spd_ui_part_getspec_reset_widget, state, 'regrid_phi'
-  endelse
-  if r1 then begin
-    spd_ui_part_getspec_set_value, state, 'regrid_theta'
-  endif else begin
-    spd_ui_part_getspec_reset_widget, state, 'regrid_theta'
-  endelse  
+  if ~r0 then begin
+    return
+  endif
+  if ~r1 then begin
+    return
+  endif  
+
+
+  ;if no errors then set all options and clear error flag
+  error = 0b
+  spd_ui_part_getspec_set_value, state, ['phi_min','phi_max', $
+                                         'start_angle', $
+                                         'theta_min','theta_max', $
+                                         'pa_min','pa_max', $
+                                         'gyro_min','gyro_max', $
+                                         'energy_min','energy_max', $
+                                         'regrid_phi', 'regrid_theta']
 
 
   ;set suffix
@@ -459,9 +456,9 @@ pro spd_ui_part_getspec_apply, state, error=error
 
 
   ;Check editable widget values and copy into appropriate variables
-  ;in the state structure.  Widgets with invalid entries will be reset
-  ;with the last applied value.
-  spd_ui_part_getspec_set_values, state
+  ;in the state structure if valid.
+  spd_ui_part_getspec_set_values, state, error=error
+  if keyword_set(error) then return
 
 
   ;get current tplot names so that extra varaibles can be cleaned later
@@ -823,8 +820,8 @@ end
 ; 
 ; 
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-08-18 16:32:47 -0700 (Mon, 18 Aug 2014) $
-;$LastChangedRevision: 15682 $
+;$LastChangedDate: 2014-11-25 18:56:53 -0800 (Tue, 25 Nov 2014) $
+;$LastChangedRevision: 16305 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_part_getspec_options.pro $
 ;-
 Pro spd_ui_part_getspec_options, tab_id, loadedData, historyWin, statusBar, $

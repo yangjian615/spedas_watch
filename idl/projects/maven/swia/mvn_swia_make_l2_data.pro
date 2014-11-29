@@ -20,8 +20,8 @@
 ;	OLDCAL: Use old calibration factors appropriate for original table
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-24 13:15:31 -0800 (Mon, 24 Nov 2014) $
-; $LastChangedRevision: 16288 $
+; $LastChangedDate: 2014-11-25 12:07:32 -0800 (Tue, 25 Nov 2014) $
+; $LastChangedRevision: 16301 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_l2_data.pro $
 ;
 ;-
@@ -45,9 +45,7 @@ if not keyword_set(type) then type = 'svy'
 
 if type eq 'arc' then archive = 1 else archive = 0
 
-;if type eq 'arc' then ftype = 'all' else ftype = 'svy'
-
-ftype = 'all'
+if type eq 'arc' then ftype = 'all' else ftype = 'svy'
 
 if not keyword_set(opath) then opath = '/disks/data/maven/data/sci/swi/l2/'
 if not keyword_set(l0_file_path) then l0_file_path = '/disks/data/maven/data/sci/pfp/l0/'
