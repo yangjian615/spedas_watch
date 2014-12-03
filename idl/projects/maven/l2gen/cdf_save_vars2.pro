@@ -35,8 +35,8 @@
 ;and if you are using Solaris you need to be in 32-bit mode NOT 64-bit
 ;(ie, idl -32)
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-08 12:48:22 -0700 (Wed, 08 Oct 2014) $
-; $LastChangedRevision: 15945 $
+; $LastChangedDate: 2014-12-01 19:48:20 -0800 (Mon, 01 Dec 2014) $
+; $LastChangedRevision: 16330 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/cdf_save_vars2.pro $
 ;-
 
@@ -84,6 +84,9 @@ function cdf_save_vars2, cdf_structure, new_cdf_name, set_compression=set_compre
   if index[0] ne -1 then ga[index]=strupcase(strmid(ga_names[index],0,2))+strlowcase(strmid(ga_names[index],2))
   index=where(ga eq 'Adid_ref')
   if index[0] ne -1 then ga[index]=strupcase(strmid(ga_names[index],0,4))+strlowcase(strmid(ga_names[index],4))
+;make names PDS compliant too
+  index = where(strmid(ga, 0, 4) eq 'Pds_')
+  if index[0] ne -1 then ga[index]=strupcase(strmid(ga_names[index],0,3))+strlowcase(strmid(ga_names[index],3))
   ga_names_istp_compliant=ga
 
 ;update logical_file_id (these checks are copied from
