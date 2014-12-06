@@ -27,7 +27,7 @@ Pro run_swe_l2gen
      message, /info, 'Lock file /tmp/SWEL2lock.txt Exists, Returning'
   Endif Else Begin
      test_file = '/tmp/SWEL2lock.txt'
-     file_touch, test_file[0]
+     spawn, 'touch '+test_file[0]
      mvn_call_swe_l2gen
      message, /info, 'Removing Lock file /tmp/SWEL2lock.txt'
      file_delete, test_file[0]

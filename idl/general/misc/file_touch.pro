@@ -29,8 +29,8 @@
 ;   may change. 
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-11-23 08:36:02 -0800 (Sun, 23 Nov 2014) $
-;$LastChangedRevision: 16273 $
+;$LastChangedDate: 2014-12-02 21:10:34 -0800 (Tue, 02 Dec 2014) $
+;$LastChangedRevision: 16338 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_touch.pro $
 ;-
 
@@ -118,7 +118,7 @@ endif else if !version.os_family eq 'Windows' then begin
    spawn,command ,/noshell,/stderr, /hide,output ,exit_status=status
 endif
 
-confirm_mtime =1
+;confirm_mtime =1
 if keyword_set(confirm_mtime) then begin   
    fi = file_info(file)  
    if fi.mtime ne long64(time) then begin

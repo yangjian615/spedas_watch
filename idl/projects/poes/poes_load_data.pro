@@ -5,6 +5,8 @@
 ;             trange:       time range of interest
 ;             datatype:     type of POES data to be loaded. Valid data types are:
 ;                    ---- Total Energy Detector (TED) ----
+;                      ted_ele_flux: TED differential electron flux, both telescopes, energies: 189 eV, 844 eV, 2595 eV, 7980 eV
+;                      ted_pro_flux: TED differential proton flux, both telescopes, energies: 189 eV, 844 eV, 2595 eV, 7980 eV
 ;                      ted_ele_eflux: TED electron integral energy flux, both telescopes, low (50-1000 eV) and high energy (1-20 keV)
 ;                      ted_pro_eflux: TED proton integral energy flux, both telescopes, low (50-1000 eV) and high energy (1-20 keV)
 ;                      ted_ele_eflux_atmo: TED electron atmospheric integral energy flux, low and high energies (50-1000 eV, 1-20 keV), at 120 km
@@ -33,18 +35,16 @@
 ;             /downloadonly: Download the file but don't read it  
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-11-26 11:02:39 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16306 $
+; $LastChangedDate: 2014-12-03 09:37:50 -0800 (Wed, 03 Dec 2014) $
+; $LastChangedRevision: 16345 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_load_data.pro $
 ;-
-
+ 
 ; split tplot variable containing data for two telescopes into 
 ; two tplot variables - one for each telescope
 pro poes_split_telescope_data, name, telescope_angles, tplotnames = tplotnames
     get_data, name, data=the_data, dlimits=the_dlimits
     if is_struct(the_data) && is_struct(the_dlimits) then begin
-        ; modify the dlimits struct with metadata for the new tplot variables
-
         store_data, name+'_tel'+telescope_angles[0], data={x: the_data.X, y: reform(the_data.Y[*,0,*])}, dlimits=the_dlimits
         store_data, name+'_tel'+telescope_angles[1], data={x: the_data.X, y: reform(the_data.Y[*,1,*])}, dlimits=the_dlimits
     
@@ -64,6 +64,35 @@ pro poes_fix_metadata, tplotnames, prefix = prefix
     for name_idx = 0, n_elements(tplotnames)-1 do begin
         tplot_name = tplotnames[name_idx]
         case tplot_name of
+            ; TED differential electron flux
+            prefix + '_' + 'ted_ele_flux_tel0': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8]
+                options, /def, tplot_name, 'ytitle', 'TED!CElectron Flux!C0deg telescope'
+                options, /def, tplot_name, 'labels', ['189 eV', '844 eV', '2595 eV', '7980 eV']
+            end
+            prefix + '_' + 'ted_ele_flux_tel30': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8]
+                options, /def, tplot_name, 'ytitle', 'TED!CElectron Flux!C30deg telescope'
+                options, /def, tplot_name, 'labels', ['189 eV', '844 eV', '2595 eV', '7980 eV']
+            end
+            prefix + '_' + 'ted_pro_flux_tel0': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8]
+                options, /def, tplot_name, 'ytitle', 'TED!CProton Flux!C0deg telescope'
+                options, /def, tplot_name, 'labels', ['189 eV', '844 eV', '2595 eV', '7980 eV']
+            end
+            prefix + '_' + 'ted_pro_flux_tel30': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8]
+                options, /def, tplot_name, 'ytitle', 'TED!CProton Flux!C30deg telescope'
+                options, /def, tplot_name, 'labels', ['189 eV', '844 eV', '2595 eV', '7980 eV']
+            end
             prefix + '_' + 'ted_ele_tel0_low_eflux': begin ; 0 deg telescope, low e- eflux
                 options, /def, tplot_name, 'labflag', 1
                 options, /def, tplot_name, 'ylog', 1
@@ -268,6 +297,11 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
     for j = 0, n_elements(datatype)-1 do begin
         if datatype[j] eq '*' then varformat = '*' else begin
             case datatype[j] of 
+                ; TED differential electron flux
+                'ted_ele_flux': append_array, varformat, 'ted_ele_flux'
+                ; TED differential proton flux
+                'ted_pro_flux': append_array, varformat, 'ted_pro_flux'
+                
                 ; TED electron integral energy flux
                 'ted_ele_eflux': append_array, varformat, 'ted_ele_*_eflux'
                 ; TED proton integral energy flux

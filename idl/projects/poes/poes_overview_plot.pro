@@ -6,17 +6,18 @@
 ;         Generates overview plots for POES data
 ;              
 ; Keywords:
-;         probe: 
-;         date: 
-;         duration:
+;         probe: POES probe to create an overview plot for (noaa18, noaa19, etc.)
+;         
+;         date: Start date for the overview plot
+;         duration: Duration of the overview plot
 ;         
 ; Notes:
 ;       
 ;       
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-11-14 10:13:54 -0800 (Fri, 14 Nov 2014) $
-; $LastChangedRevision: 16185 $
+; $LastChangedDate: 2014-12-03 08:47:59 -0800 (Wed, 03 Dec 2014) $
+; $LastChangedRevision: 16344 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_overview_plot.pro $
 ;-
 
@@ -35,30 +36,17 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration
     thm_init
     poes_init
     
-    if undefined(date) then date = '2013-03-17'
+    if undefined(date) then date = '2013-03-17/9:00:00'
     if undefined(probe_in) then probe_in = 'noaa19'
-    if undefined(duration) then duration = 1 ; days
+    if undefined(duration) then duration = 0.08333 ; days
 
     timespan, date, duration, /day
     
-    window_xsize = 750
-    window_ysize = 800
+    window_xsize = 850
+    window_ysize = 900
     
-    poes_load_data, probes = probe_in, datatype = ['ted_ele_eflux', 'ted_pro_eflux', 'mep_ele_flux', 'mep_pro_flux', 'mep_omni_flux']
+    poes_load_data, probes = probe_in
 
-    ; combine high/low energy efluxes so that we can plot different telescopes on different plots
-    ; ted_ele_tel0_*_eflux  
-    join_vec, tnames(probe_in+'_'+'ted_ele_tel?_*_eflux'), 'ted_ele_eflux_tel0'
-    
-    ; ted ele tel30 eflux
-    join_vec, tnames(probe_in+'_'+'ted_ele_tel??_*_eflux'), 'ted_ele_eflux_tel30'
-    
-    ; ted pro tel0 eflux
-    join_vec, tnames(probe_in+'_'+'ted_pro_tel?_*_eflux'), 'ted_pro_eflux_tel0'
-    
-    ; ted pro tel30 eflux
-    join_vec, tnames(probe_in+'_'+'ted_pro_tel??_*_eflux'), 'ted_pro_eflux_tel30'
-    
     
     ; setup the plot
     window, xsize=window_xsize, ysize=window_ysize
@@ -66,7 +54,41 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration
     loadct2,43
     !p.charsize=0.8
     
-    tplot, ['ted_ele_eflux_tel30', 'ted_ele_eflux_tel0', 'ted_pro_eflux_tel0', 'ted_pro_eflux_tel30', probe_in+'_mep_ele_flux_tel?', probe_in+'_mep_ele_flux_tel??', probe_in+'_mep_pro_flux_tel?', probe_in+'_mep_pro_flux_tel??', probe_in+'_mep_omni_flux']
-    stop
+    tplot_options, 'title', strupcase(probe_in)
+    
+    ; need to remove -1s from the TED electron/proton fluxes
+    ted_fluxes = probe_in+['_ted_ele_flux_tel0', '_ted_ele_flux_tel30', $
+    '_ted_pro_flux_tel0', '_ted_pro_flux_tel30']
 
+    ; we need to "fix" every TED flux tplot variable. By "fix", I mean:
+    ;   1) replace all -1s in the data with NaNs
+    ;   2) change the fillval in the metadata to NaN
+    ;   3) set the y-axis to plot as log by default
+
+    for ted_flux_idx = 0, n_elements(ted_fluxes)-1 do begin
+        get_data, ted_fluxes[ted_flux_idx], data=poes_data_to_fix, dlimits=poes_dlimits_to_fix
+        
+        poes_dlimits_to_fix.cdf.vatt.fillval = !values.F_NAN
+        str_element, poes_dlimits_to_fix, 'ylog', 1, /add_replace
+        poes_fixed_data = poes_data_to_fix
+        
+        ; change -1s to NaNs
+        for j = 0, n_elements(poes_data_to_fix.Y[0,*])-1 do begin
+            poes_fixed_data.Y[where(poes_data_to_fix.Y[*,j] eq -1),j] = !values.f_nan
+        endfor
+        
+        store_data, ted_fluxes[ted_flux_idx]+'_fixed', data=poes_fixed_data, dlimits=poes_dlimits_to_fix
+        tdeflag, ted_fluxes[ted_flux_idx]+'_fixed', 'linear', /overwrite
+    endfor
+    
+    tplot, probe_in+['_ted_ele_flux_tel0_fixed', '_ted_ele_flux_tel30_fixed', $
+    '_ted_pro_flux_tel0_fixed', '_ted_pro_flux_tel30_fixed', $
+    '_mep_ele_flux_tel?', '_mep_ele_flux_tel??', $
+    '_mep_pro_flux_tel?', '_mep_pro_flux_tel??']
+
+    ; add the ephem labels
+    options, /def, probe_in+'_mlt', 'ytitle', 'MLT'
+    options, /def, probe_in+'_mag_lat_sat', 'ytitle', 'Lat'
+    tplot, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat']
+    
 end

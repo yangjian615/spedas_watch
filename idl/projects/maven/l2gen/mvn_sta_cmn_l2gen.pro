@@ -125,8 +125,8 @@ End
 ; 1-nov-2014, jmm, PDS compliance
 ; 6-nov-2014, jmm, Corrects clock drift 
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-18 10:32:03 -0800 (Tue, 18 Nov 2014) $
-; $LastChangedRevision: 16209 $
+; $LastChangedDate: 2014-12-02 11:00:04 -0800 (Tue, 02 Dec 2014) $
+; $LastChangedRevision: 16335 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -747,6 +747,8 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 
 
   otp_struct.g_attributes.data_type = 'l2_'+ext+'>Level 2 data, APID: '+cmn_dat.apid+', '+strjoin(ext1_arr, ', ')
+
+	otp_struct.g_attributes.PDS_collection_id = ext
 
 ;save the file -- full database management
   mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression

@@ -24,9 +24,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-11-06 17:24:51 -0800 (Wed, 06 Nov 2013) $
-;$LastChangedRevision: 13501 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2014-12-02 18:33:29 -0800 (Tue, 02 Dec 2014) $
+;$LastChangedRevision: 16336 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_moments.pro $
 ;-
 
@@ -53,16 +53,6 @@ pro thm_pgs_moments, data, $
   ;set potential if available
   if ~undefined(sc_pot_data) then data.sc_pot = sc_pot_data[index]
 
-
-  ;
-  ; **** TODO:
-  ;      This code will run slower from having to re-calculate 
-  ;      bin weights for each time sample. This can be 
-  ;      remedied by storing the domega_weights and re-using 
-  ;      as long as phi, theta, dphi and dtheta do not change.
-  ;      (difference ~1.3-1.6 times longer) 
-  ; ****
-  ; 
   ;calculate moments (and errors)
   if keyword_set(get_error) then begin
     ;pass in scaling factor as keyword since moments_3d is a more general routine
