@@ -249,7 +249,7 @@ end
 ;pro mav_sep_crib
 
 
-if  ~keyword_set(recbase) then begin
+if 0 and ~keyword_set(recbase) then begin
     recorder,recbase,host='128.32.13.158',port=2025,exec_proc='gseos_cmnblk_bhandler',destination='~/RealTime/CMNBLK_YYYYMMDD_hhmmss.dat'
 ;    mav_apid_sep_handler,/reset
 ;    mav_apid_mag_handler,/reset
@@ -264,7 +264,7 @@ endif
 
 ;if size(/type,realtime) eq 0 then realtime=1
 
-if 1 then begin
+if 0 then begin
 pathname=0
 ;pathname = 'maven/sep/prelaunch_tests/EM2/20120131_222340_preamp_flt_g1/gseos_common_msg.dat'
 ;pathname = 'maven/sep/prelaunch_tests/EM2/20120131_231216_preamp_flt_g2/gseos_common_msg.dat'
@@ -378,11 +378,9 @@ endif
 
 ;pathname=0
 
-printdat,pathname
+;printdat,pathname
 ; file = dialog_pickfile(/multiple)
 
-
-end
 
 
 
@@ -444,8 +442,14 @@ q_mag2_to_MSC =spice_body_att('maven_mag2','maven_spacecraft',t,/quat)
 ;spice_vector_rotate,
 
 spice_vector_rotate_tplot,'mvn_mag?_svy_BRAW',def_frame,verbose=3,trange=tr
-
-
 endif
+
+
+
+timespan,'14 11 10',15
+
+mvn_sep_load,/ancil
+
+end
 
 

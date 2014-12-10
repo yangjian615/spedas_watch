@@ -18,6 +18,7 @@
 function spice_kernel_info,type=type,verbose=verbose,use_cache=use_cache
 common spice_kernel_info_com, stats,kernels,c,d
 
+if spice_test() eq 0 then return,0
 if keyword_set(use_cache) && keyword_set(stats) then return,stats
 stats=0
 dlevel=2

@@ -24,9 +24,9 @@
 ;   If you see any useful commands missing from these cribs, please let us know.
 ;   these cribs can help double as documentation for tplot.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-12-16 14:43:09 -0800 (Mon, 16 Dec 2013) $
-; $LastChangedRevision: 13679 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2014-12-08 17:28:11 -0800 (Mon, 08 Dec 2014) $
+; $LastChangedRevision: 16413 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_tplot.pro $
 ;-
 
@@ -95,6 +95,13 @@ tplot,[3,14]
 print,"Use 'tplot,[number,number,...]' to put multiple plots in the same window."
 print,'Type ".c" to continue'
 stop
+
+;compount variables will graph their constituents on a single plot
+store_data, 'compound_var', data = 'sta_SWEA_mom_avgtemp sta_SWEA_mom_t3'
+tplot, 'compound_var'
+
+print, 'Use "store_data, ''new_name'', data = ''var1 var2 var3...''" to create a compound variable'
+print, 'Type ".c" to continue'
 
 ;---------------------------------------------------------------------------------------------------
 ; Plot Variables Using "Globbing"

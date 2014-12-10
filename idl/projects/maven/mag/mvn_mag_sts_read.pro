@@ -1,15 +1,15 @@
 ;+
-; PROCEDURE:
-; MAG_STS_TO_CDF
+; Function:
+; MVN_MAG_STS_READ
 ;
 ; PURPOSE:
-; Convert magnetometer .sts to .cdf.
+; Convert magnetometer .sts to array of structures
 ;
 ; AUTHOR:
-; Roberto Livi (rlilvi@ssl.Berkeley.edu)
+; Roberto Livi (rlilvi@ssl.Berkeley.edu) and Davin Larson
 ;
 ; CALLING SEQUENCE:
-; MAG_STS_TO_CDF,FILENAME=FILENAME
+; data = MVN_MAG_STS_READ(filename,header=header)
 ;
 ; KEYWORDS:
 ; FILENAME: String containing .sts filename to be loaded
@@ -18,9 +18,8 @@
 ;      Uses append_array.pro
 ;
 ; EXAMPLE:
-;        IDL> dir='/directory-to-mag-files/'
-;        IDL> file='mvn_mag_l2_2014d106pl_20140416_v00_r00.sts'
-;        IDL> mag_sts_to_cdf, dir+file
+;        IDL> data_structure = mvn_mag_sts_read( filename, header = header)  
+;        
 ;
 ; HISTORY:
 ;
@@ -282,7 +281,7 @@ function mvn_mag_sts_read, filename, header_info = header_info
     add_len=add_len+temp1+len
   endfor
 
-free_lun,file_unit
+  free_lun,file_unit
 
 
   ;-----------------------------------
@@ -334,129 +333,70 @@ free_lun,file_unit
   time_unix.month = month
   time_unix.date = date
   time_unix = time_double(time_unix)
-  
+
   data_str0 = {time:0d, vec:[0.,0.,0.],range:0.}
   data_str = replicate(data_str0,nvals)
-  
+
   data_str.time = time_unix
   data_str.vec[0] = data_asc.x
   data_str.vec[1] = data_asc.y
   data_str.vec[2] = data_asc.z
   data_str.range =  data_asc.range
 
-if 1 then begin
+  if 1 then begin
 
-  ;-----------------------------------
-  ;Find frame from filename
-  sts_pos=strpos(file,'.sts')
-  tn=['pl','ss','pc']
-  spice_frames= ['MAVEN_SPACECRAFT','ss-?','pc-?']
-  temp=[strpos(strmid(file,0,sts_pos[0]),tn[0]),$
-    strpos(strmid(file,0,sts_pos[0]),tn[1]),$
-    strpos(strmid(file,0,sts_pos[0]),tn[2])]
-  pp=where(temp ne -1,cc)
-  if cc eq 0 or cc gt 1 then begin
-    print, 'ERROR: No frame designation '+$
-      '(pl,ss,pc) identified'
-    return,0
+    ;-----------------------------------
+    ;Find frame from filename
+    sts_pos=strpos(file,'.sts')
+    tn=['pl','ss','pc']
+    spice_frames= ['MAVEN_SPACECRAFT','ss-?','pc-?']
+    temp=[strpos(strmid(file,0,sts_pos[0]),tn[0]),$
+      strpos(strmid(file,0,sts_pos[0]),tn[1]),$
+      strpos(strmid(file,0,sts_pos[0]),tn[2])]
+    pp=where(temp ne -1,cc)
+    if cc eq 0 or cc gt 1 then begin
+      print, 'ERROR: No frame designation '+$
+        '(pl,ss,pc) identified'
+      return,0
+    endif
+    frame=tn[pp[0]]
+    spice_frame = spice_frames[pp[0]]
+    ;  str_element, data_asc, 'frame', frame, /add
+
+
+    ;-----------------------------------
+    ;Create structures and arrays
+    if 0 then begin
+      for i=0, nvec-1 do begin
+        cmd=''
+        temp1=strsplit(vec_info[i].var_name,' ',/extract)
+        temp2=strsplit(vec_info[i].var_type,' ',/extract)
+        nn=n_elements(temp1)
+        for ii=0, nn-1 do append_array,cmd,temp1[ii]+':data_asc.'+temp1[ii]
+        tt1=execute(vec_info[i].name+'={'+strjoin(cmd,',')+'}')
+        vec=strlowcase(vec_info[i].name)
+        tt2=execute("str_element, data, '"+vec+"',"+vec+",/add")
+      endfor
+      str_element, data, 'time_unix',/add
+    endif
+    data=0
+    str_element, data, 'Creation_time',time_string(systime(1)), /add
+    str_element, data, 'sts_file', filename, /add
+    str_element, data, 'sts_info', file_hash(filename,/add), /add
+    str_element, data, 'spice_frame',spice_frame, /add
+    str_element, data, 'frame', frame, /add
+    str_element, data, 'header_full', obj_str, /add
+    str_element, data, 'header_info', header_struc, /add
+    ;  str_element, data, 'scalar_info', sca_info, /add
+    ;  str_element, data, 'vector_info', vec_info, /add
+    ;  str_element, data, 'spice_kernels', kernel_files, /add
+    str_element, data, 'spice_list', kernel_list,/add
   endif
-  frame=tn[pp[0]]
-  spice_frame = spice_frames[pp[0]]
-;  str_element, data_asc, 'frame', frame, /add
 
-
-  ;-----------------------------------
-  ;Create structures and arrays
-if 0 then begin
-  for i=0, nvec-1 do begin
-    cmd=''
-    temp1=strsplit(vec_info[i].var_name,' ',/extract)
-    temp2=strsplit(vec_info[i].var_type,' ',/extract)
-    nn=n_elements(temp1)
-    for ii=0, nn-1 do append_array,cmd,temp1[ii]+':data_asc.'+temp1[ii]
-    tt1=execute(vec_info[i].name+'={'+strjoin(cmd,',')+'}')
-    vec=strlowcase(vec_info[i].name)
-    tt2=execute("str_element, data, '"+vec+"',"+vec+",/add")
-  endfor  
-  str_element, data, 'time_unix',/add
-endif
-  data=0
-  str_element, data, 'Creation_time',time_string(systime(1)), /add 
-  str_element, data, 'sts_file', filename, /add
-  str_element, data, 'sts_info', file_hash(filename,/add), /add
-  str_element, data, 'spice_frame',spice_frame, /add
-  str_element, data, 'frame', frame, /add
-  str_element, data, 'header_full', obj_str, /add
-  str_element, data, 'header_info', header_struc, /add
-;  str_element, data, 'scalar_info', sca_info, /add
-;  str_element, data, 'vector_info', vec_info, /add
-;  str_element, data, 'spice_kernels', kernel_files, /add
-  str_element, data, 'spice_list', kernel_list,/add
-endif
-
-header_info = data
-return,data_str
-
-
+  header_info = data
+  return,data_str
 
 end
 
-
-
-
-
-
-pro mvn_mag_gen_l1,trange=trange0,load=load,summary=summary,init=init,timestamp=timestamp
-
-if keyword_set(init) then begin
-  trange0 = [time_double('2013-12-5'), systime(1) ]
-  if init lt 0 then trange0 = [time_double('2014-9-22'), systime(1) ]
-endif else trange0 = timerange(trange0)
-
-;filename example:  http://sprg.ssl.berkeley.edu/data/maven/data/sci/mag/l1/2014/10/mvn_mag_ql_2014d290pl_20141017_v00_r01.sts
-
-STS_fileformat =  'maven/data/sci/mag/l1/YYYY/MM/mvn_mag_ql_YYYYdDOYpl_YYYYMMDD_v??_r??.sts' 
-sav_fileformat =  'maven/data/sci/mag/l1a/YYYY/MM/sav/$RES/mvn_mag_l1_pl_YYYYMMDD_$RES.sav'
-
-L1fmt = str_sub(sav_fileformat, '$RES', 'full')
-
-res = 86400L
-trange = res* double(round( (timerange((trange0+ [ 0,res-1]) /res)) ))         ; round to days
-nd = round( (trange[1]-trange[0]) /res) 
-
-if n_elements(load) eq 0 then load =1
-
-for i=0L,nd-1 do begin
-  tr = trange[0] + [i,i+1] * res
-  prereq_files=''
-
-  mag_l1_files = mvn_pfp_file_retrieve(STS_fileformat,trange=tr,/daily_names)
-  mag_l1_file = mag_l1_files[0]
-  
-  if file_test(mag_l1_file,/regular) eq 0 then continue
-
-  append_array,prereq_files,mag_l1_file
-
-  L1a_filename = mvn_pfp_file_retrieve(L1fmt,/daily,trange=tr[0],source=source,verbose=verbose,create_dir=1)
-
-  prereq_info = file_info(prereq_files)
-  prereq_timestamp = max([prereq_info.mtime, prereq_info.ctime])
-  
-  target_info = file_info(l1a_filename)
-  target_timestamp =  target_info.mtime 
-
-  if prereq_timestamp lt target_timestamp then continue    ; skip if L1 does not need to be regenerated
-  dprint,dlevel=1,'Generating L1 file: '+L1a_filename
-  timestamp= systime(1)    ; trigger regeneration of long term plots
-  data = mvn_mag_sts_read(mag_l1_file,header=header)
-  
-  dependents = file_hash(mag_l1_file,/add_mtime)
-  
-;  prereq_info = file_hash(prereq_files,/add_mtime)
-  save,file=l1a_filename,data,dependents,header,description='Preliminary MAG Data - not to be used for science purposes. Read header for more info'
-
-endfor
-  
-end
 
 

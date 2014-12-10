@@ -1,4 +1,4 @@
-pro thm_convert_esa_units, data, units, scale=scale, fractional_counts=fractional_counts
+pro thm_convert_esa_units, data, units, scale=scale, fractional_counts=fractional_counts, zero_dead_time = zero_dead_time, _extra=_extra
 
 ;so scale gets passed back even if units = data.units_name
 scale = 1.d
@@ -16,7 +16,8 @@ gf = data.geom_factor*data.gf*data.eff
 dt = data.integ_t
 dt_arr=data.dt_arr		; #dt*#anodes per bin for rate and dead time corrections
 mass = data.mass
-dead = data.dead		; dead time, (sec) A121
+If(keyword_set(zero_dead_time)) Then dead = 0.0 $
+Else dead = data.dead		; dead time, (sec) A121
 
 case strupcase(data.units_name) of 
 'COMPRESSED' :  scale = 1.d						
@@ -77,7 +78,8 @@ if strupcase(units) ne 'COUNTS' and strupcase(units) ne 'RATE' and strupcase(uni
 	tmp2 = tmp/denom
 endif else tmp2 = tmp
 
-tmp2=tmp
+;Why is this here?, 2014-12-05, jmm
+;tmp2=tmp
 
 ; scale to new units
 data.units_name = units

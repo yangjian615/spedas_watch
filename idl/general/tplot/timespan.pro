@@ -50,12 +50,12 @@ endif else begin
   endif else deltat = 86400.
   tr = minmax([start_time,start_time+deltat])
 endelse
-dprint,dlevel=2,'Time range set from ',time_string(tr(0)),' to ',time_string(tr(1))
+dprint,dlevel=2,'Time range set from ',time_string(tr[0]),' to ',time_string(tr[1])
 str_element,tplot_vars,'options.trange_full',tr,/add_replace
 str_element,tplot_vars,'settings.trange_cur',tr,/add_replace
 str_element,tplot_vars,'options.trange',tr,/add_replace
-str = time_string(tr(0))
-refdate = strmid(str(0),0,strpos(str(0),'/'))
+str = time_string(tr[0])
+refdate = strmid(str[0],0,strpos(str[0],'/'))
 str_element,tplot_vars,'options.refdate',refdate,/add_replace
 
 return

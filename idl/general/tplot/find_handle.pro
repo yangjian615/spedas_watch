@@ -34,7 +34,7 @@ endif
 if dt ge 1 and dt le 5 then begin
   index = round(name)
   if index gt 0 and index lt n_elements(data_quants) then $
-     name = data_quants(index).name $
+     name = data_quants[index].name $
   else index = 0
   return,index
 endif

@@ -80,7 +80,7 @@ endif else begin
         else  $
            store_data,name,limit = limit
     endfor
-    if n eq 0 then dprint,'No TPLOT names found that match: '+string(/print,struct)
+    if n eq 0 then dprint,dlevel=2,verbose=verbose,'No TPLOT names found that match: '+string(/print,struct)
 endelse
 return
 end

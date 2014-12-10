@@ -4,11 +4,12 @@
 ;   dir must be a scalar.
 ;D. Larson, April, 2008
 ;
-pro file_mkdir2,dir,_extra=ex,mode=mode,writeable=writeable $
+pro file_mkdir2,dir,mode=mode,dir_mode=dir_mode,writeable=writeable $
     ,dlevel=dlevel,verbose=verbose
 
 fi = file_info(dir)
 writeable = fi.write
+if keyword_set(dir_mode) then mode=dir_mode
 if fi.directory then  return
 if (~fi.directory and fi.exists) then begin ;if it is an existing file, return
   dprint, 'File exists but it is not a directory: ',  dir, dlevel=dlevel,verbose=verbose

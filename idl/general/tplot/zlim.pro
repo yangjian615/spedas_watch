@@ -28,7 +28,7 @@ if n_params() eq 1 then begin
 endif
 if n_elements(max) eq 0 then range = [0.,0.] else range = float([min,max])
 options,lim,'zrange',range,default=default
-if range(0) eq range(1) then style=0 else style=1
+if range[0] eq range[1] then style=0 else style=1
 options,lim,'zstyle',style,default=default
 if n_elements(log) ne 0 then options,lim,'zlog',log,default=default
 return

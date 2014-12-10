@@ -30,9 +30,10 @@ w = -1
 val = !values.f_nan
 if not keyword_set(t) then return,val
 if size(/type,d) ne 8 then return,val
-if n_elements(t) eq 2 then w = where(d.x ge t[0] and d.x lt t[1],c)
-if n_elements(t) eq 1 then begin
-    dt = d.x-t[0]
+td = time_double(t)
+if n_elements(td) eq 2 then w = where(d.x ge td[0] and d.x lt td[1],c)
+if n_elements(td) eq 1 then begin
+    dt = d.x-td[0]
     w = where(finite(dt) eq 0,nw)
     if nw ne 0 then dt[w] = 1e13
     dummy = min(abs(dt),w)

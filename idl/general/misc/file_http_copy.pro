@@ -127,8 +127,8 @@
  ;   Sep 2009    - Fixed user-agent
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2014-11-23 08:48:32 -0800 (Sun, 23 Nov 2014) $
- ; $LastChangedRevision: 16277 $
+ ; $LastChangedDate: 2014-12-06 11:08:02 -0800 (Sat, 06 Dec 2014) $
+ ; $LastChangedRevision: 16363 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -504,7 +504,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 16277 2014-11-23 16:48:32Z davin-mac $'
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 16363 2014-12-06 19:08:02Z davin-mac $'
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
@@ -876,7 +876,7 @@ end
              if keyword_set(archive_ext) || keyword_set(archive_dir) then begin
                  file_archive,localname,archive_ext=archive_ext,archive_dir=archive_dir,verbose=verbose,dlevel=2
              endif else begin
-                dprint,'Deleting old file: ',localname,dlevel=2,verbose=verbose
+                dprint,'Deleting old file: '+localname,dlevel=2,verbose=verbose
                 file_delete,localname,/allow_nonexistent
              endelse
          endif
@@ -892,7 +892,7 @@ end
              if arg_present(links2) then extract_html_links_regex,text,links2 ,/relative, /normal,no_parent=url
              dprint,dwait=10,dlevel=1,verbose=verbose,'Downloading "',localname,'"  Please wait ', lines++
            endwhile
-           dprint,dlevel=2,verbose=verbose,'Downloaded ',strtrim(lines,2),' lines in '+string(systime(1)-ts,format='(f0.2)'),' seconds. File:'+localname
+           dprint,dlevel=2,verbose=verbose,'Downloaded '+strtrim(lines,2)+' lines in '+string(systime(1)-ts,format='(f0.2)')+' seconds. File:'+localname
           ; if n_elements(links2) gt 1 then links2 = links2[1:*]   ; get rid of first ''
          endif else begin                                                      ; download Non-text (binary) files
            maxb = 2l^20   ; 1 Megabyte default buffer size
@@ -911,7 +911,7 @@ end
              if (dt gt 10.) and (nb lt url_info.size) then begin   ; Wait 10 seconds between updates.
                rate = b/mb/dt                             ; This will only display if the filesize (url_info.size) is greater than MAXB
                eta = (url_info.size-nb)/mb/rate +t1 - tstart
-               messstr = string(format='("  ",f5.1," %  (",f0.0,"/",f0.0," secs)  @ ",f0.2," MB/s  File: ",a)', percent, t1-tstart,eta, rate,file_basename(localname) ,/print)
+               messstr = string(format='("  ",f5.1," %  (",f0.1,"/",f0.1," secs)  @ ",f0.2," MB/s  File: ",a)', percent, t1-tstart,eta, rate,file_basename(localname) ,/print)
                t0 = t1
                b =0l
                dprint,dlevel=2,verbose=verbose,messstr    &  wait,.01
@@ -943,13 +943,16 @@ end
          
          if 0 then begin
            file_error2:
-           dprint,dlevel=0,verbose=verbose,'Error downloading file: "',url,'"'
+           dprint,dlevel=0,verbose=verbose,'Error downloading file: "'+url+'"'
            error = !error_state.msg
            dprint,dlevel=0,verbose=verbose,error
            if obj_valid(progobj)  then begin
              progobj->update,0.,text=error
            endif
-           if keyword_set(wunit) then free_lun, wunit
+           if keyword_set(wunit) then begin
+              free_lun, wunit
+              file_move,localname,localname+'.error'
+           endif
          ;                 dprint,dlevel=0,verbose=verbose,'Deleting: "' + lcl.name +'"'
          ;                 file_delete,lcl.name     ; This is not desirable!!!
          endif

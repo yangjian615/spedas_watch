@@ -30,14 +30,14 @@ d = day - (y*365 + y/4 - y/100 + y/400 - y/4000)
 
 w = where(d ge 365,c)                    ;make corrections
 if(c ne 0) then begin 
-   y(w) = y(w) +1
-   d(w) = day(w) - (y(w)*365 + y(w)/4 - y(w)/100 + y(w)/400 - y(w)/4000)
+   y[w] = y[w] +1
+   d[w] = day[w] - (y[w]*365 + y[w]/4 - y[w]/100 + y[w]/400 - y[w]/4000)
 endif
 
 w = where(d lt 0,c)                     ;more corrections
 if(c ne 0) then begin 
-   y(w) = y(w) -1 
-   d(w) = day(w) - (y(w)*365 + y(w)/4 - y(w)/100 + y(w)/400 - y(w)/4000)
+   y[w] = y[w] -1 
+   d[w] = day[w] - (y[w]*365 + y[w]/4 - y[w]/100 + y[w]/400 - y[w]/4000)
 endif
 
 y = y+1

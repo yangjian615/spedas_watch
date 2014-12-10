@@ -1,7 +1,7 @@
 
 
 
-pro mvn_sep_gen_plots,trange=trange0,load=load,summary=summary,plotformat=plotformat,init=init,timestamp=timestamp
+pro mvn_sep_gen_plots,trange=trange0,load=load,summary=summary,plotformat=plotformat,init=init,timestamp=timestamp,verbose=verbose
 
 if keyword_set(init) then begin
   tminmax = [time_double('2013-12-5'), systime(1) ]
@@ -50,10 +50,10 @@ for i=0L,nd-1 do begin
   if prereq_timestamp lt target_timestamp then continue    ; skip if L1 does not need to be regenerated
   dprint,dlevel=1,'Generating L1 file: '+L1_filename
   timestamp= systime(1)    ; trigger regeneration of long term plots
-  mvn_sep_load,files = l0_files
+  mvn_sep_load,/l0,files = l0_files
   
   prereq_info = file_hash(prereq_files,/add_mtime)
-  mvn_sep_var_save,l1_filename,prereq_info=prereq_info
+  mvn_sep_var_save,l1_filename,prereq_info=prereq_info,description=description
 
 ;  ndays = round( (tr[1]-tr[0])/res )
   pf = str_sub(plotformat,'$NDAY',strtrim(ndaysload,2)+'day')

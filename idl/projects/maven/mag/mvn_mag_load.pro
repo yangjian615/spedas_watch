@@ -1,58 +1,72 @@
-pro mvn_mag_load,format=format,trange=trange,files=files,download_only=download_only, $
-        source=source,verbose=verbose,L1_SAV=L1_SAV,pathnames=pathnames,data=str_all
+;+
+;Procedure MVN_MAG_LOAD
+;Usage:
+;  MVN_MAG_LOAD,trange=trange
+;-
+pro mvn_mag_load,format,trange=trange,files=files,download_only=download_only,tplot=tplot_flag, $
+        format=format_old, $
+        source=source,verbose=verbose,L1_SAV=L1_SAV,pathname=pathname,data=str_all
         
+if n_elements(tplot_flag) eq 0 then tplot_flag=1        
+        
+if keyword_set(format_old) then begin
+  format = format_old
+endif
 if ~keyword_set(format) then format = 'L1_FULL'               
 
 tstart=systime(1)
 
 case strupcase(format) of 
-;  http://sprg.ssl.berkeley.edu/data/maven/data/sci/mag/l1a/2014/09/sav/full/mvn_mag_l1_pl_20140927_full.sav
 
 'L1_FULL': begin
-  pathname = 'maven/data/sci/mag/l1a/YYYY/MM/sav/full/mvn_mag_l1_pl_YYYYMMDD_full.sav'
+  pathname = 'maven/data/sci/mag/l1/sav/full/YYYY/MM/mvn_mag_l1_pl_full_YYYYMMDD.sav'
   files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,/valid_only)
   if keyword_set(download_only) then break
   str_all=0
   ind=0
   for i = 0, n_elements(files)-1 do begin
     file = files[i]
-    restore,file,verbose=verbose
+    dprint,dlevel=2,verbose=verbose,'Restoring file: '+file
+    restore,file,verbose= keyword_set(verbose) && verbose ge 3
     append_array,str_all,data,index=ind
   endfor
   append_array,str_all,index=ind
   frame = header.spice_frame
   frame ='MAVEN_SPACECRAFT'
-  store_data,'mvn_B_full',str_all.time,transpose(str_all.vec),dlimit={spice_frame:frame}
+  if keyword_set(tplot_flag) then   store_data,'mvn_B_full',str_all.time,transpose(str_all.vec),dlimit={spice_frame:frame}
 end
 
 
 'L1_30SEC': begin
-  pathname = 'maven/data/sci/mag/l1a/YYYY/MM/sav/30sec/mvn_mag_l1_pl_YYYYMMDD_30sec.sav'
+  pathname = 'maven/data/sci/mag/l1/sav/30sec/YYYY/MM/mvn_mag_l1_pl_30sec_YYYYMMDD.sav'
   files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,/valid_only)
   if keyword_set(download_only) then break
   str_all=0
   ind=0
   for i = 0, n_elements(files)-1 do begin
     file = files[i]
-    restore,file,verbose=verbose
+    dprint,dlevel=2,verbose=verbose,'Restoring file: '+file
+    restore,file,verbose= keyword_set(verbose) && verbose ge 3
     append_array,str_all,data,index=ind
   endfor
   append_array,str_all,index=ind
 ;  frame = header.spice_frame
   frame ='MAVEN_SPACECRAFT'
   store_data,'mvn_B_30sec',str_all.time,transpose(str_all.vec),dlimit={spice_frame:frame}
+ ; store_data,'mvn_Brms_30sec',rms_all.time,transpose(rms_all.vec)
 end
 
 
 'L1_1SEC': begin
-  pathname = 'maven/data/sci/mag/l1a/YYYY/MM/sav/1sec/mvn_mag_l1_pl_YYYYMMDD_1sec.sav'
+  pathname = 'maven/data/sci/mag/l1/sav/1sec/YYYY/MM/mvn_mag_l1_pl_1sec_YYYYMMDD.sav'
   files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,/valid_only)
   if keyword_set(download_only) then break
   str_all=0
   ind=0
   for i = 0, n_elements(files)-1 do begin
     file = files[i]
-    restore,file,verbose=verbose
+    dprint,dlevel=2,verbose=verbose,'Restoring file: '+file
+    restore,file,verbose= keyword_set(verbose) && verbose ge 3
     append_array,str_all,data,index=ind
   endfor
   append_array,str_all,index=ind

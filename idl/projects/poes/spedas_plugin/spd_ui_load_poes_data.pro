@@ -7,9 +7,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16146 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-12-08 12:16:36 -0800 (Mon, 08 Dec 2014) $
+;$LastChangedRevision: 16399 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/spd_ui_load_poes_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -231,7 +231,7 @@ pro spd_ui_load_poes_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
   probeArrayValues = ['metop1', 'metop2', 'noaa15', 'noaa16', 'noaa18', 'noaa19']
   probeArrayDisplayed = ['MetOp 1', 'MetOp 2', 'NOAA 15', 'NOAA 16', 'NOAA 18', 'NOAA 19']
   
-  typeArray = ['*', 'ted_ele_eflux', 'ted_pro_eflux', 'ted_ele_eflux_atmo', 'ted_pro_eflux_atmo', $
+  typeArray = ['*', 'ted_ele_flux', 'ted_pro_flux', 'ted_ele_eflux', 'ted_pro_eflux', 'ted_ele_eflux_atmo', 'ted_pro_eflux_atmo', $
                'ted_total_eflux_atmo', 'ted_ele_energy', 'ted_pro_energy', 'ted_ele_max_flux', $
                'ted_pro_max_flux', 'ted_ele_eflux_bg', 'ted_pro_eflux_bg', 'ted_pitch_angles', 'ted_ifc_flag', $
                'mep_ele_flux', 'mep_pro_flux', 'mep_pro_flux_p6', 'mep_omni_flux', 'mep_pitch_angles', 'mep_ifc_flag']

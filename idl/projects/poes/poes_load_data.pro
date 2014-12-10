@@ -35,8 +35,8 @@
 ;             /downloadonly: Download the file but don't read it  
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-12-03 09:37:50 -0800 (Wed, 03 Dec 2014) $
-; $LastChangedRevision: 16345 $
+; $LastChangedDate: 2014-12-08 13:54:06 -0800 (Mon, 08 Dec 2014) $
+; $LastChangedRevision: 16407 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_load_data.pro $
 ;-
  
@@ -55,6 +55,29 @@ pro poes_split_telescope_data, name, telescope_angles, tplotnames = tplotnames
     endif else begin
         dprint, dlevel=0, 'Error splitting the telescope data for '+name+'. Invalid tplot variable?'
     endelse
+end
+
+; we need to "fix" every TED flux tplot variable. By "fix", I mean:
+;   1) replace all -1s in the data with NaNs
+;   2) change the fillval in the metadata to NaN
+;   3) set the y-axis to plot as log by default
+pro poes_fix_ted_flux_vars, ted_fluxes
+    ; loop through the TED flux tplot variables
+    for ted_flux_idx = 0, n_elements(ted_fluxes)-1 do begin
+        get_data, ted_fluxes[ted_flux_idx], data=poes_data_to_fix, dlimits=poes_dlimits_to_fix
+        
+        poes_dlimits_to_fix.cdf.vatt.fillval = !values.F_NAN
+        str_element, poes_dlimits_to_fix, 'ylog', 1, /add_replace
+        poes_fixed_data = poes_data_to_fix
+        
+        ; change -1s to NaNs
+        for j = 0, n_elements(poes_data_to_fix.Y[0,*])-1 do begin
+            poes_fixed_data.Y[where(poes_data_to_fix.Y[*,j] eq -1),j] = !values.f_nan
+        endfor
+        
+        store_data, ted_fluxes[ted_flux_idx]+'_fixed', data=poes_fixed_data, dlimits=poes_dlimits_to_fix
+        tdeflag, ted_fluxes[ted_flux_idx]+'_fixed', 'linear', /overwrite
+    endfor
 end
 
 pro poes_fix_metadata, tplotnames, prefix = prefix
@@ -301,7 +324,6 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
                 'ted_ele_flux': append_array, varformat, 'ted_ele_flux'
                 ; TED differential proton flux
                 'ted_pro_flux': append_array, varformat, 'ted_pro_flux'
-                
                 ; TED electron integral energy flux
                 'ted_ele_eflux': append_array, varformat, 'ted_ele_*_eflux'
                 ; TED proton integral energy flux
@@ -394,9 +416,13 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
             poes_split_telescope_data, prefix_array[j]+'_ted_pro_flux_err', ted_telescopes, tplotnames = tplotnames
         endif
         
+        
         ; fix the metadata for the newly loaded tplot variables (labels, etc) 
         poes_fix_metadata, tplotnames, prefix = prefix_array[j]
 
+        ted_fluxes = prefix_array[j]+['_ted_ele_flux_tel0', '_ted_ele_flux_tel30', $
+                '_ted_pro_flux_tel0', '_ted_pro_flux_tel30']
+        poes_fix_ted_flux_vars, ted_fluxes
     endfor
 
     ; make sure some tplot variables were loaded

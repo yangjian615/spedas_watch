@@ -18,6 +18,7 @@ pro SPICE_VECTOR_ROTATE_TPLOT,tvarnames,to_frame,check_objects=check_objects,ver
 
 if ~keyword_set(suffix) then suffix='_'+to_frame
 tvn= tnames(tvarnames,n)
+names=''
 for i=0,n-1 do begin
    alim=0
    get_data,tvn[i],time,vals,alimit=alim
@@ -45,6 +46,7 @@ for i=0,n-1 do begin
 ;   vector_pr///ime = spice_vector_rotate(transpose(vals),time,to_frame,from_frame,check_objects=co,verbose=verbose)
    alim.spice_frame = to_frame
    store_data,newname,time,transpose(vector_prime),dlimit=alim
+   append_array,names,newname
 endfor
 end
 

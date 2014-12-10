@@ -79,8 +79,8 @@ endelse
 ;tr         = tplot_vars.settings.x.crange * time_scale + time_offset
 
 if keyword_set(zoom) then begin
-   tmid = (tr(0)+tr(1))/2
-   tdif = (tr(1)-tr(0))/2
+   tmid = (tr[0]+tr[1])/2
+   tdif = (tr[1]-tr[0])/2
    trange = tmid+ zoom*[-tdif,tdif]
    n = -1
 endif
@@ -99,13 +99,13 @@ if n eq 0 then begin
   ctime,t,npoints=2,prompt="Use cursor to select a begin time and an end time",$
     hours=hours,minutes=minutes,seconds=seconds,days=days,silent=silent
   if n_elements(t) ne 2 then return
-  t1 = t(0)
-  t2 = t(1)
-  delta = tr(1) - tr(0)
+  t1 = t[0]
+  t2 = t[1]
+  delta = tr[1] - tr[0]
   case 1 of
-    (t1 lt tr(0)) and (t2 gt tr(1)):  trange = trange_full      ; full range
-    (t1 gt tr(1)) and (t2 gt tr(1)):  trange = tr + delta       ; pan right
-    (t1 lt tr(0)) and (t2 lt tr(0)):  trange = tr - delta       ; pan left
+    (t1 lt tr[0]) and (t2 gt tr[1]):  trange = trange_full      ; full range
+    (t1 gt tr[1]) and (t2 gt tr[1]):  trange = tr + delta       ; pan right
+    (t1 lt tr[0]) and (t2 lt tr[0]):  trange = tr - delta       ; pan left
     t2 lt t1:                         trange = trange_old       ; last limits
 ;    t2 gt tr(1):                      trange = tr + (t1-tr(0))  ; pan right
 ;    t1 lt tr(0):                      trange = tr + (tr(1)-t2)  ; pan left
@@ -114,7 +114,7 @@ if n eq 0 then begin
 endif
 if n eq 1 then begin
     if n_elements(d1) eq 2 then trange = time_double(d1) $
-    else trange = [time_double(d1),time_double(d1)+tr(1)-tr(0)]
+    else trange = [time_double(d1),time_double(d1)+tr[1]-tr[0]]
 endif
 if n eq 2 then   trange = time_double([d1,d2])
 

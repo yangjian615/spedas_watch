@@ -2,7 +2,7 @@
 pro mvn_sep_define_widths,range=range,nsteps=nsteps,binwidths=binwidths,scale=scale,de_e=de_e
 if ~keyword_set(scale) then scale= 1.5  ;[10,1.5]
 if ~keyword_set(range) then range = [11.,6000.]
-if ~keysord_set(de_e) then de_e = 0.2
+if ~keyword_set(de_e) then de_e = 0.2
 if ~keyword_set(nsteps) then nsteps = round( alog(range[1]/range[0])/alog(1+de_e) ) 
 printdat,scale,range,nsteps,de_e
 esteps = dgen(range=range,/log,nsteps)
@@ -171,10 +171,10 @@ case mapname of
   mvn_sep_fill_lut,lut,startbin,TID=1,fto=6,binwidth=bw_FT
   mvn_sep_fill_lut,lut,startbin,TID=1,fto=7,binwidth=bw_FTO
   chksum = total(/preserve,lut)
-  printdat,chksum,/hex
+;  printdat,chksum,/hex
   correction = 'AA'x - chksum
   lut[0] = correction
-  printdat,varname='checksum',total(/preserve,lut),/hex
+;  printdat,varname='checksum',total(/preserve,lut),/hex
   
   end
 

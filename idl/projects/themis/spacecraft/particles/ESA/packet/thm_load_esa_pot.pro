@@ -606,10 +606,15 @@ endif else begin
                                     If(nvaf_offset Gt 10 && use_vaf_offset[0] Ne 2) Then Begin
                                        vaf_offset0 = vaf_offset
                                        vaf_offset = simple_despike_1d(vaf_offset, threshold = 1.0)
-                                       vaf_offset = smooth_in_time(vaf_offset, tvaf_offset, 120.0)
-;extrapolation could be a problem, so keep min and max values 
-                                       vaf_offset_limits = minmax(vaf_offset)
-                                       vaf_offset_s11 = (interpol(vaf_offset, tvaf_offset, time[s11]) > vaf_offset_limits[0]) < vaf_offset_limits[1]
+                                       vaf_offset = smooth_in_time(vaf_offset, tvaf_offset, 300.0)
+                                       store_data, 'temp_vaf_offset', data = {x:tvaf_offset, y:vaf_offset}
+;extrapolation could be a problem, so don't allow it
+                                       vaf_offset_s11 = interpol(vaf_offset, tvaf_offset, time[s11])
+                                       temp_time = where(time[s11] Lt min(tvaf_offset), ntemp_time)
+                                       If(ntemp_time Gt 0) Then vaf_offset_s11[temp_time] = vaf_offset[0]
+                                       temp_time = where(time[s11] Gt max(tvaf_offset), ntemp_time)
+                                       If(ntemp_time Gt 0) Then vaf_offset_s11[temp_time] = vaf_offset[n_elements(vaf_offset)-1]
+                                       store_data, 'temp_vaf_offset_s11', data = {x:time[s11], y:vaf_offset_s11}
                                        scpot[s11] = scpot[s11]+vaf_offset_s11
                                     Endif Else scpot[s11]=scpot[s11]+median(vaf_offset)
                                  Endif

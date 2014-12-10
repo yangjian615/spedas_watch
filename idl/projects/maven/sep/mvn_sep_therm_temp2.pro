@@ -1,4 +1,4 @@
-function Thermistor_temp,R,parameter=p,b2252=b2252,L1000=L1000
+function thermistor_temp,R,parameter=p,b2252=b2252,L1000=L1000
 if not keyword_set(p) then begin
    p = {func:'thermistor_temp',note:'YSI 46006 (H10000)',R0:10000.,  $
       T0:24.988792d, t1:-24.809236d, t2:1.6864476d, t3:-0.12038317d, $
@@ -21,9 +21,9 @@ end
 
 
 
-function mav_sep_therm_temp2,dval,parameter=p
+function mvn_sep_therm_temp2,dval,parameter=p
 if not keyword_set (p) then begin
-   p = {func:'mav_sep_therm_temp2',R1:10000d, xmax:1023d, Rv:1d7, thm:thermistor_temp()}
+   p = {func:'mvn_sep_therm_temp2',R1:10000d, xmax:1023d, Rv:1d7, thm:thermistor_temp()}
 endif
 
 if n_params() eq 0 then return,p

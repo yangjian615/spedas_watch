@@ -15,7 +15,7 @@ function mav_pfdpu_23x_decom,ccsds
     tcoeff = [-1.1843E-10,  5.85479E-08,  -1.19147E-05, 1.28754E-03,  -7.9487E-02, 2.80015E+00,  -5.31694E+01, 4.83957E+02]
     tcoeff = [-1.1843E-10,  5.85479E-08,  -1.19147E-05, 1.28754E-03,  -7.9487E-02, 2.80015E+00,  -5.31694E+01, 7.83957E+01]
 ;    -9.25E-20 7.91E-15  -2.59E-10 4.04E-06  -3.37E-02 168.28
-   par_temp = mav_sep_therm_temp2()
+   par_temp = mvn_sep_therm_temp2()
    par_temp.r1 = 10000.
    par_temp.rv = 1e9
    par_temp.xmax = 2.5

@@ -2,7 +2,9 @@
 
 function mvn_spc_apid_decom_byte_pkt,buffer
 
-    if buffer[1] eq '90'x then return,gseos_cmnblk_decom_byte_pkt([byte(['EB'x,'92'x, 0b, 0b]),buffer[2:25],[0b,0b],buffer[28:*]])  ; kludge to make old format work.
+    forward_function gseos_cmnblk_decom_byte_pkt
+
+    if buffer[1] eq '90'x then return,gseos_cmnblk_decom_byte_pkt( [byte(['EB'x,'92'x, 0b, 0b]),buffer[2:25],[0b,0b],buffer[28:*]] )  ; kludge to make old format work.
 
     dbuff = uint(buffer,0,16)
     byteorder,dbuff,/swap_if_little_endian

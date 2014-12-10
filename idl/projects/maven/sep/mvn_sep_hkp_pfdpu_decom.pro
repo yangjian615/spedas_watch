@@ -84,7 +84,7 @@ function mvn_sep_hkp_pfdpu_decom,pkt,last_hkp=last_hkp,memstate=memstate,gap=gap
    
   ; else dprint,'SEP HKP error.', n_elemt
    
-   par_dap = mav_sep_therm_temp2()
+   par_dap = mvn_sep_therm_temp2()
    par_dap.r1 = 51000.
    par_dap.rv = 1e9
    par_dap.xmax = 2.5

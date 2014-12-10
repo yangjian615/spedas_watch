@@ -22,7 +22,7 @@ if not keyword_set(months) then begin    ; only needs to be computed once!
    doys = [[indgen(366)],[indgen(366)]]
    isleap = [[replicate(0,366)],[replicate(1,366)]]
    months = doys/29
-   dates = doys - mdt(months,isleap)
+   dates = doys - mdt[months,isleap]
    w = where(dates lt 0,c)
    if c ne 0 then begin
       months[w] = months[w] -1
@@ -33,8 +33,8 @@ if not keyword_set(months) then begin    ; only needs to be computed once!
 endif
 
 isleap = ((year mod 4) eq 0) - ((year mod 100) eq 0) + ((year mod 400) eq 0) - ((year mod 4000) eq 0)
-month=months(doy-1,isleap)
-date =dates(doy-1,isleap)
+month=months[doy-1,isleap]
+date =dates[doy-1,isleap]
 
 end
 

@@ -17,12 +17,14 @@
 
 Function mvn_sep_get_fov, times,nphi = nphi, ntheta=ntheta, check_objects = check_objects, coordinate_frame = coordinate_frame, $
   Cartesian = Cartesian
+  
   if not keyword_set (coordinate_frame) then coordinate_frame = 'MAVEN_MSO'
   ;if not keyword_set (dang) then dang = 1.5
   if not keyword_set (nphi) then nphi = 51
   if not keyword_set (ntheta) then ntheta = 38
   et = time_ephemeris(times)
   nt = n_elements (times)
+  if nt le 1 then message,'times must be an array with more than onre element.'
   ; load the SEP fields of view
   FOV_ID = {SEP1A_front: -202121, SEP1B_front: -202122, SEP1A_back: -202123, SEP1B_back: -202124, $
             SEP2A_front: -202126, SEP2B_front: -202127, SEP2A_back: -202128, SEP2B_back: -202129}

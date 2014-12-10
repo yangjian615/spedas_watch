@@ -3,8 +3,6 @@
 ;	MVN_SWIA_REGID
 ;PURPOSE: 
 ;	Routine to determine region of the Mars environment from SWIA and MAG data.
-;	Will probably have to futz with the logic in this once I change the energy sweep.
-;	Change (v<100) to (v<100 or n < 0.5)
 ;AUTHOR: 
 ;	Jasper Halekas
 ;CALLING SEQUENCE:
@@ -18,8 +16,8 @@
 ;	REGOUT: Tplot structure containing region IDs
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-20 11:57:22 -0800 (Thu, 20 Nov 2014) $
-; $LastChangedRevision: 16254 $
+; $LastChangedDate: 2014-12-08 14:16:25 -0800 (Mon, 08 Dec 2014) $
+; $LastChangedRevision: 16409 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_regid.pro $
 ;
 ;-
@@ -87,6 +85,7 @@ regid = fltarr(nel)
 
 temp = total(swim[w].temperature,1)/3
 vel = sqrt(total(swim[w].velocity*swim[w].velocity,1))
+dens = swim[w].density
 
 w = where(vel gt 200 and (temp/vel lt 0.05 and magstd/mag lt 0.15) and alt gt 500)
 regid(w) = 1	;Solar Wind
@@ -94,10 +93,10 @@ regid(w) = 1	;Solar Wind
 w = where(vel gt 200 and (temp/vel gt 0.1 or magstd/mag gt 0.25) and alt gt 300)
 regid(w) = 2	;Sheath
 
-w = where(vel lt 100 and magstd/mag lt 0.1 and mag gt 10 and alt lt 500)
+w = where((vel lt 100 or dens lt 0.1) and magstd/mag lt 0.1 and mag gt 10 and alt lt 500)
 regid(w) = 3	;Ionosphere
 
-w = where(vel lt 100 and magstd/mag lt 0.1 and mag gt 10 and alt lt 250 and (ux gt 0 or uyz gt RM))
+w = where((vel lt 100 or dens lt 0.1) and magstd/mag lt 0.1 and mag gt 10 and alt lt 250 and (ux gt 0 or uyz gt RM))
 regid(w) = 4 ;Periapsis Dayside Ionosphere
 
 w = where(vel lt 200 and magstd/mag lt 0.1 and abs(magx/mag) gt 0.9 and ux lt 0 and alt gt 300)

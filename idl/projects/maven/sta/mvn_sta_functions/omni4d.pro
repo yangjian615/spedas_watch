@@ -54,36 +54,39 @@ if omni.nmass eq 1 then begin
 
 if ndimen(dat.data) eq 2 and dat.nbins gt 1 then begin
 
-	str_element,/add,omni, 'denergy',reform(dat.denergy(*,0))
-	str_element,/add,omni, 'energy' ,reform(dat.energy(*,0))
-	str_element,/add,omni, 'bins',1
-	str_element,/add,omni, 'bins_sc',1
-	str_element,/add,omni, 'data'   ,total(dat.data(*,ind),2)
-	str_element,/add,omni, 'bkg'    ,total(dat.bkg(*,ind),2)
-	str_element,/add,omni, 'gf'   ,total(dat.gf(*,ind),2)
-	str_element,/add,omni, 'eff'   ,total(dat.eff(*,ind),2)/norm
+	str_element,/add,omni, 'denergy' ,reform(dat.denergy[*,0])
+	str_element,/add,omni, 'energy'  ,reform(dat.energy[*,0])
+	str_element,/add,omni, 'bins'    ,1
+	str_element,/add,omni, 'bins_sc' ,1
+	str_element,/add,omni, 'data'    ,total(dat.data[*,ind],2)
+	str_element,/add,omni, 'bkg'     ,total(dat.bkg[*,ind],2)
+	str_element,/add,omni, 'gf'      ,total(dat.gf[*,ind],2)
+	str_element,/add,omni, 'eff'     ,total(dat.eff[*,ind],2)/norm
+	str_element,/add,omni, 'dead'    ,total(dat.dead[*,ind]*dat.dead[*,ind],2)/total(dat.dead[*,ind],2)
 
 endif else if ndimen(dat.data) eq 2 and dat.nbins eq 1 then begin
 
-	str_element,/add,omni, 'denergy',reform(dat.denergy(*,0))
-	str_element,/add,omni, 'energy' ,reform(dat.energy(*,0))
-	str_element,/add,omni, 'bins',1
-	str_element,/add,omni, 'bins_sc',1
-	str_element,/add,omni, 'data'   ,total(dat.data(*,*),2)
-	str_element,/add,omni, 'bkg'    ,total(dat.bkg(*,*),2)
-	str_element,/add,omni, 'gf'     ,total(dat.gf(*,*),2)/dat.nmass
-	str_element,/add,omni, 'eff'    ,total(dat.eff(*,*),2)/dat.nmass
+	str_element,/add,omni, 'denergy' ,reform(dat.denergy[*,0])
+	str_element,/add,omni, 'energy'  ,reform(dat.energy[*,0])
+	str_element,/add,omni, 'bins'    ,1
+	str_element,/add,omni, 'bins_sc' ,1
+	str_element,/add,omni, 'data'    ,total(dat.data[*,*],2)
+	str_element,/add,omni, 'bkg'     ,total(dat.bkg[*,*],2)
+	str_element,/add,omni, 'gf'      ,total(dat.gf[*,*],2)/dat.nmass
+	str_element,/add,omni, 'eff'     ,total(dat.eff[*,*],2)/dat.nmass
+	str_element,/add,omni, 'dead'    ,reform(dat.dead[*,0])
 
 endif else if ndimen(dat.data) eq 3 then begin
 
-	str_element,/add,omni, 'denergy',reform(dat.denergy(*,0,0))
-	str_element,/add,omni, 'energy' ,reform(dat.energy(*,0,0))
-	str_element,/add,omni, 'bins',1
-	str_element,/add,omni, 'bins_sc',1
-	str_element,/add,omni, 'data'   ,total(total(dat.data(*,ind,*),3),2)
-	str_element,/add,omni, 'bkg'    ,total(total(dat.bkg(*,ind,*),3),2)
-	str_element,/add,omni, 'gf'     ,total(total(dat.gf(*,ind,*),3),2)/dat.nmass
-	str_element,/add,omni, 'eff'    ,total(total(dat.eff(*,ind,*),3),2)/dat.nmass/norm
+	str_element,/add,omni, 'denergy' ,reform(dat.denergy[*,0,0])
+	str_element,/add,omni, 'energy'  ,reform(dat.energy[*,0,0])
+	str_element,/add,omni, 'bins'    ,1
+	str_element,/add,omni, 'bins_sc' ,1
+	str_element,/add,omni, 'data'    ,total(total(dat.data[*,ind,*],3),2)
+	str_element,/add,omni, 'bkg'     ,total(total(dat.bkg[*,ind,*],3),2)
+	str_element,/add,omni, 'gf'      ,total(total(dat.gf[*,ind,*],3),2)/dat.nmass
+	str_element,/add,omni, 'eff'     ,total(total(dat.eff[*,ind,*],3),2)/dat.nmass/norm
+	str_element,/add,omni, 'dead'    ,reform(total(dat.dead[*,ind,0]*dat.dead[*,ind,0],2))/reform(total(dat.dead[*,ind,0],2))
 
 endif
 
@@ -95,17 +98,18 @@ if ndimen(dat.data) eq 2 then begin
 
 endif else if ndimen(dat.data) eq 3 then begin
 
-	str_element,/add,omni, 'denergy',reform(dat.denergy[*,0,*],dat.nenergy,dat.nmass)
-	str_element,/add,omni, 'energy' ,reform(dat.energy[*,0,*],dat.nenergy,dat.nmass)
-	str_element,/add,omni, 'mass_arr' ,reform(dat.mass_arr[*,0,*],dat.nenergy,dat.nmass)
+	str_element,/add,omni, 'denergy' ,reform(dat.denergy[*,0,*],dat.nenergy,dat.nmass)
+	str_element,/add,omni, 'energy'  ,reform(dat.energy[*,0,*],dat.nenergy,dat.nmass)
+	str_element,/add,omni, 'mass_arr',reform(dat.mass_arr[*,0,*],dat.nenergy,dat.nmass)
 	str_element,/add,omni, 'tof_arr' ,reform(dat.tof_arr[*,0,*],dat.nenergy,dat.nmass)
 	str_element,/add,omni, 'twt_arr' ,reform(dat.twt_arr[*,0,*],dat.nenergy,dat.nmass)
-	str_element,/add,omni, 'bins',1
-	str_element,/add,omni, 'bins_sc',1
-	str_element,/add,omni, 'data'   ,total(dat.data,2)
-	str_element,/add,omni, 'bkg'    ,total(dat.bkg,2)
-	str_element,/add,omni, 'gf'     ,total(dat.gf,2)
-	str_element,/add,omni, 'eff'    ,total(dat.eff,2)/dat.nbins
+	str_element,/add,omni, 'bins'    ,1
+	str_element,/add,omni, 'bins_sc' ,1
+	str_element,/add,omni, 'data'    ,total(dat.data[*,ind,*],2)
+	str_element,/add,omni, 'bkg'     ,total(dat.bkg[*,ind,*],2)
+	str_element,/add,omni, 'gf'      ,total(dat.gf[*,ind,*],2)
+	str_element,/add,omni, 'eff'     ,total(dat.eff[*,ind,*],2)/dat.nbins
+	str_element,/add,omni, 'dead'    ,total(dat.dead[*,ind,*]*dat.dead[*,ind,*],2)/total(dat.dead[*,ind,*],2)
 
 endif
 

@@ -36,8 +36,8 @@
 ;                with the same # of elements as pathnames/newpathnames
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-11-23 08:48:32 -0800 (Sun, 23 Nov 2014) $
-;$LastChangedRevision: 16277 $
+;$LastChangedDate: 2014-12-06 11:05:16 -0800 (Sat, 06 Dec 2014) $
+;$LastChangedRevision: 16362 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_retrieve.pro $
 ;-
 function file_retrieve,pathnames, newpathnames, structure_format=structure_format,  $
@@ -64,7 +64,7 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     no_clobber=no_clobber, ignore_filesize=ignore_filesize, $
     verbose=verbose,progress=progress,progobj=progobj
 
-dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 16277 2014-11-23 16:48:32Z davin-mac $'
+dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 16362 2014-12-06 19:05:16Z davin-mac $'
 if keyword_set(structure_format) then begin
    user_agent =  'FILE_RETRIEVE: IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
    str= {   $
@@ -184,12 +184,12 @@ for i=0,n_elements(fullnames)-1 do begin
          end
    else: begin
            if keyword_set(last_version) then begin
-             dprint,dlevel=2,verbose=vb,strtrim(c,2)+' matches found for: "'+fullnames[i]+'"  Using last version.'
- ;            fullnames[i] = ff[n_elements(ff)-1]   ; Cluge to Use highest version number?
-             append_array,fullnames2,ff[n_elements(ff)-1]
-             file_archive,ff[0:n_elements(ff)-2],verbose=verbose,archive_dir=oldversion_dir,archive_ext=oldversion_ext
+;             dprint,dlevel=2,verbose=vb,strtrim(c,2)+' matches found for: "'+fullnames[i]+'"  Using last version.'
+             dprint,dlevel=2,verbose=vb,'Using last version of '+strtrim(c,2)+' matches: '+ff[c-1]
+             append_array,fullnames2,ff[c-1]
+             file_archive,ff[0:c-2],verbose=verbose,archive_dir=oldversion_dir,archive_ext=oldversion_ext
            endif else begin
-             dprint,dlevel=2,verbose=vb,'Multiple matches found for: "'+fullnames[i]+'"'
+             dprint,dlevel=2,verbose=vb,strtrim(c,2)+' matches found for: "'+fullnames[i]+'"'
              append_array,fullnames2,ff
 ;             fullnames = ff
            endelse

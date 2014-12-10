@@ -2,6 +2,9 @@
 
 function gseos_cmnblk_decom_byte_pkt,buffer
 
+    forward_function  gseos_cmnblk_decom_byte_pkt
+
+    
     if buffer[1] eq '90'x then return,gseos_cmnblk_decom_byte_pkt([byte(['EB'x,'92'x, 0b, 0b]),buffer[2:25],[0b,0b],buffer[28:*]])  ; kludge to make old format work.
 
     dbuff = uint(buffer,0,16)
@@ -50,6 +53,9 @@ end
 PRO mav_cmnblk_readu,fileunit,count=count,eofile=eofile, trange=trange,$
                      decom=decom, outputfp=outputfp, display_widget=display_widget,_extra=ex
 
+    message,'Obsolete call'
+                     
+                     
     eofile =0
 ;    if not keyword_set(buffer) then buffer= bytarr(2L^10)
 ;    b=buffer[0]

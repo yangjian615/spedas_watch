@@ -15,16 +15,17 @@
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu:36867/repos/idl_socware/trunk/projects/maven/general/mvn_file_source.pro $
 ;-
 
-pro mvn_spice_load,trange=trange,kernels=kernels
+pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,verbose=verbose
 
    ; Create
-   orbdata = mvn_orbit_num()                 
+   orbdata = mvn_orbit_num(verbose=verbose)                 
    store_data,'orbnum',orbdata.peri_time,orbdata.num,dlimit={ytitle:'Orbit'}
 ;   tplot,var_label='orbnum'
    tplot_options,'timebar','orbnum'
    tplot_options,'var_label','orbnum'
 
    kernels = mvn_spice_kernels(/all,/clear,/load,trange=trange,verbose=2)
+   if keyword_set(download_only) then return
    spice_position_to_tplot,'MAVEN','Mars',frame='MSO',res=300d,scale=1000.,name=n1  ,trange=trange
    xyz_to_polar,n1
    

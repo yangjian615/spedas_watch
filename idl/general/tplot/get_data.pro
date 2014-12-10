@@ -61,16 +61,16 @@ index = find_handle(name)
 ;endif
 
 if index ne 0 then begin
-   dq = data_quants(index)
+   dq = data_quants[index]
    if arg_present(data) or arg_present(time) or arg_present(values) or $
    	arg_present(data_str) then begin
    		if size(/type,*dq.dh) eq 8 then begin
 ; 	  		mytags = tag_names_r(*dq.dh)             Too goofy to be useful!!!   see similar line in store_data
  	  		mytags = tag_names(*dq.dh)
 	   		for i=0,n_elements(mytags)-1 do begin
-	   			str_element,*dq.dh,mytags(i),foo
+	   			str_element,*dq.dh,mytags[i],foo
    				if ptr_valid(foo) then $
-   				    str_element,data_str,mytags(i),*foo,/add
+   				    str_element,data_str,mytags[i],*foo,/add
 	   		endfor
 	   	endif else data_str = *dq.dh
    endif

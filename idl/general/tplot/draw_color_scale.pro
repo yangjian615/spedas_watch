@@ -54,8 +54,8 @@ if not keyword_set(pos) then begin
   yw = !y.window  
   pos = [xw[0],yw[0],xw[1],yw[1]]
 endif else begin
-  xw = pos([0,2])
-  yw = pos([1,3])
+  xw = pos[[0,2]]
+  yw = pos[[1,3]]
 endelse
 
 ;color scale is generated using a plot

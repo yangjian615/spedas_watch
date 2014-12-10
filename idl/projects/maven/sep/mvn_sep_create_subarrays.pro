@@ -22,7 +22,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
    if size(/type,data_str) eq 7 then begin                     ; input is a string
       mvn_sep_extract_data,data_str,rawdat,trange=trange,num=num
       if ~keyword_set(rawdat) then begin
-         dprint,'No data'
+         dprint,dlevel=1,verbose=verbose,'No data'
          return
       endif
       sensnum = rawdat[1].sensor
@@ -31,13 +31,13 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
       rawdat = data_str
       num = n_elements(rawdat)
    endelse
-printdat,sepn,sensnum
+;printdat,sepn,sensnum
 ;   if num eq 0 then return  ; No data available
    if not keyword_set(rawdat) then return
    if not keyword_set(mapids) then begin
       mapnums = byte(median(rawdat.mapid))    ;  get most common mapnum
        mapids = where( histogram(rawdat.mapid) ne 0 ,n_mapids)   ; all mapids found
-       dprint,/phelp,mapids
+       dprint,dlevel=3,verbose=verbose,/phelp,mapids
        mapids=mapnums   ; do only most common one  
    endif 
    zname = keyword_set(smooth) ? '<'+zval+'>' :  zval
@@ -58,7 +58,7 @@ printdat,sepn,sensnum
 ;     bmaps = mvn_sep_lut2map(mapname=mapname,sensor=sepn)
 ;mvn_sep_det_cal,bmaps,sepn,units=1    
 
-     dprint,dlevel=3,/phelp,mapnum,mapname,sepn
+     dprint,verbose=verbose,dlevel=3,/phelp,mapnum,mapname,sepn
      sidename = ['A','B']
      for s=0,1 do begin
        rdata = replicate(!values.f_nan,nt,6) 

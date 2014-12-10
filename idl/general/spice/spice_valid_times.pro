@@ -9,6 +9,7 @@
 ; $URL: $
 ;-
 function spice_valid_times,et,objects=objects,tolerance=tol
+if spice_test() eq 0 then message,'SPICE not installed'
 if ~keyword_set(tol) then tol=120.
 kinfo = spice_kernel_info(use_cache=1)
 ok = et ne 0  ; get array of 1b     

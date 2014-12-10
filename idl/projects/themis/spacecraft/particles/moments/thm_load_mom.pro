@@ -40,8 +40,7 @@
 ;          otherwise the default is to load calibrated data.
 ;  /NO_TIME_CLIP: Disables time clipping, which is the default
 ;  /dead_time_correct: If set, then calculate dead time correction
-;                      based on ESA moments, this is the default
-;                      for L2 input
+;                      based on ESA moments
 ;Example:
 ;   thm_load_mom,/get_suppport_data,probe=['a', 'b']
 ;Notes:
@@ -61,8 +60,8 @@
 ;
 ;
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-07 09:26:19 -0800 (Fri, 07 Nov 2014) $
-; $LastChangedRevision: 16148 $
+; $LastChangedDate: 2014-12-08 10:30:21 -0800 (Mon, 08 Dec 2014) $
+; $LastChangedRevision: 16393 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
