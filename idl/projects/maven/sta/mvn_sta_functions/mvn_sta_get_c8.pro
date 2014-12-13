@@ -111,8 +111,8 @@ dat = 		{project_name:		all_dat.project_name,						$
 
 		theta: 			reform(all_dat.theta[swp_ind,*,*,*],nenergy,nbins,nmass),  	$
 		dtheta: 		reform(all_dat.dtheta[swp_ind,*,*,*],nenergy,nbins,nmass),  	$
-		phi: 			all_dat.phi,  							$
-		dphi: 			all_dat.dphi,							$
+		phi: 			reform(all_dat.phi[swp_ind,*,*,*],nenergy,nbins,nmass),  	$
+		dphi: 			reform(all_dat.dphi[swp_ind,*,*,*],nenergy,nbins,nmass),	$
 		domega: 		reform(all_dat.domega[swp_ind,*,*],nenergy,nbins,nmass),  	$
 
 		gf: 			gf2,								$

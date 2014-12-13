@@ -62,6 +62,7 @@ pro get_4dt,funct,routine, $
 	MASS=ms, $
 	M_INT=mi, $
 	q=q, $
+	mincnt=mincnt, $
 	gap_time=gap_time, $ 
 	no_data=no_data, $
         name  = name, $
@@ -102,7 +103,7 @@ if not keyword_set(gap_time) then gap_time = default_gap_time
 maxpts = idxmax-idx+1000 < 300000l			; this limits a tplot str to < 10 days
 time = dblarr(maxpts)
 
-sum = call_function(funct,dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+sum = call_function(funct,dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 nargs = n_elements(sum)
 data = fltarr(maxpts,nargs)
 
@@ -125,7 +126,7 @@ if (dat.valid eq 1) then begin
 		endif
 	endif
 
-	sum = call_function(funct,dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+	sum = call_function(funct,dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 	data(n,*) = sum
 	time(n)   = (dat.time+dat.end_time)/2.
 	last_time = time(n)
@@ -136,16 +137,18 @@ endif else begin
 endelse
 	idx=idx+1
 	dat = call_function(routine,t,index=idx)
-	if keyword_set(bkg) then begin 
-		type = size(bkg,/type)
-		if type eq 7 then begin
-			bkg_data = call_function(bkg,dat)
-			if keyword_set(floor) then dat.data=(dat.data-bkg_data)>bkg_data^.5 else dat.data=(dat.data-bkg_data)
-		endif else if type eq 2 then begin
-			if keyword_set(floor) then dat.data=(dat.data-dat.bkg)>dat.bkg^.5 else dat.data=(dat.data-dat.bkg)
-		endif
+	if keyword_set(bkg) then dat.data=dat.data-dat.bkg
 
 ; old code to be deleted later
+;	if keyword_set(bkg) then begin 
+;		type = size(bkg,/type)
+;		if type eq 7 then begin
+;			bkg_data = call_function(bkg,dat)
+;			if keyword_set(floor) then dat.data=(dat.data-bkg_data)>bkg_data^.5 else dat.data=(dat.data-bkg_data)
+;		endif else if type eq 2 then begin
+;			if keyword_set(floor) then dat.data=(dat.data-dat.bkg)>dat.bkg^.5 else dat.data=(dat.data-dat.bkg)
+;		endif
+;
 ;		if dat.data_name eq 'C6 Energy-Mass' then begin
 ;			bg = fltarr(32,64)
 ;			bb = total(dat.data[*,0:6],2)/total(dat.twt_arr[*,0:6],2)
@@ -158,7 +161,7 @@ endelse
 ;		endif else begin
 ;			if keyword_set(floor) then dat.data=(dat.data-dat.bkg)>dat.bkg^.5 else dat.data=(dat.data-dat.bkg)
 ;		endelse
-	endif
+;	endif
 endwhile
 
 if not keyword_set(name) then name=ytitle else ytitle=name

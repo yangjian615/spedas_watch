@@ -52,7 +52,7 @@ for i=0L,nd-1 do begin
   timestamp= systime(1)    ; trigger regeneration of long term plots
   mvn_sep_load,/l0,files = l0_files
   
-  prereq_info = file_hash(prereq_files,/add_mtime)
+  prereq_info = file_checksum(prereq_files,/add_mtime)
   mvn_sep_var_save,l1_filename,prereq_info=prereq_info,description=description
 
 ;  ndays = round( (tr[1]-tr[0])/res )

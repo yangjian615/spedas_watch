@@ -15,8 +15,8 @@
 ;    LIST:          If set, list the kernels in use.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-26 19:08:15 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16325 $
+; $LastChangedDate: 2014-12-11 16:21:58 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16466 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_spice_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -28,6 +28,8 @@ pro mvn_swe_spice_init, trange=trange, list=list
   common mvn_spc_met_to_unixtime_com, cor_clkdrift, icy_installed, kernel_verified, $
          time_verified, sclk, tls
 
+  oneday = 86400D
+
   if (size(trange,/type) eq 0) then begin
     if (size(mvn_swe_engy,/type) ne 8) then begin
       print,"You must specify a time range or load data first."
@@ -37,9 +39,11 @@ pro mvn_swe_spice_init, trange=trange, list=list
     trange = minmax(mvn_swe_engy.time)
   endif
   
+  srange = minmax(time_double(trange)) + [-oneday, oneday]
+  
   dprint, "Initializing SPICE ...", getdebug=old_dbug, setdebug=0
 
-  swe_kernels = mvn_spice_kernels(/all,/load,trange=trange,verbose=-1)
+  swe_kernels = mvn_spice_kernels(/all,/load,trange=srange,verbose=-1)
   swe_kernels = spice_test('*')  ; only loaded kernels, no wildcards
   n_ker = n_elements(swe_kernels)
   
@@ -66,7 +70,7 @@ pro mvn_swe_spice_init, trange=trange, list=list
     msg = "WARNING: no SPICE kernels!"
   endelse
 
-  dprint, msg, setdebug=old_debug
+  dprint, msg, setdebug=2
 
   return
 

@@ -31,13 +31,14 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-03-23 14:29:04 -0700 (Sun, 23 Mar 2014) $
-; $LastChangedRevision: 14640 $
+; $LastChangedDate: 2014-12-10 16:22:29 -0800 (Wed, 10 Dec 2014) $
+; $LastChangedRevision: 16447 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_swia_overplot.pro $
 Pro mvn_swia_overplot, date = date, time_range = time_range, $
                        makepng=makepng, device = device, directory = directory, $
                        l0_input_file = l0_input_file, $
                        noload_data = noload_data, $
+                       multipngplot = multipngplot, $
                        _extra = _extra
 
 mvn_qlook_init, device = device
@@ -78,10 +79,12 @@ tr = tr > d0
 ;plot the data
 tplot, varlist, title = 'MAVEN SWIA Quicklook '+date
 
+If(keyword_set(multipngplot)) Then makepng = 1b
 If(keyword_set(makepng)) Then Begin
     If(keyword_set(directory)) Then pdir = directory Else pdir = './'
     fname = pdir+mvn_qlook_filename('swi', tr, _extra=_extra)
-    makepng, fname
+    If(keyword_set(multipngplot)) Then mvn_gen_multipngplot, fname, directory = pdir $
+    Else makepng, fname
 Endif
 
 Return

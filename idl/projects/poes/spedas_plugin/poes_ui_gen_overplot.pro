@@ -24,8 +24,8 @@
 ;  none
 ;  
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-12-08 14:47:12 -0800 (Mon, 08 Dec 2014) $
-;$LastChangedRevision: 16411 $
+;$LastChangedDate: 2014-12-11 10:42:35 -0800 (Thu, 11 Dec 2014) $
+;$LastChangedRevision: 16455 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/poes_ui_gen_overplot.pro $
 ;-
 
@@ -110,7 +110,7 @@ pro poes_ui_gen_overplot_event, event
       
       activeWindow = state.windowStorage->GetActive()
     
-      tplot_options, title='POES-'+strupcase(string(state.probe))+' Overview ('+time_string(st_double)+')'
+      tplot_options, title=strupcase(string(state.probe))+' Overview ('+time_string(st_double)+')'
 
       state.statusBar->Update,'Generating POES overview plot. Please wait!...'
       poes_overview_plot, date = st_double, probe = state.probe, duration = dur, /gui_overplot, oplot_calls = (*state.data).oplot_calls, error = error
@@ -129,7 +129,7 @@ pro poes_ui_gen_overplot_event, event
         ; loop through the panels setting the label options
         for i = 0,n_elements(panels)-1 do begin
             panels[i]->getProperty,yaxis=yobj
-            yobj->setProperty, stackLabels = 1, orientation = 0
+            yobj->setProperty, stackLabels = 1, orientation = 0 
             yobj->getProperty, labels = ylbls
             if obj_valid(ylbls) then begin
                 lobj = ylbls->get(/all)
@@ -161,7 +161,7 @@ pro poes_ui_gen_overplot_event, event
       RETURN
     END
     'KEY': begin
-      spd_ui_overplot_key, state.gui_id, state.historyWin, /modal, poes=fix(state.probe)
+      spd_ui_overplot_key, state.gui_id, state.historyWin, /modal, poes=1
     end
     ; follows the same format as for SPEDAS overview plots
     'PROBE:01': state.probe='metop1'
@@ -179,7 +179,6 @@ pro poes_ui_gen_overplot_event, event
 end
 
 
-;returns 1 if overplot generated and 0 otherwise
 pro poes_ui_gen_overplot, gui_id = gui_id, $
                           history_window = historyWin, $
                           status_bar = statusbar, $
@@ -240,7 +239,7 @@ pro poes_ui_gen_overplot, gui_id = gui_id, $
   Button19 = widget_button(probeButtonBase, value='NOAA 19', uvalue='PROBE:19')
   
   widget_control, Button19, /set_button
-  probe='19'
+  probe='noaa19'
 
 ; Time range-related widgets
   getresourcepath,rpath
@@ -255,7 +254,7 @@ pro poes_ui_gen_overplot, gui_id = gui_id, $
 
 
   timeWidget = spd_ui_time_widget(trvalsBase,statusBar,historyWin,timeRangeObj=tr_obj, $
-                                  uvalue='TIME',uname='time', startyear = 1995);, oneday=1 
+                                  uvalue='TIME',uname='time', startyear = 2000);, oneday=1 
   
 
 ; Main window buttons

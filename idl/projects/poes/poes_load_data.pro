@@ -35,8 +35,8 @@
 ;             /downloadonly: Download the file but don't read it  
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-12-08 13:54:06 -0800 (Mon, 08 Dec 2014) $
-; $LastChangedRevision: 16407 $
+; $LastChangedDate: 2014-12-09 10:23:02 -0800 (Tue, 09 Dec 2014) $
+; $LastChangedRevision: 16423 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_load_data.pro $
 ;-
  
@@ -66,17 +66,23 @@ pro poes_fix_ted_flux_vars, ted_fluxes
     for ted_flux_idx = 0, n_elements(ted_fluxes)-1 do begin
         get_data, ted_fluxes[ted_flux_idx], data=poes_data_to_fix, dlimits=poes_dlimits_to_fix
         
-        poes_dlimits_to_fix.cdf.vatt.fillval = !values.F_NAN
-        str_element, poes_dlimits_to_fix, 'ylog', 1, /add_replace
-        poes_fixed_data = poes_data_to_fix
-        
-        ; change -1s to NaNs
-        for j = 0, n_elements(poes_data_to_fix.Y[0,*])-1 do begin
-            poes_fixed_data.Y[where(poes_data_to_fix.Y[*,j] eq -1),j] = !values.f_nan
-        endfor
-        
-        store_data, ted_fluxes[ted_flux_idx]+'_fixed', data=poes_fixed_data, dlimits=poes_dlimits_to_fix
-        tdeflag, ted_fluxes[ted_flux_idx]+'_fixed', 'linear', /overwrite
+        if is_struct(poes_data_to_fix) && is_struct(poes_dlimits_to_fix) then begin
+            poes_dlimits_to_fix.cdf.vatt.fillval = !values.F_NAN
+            str_element, poes_dlimits_to_fix, 'ylog', 1, /add_replace
+            poes_fixed_data = poes_data_to_fix
+            
+            ; change -1s to NaNs
+            for j = 0, n_elements(poes_data_to_fix.Y[0,*])-1 do begin
+                poes_fixed_data.Y[where(poes_data_to_fix.Y[*,j] eq -1),j] = !values.f_nan
+            endfor
+            
+            store_data, ted_fluxes[ted_flux_idx]+'_fixed', data=poes_fixed_data, dlimits=poes_dlimits_to_fix
+            
+            tdeflag, ted_fluxes[ted_flux_idx]+'_fixed', 'linear', /overwrite
+            
+            ; remove the old tplot variable
+            del_data, ted_fluxes[ted_flux_idx]
+        endif
     endfor
 end
 
@@ -422,6 +428,7 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
 
         ted_fluxes = prefix_array[j]+['_ted_ele_flux_tel0', '_ted_ele_flux_tel30', $
                 '_ted_pro_flux_tel0', '_ted_pro_flux_tel30']
+                
         poes_fix_ted_flux_vars, ted_fluxes
     endfor
 

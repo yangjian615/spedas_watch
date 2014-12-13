@@ -18,6 +18,8 @@
 ;       UNITS:         Plot the data in these units.  See mvn_swe_convert_units.
 ;                      Default = 'eflux'.
 ;
+;       FIXY:          Use a fixed y-axis range.
+;
 ;       KEEPWINS:      If set, then don't close the snapshot window(s) on exit.
 ;
 ;       ARCHIVE:       If set, show shapshots of archive data (A5).
@@ -63,8 +65,8 @@
 ;       NOERASE:       Overplot all spectra after the first.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-02 14:44:54 -0800 (Sun, 02 Nov 2014) $
-; $LastChangedRevision: 16114 $
+; $LastChangedDate: 2014-12-11 16:23:42 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16469 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -72,7 +74,7 @@
 pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
                    ddd=ddd, abins=abins, dbins=dbins, sum=sum, pot=pot, pdiag=pdiag, $
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
-                   noerase=noerase, thresh=thresh, scp=scp
+                   noerase=noerase, thresh=thresh, scp=scp, fixy=fixy
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -141,12 +143,26 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       print,"No SPEC archive data."
       return
     endif
+    mvn_swe_convert_units, mvn_swe_engy_arc, units
   endif else begin
     if (size(mvn_swe_engy,/type) ne 8) then begin
       print,"No SPEC survey data."
       return
     endif
   endelse
+  
+  if keyword_set(fixy) then begin
+    case strupcase(units) of
+      'COUNTS' : drange = [1e0, 1e5]
+      'RATE'   : drange = [1e1, 1e6]
+      'CRATE'  : drange = [1e1, 1e6]
+      'FLUX'   : drange = [1e1, 3e8]
+      'EFLUX'  : drange = [1e4, 3e9]
+      'DF'     : drange = [1e-18, 1e-8]
+      else     : drange = [0,0]
+    endcase
+    fflg = 1
+  endif else fflg = 0
 
   if (size(swe_hsk,/type) ne 8) then hflg = 0 else hflg = 1
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
@@ -189,6 +205,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   endif
   
   spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
+  if (fflg) then yrange = drange
   
   case strupcase(spec.units_name) of
     'COUNTS' : ytitle = 'Raw Counts'
@@ -489,6 +506,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
 
     if (size(trange,/type) eq 5) then begin
       spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
+      if (fflg) then yrange = drange
       if (hflg) then dt = min(abs(swe_hsk.time - trange[0]), jref)
     endif else ok = 0
 

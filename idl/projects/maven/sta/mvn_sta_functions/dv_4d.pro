@@ -1,7 +1,7 @@
 ;+
-;FUNCTION:	dv_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+;FUNCTION:	dv_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 ;INPUT:	
-;	dat:	structure,	3d data structure filled by themis routines get_th?_p???
+;	dat:	structure,	4d data structure filled by themis routines mvn_sta_c6.pro, mvn_sta_d0.pro, etc.
 ;KEYWORDS
 ;	ENERGY:	fltarr(2),	optional, min,max energy range for integration
 ;	ERANGE:	fltarr(2),	optional, min,max energy bin numbers for integration
@@ -27,7 +27,7 @@
 ;	J.McFadden	14-02-26	
 ;LAST MODIFICATION:
 ;-
-function dv_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q
+function dv_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
 vel = [0.,0.,0.]
 
@@ -36,24 +36,25 @@ if dat2.valid eq 0 then begin
 	return, vel
 endif
 
-flux = j_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
-density = n_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
-dflux = dj_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
-ddensity = dn_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+dat = conv_units(dat2,"counts")		; initially use counts
+na = dat.nenergy
+nb = dat.nbins
+nm = dat.nmass
 
-nm = n_elements(density)
+cnt=total(dat.data)/!pi
+if not keyword_set(nn) then nn = 13 
+vel = v_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
+dvel = vel
+dvel[*] = 0.
+for i=0,nn-1 do begin
+	tmp = dat
+	tmp.data = dat.data + dat.data^.5*randomn(cnt,na,nb,nm)
+	dvel = dvel + abs(vel - v_4d(tmp,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt))
+	cnt = total(tmp.data)/!pi 
+endfor
+dvelocity = dvel/nn
 
-if keyword_set(ms) then begin
-	dvel1 = dflux/(density+1.e-10)
-	dvel2 = flux*ddensity/(density+1.e-10)^2
-	dvel = 1.e-5*((dvel1)^2+(dvel2)^2)^.5
-endif else begin
-	dvel1 = reform([dflux[0,*]/(density+1.e-10),dflux[1,*]/(density+1.e-10),dflux[2,*]/(density+1.e-10)],3,nm)
-	dvel2 = reform([flux[0,*]*ddensity/(density+1.e-10)^2,flux[1,*]*ddensity/(density+1.e-10)^2,flux[2,*]*ddensity/(density+1.e-10)^2],3,nm)
-	dvel = 1.e-5*((dvel1)^2+(dvel2)^2)^.5
-endelse
-
-return, dvel
+return, dvelocity
 
 end
 

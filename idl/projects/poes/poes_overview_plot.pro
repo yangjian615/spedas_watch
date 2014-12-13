@@ -11,19 +11,22 @@
 ;         date: Start date for the overview plot
 ;         duration: Duration of the overview plot
 ;         error: error state, 0 for no error, 1 for an error
+;         gui_overplot: flag, 0 if the overview plot isn't being made in the GUI, 1 if it is
+;         oplot_calls: pointer to an int for tracking calls to overview plots - for 
+;             avoiding overwriting tplot data already loaded during this session
 ;         
 ; Notes:
 ;       
 ;       
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-12-08 13:55:26 -0800 (Mon, 08 Dec 2014) $
-; $LastChangedRevision: 16408 $
+; $LastChangedDate: 2014-12-11 10:39:43 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16454 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_overview_plot.pro $
 ;-
 
 pro poes_overview_plot, date = date, probe = probe_in, duration = duration, error = error, $
-                        gui_overplot = gui_overplot, oplot_calls = oplot_calls
+                        gui_overplot = gui_overplot, oplot_calls = oplot_calls, _extra = _extra
     compile_opt idl2
     
     ; Catch errors and return
@@ -45,8 +48,8 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration, erro
 
     timespan, date, duration, /day
     
-    window_xsize = 850
-    window_ysize = 900
+    window_xsize = 750
+    window_ysize = 800
     
     poes_load_data, probes = probe_in
 
@@ -55,25 +58,33 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration, erro
         '_mep_ele_flux_tel?', '_mep_ele_flux_tel??', $
         '_mep_pro_flux_tel?', '_mep_pro_flux_tel??']
 
-    if undefined(gui_overplot) then begin
-        ; setup the plot
-        window, xsize=window_xsize, ysize=window_ysize
-        time_stamp,/off
-        loadct2,43
-        !p.charsize=0.8
-        
-        tplot_options, 'title', strupcase(probe_in)
-        
-        tplot, poes_plots
+    ; make sure the data was loaded
+    poes_data_loaded = tnames(poes_plots)
     
-        ; add the ephem labels
-        options, /def, probe_in+'_mlt', 'ytitle', 'MLT'
-        options, /def, probe_in+'_mag_lat_sat', 'ytitle', 'Lat'
+    if n_elements(poes_data_loaded) gt 1 then begin
+        if undefined(gui_overplot) then begin
+            ; setup the plot
+            window, xsize=window_xsize, ysize=window_ysize
+            time_stamp,/off
+            loadct2,43
+            !p.charsize=0.7
+            
+            tplot_options, 'title', strupcase(probe_in)
+            
+            tplot, poes_plots
         
-        tplot, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat']
+            ; add the ephem labels
+            options, /def, probe_in+'_mlt', 'ytitle', 'MLT'
+            options, /def, probe_in+'_mag_lat_sat', 'ytitle', 'Lat'
+            
+            tplot, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat']
+        endif else begin
+            tplot_gui, /no_verify, /add_panel, poes_plots, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat']
+        
+        endelse
+        error = 0
     endif else begin
-        tplot_gui, /no_verify, /add_panel, poes_plots, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat']
-    
+        dprint, dlevel = 0, 'Error creating POES overview plot - no data loaded for ' + time_string(date)
+        error = 1
     endelse
-    error = 0
 end

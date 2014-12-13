@@ -1,7 +1,7 @@
 ;+
-;FUNCTION:	vp_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+;FUNCTION:	vp_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 ;INPUT:	
-;	dat:	structure,	3d data structure filled by themis routines mvn_sta_get_???
+;	dat:	structure,	4d data structure filled by themis routines mvn_sta_c6.pro, mvn_sta_d0.pro, etc.
 ;KEYWORDS
 ;	ENERGY:	fltarr(2),	optional, min,max energy range for integration
 ;	ERANGE:	fltarr(2),	optional, min,max energy bin numbers for integration
@@ -27,7 +27,7 @@
 ;	J.McFadden	2014-02-27
 ;LAST MODIFICATION:
 ;-
-function vp_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q
+function vp_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
@@ -51,6 +51,8 @@ if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
 endif
+
+if keyword_set(mincnt) then if total(data) lt mincnt then return,0
 
 charge=dat.charge
 if keyword_set(q) then charge=q

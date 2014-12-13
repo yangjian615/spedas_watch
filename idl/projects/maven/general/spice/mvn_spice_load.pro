@@ -30,9 +30,9 @@ pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,ver
    xyz_to_polar,n1
    
    frame = 'MAVEN_SPACECRAFT'
- ; frame = 'MAVEN_SCALT'
+;   frame = 'MAVEN_SCALT'
    spice_qrot_to_tplot,frame,'MSO',get_omega=3,res=30d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .5 *!pi/180  ; .5 degree error
-   spice_qrot_to_tplot,frame,'MAVEN_APP',get_omega=3,res=30d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .5 *!pi/180  ; .5 degree error
+   spice_qrot_to_tplot,frame,'MAVEN_APP',get_omega=3,res=30d,names=tn,check_obj=['MAVEN_SPACECRAFT','MAVEN_APP_OG'] ,error=  .5 *!pi/180  ; .5 degree error
    
 end
 

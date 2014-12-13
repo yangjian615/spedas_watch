@@ -25,7 +25,7 @@
 ; CALLING SEQUENCE to change options (typically typed from IDL command line - Don't put these lines in code!!!)
 ;       DPRINT, setdebug=2   ; define persistent debug level (2 is typical level)
 ;       DPRINT, SETVERBOSE=2 ; Same as above
-;       DPRINT, print_trace=[0,1,2, or 3]  ; Display program trace info in subsequent calls to DPRINT
+;       DPRINT, print_trace=[0,1,2,3, or 4]  ; Display program trace info in subsequent calls to DPRINT
 ;       DPRINT, /print_dlevel      ; Display current dlevel and verbose settings.
 ;       DPRINT, /print_dtime       ; Display delta time between DPRINT statements.
 ;
@@ -86,8 +86,8 @@
 ;                          Added PRINT_TRACE,PRINT_DTIME,PRINT_DLEVEL
 ;                          Added Widget options
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-02-10 17:20:08 -0800 (Mon, 10 Feb 2014) $
-; $LastChangedRevision: 14267 $
+; $LastChangedDate: 2014-12-09 15:53:06 -0800 (Tue, 09 Dec 2014) $
+; $LastChangedRevision: 16427 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/SSW/dprint.pro $
 ;
 ;-

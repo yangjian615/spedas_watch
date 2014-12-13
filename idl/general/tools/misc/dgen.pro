@@ -51,7 +51,7 @@ if n_elements(n) le 0 then n = 100
 
 
 if n eq 1 then x = [(r[1]+r[0])/2] $
-else x = dindgen(n)*(r(1) - r(0))/(n-1) + r(0)
+else x = dindgen(n)*(r[1] - r[0])/(n-1) + r[0]
 
 if keyword_set(log) then x = 10d^x
 

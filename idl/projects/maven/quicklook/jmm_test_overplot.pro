@@ -2,12 +2,13 @@
 ;date = '2014-05-26'
 ;date = '2014-07-16'
 ;date = '2014-09-23'
-date = '2014-10-19'
+set_plot, 'z'
+date = '2014-12-08'
 For j = 0, n_elements(date)-1 Do Begin
    filex = mvn_l0_db2file(date[j])
-   mvn_over_shell, l0_input_file = filex, $
+   mvn_over_shell, l0_input_file = filex, /multipngplot, $
                    plot_dir = '~/public_html/maven/test_overplot/', $
-                   /date_only, device = 'z'
+                   device = 'z'
 Endfor
 
 End

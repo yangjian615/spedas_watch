@@ -1,7 +1,7 @@
 ;+
-;FUNCTION:	ec_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+;FUNCTION:	ec_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 ;INPUT:	
-;	dat:	structure,	3d data structure filled by themis routines get_th?_p???
+;	dat:	structure,	4d data structure filled by themis routines mvn_sta_c6.pro, mvn_sta_d0.pro, etc.
 ;KEYWORDS
 ;	ENERGY:	fltarr(2),	optional, min,max energy range for integration
 ;	ERANGE:	fltarr(2),	optional, min,max energy bin numbers for integration
@@ -28,7 +28,7 @@
 ;	J.McFadden	2014-04-21	
 ;LAST MODIFICATION:
 ;-
-function ec_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q
+function ec_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
 ec = 0.
 
@@ -37,8 +37,8 @@ if dat2.valid eq 0 then begin
   return, ec
 endif
 
-eflux=je_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
-flux=j_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+eflux=je_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
+flux=j_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 
 return, eflux/(flux+1.e-20)
 

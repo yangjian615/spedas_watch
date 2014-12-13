@@ -22,8 +22,8 @@
 ;  none
 ;  
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-08-04 09:28:09 -0700 (Mon, 04 Aug 2014) $
-;$LastChangedRevision: 15647 $
+;$LastChangedDate: 2014-12-11 10:44:53 -0800 (Thu, 11 Dec 2014) $
+;$LastChangedRevision: 16456 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_overplot_key.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -32,8 +32,10 @@ pro spd_ui_overplot_key_draw, state
   compile_opt idl2, hidden
   
   getresourcepath,rpath
-  
-  if state.goes eq 0 then begin
+
+  if state.poes eq 1 then begin
+    key = read_png(rpath + 'poes_key.png')
+  endif else if state.goes eq 0 && state.poes eq 0 then begin
     key = read_png(rpath + 'overplotkey.png')
   endif else if state.goes ge 8 && state.goes le 12 then begin
     ; GOES 8-12
@@ -126,7 +128,7 @@ pro spd_ui_overplot_key_event, event
   Return
 end
 
-pro spd_ui_overplot_key, gui_id, historyWin, modal=modal, goes=goes
+pro spd_ui_overplot_key, gui_id, historyWin, modal = modal, goes = goes, poes = poes
 
   compile_opt idl2, hidden
   
@@ -135,17 +137,25 @@ pro spd_ui_overplot_key, gui_id, historyWin, modal=modal, goes=goes
   y_length = screen_size[1] - 140
   if (screen_size[1] gt 900) then y_length=900
   if (y_length le 450) then y_length=450
-  ; check if the GOES overview plot panel sent us here
+  ; check if the GOES or POES overview plot panel sent us here
   if undefined(goes) then goes=0
+  if undefined(poes) then poes=0
+  
+  overplot_xsize = 750
+  
+  ; ysize for overview plots:
+  ;  THEMIS: 900px, GOES: 1015px, POES: 800px
+  overplot_ysize = goes ne 0 ? 1015 : 900
+  overplot_ysize = poes ne 0 ? 800 : overplot_ysize
   
   keyid = widget_base(/col, title='Overview Plot Key', group_leader=gui_id, modal=modal, TLB_FRAME_ATTR=1)
   
-  keyDisplay = widget_draw(keyid, graphics_level=2, renderer=1, retain=0, XSize=750, YSIZE=(~undefined(goes) ? 1015 : 900), units=0, x_scroll_size=750, y_scroll_size=y_length, /expose_events)
+  keyDisplay = widget_draw(keyid, graphics_level=2, renderer=0, retain=2, XSize=overplot_xsize, YSIZE=overplot_ysize, units=0, x_scroll_size=overplot_xsize, y_scroll_size=y_length, /expose_events)
   buttons= widget_base(keyid, /row, /align_center)
   exitButtonBase = widget_base(buttons, /col, /align_center)
   exitButton = widget_button(exitButtonBase, val=' Close ', uval='EXIT', /align_center)
 
-  state = {gui_id:gui_id, historyWin:historyWin, keyDisplay:keyDisplay, goes:goes}
+  state = {gui_id:gui_id, historyWin:historyWin, keyDisplay:keyDisplay, goes:goes, poes:poes}
   
   Widget_Control, keyid, Set_UValue=state, /No_Copy
   CenterTLB, keyid

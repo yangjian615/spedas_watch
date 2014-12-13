@@ -487,7 +487,7 @@ end
 
 
 
-pro mvn_sep_var_save,filename,pathname=pathname,trange=trange,prereq_info=prereq_info,verbose=verbose
+pro mvn_sep_var_save,filename,pathname=pathname,trange=trange,prereq_info=prereq_info,verbose=verbose,description=description
 common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
  ,sep1_memdump,sep2_memdump,mag1_hkp_f0,mag2_hkp_f0
  
@@ -512,7 +512,7 @@ if 1 then begin
  ; undefine, s2_hkp,s2_svy,s2_arc,s2_nse
   sw_version = mvn_sep_sw_version()
   spice_kernels = spice_test('*')
-  spice_info = file_hash(/add_mtime,spice_kernels)
+  spice_info = file_checksum(/add_mtime,spice_kernels)
   if keyword_set(sep1_hkp) then s1_hkp = *sep1_hkp.x
   if keyword_set(sep1_svy) then s1_svy = *sep1_svy.x
   if keyword_set(sep1_arc) then s1_arc = *sep1_arc.x
@@ -532,7 +532,7 @@ if 1 then begin
   if keyword_set(apid25x) then ap25 = *apid25x.x
 
   file_mkdir2,file_dirname(filename)  
-  save,filename=filename,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,sw_version,prereq_info,spice_info,ap20,ap21,ap22,ap23,ap24,ap25
+  save,filename=filename,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,sw_version,prereq_info,spice_info,ap20,ap21,ap22,ap23,ap24,ap25,description=description
 endif else begin
   save,verbose=verbose,filename=filename,sep_all_ptrs,sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise,sep1_memdump,sep2_memdump
 endelse

@@ -29,13 +29,14 @@
 ;HISTORY:
 ; Hacked from mvn_sep_gen_ql, 2013-06-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-04-29 19:42:52 -0700 (Tue, 29 Apr 2014) $
-; $LastChangedRevision: 14973 $
+; $LastChangedDate: 2014-12-10 16:22:29 -0800 (Wed, 10 Dec 2014) $
+; $LastChangedRevision: 16447 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_sep_overplot.pro $
 Pro mvn_sep_overplot, date = date, time_range = time_range, $
                       makepng = makepng, device = device, directory = directory, $
                       l0_input_file = l0_input_file, $
-                      noload_data = noload_data,  _extra=_extra
+                      noload_data = noload_data, multipngplot = multipngplot, $
+                      _extra=_extra
 
 mvn_qlook_init, device = device
 
@@ -58,7 +59,6 @@ If(~keyword_set(noload_data)) Then Begin
    mvn_pfp_l0_file_read,file=filex,/sep
 Endif
 
-If(keyword_set(directory)) Then pdir = directory Else pdir = './'
 varlist = tnames('mvn_sep*') ;just to get a time range
 varlist = mvn_qlook_vcheck(varlist, tr = tr)
 If(varlist[0] Eq '') Then Begin
@@ -77,9 +77,12 @@ tr = tr > d0
 tplot_options, 'title', 'MAVEN SEP Quicklook '+date
 
 mvn_sep_tplot,'Ql'
+If(keyword_set(multipngplot)) Then makepng = 1b
 If(keyword_set(makepng)) Then Begin
+   If(keyword_set(directory)) Then pdir = directory Else pdir = './'
     fname = pdir+mvn_qlook_filename('sep', tr, _extra = _extra)
-    makepng, fname
+    If(keyword_set(multipngplot)) Then mvn_gen_multipngplot, fname, directory = pdir $
+    Else makepng, fname
 Endif
 
 Return

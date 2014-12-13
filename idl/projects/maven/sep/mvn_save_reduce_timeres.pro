@@ -34,13 +34,13 @@ for i=0L,nd-1 do begin
   tn = tr[0]
   prereq_files=''
 
-  fullres_files  = mvn_pfp_file_retrieve(fullres_fmt,trange=tn +[0,1.0001d]*day ,/daily_names)   ; use a little bit of following day file
+  fullres_files  = mvn_pfp_file_retrieve(fullres_fmt,trange=tn +[-.001,1.0001d]*day ,/daily_names)   ; use a little bit of files on either side. /This should always return 3 filenames
   redures_file   = mvn_pfp_file_retrieve(redures_fmt,trange=tn,/daily_names,/create_dir)
   
   dprint,dlevel=3,fullres_files[0]
   
-  if file_test(fullres_files[0],/regular) eq 0 then begin
-    dprint,verbose=verbose,dlevel=2,fullres_files[0]+' Not found. Skipping
+  if file_test(fullres_files[1],/regular) eq 0 then begin
+    dprint,verbose=verbose,dlevel=2,fullres_files[1]+' Not found. Skipping
     continue
   endif
 
@@ -59,16 +59,15 @@ for i=0L,nd-1 do begin
   
   alldata=0
 ;  all_dependents=''
-  all_dependents = file_hash(prereq_files,/add_mtime)
+  all_dependents = file_checksum(prereq_files,/add_mtime)
   
   for j=0,n_elements(fullres_files)-1 do begin
      f = fullres_files[j]
      if file_test(/regular,f) eq 0 then continue
      restore,f    ;,/verbose   ; it is presumed that the variables: 'data' and 'dependents' are defined here.
-     if keyword_set(mag_cluge) then dependents = [header.sts_info,header.spice_list]
      append_array,alldata,data
      append_array,all_dependents,dependents
-     if j eq 0 then info = header
+     if j eq 1 then info = header else info=0
   endfor
   
   data = average_hist(alldata,alldata.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)

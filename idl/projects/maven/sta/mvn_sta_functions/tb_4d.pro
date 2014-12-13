@@ -1,5 +1,5 @@
 ;+
-;FUNCTION:	tb_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+;FUNCTION:	tb_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 ;INPUT:	
 ;	dat:	structure,	4d data structure filled by themis routines mvn_sta_c6.pro, mvn_sta_d0.pro, etc.
 ;KEYWORDS
@@ -27,7 +27,7 @@
 ;	J.McFadden	2014-02-27
 ;LAST MODIFICATION:
 ;-
-function tb_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q
+function tb_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
@@ -65,6 +65,8 @@ charge=dat.charge
 if keyword_set(q) then charge=q
 energy=(dat.energy+charge*dat.sc_pot/abs(charge))>0.		; energy/charge analyzer, require positive energy
 
+if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+
 ; Note - we don't need to divide by mass
 
 v = (2.*energy*charge)^.5		; km/s
@@ -81,7 +83,15 @@ if keyword_set(ms) then begin
 	vth2  = total((v-vd)^2*data/v)/(total(data/v)>1.e-20)
 endif else begin
 	vd = total(data,1)/(total(data/v,1)>1.e-20)
+	vd = replicate(1.,n_e)#reform(vd,n_elements(vd))
+;print,v[*,0]
+;print,' '
+;print,reform(vd[0,*])
 	vth2  = total((v-vd)^2*data/v,1)/(total(data/v,1)>1.e-20)
+;print,'num',total((v-vd)^2*data/v,1)
+;print,' '
+;print,'den',total(data/v,1)>1.e-20
+;print,' '
 endelse
 
 return, vth2/2.

@@ -375,33 +375,51 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 ; get mode data and determine 
 	get_data,'mvn_sta_c6_mode',data=tmp
 		time = tmp.x
-		ind1 = where (tmp.y ne 2) 
-		ind2 = where (tmp.y ne 3) 
+		npts = n_elements(time)
+		ind1 = where (tmp.y ne 2,count1) 
+		ind2 = where (tmp.y ne 3,count2) 
+
+	get_data,'mvn_sta_ce_tot',data=tmp1,dtype=dtype_ce
+	get_data,'mvn_sta_d0_tot',data=tmp2,dtype=dtype_d0
+
+	if dtype_ce eq 0 and dtype_d0 eq 0 then begin
+		print,'Error in mvn_sta_l2_gen_kp : No d0 or ce data available."
+		return
+	endif
 
 ; H+ Characteristic Direction
 
-	get_4dt,'vc_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_vc_ce'
-		options,'mvn_sta_H+_vc_ce',ytitle='sta ce!C H+!C!Cvec'
-		ylim,'mvn_sta_H+_vc_ce',-1.1,1.1,0
-		options,'mvn_sta_H+_vc_ce',colors=[cols.blue,cols.green,cols.red]
-		options,'mvn_sta_H+_vc_ce',SPICE_FRAME='MAVEN_STATIC'
+	if dtype_ce ne 0 then begin
+		get_4dt,'vc_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_vc_ce'
+			options,'mvn_sta_H+_vc_ce',ytitle='sta ce!C H+!C!Cvec'
+			ylim,'mvn_sta_H+_vc_ce',-1.1,1.1,0
+			options,'mvn_sta_H+_vc_ce',colors=[cols.blue,cols.green,cols.red]
+			options,'mvn_sta_H+_vc_ce',SPICE_FRAME='MAVEN_STATIC'
+     	endif
 
-	get_4dt,'vc_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_vc_d0'
-		options,'mvn_sta_H+_vc_d0',ytitle='sta ce!C H+!C!Cvec'
-		ylim,'mvn_sta_H+_vc_d0',-1,1,0
-		options,'mvn_sta_H+_vc_d0',colors=[cols.blue,cols.green,cols.red]
-		options,'mvn_sta_H+_vc_d0',SPICE_FRAME='MAVEN_STATIC'
-
+	if dtype_d0 ne 0 then begin
+		get_4dt,'vc_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_vc_d0'
+			options,'mvn_sta_H+_vc_d0',ytitle='sta ce!C H+!C!Cvec'
+			ylim,'mvn_sta_H+_vc_d0',-1,1,0
+			options,'mvn_sta_H+_vc_d0',colors=[cols.blue,cols.green,cols.red]
+			options,'mvn_sta_H+_vc_d0',SPICE_FRAME='MAVEN_STATIC'
+	endif
 
 ; combine apid ce and d0 H+ Characteristic Direction
+	
+	if dtype_ce ne 0 then begin
+		tmp1=0
+		get_data,'mvn_sta_H+_vc_ce',data=tmp1
+			tmp1a = interp(tmp1.y,tmp1.x,time)
+			if count1 gt 0 then tmp1a[ind1,*]=0.
+	endif else tmp1a=fltarr(npts,3)
 
-	tmp1=0 & tmp2=0
-	get_data,'mvn_sta_H+_vc_ce',data=tmp1
-	get_data,'mvn_sta_H+_vc_d0',data=tmp2
-		tmp1a = interp(tmp1.y,tmp1.x,time)
-		tmp1a[ind1,*]=0.
-		tmp2a = interp(tmp2.y,tmp2.x,time)
-		tmp2a[ind2,*]=0.
+	if dtype_d0 ne 0 then begin
+		tmp2=0
+		get_data,'mvn_sta_H+_vc_d0',data=tmp2
+			tmp2a = interp(tmp2.y,tmp2.x,time)
+			if count2 gt 0 then tmp2a[ind2,*]=0.
+	endif else tmp2a=fltarr(npts,3)
 
 	store_data,'mvn_sta_H+_vc',data={x:time,y:tmp1a+tmp2a}
 		options,'mvn_sta_H+_vc',SPICE_FRAME='MAVEN_STATIC'
@@ -419,72 +437,101 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 
 ; H+ Anisotropy
 
-	get_4dt,'wc_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_wc_ce'
-		options,'mvn_sta_H+_wc_ce',ytitle='sta ce!C H+!C!Caniso',colors=cols.blue
-		ylim,'mvn_sta_H+_wc_ce',-.1,1.1,0
+	if dtype_ce ne 0 then begin
+		get_4dt,'wc_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_wc_ce'
+			options,'mvn_sta_H+_wc_ce',ytitle='sta ce!C H+!C!Caniso',colors=cols.blue
+			ylim,'mvn_sta_H+_wc_ce',-.1,1.1,0
+     	endif
 
-	get_4dt,'wc_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_wc_d0'
-		options,'mvn_sta_H+_wc_d0',ytitle='sta ce!C H+!C!Caniso',colors=cols.blue
-		ylim,'mvn_sta_H+_wc_d0',-.1,1.1,0
+	if dtype_d0 ne 0 then begin
+		get_4dt,'wc_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_wc_d0'
+			options,'mvn_sta_H+_wc_d0',ytitle='sta ce!C H+!C!Caniso',colors=cols.blue
+			ylim,'mvn_sta_H+_wc_d0',-.1,1.1,0
+	endif
 
 ; combine apid ce and d0 H+ Anisotropy
 
-	tmp1=0 & tmp2=0
-	get_data,'mvn_sta_H+_wc_ce',data=tmp1
-	get_data,'mvn_sta_H+_wc_d0',data=tmp2
-		tmp1a = interp(tmp1.y,tmp1.x,time)
-		tmp1a[ind1,*]=0.
-		tmp2a = interp(tmp2.y,tmp2.x,time)
-		tmp2a[ind2,*]=0.
+	if dtype_ce ne 0 then begin
+		tmp1=0 
+		get_data,'mvn_sta_H+_wc_ce',data=tmp1
+			tmp1a = interp(tmp1.y,tmp1.x,time)
+			if count1 gt 0 then tmp1a[ind1]=0.
+	endif else tmp1a=fltarr(npts)
+
+	if dtype_d0 ne 0 then begin
+		tmp2=0
+		get_data,'mvn_sta_H+_wc_d0',data=tmp2
+			tmp2a = interp(tmp2.y,tmp2.x,time)
+			if count2 gt 0 then tmp2a[ind2]=0.
+	endif else tmp2a=fltarr(npts)
 
 	store_data,'mvn_sta_H+_wc',data={x:tmp0.x,y:tmp1a+tmp2a}
 
-
 ; H+ Counts
 
-	get_4dt,'c_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_cnts_ce'
-		options,'mvn_sta_H+_cnts_ce',ytitle='sta d0!C H+!C!Ccnts',colors=cols.blue
-		ylim,'mvn_sta_H+_cnts_ce',.1,1.e5,1
+	if dtype_ce ne 0 then begin
+		get_4dt,'c_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_cnts_ce'
+			options,'mvn_sta_H+_cnts_ce',ytitle='sta d0!C H+!C!Ccnts',colors=cols.blue
+			ylim,'mvn_sta_H+_cnts_ce',.1,1.e5,1
+	endif
 
-	get_4dt,'c_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_cnts_d0'
-		options,'mvn_sta_H+_cnts_d0',ytitle='sta d0!C H+!C!Ccnts',colors=cols.blue
-		ylim,'mvn_sta_H+_cnts_d0',.1,1.e5,1
+	if dtype_d0 ne 0 then begin
+		get_4dt,'c_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_cnts_d0'
+			options,'mvn_sta_H+_cnts_d0',ytitle='sta d0!C H+!C!Ccnts',colors=cols.blue
+			ylim,'mvn_sta_H+_cnts_d0',.1,1.e5,1
+	endif
 
 ; combine apid ce and d0 H+ Counts
 
-	tmp1=0 & tmp2=0
-	get_data,'mvn_sta_H+_cnts_ce',data=tmp1
-	get_data,'mvn_sta_H+_cnts_d0',data=tmp2
-		tmp1a = interp(tmp1.y,tmp1.x,time)
-		tmp1a[ind1,*]=0.
-		tmp2a = interp(tmp2.y,tmp2.x,time)
-		tmp2a[ind2,*]=0.
+	if dtype_ce ne 0 then begin
+		tmp1=0 
+		get_data,'mvn_sta_H+_cnts_ce',data=tmp1
+			tmp1a = interp(tmp1.y,tmp1.x,time)
+			if count1 gt 0 then tmp1a[ind1]=0.
+	endif else tmp1a=fltarr(npts)
+
+	if dtype_d0 ne 0 then begin
+		tmp2=0
+		get_data,'mvn_sta_H+_cnts_d0',data=tmp2
+			tmp2a = interp(tmp2.y,tmp2.x,time)
+			if count2 gt 0 then tmp2a[ind2,*]=0.
+	endif else tmp2a=fltarr(npts)
 
 	store_data,'mvn_sta_H+_cnts_ced0',data={x:time,y:tmp1a+tmp2a}
 
 ; Dominant Pickup ion Characteristic Direction
 
-	get_4dt,'vc_4d','mvn_sta_get_ce',mass=[10,64],name='mvn_sta_PU_vc_ce'
-		options,'mvn_sta_PU_vc_ce',ytitle='sta ce!C PU!C!Cvec'
-		ylim,'mvn_sta_PU_vc_ce',-.1,1.1,0
-		options,'mvn_sta_PU_vc_ce',colors=[cols.blue,cols.green,cols.red]
-		options,'mvn_sta_PU_vc_ce',SPICE_FRAME='MAVEN_STATIC'
+	if dtype_ce ne 0 then begin
+		get_4dt,'vc_4d','mvn_sta_get_ce',mass=[10,64],name='mvn_sta_PU_vc_ce'
+			options,'mvn_sta_PU_vc_ce',ytitle='sta ce!C PU!C!Cvec'
+			ylim,'mvn_sta_PU_vc_ce',-.1,1.1,0
+			options,'mvn_sta_PU_vc_ce',colors=[cols.blue,cols.green,cols.red]
+			options,'mvn_sta_PU_vc_ce',SPICE_FRAME='MAVEN_STATIC'
+	endif
 
-	get_4dt,'vc_4d','mvn_sta_get_d0',mass=[10,64],name='mvn_sta_PU_vc_d0'
-		options,'mvn_sta_PU_vc_d0',ytitle='sta ce!C PU!C!Cvec'
-		ylim,'mvn_sta_PU_vc_d0',-.1,1.1,0
-		options,'mvn_sta_PU_vc_d0',colors=[cols.blue,cols.green,cols.red]
-		options,'mvn_sta_PU_vc_d0',SPICE_FRAME='MAVEN_STATIC'
+	if dtype_d0 ne 0 then begin
+		get_4dt,'vc_4d','mvn_sta_get_d0',mass=[10,64],name='mvn_sta_PU_vc_d0'
+			options,'mvn_sta_PU_vc_d0',ytitle='sta ce!C PU!C!Cvec'
+			ylim,'mvn_sta_PU_vc_d0',-.1,1.1,0
+			options,'mvn_sta_PU_vc_d0',colors=[cols.blue,cols.green,cols.red]
+			options,'mvn_sta_PU_vc_d0',SPICE_FRAME='MAVEN_STATIC'
+	endif
 
 ; combine apid ce and d0 PU Characteristic Direction
 
-	tmp1=0 & tmp2=0
-	get_data,'mvn_sta_PU_vc_ce',data=tmp1
-	get_data,'mvn_sta_PU_vc_d0',data=tmp2
-		tmp1a = interp(tmp1.y,tmp1.x,time)
-		tmp1a[ind1,*]=0.
-		tmp2a = interp(tmp2.y,tmp2.x,time)
-		tmp2a[ind2,*]=0.
+	if dtype_ce ne 0 then begin
+		tmp1=0 
+		get_data,'mvn_sta_PU_vc_ce',data=tmp1
+			tmp1a = interp(tmp1.y,tmp1.x,time)
+			if count1 gt 0 then tmp1a[ind1,*]=0.
+	endif else tmp1a=fltarr(npts,3)
+
+	if dtype_d0 ne 0 then begin
+		tmp2=0
+		get_data,'mvn_sta_PU_vc_d0',data=tmp2
+			tmp2a = interp(tmp2.y,tmp2.x,time)
+			if count2 gt 0 then tmp2a[ind2,*]=0.
+	endif else tmp2a=fltarr(npts,3)
 
 	store_data,'mvn_sta_PU_vc',data={x:time,y:tmp1a+tmp2a}
 		options,'mvn_sta_PU_vc',SPICE_FRAME='MAVEN_STATIC'
@@ -502,46 +549,66 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 
 ; Pickup ion Anisotropy
 
-	get_4dt,'wc_4d','mvn_sta_get_ce',mass=[16,64],name='mvn_sta_PU_wc_ce'
-		options,'mvn_sta_PU_wc_ce',ytitle='sta ce!C PU!C!Ciso',colors=cols.blue
-		ylim,'mvn_sta_PU_wc_ce',-.1,1.1,0
+	if dtype_ce ne 0 then begin
+		get_4dt,'wc_4d','mvn_sta_get_ce',mass=[16,64],name='mvn_sta_PU_wc_ce'
+			options,'mvn_sta_PU_wc_ce',ytitle='sta ce!C PU!C!Ciso',colors=cols.blue
+			ylim,'mvn_sta_PU_wc_ce',-.1,1.1,0
+	endif
 
-	get_4dt,'wc_4d','mvn_sta_get_d0',mass=[16,64],name='mvn_sta_PU_wc_d0'
-		options,'mvn_sta_PU_wc_d0',ytitle='sta ce!C PU!C!Ciso',colors=cols.blue
-		ylim,'mvn_sta_PU_wc_d0',-.1,1.1,0
+	if dtype_d0 ne 0 then begin
+		get_4dt,'wc_4d','mvn_sta_get_d0',mass=[16,64],name='mvn_sta_PU_wc_d0'
+			options,'mvn_sta_PU_wc_d0',ytitle='sta ce!C PU!C!Ciso',colors=cols.blue
+			ylim,'mvn_sta_PU_wc_d0',-.1,1.1,0
+	endif
 
 ; combine apid ce and d0 PU Anisotropy
 
-	tmp1=0 & tmp2=0
-	get_data,'mvn_sta_PU_wc_ce',data=tmp1
-	get_data,'mvn_sta_PU_wc_d0',data=tmp2
-		tmp1a = interp(tmp1.y,tmp1.x,time)
-		tmp1a[ind1,*]=0.
-		tmp2a = interp(tmp2.y,tmp2.x,time)
-		tmp2a[ind2,*]=0.
+	if dtype_ce ne 0 then begin
+		tmp1=0 
+		get_data,'mvn_sta_PU_wc_ce',data=tmp1
+			tmp1a = interp(tmp1.y,tmp1.x,time)
+			if count1 gt 0 then tmp1a[ind1,*]=0.
+	endif else tmp1a=fltarr(npts,3)
+
+	if dtype_ce ne 0 then begin
+		tmp2=0
+		get_data,'mvn_sta_PU_wc_d0',data=tmp2
+			tmp2a = interp(tmp2.y,tmp2.x,time)
+			if count2 gt 0 then tmp2a[ind2,*]=0.
+	endif else tmp2a=fltarr(npts,3)
 
 	store_data,'mvn_sta_PU_wc',data={x:time,y:tmp1a+tmp2a}
 
 
 ; Pickup ion counts
 
-	get_4dt,'c_4d','mvn_sta_get_ce',mass=[10,64],name='mvn_sta_PU_cnts_ce'
-		options,'mvn_sta_PU_cnts_ce',ytitle='sta d0!C PU!C!Ccnts',colors=cols.red
-		ylim,'mvn_sta_PU_cnts_ce',1,1.e5,1
+	if dtype_ce ne 0 then begin
+		get_4dt,'c_4d','mvn_sta_get_ce',mass=[10,64],name='mvn_sta_PU_cnts_ce'
+			options,'mvn_sta_PU_cnts_ce',ytitle='sta d0!C PU!C!Ccnts',colors=cols.red
+			ylim,'mvn_sta_PU_cnts_ce',1,1.e5,1
+	endif
 
-	get_4dt,'c_4d','mvn_sta_get_d0',mass=[10,64],name='mvn_sta_PU_cnts_d0'
-		options,'mvn_sta_PU_cnts_d0',ytitle='sta d0!C PU!C!Ccnts',colors=cols.red
-		ylim,'mvn_sta_PU_cnts_d0',1,1.e5,1
+	if dtype_d0 ne 0 then begin
+		get_4dt,'c_4d','mvn_sta_get_d0',mass=[10,64],name='mvn_sta_PU_cnts_d0'
+			options,'mvn_sta_PU_cnts_d0',ytitle='sta d0!C PU!C!Ccnts',colors=cols.red
+			ylim,'mvn_sta_PU_cnts_d0',1,1.e5,1
+	endif
 
 ; combine apid ce and d0 PU Counts
 
-	tmp1=0 & tmp2=0
-	get_data,'mvn_sta_PU_cnts_ce',data=tmp1
-	get_data,'mvn_sta_PU_cnts_d0',data=tmp2
-		tmp1a = interp(tmp1.y,tmp1.x,time)
-		tmp1a[ind1,*]=0.
-		tmp2a = interp(tmp2.y,tmp2.x,time)
-		tmp2a[ind2,*]=0.
+	if dtype_ce ne 0 then begin
+		tmp1=0 
+		get_data,'mvn_sta_PU_cnts_ce',data=tmp1
+			tmp1a = interp(tmp1.y,tmp1.x,time)
+			if count1 gt 0 then tmp1a[ind1,*]=0.
+	endif else tmp1a=fltarr(npts)
+	
+	if dtype_d0 ne 0 then begin
+		tmp2=0
+		get_data,'mvn_sta_PU_cnts_d0',data=tmp2
+			tmp2a = interp(tmp2.y,tmp2.x,time)
+			if count2 gt 0 then tmp2a[ind2,*]=0.
+	endif else tmp2a=fltarr(npts)
 
 	store_data,'mvn_sta_PU_cnts_ced0',data={x:time,y:tmp1a+tmp2a}
 

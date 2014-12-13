@@ -29,7 +29,7 @@
 ; 1. Quality flags qf_bits for semiclosed time intervals [t_start, t_end) with t_start<t_end and qf_bits>0
 ; 2. qf_bits = 0 is ignored since it is assumed to be the default
 ; 3. t_start = t_end is not possible
-; 4. Adding two quality flags is handled by qf_add() and qf_total()
+; 4. Adding two quality flags (bitwise OR) is handled by qf_add() and qf_total()
 ;
 ;EXAMPLES:
 ; x = obj_new('SPD_QF_LIST', t_start=[1262304000.0], t_end=[1263081600.0], qf_bits=[1])
@@ -39,39 +39,11 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-12-08 11:40:04 -0800 (Mon, 08 Dec 2014) $
-;$LastChangedRevision: 16396 $
+;$LastChangedDate: 2014-12-10 16:47:06 -0800 (Wed, 10 Dec 2014) $
+;$LastChangedRevision: 16448 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_qf_list__define.pro $
 ;-----------------------------------------------------------------------------------
 
-pro ntest
-  x = obj_new('SPD_QF_LIST', t_start=[3.,2.,2.,1.,2.,2.], t_end=[3.,20.,230.,10.,220.,20.], qf_bits=[3,2222,23,1,22,2])
-  y = obj_new('SPD_QF_LIST', t_start=[5.,4.,3.,2.,2., 240], t_end=[50.,40.,30.,10.,220., 280.], qf_bits=[5,4,3,1111,27,1])
-  
-  ;x = obj_new('SPD_QF_LIST', t_start=[0.0D,100.0D], t_end=[100.0D,150.0D], qf_bits=[1UL,2UL])
-  ;y = obj_new('SPD_QF_LIST', t_start=[95.0D], t_end=[105.0D], qf_bits=[3UL])
-  
-  ;x = obj_new('SPD_QF_LIST', t_start=[1262304000.0D], t_end=[1263081600.0D], qf_bits=[1UL])
-  ;y = obj_new('SPD_QF_LIST', t_start=[1262649600.0D,1263513600.0D], t_end=[1263513600.0D,1264377600.0D], qf_bits=[2UL,3UL])
-
-  z = x.qf_merge(y)
-  
-  print, "---x---"
-  test = x.qf_print()
-  print, "---y---"
-  test = y.qf_print()
-  print, "---z---"
-  test = z.qf_print()
-  
-  ; a = z.qf_time_slice(1262305000.0D,1263513600.0D)
-  a = z.qf_time_slice(2.2,210.0)
-  print, "---qf_time_slice---"
-  test = a.qf_print() 
-    
-  print, "---get_qf(1263513600.0D)---"
-  print, z.get_qf(1263513600.0D)
-    
-end
 
 function spd_qf_list::init, t_start=t_start, t_end=t_end, qf_bits=qf_bits
   self.t_start = ptr_new(t_start)
@@ -205,9 +177,8 @@ function spd_qf_list::qf_total, qf_bits
 end
 
 function spd_qf_list::qf_add, qf_bits1, qf_bits2
-  ; add two quality flags
-  result = qf_bits1
-  if qf_bits1 ne qf_bits2 then result = qf_bits1 + qf_bits2
+  ; add two quality flags, bitwise OR
+  result = qf_bits1 OR qf_bits2
   return, result
 end
 

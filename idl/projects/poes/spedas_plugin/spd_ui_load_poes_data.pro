@@ -8,8 +8,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-12-08 12:16:36 -0800 (Mon, 08 Dec 2014) $
-;$LastChangedRevision: 16399 $
+;$LastChangedDate: 2014-12-09 11:00:40 -0800 (Tue, 09 Dec 2014) $
+;$LastChangedRevision: 16424 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/spd_ui_load_poes_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -267,7 +267,9 @@ pro spd_ui_load_poes_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
 
   ; default of the data type list should be *
   widget_control, typeList, set_list_select = 0
-
+  
+  contamination_label = widget_label(leftBase, value='These data have known contamination problems: please consult')
+  contamination_label2 = widget_label(leftBase, value='Rob Redmon (sem.poes@noaa.gov) for usage recommendations')
 
                                                                 
   state = {baseid:topBase,$

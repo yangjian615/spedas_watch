@@ -60,7 +60,8 @@ end
 function mvn_pfp_file_retrieve,pathname,trange=trange,verbose=verbose, source=src,files=files, $
    last_version=last_version,valid_only=valid_only,no_update=no_update,create_dir=create_dir,pos_start=pos_start, $
    remote_kp_cdf=remote_kp_cdf,insitu_kp_cdf=insitu_kp_cdf, $    ; these keywords are temporary !!!
-   daily_names=daily_names,hourly_names=hourly_names,resolution = res,no_server=no_server,user_pass=user_pass,L0=L0,recent=recent, $
+   daily_names=daily_names,hourly_names=hourly_names,resolution = res,shiftres=shiftres,  $
+   no_server=no_server,user_pass=user_pass,L0=L0,recent=recent, $
    DPU=DPU,ATLO=ATLO,RT=RT,pformat=pformat,realtime=realtime,no_download=no_download,name=name
 
 tstart = systime(1)
@@ -87,9 +88,16 @@ if keyword_set(remote_kp_cdf) then begin
    valid_only=1
 endif
 
+if not keyword_set(shiftres) then shiftres =0
+if keyword_set(daily_names) then begin 
+   res = round(24*3600L * daily_names)
+   sres= round(24*3600L * shiftres)
+endif
 
-if keyword_set(daily_names) then res = round(24*3600L * daily_names)
-if keyword_set(hourly_names) then res = round(3600L * hourly_names)
+if keyword_set(hourly_names) then begin
+  res = round(3600L * hourly_names)
+  sres= round(3600L * shiftres)
+endif
 
 ;lv = n_elements(last_version) eq 0 ? 1 : last_version 
 ;vo = n_elements(valid_only) eq 0 ? 0 : valid_only
@@ -104,8 +112,9 @@ if ~keyword_set(RT) then begin
   if ~keyword_set(files) then begin
     if keyword_set(res) then begin
       tr = timerange(trange)
-      dtr = (ceil(tr[1]/res) - floor(tr[0]/res) )  > 1           ; must have at least one file
-      times = res * (floor(tr[0]/res) + lindgen(dtr))
+      str = (tr-sres)/res
+      dtr = (ceil(str[1]) - floor(str[0]) )  > 1           ; must have at least one file
+      times = res * (floor(str[0]) + lindgen(dtr))+sres
       pathnames = time_string(times,tformat=pathname)
       pathnames = pathnames[uniq(pathnames)]   ; Remove duplicate filenames - assumes they are sorted
     endif else pathnames = pathname

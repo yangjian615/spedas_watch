@@ -44,7 +44,14 @@
 ;
 ;KEYWORDS:
 ;       FILENAME:      Full path and file name for loading data.  Can be multiple
-;                      files.
+;                      files.  Takes precedence over trange, ORBIT, and LATEST.
+;
+;       ORBIT:         Load SWEA data by orbit number or range of orbit numbers 
+;                      (trange and LATEST are ignored).  Orbits are numbered using 
+;                      the NAIF convention, where the orbit number increments at 
+;                      periapsis.  Data are loaded from the apoapsis preceding the
+;                      first orbit (periapsis) number to the apoapsis following the
+;                      last orbit number.
 ;
 ;       LATEST:        Ignore trange (if present), and load all data within the
 ;                      LATEST days leading up to the current date.
@@ -62,15 +69,15 @@
 ;       SUMPLOT:       Create a summary plot of the loaded data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-26 17:15:46 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16320 $
+; $LastChangedDate: 2014-12-11 16:22:51 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16467 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mvn_swe_load_l0.pro
 ;-
 pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
-                             cdrift=cdrift, sumplot=sumplot, status=status
+                             cdrift=cdrift, sumplot=sumplot, status=status, orbit=orbit
 
   @mvn_swe_com
 
@@ -79,6 +86,12 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
   oneday = 86400D
   
   if keyword_set(status) then silent = 0 else silent = 1
+  
+  if keyword_set(orbit) then begin
+    imin = min(orbit, max=imax)
+    trange = mvn_orbit_num(orbnum=[imin-0.5,imax+0.5])
+    latest = 0
+  endif
   
   if keyword_set(latest) then begin
     tmax = double(ceil(systime(/sec,/utc)/oneday))*oneday

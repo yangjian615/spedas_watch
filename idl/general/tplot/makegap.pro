@@ -33,13 +33,13 @@ diffarray = [x[1:*]-x[0:n_elements(x)-2]]
 
 if dg lt 0 then begin
 	posindx = where(diffarray gt 0,poscnt)
-	if poscnt gt 0 then dg = 20d*min(diffarray(posindx)) else return
+	if poscnt gt 0 then dg = 20d*min(diffarray[posindx]) else return
 endif
 
 gapindx = where(diffarray gt dg,gapcnt)
 
 for i=gapcnt-1,0,-1 do begin
-	indx = gapindx(i)
+	indx = gapindx[i]
 	x = [x[0:indx],x[indx]+dg,x[indx+1:*]]
 	if size(/n_dimen,y) eq 1 then begin
 		y = [y[0:indx],filly,y[indx+1:*]]

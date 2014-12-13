@@ -30,7 +30,7 @@
 ;	J.McFadden	06-2-23		changed the s/c pot calculation to the same as n_2d_new.pro
 ;	J.McFadden	09-4-29		added a diagonalization to Pxx and Pyy to maximize difference
 ;-
-function p_4d,dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q
+function p_4d,dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
 p4dxx = 0. & p4dyy = 0. & p4dzz = 0. & p4dxy = 0. & p4dxz = 0. & p4dyz = 0.
 
@@ -46,9 +46,9 @@ if keyword_set(mi) then mass = dat.mass*(fix(dat.mass_arr+.5)>1)
 if ndimen(mass) eq 3 then mass=reform(total(mass(*,0,*),1))/nenergy
 if ndimen(mass) eq 2 then mass=total(mass,1)/nenergy
 
-momen = m_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
-flux=j_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
-density=n_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+momen = m_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
+flux=j_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
+density=n_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 
 if keyword_set(ms) then begin
 	p4dxx = total(reform((momen[0,*]-mass*flux[0,*]*flux[0,*]/(density+1.e-10)/1.e10)))

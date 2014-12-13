@@ -106,7 +106,7 @@ function mvn_mag_sts_read, filename, header_info = header_info
     if temp1 ne -1 and temp2 eq -1 then obj_pos[i]=i $
     else obj_pos[i]=-1
   endfor
-  obj_pos=obj_pos(where(obj_pos ne -1,cc_obj))
+  obj_pos=obj_pos[where(obj_pos ne -1,cc_obj)]
   obj_type=strarr(cc_obj)
   for i=0., cc_obj-1 do begin
     temp=strsplit(obj_str[obj_pos[i]],'=',/extract)
@@ -380,9 +380,8 @@ function mvn_mag_sts_read, filename, header_info = header_info
       str_element, data, 'time_unix',/add
     endif
     data=0
-    str_element, data, 'Creation_time',time_string(systime(1)), /add
+;    str_element, data, 'Creation_time',time_string(systime(1)), /add
     str_element, data, 'sts_file', filename, /add
-    str_element, data, 'sts_info', file_hash(filename,/add), /add
     str_element, data, 'spice_frame',spice_frame, /add
     str_element, data, 'frame', frame, /add
     str_element, data, 'header_full', obj_str, /add

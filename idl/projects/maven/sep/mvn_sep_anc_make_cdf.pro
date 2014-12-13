@@ -5,9 +5,9 @@
 ;PURPOSE:
 ; Acts as a timestamp file to trigger the regeneration of SEP data products. Also provides Software Version info for the MAVEN SEP instrument.  
 ;Author: Davin Larson  - January 2014
-; $LastChangedBy: rlillis2 $
-; $LastChangedDate: 2014-06-17 10:21:22 -0700 (Tue, 17 Jun 2014) $
-; $LastChangedRevision: 15387 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2014-12-11 09:08:45 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16452 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sep/mvn_sep_anc_make_cdf.pro $
 ;-
 function mvn_sep_anc_sw_version
@@ -22,9 +22,9 @@ sw_structure = {  $
   sw_time_stamp : time_string(this_file_date) , $
   sw_runtime : time_string(systime(1))  , $
   sw_runby :  getenv('LOGNAME') , $
-  svn_changedby : '$LastChangedBy: rlillis2 $' , $
-  svn_changedate: '$LastChangedDate: 2014-06-17 10:21:22 -0700 (Tue, 17 Jun 2014) $' , $
-  svn_revision : '$LastChangedRevision: 15387 $' }
+  svn_changedby : '$LastChangedBy: davin-mac $' , $
+  svn_changedate: '$LastChangedDate: 2014-12-11 09:08:45 -0800 (Thu, 11 Dec 2014) $' , $
+  svn_revision : '$LastChangedRevision: 16452 $' }
 return,sw_structure
 end
 
@@ -47,9 +47,9 @@ end
 ;KEYWORDS:
 ;	FILE: Output file name
 ;
-; $LastChangedBy: rlillis2 $
-; $LastChangedDate: 2014-06-17 10:21:22 -0700 (Tue, 17 Jun 2014) $
-; $LastChangedRevision: 15387 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2014-12-11 09:08:45 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16452 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sep/mvn_sep_anc_make_cdf.pro $
 
 
@@ -124,7 +124,7 @@ cdf_attput,fileid,'PI_affiliation',0,'U.C. Berkeley Space Sciences Laboratory'
 cdf_attput,fileid,'Instrument_type',0,'Energetic Particle Detector'
 cdf_attput,fileid,'Mission_group',0,'MAVEN'
 for i=0,n_elements(dependencies)-1 do begin
-   str = file_hash(dependencies[i],/add_mtime)
+   str = file_checksum(dependencies[i],/add_mtime)
    cdf_attput,fileid,'Parents',i,str[0]
 endfor
 

@@ -156,7 +156,7 @@ FUNCTION morlet, $ ;*********************************************** MORLET
     IF (k0 EQ -1) THEN k0 = 6d
     n = N_ELEMENTS(k)
     expnt = -(scale*k - k0)^2/2d*(k GT 0.)
-    dt = 2*!PI/(n*k(1))
+    dt = 2*!PI/(n*k[1])
     norm = SQRT(2*!PI*scale/dt)*(!PI^(-0.25))   ; total energy=N   [Eqn(7)]
     morlet = norm*EXP(expnt > (-100d))
     morlet = morlet*(expnt GT -100)  ; avoid underflow errors
@@ -178,7 +178,7 @@ FUNCTION paul, $ ;************************************************** PAUL
     IF (m EQ -1) THEN m = 4d
     n = N_ELEMENTS(k)
     expnt = -(scale*k)*(k GT 0.)
-    dt = 2d*!PI/(n*k(1))
+    dt = 2d*!PI/(n*k[1])
     norm = SQRT(2*!PI*scale/dt)*(2^m/SQRT(m*FACTORIAL(2*m-1)))
     paul = norm*((scale*k)^m)*EXP(expnt > (-100d))*(expnt GT -100)
     paul = paul*(k GT 0.)
@@ -199,7 +199,7 @@ FUNCTION dog, $ ;*************************************************** DOG
     IF (m EQ -1) THEN m = 2
     n = N_ELEMENTS(k)
     expnt = -(scale*k)^2/2d
-    dt = 2d*!PI/(n*k(1))
+    dt = 2d*!PI/(n*k[1])
     norm = SQRT(2*!PI*scale/dt)*SQRT(1d/GAMMA(m+0.5))
     I = DCOMPLEX(0,1)
     gauss = -norm*(I^m)*(scale*k)^m*EXP(expnt > (-100d))*(expnt GT -100)
@@ -249,7 +249,7 @@ FUNCTION wavelet,y1,dt, $   ;*** required inputs
     IF (N_ELEMENTS(param) LT 1) THEN param = -1
     IF (N_ELEMENTS(siglvl) LT 1) THEN siglvl = 0.95
     IF (N_ELEMENTS(lag1) LT 1) THEN lag1 = 0.0
-    lag1 = lag1(0)
+    lag1 = lag1[0]
     verbose = KEYWORD_SET(verbose)
     do_daughter = KEYWORD_SET(daughter)
     do_wave = NOT KEYWORD_SET(no_wave)
@@ -276,7 +276,7 @@ FUNCTION wavelet,y1,dt, $   ;*** required inputs
 
 ;....construct wavenumber array used in transform [Eqn(5)]
     k = (DINDGEN(n/2) + 1)*(2*!PI)/(n*dt)
-    k = [0d,k,-REVERSE(k(0:(n-1)/2 - 1))]
+    k = [0d,k,-REVERSE(k[0:(n-1)/2 - 1])]
 
 ;....compute FFT of the (padded) time series
     yfft = FFT(ypad,-1,/DOUBLE)  ; [Eqn(3)]
@@ -296,25 +296,25 @@ FUNCTION wavelet,y1,dt, $   ;*** required inputs
 ;....loop thru each SCALE
     FOR a1=0,na-1 DO BEGIN  ;scale
        psi_fft=CALL_FUNCTION(mother, $
-         param,scale(a1),k,period1,coi,dofmin,Cdelta,psi0)
+         param,scale[a1],k,period1,coi,dofmin,Cdelta,psi0)
        IF (do_wave) THEN $
          wave[*,a1] = FFT(yfft*psi_fft,1,/DOUBLE)  ;wavelet transform[Eqn(4)]
        period[a1] = period1   ; save period
        fft_theor[a1] = TOTAL((ABS(psi_fft)^2)*fft_theor_k)/n
        IF (do_daughter) THEN $
-         daughter(*,a1) = FFT(psi_fft,1,/DOUBLE)   ; save daughter
-       IF (verbose) THEN dprint, a1,scale(a1),period(a1), $
-          TOTAL(ABS(wave(*,a1))^2),CHECK_MATH(0), $
+         daughter[*,a1] = FFT(psi_fft,1,/DOUBLE)   ; save daughter
+       IF (verbose) THEN dprint, a1,scale[a1],period[a1], $
+          TOTAL(ABS(wave[*,a1])^2),CHECK_MATH(0), $
           FORMAT='(I3,3F11.3,I6)'
     ENDFOR  ;scale
 
     coi = coi*[FINDGEN((n1+1)/2),REVERSE(FINDGEN(n1/2))]*dt   ; COI [Sec.3g]
 
     IF (do_daughter) THEN $   ; shift so DAUGHTERs are in middle of array
-       daughter = [daughter(n-n1/2:*,*),daughter(0:n1/2-1,*)]
+       daughter = [daughter[n-n1/2:*,*],daughter[0:n1/2-1,*]]
 
 ;....significance levels [Sec.4]
-    sdev = (MOMENT(y1))(1)
+    sdev = (MOMENT(y1))[1]
     fft_theor = sdev*fft_theor  ; include time-series variance
     dof = dofmin
     signif = fft_theor*CHISQR_CVF(1. - siglvl,dof)/dof   ; [Eqn(18)]
@@ -330,6 +330,6 @@ FUNCTION wavelet,y1,dt, $   ;*** required inputs
        ENDELSE
     ENDIF
 
-    RETURN,wave(0:n1-1,*)    ; get rid of padding before returning
+    RETURN,wave[0:n1-1,*]    ; get rid of padding before returning
 
 END

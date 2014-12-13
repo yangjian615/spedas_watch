@@ -48,9 +48,9 @@ for i=0L,nd-1 do begin
   timestamp= systime(1)    ; trigger regeneration of long term plots
   data = mvn_mag_sts_read(mag_l1_file,header=header)
   
-  dependents = file_hash(mag_l1_file,/add_mtime)
+  dependents = file_checksum(mag_l1_file,/add_mtime)
   
-;  prereq_info = file_hash(prereq_files,/add_mtime)
+;  prereq_info = file_checksum(prereq_files,/add_mtime)
   save,file=sav_filename,data,dependents,header,description='Preliminary MAG Data - Not to be used for science purposes. Read header for more info'
 
 endfor

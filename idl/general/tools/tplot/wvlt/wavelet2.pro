@@ -3,9 +3,10 @@
 ;  Purpose:  Wrapper of IDL wavelet routine
 ;            Uses Morlet mother wavelet.
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2012-01-27 16:52:20 -0800 (Fri, 27 Jan 2012) $
-;$LastChangedRevision: 9646 $
+;  rewritten by: Davin Larson
+;$LastChangedBy: davin-mac $
+;$LastChangedDate: 2014-12-11 11:04:24 -0800 (Thu, 11 Dec 2014) $
+;$LastChangedRevision: 16459 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/wvlt/wavelet2.pro $
 ;
 ;-

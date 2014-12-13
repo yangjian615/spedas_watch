@@ -1,7 +1,7 @@
 ;+
-;FUNCTION:	t_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+;FUNCTION:	t_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 ;INPUT:	
-;	dat:	structure,	3d data structure filled by themis routines get_th?_p???
+;	dat:	structure,	4d data structure filled by themis routines mvn_sta_c6.pro, mvn_sta_d0.pro, etc.
 ;KEYWORDS
 ;	ENERGY:	fltarr(2),	optional, min,max energy range for integration
 ;	ERANGE:	fltarr(2),	optional, min,max energy bin numbers for integration
@@ -27,7 +27,7 @@
 ;	J.McFadden	2014-02-27
 ;LAST MODIFICATION:
 ;-
-function t_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q
+function t_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
 Tavg = 0.
 Tx = 0.
@@ -41,8 +41,8 @@ endif
 
 if dat2.nbins eq 1 then return,tb_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
 
-press   = p_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
-density = n_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+press   = p_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
+density = n_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 
 if keyword_set(ms) then begin
 	Tavg = reform(press[0]+press[1]+press[2])/((density+1.e-10)*3.)

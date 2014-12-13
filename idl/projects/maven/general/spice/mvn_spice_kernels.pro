@@ -8,18 +8,21 @@
 ;  kernels=mvn_spice_kernel() 
 ;TYPICAL USAGE:
 ;INPUT:
-;  string must be one of:
-;    Not implemented yet.  currently retrieves ALL files
+;  string must be one of:    Not implemented yet.  currently retrieves ALL files
 ;KEYWORDS:
 ; LOAD:   Set keyword to also load file
 ; TRANGE:  Set keyword to UT timerange to provide range of needed files. 
 ; RECONSTRUCT: If set, then only kernels with reconstructed data (no predicts) are returned.
 ;OUTPUT:
 ; fully qualified kernel filename(s)
+; 
+;WARNING: Be very careful using this routine with the /LOAD keyword. It will change the loaded SPICE kernels that users typically assume are not being changed 
+;PLEASE DO NOT USE this routine within general "LOAD" routines using the LOAD keyword. "LOAD" routines should assume that SPICE kernels are already loaded.
+; 
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-11-21 13:38:08 -0800 (Fri, 21 Nov 2014) $
-; $LastChangedRevision: 16266 $
+; $LastChangedDate: 2014-12-11 11:18:17 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16462 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear,reconstruct=reconstruct
@@ -33,7 +36,7 @@ common mvn_spice_kernels_com,   kernels,retrievetime,tranges
  ;   sprg = mvn_file_source()
 ;all=1
 if keyword_set(sck) then names = ['STD','SCK']
-if keyword_set(all) or not keyword_set(names) then names=['STD','SCK','FRM','IK','SPK','CK']
+if keyword_set(all) or not keyword_set(names) then names=['STD','SCK','FRM','IK','SPK','CK','CK_APP']
 if keyword_set(reset) then kernels=0
 ct = systime(1)
 waittime = 10.                 ; search no more often than this number of seconds
@@ -41,7 +44,7 @@ if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
     if ~keyword_set(source) then     source=naif
 ;    source.no_update=1
     if keyword_set(verbose) then source.verbose = verbose
-    kernels=0
+    kernels=''
     for i=0,n_elements(names)-1 do begin
       case strupcase(names[i]) of 
      'STD':    begin
@@ -84,22 +87,70 @@ if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
                endelse
              end
      'CK':  begin      ; Spacecraft Attitude  (CK)
-;               attkern =  file_retrieve('MAVEN/kernels/ck/mvn_sc_rec_??????_??????_v0?.bc' ,_extra=source)   ;SC Attitude ???  
-;                attformat = 'MAVEN/kernels/ck/mvn_sc_rec_??????_??????_v0?.bc'  ; use this line to get all files
+       tr= timerange(trange)
+       ; Get the Weekly files;  
+       att_weekly_format = 'MAVEN/kernels/ck/mvn_sc_rel_yyMMDD_??????_v??.bc'  ; use this line to get all files in time range
+       att_weekly_kern = mvn_pfp_file_retrieve(att_weekly_format ,source=source, trange=tr,daily_names=7,shift=4,last_version=1,/valid_only)  
+       n_weekly = n_elements(att_weekly_kern) * keyword_set(att_weekly_kern)
+       if n_weekly ge 1 then begin
+         str = strmid(att_weekly_kern[n_weekly-1],/reverse_offset,12,6)
+         tr[0] = time_double(str,tformat='yyMMDD') + 86400    ; 
+       endif
+       ; Get Daily files to finish off
+       att_daily_format = 'MAVEN/kernels/ck/mvn_sc_red_yyMMDD_v??.bc'  ; use this line to get all files in time range
+       att_daily_kern = mvn_pfp_file_retrieve(att_daily_format ,source=source, trange=tr,/daily_names,/last_version,/valid_only) 
+       n_daily = n_elements(att_daily_kern) * keyword_set(att_daily_kern)
+       if n_daily ge 1 then begin
+         str = strmid(att_daily_kern[n_daily-1],/reverse_offset,12,6)
+         tr[0] = time_double(str,tformat='yyMMDD') + 86400+1   ;
+       endif
+; Daily quick files for most recent stuff        
+       if ~keyword_set(reconstruct) && (tr[0] le tr[1]) then begin
+          att_quick_format = 'MAVEN/kernels/ck/mvn_sc_rec_yyMMDD_??????_v??.bc'  ; use this line to get all files in time range
+          att_quick_kern = mvn_pfp_file_retrieve(att_quick_format ,source=source, trange=tr,/daily_names,/valid_only)  ;,last_version=1)   ;SC Attitude ???
+       endif 
 
-               attformat = 'MAVEN/kernels/ck/mvn_sc_rec_yyMMDD_*_v0?.bc'  ; use this line to get all files in time range
-               tr= timerange(trange) + [-1,1] * 3600d*24
-               attkern = mvn_pfp_file_retrieve(attformat ,source=source, trange=tr,/daily_names)  ;,last_version=1)   ;SC Attitude ???  
-               append_array,kernels,  attkern  ;SC Attitude ???  
+       if keyword_set(att_quick_kern) then   append_array,kernels,  att_quick_kern
+       if keyword_set(att_daily_kern) then   append_array,kernels,  att_daily_kern
+       if keyword_set(att_weekly_kern) then   append_array,kernels,  att_weekly_kern
+     end
+     'CK_APP':  begin    ; APP Attitude (CK files)
+       tr= timerange(trange)
+       ; Start with the Weekly files;
+       app_weekly_format = 'MAVEN/kernels/ck/mvn_app_rel_yyMMDD_??????_v??.bc'  ; use this line to get all files in time range
+       app_weekly_kern = mvn_pfp_file_retrieve(app_weekly_format ,source=source, trange=tr,daily_names=7,shift=4,last_version=1,/valid_only)
+       n_weekly = n_elements(app_weekly_kern) * keyword_set(app_weekly_kern)
+       if n_weekly ge 1 then begin
+         str = strmid(app_weekly_kern[n_weekly-1],/reverse_offset,12,6)
+         tr[0] = time_double(str,tformat='yyMMDD') + 86400    ;
+       endif
+       ; Get Daily files to finish off
+       app_daily_format = 'MAVEN/kernels/ck/mvn_app_red_yyMMDD_v??.bc'  ; use this line to get all files in time range
+       app_daily_kern = mvn_pfp_file_retrieve(app_daily_format ,source=source, trange=tr,/daily_names,/last_version,/valid_only)
+       n_daily = n_elements(app_daily_kern) * keyword_set(app_daily_kern)
+       if n_daily ge 1 then begin
+         str = strmid(app_daily_kern[n_daily-1],/reverse_offset,12,6)
+         tr[0] = time_double(str,tformat='yyMMDD') + 86400+1   ;
+       endif
+       ; Daily quick files for most recent stuff
+       if ~keyword_set(reconstruct) && (tr[0] le tr[1]) then begin
+         app_quick_format = 'MAVEN/kernels/ck/mvn_app_rec_yyMMDD_??????_v??.bc'  ; use this line to get all files in time range
+         app_quick_kern = mvn_pfp_file_retrieve(app_quick_format ,source=source, trange=tr+[-2,0]*86400L,/daily_names,/valid_only)  ;,last_version=1)   ;SC Attitude ???
+       endif
 
-;               append_array,kernels, file_retrieve('MAVEN/misc/app/maven_app_home_v1.bc',_extra=source)
-               append_array,kernels, file_retrieve('MAVEN/misc/app/mvn_app_nom_131118_141031_v1.bc',_extra=source)
+       if tr[1] lt time_double('14-10-9') then append_array,kernels, file_retrieve('MAVEN/misc/app/mvn_app_nom_131118_141031_v1.bc',_extra=source)
+       if keyword_set(app_quick_kern) then   append_array,kernels,  app_quick_kern
+       if keyword_set(app_daily_kern) then   append_array,kernels,  app_daily_kern
+       if keyword_set(app_weekly_kern) then   append_array,kernels,  app_weekly_kern
+;
+;       tr= timerange(trange)
+;
+;
+;       appformat = 'MAVEN/kernels/ck/mvn_app_rec_yyMMDD_*_v0?.bc'  ; use this line to get all files in time range
+;       appkern = mvn_pfp_file_retrieve(appformat ,source=source, trange=tr+[-2,1]*86400L,daily_names=1)   ;APP Attitude ???  
+;       append_array,kernels,  appkern  ;APP Attitude ???  
 
-               appformat = 'MAVEN/kernels/ck/mvn_app_rec_yyMMDD_*_v0?.bc'  ; use this line to get all files in time range
-               appkern = mvn_pfp_file_retrieve(appformat ,source=source, trange=tr,/daily_names)  ;,last_version=1)   ;APP Attitude ???  
-                append_array,kernels,  appkern  ;APP Attitude ???  
-
-            end 
+       end 
            
       endcase
     endfor

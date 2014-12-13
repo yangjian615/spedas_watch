@@ -20,5 +20,6 @@
 ; ---------------- Add entries below here ----------------
 
 Generate GOES Overview Plot..., , goes_ui_gen_overplot
+Generate POES Overview Plot..., , poes_ui_gen_overplot
 Generate THEMIS Overview Plot..., , thm_ui_gen_overplot
 THEMIS Particle Distribution Slices..., , thm_ui_slice2d

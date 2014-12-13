@@ -51,8 +51,8 @@
 ;   thm_load_scmode,probe='a',trange=['2007-01-22/00:00:00','2007-01-24/00:00:00']
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2012-11-15 14:57:31 -0800 (Thu, 15 Nov 2012) $
-; $LastChangedRevision: 11243 $
+; $LastChangedDate: 2014-12-11 20:26:15 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16475 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/thm_load_scmode.pro $
 ;-
 
@@ -95,7 +95,7 @@ pro thm_load_scmode, datatype = datatype,$
   if ~keyword_set(suffix) then suffix = ''
     
   vprobes = ['a','b','c','d','e']
-  vdatatypes = ['ss','fs','pb','wb']
+  vdatatypes = ['ss','fs','pb','wb','ufs']
   vlevels = 'l1'
   
   if keyword_set(valid_names) then begin

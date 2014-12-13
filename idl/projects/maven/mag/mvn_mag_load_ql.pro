@@ -10,6 +10,8 @@
 ;  Appropriate tags are added to the tplot structure for rotation to 
 ;  other frames.
 ;
+;  OBSOLETE as of 2014-12-11.
+;
 ;USAGE:
 ;  mvn_mag_load_ql
 ;
@@ -23,13 +25,16 @@
 ;       VAR:           Name of TPLOT variable created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-17 15:02:18 -0700 (Fri, 17 Oct 2014) $
-; $LastChangedRevision: 16009 $
+; $LastChangedDate: 2014-12-11 13:12:52 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16463 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load_ql.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2014/10/09
 ;-
 pro mvn_mag_load_ql, trange, filename=filename, var=var
+
+  print,"This routine is now obsolete.  Use mvn_mag_load instead."
+;  return
 
 ; Get file names associated with trange or from one or more named
 ; file(s).  If you specify a time range and are working off-site, 

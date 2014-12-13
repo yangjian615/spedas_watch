@@ -1,7 +1,7 @@
 ;+
-;FUNCTION:	nb_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
+;FUNCTION:	nb_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 ;INPUT:	
-;	dat:	structure,	3d data structure filled by themis routines get_th?_p???
+;	dat:	structure,	4d data structure filled by themis routines mvn_sta_c6.pro, mvn_sta_d0.pro, etc.
 ;KEYWORDS
 ;	ENERGY:	fltarr(2),	optional, min,max energy range for integration
 ;	ERANGE:	fltarr(2),	optional, min,max energy bin numbers for integration
@@ -28,7 +28,7 @@
 ;	J.McFadden	2014-05-2
 ;LAST MODIFICATION:
 ;-
-function nb_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q
+function nb_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
@@ -82,6 +82,8 @@ if dat.nmass gt 1 then begin
 		dat.mass_arr[*]=round(dat.mass_arr-.1)>1. & mass=dat.mass*dat.mass_arr	; the minus 0.1 helps account for straggling at low mass
 	endelse
 endif else mass = dat.mass
+
+if keyword_set(mincnt) then if total(data) lt mincnt then return,0
 
 dat.data=data
 dat = conv_units(dat,"df")		; Use distribution function

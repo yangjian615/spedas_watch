@@ -14,6 +14,8 @@
 ;-
 
 function spice_body_pos,body_name,obs_name,utc=utc,et=et,frame=frame,ltime=ltime,abcorr=abcorr,check_objects=check_objects
+
+on_error,2
 if not keyword_set(frame) then frame = 'ECLIPJ2000'
 if not keyword_set(abcorr) then abcorr = 'NONE'
 ut = time_double(utc)
@@ -22,7 +24,7 @@ et = time_ephemeris(ut,/ut2et)
 ns = n_elements(et)
 if keyword_set(check_objects) then begin
   time_valid = spice_valid_times(et,object=check_objects) 
-  printdat,check_objects,time_valid
+;  printdat,check_objects,time_valid
   ind = where(time_valid ne 0,nind)
 endif else begin
  ; nind = ns

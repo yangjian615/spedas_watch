@@ -51,8 +51,8 @@
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2014-12-11 16:23:14 -0800 (Thu, 11 Dec 2014) $
+; $LastChangedRevision: 16468 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -60,7 +60,7 @@
 pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a4_sum, $
                      tfirst=tfirst, title=title, tspan=tspan, apid=apid, hsk=hsk, $
                      lut=lut, timing=timing, sifctl=sifctl, tplot_vars_out=pans, $
-                     eunits=eunits, png=png, pad_smo=smo
+                     eunits=eunits, png=png, pad_smo=smo, eph=eph
 
   @mvn_swe_com
 
@@ -727,6 +727,9 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     if keyword_set(tspan) then tmin = tmin > (tmax - tspan*3600D)
     timefit,[tmin,tmax]
   endelse
+  
+  if keyword_set(eph) then maven_orbit_tplot,/loadonly
+  pans = ['alt2', pans]
   
   if (size(title,/type) eq 7) then tplot_options,'title',title
 

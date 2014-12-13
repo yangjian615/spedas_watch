@@ -122,13 +122,13 @@ switch size(/type,data) of
       end
    else: begin                                    ; normal arrays
       if ndimen(data) eq 2 then begin
-         x = data(*,0)
-         y = data(*,1)
-         z = data(*,2)
+         x = data[*,0]
+         y = data[*,1]
+         z = data[*,2]
       endif else begin
-         x = data(0)
-         y = data(1)
-         z = data(2)
+         x = data[0]
+         y = data[1]
+         z = data[2]
       endelse
       if keyword_set(clock) then $
       cart_to_sphere,z,-y,x,magnitude,theta,phi,$
@@ -140,18 +140,18 @@ switch size(/type,data) of
          ind = where(x ge max_value,count)
          if count gt 0 then begin
             if n_elements(missing) eq 0 then missing = max(x)
-            magnitude(ind)=missing
-            theta(ind)=missing
-            phi(ind)=missing
+            magnitude[ind]=missing
+            theta[ind]=missing
+            phi[ind]=missing
          endif
       endif
       if keyword_set(min_value) then begin
          ind = where(x le min_value,count)
          if count gt 0 then begin
             if n_elements(missing) eq 0 then missing = min(x)
-            magnitude(ind)=missing
-            theta(ind)=missing
-            phi(ind)=missing
+            magnitude[ind]=missing
+            theta[ind]=missing
+            phi[ind]=missing
          endif
       endif
       return
