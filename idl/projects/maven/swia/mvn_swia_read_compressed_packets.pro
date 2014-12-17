@@ -29,13 +29,16 @@
 ;	APID87: Fast Housekeeping
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2013-09-09 08:08:13 -0700 (Mon, 09 Sep 2013) $
-; $LastChangedRevision: 12973 $
+; $LastChangedDate: 2014-12-12 06:21:37 -0800 (Fri, 12 Dec 2014) $
+; $LastChangedRevision: 16476 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_read_compressed_packets.pro $
 ;
 ;-
 
-pro mvn_swia_read_compressed_packets,file, apid29 = apid29,apid80 = apid80,apid81=apid81,apid82short = apid82short, apid82long = apid82long,apid83short = apid83short, apid83long = apid83long,apid84 = apid84,apid85 = apid85,apid86 = apid86,apid87 = apid87, r29 = r29, r80 = r80, r81 = r81, r82s = r82s, r82l = r82l, r83s = r83s, r83l = r83l, r84 = r84, r85 = r85, r86= r86, r87= r87, sync = sync
+pro mvn_swia_read_compressed_packets,file, apid29 = apid29,apid80 = apid80,apid81=apid81,apid82short = apid82short, $
+	apid82long = apid82long,apid83short = apid83short, apid83long = apid83long,apid84 = apid84,apid85 = apid85, $
+	apid86 = apid86,apid87 = apid87, r29 = r29, r80 = r80, r81 = r81, r82s = r82s, r82l = r82l, r83s = r83s, $
+	r83l = r83l, r84 = r84, r85 = r85, r86= r86, r87= r87, sync = sync
 
 compile_opt idl2
 
@@ -86,7 +89,9 @@ if nw gt 0 and keyword_set(r80) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X) or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X) or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 
 		if synced then begin
 			combytes = alldata[startbyte:startbyte+comlength-1]
@@ -131,7 +136,9 @@ if nw gt 0 and keyword_set(r81) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 
 		if synced then begin
 			combytes = alldata[startbyte:startbyte+comlength-1]
@@ -176,7 +183,9 @@ if nw gt 0 and keyword_set(r82s) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 
 		if synced then begin
 			combytes = alldata[startbyte:startbyte+comlength-1]
@@ -221,7 +230,9 @@ if nw gt 0 and keyword_set(r82l) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 	
 		if synced then begin
 			combytes = alldata[startbyte:startbyte+comlength-1]
@@ -266,7 +277,9 @@ if nw gt 0 and keyword_set(r83s) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 
 		if synced then begin
 			combytes = alldata[startbyte:startbyte+comlength-1]
@@ -311,7 +324,9 @@ if nw gt 0 and keyword_set(r83l) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 	
 		if synced then begin
 			combytes = alldata[startbyte:startbyte+comlength-1]
@@ -355,7 +370,9 @@ if nw gt 0 and keyword_set(r84) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 		
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 
 		if synced then begin
 			combytes = alldata[startbyte:startbyte+comlength-1]
@@ -400,7 +417,9 @@ if nw gt 0 and keyword_set(r85) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 		
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 
 		if synced then begin
 			combytes = alldata[startbyte:startbyte+comlength-1]
@@ -445,7 +464,9 @@ if nw gt 0 and keyword_set(r86) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 
 
 		if synced then begin
@@ -491,7 +512,9 @@ if nw gt 0 and keyword_set(r87) then begin
 		startbyte = w[j]
 		comlength = (ccsdslen[w[j]]+7)
 		
-		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and ((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or (alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
+		if keyword_set(sync) then synced = (alldata[startbyte+comlength+2] eq '08'X and $
+		((alldata[startbyte+comlength+3] eq '50'X) or (alldata[startbyte+comlength+3] eq '51'X) or $
+		(alldata[startbyte+comlength+3] eq '53'X)  or (alldata[startbyte+comlength+3] eq '62'X))) else synced = 1
 
 		if synced then begin
 			combytes = alldata[startbyte:startbyte+comlength-1]

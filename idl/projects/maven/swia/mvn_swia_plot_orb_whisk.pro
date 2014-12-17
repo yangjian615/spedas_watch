@@ -18,8 +18,8 @@
 ;	BDATA: Tplot variable for whisker data (defaults to MSO B)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-17 09:08:29 -0800 (Mon, 17 Nov 2014) $
-; $LastChangedRevision: 16195 $
+; $LastChangedDate: 2014-12-12 06:27:49 -0800 (Fri, 12 Dec 2014) $
+; $LastChangedRevision: 16477 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_plot_orb_whisk.pro $
 ;
 ;-
@@ -34,7 +34,7 @@ if not keyword_set(xrange) then xrange = [-8e3,8e3]
 if not keyword_set(yrange) then yrange = [-8e3,8e3]
 if not keyword_set(zrange) then zrange = [-8e3,8e3]
 if not keyword_set(pdata) then pdata = 'MAVEN_POS_(MARS-MSO)'
-if not keyword_set(bdata) then bdata = 'mvn_mag1_pl_ql_MAVEN_MSO'
+if not keyword_set(bdata) then bdata = 'mvn_B_1sec_MAVEN_MSO'
 if not keyword_set(len) then len = 1000
 
 @tplot_com

@@ -17,8 +17,8 @@
 ;	MAGT3: Produce temperature in magnetic field coordinates (you need to have run 'mvn_swia_add_magf' first)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-14 14:00:10 -0800 (Fri, 14 Nov 2014) $
-; $LastChangedRevision: 16187 $
+; $LastChangedDate: 2014-12-12 07:28:57 -0800 (Fri, 12 Dec 2014) $
+; $LastChangedRevision: 16479 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_part_moments.pro $
 ;
 ;-
@@ -75,7 +75,7 @@ if nw gt 0 and n_elements(swifs) gt 1 then begin
 			if keyword_set(magt3) then t3ds[i,*] = t_3d_new(dat)
 		endfor
 
-		store_data,'mvn_swifs_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e5,1e11], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+		store_data,'mvn_swifs_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e5,1e9], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 
 		store_data,'mvn_swifs_density', data = {x:ctime, y: densities, ytitle: 'SWIA!cDensity!C[cm!E-3!N]'}
 
@@ -132,7 +132,7 @@ if nw gt 0 and n_elements(swifa) gt 1 then begin
 			if keyword_set(magt3) then t3ds[i,*] = t_3d_new(dat)
 		endfor
 
-		store_data,'mvn_swifa_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e5,1e11], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+		store_data,'mvn_swifa_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e5,1e9], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 
 		store_data,'mvn_swifa_density', data = {x:ctime, y: densities, ytitle: 'SWIA!cDensity!C[cm!E-3!N]'}
 
@@ -190,7 +190,7 @@ if nw gt 0 and n_elements(swics) gt 1 then begin
 			if keyword_set(magt3) then t3ds[i,*] = t_3d_new(dat)
 		endfor
 
-		store_data,'mvn_swics_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e5,1e11], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+		store_data,'mvn_swics_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e4,1e8], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 
 		store_data,'mvn_swics_density', data = {x:ctime, y: densities, ytitle: 'SWIA!cDensity!C[cm!E-3!N]'}
 
@@ -247,7 +247,7 @@ if nw gt 0 and n_elements(swica) gt 1 then begin
 			if keyword_set(magt3) then t3ds[i,*] = t_3d_new(dat)
 		endfor
 
-		store_data,'mvn_swica_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e5,1e11], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+		store_data,'mvn_swica_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e4,1e8], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 
 		store_data,'mvn_swica_density', data = {x:ctime, y: densities, ytitle: 'SWIA!cDensity!C[cm!E-3!N]'}
 
@@ -302,7 +302,7 @@ if nw gt 0 and n_elements(swis) gt 1 then begin
 			densities[i] = n_3d_new(dat)
 		endfor
 
-		store_data,'mvn_swis_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e5,1e11], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+		store_data,'mvn_swis_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e4,1e8], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 
 		store_data,'mvn_swis_density', data = {x:ctime, y: densities, ytitle: 'SWIA!cDensity!C[cm!E-3!N]'}
 

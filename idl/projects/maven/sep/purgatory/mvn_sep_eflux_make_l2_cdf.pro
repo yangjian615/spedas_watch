@@ -204,7 +204,7 @@ cdf_attput,fileid,'PI_name',0,'Davin Larson (davin@ssl.berkeley.edu)'
 cdf_attput,fileid,'PI_affiliation',0,'U.C. Berkeley Space Sciences Laboratory'
 cdf_attput,fileid,'Instrument_type',0,'Energetic Particle Detector'
 cdf_attput,fileid,'Mission_group',0,'MAVEN'
-for i=0,n_elements(dependencies)-1 do    cdf_attput,fileid,'Parents',i,  file_hash(dependencies[i],/add_mtime)
+for i=0,n_elements(dependencies)-1 do    cdf_attput,fileid,'Parents',i,  file_checksum(dependencies[i],/add_mtime)
 for i=0,n_elements(exnames)-1 do     cdf_attput,fileid,exnames[i],0,extra.(i)
 
 

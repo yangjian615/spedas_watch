@@ -16,8 +16,8 @@
 ;	REGOUT: Tplot structure containing region IDs
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-08 14:16:25 -0800 (Mon, 08 Dec 2014) $
-; $LastChangedRevision: 16409 $
+; $LastChangedDate: 2014-12-12 06:27:49 -0800 (Fri, 12 Dec 2014) $
+; $LastChangedRevision: 16477 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_regid.pro $
 ;
 ;-
@@ -30,7 +30,7 @@ RM = 3397.
 @tplot_com
 common mvn_swia_data
 
-if not keyword_set(bdata) then bdata = 'mvn_mag1_pl_ql_MAVEN_MSO'
+if not keyword_set(bdata) then bdata = 'mvn_B_full_MAVEN_MSO'
 if not keyword_set(pdata) then pdata = 'MAVEN_POS_(MARS-MSO)'
 if not keyword_set(tr) then tr = tplot_vars.options.trange
 

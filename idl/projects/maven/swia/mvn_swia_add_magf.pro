@@ -13,8 +13,8 @@
 ;AUTHOR:	J. Halekas	
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-10 08:45:32 -0700 (Fri, 10 Oct 2014) $
-; $LastChangedRevision: 15973 $
+; $LastChangedDate: 2014-12-12 06:27:49 -0800 (Fri, 12 Dec 2014) $
+; $LastChangedRevision: 16477 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_add_magf.pro $
 ;
 ;-
@@ -28,7 +28,7 @@ compile_opt idl2
 
 common mvn_swia_data
 
-if not keyword_set(bdata) then bdata = 'mvn_mag1_pl_ql'
+if not keyword_set(bdata) then bdata = 'mvn_B_1sec'
 
 spice_vector_rotate_tplot,bdata,'MAVEN_SWIA'
 

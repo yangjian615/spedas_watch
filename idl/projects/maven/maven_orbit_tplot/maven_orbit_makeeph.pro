@@ -53,8 +53,8 @@
 ;                  (Also accepts "GEO" as a synomym for "IAU_MARS".)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-13 12:29:59 -0700 (Mon, 13 Oct 2014) $
-; $LastChangedRevision: 15983 $
+; $LastChangedDate: 2014-12-15 10:06:27 -0800 (Mon, 15 Dec 2014) $
+; $LastChangedRevision: 16485 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_makeeph.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
@@ -73,9 +73,9 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
       moi = time_double('2014-09-22/02:24:00')
       now = systime(/sec,/utc)
       twoweeks = 14D*86400D
-      trange = [moi, (now + twoweeks)]
+      trange = [(moi - 86400D), (now + twoweeks)]
 
-      kernels = mvn_spice_kernels(['STD','SCK','FRM','POS'], trange=trange, /valid, verbose=-1, /load)
+      kernels = mvn_spice_kernels(['STD','SCK','FRM','SPK'], trange=trange, /valid, verbose=-1, /load)
       indx = where(kernels ne '', count)
       if (count gt 0) then kernels = kernels[indx] else return
 

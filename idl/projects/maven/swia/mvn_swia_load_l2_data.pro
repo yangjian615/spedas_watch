@@ -29,13 +29,15 @@
 ;	NO_SERVER: If set, will not go looking for files remotely
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-25 08:56:05 -0800 (Tue, 25 Nov 2014) $
-; $LastChangedRevision: 16299 $
+; $LastChangedDate: 2014-12-12 07:28:57 -0800 (Fri, 12 Dec 2014) $
+; $LastChangedRevision: 16479 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l2_data.pro $
 ;
 ;-
 
-pro mvn_swia_load_l2_data, files, path = path, version = version, revision = revision, tplot = tplot, qlevel = qlevel, loadmom = loadmom, loadspec = loadspec, loadfine = loadfine, loadcoarse = loadcoarse, loadall = loadall, trange = trange, eflux = eflux, no_server = no_server
+pro mvn_swia_load_l2_data, files, path = path, version = version, revision = revision, tplot = tplot, qlevel = qlevel, $
+	loadmom = loadmom, loadspec = loadspec, loadfine = loadfine, loadcoarse = loadcoarse, loadall = loadall, $
+	trange = trange, eflux = eflux, no_server = no_server
 
 ;FIXME: Figure out valid time ranges for /novary stuff in info_str
 ;FIXME: Might want to make sure everything is sorted in time after loading
@@ -494,15 +496,24 @@ endfor
 
 if keyword_set(tplot) then begin
 	if n_elements(swihsk) gt 0 then begin
-		store_data,'mvn_swia_temps', data = {x:swihsk.time_unix, y: [[swihsk.lvpst],[swihsk.digt]], v:[0,1], labels: ['LVPS','DIG'],labflag:1, ytitle: 'SWIA!cTemp'}
-		store_data,'mvn_swia_imons', data = {x:swihsk.time_unix, y: [[swihsk.imon_mcp],[swihsk.imon_raw]], v:[0,1], labels: ['MCP','RAW'],labflag:1, ytitle: 'SWIA!cHV Imon'}
-		store_data,'mvn_swia_vmon_fixed', data = {x:swihsk.time_unix, y: [[swihsk.vmon_mcp],[swihsk.vmon_raw_def],[swihsk.vmon_raw_swp]], v:[0,1,2], labels: ['MCP','DEF','SWP'],labflag:1, ytitle: 'SWIA!cHV RAW'}
-		store_data,'mvn_swia_vmon_sweep', data = {x:swihsk.time_unix, y: [[swihsk.vmon_swp],[swihsk.vmon_def1],[swihsk.vmon_def2]], v:[0,1,2], labels: ['SWP','DEF1','DEF2'],labflag:1, ytitle: 'SWIA!cHV SWEEP'}
-		store_data,'mvn_swia_voltages', data = {x:swihsk.time_unix, y: [[swihsk.v25d],[swihsk.v5d],[swihsk.v33d],[swihsk.v5a],[swihsk.vn5a],[swihsk.v12],[swihsk.v28]], v:[0,1,2,3,4,5,6], labels: ['2.5d','5d','3.3d','5a','-5a','12','28'],var_label:1, ytitle: 'SWIA!cVoltages'}
-		store_data,'mvn_swia_voltages_sub', data = {x:swihsk.time_unix, y: [[swihsk.v25d-2.5],[swihsk.v5d-5],[swihsk.v33d-3.3],[swihsk.v5a-5],[swihsk.vn5a+5],[swihsk.v12-12]], v:[0,1,2,3,4,5], labels: ['2.5d','5d','3.3d','5a','-5a','12'],labflag:1, ytitle: 'SWIA!cOffsets'}
-		store_data,'mvn_swia_dighsk', data = {x:swihsk.time_unix,y:[[mvn_swia_subword(swihsk.dighsk,bit1=7,bit2=7)],[mvn_swia_subword(swihsk.dighsk,bit1=3,bit2=3)],[mvn_swia_subword(swihsk.dighsk,bit1=2,bit2=2)]],v:[0,1,2],spec:1,no_interp:1,psym:10, ytitle: 'SWIA!cDigHSK'}
-	store_data,'mvn_swia_trates',data = {x:swihsk.time_unix,y:[[swihsk.coarse_options[0]],[swihsk.coarse_options[1]],[swihsk.fine_options[0]],[swihsk.fine_options[1]],[swihsk.mom_options],[swihsk.spec_options]],labels:['CS','CA','FS','FA','MS','SS'],v:[0,1,2,3,4,5],labflag:1,psym:10, ytitle: 'SWIA!cOptions'}
-	store_data,'mvn_swia_diagdata',data = {x:swihsk.time_unix,y:[[mvn_swia_subword(swihsk.diagdata,bit1=15,bit2=15)],[mvn_swia_subword(swihsk.diagdata,bit1=14,bit2=12)],[mvn_swia_subword(swihsk.diagdata,bit1=11,bit2=11)],[mvn_swia_subword(swihsk.diagdata,bit1=10,bit2=10)],[mvn_swia_subword(swihsk.diagdata,bit1=9,bit2=0)]],v:[0,1,2,3,4],labels:['slut','diag','enbswp','p1mode','mask'],labflag:1,psym:10, ytitle: 'SWIA!cDiag'}
+		store_data,'mvn_swia_temps', data = {x:swihsk.time_unix, y: [[swihsk.lvpst],[swihsk.digt]], v:[0,1], $
+		labels: ['LVPS','DIG'],labflag:1, ytitle: 'SWIA!cTemp'}
+		store_data,'mvn_swia_imons', data = {x:swihsk.time_unix, y: [[swihsk.imon_mcp],[swihsk.imon_raw]], $
+		v:[0,1], labels: ['MCP','RAW'],labflag:1, ytitle: 'SWIA!cHV Imon'}
+		store_data,'mvn_swia_vmon_fixed', data = {x:swihsk.time_unix, y: [[swihsk.vmon_mcp],[swihsk.vmon_raw_def],[swihsk.vmon_raw_swp]], $
+		v:[0,1,2], labels: ['MCP','DEF','SWP'],labflag:1, ytitle: 'SWIA!cHV RAW'}
+		store_data,'mvn_swia_vmon_sweep', data = {x:swihsk.time_unix, y: [[swihsk.vmon_swp],[swihsk.vmon_def1],[swihsk.vmon_def2]], $
+		v:[0,1,2], labels: ['SWP','DEF1','DEF2'],labflag:1, ytitle: 'SWIA!cHV SWEEP'}
+		store_data,'mvn_swia_voltages', data = {x:swihsk.time_unix, y: [[swihsk.v25d],[swihsk.v5d],[swihsk.v33d],[swihsk.v5a],[swihsk.vn5a],[swihsk.v12],[swihsk.v28]], $
+		v:[0,1,2,3,4,5,6], labels: ['2.5d','5d','3.3d','5a','-5a','12','28'],var_label:1, ytitle: 'SWIA!cVoltages'}
+		store_data,'mvn_swia_voltages_sub', data = {x:swihsk.time_unix, y: [[swihsk.v25d-2.5],[swihsk.v5d-5],[swihsk.v33d-3.3],[swihsk.v5a-5],[swihsk.vn5a+5],[swihsk.v12-12]], $
+		v:[0,1,2,3,4,5], labels: ['2.5d','5d','3.3d','5a','-5a','12'],labflag:1, ytitle: 'SWIA!cOffsets'}
+		store_data,'mvn_swia_dighsk', data = {x:swihsk.time_unix,y:[[mvn_swia_subword(swihsk.dighsk,bit1=7,bit2=7)],[mvn_swia_subword(swihsk.dighsk,bit1=3,bit2=3)],[mvn_swia_subword(swihsk.dighsk,bit1=2,bit2=2)]], $
+		v:[0,1,2],spec:1,no_interp:1,psym:10, ytitle: 'SWIA!cDigHSK'}
+		store_data,'mvn_swia_trates',data = {x:swihsk.time_unix,y:[[swihsk.coarse_options[0]],[swihsk.coarse_options[1]],[swihsk.fine_options[0]],[swihsk.fine_options[1]],[swihsk.mom_options],[swihsk.spec_options]], $
+		labels:['CS','CA','FS','FA','MS','SS'],v:[0,1,2,3,4,5],labflag:1,psym:10, ytitle: 'SWIA!cOptions'}
+		store_data,'mvn_swia_diagdata',data = {x:swihsk.time_unix,y:[[mvn_swia_subword(swihsk.diagdata,bit1=15,bit2=15)],[mvn_swia_subword(swihsk.diagdata,bit1=14,bit2=12)],[mvn_swia_subword(swihsk.diagdata,bit1=11,bit2=11)],[mvn_swia_subword(swihsk.diagdata,bit1=10,bit2=10)],[mvn_swia_subword(swihsk.diagdata,bit1=9,bit2=0)]], $
+		v:[0,1,2,3,4],labels:['slut','diag','enbswp','p1mode','mask'],labflag:1,psym:10, ytitle: 'SWIA!cDiag'}
 
 
 
@@ -516,9 +527,11 @@ if keyword_set(tplot) then begin
 		energies = transpose(info_str[swics.info_index].energy_coarse)
 
 		if keyword_set(eflux) then begin
-			store_data,'mvn_swics_en_eflux',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+			store_data,'mvn_swics_en_eflux',data = {x:ctime, y: espec/64, v:energies, ylog:1, zlog:1, spec:1, $
+			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e4,1e8],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin	
-			store_data,'mvn_swics_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swics_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, $
+			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swics.data,1),1))
 			phis = transpose(info_str[swics.info_index].phi_coarse)
@@ -527,12 +540,14 @@ if keyword_set(tplot) then begin
 				phis[i,*] = phis[i,s]
 				phspec[i,*] = phspec[i,s]
 			endfor
-			store_data,'mvn_swics_ph_counts',data = {x:ctime, y: phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
+			store_data,'mvn_swics_ph_counts',data = {x:ctime, y: phspec, v:phis, spec:1, no_interp:1, $
+			ytitle:'Phi',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
 
 
 			thspec = transpose(total(total(swics.data,3),1))
 			thetas = transpose(info_str[swics.info_index].theta_coarse[47,*,*])
-			store_data,'mvn_swics_th_counts',data = {x:ctime,y:thspec,v:thetas,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
+			store_data,'mvn_swics_th_counts',data = {x:ctime,y:thspec,v:thetas,spec:1, no_interp:1, $
+			ytitle:'Theta',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
 
 		endelse
 	endif
@@ -544,9 +559,13 @@ if keyword_set(tplot) then begin
 		energies = transpose(info_str[swica.info_index].energy_coarse)
 
 		if keyword_set(eflux) then begin
-			store_data,'mvn_swica_en_eflux',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+			store_data,'mvn_swica_en_eflux',data = {x:ctime, y: espec/64, v:energies, ylog:1, zlog:1, $
+			spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e4,1e8],ytitle:'Energy (eV)', $
+			ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin	
-			store_data,'mvn_swica_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swica_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, $
+			spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, $
+			dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swica.data,1),1))
 			phis = transpose(info_str[swica.info_index].phi_coarse)
@@ -555,12 +574,14 @@ if keyword_set(tplot) then begin
 				phis[i,*] = phis[i,s]
 				phspec[i,*] = phspec[i,s]
 			endfor
-			store_data,'mvn_swica_ph_counts',data = {x:ctime, y: phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
+			store_data,'mvn_swica_ph_counts',data = {x:ctime, y: phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi', $
+			ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
 
 
 			thspec = transpose(total(total(swica.data,3),1))
 			thetas = transpose(info_str[swica.info_index].theta_coarse[47,*,*])
-			store_data,'mvn_swica_th_counts',data = {x:ctime,y:thspec,v:thetas,spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
+			store_data,'mvn_swica_th_counts',data = {x:ctime,y:thspec,v:thetas,spec:1, no_interp:1, ytitle:'Theta', $
+			ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
 
 		endelse
 
@@ -575,20 +596,24 @@ if keyword_set(tplot) then begin
 		energies = fltarr(nsw,48)
 		for i = 0,nsw-1 do energies[i,*] =  energy_all[i,swifs[i].estep_first:swifs[i].estep_first+47]
 		if keyword_set(eflux) then begin
-			store_data,'mvn_swifs_en_eflux',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+			store_data,'mvn_swifs_en_eflux',data = {x:ctime, y:espec/120, v:energies, ylog:1, zlog:1, spec:1, no_interp:1, $
+			yrange:[4,30000],ystyle:1,zrange:[1e5,1e9],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin
-			store_data,'mvn_swifs_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swifs_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1, $
+			yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swifs.data,1),1))
 			phis = transpose(info_str[swifs.info_index].phi_fine)
-			store_data,'mvn_swifs_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
+			store_data,'mvn_swifs_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi', $
+			ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
 
 
 			thspec = transpose(total(total(swifs.data,3),1))
 			theta_all = transpose(info_str[swifs.info_index].theta_fine[95,*,*])
 			thetas = fltarr(nsw,12)
 			for i = 0,nsw-1 do thetas[i,*] = theta_all[i,swifs[i].dstep_first:swifs[i].dstep_first+11]
-			store_data,'mvn_swifs_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
+			store_data,'mvn_swifs_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta', $
+			ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
 		endelse
 	endif
 
@@ -602,20 +627,24 @@ if keyword_set(tplot) then begin
 		for i = 0,nsw-1 do energies[i,*] =  energy_all[i,swifa[i].estep_first:swifa[i].estep_first+47]	
 
 		if keyword_set(eflux) then begin
-			store_data,'mvn_swifa_en_eflux',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+			store_data,'mvn_swifa_en_eflux',data = {x:ctime, y:espec/120, v:energies, ylog:1, zlog:1, spec:1, $
+			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e9],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin
-			store_data,'mvn_swifa_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swifa_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, $
+			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swifa.data,1),1))
 			phis = transpose(info_str[swifa.info_index].phi_fine)
-			store_data,'mvn_swifa_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
+			store_data,'mvn_swifa_ph_counts',data = {x:ctime, y:phspec, v:phis, spec:1, no_interp:1, ytitle:'Phi', $
+			ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
 
 
 			thspec = transpose(total(total(swifa.data,3),1))
 			theta_all = transpose(info_str[swifa.info_index].theta_fine[95,*,*])
 			thetas = fltarr(nsw,12)
 			for i = 0,nsw-1 do thetas[i,*] = theta_all[i,swifa[i].dstep_first:swifa[i].dstep_first+11]
-			store_data,'mvn_swifa_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta',ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
+			store_data,'mvn_swifa_th_counts',data = {x:ctime,y: thspec, v: thetas, spec:1, no_interp:1, ytitle:'Theta', $
+			ztitle:'SWIA!ccounts',zlog:1}, dlimits = {datagap:180}
 		endelse
 
 	endif
@@ -625,21 +654,30 @@ if keyword_set(tplot) then begin
 		ctime = swim[w].time_unix + 2.0				;center time of sample
 
 		store_data,'mvn_swim_density',data = {x:ctime,y:swim[w].density,ytitle:'SWIA!cdensity!c[cm!E-3!N]'}
-		store_data,'mvn_swim_velocity',data = {x:ctime,y:transpose(swim[w].velocity),v:[0,1,2],labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cvelocity!c[km/s]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
-		store_data,'mvn_swim_velocity_mso',data = {x:ctime,y:transpose(swim[w].velocity_mso),v:[0,1,2],labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cvelocity!c[km/s]'}, limits = {SPICE_FRAME: 'MAVEN_MSO'}
+		store_data,'mvn_swim_velocity',data = {x:ctime,y:transpose(swim[w].velocity),v:[0,1,2], $
+		labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cvelocity!c[km/s]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
+		store_data,'mvn_swim_velocity_mso',data = {x:ctime,y:transpose(swim[w].velocity_mso), $
+		v:[0,1,2],labels:['Vx','Vy','Vz'],labflag:1,ytitle:'SWIA!cvelocity!c[km/s]'}, limits = {SPICE_FRAME: 'MAVEN_MSO'}
 
-		store_data,'mvn_swim_pressure',data = {x:ctime,y:transpose(swim[w].pressure), v:[0,1,2,3,4,5], labels: ['Pxx','Pyy','Pzz','Pxy','Pxz','Pyz'], labflag:1, ytitle: 'SWIA!cpressure!c[eV/cm!E3!N]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
+		store_data,'mvn_swim_pressure',data = {x:ctime,y:transpose(swim[w].pressure), v:[0,1,2,3,4,5], $
+		labels: ['Pxx','Pyy','Pzz','Pxy','Pxz','Pyz'], labflag:1, ytitle: 'SWIA!cpressure!c[eV/cm!E3!N]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
 
-		store_data, 'mvn_swim_temperature', data = {x:ctime,y:transpose(swim[w].temperature), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!ctemperature!c[eV]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
-		store_data, 'mvn_swim_temperature_mso', data = {x:ctime,y:transpose(swim[w].temperature_mso), v:[0,1,2], labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!ctemperature!c[eV]'}, limits = {SPICE_FRAME: 'MAVEN_MSO'}
+		store_data, 'mvn_swim_temperature', data = {x:ctime,y:transpose(swim[w].temperature), v:[0,1,2], $
+		labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!ctemperature!c[eV]'}, limits = {SPICE_FRAME: 'MAVEN_SWIA'}
+		store_data, 'mvn_swim_temperature_mso', data = {x:ctime,y:transpose(swim[w].temperature_mso), v:[0,1,2], $
+		labels: ['Tx','Ty','Tz'], labflag:1, ytitle: 'SWIA!ctemperature!c[eV]'}, limits = {SPICE_FRAME: 'MAVEN_MSO'}
 
-		store_data, 'mvn_swim_quality_flag',data = {x:swim.time_unix+2.0,y:[[swim.quality_flag],[swim.quality_flag]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Qual'}
+		store_data, 'mvn_swim_quality_flag',data = {x:swim.time_unix+2.0,y:[[swim.quality_flag],[swim.quality_flag]], $
+		v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Qual'}
 
-		store_data, 'mvn_swim_decom_flag',data = {x:swim.time_unix+2.0,y:[[swim.decom_flag],[swim.decom_flag]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Decom'}
+		store_data, 'mvn_swim_decom_flag',data = {x:swim.time_unix+2.0,y:[[swim.decom_flag],[swim.decom_flag]], $
+		v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Decom'}
 
-		store_data, 'mvn_swim_atten_state',data = {x:swim.time_unix+2.0,y:[[swim.atten_state],[swim.atten_state]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,2],ytitle:'Atten'}
+		store_data, 'mvn_swim_atten_state',data = {x:swim.time_unix+2.0,y:[[swim.atten_state],[swim.atten_state]], $
+		v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,2],ytitle:'Atten'}
 
-		store_data, 'mvn_swim_swi_mode',data = {x:swim.time_unix+2.0,y:[[swim.swi_mode],[swim.swi_mode]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Mode'}
+		store_data, 'mvn_swim_swi_mode',data = {x:swim.time_unix+2.0,y:[[swim.swi_mode],[swim.swi_mode]], $
+		v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Mode'}
 
 	endif
 
@@ -649,12 +687,17 @@ if keyword_set(tplot) then begin
 		energies = transpose(info_str[swis[w].info_index].energy_coarse)
 
 		if keyword_set(eflux) then begin
-			store_data,'mvn_swis_en_eflux',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[1e5,1e11],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
+			store_data,'mvn_swis_en_eflux',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, $
+			zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[1e4,1e8],ytitle:'Energy (eV)', $
+			ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin
-			store_data,'mvn_swis_en_counts',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
+			store_data,'mvn_swis_en_counts',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, $
+			zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)', $
+			ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 		endelse
 
-		store_data, 'mvn_swis_decom_flag',data = {x:swis.time_unix+4.0*swis.num_accum/2,y:[[swis.decom_flag],[swis.decom_flag]],v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Decom'}
+		store_data, 'mvn_swis_decom_flag',data = {x:swis.time_unix+4.0*swis.num_accum/2,y:[[swis.decom_flag],[swis.decom_flag]], $
+		v:[0,1],spec:1},limits = {yticks:1,panel_size:0.2,zrange:[0,1],ytitle:'Decom'}
 
 	endif
 
