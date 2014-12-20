@@ -24,8 +24,8 @@
 ;  none
 ;  
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-12-11 10:42:35 -0800 (Thu, 11 Dec 2014) $
-;$LastChangedRevision: 16455 $
+;$LastChangedDate: 2014-12-18 13:48:40 -0800 (Thu, 18 Dec 2014) $
+;$LastChangedRevision: 16513 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/poes_ui_gen_overplot.pro $
 ;-
 
@@ -113,14 +113,15 @@ pro poes_ui_gen_overplot_event, event
       tplot_options, title=strupcase(string(state.probe))+' Overview ('+time_string(st_double)+')'
 
       state.statusBar->Update,'Generating POES overview plot. Please wait!...'
-      poes_overview_plot, date = st_double, probe = state.probe, duration = dur, /gui_overplot, oplot_calls = (*state.data).oplot_calls, error = error
+      poes_overview_plot, date = st_double, probe = state.probe, duration = dur, /gui_overplot, $
+                          oplot_calls = (*state.data).oplot_calls, error = error
       
       if ~error then begin
         
         ;add to call sequence
         state.callSequence->addPluginCall, 'poes_overview_plot', $
           date = st_double, probe = state.probe, duration = dur, $
-          gui_overplot=1, oplot_calls = (*state.data).oplot_calls, track_one=1b
+          gui_overplot=1, oplot_calls = (*state.data).oplot_calls, track_one=1b, no_draw=1
         
         ; update the size of the labels       
         activeWindow->GetProperty, panels = panelsObj

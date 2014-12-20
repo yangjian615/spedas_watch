@@ -40,7 +40,9 @@ commands = hash_executable
 outputs = ''
 for i=0,n_elements(files)-1 do begin
 file = files[i]
-if keyword_set(hash_error) then output ='ChecksumNotAvailable  '+ file else begin
+if file_test(/regular,file) eq 0 then begin 
+   output = 'FileDoesNotExist                          '+file
+endif else if keyword_set(hash_error) then output ='ChecksumExecutableNotAvailable            '+ file else begin
   if !version.os_family eq 'unix' then begin
     dprint,verbose=verbose,dlevel=4,commands
     spawn,[commands,file] ,/noshell,/stderr,output,exit_status=status

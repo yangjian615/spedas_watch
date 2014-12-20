@@ -54,6 +54,7 @@ for i=0L,nd-1 do begin
   
   prereq_info = file_checksum(prereq_files,/add_mtime)
   mvn_sep_var_save,l1_filename,prereq_info=prereq_info,description=description
+  mvn_mag_var_save
 
 ;  ndays = round( (tr[1]-tr[0])/res )
   pf = str_sub(plotformat,'$NDAY',strtrim(ndaysload,2)+'day')

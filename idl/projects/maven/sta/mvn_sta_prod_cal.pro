@@ -21,7 +21,6 @@
 ;
 ; TBDs to make the code consistent with SIS:
 ;
-;	tbd	add dead3 to the SIS documentation
 ;	tbd	current code uses swp2gfan and swp2gfdf to help approximate gf for omni-directional apids - c0,c2,c4,c6
 ;			need to check whether this properly handles theta and azimuthal angle ranges
 ;	tbd	correct program for leakage by electrostatic attenuator at low energy
@@ -293,9 +292,9 @@ mhist_tof = (findgen(1024)+tof_offset)/b_ns				; need to decide if we want that 
 ; ??????????????????????????????????????????
 ;dead1 = 500. 
 ;dead2 = 740.
-dead1 = 420. 
-dead2 = 660.
-dead3 = 460.
+dead1 = 420. 		; qualified events
+dead2 = 660.		; unqualified events
+dead3 = 460.		; stop-no-start and stop-then-start events
 
 ;************************************************************************************************ 
 ;************************************************************************************************ 
@@ -997,7 +996,25 @@ endif
 ;		M = (A + B*M) * C --> M = A /(1/C - B)  --> A=(acc+nrg-500), B=-125., C=const2/(2cm/((tof_offset+tof_bin)/b_ns))^2
 ;		M = (acc+nrg-500.)/(2./(tof_offset+tof_bin)/b_ns)^2/const2 - 125.)
 ;
-		mas[iswp,*,*] = (acc+nrg2[iswp,*,*]-500.)/((2./((tof_offset+tof[swp2mlut[iswp],*,*])/b_ns))^2./const2 + 125.)
+;		mas[iswp,*,*] = (acc+nrg2[iswp,*,*]-500.)/((2./((tof_offset+tof[swp2mlut[iswp],*,*])/b_ns))^2./const2 + 125.)
+;		mas[iswp,*,*] = (acc+nrg2[iswp,*,*]-0.)/((2./((tof_offset+tof[swp2mlut[iswp],*,*])/b_ns))^2./const2 + 0.)
+
+;		loss = 500 + ((M/16)^.5)*2400. = 500 + 600*M^.5
+;		M = const2 * (acc+nrg-loss) / (2cm/(tof_offset+tof_bin)/b_ns)^2 
+;		M = const2 * (acc+nrg-500-600*M^.5) / (2cm/(tof_offset+tof_bin)/b_ns)^2 
+;		A = acc+nrg-500.
+;		B = -600.
+;		C = const2/(2cm/((tof_offset+tof_bin)/b_ns))^2
+;		M = (A + B*M^.5) * C --> (M-AC)^2 = (BC)^2*M --> 0 = M^2 - (2AC + (BC)^2)M + (AC)^2
+;		M = .5 *((2AC + (BC)^2) +/- ((2AC + (BC)^2)^2 - 4*(AC)^2)^.5) 
+;		M = .5 *((2*A*C + (B*C)^2) +/- ((2*A*C + (B*C)^2)^2 - 4*(A*C)^2)^.5)
+
+		A = acc+nrg2[iswp,*,*]-500.
+		B = -450.
+		C = const2/(2./((tof_offset+tof[swp2mlut[iswp],*,*])/b_ns))^2.
+;		mas[iswp,*,*] =  .5 *((2*A*C + (B*C)^2) + ((2*A*C + (B*C)^2)^2 - 4*(A*C)^2)^.5)
+		mas[iswp,*,*] =  .5 *((2*A*C + (B*C)^2) - ((2*A*C + (B*C)^2)^2 - 4*(A*C)^2)^.5)
+
 	endfor	
 
 ;print,minmax(nrg2[3,*,*])
@@ -1267,6 +1284,8 @@ print,'Processing apid c6'
 				endfor
 			endif
 
+			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
+
 			store_data,'mvn_sta_C6_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_C6_mode',-1,7,0
 			store_data,'mvn_sta_C6_rate',data={x:tdis,y:rt2}					; corrected modes
@@ -1278,7 +1297,11 @@ print,'Processing apid c6'
 				ylim,'mvn_sta_C6_att',-1,4,0
 
 ;			swp_ind = md2swp[md1]									; old version
-			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]					
+			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]	
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5)
+			if tdis[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
+			store_data,'mvn_sta_C6_eprom_ver',data={x:tdis,y:eprom_ver}
+				ylim,'mvn_sta_C6_eprom_ver',min(eprom_ver)-1,max(eprom_ver)+1,0				
 
 			energy=nrg[swp_ind,*]
 			energy=total(reform(energy,ndis,2,32),2)/2.
@@ -1393,6 +1416,8 @@ print,'Processing apid c6'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
+		header:			header,					$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -1567,6 +1592,8 @@ print,'Processing apid c0'
 
 ;		swp_ind = md2swp[md1]									; old version
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		energy=nrg[swp_ind,*]
 		mass=mas[swp_ind,0,*]
@@ -1689,6 +1716,7 @@ print,'Processing apid c0'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -1846,6 +1874,8 @@ print,'Processing apid c2'
 
 ;		swp_ind = md2swp[md1]								; old version
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		energy=nrg[swp_ind,*]
 		energy=total(reform(energy,nn,2,32),2)/2.					; because there are only 32 energies
@@ -1955,6 +1985,7 @@ print,'Processing apid c2'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -2122,6 +2153,8 @@ print,'Processing apid c4'
 
 ;		swp_ind = md2swp[md1]									; old version
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		energy=nrg[swp_ind,*]
 		energy=total(reform(energy,nn,16,4),2)/16.
@@ -2229,6 +2262,7 @@ print,'Processing apid c4'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -2399,6 +2433,8 @@ print,'Processing apid c8'
 
 ;		swp_ind = md2swp[md1]									; old version
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		energy=nrg[swp_ind,*]
 		energy=total(reform(energy,nn,2,32),2)/2.
@@ -2513,6 +2549,7 @@ print,'Processing apid c8'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -2670,6 +2707,8 @@ print,'Processing apid ca'
 
 		swp_ind = md2swp[md1]									; old version
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		energy=nrg[swp_ind,*]
 		energy=total(reform(energy,nn,4,16),2)/4.
@@ -2781,6 +2820,7 @@ print,'Processing apid ca'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -2938,6 +2978,8 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 
 ;			swp_ind = md2swp[md1]									; old version
 			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]					
+				eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5)
+				if tdis[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 			energy=nrg[swp_ind,*]
 			energy=total(reform(energy,ndis,2,32),2)/2.
@@ -3052,6 +3094,7 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -3223,6 +3266,8 @@ print,'Processing apid cd'
 
 ;			swp_ind = md2swp[md1]									; old version
 			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]					
+				eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5)
+				if tdis[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 			energy=nrg[swp_ind,*]
 			energy=total(reform(energy,ndis,2,32),2)/2.
@@ -3336,6 +3381,7 @@ print,'Processing apid cd'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -3492,6 +3538,8 @@ print,'Processing apid ce'
 
 ;			swp_ind = md2swp[md1]									; old version
 			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]					
+				eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5)
+				if tdis[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 			energy=nrg[swp_ind,*]
 			energy=total(reform(energy,ndis,4,16),2)/4.
@@ -3607,6 +3655,7 @@ print,'Processing apid ce'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -3777,6 +3826,8 @@ print,'Processing apid cf'
 
 ;			swp_ind = md2swp[md1]									; old version
 			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]					
+				eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5)
+				if tdis[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 			energy=nrg[swp_ind,*]
 			energy=total(reform(energy,ndis,4,16),2)/4.
@@ -3891,6 +3942,7 @@ print,'Processing apid cf'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -4046,6 +4098,8 @@ print,'Processing apid d0'
 
 ;			swp_ind = md2swp[md1]									; old version
 			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]					
+				eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5)
+				if tdis[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 			energy=nrg[swp_ind,*]
 			energy=total(reform(energy,ndis,2,32),2)/2.
@@ -4160,6 +4214,7 @@ print,'Processing apid d0'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -4333,6 +4388,8 @@ print,'Processing apid d1'
 
 ;			swp_ind = md2swp[md1]									; old version
 			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]					
+				eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5)
+				if tdis[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 			energy=nrg[swp_ind,*]
 			energy=total(reform(energy,ndis,2,32),2)/2.
@@ -4454,6 +4511,7 @@ print,'Processing apid d1'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -4607,6 +4665,8 @@ print,'Processing apid d2'
 
 ;			swp_ind = md2swp[md1]									; old version
 			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]					
+				eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5)
+				if tdis[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 			energy=nrg[swp_ind,*]
 			energy=total(reform(energy,ndis,2,32),2)/2.
@@ -4723,6 +4783,7 @@ print,'Processing apid d2'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -4890,6 +4951,8 @@ print,'Processing apid d3'
 
 ;			swp_ind = md2swp[md1]									; old version
 			swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5),md2]					
+				eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tdis)+.5)
+				if tdis[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 			energy=nrg[swp_ind,*]
 			energy=total(reform(energy,ndis,2,32),2)/2.
@@ -5006,6 +5069,7 @@ print,'Processing apid d3'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -5183,6 +5247,8 @@ print,'Processing apid d4'
 
 ;		swp_ind = md2swp[md1]									; old version
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		energy=nrg[swp_ind,*]
 		energy=total(energy,2)/64.							; because there is only 1 energy
@@ -5297,6 +5363,7 @@ print,'Processing apid d4'
 		delta_t:		tt2-tt1,				$
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -5700,6 +5767,8 @@ print,'Processing apid d8'
 			ylim,'mvn_sta_D8_mode',-1,7,0
 
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		tmp=decomp19[t.y[0:nn-1,*]]						; [time,rate]
 
@@ -5756,6 +5825,7 @@ print,'Processing apid d8'
 		end_time:		tt2,					$
 		integ_t: 		integ_time,				$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -5822,6 +5892,8 @@ print,'Processing apid d9'
 			ylim,'mvn_sta_D9_mode',-1,7,0
 
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		tmp=decomp19[transpose(reform(t.y[0:nn-1,*],nn,12,64),[0,2,1])]			; [time,en,rate]
 		tmp2=decomp19[reform(t.y[0:nn-1,*],nn,12,64)]					; [time,rate,en]
@@ -5936,6 +6008,7 @@ print,'Processing apid d9'
 		end_time:		tt2,					$
 		integ_t: 		integ_time,				$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
@@ -6035,6 +6108,8 @@ print,'Processing apid da'
 
 ;		swp_ind = md2swp[md1]									; old version
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		energy=nrg[swp_ind,*]
 
@@ -6151,6 +6226,7 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 		end_time:		tt8+2.,					$
 		integ_t: 		integ_time,				$	
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1_2,					$
 		mode:			md2_2,					$
 		rate:			rt2_2,					$
@@ -6207,6 +6283,8 @@ print,'Processing apid db'
 			ylim,'mvn_sta_DB_mode',-1,7,0
 
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
+			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
+			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
 
 		store_data,'mvn_sta_DB_DATA',data={x:tt,y:t.y[0:nn-1,*],v:findgen(1024)}
 
@@ -6268,6 +6346,7 @@ print,'Processing apid db'
 ;		nswp:			n_swp,					$
 ;		ntof:			1024,					$
 
+		eprom_ver:		eprom_ver,				$
 		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$

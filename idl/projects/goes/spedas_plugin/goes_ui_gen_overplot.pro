@@ -24,8 +24,8 @@
 ;  none
 ;  
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-12-08 14:45:29 -0800 (Mon, 08 Dec 2014) $
-;$LastChangedRevision: 16410 $
+;$LastChangedDate: 2014-12-18 13:41:57 -0800 (Thu, 18 Dec 2014) $
+;$LastChangedRevision: 16512 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/spedas_plugin/goes_ui_gen_overplot.pro $
 ;-
 
@@ -120,7 +120,8 @@ pro goes_ui_gen_overplot_event, event
         ;add to call sequence
         state.callSequence->addPluginCall, 'goes_overview_plot', $
           date = st_double, probe = state.probe, duration = dur, $
-          gui_overplot=1, oplot_calls = (*state.data).oplot_calls, track_one=1b
+          gui_overplot=1, oplot_calls = (*state.data).oplot_calls, $
+          track_one=1b, error = error, no_draw=1
         
         ; update the size of the labels       
         activeWindow->GetProperty, panels = panelsObj

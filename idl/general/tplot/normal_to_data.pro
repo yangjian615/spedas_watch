@@ -15,7 +15,7 @@
 
 
 function normal_to_data,  normv, s
-if s.type eq 0 then return, (normv-s.s(0))/s.s(1)  $
-else return, exp((normv - s.s(0) )/ s.s(1) * alog(10))
+if s.type eq 0 then return, (normv-s.s[0])/s.s[1]  $
+else return, exp((normv - s.s[0] )/ s.s[1] * alog(10))
 end
 

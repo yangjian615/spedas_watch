@@ -22,8 +22,8 @@
 ;  none
 ;  
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-07-31 11:40:40 -0700 (Thu, 31 Jul 2014) $
-;$LastChangedRevision: 15634 $
+;$LastChangedDate: 2014-12-17 17:26:05 -0800 (Wed, 17 Dec 2014) $
+;$LastChangedRevision: 16506 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -260,16 +260,24 @@ pro thm_ui_fix_overview_panels, state=state
           If(ntraces Gt 1) Then Begin
             If(obj_valid(trace_obj[1])) Then Begin
               trace_obj[1]->getproperty, linestyle = linestyleobj
-              linestyleobj->setproperty, color = [255b, 0b, 0b]
+              linestyleobj->setproperty, color = [255b, 255b, 0b] ;yellow
             Endif
             If(obj_valid(trace_obj[2])) Then Begin
               trace_obj[2]->getproperty, linestyle = linestyleobj
-              linestyleobj->setproperty, color = [255b, 255b, 0b]
+              linestyleobj->setproperty, color = [255b, 0b, 0b] ;red
+            Endif
+            If(obj_valid(trace_obj[3])) Then Begin
+              trace_obj[3]->getproperty, linestyle = linestyleobj
+              linestyleobj->setproperty, color = [0b, 0b, 255b] ;blue
             Endif
             If(obj_valid(trace_obj[4])) Then Begin
               trace_obj[4]->getproperty, linestyle = linestyleobj
-              linestyleobj->setproperty, color = [0b, 0b, 0b]
+              linestyleobj->setproperty, color = [0b, 0b, 0b] ;black
             Endif
+              If(obj_valid(trace_obj[5])) Then Begin
+                trace_obj[5]->getproperty, linestyle = linestyleobj
+                linestyleobj->setproperty, color = [0b, 0b, 0b] ;black
+              Endif
             for i = 0,n_elements(trace_obj)-1 do begin
               trace_obj[i]->getProperty,linestyle=linestyleObj,symbol=symbolobj
               lineStyleObj->setProperty,thickness=2

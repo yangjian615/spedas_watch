@@ -12,40 +12,36 @@
 ;              keyword has been set.  If not given, the default file name is
 ;	       saved.tplot or saved.lim.
 ;   limits:    will save only limits structures.  No data will be saved.
+;   NO_ADD_EXTENSION:  Set this to prevent the addition of the extension
+;   
 ;SEE ALSO:      "STORE_DATA", "GET_DATA", "TPLOT", "TPLOT_RESTORE"
 ;
 ;CREATED BY:    Peter Schroeder
 ;LAST MODIFICATION:     tplot_save.pro   97/05/14
 ;
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2014-12-17 16:22:42 -0800 (Wed, 17 Dec 2014) $
+; $LastChangedRevision: 16502 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_save.pro $
 ;-
-pro tplot_save,handlenames,filename=filename,limits=limits,compress=compress
+pro tplot_save,handlenames,filename=filename,limits=limits,compress=compress,no_add_extension=no_add_extension
 
 @tplot_com.pro
 
-;if not keyword_set(handlenames) then handlenames = (data_quants.name)(1:*)
-;n = n_elements(handlenames)
-;index = fltarr(n)
-
-;;for i=0,n-1 do begin
-;  handlename = handlenames(i)
-;  index(i) = find_handle(handlename)
-;endfor
-
-;index = index(where(index ne 0))
 
 names = tnames(handlenames,n,index=index)
-
-
-origdq = data_quants(index)
+origdq = data_quants[index]
 
 if keyword_set(limits) then begin
 	dq = origdq
-	dq.dh(*) = ptr_new(0)
+	dq.dh[*] = ptr_new(0)
 	filesuf = '.lim'
 endif else begin
 	dq = origdq
 	filesuf = '.tplot'
 endelse
+
+if keyword_set(no_add_extension) then filesuf=''
 
 if size(/type,filename) ne 7 then filename = 'saved'
 

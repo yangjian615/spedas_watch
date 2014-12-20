@@ -137,7 +137,7 @@ if 0 then begin
      if nd eq 1 then jtit = string(/print,tn[j],f='(a'+strtrim(sz,2)+'," ")')  $
      else jtit = string(/print,tn[j]+'['+strtrim(indgen(nd),2)+']',f='(20(a'+strtrim(sz)+'," "))')
      title = title+jtit
-     format = format + strtrim(nd,2)+'(' + forms(dt) + '," "),'
+     format = format + strtrim(nd,2)+'(' + forms[dt] + '," "),'
   endfor
   format = format+'" ")'
   printf,lun,title

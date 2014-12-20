@@ -436,9 +436,13 @@ end
 
 
 pro mvn_sep_extract_data,dataname,data,trange=trange,tnames=tnames,tags=tags,num=num
-    common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise   $
-      ,sep1_memdump,sep2_memdump,mag1_hkp_f0,mag2_hkp_f0
-;common mav_apid_sep_handler_com , sep_all_ptrs
+
+@mvn_sep_handler_commonblock.pro
+
+;    common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise   $
+;      ,sep1_memdump,sep2_memdump,mag1_hkp_f0,mag2_hkp_f0
+
+
 count=0
 data=0
 if ~keyword_set(sep_all_ptrs) then begin
@@ -488,11 +492,13 @@ end
 
 
 pro mvn_sep_var_save,filename,pathname=pathname,trange=trange,prereq_info=prereq_info,verbose=verbose,description=description
-common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
- ,sep1_memdump,sep2_memdump,mag1_hkp_f0,mag2_hkp_f0
+
+@mvn_sep_handler_commonblock.pro
+;common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
+; ,sep1_memdump,sep2_memdump,mag1_hkp_f0,mag2_hkp_f0
  
- 
-common mvn_apid_misc_handler_com   ,manage,realtime,apid20x,apid21x,apid22x,apid23x,apid24x,apid25x   ; from mvn_pfdpu_handler
+@mvn_pfdpu_handler_commonblock.pro
+;common mvn_apid_misc_handler_com   ,manage,realtime,apid20x,apid21x,apid22x,apid23x,apid24x,apid25x   ; from mvn_pfdpu_handler
  
 
 if not keyword_set(filename) then begin
@@ -550,8 +556,9 @@ pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_
     common mav_apid_sep_handler_misc_com,manage,realtime,sep1_avg,sep2_avg,lastmem1,lastmem2,sep1_last_hkp,sep2_last_hkp ,sep1_spec,sep2_spec,sep1arc_spec,sep2arc_spec
 
 ;  All SEP data is stored in these 10 variables
-    common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
-    ,sep1_memdump,sep2_memdump  ,mag1_hkp_f0,mag2_hkp_f0
+@mvn_sep_handler_commonblock.pro
+;    common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
+;    ,sep1_memdump,sep2_memdump  ,mag1_hkp_f0,mag2_hkp_f0
 
     if n_elements(sepn) eq 0 then sepn=3
     if n_elements(magnum) eq 0 then magnum=3
@@ -578,7 +585,7 @@ pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_
         dprint,dlevel=2,'SEP handler: ' , keyword_set(clear) ? 'Clearing Data' : 'Finalizing'
         prefix = 'mvn_'
         if ~keyword_set(hkp_tags) then hkp_tags = 'RATE_CNTR VCMD_CNTR AMON_* DACS'
-        if ~keyword_set(svy_tags) then svy_tags = 'DATA ATT COUNTS_TOTAL'
+        if ~keyword_set(svy_tags) then svy_tags = 'DATA ATT COUNTS_TOTAL DURATION'
         if ~keyword_set(noise_tags) then noise_tags = 'BASELINE SIGMA DATA TOT'
         if (sepn and 1) ne 0 then mav_gse_structure_append, clear=clear,  sep1_hkp,   tname=prefix+'sep1_hkp' , tags=hkp_tags 
         if (sepn and 2) ne 0 then mav_gse_structure_append, clear=clear,  sep2_hkp,   tname=prefix+'sep2_hkp' , tags=hkp_tags 

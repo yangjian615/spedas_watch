@@ -5,9 +5,9 @@
 ;  Purpose: Manages window menu
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-20 14:57:30 -0700 (Thu, 20 Mar 2014) $
-;$LastChangedRevision: 14617 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2014-12-18 13:19:05 -0800 (Thu, 18 Dec 2014) $
+;$LastChangedRevision: 16510 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_window_menus__define.pro $
 ;-
 
@@ -187,7 +187,7 @@ PRO SPD_UI_WINDOW_MENUS::sync, windowStorage
   endif
 
   ;clear internal vars
-  ; -apparently IDL reserves "Cleanup" as an ojbect destruction method
+  ; -apparently IDL reserves "Cleanup" as an object destruction method
   ;  and will not allow a method with that name to be called internally
   ptr_free, self.names
   ptr_free, self.ids

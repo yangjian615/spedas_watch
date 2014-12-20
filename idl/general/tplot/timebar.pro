@@ -98,17 +98,17 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
   yr = fltarr(2)
 
   if keyword_set(between) eq 0 then begin
-    yp(0) = tplot_vars.settings.y(nd1).window(0)
-    yp(1) = tplot_vars.settings.y(nd0).window(1)
+    yp[0] = tplot_vars.settings.y[nd1].window[0]
+    yp[1] = tplot_vars.settings.y[nd0].window[1]
     if keyword_set(databar) then begin
-      yr(0) = tplot_vars.settings.y(nd1).crange(0)
-      yr(1) = tplot_vars.settings.y(nd0).crange(1)
+      yr[0] = tplot_vars.settings.y[nd1].crange[0]
+      yr[1] = tplot_vars.settings.y[nd0].crange[1]
     endif
   endif else begin
-    nd0 = (where(between[0] eq tplot_vars.options.varnames))(0)
-    nd1 = (where(between[1] eq tplot_vars.options.varnames))(0)
-    yp(0) = tplot_vars.settings.y(nd1).window(1)
-    yp(1) = tplot_vars.settings.y(nd0).window(0)
+    nd0 = (where(between[0] eq tplot_vars.options.varnames))[0]
+    nd1 = (where(between[1] eq tplot_vars.options.varnames))[0]
+    yp[0] = tplot_vars.settings.y[nd1].window[1]
+    yp[1] = tplot_vars.settings.y[nd0].window[0]
   endelse
 
   if keyword_set(transient) then $
@@ -116,27 +116,27 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
 
   if ~keyword_set(databar) then begin                           ;timebar
     for i=0l,nt-1 do begin
-      tp = t(i) - tplot_vars.settings.time_offset
-      tp = xp(0) + (tp-xr(0))/(xr(1)-xr(0)) * (xp(1)-xp(0))
-      if tp ge xp(0) and tp le xp(1) then begin
-	plots,[tp,tp],yp,color=color(i),linestyle=linestyle(i),thick=thick(i),/normal
+      tp = t[i] - tplot_vars.settings.time_offset
+      tp = xp[0] + (tp-xr[0])/(xr[1]-xr[0]) * (xp[1]-xp[0])
+      if tp ge xp[0] and tp le xp[1] then begin
+	plots,[tp,tp],yp,color=color[i],linestyle=linestyle[i],thick=thick[i],/normal
       endif else if keyword_set(verbose) then $
-	dprint, 'Time '+time_string(t(i))+' is out of trange.'
+	dprint, 'Time '+time_string(t[i])+' is out of trange.'
     endfor
   endif else begin
 
 ;    for i=0l,nt-1 do begin                                      ;databar
     for i=0l,0l do begin                                      ;databar    ;for now work only on first element.
-      dp = t(i)
+      dp = t[i]
 ;      if tplot_vars.settings.y[nd[i]].type then dp = yp[0,i] + (( alog10(dp) - yr[0,i] )/(yr[1,i]-yr[0,i]) * (yp[1,i]-yp[0,i])) else $
 ;        dp = yp[0,i] + (dp-yr[0,i])/(yr[1,i]-yr[0,i]) * (yp[1,i]-yp[0,i])
       if tplot_vars.settings.y[nd[i]].type then dp = yp[0] + (( alog10(dp) - yr[0] )/(yr[1]-yr[0]) * (yp[1]-yp[0])) else $
         dp = yp[0] + (dp-yr[0])/(yr[1]-yr[0]) * (yp[1]-yp[0])
 ;      if dp ge yp[0] and dp le yp[1] then begin
       if dp ge yp[0,i] and dp le yp[1,i] then begin
-	plots,xp,[dp,dp],color=color(i),linestyle=linestyle(i),thick=thick(i),/normal
+	plots,xp,[dp,dp],color=color[i],linestyle=linestyle[i],thick=thick[i],/normal
       endif else if keyword_set(verbose) then $
-	dprint, 'Data value '+string(t(i))+' is out of trange.'
+	dprint, 'Data value '+string(t[i])+' is out of trange.'
     endfor
   endelse
 

@@ -14,8 +14,8 @@
 ;Written by: Davin Larson
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-04-18 13:05:24 -0700 (Fri, 18 Apr 2014) $
-; $LastChangedRevision: 14862 $
+; $LastChangedDate: 2014-12-16 15:38:27 -0800 (Tue, 16 Dec 2014) $
+; $LastChangedRevision: 16488 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/quaternion/quaternion_rotation.pro $
 ;-
 function quaternion_rotation,v,q,last_index=last_index
@@ -37,9 +37,16 @@ if keyword_set(last_index) then begin
     b = q[1,*]
     c = q[2,*]
     d = q[3,*]
+  if size(/n_dimen,v) eq 1 then begin
+    v1 = v[0]
+    v2 = v[1]
+    v3 = v[2]
+  endif else begin
     v1 = v[0,*]
     v2 = v[1,*]
     v3 = v[2,*]
+  endelse
+
 
 endif else begin
   if size(/n_dimen,q) eq 1 then begin

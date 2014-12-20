@@ -38,7 +38,7 @@ if size(/type,filenames) ne 7 then $
 n = n_elements(filenames)
 restored_varnames = ''
 for i=0,n-1 do begin
-  restore,filenames(i),/relaxed
+  restore,filenames[i],/relaxed
   if keyword_set(tv) then begin
 	  chkverb = where(tag_names(tv.options) eq 'VERBOSE',verbosethere)
 	  if not verbosethere then begin
@@ -56,7 +56,7 @@ for i=0,n-1 do begin
   	if keyword_set(tv) then tplot_vars = tv
   if keyword_set(dq) then begin
   	for j=0,n_elements(dq.name)-1 do begin
-  		thisdq = dq(j)
+  		thisdq = dq[j]
   		dprint,dlevel=3, 'The tplot variable '+thisdq.name+' is being restored.'
         restored_varnames = [restored_varnames, thisdq.name]
   		names = strsplit(thisdq.name,'.')
@@ -81,9 +81,9 @@ for i=0,n-1 do begin
   					newdata = olddata
   					dattags = tag_names(olddata)
   					for k = 0,n_elements(dattags)-1 do begin
-  						str_element,*thisdq.dh,dattags(k),foo
+  						str_element,*thisdq.dh,dattags[k],foo
   						foo = *foo
-  						str_element,newdata,dattags(k),[*olddata.(k),foo],/add
+  						str_element,newdata,dattags[k],[*olddata[k],foo],/add
   					endfor
   				endelse
   				store_data,verbose=verbose,thisdq.name,data=newdata

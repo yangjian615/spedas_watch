@@ -15,7 +15,7 @@
 
 
 function data_to_normal,  datav, s
-  if s.type eq 0 then return, s.s(1)*datav+s.s(0)  $
-  else return, s.s(1)*alog10(datav)+s.s(0)
+  if s.type eq 0 then return, s.s[1]*datav+s.s[0]  $
+  else return, s.s[1]*alog10(datav)+s.s[0]
 end
 

@@ -20,13 +20,14 @@
 ;       
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-12-11 10:39:43 -0800 (Thu, 11 Dec 2014) $
-; $LastChangedRevision: 16454 $
+; $LastChangedDate: 2014-12-18 13:48:40 -0800 (Thu, 18 Dec 2014) $
+; $LastChangedRevision: 16513 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_overview_plot.pro $
 ;-
 
 pro poes_overview_plot, date = date, probe = probe_in, duration = duration, error = error, $
-                        gui_overplot = gui_overplot, oplot_calls = oplot_calls, _extra = _extra
+                        gui_overplot = gui_overplot, oplot_calls = oplot_calls, directory = directory, $
+                        device = device, no_draw=no_draw, _extra = _extra
     compile_opt idl2
     
     ; Catch errors and return
@@ -41,15 +42,21 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration, erro
     thm_init
     poes_init
     
+    window_xsize = 750
+    window_ysize = 800
+    
+    if undefined(directory) then dir = path_sep() + probe_in+path_sep() else dir = directory
+    if ~undefined(device) then begin 
+        set_plot, device
+        device, set_resolution = [window_xsize, window_ysize]
+    endif
+    
     if undefined(date) then date = '2013-03-17/00:00:00'
     if undefined(probe_in) then probe_in = 'noaa19'
     if undefined(duration) then duration = 0.08333 ; days
     ;if undefined(duration) then duration = 1 ; days
 
     timespan, date, duration, /day
-    
-    window_xsize = 750
-    window_ysize = 800
     
     poes_load_data, probes = probe_in
 
@@ -78,8 +85,9 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration, erro
             options, /def, probe_in+'_mag_lat_sat', 'ytitle', 'Lat'
             
             tplot, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat']
+            thm_gen_multipngplot, probe_in, date, directory = dir, /mkdir
         endif else begin
-            tplot_gui, /no_verify, /add_panel, poes_plots, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat']
+            tplot_gui, /no_verify, /add_panel, poes_plots, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat'], no_draw=no_draw
         
         endelse
         error = 0

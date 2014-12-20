@@ -18,9 +18,9 @@
 ;     sccessful
 ;HISTORY:
 ; 20-nov-2007, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2009-08-03 17:09:36 -0700 (Mon, 03 Aug 2009) $
-; $LastChangedRevision: 6522 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2014-12-18 18:02:31 -0800 (Thu, 18 Dec 2014) $
+; $LastChangedRevision: 16516 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_sample_rate_bar.pro $
 ;-
 Function thm_sample_rate_bar, date, duration, probe,outline=outline, _extra = _extra
@@ -31,28 +31,45 @@ Function thm_sample_rate_bar, date, duration, probe,outline=outline, _extra = _e
 
 ; make tplot variable tracking the sample rate (0=SS,1=FS,2=PB,3=WB)
 ;------------------------------------------------------------------
-  thm_load_hsk, probe = sc, varformat = 'th'+sc+'*issr_mode*'
-  if tnames('th'+sc+'*issr_mode*') eq '' then $
-    store_data, strjoin('th'+sc+'_hsk_issr_mode_raw'), $
-    data = {x:[time_double(date)], y:float('NaN')}
-  get_data, strjoin('th'+sc+'_hsk_issr_mode_raw'), data = d,dlimit=dl
-  ss_data = float(d.y)
-  index_ss_fill = where(d.y ne 0)
-  index_ss = where(d.y eq 0)
-  if (index_ss_fill[0] ne -1) then ss_data[index_ss_fill] = float('NaN')
-  if (index_ss[0] ne -1) then ss_data[index_ss] = 0.
 
-  fs_data = float(d.y)
-  index_fs_fill = where(d.y ne 0 and d.y ne 1 and d.y ne 2 and d.y ne 3)
-  index_fs = where(d.y eq 0 or d.y eq 1 or d.y eq 2 Or d.y eq 3)
-  if (index_fs_fill[0] ne -1) then fs_data[index_fs_fill] = float('NaN')
-  if (index_fs[0] ne -1) then fs_data[index_fs] = 0.
+  thm_load_scmode, probe=sc
+  ; default is slow survey, yellow bar
+  get_data, strjoin('th'+sc+'_scmode_ufs'), data = dufs,dlimit=dl
+  get_data, strjoin('th'+sc+'_scmode_fs'), data = dfs,dlimit=dl
+  get_data, strjoin('th'+sc+'_scmode_ss'), data = dss,dlimit=dl
+  
+  if tnames('th'+sc+'_scmode_ufs') eq '' then begin
+    ufs_time = [float('NaN')]
+    ufs_data = [float('NaN')]
+  endif else begin
+    ind_ufs = where(dufs.y eq 1) 
+    ufs_time = float(dufs.x)
+    ufs_data = float(dufs.y)
+    ufs_data[*] = float('NaN')
+    if (ind_ufs[0] ne -1) then ufs_data[ind_ufs] = 0.0
+  endelse
 
+  ind_fs = where(dfs.y eq 1)
+  fs_time = float(dfs.x)
+  fs_data = float(dfs.y)
+  fs_data[*] = float('NaN')
+  if (ind_fs[0] ne -1) then fs_data[ind_fs] = 0.0
+
+  ind_ss = where(dss.y eq 1)
+  ss_time = float(dss.x)
+  ss_data = float(dss.y)
+  ss_data[*] = float('NaN')
+  if (ind_ss[0] ne -1) then ss_data[ind_ss] = 0.0
+    
+  str_element,dl,'labels',/delete
   str_element,dl,'ysubtitle',/delete
-  str_element,dl,'colors',/delete
-  store_data, 'slow_survey_bar_'+sc, data = {x:d.x, y:ss_data},dlimit=dl
-  store_data, 'fast_survey_bar_'+sc, data = {x:d.x, y:fs_data},dlimit=dl
-  store_data, 'aesthetic_bar_'+sc, data = {x:d.x, y:ss_data},dlimit=dl
+  str_element,dl,'colors',/delete   
+  str_element,dl,'labflag',/delete
+  str_element,dl,'ytitle',/delete
+  store_data, 'slow_survey_bar_'+sc, data = {x:ss_time, y:ss_data},dlimit=dl
+  store_data, 'fast_survey_bar_'+sc, data = {x:fs_time, y:fs_data},dlimit=dl
+  store_data, 'ultrafast_survey_bar_'+sc, data = {x:ufs_time, y:ufs_data},dlimit=dl
+  store_data, 'aesthetic_bar_'+sc, data = {x:time_double(date), y:float('NaN')},dlimit=dl
 ;get particle burst data from fgh level 2 data, jmm, 27-aug-2007
   thm_load_fgm, probe = sc[0], level = 'l2', datatype = 'fgh'
 ;if L2 data is not there, look for L1 data, jmm, 24-apr-2008
@@ -121,8 +138,9 @@ Function thm_sample_rate_bar, date, duration, probe,outline=outline, _extra = _e
   endelse
 
   options, 'aesthetic_bar_'+sc, 'color', 255
-  options, 'slow_survey_bar_'+sc, 'color', 5
-  options, 'fast_survey_bar_'+sc, 'color', 6
+  options, 'slow_survey_bar_'+sc, 'color', 5 
+  options, 'fast_survey_bar_'+sc, 'color', 6 ;red
+  options, 'ultrafast_survey_bar_'+sc, 'color', 3 ;cyan
   options, 'particle_burst_bar_'+sc, 'color', 3
   options, 'particle_burst_sym_'+sc, 'color', 0
   options, 'wave_burst_bar_'+sc, 'color', 0
@@ -130,6 +148,7 @@ Function thm_sample_rate_bar, date, duration, probe,outline=outline, _extra = _e
   
   options, 'slow_survey_bar_'+sc, 'thick', 5
   options, 'fast_survey_bar_'+sc, 'thick', 5
+  options, 'ultrafast_survey_bar_'+sc, 'thick', 3
   options, 'particle_burst_bar_'+sc, 'psym', 6
   options, 'particle_burst_bar_'+sc, 'symsize', 0.1
   options, 'particle_burst_sym_'+sc, 'psym', 6
@@ -143,14 +162,13 @@ Function thm_sample_rate_bar, date, duration, probe,outline=outline, _extra = _e
 
      options,'aesthetic_bar_'+sc,color=0,ticklen=0,$
              yticks=1,ytickname=[' ',' ']
-
   endif
 
-  store_data, 'sample_rate_'+sc, data = ['aesthetic_bar_'+sc, 'fast_survey_bar_'+sc, 'slow_survey_bar_'+sc, 'particle_burst_sym_'+sc, 'wave_burst_sym_'+sc]
+  store_data, 'sample_rate_'+sc, data = ['aesthetic_bar_'+sc, 'slow_survey_bar_'+sc, 'fast_survey_bar_'+sc, 'ultrafast_survey_bar_'+sc, 'particle_burst_sym_'+sc, 'wave_burst_sym_'+sc]
 
   ylim, 'sample_rate_'+sc, -1.1, 1.1, 0
   options, 'sample_rate_'+sc, 'panel_size', 0.2
-  options,'sample_rate_'+sc,ytitle=''
+  options,'sample_rate_'+sc, ytitle=''
   
 
 ;end mode bar code block

@@ -4,7 +4,15 @@
 ;  MVN_MAG_LOAD                            ; Load default
 ;  MVN_MAG_LOAD,'L1_FULL'                  ; load Full res sav files
 ;  MVN_MAG_LOAD,'L1_30SEC',trange=trange
-;  
+;
+; Purpose:  Loads MAVEN mag data into tplot variables
+;
+; Author: Davin Larson
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2014-12-16 22:04:21 -0800 (Tue, 16 Dec 2014) $
+; $LastChangedRevision: 16493 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load.pro $
+
 ;-
 pro mvn_mag_load,format,$
                  trange=trange,$
@@ -33,26 +41,24 @@ case strupcase(format) of
 'L1_FULL': begin
   pathname = 'maven/data/sci/mag/l1/sav/full/YYYY/MM/mvn_mag_l1_pl_full_YYYYMMDD.sav'
   files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,/valid_only)
-  indx = where(files ne '', nfiles)
-  if (nfiles eq 0) then dprint,dlevel=2,verbose=verbose,'No MAG L1 32Hz data found.'
-  if (keyword_set(download_only) or ~nfiles) then break
+  nfiles = n_elements(files) * keyword_set(files)
+  if nfiles eq 0 || keyword_set(download_only) then break
   str_all=0
   ind=0
-  for i = 0, (nfiles-1) do begin
+  for i = 0, nfiles-1 do begin
     file = files[i]
     dprint,dlevel=2,verbose=verbose,'Restoring file: '+file
     restore,file,verbose= keyword_set(verbose) && verbose ge 3
     append_array,str_all,data,index=ind
   endfor
   append_array,str_all,index=ind
-  frame = header.spice_frame
+;  frame = header.spice_frame                 ; Not all files are consistent yet.
   frame ='MAVEN_SPACECRAFT'
   if keyword_set(tplot_flag) then   store_data,'mvn_B_full',str_all.time,transpose(str_all.vec),dlimit={spice_frame:frame}
   if keyword_set(spice_frame) then begin
      from_frame=frame
      to_frame=spice_frame
      utc=time_string(str_all.time)
-     mk = mvn_spice_kernels(/all,/load,trange=trange)
      new_vec=spice_vector_rotate(str_all.vec,utc,from_frame,to_frame,check_objects='MAVEN_SPACECRAFT')
      store_data,'mvn_B_full_'+to_frame,str_all.time,transpose(new_vec),dlimit={spice_frame:to_frame}
   endif
@@ -62,12 +68,11 @@ end
 'L1_30SEC': begin
   pathname = 'maven/data/sci/mag/l1/sav/30sec/YYYY/MM/mvn_mag_l1_pl_30sec_YYYYMMDD.sav'
   files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,/valid_only)
-  indx = where(files ne '', nfiles)
-  if (nfiles eq 0) then dprint,dlevel=2,verbose=verbose,'No MAG L1 30sec data found.'
-  if (keyword_set(download_only) or ~nfiles) then break
+  nfiles = n_elements(files) * keyword_set(files)
+  if nfiles eq 0 ||  keyword_set(download_only) then break
   str_all=0
   ind=0
-  for i = 0, (nfiles-1) do begin
+  for i = 0, nfiles-1 do begin
     file = files[i]
     dprint,dlevel=2,verbose=verbose,'Restoring file: '+file
     restore,file,verbose= keyword_set(verbose) && verbose ge 3
@@ -82,7 +87,6 @@ end
      from_frame=frame
      to_frame=spice_frame
      utc=time_string(str_all.time)
-     mk = mvn_spice_kernels(/all,/load,trange=trange)
      new_vec=spice_vector_rotate(str_all.vec,utc,from_frame,to_frame,check_objects='MAVEN_SPACECRAFT')
      store_data,'mvn_B_30sec_'+to_frame,str_all.time,transpose(new_vec),dlimit={spice_frame:to_frame}
   endif
@@ -92,12 +96,11 @@ end
 'L1_1SEC': begin
   pathname = 'maven/data/sci/mag/l1/sav/1sec/YYYY/MM/mvn_mag_l1_pl_1sec_YYYYMMDD.sav'
   files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,/valid_only)
-  indx = where(files ne '', nfiles)
-  if (nfiles eq 0) then dprint,dlevel=2,verbose=verbose,'No MAG L1 1sec data found.'
-  if (keyword_set(download_only) or ~nfiles) then break
+  nfiles = n_elements(files) * keyword_set(files)
+  if nfiles eq 0 ||  keyword_set(download_only) then break
   str_all=0
   ind=0
-  for i = 0, (nfiles-1) do begin
+  for i = 0, nfiles-1 do begin
     file = files[i]
     dprint,dlevel=2,verbose=verbose,'Restoring file: '+file
     restore,file,verbose= keyword_set(verbose) && verbose ge 3
@@ -111,7 +114,6 @@ end
      from_frame=frame
      to_frame=spice_frame
      utc=time_string(str_all.time)
-     mk = mvn_spice_kernels(/all,/load,trange=trange)
      new_vec=spice_vector_rotate(str_all.vec,utc,from_frame,to_frame,check_objects='MAVEN_SPACECRAFT')
      store_data,'mvn_B_1sec_'+to_frame,str_all.time,transpose(new_vec),dlimit={spice_frame:to_frame}
   endif

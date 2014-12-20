@@ -116,10 +116,48 @@ end
 
 
 
+
+pro mvn_pfdpu_var_save,filename,pathname=pathname,trange=trange,prereq_info=prereq_info,verbose=verbose,description=description
+  @mvn_pfdpu_handler_commonblock.pro
+  ;common mvn_apid_misc_handler_com   ,manage,realtime,apid20x,apid21x,apid22x,apid23x,apid24x,apid25x   ; from mvn_pfdpu_handler
+
+  if not keyword_set(filename) then begin
+    if not keyword_set(trange) then trange = minmax((*(apid20x.x)).time)
+    res = 86400.d
+    days =  round( time_double(trange )/res)
+    ndays = days[1]-days[0]
+    tr = days * res
+    if not keyword_set(pathname) then pathname =  'maven/pfp/dpu/l1/sav/YYYY/MM/mvn_dpu_l1_$NDAY_YYYYMMDD.sav'
+    pn = str_sub(pathname, '$NDAY', strtrim(ndays,2)+'day')
+    filename = mvn_pfp_file_retrieve(pn,/daily,trange=tr[0],source=source,verbose=verbose,/create_dir)
+    dprint,dlevel=2,verbose=verbose,'Creating: ',filename
+  endif
+
+  if 1 then begin
+    spice_kernels = spice_test('*')
+    dependents = file_checksum(/add_mtime,spice_kernels)
+
+    if keyword_set(apid20x) then ap20 = *apid20x.x
+    if keyword_set(apid21x) then ap21 = *apid21x.x
+    if keyword_set(apid22x) then ap22 = *apid22x.x
+    if keyword_set(apid23x) then ap23 = *apid23x.x
+    if keyword_set(apid24x) then ap24 = *apid24x.x
+    if keyword_set(apid25x) then ap25 = *apid25x.x
+
+    save,filename=filename,verbose=verbose,dependents,ap20,ap21,ap22,ap23,ap24,ap25,description=description
+  endif 
+end
+
+
+
+
+
+
 pro mvn_pfdpu_handler,ccsds,decom=decom,reset=reset  ,clear=clear ,set_realtime=set_realtime,debug=debug,finish=finish, $
     hkp_tags=hkp_tags,shkp_tags=shkp_tags,oper_tags=oper_tags
 
-common mvn_apid_misc_handler_com,manage,realtime,apid20x,apid21x,apid22x,apid23x,apid24x,apid25x
+@mvn_pfdpu_handler_commonblock.pro
+;common mvn_apid_misc_handler_com,manage,realtime,apid20x,apid21x,apid22x,apid23x,apid24x,apid25x
 
     if not keyword_set(ccsds) then begin
         if n_elements(reset) ne 0 then begin

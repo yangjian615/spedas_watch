@@ -46,9 +46,9 @@ if c ne 0 then begin
    3:  val=d.y[w,*,*]
    endcase
 ;   val=d.y(w,*)
-   times=d.x(w)
+   times=d.x[w]
    str_element,d,'v',vals
-   if ndimen(vals) eq 2 then vals= vals(w,*)
+   if ndimen(vals) eq 2 then vals= vals[w,*]
    str_element,d,'dy',dy
    if keyword_set(dy) then dy = dy[w,*]
 endif

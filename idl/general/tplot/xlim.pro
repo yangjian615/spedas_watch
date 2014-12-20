@@ -23,10 +23,10 @@ pro xlim,lim,min,max,log,log=lg
 if n_elements(lg) ne 0 then log=lg
 if n_elements(min) eq 2 then max=0 
 if n_elements(max) eq 0 then range = [0.,0.] else range = float([min,max])
-str_element,/add,lim,'xrange',range(0:1)
+str_element,/add,lim,'xrange',range[0:1]
 style = 0
 str_element,lim,'style',value=style
-if range(0) ne range(1) then style=(style or 1) else style=(style and not 1)
+if range[0] ne range[1] then style=(style or 1) else style=(style and not 1)
 str_element,/add,lim,'xstyle',style
 if n_elements(log) ne 0 then str_element,/add,lim,'xlog',log
 return

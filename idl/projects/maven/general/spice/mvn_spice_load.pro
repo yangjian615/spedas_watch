@@ -6,7 +6,7 @@
 ; Demonstrates usage of MAVEN SPICE ROUTINES
 ;  
 ;CALLING SEQUENCE:
-;   mvn_spice_load,kernels=kernels,trange=trange
+;   mvn_spice_load  [,kernels=kernels] [,trange=trange]
 ;  
 ;  Author:  Davin Larson
 ; $LastChangedBy: davin-mac $
@@ -17,22 +17,47 @@
 
 pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,verbose=verbose
 
+
    ; Create
+
    orbdata = mvn_orbit_num(verbose=verbose)                 
    store_data,'orbnum',orbdata.peri_time,orbdata.num,dlimit={ytitle:'Orbit'}
 ;   tplot,var_label='orbnum'
    tplot_options,'timebar','orbnum'
    tplot_options,'var_label','orbnum'
+   
+   dprint,dlevel=2,'Current Orbit Number is: ',mvn_orbit_num(time=systime(1))
+
 
    kernels = mvn_spice_kernels(/all,/clear,/load,trange=trange,verbose=2)
    if keyword_set(download_only) then return
+   
+   
    spice_position_to_tplot,'MAVEN','Mars',frame='MSO',res=300d,scale=1000.,name=n1  ,trange=trange
    xyz_to_polar,n1
    
+   times = dgen(range=timerange(trange),res=60.)   ; 60 second time resolution
+   pos = spice_body_pos('MAVEN','MARS',frame='IAU_MARS',utc=times)
+   cspice_bodvrd, 'MARS', 'RADII', 3, radii
+   re = total(radii[0:1])/2
+   rp = radii[2]
+   f= (re-rp)/re
+   dprint,dlevel=3,/phelp,radii,re,f
+
+   cspice_recgeo, pos, re, f, pdlon, pdlat, pdalt
+   
+   store_data,'mvn_lat',times,pdlat*180/!dpi,dlim={ytitle:'Maven!cLattitude'}
+   store_data,'mvn_lon',times,pdlon*180/!dpi,dlim={ytitle:'Maven!cLongitude'}
+   store_data,'mvn_alt',times,pdalt,dlim={ylog:1,ytitle:'Altitude'}
+   tplot_options,'var_label','orbnum mvn_alt'
+
+
+   
+   
    frame = 'MAVEN_SPACECRAFT'
 ;   frame = 'MAVEN_SCALT'
-   spice_qrot_to_tplot,frame,'MSO',get_omega=3,res=30d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .5 *!pi/180  ; .5 degree error
-   spice_qrot_to_tplot,frame,'MAVEN_APP',get_omega=3,res=30d,names=tn,check_obj=['MAVEN_SPACECRAFT','MAVEN_APP_OG'] ,error=  .5 *!pi/180  ; .5 degree error
+   spice_qrot_to_tplot,frame,'MSO',get_omega=3,res=60d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .5 *!pi/180  ; .5 degree error
+ ;  spice_qrot_to_tplot,frame,'MAVEN_APP',get_omega=3,res=30d,names=tn,check_obj=['MAVEN_SPACECRAFT','MAVEN_APP_OG'] ,error=  .5 *!pi/180  ; .5 degree error
    
 end
 

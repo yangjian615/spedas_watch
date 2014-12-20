@@ -18,8 +18,8 @@ if keyword_set(off) then begin & active = 0 & return & endif
 if n_elements(chsize) eq 0 then chsize = !p.charsize/2.
 if chsize le 0 then chsize = .5
 if active then begin
-  xp = !x.window(1) + chsize * !d.y_ch_size/!d.x_size
-  yp = !y.window(0)
+  xp = !x.window[1] + chsize * !d.y_ch_size/!d.x_size
+  yp = !y.window[0]
   xyouts,xp,yp,systime(),charsize=chsize,/norm,orien=90.
 endif
 end

@@ -42,15 +42,15 @@
 ;       
 ;       
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2014-03-20 15:10:15 -0700 (Thu, 20 Mar 2014) $
-; $LastChangedRevision: 14619 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2014-12-18 13:40:52 -0800 (Thu, 18 Dec 2014) $
+; $LastChangedRevision: 16511 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_overview_plot.pro $
 ;-
 
 pro goes_overview_plot, date = date, probe = probe_in, directory = directory, device = device, $
                     geopack_lshell = geopack_lshell, duration = duration, gui_overplot = gui_overplot, $
-                    oplot_calls = oplot_calls, error = error, skip_ae_idx = skip_ae_idx, $
+                    oplot_calls = oplot_calls, error = error, skip_ae_idx = skip_ae_idx, no_draw = no_draw, $
                     _extra=_extra
                     
                        
@@ -400,7 +400,7 @@ endif
             thm_gen_multipngplot, 'goes_goes'+probe, overviewdate, directory = dir, /mkdir
 
     endif else begin
-        tplot_gui, /no_verify, /add_panel, ['kyoto_thm_combined_ae'+suffix, $ ; AE plot
+        tplot_gui, /no_verify, /add_panel, no_draw=no_draw, ['kyoto_thm_combined_ae'+suffix, $ ; AE plot
                     [full_goes_plot]], var_label=['g'+probe+'_pos_mlt', 'g'+probe+'_L_shell']+suffix
                     
     endelse

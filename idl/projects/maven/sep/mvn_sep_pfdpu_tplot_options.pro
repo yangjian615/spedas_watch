@@ -32,6 +32,9 @@ pro mvn_sep_pfdpu_tplot_options,tplot=tplot
    store_data,'mvn_pfp_TEMPS',data = 'mvn_sep?_hkp_AMON_TEMP_* mvn_pfdpu*_TEMP',dlim={yrange:[-45.,50],ystyle:1,panel_size:2.}
    options,'mvn_sep1_hkp_* mvn_sep1_svy_ATT mvn_sep1_svy_COUNTS_TOTAL',colors='b',ystyle=2
    options,'mvn_sep2_hkp_* mvn_sep2_svy_ATT mvn_sep2_svy_COUNTS_TOTAL',colors='r',ystyle=2
+   options,'mvn_sep?_???_ATT',yrange=[0,3],panel_size=.3
+  ; options,'mvn_sep?_???_ATT',yrange=[0,1],zrange=[0,2],/ystyle,spec=1,panel_size=.2
+   
    options,'mvn_sep?_*DACS mvn_sep?_hkp_*RATE_CNTR','colors'
    options,'mvn_sep?_*DACS',colors='bgrdbgrdbgrd'
 ;   tnames = 'sep1_hkp_AMON_*'

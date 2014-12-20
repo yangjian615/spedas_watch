@@ -3,8 +3,8 @@
 ;Purpose: 
 ; Author: Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-10-07 15:08:28 -0700 (Tue, 07 Oct 2014) $
-; $LastChangedRevision: 15940 $
+; $LastChangedDate: 2014-12-16 22:11:09 -0800 (Tue, 16 Dec 2014) $
+; $LastChangedRevision: 16494 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_handler.pro $
 ; 
 ;-
@@ -225,24 +225,29 @@ if not keyword_set(filename) then begin
   if not keyword_set(trange) then trange = minmax((*(mag1_svy.x)).time)
   res = 86400.d
   days =  round( time_double(trange )/res)
-  ndays = days[1]-days[0]
+  ndays = days[1]-days[0] > 1
   tr = days * res
-  if not keyword_set(pathname) then pathname =  'maven/pfp/mag/l1/.sav/YYYY/MM/mvn_mag_l1_YYYYMMDD_$NDAY.sav' 
+  if not keyword_set(pathname) then pathname =  'maven/pfp/mag/l1/raw/sav/YYYY/MM/mvn_mag_l1_raw_$NDAY_YYYYMMDD.sav' 
   pn = str_sub(pathname, '$NDAY', strtrim(ndays,2)+'day')
   filename = mvn_pfp_file_retrieve(pn,/daily,trange=tr[0],source=source,verbose=verbose,/create_dir)
 endif
 
-sw_version = mvn_sep_sw_version()
+spice_kernels = spice_test('*')
+dependents = file_checksum(/add_mtime,spice_kernels)
+
 if keyword_set(mag1_hkp) then m1_hkp = *mag1_hkp.x
 if keyword_set(mag1_svy) then m1_svy = *mag1_svy.x
 if keyword_set(mag1_arc) then m1_arc = *mag1_arc.x
-;if keyword_set(mag1_noise) then m1_nse = *sep1_noise.x 
 if keyword_set(mag2_hkp) then m2_hkp = *mag2_hkp.x
 if keyword_set(mag2_svy) then m2_svy = *mag2_svy.x
 if keyword_set(mag2_arc) then m2_arc = *mag2_arc.x
-;if keyword_set(mag2_noise) then m2_nse = *sep2_noise.x
-file_mkdir2,file_dirname(filename)  
-save,filename=filename,verbose=verbose,m1_hkp,m1_svy,m1_arc,m2_hkp,m2_svy,m2_arc,sw_version,prereq_info
+
+if keyword_set(mag1_svy_misc) then m1_svy_misc = *mag1_svy_misc.x
+if keyword_set(mag1_arc_misc) then m1_arc_misc = *mag1_arc_misc.x
+if keyword_set(mag2_svy_misc) then m2_svy_misc = *mag2_svy_misc.x
+if keyword_set(mag2_arc_misc) then m2_arc_misc = *mag2_arc_misc.x
+;file_mkdir2,file_dirname(filename)  
+save,filename=filename,verbose=verbose,dependents,m1_hkp,m1_svy,m1_svy_misc,m1_arc,m1_arc_misc,m2_hkp,m2_svy,m2_arc,m2_svy_misc,m2_arc_misc,description=description
 end
 
 
