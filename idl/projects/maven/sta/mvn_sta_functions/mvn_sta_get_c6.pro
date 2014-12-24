@@ -66,7 +66,6 @@ endif else begin
 
 	mode	= all_dat.mode[ind]
 	rate	= all_dat.rate[ind]
-	md	= all_dat.md[ind]
 	swp_ind	= all_dat.swp_ind[ind]
 	mlut_ind= all_dat.mlut_ind[ind]
 	eff_ind	= all_dat.eff_ind[ind]
@@ -87,7 +86,8 @@ dat = 		{project_name:		all_dat.project_name,			$
 		delta_t: 		all_dat.delta_t[ind],			$
 		integ_t: 		all_dat.integ_t[ind],			$
 
-		md:			md,					$
+;		eprom_ver:		all_dat.eprom_ver[ind],			$
+;		header:			all_dat.header[ind],			$
 		mode:			mode,					$
 		rate:			rate,					$
 		swp_ind:		swp_ind,				$

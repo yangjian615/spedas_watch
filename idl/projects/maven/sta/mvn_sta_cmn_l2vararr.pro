@@ -16,8 +16,8 @@
 ;HISTORY:
 ; 16-jun-2014,jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-08 16:58:19 -0700 (Wed, 08 Oct 2014) $
-; $LastChangedRevision: 15951 $
+; $LastChangedDate: 2014-12-22 13:49:43 -0800 (Mon, 22 Dec 2014) $
+; $LastChangedRevision: 16533 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_cmn_l2vararr.pro $
 ;-
 Function mvn_sta_cmn_l2vararr, apid
@@ -38,7 +38,8 @@ Function mvn_sta_cmn_l2vararr, apid
              ['END_TIME', 'TIME_END', 'Y'], $
              ['DELTA_T', 'TIME_DELTA', 'Y'], $
              ['INTEG_T', 'TIME_INTEG', 'Y'], $
-             ['MD', 'MD', 'Y'], $
+             ['EPROM_VER', 'EPROM_VER', 'Y'], $
+             ['HEADER', 'HEADER', 'Y'], $
              ['MODE', 'MODE', 'Y'], $
              ['RATE', 'RATE', 'Y'], $
              ['SWP_IND', 'SWP_IND', 'Y'], $
@@ -89,7 +90,8 @@ Function mvn_sta_cmn_l2vararr, apid
              ['TIME', 'TIME_START', 'Y'], $
              ['END_TIME', 'TIME_END', 'Y'], $
              ['INTEG_T', 'INTEG_TIME', 'Y'], $
-             ['MD', 'MD', 'Y'], $
+             ['EPROM_VER', 'EPROM_VER', 'Y'], $
+             ['HEADER', 'HEADER', 'Y'], $
              ['MODE', 'MODE', 'Y'], $
              ['RATE', 'RATE', 'Y'], $
              ['SWP_IND', 'SWP_IND', 'Y'], $
@@ -107,7 +109,8 @@ Function mvn_sta_cmn_l2vararr, apid
              ['TIME', 'TIME_START', 'Y'], $
              ['END_TIME', 'TIME_END', 'Y'], $
              ['INTEG_T', 'INTEG_TIME', 'Y'], $
-             ['MD', 'MD', 'Y'], $
+             ['EPROM_VER', 'EPROM_VER', 'Y'], $
+             ['HEADER', 'HEADER', 'Y'], $
              ['MODE', 'MODE', 'Y'], $
              ['RATE', 'RATE', 'Y'], $
              ['SWP_IND', 'SWP_IND', 'Y'], $
@@ -168,7 +171,8 @@ Function mvn_sta_cmn_l2vararr, apid
              ['TIME', 'TIME_START', 'Y'], $
              ['END_TIME', 'TIME_END', 'Y'], $
              ['INTEG_T', 'INTEG_TIME', 'Y'], $
-             ['MD', 'MD', 'Y'], $
+             ['EPROM_VER', 'EPROM_VER', 'Y'], $
+             ['HEADER', 'HEADER', 'Y'], $
              ['MODE', 'MODE', 'Y'], $
              ['RATE', 'RATE', 'Y'], $
              ['SWP_IND', 'SWP_IND', 'Y'], $

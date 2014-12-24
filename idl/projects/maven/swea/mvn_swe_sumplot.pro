@@ -12,6 +12,11 @@
 ;
 ;KEYWORDS:
 ;
+;       EPH:          Load the MAVEN ephemeris and include a panel showing altitude, 
+;                     color coded by nominal plasma regime.
+;
+;       ORB:          Include the orbit number along the horizontal axis.
+;
 ;       VNORM:        Subtract nominal values from all housekeeping voltages and plot all
 ;                     voltage differences in a single panel.  Default = 1 (yes).
 ;
@@ -51,8 +56,8 @@
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-12-11 16:23:14 -0800 (Thu, 11 Dec 2014) $
-; $LastChangedRevision: 16468 $
+; $LastChangedDate: 2014-12-22 16:29:02 -0800 (Mon, 22 Dec 2014) $
+; $LastChangedRevision: 16537 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -60,7 +65,7 @@
 pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a4_sum, $
                      tfirst=tfirst, title=title, tspan=tspan, apid=apid, hsk=hsk, $
                      lut=lut, timing=timing, sifctl=sifctl, tplot_vars_out=pans, $
-                     eunits=eunits, png=png, pad_smo=smo, eph=eph
+                     eunits=eunits, png=png, pad_smo=smo, eph=eph, orb=orb
 
   @mvn_swe_com
 
@@ -720,13 +725,14 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   endif
 
   if (n_elements(tsp) eq 1) then begin
-    print,"No data."
-  endif else begin
-    tmin = min(tsp[1:*], max=tmax)
-    tmin = tmin > tfirst
-    if keyword_set(tspan) then tmin = tmin > (tmax - tspan*3600D)
-    timefit,[tmin,tmax]
-  endelse
+    print,"No data.  Nothing to plot."
+    return
+  endif
+
+  tmin = min(tsp[1:*], max=tmax)
+  tmin = tmin > tfirst
+  if keyword_set(tspan) then tmin = tmin > (tmax - tspan*3600D)
+  timefit,[tmin,tmax]
   
   if keyword_set(eph) then maven_orbit_tplot,/loadonly
   pans = ['alt2', pans]
@@ -738,6 +744,13 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   if (n_elements(pans) eq 1) then begin
     print,"Nothing to plot!"
     return
+  endif
+  
+  if keyword_set(orb) then begin
+    npts = round((tmax - tmin)/60D) + 1L
+    t = tmin + 60D*dindgen(npts)
+    store_data,'orbnum',data={x:t, y:mvn_orbit_num(time=t)}
+    tplot_options,'var_label','orbnum'
   endif
 
   tplot,pans

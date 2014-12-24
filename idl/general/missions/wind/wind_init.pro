@@ -6,9 +6,9 @@
 ;HISTORY
 ; Written by Davin Larson
 ;
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-25 15:53:47 -0700 (Fri, 25 Jul 2014) $
-;$LastChangedRevision: 15615 $
+;$LastChangedBy: davin-mac $
+;$LastChangedDate: 2014-12-20 22:40:16 -0800 (Sat, 20 Dec 2014) $
+;$LastChangedRevision: 16523 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wind_init.pro $
 ;-
 pro wind_init, reset=reset  ;, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
@@ -43,7 +43,7 @@ Endif else begin; use defaults
     ; default path.  JWL 2014-07-25
 
     ;!wind.local_data_dir = spd_default_local_data_dir() + 'wind' + path_sep()
-    !wind.local_data_dir = spd_default_local_data_dir()
+    !wind.local_data_dir = root_data_dir()
     !wind.remote_data_dir = 'http://sprg.ssl.berkeley.edu/data/
 endelse
 if file_test(!wind.local_data_dir+'wind/.master') then begin  ; Local directory IS the master directory

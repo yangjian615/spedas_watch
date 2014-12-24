@@ -7,9 +7,9 @@
 ;HISTORY
 ; Written by Davin Larson
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-07-09 12:05:16 -0700 (Wed, 09 Jul 2014) $
-;$LastChangedRevision: 15535 $
+;$LastChangedBy: davin-mac $
+;$LastChangedDate: 2014-12-20 22:30:17 -0800 (Sat, 20 Dec 2014) $
+;$LastChangedRevision: 16522 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/istp_init.pro $
 ;-
 pro istp_init, reset=reset  ;, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
@@ -39,7 +39,7 @@ Endif else begin; use defaults
     endif else begin
       print,'No ISTP config found...creating default configuration'
     endelse
-    !istp.local_data_dir  = spd_default_local_data_dir() + 'istp' + path_sep()
+    !istp.local_data_dir  = root_data_dir() + 'istp/' 
     ;URL is deprecated
     ;!istp.remote_data_dir = 'http://cdaweb.gsfc.nasa.gov/istp_public/data/'
     ;New url 2012/10 pcruce@igpp
@@ -47,7 +47,7 @@ Endif else begin; use defaults
 endelse
 !istp.archive_ext ='.arc'
 !istp.min_age_limit = 900    ; Don't check for new files if local file is less than 900 seconds old.
-!istp.use_wget= getenv('username') eq 'davin'
+;!istp.use_wget= getenv('username') eq 'davin'
 
 ;if keyword_set(local_data_dir) then  $
 ;   !istp.local_data_dir = local_data_dir

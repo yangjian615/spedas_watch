@@ -8,7 +8,7 @@ source /home/jimm/setup_themis
 
 #check for lock file here
 if (! -e /tmp/STAL2lock.txt) then
-    cd /home/jimm/idlpro/themis
+    cd /mydisks/home/maven
     rm -f run_sta_l2gen.bm
     rm -f /tmp/run_sta_l2gen.txt
 

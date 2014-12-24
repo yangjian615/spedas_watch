@@ -69,8 +69,8 @@
 ;       SUMPLOT:       Create a summary plot of the loaded data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-12-11 16:22:51 -0800 (Thu, 11 Dec 2014) $
-; $LastChangedRevision: 16467 $
+; $LastChangedDate: 2014-12-22 16:29:30 -0800 (Mon, 22 Dec 2014) $
+; $LastChangedRevision: 16538 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -145,7 +145,7 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
 ; Initialize SPICE
 
-  mvn_swe_spice_init, trange=trange
+  mvn_swe_spice_init, trange=trange, /list
 
 ; Define telemetry conversion factors
 

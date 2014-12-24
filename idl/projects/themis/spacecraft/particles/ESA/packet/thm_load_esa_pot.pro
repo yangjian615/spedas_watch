@@ -397,7 +397,10 @@ endif else begin
     endif else begin
       time = timerange()
     endelse
-  
+ 
+;for probe b, do not use VAF data after 2010-10-13, jmm, 2014-12-22 
+    If((probes[i] Eq 'b') And (time[1] Gt time_double('2010-10-13'))) Then efi_datatype = 'mom'
+
 	if time[1] le boom_deploy_time[isc[i]] then begin
 		if keyword_set(min_pot) then min_pot2=min_pot else min_pot2=0.
 		scpot=[min_pot2,min_pot2]
@@ -497,25 +500,23 @@ endif else begin
 			vaf3 = -1.*reform(tmp1.y[*,2])
                         vaf4 = -1.*reform(tmp1.y[*,3])
 
-;2014-09-15, jmm, replaced this whole bad points section with code
-;that gets rid of any point that is bad for any one of v1, v2, v3, or
-;v4. The original code block keeps bad points if all four are bad...
-;			ind1 = where(bad_frac lt 3.*vaf1/(vaf2+vaf3+vaf4),cnt1);
-;			ind2 = where(bad_frac lt 3.*vaf2/(vaf1+vaf3+vaf4),cnt2)
-;			ind3 = where(bad_frac lt 3.*vaf3/(vaf4+vaf1+vaf2),cnt3)
-;			ind4 = where(bad_frac lt 3.*vaf4/(vaf3+vaf1+vaf2),cnt4)
-;			if cnt1 gt 0 then vaf1[ind1]=vaf2[ind1]
-;			if cnt2 gt 0 then vaf2[ind2]=vaf1[ind2] ;If both 1 and 2 are bad, then v2 is kept?
-;			if cnt3 gt 0 then vaf3[ind3]=vaf4[ind3]
-;			if cnt4 gt 0 then vaf4[ind4]=vaf3[ind4]
-;			vaf12 = (vaf1+vaf2)/2.
-;			vaf34 = (vaf3+vaf4)/2.
-;			ind5 = where(vaf12/vaf34 gt bad_frac and vaf34 gt 1.,cnt5) 
-;			if cnt5 gt 0 then vaf12[ind5]=vaf34[ind5]		
-;			ind6 = where(vaf34/vaf12 gt bad_frac and vaf12 gt 1.,cnt6) 
-;			if cnt6 gt 0 then vaf34[ind6]=vaf12[ind6]		
-;			vaf1234 = (vaf12+vaf34)/2.
-;			dprint, 'Bad point counts=',cnt1,cnt2,cnt3,cnt4,cnt5,cnt6
+			ind1 = where(bad_frac lt 3.*vaf1/(vaf2+vaf3+vaf4),cnt1);
+			ind2 = where(bad_frac lt 3.*vaf2/(vaf1+vaf3+vaf4),cnt2)
+			ind3 = where(bad_frac lt 3.*vaf3/(vaf4+vaf1+vaf2),cnt3)
+			ind4 = where(bad_frac lt 3.*vaf4/(vaf3+vaf1+vaf2),cnt4)
+			if cnt1 gt 0 then vaf1[ind1]=vaf2[ind1]
+			if cnt2 gt 0 then vaf2[ind2]=vaf1[ind2] ;If both 1 and 2 are bad, then v2 is kept?
+			if cnt3 gt 0 then vaf3[ind3]=vaf4[ind3]
+			if cnt4 gt 0 then vaf4[ind4]=vaf3[ind4]
+			vaf12 = (vaf1+vaf2)/2.
+			vaf34 = (vaf3+vaf4)/2.
+			ind5 = where(vaf12/vaf34 gt bad_frac and vaf34 gt 1.,cnt5) 
+			if cnt5 gt 0 then vaf12[ind5]=vaf34[ind5]		
+			ind6 = where(vaf34/vaf12 gt bad_frac and vaf12 gt 1.,cnt6) 
+			if cnt6 gt 0 then vaf34[ind6]=vaf12[ind6]		
+			vaf1234 = (vaf12+vaf34)/2.
+			dprint, 'Bad point counts=',cnt1,cnt2,cnt3,cnt4,cnt5,cnt6
+                        t1234 = tmp1.x
 
 ;			vaf1234_3a=time_average(tmp1.x,vaf1234,resolution=avg_spin_period,newtime=newtime)
 ;			ind = where(finite(vaf1234_3a))
@@ -524,18 +525,23 @@ endif else begin
 ;			if keyword_set(make_plot) then store_data,'th'+sc+'_vaf1234_3a_pot',data={x:newtime,y:vaf1234_3a}
 
 
-                        ok_pts = where(3.*vaf1/(vaf2+vaf3+vaf4) Lt bad_frac And 3.*vaf2/(vaf1+vaf3+vaf4) Lt bad_frac And $
-                                       3.*vaf3/(vaf4+vaf1+vaf2) Lt bad_frac And 3.*vaf4/(vaf3+vaf1+vaf2) Lt bad_frac, nok)       
+;2014-09-15, jmm, replaced this whole bad points section with code
+;that gets rid of any point that is bad for any one of v1, v2, v3, or
+;v4. The original code block keeps bad points if all four are bad...
+                        if keyword_set(use_vaf_offset) then begin
+                           ok_pts = where(3.*vaf1/(vaf2+vaf3+vaf4) Lt bad_frac And 3.*vaf2/(vaf1+vaf3+vaf4) Lt bad_frac And $
+                                          3.*vaf3/(vaf4+vaf1+vaf2) Lt bad_frac And 3.*vaf4/(vaf3+vaf1+vaf2) Lt bad_frac, nok)       
 
-                        dprint, 'Ok point count = ', nok, ' of total =', n_elements(vaf1)
-                        If(nok Gt 0) then Begin
-                           vaf1234 = (vaf1[ok_pts]+vaf2[ok_pts]+vaf3[ok_pts]+vaf4[ok_Pts])/4.0
-                           t1234 = tmp1.x[ok_pts]
-                        Endif Else Begin
-                           dprint, 'No good VAF data'
-                           vaf1234 = vaf1 & vaf1234[*] = min_pot
-                           t1234 = tmp1.x
-                        Endelse
+                           dprint, 'Ok point count = ', nok, ' of total =', n_elements(vaf1)
+                           If(nok Gt 0) then Begin
+                              vaf1234 = (vaf1[ok_pts]+vaf2[ok_pts]+vaf3[ok_pts]+vaf4[ok_Pts])/4.0
+                              t1234 = tmp1.x[ok_pts]
+                           Endif Else Begin
+                              dprint, 'No good VAF data'
+                              vaf1234 = vaf1 & vaf1234[*] = min_pot
+                              t1234 = tmp1.x
+                           Endelse
+                        endif 
 
                         vaf1234_3s=smooth_in_time(vaf1234, t1234, avg_spin_period)
                         if keyword_set(make_plot) then store_data,'th'+sc+'_vaf1234_3s_pot',data={x:t1234,y:vaf1234_3s}

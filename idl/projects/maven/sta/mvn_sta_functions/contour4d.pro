@@ -133,9 +133,9 @@ endelse
     xstyle=1
     if not keyword_set(xlin) then xlog=1 else xlog=0
 if not keyword_set(zrange) then begin
-	ind=where(zdat ne 0.)
-	zmin=10.^fix(alog10(min(zdat(ind)))+.1)
-	zmax=10.^fix(alog10(max(zdat))+.9)
+	ind=where(zdat ne 0.,zcount)
+	if zcount gt 1 then zmin=10.^fix(alog10(min(zdat(ind)))+.1) else zmin=1
+	if zcount gt 1 then zmax=10.^fix(alog10(max(zdat))+.9) > 10.*zmin else zmax=10
 	zrange=[zmin,zmax]
 endif else begin
 	zmax=max(zrange)

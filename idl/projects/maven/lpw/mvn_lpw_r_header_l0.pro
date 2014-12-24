@@ -1131,16 +1131,14 @@ t1=SYSTIME(1,/seconds)                   ;to check on speed
        SMP_AVG[i]            = newfile_byte[counter+0] /  2^4         ;use this to get it out  Rate = 2 ^rpt_rate second  ICD table 7.8
                 ; reads,dummy,HTIMErate_dummy,notused_dummy,ENB_dummy,notused_dummy,DISDLY_dummy,HFBUF_dummy,MFBUF_dummy,LFBUF_dummy,format = '(B04,B03,B01,B01,B01,B02,B02,B02)'              
        nn                  = (((long(length[i])-1)/2)-7)/2+1   ; this is based on words
-  
+       If nn GT 0 then begin
       ; print,'### HTIME ####  nn ',counter,i,nn,n_elements(cap_time),length[i],' $ ',1.0*(((length[i]-1)/2)-7)/2+1,long(length[i]) 
- 
        ;make words from bytes
-       merge_large            = counter+indgen(nn*2)*2     +2       ; every other value: even
-       merge_small            = merge_large       +1              ; every other value: odd  
-       tmp                    = long(2L^8*newfile_byte[merge_large] + newfile_byte[merge_small])    ;<---- signed value -- correct if it is positive
-       tmp_neg                = -1.* float((ulong(tmp mod 2L^15) xor (2L^15-1) ) +1)          ;<---- signed value -- correct if it is negative
-       tmp_type               =  ulong(tmp)/2L^15                                             ; 0 if pos  but 1 if neg            
-  If nn GT 0 then begin
+         merge_large            = counter+indgen(nn*2)*2     +2       ; every other value: even
+         merge_small            = merge_large       +1              ; every other value: odd  
+         tmp                    = long(2L^8*newfile_byte[merge_large] + newfile_byte[merge_small])    ;<---- signed value -- correct if it is positive
+         tmp_neg                = -1.* float((ulong(tmp mod 2L^15) xor (2L^15-1) ) +1)          ;<---- signed value -- correct if it is negative
+         tmp_type               =  ulong(tmp)/2L^15                                             ; 0 if pos  but 1 if neg            
          cap_time2           = fltarr(nn)
          htime_type2         = intarr(nn)
          xfer_time2          = fltarr(nn)

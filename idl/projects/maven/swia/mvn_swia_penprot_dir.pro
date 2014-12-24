@@ -15,13 +15,13 @@
 ;	ARCHIVE: use archive data
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-08 13:10:18 -0800 (Mon, 08 Dec 2014) $
-; $LastChangedRevision: 16405 $
+; $LastChangedDate: 2014-12-22 07:55:08 -0800 (Mon, 22 Dec 2014) $
+; $LastChangedRevision: 16526 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_dir.pro $
 ;
 ;-
 
-pro mvn_swia_penprot_dir, reg = reg, npo = npo, archive = archive
+pro mvn_swia_penprot_dir, reg = reg, npo = npo, archive = archive, attfilt = attfilt
 
 mass = 0.0104389*1.6e-22
 Const = (mass/(2.*1.6e-12))^0.5
@@ -39,17 +39,24 @@ endif else begin
 endelse
 
 if keyword_set(reg) then begin
-	ureg = interpol(reg.y(*,0),reg.x,data.x)
+	ureg = interpol(reg.y[*,0],reg.x,data.x)
 	w = where(ureg eq 4)
-	times = data.x(w)
-	spectra = data.y(w,*)
-	energies = data.v(w,*)
-	denergies = denergy(w,*)
+	times = data.x[w]
+	spectra = data.y[w,*]
+	energies = data.v[w,*]
+	denergies = denergy[w,*]
 endif else begin
 	times = data.x
 	spectra = data.y
 	energies = data.v
 	denergies = denergy
+endelse
+
+if keyword_set(attfilt) then begin
+	if keyword_set(archive) then get_data,'mvn_swica_MSO_Zvec',data = zvec else get_data,'mvn_swics_MSO_Zvec',data = zvec 
+	zx = interpol(zvec.y[*,0],zvec.x,times)
+endif else begin
+	zx = replicate(0,n_elements(times))
 endelse
 
 orb = mvn_orbit_num(time = times)
@@ -64,7 +71,7 @@ vout = fltarr(norb)
 tout = dblarr(norb)
 
 for i = 0,norb-1 do begin
-	w = where(orb eq (mino+i),nw)		
+	w = where(orb eq (mino+i) and abs(zx) lt 1/sqrt(2),nw)		
 	if nw gt 5 then begin
 		spec = total(spectra(w,*),1,/nan)/nw
 		energy = total(energies(w,*),1,/nan)/nw

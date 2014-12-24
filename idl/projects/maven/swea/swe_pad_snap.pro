@@ -36,16 +36,18 @@
 ;                      respect to the observed vector magnetic field
 ;                      in the MSO and LGEO(local geographic coordinate). 
 ;
-; $LastChangedBy: hara $
-; $LastChangedDate: 2014-11-26 12:02:05 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16312 $
+;       MASK_SC:       Mask PA bins that are blocked by the spacecraft.
+;
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2014-12-22 16:22:57 -0800 (Mon, 22 Dec 2014) $
+; $LastChangedRevision: 16536 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
-                  label=label, smo=smo, dir=dir
+                  label=label, smo=smo, dir=dir, mask_sc=mask_sc
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -69,13 +71,15 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     abin = string(indgen(16),format='(i2.2)')
     dbin = string(indgen(6),format='(i1)')
   endif else dolab = 0
+  
+  if keyword_set(mask_sc) then mflg = 1 else mflg = 0
 
 ; Put up snapshot window(s)
 
   Twin = !d.window
 
   if (size(Dopt,/type) ne 8) then swe_snap_layout, 0
-  IF keyword_set(dir) THEN wdy = 0.075*Nopt.ysize ELSE wdy = 0.
+  IF keyword_set(dir) THEN wdy = 0.125*Nopt.ysize ELSE wdy = 0.
   window, /free, xsize=Popt.xsize, ysize=Popt.ysize, xpos=Popt.xpos, ypos=Popt.ypos
   Pwin = !d.window
 
@@ -125,14 +129,31 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
     pad = mvn_swe_getpad(trange,archive=aflg,all=doall,/sum,units=units)
     
+    case strupcase(pad.units_name) of
+      'COUNTS' : zlo = 1
+      'RATE'   : zlo = 1
+      'CRATE'  : zlo = 1
+      'FLUX'   : zlo = 1
+      'EFLUX'  : zlo = 1e3
+      'DF'     : zlo = 1e-18
+      else     : zlo = 1
+    endcase
+    
     if (size(pad,/type) eq 8) then begin
       title = string(time_string(pad.time), pad.Baz*!radeg, pad.Bel*!radeg, $
                      format='(a19,5x,"Baz = ",f5.1,3x,"Bel = ",f5.1)')
       str_element,limits,'title',title,/add
+      
+      if (mflg) then begin
+        indx = where(pad.k3d le 3, count)
+        if (count gt 0) then pad.data[*,indx] = !values.f_nan
+        indx = where((pad.k3d ge 16) and (pad.k3d le 19), count)
+        if (count gt 0) then pad.data[*,indx] = !values.f_nan
+      endif
 
       x = pad.energy[*,0]
       y = pad.pa*!radeg
-      z = smooth(pad.data,[smo,1])
+      z = smooth(pad.data,[smo,1],/nan)
 
       for i=0,63 do begin
         indx = sort(reform(y[i,0:7]))
@@ -142,6 +163,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         y[i,8:15] = y[i,jndx]
         z[i,8:15] = z[i,jndx]
       endfor
+      
+      zmin = min(z, max=zmax, /nan) > zlo
+      str_element,limits,'zrange',[zmin,zmax],/add
 
       !p.multi = [0,1,2]
       specplot,x,y[*,0:7],z[*,0:7],limits=limits
@@ -165,8 +189,10 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
         plot_io,[-1.],[0.1],psym=3,xtitle='Pitch Angle (deg)',ytitle='Normalized', $
                 yrange=[0.1,10.],ystyle=1,xrange=[0,180],xstyle=1,xticks=6,xminor=3, $
-                title=string(energy,format='("Energy = ",f6.1," eV")'), charsize=1.4, $
+                title='', charsize=1.4, $
                 pos=[0.140005, 0.124449 - (wdy/4000.), 0.958005, 0.937783 - (wdy/525.)]
+
+        xyouts,140,7.5,string(energy,format='(f6.1," eV")'),charsize=1.4
 
         for j=0,15 do oplot,[ylo[j],yhi[j]],[zi[j],zi[j]],color=col[j]
         oplot,y[i,0:7],zi[0:7],linestyle=1,color=2
@@ -187,7 +213,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         IF keyword_set(dir) THEN BEGIN
            et = time_ephemeris(pad.time)
            objects = ['MARS', 'MAVEN_SPACECRAFT']
-           valid = spice_valid_times(et, object=objects, /no_ignore)
+           valid = spice_valid_times(et, object=objects)
            IF valid EQ 0B THEN BEGIN
               dprint, 'SPICE/kernels are invalid.'
               if (kflg) then begin
@@ -235,24 +261,24 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
               XYOUTS, 17.5+45.*j, 15., dirname[j], color=dircol[j], charsize=1.3, /data
 
            undefine, dircol
-           PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.299061, 0.886156, 0.39075, 1.], $
+           PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.285892, 0.874722, 0.39075, 1.], $
                  /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
            OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
            angle = ATAN(bmso[2], bmso[1])
            IF bmso[0] GT 0. THEN dircol = 6 ELSE dircol = 2
            ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
-           XYOUTS, 0., 0., 'MSO', /data, alignment=0.5
+           XYOUTS, 0., -1.3, 'MSO', /data, alignment=0.5
            XYOUTS, 0., 0.5, 'Z', /data, alignment=0.5
            XYOUTS, 0.6, 0., 'Y', /data, alignment=0.5
 
            undefine, dircol
-           PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.708061, 0.886156, 0.799705, 1.], $
+           PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.708061, 0.874722, 0.812919, 1.], $
                  /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
            OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
            angle = ATAN(-bgeo[1], -bgeo[0])
            IF -bgeo[2] GT 0. THEN dircol = 6 ELSE dircol = 2
            ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
-           XYOUTS, 0., 0., 'GEO', /data, alignment=0.5
+           XYOUTS, 0., -1.3, 'GEO', /data, alignment=0.5
            XYOUTS, 0., 0.5, 'N', /data, alignment=0.5
            XYOUTS, 0.6, 0., 'E', /data, alignment=0.5
 

@@ -17,7 +17,6 @@
 
 pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,verbose=verbose
 
-
    ; Create
 
    orbdata = mvn_orbit_num(verbose=verbose)                 
@@ -27,6 +26,11 @@ pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,ver
    tplot_options,'var_label','orbnum'
    
    dprint,dlevel=2,'Current Orbit Number is: ',mvn_orbit_num(time=systime(1))
+   
+   if spice_test(verbose=2) eq 0 then begin
+    dprint,'Unable to continue.  Sorry!'
+    return    
+   endif
 
 
    kernels = mvn_spice_kernels(/all,/clear,/load,trange=trange,verbose=2)
@@ -46,9 +50,9 @@ pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,ver
 
    cspice_recgeo, pos, re, f, pdlon, pdlat, pdalt
    
-   store_data,'mvn_lat',times,pdlat*180/!dpi,dlim={ytitle:'Maven!cLattitude'}
-   store_data,'mvn_lon',times,pdlon*180/!dpi,dlim={ytitle:'Maven!cLongitude'}
-   store_data,'mvn_alt',times,pdalt,dlim={ylog:1,ytitle:'Altitude'}
+   store_data,'mvn_lat',times,pdlat*180/!dpi,dlimit={ytitle:'Maven!cLattitude',yrange:[-90,90],ystyle:1}
+   store_data,'mvn_lon',times,pdlon*180/!dpi,dlimit={ytitle:'Maven!cLongitude',yrange:[-180,180],ystyle:1}
+   store_data,'mvn_alt',times,pdalt,dlimit={ylog:1,ytitle:'Altitude'}
    tplot_options,'var_label','orbnum mvn_alt'
 
 

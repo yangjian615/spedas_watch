@@ -74,9 +74,9 @@ dat = 		{project_name:		all_dat.project_name,				$
 
 		time: 			all_dat.time[ind], 				$
 
-		mode:			all_dat.mode[ind],				$
-		rate:			all_dat.rate[ind],				$
-		swp_ind:		all_dat.swp_ind[ind],				$
+;		mode:			all_dat.mode[ind],				$
+;		rate:			all_dat.rate[ind],				$
+;		swp_ind:		all_dat.swp_ind[ind],				$
 
 		tdc_1: 			all_dat.tdc_1[ind],				$
 		tdc_2: 			all_dat.tdc_2[ind],				$

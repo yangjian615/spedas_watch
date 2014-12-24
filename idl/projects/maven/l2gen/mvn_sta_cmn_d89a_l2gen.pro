@@ -16,7 +16,8 @@
 ;   TIME            DOUBLE    Array[675]
 ;   END_TIME        DOUBLE    Array[675]
 ;   INTEG_T         DOUBLE    Array[675]
-;   MD              INT       Array[675]
+;   EPROM_VER       INT       Array[675]
+;   HEADER          INT       Array[675]
 ;   MODE            INT       Array[675]
 ;   RATE            INT       Array[675]
 ;   SWP_IND         INT       Array[675]
@@ -36,9 +37,10 @@
 ; no_compression = if set, do not compress the CDF file
 ;HISTORY:
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
+; 22-Dec-2014, jmm, Added eprom_ver, header
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-10 14:01:32 -0800 (Mon, 10 Nov 2014) $
-; $LastChangedRevision: 16159 $
+; $LastChangedDate: 2014-12-22 13:48:38 -0800 (Mon, 22 Dec 2014) $
+; $LastChangedRevision: 16532 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_d89a_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_d89a_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -99,7 +101,8 @@ Pro mvn_sta_cmn_d89a_l2gen, cmn_dat, otp_struct = otp_struct, directory = direct
             ['TIME_END', 'DOUBLE', 'Unix time at the end of data collection. (NUM_DISTS elements)', 'Interval end time (unix)'], $
             ['INTEG_TIME', 'DOUBLE', 'Integration time for rate in seconds. (NUM_DISTS elements).', 'Integration time'], $
             ['VALID', 'INTEGER', 'Validity flag codes valid data (bit 0), test pulser on (bit 1), diagnostic mode (bit 2), data compression type (bit 3-4), packet compression (bit 5) (NUM_DISTS elements)', ' Valid flag'], $
-            ['MD', 'INTEGER', 'Mode byte in packet header. (NUM_DISTS elements)', 'Mode byte'], $
+            ['EPROM_VER', 'INTEGER', 'An integer designating the version of the flight eprom load. (NUM_DISTS elements)', 'Eprom version'], $
+            ['HEADER', 'LONG', 'A long integer that consists of bytes 12-15 in data packet header. See MAVEN_PF_FSW_021_CTM.xls for definition of header bits. (NUM_DISTS elements)', 'Header'], $
             ['MODE', 'INTEGER', 'Decoded mode number. (NUM_DISTS elements)', 'Mode number'], $
             ['RATE', 'INTEGER', 'Decoded telemetry rate number. (NUM_DISTS elements)', 'Telemetry rate number'], $
             ['SWP_IND', 'INTEGER', 'Index that identifies the energy and deflector sweep look up tables (LUT) for the sensor. SWP_IND is an index that selects the following support data arrays: ENERGY, DENERGY, THETA, DTHETA, PHI, DPHI, DOMEGA, GF and MASS_ARR. (NUM_DISTS elements), EN_IND Le NSWP', 'Sweep index'], $

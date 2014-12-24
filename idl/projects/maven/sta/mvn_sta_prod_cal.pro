@@ -24,6 +24,7 @@
 ;	tbd	current code uses swp2gfan and swp2gfdf to help approximate gf for omni-directional apids - c0,c2,c4,c6
 ;			need to check whether this properly handles theta and azimuthal angle ranges
 ;	tbd	correct program for leakage by electrostatic attenuator at low energy
+;	tbd	check that the last energy sample includes attE attenuation  
 ;	tbd	may need to change the code that throws away extra data at end of file
 
 ;	fix	eff array
@@ -35,8 +36,26 @@
 ;	mod	dead so it varies with time 
 ;	
 ;	change	"test" keyword -- may have conflicts
+;
 ;	add	quality flag -> multi-bit parameter with test pulser, diagnostic and compression coded
 ;		develop an algorithm for quality flag that qualifies high count rate and mode changes
+;													 
+;		quality_flag definition						 determined from
+;
+;			bit 0	test pulser on					- testpulser header bit set
+;			bit 1	diagnostic mode					- diagnostic header bit set
+;			bit 2	dead time correction > factor of 2		- deadtime correction > 2
+;			bit 3	dead time correction not at event time		- missing data quantity for deadtime
+;			bit 4	mcp detector gain droop flag 			- deadtime and beam width - tbd algorithm
+;			bit 5	electrostatic attenuator failing at < 2 eV	- attE on and eprom_ver<2
+;			bit 6   attenuator change during accumulation		- att 1->2 or 2->1 transition (one measurement)	
+;			bit 7	mode change during accumulation			- only needed for packets that average data during mode transition
+;			bit 8	lpw sweeps interfering with data 		- lpw mode not dust mode
+;			bit 9	high background 		 		- minimum value in DA > 1000
+;			bit 10	missing background 		 		- dat.bkg = 0		- may not be needed
+;			bit 11	missing spacecraft potential			- dat.sc_pot = 0	- may not be needed	
+;
+;
 ;
 ;-
 pro mvn_sta_prod_cal,all=all,units=units,apids=apids,test=test,gf_nor=gf_nor,ignore=ignore
@@ -1123,7 +1142,8 @@ endif
 
 ; make the software version number common block - used for CDF file production
 
-	common mvn_sta_software_version,ver & ver=0		; software version will remain zero until MOI
+;	common mvn_sta_software_version,ver & ver=0		; software version was "0" prior to 20141219
+	common mvn_sta_software_version,ver & ver=0		; tbd changed 20141219 when all SIS required elements included in common blocks, some elements are just placeholders
 
 
 ;zero all the common block arrays
@@ -1402,8 +1422,6 @@ print,'Processing apid c6'
 
 	c6_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-;		data_name:		'C6 Energy-Mass', 			$
-;		apid:			'C6',					$
 		data_name:		'c6 32e64m', 				$
 		apid:			'c6',					$
 		units_name: 		'counts', 				$
@@ -1418,7 +1436,6 @@ print,'Processing apid c6'
 
 		eprom_ver:		eprom_ver,				$
 		header:			header,					$
-		md:			md1,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -1489,6 +1506,8 @@ print,'Processing apid c0'
 		tt=t.x[0:nn-1]
 	if nn ge 2 then begin
 
+		get_data,'mvn_STA_C0_DIAG',data=diag
+
 ;		correct half second jitter in header times, assumes times always delayed by .5, assumes C0 has 4 sec cadence
 			time = tt
 			dt = time[1:nn-1]-time[0:nn-2]-4.
@@ -1539,8 +1558,8 @@ print,'Processing apid c0'
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			md2 = round(interp(md6.y,md6.x,tt))
-			rt2 = round(interp(rt6.y,rt6.x,tt))
+			md2 = fix(round(interp(md6.y,md6.x,tt)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tt)))
 		endif
 		md1 = rt2*16+md2	 
 
@@ -1580,8 +1599,9 @@ print,'Processing apid c0'
 
 ;	correct C0 attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
-		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tt))
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tt)))
 
+		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_C0_mode',data={x:tt,y:md2}					; corrected modes
 			ylim,'mvn_sta_C0_mode',-1,8,0
@@ -1702,8 +1722,6 @@ print,'Processing apid c0'
 
 	c0_dat= {project_name:		'MAVEN',				$
 		spacecraft:		'0', 					$
-;		data_name:		'C0 Energy-Mass', 			$
-;		apid:			'C0',					$
 		data_name:		'c0 64e2m', 				$
 		apid:			'c0',					$
 		units_name: 		'counts', 				$
@@ -1717,7 +1735,7 @@ print,'Processing apid c0'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -1787,6 +1805,8 @@ print,'Processing apid c2'
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
 	if nn ge 2 then begin
+
+		get_data,'mvn_STA_C2_DIAG',data=diag
 
 		get_data,'mvn_STA_C2_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
@@ -1861,6 +1881,8 @@ print,'Processing apid c2'
 				endfor
 			endif
 		endif
+
+		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_C2_mode',data={x:tt,y:md2}					; corrected modes
 			ylim,'mvn_sta_C2_mode',-1,8,0
@@ -1986,7 +2008,7 @@ print,'Processing apid c2'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -2056,6 +2078,8 @@ print,'Processing apid c4'
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
 	if nn ge 2 then begin
+
+		get_data,'mvn_STA_C4_DIAG',data=diag
 
 		get_data,'mvn_STA_C4_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
@@ -2143,6 +2167,8 @@ print,'Processing apid c4'
 				att0[inds-nmax+1:inds-nmax+1+iww+idelay] = att1[inds]		; use ww and interal delays to correct att at previous value
 			endfor
 		endif
+
+		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_C4_mode',data={x:tt,y:md2}
 			ylim,'mvn_sta_C4_mode',-1,7,0
@@ -2263,7 +2289,7 @@ print,'Processing apid c4'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -2334,6 +2360,8 @@ print,'Processing apid c8'
 		tt=t.x[0:nn-1]
 	if nn ge 2 then begin
 
+		get_data,'mvn_STA_C8_DIAG',data=diag
+
 ;		correct half second jitter in header times, assumes times always delayed by .5, assumes C0 has 4 sec cadence
 			time = tt
 			dt = time[1:nn-1]-time[0:nn-2]-4.
@@ -2382,8 +2410,8 @@ print,'Processing apid c8'
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			md2 = round(interp(md6.y,md6.x,tt))
-			rt2 = round(interp(rt6.y,rt6.x,tt))
+			md2 = fix(round(interp(md6.y,md6.x,tt)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tt)))
 		endif
 		md1 = rt2*16+md2	 
 
@@ -2422,7 +2450,9 @@ print,'Processing apid c8'
 
 ;	correct C8 attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
-		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tt))
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tt)))
+
+		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_C8_mode',data={x:tt,y:md2}
 			ylim,'mvn_sta_C8_mode',-1,8,0
@@ -2550,7 +2580,7 @@ print,'Processing apid c8'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -2622,6 +2652,8 @@ print,'Processing apid ca'
 		tt=t.x[0:nn-1]
 	if nn ge 2 then begin
 
+		get_data,'mvn_STA_CA_DIAG',data=diag
+
 ;		correct half second jitter in header times, assumes times always delayed by .5, assumes CA has 4 sec cadence
 			time = tt
 			dt = time[1:nn-1]-time[0:nn-2]-4.
@@ -2669,8 +2701,8 @@ print,'Processing apid ca'
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			md2 = round(interp(md6.y,md6.x,tt))
-			rt2 = round(interp(rt6.y,rt6.x,tt))
+			md2 = fix(round(interp(md6.y,md6.x,tt)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tt)))
 		endif
 		md1 = rt2*16+md2	 
 
@@ -2696,7 +2728,9 @@ print,'Processing apid ca'
 
 ;	correct CA attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
-		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tt))
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tt)))
+
+		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_CA_mode',data={x:tt,y:md2}
 			ylim,'mvn_sta_CA_mode',-1,8,0
@@ -2821,7 +2855,7 @@ print,'Processing apid ca'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -2971,6 +3005,8 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 				endfor
 			endif
 
+			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
+
 			store_data,'mvn_sta_CC_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_CC_mode',-1,7,0
 			store_data,'mvn_sta_CC_att',data={x:tdis,y:att0}
@@ -3095,7 +3131,7 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -3235,8 +3271,8 @@ print,'Processing apid cd'
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			md2 = round(interp(md6.y,md6.x,tdis))
-			rt2 = round(interp(rt6.y,rt6.x,tdis))
+			md2 = fix(round(interp(md6.y,md6.x,tdis)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tdis)))
 			md1 = rt2*16+md2	 
 		endif
 
@@ -3257,7 +3293,9 @@ print,'Processing apid cd'
 
 ;	correct CD attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
-		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tdis)))
+
+			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
 
 			store_data,'mvn_sta_CD_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_CD_mode',-1,7,0
@@ -3382,7 +3420,7 @@ print,'Processing apid cd'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -3531,6 +3569,8 @@ print,'Processing apid ce'
 				endfor
 			endif
 
+			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
+
 			store_data,'mvn_sta_CE_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_CE_mode',-1,7,0
 			store_data,'mvn_sta_CE_att',data={x:tdis,y:att0}
@@ -3656,7 +3696,7 @@ print,'Processing apid ce'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -3796,8 +3836,8 @@ print,'Processing apid cf'
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			md2 = round(interp(md6.y,md6.x,tdis))
-			rt2 = round(interp(rt6.y,rt6.x,tdis))
+			md2 = fix(round(interp(md6.y,md6.x,tdis)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tdis)))
 			md1 = rt2*16+md2	 
 		endif
 
@@ -3817,7 +3857,9 @@ print,'Processing apid cf'
 
 ;	correct CF attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
-		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tdis)))
+
+			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
 
 			store_data,'mvn_sta_CF_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_CF_mode',-1,7,0
@@ -3943,7 +3985,7 @@ print,'Processing apid cf'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -4091,6 +4133,8 @@ print,'Processing apid d0'
 				endfor
 			endif
 
+			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
+
 			store_data,'mvn_sta_D0_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_D0_mode',-1,7,0
 			store_data,'mvn_sta_D0_att',data={x:tdis,y:att0}
@@ -4215,7 +4259,7 @@ print,'Processing apid d0'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -4352,8 +4396,8 @@ print,'Processing apid d1'
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			md2 = round(interp(md6.y,md6.x,tdis))
-			rt2 = round(interp(rt6.y,rt6.x,tdis))
+			md2 = fix(round(interp(md6.y,md6.x,tdis)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tdis)))
 			md1 = rt2*16+md2	 
 		endif
 
@@ -4379,7 +4423,9 @@ print,'Processing apid d1'
 
 ;	correct D0 attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
-		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tdis)))
+
+			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
 
 			store_data,'mvn_sta_D1_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_D1_mode',-1,7,0
@@ -4512,7 +4558,7 @@ print,'Processing apid d1'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -4658,6 +4704,8 @@ print,'Processing apid d2'
 				endfor
 			endif
 
+			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
+
 			store_data,'mvn_sta_D2_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_D2_mode',-1,7,0
 			store_data,'mvn_sta_D2_att',data={x:tdis,y:att0}
@@ -4784,7 +4832,7 @@ print,'Processing apid d2'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -4921,8 +4969,8 @@ print,'Processing apid d3'
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			md2 = round(interp(md6.y,md6.x,tdis))
-			rt2 = round(interp(rt6.y,rt6.x,tdis))
+			md2 = fix(round(interp(md6.y,md6.x,tdis)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tdis)))
 			md1 = rt2*16+md2	 
 		endif
 
@@ -4942,7 +4990,9 @@ print,'Processing apid d3'
 
 ;	correct D3 attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
-		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tdis))
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tdis)))
+
+			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
 
 			store_data,'mvn_sta_D3_mode',data={x:tdis,y:md2}
 				ylim,'mvn_sta_D3_mode',-1,7,0
@@ -5070,7 +5120,7 @@ print,'Processing apid d3'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -5142,6 +5192,8 @@ print,'Processing apid d4'
 		tt=t.x[0:nn-1]
 	if nn ge 2 then begin
 
+		get_data,'mvn_STA_D4_DIAG',data=diag
+
 		get_data,'mvn_STA_D4_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
 			md2 = md.y[0:nn-1] and 15
@@ -5176,8 +5228,8 @@ print,'Processing apid d4'
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			md2 = round(interp(md6.y,md6.x,tt))
-			rt2 = round(interp(rt6.y,rt6.x,tt))
+			md2 = fix(round(interp(md6.y,md6.x,tt)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tt)))
 			md1 = rt2*16+md2	 
 		endif
 
@@ -5236,7 +5288,10 @@ print,'Processing apid d4'
 
 ;	correct C8 attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
-		if size(/type,att6) eq 8 then att0 = round(interp(att6.y,att6.x,tt))
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tt)))
+
+
+		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_D4_mode',data={x:tt,y:md2}					; corrected modes
 			ylim,'mvn_sta_D4_mode',-1,8,0
@@ -5364,7 +5419,7 @@ print,'Processing apid d4'
 		integ_t: 		(tt2-tt1)/(nenergy*ndef)*dt_cor,	$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -5736,6 +5791,9 @@ print,'Processing apid d8'
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
 
+		get_data,'mvn_STA_D8_DIAG',data=diag
+		get_data,'mvn_STA_D8_ATTEN',data=catt						; attenuator state
+
 		get_data,'mvn_STA_D8_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
 			md2 = md.y[0:nn-1] and 15
@@ -5762,6 +5820,8 @@ print,'Processing apid d8'
 				for j=ind[i]-nf+1,ind[i] do tt[j]=tt[ind[i]+1]-dt*(ind[i]+1-j)
 			endfor
 		endif
+
+		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_D8_mode',data={x:tt,y:md2}
 			ylim,'mvn_sta_D8_mode',-1,7,0
@@ -5826,7 +5886,7 @@ print,'Processing apid d8'
 		integ_t: 		integ_time,				$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -5871,6 +5931,9 @@ print,'Processing apid d9'
 		ind1 = where(t.x gt 0, nn)
 		tt=t.x[0:nn-1]
 
+		get_data,'mvn_STA_D9_DIAG',data=diag
+		get_data,'mvn_STA_D9_ATTEN',data=catt						; attenuator state
+
 		get_data,'mvn_STA_D9_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
 			md2 = md.y[0:nn-1] and 15
@@ -5887,6 +5950,8 @@ print,'Processing apid d9'
 
 		tt1 = tt - 2.*avg2 	
 		tt2 = tt + 2.*avg2 
+
+		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_D9_mode',data={x:tt,y:md2}
 			ylim,'mvn_sta_D9_mode',-1,7,0
@@ -6009,7 +6074,7 @@ print,'Processing apid d9'
 		integ_t: 		integ_time,				$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$
@@ -6077,24 +6142,29 @@ print,'Processing apid da'
 
 ; 	Necessary code
 
+		get_data,'mvn_STA_DA_DIAG',data=diag
+		get_data,'mvn_STA_DA_ATTEN',data=catt						; attenuator state
+		get_data,'mvn_STA_DA_AVG',data=cavg
+
 		get_data,'mvn_STA_DA_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
 			md2 = md.y[0:nn-1] and 15
 			rt2 = (md.y[0:nn-1] and 112)/16
+
+		header = reform(replicate(1l,16) # (256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]),16*nn)
 
 ;	correct DA mode transitions using C6 data if it is available
 
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
-			md2 = round(interp(md6.y,md6.x,tt))
-			rt2 = round(interp(rt6.y,rt6.x,tt))
+			md2 = fix(round(interp(md6.y,md6.x,tt)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tt)))
 		endif
 		md1 = rt2*16+md2	 
 
 ; 	the following should not be necessary since we don't plan to average
 
-		get_data,'mvn_STA_DA_AVG',data=cavg
 			avg = cavg.y and replicate(7,nn)
 			sum = (cavg.y and replicate(8,nn))/8
 
@@ -6110,6 +6180,7 @@ print,'Processing apid da'
 		swp_ind = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt)+.5),md2]					
 			eprom_ver = fix(interp((config4.y and 255)*1.,config4.x,tt)+.5)
 			if tt[0] lt time_double('2014-10-1/0') then eprom_ver[*]=0
+		eprom_ver = fix(reform(replicate(1,16) # eprom_ver,16*nn))
 
 		energy=nrg[swp_ind,*]
 
@@ -6176,8 +6247,8 @@ print,'Processing apid da'
 ;	correct DA mode transitions using C6 data if it is available
 
 		if size(/type,md6) eq 8 then begin
-			md2_2 = round(interp(md6.y,md6.x,tt8))
-			rt2_2 = round(interp(rt6.y,rt6.x,tt8))
+			md2_2 = fix(round(interp(md6.y,md6.x,tt8)))
+			rt2_2 = fix(round(interp(rt6.y,rt6.x,tt8)))
 			md1_2 = rt2_2*16+md2_2	 
 			swp_ind_2 = conf2swp[fix(interp((config4.y and 255)*1.,config4.x,tt8)+.5),md2_2]					
 			en2 = nrg[swp_ind_2,*]
@@ -6227,7 +6298,7 @@ if size(/type,t) eq 8 and nn ge 1 then begin
 		integ_t: 		integ_time,				$	
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1_2,					$
+		header:			header,					$
 		mode:			md2_2,					$
 		rate:			rt2_2,					$
 		swp_ind:		swp_ind_2,				$
@@ -6264,6 +6335,9 @@ print,'Processing apid db'
 		tt=t.x[0:nn-1]
 	if nn ge 2 then begin
 
+		get_data,'mvn_STA_DB_DIAG',data=diag
+		get_data,'mvn_STA_DB_ATTEN',data=catt						; attenuator state
+
 		get_data,'mvn_STA_DB_MODE',data=md
 			md1 = md.y[0:nn-1] and 127
 			md2 = md.y[0:nn-1] and 15
@@ -6278,6 +6352,8 @@ print,'Processing apid db'
 
 		tt1 = tt - 2.*avg2 	
 		tt2 = tt + 2.*avg2 
+
+		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_DB_mode',data={x:tt,y:md2}
 			ylim,'mvn_sta_DB_mode',-1,7,0
@@ -6347,7 +6423,7 @@ print,'Processing apid db'
 ;		ntof:			1024,					$
 
 		eprom_ver:		eprom_ver,				$
-		md:			md1,					$
+		header:			header,					$
 		mode:			md2,					$
 		rate:			rt2,					$
 		swp_ind:		swp_ind,				$

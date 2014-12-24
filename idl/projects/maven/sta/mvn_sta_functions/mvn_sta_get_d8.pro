@@ -66,7 +66,6 @@ endif else begin
 
 	mode	= all_dat.mode[ind]
 	rate	= all_dat.rate[ind]
-	md	= all_dat.md[ind]
 	swp_ind	= all_dat.swp_ind[ind]
 	nrg	= reform(all_dat.energy[swp_ind,*])
 
@@ -74,7 +73,7 @@ dat = 		{project_name:		all_dat.project_name,					$
 		spacecraft:		all_dat.spacecraft, 					$
 		data_name:		all_dat.data_name, 					$
 		apid:			all_dat.apid,						$
-;		units_name: 		'Hz', 						$
+;		units_name: 		'Hz', 							$
 		valid: 			all_dat.valid[ind], 					$
 		quality_flag: 		all_dat.quality_flag[ind], 				$
 
@@ -82,7 +81,8 @@ dat = 		{project_name:		all_dat.project_name,					$
 		end_time: 		all_dat.end_time[ind], 					$
 		integ_t: 		all_dat.integ_t[ind],					$
 
-		md:			md,							$
+;		eprom_ver:		all_dat.eprom_ver[ind],			$
+;		header:			all_dat.header[ind],			$
 		mode:			mode,							$
 		rate:			rate,							$
 		swp_ind:		swp_ind,						$

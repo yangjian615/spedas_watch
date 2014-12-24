@@ -27,7 +27,7 @@ if size(/type,ind) eq 0 then return,tplot_vars.options.varnames
 if size(/type,ind) eq 7 then begin             ;input is a string to match
   a = where(strpos(data_quants.name,ind,0) ge 0,c)
   if c eq 0 then return,0
-  return,data_quants(a).name
+  return,data_quants[a].name
 endif
 
 nind = n_elements(ind)
@@ -35,5 +35,5 @@ a = where((ind LT 1) OR (ind GE ndq),count)
 IF count GT 0 THEN BEGIN
   dprint, 'Data quantities ',a,' do not exist.
   return,strarr(nind)
-ENDIF ELSE return,data_quants(ind).name
+ENDIF ELSE return,data_quants[ind].name
 END

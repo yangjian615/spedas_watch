@@ -10,19 +10,20 @@
 ;INPUTS:
 ;KEYWORDS:
 ;	TR: Time range (uses current tplot if not set)
-;	BDATA: Magnetic field data (needs to be in MSO)
+;	BDATA: Magnetic field data (needs to be in MSO )
+;	FBDATA: Full resolution magnetic field data (any coordinate system, just for RMS)
 ;	PDATA: Position data (needs to be in MSO)
 ;OUTPUTS:
 ;	REGOUT: Tplot structure containing region IDs
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-12 06:27:49 -0800 (Fri, 12 Dec 2014) $
-; $LastChangedRevision: 16477 $
+; $LastChangedDate: 2014-12-22 10:04:31 -0800 (Mon, 22 Dec 2014) $
+; $LastChangedRevision: 16527 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_regid.pro $
 ;
 ;-
 
-pro mvn_swia_regid, tr = tr, bdata = bdata, pdata = pdata, regout
+pro mvn_swia_regid, tr = tr, bdata = bdata, fbdata = fbdata, pdata = pdata, regout
 
 
 RM = 3397.
@@ -30,13 +31,15 @@ RM = 3397.
 @tplot_com
 common mvn_swia_data
 
-if not keyword_set(bdata) then bdata = 'mvn_B_full_MAVEN_MSO'
+if not keyword_set(bdata) then bdata = 'mvn_B_1sec_MAVEN_MSO'
+if not keyword_set(fbdata) then fbdata = 'mvn_B_full'
 if not keyword_set(pdata) then pdata = 'MAVEN_POS_(MARS-MSO)'
 if not keyword_set(tr) then tr = tplot_vars.options.trange
 
 
 get_data,pdata,data = pos
-get_data,bdata,data = mag
+get_data,fbdata,data = mag
+get_data,bdata,data = lmag
 
 
 
@@ -63,18 +66,15 @@ mt = dblarr(nmagint)
 
 for i = 0L,nmagint-1 do begin
 	mt(i) = mean(mag.x[i*128:i*128+127],/nan,/double)
-	mbx(i) = mean(mag.y[i*128:i*128+127,0],/nan)
-	mby(i) = mean(mag.y[i*128:i*128+127,1],/nan)
-	mbz(i) = mean(mag.y[i*128:i*128+127,2],/nan)
 	mrx(i) = stddev(mag.y[i*128:i*128+127,0],/nan)
 	mry(i) = stddev(mag.y[i*128:i*128+127,1],/nan)
 	mrz(i) = stddev(mag.y[i*128:i*128+127,2],/nan)
 endfor
 
 
-magx = interpol(mbx,mt,time)
-magy = interpol(mby,mt,time)
-magz = interpol(mbz,mt,time)
+magx = interpol(lmag.y(*,0),lmag.x,time)
+magy = interpol(lmag.y(*,1),lmag.x,time)
+magz = interpol(lmag.y(*,2),lmag.x,time)
 mag = sqrt(magx*magx+magy*magy+magz*magz)
 magstd = interpol(sqrt(mrx*mrx+mry*mry+mrz*mrz),mt,time)
 

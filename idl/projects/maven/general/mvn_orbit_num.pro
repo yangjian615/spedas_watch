@@ -43,6 +43,7 @@ if (systime(1) - time_cached) gt 3600 then begin   ; generate no more than once 
      dprint,dlevel=3,s
  ;    if i lt 2 then dprint,s,dlevel=2
      if i++ lt 2 then continue
+     if strmatch(s,'*Unable*') then continue
 ;     ss =  strsplit(s,/extract)
 ;     dat.num = long(ss[0])
 ;     dat.peri_time = time_double(strjoin(ss[1:4],' ') ,tformat='YYYY MTH DD hh:mm:ss')
