@@ -13,17 +13,18 @@
 ;	BDATA: Magnetic field data (needs to be in MSO )
 ;	FBDATA: Full resolution magnetic field data (any coordinate system, just for RMS)
 ;	PDATA: Position data (needs to be in MSO)
+;	NOLOBE: Don't try to find lobe (allows us to skip B in MSO and save a lot of rotation time)
 ;OUTPUTS:
 ;	REGOUT: Tplot structure containing region IDs
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-22 10:04:31 -0800 (Mon, 22 Dec 2014) $
-; $LastChangedRevision: 16527 $
+; $LastChangedDate: 2014-12-23 07:54:41 -0800 (Tue, 23 Dec 2014) $
+; $LastChangedRevision: 16541 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_regid.pro $
 ;
 ;-
 
-pro mvn_swia_regid, tr = tr, bdata = bdata, fbdata = fbdata, pdata = pdata, regout
+pro mvn_swia_regid, tr = tr, bdata = bdata, fbdata = fbdata, pdata = pdata, regout, nolobe = nolobe
 
 
 RM = 3397.
@@ -31,7 +32,10 @@ RM = 3397.
 @tplot_com
 common mvn_swia_data
 
-if not keyword_set(bdata) then bdata = 'mvn_B_1sec_MAVEN_MSO'
+if not keyword_set(bdata) then begin
+	if keyword_set(nolobe) then bdata = 'mvn_B_1sec' else bdata = 'mvn_B_1sec_MAVEN_MSO'
+endif
+
 if not keyword_set(fbdata) then fbdata = 'mvn_B_full'
 if not keyword_set(pdata) then pdata = 'MAVEN_POS_(MARS-MSO)'
 if not keyword_set(tr) then tr = tplot_vars.options.trange
@@ -71,7 +75,6 @@ for i = 0L,nmagint-1 do begin
 	mrz(i) = stddev(mag.y[i*128:i*128+127,2],/nan)
 endfor
 
-
 magx = interpol(lmag.y(*,0),lmag.x,time)
 magy = interpol(lmag.y(*,1),lmag.x,time)
 magz = interpol(lmag.y(*,2),lmag.x,time)
@@ -100,7 +103,7 @@ w = where((vel lt 100 or dens lt 0.1) and magstd/mag lt 0.1 and mag gt 10 and al
 regid(w) = 4 ;Periapsis Dayside Ionosphere
 
 w = where(vel lt 200 and magstd/mag lt 0.1 and abs(magx/mag) gt 0.9 and ux lt 0 and alt gt 300)
-regid(w) = 5	;Tail Lobe
+if not keyword_set(nolobe) then regid(w) = 5	;Tail Lobe
 
 regout = {x:time,y:[[regid],[regid]],v:[0,1],spec:1}
 

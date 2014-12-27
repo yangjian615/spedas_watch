@@ -13,8 +13,8 @@
 ;	TRANGE: time range to use
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-22 10:36:23 -0800 (Mon, 22 Dec 2014) $
-; $LastChangedRevision: 16528 $
+; $LastChangedDate: 2014-12-23 07:54:41 -0800 (Tue, 23 Dec 2014) $
+; $LastChangedRevision: 16541 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_stacomp.pro $
 ;
 ;-
@@ -22,16 +22,16 @@
 pro mvn_swia_stacomp, type = type, trange = trange
 
 if not keyword_set(trange) then ctime,trange,npoints = 2
-if not keyword_set(type) then type = 'd2'
+if not keyword_set(type) then type = 'd0'
 
-get_4dt,'n_4d','mvn_sta_get_'+type,mass = [0.3,1.8],name = 'np'
-get_4dt,'n_4d','mvn_sta_get_'+type,mass = [1.8,2.5],name = 'na'
-get_4dt,'n_4d','mvn_sta_get_'+type,mass = [10,20],name = 'no'
-get_4dt,'n_4d','mvn_sta_get_'+type,mass = [20,40],name = 'no2'
-get_4dt,'v_4d','mvn_sta_get_'+type,mass = [0.3,1.8],name = 'vp'
-get_4dt,'v_4d','mvn_sta_get_'+type,mass = [1.5,2.5],name = 'va'
-get_4dt,'v_4d','mvn_sta_get_'+type,mass = [10,20],name = 'vo'
-get_4dt,'v_4d','mvn_sta_get_'+type,mass = [20,40],name = 'vo2'
+get_4dt,'n_4d','mvn_sta_get_'+type,mass = [0.3,1.8],name = 'np', t1= trange(0),t2 = trange(1)
+get_4dt,'n_4d','mvn_sta_get_'+type,mass = [1.8,2.5],name = 'na', t1= trange(0),t2 = trange(1)
+get_4dt,'n_4d','mvn_sta_get_'+type,mass = [10,20],name = 'no', t1= trange(0),t2 = trange(1)
+get_4dt,'n_4d','mvn_sta_get_'+type,mass = [20,40],name = 'no2', t1= trange(0),t2 = trange(1)
+get_4dt,'v_4d','mvn_sta_get_'+type,mass = [0.3,1.8],name = 'vp', t1= trange(0),t2 = trange(1)
+get_4dt,'v_4d','mvn_sta_get_'+type,mass = [1.5,2.5],name = 'va', t1= trange(0),t2 = trange(1)
+get_4dt,'v_4d','mvn_sta_get_'+type,mass = [10,20],name = 'vo', t1= trange(0),t2 = trange(1)
+get_4dt,'v_4d','mvn_sta_get_'+type,mass = [20,40],name = 'vo2', t1= trange(0),t2 = trange(1)
 
 get_data,'np',data = np
 get_data,'na',data = na
