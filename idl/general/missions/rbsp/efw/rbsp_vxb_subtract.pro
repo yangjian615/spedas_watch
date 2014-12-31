@@ -37,8 +37,7 @@ pro rbsp_vxb_subtract,velname,magname,esvyname
 	vxB_y = (vel3*mag1 - vel1*mag3)
 	vxB_z = (vel1*mag2 - vel2*mag1)
 
-
-
+        ;vxb consists of Vsc x B and Vcoro x B
 	store_data,'vxb_x',data={x:esvy.x,y:vxb_x}
 	store_data,'vxb_y',data={x:esvy.x,y:vxb_y}
 	store_data,'vxb_z',data={x:esvy.x,y:vxb_z}

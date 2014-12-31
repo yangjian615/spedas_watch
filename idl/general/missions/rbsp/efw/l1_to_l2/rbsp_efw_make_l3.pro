@@ -14,8 +14,8 @@
 ; HISTORY: Created by Aaron W Breneman, May 2014
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-11-03 09:47:37 -0800 (Mon, 03 Nov 2014) $
-;   $LastChangedRevision: 16122 $
+;   $LastChangedDate: 2014-12-29 14:46:50 -0800 (Mon, 29 Dec 2014) $
+;   $LastChangedRevision: 16545 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l3.pro $
 ;-
 
@@ -477,6 +477,31 @@ endelse
 
 
 ;--------------------------------------------------
+;ADD IN ACTUAL BIAS CURRENTS
+;--------------------------------------------------
+
+ tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS1',times
+ tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS2',times
+ tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS3',times
+ tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS4',times
+ tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS5',times
+ tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS6',times
+;tplot,['*IBIAS*','rbsp'+sc+'_efw_hsk_idpu_fast_TBD']
+
+ get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS1_interp',data=ib1
+ get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS2_interp',data=ib2
+ get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS3_interp',data=ib3
+ get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS4_interp',data=ib4
+ get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS5_interp',data=ib5
+ get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS6_interp',data=ib6
+
+
+ ibias = [[ib1.y],[ib2.y],[ib3.y],[ib4.y],[ib5.y],[ib6.y]]
+
+
+
+
+;--------------------------------------------------
 ;Set individual flags based on above calculated values
 ;--------------------------------------------------
 
@@ -558,18 +583,6 @@ endelse
   flags = [[flag_arr[*,15]],[flag_arr[*,14]],[flag_arr[*,1]]]
 
 
-
-
-
-
-
-;Combine the Vsc x B data
-  get_data,'vxb_x',data=vxbx
-  get_data,'vxb_y',data=vxby
-  get_data,'vxb_z',data=vxbz
-  store_data,'vxb',data={x:vxbx.x,y:[[vxbx.y],[vxby.y],[vxbz.y]]}
-
-
 ;the times for the mag spinfit can be slightly different than the times for the
 ;Esvy spinfit. 
   tinterpol_mxn,'rbsp'+sc+'_mag_mgse',times,newname='rbsp'+sc+'_mag_mgse'
@@ -578,7 +591,7 @@ endelse
 
 ;Downsample the GSE position and velocity variables to cadence of spinfit data
   tinterpol_mxn,'rbsp'+sc+'_E_coro_mgse',times,newname='rbsp'+sc+'_E_coro_mgse'
-  tinterpol_mxn,'vxb',times,newname='vxb'
+  tinterpol_mxn,'rbsp'+sc+'_vscxb',times,newname='vxb'
   tinterpol_mxn,'rbsp'+sc+'_state_vel_coro_mgse',times,newname='rbsp'+sc+'_state_vel_coro_mgse'
   tinterpol_mxn,'rbsp'+sc+'_state_pos_gse',times,newname='rbsp'+sc+'_state_pos_gse'
   tinterpol_mxn,'rbsp'+sc+'_state_vel_gse',times,newname='rbsp'+sc+'_state_vel_gse'
@@ -676,6 +689,7 @@ endelse
      cdf_vardelete,cdfid,'orbit_num'
      cdf_vardelete,cdfid,'Lstar'
      cdf_vardelete,cdfid,'angle_Ey_Ez_Bo'
+     cdf_vardelete,cdfid,'bias_current'
 
   endif
 
@@ -698,6 +712,7 @@ endelse
      cdf_varput,cdfid,'density_potential',transpose(density_potential)
      cdf_varput,cdfid,'ephemeris',transpose(location)
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
+     cdf_varput,cdfid,'bias_current',transpose(ibias)
      
      cdf_vardelete,cdfid,'orbit_num'
      cdf_vardelete,cdfid,'Lstar'
@@ -743,6 +758,8 @@ endelse
      cdf_varput,cdfid,'orbit_num',orbit_num.y
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
+     cdf_varput,cdfid,'bias_current',transpose(ibias)
+
      
      cdf_vardelete,cdfid,'Bfield'
      cdf_vardelete,cdfid,'ephemeris'

@@ -19,9 +19,9 @@
 ;       
 ;       
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-12-18 13:48:40 -0800 (Thu, 18 Dec 2014) $
-; $LastChangedRevision: 16513 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2014-12-29 15:28:58 -0800 (Mon, 29 Dec 2014) $
+; $LastChangedRevision: 16550 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_overview_plot.pro $
 ;-
 
@@ -53,6 +53,7 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration, erro
     
     if undefined(date) then date = '2013-03-17/00:00:00'
     if undefined(probe_in) then probe_in = 'noaa19'
+    if is_numeric(probe_in) then probe_in = 'noaa' + probe_in
     if undefined(duration) then duration = 0.08333 ; days
     ;if undefined(duration) then duration = 1 ; days
 
@@ -71,10 +72,13 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration, erro
     if n_elements(poes_data_loaded) gt 1 then begin
         if undefined(gui_overplot) then begin
             ; setup the plot
-            window, xsize=window_xsize, ysize=window_ysize
+            ;window, 1, xsize=window_xsize, ysize=window_ysize
             time_stamp,/off
             loadct2,43
             !p.charsize=0.7
+            
+            !p.background=255.
+            !p.color=0.
             
             tplot_options, 'title', strupcase(probe_in)
             
