@@ -18,8 +18,8 @@
 ;	REGOUT: Tplot structure containing region IDs
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-23 07:54:41 -0800 (Tue, 23 Dec 2014) $
-; $LastChangedRevision: 16541 $
+; $LastChangedDate: 2015-01-01 18:46:58 -0800 (Thu, 01 Jan 2015) $
+; $LastChangedRevision: 16559 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_regid.pro $
 ;
 ;-
@@ -90,10 +90,10 @@ temp = total(swim[w].temperature,1)/3
 vel = sqrt(total(swim[w].velocity*swim[w].velocity,1))
 dens = swim[w].density
 
-w = where(vel gt 200 and (temp/vel lt 0.05 and magstd/mag lt 0.15) and alt gt 500)
+w = where(vel gt 200 and (sqrt(temp)/vel lt 0.012 and magstd/mag lt 0.15) and alt gt 500)
 regid(w) = 1	;Solar Wind
 
-w = where(vel gt 200 and (temp/vel gt 0.1 or magstd/mag gt 0.25) and alt gt 300)
+w = where(vel gt 200 and (sqrt(temp)/vel gt 0.015 or magstd/mag gt 0.25) and alt gt 300)
 regid(w) = 2	;Sheath
 
 w = where((vel lt 100 or dens lt 0.1) and magstd/mag lt 0.1 and mag gt 10 and alt lt 500)
