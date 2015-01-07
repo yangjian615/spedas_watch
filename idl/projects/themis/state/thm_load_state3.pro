@@ -33,9 +33,9 @@
 ;   thm_load_state
 ;Notes:
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2011-04-04 14:21:40 -0700 (Mon, 04 Apr 2011) $
-; $LastChangedRevision: 8564 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16596 $
 ; $URL $
 ;-
 pro thm_load_state3,probes=probes, datatype=datatype, trange=trange, $
@@ -50,7 +50,7 @@ pro thm_load_state3,probes=probes, datatype=datatype, trange=trange, $
                    progobj=progobj
 
 thm_init
-dprint,verbose=verbose,dlevel=4,'$Id: thm_load_state3.pro 8564 2011-04-04 21:21:40Z jimm $'
+dprint,verbose=verbose,dlevel=4,'$Id: thm_load_state3.pro 16596 2015-01-06 01:01:57Z pcruce $'
 
 if not keyword_set(version) then version= ['v02', 'v01', 'v00']
 
@@ -107,14 +107,14 @@ for s=0,nprobes-1 do begin
         xyz_to_polar,thx+midfix+'_pos'
         get_data,thx+midfix+'_pos_mag',data=d
         if keyword_set(d) then begin
-           d.y = d.y/ 6374.
+           d.y = d.y/ 6371.2 ;mean earth radius
            store_data,thx+midfix+'_pos_Re',data=d
         endif
         thm_setprobe_colors, thx+midfix+'_pos_*'
      endif
      thm_setprobe_colors, tns
 
-     options,/default,tns,code_id='$Id: thm_load_state3.pro 8564 2011-04-04 21:21:40Z jimm $'
+     options,/default,tns,code_id='$Id: thm_load_state3.pro 16596 2015-01-06 01:01:57Z pcruce $'
 ;     options,/default,tns,colors = probe_colors[pn]
 
      dprint,dwait=5.,'Flushing output'

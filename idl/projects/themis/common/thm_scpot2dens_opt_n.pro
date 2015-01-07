@@ -71,7 +71,7 @@ pro thm_scpot2dens_opt_n, probe = probe, datatype_esa = datatype_esa, trange = t
     return
   Endif
 
-  store_data, 'th'+sc+'_R', data = {x:tmp.x, y:sqrt(tmp.y[*, 0]^2+tmp.y[*, 1]^2+tmp.y[*, 2]^2)/6371.}, $
+  store_data, 'th'+sc+'_R', data = {x:tmp.x, y:sqrt(tmp.y[*, 0]^2+tmp.y[*, 1]^2+tmp.y[*, 2]^2)/6371.2}, $
     dlim = {colors:[0], labels:['R'], ysubtitle:'[km]', labflag:1, constant:0, ytitle:'th'+sc+'_R'}
   MLT = atan(tmp.y[*, 1]/tmp.y[*, 0])*180/!pi/15.+12
   if(n_elements(where(tmp.y[*, 0] lt 0)) gt 1) then MLT[where(tmp.y[*, 0] lt 0)] = $

@@ -663,11 +663,11 @@ thm_cotrans,thx+'_state_pos',out_suf='_gse',out_coord='gse'
 get_data, thx+'_state_pos_gse',data=tmp
 
 if is_struct(tmp) then begin
-  store_data,thx+'_state_pos_gse_x',data={x:tmp.x,y:tmp.y[*,0]/6370.}
+  store_data,thx+'_state_pos_gse_x',data={x:tmp.x,y:tmp.y[*,0]/6371.2}
 	  options,thx+'_state_pos_gse_x','ytitle','X-GSE'
-  store_data,thx+'_state_pos_gse_y',data={x:tmp.x,y:tmp.y[*,1]/6370.}
+  store_data,thx+'_state_pos_gse_y',data={x:tmp.x,y:tmp.y[*,1]/6371.2}
 	  options,thx+'_state_pos_gse_y','ytitle','Y-GSE'
-  store_data,thx+'_state_pos_gse_z',data={x:tmp.x,y:tmp.y[*,2]/6370.}
+  store_data,thx+'_state_pos_gse_z',data={x:tmp.x,y:tmp.y[*,2]/6371.2}
   	options,thx+'_state_pos_gse_z','ytitle','Z-GSE'
 endif else begin
   dprint,'No state gse data found'

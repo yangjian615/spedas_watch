@@ -1,11 +1,10 @@
 ;+
-;PROCEDURE:   mag_mola_orbit
+;PROCEDURE:   mag_npole_orbit
 ;PURPOSE:
-;  Plots a set of [longitude,latitude] positions over a MAG-MOLA
-;  map.
+;  Plots a set of [longitude,latitude] positions over a polar MAG map.
 ;
 ;USAGE:
-;  mag_mola_orbit, lon, lat
+;  mag_Npole_orbit, lon, lat
 ;
 ;INPUTS:
 ;       lon:       East longitude (0 to 360 degrees).
@@ -27,22 +26,20 @@
 ;
 ;       NOERASE:   Do not refresh the plot for each [lon, lat] point.
 ;
-;       BIG:       Use a 1000x500 MAG-MOLA image.
-;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-05 15:32:54 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16593 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mag_mola_orbit.pro $
+; $LastChangedDate: 2015-01-05 15:31:37 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16592 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mag_npole_orbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  04-02-03
 ;-
-pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
-                    reset=reset, big=big, noerase=noerase, title=title
+pro mag_npole_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
+                     reset=reset, noerase=noerase, title=title
 
-  common magmola_orb_com, img, ppos
+  common magpole_orb_com, img, ppos
 
   twin = !d.window
-  owin = 29
+  owin = 27
   csize = 1.2
 
   if not keyword_set(title) then title = ''
@@ -59,25 +56,24 @@ pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
   endif
 
   if ((size(img,/type) eq 0) or keyword_set(reset)) then begin
-    if keyword_set(big) then fname = file_which('MAG_MOLA_lg.bmp') $
-                        else fname = file_which('MAG_MOLA.bmp')
+    fname = file_which('MAG_Npole.jpg')
 
     if (fname eq '') then begin
-      print, "MAG_MOLA.bmp not found!"
+      print, "MAG_Npole.jpg not found!"
       return
     endif
-    img = read_bmp(fname,/rgb)
+    read_jpeg, fname, img
     sz = size(img)
 
-    xoff = round(34.*csize)
-    yoff = round(30.*csize)
+    xoff = 0
+    yoff = 0
     i = sz[2] + (2*xoff)
     j = sz[3] + (2*yoff)
 
     window,owin,xsize=i,ysize=j
 
-    px = [0.0, 1.0] * !d.x_vsize + xoff + 16
-    py = [0.0, 1.0] * !d.y_vsize + yoff + 10
+    px = [0.0, 1.0] * !d.x_vsize + xoff
+    py = [0.0, 1.0] * !d.y_vsize + yoff
     ppos=[px[0],py[0],px[0]+sz[2]-1,py[0]+sz[3]-1]
     
     eflg = 1
@@ -87,12 +83,16 @@ pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
 
   if (eflg) then tv,img,ppos[0],ppos[1],/true
 
-  plot,[-1.,-2.],[-1.,-2.],position=ppos,/device, $
-    xrange=[0,360],yrange=[-90,90],xticks=4,xminor=3, $
-    yticks=2,yminor=3,/xstyle,/ystyle,/noerase,charsize=csize, $
-    xtitle = 'East Longitude', ytitle = 'Latitude', title=title
+  plot,[-100.],[-100.],position=[22,112,501,590],/device, $
+    xrange=[-35,35],yrange=[-35,35],xticks=6,xminor=3, $
+    yticks=6,yminor=3,xstyle=5,ystyle=5,/noerase,charsize=csize, $
+    xtitle = 'This Way', ytitle = 'That Way', title=title
+  
+  r = 90. - lat
+  phi = (lon - 90.)*!dtor
 
-  oplot,[lon],[lat],psym=psym,color=color,linestyle=lstyle,thick=2,symsize=1.4
+  oplot,[r*cos(phi)],[r*sin(phi)],psym=psym,color=color, $
+    linestyle=lstyle,thick=2,symsize=1.4
 
   wset,twin
 

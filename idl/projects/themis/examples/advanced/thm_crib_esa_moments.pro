@@ -80,11 +80,11 @@ tplot,['tha_peif_en_eflux','tha_peif_density','tha_peif_velocity_dsl','tha_peif_
        
        thm_cotrans,strjoin('th'+sc+'_state_pos'),in_coord='gei',out_coord='gse',out_suf='_gse'
 	get_data,strjoin('th'+sc+'_state_pos_gse'),data=tmp
-	store_data,'th'+sc+'_state_pos_gse_x',data={x:tmp.x,y:tmp.y(*,0)/6370.}
+	store_data,'th'+sc+'_state_pos_gse_x',data={x:tmp.x,y:tmp.y(*,0)/6371.2}
 		options,'th'+sc+'_state_gse_pos_x','ytitle','th'+sc+'_X-GSE'
-	store_data,'th'+sc+'_state_pos_gse_y',data={x:tmp.x,y:tmp.y(*,1)/6370.}
+	store_data,'th'+sc+'_state_pos_gse_y',data={x:tmp.x,y:tmp.y(*,1)/6371.2}
 		options,'th'+sc+'_state_pos_gse_y','ytitle','th'+sc+'_Y-GSE'
-	store_data,'th'+sc+'_state_pos_gse_z',data={x:tmp.x,y:tmp.y(*,2)/6370.}
+	store_data,'th'+sc+'_state_pos_gse_z',data={x:tmp.x,y:tmp.y(*,2)/6371.2}
 		options,'th'+sc+'_state_pos_gse_z','ytitle','th'+sc+'_Z-GSE'
 
 ; ion plots

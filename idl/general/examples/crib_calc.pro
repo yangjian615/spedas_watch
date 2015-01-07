@@ -10,8 +10,8 @@
 ;Warning: this crib uses some data from the THEMIS branch.  You'll require those routines to run this crib
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-12-16 16:59:54 -0800 (Mon, 16 Dec 2013) $
-; $LastChangedRevision: 13681 $
+; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16596 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_calc.pro $
 ;
 ;-
@@ -74,7 +74,7 @@ thm_load_state,probe='a'
 ; like '?' and '*', so 'th?_state_pos' is currently an invalid name.
 ;We plan to add this feature soon.
 
-calc,"'tha_pos_re' = 'tha_state_pos'/6374.4"
+calc,"'tha_pos_re' = 'tha_state_pos'/6371.2"
 
 stop
 

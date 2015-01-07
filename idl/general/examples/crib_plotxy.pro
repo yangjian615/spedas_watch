@@ -49,11 +49,11 @@ thm_load_state,probe='b c',coord='gsm',datatype='pos'
 
 get_data,'thb_state_pos',data=d
 
-d_thm_b = d.y/6374
+d_thm_b = d.y/6371.2
 
 get_data,'thc_state_pos',data=d
 
-d_thm_c=d.y/6374
+d_thm_c=d.y/6371.2
 
 ;basic call with themis data array
 

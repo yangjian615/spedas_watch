@@ -102,9 +102,9 @@
 ;                         rather than by network.
 ; 04-Apr-2012, clrussell, Added units to the data_att structure
 ; 
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2014-03-06 10:52:31 -0800 (Thu, 06 Mar 2014) $
-; $LastChangedRevision: 14510 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2015-01-02 09:13:31 -0800 (Fri, 02 Jan 2015) $
+; $LastChangedRevision: 16561 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag.pro $
 ;-
 
@@ -223,9 +223,9 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
       site = 'all'
     Endif
   Endif else begin
-    vsnames = 'abk amd amer arct atha benn bett blc bmls bou brw bsl cbb ccnv cdrt chbg cigo cmo crvr ded dik drby eagl ekat fcc frd frn fsim fsmi fykn '+ $
-      'fyts gako gbay gill gjoa glyn gua hlms homr hon hots iglo inuv iqa kako kapu kian kuuj larg leth loys lrv lyfd mcgr mea nain new nrsq '+ $
-      'ott pang pbk pcel pg1 pg2 pg3 pg4 pgeo pina pine pokr ptrs rank rbay redr rich rmus roth satx shu sit sjg snap snkq stj swno tik tpas trap tuc ukia vic vldr whit wrth ykc yknf'
+    vsnames = 'abk akul amd amer arct atha benn bett blc bmls bou brw bsl cbb ccnv cdrt chbg cigo cmo crvr ded dik drby eagl ekat fcc frd frn fsim fsmi fykn '+ $
+      'fyts gako gbay gill gjoa glyn gua hlms homr hon hots iglo inuk inuv iqa kako kapu kian kjpk kuuj larg leth loys lrv lyfd mcgr mea nain new nrsq '+ $
+      'ott pang pbk pcel pg1 pg2 pg3 pg4 pgeo pina pine pokr ptrs puvr radi rank rbay redr rich rmus roth salu satx schf sept shu sit sjg snap snkq stfl stj swno tik tpas trap tuc ukia vic vldr whit wrth ykc yknf'
     vsnames_arr = strsplit(vsnames, ' ', /extract)
     vsnames_g =  'amk and atu bfe bjn dob dmh dnb don fhb gdh ghb hop jck kar kuv lyr nal naq nor nrd roe rvk sco skt sol sor stf svs tdc thl tro umq upn'
     vsnames_g_arr = strsplit(vsnames_g, ' ', /extract)
@@ -269,7 +269,8 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
     endif 
 
     if keyword_set(atha_sites) then begin
-      site_in = array_concat(['roth', 'leth', 'redr', 'larg', 'vldr'],site_in)
+      site_in = array_concat(['roth', 'leth', 'redr', 'larg', 'vldr', 'salu', 'akul',+ $
+        'puvr', 'inuk', 'kjpk', 'radi', 'stfl', 'sept', 'schf'],site_in)
     endif 
 
     if keyword_set(epo_sites) then begin

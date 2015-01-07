@@ -119,7 +119,8 @@
 ;          
 ; Notes: 
 ;        1. converts from normal gsm to rgsm by dividing vectors by earth's
-;            radius(6374 km) ie inputs should be in km
+;            radius(6371.2 km) ie inputs should be in km
+;            6371.2 = the value used in the GEOPACK FORTRAN code for Re
 ;        2. Input must be in GSM coordinates
 ;        3. Haje Korth's IDL/Geopack DLM must be installed for this
 ;            procedure to work
@@ -139,9 +140,9 @@
 ;            inner magnetosphere during strong geomagnetic storms, J. Geophys. 
 ;            Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-18 13:03:40 -0700 (Tue, 18 Mar 2014) $
-; $LastChangedRevision: 14577 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-01-05 16:40:49 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16595 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t04s/tt04s.pro $
 ;-
 
@@ -305,15 +306,15 @@ pro tt04s, pos_gsm_tvar, pdyn=pdyn, dsti=dsti, yimf=yimf, zimf=zimf, $
  
   ;do the calculation, division converts position into earth radii units
   if n_elements(set_tilt) gt 0 then begin
-    mag_array = t04s(d.x, d.y/6374, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, w1_dat, $
+    mag_array = t04s(d.x, d.y/6371.2, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, w1_dat, $
         w2_dat, w3_dat, w4_dat, w5_dat, w6_dat, period=period, get_nperiod=get_nperiod, $
         get_period_times=period_times_dat, get_tilt=tilt_dat, set_tilt=set_tilt_dat, geopack_2008=geopack_2008)
   endif else if n_elements(add_tilt) gt 0 then begin
-    mag_array = t04s(d.x, d.y/6374, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, w1_dat, $
+    mag_array = t04s(d.x, d.y/6371.2, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, w1_dat, $
         w2_dat, w3_dat, w4_dat, w5_dat, w6_dat, period=period, get_nperiod=get_nperiod, $
         get_period_times=period_times_dat, get_tilt=tilt_dat, add_tilt=add_tilt_dat, geopack_2008=geopack_2008)
   endif else begin
-    mag_array = t04s(d.x, d.y/6374, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, w1_dat, $
+    mag_array = t04s(d.x, d.y/6371.2, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, w1_dat, $
         w2_dat, w3_dat, w4_dat, w5_dat, w6_dat, period=period, get_nperiod=get_nperiod, $
         get_period_times=period_times_dat, get_tilt=tilt_dat, geopack_2008=geopack_2008)
   endelse

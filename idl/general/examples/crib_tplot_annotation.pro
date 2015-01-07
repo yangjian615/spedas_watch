@@ -26,14 +26,14 @@
 ;   these cribs can help double as documentation for tplot.
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-12-16 16:55:27 -0800 (Mon, 16 Dec 2013) $
-; $LastChangedRevision: 13680 $
+; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16596 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_tplot_annotation.pro $
 ;-
 
 ;This function is a helper function used in an example below
 function km2re_callback,axis,index,value,level
-  return,strtrim(string(value/6474.4,format='(F6.2)'),2)
+  return,strtrim(string(value/6471.2,format='(F6.2)'),2)
 end
 
 
@@ -314,7 +314,7 @@ stop
 
 ;label the x-axis using a single variable(distance in re)
 
-calc,'"sta_pos_re" = "sta_pos_GSE"/6374.4',/verbose ;convert km into RE
+calc,'"sta_pos_re" = "sta_pos_GSE"/6371.2',/verbose ;convert km into RE
 calc,'"sta_dist_re" = sqrt(total(abs("sta_pos_re"),2))',/verbose  ;euclidean norm
 
 options,'sta_dist_re',ytitle="Dist(RE)"  ;ytitle is used to label variables

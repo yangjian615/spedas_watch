@@ -25,9 +25,9 @@
 ;
 ;
 ;Version:
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2014-03-20 18:58:37 -0700 (Thu, 20 Mar 2014) $
-; $LastChangedRevision: 14624 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16596 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_overplot.pro $
 ;-
 
@@ -1043,7 +1043,7 @@ thm_cotrans,thx+'_state_pos',out_suf='_gse',in_coord='gei',out_coord='gse'
 get_data, thx+'_state_pos_gse',data=tmp
 ;creating new state variables in unnecessary now, jmm, 15-apr-2009
 If(is_struct(tmp)) Then begin
-  store_data,thx+'_state_pos_gse',data={x:tmp.x,y:tmp.y/6370.}
+  store_data,thx+'_state_pos_gse',data={x:tmp.x,y:tmp.y/6371.2} ;mean equatorial radius
 endif else begin
   store_data,thx+'_state_pos_gse',data={x:time_double(date)+findgen(2),y:dblarr(2,3)+!VALUES.D_NAN}
 endelse

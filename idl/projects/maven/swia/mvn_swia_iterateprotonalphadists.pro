@@ -6,7 +6,10 @@
 ;	distributions, using a fit routine based on the SWIA energy/angle response.
 ; 	Intended to be appropriate for use when distributions are hot.  This routine 
 ;	is still very experimental and should be used with caution. Currently working to
-;	adapt it to use simulated instrument response. 
+;	adapt it to use simulated instrument response.
+;	Currently deconvolution in energy/theta is working, but there is also blurring
+;	in phi at high deflection angles that is not properly accounted for. 
+; 
 ;AUTHOR: 
 ;	Jasper Halekas
 ;CALLING SEQUENCE:
@@ -16,19 +19,22 @@
 ;	TRANGE: Time Range to Compute Moments
 ;	ARCHIVE: Use Archive data instead of Survey (default)
 ;	NREPS: Number of iterations (default 4)
+;	DPATH: path to model results used for deconvolution
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-17 08:38:14 -0800 (Mon, 17 Nov 2014) $
-; $LastChangedRevision: 16193 $
+; $LastChangedDate: 2015-01-02 11:31:48 -0800 (Fri, 02 Jan 2015) $
+; $LastChangedRevision: 16563 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_iterateprotonalphadists.pro $
 ;
 ;-
 
 @mvn_swia_protonalphamoms
 
-pro mvn_swia_protonalphadist, dat, ndat, protonparams = protonparams, alphaparams = alphaparams
+pro mvn_swia_protonalphadist, dat, ndat, protonparams = protonparams, alphaparams = alphaparams, dpath = dpath
 
-restore,'~jazzman/swia/mdl/allgresparr.sav'
+if not keyword_set(dpath) then dpath = '~jsh/work/Research/SWIA/mdl/'
+
+restore,dpath+'allgresparr.sav'
 
 compile_opt idl2
 
@@ -157,7 +163,7 @@ ndat.data = ndat.data*total(dat.data,/nan)/total(ndat.data,/nan)
 end
 
 
-pro mvn_swia_iterateprotonalphadist, nreps = nreps, dat = dat, archive = archive, plot = plot, rpparams, raparams
+pro mvn_swia_iterateprotonalphadist, nreps = nreps, dat = dat, archive = archive, plot = plot, rpparams, raparams, dpath = dpath
 
 compile_opt idl2
 
@@ -176,7 +182,7 @@ rpparams = pparams
 raparams = aparams
 
 for i = 0,nreps-1 do begin
-	mvn_swia_protonalphadist,dat,ndat,protonparams = rpparams,alphaparams=raparams
+	mvn_swia_protonalphadist,dat,ndat,protonparams = rpparams,alphaparams=raparams, dpath = dpath
 	mvn_swia_protonalphamom,dat = ndat,n1n,t1n,v1n,n2n,t2n,v2n, plot = plot
 	npparams = [n1n,v1n,t1n]
 	naparams = [n2n,v2n,t2n]
@@ -194,7 +200,7 @@ endif
 end
 	
 	
-pro mvn_swia_iterateprotonalphadists, nreps = nreps, archive = archive, trange = trange
+pro mvn_swia_iterateprotonalphadists, nreps = nreps, archive = archive, trange = trange, dpath = dpath
 
 
 compile_opt idl2
@@ -218,7 +224,7 @@ for i = 0,nt-1 do begin
 	print,i,' / ',nt
 	dat = mvn_swia_get_3df(archive = archive,time[i])
 	
-	mvn_swia_iterateprotonalphadist,nreps=nreps,dat = dat, rpparams, raparams
+	mvn_swia_iterateprotonalphadist,nreps=nreps,dat = dat, rpparams, raparams, dpath = dpath
 
 	dens0[i] = rpparams[0]
 	vel0[i,*] = rpparams[1:3]

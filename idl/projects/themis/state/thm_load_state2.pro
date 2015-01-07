@@ -33,9 +33,9 @@
 ;   thm_load_state
 ;Notes:
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2011-04-04 14:21:40 -0700 (Mon, 04 Apr 2011) $
-; $LastChangedRevision: 8564 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16596 $
 ; $URL $
 ;-
 pro thm_load_state2,probes=probes, datatype=datatype, trange=trange, $
@@ -51,9 +51,9 @@ pro thm_load_state2,probes=probes, datatype=datatype, trange=trange, $
                    version=version, $
                    progobj=progobj
 
-dprint,verbose=verbose,dlevel=4,'$Id: thm_load_state2.pro 8564 2011-04-04 21:21:40Z jimm $'
+dprint,verbose=verbose,dlevel=4,'$Id: thm_load_state2.pro 16596 2015-01-06 01:01:57Z pcruce $'
 if not keyword_set(coords) then coords = 'gse'
-r_e = 6374.  ; radius of earth in km
+r_e = 6371.2  ;mean radius of earth in km
 
 if not keyword_set(source_options) then begin
    thm_init
@@ -150,7 +150,7 @@ wait,0  ;bp
      endif
      thm_setprobe_colors, tns,/def
 
-     options,/def,tns,code_id='$Id: thm_load_state2.pro 8564 2011-04-04 21:21:40Z jimm $'
+     options,/def,tns,code_id='$Id: thm_load_state2.pro 16596 2015-01-06 01:01:57Z pcruce $'
 ;     options,/default,tns,colors = probe_colors[pn]
 
      dprint,dlevel=4,'Housekeeping data Loaded for probe: '+probe

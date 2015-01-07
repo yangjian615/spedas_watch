@@ -62,11 +62,12 @@
 ;  This means that as period becomes smaller the amount time of this
 ;  function should take will grow quickly.
 ;  4. Position units are earth radii, be sure to divide your normal
-;  units by 6374 km to convert them.
+;  units by 6371.2 km to convert them.
+;  6371.2 = the value used in the GEOPACK FORTRAN code for Re
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-19 08:22:59 -0700 (Wed, 19 Mar 2014) $
-; $LastChangedRevision: 14600 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-01-05 16:40:49 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16595 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t89/t89.pro $
 ;-
 

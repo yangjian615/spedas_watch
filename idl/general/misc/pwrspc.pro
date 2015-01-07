@@ -6,7 +6,7 @@
 ;    spectrum power at frequencies freq. A Hanning window is applied to
 ;    the input data, and its power is divided out of the returned
 ;    spectrum. A straight line is subtracted from the data to
-;    reduce spurius power due to sawtooth behavior of a background.
+;    reduce spurious power due to sawtooth behavior of a background.
 ;    UNITS ARE (UNITS)^2 WHERE UNITS ARE THE UNITS OF quantity. freq
 ;    is in 1/timeunits.
 ;    THUS THE OUTPUT REPRESENTS THE MEAN SQUARED AMPLITUDE OF THE SIGNAL

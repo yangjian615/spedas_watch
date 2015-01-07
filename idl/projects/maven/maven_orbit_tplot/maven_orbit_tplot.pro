@@ -62,21 +62,26 @@
 ;       VARS:     Array of TPLOT variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-16 14:04:52 -0700 (Thu, 16 Oct 2014) $
-; $LastChangedRevision: 16005 $
+; $LastChangedDate: 2015-01-05 15:29:47 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16590 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, date=date, $
-                       extended=extended, eph=eph, current=current, loadonly=loadonly, vars=vars
+                       extended=extended, eph=eph, current=current, loadonly=loadonly, vars=vars, $
+                       ellip=ellip
 
   common mav_orb_tplt, time, ss, wind, sheath, pileup, wake, sza, torb, period, lon, lat, hgt, mex
 
   R_m = 3389.9D
-  
+  R_equ = 3396.2D
+  R_pol = 3376.2D
+  R_vol = (R_equ*R_equ*R_pol)^(1D/3D)
+
   if keyword_set(domex) then domex = 1 else domex = 0
   if not keyword_set(ialt) then ialt = 400.
+  if keyword_set(ellip) then eflg = 1 else eflg = 0
 
   rootdir = 'maven/anc/spice/sav/'
   
@@ -127,15 +132,20 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     eph = {time:time, mso_x:mso_x, mso_v:mso_v}
 
   endif else begin
-    pathname = rootdir + 'maven_orb_mso_' + date + '.sav'
-    file = mvn_pfp_file_retrieve(pathname)
-    finfo = file_info(file)
-    if (~finfo.exists) then begin
-      print,"File not found: ",pathname
-      return
-    endif else print, "Using ephemeris: ", file_basename(file[0])
+    pathname = rootdir + 'maven_spacecraft_mso_??????' + '.sav'
+    file = mvn_pfp_file_retrieve(pathname,last_version=0)
+    nfiles = n_elements(file)
 
-    restore, file[0]
+	eph = [{t:0D, x:0D, y:0D, z:0D, vx:0D, vy:0D, vz:0D}]
+    for i=0,(nfiles-1) do begin
+      finfo = file_info(file[i])
+      if (finfo.exists) then begin
+        print, "Loading: ", file_basename(file[i])
+        restore, file[i]
+        eph = [temporary(eph), maven_mso]
+      endif else print, "File not found: ", file[i]
+    endfor
+    maven = temporary(eph[1:*])
 
     time = maven.t
     dt = median(time - shift(time,1))
@@ -163,15 +173,20 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     
     maven = 0
 
-    pathname = rootdir + 'maven_orb_geo_' + date + '.sav'
-    file = mvn_pfp_file_retrieve(pathname)
-    finfo = file_info(file)
-    if (~finfo.exists) then begin
-      print,"File not found: ",pathname
-      return
-    endif else print, "Using ephemeris: ", file_basename(file[0])
+    pathname = rootdir + 'maven_spacecraft_geo_??????' + '.sav'
+    file = mvn_pfp_file_retrieve(pathname,last_version=0)
+    nfiles = n_elements(file)
 
-    restore, file[0]
+	eph = [{t:0D, x:0D, y:0D, z:0D, vx:0D, vy:0D, vz:0D}]
+    for i=0,(nfiles-1) do begin
+      finfo = file_info(file[i])
+      if (finfo.exists) then begin
+        print, "Loading: ", file_basename(file[i])
+        restore, file[i]
+        eph = [temporary(eph), maven_geo]
+      endif else print, "File not found: ", file[i]
+    endfor
+    maven_g = temporary(eph[1:*])
 
     lon = atan(maven_g.y, maven_g.x)*!radeg
     lat = asin(maven_g.z/(R_m*r))*!radeg

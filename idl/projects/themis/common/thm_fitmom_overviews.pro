@@ -653,11 +653,11 @@ if tnames('th'+probe+'_state_pos_gsm') then begin
 
    get_data,strjoin('th'+probe+'_state_pos_gsm'),data=tmp
 
-   store_data,strjoin('th'+probe+'_state_pos_gsm_x'),data={x:tmp.x,y:tmp.y[*,0]/6374.}
+   store_data,strjoin('th'+probe+'_state_pos_gsm_x'),data={x:tmp.x,y:tmp.y[*,0]/6371.2}
    options,strjoin('th'+probe+'_state_pos_gsm_x'),'ytitle','th'+probe+'_X-GSM'
-  store_data,strjoin('th'+probe+'_state_pos_gsm_y'),data={x:tmp.x,y:tmp.y[*,1]/6374.}
+  store_data,strjoin('th'+probe+'_state_pos_gsm_y'),data={x:tmp.x,y:tmp.y[*,1]/6371.2}
   options,strjoin('th'+probe+'_state_pos_gsm_y'),'ytitle','th'+probe+'_Y-GSM'
-  store_data,strjoin('th'+probe+'_state_pos_gsm_z'),data={x:tmp.x,y:tmp.y[*,2]/6374.}
+  store_data,strjoin('th'+probe+'_state_pos_gsm_z'),data={x:tmp.x,y:tmp.y[*,2]/6371.2}
   options,strjoin('th'+probe+'_state_pos_gsm_z'),'ytitle','th'+probe+'_Z-GSM'
   
 endif

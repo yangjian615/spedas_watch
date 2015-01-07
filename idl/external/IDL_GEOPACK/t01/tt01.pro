@@ -88,7 +88,8 @@
 ;          
 ; Notes: 
 ;        1. converts from normal gsm to rgsm by dividing vectors by earth's
-;            radius(6374 km) ie inputs should be in km
+;            radius(6371.2 km) ie inputs should be in km
+;            6371.2 = the value used in the GEOPACK FORTRAN code for Re
 ;        2. Input must be in GSM coordinates
 ;        3. Haje Korth's IDL/Geopack DLM must be installed for this
 ;            procedure to work
@@ -107,9 +108,9 @@
 ;            http://modelweb.gsfc.nasa.gov/magnetos/data-based/Paper220.pdf
 ;            http://modelweb.gsfc.nasa.gov/magnetos/data-based/Paper219.pdf
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-18 13:03:40 -0700 (Tue, 18 Mar 2014) $
-; $LastChangedRevision: 14577 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-01-05 16:40:49 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16595 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t01/tt01.pro $
 ;-
 
@@ -233,18 +234,18 @@ pro tt01, pos_gsm_tvar, pdyn=pdyn, dsti=dsti, yimf=yimf, zimf=zimf, $
     if(size(set_tilt, /n_dim) eq 0 && set_tilt_dat[0] eq -1L) then return
   endif
 
-  ;do the calculation, division (by 6374) converts position into earth radii units
+  ;do the calculation, division (by 6371.2) converts position into earth radii units
   ;various types for various tilt control options
   if n_elements(set_tilt) gt 0 then begin
-    mag_array = t01(d.x, d.y/6374, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, g1_dat, g2_dat, $
+    mag_array = t01(d.x, d.y/6371.2, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, g1_dat, g2_dat, $
         period = period,get_nperiod=get_nperiod,get_period_times=period_times_dat, $
         get_tilt=tilt_dat,set_tilt=set_tilt_dat,storm=storm,geopack_2008=geopack_2008)
   endif else if n_elements(add_tilt) gt 0 then begin
-    mag_array = t01(d.x, d.y/6374, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, g1_dat, g2_dat, $
+    mag_array = t01(d.x, d.y/6371.2, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, g1_dat, g2_dat, $
         period = period,get_nperiod=get_nperiod,get_period_times=period_times_dat, $
         get_tilt=tilt_dat,add_tilt=add_tilt_dat,storm=storm,geopack_2008=geopack_2008)
   endif else begin
-    mag_array = t01(d.x, d.y/6374, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, g1_dat, g2_dat, $
+    mag_array = t01(d.x, d.y/6371.2, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, g1_dat, g2_dat, $
         period = period,get_nperiod=get_nperiod,get_period_times=period_times_dat, $
         get_tilt=tilt_dat,storm=storm,geopack_2008=geopack_2008)
   endelse

@@ -40,20 +40,29 @@
 ;                   1 : Use a small image
 ;                   2 : Use a large image
 ;
+;       NPOLE:    Plot the position of the spacecraft (PREC=1) or periapsios
+;                 (PREC=0) on a north polar projection (lat > 55 deg).  The
+;                 background image is the north polar magnetic anomalies observed
+;                 at 180-km altitude by MGS (from Acuna).
+;
 ;       NOERASE:  Don't erase previously plotted positions.  Can be used to build
 ;                 up a visual representation of sampling.
+;
+;       RESET:    Initialize all plots.
+;
+;       COLOR:    Symbol color index.
 ;
 ;       KEEP:     Do not kill the plot windows on exit.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:24:42 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16108 $
+; $LastChangedDate: 2015-01-05 15:34:05 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16594 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
-    noerase=noerase, keep=keep
+    npole=npole, noerase=noerase, keep=keep, color=color, reset=reset
 
   common mav_orb_tplt, time, ss, wind, sheath, pileup, wake, sza, torb, period, lon, lat, hgt, mex
 
@@ -62,28 +71,36 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   usersym,a*cos(phi),a*sin(phi),/fill
 
   if keyword_set(prec) then pflg = 1 else pflg = 0
+  if (size(color,/type) gt 0) then cflg = 1 else cflg = 0  
+  if keyword_set(noerase) then noerase = 1 else noerase = 0
+  if keyword_set(reset) then reset = 1 else reset = 0
   
   if keyword_set(xz) then xzflg = 1 else xzflg = 0
 
   if keyword_set(mhd) then begin
     if (mhd gt 1) then begin
-      mhd_orbit, [-10.], [-10.], /reset, /xz
+      if (~noerase or reset) then mhd_orbit, [-10.], [-10.], /reset, /xz
       nflg = 2
     endif else begin
-      mhd_orbit, [-10.], [-10.], /reset, /xy
+      if (~noerase or reset) then mhd_orbit, [-10.], [-10.], /reset, /xy
       nflg = 1
     endelse
   endif else nflg = 0
 
   if keyword_set(hybrid) then begin
     if (hybrid eq 1) then begin
-      hybrid_orbit_new, [-10.], [-10.], /reset, /xz
+      if (~noerase or reset) then hybrid_orbit_new, [-10.], [-10.], /reset, /xz
       bflg = 1
     endif else begin
-      hybrid_orbit_new, [-10.], [-10.], /reset, /xz, /flip
+      if (~noerase or reset) then hybrid_orbit_new, [-10.], [-10.], /reset, /xz, /flip
       bflg = 2
     endelse
   endif else bflg = 0
+
+  if keyword_set(npole) then begin
+    if (~noerase or reset) then mag_npole_orbit, [0.], [0.], /reset
+    npflg = 1
+  endif else npflg = 0
 
   if keyword_set(latlon) then gflg = 1 else gflg = 0
   
@@ -93,8 +110,6 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   endif else mflg = 0
   
   if keyword_set(orbit) then oflg = 1 else oflg = 0
-  
-  if keyword_set(noerase) then noerase = 1 else noerase = 0
 
   Twin = !d.window
 
@@ -513,8 +528,9 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       endif
 
       if (pflg) then i = imid else i = imin
+      if (cflg) then j = color else j = 0
 
-      mhd_orbit, x, y, x[i], y[i], color=0, psym=0, /xy
+      mhd_orbit, x, y, x[i], y[i], color=j, psym=0, /xy
     endif
 
     if (nflg eq 2) then begin
@@ -530,8 +546,9 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       endif
 
       if (pflg) then i = imid else i = imin
+      if (cflg) then j = color else j = 0
 
-      mhd_orbit, x, z, x[i], z[i], color=0, psym=0, /xz
+      mhd_orbit, x, z, x[i], z[i], color=j, psym=0, /xz
     endif
 
 ; Put up the hybrid simulation plot
@@ -549,9 +566,10 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       endif
 
       if (pflg) then i = imid else i = imin
+      if (cflg) then j = color else j = 255
 
-      if (bflg eq 1) then hybrid_orbit_new, x, z, x[i], z[i], color=255, psym=0, /xz $
-                     else hybrid_orbit_new, x, z, x[i], z[i], color=255, psym=0, /xz, /flip
+      if (bflg eq 1) then hybrid_orbit_new, x, z, x[i], z[i], color=j, psym=0, /xz $
+                     else hybrid_orbit_new, x, z, x[i], z[i], color=j, psym=0, /xz, /flip
     endif
 
 ; Put up Mars orbit
@@ -559,7 +577,17 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     if (mflg gt 0) then begin
       if (pflg) then i = iref else i = rndx[imin]
       title = ''
-      mag_mola_orbit, lon[i], lat[i], big=mbig, noerase=noerase, title=title
+      if (cflg) then j = color else j = 2
+      mag_mola_orbit, lon[i], lat[i], big=mbig, noerase=noerase, title=title, color=j
+    endif
+
+; Put up Mars North polar plot
+
+    if (npflg) then begin
+      if (pflg) then i = iref else i = rndx[imin]
+      title = ''
+      if (cflg) then j = color else j = 2
+      mag_Npole_orbit, lon[i], lat[i], noerase=noerase, title=title, color=j
     endif
 
 ; Get the next button press
@@ -581,9 +609,10 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   if not keyword_set(keep) then begin
     wdelete, Owin
     if (gflg) then wdelete, Gwin
-    if (mflg gt 0) then wdelete, 29
-    if (nflg gt 0) then wdelete, 30
-    if (bflg gt 0) then wdelete, 31
+    if (npflg gt 0) then wdelete, 27
+    if (mflg gt 0)  then wdelete, 29
+    if (nflg gt 0)  then wdelete, 30
+    if (bflg gt 0)  then wdelete, 31
   endif
 
   !p.multi = 0

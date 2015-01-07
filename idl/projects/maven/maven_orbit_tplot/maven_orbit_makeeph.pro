@@ -52,15 +52,30 @@
 ;       FRAME:     Coordiante frame.  Can be "J2000", "IAU_MARS", or "MSO".
 ;                  (Also accepts "GEO" as a synomym for "IAU_MARS".)
 ;
+;       TSTART:    Start time for output save file ephemeris.
+;
+;       TSTOP:     Stop time for output save file ephemeris.
+;
+;       CURRENT:   Generate ephemeris based on MAVEN kernels, both reconstructions
+;                  and predictions.  Otherwise, use the design reference mission.
+;
+;       UNLOAD:    Unload the kernels after completion.
+;
+;       RESET:     Force loading of the kernels, even if some kernels are already
+;                  loaded.
+;
+;       STAT:      Return statistics of ephemeris coverage.  (Useful to determine
+;                  the boundary between reconstructions and predictions.)
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-12-15 10:06:27 -0800 (Mon, 15 Dec 2014) $
-; $LastChangedRevision: 16485 $
+; $LastChangedDate: 2015-01-05 15:06:43 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16589 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_makeeph.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
 ;-
 pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop=tstop, $
-                         current=current, unload=unload, reset=reset
+                         current=current, unload=unload, reset=reset, stat=stat
 
   common mvn_orbit_makeeph, kernels, tstart1, tstop1
 
@@ -72,8 +87,9 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
 
       moi = time_double('2014-09-22/02:24:00')
       now = systime(/sec,/utc)
-      twoweeks = 14D*86400D
-      trange = [(moi - 86400D), (now + twoweeks)]
+      oneday = 86400D
+      twoweeks = 14D*oneday
+      trange = [(moi - oneday), (now + twoweeks)]
 
       kernels = mvn_spice_kernels(['STD','SCK','FRM','SPK'], trange=trange, /valid, verbose=-1, /load)
       indx = where(kernels ne '', count)
@@ -156,12 +172,17 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
   endif
   
   maven_spk = kernels[indx]
+  
+  stat = replicate({name:'', trange:[0D,0D]}, nspk)
 
   estart = [0D]
   estop = [0D]
 
   for k=0,(nspk-1) do begin
     cspice_spkobj, maven_spk[k], ids
+    
+    stat[k].name = file_basename(maven_spk[k])
+    tsp = [0D]
 
     for i=0, cspice_card(ids) - 1 do begin
       obj = ids.base[ids.data + i]
@@ -173,10 +194,14 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
       for j=0, niv-1 do begin
         cspice_wnfetd, cover, j, b, e
         cspice_timout, [b,e], "YYYY-MM-DD/HR:MN:SC.###", timlen, timstr
-        estart = [estart, time_double(timstr[0])]
-        estop = [estop, time_double(timstr[1])]
+        tr = time_double(timstr[0:1])
+        estart = [estart, tr[0]]
+        estop = [estop, tr[1]]
+        tsp = [tsp, tr]
       endfor
     endfor
+    
+    stat[k].trange = minmax(tsp[1:*])
   endfor
   
   estart = min(time_double(estart[1L:*]))

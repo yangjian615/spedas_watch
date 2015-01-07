@@ -14,8 +14,8 @@
 ;	None.
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16596 $
 ; $URL $
 ;-
 
@@ -88,7 +88,7 @@ print,'Now lets transform the magnitude into earth radii(RE)'
 
 get_data,'tha_state_pos_gse_mag',data=d,dlimits=dl
 
-d.y = d.y/6374.4
+d.y = d.y/6371.2
 
 store_data,'tha_state_pos_gse_mag_re',data=d,dlimits=dl
 

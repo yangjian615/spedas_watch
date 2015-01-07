@@ -11,24 +11,86 @@
 ;KEYWORDS:
 ;       TSTEP:    Ephemeris time step (sec).  Default = 60 sec.
 ;
+;       REBUILD:  Normally, months containing only reconstructed kernels are not
+;                 updated.  Set this keyword to rebuild the entire database.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-13 12:29:59 -0700 (Mon, 13 Oct 2014) $
-; $LastChangedRevision: 15983 $
+; $LastChangedDate: 2015-01-05 15:00:17 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16588 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_update.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
 ;-
-pro maven_orbit_update, tstep=tstep
+pro maven_orbit_update, tstep=tstep, rebuild=rebuild
+
+; First month is Sep 2014 -> moi on 2014-09-22/02:24:00
+
+  month0 = replicate(time_struct('2014-09-01'),2)
+  month0.month = month0.month + [0,1]
 
   if not keyword_set(tstep) then tstep = 60D
   path = root_data_dir() + 'maven/anc/spice/sav/'
-  mname = path + 'maven_orb_mso_current.sav'
-  gname = path + 'maven_orb_geo_current.sav'
+  mroot = path + 'maven_spacecraft_mso_'
+  groot = path + 'maven_spacecraft_geo_'
 
-  maven_orbit_makeeph, tstep=tstep, frame='mso', eph=maven, /current, /reset
-  save, maven, file=mname
+; Generate and process ephemeris in MSO frame
 
-  maven_orbit_makeeph, tstep=tstep, frame='geo', eph=maven_g, /current, /unload
-  save, maven_g, file=gname
+  maven_orbit_makeeph, tstep=tstep, frame='mso', eph=eph, /current, /reset, stat=stat
+  
+  tmin = min(eph.t, max=tmax)
+  
+  k = where(stat.name eq 'maven_orb_rec.bsp')
+  if (k ge 0) then trec = stat[k].trange[1] else trec = 0D
+  if keyword_set(rebuild) then trec = 0D
+  
+  dmonth = 0
+  trange = time_double(month0)
+  
+  while(trange[0] lt tmax) do begin
+    indx = where((eph.t ge trange[0]) and (eph.t lt trange[1]), count)
+    if (count gt 0L) then begin
+      maven_mso = eph[indx]
+      if (max(maven_mso.t) gt trec) then begin
+        tstr = time_struct(trange[0])
+        yyyy = string(tstr.year, format='(i4.4)')
+        mm = string(tstr.month, format='(i2.2)')
+        mname = mroot + yyyy + mm + '.sav'
+        save, maven_mso, file=mname
+      endif
+    endif
+    
+    dmonth++
+    trange = month0
+    trange.month = month0.month + dmonth
+    trange = time_double(trange)    
+  endwhile
+
+; Generate and process ephemeris in IAU_MARS frame
+
+  maven_orbit_makeeph, tstep=tstep, frame='geo', eph=eph, /current, /unload
+
+  tmin = min(eph.t, max=tmax)
+  
+  dmonth = 0
+  trange = time_double(month0)
+  
+  while(trange[0] lt tmax) do begin
+    indx = where((eph.t ge trange[0]) and (eph.t lt trange[1]), count)
+    if (count gt 0L) then begin
+      maven_geo = eph[indx]
+      if (max(maven_geo.t) gt trec) then begin
+        tstr = time_struct(trange[0])
+        yyyy = string(tstr.year, format='(i4.4)')
+        mm = string(tstr.month, format='(i2.2)')
+        gname = groot + yyyy + mm + '.sav'
+        save, maven_geo, file=gname
+      endif
+    endif
+    
+    dmonth++
+    trange = month0
+    trange.month = month0.month + dmonth
+    trange = time_double(trange)    
+  endwhile
 
 end

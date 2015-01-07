@@ -22,13 +22,13 @@
 ;        tKm2Re,'thb_state_pos',newname='pos_in_re'
 ;        tKm2Re,'th?_state_pos',suffix='_converted'
 ;
-;  NOTES: Uses conversion of 6374.4 KM/RE
+;  NOTES: Uses conversion of 6371.2 KM/RE ;mean equatorial radius
 ;         By default output will be called: input_name+'_RE'
 ;
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2008-07-30 17:43:17 -0700 (Wed, 30 Jul 2008) $
-;$LastChangedRevision: 3320 $
+;$LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
+;$LastChangedRevision: 16596 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/tkm2re.pro $
 ;-
 
@@ -36,7 +36,7 @@ pro tkm2re,name,newname=newname,suffix=suffix,replace=replace,km=km
 
 compile_opt idl2
 
-km_in_re = 6374.4
+km_in_re = 6371.2
 
 names = tnames(name)
 

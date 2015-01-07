@@ -641,11 +641,11 @@ thm_set_lim,'pressure_vars',times[0],times[1],0D,50D,1
 if tnames('th'+probe+'_state_pos') then begin
 
    get_data,strjoin('th'+probe+'_state_pos'),data=tmp
-   store_data,strjoin('th'+probe+'_state_pos_gsm_x'),data={x:tmp.x,y:tmp.y[*,0]/6370.}
+   store_data,strjoin('th'+probe+'_state_pos_gsm_x'),data={x:tmp.x,y:tmp.y[*,0]/6371.2}
    options,strjoin('th'+probe+'_state_pos_gsm_x'),'ytitle','th'+probe+'_X-GSM'
-   store_data,strjoin('th'+probe+'_state_pos_gsm_y'),data={x:tmp.x,y:tmp.y[*,1]/6370.}
+   store_data,strjoin('th'+probe+'_state_pos_gsm_y'),data={x:tmp.x,y:tmp.y[*,1]/6371.2}
    options,strjoin('th'+probe+'_state_pos_gsm_y'),'ytitle','th'+probe+'_Y-GSM'
-   store_data,strjoin('th'+probe+'_state_pos_gsm_z'),data={x:tmp.x,y:tmp.y[*,2]/6370.}
+   store_data,strjoin('th'+probe+'_state_pos_gsm_z'),data={x:tmp.x,y:tmp.y[*,2]/6371.2}
    options,strjoin('th'+probe+'_state_pos_gsm_z'),'ytitle','th'+probe+'_Z-GSM'
 
 endif

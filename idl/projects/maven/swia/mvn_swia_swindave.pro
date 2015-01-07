@@ -12,15 +12,16 @@
 ;	REG: region structure from 'mvn_swia_regid'
 ;	NPO: number of determinations per orbit
 ;	IMF: if set, calculate upstream IMF
+;	ALPHAPROTON: if set, calculate alpha/proton quantities
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-29 05:31:31 -0800 (Mon, 29 Dec 2014) $
-; $LastChangedRevision: 16544 $
+; $LastChangedDate: 2015-01-02 10:02:54 -0800 (Fri, 02 Jan 2015) $
+; $LastChangedRevision: 16562 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_swindave.pro $
 ;
 ;-
 
-pro mvn_swia_swindave, reg = reg, npo = npo, imf = imf, bdata = bdata
+pro mvn_swia_swindave, reg = reg, npo = npo, imf = imf, alphaproton = alphaproton, bdata = bdata
 
 common mvn_swia_data
 
@@ -45,6 +46,24 @@ if keyword_set(imf) then begin
 	by = interpol(bvec.y[*,1],bvec.x,times)
 	bz = interpol(bvec.y[*,2],bvec.x,times)
 endif
+if keyword_set(alphaproton) then begin
+	get_data,'nproton',data = nproton
+	np = interpol(nproton.y,nproton.x,times)
+	get_data,'nalpha',data = nalpha
+	na = interpol(nalpha.y,nalpha.x,times)
+	get_data,'vproton',data = vproton
+	vp = interpol(sqrt(total(vproton.y*vproton.y,2)),vproton.x,times)
+	get_data,'valpha',data = valpha
+	va = interpol(sqrt(total(valpha.y*valpha.y,2)),valpha.x,times)
+	get_data,'tproton',data = tproton
+	tpx = interpol(tproton.y[*,0],tproton.x,times)
+	tpy = interpol(tproton.y[*,1],tproton.x,times)
+	tpz = interpol(tproton.y[*,2],tproton.x,times)
+	get_data,'talpha',data = talpha
+	tax = interpol(talpha.y[*,0],talpha.x,times)
+	tay = interpol(talpha.y[*,1],talpha.x,times)
+	taz = interpol(talpha.y[*,2],talpha.x,times)
+endif
 
 orb = mvn_orbit_num(time = times)
 orb = floor(orb*npo)
@@ -63,18 +82,44 @@ if keyword_set(imf) then begin
 	bzout = fltarr(norb)
 endif
 
+if keyword_set(alphaproton) then begin
+	npout = fltarr(norb)
+	naout = fltarr(norb)
+	vpout = fltarr(norb)
+	vaout = fltarr(norb)
+	tpxout = fltarr(norb)
+	tpyout = fltarr(norb)
+	tpzout = fltarr(norb)
+	taxout = fltarr(norb)
+	tayout = fltarr(norb)
+	tazout = fltarr(norb)
+endif
+
 for i = 0,norb-1 do begin
 	w = where(orb eq (mino+i),nw)
 	if nw gt 10 then begin
-		nout(i) = mean(densities[w],/nan)
+		nout[i] = mean(densities[w],/nan)
 
-		vout(i) = mean(vels[w],/nan)
-		tout(i) = mean(uswim[w].time_unix,/double,/nan)
+		vout[i] = mean(vels[w],/nan)
+		tout[i] = mean(uswim[w].time_unix,/double,/nan)
 
 		if keyword_set(imf) then begin
-			bxout(i) = mean(bx(w),/nan)
-			byout(i) = mean(by(w),/nan)
-			bzout(i) = mean(bz(w),/nan)
+			bxout[i] = mean(bx[w],/nan)
+			byout[i] = mean(by[w],/nan)
+			bzout[i] = mean(bz[w],/nan)
+		endif
+
+		if keyword_set(alphaproton) then begin
+			npout[i] = mean(np[w],/nan)
+			naout[i] = mean(na[w],/nan)
+			vpout[i] = mean(vp[w],/nan)
+			vaout[i] = mean(va[w],/nan)
+			tpxout[i] = mean(tpx[w],/nan)
+			tpyout[i] = mean(tpy[w],/nan)
+			tpzout[i] = mean(tpz[w],/nan)
+			taxout[i] = mean(tax[w],/nan)
+			tayout[i] = mean(tay[w],/nan)
+			tazout[i] = mean(taz[w],/nan)
 		endif
 	endif
 endfor
@@ -84,6 +129,15 @@ w = where(tout ne 0)
 store_data,'nsw',data = {x:tout[w],y:nout[w]}
 store_data,'vsw',data = {x:tout[w],y:vout[w]}
 
-if keyword_set(imf) then store_data,'bsw',data = {x:tout(w),y:[[bxout[w]],[byout[w]],[bzout[w]]],v:[0,1,2]}
+if keyword_set(imf) then store_data,'bsw',data = {x:tout[w],y:[[bxout[w]],[byout[w]],[bzout[w]]],v:[0,1,2]}
+
+if keyword_set(alphaproton) then begin
+	store_data,'npsw',data = {x:tout[w],y:npout[w]}
+	store_data,'nasw',data = {x:tout[w],y:naout[w]}
+	store_data,'vpsw',data = {x:tout[w],y:vpout[w]}
+	store_data,'vasw',data = {x:tout[w],y:vaout[w]}
+	store_data,'tpsw',data = {x:tout[w],y:[[tpxout[w]],[tpyout[w]],[tpzout[w]]],v:[0,1,2]}
+	store_data,'tasw',data = {x:tout[w],y:[[taxout[w]],[tayout[w]],[tazout[w]]],v:[0,1,2]}
+endif
 
 end

@@ -15,9 +15,9 @@
 ; none
 ;
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-09-30 10:06:42 -0700 (Tue, 30 Sep 2014) $
-;$LastChangedRevision: 15884 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
+;$LastChangedRevision: 16596 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_calculate.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -295,7 +295,7 @@ PRO spd_ui_calculate_event, event
     'RE':begin
       ;use abstracted function
       ;use actual value instead of symbolic constant so that users know what value they're getting
-      spd_ui_calculate_insert,3,state.insertTree,state.programText,'6374.4',state.offset,state.statusBar,state.historyWin
+      spd_ui_calculate_insert,3,state.insertTree,state.programText,'6371.2',state.offset,state.statusBar,state.historyWin
     end
     'RUN': begin 
       ; initialize a prompt object to pass to calc

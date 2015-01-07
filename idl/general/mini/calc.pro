@@ -55,14 +55,14 @@
 ;              
 ; Examples:
 ;    calc,'a = 5'
-;    calc,'"pos_re" = "tha_state_pos"/6374'
+;    calc,'"pos_re" = "tha_state_pos"/6371.2'
 ;    calc,'a += 7',/v ;abbreviated verbose keyword
 ;    calc,'"tvar" = "tvar" + var'
 ;    calc,'"tvar" = ln("tvar")'
 ;    calc,'"tvar" = total("tvar"+3,2)'
 ;    calc,'"tvar" = -a + 5.43e-7 ^ ("thb_fgs_dsl_x" / total("thb_fgs_dsl_x"))
 ;    calc,operator_list=o,function_list=f
-;    calc,'"th?_state_pos_re" = "th?_state_pos"/6374.4' ;globbing
+;    calc,'"th?_state_pos_re" = "th?_state_pos"/6371.2' ;globbing
 ;
 ; Notes:
 ;    1. The language generally uses a fairly straightforward computational syntax.  The main
@@ -80,9 +80,9 @@
 ;    7. Procedures: min,max,mean,median,count,total  all take a second argument that allow you to select the
 ;       dimension over which the operation is performed
 ;    8. Calc supports globbing in tplot variable operands, but for it to work, the output variable also needs to be a tplot variable with the same number of glob characters.
-;       Correct: calc,'"th?_state_pos_re" = "th?_state_pos"/6374.4'
-;       Incorrect: calc,'tha_state_pos_re = "th?_state_pos"/6374.4'
-;       Incorrect: calc,'"th?_state_pos_re" = "th?_state_*"/6374.4'
+;       Correct: calc,'"th?_state_pos_re" = "th?_state_pos"/6371.2'
+;       Incorrect: calc,'tha_state_pos_re = "th?_state_pos"/6371.2'
+;       Incorrect: calc,'"th?_state_pos_re" = "th?_state_*"/6371.2'
 ;       
 ; See Also:
 ;   All routines in the ssl_general/mini directory
@@ -102,9 +102,9 @@
 ;       3. Implement procedures
 ;       4. Implement control statements
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2014-05-06 10:41:49 -0700 (Tue, 06 May 2014) $
-; $LastChangedRevision: 15055 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
+; $LastChangedRevision: 16596 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/calc.pro $
 ;-
 

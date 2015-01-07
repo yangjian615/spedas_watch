@@ -33,7 +33,7 @@ in the GUI, simply remove the text, 'calc, ' which preceeds the statement.
    
 Examples:
     a = 5  
-    "pos_re" = "tha_state_pos"/6374  
+    "pos_re" = "tha_state_pos"/6371.2  
     a += 7
     var = "tvar" * 0.1
     "tvar" = "tvar" + var 
