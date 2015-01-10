@@ -14,9 +14,9 @@
 ;OUTPUT:
 ;
 ;HISTORY:
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-16 17:55:52 -0700 (Fri, 16 May 2014) $
-;$LastChangedRevision: 15162 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-01-06 15:48:15 -0800 (Tue, 06 Jan 2015) $
+;$LastChangedRevision: 16605 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_page_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -318,25 +318,29 @@ END ;---------------------------------------------
 ; NOTES:
 ;-
 
-pro spd_ui_page_title_set_value,tlb,pagesettings,historywin,statusBar
+pro spd_ui_page_title_set_value,tlb,pagesettings,historywin,statusBar, retain_title=retain_title
 
   compile_opt idl2,hidden
   
   pageSettings->getProperty,title=title
   
-  ;get the title text widget
-  titletext = widget_info(tlb,find_by_uname='titletext')
+  if ~keyword_set(retain_title) then begin
+    ;set the title only if retain_title does not exist  
+    
+    ;get the title text widget
+    titletext = widget_info(tlb,find_by_uname='titletext')
+    
+    ;get the value from the title text widget
+    widget_control,titletext,get_value=textvalue
+    
+    ;set the value
+    title->setProperty,value=textvalue ;title text
+    ;---------
+     
+    historywin->update,'Set Title Text', /dontshow
+  endif
   
-  ;get the value from the title text widget
-  widget_control,titletext,get_value=textvalue
-  
-  ;set the value
-  title->setProperty,value=textvalue ;title text
-  ;---------
-  
-  
-  
-  historywin->update,'Set Title Text', /dontshow
+ 
   
   ;title font
   ;----------
@@ -428,7 +432,7 @@ end
 ; NOTES:
 ;-
 
-pro spd_ui_page_footer_set_value,tlb,pagesettings,historywin,statusBar
+pro spd_ui_page_footer_set_value,tlb,pagesettings,historywin,statusBar, retain_footer=retain_footer
 
   compile_opt idl2,hidden
   
@@ -437,16 +441,20 @@ pro spd_ui_page_footer_set_value,tlb,pagesettings,historywin,statusBar
   ;footer text
   ;---------
   
-  ;get the footer text widget
-  footertext = widget_info(tlb,find_by_uname='footertext')
-  
-  ;get the value from the footer text widget
-  widget_control,footertext,get_value=textvalue
-  
-  ;set the value
-  footer->setProperty,value=textvalue
-  
-  historywin->update,'Set Footer Text', /dontshow
+  if ~keyword_set(retain_title) then begin
+    ;set the footer only if retain_footer does not exist
+    
+    ;get the footer text widget
+    footertext = widget_info(tlb,find_by_uname='footertext')
+    
+    ;get the value from the footer text widget
+    widget_control,footertext,get_value=textvalue
+    
+    ;set the value
+    footer->setProperty,value=textvalue
+    
+    historywin->update,'Set Footer Text', /dontshow
+  endif 
   
   ;footer font
   ;----------
@@ -541,6 +549,10 @@ pro spd_ui_page_all_set_value,tlb,state
 
   historywin = state.info.historywin
   statusBar = state.statusBar
+    
+  ; set title and footer of current page
+  spd_ui_page_title_set_value,tlb,state.pagesettings,historywin,statusBar
+  spd_ui_page_footer_set_value,tlb,state.pagesettings,historywin,statusBar
   
   ;get the background color
   state.pagesettings->GetProperty,backgroundcolor=currcolor
@@ -573,9 +585,10 @@ pro spd_ui_page_all_set_value,tlb,state
       widget_control,titletext,get_value=textvalue
       
       ;set the values
-      spd_ui_page_title_set_value,tlb, settings, historywin, statusBar
+      ; For title and footer, we do not change the text but we change the other properties (font, color)
+      spd_ui_page_title_set_value,tlb, settings, historywin, statusBar, retain_title=1      
+      spd_ui_page_footer_set_value,tlb, settings, historywin, statusBar, retain_footer=1 
       
-      spd_ui_page_footer_set_value,tlb, settings, historywin, statusBar
       spd_ui_page_margins_set_value, tlb, settings, historywin, statusBar
       spd_ui_page_canvas_set_value, tlb, settings, historywin, statusbar,state.drawObject,state.windowStorage
       spd_ui_page_spacing_set_value, tlb, settings, historywin, statusbar

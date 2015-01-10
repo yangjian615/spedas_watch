@@ -15,8 +15,8 @@
 ;	ARCHIVE: use archive data
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-22 07:55:08 -0800 (Mon, 22 Dec 2014) $
-; $LastChangedRevision: 16526 $
+; $LastChangedDate: 2015-01-06 05:22:37 -0800 (Tue, 06 Jan 2015) $
+; $LastChangedRevision: 16597 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_dir.pro $
 ;
 ;-
@@ -72,7 +72,7 @@ tout = dblarr(norb)
 
 for i = 0,norb-1 do begin
 	w = where(orb eq (mino+i) and abs(zx) lt 1/sqrt(2),nw)		
-	if nw gt 5 then begin
+	if nw gt 2 then begin
 		spec = total(spectra(w,*),1,/nan)/nw
 		energy = total(energies(w,*),1,/nan)/nw
 		denergy = total(denergies(w,*),1,/nan)/nw

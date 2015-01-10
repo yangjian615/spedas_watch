@@ -24,9 +24,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-12-02 18:33:29 -0800 (Tue, 02 Dec 2014) $
-;$LastChangedRevision: 16336 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2015-01-06 14:12:58 -0800 (Tue, 06 Jan 2015) $
+;$LastChangedRevision: 16601 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_moments.pro $
 ;-
 
@@ -37,7 +37,8 @@ pro thm_pgs_moments, data, $
                      get_error=get_error, $
                      mag_data=mag_data, $
                      sc_pot_data=sc_pot_data, $
-                     index=index
+                     index=index, $
+                     _extra = _extra
 
     compile_opt idl2, hidden
 
@@ -56,11 +57,10 @@ pro thm_pgs_moments, data, $
   ;calculate moments (and errors)
   if keyword_set(get_error) then begin
     ;pass in scaling factor as keyword since moments_3d is a more general routine
-    mom = moments_3d(data, dmoments=dmom, unit_scaling=data.scaling, /no_unit_conv)
+    mom = moments_3d(data, dmoments=dmom, unit_scaling=data.scaling, /no_unit_conv, _extra=_extra)
   endif else begin
-    mom = moments_3d(data, /no_unit_conv)
+    mom = moments_3d(data, /no_unit_conv, _extra=_extra)
   endelse
-
   ;concatenate moments structures  
   if undefined(moments) then begin
     moments = mom

@@ -26,8 +26,8 @@
 ; 5-dec-2014, jmm, uses thm_part_products directly
 ; common blocks to using the dtc_private common block in thm_esa_convert_units
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-12-08 13:36:01 -0800 (Mon, 08 Dec 2014) $
-; $LastChangedRevision: 16406 $
+; $LastChangedDate: 2015-01-06 15:09:32 -0800 (Tue, 06 Jan 2015) $
+; $LastChangedRevision: 16604 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_esa_dtc4mom.pro $
 ;-
 
@@ -92,13 +92,14 @@ Pro thm_esa_dtc4mom, probe = probe, trange = trange, noload = noload, $
 ;you need the potential for the moments
      If(keyword_set(scpot_correct)) Then Begin
         thm_load_esa_pot, sc = sc, efi_datatype = 'mom'
-        scpot_suffix = '_esa_pot'
-     Endif Else scpot_suffix = ''
+        sc_pot_name = thx+'_esa_pot'
+     Endif Else sc_pot_name = ''
 ;now get moments - without dead time corrections
      For i = 0, 1 Do Begin
         thm_part_products, probe = sc, datatype = datat[i], /zero_dead_time, $
-                           scpot_suffix = scpot_suffix, suffix = '_temp4dtc_0', $
+                           sc_pot_name = sc_pot_name, suffix = '_temp4dtc_0', $
                            outputs = 'moments'
+
 ;'ptot' variable
         get_data, thx+'_'+datat[i]+'_ptens_temp4dtc_0', data = ptd, dlimits = dl
         If(is_struct(ptd)) Then Begin
@@ -110,7 +111,7 @@ Pro thm_esa_dtc4mom, probe = probe, trange = trange, noload = noload, $
 ;now get moments - with dead time corrections
      For i = 0, 1 Do Begin
         thm_part_products, probe = sc, datatype = datat[i], $
-                           scpot_suffix = scpot_suffix, suffix = '_temp4dtc', $
+                           sc_pot_name = sc_pot_name, suffix = '_temp4dtc', $
                            outputs = 'moments'
 ;'ptot' variable
         get_data, thx+'_'+datat[i]+'_ptens_temp4dtc', data = ptd, dlimits = dl

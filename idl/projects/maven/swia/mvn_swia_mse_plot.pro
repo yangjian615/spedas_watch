@@ -27,8 +27,8 @@
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-05 09:58:59 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16585 $
+; $LastChangedDate: 2015-01-06 06:42:57 -0800 (Tue, 06 Jan 2015) $
+; $LastChangedRevision: 16600 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
@@ -204,42 +204,113 @@ zp = zrange[0]+findgen(nbz)*dz + dz/2.
 rp = rrange[0]+findgen(nby)*dr + dr/2.
 
 
+; Mars shock parameters from Dave Mitchell's code
+
+  R_m = 3389.9D
+  x0  = 0.600
+  psi = 1.026
+  L   = 2.081
+
+; Mars MPB parameters from Dave Mitchell's code
+
+  x0_p1  = 0.640
+  psi_p1 = 0.770
+  L_p1   = 1.080
+
+  x0_p2  = 1.600
+  psi_p2 = 1.009
+  L_p2   = 0.528
+
+; Shock conic
+
+      phi = (-150. + findgen(301))*!dtor
+      rho = L/(1. + psi*cos(phi))
+
+      xshock = 3376*[x0 + rho*cos(phi)]
+      yshock = 3376*rho*sin(phi)
+
+; MPB conic
+
+      phi = (-160. + findgen(160))*!dtor
+
+      rho = L_p1/(1. + psi_p1*cos(phi))
+      x1 = x0_p1 + rho*cos(phi)
+      y1 = rho*sin(phi)
+
+      rho = L_p2/(1. + psi_p2*cos(phi))
+      x2 = x0_p2 + rho*cos(phi)
+      y2 = rho*sin(phi)
+
+      indx = where(x1 ge 0)
+      jndx = where(x2 lt 0)
+      xpileup = [x2[jndx], x1[indx]]
+      ypileup = [y2[jndx], y1[indx]]
+
+      phi = findgen(161)*!dtor
+
+      rho = L_p1/(1. + psi_p1*cos(phi))
+      x1 = x0_p1 + rho*cos(phi)
+      y1 = rho*sin(phi)
+
+      rho = L_p2/(1. + psi_p2*cos(phi))
+      x2 = x0_p2 + rho*cos(phi)
+      y2 = rho*sin(phi)
+
+      indx = where(x1 ge 0)
+      jndx = where(x2 lt 0)
+      xpileup = 3376*[xpileup, x1[indx], x2[jndx]]
+      ypileup = 3376*[ypileup, y1[indx], y2[jndx]]
+
+
+
 ang = findgen(360)*!pi/180
 
 if ptype eq 'scalar' then begin
 	
 	window,0
 	specplot,xp,yp,binxy[*,*,0],limits = {xrange:xrange,yrange:yrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Y [km]',position:[0.1,0.1,0.85,0.9]}
-	plots,RM*cos(ang),RM*sin(ang)
+	plots,RM*cos(ang),RM*sin(ang),thick = 2
+	oplot,xshock,yshock,linestyle = 2,thick = 2
+	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,1
 	specplot,xp,zp,binxz[*,*,0],limits = {xrange:xrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Z [km]',position:[0.1,0.1,0.85,0.9]}
-	plots,RM*cos(ang),RM*sin(ang)
+	plots,RM*cos(ang),RM*sin(ang),thick = 2
+	oplot,xshock,yshock,linestyle = 2,thick = 2
+	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,2
 	specplot,xp,rp,bincyl[*,*,0],limits = {xrange:xrange,yrange:rrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'R_YZ [km]',position:[0.1,0.1,0.85,0.9]}
-	oplot,RM*cos(ang),RM*sin(ang)
+	oplot,RM*cos(ang),RM*sin(ang),thick = 2
+	oplot,xshock,yshock,linestyle = 2,thick = 2
+	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,3
 	specplot,yp,zp,binyz[*,*,0],limits = {xrange:yrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'Y [km]',ytitle:'Z [km]',position:[0.1,0.1,0.85,0.9]}
-	plots,RM*cos(ang),RM*sin(ang)
+	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	
 endif else begin
 	window,0
 	velovect,binxy[*,*,0],binxy[*,*,1],xp,yp,xrange = xrange, yrange = yrange, xtitle = 'X [km]',ytitle = 'Y [km]', len = len
-	plots,RM*cos(ang),RM*sin(ang)
+	plots,RM*cos(ang),RM*sin(ang),thick = 2
+	oplot,xshock,yshock,linestyle = 2,thick = 2
+	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,1
 	velovect,binxz[*,*,0],binxz[*,*,2],xp,zp,xrange = xrange, yrange = zrange, xtitle = 'X [km]',ytitle = 'Z [km]', len = len
-	plots,RM*cos(ang),RM*sin(ang)
+	plots,RM*cos(ang),RM*sin(ang),thick = 2
+	oplot,xshock,yshock,linestyle = 2,thick = 2
+	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,2
 	velovect,bincyl[*,*,0],bincyl[*,*,1],xp,rp,xrange = xrange, yrange = rrange, xtitle = 'X [km]',ytitle = 'R_YZ [km]', title = 'In Plane', len = len	
-	oplot,RM*cos(ang),RM*sin(ang)
+	oplot,RM*cos(ang),RM*sin(ang),thick = 2
+	oplot,xshock,yshock,linestyle = 2,thick = 2
+	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,3
 	velovect,binyz[*,*,1],binyz[*,*,2],yp,zp,xrange = yrange, yrange = zrange, xtitle = 'Y [km]',ytitle = 'Z [km]', len = len
-	plots,RM*cos(ang),RM*sin(ang)
+	plots,RM*cos(ang),RM*sin(ang),thick = 2
 endelse
 
 end

@@ -31,9 +31,9 @@
 ;
 ;Keywords:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-11-20 18:31:12 -0800 (Wed, 20 Nov 2013) $
-;$LastChangedRevision: 13556 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2015-01-06 14:54:23 -0800 (Tue, 06 Jan 2015) $
+;$LastChangedRevision: 16602 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_esa.pro $
 ;-
 
@@ -41,7 +41,6 @@
 pro thm_pgs_clean_esa,data,units,output=output,_extra=ex
 
   compile_opt idl2,hidden
-  
   
   ;convert to requested units
   ;get scaling coefficient used to convert from counts->units
