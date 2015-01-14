@@ -15,9 +15,9 @@
 ;HISTORY:
 ; 20-oct-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-20 12:46:09 -0700 (Mon, 20 Oct 2014) $
-; $LastChangedRevision: 16014 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/rerun_sta_l2gen.pro $
+; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
+; $LastChangedRevision: 16613 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/rerun_sta_l2gen.pro $
 ;-
 
 Pro rerun_sta_l2gen, ndays = ndays

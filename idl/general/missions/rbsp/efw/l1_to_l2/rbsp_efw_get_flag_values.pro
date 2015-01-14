@@ -10,8 +10,8 @@
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2015-01-08 13:59:11 -0800 (Thu, 08 Jan 2015) $
-;   $LastChangedRevision: 16606 $
+;   $LastChangedDate: 2015-01-09 11:52:33 -0800 (Fri, 09 Jan 2015) $
+;   $LastChangedRevision: 16617 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
@@ -21,6 +21,16 @@ function rbsp_efw_get_flag_values,sc,times
 
   date = strmid(time_string(timerange()),0,10)
   date = date[0]
+
+
+;Load the HSK data to flag the bias sweeps
+  rbsp_load_efw_hsk,probe=sc,/get_support_data
+
+
+;Possibly load state data
+get_data,'rbsp'+sc+'_state_lshell',data=test
+if ~is_struct(test) then rbsp_efw_position_velocity_crib
+
 
 
 ;--------------------------------------------------
@@ -176,8 +186,6 @@ function rbsp_efw_get_flag_values,sc,times
   ;;             'undefined']
 
 
-;Load the HSK data to flag the bias sweeps
-  rbsp_load_efw_hsk,probe=sc,/get_support_data
 
 
                                 ;Get flag values

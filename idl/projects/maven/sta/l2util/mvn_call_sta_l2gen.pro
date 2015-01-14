@@ -31,9 +31,9 @@
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-19 10:38:49 -0800 (Wed, 19 Nov 2014) $
-; $LastChangedRevision: 16239 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_sta_l2gen.pro $
+; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
+; $LastChangedRevision: 16613 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
                         before_time = before_time, $

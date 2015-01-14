@@ -15,8 +15,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-01-06 15:48:15 -0800 (Tue, 06 Jan 2015) $
-;$LastChangedRevision: 16605 $
+;$LastChangedDate: 2015-01-09 16:00:41 -0800 (Fri, 09 Jan 2015) $
+;$LastChangedRevision: 16632 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_page_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -441,7 +441,7 @@ pro spd_ui_page_footer_set_value,tlb,pagesettings,historywin,statusBar, retain_f
   ;footer text
   ;---------
   
-  if ~keyword_set(retain_title) then begin
+  if ~keyword_set(retain_footer) then begin
     ;set the footer only if retain_footer does not exist
     
     ;get the footer text widget

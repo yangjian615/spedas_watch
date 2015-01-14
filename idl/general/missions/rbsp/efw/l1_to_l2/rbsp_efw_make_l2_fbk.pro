@@ -38,20 +38,21 @@
 ;
 ;
 ; VERSION:
-;	$LastChangedBy: kersten $
-;	$LastChangedDate: 2013-09-18 13:41:10 -0700 (Wed, 18 Sep 2013) $
-;	$LastChangedRevision: 13062 $
+;	$LastChangedBy: aaronbreneman $
+;	$LastChangedDate: 2015-01-12 10:41:34 -0800 (Mon, 12 Jan 2015) $
+;	$LastChangedRevision: 16637 $
 ;	$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_fbk.pro $
 ;
 ;-
 
-pro rbsp_efw_make_l2_fbk,sc,date,folder=folder
+pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
+  rbsp_efw_init
 	skip_plot = 1   ;set to skip restoration of cdf file and test plotting at end of program
 
 	dprint,'BEGIN TIME IS ',systime()
 
-	if n_elements(version) eq 0 then version = 1
+	if n_elements(version) eq 0 then version = 2
 	vstr = string(version, format='(I02)')
 	version = 'v'+vstr
 
@@ -62,15 +63,27 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder
 	endif
 	rbspx = 'rbsp'+sc
 
-	if ~keyword_set(folder) then folder ='~/Desktop/code/Aaron/RBSP/l2_processing_cribs/'
+	if ~keyword_set(folder) then folder ='~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/'
 	; make sure we have the trailing slash on folder
 	if strmid(folder,strlen(folder)-1,1) ne path_sep() then folder=folder+path_sep()
 	file_mkdir,folder
 
 	; Grab the skeleton file.
+
+
+
 	skeleton=rbspx+'/l2/fbk/0000/'+ $
 		rbspx+'_efw-l2_fbk_00000000_v'+vstr+'.cdf'
-	source_file=file_retrieve(skeleton,_extra=!rbsp_efw)
+;	source_file=file_retrieve(skeleton,_extra=!rbsp_efw)
+
+
+       if keyword_set(testing) then begin
+           skeleton = 'rbspa_efw-l2_fbk_00000000_v01.cdf'
+           source_file='~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/' + skeleton
+        endif
+
+
+
 
 	; use skeleton from the staging dir until we go live in the main data tree
 	;source_file='/Volumes/DataA/user_volumes/kersten/data/rbsp/'+skeleton
@@ -118,6 +131,23 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder
 	epoch_flag_times,date,5,epoch_qual,timevals
 
 
+        ;Get all the flag values
+        flag_str = rbsp_efw_get_flag_values(sc,timevals)
+
+
+        flag_arr = flag_str.flag_arr
+        bias_sweep_flag = flag_str.bias_sweep_flag
+        ab_flag = flag_str.ab_flag
+        charging_flag = flag_str.charging_flag
+        ibias = flag_str.ibias
+
+
+        get_data,'rbsp'+sc+'_density',data=dens
+
+
+
+
+
 
 	;Make the time string
 
@@ -131,93 +161,6 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder
 
 	if is_struct(fbk13_pk_fb1) then datatimes = fbk13_pk_fb1.x
 	if is_struct(fbk7_pk_fb1)  then datatimes = fbk7_pk_fb1.x
-
-
-;*****TEMPORARY CODE***********
-;APPLY THE ECLIPSE FLAG WITHIN THIS ROUTINE. LATER, THIS WILL BE DONE BY THE MASTER ROUTINE
-	;load eclipse times
-	; for Keith's stack
-	rbsp_load_eclipse_predict,sc,date,$
-		local_data_dir='~/data/rbsp/',$
-		remote_data_dir='http://themis.ssl.berkeley.edu/data/rbsp/'
-
-	get_data,'rbsp'+sc+'_umbra',data=eu
-	get_data,'rbsp'+sc+'_penumbra',data=ep
-
-	eclipset = replicate(0B,n_elements(datatimes))
-
-;*****************************
-
-
-
-	;Get flag values
-	na_val = -2    ;not applicable value
-	fill_val = -1  ;value in flag array that indicates "dunno"
-	good_val = 0   ;value for good data
-	bad_val = 1    ;value for bad data
-	maxvolts = 195. ;Max antenna voltage above which the saturation flag is thrown
-
-	offset = 5   ;position in flag_arr of "v1_saturation" 
-
-	;All the flag values for the entire EFW data set
-	flag_arr = replicate(fill_val,n_elements(timevals),20)
-
-
-;*****TEMPORARY CODE*****
-;set the eclipse flag in this program
-
-flag_arr[*,1] = 0.    ;default to no eclipse
-
-;Umbra
-if is_struct(eu) then begin
-	for bb=0,n_elements(eu.x)-1 do begin
-		goo = where((datatimes ge eu.x[bb]) and (datatimes le (eu.x[bb]+eu.y[bb])))
-		if goo[0] ne -1 then eclipset[goo] = 1
-	endfor
-endif
-;Penumbra
-if is_struct(ep) then begin
-	for bb=0,n_elements(ep.x)-1 do begin
-		goo = where((datatimes ge ep.x[bb]) and (datatimes le (ep.x[bb]+ep.y[bb])))
-		if goo[0] ne -1 then eclipset[goo] = 1
-	endfor
-endif
-
-
-flag_arr[*,1] = ceil(interpol(eclipset,datatimes,timevals))
-;***********************
-		
-
-
-
-		flag_arr[*,0] = 0			;global_flag
-;		flag_arr[*,1] = -1    ;default to no eclipse
-		flag_arr[*,2] = fill_val	;maneuver
-		flag_arr[*,3] = fill_val	;efw_sweep
-		flag_arr[*,4] = fill_val	;efw_deploy
-
-
-		;Set the N/A values. These are not directly relevant to the quality
-		;of the FBK product
-		flag_arr[*,11] = na_val	;Espb_magnitude
-		flag_arr[*,12] = na_val	;Eparallel_magnitude
-		flag_arr[*,13] = na_val	;magnetic_wake
-		flag_arr[*,14:19] = na_val  ;undefined values
-
-
-
-
-
-;****TEMPORARY CODE******
-
-;Set global flag if eclipse flag is thrown
-	goo = where(flag_arr[*,1] eq 1)
-	if goo[0] ne -1 then flag_arr[goo,0] = 1
-;************************
-
-
-
-
 
 
 
@@ -247,13 +190,6 @@ flag_arr[*,1] = ceil(interpol(eclipset,datatimes,timevals))
 	cdfid = cdf_open(folder+filename)
 	cdf_control, cdfid, get_var_info=info, variable='epoch'
 
-
-
-
-;NEED TO AS BONNELL ABOUT THE OFFICIAL NAMES FOR THESE SOURCES THAT WILL SHOW UP
-;FROM THE LOAD_FBK ROUTINE
-
-
 	if is_struct(fbk7_pk_fb1) then begin
 	
 		cdf_varput,cdfid,'epoch',epoch_fbk7
@@ -273,7 +209,6 @@ flag_arr[*,1] = ceil(interpol(eclipset,datatimes,timevals))
 	endif
 
 
-
 	if is_struct(fbk7_av_fb1) then begin
 	
 		cdf_varput,cdfid,'epoch',epoch_fbk7
@@ -291,9 +226,6 @@ flag_arr[*,1] = ceil(interpol(eclipset,datatimes,timevals))
 		if source7_fb1 eq 'V1V2V3V4_AVG_AC' then cdf_varput,cdfid,'fbk7_v1v1v3v4_avg_ac_av',transpose(fbk7_av_fb1.y)
 
 	endif
-
-
-
 
 
 	if is_struct(fbk7_pk_fb2) then begin
@@ -332,8 +264,6 @@ flag_arr[*,1] = ceil(interpol(eclipset,datatimes,timevals))
 		if source7_fb2 eq 'V1V2V3V4_AVG_AC' then cdf_varput,cdfid,'fbk7_v1v1v3v4_avg_ac_av',transpose(fbk7_av_fb2.y)
 
 	endif
-
-
 
 
 	if is_struct(fbk13_pk_fb1) then begin
@@ -440,8 +370,6 @@ flag_arr[*,1] = ceil(interpol(eclipset,datatimes,timevals))
 	endif
 
 
-
-
 	if is_struct(fbk13_av_fb2) then begin
 	
 		cdf_varput,cdfid,'epoch',epoch_fbk13
@@ -505,8 +433,8 @@ flag_arr[*,1] = ceil(interpol(eclipset,datatimes,timevals))
 			'Espb_magnitude',$
 			'Eparallel_magnitude',$
 			'magnetic_wake',$
-			'undefined',$
-			'undefined',$
+			'autobias',$
+			'charging',$
 			'undefined',$
 			'undefined',$
 			'undefined',$

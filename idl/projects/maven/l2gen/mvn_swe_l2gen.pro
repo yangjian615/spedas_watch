@@ -15,8 +15,8 @@
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14, jmm,
 ; jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-18 14:34:02 -0800 (Tue, 18 Nov 2014) $
-; $LastChangedRevision: 16227 $
+; $LastChangedDate: 2015-01-12 14:53:40 -0800 (Mon, 12 Jan 2015) $
+; $LastChangedRevision: 16647 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
 Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
@@ -73,6 +73,9 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
   mvn_swe_makecdf_spec, spec_arc, directory=directory
 
 ; stop here if you're only making L2 files
+; Make kp save file:
+  mvn_swe_kp, trange, output_path=directory
+
 Return
 End
 

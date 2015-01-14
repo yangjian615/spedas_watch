@@ -153,6 +153,15 @@ if not keyword_set(date) then begin
   error=1
   return
 endif else begin
+  
+  ; Expand start time (-1 hour) and duration (+2 hours)
+  ; so that there are no gaps due to packets missing 
+  ; at the beginning or the end of the time span 
+  date_orig = date 
+  dur_orig = dur
+  date=time_string(time_double(date)-60*60D)
+  dur = dur + 2.0/24.0
+ 
   t0 = time_double(date)
   t1 = t0+dur*60D*60D*24D
   
@@ -816,11 +825,17 @@ if keyword_set(gui_plot) then begin ; for GUI plots we have some differences
         store_data,thx+'_roi_bar',data={x:time_double(date)+findgen(2),y:filler}
         roi_bar=thx+'_roi_bar'
     Endelse
-       
+    
+    date = date_orig
+    dur = dur_orig
+    timespan,date,dur
     tplot_gui,vars_full,/no_verify,/no_update,/add_panel,no_draw=keyword_set(no_draw),  var_label = [thx+'_state_pos_gse_z', thx+'_state_pos_gse_y', thx+'_state_pos_gse_x']
 
 endif else begin
   ;for server plots
+  date = date_orig
+  dur = dur_orig
+  timespan,date,dur
   tplot, vars_full, title = probes_title[pindex[0]]+' (TH-'+strupcase(sc)+')', $
     var_label = [thx+'_state_pos_gse_z', thx+'_state_pos_gse_y', thx+'_state_pos_gse_x']
 endelse

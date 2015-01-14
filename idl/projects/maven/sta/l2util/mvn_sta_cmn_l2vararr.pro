@@ -16,9 +16,9 @@
 ;HISTORY:
 ; 16-jun-2014,jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-12-22 13:49:43 -0800 (Mon, 22 Dec 2014) $
-; $LastChangedRevision: 16533 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_cmn_l2vararr.pro $
+; $LastChangedDate: 2015-01-09 10:12:13 -0800 (Fri, 09 Jan 2015) $
+; $LastChangedRevision: 16611 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2vararr.pro $
 ;-
 Function mvn_sta_cmn_l2vararr, apid
 

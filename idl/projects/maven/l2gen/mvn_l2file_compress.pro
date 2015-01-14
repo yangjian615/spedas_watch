@@ -16,8 +16,8 @@
 ;HISTORY:
 ; 26-nov-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-26 11:21:49 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16307 $
+; $LastChangedDate: 2015-01-12 14:53:40 -0800 (Mon, 12 Jan 2015) $
+; $LastChangedRevision: 16647 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_l2file_compress.pro $
 ;-
 Pro mvn_l2file_compress, fullfile0, _extra = _extra
@@ -33,7 +33,18 @@ Pro mvn_l2file_compress, fullfile0, _extra = _extra
      Return
   Endif
 
+
+;Move the file to the local working directory; cdf convert will kill
+;the network in some cases, so this should be run in a local working
+;directory on the machine that is running the program, so that
+;cdfconvert does not have to operate over the network, jmm, 2015-01-12
+  fullfile_init = fullfile
   file = file_basename(fullfile)
+  file_path = file_dirname(fullfile)
+
+  fullfile = './'+file
+  file_move, fullfile_init, fullfile
+
   file_id = file_basename(file, '.cdf')
 
   spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfile+' '+$
@@ -59,6 +70,11 @@ Pro mvn_l2file_compress, fullfile0, _extra = _extra
 ;chmod to g+w for the files
   spawn, 'chmod g+w '+fullfile
   spawn, 'chmod g+w '+md5file
+
+;move the fullfile and md5file to the data directory
+  file_move, fullfile, fullfile_init
+  file_move, md5file, file_path[0]+'/'+file_basename(md5file)
+
 
   Return
 End

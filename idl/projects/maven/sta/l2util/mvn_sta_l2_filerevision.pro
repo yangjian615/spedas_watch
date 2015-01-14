@@ -16,9 +16,9 @@
 ;HISTORY:
 ; 22-jul-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-09-10 12:20:31 -0700 (Wed, 10 Sep 2014) $
-; $LastChangedRevision: 15751 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_l2_filerevision.pro $
+; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
+; $LastChangedRevision: 16613 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2_filerevision.pro $
 ;-
 Pro mvn_sta_l2_filerevision, fullfile, fullfile_rev, fullfile_del
 

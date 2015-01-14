@@ -13,6 +13,7 @@
 ;
 ;Input:
 ;  menu_id: Widget ID of the parent menu into which plugin buttons will be placed.
+;  plugin_menu_items: an array of structures containing the plugin menu items; loaded via pluginManager->getPluginMenus()
 ;
 ;
 ;Output:
@@ -31,7 +32,7 @@
 ;
 ;-
 
-pro spd_ui_plugin_menu, menu_id
+pro spd_ui_plugin_menu, menu_id, plugin_menu_items
 
     compile_opt idl2, hidden
 
@@ -49,26 +50,12 @@ pro spd_ui_plugin_menu, menu_id
 ;  endif
   
 
-  ;template for reading config file
-  ascii_temp = { VERSION: 1.0, $
-                 DATASTART: 0, $
-                 DELIMITER: 44b, $
-                 MISSINGVALUE: '', $
-                 COMMENTSYMBOL: ";", $
-                 FIELDCOUNT: 3, $
-                 FIELDTYPES: [7, 7, 7], $
-                 FIELDNAMES: ['item', 'location', 'procedure'], $
-                 FIELDLOCATIONS: [0, 10, 27], $
-                 FIELDGROUPS: [0, 1, 2] $
-                 }
-
-  ;----------------------------------------------------
-  ; Read config file into struct
-  ;----------------------------------------------------
-  
-  getresourcepath, configPath
-  
-  plugins = read_ascii(configPath+'spd_ui_plugin_config.txt', template=ascii_temp, count=nitems)
+  if ~is_struct(plugin_menu_items) then begin
+        ; no valid menu items
+        dummy = widget_button(menu_id, value='None', sens=0)
+        return
+  endif
+  nitems = n_elements(plugin_menu_items)
   
   if nitems lt 1 then begin
     dummy = widget_button(menu_id, value='None', sens=0)
@@ -82,10 +69,10 @@ pro spd_ui_plugin_menu, menu_id
   ;----------------------------------------------------
 
   for i=0, nitems-1 do begin
-    
-    name = strtrim(plugins.item[i],2)
-    location = strtrim(strsplit(plugins.location[i], '|', /extract),2)
-    procedure = strlowcase( strtrim(plugins.procedure[i],2) )
+    plugins = plugin_menu_items[i]
+    name = strtrim(plugins.item,2)
+    location = strtrim(strsplit(plugins.location, '|', /extract),2)
+    procedure = strlowcase( strtrim(plugins.procedure,2) )
     
     ;warn user?
     if name eq '' then continue

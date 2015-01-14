@@ -143,11 +143,11 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_c0_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c0_tot',0,0,1
-			ylim,'mvn_sta_c0_P1A_E',.4,40000.,1
-			ylim,'mvn_sta_c0_P1A_H_E',.4,40000.,1
+			ylim,'mvn_sta_c0_P1A_E',.1,40000.,1
+			ylim,'mvn_sta_c0_P1A_H_E',.1,40000.,1
 			ylim,'mvn_sta_c0_P1A_M',.5,100,1
-			ylim,'mvn_sta_c0_E',.4,40000.,1
-			ylim,'mvn_sta_c0_H_E',.4,40000.,1
+			ylim,'mvn_sta_c0_E',.1,40000.,1
+			ylim,'mvn_sta_c0_H_E',.1,40000.,1
 			ylim,'mvn_sta_c0_M',.5,100,1
 			ylim,'mvn_sta_c0_att',-1,5,0
 
@@ -225,9 +225,9 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_c2_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c2_tot',0,0,1
-			ylim,'mvn_sta_c2_P1D_E',.4,40000.,1
+			ylim,'mvn_sta_c2_P1D_E',.1,40000.,1
 			ylim,'mvn_sta_c2_P1D_M',.5,100.,1
-			ylim,'mvn_sta_c2_E',.4,40000.,1
+			ylim,'mvn_sta_c2_E',.1,40000.,1
 			ylim,'mvn_sta_c2_M',.5,100.,1
 			ylim,'mvn_sta_c2_att',-1,5,0
 
@@ -304,9 +304,9 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_c4_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c4_tot',0,0,1
-			ylim,'mvn_sta_c4_P1D_E',.4,40000.,1
+			ylim,'mvn_sta_c4_P1D_E',.1,40000.,1
 			ylim,'mvn_sta_c4_P1D_M',.5,100.,1
-			ylim,'mvn_sta_c4_E',.4,40000.,1
+			ylim,'mvn_sta_c4_E',.1,40000.,1
 			ylim,'mvn_sta_c4_M',.5,100.,1
 			ylim,'mvn_sta_c4_att',-1,5,0
 
@@ -396,9 +396,9 @@ endif
 			store_data,'mvn_sta_c6_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c6_tot',0,0,1
-			ylim,'mvn_sta_c6_P1D_E',.4,40000.,1
+			ylim,'mvn_sta_c6_P1D_E',.1,40000.,1
 			ylim,'mvn_sta_c6_P1D_M',.5,100.,1
-			ylim,'mvn_sta_c6_E',.4,40000.,1
+			ylim,'mvn_sta_c6_E',.1,40000.,1
 			ylim,'mvn_sta_c6_M',.5,100.,1
 			ylim,'mvn_sta_c6_att',-1,5,0
 			ylim,'mvn_sta_c6_mode',-1,7,0
@@ -477,9 +477,9 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_c8_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c8_tot',0,0,1
-			ylim,'mvn_sta_c8_P2_E',.4,40000.,1
+			ylim,'mvn_sta_c8_P2_E',.1,40000.,1
 			ylim,'mvn_sta_c8_P2_D',-50,50,0
-			ylim,'mvn_sta_c8_E',.4,40000.,1
+			ylim,'mvn_sta_c8_E',.1,40000.,1
 			ylim,'mvn_sta_c8_D',-50,50,0
 			ylim,'mvn_sta_c8_att',-1,5,0
 
@@ -558,12 +558,12 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_ca_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_ca_rate',data={x:time,y:rate}
 
-			ylim,'mvn_sta_ca_P3_E',.4,40000.,1
+			ylim,'mvn_sta_ca_P3_E',.1,40000.,1
 			ylim,'mvn_sta_ca_P3_D',-50,50,0
 			ylim,'mvn_sta_ca_P3_A',-180,200.,0
 			ylim,'mvn_sta_ca_tot',0,0,1
 
-			ylim,'mvn_sta_ca_E',.4,40000.,1
+			ylim,'mvn_sta_ca_E',.1,40000.,1
 			ylim,'mvn_sta_ca_D',-50,50,0
 			ylim,'mvn_sta_ca_A',-180,200.,0
 
@@ -659,10 +659,10 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_cc_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_cc_tot',0,0,1
-			ylim,'mvn_sta_cc_P4B_E',.4,40000.,1
+			ylim,'mvn_sta_cc_P4B_E',.1,40000.,1
 			ylim,'mvn_sta_cc_P4B_D',-50,50,0
 			ylim,'mvn_sta_cc_P4B_M',.5,100,1
-			ylim,'mvn_sta_cc_E',.4,40000.,1
+			ylim,'mvn_sta_cc_E',.1,40000.,1
 			ylim,'mvn_sta_cc_D',-50,50,0
 			ylim,'mvn_sta_cc_M',.5,100,1
 			ylim,'mvn_sta_cc_att',-1,5,0
@@ -757,10 +757,10 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_cd_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_cd_tot',0,0,1
-			ylim,'mvn_sta_cd_P4B_E',.4,40000.,1
+			ylim,'mvn_sta_cd_P4B_E',.1,40000.,1
 			ylim,'mvn_sta_cd_P4B_D',-50,50,0
 			ylim,'mvn_sta_cd_P4B_M',.5,100,1
-			ylim,'mvn_sta_cd_E',.4,40000.,1
+			ylim,'mvn_sta_cd_E',.1,40000.,1
 			ylim,'mvn_sta_cd_D',-50,50,0
 			ylim,'mvn_sta_cd_M',.5,100,1
 			ylim,'mvn_sta_cd_att',-1,5,0
@@ -857,11 +857,11 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_ce_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_ce_tot',0,0,1
-			ylim,'mvn_sta_ce_P4B_E',.4,40000.,1
+			ylim,'mvn_sta_ce_P4B_E',.1,40000.,1
 			ylim,'mvn_sta_ce_P4B_D',-50,50,0
 			ylim,'mvn_sta_ce_P4B_A',-180,200.,0
 			ylim,'mvn_sta_ce_P4B_M',.5,100,1
-			ylim,'mvn_sta_ce_E',.4,40000.,1
+			ylim,'mvn_sta_ce_E',.1,40000.,1
 			ylim,'mvn_sta_ce_D',-50,50,0
 			ylim,'mvn_sta_ce_A',-180,200.,0
 			ylim,'mvn_sta_ce_M',.5,100,1
@@ -967,11 +967,11 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_cf_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_cf_tot',0,0,1
-			ylim,'mvn_sta_cf_P4B_E',.4,40000.,1
+			ylim,'mvn_sta_cf_P4B_E',.1,40000.,1
 			ylim,'mvn_sta_cf_P4B_D',-50,50,0
 			ylim,'mvn_sta_cf_P4B_A',-180,200.,0
 			ylim,'mvn_sta_cf_P4B_M',.5,100,1
-			ylim,'mvn_sta_cf_E',.4,40000.,1
+			ylim,'mvn_sta_cf_E',.1,40000.,1
 			ylim,'mvn_sta_cf_D',-50,50,0
 			ylim,'mvn_sta_cf_A',-180,200.,0
 			ylim,'mvn_sta_cf_M',.5,100,1
@@ -1075,17 +1075,23 @@ endif
 		store_data,'mvn_sta_d0_att',data={x:time,y:iatt}
 			if keyword_set(test) then store_data,'mvn_sta_d0_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_d0_rate',data={x:time,y:rate}
+		store_data,'mvn_sta_d0_H_E',data={x:time,y:total(total(eflux[*,*,*,4:7],4),3)/nbins,v:energy}
+		store_data,'mvn_sta_d0_H_D',data={x:time,y:total(total(reform(total(eflux[*,*,*,4:7],4),npts,nenergy,ndef,nanode),4),2),v:theta}
+		store_data,'mvn_sta_d0_H_A',data={x:time,y:total(total(reform(total(eflux[*,*,*,4:7],4),npts,nenergy,ndef,nanode),3),2),v:phi}
 
 			ylim,'mvn_sta_d0_tot',0,0,1
-			ylim,'mvn_sta_d0_P4C_E',.4,40000.,1
+			ylim,'mvn_sta_d0_P4C_E',.1,40000.,1
 			ylim,'mvn_sta_d0_P4C_D',-50,50,0
 			ylim,'mvn_sta_d0_P4C_A',-180,200.,0
 			ylim,'mvn_sta_d0_P4C_M',.5,100,1
-			ylim,'mvn_sta_d0_E',.4,40000.,1
+			ylim,'mvn_sta_d0_E',.1,40000.,1
 			ylim,'mvn_sta_d0_D',-50,50,0
 			ylim,'mvn_sta_d0_A',-180,200.,0
 			ylim,'mvn_sta_d0_M',.5,100,1
 			ylim,'mvn_sta_d0_att',-1,5,0
+			ylim,'mvn_sta_d0_H_E',.1,40000.,1
+			ylim,'mvn_sta_d0_H_D',-50,50,0
+			ylim,'mvn_sta_d0_H_A',-180,200.,0
 
 			zlim,'mvn_sta_d0_P4C_E',10,1.e5,1
 			zlim,'mvn_sta_d0_P4C_D',10,1.e5,1
@@ -1095,17 +1101,21 @@ endif
 			zlim,'mvn_sta_d0_D',1.e3,1.e9,1
 			zlim,'mvn_sta_d0_A',1.e3,1.e9,1
 			zlim,'mvn_sta_d0_M',1.e3,1.e9,1
+			zlim,'mvn_sta_d0_H_E',1.e3,1.e9,1
+			zlim,'mvn_sta_d0_H_D',1.e3,1.e9,1
+			zlim,'mvn_sta_d0_H_A',1.e3,1.e9,1
 
 			datagap=600.
-			options,'mvn_sta_d0_P4C_E',datagap=datagap
-			options,'mvn_sta_d0_P4C_D',datagap=datagap
-			options,'mvn_sta_d0_P4C_A',datagap=datagap
-			options,'mvn_sta_d0_P4C_M',datagap=datagap
-			options,'mvn_sta_d0_E',datagap=datagap
-			options,'mvn_sta_d0_D',datagap=datagap
-			options,'mvn_sta_d0_A',datagap=datagap
-			options,'mvn_sta_d0_M',datagap=datagap
-			options,'mvn_sta_d0_tot',datagap=datagap
+			options,'mvn_sta_d0*',datagap=datagap
+;			options,'mvn_sta_d0_P4C_E',datagap=datagap
+;			options,'mvn_sta_d0_P4C_D',datagap=datagap
+;			options,'mvn_sta_d0_P4C_A',datagap=datagap
+;			options,'mvn_sta_d0_P4C_M',datagap=datagap
+;			options,'mvn_sta_d0_E',datagap=datagap
+;			options,'mvn_sta_d0_D',datagap=datagap
+;			options,'mvn_sta_d0_A',datagap=datagap
+;			options,'mvn_sta_d0_M',datagap=datagap
+;			options,'mvn_sta_d0_tot',datagap=datagap
 	
 			options,'mvn_sta_d0_P4C_E','spec',1
 			options,'mvn_sta_d0_P4C_D','spec',1
@@ -1115,6 +1125,9 @@ endif
 			options,'mvn_sta_d0_D','spec',1
 			options,'mvn_sta_d0_A','spec',1
 			options,'mvn_sta_d0_M','spec',1
+			options,'mvn_sta_d0_H_E','spec',1
+			options,'mvn_sta_d0_H_D','spec',1
+			options,'mvn_sta_d0_H_A','spec',1
 
 			options,'mvn_sta_d0_P4C_E',ytitle='sta!CP4C-d0!C!CEnergy!CeV'
 			options,'mvn_sta_d0_P4C_D',ytitle='sta!CP4C-d0!C!CTheta!Cdeg'
@@ -1126,11 +1139,18 @@ endif
 			options,'mvn_sta_d0_M',ytitle='sta!Cd0!C!CMass!Camu'
 			options,'mvn_sta_d0_tot',ytitle='sta!Cd0!C!CCounts'
 			options,'mvn_sta_d0_att',ytitle='sta!Cd0!C!CAttenuator'
+			options,'mvn_sta_d0_H_E',ytitle='sta!Cd0!C!CEnergy!CeV'
+			options,'mvn_sta_d0_H_D',ytitle='sta!Cd0!C!CTheta!Cdeg'
+			options,'mvn_sta_d0_H_A',ytitle='sta!Cd0!C!CPhi!Cdeg'
 
 			options,'mvn_sta_d0_E',ztitle='eflux'
 			options,'mvn_sta_d0_D',ztitle='eflux'
 			options,'mvn_sta_d0_A',ztitle='eflux'
 			options,'mvn_sta_d0_M',ztitle='eflux'
+			options,'mvn_sta_d0_H_E',ztitle='eflux'
+			options,'mvn_sta_d0_H_D',ztitle='eflux'
+			options,'mvn_sta_d0_H_A',ztitle='eflux'
+
 	endif
 
 ; D1
@@ -1187,11 +1207,11 @@ endif
 			if keyword_set(test) then store_data,'mvn_sta_d1_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_d1_tot',0,0,1
-			ylim,'mvn_sta_d1_P4C_E',.4,40000.,1
+			ylim,'mvn_sta_d1_P4C_E',.1,40000.,1
 			ylim,'mvn_sta_d1_P4C_D',-50,50,0
 			ylim,'mvn_sta_d1_P4C_A',-180,200.,0
 			ylim,'mvn_sta_d1_P4C_M',.5,100,1
-			ylim,'mvn_sta_d1_E',.4,40000.,1
+			ylim,'mvn_sta_d1_E',.1,40000.,1
 			ylim,'mvn_sta_d1_D',-50,50,0
 			ylim,'mvn_sta_d1_A',-180,200.,0
 			ylim,'mvn_sta_d1_M',.5,100,1
@@ -1700,7 +1720,7 @@ endif
 	if size(/type,t4) eq 8 then tt4=1
 	if tt1 or tt2 or tt3 or tt4 then begin
 		store_data,'mvn_sta_P4_E',data=['mvn_sta_cc_P4A_E','mvn_sta_ce_P4B_E','mvn_sta_d0_P4C_E','mvn_sta_d2_P4D_E']
-		ylim,'mvn_sta_P4_E',.4,40000.,1
+		ylim,'mvn_sta_P4_E',.1,40000.,1
 		zlim,'mvn_sta_P4_E',1,1.e5,1
 		options,'mvn_sta_P4_E',ytitle='sta!CP4 !CEnergy!CeV'
 	endif
@@ -1764,7 +1784,7 @@ endif
 	if size(/type,t4) eq 8 then tt4=1
 	if tt1 or tt2 or tt3 or tt4 then begin
 		store_data,'mvn_sta_P4_arc_E',data=['mvn_sta_cd_P4A_E','mvn_sta_cf_P4B_E','mvn_sta_d1_P4C_E','mvn_sta_d3_P4D_E']
-		ylim,'mvn_sta_P4_arc_E',.4,40000.,1
+		ylim,'mvn_sta_P4_arc_E',.1,40000.,1
 		ylim,'mvn_sta_P4_arc_E',1,1.e4,1
 		options,'mvn_sta_P4_arc_E',ytitle='sta!CP4 arc !CEnergy!CeV'
 	endif

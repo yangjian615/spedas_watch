@@ -28,16 +28,20 @@
 ;   DBINS:     Deflector bin mask - 6-element byte array (0 = off, 1 = on)
 ;              (Only effective if DDD is set.)
 ;
+;   OUTPUT_PATH: An output_path, the save file will be put
+;                into the path in output_path/yyyy/mm/, the default is
+;                getenv('ROOT_DATA_DIR') + 'maven/data/sci/swe/kp'-
+;                for testing.
 ;OUTPUTS:
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-02 14:53:27 -0800 (Sun, 02 Nov 2014) $
-; $LastChangedRevision: 16116 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-01-12 15:12:08 -0800 (Mon, 12 Jan 2015) $
+; $LastChangedRevision: 16648 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_kp.pro $
 ;
 ;-
 
-pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mom=mom
+pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mom=mom, output_path=output_path
 
   compile_opt idl2
 
@@ -51,6 +55,7 @@ pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obin
   if (n_elements(dbins) ne 6) then dbins = replicate(1B, 6)
   if (n_elements(obins) ne 96) then obins = reform(abins # dbins, 96)
   
+  If(keyword_set(output_path)) Then kp_path = output_path Else $ ;jmm, 2014-01-12 for testing
   kp_path = getenv('ROOT_DATA_DIR') + 'maven/data/sci/swe/kp'
   froot = 'mvn_swe_kp_'
   

@@ -8,8 +8,8 @@
 ; HISTORY: Created by Aaron W Breneman, Univ. Minnesota  4/10/2014
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-11-26 13:19:44 -0800 (Wed, 26 Nov 2014) $
-;   $LastChangedRevision: 16313 $
+;   $LastChangedDate: 2015-01-09 11:50:11 -0800 (Fri, 09 Jan 2015) $
+;   $LastChangedRevision: 16615 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/examples/rbsp_efw_burst_fa_rotate_crib.pro $
 ;-
 
@@ -66,7 +66,8 @@ start_after_step = 0.
 ;Otherwise set to the file to be saved. 
 ;fn = 'burst_crib_b2_a_20140827'
 ;fn = 'burst_crib_b1_b_20140827'
-fn = 'burst_crib_b2_a_20140123'
+;fn = 'burst_crib_b2_a_20140123'
+fn = 'burst_crib_b2_a_20121101'
 ;;fn = 'burst_crib_b1_a_20140716'
 
 
@@ -113,8 +114,9 @@ if start_after_step eq 0 then begin
    bt = '2'                     ;burst 1 or 2
 
 ;   date = '2014-08-27'
-   date = '2014-01-23'
-   timespan,date
+;   date = '2014-01-23'
+   date = '2012-11-01'
+  timespan,date
    tr = timerange()
                                 ;Define timerange for loading of burst waveform
                                 ;(CURRENTLY NEED AT LEAST 1 SEC OF BURST FOR MGSE TRANSFORMATION TO WORK!!!)
@@ -126,8 +128,12 @@ if start_after_step eq 0 then begin
   ;; t1 = date + '/14:00'
 
    ;bt=2
-  t0 = date + '/05:17'
-  t1 = date + '/05:19'
+  ;; t0 = date + '/05:17'
+  ;; t1 = date + '/05:19'
+
+
+  t0 = date + '/09:00'
+  t1 = date + '/09:10'
 
 
 ;; ;bt=1  (2014-08-27, probe b)
@@ -181,7 +187,7 @@ if start_after_step eq 0 then begin
    rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['mscb'+bt]
    rbsp_load_efw_waveform_partial,probe=probe,type='calibrated',datatype=['eb'+bt]
    ;load Vburst if there is no Eburst
-   if tdexists(rbspx+'_efw_eb'+bt,tr[0],tr[1]) then rbsp_load_efw_waveform_partial,probe=probe,$
+   if ~tdexists(rbspx+'_efw_eb'+bt,tr[0],tr[1]) then rbsp_load_efw_waveform_partial,probe=probe,$
       type='calibrated',datatype=['vb'+bt]
 
 
@@ -200,7 +206,7 @@ if start_after_step eq 0 then begin
                                 ;Vburst data
 
 
-   if tdexists(rbspx+'_efw_eb'+bt,tr[0],tr[1]) then begin
+   if tdexists(rbspx+'_efw_vb'+bt,tr[0],tr[1]) then begin
 
                                 ;Create E-field variables (mV/m)
       trange = timerange()

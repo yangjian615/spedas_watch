@@ -61,16 +61,15 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
 	get_data,'rbsp'+probe+'_penumbra',data=ep
 
 
-;Load spice
-	if ~keyword_set(no_spice_load) then rbsp_load_spice_kernels
-	rbsp_load_spice_state,probe=probe,coord='gse',/no_spice_load
-	store_data,'rbsp'+probe+'_state_pos_gse',newname='rbsp'+probe+'_pos_gse'
-	store_data,'rbsp'+probe+'_state_vel_gse',newname='rbsp'+probe+'_vel_gse'
+;; ;Load spice
+;; 	if ~keyword_set(no_spice_load) then rbsp_load_spice_kernels
+;; 	rbsp_load_spice_state,probe=probe,coord='gse',/no_spice_load
+;; 	store_data,'rbsp'+probe+'_state_pos_gse',newname='rbsp'+probe+'_pos_gse'
+;; 	store_data,'rbsp'+probe+'_state_vel_gse',newname='rbsp'+probe+'_vel_gse'
 
 
 ;Load spinfit MGSE Efield and Bfield
-	;rbsp_efw_make_l2_spinfit,probe,date,/no_spice_load,/no_cdf	
-	rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,/noplot;,/ql
+	rbsp_efw_spinfit_vxb_subtract_crib,probe,/noplot;,/ql
 	
 	
 	;tplot,'rbsp'+probe+'_' + ['vxb_mgse', 'sfit12_mgse']

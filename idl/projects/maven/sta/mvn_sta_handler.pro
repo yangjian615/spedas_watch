@@ -183,5 +183,4 @@ pro mvn_sta_handler,ccsds,decom=decom,reset=reset,debug=debug,clear=clear
        else: return    ; Do nothing if not a STATIC packet
     endcase 
     decom = 1
-
 end

@@ -1,12 +1,12 @@
 ;+
 ;NAME:
-; mvn_sta_cmn_tclip
+; mvn_sta_cmn_concat
 ;PURPOSE:
-; applies a trange to a STATIC common block structure
+; concatenates two MAVEN STA commonblick structures
 ;CALLING SEQUENCE:
-; dat = mvn_sta_cmn_tclip(dat, trange)
+; dat = mvn_sta_cmn_concat(dat1, dat2)
 ;INPUT:
-; dat1 = a MAVEN STA data structure: e.g., 
+; dat1, dat2 = two MAVEN STA data structures: e.g., 
 ;   PROJECT_NAME    STRING    'MAVEN'
 ;   SPACECRAFT      STRING    '0'
 ;   DATA_NAME       STRING    'C6 Energy-Mass'
@@ -54,69 +54,68 @@
 ;   BINS_SC         LONG      Array[21600]
 ;   POS_SC_MSO      FLOAT     Array[21600, 3]
 ;   BKG             FLOAT     Array[21600, 32, 64]
-;   DEAD            FLOAT     Array[21600, 32, 64]
+;   DEAD            DOUBLE    Array[21600, 32, 64]
 ;   DATA            DOUBLE    Array[21600, 32, 64]
 ;OUTPUT:
-; dat = structure with data only in the time range
-;NOTES:
-; Only will work if the reocrd varying arrays are 5D or less 
+; dat = a single structure concatenated
 ;HISTORY:
 ; 19-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-09 15:56:05 -0700 (Thu, 09 Oct 2014) $
-; $LastChangedRevision: 15966 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_cmn_tclip.pro $
+; $LastChangedDate: 2015-01-09 10:12:13 -0800 (Fri, 09 Jan 2015) $
+; $LastChangedRevision: 16611 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_concat.pro $
 ;-
-Function mvn_sta_cmn_tclip, dat1, trange
+Function mvn_sta_cmn_concat, dat1, dat2
 
-  If(n_elements(trange) Ne 2) Then Begin
-     dprint, dlevel = [0], 'Bad time range:'
+;Record varying arrays are concatenated, NRV values must be
+;equal. rv_flag is one for tags that will be concatenated. This will
+;need to be kept up_to_date
+  If(dat1.apid Ne dat2.apid) Then Begin
+     dprint, 'Mismatch in apid '+dat1.apid+' '+dat2.apid
      Return, -1
   Endif
-
-;Record varying arrays are clipped rv_flag is 'Y' for tags that will
-;be clipped.
   rv_arr = mvn_sta_cmn_l2vararr(dat1.apid)
-  
+
   nvar = n_elements(rv_arr[0, *])
   tags1 = tag_names(dat1)
+  tags2 = tag_names(dat2)
   ntags1 = n_elements(tags1)
+  ntags2 = n_elements(tags2)
 
-  xtime = where(tags1 Eq 'TIME', nxtime)
-  If(nxtime Eq 0) Then Begin
-     dprint, dlev = [0], 'Missing tag: TIME'
-     Return, -1
-  Endif Else Begin
-     tr0 = time_double(trange)
-     ok = where(dat1.time Ge tr0[0] And dat1.time Lt tr0[1], nok)
-     If(nok Eq 0) Then Begin
-        dprint, dlev = [0], 'No data in interval: '
-        dprint, dlev = [0], time_string(tr0[0])+ ' -- '+time_string(tr0[1])
-        Return, -1
-     Endif
-  Endelse
-        
-;The ok array exists here
   count = 0
   dat = -1
   For j = 0, nvar-1 Do Begin
      x1 = where(tags1 Eq rv_arr[0, j], nx1)
-     If(nx1 Eq 0) Then Begin
-        dprint, 'Ignoring missing tag: '+rv_arr[0, j]
+     x2 = where(tags2 Eq rv_arr[0, j], nx2)
+     If(nx1 Eq 0 Or nx2 Eq 0) Then Begin
+        dprint, dlev = [0], 'Missing tag: '+rv_arr[0, j]
+        Return, -1
      Endif Else Begin
         If(rv_arr[2, j] Eq 'N') Then Begin
-           If(count Eq 0) Then undefine, dat
-           count = count+1
-           str_element, dat, rv_arr[0, j], dat1.(x1), /add_replace
-        Endif Else Begin        ;records vary
+;Arrays must be equal
+           If(Not array_equal(dat1.(x1), dat2.(x2))) Then Begin
+              dprint, dlev = [0], 'Array mismatch for: '+rv_arr[0, j]
+              Return, -1
+           Endif Else Begin
+              If(count Eq 0) Then undefine, dat
+              count = count+1
+              str_element, dat, rv_arr[0, j], dat1.(x1), /add_replace
+           Endelse
+        Endif Else Begin ;records vary
            t1 = dat1.(x1)
-           If(count Eq 0) Then undefine, dat
-           count = count+1
-           str_element, dat, rv_arr[0, j], t1[ok, *, *, *, *], /add_replace
+           t2 = dat2.(x2)
+           t1 = size(t1[0,*,*,*,*])
+           t2 = size(t2[0,*,*,*,*])
+           If(Not array_equal(t1, t2)) Then Begin
+              dprint, dlev = [0], 'Array mismatch for: '+rv_arr[0,j]
+              Return, -1
+           Endif Else Begin
+              If(count Eq 0) Then undefine, dat
+              count = count+1
+              str_element, dat, rv_arr[0, j], [dat1.(x1), dat2.(x2)], /add_replace
+           Endelse
         Endelse
      Endelse
   Endfor
-
   Return, dat
 End
-

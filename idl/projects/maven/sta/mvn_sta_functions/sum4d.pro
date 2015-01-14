@@ -24,7 +24,7 @@ endif
 sum = d1
 sum.data = sum.data+d2.data
 ;sum.delta_t =  d1.delta_t + d2.delta_t
-sum.delta_t =  d2.end_time - d1.time
+;sum.delta_t =  d2.end_time - d1.time
 sum.integ_t =  d1.integ_t + d2.integ_t
 sum.end_time = d1.end_time > d2.end_time
 sum.time     = d1.time     < d2.time

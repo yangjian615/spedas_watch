@@ -1,24 +1,27 @@
 ;+
 ;NAME:
-; mvn_sta_cmn_2a_l2gen.pro
+; mvn_sta_cmn_d7_l2gen.pro
 ;PURPOSE:
 ; turn a MAVEN STA RATES common block into a L2 CDF.
 ;CALLING SEQUENCE:
-; mvn_sta_cmn_2a_l2gen, cmn_dat
+; mvn_sta_cmn_d7_l2gen, cmn_dat
 ;INPUT:
 ; cmn_dat = a structure with the data:
 ;   PROJECT_NAME    STRING    'MAVEN'
 ;   SPACECRAFT      STRING    '0'
-;   DATA_NAME       STRING    'Housekeeping'
-;   APID            STRING    '2a'
-;   QUALITY_FLAG    INT       Array[2700]
-;   TIME            DOUBLE    Array[2700]
-;   NHKP            INT             99
-;   CALIB_CONSTANTS DOUBLE    Array[8, 99]
-;   HKP_LABELS      STRING    Array[99]
-;   HKP_RAW         INT       Array[2700, 99]
-;   HKP             FLOAT     Array[2700, 99]
-;
+;   DATA_NAME       STRING    'd7 fsthkp'
+;   APID            STRING    'd7'
+;   VALID           INT       Array[14336]
+;   QUALITY_FLAG    INT       Array[14336]
+;   TIME            DOUBLE    Array[14336]
+;   HKP_RAW         INT       Array[14336]
+;   HKP_CALIB       FLOAT     Array[14336]
+;   HKP_IND         LONG      Array[14336]
+;   NHKP            INT             24
+;   HKP_CONV        DOUBLE    Array[8, 24]
+;   HKP_LABELS      STRING    Array[24]
+; ? don't know yet, but this is written from the SIS assuming
+; that everything is in the structure except for n_elements
 ; All of this has to go into the CDF, also Epoch, tt200, MET time
 ; variables; some of the names are changed to titles given in the SIS
 ; Data is changed from double to float prior to output
@@ -30,13 +33,13 @@
 ;             database. /disks/data/maven/pfp/sta/l2
 ; no_compression = if set, do not compress the CDF file
 ;HISTORY:
-; 16-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
+; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-10 14:01:32 -0800 (Mon, 10 Nov 2014) $
-; $LastChangedRevision: 16159 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_2a_l2gen.pro $
+; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
+; $LastChangedRevision: 16613 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_d7_l2gen.pro $
 ;-
-Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
+Pro mvn_sta_cmn_d7_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
                           no_compression = no_compression, _extra = _extra
 
 ;Keep track of software versioning here
@@ -49,7 +52,7 @@ Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
   Endif
 ;First, global attributes
   global_att = {Acknowledgment:'None', $
-                Data_type:'l2_2a-hkp>Level 2 Housekeeping Data', $
+                Data_type:'l2_d7-fsthkp>Level 2 Fast Housekeeping', $
                 Data_version:'0', $
                 Descriptor:'STATIC>Supra-Thermal Thermal Ion Composition Particle Distributions', $
                 Discipline:'Space Physics>Planetary Physics>Particles', $
@@ -90,8 +93,10 @@ Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
             ['TIME_MET', 'DOUBLE', 'Mission elapsed time for this data record, one element per ion distribution (NUM_DISTS elements)', 'Mission Elapsed Time'], $
             ['TIME_EPHEMERIS', 'DOUBLE', 'Time used by SPICE program (NUM_DISTS elements)', 'SPICE Ephemeris Time'], $
             ['TIME_UNIX', 'DOUBLE', 'Unix time (elapsed seconds since 1970-01-01/00:00 without leap seconds) for this data record, one element per ion distribution. This time is the center time of data collection. (NUM_DISTS elements)', 'Unix Time'], $
-            ['HKP_RAW', 'INTEGER', 'Housekeeping array of dimension (NUM_DISTS) of raw housekeeping values ', 'hkp_raw'], $
-            ['HKP', 'FLOAT', 'Housekeeping array of dimension (NUM_DISTS) of calibrated housekeeping values', 'hkp'], $
+            ['VALID', 'INTEGER', 'Validity flag codes valid data (bit 0), test pulser on (bit 1), diagnostic mode (bit 2), data compression type (bit 3-4), packet compression (bit 5) (NUM_DISTS elements)', ' Valid flag'], $
+            ['HKP_RAW', 'INTEGER', 'Housekeeping array of dimension (NUM_DISTS) of raw housekeeping values ', 'hxkp_raw'], $
+            ['HKP_CALIB', 'FLOAT', 'Housekeeping array of dimension (NUM_DISTS) of calibrated housekeeping values', 'hkp'], $
+            ['HKP_IND', 'INTEGER', 'Index defines the selected fast housekeeping channel (NUM_DISTS elements). HKP_IND can be used to select support data.', 'hkp_ind'], $
             ['QUALITY_FLAG', 'INTEGER', 'Quality flag (NUM_DISTS elements)', 'Quality flag']]
 ;Use Lower case for variable names
   rv_vt[0, *] = strlowcase(rv_vt[0, *])
@@ -103,7 +108,7 @@ Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
            ['APID', 'STRING', 'XX, where XX is the APID'], $
            ['NUM_DISTS', 'INTEGER', 'Number of measurements or times in the file'], $
            ['NHKP', 'INTEGER', 'Number of housekeeping channels - 99'], $
-           ['CALIB_CONSTANTS', 'INTEGER', 'Calibration parameters to convert raw housekeeping value to calibrated housekeeping with dimension (8,NHKP)'], $
+           ['HKP_CONV', 'INTEGER', 'Calibration parameters to convert raw housekeeping value to calibrated housekeeping with dimension (8,NHKP)'], $
            ['HKP_LABELS', 'STRING', 'Housekeeping label string array with dimension NHKP']]
 
 ;Use Lower case for variable names
@@ -216,7 +221,6 @@ Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      Endif Else Begin
         str_element, vatt, 'validmin', vmn, /add
         str_element, vatt, 'validmax', vmx, /add
-        str_element, vatt, 'format', fmt, /add
 ;scalemin and scalemax depend on the variable's values
         str_element, vatt, 'scalemin', vmn, /add
         str_element, vatt, 'scalemax', vmx, /add
@@ -226,6 +230,7 @@ Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
            vatt.scalemax = max(dvar[ok])
         Endif
      Endelse
+
      vatt.catdesc = rv_vt[2, j]
 ;Data or support data?
      IF(vj Eq 'hkp_raw' Or vj Eq 'hkp') Then Begin
@@ -248,12 +253,6 @@ Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      vatt.depend_time = 'time_unix'
      vatt.depend_0 = 'epoch'
      vatt.lablaxis = rv_vt[3, j]
-
-;Assign labels and components for vectors
-     If(vj Eq 'hkp' Or vj Eq 'hkp_raw') Then Begin
-        vatt.depend_1 = 'compno_99'
-        vatt.labl_ptr_1 = 'hkp_labels'
-     Endif
 
 ;Time variables are monotonically increasing:
      If(is_tvar) Then vatt.monoton = 'INCREASE' Else vatt.monoton = 'FALSE'
@@ -306,6 +305,9 @@ Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
         Case vj of
            'num_dists': Begin
               dvar = num_dists
+           End        
+           'nhkp': Begin
+              dvar = 99         ;may not need this
            End        
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for. Skipping'
@@ -360,41 +362,6 @@ Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      count = count+1
   Endfor
      
-;Now compno_99
-  vcompno = 'compno_99'
-
-  For j = 0, n_elements(vcompno)-1 Do Begin
-     vj = vcompno[j]
-     xj = strsplit(vj, '_', /extract)
-     nj = Fix(xj[1])
-;Component attributes
-     vatt =  {catdesc:vj, fieldnam:vj, $
-              fillval:0, format:'I3', $
-              validmin:0, dict_key:'number', $
-              validmax:255, var_type:'metadata'}
-;Also a data array
-     dvar = 1+indgen(nj)
-;Create and fill the variable structure
-     vsj = {name:'', num:0, is_zvar:1, datatype:'', $
-            type:0, numattr: -1, numelem: 1, recvary: 0b, $
-            numrec:-1L, ndimen: 0, d:lonarr(6), dataptr:ptr_new(), $
-            attrptr:ptr_new()}
-     vsj.name = vj
-     vsj.datatype = 'CDF_INT2'
-     vsj.type = 2
-;Include all dimensions
-     ndim = size(dvar, /n_dimen)
-     dims = size(dvar, /dimen)
-     vsj.ndimen = ndim
-     If(ndim Gt 0) Then vsj.d[0:ndim-1] = dims
-     vsj.dataptr = ptr_new(dvar)
-     vsj.attrptr = ptr_new(vatt)
-     
-;Append the variables structure
-     If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
-     count = count+1
-  Endfor
-
   nvars = n_elements(vstr)
   natts = n_tags(global_att)+n_tags(vstr[0])
 
@@ -430,7 +397,7 @@ Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      dir = temporary(temp_string)
   Endif Else dir = './'
 
-  ext = strcompress(strlowcase(cmn_dat.apid), /remove_all)+'-hkp'
+  ext = strcompress(strlowcase(cmn_dat.apid), /remove_all)+'-fsthkp'
 
   file0 = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
   fullfile0 = dir+file0

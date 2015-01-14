@@ -1,4 +1,4 @@
- ;+
+;+
 ;NAME:
 ;mvn_sta_l2_crib
 ;PURPOSE:
@@ -19,7 +19,7 @@
 
 ; View names of STATIC tplot structures
 
-	tplot_names,'*sta*
+	tplot_names,'*sta*'
 
 ; Time series plots of apid c6 data
 

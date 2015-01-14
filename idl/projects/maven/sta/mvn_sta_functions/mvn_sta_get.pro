@@ -31,7 +31,14 @@ endif else if size(/type,apid) ne 7 then begin
 	return,dat
 endif else routine = 'mvn_sta_get_'+apid
 
+choose_tt: 
 if not keyword_set(tt) then ctime,tt,npoints=2
+
+if n_elements(tt) ne 2 then begin
+   print,' ERROR - need two times chosen'
+   goto, choose_tt
+endif
+
 if tt[0] gt tt[1] then tt=reverse(tt)
 
 dat = call_function(routine,tt[0]) 

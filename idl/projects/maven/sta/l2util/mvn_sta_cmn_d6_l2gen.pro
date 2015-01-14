@@ -49,9 +49,9 @@
 ;HISTORY:
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-10 14:01:32 -0800 (Mon, 10 Nov 2014) $
-; $LastChangedRevision: 16159 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_d6_l2gen.pro $
+; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
+; $LastChangedRevision: 16613 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_d6_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
                           no_compression = no_compression, _extra = _extra

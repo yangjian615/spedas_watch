@@ -7,7 +7,7 @@
 ;
 ;CALLING SEQUENCE:
 ;  spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
-;                           timerange, treeCopyPtr
+;                           timerange, treeCopyPtr, loadDataTabs
 ;
 ;INPUT:
 ;  gui_id:  The id of the main GUI window.
@@ -16,6 +16,7 @@
 ;  historyWin:  The history window object.
 ;  timerange:  The GUI timerange object.
 ;  treeCopyPtr:  Pointer variable to a copy of the load widget tree.
+;  loadDataTabs: an array of structures containing the "Load Data" panels, loaded via pluginManager->getLoadDataPanels()
 ;  
 ;KEYWORDS:
 ;  none
@@ -212,7 +213,7 @@ pro spd_ui_init_load_window_event, event
   CASE uval OF
     'DISMISS':BEGIN
       spd_ui_init_load_update_tree_copy,state
-      spd_ui_load_data_select_copy,state
+     ; spd_ui_load_data_select_copy,state
       Widget_Control, event.top, Set_UValue=state, /No_Copy
       Widget_Control, event.top, /Destroy
       RETURN
@@ -228,7 +229,7 @@ pro spd_ui_init_load_window_event, event
 end
 
 pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
-                             timerange, treeCopyPtr,userSelectPtr
+                             timerange, treeCopyPtr,userSelectPtr, loadDataTabs
 
   compile_opt idl2, hidden
   
@@ -236,12 +237,12 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
                     /Modal, /Floating, /TLB_KILL_REQUEST_EVENTS)
   tabBase = widget_tab(tlb, location=0, multiline=10)
 
-  getresourcepath,configPath
-  restore,filename=configPath+'spd_ui_load_data_config_template.sav' ;restores a saved ascii_template variable named "templ"
-  loadDataTabs = read_ascii(configPath+'spd_ui_load_data_config.txt',template=templ,count=tabNum) ;load data api configuration information
-  ; if no title was provided then use the tab mission name
-  ind = where(loadDataTabs.panel_title eq '', ncnt)
-  if ncnt gt 0 then loadDataTabs.panel_title[ind]=loadDataTabs.mission_name[ind]
+  tabNum = n_elements(loadDataTabs)
+  
+  ; set the titles
+  for tab_idx = 0, n_elements(loadDataTabs)-1 do begin
+      if loadDataTabs[tab_idx].panel_title eq '' then loadDataTabs[tab_idx].panel_title = loadDataTabs[tab_idx].mission_name
+  endfor
 
   if tabNum eq 0 then begin 
     message,'ERROR: No tabs found in config file. Probable config file error' ;use of message to send error here is okay, methinx, 'cause it is serious and will be caught by the parent error handler'
@@ -250,8 +251,8 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
       ; create a widget base for each tab
   tabArray = make_array(tabNum, /long)
   for i=0,tabNum-1 do begin
-      tabArray[i] = widget_base(tabBase, title=loadDataTabs.mission_name[i], $
-                           event_pro=loadDataTabs.procedure_name[i])    
+      tabArray[i] = widget_base(tabBase, title=loadDataTabs[i].panel_title, $
+                           event_pro=loadDataTabs[i].procedure_name)    
   endfor
      
   bottomBase = widget_base(tlb, /Col, YPad=6, /Align_Left)
@@ -285,7 +286,7 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
    
   for i= 0, tabNum-1 do begin
 
-    call_procedure, strtrim(loadDataTabs.procedure_name[i]), tabArray[i], loadedData, historyWin, statusText, $
+    call_procedure, strtrim(loadDataTabs[i].procedure_name), tabArray[i], loadedData, historyWin, statusText, $
                     treeCopyPtr, timeRange, callSequence,loadTree=thisTreeArray, $
                     timeWidget=otherTimeWidget
     timeArray[i] = otherTimeWidget
@@ -295,14 +296,18 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
   
   tabTitleText=loadDataTabs.panel_title
                    
-  state = {tlb:tlb, gui_id:gui_id,tabBase:tabBase, historyWin:historyWin, statusText:statusText,treeArray:treeArray,timeArray:timeArray,tabArray:tabArray,treeCopyPtr:treeCopyPtr,previousTab:0,tabTitleText:tabTitleText, userSelectPtr:userSelectPtr}
+  state = {tlb:tlb, gui_id:gui_id,tabBase:tabBase, historyWin:historyWin, statusText:statusText,treeArray:treeArray,$
+        timeArray:timeArray,tabArray:tabArray,treeCopyPtr:treeCopyPtr,previousTab:0,tabTitleText:tabTitleText, userSelectPtr:userSelectPtr}
 
   CenterTLB, tlb
   Widget_Control, tlb, Set_UValue = state, /No_Copy
   Widget_Control, tlb, /Realize
-  Widget_Control, tlb, get_UValue = state, /No_Copy
-  spd_ui_load_data_set_user_select,state
-  Widget_Control, tlb, set_UValue = state, /No_Copy
+  
+  ; NOTE: after refactoring the plugins, the following will only work if THEMIS
+  ; is the first plugin loaded (this means it must be the first file in the directory)
+;  Widget_Control, tlb, get_UValue = state, /No_Copy
+;  spd_ui_load_data_set_user_select,state
+;  Widget_Control, tlb, set_UValue = state, /No_Copy
 
   ;keep windows in X11 from snaping back to 
   ;center during tree widget events 

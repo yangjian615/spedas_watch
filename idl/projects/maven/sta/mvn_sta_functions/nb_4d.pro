@@ -46,8 +46,10 @@ dtheta = dat.dtheta/!radeg
 dphi = dat.dphi/!radeg
 domega = dat.domega
 ;	if ndimen(domega) eq 0 then domega=replicate(1.,dat.nenergy)#domega
-if n_e eq 64 then nne=4 else nne=3
-if n_e eq 48 then nne=6
+if n_e eq 64 then nne=8 
+if n_e eq 32 then nne=4
+if n_e le 16 then nne=2
+if n_e eq 48 then nne=6		; when does this happen? is this for swia?
 
 
 if keyword_set(en) then begin
@@ -70,10 +72,22 @@ endif
 if dat.nmass eq 1 then begin
 	if dat.time lt time_double('14-10-1') then begin
 		maxcnt = max(data,mind)
-		data[0:(mind-nne>0)]=0.
-		data[((mind+nne)<(n_e-1)):(n_e-1)]=0.
+		if n_e eq 64 then nnne=4 else nnne=nne
+		data[0:(mind-nnne>0)]=0.
+		data[((mind+nnne)<(n_e-1)):(n_e-1)]=0.
 	endif	
 endif
+
+; limit the energy range to near the peak
+	if ndimen(data) eq 2 then begin
+		maxcnt = max(total(data,2),mind) 
+		data[0:(mind-nne>0),*]=0.
+		data[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
+	endif else begin
+		maxcnt = max(data,mind)
+		data[0:(mind-nne>0)]=0.
+		data[((mind+nne)<(n_e-1)):(n_e-1)]=0.
+	endelse
 
 if dat.nmass gt 1 then begin
 	if keyword_set(mi) then begin

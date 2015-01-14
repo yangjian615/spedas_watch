@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:33:14 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16147 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-01-09 09:53:09 -0800 (Fri, 09 Jan 2015) $
+;$LastChangedRevision: 16610 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -210,7 +210,7 @@ PRO spd_gui_event, event
   info.contextMenuOn = 0
 
   CASE userValue OF
-
+  
     'EXIT': BEGIN
       spd_ui_exit,event,info=info
       return
@@ -272,10 +272,12 @@ PRO spd_gui_event, event
 	 END
 
     'LOAD': BEGIN
-     dataLoadSelectPtr = info.dataLoadSelectPtr
+       loadDataTabs = info.pluginManager->getLoadDataPanels()
+       
+       dataLoadSelectPtr = info.dataLoadSelectPtr
        spd_ui_init_load_window, info.master, info.windowStorage, info.loadedData, $
                                 info.historyWin, $
-                                info.loadtr,info.guiTree,dataLoadSelectPtr
+                                info.loadtr,info.guiTree,dataLoadSelectPtr, loadDataTabs
        info.dataLoadSelectPtr = dataLoadSelectPtr
      
        info.drawObject->Update,info.windowStorage,info.loadedData 
@@ -450,8 +452,8 @@ PRO spd_gui_event, event
 ;      info.drawObject->draw
 ;      drawID = info.drawId
 ;      drawWin = info.drawWin
-
-     spd_ui_init_fileconfig, info.master, info.historyWin  
+       fileconfig_panels = info.pluginManager->getFileConfigPanels()
+       spd_ui_init_fileconfig, info.master, info.historyWin, fileconfig_panels
 
 ;      do not erase in case graphcs are reinstalled
 ;      spd_ui_init_fileconfig, info.master, drawId, drawWin, $ 
@@ -1376,6 +1378,9 @@ PRO spd_gui,reset=reset,template_filename=template_filename
     palettebmp = transpose(palettebmp, [1,2,0])
     _extra = {bitmap:palettebmp}
   endif
+  
+  ; load the plugin manager
+  pluginManager = obj_new('spd_ui_plugin_manager')
 
   ; top level and main bases
   gui_title = 'Space Physics Environment Data Analysis Software (SPEDAS)'
@@ -1559,7 +1564,9 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   
   pluginsMenu = widget_button(bar, value='Plugins ', /menu)
   
-  spd_ui_plugin_menu, pluginsMenu
+  plugin_menu_items = pluginManager->getPluginMenus()
+ 
+  spd_ui_plugin_menu, pluginsMenu, plugin_menu_items
   
 ; Window Pull Down Menu window
 
@@ -1943,6 +1950,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
           dataLoadSelectPtr:ptr_new(), $ ; stores users selections from the load data window so that they don't have to re-click every time they open the window.
           saveDataDirPtr:ptr_new(''),$; stores path to last directory data was save to so user doesn't have to renavigate 
           fieldModelSettings:fieldModelSettings, $ ; used to keep track of field model inputs
+          pluginManager: pluginManager, $ ; the plugin manager
           toolbar_ysize:0,$; store the size of the toolbar along top of gui
           toolbar_xsize:0 $; store the x size of the toolbar along top of gui
           } 

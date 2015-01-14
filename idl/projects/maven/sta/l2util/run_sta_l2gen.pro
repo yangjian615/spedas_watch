@@ -15,9 +15,9 @@
 ;HISTORY:
 ; 25-jun-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-12-02 11:00:04 -0800 (Tue, 02 Dec 2014) $
-; $LastChangedRevision: 16335 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/run_sta_l2gen.pro $
+; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
+; $LastChangedRevision: 16613 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/run_sta_l2gen.pro $
 ;-
 
 Pro run_sta_l2gen

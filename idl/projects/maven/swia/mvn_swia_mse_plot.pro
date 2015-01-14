@@ -27,8 +27,8 @@
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-06 06:42:57 -0800 (Tue, 06 Jan 2015) $
-; $LastChangedRevision: 16600 $
+; $LastChangedDate: 2015-01-12 11:59:10 -0800 (Mon, 12 Jan 2015) $
+; $LastChangedRevision: 16645 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
@@ -49,6 +49,10 @@ if not keyword_set(nby) then nby = 100
 if not keyword_set(nbz) then nbz = 100
 if not keyword_set(plog) then plog = 0
 if not keyword_set(len) then len = 1
+
+xrange = float(xrange)
+yrange = float(yrange)
+zrange = float(zrange)
 
 rrange = [0,sqrt(max(abs(yrange))^2 + max(abs(zrange))^2)]
 
@@ -146,7 +150,7 @@ if keyword_set(qfilt) then begin
 	zmse = zmse[w]
 endif
 
-binxy = fltarr(nbx,nby,3)
+binxy = fltarr(nbx,nby,3) 
 normxy = fltarr(nbx,nby)
 binxz = fltarr(nbx,nbz,3)
 normxz = fltarr(nbx,nbz)
@@ -197,7 +201,24 @@ binxz[*,*,2] = binxz[*,*,2]/(normxz>1)
 bincyl[*,*,2] = bincyl[*,*,2]/(normcyl>1)
 binyz[*,*,2] = binyz[*,*,2]/(normyz>1)
 
-if not keyword_set(prange) then prange = [min(bincyl),max(bincyl)]
+w = where(normxy eq 0)
+binxy[w] = !values.d_nan
+binxy[w+1L*nbx*nby] = !values.d_nan
+binxy[w+2L*nbx*nby] = !values.d_nan
+w = where(normxz eq 0)
+binxz[w] = !values.d_nan
+binxz[w+1L*nbx*nbz] = !values.d_nan
+binxz[w+2L*nbx*nbz] = !values.d_nan
+w = where(normyz eq 0)
+binyz[w] = !values.d_nan
+binyz[w+1L*nby*nbz] = !values.d_nan
+binyz[w+2L*nby*nbz] = !values.d_nan
+w = where(normcyl eq 0)
+bincyl[w] = !values.d_nan
+bincyl[w+1L*nbx*nby] = !values.d_nan
+bincyl[w+2L*nbx*nby] = !values.d_nan
+
+if not keyword_set(prange) then prange = [min(bincyl,/nan),max(bincyl,/nan)]
 xp = xrange[0]+findgen(nbx)*dx + dx/2.
 yp = yrange[0]+findgen(nby)*dy + dy/2.
 zp = zrange[0]+findgen(nbz)*dz + dz/2.
@@ -290,26 +311,35 @@ if ptype eq 'scalar' then begin
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	
 endif else begin
+	w = where(1-finite(binxy),nw)
+	if nw gt 0 then binxy(w) = 1e10
+	w = where(1-finite(binxz),nw)
+	if nw gt 0 then binxz(w) = 1e10
+	w = where(1-finite(binyz),nw)
+	if nw gt 0 then binyz(w) = 1e10
+	w = where(1-finite(bincyl),nw)
+	if nw gt 0 then bincyl(w) = 1e10
+	
 	window,0
-	velovect,binxy[*,*,0],binxy[*,*,1],xp,yp,xrange = xrange, yrange = yrange, xtitle = 'X [km]',ytitle = 'Y [km]', len = len
+	velovect,binxy[*,*,0],binxy[*,*,1],xp,yp,xrange = xrange, yrange = yrange, xtitle = 'X [km]',ytitle = 'Y [km]', len = len, dots = 0,missing = 1e9
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,1
-	velovect,binxz[*,*,0],binxz[*,*,2],xp,zp,xrange = xrange, yrange = zrange, xtitle = 'X [km]',ytitle = 'Z [km]', len = len
+	velovect,binxz[*,*,0],binxz[*,*,2],xp,zp,xrange = xrange, yrange = zrange, xtitle = 'X [km]',ytitle = 'Z [km]', len = len, dots = 0,missing = 1e9
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,2
-	velovect,bincyl[*,*,0],bincyl[*,*,1],xp,rp,xrange = xrange, yrange = rrange, xtitle = 'X [km]',ytitle = 'R_YZ [km]', title = 'In Plane', len = len	
+	velovect,bincyl[*,*,0],bincyl[*,*,1],xp,rp,xrange = xrange, yrange = rrange, xtitle = 'X [km]',ytitle = 'R_YZ [km]', title = 'In Plane', len = len, dots = 0, missing=1e9	
 	oplot,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,3
-	velovect,binyz[*,*,1],binyz[*,*,2],yp,zp,xrange = yrange, yrange = zrange, xtitle = 'Y [km]',ytitle = 'Z [km]', len = len
+	velovect,binyz[*,*,1],binyz[*,*,2],yp,zp,xrange = yrange, yrange = zrange, xtitle = 'Y [km]',ytitle = 'Z [km]', len = len, dots = 0,missing=1e9
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 endelse
 

@@ -16,7 +16,7 @@ setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 
 #check for lock file here
 if (! -e /tmp/SWEL2lock.txt) then
-    cd /home/muser/export_socware
+    cd /mydisks/home/maven
     rm -f run_swe_l2gen.bm
     rm -f /tmp/run_swe_l2gen.txt
 

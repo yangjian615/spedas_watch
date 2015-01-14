@@ -1,0 +1,4 @@
+project: GOES
+load_data: spd_ui_load_goes_data
+menu: goes_ui_gen_overplot, Overview Plots, GOES Overview Plot...
+config: goes_fileconfig

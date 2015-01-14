@@ -1,29 +1,24 @@
 ;+
 ;NAME:
-; mvn_sta_cmn_db_l2gen.pro
+; mvn_sta_cmn_2a_l2gen.pro
 ;PURPOSE:
 ; turn a MAVEN STA RATES common block into a L2 CDF.
 ;CALLING SEQUENCE:
-; mvn_sta_cmn_db_l2gen, cmn_dat
+; mvn_sta_cmn_2a_l2gen, cmn_dat
 ;INPUT:
-; cmn_dat = a structrue with the data:
+; cmn_dat = a structure with the data:
 ;   PROJECT_NAME    STRING    'MAVEN'
 ;   SPACECRAFT      STRING    '0'
-;   DATA_NAME       STRING    'db_1024m'
-;   APID            STRING    'db'
-;   VALID           INT       Array[1350]
-;   QUALITY_FLAG    INT       Array[1350]
-;   TIME            DOUBLE    Array[1350]
-;   END_TIME        DOUBLE    Array[1350]
-;   INTEG_T         DOUBLE    Array[1350]
-;   EPROM_VER       INT       Array[1350]
-;   HEADER          LONG      Array[1350]
-;   MODE            INT       Array[1350]
-;   RATE            INT       Array[1350]
-;   SWP_IND         INT       Array[1350]
-;   ENERGY          FLOAT     Array[9, 64]
-;   TOF             FLOAT     Array[1024]
-;   DATA            DOUBLE    Array[1350, 1024]
+;   DATA_NAME       STRING    'Housekeeping'
+;   APID            STRING    '2a'
+;   QUALITY_FLAG    INT       Array[2700]
+;   TIME            DOUBLE    Array[2700]
+;   NHKP            INT             99
+;   CALIB_CONSTANTS DOUBLE    Array[8, 99]
+;   HKP_LABELS      STRING    Array[99]
+;   HKP_RAW         INT       Array[2700, 99]
+;   HKP             FLOAT     Array[2700, 99]
+;
 ; All of this has to go into the CDF, also Epoch, tt200, MET time
 ; variables; some of the names are changed to titles given in the SIS
 ; Data is changed from double to float prior to output
@@ -35,14 +30,13 @@
 ;             database. /disks/data/maven/pfp/sta/l2
 ; no_compression = if set, do not compress the CDF file
 ;HISTORY:
-; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
-; 22-Dec-2014, jmm, Added eprom_ver, header
+; 16-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-12-22 13:48:38 -0800 (Mon, 22 Dec 2014) $
-; $LastChangedRevision: 16532 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_sta_cmn_db_l2gen.pro $
+; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
+; $LastChangedRevision: 16613 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_2a_l2gen.pro $
 ;-
-Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
+Pro mvn_sta_cmn_2a_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
                           no_compression = no_compression, _extra = _extra
 
 ;Keep track of software versioning here
@@ -55,7 +49,7 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
   Endif
 ;First, global attributes
   global_att = {Acknowledgment:'None', $
-                Data_type:'l2_db-1024tof>Level 2 Time of flight 1024 channels', $
+                Data_type:'l2_2a-hkp>Level 2 Housekeeping Data', $
                 Data_version:'0', $
                 Descriptor:'STATIC>Supra-Thermal Thermal Ion Composition Particle Distributions', $
                 Discipline:'Space Physics>Planetary Physics>Particles', $
@@ -96,16 +90,8 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
             ['TIME_MET', 'DOUBLE', 'Mission elapsed time for this data record, one element per ion distribution (NUM_DISTS elements)', 'Mission Elapsed Time'], $
             ['TIME_EPHEMERIS', 'DOUBLE', 'Time used by SPICE program (NUM_DISTS elements)', 'SPICE Ephemeris Time'], $
             ['TIME_UNIX', 'DOUBLE', 'Unix time (elapsed seconds since 1970-01-01/00:00 without leap seconds) for this data record, one element per ion distribution. This time is the center time of data collection. (NUM_DISTS elements)', 'Unix Time'], $
-            ['TIME_START', 'DOUBLE', 'Unix time at the start of data collection. (NUM_DISTS elements)', 'Interval start time (unix)'], $
-            ['TIME_END', 'DOUBLE', 'Unix time at the end of data collection. (NUM_DISTS elements)', 'Interval end time (unix)'], $
-            ['INTEG_TIME', 'DOUBLE', 'Integration time for TOF accumulation. (NUM_DISTS elements).', 'Integration time'], $
-            ['EPROM_VER', 'INTEGER', 'An integer designating the version of the flight eprom load. (NUM_DISTS elements)', 'Eprom version'], $
-            ['HEADER', 'LONG', 'A long integer that consists of bytes 12-15 in data packet header. See MAVEN_PF_FSW_021_CTM.xls for definition of header bits. (NUM_DISTS elements)', 'Header'], $
-            ['VALID', 'INTEGER', 'Validity flag codes valid data (bit 0), test pulser on (bit 1), diagnostic mode (bit 2), data compression type (bit 3-4), packet compression (bit 5) (NUM_DISTS elements)', ' Valid flag'], $
-            ['MODE', 'INTEGER', 'Decoded mode number. (NUM_DISTS elements)', 'Mode number'], $
-            ['RATE', 'INTEGER', 'Decoded telemetry rate number. (NUM_DISTS elements)', 'Telemetry rate number'], $
-            ['SWP_IND', 'INTEGER', 'Index that identifies the energy and deflector sweep look up tables (LUT) for the sensor. SWP_IND is an index that selects the following support data arrays: ENERGY, DENERGY, THETA, DTHETA, PHI, DPHI, DOMEGA, GF and MASS_ARR. (NUM_DISTS elements), EN_IND Le NSWP', 'Sweep index'], $
-            ['DATA', 'FLOAT', 'Accumulated events binned into 1024 time-of-flight channels with dimension (NUM_DISTS, 1024) units=counts', 'Data'], $
+            ['HKP_RAW', 'INTEGER', 'Housekeeping array of dimension (NUM_DISTS) of raw housekeeping values ', 'hkp_raw'], $
+            ['HKP', 'FLOAT', 'Housekeeping array of dimension (NUM_DISTS) of calibrated housekeeping values', 'hkp'], $
             ['QUALITY_FLAG', 'INTEGER', 'Quality flag (NUM_DISTS elements)', 'Quality flag']]
 ;Use Lower case for variable names
   rv_vt[0, *] = strlowcase(rv_vt[0, *])
@@ -116,10 +102,9 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
            ['DATA_NAME', 'STRING', 'XX YYY where XX is the APID and YYY is the array abbreviation (64e2m, 32e32m, etc.)'], $
            ['APID', 'STRING', 'XX, where XX is the APID'], $
            ['NUM_DISTS', 'INTEGER', 'Number of measurements or times in the file'], $
-           ['NSWP', 'INTEGER', 'Number of sweep tables;  will increase over mission as new sweep modes are added'], $
-           ['ENERGY', 'FLOAT', 'Energy array with dimension (NSWP, 64)'], $
-           ['NTOF', 'INTEGER', 'Number of TOF channels - 1024'], $
-           ['TOF', 'FLOAT', 'Time of flight value for each TOF bin in nanoseconds. (1024 elements)']]
+           ['NHKP', 'INTEGER', 'Number of housekeeping channels - 99'], $
+           ['CALIB_CONSTANTS', 'INTEGER', 'Calibration parameters to convert raw housekeeping value to calibrated housekeeping with dimension (8,NHKP)'], $
+           ['HKP_LABELS', 'STRING', 'Housekeeping label string array with dimension NHKP']]
 
 ;Use Lower case for variable names
   nv_vt[0, *] = strlowcase(nv_vt[0, *])
@@ -133,7 +118,7 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
   tt2000_range = long64((add_tt2000_offset(date_range)-time_double('2000-01-01/12:00'))*1e9)
 
 ;Use center time for time variables
-  center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
+  center_time = cmn_dat.time
 
 ;Grab the date, and clip anything plus or minus 10 minutes from the
 ;start or end of the date
@@ -142,9 +127,8 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
   cmn_dat = mvn_sta_cmn_tclip(temporary(cmn_dat), trange)
 
 ;Reset center time
-  center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
+  center_time = cmn_dat.time
   num_dists = n_elements(center_time)
-
 ;met_center at the spacecraft
   timespan, date, 1
   met_center = mvn_spc_met_to_unixtime(center_time, /reverse)
@@ -183,15 +167,6 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
               dvar = center_time
               is_tvar = 1b
            End
-           'time_start': Begin
-              dvar = cmn_dat.time
-              is_tvar = 1b
-           End
-           'time_end': Begin
-              dvar = cmn_dat.end_time
-              is_tvar = 1b
-           End
-           'integ_time': dvar = cmn_dat.integ_t
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for; Skipping'
               have_dvar = 0b
@@ -202,7 +177,7 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      If(have_dvar Eq 0) Then Continue
 
 ;change data to float from double
-     if(vj eq 'data') then dvar = float(dvar) 
+     if(vj eq 'hkp') then dvar = float(dvar) 
 
      cdf_type = idl2cdftype(dvar, format_out = fmt, fillval_out = fll, validmin_out = vmn, validmax_out = vmx)
 ;Change types for CDF time variables
@@ -235,12 +210,13 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      Endif Else If(vj Eq 'time_ephemeris') Then Begin
         str_element, vatt, 'validmin', et_range[0], /add
         str_element, vatt, 'validmax', et_range[1], /add
-     Endif Else If(vj Eq 'time_unix' Or vj Eq 'time_start' Or vj Eq 'time_end') Then Begin
+     Endif Else If(vj Eq 'time_unix') Then Begin
         str_element, vatt, 'validmin', date_range[0], /add
         str_element, vatt, 'validmax', date_range[1], /add
      Endif Else Begin
         str_element, vatt, 'validmin', vmn, /add
         str_element, vatt, 'validmax', vmx, /add
+        str_element, vatt, 'format', fmt, /add
 ;scalemin and scalemax depend on the variable's values
         str_element, vatt, 'scalemin', vmn, /add
         str_element, vatt, 'scalemax', vmx, /add
@@ -250,11 +226,10 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
            vatt.scalemax = max(dvar[ok])
         Endif
      Endelse
-
      vatt.catdesc = rv_vt[2, j]
-;Rates are data, all else is support data
-     IF(vj Eq 'data') Then Begin
-        vatt.scaletyp = 'log' 
+;Data or support data?
+     IF(vj Eq 'hkp_raw' Or vj Eq 'hkp') Then Begin
+        vatt.scaletyp = 'linear' 
         vatt.display_type = 'time_series'
         vatt.var_type = 'data'
      Endif Else Begin
@@ -267,9 +242,7 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
 ;Units
      If(is_tvar) Then Begin ;Time variables
         If(vj Eq 'epoch') Then vatt.units = 'nanosec' Else vatt.units = 'sec'
-     Endif Else Begin
-        If(vj Eq 'data') Then vatt.units = 'counts'
-     Endelse
+     Endif
 
 ;Depends and labels
      vatt.depend_time = 'time_unix'
@@ -277,11 +250,11 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      vatt.lablaxis = rv_vt[3, j]
 
 ;Assign labels and components for vectors
-     If(vj Eq 'data') Then Begin
-        vatt.depend_1 = 'tof'
-        vatt.labl_ptr_1 = 'tof_labels_1024'
+     If(vj Eq 'hkp' Or vj Eq 'hkp_raw') Then Begin
+        vatt.depend_1 = 'compno_99'
+        vatt.labl_ptr_1 = 'hkp_labels'
      Endif
-     
+
 ;Time variables are monotonically increasing:
      If(is_tvar) Then vatt.monoton = 'INCREASE' Else vatt.monoton = 'FALSE'
 
@@ -334,12 +307,6 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
            'num_dists': Begin
               dvar = num_dists
            End        
-           'nswp': Begin
-              dvar = fix(n_elements(uniq(cmn_dat.swp_ind)))
-           End
-           'ntof': Begin
-              dvar = fix(n_elements(cmn_dat.tof))
-           End
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for. Skipping'
               have_dvar = 0b
@@ -371,7 +338,6 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      Endif
      vatt.catdesc = nv_vt[2, j]
      vatt.fieldnam = nv_vt[0, j]
-     If(vj Eq 'tof') Then vatt.units = 'nanosec'
 
 ;Create and fill the variable structure
      vsj = {name:'', num:0, is_zvar:1, datatype:'', $
@@ -394,33 +360,28 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      count = count+1
   Endfor
      
-;Labels now, only tof labels
-  lablvars = 'tof_labels_1024'
+;Now compno_99
+  vcompno = 'compno_99'
 
-  For j = 0, n_elements(lablvars)-1 Do Begin
-     vj = lablvars[j]
+  For j = 0, n_elements(vcompno)-1 Do Begin
+     vj = vcompno[j]
      xj = strsplit(vj, '_', /extract)
-     nj = Fix(xj[2])
-     aj = xj[0]
-     dvar = strupcase(aj)+strcompress(/remove_all, string(indgen(nj)))
-
-     ndv = n_elements(dvar)
-     numelem = strlen(dvar[ndv-1]) ;needed for numrec
-     fmt = 'A'+strcompress(/remove_all, string(numelem))
-
-;Label attributes
+     nj = Fix(xj[1])
+;Component attributes
      vatt =  {catdesc:vj, fieldnam:vj, $
-              format:fmt, dict_key:'label', $
-              var_type:'metadata'}
+              fillval:0, format:'I3', $
+              validmin:0, dict_key:'number', $
+              validmax:255, var_type:'metadata'}
+;Also a data array
+     dvar = 1+indgen(nj)
 ;Create and fill the variable structure
      vsj = {name:'', num:0, is_zvar:1, datatype:'', $
             type:0, numattr: -1, numelem: 1, recvary: 0b, $
             numrec:-1L, ndimen: 0, d:lonarr(6), dataptr:ptr_new(), $
             attrptr:ptr_new()}
      vsj.name = vj
-     vsj.datatype = 'CDF_CHAR'
-     vsj.type = 1
-     vsj.numelem = numelem
+     vsj.datatype = 'CDF_INT2'
+     vsj.type = 2
 ;Include all dimensions
      ndim = size(dvar, /n_dimen)
      dims = size(dvar, /dimen)
@@ -433,7 +394,7 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
      count = count+1
   Endfor
-     
+
   nvars = n_elements(vstr)
   natts = n_tags(global_att)+n_tags(vstr[0])
 
@@ -469,7 +430,7 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
      dir = temporary(temp_string)
   Endif Else dir = './'
 
-  ext = strcompress(strlowcase(cmn_dat.apid), /remove_all)+'-1024tof'
+  ext = strcompress(strlowcase(cmn_dat.apid), /remove_all)+'-hkp'
 
   file0 = 'mvn_sta_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
   fullfile0 = dir+file0

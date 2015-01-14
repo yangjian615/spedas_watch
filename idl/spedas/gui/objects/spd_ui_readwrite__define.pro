@@ -26,9 +26,9 @@
 ; 
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-27 16:21:55 -0700 (Thu, 27 Mar 2014) $
-;$LastChangedRevision: 14686 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-01-12 16:43:43 -0800 (Mon, 12 Jan 2015) $
+;$LastChangedRevision: 16649 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_readwrite__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -354,7 +354,19 @@ for i=0, att_count-1 do begin
         if (classname EQ 'NULLOBJ') then begin
             ; Assign a null object reference
             ;dprint, 'Assigning null object reference'
-            self.(tagindex)[valindex] = obj_new()
+           
+            ;If-else statement below is quick work around for syntax ambiguity in our serializer
+            ;serialization code doesn't properly distinguish between zero element(scalar) and one element arrays
+            ;This was fine until IDL8.4(may be due to a bug in IDL 8.4)
+            ;IDL 8.3 or earlier: self.(tagindex)[0] = proto_value (zero indexing scalar, just returns element)
+            ;IDL 8.4 and later: self.(tagindex)[0] = proto_value (zero indexing an object with overloaded [], tries to store proto_value inside object, instead of replacing 
+            ;Better solution is to adopt the fix we put into the call_sequence serialization code:  proto_nelem=0 implies scalar,proto_nelem=1 or more implies 1 to N element array
+            if proto_nelem eq 1 then begin
+              self.(tagindex) = obj_new()
+            endif else begin
+              self.(tagindex)[valindex] = obj_new()
+            endelse
+
         endif else if (classname EQ 'IDL_CONTAINER') then begin
            contained_type=valobj->GetAttribute('contained_type')
            ;support multiple types, space separated
@@ -392,8 +404,22 @@ for i=0, att_count-1 do begin
                 message,'IDL_CONTAINER wrong count, expected '+string(container_count)+', got '+string(child_count)
              endif
            endif
+           
+           
            ; Make the assignment to self
-           self.(tagindex)[valindex] = proto_value
+           
+           ;If-else statement below is quick work around for syntax ambiguity in our serializer
+           ;serialization code doesn't properly distinguish between zero element(scalar) and one element arrays
+           ;This was fine until IDL8.4(may be due to a bug in IDL 8.4)
+           ;IDL 8.3 or earlier: self.(tagindex)[0] = proto_value (zero indexing scalar, just returns element)
+           ;IDL 8.4 and later: self.(tagindex)[0] = proto_value (zero indexing an object with overloaded [], tries to store proto_value inside object, instead of replacing object
+           ;Better solution is to adopt the fix we put into the call_sequence serialization code:  proto_nelem=0 implies scalar,proto_nelem=1 or more implies 1 to N element array
+           if proto_nelem eq 1 then begin
+             self.(tagindex) = proto_value
+           endif else begin
+             self.(tagindex)[valindex] = proto_value
+           endelse
+           
         endif else begin
            ; Assume it's a SPD_UI object
            ; Construct an object
@@ -403,7 +429,19 @@ for i=0, att_count-1 do begin
            ; Invoke BuildFromDOMElement on child
            child_obj->BuildFromDOMElement,child_dom_element
            ; Assign to self
-            self.(tagindex)[valindex] = child_obj
+           
+           ;If-else statement below is quick work around for syntax ambiguity in our serializer
+           ;serialization code doesn't properly distinguish between zero element(scalar) and one element arrays
+           ;This was fine until IDL8.4(may be due to a bug in IDL 8.4)
+           ;IDL 8.3 or earlier: self.(tagindex)[0] = proto_value (zero indexing scalar, just returns element)
+           ;IDL 8.4 and later: self.(tagindex)[0] = proto_value (zero indexing an object with overloaded [], tries to store proto_value inside object, instead of replacing object
+           ;Better solution is to adopt the fix we put into the call_sequence serialization code:  proto_nelem=0 implies scalar,proto_nelem=1 or more implies 1 to N element array
+           if proto_nelem eq 1 then begin
+             self.(tagindex) = child_obj
+           endif else begin
+             self.(tagindex)[valindex] = child_obj
+           endelse
+           
         endelse
     endif else begin
         ; not a primitive, not an obj?

@@ -7,11 +7,13 @@
 ;  in the SPEDAS GUI.
 ;
 ;CALLING SEQUENCE:
-;  spd_ui_init_fileconfig, gui_id, historyWin
+;  spd_ui_init_fileconfig, gui_id, historyWin, configTabs
 ;
 ;INPUT:
 ;  gui_id:  The id of the main GUI window.
 ;  historyWin:  The history window object.
+;  configTabs: an array of structures containing the config panel 
+;      plugin information; loaded via pluginManager->getFileConfigPanels()
 ;  
 ;KEYWORDS:
 ;  none
@@ -113,27 +115,21 @@ pro spd_ui_init_fileconfig_event, event
  RETURN
 end
 
-pro spd_ui_init_fileconfig,  gui_id,  historyWin                       
+pro spd_ui_init_fileconfig,  gui_id,  historyWin, configTabs
                            
   ; create the base widget for this tab
   tlb = widget_base(/col, Title = "Configuration Settings", Group_Leader = gui_id, $
                     /Modal, /Floating, /TLB_KILL_REQUEST_EVENTS)
   tabBase = widget_tab(tlb, location=0, multiline=10)
-    
-  ; read the spd_ui_fileconfig text file which contains information
-  ; on missions that have file configuration settings they want to 
-  ; modify within the gui
-  getresourcepath,configPath
-  restore,filename=configPath+'spd_ui_fileconfig_template.sav' ;restores a saved ascii_template variable named "templ"
-  configTabs = read_ascii(configPath+'spd_ui_fileconfig.txt',template=templ,count=tabNum) ;load data api configuration information
-
+  
+  tabNum = n_elements(configTabs)
   if tabNum eq 0 then message,'ERROR: No tabs found in config file. Probable config file error' 
   
   ; create a widget base for each tab
   tabArray = make_array(tabNum, /long)
   for i=0,tabNum-1 do begin
-      tabArray[i] = widget_base(tabBase, title=configTabs.mission_name[i], $
-                           event_pro=configTabs.procedure_name[i])    
+      tabArray[i] = widget_base(tabBase, title=configTabs[i].mission_name, $
+                           event_pro=configTabs[i].procedure_name)    
   endfor
 
   widget_control, tabBase, set_tab_current=0
@@ -147,7 +143,7 @@ pro spd_ui_init_fileconfig,  gui_id,  historyWin
   
   ; call the configuration file gui IDL procedure for each mission listed in the 
   ; spd_ui_config text file
-  FOR i = 0 ,tabNum-1 DO call_procedure, strtrim(configTabs.procedure_name[i]), tabArray[i], $
+  FOR i = 0 ,tabNum-1 DO call_procedure, strtrim(configTabs[i].procedure_name), tabArray[i], $
                                historyWin, statusBar
 
   state = {tlb:tlb,gui_id:gui_id,tabBase:tabBase,historyWin:historyWin,statusBar:statusBar, $

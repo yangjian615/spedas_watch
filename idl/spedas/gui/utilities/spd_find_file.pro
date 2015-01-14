@@ -13,14 +13,14 @@
 ;  name: (string) Name of file including type appendix
 ;
 ;Output:
-;  Return Value: (bool) true if file found, false if not
+;  Return Value: (bool) true if one or more copies of the file found in your path, false if not
 ;
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-13 18:20:24 -0800 (Thu, 13 Feb 2014) $
-;$LastChangedRevision: 14377 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-01-12 12:57:20 -0800 (Mon, 12 Jan 2015) $
+;$LastChangedRevision: 16646 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_find_file.pro $
 ;
 ;-
@@ -32,7 +32,7 @@ function spd_find_file, name
 
   file_path = file_search( idl_path_dirs + path_sep() + name )
 
-  if file_path eq '' then begin
+  if n_elements(file_path) eq 1 and file_path[0] eq '' then begin
     return, 0b
   endif else begin
     return, 1b

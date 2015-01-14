@@ -1,0 +1,2 @@
+project: MAVEN
+config: mvn_spd_fileconfig

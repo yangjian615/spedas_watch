@@ -3,7 +3,6 @@ function mvn_sta_apid_decom,ccsds,lastpkt=lastpkt,apid=apid,pcyc=pcyc,len=len
 ;return, {time:ccsds.time, mode:1}
 
 ;dprint,dlevel=2,'APID ',ccsds.apid,ccsds.seq_cntr,ccsds.size ,format='(a,z03," ",i,i)'
-
 data = mvn_pfdpu_part_decompress_data(ccsds)
 ;data = ccsds.data
 
