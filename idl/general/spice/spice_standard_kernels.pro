@@ -44,7 +44,7 @@ if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin     ;
 ;    if keyword_set(verbose) then source.verbose=verbose
     kernels=0
 ;        WARNING!!!!!  ALL FILE NAMES LISTED BELOW ARE SUBJECT TO CHANGE AND DO CHANGE REGULARLY
-    append_array,kernels,  file_retrieve('generic_kernels/lsk/naif0010.tls',_extra=source)        ; naif0010.tls is most recent as of 2013/12/16
+    append_array,kernels,  file_retrieve('generic_kernels/lsk/naif00??.tls',_extra=source,/last_version)        ; naif0010.tls is most recent as of 2013/12/16
     append_array,kernels,  file_retrieve('generic_kernels/pck/pck00010.tpc',_extra=source)        ; pck00010.tpc is most recent as of 2013/12/16
 ;    append_array,kernels,  file_retrieve('generic_kernels/spk/planets/de421.bsp',_extra=source)   ; Now obsolete ....  No longer on NAIF site!
 ;    append_array,kernels,  file_retrieve('generic_kernels/spk/planets/a_old_versions/de421.bsp',_extra=source)   ; archived location of de421.bsp

@@ -118,8 +118,11 @@ THEN BEGIN
                                 Print,'(mvn_lpw_spectra) Either no data or wrong cycle/type ',subcycle,type
                                 return;
                              endif
-      time = double(output.SC_CLK1(nn_index))+output.SC_CLK2(nn_index)/2l^16 +t_epoch  
-      nn_pktnum_extra=total(pktarr)-nn_pktnum  ; if multiple spectras is in one and the same spectra here is how many
+
+       ;reset nn_pktnum to match nn_index, jmm, 2015-01-15
+       nn_pktnum = n_elements(nn_index)
+       time = double(output.SC_CLK1(nn_index))+output.SC_CLK2(nn_index)/2l^16 +t_epoch
+       nn_pktnum_extra=total(pktarr)-nn_pktnum ; if multiple spectras is in one and the same spectra here is how many
       
       ;------------------      
        n_lines_temp1 = n_bins_spec/2   

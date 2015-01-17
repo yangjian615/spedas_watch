@@ -21,8 +21,8 @@
 ; 
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-12-11 11:18:17 -0800 (Thu, 11 Dec 2014) $
-; $LastChangedRevision: 16462 $
+; $LastChangedDate: 2015-01-14 19:18:36 -0800 (Wed, 14 Jan 2015) $
+; $LastChangedRevision: 16654 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear,reconstruct=reconstruct
@@ -51,7 +51,7 @@ if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
                append_array,kernels,  spice_standard_kernels(source=source,/mars)          ;  "Standard" kernels
 ;               append_array,kernels,  file_retrieve('generic_kernels/spk/comets/siding_spring_v?.bsp',_extra=source,/last_version)
                end
-     'LSK':    append_array,kernels,  file_retrieve('generic_kernels/lsk/naif0010.tls',_extra=source) 
+     'LSK':    append_array,kernels,  file_retrieve('generic_kernels/lsk/naif00??.tls',_extra=source,/last_version) 
      'SCK':    append_array,kernels,  file_retrieve('MAVEN/kernels/sclk/MVN_SCLKSCET.000??.tsc',_extra=source,/last_version)           ; spacecraft time
      'FRM':    begin                                                                                                            ; Frame kernels
 ;               append_array,kernels,  file_retrieve('MAVEN/kernels/fk/maven_v??*.tf',_extra=source,/last)                

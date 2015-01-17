@@ -27,6 +27,7 @@ pro mvn_sep_anc_read_cdf, file, tplot = tplot, sep_ancillary = sep_ancillary
 ; here we define the tags for the ancillary/ephemeris data structure.
   SEP_ancillarya = {time: 0d, look_directions_MSO:fltarr(4, 3),look_directions_SSO:fltarr(4, 3), $
                     look_directions_GEO:fltarr (4, 3), FOV_sun_angle:fltarr(4), FOV_ram_angle: fltarr(4), $
+                    FOV_pitch_angle: fltarr(4),$
                     fraction_FOV_Mars:fltarr(4), fraction_FOV_illuminated:fltarr(4), Mars_fraction_sky:sqrt(-6.6), $
                     qrot_SEP1_to_MSO: fltarr(4), qrot_SEP2_to_MSO: fltarr(4), $
                     qrot_SEP1_to_SSO: fltarr(4), qrot_SEP2_to_SSO: fltarr(4), $
@@ -56,26 +57,28 @@ pro mvn_sep_anc_read_cdf, file, tplot = tplot, sep_ancillary = sep_ancillary
   
   SEP_ancillary.FOV_sun_angle = transpose ([[*cdfi.vars[20].dataptr], [*cdfi.vars[21].dataptr],[*cdfi.vars[22].dataptr],[*cdfi.vars[23].dataptr]])
   SEP_ancillary.FOV_ram_angle = transpose ([[*cdfi.vars[24].dataptr], [*cdfi.vars[25].dataptr],[*cdfi.vars[26].dataptr],[*cdfi.vars[27].dataptr]])
-  SEP_ancillary.fraction_FOV_Mars = transpose ([[*cdfi.vars[28].dataptr], [*cdfi.vars[29].dataptr],[*cdfi.vars[30].dataptr],[*cdfi.vars[31].dataptr]])
-  SEP_ancillary.fraction_FOV_illuminated = transpose ([[*cdfi.vars[32].dataptr], [*cdfi.vars[33].dataptr],[*cdfi.vars[34].dataptr],[*cdfi.vars[35].dataptr]])
+  SEP_ancillary.FOV_pitch_angle = transpose ([[*cdfi.vars[28].dataptr], [*cdfi.vars[29].dataptr],[*cdfi.vars[30].dataptr],[*cdfi.vars[31].dataptr]])
+  SEP_ancillary.fraction_FOV_Mars = transpose ([[*cdfi.vars[32].dataptr], [*cdfi.vars[33].dataptr],[*cdfi.vars[34].dataptr],[*cdfi.vars[35].dataptr]])
+  SEP_ancillary.fraction_FOV_illuminated = transpose ([[*cdfi.vars[32].dataptr], [*cdfi.vars[33].dataptr],[*cdfi.vars[34].dataptr],[*cdfi.vars[36].dataptr]])
   SEP_ancillary.Mars_fraction_sky = *cdfi.vars[36].dataptr
-  SEP_ancillary.qrot_SEP1_to_MSO = transpose (*cdfi.vars[37].dataptr)
-  SEP_ancillary.qrot_SEP2_to_MSO = transpose (*cdfi.vars[38].dataptr)
-  SEP_ancillary.qrot_SEP1_to_SSO = transpose (*cdfi.vars[39].dataptr)
-  SEP_ancillary.qrot_SEP2_to_SSO = transpose (*cdfi.vars[40].dataptr)
-  SEP_ancillary.qrot_SEP1_to_GEO = transpose (*cdfi.vars[41].dataptr)
-  SEP_ancillary.qrot_SEP2_to_GEO = transpose (*cdfi.vars[42].dataptr)
-  SEP_ancillary.mvn_pos_MSO = transpose (*cdfi.vars[43].dataptr)
-  SEP_ancillary.mvn_pos_GEO = transpose (*cdfi.vars[44].dataptr)
-  SEP_ancillary.mvn_pos_ECLIPJ2000 = transpose (*cdfi.vars[45].dataptr)
-  SEP_ancillary.Earth_pos_ECLIPJ2000 = transpose (*cdfi.vars[46].dataptr)
-  SEP_ancillary.Mars_pos_ECLIPJ2000 = transpose (*cdfi.vars[47].dataptr)
-  SEP_ancillary.mvn_lat_GEO=*cdfi.vars[48].dataptr
-  SEP_ancillary.mvn_elon_GEO=*cdfi.vars[49].dataptr
-  SEP_ancillary.mvn_alt_areoid = mvn_get_altitude(reform (SEP_ancillary.mvn_pos_GEO[0,*]),reform (SEP_ancillary.mvn_pos_GEO[1,*]),$
+  SEP_ancillary.qrot_SEP1_to_MSO = transpose (*cdfi.vars[41].dataptr)
+  SEP_ancillary.qrot_SEP2_to_MSO = transpose (*cdfi.vars[42].dataptr)
+  SEP_ancillary.qrot_SEP1_to_SSO = transpose (*cdfi.vars[43].dataptr)
+  SEP_ancillary.qrot_SEP2_to_SSO = transpose (*cdfi.vars[44].dataptr)
+  SEP_ancillary.qrot_SEP1_to_GEO = transpose (*cdfi.vars[45].dataptr)
+  SEP_ancillary.qrot_SEP2_to_GEO = transpose (*cdfi.vars[46].dataptr)
+  SEP_ancillary.mvn_pos_MSO = transpose (*cdfi.vars[47].dataptr)
+  SEP_ancillary.mvn_pos_GEO = transpose (*cdfi.vars[48].dataptr)
+  SEP_ancillary.mvn_pos_ECLIPJ2000 = transpose (*cdfi.vars[49].dataptr)
+  SEP_ancillary.Earth_pos_ECLIPJ2000 = transpose (*cdfi.vars[50].dataptr)
+  SEP_ancillary.Mars_pos_ECLIPJ2000 = transpose (*cdfi.vars[51].dataptr)
+  SEP_ancillary.mvn_lat_GEO=*cdfi.vars[52].dataptr
+  SEP_ancillary.mvn_elon_GEO=*cdfi.vars[53].dataptr
+  SEP_ancillary.mvn_alt_areoid = mvn_get_altitude(reform (SEP_ancillary.mvn_pos_GEO[0,*]),$
+                                                  reform (SEP_ancillary.mvn_pos_GEO[1,*]),$
     reform (SEP_ancillary.mvn_pos_GEO[2,*]))
-  SEP_ancillary.mvn_sza=*cdfi.vars[50].dataptr
-  SEP_ancillary.mvn_slt=*cdfi.vars[51].dataptr
+  SEP_ancillary.mvn_sza=*cdfi.vars[54].dataptr
+  SEP_ancillary.mvn_slt=*cdfi.vars[55].dataptr
   
   
   if keyword_set (tplot) then begin
@@ -99,6 +102,7 @@ pro mvn_sep_anc_read_cdf, file, tplot = tplot, sep_ancillary = sep_ancillary
   
   store_data, 'SEP_sun_angle', data ={x: times,y:transpose (SEP_ancillary.FOV_sun_angle)}
   store_data, 'SEP_ram_angle', data ={x: times,y:transpose (SEP_ancillary.FOV_ram_angle)}
+  store_data, 'SEP_pitch_angle', data ={x: times,y:transpose (SEP_ancillary.FOV_pitch_angle)}
   options,'SEP_FOV*', 'colors', colors_3_lines
  
   ylim,'SEP_FOV*', [-1.0, 1.0]

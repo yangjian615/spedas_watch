@@ -27,8 +27,8 @@
 ;HISTORY:
 ; 16-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-10 15:20:26 -0800 (Mon, 10 Nov 2014) $
-; $LastChangedRevision: 16161 $
+; $LastChangedDate: 2015-01-13 12:58:16 -0800 (Tue, 13 Jan 2015) $
+; $LastChangedRevision: 16650 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_l2_load.pro $
 ;-
 Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_pass = user_pass, no_time_clip = no_time_clip, _extra = _extra
@@ -73,7 +73,8 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
      filex = ''
      For j = 0, napp_id-1 Do For k = 0, ndays-1 Do Begin
         yyyy = strmid(daystr[k], 0, 4) & mmmm = strmid(daystr[k], 4, 2)
-        filejk0 = 'maven/data/sci/sta/l2/'+yyyy+'/'+mmmm+'/mvn_sta_l2_'+app_id[j]+'*_'+daystr+'_v??.cdf'
+;fixed daystr to daystr[k], 2015-01-13
+        filejk0 = 'maven/data/sci/sta/l2/'+yyyy+'/'+mmmm+'/mvn_sta_l2_'+app_id[j]+'*_'+daystr[k]+'_v??.cdf'
         filejk = mvn_pfp_file_retrieve(filejk0, user_pass = user_pass)
         ;Files with ? or * left were not found
         question_mark = strpos(filejk, '?')
@@ -95,9 +96,10 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
      xxxx = strsplit(file_basename(filex[j]), '_', /extract)
      app_ids_all = [app_ids_all, strmid(xxxx[3], 0, 2)]
   Endfor
-  app_ids_all0 = app_ids_all[1:*]
-  app_ids_all = app_ids_all0[uniq(app_ids_all0)]
-  napp_ids_all = n_elements(app_ids_all)
+  app_ids_all0 = app_ids_all[1:*]                  ;app_ids are in the same order as filex
+  app_ids_all1 = app_ids_all0[bsort(app_ids_all0)] ;but sorted for uniq call
+  app_ids_all = app_ids_all1[uniq(app_ids_all1)]   ;otherwise files are loaded twice over month boundaries
+  napp_ids_all = n_elements(app_ids_all)           ;jmm, 2015-01-13
 ;Now for each app_id, read the files
   For j = 0, napp_ids_all-1 Do Begin
      datj = -1

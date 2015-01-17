@@ -24,16 +24,17 @@
 ;	QNORM: Quantity to normalize plots by
 ;	QFILT: Quantity to filter plots by
 ;	QRANGE: Range of quantity to filter plots by
+;	PLOTNORM: Plot histogram of event density (only works for scalar)
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-12 11:59:10 -0800 (Mon, 12 Jan 2015) $
-; $LastChangedRevision: 16645 $
+; $LastChangedDate: 2015-01-14 06:35:34 -0800 (Wed, 14 Jan 2015) $
+; $LastChangedRevision: 16651 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
 
-pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm
+pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm, plotnorm = plotnorm
 
 
 RM = 3397.
@@ -287,6 +288,12 @@ rp = rrange[0]+findgen(nby)*dr + dr/2.
 ang = findgen(360)*!pi/180
 
 if ptype eq 'scalar' then begin
+	if keyword_set(plotnorm) then begin
+		bincyl[*,*,0] = normcyl
+		binxy[*,*,0] = normxy
+		binxz[*,*,0] = normxz
+		binyz[*,*,0] = normyz
+	endif
 	
 	window,0
 	specplot,xp,yp,binxy[*,*,0],limits = {xrange:xrange,yrange:yrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Y [km]',position:[0.1,0.1,0.85,0.9]}

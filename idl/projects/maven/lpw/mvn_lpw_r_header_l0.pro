@@ -763,6 +763,7 @@ t1=SYSTIME(1,/seconds)                   ;to check on speed
        n_packets             = floor((((length[i]-1)/2)-4)/29)        ;this is how to merge them
        ACT_LF_pktarr[ni]     = n_packets 
        ;make the array
+       IF(n_packets Le 0) THEN continue                     ;jmm, 2015-01-15
        merge_large           = indgen(n_packets*29)*2    +2   ; every other even
        merge_small           = merge_large       +1   ; every other odd
        data_array            = 2L^8*newfile_byte[counter+merge_large] + newfile_byte[counter+merge_small]    
@@ -800,6 +801,7 @@ t1=SYSTIME(1,/seconds)                   ;to check on speed
        n_packets             = floor((((length[i]-1)/2)-4)/29)        ;this is how to merge them
        ACT_MF_pktarr[ni]     = n_packets 
        ;make the array
+       IF(n_packets Le 0) THEN continue                     ;jmm, 2015-01-15
        merge_large           = indgen(n_packets*29)*2    +2           ; every other even
        merge_small           = merge_large       +1                   ; every other odd
        data_array            = 2L^8*newfile_byte[counter+merge_large] + newfile_byte[counter+merge_small]    
@@ -837,6 +839,7 @@ t1=SYSTIME(1,/seconds)                   ;to check on speed
        n_packets             = floor((((length[i]-1)/2)-4)/65) ;floor((((length[i]-1)/2)-4)/29)        ;this is how to merge them
        ACT_HF_pktarr[ni]     = n_packets 
        ;make the array
+       IF(n_packets Le 0) THEN continue                     ;jmm, 2015-01-15
        merge_large           = indgen(n_packets*65)*2    +2           ; every other even
        merge_small           = merge_large       +1                   ; every other odd
        data_array            = 2L^8*newfile_byte[counter+merge_large] + newfile_byte[counter+merge_small]    
@@ -873,6 +876,7 @@ t1=SYSTIME(1,/seconds)                   ;to check on speed
        n_packets             = floor((((length[i]-1)/2)-4)/29)        ;this is how to merge them
        PAS_LF_pktarr[ni]     = n_packets 
        ;make the array
+       IF(n_packets Le 0) THEN continue                     ;jmm, 2015-01-15
        merge_large           = indgen(n_packets*29)*2    +2           ; every other even
        merge_small           = merge_large       +1                   ; every other odd
        data_array            = 2L^8*newfile_byte[counter+merge_large] + newfile_byte[counter+merge_small]    
@@ -910,6 +914,7 @@ t1=SYSTIME(1,/seconds)                   ;to check on speed
        n_packets             = floor((((length[i]-1)/2)-4)/29)        ;this is how to merge them
        PAS_MF_pktarr[ni]     = n_packets 
        ;make the array
+       IF(n_packets Le 0) THEN continue                     ;jmm, 2015-01-15
        merge_large           = indgen(n_packets*29)*2    +2           ; every other even
        merge_small           = merge_large       +1                   ; every other odd
        data_array            = 2L^8*newfile_byte[counter+merge_large] + newfile_byte[counter+merge_small]    
@@ -946,6 +951,7 @@ t1=SYSTIME(1,/seconds)                   ;to check on speed
        n_packets             = floor((((length[i]-1)/2)-4)/65)        ;this is how to merge them
        PAS_HF_pktarr[ni]     = n_packets 
        ;make the array
+       IF(n_packets Le 0) THEN continue                     ;jmm, 2015-01-15
        merge_large           = indgen(n_packets*65)*2    +2           ; every other even
        merge_small           = merge_large       +1                   ; every other odd
        data_array            = 2L^8*newfile_byte[counter+merge_large] + newfile_byte[counter+merge_small]    

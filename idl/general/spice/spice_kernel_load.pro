@@ -25,8 +25,12 @@ end
 
 
 ; Loads kernels only if they are not already loaded
-pro spice_kernel_load,kernels,unload=unload,verbose=verbose,info=info
+pro spice_kernel_load,kernels,unload=unload,verbose=verbose,info=info,clear=clear
   if spice_test() eq 0 then return
+  if keyword_set(clear) then begin
+    cspice_kclear
+    dprint,dlevel=2,'All kernels unloaded'
+  endif
   if ~keyword_set(unload) then begin              ;  loading kernels
     loaded = spice_test('*')
     for i=0L,n_elements(kernels)-1 do begin
