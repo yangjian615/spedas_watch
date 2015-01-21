@@ -2,9 +2,9 @@
 ; NAME: 
 ;   MVN_SWE_READCDF_3D
 ; SYNTAX:
-;	MVN_SWE_READCDF_3D, INFILE, STRUCTURE
+;   MVN_SWE_READCDF_3D, INFILE, STRUCTURE
 ; PURPOSE:
-;	Routine to read CDF file from mvn_swe_makecdf_3d.pro
+;   Routine to read CDF file from mvn_swe_makecdf_3d.pro
 ; INPUTS:
 ;   INFILE: CDF file name to read
 ;           (nominally created by mvn_swe_makecdf_3d.pro)
@@ -16,8 +16,8 @@
 ;   Created by Matt Fillingim
 ; VERSION:
 ;   $LastChangedBy: mattf $
-;   $LastChangedDate: 2014-11-25 10:16:02 -0800 (Tue, 25 Nov 2014) $
-;   $LastChangedRevision: 16300 $
+;   $LastChangedDate: 2015-01-16 15:41:56 -0800 (Fri, 16 Jan 2015) $
+;   $LastChangedRevision: 16667 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_readcdf_3d.pro $
 ;
 ;-

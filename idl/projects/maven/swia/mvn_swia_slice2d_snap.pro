@@ -15,12 +15,12 @@
 ;       Yuki Harada on 2014-10-10
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2014-11-26 11:31:35 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16308 $
+; $LastChangedDate: 2015-01-16 13:06:52 -0800 (Fri, 16 Jan 2015) $
+; $LastChangedRevision: 16666 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_slice2d_snap.pro $
 ;-
 
-pro mvn_swia_slice2d_snap, archive=archive, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrange=xrange, range=range, erange=erange, units=units, nozlog=nozlog, position=position, nofill=nofill, nlines=nlines, noolines=noolines, numolines=numolines, removezero=removezero, showdata=showdata, vel=vel, nogrid=nogrid, nosmooth=nosmooth, sundir=sundir, novelline=novelline, subtract=subtract, resolution=resolution, isotropic=isotropic
+pro mvn_swia_slice2d_snap, archive=archive, _extra=_extra
 
 dsize = get_screen_size()
 
@@ -51,7 +51,7 @@ while (ok) do begin
       d = call_function(get3d_func,t,archive=archive)
 
       wset,Dwin
-      slice2d,d, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrange=xrange, range=range, erange=erange, units=units, nozlog=nozlog, position=position, nofill=nofill, nlines=nlines, noolines=noolines, numolines=numolines, removezero=removezero, showdata=showdata, vel=vel, nogrid=nogrid, nosmooth=nosmooth, sundir=sundir, novelline=novelline, subtract=subtract, resolution=resolution, isotropic=isotropic
+      slice2d,d, _extra=_extra
 
    endif
 

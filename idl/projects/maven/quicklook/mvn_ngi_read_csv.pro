@@ -125,8 +125,8 @@ End
 ;HISTORY:
 ; 2014-07-28, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-28 10:54:21 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16057 $
+; $LastChangedDate: 2015-01-18 15:19:18 -0800 (Sun, 18 Jan 2015) $
+; $LastChangedRevision: 16673 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ngi_read_csv.pro $
 ;-
 Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
@@ -226,7 +226,7 @@ Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec
      If((p.mass[jj]-p.mass[jm1]) Lt 0.5 And $
         (p.mass[jp1]-p.mass[jm1]) Lt 0.5) Then Begin
         jm3 = (jj-3) > 0
-        jp3 = (jj+3) < (ntimes+1)
+        jp3 = (jj+3) < (ntimes-1)
         counts_temp = max(p.counts_per_second[jm3:jp3])
         pnew.counts_per_second[j] = counts_temp
      Endif

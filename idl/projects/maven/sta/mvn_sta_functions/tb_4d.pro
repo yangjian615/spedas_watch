@@ -17,6 +17,7 @@
 ;					nb = dat.ntheta
 ;	BINS:	bytarr(na,nb),	optional, energy/angle bins array for integration
 ;					0,1=exclude,include
+;	MASS:	intarr(nm)	optional, 
 ;PURPOSE:
 ;	Returns the temperature of a beam in units of eV 
 ;NOTES:	
@@ -31,7 +32,11 @@ function tb_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins
 
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
-	return, 0
+	return, !Values.F_NAN
+endif
+
+if keyword_set(mi) and keyword_set(en) then begin
+	if mi le 5. and max(en) le 200. and dat2.att_ind ge 2 then return, !Values.F_NAN
 endif
 
 dat = conv_units(dat2,"counts")		; initially use counts
@@ -40,18 +45,34 @@ n_e = dat.nenergy
 
 data = dat.data
 energy = dat.energy
+
+
+
+
+
 if n_e eq 64 then nne=8 
 if n_e eq 32 then nne=4
 if n_e le 16 then nne=2
 if n_e eq 48 then nne=6		; when does this happen? is this for swia?
 
+en_min = min(energy)
+en_max = max(energy)
 if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
+	en_min = en_min > en[0]
+	en_max = en_max < en[1]
 endif
 if keyword_set(ms) then begin
 	ind = where(dat.mass_arr lt ms[0] or dat.mass_arr gt ms[1],count)
 	if count ne 0 then data[ind]=0.
+; 		the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements
+;	if dat.time lt time_double('14-10-1') then begin
+;		tcnts = total(data,2)
+;		maxcnt = max(tcnts,mind)
+;		data[0:(mind-nne>0),*]=0.
+;		data[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
+;	endif	
 endif
 
 ; the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements
@@ -65,25 +86,42 @@ if dat.nmass eq 1 then begin
 endif
 
 ; limit the energy range to near the peak
+	data2 = data
 	if ndimen(data) eq 2 then begin
 		maxcnt = max(total(data,2),mind) 
 		data[0:(mind-nne>0),*]=0.
 		data[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
+		en_peak=energy[mind,0]
 	endif else begin
 		maxcnt = max(data,mind)
 		data[0:(mind-nne>0)]=0.
 		data[((mind+nne)<(n_e-1)):(n_e-1)]=0.
+		en_peak=energy[mind]
 	endelse
+
+; if the number of counts near the peak is less than 75% of total counts in the energy range, then it is not a beam
+	if total(data) lt .75*total(data2) then return,!Values.F_NAN
+
+
+
+
+
+
+; print,en_peak,en_min,en_max
+
+if keyword_set(mincnt) then if total(data) lt mincnt then return,!Values.F_NAN
+if en_peak lt 1.5*en_min or en_peak gt en_max/1.5 then return,!Values.F_NAN
 
 charge=dat.charge
 if keyword_set(q) then charge=q
-energy=(dat.energy+charge*dat.sc_pot/abs(charge))>0.		; energy/charge analyzer, require positive energy
-
-if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+sc_pot=dat.sc_pot
+;if sc_pot eq 0. and keyword_set(mi) then if mi lt 5. then sc_pot = -1.1*energy[mind+1,0]  
+;if keyword_set(mi) then if mi lt 5. then sc_pot = -1.1*energy[mind+1,0]  
+energy=(dat.energy+charge*sc_pot/abs(charge))>0.		; energy/charge analyzer, require positive energy
 
 ; Note - we don't need to divide by mass
 
-v = (2.*energy*charge)^.5		; km/s
+v = (2.*energy*charge)^.5		; 
 v = v>0.001
 
 ; Notes	f ~ Counts/v^4 = C/v^4 
@@ -93,7 +131,7 @@ v = v>0.001
 
 if keyword_set(ms) then begin
 	vd = total(data)/(total(data/v)>1.e-20)
-	if keyword_set(mi) then if mi lt 1.5 then vd=0
+;	if keyword_set(mi) then if mi lt 5. then vd=0				; not sure about how this is affected by lack of sc_pot
 	vth2  = total((v-vd)^2*data/v)/(total(data/v)>1.e-20)
 endif else begin
 	vd = total(data,1)/(total(data/v,1)>1.e-20)

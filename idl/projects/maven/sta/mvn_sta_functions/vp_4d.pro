@@ -31,12 +31,12 @@ function vp_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins
 
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
-	return, 0
+	return, !Values.F_NAN
 endif
 
 if dat2.apid ne 'c8' and dat2.apid ne 'ca' then begin
 	print,'Invalid Data: Data must be Maven APID c8 or ca'
-	return, 0
+	return, !Values.F_NAN
 endif
 
 dat = conv_units(dat2,"counts")		; initially use counts
@@ -45,14 +45,15 @@ n_m = dat.nmass
 mass_amu = dat.mass_arr
 data = dat.data
 energy = dat.energy
-if dat2.apid eq 'CA' then data = total(reform(data,16,4,16),2)
+if dat2.apid eq 'ca' then data = total(reform(data,16,4,16),2)
+if dat2.apid eq 'ca' then energy = total(reform(energy,16,4,16),2)/4.
 
 if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
 endif
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+if keyword_set(mincnt) then if total(data) lt mincnt then return, !Values.F_NAN
 
 charge=dat.charge
 if keyword_set(q) then charge=q
@@ -60,12 +61,18 @@ energy=(dat.energy+charge*dat.sc_pot/abs(charge))>0.		; energy/charge analyzer, 
 
 if keyword_set(ms) then mass_amu = ms
 mass = dat.mass*mass_amu
+; the following kluge is only for the electrostatic attenuator
+; it assumes the beam is centered on an anode and accounts for energy-angle response variation across an anode
+; for beams centered on an anode, the offset is ~3 deg, for beams centered between anodes the offset is -3 deg
+; this could be improved by using apid ca to determine where the beam is centered
+if (dat.att_ind eq 1 or dat.att_ind eq 3) then offset=3. else offset=0. 
 
 v = (2.*energy/mass)^.5								; km/s  note - mass=mass/charge, energy=energy/charge, charge cancels
-if dat2.apid eq 'CA' then begin
+if dat2.apid eq 'ca' then begin
 	phi = total(reform(dat.phi,16,4,16),2)/4.
 	sth = sin(phi/!radeg) 
-endif else sth = sin(dat.theta/!radeg)
+endif else sth = sin((dat.theta+offset)/!radeg)
+
 vp = v*sth									; km/s
 
 vperp = total(vp*data)/total(data)

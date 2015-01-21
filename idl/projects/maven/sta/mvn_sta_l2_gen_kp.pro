@@ -16,17 +16,20 @@
 ;
 ;NOTES:	  
 ;	Once MAVEN arrives at Mars, change def_min to 100. or an appropriate value
+;	def_min no longer used
 ;	
 ;-
 
 pro mvn_sta_l2_gen_kp,test=test,def_min=def_min
 
-if not keyword_set(def_min) then def_min=50.
+if not keyword_set(def_min) then def_min=25.
 
-if keyword_set(test) then def_min=10. 
+;if keyword_set(test) then def_min=10. 
 
 mvn_sta_l2_load
-mvn_sta_l2_tplot
+;mvn_sta_ql_load
+;mvn_sta_dead_load
+mvn_sta_l2_tplot,/replace
 
 	get_data,'mvn_sta_c6_tot',data=tmp,dtype=dtype
 
@@ -50,70 +53,116 @@ if keyword_set(test) then window,0,xsize=900,ysize=1000
 if keyword_set(test) then tplot,['MAVEN_STATIC_QROT_MAVEN_SSO','mvn_sta_c0_P1A_tot','mvn_sta_c0_P1A_E','mvn_sta_c6_P1D_M','mvn_sta_A','mvn_sta_D'],title='MAVEN STATIC KP '+date
 
 ;*********************************************************************************************
+; load quality flags
+
+	common mvn_c6,mvn_c6_ind,mvn_c6_dat
+	store_data,'mvn_sta_qf',data={x:mvn_c6_dat.time,y:mvn_c6_dat.quality_flag}
+	
+;*********************************************************************************************
 ;*********************************************************************************************
 ; RAM-Conic modes - periapsis KP
 
-; Note - mass ranges, like "mass_co2", should be adjusted when observations are seen at Mars
+; H+ RAM-Conic modes 
 
-; CO2+ RAM-Conic modes 
+	mass_p = [.3,1.6]
+	m_p = 1.
+	engy_p = [0.0,100.]
+	min_p = 25
 
-	mass_co2 = [40,50]
-	m_co2 = 44
-	engy_co2 = [0,14.]
+	get_data,'mvn_sta_c6_mode',data=tmp7
+	ind_mode = where(tmp7.y ne 1 and tmp7.y ne 2)
 
-	get_4dt,'nb_4d','mvn_sta_get_c6',mass=mass_co2,name='mvn_sta_CO2+_raw_density',energy=engy_co2,m_int=m_co2
-		options,'mvn_sta_CO2+_raw_density',ytitle='sta c6!C CO2+!C!C1/cm!U3',colors=cols.magenta
-		ylim,'mvn_sta_CO2+_raw_density',1,100000,1
+; the routine is marginal for protons because s/c charging impacts the trajectories
+; nb_4d is modified so that when the mechanical attenuator is closed, it returns NANs for protons
+	get_4dt,'nb_4d','mvn_sta_get_c6',mass=mass_p,name='mvn_sta_H+_raw_density',energy=engy_p,m_int=m_p,mincnt=min_p
+		options,'mvn_sta_H+_raw_density',ytitle='sta c6!C H+!C!C1/cm!U3',colors=cols.blue
+		ylim,'mvn_sta_H+_raw_density',1,100000,1
+	get_data,'mvn_sta_H+_raw_density',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_H+_raw_density',data=tmp
 
-	get_4dt,'tb_4d','mvn_sta_get_c6',mass=mass_co2,name='mvn_sta_CO2+_raw_temp',energy=engy_co2,m_int=m_co2
-		options,'mvn_sta_CO2+_raw_temp',ytitle='sta c6!C CO2+!C!CeV!U3',colors=cols.magenta
-		ylim,'mvn_sta_CO2+_raw_temp',.01,1.,1
+; this routine does not work for cold protons because the s/c velocity is not supersonic
+if 0 then begin
+	get_4dt,'tb_4d','mvn_sta_get_c6',mass=mass_p,name='mvn_sta_H+_raw_temp',energy=engy_p,m_int=m_p,mincnt=min_p
+		options,'mvn_sta_H+_raw_temp',ytitle='sta c6!C H+!C!CeV!U3',colors=cols.blue
+		ylim,'mvn_sta_H+_raw_temp',.01,1.,1
+	get_data,'mvn_sta_H+_raw_temp',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_H+_raw_temp',data=tmp
+endif else begin
+	get_data,'mvn_sta_H+_raw_density',data=tmp
+	tmp.y[*] = !Values.F_NAN
+	store_data,'mvn_sta_H+_raw_temp',data={x:tmp.x,y:tmp.y}
+endelse
 
-	get_4dt,'c_4d','mvn_sta_get_c6',mass=mass_co2,name='mvn_sta_CO2+_raw_density_cnts',energy=engy_co2
-		options,'mvn_sta_CO2+_raw_density_cnts',ytitle='sta c6!C CO2+!C!Ccnts/s',colors=cols.magenta
-		ylim,'mvn_sta_CO2+_raw_density_cnts',1,10000,1
-
-	get_data,'mvn_sta_CO2+_raw_density_cnts',data=tmp1
-	store_data,'mvn_sta_CO2+_raw_temp_cnts',data=tmp1
+	get_4dt,'cb_4d','mvn_sta_get_c6',mass=mass_p,name='mvn_sta_H+_raw_density_cnts',energy=engy_p
+		options,'mvn_sta_H+_raw_density_cnts',ytitle='sta c6!C H+!C!Ccnts/s',colors=cols.blue
+		ylim,'mvn_sta_H+_raw_density_cnts',1,10000,1
+	get_data,'mvn_sta_H+_raw_density_cnts',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_H+_raw_density_cnts',data=tmp
+	
+	get_data,'mvn_sta_H+_raw_density_cnts',data=tmp1
+	store_data,'mvn_sta_H+_raw_temp_cnts',data=tmp1
 
 ; O+ RAM-Conic modes
 
-	mass_o = [14,18]
+	mass_o = [14,20]
 	m_o = 16
-	engy_o = [0.0,7.]
+	engy_o = [0.0,100.]
+	min_o = 25
 
-	get_4dt,'nb_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_raw_density',energy=engy_o,m_int=m_o
-		options,'mvn_sta_O+_raw_density',ytitle='sta c6!C  O+!C!C1/cm!U3',colors=cols.cyan
+	get_4dt,'nb_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_raw_density',energy=engy_o,m_int=m_o,mincnt=min_o
+		options,'mvn_sta_O+_raw_density',ytitle='sta c6!C  O+!C!C1/cm!U3',colors=cols.green
 		ylim,'mvn_sta_O+_raw_density',10,100000,1
+	get_data,'mvn_sta_O+_raw_density',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_O+_raw_density',data=tmp
 
-	get_4dt,'tb_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_raw_temp',energy=engy_o,m_int=m_o
-		options,'mvn_sta_O+_raw_temp',ytitle='sta c6!C  O+!C!C1/cm!U3',colors=cols.cyan
+	get_4dt,'tb_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_raw_temp',energy=engy_o,m_int=m_o,mincnt=min_o
+		options,'mvn_sta_O+_raw_temp',ytitle='sta c6!C  O+!C!C1/cm!U3',colors=cols.green
 		ylim,'mvn_sta_O+_raw_temp',.01,1.,1
+	get_data,'mvn_sta_O+_raw_temp',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_O+_raw_temp',data=tmp
 
-	get_4dt,'c_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_raw_density_cnts',energy=engy_o
-		options,'mvn_sta_O+_raw_density_cnts',ytitle='sta c6!C  O+!C!Ccnts/s',colors=cols.cyan
+	get_4dt,'cb_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_raw_density_cnts',energy=engy_o
+		options,'mvn_sta_O+_raw_density_cnts',ytitle='sta c6!C  O+!C!Ccnts/s',colors=cols.green
 		ylim,'mvn_sta_O+_raw_density_cnts',1,10000,1
+	get_data,'mvn_sta_O+_raw_density_cnts',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_O+_raw_density_cnts',data=tmp
 
 	get_data,'mvn_sta_O+_raw_density_cnts',data=tmp2
 	store_data,'mvn_sta_O+_raw_temp_cnts',data=tmp2
 
 ; O2+ RAM-Conic modes
 
-	mass_o2 = [25,35]
-	m_o2 = 32
-	engy_o2 = [0.,10.]
+	mass_o2 = [25,40.]
+	m_o2 = 32.
+	engy_o2 = [0.0,100]
+	min_o2 = 25
 
-	get_4dt,'nb_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_raw_density',energy=engy_o2,m_int=m_o2
+	get_4dt,'nb_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_raw_density',energy=engy_o2,m_int=m_o2,mincnt=min_o2
 		options,'mvn_sta_O2+_raw_density',ytitle='sta c6!C O2+!C!C1/cm!U3',colors=cols.red
 		ylim,'mvn_sta_O2+_raw_density',10,100000,1
+	get_data,'mvn_sta_O2+_raw_density',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_O2+_raw_density',data=tmp
 
-	get_4dt,'tb_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_raw_temp',energy=engy_o2,m_int=m_o2
+	get_4dt,'tb_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_raw_temp',energy=engy_o2,m_int=m_o2,mincnt=min_o2
 		options,'mvn_sta_O2+_raw_temp',ytitle='sta c6!C O2+!C!C1/cm!U3',colors=cols.red
 		ylim,'mvn_sta_O2+_raw_temp',.01,1.,1
+	get_data,'mvn_sta_O2+_raw_temp',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_O2+_raw_temp',data=tmp
 
-	get_4dt,'c_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_raw_density_cnts',energy=engy_o2
+	get_4dt,'cb_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_raw_density_cnts',energy=engy_o2
 		options,'mvn_sta_O2+_raw_density_cnts',ytitle='sta c6!C O2+!C!Ccnts/s',colors=cols.red,psym=-1
 		ylim,'mvn_sta_O2+_raw_density_cnts',.1,10000,1
+	get_data,'mvn_sta_O2+_raw_density_cnts',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_O2+_raw_density_cnts',data=tmp
 
 ; Note that most of the quality error bars are just counts from 'mvn_sta_O2+_raw_density_cnts'
 
@@ -128,44 +177,88 @@ if keyword_set(test) then tplot,['MAVEN_STATIC_QROT_MAVEN_SSO','mvn_sta_c0_P1A_t
 
 ; combine plots of density, temp and counts - need to add lables
 
-	store_data,'mvn_sta_raw_density',data=['mvn_sta_CO2+_raw_density','mvn_sta_O+_raw_density','mvn_sta_O2+_raw_density']
+	store_data,'mvn_sta_raw_density',data=['mvn_sta_H+_raw_density','mvn_sta_O+_raw_density','mvn_sta_O2+_raw_density']
 		options,'mvn_sta_raw_density',ytitle='sta c6!C Ni!C!C1/cm!U3'
 		ylim,'mvn_sta_raw_density',1,100000,1
 
-	store_data,'mvn_sta_raw_temp',data=['mvn_sta_CO2+_raw_temp','mvn_sta_O+_raw_temp','mvn_sta_O2+_raw_temp']
+	store_data,'mvn_sta_raw_temp',data=['mvn_sta_H+_raw_temp','mvn_sta_O+_raw_temp','mvn_sta_O2+_raw_temp']
 		options,'mvn_sta_raw_temp',ytitle='sta c6!C Ti!C!C1/cm!U3'
 		ylim,'mvn_sta_raw_temp',.01,1.,1
 
-	store_data,'mvn_sta_raw_counts',data=['mvn_sta_CO2+_raw_density_cnts','mvn_sta_O+_raw_density_cnts','mvn_sta_O2+_raw_density_cnts']
+	store_data,'mvn_sta_raw_counts',data=['mvn_sta_H+_raw_density_cnts','mvn_sta_O+_raw_density_cnts','mvn_sta_O2+_raw_density_cnts']
 		options,'mvn_sta_raw_counts',ytitle='sta c6!C!Ccnts/s'
 		ylim,'mvn_sta_raw_counts',.1,10000,1
 
 		options,'mvn_sta_raw_counts',psym=-1
-		options,'mvn_sta_raw_density',psym=-1
+		options,'mvn_sta_raw_density',psym=0
 
 if keyword_set(test) then tplot,/add,['mvn_sta_raw_density','mvn_sta_raw_temp','mvn_sta_raw_counts']
 
 ; O2+ velocity
 
-	get_4dt,'vb_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_vx',energy=engy_o2,m_int=m_o2
+	common mvn_c6,mvn_c6_ind,mvn_c6_dat
+
+if max(mvn_c6_dat.sc_pot) eq 0 and min(mvn_c6_dat.sc_pot) eq 0 then begin
+
+	get_data,'mvn_sta_H+_raw_density',data=tmp
+	tmp.y[*] = !Values.F_NAN
+	store_data,'mvn_sta_O2+_vx',data=tmp
+	store_data,'mvn_sta_O2+_vy',data=tmp
+	store_data,'mvn_sta_O2+_vz',data=tmp
+
+endif else begin
+
+	engy_o2 = [0.0,10]
+	get_4dt,'vb_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_vx',energy=engy_o2,m_int=m_o2,mincnt=min_o2
 		options,'mvn_sta_O2+_vx',ytitle='sta c6!C O2+!C!Ckm/s',colors=cols.blue
 		ylim,'mvn_sta_O2+_vx',0.,5,0
+	get_data,'mvn_sta_O2+_vx',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_O2+_vx',data=tmp
 
-	get_4dt,'vp_4d','mvn_sta_get_ca',mass=m_o2,name='mvn_sta_O2+_vy',energy=engy_o2
+	get_4dt,'cb_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_vx_cnts',energy=engy_o2
+		options,'mvn_sta_O2+_vx_cnts',ytitle='sta c6!C O2+!C!Ccnts/s',colors=cols.red,psym=-1
+		ylim,'mvn_sta_O2+_vx_cnts',.1,10000,1
+	get_data,'mvn_sta_O2+_vx_cnts',data=tmp
+		tmp.y[ind_mode] = !Values.F_NAN
+	store_data,'mvn_sta_O2+_vx_cnts',data=tmp
+
+
+	get_data,'mvn_sta_ca_mode',data=tmp7
+	ind_mode_ca = where(tmp7.y ne 1 and tmp7.y ne 2)
+
+	get_4dt,'vp_4d','mvn_sta_get_ca',mass=m_o2,name='mvn_sta_O2+_vy',energy=engy_o2,mincnt=min_o2
 		options,'mvn_sta_O2+_vy',ytitle='sta c6!C O2+!C!Ckm/s',colors=cols.green
 		ylim,'mvn_sta_O2+_vy',0.,1,0
+	get_data,'mvn_sta_O2+_vy',data=tmp
+		tmp.y[ind_mode_ca] = !Values.F_NAN
+	store_data,'mvn_sta_O2+_vy',data=tmp
 
 ;	get_4dt,'c_4d','mvn_sta_get_ca',name='mvn_sta_O2+_vy_cnts',energy=engy_o2
 ;		options,'mvn_sta_O2+_vy_cnts',ytitle='sta ca!C O2+!C!Ccnts/s',colors=cols.green,psym=-1
 ;		ylim,'mvn_sta_O2+_vy_cnts',.1,10000,1
+;	get_data,'mvn_sta_O2+_vy_cnts',data=tmp
+;		tmp.y[ind_mode] = !Values.F_NAN
+;	store_data,'mvn_sta_O2+_vy_cnts',data=tmp
 
-	get_4dt,'vp_4d','mvn_sta_get_c8',mass=m_o2,name='mvn_sta_O2+_vz',energy=engy_o2
+	get_data,'mvn_sta_c8_mode',data=tmp7
+	ind_mode_c8 = where(tmp7.y ne 1 and tmp7.y ne 2)
+
+	get_4dt,'vp_4d','mvn_sta_get_c8',mass=m_o2,name='mvn_sta_O2+_vz',energy=engy_o2,mincnt=min_o2
 		options,'mvn_sta_O2+_vz',ytitle='sta c8!C O2+!C!Ckm/s',colors=cols.red
 		ylim,'mvn_sta_O2+_vz',0.,1,0
+	get_data,'mvn_sta_O2+_vz',data=tmp
+		tmp.y[ind_mode_c8] = !Values.F_NAN
+	store_data,'mvn_sta_O2+_vz',data=tmp
 
-;	get_4dt,'c_4d','mvn_sta_get_c8',name='mvn_sta_O2+_vz_cnts',energy=engy_o2
+;	get_4dt,'c_4d','mvn_sta_get_c8',name='mvn_sta_O2+_vz_cnts',energy=engy_o2,mincnt=min_o2
 ;		options,'mvn_sta_O2+_vz_cnts',ytitle='sta c8!C O2+!C!Ccnts/s',colors=cols.red,psym=-1
 ;		ylim,'mvn_sta_O2+_vz_cnts',.1,10000,1
+;	get_data,'mvn_sta_O2+_vz_cnts',data=tmp
+;		tmp.y[ind_mode] = !Values.F_NAN
+;	store_data,'mvn_sta_O2+_vz_cnts',data=tmp
+
+endelse
 
 		get_data,'mvn_sta_O2+_vx',data=tmp0
 		get_data,'mvn_sta_O2+_vy',data=tmp1
@@ -231,9 +324,9 @@ if keyword_set(test) then tplot,[$
 
 
 
-	sta_low=['mvn_sta_CO2+_raw_density','mvn_sta_CO2+_raw_density_cnts','mvn_sta_O+_raw_density',$
+	sta_low=['mvn_sta_H+_raw_density','mvn_sta_H+_raw_density_cnts','mvn_sta_O+_raw_density',$
 		'mvn_sta_O+_raw_density_cnts','mvn_sta_O2+_raw_density','mvn_sta_O2+_raw_density_cnts',$
-		'mvn_sta_CO2+_raw_temp','mvn_sta_CO2+_raw_temp_cnts','mvn_sta_O+_raw_temp',$
+		'mvn_sta_H+_raw_temp','mvn_sta_H+_raw_temp_cnts','mvn_sta_O+_raw_temp',$
 		'mvn_sta_O+_raw_temp_cnts','mvn_sta_O2+_raw_temp','mvn_sta_O2+_raw_temp_cnts',$
 		'mvn_sta_O2+_vx','mvn_sta_O2+_vx_cnts','mvn_sta_O2+_vy_interp',$
 		'mvn_sta_O2+_vy_cnts','mvn_sta_O2+_vz_interp','mvn_sta_O2+_vz_cnts',$
@@ -246,6 +339,9 @@ if keyword_set(test) then makepng,'mvn_sta_kp_periapsis_all_'+date
 
 
 ; Mask the tplot data when certain rules are violated for mode or quality (counts)
+
+; This section no longer needed
+if 0 then begin
 
 ; If the average counts in O2+ smoothed are not at least "def_min", throw it out. 
 	tsmooth2,'mvn_sta_O2+_raw_density_cnts',10
@@ -266,7 +362,7 @@ if keyword_set(test) then makepng,'mvn_sta_kp_periapsis_all_'+date
 		if (nind1 gt 0) then tmp2.y[ind1]=def 
 		store_data,name,data=tmp2
 	endfor
-
+endif
 
 ; generate plot title
 
@@ -291,30 +387,29 @@ if keyword_set(test) then makepng,'mvn_sta_kp_periapsis_'+date
 
 ;*********************************************************************************************
 ;*********************************************************************************************
-; Color plan: total=black, H+=blue He++=green, O+=cyan  O2+=red  CO2=magenta
+; Color plan: total=black, H+=blue He++=cyan, O+=green  O2+=red  CO2=magenta
 
-if keyword_set(test) then tplot,['MAVEN_STATIC_QROT_MAVEN_SSO','mvn_sta_c0_P1A_tot','mvn_sta_c0_P1A_E','mvn_sta_c6_P1D_M','mvn_sta_A','mvn_sta_D']
+if keyword_set(test) then tplot,['MAVEN_STATIC_QROT_MAVEN_SSO','mvn_sta_c0_P1A_tot','mvn_sta_c0_P1A_E','mvn_sta_c6_P1D_M','mvn_sta_A','mvn_sta_D','mvn_sta_c6_att']
 
-	mass_p = [.3,1.6]
-	m_p = 1.
-	mass_he = [1.6,3.0]
+	mass_he = [1.7,2.5]
 	m_he = 2.
+	min_he = 25
 
 ; Flux
 
-	get_4dt,'j_4d','mvn_sta_get_c6',mass=mass_p,name='mvn_sta_H+_flux',m_int=m_p
+	get_4dt,'j_4d','mvn_sta_get_c6',mass=mass_p,name='mvn_sta_H+_flux',m_int=m_p,mincnt=min_p
 		options,'mvn_sta_H+_flux',ytitle='sta c6!C H+!C!C1/s-cm!U2',colors=cols.blue
 		ylim,'mvn_sta_H+_flux',1.e5,1.e9,1
 
-	get_4dt,'j_4d','mvn_sta_get_c6',mass=mass_he,name='mvn_sta_He++_flux',m_int=m_he
-		options,'mvn_sta_He++_flux',ytitle='sta c6!CHe++!C!C1/s-cm!U2',colors=cols.green
+	get_4dt,'j_4d','mvn_sta_get_c6',mass=mass_he,name='mvn_sta_He++_flux',m_int=m_he,mincnt=min_he
+		options,'mvn_sta_He++_flux',ytitle='sta c6!CHe++!C!C1/s-cm!U2',colors=cols.cyan
 		ylim,'mvn_sta_He++_flux',1.e5,1.e9,1
 
-	get_4dt,'j_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_flux',m_int=m_o
-		options,'mvn_sta_O+_flux',ytitle='sta c6!C O+!C!C1/s-cm!U2',colors=cols.cyan
+	get_4dt,'j_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_flux',m_int=m_o,mincnt=min_o
+		options,'mvn_sta_O+_flux',ytitle='sta c6!C O+!C!C1/s-cm!U2',colors=cols.green
 		ylim,'mvn_sta_O+_flux',1.e5,1.e9,1
 
-	get_4dt,'j_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_flux',m_int=m_o2
+	get_4dt,'j_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_flux',m_int=m_o2,mincnt=min_o2
 		options,'mvn_sta_O2+_flux',ytitle='sta c6!C O2+!C!C1/s-cm!U2',colors=cols.red
 		ylim,'mvn_sta_O2+_flux',1.e5,1.e9,1
 
@@ -326,19 +421,19 @@ if keyword_set(test) then tplot,/add,'mvn_sta_flux'
 
 ; Characteristic Energy
 
-	get_4dt,'ec_4d','mvn_sta_get_c6',mass=mass_p,name='mvn_sta_H+_ec'
+	get_4dt,'ec_4d','mvn_sta_get_c6',mass=mass_p,name='mvn_sta_H+_ec',mincnt=min_p
 		options,'mvn_sta_H+_ec',ytitle='sta c6!CEc H+!C!CeV',colors=cols.blue
 		ylim,'mvn_sta_H+_ec',10,30000,1
 
-	get_4dt,'ec_4d','mvn_sta_get_c6',mass=mass_he,name='mvn_sta_He++_ec'
-		options,'mvn_sta_He++_ec',ytitle='sta c6!CEc He++!C!CeV',colors=cols.green
+	get_4dt,'ec_4d','mvn_sta_get_c6',mass=mass_he,name='mvn_sta_He++_ec',mincnt=min_he
+		options,'mvn_sta_He++_ec',ytitle='sta c6!CEc He++!C!CeV',colors=cols.cyan
 		ylim,'mvn_sta_He++_ec',10,30000,1
 
-	get_4dt,'ec_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_ec'
-		options,'mvn_sta_O+_ec',ytitle='sta c6!CEc O+!C!CeV',colors=cols.cyan
+	get_4dt,'ec_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_ec',mincnt=min_o
+		options,'mvn_sta_O+_ec',ytitle='sta c6!CEc O+!C!CeV',colors=cols.green
 		ylim,'mvn_sta_O+_ec',10,30000,1
 
-	get_4dt,'ec_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_ec'
+	get_4dt,'ec_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_ec',mincnt=min_o2
 		options,'mvn_sta_O2+_ec',ytitle='sta c6!CEc O2+!C!CeV',colors=cols.red
 		ylim,'mvn_sta_O2+_ec',10,30000,1
 
@@ -390,7 +485,7 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 ; H+ Characteristic Direction
 
 	if dtype_ce ne 0 then begin
-		get_4dt,'vc_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_vc_ce'
+		get_4dt,'vc_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_vc_ce',mincnt=min_p
 			options,'mvn_sta_H+_vc_ce',ytitle='sta ce!C H+!C!Cvec'
 			ylim,'mvn_sta_H+_vc_ce',-1.1,1.1,0
 			options,'mvn_sta_H+_vc_ce',colors=[cols.blue,cols.green,cols.red]
@@ -398,7 +493,7 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
      	endif
 
 	if dtype_d0 ne 0 then begin
-		get_4dt,'vc_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_vc_d0'
+		get_4dt,'vc_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_vc_d0',mincnt=min_p
 			options,'mvn_sta_H+_vc_d0',ytitle='sta ce!C H+!C!Cvec'
 			ylim,'mvn_sta_H+_vc_d0',-1,1,0
 			options,'mvn_sta_H+_vc_d0',colors=[cols.blue,cols.green,cols.red]
@@ -438,13 +533,13 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 ; H+ Anisotropy
 
 	if dtype_ce ne 0 then begin
-		get_4dt,'wc_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_wc_ce'
+		get_4dt,'wc_4d','mvn_sta_get_ce',mass=mass_p,name='mvn_sta_H+_wc_ce',mincnt=min_p
 			options,'mvn_sta_H+_wc_ce',ytitle='sta ce!C H+!C!Caniso',colors=cols.blue
 			ylim,'mvn_sta_H+_wc_ce',-.1,1.1,0
      	endif
 
 	if dtype_d0 ne 0 then begin
-		get_4dt,'wc_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_wc_d0'
+		get_4dt,'wc_4d','mvn_sta_get_d0',mass=mass_p,name='mvn_sta_H+_wc_d0',mincnt=min_p
 			options,'mvn_sta_H+_wc_d0',ytitle='sta ce!C H+!C!Caniso',colors=cols.blue
 			ylim,'mvn_sta_H+_wc_d0',-.1,1.1,0
 	endif
@@ -502,7 +597,7 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 ; Dominant Pickup ion Characteristic Direction
 
 	if dtype_ce ne 0 then begin
-		get_4dt,'vc_4d','mvn_sta_get_ce',mass=[10,64],name='mvn_sta_PU_vc_ce'
+		get_4dt,'vc_4d','mvn_sta_get_ce',mass=[10,64],name='mvn_sta_PU_vc_ce',mincnt=min_o
 			options,'mvn_sta_PU_vc_ce',ytitle='sta ce!C PU!C!Cvec'
 			ylim,'mvn_sta_PU_vc_ce',-.1,1.1,0
 			options,'mvn_sta_PU_vc_ce',colors=[cols.blue,cols.green,cols.red]
@@ -510,7 +605,7 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 	endif
 
 	if dtype_d0 ne 0 then begin
-		get_4dt,'vc_4d','mvn_sta_get_d0',mass=[10,64],name='mvn_sta_PU_vc_d0'
+		get_4dt,'vc_4d','mvn_sta_get_d0',mass=[10,64],name='mvn_sta_PU_vc_d0',mincnt=min_o
 			options,'mvn_sta_PU_vc_d0',ytitle='sta ce!C PU!C!Cvec'
 			ylim,'mvn_sta_PU_vc_d0',-.1,1.1,0
 			options,'mvn_sta_PU_vc_d0',colors=[cols.blue,cols.green,cols.red]
@@ -550,13 +645,13 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 ; Pickup ion Anisotropy
 
 	if dtype_ce ne 0 then begin
-		get_4dt,'wc_4d','mvn_sta_get_ce',mass=[16,64],name='mvn_sta_PU_wc_ce'
+		get_4dt,'wc_4d','mvn_sta_get_ce',mass=[16,64],name='mvn_sta_PU_wc_ce',mincnt=min_o
 			options,'mvn_sta_PU_wc_ce',ytitle='sta ce!C PU!C!Ciso',colors=cols.blue
 			ylim,'mvn_sta_PU_wc_ce',-.1,1.1,0
 	endif
 
 	if dtype_d0 ne 0 then begin
-		get_4dt,'wc_4d','mvn_sta_get_d0',mass=[16,64],name='mvn_sta_PU_wc_d0'
+		get_4dt,'wc_4d','mvn_sta_get_d0',mass=[16,64],name='mvn_sta_PU_wc_d0',mincnt=min_o
 			options,'mvn_sta_PU_wc_d0',ytitle='sta ce!C PU!C!Ciso',colors=cols.blue
 			ylim,'mvn_sta_PU_wc_d0',-.1,1.1,0
 	endif

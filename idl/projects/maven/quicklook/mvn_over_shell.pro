@@ -29,8 +29,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-27 13:33:32 -0700 (Mon, 27 Oct 2014) $
-; $LastChangedRevision: 16042 $
+; $LastChangedDate: 2015-01-16 09:50:47 -0800 (Fri, 16 Jan 2015) $
+; $LastChangedRevision: 16662 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_over_shell.pro $
 ;-
 Pro mvn_over_shell, date = date, $
@@ -105,6 +105,11 @@ If(over_all[0] Eq -1) Then noload = 0b Else noload = 1b
 
 If(keyword_set(l0_input_file)) Then Begin
   p1 = strsplit(file_basename(l0_input_file), '_',/extract)
+  p1 = strlowcase(p1)
+  If(p1[2] NE 'svy' Or p1[3] NE 'l0') Then Begin
+     dprint, 'Incorrect filename: '+file_basename(l0_input_file)
+     Return
+  Endif
   date = p1[4]
   start_date = time_double(date)
   end_date= start_date

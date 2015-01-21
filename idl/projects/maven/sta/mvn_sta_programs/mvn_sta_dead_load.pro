@@ -18,6 +18,7 @@
 ;							dead(energy,def) is extrapolated from apid da and c8
 ;							dead calculation also uses apid d8 to determine relative amounts event types (see d1,d2,d3 in code)
 ;						where "averaged" accounts for averaging over energy or deflection
+;			15/01/17	added mcp droop correction
 ;NOTES:	  
 ;	Program assumes that "mvn_sta_l0_load" or "mvn_sta_l2_load,/test" has been run 
 ;	Program requires c0,c8,d8,da packets are available at 4 sec cadence
@@ -26,15 +27,16 @@
 ;		then code used for apid cc can be adapted to the above apids.
 ;
 ;-
-pro mvn_sta_dead_load,check=check
+pro mvn_sta_dead_load,check=check,dead_droop=dead_droop
 
 	common mvn_c0,mvn_c0_ind,mvn_c0_dat 
 	common mvn_c8,mvn_c8_ind,mvn_c8_dat 
+	common mvn_ca,mvn_ca_ind,mvn_ca_dat 
 	common mvn_d8,mvn_d8_ind,mvn_d8_dat 
 	common mvn_da,mvn_da_ind,mvn_da_dat 
 
-if size(mvn_c0_dat,/type) eq 0 or size(mvn_c8_dat,/type) eq 0 or size(mvn_d8_dat,/type) eq 0 or size(mvn_da_dat,/type) eq 0 then begin
-	print,'Error - apid c0,c8,d8,da data must be loaded, run mvn_sta_l2_load.pro first'
+if size(mvn_c0_dat,/type) eq 0 or size(mvn_c8_dat,/type) eq 0 or size(mvn_ca_dat,/type) eq 0 or size(mvn_d8_dat,/type) eq 0 or size(mvn_da_dat,/type) eq 0 then begin
+	print,'Error - apid c0,c8,ca,d8,da data must be loaded, run mvn_sta_l2_load.pro first'
 	return
 endif
 
@@ -42,25 +44,37 @@ endif
 npts = n_elements(mvn_da_dat.time)
 rate = dblarr(npts,64,16)
 dead = dblarr(npts,64,16)
+droop = dblarr(npts,64,16)
 valid = dblarr(npts,64,16)
-d1 = mvn_c8_dat.dead1			; 420 ns, fully qualified events
-d2 = mvn_c8_dat.dead2			; 660 ns, unqualified events
-d3 = mvn_c8_dat.dead3			; 460 ns, stop no start events (and stop then start events)
+qual = intarr(npts)
+d1 = mvn_c8_dat.dead1						; 420 ns, fully qualified events
+d2 = mvn_c8_dat.dead2						; 660 ns, unqualified events
+d3 = mvn_c8_dat.dead3						; 460 ns, stop no start events (and stop then start events)
+
+if not keyword_set(dead_droop) then dead_droop=1000.		; this was empirically determined from data on 20150107-1520UT, seems good to ~10% 
 
 for i=0l,npts-1 do begin
 
 	min_c0 = min(abs(mvn_c0_dat.time-mvn_da_dat.time[i]),ind_c0)
 	min_c8 = min(abs(mvn_c8_dat.time-mvn_da_dat.time[i]),ind_c8)
+	min_ca = min(abs(mvn_ca_dat.time-mvn_da_dat.time[i]),ind_ca)
 	min_d8 = min(abs(mvn_d8_dat.time-mvn_da_dat.time[i]),ind_d8)
 
-	if keyword_set(check) and (min_c0 gt 2. or min_c8 gt 2. or min_d8 gt 2.) then begin
-		print,'No matching data at: ',time_string(mvn_da_dat.time[i]),' c0_delta_time= ',min_c0,' c8_delta_time= ',min_c8,' d8_delta_time= ',min_d8
-		print,'		Using nearest matching data'
+	if (min_c0 gt 2. or min_c8 gt 2. or min_ca gt 2. or min_d8 gt 2.) then begin
+		if keyword_set(check) then print,'No matching data at: ',time_string(mvn_da_dat.time[i]),' c0_delta_time= ',min_c0,' c8_delta_time= ',min_c8,' ca_delta_time= ',min_ca,' d8_delta_time= ',min_d8
+		if keyword_set(check) then print,'		Using nearest matching data'
+		qual[i]=qual[i]+16
 	endif
 
 	c0 = 1.*reform(mvn_c0_dat.data[ind_c0,*,0]+mvn_c0_dat.data[ind_c0,*,1])#replicate(1.,16)	; apid c0 is valid counts vs energy, averaged over mass
 	da = 1.*reform(mvn_da_dat.rates[i,*])*16.#replicate(1.,16)					; apid da is a rate (Hz), *16. keeps it a rate when normalized below by c8/ct
 	c8 = 1.*reform(replicate(1.,2)#reform(mvn_c8_dat.data[ind_c8,*,*],512),64,16)
+
+	ca = total(reform(mvn_ca_dat.data[ind_ca,*,*],16,4,16),2)
+	ca1 = fltarr(16) 
+	for j=0,15 do ca1[j] = max(ca[j,*]/total(ca[j,*]))
+	ca2 = reform(replicate(1.,4)#ca1,64)#replicate(1.,16)
+
 	ct = 1.*total(c8,2)#replicate(1.,16) > 0.0001
 	r1 = mvn_d8_dat.rates[ind_d8,7]/mvn_d8_dat.rates[ind_d8,4]				; fully qualified processed events 
 	r2 = mvn_d8_dat.rates[ind_d8,6]/mvn_d8_dat.rates[ind_d8,4]				; rejected events, unqualified events 
@@ -84,11 +98,23 @@ for i=0l,npts-1 do begin
 	endif
 	dead[i,*,*] = 1./(1.-dead2)
 
+	droop[i,*,*] = 1./(1.-(dead_droop*rate[i,*,*]*ca2*1.e-9 < .9))				; this is an empirical formula
+
 	if keyword_set(check) and (i mod 1000) eq 0 then print,total(da[*,0]),total(rate[i,*,*]),total(dtmp),minmax(dead[i,*,*])
-	if keyword_set(check) and (i mod 1000) eq 0 then print,minmax(da),minmax(rate[i,*,*]),minmax(dtmp),minmax(dead[i,*,*]*rate[i,*,*])
-	if keyword_set(check) and (i mod 1000) eq 0 then print,'   '
+	if keyword_set(check) and (i mod 1000) eq 0 then print,minmax(da)
+	if keyword_set(check) and (i mod 1000) eq 0 then print,'rate',minmax(rate[i,*,*]),minmax(dtmp)
+	if keyword_set(check) and (i mod 1000) eq 0 then print,'dead',minmax(dead2)
+	if keyword_set(check) and (i mod 1000) eq 0 then print,'dead_droop ',minmax(dead_droop*rate[i,*,*]*ca2*1.e-9),total(dead_droop*rate[i,*,*]*ca2*1.e-9)/(64.*16.)
+
+	if (max(dead[i,*,*])  gt 2.0) then qual[i]=qual[i]+4					; we may want to change this
+	if (max(droop[i,*,*]) gt 2.0) then qual[i]=qual[i]+8					; we may want to change this
+
 endfor
 
+if keyword_set(check) then print,minmax(dead)
+if keyword_set(check) then print,minmax(droop)
+
+dead = dead * droop
 
 print,'Minimum and maximum dead time corrections in array =',minmax(dead)
 
@@ -132,12 +158,6 @@ if size(mvn_c0_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid c0 dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -146,6 +166,7 @@ if size(mvn_c0_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -153,7 +174,7 @@ if size(mvn_c0_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'c0 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_c0_dat.quality_flag = 2*(mvn_c0_dat.quality_flag/2) + qf_tmp
+	mvn_c0_dat.quality_flag = (mvn_c0_dat.quality_flag and 32739) or qf_tmp
 	mvn_c0_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -179,12 +200,6 @@ if size(mvn_c2_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid c2 dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -193,6 +208,7 @@ if size(mvn_c2_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -200,7 +216,7 @@ if size(mvn_c2_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'c2 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_c2_dat.quality_flag = 2*(mvn_c2_dat.quality_flag/2) + qf_tmp
+	mvn_c2_dat.quality_flag = (mvn_c2_dat.quality_flag and 32739) or qf_tmp
 	mvn_c2_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -226,12 +242,6 @@ if size(mvn_c4_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid c4 dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -240,6 +250,7 @@ if size(mvn_c4_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -247,7 +258,7 @@ if size(mvn_c4_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'c4 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_c4_dat.quality_flag = 2*(mvn_c4_dat.quality_flag/2) + qf_tmp
+	mvn_c4_dat.quality_flag = (mvn_c4_dat.quality_flag and 32739) or qf_tmp
 	mvn_c4_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -273,12 +284,6 @@ if size(mvn_c6_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid c6 dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -287,6 +292,7 @@ if size(mvn_c6_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -294,7 +300,7 @@ if size(mvn_c6_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'c6 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_c6_dat.quality_flag = 2*(mvn_c6_dat.quality_flag/2) + qf_tmp
+	mvn_c6_dat.quality_flag = (mvn_c6_dat.quality_flag and 32739) or qf_tmp
 	mvn_c6_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -320,12 +326,6 @@ if size(mvn_c8_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid c8 dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -334,6 +334,7 @@ if size(mvn_c8_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -341,7 +342,7 @@ if size(mvn_c8_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'c8 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_c8_dat.quality_flag = 2*(mvn_c8_dat.quality_flag/2) + qf_tmp
+	mvn_c8_dat.quality_flag = (mvn_c8_dat.quality_flag and 32739) or qf_tmp
 	mvn_c8_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -367,12 +368,6 @@ if size(mvn_ca_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid ca dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -381,6 +376,7 @@ if size(mvn_ca_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -388,7 +384,7 @@ if size(mvn_ca_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'ca min & max dead times =',minmax(dead_tmp)
 	
-	mvn_ca_dat.quality_flag = 2*(mvn_ca_dat.quality_flag/2) + qf_tmp
+	mvn_ca_dat.quality_flag = (mvn_ca_dat.quality_flag and 32739) or qf_tmp
 	mvn_ca_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -416,12 +412,6 @@ if size(mvn_cc_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da1 gt 2. or min_da2 gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid cc dead time out of sync, delta time =',min_da1,min_da2,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
@@ -430,6 +420,7 @@ if size(mvn_cc_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		for j=ind_da1,ind_da2 do qf_tmp[i] = (qf_tmp[i] or qual[j])
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -437,7 +428,7 @@ if size(mvn_cc_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'cc min & max dead times =',minmax(dead_tmp)
 	
-	mvn_cc_dat.quality_flag = 2*(mvn_cc_dat.quality_flag/2) + qf_tmp
+	mvn_cc_dat.quality_flag = (mvn_cc_dat.quality_flag and 32739) or qf_tmp
 	mvn_cc_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -463,12 +454,6 @@ if size(mvn_cd_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid cd dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -477,6 +462,7 @@ if size(mvn_cd_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -484,7 +470,7 @@ if size(mvn_cd_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'cd min & max dead times =',minmax(dead_tmp)
 	
-	mvn_cd_dat.quality_flag = 2*(mvn_cd_dat.quality_flag/2) + qf_tmp
+	mvn_cd_dat.quality_flag = (mvn_cd_dat.quality_flag and 32739) or qf_tmp
 	mvn_cd_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -512,12 +498,6 @@ if size(mvn_ce_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da1 gt 2. or min_da2 gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid ce dead time out of sync, delta time =',min_da1,min_da2,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
@@ -526,6 +506,7 @@ if size(mvn_ce_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		for j=ind_da1,ind_da2 do qf_tmp[i] = (qf_tmp[i] or qual[j])
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -533,7 +514,7 @@ if size(mvn_ce_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'ce min & max dead times =',minmax(dead_tmp)
 	
-	mvn_ce_dat.quality_flag = 2*(mvn_ce_dat.quality_flag/2) + qf_tmp
+	mvn_ce_dat.quality_flag = (mvn_ce_dat.quality_flag and 32739) or qf_tmp
 	mvn_ce_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -559,12 +540,6 @@ if size(mvn_cf_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid cf dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -573,6 +548,7 @@ if size(mvn_cf_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -580,7 +556,7 @@ if size(mvn_cf_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'cf min & max dead times =',minmax(dead_tmp)
 	
-	mvn_cf_dat.quality_flag = 2*(mvn_cf_dat.quality_flag/2) + qf_tmp
+	mvn_cf_dat.quality_flag = (mvn_cf_dat.quality_flag and 32739) or qf_tmp
 	mvn_cf_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -608,12 +584,6 @@ if size(mvn_d0_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da1 gt 2. or min_da2 gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid d0 dead time out of sync, delta time =',min_da1,min_da2,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
@@ -622,6 +592,7 @@ if size(mvn_d0_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		for j=ind_da1,ind_da2 do qf_tmp[i] = (qf_tmp[i] or qual[j])
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -629,7 +600,7 @@ if size(mvn_d0_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'d0 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_d0_dat.quality_flag = 2*(mvn_d0_dat.quality_flag/2) + qf_tmp
+	mvn_d0_dat.quality_flag = (mvn_d0_dat.quality_flag and 32739) or qf_tmp
 	mvn_d0_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -657,12 +628,6 @@ if size(mvn_d1_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da1 gt 2. or min_da2 gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid d1 dead time out of sync, delta time =',min_da1,min_da2,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
@@ -671,6 +636,7 @@ if size(mvn_d1_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		for j=ind_da1,ind_da2 do qf_tmp[i] = (qf_tmp[i] or qual[j])
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -678,7 +644,7 @@ if size(mvn_d1_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'d1 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_d1_dat.quality_flag = 2*(mvn_d1_dat.quality_flag/2) + qf_tmp
+	mvn_d1_dat.quality_flag = (mvn_d1_dat.quality_flag and 32739) or qf_tmp
 	mvn_d1_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -706,12 +672,6 @@ if size(mvn_d2_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da1 gt 2. or min_da2 gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid d2 dead time out of sync, delta time =',min_da1,min_da2,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
@@ -720,6 +680,7 @@ if size(mvn_d2_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		for j=ind_da1,ind_da2 do qf_tmp[i] = (qf_tmp[i] or qual[j])
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -727,7 +688,7 @@ if size(mvn_d2_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'d2 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_d2_dat.quality_flag = 2*(mvn_d2_dat.quality_flag/2) + qf_tmp
+	mvn_d2_dat.quality_flag = (mvn_d2_dat.quality_flag and 32739) or qf_tmp
 	mvn_d2_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -753,12 +714,6 @@ if size(mvn_d3_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid d3 dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -767,6 +722,7 @@ if size(mvn_d3_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -774,7 +730,7 @@ if size(mvn_d3_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'d3 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_d3_dat.quality_flag = 2*(mvn_d3_dat.quality_flag/2) + qf_tmp
+	mvn_d3_dat.quality_flag = (mvn_d3_dat.quality_flag and 32739) or qf_tmp
 	mvn_d3_dat.dead[*] = dead_tmp[*]		
 
 endif
@@ -800,12 +756,6 @@ if size(mvn_d4_dat,/type) eq 8 then begin
 	for i=0,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		poor dead-time correction quality flag at bit 0
-		if min_da gt 2. then begin
-			qf_tmp[i] = 1
-			if keyword_set(check) then print,'Apid d4 dead time out of sync, delta time =',min_da,' time =',time_string(dat.time[i])
-		endif
-
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -814,6 +764,7 @@ if size(mvn_d4_dat,/type) eq 8 then begin
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
 
 		dead_tmp[i,*] = reform(tmp1/(tmp2>.0001),nenergy*ndef*nanode*nmass) > 1.
+		qf_tmp[i] = qual[ind_da]
 	endfor
 	
 	if keyword_set(check) then print,'# QF set, npts =',total(qf_tmp),npts
@@ -821,7 +772,7 @@ if size(mvn_d4_dat,/type) eq 8 then begin
 	print,'# QF set, npts =',total(qf_tmp),npts
 	print,'d4 min & max dead times =',minmax(dead_tmp)
 	
-	mvn_d4_dat.quality_flag = 2*(mvn_d4_dat.quality_flag/2) + qf_tmp
+	mvn_d4_dat.quality_flag = (mvn_d4_dat.quality_flag and 32739) or qf_tmp
 	mvn_d4_dat.dead[*] = dead_tmp[*]		
 
 endif

@@ -59,9 +59,9 @@
 ;     CSN, OSNT, OSNB, OSI
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-12-10 16:22:29 -0800 (Wed, 10 Dec 2014) $
-; $LastChangedRevision: 16447 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2015-01-16 11:30:13 -0800 (Fri, 16 Jan 2015) $
+; $LastChangedRevision: 16663 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_overplot.pro $
 ;-
 Pro mvn_gen_overplot, date = date, time_range = time_range, $
@@ -78,7 +78,7 @@ mvn_qlook_init, device = device
 If(keyword_set(l0_input_file)) Then Begin
    filex = l0_input_file[0]
 Endif Else Begin
-   filex = mvn_l0_db2file(date)
+   filex = mvn_l0_db2file(date, l0_file_type = 'svy')
 Endelse
 If(~keyword_set(noload_data)) Then Begin
     mvn_load_all_qlook, l0_input_file = filex,  device = device, _extra=_extra

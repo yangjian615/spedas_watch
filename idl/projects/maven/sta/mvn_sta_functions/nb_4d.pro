@@ -32,7 +32,11 @@ function nb_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins
 
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
-	return, 0
+	return, !Values.F_NAN
+endif
+
+if keyword_set(mi) and keyword_set(en) then begin
+	if mi le 5. and max(en) le 200. and dat2.att_ind ge 2 then return, !Values.F_NAN
 endif
 
 dat = omni4d(dat2,/mass)
@@ -51,24 +55,27 @@ if n_e eq 32 then nne=4
 if n_e le 16 then nne=2
 if n_e eq 48 then nne=6		; when does this happen? is this for swia?
 
-
+en_min = min(energy)
+en_max = max(energy)
 if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
+	en_min = en_min > en[0]
+	en_max = en_max < en[1]
 endif
 if keyword_set(ms) then begin
 	ind = where(dat.mass_arr lt ms[0] or dat.mass_arr gt ms[1],count)
 	if count ne 0 then data[ind]=0.
 ; 		the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements
-	if dat.time lt time_double('14-10-1') then begin
-		tcnts = total(data,2)
-		maxcnt = max(tcnts,mind)
-		data[0:(mind-nne>0),*]=0.
-		data[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
-	endif	
+;	if dat.time lt time_double('14-10-1') then begin
+;		tcnts = total(data,2)
+;		maxcnt = max(tcnts,mind)
+;		data[0:(mind-nne>0),*]=0.
+;		data[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
+;	endif	
 endif
 
-; the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements
+; the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements of apid c0
 if dat.nmass eq 1 then begin
 	if dat.time lt time_double('14-10-1') then begin
 		maxcnt = max(data,mind)
@@ -79,15 +86,21 @@ if dat.nmass eq 1 then begin
 endif
 
 ; limit the energy range to near the peak
+	data2 = data
 	if ndimen(data) eq 2 then begin
 		maxcnt = max(total(data,2),mind) 
 		data[0:(mind-nne>0),*]=0.
 		data[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
+		en_peak=energy[mind,0]
 	endif else begin
 		maxcnt = max(data,mind)
 		data[0:(mind-nne>0)]=0.
 		data[((mind+nne)<(n_e-1)):(n_e-1)]=0.
+		en_peak=energy[mind]
 	endelse
+
+; if the number of counts near the peak is less than 75% of total counts in the energy range, then it is not a beam
+	if total(data) lt .75*total(data2) then return,!Values.F_NAN
 
 if dat.nmass gt 1 then begin
 	if keyword_set(mi) then begin
@@ -97,7 +110,8 @@ if dat.nmass gt 1 then begin
 	endelse
 endif else mass = dat.mass
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+if keyword_set(mincnt) then if total(data) lt mincnt then return,!Values.F_NAN
+if en_peak lt 1.5*en_min or en_peak gt en_max/1.5 then return,!Values.F_NAN
 
 dat.data=data
 dat = conv_units(dat,"df")		; Use distribution function

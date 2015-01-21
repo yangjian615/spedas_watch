@@ -6,7 +6,8 @@
 ; CALLING SEQUENCE:
 ;       mvn_swia_diretmag,pitch=[150,180]
 ; INPUTS:
-;       None (SWIA data should be loaded in advance and magnetic field should be added to SWIA common blocks by 'mvn_swia_add_magf'.)
+;       None (SWIA data should have been loaded and magnetic field
+;       should have been added to SWIA common blocks by 'mvn_swia_add_magf'.)
 ; KEYWORDS:
 ;       all optional
 ;       PITCH: specifies the pitch angle range (Def: [0,30])
@@ -18,8 +19,8 @@
 ;       Yuki Harada on 2014-11-20
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2014-11-24 17:06:34 -0800 (Mon, 24 Nov 2014) $
-; $LastChangedRevision: 16298 $
+; $LastChangedDate: 2015-01-16 12:56:29 -0800 (Fri, 16 Jan 2015) $
+; $LastChangedRevision: 16665 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_diretmag.pro $
 ;-
 
@@ -54,16 +55,26 @@ pro mvn_swia_diretmag, pitch=pitch, units=units, archive=archive, trange=trange,
      xyz_to_polar,d.magf,theta=bth,phi=bph
      pa = pangle(d.theta,d.phi,bth,bph)
 
-     for j=0,d.nenergy-1 do begin ;- energy loop
-        idx = where( pa[j,*] gt pitch[0] and pa[j,*] lt pitch[1], idx_cnt )
-        if idx_cnt gt 0 then begin
-           if strlowcase(units) ne 'counts' then $
-              eflux_dir[i,j] = total(d.data[j,idx]*d.domega[j,idx]) $
-                              /total(d.domega[j,idx]) $
-           else $
-              eflux_dir[i,j] = total(d.data[j,idx])
-        endif else eflux_dir[i,j] = !values.f_nan
-     endfor                     ;- energy loop end
+     idx = where( pa gt pitch[0] and pa lt pitch[1], idx_cnt )
+     if idx_cnt gt 0 then begin
+        w = d.data * 0.
+        w[idx] = 1.
+        if strlowcase(units) ne 'counts' then $
+           eflux_dir[i,*] = total(d.data*d.domega*w,2)/total(d.domega*w,2) $
+        else $
+           eflux_dir[i,*] = total(d.data*w,2)
+     endif else eflux_dir[i,*] = !values.f_nan
+
+;;      for j=0,d.nenergy-1 do begin ;- energy loop
+;;         idx = where( pa[j,*] gt pitch[0] and pa[j,*] lt pitch[1], idx_cnt )
+;;         if idx_cnt gt 0 then begin
+;;            if strlowcase(units) ne 'counts' then $
+;;               eflux_dir[i,j] = total(d.data[j,idx]*d.domega[j,idx]) $
+;;                               /total(d.domega[j,idx]) $
+;;            else $
+;;               eflux_dir[i,j] = total(d.data[j,idx])
+;;         endif else eflux_dir[i,j] = !values.f_nan
+;;      endfor                     ;- energy loop end
   endfor                        ;- time loop end
 
 
@@ -72,7 +83,7 @@ pro mvn_swia_diretmag, pitch=pitch, units=units, archive=archive, trange=trange,
   store_data,'mvn_'+type+'_en_'+units+suffix, $
              data={x:center_time,y:eflux_dir,v:energy}, $
              dlim={spec:1,zlog:1,ylog:1,yrange:minmax(energy),ystyle:1, $
-                   ytitle:'SWIA Coarse!c'+suffix+'!cEnergy [eV]', $
-                   ztitle:units},verbose=verbose
+                   ytitle:type+'!c'+suffix+'!cEnergy [eV]', $
+                   ztitle:units,datagap:180},verbose=verbose
 
 end

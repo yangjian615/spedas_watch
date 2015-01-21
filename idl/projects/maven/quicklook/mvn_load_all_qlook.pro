@@ -19,8 +19,8 @@
 ;HISTORY:
 ; 16-jul-2013, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-10-21 16:11:15 -0700 (Tue, 21 Oct 2014) $
-; $LastChangedRevision: 16018 $
+; $LastChangedDate: 2015-01-19 12:47:54 -0800 (Mon, 19 Jan 2015) $
+; $LastChangedRevision: 16682 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_load_all_qlook.pro $
 Pro mvn_load_all_qlook, date_in = date_in, l0_input_file = l0_input_file, $
                         device = device, _extra=_extra
@@ -80,7 +80,7 @@ mvn_qlook_init, device = device
 If(keyword_set(l0_input_file)) Then Begin
    filex = l0_input_file[0]
 Endif Else If(keyword_set(date_in)) Then Begin
-   filex = mvn_l0_db2file(date_in)
+   filex = mvn_l0_db2file(date_in, l0_file_type = 'svy')
 Endif Else Begin
    message, /info, 'Need to set date or l0_input_file keyword'
 Endelse
@@ -150,11 +150,13 @@ load_position = 'swia'
 mvn_swia_load_l0_data, filex, /tplot, /sync
 ;Create an "energy spectrogram"
 get_data, 'mvn_swis_en_counts', data=ddd
-ddd1 = ddd
-ddd1.y = ddd1.y*ddd1.v
-ddd1.zrange = minmax(ddd1.zrange) & ddd1.zrange[0] = 10.0
-ddd1.ztitle = 'SWIA!cEnergy'
-store_data, 'mvn_swis_en_energy', data = ddd1
+If(is_struct(ddd)) Then Begin
+   ddd1 = ddd
+   ddd1.y = ddd1.y*ddd1.v
+   ddd1.zrange = minmax(ddd1.zrange) & ddd1.zrange[0] = 10.0
+   ddd1.ztitle = 'SWIA!cEnergy'
+   store_data, 'mvn_swis_en_energy', data = ddd1
+Endif Else store_data, 'mvn_swis_en_energy', data = ddd
 
 skip_swia:
 

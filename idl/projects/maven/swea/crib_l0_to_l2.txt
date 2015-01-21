@@ -5,14 +5,15 @@
 
 ; pick a day
 ;time = '2014-03-26'
-time = '2014-10-22'
+;time = '2014-10-22'
+time = '2014-12-22'
 t_start = time_double(time)
 t_end = time_double(time) + 86400.D ; a full day
 trange = [t_start, t_end]
 trange_str = time_string(trange)
 
-; get SPICE kernels
-mvn_swe_spice_init, trange = trange
+;; get SPICE kernels - done in mvn_swe_load_l0
+;mvn_swe_spice_init, trange = trange
 
 ; load L0 data
 mvn_swe_load_l0, trange_str

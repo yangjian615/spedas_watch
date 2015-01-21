@@ -7,7 +7,7 @@
 ; CALLING SEQUENCE:
 ;       mvn_swia_diret
 ; INPUTS:
-;       None (SWIA data and SPICE kernels need to be loaded)
+;       None (SWIA data and SPICE kernels need to have been loaded)
 ; KEYWORDS:
 ;       all optional
 ;       FRAME: specifies the frame (Def: 'MSO')
@@ -21,8 +21,8 @@
 ;       Yuki Harada on 2014-11-20
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2014-11-24 17:06:29 -0800 (Mon, 24 Nov 2014) $
-; $LastChangedRevision: 16297 $
+; $LastChangedDate: 2015-01-16 12:50:20 -0800 (Fri, 16 Jan 2015) $
+; $LastChangedRevision: 16664 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_diret.pro $
 ;-
 
@@ -98,67 +98,71 @@ pro mvn_swia_diret, frame=frame, units=units, archive=archive, thld_theta=thld_t
         pZ_new[i,2] = 2*( (t7 -  t3)*0. + (t2 +  t9)*0. + (t5 + t8)*1. ) + 1.
      endif
 
-     for j=0,d.nenergy-1 do begin ;- energy loop
 
-        idx = where( abs(thetanew[j,*]) le thld_theta $ ;- +X
-                     and abs(phinew[j,*]) le 45, idx_cnt )
-        if idx_cnt gt 0 then begin
-           if strlowcase(units) ne 'counts' then $
-              eflux_pX[i,j] = total(d.data[j,idx]*d.domega[j,idx]) $
-                              /total(d.domega[j,idx]) $
-           else $
-              eflux_pX[i,j] = total(d.data[j,idx])
-        endif else eflux_pX[i,j] = !values.f_nan
+     idx = where( abs(thetanew) le thld_theta $ ;- +X
+                  and abs(phinew) le 45, idx_cnt )
+     if idx_cnt gt 0 then begin
+        w = d.data * 0.
+        w[idx] = 1.
+        if strlowcase(units) ne 'counts' then $
+           eflux_pX[i,*] = total(d.data*d.domega*w,2)/total(d.domega*w,2) $
+        else $
+           eflux_pX[i,j] = total(d.data*w,2)
+     endif else eflux_pX[i,*] = !values.f_nan
 
-        idx = where( abs(thetanew[j,*]) le thld_theta $ ;- -X
-                     and abs(phinew[j,*]) ge 135, idx_cnt )
-        if idx_cnt gt 0 then begin
-           if strlowcase(units) ne 'counts' then $
-              eflux_mX[i,j] = total(d.data[j,idx]*d.domega[j,idx]) $
-                              /total(d.domega[j,idx]) $
-           else $
-              eflux_mX[i,j] = total(d.data[j,idx])
-        endif else eflux_mX[i,j] = !values.f_nan
+     idx = where( abs(thetanew) le thld_theta $ ;- -X
+                  and abs(phinew) ge 135, idx_cnt )
+     if idx_cnt gt 0 then begin
+        w = d.data * 0.
+        w[idx] = 1.
+        if strlowcase(units) ne 'counts' then $
+           eflux_mX[i,*] = total(d.data*d.domega*w,2)/total(d.domega*w,2) $
+        else $
+           eflux_mX[i,*] = total(d.data*w,2)
+     endif else eflux_mX[i,*] = !values.f_nan
 
-        idx = where( abs(thetanew[j,*]) le thld_theta $ ;- +Y
-                     and phinew[j,*] gt 45 and phinew[j,*] lt 135, idx_cnt )
-        if idx_cnt gt 0 then begin
-           if strlowcase(units) ne 'counts' then $
-              eflux_pY[i,j] = total(d.data[j,idx]*d.domega[j,idx]) $
-                              /total(d.domega[j,idx]) $
-           else $
-              eflux_pY[i,j] = total(d.data[j,idx])
-        endif else eflux_pY[i,j] = !values.f_nan
+     idx = where( abs(thetanew) le thld_theta $ ;- +Y
+                  and phinew gt 45 and phinew lt 135, idx_cnt )
+     if idx_cnt gt 0 then begin
+        w = d.data * 0.
+        w[idx] = 1.
+        if strlowcase(units) ne 'counts' then $
+           eflux_pY[i,*] = total(d.data*d.domega*w,2)/total(d.domega*w,2) $
+        else $
+           eflux_pY[i,*] = total(d.data*w,2)
+     endif else eflux_pY[i,*] = !values.f_nan
 
-        idx = where( abs(thetanew[j,*]) le thld_theta $ ;- -Y
-                     and phinew[j,*] gt -135 and phinew[j,*] lt -45, idx_cnt )
-        if idx_cnt gt 0 then begin
-           if strlowcase(units) ne 'counts' then $
-              eflux_mY[i,j] = total(d.data[j,idx]*d.domega[j,idx]) $
-                              /total(d.domega[j,idx]) $
-           else $
-              eflux_mY[i,j] = total(d.data[j,idx])
-        endif else eflux_mY[i,j] = !values.f_nan
+     idx = where( abs(thetanew) le thld_theta $ ;- -Y
+                  and phinew gt -135 and phinew lt -45, idx_cnt )
+     if idx_cnt gt 0 then begin
+        w = d.data * 0.
+        w[idx] = 1.
+        if strlowcase(units) ne 'counts' then $
+           eflux_mY[i,*] = total(d.data*d.domega*w,2)/total(d.domega*w,2) $
+        else $
+           eflux_mY[i,*] = total(d.data*w,2)
+     endif else eflux_mY[i,*] = !values.f_nan
 
-        idx = where( thetanew[j,*] gt thld_theta, idx_cnt ) ;- +Z
-        if idx_cnt gt 0 then begin
-           if strlowcase(units) ne 'counts' then $
-              eflux_pZ[i,j] = total(d.data[j,idx]*d.domega[j,idx]) $
-                              /total(d.domega[j,idx]) $
-           else $
-              eflux_pZ[i,j] = total(d.data[j,idx])
-        endif else eflux_pZ[i,j] = !values.f_nan
+     idx = where( thetanew gt thld_theta, idx_cnt ) ;- +Z
+     if idx_cnt gt 0 then begin
+        w = d.data * 0.
+        w[idx] = 1.
+        if strlowcase(units) ne 'counts' then $
+           eflux_pZ[i,*] = total(d.data*d.domega*w,2)/total(d.domega*w,2) $
+        else $
+           eflux_pZ[i,*] = total(d.data*w,2)
+     endif else eflux_pZ[i,*] = !values.f_nan
 
-        idx = where( thetanew[j,*] lt -thld_theta, idx_cnt ) ;- -Z
-        if idx_cnt gt 0 then begin
-           if strlowcase(units) ne 'counts' then $
-              eflux_mZ[i,j] = total(d.data[j,idx]*d.domega[j,idx]) $
-                              /total(d.domega[j,idx]) $
-           else $
-              eflux_mZ[i,j] = total(d.data[j,idx])
-        endif else eflux_mZ[i,j] = !values.f_nan
+     idx = where( thetanew lt -thld_theta, idx_cnt ) ;- -Z
+     if idx_cnt gt 0 then begin
+        w = d.data * 0.
+        w[idx] = 1.
+        if strlowcase(units) ne 'counts' then $
+           eflux_mZ[i,*] = total(d.data*d.domega*w,2)/total(d.domega*w,2) $
+        else $
+           eflux_mZ[i,*] = total(d.data*w,2)
+     endif else eflux_mZ[i,*] = !values.f_nan
 
-     endfor                     ;- energy loop end
   endfor                        ;- time loop end
 
 
@@ -167,33 +171,33 @@ pro mvn_swia_diret, frame=frame, units=units, archive=archive, thld_theta=thld_t
   store_data,'mvn_'+type+'_en_'+units+'_'+frame+'_pX', $
              data={x:center_time,y:eflux_pX,v:energy}, $
              dlim={spec:1,zlog:1,ylog:1,yrange:minmax(energy),ystyle:1, $
-                   ytitle:'SWIA Coarse!c'+frame+' +X!cEnergy [eV]', $
-                   ztitle:units},verbose=verbose
+                   ytitle:type+'!c'+frame+' +X!cEnergy [eV]', $
+                   ztitle:units,datagap:180},verbose=verbose
   store_data,'mvn_'+type+'_en_'+units+'_'+frame+'_mX', $
              data={x:center_time,y:eflux_mX,v:energy}, $
              dlim={spec:1,zlog:1,ylog:1,yrange:minmax(energy),ystyle:1, $
-                   ytitle:'SWIA Coarse!c'+frame+' -X!cEnergy [eV]', $
-                   ztitle:units},verbose=verbose
+                   ytitle:type+'!c'+frame+' -X!cEnergy [eV]', $
+                   ztitle:units,datagap:180},verbose=verbose
   store_data,'mvn_'+type+'_en_'+units+'_'+frame+'_pY', $
              data={x:center_time,y:eflux_pY,v:energy}, $
              dlim={spec:1,zlog:1,ylog:1,yrange:minmax(energy),ystyle:1, $
-                   ytitle:'SWIA Coarse!c'+frame+' +Y!cEnergy [eV]', $
-                   ztitle:units},verbose=verbose
+                   ytitle:type+'!c'+frame+' +Y!cEnergy [eV]', $
+                   ztitle:units,datagap:180},verbose=verbose
   store_data,'mvn_'+type+'_en_'+units+'_'+frame+'_mY', $
              data={x:center_time,y:eflux_mY,v:energy}, $
              dlim={spec:1,zlog:1,ylog:1,yrange:minmax(energy),ystyle:1, $
-                   ytitle:'SWIA Coarse!c'+frame+' -Y!cEnergy [eV]', $
-                   ztitle:units},verbose=verbose
+                   ytitle:type+'!c'+frame+' -Y!cEnergy [eV]', $
+                   ztitle:units,datagap:180},verbose=verbose
   store_data,'mvn_'+type+'_en_'+units+'_'+frame+'_pZ', $
              data={x:center_time,y:eflux_pZ,v:energy}, $
              dlim={spec:1,zlog:1,ylog:1,yrange:minmax(energy),ystyle:1, $
-                   ytitle:'SWIA Coarse!c'+frame+' +Z!cEnergy [eV]', $
-                   ztitle:units},verbose=verbose
+                   ytitle:type+'!c'+frame+' +Z!cEnergy [eV]', $
+                   ztitle:units,datagap:180},verbose=verbose
   store_data,'mvn_'+type+'_en_'+units+'_'+frame+'_mZ', $
              data={x:center_time,y:eflux_mZ,v:energy}, $
              dlim={spec:1,zlog:1,ylog:1,yrange:minmax(energy),ystyle:1, $
-                   ytitle:'SWIA Coarse!c'+frame+' -Z!cEnergy [eV]', $
-                   ztitle:units},verbose=verbose
+                   ytitle:type+'!c'+frame+' -Z!cEnergy [eV]', $
+                   ztitle:units,datagap:180},verbose=verbose
 
   if keyword_set(attvec) then begin
      store_data,'mvn_'+type+'_'+frame+'_Xvec', $

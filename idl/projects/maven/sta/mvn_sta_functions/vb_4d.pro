@@ -31,7 +31,7 @@ function vb_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins
 
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
-	return, 0
+	return, !Values.F_NAN
 endif
 
 dat = conv_units(dat2,"counts")		; initially use counts
@@ -68,7 +68,7 @@ if dat.nmass eq 1 then begin
 	endif	
 endif
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+if keyword_set(mincnt) then if total(data) lt mincnt then return, !Values.F_NAN
 
 charge=dat.charge
 if keyword_set(q) then charge=q

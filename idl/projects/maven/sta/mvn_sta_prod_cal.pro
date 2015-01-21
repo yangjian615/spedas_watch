@@ -20,7 +20,7 @@
 ;NOTES:	 L0 files changed to APID 0x62 (instead of 0x51) 
 ;
 ; TBDs to make the code consistent with SIS:
-
+;
 ;	tbd	modify code to account for non-perfect attenuation of attE and lowest energy sample where attE is activated
 ;
 ;	tbd	current code uses swp2gfan and swp2gfdf to help approximate gf for omni-directional apids - c0,c2,c4,c6
@@ -28,11 +28,11 @@
 ;	tbd	correct program for leakage by electrostatic attenuator at low energy
 ;	tbd	check that the last energy sample includes attE attenuation  
 ;	tbd	may need to change the code that throws away extra data at end of file
-
+;
 ;	fix	eff array
 ;	add	eff_ind coding from time and swp_ind
 ;	mod	eff dimension
-
+;
 ;	mod	data_names
 ;	mod	bkg so it varies with time (it will contain the estimated straggling counts)
 ;	mod	dead so it varies with time 
@@ -41,22 +41,26 @@
 ;
 ;	add	quality flag -> multi-bit parameter with test pulser, diagnostic and compression coded
 ;		develop an algorithm for quality flag that qualifies high count rate and mode changes
+;		bits are set to 1 if there is a problem
 ;													 
 ;		quality_flag definition						 determined from
 ;
 ;			bit 0	test pulser on					- testpulser header bit set
 ;			bit 1	diagnostic mode					- diagnostic header bit set
 ;			bit 2	dead time correction > factor of 2		- deadtime correction > 2
-;			bit 3	dead time correction not at event time		- missing data quantity for deadtime
-;			bit 4	mcp detector gain droop flag 			- deadtime and beam width - tbd algorithm
-;			bit 5	electrostatic attenuator failing at < 2 eV	- attE on and eprom_ver<2
+;			bit 3	mcp detector gain droop flag 			- deadtime and beam width - flagged if correction > 2
+;			bit 4	dead time correction not at event time		- missing data quantity for deadtime
+;			bit 5	electrostatic attenuator failing at low energy	- attE on and eprom_ver<2
 ;			bit 6   attenuator change during accumulation		- att 1->2 or 2->1 transition (one measurement)	
 ;			bit 7	mode change during accumulation			- only needed for packets that average data during mode transition
 ;			bit 8	lpw sweeps interfering with data 		- lpw mode not dust mode
-;			bit 9	high background 		 		- minimum value in DA > 1000
+;			bit 9	high background 		 		- minimum value in DA > 10000 Hz
 ;			bit 10	missing background 		 		- dat.bkg = 0		- may not be needed
 ;			bit 11	missing spacecraft potential			- dat.sc_pot = 0	- may not be needed	
-;
+;			bit 12	inflight calibration 				- date determined, set to 1 until calibration finalized
+;			bit 13	tbd
+;			bit 14	tbd
+;			bit 15	not used
 ;
 ;
 ;-
@@ -443,11 +447,18 @@ def_eff = .285		; early mission solar wind proton efficiency
 	if first_t gt time_double('2014-03-10/0') then conf2swp[17,0:4]=[5,5,6,3,4]	; Cruciform values loaded
 	conf2swp[1,0:4]=[5,5,6,7,8]							; MOI values expected
 	conf2swp[2,0:6]=[9,9,10,11,12,13,14]						; Protect mode eprom load - sometime after 20141120
+	conf2swp[3,0:6]=[15,15,16,17,18,19,20]						; Deep dip eprom load - sometime after 20150120
 
 ; SLUT parameters for each STATIC energy sweep table
-; Note - slut parameters must be corrected to actual calibration sweep & deflection values with "scale" and "def_scale"
+; Note - Slut parameters must be corrected to actual calibration sweep & deflection values with "scale" and "def_scale"
+; Note - be sure to put the gridon at an energy step divisible by 4 so that attenuator shifts do not happen within averaged energy steps
+; Note - sweep table number is determined from the mode number (ram-1, conic-2, etc) and the config4 byte in the header
+; Note - eprom config4 byte is set in RTS_STASTART RTS - cmd.PFP_LOADTABLE(21, 51, 0x03) for config4=3
+; Note - adding/changing sweeps should be accompanied a change in the EEPROM config4 byte
+; Note - when sweeps are changed/added, "conf2swp,conf2mlut,swp2gfan,swp2gfdf" must be modified in this program
+; Note - new MLUT tables might also be needed when sweeps are changed -- determined by "conf2mlut"
 
-	n_swp = 15
+	n_swp = 21
 	slut = fltarr(n_swp,7)
 ;	slut[iswp,*]	  Estart,	 Estop,	defmax,	defctr,	gridon,	gridscale,	maxgrid		; mode name
 ; LEO modes
@@ -457,30 +468,52 @@ def_eff = .285		; early mission solar wind proton efficiency
 	slut[3,*] = 	[30000.0,	2.6080,	45.0,	0.,	 0.0,	2.0,		25.]		; pickup 
 	slut[4,*] = 	[30000.0,	2.6080,	 0.0,	0.,	 0.0,	2.0,		25.]		; scan
 ; Cruciform modes 
-	slut[5,*] = 	[   50.0,	0.1000,	22.5,	0.,	11.0,	2.0,		25.]		; ram2			loaded before cruciform scan on 2014-03-19
-	slut[6,*] = 	[  500.0,	0.1000,	45.0,	0.,	12.0,	2.0,		25.]		; conic2		
-; MOI modes 
-	slut[7,*] = 	[30000.0,	8.0000,	45.0,	0.,	 0.0,	2.0,		25.]		; pickup2		loaded before Mars Turn-on 2014-10-06
-	slut[8,*] = 	[30000.0,	8.0000,	 0.0,	0.,	 0.0,	2.0,		25.]		; scan2			
-; Science modes 
-	slut[9,*] = 	[   50.0,	0.1000,	22.5,	0.,	24.0,	4.0,		25.]		; ram3			loaded 2014-11-?? - protects static from s/c charging
-	slut[10,*] = 	[  500.0,	0.1000,	45.0,	0.,	21.0,	4.0,		25.]		; conic3		
-	slut[11,*] = 	[30000.0,	1.0000,	45.0,	0.,	24.0,	4.0,		25.]		; pickup3		
-	slut[12,*] = 	[30000.0,	1.0000,	 0.0,	0.,	24.0,	4.0,		25.]		; scan3			
-	slut[13,*] = 	[30000.0,	1.0000,	45.0,	0.,	24.0,	4.0,		25.]		; eclip3		
-	slut[14,*] = 	[30000.0,	25.000,	45.0,	0.,	 0.0,	2.0,		25.]		; protect3		
+	slut[5,*] = 	[   50.0,	0.1000,	22.5,	0.,	11.0,	2.0,		25.]		; ram0			loaded before cruciform scan on 2014-03-19
+	slut[6,*] = 	[  500.0,	0.1000,	45.0,	0.,	12.0,	2.0,		25.]		; conic0		
+; MOI modes loaded 2014-10-06 - gridon minimum is 0V
+	slut[7,*] = 	[30000.0,	8.0000,	45.0,	0.,	 0.0,	2.0,		25.]		; pickup1		loaded before Mars Turn-on 2014-10-06
+	slut[8,*] = 	[30000.0,	8.0000,	 0.0,	0.,	 0.0,	2.0,		25.]		; scan1			
+; Science modes loaded 2014-11-27 - gridon minimum is 2V
+	slut[9,*] = 	[   50.0,	0.1000,	22.5,	0.,	24.0,	4.0,		25.]		; ram2			loaded 2014-11-27 - protects static from s/c charging
+	slut[10,*] = 	[  500.0,	0.1000,	45.0,	0.,	21.0,	4.0,		25.]		; conic2		
+	slut[11,*] = 	[30000.0,	1.0000,	45.0,	0.,	24.0,	4.0,		25.]		; pickup2		
+	slut[12,*] = 	[30000.0,	1.0000,	 0.0,	0.,	24.0,	4.0,		25.]		; scan2			
+	slut[13,*] = 	[30000.0,	1.0000,	45.0,	0.,	24.0,	4.0,		25.]		; eclip2		
+	slut[14,*] = 	[30000.0,	25.000,	45.0,	0.,	 0.0,	2.0,		25.]		; protect2		
+; Science modes loaded 2015-01-20 - gridon minimum is 4V
+	slut[15,*] = 	[   50.0,	0.1000,	22.5,	0.,	24.0,	4.0,		25.]		; ram3			this should be changed to gridon=11 in the next iteration - better attenuator boundary, protects handles sc charging
+	slut[16,*] = 	[  500.0,	0.1000,	45.0,	0.,	21.0,	4.0,		25.]		; conic3		this should be changed to gridon=12 in the next iteration - better attenuator boundary, protects handles sc charging
+	slut[17,*] = 	[30000.0,	0.2000,	45.0,	0.,	24.0,	4.0,		25.]		; pickup3		this should be changed to gridon=17 in the next iteration - better attenuator boundary, protects handles sc charging
+	slut[18,*] = 	[30000.0,	0.2000,	 0.0,	0.,	24.0,	4.0,		25.]		; scan3			
+	slut[19,*] = 	[30000.0,	0.2000,	45.0,	0.,	24.0,	4.0,		25.]		; eclip3		
+	slut[20,*] = 	[30000.0,	25.000,	45.0,	0.,	 0.0,	2.0,		25.]		; protect3		
+; Science modes - TBD - when next eprom update is performed
+;	slut[21,*] = 	[   50.0,	0.1000,	22.5,	0.,	11.0,	4.0,		25.]		; ram3			
+;	slut[22,*] = 	[  500.0,	0.1000,	45.0,	0.,	12.0,	4.0,		25.]		; conic3		
+;	slut[23,*] = 	[30000.0,	0.2000,	45.0,	0.,	17.0,	4.0,		25.]		; pickup3		
+;	slut[24,*] = 	[30000.0,	0.2000,	 0.0,	0.,	17.0,	4.0,		25.]		; scan3			
+;	slut[25,*] = 	[30000.0,	0.2000,	45.0,	0.,	17.0,	4.0,		25.]		; eclip3		
+;	slut[26,*] = 	[30000.0,	25.000,	45.0,	0.,	 0.0,	2.0,		25.]		; protect3		
 
 ; iswp to MLUT map	
-	swp2mlut = [0,0,0,3,3,1,1,4,4,1,1,5,5,5,6]							; MLUT table associated with each SLUT sweep table
+	swp2mlut = [0,0,0,3,3,1,1,4,4,1,1,5,5,5,6,1,1,7,7,7,6]						; MLUT table associated with each SLUT sweep table
 
 ; iswp to anode & def range for geometric factor considerations
-;    these are needed to help approximate gf for omindirectional data - apid c0,c2,c4,c6
+;    these tables are needed to help approximate gf for omindirectional data - apid c0,c2,c4,c6
+;    the assumption is that: ions are in anode 0 in ram mode, ions are in anodes 6-8 in conic mode, ions are uniformly distributed over anodes 0-15 in other modes 
+;    these assumptions are adequate to meet required uncertainties of 25% and the code does not require multiple apids for decommutation
+;    a more accurate GF estimate could be made by using apid CA to determine the anode distribution of counts -- at some future date if needed
+;    a problem with this method is dealing with the non-uniform mechanical attenuator.
+;    a better approach might be to have a mechanical attenuator dependence in this table - swp2gfan[nswp,2,4], swp2gfdf[nswp,2,4]
+;    right now, the case of mechanical attenuator closed in pickup mode (and protect,eclipse,etc) is handled in the apid secions by a factor of 50 division 
+
 	swp2gfan = intarr(n_swp,2)									; For data averaged over anode, swp2gfan gives the assumed anode range for most counts 
 	swp2gfdf = intarr(n_swp,2)									; For data averaged over def step, swp2gfdf gives the assumed def range for most counts 
-	swp2gfan[*,0] = [7,7,6,0,0,7,6,0,0,7,6,0,0,0,0]							;   Used for APIDs with anode compressed data
-	swp2gfan[*,1] = [7,7,8,15,15,7,8,15,15,7,8,15,15,15,15]						;   RAM mode counts assumed to land in anode 7, CONIC mode counts assumed to land in anodes 6 to 8
-	swp2gfdf[*,0] = [7,7,5,0,0,7,5,0,0,7,5,0,0,0,0]							;   Used for APIDs with deflector compressed data, determines which sweeps should assume inclusion of large def angles where gf response rolls off
-	swp2gfdf[*,1] = [8,8,10,15,15,8,10,15,15,8,10,15,15,15,15]					;   RAM mode counts assumed to land in def 7-8, CONIC mode counts assumed to land in def 5-10
+	swp2gfan[*,0] = [7,7,6, 0, 0,7,6, 0, 0,7,6, 0, 0, 0, 0,7,6, 0, 0, 0, 0]				;   Used for APIDs with anode compressed data
+	swp2gfan[*,1] = [7,7,8,15,15,7,8,15,15,7,8,15,15,15,15,7,8,15,15,15,15]				;   RAM mode counts assumed to land in anode 7, CONIC mode counts assumed to land in anodes 6 to 8
+
+	swp2gfdf[*,0] = [7,7, 5, 0, 0,7, 5, 0, 0,7, 5, 0, 0, 0, 0,7, 5, 0, 0, 0, 0]			;   Used for APIDs with deflector compressed data, determines which sweeps should assume inclusion of large def angles where gf response rolls off
+	swp2gfdf[*,1] = [8,8,10,15,15,8,10,15,15,8,10,15,15,15,15,8,10,15,15,15,15]			;   RAM mode counts assumed to land in def 7-8, CONIC mode counts assumed to land in def 5-10
 
 	def_volt_max = 4000.										; max deflector voltage, high energy steps have limited deflection range
 
@@ -511,6 +544,10 @@ endif								;
 
 	gf_an_on =  reform(agf#[1,1,1,1] * (bgf#[1,0,1,0]+egf#[0,1,0,1]) * (replicate(1.,16)#[1,1,0,0]+mgf#[0,0,1,1]),16*4)	; electrostatic attenuator on
 	gf_an_off = reform(agf#[1,1,1,1] * (bgf#[1,1,1,1])               * (replicate(1.,16)#[1,1,0,0]+mgf#[0,0,1,1]),16*4)	; electrostatic attenuator off
+
+;	this correction factor is used correct apids c6,c0,c2,c4 for attM closed conditions
+	att_corr = total(mgf[5:9])/5./(total(mgf)/16.)
+
 
 ; Generate the energy, deflector, attenuation arrays
 
@@ -652,9 +689,9 @@ endif
 
 ; Prior to L&EO there are 4 MLUTs, for MOI there were 5 MLUTs 
 
-	n_mlut = 7							; number of MLUT tables used
+	n_mlut = 8							; number of MLUT tables used
 
-; The following replaces the md2mlut map
+; The following replaces the md2mlut map -- assumes we never have more than 255 eprom changes
 ;    conf2mlut[config4,md2], where md2 is the lower nibble of the header mode, and config4 is from housekeeping
 	conf2mlut = intarr(256,16)
 	conf2mlut[0,0:4]=[0,0,0,2,2]								; pre-delivery
@@ -662,6 +699,7 @@ endif
 	if first_t gt time_double('2014-03-10/0') then conf2mlut[17,0:4]=[1,1,1,3,3]		; Cruciform
 	conf2mlut[1,0:4]=[1,1,1,4,4]								; MOI
 	conf2mlut[2,0:6]=[1,1,1,5,5,5,6]							; Protect modes after s/c charging problems
+	conf2mlut[3,0:6]=[1,1,1,7,7,7,6]							; Protect modes after s/c charging problems
 
 ; Obsolete: Create ModeID to MLUT table map - this tells what MLUT table is used for each mode
 ; 	ModeID = 8*rate+mode
@@ -974,6 +1012,43 @@ endif
 ;	print,reform(mind2twt6[0,*])
 ;	print,reform(mind2twt6[63,*])
 
+;**********************************************
+;    MLUT5(256,64) for slut(17:19,*) 30000.0-0.2 eV Sweep), w/ -16 TDC offset, assumes energy lost in foil is (500.+M*1000./8.)eV (mlutmath.py)
+
+	close,1
+	openr,1,mlut_path+'mav_sta_mlut_0p2eV_30keV.lut'
+	nna=22									; offset for text at beginning of file
+	na=nna+64*128l & aa=strarr(na)
+	readf,1,aa
+	tmp0 = strmid(aa[nna:na-1],2,2)
+	tmp1 = strmid(aa[nna:na-1],4,2)
+; reverse byte order of the commands
+;	mlut=reform(transpose([[tmp0],[tmp1]]),256*64l)
+	mlut=reform(transpose([[tmp1],[tmp0]]),256*64l)
+	mlut7=intarr(256*64l)
+	reads,mlut,mlut7,format='(Z)'
+	mlut7=reform(mlut7,256,64)					; (ma,en)
+;	print,mlut7
+	close,1
+
+
+	mind2tof5 = fltarr(64,64)
+	mind2twt5=intarr(64,64)
+	for j=0,63 do begin
+		for i=0,63 do begin
+			ind = where(i eq mlut7[*,j],nind)
+			if nind ge 1 then begin
+				mind2tof5[j,i] = (m2tofmax[max(ind)] + m2tofmin[min(ind)])/2. 		; (en,ma)
+				mind2twt5[j,i] = (1 + m2tofmax[max(ind)] - m2tofmin[min(ind)])		; (en,ma)
+				if mind2twt3[j,i] le 0 then print,'Error in mlut7',i
+			endif else print,'Error in mlut7'
+		endfor
+	endfor
+
+;	print,reform(mind2tof5[0,*])
+;	print,reform(mind2tof5[63,*])
+;	print,reform(mind2twt5[0,*])
+;	print,reform(mind2twt5[63,*])
 
 ;**********************************************
 ; Load tof/mode twt/mode tables
@@ -1145,7 +1220,7 @@ endif
 ; make the software version number common block - used for CDF file production
 
 ;	common mvn_sta_software_version,ver & ver=0		; software version was "0" prior to 20141219
-	common mvn_sta_software_version,ver & ver=0		; tbd changed 20141219 when all SIS required elements included in common blocks, some elements are just placeholders
+	common mvn_sta_software_version,ver & ver=1		; changed 20150118 when all SIS required elements were included in common blocks, some element not filled in
 
 
 ;zero all the common block arrays
@@ -1402,6 +1477,15 @@ print,'Processing apid c6'
 			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
 			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
 		endelse
+	endif
+; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
+	if first_t ge time_double('2014-09-01/0') then begin
+			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
+			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[7:8,*,2]=gf2[3:4,*,2]*att_corr
+			gf2[7:8,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
+			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
 	endif
 
 ; ??????? i think the above line should sum over anodes and average over deflections so that the integ_t can reflect the dead time correctly
@@ -1706,6 +1790,15 @@ print,'Processing apid c0'
 			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
 		endelse
 	endif
+; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
+	if first_t ge time_double('2014-09-01/0') then begin
+			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
+			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[7:8,*,2]=gf2[3:4,*,2]*att_corr
+			gf2[7:8,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
+			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
+	endif
 
 ; the following line need to be fixed ?????????????????????????????
 	eff2 = fltarr(128,nenergy,nmass) & eff2[*]=def_eff  & eff_ind=intarr(nn)
@@ -1976,6 +2069,15 @@ print,'Processing apid c2'
 			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
 			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
 		endelse
+	endif
+; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
+	if first_t ge time_double('2014-09-01/0') then begin
+			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
+			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[7:8,*,2]=gf2[3:4,*,2]*att_corr
+			gf2[7:8,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
+			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
 	endif
 
 ; the following line need to be fixed ?????????????????????????????
@@ -2257,6 +2359,15 @@ print,'Processing apid c4'
 			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
 			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
 		endelse
+	endif
+; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
+	if first_t ge time_double('2014-09-01/0') then begin
+			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
+			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[7:8,*,2]=gf2[3:4,*,2]*att_corr
+			gf2[7:8,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
+			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
 	endif
 
 ; the following line need to be fixed ?????????????????????????????
@@ -2831,7 +2942,7 @@ print,'Processing apid ca'
 ; check the following????????????  - bug in theta - off by factor of 3???
 ;	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins)/avg_nrg/avg_def
 ;	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins)/avg_nrg
-;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins)
+;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins)
 ;	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode),n_swp,nenergy,nbins)/avg_nrg/avg_def
@@ -3111,7 +3222,7 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
-;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
+;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	phi = fltarr(n_swp,nenergy,nbins,nmass) & phi[*]=0.
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi[*]=360.
 	domega = dphi*dtheta/!radeg^2
@@ -3400,7 +3511,7 @@ print,'Processing apid cd'
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
-;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
+;	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	phi = fltarr(n_swp,nenergy,nbins,nmass) & phi[*]=0.
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=360.
 	domega = dphi*dtheta/!radeg^2
@@ -3677,7 +3788,7 @@ print,'Processing apid ce'
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
-	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
+	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
 
@@ -3966,7 +4077,7 @@ print,'Processing apid cf'
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
-	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
+	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
 
@@ -4240,7 +4351,7 @@ print,'Processing apid d0'
 ;theta and phi are screwed up????????????????????
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
-	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
+	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
 
@@ -4539,7 +4650,7 @@ print,'Processing apid d1'
 
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
-	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
+	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
 
@@ -4813,7 +4924,7 @@ print,'Processing apid d2'
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def 
 	dtheta = dtheta > 6.
-	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
+	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
 
@@ -5101,7 +5212,7 @@ print,'Processing apid d3'
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def 
 	dtheta = dtheta > 6.
-	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
+	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
 
@@ -5400,7 +5511,7 @@ print,'Processing apid d4'
 
 	theta = reform(reform(total(total(reform(def,n_swp,avg_nrg,nenergy,avg_def,ndef),4),2),n_swp*nenergy*ndef)#replicate(1.,nanode*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg/avg_def
 	dtheta = reform(reform(total(reform(abs(def(*,*,15)-def(*,*,0))/(15.),n_swp,avg_nrg,nenergy),2),n_swp*nenergy)#replicate(1.,nbins*nmass),n_swp,nenergy,nbins,nmass)/avg_nrg*avg_def
-	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
+	phi = 22.5*reform(reform(replicate(1.,n_swp*nenergy*ndef)#(findgen(nanode)-7.),1l*n_swp*nenergy*nbins)#replicate(1.,nmass),n_swp,nenergy,nbins,nmass)
 	dphi = fltarr(n_swp,nenergy,nbins,nmass) & dphi(*)=22.5
 	domega = dphi*dtheta/!radeg^2
 

@@ -10,10 +10,14 @@
 ;	units	string		select the units for generated tplot structures - not working yet
 ;	apids	strarr		if set, selectes subset of apids to generate tplot structures - not working yet
 ;	test	0/1		if set, diagnostic tplot structures (APIDs: 2A,d6,d7,d8,d9,da) are made
-;					generates "mode" and "rate" tplot structures for all APIDs, 
-;						default only generates c6 mode and rate tplot structures
+;					generates "rate" tplot structures for all APIDs, 
+;						default only generates c6 rate tplot structures
 ;	gf_nor	0/1		if set, keyword for testing - not working yet
-;
+;	dead_c0 flt		not used -- only for testing
+;	scale	flt		not used -- only for develpment testing for crude background subtraction for 'mvn_sta_c0_H_E'
+;	replace 0/1		if set, replaces eflux with values calculated as this routine is run
+;					allows new dead time or background subtraction routines to be run with recalculations of eflux 
+;'mvn_sta_c0_H_E'
 ;
 ;CREATED BY:	J. McFadden	2014/03/14
 ;VERSION:	1
@@ -22,7 +26,7 @@
 ;
 ;
 ;-
-pro mvn_sta_l2_tplot,all=all,units=units,apids=apids,test=test,gf_nor=gf_nor,scale=scale,dead_c0=dead_c0
+pro mvn_sta_l2_tplot,all=all,units=units,apids=apids,test=test,gf_nor=gf_nor,scale=scale,dead_c0=dead_c0,replace=replace
 
 cols=get_colors()
 
@@ -112,7 +116,8 @@ endif
 		data = mvn_c0_dat.data
 		energy = reform(mvn_c0_dat.energy[iswp,*,0])
 		mass = total(mvn_c0_dat.mass_arr[iswp,*,*],2)/nenergy
-		eflux = mvn_c0_dat.eflux
+		str_element,mvn_c0_dat,'eflux',eflux,success=success
+;		eflux = mvn_c0_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c0_dat.bkg
@@ -126,8 +131,8 @@ endif
 			dt = mvn_c0_dat.integ_t#replicate(1.,nenergy*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c0 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c0 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_c0_P1A_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c0_P1A_H_E',data={x:time,y:reform( (data[*,*,1]-0.006*data[*,*,0]/(1.-(data[*,*,0]/1200.<.9))) >0.),v:energy}
@@ -139,7 +144,7 @@ endif
 		store_data,'mvn_sta_c0_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c0_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c0_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_c0_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_c0_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_c0_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c0_tot',0,0,1
@@ -198,7 +203,8 @@ endif
 		data = mvn_c2_dat.data
 		energy = reform(mvn_c2_dat.energy[iswp,*,0])
 		mass = total(mvn_c2_dat.mass_arr[iswp,*,*],2)/nenergy
-		eflux = mvn_c2_dat.eflux
+		str_element,mvn_c2_dat,'eflux',eflux,success=success
+;		eflux = mvn_c2_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c2_dat.bkg
@@ -212,8 +218,8 @@ endif
 			dt = mvn_c2_dat.integ_t#replicate(1.,nenergy*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c2 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c2 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_c2_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c2_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -221,7 +227,7 @@ endif
 		store_data,'mvn_sta_c2_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c2_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c2_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_c2_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_c2_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_c2_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c2_tot',0,0,1
@@ -277,7 +283,8 @@ endif
 		data = mvn_c4_dat.data
 		energy = reform(mvn_c4_dat.energy[iswp,*,0])
 		mass = total(mvn_c4_dat.mass_arr[iswp,*,*],2)/nenergy
-		eflux = mvn_c4_dat.eflux
+		str_element,mvn_c4_dat,'eflux',eflux,success=success
+;		eflux = mvn_c4_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c4_dat.bkg
@@ -291,8 +298,8 @@ endif
 			dt = mvn_c4_dat.integ_t#replicate(1.,nenergy*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c4 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c4 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_c4_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c4_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -300,7 +307,7 @@ endif
 		store_data,'mvn_sta_c4_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c4_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c4_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_c4_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_c4_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_c4_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c4_tot',0,0,1
@@ -356,7 +363,8 @@ endif
 		data = mvn_c6_dat.data
 		energy = reform(mvn_c6_dat.energy[iswp,*,0])
 		mass = total(mvn_c6_dat.mass_arr[iswp,*,*],2)/nenergy
-		eflux = mvn_c6_dat.eflux
+		str_element,mvn_c6_dat,'eflux',eflux,success=success
+;		eflux = mvn_c6_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c6_dat.bkg
@@ -370,8 +378,8 @@ endif
 			dt = mvn_c6_dat.integ_t#replicate(1.,nenergy*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c6 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c6 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		if keyword_set(test) then begin
 			store_data,'mvn_sta_c6_gf30_att',data={x:time,y:reform(mvn_c6_dat.gf[iswp,30,*])}
@@ -450,7 +458,8 @@ endif
 		data = mvn_c8_dat.data
 		energy = reform(mvn_c8_dat.energy[iswp,*,0])
 		theta = reform(mvn_c8_dat.theta[iswp,nenergy-1,*])
-		eflux = mvn_c8_dat.eflux
+		str_element,mvn_c8_dat,'eflux',eflux,success=success
+;		eflux = mvn_c8_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c8_dat.bkg
@@ -464,8 +473,8 @@ endif
 			dt = mvn_c8_dat.integ_t#replicate(1.,nenergy*ndef)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c8 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c8 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_c8_P2_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c8_P2_D',data={x:time,y:total(data,2),v:theta}
@@ -473,7 +482,7 @@ endif
 		store_data,'mvn_sta_c8_D',data={x:time,y:total(eflux,2)/nenergy,v:theta}
 		store_data,'mvn_sta_c8_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c8_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_c8_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_c8_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_c8_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_c8_tot',0,0,1
@@ -530,7 +539,8 @@ endif
 		energy = reform(mvn_ca_dat.energy[iswp,*,0])
 		theta = total(reform(mvn_ca_dat.theta[iswp,nenergy-1,*],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_ca_dat.phi[iswp,nenergy-1,*],npts,ndef,nanode),2)/ndef
-		eflux = mvn_ca_dat.eflux
+		str_element,mvn_ca_dat,'eflux',eflux,success=success
+;		eflux = mvn_ca_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_ca_dat.bkg
@@ -544,8 +554,8 @@ endif
 			dt = mvn_ca_dat.integ_t#replicate(1.,nenergy*nbins)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF ca eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF ca eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_ca_P3_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_ca_P3_D',data={x:time,y:total(total(reform(data,npts,nenergy,ndef,nanode),4),2),v:theta}
@@ -555,7 +565,7 @@ endif
 		store_data,'mvn_sta_ca_E',data={x:time,y:total(eflux,3)/nbins,v:energy}
 		store_data,'mvn_sta_ca_D',data={x:time,y:total(total(reform(eflux,npts,nenergy,ndef,nanode),4),2)/nenergy/nanode,v:theta}
 		store_data,'mvn_sta_ca_A',data={x:time,y:total(total(reform(eflux,npts,nenergy,ndef,nanode),3),2)/nenergy/ndef,v:phi}
-			if keyword_set(test) then store_data,'mvn_sta_ca_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_ca_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_ca_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_ca_P3_E',.1,40000.,1
@@ -575,7 +585,7 @@ endif
 			zlim,'mvn_sta_ca_D',1.e3,1.e9,1
 			zlim,'mvn_sta_ca_A',1.e3,1.e9,1
 
-			datagap=600.
+			datagap=7.
 			options,'mvn_sta_ca_P3_E',datagap=datagap
 			options,'mvn_sta_ca_P3_D',datagap=datagap
 			options,'mvn_sta_ca_P3_A',datagap=datagap
@@ -629,7 +639,8 @@ endif
 		mass = reform(total(mvn_cc_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_cc_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cc_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
-		eflux = mvn_cc_dat.eflux
+		str_element,mvn_cc_dat,'eflux',eflux,success=success
+;		eflux = mvn_cc_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_cc_dat.bkg
@@ -644,8 +655,8 @@ endif
 			dt = mvn_cc_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF cc eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF cc eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_cc_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cc_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
@@ -655,7 +666,7 @@ endif
 		store_data,'mvn_sta_cc_M',data={x:time,y:total(total(eflux,3),2)/nenergy/nbins,v:mass}
 		store_data,'mvn_sta_cc_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_cc_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_cc_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_cc_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_cc_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_cc_tot',0,0,1
@@ -727,7 +738,8 @@ endif
 		mass = reform(total(mvn_cd_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_cd_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cd_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
-		eflux = mvn_cd_dat.eflux
+		str_element,mvn_cd_dat,'eflux',eflux,success=success
+;		eflux = mvn_cd_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_cd_dat.bkg
@@ -742,8 +754,8 @@ endif
 			dt = mvn_cd_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF cd eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF cd eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_cd_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cd_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
@@ -753,7 +765,7 @@ endif
 		store_data,'mvn_sta_cd_M',data={x:time,y:total(total(eflux,3),2)/nenergy/nbins,v:mass}
 		store_data,'mvn_sta_cd_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_cd_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_cd_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_cd_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_cd_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_cd_tot',0,0,1
@@ -825,7 +837,8 @@ endif
 		mass = reform(total(mvn_ce_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_ce_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_ce_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
-		eflux = mvn_ce_dat.eflux
+		str_element,mvn_ce_dat,'eflux',eflux,success=success
+;		eflux = mvn_ce_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_ce_dat.bkg
@@ -840,8 +853,8 @@ endif
 			dt = mvn_ce_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF ce eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF ce eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_ce_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_ce_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -853,7 +866,7 @@ endif
 		store_data,'mvn_sta_ce_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_ce_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_ce_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_ce_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_ce_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_ce_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_ce_tot',0,0,1
@@ -935,7 +948,8 @@ endif
 		mass = reform(total(mvn_cf_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_cf_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cf_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
-		eflux = mvn_cf_dat.eflux
+		str_element,mvn_cf_dat,'eflux',eflux,success=success
+;		eflux = mvn_cf_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_cf_dat.bkg
@@ -950,8 +964,8 @@ endif
 			dt = mvn_cf_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF cf eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF cf eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_cf_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cf_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -963,7 +977,7 @@ endif
 		store_data,'mvn_sta_cf_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_cf_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_cf_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_cf_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_cf_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_cf_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_cf_tot',0,0,1
@@ -1045,7 +1059,8 @@ endif
 		mass = reform(total(mvn_d0_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_d0_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d0_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
-		eflux = mvn_d0_dat.eflux
+		str_element,mvn_d0_dat,'eflux',eflux,success=success
+;		eflux = mvn_d0_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_d0_dat.bkg
@@ -1060,8 +1075,8 @@ endif
 			dt = mvn_d0_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF d0 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF d0 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_d0_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d0_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1073,7 +1088,7 @@ endif
 		store_data,'mvn_sta_d0_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_d0_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_d0_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_d0_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_d0_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_d0_rate',data={x:time,y:rate}
 		store_data,'mvn_sta_d0_H_E',data={x:time,y:total(total(eflux[*,*,*,4:7],4),3)/nbins,v:energy}
 		store_data,'mvn_sta_d0_H_D',data={x:time,y:total(total(reform(total(eflux[*,*,*,4:7],4),npts,nenergy,ndef,nanode),4),2),v:theta}
@@ -1175,7 +1190,8 @@ endif
 		mass = reform(total(mvn_d1_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_d1_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d1_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
-		eflux = mvn_d1_dat.eflux
+		str_element,mvn_d1_dat,'eflux',eflux,success=success
+;		eflux = mvn_d1_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_d1_dat.bkg
@@ -1190,8 +1206,8 @@ endif
 			dt = mvn_d1_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF d1 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF d1 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_d1_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d1_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1203,7 +1219,7 @@ endif
 		store_data,'mvn_sta_d1_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_d1_tot',data={x:time,y:total(total(total(data,4),3),2)}
 		store_data,'mvn_sta_d1_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_d1_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_d1_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_d1_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_d1_tot',0,0,1
@@ -1284,7 +1300,8 @@ endif
 		mass = reform(total(mvn_d4_dat.mass_arr[iswp,*,0,*],2)/nenergy)
 		theta = total(reform(mvn_d4_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d4_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
-		eflux = mvn_d4_dat.eflux
+		str_element,mvn_d4_dat,'eflux',eflux,success=success
+;		eflux = mvn_d4_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_d4_dat.bkg
@@ -1299,8 +1316,8 @@ endif
 			dt = mvn_d4_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
 			eflux2 = (data-bkg)*dead/(gf*eff*dt)
 			eflux2 = float(eflux2)
-			if keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF d4 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
-			eflux = eflux2
+			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF d4 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
+			if not success or keyword_set(replace) then eflux = eflux2
 
 		store_data,'mvn_sta_d4_P4E_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
 		store_data,'mvn_sta_d4_P4E_A',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),3),2),v:phi}
@@ -1311,7 +1328,7 @@ endif
 		store_data,'mvn_sta_d4_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_d4_tot',data={x:time,y:total(total(data,4),3)}
 		store_data,'mvn_sta_d4_att',data={x:time,y:iatt}
-			if keyword_set(test) then store_data,'mvn_sta_d4_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_d4_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_d4_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_d4_tot',0,0,1
@@ -1593,7 +1610,7 @@ endif
 		store_data,'mvn_sta_da_R3_hz',data={x:time,y:total(data,2)/64}
 
 			ylim,'mvn_sta_da_R3',-1,64,0
-			ylim,'mvn_sta_da_R3_E',.5,30000.,1
+			ylim,'mvn_sta_da_R3_E',.1,40000.,1
 			ylim,'mvn_sta_da_R3_tot',100,1.e5,1
 			ylim,'mvn_sta_da_R3_hz',100,1.e5,1
 
@@ -1635,7 +1652,7 @@ endif
 		store_data,'mvn_sta_db_tof',data={x:time,y:data,v:tof}
 
 		store_data,'mvn_sta_db_tot',data={x:time,y:total(data,2)}
-			if keyword_set(test) then store_data,'mvn_sta_db_mode',data={x:time,y:mode}
+		store_data,'mvn_sta_db_mode',data={x:time,y:mode}
 			if keyword_set(test) then store_data,'mvn_sta_db_rate',data={x:time,y:rate}
 
 			ylim,'mvn_sta_db_tot',.1,10000,1
