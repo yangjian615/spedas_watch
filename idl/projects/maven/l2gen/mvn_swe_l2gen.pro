@@ -15,8 +15,8 @@
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14, jmm,
 ; jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-12 14:53:40 -0800 (Mon, 12 Jan 2015) $
-; $LastChangedRevision: 16647 $
+; $LastChangedDate: 2015-01-21 14:40:36 -0800 (Wed, 21 Jan 2015) $
+; $LastChangedRevision: 16701 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
 Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
@@ -24,6 +24,9 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
 ; only works for one day at a time -- that's how we make L2 CDFs
 
 @ mvn_swe_com
+
+;Root data directory, sometimes isn't defined
+  setenv, 'ROOT_DATA_DIR=/disks/data/'
 
 ; pick a day
   If(keyword_set(date)) Then time = time_string(date[0], /date_only) $
@@ -74,7 +77,7 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
 
 ; stop here if you're only making L2 files
 ; Make kp save file:
-  mvn_swe_kp, trange, output_path=directory
+  mvn_swe_kp, trange
 
 Return
 End

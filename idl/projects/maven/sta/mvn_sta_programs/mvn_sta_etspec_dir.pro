@@ -22,8 +22,6 @@
 ;   UNITS:      Specifies the units ('eflux', 'counts', etc.).
 ;               (Def: 'eflux')
 ;
-;   ARCHIVE:    Uses archive data instead of survey.
-;
 ;   THLD_THETA: theta_v > thld_theta => +Z,
 ;               theta_v < -thld_theta => -Z (Def: 45).
 ;
@@ -38,8 +36,8 @@
 ;CREATED BY:    Takuya Hara  on 2014-11-25.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-12-09 17:51:20 -0800 (Tue, 09 Dec 2014) $
-; $LastChangedRevision: 16430 $
+; $LastChangedDate: 2015-01-21 16:52:44 -0800 (Wed, 21 Jan 2015) $
+; $LastChangedRevision: 16702 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_etspec_dir.pro $
 ;
 ;MODIFICATION LOG:
@@ -50,7 +48,7 @@
 ;
 ;-
 
-PRO mvn_sta_etspec_dir, apid, frame=frame, units=units, archive=archive, thld_theta=thld_theta, attvec=attvec, $
+PRO mvn_sta_etspec_dir, apid, frame=frame, units=units, thld_theta=thld_theta, attvec=attvec, $
                         trange=trange, verbose=verbose, mass=mass, suffix=suffix
   nan = !values.f_nan
   IF ~keyword_set(apid) THEN apid = 'd0' 

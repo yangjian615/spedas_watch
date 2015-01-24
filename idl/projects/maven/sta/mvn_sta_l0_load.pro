@@ -33,6 +33,16 @@ dprint,'Download finished in ',systime(1)-starttime,' seconds'
 	mvn_sta_handler,/clear
 	if keyword_set(all) then mvn_sta_hkp_cal,def_lim=1
 	mvn_sta_prod_cal,all=all
+	mvn_sta_dead_load		; preliminary version ready 20150122
+	mvn_sta_qf_load			; preliminary version ready 20150122
+;	mvn_sta_bkg_load		; not developed yet
+
+; Note - the follow can be run a couple of weeks after data arrives at berkeley to complete the structures
+
+;	mvn_sta_ephemeris_load		; preliminary version ready 20150119
+;	mvn_sta_mag_load		; preliminary version ready 20150119
+;	mvn_sta_scpot_load		; not developed yet
+
 endif
 
 end

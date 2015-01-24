@@ -409,7 +409,7 @@ if size(mvn_cc_dat,/type) eq 8 then begin
 
 	for i=0,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
-		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
+		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
@@ -495,7 +495,7 @@ if size(mvn_ce_dat,/type) eq 8 then begin
 
 	for i=0,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
-		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
+		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
@@ -581,7 +581,7 @@ if size(mvn_d0_dat,/type) eq 8 then begin
 
 	for i=0,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
-		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
+		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
@@ -625,7 +625,7 @@ if size(mvn_d1_dat,/type) eq 8 then begin
 
 	for i=0,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
-		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
+		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
@@ -669,7 +669,7 @@ if size(mvn_d2_dat,/type) eq 8 then begin
 
 	for i=0,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
-		min_da2 = min(abs(time-dat.end_time[i]-4.),ind_da2)
+		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
 ;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)

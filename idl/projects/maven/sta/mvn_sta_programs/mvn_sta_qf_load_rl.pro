@@ -38,7 +38,7 @@
 
 
 
-pro mvn_sta_qf_load,verbose=verbose
+pro mvn_sta_qf_load_rl,verbose=verbose
 
 
 
@@ -70,7 +70,7 @@ pro mvn_sta_qf_load,verbose=verbose
 
 
   ;;----------------------------------------------------
-  ;;Make sure da is loaded to obtain quality flags
+  ;;Make sure APID da is loaded to obtain quality flags
   ;;for the the background (bit 9).
   temp=execute("temp1=mvn_da_dat")
   if size(temp1,/type) ne 8 then mvn_sta_l2_load, sta_apid=['da']
@@ -79,10 +79,10 @@ pro mvn_sta_qf_load,verbose=verbose
 
 
 
-  ;;-----------------------
-  ;;Find orbits and altitude
+  ;;-----------------------------------------------------
+  ;;Find orbits and altitudes
   tt=timerange()
-  orb_time = tt[0]+360.*findgen(240)*(tt[1]-tt[0])/(24.*3600.)
+  orb_time = tt[0]+360*indgen(240)*(tt[1]-tt[0])/(24*3600)
   orb_num = mvn_orbit_num(time=orb_time)-0.3
   maven_orbit_tplot,result=result,/loadonly
   R_m = 3389.9D
@@ -98,7 +98,7 @@ pro mvn_sta_qf_load,verbose=verbose
 
 
   ;;;********************************************************
-  ;;;Get APID c0 and c6
+  ;;;Get APID c6
   ;;;
   ;;
   ;;NOTE:
@@ -109,11 +109,10 @@ pro mvn_sta_qf_load,verbose=verbose
 
   ;;Load c6 - Change structure name to dat
   print, 'Generate Quality Flags for APID c6...'
-  dat=mvn_c6_dat  
+  dat      = mvn_c6_dat  
+  qf       = dat.quality_flag
+  qf_time  = dat.time
   npts     = dimen1(dat.data)
-  nmass    = dat.nmass
-  nenergy  = dat.nenergy
-  nbins    = dat.nbins
   time     = dat.time
   time_end = dat.end_time
   mode     = dat.mode
@@ -121,16 +120,6 @@ pro mvn_sta_qf_load,verbose=verbose
   header   = dat.header
   eprom    = dat.eprom_ver
 
-  ;Load c0 - For bit 5 specifically.
-  c0_npts    = dimen1(mvn_c0_dat.data)
-  nmass      = mvn_c0_dat.nmass
-  nenergy    = mvn_c0_dat.nenergy
-  nbins      = mvn_c0_dat.nbins
-  c0_counts  = reform(mvn_c0_dat.data,c0_npts,nenergy,nbins,nmass)
-  c0_swp_ind = mvn_c0_dat.swp_ind
-  c0_start   = mvn_c0_dat.time
-  c0_end     = mvn_c0_dat.end_time
-  c0_energy  = reform(mvn_c0_dat.energy,dimen1(mvn_c0_dat.energy),nenergy,nbins,nmass) 
 
 
   ;;--------------------------------------------------------
@@ -138,8 +127,9 @@ pro mvn_sta_qf_load,verbose=verbose
   bitclear=2^0  + 2^1  + 2^5 + 2^6  + $
            2^7  + 2^8  + 2^9 + 2^10 + $
            2^11 + 2^12
-  dat.quality_flag=dat.quality_flag and (not bitclear)
+  qf=qf and (not bitclear)
   
+
 
   ;;***************************************************************
   ;;Bit 0 - Test pulser
@@ -147,7 +137,7 @@ pro mvn_sta_qf_load,verbose=verbose
   bit0mask=2^0
   head=(header and 128L)/128L
   pp=where(head eq 1L,cc)
-  if cc ne 0 then dat.quality_flag[pp] = dat.quality_flag[pp] or bit0mask
+  if cc ne 0 then qf[pp] = qf[pp] or bit0mask
   if keyword_set(verbose) then print, 'Bit 0 flags - Total:  '+string(cc)+'/'+string(npts)
 
 
@@ -158,7 +148,7 @@ pro mvn_sta_qf_load,verbose=verbose
   bit1mask=2^1
   head=(header and 64L)/64L
   pp=where(head eq 1L,cc)
-  if cc ne 0 then dat.quality_flag[pp] = dat.quality_flag[pp] or bit1mask
+  if cc ne 0 then qf[pp] = qf[pp] or bit1mask
   if keyword_set(verbose) then $
      print, 'Bit 1 flags - Total:  '+string(cc)+'/'+string(npts)
 
@@ -197,7 +187,6 @@ pro mvn_sta_qf_load,verbose=verbose
   ;;      (c2 gt 10.))) 
   ;;      where c1 is the total counts in apid c0 less than .75 eV
   ;;      where c2 is the total counts in apid c0 less than 2.5 eV 
-
   
   ;;Jim's Method
   bit5mask=2^5
@@ -205,57 +194,25 @@ pro mvn_sta_qf_load,verbose=verbose
   bit5=intarr(npts)
   eprom = dat.eprom_ver
   att = dat.att_ind
+  swp = dat.swp_ind
+  energy = dat.energy
+  ccc = 0L
   ind = where(eprom eq 1 or eprom eq 2 ,cnt)
   if cnt gt 0 then begin
      for i=0,npts-1 do begin
         if (att[i] eq 1 or att[i] eq 3) then begin   
-           if eprom[i] eq 1 then ind = where(dat.energy[dat.swp_ind[i],*,0] lt 2.4,count)
-           if eprom[i] eq 2 then ind = where(dat.energy[dat.swp_ind[i],*,0] lt 0.69,count)
+           if eprom[i] eq 1 then ind = where(energy[swp[i],*,0] lt 2.5,count)
+           if eprom[i] eq 2 then ind = where(energy[swp[i],*,0] lt 0.75,count)
            if count ge 1 then begin
               datt = total(dat.data[i,ind,*])
               ;if datt gt 10. then bit5[i]=2^5
-              if datt gt 10. then dat.quality_flag[i] = dat.quality_flag[i] or bit5mask
+              if datt gt 10. then qf[i] = qf[i] or bit5mask
+              if datt gt 10. then ccc++
            endif
         endif
    endfor
   endif 
 
-  
-
-  ;;Old Method
-  ;energies=c6_energy[c6_swp_ind,*,*,*]
-  ;p1_energies=where(energies[*,nenergy-1,0,0] lt 0.75,c1_energies)
-  ;p2_energies=where(energies[*,nenergy-1,0,0] lt 2.50,c2_energies)
-  ;;;c1-----------------------------
-  ;if c1_energies gt 0 then begin     
-  ;   att_e1=att[p1_energies]
-  ;   e1_temp=c0_counts[p1_energies,*,*]
-  ;   c1=fltarr(c1_energies)
-  ;   for i=0, c1_energies-1 do $
-  ;      c1[i]=total(e1_temp[i,where(e1_temp[i,*,0] lt 0.75),0],2)
-  ;   ppp=where($
-  ;       ((att_e1 eq 1)  or  $
-  ;        (att_e1 eq 3)) and $
-  ;       ((eprom[p1_energies] eq 2)    and $
-  ;        (c1 gt 10.)),ccc)
-  ;   if ccc ne 0 then pp=p1_energies[ppp]
-  ;   if ccc ne 0 then dat.quality_flag[pp] = dat.quality_flag[pp] or bit5mask
-  ;endif
-  ;;;c2-----------------------------
-  ;if c2_energies gt 0 then begin     
-  ;   att_e2=att[p2_energies]
-  ;   e2_temp=c0_counts[p2_energies,*,*]
-  ;   c2=fltarr(c2_energies)
-  ;   for i=0, c2_energies-1 do $
-  ;      c2[i]=total(e2_temp[i,where(e2_temp[i,*,0] lt 2.50),0],2)
-  ;   ppp=where($
-  ;       ((att_e2 eq 1)  or  $
-  ;        (att_e2 eq 3)) and $
-  ;       ((eprom[p2_energies] eq 1)    and $
-  ;        (c2 gt 10.)),ccc)
-  ;   if ccc ne 0 then pp=p2_energies[ppp]
-  ;   if ccc ne 0 then dat.quality_flag[pp] = dat.quality_flag[pp] or bit5mask
-  ;endif
   if keyword_set(verbose) and n_elements(ccc) then $
      print, 'Bit 5 flags - Total:  '+string(ccc)+'/'+string(npts) $
   else print, 'Bit 5 flags - Total:  '+string(0L)+'/'+string(npts)
@@ -273,11 +230,12 @@ pro mvn_sta_qf_load,verbose=verbose
   ;; that have a larger cadence we include all changes.
   bit6mask=2^6
   pp1=[0,findgen(n_elements(att)-1)]        
-  temp=att-att[pp1]
+  temp=att[pp1]-att
   ind=where(temp ne 0,cc)
-  if cc ne 0 then dat.quality_flag[ind] = dat.quality_flag[ind] or bit6mask
+  if cc ne 0 then qf[ind] = qf[ind] or bit6mask
   if keyword_set(verbose) then $
      print, 'Bit 6 flags - Total:  '+string(cc)+'/'+string(npts)
+
 
 
   ;;***************************************************************  
@@ -288,8 +246,8 @@ pro mvn_sta_qf_load,verbose=verbose
   bit7mask=2^7
   pp=[0,findgen(n_elements(mode)-1)]        
   temp=mode-mode[pp]
-  pp=where(temp gt 0,cc)
-  if cc ne 0 then dat.quality_flag[pp] = dat.quality_flag[pp] or bit7mask
+  ind=where(temp ne 0,cc)
+  if cc ne 0 then qf[ind] = qf[ind] or bit7mask
   if keyword_set(verbose) then $
      print, 'Bit 7 flags - Total:  '+string(cc)+'/'+string(npts)
   
@@ -310,12 +268,12 @@ pro mvn_sta_qf_load,verbose=verbose
   date1=time_double('2014-11-20')
   date2=time_double('2015-01-07')
   pp1=where(time lt date1 and mode lt 3,cc1)
-  if cc1 ne 0 then dat.quality_flag[pp1] = dat.quality_flag[pp1] or bit8mask
+  if cc1 ne 0 then qf[pp1] = qf[pp1] or bit8mask
   pp2=where(time ge date1 and $
             time lt date2 and $
             (orb_num_new mod 2) eq 1 and $ ;odd orbits 
             mode lt 3,cc2)
-  if cc2 ne 0 then dat.quality_flag[pp2] = dat.quality_flag[pp2] or bit8mask
+  if cc2 ne 0 then qf[pp2] = qf[pp2] or bit8mask
   if keyword_set(verbose) then $
      print, 'Bit 8 flags - Total:  '+string(cc1)+'/'+string(npts)+' (c1)'
   if keyword_set(verbose) then $
@@ -331,10 +289,10 @@ pro mvn_sta_qf_load,verbose=verbose
      ind=mvn_da_dat.time*0.D
      ind[pp]=1.
      time_da=mvn_da_dat.time[pp]
-     ;;Interpolate for apid c6 (time)  
+     ;;Interpolate for time (apid c6)  
      ind2=ceil(interpol(ind,mvn_da_dat.time,time))
      pp=where(ind2 gt 0)
-     dat.quality_flag[pp] = dat.quality_flag[pp] or bit9mask
+     qf[pp] = qf[pp] or bit9mask
   endif
   if keyword_set(verbose) then $
      print, 'Bit 9 flags - Total:  '+string(cc)+'/'+string(npts)
@@ -346,7 +304,7 @@ pro mvn_sta_qf_load,verbose=verbose
   ;;
   ;; !!! Default is set to 1 until these values are calculated !!!
   bit10mask=2^10
-  dat.quality_flag = dat.quality_flag or bit10mask
+  qf = qf or bit10mask
   if keyword_set(verbose) then $
      print, 'Bit 10 flags - Total: '+string(npts)+'/'+string(npts)
   
@@ -357,7 +315,7 @@ pro mvn_sta_qf_load,verbose=verbose
   ;;
   ;; !!! Default is set to 1 until these values are calculated !!!
   bit11mask=2^11
-  dat.quality_flag = dat.quality_flag or bit11mask
+  qf = qf or bit11mask
   if keyword_set(verbose) then $
      print, 'Bit 11 flags - Total: '+string(npts)+'/'+string(npts)
   
@@ -368,82 +326,71 @@ pro mvn_sta_qf_load,verbose=verbose
   ;;
   ;; !!! Default is set to 1 until these values are calculated !!!
   bit12mask=2^12
-  dat.quality_flag = dat.quality_flag or bit12mask
+  qf = qf or bit12mask
   if keyword_set(verbose) then $
      print, 'Bit 12 flags - Total: '+string(npts)+'/'+string(npts)
   
 
 
-
-
-
   ;;-----------------------------------------------
-  ;;Apply quality flag to all APIDs (except c6 since
-  ;;it was already set).Define QF and APIDs
-  qf=dat.quality_flag
-  qf_time=time
+  ;;Apply quality flag to all APIDs and  
+  ;;define QF and APIDs
   apid=['2a','c0','c2','c4','c8','c6',$
         'ca','cc','cd','ce','cf','d0',$
         'd1','d2','d3','d4','d6','d7',$
         'd8','d9','da','db']
-  cade=[  32,   4,   4,   4,   4,   4,$
+  cade=[   4,  32,   4,   4,   4,   4,$
            4,  32,   4,  32,   4, 128,$
-          16,  16,   4,   4, 128,  32,$
+          16,  16,   4,   4, 148,   4,$
            4, 128,   4,   4]
-
   nn_apid=n_elements(apid)
   for api=0, nn_apid-1 do begin     
-     temp=execute('nn7=size(mvn_'+apid[api]+'_dat,/type)')
-     if nn7 eq 8 then begin
+     temp=execute('nn1=size(mvn_'+apid[api]+'_dat,/type)')
+     if nn1 eq 8 then begin
+
         temp=execute('qf_new=mvn_'+apid[api]+'_dat.quality_flag')        
         temp=execute('time_new=mvn_'+apid[api]+'_dat.time')        
-       	qf_new = qf_new and (2^2+2^3+2^4)
+        
         ;;---------------------------------------------------------
         ;;Time interval
-;        temp1=execute('nn1=n_elements(mvn_'+apid[api]+'_dat.time)')
-	nn1 = n_elements(qf_new)
+        temp1=execute('nn1=n_elements(mvn_'+apid[api]+'_dat.time)')
         temp2=execute('nn2=n_elements(mvn_'+apid[api]+'_dat.end_time)')
-        ;start time
-;        if temp1 then temp=execute('t_start=mvn_'+apid[api]+'_dat.time') $
-;        else stop, 'No time instances.'
-	t_start = time_new
-        ;stop time
+        ;start time -----
+        if temp1 then temp=execute('t_start=mvn_'+apid[api]+'_dat.time') $
+        else stop, 'No time instances.'
+        ;stop time ------
         if temp2 then temp=execute('t_stop=mvn_'+apid[api]+'_dat.end_time') $
-;        else temp=execute('t_stop=mvn_'+apid[api]+'_dat.time')       
-        else t_stop = [t_start[1:nn1-1],2.*t_start[nn1-1]-t_start[nn1-2]] 
-        for itime=0l, nn1-1 do begin
-           pp=where( time+2. ge t_start[itime] and $
-                     time+2. le t_stop[itime],cc)
-           if cc ne 0 then for i=0, cc-1 do qf_new[itime]=qf_new[itime] or qf[pp[i]]
+        else temp=execute('t_stop=mvn_'+apid[api]+'_dat.time')       
+        for itime=0., nn1-1 do begin
+           t1=t_start[itime]
+           t2=t_stop[itime]
+           pp=where( time ge t1-0.1 and time_end le t2+0.1,cc)
+           if cc ne 0 then for i=0., cc-1 do qf_new[itime]=qf_new[itime] or qf[itime[pp[[i]]]]           
         endfor
 
 
         ;;---------------------------------------------------------------------------
         ;;EXCEPTION
         ;;---------------------------------------------------------------------------
-        ;;Bit 6 (attenuator change) and 7 (mode change) only apply
+        ;;Bit 6 (attenuator change) only applies
         ;;to summed APIDs. Any flag set for not-summed APIDs (cadence
-        ;;of 4 seconds or less) be removed
-        cadence=cade[api]
+        ;;of 4 seconds or less) is removed
         if cade[api] le 4 then begin
-           ;;1. Make sure to 0 out for all bit 6 and bit 7 for this APID
-           qf_new=qf_new and (not (2^6 + 2^7))
+           ;;1. Make sure to 0 out all bit 6 for this APID
+           qf_new=qf_new and (not 2^6)
            ;;2. interpolate current APID attenuator with c6 attenuator           
-           att_int=round(interpol(att,time,time_new))
+           att_int=ceil(interpol(att,time,time_new))
            ;;3. find instances when att goes from 1->2 and 2->1
-;           pp1=[0,findgen(n_elements(att_int)-1)]        
-;           pp1=[0,indgen(n_elements(att_int)-1)]        
-           pp1=[indgen(n_elements(att_int)-1)+1,n_elements(att_int)-1]        
+           pp1=[0,findgen(n_elements(att_int)-1)]        
            temp5=att_int-att_int[pp1]
-;           ind=where(temp5 ne 0,cc)
-;           att_ind_12=where(((att_int[ind] eq 1) and (temp5[ind] eq -1 )) or $
-;                            ((att_int[ind] eq 2) and (temp5[ind] eq 1)),cc)
-           att_ind_12=where(((att_int eq 1) and (temp5 eq -1 )) or $
-                            ((att_int eq 2) and (temp5 eq 1)),cc)
+           ind=where(temp5 ne 0,cc)
+           att_ind_12=where((att_int[ind] eq 2) or $
+                            ((att_int[ind] eq 1) and $
+                             temp5[ind] eq -1),cc)
+           final_ind=ind[att_ind_12]
            ;;4. insert flags back into APID
-           if cc gt 0 then qf_new[att_ind_12]=qf_new[att_ind_12] or 2^6
+           qf_new[final_ind]=qf_new[final_ind] or 2^6
         endif
-
         ;;---------------------------------------------------------------------------
         ;;Insert new 
         temp=execute('mvn_'+apid[api]+'_dat.quality_flag=qf_new')
