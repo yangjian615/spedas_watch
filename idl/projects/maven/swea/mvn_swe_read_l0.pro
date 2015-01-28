@@ -57,8 +57,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-26 17:15:30 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16319 $
+; $LastChangedDate: 2015-01-24 14:39:12 -0800 (Sat, 24 Jan 2015) $
+; $LastChangedRevision: 16728 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -264,6 +264,25 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
               ChkSum  : bytarr(4)     , $    ; Checksum LUT 0-3
               CmdCnt  : 0U            , $    ; Command counter
               HSKREG  : bytarr(16)       }   ; Digital housekeeping register
+
+; SIF Control Register Bits
+;   0 -> HV enable allow
+;   1 -> HV sync enable (always 0)
+;   2 -> Test pulser enable
+;   3 -> spare
+;   4 -> spare
+;   5 -> spare
+;   6 -> spare
+;   7 -> spare
+;   8 -> sweep diagnostic mode (ANALV)
+;   9 -> sweep diagnostic mode (DEF1)
+;  10 -> sweep diagnostic mode (DEF2)
+;  11 -> sweep diagnostic mode (V0)
+;  12 -> spare
+;  13 -> spare
+;  14 -> spare
+;  15 -> sweep enable
+;
               
   ddd_str =  {time    : 0D            , $    ; packet unix time
               met     : 0D            , $    ; packet mission elapsed time
@@ -1191,14 +1210,38 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 ; Append to previously loaded data
 
   if keyword_set(append) then begin
-    if (size(swe_hsk_s,/type) eq 8) then swe_hsk = [temporary(swe_hsk_s), temporary(swe_hsk)]
-    if (size(a0_s,/type) eq 8) then a0 = [temporary(a0_s), temporary(a0)]
-    if (size(a1_s,/type) eq 8) then a1 = [temporary(a1_s), temporary(a1)]
-    if (size(a2_s,/type) eq 8) then a2 = [temporary(a2_s), temporary(a2)]
-    if (size(a3_s,/type) eq 8) then a3 = [temporary(a3_s), temporary(a3)]
-    if (size(a4_s,/type) eq 8) then a4 = [temporary(a4_s), temporary(a4)]
-    if (size(a5_s,/type) eq 8) then a5 = [temporary(a5_s), temporary(a5)]
-    if (size(a6_s,/type) eq 8) then a6 = [temporary(a6_s), temporary(a6)]
+    if (size(swe_hsk_s,/type) eq 8) then begin
+      if (size(swe_hsk,/type) eq 8) then swe_hsk = [temporary(swe_hsk_s), temporary(swe_hsk)] $
+                                    else swe_hsk = temporary(swe_hsk_s)
+    endif
+    if (size(a0_s,/type) eq 8) then begin
+      if (size(a0,/type) eq 8) then a0 = [temporary(a0_s), temporary(a0)] $
+                               else a0 = temporary(a0_s)
+    endif
+    if (size(a1_s,/type) eq 8) then begin
+      if (size(a1,/type) eq 8) then a1 = [temporary(a1_s), temporary(a1)] $
+                               else a1 = temporary(a1_s)
+    endif
+    if (size(a2_s,/type) eq 8) then begin
+      if (size(a2,/type) eq 8) then a2 = [temporary(a2_s), temporary(a2)] $
+                               else a2 = temporary(a2_s)
+    endif
+    if (size(a3_s,/type) eq 8) then begin
+      if (size(a3,/type) eq 8) then a3 = [temporary(a3_s), temporary(a3)] $
+                               else a3 = temporary(a3_s)
+    endif
+    if (size(a4_s,/type) eq 8) then begin
+      if (size(a4,/type) eq 8) then a4 = [temporary(a4_s), temporary(a4)] $
+                               else a4 = temporary(a4_s)
+    endif
+    if (size(a5_s,/type) eq 8) then begin
+      if (size(a5,/type) eq 8) then a5 = [temporary(a5_s), temporary(a5)] $
+                               else a5 = temporary(a5_s)
+    endif
+    if (size(a6_s,/type) eq 8) then begin
+      if (size(a6,/type) eq 8) then a6 = [temporary(a6_s), temporary(a6)] $
+                               else a6 = temporary(a6_s)
+    endif
   endif
 
   return

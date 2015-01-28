@@ -402,6 +402,8 @@ endif
 		store_data,'mvn_sta_c6_att',data={x:time,y:iatt}
 			store_data,'mvn_sta_c6_mode',data={x:time,y:mode}
 			store_data,'mvn_sta_c6_rate',data={x:time,y:rate}
+			store_data,'mvn_sta_c6_quality_flag',data={x:time,y:mvn_c6_dat.quality_flag}
+				options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
 
 			ylim,'mvn_sta_c6_tot',0,0,1
 			ylim,'mvn_sta_c6_P1D_E',.1,40000.,1
@@ -1681,7 +1683,7 @@ endif
 ; General
 
 	options,'mvn_sta*',no_interp=1
-	ylim,'*mode',-1,5,0
+	ylim,'*mode',-1,7,0
 	ylim,'*rate',-1,7,0
 
 

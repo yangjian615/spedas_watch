@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-01-09 09:53:09 -0800 (Fri, 09 Jan 2015) $
-;$LastChangedRevision: 16610 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-01-23 18:08:16 -0800 (Fri, 23 Jan 2015) $
+;$LastChangedRevision: 16720 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -50,16 +50,18 @@ PRO spd_gui_event, event
       info.drawDisabled = 0
       x=info.master
  
+      if obj_valid(info.historywin) then begin
+        spd_gui_error,x,info.historywin
+      endif
+ 
       if widget_valid(event.top) then begin
+        ;this call unsets info, you can't use it again after this line
         widget_control, event.top, set_uval = info, /no_copy
       endif else begin
         print,'Potentially catastrophic error.  You may want to terminate the gui by selecting run->terminate'
       endelse
       
-      if obj_valid(info.historywin) then begin
-        spd_gui_error,x,info.historywin
-      endif
-      
+    
     Endif else begin
       print,'Potentially catastrophic error.  You may want to terminate the gui by selecting run->terminate'
     endelse

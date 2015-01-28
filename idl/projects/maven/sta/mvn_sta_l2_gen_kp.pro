@@ -27,8 +27,8 @@ if not keyword_set(def_min) then def_min=25.
 ;if keyword_set(test) then def_min=10. 
 
 mvn_sta_l2_load
-;mvn_sta_ql_load
-;mvn_sta_dead_load
+mvn_sta_dead_load
+mvn_sta_qf_load
 mvn_sta_l2_tplot,/replace
 
 	get_data,'mvn_sta_c6_tot',data=tmp,dtype=dtype
@@ -291,11 +291,17 @@ if keyword_set(test) then tplot,/add,['mvn_sta_O2+_V']
 ; get s/c velocity in MSO
 ; the below code could be replaced with a TBD spice_velocity_to_tplot.pro routine
 
+if 0 then begin
 	scale = 1.
 	spice_position_to_tplot,'MAVEN','MARS',frame='MSO',res=4d,scale=scale,name='mvn_pos_MSO'
 	get_data,'MAVEN_POS_(MARS-MSO)',data=tmp
 	npts=n_elements(tmp.x)
 	store_data,'MAVEN_VEL_(MARS-MSO)',data={x:tmp.x[0:(npts-2)]+2.d,y:(tmp.y[1:(npts-1),*]-tmp.y[0:(npts-2),*])/4.d}
+endif else begin
+	maven_orbit_tplot,/current,result=foo,/LOADONLY					; other keywords: eph, vars,/LOADONLY	
+	store_data,'MAVEN_POS_(MARS-MSO)',data={x:foo.t,y:[[foo.x] ,[foo.y] ,[foo.z]] }
+	store_data,'MAVEN_VEL_(MARS-MSO)',data={x:foo.t,y:[[foo.vx],[foo.vy],[foo.vz]]}
+endelse
 		ylim,'MAVEN_VEL_(MARS-MSO)',-15.,15,0
 		options,'MAVEN_VEL_(MARS-MSO)',colors=[cols.blue,cols.green,cols.red]
 

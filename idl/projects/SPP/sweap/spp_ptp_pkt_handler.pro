@@ -15,13 +15,15 @@ function spp_swp_spanai_rates_decom,ccsds, ptp_header=ptp_header, apdat=apdat
     return,0
   endif
   
-  f0 = ccsds.data[12] and 3
-  
-;  rates = 1. * (reform( Uint(ccsds.data[20:83])  ,4,16 ) ) 
+  sf0 = ccsds.data[11] and 3
+;  print,sf0
+;hexprint,ccsds.data[0:29]
+
   rates = float( reform( spp_sweap_log_decomp( ccsds.data[20:83] , 0 ) ,4,16))
+;  rates = float( reform( float( ccsds.data[20:83] ) ,4,16))
   
-  time = ccsds.time
-  if 1 then begin   ;     cluge to correct times
+  time = ccsds.time 
+  if 0 then begin   ;     cluge to correct times
     if keyword_set(apdat) && size(/type,*apdat.last_ccsds) eq 8 then begin
       ltime =  (*apdat.last_ccsds).time
       dt = time - ltime
@@ -30,6 +32,9 @@ function spp_swp_spanai_rates_decom,ccsds, ptp_header=ptp_header, apdat=apdat
         ccsds.time = time
       endif else rates=rates/2 
     endif
+  endif else if 1 then begin
+    if sf0 eq 1 then  rates=rates/2
+    
   endif
     
   rates_str = { $
@@ -113,11 +118,15 @@ if n_elements(b) ne psize then begin
   return,0
 endif
 
-ref = 5.
+sf0 = ccsds.data[11] and 3
+if sf0 ne 0 then dprint, 'Odd time at: ',time_string(ccsds.time)
+
+ref = 5. ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
 
 spai = { $
   time: ccsds.time, $
   met: ccsds.met,  $
+  delay_time: ptp_header.ptp_time - ccsds.time, $
   seq_cntr: ccsds.seq_cntr, $
   GND0: b[16],  $
   GND1: b[17],  $
@@ -165,6 +174,42 @@ spai = { $
 end
 
 
+function spp_log_message_decom,ccsds, ptp_header=ptp_header, apdat=apdat
+;  printdat,ccsds
+;  time=ccsds.time
+;  printdat,ptp_header
+;  hexprint,ccsds.data
+  time = ptp_header.ptp_time
+  msg = string(ccsds.data[10:*])
+  dprint,dlevel=2,time_string(time)+  ' "'+msg+'"'
+  str={time:time,seq:ccsds.seq_cntr,size:ccsds.size,msg:msg}
+  return,str
+end
+
+
+function spp_spane_test1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+
+  cnts = ccsds.data[20:*]
+  
+  str = { $
+    time:ptp_header.ptp_time, $
+    seq_cntr:ccsds.seq_cntr,  $
+    cnts: float(cnts) }
+    
+  return, str
+end
+
+
+function spp_generic_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+
+  str = create_struct(ptp_header,ccsds)
+;  dprint,format="('Generic routine for ',Z04)",ccsds.apid
+
+  return,str
+
+end
+
+
 
 function spp_ccsds_decom,buffer             ; buffer should contain bytes for a single ccsds packet, header is contained in first 3 words (6 bytes)
   buffer_length = n_elements(buffer)
@@ -173,7 +218,7 @@ function spp_ccsds_decom,buffer             ; buffer should contain bytes for a 
     return, 0
   endif
   header = swap_endian(uint(buffer[0:11],0,6) ,/swap_if_little_endian )
-  MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16)
+  MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16) + (header[5] and '3'x) * 2d^15/150000
   utime = spp_spc_met_to_unixtime(MET)
   ccsds = { $
     version_flag: byte(ishft(header[0],-8) ), $
@@ -192,9 +237,9 @@ function spp_ccsds_decom,buffer             ; buffer should contain bytes for a 
     ccsds.time = !values.d_nan
   endif
 
-  if ccsds.size ne (n_elements(ccsds.data)) then begin
-    dprint,dlevel=1,format='(a," x",z04,i7,i7)','CCSDS size error',ccsds.apid,ccsds.size,n_elements(ccsds.data)
-  endif
+;  if ccsds.size ne (n_elements(ccsds.data))-7 then begin
+;    dprint,dlevel=3,format='(a," x",z04,i7,i7)','CCSDS size error',ccsds.apid,ccsds.size,n_elements(ccsds.data)
+;  endif
 
   return,ccsds
 
@@ -215,6 +260,7 @@ pro spp_apid_data,apid,name=name,clear=clear,reset=reset,save=save,finish=finish
   
   if ~keyword_set(all_apdat) then begin
     apdat0 = {  apid:-1 ,name:'',counter:0uL,nbytes:0uL, maxsize: 0,  routine:   '',   tname: '',  tfields: '',  rt_flag:0b, rt_tags: '', save:0b, $
+;       status_ptr: ptr_new(), $
        last_ccsds: ptr_new(),  dataptr:  ptr_new(),   dataindex: ptr_new() , dlimits:ptr_new() }
     all_apdat = replicate( apdat0,2^11 )
   endif
@@ -266,16 +312,13 @@ pro spp_swp_apid_data_init,save=save
   spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom',tname='spp_spanai_rates_',tfields='*',save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
   
+;  spp_apid_data,'359'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
+  spp_apid_data,'360'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
+  
+  spp_apid_data,'7c0'x,routine='spp_log_message_decom',tname='log_',tfields='MSG',save=1,rt_tags='MSG',rt_flag=1
+  
 end
 
-
-function spp_generic_decom,ccsds,ptp_header=ptp_header
-
-str = create_struct(ptp_header,ccsds)
-
-return,str
-
-end
 
 
 
@@ -284,7 +327,12 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
 
   ccsds=spp_ccsds_decom(buffer)
     
-  if ~keyword_set(ccsds) then return
+  if ~keyword_set(ccsds) then begin
+    dprint,'Invalid CCSDS packet'
+    dprint,time_string(ptp_header.ptp_time)
+    hexprint,buffer
+    return
+  endif
 
   if 1 then begin
     spp_apid_data,ccsds.apid,apdata=apdat,/increment
@@ -292,7 +340,7 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
       dseq = (( ccsds.seq_cntr - (*apdat.last_ccsds).seq_cntr ) and '3fff'x) -1
       if dseq ne 0  then begin
         ccsds.gap = 1
-        dprint,dlevel=2,format='("Lost ",i5," ", Z03, " packets")',dseq,apdat.apid
+        dprint,dlevel=3,format='("Lost ",i5," ", Z03, " packets")',dseq,apdat.apid
       endif
     endif
     if keyword_set(apdat.routine) then begin
@@ -311,6 +359,33 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
 
 end
 
+
+
+function ptp_pkt_add_header,buffer,time=time,spc_id=spc_id,path=path,source=source
+
+if ~keyword_set(time) then time=systime(1)
+if ~keyword_set(spc_id) then spc_id = 187
+if ~keyword_set(path) then path = 'a200'x
+if ~keyword_set(source) then source = 'a0'x
+size = n_elements(buffer)
+
+st = time_struct(time)
+day1958 = uint(st.daynum -714779)
+msec =  ulong(st.sod * 1000)
+usec = 0U
+
+b_size    = byte( swap_endian(/swap_if_little_endian, uint(size+17)), 0 ,2)
+b_sc_id   = byte( swap_endian(/swap_if_little_endian, uint(spc_id)), 0 ,2)
+b_day1958 = byte( swap_endian(/swap_if_little_endian, uint(day1958)), 0 ,2)
+b_msec    = byte( swap_endian(/swap_if_little_endian, ulong(msec)), 0 ,4)
+b_usec    = byte( swap_endian(/swap_if_little_endian, uint(usec)), 0 ,2)
+b_source  = byte(source)
+b_spare   = byte(0)
+b_path    = byte( swap_endian(/swap_if_little_endian, uint(path)), 0 ,2)
+
+hdr = [b_size, 3b, b_sc_id, b_day1958, b_msec, b_usec, b_source, b_spare, b_path]
+return, size ne 0 ? [hdr,buffer] : hdr
+end
 
 
 
@@ -336,7 +411,12 @@ end
   ;-
 pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   ptp_size = swap_endian( uint(buffer,0) ,/swap_if_little_endian)   ; first two bytes provide the size
-  if ptp_size ne n_elements(buffer) then message,'PTP Error 1'
+  if ptp_size ne n_elements(buffer) then begin
+    dprint,time_string(time,/local_time),'PTP size error- size is ',ptp_size
+    hexprint,buffer
+    savetomain,buffer,time
+    return
+  endif
   ptp_code = buffer[2]
   if ptp_code eq 0 then begin
     dprint,'End of Transmission Code'
@@ -360,13 +440,16 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   source   =    ga[10]
   spare    =    ga[11]
   path  = swap_endian(/swap_if_little_endian, uint(ga,12))
-  payload    = buffer[17:*]
   utime = (days-4383L) * 86400L + ms/1000d 
-  if utime lt 1420070400 then utime += us/1d4   ;  correct for error in pre 2015 files
+  if utime lt   1425168000 then utime += us/1d4   ;  correct for error in pre 2015-3-1 files
   if keyword_set(time) then dt = utime-time  else dt = 0
-  dprint,dlevel=3,time_string(utime,prec=6),ptp_size,sc_id,days,ms,us,source,path,dt,format='(a,i6," x",Z04,i6,i9,i6," x",Z02," x",Z04,f10.2)'
+;  dprint,dlevel=4,time_string(utime,prec=3),ptp_size,sc_id,days,ms,us,source,path,dt,format='(a,i6," x",Z04,i6,i9,i6," x",Z02," x",Z04,f10.2)'
+  if ptp_size le 17 then begin
+    dprint,'PTP size error - not enough bytes: '+strtrim(ptp_size,2)+ ' '+time_string(utime)
+    return
+  endif
   ptp_header ={ ptp_time:utime, ptp_scid: sc_id, ptp_source:source, ptp_spare:spare, ptp_path:path, ptp_size:ptp_size }
-  spp_ccsds_pkt_handler,payload,ptp_header = ptp_header
+  spp_ccsds_pkt_handler, buffer[17:*],ptp_header = ptp_header
   return
 end
 

@@ -374,7 +374,7 @@ endif else if c eq 3 then begin
 endif else if c eq 4 then begin
   ds = [ptrArray,ptrArray2,ptrArray3,ptrArray4]
 endif else begin
-  fail = "Error: This should never happen, please report to the TDAS software team."
+  fail = "Unknown error collating data, please report to the TDAS software team."
   dprint,dlevel=0, fail
   return
 endelse
@@ -392,6 +392,18 @@ endif else begin
   trange = [slice_time, $
             slice_time + timewin ]
 endelse
+
+; check that there is data in range before proceeding
+for i=0, n_elements(ds)-1 do begin
+  times_ind = thm_part_slice2d_intrange(ds[i], trange, n=ndat)
+  n_samples = array_concat(ndat,n_samples)
+endfor
+if total(n_samples) lt 1 then begin
+  fail = 'No particle data in the time window: '+strjoin(time_string(trange),', ')+ $
+         '. Time samples may be at low cadence; try adjusting the time window.'
+  dprint, dlevel=1, fail 
+  return
+endif
 
 
 

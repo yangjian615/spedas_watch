@@ -34,9 +34,9 @@
 ;                for testing.
 ;OUTPUTS:
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-12 15:12:08 -0800 (Mon, 12 Jan 2015) $
-; $LastChangedRevision: 16648 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-01-26 18:08:31 -0800 (Mon, 26 Jan 2015) $
+; $LastChangedRevision: 16741 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_kp.pro $
 ;
 ;-
@@ -49,14 +49,14 @@ pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obin
 
 ; Process keywords
 
-  if keyword_set(ddd) then ddd = 1 else ddd = 0
-  if keyword_set(mom) then mom = 1 else mom = 0
+  if (size(ddd,/type) eq 0) then ddd = 0
+  if (size(mom,/type) eq 0) then mom = 1
   if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
   if (n_elements(dbins) ne 6) then dbins = replicate(1B, 6)
   if (n_elements(obins) ne 96) then obins = reform(abins # dbins, 96)
   
   If(keyword_set(output_path)) Then kp_path = output_path Else $ ;jmm, 2014-01-12 for testing
-  kp_path = getenv('ROOT_DATA_DIR') + 'maven/data/sci/swe/kp'
+  kp_path = root_data_dir() + 'maven/data/sci/swe/kp'
   froot = 'mvn_swe_kp_'
   
   finfo = file_info(kp_path)
@@ -64,6 +64,10 @@ pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obin
     print,"KP directory does not exist: ",kp_path
     return
   endif
+
+; Load ephemeris
+
+  maven_orbit_tplot, /current, /loadonly
 
 ; Load data one day at a time
 
@@ -85,6 +89,7 @@ pro mvn_swe_kp, trange, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obin
     t2 = t1 + oneday
 
     mvn_swe_load_l0, [t1,t2]
+    if (size(mvn_swe_engy,/type) ne 8) then continue
 
 ; Calculate the energy shape parameter
 

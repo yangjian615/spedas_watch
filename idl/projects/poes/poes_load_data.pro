@@ -35,8 +35,8 @@
 ;             /downloadonly: Download the file but don't read it  
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-12-09 10:23:02 -0800 (Tue, 09 Dec 2014) $
-; $LastChangedRevision: 16423 $
+; $LastChangedDate: 2015-01-26 09:58:49 -0800 (Mon, 26 Jan 2015) $
+; $LastChangedRevision: 16735 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_load_data.pro $
 ;-
  
@@ -234,6 +234,7 @@ pro poes_fix_metadata, tplotnames, prefix = prefix
             end
             prefix + '_' + 'mep_omni_flux': begin ; omni-directional p+ flux (MeV)
                 options, /def, tplot_name, 'ylog', 1
+                options, /def, tplot_name, 'colors', [2,4,6]
                 options, /def, tplot_name, 'ytitle', 'Omni-directional_Proton_Flux'
                 options, /def, tplot_name, 'labels', ['25 MeV', '50 MeV', '100 MeV']
                 options, /def, tplot_name, 'ysubtitle', '[#/cm!U2!N-s-str-MeV]'
@@ -241,12 +242,14 @@ pro poes_fix_metadata, tplotnames, prefix = prefix
             prefix + '_' + 'mep_ele_flux_tel0': begin
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8]
                 options, /def, tplot_name, 'labels', ['40 keV', '130 keV', '287 keV', '612 keV']
                 options, /def, tplot_name, 'ytitle', 'MEPED!CElectron Flux!C0deg telescope'
             end
             prefix + '_' + 'mep_ele_flux_tel90': begin
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8]
                 options, /def, tplot_name, 'labels', ['40 keV', '130 keV', '287 keV', '612 keV']
                 options, /def, tplot_name, 'ytitle', 'MEPED!CElectron Flux!C90deg telescope'
             
@@ -254,6 +257,7 @@ pro poes_fix_metadata, tplotnames, prefix = prefix
             prefix + '_' + 'mep_pro_flux_tel0': begin
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8,1]
                 options, /def, tplot_name, 'labels', ['30-80 keV', '80-240 keV', '240-800 keV', '2500-6900 keV', '> 6900 keV']
                 options, /def, tplot_name, 'ytitle', 'MEPED!CProton Flux!C0deg telescope'
             
@@ -261,6 +265,7 @@ pro poes_fix_metadata, tplotnames, prefix = prefix
             prefix + '_' + 'mep_pro_flux_tel90': begin
                 options, /def, tplot_name, 'ylog', 1
                 options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8,1]
                 options, /def, tplot_name, 'labels', ['30-80 keV', '80-240 keV', '240-800 keV', '2500-6900 keV', '> 6900 keV']
                 options, /def, tplot_name, 'ytitle', 'MEPED!CProton Flux!C90deg telescope'
             

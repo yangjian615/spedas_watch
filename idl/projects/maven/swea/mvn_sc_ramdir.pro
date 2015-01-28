@@ -19,8 +19,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-26 17:17:48 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16324 $
+; $LastChangedDate: 2015-01-24 14:26:32 -0800 (Sat, 24 Jan 2015) $
+; $LastChangedRevision: 16724 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -53,6 +53,10 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app
   store_data,'V_sc',data={x:eph.time, y:eph.geo_v}
   options,'V_sc',spice_frame='IAU_MARS',spice_master_frame='MAVEN_SPACECRAFT'
   spice_vector_rotate_tplot,'V_sc',to_frame,trange=[tmin,tmax]
+
+  vname = 'V_sc_' + to_frame
+  options,vname,'labels',['X','Y','Z']
+  options,vname,'labflag',1
 
 ; Rotate to Spacecraft or APP frame
 

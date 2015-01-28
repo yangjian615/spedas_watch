@@ -23,9 +23,9 @@
 ; OUTPUT:
 ;  none
 ;  
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-12-18 13:41:57 -0800 (Thu, 18 Dec 2014) $
-;$LastChangedRevision: 16512 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-01-23 19:30:24 -0800 (Fri, 23 Jan 2015) $
+;$LastChangedRevision: 16723 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/spedas_plugin/goes_ui_gen_overplot.pro $
 ;-
 
@@ -121,7 +121,8 @@ pro goes_ui_gen_overplot_event, event
         state.callSequence->addPluginCall, 'goes_overview_plot', $
           date = st_double, probe = state.probe, duration = dur, $
           gui_overplot=1, oplot_calls = (*state.data).oplot_calls, $
-          track_one=1b, error = error, no_draw=1
+          track_one=1b, error = error, $
+          import_only=1 ;when replaying overviews, we only want it to import data, since the window/panel structure is already serialized xml tgd document
         
         ; update the size of the labels       
         activeWindow->GetProperty, panels = panelsObj

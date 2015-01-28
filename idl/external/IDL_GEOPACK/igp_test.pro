@@ -18,9 +18,9 @@
 ;Notes:
 ;  Should be called in all idl geopack wrapper routines
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-11-04 10:10:32 -0800 (Tue, 04 Nov 2014) $
-; $LastChangedRevision: 16132 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-01-26 14:30:54 -0800 (Mon, 26 Jan 2015) $
+; $LastChangedRevision: 16740 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/igp_test.pro $
 ;-
 
@@ -47,24 +47,28 @@ function igp_test, geopack_2008=geopack_2008
       return, 0
     endif
     
-    ; check the version of the Geopack DLM if the user requested Geopack 2008
-    geopack_version = stregex(out[filter+1], '([0-9.]+[0-9]?), Build', /extract)
-    version_num = (strsplit(geopack_version[0], ', ', /extract))[0]
-    version_num_pieces = strsplit(version_num, '.', /extract)
-    if version_num_pieces[0] lt version_geopack08[0] || $
-      (version_num_pieces[0] eq version_geopack08[0] && version_num_pieces[1] lt version_geopack08[1]) then begin
-      message, /continue, 'Old version of IDL/GEOPACK found'
-      message, /continue, 'Version 9.0+ expected when using the GEOPACK 2008 keyword'
-      message,/continue, 'Please download the newest version and'
-      message, /continue, 'place the binary(.dll,.so,.etc..) and the .dlm in:'
-      message, /continue, !DLM_PATH
-      message, /continue, 'then restart IDL to install the package'
-      message, /continue, 'More detailed installation instructions'
-      message, /continue, 'can be found on the GEOPACK DLM web site (http://ampere.jhuapl.edu/code/idl_geopack.html), or'
-      message, /continue, 'in the SPEDAS software distribution at'
-      message, /continue, 'external/IDL_GEOPACK/README.txt'
-      return, 0
-    endif
+                                ; check the version of the Geopack DLM
+                                ; if the user requested Geopack 2008,
+                                ; jmm, 2015-01-26
+    If(keyword_set(geopack_2008)) Then Begin
+       geopack_version = stregex(out[filter+1], '([0-9.]+[0-9]?), Build', /extract)
+       version_num = (strsplit(geopack_version[0], ', ', /extract))[0]
+       version_num_pieces = strsplit(version_num, '.', /extract)
+       if version_num_pieces[0] lt version_geopack08[0] || $
+          (version_num_pieces[0] eq version_geopack08[0] && version_num_pieces[1] lt version_geopack08[1]) then begin
+          message, /continue, 'Old version of IDL/GEOPACK found'
+          message, /continue, 'Version 9.0+ expected when using the GEOPACK 2008 keyword'
+          message,/continue, 'Please download the newest version and'
+          message, /continue, 'place the binary(.dll,.so,.etc..) and the .dlm in:'
+          message, /continue, !DLM_PATH
+          message, /continue, 'then restart IDL to install the package'
+          message, /continue, 'More detailed installation instructions'
+          message, /continue, 'can be found on the GEOPACK DLM web site (http://ampere.jhuapl.edu/code/idl_geopack.html), or'
+          message, /continue, 'in the SPEDAS software distribution at'
+          message, /continue, 'external/IDL_GEOPACK/README.txt'
+          return, 0
+       endif
+    Endif
     
     ; If the user has the Geopack DLM installed, but can't load it for some reason 
     ; (e.g., missing/wrong dependencies), the igp_test() routine will still 

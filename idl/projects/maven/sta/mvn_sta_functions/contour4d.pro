@@ -181,7 +181,7 @@ if not keyword_set(units) then str_element,limits,'units',value=units
 if not keyword_set(levels) then begin
     if keyword_set(ncont) then begin
         if (ncont GT 29 or ncont LT 1) then begin
-            print,'CONTOUR2D: Keyword NCONT must be in the range 1 to 29.'
+            print,'contour4d: Keyword NCONT must be in the range 1 to 29.'
             print,'Setting NCONT = 25'
             ncont=25
         endif
@@ -214,7 +214,7 @@ endelse
           c_colors=c_colors, levels=levels, yrange=xrange, ystyle=xstyle, $
           ylog=xlog, xrange=yrange, xstyle=ystyle, xlog=ylog, $
 	  fill=fill, xmargin=xmargin, ymargin=ymargin, xticks=yticks, xtickv=ytickv
-    endif else begin
+    endif else begin
         contour, zdat, xdat, ydat, title=title, xtitle=xtitle, ytitle=ytitle, $
           c_colors=c_colors, levels=levels, yrange=yrange, ystyle=ystyle, $
           ylog=ylog, xrange=xrange, xstyle=xstyle, xlog=xlog, $

@@ -1161,7 +1161,7 @@ end
 
 ; Legend for rotation option
 ;
-pro thm_ui_slice2d_legend, gui_ID, top_ID, rotation=rotation, coord=coord
+pro thm_ui_slice2d_legend, gui_ID, top_ID, rotation=rotation, coord=coord, bgnd=bgnd
 
     compile_opt idl2, hidden
 
@@ -1204,6 +1204,30 @@ pro thm_ui_slice2d_legend, gui_ID, top_ID, rotation=rotation, coord=coord
      ' mphiGeo:  The y axis is the projection of the azimuthal spacecraft position vector (GEI), positive westward', $
      ' phiSM:  The y axis is the projection of the azimuthal spacecraft position vector in Solar Magnetic coordinates', $
      ' mphiSM:  The y axis is the projection of the negative azimuthal spacecraft position vector in Solar Magnetic coordinates' $
+    ]
+  endif else if keyword_set(bgnd) then begin
+    legend_type = 'ESA Background Removal'
+    text = [ $
+     'ESA background removal is performed by calculating and subtracting a background value from the ', $
+     'distribution at each time sample. The background is calculated to be the average of the smallest N ', $
+     'data points multiplied by the scale (for example: if N=3, scale=1.25, and the data are ', $
+     '[1,2,3,4,5,6] then the background would be 2.5).', $
+     ' ', $
+     'This procedure is applied differently depending on the removal type: ', $
+     ' ', $
+     ' Angle: ', $
+     '   The entire distribution is used.', $
+     ' ', $
+     ' Omni: ', $
+     '   The data are averaged over all look directions (phi & theta), yielding ', $
+     '   an average value for each energy.  The background is determined from ', $
+     '   the averaged values.', $
+     ' ', $
+     ' Anode: ', $
+     '   Data in each of 16 theta bins are averaged over all look directions, ', $
+     '   yielding an average value for each energy in each theta bin. A separate ', $
+     '   background is determined from the averaged values in each of the theta ', $
+     '   bins (16 background levels).' $
     ]
   endif else begin
     return
@@ -1564,6 +1588,8 @@ pro thm_ui_slice2d_event, event
       'ROTLEGEND': thm_ui_slice2d_legend, state.tlb, state.gui_id, /rotation
       
       'COORDLEGEND': thm_ui_slice2d_legend, state.tlb, state.gui_id, /coord
+
+      'BGNDLEGEND': thm_ui_slice2d_legend, state.tlb, state.gui_id, /bgnd
       
       'ANGLEAVE': begin
         id = widget_info(event.top, find_by_uname='averagebase')
@@ -1688,8 +1714,8 @@ end ;----------------------------------------------------
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-24 11:36:34 -0700 (Thu, 24 Jul 2014) $
-;$LastChangedRevision: 15598 $
+;$LastChangedDate: 2015-01-23 18:41:54 -0800 (Fri, 23 Jan 2015) $
+;$LastChangedRevision: 16722 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
@@ -2081,6 +2107,8 @@ thm_graphics_config
     esaTypeBase = widget_base(esaRemoveOptsBase, /row)
       esaTypeLabel = widget_label(esaTypeBase, value='Type:  ')
       esaType = widget_combobox(esaTypeBase, value=esaBgndTypes, uname='esatype')
+      bgndLegend = widget_button(esaTypeBase, value=' ? ', uval='BGNDLEGEND', $
+                          tooltip = 'Displays description of background removal options')
     esaNPtsBase = widget_base(esaRemoveOptsBase, /row)
       esaNPts = spd_ui_spinner(esaNPtsBase, label='Number of Points:  ', text_box_size=6, $
                                uname='esanpoints', incr=1, value=esaNPoints, $

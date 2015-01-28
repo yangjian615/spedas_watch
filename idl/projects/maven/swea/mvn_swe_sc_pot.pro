@@ -3,9 +3,11 @@
 ;	mvn_swe_sc_pot
 ;
 ;PURPOSE:
-;	Estimates the spacecraft potential from SWEA energy spectra.
-;
-;   This routine is EXPERIMENTAL.
+;	Estimates the spacecraft potential from SWEA energy spectra.  The basic
+;   idea is to look for a break in the energy spectrum (sharp change in flux
+;   level and slope).  No attempt is made to estimate the potential when the
+;   spacecraft is in darkness (expect negative potential) or below 250 km
+;   altitude (expect small or negative potential).
 ;
 ;AUTHOR: 
 ;	David L. Mitchell
@@ -22,21 +24,17 @@
 ;   ERANGE:    Energy range over which to search for the potential.
 ;              Default = [3.,20.]
 ;
-;   THRESH:    Thresholds for testing the spectral shape.  The first 
-;              element sets the minimum value of d(logF)/d(logE).  The
-;              second sets the minumum value of d2(logF)/d(logE)2.
-;              The third element sets the minimum value of the energy
-;              shape parameter (used to exclude ionospheric spectra).
+;   THRESH:    Threshold for the minimum slope: d(logF)/d(logE). 
+;              Default = 0.05
 ;
-;              Default = [0.05, 0.025, 1.8]
+;              A smaller value includes more data and extends the range 
+;              over which you can estimate the potential, but at the 
+;              expense of making more errors.
 ;
-;              A smaller value for any of these parameters includes more
-;              data and extends the range over which you can estimate 
-;              the potential, but at the expense of making more errors.
-;
-;   PSMO:      Smoothing parameter for the derived potentials.
-;              Not recommended - the spacecraft potential can change on
-;              time scales shorter than the SWEA time resolution.
+;   DEMAX:     The largest allowable energy width of the spacecraft 
+;              potential feature.  This excludes features not related
+;              to the spacecraft potential at higher energies (often 
+;              observed downstream of the shock).  Default = 4 eV.
 ;
 ;   FUDGE:     Multiply the derived potential by this fudge factor.
 ;              (for calibration against LPW).  Default = 1.
@@ -62,18 +60,18 @@
 ;   OVERLAY:   Overlay the result on the energy spectrogram.
 ;
 ;OUTPUTS:
-;   none - result is returned via POTENTIAL keyword or as TPLOT variable.
+;   None - Result is stored in SPEC data structure, returned via POTENTIAL
+;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:54:34 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16110 $
+; $LastChangedDate: 2015-01-24 14:40:03 -0800 (Sat, 24 Jan 2015) $
+; $LastChangedRevision: 16729 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
-pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, fudge=fudge, $
-                    pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, $
-                    obins=obins, thresh=thresh
+pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
+                    pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins
 
   compile_opt idl2
   
@@ -84,21 +82,19 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, fudge=fudge, $
     phi = 0
     return
   endif
+
+; Clear any previous potential calculations
+
+  mvn_swe_engy.sc_pot = !values.f_nan
   
   if not keyword_set(erange) then erange = [3.,20.]
   erange = minmax(float(erange))
-  if not keyword_set(psmo) then psmo = 1
   if not keyword_set(fudge) then fudge = 1.
   if keyword_set(ddd) then dflg = 1 else dflg = 0
   if not keyword_set(abins) then abins = replicate(1B, 16)
   if not keyword_set(dbins) then dbins = replicate(1B, 6)
-
-  case n_elements(thresh) of
-    0    : thresh = [0.05, 0.025, 1.8]
-    1    : thresh = [float(thresh), 0.025, 1.8]
-    2    : thresh = [float(thresh), 1.8]
-    else : thresh = float(thresh[0:2])
-  endcase
+  if (size(thresh,/type) eq 0) then thresh = 0.05
+  if (size(dEmax,/type) eq 0) then dEmax = 4.
   
   if (dflg) then begin
     t = swe_3d.time
@@ -136,9 +132,14 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, fudge=fudge, $
 
   gndx = round(total(finite(f),1))
   gndx = where(gndx eq n_e, npts)
-  t = t[gndx]
-  e = e[*,gndx]
-  f = f[*,gndx]
+  if (npts gt 0L) then begin
+    t = t[gndx]
+    e = e[*,gndx]
+    f = f[*,gndx]
+  endif else begin
+    print,"No good spectra!"
+    return
+  endelse
 
 ; Take first and second derivatives of log(eflux) w.r.t. log(E)
 
@@ -168,13 +169,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, fudge=fudge, $
   dfs = dfs[indx,*]
   d2fs = d2fs[indx,*]
 
-; Calculate the energy shape parameter to filter out ionospheric spectra
-
-  mvn_swe_shape_par
-  get_data,'mvn_swe_shape_par',data=par
-  par = interpol(par.y, par.x, t)
-
-; The spacecraft potential is taken to be the maximum curvature (d2logF/dlogE2)
+; The spacecraft potential is taken to be the maximum slope (dlogF/dlogE)
 ; within the search window.  A fudge factor is included to adjust the estimate 
 ; for cross calibration with LPW.
 ;
@@ -186,21 +181,67 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, psmo=psmo, fudge=fudge, $
 
   phi = replicate(!values.f_nan, npts)
   for i=0L,(npts-1L) do begin
-    indx = where((zcross[*,i] lt 0.) and (dfs[*,i] gt thresh[0]), ncross)
-    if (ncross gt 0L) then begin
-      dfsmax = max(dfs[indx,i],k)
-      d2fsmax = max(d2fs[0L:indx[k],i])
-      if ((d2fsmax gt thresh[1]) and (par[i] gt thresh[2])) then phi[i] = ee[indx[k],i]
+    indx = where((dfs[*,i] gt thresh) and (zcross[*,i] lt 0.), ncross) ; local maxima in slope
+
+    if (ncross gt 0) then begin
+      k = max(indx)               ; lowest energy feature above threshold
+      dfsmax = dfs[k,i]
+      dfsmin = dfsmax/3.
+
+      while ((dfs[k,i] gt dfsmin) and (k lt n_e-1)) do k++
+      kmax = k
+      k = max(indx)
+      while ((dfs[k,i] gt dfsmin) and (k gt 0)) do k--
+      kmin = k
+      
+      dE = ee[kmin,i] - ee[kmax,i]
+      if ((kmax eq (n_e-1)) or (kmin eq 0)) then dE = 2.*dEmax
+      
+      if (dE lt dEmax) then phi[i] = ee[max(indx),i]  ; only accept narrow features
     endif
   endfor
 
-  phi = smooth(phi*fudge,psmo,/nan)
+; Filter for low flux
+
+  fmax = max(mvn_swe_engy[gndx].data, dim=1)
+  indx = where(fmax lt 1.e7, count)
+  if (count gt 0L) then phi[indx] = !values.f_nan
+
+; Filter out shadow regions
+
+  get_data, 'wake', data=wake, index=i
+  if (i eq 0) then begin
+    maven_orbit_tplot, /current, /loadonly
+    get_data, 'wake', data=wake, index=i
+  endif
+  if (i gt 0) then begin
+    shadow = interpol(float(finite(wake.y)), wake.x, mvn_swe_engy[gndx].time)
+    indx = where(shadow gt 0., count)
+    if (count gt 0L) then phi[indx] = !values.f_nan
+  endif
+
+; Filter out altitudes below 250 km
+
+  get_data, 'alt', data=alt, index=i
+  if (i eq 0) then begin
+    maven_orbit_tplot, /current, /loadonly
+    get_data, 'alt', data=alt, index=i
+  endif
+  if (i gt 0) then begin
+    altitude = interpol(alt.y, alt.x, mvn_swe_engy[gndx].time)
+    indx = where(altitude lt 250., count)
+    if (count gt 0L) then phi[indx] = !values.f_nan
+  endif
+
+; Apply fudge factor, and store the result
+
+  phi = phi*fudge
 
   if (not dflg) then begin
     mvn_swe_engy[gndx].sc_pot = phi
     mvn_swe_convert_units, mvn_swe_engy, old_units
   endif else begin
-    mvn_swe_engy.sc_pot = interpol(phi,t,mvn_swe_engy.time)
+    mvn_swe_engy[gndx].sc_pot = interpol(phi,t,mvn_swe_engy[gndx].time)
   endelse
   
   swe_sc_pot = replicate(swe_pot_struct, npts)

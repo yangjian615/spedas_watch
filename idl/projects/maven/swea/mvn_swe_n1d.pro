@@ -1,37 +1,4 @@
 ;+
-;FUNCTION  parabola(x,par=p)
-;PURPOSE:
-;   Evaluates a (2nd degree) polynomial (can be used with "FIT")
-;-
-
-function parabola, x,  $
-    parameters=p,  p_names = p_names, pder_values= pder_values
-
-if not keyword_set(p) then $
-   p = {func:'parabola', a:0D, b:1D, x0:0D}
-
-if n_params() eq 0 then return,p
-
-y = x - p.x0
-f = p.a + p.b*y*y
-
-if keyword_set(p_names) then begin
-   np = n_elements(p_names)
-   nd = n_elements(f)
-   pder_values = dblarr(nd,np)
-   for i=0,np-1 do begin
-      case strupcase(p_names(i)) of
-          'X0': pder_values[*,i] = -2.*p.b*y
-          'B' : pder_values[*,i] = y*y
-          'A' : pder_values[*,i] = 1.
-      endcase
-   endfor
-endif
-
-return,f
-end
-
-;+
 ;PROCEDURE: 
 ;	mvn_swe_n1d
 ;PURPOSE:
@@ -55,13 +22,12 @@ end
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-02 14:57:11 -0800 (Sun, 02 Nov 2014) $
-; $LastChangedRevision: 16117 $
+; $LastChangedDate: 2015-01-24 14:37:37 -0800 (Sat, 24 Jan 2015) $
+; $LastChangedRevision: 16727 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-
-
-pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
+pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom, minden=minden
 
   compile_opt idl2
 
@@ -72,7 +38,8 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
   c2 = (2d5/(mass*mass))
   c3 = 4D*!dpi*1d-5*sqrt(mass/2D)  ; assume isotropic electron distribution
   
-  if keyword_set(mom) then mom = 1 else mom = 0
+  if (size(mom,/type) eq 0) then mom = 1
+  if (size(minden,/type) eq 0) then minden = 0.08  ; minimum density
 
 ; Get energy spectra from SPEC or 3D distributions
 
@@ -136,10 +103,6 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
     sc_pot = mvn_swe_engy.sc_pot
   endelse
 
-  mvn_swe_shape_par
-  get_data,'mvn_swe_shape_par',data=par
-  par = interpol(par.y, par.x, t)
-
   E = energy[*,0]
   dE = E
   dE[0] = abs(E[1] - E[0])
@@ -154,16 +117,9 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
     pot = sc_pot[i]
 
     if (finite(pot)) then begin
-      if (n_elements(erange) gt 1) then begin
-        Emin = min(erange, max=Emax)
-        j = where((E ge Emin) and (E le Emax), n_e)
-      endif else begin
-        j = where(E gt pot, n_e)
-        j1 = max(j)
-        Fmax = max(F[0:j1],jmax,/nan)
-        Fmin = min(F[jmax:j1],jmin,/nan)
-        j = where(E ge E[jmin+jmax], n_e)
-      endelse
+      j = where(E gt pot, n_e)
+      j = j[0:(n_e-2)]  ; one channel cushion from s/c potential
+      n_e--
     endif else n_e = 0
 
     if (mom) then begin
@@ -171,37 +127,16 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
         prat = (pot/E[j]) < 1.
         dens[i] = c3*total(dE[j]*sqrt(1. - prat)*(E[j]^(-1.5))*F[j])
         dsig[i] = sqrt(c3*total(dE[j]*sqrt(1. - prat)*(E[j]^(-1.5))*(S[j]*S[j])))
+      
+        pres = (2./3.)*c3*total(dE[j]*((1. - prat)^1.5)*(E[j]^(-0.5))*F[j])
+        psig = sqrt((2./3.)*c3*total(dE[j]*((1. - prat)^1.5)*(E[j]^(-0.5))*(S[j]*S[j])))
+        
+        temp[i] = pres/dens[i]
+        tsig[i] = temp[i]*sqrt((dsig[i]/dens[i])^2. + (psig/pres)^2.)
       endif else begin
         dens[i] = !values.f_nan
-        dsig[i] = !values.f_nan
-        j = indgen(64)
-      endelse
-
-      if (par[i] gt 2.5) then begin
-        Fmax = max(F[j],k,/nan)
-        Emax = E[j[k]]
-        
-        nfit = 5
-        nmid = (nfit - 1)/2
-        kndx = k + indgen(nfit) - nmid
-        x = E[j[kndx]]
-        y = F[j[kndx]]
-        dy = S[j[kndx]]
-        p = parabola()
-        p.a = y[nmid]
-        p.b = 0.5*(y[nmid+1] - 2.*y[nmid] + y[nmid-1])/(x[nmid] - x[nmid-1])^2.
-        p.x0 = x[nmid]
-        fit,x,y,dy=dy,func='parabola',par=p,names='A B X0',p_sigma=sig,/silent
-
-        if (p.x0 gt min(x)) then begin
-          temp[i] = p.x0/2.
-          tsig[i] = dE[j[k]]/6. ; 1/3 of an energy bin width
-        endif else begin
-          temp[i] = !values.f_nan
-          tsig[i] = !values.f_nan
-        endelse
-      endif else begin
         temp[i] = !values.f_nan
+        dsig[i] = !values.f_nan
         tsig[i] = !values.f_nan
       endelse
     endif else begin
@@ -238,7 +173,17 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom
     endelse
     
   endfor
-  
+
+; Filter out bad data
+
+  indx = where(dens lt minden, count)
+  if (count gt 0L) then begin
+    dens[indx] = !values.f_nan
+    temp[indx] = !values.f_nan
+    dsig[indx] = !values.f_nan
+    tsig[indx] = !values.f_nan
+  endif
+
 ; Create TPLOT variables
 
   if keyword_set(ddd) then mode = '3d' else mode = 'spec'

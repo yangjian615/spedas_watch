@@ -1,4 +1,5 @@
-function spp_sweap_log_decomp,bdata,ctype
+function spp_sweap_log_decomp,bdata,ctype,compress=compress
+if n_elements(ctype) eq 0 then ctype = 0
 
 clog_19_8=[ $
      0,      1,      2,      3,      4,      5,      6,      7,  $
@@ -46,6 +47,11 @@ clog_12_8=long([0,  1,  2,  3,  4,   5,   6,   7,   8,   9,  10,  11,  12,  13, 
 ;clog = [[clog_19_8],[clog_12_8]]
 ;printdat,clog
 clog = ctype and 1 ? clog_12_8 : clog_19_8
+
+if keyword_set(compress) then begin
+  comp = interp(indgen(256),clog*.99999,bdata,index=i)
+  return,fix(i)
+endif
 
 return, clog[byte(bdata)]
 

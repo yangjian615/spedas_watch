@@ -68,16 +68,19 @@
 ;
 ;       SUMPLOT:       Create a summary plot of the loaded data.
 ;
+;       LOADONLY:      Download data but do not process.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-12-22 16:29:30 -0800 (Mon, 22 Dec 2014) $
-; $LastChangedRevision: 16538 $
+; $LastChangedDate: 2015-01-24 14:31:32 -0800 (Sat, 24 Jan 2015) $
+; $LastChangedRevision: 16726 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mvn_swe_load_l0.pro
 ;-
 pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
-                             cdrift=cdrift, sumplot=sumplot, status=status, orbit=orbit
+                             cdrift=cdrift, sumplot=sumplot, status=status, orbit=orbit, $
+                             loadonly=loadonly
 
   @mvn_swe_com
 
@@ -125,6 +128,14 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
   for j=0,(n-1) do print,"File not found: ",file[jndx[j]]  
   if (nfiles eq 0) then return
   file = file[indx]
+
+  if keyword_set(loadonly) then begin
+    print,''
+    print,'Files found:'
+    for i=0,(nfiles-1) do print,file[i],format='("  ",a)'
+    print,''
+    return
+  endif
 
 ; If time range is undefined, get it from the file name(s)
 

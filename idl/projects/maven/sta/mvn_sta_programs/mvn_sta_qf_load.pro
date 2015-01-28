@@ -1,22 +1,24 @@
 
 ;;Quality Flag Legend
 ;;
-;;Location   Definition                                            - Determined from                                                             
+;;Location   	Definition   					Determined from                                                             
 ;;---------------------------------------------------------------------------------------------------------------------------------                       
-;;bit 0      Test pulser on                                        - testpulser header bit set
-;;bit 1      Diagnostic mode                                       - diagnostic header bit set                                                  
-;;bit 2      Dead time correction > factor of 2                    - deadtime correction > 2                                                    
-;;bit 3      MCP detector gain droop flag- deadtime and beam width - tbd algorithm                                    
-;;bit 4      Dead time correction not at event time                - missing data quantity for deadtime                                         
-;;bit 5      Electrostatic attenuator failing at <2 eV             - attE on and eprom_ver<2                                                    
-;;bit 6      Attenuator change during accumulation                 - att 1->2 or 2->1 transition (one measurement)                              
-;;bit 7      Mode change during accumulation                       - only needed for packets that average data during mode transition           
-;;bit 8      LPW sweeps interfering with data                      - LPW mode not dust mode                                                     
-;;bit 9      High background                                       - minimum value in DA > 1000                                                 
-;;bit 10     Missing background                                    - dat.bkg = 0           - may not be needed                                  
-;;bit 11     Missing spacecraft potential                          - dat.sc_pot = 0        - may not be needed                                  
-;;bit 12     Extra                                                 - may not be needed                                    
-
+;bit 0		test pulser on					- testpulser header bit set
+;bit 1		diagnostic mode					- diagnostic header bit set
+;bit 2		dead time correction > factor of 2		- deadtime correction > 2
+;bit 3		mcp detector gain droop flag 			- deadtime and beam width - flagged if correction > 2
+;bit 4		dead time correction not at event time		- missing data quantity for deadtime
+;bit 5		electrostatic attenuator failing at low energy	- attE on and eprom_ver<2
+;bit 6  	attenuator change during accumulation		- att 1->2 or 2->1 transition (one measurement)	
+;bit 7		mode change during accumulation			- only needed for packets that average data during mode transition
+;bit 8		lpw sweeps interfering with data 		- lpw mode not dust mode
+;bit 9		high background 		 		- minimum value in DA > 10000 Hz
+;bit 10		missing background 		 		- dat.bkg = 0		- may not be needed
+;bit 11		missing spacecraft potential			- dat.sc_pot = 0	- may not be needed	
+;bit 12		inflight calibration 				- date determined, set to 1 until calibration finalized
+;bit 13		tbd
+;bit 14		tbd
+;bit 15		not used
 
 
 ;;Bit Value Definition
@@ -209,6 +211,7 @@ pro mvn_sta_qf_load,verbose=verbose
   if cnt gt 0 then begin
      for i=0,npts-1 do begin
         if (att[i] eq 1 or att[i] eq 3) then begin   
+	   count=0
            if eprom[i] eq 1 then ind = where(dat.energy[dat.swp_ind[i],*,0] lt 2.4,count)
            if eprom[i] eq 2 then ind = where(dat.energy[dat.swp_ind[i],*,0] lt 0.69,count)
            if count ge 1 then begin
@@ -326,16 +329,24 @@ pro mvn_sta_qf_load,verbose=verbose
   ;;***************************************************************
   ;;Bit 9  - High Background
   bit9mask=2^9
-  pp=where(min(mvn_da_dat.rates,dim=2) ge 1000.D,cc)
-  if cc ne 0 then begin
-     ind=mvn_da_dat.time*0.D
-     ind[pp]=1.
-     time_da=mvn_da_dat.time[pp]
-     ;;Interpolate for apid c6 (time)  
-     ind2=ceil(interpol(ind,mvn_da_dat.time,time))
-     pp=where(ind2 gt 0)
-     dat.quality_flag[pp] = dat.quality_flag[pp] or bit9mask
-  endif
+;  pp=where(min(mvn_da_dat.rates,dim=2) ge 1000.D,cc)
+;  if cc ne 0 then begin
+;     ind=mvn_da_dat.time*0.D
+;     ind[pp]=1.
+;     time_da=mvn_da_dat.time[pp]
+;     ;;Interpolate for apid c6 (time)  
+;     ind2=ceil(interpol(ind,mvn_da_dat.time,time))
+;     pp=where(ind2 gt 0)
+;     dat.quality_flag[pp] = dat.quality_flag[pp] or bit9mask
+;  endif
+	rates = interp(mvn_da_dat.rates,mvn_da_dat.time,time)
+	for i=0,npts-1 do begin
+		if (min(rates[i,*]) ge 10000.) then begin
+			dat.quality_flag[i] = dat.quality_flag[i] or bit9mask
+		endif else begin
+			dat.quality_flag[i] = dat.quality_flag[i] and (not bit9mask)
+		endelse
+	endfor
   if keyword_set(verbose) then $
      print, 'Bit 9 flags - Total:  '+string(cc)+'/'+string(npts)
 
@@ -452,5 +463,7 @@ pro mvn_sta_qf_load,verbose=verbose
      endif
   endfor
 
+	store_data,'mvn_sta_c6_quality_flag',data={x:(mvn_c6_dat.time+mvn_c6_dat.end_time)/2.,y:mvn_c6_dat.quality_flag}
+		options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
 
 end

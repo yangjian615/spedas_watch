@@ -27,11 +27,15 @@
 ;HISTORY:
 ; 16-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-13 12:58:16 -0800 (Tue, 13 Jan 2015) $
-; $LastChangedRevision: 16650 $
+; $LastChangedDate: 2015-01-23 11:07:39 -0800 (Fri, 23 Jan 2015) $
+; $LastChangedRevision: 16715 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_l2_load.pro $
 ;-
 Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_pass = user_pass, no_time_clip = no_time_clip, _extra = _extra
+
+;Keep track of software versioning here
+  sw_vsn = mvn_sta_current_sw_version()
+  sw_vsn_str = 'v'+string(sw_vsn, format='(i2.2)')
 
 ;The first step is to set up filenames, if there are any
   If(keyword_set(files)) Then Begin
@@ -74,9 +78,9 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
      For j = 0, napp_id-1 Do For k = 0, ndays-1 Do Begin
         yyyy = strmid(daystr[k], 0, 4) & mmmm = strmid(daystr[k], 4, 2)
 ;fixed daystr to daystr[k], 2015-01-13
-        filejk0 = 'maven/data/sci/sta/l2/'+yyyy+'/'+mmmm+'/mvn_sta_l2_'+app_id[j]+'*_'+daystr[k]+'_v??.cdf'
+        filejk0 = 'maven/data/sci/sta/l2/'+yyyy+'/'+mmmm+'/mvn_sta_l2_'+app_id[j]+'*_'+daystr[k]+'_'+sw_vsn_str+'.cdf'
         filejk = mvn_pfp_file_retrieve(filejk0, user_pass = user_pass)
-        ;Files with ? or * left were not found
+;Files with ? or * left were not found
         question_mark = strpos(filejk, '?')
         If(is_string(filejk) && question_mark[0] Eq -1) Then filex = [filex, filejk]
      Endfor
@@ -85,6 +89,12 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
         Return
      Endelse
   Endelse
+;ONly files that exist here
+  filex = file_search(filex)
+  If(~is_string(filex)) Then Begin
+     dprint, 'No files found for time range and app_ids:'+app_id
+     Return
+  Endif
 ;Only unique files here
   filex_u = filex[bsort(filex)]
   filex = filex_u[uniq(filex_u)]
@@ -106,6 +116,7 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
      ssj = where(app_ids_all0 Eq app_ids_all[j], nssj)
      If(nssj Eq 0) Then Begin
         dprint, 'No files for apid: '+app_ids_all[j]
+        Continue                ;to next app_id
      Endif Else Begin
         ck = 0
         For k = 0, nssj-1 Do Begin
@@ -115,9 +126,15 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
               Else datj = mvn_sta_cmn_concat(temporary(datj), temporary(datk))
            Endif
         Endfor
-     Endelse
 ;Check time range
-     If(~keyword_set(files) and ~keyword_set(no_time_clip)) Then datj = mvn_sta_cmn_tclip(datj, tr0)
+        If(~keyword_set(files) and ~keyword_set(no_time_clip)) Then Begin
+           If(is_struct(datj)) Then datj = mvn_sta_cmn_tclip(datj, tr0) $
+           Else Begin
+              dprint, 'No data for apid: '+app_ids_all[j]
+              Continue          ;to next app_id
+           Endelse
+        Endif
+     Endelse
 ;Contract nbins = 1 case, 
 ;     If(datj.nbins Eq 1) Then Begin
 ;        num_dists = n_elements(datj.time)

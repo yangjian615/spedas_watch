@@ -480,7 +480,7 @@ def_eff = .285		; early mission solar wind proton efficiency
 	slut[12,*] = 	[30000.0,	1.0000,	 0.0,	0.,	24.0,	4.0,		25.]		; scan2			
 	slut[13,*] = 	[30000.0,	1.0000,	45.0,	0.,	24.0,	4.0,		25.]		; eclip2		
 	slut[14,*] = 	[30000.0,	25.000,	45.0,	0.,	 0.0,	2.0,		25.]		; protect2		
-; Science modes loaded 2015-01-20 - gridon minimum is 4V
+; Science modes loaded 2015-01-24 - gridon minimum is 4V
 	slut[15,*] = 	[   50.0,	0.1000,	22.5,	0.,	24.0,	4.0,		25.]		; ram3			this should be changed to gridon=11 in the next iteration - better attenuator boundary, protects handles sc charging
 	slut[16,*] = 	[  500.0,	0.1000,	45.0,	0.,	21.0,	4.0,		25.]		; conic3		this should be changed to gridon=12 in the next iteration - better attenuator boundary, protects handles sc charging
 	slut[17,*] = 	[30000.0,	0.2000,	45.0,	0.,	24.0,	4.0,		25.]		; pickup3		this should be changed to gridon=17 in the next iteration - better attenuator boundary, protects handles sc charging
@@ -1032,23 +1032,23 @@ endif
 	close,1
 
 
-	mind2tof5 = fltarr(64,64)
-	mind2twt5=intarr(64,64)
+	mind2tof7 = fltarr(64,64)
+	mind2twt7=intarr(64,64)
 	for j=0,63 do begin
 		for i=0,63 do begin
 			ind = where(i eq mlut7[*,j],nind)
 			if nind ge 1 then begin
-				mind2tof5[j,i] = (m2tofmax[max(ind)] + m2tofmin[min(ind)])/2. 		; (en,ma)
-				mind2twt5[j,i] = (1 + m2tofmax[max(ind)] - m2tofmin[min(ind)])		; (en,ma)
+				mind2tof7[j,i] = (m2tofmax[max(ind)] + m2tofmin[min(ind)])/2. 		; (en,ma)
+				mind2twt7[j,i] = (1 + m2tofmax[max(ind)] - m2tofmin[min(ind)])		; (en,ma)
 				if mind2twt3[j,i] le 0 then print,'Error in mlut7',i
 			endif else print,'Error in mlut7'
 		endfor
 	endfor
 
-;	print,reform(mind2tof5[0,*])
-;	print,reform(mind2tof5[63,*])
-;	print,reform(mind2twt5[0,*])
-;	print,reform(mind2twt5[63,*])
+;	print,reform(mind2tof7[0,*])
+;	print,reform(mind2tof7[63,*])
+;	print,reform(mind2twt7[0,*])
+;	print,reform(mind2twt7[63,*])
 
 ;**********************************************
 ; Load tof/mode twt/mode tables
@@ -1061,6 +1061,7 @@ endif
 	tof[4,*,*] = mind2tof4 	
 	tof[5,*,*] = mind2tof5 	
 	tof[6,*,*] = mind2tof6 	
+	tof[7,*,*] = mind2tof7 	
 
 	twt = fltarr(n_mlut,64,64)
 	twt[0,*,*] = mind2twt0 	
@@ -1070,6 +1071,7 @@ endif
 	twt[4,*,*] = mind2twt4 	
 	twt[5,*,*] = mind2twt5 	
 	twt[6,*,*] = mind2twt6 	
+	twt[7,*,*] = mind2twt7 	
 
 ; Generate tof/mass tables
 ;    Assume the foil mass loss is (500+M*1000/8) eV = 500+125*M
@@ -1474,16 +1476,16 @@ print,'Processing apid c6'
 		endif else begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]/50.
 			gf2[3:4,*,3]=gf2[3:4,*,3]/50.
-			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
-			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+			gf2[7:8,*,2]=gf2[7:8,*,2]/50.
+			gf2[7:8,*,3]=gf2[7:8,*,3]/50.
 		endelse
 	endif
 ; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
 	if first_t ge time_double('2014-09-01/0') then begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
 			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
-			gf2[7:8,*,2]=gf2[3:4,*,2]*att_corr
-			gf2[7:8,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[7:8,*,2]=gf2[7:8,*,2]*att_corr
+			gf2[7:8,*,3]=gf2[7:8,*,3]*att_corr
 			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
 			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
 	endif
@@ -1786,16 +1788,16 @@ print,'Processing apid c0'
 		endif else begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]/50.
 			gf2[3:4,*,3]=gf2[3:4,*,3]/50.
-			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
-			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+			gf2[7:8,*,2]=gf2[7:8,*,2]/50.
+			gf2[7:8,*,3]=gf2[7:8,*,3]/50.
 		endelse
 	endif
 ; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
 	if first_t ge time_double('2014-09-01/0') then begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
 			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
-			gf2[7:8,*,2]=gf2[3:4,*,2]*att_corr
-			gf2[7:8,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[7:8,*,2]=gf2[7:8,*,2]*att_corr
+			gf2[7:8,*,3]=gf2[7:8,*,3]*att_corr
 			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
 			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
 	endif
@@ -2066,16 +2068,16 @@ print,'Processing apid c2'
 		endif else begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]/50.
 			gf2[3:4,*,3]=gf2[3:4,*,3]/50.
-			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
-			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+			gf2[7:8,*,2]=gf2[7:8,*,2]/50.
+			gf2[7:8,*,3]=gf2[7:8,*,3]/50.
 		endelse
 	endif
 ; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
 	if first_t ge time_double('2014-09-01/0') then begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
 			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
-			gf2[7:8,*,2]=gf2[3:4,*,2]*att_corr
-			gf2[7:8,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[7:8,*,2]=gf2[7:8,*,2]*att_corr
+			gf2[7:8,*,3]=gf2[7:8,*,3]*att_corr
 			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
 			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
 	endif
@@ -2356,16 +2358,16 @@ print,'Processing apid c4'
 		endif else begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]/50.
 			gf2[3:4,*,3]=gf2[3:4,*,3]/50.
-			gf2[7:8,*,2]=gf2[3:4,*,2]/50.
-			gf2[7:8,*,3]=gf2[3:4,*,3]/50.
+			gf2[7:8,*,2]=gf2[7:8,*,2]/50.
+			gf2[7:8,*,3]=gf2[7:8,*,3]/50.
 		endelse
 	endif
 ; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
 	if first_t ge time_double('2014-09-01/0') then begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
 			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
-			gf2[7:8,*,2]=gf2[3:4,*,2]*att_corr
-			gf2[7:8,*,3]=gf2[3:4,*,3]*att_corr
+			gf2[7:8,*,2]=gf2[7:8,*,2]*att_corr
+			gf2[7:8,*,3]=gf2[7:8,*,3]*att_corr
 			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
 			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
 	endif

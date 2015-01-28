@@ -32,6 +32,11 @@
 ;       POT:           Overplot an estimate of the spacecraft potential.  Must run
 ;                      mvn_swe_sc_pot first.
 ;
+;       DEMAX:         Maximum width of spacecraft potential signature.
+;
+;       PEPEAKS:       Overplot the nominal energies of the photoelectron energy peaks
+;                      at 23 and 27 eV.
+;
 ;       PDIAG:         Plot potential estimator in a separate window.
 ;
 ;       PXLIM:         X limits (Volts) for diagnostic plot.
@@ -65,8 +70,8 @@
 ;       NOERASE:       Overplot all spectra after the first.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-12-11 16:23:42 -0800 (Thu, 11 Dec 2014) $
-; $LastChangedRevision: 16469 $
+; $LastChangedDate: 2015-01-24 14:41:06 -0800 (Sat, 24 Jan 2015) $
+; $LastChangedRevision: 16730 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -74,7 +79,8 @@
 pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
                    ddd=ddd, abins=abins, dbins=dbins, sum=sum, pot=pot, pdiag=pdiag, $
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
-                   noerase=noerase, thresh=thresh, scp=scp, fixy=fixy
+                   noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
+                   dEmax=dEmax
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -92,19 +98,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   if not keyword_set(dbins) then dbins = replicate(1, 6)
   if keyword_set(noerase) then oflg = 0 else oflg = 1
   if not keyword_set(scp) then scp = 0. else scp = float(scp[0])
-
-  case n_elements(thresh) of
-    0    : thresh = [0.05, 0.025, 1.8]
-    1    : thresh = [float(thresh), 0.025, 1.8]
-    2    : thresh = [float(thresh), 1.8]
-    else : thresh = float(thresh[0:2])
-  endcase
-
-  get_data,'mvn_swe_shape_par',data=par
-  if (size(par,/type) ne 8) then begin
-    mvn_swe_shape_par
-    get_data,'mvn_swe_shape_par',data=par
-  endif
+  if (size(thresh,/type) eq 0) then thresh = 0.05
+  if (size(dEmax,/type) eq 0) then dEmax = 4.
 
   get_data,'alt',data=alt
   if (size(alt,/type) eq 8) then doalt = 1 else doalt = 0
@@ -115,6 +110,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   onorm = float(onorm)
   
   if keyword_set(pot) then dopot = 1 else dopot = 0
+  if keyword_set(pepeaks) then dopep = 1 else dopep = 0
   if keyword_set(scat) then scat = 1 else scat = 0
 
   if keyword_set(mb) then begin
@@ -254,6 +250,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       oplot,[pot,pot],yrange,line=2,color=6
     endif
     
+    if (dopep) then begin
+      oplot,[23.,23.],yrange,line=2,color=1
+      oplot,[27.,27.],yrange,line=2,color=1
+    endif
+    
     if (doalt) then begin
       dt = min(abs(alt.x - spec.time), aref)
       xyouts,xs,ys,string(alt.y[aref], format='("ALT = ",f6.1)'),charsize=1.2,/norm
@@ -348,8 +349,9 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     endif
       
     if (mom) then begin
-      E1 = spec.energy
-      F1 = spec.data
+      eflux = conv_units(spec,'eflux')
+      E1 = eflux.energy
+      F1 = eflux.data
 
       dE = E1
       dE[0] = abs(E1[1] - E1[0])
@@ -362,22 +364,18 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       endif else begin
         if finite(phi) then pot = phi else pot = scp
         j = where(E1 gt pot, n_e)
-        j1 = max(j)
-        Fmax = max(F1[0:j1],jmax,/nan)
-        Fmin = min(F1[jmax:j1],jmin,/nan)
-        j = where(E1 ge E1[jmin+jmax], n_e)
+        j = j[0:(n_e-2)]  ; one channel cushion from s/c potential
+        n_e--
       endelse
 
       oplot,E1[j],F1[j],color=1,psym=10
+
       prat = (pot/E1[j]) < 1.
+      N_tot = c3*total(dE[j]*sqrt(1. - prat)*(E1[j]^(-1.5))*F1[j])      
+      P_tot = (2./3.)*c3*total(dE[j]*((1. - prat)^1.5)*(E1[j]^(-0.5))*F1[j])
+      temp = P_tot/N_tot  ; temperature corresponding to kinetic energy density
 
-      N_tot = c3*total(dE[j]*sqrt(1. - prat)*(E1[j]^(-1.5))*F1[j])
-
-      Fmax = max(F1[j],k,/nan)
-      Emax = E1[j[k]]
-      temp = Emax/2.
-
-      xyouts,xs,ys,string(N_tot,format='("N = ",f6.2)'),color=1,charsize=1.2,/norm
+      xyouts,xs,ys,string(N_tot,format='("N = ",f6.3)'),color=1,charsize=1.2,/norm
       ys -= dys
       xyouts,xs,ys,string(temp,format='("T = ",f6.2)'),color=1,charsize=1.2,/norm
       ys -= dys
@@ -387,7 +385,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     
     if (pflg) then begin
       wset, Pwin
-      
+
+      xs = 0.71
+      ys = 0.90
+      dys = 0.03
+
       if not keyword_set(pxlim) then xlim = [0.,30.] else xlim = minmax(pxlim)
 
       indx = where((df.v ge xlim[0]) and (df.v le xlim[1]))
@@ -410,24 +412,33 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       oplot,[spec.sc_pot,spec.sc_pot],ylim,line=2,color=6
       oplot,px,py2,color=4
       oplot,xlim,[0,0],line=2
-      oplot,xlim,[thresh[0],thresh[0]],line=2,color=5      
-      oplot,xlim,[thresh[1],thresh[1]],line=2,color=5      
+      oplot,xlim,[thresh,thresh],line=2,color=5      
 
       if (ncross gt 0L) then begin
-        pymax = max(py[indx],k)
-        py2max = max(py2[0L:indx[k]])
-        
-        dt = min(abs(spec.time - par.x), sndx)
-        par_y = par.y[sndx]
-        
-        if ((py2max gt thresh[1]) and (par_y gt thresh[2])) then k = indx[k] else k = -1
+        k = max(indx)  ; lowest energy feature above threshold
+        pymax = py[k]
+        pymin = pymax/3.
+
+        while ((py[k] gt pymin) and (k lt n_e-1)) do k++
+        kmax = k
+        k = max(indx)
+        while ((py[k] gt pymin) and (k gt 0)) do k--
+        kmin = k
+      
+        dE = px[kmin] - px[kmax]
+        if ((kmax eq (n_e-1)) or (kmin eq 0)) then dE = 2.*dEmax
+      
+        if (dE lt dEmax) then k = max(indx) else k = -1  ; only accept narrow features
 
         for j=0,(ncross-1) do oplot,[px[indx[j]],px[indx[j]]],ylim,color=2
 
         if (k gt 0) then begin
-          xyouts,xs,0.90,string(px[k],format='("V = ",f6.2)'),color=6,charsize=1.2,/norm
+          xyouts,xs,ys,string(px[k],format='("V = ",f6.2)'),color=6,charsize=1.2,/norm
           oplot,[px[k],px[k]],ylim,color=6,line=2
         endif
+
+        ys = ys - dys
+        xyouts,xs,ys,string(dE,format='("dE = ",f6.2)'),charsize=1.2,/norm
 
       endif
 

@@ -24,8 +24,8 @@
 ;  none
 ;  
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-12-18 13:48:40 -0800 (Thu, 18 Dec 2014) $
-;$LastChangedRevision: 16513 $
+;$LastChangedDate: 2015-01-26 10:06:01 -0800 (Mon, 26 Jan 2015) $
+;$LastChangedRevision: 16736 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/poes_ui_gen_overplot.pro $
 ;-
 
@@ -121,7 +121,8 @@ pro poes_ui_gen_overplot_event, event
         ;add to call sequence
         state.callSequence->addPluginCall, 'poes_overview_plot', $
           date = st_double, probe = state.probe, duration = dur, $
-          gui_overplot=1, oplot_calls = (*state.data).oplot_calls, track_one=1b, no_draw=1
+          gui_overplot=1, oplot_calls = (*state.data).oplot_calls, track_one=1b, $
+          import_only=1 ;when replaying overviews, we only want it to import data, since the window/panel structure is already serialized xml tgd document
         
         ; update the size of the labels       
         activeWindow->GetProperty, panels = panelsObj

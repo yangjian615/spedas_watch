@@ -131,15 +131,15 @@ End
 ; 6-nov-2014, jmm, Corrects clock drift 
 ; 22-dec-2014, jmm, added eprom_ver and header
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
-; $LastChangedRevision: 16613 $
+; $LastChangedDate: 2015-01-23 11:07:39 -0800 (Fri, 23 Jan 2015) $
+; $LastChangedRevision: 16715 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
                        no_compression = no_compression, _extra = _extra
 
 ;Keep track of software versioning here
-  common mvn_sta_software_version, sw_vsn
+  sw_vsn = mvn_sta_current_sw_version()
   sw_vsn_str = 'v'+string(sw_vsn, format='(i2.2)')
 
   If(~is_struct(cmn_dat)) Then Begin

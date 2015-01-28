@@ -44,9 +44,9 @@
 ;NOTES:
 ;  tplot_gui supports many of the same settings that are selected in tplot using options and tplot_options. 
 ;  
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-01-23 19:30:24 -0800 (Fri, 23 Jan 2015) $
+;$LastChangedRevision: 16723 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/tplot_gui.pro $
 ;--------------------------------------------------------------------------------
 
@@ -107,6 +107,7 @@ pro tplot_gui, datanames,$
                overplot=overplot,$
                template_filename=template_filename,$
                var_labels=var_label,$
+               import_only=import_only,$
                trange=trange
 
   compile_opt idl2
@@ -217,7 +218,7 @@ pro tplot_gui, datanames,$
     new_names=all_names
   endelse
 
-  if ~keyword_set(no_draw) then begin
+  if ~keyword_set(no_draw) && ~keyword_set(import_only) then begin
 
     ;note it is important that pagesettings gets set one way or another by this block
 
@@ -227,6 +228,7 @@ pro tplot_gui, datanames,$
       if ~!spd_gui.windowStorage->add(isactive=1) then begin
         ok = error_message('Error initializing new window for TPLOT_GUI.',/traceback, /center, $
                title='Error in TPLOT_GUI')
+        return
       endif  
     
     activeWindow = !spd_gui.windowStorage->GetActive()
@@ -244,8 +246,14 @@ pro tplot_gui, datanames,$
     endif else begin
       activeWindow = !spd_gui.windowStorage->GetActive()
       ; add window name to gui window menu
-      activeWindow[0]->GetProperty,settings=pagesettings
-      spd_ui_tplot_gui_page_options,pagesettings
+      if ~obj_valid(activeWindow) then begin
+        ok = error_message('Error, tplot_gui /add_panel called with no active window',/traceback, /center, $
+          title='Error in TPLOT_GUI')
+        return
+      endif else begin
+        activeWindow[0]->GetProperty,settings=pagesettings
+        spd_ui_tplot_gui_page_options,pagesettings
+      endelse
     endelse
     
 ;    if keyword_set(trange) && n_elements(trange) eq 2 then begin

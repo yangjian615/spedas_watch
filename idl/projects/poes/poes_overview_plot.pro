@@ -19,15 +19,15 @@
 ;       
 ;       
 ;
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2014-12-29 15:28:58 -0800 (Mon, 29 Dec 2014) $
-; $LastChangedRevision: 16550 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-01-26 10:06:01 -0800 (Mon, 26 Jan 2015) $
+; $LastChangedRevision: 16736 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_overview_plot.pro $
 ;-
 
 pro poes_overview_plot, date = date, probe = probe_in, duration = duration, error = error, $
                         gui_overplot = gui_overplot, oplot_calls = oplot_calls, directory = directory, $
-                        device = device, no_draw=no_draw, _extra = _extra
+                        device = device, import_only=import_only, _extra = _extra
     compile_opt idl2
     
     ; Catch errors and return
@@ -91,7 +91,7 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration, erro
             tplot, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat']
             thm_gen_multipngplot, probe_in, date, directory = dir, /mkdir
         endif else begin
-            tplot_gui, /no_verify, /add_panel, poes_plots, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat'], no_draw=no_draw
+            tplot_gui, /no_verify, /add_panel, poes_plots, var_label=[probe_in+'_mlt', probe_in+'_mag_lat_sat'], import_only=import_only
         
         endelse
         error = 0

@@ -27,8 +27,7 @@ pro spp_ptp_file_read,files
   endfor
   dt = systime(1)-t0
   dprint,format='("Finished loading in ",f0.1," seconds")',dt
-  spp_apid_data,/finish
-
+  spp_apid_data,/finish,rt_flag=1
 end
 
 

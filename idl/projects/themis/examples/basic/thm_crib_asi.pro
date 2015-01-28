@@ -13,11 +13,14 @@
 ;
 ;-
 
-; Before starting IDL run the setup
+; Before starting IDL run the setup(SSL users only)
 ; source /usr/local/setup/setup_themis
 ; (same as the idl/themis/setup_themis file in the thmsw distribution.)
 
+;------------------------------------------------------------------------------
 ; Load keograms for 2008-02-10
+;------------------------------------------------------------------------------
+
 thm_init
 timespan,'2008-02-10',1,/day
 thm_load_ask,/verbose
@@ -43,7 +46,10 @@ timespan,'2008-02-10/04:00:00',4,/hours
 TPLOT,['thg_ask_fykn','thg_ask_inuv','thg_ask_fsim','thg_ask_fsmi'],title='Zoom'
 stop
 
-	; load full resolution images for one station
+
+;------------------------------------------------------------------------------
+; load full resolution images for one station
+;------------------------------------------------------------------------------
 timespan,'2008-02-10/07:00:00',1,/hours
 thm_load_asi,site='fykn',datatype='asf'
 tplot,'thg_ask_fykn thg_asf_fykn',title='One station example'
@@ -72,6 +78,10 @@ thm_asi_create_mosaic,show_time,/verbose,$
     central_lon=-100,central_lat=60.,scale=2.9e7,$	; set area
     projection='AzimuthalEquidistant'			; map projection
 stop
+
+;------------------------------------------------------------------------------
+; field line traces
+;------------------------------------------------------------------------------
 
 	; get position of one spacecraft
 thm_load_state,probe='c',coord='gsm',suffix='_gsm'
