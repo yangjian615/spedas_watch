@@ -103,8 +103,8 @@ for s=0,n_name_array-1 do begin
 	dummy=histogram(temp.x,min=min_t,max=max_t,binsize=res,reverse_indices=r)
 	l1=n_elements(temp.y)
 	l2=n_elements(r)
-	values(s,0:l1-1)=temp.y
-	r_index(s,0:l2-1)=r
+	values[s,0:l1-1]=temp.y
+	r_index[s,0:l2-1]=r
 endfor
 
 ; initialize number of bins (n_bins)
@@ -131,7 +131,7 @@ bin_values = [!values.f_nan]
 	for s=0,n_name_array-1 do begin
 		if(r_index[s,j] ne r_index[s,j+1]) then begin
 			ss = r_index[s, r_index[s,j]:r_index[s,j+1]-1]  ;subscripts in this time bin
-			bin_values=[bin_values,reform(values(s,ss))]
+			bin_values=[bin_values,reform(values[s,ss])]
 		endif
     endfor
 

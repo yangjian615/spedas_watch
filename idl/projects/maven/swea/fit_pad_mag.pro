@@ -17,8 +17,8 @@
 ;                     Angular offsets are for reference only.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2015-01-27 19:59:03 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16764 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/fit_pad_mag.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -163,6 +163,12 @@ pro fit_pad_mag, trange=trange, result=result
     if (k gt 0) then begin
       Bthe2.x = Bthe2.x - toff
       store_data,'Bthe2',data=Bthe2
+    endif
+    
+    get_data,'mvn_B_1sec',data=mag,index=k
+    if (k gt 0) then begin
+      mag.x = mag.x - toff
+      store_data,'mvn_B_1sec',data=mag
     endif
   endif
 

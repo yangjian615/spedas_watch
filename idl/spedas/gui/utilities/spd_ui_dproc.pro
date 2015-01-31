@@ -33,8 +33,8 @@
 ;HISTORY:
 ; 20-oct-2008, jmm, jimm@ssl.berkeley.edu
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-02 15:34:01 -0700 (Fri, 02 May 2014) $
-;$LastChangedRevision: 15031 $
+;$LastChangedDate: 2015-01-27 12:45:00 -0800 (Tue, 27 Jan 2015) $
+;$LastChangedRevision: 16755 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_dproc.pro $
 
 
@@ -119,7 +119,7 @@ Function spd_ui_dproc, info, uval, $
   if ~is_string(active_data[0]) then begin
     message = 'No active data.  Returning to Data Processing window.'
     sBar->update, message
-    info.historyWin->update, 'SPD_UI_PWRSPC: ' + message
+    info.historyWin->update, 'SPD_UI_DPROC: ' + message
     return,''
   endif
 

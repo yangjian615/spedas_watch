@@ -187,19 +187,6 @@ function spp_log_message_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 end
 
 
-function spp_spane_test1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
-
-  cnts = ccsds.data[20:*]
-  
-  str = { $
-    time:ptp_header.ptp_time, $
-    seq_cntr:ccsds.seq_cntr,  $
-    cnts: float(cnts) }
-    
-  return, str
-end
-
-
 function spp_generic_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   str = create_struct(ptp_header,ccsds)
@@ -316,7 +303,7 @@ pro spp_swp_apid_data_init,save=save
   spp_apid_data,'360'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
   
   spp_apid_data,'7c0'x,routine='spp_log_message_decom',tname='log_',tfields='MSG',save=1,rt_tags='MSG',rt_flag=1
-  
+  spp_swp_spane_init
 end
 
 

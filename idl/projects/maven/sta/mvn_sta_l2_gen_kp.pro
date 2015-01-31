@@ -566,7 +566,7 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 			if count2 gt 0 then tmp2a[ind2]=0.
 	endif else tmp2a=fltarr(npts)
 
-	store_data,'mvn_sta_H+_wc',data={x:tmp0.x,y:tmp1a+tmp2a}
+	store_data,'mvn_sta_H+_wc',data={x:time,y:tmp1a+tmp2a}
 
 ; H+ Counts
 

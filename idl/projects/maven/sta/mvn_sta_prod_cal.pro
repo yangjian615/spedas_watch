@@ -23,25 +23,23 @@
 ;
 ;	tbd	modify code to account for non-perfect attenuation of attE and lowest energy sample where attE is activated
 ;
+;	tbd	correct program for leakage by electrostatic attenuator at low energy - 
+;			currently these data are flagged with the quality flag
+;
 ;	tbd	current code uses swp2gfan and swp2gfdf to help approximate gf for omni-directional apids - c0,c2,c4,c6
 ;			need to check whether this properly handles theta and azimuthal angle ranges
-;	tbd	correct program for leakage by electrostatic attenuator at low energy
-;	tbd	check that the last energy sample includes attE attenuation  
+;	add	gf_corr[npts,nenergy] to common blocks for apids c0,c2,c4,c6,c8 to account for sensitivity variation with ion flux direction
+;
 ;	tbd	may need to change the code that throws away extra data at end of file
 ;
 ;	fix	eff array
 ;	add	eff_ind coding from time and swp_ind
 ;	mod	eff dimension
 ;
-;	mod	data_names
 ;	mod	bkg so it varies with time (it will contain the estimated straggling counts)
-;	mod	dead so it varies with time 
 ;	
 ;	change	"test" keyword -- may have conflicts
 ;
-;	add	quality flag -> multi-bit parameter with test pulser, diagnostic and compression coded
-;		develop an algorithm for quality flag that qualifies high count rate and mode changes
-;		bits are set to 1 if there is a problem
 ;													 
 ;		quality_flag definition						 determined from
 ;

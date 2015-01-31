@@ -21,9 +21,12 @@
 ;    DLIMITS; variable that contains the default limits structure.
 ;    NEWNAME: new tplot handle.  Use to rename tplot names.
 ;    DELETE: array of tplot handles or indices to delete from common block.
+;    CLEAR:  Set this keyword to erase the data structure but not the LIMITS or DLIMITS structures
+;    TAGNAMES: Set this keyword to a string containing tagnames that are to be extracted from an array of 
+;       structures passed in through the DATA structure.  Use TAGNAMES='*' to extract all tagnames.
 ;    MIN: if set, data values less than this value will be made NaN.               (obsolete)
 ;    MAX: if set, data values greater than this value will be made NaN.            (obsolete)
-;    NOSTRSW: if set, do not transpose multidimensional data arrays in
+;    NOSTRSW: if set, do not transpose multidimensional data arrays in             (obsolete)
 ;         structures.  The default is to transpose.
 ;    ERROR: if set returns error code for store_data, values are:
 ;    0=NO ERROR
@@ -34,13 +37,14 @@
 ;
 ;CREATED BY:    Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-04-29 12:16:31 -0700 (Tue, 29 Apr 2014) $
-; $LastChangedRevision: 14965 $
+; $LastChangedDate: 2015-01-27 16:58:56 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16760 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/store_data.pro $
 ;-
 pro store_data,name, time,ydata,values, $
    data = data, $
    append=append, $
+   tagnames = tagnames, $
    limits= limits, $
    dlimits = dlimits, $
    newname = newname, $
@@ -67,6 +71,34 @@ error = 0
 if size(verbose,/type) eq 0 then begin
     str_element,tplot_vars,'options.verbose',verbose ; get default verbose value if it exists
 endif
+
+if size(/type,tagnames) eq 7 then begin
+  if size(/type,data) ne 8 then begin
+    dprint,dlevel=3,'Data must be a structure'
+    return
+  endif
+  tags = tag_names(data)
+  time = data.time
+  ok   = strfilter(tags,tagnames,delimiter=' ',/byte)
+  if ~keyword_set(seperator) then seperator = ''
+  nd = size(/n_elements,data)
+  for i=0,n_elements(tags)-1 do begin
+    if ok[i] eq 0 then continue
+    if tags[i] eq 'TIME' then continue
+    y = data.(i)
+    dimy = size(/n_dimen,y)
+    if dimy eq 2 || nd eq 1 then begin
+       y = transpose([y])
+;       dimy2 = size(/dimen,y)
+;       v = findgen(dimy2[1])
+    endif ;else undefine,v
+    dl=0
+    str_element,dlimits,tags[i],dl    
+    store_data,name+seperator+tags[i],time,y,v,append=append,dlimit=dl
+  endfor
+  return
+endif
+
 
 dprint,dlevel=5,verbose,/phelp
 
@@ -261,7 +293,7 @@ str_element,dstr,'time',value=time0
 if size(/type,time0) eq 10 then time0=*time0
 if n_elements(time0) ne 0 then begin                ; obsolete format of passing in an array of structures
     dq.dtype = 2
-    dprint, dlevel=1,'Obsolete storage method. May be disabled in the future'
+    dprint, dlevel=0,'Obsolete storage method. Use TAGNAMES keyword to use arrays of structures. May be disabled in the future'
     dq.trange = minmax(time0)
     dqtags = tag_names(*dq.dh)
     data_quants[index] = dq
@@ -271,10 +303,12 @@ if n_elements(time0) ne 0 then begin                ; obsolete format of passing
         if(ptr_valid(foo)) then begin ;there is a variable here, otherwise do nothing
             if ndimen(*foo) ne 1 then $
               if dimen((*foo)[0]) ne n_elements(time0) then $
-              if keyword_set(nostrsw) eq 0 then $
-              *foo = transpose(*foo)
-            store_data,subname,data={x: time0, y:foo}, $
-              dlimits=*dq.dl, limits=*dq.lh
+              if keyword_set(NOSTRSW) eq 0 then $
+                 *foo = transpose(*foo)
+            dl=0
+            str_element,dlimits,dqtags[i],dl              
+;  dprint,dlevel=2,phelp=3,subname,dl,foo,time0
+            store_data,subname,data={x: time0, y:foo},   dlimits= dl ;*dq.dl, limits=*dq.lh
         endif
     endif
 endif

@@ -117,8 +117,8 @@
 ;	Takuya Hara
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-11-18 13:06:38 -0800 (Tue, 18 Nov 2014) $
-; $LastChangedRevision: 16222 $
+; $LastChangedDate: 2015-01-27 15:31:46 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16757 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -450,13 +450,8 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
   stow[*] = 0
   IF keyword_set(mask) THEN BEGIN
      mobins = FLTARR(96, 2)
-     mdbins = [0., 0., 0., 1., 1., 1.]
-     mabins = REPLICATE(1., 16)
-
-     mobins[*, 1] = REFORM(mabins # mdbins, 96)
-     mobins[*, 0] = 1.
-     mobins[0:3, 0] = 0.
-     mobins[16:19, 0] = 0.
+     mobins[*, 1] = swe_sc_mask[*,0]  ; stowed boom
+     mobins[*, 0] = swe_sc_mask[*,1]  ; deployed boom
      i = WHERE(dat[idx].time LT t_mtx[2], cnt)
      IF cnt GT 0 THEN stow[i] = 1
      undefine, i, cnt
@@ -750,8 +745,8 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
 
      IF NOT keyword_set(pans) THEN pans = 'mvn_swe_pad_resample'
      store_data, pans, $
-                 data={x: result.time, y: data, v: TRANSPOSE(result.xax), nfactor: nfactor}, $
-                 dlim={spec: 1, yrange: [0., 180.], ystyle: 1, yticks: 6, yminor: 3, $
+                 data={x: result.time, y: data, v: TRANSPOSE(result.xax)}, $ ;, nfactor: nfactor}, $
+                 dlim={nfactor: nfactor, spec: 1, yrange: [0., 180.], ystyle: 1, yticks: 6, yminor: 3, $
                        ytitle: ytit, ysubtitle: '[deg]', ztitle: ztit, zlog: zlog, zrange: zrange}
 
   ENDIF 

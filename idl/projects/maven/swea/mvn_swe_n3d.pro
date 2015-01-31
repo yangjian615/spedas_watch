@@ -13,13 +13,14 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2015-01-27 12:08:43 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16747 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n3d.pro $
 ;
 ;-
 
-pro mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins, pans=pans, archive=archive
+pro mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, $
+                 pans=pans, archive=archive
 
   compile_opt idl2
 
@@ -36,7 +37,21 @@ pro mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins, pans=pans, archive=archi
     print,"No spacecraft potential.  Use mvn_swe_sc_pot."
     return
   endif
-  
+
+; Solid angle bin masking
+
+  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
+  if (n_elements(obins) ne 96) then begin
+    obins = replicate(1B, 96, 2)
+    obins[*,0] = reform(abins # dbins, 96)
+    obins[*,1] = obins[*,0]
+  endif else obins = byte(obins # [1B,1B])
+  if (size(mask_sc,/type) eq 0) then mask_sc = 1
+  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+
+; Process data
+
   if keyword_set(archive) then aflg = 1 else aflg = 0
     
   if (aflg) then t = swe_3d_arc.time else t = swe_3d.time
@@ -45,7 +60,8 @@ pro mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins, pans=pans, archive=archi
   
   for i=0L,(npts-1L) do begin
     ddd = mvn_swe_get3d(t[i],archive=aflg,units='eflux')
-    density[i] = swe_n_3d(ddd,ebins=ebins,abins=abins,dbins=dbins)
+    if (ddd.time gt t_mtx[2]) then boom = 1 else boom = 0
+    density[i] = swe_n_3d(ddd,ebins=ebins,obins=obins[*,boom])
   endfor
   
 ; Create TPLOT variables

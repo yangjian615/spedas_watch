@@ -16,6 +16,8 @@
 ;
 ;       CENTER:        Longitude and latitude of the center [lon, lat].
 ;
+;       MAP:           Mapping projection.  See plot3d_options for details.
+;
 ;       SPEC:          Plot energy spectra using spec3d.
 ;
 ;       UNITS:         Units for the spec3d.
@@ -58,9 +60,11 @@
 ;
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
+;       MASK_SC:       Mask solid angle bins that are blocked by the spacecraft.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2015-01-27 19:58:10 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16762 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -68,13 +72,32 @@
 pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  center=center, units=units, ddd=ddd, sum=sum, padmag=padmag, $
                  energy=energy, label=label, smo=smo, symdir=symdir, sundir=sundir, $
-                 symenergy=symenergy, symdiag=symdiag, power=pow
+                 symenergy=symenergy, symdiag=symdiag, power=pow, map=map, $
+                 abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
+
+  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
+  if (n_elements(obins) ne 96) then begin
+    obins = replicate(1B, 96, 2)
+    obins[*,0] = reform(abins # dbins, 96)
+    obins[*,1] = obins[*,0]
+  endif else obins = byte(obins # [1B,1B])
+  if (size(mask_sc,/type) eq 0) then mask_sc = 1
+  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+
+  omask = replicate(1.,96,2)
+  indx = where(obins eq 0B, count)
+  if (count gt 0L) then omask[indx] = !values.f_nan
+  omask = reform(replicate(1.,64) # reform(omask, 96*2), 64, 96, 2)
+
   if (size(units,/type) ne 7) then units = 'crate'
+  if (size(map,/type) ne 7) then map = 'ait'
+  plot3d_options, map=map
   
   case strupcase(units) of
     'COUNTS' : yrange = [1.,1.e5]
@@ -124,16 +147,26 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   endelse
   
   if keyword_set(sundir) then begin
+    t = [0D]
+    the = [0.]
+    phi = [0.]
     get_data,'Sun_MAVEN_SWEA_STOW',data=sun,index=i
-    if (i eq 0) then begin
-      print,"No sun direction!"
-      sundir = 0
-    endif else begin
-      xyz_to_polar, sun, theta=the, phi=phi, /ph_0_360
-      sun = {time:sun.x, the:the.y, phi:phi.y}
-      the = 0
-      phi = 0
-    endelse
+    if (i gt 0) then begin
+      t = [temporary(t), sun.x]
+      xyz_to_polar, sun, theta=th, phi=ph, /ph_0_360
+      the = [temporary(the), th]
+      phi = [temporary(phi), ph]
+    endif
+    get_data,'Sun_MAVEN_SWEA',data=sun,index=i
+    if (i gt 0) then begin
+      t = [temporary(t), sun.x]
+      xyz_to_polar, sun, theta=th, phi=ph, /ph_0_360
+      the = [temporary(the), th]
+      phi = [temporary(phi), ph]
+    endif
+    if (n_elements(t) gt 1) then begin
+      sun = {time:t[1L:*], the:the[1L:*], phi:phi[1L:*]}
+    endif else sundir = 0
   endif
 
 ; Put up snapshot window(s)
@@ -181,7 +214,9 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
     ddd = mvn_swe_get3d(trange,archive=aflg,all=doall,/sum,units=units)
 
     if (size(ddd,/type) eq 8) then begin
-    
+      data = ddd.data
+      if (ddd.time gt t_mtx[2]) then boom = 1 else boom = 0
+
       if keyword_set(energy) then begin
         n_e = n_elements(energy)
         ebins = intarr(n_e)
@@ -193,12 +228,12 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
       nbins = float(n_elements(ebins))
       
       if (dosmo) then begin
-        ddat = reform(ddd.data,64,16,6)
+        ddat = reform(data*omask[*,*,boom],64,16,6)
         dat = fltarr(64,32,6)
         dat[*,8:23,*] = ddat
         dat[*,0:7,*] = ddat[*,8:15,*]
         dat[*,24:31,*] = ddat[*,0:7,*]
-        dats = smooth(dat,nsmo)
+        dats = smooth(dat,nsmo,/nan)
         ddd.data = reform(dats[*,8:23,*],64,96)
       endif
 
@@ -232,8 +267,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
       
       if keyword_set(symdir) then begin
         de = min(abs(ddd.energy[*,0] - symenergy), sbin)
-        f = reform(ddd.data[sbin,*],16,6)
-        if (min(ddd.time) lt t_mtx[2]) then f[*,0:1] = 0.
+        f = reform(data[sbin,*],16,6)
         phi = (reform(ddd.phi[sbin,*],16,6))[*,0]
         the = (reform(ddd.theta[sbin,*],16,6))[0,*]
         

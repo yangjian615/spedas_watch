@@ -39,15 +39,17 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-12-10 16:47:06 -0800 (Wed, 10 Dec 2014) $
-;$LastChangedRevision: 16448 $
+;$LastChangedDate: 2015-01-29 17:18:52 -0800 (Thu, 29 Jan 2015) $
+;$LastChangedRevision: 16783 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_qf_list__define.pro $
 ;-----------------------------------------------------------------------------------
 
 
 function spd_qf_list::init, t_start=t_start, t_end=t_end, qf_bits=qf_bits
-  self.t_start = ptr_new(t_start)
-  self.t_end = ptr_new(t_end)
+  if undefined(t_start) then t_start = 0.0
+  if undefined(t_end) then t_end = 0.0
+  self.t_start = ptr_new(time_double(t_start))
+  self.t_end = ptr_new(time_double(t_end))
   self.qf_bits = ptr_new(qf_bits)
   return, 1
 end
@@ -220,10 +222,10 @@ function spd_qf_list::qf_sort
 end
 
 function spd_qf_list::qf_print
-  print, self.t_start()
-  print, self.t_end()
+  print, time_string(self.t_start())
+  print, time_string(self.t_end())
   print, self.qf_bits()
-  return, 1
+  return, ''
 end
 
 function spd_qf_list::count

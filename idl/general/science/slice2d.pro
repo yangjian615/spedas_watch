@@ -63,10 +63,31 @@
 ;       Modified from 'thm_esa_slice2d'
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2014-10-10 08:17:06 -0700 (Fri, 10 Oct 2014) $
-; $LastChangedRevision: 15972 $
+; $LastChangedDate: 2015-01-28 11:38:05 -0800 (Wed, 28 Jan 2015) $
+; $LastChangedRevision: 16771 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
+
+;- copied from 'thm_cal_rot' for non-THEMIS users
+function slice2d_cal_rot,v1,v2
+
+a=v1/(total(v1^2))^.5
+d=v2/(total(v2^2))^.5
+c=crossp(a,d)
+c=c/(total(c^2))^.5
+b=-crossp(a,c)
+b=b/(total(b^2))^.5
+
+rotinv = dblarr(3,3)
+rotinv(0,*) = a
+rotinv(1,*) = b
+rotinv(2,*) = c
+
+rot = invert(rotinv)
+ 
+return, rot
+end
+
 
 pro slice2d, dat, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrange=xrange, range=range, erange=erange, units=units, nozlog=nozlog, position=position, nofill=nofill, nlines=nlines, noolines=noolines, numolines=numolines, removezero=removezero, showdata=showdata, vel=vel, nogrid=nogrid, nosmooth=nosmooth, sundir=sundir, novelline=novelline, subtract=subtract, resolution=resolution, isotropic=isotropic
 
@@ -157,12 +178,11 @@ endelse
 if rotation ne 'xy' and rotation ne 'xz' and rotation ne 'yz' then begin
    if tag_exist(dat2,'magf') eq 1 then begin
       bvec = dat2.magf
-      if total(bvec^2) ne 0 then begin
+      if total(bvec^2) ne 0 and total(finite(bvec)) eq 3 then begin
          dprint,'Magntic field is taken from MAGF tag in the data structure'
          dprint,'bvec =',bvec
       endif else begin
-         dprint,'MAGF tag in the data structure is [0,0,0]!!!'
-         dprint,'Set a valid magnetic field vector'
+         dprint,'Invalid MAGF:',bvec
          return
       endelse
    endif else begin
@@ -226,22 +246,22 @@ endelse
 
 
 ;=== rotation to the required frame of reference ===
-if rotation eq 'BV' then rot = thm_cal_rot( bvec, vvec )
-if rotation eq 'BE' then rot = thm_cal_rot( bvec, crossp(bvec,vvec) )
-if rotation eq 'xy' then rot = thm_cal_rot( [1,0,0], [0,1,0] )
-if rotation eq 'xz' then rot = thm_cal_rot( [1,0,0], [0,0,1] )
-if rotation eq 'yz' then rot = thm_cal_rot( [0,1,0], [0,0,1] )
+if rotation eq 'BV' then rot = slice2d_cal_rot( bvec, vvec )
+if rotation eq 'BE' then rot = slice2d_cal_rot( bvec, crossp(bvec,vvec) )
+if rotation eq 'xy' then rot = slice2d_cal_rot( [1,0,0], [0,1,0] )
+if rotation eq 'xz' then rot = slice2d_cal_rot( [1,0,0], [0,0,1] )
+if rotation eq 'yz' then rot = slice2d_cal_rot( [0,1,0], [0,0,1] )
 if rotation eq 'perp' then begin
-   rot = thm_cal_rot( crossp(crossp(bvec,vvec),bvec), crossp(bvec,vvec) )
+   rot = slice2d_cal_rot( crossp(crossp(bvec,vvec),bvec), crossp(bvec,vvec) )
 endif
 if rotation eq 'perp_xy' then begin
-   rot = thm_cal_rot( crossp(crossp(bvec,[1,0,0]),bvec), crossp(crossp(bvec,[0,1,0]),bvec) )
+   rot = slice2d_cal_rot( crossp(crossp(bvec,[1,0,0]),bvec), crossp(crossp(bvec,[0,1,0]),bvec) )
 endif
 if rotation eq 'perp_xz' then begin
-   rot = thm_cal_rot( crossp(crossp(bvec,[1,0,0]),bvec), crossp(crossp(bvec,[0,0,1]),bvec) )
+   rot = slice2d_cal_rot( crossp(crossp(bvec,[1,0,0]),bvec), crossp(crossp(bvec,[0,0,1]),bvec) )
 endif
 if rotation eq 'perp_yz' then begin
-   rot = thm_cal_rot( crossp(crossp(bvec,[0,1,0]),bvec), crossp(crossp(bvec,[0,0,1]),bvec) )
+   rot = slice2d_cal_rot( crossp(crossp(bvec,[0,1,0]),bvec), crossp(crossp(bvec,[0,0,1]),bvec) )
 endif
 
 newdata.v = newdata.v # rot

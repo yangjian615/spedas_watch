@@ -13,8 +13,8 @@
 ;	DATA_VERSION: Data version to put in file (default = '1')
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-10-28 11:45:50 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16058 $
+; $LastChangedDate: 2015-01-29 07:11:38 -0800 (Thu, 29 Jan 2015) $
+; $LastChangedRevision: 16776 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_swic_cdf.pro $
 ;
 ;-
@@ -104,8 +104,14 @@ cdf_attput,fileid,'Parents',0,'None'
 cdf_attput,fileid,'PDS_collection_id',0,'urn:nasa:pds:maven.swia.calibrated:data.coarse_'+tail+'_3d'
 cdf_attput,fileid,'PDS_start_time',0,time_string(data[0].time_unix,tformat = 'YYYY-MM-DDThh:mm:ss.fffZ')
 cdf_attput,fileid,'PDS_stop_time',0,time_string(data[nrec-1].time_unix,tformat = 'YYYY-MM-DDThh:mm:ss.fffZ')
-cdf_attput,fileid,'PDS_sclk_start_count',0,data[0].time_met
-cdf_attput,fileid,'PDS_sclk_stop_count',0,data[nrec-1].time_met
+
+etstart = time_ephemeris(data[0].time_unix)
+etend = time_ephemeris(data[nrec-1].time_unix)
+cspice_sce2c,-202,etstart,sclkdp0
+cspice_sce2c,-202,etend,sclkdp1
+
+cdf_attput,fileid,'PDS_sclk_start_count',0,sclkdp0
+cdf_attput,fileid,'PDS_sclk_stop_count',0,sclkdp1
 
 
 dummy = cdf_attcreate(fileid,'FIELDNAM',/variable_scope)

@@ -9,25 +9,37 @@
 ;	mvn_swe_n1d
 ;INPUTS: 
 ;KEYWORDS:
-;   PANS:   Named variable to return tplot panels created.
+;   PANS:     Named variable to return tplot panels created.
 ;
-;   DDD:    Calculate density from 3D distributions (allows bin
-;           masking).  Typically lower cadence and coarser energy
-;           resolution.
+;   DDD:      Calculate density from 3D distributions (allows bin
+;             masking).  Typically lower cadence and coarser energy
+;             resolution.
 ;
-;   ABINS:  Anode bin mask -> 16 elements (0 = off, 1 = on)
+;   ABINS:    Anode bin mask -> 16 elements (0 = off, 1 = on)
+;             Default = replicate(1,16)
 ;
-;   DBINS:  Deflector bin mask -> 6 elements (0 = off, 1 = on)
+;   DBINS:    Deflector bin mask -> 6 elements (0 = off, 1 = on)
+;             Default = replicate(1,6)
+;
+;   OBINS:    3D solid angle bin mask -> 96 elements (0 = off, 1 = on)
+;             Default = reform(ABINS # DBINS)
+;
+;   MASK_SC:  Mask the spacecraft blockage.  Takes precedence over OBINS.
+;             Default = 1 (yes).  Set this to 0 to disable and use the
+;             above 3 keywords instead.
+;
+;   MINDEN:   Smallest reliable density (cm-3).  Default = 0.08
 ;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-24 14:37:37 -0800 (Sat, 24 Jan 2015) $
-; $LastChangedRevision: 16727 $
+; $LastChangedDate: 2015-01-27 12:08:22 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16746 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-
-pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom, minden=minden
+pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, $
+                 mom=mom, minden=minden
 
   compile_opt idl2
 
@@ -49,8 +61,15 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom, minden=m
       print,"No 3D data."
       return
     endif
-    if not keyword_set(abins) then abins = replicate(1B, 16)
-    if not keyword_set(dbins) then dbins = replicate(1B, 6)
+    if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+    if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
+    if (n_elements(obins) ne 96) then begin
+      obins = replicate(1B, 96, 2)
+      obins[*,0] = reform(abins # dbins, 96)
+      obins[*,1] = obins[*,0]
+    endif else obins = byte(obins # [1B,1B])
+    if (size(mask_sc,/type) eq 0) then mask_sc = 1
+    if keyword_set(mask_sc) then obins = swe_sc_mask * obins
    
     t = swe_3d.time
     npts = n_elements(t)
@@ -58,10 +77,6 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom, minden=m
     temp = dens
     dsig = dens
     tsig = dens
-    obins = reform(abins # dbins, 96)
-    ondx = where(obins eq 1B, ocnt)
-    onorm = float(ocnt)
-    obins = replicate(1B, 64) # obins
 
     energy = fltarr(64, npts)
     eflux = energy
@@ -74,11 +89,16 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, mom=mom, minden=m
       counts = ddd.data
       var = ddd.var
       ddd = conv_units(ddd,'eflux')
+
+      if (ddd.time gt t_mtx[2]) then boom = 1 else boom = 0
+      ondx = where(obins[*,boom] eq 1B, ocnt)
+      onorm = float(ocnt)
+      obins_b = replicate(1B, 64) # obins[*,boom]
       
       energy[*,i] = ddd.energy[*,0]
-      eflux[*,i] = total(ddd.data*obins,2)/onorm
-      cnts[*,i] = total(counts*obins,2)
-      sig2[*,i] = total(var*obins,2)
+      eflux[*,i] = total(ddd.data*obins_b,2)/onorm
+      cnts[*,i] = total(counts*obins_b,2)
+      sig2[*,i] = total(var*obins_b,2)
       sc_pot[i] = ddd.sc_pot
     endfor
 

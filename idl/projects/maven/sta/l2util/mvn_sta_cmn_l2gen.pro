@@ -131,8 +131,8 @@ End
 ; 6-nov-2014, jmm, Corrects clock drift 
 ; 22-dec-2014, jmm, added eprom_ver and header
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-23 11:07:39 -0800 (Fri, 23 Jan 2015) $
-; $LastChangedRevision: 16715 $
+; $LastChangedDate: 2015-01-29 13:37:44 -0800 (Thu, 29 Jan 2015) $
+; $LastChangedRevision: 16778 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -167,10 +167,10 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
                 PI_name:'J. P. McFadden', $
                 PI_affiliation:'U.C. Berkeley Space Sciences Laboratory', $
                 PDS_collection_id:'MAVEN', $
-                PDS_sclk_start_count:'YYYY-MM-DDThh:mm:ss.sssZ', $
-                PDS_sclk_stop_count:'YYYY-MM-DDThh:mm:ss.sssZ', $
-                PDS_start_time:'', $
-                PDS_stop_time:'', $
+                PDS_sclk_start_count:0.0d0, $
+                PDS_sclk_stop_count:0.0d0, $
+                PDS_start_time:'YYYY-MM-DDThh:mm:ss.sssZ', $
+                PDS_stop_time:'YYYY-MM-DDThh:mm:ss.sssZ', $
                 Planet:'Mars', $
                 Project:'MAVEN', $
                 Rules_of_use:'Open Data for Scientific Use' , $
@@ -719,10 +719,12 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 ;times for PDS attributes
   PDS_time = time_string(minmax(center_time), tformat='YYYY-MM-DDThh:mm:ss.fffZ')
   PDS_met =  mvn_spc_met_to_unixtime(minmax(center_time), /reverse)
-  global_att.PDS_sclk_start_count = pds_time[0]
-  global_att.PDS_sclk_stop_count = pds_time[1]
-  global_att.PDS_start_time = string(pds_met[0])
-  global_att.PDS_stop_time = string(pds_met[1])
+  PDS_etime = time_ephemeris(minmax(center_time))
+  cspice_sce2c, -202, PDS_etime, PDS_sclk
+  global_att.PDS_sclk_start_count = pds_sclk[0]
+  global_att.PDS_sclk_stop_count = pds_sclk[1]
+  global_att.PDS_start_time = pds_time[0]
+  global_att.PDS_stop_time = pds_time[1]
 
   otp_struct = {filename:'', g_attributes:global_att, inq:inq, nv:nvars, vars:vstr}
 
@@ -762,3 +764,4 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 
   Return
 End
+>

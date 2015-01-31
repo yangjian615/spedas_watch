@@ -26,8 +26,8 @@
 ;    
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-07 18:02:14 -0800 (Fri, 07 Feb 2014) $
-;$LastChangedRevision: 14210 $
+;$LastChangedDate: 2015-01-28 10:33:29 -0800 (Wed, 28 Jan 2015) $
+;$LastChangedRevision: 16765 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_support.pro $
 ;-
 
@@ -87,7 +87,7 @@ pro thm_pgs_clean_support, times, $
       del_data, sc_pot_temp
       dprint,'Using "' + sc_pot_tvar_in + '" as spacecraft potential for particle calculations.',dlevel=1 
     endif else begin
-      dprint, dlevel=1, 'Spacecraft potential tplot variable not found: '+sc_pot_tvar_in
+      dprint, dlevel=1, 'Spacecraft potential tplot variable not found: '+sc_pot_tvar_in + '. No spacecraft potential will be used in calibrations.
     endelse
   endif else begin
     dprint, dlevel=1, 'No spacecraft potential specified.  No spacecraft potential will be used in calibrations.'

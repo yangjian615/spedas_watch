@@ -13,8 +13,8 @@
 ;     a6:       fast housekeeping
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-26 17:16:36 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16322 $
+; $LastChangedDate: 2015-01-27 12:07:28 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16745 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_com.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-03-18
@@ -30,7 +30,7 @@ common swe_dat, swe_3d_struct, swe_pad_struct, swe_engy_struct, swe_mag_struct, 
 common swe_cal, decom, swe_v, swe_t, swe_ne, swe_dt, swe_duty, swe_gf, swe_swp, $
                 swe_de, swe_el, swe_del, swe_az, swe_daz, swe_Ka, swe_dead, $
                 swe_integ_t, swe_padlut, swe_mcp_eff, swe_rgf, swe_dgf, devar, $
-                mass_e, swe_min_dtc
+                mass_e, swe_min_dtc, swe_sc_mask
 
 common swe_cfg, mvn_swe_version, t_swp, t_mtx, t_dsf, t_mcp, t_cfg
 

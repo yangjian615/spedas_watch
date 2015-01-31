@@ -25,16 +25,17 @@
 ;	QFILT: Quantity to filter plots by
 ;	QRANGE: Range of quantity to filter plots by
 ;	PLOTNORM: Plot histogram of event density (only works for scalar)
+;	STDDEV: Plot standard deviation instead of average (only works for scalar)
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-14 06:35:34 -0800 (Wed, 14 Jan 2015) $
-; $LastChangedRevision: 16651 $
+; $LastChangedDate: 2015-01-27 12:03:04 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16743 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
 
-pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm, plotnorm = plotnorm
+pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm, plotnorm = plotnorm, stddev = stddev
 
 
 RM = 3397.
@@ -152,12 +153,16 @@ if keyword_set(qfilt) then begin
 endif
 
 binxy = fltarr(nbx,nby,3) 
+binxy2 = fltarr(nbx,nby,3)
 normxy = fltarr(nbx,nby)
 binxz = fltarr(nbx,nbz,3)
+binxz2 = fltarr(nbx,nbz,3)
 normxz = fltarr(nbx,nbz)
 bincyl = fltarr(nbx,nby,3)
+bincyl2 = fltarr(nbx,nby,3)
 normcyl = fltarr(nbx,nby)
 binyz = fltarr(nby,nbz,3)
+binyz2 = fltarr(nby,nbz,3)
 normyz = fltarr(nby,nbz)
 
 i1 = floor(xmse-xrange[0])/dx
@@ -168,12 +173,16 @@ i4 = floor(sqrt(ymse^2+zmse^2)-rrange[0])/dr
 for i = 0,nel-1 do begin
 	if finite(pq[i]) then begin
 		binxy[i1[i],i2[i],0] = binxy[i1[i],i2[i],0] + pq[i]
+		binxy2[i1[i],i2[i],0] = binxy2[i1[i],i2[i],0] + (pq[i])^2
 		normxy[i1[i],i2[i]] = normxy[i1[i],i2[i]] + 1
 		binxz[i1[i],i3[i],0] = binxz[i1[i],i3[i],0] + pq[i]
+		binxz2[i1[i],i3[i],0] = binxz2[i1[i],i3[i],0] + (pq[i])^2
 		normxz[i1[i],i3[i]] = normxz[i1[i],i3[i]] + 1
 		bincyl[i1[i],i4[i],0] = bincyl[i1[i],i4[i],0] + pq[i]
+		bincyl2[i1[i],i4[i],0] = bincyl2[i1[i],i4[i],0] + (pq[i])^2
 		normcyl[i1[i],i4[i]] = normcyl[i1[i],i4[i]] + 1
 		binyz[i2[i],i3[i],0] = binyz[i2[i],i3[i],0] + pq[i]
+		binyz2[i2[i],i3[i],0] = binyz2[i2[i],i3[i],0] + (pq[i])^2
 		normyz[i2[i],i3[i]] = normyz[i2[i],i3[i]] + 1
 
 		if ptype eq 'vector' then begin
@@ -193,6 +202,10 @@ binxy[*,*,0] = binxy[*,*,0]/(normxy>1)
 binxz[*,*,0] = binxz[*,*,0]/(normxz>1)
 bincyl[*,*,0] = bincyl[*,*,0]/(normcyl>1)
 binyz[*,*,0] = binyz[*,*,0]/(normyz>1)
+binxy2[*,*,0] = binxy2[*,*,0]/(normxy>1)
+binxz2[*,*,0] = binxz2[*,*,0]/(normxz>1)
+bincyl2[*,*,0] = bincyl2[*,*,0]/(normcyl>1)
+binyz2[*,*,0] = binyz2[*,*,0]/(normyz>1)
 binxy[*,*,1] = binxy[*,*,1]/(normxy>1)
 binxz[*,*,1] = binxz[*,*,1]/(normxz>1)
 bincyl[*,*,1] = bincyl[*,*,1]/(normcyl>1)
@@ -218,6 +231,13 @@ w = where(normcyl eq 0)
 bincyl[w] = !values.d_nan
 bincyl[w+1L*nbx*nby] = !values.d_nan
 bincyl[w+2L*nbx*nby] = !values.d_nan
+
+
+stdxy = sqrt(binxy2-binxy^2)
+stdxz = sqrt(binxz2-binxz^2)
+stdcyl = sqrt(bincyl2-bincyl^2)
+stdyz = sqrt(binyz2-binyz^2)
+
 
 if not keyword_set(prange) then prange = [min(bincyl,/nan),max(bincyl,/nan)]
 xp = xrange[0]+findgen(nbx)*dx + dx/2.
@@ -293,6 +313,12 @@ if ptype eq 'scalar' then begin
 		binxy[*,*,0] = normxy
 		binxz[*,*,0] = normxz
 		binyz[*,*,0] = normyz
+	endif
+	if keyword_set(stddev) then begin
+		binxy = stdxy
+		binxz = stdxz
+		binyz = stdyz
+		bincyl = stdcyl
 	endif
 	
 	window,0

@@ -52,8 +52,12 @@
 ;
 ;   OBINS:     When using 3D spectra, specify which solid angle bins to
 ;              include in the analysis: 0 = no, 1 = yes.
-;              Takes precedence over ABINS and DBINS.  No default, but
-;              must have 96 elements.
+;              Default = reform(ABINS#DBINS,96).  Takes precedence over
+;              ABINS and OBINS.
+;
+;   MASK_SC:   Mask the spacecraft blockage.  This is in addition to any
+;              masking specified by the above three keywords.
+;              Default = 1 (yes).
 ;
 ;   PANS:      Named varible to hold the tplot panels created.
 ;
@@ -64,14 +68,15 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-24 14:40:03 -0800 (Sat, 24 Jan 2015) $
-; $LastChangedRevision: 16729 $
+; $LastChangedDate: 2015-01-28 12:38:48 -0800 (Wed, 28 Jan 2015) $
+; $LastChangedRevision: 16773 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
 pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
-                    pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins
+                    pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
+                    mask_sc=mask_sc
 
   compile_opt idl2
   
@@ -91,25 +96,36 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
   erange = minmax(float(erange))
   if not keyword_set(fudge) then fudge = 1.
   if keyword_set(ddd) then dflg = 1 else dflg = 0
-  if not keyword_set(abins) then abins = replicate(1B, 16)
-  if not keyword_set(dbins) then dbins = replicate(1B, 6)
+
+  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
+  if (n_elements(obins) ne 96) then begin
+    obins = replicate(1B, 96, 2)
+    obins[*,0] = reform(abins # dbins, 96)
+    obins[*,1] = obins[*,0]
+  endif else obins = byte(obins # [1B,1B])
+  if (size(mask_sc,/type) eq 0) then mask_sc = 1
+  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+
   if (size(thresh,/type) eq 0) then thresh = 0.05
   if (size(dEmax,/type) eq 0) then dEmax = 4.
   
   if (dflg) then begin
     t = swe_3d.time
     npts = n_elements(t)
-    if (n_elements(obins) ne 96) then obins = reform(abins # dbins, 96)
-    indx = where(obins eq 1B, ocnt)
-    onorm = float(ocnt)
-    obins = replicate(1B, 64) # obins
     e = fltarr(64,npts)
     f = e
     
     for i=0L,(npts-1L) do begin
       ddd = mvn_swe_get3d(t[i], units='eflux')
+
+      if (ddd.time gt t_mtx[2]) then boom = 1 else boom = 0
+      ondx = where(obins[*,boom] eq 1B, ocnt)
+      onorm = float(ocnt)
+      obins_b = replicate(1B, 64) # obins[*,boom]
+
       e[*,i] = ddd.energy[*,0]
-      f[*,i] = total(ddd.data * obins, 2)/onorm
+      f[*,i] = total(ddd.data * obins_b, 2)/onorm
     endfor
 
   endif else begin

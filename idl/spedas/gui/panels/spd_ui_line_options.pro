@@ -15,30 +15,18 @@
  ;
  ;
  ;HISTORY:
- ;$LastChangedBy: jimm $
- ;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
- ;$LastChangedRevision: 14326 $
+ ;$LastChangedBy: nikos $
+ ;$LastChangedDate: 2015-01-28 16:44:01 -0800 (Wed, 28 Jan 2015) $
+ ;$LastChangedRevision: 16774 $
  ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_line_options.pro $
  ;
  ;---------------------------------------------------------------------------------
  
- ; Get settings of current trace and set widgets to reflect current settings
- 
- ;pro spd_ui_line_options_show_hide, tlb, state=state, show_or_hide=1
- ; if show_or_hide then
- ;   state.statusBar->Update, 'Line Options: Show Line turned on.'
- ; else
- ;   state.statusBar->Update, 'Line Options: Show Line turned off.'
- ; endif
- ;if event.select then state.statusBar->Update, 'Line Options: Show Line turned on.' $
- ;else state.statusBar->Update, 'Line Options: Show Line turned off.'
- 
- ;end
- 
+
  ; The following function spd_ui_line_options_show_hide
  ; enables (show_or_hide=1) or disables (show_or_hide=0) the line options
  pro spd_ui_line_options_show_hide, tlb, state, show_or_hide
-   lineMirrorButtonid = widget_info(tlb, find_by_uname='mirror')
+   ;lineMirrorButtonid = widget_info(tlb, find_by_uname='mirror')
    lpaletteButtonid = widget_info(tlb, find_by_uname='palette')
    linestyleDroplistid = widget_info(tlb, find_by_uname='linestyle')
    lineThickIncrementid = widget_info(tlb, find_by_uname='thickness')
@@ -46,14 +34,14 @@
    
    if show_or_hide   then begin
      state.statusBar->Update, 'Line Options: Show Line turned on.'
-     widget_control, lineMirrorButtonid, sensitive=1
+     ;widget_control, lineMirrorButtonid, sensitive=1
      widget_control, lpaletteButtonid, sensitive=1
      widget_control, linestyleDroplistid, sensitive=1
      widget_control, lineThickIncrementid, sensitive=1
      widget_control, drawButtonBaseid, sensitive=1
    endif else begin
      state.statusBar->Update, 'Line Options: Show Line turned off.'
-     widget_control, lineMirrorButtonid, sensitive=0
+     ;widget_control, lineMirrorButtonid, sensitive=0
      widget_control, lpaletteButtonid, sensitive=0
      widget_control, linestyleDroplistid, sensitive=0
      widget_control, lineThickIncrementid, sensitive=0
@@ -127,9 +115,9 @@
    widget_control, id, set_button = value
    spd_ui_line_options_show_hide, tlb, state, value
    
-   id = widget_info(tlb, find_by_uname = 'mirror')
-   *state.ctrace->GetProperty, mirrorline=value
-   widget_control, id, set_button = value
+;   id = widget_info(tlb, find_by_uname = 'mirror')
+;   *state.ctrace->GetProperty, mirrorline=value
+;   widget_control, id, set_button = value
    
    ; intialize color window
    *state.ctrace->GetProperty, LineStyle=lineStyleObj
@@ -240,88 +228,7 @@
    id = widget_info(tlb, find_by_uname = 'drawtext')
    *state.ctrace->GetProperty, SeparatedBy=value
    widget_control, id, set_value = strcompress(string(value), /remove_all)
-   
-   ;****** Line Bar **************************************************************
-   ;  id = widget_info(tlb, find_by_uname = 'negative')
-   ;  *state.ctrace->GetProperty, negativeEndPt=value
-   ;  value = where(state.dataNames eq value, n)
-   ;  if n gt 0 then begin
-   ;    widget_control, id, set_combobox_select=value
-   ;  endif else begin
-   ;    widget_control, id, set_combobox_select=0
-   ;  endelse
-   
-   ;  id = widget_info(tlb, find_by_uname = 'positive')
-   ;  *state.ctrace->GetProperty, positiveEndPt=value
-   ;  value = where(state.dataNames eq value, n)
-   ;  if n gt 0 then begin
-   ;    widget_control, id, set_combobox_select=value
-   ;  endif else begin
-   ;    widget_control, id, set_combobox_select=0
-   ;  endelse
-   
-   ;  id = widget_info(tlb, find_by_uname = 'relnegative')
-   ;  *state.ctrace->GetProperty, negativeEndRel=value
-   ;  widget_control, id, set_button = value
-   ;
-   ;  id = widget_info(tlb, find_by_uname = 'relpositive')
-   ;  *state.ctrace->GetProperty, positiveEndRel=value
-   ;  widget_control, id, set_button = value
-   
-   ;  id = widget_info(tlb, find_by_uname = 'showbar')
-   ;  *state.ctrace->GetProperty, BarLine=BarLineObj
-   ;  BarLineObj->GetProperty, Show=value
-   ;  widget_control, id, set_button = value
-   
-   
-   
-   ;****** Line Bar Line Style ***************************************************
-   ;  id = widget_info(tlb, find_by_uname = 'lsthickness')
-   ;  *state.ctrace->GetProperty, BarLine=lineStyleObj
-   ;  lineStyleObj->GetProperty, Thickness=value
-   ;  widget_control, id, set_value = value
-   
-   ; intialize color window
-   ;  *state.ctrace->GetProperty, BarLine=lineStyleObj
-   ;  lineStyleObj->GetProperty, Color=value
-   ;  Widget_Control, state.lscolorWindow, Get_Value=lscolorWin
-   ;  if obj_valid(scene) then scene->remove,/all
-   ;  scene=obj_new('IDLGRSCENE', color=value)
-   ;  lscolorWin->draw, scene
-   
-   
-   ;****** Line Bar End Mark *****************************************************
-   ;  id = widget_info(tlb, find_by_uname = 'emthickness')
-   ;  *state.ctrace->GetProperty, MarkSymbol=lineStyleObj
-   ;  lineStyleObj->GetProperty, Thickness=value
-   ;  widget_control, id, set_value = value
-   
-   ; intialize color window
-   ;  *state.ctrace->GetProperty, MarkSymbol=lineStyleObj
-   ;  lineStyleObj->GetProperty, Color=value
-   ;  Widget_Control, state.mcolorWindow, Get_Value=mcolorWin
-   ;  if obj_valid(scene) then scene->remove,/all
-   ;  scene=obj_new('IDLGRSCENE', color=value)
-   ;  mcolorWin->draw, scene
-   
-   ;  *state.ctrace->GetProperty, BarLine=barline
-   ;  IF Obj_Valid(BarLine) THEN BEGIN
-   ;     barLine->GetProperty, Show=show
-   ;     IF show EQ 1 THEN BEGIN
-   ;       Widget_Control, state.endFrameBase, Sensitive=1
-   ;       Widget_Control, state.styleFrameBase, Sensitive=1
-   ;       Widget_Control, state.endMarkFrameBase, Sensitive=1
-   ;     ENDIF ELSE BEGIN
-   ;       Widget_Control, state.endFrameBase, Sensitive=0
-   ;       Widget_Control, state.styleFrameBase, Sensitive=0
-   ;       Widget_Control, state.endMarkFrameBase, Sensitive=0
-   ;     ENDELSE
-   ;  ENDIF ELSE BEGIN
-   ;    Widget_Control, state.endFrameBase, Sensitive=0
-   ;    Widget_Control, state.styleFrameBase, Sensitive=0
-   ;    Widget_Control, state.endMarkFrameBase, Sensitive=0
-   ;  ENDELSE
-   
+      
    if ~statedef then Widget_Control, tlb, Set_UValue=state, /No_Copy   ;Only put STATE if it was not passed in.
  end
  
@@ -455,6 +362,39 @@
    
  end
  
+ pro  spd_ui_line_options_applyall, ctrace, ctraces, applyall_error=applyall_error
+ ; applies all values from current line to all lines of current panel
+ ; values applied are: line thickness, show line, show symbol, symbol size, symbol filled, symbol frequency, gapsize
+ ; operates by copying from current line to all other lines of the same panel
+  
+  ntr = n_elements(ctraces)
+  if ntr lt 2 then begin 
+    applyall_error = 1
+    return
+  endif else applyall_error = 0
+  
+  ; Get values of current line
+  ctrace->GetProperty, LineStyle=lineStyleObj0, symbol=symbolObj0, $
+    PlotPoints=read_plotpoints, EveryOther=read_every, drawBetweenPts=read_drawbetween, SeparatedUnits=read_sepU, SeparatedBy=read_sepBy
+  lineStyleObj0->GetProperty, Thickness=read_thickness, Show=read_show  
+  symbolObj0->GetProperty, show=read_symbshow, size=read_size, fill=read_fill
+    
+  ; Set values of all lines  
+  for i=0,ntr-1 do begin 
+     if obj_valid((ctraces)[i]) then begin
+       ctracen=(ctraces)[i]
+       
+       ctracen->GetProperty, LineStyle=lineStyleObj, symbol=symbolObj
+       lineStyleObj->SetProperty, Thickness=read_thickness, Show=read_show       
+       symbolObj->SetProperty, show=read_symbshow, size=read_size, fill=read_fill       
+       
+       ctracen->SetProperty, PlotPoints=read_plotpoints, $
+        EveryOther=read_every, drawBetweenPts=read_drawbetween, SeparatedUnits=read_sepU, SeparatedBy=read_sepBy
+     endif
+  endfor
+ 
+ end
+ 
  
  PRO spd_ui_line_options_event, event
  
@@ -570,24 +510,6 @@
            state.statusBar->Update, 'Separated by values must be positive.'
          endif else state.statusBar->update, 'Invalid Separated By value, please re-enter.'
        END
-       'SETALL': BEGIN
-         ; check spinner entries are valid
-         spd_ui_line_options_check_spinners, *state.ctrace,state.tlb
-         widget_control, state.drawText, get_value=sepBy
-         result = Widget_Info(state.drawButtonButton, /Button_Set)
-         *state.ctrace->GetProperty, SeparatedUnits=sepU
-         if obj_valid((*state.ctraces)[0]) then begin
-           ntr = n_elements(*state.ctraces)
-           for i=0,ntr-1 do begin
-             ctrace=(*state.ctraces)[i]
-             ctrace->SetProperty, drawBetweenPts=result, SeparatedUnits=sepU, $
-               SeparatedBy=sepBy
-           endfor
-           state.statusBar->Update, 'Draw Between settings set for all traces in panel.'
-         endif
-       END
-       ;**************************************************************************
-       
        
        ;****** Line Options ******************************************************
        'LINESTYLE': BEGIN
@@ -768,12 +690,7 @@
              state.statusBar->Update, 'Symbol Options: Size updated.'
            ENDELSE
          endif else if finite(event.value, /nan) then begin
-           state.statusBar->update, 'Invalid symbol size, please re-enter.'
-         ; delay handling
-         ;IF Obj_Valid(symbolObj) THEN begin
-         ;     symbolObj->GetProperty, Size=prevsize
-         ;     widget_control,event.id,set_value=prevsize
-         ;endif else widget_control,event.id,set_value=''
+           state.statusBar->update, 'Invalid symbol size, please re-enter.'        
          endif else begin
            state.statusBar->update, 'Size values must be positive.'
          endelse
@@ -845,8 +762,8 @@
          if ptr_valid(state.ctrace) && obj_valid(*state.ctrace) then begin
            ; check spinner entries are valid
            spd_ui_line_options_check_spinners, *state.ctrace,state.tlb
-           ;Sync labels:      	;
-           ;      	*state.cpanel->GetProperty, SyncFlag=syncflag
+           ;Sync labels:        ;
+           ;        *state.cpanel->GetProperty, SyncFlag=syncflag
            if ptr_valid(state.cpanel) && obj_valid(*state.cpanel) then begin
              *state.cpanel->SyncLabelsToLines
            endif
@@ -861,6 +778,53 @@
          endelse
          
        END
+       'APPLYTOALL': BEGIN
+        
+         if ptr_valid(state.ctrace) && obj_valid(*state.ctrace) then begin
+           ; check spinner entries are valid
+           spd_ui_line_options_check_spinners, *state.ctrace,state.tlb
+           
+           spd_ui_line_options_applyall, *state.ctrace, *state.ctraces, applyall_error=applyall_error
+           
+           
+           ;Sync labels:        ;
+           if ptr_valid(state.cpanel) && obj_valid(*state.cpanel) then begin
+             *state.cpanel->SyncLabelsToLines
+           endif
+           
+           state.drawObject->update,state.windowStorage,state.loadedData
+           state.drawObject->draw
+
+           if applyall_error eq 1 then begin
+            state.historyWin->Update, 'SPD_UI_LINE_OPTIONS: This panel contains no lines to copy changes to.'
+            state.statusBar->Update, 'This panel contains no lines to copy changes to.'            
+           endif else begin
+             state.historyWin->Update, 'SPD_UI_LINE_OPTIONS: Changes applied to all lines.'
+             state.statusBar->Update, 'Changes applied to all lines.'            
+           endelse
+         endif else begin
+           state.historywin->update,'No Traces Available, changes could not be applied'
+           state.statusBar->update,'No Traces Available, changes could not be applied'
+         endelse       
+        
+        END
+        'SETALL': BEGIN
+          ; check spinner entries are valid
+          spd_ui_line_options_check_spinners, *state.ctrace,state.tlb
+          widget_control, state.drawText, get_value=sepBy
+          result = Widget_Info(state.drawButtonButton, /Button_Set)
+          *state.ctrace->GetProperty, SeparatedUnits=sepU
+          if obj_valid((*state.ctraces)[0]) then begin
+            ntr = n_elements(*state.ctraces)
+            for i=0,ntr-1 do begin
+              ctrace=(*state.ctraces)[i]
+              ctrace->SetProperty, drawBetweenPts=result, SeparatedUnits=sepU, $
+                SeparatedBy=sepBy
+            endfor
+            state.statusBar->Update, 'Draw Between settings set for all traces in panel.'
+          endif
+        END
+        ;**************************************************************************
        'CANC': BEGIN
          state.origWindow->GetProperty, panels=origPanels
          state.cWindow->SetProperty, panels=origPanels
@@ -1047,9 +1011,6 @@
    subMainLineBase = Widget_Base(Dummy_Base, /col, frame=3)
    traceBase = Widget_Base(submainlineBase, /col)
    subMainLineBase = widget_base(submainlinebase, /col, space=0)
-   ;    SubMainLineBaseRight = Widget_Base(Dummy_Base, /col) ;jmm, 25-feb-2009
-   ;    axisBase = Widget_Base(subMainLineBase, /Row)
-   ;    main1Base = Widget_Base(SubMainLineBase, /Row)
    col1Base1 = Widget_Base(submainlineBase, /Col)
    optionsBase = Widget_Base(col1Base1, /Row)
    c1Base = Widget_Base(optionsBase, /col)
@@ -1059,19 +1020,7 @@
    lineOptionsBase = Widget_Base(r1c1Base, /Col)
    symbolOptionsBase = Widget_Base(r1c1Base, /Col)
    frequencyBase = Widget_Base(c2Base, /Col)
-   ;        plotOptionsBase = Widget_Base(col1Base1, /Col)
    drawBase = Widget_Base(r2c1Base, /Col, frame = 3, uname='drawButtonBase')
-   ;setallBase = Widget_Base(mainlinebase, /row, /align_center)
-   ;    main2base = Widget_base(SubMainLineBaseRight, /Col)
-   ;      col1Base2 = Widget_Base(main2Base, /Col)
-   ;        drawBase = Widget_Base(col1Base2, /Col)
-   ;        barsBase = Widget_Base(col1Base2, /Col)
-   ;          showBarBase = Widget_Base(barsBase, /Row)
-   ;          endBarsBase = Widget_Base(barsBase, /Col)
-   ;      col2Base2 = Widget_Base(main2Base, /Col)
-   ;        styleLineBase = Widget_Base(col2Base2, /Col)
-   ;        endMarkBase = Widget_Base(col2Base2, /Col)
-   
    
    if ~ptr_valid(cpanel_num) then cpanel_num = ptr_new(0)
    if ~ptr_valid(ctr_num) then ctr_num = ptr_new(0)
@@ -1193,9 +1142,6 @@
  endif else begin
    tr_nums = 0
    ntr_nums = 0
- ;    panelObjs = obj_new('spd_ui_panel')
- ;    cTrace = obj_new('spd_ui_line_settings')
- ;    cTraces = [cTrace]
  endelse
  
  
@@ -1210,8 +1156,7 @@
  
  tracedbase = widget_base(tracebase, /row)
  tracedlabel = widget_label(tracedBase, value = 'Select Trace: ')
- traceDroplist = Widget_combobox(tracedBase, XSize=450, $
-   Value=traceNames, UValue='TRACELIST')
+ traceDroplist = Widget_combobox(tracedBase, XSize=450, Value=traceNames, UValue='TRACELIST')
  widget_control, traceDroplist, set_combobox_select=*ctr_num
  
  IF Is_Num(dataNames) OR dataNames[0] EQ '' THEN dataNames=['No Loaded Data']
@@ -1226,9 +1171,6 @@
  lineFrameBase = Widget_Base(lineOptionsBase, /Col, Frame=3)
  lineShowBase = Widget_Base(lineFrameBase, /NonExclusive, /row)
  lineShowButton = Widget_Button(lineShowBase, Value='Show Line', UValue='SHOWLINE', uname='showline')
- lineMirrorButton = Widget_Button(lineShowBase, Value='Mirror', UValue='MIRROR', uname='mirror')
- ;  lineSyncBase = Widget_Base(lineFrameBase, /nonexclusive, /row)
- ;  lineSyncButton = Widget_Button(lineSyncBase, Value='Set All Labels Black', UValue='BLACK', uname='black')
  lpaletteBase = Widget_Base(lineFrameBase, /Row, XPad=1)
  lcolorLabel = Widget_Label(lpaletteBase, Value='Color:', xsize = 70, /align_left)
  
@@ -1346,79 +1288,12 @@
  ;    UName='drawdroplist', Value=[' seconds', ' minutes', ' hours', ' days', '<none>'])
  ;  spaceLabel = Widget_Label(drawFrameBase, Value=' ')
  drawSetBase = Widget_Base(drawBase, /col)
- drawSetButton = Widget_Button(drawBase, Value='Set All Lines',UValue='SETALL', XSize=95, /align_center)
- ;******************************************************************************
- 
- 
- ;****** Line Bar **************************************************************
- ; barsLabel = Widget_Label(barsBase, Value='Bar: ', /Align_Left, sensitive=0)
- ;  barsFrameBase = Widget_Base(barsBase, /Col, Frame=3, XPad=8)
- ;  showLabelBase = Widget_Base(barsFrameBase, /Row, /NonExclusive)
- ;  showLabelButton = Widget_Button(showLabelBase, Value='Show bar or line', UValue='SHOWBAR', $
- ;                                  UName='showbar', sensitive=0)
- ;  endLabel = Widget_Label(barsFrameBase, Value='End Points', /Align_Left, sensitive=0)
- ;  endFrameBase =  Widget_Base(barsFrameBase, /Col, Frame=3, XPad=2, sensitive=0)
- ;  positiveBase = Widget_Base(endFrameBase, /Row)
- ;  negativeBase = Widget_Base(endFrameBase, /Row)
- ;  positiveLabel = widget_label(positiveBase, value = 'Positive: ')
- ;  positiveDroplist = Widget_combobox(positiveBase, $
- ;    Value=dataNames, UValue='POSITIVE', UName='positive')
- ;  posRelBase = Widget_Base(positiveBase, /NonExclusive)
- ;  posRelButton = Widget_Button(posRelBase, Value='Relative to trace', UValue='RELPOSITIVE', $
- ;                               UName='relpositive')
- ;  negativeLabel = widget_label(negativeBase, value = 'Negative: ')
- ;  negativeDroplist = Widget_combobox(negativeBase, $
- ;    Value=dataNames, UValue='NEGATIVE', Uname='negative')
- ;  negRelBase = Widget_Base(negativeBase, /NonExclusive)
- ;  negRelButton = Widget_Button(negRelBase, Value='Relative to trace', UValue='RELNEGATIVE', $
- ;                               UName='relnegative')
- ;;******************************************************************************
- 
- 
- ;****** Line Bar Line Style ***************************************************
- ;  styleLineLabel=Widget_Label(styleLineBase, Value='Line Style:', /Align_Left, sensitive=0)
- ;  styleFrameBase = Widget_Base(styleLineBase, /Col, Frame=3,sensitive=0)
- ;  lspaletteBase = Widget_Base(styleFrameBase, /Row, XPad=1)
- ;  lscolorLabel = Widget_Label(lspaletteBase, Value='Color:', /align_left, xsize = 70)
- ;  palettebmp = filepath('palette.bmp', Subdir=['resource', 'bitmaps'])
- ;  lspaletteButton = Widget_Button(lspaletteBase, Value=palettebmp, /Bitmap, $
- ;    UValue='PALETTE2', Tooltip='Choose color from Palette')
- ;  lsspaceLabel = Widget_Label(lspaletteBase, Value=' ')
- ;  lscolorbase = widget_base(lspalettebase, /col)
- ;  lccolorlabel = Widget_Label(lscolorBase, Value = 'Currently')
- ;  lscolorWindow = WIDGET_DRAW(lscolorBase,graphics_level=2,renderer=1, $
- ;                              retain=1, XSize=50, YSize=19, units=0, frame=1)
- ;  styleThickBase = Widget_Base(styleFrameBase, /Row)
- ;  lthicklabel = widget_label(styleThickBase, value = 'Thickness:', xsize = 70, /align_left)
- ;  styleThickIncrement = spd_ui_spinner(styleThickBase, $
- ;    Increment=1, Value=1, UValue='LSTHICKNESS', UName='lsthickness')
- ;  prevlsthick=1
- ;******************************************************************************
- 
- 
- ;****** Line Bar End Mark *****************************************************
- ;  endMarkLabel=Widget_Label(endMarkBase, Value='End Mark:', /Align_Left, sensitive=0)
- ;  endMarkFrameBase = Widget_Base(endMarkBase, /Col, Frame=3, sensitive=0)
- ;  mpaletteBase = Widget_Base(endMarkFrameBase, /Row, XPad=1)
- ;  mcolorLabel = Widget_Label(mpaletteBase, Value='Color:', /align_left, xsize = 70)
- ;;  palettebmp = filepath('palette.bmp', Subdir=['resource', 'bitmaps'])
- ;  mpaletteButton = Widget_Button(mpaletteBase, Value=palettebmp, /Bitmap, $
- ;    UValue='PALETTE3', Tooltip='Choose color from Palette')
- ;  mspaceLabel = Widget_Label(mpaletteBase, Value=' ')
- ;  mscolorbase = widget_base(mpalettebase, /col)
- ;;  mccolorlabel = Widget_Label(mscolorBase, Value = 'Currently')
- ;  mcolorWindow = WIDGET_DRAW(mscolorBase,graphics_level=2,renderer=1, $
- ;                             retain=1, XSize=50, YSize=19, units=0, frame=1)
- ;  endMarkthickBase = Widget_Base(endMarkFrameBase, /Row)
- ;  mthicklabel = widget_label(endMarkThickBase, value = 'Thickness:', xsize = 70, /align_left)
- ;  endMarkthickIncrement = spd_ui_spinner(endMarkthickBase, $
- ;    Increment=1, Value=1, UValue='EMTHICKNESS', UName='emthickness')
- ;  prevemthick=1
- ;******************************************************************************
+; drawSetButton = Widget_Button(drawBase, Value='Set All Lines',UValue='SETALL', XSize=95, /align_center)
  
  buttonsBase = Widget_Base(buttonStatusBase, /row, /align_center)
  okButton = Widget_Button(buttonsBase, Value='OK', UValue='OK', XSize=75)
  applyButton = Widget_Button(buttonsBase, Value='Apply', UValue='APPLY', XSize=75)
+ applyButton = Widget_Button(buttonsBase, Value='Apply to All Lines', UValue='APPLYTOALL', tooltip="Apply changes to all lines of this panel (except color and style)", XSize=125)
  cancelButton = Widget_Button(buttonsBase, Value='Cancel', UValue='CANC', XSize=75)
  templateButton = Widget_Button(buttonsBase,  Value='Save as Default', UValue='TEMP',xsize=125,tooltip="Save current settings as default template")
  
@@ -1427,23 +1302,21 @@
  ;  blank_label_for_space = widget_label(statusBase, Value = '      ')
  
  
- state = {tlb:tlb, gui_id:gui_id, winID:0, xSelect:0, ySelect:0, $;endMarkFrameBase:endMarkFrameBase, $
-   lpaletteBase:lpaletteBase, statusBar:statusBar, $;$endFrameBase:EndFrameBase, $
+ state = {tlb:tlb, gui_id:gui_id, winID:0, xSelect:0, ySelect:0, $ 
+   lpaletteBase:lpaletteBase, statusBar:statusBar, $ 
    lcolorWindow:lcolorWindow, scolorWindow:scolorWindow, $
-   ;lscolorWindow:lscolorWindow, mcolorWindow:mcolorWindow, $
-   ;mcolorWindow:mcolorWindow, $
    cpanel_num:cpanel_num, ctr_num:ctr_num, prevSymbolSize:prevSymbolSize, $
    panelDroplist:panelDroplist, traceDroplist:traceDroplist, $
    drawText:drawText, drawLabel:drawLabel, prevInc:prevInc, $
    drawDroplist:drawDroplist, drawButtonButton:drawButtonButton, $
-   everyBase:everyBase, everyIncrement:everyIncrement, $;styleLineBase:styleLineBase, $
+   everyBase:everyBase, everyIncrement:everyIncrement, $
    vcolorWin:0, hfcolorWin:0, ciscolorWin:0, dataNames:dataNames, $
-   drawObject:drawObject, historyWin:historyWin, $ ;,prevlsthick:prevlsthick, $
+   drawObject:drawObject, historyWin:historyWin, $ 
    loadedData:loadedData, windowStorage:windowStorage, origWindow:origWindow, $
-   cWindow:cWindow, prevThickness:prevThickness, $ ;prevemthick:prevemthick, $
+   cWindow:cWindow, prevThickness:prevThickness, $
    panelObjs:ptr_new(panelObjs), cpanel:ptr_new(cpanel), ctrace:ptr_new(ctrace), $
-   ctraces:ptr_new(ctraces), $;styleFrameBase:styleFrameBase, $
-   subMainLineBase:subMainLineBase,template:template, tlb_statusbar:tlb_statusbar}; subMainLineBaseRight:subMainLineBaseRight}
+   ctraces:ptr_new(ctraces), $
+   subMainLineBase:subMainLineBase,template:template, tlb_statusbar:tlb_statusbar}
    
  Widget_Control, tlb, Set_UValue=state, /No_Copy
  CenterTLB, tlb

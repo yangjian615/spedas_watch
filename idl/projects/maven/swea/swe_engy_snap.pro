@@ -70,8 +70,8 @@
 ;       NOERASE:       Overplot all spectra after the first.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-24 14:41:06 -0800 (Sat, 24 Jan 2015) $
-; $LastChangedRevision: 16730 $
+; $LastChangedDate: 2015-01-27 13:07:23 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16756 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -343,8 +343,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       endelse
 
       if (scat) then begin
-        kndx = where((E1 gt phi) and (E1 lt Epeak))
-        oplot,E1[kndx],(F1[kndx] - swe_maxbol(E1[kndx], par=p)),color=5,psym=10
+        kndx = where((E1 gt phi) and (E1 lt Epeak), count)
+        if (count gt 0L) then oplot,E1[kndx],(F1[kndx] - swe_maxbol(E1[kndx], par=p)),color=5,psym=10
       endif
     endif
       
@@ -460,9 +460,10 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       fmt3 = '(i2)'
       
       j = jref
-    
-      tabnum = mvn_swe_tabnum(swe_hsk[j].chksum[swe_hsk[j].ssctl])
-          
+
+      k = swe_hsk[j].ssctl
+      if (k lt 4) then tabnum = mvn_swe_tabnum(swe_hsk[j].chksum[k]) else tabnum = -1
+
       erase
       xyouts,x1,y1[0],/normal,"SWEA Housekeeping",charsize=csize
       xyouts,x1,y1[1],/normal,time_string(swe_hsk[j].time),charsize=csize

@@ -22,7 +22,7 @@
 ;   14-7-6      D.Mitchell  redefined keywords, 
 ;                           added correction for spacecraft potential
 ;-
-function swe_n_3d, dat2, EBINS=ebins, ABINS=abins, DBINS=dbins
+function swe_n_3d, dat2, EBINS=ebins, ABINS=abins, DBINS=dbins, OBINS=obins
 
   density = 0.
 
@@ -38,15 +38,17 @@ function swe_n_3d, dat2, EBINS=ebins, ABINS=abins, DBINS=dbins
   pot = dat.sc_pot                  ; Spacecraft potential (V)
 
   ebins2 = replicate(1B,na)
-  if keyword_set(ebins) then ebins2 = ebins
+  if (n_elements(ebins) eq na) then ebins2 = ebins
 
   abins2 = replicate(1B,16)
-  if keyword_set(abins) then abins2 = abins
+  if (n_elements(abins) eq 16) then abins2 = abins
 
   dbins2 = replicate(1B,6)
-  if keyword_set(dbins) then dbins2 = dbins
+  if (n_elements(dbins) eq 6) then dbins2 = dbins
 
-  obins2 = reform(abins2 # dbins2, nb)
+  if (n_elements(obins) eq 96) then obins2 = obins $
+                               else obins2 = reform(abins2 # dbins2, nb)
+
   bins2 = ebins2 # obins2
 
 ; Calculate energy steps for integral

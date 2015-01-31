@@ -9,9 +9,9 @@
 ;  
 ;  Examples on SST specific sun decontamination options can be found in thm_crib_sst.pro
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-11-24 16:53:19 -0800 (Mon, 24 Nov 2014) $
-;$LastChangedRevision: 16295 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-01-28 10:38:31 -0800 (Wed, 28 Jan 2015) $
+;$LastChangedRevision: 16768 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_products.pro $
 ;-
 
@@ -145,7 +145,7 @@ tplot,['tha_peef_density','tha_peef_velocity','tha_peef_t3','tha_peef_eflux_pa',
 stop
 
 ;----------------------------------------------------------------------------------------------------------------------------
-;Example 7: Specifying non-default support parameters for moments
+;Example 7: Specifying support parameters for moments(Spacecraft potential/ Mag & Position)
 ;----------------------------------------------------------------------------------------------------------------------------
  
 
@@ -155,14 +155,19 @@ trange=['2008-02-23','2008-02-24']
 timespan,trange
  
 
-thm_load_mom,probe=probe,trange=trange
-thm_load_fit,probe=probe,coord='dsl',trange=trange
+thm_load_state,probe=probe,trange=trange ;this loads the spacecraft position
+
+thm_load_mom,probe=probe,trange=trange ;this routine loads the spacecraft calculated spacecraft potential
+
+thm_load_fit,probe=probe,coord='dsl',trange=trange ;this loads the fluxgate mag data(spacecraft generated spin-fit)
 
 ;load particle data
 thm_part_load,probe=probe,trange=trange,datatype=datatype
 
 ;Note ESA background removal is now enabled by default.
 ;Use esa_bgnd=0 keyword to thm_part_products to disable background removal
+
+;Note spacecraft potential must be loaded by the user.  If none is found, none will be used in products generation.
 thm_part_products,probe=probe,datatype=datatype,trange=trange,outputs='moments pa gyro', $
       mag_name='tha_fgs',pos_name='tha_state_pos',sc_pot_name='tha_pxxm_pot'
 

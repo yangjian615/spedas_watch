@@ -51,8 +51,8 @@
 ;See Also:  "XLIM", "YLIM", "ZLIM",  "OPTIONS",  "TPLOT", "DRAW_COLOR_SCALE"
 ;Author:  Davin Larson,  Space Sciences Lab
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-02-02 17:11:43 -0800 (Sun, 02 Feb 2014) $
-; $LastChangedRevision: 14136 $
+; $LastChangedDate: 2015-01-27 17:00:47 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16761 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/specplot.pro $
 ;-
 pro specplot,x,y,z,limits=lim,data=data,overplot=overplot,overlay=overlay,$
@@ -74,7 +74,10 @@ if keyword_set(data) then begin
   z = struct_value(data,'y')
   if not keyword_set( y ) and size(/n_dimen,y) eq 0 then begin
        y = struct_value(data,'v2')    ;bp
-       z = total(z,2)
+       if ~keyword_set(y) then begin
+         dim2 = size(/dimen,z)
+         y= findgen(dim2[1])
+       endif else   z = total(z,2)
   endif
   extract_tags,opt,data,except=['x','y','v']
   if keyword_set(dx_gap_size) then dg=dx_gap_size else str_element,lim,'datagap',dg

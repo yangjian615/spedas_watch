@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-26 17:16:52 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16323 $
+; $LastChangedDate: 2015-01-27 19:58:36 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16763 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -360,6 +360,15 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
   swe_dgf = transpose(swe_dgf,[1,0,2])
 
   swe_dgf[*] = 1.  ; disable for now
+
+; Spacecraft blockage mask (~8% of sky, deployed boom, approximate)
+;   Complete blockage: 0, 1, 2, 3, 17, 18
+;   Partial blockage: 14 & 15 (summed onboard), 16, 31
+
+  swe_sc_mask = replicate(1B, 96, 2)  ; 96 solid angle bins, 2 boom states
+  
+  swe_sc_mask[0:31,0] = 0B                         ; stowed boom
+  swe_sc_mask[[0,1,2,3,14,15,16,17,18,31],1] = 0B  ; deployed boom
 
 ; Dead time (from IRAP calibration: MCP-Anode-Preamp chain)
 ; This is for ONE of the 16 chains.  Energy spectra combine all 16 chains, so

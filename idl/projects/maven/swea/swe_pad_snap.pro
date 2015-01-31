@@ -39,15 +39,16 @@
 ;       MASK_SC:       Mask PA bins that are blocked by the spacecraft.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-12-22 16:22:57 -0800 (Mon, 22 Dec 2014) $
-; $LastChangedRevision: 16536 $
+; $LastChangedDate: 2015-01-27 12:18:32 -0800 (Tue, 27 Jan 2015) $
+; $LastChangedRevision: 16753 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
-                  label=label, smo=smo, dir=dir, mask_sc=mask_sc
+                  label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
+                  abins=abins, dbins=dbins, obins=obins
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -72,7 +73,15 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     dbin = string(indgen(6),format='(i1)')
   endif else dolab = 0
   
-  if keyword_set(mask_sc) then mflg = 1 else mflg = 0
+  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
+  if (n_elements(obins) ne 96) then begin
+    obins = replicate(1B, 96, 2)
+    obins[*,0] = reform(abins # dbins, 96)
+    obins[*,1] = obins[*,0]
+  endif else obins = byte(obins # [1B,1B])
+  if (size(mask_sc,/type) eq 0) then mask_sc = 1
+  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
 
 ; Put up snapshot window(s)
 
@@ -144,12 +153,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                      format='(a19,5x,"Baz = ",f5.1,3x,"Bel = ",f5.1)')
       str_element,limits,'title',title,/add
       
-      if (mflg) then begin
-        indx = where(pad.k3d le 3, count)
-        if (count gt 0) then pad.data[*,indx] = !values.f_nan
-        indx = where((pad.k3d ge 16) and (pad.k3d le 19), count)
-        if (count gt 0) then pad.data[*,indx] = !values.f_nan
-      endif
+      if (pad.time gt t_mtx[2]) then boom = 1 else boom = 0
+      indx = where(obins[pad.k3d,boom] eq 0B, count)
+      if (count gt 0L) then pad.data[*,indx] = !values.f_nan
 
       x = pad.energy[*,0]
       y = pad.pa*!radeg
