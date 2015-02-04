@@ -14,7 +14,7 @@ for i=0l,n-1 do begin
   pos = strpos(/reverse_search,f,extension)
   if pos lt ndigits then continue
   revstr = strmid(f,pos-ndigits,ndigits)
-  printdat,revstr
+;  printdat,revstr
   revnum = fix(revstr)
   format =  string(format='("(i0",i1,")")',ndigits)
   nextrev = string(format=format,revnum+1)
@@ -59,7 +59,9 @@ end
 ;-
 function mvn_pfp_file_retrieve,pathname,trange=trange,verbose=verbose, source=src,files=files, $
    last_version=last_version,valid_only=valid_only,no_update=no_update,create_dir=create_dir,pos_start=pos_start, $
-   remote_kp_cdf=remote_kp_cdf,insitu_kp_cdf=insitu_kp_cdf, $    ; these keywords are temporary !!!
+   remote_kp_cdf=remote_kp_cdf, $   
+   insitu_kp_tab = insitu_kp_tab, $
+   insitu_kp_cdf=insitu_kp_cdf, $
    daily_names=daily_names,hourly_names=hourly_names,resolution = res,shiftres=shiftres,  $
    no_server=no_server,user_pass=user_pass,L0=L0,recent=recent, $
    DPU=DPU,ATLO=ATLO,RT=RT,pformat=pformat,realtime=realtime,no_download=no_download,name=name
@@ -75,8 +77,8 @@ if keyword_set(L0) || ~keyword_set(pathname) then begin   ; default location of 
    last_version =1
 endif
 
-if keyword_set(insitu_kp_cdf) then begin
-   pathname = 'maven/data/sci/kp/insitu/sample_insitu_kp/mvn_pfp_l2_keyparam_YYYYMMDD_v??_r??.cdf'
+if keyword_set(insitu_kp_tab) then begin
+   pathname = 'maven/data/sci/kp/insitu/YYYY/MM/mvn_kp_insitu_YYYYMMDD_v??_r??.tab'
    daily_names = 1
    last_version=1
 endif

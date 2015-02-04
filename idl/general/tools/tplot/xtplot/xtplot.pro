@@ -7,9 +7,10 @@
 ; 
 ; CREATED BY: Mitsuo Oka   Jan 2015
 ; 
+; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-01-23 14:08:42 -0800 (Fri, 23 Jan 2015) $
-; $LastChangedRevision: 16717 $
+; $LastChangedDate: 2015-02-02 13:34:21 -0800 (Mon, 02 Feb 2015) $
+; $LastChangedRevision: 16833 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -92,7 +93,11 @@ PRO xtplot_event, event
   ; main
   case event.id of
 
-    widf.btnTlm:      xtplot_change_tlimit,'default'
+    widf.btnTlm:      begin
+      xtplot_right_click = 0 
+      xtplot_change_tlimit,'default'
+      xtplot_right_click = 1
+      end
     widf.btnTlmRedo:  xtplot_recovr_tlimit,'redo'
     widf.btnTlmUndo:  xtplot_recovr_tlimit,'undo'
     widf.btnTlmFull:  xtplot_change_tlimit,'full'
@@ -133,24 +138,17 @@ PRO xtplot_event, event
       case thisEvent of
         'WIDGET_KILL_REQUEST': code_exit=1
         'WIDGET_BASE'       : begin; Resize Event
-          ;          if (event.y lt widf.leftHeight) then begin
-          ;            widget_control,widf.baseLeft,SCR_YSIZE=event.y
-          ;          endif
-          ;          if widf.noCtrlBar eq 1 $
-
-
-          ;geo1 = widget_info(widf.baseTL,/geometry)
-          ;geo2 = widget_info(widf.drwPlot,/geometry)
-          ;          print, 'geo1.xsize=',geo1.xsize
-          ;          print, 'geo2.xsize=',geo2.xsize
-          ;          print, 'event.x  = ', event.x
-          widget_control, widf.drwPlot, Draw_XSize=(event.x)>0, Draw_YSize=(event.y-widf.resYsize)>0
-          ;          geo2 = widget_info(widf.drwPlot,/geometry)
-          ;          print, 'geo2.xsize (new)=',geo2.xsize
-          widget_control, widf.baseTL, xsize=(event.x), ysize=(event.y)
-          tplot,verbose=0, get_plot_pos = plot_pos
-          str_element,/add,widf,'plot_pos',plot_pos
-        end
+          geoB = widget_info(widf.baseTL,/geometry)
+          ;geoD = widget_info(widf.drwPlot,/geometry)
+          ;print, 'OLD (x,y)=(', geoB.xsize,',', geoB.ysize,')'
+          ;print, 'NEW (x,y)=(', event.x,',',event.y,')'
+          if (abs(geoB.xsize-event.x) gt 5.) or (abs(geoB.ysize-event.y) gt 5.) then begin  
+            widget_control, widf.drwPlot, Draw_XSize=(event.x)>0, Draw_YSize=(event.y-floor(widf.resYsize))>0
+            widget_control, widf.baseTL, xsize=(event.x), ysize=(event.y)
+            tplot,verbose=0, get_plot_pos = plot_pos
+            str_element,/add,widf,'plot_pos',plot_pos
+          endif
+          end
         else:
       endcase
     end
@@ -222,7 +220,7 @@ PRO xtplot_event, event
           ', value = '+strtrim(string(value),2)+' ( '+tn+' )'
 
         ; RIGHT CLICK EVENT
-        if (event.release EQ 4) then begin
+        if (event.release EQ 4) and (xtplot_right_click=1) then begin
           print,'right clicked on '+tn
           xtplot_options_panel, group_leader=widf.baseTL, target=tn
         endif
@@ -344,7 +342,7 @@ PRO xtplot_event, event
       tplot, tplot_vars.options.def_datanames, get_plot_pos = plot_pos, verbose=0
       str_element,/add,widf,'plot_pos',plot_pos
     end
-    widf.mnO_AutoCommand: xtplot_options
+    widf.mnO_AutoExec: xtplot_options
     widf.mnO_PanelOptions: begin
       ctime,prompt='Click on desired panels. (button 3 to quit)',panel=mix,/silent,npoints=1
       tn = tplot_vars.options.def_datanames[mix]
@@ -417,12 +415,13 @@ pro xtplot,datanames,     $
   ;===== initialize ===================================================================
 
   ; xtplot_com
-  if ~keyword_set(mouse_event) then mouse_event = 0
+  
+  xtplot_right_click = 1
+  if ~keyword_set(mouse_event) then mouse_event = 0; obsolete?
   xtplot_mouse_event = mouse_event
-  if ~keyword_set(routine_name) then routine_name = 'xtplot_tlimit'
+  if ~keyword_set(routine_name) then routine_name = 'xtplot_tlimit'; obsolete?
   xtplot_routine_name = routine_name
-
-
+  
   ; window size
   factor    = 0.9
   this_screen_size = get_screen_size()
@@ -565,7 +564,8 @@ pro xtplot,datanames,     $
     mnOptions = widget_button(mbar, VALUE='Options', /menu)
     str_element,/add,widf,'mnO_PanelOptions',widget_button(mnOptions,VALUE='Panel Options')
     str_element,/add,widf,'mnO_TplotOptions',widget_button(mnOptions,VALUE='Tplot Options')
-    str_element,/add,widf,'mnO_AutoCommand',widget_button(mnOptions,VALUE='Auto Command')
+    mnMacros = widget_button(mbar, VALUE='Macros', /menu)
+    str_element,/add,widf,'mnO_AutoExec',widget_button(mnMacros,VALUE='Auto Exec')
     mnHelp = widget_button(mbar, VALUE='Help',/menu)
     ;str_element,/add,widf,'mnH_Guide',widget_button(mnHelp,VALUE='Getting Started (PDF)')
     str_element,/add,widf,'mnH_About',widget_button(mnHelp,VALUE='About XTPLOT')

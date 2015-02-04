@@ -26,16 +26,18 @@
 ;	QRANGE: Range of quantity to filter plots by
 ;	PLOTNORM: Plot histogram of event density (only works for scalar)
 ;	STDDEV: Plot standard deviation instead of average (only works for scalar)
+;	ABERR: Aberrate both upstream velocity and plotted quantities
+;	VDATA: Velocity data to do aberration correction (defaults to 'vsw')
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-27 12:03:04 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16743 $
+; $LastChangedDate: 2015-02-02 17:59:04 -0800 (Mon, 02 Feb 2015) $
+; $LastChangedRevision: 16839 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
 
-pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm, plotnorm = plotnorm, stddev = stddev
+pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm, plotnorm = plotnorm, stddev = stddev, aberr = aberr, vdata = vdata
 
 
 RM = 3397.
@@ -44,7 +46,8 @@ if not keyword_set(xrange) then xrange = [-8e3,8e3]
 if not keyword_set(yrange) then yrange = [-8e3,8e3]
 if not keyword_set(zrange) then zrange = [-8e3,8e3]
 if not keyword_set(pdata) then pdata = 'MAVEN_POS_(MARS-MSO)'
-if not keyword_set(bdata) then idata = 'bsw'
+if not keyword_set(idata) then idata = 'bsw'
+if not keyword_set(vdata) then vdata = 'vsw'
 if not keyword_set(sdata) then sdata = 'mvn_swim_density'
 if not keyword_set(nbx) then nbx = 100
 if not keyword_set(nby) then nby = 100
@@ -96,6 +99,19 @@ imfx = interpol(imf.y[*,0],imf.x,time)
 imfy = interpol(imf.y[*,1],imf.x,time)
 imfz = interpol(imf.y[*,2],imf.x,time)
 
+if keyword_set(aberr) then begin
+	get_data,vdata,data = vel
+	vsw = interpol(vel.y,vel.x,time)
+	vaberr = -24.0
+	phi = atan(vaberr,vsw)
+	xn = x*cos(phi)+y*sin(phi)
+	yn = -x*sin(phi)+y*cos(phi)
+
+	x = xn
+	y = yn
+endif
+
+
 theta = atan(imfz,imfy)
 xmse = x
 ymse = y*cos(theta) + z*sin(theta)
@@ -110,6 +126,14 @@ time = time[w]
 theta = theta[w]
 
 if ptype eq 'vector' then begin
+	if keyword_set(aberr) then begin
+		pqxn = pq[w,0]*cos(phi)+pq[w,1]*sin(phi)
+		pqyn = -1*pq[w,0]*sin(phi)+pq[w,1]*cos(phi)
+		
+		pq[w,0] = pqxn
+		pq[w,1] = pqyn
+	endif
+
 	pqx = pq[w,0]
 	pqy = pq[w,1]*cos(theta) + pq[w,2]*sin(theta)
 	pqz = -1*pq[w,1]*sin(theta) + pq[w,2]*cos(theta)

@@ -14,9 +14,9 @@
 ;HISTORY:
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14, jmm,
 ; jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-21 14:40:36 -0800 (Wed, 21 Jan 2015) $
-; $LastChangedRevision: 16701 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2015-02-01 12:02:24 -0800 (Sun, 01 Feb 2015) $
+; $LastChangedRevision: 16810 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
 Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
@@ -39,6 +39,7 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
   trange = [t_start, t_end]
   trange_str = time_string(trange)
 ;You need a timespan, so that the clock drift doesn't prompt for one
+  message, /info, 'PROCESSING: '+time_string(t_start)
   timespan, t_start, 1
 ; get SPICE kernels
   mvn_swe_spice_init, trange = trange

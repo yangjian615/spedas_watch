@@ -16,8 +16,8 @@
 ;   Created by Matt Fillingim
 ; VERSION:
 ;   $LastChangedBy: mattf $
-;   $LastChangedDate: 2015-01-16 15:41:56 -0800 (Fri, 16 Jan 2015) $
-;   $LastChangedRevision: 16667 $
+;   $LastChangedDate: 2015-01-30 17:48:56 -0800 (Fri, 30 Jan 2015) $
+;   $LastChangedRevision: 16804 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_readcdf_pad.pro $
 ;
 ;-
@@ -455,12 +455,12 @@ structure.domega = domega
 ; reconstruct gf*eff (eff = 1.)
 CDF_VARGET, id, 'geom_factor', geom_factor, /ZVAR ; integer
 CDF_VARGET, id, 'g_engy', g_engy, /ZVAR ; [64]
-CDF_VARGET, id, 'g_pa', g_pa, /ZVAR ; [64, 16]
+CDF_VARGET, id, 'g_pa', g_pa, /ZVAR, rec_count = nrec ; [64, 16, nrec]
 
-gfe = fltarr(n_e, n_az)
-for i = 0, n_az-1 do $
-;  gfe[*, i] = geom_factor*g_engy*g_elev[*, i/16]*g_azim[i mod 16]
-  gfe[*, i] = geom_factor*g_engy*g_pa[*, i]
+gf_engy = geom_factor*(g_engy # replicate(1., n_az))
+gfe = fltarr(n_e, n_az, nrec)
+for i = 0, nrec-1 do $
+  gfe[*, *, i] = gf_engy*g_pa[*, *, i]
 structure.gf = gfe
 
 ; *** dtc

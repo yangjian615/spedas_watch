@@ -142,19 +142,19 @@ PRO xtplot_options,width=width
   xtplot_var2  = 0
   xtplot_var3  = 0
   
-  base = widget_base(title='XTPLOT Options',xoffset=xoffset, yoffset=yoffset,/column);scr_xsize=width)
+  base = widget_base(title='XTPLOT AutoExec',xoffset=xoffset, yoffset=yoffset,/column);scr_xsize=width)
   
   baseTab = widget_tab(base,/align_center)
-    baseAutoCommand = widget_base(baseTab,title='Auto Command',/column)
+    baseAutoCommand = widget_base(baseTab,title='Auto Exec',/column)
       str_element,/add,wid,'bgpCsrS',cw_bgroup(baseAutoCommand, ['Csr A','Csr B'], /ROW, /NONEXCLUSIVE, $
-        SET_VALUE=0) 
+        SET_VALUE=[1,0]) 
       str_element,/add,wid,'btnCsrSet',widget_button(baseAutoCommand,VALUE='Set Cursor(s)')
       baseCtrl = widget_base(baseAutoCommand,/row)
         str_element,/add,wid,'btnM',widget_button(baseCtrl,VALUE='  <  ')
         str_element,/add,wid,'txtInc',widget_text(baseCtrl,value='1',/editable,xsize=5)
         str_element,/add,wid,'btnP',widget_button(baseCtrl,VALUE='  >  ')
-      lblExec = widget_label(baseAutoCommand,VALUE='Command:')
-      str_element,/add,wid,'txtExec', widget_text(baseAutoCommand,value=execcom,/editable)
+      lblExec = widget_label(baseAutoCommand,VALUE='IDL Command:')
+      str_element,/add,wid,'txtExec', widget_text(baseAutoCommand,value='xtplot_example',/editable)
   
   str_element,/add,wid,'close',widget_button(base,VALUE=' Close ')
         

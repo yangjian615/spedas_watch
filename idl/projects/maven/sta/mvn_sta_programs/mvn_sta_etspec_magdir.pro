@@ -35,14 +35,15 @@
 ;CREATED BY:      Takuya Hara on 2015-01-21.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-01-21 17:36:13 -0800 (Wed, 21 Jan 2015) $
-; $LastChangedRevision: 16703 $
+; $LastChangedDate: 2015-01-30 22:56:19 -0800 (Fri, 30 Jan 2015) $
+; $LastChangedRevision: 16806 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_etspec_magdir.pro $
 ;
 ;-
 PRO mvn_sta_etspec_magdir, apid, pitch=pad, units=units, trange=trange, $
                            mass=mrange, suffix=suffix, verbose=verbose, _extra=extra
   nan = !values.f_nan
+  IF ~keyword_set(verbose) THEN v = 1 ELSE v = verbose
   IF ~keyword_set(apid) THEN apid = 'd0'
   IF ~keyword_set(pad) THEN pitch = [0., 30.] ELSE pitch = minmax(ABS(pad))
   IF ~keyword_set(units) THEN units = 'eflux'
@@ -64,11 +65,17 @@ PRO mvn_sta_etspec_magdir, apid, pitch=pad, units=units, trange=trange, $
      ENDELSE 
      undefine, idx, nidx
   ENDIF 
-
   center_time = DBLARR(N_ELEMENTS(time))
+  fifb = STRING("15b) ;"
   FOR i=0LL, N_ELEMENTS(time)-1 DO BEGIN ;- time loop
-     IF (i MOD 100) EQ 0 THEN $
-        dprint, dlevel=1, verbose=verbose, i, ' /', N_ELEMENTS(time)
+     IF ((i MOD 100) EQ 0) OR (i EQ N_ELEMENTS(time)-1) THEN $
+        IF v GE 1 THEN BEGIN $
+        num = i
+        IF i EQ N_ELEMENTS(time)-1 THEN num += 1
+        PRINT, format='(a, a, a, a, a, a, $)', $
+               '      ', fifb, ptrace(), STRING(num), ' /', STRING(N_ELEMENTS(time))
+     ENDIF
+ 
      d = CALL_FUNCTION(fname, time[i])
      d = conv_units(d, units)
      center_time[i] = (d.time+d.end_time)/2.d
@@ -97,6 +104,7 @@ PRO mvn_sta_etspec_magdir, apid, pitch=pad, units=units, trange=trange, $
         ELSE eflux_dir[i, *] = TOTAL(TOTAL((d.data*w), 3), 2)
      ENDIF ELSE eflux_dir[i, *] = nan 
      undefine, pa, idx, nidx, w
+     IF v GE 1 AND i EQ N_ELEMENTS(time)-1 THEN PRINT, ' '
   ENDFOR                         ;- time loop end
 
   ytit = 'STA ' + STRUPCASE(apid) + '!C' + $

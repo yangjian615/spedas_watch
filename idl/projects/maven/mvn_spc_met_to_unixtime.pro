@@ -5,9 +5,9 @@
 ;see also:  "mvn_spc_unixtime_to_met" for the reverse conversion
 ; This routine is in the process of being modified to use SPICE Kernels to correct for clock drift as needed.
 ; Author: Davin Larson
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-11-21 12:32:34 -0800 (Fri, 21 Nov 2014) $
-; $LastChangedRevision: 16265 $
+; $LastChangedBy: jhalekas $
+; $LastChangedDate: 2015-01-30 05:53:45 -0800 (Fri, 30 Jan 2015) $
+; $LastChangedRevision: 16793 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mvn_spc_met_to_unixtime.pro $
 ;-
 function mvn_spc_met_to_unixtime,input,reverse=reverse,correct_clockdrift=correct_clockdrift   ,reset=reset   ;,prelaunch = prelaunch
@@ -57,8 +57,15 @@ if keyword_set(reverse) then begin
   endif else begin
 ;   dprint,'Using cspice',dlevel=3
     et = time_ephemeris(unixtime)
-    cspice_sce2c, -202, et, sclkdp1
-    met = sclkdp1 / 2d^16
+    met = double(et)
+    for i = 0,n_elements(met)-1 do begin
+
+	    cspice_sce2s, -202, et[i], sclk
+	    seconds = double(strmid(sclk,2,10))
+	    subticks = double(strmid(sclk,13,5))	
+	    met[i] = seconds+subticks/(2.0^16)
+    endfor  
+    return,met  
   endelse
   return,met
 endif
@@ -74,13 +81,13 @@ if ~cor_clkdrift then begin
     unixtime += delta
 ;    if unixtime[0] le 1351728000  then unixtime = met + epoch + 3600L*12   ; correction prior to '2012-11-1' 
 endif else begin
-   eti = double(met)
+   seconds = floor(met,/l64)
+   subseconds = met mod 1
+   subticks = round(subseconds*65536)
+   sclk = string(seconds)+':'+string(subticks)
    n = n_elements(met)
-   for i=0L,n-1 do begin
-     cspice_sct2e, -202, double(MET[i]*2D^16), ET
-     eti[i] = et
-   endfor 
-   unixtime = time_ephemeris(ETI,/et2ut)
+   cspice_scs2e, -202, sclk, ET
+   unixtime = time_ephemeris(ET,/et2ut)
 endelse
 
 return,unixtime

@@ -1,4 +1,5 @@
 ;+
+;
 ;PROCEDURE:   mvn_sta_mag_load
 ;
 ;PURPOSE:
@@ -12,14 +13,18 @@
 ;  frame:       Mag data frame of reference (currently STATIC)
 ;  verbose:     Display information.
 ;  stacom:      Set if you want STATIC common blocks filled
-
-
-
+;
+;LAST MODIFICATION:
+; $LastChangedBy: hara $
+; $LastChangedDate: 2015-01-30 14:36:17 -0800 (Fri, 30 Jan 2015) $
+; $LastChangedRevision: 16800 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_mag_load.pro $
+;
+;-
 pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom, tplot=tplot
 
-
-
-  if keyword_set(verbose) then print, 'Loading Magnetometer Data...'
+  IF keyword_set(verbose) THEN v = verbose ELSE v = 0
+  dprint, 'Loading Magnetometer Data...', dlevel=1, verbose=v
   if ~keyword_set(frame) then frame='MAVEN_STATIC'
 
 
@@ -151,7 +156,7 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom, tplot=tplot
 
   ;-------------------------------------------------------------------------
   ;Davin's SPICE Routines to convert from mag to sta (frame of reference). 
-  mk = mvn_spice_kernels(/all,/load,trange=trange)
+  mk = mvn_spice_kernels(/all,/load,trange=trange,verbose=verbose)
   utc=time_string(time)
   for api=0, nn_apid-1 do begin
      temp=execute('nn1=size(mvn_'+apid[api]+'_dat,/type)')
@@ -170,7 +175,7 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom, tplot=tplot
            newvec=spice_vector_rotate(vec,utc,$
                                       'MAVEN_SPACECRAFT',$
                                       'MAVEN_STATIC',$
-                                      check_objects='MAVEN_SPACECRAFT')
+                                      check_objects='MAVEN_SPACECRAFT', verbose=verbose)
            vec=transpose(newvec)
            if keyword_set(stacom) then begin
               temp=execute('mvn_'+apid[api]+'_dat.magf[*,0]=vec[*,0]')

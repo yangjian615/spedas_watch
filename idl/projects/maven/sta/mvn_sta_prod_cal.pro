@@ -40,6 +40,8 @@
 ;	
 ;	change	"test" keyword -- may have conflicts
 ;
+;	add	change gf to account for narrow cold beams centered on a sector - no losses from ESA exit posts or TOF posts, see lines 178 and 600
+;
 ;													 
 ;		quality_flag definition						 determined from
 ;
@@ -223,7 +225,7 @@ decomp19[128:255]=$
 		if th lt theta_zero[ind] then def2gf[i] = (g_th_zero[ind] + (g_th_zero[ind-1>0] -g_th_zero[ind])*(theta_zero[ind]-th)/(theta_zero[ind]-theta_zero[ind-1>0] ))/.183								
 	endfor
 
-; Include the increased grid losses at large deflections
+; Include the increased grid losses at large deflections 
 
 	grid_thickness	= 0.003			; mill
 	wire_spacing	= 0.0693		; mill
@@ -231,7 +233,7 @@ decomp19[128:255]=$
 
 ; electrostatic attenuator
 
-	e_att = 0.09133  						; calculated electrostatic attenuation value - check value after Mars insertion 
+	e_att = 0.0985  						; calculated electrostatic attenuation value - was incorrectly calculated to be 0.09133 prior to 20150202
 	e_ano = replicate(1.,16)					; electrostatic grid attenuator variation with anode, assumes no variation 
 
 ;	t0    = -2.15							; TOF offset in ns, not used
@@ -533,7 +535,7 @@ endif								;
 
 ;   The following will require an inflight calibration for tuning to exact values
 ;	mec = [1.00,1.00,1.00,0.30,.040,.010,.010,.010,.010,.010,.020,0.10,1.00,1.00,1.00,1.00]			; ground calibration approximate value of mec = mgf*bgf
-	attM = 0.02												; inflight calibration - first approximation
+	attM = 0.01												; inflight calibration - first approximation
 
 	agf = [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00]			; anode dependent gf - grid attenuation, active foil area
 	mgf = [1.00,1.00,1.00,0.30,.050,attM,attM,attM,attM,attM,.050,0.30,1.00,1.00,1.00,1.00]			; mech gf attenuator variation with anode
@@ -3114,7 +3116,8 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 				for i=0,cnt0-1 do begin
 					inds = ind0[i]
 					idelay = fix(2/avg[inds])
-					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+;					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
 
@@ -3400,7 +3403,8 @@ print,'Processing apid cd'
 				for i=0,cnt0-1 do begin
 					inds = ind0[i]
 					idelay = fix(2/avg[inds])
-					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+;					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
 
@@ -3678,7 +3682,8 @@ print,'Processing apid ce'
 				for i=0,cnt0-1 do begin
 					inds = ind0[i]
 					idelay = fix(2/avg[inds])
-					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+;					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
 
@@ -3964,7 +3969,8 @@ print,'Processing apid cf'
 				for i=0,cnt0-1 do begin
 					inds = ind0[i]
 					idelay = fix(2/avg[inds])
-					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+;					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
 
@@ -4242,7 +4248,8 @@ print,'Processing apid d0'
 				for i=0,cnt0-1 do begin
 					inds = ind0[i]
 					idelay = fix(2/avg[inds])
-					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+;					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
 
@@ -4530,7 +4537,8 @@ print,'Processing apid d1'
 				for i=0,cnt0-1 do begin
 					inds = ind0[i]
 					idelay = fix(2/avg[inds])
-					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+;					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
 
@@ -4813,7 +4821,8 @@ print,'Processing apid d2'
 				for i=0,cnt0-1 do begin
 					inds = ind0[i]
 					idelay = fix(2/avg[inds])
-					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+;					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
 
@@ -5097,7 +5106,8 @@ print,'Processing apid d3'
 				for i=0,cnt0-1 do begin
 					inds = ind0[i]
 					idelay = fix(2/avg[inds])
-					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+;					if idelay gt 0 then att0[inds+1:(inds+idelay)<(nn-1)] = att0[inds]
+					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
 

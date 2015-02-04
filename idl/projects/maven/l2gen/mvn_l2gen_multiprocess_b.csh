@@ -12,11 +12,17 @@ set comment=$5
 unsetenv IDL_PATH
 source /usr/local/setup/setup_idl8.3		# IDL
 setenv BASE_DATA_DIR /disks/data/
-setenv THEMIS_DATA_DIR /disks/themisdata/
-setenv IDL_STARTUP /home/jimm/temp_idl_startup.pro
-source /home/jimm/setup_themis
+setenv ROOT_DATA_DIR /disks/data/
+#IDL SETUP for MAVEN
+if !( $?IDL_BASE_DIR ) then
+    setenv IDL_BASE_DIR ~/export_socware/idl_socware
+endif
 
-setenv IDL_PATH $IDL_PATH':'+/home/jimm/idlpro/themis
+if !( $?IDL_PATH ) then
+   setenv IDL_PATH '<IDL_DEFAULT>'
+endif
+
+setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 
 # create a date to append to batch output
 setenv datestr `date +%Y%m%d%H%M%S`

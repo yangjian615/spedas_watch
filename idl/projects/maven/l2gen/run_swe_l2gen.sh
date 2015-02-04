@@ -3,6 +3,7 @@
 
 source /usr/local/setup/setup_idl8.3		# IDL
 setenv BASE_DATA_DIR /disks/data/
+setenv ROOT_DATA_DIR /disks/data/
 #IDL SETUP for MAVEN
 if !( $?IDL_BASE_DIR ) then
     setenv IDL_BASE_DIR ~/export_socware/idl_socware

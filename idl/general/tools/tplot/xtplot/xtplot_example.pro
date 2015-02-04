@@ -6,6 +6,9 @@ PRO xtplot_example
   pA = xtplot_pcsrA
   pB = xtplot_pcsrB
   
+  print, xtplot_pcsrA, xtplot_pcsrB
+  print, xtplot_vnameA
+  print, xtplot_vnameB
   if strmatch(xtplot_vnameA, xtplot_vnameB) then begin
     get_data, xtplot_vnameA, data=D
     sum = total(D.y[pA:pB])

@@ -47,7 +47,7 @@ pro mav_get_altitude, elon_sc, lat_sc,r_sc, alt_sc, mola_struc = mola_struc, $
     nlevels = n_elements(traceinfo) 
     thisfile = traceinfo[nlevels-1].filename
     eph_folder = file_dirname(thisfile)
-    restore, eph_folder + 'mola_save_file_0.25deg.idl'
+    restore, eph_folder + '/mola_save_file_0.25deg.sav'
     endif 
   if keyword_set (topographic) and keyword_set (areoid) then message, 'Must choose either altitude to be above the topographic or areoid surfaces, not both!!'
 

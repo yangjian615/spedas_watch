@@ -131,8 +131,8 @@ End
 ; 6-nov-2014, jmm, Corrects clock drift 
 ; 22-dec-2014, jmm, added eprom_ver and header
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-29 13:37:44 -0800 (Thu, 29 Jan 2015) $
-; $LastChangedRevision: 16778 $
+; $LastChangedDate: 2015-01-30 13:38:25 -0800 (Fri, 30 Jan 2015) $
+; $LastChangedRevision: 16798 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -720,9 +720,10 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
   PDS_time = time_string(minmax(center_time), tformat='YYYY-MM-DDThh:mm:ss.fffZ')
   PDS_met =  mvn_spc_met_to_unixtime(minmax(center_time), /reverse)
   PDS_etime = time_ephemeris(minmax(center_time))
-  cspice_sce2c, -202, PDS_etime, PDS_sclk
-  global_att.PDS_sclk_start_count = pds_sclk[0]
-  global_att.PDS_sclk_stop_count = pds_sclk[1]
+  cspice_sce2c, -202, PDS_etime[0], PDS_sclk0
+  cspice_sce2c, -202, PDS_etime[1], PDS_sclk1
+  global_att.PDS_sclk_start_count = pds_sclk0
+  global_att.PDS_sclk_stop_count = pds_sclk1
   global_att.PDS_start_time = pds_time[0]
   global_att.PDS_stop_time = pds_time[1]
 

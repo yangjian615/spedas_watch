@@ -358,6 +358,7 @@ endif
 		mlut = mvn_c6_dat.mlut_ind
 		nenergy = mvn_c6_dat.nenergy
 		nmass = mvn_c6_dat.nmass
+		eprom_ver = mvn_c6_dat.eprom_ver
 
 		time = (mvn_c6_dat.time + mvn_c6_dat.end_time)/2.
 		data = mvn_c6_dat.data
@@ -365,6 +366,12 @@ endif
 		mass = total(mvn_c6_dat.mass_arr[iswp,*,*],2)/nenergy
 		str_element,mvn_c6_dat,'eflux',eflux,success=success
 ;		eflux = mvn_c6_dat.eflux
+
+		cnt_low_nrg=fltarr(npts)
+		for i=0,npts-1 do begin
+			ind = where(energy[i,*] le 10.,count)
+			if count ge 1 then cnt_low_nrg[i] = total(data[i,ind,*])
+		endfor
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c6_dat.bkg
@@ -399,13 +406,17 @@ endif
 		store_data,'mvn_sta_c6_E',data={x:time,y:total(eflux,3),v:energy}
 		store_data,'mvn_sta_c6_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c6_tot',data={x:time,y:total(total(data,3),2)}
+			store_data,'mvn_sta_c6_tot_le_10eV',data={x:time,y:cnt_low_nrg}
 		store_data,'mvn_sta_c6_att',data={x:time,y:iatt}
 			store_data,'mvn_sta_c6_mode',data={x:time,y:mode}
 			store_data,'mvn_sta_c6_rate',data={x:time,y:rate}
 			store_data,'mvn_sta_c6_quality_flag',data={x:time,y:mvn_c6_dat.quality_flag}
 				options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
+			store_data,'mvn_sta_c6_eprom_ver',data={x:time,y:eprom_ver}
+				ylim,'mvn_sta_c6_eprom_ver',min(eprom_ver)-1,max(eprom_ver)+1,0				
 
 			ylim,'mvn_sta_c6_tot',0,0,1
+				ylim,'mvn_sta_c6_tot_le_10eV',0,0,1
 			ylim,'mvn_sta_c6_P1D_E',.1,40000.,1
 			ylim,'mvn_sta_c6_P1D_M',.5,100.,1
 			ylim,'mvn_sta_c6_E',.1,40000.,1
@@ -425,6 +436,7 @@ endif
 			options,'mvn_sta_c6_E',datagap=datagap
 			options,'mvn_sta_c6_M',datagap=datagap
 			options,'mvn_sta_c6_tot',datagap=datagap
+				options,'mvn_sta_c6_tot_le_10eV',datagap=datagap
 			options,'mvn_sta_c6_att',datagap=datagap
 
 			options,'mvn_sta_c6_P1D_E','spec',1
@@ -437,6 +449,7 @@ endif
 			options,'mvn_sta_c6_E',ytitle='sta!Cc6!C!CEnergy!CeV'
 			options,'mvn_sta_c6_M',ytitle='sta!Cc6!C!CMass!Camu'
 			options,'mvn_sta_c6_tot',ytitle='sta!Cc6!C!CCounts'
+				options,'mvn_sta_c6_tot_le_10eV',ytitle='sta!Cc6!C!C<10eV Cnts'
 			options,'mvn_sta_c6_att',ytitle='sta!Cc6!C!CAttenuator'
 
 			options,'mvn_sta_c6_E',ztitle='eflux'

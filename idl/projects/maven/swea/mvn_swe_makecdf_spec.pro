@@ -13,14 +13,17 @@
 ; KEYWORDS:
 ;   FILE: full name of the output file - only used for testing
 ;         if not specified (usually won't be), the program creates the appropriate filename
-;   VERSION: integer; software version - should be hardcoded when/if software changes
+;   VERSION: integer; software version
+;          - read from common block (SWE_CFG) defined in mvn_swe_calib.pro
+;          - keyword no longer need (but kept for compatibility)
 ; HISTORY:
 ;   created by Matt Fillingim (with code stolen from JH and RL)
 ;   Added directory keyword, and deletion of old files, jmm, 2014-11-14
+;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: jimm $
-;   $LastChangedDate: 2014-11-26 13:47:48 -0800 (Wed, 26 Nov 2014) $
-;   $LastChangedRevision: 16314 $
+;   $LastChangedDate: 2015-01-30 13:44:01 -0800 (Fri, 30 Jan 2015) $
+;   $LastChangedRevision: 16799 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_spec.pro $
 ;
 ;-
@@ -75,7 +78,10 @@ if (not keyword_set(file)) then begin
   file = 'mvn_swe_l2_' + tag + 'spec_' + yyyymmdd
 
 ; specify version number
-  if (not keyword_set(version)) then version = 1
+;  if (not keyword_set(version)) then version = 1
+; read version number from common block (SWE_CFG) defined in mvn_swe_calib.pro
+  if (not keyword_set(version)) then version = mvn_swe_version
+
 
 ; search for CDF files for this day
   file_list = file_search(path + file + '*.cdf', count = nfiles) 
@@ -221,10 +227,14 @@ cdf_attput, fileid, 'PDS_start_time',             0, $
   t_start_str
 cdf_attput, fileid, 'PDS_stop_time',              0, $
   t_end_str
+;jmm, 2014-01-30, changed met to sclk count
+PDS_etime = time_ephemeris([data[0].time, data[nrec-1].end_time])
+cspice_sce2c, -202, PDS_etime[0], PDS_sclk0
+cspice_sce2c, -202, PDS_etime[1], PDS_sclk1
 cdf_attput, fileid, 'PDS_sclk_start_count',       0, $
-  data[0].met
+  PDS_sclk0
 cdf_attput, fileid, 'PDS_sclk_stop_count',        0, $
-  data[nrec-1].met
+  PDS_sclk1
 
 dummy = cdf_attcreate(fileid, 'FIELDNAM',     /variable_scope)
 dummy = cdf_attcreate(fileid, 'MONOTON',      /variable_scope)
