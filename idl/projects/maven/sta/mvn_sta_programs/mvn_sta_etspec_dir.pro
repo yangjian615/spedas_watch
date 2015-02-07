@@ -32,8 +32,8 @@
 ;CREATED BY:      Takuya Hara  on 2014-11-25.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-01-30 22:56:19 -0800 (Fri, 30 Jan 2015) $
-; $LastChangedRevision: 16806 $
+; $LastChangedDate: 2015-02-03 14:48:46 -0800 (Tue, 03 Feb 2015) $
+; $LastChangedRevision: 16844 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_etspec_dir.pro $
 ;
 ;-
@@ -60,17 +60,9 @@ PRO mvn_sta_etspec_dir, apid, frame=frame, units=units, thld_theta=thld_theta, a
   center_time = DBLARR(N_ELEMENTS(time))
   fifb = STRING("15b) ;"
   FOR i=0ll, N_ELEMENTS(time)-1 DO BEGIN ;- time loop
-     IF ((i MOD 100) EQ 0) OR (i EQ N_ELEMENTS(time)-1) THEN $
-        IF v GE 1 THEN BEGIN $
-        num = i
-        IF i EQ N_ELEMENTS(time)-1 THEN num += 1
-        PRINT, format='(a, a, a, a, a, a, $)', $
-               '      ', fifb, ptrace(), STRING(num), ' /', STRING(N_ELEMENTS(time))
-     ENDIF
      d = CALL_FUNCTION(fun_name, time[i]) 
      d = conv_units(d, units)
      center_time[i] = (d.time+d.end_time)/2.d
-     
      
      IF i EQ 0LL THEN BEGIN
         energy = fltarr(n_elements(time),d.nenergy)
@@ -113,6 +105,14 @@ PRO mvn_sta_etspec_dir, apid, frame=frame, units=units, thld_theta=thld_theta, a
         pY_new[i, *] = py
         pZ_new[i, *] = pz
      ENDIF 
+
+     IF ((i MOD 100) EQ 0) OR (i EQ N_ELEMENTS(time)-1) THEN $
+        IF v GE 1 THEN BEGIN $
+        num = i
+        IF i EQ N_ELEMENTS(time)-1 THEN num += 1
+        PRINT, format='(a, a, a, a, a, a, $)', $
+               '      ', fifb, ptrace(), STRING(num), ' /', STRING(N_ELEMENTS(time))
+     ENDIF
      
      weight = FLTARR(d.nenergy, d.nbins, d.nmass)
      weight[*] = 0.

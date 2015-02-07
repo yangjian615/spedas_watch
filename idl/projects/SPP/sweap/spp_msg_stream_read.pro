@@ -37,12 +37,12 @@ pro spp_msg_stream_read,buffer,time=time   ;,   fileunit=fileunit   ,ptr=ptr
     
     if sync ne 'a829'x then begin
       dprint,format='(i,z,z,i)',ptr,sync,code,psize,dlevel=0,    ' Sync not recognized'
-      hexprint,buffer
+;      hexprint,buffer
       return
     endif
 
     if psize lt 12 then begin
-      dprint,format="('Bad MSG packet size',i,' in file: ',a,' at file position: ',i)",psize,file,fp
+      dprint,format="('Bad MSG packet size',i,' in file: ',a,' at file position: ',i)",psize,'???',0
       break
     endif
     if ptr+6+psize gt bsize then begin

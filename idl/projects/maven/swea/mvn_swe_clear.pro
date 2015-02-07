@@ -13,8 +13,8 @@
 ;     a6:       fast housekeeping
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-05-21 11:46:12 -0700 (Wed, 21 May 2014) $
-; $LastChangedRevision: 15184 $
+; $LastChangedDate: 2015-02-04 13:38:19 -0800 (Wed, 04 Feb 2015) $
+; $LastChangedRevision: 16856 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_clear.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -37,9 +37,16 @@ pro mvn_swe_clear
   swe_3d_arc = 0
   swe_mag1   = 0
   swe_mag2   = 0
+  swe_sc_pot = 0
 
   mvn_swe_engy     = 0
   mvn_swe_engy_arc = 0
+  
+  mvn_swe_pad     = 0
+  mvn_swe_pad_arc = 0
+  
+  mvn_swe_3d     = 0
+  mvn_swe_3d_arc = 0
 
   swe_chksum        = 0
   swe_active_chksum = 0

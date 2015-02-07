@@ -15,8 +15,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 12:38:13 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16102 $
+; $LastChangedDate: 2015-02-04 13:43:51 -0800 (Wed, 04 Feb 2015) $
+; $LastChangedRevision: 16866 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_par.pro $
 ;
 ;-
@@ -59,7 +59,7 @@ pro mvn_swe_shape_par, pans=pans
   e = e[indx,*]
   f = alog10(f[indx,*])
 
-; Filter out bad spectra
+; Filter out bad spectra (typically hot electron voids)
 
   gndx = round(total(finite(f),1))
   gndx = where(gndx eq n_e, npts)

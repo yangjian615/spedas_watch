@@ -63,6 +63,10 @@ PRO xtplot_options_panel, group_leader=group_leader, target=target
   if xregistered('xtplot_options_panel') ne 0 then return
 
   ;state
+  if n_elements(target) eq 0 then begin
+    answer=dialog_message('must have a target',/center)
+    return
+  endif
   wid = {target:target}
   
   ; target - current options

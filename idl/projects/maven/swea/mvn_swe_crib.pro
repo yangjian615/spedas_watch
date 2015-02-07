@@ -5,26 +5,60 @@
 ; displayed using doc_library.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-27 12:23:35 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16754 $
+; $LastChangedDate: 2015-02-05 15:57:40 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16889 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crib.pro $
 ;--------------------------------------------------------------------
 ;
 
-;
-; Load L0 data by unix time range into a common block
-;   See the cruise catalog for some interesting times.
+; General note: All SWEA procedures have their own documentation, 
+; describing how to call them and what the options are.  There are
+; many more options than are listed in this help file.  To list the
+; documentation for routine_name.pro:
+
+doc_library, 'routine_name'
+
+; Load SWEA L0 data by unix time range into a common block
 ;   Note: trange can be in any format accepted by time_double(), and
 ;   it can have multiple dimensions, as long as it has at least two
-;   elements.  You can also request data by orbit number using the
-;   ORBIT keyword.
+;   elements.  Data are automatically downloaded as needed.
 
-trange = ['2014-05-02','2014-05-03']
+trange = ['2014-12-10','2014-12-11']
 mvn_swe_load_l0, trange
+
+; You can also request data by orbit number using the ORBIT keyword.
+;   SWEA software uses the NAIF orbit numbering convention, where
+;   the orbit number increments at geometric periapsis.  When you
+;   request data for orbit X, you get data from apoapsis X-1 through 
+;   periapsis X, extending to apoapsis X.
 
 mvn_swe_load_l0, orbit=[357,360]
 
+; Load L2 data by unix time range or orbit number into a common block
+;   Data loaded from L2 are identical to data loaded from L0 (by design).
+;   L2 data load quickly but consume about 6 times more RAM.  All SWEA 
+;   routines automatically detect which type of data are loaded and work 
+;   the same.
+
+trange = ['2014-12-10','2014-12-11']
+mvn_swe_load_l2, trange
+
+mvn_swe_load_l2, orbit=[357,360]
+
+; To conserve RAM, you can load individual data products over different
+; time ranges.  Remember to reset the time range to the original value
+; for subsequent plotting with tplot.
 ;
+; I recommend that you load burst data in this way.
+
+full_trange = ['2014-12-10','2014-12-11']
+mvn_swe_load_l2, full_trange, /spec  ; SPEC survey data over the full range
+
+smaller_trange = ['2014-12-10/10','2014-12-10/12']
+mvn_swe_load_l2, smaller_trange, /pad, /noerase          ; PAD survey data
+mvn_swe_load_l2, smaller_trange, /pad, /burst, /noerase  ; PAD burst data
+timespan, full_trange
+
 ; Summary plot.  Loads ephemeris data and includes a panel for 
 ; spacecraft altitude (aerocentric).  Orbit numbers appear along
 ; the time axis.
@@ -34,7 +68,6 @@ mvn_swe_load_l0, orbit=[357,360]
 
 mvn_swe_sumplot, /eph, /orb
 
-;
 ; Load MAG data, rotate to SWEA coordinates, and smooth to SWEA PAD 
 ; resolution (1-sec averages over second half of sweep).  These data 
 ; are stored in a common block for quick access by mvn_swe_getpad and 
@@ -71,6 +104,12 @@ mvn_swe_sc_pot, /overlay, /ddd, /mask_sc
 
 mvn_swe_sundir, pans=pans
 
+; Determine the RAM direction in spacecraft or APP coordinates
+;   Requires SPICE.  The RAM direction is calculated with respect to
+;   the IAU_MARS frame (planetocentric, body-fixed).
+
+mvn_sc_ramdir, pans=pans
+
 ; Estimate electron density from 3D moment (allows bin masking).
 ; This method does not account for spacecraft photoelectron scattering
 ; into the SWEA aperture, or for photoelectrons created inside the 
@@ -92,18 +131,15 @@ mvn_swe_n1d, /mb, pans=pans
 
 mvn_swe_n1d, /mom, pans=pans
 
-;
 ; Resample the pitch angle distributions for a nicer plot
 
-mvn_swe_pad_resample, nbins=128., erange=[100., 150.], /norm, /mask
+mvn_swe_pad_resample, nbins=128., erange=[100., 150.], /norm, /mask, /silent
 
-;
 ; Calculate pitch angle distributions from 3D distributions
 
 mvn_swe_pad_resample, nbins=128., erange=[100., 150.], /norm, /mask, $
-                     /ddd, /map3d
+                     /ddd, /map3d, /silent
 
-;
 ; Snapshots selected by the cursor in the tplot window
 ;   Return data by keyword (ddd, pad, spec) at the last place clicked
 ;   Use keyword SUM to sum data between two clicks.  (Careful with

@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-27 19:58:36 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16763 $
+; $LastChangedDate: 2015-02-04 13:37:36 -0800 (Wed, 04 Feb 2015) $
+; $LastChangedRevision: 16855 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -67,6 +67,10 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 
     mvn_swe_version = 1
 
+; Initialize
+
+  if (size(swe_hsk_str,/type) ne 8) then mvn_swe_init
+
 ; Find the first valid LUT
 ;   chksum =   0B means SWEA has just powered on
 ;   chksum = 255B means SWEA is loading tables
@@ -76,6 +80,12 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
   if (not ok) then begin
     if keyword_set(tabnum) then begin
       swe_active_chksum = mvn_swe_tabnum(tabnum,/inverse)
+      if (size(swe_hsk,/type) ne 8) then begin
+        tplot_options, get=topt
+        swe_hsk = replicate(swe_hsk_str,2)
+        swe_hsk.time = topt.trange_full
+        swe_hsk.chksum = swe_active_chksum
+      endif
       swe_chksum = replicate(swe_active_chksum,n_elements(swe_hsk))
       if (swe_active_chksum ne 0B) then ok = 1
     endif
@@ -85,7 +95,11 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
     if keyword_set(chksum) then begin
       swe_active_chksum = chksum
       tabnum = mvn_swe_tabnum(swe_active_chksum)
-      swe_chksum = replicate(swe_active_chksum,n_elements(swe_hsk))
+      if (nhsk eq 0L) then begin
+        nhsk = 2
+        swe_hsk = replicate(swe_hsk_str,nhsk)
+      endif
+      swe_chksum = replicate(swe_active_chksum,nhsk)
       if (tabnum ne 0) then ok = 1
     endif
   endif
@@ -182,55 +196,18 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 
 ; Deflection Angle Range
 
-  swe_del = fltarr(6,64,3)             ; 6 del bins per energy step for group=0,1,2
-
-; SWEA calibrations (energy/angle response)
-
-  p = { a0 :  7.579357236d+00, $
-        a1 : -1.735792405d-01, $
-        a2 : -3.795756270d-04, $
-        a3 :  4.389078897d-05, $
-        a4 :  5.688218987d-07, $
-        a5 :  0.0               }
-
-  dtheta = abs(swp.th1 - swp.th2)      ; elevations spanned over 4 deflector steps
-  fwhm = polycurve(swp.theta, par=p)   ; instrumental resolution at center elevation
-  swe_del[*,*,0] = dtheta + fwhm       ; elevation resolution of the 4 bins combined
-
-  for i=0,31 do begin
-    swe_del[*,(2*i),1] = (swe_del[*,(2*i),0] + swe_del[*,(2*i+1),0])/2.
-    swe_del[*,(2*i+1),1] = swe_del[*,(2*i),1]
-  endfor
-
-  for i=0,15 do begin
-    swe_del[*,(4*i),2] = (swe_del[*,(4*i),1] + swe_del[*,(4*i+3),1])/2.
-    for j=1,3 do swe_del[*,(4*i+j),2] = swe_del[*,(4*i),2]
-  endfor
-
-; Alternate method, just make the bins touch with no gaps
-; This seems to be what plot3d is expecting.
+  swe_del = fltarr(6,64,3)            ; 6 del bins per energy step for group=0,1,2
 
   for j=0,2 do for i=0,63 do swe_del[*,i,j] = median(swe_el[*,i,j] - shift(swe_el[*,i,j],1))
 
 ; Azimuth Angle and Range
-;   From the rotation scan of 2013-02-27 at 1 keV.  These are the centroids of the
-;   azimuth response function (F) of each anode: <az> = total(az*F(az))/total(F(az))
-
-  swe_az = [   11.2470,  31.6462,  55.4238,  76.0096, 101.7052, 122.2142, $
-              146.2746, 166.3412, 192.0000, 212.4004, 235.8170, 255.6995, $
-              281.4268, 301.6986, 325.7882, 345.7588                       ]
-
-  swe_daz = (shift(swe_az,-1) - shift(swe_az,1))/2.
-  swe_daz[[0,15]] = swe_daz[[0,15]] + 180.
-
-; For now, override with nominal
 
   swe_az = 11.25 + 22.5*findgen(16)   ; azimuth bins in SWEA science coord.
   swe_daz = replicate(22.5,16)        ; nominal widths
 
 ; Pitch angle mapping lookup table
 
-  mvn_swe_padlut, lut=lut, dlat=22.5  ; default at launch (maybe I will update)
+  mvn_swe_padlut, lut=lut, dlat=22.5  ; table used in flight software
   swe_padlut = lut
 
 ; Geometric Factor

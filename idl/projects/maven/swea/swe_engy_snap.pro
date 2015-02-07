@@ -70,8 +70,8 @@
 ;       NOERASE:       Overplot all spectra after the first.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-27 13:07:23 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16756 $
+; $LastChangedDate: 2015-02-05 15:50:04 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16878 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -160,7 +160,9 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     fflg = 1
   endif else fflg = 0
 
-  if (size(swe_hsk,/type) ne 8) then hflg = 0 else hflg = 1
+  if (size(swe_hsk,/type) eq 8) then begin
+    if (n_elements(swe_hsk) gt 2L) then hflg = 1 else hflg = 0
+  endif else hflg = 0
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   if keyword_set(archive) then aflg = 1 else aflg = 0
 

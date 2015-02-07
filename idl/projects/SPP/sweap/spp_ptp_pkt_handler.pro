@@ -300,10 +300,10 @@ pro spp_swp_apid_data_init,save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
   
 ;  spp_apid_data,'359'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
-  spp_apid_data,'360'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
+;  spp_apid_data,'360'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
   
   spp_apid_data,'7c0'x,routine='spp_log_message_decom',tname='log_',tfields='MSG',save=1,rt_tags='MSG',rt_flag=1
-  spp_swp_spane_init
+  spp_swp_spane_init,save=save
 end
 
 
@@ -400,8 +400,8 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   ptp_size = swap_endian( uint(buffer,0) ,/swap_if_little_endian)   ; first two bytes provide the size
   if ptp_size ne n_elements(buffer) then begin
     dprint,time_string(time,/local_time),'PTP size error- size is ',ptp_size
-    hexprint,buffer
-    savetomain,buffer,time
+;    hexprint,buffer
+;    savetomain,buffer,time
     return
   endif
   ptp_code = buffer[2]

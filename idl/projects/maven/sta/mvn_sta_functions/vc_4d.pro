@@ -53,7 +53,7 @@ if keyword_set(ms) then begin
 	if count ne 0 then data[ind]=0.
 endif
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+if keyword_set(mincnt) then if total(data) lt mincnt then return,[0.,0.,0.]
 
 dat.data=data
 dat = conv_units(dat2,"eflux")		; Use energy flux

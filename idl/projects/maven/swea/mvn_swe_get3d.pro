@@ -1,7 +1,9 @@
 ;+
 ;FUNCTION:   mvn_swe_get3d
 ;PURPOSE:
-;  Returns a SWEA 3D data structure constructed from telemetry data (APID's A0 and A1).
+;  Returns a SWEA 3D data structure constructed from L0 data or extracted
+;  from L2 data.  This routine automatically determines which data are loaded.
+;  Optionally sums the data over a time range, propagating uncertainties.
 ;
 ;USAGE:
 ;  ddd = mvn_swe_get3d(time)
@@ -22,8 +24,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-26 17:16:16 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16321 $
+; $LastChangedDate: 2015-02-05 15:57:29 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16888 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -37,9 +39,74 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
     print,"You must specify a time."
     return, 0
   endif
-  
+
   time = time_double(time)
   
+  if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
+  if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
+  if (size(units,/type) ne 7) then units = 'eflux'
+
+; First attempt to get extract 3D(s) from L2 data
+
+  if keyword_set(archive) then begin
+    if (size(mvn_swe_3d_arc,/type) eq 8) then begin
+      if keyword_set(all) then begin
+        tmin = min(time, max=tmax, /nan)
+        indx = where((mvn_swe_3d_arc.time ge tmin) and (mvn_swe_3d_arc.time le tmax), npts)
+        if (npts gt 0L) then time = mvn_swe_3d_arc[indx].time $
+                        else print,"No 3D archive data at specified time(s)."        
+      endif else npts = n_elements(time)
+      
+      if (npts gt 0L) then begin
+        ddd = replicate(swe_3d_struct, npts)
+        aflg = 1
+      endif
+    endif else npts = 0L
+  endif else begin
+    if (size(mvn_swe_3d,/type) eq 8) then begin
+      if keyword_set(all) then begin
+        tmin = min(time, max=tmax, /nan)
+        indx = where((mvn_swe_3d.time ge tmin) and (mvn_swe_3d.time le tmax), npts)
+        if (npts gt 0L) then time = mvn_swe_3d[indx].time $
+                        else print,"No 3D survey data at specified time(s)."
+      endif else npts = n_elements(time)
+
+      if (npts gt 0L) then begin
+        ddd = replicate(swe_3d_struct, npts)
+        aflg = 0
+      endif
+    endif else npts = 0L
+  endelse
+
+  for n=0L,(npts-1L) do begin
+    if (aflg) then begin
+      tgap = min(abs(mvn_swe_3d_arc.time - time[n]), i)
+      ddd[n] = mvn_swe_3d_arc[i]
+    endif else begin
+      tgap = min(abs(mvn_swe_3d.time - time[n]), i)
+      ddd[n] = mvn_swe_3d[i]
+    endelse
+
+    if (addmag) then begin
+      dt = min(abs(ddd[n].time - swe_mag1.time),j)
+      if (dt lt 1D) then ddd[n].magf = swe_mag1[j].magf
+    endif
+
+    if (addpot) then begin
+      dt = min(abs(ddd[n].time - swe_sc_pot.time),j)
+      if (dt lt ddd[n].delta_t) then ddd[n].sc_pot = swe_sc_pot[j].potential $
+                                else ddd[n].sc_pot = !values.f_nan
+    endif
+  endfor
+
+  if (npts gt 0L) then begin
+    if keyword_set(sum) then ddd = mvn_swe_3dsum(ddd)
+    mvn_swe_convert_units, ddd, units
+    return, ddd
+  endif
+
+; If necessary (npts = 0), extract 3D(s) from L0 data
+
   if keyword_set(archive) then begin
     if (size(swe_3d_arc,/type) ne 8) then begin
       print,"No 3D archive data."
@@ -85,9 +152,6 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
 
     aflg = 0
   endelse
-  
-  if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
-  if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
 
 ; Locate the 3D data closest to the desired time
 
@@ -291,30 +355,8 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
 ; "blurred" by a changing magnetic field direction, so summing only makes 
 ; sense for short intervals.
 
-  if (keyword_set(sum) and (npts gt 1)) then begin
-    dddsum = ddd[0]
-
-    dddsum.met = mean(ddd.met)
-    dddsum.time = mean(ddd.time)
-    dddsum.end_time = max(ddd.end_time)
-    tmin = min(ddd.time, max=tmax)
-    dddsum.delta_t = (tmax - tmin) > ddd[0].delta_t
-    dddsum.dt_arr = total(ddd.dt_arr,3)      ; normalization for the sum
-
-    sc_pot = mean(ddd.sc_pot)
-    
-    dddsum.magf = total(ddd.magf,2)/float(npts)
-    dddsum.v_flow = total(ddd.v_flow,2)/float(npts)
-    dddsum.bkg = mean(ddd.bkg)
-    
-    dddsum.data = total(ddd.data/ddd.dtc,3)  ; corrected counts
-    dddsum.var = total(ddd.var/ddd.dtc,3)    ; variance
-    dddsum.dtc = 1.         ; summing corrected counts is not reversible
-    
-    ddd = dddsum    
-  endif
-  
-  if (size(units,/type) eq 7) then mvn_swe_convert_units, ddd, units
+  if keyword_set(sum) then ddd = mvn_swe_3dsum(ddd)
+  mvn_swe_convert_units, ddd, units
 
   return, ddd
 

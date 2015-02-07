@@ -15,8 +15,8 @@
 ; Hacked from mvn_swe_l2gen, 2015-01-25, jmm, jimm@ssl.berkeley.edu
 ; jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-25 11:06:38 -0800 (Sun, 25 Jan 2015) $
-; $LastChangedRevision: 16731 $
+; $LastChangedDate: 2015-02-04 14:38:32 -0800 (Wed, 04 Feb 2015) $
+; $LastChangedRevision: 16870 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_kpgen.pro $
 ;- 
 Pro mvn_swe_kpgen, date = date, directory = directory, _extra = _extra
@@ -44,6 +44,8 @@ Pro mvn_swe_kpgen, date = date, directory = directory, _extra = _extra
   mvn_swe_spice_init, trange = trange
 
 ; Make kp save file:
+  del_data, '*'                 ;delete all tplot variables so files 
+                                ;aren't made from the previous day's data
   mvn_swe_kp, trange
 
 Return

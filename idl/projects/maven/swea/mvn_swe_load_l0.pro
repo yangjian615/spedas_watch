@@ -71,8 +71,8 @@
 ;       LOADONLY:      Download data but do not process.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-24 14:31:32 -0800 (Sat, 24 Jan 2015) $
-; $LastChangedRevision: 16726 $
+; $LastChangedDate: 2015-02-04 13:39:20 -0800 (Wed, 04 Feb 2015) $
+; $LastChangedRevision: 16858 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -84,10 +84,13 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
   @mvn_swe_com
 
+; Process keywords
+
   if not keyword_set(maxbytes) then maxbytes = 0
   nodupe = 1
   oneday = 86400D
   
+  if (size(status,/type) eq 0) then status = 1
   if keyword_set(status) then silent = 0 else silent = 1
   
   if keyword_set(orbit) then begin
@@ -158,73 +161,10 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
   mvn_swe_spice_init, trange=trange, /list
 
-; Define telemetry conversion factors
+; Define decompression, telemetry conversion factors, and data structures
 
-  if (size(decom,/type) eq 0) then begin
+  mvn_swe_init
 
-; Decompression: 19-to-8
-;   16-bit instrument messages are summed into 19-bit counters 
-;   in the PFDPU.  These 19-bit values are rounded down onboard
-;   to fit into the 8-bit compression scheme, so each compressed
-;   value corresponds to a range of possible counts.  I take the
-;   middle of each range for decompression, so there are half 
-;   counts.  This is less than a ~3% (systematic) correction.
-;
-;   Compression introduces digitization noise, which dominates
-;   the variance at high count rates.  I treat digitization noise
-;   as additive white noise.
-
-    decom = fltarr(16,16)
-    decom[0,*] = findgen(16)
-    decom[1,*] = 16. + findgen(16)
-    for i=2,15 do decom[i,*] = 2.*decom[(i-1),*]
-    
-    d_floor = reform(transpose(decom),256)        ; FSW rounds down
-    d_ceil = shift(d_floor,-1) - 1.
-    d_ceil[255] = 2.^19. - 1.                     ; 19-bit counter max
-    d_mid = (d_ceil + d_floor)/2.                 ; mid-point
-    n_pts = d_ceil - d_floor + 1.                 ; number of values in range
-    d_var = d_mid + (n_pts^2. - 1.)/12.           ; variance w/ dig. noise
-    
-    decom = d_mid  ; decompressed counts
-    devar = d_var  ; variance w/ digitization noise
-
-; Housekeeping conversions
-
-    swe_v = [ 1.000     , $   ;  0: LVPS Temperature
-             -0.153355  , $   ;  1: MCP HV Voltage
-             -0.000203  , $   ;  2: NRHV +5V Supply Voltage
-             -0.030795  , $   ;  3: Analyzer Voltage
-             -0.076870  , $   ;  4: Deflector 1 Voltage
-             -0.075839  , $   ;  5: Deflector 2 Voltage
-              1.000     , $   ;  6: ground/spare
-              1.000     , $   ;  7: ground/spare
-              0.000763  , $   ;  8: V0 Voltage
-              1.000     , $   ;  9: Analyzer Temperature
-             -0.000459  , $   ; 10: +12V Voltage
-             -0.000459  , $   ; 11: -12V Voltage
-             -0.001055  , $   ; 12: +28V Voltage (after MCPHV enable plug)
-             -0.001055  , $   ; 13: +28V Voltage (after NRHV enable plug)
-              1.000     , $   ; 14: ground/spare
-              1.000     , $   ; 15: ground/spare
-              1.000     , $   ; 16: Digital Temperature
-             -0.000169  , $   ; 17: +2.5V Digital Voltage
-             -0.000191  , $   ; 18: +5V Digital Voltage
-             -0.000169  , $   ; 19: +3.3V Digital Voltage
-             -0.000191  , $   ; 20: +5V Analog Voltage
-             -0.000191  , $   ; 21: -5V Analog Voltage
-             -0.001055  , $   ; 22: +28V Voltage
-              1.000        ]  ; 23: ground/spare
-
-    swe_t = [1.6484d2, 3.9360d-2, 5.6761d-6, 4.4329d-10, 1.6701d-14, 2.4223d-19]
-
-; Grouping and Period
-
-    swe_ne = [64, 32, 16, 0]       ; number of energy bins for group=0,1,2
-    swe_dt = 2D^(dindgen(6) + 1D)  ; sample interval (sec) for period=0,1,2,3,4,5
-
-  endif
-  
 ; Read in the telemetry file and store the packets in a byte array
 
   for i=0,(nfiles-1) do begin
@@ -242,7 +182,7 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
 ; Check to see if data were actually loaded
 
-  mvn_swe_stat, npkt=npkt, silent=silent
+  mvn_swe_stat, npkt=npkt, /silent
   
   if (total(npkt) eq 0L) then begin
     print,"No data were loaded!"
@@ -308,21 +248,18 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
   endif
 
-; Define times of configuration changes
-
-  mvn_swe_config
-
 ; Determine calibration factors
+; (uses housekeeping to determine sweep table)
 
   mvn_swe_calib
-
-; Define the 3D, PAD, and SPEC data structures
-
-  mvn_swe_struct
 
 ; Extract energy spectra
 
   mvn_swe_makespec
+
+; Report status of data loaded
+
+  mvn_swe_stat, npkt=npkt, silent=silent
 
 ; Create a summary plot
 

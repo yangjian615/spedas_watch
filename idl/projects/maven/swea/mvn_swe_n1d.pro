@@ -33,8 +33,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-27 12:08:22 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16746 $
+; $LastChangedDate: 2015-02-05 15:53:52 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16884 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-
@@ -57,10 +57,11 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask
 
   if keyword_set(ddd) then begin
 
-    if (size(swe_3d,/type) ne 8) then begin
+    if ((size(swe_3d,/type) ne 8) and (size(mvn_swe_3d,/type) ne 8)) then begin
       print,"No 3D data."
       return
     endif
+
     if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
     if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
     if (n_elements(obins) ne 96) then begin
@@ -71,7 +72,9 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask
     if (size(mask_sc,/type) eq 0) then mask_sc = 1
     if keyword_set(mask_sc) then obins = swe_sc_mask * obins
    
-    t = swe_3d.time
+    if (size(mvn_swe_3d,/type) ne 8) then t = mvn_swe_3d.time $
+                                     else t = swe_3d.time
+
     npts = n_elements(t)
     dens = fltarr(npts)
     temp = dens

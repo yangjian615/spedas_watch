@@ -18,7 +18,7 @@
 
 pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,ql=ql,qa=qa,hiresl3=hiresl3,level=level
 
-
+  type = ''
   if ~keyword_set(level) or keyword_set(hiresl3) then level = 'l3'
 
 ;Get the time range if it hasn't already been set
@@ -52,7 +52,7 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
   
   
 ;Load the mag data	
-  if keyword_set(ql) then begin
+  if keyword_set(ql) or level eq 'l2' then begin
      rbsp_load_emfisis,probe=probe,/quicklook
 
      if ~tdexists(rbspx+'_emfisis_quicklook_Mag',tr[0],tr[1]) then begin
@@ -60,6 +60,7 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
         return
      endif		
 
+     
   endif else begin
      if keyword_set(hiresl3) then type = 'hires' else type = '1sec'
 
@@ -98,7 +99,7 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
 
   message,"Rotating emfisis data...",/continue
 
-  if keyword_set(ql) or type eq 'l2' then begin
+  if keyword_set(ql) or level eq 'l2' then begin
                                 ;Some of the EMFISIS quicklook data
                                 ;extend beyond the day loaded. This messes things up
                                 ;later. Remove these data points now. 
@@ -172,40 +173,6 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
      tdexists(rbspx+'_sfit12_mgse',tr[0],tr[1]) then $
         rbsp_vxb_subtract,'vel_total',rbspx + '_mag_mgse',rbspx+'_sfit12_mgse'
 
-;; stop
-
-;; ;**************************************************
-;; ;TESTING
-;; ;copy_data,'Esvy_mgse_vxb_removed','Esvy_mgse_vxb_removed_orig'
-;; copy_data,rbspx+'_sfit12_mgse',rbspx+'_sfit12_mgse_orig'
-;; ;timeshift emfisis data to reduce residual
-;; ;get_data,rbspx+'_mag_mgse',data=mm
-;; get_data,rbspx+'_sfit12_mgse',data=mm
-;; mm.x = mm.x + 60d
-;; ;store_data,rbspx+'_mag_mgse_test',data=mm
-;; store_data,rbspx+'_sfit12_mgse',data=mm
-
-;; ;; get_data,rbspx+'_mag_mgse',data=m1
-;; ;; get_data,rbspx+'_mag_mgse_test',data=m2
-;; ;print,total(m2.x - m1.x)
-
-;; ;dif_data,rbspx+'_mag_mgse',rbspx+'_mag_mgse_test'
-;; ;options,'rbspa_mag_mgse-rbspa_mag_mgse_test','ytitle','Bo_old - Bo_new!CnT MGSE'
-
-;; rbsp_vxb_subtract,'vel_total',rbspx + '_mag_mgse',rbspx+'_sfit12_mgse'
-;; dif_data,'Esvy_mgse_vxb_removed','Esvy_mgse_vxb_removed_orig'
-;; options,'Esvy_mgse_vxb_removed-Esvy_mgse_vxb_removed_orig','ytitle','E_old - E_new!CmV/m MGSE'
-
-;; options,'Esvy_mgse_vxb_removed','ytitle','E-VxB time!Cshifted'
-;; options,'Esvy_mgse_vxb_removed_orig','ytitle','E-VxB!Corig'
-;; ylim,['Esvy_mgse_vxb_removed','Esvy_mgse_vxb_removed_orig'],-40,40
-;; tplot,['rbspa_mag_mgse-rbspa_mag_mgse_test','Esvy_mgse_vxb_removed-Esvy_mgse_vxb_removed_orig','Esvy_mgse_vxb_removed','Esvy_mgse_vxb_removed_orig']
-
-
-
-;; ;**************************************************
-
-
   store_data,'vel_total',/delete
 
   ;Contains both Vsc x B and Vcoro x B
@@ -213,13 +180,6 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
 
   ;subtract off Vcoro x B
   dif_data,rbspx+'_vxb',rbspx+'_E_coro_mgse',newname=rbspx+'_vscxb'
-;; tplot,[rbspx+'_vxb',rbspx+'_vscxb']
-;; dif_data,rbspx+'_vxb',rbspx+'_vscxb'
-;; dif_data,rbspx+'_vxb-'+rbspx+'_vscxb','rbspa_E_coro_mgse'
-
-;; ;This plot should be zero if rbspx+'_vscxb' only contains Vsc x B
-;; tplot,rbspx+'_vxb-'+rbspx+'_vscxb-'+rbspx+'_E_coro_mgse'
-
 
   store_data,['vxb_x','vxb_y','vxb_z'],/delete
 

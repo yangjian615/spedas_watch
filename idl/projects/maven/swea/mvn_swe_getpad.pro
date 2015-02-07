@@ -1,7 +1,9 @@
 ;+
 ;FUNCTION:   mvn_swe_getpad
 ;PURPOSE:
-;  Constructs PAD data structure from raw data.
+;  Returns a SWEA PAD data structure constructed from L0 data or extracted
+;  from L2 data.  This routine automatically determines which data are loaded.
+;  Optionally sums the data over a time range, propagating uncertainties.
 ;
 ;USAGE:
 ;  pad = mvn_swe_getpad(time)
@@ -20,10 +22,11 @@
 ;       SUM:           If set, then sum all PAD's selected.
 ;
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
+;                      Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-11-17 16:49:19 -0800 (Mon, 17 Nov 2014) $
-; $LastChangedRevision: 16206 $
+; $LastChangedDate: 2015-02-05 17:38:13 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16893 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -40,6 +43,101 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
   
   time = time_double(time)
   
+  if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
+  if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
+  if (size(units,/type) ne 7) then units = 'eflux'
+
+; First attempt to get extract PAD(s) from L2 data
+
+  if keyword_set(archive) then begin
+    if (size(mvn_swe_pad_arc,/type) eq 8) then begin
+      if keyword_set(all) then begin
+        tmin = min(time, max=tmax, /nan)
+        indx = where((mvn_swe_pad_arc.time ge tmin) and (mvn_swe_pad_arc.time le tmax), npts)
+        if (npts gt 0L) then time = mvn_swe_pad_arc[indx].time $
+                        else print,"No PAD archive data at specified time(s)."        
+      endif else npts = n_elements(time)
+      
+      if (npts gt 0L) then begin
+        pad = replicate(swe_pad_struct, npts)
+        aflg = 1
+      endif
+    endif else npts = 0L
+  endif else begin
+    if (size(mvn_swe_pad,/type) eq 8) then begin
+      if keyword_set(all) then begin
+        tmin = min(time, max=tmax, /nan)
+        indx = where((mvn_swe_pad.time ge tmin) and (mvn_swe_pad.time le tmax), npts)
+        if (npts gt 0L) then time = mvn_swe_pad[indx].time $
+                        else print,"No PAD survey data at specified time(s)."
+      endif else npts = n_elements(time)
+
+      if (npts gt 0L) then begin
+        pad = replicate(swe_pad_struct, npts)
+        aflg = 0
+      endif
+    endif else npts = 0L
+  endelse
+
+  for n=0L,(npts-1L) do begin
+    if (aflg) then begin
+      tgap = min(abs(mvn_swe_pad_arc.time - time[n]), i)
+      pad[n] = mvn_swe_pad_arc[i]
+    endif else begin
+      tgap = min(abs(mvn_swe_pad.time - time[n]), i)
+      pad[n] = mvn_swe_pad[i]
+    endelse
+
+    if (addmag) then begin
+      dt = min(abs(pad[n].time - swe_mag1.time),j)
+      if (dt lt 1D) then pad[n].magf = swe_mag1[j].magf
+    endif
+
+    if (addpot) then begin
+      dt = min(abs(pad[n].time - swe_sc_pot.time),j)
+      if (dt lt pad[n].delta_t) then pad[n].sc_pot = swe_sc_pot[j].potential $
+                                else pad[n].sc_pot = !values.f_nan
+    endif
+  endfor
+
+  if (npts gt 0L) then begin
+
+; Fill in bookkeeping parameters used by snapshot and diagnostic procedures
+; Add magnetic field and spacecraft potential, if available
+
+    mvn_swe_magdir, pad.time, iBaz, jBel, pad.Baz, pad.Bel, /inverse
+
+    fake_pkt = replicate({time:0D, Baz:0., Bel:0., group:0}, npts)
+    fake_pkt.time = pad.time
+    fake_pkt.Baz = iBaz
+    fake_pkt.Bel = jBel
+    fake_pkt.group = pad.group
+
+    for i=0L,(npts-1L) do begin
+      pam = mvn_swe_padmap(fake_pkt[i])
+;     pad[i].pa     = pam.pa     ; obtained from the CDF
+;     pad[i].dpa    = pam.dpa    ; obtained from the CDF
+      pad[i].pa_min = transpose(pam.pa_min)
+      pad[i].pa_max = transpose(pam.pa_max)
+      pad[i].theta  = transpose(swe_el[pam.jel,*,pad[i].group])
+      pad[i].dtheta = transpose(swe_del[pam.jel,*,pad[i].group])
+      pad[i].phi    = replicate(1.,pad[i].nenergy) # swe_az[pam.iaz]
+      pad[i].dphi   = replicate(1.,pad[i].nenergy) # swe_daz[pam.iaz]
+      pad[i].iaz    = pam.iaz
+      pad[i].jel    = pam.jel
+      pad[i].k3d    = pam.k3d
+    endfor
+
+    pad.domega = (2.*!dtor)*pad.dphi*cos(pad.theta*!dtor)*sin(pad.dtheta*!dtor/2.)
+
+    if keyword_set(sum) then pad = mvn_swe_padsum(pad)
+    mvn_swe_convert_units, pad, units
+
+    return, pad
+  endif
+
+; If necessary (npts = 0), extract PAD(s) from L0 data
+
   if keyword_set(archive) then begin
     if (size(a3,/type) ne 8) then begin
       print,"No PAD archive data."
@@ -85,9 +183,6 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
 
     aflg = 0
   endelse
-  
-  if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
-  if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
 
 ; Locate the PAD data closest to the desired time
 
@@ -109,7 +204,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
 
     pad[n].chksum = swe_active_chksum
  
-    dt = 1.95D                         ; measurement span
+    dt = 1.95D                            ; measurement span
     pad[n].time = pkt.time + (dt/2D)      ; center time (unix)
     pad[n].met = pkt.met + (dt/2D)        ; center time (met)
     pad[n].end_time = pkt.time + dt       ; end time (unix)
@@ -250,41 +345,13 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units
   indx = where(pad.time gt t_mcp[0], count)
   if (count gt 0L) then pad[indx].eff = pad[indx].eff * 1.5
 
-; Sum the data.  This is done by summing raw counts corrected by deadtime
-; and then setting dtc to unity.  Also, note that summed PAD's can be 
-; "blurred" by a changing magnetic field direction, so summing only makes 
-; sense for short intervals.  The theta, phi, and omega tags can be 
-; hopelessly confused if the MAG direction changes much.
+; Sum the data
 
-  if (keyword_set(sum) and (npts gt 1)) then begin
-    padsum = pad[0]
+  if keyword_set(sum) then pad = mvn_swe_padsum(pad)    
 
-    padsum.met = mean(pad.met)
-    padsum.time = mean(pad.time)
-    padsum.end_time = max(pad.end_time)
-    tmin = min(pad.time, max=tmax)
-    padsum.delta_t = (tmax - tmin) > pad[0].delta_t
-    padsum.dt_arr = total(pad.dt_arr,3)      ; normalization for the sum
-    
-    pa = total(pad.pa,3)/float(npts)         ; pitch angles can be blurred
-    dpa = total(pad.dpa,3)/float(npts)
-    
-    sc_pot = mean(pad.sc_pot)
-    Baz = mean(pad.Baz)
-    Bel = mean(pad.Bel)
-    
-    padsum.magf = total(pad.magf,2)/float(npts)
-    padsum.v_flow = total(pad.v_flow,2)/float(npts)
-    padsum.bkg = mean(pad.bkg)
-    
-    padsum.data = total(pad.data/pad.dtc,3)  ; corrected counts
-    padsum.var = total(pad.var/pad.dtc,3)    ; variance
-    padsum.dtc = 1.         ; summing corrected counts is not reversible
-    
-    pad = padsum
-  endif
-  
-  if (size(units,/type) eq 7) then mvn_swe_convert_units, pad, units
+; Convert units
+
+  mvn_swe_convert_units, pad, units
 
   return, pad
 

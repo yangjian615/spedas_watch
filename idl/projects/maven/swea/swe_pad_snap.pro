@@ -39,8 +39,8 @@
 ;       MASK_SC:       Mask PA bins that are blocked by the spacecraft.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-27 12:18:32 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16753 $
+; $LastChangedDate: 2015-02-05 15:49:32 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16877 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -138,17 +138,18 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
     pad = mvn_swe_getpad(trange,archive=aflg,all=doall,/sum,units=units)
     
-    case strupcase(pad.units_name) of
-      'COUNTS' : zlo = 1
-      'RATE'   : zlo = 1
-      'CRATE'  : zlo = 1
-      'FLUX'   : zlo = 1
-      'EFLUX'  : zlo = 1e3
-      'DF'     : zlo = 1e-18
-      else     : zlo = 1
-    endcase
-    
     if (size(pad,/type) eq 8) then begin
+    
+      case strupcase(pad.units_name) of
+        'COUNTS' : zlo = 1
+        'RATE'   : zlo = 1
+        'CRATE'  : zlo = 1
+        'FLUX'   : zlo = 1
+        'EFLUX'  : zlo = 1e3
+        'DF'     : zlo = 1e-18
+        else     : zlo = 1
+      endcase
+
       title = string(time_string(pad.time), pad.Baz*!radeg, pad.Bel*!radeg, $
                      format='(a19,5x,"Baz = ",f5.1,3x,"Bel = ",f5.1)')
       str_element,limits,'title',title,/add

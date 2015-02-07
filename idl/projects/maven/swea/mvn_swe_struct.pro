@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-13 12:58:04 -0700 (Mon, 13 Oct 2014) $
-; $LastChangedRevision: 15989 $
+; $LastChangedDate: 2015-02-04 13:43:05 -0800 (Wed, 04 Feb 2015) $
+; $LastChangedRevision: 16864 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -22,6 +22,133 @@ pro mvn_swe_struct
   n_az = 16                       ; number of azimuth bins
   n_el =  6                       ; number of elevation bins
   n_a  = n_az*n_el                ; number of solid angle bins
+
+; Raw telemetry structures
+
+  swe_hsk_str =  {time    : 0D            , $    ; packet unix time
+                  met     : 0D            , $    ; packet mission elapsed time
+                  addr    : -1L           , $    ; packet address
+                  ver     : 0B            , $    ; CCSDS Version
+                  type    : 0B            , $    ; CCSDS Type
+                  hflg    : 0B            , $    ; CCSDS Secondary header flag
+                  APID    : 0U            , $    ; CCSDS APID
+                  gflg    : 0B            , $    ; CCSDS Group flags
+                  npkt    : 0B            , $    ; packet counter
+                  plen    : 0U            , $    ; packet length
+                  LVPST   : 0.            , $    ; LVPS temperature (C)
+                  MCPHV   : 0.            , $    ; MCP HV (V)
+                  NRV     : 0.            , $    ; NR HV readback (V)
+                  ANALV   : 0.            , $    ; Analyzer voltage (V)
+                  DEF1V   : 0.            , $    ; Deflector 1 voltage (V)
+                  DEF2V   : 0.            , $    ; Deflector 2 voltage (V)
+                  V0V     : 0.            , $    ; V0 voltage (V)
+                  ANALT   : 0.            , $    ; Analyzer temperature (C)
+                  P12V    : 0.            , $    ; +12 V
+                  N12V    : 0.            , $    ; -12 V
+                  MCP28V  : 0.            , $    ; +28-V MCP supply (V)
+                  NR28V   : 0.            , $    ; +28-V NR supply (V)
+                  DIGT    : 0.            , $    ; Digital temperature (C)
+                  P2P5DV  : 0.            , $    ; +2.5 V Digital (V)
+                  P5DV    : 0.            , $    ; +5 V Digital (V)
+                  P3P3DV  : 0.            , $    ; +3.3 V Digital (V)
+                  P5AV    : 0.            , $    ; +5 V Analog (V)
+                  N5AV    : 0.            , $    ; -5 V Analog (V)
+                  P28V    : 0.            , $    ; +28 V Primary (V)
+                  modeID  : 0B            , $    ; Parameter Table Mode ID
+                  opts    : 0B            , $    ; Options
+                  DistSvy : 0B            , $    ; 3D Survey Options     (CCGGxNNN)
+                  DistArc : 0B            , $    ; 3D Archive Options    (CCGGxNNN)
+                  PadSvy  : 0B            , $    ; PAD Survey Options    (CCGGxNNN)
+                  PadArc  : 0B            , $    ; PAD Archive Options   (CCGGxNNN)
+                  SpecSvy : 0B            , $    ; ENGY Survey Options   (CCxxxNNN)
+                  SpecArc : 0B            , $    ; ENGY Archive Options  (CCxxxNNN)
+                  LUTADR  : bytarr(4)     , $    ; LUT Address 0-3
+                  CSMLMT  : 0B            , $    ; CSM Failure Limit
+                  CSMCTR  : 0B            , $    ; CSM Failure Count
+                  RSTLMT  : 0B            , $    ; Reset if no message in seconds
+                  RSTSEC  : 0B            , $    ; Reset seconds since last message
+                  MUX     : bytarr(4)     , $    ; Fast Housekeeping MUX 0-3
+                  DSF     : fltarr(6)     , $    ; Deflection scale factor 0-5
+                  SSCTL   : 0U            , $    ; Active LUT
+                  SIFCTL  : bytarr(16)    , $    ; SIF control register
+                  MCPDAC  : 0U            , $    ; MCP DAC
+                  ChkSum  : bytarr(4)     , $    ; Checksum LUT 0-3
+                  CmdCnt  : 0U            , $    ; Command counter
+                  HSKREG  : bytarr(16)       }   ; Digital housekeeping register
+
+; SIF Control Register Bits
+;   0 -> HV enable allow
+;   1 -> HV sync enable (always 0)
+;   2 -> Test pulser enable
+;   3 -> spare
+;   4 -> spare
+;   5 -> spare
+;   6 -> spare
+;   7 -> spare
+;   8 -> sweep diagnostic mode (ANALV)
+;   9 -> sweep diagnostic mode (DEF1)
+;  10 -> sweep diagnostic mode (DEF2)
+;  11 -> sweep diagnostic mode (V0)
+;  12 -> spare
+;  13 -> spare
+;  14 -> spare
+;  15 -> sweep enable
+;
+              
+  swe_a0_str =  {time    : 0D            , $    ; packet unix time
+                 met     : 0D            , $    ; packet mission elapsed time
+                 addr    : -1L           , $    ; packet address
+                 npkt    : 0B            , $    ; packet counter
+                 cflg    : 0B            , $    ; compression flag
+                 modeID  : 0B            , $    ; mode ID
+                 ctype   : 0B            , $    ; compression type
+                 group   : 0B            , $    ; grouping (2^N adjacent bins)
+                 period  : 0B            , $    ; sampling interval (2*2^period sec)
+                 lut     : 0B            , $    ; LUT in use (0-7)
+                 e0      : 0             , $    ; starting energy step (0, 16, 32, 48)
+                 data    : fltarr(80,16) , $    ; data array (80A x 16E)
+                 var     : fltarr(80,16)    }   ; variance array (80A x 16E)
+
+  swe_a2_str =  {time    : 0D            , $    ; packet unix time
+                 met     : 0D            , $    ; packet mission elapsed time
+                 addr    : -1L           , $    ; packet address
+                 npkt    : 0B            , $    ; packet counter
+                 cflg    : 0B            , $    ; compression flag
+                 modeID  : 0B            , $    ; mode ID
+                 ctype   : 0B            , $    ; compression type
+                 group   : 0B            , $    ; grouping (2^N adjacent bins)
+                 period  : 0B            , $    ; sampling interval (2*2^period sec)
+                 Baz     : 0B            , $    ; magnetic field azimuth (0-255)
+                 Bel     : 0B            , $    ; magnetic field elevation (0-39)
+                 data    : fltarr(16,64) , $    ; data array (16A x 64E)
+                 var     : fltarr(16,64)    }   ; variance array (16A x 64E)
+
+  swe_a4_str = {time    : 0D            , $    ; packet unix time
+                met     : 0D            , $    ; packet mission elapsed time
+                addr    : -1L           , $    ; packet address
+                npkt    : 0B            , $    ; packet counter
+                cflg    : 0B            , $    ; compression flag
+                modeID  : 0B            , $    ; mode ID
+                ctype   : 0B            , $    ; compression type
+                smode   : 0B            , $    ; summing mode (0 = off, 1 = on)
+                period  : 0B            , $    ; sampling interval (2*2^period sec)
+                lut     : 0B            , $    ; LUT in use (0-7)
+                data    : fltarr(64,16) , $    ; data array (64E x 16T)
+                var     : fltarr(64,16)    }   ; variance array (64E x 16T)
+
+  swe_a6_str = {time    : 0D            , $    ; packet unix time
+                met     : 0D            , $    ; packet mission elapsed time
+                addr    : -1L           , $    ; packet address
+                npkt    : 0B            , $    ; packet counter
+                cflg    : 0B            , $    ; compression flag
+                mux0    : 0B            , $    ; Mux 0
+                mux1    : 0B            , $    ; Mux 1
+                mux2    : 0B            , $    ; Mux 2
+                mux3    : 0B            , $    ; Mux 3
+                analv   : fltarr(224)   , $    ; Analyzer voltage
+                def1v   : fltarr(224)   , $    ; Deflector 1 voltage
+                def2v   : fltarr(224)   , $    ; Deflector 2 voltage
+                v0v     : fltarr(224)      }   ; V0 voltage
 
 ; Define 3D data structure
 

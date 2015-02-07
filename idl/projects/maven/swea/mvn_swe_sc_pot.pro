@@ -68,8 +68,8 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-28 12:38:48 -0800 (Wed, 28 Jan 2015) $
-; $LastChangedRevision: 16773 $
+; $LastChangedDate: 2015-02-05 15:51:27 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16880 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -111,10 +111,27 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
   if (size(dEmax,/type) eq 0) then dEmax = 4.
   
   if (dflg) then begin
-    t = swe_3d.time
-    npts = n_elements(t)
-    e = fltarr(64,npts)
-    f = e
+    ok = 0
+    if (size(mvn_swe_3d,/type) eq 8) then begin
+      t = mvn_swe_3d.time
+      npts = n_elements(t)
+      e = fltarr(64,npts)
+      f = e
+      ok = 1
+    endif
+
+    if ((not ok) and size(swe_3d,/type) eq 8) then begin
+      t = swe_3d.time
+      npts = n_elements(t)
+      e = fltarr(64,npts)
+      f = e
+      ok = 1
+    endif
+    
+    if (not ok) then begin
+      print, "No valid 3D data."
+      return
+    endif
     
     for i=0L,(npts-1L) do begin
       ddd = mvn_swe_get3d(t[i], units='eflux')

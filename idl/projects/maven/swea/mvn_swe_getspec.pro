@@ -1,8 +1,9 @@
 ;+
 ;FUNCTION:   mvn_swe_getspec
 ;PURPOSE:
-;  Extracts ENGY data common block at a specified time or time range.
-;  Optionally sums spectra.
+;  Returns a SWEA SPEC data structure constructed from L0 data or extracted
+;  from L2 data.  This routine automatically determines which data are loaded.
+;  Optionally sums the data over a time range, propagating uncertainties.
 ;
 ;USAGE:
 ;  spec = mvn_swe_getspec(time)
@@ -23,8 +24,8 @@
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2015-02-05 15:56:09 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16886 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14

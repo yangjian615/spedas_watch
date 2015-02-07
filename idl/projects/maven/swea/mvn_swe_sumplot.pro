@@ -56,8 +56,8 @@
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-12-22 16:29:02 -0800 (Mon, 22 Dec 2014) $
-; $LastChangedRevision: 16537 $
+; $LastChangedDate: 2015-02-05 23:04:21 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16897 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -74,7 +74,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   if not keyword_set(pad_e) then pad_e = 280.
   if not keyword_set(smo) then smo = 1
   if keyword_set(a4_sum) then a4_sum = 1 else a4_sum = 0
-  if (size(eunits,/type) ne 7) then eunits = 'crate'
+  if (size(eunits,/type) ne 7) then eunits = 'eflux'
   if keyword_set(tfirst) then tfirst = time_double(tfirst) else tfirst = 0D
   if keyword_set(timing) then tflg = 1 else tflg = 0
   if keyword_set(png) then dopng = 1 else dopng = 0
@@ -155,7 +155,9 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 ;    15    Sweep Enable
 ; ------------------------------------------------------------
 
-  if (size(swe_hsk,/type) eq 8) then begin
+  if (size(swe_hsk,/type) eq 8) then n_hsk = n_elements(swe_hsk) else n_hsk = 0L
+
+  if (n_hsk gt 2L) then begin
     tmin = min(swe_hsk.time, max=tmax)
     tsp = [tsp, tmin, tmax]
 
@@ -346,6 +348,88 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
 ; PAD Spectra, Survey (APID A2)
 
+  if (size(mvn_swe_pad,/type) eq 8) then begin
+    tmin = min(mvn_swe_pad.time, max=tmax)
+    tsp = [tsp, tmin, tmax]
+    npkt = n_elements(mvn_swe_pad)                 ; number of spectra
+    x = dblarr(npkt)
+    y = fltarr(npkt,16)
+    for i=0L,(npkt-1L) do begin
+      de = min(abs(mvn_swe_pad[i].energy[*,0] - pad_e),j)
+      x[i] = mvn_swe_pad[i].time                   ; center time
+      a2dat = smooth(mvn_swe_pad[i].data,[smo,1])  ; smooth in energy
+      y[i,*] = a2dat[j,*]                          ; data
+    endfor
+    
+    case strupcase(mvn_swe_pad[0].units_name) of
+      'COUNTS' : begin
+                   zlo = 1
+                   zhi = 1e5
+                 end
+      'RATE'   : begin
+                   zlo = 1
+                   zhi = 1e6
+                 end
+      'CRATE'  : begin
+                   zlo = 1
+                   zhi = 1e6
+                 end
+      'FLUX'   : begin
+                   zlo = 1
+                   zhi = 1e8
+                 end
+      'EFLUX'  : begin
+                   zlo = 1e3
+                   zhi = 3e9
+                 end
+      'DF'     : begin
+                   zlo = 1e-18
+                   zhi = 1e-8
+                 end
+      else     : begin
+                   zlo = 0
+                   zhi = 0
+                 end
+    endcase
+    
+
+   pad_s = strtrim(string(round(pad_e)),2)
+    pname = 'swe_pad_' + pad_s
+    store_data,pname,data={x:x, y:y, v:findgen(16)}
+    options,pname,'ytitle',('E PAD (' + pad_s + ')')
+    if (sflg) then begin
+      options,pname,'spec',1
+      ylim,pname,0,0,0
+      zlim,pname,zlo,zhi,1
+      options,pname,'x_no_interp',1
+      options,pname,'y_no_interp',1
+      options,pname,'ztitle',strupcase(mvn_swe_pad[0].units_name)
+    endif else begin
+      options,pname,'spec',0
+      ylim,pname,zlo,zhi,1
+    endelse
+    
+    Baz = mvn_swe_pad.Baz*!radeg
+    Bel = mvn_swe_pad.Bel*!radeg + 90.
+    
+    Bdir = fltarr(npkt,2)
+    Bdir[*,0] = Baz
+    Bdir[*,1] = Bel
+
+    mname = 'swe_mag_svy'
+    store_data,mname,data={x:(mvn_swe_pad.time + 1.5D), y:Bdir, z:[0,1]}
+    ylim,mname,0,360,0
+    options,mname,'ytitle','SWE MAG'
+    options,mname,'yticks',4
+    options,mname,'yminor',4
+    options,mname,'labels',['AZ','EL+90']
+    options,mname,'labflag',1
+    options,mname,'psym',3
+    
+    if (plotap[2]) then pans = [pans,pname,mname]
+
+  endif
+
   if (size(a2,/type) eq 8) then begin
     tmin = min(a2.time, max=tmax)
     tsp = [tsp, tmin, tmax]
@@ -358,9 +442,11 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     x = dblarr(npkt)
     y = fltarr(npkt,16)
     for i=0L,(npkt-1L) do begin
-      de = min(abs(swe_swp[0:(n_e[i]-1),a2[i].group] - pad_e),j)
+      swp = swe_swp[*,a2[i].group]
+      swp = swp[uniq(swp)]               ; energies not duplicated in a2 packets
+      de = min(abs(swp - pad_e),j)
       x[i] = a2[i].time + 1.95D*(double(j) + 0.5D)/double(n_e[i])  ; center time
-      a2dat = smooth(a2[i].data,[1,smo])                           ; smooth in energy
+      a2dat = smooth(a2[i].data[*,0:(n_e[i]-1)],[1,smo])           ; smooth in energy
       y[i,*] = transpose(a2dat[*,j])/dt[i]                         ; count rate
     endfor
 
@@ -380,6 +466,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
       zlim,pname,0,0,1
       options,pname,'x_no_interp',1
       options,pname,'y_no_interp',1
+      options,pname,'ztitle','CRATE'
     endif else begin
       options,pname,'spec',0
       ylim,pname,0,0,1
@@ -429,7 +516,89 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   endif
 
 ; PAD Spectra, Archive (APID A3)
- 
+
+  if (size(mvn_swe_pad_arc,/type) eq 8) then begin
+    tmin = min(mvn_swe_pad_arc.time, max=tmax)
+    tsp = [tsp, tmin, tmax]
+    npkt = n_elements(mvn_swe_pad_arc)                 ; number of spectra
+    x = dblarr(npkt)
+    y = fltarr(npkt,16)
+    for i=0L,(npkt-1L) do begin
+      de = min(abs(mvn_swe_pad_arc[i].energy[*,0] - pad_e),j)
+      x[i] = mvn_swe_pad_arc[i].time                   ; center time
+      a2dat = smooth(mvn_swe_pad_arc[i].data,[smo,1])  ; smooth in energy
+      y[i,*] = a2dat[j,*]                              ; data
+    endfor
+    
+    case strupcase(mvn_swe_pad_arc[0].units_name) of
+      'COUNTS' : begin
+                   zlo = 1
+                   zhi = 1e5
+                 end
+      'RATE'   : begin
+                   zlo = 1
+                   zhi = 1e6
+                 end
+      'CRATE'  : begin
+                   zlo = 1
+                   zhi = 1e6
+                 end
+      'FLUX'   : begin
+                   zlo = 1
+                   zhi = 1e8
+                 end
+      'EFLUX'  : begin
+                   zlo = 1e3
+                   zhi = 3e9
+                 end
+      'DF'     : begin
+                   zlo = 1e-18
+                   zhi = 1e-8
+                 end
+      else     : begin
+                   zlo = 0
+                   zhi = 0
+                 end
+    endcase
+
+
+   pad_s = strtrim(string(round(pad_e)),2)
+    pname = 'swe_pad_arc_' + pad_s
+    store_data,pname,data={x:x, y:y, v:findgen(16)}
+    options,pname,'ytitle',('E PAD (' + pad_s + ')')
+    if (sflg) then begin
+      options,pname,'spec',1
+      ylim,pname,0,0,0
+      zlim,pname,zlo,zhi,1
+      options,pname,'x_no_interp',1
+      options,pname,'y_no_interp',1
+      options,pname,'ztitle',strupcase(mvn_swe_pad_arc[0].units_name)
+    endif else begin
+      options,pname,'spec',0
+      ylim,pname,zlo,zhi,1
+    endelse
+    
+    Baz = mvn_swe_pad_arc.Baz*!radeg
+    Bel = mvn_swe_pad_arc.Bel*!radeg + 90.
+    
+    Bdir = fltarr(npkt,2)
+    Bdir[*,0] = Baz
+    Bdir[*,1] = Bel
+
+    mname = 'swe_mag_arc'
+    store_data,mname,data={x:(mvn_swe_pad_arc.time + 1.5D), y:Bdir, z:[0,1]}
+    ylim,mname,0,360,0
+    options,mname,'ytitle','SWE MAG'
+    options,mname,'yticks',4
+    options,mname,'yminor',4
+    options,mname,'labels',['AZ','EL+90']
+    options,mname,'labflag',1
+    options,mname,'psym',3
+    
+    if (plotap[2]) then pans = [pans,pname,mname]
+
+  endif
+
   if (size(a3,/type) eq 8) then begin
     tmin = min(a3.time, max=tmax)
     tsp = [tsp, tmin, tmax]
@@ -442,13 +611,12 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     x = dblarr(npkt)
     y = fltarr(npkt,16)
     for i=0L,(npkt-1L) do begin
-      if (n_e[i] gt 0.) then begin
-        de = min(abs(swe_swp[0:(n_e[i]-1),a3[i].group] - pad_e),j)
-        x[i] = a3[i].time + 1.95D*(double(j) + 0.5D)/double(n_e[i])  ; center time
-        a3dat = smooth(a3[i].data,[1,smo])                           ; smooth in energy
-        y[i,*] = transpose(a3dat[*,j])/dt[i]                         ; count rate
-      
-      endif
+      swp = swe_swp[*,a3[i].group]
+      swp = swp[uniq(swp)]               ; energies not duplicated in a3 packets
+      de = min(abs(swp - pad_e),j)
+      x[i] = a3[i].time + 1.95D*(double(j) + 0.5D)/double(n_e[i])  ; center time
+      a3dat = smooth(a3[i].data[*,0:(n_e[i]-1)],[1,smo])           ; smooth in energy
+      y[i,*] = transpose(a3dat[*,j])/dt[i]                         ; count rate
     endfor
 
 ; Correct for deadtime.
@@ -516,8 +684,9 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
 ; Energy Spectra, Survey (APID A4)
 
-  if (size(a4,/type) eq 8) then begin
-    if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_makespec
+  if (size(mvn_swe_engy,/type) ne 8) then if (size(a4,/type) eq 8) then mvn_swe_makespec
+
+  if (size(mvn_swe_engy,/type) eq 8) then begin
     mvn_swe_convert_units, mvn_swe_engy, eunits
 
     x = mvn_swe_engy.time
@@ -577,8 +746,9 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
 ; Energy Spectra, Archive (APID A5)
 
-  if (size(a5,/type) eq 8) then begin
-    if (size(mvn_swe_engy_arc,/type) ne 8) then mvn_swe_makespec
+  if (size(mvn_swe_engy_arc,/type) ne 8) then if (size(a5,/type) eq 8) then mvn_swe_makespec
+
+  if (size(mvn_swe_engy_arc,/type) eq 8) then begin
     mvn_swe_convert_units, mvn_swe_engy_arc, eunits
 
     x = mvn_swe_engy_arc.time
@@ -753,6 +923,8 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     tplot_options,'var_label','orbnum'
   endif
 
+  help,pans
+  print,pans
   tplot,pans
   timebar,t_cfg,/line
   

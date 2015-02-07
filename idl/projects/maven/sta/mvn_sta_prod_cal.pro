@@ -233,7 +233,7 @@ decomp19[128:255]=$
 
 ; electrostatic attenuator
 
-	e_att = 0.0985  						; calculated electrostatic attenuation value - was incorrectly calculated to be 0.09133 prior to 20150202
+	e_att = 0.0897  						; calculated electrostatic attenuation value - was incorrectly calculated to be 0.09133 prior to 20150202
 	e_ano = replicate(1.,16)					; electrostatic grid attenuator variation with anode, assumes no variation 
 
 ;	t0    = -2.15							; TOF offset in ns, not used

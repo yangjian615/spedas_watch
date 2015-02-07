@@ -1,0 +1,9 @@
+; Test all science data for SITL 
+mms*_afg_fast_bvec
+mms*_dfg_fast_bvec
+mms*_dsp_sitl_epsd_x
+mms*_dsp_sitl_epsd_y
+mms*_dsp_sitl_epsd_z
+mms*_dsp_sitl_bpsd_x
+mms*_dsp_sitl_bpsd_y
+mms*_dsp_sitl_bpsd_z

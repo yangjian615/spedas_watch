@@ -31,8 +31,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2015-02-05 15:50:54 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16879 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_strahl_dir.pro $
 ;
 ;-
@@ -49,20 +49,27 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
   if keyword_set(archive) then aflg = 1 else aflg = 0
 
   if (aflg) then begin
-    if (size(swe_3d_arc,/type) ne 8) then begin
+    if ((size(swe_3d_arc,/type) ne 8) and (size(mvn_swe_3d_arc,/type) ne 8)) then begin
       print,"No 3D archive data loaded."
       return
     endif
   endif else begin
-    if (size(swe_3d,/type) ne 8) then begin
+    if ((size(swe_3d,/type) ne 8) and (size(mvn_swe_3d,/type) ne 8)) then begin
       print,"No 3D survey data loaded."
       return
     endif
   endelse
-  
+    
   units = 'crate'
   
-  if (aflg) then t = swe_3d_arc.time else t = swe_3d.time
+  if (aflg) then begin
+    if (size(mvn_swe_3d_arc,/type) eq 8) then t = mvn_swe_3d_arc.time $
+                                         else t = swe_3d_arc.time
+  endif else begin
+    if (size(mvn_swe_3d,/type) eq 8) then t = mvn_swe_3d.time $
+                                     else t = swe_3d.time
+  endelse
+
   npts = n_elements(t)
   sphi = fltarr(npts)
   sthe = sphi
@@ -134,11 +141,22 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
   fel = total((f[m,*]/fmax)^pow,1)
   fel = (fel - mean(fel)) > 0.
   sthe[i] = total(el*fel^pow)/total(fel^pow)
+  
+  ok = 0
 
-  dt = min(abs(a2.time - ddd.time),j)
-  mvn_swe_magdir, a2[j].time, a2[j].Baz, a2[j].Bel, aBaz, aBel
-  Baz[i] = aBaz*!radeg
-  Bel[i] = aBel*!radeg
+  if (size(mvn_swe_pad,/type) eq 8) then begin
+    dt = min(abs(mvn_swe_pad.time - ddd.time),j)
+    Baz[i] = mvn_swe_pad[j].Baz*!radeg
+    Bel[i] = mvn_swe_pad[j].Bel*!radeg
+    ok = 1
+  endif
+  
+  if ((not ok) and (size(a2,/type) eq 8)) then begin
+    dt = min(abs(a2.time - ddd.time),j)
+    mvn_swe_magdir, a2[j].time, a2[j].Baz, a2[j].Bel, aBaz, aBel
+    Baz[i] = aBaz*!radeg
+    Bel[i] = aBel*!radeg
+  endif
 
   for i=1L,(npts-1L) do begin
     ddd = mvn_swe_get3d(t[i],units=units,archive=aflg)
@@ -184,10 +202,21 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
     fel = (fel - mean(fel)) > 0.
     sthe[i] = total(el*fel)/total(fel)
 
-    dt = min(abs(a2.time - ddd.time),j)
-    mvn_swe_magdir, a2[j].time, a2[j].Baz, a2[j].Bel, aBaz, aBel
-    Baz[i] = aBaz*!radeg
-    Bel[i] = aBel*!radeg
+    ok = 0
+
+    if (size(mvn_swe_pad,/type) eq 8) then begin
+      dt = min(abs(mvn_swe_pad.time - ddd.time),j)
+      Baz[i] = mvn_swe_pad[j].Baz*!radeg
+      Bel[i] = mvn_swe_pad[j].Bel*!radeg
+      ok = 1
+    endif
+
+    if ((not ok) and (size(a2,/type) eq 8)) then begin
+      dt = min(abs(a2.time - ddd.time),j)
+      mvn_swe_magdir, a2[j].time, a2[j].Baz, a2[j].Bel, aBaz, aBel
+      Baz[i] = aBaz*!radeg
+      Bel[i] = aBel*!radeg
+    endif
   endfor
 
   result = {time:t, theta:sthe, phi:sphi, Baz:Baz, Bel:Bel}

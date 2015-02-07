@@ -14,9 +14,9 @@
 ;HISTORY:
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14, jmm,
 ; jimm@ssl.berkeley.edu
-; $LastChangedBy: muser $
-; $LastChangedDate: 2015-02-01 12:02:24 -0800 (Sun, 01 Feb 2015) $
-; $LastChangedRevision: 16810 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-02-04 14:38:32 -0800 (Wed, 04 Feb 2015) $
+; $LastChangedRevision: 16870 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
 Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
@@ -78,6 +78,8 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
 
 ; stop here if you're only making L2 files
 ; Make kp save file:
+  del_data, '*'                 ;delete all tplot variables so files 
+                                ;aren't made from the previous day's data
   mvn_swe_kp, trange
 
 Return

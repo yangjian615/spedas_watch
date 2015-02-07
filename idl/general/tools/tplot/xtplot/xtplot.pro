@@ -9,8 +9,8 @@
 ; 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-02 13:34:21 -0800 (Mon, 02 Feb 2015) $
-; $LastChangedRevision: 16833 $
+; $LastChangedDate: 2015-02-05 22:06:49 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16894 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -109,30 +109,6 @@ PRO xtplot_event, event
     widf.btnShrink:   xtplot_change_tlimit,'shrink'
     widf.btnForward:  xtplot_change_tlimit,'forward'
     widf.btnBackward: xtplot_change_tlimit,'backward'
-
-
-    ;    widf.btnAuto:     begin
-    ;      widget_control, widf.drpTarget, GET_VALUE=names
-    ;      index = widget_info(widf.drpTarget, /DROPLIST_SELECT); which variable?
-    ;      checked = widget_info(widf.btnAuto,/BUTTON_SET); is is checked?
-    ;      if checked then begin
-    ;        widget_control, widf.baseManu, SENSITIVE = 0
-    ;;        yrange_auto = xtplot_minmax(names[index])
-    ;        options,names[index],'yrange',/delete;yrange_auto
-    ;        options,names[index],'autorange',1
-    ;        tplot,verbose=0
-    ;      endif else begin
-    ;        get_data, names[index], limit=limit
-    ;        index=where(strmatch(tag_names(limit),'yrange',/fold_case),count)
-    ;        if count ne 0 then yrng = limit.yrange else yrng = [0.,0.]
-    ;        widget_control, widf.baseManu, SENSITIVE = 1
-    ;        widget_control, widf.fldAmin, SET_VALUE=yrng[0]
-    ;        widget_control, widf.fldAmax, SET_VALUE=yrng[1]
-    ;        options,names[index],'autorange',0
-    ;      endelse
-    ;      end
-
-
     widf.baseTL:      begin
       thisEvent = tag_names(event,/structure_name)
       case thisEvent of
@@ -348,7 +324,7 @@ PRO xtplot_event, event
       tn = tplot_vars.options.def_datanames[mix]
       xtplot_options_panel, group_leader=widf.baseTL, target=tn
     end
-    widf.mnO_TplotOptions: print,'Sorry....this feature is under development.'
+    widf.mnO_TplotOptions: xtplot_options_tplot, group_leader=widf.baseTL
     ;    widf.mnH_Guide:   begin
     ;      fullpath = filepath(root_dir=ProgramRootDir(), 'xtplot.pdf')
     ;      online_help,'Getting Started', BOOK=fullpath,/full_path;fullpath,/full_path
@@ -371,6 +347,12 @@ PRO xtplot_event, event
     str_element,/add,tplot_vars,'options.base',-1
     widget_control, widf.baseTL, /DESTROY
     init_devices
+
+    if (!d.flags and 256) ne 0  then begin    ; windowing devices
+      str_element,tplot_vars,'options.window',!d.window,/add_replace
+      str_element,tplot_vars,'settings.window',!d.window,/add_replace
+      ;if def_opts.window ge 0 then wset,current_window
+    endif
   endif
 END
 
@@ -574,8 +556,9 @@ pro xtplot,datanames,     $
     sxsize=10
     bsTool = widget_base(baseTL,/row)
     str_element,/add,widf,'bsTool',bsTool
-    str_element,/add,widf,'btnTlm', widget_button(bsTool,VALUE='Time Range',$
+    str_element,/add,widf,'btnTlm', widget_button(bsTool,VALUE='Trange',$
       TOOLTIP='Left-click twice to define a time range (call to "tlimit")')
+
 
     bsSpace1 = widget_base(bsTool,XSIZE=sxsize)
     str_element,/add,widf,'btnBackward',widget_button(bsTool,VALUE=shiftlbmp,/Bitmap,$

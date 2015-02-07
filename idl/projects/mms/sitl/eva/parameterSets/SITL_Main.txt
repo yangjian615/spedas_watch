@@ -1,0 +1,7 @@
+; Main Sets of Parameters for SITL Daily Task
+
+th*_fgs_gsm ; Bz
+th*_peir_density
+th*_peif_velocity_gsm ; Vx
+
+mms_stlm_output_fom; FOM and back-structure (SITL Manual)

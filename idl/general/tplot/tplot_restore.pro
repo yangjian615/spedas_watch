@@ -38,6 +38,11 @@ if size(/type,filenames) ne 7 then $
 n = n_elements(filenames)
 restored_varnames = ''
 for i=0,n-1 do begin
+  fi = file_info(filenames[i])
+  if fi.exists eq 0 then begin
+    dprint,dlevel=1,'File '+filenames[i]+' Does not exist! Skipping.'
+    continue
+  endif
   restore,filenames[i],/relaxed
   if keyword_set(tv) then begin
 	  chkverb = where(tag_names(tv.options) eq 'VERBOSE',verbosethere)

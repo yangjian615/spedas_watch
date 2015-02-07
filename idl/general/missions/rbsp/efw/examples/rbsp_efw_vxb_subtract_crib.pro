@@ -64,7 +64,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 	;Load other state variables
 	rbsp_efw_position_velocity_crib,/no_spice_load,/noplot
 
-
+stop
 
 
 ;Load Esvy data in MGSE 
@@ -138,11 +138,11 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 		get_data,rbspx+'_penumbra',data=ep
 	endif
 
-
+stop
 
 
 ;Determine corotation Efield
-	rbsp_corotation_efield,probe,date,/no_spice_load
+	rbsp_corotation_efield,probe,date,/no_spice_load,/data_preloaded
 
 
 
@@ -158,8 +158,8 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 	get_data,rbspx+'_efw_esvy_mgse_vxb_removed', data = d
 ;	d.y[*, 1] *= 1.05d
 ;	d.y[*, 2] *= 1.05d
-	d.y[*, 1] *= 1d
-	d.y[*, 2] *= 1d
+	d.y[*, 1] *= 0.947d     ;found by S. Thaller
+	d.y[*, 2] *= 0.947d     
 	store_data,rbspx+'_efw_esvy_mgse_vxb_removed', data = d
 
 

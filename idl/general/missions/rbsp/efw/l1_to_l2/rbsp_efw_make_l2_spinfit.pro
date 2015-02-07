@@ -37,8 +37,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2014-06-24 13:42:43 -0700 (Tue, 24 Jun 2014) $
-; $LastChangedRevision: 15419 $
+; $LastChangedDate: 2015-02-05 15:01:05 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16876 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_spinfit.pro $
 ;
 ;-
@@ -106,15 +106,7 @@ if keyword_set(testing) then skeletonfile = '~/Desktop/code/Aaron/RBSP/TDAS_trun
 
 
 timespan, date
-rbsp_efw_spinfit_vxb_subtract_crib,sc,no_spice_load=no_spice_load,/noplot,/ql
-
-
-; Get l1 data.
-tvar = rbx + 'efw_esvy'
-if ~thm_check_tvar(tvar) then begin
-  dprint, tvar, ' is not available. Exit processing.'
-  return
-endif
+rbsp_efw_spinfit_vxb_subtract_crib,sc,no_spice_load=no_spice_load,/noplot,level='l2'
 
 
 ;***********************************
@@ -130,26 +122,6 @@ endif
 ;***********************************
 ;***********************************
 ;***********************************
-
-
-
-;************************************
-;************************************
-;	;Some of the emfisis data extends beyond requested data. This causes thm_check_var to crash
-;	;Fix here
-;	t0 = time_double(date)
-;	t1 = t0 + 86400.
-;
-;	ttst = tnames(rbx+'emfisis_quicklook_Mag',cnt)
-;	if cnt eq 1 then time_clip,rbx+'emfisis_quicklook_Mag',t0,t1,replace=1,error=error,newname=rbx+'emfisis_quicklook_Mag'
-;	ttst = tnames(rbx+'emfisis_quicklook_Magnitude',cnt)
-;	if cnt eq 1 then time_clip,rbx+'emfisis_quicklook_Magnitude',t0,t1,replace=1,error=error,newname=rbx+'emfisis_quicklook_Magnitude'
-
-;************************************
-;************************************
-
-
-
 
 if keyword_set(no_cdf) then return
 
@@ -223,22 +195,6 @@ flag_arr[*,1] = ceil(interpol(eclipset,datatimes,timevals))
 
 ;***********************
 
-;get_data, rbx + 'umbra_sta', data = usta
-;get_data, rbx + 'umbra_end', data = uend
-;if is_struct(usta) and is_struct(uend) then begin
-;  dprint,'FLAGGING ECLIPSE'
-;  n_umbra = n_elements(usta.x)
-;  for i = 0, n_umbra - 1 do begin
-;    tsta = usta.x[i]
-;    tend = uend.x[i]
-;    ind = where(timevals ge tsta and timevals le tend, nind)
-;    if nind gt 0 then flag_arr[ind, 1] = 100
-;  endfor
-;endif
-
-
-
-;***********************************
 ;***********************************
 ;********TEMPORARY*******************
 ;Throw global flag during eclipse times
@@ -323,10 +279,12 @@ if keyword_set(save_flags) then $
 get_data,rbx+'efw_esvy_mgse_vxb_removed_spinfit',data=d
 tinterpol_mxn,rbx+'E_coro_mgse',d.x,newname=rbx+'E_coro_mgse'
 
+split_vec,rbx+'vxb'
+
 ;Interpolate vsc x b values to be at correct times
-tinterpol_mxn,'vxb_x',d.x,newname='vxb_x'
-tinterpol_mxn,'vxb_y',d.x,newname='vxb_y'
-tinterpol_mxn,'vxb_z',d.x,newname='vxb_z'
+tinterpol_mxn,rbx+'vxb_x',d.x,newname='vxb_x'
+tinterpol_mxn,rbx+'vxb_y',d.x,newname='vxb_y'
+tinterpol_mxn,rbx+'vxb_z',d.x,newname='vxb_z'
 
 
 get_data,'vxb_x',data=vxbx
@@ -386,7 +344,8 @@ endif
 
 ;-------------------- spinfit --------------------------
 ; time
-tvar = rbx + 'sfit12_mgse'
+;tvar = rbx + 'sfit12_mgse'
+tvar = rbx+'efw_esvy_mgse_vxb_removed_spinfit'
 cdfhandle = 'epoch'
 get_data, tvar, data = d, dlim = dl
 epoch = tplot_time_to_epoch(d.x, /epoch16)
@@ -447,6 +406,33 @@ cdf_varput, cdfid, 'e_spinfit_mgse_efw_qual', transpose(flag_arr)
 ;cdfhandle = 'e_spinfit_mgse_DFB_config'
 ;get_data, tvar, data = d, dlim = dl
 ;cdf_varput, cdfid, cdfhandle, d.y
+
+
+
+;********************
+;need to populate these
+;********************
+
+;mlt, mlat, lshell, pos_gse, vel_gse, spinaxis_gse
+
+
+
+
+
+
+;--------------------------------------------------
+;DELETE UNNECESSARY VARIABLES FROM CDF FILE
+;--------------------------------------------------
+
+;; cdf_vardelete,cdfid,'density'
+;; cdf_vardelete,cdfid,'bfield_mgse'
+;; cdf_vardelete,cdfid,'bfield_model_mgse'
+;; cdf_vardelete,cdfid,'bfield_minus_model_mgse'
+;; cdf_vardelete,cdfid,'bfield_magnitude_minus_modelmagnitude'
+;; cdf_vardelete,cdfid,'efield_raw_uvw'
+
+
+
 
 cdf_close, cdfid
 

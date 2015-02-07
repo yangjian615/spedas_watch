@@ -116,9 +116,9 @@
 ;CREATED BY: 
 ;	Takuya Hara
 ;
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-01-27 15:31:46 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16757 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-02-05 15:53:11 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16882 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -291,7 +291,7 @@ FUNCTION mvn_swe_pad_resample_swia, var, archive=archive, silent=silent, $
 
   edat = var
   time = edat.time
-  unit = edat.units_name
+  unit = edat[0].units_name
   idat = mvn_swia_get_3dc(time, archive=archive)
   ivel = v_3d(idat)             ; SWIA coordiate system
 
@@ -344,15 +344,17 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
   nan = !values.f_nan 
   ;; fifb = fifteenb()
   fifb = string("15b) ;"
+  
+  if (size(silent,/type) eq 0) then silent = 0
 
   IF SIZE(mvn_swe_engy, /type) NE 8 THEN BEGIN
      print, ptrace()
-     print, '  No SWEA data loaded.  Use mvn_swe_load_l0 first.'
+     print, '  No SWEA data loaded.'
      RETURN
   ENDIF 
   IF SIZE(swe_mag1, /type) NE 8 THEN BEGIN
      print, ptrace()
-     print, '  No MAG1 data loaded.  Use swe_getmag_ql first.'
+     print, '  No MAG1 data loaded.  Use mvn_swe_addmag first.'
      RETURN
   ENDIF 
 
@@ -361,30 +363,44 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
   IF SIZE(dtype, /type) EQ 0 THEN dtype = 0
 
   IF NOT keyword_set(dtype) THEN BEGIN
-     IF NOT keyword_set(archive) THEN dat = a2 ELSE dat = a3
-     IF SIZE(dat, /type) NE 8 THEN BEGIN
-        PRINT, ptrace()
-        IF keyword_set(archive) THEN BEGIN
-           PRINT, '  No PAD archive data. Instead, PAD survey data is used.'
-           dat = a2
-           archive = 0
-        ENDIF
-     ENDIF  
+     if keyword_set(archive) then begin
+       if (size(a3,/type) eq 8) then dat_time = a3.time
+       if (size(mvn_swe_pad_arc,/type) eq 8) then dat_time = mvn_swe_pad_arc.time
+       if (size(dat_time,/type) eq 0) then begin
+         print,'  No PAD archive data.'
+         archive = 0
+       endif
+     endif
+     if not keyword_set(archive) then begin
+       if (size(a2,/type) eq 8) then dat_time = a2.time
+       if (size(mvn_swe_pad,/type) eq 8) then dat_time = mvn_swe_pad.time
+       if (size(dat_time,/type) eq 0) then begin
+         print,'  No PAD survey data.  Nothing to resample.'
+         return
+       endif
+     endif
   ENDIF ELSE BEGIN
-     IF NOT keyword_set(archive) THEN dat = swe_3d ELSE dat = swe_3d_arc
-     IF SIZE(dat, /type) NE 8 THEN BEGIN
-        PRINT, ptrace()
-        IF keyword_set(archive) THEN BEGIN
-           PRINT, '  No 3D archive data. Instead, 3D survey data is used'
-           dat = swe_3d
-           archive = 0
-        ENDIF 
-     ENDIF
+     if keyword_set(archive) then begin
+       if (size(swe_3d_arc,/type) eq 8) then dat_time = swe_3d_arc.time
+       if (size(mvn_swe_3d_arc,/type) eq 8) then dat_time = mvn_swe_3d_arc.time
+       if (size(dat_time,/type) eq 0) then begin
+         print,'  No 3D archive data.'
+         archive = 0
+       endif
+     endif
+     if not keyword_set(archive) then begin
+       if (size(swe_3d,/type) eq 8) then dat_time = swe_3d.time
+       if (size(mvn_swe_3d,/type) eq 8) then dat_time = mvn_swe_3d.time
+       if (size(dat_time,/type) eq 0) then begin
+         print,'  No 3D survey data.  Nothing to resample.'
+         return
+       endif
+     endif
 
      IF keyword_set(symdir) THEN BEGIN
         swe_3d_strahl_dir, result=strahl, archive=archive
         
-        idx = NN(dat.time, strahl.time)
+        idx = NN(dat_time, strahl.time)
         magf = [ [COS(strahl.theta[idx]*!DTOR) * COS(strahl.phi[idx]*!DTOR)], $
                  [COS(strahl.theta[idx]*!DTOR) * SIN(strahl.phi[idx]*!DTOR)], $
                  [SIN(strahl.theta[idx]*!DTOR)] ]
@@ -400,10 +416,10 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
      CASE N_ELEMENTS(trange) OF
         1: BEGIN
            ndat = 1
-           idx = nn(dat.time, trange)
+           idx = nn(dat_time, trange)
         END 
         2: BEGIN
-           idx = WHERE(dat.time GE MIN(trange) AND dat.time LE MAX(trange), ndat)
+           idx = WHERE(dat_time GE MIN(trange) AND dat_time LE MAX(trange), ndat)
            IF ndat EQ 0 THEN BEGIN
               PRINT, ptrace()
               PRINT, '  No data during the specified time you set.'
@@ -417,8 +433,8 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         END 
      ENDCASE 
   ENDIF ELSE BEGIN
-     trange = minmax(dat.time)
-     ndat = N_ELEMENTS(dat)
+     trange = minmax(dat_time)
+     ndat = N_ELEMENTS(dat_time)
      idx = INDGEN(ndat)
 
      IF SIZE(tplot, /type) EQ 0 THEN tplot = 1
@@ -452,7 +468,7 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
      mobins = FLTARR(96, 2)
      mobins[*, 1] = swe_sc_mask[*,0]  ; stowed boom
      mobins[*, 0] = swe_sc_mask[*,1]  ; deployed boom
-     i = WHERE(dat[idx].time LT t_mtx[2], cnt)
+     i = WHERE(dat_time[idx] LT t_mtx[2], cnt)
      IF cnt GT 0 THEN stow[i] = 1
      undefine, i, cnt
   ENDIF ELSE IF keyword_set(mbins) THEN BEGIN
@@ -473,7 +489,7 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
   IF keyword_set(silent) THEN prt = 0 ELSE prt = 1
   FOR i=0L, ndat-1L DO BEGIN
      IF keyword_set(dtype) THEN BEGIN
-        ddd = mvn_swe_get3d(dat[idx[i]].time, units=units, archive=archive)
+        ddd = mvn_swe_get3d(dat_time[idx[i]], units=units, archive=archive)
         energy = average(ddd.energy, 2)
 
         IF keyword_set(swia) OR keyword_set(sc_pot) THEN $
@@ -492,7 +508,7 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
         IF keyword_set(map3d) THEN $
            ddd = mvn_swe_pad_resample_map3d(ddd, prf=interpolate)
      ENDIF ELSE BEGIN
-        pad = mvn_swe_getpad(dat[idx[i]].time, units=units, archive=archive)
+        pad = mvn_swe_getpad(dat_time[idx[i]], units=units, archive=archive)
         dname = pad.data_name
         energy = average(pad.energy, 2)
         ;; pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]), pad.nenergy, pad.nbins)

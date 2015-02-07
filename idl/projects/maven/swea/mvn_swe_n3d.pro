@@ -13,8 +13,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-27 12:08:43 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16747 $
+; $LastChangedDate: 2015-02-05 15:53:33 -0800 (Thu, 05 Feb 2015) $
+; $LastChangedRevision: 16883 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n3d.pro $
 ;
 ;-
@@ -28,8 +28,8 @@ pro mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins, obins=obins, mask_sc=mas
   
 ; Make sure data are loaded
 
-  if (size(swe_3d,/type) ne 8) then begin
-    print,"Load SWEA data first.  Use mvn_swe_load_l0."
+  if ((size(swe_3d,/type) ne 8) and (size(mvn_swe_3d,/type) ne 8)) then begin
+    print,"Load SWEA data first."
     return
   endif
   
@@ -53,8 +53,15 @@ pro mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins, obins=obins, mask_sc=mas
 ; Process data
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
-    
-  if (aflg) then t = swe_3d_arc.time else t = swe_3d.time
+
+  if (aflg) then begin
+    if (size(mvn_swe_3d_arc,/type) eq 8) then t = mvn_swe_3d_arc.time $
+                                         else t = swe_3d_arc.time 
+  endif else begin
+    if (size(mvn_swe_3d,/type) eq 8) then t = mvn_swe_3d.time $
+                                     else t = swe_3d.time 
+  endelse
+  
   npts = n_elements(t)
   density = fltarr(npts)
   

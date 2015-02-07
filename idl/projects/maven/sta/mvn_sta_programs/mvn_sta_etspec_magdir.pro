@@ -35,8 +35,8 @@
 ;CREATED BY:      Takuya Hara on 2015-01-21.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-01-30 22:56:19 -0800 (Fri, 30 Jan 2015) $
-; $LastChangedRevision: 16806 $
+; $LastChangedDate: 2015-02-03 14:48:46 -0800 (Tue, 03 Feb 2015) $
+; $LastChangedRevision: 16844 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_etspec_magdir.pro $
 ;
 ;-
@@ -68,14 +68,6 @@ PRO mvn_sta_etspec_magdir, apid, pitch=pad, units=units, trange=trange, $
   center_time = DBLARR(N_ELEMENTS(time))
   fifb = STRING("15b) ;"
   FOR i=0LL, N_ELEMENTS(time)-1 DO BEGIN ;- time loop
-     IF ((i MOD 100) EQ 0) OR (i EQ N_ELEMENTS(time)-1) THEN $
-        IF v GE 1 THEN BEGIN $
-        num = i
-        IF i EQ N_ELEMENTS(time)-1 THEN num += 1
-        PRINT, format='(a, a, a, a, a, a, $)', $
-               '      ', fifb, ptrace(), STRING(num), ' /', STRING(N_ELEMENTS(time))
-     ENDIF
- 
      d = CALL_FUNCTION(fname, time[i])
      d = conv_units(d, units)
      center_time[i] = (d.time+d.end_time)/2.d
@@ -93,6 +85,14 @@ PRO mvn_sta_etspec_magdir, apid, pitch=pad, units=units, trange=trange, $
      xyz_to_polar, d.magf, theta=bth, phi=bph
      pa = pangle(d.theta, d.phi, bth, bph)
      undefine, bth, pth
+
+     IF ((i MOD 100) EQ 0) OR (i EQ N_ELEMENTS(time)-1) THEN $
+        IF v GE 1 THEN BEGIN $
+        num = i
+        IF i EQ N_ELEMENTS(time)-1 THEN num += 1
+        PRINT, format='(a, a, a, a, a, a, $)', $
+               '      ', fifb, ptrace(), STRING(num), ' /', STRING(N_ELEMENTS(time))
+     ENDIF
 
      idx = WHERE(pa GT pitch[0] AND pa LT pitch[1], nidx)
      IF nidx GT 0 THEN BEGIN
