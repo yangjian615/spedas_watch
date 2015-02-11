@@ -55,8 +55,8 @@
 ;       KEEP:     Do not kill the plot windows on exit.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-05 15:34:05 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16594 $
+; $LastChangedDate: 2015-02-09 17:01:07 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16929 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -64,7 +64,8 @@
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset
 
-  common mav_orb_tplt, time, ss, wind, sheath, pileup, wake, sza, torb, period, lon, lat, hgt, mex
+  common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
+                       lon, lat, hgt, mex
 
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)
@@ -165,11 +166,11 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   endif
 
   tref = trange[0]
-  dt = min(abs(time - tref), iref)
+  dt = min(abs(time - tref), iref, /nan)
   tref = time[iref]
   ndays = (tref - time[0])/86400D
 
-  dt = min(abs(torb - tref), jref)
+  dt = min(abs(torb - tref), jref, /nan)
   dj = round(double(period[jref])*3600D/(time[1] - time[0]))
   
   

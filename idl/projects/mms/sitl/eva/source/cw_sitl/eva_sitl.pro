@@ -121,7 +121,7 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
     RealFOM = 40
 
     ; segSelect
-    segSelect = {ts:trange[0], te:trange[1], fom:RealFOM, BAK:BAK}
+    segSelect = {ts:trange[0], te:trange[1], fom:RealFOM, BAK:BAK, comment:''}
     eva_sitl_FOMedit, state, segSelect; Here, change FOM value only. No trange change.
   endif
 END
@@ -160,7 +160,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
         etime = s.TIMESTAMPS[s.STOP] + 10.d0
         idx = where((stime le t) and (t le etime), ct)
         if ct eq 1 then begin
-          segSelect = {ts:stime[idx[0]],te:etime[idx[0]],fom:s.FOM[idx[0]],BAK:BAK}
+          segSelect = {ts:stime[idx[0]],te:etime[idx[0]],fom:s.FOM[idx[0]],BAK:BAK, Comment:s.COMMENT[idx[0]]}
         endif else segSelect = 0
       end
       else: segSelect = -1
@@ -172,7 +172,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
   endelse
 
 
-  if n_tags(segSelect) eq 4 then begin
+  if n_tags(segSelect) eq 5 then begin
     if segSelect.BAK and ~state.pref.ENABLE_ADVANCED then begin
       msg ='This is a back-structure segment. Ask Super SITL if you really need to modify this.'
       rst = dialog_message(msg,/info,/center)

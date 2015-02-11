@@ -24,6 +24,8 @@
 ;
 ;       ARCHIVE:       If set, show shapshots of archive data (A5).
 ;
+;       BURST:         Synonym for ARCHIVE.
+;
 ;       SPEC:          Named variable to hold the energy spectrum at the last time
 ;                      selected.
 ;
@@ -70,8 +72,8 @@
 ;       NOERASE:       Overplot all spectra after the first.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:50:04 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16878 $
+; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -80,7 +82,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
                    ddd=ddd, abins=abins, dbins=dbins, sum=sum, pot=pot, pdiag=pdiag, $
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
                    noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
-                   dEmax=dEmax
+                   dEmax=dEmax, burst=burst
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -91,6 +93,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   c3 = 4D*!dpi*1d-5*sqrt(mass/2D)  ; assume isotropic electron distribution
 
   if not keyword_set(archive) then aflg = 0 else aflg = 1
+  if keyword_set(burst) then aflg = 1
   if not keyword_set(units) then units = 'eflux'
   if keyword_set(sum) then npts = 2 else npts = 1
   if keyword_set(ddd) then dflg = 1 else dflg = 0

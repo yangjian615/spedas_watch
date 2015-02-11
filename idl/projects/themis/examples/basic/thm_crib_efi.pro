@@ -16,12 +16,14 @@
 ;	None.
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedDate: 2015-02-06 18:09:41 -0800 (Fri, 06 Feb 2015) $
+; $LastChangedRevision: 16904 $
 ; $URL $
 ;-
 
+;------------------------------------------------------------------------------
 ; EFI waveform data example.
+;------------------------------------------------------------------------------
 tplot_title = 'THEMIS EFI Waveform Examples'
 tplot_options, 'title', tplot_title
 tplot_options, 'xmargin', [ 15, 10]
@@ -59,13 +61,10 @@ print,'Enter ".c"  to print the contents of DLIMITS.DATA_ATT structure for'
 print,'"thd_vaf_raw", and "thd_eff_raw".'
 stop
 
-get_data,'thd_vaf_raw',dlimits=dl
-help,dl.data_att,/st
-get_data,'thd_eff_raw',dlimits=dl
-help,dl.data_att,/st
-print,'Enter ".c" to zoom in.'
-stop
-
+;------------------------------------------------------------------------------
+;zoom in on the data
+;------------------------------------------------------------------------------
+;
 ;tlimit, [ tr[0] + 10d*3600 + 10d*60 , tr[0] + 13d*3600 + 56d*60 ]    ;10:10:00 to 13:56:00
 tlimit, [ tr[0] + 17d*3600 + 36d*60 , tr[0] + 17d*3600 + 45d*60 ]    ;17:36:00 to 17:45:00     Mozer intervals.
 
@@ -83,6 +82,10 @@ print,'Enter ".c"  to print the contents of DLIMITS.DATA_ATT structure for'
 print,'"thc_vaf", and "thc_eff" (note updated and additional fields).'
 stop
 
+;------------------------------------------------------------------------------
+;view data attributes
+;------------------------------------------------------------------------------
+
 get_data,'thd_vaf',dlimits=dl
 help,dl.data_att,/st
 get_data,'thd_eff',dlimits=dl
@@ -91,11 +94,18 @@ help,dl.data_att,/st
 print, 'Enter ".c" to view the structure and substructure of the optional ONTHFLY_EDC_OFFSET keyword (GAP_BEGIN and GAP_END are similar).'
 stop
 
+;------------------------------------------------------------------------------
+;view calibration parameters
+;------------------------------------------------------------------------------
+
 help, onthefly_edc_offset, onthefly_edc_offset.d, /st
 
 print,'Enter ".c" to view particle burst data.'
 stop
 
+;------------------------------------------------------------------------------
+;wave burst data
+;------------------------------------------------------------------------------
 
 ;tlimit, /full
 timespan, tr[0], tr[1] - tr[0], /seconds
@@ -106,6 +116,10 @@ tlimit
 print, 'Enter ".c" to view wave burst data.'
 
 stop
+
+;------------------------------------------------------------------------------
+;wave burst inside particle burst
+;------------------------------------------------------------------------------
 
 ;tplot, [ 'thd_vaw_raw', 'thd_vaw', 'thd_efw_raw', 'thd_efw', 'thd_efw_0', 'thd_efw_dot0' ]
 tplot, [ 'thd_vaw_raw', 'thd_vaw', 'thd_efw_raw', 'thd_efw_dsl', 'thd_efw_gei', 'thd_efw_0', 'thd_efw_dot0_dsl', 'thd_efw_dot0_gei' ]

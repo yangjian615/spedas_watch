@@ -1,3 +1,17 @@
+;+
+; NAME:
+;   EVA_SITL_STRCT_UPDATE
+;   
+; COMMENT:
+;   If a SITL modifies a segment, the information of the segement will be stored in
+;   "segSelect" and is passed to this program. This program will then make changes
+;   (add, split/combine,etc) to the FOM/BAK structure file. 
+; 
+; $LastChangedBy: moka $
+; $LastChangedDate: 2015-02-09 17:37:52 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16932 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
+;
 PRO eva_sitl_strct_update, segSelect
   compile_opt idl2
   common mms_sitl_connection, netUrl, connection_time, login_source
@@ -8,8 +22,6 @@ PRO eva_sitl_strct_update, segSelect
   endif else begin
     message,'Something is wrong'
   endelse
-  
-  
   defSourceID = 'SITL:'+username
   
   get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
@@ -25,10 +37,12 @@ PRO eva_sitl_strct_update, segSelect
     else:;-2 or 0 --> OK
   endcase
 
-  ;main
+  ;main (Determine if segSelect if for FOMStr or BAKStr)
   r = segment_overlap([segSelect.TS,segSelect.TE],tfom)
   case r of
-    ;================================================= FOMStr =====
+    ;----------------------
+    ; FOMStr
+    ;----------------------
     0: begin
       s = lim.UNIX_FOMSTR_MOD
       result = min(abs(s.TIMESTAMPS-segSelect.TS),segSTART)
@@ -42,10 +56,14 @@ PRO eva_sitl_strct_update, segSelect
       newFOM        = 0.
       newCOMMENT    = ''
       newISPENDING  = 1L
-      for N=0,s.Nsegs-1 do begin; scan all segments
+      
+      ; scan all segments
+      for N=0,s.Nsegs-1 do begin
         ss = s.TIMESTAMPS[s.START[N]]; segment start time
         se = s.TIMESTAMPS[s.STOP[N]+1]; segment stop time
         fv = s.FOM[N]; segment FOM value
+        
+        ; Each segment is compared to the User's new/modified segement
         rr = segment_overlap([ss,se],segSelectTime)
         case abs(rr) of; 
           1: begin; partial overlap --> split
@@ -86,7 +104,7 @@ PRO eva_sitl_strct_update, segSelect
         newSOURCEID   = [newSOURCEID, defSourceID]
         newSTART      = [newSTART, segSTART]
         newSTOP       = [newSTOP, segSTOP]
-        newCOMMENT    = [newCOMMENT,'']
+        newCOMMENT    = [newCOMMENT,segSelect.COMMENT]
       endif
       
       ;update FOM structure
@@ -114,7 +132,9 @@ PRO eva_sitl_strct_update, segSelect
         r = dialog_message("You can't delete all segments.",/center)
       endelse
       end; FOMStr case
-    ;================================================= BAKStr =====
+    ;----------------------
+    ; BAKStr
+    ;----------------------
     ; Already validated in 'eva_sitl' so that [segSelect.TS,segSelect.TE] 
     ; (1) does not overlap with any other segment (ADD)
     ; (2) matches exactly with one of the existing segments. (EDIT)

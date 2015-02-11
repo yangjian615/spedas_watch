@@ -13,10 +13,14 @@
 ;	None.
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedDate: 2015-02-06 18:17:50 -0800 (Fri, 06 Feb 2015) $
+; $LastChangedRevision: 16905 $
 ; $URL $
 ;-
+
+;------------------------------------------------------------------------------
+;Loading FGM into tplot
+;------------------------------------------------------------------------------
 
 ;your exemplar themis data is magnetometer data
 timespan,'2007-03-23'
@@ -25,7 +29,7 @@ thm_load_fgm, probe = 'b', level = 'l2'
 
 tplot_options,'title','data_export_example'
 
-print,'The SciSoft software package stores data in tplot variables by default'
+print,'The SPEDAS software package stores data in tplot variables by default'
 
 print,'To get a list of available variables type "tplot_names"'
 
@@ -35,8 +39,9 @@ stop
 
 tplot_names
 
-
-;;Access Data Variables Directly
+;------------------------------------------------------------------------------
+;Access Data Variables Directly as IDL arrays
+;------------------------------------------------------------------------------
 print,'The most basic way to "export" data from the scisoft package is to access the data directly'
 
 print,'You can do this by typing "get_data,tplot_var_name,time,data"'
@@ -52,7 +57,10 @@ print,'(press .c to continue with crib)'
 
 stop
 
-;;Make PNG's
+;------------------------------------------------------------------------------
+; Make plot
+;------------------------------------------------------------------------------
+
 print,'We can export a plot to a file by first plotting the data with the command:'
 print,'"tplot,tplot_var_name"'
 
@@ -64,6 +72,10 @@ print,'(press .c to continue with crib)'
 
 stop
 
+;------------------------------------------------------------------------------
+;Export to PNG
+;------------------------------------------------------------------------------
+
 print,'Now we simply type: "makepng,plotname"'
 
 makepng,'thb_fgs_dsl_plot'
@@ -72,7 +84,9 @@ print,'(press .c to continue with crib)'
 
 stop
 
-;Make Gif's
+;------------------------------------------------------------------------------
+;Export to GIF
+;------------------------------------------------------------------------------
 print,'You export data to gif format with the "makegif" function as well'
 
 makegif,'thb_fgs_dsl_plot'
@@ -80,8 +94,9 @@ makegif,'thb_fgs_dsl_plot'
 print,'(press .c to continue with crib)'
 
 stop
-
-;Make PS
+;------------------------------------------------------------------------------
+;Export to postscript(.ps)
+;------------------------------------------------------------------------------
 print,'You can export to postscript format with the "popen & pclose" procedures'
 
 popen,'thb_fgs_dsl_plot'
@@ -94,7 +109,10 @@ print,'(press .c to continue with crib)'
 
 stop
 
-;Make EPS
+;------------------------------------------------------------------------------
+;Export to encapsulated postscript(.eps)
+;------------------------------------------------------------------------------
+
 print,'You can export to encapsulated postscript format with the /encapsulated keyword'
 
 popen,'thb_fgs_dsl_plot',/encapsulated
@@ -106,7 +124,10 @@ pclose
 print,'(press .c to continue with crib)'
 
 stop
+
+;------------------------------------------------------------------------------
 ;Export to Ascii
+;------------------------------------------------------------------------------
 print,'We can also export data to an ascii file'
 
 print,'Just type "tplot_ascii,tplot_var_name"'
@@ -120,7 +141,9 @@ print,'(press .c to continue with crib)'
 
 stop
 
-;current directory control
+;------------------------------------------------------------------------------
+;Check current output directory
+;------------------------------------------------------------------------------
 print,'All files go to your current idl directory by default'
 
 print,'Check your current idl directory by typing "cwd"'
@@ -131,6 +154,10 @@ print,'(press .c to continue with crib)'
 
 stop
 
+;------------------------------------------------------------------------------
+;Change current output directory
+;------------------------------------------------------------------------------
+
 print,'You can change your current by calling cwd,dirname'
 
 cwd,'.'
@@ -140,7 +167,10 @@ print,'(press .c to continue with crib)'
 
 stop
 
-;save current state
+;------------------------------------------------------------------------------
+;save all tplot variables in current session
+;------------------------------------------------------------------------------
+
 tplot_save,filename='current'
 
 del_data,'*'
@@ -152,8 +182,11 @@ print,'Now the data has been saved to current.tplot and idl tplot variables have
 print,'(press .c to continue with crib)'
 
 stop
+;----------
+;--------------------------------------------------------------------
+;restore all tplot variables from previous session
+;------------------------------------------------------------------------------
 
-;restore current state
 tplot_restore,filename='current.tplot'
 
 tplot_names
@@ -165,6 +198,11 @@ print,'The End'
 print,'(press .c to continue with crib)'
 
 stop
+
+
+;------------------------------------------------------------------------------
+;Beautify your plot(see tplot cribs in spedas/general/examples for more detail 
+;------------------------------------------------------------------------------
 
 ;changing thickness
 
@@ -190,5 +228,11 @@ pclose
 print,'(press .c to continue with crib)'
 
 stop
+
+;------------------------------------------------------------------------------
+;export from command line to GUI(need system with windowing support)
+;------------------------------------------------------------------------------
+tplot_gui,'thb_fgs_dsl' ;note that it imports your increased thickness settings too!
+
 
 end

@@ -12,7 +12,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
 
    if keyword_set(units_name) then zval = units_name
    if not keyword_set(yval) then yval = 'Energy'
-   if not keyword_set(zval) then zval = 'Rate'
+   if not keyword_set(zval) then zval = 'Eflux'
 ;   smooth=1
    
    geoms = [!values.f_nan,.1,.001,!values.f_nan]        ; cm2-ster         ; temporary kludge
@@ -74,7 +74,9 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
           dt2 = dt # replicate(1.,nw)
           if keyword_set(smooth)  then begin
              dprint,dlevel=2,'Smoothing count array ',cname
-             cnts = dt2 * smooth_counts(cnts/dt2,dt2,smpar=smpar)
+             case smooth of
+              1:          cnts = dt2 * smooth_counts(cnts/dt2,dt2,smpar=smpar)
+           endcase
              dprint,dlevel=3,'Done'
           endif
           dim = size(cnts,/dimension)

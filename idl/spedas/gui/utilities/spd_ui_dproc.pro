@@ -32,21 +32,23 @@
 ;
 ;HISTORY:
 ; 20-oct-2008, jmm, jimm@ssl.berkeley.edu
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-01-27 12:45:00 -0800 (Tue, 27 Jan 2015) $
-;$LastChangedRevision: 16755 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2015-02-09 13:28:13 -0800 (Mon, 09 Feb 2015) $
+;$LastChangedRevision: 16922 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_dproc.pro $
 
 
 ;This routine simplifies some of the recall code
 function call_dproc, dp_task, dp_pars, names_out = names_out, no_setactive = no_setactive, $
-                     hwin = hwin, sbar = sbar, call_sequence=call_sequence,$
-                     loadedData=loadedData,gui_id = gui_id, dpr_extra = _extra
+                     hwin = hwin, sbar = sbar, call_sequence = call_sequence,$
+                     loadedData = loadedData, gui_id = gui_id, process_vars = process_vars, $
+                     dpr_extra = _extra
 
   compile_opt idl2,hidden
 
   ;First get the active data names:
-  in_vars = loadedData->getactive(/parent) ;all you want is parents
+  If(is_string(process_vars)) Then in_vars = process_vars $ ;Use process_vars if you do not want to do all active data
+  Else in_vars = loadedData->getactive(/parent) ;all you want is parents
   If(is_string(in_vars) Eq 0) Then Begin
       hwin -> update, 'No active data, Returning'
       sbar -> update, 'No active data, Returning'
@@ -223,84 +225,36 @@ Function spd_ui_dproc, info, uval, $
       endif else sbar->update,'Degap Canceled'
     End
     'wave':Begin
-    
-      ;get time range from active data if possible
-      active_data = info.loadedData->getactive()
-      for i=0, n_elements(active_data)-1 do begin
-        info.loadeddata->getvardata, name=active_data[i], trange=tr0
-        if obj_valid(tr0) then break
-      endfor
-      
-      ;use store time range otherwise
-      if ~obj_valid(tr0) then tr0 = info.loadtr
-
-      tr = [tr0->getstarttime(),tr0->getendtime()]
-      
-      plabel = ['Start Time:', 'Stop Time: ', 'Max # of Samples']
-      pvalue = [time_string(tr),strtrim(2l^15,2)] ;uses default maxpoints from wav_data.pro
-      opar = obj_new('spd_ui_dproc_par', dp_string = uv, $
-                     dp_struct = {pvalue:pvalue, plabel:plabel})
-      trange0 = spd_ui_dproc_par_choose(opar, gui_id = guiid, $
-                                        par_pad = 2, label_xsize = 100, $
-                                        title =  'Wavelet Transform Time Range', $
-                                        bottomlabel = 'Format: yyyy-mm-dd/hh:mm:ss')
-
-      obj_destroy, opar
-      
-      msg = ''
-      If(trange0[0] Eq 'Cancelled') Then Begin
-        msg = 'Operation Cancelled: '+uvlong[is_possible]
-        hwin -> update, msg
-        sbar -> update, msg
-      Endif Else Begin
-      
-        ; 'trange0' should be an array with 3 elements: 1) start time, 2) end time, 3) max # of samples
-        if n_elements(trange0) ne 3 then begin
-            wavelet_err_msg = 'Error calculating wavelet transform, missing some parameters. Did you leave a textbox in the wavelet panel empty?'
-            hwin->update, wavelet_err_msg
-            sbar->update, wavelet_err_msg
-            break
-        endif 
-        
-        t00 = spd_ui_timefix(trange0[0])
-        If(is_string(t00)) Then Begin
-            t00x = time_double(t00)
-        Endif Else Begin
-            msg = 'Invalid Start Time: "' + trange0[0] + '"'
-        Endelse
-
-        t01 = spd_ui_timefix(trange0[1])
-        If(is_string(t01)) Then Begin
-            t01x = time_double(t01)
-        Endif Else Begin
-            msg = 'Invalid End Time: "' + trange0[1] + '"'
-        Endelse
-        
-        if msg eq '' then begin
-          trange = [t00x, t01x]
-          If(trange[0] Le 0) Then Begin
-            msg = 'Invalid Start Time: "' + trange0[0] + '"'
-          Endif Else If(trange[1] Le 0) Then Begin
-            msg = 'Invalid End Time: "' + trange0[1] + '"'
-          Endif Else If(trange[0] Ge trange[1]) Then Begin
-            msg = 'Start Time: '+trange0[0]+' is GE End Time: '+trange0[1]
-          endif else if ~is_numeric(trange0[2]) then begin
-            msg = 'Invalid Max # of Samples: "' + trange0[2] + '"'
-          endif else begin
-            otp = call_dproc(uv,{trange:trange,maxpoints:float(trange0[2])} , hwin=info.historyWin,sbar=sbar,call_sequence=call_sequence,loadedData=info.loadedData, gui_id=guiid)  
+;get options for each variable, this is done because the defaults for
+;wavelets depend on dt
+       active_data = info.loadedData->getactive(/parent)
+; create new time range object here
+       tr_obj = obj_new('SPD_UI_TIME_RANGE')
+       ok = tr_obj->SetStartTime(info.loadtr->getstarttime())
+       ok = tr_obj->setendtime(info.loadtr->getendtime())
+       For i=0, n_elements(active_data)-1 Do Begin
+          dpar = spd_ui_wavelet_options(guiid, info.loadeddata, tr_obj, $
+                                        info.historywin, sbar, active_data[i])
+          msg = ''
+          If(is_struct(dpar) Eq 0 || dpar.success Eq 0) Then Begin
+             msg = 'Operation Cancelled: '+uvlong[is_possible]
+             hwin -> update, msg
+             sbar -> update, msg
+          Endif Else Begin
+             otp = call_dproc(uv, dpar, hwin=info.historyWin, sbar=sbar, $
+                              call_sequence=call_sequence, $
+                              loadedData=info.loadedData, process_vars = active_data[i], $
+                              gui_id=guiid)  
           Endelse
-        endif
-        
-        if msg ne '' then begin
-          ok = dialog_message(msg,/center,title='Error Initializing Wavelet: ')
-          hwin -> update, msg
-          sbar -> update, msg
-        endif
-      Endelse
-      
+          if msg ne '' then begin
+             ok = dialog_message(msg,/center,title='Error Initializing Wavelet: ')
+             hwin -> update, msg
+             sbar -> update, msg
+          endif
+       Endfor
+       If(obj_valid(tr_obj)) Then obj_destroy, tr_obj
     End
     'hpfilt':Begin
-
       values = spd_ui_high_pass_options(guiid, sbar, info.historywin)
       if values.ok then begin
         otp = call_dproc(uv, values, hwin=info.historyWin,sbar=sbar,call_sequence=call_sequence,loadedData=info.loadedData, gui_id=guiid) 

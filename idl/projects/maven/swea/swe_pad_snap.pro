@@ -32,6 +32,8 @@
 ;
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
+;       BURST:         Synonym for ARCHIVE.
+;
 ;       DIR:           If set, show some useful information with
 ;                      respect to the observed vector magnetic field
 ;                      in the MSO and LGEO(local geographic coordinate). 
@@ -39,8 +41,8 @@
 ;       MASK_SC:       Mask PA bins that are blocked by the spacecraft.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:49:32 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16877 $
+; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -48,12 +50,13 @@
 pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
                   label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
-                  abins=abins, dbins=dbins, obins=obins
+                  abins=abins, dbins=dbins, obins=obins, burst=burst
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
+  if keyword_set(burst) then aflg = 1
   if (size(units,/type) ne 7) then units = 'crate'
   if keyword_set(energy) then sflg = 1 else sflg = 0
   if keyword_set(keepwins) then kflg = 0 else kflg = 1

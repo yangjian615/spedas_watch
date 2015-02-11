@@ -60,11 +60,13 @@
 ;
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
+;       BURST:         Synonym for ARCHIVE.
+;
 ;       MASK_SC:       Mask solid angle bins that are blocked by the spacecraft.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-27 19:58:10 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16762 $
+; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -73,12 +75,13 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  center=center, units=units, ddd=ddd, sum=sum, padmag=padmag, $
                  energy=energy, label=label, smo=smo, symdir=symdir, sundir=sundir, $
                  symenergy=symenergy, symdiag=symdiag, power=pow, map=map, $
-                 abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc
+                 abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
+  if keyword_set(burst) then aflg = 1
 
   if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
   if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)

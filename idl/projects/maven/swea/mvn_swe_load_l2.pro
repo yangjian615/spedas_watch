@@ -55,8 +55,8 @@
 ;                      allows multiple calls to load subsets of the data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 23:03:53 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16896 $
+; $LastChangedDate: 2015-02-09 14:33:00 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16924 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l2.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-02-15
@@ -69,6 +69,8 @@ pro mvn_swe_load_l2, trange, filename=filename, latest=latest, spec=spec, pad=pa
   @mvn_swe_com
 
 ; Process keywords
+
+  oneday = 86400D
 
   if (size(status,/type) eq 0) then status = 1
   if keyword_set(status) then silent = 0 else silent = 1
@@ -86,6 +88,10 @@ pro mvn_swe_load_l2, trange, filename=filename, latest=latest, spec=spec, pad=pa
     tmin = tmax - (double(latest[0])*oneday)
     trange = [tmin, tmax]
   endif
+
+  tplot_options, get_opt=topt
+  tspan_exists = (max(topt.trange_full) gt time_double('2013-11-18'))
+  if ((size(trange,/type) eq 0) and tspan_exists) then trange = topt.trange_full
 
 ; Default is to load all data types
 
@@ -230,11 +236,11 @@ pro mvn_swe_load_l2, trange, filename=filename, latest=latest, spec=spec, pad=pa
 
 ; Set the time range for tplot (and other routines that access this)
   
-  timespan, trange
+  if (~tspan_exists) then timespan, trange
 
-; Initialize SPICE
+; Initialize SPICE (now done outside of loader)
 
-  mvn_swe_spice_init, trange=trange, /list
+; mvn_swe_spice_init, trange=trange, /list
 
 ; Define decompression, telemetry conversion factors, and data structures
 

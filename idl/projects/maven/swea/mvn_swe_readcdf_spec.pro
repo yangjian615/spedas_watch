@@ -15,9 +15,9 @@
 ; HISTORY:
 ;   Created by Matt Fillingim
 ; VERSION:
-;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-02-04 13:42:42 -0800 (Wed, 04 Feb 2015) $
-;   $LastChangedRevision: 16863 $
+;   $LastChangedBy: mattf $
+;   $LastChangedDate: 2015-02-06 12:34:20 -0800 (Fri, 06 Feb 2015) $
+;   $LastChangedRevision: 16903 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_readcdf_spec.pro $
 ;
 ;-
@@ -25,6 +25,9 @@
 pro mvn_swe_readcdf_spec, infile, structure
 
   @mvn_swe_com
+
+; initialize
+  mvn_swe_init
 
   n_e = swe_engy_struct.nenergy
 
@@ -272,5 +275,6 @@ pro mvn_swe_readcdf_spec, infile, structure
   structure.valid = 1B
 
 ; finis!
+CDF_CLOSE, id
 
 end

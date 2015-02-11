@@ -24,11 +24,12 @@
 ; 12-mar-2007, jmm, jimm@ssl.berkeley.edu
 ; 5-jun-2007, jmm, no longer handles history
 ; 7-may-2008, W. Michael Feuerstein, Test for >= 2 finite points.
-; 11-may-2009,prc(pcruce@igpp.ucla.edu) added keyword to return the names of temporary variables created in process
+; 11-may-2009,prc(pcruce@igpp.ucla.edu) added keyword to return the  
+;             names of temporary variables created in process
 ;
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedDate: 2015-02-09 13:28:13 -0800 (Mon, 09 Feb 2015) $
+;$LastChangedRevision: 16922 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_wavelet.pro $
 ;-
 Pro spd_ui_wavelet, vnames, new_names, trange, polar = polar, $

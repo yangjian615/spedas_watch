@@ -57,7 +57,8 @@ stop
 yyyy = strmid(time, 0, 4)
 mm = strmid(time, 5, 2)
 dd = strmid(time, 8, 2)
-path = '/disks/data/maven/data/sci/swe/l2/' + yyyy + '/' + mm + '/'
+
+path = root_data_dir() + 'maven/data/sci/swe/l2/' + yyyy + '/' + mm + '/'
 
 ; *** is this sufficient, or do we want a wrapper program that determines
 ;     the correct filename and which mnv_swe_readcdf_XX to call?  ***

@@ -22,8 +22,8 @@
 ; qf.qf_print()
 ;
 ;NOTES:
-;Quality flags:  
-;     1:boom not deployed, 2:in shadow, 3:uncorrected shadow, 4:noisy waveforms 
+;Quality flags:
+;     1:boom not deployed, 2:in shadow, 3:uncorrected shadow, 4:noisy waveforms
 ;
 ;FGM/SCM boom deploy:
 ;THEMIS_A: 2007/056 21:00
@@ -44,13 +44,24 @@
 ;THEMIS_E: spin plane: 2007/156 23:55
 ;axial: 2007/158 18:45
 ;
+;Data for thc are wrong for 2011:
+;
+;Nov 26 10:10 – Nov. 26 24:00
+;Nov 28 23:10 – Nov. 29 03:00
+;Nov 30 05:00 – Nov. 30 24:00
+;Dec 07 15:00 – Dec. 08 24:00
+;Dec 27 15:00 – Dec. 27 24:00
+;
+;Data for thb are wrong for 2012:;
+;Jan 04 20:45 – Jan. 04 24:00
+;
 ;RELATED:
 ;spd_qf_list__define
 ;
 ;HISTORY:;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-01-29 17:17:27 -0800 (Thu, 29 Jan 2015) $
-;$LastChangedRevision: 16782 $
+;$LastChangedDate: 2015-02-06 11:09:04 -0800 (Fri, 06 Feb 2015) $
+;$LastChangedRevision: 16899 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_get_fgm_quality_flags.pro $
 ;-
 
@@ -78,7 +89,8 @@ function thm_get_fgm_quality_flags, probe, trange=trange
   endelse
 
 
-  if (keyword_set(trange) && (n_elements(trange) eq 2) && (trange[1] ge trange[0])) then begin
+  if (keyword_set(trange) && (n_elements(trange) eq 2) && (time_double(trange[1]) ge time_double(trange[0]))) then begin
+    trange = time_double(trange)
     if (trange[0] ge t2) then begin
       fgm_qf= obj_new('SPD_QF_LIST', t_start=[trange[0]], t_end=[trange[1]], qf_bits=[0])
     endif else if (trange[1] le t1) then begin
@@ -97,12 +109,12 @@ function thm_get_fgm_quality_flags, probe, trange=trange
     trange = [t1, SYSTIME(1)]
   endelse
 
-  ; eclipse corrections 
+  ; eclipse corrections
   thm_load_state,probe=probe, trange=trange, /get_support
   smp=spinmodel_get_ptr(probe,use_eclipse_corrections=2)
   smp->get_info,shadow_count=shadow_count,shadow_start=shadow_start,$
     shadow_end=shadow_end
-    
+
   for i=0, shadow_count-1 do begin
     shadow_start0 = shadow_start[i]
     shadow_end0 = shadow_end[i]
@@ -112,7 +124,22 @@ function thm_get_fgm_quality_flags, probe, trange=trange
     fgm_qf0= obj_new('SPD_QF_LIST', t_start=[shadow_start0], t_end=[shadow_end0], qf_bits=[qf])
     fgm_qf = fgm_qf.qf_merge(fgm_qf0)
   endfor
-   
+
+  ; noisy waveforms
+  if (probe eq 'b') then begin ;Jan 04 20:45 – Jan. 04 24:00
+    t_start = [time_double('2012-01-04/20:45:00')]
+    t_end = [time_double('2012-01-04/24:00:00')]
+    fgm_qf4 = obj_new('SPD_QF_LIST', t_start=t_start, t_end=t_end, qf_bits=[4])
+    fgm_qf = fgm_qf.qf_merge(fgm_qf4)
+  endif else if (probe eq 'c') then begin
+    t_start = [time_double('2011-11-26/10:10:00'),time_double('2011-11-28/23:10:00'),time_double('2011-11-30/05:00:00'),time_double('2011-12-07/15:00:00'),time_double('2011-12-27/15:00:00')]
+    t_end = [time_double('2011-11-27/00:00:00'),time_double('2011-11-29/03:00:00'),time_double('2011-11-30/24:00:00'),time_double('2011-12-08/24:00:00'),time_double('2011-12-27/24:00:00')]
+    fgm_qf4 = obj_new('SPD_QF_LIST', t_start=t_start, t_end=t_end, qf_bits=[4,4,4,4,4])    
+    fgm_qf = fgm_qf.qf_merge(fgm_qf4)
+  endif
+  
+  
+  fgm_qf = fgm_qf.qf_time_slice(trange[0],trange[1])
 
   return, fgm_qf
 

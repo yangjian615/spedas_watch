@@ -39,8 +39,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-01-29 17:18:52 -0800 (Thu, 29 Jan 2015) $
-;$LastChangedRevision: 16783 $
+;$LastChangedDate: 2015-02-06 11:10:05 -0800 (Fri, 06 Feb 2015) $
+;$LastChangedRevision: 16900 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_qf_list__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -56,6 +56,9 @@ end
 
 function spd_qf_list::qf_time_slice, tstart, tend
   ; returns a quality flag list object for times between tstart and tend
+  
+  tstart = time_double(tstart)
+  tend = time_double(tend)
   result = obj_new("spd_qf_list")
   self = self.qf_sort()
   t1 = self.t_start()
@@ -63,29 +66,35 @@ function spd_qf_list::qf_time_slice, tstart, tend
   qf_bits = self.qf_bits()
   count = self.count()
 
-  if (n_elements(t1) lt 1) then return, result
-  last = t2[count-1]
-  if ((tstart ge tend) or (tend le t1[0]) or (tstart ge last)) then return, result
-
-  ids1 = max(where(tstart ge t1))
-  ids2 = min(where(tstart le t2))
-  ide1 = max(where(tend ge t1))
-  ide2 = min(where(tend le t2))
-
-  if (ids1 lt 1) then ids1 = 0
-  if (ids2 lt 1) then ids2 = 0
-  if (ide1 lt 1) then ide1 = 0
-  if (ide2 lt 1) then ide2 = 0
-
-  if (ids1 eq ids2) then begin
-    t1[ids1] = tstart
-  endif
-  if (ide1 eq ide2) then begin
-    t2[ide2] = tend
-  endif
-
-  result = obj_new('SPD_QF_LIST', t_start=t1[ids2:ide2], t_end=t2[ids2:ide2], qf_bits=qf_bits[ids2:ide2])
-
+  if count lt 0 then return, result
+  if tstart ge t2[count-1] then return, result
+  if tend le t1[0] then return, result
+ 
+  ; sort and eliminate douplicates
+  t = [t1,t2, tstart, tend]
+  t = t(sort(t))
+  tn = [t[0]]
+  tprev = t[0]
+  for i = 1, n_elements(t)-1 do begin
+    if (t[i] eq tprev) then continue
+    tprev = t[i]
+    tn = [tn, tprev]
+  endfor  
+  tn = tn[where((tn ge tstart) and (tn le tend))]   
+  if n_elements(tn) lt 2 then return, result
+  
+  ; create new time pairs
+  t1n = tn[0]
+  t2n = tn[1]
+  q = [self.get_qf(tn[0])]
+  for i=1, n_elements(tn)-1 do begin
+    if (t[i] eq t[i-1]) then continue
+    t1n = [t[i], t1n]
+    t2n = [t[i+1], t2n]
+    q = [self.get_qf(t[i]), q]
+  endfor
+  result = obj_new('SPD_QF_LIST', t_start=t1n, t_end=t2n, qf_bits=q)
+  
   return, result
 end
 
@@ -109,16 +118,22 @@ function spd_qf_list::qf_merge, qf
   t = t(sort(t))
 
   t1 = [t[0]]
-  t2 = [t[1]]
-  qfb = [self.get_qf(t[0])]
   for i = 1, n_elements(t)-2  do begin
+    if undefined(t2) then begin
+      if (t[i] gt t[0]) then begin
+        t2 = [t[i]]
+        qf1 = self.get_qf(t[0])
+        qf2 = qf.get_qf(t[0])
+        qfb = [self.qf_add(qf1, qf2)]
+      endif else continue
+    endif
     nt1 = t[i]
     nt2 = t[i+1]
     qf1 = self.get_qf(t[i])
     qf2 = qf.get_qf(t[i])
     nqfb = self.qf_add(qf1, qf2)
 
-    if ((nqfb gt 0) and (nt1 ne nt2)) then begin
+    if ((nqfb ge 0) and (nt1 ne nt2)) then begin
       if ((qfb[n_elements(qfb)-1] eq nqfb) and (t2[n_elements(t2)-1] eq nt1)) then begin
         t2[n_elements(t2)-1] = nt2
       endif else begin

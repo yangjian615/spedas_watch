@@ -15,9 +15,9 @@
 ; HISTORY:
 ;   Created by Matt Fillingim
 ; VERSION:
-;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-02-05 15:52:10 -0800 (Thu, 05 Feb 2015) $
-;   $LastChangedRevision: 16881 $
+;   $LastChangedBy: mattf $
+;   $LastChangedDate: 2015-02-06 12:34:20 -0800 (Fri, 06 Feb 2015) $
+;   $LastChangedRevision: 16903 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_readcdf_3d.pro $
 ;
 ;-
@@ -25,6 +25,9 @@
 pro mvn_swe_readcdf_3d, infile, structure
 
   @mvn_swe_com
+
+; initialize
+  mvn_swe_init
 
   n_e  = swe_3d_struct.nenergy  ; 64 energies
   n_az = 16                     ; 16 azimuths
@@ -365,5 +368,6 @@ pro mvn_swe_readcdf_3d, infile, structure
   structure.valid = 1B
 
 ; finis!
+CDF_CLOSE, id
 
 end

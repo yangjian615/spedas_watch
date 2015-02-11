@@ -195,34 +195,38 @@ FUNCTION eva_data_targettime, state, evTop
   r = get_mms_sitl_connection(group_leader=evTop); establish connection with login-widget  
   type = size(r, /type) ;will be 11 if object has been created
   check = (type eq 11)  
-  unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, evTop)
+  if check then begin
+    unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, evTop)
+    if n_tags(unix_FOMstr) gt 0 then begin
+      nmax = n_elements(unix_FOMstr.timestamps)
+      start_time = time_string(unix_FOMstr.timestamps[0],precision=3)
+      end_time = time_string(unix_FOMstr.timestamps[nmax-1],precision=3)
+      
+      ;---- update cw_sitl label ----
+      lbl = ' '+start_time+' - '+end_time
+      log.o,'updating cw_sitl target_time label:'
+      log.o, lbl
+      print, lbl
+      
+      id_sitl = widget_info(state.parent, find_by_uname='eva_sitl')
+      sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
+      WIDGET_CONTROL, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY
+      widget_control, sitl_state.lblTgtTimeMain, SET_VALUE=lbl
+      WIDGET_CONTROL, sitl_stash, SET_UVALUE=sitl_state, /NO_COPY
   
-  if n_tags(unix_FOMstr) gt 0 then begin
-    nmax = n_elements(unix_FOMstr.timestamps)
-    start_time = time_string(unix_FOMstr.timestamps[0],precision=3)
-    end_time = time_string(unix_FOMstr.timestamps[nmax-1],precision=3)
-
-    
-    ;---- update cw_sitl label ----
-    lbl = ' '+start_time+' - '+end_time
-    log.o,'updating cw_sitl target_time label:'
-    log.o, lbl
-    print, lbl
-    
-    id_sitl = widget_info(state.parent, find_by_uname='eva_sitl')
-    sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
-    WIDGET_CONTROL, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY
-    widget_control, sitl_state.lblTgtTimeMain, SET_VALUE=lbl
-    WIDGET_CONTROL, sitl_stash, SET_UVALUE=sitl_state, /NO_COPY
-
-    ;---- update cw_data field boxes ----
-    log.o,'updating cw_data start and end times'
-    str_element,/add,state,'start_time',start_time
-    str_element,/add,state,'end_time',end_time
-    eva_data_update_time, state,/update
-  endif else check = 0
+      ;---- update cw_data field boxes ----
+      log.o,'updating cw_data start and end times'
+      str_element,/add,state,'start_time',start_time
+      str_element,/add,state,'end_time',end_time
+      eva_data_update_time, state,/update
+    endif else check = 0
+  endif; if check
   
-  if check then answer = dialog_message('Logged in!',/info,title='MMS LOG-IN',/center)
+  if check then begin 
+    answer = dialog_message('Logged in!',/info,title='MMS LOG-IN',/center)
+  endif else begin
+    answer = dialog_message('Log-in Failed',/info,title='MMS LOG-IN',/center)
+  endelse
   return, state
 END
 

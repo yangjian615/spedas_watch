@@ -71,8 +71,8 @@
 ;       LOADONLY:      Download data but do not process.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-04 13:39:20 -0800 (Wed, 04 Feb 2015) $
-; $LastChangedRevision: 16858 $
+; $LastChangedDate: 2015-02-09 11:03:15 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16914 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -104,6 +104,10 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
     tmin = tmax - (double(latest[0])*oneday)
     trange = [tmin, tmax]
   endif
+
+  tplot_options, get_opt=topt
+  tspan_exists = (max(topt.trange_full) gt time_double('2013-11-18'))
+  if ((size(trange,/type) eq 0) and tspan_exists) then trange = topt.trange_full
   
   if (size(cdrift, /type) eq 0) then dflg = 1 else dflg = keyword_set(cdrift)
 
@@ -115,7 +119,6 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
   if (size(filename,/type) eq 7) then begin
     file = filename
     nfiles = n_elements(file)
-    trange = 0
   endif else begin
     if (size(trange,/type) eq 0) then begin
       print,"You must specify a file name or time range."
@@ -155,11 +158,11 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
     trange = minmax(trange[1:*])
   endif
   
-  timespan, trange
+  if (~tspan_exists) then timespan, trange
 
-; Initialize SPICE
+; Initialize SPICE (now done outside of loader)
 
-  mvn_swe_spice_init, trange=trange, /list
+; mvn_swe_spice_init, trange=trange, /list
 
 ; Define decompression, telemetry conversion factors, and data structures
 

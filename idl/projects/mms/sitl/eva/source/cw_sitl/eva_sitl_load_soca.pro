@@ -14,9 +14,17 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   dgrand = ['mms_soca_fomstr']
   store_data,'mms_soca_fomstr',data=eva_sitl_strct_read(unix_FOMStr,tfom[0])
   options,'mms_soca_fomstr','ytitle','FOM'
-  options,'mms_soca_fomstr','ysubtitle','(latest ABS selection)'
+  options,'mms_soca_fomstr','ysubtitle','(ABS)'
   options,'mms_soca_fomstr','unix_FOMStr_org',unix_FOMStr
 
+
+  ; 'mms_soca_mdq'
+  wavex = unix_FOMstr.TIMESTAMPS+5.d0; shift 5 seconds so that the bars (histograms) will be properly placed.
+  D = {x:wavex, y:unix_FOMstr.MDQ} 
+  store_data,'mms_soca_mdq',data=D
+  options,'mms_soca_mdq','psym',10
+  options,'mms_soca_mdq','ytitle','MDQ'
+  
   ; 'mms_soca_zero'
   zerox = [tspan[0],tfom[0],tfom[0],tfom[0],tfom[1],tfom[1],tfom[1],tspan[1]]
   zeroy = [      0.,     0.,   255.,     0.,     0.,   255.,     0.,      0.]
@@ -56,9 +64,9 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   dgrand = [dgrand,'mms_soca_zero']
   store_data, 'mms_soca_fom',data=dgrand
   options,    'mms_soca_fom','ytitle', 'FOM'
-  if keyword_set(mdq) then begin
-    ; ABSstr
-    ;unix_ABSstr = eva_data_load_soca_getabs(str_tspan)
-  endif
+;  if keyword_set(mdq) then begin
+;    ; ABSstr
+;    ;unix_ABSstr = eva_data_load_soca_getabs(str_tspan)
+;  endif
 
 END

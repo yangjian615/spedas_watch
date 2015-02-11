@@ -5,8 +5,8 @@
 ; displayed using doc_library.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:57:40 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16889 $
+; $LastChangedDate: 2015-02-09 12:35:33 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16919 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crib.pro $
 ;--------------------------------------------------------------------
 ;
@@ -18,13 +18,21 @@
 
 doc_library, 'routine_name'
 
-; Load SWEA L0 data by unix time range into a common block
-;   Note: trange can be in any format accepted by time_double(), and
-;   it can have multiple dimensions, as long as it has at least two
-;   elements.  Data are automatically downloaded as needed.
+; Before loading SWEA data, set the time range.  You only need to do 
+; this once.  If you have already done this to load the data from another
+; instrument, you don't need to do it again.
 
-trange = ['2014-12-10','2014-12-11']
-mvn_swe_load_l0, trange
+timespan, ['2014-12-10','2014-12-11']
+
+; Load SWEA L0 data into a common block
+
+mvn_swe_load_l0
+
+; You can override the time range set by timespan by explicitly providing
+; a time range to the loader.  You might want to do this if you're only
+; interested in a shorter time interval of SWEA data.
+
+mvn_swe_load_l0, ['2014-12-10/08','2014-12-10/12']
 
 ; You can also request data by orbit number using the ORBIT keyword.
 ;   SWEA software uses the NAIF orbit numbering convention, where
@@ -36,28 +44,29 @@ mvn_swe_load_l0, orbit=[357,360]
 
 ; Load L2 data by unix time range or orbit number into a common block
 ;   Data loaded from L2 are identical to data loaded from L0 (by design).
-;   L2 data load quickly but consume about 6 times more RAM.  All SWEA 
-;   routines automatically detect which type of data are loaded and work 
-;   the same.
+;   L2 data load quickly but consume about 6 times more RAM.  A full day
+;   of L2 survey data can consume ~4 GB of RAM.  Add burst data to this
+;   and ~8 GB are needed.  So, you may need to manage RAM, depending on
+;   your hardware.
+;
+;   All SWEA routines automatically detect which type of data are loaded 
+;   and work the same.  L2 data are loaded using the same methods as L0:
 
-trange = ['2014-12-10','2014-12-11']
-mvn_swe_load_l2, trange
+mvn_swe_load_l2
 
 mvn_swe_load_l2, orbit=[357,360]
 
 ; To conserve RAM, you can load individual data products over different
-; time ranges.  Remember to reset the time range to the original value
-; for subsequent plotting with tplot.
+; time ranges.  Make sure to use the NOERASE option, so that you don't 
+; reinitialize the common block with each call.
 ;
-; I recommend that you load burst data in this way.
+; (I recommend that you load burst data in this way.)
 
-full_trange = ['2014-12-10','2014-12-11']
-mvn_swe_load_l2, full_trange, /spec  ; SPEC survey data over the full range
+mvn_swe_load_l2, /spec         ; load SPEC survey data over the full range
 
 smaller_trange = ['2014-12-10/10','2014-12-10/12']
 mvn_swe_load_l2, smaller_trange, /pad, /noerase          ; PAD survey data
 mvn_swe_load_l2, smaller_trange, /pad, /burst, /noerase  ; PAD burst data
-timespan, full_trange
 
 ; Summary plot.  Loads ephemeris data and includes a panel for 
 ; spacecraft altitude (aerocentric).  Orbit numbers appear along
@@ -127,11 +136,15 @@ mvn_swe_n1d, /mb, pans=pans
 
 ; Estimate electron density and temperature from 1D moments.  Works in
 ; the post-shock region, where the distribution is not Maxwellian.  
-; No correction for scattered electrons.
+; No correction for scattered electrons.  (This is the default for 
+; key parameters.)
 
 mvn_swe_n1d, /mom, pans=pans
 
-; Resample the pitch angle distributions for a nicer plot
+; Resample the pitch angle distributions for a nicer plot.  SWEA measures
+; the 0-180-degree pitch angle range twice.  This procedure averages these
+; two independent measurements and oversamples.  Spacecraft blockage is 
+; masked automatically (by default).
 
 mvn_swe_pad_resample, nbins=128., erange=[100., 150.], /norm, /mask, /silent
 
@@ -143,18 +156,21 @@ mvn_swe_pad_resample, nbins=128., erange=[100., 150.], /norm, /mask, $
 ; Snapshots selected by the cursor in the tplot window
 ;   Return data by keyword (ddd, pad, spec) at the last place clicked
 ;   Use keyword SUM to sum data between two clicks.  (Careful with
-;   changing magnetic field.)  The structure element "var" keeps
-;   track of counting statistics, including digitization noise.
+;   changing magnetic field.)  The structure element "var" (variance)
+;   keeps track of counting statistics, including digitization noise.
+;   Set the BURST keyword to show burst data instead of survey data.
 
-swe_engy_snap,units='crate',mb=0,pot=1,mom=1,spec=spec
-swe_pad_snap,units='eflux',energy=130,pad=pad
+swe_engy_snap,/mom,/fixy,spec=spec
+swe_pad_snap,energy=130,pad=pad
 swe_3d_snap,/spec,/symdir,energy=130,ddd=ddd,smo=[5,1,1]
 
 ;
 ; Get 3D, PAD, or SPEC data at a specified time or array of times.
 ;   Use keyword ALL to get all 3D/PAD distributions bounded by
 ;   the input time array.  Use keyword SUM to average all
-;   distributions bounded by the input time array.
+;   distributions bounded by the input time array.  Set the BURST
+;   keyword to get burst data instead of survey data.  (You have
+;   to load burst data first.  See above.)
 
 ddd = mvn_swe_get3d(time, units='eflux')
 pad = mvn_swe_getpad(time)

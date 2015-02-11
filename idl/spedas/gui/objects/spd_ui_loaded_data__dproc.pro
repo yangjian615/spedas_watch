@@ -90,8 +90,8 @@ end
 ; 10-Feb-2009, jmm, Added hwin, sbar keywords
 ;
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-01-20 13:27:39 -0800 (Tue, 20 Jan 2015) $
-;$LastChangedRevision: 16693 $
+;$LastChangedDate: 2015-02-09 13:27:26 -0800 (Mon, 09 Feb 2015) $
+;$LastChangedRevision: 16921 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__dproc.pro $
 Function spd_ui_loaded_data::dproc, dp_task, dp_pars,callSequence=callSequence,replay=replay,in_vars=in_vars, names_out = names_out, $
                            no_setactive = no_setactive, hwin = hwin, sbar = sbar, gui_id = gui_id, $
@@ -419,53 +419,25 @@ For j = 0, nav-1 Do Begin
             End
             'wave': Begin
 ;              copy_data, varname, nn0  ;nn0 set equivalent to varname before case statement
-;Test for memory
-              get_data, varname, t
-              sstx = where(t Ge dp_pars.trange[0] And $
-                           t Lt dp_pars.trange[1], nsstx)
-              If(nsstx Eq 0) Then Begin
-                dproc_status_update,'No Data In Time Range. Processing next variable', sbar, hwin
-                canceled =  1b ;prevent variable from being added later
-              endif else if nsstx gt dp_pars.maxpoints then begin
-                  dproc_status_update,'Too many time samples ('+strtrim(nsstx,2)+' > ' $
-                                +strtrim(dp_pars.maxpoints,2)+'); Please set a higher max # of samples or a smaller time range.', sbar, hwin
+               get_data, varname, t
+               sstx = where(t Ge dp_pars.trange[0] And $
+                            t Lt dp_pars.trange[1], nsstx)
+               If(nsstx Gt 0) Then Begin
+                  dproc_status_update,'Processing Wavelet for: '+varname, sbar, hwin
+;Here just increase maxpoints to be larger than nsstx, the memory
+;check should do enough so that the user knows when he has memory
+;issues, jmm 2015-01-20
+                  spd_ui_wavelet, varname, nn, dp_pars.trange, $
+                                  maxpoints=nsstx+16, $
+                                  temp_names = temp_names, $
+                                  display_object=display_object
+                  if is_string(temp_names) then begin
+                     store_data, temp_names, /delete
+                  endif
+               Endif Else Begin
+                  dproc_status_update, 'Wavelet process for: '+varname+' cancelled.', sbar, hwin
                   canceled = 1b ;prevent variable from being added later
-              Endif Else Begin
-                t = t[sstx]
-                memtest = spd_ui_wv_memory_test(temporary(t), jv)/1.0e6
-;added error check for jv, wavelet, wave_data crash on too few data
-;points if jv LT 2, jmm, 10-jun-2009
-                If(jv LT 2) Then Begin
-                  dproc_status_update,'Only'+strcompress(string(nsstx))+' Data Points. '+$
-                    'Not Enough Data In Time Range. Processing next variable', sbar, hwin
-                  canceled =  1b ;prevent variable from being added later
-                Endif Else Begin 
-                  mem_av = get_max_memblock2()
-                  if double(memtest)/mem_av gt .01 then begin       
-                    lbl = ['Estimated Memory usage for Wavelet for '+varname+' is: '+string(memtest, '(f10.2)')+' Mbytes, ', $
-                           'You have an estimated '+string(mem_av, '(f10.2)')+' Mbytes, Continue?']
-    
-                    out = spd_ui_prompt_widget(gui_id, sbar, hwin, prompt = strjoin(lbl, ssl_newline()), title = 'SPEDAS GUI WAVELET MEMORY CHECK', /yes, /no) 
-                    ok = out eq 'yes'?1:0 
-                  endif else begin
-                    ok = 1
-                  endelse
-                  If(ok) Then Begin
-                    dproc_status_update,'Processing Wavelet for: '+varname, sbar, hwin
-                    spd_ui_wavelet, varname, nn, dp_pars.trange, maxpoints=dp_pars.maxpoints, temp_names = temp_names, display_object=display_object
-                   ;globs removed, not identifying all quantities accurately
-                   ;  nn = tnames(nn0+'_?_wv_pow')
-                   ;   nn = tnames(nn0+'?_wv_pow')
-                    if is_string(temp_names) then begin
-                      store_data, temp_names, /delete
-                    endif
-                  Endif Else Begin
-                    dproc_status_update, 'Wavelet process for: '+varname+' cancelled.', sbar, hwin
-                    canceled = 1b ;prevent variable from being added later
-                  Endelse
-;                  store_data, tnames(varname), /delete ;unnecessary as data isn't copied
-                Endelse
-              Endelse
+               Endelse
             End
             'hpfilt': Begin
                 get_data, nn0, t

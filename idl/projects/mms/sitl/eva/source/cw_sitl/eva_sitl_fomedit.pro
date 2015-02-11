@@ -1,8 +1,16 @@
-; This is the event-handler for the eva_sitl_FOMedit widget.
-; The widget allows the user to modify the segment he/she selected.
-; The information of the segment to be modified is store in the structure "segSelect".
-; The event-handler will basically modify this "segSelect" except that "Save" 
-; will pass segSelect to update FOM/BAK structures.
+;+
+; NAME: EVA_SITL_FOMEDIT
+; 
+; COMMENT:
+;   This widget allows the user to modify the segment he/she selected.
+;   The information of the segment to be modified is store in the structure "segSelect".
+;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
+; 
+; $LastChangedBy: moka $
+; $LastChangedDate: 2015-02-09 17:37:52 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16932 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
+;
 PRO eva_sitl_FOMedit_event, ev
   @moka_logger_com
   widget_control, ev.top, GET_UVALUE=wid
@@ -13,6 +21,8 @@ PRO eva_sitl_FOMedit_event, ev
   case ev.id of
     wid.ssFOM: begin
       if (ev.type eq 0) or (ev.type eq 4) then begin; (0: text change; 4: slider change)
+        if (ev.value gt wid.fom_max_value) then $
+          answer=dialog_message('FOM must be less than 255',/center) 
         FOMvalue = (ev.value < wid.fom_max_value) > wid.fom_min_value
         if ev.type eq 4 then widget_control,wid.ssFOM, SET_VALUE=strtrim(string(FOMvalue),2)
         segSelect.FOM = FOMvalue
@@ -30,6 +40,10 @@ PRO eva_sitl_FOMedit_event, ev
         segSelect.TE = ev.value
       endif
     end
+    wid.fldComment: begin
+      widget_control, ev.id, GET_VALUE=new_comment;get new comment
+      segSelect.COMMENT = new_comment
+      end
     wid.btnSave: begin
       log.o,'***** EVENT: btnSave *****'
       eva_sitl_strct_update, segSelect
@@ -46,17 +60,14 @@ PRO eva_sitl_FOMedit_event, ev
   if code_exit then begin
     device, set_graphics=wid.old_graphics
     tplot,verbose=0
-;    eva_sitl_update_board, wid.state, 1
     widget_control, ev.top, /destroy
   endif else begin
     eva_sitl_highlight, segSelect.TS, segSelect.TE, segSelect.FOM, /rehighlight
     str_element,/add,wid,'segSelect',segSelect
-    ;    eva_sitl_update_board, wid.state, 1      ;.................   update dashboard
     widget_control, ev.top, SET_UVALUE=wid
   endelse
 end
 
-; This procedure provides a GUI for editing a segment/FOM.
 ; INPUT:
 ;   STATE: state for cw_sitl; this information is needed to call >eva_sitl_update_board, wid.state, 1
 PRO eva_sitl_FOMedit, state, segSelect
@@ -93,6 +104,8 @@ PRO eva_sitl_FOMedit, state, segSelect
     MAX_VALUE=start_max_value, MIN_VALUE=start_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
   str_element,/add,wid,'ssStop',sliding_spinner(base,LABEL='STOP',VALUE=time_string(Te),/time,$
     MAX_VALUE=stop_max_value, MIN_VALUE=stop_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
+  str_element,/add,wid,'fldComment',cw_field(base,VALUE=segSelect.COMMENT,TITLE='Comment',/ALL_EVENTS)
+  
   baseDeci = widget_base(base,/ROW)
   str_element,/add,wid,'btnSave',widget_button(baseDeci,VALUE='Save',ACCELERATOR = "Return")
   str_element,/add,wid,'btnCancel',widget_button(baseDeci,VALUE='Cancel')

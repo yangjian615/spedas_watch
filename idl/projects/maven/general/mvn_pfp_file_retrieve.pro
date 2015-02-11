@@ -1,33 +1,4 @@
 ;+
-;FUNCTION mvn_pfp_file_next_revision(filename,ndigits, [extension=extension])
-;Returns the filename with the next revision number
-;Warning: unpredictable results at rollover.
-;-
-function  mvn_pfp_file_next_revision, filename,ndigits, extension=extension
-
-if not keyword_set(ndigits) then ndigits = 2
-if not keyword_set(extension) then extension = '.'
-nfilename = filename
-n = n_elements(filename)
-for i=0l,n-1 do begin
-  f = filename[i]
-  pos = strpos(/reverse_search,f,extension)
-  if pos lt ndigits then continue
-  revstr = strmid(f,pos-ndigits,ndigits)
-;  printdat,revstr
-  revnum = fix(revstr)
-  format =  string(format='("(i0",i1,")")',ndigits)
-  nextrev = string(format=format,revnum+1)
-  strput, f,nextrev,pos-ndigits
-  nfilename[i] = f
-endfor
-return,nfilename
-end
-
-
-
-
-;+
 ; Function:  files = mvn_pfp_file_retrieve(PATHNAME)
 ; Purpose:  Retrieve or Download MAVEN data files (i.e. L0 files)  (Can be used to generate filenames too)
 ; INPUT:

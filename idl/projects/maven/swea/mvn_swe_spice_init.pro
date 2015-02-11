@@ -15,28 +15,52 @@
 ;    LIST:          If set, list the kernels in use.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-12-11 16:21:58 -0800 (Thu, 11 Dec 2014) $
-; $LastChangedRevision: 16466 $
+; $LastChangedDate: 2015-02-09 11:22:47 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16917 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_spice_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
-pro mvn_swe_spice_init, trange=trange, list=list
+pro mvn_swe_spice_init, trange=trange, list=list, force=force, status=status
 
   @mvn_swe_com
 
   common mvn_spc_met_to_unixtime_com, cor_clkdrift, icy_installed, kernel_verified, $
          time_verified, sclk, tls
 
+  if keyword_set(status) then begin
+    mk = spice_test('*')
+    indx = where(mk ne '', n_ker)
+    if (n_ker eq 0) then begin
+      print,"No kernels are loaded."
+      return
+    endif
+    print,"Kernels in use:"
+    for i=0,(n_ker-1) do print,"  ",file_basename(swe_kernels[i])
+    return
+  endif
+
+  if (not keyword_set(force)) then begin
+    mk = spice_test('*')
+    indx = where(mk ne '', n_ker)
+    if (n_ker gt 0) then begin
+      print,"SPICE kernels are already loaded."
+      yn = 'N'
+      read,"Reinitialize (y|n) ? ", yn
+      if (strupcase(yn) ne 'Y') then return
+    endif
+  endif
+
   oneday = 86400D
 
   if (size(trange,/type) eq 0) then begin
-    if (size(mvn_swe_engy,/type) ne 8) then begin
-      print,"You must specify a time range or load data first."
+    tplot_options, get_opt=topt
+    if (max(topt.trange_full) gt time_double('2013-11-18')) then trange = topt.trange_full
+    
+    if (size(trange,/type) eq 0) then begin
+      print,"You must supply a time range."
       return
     endif
-    
-    trange = minmax(mvn_swe_engy.time)
   endif
   
   srange = minmax(time_double(trange)) + [-oneday, oneday]

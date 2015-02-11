@@ -16,6 +16,8 @@
 ;KEYWORDS:
 ;       ARCHIVE:       Get 3D data from archive instead (APID A1).
 ;
+;       BURST:         Synonym for ARCHIVE.
+;
 ;       ALL:           Get all 3D spectra bounded by the earliest and latest times in
 ;                      the input time array.
 ;
@@ -24,14 +26,14 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:57:29 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16888 $
+; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
 ;FILE: mvn_swe_get3d.pro
 ;-
-function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
+function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, burst=burst
 
   @mvn_swe_com
 
@@ -45,6 +47,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units
   if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
   if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
   if (size(units,/type) ne 7) then units = 'eflux'
+  if keyword_set(burst) then archive = 1
 
 ; First attempt to get extract 3D(s) from L2 data
 

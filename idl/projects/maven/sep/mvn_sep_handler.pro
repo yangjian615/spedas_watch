@@ -539,6 +539,7 @@ if 1 then begin
 
   file_mkdir2,file_dirname(filename)  
   save,filename=filename,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,sw_version,prereq_info,spice_info,ap20,ap21,ap22,ap23,ap24,ap25,description=description
+  l1_filename = filename
 endif else begin
   save,verbose=verbose,filename=filename,sep_all_ptrs,sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise,sep1_memdump,sep2_memdump
 endelse

@@ -46,33 +46,29 @@
 ;
 ;       EPH:      Named variable to hold the MSO and GEO state vectors.
 ;
-;       DATE:     Ephemeris version date.  Several predict spk kernels have been
-;                 generated.  The latest was created on 21aug14 and covers the
-;                 transition and science phases.  The 28oct11 ephemeris is dated 
-;                 but includes an extended mission.
-;
 ;       CURRENT:  Load the ephemeris from MOI to the current date + 2 weeks.  This
 ;                 uses reconstructed SPK kernels, as available, then predicts.
 ;                 This is the default.
 ;
-;       EXTENDED: Alternate method of choosing the 28oct11 ephemeris.
+;       EXTENDED: Load the long-term predict ephemeris.
 ;
 ;       LOADONLY: Create the TPLOT variables, but do not plot.
 ;
 ;       VARS:     Array of TPLOT variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-05 15:29:47 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16590 $
+; $LastChangedDate: 2015-02-09 17:00:47 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16928 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
-pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, date=date, $
+pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
                        extended=extended, eph=eph, current=current, loadonly=loadonly, vars=vars, $
                        ellip=ellip
 
-  common mav_orb_tplt, time, ss, wind, sheath, pileup, wake, sza, torb, period, lon, lat, hgt, mex
+  common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
+                       lon, lat, hgt, mex
 
   R_m = 3389.9D
   R_equ = 3396.2D
@@ -82,12 +78,9 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   if keyword_set(domex) then domex = 1 else domex = 0
   if not keyword_set(ialt) then ialt = 400.
   if keyword_set(ellip) then eflg = 1 else eflg = 0
+  if keyword_set(extended) then cflg = 0 else cflg = 1
 
   rootdir = 'maven/anc/spice/sav/'
-  
-  if (size(date,/type) eq 7) then date = date[0]
-  if (keyword_set(extended)) then date = '28oct11'
-  if (size(date,/type) eq 0) then date = 'current'
   
 ; Restore the orbit ephemeris
 
@@ -132,8 +125,10 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     eph = {time:time, mso_x:mso_x, mso_v:mso_v}
 
   endif else begin
-    pathname = rootdir + 'maven_spacecraft_mso_??????' + '.sav'
-    file = mvn_pfp_file_retrieve(pathname,last_version=0)
+    if (cflg) then fname = 'maven_spacecraft_mso_??????' + '.sav' $
+              else fname = 'maven_orb_mso_28oct11.sav'
+
+    file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
     nfiles = n_elements(file)
 
 	eph = [{t:0D, x:0D, y:0D, z:0D, vx:0D, vy:0D, vz:0D}]
@@ -142,7 +137,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
       if (finfo.exists) then begin
         print, "Loading: ", file_basename(file[i])
         restore, file[i]
-        eph = [temporary(eph), maven_mso]
+        if (cflg) then eph = [temporary(eph), maven_mso] $
+                  else eph = [temporary(eph), maven]
       endif else print, "File not found: ", file[i]
     endfor
     maven = temporary(eph[1:*])
@@ -173,8 +169,10 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     
     maven = 0
 
-    pathname = rootdir + 'maven_spacecraft_geo_??????' + '.sav'
-    file = mvn_pfp_file_retrieve(pathname,last_version=0)
+    if (cflg) then fname = 'maven_spacecraft_geo_??????' + '.sav' $
+              else fname = 'maven_orb_geo_28oct11.sav'
+
+    file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
     nfiles = n_elements(file)
 
 	eph = [{t:0D, x:0D, y:0D, z:0D, vx:0D, vy:0D, vz:0D}]
@@ -183,7 +181,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
       if (finfo.exists) then begin
         print, "Loading: ", file_basename(file[i])
         restore, file[i]
-        eph = [temporary(eph), maven_geo]
+        if (cflg) then eph = [temporary(eph), maven_geo] $
+                  else eph = [temporary(eph), maven_g]
       endif else print, "File not found: ", file[i]
     endfor
     maven_g = temporary(eph[1:*])
@@ -212,6 +211,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   endelse
   
   npts = n_elements(time)
+  state = eph
 
   result = {t   : time  , $   ; time (UTC)
             x   : x     , $   ; MSO X

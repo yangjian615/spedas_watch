@@ -44,7 +44,7 @@ function get_mms_sitl_connection, host=host, port=port, authentication=authentic
         username = login.username
         password = login.password
       endif
-      
+
       netUrl->SetProperty, URL_SCHEME = 'https'
       netUrl->SetProperty, SSL_VERIFY_HOST = 0 ;don't worry about certificate
       netUrl->SetProperty, SSL_VERIFY_PEER = 0
@@ -70,7 +70,7 @@ function get_mms_sitl_connection, host=host, port=port, authentication=authentic
     ; Set the time of the login so we can make it expire.
     connection_time = systime(/seconds)
   endif
-  
+
   ; check that the connection is valid
   status = validate_mms_sitl_connection(netUrl)
   if status ne 0 then begin

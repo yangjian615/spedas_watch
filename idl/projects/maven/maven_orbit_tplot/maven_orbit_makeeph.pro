@@ -68,18 +68,26 @@
 ;                  the boundary between reconstructions and predictions.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-05 15:06:43 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16589 $
+; $LastChangedDate: 2015-02-09 17:01:32 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16930 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_makeeph.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
 ;-
 pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop=tstop, $
-                         current=current, unload=unload, reset=reset, stat=stat
+                         current=current, unload=unload, reset=reset, stat=stat, $
+                         loadlist=loadlist
 
   common mvn_orbit_makeeph, kernels, tstart1, tstop1
 
 ; Initialize SPICE
+
+  if (size(loadlist,/type) eq 7) then begin
+    kernels = loadlist
+    indx = where(kernels ne '', count)
+    if (count gt 0) then kernels = kernels[indx] else return
+    cspice_furnsh, kernels
+  endif
 
   if ((size(kernels,/type) eq 0) or keyword_set(reset)) then begin
 

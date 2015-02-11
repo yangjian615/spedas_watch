@@ -14,13 +14,15 @@
 ;	None.
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedDate: 2015-02-06 20:06:42 -0800 (Fri, 06 Feb 2015) $
+; $LastChangedRevision: 16906 $
 ; $URL $
 ;-
 
-; FBK FilterBank data example.
-
+;------------------------------------------------------------------------------
+; FBK FilterBank data load example.
+;------------------------------------------------------------------------------
+;
 ;start with a clean slate
 del_data, '*'
 
@@ -46,12 +48,18 @@ print, 'We just loaded the level 2 fbk data from probe alpha'
 
 stop
 
-; now I'm going to plot some of that data
+;------------------------------------------------------------------------------
+; Plot the loaded data
+;------------------------------------------------------------------------------
 tplot, [ 'tha_fb_scm1']
 
 print, 'We just plotted the search coil magnetometer boom 1 data'
 
 stop
+
+;------------------------------------------------------------------------------
+;Set zoom for the data
+;------------------------------------------------------------------------------
 
 tlimit, '2007-06-23/03:30:00', '2007-06-23/05:30:00'
 
@@ -65,7 +73,9 @@ print, 'Now we zoom back out'
 
 stop
 
-; plot all the level two data from probe a on one plot
+;------------------------------------------------------------------------------
+; plot multiple quantities(all level 2 data from one probe on one plot)
+;------------------------------------------------------------------------------
 tplot, [ 'tha_fb_*']
 
 print, 'We just plotted all the fb data on one plot'
@@ -75,7 +85,13 @@ print, 'As mentioned above, fb_scm1 is the search coil magnetometer data boom 1'
 
 stop
 
+;------------------------------------------------------------------------------
+;using the datatype keyword for FBK
+;------------------------------------------------------------------------------
+
 del_data,'*'
+
+
 
 ;NOTE: it can be dangerous to use the datatype keyword on filterbank
 ;data. Because the returned datatypes vary depending on spacecraft
@@ -104,6 +120,10 @@ print, 'We deleted all the data'
 
 stop
 
+;------------------------------------------------------------------------------
+;FBK support data
+;------------------------------------------------------------------------------
+
 thm_load_fbk, level=1,/get_support_data
 
 tplot_names
@@ -117,6 +137,10 @@ tplot, 'thc_*'
 print, 'and plotted the themis c data using the * wildcard'
 
 stop
+
+;------------------------------------------------------------------------------
+;List valid loadable types
+;------------------------------------------------------------------------------
 
 thm_load_fbk, /valid_names
 

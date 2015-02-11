@@ -59,7 +59,7 @@ FUNCTION eva_sitl_load_stlm, state
     options, 'mms_stlm_output_fom','codeFOM',codeFOM
     options, 'mms_stlm_output_fom','codeBAK',codeBAK
     options,'mms_stlm_output_fom','ytitle','FOM'
-    options,'mms_stlm_output_fom','ysubtitle','(modified)'
+    options,'mms_stlm_output_fom','ysubtitle','(SITL)'
     eva_sitl_strct_yrange,'mms_stlm_output_fom'
   endif
 

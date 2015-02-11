@@ -56,8 +56,8 @@
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 23:04:21 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16897 $
+; $LastChangedDate: 2015-02-09 12:52:09 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16920 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -392,6 +392,8 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
                  end
     endcase
     
+    zmax = 10.^(ceil(alog10(max(y)))) < zhi
+    
 
    pad_s = strtrim(string(round(pad_e)),2)
     pname = 'swe_pad_' + pad_s
@@ -400,13 +402,13 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     if (sflg) then begin
       options,pname,'spec',1
       ylim,pname,0,0,0
-      zlim,pname,zlo,zhi,1
+      zlim,pname,zlo,zmax,1
       options,pname,'x_no_interp',1
       options,pname,'y_no_interp',1
       options,pname,'ztitle',strupcase(mvn_swe_pad[0].units_name)
     endif else begin
       options,pname,'spec',0
-      ylim,pname,zlo,zhi,1
+      ylim,pname,zlo,zmax,1
     endelse
     
     Baz = mvn_swe_pad.Baz*!radeg
@@ -560,6 +562,8 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
                    zhi = 0
                  end
     endcase
+    
+    zmax = 10.^(ceil(alog10(max(y)))) < zhi
 
 
    pad_s = strtrim(string(round(pad_e)),2)
@@ -569,13 +573,13 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     if (sflg) then begin
       options,pname,'spec',1
       ylim,pname,0,0,0
-      zlim,pname,zlo,zhi,1
+      zlim,pname,zlo,zmax,1
       options,pname,'x_no_interp',1
       options,pname,'y_no_interp',1
       options,pname,'ztitle',strupcase(mvn_swe_pad_arc[0].units_name)
     endif else begin
       options,pname,'spec',0
-      ylim,pname,zlo,zhi,1
+      ylim,pname,zlo,zmax,1
     endelse
     
     Baz = mvn_swe_pad_arc.Baz*!radeg
@@ -902,10 +906,13 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   tmin = min(tsp[1:*], max=tmax)
   tmin = tmin > tfirst
   if keyword_set(tspan) then tmin = tmin > (tmax - tspan*3600D)
-  timefit,[tmin,tmax]
+; timefit,[tmin,tmax]
   
-  if keyword_set(eph) then maven_orbit_tplot,/loadonly
-  pans = ['alt2', pans]
+  if keyword_set(eph) then begin
+    get_data,'alt2',data=alt2,index=i
+    if (i eq 0) then maven_orbit_tplot, /current, /loadonly
+    pans = ['alt2', pans]
+  endif
   
   if (size(title,/type) eq 7) then tplot_options,'title',title
 
@@ -923,9 +930,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     tplot_options,'var_label','orbnum'
   endif
 
-  help,pans
-  print,pans
-  tplot,pans
+  tplot,pans,trange=[tmin,tmax]
   timebar,t_cfg,/line
   
   if (dopng) then begin
@@ -943,7 +948,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
       print,"Writing png file: ",pngname," ... "
       loadct2,34
       device,set_resolution=[1200,800]
-      tplot,pans
+      tplot,pans,trange=[tmin,tmax]
       timebar,t_cfg,/line
       img = tvrd()
       tvlct,red,green,blue,/get

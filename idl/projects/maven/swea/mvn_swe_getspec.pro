@@ -17,6 +17,8 @@
 ;KEYWORDS:
 ;       ARCHIVE:       Get SPEC data from archive instead (APID A5).
 ;
+;       BURST:         Synonym for ARCHIVE.
+;
 ;       SUM:           If set, then sum all spectra selected.
 ;
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
@@ -24,14 +26,14 @@
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:56:09 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16886 $
+; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
+; $LastChangedRevision: 16918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
 ;FILE: mvn_swe_getspec.pro
 ;-
-function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yrange
+function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yrange, burst=burst
 
   @mvn_swe_com  
 
@@ -42,6 +44,7 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
   
   npts = n_elements(time)
   tmin = min(time_double(time), max=tmax)
+  if keyword_set(burst) then archive = 1
 
   if keyword_set(archive) then begin
     if (size(mvn_swe_engy_arc, /type) ne 8) then begin
