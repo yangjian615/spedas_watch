@@ -150,7 +150,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
         s = lim.UNIX_BAKSTR_MOD
         idx = where((s.START le t) and (t le s.STOP), ct)
         if ct eq 1 then begin
-          segSelect = {ts:s.START[idx[0]], te:s.STOP[idx[0]], fom:s.FOM[idx[0]], BAK:BAK}
+          segSelect = {ts:s.START[idx[0]],te:s.STOP[idx[0]],fom:s.FOM[idx[0]],BAK:BAK,Comment:s.COMMENT[idx[0]]}
         endif else segSelect = 0
       end
       0: begin
@@ -167,7 +167,8 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
     endcase
   endif else begin
     if (BAK eq 0) or (BAK eq 1) then begin
-      segSelect = {ts:t[0], te:t[1], fom:0., BAK: BAK}
+      stop
+      segSelect = {ts:t[0], te:t[1], fom:0., BAK: BAK, Comment:''}
     endif else segSelect = -1
   endelse
 
@@ -243,183 +244,144 @@ FUNCTION eva_sitl_event, ev
   set_trange= widget_info(state.cbWTrng,/button_set)
   submit_code = 0
 
-  ;-----
   case ev.id of
     state.btnAdd:  begin
       log.o,'***** EVENT: btnAdd *****'
       str_element,/add,state,'group_leader',ev.top
       eva_ctime,/silent,routine_name='eva_sitl_seg_add',state=state,occur=2,npoints=2;npoints
-    end
+      end
     state.btnEdit:  begin
       log.o,'***** EVENT: btnEdit *****'
       str_element,/add,state,'group_leader',ev.top
       eva_ctime,/silent,routine_name='eva_sitl_seg_edit',state=state,occur=1,npoints=1;npoints
-    end
+      end
     state.btnDelete:begin
-    log.o,'***** EVENT: btnDelete *****'
-    if ~set_multi then begin;................ Default (1 segment with 1 1-click)
-      npoints = 1 & occur = 1
-    endif else begin
-      if ~set_trange then begin;.............. set_multi (N segment with N 1-click)
-        npoints = 2000 & occur = 1
-      endif else begin;......................... set_multi & set_trange (N segment with 2 click)
-        npoints = 2 & occur = 2
+      log.o,'***** EVENT: btnDelete *****'
+      if ~set_multi then begin;................ Default (1 segment with 1 1-click)
+        npoints = 1 & occur = 1
+      endif else begin
+        if ~set_trange then begin;.............. set_multi (N segment with N 1-click)
+          npoints = 2000 & occur = 1
+        endif else begin;......................... set_multi & set_trange (N segment with 2 click)
+          npoints = 2 & occur = 2
+        endelse
       endelse
-    endelse
-    print, 'npoints=',npoints
-    print, 'occur =',occur
-    eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
-  end
-  state.btnUndo: begin
-    log.o,'***** EVENT: btnUndo *****'
-    eva_sitl_fom_recover,'undo'
-  end
-  state.btnRedo: begin
-    log.o,'***** EVENT: btnRedo *****'
-    eva_sitl_fom_recover,'redo'
-  end
-  state.btnAllAuto: begin
-    log.o,'***** EVENT: btnAllAuto *****'
-    eva_sitl_fom_recover,'rvrt'
-  end
-  state.btnValidate: begin
-    if state.PREF.ENABLE_ADVANCED then begin
-      log.o,'***** EVENT: btnValidate *****'
-      msg = 'Validation for Back Structure Mode is under construction.'
-
-    endif else begin
-
-
-      log.o,'***** EVENT: btnValidate *****'
-      get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
-      get_data,'mms_soca_fomstr',data=Dorg, lim=lorg,dl=dorg
-      ; convert back to TAI before checking
-      mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
-      mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
-      mms_check_fom_structure, tai_FOMstr_mod, tai_FOMstr_org, $
-        error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
-        error_msg,    orange_warning_msg,    yellow_warning_msg,  $; Error Messages
-        error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
-        error_indices,orange_warning_indices,yellow_warning_indices; Error Indices (ptr_arr)
-
-
-
-      msg = ''
-      tot_error = 0
-
-      ; ERROR
-      loc_error = where(error_flags ne 0, count_error)
-      if count_error ne 0 then begin
-        print, string(count_error) + ' error'
-        for c=0,count_error-1 do begin; for each error
-          msg = [msg,error_msg[loc_error[c]],' ']; get the main message
-          tstr = *(error_times[loc_error[c]]); get the erroneous times as an array
-          for d=0,n_elements(tstr)-1 do begin; for each erroneous time
-            msg = [msg,'  '+strmid(tstr[d],0,19)]
-          endfor
-          msg = [msg,' ']
-        endfor
-      endif
-      tot_error += count_error
-
-      ; WARNINGS (ORANGE)
-      loc_error = where(orange_warning_flags ne 0, count_error)
-      if count_error ne 0 then begin
-        print, string(count_error) + ' orange warning'
-        for c=0,count_error-1 do begin; for each error
-          msg = [msg,orange_warning_msg[loc_error[c]],' ']; get the main message
-          tstr = *(orange_warning_times[loc_error[c]]); get the erroneous times as an array
-          for d=0,n_elements(tstr)-1 do begin; for each erroneous time
-            msg = [msg,'  '+strmid(tstr[d],0,19)]
-          endfor
-          msg = [msg,' ']
-        endfor
-      endif
-      tot_error += count_error
-
-      ; WARNINGS (YELLOW)
-      loc_error = where(yellow_warning_flags ne 0, count_error)
-      if count_error ne 0 then begin
-        print, string(count_error) + ' yellow warning'
-        for c=0,count_error-1 do begin; for each error
-          msg = [msg,yellow_warning_msg[loc_error[c]],' ']; get the main message
-          tstr = *(yellow_warning_times[loc_error[c]]); get the erroneous times as an array
-          for d=0,n_elements(tstr)-1 do begin; for each erroneous time
-            msg = [msg,'  '+strmid(tstr[d],0,19)]
-          endfor
-          msg = [msg,' ']
-        endfor
-      endif
-      tot_error += count_error
-
-      if tot_error eq 0 then begin
-        msg = ['No error/warning !']
-      endif
-
-      ptr_free, error_times, orange_warning_times, yellow_warning_times
-      ptr_free, error_indices, orange_warning_indices, yellow_warning_indices
-    endelse
-    eva_sitl_message_display,value=msg
-  end
-  state.drpHighlight: begin
-    tplot
-    type = state.hlSet[ev.index]
-    status = ''
-    skip=0
-    case type of
-      'Default'  : begin
-        isPending=0 & inPlaylist=0 & status = '' & skip=1
+      print, 'npoints=',npoints
+      print, 'occur =',occur
+      eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
       end
-      'isPending': isPending=1
-      'inPlaylist': inPlaylist=1
-      else: begin
-        isPending=0 & inPlaylist=0 & status = type
+    state.btnUndo: begin
+      log.o,'***** EVENT: btnUndo *****'
+      eva_sitl_fom_recover,'undo'
       end
-    endcase
-    if ~skip then begin
-      get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
-      D = eva_sitl_strct_read(lim.unix_BAKStr_mod, 0.d0,$
-        isPending=isPending,inPlaylist=inPlaylist,status=status)
-      nmax = n_elements(D.x)
-      if nmax ge 5 then begin
-        left_edges  = D.x[1:nmax-1:4]
-        right_edges = D.x[4:nmax-1:4]
-        data        = D.y[2:nmax-1:4]
-        eva_sitl_highlight, left_edges, right_edges, data;, rehighlight=state.rehighlight
-        ;if state.rehighlight eq 0 then state.rehighlight = 1
-      endif
+    state.btnRedo: begin
+      log.o,'***** EVENT: btnRedo *****'
+      eva_sitl_fom_recover,'redo'
+      end
+    state.btnAllAuto: begin
+      log.o,'***** EVENT: btnAllAuto *****'
+      eva_sitl_fom_recover,'rvrt'
+      end
+    state.btnValidate: begin
+      log.o,'***** EVENT: btnValidate *****'
+      if state.PREF.ENABLE_ADVANCED then begin
+        msg = 'Validation for Back Structure Mode is under construction.'
+        result = dialog_message(msg,/center)
+      endif else begin
+        get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
+        get_data,'mms_soca_fomstr',data=Dorg, lim=lorg,dl=dorg
+        mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
+        mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
+        header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
+        r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, header=header)
+        ;ct_total = r.error.COUNT+r.orange.COUNT+r.yellow.COUNT
+        ;if ct_total eq 0 then result = dialog_message('No error/warning !',/center)
+      endelse
+      end
+    state.btnEmail: begin
+      log.o,'***** EVENT: btnEmail *****'
+      if state.PREF.ENABLE_ADVANCED then begin
+        msg = 'Email for Back Structure Mode is under construction.'
+        result = dialog_message(msg,/center)
+      endif else begin
+        get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
+        mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
+        header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
+        body = ''
+        nmax = n_elements(header)
+        for n=0,nmax-1 do begin
+          body += header[n] + 'rtn'
+        endfor
+        email_address = 'mitsuo.oka@gmail.com'
+        syst = systime(/utc)
+        oUrl = obj_new('IDLnetUrl')
+        txturl = 'http://www.ssl.berkeley.edu/~moka/evasendmail.php?email='$
+          +email_address+'&fomstr='+body+'&time='+syst
+        ok = oUrl->Get(URL=txturl,/STRING_ARRAY)
+        obj_destroy, oUrl
+        print, 'email done'
+      endelse
+      end
+    state.drpHighlight: begin
+      log.o,'***** EVENT: drpHighlight *****'
+      tplot
+      type = state.hlSet[ev.index]
+      status = ''
+      skip=0
+      case type of
+        'Default'  : begin
+          isPending=0 & inPlaylist=0 & status = '' & skip=1
+        end
+        'isPending': isPending=1
+        'inPlaylist': inPlaylist=1
+        else: begin
+          isPending=0 & inPlaylist=0 & status = type
+        end
+      endcase
+      if ~skip then begin
+        get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
+        D = eva_sitl_strct_read(lim.unix_BAKStr_mod, 0.d0,$
+          isPending=isPending,inPlaylist=inPlaylist,status=status)
+        nmax = n_elements(D.x)
+        if nmax ge 5 then begin
+          left_edges  = D.x[1:nmax-1:4]
+          right_edges = D.x[4:nmax-1:4]
+          data        = D.y[2:nmax-1:4]
+          eva_sitl_highlight, left_edges, right_edges, data;, rehighlight=state.rehighlight
+          ;if state.rehighlight eq 0 then state.rehighlight = 1
+        endif
+      endif;if~skip
+      end
+    state.btnSubmit: begin
+      log.o,'***** EVENT: btnSubmit *****'
+      submit_code = 1
+      if state.PREF.ENABLE_ADVANCED $
+        then eva_sitl_submit_bakstr,ev.top $
+      else eva_sitl_submit_fomstr,ev.top
+      end
+    state.cbMulti:  begin
+      log.o,'***** EVENT: cbMulti *****'
+      if  ev.select then widget_control,state.cbWTrng,SENSITIVE=1
+      if ~ev.select then widget_control,state.cbWTrng,SENSITIVE=0
+      end
+    state.drDash: begin
+      log.o,'***** EVENT: drDash *****'
+      widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
+      end
+    else:
+  endcase
+
+  if ~submit_code then begin
+    tn = tnames('*_stlm_*',ct)
+    if ct gt 0 then s=1 else s=0
+    eva_sitl_update_board, state, s
+    if (s eq 1) and (state.stack eq 0) then begin; At the first call to eva_sitl_update_board
+      eva_sitl_stack                             ; with mms_sitl_ouput_fom, we initiate
+      str_element,/add,state,'stack',1           ; stacking.
     endif
-  end
-  state.btnSubmit: begin
-    log.o,'***** EVENT: btnSubmit *****'
-    submit_code = 1
-    if state.PREF.ENABLE_ADVANCED $
-      then eva_sitl_submit_bakstr,ev.top $
-    else eva_sitl_submit_fomstr,ev.top
-  end
-  state.cbMulti:  begin
-    log.o,'***** EVENT: cbMulti *****'
-    if  ev.select then widget_control,state.cbWTrng,SENSITIVE=1
-    if ~ev.select then widget_control,state.cbWTrng,SENSITIVE=0
-  end
-  state.drDash: begin
-    widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
-  end
-  else:
-endcase
-;-----
-
-if ~submit_code then begin
-  tn = tnames('*_stlm_*',ct)
-  if ct gt 0 then s=1 else s=0
-  eva_sitl_update_board, state, s
-  if (s eq 1) and (state.stack eq 0) then begin; At the first call to eva_sitl_update_board
-    eva_sitl_stack                             ; with mms_sitl_ouput_fom, we initiate
-    str_element,/add,state,'stack',1           ; stacking.
   endif
-endif
-WIDGET_CONTROL, stash, SET_UVALUE=state, /NO_COPY
-RETURN, { ID:parent, TOP:ev.top, HANDLER:0L }
+  WIDGET_CONTROL, stash, SET_UVALUE=state, /NO_COPY
+  RETURN, { ID:parent, TOP:ev.top, HANDLER:0L }
 END
 
 ;-----------------------------------------------------------------------------
@@ -502,8 +464,10 @@ FUNCTION eva_sitl, parent, $
   str_element,/add,state,'hlSet',hlSet
 
   bsActionSubmit = widget_base(subbase,/ROW)
-  dumSubmit = widget_base(bsActionSubmit,xsize=60)
+  
   str_element,/add,state,'btnValidate',widget_button(bsActionSubmit,VALUE=' Validate ')
+  str_element,/add,state,'btnEmail',widget_button(bsActionSubmit,VALUE=' Email ')
+  dumSubmit = widget_base(bsActionSubmit,xsize=60)
   str_element,/add,state,'btnSubmit',widget_button(bsActionSubmit,VALUE='   SUBMIT   ')
 
   ; Save out the initial state structure into the first childs UVALUE.

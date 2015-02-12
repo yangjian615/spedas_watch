@@ -65,8 +65,8 @@
 ;       MASK_SC:       Mask solid angle bins that are blocked by the spacecraft.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16918 $
+; $LastChangedDate: 2015-02-10 21:41:01 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16947 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -238,7 +238,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
         dat[*,24:31,*] = ddat[*,0:7,*]
         dats = smooth(dat,nsmo,/nan)
         ddd.data = reform(dats[*,8:23,*],64,96)
-      endif
+      endif else ddd.data = ddd.data*omask[*,*,boom]
 
       plot3d_new, ddd, lat, lon, ebins=ebins
     

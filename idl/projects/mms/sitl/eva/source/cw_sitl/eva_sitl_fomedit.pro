@@ -7,8 +7,8 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-09 17:37:52 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16932 $
+; $LastChangedDate: 2015-02-10 14:51:04 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16945 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
@@ -40,9 +40,11 @@ PRO eva_sitl_FOMedit_event, ev
         segSelect.TE = ev.value
       endif
     end
-    wid.fldComment: begin
+    wid.txtComment: begin
       widget_control, ev.id, GET_VALUE=new_comment;get new comment
-      segSelect.COMMENT = new_comment
+      segSelect.COMMENT = new_comment[0]
+      comlen = strtrim(string(strlen(new_comment[0])),2)
+      widget_control, wid.lblComment, SET_VALUE='COMMENT: '+comlen+' characters (max 256)' 
       end
     wid.btnSave: begin
       log.o,'***** EVENT: btnSave *****'
@@ -104,7 +106,9 @@ PRO eva_sitl_FOMedit, state, segSelect
     MAX_VALUE=start_max_value, MIN_VALUE=start_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
   str_element,/add,wid,'ssStop',sliding_spinner(base,LABEL='STOP',VALUE=time_string(Te),/time,$
     MAX_VALUE=stop_max_value, MIN_VALUE=stop_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
-  str_element,/add,wid,'fldComment',cw_field(base,VALUE=segSelect.COMMENT,TITLE='Comment',/ALL_EVENTS)
+  comlen = strtrim(string(strlen(segSelect.COMMENT)),2)
+  str_element,/add,wid,'lblComment',widget_label(base,VALUE='COMMENT: '+comlen+' characters (max 256)')
+  str_element,/add,wid,'txtComment',widget_text(base,VALUE=segSelect.COMMENT,/all_events,/editable)
   
   baseDeci = widget_base(base,/ROW)
   str_element,/add,wid,'btnSave',widget_button(baseDeci,VALUE='Save',ACCELERATOR = "Return")

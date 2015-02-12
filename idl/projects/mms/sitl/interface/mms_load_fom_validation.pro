@@ -3,7 +3,7 @@ function mms_load_fom_validation
 ; Here are the validation parameters for the FOM
   fom_gmax = 200                ; Maximum FOM size based on guidlines
   fom_bounds = [0, 255]         ; Absolute FOM range
-  seg_bounds = [1, 60]         ; Absolute segment size range
+  seg_bounds = [1, 400]         ; Absolute segment size range
   buff_max = 1000.              ; Maximum number of selectable buffers
   p1_percent = 33.              ; Percentage of selections which are priority 1 before warning
   nominal_seg_range = [2, 200]   ; Nominal range for segment lengths, warning if exceeded

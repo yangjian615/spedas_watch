@@ -3,8 +3,8 @@
 ;Purpose: 
 ; Author: Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-12-16 22:11:09 -0800 (Tue, 16 Dec 2014) $
-; $LastChangedRevision: 16494 $
+; $LastChangedDate: 2015-02-10 08:15:03 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16937 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_handler.pro $
 ; 
 ;-
@@ -222,6 +222,10 @@ pro mvn_mag_var_save,filename,pathname=pathname,trange=trange,prereq_info=prereq
 common mav_apid_mag_handler_com,manage,realtime,mag1_hkp,mag2_hkp,mag1_svy,mag2_svy,mag1_svy_misc,mag2_svy_misc,mag1_arc,mag2_arc,mag1_arc_misc,mag2_arc_misc
 
 if not keyword_set(filename) then begin
+  if ~keyword_set(mag1_svy) || ~keyword_set(*mag1_svy.x)  then begin
+    dprint,'Improper data.  Returning'
+    return
+  endif
   if not keyword_set(trange) then trange = minmax((*(mag1_svy.x)).time)
   res = 86400.d
   days =  round( time_double(trange )/res)

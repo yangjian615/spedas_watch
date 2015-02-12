@@ -1,12 +1,7 @@
-pro mvn_sep_var_restore,pathname,trange=trange,verbose=verbose,download_only=download_only,prereq_info=prereq_temp,filename=files
+pro mvn_sep_var_restore,pathname,trange=trange,verbose=verbose,download_only=download_only,prereq_info=prereq_temp,filename=files,no_finish=no_finish
 
-  @mvn_sep_handler_commonblock.pro
-;    common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
-;    ,sep1_memdump,sep2_memdump  ,mag1_hkp_f0,mag2_hkp_f0
-    
-  @mvn_pfdpu_handler_commonblock.pro
-  ;    common mvn_apid_misc_handler_com,manage,realtime,apid20x,apid21x,apid22x,apid23x,apid24x,apid25x
-
+@mvn_sep_handler_commonblock.pro
+@mvn_pfdpu_handler_commonblock.pro
 
 trange = timerange(trange)
 ;res = 86400.d
@@ -14,23 +9,24 @@ trange = timerange(trange)
 ;ndays = days[1]-days[0]
 ;tr = days * res
 
-ndays=1
 if ~keyword_set(files) then begin
+  ndays=1
   if not keyword_set(pathname) then pathname =  'maven/data/sci/sep/l1/sav/YYYY/MM/mvn_sep_l1_YYYYMMDD_$NDAY.sav'
   pn = str_sub(pathname, '$NDAY', strtrim(ndays,2) +'day')
   files = mvn_pfp_file_retrieve(pn,/daily,trange=trange,source=source,verbose=verbose,/valid_only,no_update=0,last_version=0)
-  
 endif
 
 if keyword_set(download_only) then return
 undefine,prereq_temp
+undefine,source_filenames
+
 
 mvn_sep_handler,/clear
 mvn_pfdpu_handler,/clear
 for i=0,n_elements(files)-1 do begin
   undefine, s1_hkp,s1_svy,s1_arc,s1_nse
   undefine, s2_hkp,s2_svy,s2_arc,s2_nse
-  undefine, prereq_info
+  undefine, prereq_info,source_filename
   restore,verbose=verbose,filename=files[i]
   mav_gse_structure_append  ,sep1_hkp  , s1_hkp
   mav_gse_structure_append  ,sep1_svy  , s1_svy
@@ -50,9 +46,10 @@ for i=0,n_elements(files)-1 do begin
   mav_gse_structure_append  ,apid24x  , ap24
   mav_gse_structure_append  ,apid25x  , ap25
   append_array, prereq_temp,prereq_info
+  append_array, source_filenames, source_filename
 endfor
-mvn_pfdpu_handler,/finish
-mvn_sep_handler,/finish
+mvn_pfdpu_handler,finish= ~keyword_set(no_finish)
+mvn_sep_handler,finish= ~keyword_set(no_finish)
 end
 
 

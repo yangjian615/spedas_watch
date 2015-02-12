@@ -1,41 +1,50 @@
-pro mvn_sep_make_raw_cdf_wrap,sep,date=date  ,prereq=prereq
+pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trange=trange ;,timestamp=timestamp ,prereq=prereq
 
-  if ~keyword_set(date) then  date = average(sep.time,/nan)
-  sepnum = round(median(sep.sensor))
-  sepstr = 'S'+strtrim(sepnum,2)
+  @mvn_sep_handler_commonblock.pro
 
-  mapid = round(median(sep.mapid))
-
-  bmaps = mvn_sep_get_bmap(mapid,sepnum)
-
-  data_type = sepstr+'-raw-svy-full'    ;+timeres_str    ;full'
+;  if size(/type,sep) ne 8 then begin
+;    dprint,dlevel=2,'Input data is not a structure... Skipping'
+;    return
+;  endif
+;  if ~keyword_set(date) then  date = average(sep.time,/nan)
+;  sepnum = round(median(sep.sensor))
+  sepstr = 's'+strtrim(sepnum,2)
+  data_type = sepstr+'-raw-svy-full'  
   L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v00_r??.cdf'
-  lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=date[0],source=source,verbose=verbose,/last_version)
-  nextrev_fname = mvn_pfp_file_next_revision(lastrev_fname)
-  global={ filename:nextrev_fname,  data_type:data_type+'>Survey Raw Particle Counts',   logical_source:'SEP.raw.spec_svy'}   ;'SEP.calibrated.spec_svy'
-  mvn_sep_make_raw_cdf,sep,bmaps,filename = nextrev_fname,global=global,dependencies=prereq
-  print_cdf_info,nextrev_fname
-
-if 0 then begin
-  src = mvn_file_source()
-  arcdir = src.local_data_dir+'maven/data/sci/sep/archive/'
-  file_archive,lastrev_fname,archive_ext='.arc',archive_dir = arcdir
-endif
-
+  lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
+  lri = file_info(lastrev_fname)
+  source_fi = file_info(source_files)
+  if lri.mtime lt min(source_fi.mtime) then begin
+    mvn_sep_load,/use_cache,files=source_files,trange=trange,/L0
+    sepdata = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
+    if size(/type,sepdata) ne 8 then begin
+      dprint,'sepdata is not a structure'
+      printdat,sepdata
+      return
+    endif
+    nextrev_fname = mvn_pfp_file_next_revision(lastrev_fname)
+    global={ filename:nextrev_fname,  data_type:data_type+'>Survey Raw Particle Counts',   logical_source:'SEP.raw.spec_svy'}   ;'SEP.calibrated.spec_svy'
+    mapid = round(median(sepdata.mapid))
+    bmaps = mvn_sep_get_bmap(mapid,sepnum)
+    dependencies = [source_files,spice_test('*')]
+    mvn_sep_make_raw_cdf,sepdata,bmaps,filename = nextrev_fname,global=global,dependencies=dependencies
+;    print_cdf_info,nextrev_fname
+    if 0 then begin
+      src = mvn_file_source()
+      arcdir = src.local_data_dir+'maven/data/sci/sep/archive/'
+      file_archive,lastrev_fname,archive_ext='.arc',archive_dir = arcdir
+    endif
+  endif
 end
 
 
 
 
 
-pro mvn_sep_make_l2_cdfs,date   ,prereq_info=prereq_info
+pro mvn_sep_make_l2_cdfs,trange=trange,source_files=source_files   
 
-  @mvn_sep_handler_commonblock.pro
-
-  ;  sep = *sep1_svy.x
-  mvn_sep_make_raw_cdf_wrap, *sep1_svy.x, prereq=prereq_info
-  mvn_sep_make_raw_cdf_wrap, *sep2_svy.x, prereq=prereq_info
-
+  mvn_sep_make_raw_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files
+  mvn_sep_make_raw_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files
 
 ;caldat=mvn_sep_get_cal_units(*sep1_svy.x,bkg =bkg)
 
@@ -54,6 +63,7 @@ endif else trange0 = timerange(trange0)
 ;if ~keyword_set(plotformat) then plotformat = 'maven/data/sci/sep/plots/YYYY/MM/$NDAY/$PLOT/mvn_sep_$PLOT_YYYYMMDD_$NDAY.png'
 L1_fileformat =  'maven/data/sci/sep/l1/sav/YYYY/MM/mvn_sep_l1_YYYYMMDD_$NDAY.sav'
 
+
 ndaysload =1
 L1fmt = str_sub(L1_fileformat, '$NDAY', strtrim(ndaysload,2)+'day')
 
@@ -61,7 +71,7 @@ res = 86400L
 trange = res* double(round( (timerange((trange0+ [ 0,res-1]) /res)) ))         ; round to days
 nd = round( (trange[1]-trange[0]) /res)
 
-if n_elements(load) eq 0 then load =1
+;if n_elements(load) eq 0 then load =1
 
 for i=0L,nd-1 do begin
   tr = trange[0] + [i,i+1] * res
@@ -89,14 +99,17 @@ for i=0L,nd-1 do begin
   target_timestamp =  target_info.mtime
 
   if prereq_timestamp gt target_timestamp then begin    ; skip if L1 does not need to be regenerated
-    dprint,dlevel=1,'Generating L1 file: '+L1_filename
     mvn_sep_load,/l0,files = l0_files
+    dprint,dlevel=1,'Generating L1 file: '+L1_filename
     prereq_info = file_checksum(prereq_files,/add_mtime)
     mvn_sep_var_save,l1_filename,prereq_info=prereq_info,description=description
     mvn_mag_var_save
-  endif else mvn_sep_var_restore,trange=tr ,prereq=prereq_info,filename=l1_filename
-
-  mvn_sep_make_l2_cdfs,prereq=prereq_info
+  endif  ; else begin
+;    mvn_sep_var_restore,trange=tr ,prereq=prereq_info  ;,filename=l1_filename
+;    printdat,prereq_info
+;  endelse
+  
+  mvn_sep_make_l2_cdfs,source_files=l0_files,trange=tr
 
   if keyword_set(plotformat) then begin
     pf = str_sub(plotformat,'$NDAY',strtrim(ndaysload,2)+'day')

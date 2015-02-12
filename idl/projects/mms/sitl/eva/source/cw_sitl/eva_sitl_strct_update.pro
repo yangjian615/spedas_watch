@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-09 17:37:52 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16932 $
+; $LastChangedDate: 2015-02-10 23:02:32 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16949 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect
@@ -22,7 +22,7 @@ PRO eva_sitl_strct_update, segSelect
   endif else begin
     message,'Something is wrong'
   endelse
-  defSourceID = 'SITL:'+username
+  defSourceID = username+'(EVA)'
   
   get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
   tfom = eva_sitl_tfom(lim.UNIX_FOMSTR_MOD)
@@ -150,8 +150,10 @@ PRO eva_sitl_strct_update, segSelect
           if segSelect.FOM gt 0 then begin;.................. EDIT
             s.FOM[N]    = segSelect.FOM
             s.STATUS[N] = 'MODIFIED'
+            s.CHANGESTATUS[N] = 1L
           endif else begin;............................ DELETE
             s.STATUS[N] = 'DELETED'
+            s.CHANGESTATUS[N] = 0L
           endelse
           matched=1
         endif

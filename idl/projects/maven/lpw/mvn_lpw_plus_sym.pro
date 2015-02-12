@@ -1,26 +1,26 @@
-;;+
-;PROCEDURE:   mvn_lpw_pkt_plus_sym
-;PURPOSE:
-;  Make a resizeble dot/circle/square.
-;  Originally created by Bob Ergun for the FAST mission
+;----------------------
 ;
-;USAGE:
-;  mvn_lpw_pkt_plus_sym,output,lpw_const
+;   pro plus_sym
 ;
-;INPUTS:
-;       z:         radious of the dot/cirvle/square
+;----------------------
 ;
-;KEYWORDS:
-;      square:
-;      fill:    
+; creates new symbol, circle or dot, can be scaled
 ;
-;CREATED BY:   Bob Ergun 
-;FILE: mvn_lpw_pkt_plus_sym.pro
-;VERSION:   1.0
-;LAST MODIFICATION:   2000?
-;-
+;----------------------
+;  contains routines/procedures:
+;   plus_sym
+;----------------------
+;example
+; to run
+;     plus_sym, 0.7,fill=1
+;----------------------
+; history: 
+; this is the ree_sym routine
+;----------------------
+;
+;*******************************************************************
  
- pro mvn_lpw_pkt_plus_sym, z, square=square, fill=fill
+ pro mvn_lpw_plus_sym, z, square=square, fill=fill
 
 if not keyword_set(z) then z=1
 IF keyword_set(square) then BEGIN

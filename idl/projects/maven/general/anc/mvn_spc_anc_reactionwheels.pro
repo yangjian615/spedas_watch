@@ -24,7 +24,7 @@
 ; $LastChangedRevision:  $
 ; $URL:  $
 ;-
-function  mvn_spc_anc_reactionwheels,pformat,trange=trange  ,files=files         ;,var_name,thruster_time= time_x
+function  mvn_spc_anc_reactionwheels,pformat,trange=trange  ,files=files,dlimit=dlimit         ;,var_name,thruster_time= time_x
 
 ; Get filenames
 trange=timerange(trange)
@@ -38,6 +38,7 @@ src = mvn_file_source(source,last_version=last_version,no_update=0,/valid_only)
 files = mvn_pfp_file_retrieve(pformat,files=files,trange=tr,daily_names=daily_names,source=src)
 nfiles = n_elements(files) * keyword_set(files)
 dprint,dlevel=2,nfiles,' files found'
+if nfiles eq 0 then return,0
   
   
 ;Added 2014-12-04, CF: format of reaction wheel file changed; original files had evenly spaced columns making it easy to extract data. Later files
@@ -147,7 +148,7 @@ for i=0,nfiles-1 do begin
           readf,fp,s
           timestr = strmid(s,0,fpos[0])
           if strmid(timestr,0,1) eq ' ' then continue
-          time = time_double(timestr,tformat='yy/DOY-hh:mm:ss.fff')
+          time = time_double(timestr,tformat='yy/DOY-hh:mm:ss.fff')  ; Warning these times appear to be off by ~20 seconds - probably not corrected for clock drift.
           output_str.time =time
           for j=0,nc-5 do begin  ;ignore last four fields in the structure - add to these after
             if j eq 4 then sss = 17 else sss = 13  ;one column is longer than the others
@@ -170,6 +171,13 @@ output[*].rw1_spd_hz = output[*].rw1_spd_dgtl * factor
 output[*].rw2_spd_hz = output[*].rw2_spd_dgtl * factor
 output[*].rw3_spd_hz = output[*].rw3_spd_dgtl * factor
 output[*].rw4_spd_hz = output[*].rw4_spd_dgtl * factor
+
+dlimit={ $
+  rw1_spd_hz: {colors:'m'}, $
+  rw2_spd_hz: {colors:'b'}, $
+  rw3_spd_hz: {colors:'g'}, $
+  rw4_spd_hz: {colors:'r'}, $
+  dummy: 0  }
 
 
 append_array,output,index=nrec

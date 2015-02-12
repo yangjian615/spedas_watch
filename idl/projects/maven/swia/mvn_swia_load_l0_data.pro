@@ -21,8 +21,8 @@
 ;		(appropriate before ~11/25/2014)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-12 06:21:37 -0800 (Fri, 12 Dec 2014) $
-; $LastChangedRevision: 16476 $
+; $LastChangedDate: 2015-02-10 11:01:05 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16941 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l0_data.pro $
 ;
 ;-
@@ -222,7 +222,7 @@ if keyword_set(tplot) then begin
 		espec = transpose(total(total(swica.data,2),2))
 		energies = transpose(info_str[swica.info_index].energy_coarse)
 		store_data,'mvn_swica_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1, $
-		yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}
+		yrange:[4,30000],ystyle:1,zrange:[1,1e4],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}
 
 		phspec = transpose(total(total(swica.data,1),1))
 		phis = transpose(info_str[swica.info_index].phi_coarse)
@@ -252,7 +252,7 @@ if keyword_set(tplot) then begin
 		energies = fltarr(nsw,48)
 		for i = 0,nsw-1 do energies[i,*] =  energy_all[i,swifs[i].estep_first:swifs[i].estep_first+47]
 		store_data,'mvn_swifs_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1, $
-		yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		yrange:[4,30000],ystyle:1,zrange:[1,1e4],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
 
 		phspec = transpose(total(total(swifs.data,1),1))
 		phis = transpose(info_str[swifs.info_index].phi_fine)
@@ -278,7 +278,7 @@ if keyword_set(tplot) then begin
 		energies = fltarr(nsw,48)
 		for i = 0,nsw-1 do energies[i,*] =  energy_all[i,swifa[i].estep_first:swifa[i].estep_first+47]	
 		store_data,'mvn_swifa_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1, $
-		yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		yrange:[4,30000],ystyle:1,zrange:[1,1e4],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
 
 		phspec = transpose(total(total(swifa.data,1),1))
 		phis = transpose(info_str[swifa.info_index].phi_fine)
@@ -321,7 +321,7 @@ if keyword_set(tplot) then begin
 		w = where(swis.decom_flag ge qlevel)
 		ctime = swis[w].time_unix + 4.0*swis[w].num_accum/2		;center time of sample
 		energies = transpose(info_str[swis[w].info_index].energy_coarse)
-		store_data,'mvn_swis_en_counts',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
+		store_data,'mvn_swis_en_counts',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[1,1e4],ytitle:'Energy (eV)',ztitle:'SWIA!cCounts'}, dlimits = {datagap:180}
 	endif
 
 endif

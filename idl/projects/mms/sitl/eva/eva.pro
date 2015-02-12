@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-05 22:07:29 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16895 $
+; $LastChangedDate: 2015-02-10 14:51:04 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16945 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -95,7 +95,7 @@ PRO eva
 
 
   scr_dim    = get_screen_size()
-  xoffset = scr_dim[0]-650.-286-50. > 0.
+  xoffset = scr_dim[0]*0.3 > 0.;-650.-286-50. > 0.
 
   ; Top Level Base
   base = widget_base(TITLE = 'EVA',MBAR=mbar,_extra=_extra,/column,$

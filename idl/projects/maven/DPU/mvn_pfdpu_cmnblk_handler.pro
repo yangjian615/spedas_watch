@@ -140,7 +140,7 @@ endelse
  ;   mvn_apid_swia_handler,ccsds,decom=decom
  ;   mvn_apid_swea_handler,ccsds,decom=decom
     mvn_sta_handler,ccsds,decom=decom              ; Must be updated for Jim Mcfadden
-    mvn_lpw_handler,ccsds,decom=decom
+ ;   mvn_lpw_handler,ccsds,decom=decom
  ;   mvn_apid_30_handler,ccsds,decom=decom
 ;    if decom eq 0 then dprint,dlevel=2,'Unknown APID ',ccsds.apid,ccsds.seq_cntr,ccsds.size ,format='(a,z03," ",i,i)'
           

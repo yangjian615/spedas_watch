@@ -59,7 +59,7 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
       dgrand = [dgrand,'mms_soca_bakstr']
     endelse
   endif
-
+  
   ; 'mms_soca_fom'
   dgrand = [dgrand,'mms_soca_zero']
   store_data, 'mms_soca_fom',data=dgrand

@@ -31,7 +31,7 @@ if n_elements(sep)   ne 0 then mvn_sep_handler,reset=sep,set_realtime=0
 if n_elements(mag)   ne 0 then mvn_mag_handler,reset=mag,set_realtime=0
 if n_elements(pfdpu) ne 0 then mvn_pfdpu_handler,reset=pfdpu,set_realtime=0
 if n_elements(static) ne 0 then mvn_sta_handler,reset=static
-if n_elements(lpw) ne 0 then mvn_lpw_handler,reset=lpw,set_realtime=0
+;if n_elements(lpw) ne 0 then mvn_lpw_handler,reset=lpw,set_realtime=0
 
 dprint,dlevel=2,'Start Loading file ',file
 mvn_spc_apid_file_read,file=file,trange=trange
@@ -45,7 +45,7 @@ if 1 then begin
 if n_elements(pfdpu) ne 0 then mvn_pfdpu_handler,reset=0,finish=1,set_realtime=rt
 if n_elements(mag)   ne 0 then mvn_mag_handler,reset=0,finish=1,set_realtime=rt
 if n_elements(sep)   ne 0 then mvn_sep_handler,reset=0,finish=1,set_realtime=rt        ; disables manager, but common block data remains intact
-if n_elements(lpw)   ne 0 then mvn_lpw_handler,reset=0,set_realtime=rt
+;if n_elements(lpw)   ne 0 then mvn_lpw_handler,reset=0,set_realtime=rt
 if n_elements(static) ne 0 then mvn_sta_handler,reset=0
 endif
 

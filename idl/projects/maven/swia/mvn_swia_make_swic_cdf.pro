@@ -13,8 +13,8 @@
 ;	DATA_VERSION: Data version to put in file (default = '1')
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-29 07:11:38 -0800 (Thu, 29 Jan 2015) $
-; $LastChangedRevision: 16776 $
+; $LastChangedDate: 2015-02-10 11:01:05 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16941 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_swic_cdf.pro $
 ;
 ;-
@@ -85,9 +85,9 @@ id21 = cdf_attcreate(fileid,'PDS_sclk_stop_count',/global_scope)
 
 
 cdf_attput,fileid,'TITLE',0,'MAVEN SWIA Coarse 3d Distributions'
-cdf_attput,fileid,'Project',0,'MAVEN'
+cdf_attput,fileid,'Project',0,'MAVEN>Mars Atmosphere and Volatile EvolutioN Mission'
 cdf_attput,fileid,'Discipline',0,'Planetary Physics>Particles'
-cdf_attput,fileid,'Source_name',0,'MAVEN>Mars Atmosphere and Volatile Evolution Mission'
+cdf_attput,fileid,'Source_name',0,'MAVEN>Mars Atmosphere and Volatile EvolutioN Mission'
 cdf_attput,fileid,'Descriptor',0,'SWIA>Solar Wind Ion Analyzer'
 cdf_attput,fileid,'Data_type',0,'CAL>Calibrated'
 cdf_attput,fileid,'Data_version',0,data_version

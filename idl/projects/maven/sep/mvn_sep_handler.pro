@@ -494,17 +494,12 @@ end
 pro mvn_sep_var_save,filename,pathname=pathname,trange=trange,prereq_info=prereq_info,verbose=verbose,description=description
 
 @mvn_sep_handler_commonblock.pro
-;common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
-; ,sep1_memdump,sep2_memdump,mag1_hkp_f0,mag2_hkp_f0
- 
 @mvn_pfdpu_handler_commonblock.pro
-;common mvn_apid_misc_handler_com   ,manage,realtime,apid20x,apid21x,apid22x,apid23x,apid24x,apid25x   ; from mvn_pfdpu_handler
- 
 
 if not keyword_set(filename) then begin
   if not keyword_set(trange) then trange = minmax((*(sep1_svy.x)).time)
   res = 86400.d
-  days =  round( time_double(trange )/res)
+  days =  round( time_double(trange )/res )
   ndays = days[1]-days[0]
   tr = days * res
   if not keyword_set(pathname) then pathname =  'maven/pfp/sep/l1/sav/YYYY/MM/mvn_sep_l1_YYYYMMDD_$NDAY.sav' 
@@ -536,10 +531,12 @@ if 1 then begin
   if keyword_set(apid23x) then ap23 = *apid23x.x
   if keyword_set(apid24x) then ap24 = *apid24x.x
   if keyword_set(apid25x) then ap25 = *apid25x.x
+  
+  if keyword_set(source_filenames) then source_filename = source_filenames
 
   file_mkdir2,file_dirname(filename)  
-  save,filename=filename,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,sw_version,prereq_info,spice_info,ap20,ap21,ap22,ap23,ap24,ap25,description=description
-  l1_filename = filename
+  save,filename=filename,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,sw_version,prereq_info,spice_info,ap20,ap21,ap22,ap23,ap24,ap25,source_filename,description=description
+;  l1_filename = filename
 endif else begin
   save,verbose=verbose,filename=filename,sep_all_ptrs,sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise,sep1_memdump,sep2_memdump
 endelse
@@ -551,15 +548,13 @@ end
 
 
 
-pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_realtime=set_realtime ,clear=clear,set_manage=set_manage $
+pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_realtime=set_realtime,record_filenames=record_filenames ,clear=clear,set_manage=set_manage $
  ,trange=trange,svy_tags=svy_tags,hkp_tags=hkp_tags,noise_tags=noise_tags,sepnum=sepnum,mag_tags=mag_tags
 
     common mav_apid_sep_handler_misc_com,manage,realtime,sep1_avg,sep2_avg,lastmem1,lastmem2,sep1_last_hkp,sep2_last_hkp ,sep1_spec,sep2_spec,sep1arc_spec,sep2arc_spec
 
-;  All SEP data is stored in these 10 variables
+;  All SEP data is stored in the common block variables
 @mvn_sep_handler_commonblock.pro
-;    common mav_apid_sep_handler_com , sep_all_ptrs ,  sep1_hkp,sep2_hkp,sep1_svy,sep2_svy,sep1_arc,sep2_arc,sep1_noise,sep2_noise $
-;    ,sep1_memdump,sep2_memdump  ,mag1_hkp_f0,mag2_hkp_f0
 
     if n_elements(sepn) eq 0 then sepn=3
     if n_elements(magnum) eq 0 then magnum=3
@@ -581,8 +576,10 @@ pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_
            dprint,phelp=debug,manage,realtime
            if (sepn and 1) ne 0 then dprint,phelp=debug,sep1_hkp,sep1_svy,sep1_arc,sep1_memdump,lastmem1
            if (sepn and 2) ne 0 then dprint,phelp=debug,sep2_hkp,sep2_svy,sep2_arc ,sep2_memdump,lastmem2
+           dprint,/phelp,source_filenames
            return
-        endif        
+        endif
+        if keyword_set( record_filenames) then append_array,source_filenames,record_filenames       
         dprint,dlevel=2,'SEP handler: ' , keyword_set(clear) ? 'Clearing Data' : 'Finalizing'
         prefix = 'mvn_'
         if ~keyword_set(hkp_tags) then hkp_tags = 'RATE_CNTR VCMD_CNTR AMON_* DACS'
@@ -600,6 +597,9 @@ pro mvn_sep_handler,ccsds,decom=decom,reset=reset,debug=debug,finish=finish,set_
         if (sepn and 2) ne 0 then mav_gse_structure_append, clear=clear,  sep2_memdump , tname = prefix+'sep2_mem' 
         if (magnum and 1) ne 0 then   mav_gse_structure_append, clear=clear,  mag1_hkp_f0   ,    tname= 'mvn_mag1_hkp' , tags = mag_tags
         if (magnum and 2) ne 0 then   mav_gse_structure_append, clear=clear,  mag2_hkp_f0   ,    tname= 'mvn_mag2_hkp' , tags = mag_tags
+        if keyword_set(clear) then begin
+          undefine,source_filenames
+        endif
         sep_all_ptrs = 0
         append_array,sep_all_ptrs,sep1_hkp
         append_array,sep_all_ptrs,sep2_hkp

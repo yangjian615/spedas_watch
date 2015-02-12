@@ -29,8 +29,8 @@
 ;	NO_SERVER: If set, will not go looking for files remotely
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-12 07:28:57 -0800 (Fri, 12 Dec 2014) $
-; $LastChangedRevision: 16479 $
+; $LastChangedDate: 2015-02-10 11:01:05 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16941 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l2_data.pro $
 ;
 ;-
@@ -531,7 +531,7 @@ if keyword_set(tplot) then begin
 			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e4,1e8],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin	
 			store_data,'mvn_swics_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, spec:1, $
-			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
+			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1,1e4],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swics.data,1),1))
 			phis = transpose(info_str[swics.info_index].phi_coarse)
@@ -564,7 +564,7 @@ if keyword_set(tplot) then begin
 			ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin	
 			store_data,'mvn_swica_en_counts',data = {x:ctime, y: espec, v:energies, ylog:1, zlog:1, $
-			spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, $
+			spec:1, no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1,1e4],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, $
 			dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swica.data,1),1))
@@ -600,7 +600,7 @@ if keyword_set(tplot) then begin
 			yrange:[4,30000],ystyle:1,zrange:[1e5,1e9],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin
 			store_data,'mvn_swifs_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, no_interp:1, $
-			yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
+			yrange:[4,30000],ystyle:1,zrange:[1,1e4],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swifs.data,1),1))
 			phis = transpose(info_str[swifs.info_index].phi_fine)
@@ -631,7 +631,7 @@ if keyword_set(tplot) then begin
 			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1e5,1e9],ytitle:'Energy (eV)',ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin
 			store_data,'mvn_swifa_en_counts',data = {x:ctime, y:espec, v:energies, ylog:1, zlog:1, spec:1, $
-			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
+			no_interp:1,yrange:[4,30000],ystyle:1,zrange:[1,1e4],ytitle:'Energy (eV)',ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 
 			phspec = transpose(total(total(swifa.data,1),1))
 			phis = transpose(info_str[swifa.info_index].phi_fine)
@@ -692,7 +692,7 @@ if keyword_set(tplot) then begin
 			ztitle:'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
 		endif else begin
 			store_data,'mvn_swis_en_counts',data = {x:ctime,y:transpose(swis[w].data),v:energies, ylog:1, $
-			zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[10,1e6],ytitle:'Energy (eV)', $
+			zlog:1, spec:1, no_interp:1, yrange:[4,30000], ystyle:1,zrange:[1,1e4],ytitle:'Energy (eV)', $
 			ztitle:'SWIA!ccounts'}, dlimits = {datagap:180}
 		endelse
 

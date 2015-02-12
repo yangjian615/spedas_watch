@@ -22,8 +22,8 @@
 ; CREATED BY: Mitsuo Oka   Feb 2015
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-09 17:35:03 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16931 $
+; $LastChangedDate: 2015-02-10 10:17:52 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16940 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_quick.pro $
 Function sitl_quick_template
   anan = fltarr(1) & anan[0] = 'NaN'
@@ -72,6 +72,9 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
   ;------------------
   ; Input File
   ;------------------
+  if n_elements(filename) eq 0 then begin
+    filename = dialog_pickfile(/READ)
+  endif
   found = file_test(filename)
   if not found then begin
     print, 'ERROR: '+filename+' was not found'
@@ -82,35 +85,34 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
   ;------------------
   ; FOM Structure
   ;------------------
-  NSEGS = n_elements(r.FOM)  
-  START = dblarr(NSEGS)
-  STOP = dblarr(NSEGS)
-  FOM = fltarr(NSEGS)
+  print, '--------------'
+  print, 'INPUTS'
+  print, '--------------'
+  NSEGS = n_elements(r.FOM)
   SEGLENGTHS = lonarr(NSEGS)
   SOURCEID = strarr(NSEGS)
-  COMMENT = strarr(NSEGS)
-  
+  START = dblarr(NSEGS)
+  STOP = dblarr(NSEGS)
   for n=0,NSEGS-1 do begin
+    strFOM = string(r.FOM[n],format='(F5.1)')
+    print, r.STR_STIME[n], ' - ', r.STR_ETIME[n], ', FOM=',strFOM,', ',strtrim(r.COMMENT[n],2)
     stime = str2time(r.STR_STIME[n])
     etime = str2time(r.STR_ETIME[n])
     rs = min(abs(unix_FOMstr.TIMESTAMPS-stime), ids)
     re = min(abs(unix_FOMstr.TIMESTAMPS-etime), ide)
+    SEGLENGTHS[n] = STOP[n]-START[n]+1
+    SOURCEID[n] = username+'(Quick)'
     START[n] = long(ids)
     STOP[n]  = long(ide)
-    FOM[n] = r.FOM[n]
-    SEGLENGTHS[n] = STOP[n]-START[n]+1
-    SOURCEID[n] = 'SITL(Quick):'+username
   endfor
-  
+  str_element,/add,unix_FOMstr,'COMMENT', r.COMMENT
+  str_element,/add,unix_FOMstr,'FOM', r.FOM
+  str_element,/add,unix_FOMstr,'NBUFFS',total(SEGLENGTHS)
+  str_element,/add,unix_FOMstr,'NSEGS',NSEGS
   str_element,/add,unix_FOMstr,'SEGLENGTHS',SEGLENGTHS
   str_element,/add,unix_FOMstr,'SOURCEID', SOURCEID
   str_element,/add,unix_FOMstr,'START',START
   str_element,/add,unix_FOMstr,'STOP',STOP
-  str_element,/add,unix_FOMstr,'FOM', FOM
-  str_element,/add,unix_FOMstr,'NSEGS',NSEGS
-  str_element,/add,unix_FOMstr,'NBUFFS',total(SEGLENGTHS)
-  str_element,/add,unix_FOMstr,'COMMENT', COMMENT
-  
   mms_convert_fom_unix2tai, unix_FOMStr, tai_FOMstr
 
   ;------------------
@@ -123,9 +125,10 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
     error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
     error_indices,orange_warning_indices,yellow_warning_indices; Error Indices (ptr_arr)
 
-  print, '---------'
+  print, ''
+  print, '--------------'
   print, 'ERROR'
-  print, '---------'
+  print, '--------------'
   cmax = n_elements(error_flags)
   ct_error = 0
   for c=0,cmax-1 do begin; for each error type
@@ -137,16 +140,16 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
       tidx = *(error_indices[c])
       nmax = n_elements(tstr)
       for n=0,nmax-1 do begin
-        print, 'segment number: ',strtrim(string(tidx[n]),2), ', start time: ', tstr[n]
+        print, '   segment: ',strtrim(string(tidx[n]),2), ', ', tstr[n]
       endfor
     endif
   endfor
   if ct_error eq 0 then print, 'none'
   
   print, ' '
-  print, '---------'
+  print, '--------------'
   print, 'ORANGE WARNING'
-  print, '---------'
+  print, '--------------'
   cmax = n_elements(orange_warning_flags)
   ct_orange = 0
   ct_override = 0
@@ -166,16 +169,16 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
           ow = '!!!!! OVERRIDDEN !!!!!'
           ct_override += 1
         endelse
-        print, 'segment number: ',strtrim(string(tidx[n]),2), ', start time: ', tstr[n], ',',ow
+        print, '   segment: ',strtrim(string(tidx[n]),2), ', ', tstr[n], ',',ow
       endfor
     endif
   endfor
   if ct_orange eq 0 then print, 'none'
   
   print, ' '
-  print, '---------'
+  print, '--------------'
   print, 'YELLOW WARNING'
-  print, '---------'
+  print, '--------------'
   cmax = n_elements(yellow_warning_flags)
   ct_yellow = 0
   for c=0,cmax-1 do begin; for each error type
@@ -187,7 +190,7 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
       tidx = *(yellow_warning_indices[c])
       nmax = n_elements(tstr)
       for n=0,nmax-1 do begin
-        print, 'segment number: ',strtrim(string(tidx[n]),2), ', start time: ', tstr[n]
+        print, '   segment: ',strtrim(string(tidx[n]),2), ', ', tstr[n]
       endfor
     endif
   endfor
@@ -196,7 +199,7 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
   ;------------------
   ; Submit
   ;------------------
-  print, '============='
+  print, ''
   if (ct_error eq 0) and (ct_orange eq ct_override) then begin
     mms_put_fom_structure, tai_FOMstr, FOMStr, local_dir,$
       error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
@@ -205,15 +208,14 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
       error_indices,orange_warning_indices,yellow_warning_indices,$; Error Indices (ptr_arr)
       problem_status, /warning_override
     if problem_status eq 0 then begin
-      print, 'The FOM structure was sent successfully to SDC.'
+      print, '>>> The FOM structure was sent successfully to SDC.'
     endif else begin
-      print, 'Submission Failed.'
+      print, '>>> Submission Failed.'
     endelse
   endif else begin
-    print, 'The FOM structure was not sent to SDC because of the error/warning.'
+    print, '>>> The FOM structure was not sent to SDC because of the error/warning.'
   endelse
-  print, '============='
-  
+  print, ''
   ptr_free, error_times, orange_warning_times, yellow_warning_times
   ptr_free, error_indices, orange_warning_indices, yellow_warning_indices
   

@@ -41,8 +41,8 @@
 ;       MASK_SC:       Mask PA bins that are blocked by the spacecraft.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16918 $
+; $LastChangedDate: 2015-02-10 21:41:01 -0800 (Tue, 10 Feb 2015) $
+; $LastChangedRevision: 16947 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -299,6 +299,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
         if (dflg) then begin
           ddd = mvn_swe_get3d(pad.time,archive=aflg,units=units)
+          indx = where(obins[*,boom] eq 0B, count)
+          if (count gt 0L) then ddd.data[*,indx] = !values.f_nan
+
           de = min(abs(ddd.energy[*,0] - energy),ebin)
           z3d = reform(ddd.data[ebin,pad.k3d])  ; 3D mapped into PAD
           z3d = z3d/mean(z3d,/nan)

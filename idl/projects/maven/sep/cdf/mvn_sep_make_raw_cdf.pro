@@ -37,7 +37,7 @@ tt2000_range = long64((add_tt2000_offset(date_range)-time_double('2000-01-01/12:
 epoch = time_epoch(time)
 timett2000 = long64((add_tt2000_offset(time)-time_double('2000-01-01/12:00'))*1e9)
 
-tstr= time_string(minmax(time),tformat='YYYY-MM-DDThh:mm:ss.fff')
+tstr= time_string(minmax(time),tformat='YYYY-MM-DDThh:mm:ss.fffZ')
 
 
 file_mkdir2,file_dirname(filename)
