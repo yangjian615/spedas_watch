@@ -17,9 +17,9 @@ Function eva_sitl_load_soca_getfom, CACHE_DATA_DIR, parent
     mms_convert_fom_tai2unix, FOMstr, unix_FOMstr, start_string
     log.o,'fom_file = '+fom_file
     nmax = unix_FOMStr.Nsegs
-    comment = strarr(nmax)
-    comment[0:nmax-1] = ''
-    str_element,/add,unix_FOMStr,'comment',comment
+    discussion = strarr(nmax)
+    discussion[0:nmax-1] = ''
+    str_element,/add,unix_FOMStr,'discussion',discussion
     
     ;//////////////////////////////////////
 ;    fom_file = local_dir + 'abs_selections_2014-03-07-22-07-35.sav'

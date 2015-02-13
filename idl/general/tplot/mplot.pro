@@ -100,6 +100,7 @@ str_element,stuff,'label_index',value=label_index ;pseudo vars only
 str_element,stuff,'labpos',value=labpos
 str_element,stuff,'labsize',value=lbsize
 str_element,stuff,'bins',value=bins
+str_element,stuff,'indices',value=indices
 str_element,stuff,'charsize',value=charsize
 str_element,stuff,'axis',value=axis
 str_element,stuff,'reverse_order',rev_order
@@ -281,9 +282,12 @@ endif else labflag=0
 ;offset into colors array in case of pseudo var
 c_off = size(/type,color_offset) gt 0 ? color_offset:0
 
-for n_=0,d2-1 do begin
-    n = n_
-    if keyword_set(rev_order) then n = d2 - n_ -1
+if keyword_set(indices) then ind = indices else ind=indgen(d2)
+if keyword_set(rev_order) then ind = reverse(ind)
+
+for n_=0,n_elements(ind)-1 do begin
+    n = ind[n_]
+;    if keyword_set(rev_order) then n = d2 - n_ -1
 ;  if bins(n) ne 0 then begin
     if ndx eq 1 then i=0 else i=n
     c = col[ (n + c_off) mod nc ]

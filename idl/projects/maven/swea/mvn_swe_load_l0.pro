@@ -71,8 +71,8 @@
 ;       LOADONLY:      Download data but do not process.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 11:03:15 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16914 $
+; $LastChangedDate: 2015-02-11 12:07:02 -0800 (Wed, 11 Feb 2015) $
+; $LastChangedRevision: 16950 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -160,9 +160,12 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
   
   if (~tspan_exists) then timespan, trange
 
-; Initialize SPICE (now done outside of loader)
+; Initialize SPICE if not already done
+;   This is needed for MET -> UNIX time conversion.
 
-; mvn_swe_spice_init, trange=trange, /list
+  mk = spice_test('*', verbose=-1)
+  indx = where(mk ne '', count)
+  if (count eq 0) then mvn_swe_spice_init
 
 ; Define decompression, telemetry conversion factors, and data structures
 

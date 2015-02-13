@@ -15,8 +15,8 @@
 ;    LIST:          If set, list the kernels in use.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 11:22:47 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16917 $
+; $LastChangedDate: 2015-02-11 12:07:43 -0800 (Wed, 11 Feb 2015) $
+; $LastChangedRevision: 16951 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_spice_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -36,7 +36,7 @@ pro mvn_swe_spice_init, trange=trange, list=list, force=force, status=status
       return
     endif
     print,"Kernels in use:"
-    for i=0,(n_ker-1) do print,"  ",file_basename(swe_kernels[i])
+    for i=0,(n_ker-1) do print,"  ",file_basename(mk[i])
     return
   endif
 

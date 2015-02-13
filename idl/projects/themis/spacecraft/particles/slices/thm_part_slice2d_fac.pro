@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-31 11:16:59 -0700 (Thu, 31 Jul 2014) $
-;$LastChangedRevision: 15632 $
+;$LastChangedDate: 2015-02-11 18:02:22 -0800 (Wed, 11 Feb 2015) $
+;$LastChangedRevision: 16964 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_fac.pro $
 ;
 ;-
@@ -97,6 +97,7 @@ pro thm_part_slice2d_fac, probe=probe, coord=coord, trange=trange, mag_data=mag_
     return
   endif
   
+  ;matrix must be transposed to perform dsl->fac for ## operator
   matrix = transpose(ctd.y)
 
   

@@ -121,7 +121,7 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
     RealFOM = 40
 
     ; segSelect
-    segSelect = {ts:trange[0], te:trange[1], fom:RealFOM, BAK:BAK, comment:''}
+    segSelect = {ts:trange[0], te:trange[1], fom:RealFOM, BAK:BAK, discussion:''}
     eva_sitl_FOMedit, state, segSelect; Here, change FOM value only. No trange change.
   endif
 END
@@ -150,7 +150,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
         s = lim.UNIX_BAKSTR_MOD
         idx = where((s.START le t) and (t le s.STOP), ct)
         if ct eq 1 then begin
-          segSelect = {ts:s.START[idx[0]],te:s.STOP[idx[0]],fom:s.FOM[idx[0]],BAK:BAK,Comment:s.COMMENT[idx[0]]}
+          segSelect = {ts:s.START[idx[0]],te:s.STOP[idx[0]],fom:s.FOM[idx[0]],BAK:BAK,discussion:s.DISCUSSION[idx[0]]}
         endif else segSelect = 0
       end
       0: begin
@@ -160,7 +160,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
         etime = s.TIMESTAMPS[s.STOP] + 10.d0
         idx = where((stime le t) and (t le etime), ct)
         if ct eq 1 then begin
-          segSelect = {ts:stime[idx[0]],te:etime[idx[0]],fom:s.FOM[idx[0]],BAK:BAK, Comment:s.COMMENT[idx[0]]}
+          segSelect = {ts:stime[idx[0]],te:etime[idx[0]],fom:s.FOM[idx[0]],BAK:BAK, discussion:s.DISCUSSION[idx[0]]}
         endif else segSelect = 0
       end
       else: segSelect = -1
@@ -168,7 +168,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
   endif else begin
     if (BAK eq 0) or (BAK eq 1) then begin
       stop
-      segSelect = {ts:t[0], te:t[1], fom:0., BAK: BAK, Comment:''}
+      segSelect = {ts:t[0], te:t[1], fom:0., BAK: BAK, discussion:''}
     endif else segSelect = -1
   endelse
 
@@ -227,19 +227,20 @@ FUNCTION eva_sitl_event, ev
   @eva_sitl_com
   @moka_logger_com
 
-
-  catch, error_status
-  if error_status ne 0 then begin
-    eva_error_message, error_status
-    catch, /cancel
-    return, { ID:ev.handler, TOP:ev.top, HANDLER:0L }
-  endif
-
   parent=ev.handler
   stash = WIDGET_INFO(parent, /CHILD)
   WIDGET_CONTROL, stash, GET_UVALUE=state, /NO_COPY
   if n_tags(state) eq 0 then return, { ID:ev.handler, TOP:ev.top, HANDLER:0L }
 
+  catch, error_status
+  if error_status ne 0 then begin
+    catch, /cancel
+    eva_error_message, error_status
+    WIDGET_CONTROL, stash, SET_UVALUE=state, /NO_COPY
+    message, /reset
+    return, { ID:ev.handler, TOP:ev.top, HANDLER:0L }
+  endif
+  
   set_multi = widget_info(state.cbMulti,/button_set)
   set_trange= widget_info(state.cbWTrng,/button_set)
   submit_code = 0
@@ -352,6 +353,17 @@ FUNCTION eva_sitl_event, ev
         endif
       endif;if~skip
       end
+    state.drpSave: begin
+      log.o,'***** EVENT: drpSave *****'
+      type = state.svSet[ev.index]
+      case type of
+        'Save': eva_sitl_save,/auto
+        'Restore': eva_sitl_restore,/auto
+        'Save As': eva_sitl_save
+        'Restore From': eva_sitl_restore
+        else: answer = dialog_message('Something is wrong.')
+      endcase
+      end
     state.btnSubmit: begin
       log.o,'***** EVENT: btnSubmit *****'
       submit_code = 1
@@ -365,7 +377,7 @@ FUNCTION eva_sitl_event, ev
       if ~ev.select then widget_control,state.cbWTrng,SENSITIVE=0
       end
     state.drDash: begin
-      log.o,'***** EVENT: drDash *****'
+      ;log.o,'***** EVENT: drDash *****'
       widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
       end
     else:
@@ -434,7 +446,8 @@ FUNCTION eva_sitl, parent, $
   endif else begin
     hlSet = ['Default','isPending','inPlaylist']
   endelse
-
+  svSet = ['Save','Restore','Save As', 'Restore From']
+  
   mainbase = WIDGET_BASE(parent, UVALUE = uval, UNAME = uname, TITLE=title,$
     EVENT_FUNC = "eva_sitl_event", $
     FUNC_GET_VALUE = "eva_sitl_get_value", $
@@ -462,9 +475,11 @@ FUNCTION eva_sitl, parent, $
   bsActionHighlight = widget_base(bsAction,/ROW)
   str_element,/add,state,'drpHighlight',widget_droplist(bsActionHighlight,VALUE=hlSet,TITLE='Segment status:')
   str_element,/add,state,'hlSet',hlSet
+  bsActionSave = widget_base(bsAction,/ROW)
+  str_element,/add,state,'drpSave',widget_droplist(bsActionSave,VALUE=svSet,TITLE='FOM save/restore:')
+  str_element,/add,state,'svSet',svSet
 
   bsActionSubmit = widget_base(subbase,/ROW)
-  
   str_element,/add,state,'btnValidate',widget_button(bsActionSubmit,VALUE=' Validate ')
   str_element,/add,state,'btnEmail',widget_button(bsActionSubmit,VALUE=' Email ')
   dumSubmit = widget_base(bsActionSubmit,xsize=60)

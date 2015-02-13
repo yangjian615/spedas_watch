@@ -257,6 +257,7 @@ str_xtitle = str_xtitle+' '+time_check  ;add to str_xtitle
 ;------------
 
 cspice_kclear  ;unload spice kernels
+mvn_lpw_anc_unset_spice_check ;Clear kernel_verified flag, jmm, 2015-02-11
 
 ;Append values to array:
 tt = [[sclk], [utc_time], [string(et_time, format='(F16.5)')], $

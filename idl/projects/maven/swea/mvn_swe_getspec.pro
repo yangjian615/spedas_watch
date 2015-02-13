@@ -26,8 +26,8 @@
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16918 $
+; $LastChangedDate: 2015-02-11 12:08:23 -0800 (Wed, 11 Feb 2015) $
+; $LastChangedRevision: 16952 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -81,7 +81,8 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
     endif
     spec = mvn_swe_engy[iref]
   endelse
-
+  
+  old_units = spec.units_name
   mvn_swe_convert_units, spec, 'counts'
 
   if (keyword_set(sum) and (count gt 1)) then begin
@@ -102,12 +103,15 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
     spec = spec0
   endif
 
-  indx = where(spec.data gt 0.)
-  if (size(units,/type) eq 7) then mvn_swe_convert_units, spec, units
+  if (size(units,/type) eq 7) then mvn_swe_convert_units, spec, units $
+                              else mvn_swe_convert_units, spec, old_units
 
-  yrange = minmax((spec.data)[indx])
-  yrange[0] = 10.^(floor(alog10(yrange[0])))
-  yrange[1] = 10.^(ceil(alog10(yrange[1])))
+  indx = where(spec.data gt 0., count)
+  if (count gt 0L) then begin
+    yrange = minmax((spec.data)[indx])
+    yrange[0] = 10.^(floor(alog10(yrange[0])))
+    yrange[1] = 10.^(ceil(alog10(yrange[1])))
+  endif else yrange = 0
 
   return, spec
 

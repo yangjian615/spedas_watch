@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-10 23:02:32 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16949 $
+; $LastChangedDate: 2015-02-11 13:54:06 -0800 (Wed, 11 Feb 2015) $
+; $LastChangedRevision: 16955 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect
@@ -54,7 +54,7 @@ PRO eva_sitl_strct_update, segSelect
       newSTART      = 0L
       newSTOP       = 0L
       newFOM        = 0.
-      newCOMMENT    = ''
+      newDISCUSSION    = ''
       newISPENDING  = 1L
       
       ; scan all segments
@@ -78,7 +78,7 @@ PRO eva_sitl_strct_update, segSelect
               newSTOP  = [newSTOP, s.STOP[N]]
               newSEGLENGTHS = [newSEGLENGTHS,s.STOP[N] - (segSTOP+1L) + 1L]
             endelse
-            newCOMMENT    = [newCOMMENT, s.COMMENT[N]]
+            newDISCUSSION    = [newDISCUSSION, s.DISCUSSION[N]]
             newSOURCEID   = [newSOURCEID, defSourceID]
             newFOM        = [newFOM,s.FOM[N]]
             ;newISPENDING  = [newISPENDING,s.ISPENDING[N]]
@@ -87,7 +87,7 @@ PRO eva_sitl_strct_update, segSelect
             newSEGLENGTHS = [newSEGLENGTHS, s.SEGLENGTHS[N]]
             ;newISPENDING  = [newISPENDING,s.ISPENDING[N]]
             newSOURCEID   = [newSOURCEID, s.SOURCEID[N]]
-            newCOMMENT    = [newCOMMENT, s.COMMENT[N]]
+            newDISCUSSION    = [newDISCUSSION, s.DISCUSSION[N]]
             newSTART      = [newSTART, s.START[N]]
             newSTOP       = [newSTOP, s.STOP[N]]
             newFOM        = [newFOM,s.FOM[N]]
@@ -104,7 +104,7 @@ PRO eva_sitl_strct_update, segSelect
         newSOURCEID   = [newSOURCEID, defSourceID]
         newSTART      = [newSTART, segSTART]
         newSTOP       = [newSTOP, segSTOP]
-        newCOMMENT    = [newCOMMENT,segSelect.COMMENT]
+        newDISCUSSION    = [newDISCUSSION,segSelect.DISCUSSION]
       endif
       
       ;update FOM structure
@@ -119,7 +119,7 @@ PRO eva_sitl_strct_update, segSelect
         str_element,/add,s,'FOM',float(newFOM[1:Nmax-1])
         str_element,/add,s,'NSEGS',long(newNsegs)
         str_element,/add,s,'NBUFFS',long(total(newSEGLENGTHS[1:Nmax-1]))
-        str_element,/add,s,'COMMENT',newCOMMENT[1:Nmax-1]
+        str_element,/add,s,'DISCUSSION',newDISCUSSION[1:Nmax-1]
         ;str_element,/add,s,'ISPENDING',newISPENDING[1:Nmax-1]
         ;update 'mms_sitl_fomstr'
         D = eva_sitl_strct_read(s,tfom[0])

@@ -7,8 +7,8 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-10 14:51:04 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16945 $
+; $LastChangedDate: 2015-02-11 17:26:22 -0800 (Wed, 11 Feb 2015) $
+; $LastChangedRevision: 16961 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
@@ -40,11 +40,11 @@ PRO eva_sitl_FOMedit_event, ev
         segSelect.TE = ev.value
       endif
     end
-    wid.txtComment: begin
-      widget_control, ev.id, GET_VALUE=new_comment;get new comment
-      segSelect.COMMENT = new_comment[0]
-      comlen = strtrim(string(strlen(new_comment[0])),2)
-      widget_control, wid.lblComment, SET_VALUE='COMMENT: '+comlen+' characters (max 256)' 
+    wid.txtDiscussion: begin
+      widget_control, ev.id, GET_VALUE=new_discussion;get new discussion
+      segSelect.DISCUSSION = new_discussion[0]
+      comlen = string(strlen(new_discussion[0]),format='(I4)')
+      widget_control, wid.lblDiscussion, SET_VALUE='COMMENT: '+comlen+wid.DISLEN 
       end
     wid.btnSave: begin
       log.o,'***** EVENT: btnSave *****'
@@ -81,6 +81,7 @@ PRO eva_sitl_FOMedit, state, segSelect
   drag            = 1   ; use drag keyword for sliders?
   fom_min_value   = 2.0  ; min allowable value of FOM
   fom_max_value   = 255.0 ; max allowable value of FOM
+  dislen          = ' characters (max 250)'; label for the Discussion Text Field
   ;////////////////////////////////////
 
   ; initialize
@@ -93,7 +94,7 @@ PRO eva_sitl_FOMedit, state, segSelect
   start_max_value = Ts+dTh < Tc
   stop_min_value  = Te-dTh > Tc
   stop_max_value  = Te+dTh
-  wid = {STATE:state, segSelect:segSelect, SCROLL:scroll, OLD_GRAPHICS:old_graphics, $
+  wid = {STATE:state, segSelect:segSelect, SCROLL:scroll, OLD_GRAPHICS:old_graphics, DISLEN:dislen, $
     START_MIN_VALUE: start_min_value, STOP_MIN_VALUE: stop_min_value, FOM_MIN_VALUE: fom_min_value, $
     START_MAX_VALUE: start_max_value, STOP_MAX_VALUE: stop_max_value, FOM_MAX_VALUE: fom_max_value }
     
@@ -106,9 +107,9 @@ PRO eva_sitl_FOMedit, state, segSelect
     MAX_VALUE=start_max_value, MIN_VALUE=start_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
   str_element,/add,wid,'ssStop',sliding_spinner(base,LABEL='STOP',VALUE=time_string(Te),/time,$
     MAX_VALUE=stop_max_value, MIN_VALUE=stop_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
-  comlen = strtrim(string(strlen(segSelect.COMMENT)),2)
-  str_element,/add,wid,'lblComment',widget_label(base,VALUE='COMMENT: '+comlen+' characters (max 256)')
-  str_element,/add,wid,'txtComment',widget_text(base,VALUE=segSelect.COMMENT,/all_events,/editable)
+  comlen = string(strlen(segSelect.DISCUSSION), format='(I4)')
+  str_element,/add,wid,'lblDiscussion',widget_label(base,VALUE='COMMENT: '+comlen+wid.DISLEN)
+  str_element,/add,wid,'txtDiscussion',widget_text(base,VALUE=segSelect.DISCUSSION,/all_events,/editable)
   
   baseDeci = widget_base(base,/ROW)
   str_element,/add,wid,'btnSave',widget_button(baseDeci,VALUE='Save',ACCELERATOR = "Return")

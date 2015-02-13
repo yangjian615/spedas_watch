@@ -16,8 +16,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 14:33:00 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16924 $
+; $LastChangedDate: 2015-02-11 12:09:42 -0800 (Wed, 11 Feb 2015) $
+; $LastChangedRevision: 16953 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -36,7 +36,7 @@ pro mvn_swe_sundir, trange, dt=dt, pans=pans
   endif
   tmin = min(time_double(trange), max=tmax)
 
-  mk = spice_test('*')
+  mk = spice_test('*', verbose=-1)
   indx = where(mk ne '', count)
   if (count eq 0) then mvn_swe_spice_init, trange=[tmin,tmax]
 

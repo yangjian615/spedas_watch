@@ -10,9 +10,9 @@ FUNCTION eva_sitl_text_selection, unix_FOMstr, email=email
     stime = time_string(unix_FOMstr.TIMESTAMPS[unix_FOMstr.START[n]])
     etime = time_string(unix_FOMstr.TIMESTAMPS[unix_FOMstr.STOP[n]])
     str_fom = strtrim(string(unix_FOMstr.FOM[n],format='(F5.1)'),2)
-    comment = unix_FOMstr.COMMENT[n]
+    discussion = unix_FOMstr.DISCUSSION[n]
     srcID   = unix_FOMstr.SOURCEID[n]
-    msg = [msg,stime+' - '+etime+', '+str_fom+', '+srcID+', '+comment]
+    msg = [msg,stime+' - '+etime+', '+str_fom+', '+srcID+', '+discussion]
   endfor
 
   return, msg

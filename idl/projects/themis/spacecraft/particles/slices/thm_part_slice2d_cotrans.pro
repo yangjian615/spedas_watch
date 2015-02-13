@@ -32,8 +32,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-02-26 18:49:55 -0800 (Wed, 26 Feb 2014) $
-;$LastChangedRevision: 14451 $
+;$LastChangedDate: 2015-02-11 17:56:52 -0800 (Wed, 11 Feb 2015) $
+;$LastChangedRevision: 16963 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_cotrans.pro $
 ;
 ;-
@@ -89,12 +89,13 @@ pro thm_part_slice2d_cotrans, probe=probe, coord=coord, trange=trange, $
     return
   endif
   
-  matrix = transpose(ctd.y)
+  ;columns are dsl x,y,z in new coordinates
+  matrix = ctd.y
 
 
   ;Transform particle and support vectors 
   ; -transformation will be applied to particle vectors later
-  ;  if using geometric method (type=0)
+  ;  if using geometric method (no "vectors" array)
   if keyword_set(vectors) then vectors = matrix ## temporary(vectors)
   if keyword_set(vbulk) then vbulk = matrix ## vbulk
   if keyword_set(bfield) then bfield = matrix ## bfield

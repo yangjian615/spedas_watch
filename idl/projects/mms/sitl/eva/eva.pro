@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-10 14:51:04 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16945 $
+; $LastChangedDate: 2015-02-11 17:26:22 -0800 (Wed, 11 Feb 2015) $
+; $LastChangedRevision: 16961 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -105,8 +105,6 @@ PRO eva
   ; menu
   mnFile = widget_button(mbar, VALUE='File', /menu)
   str_element,/add,wid,'mnPref',widget_button(mnFile,VALUE='Preference')
-  str_element,/add,wid,'mnImport',widget_button(mnFile,VALUE='Import SITL')
-  str_element,/add,wid,'mnExport',widget_button(mnFile,VALUE='Export SITL')
   str_element,/add,wid,'exit',widget_button(mnFile,VALUE='Exit',/separator)
   ;    mnPref = widget_button(mbar, VALUE='Preference',/menu)
   ;      str_element,/add,wid,'mnPref_path',widget_button(mnPref,VALUE='Path',/checked_menu)

@@ -50,8 +50,12 @@ PRO eva_sitl_highlight, left_edges, right_edges, data, $
     
     if keyword_set(rehighlight) then begin
       polyfill, old_polygonx, old_polygony, color=color, /norm
+      plots,[old_polygonx[0],old_polygonx[0]],[0.0,1.0],color=color,/norm
+      plots,[old_polygonx[2],old_polygonx[2]],[0.0,1.0],color=color,/norm
     endif
     polyfill, [x0,x0,x1,x1],[y0,y1,y1,y0],color=color, /norm
+    plots,[x0,x0],[0.0,1.0],color=color,/norm
+    plots,[x1,x1],[0.0,1.0],color=color,/norm
     old_polygonx = [x0,x0,x1,x1]
     old_polygony = [y0,y1,y1,y0]
     old_tstart = ts
