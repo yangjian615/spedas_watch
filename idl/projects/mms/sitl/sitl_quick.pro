@@ -9,7 +9,7 @@
 ;
 ; INPUT:
 ;   Prepare an input ASCII file which contains a list of
-;   startime, endtime, FOM value, and comment (required for overriding
+;   startime, endtime, FOM value, and discussion (required for overriding
 ;   warning) of desired segments.(There should be 3 or 4 columns,
 ;   each delimited by space.)
 ;
@@ -22,8 +22,8 @@
 ; CREATED BY: Mitsuo Oka   Feb 2015
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-10 10:17:52 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16940 $
+; $LastChangedDate: 2015-02-12 12:57:25 -0800 (Thu, 12 Feb 2015) $
+; $LastChangedRevision: 16969 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_quick.pro $
 Function sitl_quick_template
   anan = fltarr(1) & anan[0] = 'NaN'
@@ -34,7 +34,7 @@ Function sitl_quick_template
     COMMENTSYMBOL:';', $
     FIELDCOUNT:4L, $
     FIELDTYPES:[7L, 7L, 4L, 7L], $
-    FIELDNAMES:['str_stime','str_etime','fom','comment'], $
+    FIELDNAMES:['str_stime','str_etime','fom','discussion'], $
     FIELDLOCATIONS:[0L,17L,35L,39L],$
     FIELDGROUPS:[0L,1L,2L,3L]}
   return, ppp
@@ -95,7 +95,7 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
   STOP = dblarr(NSEGS)
   for n=0,NSEGS-1 do begin
     strFOM = string(r.FOM[n],format='(F5.1)')
-    print, r.STR_STIME[n], ' - ', r.STR_ETIME[n], ', FOM=',strFOM,', ',strtrim(r.COMMENT[n],2)
+    print, r.STR_STIME[n], ' - ', r.STR_ETIME[n], ', FOM=',strFOM,', ',strtrim(r.DISCUSSION[n],2)
     stime = str2time(r.STR_STIME[n])
     etime = str2time(r.STR_ETIME[n])
     rs = min(abs(unix_FOMstr.TIMESTAMPS-stime), ids)
@@ -105,7 +105,7 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
     START[n] = long(ids)
     STOP[n]  = long(ide)
   endfor
-  str_element,/add,unix_FOMstr,'COMMENT', r.COMMENT
+  str_element,/add,unix_FOMstr,'DISCUSSION', r.DISCUSSION
   str_element,/add,unix_FOMstr,'FOM', r.FOM
   str_element,/add,unix_FOMstr,'NBUFFS',total(SEGLENGTHS)
   str_element,/add,unix_FOMstr,'NSEGS',NSEGS
@@ -162,7 +162,7 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
       tidx = *(orange_warning_indices[c])
       nmax = n_elements(tstr)
       for n=0,nmax-1 do begin
-        cmt = r.COMMENT[tidx[n]]
+        cmt = r.DISCUSSION[tidx[n]]
         if strmatch(cmt,'*NaN*') then begin 
           ow = '' 
         endif else begin 

@@ -219,7 +219,7 @@ function spp_ccsds_decom,buffer             ; buffer should contain bytes for a 
     data:  buffer[0:*], $
     gap : 0b }
 
-  if MET lt 1e5 then begin
+  if MET lt -1e5 then begin
     dprint,dlevel=3,'Invalid MET: ',MET,' For packet type: ',ccsds.apid
     ccsds.time = !values.d_nan
   endif

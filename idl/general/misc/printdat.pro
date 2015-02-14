@@ -14,7 +14,7 @@
 ;   WIDTH:   Width of screen (Default is 120).
 ;   MAX:     Maximum number of array elements to print.  (default is 30)
 ;   NSTRMAX  Maximum number of structure elements to print. (default is 3)
-;   NPTRMAX  Maximum number of structure elements to print. (default is 5)
+;   NPTRMAX  Maximum number of pointer elements to print. (default is 5)
 ;   OUTPUT=string :  named variable in which the output is dumped.
 ;   VARNAME=string : [optional] name of variable to be displayed. (useful if input is an expression instead of a variable)
 ;   RECURSEMAX = integer :  Maximum number of levels to dive into. (Useful for limiting the output for heavily nested structures or pointers)
@@ -22,8 +22,8 @@
 ;Written by Davin Larson, May 1997.
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-02-02 16:47:06 -0800 (Sun, 02 Feb 2014) $
-; $LastChangedRevision: 14120 $
+; $LastChangedDate: 2015-02-12 10:44:30 -0800 (Thu, 12 Feb 2015) $
+; $LastChangedRevision: 16966 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/printdat.pro $
 ;-
 pro printdat,data,data2,data3,data4,data5,data6,data7,data8,  $
@@ -146,9 +146,11 @@ case dt of
         valstr = strarr(nm)
         for i=0,nm-1 do valstr[i] = string(/print,data[i])
        end
- 11:   begin                                                   ;objects
+ 11:   begin    
+ ;        help,data, output= valstr                                       ;objects  - very difficult to distinguish lists and arrays of lists
+         nm = 1
         valstr = strarr(nm)
-        for i=0,nm-1 do valstr[i] = string(/print,data[i])
+        for i=0,nm-1 do valstr[i] = (string(/print,data[i]))[0]
        end
  else: valstr = strcompress(string(data[0:nm-1],format=opts.iformat),/remove_all)
 endcase

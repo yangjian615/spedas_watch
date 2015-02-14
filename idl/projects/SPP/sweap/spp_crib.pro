@@ -142,6 +142,14 @@ pro spp_set_tplot_options
   store_data,'START_SPEC',data='spp_spanai_rates_START_CNTS',dlimit=struct(spec=1,yrange=[-1,16],zrange=[.5,500],/zlog,ylog=0,/no_interp)
 
   tplot,' *CMD_REC *rate*CNTS *ACC *MCP *events* log_MSG'
+  
+  if 0 then begin
+    options,'spp_spane_spec_CNTS',spec=0,yrange=[1,1000],ylog=1,colors='mbcgdr'
+  endif else begin
+    options,'spp_spane_spec_CNTS',spec=1,yrange=[0,17],ylog=0,zrange=[1,500.],zlog=1
+  endelse
+  
+  
 
 
 end
