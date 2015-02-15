@@ -7,8 +7,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-01-12 09:02:00 -0800 (Mon, 12 Jan 2015) $
-;$LastChangedRevision: 16636 $
+;$LastChangedDate: 2015-02-13 09:42:34 -0800 (Fri, 13 Feb 2015) $
+;$LastChangedRevision: 16978 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_plugin_manager__define.pro $
 ;-
 
@@ -106,6 +106,19 @@ function spd_ui_plugin_manager::getPluginMenus
     endif else return, 0
 end
 
+pro spd_ui_plugin_manager::addDataProcessingPlugin, item, procedure
+    plugin_struct = [{item: item, procedure: procedure}]
+    if ptr_valid(self.data_proc_plugins) eq 1 then begin
+        append_array, (*self.data_proc_plugins), plugin_struct
+    endif else self.data_proc_plugins = ptr_new(plugin_struct)
+end
+
+function spd_ui_plugin_manager::getDataProcessingPlugins
+    if ptr_valid(self.data_proc_plugins) then begin
+        return, *self.data_proc_plugins
+    endif else return, 0
+end
+
 function spd_ui_plugin_manager::parseConfig, filename
     mission_name = ''
     file_template = { VERSION: 1.0, $
@@ -193,6 +206,10 @@ function spd_ui_plugin_manager::init
                 dprint, dlevel = 0, 'Error parsing the configuration file: ' + plugin_files[plugin_idx]
             endif
         endfor
+        
+        ; for testing dproc plugins, needs to be fixed when I update how the plugin developers add plugins
+        self->addDataProcessingPlugin, 'Superposed...', 'spd_ui_superpo_options'
+
     endif
     return, 1
 end
@@ -202,6 +219,7 @@ pro spd_ui_plugin_manager__define
     state = { SPD_UI_PLUGIN_MANAGER, $
         plugin_menus: ptr_new(), $
         plugin_file_config_panels: ptr_new(), $
-        plugin_load_data_panels: ptr_new() $
+        plugin_load_data_panels: ptr_new(), $
+        data_proc_plugins: ptr_new() $
     }
 end

@@ -32,9 +32,9 @@
 ;
 ;HISTORY:
 ; 20-oct-2008, jmm, jimm@ssl.berkeley.edu
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-02-09 13:28:13 -0800 (Mon, 09 Feb 2015) $
-;$LastChangedRevision: 16922 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-02-13 09:42:34 -0800 (Fri, 13 Feb 2015) $
+;$LastChangedRevision: 16978 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_dproc.pro $
 
 
@@ -67,7 +67,6 @@ Function spd_ui_dproc, info, uval, $
                            group_leader = group_leader, ext_statusbar = ext_statusbar, $
                            ptree = ptree
 
-
 ;Initialize output
   otp = 0b
 
@@ -84,7 +83,7 @@ Function spd_ui_dproc, info, uval, $
 
   uv0 = ['subavg', 'submed', 'smooth', 'blkavg', 'clip', 'deflag', $
          'degap', 'spike', 'deriv', 'pwrspc', 'wave', 'hpfilt', $
-         'interpol','split','join']
+         'interpol','split','join', 'plugin']
   uvlong = ['Average subtraction', 'Median subtraction', $
             'Time smoothing', 'Block average', 'Clip', 'Deflag', $
             'Degap', 'De-spike', 'Time derivative', $
@@ -102,7 +101,9 @@ Function spd_ui_dproc, info, uval, $
     Return, otp
   Endif
 
-  uv = strcompress(/remove_all, strlowcase(uval))
+  ; updated, 1/28/15, with the ability for data processing plugins to pass 
+  ; additional information via semicolon separated values
+  uv = strcompress(/remove_all, strlowcase((strsplit(uval, ';', /extract))[0]))
 
 ;This is not likely to happen, either
   is_possible = where(uv0 Eq uv)
@@ -126,9 +127,19 @@ Function spd_ui_dproc, info, uval, $
   endif
 
   If(keyword_set(group_leader)) Then guiid = group_leader[0] Else guiid = info.master
-;Long case statement
-
+  
+  ;Long case statement
   Case uv Of
+    'plugin': begin
+        plugin_routine_name = strcompress(/remove_all, strlowcase((strsplit(uval, ';', /extract))[1]))
+        ; open the plugin dialog
+        values = call_function(plugin_routine_name, guiid, sbar, info.historywin)
+        
+        if values.ok then begin
+          ; user pressed OK in the plugin dialog
+          otp = call_dproc(uv, values, hwin=info.historyWin, sbar=sbar, call_sequence=call_sequence, loadedData=info.loadedData, gui_id=guiid)
+        endif
+    end
     'split':begin
       otp = call_dproc(uv, hwin=info.historyWin,sbar=sbar,call_sequence=call_sequence,loadedData=info.loadedData, gui_id=guiid)
     end

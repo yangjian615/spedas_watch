@@ -74,16 +74,17 @@ pro mvn_sta_ephemeris_load,frame=frame,verbose=verbose
                    tt eq 'QUAT_MSO',nn2)
         if nn2 eq 3 then begin
            temp=execute('utc=time_string(mvn_'+apid[api]+'_dat.time)')
-           cspice_str2et, utc,et
+           ;cspice_str2et, utc,et
            pos=spice_body_pos('MAVEN','MARS',frame='MSO',$
                               utc=utc,check_objects='MAVEN_SPACECRAFT') 
            quat_sc =spice_body_att('MAVEN_STATIC','MAVEN_SPACECRAFT',$
                                    utc,/quaternion,check_objects='MAVEN_SPACECRAFT') 
            quat_mso=spice_body_att('MAVEN_STATIC','MAVEN_MSO',$
                                    utc,/quaternion,check_objects='MAVEN_SPACECRAFT') 
-           temp=execute('mvn_'+apid[api]+'_dat.QUAT_SC=quat_sc')
-           temp=execute('mvn_'+apid[api]+'_dat.QUAT_MSO=quat_mso')
-           temp=execute('mvn_'+apid[api]+'_dat.POS_SC_MSO=pos')
+           temp1=execute('mvn_'+apid[api]+'_dat.QUAT_SC    = transpose(quat_sc)')
+           temp2=execute('mvn_'+apid[api]+'_dat.QUAT_MSO   = transpose(quat_mso)')
+           temp3=execute('mvn_'+apid[api]+'_dat.POS_SC_MSO = transpose(pos)')
+           if temp1 eq 0 or temp2 eq 0 or temp3 eq 0 then stop, 'Wrong array dimensions.'
         endif
      endif
   endfor

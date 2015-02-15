@@ -45,8 +45,7 @@
 ;-
 
 
-pro superpo_histo, quantities,res=res,min=min,max=max,dif=dif,avg=avg,med=med
-
+pro superpo_histo, quantities,res=res,min=min,max=max,dif=dif,avg=avg,med=med,extra=_extra ;, _ref_extra = _ref_extra
 
 ;#######################################################
 ;               initialize variables
@@ -86,7 +85,7 @@ size_y=0.0
 size_r=0.0
 for s=0,n_name_array-1 do begin
 ; iterates through all input quantities (e.g., ground stations)
-	get_data,name_array(s),data=temp
+	get_data,name_array[s],data=temp
 	dummy=histogram(temp.x,min=min_t,max=max_t,binsize=res,reverse_indices=r)
 	n1 = n_elements(temp.y)
 	n2 = n_elements(r)
@@ -99,7 +98,7 @@ endfor
 values=fltarr(n_name_array,size_y)
 r_index=fltarr(n_name_array,size_r)
 for s=0,n_name_array-1 do begin
-	get_data,name_array(s),data=temp
+	get_data,name_array[s],data=temp
 	dummy=histogram(temp.x,min=min_t,max=max_t,binsize=res,reverse_indices=r)
 	l1=n_elements(temp.y)
 	l2=n_elements(r)
@@ -127,7 +126,7 @@ t = min_t+res*dindgen(n_bins) + res/2D
 ;#######################################################
 
 for j=0.0,n_bins-1.0 do begin
-bin_values = [!values.f_nan]
+    bin_values = [!values.f_nan]
 	for s=0,n_name_array-1 do begin
 		if(r_index[s,j] ne r_index[s,j+1]) then begin
 			ss = r_index[s, r_index[s,j]:r_index[s,j+1]-1]  ;subscripts in this time bin
@@ -156,5 +155,6 @@ if keyword_set(max) then store_data,max,data={x:t,y:max_array}
 if keyword_set(dif) then store_data,dif,data={x:t,y:dif_array}
 if keyword_set(avg) then store_data,avg,data={x:t,y:avg_array}
 if keyword_set(med) then store_data,med,data={x:t,y:med_array}
+
 
 end

@@ -89,9 +89,9 @@ end
 ;                   process.
 ; 10-Feb-2009, jmm, Added hwin, sbar keywords
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-02-09 13:27:26 -0800 (Mon, 09 Feb 2015) $
-;$LastChangedRevision: 16921 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-02-13 09:42:34 -0800 (Fri, 13 Feb 2015) $
+;$LastChangedRevision: 16978 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__dproc.pro $
 Function spd_ui_loaded_data::dproc, dp_task, dp_pars,callSequence=callSequence,replay=replay,in_vars=in_vars, names_out = names_out, $
                            no_setactive = no_setactive, hwin = hwin, sbar = sbar, gui_id = gui_id, $
@@ -184,6 +184,35 @@ For j = 0, nav-1 Do Begin
         nn0 = varname
 ;Now process the data
         Case dpt Of
+            'plugin': begin
+                if ~tag_exist(dp_pars, 'dproc_routine') then begin
+                    dprint, dlevel = 0, 'Error, the dproc_routine tag must be set in the structure returned by the plugin window.'
+                    return, -1
+                endif
+                
+                if ~tag_exist(dp_pars, 'keywords') then begin
+                    dprint, dlevel = 0, 'Error, the keywords structure must be set in the structure returned by the plugin window.'
+                    return, -1
+                endif
+                
+                ; get the keywords
+                dproc_keywords = dp_pars.keywords
+                
+                ; get a list of the current tplot names
+                tn_list_before = tnames()
+                
+                if tag_exist(dp_pars, 'process_all_vars_at_once') && dp_pars.process_all_vars_at_once eq 1 then begin
+                    ; wait until we're at the last active variable, then process all variables at once
+                    if j eq nav-1 then begin
+                        call_procedure, dp_pars.dproc_routine, active_v, _extra = dproc_keywords
+                    endif
+                endif else begin
+                    ; process one active variable at a time
+                    call_procedure, dp_pars.dproc_routine, active_v, _extra = dproc_keywords
+                endelse
+                tn_list_after = tnames()
+                nn = ssl_set_complement([tn_list_before], [tn_list_after])
+            end
             'split': Begin
                 split_vec, varname, names_out = nn, inset='_split', display_object=display_object
             End

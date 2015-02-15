@@ -64,9 +64,12 @@
 ;
 ;       MASK_SC:       Mask solid angle bins that are blocked by the spacecraft.
 ;
+;       PLOT_SC:       Draw an outline of the spacecraft as seen from SWEA on 
+;                      the 3D plot.  EXPERIMENTAL - Still debugging.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-10 21:41:01 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16947 $
+; $LastChangedDate: 2015-02-13 13:15:54 -0800 (Fri, 13 Feb 2015) $
+; $LastChangedRevision: 16986 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -75,7 +78,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  center=center, units=units, ddd=ddd, sum=sum, padmag=padmag, $
                  energy=energy, label=label, smo=smo, symdir=symdir, sundir=sundir, $
                  symenergy=symenergy, symdiag=symdiag, power=pow, map=map, $
-                 abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst
+                 abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst, $
+                 plot_sc=plot_sc
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -92,6 +96,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   endif else obins = byte(obins # [1B,1B])
   if (size(mask_sc,/type) eq 0) then mask_sc = 1
   if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+  if keyword_set(plot_sc) then plot_sc = 1 else plot_sc = 0
 
   omask = replicate(1.,96,2)
   indx = where(obins eq 0B, count)
@@ -312,6 +317,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
           !p.multi = 0
         endif
       endif
+      
+      if (plot_sc) then mvn_spc_fov_blockage, /swea, /oplot, clr=6
 
       if (sflg) then begin
         wset, Swin

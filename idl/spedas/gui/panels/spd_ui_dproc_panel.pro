@@ -19,8 +19,8 @@
 ; 21-nov-2008, jmm, jimm@ssl.berkeley.edu
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-03-05 08:35:38 -0800 (Wed, 05 Mar 2014) $
-;$LastChangedRevision: 14498 $
+;$LastChangedDate: 2015-02-13 09:56:57 -0800 (Fri, 13 Feb 2015) $
+;$LastChangedRevision: 16980 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_dproc_panel.pro $
 ;-
 
@@ -129,7 +129,6 @@ SPL = strsplit(uval, ':', /extract)
 
 ;Handle most data processing options
 If(spl[0] Eq 'PROC') Then Begin
-
     ptree = ptr_new(state.treeobj->getcopy())
     otp = spd_ui_dproc(state.info, spl[1], ext_statusbar = sobj, $ 
                            group_leader = state.master, ptree = ptree)
@@ -385,6 +384,16 @@ splitMenu = Widget_Button(analysisMenu, Value='Split Variable', UValue='PROC:SPL
                          tooltip = 'Splits a variable into its different componenets (e.g. _x,_y,_z)')
 joinMenu = Widget_Button(analysisMenu, Value='Join Variables...', UValue='PROC:JOIN', $
                          tooltip = 'Joins similar variables into one. To be used after splitting.')
+
+valid_plugins = info.pluginManager->getDataProcessingPlugins()
+
+pluginsMenu = Widget_Button(analysisMenu, value='More...', UValue='PROC:PLUGIN', $
+                            tooltip='More data processing options...', /menu)
+
+plugin_menus = lonarr(n_elements(valid_plugins))
+for i = 0, n_elements(plugin_menus)-1 do $
+    plugin_menus[i] = Widget_Button(pluginsMenu, value=valid_plugins[i].item, uvalue='PROC:PLUGIN;'+valid_plugins[i].procedure)
+    
 
 ;getspecMenu = Widget_Button(analysisMenu, Value='Get Particle Spectra...', UValue='PARTSPEC', $
 ;                            tooltip = 'Angular and/or energy spectra for ESA, SST')

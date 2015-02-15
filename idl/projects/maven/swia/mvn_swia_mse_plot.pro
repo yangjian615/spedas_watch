@@ -24,6 +24,8 @@
 ;	QNORM: Quantity to normalize plots by
 ;	QFILT: Quantity to filter plots by
 ;	QRANGE: Range of quantity to filter plots by
+;	QF2: Second quantity to filter plots by
+;	QR2: Range of second quantity to filter plots by
 ;	PLOTNORM: Plot histogram of event density (only works for scalar)
 ;	STDDEV: Plot standard deviation instead of average (only works for scalar)
 ;	ABERR: Aberrate both upstream velocity and plotted quantities
@@ -31,13 +33,13 @@
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-02-02 17:59:04 -0800 (Mon, 02 Feb 2015) $
-; $LastChangedRevision: 16839 $
+; $LastChangedDate: 2015-02-13 11:12:57 -0800 (Fri, 13 Feb 2015) $
+; $LastChangedRevision: 16981 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
 
-pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm, plotnorm = plotnorm, stddev = stddev, aberr = aberr, vdata = vdata
+pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm, plotnorm = plotnorm, stddev = stddev, aberr = aberr, vdata = vdata, qf2 = qf2, qr2 = qr2
 
 
 RM = 3397.
@@ -75,7 +77,8 @@ get_data,pdata,data = pos
 get_data,idata,data = imf
 get_data,sdata,data = plot
 if keyword_set(qnorm) then get_data,qnorm,data = qn
-if keyword_set(qfilt) then get_data,qfilt,data = qf
+if keyword_set(qfilt) then get_data,qfilt,data = qfd
+if keyword_set(qf2) then get_data,qf2,data = qfd2
 
 w = where(plot.x ge tr[0] and plot.x le tr[1],nel)
 
@@ -161,9 +164,26 @@ if keyword_set(qnorm) then begin
 endif
 
 if keyword_set(qfilt) then begin
-	uqf = interpol(qf.y,qf.x,time)
+	uqf = interpol(qfd.y,qfd.x,time)
 	if not keyword_set(qrange) then qrange = [min(uqf),max(uqf)]
 	w = where(uqf ge qrange[0] and uqf le qrange[1],nel)
+	if ptype eq 'vector' then begin
+		pqx = pqx[w]
+		pqy = pqy[w]
+		pqz = pqz[w]
+	endif
+	pq = pq[w]
+
+	xmse = xmse[w]
+	ymse = ymse[w]
+	zmse = zmse[w]
+	time = time[w]
+endif
+
+if keyword_set(qf2) then begin
+	uqf = interpol(qfd2.y,qfd2.x,time)
+	if not keyword_set(qr2) then qr2 = [min(uqf),max(uqf)]
+	w = where(uqf ge qr2[0] and uqf le qr2[1],nel)
 	if ptype eq 'vector' then begin
 		pqx = pqx[w]
 		pqy = pqy[w]
