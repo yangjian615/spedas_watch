@@ -33,13 +33,13 @@
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-02-13 11:12:57 -0800 (Fri, 13 Feb 2015) $
-; $LastChangedRevision: 16981 $
+; $LastChangedDate: 2015-02-17 05:51:40 -0800 (Tue, 17 Feb 2015) $
+; $LastChangedRevision: 16989 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
 
-pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm, plotnorm = plotnorm, stddev = stddev, aberr = aberr, vdata = vdata, qf2 = qf2, qr2 = qr2
+pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange, pdata = pdata, idata = idata, sdata = sdata, sindex = sindex, nbx = nbx, nby = nby, nbz = nbz, prange = prange, len = len, plog = plog, qrange = qrange, qfilt = qfilt, qnorm = qnorm, plotnorm = plotnorm, stddev = stddev, aberr = aberr, vdata = vdata, qf2 = qf2, qr2 = qr2, binxy, binxz, binyz, bincyl
 
 
 RM = 3397.

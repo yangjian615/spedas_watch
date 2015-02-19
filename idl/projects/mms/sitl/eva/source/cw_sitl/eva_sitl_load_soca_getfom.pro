@@ -18,7 +18,7 @@ Function eva_sitl_load_soca_getfom, CACHE_DATA_DIR, parent
     log.o,'fom_file = '+fom_file
     nmax = unix_FOMStr.Nsegs
     discussion = strarr(nmax)
-    discussion[0:nmax-1] = ''
+    discussion[0:nmax-1] = ' '
     str_element,/add,unix_FOMStr,'discussion',discussion
     
     ;//////////////////////////////////////

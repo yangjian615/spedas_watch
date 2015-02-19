@@ -236,8 +236,9 @@ FUNCTION eva_data_event, ev
   
   catch, error_status
   if error_status ne 0 then begin
-    eva_error_message, error_status
     catch, /cancel
+    eva_error_message, error_status
+    message, /reset
     return, {ID:ev.handler, TOP:ev.top, HANDLER:0L }
   endif
 
@@ -263,9 +264,9 @@ FUNCTION eva_data_event, ev
     end
     state.calStartTime: begin
       log.o,'***** EVENT: calStartTime *****'
-      otime = obj_new('thm_ui_time')
+      otime = obj_new('spd_ui_time')
       otime->SetProperty,tstring=state.start_time
-      thm_ui_calendar,'EVA Calendar',otime,ev.top
+      spd_ui_calendar,'EVA Calendar',otime,ev.top
       otime->GetProperty,tstring=tstring         ; get tstring
       str_element,/add,state,'start_time',tstring; put tstring into state structure
       widget_control, state.fldStartTime, SET_VALUE=state.start_time; update GUI field
@@ -274,9 +275,9 @@ FUNCTION eva_data_event, ev
     end
     state.calEndTime: begin
       log.o,'***** EVENT: calEndTime *****'
-      otime = obj_new('thm_ui_time')
+      otime = obj_new('spd_ui_time')
       otime->SetProperty,tstring=state.end_time
-      thm_ui_calendar,'EVA Calendar',otime,ev.top
+      spd_ui_calendar,'EVA Calendar',otime,ev.top
       otime->GetProperty,tstring=tstring
       str_element,/add,state,'end_time',tstring
       widget_control, state.fldEndTime, SET_VALUE=state.end_time
@@ -284,9 +285,9 @@ FUNCTION eva_data_event, ev
       obj_destroy, otime
     end
     ;    state.btnCal: begin
-    ;      otime = obj_new('thm_ui_time')
+    ;      otime = obj_new('spd_ui_time')
     ;      otime->SetProperty,tstring=state.eventdate
-    ;      thm_ui_calendar,'EVA Calendar',otime,ev.top
+    ;      spd_ui_calendar,'EVA Calendar',otime,ev.top
     ;      otime->GetProperty,tstring=tstring
     ;      str_element,/add,state,'eventdate',strmid(tstring,0,10)
     ;      widget_control, state.fldDate, SET_VALUE=state.eventdate
@@ -433,7 +434,7 @@ FUNCTION eva_data, parent, $
     XSIZE = xsize, YSIZE = ysize)
   str_element,/add,state,'mainbase',mainbase
   
-  baseInit = widget_base(mainbase,/row)
+  baseInit = widget_base(mainbase,/row, SPACE=0, YPAD=0)
   str_element,/add,state,'btnLogin',widget_button(baseInit,VALUE=' Log-in to MMS SOC ')
   
   ; calendar icon
@@ -441,7 +442,7 @@ FUNCTION eva_data, parent, $
   cal = read_bmp(rpath + 'cal.bmp', /rgb)
   spd_ui_match_background, parent, cal; thm_ui_match_background
   
-  baseStartTime = widget_base(mainbase,/row)
+  baseStartTime = widget_base(mainbase,/row, SPACE=0, YPAD=0)
   lblStartTime = widget_label(baseStartTime,VALUE='Start Time',/align_left,xsize=70)
   str_element,/add,state,'fldStartTime',cw_field(baseStartTime,VALUE=state.start_time,TITLE='',/ALL_EVENTS,XSIZE=24)
   str_element,/add,state,'calStartTime',widget_button(baseStartTime,VALUE=cal)
@@ -473,12 +474,13 @@ FUNCTION eva_data, parent, $
   ;      str_element,/add,state,'lblUnit',widget_label(baseDateDur2,VALUE='Day')
   
   
-  subbase = widget_base(mainbase,/row,/frame)
+  subbase = widget_base(mainbase,/row,/frame, space=0, ypad=0)
     str_element,/add,state,'bgTHM',cw_bgroup(subbase, ProbeNamesTHM, /COLUMN, /NONEXCLUSIVE,$
       SET_VALUE=[1,0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
     str_element,/add,state,'bgMMS',cw_bgroup(subbase, ProbeNamesMMS, /COLUMN, /NONEXCLUSIVE,$
       SET_VALUE=[0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
-    bsCtrl = widget_base(subbase, /COLUMN,/align_center)
+    bsCtrl = widget_base(subbase, /COLUMN,/align_center, space=0, ypad=0)
+      str_element,/add,state,'lblPS',widget_label(bsCtrl,VALUE='Parameter Set')
       str_element,/add,state,'drpSet',widget_droplist(bsCtrl,VALUE=state.paramSetList,$
         TITLE='')
       str_element,/add,state,'bgOPOD',cw_bgroup(bsCtrl,'separate windows', /NONEXCLUSIVE,$

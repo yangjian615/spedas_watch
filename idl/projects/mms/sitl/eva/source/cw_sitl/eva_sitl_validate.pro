@@ -18,7 +18,7 @@ FUNCTION eva_sitl_validate_msg, title, flags, msg, times, indices
   return, result
 END
 
-FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header
+FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, quiet=quiet
   
   ;---------------------
   ; Validation by Rick
@@ -54,7 +54,9 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header
     ex = '####################'
     msg = [msg, ex,' No error/warning',ex]
   endif 
-  xdisplayfile,'dummy',done='Close',group=tlb,text=msg, title='VALIDATION',/grow_to_screen
+  if ~keyword_set(quiet) then begin 
+    xdisplayfile,'dummy',done='Close',group=tlb,text=msg, title='VALIDATION',/grow_to_screen
+  endif
   result = {error:error, orange:orange, yellow:yellow}
   return, result
 END

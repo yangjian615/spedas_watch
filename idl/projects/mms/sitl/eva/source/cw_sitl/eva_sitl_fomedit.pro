@@ -7,8 +7,8 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-11 17:26:22 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16961 $
+; $LastChangedDate: 2015-02-17 22:38:35 -0800 (Tue, 17 Feb 2015) $
+; $LastChangedRevision: 16996 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
@@ -31,12 +31,18 @@ PRO eva_sitl_FOMedit_event, ev
     wid.ssStart: begin
       if (ev.type eq 0) or (ev.type eq 4) then begin
         if ev.type eq 4 then widget_control,wid.ssStart, SET_VALUE=time_string(ev.value)
+        len = (segSelect.Te-ev.value)/10.d0
+        txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
+        widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
         segSelect.TS = ev.value
       endif
     end
     wid.ssStop: begin
       if (ev.type eq 0) or (ev.type eq 4) then begin
         if ev.type eq 4 then widget_control,wid.ssStop, SET_VALUE=time_string(ev.value)
+        len = (ev.value-segSelect.Ts)/10.d0
+        txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
+        widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
         segSelect.TE = ev.value
       endif
     end
@@ -94,15 +100,17 @@ PRO eva_sitl_FOMedit, state, segSelect
   start_max_value = Ts+dTh < Tc
   stop_min_value  = Te-dTh > Tc
   stop_max_value  = Te+dTh
+  len = (Te-Ts)/10.d0
   wid = {STATE:state, segSelect:segSelect, SCROLL:scroll, OLD_GRAPHICS:old_graphics, DISLEN:dislen, $
     START_MIN_VALUE: start_min_value, STOP_MIN_VALUE: stop_min_value, FOM_MIN_VALUE: fom_min_value, $
     START_MAX_VALUE: start_max_value, STOP_MAX_VALUE: stop_max_value, FOM_MAX_VALUE: fom_max_value }
-    
   ; widget layout
   sensitive = (segSelect.BAK eq 0)
   base = widget_base(TITLE='Edit FOM',/column);,/modal,group_leader=group_leader)
   str_element,/add,wid,'ssFOM',sliding_spinner(base,LABEL='FOM',VALUE=strtrim(string(segSelect.FOM),2),$
     MAX_VALUE=255, MIN_VALUE=0, DRAG=drag, XLABELSIZE=40)
+  txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
+  str_element,/add,wid,'lblBuffs',widget_label(base,VALUE=txtbuffs)
   str_element,/add,wid,'ssStart',sliding_spinner(base,LABEL='START',VALUE=time_string(Ts),/time,$
     MAX_VALUE=start_max_value, MIN_VALUE=start_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
   str_element,/add,wid,'ssStop',sliding_spinner(base,LABEL='STOP',VALUE=time_string(Te),/time,$

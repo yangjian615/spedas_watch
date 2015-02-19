@@ -43,7 +43,7 @@ PRO eva_sitl_submit_FOMStr, tlb
   if not found then file_mkdir, local_dir
   
   ;////////////////////////
-  TESTING = 1
+  TESTING = 0
   ;////////////////////////
   
   if TESTING then begin

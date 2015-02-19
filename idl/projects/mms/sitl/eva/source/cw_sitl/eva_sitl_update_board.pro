@@ -61,7 +61,6 @@ PRO eva_sitl_update_board, state, activate
     
     
     oBackStr = obj_new('IDLgrText','Back Structure Mode',FONT=myfontL,COLOR=cred,  LOCATION=[x0,yB1])
-    ;oBackStr = obj_new('IDLgrText','Back Structure Mode',FONT=myfontL,COLOR=cred,  LOCATION=convert_coord(x0,yB1, /NORMAL, /TO_DATA))
     myviewB->Add, mymodel3
     mymodel3 ->Add, oBackStr
 
@@ -81,13 +80,6 @@ PRO eva_sitl_update_board, state, activate
     oMinu    = obj_new('IDLgrText','min',FONT=myfont,COLOR=cwindow,    LOCATION=[x0,yB3])
     oErr     = obj_new('IDLgrText','err',FONT=myfont,COLOR=cwindow,    LOCATION=[x0,yB4])
 
-;    oTime    = obj_new('IDLgrText','time',FONT=myfont,COLOR=cwindow,   LOCATION=convert_coord(x0,y1-dy, /NORMAL, /TO_DATA))
-;    oTimeCtdn= obj_new('IDLgrText','remaining',FONT=myfont,COLOR=cwindow,LOCATION=convert_coord(x0,y1-2*dy, /NORMAL, /TO_DATA))
-;    oNsegs   = obj_new('IDLgrText','Segs',FONT=myfontL,COLOR=cwindow,  LOCATION=convert_coord(x0,yB1, /NORMAL, /TO_DATA))
-;    oNBuffs  = obj_new('IDLgrText','NBuffs',FONT=myfontL,COLOR=cwindow,LOCATION=convert_coord(x0,yB2, /NORMAL, /TO_DATA))
-;    oMinu    = obj_new('IDLgrText','min',FONT=myfont,COLOR=cwindow,    LOCATION=convert_coord(x0,yB3, /NORMAL, /TO_DATA))
-;    oErr     = obj_new('IDLgrText','err',FONT=myfont,COLOR=cwindow,    LOCATION=convert_coord(x0,yB4, /NORMAL, /TO_DATA))
-    
     myview ->Add, mymodel
     myview ->Add, mymodel2
 
@@ -101,9 +93,7 @@ PRO eva_sitl_update_board, state, activate
     
     ; color bar (level 2)
     crd = [xL,yL2-dy]
-    ;crd = convert_coord(xL,yL2-dy,/normal,/to_data)
-    oL2_Label = obj_new('IDLgrText','Warning',FONT=myfont,COLOR=cwindow,LOCATION=[xL,yL2])
-    ;oL2_Label = obj_new('IDLgrText','Warning',FONT=myfont,COLOR=cwindow,LOCATION=convert_coord(xL,yL2,/normal,/to_data))
+    oL2_Label = obj_new('IDLgrText','Max',FONT=myfont,COLOR=cwindow,LOCATION=[xL,yL2])
     oL2_Number = obj_new('IDLgrText','XX',FONT=myfont,COLOR=cwindow,LOCATION=crd)
     oL2_Line = OBJ_NEW('IDLgrPlot', [0,0],[0,0], COLOR=cwindow)
     mymodel ->Add,oL2_Label
@@ -111,10 +101,8 @@ PRO eva_sitl_update_board, state, activate
     mymodel ->Add,oL2_Line
     
     ; color bar (level 1)
-    oL1_Label = obj_new('IDLgrText','Redundant',FONT=myfont,COLOR=cwindow,LOCATION=[xL,yL1])
-    ;oL1_Label = obj_new('IDLgrText','Redundant',FONT=myfont,COLOR=cwindow,LOCATION=convert_coord(xL,yL1,/normal,/to_data))
+    oL1_Label = obj_new('IDLgrText','Warning',FONT=myfont,COLOR=cwindow,LOCATION=[xL,yL1])
     oL1_Number= obj_new('IDLgrText','XX',FONT=myfont,COLOR=cwindow,LOCATION=[xL,yL1-dy])
-    ;oL1_Number= obj_new('IDLgrText','XX',FONT=myfont,COLOR=cwindow,LOCATION=convert_coord(xL,yL1-dy,/normal,/to_data))
     oL1_Line = OBJ_NEW('IDLgrPlot', [0,0],[0,0], COLOR=cwindow)
     mymodel ->Add,oL1_Label
     mymodel ->Add,oL1_Number
@@ -122,9 +110,7 @@ PRO eva_sitl_update_board, state, activate
     
     ; color bar (level 0)
     oL0_Label = obj_new('IDLgrText','Target',FONT=myfont,COLOR=cwindow,LOCATION=[xL,yL0])
-    ;oL0_Label = obj_new('IDLgrText','Target',FONT=myfont,COLOR=cwindow,LOCATION=convert_coord(xL,yL0,/normal,/to_data))
     oL0_Number= obj_new('IDLgrText','XX',FONT=myfont,COLOR=cwindow,LOCATION=[xL,yL0-dy])
-    ;oL0_Number= obj_new('IDLgrText','XX',FONT=myfont,COLOR=cwindow,LOCATION=convert_coord(xL,yL0-dy,/normal,/to_data))
     oL0_Line = OBJ_NEW('IDLgrPlot', [0,0],[0,0], COLOR=cwindow)
     mymodel ->Add,oL0_Label
     mymodel ->Add,oL0_Number
@@ -179,19 +165,19 @@ PRO eva_sitl_update_board, state, activate
       if NBuffsMax lt f.TargetBuffs then message, "something is wrong with Target Buffers or Buffer Max"
       BuffExtra = NBuffsMax - f.TargetBuffs
       NBuffsTarget    = f.TargetBuffs
-      NBuffsRedundant = f.TargetBuffs + 0.2*BuffExtra
-      NBuffsWarning   = f.TargetBuffs + 0.7*BuffExtra
+      NBuffsWarning   = f.TargetBuffs + 0.2*BuffExtra
+      NBuffsHardLimit = 2100.0;f.TargetBuffs + 0.7*BuffExtra
       
       lvlTarget    = long((255.0/NBuffsMax)*NBuffsTarget)
-      lvlRedundant = long((255.0/NBuffsMax)*NBuffsRedundant)
       lvlWarning   = long((255.0/NBuffsMax)*NBuffsWarning)
+      lvlMax       = long((255.0));/NBuffsMax)*NBuffsMax)
       lvlCurrent   = long((255.0/NBuffsMax)*f.NBuffs) < 255
       
       ; level coloring
       color=cred
-      if f.NBuffs le NBuffsWarning   then color=cyellow
-      if f.NBuffs le NBuffsRedundant then color=cgreen
-      if f.NBuffs le NBuffsTarget    then color=cgreen;cwhite
+      if f.NBuffs le NBuffsMax     then color=cyellow
+      if f.NBuffs le NBuffsWarning then color=cgreen
+      if f.NBuffs le NBuffsTarget  then color=cgreen;cwhite
       redValues[lvlCurrent:255] = 0B
       grnValues[lvlCurrent:255] = 0B
       bluValues[lvlCurrent:255] = 0B
@@ -228,39 +214,33 @@ PRO eva_sitl_update_board, state, activate
       sg.oMinu ->SetProperty,STRING = txt, COLOR=cwhite
       
       ;....................................................... Error Counts
-      ;      mms_convert_fom_unix2tai, lim.unix_FOMStr,    new_tai_fomstr; Modified FOM to be checked
-      ;      mms_convert_fom_unix2tai, limin.unix_FOMStr,  old_tai_fomstr; Original FOM for reference
-      ;      mms_check_fom_structure, new_tai_fomstr, old_tai_fomstr, $
-      ;        error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
-      ;        error_msg,    orange_warning_msg,    yellow_warning_msg,  $; Error Messages
-      ;        error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
-      ;        error_indices,orange_warning_indices,yellow_warning_indices; Error Indices (ptr_arr)
-      ;      loc_error = where(error_flags ne 0, count_error)
-      ;      terr = 0
-      ;      if count_error ne 0 then begin
-      ;        for c=0,count_error-1 do begin; for each error
-      ;          tstr = *(error_times[loc_error[c]]); get the erroneous times as an array
-      ;          terr += n_elements(tstr); count erroneous segments
-      ;        endfor
-      ;      endif
-      ;      ptr_free, error_times, orange_warning_times, yellow_warning_times
-      ;      ptr_free, error_indices, orange_warning_indices, yellow_warning_indices
+      if state.PREF.ENABLE_ADVANCED then begin
+        msg = 'Validation for Back Structure Mode is under construction.'
+        result = dialog_message(msg,/center)
+      endif else begin
+        get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
+        get_data,'mms_soca_fomstr',data=Dorg, lim=lorg,dl=dorg
+        mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
+        mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
+        header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
+        r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, header=header, /quiet)
+        terr = r.error.COUNT
+      endelse
       
-      terr = 0
       if terr gt 0 then ecolor=cred else ecolor=cwhite
       if terr gt 1 then txt_sfx = ' error segs' else txt_sfx = ' error seg'
       txt = strtrim(string(terr),2)+txt_sfx
       sg.oErr ->SetProperty,STRING = txt, COLOR=ecolor
       
       ; Color Bar
-      crd1 = [xC+wC,yC+hC*NBuffsWarning/NBuffsMax]
+      crd1 = [xC+wC,yC+hC];*NBuffsMax/NBuffsMax]
       crd2 = [xL   ,yL2-dy-0.02                  ]
-      sg.oL2_Number ->SetProperty,STRING=strtrim(string(long(NBuffsWarning)),2),COLOR=cywhite
+      sg.oL2_Number ->SetProperty,STRING=strtrim(string(long(NBuffsMax)),2),COLOR=cywhite
       sg.oL2_Line ->SetProperty, DATAX = [crd1[0],xLL,crd2[0],xLLL], DATAY=[crd1[1],crd1[1],crd2[1],crd2[1]], COLOR=cwhite
       
-      crd1 = [xC+wC,yC+hC*NBuffsRedundant/NBuffsMax]
+      crd1 = [xC+wC,yC+hC*NBuffsWarning/NBuffsMax]
       crd2 = [xL   ,yL1-dy-0.02                    ]
-      sg.oL1_Number ->SetProperty,STRING=strtrim(string(long(NBuffsRedundant)),2),COLOR=cwhite
+      sg.oL1_Number ->SetProperty,STRING=strtrim(string(long(NBuffsWarning)),2),COLOR=cwhite
       sg.oL1_Line ->SetProperty, DATAX = [crd1[0],xLL,crd2[0],xLLL], DATAY=[crd1[1],crd1[1],crd2[1],crd2[1]], COLOR=cwhite
       
       crd1 = [xC+wC,yC+hC*NBuffsTarget/NBuffsMax]

@@ -91,8 +91,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-13 19:25:50 -0800 (Fri, 13 Feb 2015) $
-; $LastChangedRevision: 16988 $
+; $LastChangedDate: 2015-02-17 12:20:29 -0800 (Tue, 17 Feb 2015) $
+; $LastChangedRevision: 16990 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -295,6 +295,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
               lab=strcompress(indgen(ddd.nbins),/rem)
               xyouts,reform(ddd.phi[ddd.nenergy-1,*]),reform(ddd.theta[ddd.nenergy-1, *]),lab,align=.5
               xyouts, !x.window[1], !y.window[0]*1.2, lab2, charsize=!p.charsize, /normal, color=255, align=1.
+              xyouts, !x.window[1], !y.window[1]-!y.window[0]*0.5, '(+: Plus / -: Diamond) ', charsize=!p.charsize, /normal, color=255, align=1.
            endif
 
            XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal, color=255

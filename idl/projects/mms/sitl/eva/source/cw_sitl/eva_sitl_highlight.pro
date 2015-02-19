@@ -1,5 +1,5 @@
 PRO eva_sitl_highlight, left_edges, right_edges, data, $
-  color=color, target=target, rehighlight=rehighlight
+  color=color, target=target, rehighlight=rehighlight, noline=noline
   compile_opt idl2
   @xtplot_com
 ;  @tplot_com
@@ -30,12 +30,6 @@ PRO eva_sitl_highlight, left_edges, right_edges, data, $
   eva_sitl_strct_yrange, target, yrange=frange
   fmin = frange[0]
   fmax = frange[1]
-
-;  ysetting = tplot_vars.settings.y
-;  fmin = ysetting[ind].crange[0]
-;  fmax = ysetting[ind].crange[1]
-;  log.o,'fmin='+string(fmin,format='(F15.8)')
-;  log.o,'fmax='+string(fmax,format='(F15.8)') 
   
   ; coefficients
   xc = (xe-xs)/(te-ts)
@@ -43,19 +37,22 @@ PRO eva_sitl_highlight, left_edges, right_edges, data, $
   
   ; data points in normal coordinate
   for n=0,nmax-1 do begin
-    x0 = xc*(left_edges[n] -ts)+xs > xs
+    x0 = (xc*(left_edges[n]-ts)+xs > xs) < xe
     x1 = xc*(right_edges[n]-ts)+xs < xe
     y0 = yc*(0.0-fmin)+ys > ys
     y1 = yc*(data[n]-fmin)+ys < ye
-    
     if keyword_set(rehighlight) then begin
       polyfill, old_polygonx, old_polygony, color=color, /norm
-      plots,[old_polygonx[0],old_polygonx[0]],[0.0,1.0],color=color,/norm
-      plots,[old_polygonx[2],old_polygonx[2]],[0.0,1.0],color=color,/norm
+      if ~keyword_set(noline) then begin
+        plots,[old_polygonx[0],old_polygonx[0]],[0.0,1.0],color=color,/norm
+        plots,[old_polygonx[2],old_polygonx[2]],[0.0,1.0],color=color,/norm
+      endif
     endif
     polyfill, [x0,x0,x1,x1],[y0,y1,y1,y0],color=color, /norm
-    plots,[x0,x0],[0.0,1.0],color=color,/norm
-    plots,[x1,x1],[0.0,1.0],color=color,/norm
+    if ~keyword_set(noline) then begin
+      plots,[x0,x0],[0.0,1.0],color=color,/norm
+      plots,[x1,x1],[0.0,1.0],color=color,/norm
+    endif
     old_polygonx = [x0,x0,x1,x1]
     old_polygony = [y0,y1,y1,y0]
     old_tstart = ts

@@ -121,7 +121,7 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
     RealFOM = 40
 
     ; segSelect
-    segSelect = {ts:trange[0], te:trange[1], fom:RealFOM, BAK:BAK, discussion:''}
+    segSelect = {ts:trange[0], te:trange[1], fom:RealFOM, BAK:BAK, discussion:' '}
     eva_sitl_FOMedit, state, segSelect; Here, change FOM value only. No trange change.
   endif
 END
@@ -150,7 +150,8 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
         s = lim.UNIX_BAKSTR_MOD
         idx = where((s.START le t) and (t le s.STOP), ct)
         if ct eq 1 then begin
-          segSelect = {ts:s.START[idx[0]],te:s.STOP[idx[0]],fom:s.FOM[idx[0]],BAK:BAK,discussion:s.DISCUSSION[idx[0]]}
+          segSelect = {ts:s.START[idx[0]],te:s.STOP[idx[0]],fom:s.FOM[idx[0]],$
+            BAK:BAK,discussion:' '};s.DISCUSSION[idx[0]]}
         endif else segSelect = 0
       end
       0: begin
@@ -160,7 +161,8 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
         etime = s.TIMESTAMPS[s.STOP] + 10.d0
         idx = where((stime le t) and (t le etime), ct)
         if ct eq 1 then begin
-          segSelect = {ts:stime[idx[0]],te:etime[idx[0]],fom:s.FOM[idx[0]],BAK:BAK, discussion:s.DISCUSSION[idx[0]]}
+          segSelect = {ts:stime[idx[0]],te:etime[idx[0]],fom:s.FOM[idx[0]],$
+            BAK:BAK, discussion:s.DISCUSSION[idx[0]]}
         endif else segSelect = 0
       end
       else: segSelect = -1
@@ -168,7 +170,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
   endif else begin
     if (BAK eq 0) or (BAK eq 1) then begin
       stop
-      segSelect = {ts:t[0], te:t[1], fom:0., BAK: BAK, discussion:''}
+      segSelect = {ts:t[0], te:t[1], fom:0., BAK: BAK, discussion:' '}
     endif else segSelect = -1
   endelse
 
@@ -341,16 +343,18 @@ FUNCTION eva_sitl_event, ev
       endcase
       if ~skip then begin
         get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
-        D = eva_sitl_strct_read(lim.unix_BAKStr_mod, 0.d0,$
-          isPending=isPending,inPlaylist=inPlaylist,status=status)
-        nmax = n_elements(D.x)
-        if nmax ge 5 then begin
-          left_edges  = D.x[1:nmax-1:4]
-          right_edges = D.x[4:nmax-1:4]
-          data        = D.y[2:nmax-1:4]
-          eva_sitl_highlight, left_edges, right_edges, data;, rehighlight=state.rehighlight
-          ;if state.rehighlight eq 0 then state.rehighlight = 1
-        endif
+        if n_tags(lim) gt 0 then begin
+          D = eva_sitl_strct_read(lim.unix_BAKStr_mod, 0.d0,$
+            isPending=isPending,inPlaylist=inPlaylist,status=status)
+          nmax = n_elements(D.x)
+          if nmax ge 5 then begin
+            left_edges  = D.x[1:nmax-1:4]
+            right_edges = D.x[4:nmax-1:4]
+            data        = D.y[2:nmax-1:4]
+            eva_sitl_highlight, left_edges, right_edges, data, /noline
+            
+          endif; if nmax
+        endif; if n_tags
       endif;if~skip
       end
     state.drpSave: begin
@@ -435,24 +439,26 @@ FUNCTION eva_sitl, parent, $
   ; ----- CONFIG (READ) -----
   cfg = eva_config_read()         ; Read config file and
   pref = eva_config_push(cfg,pref); push the values into preferences
+  pref.ENABLE_ADVANCED = 0
   str_element,/add,state,'pref',pref
 
   ; ----- WIDGET LAYOUT -----
   geo = widget_info(parent,/geometry)
   if n_elements(xsize) eq 0 then xsize = geo.xsize
 
-  if pref.ENABLE_ADVANCED then begin
-    hlSet = ['Default','isPending','inPlaylist','New','Modified','Deleted','Finished']
-  endif else begin
-    hlSet = ['Default','isPending','inPlaylist']
-  endelse
+;  if pref.ENABLE_ADVANCED then begin
+;    hlSet = ['Default','isPending','inPlaylist','New','Modified','Deleted','Finished']
+;  endif else begin
+;    hlSet = ['Default','isPending','inPlaylist']
+;  endelse
+  hlSet = ['Default','isPending','inPlaylist']
   svSet = ['Save','Restore','Save As', 'Restore From']
   
   mainbase = WIDGET_BASE(parent, UVALUE = uval, UNAME = uname, TITLE=title,$
     EVENT_FUNC = "eva_sitl_event", $
     FUNC_GET_VALUE = "eva_sitl_get_value", $
     PRO_SET_VALUE = "eva_sitl_set_value",/column,$
-    XSIZE = xsize, YSIZE = ysize,sensitive=1)
+    XSIZE = xsize, YSIZE = ysize,sensitive=1, SPACE=0, YPAD=0)
   str_element,/add,state,'mainbase',mainbase
   str_element,/add,state,'lblTgtTimeMain',widget_label(mainbase,VALUE='(Select a paramter-set for SITL)',/align_left,xsize=xsize)
 
@@ -468,14 +474,16 @@ FUNCTION eva_sitl, parent, $
   bsActionCheck = widget_base(bsActionButton,/COLUMN,/NONEXCLUSIVE)
   str_element,/add,state,'cbMulti',widget_button(bsActionCheck, VALUE='Multi-segment')
   str_element,/add,state,'cbWTrng',widget_button(bsActionCheck, VALUE='Within a timerange',SENSITIVE=0)
-  bsActionHistory = widget_base(bsAction,/ROW)
+  bsActionHistory = widget_base(bsAction,/ROW, SPACE=0, YPAD=0)
   str_element,/add,state,'btnUndo',widget_button(bsActionHistory,VALUE=' Undo ')
   str_element,/add,state,'btnRedo',widget_button(bsActionHistory,VALUE=' Redo ')
   str_element,/add,state,'btnAllAuto',widget_button(bsActionHistory,VALUE=' Revert to Auto ')
-  bsActionHighlight = widget_base(bsAction,/ROW)
+  str_element,/add,state,'bsDummy',widget_base(bsActionHistory,xsize=40)
+  str_element,/add,state,'btnSplit',widget_button(bsActionHistory,VALUE=' Split ')
+  bsActionHighlight = widget_base(bsAction,/ROW, SPACE=0, YPAD=0)
   str_element,/add,state,'drpHighlight',widget_droplist(bsActionHighlight,VALUE=hlSet,TITLE='Segment status:')
   str_element,/add,state,'hlSet',hlSet
-  bsActionSave = widget_base(bsAction,/ROW)
+  bsActionSave = widget_base(bsAction,/ROW, SPACE=0, YPAD=0)
   str_element,/add,state,'drpSave',widget_droplist(bsActionSave,VALUE=svSet,TITLE='FOM save/restore:')
   str_element,/add,state,'svSet',svSet
 

@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-11 13:54:06 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16955 $
+; $LastChangedDate: 2015-02-17 22:38:35 -0800 (Tue, 17 Feb 2015) $
+; $LastChangedRevision: 16996 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect
@@ -54,7 +54,7 @@ PRO eva_sitl_strct_update, segSelect
       newSTART      = 0L
       newSTOP       = 0L
       newFOM        = 0.
-      newDISCUSSION    = ''
+      newDISCUSSION    = ' '
       newISPENDING  = 1L
       
       ; scan all segments
