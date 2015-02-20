@@ -28,9 +28,9 @@
 ;                        reprocessing.
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-16 09:50:47 -0800 (Fri, 16 Jan 2015) $
-; $LastChangedRevision: 16662 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2015-02-18 12:59:50 -0800 (Wed, 18 Feb 2015) $
+; $LastChangedRevision: 17000 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_over_shell.pro $
 ;-
 Pro mvn_over_shell, date = date, $
@@ -106,7 +106,7 @@ If(over_all[0] Eq -1) Then noload = 0b Else noload = 1b
 If(keyword_set(l0_input_file)) Then Begin
   p1 = strsplit(file_basename(l0_input_file), '_',/extract)
   p1 = strlowcase(p1)
-  If(p1[2] NE 'svy' Or p1[3] NE 'l0') Then Begin
+  If((p1[2] NE 'all' And p1[2] NE 'svy') Or p1[3] NE 'l0') Then Begin
      dprint, 'Incorrect filename: '+file_basename(l0_input_file)
      Return
   Endif

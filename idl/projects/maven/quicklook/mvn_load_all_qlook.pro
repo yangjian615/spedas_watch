@@ -19,20 +19,23 @@
 ;HISTORY:
 ; 16-jul-2013, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-19 12:47:54 -0800 (Mon, 19 Jan 2015) $
-; $LastChangedRevision: 16682 $
+; $LastChangedDate: 2015-02-18 12:53:52 -0800 (Wed, 18 Feb 2015) $
+; $LastChangedRevision: 16999 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_load_all_qlook.pro $
 Pro mvn_load_all_qlook, date_in = date_in, l0_input_file = l0_input_file, $
-                        device = device, _extra=_extra
+                        device = device, stop_in_catch = stop_in_catch, $
+                        _extra=_extra
 
 ;Hold load position for error handling
 common mvn_load_all_qlook, load_position
+
 
 catch, error_status
 If(error_status Ne 0) Then Begin
   dprint, dlevel = 0, 'Got Error Message'
   help, /last_message, output = err_msg
   For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
+  If(keyword_set(stop_in_catch)) Then stop
   Case load_position Of
     'init':Begin
       print, 'Bad initialization: Exiting'
@@ -80,7 +83,7 @@ mvn_qlook_init, device = device
 If(keyword_set(l0_input_file)) Then Begin
    filex = l0_input_file[0]
 Endif Else If(keyword_set(date_in)) Then Begin
-   filex = mvn_l0_db2file(date_in, l0_file_type = 'svy')
+   filex = mvn_l0_db2file(date_in, l0_file_type = 'all')
 Endif Else Begin
    message, /info, 'Need to set date or l0_input_file keyword'
 Endelse
@@ -103,14 +106,6 @@ time_range = d0+[0.0, 86400.0]
 timespan, d0, 1 
 
 If(~is_string(filex)) Then message, 'No file found:'
-
-load_position = 'lpw'
-;LPW data
-mvn_lpw_load, filex, filetype='L0', tplot_var='all'
-mvn_lpw_ql_3panels
-mvn_lpw_ql_instr_page
-
-skip_lpw:
 
 load_position = 'mag'
 
@@ -166,12 +161,21 @@ mvn_sta_gen_ql, file = filex
 
 skip_sta:
 
-;Load MGIMS data, if available, 
+;Load NGIMS data, if available, 
 load_position = 'ngi'
 ngi_file = '/disks/data/maven/data/sci/ngi/ql/mvn_ngi_ql_'+date+'.csv'
 ppp = mvn_ngi_read_csv(ngi_file)
 
 skip_ngi:
+
+load_position = 'lpw'
+;LPW data
+mvn_lpw_load, date_str, tplot_var='all', packet='nohsbm', /notatlasp, /noserver
+;mvn_lpw_load, filex, filetype='L0', tplot_var='all', packet='nohsbm', /notatlasp, /noserver, board = 'FM'
+mvn_lpw_ql_3panels
+mvn_lpw_ql_instr_page
+
+skip_lpw:
 
 mvn_qlook_init, device = device
 

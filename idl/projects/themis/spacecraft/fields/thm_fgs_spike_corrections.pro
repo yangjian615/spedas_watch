@@ -11,10 +11,12 @@
 ;     These problems are obvious when plotting FGS dBz/dt when the spacecraft is near perigee,
 ;     though they can also occur during low fields
 ;
+; Example:
+;   thm_fgs_spike_corrections, time_start='2010-09-01/00:00:00', duration=30, probes=['a'], eclipse_tolerance=300, filename="c:\temp\test.txt"
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-12-06 10:12:17 -0800 (Fri, 06 Dec 2013) $
-; $LastChangedRevision: 13651 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2015-02-18 16:03:44 -0800 (Wed, 18 Feb 2015) $
+; $LastChangedRevision: 17003 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_fgs_spike_corrections.pro $
 ;-
 
@@ -472,13 +474,23 @@ function thm_fgm_ret_packet, fgm_times, fgm_data, fgs_times
     d
 end
 
-pro thm_fgs_spike_corrections
-    ; max distance of a spike in dBz/dt from an eclipse start/stop time 
-    ; to be considered due to the eclipse
-    eclipse_tolerance = 300 ; seconds
+pro thm_fgs_spike_corrections, time_start=time_start, duration=duration, probes=probes, eclipse_tolerance=eclipse_tolerance, filename=filename
+    ; eclipse_tolerance = max distance of a spike in dBz/dt from an eclipse start/stop time 
+    ; to be considered due to the eclipse (default 300 sec)
     
-    timespan, '2009-09-01/00:00:00', 30, /days
-    probes = ['e']
+    results = ['[*] Results START - ' + SYSTIME()]
+    
+    if undefined(eclipse_tolerance) then eclipse_tolerance = 300 ; seconds
+    if undefined(time_start) then time_start = '2009-09-01/00:00:00' ; seconds
+    if undefined(duration) then duration = 30 ; days
+    if undefined(probes) then probes = ['e'] 
+    
+    results = [results, '[*] eclipse_tolerance=' + string(eclipse_tolerance)]
+    results = [results, '[*] time_start=' + time_start]
+    results = [results, '[*] duration=' + string(duration)]
+    results = [results, '[*] probes=' + probes[0]]
+    
+    timespan, time_start, duration, /days
     prefix = 'th'+probes[0]
 
     ; load the L1 FGS data
@@ -544,23 +556,36 @@ pro thm_fgs_spike_corrections
         pct_rmvd = 100.
         jumps_removed = strcompress(string(n_elements(jumps_in_ddt)) + '/0', /rem)
     endif else begin
-        print, '******************** other jumps ********************'
+        results=[results, '[*] ******************** other jumps ********************']
         for i=0l, n_elements(final_jumps_in_ddt_corr)-1 do begin
             whereeclipse = where(jumps_due_to_eclipse eq final_jumps_in_ddt_corr[i], ecl_count)
             if ecl_count ne 0 then begin
-                print, time_string(final_jumps_in_ddt_corr[i]) + ' (due to eclipse)'
+                results = [results, time_string(final_jumps_in_ddt_corr[i]) + ' (due to eclipse)']
                 ecl_removed++
             endif else begin
-                print, time_string(final_jumps_in_ddt_corr[i])
+                results = [results, time_string(final_jumps_in_ddt_corr[i])]
             endelse
         endfor
         ; calculate the percentage of jumps removed
         pct_rmvd =  100.-double(n_elements(final_jumps_in_ddt_corr)-ecl_removed)/(n_elements(jumps_in_ddt))*100.
         jumps_removed = strcompress(string(n_elements(jumps_in_ddt)) + '/' + string(n_elements(final_jumps_in_ddt_corr)-ecl_removed), /rem)
     endelse
-    print, '[*] ' +strcompress(string(pct_rmvd, format='(F6.2)'),/rem) + $
-        '% of the spikes in dBz/dt accounted for due to missing points and eclipse issues'
-    print, '[*] total number of spikes in dBz/dt before/after making adjustments: ' + jumps_removed
+    results = [results, '[*] ' +strcompress(string(pct_rmvd, format='(F6.2)'),/rem) + $
+        '% of the spikes in dBz/dt accounted for due to missing points and eclipse issues']
+    results = [results, '[*] total number of spikes in dBz/dt before/after making adjustments: ' + jumps_removed]
+    results = [results, '[*] Results END - ' + SYSTIME()]
+    
+    for i = 0, n_elements(results)-1 do begin
+      print, results[i]
+    endfor
+    
+    if ~undefined(filename) then begin
+      openw,lun,filename,/get_lun
+      for i = 0, n_elements(results)-1 do begin
+        printf, lun, results[i]
+      endfor 
+      free_lun,lun      
+    endif   
     
 end
 

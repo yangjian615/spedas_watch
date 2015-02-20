@@ -29,8 +29,8 @@
 ;HISTORY:
 ; Hacked from mvn_sep_gen_ql, 2013-06-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-16 09:50:47 -0800 (Fri, 16 Jan 2015) $
-; $LastChangedRevision: 16662 $
+; $LastChangedDate: 2015-02-18 12:53:52 -0800 (Wed, 18 Feb 2015) $
+; $LastChangedRevision: 16999 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_sep_overplot.pro $
 Pro mvn_sep_overplot, date = date, time_range = time_range, $
                       makepng = makepng, device = device, directory = directory, $
@@ -44,7 +44,7 @@ mvn_qlook_init, device = device
 If(keyword_set(l0_input_file)) Then Begin
    filex = l0_input_file[0]
 Endif Else Begin
-   filex = mvn_l0_db2file(date, l0_file_type = 'svy')
+   filex = mvn_l0_db2file(date, l0_file_type = 'all')
 Endelse
 If(~keyword_set(noload_data)) Then Begin
 ;mvn_sep_gen_ql needs a time range

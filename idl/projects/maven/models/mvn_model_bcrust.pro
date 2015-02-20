@@ -107,8 +107,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-17 16:31:00 -0800 (Tue, 17 Feb 2015) $
-; $LastChangedRevision: 16994 $
+; $LastChangedDate: 2015-02-18 14:11:32 -0800 (Wed, 18 Feb 2015) $
+; $LastChangedRevision: 17001 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/models/mvn_model_bcrust.pro $
 ;
 ;-
@@ -417,9 +417,9 @@ end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
                       silent=sl, verbose=vb, nmax=nmax, $
-                      ARKANI = arkani, PURUCKER = purucker, $
-                      cain_2003 = cain_2003, cain_2011=cain_2011, $
-                      VERSION = version, tplot=tplot, path=path, $
+                      arkani=arkani, purucker=purucker, $
+                      cain_2003=cain_2003, cain_2011=cain_2011, $
+                      version=version, tplot=tplot, path=path, $
                       morschhauser=morschhauser, pos=pos
 
   IF keyword_set(sl) THEN silent = sl ELSE silent = 0
@@ -471,20 +471,31 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
   ; Assuming that the IDL save file is stored on the same place to this routine.
   IF ~keyword_set(path) THEN path = FILE_DIRNAME(ROUTINE_FILEPATH('mvn_model_bcrust'), /mark)
   modelfile = path + 'martiancrustmodels.sav'
-  ;;;IF ~keyword_set(morschhauser) THEN modelfile = path + 'martiancrustmodels.sav' $
-  ;;;ELSE modelfile = path + 'martiancrustmodels_morschhauser_2014.sav'
 
-
-  IF ( N_ELEMENTS(cain_2003) + N_ELEMENTS(cain_2011) + $
-       N_ELEMENTS(purucker)  + N_ELEMENTS(arkani) + N_ELEMENTS(morschhauser)) NE 1 THEN BEGIN
+  IF keyword_set(morschhauser) THEN mflg = 1 ELSE mflg = 0
+  IF keyword_set(cain_2003) THEN cflg03 = 1 ELSE cflg03 = 0
+  IF keyword_set(cain_2011) THEN cflg11 = 1 ELSE cflg11 = 0
+  IF keyword_set(arkani) THEN aflg = 1 ELSE aflg = 0
+  IF keyword_set(purucker) THEN pflg = 1 ELSE pflg = 0
+  
+  IF (mflg + cflg03 + cflg11 + aflg + pflg EQ 0) THEN BEGIN
      IF verbose GE 0 THEN BEGIN
         print, ptrace()
         print, '  The Morschhauser model is used in default.'
      ENDIF 
-     morschhauser = 1
-        ;;;print, '  It must be called with ONE AND ONLY ONE crustal B field model selected.'
-        ;;;RETURN
-  ENDIF
+     mflg = 1
+  ENDIF 
+  IF (mflg + cflg03 + cflg11 + aflg + pflg GT 1) THEN BEGIN
+     dprint, "'mvn_model_bcrust' must be called with only one crustal model selected."
+     RETURN
+  ENDIF 
+;  IF ( N_ELEMENTS(cain_2003) + N_ELEMENTS(cain_2011) + $
+;       N_ELEMENTS(purucker)  + N_ELEMENTS(arkani) + N_ELEMENTS(morschhauser)) NE 1 THEN BEGIN
+;     IF verbose GE 0 THEN BEGIN
+;        print, ptrace()
+;        print, '  The Morschhauser model is used in default.'
+;     ENDIF 
+;     morschhauser = 1
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; Restore model information ;
@@ -497,7 +508,7 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
 
   rplanet = 3390.D  
   ; Determine the model coeff.
-  IF n_elements(cain_2003) EQ 1 THEN BEGIN
+  IF (cflg03) THEN BEGIN
      modeler = 'cain_2003'
      mname = 'Cain (2003)'
      g = gc_2003
@@ -507,7 +518,7 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
         h = h[0:nmax+1, 0:nmax+1]
      ENDIF ELSE nmax = 90
   ENDIF 
-  IF n_elements(cain_2011) EQ 1 THEN BEGIN
+  IF (cflg11) THEN BEGIN
      modeler = 'cain_2011'
      IF ~keyword_set(version) THEN BEGIN
         mname = 'Cain (2011)'
@@ -523,7 +534,7 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
         h = h[0:nmax+1, 0:nmax+1]
      ENDIF ELSE nmax = 90
   ENDIF 
-  IF n_elements(arkani) EQ 1 THEN BEGIN
+  IF (aflg) THEN BEGIN
      modeler = 'arkani'
      mname = 'Arkani'
      g = ga
@@ -533,7 +544,7 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
         h = h[0:nmax+1, 0:nmax+1]
      ENDIF ELSE nmax = 90
   ENDIF 
-  IF n_elements(purucker) EQ 1 THEN BEGIN
+  IF (pflg) THEN BEGIN
      modeler = 'purucker'
      mname = 'Purucker'
      g = gp
@@ -543,7 +554,7 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
         h = h[0:nmax+1, 0:nmax+1]
      ENDIF ELSE nmax = 51
   ENDIF 
-  IF n_elements(morschhauser) EQ 1 THEN BEGIN
+  IF (mflg) THEN BEGIN
      modeler = 'morschhauser'
      mname = 'Morschhauser'
      g = gm
@@ -625,13 +636,13 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
       
   IF keyword_set(tplot) AND SIZE(trange, /type) NE 0 THEN BEGIN
      store_data, 'mvn_model_bcrust_amp_' + modeler, data={x: modelmag.time, y:modelmag.amp}, $
-                 dlimits={ytitle: mname+'!C|B| [nT]'}
+                 dlimits={ytitle: mname, ysubtitle: '|B| [nT]'}
      store_data, 'mvn_model_bcrust_geo_' + modeler, data={x: modelmag.time, y:transpose(modelmag.pc)}, $
-                 dlimits={colors: [2, 4, 6], labels: ['Bx', 'By', 'Bz'], labflag: 1, ytitle: mname+'!CB IAU_MARS [nT]', constant: 0, $
-                          spice_master_frame: 'MAVEN_SPACECRAFT', spice_frame: 'IAU_MARS'}
+                 dlimits={colors: 'bgr', labels: ['Bx', 'By', 'Bz'], labflag: 1, ytitle: mname, ysubtitle:'B IAU_MARS [nT]', $
+                          constant: 0, spice_master_frame: 'MAVEN_SPACECRAFT', spice_frame: 'IAU_MARS'}
      store_data, 'mvn_model_bcrust_mso_' + modeler, data={x: modelmag.time, y:transpose(modelmag.ss)}, $
-                 dlimits={colors: [2, 4, 6], labels: ['Bx', 'By', 'Bz'], labflag: 1, ytitle: mname+'!CBmso [nT]', constant: 0, $
-                          spice_master_frame: 'MAVEN_SPACECRAFT', spice_frane: 'MAVEN_MSO'}
+                 dlimits={colors: 'bgr', labels: ['Bx', 'By', 'Bz'], labflag: 1, ytitle: mname, ysubtitle:'Bmso [nT]', $
+                          constant: 0, spice_master_frame: 'MAVEN_SPACECRAFT', spice_frane: 'MAVEN_MSO'}
   ENDIF 
   dprint, dlevel=2, 'Don''t forget to contact the modeler if you use these results!', verbose=verbose
   RETURN
