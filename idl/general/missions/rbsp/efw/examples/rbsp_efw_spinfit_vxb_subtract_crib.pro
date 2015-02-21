@@ -8,7 +8,7 @@
 ;			qa -> select to load QA waveform data. Don't want to use this route for normal
 ;				  data processing. 
 ;			hiresl3 -> loads the EMFISIS high resolution 64 S/s L3 GSE data
-;                       level -> 'ql', 'l2', 'l3'. Defaults to 'l3'
+;                       level -> Level of EMFISIS data. Options are:  'ql', 'l2', 'l3'. Defaults to 'l3'
 ;
 ;By Aaron W Breneman
 ;University of Minnesota
@@ -18,7 +18,14 @@
 
 pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,ql=ql,qa=qa,hiresl3=hiresl3,level=level
 
+
+  if ~keyword_set(level) and ~keyword_set(ql) then level = 'l3'
+  if ~keyword_set(ql) then quickl = 0 else quickl = 1
+  if keyword_set(ql) then level = 'ql'
+  if level eq 'l3' or level eq 'l2' then quickl = 0
+
   type = ''
+  if keyword_set(hiresl3) then type = 'hires' else type = '1sec'
   if ~keyword_set(level) or keyword_set(hiresl3) then level = 'l3'
 
 ;Get the time range if it hasn't already been set
@@ -52,26 +59,31 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
   
   
 ;Load the mag data	
-  if keyword_set(ql) or level eq 'l2' then begin
-     rbsp_load_emfisis,probe=probe,/quicklook
 
-     if ~tdexists(rbspx+'_emfisis_quicklook_Mag',tr[0],tr[1]) then begin
-        print,'******NO QL MAG DATA TO LOAD.....rbsp_efw_DCfield_removal_crib.pro*******'
-        return
-     endif		
 
-     
-  endif else begin
-     if keyword_set(hiresl3) then type = 'hires' else type = '1sec'
-
-     rbsp_load_emfisis,probe=probe,coord='gse',cadence=type,level=level
-
-     if ~tdexists(rbspx+'_emfisis_l3_'+type+'_gse_Mag',tr[0],tr[1]) then begin
-        print,'******NO L3 MAG DATA TO LOAD.....rbsp_efw_DCfield_removal_crib.pro*******'
-        return
-     endif		
-
-  endelse
+  case level of
+     'ql': begin
+        rbsp_load_emfisis,probe=probe,/quicklook
+        if ~tdexists(rbspx+'_emfisis_quicklook_Mag',tr[0],tr[1]) then begin
+           print,'******NO QL MAG DATA TO LOAD.....rbsp_efw_spinfit_vxb_subtract_crib.pro*******'
+           return
+        endif		
+     end
+     'l2': begin
+        rbsp_load_emfisis,probe=probe,coord='uvw',level='l2'
+        if ~tdexists(rbspx+'_emfisis_l2_uvw_Mag',tr[0],tr[1]) then begin
+           print,'******NO L2 MAG DATA TO LOAD.....rbsp_efw_spinfit_vxb_subtract_crib.pro*******'
+           return
+        endif		
+     end
+     'l3': begin
+        rbsp_load_emfisis,probe=probe,coord='gse',cadence=type,level='l3'
+        if ~tdexists(rbspx+'_emfisis_l3_'+type+'_gse_Mag',tr[0],tr[1]) then begin
+           print,'******NO L3 MAG DATA TO LOAD.....rbsp_efw_spinfit_vxb_subtract_crib.pro*******'
+           return
+        endif		
+     end
+  endcase
 
   
 ;Spinfit data and transform to MGSE coordinates
@@ -99,13 +111,15 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
 
   message,"Rotating emfisis data...",/continue
 
-  if keyword_set(ql) or level eq 'l2' then begin
+
+  t0 = time_double(date)
+  t1 = t0 + 86400.
+
+  if level eq 'ql' then begin
                                 ;Some of the EMFISIS quicklook data
                                 ;extend beyond the day loaded. This messes things up
                                 ;later. Remove these data points now. 
 
-     t0 = time_double(date)
-     t1 = t0 + 86400.
 
      ttst = tnames(rbspx+'_emfisis_quicklook_Mag',cnt)
      if cnt eq 1 then time_clip,rbspx+'_emfisis_quicklook_Mag',t0,t1,replace=1,error=error
@@ -130,12 +144,34 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
         rbsp_cotrans,rbspx +'_emfisis_quicklook_Mag_spinfit', rbspx + '_mag_mgse', /dsc2mgse
      endif
 
-  endif else begin
-                                ;Transform the EMFISIS gse mag data to mgse
+  endif 
 
 
-     t0 = time_double(date)
-     t1 = t0 + 86400.
+
+
+  if level eq 'l2' then begin
+ 
+     ttst = tnames(rbspx+'_emfisis_l2_uvw_Mag',cnt)
+     if cnt eq 1 then time_clip,rbspx+'_emfisis_l2_uvw_Mag',t0,t1,replace=1,error=error
+     ttst = tnames(rbspx+'_emfisis_l2_uvw_Magnitude',cnt)
+     if cnt eq 1 then time_clip,rbspx+'_emfisis_l2_uvw_Magnitude',t0,t1,replace=1,error=error
+
+     get_data,rbspx +'_emfisis_l2_uvw_Mag',data=datt
+     data_att = {coord_sys:'uvw'}
+     dlim = {data_att:data_att}
+     store_data,rbspx +'_emfisis_l2_uvw_Mag',data=datt,dlimits=dlim
+
+     if tdexists(rbspx +'_emfisis_l2_uvw_Mag',tr[0],tr[1]) then begin
+        rbsp_decimate,rbspx +'_emfisis_l2_uvw_Mag', upper = 2
+        rbsp_spinfit,rbspx +'_emfisis_l2_uvw_Mag', plane_dim = 0
+        rbsp_cotrans,rbspx +'_emfisis_l2_uvw_Mag_spinfit', rbspx + '_mag_mgse', /dsc2mgse
+     endif
+ 
+  endif
+
+
+
+if level eq 'l3' then begin
 
      ttst = tnames(rbspx+'_emfisis_l3_'+type+'_gse_Mag',cnt)
      if cnt eq 1 then time_clip,rbspx+'_emfisis_l3_'+type+'_gse_Mag',t0,t1,replace=1,error=error
@@ -143,11 +179,9 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
      if cnt eq 1 then time_clip,rbspx+'_emfisis_l3_'+type+'_gse_Magnitude',t0,t1,replace=1,error=error
 
 
-
      get_data,rbspx+'_emfisis_l3_'+type+'_gse_Mag',data=tmpp
 
      if is_struct(tmpp) then begin
-
 
         tinterpol_mxn,rbspx+'_spinaxis_direction_gse',tmpp.x
 
@@ -159,7 +193,7 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
         rbsp_gse2mgse,rbspx+'_emfisis_l3_'+type+'_gse_Mag',wsc_GSE_tmp,newname=rbspx+'_mag_mgse'
 
      endif
-  endelse
+  endif
 
   message,"Done rotating emfisis data...",/continue
 

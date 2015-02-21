@@ -1,4 +1,4 @@
-compile_opt idl2
+;compile_opt idl2
 
 
 
@@ -253,7 +253,7 @@ if 0 then begin
     url_index = 'http://sprg.ssl.berkeley.edu/data/spp/sweap/prelaunch/gsedata/EM/spanai/'
     pathindex = strmid(url_index,strlen(src.remote_data_dir))
     indexfile = file_retrieve(_extra=src,pathindex)+'/.remote-index.html'
-    links = file_extract_html_links(indexfile,count,verbose=verbose,no_parent=url_index)  ; Links with '*' or '?' or leading '/' are removed.
+ ;   links = file_extract_html_links(indexfile,count,verbose=verbose,no_parent=url_index)  ; Links with '*' or '?' or leading '/' are removed.
     fileformat = 'spp/sweap/prelaunch/gsedata/EM/spanai/'+links[-1]+'PTP_data.dat'
   endif
 

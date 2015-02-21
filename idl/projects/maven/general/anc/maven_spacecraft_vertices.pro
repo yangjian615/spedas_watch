@@ -1,33 +1,27 @@
-function maven_spacecraft_vertices, plot_sc=plot_sc
-
-
-
+function maven_spacecraft_vertices
 
 
   ;;-------------------------------------------------
   ;;Vertices of MAVEN in MAVEN Spacecraft coordinates
 
 
-
-
   ;;---------------------------
   ;;Instrument and Gimbal location
 
   ;;Inner Gimbal
-  g1_gim_loc=[2585.00,203.50, 2044.00]
+  g1_gim_loc=[2589.00,203.50, 2044.00]
   ;;Outer Gimbal
   g2_gim_loc=[2775.00,203.50, 2044.00]
   ;;STATIC
-  sta_loc=[ 3127.00, 1847.00, 1847.50]
+  sta_loc=[2589.0+538.00, 203.50+450.00, 1847.50]
   ;;SWEA
-  swe_loc=[ 3126.00, 1847.00, -450.00]
+  swe_loc=[-2359.00,   0.00,-1115.00]
   ;;SWIA
-  swi_loc=[ 3126.00, 1847.00, -450.00]
-  ;;SEP
-  sep_loc=[ 3126.00, 1847.00, -450.00]
-
-
-
+  swi_loc=[-1223.00,-1313.00, 1969.00]
+  ;;SEP +X/+
+  sep_py_loc=[ 1245.00, 1143.00,2080.00]
+  ;;SEP +X/-Y
+  sep_my_loc=[ 1245.00,-1143.00,2080.00]
 
   ;;---------------------------
   ;;Main Body
@@ -50,7 +44,6 @@ function maven_spacecraft_vertices, plot_sc=plot_sc
 
                 [0,1,5,4],$       ;+y side 3
                 [2,3,7,6]]        ;-y side 4
-
 
   ;;---------------------------
   ;;Antenna Body
@@ -75,8 +68,6 @@ function maven_spacecraft_vertices, plot_sc=plot_sc
                
                [0,1,5,4],$        ;+y side 3
                [2,3,7,6]]         ;-y side 4
-                
-
 
   ;;---------------------------
   ;;+Y Solar Panel
@@ -291,10 +282,103 @@ function maven_spacecraft_vertices, plot_sc=plot_sc
 
 
 
+  ;;---------------------------------------------------------------
+  ;;Rotation Matrix from MAVEN_SPACECRAFT to INSTRUMENT
+  ;;
+  ;;NOTE:
+  ;;Used as follows:
+  ;;IDL>to_pos = rotation_matrix # from_pos
+  ;;When using the rotation matrix from cspice_pxform we must first
+  ;;perform a transpose:
+  ;;IDL> cspice_pxform, 'MAVEN_SPACECRAFT','MAVEN_INSTUMENT',et,inst_rot
+  ;;IDL> rotation_matrix=transpose(inst_rot)
+  ;;IDL> to_pos = rotation_matrix # from_pos
+
+
+
+  ;;-----------------------------------------
+  ;;SWEA
+  ;;1. +140 degrees around Zs/c
+  ;;Same as :
+  ;;IDL> cspice_pxform, 'MAVEN_SPACECRAFT','MAVEN_SWEA',et,swea_rot
+  ;;IDL> swea_rot=transpose(swea_rot)
+  th=140.D*!DTOR
+  swea_rot=[$
+           [cos(th), -1.*sin(th),  0.],$
+           [sin(th),     cos(th),  0.],$
+           [     0.,          0.,  1.]]
+  
+  ;;-----------------------------------------
+  ;;SWIA
+  ;;1. +90 degrees around Xs/c
+  ;;2. +90 degrees around Zs/c
+  ;;Same as :
+  ;;IDL> cspice_pxform, 'MAVEN_SPACECRAFT','MAVEN_SWIA',et,swia_rot
+  ;;IDL> swia_rot=transpose(swia_rot)
+  ;;From cspice_pxform
+  ;swia_rot=transpose([$
+  ;         [  0.D,   0.D,   1.D],$
+  ;         [ -1.D,   0.D,   0.D],$
+  ;         [  0.D,  -1.D,   0.D]])
+  th=90.D*!DTOR
+  swia_rot1=[$
+            [        1.D,         0.D,         0.D],$
+            [        0.D,     cos(th), -1.*sin(th)],$
+            [        0.D,     sin(th),     cos(th)]]
+  swia_rot2=[$
+            [    cos(th), -1.*sin(th),         0.D],$
+            [    sin(th),     cos(th),         0.D],$
+            [        0.D,         0.D,         1.D]]
+  swia_rot=swia_rot2 # swia_rot1
+
+
+
+
+  ;;-----------------------------------------
+  ;;SEP1
+  ;;From cspice_pxform
+  sep1_rot=transpose([$   
+           [0.D,     -0.70710678,      0.70710678],$
+           [1.D,             0.D,             0.D],$
+           [0.D,      0.70710678,      0.70710678]])
+
+
+  ;;-----------------------------------------
+  ;;SEP2
+  ;;From cspice_pxform
+  sep2_rot=transpose([$
+           [0.D,      0.70710678,      0.70710678],$
+           [1.D,             0.D,             0.D],$
+           [0.D,     -0.70710678,      0.70710678]])
+
+
+  rot_matrix_name=['SWEA','SWIA','SEP1','SEP2']
+  rot_matrix=[[[swea_rot]],$
+              [[swia_rot]],$
+              [[sep1_rot]],$
+              [[sep2_rot]]]
+
+
+
 
 
 
          
+  ;;---------------------------
+  ;;Names
+  names=['main_body_ind',$
+         'ant_body_ind',$
+         'py_solar1_ind',$
+         'py_solar2_ind',$
+         'my_solar1_ind',$
+         'my_solar2_ind',$
+         'py_lpw_ind',$
+         'my_lpw_ind',$
+         'app_body_ind',$
+         'gi1_body_ind',$
+         'gi2_body_ind'];,$
+         ;[swe_boom_ind]]
+
 
   ;;---------------------------
   ;;Index
@@ -311,11 +395,10 @@ function maven_spacecraft_vertices, plot_sc=plot_sc
          [gi2_body_ind],$
          [swe_boom_ind]]
 
+  ;;array=[4, 6, #-of-object]
   n1=4
   n2=6
   n3=n_elements(index)/n1/n2
-  ;;Reform such that each object is has its own index, i.e.
-  ;;i.e.  array=[4, 6, #-of-objects]
   index=reform(index, n1, n2, n3)
 
 
@@ -333,79 +416,34 @@ function maven_spacecraft_vertices, plot_sc=plot_sc
            [gi1_body],$
            [gi2_body],$
            [swe_boom]]]
-  n1=3
-  n2=8
-  n3=n_elements(vertex)/n1/n2
-  ;;Reform such that each object is has its own index, i.e.
-  ;;i.e.  array=[3, 8, #-of-objects]
-  vertex=reform(vertex, n1, n2, n3)
+
+  ;;array=[3, 8, #-of-objects]
+  nn1=3
+  nn2=8
+  nn3=n_elements(vertex)/nn1/nn2
+  vertex=reform(vertex, nn1, nn2, nn3)
 
 
+  ;;-----------------------------------
+  ;;Create XYZ coordinates for plotting
+  xx=fltarr(5,n2,n3)
+  yy=fltarr(5,n2,n3)
+  zz=fltarr(5,n2,n3)
+  for iobj=0, n3-1 do $
+     for i=0, n2-1 do begin           
+     box=vertex[*,*,iobj]
+     ind=index[*,*,iobj]           
+     indd=[ind[*,i],ind[0,i]]
+     xx[*,i,iobj]=box[0,indd]
+     yy[*,i,iobj]=box[1,indd]
+     zz[*,i,iobj]=box[2,indd]
+  endfor
+  
 
-
-
-  ;;Plot The spacecraft
-  if keyword_set(plot_sc) then begin
-
-     ;;CHECK ALL SIDES OF OBJECT
-     pos1=[0.0,0.0,1.0,0.3]
-     pos2=[0.0,0.3,1.0,0.6]
-     pos3=[0.0,0.6,1.0,0.9]
-     
-     x1=[-8000,8000]
-     y1=[-8000,8000]
-     
-     window,1,xsize=300,ysize=900
-     plot, [0,0],[1,1],/nodata,$
-           xrange=x1,$
-           yrange=y1,$
-           position=pos1
-     plot, [0,0],[1,1],/nodata,$
-           xrange=[-5000,5000],$
-           yrange=[-5000,5000],$
-           position=pos2,/noerase
-     plot, [0,0],[1,1],/nodata,$
-           xrange=[-5000,5000],$
-           yrange=[-5000,5000],$
-           position=pos3,/noerase
-     
-     for iobj=0, 11 do begin
-        for i=0, 5 do begin
-           
-           box=vertex[*,*,iobj]
-           ind=index[*,*,iobj]
-           
-           indd=[ind[*,i],ind[0,i]]
-           plot, box[0,indd], box[1,indd],$
-                 xstyle=5,xrange=x1,$
-                 ystyle=5,yrange=y1,$
-                 /noerase,$
-                 position=pos1
-           oplot, [sta_loc[0],sta_loc[0]],$
-                  [sta_loc[1],sta_loc[1]],$
-                  color=250,psym=1,symsize=5
-           plot, box[1,indd], box[2,indd],$
-                 xstyle=5,xrange=x1,$
-                 ystyle=5,yrange=y1,$
-                 /noerase,$
-                 position=pos2
-           oplot, [sta_loc[1],sta_loc[1]],$
-                  [sta_loc[2],sta_loc[2]],$
-                  color=250,psym=1,symsize=5
-           plot, box[0,indd], box[2,indd],$
-                 xstyle=5,xrange=x1,$
-                 ystyle=5,yrange=y1,$
-                 /noerase,$
-                 position=pos3
-           oplot, [sta_loc[0],sta_loc[0]],$
-                  [sta_loc[2],sta_loc[2]],$
-                  color=250,psym=1,symsize=5
-        endfor
-     endfor
-
-
-  endif
-
-  return, {vertex:vertex, index:index}
+  return, {vertex:vertex, $
+           index:index, $
+           names:names, $
+           rot_matrix:rot_matrix,$
+           rot_matrix_name:rot_matrix_name}
      
 end

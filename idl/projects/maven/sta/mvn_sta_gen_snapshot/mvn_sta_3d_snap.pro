@@ -91,8 +91,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-17 12:20:29 -0800 (Tue, 17 Feb 2015) $
-; $LastChangedRevision: 16990 $
+; $LastChangedDate: 2015-02-19 16:14:34 -0800 (Thu, 19 Feb 2015) $
+; $LastChangedRevision: 17017 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -290,6 +290,8 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
               undefine, xsc, tsc, psc 
               lab2 += 'APP (m) '
            ENDIF 
+           IF keyword_set(plot_sc) THEN $
+              mvn_spc_fov_blockage, trange=MEAN(trange), /static, clr=1, /plot_sc, /invert
            
            if keyword_set(label) then begin
               lab=strcompress(indgen(ddd.nbins),/rem)

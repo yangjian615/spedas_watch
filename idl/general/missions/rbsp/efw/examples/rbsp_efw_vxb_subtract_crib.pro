@@ -33,7 +33,7 @@
 ;	2012-10-13 -> much better
 
 
-pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,ql=ql,hires=hires,qa=qa
+pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,ql=ql,l2=l2,hires=hires,qa=qa
 
 
 ;Set timerange if it's not already set
@@ -64,7 +64,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 	;Load other state variables
 	rbsp_efw_position_velocity_crib,/no_spice_load,/noplot
 
-stop
+
 
 
 ;Load Esvy data in MGSE 
@@ -76,14 +76,16 @@ stop
 
 ;Load EMFISIS data
 	if keyword_set(ql) then rbsp_load_emfisis,probe=probe,/quicklook
-	if keyword_set(hires) then rbsp_load_emfisis,probe=probe,coord='gse',cadence='hires',level='l3'
+	if keyword_set(hires) and ~keyword_set(l2) then  rbsp_load_emfisis,probe=probe,coord='gse',cadence='hires',level='l3'
+	if keyword_set(l2) then   rbsp_load_emfisis,probe=probe,coord='uvw',level='l2'
 	if ~keyword_set(hires) and ~keyword_set(ql) then rbsp_load_emfisis,probe=probe,coord='gse',cadence='4sec',level='l3'
 
 
 ;Check for data existence
 	if keyword_set(ql) then get_data,rbspx+'_emfisis_quicklook_Mag',data=dd2
-	if keyword_set(hires) then get_data,rbspx+'_emfisis_l3_hires_gse_Mag',data=dd2
-	if ~keyword_set(hires) and ~keyword_set(ql) then get_data,rbspx+'_emfisis_l3_4sec_gse_Mag',data=dd2
+	if keyword_set(hires) and ~keyword_set(l2) then get_data,rbspx+'_emfisis_l3_hires_gse_Mag',data=dd2
+	if keyword_set(l2) then get_data,rbspx+'_emfisis_l2_uvw_Mag',data=dd2
+	if ~keyword_set(hires) and ~keyword_set(ql) and ~keyword_set(l2) then get_data,rbspx+'_emfisis_l3_4sec_gse_Mag',data=dd2
 
 	if ~is_struct(dd2) then begin
 		print,'******NO MAG DATA TO LOAD.....rbsp_efw_DCfield_removal_crib.pro*******'
@@ -93,10 +95,10 @@ stop
 
 
 ;Transform the Mag data to MGSE coordinates
-	if ~keyword_set(ql) then begin
+	if ~keyword_set(ql) and ~keyword_set(l2) then begin
 
 		if keyword_set(hires) then get_data,rbspx+'_emfisis_l3_hires_gse_Mag',data=tmpp else $
-								   get_data,rbspx+'_emfisis_l3_4sec_gse_Mag',data=tmpp
+                   get_data,rbspx+'_emfisis_l3_4sec_gse_Mag',data=tmpp
 		get_data,rbspx+'_spinaxis_direction_gse',data=wsc_GSE	
 
 		wsc_GSE_tmp = [[interpol(wsc_GSE.y[*,0],wsc_GSE.x,tmpp.x)],$
@@ -128,6 +130,22 @@ stop
 
 	endif
 
+	if keyword_set(l2) then begin
+
+		;Create the dlimits structure for the EMFISIS quantity. Jianbao's spinfit program needs
+		;to see that the coords are 'uvw'
+			data_att = {coord_sys:'uvw'}
+			dlim = {data_att:data_att}
+			store_data,rbspx +'_emfisis_l2_uvw_Mag',data=dd2,dlimits=dlim
+
+
+		;spinfit the mag data and transform to MGSE
+			rbsp_decimate,rbspx +'_emfisis_l2_uvw_Mag', upper = 2
+			rbsp_spinfit,rbspx +'_emfisis_l2_uvw_Mag', plane_dim = 0 ; V12
+			rbsp_cotrans,rbspx +'_emfisis_l2_uvw_Mag_spinfit',rbspx+'_mag_mgse', /dsc2mgse
+
+	endif
+
 
 
 ; Load eclipse times 
@@ -138,7 +156,7 @@ stop
 		get_data,rbspx+'_penumbra',data=ep
 	endif
 
-stop
+
 
 
 ;Determine corotation Efield
