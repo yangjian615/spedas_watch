@@ -10,9 +10,9 @@
 ;
 ; KEYWORDS:
 ;   TRANGE=TRANGE  ; Optional 2 element time range vector
-; $LastChangedBy:  $
-; $LastChangedDate:  $
-; $LastChangedRevision:  $
+; $LastChangedBy: Chris Fowler  $
+; $LastChangedDate: CMF: 2015-02-20 $
+; $LastChangedRevision: CMF: routine returns the string 'none_found' if no file is found, to avoid crashes in IDL.  $
 ; $URL:  $
 ;-
 function  mvn_spc_anc_thruster,pformat,trange=trange,verbose=verbose         ;,var_name=var_name,thruster_time= time_x
@@ -68,6 +68,8 @@ FREE_LUN ,unit
 
 endfor
 append_array,data,index=rec
+
+if size(data, /type) eq 0 then data = 'none_found' ;CMF 2015-02-20: return string if no file is found to avoid crash in IDL
 
 return,data
 end

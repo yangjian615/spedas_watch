@@ -20,9 +20,9 @@
 ;OUTPUT:
 ;  mutates panel object
 ;  
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-02-20 13:46:54 -0800 (Fri, 20 Feb 2015) $
+;$LastChangedRevision: 17020 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_tplot_gui_funcs/spd_ui_tplot_gui_panel_options.pro $
 ;-------------------------------------------------------------------------------
 
@@ -171,14 +171,16 @@ pro spd_ui_tplot_gui_panel_options,panel,varnames=varnames,allnames=allnames,new
    endif
    
    if xistime && n_elements(ctrange) ne 2 then begin
-     ctrange=timerange(/current) 
+     ctrange=spd_tplot_trange(/current) 
    endif
   
    if n_elements(ctrange) eq 2 then begin
      if is_string(ctrange) then begin
        ctrange = time_double(ctrange)
      endif
-     xaxis->setProperty,minfixedrange=ctrange[0],maxfixedrange=ctrange[1],rangeoption=2,rangemargin=0
+     if ctrange[1] gt ctrange[0] then begin
+       xaxis->setProperty,minfixedrange=ctrange[0],maxfixedrange=ctrange[1],rangeoption=2,rangemargin=0
+     endif
    endif
    
    str_element,dl,'ycharsize',v,success=s
