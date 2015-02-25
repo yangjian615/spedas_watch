@@ -31,7 +31,6 @@ for i = 0, n_elements(times)-1 do begin
 
   csecstr = string(csecond, format = '(i02)')
   
-  ; create a tplot timestring for cyclestart
   timestrings(i) = cyearstr+'-'+cmostr+'-'+cdaystr+'/'+chourstr+':'+$
     cminstr+':'+csecstr + ' '
   

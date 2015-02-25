@@ -3,8 +3,8 @@
 
 ;sav_file = '/Users/frederickwilder/back_structure_data.sav'
 
-start_jul = julday(4, 1, 1980, 0, 0)
-stop_jul = julday(4, 10, 1980, 0, 0)
+start_jul = julday(2, 4, 2009, 0, 0)
+stop_jul = julday(2, 5, 2009, 0, 0)
 
 start_unix = double(86400) * (start_jul - julday(1, 1, 1970, 0, 0, 0 ))
 stop_unix = double(86400) * (stop_jul - julday(1, 1, 1970, 0, 0, 0 ))
@@ -13,6 +13,8 @@ start_tai = 702086410l
 stop_tai = start_tai + 1*1*24*3600l
 
 mms_get_back_structure, start_unix, stop_unix, backstr, pw_flag, pw_message
+
+die
 
 ;save, file = sav_file, backstr, start_jul, stop_jul
 

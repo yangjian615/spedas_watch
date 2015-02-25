@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-11 17:26:22 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16961 $
+; $LastChangedDate: 2015-02-23 15:47:30 -0800 (Mon, 23 Feb 2015) $
+; $LastChangedRevision: 17027 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -40,7 +40,12 @@ PRO eva_event, event
 
   if exitcode then begin
     tplot_options,'base',-1
-    obj_destroy, obj_valid()
+    ;obj_destroy, obj_valid()
+    idx = where(strmatch(strlowcase(tag_names(wid)),'sitl'),ct)
+    if ct eq 1 then begin
+      eva_sitl_cleanup
+    endif
+    
     widget_control, event.top, /DESTROY
     
     if (!d.flags and 256) ne 0  then begin    ; windowing devices

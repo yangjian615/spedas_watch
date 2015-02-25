@@ -1,5 +1,7 @@
 ; This validation routine will ONLY look at modified burst segments from the original burst
 ; segment status table. A separate routine will validate new segments.
+;
+; Assumes new_backstr.start and new_backstr.start are both in TAI time.
 
 pro mms_back_structure_check_modifications, new_backstr, old_backstr, mod_error_flags, mod_warning_flags, $
                                              mod_error_msg, mod_warning_msg, mod_error_times, mod_warning_times, $
@@ -109,7 +111,8 @@ fom_error_txt = 'ERROR: FOM value at following times out of bounds (' + fom_min_
 
 if count_fom_errors gt 0 then begin
    fom_error_times = strarr(count_fom_errors)
-   convert_time_stamp, new_backstr.cyclestart, new_backstr.start(loc_fom_error), fom_error_times
+   ; ALERT - need to change this!!!
+   create_time_strings, new_backstr.start(loc_fom_error), fom_error_times
 endif else begin
    fom_error_times = ''
 endelse
@@ -130,14 +133,14 @@ mod_warning_text = 'WARNING: The segments at the following times have a modified
                     
 if count_del_warnings gt 0 then begin
   del_warning_times = strarr(count_del_warnings)
-  convert_time_stamp, new_backstr.cyclestart, new_backstr.start(loc_del_warning), del_warning_times
+  create_time_strings, new_backstr.start(loc_del_warning), del_warning_times
 endif else begin
   del_warning_times = ''
 endelse
 
 if count_mod_percent gt 0 then begin
   mod_percent_times = strarr(count_mod_percent)
-  convert_time_stamp, new_backstr.cyclestart, new_backstr.start(loc_mod_percent), mod_percent_times
+  create_time_strings, new_backstr.start(loc_mod_percent), mod_percent_times
 endif else begin
   mod_percent_times = ''
 endelse

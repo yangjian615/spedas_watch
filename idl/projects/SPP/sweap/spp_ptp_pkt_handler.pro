@@ -7,7 +7,54 @@ end
 
 
 
-function spp_swp_spanai_rates_decom,ccsds, ptp_header=ptp_header, apdat=apdat 
+function thermistor_temp,R,parameter=p,b2252=b2252,L1000=L1000
+  if not keyword_set(p) then begin
+    p = {func:'thermistor_temp',note:'YSI 46006 (H10000)',R0:10000.,  $
+      T0:24.988792d, t1:-24.809236d, t2:1.6864476d, t3:-0.12038317d, $
+      t4:0.0081576555d, t5:-0.00057545026d ,t6:3.1337558d-005}
+    if keyword_set(B2252) then p={func:'thermistor_temp',note:'YSI (B2252)',R0:2252.,  $
+      T0:24.990713d, t1:-22.808501d, t2:1.5334736d, t3:-0.10485403d, $
+      t4:0.0076653446d, t5:-0.00084656440d ,t6:6.1095571d-005}
+    if keyword_set(L1000) then p={func:'thermistor_temp',note:'YSI (L1000)',R0:1000.,  $
+      T0:25.00077d, t1:-27.123102d, t2:2.2371834d, t3:-0.20295066d, $
+      t4:0.022239779d, t5:-0.0024144851d ,t6:0.00013611146d}
+;    if keyword_set(YSI4908) then p = {func:'thermistor_temperature_ysi4908',note:'YSI4908'}
+  endif
+  if n_params() eq 0 then return,p
+
+  x = alog(R/p.r0)
+  T = p.t0 + p.t1*x + p.t2*x^2 + p.t3*x^3 + p.t4*x^4 +p.t5*x^5 +p.t6*x^6
+  return,t
+
+end
+
+
+
+
+function spp_sweap_therm_temp,dval,parameter=p
+  if not keyword_set (p) then begin
+;    p = {func:'mvn_sep_therm_temp2',R1:10000d, xmax:1023d, Rv:1d8, thm:thermistor_temp()}
+     p = {func:'spp_sweap_therm_temp',R1:10000d, xmax:1023d, Rv:1d7, thm:'thermistor_resistance_ysi4908'}
+  endif
+
+  if n_params() eq 0 then return,p
+
+;print,dval
+  x = dval/p.xmax
+  rt = p.r1*(x/(1-x*(1+p.R1/p.Rv)))
+  tc = thermistor_resistance_ysi4908(rt,/inverse)
+ ; print,dval,x,rt,tc
+  return,float(tc)
+end
+
+
+;coeff = [0.00E+00,  0.00E+00,  -5.76E-20, 5.01E-15,  -1.68E-10, 2.69E-06,  -2.33E-02, 9.33E+01]
+
+
+
+
+
+function spp_swp_spanai_rates_decom_50x,ccsds, ptp_header=ptp_header, apdat=apdat 
   b = ccsds.data
   psize = 84
   if n_elements(b) ne psize then begin
@@ -51,6 +98,53 @@ end
 
 
 
+function spp_swp_spanai_rates_decom_64x,ccsds, ptp_header=ptp_header, apdat=apdat
+  b = ccsds.data
+  psize = 105+7
+  if n_elements(b) ne psize then begin
+    dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
+    return,0
+  endif
+  
+  ;dprint,time_string(ccsds.time)
+
+  sf0 = ccsds.data[11] and 3
+  ;  print,sf0
+  ;hexprint,ccsds.data[0:29]
+
+  rates = float( reform( spp_sweap_log_decomp( ccsds.data[20:83] , 0 ) ,4,16))
+  ;  rates = float( reform( float( ccsds.data[20:83] ) ,4,16))
+
+  time = ccsds.time
+
+  rates2 = float( reform( spp_sweap_log_decomp( ccsds.data[20+16*4:*] , 0 ) ))
+  ;  rates = float( reform( float( ccsds.data[20:83] ) ,4,16))
+
+  startbins = [0,0,3,3,6,6, 9, 9,12,12,15,17,19,21,23,25]
+  stopbins =  [1,2,4,5,7,8,10,11,13,14,16,18,20,22,24,26]
+;dprint,'rates2'
+;printdat,rates2
+
+;dprint,rates2
+
+  rates_str = { $
+    time: time, $
+    met: ccsds.met,  $
+    seq_cntr: ccsds.seq_cntr, $
+    mode:  b[13] , $
+    valid_cnts: reform( rates[0,*]) , $
+    multi_cnts: reform( rates[1,*]), $
+    start_nostop_cnts: reform( rates[2,*] ), $
+    stop_nostart_cnts:  reform( rates[3,*]) , $
+    starts_cnts: rates2[startbins] , $
+    stops_cnts:  rates2[stopbins] , $   
+    gap: 0 }
+
+  return,rates_str
+end
+
+
+
 function spp_swp_spanai_event_decom,ccsds, ptp_header=ptp_header, apdat=apdat
   b = ccsds.data
   psize = 2048
@@ -60,6 +154,7 @@ function spp_swp_spanai_event_decom,ccsds, ptp_header=ptp_header, apdat=apdat
   endif
 
   time = ccsds.time
+ ; dprint,time_string(time)
   
   wrds = swap_endian(ulong(ccsds.data,20,(2048-20)/4) ,/swap_if_little_endian )
   tf = (wrds and '80000000'x) ne 0
@@ -109,8 +204,7 @@ end
 
 
 
-function spp_swp_spanai_slow_hkp_decom,ccsds , ptp_header=ptp_header, apdat=apdat     ; Slow Housekeeping
-
+function spp_swp_spanai_slow_hkp_decom_version_50x,ccsds , ptp_header=ptp_header, apdat=apdat     ; Slow Housekeeping
 b = ccsds.data
 psize = 68
 if n_elements(b) ne psize then begin
@@ -153,7 +247,7 @@ spai = { $
   HIMON_MCP:  swap_endian(/swap_if_little_endian,  fix(b,44 ) ) * ref*20.408/4095 , $
   TDC_TEMP:  swap_endian(/swap_if_little_endian,  fix(b,46 ) ) * 1. , $
   HVMON_RAW: swap_endian(/swap_if_little_endian,  fix(b,48 ) ) *  ref*1250./4095 , $
-  FPGA_TEMP: swap_endian(/swap_if_little_endian,  fix(b,50 ) )  , $
+  FPGA_TEMP: swap_endian(/swap_if_little_endian,  fix(b,50 ) ) * 1. , $
   HIMON_RAW:  swap_endian(/swap_if_little_endian,  fix(b,52 ) ) * ref*25./ 4095. , $
 ;  spare0
 ;  spare1
@@ -169,6 +263,86 @@ spai = { $
   ACTSTAT_FLAG: b[67]  , $
   GAP: ccsds.gap }
   
+  return,spai
+
+end
+
+function spp_swp_word_decom,buffer,n
+   return,   swap_endian(/swap_if_little_endian,  uint(buffer,n) )
+end
+
+
+
+function spp_swp_spanai_slow_hkp_decom_version_64x,ccsds , ptp_header=ptp_header, apdat=apdat     ; Slow Housekeeping
+
+  b = ccsds.data
+  psize = 69+7
+  if n_elements(b) ne psize then begin
+    dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
+    return,0
+  endif
+
+  sf0 = ccsds.data[11] and 3
+  if sf0 ne 0 then dprint, 'Odd time at: ',time_string(ccsds.time)
+  ref = 5. ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
+n=0
+
+  temp_par= spp_sweap_therm_temp()
+  temp_par_8bit = temp_par
+  temp_par_8bit.xmax = 255
+  temp_par_12bit = temp_par
+  temp_par_12bit.xmax = 4095
+
+  spai = { $
+    time: ccsds.time, $
+    met: ccsds.met,  $
+    delay_time: ptp_header.ptp_time - ccsds.time, $
+    seq_cntr: ccsds.seq_cntr, $
+    REVN: b[12],  $
+    CMDS_REC: spp_swp_word_decom(b,13),  $
+    cmds_unk:  ishft(b[15],4), $
+    cmds_err:  b[15] and 'f'x, $
+    GND0: b[16],  $
+    GND1: b[17],  $
+    Vmon_22VA: b[19] * 0.1118 ,  $
+    vmon_1P5V: b[20] * .0068  ,  $
+    Imon_3P3VA: b[21] * .0149 ,  $
+    vmon_3P3VD: b[22] * .0149 ,  $
+    Imon_N12VA: b[23] * .0456 ,  $
+    Imon_N5VA: b[24]  * .0251 ,  $
+    Imon_P12VA: b[25] * .0449 ,  $
+    Imon_P5VA: b[26] * .0252 ,  $
+    IMON_3P3I: b[28] * 1.15,  $
+    IMON_1P5I: b[29] * .345,  $
+    IMON_P5I: b[30] * 1.955,  $
+    IMON_N5I: b[31] * 4.887,  $
+    LVPS_TEMP: func(b[18] * 1., param = temp_par_8bit),  $
+    ANAL_TEMP: func(b[27] * 1., param = temp_par_8bit),  $
+    TDC_TEMP:  func(spp_swp_word_decom(b,46 )  * 1. ,param = temp_par_12bit) , $
+    FPGA_TEMP: func(spp_swp_word_decom(b,50 )  * 1. ,param = temp_par_12bit) , $
+    HVMON_ACC:  swap_endian(/swap_if_little_endian,  uint(b,32 ) ) * ref*3750./4095. , $
+    HVMON_DEF1: swap_endian(/swap_if_little_endian,  uint(b,34 ) ) * ref*1000./4095., $
+    HIMON_ACC: swap_endian(/swap_if_little_endian,  uint(b,36 ) ) * ref/130.*1000./4095. , $
+    HVMON_DEF2: swap_endian(/swap_if_little_endian,  uint(b,38 ) ) * ref*1000./4095. , $
+    HVMON_MCP:  swap_endian(/swap_if_little_endian,  uint(b,40 ) ) * ref*938./4095 , $
+    HVMON_SPOIL:swap_endian(/swap_if_little_endian,  uint(b,42 ) ) * ref*80./4./4095. , $
+    HIMON_MCP:  swap_endian(/swap_if_little_endian,  uint(b,44 ) ) * ref*20.408/4095 , $
+    HVMON_RAW: swap_endian(/swap_if_little_endian,  uint(b,48 ) ) *  ref*1250./4095 , $
+    HIMON_RAW:  swap_endian(/swap_if_little_endian,  uint(b,52 ) ) * ref*25./ 4095. , $
+    HVMON_HEM: swap_endian(/swap_if_little_endian,   uint(b,54 ) ) *ref *1000./4095  , $
+    DAC_RAW: spp_swp_word_decom(b,56)   , $
+    MAXCNT: swap_endian(/swap_if_little_endian, uint(b, 64 ) ),  $
+    DAC_MCP: spp_swp_word_decom(b,60), $
+    DAC_ACC: spp_swp_word_decom(b,62), $
+    HV_STATUS_FLAG: spp_swp_word_decom(b,58), $
+    Cycle_cnt: spp_swp_word_decom(b,66), $
+    reset_cnt: spp_swp_word_decom(b,68), $
+    user2: 0u, $
+    ACTSTAT_FLAG: b[72]  , $
+    user3: b[73] ,$
+    user4: spp_swp_word_decom(b,74) ,$ 
+    GAP: ccsds.gap }
+
   return,spai
 
 end
@@ -206,6 +380,7 @@ function spp_ccsds_decom,buffer             ; buffer should contain bytes for a 
   endif
   header = swap_endian(uint(buffer[0:11],0,6) ,/swap_if_little_endian )
   MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16) + (header[5] and '3'x) * 2d^15/150000
+  
   utime = spp_spc_met_to_unixtime(MET)
   ccsds = { $
     version_flag: byte(ishft(header[0],-8) ), $
@@ -220,7 +395,7 @@ function spp_ccsds_decom,buffer             ; buffer should contain bytes for a 
     gap : 0b }
 
   if MET lt -1e5 then begin
-    dprint,dlevel=3,'Invalid MET: ',MET,' For packet type: ',ccsds.apid
+    dprint,dlevel=1,'Invalid MET: ',MET,' For packet type: ',ccsds.apid
     ccsds.time = !values.d_nan
   endif
 
@@ -295,9 +470,16 @@ end
 
 
 pro spp_swp_apid_data_init,save=save
-  spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom',tname='spp_spanai_hkp_',tfields='*',save=save
-  spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom',tname='spp_spanai_rates_',tfields='*',save=save
+
+if 0 then begin
+  spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom_version_50x',tname='spp_spanai_hkp_',tfields='*',save=save
+  spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_50x',tname='spp_spanai_rates_',tfields='*',save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
+endif else begin
+  spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom_version_64x',tname='spp_spanai_hkp_',tfields='*',save=save
+  spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_64x',tname='spp_spanai_rates_',tfields='*',save=save
+  spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save  
+endelse
   
 ;  spp_apid_data,'359'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
 ;  spp_apid_data,'360'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
@@ -312,7 +494,10 @@ end
 
 pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
 
+
   ccsds=spp_ccsds_decom(buffer)
+  
+  ;dprint,time_string(ccsds.time)
     
   if ~keyword_set(ccsds) then begin
     dprint,'Invalid CCSDS packet'
@@ -399,7 +584,7 @@ end
 pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   ptp_size = swap_endian( uint(buffer,0) ,/swap_if_little_endian)   ; first two bytes provide the size
   if ptp_size ne n_elements(buffer) then begin
-    dprint,time_string(time,/local_time),'PTP size error- size is ',ptp_size
+    dprint,time_string(time,/local_time),' PTP size error- size is ',ptp_size
 ;    hexprint,buffer
 ;    savetomain,buffer,time
     return
@@ -437,6 +622,7 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   endif
   ptp_header ={ ptp_time:utime, ptp_scid: sc_id, ptp_source:source, ptp_spare:spare, ptp_path:path, ptp_size:ptp_size }
   spp_ccsds_pkt_handler, buffer[17:*],ptp_header = ptp_header
+ ; printdat,time_string(ptp_header.ptp_time)
   return
 end
 

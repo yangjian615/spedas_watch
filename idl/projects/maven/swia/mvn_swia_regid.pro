@@ -18,8 +18,8 @@
 ;	REGOUT: Tplot structure containing region IDs
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-01 18:46:58 -0800 (Thu, 01 Jan 2015) $
-; $LastChangedRevision: 16559 $
+; $LastChangedDate: 2015-02-23 07:13:25 -0800 (Mon, 23 Feb 2015) $
+; $LastChangedRevision: 17024 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_regid.pro $
 ;
 ;-
@@ -60,9 +60,6 @@ alt = sqrt(ux^2+uy^2+uz^2)-RM
 
 nmagint = floor(n_elements(mag.x)/128L)
 
-mbx = fltarr(nmagint)
-mby = fltarr(nmagint)
-mbz = fltarr(nmagint)
 mrx = fltarr(nmagint)
 mry = fltarr(nmagint)
 mrz = fltarr(nmagint)
@@ -75,14 +72,30 @@ for i = 0L,nmagint-1 do begin
 	mrz(i) = stddev(mag.y[i*128:i*128+127,2],/nan)
 endfor
 
+nmag2 = floor(n_elements(lmag.x)/16L)
+mrx2 = fltarr(nmag2)
+mry2 = fltarr(nmag2)
+mrz2 = fltarr(nmag2)
+mt2 = fltarr(nmag2)
+
+for i = 0L,nmag2-1 do begin
+	mt2(i) = mean(lmag.x[i*16:i*16+15],/nan,/double)
+	mrx2(i) = stddev(lmag.y[i*16:i*16+15,0],/nan)
+	mry2(i) = stddev(lmag.y[i*16:i*16+15,1],/nan)
+	mrz2(i) = stddev(lmag.y[i*16:i*16+15,2],/nan)
+endfor
+
+
 magx = interpol(lmag.y(*,0),lmag.x,time)
 magy = interpol(lmag.y(*,1),lmag.x,time)
 magz = interpol(lmag.y(*,2),lmag.x,time)
 mag = sqrt(magx*magx+magy*magy+magz*magz)
 magstd = interpol(sqrt(mrx*mrx+mry*mry+mrz*mrz),mt,time)
+magstd2 = interpol(sqrt(mrx2*mrx2+mry2*mry2+mrz2*mrz2),mt2,time)
 
 store_data,'magave',data = {x:time,y:[[magx],[magy],[magz]]}
 store_data,'magstd',data = {x:time,y:magstd}
+store_data,'magstd2',data= {x:time,y:magstd2}
 
 regid = fltarr(nel)
 

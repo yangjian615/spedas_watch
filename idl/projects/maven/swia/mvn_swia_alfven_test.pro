@@ -17,13 +17,13 @@
 ;AUTHOR:	J. Halekas	
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-02-02 12:46:52 -0800 (Mon, 02 Feb 2015) $
-; $LastChangedRevision: 16832 $
+; $LastChangedDate: 2015-02-23 06:42:11 -0800 (Mon, 23 Feb 2015) $
+; $LastChangedRevision: 17022 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_alfven_test.pro $
 ;
 ;-
 
-pro mvn_swia_alfven_test, bdata = bdata, vdata = vdata, tdata = tdata, trange = trange, alpha = alpha
+pro mvn_swia_alfven_test, bdata = bdata, vdata = vdata, tdata = tdata, ndata = ndata, trange = trange, alpha = alpha
 
 if not keyword_set(bdata) then bdata = 'mvn_B_1sec_MAVEN_MSO'
 if not keyword_set(ndata) then ndata = 'nproton'

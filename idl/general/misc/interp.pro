@@ -69,14 +69,14 @@ endif
 if c ne nx then return, interp(y[good],x[good],u,index=i,no_extrap=no_extrap,interp_thresh=int_th)
 
 ; insure that x is monotonically increasing
-if x[0] gt x[nx-1] then return,interp(reverse(y),reverse(x),u,index=i,interp_thresh=int_th)
+if x[0] gt x[nx-1] then return,interp(reverse(y),reverse(x),u,index=i,interp_thresh=int_th,no_extrap=no_extrap)
 
 
 if not keyword_set(ch_mon) then begin
   dx = x-shift(x,1)
   dx[0] = 0
   bad = where(dx lt 0,c)
-  if c ne 0 then dprint,'Warning: Data not monotonic!'
+  if c ne 0 then dprint,dlevel=2,'Warning: Data not monotonic!'
 endif
 
 if keyword_set(int_th) then begin

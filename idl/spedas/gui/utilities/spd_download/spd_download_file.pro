@@ -53,8 +53,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-18 16:27:58 -0800 (Wed, 18 Feb 2015) $
-;$LastChangedRevision: 17004 $
+;$LastChangedDate: 2015-02-23 15:13:04 -0800 (Mon, 23 Feb 2015) $
+;$LastChangedRevision: 17025 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -113,7 +113,7 @@ if undefined(progress_object) then begin
 endif
 
 url = url_in
-filename = filename_in
+filename = file_expand_path(filename_in)
 
 local_info = file_info(filename)
 
@@ -153,14 +153,14 @@ endif
 
 
 ; Set neturl object properties
-;  -if "url" keyword is passed to get() then all "url_*" properties are ignored,
-;   set them manually here to avoid that
 ;  -any keywords passed through _extra will take precedent
 ;----------------------------------------
 
 ;flag to tell if there was an exception thrown in the idlneturl callback function
 callback_error = ptr_new(0b)
 
+;if the "url" keyword is passed to get() then all "url_*" properties are ignored,
+;set them manually here to avoid that
 url_struct = parse_url(url)
 
 net_object->setproperty, $
@@ -174,8 +174,6 @@ net_object->setproperty, $
             url_port=url_struct.port, $
             url_username=url_struct.username, $
             url_password=url_struct.password, $
-            
-            timeout=timeout, $
             
             _extra=_extra
 
@@ -191,9 +189,13 @@ net_object->setproperty, $
                            }
 
 
+
 ; Download
 ;  -an unsuccessful get will throw an exception and halt execution, 
 ;   the catch should allow these to be handled gracefully
+;  -the file will be downloaded to temporary location to avoid
+;   clobbering current files and/or leaving empty files
+;   in the case of an error
 ;----------------------------------------
 
 dprint, dlevel=2, 'Downloading: '+url
@@ -203,27 +205,41 @@ if ~keyword_set(string_array) then begin
   spd_download_mkdir, file_dirname(filename), dir_mode
 endif
 
+;download file to temporary location
+;  -IDLnetURL creates the destination file almost immediately, clobbering any
+;   existing file.  If an error occurs (e.g. incorrect URL, server timeout)
+;   then an empty file will persist afterward.  Using a temporary filename
+;   prevents current valid files from being immediately overwritten and allows
+;   empty or incomplete files to be deleted safely in the case of an error.
+file_suffix = spd_download_temp()
+
 catch, error
 if error eq 0 then begin
 
   ;get the file
-  filepath = net_object->get(filename=filename,string_array=string_array)
+  filepath = net_object->get(filename=filename+file_suffix,string_array=string_array)
   
   if ~keyword_set(string_array) then begin
     
-    dprint, dlevel=2, 'Download complete:  '+filepath
-    
+    ;move file to the requested location
+    file_move, filepath, filename, /overwrite
+
     ;set permissions for downloaded file
     if ~undefined(file_mode) then begin
-      file_chmod, filepath, file_mode
+      file_chmod, filename, file_mode
     endif
+
+    dprint, dlevel=2, 'Download complete:  '+filename
 
   endif
 
-  output = filepath
+  output = filename
 
 endif else begin
   catch, /cancel
+
+  ;remove temporary file
+  file_delete, filename+file_suffix, /allow_nonexistent
 
   ;handle exceptions from idlneturl
   spd_download_handler, net_object=net_object, $

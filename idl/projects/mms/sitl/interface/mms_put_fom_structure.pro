@@ -5,6 +5,19 @@ pro mms_put_fom_structure, new_fomstr, old_fomstr, local_dir, error_flags, $
                            error_indices, orange_warning_indices, yellow_warning_indices, $
                            problem_status, warning_override = warning_override
                            
+                           
+if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
+  data_dir = local_dir + 'data/mms/'
+endif else begin
+  data_dir = local_dir + '/data/mms/'
+endelse
+
+temptime = systime(/utc)
+
+yearstr = strmid(temptime, 20, 4)
+
+dir_path = data_dir + 'sitl/sitl_selections/' + yearstr + '/'
+
 ; Check the fom structure
 mms_check_fom_structure, new_fomstr, old_fomstr, error_flags, orange_warning_flags, $
   yellow_warning_flags, error_msg, orange_warning_msg, yellow_warning_msg, $
@@ -57,8 +70,10 @@ if (count_errors eq 0) then begin
     endif else begin
       daystr = string(day_val, format = '(I2)')
     endelse
-  
-    savefile = local_dir + 'sitl_selections_' + yearstr + '-' + monew + $
+    
+    file_mkdir, dir_path
+
+    savefile = dir_path + 'sitl_selections_' + yearstr + '-' + monew + $
                '-' + daystr + '-' + hrstr + '-' + minstr + '-' + secstr + '.sav'
   
     print, savefile

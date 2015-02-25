@@ -178,7 +178,8 @@ FUNCTION eva_data_load_daily, filename, cache_data_dir
       file_mkdir,svdir
 
       print, 'dir='+dir
-      eva_tplot_save,file=fullname, tpv
+      ;eva_tplot_save,file=fullname, tpv
+      tplot_save,file=fullname,tpv
     endif
     answer = 'Yes'
   endif else begin

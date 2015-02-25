@@ -17,7 +17,7 @@
 ;        radio buttons were checked in the EVA's main panel.
 ; 
 ; DATA COMPONENT: If a quantity is a vector (e.g. magnetic field), then
-;        the tplot variable contains tne entire quantity (e.g. Bx, By, and Bz)
+;        the tplot variable contains the entire quantity (e.g. Bx, By, and Bz)
 ;        and shows all these component in a panel. Here, you can add a suffix 
 ;        to extract only one component of the vector.
 ;        

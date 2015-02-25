@@ -1,4 +1,14 @@
 
+PRO eva_sitl_cleanup, parent=parent
+  @eva_sitl_com
+;  id_sitl = widget_info(parent, find_by_uname='eva_sitl')
+;  widget_control, id_sitl, GET_VALUE=s
+  
+  obj_destroy,sg.myview
+  obj_destroy,sg.myviewB
+  obj_destroy,sg.myfont
+  obj_destroy,sg.myfontL
+END
 
 PRO eva_sitl_fom_recover,strcmd
   compile_opt idl2

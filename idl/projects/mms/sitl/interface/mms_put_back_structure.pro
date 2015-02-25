@@ -20,6 +20,8 @@ mms_back_structure_check_new_segments, new_backstr, new_segs, new_error_flags, o
                                        new_error_times, orange_warning_times, yellow_warning_times, $
                                        new_error_indices, orange_warning_indices, yellow_warning_indices
 
+
+
 loc_mod_errors = where(mod_error_flags gt 0, count_mod_errors)
 loc_mod_warnings = where(mod_warning_flags gt 0, count_mod_warnings)
 loc_new_errors = where(new_error_flags gt 0, count_new_errors)
@@ -115,7 +117,19 @@ if count_mod_errors eq 0 and count_new_errors eq 0 then begin
         daystr = string(day_val, format = '(I2)')
       endelse
 
-      savefile = local_dir + 'bdm_sitl_changes_' + yearstr + '-' + monew + $
+      if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
+        data_dir = local_dir + 'data/mms/'
+      endif else begin
+        data_dir = local_dir + '/data/mms/'
+      endelse
+
+      temptime = systime(/utc)
+
+      dir_path = data_dir + 'sitl/bdm_sitl_changes/' + yearstr + '/'
+      
+      file_mkdir, dir_path
+      
+      savefile = dir_path + 'bdm_sitl_changes_' + yearstr + '-' + monew + $
                  '-' + daystr + '-' + hrstr + '-' + minstr + '-' + secstr + '.sav'
 
       fomstr = sub_segments

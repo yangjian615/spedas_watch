@@ -3,10 +3,10 @@
 
 
 ;; Set up local_dir where you have FOM data stored
-local_dir = '/Users/frederickwilder/IDLWorkspace82/abs_data/'
+local_dir = '/Users/frederickwilder/'
 ;
 ;Grab latest fom structure from SOC
-get_latest_fom_from_soc, local_dir, fom_file
+get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_message
 
 restore, fom_file, /verbose
 

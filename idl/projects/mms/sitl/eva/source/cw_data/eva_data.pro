@@ -196,6 +196,7 @@ FUNCTION eva_data_targettime, state, evTop
   type = size(r, /type) ;will be 11 if object has been created
   check = (type eq 11)  
   if check then begin
+    print, 'check=',check
     unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, evTop)
     if n_tags(unix_FOMstr) gt 0 then begin
       nmax = n_elements(unix_FOMstr.timestamps)
@@ -250,6 +251,7 @@ FUNCTION eva_data_event, ev
 
   ;-----
   case ev.id of
+    state.btnLogin: state = eva_data_targettime(state,ev.TOP)
     state.fldStartTime: begin
       log.o,'***** EVENT: fldStartTime *****'
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
@@ -321,7 +323,6 @@ FUNCTION eva_data_event, ev
     
     state.bgTHM: state = eva_data_probelist(state)
     state.bgMMS: state = eva_data_probelist(state)
-    state.btnLogin: state = eva_data_targettime(state,ev.TOP)
     state.drpSet: begin
       log.o,'***** EVENT: drpSet *****'
       str_element,/add,state,'paramID',ev.index

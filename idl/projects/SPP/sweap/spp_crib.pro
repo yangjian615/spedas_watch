@@ -1,6 +1,15 @@
 ;compile_opt idl2
 
 
+function spp_swp_spani_thermaltest1_files
+src = spp_file_source()
+pathnames = 'spp/sweap/prelaunch/gsedata/EM/spanai/201502??_*/PTP_data.dat'
+printdat,src
+files=file_retrieve(pathnames,_extra=src)
+return,files
+end
+
+
 
 
 pro poisson_plot,s,index=index
@@ -68,6 +77,8 @@ csize = 2
 spp_apid_data,'3B9'x,apdata=ap
 ;print_struct,ap
 events = *ap.dataptr
+if not keyword_set(tragne) then ctime,trange
+
 if keyword_set(trange) then begin
   w = where(events.time ge trange[0] and events.time le trange[1],nw)
   if nw ne 0 then events = events[w] else dprint,'No points selected - using all'
@@ -131,7 +142,7 @@ end
 
 pro spp_set_tplot_options
   ylim,'*rate*CNTS',1,1,1
-  options,'*rates*CNTS',labels='CH'+strtrim(indgen(16),2),labflag=-1,yrange=[1,1],/ylog,ystyle=3,psym=-1,symsize=.5
+  options,'*rates*CNTS',labels='CH'+strtrim(indgen(16),2),labflag=-1,yrange=[.5,1e3],/ylog,ystyle=3,psym=-1,symsize=.5
   options,'*rates*CNTS_t',labels='CH'+strtrim(indgen(16),2),labflag=-1,yrange=[.01,100],/ylog,ystyle=3,psym=-1,symsize=.5
   options,'*events*',psym=3,ystyle=3
   store_data,'log_MSG',dlimit=struct(tplot_routine='strplot')
@@ -161,7 +172,8 @@ exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
 
 host = 'ABIAD-SW'
 host = 'localhost'
-recorder,recorder_base,title='GSEOS PTP',port=2024,host=host,exec_proc='spp_ptp_stream_read',destination='spp_raw_YYYYMMDD_hhmmss.ptp',/set_proc,/set_connect,get_filename=filename
+host = '128.32.98.101'
+recorder,recorder_base,title='GSEOS PTP',port=2024,host=host,exec_proc='spp_ptp_stream_read',destination='spp_raw_YYYYMMDD_hhmmss.ptp';,/set_proc,/set_connect,get_filename=filename
 printdat,recorder_base,filename,exec_base,/value
 
 spp_swp_apid_data_init,save=1
