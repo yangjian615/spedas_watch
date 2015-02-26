@@ -91,8 +91,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-19 16:14:34 -0800 (Thu, 19 Feb 2015) $
-; $LastChangedRevision: 17017 $
+; $LastChangedDate: 2015-02-24 13:57:54 -0800 (Tue, 24 Feb 2015) $
+; $LastChangedRevision: 17035 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -214,14 +214,20 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
      IF ~keyword_set(id) THEN BEGIN
         idx = nn(mtime, trange)
         emode = mode[idx]
-        CASE emode OF
-           1: IF (aflg) THEN apid = 'cd' ELSE apid = 'cc'
-           2: IF (aflg) THEN apid = 'cf' ELSE apid = 'ce'
-           3: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
-           5: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
-           6: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
-           ELSE: apid = 'ca'
-        ENDCASE 
+        emode = emode[uniq(emode)]
+        IF N_ELEMENTS(emode) EQ 1 THEN BEGIN
+           CASE emode OF
+              1: IF (aflg) THEN apid = 'cd' ELSE apid = 'cc'
+              2: IF (aflg) THEN apid = 'cf' ELSE apid = 'ce'
+              3: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
+              5: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
+              6: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
+              ELSE: apid = 'ca'
+           ENDCASE 
+        ENDIF ELSE BEGIN
+           dprint, 'The selected time interval includes multiple APID modes.'
+           apid = 'ca'
+        ENDELSE 
         undefine, idx, emode
      ENDIF ELSE apid = id 
      
@@ -291,7 +297,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
               lab2 += 'APP (m) '
            ENDIF 
            IF keyword_set(plot_sc) THEN $
-              mvn_spc_fov_blockage, trange=MEAN(trange), /static, clr=1, /plot_sc, /invert
+              mvn_spc_fov_blockage, trange=MEAN(trange), /static, clr=1, /invert_phi, /invert_theta
            
            if keyword_set(label) then begin
               lab=strcompress(indgen(ddd.nbins),/rem)

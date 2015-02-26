@@ -26,8 +26,8 @@
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-11 12:08:23 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16952 $
+; $LastChangedDate: 2015-02-24 19:03:51 -0800 (Tue, 24 Feb 2015) $
+; $LastChangedRevision: 17038 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -82,7 +82,7 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
     spec = mvn_swe_engy[iref]
   endelse
   
-  old_units = spec.units_name
+  old_units = spec[0].units_name
   mvn_swe_convert_units, spec, 'counts'
 
   if (keyword_set(sum) and (count gt 1)) then begin

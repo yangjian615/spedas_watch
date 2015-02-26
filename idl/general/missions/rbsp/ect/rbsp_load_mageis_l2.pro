@@ -31,8 +31,8 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2013-12-17 17:14:08 -0800 (Tue, 17 Dec 2013) $
-;   $LastChangedRevision: 13699 $
+;   $LastChangedDate: 2015-02-24 12:41:45 -0800 (Tue, 24 Feb 2015) $
+;   $LastChangedRevision: 17034 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/ect/rbsp_load_mageis_l2.pro $
 ;
 ;-
@@ -56,7 +56,7 @@ pro rbsp_load_mageis_l2,probe=probe,get_mag_ephem=get_mag_ephem, $
 
 		rbspx = 'rbsp'+ p_var[p]
 		
-		format=rbspx+'/mageis/level2/'+rbspx+'_rel02_ect-mageis-L2_YYYYMMDD_v*.cdf'
+		format=rbspx+'/mageis/level2/'+rbspx+'_rel0?_ect-mageis-L2_YYYYMMDD_v*.cdf'
 		prefix=rbspx+'_ect_mageis_L'+slevel+'_'
 
      	relpathnames=file_dailynames(file_format=format,trange=trange,addmaster=addmaster)

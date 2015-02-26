@@ -1,5 +1,33 @@
-function maven_spacecraft_vertices
+;+
+; FUNCTION:        MAVEN_SPACECRAFT_VERTICES
+;
+; PURPOSE:         Collection of MAVEN spacecraft/instrument vertices and
+;                  rotation matrices for the purpose of plotting a model in
+;                  IDL. Vertices are in units of [mm] and in MAVEN_SPACECRAFT
+;                  coordinates.   
+;
+; INPUT:           None.
+;
+; OUTPUT:          Structure containing vertices and rotation matrices. 
+;
+; KEYWORDS:        
+;   
+;     PREC:        Number of points per side.
+;
+; CREATED BY:      Roberto Livi on 2015-02-23.       
+;
+; VERSION:
+;   $LastChangedBy: rlivi2 $
+;   $LastChangedDate: 2015-02-24 10:07:26 -0800 (Tue, 24 Feb 2015) $
+;   $LastChangedRevision: 17032 $
+;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/anc/maven_spacecraft_vertices.pro $
+;-
 
+
+function maven_spacecraft_vertices, prec=prec
+
+
+  if ~keyword_set(prec) then prec=10
 
   ;;-------------------------------------------------
   ;;Vertices of MAVEN in MAVEN Spacecraft coordinates
@@ -424,21 +452,6 @@ function maven_spacecraft_vertices
   vertex=reform(vertex, nn1, nn2, nn3)
 
 
-  ;;-----------------------------------
-  ;;Create XYZ coordinates for plotting
-  xx=fltarr(5,n2,n3)
-  yy=fltarr(5,n2,n3)
-  zz=fltarr(5,n2,n3)
-  for iobj=0, n3-1 do $
-     for i=0, n2-1 do begin           
-     box=vertex[*,*,iobj]
-     ind=index[*,*,iobj]           
-     indd=[ind[*,i],ind[0,i]]
-     xx[*,i,iobj]=box[0,indd]
-     yy[*,i,iobj]=box[1,indd]
-     zz[*,i,iobj]=box[2,indd]
-  endfor
-  
 
   return, {vertex:vertex, $
            index:index, $

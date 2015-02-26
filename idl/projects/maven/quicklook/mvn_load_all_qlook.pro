@@ -19,8 +19,8 @@
 ;HISTORY:
 ; 16-jul-2013, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-23 16:20:00 -0800 (Mon, 23 Feb 2015) $
-; $LastChangedRevision: 17028 $
+; $LastChangedDate: 2015-02-24 14:54:06 -0800 (Tue, 24 Feb 2015) $
+; $LastChangedRevision: 17036 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_load_all_qlook.pro $
 Pro mvn_load_all_qlook, date_in = date_in, l0_input_file = l0_input_file, $
                         device = device, stop_in_catch = stop_in_catch, $
@@ -152,7 +152,6 @@ If(is_struct(ddd)) Then Begin
    ddd1.ztitle = 'SWIA!cEnergy'
    store_data, 'mvn_swis_en_energy', data = ddd1
 Endif Else store_data, 'mvn_swis_en_energy', data = ddd
-stop
 
 skip_swia:
 

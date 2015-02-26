@@ -1,15 +1,62 @@
+;+
+;PROCEDURE:      MVN_SPC_FOV_BLOCKAGE
+;
+;PURPOSE:        Plot MAVEN spacecraft/instrument vertices in spherical
+;                coordiantes (phi-> -180-180, theta-> -90-90). The
+;                location and orientation can be changed by selecting
+;                the instrument of choice as a keyword. 
+;
+;OUTPUT:         Oplot of MAVEN spacecraft and isntruments.
+;
+;KEYWORDS:
+;
+;  POLYFILL:     FOR FUTURE VERSION
+;
+;  TRANGE:       Time selection.
+;
+;  CLR:          Color of vertices and fill.
+;
+;  INVERT_PHI:   Invert the phi coordiantes.
+;
+;  INVERT_THETA: Invert the theta coordiantes.
+;
+;  SWEA:         Change coordinates/FOV to match SWEA.
+;
+;  SWIA:         Change coordinates/FOV to match SWIA.
+;
+;  STATIC:       Change coordinates/FOV to match STATIC.
+;
+;  SEP1:         Change coordinates/FOV to match SEP1.
+;
+;  SEP2:         Change coordinates/FOV to match SEP2.
+;
+;CREATED BY:     Roberto Livi on 2015-02-23.
+;
+;EXAMPLES:       1. SWEA
+;                mvn_spc_fov_blockage,clr=200,/swea,/invert_phi,/invert_theta
+;
+;
+; VERSION:
+;   $LastChangedBy: rlivi2 $
+;   $LastChangedDate: 2015-02-24 10:08:15 -0800 (Tue, 24 Feb 2015) $
+;   $LastChangedRevision: 17033 $
+;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/anc/mvn_spc_fov_blockage.pro $
+;-
+
+
+
+
 pro mvn_spc_fov_blockage, trange=trange,$
-                          plot_sc=plot_sc,$
+                          clr=clr,$  
                           polyfill=polyfill,$
-                          invert=invert,$
+                          invert_phi=invert_phi,$
+                          invert_theta=invert_theta,$
                           swea=swea,$
                           swia=swia,$
                           sep1=sep1,$
                           sep2=sep2,$
-                          static=static, $
-                          clr=clr,$
-                          rot90=rot90,$
-                          test=test
+                          static=static
+
 
 
   ;;------------------------------
@@ -20,17 +67,17 @@ pro mvn_spc_fov_blockage, trange=trange,$
   vertex=inst.vertex
   index=inst.index
   
+
   ;;--------------------------
   ;;Check vertex array size
   n1=3
   n2=8
   n3=n_elements(vertex)/n1/n2
-
      
 
   ;;------------------------------
   ;;Instrument and Gimbal location
-  
+  ;;------------------------------
   ;;Inner Gimbal
   g1_gim_loc=[2589.00,203.50, 2044.00]
   ;;Outer Gimbal
@@ -47,7 +94,6 @@ pro mvn_spc_fov_blockage, trange=trange,$
   sep2_loc=[ 1245.00,-1143.00,2080.00]
 
 
-
   ;;------------------------------
   ;;User selected instrument
   if keyword_set(static) then inst_loc=sta_loc
@@ -55,7 +101,6 @@ pro mvn_spc_fov_blockage, trange=trange,$
   if keyword_set(swia)   then inst_loc=swi_loc
   if keyword_set(sep1)   then inst_loc=sep1_loc
   if keyword_set(sep2)   then inst_loc=sep2_loc
-
 
   ;;-------------------------------------------
   ;;Define instrument coordinates
@@ -72,9 +117,8 @@ pro mvn_spc_fov_blockage, trange=trange,$
      inst_rot=reform(rot_matrix[*,*,pname]) else $
         if inst_rot_name ne 'STATIC' then stop, 'ERROR'
 
-
   ;;---------------------------------------------
-  ;;Use SPICE for STATIC Gimbal adjustment  
+  ;;Get STATIC location and rotation matrix
   if keyword_set(static) then begin
 
      if ~keyword_set(trange) then begin
@@ -91,11 +135,11 @@ pro mvn_spc_fov_blockage, trange=trange,$
      time_valid = spice_valid_times(et[0],object=check_objects,tol=tol)     
 
 
-     ;;---------------------------------------------------------------
-     ;;Change STATIC original location depending on the rotation of
+     ;;---------------------------------------------------
+     ;;Change STATIC location depending on the rotation of
      ;;the inner and outer gimbal.
+     ;;NOTE: In this case inst_loc = sta_loc
 
-     ;;NOTE: In this case inst_loc is sta_loc
      ;;######################################
      ;;1.: Rotate inst_loc about outer Gimbal
      ;;a. Use location of 2nd gimbal as rotation axis
@@ -143,36 +187,11 @@ pro mvn_spc_fov_blockage, trange=trange,$
   ;;NOTE: Vertices are originally in spacecraft coordinates.
   old_ver=reform(vertex,n1,n2*n3)
   new_ver=old_ver*0.
-  ;;######## USING DAVIN'S ROUTINE #############
-  ;;new_ver2=spice_vector_rotate($
-  ;;      old_ver,$
-  ;;      replicate(utc[0],n2*n3),$
-  ;;      'MAVEN_SPACECRAFT',$
-  ;;      inst_rot,$
-  ;;      check_objects='MAVEN_SPACECRAFT')
-  ;;vertex2=reform(new_ver2,n1,n2,n3)
-  ;;###########################################
   for i=0, n2*n3-1 do $
      new_ver[*,i]= inst_rot # old_ver[*,i]
   vertex=reform(new_ver,n1,n2,n3)
   new_shift=inst_rot # inst_loc
   inst_loc=new_shift
-
-
-  ;;TEST PLOT
-  if keyword_set(test) then begin
-     plot, [0,1], [0,1],$
-           /nodata,$
-           xstyle=1,$
-           ystyle=1,$
-           xrange=[-180,180],$
-           yrange=[-90,90]
-  endif
-
-
-  ;;---------------------------------------------------------
-  ;;Plot MAVEN
-  ;if keyword_set(plot_sc) then begin
 
   ;;----------------------------------------------
   ;;Change coordinates from cartesian to spherical
@@ -185,20 +204,18 @@ pro mvn_spc_fov_blockage, trange=trange,$
   theta=reform(theta1, n2, n3)
   phi=reform(phi1, n2, n3)
   
-  ;;------------------------------------------------------
-  ;;Invert in case we want to view particle flow direction
-  if keyword_set(invert) or keyword_set(swea) then inv=-1. else inv=1.
+  ;;--------------
+  ;;Invert Phi
+  if keyword_set(invert_phi) then $
+     phi=(((phi+180.)+180.) mod 360.)-180.
 
-  ;;------------------------------------------------------
-  ;;Rotate by 90 degrees
-  if keyword_set(rot90) then begin
-     phi_rot=90.
-     phi=phi+90.
-     pp=where(phi gt 180,cc)
-     if cc ne 0 then phi[pp]=phi[pp]-360.
-  endif
-  
-  ;;---------------------------------------------
+  ;;---------------
+  ;;Invert Theta
+  if keyword_set(invert_theta) then $
+        theta=(((theta+90.)+90.) mod 180.)-90.
+
+
+  ;;-------------------------------
   ;;Select Color
   if keyword_set(clr) then clr1=clr else clr1=250
   
@@ -211,11 +228,11 @@ pro mvn_spc_fov_blockage, trange=trange,$
         ind=index[*,*,iobj]           
         indd=[ind[*,i],ind[0,i]]
         if keyword_set(polyfill) then $
-           polyfill, inv*phi_temp[indd],$
-                     inv*theta_temp[indd],$
+           polyfill, phi_temp[indd],$
+                     theta_temp[indd],$
                      color=clr1 
-        oplot, inv*phi_temp[indd],$
-               inv*theta_temp[indd],$
+        oplot, phi_temp[indd],$
+               theta_temp[indd],$
                color=clr1
      endfor
   endfor  
@@ -226,6 +243,13 @@ end
 
 
 
+
+
+
+
+;;;###################################################################
+;;;OLD CODE (may be useful later)
+;;;###################################################################
 
 
 
@@ -244,8 +268,6 @@ end
 
 
 
-
-     ;;;OLD CODE (may be useful later)
      ;;############################################
      ;;1st: Rotate STATIC FOV center location about 
      ;;Xs/c by theta degrees.
@@ -286,3 +308,12 @@ end
      ;sta_loc=sta_loc_new2+g1_gim_loc
      
 
+  ;;######## USING DAVIN'S ROUTINE #############
+  ;;new_ver2=spice_vector_rotate($
+  ;;      old_ver,$
+  ;;      replicate(utc[0],n2*n3),$
+  ;;      'MAVEN_SPACECRAFT',$
+  ;;      inst_rot,$
+  ;;      check_objects='MAVEN_SPACECRAFT')
+  ;;vertex2=reform(new_ver2,n1,n2,n3)
+  ;;###########################################

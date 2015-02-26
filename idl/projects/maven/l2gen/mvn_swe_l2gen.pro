@@ -15,8 +15,8 @@
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14, jmm,
 ; jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-04 14:38:32 -0800 (Wed, 04 Feb 2015) $
-; $LastChangedRevision: 16870 $
+; $LastChangedDate: 2015-02-24 18:45:38 -0800 (Tue, 24 Feb 2015) $
+; $LastChangedRevision: 17037 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
 Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
@@ -42,7 +42,7 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
   message, /info, 'PROCESSING: '+time_string(t_start)
   timespan, t_start, 1
 ; get SPICE kernels
-  mvn_swe_spice_init, trange = trange
+  mvn_swe_spice_init, trange = trange, /force
 
 ; load L0 data
   mvn_swe_load_l0, trange_str
