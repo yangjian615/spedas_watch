@@ -20,9 +20,9 @@
 ; SEE ALSO:
 ;   thm_part_dist_array, thm_part_smooth, thm_part_subtract,thm_part_omni_convert
 ;
-;  $LastChangedBy: aaflores $
-;  $LastChangedDate: 2014-01-10 18:02:25 -0800 (Fri, 10 Jan 2014) $
-;  $LastChangedRevision: 13850 $
+;  $LastChangedBy: pcruce $
+;  $LastChangedDate: 2015-02-25 13:10:28 -0800 (Wed, 25 Feb 2015) $
+;  $LastChangedRevision: 17040 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_time_interpolate.pro $
 ;-
 
@@ -41,8 +41,8 @@ pro thm_part_time_interpolate,source,target,error=error,_extra=ex
   
   ;concatenate time list from all target modes
   for i = 0,n_elements(target)-1 do begin
-    target_mid_times = array_concat(((*target[i]).start_time+(*target[i]).end_time)/2d,target_mid_times)        
-    target_delta_times = array_concat(((*target[i]).end_time-(*target[i]).start_time),target_delta_times)    
+    target_mid_times = array_concat(((*target[i]).time+(*target[i]).end_time)/2d,target_mid_times)        
+    target_delta_times = array_concat(((*target[i]).end_time-(*target[i]).time),target_delta_times)    
   endfor
   
   
@@ -50,25 +50,25 @@ pro thm_part_time_interpolate,source,target,error=error,_extra=ex
   
     ;handle target times that occur between modes.  Since we can't interpolate these reliably in the general case, we're treating them as missing data
     if i eq 0 then begin ;This handles the case where we're checking for all targets before the first source mode
-      idx = where(target_mid_times lt min((*source[0]).start_time),c)
+      idx = where(target_mid_times lt min((*source[0]).time),c)
       if c gt 0 then begin
         out_dist = ptr_new(replicate((*source[0])[0],c))
-        (*out_dist[0]).start_time = target_mid_times[idx]-target_delta_times[idx]/2d ;using the target time width to resize the time bin after interpolation only works because the spacecraft runs in snapshot mode 
+        (*out_dist[0]).time = target_mid_times[idx]-target_delta_times[idx]/2d ;using the target time width to resize the time bin after interpolation only works because the spacecraft runs in snapshot mode 
         (*out_dist[0]).end_time = target_mid_times[idx]+target_delta_times[idx]/2d 
         (*out_dist[0]).data = !VALUES.D_NAN
       endif
     endif else begin ;this handles the case where we're checking for all targets between modes(we can't interpolate between modes because the data may not match)
-      idx = where(target_mid_times lt min((*source[i]).start_time) and target_mid_times gt max((*source[i-1]).end_time),c)
+      idx = where(target_mid_times lt min((*source[i]).time) and target_mid_times gt max((*source[i-1]).end_time),c)
       if c gt 0 then begin
         out_dist = array_concat(ptr_new(replicate((*source[i])[0],c)),temporary(out_dist))
-        (*out_dist[n_elements(out_dist)-1]).start_time = target_mid_times[idx]-target_delta_times[idx]/2d ;using the target time width to resize the time bin after interpolation only works because the spacecraft runs in snapshot mode 
+        (*out_dist[n_elements(out_dist)-1]).time = target_mid_times[idx]-target_delta_times[idx]/2d ;using the target time width to resize the time bin after interpolation only works because the spacecraft runs in snapshot mode 
         (*out_dist[n_elements(out_dist)-1]).end_time = target_mid_times[idx]+target_delta_times[idx]/2d
         (*out_dist[n_elements(out_dist)-1]).data = !VALUES.D_NAN
       endif
     endelse
     
     ;This handles the case where we're checking for targets within modes
-    idx = where (target_mid_times ge min((*source[i]).start_time) and target_mid_times le max((*source[i]).end_time),c)
+    idx = where (target_mid_times ge min((*source[i]).time) and target_mid_times le max((*source[i]).end_time),c)
     if c gt 0 then begin  
       out_data = replicate((*source[i])[0],c)
       
@@ -78,7 +78,7 @@ pro thm_part_time_interpolate,source,target,error=error,_extra=ex
         for j=0,n_elements(tag_names)-1 do begin
           if is_num(out_data[0].(j)) then begin
             for k = 0,n_elements(out_data[0].(j))-1 do begin
-              out_data.(j)[k] = interpol((*source[i]).(j)[k],((*source[i]).start_time+(*source[i]).end_time)/2d,target_mid_times[idx],_extra=ex) ;The assumption with this interpolation is that it will be valid for any data that are changing over time within a mode.  For others, it should not change the data.(because it is constant)
+              out_data.(j)[k] = interpol((*source[i]).(j)[k],((*source[i]).time+(*source[i]).end_time)/2d,target_mid_times[idx],_extra=ex) ;The assumption with this interpolation is that it will be valid for any data that are changing over time within a mode.  For others, it should not change the data.(because it is constant)
             endfor
           endif else if n_elements(out_data[0].(j)) ne 1 then begin ;single element non-numeric are copied
             message,'Panic!' ;arrays of non-numeric types, no way to handle...eeeekkk!!
@@ -87,7 +87,7 @@ pro thm_part_time_interpolate,source,target,error=error,_extra=ex
       endif
       
       ;guarantees that final times match target exactly
-      out_data.start_time = target_mid_times[idx]-target_delta_times[idx]/2d 
+      out_data.time = target_mid_times[idx]-target_delta_times[idx]/2d 
       out_data.end_time = target_mid_times[idx]+target_delta_times[idx]/2d 
       
       
@@ -104,7 +104,7 @@ pro thm_part_time_interpolate,source,target,error=error,_extra=ex
   idx = where(target_mid_times gt max((*source[n_elements(source)-1]).end_time),c)
   if c gt 0 then begin
     out_dist = array_concat(ptr_new(replicate((*source[n_elements(source)-1])[0],c)),out_dist)
-    (*out_dist[n_elements(out_dist)-1]).start_time = target_mid_times[idx]-target_delta_times[idx]/2d ;using the target time width to resize the time bin after interpolation only works because the spacecraft runs in snapshot mode 
+    (*out_dist[n_elements(out_dist)-1]).time = target_mid_times[idx]-target_delta_times[idx]/2d ;using the target time width to resize the time bin after interpolation only works because the spacecraft runs in snapshot mode 
     (*out_dist[n_elements(out_dist)-1]).end_time = target_mid_times[idx]+target_delta_times[idx]/2d
     (*out_dist[n_elements(out_dist)-1]).data = !VALUES.D_NAN
   endif

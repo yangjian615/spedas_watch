@@ -6,17 +6,21 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedDate: 2015-02-25 13:10:28 -0800 (Wed, 25 Feb 2015) $
+; $LastChangedRevision: 17040 $
 ; $URL $
 ;-
+
 
 ;--------------------------------------------------------------------------------------------------------------------------------------
 ;basic call
 ;--------------------------------------------------------------------------------------------------------------------------------------
+;
+trange=['2011-07-29/13:00:00','2011-07-29/14:00:00']
+timespan,trange
 ;thm_sst_load_calibrate loads the data automatically.  Calling thm_load_esa_pkt, thm_load_sst, is not necessary
 ;sun contamination is automatically removed by default using the manual method with a default bin selection based on analysis by Jim Mctiernan
-thm_sst_load_calibrate,probe='d',datatype='psif',trange=['2011-07-29/13:00:00','2011-07-29/14:00:00'],dist_data=dist_psif
+thm_sst_load_calibrate,probe='d',datatype='psif',trange=trange,dist_data=dist_psif
 thm_part_moments,inst='psif',probe='d',dist_array=dist_psif
 thm_part_getspec,data_type='psif',probe='d',dist_array=dist_psif,angle='phi'
   
@@ -32,12 +36,14 @@ stop
 ;manually select contamination bins
 ;--------------------------------------------------------------------------------------------------------------------------------------
 
+trange=['2011-07-29/13:00:00','2011-07-29/14:00:00']
+timespan,trange
 ;sun_bins = [0,8,16,24,32,33,40,47,48,55,56,57]  ;this is the default 
 ;sun_bins = -1 ; use this to disable sun decontamination 
 
 sun_bins = [0,8,16,24,32,33,40,47,48,49,54,55,56,57] ;mask some extra bins(49,54)
 
-thm_sst_load_calibrate,probe='d',datatype='psif',trange=['2011-07-29/13:00:00','2011-07-29/14:00:00'],dist_data=dist_psif,sun_bins=sun_bins
+thm_sst_load_calibrate,probe='d',datatype='psif',trange=trange,dist_data=dist_psif,sun_bins=sun_bins
 thm_part_moments,inst='psif',probe='d',dist_array=dist_psif
 thm_part_getspec,data_type='psif',probe='d',dist_array=dist_psif,angle='phi'
 
@@ -47,6 +53,10 @@ stop
 ;---------------------------------------------------------------------------------------------------------------------------------------
 ;manually select output energies for SST
 ;---------------------------------------------------------------------------------------------------------------------------------------
+;
+trange=['2011-07-29/13:00:00','2011-07-29/14:00:00']
+timespan,trange
+
 ;Since SST must be interpolated across energy to match detector dead layers, it is possible to select different target energies from
 ;default binning output by the spacecraft. This can also be used to adjust the number of energies interpolated into the energy gap
 ;between ESA and SST
@@ -56,7 +66,7 @@ stop
 ;energies = [27000,28000.,29000.,30000.0, 31000.0,41000.0,52000.0,65500.0,93000.0,139000.,203500.,293000.,408000.,561500.,719500.] ;the default value iin eV for electrons
 
 energies =  [25000.,26000.,27000.,28000.,29000.,34000.0,41000.0,53000.0,67400.0,95400.0,142600.,207400.,297000.,421800.,654600.,1.13460e+06,2.32980e+06,4.00500e+06] ;add some extra energies in the gap(27,29 keV)
-thm_sst_load_calibrate,probe='d',datatype='psif',trange=['2011-07-29/13:00:00','2011-07-29/14:00:00'],dist_data=dist_psif,energies=energies
+thm_sst_load_calibrate,probe='d',datatype='psif',trange=trange,dist_data=dist_psif,energies=energies
 thm_part_moments,inst='psif',probe='d',dist_array=dist_psif
 thm_part_getspec,data_type='psif',probe='d',dist_array=dist_psif,angle='phi'
 
@@ -80,6 +90,7 @@ sst_datatype = 'ps'+species+'f'
 esa_datatype = 'pe'+species+'r'
 comb_datatype = 'pc'+species+'x'
 trange=['2012-07-29/12:00:00','2012-07-29/13:00:00']
+timespan,trange
 
 thm_sst_load_calibrate,probe=probe,datatype=sst_datatype,esa_datatype=esa_datatype,trange=trange,dist_data=dist_sst,dist_esa=dist_esa
 thm_part_moments,inst=sst_datatype,probe=probe,dist_array=dist_sst

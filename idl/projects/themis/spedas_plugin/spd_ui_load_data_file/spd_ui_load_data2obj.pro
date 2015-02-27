@@ -39,9 +39,9 @@
 ;HISTORY:
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-10-23 19:08:21 -0700 (Thu, 23 Oct 2014) $
-;$LastChangedRevision: 16029 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-02-25 15:04:42 -0800 (Wed, 25 Feb 2015) $
+;$LastChangedRevision: 17041 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data2obj.pro $
 ;
 ;-
@@ -121,7 +121,10 @@ pro spd_ui_load_data2obj,$
   ;scm_cal = loadStruct.scm_cal (doesn't appear to be used in any existing calls, may want to deprecate)
   outcoord = loadStruct.outcoord
   raw = loadStruct.raw
- 
+  
+  ;load full eclipse corrections or none
+  eclipse = loadstruct.eclipse ? 2:0
+
   statusText=statusBar
   ;state_gui_id =parentWidgetId
 
@@ -216,7 +219,7 @@ pro spd_ui_load_data2obj,$
   endif
   for i=0L,nobs-1 do begin ; loop over observatories (probes/stations)
   
-  init_time = systime(/sec)
+    init_time = systime(/sec)
   
   ;GMAG
     ss = where(instr Eq 'gmag')
@@ -272,6 +275,7 @@ pro spd_ui_load_data2obj,$
         
           thm_load_efi, probe=observ[i], datatype=iname[ss[ssj]], $
             level=lvls[j], /get_support_data, trange=[st_time, en_time], $
+            use_eclipse_corrections=eclipse, $
             coord=out_coord, files=fns4obj,type=type_keyword,historyWin=historyWin
         Endif
       Endfor ; loop over EFI levels
@@ -410,6 +414,7 @@ pro spd_ui_load_data2obj,$
           endelse
           thm_load_fgm, probe=observ[i], datatype=iname_mod, $
             level=lvls[j], /get_support_data, trange=[st_time, en_time], $
+            use_eclipse_corrections=eclipse, $
             coord=out_coord, files=fns4obj,type=type_keyword
         Endif
       Endfor
@@ -469,6 +474,7 @@ pro spd_ui_load_data2obj,$
         
           thm_load_fit, probe=observ[i], datatype=iname_mod, $
             level=lvls[j], /get_support_data, trange=[st_time, en_time], $
+            use_eclipse_corrections=eclipse, $
             coord=out_coord_temp, files=fns4obj;,type=type_keyword ;raw type disabled, doesn't produce any data that is useful to gui
         Endif
       Endfor
@@ -518,16 +524,19 @@ pro spd_ui_load_data2obj,$
             endfor
           endif else iname_mod = iname[ss[ssj]]
           
-          if keyword_set(scm_cal) then Begin 
+          if keyword_set(scm_cal) then Begin
+          ;*** 2015-02-24 (aaflores): This branch does not appear to be used. ***
             thm_load_scm,probe=observ[i],datatype=iname[ss[ssj]],level=lvls[j], $
                /get_support_data, trange=[st_time,en_time], $
                ;progobj = progobj, coord='dsl', cleanup='full', $
                coord=out_coord, cleanup='full', $
+               use_eclipse_corrections=eclipse, $
                type='calibrated', scm_cal = scm_cal, files=fns4obj
           endif else begin
             thm_load_scm,probe=observ[i],datatype=iname_mod,level=lvls[j], $
                /get_support_data, trange=[st_time,en_time], $
                coord=out_coord, cleanup='full', $
+               use_eclipse_corrections=eclipse, $
                files=fns4obj,type=type_keyword
           endelse
         Endif
@@ -542,6 +551,7 @@ pro spd_ui_load_data2obj,$
       If(nl1 Gt 0) Then Begin
         ssj = where(dlvl[ss] Eq 'l1')
         thm_load_mom, probe=observ[i], datatype=iname[ss[ssj]], $
+          use_eclipse_corrections=eclipse, $
           level='l1', trange=[st_time, en_time], files=fns4obj,type=keyword_set(raw)
       Endif
       lvl_2 = where(dlvl[ss] Eq 'l2',  nl2)
@@ -569,6 +579,7 @@ pro spd_ui_load_data2obj,$
         ssj = where(dlvl[ss] Eq lvls[j])
         If(ssj[0] Ne -1) Then Begin
           thm_load_sst, probe=observ[i], datatype=iname[ss], level=lvls[j], $
+            use_eclipse_corrections=eclipse, $
             trange=[st_time, en_time], files=fns4obj
         Endif
       Endfor
@@ -583,6 +594,7 @@ pro spd_ui_load_data2obj,$
         ddd = strcompress(/remove_all, app_id)
         thm_load_esa_pkt, probe=observ[i], datatype=ddd, $
           /get_support_data, trange=[st_time, en_time], $
+          use_eclipse_corrections=eclipse, $
           suffix='_L1', files=fns4obj
       Endif
       lvl_2 = where(dlvl[ss] Eq 'l2',  nl2)

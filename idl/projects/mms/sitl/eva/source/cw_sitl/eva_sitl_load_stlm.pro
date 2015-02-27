@@ -32,6 +32,8 @@ FUNCTION eva_sitl_load_stlm, state
       store_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
       options,   'mms_stlm_fomstr','unix_FOMStr_mod',lim.unix_FOMStr_org; add unixFOMStr_mod
       options,   'mms_stlm_fomstr','unix_FOMStr_org'; remove unixFOMStr_org
+      options,   'mms_stlm_fomstr','ytitle','FOM'
+      options,   'mms_stlm_fomstr','ysubtitle','(SITL)'
       dgrand = ['mms_stlm_fomstr']
     endif else message, "This can't be happening!"
         
@@ -43,6 +45,8 @@ FUNCTION eva_sitl_load_stlm, state
       store_data,'mms_stlm_bakstr',data=D, lim=lim, dl=dl
       options,   'mms_stlm_bakstr','unix_BAKStr_mod',lim.unix_BAKStr_org; add unix_BAKStr_mod
       options,   'mms_stlm_bakstr','unix_BAKStr_org'; remove unix_BAKStr_org
+      options,   'mms_stlm_bakstr','ytitle','BAK'
+      options,   'mms_stlm_bakstr','ysubtitle','(SITL)'
       dgrand = [dgrand,'mms_stlm_bakstr']
     endif
     

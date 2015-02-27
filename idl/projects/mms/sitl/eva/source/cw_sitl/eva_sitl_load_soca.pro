@@ -52,8 +52,8 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
       str_element,/add,unix_BAKStr_org,'STOP',  mms_tai2unix(BAKStr.STOP)
       D = eva_sitl_strct_read(unix_BAKStr_org,tspan[0])
       store_data,'mms_soca_bakstr',data=D
-      options,'mms_soca_bakstr','ytitle','FOM'
-      options,'mms_soca_bakstr','ysubtitle','(burst segment status)'
+      options,'mms_soca_bakstr','ytitle','BAK'
+      options,'mms_soca_bakstr','ysubtitle','(SOC)'
       options,'mms_soca_bakstr','colors',85; 179
       options,'mms_soca_bakstr','unix_BAKStr_org',unix_BAKStr_org
       dgrand = [dgrand,'mms_soca_bakstr']

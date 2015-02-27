@@ -86,25 +86,30 @@ nv = n_elements(vars)
 
 ;To get the base dir to the server, root_data_dir os /spg/maven/data; the production files are saved on /spg/mavenlpw/. BUT, spg mounts differently depending on desktop vs laptop. Need to use getenv and break apart the variable.
 udir = getenv('ROOT_DATA_DIR')  ;at LASP this is usually /Volumes/spg/maven/data/ or /spg/maven/data
-fbase=udir+'maven'+sl+'data'+sl+'sci'+sl+'lpw'+sl   ;Need some files to test this, so it may not work yet!
+
+;fbase=udir+'maven'+sl+'data'+sl+'sci'+sl+'lpw'+sl   ;Need some files to test this, so it may not work yet!
 
 ;if strmatch(udir, '*Volumes*') eq 1. then fbase = '/Volumes/spg/mavenlpw/products/automatic_production/' else fbase = '/spg/mavenlpw/products/automatic_production/'
-if keyword_set(newdir) then fbase = newdir  ;### NOT checked or tested yet
+
 
 fvars = ['']  ;store found variables
 
 for ll = 0, nl-1 do begin
     for vv = 0, nv -1 do begin
-          ;Search for latest file:
-          fname = 'mvn_lpw_'+levels[ll]+'_'+vars[vv]+'_'+yr+mm+dd   ;cdf_latest will find latest v and r; this is first part of filename
-          fname2 = fbase+levels[ll]+sl+yr+sl+mm+sl+fname   ;full directory to file, minus v and r numbers.
-;jmm, 2015-02-05 to use mvn_pfp_file_retrieve, don't include the root_data_dir 
-          fname2_tst = 'maven'+sl+'data'+sl+'sci'+sl+'lpw'+sl+ $
-                       levels[ll]+sl+yr+sl+mm+sl+fname+'_v??_r??.cdf'
-          fname2 = mvn_pfp_file_retrieve(fname2_tst, user_pass = passwd)
-
-          ff = mvn_lpw_cdf_latest_file(fname2)  ;latest file
-          if ff ne 'none_found' then fvars = [fvars, ff]     
+;Search for latest file: fixed for euv, jmm, 2014-02-25
+       if vars[vv] eq 'euv' then begin
+          fname = 'mvn_euv_'+levels[ll]+'_bands_'+yr+mm+dd
+          fbase='maven'+sl+'data'+sl+'sci'+sl+'euv'+sl
+       endif else begin
+          fname = 'mvn_lpw_'+levels[ll]+'_'+vars[vv]+'_'+yr+mm+dd ;cdf_latest will find latest v and r; this is first part of filename
+          fbase='maven'+sl+'data'+sl+'sci'+sl+'lpw'+sl
+       endelse
+;If requested, use alternate directory
+       if keyword_set(newdir) then fbase = newdir
+       fname2 = fbase+levels[ll]+sl+yr+sl+mm+sl+fname+'_v??_r??.cdf' ;full directory to file, minus v and r numbers.
+       fname2 = mvn_pfp_file_retrieve(fname2, user_pass = passwd)
+       ff = mvn_lpw_cdf_latest_file(fname2) ;latest file
+       if ff ne 'none_found' then fvars = [fvars, ff]     
     endfor 
 endfor
 

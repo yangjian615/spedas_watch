@@ -139,13 +139,17 @@ pro spd_ui_load_data_file_load, state, event
   raw_id = widget_info(state.tab_id,find_by_uname='raw_data')
   raw = widget_info(raw_id,/button_set)
 
+  eclipse_id = widget_info(state.tab_id,find_by_uname='eclipse')
+  eclipse = widget_info(eclipse_id,/button_set)
+
   loadStruct = {$
     st_time:t0,$
     en_time:t1,$
     dtype:dtype,$
     outcoord:outcoord,$
     observ:*state.observ,$
-    raw:raw}
+    raw:raw, $
+    eclipse:eclipse}
     
 
   spd_ui_load_data2obj, loadStruct,$ 

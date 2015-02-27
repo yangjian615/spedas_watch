@@ -59,9 +59,9 @@
 ;  potential, and efficiency.
 ;
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-12-08 10:30:21 -0800 (Mon, 08 Dec 2014) $
-; $LastChangedRevision: 16393 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-02-25 15:06:10 -0800 (Wed, 25 Feb 2015) $
+; $LastChangedRevision: 17042 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
@@ -130,7 +130,8 @@ if use_eclipse_corrections GT 0 then begin
    ; to true DSL
                      
    ; Make sure spin model data is loaded.
-   thm_autoload_spinmodel,probe=probe,trange=minmax(time)
+;   thm_autoload_spinmodel,probe=probe,trange=minmax(time)
+   thm_autoload_support, probe_in=probe, trange=minmax(time), /spinmodel, /spinaxis 
 
    ; Retrieve eclipse delta_phi values
     smp=spinmodel_get_ptr(probe,use_eclipse_corrections=use_eclipse_corrections)

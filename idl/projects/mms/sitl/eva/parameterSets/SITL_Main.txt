@@ -1,6 +1,6 @@
 ; Main Sets of Parameters for SITL Daily Task
 
-th*_fgs_gsm ; Bz
+thw_fgs_gsm_y ; Bz
 th*_peir_density
 th*_peif_velocity_gsm ; Vx
 

@@ -15,9 +15,9 @@
 ;OUTPUT:
 ; None
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-11-12 17:05:47 -0800 (Wed, 12 Nov 2014) $
-;$LastChangedRevision: 16175 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-02-25 15:04:42 -0800 (Wed, 25 Feb 2015) $
+;$LastChangedRevision: 17041 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file_itype_sel.pro $
 ;-
 pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
@@ -62,6 +62,20 @@ pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
      widget_control,raw_id,sensitive=0
   endelse
   
+  ;determine whether to sensitize the eclipse correction button
+  eclipse_id = widget_info(state.tab_id,find_by_uname='eclipse')
+  if state.instr eq 'esa' || $
+     state.instr eq 'sst' || $
+     state.instr eq 'fit' || $
+     state.instr eq 'fgm' || $ 
+     state.instr eq 'efi' || $
+     state.instr eq 'scm' || $
+     state.instr eq 'mom' then begin
+     widget_control,eclipse_id,sensitive=1
+  endif else begin
+     widget_control,eclipse_id,sensitive=0
+  endelse
+
   ; reset selected output coordinate when new instrument is selected
   if ~keyword_set(from_coord_sel) then begin
     if state.instr eq 'state' then begin

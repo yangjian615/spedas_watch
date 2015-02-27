@@ -1,8 +1,7 @@
 ; Various ways to display FOM and BACK structures
 
-mms_stlm_input_mdq; MDQ
+mms_soca_mdq; MDQ
 mms_soca_fomstr; FOM (SOC Automatic Algorithm)
 mms_stlm_fomstr; FOM (SITL Manual)
 mms_soca_bakstr; back-structure (Burst Segment Status at SOC)
 mms_stlm_bakstr; back-structure (SITL Manual)
-mms_stlm_output_fom; FOM and back-structure (SITL Manual)

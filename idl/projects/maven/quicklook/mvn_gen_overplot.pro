@@ -60,8 +60,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-18 12:53:52 -0800 (Wed, 18 Feb 2015) $
-; $LastChangedRevision: 16999 $
+; $LastChangedDate: 2015-02-25 16:56:01 -0800 (Wed, 25 Feb 2015) $
+; $LastChangedRevision: 17043 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_overplot.pro $
 ;-
 Pro mvn_gen_overplot, date = date, time_range = time_range, $
@@ -85,6 +85,9 @@ If(~keyword_set(noload_data)) Then Begin
 Endif
 ;Re-init here
 mvn_qlook_init, device = device
+
+;Get a burst_data_bar
+mvn_bb = mvn_qlook_burst_bar(date, 1.0, /outline)
 
 ;Create a sc potential variable to overplot, this one seems to give
 ;the best results
@@ -116,10 +119,11 @@ Endif Else Begin
    swi_v = 'mvn_swis_en_counts'
 Endelse
 
-varlist=[swe_v1, 'swe_pad', swi_v, 'mvn_sta_C0_P1A_E','mvn_sta_C6_P1D_M', $
+varlist=[swe_v1, 'swe_pad', swi_v, 'mvn_sta_C0_P1A_E',$
+         'mvn_sta_C6_P1D_M', $
          'mvn_SEPS_QL', 'mvn_lpw_euv_ql','mvn_lpw_wave_spec_ql', $
          'mvn_lpw_IV1_pasV2_ql','htime', 'mvn_ql_mag1', 'mvn_ngi_csn', $
-         'mvn_ngi_osnt', 'mvn_ngi_osnb', 'mvn_ngi_osi']
+         'mvn_ngi_osnt', 'mvn_ngi_osnb', 'mvn_ngi_osi', mvn_bb]
 
 ;Set ytitle options here for each variable
 options, swe_v1, 'ytitle', 'SWE!CE spec'

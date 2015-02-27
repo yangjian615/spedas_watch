@@ -332,7 +332,7 @@ FUNCTION eva_sitl_event, ev
           +email_address+'&fomstr='+body+'&time='+syst
         ok = oUrl->Get(URL=txturl,/STRING_ARRAY)
         obj_destroy, oUrl
-        print, 'email done'
+        result=dialog_message('Email sent to '+email_address,/center,/info)
       endelse
       end
     state.drpHighlight: begin

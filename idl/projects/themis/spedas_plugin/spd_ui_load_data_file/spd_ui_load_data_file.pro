@@ -26,9 +26,9 @@
 ;NOTES:
 ;  
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-11-12 17:32:04 -0800 (Wed, 12 Nov 2014) $
-;$LastChangedRevision: 16176 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-02-25 15:04:42 -0800 (Wed, 25 Feb 2015) $
+;$LastChangedRevision: 17041 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file.pro $
 ;
 ;-
@@ -330,8 +330,12 @@ pro spd_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
                             uvalue='TIME_WIDGET',$
                             uname='time_widget')
                             
-  rawDataBase = widget_base(midRowBase,/col,ypad=3,/nonexclusive,/align_center)
-  button = widget_button(rawDataBase,val='Uncalibrated/Raw?',uname='raw_data',uvalue='RAW_DATA',sensitive=0)
+  midRowButtonBase = widget_base(midRowBase,/col,ypad=2,space=2,/nonexclusive,/align_center)
+  eclipse_button = widget_button(midRowButtonBase,val='Apply Eclipse Corrections', $
+                    uname='eclipse',uvalue='ECLIPSE',sensitive=0, $
+                    tooltip='Apply eclipse corrections to calibrated level 1 data')
+  raw_button = widget_button(midRowButtonBase,val='Uncalibrated/Raw', $
+                 uname='raw_data',uvalue='RAW_DATA',sensitive=0)
   
   ;clear buttons
   clearbuts = Widget_Base(dbottomBase, /Row)
