@@ -4,22 +4,22 @@ pro mms_convert_fom_tai2unix, tai_fomstr, unix_fomstr, start_string
   ; Load the leap table, get the first
   ;------------------------------------------------------------------------------
   
-  load_leap_table2, leaps, Juls
-  
-  table_length = n_elements(leaps)
-  
-  ; Add leap seconds to timestamps to convert to TAI (Need to double check that
-  ; I subtracted properly)
-  Juls_TAI = Juls + leaps/double(86400)
-  
-  ; Convert NTP to Juls
-
-  start_tai_jul = double(tai_fomstr.cyclestart)/double(86400) + julday(1, 1, 1958, 0, 0, 0)
-  
-  loc_greater = where(start_tai_jul gt juls_tai, count_greater)
-  
-  last_loc = loc_greater(count_greater-1)
-  current_leap = leaps(last_loc) 
+;  load_leap_table2, leaps, Juls
+;  
+;  table_length = n_elements(leaps)
+;  
+;  ; Add leap seconds to timestamps to convert to TAI (Need to double check that
+;  ; I subtracted properly)
+;  Juls_TAI = Juls + leaps/double(86400)
+;  
+;  ; Convert NTP to Juls
+;
+;  start_tai_jul = double(tai_fomstr.cyclestart)/double(86400) + julday(1, 1, 1958, 0, 0, 0)
+;  
+;  loc_greater = where(start_tai_jul gt juls_tai, count_greater)
+;  
+;  last_loc = loc_greater(count_greater-1)
+;  current_leap = leaps(last_loc) 
   
   ;------------------------------------------------------------------------------
   ; Convert the "cyclestart" variable
@@ -27,9 +27,12 @@ pro mms_convert_fom_tai2unix, tai_fomstr, unix_fomstr, start_string
   
   ;FDWHACK - +9 to agree with SPICE
   
-  cyclestart_utc_sec = double(tai_fomstr.cyclestart) - current_leap + 9
-  cyclestart_juls = cyclestart_utc_sec/double(86400) + julday(1, 1, 1958, 0, 0, 0)
-  cyclestart_unix = double(86400)*(cyclestart_juls - julday(1, 1, 1970, 0, 0, 0))
+;  cyclestart_utc_sec = double(tai_fomstr.cyclestart) - current_leap + 9
+;  cyclestart_juls = cyclestart_utc_sec/double(86400) + julday(1, 1, 1958, 0, 0, 0)
+;  cyclestart_unix = double(86400)*(cyclestart_juls - julday(1, 1, 1970, 0, 0, 0))
+  
+  cyclestart_unix = mms_tai2unix(tai_fomstr.cyclestart)
+  cyclestart_juls = cyclestart_unix/double(86400) + julday(1, 1, 1970, 0, 0, 0)
   
   caldat, cyclestart_juls, cmonth, cday, cyear, chour, cminute, csecond
   
@@ -77,7 +80,9 @@ pro mms_convert_fom_tai2unix, tai_fomstr, unix_fomstr, start_string
   
   unix_fomstr.cyclestart = cyclestart_unix
   
-  timestamps_unix = cyclestart_unix + dindgen(n_elements(unix_fomstr.timestamps))*10
+  ;timestamps_unix = cyclestart_unix + dindgen(n_elements(unix_fomstr.timestamps))*10
+  
+  timestamps_unix = mms_tai2unix(unix_fomstr.timestamps)
   
   ;str_element, unix_fomstr, 'unix_fomstr.timestamps', timestamps_unix, /add_replace
   

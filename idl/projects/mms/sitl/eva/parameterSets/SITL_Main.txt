@@ -1,9 +1,8 @@
 ; Main Sets of Parameters for SITL Daily Task
 
-thw_fgs_gsm_y ; Bz
+th*_fgs_gsm
 th*_peir_density
-th*_peif_velocity_gsm ; Vx
-
+th*_peif_velocity_gsm
 mms_soca_mdq; MDQ
 mms_soca_fomstr; FOM (SOC Automatic Algorithm)
 mms_stlm_output_fom; FOM and back-structure (SITL Manual)

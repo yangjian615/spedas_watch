@@ -283,6 +283,9 @@ FUNCTION eva_sitl_event, ev
       print, 'occur =',occur
       eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
       end
+    state.btnSplit: begin
+      res = dialog_message('Sorry, still under development.',/center,/info)
+      end
     state.btnUndo: begin
       log.o,'***** EVENT: btnUndo *****'
       eva_sitl_fom_recover,'undo'
@@ -482,7 +485,7 @@ FUNCTION eva_sitl, parent, $
   str_element,/add,state,'btnEdit',widget_button(bsActionButton,VALUE='  Edit  ')
   str_element,/add,state,'btnDelete',widget_button(bsActionButton,VALUE=' Del ');,/TRACKING_EVENTS)
   bsActionCheck = widget_base(bsActionButton,/COLUMN,/NONEXCLUSIVE)
-  str_element,/add,state,'cbMulti',widget_button(bsActionCheck, VALUE='Multi-segment')
+  str_element,/add,state,'cbMulti',widget_button(bsActionCheck, VALUE='Multi-segment',SENSITIVE=0)
   str_element,/add,state,'cbWTrng',widget_button(bsActionCheck, VALUE='Within a timerange',SENSITIVE=0)
   bsActionHistory = widget_base(bsAction,/ROW, SPACE=0, YPAD=0)
   str_element,/add,state,'btnUndo',widget_button(bsActionHistory,VALUE=' Undo ')
@@ -491,7 +494,8 @@ FUNCTION eva_sitl, parent, $
   str_element,/add,state,'bsDummy',widget_base(bsActionHistory,xsize=40)
   str_element,/add,state,'btnSplit',widget_button(bsActionHistory,VALUE=' Split ')
   bsActionHighlight = widget_base(bsAction,/ROW, SPACE=0, YPAD=0)
-  str_element,/add,state,'drpHighlight',widget_droplist(bsActionHighlight,VALUE=hlSet,TITLE='Segment status:')
+  str_element,/add,state,'drpHighlight',widget_droplist(bsActionHighlight,VALUE=hlSet,$
+    TITLE='Segment status:',SENSITIVE=1)
   str_element,/add,state,'hlSet',hlSet
   bsActionSave = widget_base(bsAction,/ROW, SPACE=0, YPAD=0)
   str_element,/add,state,'drpSave',widget_droplist(bsActionSave,VALUE=svSet,TITLE='FOM save/restore:')
