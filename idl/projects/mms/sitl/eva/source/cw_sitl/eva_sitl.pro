@@ -300,9 +300,30 @@ FUNCTION eva_sitl_event, ev
       end
     state.btnValidate: begin
       log.o,'***** EVENT: btnValidate *****'
+      title = 'Validation'
       if state.PREF.ENABLE_ADVANCED then begin
-        msg = 'Validation for Back Structure Mode is under construction.'
-        result = dialog_message(msg,/center)
+        tn = tnames()
+        idx = where(strmatch(tn,'mms_stlm_bakstr'),ct)
+        if ct eq 0 then begin
+          msg = 'Back-Structure not found. If you wish to'
+          msg = [msg, 'submit a FOM structure, please disable the back-']
+          msg = [msg, 'structure mode.']
+          rst = dialog_message(msg,/error,/center,title=title)
+        endif else begin
+          get_data,'mms_stlm_bakstr',data=Dmod, lim=lmod,dl=dmod
+          get_data,'mms_soca_bakstr',data=Dorg, lim=lorg,dl=dorg
+          tai_BAKStr_org = lorg.unix_BAKStr_org
+          str_element,/add,tai_BAKStr_org,'START', mms_unix2tai(lorg.unix_BAKStr_org.START); LONG
+          str_element,/add,tai_BAKStr_org,'STOP',  mms_unix2tai(lorg.unix_BAKStr_org.STOP) ; LONG
+          tai_BAKStr_mod = lmod.unix_BAKStr_mod
+          str_element,/add,tai_BAKStr_mod,'START', mms_unix2tai(lmod.unix_BAKStr_mod.START); LONG
+          str_element,/add,tai_BAKStr_mod,'STOP',  mms_unix2tai(lmod.unix_BAKStr_mod.STOP) ; LONG
+          vsp = '////////////////////////////'
+          header = [vsp+' NEW SEGMENTS '+vsp]
+          r = eva_sitl_validate(tai_BAKStr_mod, -1, vcase=1, header=header, /quiet); Validate New Segs
+          header = [r.msg,' ', vsp+' MODIFIED SEGMENTS '+vsp]
+          r2 = eva_sitl_validate(tai_BAKStr_mod, tai_BAKStr_org, vcase=2, header=header); Validate Modified Seg
+        endelse; if ct eq 0
       endif else begin
         get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
         get_data,'mms_soca_fomstr',data=Dorg, lim=lorg,dl=dorg
@@ -341,7 +362,7 @@ FUNCTION eva_sitl_event, ev
     state.drpHighlight: begin
       log.o,'***** EVENT: drpHighlight *****'
       tplot
-      type = state.hlSet[ev.index]
+      type = state.hlSet2[ev.index]
       status = ''
       skip=0
       case type of
@@ -432,7 +453,8 @@ FUNCTION eva_sitl, parent, $
     FOMSlope: 20, $
     FOMSkew:  0,  $
     FOMBias:  1, $
-    ENABLE_ADVANCED: 0 }
+    ENABLE_ADVANCED: 0,$
+    USER_FLAG: 0 }
   socs  = {$; SOC Auto Simulated
     pmdq: ['a','b','c','d'], $ ; probes to be used for calculating MDQs
     input: 'thm_archive'}    ; input to be used for simulating SOC-Auto
@@ -459,12 +481,9 @@ FUNCTION eva_sitl, parent, $
   geo = widget_info(parent,/geometry)
   if n_elements(xsize) eq 0 then xsize = geo.xsize
 
-;  if pref.ENABLE_ADVANCED then begin
-;    hlSet = ['Default','isPending','inPlaylist','New','Modified','Deleted','Finished']
-;  endif else begin
-;    hlSet = ['Default','isPending','inPlaylist']
-;  endelse
   hlSet = ['Default','isPending','inPlaylist']
+  hlSet2 = [hlSet, 'New', 'Held', 'Realloc', 'Deferred', 'Derelict', 'Demoted',$
+    'Modified','Deleted','Aborted','Incomplete','Complete','Finished']
   svSet = ['Save','Restore','Save As', 'Restore From']
   
   mainbase = WIDGET_BASE(parent, UVALUE = uval, UNAME = uname, TITLE=title,$
@@ -479,34 +498,42 @@ FUNCTION eva_sitl, parent, $
   str_element,/add,state,'subbase',subbase
 
   bsAction = widget_base(subbase,/COLUMN,/frame)
+  ;#####################################################################
   str_element,/add,state,'drDash', widget_draw(bsAction,graphics_level=2,xsize=xsize-20,ysize=150,/expose_event)
-  bsActionButton = widget_base(bsAction,/ROW)
-  str_element,/add,state,'btnAdd',widget_button(bsActionButton,VALUE='  Add  ')
-  str_element,/add,state,'btnEdit',widget_button(bsActionButton,VALUE='  Edit  ')
-  str_element,/add,state,'btnDelete',widget_button(bsActionButton,VALUE=' Del ');,/TRACKING_EVENTS)
-  bsActionCheck = widget_base(bsActionButton,/COLUMN,/NONEXCLUSIVE)
-  str_element,/add,state,'cbMulti',widget_button(bsActionCheck, VALUE='Multi-segment',SENSITIVE=0)
-  str_element,/add,state,'cbWTrng',widget_button(bsActionCheck, VALUE='Within a timerange',SENSITIVE=0)
-  bsActionHistory = widget_base(bsAction,/ROW, SPACE=0, YPAD=0)
-  str_element,/add,state,'btnUndo',widget_button(bsActionHistory,VALUE=' Undo ')
-  str_element,/add,state,'btnRedo',widget_button(bsActionHistory,VALUE=' Redo ')
-  str_element,/add,state,'btnAllAuto',widget_button(bsActionHistory,VALUE=' Revert to Auto ')
-  str_element,/add,state,'bsDummy',widget_base(bsActionHistory,xsize=40)
-  str_element,/add,state,'btnSplit',widget_button(bsActionHistory,VALUE=' Split ')
-  bsActionHighlight = widget_base(bsAction,/ROW, SPACE=0, YPAD=0)
-  str_element,/add,state,'drpHighlight',widget_droplist(bsActionHighlight,VALUE=hlSet,$
-    TITLE='Segment status:',SENSITIVE=1)
-  str_element,/add,state,'hlSet',hlSet
-  bsActionSave = widget_base(bsAction,/ROW, SPACE=0, YPAD=0)
-  str_element,/add,state,'drpSave',widget_droplist(bsActionSave,VALUE=svSet,TITLE='FOM save/restore:')
-  str_element,/add,state,'svSet',svSet
+  ;#####################################################################
 
-  bsActionSubmit = widget_base(subbase,/ROW)
-  str_element,/add,state,'btnValidate',widget_button(bsActionSubmit,VALUE=' Validate ')
-  str_element,/add,state,'btnEmail',widget_button(bsActionSubmit,VALUE=' Email ')
-  dumSubmit = widget_base(bsActionSubmit,xsize=60)
-  str_element,/add,state,'btnSubmit',widget_button(bsActionSubmit,VALUE='   SUBMIT   ')
+  bsAction0 = widget_base(bsAction,/COLUMN,space=0,ypad=0, SENSITIVE=0)
+  str_element,/add,state,'bsAction0',bsAction0
+    bsActionButton = widget_base(bsAction0,/ROW)
+    str_element,/add,state,'btnAdd',widget_button(bsActionButton,VALUE='  Add  ')
+    str_element,/add,state,'btnEdit',widget_button(bsActionButton,VALUE='  Edit  ')
+    str_element,/add,state,'btnDelete',widget_button(bsActionButton,VALUE=' Del ');,/TRACKING_EVENTS)
+    bsActionCheck = widget_base(bsActionButton,/COLUMN,/NONEXCLUSIVE)
+    str_element,/add,state,'cbMulti',widget_button(bsActionCheck, VALUE='Multi-segment',SENSITIVE=0)
+    str_element,/add,state,'cbWTrng',widget_button(bsActionCheck, VALUE='Within a timerange',SENSITIVE=0)
+    bsActionHistory = widget_base(bsAction0,/ROW, SPACE=0, YPAD=0)
+    str_element,/add,state,'btnUndo',widget_button(bsActionHistory,VALUE=' Undo ')
+    str_element,/add,state,'btnRedo',widget_button(bsActionHistory,VALUE=' Redo ')
+    str_element,/add,state,'btnAllAuto',widget_button(bsActionHistory,VALUE=' Revert to Auto ')
+    str_element,/add,state,'bsDummy',widget_base(bsActionHistory,xsize=40)
+    str_element,/add,state,'btnSplit',widget_button(bsActionHistory,VALUE=' Split ')
+    bsActionHighlight = widget_base(bsAction0,/ROW, SPACE=0, YPAD=0)
+    str_element,/add,state,'drpHighlight',widget_droplist(bsActionHighlight,VALUE=hlSet,$
+      TITLE='Segment status:',SENSITIVE=1)
+    str_element,/add,state,'hlSet',hlSet
+    str_element,/add,state,'hlSet2',hlSet2
+    bsActionSave = widget_base(bsAction0,/ROW, SPACE=0, YPAD=0)
+    str_element,/add,state,'drpSave',widget_droplist(bsActionSave,VALUE=svSet,$
+      TITLE='FOM save/restore:',SENSITIVE=1)
+    str_element,/add,state,'svSet',svSet
 
+  bsActionSubmit = widget_base(subbase,/ROW, SENSITIVE=0)
+  str_element,/add,state,'bsActionSubmit',bsActionSubmit
+    str_element,/add,state,'btnValidate',widget_button(bsActionSubmit,VALUE=' Validate ')
+    str_element,/add,state,'btnEmail',widget_button(bsActionSubmit,VALUE=' Email ')
+    dumSubmit = widget_base(bsActionSubmit,xsize=60)
+    str_element,/add,state,'btnSubmit',widget_button(bsActionSubmit,VALUE='   SUBMIT   ')
+  
   ; Save out the initial state structure into the first childs UVALUE.
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY
 

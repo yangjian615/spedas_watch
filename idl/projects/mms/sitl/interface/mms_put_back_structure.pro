@@ -117,6 +117,8 @@ if count_mod_errors eq 0 and count_new_errors eq 0 then begin
         daystr = string(day_val, format = '(I2)')
       endelse
 
+      lastpos = strlen(local_dir)
+
       if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
         data_dir = local_dir + 'data/mms/'
       endif else begin

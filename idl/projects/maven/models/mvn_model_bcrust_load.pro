@@ -35,6 +35,10 @@
 ;         CALC:   If there is no tplot save files to load, the Martian
 ;                 crustal magnetic field is calclated by 'mvn_model_bcrust'.
 ;
+;       STATUS:   Returns the loading status:
+;                 0 = Failure.
+;                 1 = Success.
+;
 ;RELATED ROUTINES:
 ;                 'mvn_model_bcrust', 'mvn_model_bcrust_restore'.
 ;
@@ -42,12 +46,12 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-21 16:14:36 -0800 (Sat, 21 Feb 2015) $
-; $LastChangedRevision: 17021 $
+; $LastChangedDate: 2015-02-27 16:07:01 -0800 (Fri, 27 Feb 2015) $
+; $LastChangedRevision: 17055 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/models/mvn_model_bcrust_load.pro $
 ;
 ;-
-PRO mvn_model_bcrust_load, var, orbit=orbit, silent=sl, verbose=vb, calc=calc,  $
+PRO mvn_model_bcrust_load, var, orbit=orbit, silent=sl, verbose=vb, calc=calc, status=status, $
                            cain_2003=cain_2003, cain_2011=cain_2011, arkani=arkani, $
                            purucker=purucker, morschhauser=morschhauser, path=path, $
                            resolution=resolution, data=modelmag, nmax=nmax, version=version, _extra=ext
@@ -134,7 +138,8 @@ PRO mvn_model_bcrust_load, var, orbit=orbit, silent=sl, verbose=vb, calc=calc,  
               undefine, mor, c03, c11, ark, pur
            ENDIF 
         ENDFOR 
-     ENDIF  
+        status = 1
+     ENDIF   
   ENDIF    
   RETURN
 END

@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-17 22:38:35 -0800 (Tue, 17 Feb 2015) $
-; $LastChangedRevision: 16996 $
+; $LastChangedDate: 2015-02-27 19:17:56 -0800 (Fri, 27 Feb 2015) $
+; $LastChangedRevision: 17057 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect
@@ -151,9 +151,11 @@ PRO eva_sitl_strct_update, segSelect
             s.FOM[N]    = segSelect.FOM
             s.STATUS[N] = 'MODIFIED'
             s.CHANGESTATUS[N] = 1L
+            s.SOURCEID[N] = defSourceID
           endif else begin;............................ DELETE
             s.STATUS[N] = 'DELETED'
             s.CHANGESTATUS[N] = 0L
+            s.SOURCEID[N] = defSourceID
           endelse
           matched=1
         endif

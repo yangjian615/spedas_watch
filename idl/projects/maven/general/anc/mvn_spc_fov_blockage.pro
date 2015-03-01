@@ -38,8 +38,8 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: rlivi2 $
-;   $LastChangedDate: 2015-02-24 10:08:15 -0800 (Tue, 24 Feb 2015) $
-;   $LastChangedRevision: 17033 $
+;   $LastChangedDate: 2015-02-27 14:10:42 -0800 (Fri, 27 Feb 2015) $
+;   $LastChangedRevision: 17050 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/anc/mvn_spc_fov_blockage.pro $
 ;-
 
@@ -66,14 +66,28 @@ pro mvn_spc_fov_blockage, trange=trange,$
   rot_matrix=inst.rot_matrix
   vertex=inst.vertex
   index=inst.index
-  
+  xsc=inst.x_sc
+  ysc=inst.y_sc
+  zsc=inst.z_sc
+  coord=transpose([[[xsc]],[[ysc]],[[zsc]]])
+
+
 
   ;;--------------------------
   ;;Check vertex array size
   n1=3
   n2=8
   n3=n_elements(vertex)/n1/n2
-     
+
+  ;;--------------------------
+  ;;Check XYZ components
+  ss=size(coord)
+  nn1=ss[1]
+  nn2=ss[2]
+  nn3=ss[3]
+
+
+
 
   ;;------------------------------
   ;;Instrument and Gimbal location
@@ -178,32 +192,41 @@ pro mvn_spc_fov_blockage, trange=trange,$
 
   ;;---------------------------------
   ;;Shift to Instrument location
-  vertex[0,*,*]=vertex[0,*,*]-inst_loc[0]
-  vertex[1,*,*]=vertex[1,*,*]-inst_loc[1]
-  vertex[2,*,*]=vertex[2,*,*]-inst_loc[2]
+  coord[0,*,*]=coord[0,*,*]-inst_loc[0]
+  coord[1,*,*]=coord[1,*,*]-inst_loc[1]
+  coord[2,*,*]=coord[2,*,*]-inst_loc[2]
+
+
 
   ;;------------------------------------------------------------
   ;;Rotate Vertices into instrument coordiantes
   ;;NOTE: Vertices are originally in spacecraft coordinates.
-  old_ver=reform(vertex,n1,n2*n3)
+  old_ver=reform(coord,nn1,nn2*nn3)
   new_ver=old_ver*0.
-  for i=0, n2*n3-1 do $
+  for i=0, nn2*nn3-1 do $
      new_ver[*,i]= inst_rot # old_ver[*,i]
-  vertex=reform(new_ver,n1,n2,n3)
+  coord=reform(new_ver,nn1,nn2,nn3)
   new_shift=inst_rot # inst_loc
   inst_loc=new_shift
+
+
+
 
   ;;----------------------------------------------
   ;;Change coordinates from cartesian to spherical
   ;;theta - angle from positive z-axis (-90-90)
   ;;phi - angle around x-y (-180 - 180)
-  dat=transpose(reform(vertex,n1,n2*n3))
+  ;dat=transpose(reform(vertex,n1,n2*n3))
+  dat=transpose(reform(coord,nn1,nn2*nn3))
   xyz_to_polar, dat, $
                 theta=theta1, $
                 phi=phi1
-  theta=reform(theta1, n2, n3)
-  phi=reform(phi1, n2, n3)
-  
+  ;;theta=reform(theta1, n2, n3)
+  ;;phi=reform(phi1, n2, n3)  
+  theta=reform(theta1, nn2, nn3)
+  phi=reform(phi1, nn2, nn3)
+
+
   ;;--------------
   ;;Invert Phi
   if keyword_set(invert_phi) then $
@@ -212,30 +235,25 @@ pro mvn_spc_fov_blockage, trange=trange,$
   ;;---------------
   ;;Invert Theta
   if keyword_set(invert_theta) then $
-        theta=(((theta+90.)+90.) mod 180.)-90.
+        theta=-1.*theta
 
 
   ;;-------------------------------
   ;;Select Color
   if keyword_set(clr) then clr1=clr else clr1=250
   
-  ;;-------------------------------
-  ;;Draw Vertices
-  for iobj=0, n3-1 do begin
-     for i=0, 5 do begin
-        phi_temp=phi[*,iobj]
-        theta_temp=theta[*,iobj]
-        ind=index[*,*,iobj]           
-        indd=[ind[*,i],ind[0,i]]
-        if keyword_set(polyfill) then $
-           polyfill, phi_temp[indd],$
-                     theta_temp[indd],$
-                     color=clr1 
-        oplot, phi_temp[indd],$
-               theta_temp[indd],$
-               color=clr1
-     endfor
+  for iobj=0, nn3-1 do begin
+     phi_temp=phi[*,iobj]
+     theta_temp=theta[*,iobj]
+     if keyword_set(polyfill) then $
+        polyfill, phi_temp,$
+                  theta_temp,$
+                  color=clr1 
+     oplot, phi_temp,theta_temp,$
+            color=clr1
   endfor  
+
+
 end
 
 
@@ -317,3 +335,44 @@ end
   ;;      check_objects='MAVEN_SPACECRAFT')
   ;;vertex2=reform(new_ver2,n1,n2,n3)
   ;;###########################################
+
+
+
+  ;;------------------------------------------------------------
+  ;;Rotate Vertices into instrument coordiantes
+  ;;NOTE: Vertices are originally in spacecraft coordinates.
+  ;;old_ver=reform(vertex,n1,n2*n3)
+  ;;new_ver=old_ver*0.
+  ;;for i=0, n2*n3-1 do $
+  ;;   new_ver[*,i]= inst_rot # old_ver[*,i]
+  ;;vertex=reform(new_ver,n1,n2,n3)
+  ;;new_shift=inst_rot # inst_loc
+  ;;inst_loc=new_shift
+
+  ;;---------------------------------
+  ;;Shift to Instrument location
+  ;vertex[0,*,*]=vertex[0,*,*]-inst_loc[0]
+  ;vertex[1,*,*]=vertex[1,*,*]-inst_loc[1]
+  ;vertex[2,*,*]=vertex[2,*,*]-inst_loc[2]
+
+
+
+
+  ;;-------------------------------
+  ;;Draw Vertices
+  ;for iobj=0, n3-1 do begin
+  ;   for i=0, 5 do begin
+  ;      phi_temp=phi[*,iobj]
+  ;      theta_temp=theta[*,iobj]
+  ;      ind=index[*,*,iobj]           
+  ;      indd=[ind[*,i],ind[0,i]]
+  ;      if keyword_set(polyfill) then $
+  ;         polyfill, phi_temp[indd],$
+  ;                   theta_temp[indd],$
+  ;                   color=clr1 
+  ;      oplot, phi_temp[indd],$
+  ;             theta_temp[indd],$
+  ;             color=clr1
+  ;   endfor
+  ;endfor  
+

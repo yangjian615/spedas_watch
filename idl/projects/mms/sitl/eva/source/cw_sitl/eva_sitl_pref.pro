@@ -42,6 +42,7 @@ FUNCTION eva_sitl_pref_event, ev
   case ev.id of
     state.bgAdvanced:  begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
       pref.ENABLE_ADVANCED = ev.SELECT 
+      widget_control, state.MODULE_STATE.drpSave, SENSITIVE=(~ev.SELECT)
       end
     else:
   endcase
@@ -76,7 +77,9 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
     XSIZE = xsize, YSIZE = ysize,sensitive=1)
   str_element,/add,state,'mainbase',mainbase
 
-  str_element,/add,state,'bgAdvanced',cw_bgroup(mainbase,'Enable advanced features (for Super SITL)',$
+  bsAdvanced = widget_base(mainbase,space=0,ypad=0,SENSITIVE=(module_state.PREF.user_flag ge 3))
+    str_element,/add,state,'bsAdvanced',bsAdvanced
+    str_element,/add,state,'bgAdvanced',cw_bgroup(bsAdvanced,'Enable advanced features (for Super SITL)',$
      /NONEXCLUSIVE,SET_VALUE=state.PREF.ENABLE_ADVANCED)
 
 

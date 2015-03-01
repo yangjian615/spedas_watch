@@ -1,7 +1,7 @@
 ; Crib sheet showing how to fetch mag data
 
 ;cache_dir = '/Users/frederickwilder/'
-cache_dir = 'abs_data/'
+cache_dir = 'abs_tmp/'
 
 ;start_date = '2009-02-01'
 ;end_date = '2009-02-07'
@@ -22,5 +22,7 @@ mms_sitl_get_dcb, start_date, end_date, cache_dir, afg_status2, dfg_status2
 ; Lets try e spectrum
 
 mms_sitl_get_espec, start_date, end_date, cache_dir, data_status, sc_id='mms2'
+
+mms_sitl_get_dce,  start_date, end_date, cache_dir, sdp_status, sc_id='mms2';, coord=coord, no_update = no_update
 
 end

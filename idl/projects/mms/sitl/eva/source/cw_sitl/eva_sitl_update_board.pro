@@ -7,7 +7,6 @@ PRO eva_sitl_update_board, state, activate
   @eva_sitl_com
   
   
-  
   ;widget_control, state.mainbase, SENSITIVE=activate
   widget_control, state.subbase, SENSITIVE=activate
   widget_control, state.drDash, GET_VALUE=mywindow

@@ -65,4 +65,6 @@ PRO eva_sitl_submit_FOMStr, tlb
       rst = dialog_message(msg,/error,/center,title=title)
     endelse
   endelse
+  ptr_free, error_times, orange_warning_times, yellow_warning_times
+  ptr_free, error_indices, orange_warning_indices, yellow_warning_indices
 END

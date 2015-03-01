@@ -18,16 +18,16 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: rlivi2 $
-;   $LastChangedDate: 2015-02-24 10:07:26 -0800 (Tue, 24 Feb 2015) $
-;   $LastChangedRevision: 17032 $
-;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/anc/maven_spacecraft_vertices.pro $
+;   $LastChangedDate: 2015-02-23 13:05:25$
+;   $LastChangedRevision: 17051 $
+;   $URL svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;-
 
 
 function maven_spacecraft_vertices, prec=prec
 
 
-  if ~keyword_set(prec) then prec=10
+  if ~keyword_set(prec) then prec=100
 
   ;;-------------------------------------------------
   ;;Vertices of MAVEN in MAVEN Spacecraft coordinates
@@ -87,15 +87,8 @@ function maven_spacecraft_vertices, prec=prec
   [-1.*val2,-1.*val2, 2957.00],$
   [    val2,-1.*val2, 2957.00]]
 
-  ant_body_ind=[$
-               [0,1,3,2],$        ;+z side 1
-               [4,5,7,6],$        ;-z side 2
-               
-               [0,2,6,4],$        ;+x side 3
-               [1,3,7,5],$        ;-x side 4
-               
-               [0,1,5,4],$        ;+y side 3
-               [2,3,7,6]]         ;-y side 4
+  ant_body_ind=main_body_ind
+
 
   ;;---------------------------
   ;;+Y Solar Panel
@@ -118,24 +111,14 @@ function maven_spacecraft_vertices, prec=prec
   py_solar2=[$
   [ -996.00, 3060.00, 1983.00],$
   [  996.00, 3060.00, 1983.00],$
-  [ -996.00, 3060.00, 1953.00],$
-  [  996.00, 3060.00, 1953.00],$
+  [ -996.00, 3060.00, 1983.00],$
+  [  996.00, 3060.00, 1983.00],$
   [ -996.00, 5657.00, 2663.00],$
   [  996.00, 5657.00, 2663.00],$
   [ -996.00, 5657.00, 2633.00],$
   [  996.00, 5657.00, 2633.00]]
 
-  py_solar2_ind=[$
-                
-                [0,1,5,4],$       ;+z side 1
-                [2,3,7,6],$       ;-z side 2
-                
-                [0,2,4,6],$       ;+x side 3
-                [1,3,5,7],$       ;-x side 4
-
-                [0,1,2,3],$       ;+y side 3
-                [4,5,6,7]]        ;-y side 4
-
+  py_solar2_ind=main_body_ind
 
   ;;---------------------------
   ;;-Y Solar Panel
@@ -158,8 +141,8 @@ function maven_spacecraft_vertices, prec=prec
   my_solar2=[$
   [ -996.00,-3060.00, 1983.00],$
   [  996.00,-3060.00, 1983.00],$
-  [ -996.00,-3060.00, 1953.00],$
-  [  996.00,-3060.00, 1953.00],$
+  [ -996.00,-3060.00, 1983.00],$
+  [  996.00,-3060.00, 1983.00],$
   [ -996.00,-5657.00, 2663.00],$
   [  996.00,-5657.00, 2663.00],$
   [ -996.00,-5657.00, 2633.00],$
@@ -168,43 +151,41 @@ function maven_spacecraft_vertices, prec=prec
   my_solar2_ind=py_solar2_ind
 
 
+
   ;;---------------------------
   ;;+Y LPW
+
   py_lpw=[$
   [-4756.00, 6627.00,-1819.00],$
-  [-4756.00, 6627.00,-1815.00],$
   [-4756.00, 6623.00,-1819.00],$
-  [-4756.00, 6623.00,-1815.00],$
-  [-1143.00,  208.00,  614.00],$
-  [-1143.00,  208.00,  610.00],$
   [-1143.00,  204.00,  614.00],$
-  [-1143.00,  204.00,  610.00]]
+  [-1143.00,  208.00,  614.00],$
+  [-4756.00, 6627.00,-1815.00],$
+  [-4756.00, 6623.00,-1815.00],$
+  [-1143.00,  204.00,  610.00],$
+  [-1143.00,  208.00,  610.00]] 
 
-  py_lpw_ind=[$
-             [0,2,4,6],$          ;+z side 1
-             [1,3,5,7],$          ;-z side 2
-             
-             [0,1,2,3],$          ;+x side 3
-             [4,5,6,7],$          ;-x side 4
-             
-             [0,1,4,5],$          ;+y side 3
-             [2,3,6,7]]           ;-y side 4
+  py_lpw_ind=main_body_ind
+
+
+
 
 
   ;;---------------------------
   ;;-Y LPW
+  ;;
+  ;;Part 2
   my_lpw=[$
   [-4756.00,-6627.00,-1819.00],$
-  [-4756.00,-6627.00,-1815.00],$
   [-4756.00,-6623.00,-1819.00],$
-  [-4756.00,-6623.00,-1815.00],$
-  [-1143.00, -208.00,  614.00],$
-  [-1143.00, -208.00,  610.00],$
   [-1143.00, -204.00,  614.00],$
-  [-1143.00, -204.00,  610.00]]
+  [-1143.00, -208.00,  614.00],$
+  [-4756.00,-6627.00,-1815.00],$
+  [-4756.00,-6623.00,-1815.00],$
+  [-1143.00, -204.00,  610.00],$
+  [-1143.00, -208.00,  610.00]] 
   
-  my_lpw_ind=py_lpw_ind
-
+  my_lpw_ind=main_body_ind
 
 
 
@@ -220,17 +201,7 @@ function maven_spacecraft_vertices, prec=prec
   [ 2503.00,  266.00, 2103.00],$
   [ 1078.00,  266.00, 2103.00]]
 
-  app_body_ind=[$
-                [0,1,3,2],$       ;+z side 1
-                [4,5,7,6],$       ;-z side 2
-
-                [0,2,6,4],$       ;+x side 3
-                [1,3,7,5],$       ;-x side 4
-
-                [0,1,5,4],$       ;+y side 3
-                [2,3,7,6]]        ;-y side 4
-                
-
+  app_body_ind=main_body_ind
 
   ;;---------------------------
   ;;Gimbal #1
@@ -244,16 +215,7 @@ function maven_spacecraft_vertices, prec=prec
   [ 2503.00,  284.00, 2150.00],$
   [ 2667.00,  284.00, 2150.00]]
 
-  gi1_body_ind=[$
-                [0,1,3,2],$       ;+z side 1
-                [4,5,7,6],$       ;-z side 2
-
-                [0,2,6,4],$       ;+x side 3
-                [1,3,7,5],$       ;-x side 4
-
-                [0,1,5,4],$       ;+y side 3
-                [2,3,7,6]]        ;-y side 4
-
+  gi1_body_ind=main_body_ind
 
 
   ;;---------------------------
@@ -268,18 +230,7 @@ function maven_spacecraft_vertices, prec=prec
   [ 2883.00,  347.00, 2205.00],$
   [ 2667.00,  347.00, 2205.00]]
 
-  gi2_body_ind=[$
-                [0,1,3,2],$       ;+z side 1
-                [4,5,7,6],$       ;-z side 2
-
-                [0,2,6,4],$       ;+x side 3
-                [1,3,7,5],$       ;-x side 4
-
-                [0,1,5,4],$       ;+y side 3
-                [2,3,7,6]]        ;-y side 4
-                
-
-
+  gi2_body_ind=main_body_ind
 
   ;;---------------------------
   ;;SWEA Boom
@@ -294,16 +245,9 @@ function maven_spacecraft_vertices, prec=prec
   [-2331.00,   66.00, -973.00],$
   [-2431.00,   66.00, -973.00]]
 
-  swe_boom_ind=[$
-                [0,1,3,2],$       ;+z side 1
-                [4,5,7,6],$       ;-z side 2
+  swe_boom_ind=main_body_ind
 
-                [0,2,6,4],$       ;+x side 3
-                [1,3,7,5],$       ;-x side 4
 
-                [0,1,5,4],$       ;+y side 3
-                [2,3,7,6]]        ;-y side 4
-                
 
 
 
@@ -404,8 +348,8 @@ function maven_spacecraft_vertices, prec=prec
          'my_lpw_ind',$
          'app_body_ind',$
          'gi1_body_ind',$
-         'gi2_body_ind'];,$
-         ;[swe_boom_ind]]
+         'gi2_body_ind',$
+         'swe_boom_ind']
 
 
   ;;---------------------------
@@ -453,10 +397,117 @@ function maven_spacecraft_vertices, prec=prec
 
 
 
+  ;;------------------------------------
+  ;;PLOT TESTING
+  if keyword_set(plot_sc) then begin
+     ;;Cycle through all n3 objects
+     x1=[-8000,8000]
+     y1=[-8000,8000]
+     pos1=[0.1,0.6,0.9,0.9]
+     pos2=[0.1,0.3,0.9,0.6]
+     pos3=[0.1,0.0,0.9,0.3]
+     window, 1, xsize=600, ysize=900
+     for iobj=0, nn3-1 do $
+        ;;Cycle through all 8 vertices.
+        for i=0, n2-1 do begin           
+        box=vertex[*,*,iobj]
+        ind=index[*,*,iobj]           
+        indd=[ind[*,i],ind[0,i]]
+        plot, box[0,indd],box[1,indd],$
+              /noerase,$
+              xrange=x1,$
+              yrange=y1,$
+              xstyle=1,$
+              ystyle=1,$
+              position=pos1
+        plot, box[1,indd],box[2,indd],$
+              /noerase,$
+              xrange=x1,$
+              yrange=y1,$
+              xstyle=1,$
+              ystyle=1,$
+              position=pos2
+        plot, box[0,indd],box[2,indd],$
+              /noerase,$
+              xrange=x1,$
+              yrange=y1,$
+              xstyle=1,$
+              ystyle=1,$
+              position=pos3
+     endfor
+  endif
+
+  ;;-----------------------------------
+  ;;Create XYZ coordinates for plotting
+  xx=fltarr(nn3,5.*n2)
+  yy=fltarr(nn3,5.*n2)
+  zz=fltarr(nn3,5.*n2)
+  ;;Cycle through all n3 objects
+  for iobj=0, nn3-1 do begin
+     ;;Cycle through all 8 vertices.
+     ll=indgen(5)
+     for i=0, n2-1 do begin           
+        box=vertex[*,*,iobj]
+        ind=index[*,*,iobj]           
+        indd=[ind[*,i],ind[0,i]]
+        ;;Generate PREC number of points between two vertices.
+        ;;Repeat for all indices.
+        xx[iobj,ll]=reform(box[0,indd])
+        yy[iobj,ll]=reform(box[1,indd])
+        zz[iobj,ll]=reform(box[2,indd])
+        ll=ll+5
+     endfor
+  endfor
+  
+  ;;---------------------------------------------------
+  ;;Expand using 'prec'
+  nn=5.*n2
+  xx_new=fltarr(nn3,nn*prec-prec)
+  yy_new=fltarr(nn3,nn*prec-prec)
+  zz_new=fltarr(nn3,nn*prec-prec)
+  for iobj=0, nn3-1 do begin    
+     xx_new[iobj,*]=interpol(xx[iobj,*],findgen(nn),findgen(nn*prec-prec)/prec)
+     yy_new[iobj,*]=interpol(yy[iobj,*],findgen(nn),findgen(nn*prec-prec)/prec)
+     zz_new[iobj,*]=interpol(zz[iobj,*],findgen(nn),findgen(nn*prec-prec)/prec)
+  endfor
+
+
+
   return, {vertex:vertex, $
+           x_sc:xx_new,$
+           y_sc:yy_new,$
+           z_sc:zz_new,$
            index:index, $
            names:names, $
            rot_matrix:rot_matrix,$
            rot_matrix_name:rot_matrix_name}
      
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+;;     plot, xx[iobj,0:max(ll)], zz[iobj,0:max(ll)], $
+;;           xrange=[-8000,8000], $
+;;           yrange=[-8000,8000], $
+;;           position=pos1,$
+;;           noerase=iobj
+;;     plot, xx[iobj,0:max(ll)], yy[iobj,0:max(ll)], $
+;;           xrange=[-8000,8000], $
+;;           yrange=[-8000,8000], $
+;;           position=pos2,$
+;;           /noerase
+;;     plot, yy[iobj,0:max(ll)], zz[iobj,0:max(ll)], $
+;;           xrange=[-8000,8000], $
+;;           yrange=[-8000,8000], $
+;;           position=pos3,$
+;;           /noerase     

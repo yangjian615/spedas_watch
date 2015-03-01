@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-23 15:47:30 -0800 (Mon, 23 Feb 2015) $
-; $LastChangedRevision: 17027 $
+; $LastChangedDate: 2015-02-27 19:17:56 -0800 (Fri, 27 Feb 2015) $
+; $LastChangedRevision: 17057 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -80,8 +80,9 @@ PRO eva
   ; Force logging during development. For an official release,
   ; enable the LOG keyword by using the following line.
   ; d = moka_logger(on=keyword_set(log), no_file=~keyword_set(log))
-  log.o, 'Starting EVA ...'
-
+  log.o, '--------'
+  log.o, ' LAUNCH '
+  log.o, '--------'
   thm_init
 
   cfg = eva_config_read()

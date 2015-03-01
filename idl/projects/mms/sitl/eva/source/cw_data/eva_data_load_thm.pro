@@ -1,3 +1,8 @@
+; $LastChangedBy: moka $
+; $LastChangedDate: 2015-02-27 19:17:56 -0800 (Fri, 27 Feb 2015) $
+; $LastChangedRevision: 17057 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data_load_thm.pro $
+
 PRO eva_data_load_magcap, sname, max=max; sname can be, for example, 'thb_fgs_gsm'
   if ~keyword_set(max) then max=100.0
   get_data,  sname,data=D,limit=limit,dlimit=dlimit
@@ -24,7 +29,9 @@ FUNCTION eva_data_load_thm, state
   eventdate = state.eventdate
   paramlist = strlowcase(state.paramlist_thm); list of parameters read from parameterSet file
   probelist = state.probelist_thm
-  if probelist[0] eq -1 then return, 'No'
+  ptype = size(probelist[0], /type)
+  if ptype ne 7 then return, 'No'
+  ;if probelist[0] eq -1 then return, 'No'
 
   imax      = n_elements(paramlist)
   pmax      = n_elements(probelist)

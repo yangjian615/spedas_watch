@@ -1,3 +1,8 @@
+; $LastChangedBy: moka $
+; $LastChangedDate: 2015-02-27 19:17:56 -0800 (Fri, 27 Feb 2015) $
+; $LastChangedRevision: 17057 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
+
 ;PRO eva_data_update_date, state, update=update
 ;  if keyword_set(update) then widget_control, state.fldDate, SET_VALUE=state.eventdate
 ;  sstime = time_string(str2time(state.eventdate))
@@ -93,26 +98,32 @@ FUNCTION eva_data_load_and_plot, state
   ;----------------------
   ; Load SITL
   ;----------------------
+  
   idx=where(strpos(paramlist,'stlm') gt 0,ct)
   paramlist_stlm = (ct ge 1) ? paramlist[idx] : ''
   str_element,/add,state,'paramlist_stlm',paramlist_stlm
   rst_stlm = (ct ge 1) ? eva_sitl_load_stlm(state) : 'No'
-  
+  log.o, 'load SITL: number of parameters:'+string(ct)
+
   ;----------------------
   ; Load THEMIS
   ;----------------------
+  
   idx=where(strmatch(plshort,'th'),ct)
   paramlist_thm = (ct ge 1) ? paramlist[idx] : ''
   str_element,/add,state,'paramlist_thm',paramlist_thm
   rst_thm = (ct ge 1) ? eva_data_load_thm(state) : 'No'
+  log.o, 'load THEMIS: number of parameters:'+string(ct)
   
   ;----------------------
   ; Load MMS
   ;----------------------
+  
   idx=where(strmatch(plshort,'mm'),ct)
   paramlist_mms = (ct ge 1) ? paramlist[idx] : ''      
   str_element,/add,state,'paramlist_mms',paramlist_mms
   rst_mms = (ct ge 1) ? eva_data_load_mms(state) : 'No'
+  log.o, 'load MMS: number of parameters'+string(ct)
   
   ;----------------------
   ; Plot
@@ -129,9 +140,10 @@ FUNCTION eva_data_load_and_plot, state
     ;##############################################################
     eva_data_plot, state; ............. PLOT
     ;##############################################################
-    ;cw_sitl
-    tn = tnames('*_stlm_*',ct)
-    if ct gt 0 then s=1 else s=0
+    ;
+    ;Activate DASHBOARD
+    tn = tnames('*_stlm_*',ct); Check for the existence of stlm parameters
+    s = (ct gt 0)
     id_sitl = widget_info(state.parent, find_by_uname='eva_sitl')
     widget_control, id_sitl, SET_VALUE=s
   endif
@@ -186,48 +198,97 @@ FUNCTION eva_data_probelist, state
   return,state
 END
 
-FUNCTION eva_data_targettime, state, evTop
+FUNCTION eva_data_login, state, evTop
   compile_opt idl2
   @moka_logger_com
   
   log.o,'accessing MMS SDC...'
 
-  r = get_mms_sitl_connection(group_leader=evTop); establish connection with login-widget  
+  ;---------------------
+  ; Establish Connection
+  ;---------------------
+  r = get_mms_sitl_connection(group_leader=evTop); establish connection with login-widget 
   type = size(r, /type) ;will be 11 if object has been created
-  check = (type eq 11)  
-  if check then begin
-    print, 'check=',check
+  connected = (type eq 11)  
+  msg = 'Log-in Failed'
+  if connected then begin
+    
+    ;---------------------
+    ; Identify User Type
+    ;---------------------
+    user_flag  = 3; [0] Guest [1] MMS member [2] SITL [3] Super-SITL [4] FPI
+    user = eva_flag2user(user_flag)
+    
+    ;----- Update CW_DATA -----
+    state.pref.USER_FLAG = user_flag
+    state.paramID = 0
+    state = eva_data_paramSetList(state,user_flag=user_flag)
+    widget_control, state.lblLogin, SET_VALUE=user
+    widget_control, state.sbMMS, SENSITIVE=1
+    widget_control, state.drpSet, SET_VALUE=state.paramSetList
+    
+    
+    ;---------------------
+    ; Get Target Time
+    ;---------------------
     unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, evTop)
     if n_tags(unix_FOMstr) gt 0 then begin
       nmax = n_elements(unix_FOMstr.timestamps)
       start_time = time_string(unix_FOMstr.timestamps[0],precision=3)
       end_time = time_string(unix_FOMstr.timestamps[nmax-1],precision=3)
       
-      ;---- update cw_sitl label ----
+      ;---- Update CW_SITL ----
       lbl = ' '+start_time+' - '+end_time
       log.o,'updating cw_sitl target_time label:'
       log.o, lbl
-      print, lbl
-      
       id_sitl = widget_info(state.parent, find_by_uname='eva_sitl')
       sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
-      WIDGET_CONTROL, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY
+      widget_control, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY;******* GET
       widget_control, sitl_state.lblTgtTimeMain, SET_VALUE=lbl
-      WIDGET_CONTROL, sitl_stash, SET_UVALUE=sitl_state, /NO_COPY
+      sitl_state.PREF.USER_FLAG = user_flag
+      widget_control, sitl_state.bsAction0, SENSITIVE=(user_flag ge 2);...... SITL
+      widget_control, sitl_state.bsActionSubmit, SENSITIVE=(user_flag ge 2)
+      this_hlSet = (user_flag ge 3) ? sitl_state.hlSet2 : sitl_state.hlSet;...Super-SITL
+      widget_control, sitl_state.drpHighlight, SET_VALUE=this_hlSet
+      widget_control, sitl_stash, SET_UVALUE=sitl_state, /NO_COPY;******* SET
   
-      ;---- update cw_data field boxes ----
+      ;---- Update CW_DATA ----
       log.o,'updating cw_data start and end times'
       str_element,/add,state,'start_time',start_time
       str_element,/add,state,'end_time',end_time
       eva_data_update_time, state,/update
-    endif else check = 0
-  endif; if check
-  
-  if check then begin 
-    answer = dialog_message('Logged in!',/info,title='MMS LOG-IN',/center)
-  endif else begin
-    answer = dialog_message('Log-in Failed',/info,title='MMS LOG-IN',/center)
-  endelse
+      msg = 'Logged in as a '+user+'!'
+    endif; if n_tags(unix_FOMstr)
+  endif
+  answer = dialog_message(msg,/info,title='MMS LOG-IN',/center)
+
+  return, state
+END
+
+FUNCTION eva_data_paramSetList, state, user_flag=user_flag
+  if n_elements(user_flag) eq 0 then user_flag = 0
+  ; 'dir' produces the directory name with a path separator character that can be OS dependent.
+  dir = file_search(ProgramRootDir(/twoup)+'parameterSets',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
+  paramFileList_tmp = file_search(dir,'*',/FULLY_QUALIFY_PATH,count=cmax); full path to the files
+  filename = strmid(paramFileList_tmp,strlen(dir),1000); extract filenames only
+  paramSetList = ['dummy']
+  paramFileList = ['dummy']
+  for c=0,cmax-1 do begin; for each file
+    spl = strsplit(filename[c],'_',/extract)
+    case spl[0] of
+      'THM': skip = 0
+      'MMS': skip = (user_flag eq 0); skip if guest_user
+      'SITL': skip = (user_flag eq 0) ; skip if guest_user
+      else: skip = 0
+    endcase
+    if ~skip then begin
+      tmp = strjoin(spl,' '); replace '_' with ' '
+      paramSetList = [paramSetList, strmid(tmp,0,strlen(tmp)-4)]; remove file extension .txt etc.
+      paramFileList = [paramFileList, paramFileList_tmp[c]]
+    endif
+  endfor
+  str_element,/add,state,'paramSetList',paramSetList[1:*]
+  str_element,/add,state,'paramFileList',paramFileList[1:*]
   return, state
 END
 
@@ -251,7 +312,10 @@ FUNCTION eva_data_event, ev
 
   ;-----
   case ev.id of
-    state.btnLogin: state = eva_data_targettime(state,ev.TOP)
+    state.btnLogin: begin
+      log.o,'***** EVENT: login *****' 
+      state = eva_data_login(state,ev.TOP)
+      end
     state.fldStartTime: begin
       log.o,'***** EVENT: fldStartTime *****'
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
@@ -341,7 +405,6 @@ FUNCTION eva_data_event, ev
     end
     state.load: begin
       log.o,'***** EVENT: load *****'
-      r = get_mms_sitl_connection(group_leader=ev.TOP)
       state = eva_data_load_and_plot(state)
       end
     state.bgOPOD: str_element,/add,state,'OPOD',ev.select
@@ -365,34 +428,19 @@ FUNCTION eva_data, parent, $
   IF NOT (KEYWORD_SET(uname))  THEN uname = 'eva_data'
   
   ; ----- INITIALIZE -----
+  user_flag = 0
   eventdate = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)
   start_time = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/00:00:00'
   end_time   = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/24:00:00'
-  
-  ; 'dir' produces the directory name with a path separator character that can be OS dependent.
-  dir = file_search(ProgramRootDir(/twoup)+'parameterSets',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
-  paramFileList = file_search(dir,'*',/FULLY_QUALIFY_PATH,count=cmax); full path to the files
-  filename = strmid(paramFileList,strlen(dir),1000); extract filenames only
-  paramSetList = ['dummy']
-  ;sitl_mode = 0
-  
-  for c=0,cmax-1 do begin; for each file
-    ;skip_when =  (~sitl_mode and strmatch(filename[c],'SITL*'))
-    ;skip_when = 0
-    ;if ~skip_when then begin
-      tmp = strjoin(strsplit(filename[c],'_',/extract),' '); replace '_' with ' '
-      ;paramSetList[c] = strmid(tmp,0,strlen(tmp)-4); remove file extension .txt etc.
-      paramSetList = [paramSetList, strmid(tmp,0,strlen(tmp)-4)]; remove file extension .txt etc.
-    ;endif
-  endfor
-  paramSetList = paramSetList[1:*]
   ProbeNamesTHM = ['P1 (THB)','P2 (THC)','P3 (THD)','P4 (THA)','P5 (THE)']
   ProbeNamesMMS = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
   SetTimeList = ['Default','SITL Current Target Time', 'SITL Back-Structure Time']
   
+  
   ;----- PREFERENCES -----
   cd,current = c
-  pref = {CACHE_DATA_DIR: c+'/eva_cache/'}
+  pref = {CACHE_DATA_DIR: c+'/eva_cache/',$
+    USER_FLAG: user_flag}
   
   ;----- STATE ----- 
   state = { $
@@ -408,9 +456,10 @@ FUNCTION eva_data, parent, $
     SRTV:          0,            $; Sort by Variables when display
     probelist_thm: 'thb',        $; which THM probe(s) to be used
     probelist_mms: -1,           $; which MMS probe(s) to be used
-    paramSetList:  paramSetList, $; List of ParameterSets
-    paramFileList: paramFileList}
-
+    paramSetList:  '', $; List of ParameterSets
+    paramFileList: ''}
+  state = eva_data_paramSetList(state, user_flag=pref.USER_FLAG)
+  
   ; ----- CONFIG (READ and VALIDATE) -----
   cfg = eva_config_read()         ; Read config file and
   pref = eva_config_push(cfg,pref); push the values into preferences
@@ -437,6 +486,8 @@ FUNCTION eva_data, parent, $
   
   baseInit = widget_base(mainbase,/row, SPACE=0, YPAD=0)
   str_element,/add,state,'btnLogin',widget_button(baseInit,VALUE=' Log-in to MMS SOC ')
+  str_element,/add,state,'lblLogin0',widget_label(baseInit,VALUE='   ')
+  str_element,/add,state,'lblLogin',widget_label(baseInit,VALUE='Guest user')
   
   ; calendar icon
   getresourcepath,rpath
@@ -478,8 +529,10 @@ FUNCTION eva_data, parent, $
   subbase = widget_base(mainbase,/row,/frame, space=0, ypad=0)
     str_element,/add,state,'bgTHM',cw_bgroup(subbase, ProbeNamesTHM, /COLUMN, /NONEXCLUSIVE,$
       SET_VALUE=[1,0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
-    str_element,/add,state,'bgMMS',cw_bgroup(subbase, ProbeNamesMMS, /COLUMN, /NONEXCLUSIVE,$
-      SET_VALUE=[0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
+    sbMMS = widget_base(subbase,space=0,ypad=0,SENSITIVE=0)
+      str_element,/add,state,'sbMMS',sbMMS
+      str_element,/add,state,'bgMMS',cw_bgroup(sbMMS, ProbeNamesMMS, /COLUMN, /NONEXCLUSIVE,$
+        SET_VALUE=[0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
     bsCtrl = widget_base(subbase, /COLUMN,/align_center, space=0, ypad=0)
       str_element,/add,state,'lblPS',widget_label(bsCtrl,VALUE='Parameter Set')
       str_element,/add,state,'drpSet',widget_droplist(bsCtrl,VALUE=state.paramSetList,$
