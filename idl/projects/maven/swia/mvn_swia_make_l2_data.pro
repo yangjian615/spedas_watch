@@ -20,8 +20,8 @@
 ;	OLDCAL: Use old calibration factors appropriate for original table
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-25 12:07:32 -0800 (Tue, 25 Nov 2014) $
-; $LastChangedRevision: 16301 $
+; $LastChangedDate: 2015-03-02 17:09:48 -0800 (Mon, 02 Mar 2015) $
+; $LastChangedRevision: 17063 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_l2_data.pro $
 ;
 ;-
@@ -38,7 +38,7 @@ timespan, startdate, days
 
 if keyword_set(kload) then mk = mvn_spice_kernels(/all,/load,/reset)
 
-if not keyword_set(version) then version = '00'
+if not keyword_set(version) then version = '01'
 if not keyword_set(revision) then revision = '00'
 if not keyword_set(type) then type = 'svy'
 

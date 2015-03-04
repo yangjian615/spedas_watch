@@ -36,6 +36,7 @@ if not keyword_set(tt) then ctime,tt,npoints=2
 
 if n_elements(tt) ne 2 then begin
    print,' ERROR - need two times chosen'
+   tt=0
    goto, choose_tt
 endif
 

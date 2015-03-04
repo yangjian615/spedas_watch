@@ -1,9 +1,30 @@
 ;+
 ;PROCEDURE:   mvn_sc_ramdir
 ;PURPOSE:
-;  Determines the velocity vector relative to the body-fixed rotating
-;  Mars frame (IAU_MARS), rotated into either spacecraft or APP
-;  coordinates.
+;  Determines the spacecraft orbital velocity vector relative to
+;  the body-fixed rotating Mars frame (IAU_MARS), rotated into either
+;  spacecraft or APP coordinates.
+;
+;  In the spacecraft frame, phi is the angle in the X-Y plane:
+;      0 --> +X axis (APP boom)
+;     90 --> +Y axis (+Y solar array and MAG1)
+;    180 --> -X axis
+;    270 --> -Y axis (-Y solar array and MAG2)
+;
+;  and theta is the angle out of the X-Y plane:
+;    +90 --> +Z axis (HGA)
+;      0 --> X-Y plane
+;    -90 --> -Z axis
+;
+;  In the APP frame, phi is the angle in the i-j plane:
+;      0 --> +i --> NGIMS boresight
+;    +90 --> +j --> IUVS fields of regard (general direction)
+;
+;  and theta is the angle out of this plane:
+;    +90 --> +k --> STATIC symmetry direction
+;
+;  This is the velocity vector -- the RAM flow is incident on the spacecraft
+;  from the opposite direction.
 ;
 ;USAGE:
 ;  mvn_sc_ramdir, trange
@@ -19,8 +40,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-11 12:09:42 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16953 $
+; $LastChangedDate: 2015-03-02 10:05:31 -0800 (Mon, 02 Mar 2015) $
+; $LastChangedRevision: 17060 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -51,7 +72,7 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app
 
   if (size(state,/type) eq 0) then maven_orbit_tplot, /loadonly, /current
 
-; Spacecraft velocity in IAU_MARS frame
+; Spacecraft velocity in IAU_MARS frame --> rotate to S/C or APP frame
   
   store_data,'V_sc',data={x:state.time, y:state.geo_v}
   options,'V_sc',spice_frame='IAU_MARS',spice_master_frame='MAVEN_SPACECRAFT'
@@ -61,7 +82,7 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app
   options,vname,'labels',['X','Y','Z']
   options,vname,'labflag',1
 
-; Rotate to Spacecraft or APP frame
+; Calculate angles and create tplot variables
 
   tname = 'V_sc_' + to_frame
   

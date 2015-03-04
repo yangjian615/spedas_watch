@@ -22,7 +22,12 @@ if d1.data_name ne d2.data_name or d1.mode ne d2.mode then begin
   return,d2
 endif
 sum = d1
-sum.data = sum.data+d2.data
+
+value=0 & str_element,sum,'data',value
+	if n_elements(value) gt 1 then sum.data = sum.data+d2.data
+value=0 & str_element,sum,'rates',value
+	if n_elements(value) gt 1 then sum.rates = (sum.rates*sum.integ_t+d2.rates*d2.integ_t)/(sum.integ_t+d2.integ_t)
+
 ;sum.delta_t =  d1.delta_t + d2.delta_t
 ;sum.delta_t =  d2.end_time - d1.time
 sum.integ_t =  d1.integ_t + d2.integ_t

@@ -1,8 +1,13 @@
 ;+
 ;PROCEDURE:   mvn_swe_sundir
 ;PURPOSE:
-;  Determines the direction of the Sun in SWEA coordinates.  The result is
-;  stored in TPLOT variables.
+;  Determines the direction of the Sun in SWEA and spacecraft coordinates.
+;  The result is stored in TPLOT variables.
+;
+;  Spacecraft frame:
+;    X --> APP boom axis
+;    Y --> +Y solar array axis
+;    Z --> HGA axis
 ;
 ;USAGE:
 ;  mvn_swe_sundir, trange
@@ -16,8 +21,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-11 12:09:42 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16953 $
+; $LastChangedDate: 2015-03-02 10:09:42 -0800 (Mon, 02 Mar 2015) $
+; $LastChangedRevision: 17061 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
