@@ -280,7 +280,7 @@ end
 
 
 
-
+if 0
 mvn_sep_extract_data,'mvn_sep2_svy',rawdat;,trange=[time_double('14 9 22 21'),systime(1)]
 ;printdat,rawdat
 
@@ -293,6 +293,7 @@ restore,file=bkgfile,/verb
 ; mvn_sep_spectra_plot,bkg2
 
 newdat = mvn_sep_get_cal_units(rawdat,background = bkg2)
+endif
 
 
 ;
@@ -323,7 +324,7 @@ data = newdat.f_ion_eflux
 ddata = newdat.f_ion_eflux_unc
 
 
-bad = data lt .0* ddata 
+bad = data lt .0* ddata
 w = where(bad)
 ;data[w] = !values.f_nan
 store_data,'sep2F_ion_eflux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[100.,1e5],zlog:1,panel_size:2}
@@ -354,8 +355,8 @@ store_data,'sep2F_ion_flux_red',newdat.time,transpose(data),eval,dlim={spec:0,yr
 store_data,'sep2F_ion_eflux_tot',data={x:newdat.time,y:newdat.f_ion_eflux_tot},dlim={ylog:1,yrange:[1e3,1e8]}
 store_data,'sep2R_ion_eflux_tot',data={x:newdat.time,y:newdat.r_ion_eflux_tot},dlim={ylog:1,yrange:[1e3,1e8]}
 
-store_data,'sep2F_ion_flux_tot',data={x:newdat.time,y:newdat.f_ion_flux_tot},dlim={ylog:1,yrange:[100.,1e6]}
-store_data,'sep2R_ion_flux_tot',data={x:newdat.time,y:newdat.r_ion_flux_tot},dlim={ylog:1,yrange:[100.,1e6]}
+store_data,'sep2F_ion_flux_tot',data={x:newdat.time,y:newdat.f_ion_flux_tot},dlim={ylog:1,yrange:[10.,1e6]}
+store_data,'sep2R_ion_flux_tot',data={x:newdat.time,y:newdat.r_ion_flux_tot},dlim={ylog:1,yrange:[10.,1e6]}
 
 
 ;print,(eval0* reform(rr[0,*]))

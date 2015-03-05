@@ -3,23 +3,25 @@
 ;usage:
 ; .run thm_crib_fgm
 ;
+;Notes:
+;Disable print statements by calling "dprint,setdebug=-1" before running the crib
 ;
 ;Written by Hannes Schwarzl and Ken Bromund
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedDate: 2015-03-03 15:31:42 -0800 (Tue, 03 Mar 2015) $
+; $LastChangedRevision: 17073 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_fgm.pro $
 ;
 ;-
 
-print, "--- Start of crib sheet ---"
+dprint, "--- Start of crib sheet ---"
 ;timespan, '6-8-17', 1
 timespan, '2007-3-23', 1
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-print, "-"
-print, "- 'standardized' interface, with intermediate outputs saved"
-print, "--> enter .c"
+dprint, "-"
+dprint, "- 'standardized' interface, with intermediate outputs saved"
+dprint, "--> enter .c"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 stop
 
@@ -61,9 +63,9 @@ tplot_names
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-print, "-"
-print, "- next: same thing, but  without saving intermediate outputs"
-print, "--> enter .c"
+dprint, "-"
+dprint, "- next: same thing, but  without saving intermediate outputs"
+dprint, "--> enter .c"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 stop
 
@@ -89,9 +91,9 @@ tplot_names
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-print, "-"
-print, "- next: load, calibrate, and transform coordinates in one call"
-print, "--> enter .c"
+dprint, "-"
+dprint, "- next: load, calibrate, and transform coordinates in one call"
+dprint, "--> enter .c"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 stop
 
@@ -114,15 +116,15 @@ thm_cotrans, 'tha_fgl', 'tha_fgl_gse', out_coord='gse'
 ;; if you want it to stick around, then give the /get_support_data keyword.
 tplot_names
 
-print, "cleanup state"
+dprint, "cleanup state"
 del_data, 'th?_state*'
 
 tplot_names
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-print, "-"
-print, "- next: load data directly from L2 CDF"
-print, "--> enter .c"
+dprint, "-"
+dprint, "- next: load data directly from L2 CDF"
+dprint, "--> enter .c"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 stop
 
@@ -135,10 +137,10 @@ thm_load_fgm, probe='a', coord='*', level = 'l2'
 tplot_names
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-print, "-"
-print, "- note that the original crib still works, with one change:"
-print, "- new keyword to override new default behavior of thm_load_fgm: type='raw'"
-print, "--> enter .c"
+dprint, "-"
+dprint, "- note that the original crib still works, with one change:"
+dprint, "- new keyword to override new default behavior of thm_load_fgm: type='raw'"
+dprint, "--> enter .c"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 stop
 
@@ -168,10 +170,10 @@ cotrans,'tha_fgl_gse','tha_fgl_gsm',/GSE2GSM
 tplot, ['tha_fgl', 'tha_fgl_ssl', 'tha_fgl_dsl', 'tha_fgl_gse','tha_fgl_gsm']
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-print, "-"
-print, "- The next example shows how to enable the eclipse spin model corrections"
-print, "- when loading calibrated L1 FGM data."
-print, "--> enter .c"
+dprint, "-"
+dprint, "- The next example shows how to enable the eclipse spin model corrections"
+dprint, "- when loading calibrated L1 FGM data."
+dprint, "--> enter .c"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 stop
@@ -204,14 +206,14 @@ thm_load_fgm,probe='b',level=1,type='calibrated',suffix='_before',use_eclipse_co
 
 thm_load_fgm,probe='b',level=1,type='calibrated',suffix='_after',use_eclipse_corrections=2
 
-print, " - This plot shows the effect of the eclipse spin model corrections"
-print, " - on the FGL and FGH data.  The variables with suffix _before "
-print, " - are uncorrected, while the variables with suffix _after have "
-print, " - had the corrections enabled.  During the eclipse, between "
-print, " - approximately 0853 and 0930 UTC, the uncorrected FGM data "
-print, " - is clearly rotating in the spin plane, due to the spin-up "
-print, " - that occurs during the eclipse as the probe and booms cool "
-print, " - and contract. "
+dprint, " - This plot shows the effect of the eclipse spin model corrections"
+dprint, " - on the FGL and FGH data.  The variables with suffix _before "
+dprint, " - are uncorrected, while the variables with suffix _after have "
+dprint, " - had the corrections enabled.  During the eclipse, between "
+dprint, " - approximately 0853 and 0930 UTC, the uncorrected FGM data "
+dprint, " - is clearly rotating in the spin plane, due to the spin-up "
+dprint, " - that occurs during the eclipse as the probe and booms cool "
+dprint, " - and contract. "
 
 tplot,['thb_fgl_before','thb_fgl_after','thb_fgh_before','thb_fgh_after']
 

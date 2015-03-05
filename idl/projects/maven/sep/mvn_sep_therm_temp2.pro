@@ -8,7 +8,7 @@ if not keyword_set(p) then begin
       t4:0.0076653446d, t5:-0.00084656440d ,t6:6.1095571d-005}
 if keyword_set(L1000) then p={func:'thermistor_temp',note:'YSI (L1000)',R0:1000.,  $
       T0:25.00077d, t1:-27.123102d, t2:2.2371834d, t3:-0.20295066d, $
-      t4:0.022239779d, t5:-0.0024144851d ,t6:0.00013611146}
+      t4:0.022239779d, t5:-0.0024144851d ,t6:0.00013611146d}
 endif
 if n_params() eq 0 then return,p
 

@@ -11,18 +11,21 @@
 ;   None.
 ;
 ;	Notes:
-;	None.
+;   Disable print statements by calling "dprint,setdebug=-1" before running the crib
 ;
 ;Written by John Bonnell
+;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedDate: 2015-03-03 15:44:21 -0800 (Tue, 03 Mar 2015) $
+; $LastChangedRevision: 17074 $
 ; $URL $
 ;-
 
-print, "--- Start of crib sheet ---"
-; FIT On-Board SpinFit data example.
-
+dprint, "--- Start of crib sheet ---"
+;------------------------------------------------------------------------------
+; FIT On-Board SpinFit data basic example.
+;------------------------------------------------------------------------------
+;
 ; set a few TPLOT options.
 tplot_title = 'THEMIS FIT On-Board Spin Fit Examples'
 tplot_options, 'title', tplot_title
@@ -44,25 +47,29 @@ loadct2, 39
 ; plot the calibrated FIT data.
 tplot, ['thc_efs', 'thc_fgs']
 
-print, 'at each stop point type .c to continue with the crib'
+dprint, 'at each stop point type .c to continue with the crib'
 
 stop
 
 ;tlimit, ['2007-06-30/00:45:00', '2007-06-30/16:30:00']
 tlimit, ['2008-05-15/10:00:00', '2008-05-15/14:00:00']
 
-print, 'now we zoomed in'
+dprint, 'now we zoomed in'
 
 
 stop
 
 tplot, 'th?_fgs th?_efs'
 
-print, 'all probes plotted.' 
+dprint, 'all probes plotted.' 
 ; Note only probes Charley, Delta, Echo have '
 ;print, 'booms deployed for good E-Field data.'
 
 stop
+
+;------------------------------------------------------------------------------
+;Coordinate Transform
+;------------------------------------------------------------------------------
 
 thm_load_state, /get_support_data
 
@@ -71,7 +78,7 @@ thm_cotrans, 'th?_??s', out_suffix='_gsm', out_coord='gsm'
 tplot, [ 'thc_efs',     'thc_fgs', $
          'thc_efs_gsm', 'thc_fgs_gsm']
 
-print, 'we transformed both efs and fgs to gsm, adding _gsm suffix to result'
+dprint, 'we transformed both efs and fgs to gsm, adding _gsm suffix to result'
 stop
 
 thm_load_fit, level=1,datatype=['efs', 'fgs'], coord='gsm', suffix='_gsm'
@@ -79,25 +86,30 @@ thm_load_fit, level=1,datatype=['efs', 'fgs'], coord='gsm', suffix='_gsm'
 tplot, [ 'thc_efs',     'thc_fgs', $
          'thc_efs_gsm', 'thc_fgs_gsm']
 
-print, 'you can get the same result (with better plot labels) if you load'
-print, 'specify the coord keyword to thm_load_fit.'
+dprint, 'you can get the same result (with better plot labels) if you load'
+dprint, 'specify the coord keyword to thm_load_fit.'
 stop
+
+;------------------------------------------------------------------------------
+;Level 2 data
+;------------------------------------------------------------------------------
 
 thm_load_fgm, datatype=['fgs'],/verbose,  suffix='_l2', level = 'l2'
-; L2 EFI not yet available...
-;thm_load_efi, datatype=['efs'],/verbose, suffix='_l2' 
 
-tplot, ['thc_fgs',  'thc_fgs_dsl_l2']
+thm_load_efi, datatype=['*efs'],/verbose, suffix='_l2', level= 'l2'
 
-print, 'now we loaded the same data from level 2.  Note L2 data has a '
-print, 'suffix to designate the coordinate.  '
-print, 'EFI is not yet available directly from L2 files.'
+tplot, ['thc_fgs',  'thc_fgs_dsl_l2','thc_efs','thc_eff_e12_efs_l2']
+
+dprint, 'now we loaded the same data from level 2.'  
+
+dprint, 'Note that the l2 FGM data has a suffix to designate the coordinate.  '
 
 stop
 
-
-; Example showing use of eclipse spin model corrections for FIT data
-
+;------------------------------------------------------------------------------
+; Examples showing use of eclipse spin model corrections for FIT data
+;------------------------------------------------------------------------------
+;
 ; THB passed through a lunar shadow during this flyby.  The eclipse
 ; occurs between approximately 0853 and 0930 UTC.
 
@@ -135,13 +147,13 @@ thm_load_fit,probe='b',level=1,type='calibrated',suffix='_after',use_eclipse_cor
 
 tplot,['thb_fgs_before','thb_fgs_after']
 
-print, "This plot shows the effect of enabling the eclipse spin model"
-print, "corrections on FIT (FGS and EFS) data.  The variables with "
-print, "suffix _before have not had the corrections applied, while"
-print, "the variables with suffix _after use the eclipse corrections."
-print, "Without the corrections, a spin phase offset and slow rotation"
-print, "are visible in the data during the eclipse (0853-0930 UTC), due "
-print, "to the spin-up that occurs as the probe and booms cool and contract."
-print, " "
-print, "--- End of crib sheet ---"
+dprint, "This plot shows the effect of enabling the eclipse spin model"
+dprint, "corrections on FIT (FGS and EFS) data.  The variables with "
+dprint, "suffix _before have not had the corrections applied, while"
+dprint, "the variables with suffix _after use the eclipse corrections."
+dprint, "Without the corrections, a spin phase offset and slow rotation"
+dprint, "are visible in the data during the eclipse (0853-0930 UTC), due "
+dprint, "to the spin-up that occurs as the probe and booms cool and contract."
+dprint, " "
+dprint, "--- End of crib sheet ---"
 end

@@ -1,99 +1,96 @@
 ;+
-;pro thm_crib_mom
-; This is an example crib sheet that will load onboard MOMent data.
-; It also shows how to compute moments from the full distributions.
-; Data is corrected for spacecraft potential.
+;Procedure:
+;  thm_crib_mom
 ;
-; Open this file in a text editor and then use copy and paste to copy
-; selected lines into an idl window. Or alternatively compile and run
-; using the command:
-; .RUN THM_CRIB_MOM
+;Purpose:
+;  Demonstrate basic examples of accessing on-board particle moments data.
+;  
+;See also:
+;  thm_crib_esa
+;  thm_crib_sst
+;  thm_crib_part_products
+;
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-03-03 15:29:06 -0800 (Tue, 03 Mar 2015) $
+;$LastChangedRevision: 17072 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_mom.pro $
+;
 ;-
 
-if not keyword_set(sc) then sc = 'c'
-
-;------------ On Board moments: ----------------
-
-; load onboard moments
-thm_load_mom,probe=sc
-
-; load magnetic field data:
-thm_load_fit,probe=sc
 
 
-; ------------- Ground processed moments: ----------------
 
+;------------------------------------------------------------------------------
+; Load all partially calibrated (l1) data for a single probe
+;------------------------------------------------------------------------------
 
-; load ESA distribution data:
-thm_load_esa_pkt,probe=sc
+probe = 'c'
 
-; load Spacecraft Potential, this results in a tplot variable with the
-; spacecraft potential for all ESA modes. Note that setting the
-; datatype keyword equal to anything that is not 'mom' will result in
-; the direct use of EFI data for the potential. If datatype is not
-; set, or is set to 'mom', then th?_pxxm_pot is used  
-thm_load_esa_pot, sc = sc
+;set time range
+trange =  ['2010-02-13', '2010-02-14']
 
-; calculate esa electron and ion parameters  (moments and spectra) :
-thm_part_moments, probe = sc, instrum = 'pe?f', scpot_suffix = '_esa_pot', mag_suffix = '_fgs', tplotnames = tn, verbose = 2 ; names are output into variable tn
+;loead all level 1 data (default)
+thm_load_mom, probe=probe, trange=trange
 
-; load SST data
-thm_load_sst,probe=sc
+;print list of variables
+tplot_names, 'th'+probe+'_p??m*'
 
-; calculate SST parameters:
-thm_part_moments,probe=sc,instrum='ps?f',mag_suffix='_fgs' ,tplotnames=tn, verbose=2    ; names are output into variable tn
-thm_part_moments,probe=sc,instrum='ps?r',mag_suffix='_fgs' ,tplotnames=tn, verbose=2    ; names are output into variable tn
-
-; get eflux spectra of reduced distributions  (but not moments)
-thm_part_moments, probe = sc, instrum = 'pe?r', moments = ''
-
-; Create overview variables
-
-store_data,'Th'+sc+'_pXiX_en_eflux',data='th'+sc+['_peif_en_eflux','_peir_en_eflux','_psif_en_eflux','_psir_en_eflux'], $
-    dlimit={yrange:[1,1e6],ylog:1,panel_size:1.5,ztitle:'Eflux [eV/cm2/s/ster/eV]',zrange:[1e3,1e9],zlog:1}
-
-store_data,'Th'+sc+'_pXeX_en_eflux',data='th'+sc+['_peef_en_eflux','_peer_en_eflux','_psef_en_eflux', '_pxxm_pot'], $
-    dlimit={yrange:[1,1e6],ylog:1,panel_size:1.5,ztitle:'Eflux [eV/cm2/s/ster/eV]',zrange:[1e3,1e9],zlog:1}
-
-options,'th?_p?if_density',colors='b'
-options,'th?_p?ef_density',colors='r'
-options,'th?_p?im_density',colors='c'
-options,'th?_p?em_density',colors='m'
-
-store_data,'Th'+sc+'_peXf_density',data='th'+sc+['_peef_density','_peif_density']   ;, '_pxxm_pot'
-store_data,'Th'+sc+'_peXm_density',data='th'+sc+['_peem_density','_peim_density']   ;, '_pxxm_pot'
-
-store_data,'Th'+sc+'_peiX_density',data='th'+sc+['_peim_density','_peif_density']   ;, '_pxxm_pot'
-store_data,'Th'+sc+'_peeX_density',data='th'+sc+['_peem_density','_peef_density']   ;, '_pxxm_pot'
-
-ylim,'*density',.1,400,1
-
-
-tplot,'T* '
+;plot some examples
+tplot, 'th'+probe+'_p??m_density'
 
 stop
 
-;
-; Eclipse spin model corrections for onboard moments
-;
+
+;------------------------------------------------------------------------------
+; Load specific l1 data types
+;------------------------------------------------------------------------------
+
+probe = 'b'
+
+;set time range
+trange =  ['2010-02-13', '2010-02-14']
+
+;load level 1 total (esa + sst) moments for ions and electrons
+;this will load all data products for the specified data types
+thm_load_mom, probe=probe, trange=trange, datatype='ptim ptem'
+
+;print list of variables
+tplot_names, 'th'+probe+'_pt?m*'
+
+;plot examples
+tplot, 'th'+probe+ ['_ptim_density','_ptem_velocity']
+
+stop
 
 
+;------------------------------------------------------------------------------
+; Load eclipse-corrected data
+;------------------------------------------------------------------------------
 
-; Example showing use of eclipse spin model corrections for onboard MOM data
+probe = 'b'
 
-; THB passed through a lunar shadow during this flyby.  The eclipse
-; occurs between approximately 0853 and 0930 UTC.
+;time range of eclipse
+trange =  '2010-02-13/'+ ['08:30', '10:00']
 
-timespan,'2010-02-13/08:00',4,/hours
 
+;load original data
+;------------------
 ; 2012-08-03: By default, the eclipse spin model corrections are not
 ; applied. For clarity, we'll explicitly set use_eclipse_corrections to 0
 ; to get a comparison plot, showing how the lack of eclipse spin model
 ; corrections induces an apparent rotation in the data.
 
-thm_load_mom,probe='b',level=1,type='calibrated',suffix='_before',use_eclipse_corrections=0
+thm_load_mom, probe=probe, trange=trange, suffix='_orig'
 
-; Here we load the same data, but enable the full set of eclipse spin
+
+;load eclipse-corrected data
+;---------------------------
+;  use_eclipse_corrections: 0 - no corrections
+;                           1 - partial corrections (see notes below)
+;                           2 - full corrections
+;
+; Here we load the original data, but enable the full set of eclipse spin
 ; model corrections by setting use_eclipse_corrections to 2.  
 ;  
 ; use_eclipse_corrections=1 is not recommended except for SOC processing.
@@ -105,7 +102,8 @@ thm_load_mom,probe='b',level=1,type='calibrated',suffix='_before',use_eclipse_co
 ; the eclipse spin model corrections.  The corrections are not
 ; yet enabled in the L1->L2 processing.
 
-thm_load_mom,probe='b',level=1,type='calibrated',suffix='_after',use_eclipse_corrections=2
+thm_load_mom, probe=probe, trange=trange, use_eclipse_corrections=2, suffix='_corr'
+
 
 ; Plot the data to compare the results before and after the eclipse
 ; spin model corrections have been applied.  In the uncorrected
@@ -113,15 +111,85 @@ thm_load_mom,probe='b',level=1,type='calibrated',suffix='_after',use_eclipse_cor
 ; the spin-up that occurs during the eclipse as the probe and
 ; booms cool and contract.
 
-tplot,['thb_peim_velocity_before','thb_peim_velocity_after','thb_peem_velocity_before','thb_peem_velocity_after']
-
-print, "This plot shows some onboard velocity moments, without (_before)"
-print, "and with (_after) the eclipse spin model corrections enabled."
-print, "During the eclipse (0853-0930 UTC), a spin phase offset and "
-print, "slow rotation are visible in the uncorrected data, due to the"
-print, "spin-up that occurs as the probe and booms cool and contract."
+tplot, 'th'+probe+'_peim_velocity' + ['_orig','_corr']
 
 stop
 
-end
 
+;------------------------------------------------------------------------------
+; Compare with ground processed moments
+;------------------------------------------------------------------------------
+
+; See thm_crib_part_products for more details on ground processed moments
+
+probe='e'
+
+trange =  ['2010-02-13', '2010-02-14']
+
+;load on-board moments
+thm_load_mom, probe=probe, trange=trange, datatype='peim'
+
+;load l0 particle data into memory
+;  -load full distribution ESA ion data
+thm_part_load, probe=probe, datatype='peif', trange=trange
+
+;generate moments from l0 particle data
+;  -this routine will automatically use 'th?_pxxm_pot' (loaded with l1 on-board data)
+;   to correct for spacecraft potential, usethe mag_name keyword to specify another 
+;   tplot variable
+thm_part_products, probe=probe, datatype='peif', trange=trange, output='moments'
+
+;ensure plot axes are identical
+options, '*density', ylog=1, yrange=[.01,10]
+options, '*velocity', yrange=[-100,100]
+
+tplot, 'th'+probe+'_pei?_' + ['density','velocity']
+
+stop
+
+
+;------------------------------------------------------------------------------
+; Load all calibrated (l2) on-board moments for single probe 
+;------------------------------------------------------------------------------
+
+;select probe
+probe = 'c'
+
+;set time range
+trange =  ['2010-02-13', '2010-02-14']
+
+;load all level 2 data products
+thm_load_mom, probe=probe, trange=trange, level='l2'
+
+;print list of variables
+tplot_names, 'th'+probe+'_p??m*'
+
+;plot examples
+tplot, 'th'+probe+ ['_peim_density','_peem_density','_peim_eflux','_peem_eflux']
+
+stop
+
+
+;------------------------------------------------------------------------------
+; Load specific l2 data products
+;------------------------------------------------------------------------------
+
+;select probe
+probe = 'b'
+
+;set time range
+trange =  ['2010-02-13', '2010-02-14']
+
+;load only level 2 ion density and energy flux
+thm_load_mom, probe=probe, trange=trange, level='l2', datatype='peim_density peim_eflux'
+
+;print list of variables
+tplot_names, 'th'+probe+'_p??m*'
+
+;plot examples
+tplot, 'th'+probe+ ['_peim_density','_peim_eflux']
+
+stop
+
+
+end

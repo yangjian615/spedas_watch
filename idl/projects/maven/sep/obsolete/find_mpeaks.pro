@@ -1,10 +1,10 @@
 
 
-function find_mpeaks,dat,threshold=threshold,plotwindow=plotwindow,roiw=roiw,binsize=binsize,fitvalue=fitvalue,verbose=verbose
+function find_mpeaks,xval=channels,dat,threshold=threshold,plotwindow=plotwindow,roiw=roiw,binsize=binsize,fitvalue=fitvalue,verbose=verbose
 
 ;peak={a:!values.d_nan,x0:!values.d_nan,s:!values.d_nan}
 if not keyword_set(dat) then return,0
-channels = dindgen(n_elements(dat))
+if ~keyword_set(channels) then channels = dindgen(n_elements(dat))
 if n_elements(binsize) eq 0 then binsize=1
 
 yran = 10.^floor(alog10( .5 > minmax(dat))+[0,1])

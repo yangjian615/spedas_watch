@@ -122,54 +122,6 @@ function crossp_trans,a,b
 end
 
 
-;+
-; function get_quaternion(v1,new_v1)
-; Purpose: Returns the quaternion that provides the smallest angle rotation that transforms V1 into V1_prime.
-;      If V1_prime is not provided it is assumed to be [0,0,1]
-;      Use QUATERNION_ROTATION to perform the rotaton.
-;-
-function get_quaternion,v1,newv,last_index=last_index   
-if not keyword_set(newv) then newv = [0,0,1.d]      ; z-axis by default
-dim_v1 = size(/dimen,v1)
-if dim_v1[0] ne 3 then message,'First dimension of V must be 3'
-dim_newv = size(/dimen,newv)
-if dim_newv[0] ne 3 then message,'First dimension of V_prime must be 3'
-;if ~keyword_set( last_index)  then dprint,'Only works if the last_index is set to 1'
-nd = size(/n_dimen,v1)
-n = nd eq 1 ? 1 : dim_v1[nd-1]
-;printdat,n,dim_v1
-V1_norm = v1/ ( [1,1,1] # sqrt(total(v1^2,1)) )
-newv_ =  (size(/n_dimen,newv) eq 2) ? newv : (newv # replicate(1,n))
-newv_norm = newv_ / ([1,1,1] # sqrt(total(newv_^2,1)) )
-cos_angle = total( V1_norm * newv_norm ,1) 
-c = crossp_trans(V1_norm,newv_norm)
-cl = sqrt( total(c^2,1) )             ; cl = sin_angle = cl
-sin_angle_2 = sqrt((1-cos_angle)/2)
-;angle = asin( cl )  
-;e = c * ( [1,1,1] # ( sin(angle/2d)/cl) )
-w = where(cl eq 0 and cos_angle gt 0,nw)
-if nw ne 0 then begin
-dprint,dlevel=2,'Singular case 0'  ; Not a bad case
-   cl[w] = 1
-   sin_angle_2[w]  =  0.
-endif
-w = where(cl eq 0 and cos_angle lt 0,nw)
-if nw ne 0 then begin
-dprint,'Singular case 1' ; Bad -requires a 180 degree rotation
-;   cl[w] = 1
-;   sin_angle_2[w] = 
-;   c[*,w] =   !values.f_nan ;  [1,0,0] # replicate(1,nw)  ; Not correct!!!
-endif
-e = c * ( [1,1,1] # (sin_angle_2/cl) )
-;e0 =  sign( dot ) * sqrt( 1 - total(e^2,1) )               ; these equations may not be optimized!
-e0 =  sqrt( 1 - total(e^2,1) )               ; these equations may not be optimized!
-;e  =  ([1,1,1] # sign( dot ) ) * e
-;rot_angle = acos(e0^2-e1^2-e2^2-e3^2)*180/!dpi   ;* sign(total(e*ev))
-eulerp = [transpose([e0]),e] 
-return,eulerp
-end
-
-
 
 pro mvn_sep_response_simdata_rand,type,data=data,simstat=simstat,seed=seed,window=win
 if not keyword_set(type) then type = 0
@@ -391,6 +343,40 @@ dprint,dlevel=3,side,fto,total(g2)
 endfor
 !p.multi=0
 end
+
+
+;  Multiple matrix plots
+pro mvn_sep_response_matrix_plots_lin,r,window=win,single=single
+  if keyword_set(win) then     wi,win,/show,wsize=[1100,850]
+  labels = strsplit('XXX O T OT F FO FT FTO Total',/extract)
+  zrange = minmax(r.g4,/pos)
+  xrange = r.xbinrange
+  yrange = r.ybinrange
+  xrange = [0.,200]
+  yrange = [0.,200]
+  options,lim,xlog=0,ylog=0,xrange=xrange,/ystyle,/xstyle,yrange=yrange,xmargin=[10,10],/zlog,zrange=zrange,/no_interp,xtitle='Energy incident (keV)',ytitle='Enery Deposited (keV)'
+  if not keyword_set(single) then !p.multi = [0,4,4]
+  if not keyword_set(ok1) then ok1 = 1
+  wnum=0
+  for side =0,1 do begin
+    slabel = side ? 'B' : 'A'
+    for fto = 1,8 do begin
+      if fto eq 8 then G2 = total(r.g4[*,*,1:7,side],3) $
+      else G2 = r.g4[*,*,fto,side]
+      dprint,dlevel=3,side,fto,total(g2)
+      options,lim,title = slabel+'_'+labels[fto]
+      if keyword_set(single) then begin
+        if single ne fto then continue
+        if side ne 0 then continue
+      endif
+      specplot,r.e_inc,r.e_meas,G2,limit=lim
+      oplot,dgen(),dgen(),linestyle=1
+    endfor
+  endfor
+  !p.multi=0
+end
+
+
 
 pro mvn_sep_response_plot_gf,r,window=win,ylog=ylog,xrange=xrange  ;,face=face
 ;            x O  T OT  F  OF  FT FTO   Total
@@ -926,7 +912,7 @@ str_element,/add,response,'e_inc',ei_val
 str_element,/add,response,'e_meas',em_val
 str_element,/add,response,'G4',g4
 str_element,/add,response,'bin3',adcbin_hist
-str_element,/add,response,'GB3' , adcbin_hist *  (r.sim_area /100 / r.nd * 3.14)
+str_element,/add,response,'GB3' , adcbin_hist *  (response.sim_area /100 / response.nd * 3.14)
 str_element,/add,response,'bin_val',bin_val
 peakeinc = mvn_sep_inst_response_peakeinc(response,width=30)
 str_element,/add,response,'peakeinc',peakeinc
@@ -947,6 +933,8 @@ if keyword_set(win) then     wi,win,/show,wsize=round([800,400]*1.),icon=0
 ok = mvn_sep_response_data_filter(simstat,data,_extra=ex,filter=filter,fdesc=fdesc)
 
 title='Angular Direction'
+desc = '-'
+particle = '-'
 if keyword_set(posflag) then title='Position Angle'
 str_element,simstat,'title',title
 str_element,simstat,'desc',desc
@@ -1071,6 +1059,7 @@ resp = mvn_sep_inst_response(simstat,data,filter=f)
 if ~keyword_set(resp) then stop
 
 mvn_sep_response_matrix_plots,resp,window=win++
+mvn_sep_response_matrix_plots,resp,window=win++,/single
 ;mvn_sep_response_bin_matrix_plot,resp,window=win++ ,face=0         ; both faces
 mvn_sep_response_bin_matrix_plot,resp,window=win++ ,face=-1
 mvn_sep_response_bin_matrix_plot,resp,window=win++ ,face=+1
@@ -1091,7 +1080,8 @@ if 0 then $
 ;testrun = '4pi_magcorrect'
 ;testrun = 'Geom1'
 ;testrun = '4pi'
-; testrun = 'oxygen'
+ testrun = 'oxygen'
+ testrun = 'oxygen_dir'
 ;testrun = 'run1b'
 ;testrun = 'Geom1_front'
 ;testrun = 'Geom1_back'
@@ -1205,10 +1195,23 @@ end
 
 'oxygen':begin  ;
 mvn_sep_read_mult_sim_files,simstat_Ox,data_Ox,pathnames='results2/results/oxygen/mvn_sep_oxygen_.dat',type=2,dosymm=1
+str_element,/add,simstat_Ox,'desc','Oxygen Sim'   ; Needs checking!
+str_element,/add,simstat_Ox,'sensornum',2   ; Needs checking!
+str_element,/add,simstat_Ox,'sim_energy_log',1
+str_element,/add,simstat_Ox,'sim_energy_range',[10.,1e7]
+resp_O0 = mvn_sep_inst_response(simstat_Ox,data_Ox,mapnum=mapnum,bmap=bmap)
 end
 
 'oxygen_dir':begin  ;
 mvn_sep_read_mult_sim_files,simstat_Ox,data_Ox,pathnames='results2/results/oxygen/mvn_sep_oxygen_randomDir_.dat',type=2,dosymm=1
+str_element,/add,simstat_Ox,'desc','Ox GEOM'   ; Needs checking!
+str_element,/add,simstat_Ox,'particle_name','Oxygen'   ; Needs checking!
+str_element,/add,simstat_Ox,'desc','GEOM'   ; Needs checking!
+str_element,/add,simstat_Ox,'sensornum',2   ; Needs checking!
+str_element,/add,simstat_Ox,'sim_energy_log',1
+str_element,/add,simstat_Ox,'sim_energy_range',[10.,1e7]
+if simstat_ox.sim_area eq 0 then simstat_ox.sim_area= 2 * !pi * 15. ^2   ;  2 circles
+resp_O0 = mvn_sep_inst_response(simstat_Ox,data_Ox,mapnum=mapnum,bmap=bmap)
 end
 
 'geom1_all_elec':begin  ;
@@ -1288,7 +1291,7 @@ end
 endcase
 
 filename = testrun+'_response-map-'+strtrim(mapnum,2)+'.sav'
-save,file=filename,resp_e0,resp_p0,resp_g0,resp_e1,resp_p1,resp_g1,bmap,mapnum
+save,file=filename,resp_e0,resp_p0,resp_g0,resp_e1,resp_p1,resp_g1,resp_O0,bmap,mapnum
 
 
 undefine,f
@@ -1334,6 +1337,14 @@ over=0
 bins0 = where(strmatch(bmap.name,'B-O'))
 ;mvn_sep_response_each_bin,resp_p0,bins=bins0,window=20,ylog=1,omega=omega
 mvn_sep_response_each_bin_GF,resp_p0,bins=bins0,window=20,ylog=1,omega=omega,over=over
+endif
+
+
+if testrun eq 'oxygen_dir' then begin
+  mvn_sep_inst_bin_response,simstat_Ox,data_Ox,mapnum=mapnum,noise_level=noise_level
+  win=0
+  mvn_sep_response_plots,simstat_Ox,data_Ox,window=win,filter=f
+
 endif
 
 

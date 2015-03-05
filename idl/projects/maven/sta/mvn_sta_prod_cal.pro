@@ -538,6 +538,12 @@ endif								;
 	attM = 0.01												; inflight calibration - first approximation
 
 	agf = [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00]			; anode dependent gf - grid attenuation, active foil area
+
+; ground calibration based on this file
+; pathname = '' & append_array, pathname, 'maven/prelaunch/sta/prelaunch/20130717_223852_fm_cal3_15kV_2keV_swp_0yaw_rot_n169to191/commonBlock_20130717_223852_.dat'	
+;	agf = [0.71,0.73,0.79,0.77,0.87,0.96,0.90,0.83,0.98,1.00,0.84,0.84,1.08,0.79,0.72,0.71]			; anode dependent gf - grid attenuation, active foil area
+
+
 	mgf = [1.00,1.00,1.00,0.30,.050,attM,attM,attM,attM,attM,.050,0.30,1.00,1.00,1.00,1.00]			; mech gf attenuator variation with anode
 	bgf = [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,.775,.325,.775,1.00,1.00,1.00]			; blocked anode 11 response
 	egf = [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00]*e_att		; electrostatic gf attenuation, e_att ~ 0.1

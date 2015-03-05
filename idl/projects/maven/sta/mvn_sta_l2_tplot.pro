@@ -154,7 +154,7 @@ endif
 			ylim,'mvn_sta_c0_E',.1,40000.,1
 			ylim,'mvn_sta_c0_H_E',.1,40000.,1
 			ylim,'mvn_sta_c0_M',.5,100,1
-			ylim,'mvn_sta_c0_att',-1,5,0
+			ylim,'mvn_sta_c0_att',-1,4,0
 
 			zlim,'mvn_sta_c0_P1A_E',1,1.e4,1
 			zlim,'mvn_sta_c0_P1A_H_E',1,1.e4,1
@@ -235,7 +235,7 @@ endif
 			ylim,'mvn_sta_c2_P1D_M',.5,100.,1
 			ylim,'mvn_sta_c2_E',.1,40000.,1
 			ylim,'mvn_sta_c2_M',.5,100.,1
-			ylim,'mvn_sta_c2_att',-1,5,0
+			ylim,'mvn_sta_c2_att',-1,4,0
 
 			zlim,'mvn_sta_c2_P1D_E',1,1.e4,1
 			zlim,'mvn_sta_c2_P1D_M',1,1.e4,1
@@ -315,7 +315,7 @@ endif
 			ylim,'mvn_sta_c4_P1D_M',.5,100.,1
 			ylim,'mvn_sta_c4_E',.1,40000.,1
 			ylim,'mvn_sta_c4_M',.5,100.,1
-			ylim,'mvn_sta_c4_att',-1,5,0
+			ylim,'mvn_sta_c4_att',-1,4,0
 
 			zlim,'mvn_sta_c4_P1D_E',1,1.e4,1
 			zlim,'mvn_sta_c4_P1D_M',1,1.e4,1
@@ -356,6 +356,7 @@ endif
 		ieff = mvn_c6_dat.eff_ind
 		iatt = mvn_c6_dat.att_ind
 		mlut = mvn_c6_dat.mlut_ind
+		twt  = mvn_c6_dat.twt_arr[mlut,*,*]
 		nenergy = mvn_c6_dat.nenergy
 		nmass = mvn_c6_dat.nmass
 		eprom_ver = mvn_c6_dat.eprom_ver
@@ -405,6 +406,7 @@ endif
 		store_data,'mvn_sta_c6_P1D_M',data={x:time,y:total(data,2),v:mass}
 		store_data,'mvn_sta_c6_E',data={x:time,y:total(eflux,3),v:energy}
 		store_data,'mvn_sta_c6_M',data={x:time,y:total(eflux,2),v:mass}
+		store_data,'mvn_sta_c6_M_twt',data={x:time,y:total(eflux/twt,2),v:mass}
 		store_data,'mvn_sta_c6_tot',data={x:time,y:total(total(data,3),2)}
 			store_data,'mvn_sta_c6_tot_le_10eV',data={x:time,y:cnt_low_nrg}
 		store_data,'mvn_sta_c6_att',data={x:time,y:iatt}
@@ -421,7 +423,8 @@ endif
 			ylim,'mvn_sta_c6_P1D_M',.5,100.,1
 			ylim,'mvn_sta_c6_E',.1,40000.,1
 			ylim,'mvn_sta_c6_M',.5,100.,1
-			ylim,'mvn_sta_c6_att',-1,5,0
+			ylim,'mvn_sta_c6_M_twt',.5,100.,1
+			ylim,'mvn_sta_c6_att',-1,4,0
 			ylim,'mvn_sta_c6_mode',-1,7,0
 			ylim,'mvn_sta_c6_rate',-1,7,0
 
@@ -429,12 +432,14 @@ endif
 			zlim,'mvn_sta_c6_P1D_M',1,1.e4,1
 			zlim,'mvn_sta_c6_E',1.e3,1.e9,1
 			zlim,'mvn_sta_c6_M',1.e3,1.e9,1
+			zlim,'mvn_sta_c6_M_twt',1.e3,1.e9,1
 
 			datagap=7.
 			options,'mvn_sta_c6_P1D_E',datagap=datagap
 			options,'mvn_sta_c6_P1D_M',datagap=datagap
 			options,'mvn_sta_c6_E',datagap=datagap
 			options,'mvn_sta_c6_M',datagap=datagap
+			options,'mvn_sta_c6_M_twt',datagap=datagap
 			options,'mvn_sta_c6_tot',datagap=datagap
 				options,'mvn_sta_c6_tot_le_10eV',datagap=datagap
 			options,'mvn_sta_c6_att',datagap=datagap
@@ -443,17 +448,20 @@ endif
 			options,'mvn_sta_c6_P1D_M','spec',1
 			options,'mvn_sta_c6_E','spec',1
 			options,'mvn_sta_c6_M','spec',1
+			options,'mvn_sta_c6_M_twt','spec',1
 
 			options,'mvn_sta_c6_P1D_E',ytitle='sta!CP1D-c6!C!CEnergy!CeV'
 			options,'mvn_sta_c6_P1D_M',ytitle='sta!CP1D-c6!C!CMass!Camu'
 			options,'mvn_sta_c6_E',ytitle='sta!Cc6!C!CEnergy!CeV'
 			options,'mvn_sta_c6_M',ytitle='sta!Cc6!C!CMass!Camu'
+			options,'mvn_sta_c6_M_twt',ytitle='sta!Cc6!C!CMass!Camu'
 			options,'mvn_sta_c6_tot',ytitle='sta!Cc6!C!CCounts'
 				options,'mvn_sta_c6_tot_le_10eV',ytitle='sta!Cc6!C!C<10eV Cnts'
 			options,'mvn_sta_c6_att',ytitle='sta!Cc6!C!CAttenuator'
 
 			options,'mvn_sta_c6_E',ztitle='eflux'
 			options,'mvn_sta_c6_M',ztitle='eflux'
+			options,'mvn_sta_c6_M_twt',ztitle='eflux/tofbin'
 	endif
 
 ; C8
@@ -505,7 +513,7 @@ endif
 			ylim,'mvn_sta_c8_P2_D',-50,50,0
 			ylim,'mvn_sta_c8_E',.1,40000.,1
 			ylim,'mvn_sta_c8_D',-50,50,0
-			ylim,'mvn_sta_c8_att',-1,5,0
+			ylim,'mvn_sta_c8_att',-1,4,0
 
 			zlim,'mvn_sta_c8_P2_E',1,1.e4,1
 			zlim,'mvn_sta_c8_P2_D',1,1.e4,1
@@ -691,7 +699,7 @@ endif
 			ylim,'mvn_sta_cc_E',.1,40000.,1
 			ylim,'mvn_sta_cc_D',-50,50,0
 			ylim,'mvn_sta_cc_M',.5,100,1
-			ylim,'mvn_sta_cc_att',-1,5,0
+			ylim,'mvn_sta_cc_att',-1,4,0
 
 			zlim,'mvn_sta_cc_P4B_E',10,1.e5,1
 			zlim,'mvn_sta_cc_P4B_D',10,1.e5,1
@@ -790,7 +798,7 @@ endif
 			ylim,'mvn_sta_cd_E',.1,40000.,1
 			ylim,'mvn_sta_cd_D',-50,50,0
 			ylim,'mvn_sta_cd_M',.5,100,1
-			ylim,'mvn_sta_cd_att',-1,5,0
+			ylim,'mvn_sta_cd_att',-1,4,0
 
 			zlim,'mvn_sta_cd_P4B_E',10,1.e5,1
 			zlim,'mvn_sta_cd_P4B_D',10,1.e5,1
@@ -893,7 +901,7 @@ endif
 			ylim,'mvn_sta_ce_D',-50,50,0
 			ylim,'mvn_sta_ce_A',-180,200.,0
 			ylim,'mvn_sta_ce_M',.5,100,1
-			ylim,'mvn_sta_ce_att',-1,5,0
+			ylim,'mvn_sta_ce_att',-1,4,0
 
 			zlim,'mvn_sta_ce_P4B_E',10,1.e5,1
 			zlim,'mvn_sta_ce_P4B_D',10,1.e5,1
@@ -1004,7 +1012,7 @@ endif
 			ylim,'mvn_sta_cf_D',-50,50,0
 			ylim,'mvn_sta_cf_A',-180,200.,0
 			ylim,'mvn_sta_cf_M',.5,100,1
-			ylim,'mvn_sta_cf_att',-1,5,0
+			ylim,'mvn_sta_cf_att',-1,4,0
 
 			zlim,'mvn_sta_cf_P4B_E',10,1.e5,1
 			zlim,'mvn_sta_cf_P4B_D',10,1.e5,1
@@ -1118,7 +1126,7 @@ endif
 			ylim,'mvn_sta_d0_D',-50,50,0
 			ylim,'mvn_sta_d0_A',-180,200.,0
 			ylim,'mvn_sta_d0_M',.5,100,1
-			ylim,'mvn_sta_d0_att',-1,5,0
+			ylim,'mvn_sta_d0_att',-1,4,0
 			ylim,'mvn_sta_d0_H_E',.1,40000.,1
 			ylim,'mvn_sta_d0_H_D',-50,50,0
 			ylim,'mvn_sta_d0_H_A',-180,200.,0
@@ -1246,7 +1254,7 @@ endif
 			ylim,'mvn_sta_d1_D',-50,50,0
 			ylim,'mvn_sta_d1_A',-180,200.,0
 			ylim,'mvn_sta_d1_M',.5,100,1
-			ylim,'mvn_sta_d1_att',-1,5,0
+			ylim,'mvn_sta_d1_att',-1,4,0
 
 			zlim,'mvn_sta_d1_P4C_E',10,1.e5,1
 			zlim,'mvn_sta_d1_P4C_D',10,1.e5,1
@@ -1354,7 +1362,7 @@ endif
 			ylim,'mvn_sta_d4_A',-180,200.,0
 			ylim,'mvn_sta_d4_H_A',-180,200.,0
 			ylim,'mvn_sta_d4_M',.5,100,1
-			ylim,'mvn_sta_d4_att',-1,5,0
+			ylim,'mvn_sta_d4_att',-1,4,0
 
 			zlim,'mvn_sta_d4_P4E_D',10,1.e5,1
 			zlim,'mvn_sta_d4_P4E_A',10,1.e5,1

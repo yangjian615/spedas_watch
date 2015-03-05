@@ -18,7 +18,7 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
     mvn_sep_load,/use_cache,files=source_files,trange=trange,/L0
     sepdata = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
     if size(/type,sepdata) ne 8 then begin
-      dprint,'sepdata is not a structure'
+      dprint,'sepdata is not a structure.  No Data?'
       printdat,sepdata
       return
     endif
@@ -38,6 +38,42 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
 end
 
 
+pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=trange ;,timestamp=timestamp ,prereq=prereq
+  @mvn_sep_handler_commonblock.pro
+  sepstr = 's'+strtrim(sepnum,2)
+  data_type = sepstr+'-cal-svy-full'
+  L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v00_r??.cdf'
+  lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
+  lri = file_info(lastrev_fname)
+  source_fi = file_info(source_files)
+  if lri.mtime lt min(source_fi.mtime) then begin
+    mvn_sep_load,/use_cache,files=source_files,trange=trange,/L0
+    sepdata = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
+    bkgfile=mvn_pfp_file_retrieve('maven/data/sci/sep/l1/sav/sep2_bkg.sav')
+    if keyword_set(bkgfile) and file_test(/regular,bkgfile) then restore,file=bkgfile,/verb
+    ; mvn_sep_spectra_plot,bkg2
+    sepcaldata = mvn_sep_get_cal_units(sepdata,background = bkg2)
+    if size(/type,sepcaldata) ne 8 then begin
+      dprint,'sepcaldata is not a structure.  No Data?'
+      printdat,sepcaldata
+      return
+    endif
+    nextrev_fname = mvn_pfp_file_next_revision(lastrev_fname)
+    global={ filename:nextrev_fname,  data_type:data_type+'>Survey Calibrated Particle Flux',   logical_source:'SEP.cal.spec_svy'}   
+    mapid = round(median(sepdata.mapid))
+    bmaps = mvn_sep_get_bmap(mapid,sepnum)
+    dependencies = [source_files,spice_test('*')]
+    mvn_sep_make_cal_cdf,sepcaldata,bmaps,filename = nextrev_fname,global=global,dependencies=dependencies
+    ;    print_cdf_info,nextrev_fname
+    if 0 then begin
+      src = mvn_file_source()
+      arcdir = src.local_data_dir+'maven/data/sci/sep/archive/'
+      file_archive,lastrev_fname,archive_ext='.arc',archive_dir = arcdir
+    endif
+  endif
+end
+
+
 
 
 
@@ -45,6 +81,9 @@ pro mvn_sep_make_l2_cdfs,trange=trange,source_files=source_files
 
   mvn_sep_make_raw_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files
   mvn_sep_make_raw_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files
+
+  mvn_sep_make_cal_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files
+  mvn_sep_make_cal_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files
 
 ;caldat=mvn_sep_get_cal_units(*sep1_svy.x,bkg =bkg)
 

@@ -11,16 +11,25 @@
 ;   None.
 ;
 ;	Notes:
-;	None.
+;	Disable print statements by calling "dprint,setdebug=-1" before running the crib
+;	
 ;
-;Written by Patrick Cruce(with liberal copying from thm_crib_fit.pro)
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-03-03 15:27:10 -0800 (Tue, 03 Mar 2015) $
+; $LastChangedRevision: 17071 $
+; $URL $
 ;-
 
-print, "--- Start of crib sheet ---"
+
+;------------------------------------------------------------------------------
+; FFT FilterBank data load example.
+;------------------------------------------------------------------------------
+
+dprint, "--- Start of crib sheet ---"
 ;start with a clean slate
 del_data, '*'
 
-print, 'at each stop point type .c to continue with the crib'
+dprint, 'at each stop point type .c to continue with the crib'
 
 stop
 
@@ -44,39 +53,50 @@ thm_load_fft
 
 tplot_names
 
-print, 'heres a list of the data variables we just got'
-print, 'fft actually has 4 spectral channels, so '
-print, 'when the data is calibrated a suffix is added to the end'
+dprint, 'heres a list of the data variables we just got'
+dprint, 'fft actually has 4 spectral channels, so '
+dprint, 'when the data is calibrated a suffix is added to the end'
 
 stop
 
-;plot the particle burst data from themis alpha at 16
-;frequency samples, spectra scm2
+;------------------------------------------------------------------------------
+; Plot the loaded data
+;------------------------------------------------------------------------------
+
+;particle burst data from themis A at 16 frequency samples spectra scm2
 
 tplot, 'thc_ffp_16_scm2'
 
-print, 'We just plotted the calibrated particle burst data from themis charlie'
-print, 'This plot is of spectra scm2 at 16 frequency samples'
+dprint, 'We just plotted the calibrated particle burst data from themis charlie'
+dprint, 'This plot is of spectra scm2 at 16 frequency samples'
 
 stop
 
+;------------------------------------------------------------------------------
+; Zoom in/out, because particle burst data as very narrow time windows
+;------------------------------------------------------------------------------
+
 tlimit, '2007-06-23/07:31:47', '2007-06-23/07:32:20'
 
-print, 'now we zoom in'
+dprint, 'now we zoom in'
 
 stop
 
 tlimit, '2007-06-23/00:00:00', '2007-06-24/00:00:00'
 
-print, 'now we zoom out'
+dprint, 'now we zoom out'
 
-print, 'Note: the plot must be zoomed in quite a bit to see what is going on in the data.  This is typical for most of the fft data.' 
+dprint, 'Note: the plot must be zoomed in quite a bit to see what is going on in the data.  This is typical for most of the fft data.' 
 
-print,'If you want to zoom in using the mouse, call the tlimit routine with no arguments(ie "tlimit"). This can be useful for adjusting viewing fft data.'
+dprint,'If you want to zoom in using the mouse, call the tlimit routine with no arguments(ie "tlimit"). This can be useful for adjusting viewing fft data.'
 
-print,'If you want try typing "tlimit" now and using the mouse to zoom in'
+dprint,'If you want try typing "tlimit" now and using the mouse to zoom in'
 
 stop
+
+;------------------------------------------------------------------------------
+; Return a list of valid datatypes/probes
+;------------------------------------------------------------------------------
 
 ;clear the data
 
@@ -85,11 +105,17 @@ del_data, '*'
 ;get lists of valid choices for probe and datatypes
 thm_load_fft, probe = p,datatype = d, /valid_names
 
-print, 'Here is a list of the valid datatype,probe and, level choices we can make'
+dprint,'Datatypes: ', transpose(d)
+dprint,'Probes: ', p
+dprint, 'Here is a list of the valid datatype, probe, and level choices we can make'
+dprint, 'For FFT not all datatypes will be valid at all times.'
 
 stop
 
-;now lets get something more specific
+;------------------------------------------------------------------------------
+; Load specific datatype and probes
+;------------------------------------------------------------------------------
+
 
 thm_load_fft, probe = ['b','c'], datatype = 'ffw_16_edc34'
 
@@ -99,10 +125,14 @@ tplot, ['thb_ffw_16_edc34', 'thc_ffw_16_edc34']
 
 tlimit, '2007-06-23/07:31:47', '2007-06-23/07:32:20'
 
-print, 'just got the waveburst data for themis beta and' 
-print, 'charlie at 16 frequency samples and plotted them'
+dprint, 'just got the waveburst data for themis beta and' 
+dprint, 'charlie at 16 frequency samples and plotted them'
 
 stop
+
+;------------------------------------------------------------------------------
+; Load support data
+;------------------------------------------------------------------------------
 
 ;now we load some probe b data with its support data
 
@@ -117,22 +147,24 @@ tplot_names
 
 tplot, ['thb_ff?_??_*', 'thb_ff?_??'] 
 
-print, 'we just loaded calibrated science data,raw science data, and support data for probe b'
+dprint, 'we just loaded calibrated science data,raw science data, and support data for probe b'
 
-print, 'and plotted it(minus the support data which doesnt really plot)'
+dprint, 'and plotted it(minus the support data which doesnt really plot)'
 
-print, 'Note the use of ? wildcards'
+dprint, 'Note the use of ? wildcards'
 
 stop
 
-;finally lets plot some wave burst with some particle burst
+;------------------------------------------------------------------------------
+; Plot with wave and particle burst together
+;------------------------------------------------------------------------------
 
 tplot, ['thb_ffp_16_scm2', 'thb_ffw_16_scm2']
 
-print, 'here is some particle burst and wave burst data on the same plot'
+dprint, 'here is some particle burst and wave burst data on the same plot'
 
 stop
 
-print, "--- End of crib sheet ---"
+dprint, "--- End of crib sheet ---"
 
 end
