@@ -1,4 +1,4 @@
-pro get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_message
+pro get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_msg
 
   ; For now, lets ignore start and end time, and just grab the most recent file
   
@@ -17,7 +17,7 @@ pro get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_message
   dir_path = data_dir + 'sitl/abs_selections/' + yearstr + '/'
   
   error_flag = 0
-  pw_message = 'ERROR: Either no FOM structure exists for the time specified, or login failed.'
+  error_msg = 'ERROR: Either no FOM structure exists for the time specified, or login failed.'
   
   current_leap = 35
   
@@ -32,15 +32,17 @@ pro get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_message
     flist = file_search(search_string)
     dir_length = strlen(dir_path)
     
+    
     fjul = dblarr(n_elements(flist))
     
     for i = 0, n_elements(flist)-1 do begin
-      fyear = fix(strmid(flist(i), dir_length+15, 4))
-      fmonth = fix(strmid(flist(i), dir_length+20, 2))
-      fday = fix(strmid(flist(i), dir_length+23, 2))
-      fhour = fix(strmid(flist(i), dir_length+26, 2))
-      fmin = fix(strmid(flist(i), dir_length+29, 2))
-      fsec = fix(strmid(flist(i), dir_length+32, 2))
+      last_slash = strpos(flist(i), '/', /reverse_search)
+      fyear = fix(strmid(flist(i), last_slash+16, 4))
+      fmonth = fix(strmid(flist(i), last_slash+21, 2))
+      fday = fix(strmid(flist(i), last_slash+24, 2))
+      fhour = fix(strmid(flist(i), last_slash+27, 2))
+      fmin = fix(strmid(flist(i), last_slash+30, 2))
+      fsec = fix(strmid(flist(i), last_slash+33, 2))
       fjul(i) = julday(fmonth, fday, fyear, fhour, fmin, fsec)
     endfor
     

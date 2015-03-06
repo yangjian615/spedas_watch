@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
-; $LastChangedRevision: 16613 $
+; $LastChangedDate: 2015-03-04 11:29:00 -0800 (Wed, 04 Mar 2015) $
+; $LastChangedRevision: 17087 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -172,6 +172,8 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
 ;use no_time_clip to get all data, mvn_sta_l2_load will fill all of
 ;the common blocks
      mvn_sta_l2_load, /no_time_clip
+;Add dead_time_load, 2015-03-03, jmm
+     mvn_sta_dead_load
   Endif Else Begin
      mvn_sta_l0_load, files = filex
   Endelse

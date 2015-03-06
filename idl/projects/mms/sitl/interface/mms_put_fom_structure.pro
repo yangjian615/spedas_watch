@@ -5,6 +5,8 @@ pro mms_put_fom_structure, new_fomstr, old_fomstr, local_dir, error_flags, $
                            error_indices, orange_warning_indices, yellow_warning_indices, $
                            problem_status, warning_override = warning_override
                            
+lastpos = strlen(local_dir)
+                           
                            
 if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
   data_dir = local_dir + 'data/mms/'

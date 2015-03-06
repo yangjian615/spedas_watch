@@ -32,9 +32,9 @@
 ;CREATED BY:      Takuya Hara  on 2014-11-25.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-03 14:48:46 -0800 (Tue, 03 Feb 2015) $
-; $LastChangedRevision: 16844 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_etspec_dir.pro $
+; $LastChangedDate: 2015-03-04 06:49:45 -0800 (Wed, 04 Mar 2015) $
+; $LastChangedRevision: 17085 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_tplot_var/mvn_sta_etspec_dir.pro $
 ;
 ;-
 PRO mvn_sta_etspec_dir, apid, frame=frame, units=units, thld_theta=thld_theta, attvec=attvec, $

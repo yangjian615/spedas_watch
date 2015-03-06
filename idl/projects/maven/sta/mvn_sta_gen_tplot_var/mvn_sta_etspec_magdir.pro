@@ -35,9 +35,9 @@
 ;CREATED BY:      Takuya Hara on 2015-01-21.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-03 14:48:46 -0800 (Tue, 03 Feb 2015) $
-; $LastChangedRevision: 16844 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_etspec_magdir.pro $
+; $LastChangedDate: 2015-03-04 06:51:10 -0800 (Wed, 04 Mar 2015) $
+; $LastChangedRevision: 17086 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_tplot_var/mvn_sta_etspec_magdir.pro $
 ;
 ;-
 PRO mvn_sta_etspec_magdir, apid, pitch=pad, units=units, trange=trange, $

@@ -1,5 +1,6 @@
 PRO xtplot_options_panel_event, ev
   compile_opt idl2
+  @xtplot_com
   widget_control, ev.top, GET_UVALUE=wid
 
   code_exit = 0
@@ -23,6 +24,21 @@ PRO xtplot_options_panel_event, ev
       widget_control, ev.id, GET_VALUE=new_color
       options,wid.target,'color',new_color
     end
+    wid.bgXYZ: begin; ev.value, ev.select
+      xyz = wid.xyz
+      xyz[ev.VALUE] = ev.SELECT
+      idx = where(xyz eq 1, ct)
+      colors=[2,4,6]
+      if ct ge 1 then begin
+        str_element,/add,wid,'xyz',xyz
+        get_data,wid.target+'_full',data=Dfull
+        get_data,wid.target,data=D,lim=lim,dl=dl
+        str_element,/add,D,'Y', Dfull.Y[*,idx]
+        store_data,wid.target,data=D,lim=lim,dl=dl
+        options,wid.target,'xyz',xyz
+        options,wid.target,'colors',colors[idx]
+      endif
+      end
     ;--------------------------------------------------------------------------------------
     ; AXES
     ;--------------------------------------------------------------------------------------
@@ -39,11 +55,22 @@ PRO xtplot_options_panel_event, ev
       ylim, wid.target, wid.yrange[0], wid.yrange[1], value[0]
       str_element,/add,wid,'ylog',value[0]
       end
+;    wid.bgZeroaxis: begin
+;      widget_control, wid.bgZeroaxis, GET_VALUE=value
+;      str_element,/add,wid,'zeroaxis',value[0]
+;      if wid.ZEROAXIS then begin
+;        widget_control, xtplot_base, GET_UVALUE=ww; get widf from xtplot_com
+;        ind = where(strcmp(tnames(/tplot),wid.target)); find target index
+;        pos = ww.plot_pos[*,ind[0]]
+;        xs = pos[0] & ys = pos[1] & xe = pos[2] & ye = pos[3]
+;        print, xs,xe,ys,ye
+;      endif
+;      code_refresh = 0
+;      end
     ;--------------------------------------------------------------------------------------
     ; FINALIZE
     ;--------------------------------------------------------------------------------------
     wid.btnClose: begin
-      print, 'Close'
       code_refresh = 0
       code_exit = 1
     end
@@ -67,11 +94,33 @@ PRO xtplot_options_panel, group_leader=group_leader, target=target
     answer=dialog_message('must have a target',/center)
     return
   endif
-  wid = {target:target}
+  wid = {target:target, zeroaxis:0, threecomp:0, xyz:[1,1,1]}
   
   ; target - current options
   get_data,target,data=D,dl=dl,lim=lim
 
+  ; check if this tpv has been editted by this 'panel' option program
+  idx = where(strpos(tnames(),target+'_full') ge 0,ct)
+  if ct eq 0 then begin; create a full backup if there isn't any
+    store_data,target+'_full',data=D, dl=dl, lim=lim
+    ; check if this is a combined tpv or not
+    if (n_tags(D) gt 0) then begin; a non-combined tpv should have D as a structure
+      sz = size(D.y,/dim)
+      ; check if this is a 3-comp vector or not
+      if sz[1] eq 3 then begin
+        options, target, 'xyz',[1,1,1]
+        str_element,/add,wid,'threecomp',1
+      endif
+    endif
+  endif else begin
+    if (n_tags(D) gt 0) then begin; if D was a structure
+      idx = where(strmatch(tag_names(lim),'XYZ'),ct); look for the tag 'xyz'
+      str_element,/add,wid,'threecomp',(ct gt 0)
+      if (ct gt 0) then str_element,/add,wid,'xyz',lim.XYZ
+    endif
+  endelse
+
+  
   color = 0
   ylog = 0
   yrange = [1e+9, -1e+9]
@@ -128,7 +177,6 @@ PRO xtplot_options_panel, group_leader=group_leader, target=target
   str_element,/add,wid,'color',color
   str_element,/add,wid,'yrange',yrange
   str_element,/add,wid,'ylog',ylog
-
   
   ; widget layout
   base = widget_base(TITLE='Panel Options',/column)
@@ -143,8 +191,13 @@ PRO xtplot_options_panel, group_leader=group_leader, target=target
       str_element,/add,wid,'fldYmax',cw_field(baseTabAxes, TITLE = "Ymax", VALUE=wid.yrange[1],/RETURN_EVENTS)
       str_element,/add,wid,'bgYlog',cw_bgroup(baseTabAxes, 'Ylog',/COLUMN, /NONEXCLUSIVE, $
         SET_VALUE=[wid.YLOG],ypad=0,space=0)
-      
+;      str_element,/add,wid,'bgZeroAxis',cw_bgroup(baseTabAxes, 'ZeroAxis',/COLUMN, /NONEXCLUSIVE, $
+;        SET_VALUE=[wid.ZEROAXIS],ypad=0,space=0)
+        
       baseTabTrace = widget_base(baseTab,title='Trace',/COLUMN)
+        baseXYZ = widget_base(baseTabTrace,/COLUMN,ypad=0,space=0,SENSITIVE=wid.THREECOMP)
+          str_element,/add,wid,'bgXYZ',cw_bgroup(baseXYZ,['X','Y','Z'],/ROW, /NONEXCLUSIVE, $
+          SET_VALUE=wid.XYZ,ypad=0,space=0)
         baseXcolor = widget_base(baseTabTrace,/ROW)
           str_element,/add,wid,'btnXloadct',widget_button(baseXcolor,VALUE='XLOADCT')
           str_element,/add,wid,'btnXpalette',widget_button(baseXcolor,VALUE='XPALETTE')
