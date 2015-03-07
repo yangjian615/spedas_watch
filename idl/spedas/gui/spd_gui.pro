@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-01-23 18:08:16 -0800 (Fri, 23 Jan 2015) $
-;$LastChangedRevision: 16720 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-03-05 09:35:01 -0800 (Thu, 05 Mar 2015) $
+;$LastChangedRevision: 17094 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1586,7 +1586,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   ; Start of Toolbar Buttons
 
   ; First get the bitmap full path name
-
+  
   getresourcepath,rpath
   openBMP = read_bmp(rpath + 'folder_horizontal_open.bmp',/rgb)
   saveBMP = read_bmp(rpath + 'disk.bmp',/rgb)
@@ -1601,13 +1601,13 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   plotBMP = read_bmp(rpath + 'np_icon.bmp',/rgb)
   shiftRBMP = read_bmp(rpath + 'control_180.bmp',/rgb)
   shiftLBMP = read_bmp(rpath + 'control.bmp',/rgb)
-  plusBMP = read_bmp(rpath + 'plus.bmp',/rgb)
-  minusBMP = read_bmp(rpath + 'minus.bmp',/rgb)
+ ; plusBMP = read_bmp(rpath + 'plus.bmp',/rgb)
+ ; minusBMP = read_bmp(rpath + 'minus.bmp',/rgb)
   windowBMP = read_bmp(rpath + 'new_page.bmp',/rgb)
   helpBMP = read_bmp(rpath + 'question.bmp',/rgb)
   manageBMP = read_bmp(rpath + 'wrench_screwdriver.bmp',/rgb)
   loadBMP = read_bmp(rpath + 'folder_open_image.bmp',/rgb)
-  
+
   spd_ui_match_background, master, openBMP
   spd_ui_match_background, master, saveBMP
   spd_ui_match_background, master, printBMP
@@ -1619,13 +1619,12 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   spd_ui_match_background, master, plotBMP
   spd_ui_match_background, master, shiftRBMP
   spd_ui_match_background, master, shiftLBMP
-  spd_ui_match_background, master, plusBMP
-  spd_ui_match_background, master, minusBMP
+;  spd_ui_match_background, master, plusBMP
+;  spd_ui_match_background, master, minusBMP
   spd_ui_match_background, master, windowBMP
   spd_ui_match_background, master, helpBMP
   spd_ui_match_background, master, manageBMP
   spd_ui_match_background, master, loadBMP
-  
 
 ;  openBMP = FilePath('open.bmp', SubDir=['resource', 'bitmaps'])
 ;  saveBMP = FilePath('save.bmp', SubDir=['resource', 'bitmaps'])
@@ -1638,8 +1637,8 @@ PRO spd_gui,reset=reset,template_filename=template_filename
 ;  windowBMP = FilePath('view.bmp', SubDir=['resource', 'bitmaps'])
 ;  shiftRBMP = FilePath('shift_left.bmp', SubDir=['resource', 'bitmaps'])
 ;  shiftLBMP = FilePath('shift_right.bmp', SubDir=['resource', 'bitmaps'])
-  plusBMP = FilePath('plus.bmp', SubDir=['resource', 'bitmaps'])
-  minusBMP = FilePath('minus.bmp', SubDir=['resource', 'bitmaps'])
+;  plusBMP = FilePath('plus.bmp', SubDir=['resource', 'bitmaps'])
+;  minusBMP = FilePath('minus.bmp', SubDir=['resource', 'bitmaps'])
 ;  helpBMP = FilePath('help.bmp', SubDir=['resource', 'bitmaps'])
 ;  plotBMP = FilePath('plot.bmp', SubDir=['resource', 'bitmaps'])
 
@@ -1791,8 +1790,8 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   charSize = ceil(x_scr_size/!d.x_ch_size)
   
   ; Create Path Bar, but don't show for now (it is not used in Phase I or II)
-  pathBar = Obj_New('SPD_UI_MESSAGE_BAR', pathBase, XSize=charSize, YSize=2, Value='Path Name')
-  pathBar->Delete
+ ; pathBar = Obj_New('SPD_UI_MESSAGE_BAR', pathBase, XSize=charSize, YSize=2, Value='Path Name')
+ ; pathBar->Delete
     
   ; Draw Area
   ;NOTE any changes in the following call to widget draw should be mirrored by changes
@@ -1894,7 +1893,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
           lastClick: [0d,0], $
           prevEventType:-1, $
           statusBar:statusBar, $ ;the status message bar for the main window
-          pathBar:pathBar, $
+         ; pathBar:pathBar, $ ; not implemented? commented out 3/5/15
           trackingv:0, $ ;indicates whether vertical tracking is on
           trackingh:0, $ ;indicates whether horizontal tracking is on
           trackvMenu:trackvMenu, $  ;widget id of vertical tracking menu item

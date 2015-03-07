@@ -6,22 +6,27 @@
 ;     Convert from geomagnetic to geographic coordinates
 ;
 ; CALLING SEQUENCE:
-;       mag2geo, time, data_in, data_out
+;       mag2geo, data_in, data_out, time
 ;
 ; INPUT:
 ;       data_in = an [n,3] element array of position data in km and in
-;                MAG coordinates
+;                MAG coordinates or a tplot variable
+;                
+;       time = an n-element array containing double precision time values 
+;              corresponding to the points in data_in
 ;
 ; KEYWORD INPUTS:
 ;               None
 ;
 ; OUTPUT:
-;       data_in = an [n,3] element array of position data in km in
+;       data_out = an [n,3] element array of position data in km in
 ;                 newly transformed GEO coordinates
 ;
 ; EXAMPLE:
-;
-;       IDL> geo2mag, data_in data_out      
+;    if data_in is a tplot variable:
+;       IDL> mag2geo, data_in, data_out
+;    otherwise:
+;       IDL> mag2geo, data_in, data_out, time 
 ;
 ; NOTES:
 ;

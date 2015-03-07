@@ -6,7 +6,7 @@
 ;       Convert from geographic to geomagnetic coordinates
 ;
 ; CALLING SEQUENCE:
-;       geo2mag, time, data_in, data_out
+;       geo2mag, data_in, data_out, time
 ;
 ; INPUT:
 ;       time = an array [n] of double precision time in seconds from 1970-Jan-01/00:00:00.000
@@ -19,8 +19,10 @@
 ;       data_out = an array [n,3] of the input data in MAG coordinates                    
 ;
 ; EXAMPLE:
-;
-;       IDL> geo2mag, data_in data_out      
+;    if data_in is a tplot variable:
+;       IDL> geo2mag, data_in, data_out
+;    otherwise:
+;       IDL> geo2mag, data_in, data_out, time
 ;
 ; NOTES:
 ;
