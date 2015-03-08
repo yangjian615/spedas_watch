@@ -56,6 +56,7 @@ Function pp2spectrogram, pp, time_range = time_range
      If(nj Eq 0) Then Continue
 ;degap the data  first
      xdegap, 600.0, 10.0, pp.time[this_mass], pp.counts_per_second[this_mass], ct_out, y_out, /twonanpergap
+     If(y_out[0] Eq -1 && ct_out[0] Eq -1) Then Continue
      otpj = interpol(y_out, ct_out, tmid)
 ;Apply attenuation here:
      If(mass_arr[j] Le 150.0) Then att = 1.0 $
@@ -125,8 +126,8 @@ End
 ;HISTORY:
 ; 2014-07-28, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-18 15:19:18 -0800 (Sun, 18 Jan 2015) $
-; $LastChangedRevision: 16673 $
+; $LastChangedDate: 2015-03-06 16:33:35 -0800 (Fri, 06 Mar 2015) $
+; $LastChangedRevision: 17101 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ngi_read_csv.pro $
 ;-
 Function mvn_ngi_read_csv, filename, tplot_vars, tplot_spec

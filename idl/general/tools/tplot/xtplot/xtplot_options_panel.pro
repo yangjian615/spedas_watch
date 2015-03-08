@@ -17,12 +17,12 @@ PRO xtplot_options_panel_event, ev
     ;--------------------------------------------------------------------------------------
     ; TRACE
     ;--------------------------------------------------------------------------------------
-    wid.btnXloadct: xloadct
-    wid.btnXpalette: xpalette
-    wid.btnLoadct2: loadct2,34
+;    wid.btnXloadct: xloadct
+;    wid.btnXpalette: xpalette
+;    wid.btnLoadct2: loadct2,34
     wid.fldColor: begin
       widget_control, ev.id, GET_VALUE=new_color
-      options,wid.target,'color',new_color
+      options,wid.target,'colors',new_color
     end
     wid.bgXYZ: begin; ev.value, ev.select
       xyz = wid.xyz
@@ -107,11 +107,13 @@ PRO xtplot_options_panel, group_leader=group_leader, target=target
     if (n_tags(D) gt 0) then begin; a non-combined tpv should have D as a structure
       sz = size(D.y,/dim)
       ; check if this is a 3-comp vector or not
-      if sz[1] eq 3 then begin
-        options, target, 'xyz',[1,1,1]
-        str_element,/add,wid,'threecomp',1
-      endif
-    endif
+      if n_elements(sz) ge 2 then begin
+        if sz[1] eq 3 then begin
+          options, target, 'xyz',[1,1,1]
+          str_element,/add,wid,'threecomp',1
+        endif
+      endif;if n_elements
+    endif; if n_tags
   endif else begin
     if (n_tags(D) gt 0) then begin; if D was a structure
       idx = where(strmatch(tag_names(lim),'XYZ'),ct); look for the tag 'xyz'
@@ -198,10 +200,10 @@ PRO xtplot_options_panel, group_leader=group_leader, target=target
         baseXYZ = widget_base(baseTabTrace,/COLUMN,ypad=0,space=0,SENSITIVE=wid.THREECOMP)
           str_element,/add,wid,'bgXYZ',cw_bgroup(baseXYZ,['X','Y','Z'],/ROW, /NONEXCLUSIVE, $
           SET_VALUE=wid.XYZ,ypad=0,space=0)
-        baseXcolor = widget_base(baseTabTrace,/ROW)
-          str_element,/add,wid,'btnXloadct',widget_button(baseXcolor,VALUE='XLOADCT')
-          str_element,/add,wid,'btnXpalette',widget_button(baseXcolor,VALUE='XPALETTE')
-          str_element,/add,wid,'btnLoadct2',widget_button(baseXcolor,VALUE='Default color table')
+;        baseXcolor = widget_base(baseTabTrace,/ROW)
+;          str_element,/add,wid,'btnXloadct',widget_button(baseXcolor,VALUE='XLOADCT')
+;          str_element,/add,wid,'btnXpalette',widget_button(baseXcolor,VALUE='XPALETTE')
+;          str_element,/add,wid,'btnLoadct2',widget_button(baseXcolor,VALUE='Default color table')
         str_element,/add,wid,'fldColor',cw_field(baseTabTrace, TITLE = "Trace color index:", VALUE=color,/RETURN_EVENTS)    
       
     baseExit = widget_base(base,/ROW)

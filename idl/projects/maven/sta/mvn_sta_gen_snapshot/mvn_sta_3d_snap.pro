@@ -91,8 +91,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-24 13:57:54 -0800 (Tue, 24 Feb 2015) $
-; $LastChangedRevision: 17035 $
+; $LastChangedDate: 2015-03-06 11:04:08 -0800 (Fri, 06 Mar 2015) $
+; $LastChangedRevision: 17100 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -199,7 +199,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
   endif
   
   ok = 1
-  IF ~keyword_set(apid) THEN BEGIN
+  IF ~keyword_set(id) THEN BEGIN
      mode = mvn_c6_dat.mode
      mtime = mvn_c6_dat.time
   ENDIF 

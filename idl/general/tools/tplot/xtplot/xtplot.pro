@@ -9,8 +9,8 @@
 ; 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-05 22:06:49 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16894 $
+; $LastChangedDate: 2015-03-06 20:15:25 -0800 (Fri, 06 Mar 2015) $
+; $LastChangedRevision: 17104 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -102,8 +102,8 @@ PRO xtplot_event, event
     widf.btnTlmUndo:  xtplot_recovr_tlimit,'undo'
     widf.btnTlmFull:  xtplot_change_tlimit,'full'
     widf.btnTlmRefresh: begin
-      tplot,verbose=0, get_plot_pos = plot_pos
-      str_element,/add,widf,'plot_pos',plot_pos
+      tplot;,verbose=0, get_plot_pos = plot_pos
+      ;str_element,/add,widf,'plot_pos',plot_pos
     end
     widf.btnExpand:   xtplot_change_tlimit,'expand'
     widf.btnShrink:   xtplot_change_tlimit,'shrink'

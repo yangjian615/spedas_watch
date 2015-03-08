@@ -103,6 +103,15 @@ FUNCTION eva_data_load_daily, filename, cache_data_dir
     ; LOAD CDF FILES
     matched = 0
 
+    if strmatch(type,'idx') then begin
+      thm_load_pseudoAE,datatype='ae'
+      if tnames('thg_idx_ae') eq '' then begin
+        store_data,'thg_idx_ae',data={x:time_double(date)+dindgen(2), y:replicate(!values.d_nan,2)}
+      endif
+      options,'thg_idx_ae',ytitle='THEMIS!CAE Index'
+      matched = 1
+    endif
+    
     if strmatch(type,'fb') then begin
       thm_load_fbk,probe=prbs,level=2;,datatype=['fb_'+type]
       matched = 1

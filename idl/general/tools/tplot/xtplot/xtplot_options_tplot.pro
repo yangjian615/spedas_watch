@@ -36,7 +36,6 @@ PRO xtplot_options_tplot_event, ev
     ; FINALIZE
     ;--------------------------------------------------------------------------------------
     wid.btnClose: begin
-      print, 'Close'
       code_refresh = 0
       code_exit = 1
     end

@@ -2,8 +2,10 @@ function mms_load_fom_validation
 
 ; Here are the validation parameters for the FOM
   fom_gmax = 200                ; Maximum FOM size based on guidelines
+  fom_fpi_min = 200             ; Minimum FOM for an FPI calibration segment before warning
   fom_bounds = [0, 255]         ; Absolute FOM range
   seg_bounds = [1, 60]          ; Absolute segment size range
+  fpi_seg_bounds = [1, 4]       ; Absolute segment size range for FPI calibration files.
   buff_max = 1000.              ; Maximum number of selectable buffers
   p1_percent = 33.              ; Percentage of selections which are priority 1 before warning
   nominal_seg_range = [2, 35]   ; Nominal range for segment lengths, warning if exceeded
@@ -28,7 +30,9 @@ function mms_load_fom_validation
                        type3_range: type3_range, $
                        type4_range: type4_range, $
                        fom_del_max: fom_del_max, $
-                       fom_mod_percent: fom_mod_percent}
+                       fom_mod_percent: fom_mod_percent, $
+                       fom_fpi_min: fom_fpi_min, $
+                       fpi_seg_bounds: fpi_seg_bounds}
                        
 return, validation_struct
 
