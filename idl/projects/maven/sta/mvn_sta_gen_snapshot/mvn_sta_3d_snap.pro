@@ -91,8 +91,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-03-06 11:04:08 -0800 (Fri, 06 Mar 2015) $
-; $LastChangedRevision: 17100 $
+; $LastChangedDate: 2015-03-08 00:52:50 -0800 (Sun, 08 Mar 2015) $
+; $LastChangedRevision: 17105 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -101,7 +101,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
                      label=label, smo=smo, sundir=sundir, map=map, $
                      abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst, $
                      mass=mass, m_int=mq, erange=erange, window=window, msodir=mso, apid=id, $
-                     appdir=app, mmin=mmin, mmax=mmax, plot_sc=plot_sc
+                     appdir=app, mmin=mmin, mmax=mmax, plot_sc=plot_sc, swia=swia
   COMMON mvn_c6
   tplot_options, get_option=topt
   IF SIZE(var1, /type) NE 0 AND SIZE(var2, /type) EQ 0 THEN var2 = var1
@@ -206,6 +206,8 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
   func = 'mvn_sta_get'
   IF ~keyword_set(mmin) THEN mmin = 0
   IF ~keyword_set(mmax) THEN mmin = 100.
+
+  init_swi = 1
   while (ok) do begin
 
 ; Put up a 3D spectrogram
@@ -307,6 +309,32 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
            endif
 
            XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal, color=255
+
+           IF keyword_set(swia) THEN BEGIN
+              status = EXECUTE("swicom = SCOPE_VARNAME(common='mvn_swia_data')")
+              IF status EQ 1 THEN BEGIN
+                 IF (init_swi) THEN BEGIN
+                    status = EXECUTE('COMMON mvn_swia_data')
+                    init_swi = 0
+                 ENDIF 
+                 dcs = mvn_swia_get_3dc(MEAN(trange))
+
+                 mk = spice_test('*')
+                 idx = WHERE(mk NE '', count)
+                 IF count EQ 0 THEN mk = mvn_spice_kernels(/load, /all, trange=trange, verbose=-1)
+                 mvn_pfp_cotrans, dcs, from='MAVEN_SWIA', to='MAVEN_STATIC', theta=tswi, phi=pswi, verbose=-1
+                 ; Assuming that the color table is defined via 'loadct2'.
+                 cswi = bytescale(dcs.phi, bottom=7, top=254, range=[0., 360.])
+                 PLOTS, REFORM(pswi[dcs.nenergy-1, *], dcs.nbins), REFORM(tswi[dcs.nenergy-1, *], dcs.nbins), $
+                        psym=6, color=REFORM(cswi[dcs.nenergy-1, *], dcs.nbins)
+                 undefine, dcs, tswi, pswi, cswi, idx, count
+
+                 XYOUTS, !x.window[0]*1.2, !y.window[1]-!y.window[0]*0.5, '(SWIA: Square)', charsize=!p.charsize, /normal, color=255
+              ENDIF ELSE BEGIN
+                 dprint, 'No SWIA data loaded.'
+              ENDELSE 
+              undefine, status, swicom
+           ENDIF 
            
            if (sflg) then begin
               wset, wnum+1
