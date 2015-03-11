@@ -74,6 +74,11 @@
 ;
 ;   APID:         If set, specifies the APID data product to use. 
 ;
+;   PLOT_SC:      Overplots the projection of the spacecraft body.
+;
+;   SWIA:         Overplots the SWIA FOV in STATIC coordidates in
+;                 order to make sure the FOV overlap each other.
+;
 ;NOTE:            This routine is written based on parially 'swe_3d_snap'
 ;                 created by Dave Mitchell.
 ;
@@ -91,8 +96,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-03-08 00:52:50 -0800 (Sun, 08 Mar 2015) $
-; $LastChangedRevision: 17105 $
+; $LastChangedDate: 2015-03-09 14:24:19 -0700 (Mon, 09 Mar 2015) $
+; $LastChangedRevision: 17111 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -322,17 +327,25 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
                  mk = spice_test('*')
                  idx = WHERE(mk NE '', count)
                  IF count EQ 0 THEN mk = mvn_spice_kernels(/load, /all, trange=trange, verbose=-1)
+                 undefine, idx, count
                  mvn_pfp_cotrans, dcs, from='MAVEN_SWIA', to='MAVEN_STATIC', theta=tswi, phi=pswi, verbose=-1
                  ; Assuming that the color table is defined via 'loadct2'.
                  cswi = bytescale(dcs.phi, bottom=7, top=254, range=[0., 360.])
-                 PLOTS, REFORM(pswi[dcs.nenergy-1, *], dcs.nbins), REFORM(tswi[dcs.nenergy-1, *], dcs.nbins), $
-                        psym=6, color=REFORM(cswi[dcs.nenergy-1, *], dcs.nbins)
-                 undefine, dcs, tswi, pswi, cswi, idx, count
+                 lswi = [0., 90., 180., 270., 360.]
+                 clswi = bytescale(lswi, bottom=7, top=254, range=[0., 360.])
+                 
+                 idx = WHERE(dcs.theta[dcs.nenergy-1, *] GT 0., nidx, complement=jdx, ncomplement=njdx)
+                 PLOTS, REFORM(pswi[dcs.nenergy-1, idx], nidx), REFORM(tswi[dcs.nenergy-1, idx], nidx), $
+                        psym=6, color=REFORM(cswi[dcs.nenergy-1, idx], nidx)
+                 PLOTS, REFORM(pswi[dcs.nenergy-1, jdx], njdx), REFORM(tswi[dcs.nenergy-1, jdx], njdx), $
+                        psym=5, color=REFORM(cswi[dcs.nenergy-1, jdx], njdx)
+                 undefine, dcs, tswi, pswi, cswi, idx, nidx, jdx, njdx
 
-                 XYOUTS, !x.window[0]*1.2, !y.window[1]-!y.window[0]*0.5, '(SWIA: Square)', charsize=!p.charsize, /normal, color=255
-              ENDIF ELSE BEGIN
-                 dprint, 'No SWIA data loaded.'
-              ENDELSE 
+                 XYOUTS, !x.window[0]*1.2, !y.window[1]-!y.window[0]*0.5, '(SWIA, +: Square / -: Triangle)', charsize=!p.charsize, /normal, color=255
+                 FOR i=0, N_ELEMENTS(lswi)-1 DO $
+                    XYOUTS, !x.window[0]*1.2 + 0.04*i, !y.window[1]-!y.window[0]*1.1, STRING(lswi[i], '(I0)'), charsize=!p.charsize, /normal, color=clswi[i]
+                 undefine, i, lswi, clswi 
+              ENDIF ELSE dprint, 'No SWIA data loaded.'
               undefine, status, swicom
            ENDIF 
            

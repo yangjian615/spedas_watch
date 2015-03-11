@@ -33,8 +33,8 @@
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-02-17 05:51:40 -0800 (Tue, 17 Feb 2015) $
-; $LastChangedRevision: 16989 $
+; $LastChangedDate: 2015-03-09 07:46:28 -0700 (Mon, 09 Mar 2015) $
+; $LastChangedRevision: 17108 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
@@ -366,25 +366,25 @@ if ptype eq 'scalar' then begin
 	endif
 	
 	window,0
-	specplot,xp,yp,binxy[*,*,0],limits = {xrange:xrange,yrange:yrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Y [km]',position:[0.1,0.1,0.85,0.9]}
+	specplot,xp,yp,binxy[*,*,0],limits = {xrange:xrange,yrange:yrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Y [km]',position:[0.1,0.15,0.85,0.9],charsize:1.5}
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,1
-	specplot,xp,zp,binxz[*,*,0],limits = {xrange:xrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Z [km]',position:[0.1,0.1,0.85,0.9]}
+	specplot,xp,zp,binxz[*,*,0],limits = {xrange:xrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Z [km]',position:[0.1,0.15,0.85,0.9],charsize:1.5}
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,2
-	specplot,xp,rp,bincyl[*,*,0],limits = {xrange:xrange,yrange:rrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'R_YZ [km]',position:[0.1,0.1,0.85,0.9]}
+	specplot,xp,rp,bincyl[*,*,0],limits = {xrange:xrange,yrange:rrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'R_YZ [km]',position:[0.1,0.15,0.85,0.9],charsize:1.5}
 	oplot,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,3
-	specplot,yp,zp,binyz[*,*,0],limits = {xrange:yrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'Y [km]',ytitle:'Z [km]',position:[0.1,0.1,0.85,0.9]}
+	specplot,yp,zp,binyz[*,*,0],limits = {xrange:yrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'Y [km]',ytitle:'Z [km]',position:[0.1,0.15,0.85,0.9],charsize:1.5}
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	
 endif else begin
@@ -398,26 +398,26 @@ endif else begin
 	if nw gt 0 then bincyl(w) = 1e10
 	
 	window,0
-	velovect,binxy[*,*,0],binxy[*,*,1],xp,yp,xrange = xrange, yrange = yrange, xtitle = 'X [km]',ytitle = 'Y [km]', len = len, dots = 0,missing = 1e9
+	velovect,binxy[*,*,0],binxy[*,*,1],xp,yp,xrange = xrange, yrange = yrange, xtitle = 'X [km]',ytitle = 'Y [km]', len = len, dots = 0,missing = 1e9,charsize = 1.5, thick = 1.5
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,1
-	velovect,binxz[*,*,0],binxz[*,*,2],xp,zp,xrange = xrange, yrange = zrange, xtitle = 'X [km]',ytitle = 'Z [km]', len = len, dots = 0,missing = 1e9
+	velovect,binxz[*,*,0],binxz[*,*,2],xp,zp,xrange = xrange, yrange = zrange, xtitle = 'X [km]',ytitle = 'Z [km]', len = len, dots = 0,missing = 1e9,charsize = 1.5, thick = 1.5
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,2
-	velovect,bincyl[*,*,0],bincyl[*,*,1],xp,rp,xrange = xrange, yrange = rrange, xtitle = 'X [km]',ytitle = 'R_YZ [km]', title = 'In Plane', len = len, dots = 0, missing=1e9	
+	velovect,bincyl[*,*,0],bincyl[*,*,1],xp,rp,xrange = xrange, yrange = rrange, xtitle = 'X [km]',ytitle = 'R_YZ [km]', title = 'In Plane', len = len, dots = 0, missing=1e9, charsize = 1.5, thick =1.5
 	oplot,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,3
-	velovect,binyz[*,*,1],binyz[*,*,2],yp,zp,xrange = yrange, yrange = zrange, xtitle = 'Y [km]',ytitle = 'Z [km]', len = len, dots = 0,missing=1e9
-	plots,RM*cos(ang),RM*sin(ang),thick = 2
+	velovect,binyz[*,*,1],binyz[*,*,2],yp,zp,xrange = yrange, yrange = zrange, xtitle = 'Y [km]',ytitle = 'Z [km]', len = len, dots = 0,missing=1e9, charsize = 1.5, thick = 1.5
+	plots,RM*cos(ang),RM*sin(ang),thick = 1,5
 endelse
 
 end

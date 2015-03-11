@@ -210,8 +210,8 @@ pro rylm,colat,lon,order,ylmval
   z1=d1*z2
   q_fac=z1
 
-  ylmval(0)=1;
-  ylmval(2)=cos_theta;
+  ylmval[0]=1;
+  ylmval[2]=cos_theta;
 
   for l=1,order-1 do begin
     la = (l - 1) * l + 1
@@ -220,12 +220,12 @@ pro rylm,colat,lon,order,ylmval
 
     ca =float(l * 2. + 1.) / (l + 1.)
     cb= float(l)/(l + 1.)
-    ylmval(lc-1) = ca * cos_theta * ylmval(lb-1) - cb * ylmval(la-1);
+    ylmval[lc-1] = ca * cos_theta * ylmval[lb-1] - cb * ylmval[la-1]
   end
 
   q_val=q_fac;
-  ylmval(3)=float(q_val)
-  ylmval(1)=-imaginary(q_val)
+  ylmval[3]=float(q_val)
+  ylmval[1]=-imaginary(q_val)
   for l=2,order do begin
     d1 = l*2 - 1.
     z2=d1*q_fac
@@ -235,8 +235,8 @@ pro rylm,colat,lon,order,ylmval
     la = l*l + (2*l) + 1
     lb = l*l + 1;
 
-    ylmval(la-1) = float(q_val)
-    ylmval(lb-1) = -imaginary(q_val)
+    ylmval[la-1] = float(q_val)
+    ylmval[lb-1] = -imaginary(q_val)
 
   end
 
@@ -247,8 +247,8 @@ pro rylm,colat,lon,order,ylmval
      ld = l*l + 2
 
      fac = l*2 - 1
-     ylmval(lc-1) = fac * cos_theta * ylmval(la-1)
-     ylmval(ld-1) = fac * cos_theta * ylmval(lb-1)
+     ylmval[lc-1] = fac * cos_theta * ylmval[la-1]
+     ylmval[ld-1] = fac * cos_theta * ylmval[lb-1]
    end
 
    for m=1,order-2 do begin
@@ -264,8 +264,8 @@ pro rylm,colat,lon,order,ylmval
         ca=float(2.*l-1)/(l-m)
         cb=float(l+m-1.)/(l-m)
 
-        ylmval(lc-1) = ca * cos_theta *ylmval(lb-1) - cb *ylmval(la-1);
-	ylmval(lf-1) = ca * cos_theta *ylmval(ldd-1) - cb *ylmval(ld-1);
+        ylmval[lc-1] = ca * cos_theta *ylmval[lb-1] - cb *ylmval[la-1]
+        ylmval[lf-1] = ca * cos_theta *ylmval[ldd-1] - cb *ylmval[ld-1]
 
 	la = lb
         lb = lc
@@ -339,13 +339,13 @@ function eqn_of_time,mean_lon,yr
   if (index gt 12) then index=12;
  
 
-  return,  eqcoef(0,index-1)*sind(mean_lon)+ $
-           eqcoef(1,index-1)*sind(2.0*mean_lon)+ $
-           eqcoef(2,index-1)*sind(3.0*mean_lon)+ $ 
-           eqcoef(3,index-1)*sind(4.0*mean_lon)+ $
-           eqcoef(4,index-1)*cosd(mean_lon)+ $
-           eqcoef(5,index-1)*cosd(2.0*mean_lon)+ $
-           eqcoef(6,index-1)*cosd(3.0*mean_lon)
+  return,  eqcoef[0,index-1]*sind(mean_lon)+ $
+           eqcoef[1,index-1]*sind(2.0*mean_lon)+ $
+           eqcoef[2,index-1]*sind(3.0*mean_lon)+ $ 
+           eqcoef[3,index-1]*sind(4.0*mean_lon)+ $
+           eqcoef[4,index-1]*cosd(mean_lon)+ $
+           eqcoef[5,index-1]*cosd(2.0*mean_lon)+ $
+           eqcoef[6,index-1]*cosd(3.0*mean_lon)
           
 end
 
@@ -435,14 +435,14 @@ pro convert_geo_coord, lat_in,lon_in,height_in,lat_out,lon_out, $
 
       for i=0,2 do begin
         for j=0,120 do begin 
-          cint(j,i,flag) =coef[j,i,0,flag]+ $
+          cint[j,i,flag] =coef[j,i,0,flag]+ $
                 coef[j,i,1,flag]*alt_var+ $
                 coef[j,i,2,flag]*alt_var_sq+ $
                 coef[j,i,3,flag]*alt_var_cu+ $
                 coef[j,i,4,flag]*alt_var_qu 
 	end
       end
-      height_old(flag) = height_in;
+      height_old[flag] = height_in;
   end
   x=0.
   y=0.
@@ -464,9 +464,9 @@ pro convert_geo_coord, lat_in,lon_in,height_in,lat_out,lon_out, $
      for m = -l,l do begin
        k = l * (l+1) + m+1;
       
-       x=x+cint(k-1,0,flag)*ylmval(k-1)
-       y=y+cint(k-1,1,flag)*ylmval(k-1)
-       z=z+cint(k-1,2,flag)*ylmval(k-1)
+       x=x+cint[k-1,0,flag]*ylmval[k-1]
+       y=y+cint[k-1,1,flag]*ylmval[k-1]
+       z=z+cint[k-1,2,flag]*ylmval[k-1]
      end
    end
    error=-32
@@ -560,7 +560,7 @@ pro load_coef,filename
  readf, unit,coef
  close,unit
  free_lun,unit  
-
+ 
 end
 
 
@@ -579,7 +579,7 @@ pro aacgmidl
   mslon1=0
   mslon2=0
 
-@default.pro
+;@default.pro
 
 end
 

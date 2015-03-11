@@ -39,8 +39,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-02-06 11:10:05 -0800 (Fri, 06 Feb 2015) $
-;$LastChangedRevision: 16900 $
+;$LastChangedDate: 2015-03-09 08:26:27 -0700 (Mon, 09 Mar 2015) $
+;$LastChangedRevision: 17109 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_qf_list__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -87,11 +87,11 @@ function spd_qf_list::qf_time_slice, tstart, tend
   t1n = tn[0]
   t2n = tn[1]
   q = [self.get_qf(tn[0])]
-  for i=1, n_elements(tn)-1 do begin
-    if (t[i] eq t[i-1]) then continue
-    t1n = [t[i], t1n]
-    t2n = [t[i+1], t2n]
-    q = [self.get_qf(t[i]), q]
+  for i=1, n_elements(tn)-2 do begin
+    if (tn[i] eq tn[i-1]) then continue
+    t1n = [t1n, tn[i]]
+    t2n = [t2n, tn[i+1]]
+    q = [q, self.get_qf(tn[i])]
   endfor
   result = obj_new('SPD_QF_LIST', t_start=t1n, t_end=t2n, qf_bits=q)
   
