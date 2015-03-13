@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 20-nov-2007, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-23 16:20:00 -0800 (Mon, 23 Feb 2015) $
-; $LastChangedRevision: 17028 $
+; $LastChangedDate: 2015-03-11 14:41:38 -0700 (Wed, 11 Mar 2015) $
+; $LastChangedRevision: 17119 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_qlook_burst_bar.pro $
 ;-
 Function mvn_qlook_burst_bar, date, duration, outline=outline, _extra = _extra
@@ -44,11 +44,11 @@ Function mvn_qlook_burst_bar, date, duration, outline=outline, _extra = _extra
   Endif Else yes_swi_arc = 0b
 
 ;Use SWE if you have it, swi as a backup
-  If(yes_swe_arc) Then Begin
-     copy_data, 'mvn_swe_arctemp', 'mvn_arcflag'
-     tdegap, 'mvn_arcflag', /overwrite, dt = 600.0
-  Endif Else If(yes_swi_arc) Then Begin
+  If(yes_swi_arc) Then Begin
      copy_data, 'mvn_swi_arctemp', 'mvn_arcflag'
+     tdegap, 'mvn_arcflag', /overwrite, dt = 600.0
+  Endif Else If(yes_swe_arc) Then Begin
+     copy_data, 'mvn_swe_arctemp', 'mvn_arcflag'
      tdegap, 'mvn_arcflag', /overwrite, dt = 600.0
   Endif Else Begin
      store_data, 'mvn_arcflag', {x:timerange(), y:[!values.f_nan, !values.f_nan]}

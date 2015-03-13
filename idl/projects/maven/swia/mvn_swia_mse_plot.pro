@@ -33,8 +33,8 @@
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-03-09 07:46:28 -0700 (Mon, 09 Mar 2015) $
-; $LastChangedRevision: 17108 $
+; $LastChangedDate: 2015-03-11 06:29:44 -0700 (Wed, 11 Mar 2015) $
+; $LastChangedRevision: 17113 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
@@ -44,9 +44,9 @@ pro mvn_swia_mse_plot, tr = tr,xrange = xrange, yrange = yrange,zrange = zrange,
 
 RM = 3397.
 
-if not keyword_set(xrange) then xrange = [-8e3,8e3]
-if not keyword_set(yrange) then yrange = [-8e3,8e3]
-if not keyword_set(zrange) then zrange = [-8e3,8e3]
+if not keyword_set(xrange) then xrange = [-1e4,1e4]
+if not keyword_set(yrange) then yrange = [-1e4,1e4]
+if not keyword_set(zrange) then zrange = [-1e4,1e4]
 if not keyword_set(pdata) then pdata = 'MAVEN_POS_(MARS-MSO)'
 if not keyword_set(idata) then idata = 'bsw'
 if not keyword_set(vdata) then vdata = 'vsw'

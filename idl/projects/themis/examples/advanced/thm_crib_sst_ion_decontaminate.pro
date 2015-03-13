@@ -7,8 +7,8 @@
 ;Notes:
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-02-19 17:22:15 -0800 (Thu, 19 Feb 2015) $
-; $LastChangedRevision: 17018 $
+; $LastChangedDate: 2015-03-11 13:36:01 -0700 (Wed, 11 Mar 2015) $
+; $LastChangedRevision: 17118 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_sst_ion_decontaminate.pro $
 ;-
 
@@ -46,28 +46,26 @@ thm_part_conv_units,dist_psef,units='eflux',/fractional_counts
 ;for comparison
 thm_part_products,probe=probe,datatype='psif',trange=trange,outputs='moments energy',dist_array=dist_psif,suffix='_before'
 
-;this code assumes that psif/psef are matched in angle/mode/time
-;if they're not, this code will throw an error.
-;To fix you can match time/mode/angle using
-;thm_part_time_interpolate ;matches time/mode 
-;then 
+;this code assumes that psif/psef are matched in angle
+;If they aren't, the code may throw and error.  Call this to match angle:
 ;thm_part_sphere_interpolate ;matches angle
 
-;This part is not vectorized.  It may take a while
-for i = 0,n_elements(dist_psef)-1 do begin ;loop over mode
-  dim = dimen((*dist_psef[i]).energy)
-  for j = 0,dim[2]-1l do begin ;loop over time
-    psif_data = (*dist_psif[i])[j] ;pull out a distribution structure
-    psef_data = (*dist_psef[i])[j]
-    for k = 0,dim[1]-1l do begin ;loop over angle
-      data8 = interpol(psef_data.data[*,k],psef_data.energy[*,k],psif_data.energy[8,k]) ;interpolate electron data to 8th sst ion bin
-      psif_data.data[8,k]=(psif_data.data[8,k]-data8) > 0 ; subtract data(store max(result,0)
-      data9 = interpol(psef_data.data[*,k],psef_data.energy[*,k],psif_data.energy[9,k]) ;interpolate electron data to 9th sst ion bin
-      psif_data.data[9,k]=(psif_data.data[9,k]-data9) > 0 ; subtract data(store max(result,0)     
-    endfor
-    (*dist_psif[i])[j] = psif_data ;store the modified distribution structure
+for i = 0l,n-1 do begin
+  thm_part_time_iterator,dist_psif,psif_data,index=i
+  thm_part_time_iterator,dist_psef,psef_data,index=i
+
+  dim = dimen(psif_data.energy)
+  for j = 0l, dim[1]-1l do begin
+    data8 = interpol(psef_data.data[*,j],psef_data.energy[*,j],psif_data.energy[8,j]) ;interpolate electron data to 8th sst ion bin
+    psif_data.data[8,j]=(psif_data.data[8,j]-data8) > 0 ; subtract data(store max(result,0)
+    data9 = interpol(psef_data.data[*,j],psef_data.energy[*,j],psif_data.energy[9,j]) ;interpolate electron data to 9th sst ion bin
+    psif_data.data[9,j]=(psif_data.data[9,j]-data9) > 0 ; subtract data(store max(result,0)
   endfor
+
+  thm_part_time_iterator,dist_psif,psif_data,index=i,/set
+
 endfor
+
 
 thm_part_products,probe=probe,datatype='psif',trange=trange,outputs='moments energy',dist_array=dist_psif,suffix='_after'
 

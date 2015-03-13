@@ -13,20 +13,25 @@
 ;	REG: region structure from 'mvn_swia_regid'
 ;	NPO: number of determinations per orbit
 ;	ARCHIVE: use archive data
+;	INVEC: Allows you to use a different set of spectra for computation
+;		Assumed to be on the same energy scale
+;	VFILT: Keep only points that agree with upstream solar wind velocity
+;	VTHRESH: Percentage difference from upstream velocity to allow
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-06 05:22:37 -0800 (Tue, 06 Jan 2015) $
-; $LastChangedRevision: 16597 $
+; $LastChangedDate: 2015-03-11 06:58:40 -0700 (Wed, 11 Mar 2015) $
+; $LastChangedRevision: 17116 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_dir.pro $
 ;
 ;-
 
-pro mvn_swia_penprot_dir, reg = reg, npo = npo, archive = archive, attfilt = attfilt
+pro mvn_swia_penprot_dir, reg = reg, npo = npo, archive = archive, attfilt = attfilt, invec = invec, vfilt = vfilt, vthresh = vthresh
 
 mass = 0.0104389*1.6e-22
 Const = (mass/(2.*1.6e-12))^0.5
 
 if not keyword_set(npo) then npo = 1
+if not keyword_set(vthresh) then vthresh = 0.15
 
 common mvn_swia_data
 
@@ -37,6 +42,8 @@ endif else begin
 	get_data,'mvn_swics_en_eflux_MSO_mX',data = data
 	denergy = data.v*(info_str[swics.info_index].deovere_coarse#replicate(1,48))
 endelse
+
+if keyword_set(invec) then get_data,invec,data = data
 
 if keyword_set(reg) then begin
 	ureg = interpol(reg.y[*,0],reg.x,data.x)
@@ -73,16 +80,16 @@ tout = dblarr(norb)
 for i = 0,norb-1 do begin
 	w = where(orb eq (mino+i) and abs(zx) lt 1/sqrt(2),nw)		
 	if nw gt 2 then begin
-		spec = total(spectra(w,*),1,/nan)/nw
-		energy = total(energies(w,*),1,/nan)/nw
-		denergy = total(denergies(w,*),1,/nan)/nw
+		spec = total(spectra[w,*],1,/nan)/nw
+		energy = total(energies[w,*],1,/nan)/nw
+		denergy = total(denergies[w,*],1,/nan)/nw
 		
 		wr = where(energy gt 200 and energy lt 4000)
-		nout(i) = Const*!pi*total(denergy(wr)*energy(wr)^(-1.5)*spec(wr))
-		spec = spec-min(spec(wr)) > 0
+		spec = spec-min(spec[wr]) > 0
+		nout(i) = Const*!pi*total(denergy[wr]*energy[wr]^(-1.5)*spec[wr])
 
-		maxc = max(spec(wr),maxi)
-		eout = energy(wr(maxi))
+		maxc = max(spec[wr],maxi)
+		eout = energy(wr[maxi])
 		vout(i) = sqrt(2*eout*1.6e-19/1.67e-27)/1e3
 		tout(i) = mean(times(w),/double,/nan)
 	endif
@@ -90,7 +97,14 @@ endfor
 
 w = where(tout ne 0)
 
-store_data,'npen',data = {x:tout(w),y:nout(w)}
-store_data,'vpen',data = {x:tout(w),y:vout(w)}
+if keyword_set(vfilt) then begin
+	get_data,'vsw',data = vsw
+	cv = interpol(vsw.y,vsw.x,tout[w])
+	ww = where(abs(vout[w]-cv)/cv lt vthresh)
+	w = w[ww]
+endif
+
+store_data,'npen',data = {x:tout[w],y:nout[w]}
+store_data,'vpen',data = {x:tout[w],y:vout[w]}
 
 end
