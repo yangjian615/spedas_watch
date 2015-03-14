@@ -51,9 +51,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-03-12 17:12:52 -0700 (Thu, 12 Mar 2015) $
+;$LastChangedRevision: 17128 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_prompt_widget.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -163,7 +163,8 @@ function spd_ui_prompt_widget,$
   width += 2
   width = width < maxwidth
   
-  height = max([long(strlen(promptText)+2) / long(width) + 1,numlines])
+  ;height is number of new lines + total number of line wraps + margin
+  height = numlines + total( (strlen(textlines)+2) / width ) + 1
   
   textBase = widget_text(tlb, value=promptText,xsize=width,editable=0,/wrap,ysize=height)
   buttonBase = widget_base(tlb, /row, /align_center)

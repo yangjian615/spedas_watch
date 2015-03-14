@@ -7,11 +7,12 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-02-13 09:42:34 -0800 (Fri, 13 Feb 2015) $
-;$LastChangedRevision: 16978 $
+;$LastChangedDate: 2015-03-12 11:52:45 -0700 (Thu, 12 Mar 2015) $
+;$LastChangedRevision: 17123 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_plugin_manager__define.pro $
 ;-
 
+;+
 ; NAME: 
 ;     addLoadDataPanel
 ;     
@@ -22,6 +23,7 @@
 ;     mission name: name of the mission to add to the load data panel
 ;     procedure name: name of the procedure containing the load data panel widget for this mission
 ;     panel title: title of the load data panel
+;-
 pro spd_ui_plugin_manager::addLoadDataPanel, mission_name, procedure_name, panel_title
     plugin_struct = [{mission_name: mission_name, procedure_name: procedure_name, panel_title: panel_title}]
     if ptr_valid(self.plugin_load_data_panels) then begin
@@ -29,6 +31,7 @@ pro spd_ui_plugin_manager::addLoadDataPanel, mission_name, procedure_name, panel
     endif else self.plugin_load_data_panels = ptr_new(plugin_struct)
 end 
 
+;+
 ; NAME: 
 ;     getLoadDataPanels
 ;     
@@ -36,13 +39,15 @@ end
 ;     returns an array of structures, one struct for each load data panel
 ;     
 ; OUTPUT:
-; 
+;
+;-
 function spd_ui_plugin_manager::getLoadDataPanels
     if ptr_valid(self.plugin_load_data_panels) then begin
         return, *self.plugin_load_data_panels
     endif else return, 0
 end
 
+;+
 ; NAME: 
 ;     addFileConfigPanel
 ;     
@@ -52,7 +57,7 @@ end
 ; INPUT: 
 ;    mission name: name of the mission
 ;    procedure name: name of the procedure containing the file config widget
-;    
+;-   
 pro spd_ui_plugin_manager::addFileConfigPanel, mission_name, procedure_name
     plugin_struct = [{mission_name: mission_name, procedure_name: procedure_name}]
     if ptr_valid(self.plugin_file_config_panels) then begin
@@ -60,7 +65,7 @@ pro spd_ui_plugin_manager::addFileConfigPanel, mission_name, procedure_name
     endif else self.plugin_file_config_panels = ptr_new(plugin_struct)
 end
 
-
+;+
 ; NAME: 
 ;     getFileConfigPanels
 ;     
@@ -69,12 +74,14 @@ end
 ;     
 ; OUTPUT:
 ; 
+;-
 function spd_ui_plugin_manager::getFileConfigPanels
     if ptr_valid(self.plugin_file_config_panels) then begin
         return, *self.plugin_file_config_panels
     endif else return, 0
 end
 
+;+
 ; NAME: 
 ;     addPluginMenu
 ;     
@@ -85,7 +92,8 @@ end
 ;    item: menu item text
 ;    procedure: name of the procedure containing the widget to open when the user selects this menu item
 ;    location: 
-;    
+; 
+;-   
 pro spd_ui_plugin_manager::addPluginMenu, item, procedure, location
     plugin_struct = [{item: item, procedure: procedure, location: location}]
     
@@ -94,18 +102,28 @@ pro spd_ui_plugin_manager::addPluginMenu, item, procedure, location
     endif else self.plugin_menus = ptr_new(plugin_struct)
 end
 
+;+
 ; NAME: 
 ;     getPluginMenus
 ;     
 ; PURPOSE: 
 ;     returns an array of structures, one for each plugin menu
-;    
+;
+;-   
 function spd_ui_plugin_manager::getPluginMenus
     if ptr_valid(self.plugin_menus) then begin
         return, *self.plugin_menus
     endif else return, 0
 end
 
+;+
+; NAME:
+;    addDataProcessingPlugin
+; 
+; PURPOSE: 
+;     add a new plugin to the "More..." menu in the data processing panel
+;   
+;-
 pro spd_ui_plugin_manager::addDataProcessingPlugin, item, procedure
     plugin_struct = [{item: item, procedure: procedure}]
     if ptr_valid(self.data_proc_plugins) eq 1 then begin
@@ -113,12 +131,28 @@ pro spd_ui_plugin_manager::addDataProcessingPlugin, item, procedure
     endif else self.data_proc_plugins = ptr_new(plugin_struct)
 end
 
+;+
+; NAME: 
+;     getDataProcessingPlugins
+;     
+; PURPOSE: 
+;     returns an array of structures, one for each data processing plugin
+;
+;-    
 function spd_ui_plugin_manager::getDataProcessingPlugins
     if ptr_valid(self.data_proc_plugins) then begin
         return, *self.data_proc_plugins
     endif else return, 0
 end
 
+;+
+; NAME: 
+;     parseConfig
+;     
+; PURPOSE: 
+;     parses a SPEDAS configuration file (.txt)
+;
+;-  
 function spd_ui_plugin_manager::parseConfig, filename
     mission_name = ''
     file_template = { VERSION: 1.0, $
@@ -170,6 +204,14 @@ function spd_ui_plugin_manager::parseConfig, filename
                 ; plugin has a config panel
                 self->addFileConfigPanel, mission_name, info_components[0]
             end
+            'data_processing': begin
+                ; found a data processing plugin
+                if n_elements(info_components) eq 2 then begin
+                    self->addDataProcessingPlugin, info_components[1], info_components[0]
+                endif else begin
+                    dprint, dlevel = 0, 'Not enough arguments to add plugin item to the "Data Processing" panel'
+                endelse
+            end
             else: dprint, dlevel = 0, 'Error loading plugin, unknown plugin type: ' + string(plugin_type)
         endcase
     endfor
@@ -207,9 +249,6 @@ function spd_ui_plugin_manager::init
             endif
         endfor
         
-        ; for testing dproc plugins, needs to be fixed when I update how the plugin developers add plugins
-        self->addDataProcessingPlugin, 'Superposed...', 'spd_ui_superpo_options'
-
     endif
     return, 1
 end

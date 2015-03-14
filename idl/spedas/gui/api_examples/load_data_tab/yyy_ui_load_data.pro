@@ -10,9 +10,9 @@
 ;  the data set to be loaded or some may not be needed. 
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:33:14 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16147 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-03-12 11:48:33 -0700 (Thu, 12 Mar 2015) $
+;$LastChangedRevision: 17122 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/load_data_tab/yyy_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -189,7 +189,7 @@ pro yyy_ui_load_data_event,event
   
         ;call the routine that loads the data and update the loaded data tree
         ;this routine is specific to each mission 
-        yyy_ui_load_data_load_pro, $
+        yyy_ui_load_data_import, $
                          loadStruc,$
                          state.loadedData,$
                          state.statusBar,$
@@ -207,7 +207,7 @@ pro yyy_ui_load_data_event,event
          ;later session. The callSeqStruc.type for ALL new missions is 
          ;'loadapidata'.
          callSeqStruc = { type:'loadapidata', $
-                          subtype:'yyy_ui_load_data_load_pro', $
+                          subtype:'yyy_ui_load_data_import', $
                           loadStruc:loadStruc, $
                           overwrite_selections:overwrite_selections }
          ; add the information regarding this load to the call sequence object

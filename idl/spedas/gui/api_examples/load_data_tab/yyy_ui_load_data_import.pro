@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-;  yyy_ui_load_data_load_pro
+;  yyy_ui_load_data_import
 ;
 ;PURPOSE:
 ;  This routine provides an example for loading data into the GUI from the load
@@ -48,14 +48,14 @@
 ;  
 ;HISTORY:
 ;
-;;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/load_data_tab/yyy_ui_load_data_load_pro.pro $
+;;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-03-12 11:48:33 -0700 (Thu, 12 Mar 2015) $
+;$LastChangedRevision: 17122 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/load_data_tab/yyy_ui_load_data_import.pro $
 ;
 ;--------------------------------------------------------------------------------
 
-pro yyy_ui_load_data_load_pro,$
+pro yyy_ui_load_data_import,$
                          loadStruc,$
                          loadedData,$
                          statusBar,$

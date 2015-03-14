@@ -25,7 +25,7 @@ FUNCTION Test_leap_yr, iyr, modays = modays
 ;   print, iyr1, cent
    ssc1 = where(cent GT 0)
 ;first be sure that the numbers in iyr1 are less than 100
-   IF(ssc1(0) NE -1) THEN iyr1[ssc1] = iyr1[ssc1]-100*cent[ssc1]
+   IF(ssc1[0] NE -1) THEN iyr1[ssc1] = iyr1[ssc1]-100*cent[ssc1]
 ;Ok, now do the leap year determination
    test = iyr1 MOD 4
 ;do the zeros correctly, leap year divisible by 100.0 are not,
@@ -33,16 +33,16 @@ FUNCTION Test_leap_yr, iyr, modays = modays
    test_100 = cent MOD 1
    test_400 = cent MOD 4
    sslyr = where(test EQ 0)
-   IF(sslyr(0) NE -1) THEN lyr(sslyr) = 1
+   IF(sslyr[0] NE -1) THEN lyr[sslyr] = 1
    ss_100 = where((iyr1 EQ 0) AND (test_100 EQ 0))
    ss_400 = where((iyr1 EQ 0) AND (test_400 EQ 0))
-   IF(ss_100(0) NE -1) THEN lyr(ss_100) = 0
-   IF(ss_400(0) NE -1) THEN lyr(ss_400) = 1
+   IF(ss_100[0] NE -1) THEN lyr[ss_100] = 0
+   IF(ss_400[0] NE -1) THEN lyr[ss_400] = 1
 ;finally
    ssm1 = where(cent LT 0)
-   IF(ssm1(0) NE -1) THEN BEGIN
+   IF(ssm1[0] NE -1) THEN BEGIN
       print, ' NO NEGATIVE CENTURIES'
-      lyr(ssm1) = -1
+      lyr[ssm1] = -1
    ENDIF
    modays = intarr(12, 2)
    modays[*, 1] = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -61,8 +61,8 @@ END
 ; 2011-07-20, added comment to test post-commit emails, jmm
 ; 2011-11-04, added comment to test post-commit emails, jmm
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-05-29 08:25:10 -0700 (Thu, 29 May 2014) $
-;$LastChangedRevision: 15254 $
+;$LastChangedDate: 2015-03-12 11:46:50 -0700 (Thu, 12 Mar 2015) $
+;$LastChangedRevision: 17121 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_timefix.pro $
 Function spd_ui_timefix, time_in, progobj = progobj, _extra = _extra
 ;-
