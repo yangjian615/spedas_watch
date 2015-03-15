@@ -12,16 +12,15 @@
 ;KEYWORDS:       
 ;  frame:       Mag data frame of reference (currently STATIC)
 ;  verbose:     Display information.
-;  stacom:      Set if you want STATIC common blocks filled
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-01-30 14:36:17 -0800 (Fri, 30 Jan 2015) $
-; $LastChangedRevision: 16800 $
+; $LastChangedBy: rlivi2 $
+; $LastChangedDate: 2015-03-13 14:27:48 -0700 (Fri, 13 Mar 2015) $
+; $LastChangedRevision: 17131 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_mag_load.pro $
 ;
 ;-
-pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom, tplot=tplot
+pro mvn_sta_mag_load, frame=frame, verbose=verbose,  tplot=tplot
 
   IF keyword_set(verbose) THEN v = verbose ELSE v = 0
   dprint, 'Loading Magnetometer Data...', dlevel=1, verbose=v
@@ -71,65 +70,21 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom, tplot=tplot
      print,"You must specify a file name or time range."
      return
   endif
-  tmin = min(time_double(trange), max=tmax)
-  path = 'maven/data/sci/mag/l1_sav/YYYY/MM/mvn_mag_ql_*_YYYYMMDD_v??_r??.sav'
-  file = mvn_pfp_file_retrieve(path,/daily_names,trange=[tmin,tmax])
-  nfiles = n_elements(file)
-
-  finfo = file_info(file)
-  indx = where(finfo.exists, nfiles, comp=jndx, ncomp=n)
-  for j=0,(n-1) do print,"File not found: ",file[jndx[j]]
-  if (nfiles eq 0) then return
-  file = file[indx]
-  
-  restore, file[0]
-  npts = n_elements(data.time.year)
-  tstr = replicate(time_struct(0D), npts)
-  doy_to_month_date, data.time.year, data.time.doy, month, date
-  tstr.year = data.time.year
-  tstr.month = month
-  tstr.date = date
-  tstr.hour = data.time.hour
-  tstr.min = data.time.min
-  tstr.sec = data.time.sec
-  tstr.fsec = double(data.time.msec)/1000D
-  tstr.doy = data.time.doy
-  time = time_double(tstr)
-  magf = fltarr(npts,3)
-  magf[*,0] = data.ob_bpl.x
-  magf[*,1] = data.ob_bpl.y
-  magf[*,2] = data.ob_bpl.z
-
-  for i=1,(nfiles-1) do begin
-     restore, file[i]
-     
-     npts = n_elements(data.time.year)
-     tstr = replicate(time_struct(0D), npts)
-
-     doy_to_month_date, data.time.year, data.time.doy, month, date
-    
-     tstr.year = data.time.year
-     tstr.month = month
-     tstr.date = date
-     tstr.hour = data.time.hour
-     tstr.min = data.time.min
-     tstr.sec = data.time.sec
-     tstr.fsec = data.time.msec/1000D
-     tstr.doy = data.time.doy
-     time = [temporary(time), time_double(tstr)]
-
-     magfs = magf
-     mpts = n_elements(magfs[*,0])
-
-     magf = fltarr(mpts+npts,3)
-     magf[0L:(mpts-1L),*] = temporary(magfs)
-     magf[mpts:*,0] = data.ob_bpl.x
-     magf[mpts:*,1] = data.ob_bpl.y
-     magf[mpts:*,2] = data.ob_bpl.z
-     
+  pathname = 'maven/data/sci/mag/l1/sav/1sec/YYYY/MM/mvn_mag_l1_pl_1sec_YYYYMMDD.sav'
+  files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,/valid_only)
+  nfiles = n_elements(files) * keyword_set(files)
+  if nfiles eq 0 ||  keyword_set(download_only) then return;break
+  str_all=0
+  ind=0
+  for i = 0, nfiles-1 do begin
+     file = files[i]
+     dprint,dlevel=2,verbose=verbose,'Restoring file: '+file
+     restore,file,verbose= keyword_set(verbose) && verbose ge 3
+     append_array,str_all,data,index=ind
   endfor
-
-
+  append_array,str_all,index=ind
+  time=str_all.time
+  magf=transpose(str_all.vec)
 
   ;----------------------------------------------------------
   ;Trim data to requested time range
@@ -152,7 +107,6 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom, tplot=tplot
   bb[*,1]=smooth_in_time(magf[*,1],time,4)
   bb[*,2]=smooth_in_time(magf[*,2],time,4)
   magf=bb
-
 
   ;-------------------------------------------------------------------------
   ;Davin's SPICE Routines to convert from mag to sta (frame of reference). 
@@ -177,11 +131,9 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom, tplot=tplot
                                       'MAVEN_STATIC',$
                                       check_objects='MAVEN_SPACECRAFT', verbose=verbose)
            vec=transpose(newvec)
-           if keyword_set(stacom) then begin
-              temp=execute('mvn_'+apid[api]+'_dat.magf[*,0]=vec[*,0]')
-              temp=execute('mvn_'+apid[api]+'_dat.magf[*,1]=vec[*,1]')
-              temp=execute('mvn_'+apid[api]+'_dat.magf[*,2]=vec[*,2]')
-           endif
+           temp=execute('mvn_'+apid[api]+'_dat.magf[*,0]=vec[*,0]')
+           temp=execute('mvn_'+apid[api]+'_dat.magf[*,1]=vec[*,1]')
+           temp=execute('mvn_'+apid[api]+'_dat.magf[*,2]=vec[*,2]')
            if apid[api] eq 'c6' then begin
               time_sta_c6=apid_time
               magf_sta_c6=vec
@@ -200,15 +152,15 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose, stacom=stacom, tplot=tplot
   ;-------------------------------------------------------------------------
   ;Tplot  
   if keyword_set(tplot) then begin
-     ;var = 'mvn_mag1_sta_phi'
-     ;store_data,var,data={x:time_sta_c6, y:phi, labels:['phi'], $
-     ;                     labflag:1}, limits = {SPICE_FRAME:'MAVEN_STATIC', $
-     ;                                           SPICE_MASTER_FRAME:'MAVEN_SPACECRAFT'}
+     var = 'mvn_mag1_sta_phi'
+     store_data,var,data={x:time_sta_c6, y:phi, labels:['phi'], $
+                          labflag:1}, limits = {SPICE_FRAME:'MAVEN_STATIC', $
+                                                SPICE_MASTER_FRAME:'MAVEN_SPACECRAFT'}
      
-     ;var = 'mvn_mag1_sta_theta'
-     ;store_data,var,data={x:time_sta_c6, y:theta, labels:['theta'], $
-     ;                     labflag:1}, limits = {SPICE_FRAME:'MAVEN_STATIC', $
-     ;                                           SPICE_MASTER_FRAME:'MAVEN_SPACECRAFT'}
+     var = 'mvn_mag1_sta_theta'
+     store_data,var,data={x:time_sta_c6, y:theta, labels:['theta'], $
+                          labflag:1}, limits = {SPICE_FRAME:'MAVEN_STATIC', $
+                                                SPICE_MASTER_FRAME:'MAVEN_SPACECRAFT'}
 
      var = 'mvn_mag1_pl_full'
      store_data,var,data={x:time, y:magf, v:[0,1,2], labels:['X','Y','Z'], $
