@@ -1698,7 +1698,7 @@ print,'Processing apid c0'
 		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_C0_mode',data={x:tt,y:md2}					; corrected modes
-			ylim,'mvn_sta_C0_mode',-1,8,0
+			ylim,'mvn_sta_C0_mode',-1,7,0
 		store_data,'mvn_sta_C0_rate',data={x:tt,y:rt2}					; corrected modes
 			ylim,'mvn_sta_C0_rate',-1,8,0
 		store_data,'mvn_sta_C0_att',data={x:tt,y:att0}
@@ -1988,7 +1988,7 @@ print,'Processing apid c2'
 		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_C2_mode',data={x:tt,y:md2}					; corrected modes
-			ylim,'mvn_sta_C2_mode',-1,8,0
+			ylim,'mvn_sta_C2_mode',-1,7,0
 		store_data,'mvn_sta_C2_rate',data={x:tt,y:rt2}					; corrected modes
 			ylim,'mvn_sta_C2_rate',-1,8,0
 		store_data,'mvn_sta_C2_att',data={x:tt,y:att0}
@@ -2576,7 +2576,7 @@ print,'Processing apid c8'
 		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_C8_mode',data={x:tt,y:md2}
-			ylim,'mvn_sta_C8_mode',-1,8,0
+			ylim,'mvn_sta_C8_mode',-1,7,0
 		store_data,'mvn_sta_C8_rate',data={x:tt,y:rt2}					; corrected modes
 			ylim,'mvn_sta_C8_rate',-1,8,0
 		store_data,'mvn_sta_C8_att',data={x:tt,y:att0}
@@ -2854,7 +2854,7 @@ print,'Processing apid ca'
 		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_CA_mode',data={x:tt,y:md2}
-			ylim,'mvn_sta_CA_mode',-1,8,0
+			ylim,'mvn_sta_CA_mode',-1,7,0
 		store_data,'mvn_sta_CA_rate',data={x:tt,y:rt2}					; corrected modes
 			ylim,'mvn_sta_CA_rate',-1,8,0
 		store_data,'mvn_sta_CA_att',data={x:tt,y:att0}
@@ -5423,7 +5423,7 @@ print,'Processing apid d4'
 		header = 256l^3*md.y[0:nn-1] + 256l^2*cavg.y[0:nn-1] + 256l*catt.y[0:nn-1] + diag.y[0:nn-1]
 
 		store_data,'mvn_sta_D4_mode',data={x:tt,y:md2}					; corrected modes
-			ylim,'mvn_sta_D4_mode',-1,8,0
+			ylim,'mvn_sta_D4_mode',-1,7,0
 		store_data,'mvn_sta_D4_rate',data={x:tt,y:rt2}					; corrected modes
 			ylim,'mvn_sta_D4_rate',-1,8,0
 		store_data,'mvn_sta_D4_att',data={x:tt,y:att0}
@@ -6751,7 +6751,7 @@ endif
 	if size(/type,t4) eq 8 then tt4=1
 	if tt1 or tt2 or tt3 or tt4 then begin
 		store_data,'mvn_sta_P4_arc_mode',data=['mvn_sta_CD_mode','mvn_sta_CF_mode','mvn_sta_D1_mode','mvn_sta_D3_mode']
-			ylim,'mvn_sta_P4_arc_mode',-1,5
+			ylim,'mvn_sta_P4_arc_mode',-1,7
 			options,'mvn_sta_P4_arc_mode',ytitle='sta!CP4 arc!C!Cmode'
 			options,'mvn_sta_CD_mode',colors=cols.black
 			options,'mvn_sta_CF_mode',colors=cols.red
@@ -6778,7 +6778,7 @@ endif
 	if size(/type,t6) eq 8 then tt6=1 else tt6=0
 	if tt1 or tt2 or tt3 or tt4 or tt5 or tt6 then begin
 		store_data,'mvn_sta_mode',data=['mvn_sta_C0_mode','mvn_sta_C2_mode','mvn_sta_C4_mode','mvn_sta_C6_mode','mvn_sta_C8_mode','mvn_sta_CA_mode']
-			ylim,'mvn_sta_mode',-1,5
+			ylim,'mvn_sta_mode',-1,7
 			options,'mvn_sta_mode',ytitle='sta!Cmode'
 			options,'mvn_sta_C0_mode',colors=cols.black
 			options,'mvn_sta_C2_mode',colors=cols.red

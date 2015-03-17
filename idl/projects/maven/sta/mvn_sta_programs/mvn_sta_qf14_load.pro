@@ -1,9 +1,14 @@
+;+
+;PROCEDURE:	mvn_sta_qf14_load
+;PURPOSE:	
+;	Loads quality flag bit 14 into static apid common blocks - set to 1 during anomolous ion suppression
+;
 pro mvn_sta_qf14_load
 
   
   ;;--------------------------------------------------------
   ;;STATIC APIDs
-  apid=['2a','c0','c2','c4','c8','c6',$
+  apid=['2a','c0','c2','c4','c8',$
         'ca','cc','cd','ce','cf','d0',$
         'd1','d2','d3','d4','d6','d7',$
         'd8','d9','da','db']
@@ -37,55 +42,58 @@ pro mvn_sta_qf14_load
   ;;------------------------
   ;;Define bit
   bit14mask=2^14  
+  bit14zero=2^14-1
 
   ;;------------------------
   ;;Orbit selection 
   ;;All orbits: 713-753
-  all_orbits = findgen(753-713)+713 
   ;;Odd orbits: 754-1e5
   ;;(except 755,759,823,841)
-  ;;Use 1e5 as maximum orbit number.
-  temp       = (findgen(1e5)+756.) * round(findgen(1e5) mod 2)
-  pp=where(temp ne 0 and $
-           temp ne 759 and $
-           temp ne 823 and $
-           temp ne 841)
-  odd_orbits=temp[pp]
-  orbits=[all_orbits,odd_orbits]
 
+; do apid c6 then interpolate for all other apids
+	qf_c6 = mvn_c6_dat.quality_flag
+	tm_c6 = mvn_c6_dat.time
+	md_c6 = mvn_c6_dat.mode
+        orb = round(mvn_orbit_num(time=tm_c6))
+
+;	store_data,'mvn_sta_c6_quality_flag_old',data={x:tm_c6,y:qf_c6}
+;	options,'mvn_sta_c6_quality_flag_old',tplot_routine='bitplot',psym = 1,symsize=1
+
+	ind = where((md_c6 eq 1 or md_c6 eq 2) and $
+		((orb ge 713 and orb le 753) or $
+		((((orb mod 2) eq 1) and orb gt 754) and ((orb ne 755) and (orb ne 759) and (orb ne 823) and (orb ne 841)) )   ),count)
+
+	if count eq 0 then begin
+		qf_c6 = qf_c6 and bit14zero
+		mvn_c6_dat.quality_flag = qf_c6
+		store_data,'mvn_sta_c6_quality_flag',data={x:tm_c6,y:qf_c6}
+		options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
+		return
+	endif else begin
+		qf_c6 = qf_c6 and bit14zero
+		qf_c6[ind] = qf_c6[ind] or bit14mask
+		mvn_c6_dat.quality_flag = qf_c6
+		qf_bm = intarr(n_elements(tm_c6))
+		qf_bm[ind] = bit14mask
+		store_data,'mvn_sta_c6_quality_flag',data={x:tm_c6+2.,y:qf_c6}
+		options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
+	endelse
 
   ;;------------------------
-  ;;Loop through all APIDs
+  ;;Loop through all APIDs except c6
   nn_apid=n_elements(apid)
   for api=0, nn_apid-1 do begin
      temp=execute('nn7=size(mvn_'+apid[api]+'_dat,/type)')
      if nn7 eq 8 then begin
-        temp=execute('qf_new=mvn_'+apid[api]+'_dat.quality_flag')
-        temp=execute('time_new=mvn_'+apid[api]+'_dat.time')
-        ;;------------------------
-        ;;Find orbit numbers
-        tt=timerange()
-        orb_num = round(mvn_orbit_num(time=time_new))
-        nn=n_elements(time)
-        ;;---------------------------------------
-        ;;Loop through orbit numbers and pick out
-        ;;flagged orbits from 'orbits' array
-        cc_end=1
-        while n_elements(orb_num) gt 1 and $
-           cc_end ge 1 do begin
-           pp_orbs=where(orb_num eq min(orb_num))           
-           pp_not_orbs=where(orb_num ne min(orb_num),cc_end)           
-           current_orbit=min(orb_num)
-           pp_check=where(current_orbit eq orbits,cc)
-           if cc ne 0 then begin
-              ;;-------------------------------------------
-              ;;Apply quality flag to all matching orbits
-              temp=execute('temp_qf=mvn_'+apid[api]+'_dat.quality_flag')
-              temp_qf[pp_orbs] = temp_qf[pp_orbs] or bit14mask
-              temp=execute('mvn_'+apid[api]+'_dat.quality_flag[pp_orbs]=temp_qf[pp_orbs]')             
-           endif
-           orb_num=orb_num[pp_not_orbs]
-        endwhile           
+        temp=execute('time=mvn_'+apid[api]+'_dat.time')
+        temp=execute('qf=mvn_'+apid[api]+'_dat.quality_flag')
+	qf = qf and bit14zero 
+	bm = interp(qf_bm,tm_c6,time)
+	ind = where ((bm ne bit14mask) and (bm ne 0),count)				; if interpolated, assume bit14=0 - works best for missing c6 packets
+; print,api,'  ',apid[api],' ',count,' ',minmax(bm)
+	if count gt 0 then bm[ind] = 0
+	bm = fix(round(bm))
+	temp=execute('mvn_'+apid[api]+'_dat.quality_flag = (qf or bm)')
      endif
   endfor
 

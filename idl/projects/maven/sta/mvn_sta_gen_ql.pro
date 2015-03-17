@@ -41,7 +41,7 @@ mvn_sta_l0_load,pathname=pathname,files=files,mag=mag,all=all
 	if size(mvn_c6_dat,/type) eq 8 then begin
 		get_4dt,'n_4d','mvn_sta_get_c6',mass=[.1,100],name='mvn_sta_density'
 			options,'mvn_sta_density',ytitle='sta C6!CNi!C!C1/cm!U3'
-			ylim,'mvn_sta_density',.1,100,1
+			ylim,'mvn_sta_density',.1,2.e5,1
 	endif
 
 	If(!d.name NE 'Z') Then window,0,xsize=900,ysize=1000
@@ -51,6 +51,7 @@ mvn_sta_l0_load,pathname=pathname,files=files,mag=mag,all=all
 	date = strmid(tt_str,0,4)+strmid(tt_str,5,2)+strmid(tt_str,8,2)
 	title = 'MAVEN STATIC Quicklook '+date
 	options,'mvn_sta_mode',panel_size=.5
+	ylim,'mvn_sta_mode',-1,7,1
 	options,'mvn_sta_C0_att',panel_size=.5
 	ylim,'mvn_sta_C0_P1A_tot',1,1.e5,1
 	options,'mvn_sta_C0_P1A_tot',ytitle='sta!CP1A-C0!C!CCounts'
