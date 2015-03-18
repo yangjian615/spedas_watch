@@ -92,8 +92,8 @@ pro mvn_sta_ephemeris_load,frame=frame,verbose=verbose
 
   ;-------------------------------------------------------------------------
   ;Clear kernels
-  cspice_kclear
-  
+;  cspice_kclear
+  mvn_spc_clear_spice_kernels   ;changed to allow correct clearing of SCLK kernel flag, jmm, 2015-03-16
 
 end
 

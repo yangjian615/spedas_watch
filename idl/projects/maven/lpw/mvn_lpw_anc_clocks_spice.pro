@@ -256,7 +256,7 @@ time_check = mvn_lpw_anc_spice_time_check(et_time[nele_sclk-1])  ;give routine t
 str_xtitle = str_xtitle+' '+time_check  ;add to str_xtitle
 ;------------
 
-mvn_lpw_anc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11
+mvn_spc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11
 
 ;Append values to array:
 tt = [[sclk], [utc_time], [string(et_time, format='(F16.5)')], $

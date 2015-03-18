@@ -62,8 +62,11 @@ eff_cal[13,*] = [0.65591447,	0.42595970,	0.27939313,	0.33817375,	0.33457857,	552
 eff_cal[14,*] = [0.68126999,	0.42288018,	0.28809558,	0.34021118,	0.34108944,	48966.0,	146814.,	2885.7485]
 eff_cal[15,*] = [0.69060158,	0.42679990,	0.29474869,	0.34436476,	0.34702154,	50263.0,	148833.,	2874.3963]
 
-if size(mvn_c0_dat,/type) eq 0 or size(mvn_c8_dat,/type) eq 0 or size(mvn_ca_dat,/type) eq 0 or $
-	size(mvn_d8_dat,/type) eq 0 or size(mvn_d9_dat,/type) eq 0 or size(mvn_da_dat,/type) eq 0 then begin
+
+;if size(mvn_c0_dat,/type) eq 0 or size(mvn_c8_dat,/type) eq 0 or size(mvn_ca_dat,/type) eq 0 or $
+;	size(mvn_d8_dat,/type) eq 0 or size(mvn_d9_dat,/type) eq 0 or size(mvn_da_dat,/type) eq 0 then begin
+if size(mvn_c0_dat,/type) ne 8 or size(mvn_c8_dat,/type) ne 8 or size(mvn_ca_dat,/type) ne 8 or $
+	size(mvn_d8_dat,/type) ne 8 or size(mvn_d9_dat,/type) ne 8 or size(mvn_da_dat,/type) ne 8 then begin
 	print,'Error - apid c0,c8,ca,d8,d9,da data must be loaded, run mvn_sta_l2_load.pro first'
 	return
 endif

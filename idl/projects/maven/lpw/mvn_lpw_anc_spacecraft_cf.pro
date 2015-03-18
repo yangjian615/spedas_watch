@@ -1030,7 +1030,7 @@ if keyword_set(not_quiet) then begin
     !p.multi=0
 endif
 
-mvn_lpw_anc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11
+mvn_spc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11
 
 print, "==========================="
 print, "Routine finished"

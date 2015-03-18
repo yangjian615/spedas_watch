@@ -14,9 +14,9 @@
 ;  verbose:     Display information.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2015-03-13 14:27:48 -0700 (Fri, 13 Mar 2015) $
-; $LastChangedRevision: 17131 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-03-16 12:03:14 -0700 (Mon, 16 Mar 2015) $
+; $LastChangedRevision: 17141 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_mag_load.pro $
 ;
 ;-
@@ -146,7 +146,8 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose,  tplot=tplot
   
   ;-------------------------------------------------------------------------
   ;Clear kernels
-  cspice_kclear
+;  cspice_kclear
+  mvn_spc_clear_spice_kernels   ;changed to allow correct clearing of SCLK kernel flag, jmm, 2015-03-16
 
 
   ;-------------------------------------------------------------------------
