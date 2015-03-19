@@ -2,7 +2,7 @@
 ;Procedure : tsy_valid_coords
 ;
 ;Purpose: 
-;    Helper function used by Tsygenanko wrapper routines - checks coordinate system in dlimits structure
+;    Helper function used by Tsyganenko wrapper routines - checks coordinate system in dlimits structure
 ;    
 ;Input:
 ;    dlimits: dlimits structure from the tplot position variable
@@ -15,8 +15,8 @@
 ;  
 ;        
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-18 09:51:27 -0700 (Tue, 18 Mar 2014) $
-; $LastChangedRevision: 14573 $
+; $LastChangedDate: 2015-03-17 12:53:14 -0700 (Tue, 17 Mar 2015) $
+; $LastChangedRevision: 17145 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/tsy_valid_coords.pro $
 ;-
 function tsy_valid_coords, dlimits, geopack_2008 = geopack_2008

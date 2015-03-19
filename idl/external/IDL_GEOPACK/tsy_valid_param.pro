@@ -2,7 +2,7 @@
 ;Procedure : tsy_valid_param
 ;
 ;Purpose: 
-;    Helper function used by Tsygenanko wrapper routines. Validates model input 
+;    Helper function used by Tsyganenko wrapper routines. Validates model input 
 ;      parameters and interpolates parameters onto position data
 ;    
 ;    
@@ -15,8 +15,8 @@
 ;  
 ;        
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-18 08:33:35 -0700 (Tue, 18 Mar 2014) $
-; $LastChangedRevision: 14571 $
+; $LastChangedDate: 2015-03-17 12:53:14 -0700 (Tue, 17 Mar 2015) $
+; $LastChangedRevision: 17145 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/tsy_valid_param.pro $
 ;-
 

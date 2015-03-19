@@ -33,7 +33,7 @@
 ;         get_tilt: Returns the dipole_tilt parameter used for each period. 
 ;                   Returned value has a number of elements equal to the value returned by get_nperiod
 ;         
-;         set_tilt: Alternative alternative dipole_tilt value rather than the geopack tilt.
+;         set_tilt: Use alternative dipole_tilt value rather than the geopack tilt.
 ;                   This input can be an M length array, and N length array or a single elemnt.
 ;                   Value can be set to an N length array an M length array or a single element array. 
 ;                   N is the number of time elements for the data.  M is the number of periods in the time interval.(determined by the period keyword)
@@ -65,9 +65,9 @@
 ;  units by 6371.2 km to convert them.
 ;  6371.2 = the value used in the GEOPACK FORTRAN code for Re
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 16:40:49 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16595 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-17 09:17:03 -0700 (Tue, 17 Mar 2015) $
+; $LastChangedRevision: 17143 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t89/t89.pro $
 ;-
 

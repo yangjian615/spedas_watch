@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-03-04 11:29:00 -0800 (Wed, 04 Mar 2015) $
-; $LastChangedRevision: 17087 $
+; $LastChangedDate: 2015-03-17 11:17:10 -0700 (Tue, 17 Mar 2015) $
+; $LastChangedRevision: 17144 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -167,17 +167,6 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   Endelse
   If(~is_string(file_search(dir_out))) Then file_mkdir, dir_out
 
-;load l0 data, or L2 data
-  If(keyword_set(use_l2_files)) Then Begin
-;use no_time_clip to get all data, mvn_sta_l2_load will fill all of
-;the common blocks
-     mvn_sta_l2_load, /no_time_clip
-;Add dead_time_load, 2015-03-03, jmm
-     mvn_sta_dead_load
-  Endif Else Begin
-     mvn_sta_l0_load, files = filex
-  Endelse
-
 ;define the common blocks
   common mvn_2a, mvn_2a_ind, mvn_2a_dat ;this one is HKP data
   common mvn_c0, mvn_c0_ind, mvn_c0_dat
@@ -201,6 +190,25 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   common mvn_d9, mvn_d9_ind, mvn_d9_dat
   common mvn_da, mvn_da_ind, mvn_da_dat
   common mvn_db, mvn_db_ind, mvn_db_dat
+
+;load l0 data, or L2 data
+  If(keyword_set(use_l2_files)) Then Begin
+;use no_time_clip to get all data, mvn_sta_l2_load will fill all of
+;the common blocks
+     mvn_sta_l2_load, /no_time_clip
+;Check for 2a data, if not present, try L0, jmm, 2015-03-17
+     If(~is_struct(mvn_2a_dat)) Then Begin
+        mvn_sta_l0_load, files = filex ;filex is still defined.
+     Endif Else mvn_sta_dead_load
+;Added dead_time_load, 2015-03-03, jmm
+;Add mag load, ephemeris_load, 2015-03-15, jmm
+     mvn_sta_mag_load
+     mvn_sta_ephemeris_load
+     mvn_sta_qf14_load
+  Endif Else Begin
+     mvn_sta_l0_load, files = filex
+  Endelse
+
 
 ;If yyy is set, we are replicating some app id's
   If(keyword_set(yyy)) Then Begin
