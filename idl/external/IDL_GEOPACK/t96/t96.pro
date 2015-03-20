@@ -4,11 +4,11 @@
 ;Purpose:  generates an array of model magnetic field vectors from
 ;          a monotonic time series and an array of 3-d position
 ;          vectors
-;
-;Keywords:
+;          
+;Input:
 ;         tarray: N array representing the time series in seconds utc since 1970
 ;         rgsm_array: Nx3 array representing the position series in
-;         earth radii GSM
+;             earth radii (required to be in GSM coordinates)
 ;
 ;         The following arguments can either be N length arrays or
 ;         single values
@@ -17,6 +17,7 @@
 ;         yimf: y component of the interplanetary magnetic field
 ;         zimf: z component of the interplanetary magnetic field
 ;
+;Keywords:
 ;         period(optional): the amount of time between recalculations of
 ;             geodipole tilt in seconds(default: 60)  increase this
 ;             value to decrease run time
@@ -69,9 +70,9 @@
 ;    -or-
 ;    http://ampere.jhuapl.edu/code/idl_geopack.html
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 16:40:49 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16595 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-18 08:30:33 -0700 (Wed, 18 Mar 2015) $
+; $LastChangedRevision: 17146 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t96/t96.pro $
 ;-
 

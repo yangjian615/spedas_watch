@@ -5,10 +5,10 @@
 ;          a monotonic time series and an array of 3-d position
 ;          vectors
 ;
-;Keywords:
+;Input:
 ;         tarray: N array representing the time series in seconds utc since 1970
 ;         rgsm_array: Nx3 array representing the position series in
-;         earth radii GSM
+;             earth radii (required to be in GSM coordinates)
 ;         The following arguments can either be N length arrays or
 ;         single values
 ;         pdyn_array: Solar wind pressure (nanoPascals) 
@@ -22,6 +22,7 @@
 ;         w5_array:  index represents a time integral over a storm
 ;         w6_array:  index represents a time integral over a storm
 ;
+;Keywords:
 ;         period(optional): the amount of time between recalculations of
 ;             geodipole tilt in seconds(default: 60)  
 ;             increase this value to decrease run time
@@ -78,9 +79,9 @@
 ;  inner magnetosphere during strong geomagnetic storms, J. Geophys. 
 ;  Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 16:40:49 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16595 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-18 08:30:33 -0700 (Wed, 18 Mar 2015) $
+; $LastChangedRevision: 17146 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t04s/t04s.pro $
 ;-
 

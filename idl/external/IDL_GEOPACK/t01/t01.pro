@@ -5,22 +5,20 @@
 ;          a monotonic time series and an array of 3-d position
 ;          vectors
 ;
-;Keywords:
+;Input:
 ;         tarray: N array representing the time series in seconds utc since 1970
-;         rgsm_array: Nx3 array representing the position series in earth radii GSM
+;         rgsm_array: Nx3 array representing the position series in earth radii (required to be in GSM coordinates)
 ;         pdyn_array: Solar wind pressure (nanoPascals) 
-;         dsti_array: DST index(nanoTeslas)
+;         dsti_array: DST index (nanoTeslas)
 ;         yimf_array: y component of the interplanetary magnetic field
 ;         zimf_array: z component of the interplanetary magnetic field
-;         g1_array:  index describes solar wind conditions in the
-;         previous hour
-;         g2_array: index describes solar wind conditions in the
-;         previous hour
+;         g1_array:  index describes solar wind conditions in the previous hour
+;         g2_array: index describes solar wind conditions in the previous hour
 ;
+;Keywords:
 ;         period(optional): the amount of time between recalculations of
 ;             geodipole tilt in seconds(default: 60)  increase this
 ;             value to decrease run time
-;         
 ;           
 ;         add_tilt:  Increment the default dipole tilt used by the model with
 ;                    a user provided tilt in degrees.  Result will be produced with TSY_DEFAULT_TILT+ADD_TILT
@@ -76,9 +74,9 @@
 ;  http://modelweb.gsfc.nasa.gov/magnetos/data-based/Paper220.pdf
 ;  http://modelweb.gsfc.nasa.gov/magnetos/data-based/Paper219.pdf
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 16:40:49 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16595 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-18 08:30:33 -0700 (Wed, 18 Mar 2015) $
+; $LastChangedRevision: 17146 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t01/t01.pro $
 ;-
 

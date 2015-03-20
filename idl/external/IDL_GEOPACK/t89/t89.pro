@@ -5,9 +5,11 @@
 ;          a monotonic time series and an array of 3-d position
 ;          vectors
 ;
-;Keywords:
+;Input:
 ;         tarray: N array representing the time series in seconds utc since 1970
-;         rgsm_array: Nx3 array representing the position series in earth radii GSM
+;         rgsm_array: Nx3 array representing the position series in earth radii (required to be in GSM coordinates)
+;    
+;Keywords:
 ;         kp(optional): the requested value of the kp parameter(default: 2) 
 ;           kp can also be an array, if it is an array it should be an
 ;           N length array(you should interpolate your values onto the tarray)
@@ -66,8 +68,8 @@
 ;  6371.2 = the value used in the GEOPACK FORTRAN code for Re
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-03-17 09:17:03 -0700 (Tue, 17 Mar 2015) $
-; $LastChangedRevision: 17143 $
+; $LastChangedDate: 2015-03-18 08:30:33 -0700 (Wed, 18 Mar 2015) $
+; $LastChangedRevision: 17146 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t89/t89.pro $
 ;-
 
@@ -267,7 +269,7 @@ function t89, tarray, rgsm_array, kp=kp, period=period, igrf_only=igrf_only,$
       ;calculate external contribution
       ;iopt = kp+1
       geopack_t89, kp_array[id]+1, rgsm_x, rgsm_y, rgsm_z, t89_bx, t89_by, t89_bz, tilt = tilt
-
+      
       ;total field   
       if keyword_set(igrf_only) then begin
         out_array[idx, 0] = igrf_bx
