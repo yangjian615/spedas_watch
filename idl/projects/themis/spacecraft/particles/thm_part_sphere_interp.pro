@@ -96,15 +96,15 @@ pro thm_part_sphere_interp,source,target,regrid=regrid,error=error,_extra=ex
       
       
     ;find time ranges for current modes
-    source_time_range = [min((*source[s]).start_time),max((*source[s]).end_time)]
-    target_time_range = [min((*target[t]).start_time),max((*target[t]).end_time)]
+    source_time_range = [min((*source[s]).time),max((*source[s]).end_time)]
+    target_time_range = [min((*target[t]).time),max((*target[t]).end_time)]
     
     output_time_range = [source_time_range[0] > target_time_range[0],source_time_range[1] < target_time_range[1]]
     
     
     ;find the indexes for current modes
-    source_idx = where((*source[s]).start_time ge output_time_range[0] and (*source[s]).end_time le output_time_range[1],source_c)
-    target_idx = where((*target[t]).start_time ge output_time_range[0] and (*target[t]).end_time le output_time_range[1],target_c)
+    source_idx = where((*source[s]).time ge output_time_range[0] and (*source[s]).end_time le output_time_range[1],source_c)
+    target_idx = where((*target[t]).time ge output_time_range[0] and (*target[t]).end_time le output_time_range[1],target_c)
     
     
     ;no overlap or mismatched modes and...we've got a problem
@@ -115,7 +115,7 @@ pro thm_part_sphere_interp,source,target,regrid=regrid,error=error,_extra=ex
     source_dists = (*source[s])[source_idx]
    
     output_dists = replicate(output_template,target_c)
-    output_dists.start_time = source_dists.start_time ;copy over times
+    output_dists.time = source_dists.time ;copy over times
     output_dists.end_time = source_dists.end_time
 
 

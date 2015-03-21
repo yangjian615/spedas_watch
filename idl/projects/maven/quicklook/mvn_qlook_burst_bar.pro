@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 20-nov-2007, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-03-11 14:41:38 -0700 (Wed, 11 Mar 2015) $
-; $LastChangedRevision: 17119 $
+; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
+; $LastChangedRevision: 17150 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_qlook_burst_bar.pro $
 ;-
 Function mvn_qlook_burst_bar, date, duration, outline=outline, _extra = _extra
@@ -63,7 +63,7 @@ Function mvn_qlook_burst_bar, date, duration, outline=outline, _extra = _extra
 
   ylim, 'mvn_arcflag', 0.0, 1.0, 0
   options, 'mvn_arcflag', 'panel_size', 0.2
-  options,'mvn_arcflag', ytitle=''
+  options,'mvn_arcflag', ytitle='BST'
   
 
 ;end mode bar code block

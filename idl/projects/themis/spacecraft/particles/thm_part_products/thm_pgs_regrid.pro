@@ -15,8 +15,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-11-01 16:35:10 -0700 (Fri, 01 Nov 2013) $
-;$LastChangedRevision: 13474 $
+;$LastChangedDate: 2015-03-19 17:18:03 -0700 (Thu, 19 Mar 2015) $
+;$LastChangedRevision: 17151 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_regrid.pro $
 ;-
 
@@ -60,7 +60,7 @@ pro thm_pgs_regrid,data,regrid_dimen,output=output,error=error
  ;copied from thm_pgs_clean_sst.pro
   output_t = {data:data_grid, $ ;particle data 2-d array, energy by angle. (Float or double)
             scaling:data_grid, $
-            start_time:data.start_time, $ ;sample start time(1-element double precision scalar)
+            time:data.time, $ ;sample start time(1-element double precision scalar)
             end_time:data.end_time, $ ;sample end time(1-element double precision scalar)
             phi:phi_grid, $ ;Measurment angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
             dphi:d_phi_grid, $ ;Width of measurement angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)

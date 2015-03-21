@@ -13,7 +13,7 @@
 ;   output structure elements:
 ;         data - particle data 2-d array, energy by angle. (Float or double)
 ;      scaling - scaling coefficient corresponding to 1 count/bin, used for error calculation (float or double)
-;   start_time - sample start time(1-element double precision scalar)
+;         time - sample start time(1-element double precision scalar)
 ;     end_time - sample end time(1-element double precision scalar)
 ;          phi - Measurment angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
 ;         dphi - Width of measurement angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
@@ -31,9 +31,9 @@
 ;
 ;Keywords:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-01-06 14:54:23 -0800 (Tue, 06 Jan 2015) $
-;$LastChangedRevision: 16602 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-03-19 17:18:03 -0700 (Thu, 19 Mar 2015) $
+;$LastChangedRevision: 17151 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_esa.pro $
 ;-
 
@@ -73,7 +73,7 @@ pro thm_pgs_clean_esa,data,units,output=output,_extra=ex
   ;**extra dimension in case of later vectorization
   output = { data: udata.data[s,*,*], $
              scaling: scale[s,*,*], $
-             start_time: udata.time, $
+             time: udata.time, $
              end_time: udata.end_time, $
              phi: udata.phi[s,*,*], $
              dphi: udata.dphi[s,*,*], $

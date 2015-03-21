@@ -16,7 +16,7 @@
 ;           Structure definition:
 ;               ** Structure <afc6c05c>, 10 tags, length=30736, data length=30736, refs=1:
 ;               DATA            FLOAT     Array[16, 64]
-;               START_TIME      DOUBLE       1.1746086e+09
+;               TIME            DOUBLE       1.1746086e+09
 ;               END_TIME        DOUBLE       1.1746086e+09
 ;               PHI             FLOAT     Array[16, 64]
 ;               DPHI            FLOAT     Array[16, 64]
@@ -34,9 +34,9 @@
 ;Keywords:
 ;  sst_sun_bins:  The bin numbers that should be flagged as contaminated by sun and interpolated
 ;  sst_method_clean: how to decontaminate the sst data.  Right now the only option is 'manual', but selects a good set of default sst_sun_bins, if not user specified.
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-10-06 10:27:08 -0700 (Mon, 06 Oct 2014) $
-;$LastChangedRevision: 15926 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-03-19 17:18:03 -0700 (Thu, 19 Mar 2015) $
+;$LastChangedRevision: 17151 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_sst.pro $
 ;-
 
@@ -75,7 +75,7 @@ pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_met
     
     output = {data:udata.data[*,*], $ ;particle data 2-d array, energy by angle. (Float or double)
       scaling:scale[*,*], $ ;scaling coefficient corresponding to 1 count/bin, used for error calculation (float or double)
-      start_time:udata.time, $ ;sample start time(1-element double precision scalar)
+      time:udata.time, $ ;sample start time(1-element double precision scalar)
       end_time:udata.end_time, $ ;sample end time(1-element double precision scalar)
       phi:udata.phi[*,*], $ ;Measurment angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
       dphi:udata.dphi[*,*], $ ;Width of measurement angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
@@ -107,7 +107,7 @@ pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_met
     
     output = {data:udata.data[energy_idx,*], $ ;particle data 2-d array, energy by angle. (Float or double)
       scaling:scale[energy_idx,*], $ ;scaling coefficient corresponding to 1 count/bin, used for error calculation (float or double)
-      start_time:udata.time, $ ;sample start time(1-element double precision scalar)
+      time:udata.time, $ ;sample start time(1-element double precision scalar)
       end_time:udata.end_time, $ ;sample end time(1-element double precision scalar)
       phi:udata.phi[energy_idx,*], $ ;Measurment angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
       dphi:udata.dphi[energy_idx,*], $ ;Width of measurement angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
@@ -126,7 +126,7 @@ pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_met
     ;[0:11] includes only f/o channels by default
     output = {data:udata.data[0:11,*], $ ;particle data 2-d array, energy by angle. (Float or double)
       scaling:scale[0:11,*], $ ;scaling coefficient corresponding to 1 count/bin, used for error calculation (float or double)
-      start_time:udata.time, $ ;sample start time(1-element double precision scalar)
+      time:udata.time, $ ;sample start time(1-element double precision scalar)
       end_time:udata.end_time, $ ;sample end time(1-element double precision scalar)
       phi:udata.phi[0:11,*], $ ;Measurment angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
       dphi:udata.dphi[0:11,*], $ ;Width of measurement angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)

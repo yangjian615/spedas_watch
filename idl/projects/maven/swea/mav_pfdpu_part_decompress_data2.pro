@@ -13,13 +13,15 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-04-14 18:53:25 -0700 (Mon, 14 Apr 2014) $
-; $LastChangedRevision: 14818 $
+; $LastChangedDate: 2015-03-19 09:11:54 -0700 (Thu, 19 Mar 2015) $
+; $LastChangedRevision: 17147 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mav_pfdpu_part_decompress_data2.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mav_pfdpu_part_decompress_data2.pro
 ;-
+
+compile_opt idl2
 
 function mav_pfdpu_getbit,bfr,bitinx
   inx = bitinx / 8
@@ -194,6 +196,8 @@ end
 
 function mav_pfdpu_part_decompress_data2, bfr
 
+  compile_opt idl2
+
 ; returns decompressed ccsds packet data for the particle instruments
 
   cmpbyte = bfr[12]
@@ -224,8 +228,8 @@ function mav_pfdpu_part_decompress_data2, bfr
   endwhile
     
   decomp_size = DcmInx
-  decomp_bfr(4) = (decomp_size-7) / 256
-  decomp_bfr(5) = (decomp_size-7) mod 256
+  decomp_bfr[4] = (decomp_size-7) / 256
+  decomp_bfr[5] = (decomp_size-7) mod 256
   
   ddata = decomp_bfr[0:decomp_size-1]
   return, ddata

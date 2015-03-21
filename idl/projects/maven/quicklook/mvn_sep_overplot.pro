@@ -29,8 +29,8 @@
 ;HISTORY:
 ; Hacked from mvn_sep_gen_ql, 2013-06-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-18 12:53:52 -0800 (Wed, 18 Feb 2015) $
-; $LastChangedRevision: 16999 $
+; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
+; $LastChangedRevision: 17150 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_sep_overplot.pro $
 Pro mvn_sep_overplot, date = date, time_range = time_range, $
                       makepng = makepng, device = device, directory = directory, $
@@ -57,6 +57,9 @@ If(~keyword_set(noload_data)) Then Begin
 ;   timespan, trange0
 ;   mvn_sep_gen_ql, trange=trange, /load
    mvn_pfp_l0_file_read,file=filex,/sep
+   orbdata = mvn_orbit_num()
+   store_data, 'mvn_orbnum', orbdata.peri_time, orbdata.num, $
+               dlimit={ytitle:'Orbit'}
 Endif
 
 varlist = tnames('mvn_sep*') ;just to get a time range

@@ -21,27 +21,6 @@ function spd_ui_part_getspec_check_num, num
 end
 
 
-; Helper function to reset one or more widgets' value(s)
-;
-pro spd_ui_part_getspec_reset_widget, state, uname
-
-    compile_opt idl2, hidden
-
-
-  for i=0, n_elements(uname)-1 do begin
-    id = widget_info(state.tab_id, find_by_uname=uname[i])
-    
-    str_element, state, uname[i], value
-    
-    if size(/type,value) gt 0 then begin
-      widget_control, id, set_value=value
-    endif else begin
-      ;throw error?
-    endelse
-  endfor
-
-end
-
 
 ; Helper function to abstract sensitization of FAC related widgets
 ;
@@ -90,6 +69,62 @@ pro spd_ui_part_getspec_sens_erange, top_id
   widget_control, id, sensitive = limit_energy
 
 end
+
+
+
+; Helper function to abstract sensitization of ESA background widgets
+;
+pro spd_ui_part_getspec_sens_esabgnd, top_id
+
+    compile_opt idl2, hidden
+
+  
+  ;check selection box
+  id = widget_info(top_id, find_by_uname='esa_bgnd_remove')
+  esa_bgnd_remove = widget_info(id, /button_set)
+
+  ;sensitze widgets accordingly
+  id = widget_info(top_id, find_by_uname='esa_bgnd_base')
+  widget_control, id, sensitive = esa_bgnd_remove
+  
+end
+
+
+; Helper function to edit data type list with regards to 
+; combed data and sst calibration options. 
+;
+pro spd_ui_part_getspec_datatype, state
+
+    compile_opt idl2, hidden
+
+
+  ;get combined data option
+  combined_id = widget_info(state.tab_id, find_by_uname='combined')
+  combined = widget_info(combined_id, /button_set)
+
+  ;get sst calibration option
+  ;sst calibrations should always be used for combined data
+  sst_cal_id = widget_info(state.tab_id, find_by_uname='sst_cal')
+  sst_cal = combined ? 1b: widget_info(sst_cal_id, /button_set)
+  
+  ;get appropriate datatype list
+  if combined then begin
+    valid_datatypes = state.validCombinedTypes
+  endif else if sst_cal then begin
+    valid_datatypes = state.validCalTypes
+  endif else begin
+    valid_datatypes = state.validDataTypes
+  endelse
+
+  ;set datatype list
+  id = widget_info(state.tab_id, find_by_uname='data_type_list')
+  widget_control, id, set_value=valid_datatypes
+
+  ;sensitize/select sst calibration button based on combined data option
+  widget_control, sst_cal_id, set_button=sst_cal, sens=~combined
+
+end
+
 
 
 ;+ 
@@ -159,6 +194,38 @@ end
 
 
 
+; Helper function to reset one or more widgets' value(s)
+;
+pro spd_ui_part_getspec_reset_widget, state, uname
+
+    compile_opt idl2, hidden
+
+
+  for i=0, n_elements(uname)-1 do begin
+
+    ;get widget id and type
+    id = widget_info(state.tab_id, find_by_uname=uname[i])
+    type = widget_info(id, /type)
+    
+    ;get stored value
+    str_element, state, uname[i], value
+    
+    ;update widget
+    case type of 
+         1: widget_control, id, set_button=value ;button
+        12: begin
+              widget_control, id, get_value=list ;combobx
+              widget_control, id, set_combobox_select=where(list eq value)
+            end
+      else: widget_control, id, set_value=value ;spinner/text
+    endcase
+
+  endfor
+
+end
+
+
+
 ; Helper function to copy a widget's value into the 
 ; appropriate variable
 ;
@@ -168,14 +235,24 @@ pro spd_ui_part_getspec_set_value, state, uname
 
 
   for i=0, n_elements(uname)-1 do begin
-    id = widget_info(state.tab_id, find_by_uname=uname[i])
     
-    widget_control, id, get_value=value
+    ;get widget id and type
+    id = widget_info(state.tab_id, find_by_uname=uname[i])
+    type = widget_info(id, /type)
+    
+    ;get appropriate value
+    case type of 
+         1: value = widget_info(id, /button_set) ;button
+        12: value = widget_info(id, /combobox_gettext) ;combobox
+      else: widget_control, id, get_value=value ;spinner/text
+    endcase
     
     ;strings from widget_control are often single-element arrays
     if n_elements(value) eq 1 then value=value[0]
-    
+
+    ;set value in state structure
     str_element, state, uname[i], value, /add
+
   endfor
   
 end
@@ -261,28 +338,38 @@ pro spd_ui_part_getspec_set_values, state, error=error
   endif  
 
 
+  ;check background removal input
+  bnp = spd_ui_part_getspec_check_input(state,'bgnd_npoints','Background points',min=1)
+  bs = spd_ui_part_getspec_check_input(state,'bgnd_scale','Background scale',min=0)
+  if ~bnp or ~bs then begin
+    return
+  endif
+
+
   ;if no errors then set all options and clear error flag
   error = 0b
-  spd_ui_part_getspec_set_value, state, ['phi_min','phi_max', $
-                                         'start_angle', $
-                                         'theta_min','theta_max', $
-                                         'pa_min','pa_max', $
-                                         'gyro_min','gyro_max', $
-                                         'energy_min','energy_max', $
-                                         'regrid_phi', 'regrid_theta']
+  spd_ui_part_getspec_set_value, state, state.widget_list
 
 
-  ;set suffix
-  ;anything can be a suffix, as long as there are no spaces
-  id = widget_info(state.tab_id, find_by_uname='suffix')
-  widget_control, id, get_value = suffix
-  state.suffix = strcompress(/remove_all, suffix)
+;  ;set suffix
+;  ;anything can be a suffix, as long as there are no spaces
+;  id = widget_info(state.tab_id, find_by_uname='suffix')
+;  widget_control, id, get_value = suffix
+;  state.suffix = strcompress(/remove_all, suffix)
   
   
-  ;set SST contamination removal option
-  id = widget_info(state.tab_id, find_by_uname='sst_method_clean')
-  state.sst_method_clean = widget_info(id, /button_set)
-  
+;  ;set SST contamination removal option
+;  id = widget_info(state.tab_id, find_by_uname='sst_method_clean')
+;  state.sst_method_clean = widget_info(id, /button_set)
+;  
+;  ;set SST calibration removal option
+;  id = widget_info(state.tab_id, find_by_uname='sst_cal')
+;  state.sst_cal = widget_info(id, /button_set)
+;
+;  ;set ESA background removal option
+;  id = widget_info(state.tab_id, find_by_uname='esa_bgnd_remove')
+;  state.esa_bgnd_remove = widget_info(id, /button_set)
+
   
   ;set output types
   types = state.validoutputs
@@ -326,11 +413,21 @@ pro spd_ui_part_getspec_set_defaults, state
   state.gyro_min =   0.
   state.gyro_max = 360.
   state.start_angle = 0.
+  state.energy_button = 0b
   state.energy_min = 0.
   state.energy_max = 1e7
+  state.fac_type = 'MPHIGEO'
   state.regrid_phi =  16
   state.regrid_theta = 8
+  state.sst_cal = 1b
   state.sst_method_clean = 0b
+  state.eclipse = 0b
+  state.esa_bgnd_remove = 1b
+  state.bgnd_type = 'Anode'
+  state.bgnd_npoints = 3.0
+  state.bgnd_scale = 1.0
+  state.combined = 0b
+
   
   ;clear probe and data type selections
   ;  -only works once the widget it realized
@@ -339,48 +436,34 @@ pro spd_ui_part_getspec_set_defaults, state
     widget_control, state.dataTypeList, set_list_select=-1
   endif
 
-  ;erange limits off by default
-  id=widget_info(state.tab_id, find_by_uname='energy_button')
-  widget_control, id, set_button=0
 
-  ;set FAC conversion to default
-  id=widget_info(state.tab_id, find_by_uname='fac_type')
-  widget_control, id, set_combobox_select=0
-  
-  
   ;-------------------------------------------------------
   ; Update Widgets
   ;   -no defaults set in this section, only widget updates
   ;-------------------------------------------------------
   
-  ;list of widgets than can be set/reset with general procedure
-  widget_list = [ 'phi_min', 'phi_max', 'theta_min', 'theta_max', $
-                  'pa_min', 'pa_max', 'gyro_min', 'gyro_max', $
-                  'start_angle', 'energy_min', 'energy_max', $
-                  'regrid_phi', 'regrid_theta', 'suffix' $
-                 ]
-  
   ;update applicable widgets from state structures values
-  spd_ui_part_getspec_reset_widget, state, widget_list
+  spd_ui_part_getspec_reset_widget, state, state.widget_list
   
-  ;update spectrogram selection buttons
+  ;update datatype list from other settings
+  spd_ui_part_getspec_datatype, state
+  
+  ;update output selection buttons
   for i=0, n_elements(state.validOutputs)-1 do begin
     id=widget_info(state.tab_id, find_by_uname=state.validoutputs[i])
     widget_control, id, set_button = in_set(state.validoutputs[i],state.outputs)
   endfor
-  
-  ;update SST contamination removal button
-  id=widget_info(state.tab_id, find_by_uname='sst_method_clean')
-  widget_control, id, set_button = state.sst_method_clean
   
   ;sensitize/desensitize FAC options
   spd_ui_part_getspec_sens_fac, state.tab_id
 
   ;sensitize/desensitize energy range options
   spd_ui_part_getspec_sens_erange, state.tab_id
+
+  ;sensitize/desensitize ESA background options
+  spd_ui_part_getspec_sens_esabgnd, state.tab_id
   
-  
-  spd_ui_message, 'Using default spectrogram settings.', sb=state.statusbar, hw=state.historywin
+  spd_ui_message, 'Using default settings.', sb=state.statusbar, hw=state.historywin
 
 end
 
@@ -401,6 +484,9 @@ pro spd_ui_part_getspec_apply, state, error=error
   sb = state.statusbar
   hw = state.historywin
   
+
+  ; Get requested options from widgets
+  ;-------------------------------------
 
   ;check/get probe
   probe_idx = widget_info(state.probeList,/list_select)
@@ -464,97 +550,131 @@ pro spd_ui_part_getspec_apply, state, error=error
   ;get current tplot names so that extra varaibles can be cleaned later
   tnames_before = tnames('*',create_time=ct)
 
-  
-  ;check in new SST calibrations are requested
-  sst_cal_id=widget_info(state.tab_id, find_by_uname='SST_CALIBRATE')
-  sst_cal=widget_info(sst_cal_id,/button_set)
-  
-  ;list of acceptable data types is different if user is using new SST calibrations
-  if sst_cal then begin
-    if in_set(data_idx,0) then begin
-      datatype = state.validBetatypes[1:n_elements(state.validBetatypes)-1]
-    endif else begin
-      datatype = state.validBetatypes[data_idx]
-    endelse
-  endif else begin
-    if in_set(data_idx,0) then begin
-      datatype = state.validDatatypes[1:n_elements(state.validDatatypes)-1]
-    endif else begin
-      datatype = state.validDatatypes[data_idx]
-    endelse
-  endelse
 
-
-  ;get status of energy limit selection
-  ; -energy limits will only be applied if the button is set
-  id = widget_info(state.tab_id, find_by_uname='energy_button')
+  ;get status of energy limit selection;
+  ; -energy limits will only be applied if the button is set;
+  id = widget_info(state.tab_id, find_by_uname='energy_button');
   limit_energy = widget_info(id, /button_set)
 
 
-  ;copy options out of state structure
-  ; -numerical values have already been checked
+
+  ; Copy options out of state structure
+  ;  -numerical values have already been checked
+  ;-------------------------------------
+
   trange = time_double([startText, stopText])
   outputs = state.outputs
-  suffix = state.suffix
+  combined = state.combined
+  suffix = strcompress(/remove_all, state.suffix)
+
   phi = [state.phi_min, state.phi_max]
   theta = [state.theta_min, state.theta_max]
   pitch = [state.pa_min, state.pa_max]
   gyro = [state.gyro_min, state.gyro_max]
-  energy = limit_energy ? [state.energy_min, state.energy_max]:0
+  energy = state.energy_button ? [state.energy_min, state.energy_max]:0
+
   start_angle = state.start_angle
+
   regrid = [state.regrid_phi,state.regrid_theta]
   fac_type = strlowcase(state.fac_type)
+
+  use_eclipse_corrections = state.eclipse ? 2:0
+
+  esa_bgnd_remove = state.esa_bgnd_remove
+  bgnd_type = state.bgnd_type
+  bgnd_npoints = state.bgnd_npoints
+  bgnd_scale = state.bgnd_scale
+
+  sst_cal = state.sst_cal
   sst_method_clean = state.sst_method_clean
-    
-  
-  var_success = 1b  ;flag denoting whether all requested variables were imported
-  clobber = ''      ;used later to determine if existing variables should be overwritten
-  
-  
-  ;Loop over probe
+
+
+  ;get appropriate list of valid datatypes
+  ;combined data will also use sst calibrations
+  if combined then begin
+    valid_datatypes = state.validCombinedTypes
+  endif else if sst_cal then begin
+    valid_datatypes = state.validCalTypes
+  endif else begin
+    valid_datatypes = state.validDataTypes
+  endelse
+
+  ;get datatype selection
+  if ~combined && in_set(data_idx,0) then begin
+    datatype = valid_datatypes[1:*]
+  endif else begin
+    datatype = valid_datatypes[data_idx]
+  endelse
+
+
+
+  ; Check for overwrite
+  ;----------------------------------
+  clobber = ''  ;must be defined later
+
+  ;initialize flags to control overwrite
+  ;array must be created and reformed to maintain dimensionality (IDL bug?)
+  flag_dimensions = [n_elements(probe),n_elements(datatype),n_elements(outputs)]
+  load_flags = replicate(1b,flag_dimensions)
+  load_flags = reform(load_flags,flag_dimensions)
+
+  ;list out valid moment variables
+  moment_outputs = [ 'avgtemp', $
+                     'density', $
+                     'eflux', $
+                     'flux', $
+                     'mftens', $
+                     'ptens', $
+                     'sc_current', $
+                     'velocity', $
+                     'vthermal', $
+                     'magt3', $
+                     't3', $
+                     'symm', $
+                     'symm_theta', $
+                     'symm_phi', $
+                     'symm_ang', $
+                     'delta_time' ]
+
   for k=0, n_elements(probe)-1 do begin
-  
-  
-    ;Load support data for this probe
-    ;  -support data only needed for FAC transformations
-    if in_set('pa',outputs) or in_set('gyro',outputs) then begin
-      thm_load_state, probe=probe[k], trange=trange, /get_support
-      thm_load_fit, probe=probe[k], trange=trange, datatype='fgs', level='l1', coord='dsl'
-    endif
-  
-  
-    ;Loop over data type
     for j=0, n_elements(datatype)-1 do begin
-    
-      spd_ui_message, 'Processing Probe: '+probe[k]+',  Datatype: '+datatype[j], sb=sb, hw=hw
-    
-    
-      ; Check for duplicate variable names before processing 
-      ; and modify the requested outputs accordingly.
-      ;----------------------------------------------------
-    
-      ;names of existing variables in gui
-      existing_names = state.loadedData->getGroupNames()
-      if ~is_string(existing_names) then existing_names = '' ;can return 0
+      for i=0, n_elements(outputs)-1 do begin
+        
+        ;names of existing variables in gui
+        existing_names = state.loadedData->getGroupNames()
+        if ~is_string(existing_names) then existing_names = ''
+        
+        ;check for presense of variable(s)
+        ;requesting moments loads multiple products it is checked separately
+        if outputs[i] eq 'moments' then begin
       
-      ;names of new variables to be created here
-      new_names = 'th'+probe[k]+'_'+datatype[j]+'_eflux'+'_'+outputs+suffix
-    
-      output_flags = replicate(1b,n_elements(outputs))
-    
-      ;loop over requested variable names to check if any
-      ;GUI variables will be overwritten
-      for i=0, n_elements(new_names)-1 do begin
+          ;moments load in an "all or nothing" fassion so the overwrite option
+          ;should reflect that for simplicity and maintainability
+          name = ssl_set_intersection('th'+probe[k]+'_'+datatype[j]+'_'+moment_outputs+suffix, existing_names)
+          ;null set intersection will return -1L
+          query = ~is_num(name)
+          prompttext = 'One or more moments for datatype "th'+probe[k]+'_'+datatype[j]+ $
+                       '" already exist. Do you want to overwrite them? '+ $
+                       ' Click "No" continue with the existing variables or "Cancel" to stop.'+ $
+                       ssl_newline()+' '+ssl_newline()+'The following will be overwritten: '+ $
+                       ssl_newline()+strjoin(name,',  ')
+      
+        endif else begin
+          
+          name = 'th'+probe[k]+'_'+datatype[j]+'_eflux'+'_'+outputs[i]+suffix
+          query = in_set(name, existing_names) 
+          prompttext = 'The variable "' + name + $
+              '" already exists. Do you want to overwrite it?'+ $
+              ' Click "No" continue with the existing variable or "Cancel" to stop.'
+      
+        endelse
       
         ;query the user if the variable already exists
-        if in_set(new_names[i], existing_names) then begin
+        if query then begin
         
           ;only query if neither "yes to all" nor "no to all" have been selected
           if clobber ne 'yestoall' AND clobber ne 'notoall' then begin
-    
-            prompttext = 'The variable ' + strupcase(new_names[i]) + $
-                ' already exists. Do you want to ' + 'overwrite it?'+ $
-                ' Click "No" continue with the existing variable or "Cancel" to stop.'
+      
             clobber = spd_ui_prompt_widget(state.tab_id, sb, hw, promptText=promptText,$
                 title='Variable already exists.', defaultvalue='cancel', $
                 /no, /yes, /allno, /allyes, /cancel, frame_attr=8)
@@ -564,13 +684,9 @@ pro spd_ui_part_getspec_apply, state, error=error
             
           endif
             
-          if clobber eq 'yestoall' then break  ;loads all by default
-          if clobber eq 'no' then output_flags[i] = 0b
-          if clobber eq 'notoall' then begin ;
-            output_flags[*] = 0b
-            break
-          endif
-          
+          ;if answer was "yes" or "yes to all" then nothing need be done
+          if clobber eq 'no' then load_flags[k,j,i] = 0b
+          if clobber eq 'notoall' then load_flags[k,j,i] = 0b
           if clobber eq 'cancel' then begin
             spd_ui_message, 'Load canceled by user.', sb=sb, hw=hw
             return
@@ -579,91 +695,75 @@ pro spd_ui_part_getspec_apply, state, error=error
         endif
         
       endfor
-  
-      ;remove data types that are not desired
-      output_idx = where(output_flags,nout)
-      if nout eq 0 then begin
-        continue
-      endif else begin
-        outputs = outputs[output_idx]
-      endelse
-      
-      
-      ; Load data & generate spectrograms
-      ;----------------------------------
-      
-      thm_part_load, probe=probe[k], datatype=datatype[j], trange=trange, sst_cal=sst_cal
-      
-  
-      thm_part_products, probe = probe[k], $
-                      datatype = datatype[j], $
-                      trange = trange, $
-                      outputs = outputs, $
-                      phi = phi, $
-                      theta = theta, $
-                      pitch = pitch, $
-                      gyro = gyro, $
-                      energy = energy, $
-                      regrid = regrid, $
-                      start_angle = start_angle, $
-                      suffix = suffix, $
-                      fac_type = fac_type, $
-                      sst_method_clean = sst_method_clean, $
-                      sst_cal=sst_cal, $
-                      tplotnames=tplotnames
-        
-      
-      ; Add new variables to the GUI
-      ;---------------------------------
-      
-      add_replay_call = 0b ;flag to add this run to the call sequence
-      
-      ;if all data from this run loaded fine then add this call to the call sequence
-      ;if any data failed notify user and do not add this call to the call sequence
-      for i=0, n_elements(tplotnames)-1 do begin
-        success = state.loadeddata->add(tplotnames[i])
-        if success then begin
-          spd_ui_message, 'Added Variable: '+tplotnames[i], sb=sb, hw=hw
-          add_replay_call = 1b
-        endif else begin
-          spd_ui_message, 'Failed to Add Variable: '+tplotnames[i], sb=sb, hw=hw
-          var_success = 0b
-        endelse
-      endfor
-  
-  
-      ; Add replay call for GUI docs
-      ;---------------------------------
-      if add_replay_call then begin
-        state.callSequence->addGetSpecOp,probe[k], datatype[j], trange,$
-            start_angle, suffix, outputs, phi, theta, pitch, gyro, energy, $
-            regrid, fac_type, sst_cal, sst_method_clean
-      endif
-
-
     endfor
   endfor
 
 
-  ;Remove tplot variables created in this routine
-  ;  -this will only remove new variables, not modified variables 
-  ;----------------------------------------------
-  spd_ui_cleanup_tplot, tnames_before, create_time_before=ct, new_vars=new_vars, del_vars=del_vars
-
-  ;use 'new_vars' to also remove modified tplot variables
-  if del_vars[0] ne '' then begin
-    store_data, del_vars, /delete
-  endif
-  
-  
-  ; Output update messages and return
+  ; Generate products and load into gui
   ;----------------------------------
-  if var_success Then Begin
-    spd_ui_message, 'Getspec load finished.', sb=sb, hw=hw
-  endif else begin
-    spd_ui_message, 'Getspec load finished. Some quantities were not processed. '+ $
-                    'Check History window for details.', sb=sb, hw=hw
-  endelse
+  thm_ui_part_products, loaded_data=state.loadeddata, $
+                        history_window=hw, $
+                        status_bar=sb, $
+                        load_flags=load_flags, $
+
+                        probe=probe, $
+                        datatype=datatype, $
+                        trange=trange, $
+                        outputs=outputs, $
+                        suffix=suffix, $
+
+                        energy=energy, $
+                        phi=phi, $
+                        theta=theta, $
+                        gyro=gyro, $
+                        pitch=pitch, $
+                        start_angle=start_angle, $
+
+                        regrid=regrid, $
+                        fac_type=fac_type, $
+
+                        use_eclipse_corrections=use_eclipse_corrections, $
+
+                        esa_bgnd_remove = esa_bgnd_remove, $
+                        bgnd_type = bgnd_type, $
+                        bgnd_npoints = bgnd_npoints, $
+                        bgnd_scale = bgnd_scale, $
+
+                        sst_cal=sst_cal, $
+                        sst_method_clean=sst_method_clean
+
+
+  ; Add operation to call sequence
+  ;----------------------------------
+  state.callsequence->addplugincall, 'thm_ui_part_products', $
+                        load_flags=load_flags, $
+
+                        probe=probe, $
+                        datatype=datatype, $
+                        trange=trange, $
+                        outputs=outputs, $
+                        suffix=suffix, $
+
+                        energy=energy, $
+                        phi=phi, $
+                        theta=theta, $
+                        gyro=gyro, $
+                        pitch=pitch, $
+                        start_angle=start_angle, $
+
+                        regrid=regrid, $
+                        fac_type=fac_type, $
+
+                        use_eclipse_corrections=use_eclipse_corrections, $
+
+                        esa_bgnd_remove = esa_bgnd_remove, $
+                        bgnd_type = bgnd_type, $
+                        bgnd_npoints = bgnd_npoints, $
+                        bgnd_scale = bgnd_scale, $
+
+                        sst_cal=sst_cal, $
+                        sst_method_clean=sst_method_clean
+
 
   error = 0
   
@@ -727,6 +827,11 @@ Pro spd_ui_part_getspec_options_event, event
       spd_ui_part_getspec_sens_fac, state.tab_id
     end
     
+    'esa_bgnd_remove':begin
+      ;sensitize/desensitize ESA background options
+      spd_ui_part_getspec_sens_esabgnd, state.tab_id
+    end
+
     'CLEARDATA': begin
       widget_control, state.dataTypeList, set_list_select=-1
     end
@@ -735,21 +840,22 @@ Pro spd_ui_part_getspec_options_event, event
       widget_control, state.probeList , set_list_select=-1
     end
     
-    'SST_CALIBRATE':begin
-      ;if beta calibrations are requested, don't let user select invalid data types.(ESA or SST reduced)
-      use_new_sst_calibrations = widget_info(event.id,/button_set)
-      data_type_list_id = widget_info(state.tab_id,find_by_uname='data_type_list')
-      if use_new_sst_calibrations then begin
-        widget_control,data_type_list_id,set_value=state.validBetaTypes
-      endif else begin
-        widget_control,data_type_list_id,set_value=state.validDataTypes
-      endelse
+    'SST_CAL': begin
+      ;update datatype list from other settings
+      spd_ui_part_getspec_datatype, state
+    end
+
+    'COMBINED': begin
+      ;update datatype list from other settings
+      spd_ui_part_getspec_datatype, state
     end
     
     'HELP':begin
-      gethelppath,path
-      xdisplayfile, path+'spd_ui_part_getspec_options.txt', group=state.tab_id, /modal, done_button='Done', $
-                    title='HELP: Getspec Options'
+      ;assume help file is in this dir
+      info = routine_info('spd_ui_part_getspec_options',/source)
+      xdisplayfile, file_dirname(info.path,/mark)+'spd_ui_part_getspec_options.txt', $
+                    group=state.tab_id, /modal, done_button='Done', $
+                    title='HELP: THEMIS Derived Particle Products'
     end
     
     'RESET':begin
@@ -817,11 +923,12 @@ end
 ;                   behavior of other GUI windows
 ; ??-sept-2013, aaf, modified to use new spectrogram code
 ; 01-jul-2014, aaf, now conforms to standard SPEDAS load API
+; 19-mar-2015, aaf, moments, combined data, eclipse corrections, use plugin replay API 
 ; 
 ; 
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-11-25 18:56:53 -0800 (Tue, 25 Nov 2014) $
-;$LastChangedRevision: 16305 $
+;$LastChangedDate: 2015-03-19 19:25:12 -0700 (Thu, 19 Mar 2015) $
+;$LastChangedRevision: 17152 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_part_getspec_options.pro $
 ;-
 Pro spd_ui_part_getspec_options, tab_id, loadedData, historyWin, statusBar, $
@@ -842,31 +949,35 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
       instrLabelBase = widget_base(topcol1base, /row)
       instrumentBase = widget_base(topCol1Base, /col, /frame, xpad=5)
         timeBase = widget_base(instrumentBase)
-        sstCalButtonBase = widget_base(instrumentBase, /col, /nonexclusive, xpad=5)
+        dataButtonsBase = widget_base(instrumentBase, /col, /nonexclusive, xpad=5)
         dataBase = widget_base(instrumentBase, /row)
-    topCol2Base = widget_base(topBase, /col, space=4)
+    topCol2Base = widget_base(topBase, /col, space=2)
       col2row1 = widget_base(topcol2base, ypad=2, /col) ;zero padding to keep tops aligned
-        spec_type_label_base = widget_base(col2row1, /row, /align_left)
-        spec_type_base = widget_base(col2row1, /row, /frame, ypad=6, xpad=5)
+        output_label_base = widget_base(col2row1, /row, /align_left)
+        output_base = widget_base(col2row1, /row, /frame, ypad=6, xpad=5)
       col2row2 = widget_base(topcol2base, ypad=2, /col)
         angle_range_label_base = widget_base(col2row2, /row, /align_left)
         angle_range_base = widget_base(col2row2, /col, /frame, ypad=8, xpad=5)
       col2row3 = widget_base(topcol2base, ypad=2, /col)
         energy_range_label_base = widget_base(col2row3, /row, /align_left)
-        energy_range_base = widget_base(col2row3, /col, /frame, ypad=6, xpad=5)
-    topCol3Base =  widget_base(topBase, /col, space=4)
+        energy_range_base = widget_base(col2row3, /col, /frame, ypad=4, xpad=5)
+      col2row4 = widget_base(topcol2base, ypad=2, /col)
+        start_angle_label_base = widget_base(col2row4, /row, /align_left)
+        start_angle_base = widget_base(col2row4, /col, /frame, ypad=4, xpad=5)
+    topCol3Base =  widget_base(topBase, /col, space=6)
       col4row1 = widget_base(topcol3base, ypad=2, /col)
         suffixLabelBase = widget_base(col4row1,/col)
         suffixBase = widget_base(col4row1, /row, /frame, ypad=8, xpad=10)
       col3row2 = widget_base(topcol3base, ypad=2, /col)
         fac_label_base = widget_base(col3row2, /row, /align_left)
-        fac_base = widget_base(col3row2, /col, /frame, ypad=8, xpad=5, uname='fac_base')
+        fac_base = widget_base(col3row2, /col, /frame, ypad=4, xpad=5, uname='fac_base')
       col3row3 = widget_base(topcol3base, ypad=2, /col)
-        sst_label_base = widget_base(col3row3, /row, /align_left)
-        sst_base = widget_base(col3row3, /col, /frame, ypad=8, xpad=5)
+        esa_label_base = widget_base(col3row3, /row, /align_left)
+        esa_base = widget_base(col3row3, /col, /frame, ypad=4, xpad=5)
       col3row4 = widget_base(topcol3base, ypad=2, /col)
-        start_angle_label_base = widget_base(col3row4, /row, /align_left)
-        start_angle_base = widget_base(col3row4, /col, /frame, ypad=5, xpad=5)
+        sst_label_base = widget_base(col3row4, /row, /align_left)
+        sst_base = widget_base(col3row4, /col, /frame, ypad=4, xpad=5)
+
 
 
   buttonBase = widget_base(mainBase, /row, /align_center)
@@ -894,9 +1005,6 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
                               uvalue='TIME_WIDGET',$
                               uname='time_widget')
                               
-  sstButton = widget_button(sstCalButtonBase, value = 'Use Beta SST Calibrations?', $
-                             uname = 'SST_CALIBRATE',UVAL='SST_CALIBRATE')
-
 
 ;------------------------------------------------------------------------------
 ; Probe selection
@@ -919,17 +1027,33 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
   suffix = ''
   validDataTypes = ['*', $
                     'peif', 'peir', 'peib', 'peef', 'peer', 'peeb', $
-                    'psif', 'psir', 'psef', 'pser', 'pseb'] 
-  validBetaTypes = ['*','psif','psef','pseb']
+                    'psif', 'psir', 'psef', 'pser',         'pseb'] 
+  validCalTypes = ['*', $
+                    'peif', 'peir', 'peib', 'peef', 'peer', 'peeb', $
+                    'psif',         'psef',                 'pseb'] 
+  validCombinedTypes= [ 'ptiff', 'ptirf', 'ptibb', 'ptifb', 'ptibf', $
+                        'pteff', 'pterf', 'ptebb', 'ptefb', 'ptebf' ]
+
+
+  eclipse_button = widget_button(dataButtonsBase, value='Apply Eclipse Corrections', $
+                    uname='eclipse', tooltip='Apply spacecraft spin corrections during eclipses')
+  sstButton = widget_button(dataButtonsBase, value='Use SST Calibrations', $
+                            uname='sst_cal', uval='SST_CAL', tooltip= $
+                            'Use newest SST calibrations (not available for reduced data).')
   
-  
+  combinedButton = widget_button(dataButtonsBase, value='Combined Data', $
+                            uname='combined', uval='COMBINED', tooltip= $
+                            'Generate data from interpolated ESA+SST distributions. '+ $
+                            'The last two characters of the data type represent '+ $
+                            'ESA and SST data types respectively. '+ $
+                            'Processing time will significantly increase.')
+
   dataTypeBase = Widget_Base(DataBase, /col)
   dataL1Base = Widget_Base(dataTypeBase, /col)
   dataButtonBase = Widget_Base(dataTypeBase, /col, /align_center)
   dataTypeLabel = Widget_Label(dataL1Base, Value='Data Type:', /align_left)
   dataTypeList = Widget_List(dataL1Base, Value=validDataTypes, uval='DATATYPE', $
-                             uname='data_type_list',$
-                         /Multiple, XSize=16, YSize=11)
+                             uname='data_type_list', /Multiple, XSize=16, YSize=11)
   dataClearButton = Widget_Button(dataButtonBase, value=' Clear Data Type ', uvalue='CLEARDATA', /align_center)
 
   ;suffix
@@ -939,27 +1063,29 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
 
 
 ;------------------------------------------------------------------------------
-;Spectrogram Selection
+;Output selection
 ;------------------------------------------------------------------------------
   outputs = ['phi', 'theta', 'energy']
-  validOutputs = ['energy', 'phi', 'theta', 'pa', 'gyro'] 
+  validOutputs = ['energy', 'phi', 'theta', 'pa', 'gyro', 'moments'] 
 
-  spec_label = widget_label(spec_type_label_base, value='Output Selection')
+  spec_label = widget_label(output_label_base, value='Output Selection')
   
-  spec_selection_base1 = widget_base(spec_type_base, /nonexclusive)
-    ener_energy = widget_button(spec_selection_base1, value='Energy', uname='energy', $ 
+  output_col_1 = widget_base(output_base, /nonexclusive)
+    energy_button = widget_button(output_col_1, value='Energy', uname='energy', $ 
                      tooltip='Energy spectrogram.  Averages over all look directions.')
+    moments_button = widget_button(output_col_1, value='Moments', uname='moments', $
+                     tooltip='Various products derived from moments of the particle distribution.')
   
-  spec_selection_base2 = widget_base(spec_type_base, /nonexclusive)
-    spec_phi = widget_button(spec_selection_base2, value='Phi', uname='phi', $ 
+  output_col_2 = widget_base(output_base, /nonexclusive)
+    phi_button = widget_button(output_col_2, value='Phi', uname='phi', $ 
                      tooltip='Phi (longitudinal) spectrogram.  Averages over energy and theta (latitude).')
-    spec_theta = widget_button(spec_selection_base2, value='Theta', uname='theta', $ 
+    theta_button = widget_button(output_col_2, value='Theta', uname='theta', $ 
                      tooltip='Theta (latitudinal) spectrogram. Averages over energy and phi (longitude).')
   
-  spec_selection_base3 = widget_base(spec_type_base, /nonexclusive)
-    spec_gyro = widget_button(spec_selection_base3, value='Gyrophase', uname='gyro', uval='fac_set', $ 
+  output_col_3 = widget_base(output_base, /nonexclusive)
+    gyro_button = widget_button(output_col_3, value='Gyrophase', uname='gyro', uval='fac_set', $ 
                      tooltip='Field aligned longitudinal spectrogram.  Averages over energy and latitude in field alligned coordinates.')
-    spec_pa = widget_button(spec_selection_base3, value='Pitch Angle', uname='pa', uval='fac_set', $ 
+    pa_button = widget_button(output_col_3, value='Pitch Angle', uname='pa', uval='fac_set', $ 
                      tooltip='Field aligned colatitude spectrogram.  Averages over energy and longitude in field alligned coordinates.') 
   
 
@@ -1057,6 +1183,45 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
   coord_base = widget_base(fac_base, /row)
     coord_label = widget_label(coord_base, value='FAC Variant:  ')
     coord_list = widget_combobox(coord_base, value=facs, uname='fac_type')
+
+
+;------------------------------------------------------------------------------
+; ESA Background
+;------------------------------------------------------------------------------
+
+  esa_bgnd_remove = 1b
+  bgnd_type =  ['Anode','Angle','Omni']
+  bgnd_npoints = 3.0
+  bgnd_scale = 1.0
+
+;  esa_label = widget_label(esa_label_base, value='ESA Background')
+
+  esa_bgnd_button_base = widget_base(esa_label_base, /nonexclusive,/col, ypad=0)
+    esa_bgnd_button = widget_button(esa_bgnd_button_base, $
+                      value='Subtract ESA Background', $
+                      uvalue='esa_bgnd_remove', uname='esa_bgnd_remove', $
+                      tooltip='Calculate ESA background and subtract from '+ $
+                      'each time sample. Click "Help" for more information.')
+
+  esa_bgnd_base = widget_base(esa_base, uname='esa_bgnd_base', /col, ypad=0)
+    bgnd_type_base = widget_base(esa_bgnd_base, /row)
+      bgnd_type_label = widget_label(bgnd_type_base, value='Type:  ')
+      bgnd_type_list = widget_combobox(bgnd_type_base, value=bgnd_type, uname='bgnd_type')
+
+    bgnd_npoints_base = widget_base(esa_bgnd_base, /row)
+      bgnd_npoints_spinner = spd_ui_spinner(bgnd_npoints_base, label='Number of Points:  ', $
+                               uname='bgnd_npoints', incr=1, value=bgnd_npoints, $
+                               getXLabelSize=scr_xsize, min_value=1, text_box_size=6, $
+                               tooltip='The number of lowest values points to '+ $
+                               'average over when determining background.')
+      widget_control, bgnd_type_label, xsize = scr_xsize+1
+
+    bgnd_scale_base = widget_base(esa_bgnd_base, /row)
+      bgnd_scale_spinner = spd_ui_spinner(bgnd_scale_base, label='Scaling:  ', $ 
+                                uname='bgnd_scale', incr=.05, value=bgnd_scale, $
+                                xlabelsize=scr_xsize, min_value=0, text_box_size=6, $
+                                tooltip='A scaling factor that the background '+ $
+                                'will be multiplied by before it is subtracted.')
   
 
 ;------------------------------------------------------------------------------
@@ -1091,13 +1256,13 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
 
   ;dynamically resize the second column's framed bases
   geo = widget_info(energy_range_base,/geo)
-    widget_control, spec_type_base, xsize=geo.scr_xsize
+    widget_control, output_base, xsize=geo.scr_xsize
     widget_control, angle_range_base, xsize=geo.scr_xsize
+    widget_control, start_angle_base, xsize=geo.scr_xsize
 
   ;dynamically resize the third column's framed bases
   geo = widget_info(fac_base,/geo)
     widget_control, sst_base, xsize=geo.scr_xsize
-    widget_control, start_angle_base, xsize=geo.scr_xsize
     widget_control, suffixbase, xsize=geo.scr_xsize
 
 
@@ -1120,21 +1285,50 @@ state = {tab_id:tab_id, $
         ; Widget support variables (lists etc)
          validProbes:validProbes, $
          validDataTypes:validDataTypes, $
-         validBetaTypes:validBetaTypes, $
+         validCalTypes:validCalTypes, $
+         validCombinedTypes:validCombinedTypes, $
          validOutputs:validOutputs, $
         
-        ; Stored Options (to be passed to thm_part_getspec)
-         phi_min:phi[0], phi_max:phi[0], $
-         theta_min:theta[0], theta_max:theta[1], $
-         pa_min:pa[0], pa_max:pa[1], $
-         gyro_min:gyro[0], gyro_max:gyro[1], $
-         energy_min:energy[0], energy_max:energy[1], $
-         outputs:outputs, $
-         start_angle:start_angle, $
-         regrid_phi:regrid[0], regrid_theta:regrid[1], $
-         fac_type:facs[0],  $         
-         sst_method_clean:sst_method_clean, $
-         suffix:suffix $
+        ; Stored Options (initialized in spd_ui_part_getspec_set_defaults)
+        ; The nomenclature here should match the uvalue of the corresponding
+        ; widget so that it's value can be set with spd_ui_part_getspec_set_value 
+         phi_min:0d,    phi_max:0d, $
+         theta_min:0d,  theta_max:0d, $
+         pa_min:0d,     pa_max:0d, $
+         gyro_min:0d,   gyro_max:0d, $
+         energy_button:0b, $
+         energy_min:0d, energy_max:0d, $
+         outputs:[''], $
+         start_angle:0d, $
+         regrid_phi:0d, regrid_theta:0d, $
+         fac_type:'',  $
+         eclipse:0b, $
+         esa_bgnd_remove:0b, $
+         bgnd_type:'', $
+         bgnd_npoints:0d, $
+         bgnd_scale:0d, $
+         sst_cal:0b, $
+         sst_method_clean:0b, $
+         combined:0b, $
+         suffix:'', $
+
+         widget_list: ['phi_min','phi_max', $
+                       'theta_min','theta_max', $
+                       'pa_min','pa_max', $
+                       'gyro_min','gyro_max', $
+                       'energy_min','energy_max', $
+                       'start_angle', $
+                       'suffix', $
+                       'fac_type', $
+                       'regrid_phi', 'regrid_theta', $
+                       'eclipse', $
+                       'esa_bgnd_remove', $
+                       'bgnd_type', $
+                       'bgnd_npoints', $
+                       'bgnd_scale', $
+                       'sst_cal', $
+                       'sst_method_clean', $
+                       'combined'] $
          }
 
 

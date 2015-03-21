@@ -107,7 +107,7 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error;,dist_sst_coun
          return
        endif
        
-       sst_mode_out[j].start_time=sample_sst.start_time ;copy time over
+       sst_mode_out[j].time=sample_sst.time ;copy time over
        sst_mode_out[j].end_time=sample_sst.end_time ;copy time over
        
        ;loop over look directions and interpolate 

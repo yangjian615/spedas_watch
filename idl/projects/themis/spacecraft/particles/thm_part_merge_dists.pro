@@ -109,8 +109,7 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
                 magf: replicate(!values.f_nan,3), $ ;placeholder for moments
                 velocity: replicate(!values.f_nan,3), $ ;placeholder for slices
                 
-                time: 0d, $ ;identical to start time, kept to match original structs
-                start_time: 0d, $
+                time: 0d, $
                 end_time: 0d, $
                 
                 data: comb_arr, $
@@ -157,8 +156,7 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
       
     endelse
       
-    out_str.time = esa_str.start_time  ;times should be identical
-    out_str.start_time = esa_str.start_time  ;times should be identical
+    out_str.time = esa_str.time  ;times should be identical
     out_str.end_time = esa_str.end_time
   
     

@@ -31,8 +31,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-18 12:53:52 -0800 (Wed, 18 Feb 2015) $
-; $LastChangedRevision: 16999 $
+; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
+; $LastChangedRevision: 17150 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_swia_overplot.pro $
 Pro mvn_swia_overplot, date = date, time_range = time_range, $
                        makepng=makepng, device = device, directory = directory, $
@@ -51,6 +51,9 @@ Endif Else Begin
 Endelse
 If(~keyword_set(noload_data)) Then Begin
     mvn_swia_load_l0_data, filex, /tplot, /sync
+    orbdata = mvn_orbit_num()
+    store_data, 'mvn_orbnum', orbdata.peri_time, orbdata.num, $
+                dlimit={ytitle:'Orbit'}
 Endif
 
 varlist = ['mvn_swia_temps', 'mvn_swia_imons', 'mvn_swia_vmon_fixed', $
@@ -77,7 +80,7 @@ date = p1[4]
 d0 = time_double(time_string(date))
 tr = tr > d0
 ;plot the data
-tplot, varlist, title = 'MAVEN SWIA Quicklook '+date
+tplot, varlist, title = 'MAVEN SWIA Quicklook '+date, var_label = 'mvn_orbnum'
 
 If(keyword_set(multipngplot)) Then makepng = 1b
 If(keyword_set(makepng)) Then Begin

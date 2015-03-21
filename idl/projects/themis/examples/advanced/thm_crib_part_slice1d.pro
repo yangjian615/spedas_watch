@@ -14,13 +14,19 @@
 ;   thm_crib_part_slice2d.pro
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-06-24 18:01:54 -0700 (Tue, 24 Jun 2014) $
-;$LastChangedRevision: 15430 $
+;$LastChangedDate: 2015-03-19 12:51:00 -0700 (Thu, 19 Mar 2015) $
+;$LastChangedRevision: 17149 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_slice1d.pro $
 ;
 ;
 ;-
 
+
+
+;-------------------------------------------
+; **** SETUP **** 
+; Run this section before proceeding to examples
+;-------------------------------------------
 
 ;set day and time
 day = '2008-02-26/'
@@ -39,7 +45,7 @@ dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
 ;generate slice plot
 ; -2D interpolation or 3D interpolation with smoothing are recommended for the best results
 thm_part_slice2d, dist_arr, slice_time=start_time, timewin=30, part_slice=slice, $
-                  rotation='BV', mag_data='thb_fgl_dsl', /two_d_interp
+                  rotation='BV', mag_data='thb_fgl_dsl', /three_d_interp
 
 ;plot slice for reference
 thm_part_slice2d_plot, slice
@@ -162,6 +168,27 @@ stop
 thm_part_slice1d, slice, ycut=0, data=data
 
 help, /structure, data
+
+stop
+
+;-------------------------------------------
+;plot single count level over data
+;-------------------------------------------
+
+;create copy of the original data
+thm_part_copy, dist_arr, dist_arr_copy
+
+;set all data in the copy to one count
+thm_part_set_counts, dist_arr_copy, 1.
+
+;create 2D slice with single-count data
+;  -all keywords here should match original call to thm_part_slice2d
+thm_part_slice2d, dist_arr_copy, slice_time=start_time, timewin=30, part_slice=slice_onecnt, $
+                  rotation='BV', mag_data='thb_fgl_dsl', /three_d_interp
+
+;any 1D slice can now be compared against the synthetic single-count distribution
+thm_part_slice1d, slice, ycut=0
+thm_part_slice1d, slice_onecnt, ycut=0, linestyle=2, /overplot
 
 stop
 

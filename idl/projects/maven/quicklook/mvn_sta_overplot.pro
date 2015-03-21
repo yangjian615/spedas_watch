@@ -29,8 +29,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_gen_ql, 2013-06-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-18 12:53:52 -0800 (Wed, 18 Feb 2015) $
-; $LastChangedRevision: 16999 $
+; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
+; $LastChangedRevision: 17150 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_sta_overplot.pro $
 Pro mvn_sta_overplot, date = date, time_range = time_range, $
                       makepng=makepng, device = device, directory = directory, $
@@ -52,6 +52,9 @@ If(~keyword_set(noload_data)) Then Begin
     d0 = time_double(time_string(p1[4]))
     timespan, d0, 1
     mvn_sta_gen_ql, file = filex;, pathname=file_dirname(filex), file=file_basename(filex)
+    orbdata = mvn_orbit_num()
+    store_data, 'mvn_orbnum', orbdata.peri_time, orbdata.num, $
+                dlimit={ytitle:'Orbit'}
 Endif
 varlist = ['mvn_sta_mode','mvn_sta_C0_att'$
            ,'mvn_sta_density'$
@@ -80,7 +83,7 @@ title = 'MAVEN STATIC Quicklook '+date
 tplot_options, 'ygap', 0.0d0
 
 ;plot the data
-tplot, varlist, title = title
+tplot, varlist, title = title, var_label = 'mvn_orbnum'
 
 If(keyword_set(multipngplot)) Then makepng = 1b
 If(keyword_set(makepng)) Then Begin

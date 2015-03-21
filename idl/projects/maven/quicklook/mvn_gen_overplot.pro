@@ -60,8 +60,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-25 16:56:01 -0800 (Wed, 25 Feb 2015) $
-; $LastChangedRevision: 17043 $
+; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
+; $LastChangedRevision: 17150 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_overplot.pro $
 ;-
 Pro mvn_gen_overplot, date = date, time_range = time_range, $
@@ -168,7 +168,7 @@ date = p1[4]
 d0 = time_double(time_string(date))
 tr = tr > d0
 ;plot the data
-tplot, varlist, title = 'MAVEN PFP Quicklook '+date
+tplot, varlist, title = 'MAVEN PFP Quicklook '+date, var_label = 'mvn_orbnum'
 
 If(keyword_set(multipngplot)) Then makepng = 1b
 If(keyword_set(makepng)) Then Begin

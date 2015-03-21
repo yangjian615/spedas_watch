@@ -31,8 +31,8 @@
 ; Changed to call mvn_mag_ql_tsmaker2, 2014-03-21, may switch back
 ; next week
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-18 12:53:52 -0800 (Wed, 18 Feb 2015) $
-; $LastChangedRevision: 16999 $
+; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
+; $LastChangedRevision: 17150 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_mag_overplot.pro $
 Pro mvn_mag_overplot, date = date, time_range = time_range, $
                       makepng=makepng, device = device, directory = directory, $
@@ -63,7 +63,10 @@ If(~keyword_set(noload_data)) Then Begin
           store_data, magvar1[j], dlimits = dlimits
        Endif
     Endfor
-    
+;orbit number
+    orbdata = mvn_orbit_num()
+    store_data, 'mvn_orbnum', orbdata.peri_time, orbdata.num, $
+                dlimit={ytitle:'Orbit'}
     varlist = ['mvn_ql_mag1', 'mvn_ql_mag2']
 ;You need a time range for the data, Assuming that everything comes
 ;from one kind of packet, you should be ok, but check all variables
@@ -104,7 +107,7 @@ date = p1[4]
 d0 = time_double(time_string(date))
 tr = tr > d0
 ;plot the data
-tplot, varlist, title = 'MAVEN MAG Quicklook '+date
+tplot, varlist, title = 'MAVEN MAG Quicklook '+date, var_label = 'mvn_orbnum'
 
 If(keyword_set(multipngplot)) Then makepng = 1b
 If(keyword_set(makepng)) Then Begin

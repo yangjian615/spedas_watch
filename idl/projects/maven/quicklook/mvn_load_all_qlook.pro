@@ -19,8 +19,8 @@
 ;HISTORY:
 ; 16-jul-2013, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-24 14:54:06 -0800 (Tue, 24 Feb 2015) $
-; $LastChangedRevision: 17036 $
+; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
+; $LastChangedRevision: 17150 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_load_all_qlook.pro $
 Pro mvn_load_all_qlook, date_in = date_in, l0_input_file = l0_input_file, $
                         device = device, stop_in_catch = stop_in_catch, $
@@ -176,6 +176,12 @@ mvn_lpw_ql_3panels
 mvn_lpw_ql_instr_page
 
 skip_lpw:
+
+;Orbit number
+load_position = 'orb'
+orbdata = mvn_orbit_num()
+store_data, 'mvn_orbnum', orbdata.peri_time, orbdata.num, $
+            dlimit={ytitle:'Orbit'}
 
 mvn_qlook_init, device = device
 

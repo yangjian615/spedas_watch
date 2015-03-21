@@ -25,9 +25,9 @@
 ;          default is to call tplot without any inputs
 ;HISTORY:
 ; 21-may-2008, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-06 08:50:39 -0800 (Thu, 06 Feb 2014) $
-; $LastChangedRevision: 14172 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2015-03-19 12:11:26 -0700 (Thu, 19 Mar 2015) $
+; $LastChangedRevision: 17148 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_gen_multipngplot.pro $
 ;-
 Pro thm_gen_multipngplot, filename_proto, date0, directory = directory, $
@@ -42,6 +42,7 @@ Pro thm_gen_multipngplot, filename_proto, date0, directory = directory, $
   ymd = year+month+day
 
   date_double = time_double(date[0])
+  timespan,date_double,1
   if keyword_set(directory) then begin
     dir = directory[0]
     dir = strtrim(dir, 2)

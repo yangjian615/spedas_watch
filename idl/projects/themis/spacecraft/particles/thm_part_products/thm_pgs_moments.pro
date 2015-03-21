@@ -24,9 +24,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-01-06 14:12:58 -0800 (Tue, 06 Jan 2015) $
-;$LastChangedRevision: 16601 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-03-19 17:18:03 -0700 (Thu, 19 Mar 2015) $
+;$LastChangedRevision: 17151 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_moments.pro $
 ;-
 
@@ -44,7 +44,6 @@ pro thm_pgs_moments, data, $
 
   
   ;moments_3d requires the following tags but they are not needed for our purposes
-  str_element, data, 'time', !values.d_nan, /add_replace
   str_element, data, 'valid', 1b, /add_replace
   str_element, data, 'nenergy', dimen1(data.energy), /add_replace
   
@@ -78,7 +77,7 @@ pro thm_pgs_moments, data, $
   endif
 
   ;calculate & concatenate integration times, needed for L2 CDFs, and informational for users
-  delta_time=data.end_time-data.start_time
+  delta_time=data.end_time-data.time
   if undefined(delta_times) then begin
     delta_times=delta_time
   endif else begin
