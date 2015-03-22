@@ -40,7 +40,7 @@
 ;
 ;TO BE ADDED:
 ;     Support for other spectral models
-;     Reasonable formula to guess e-folding or mono-E from count spectrum
+;
 ;
 ;REVISION HISTORY:
 ;Version 1.0 DMS 7/18/12 -- split out from barrel_folding as new middle layer;
@@ -54,17 +54,18 @@
 ;                      Removed redundant routine identifier from "message"
 ;Version 2.4 DMS 8/26/12 -- added support for model 2 (monoenergetic)
 ;Version 3.4 DMS 4/17/14 -- save elecmodel for best fit e- spectrum
-
+;Version 3.6 DMS 2/12/15    Use dynamic generation of first-guess
+;                           parameters based on true altitude
 ;-
 
 pro  barrel_sp_fold_m1, subspec, subspecerr, model, drm, phebins, phmean, phwidth, ctwidth, ctmean, usebins, maxcycles,  $
-         params, param_ranges, elecmodel, modvals, chisquare, dof, quiet=quiet, verbose=verbose
+         params, param_ranges, elecmodel, modvals, chisquare, dof, altitude, quiet=quiet, verbose=verbose
 
 ;Find good starting parameters:
 if model EQ 1 then begin
     ;;This formula for approximate e-folding from a count ratio between
     ;;two bands is empirical from simulations. 
-    restore,barrel_find_file('guess_efold_ratios.sav','barrel_sp_v3.5')
+    barrel_sp_testratio_exp, altitude,efold,efold_ratios
     w1=where(ctmean GT 110. and ctmean LT 150.)
     w2=where(ctmean GT 200. and ctmean LT 250.)
     rat =  total(subspec[w2])/total(subspec[w1])
@@ -73,7 +74,7 @@ if model EQ 1 then begin
           startpar = interpol(efold,efold_ratios,rat)
     tryspec = (exp(-phmean/startpar)*phwidth) # drm
 endif else if model EQ 2 then begin
-    restore,barrel_find_file('guess_mono_ratios.sav','barrel_sp_v3.5')
+    barrel_sp_testratio_mono, altitude,emono,emono_ratios
     w1=where(ctmean GT 110. and ctmean LT 150.)
     w2=where(ctmean GT 200. and ctmean LT 250.)
     rat =  total(subspec[w2])/total(subspec[w1])
@@ -112,8 +113,8 @@ for i=0, maxcycles-1 do begin
    ;;Note that zooming in or out on scalingdrm doesn't do anything if
    ;;you aren't using two drms.
 
-   if abs(bestnormn) NE points and scaling[0] GE 0.001 then scaling[0] /= 2.5
-   if abs(bestparn)  NE points and scaling[1] GE 0.001 then scaling[1] /= 2.5
+   if abs(bestnormn) NE points and scaling[0] GE 0.001 then scaling[0] /= 1.5
+   if abs(bestparn)  NE points and scaling[1] GE 0.001 then scaling[1] /= 1.5
 
    ;;If scaling is now very fine, break.  Note that the last values of the
    ;;scaling parameters recorded here aren't really the last

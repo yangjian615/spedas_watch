@@ -55,12 +55,13 @@
 ;10/29/13 - Add plot of altitude to assist in background selection
 ;11/12/13 - Add option for vertical ticks for medium and slow spectra
 ;11/12/13 - Add default "no update" for reading FSPC data
+;2/10/15 DMS - collect altitude using correct source time interval (average)
 ;-
 
 pro barrel_sp_pick_datatime,ss,startdatetime,duration,payload,bkgmethod,$
   lcband=lcband,uselog=uselog,level=level,version=version,$
   starttimes=starttimes,endtimes=endtimes,startbkgs=startbkgs,$
-  endbkgs=endbkgs,mticks=mticks,sticks=sticks
+  endbkgs=endbkgs,mticks=mticks,sticks=sticks,altitude=altitude
 
 if not keyword_set(level) then level='l2'
 if not keyword_set(lcband) then lcband=1
@@ -78,6 +79,15 @@ ss.bkgmethod = bkgmethod
 
 timespan,startdatetime,duration,/hour
 
+;Get altitude data:
+barrel_load_data, probe=payload, datatype=['GPS'], level=level,/no_clobber,$
+    version=version
+varname='brl'+payload+'_GPS_Alt'
+tplot_names,varname, NAMES=matches2,/ASORT
+if (n_elements(matches2) EQ 1) then get_data, matches2[0], data=gpsalt
+altsum=0.d
+altnorm=0.d
+
 ;If the times have already been specified by hand, use them and go: 
 if keyword_set(starttimes) then begin
     typ = size(starttimes[0],/type)
@@ -88,6 +98,15 @@ if keyword_set(starttimes) then begin
        for i=0,ss.numsrc-1 do ss.trange[0,i] = starttimes[i]
        for i=0,ss.numsrc-1 do ss.trange[1,i] = endtimes[i]
     endelse
+
+    ;get altitude
+    for i=0,ss.numsrc-1 do begin
+        w=where(gpsalt.x ge ss.trange[0,i] and gpsalt.x le ss.trange[1,i],nw)
+        altsum += total(gpsalt.y[w])
+        altnorm += 1.d * nw
+    endfor
+    altitude = altsum/altnorm
+
     if ss.bkgmethod eq 1 then begin  
        typ = size(startbkgs[0],/type)
        if typ EQ 7 then begin
@@ -158,11 +177,6 @@ window,2,xsize=1200,ysize=600
 !p.multi=[0,1,2]
 
 ;Plot altitude as well to guide bkg selection:
-barrel_load_data, probe=payload, datatype=['GPS'], level=level,/no_clobber,$
-    version=version
-varname='brl'+payload+'_GPS_Alt'
-tplot_names,varname, NAMES=matches2,/ASORT
-if (n_elements(matches2) EQ 1) then get_data, matches2[0], data=gpsalt
 hourtimes2=(gpsalt.x-daystart)/3600.d
 plot,hourtimes2,gpsalt.y,xrange=[hourstart,hourstart+duration],ytitle='Altitude, km'
 
@@ -185,7 +199,13 @@ for ns=0,ss.numsrc-1 do begin
   ;Fill in the appropriate part of the structure:
   ss.trange[*,ns] = [lc.x[datause[0]], lc.x[datause[ndatause-1]]]
   
+  ;Get the altitude
+  w=where(gpsalt.x ge ss.trange[0,ns] and gpsalt.x le ss.trange[1,ns],nw)
+  altsum += total(gpsalt.y[w])
+  altnorm += 1.d * nw
 end
+
+altitude = altsum/altnorm
 
 if ss.bkgmethod eq 1 then begin  
 

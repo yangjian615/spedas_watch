@@ -17,9 +17,9 @@
 ;        appended is written out
 ;HISTORY:
 ; Copied from tt2000_write_config and thm_write_config lphilpott 20-jun-2012
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-03-20 13:50:13 -0700 (Fri, 20 Mar 2015) $
+;$LastChangedRevision: 17158 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/file_configuration_tab/yyy_write_config.pro $
 ;-
 
@@ -64,7 +64,6 @@ Pro yyy_write_config, copy = copy, _extra = _extra
   For j = 0, nctags-1 Do Begin
     x0 = strtrim(ctags[j])
     x1 = cfg.(j)
-stop
     If(is_string(x1)) Then x1 = strtrim(x1, 2) $
     Else Begin                  ;Odd thing can happen with byte arrays
       If(size(x1, /type) Eq 1) Then x1 = fix(x1)

@@ -107,6 +107,11 @@
 ;         set_tilt(optional): Set this to a tplot variable name or an array of values containing the dipole tilt that should be used.
 ;              If a tplot input is used it will be interpolated to match the time inputs from the position
 ;              var. Non-tplot array values must match the number of times in the tplot input for pos_gsm_tvar
+;              Notes:
+;                  1) set_tilt will cause add_tilt to be ignored
+;                  2) Due to this routine adding IGRF to the returned field, you cannot use set_tilt = 0 and give input 
+;                      position values in SM coordinates; input position values are required to be in GSM coordinates due to the
+;                      IGRF calculation
 ;
 ;         add_tilt(optional): Set this to a tplot variable name or an array of values containing the values to be added to the dipole tilt
 ;              that should be used for each period. If a tplot input is used it will be interpolated to match the time inputs from the position
@@ -140,9 +145,9 @@
 ;            inner magnetosphere during strong geomagnetic storms, J. Geophys. 
 ;            Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 16:40:49 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16595 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 08:27:55 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17153 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t04s/tt04s.pro $
 ;-
 

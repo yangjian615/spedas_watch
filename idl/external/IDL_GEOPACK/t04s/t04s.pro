@@ -44,44 +44,48 @@
 ;                   N is the number of time elements for the data.  M is the number of periods in the time interval.(determined by the period keyword)
 ;                   If an N length array is provided, the data will be re-sampled to an M length array. Consequently, if
 ;                   the values change quickly, the period may need to be shortened. 
-;                   set_tilt will cause add_tilt to be ignored. 
+;                   Notes:
+;                       1) set_tilt will cause add_tilt to be ignored
+;                       2) Due to this routine adding IGRF to the returned field, you cannot use set_tilt = 0 and give input 
+;                           position values in SM coordinates; input position values are required to be in GSM coordinates due to the
+;                           IGRF calculation
 ;                   
 ;         get_nperiod: Returns the number of periods used for the time interval=  ceil((end_time-start_time)/period)
 ;
 ;         geopack_2008 (optional): Set this keyword to use the latest version (2008) of the Geopack
 ;              library. Version 9.2 of the IDL Geopack DLM is required for this keyword to work.
 ;              
-;Returns: an Nx3 length array or -1L on failure
+;Returns: an Nx3 length array of field model data (TS04 + IGRF) or -1L on failure
 ;
 ;Example:
 ;   mag_array = t04s(time_array,pos_array,pdyn_array,dsti_array,yimf_array,zimf_array,w1_array,w2_array,w3_array,w4_array,w5_array,w6_array)
 ;   mag_array = t04s(time_array,pos_array,pdyn_array,dsti_array,yimf_array,zimf_array,w1_array,w2_array,w3_array,w4_array,w5_array,w6_array,period=10)
+;
 ;Notes:
 ;  1. Relies on the IDL/Geopack Module provided by Haje Korth JHU/APL
-;  and N.A. Tsyganenko NASA/GSFC, if the module is not installed
-;  this function will fail.  
+;      and N.A. Tsyganenko NASA/GSFC, if the module is not installed
+;      this function will fail.  
 ;  2. Sums the contribution from the internal field model and the
-;  external field model.
-;  3. Has a loop with number of iterations =
-;  (tarray[n_elements(t_array)]-tarray[0])/period
-;  This means that as period becomes smaller the amount time of this
-;  function should take will grow quickly.
+;      external field model.
+;  3. Has a loop with number of iterations = (tarray[n_elements(t_array)]-tarray[0])/period
+;      This means that as period becomes smaller the amount time of this
+;      function should take will grow quickly.
 ;  4. Position units are in earth radii, be sure to divide your normal
-;  units by 6371.2 km to convert them.
-;  6371.2 = the value used in the GEOPACK FORTRAN code for Re
+;      units by 6371.2 km to convert them.
+;      6371.2 = the value used in the GEOPACK FORTRAN code for Re
 ;  5.Find more documentation on the inner workings of the model,
-;    any gotchas, and the meaning of the arguments at:
-;    http://geo.phys.spbu.ru/~tsyganenko/modeling.html
-;    -or-
-;    http://ampere.jhuapl.edu/code/idl_geopack.html
+;      any gotchas, and the meaning of the arguments at:
+;      http://geo.phys.spbu.ru/~tsyganenko/modeling.html
+;      -or-
+;      http://ampere.jhuapl.edu/code/idl_geopack.html
 ;  6. Definition of W1-W6 can be found at:
-;  N. A. Tsyganenko and M. I. Sitnov, Modeling the dynamics of the
-;  inner magnetosphere during strong geomagnetic storms, J. Geophys. 
-;  Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005
+;      N. A. Tsyganenko and M. I. Sitnov, Modeling the dynamics of the
+;      inner magnetosphere during strong geomagnetic storms, J. Geophys. 
+;      Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-03-18 08:30:33 -0700 (Wed, 18 Mar 2015) $
-; $LastChangedRevision: 17146 $
+; $LastChangedDate: 2015-03-20 12:48:33 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17157 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t04s/t04s.pro $
 ;-
 

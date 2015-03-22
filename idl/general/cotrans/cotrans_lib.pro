@@ -1,5 +1,46 @@
-
-
+;+
+;pro sub_GSE2aGSM
+;
+;Purpose: transforms data from GSE to aberrated GSM coordinates
+;
+;
+;keywords:
+;   /aGSM2GSE : inverse transformation
+;Example:
+;      sub_GSE2aGSM,tha_fglc_gse,tha_fglc_agsm
+;
+;      sub_GSE2aGSM,tha_fglc_agsm,tha_fglc_gse,/aGSM2GSE
+;
+;
+;Notes: Same as sub_GSE2GSM, with "aberrated GSM" in the output message. The actual aberration 
+;       occurs in the higher level routine, gse2agsm
+;
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
+;-
+pro sub_GSE2aGSM,data_in,data_out,aGSM2GSE=aGSM2GSE
+    data_out=data_in
+    
+    ;convert the time
+    timeS=time_struct(data_in.X)
+    
+    ;get direction
+    if keyword_set(aGSM2GSE) then begin
+        dprint,'aberrated GSM-->GSE'
+        subGSM2GSE,TIMES,data_in.Y,DATA_outARR
+    endif else begin
+        dprint,'GSE-->aberrated GSM'
+        subGSE2GSM,TIMES,data_in.Y,DATA_outARR
+    endelse
+    
+    data_out.Y=DATA_outARR
+    
+    DPRINT,'done'
+    
+    ;RETURN,data_out
+end
 
 ;+
 ;pro sub_GSE2GSM
@@ -18,78 +59,40 @@
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ;Written by Hannes Schwarzl
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
-
-
-pro sub_GSE2aGSM,data_in,data_out,aGSM2GSE=aGSM2GSE
-
-data_out=data_in
-
-;convert the time
-timeS=time_struct(data_in.X)
-
-;get direction
-if keyword_set(aGSM2GSE) then begin
-    dprint,'aberrated GSM-->GSE'
-    subGSM2GSE,TIMES,data_in.Y,DATA_outARR
-endif else begin
-    dprint,'GSE-->aberrated GSM'
-    subGSE2GSM,TIMES,data_in.Y,DATA_outARR
-endelse
-
-data_out.Y=DATA_outARR
-
-DPRINT,'done'
-
-;RETURN,data_out
-end
-
-
-
 pro sub_GSE2GSM,data_in,data_out,GSM2GSE=GSM2GSE
-
-
-
-
-data_out=data_in
-
-
-;convert the time
-timeS=time_struct(data_in.X)
-
-;get direction
-if keyword_set(GSM2GSE) then begin
-    dprint,'GSM-->GSE'
-    isGSM2GSE=1
-endif else begin
-    dprint,'GSE-->GSM'
-    isGSM2GSE=0
-endelse
-
-
-if isGSM2GSE eq 0 then begin
-    subGSE2GSM,TIMES,data_in.Y,DATA_outARR
-endif else begin
-  subGSM2GSE,TIMES,data_in.Y,DATA_outARR
-endelse
-
-
-data_out.Y=DATA_outARR
-
-DPRINT,'done'
-
-;RETURN,data_out
+    data_out=data_in
+    
+    ;convert the time
+    timeS=time_struct(data_in.X)
+    
+    ;get direction
+    if keyword_set(GSM2GSE) then begin
+        dprint,'GSM-->GSE'
+        isGSM2GSE=1
+    endif else begin
+        dprint,'GSE-->GSM'
+        isGSM2GSE=0
+    endelse
+    
+    if isGSM2GSE eq 0 then begin
+        subGSE2GSM,TIMES,data_in.Y,DATA_outARR
+    endif else begin
+      subGSM2GSE,TIMES,data_in.Y,DATA_outARR
+    endelse
+    
+    data_out.Y=DATA_outARR
+    
+    DPRINT,'done'
+    
+    ;RETURN,data_out
 end
-
 
 ;#################################################
-
-
-
 
 ;+
 ;pro: sub_GEI2GSE
@@ -107,50 +110,38 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-
-
 pro sub_GEI2GSE,data_in,data_out,GSE2GEI=GSE2GEI
-
-
-
-data_out=data_in
-
-
-
-;convert the time
-timeS=time_struct(data_in.X)
-
-;get direction
-if keyword_set(GSE2GEI) then begin
-	DPRINT,'GSE-->GEI'
-	isGSE2GEI=1
-endif else begin
-	DPRINT,'GEI-->GSE'
-	isGSE2GEI=0
-endelse
-
-
-
-
-if isGSE2GEI eq 0 then begin
-	subGEI2GSE,TIMES,data_in.Y,DATA_outARR
-endif else begin
-    subGSE2GEI,TIMES,data_in.Y,DATA_outARR
-endelse
-
-data_out.Y=DATA_outARR
-
-DPRINT,'done'
-
-;RETURN,data_out
+    data_out=data_in
+    
+    ;convert the time
+    timeS=time_struct(data_in.X)
+    
+    ;get direction
+    if keyword_set(GSE2GEI) then begin
+    	DPRINT,'GSE-->GEI'
+    	isGSE2GEI=1
+    endif else begin
+    	DPRINT,'GEI-->GSE'
+    	isGSE2GEI=0
+    endelse
+    
+    if isGSE2GEI eq 0 then begin
+    	subGEI2GSE,TIMES,data_in.Y,DATA_outARR
+    endif else begin
+        subGSE2GEI,TIMES,data_in.Y,DATA_outARR
+    endelse
+    
+    data_out.Y=DATA_outARR
+    
+    DPRINT,'done'
+    
+    ;RETURN,data_out
 end
-
-
 
 ;+
 ;pro sub_GSM2SM
@@ -169,48 +160,38 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ;Written by Hannes Schwarzl
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
-
-
 pro sub_GSM2SM,data_in,data_out,SM2GSM=SM2GSM
-
-
-
-
-data_out=data_in
-
-
-;convert the time
-timeS=time_struct(data_in.X)
-
-;get direction
-if keyword_set(SM2GSM) then begin
-	DPRINT,'SM-->GSM'
-	isSM2GSM=1
-endif else begin
-	DPRINT,'GSM-->SM'
-	isSM2GSM=0
-endelse
-
-
-if isSM2GSM eq 0 then begin
-	subGSM2SM,TIMES,data_in.Y,DATA_outARR
-endif else begin
-    subSM2GSM,TIMES,data_in.Y,DATA_outARR
-endelse
-
-
-data_out.Y=DATA_outARR
-
-DPRINT,'done'
-
-;RETURN,data_out
+    data_out=data_in
+    
+    ;convert the time
+    timeS=time_struct(data_in.X)
+    
+    ;get direction
+    if keyword_set(SM2GSM) then begin
+    	DPRINT,'SM-->GSM'
+    	isSM2GSM=1
+    endif else begin
+    	DPRINT,'GSM-->SM'
+    	isSM2GSM=0
+    endelse
+    
+    if isSM2GSM eq 0 then begin
+    	subGSM2SM,TIMES,data_in.Y,DATA_outARR
+    endif else begin
+        subSM2GSM,TIMES,data_in.Y,DATA_outARR
+    endelse
+    
+    data_out.Y=DATA_outARR
+    
+    DPRINT,'done'
+    
+    ;RETURN,data_out
 end
-
 
 ;+
 ;pro sub_GEI2GEO
@@ -229,41 +210,32 @@ end
 ;Notes:
 ;
 ;Written by Patrick Cruce(pcruce@igpp.ucla.edu)
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
-
-
 pro sub_GEI2GEO,data_in,data_out,GEO2GEI=GEO2GEI
-
-
-
-
-data_out=data_in
-
-
-;convert the time
-timeS=time_struct(data_in.X)
-
-;get direction
-if keyword_set(GEO2GEI) then begin
-	dprint,'GEO-->GEI'
-  subGEO2GEI,TIMES,data_in.Y,DATA_outARR
-endif else begin
-	dprint,'GEI-->GEO'
-  subGEI2GEO,TIMES,data_in.Y,DATA_outARR
-endelse
-
-data_out.Y=DATA_outARR
-
-dprint,'done'
-
-;RETURN,data_out
+    data_out=data_in
+    
+    ;convert the time
+    timeS=time_struct(data_in.X)
+    
+    ;get direction
+    if keyword_set(GEO2GEI) then begin
+    	dprint,'GEO-->GEI'
+        subGEO2GEI,TIMES,data_in.Y,DATA_outARR
+    endif else begin
+    	dprint,'GEI-->GEO'
+        subGEI2GEO,TIMES,data_in.Y,DATA_outARR
+    endelse
+    
+    data_out.Y=DATA_outARR
+    
+    dprint,'done'
+    
+    ;RETURN,data_out
 end
-
-
 
 ;+
 ;pro sub_GEO2MAG
@@ -282,49 +254,39 @@ end
 ;Notes:
 ;
 ;Written by Cindy Russell(clrussell@igpp.ucla.edu)
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
-
-
 pro sub_GEO2MAG,data_in,data_out,MAG2GEO=MAG2GEO
-
-data_out=data_in
-
-;convert the time
-timeS=time_struct(data_in.X)
-
-;get direction
-if keyword_set(MAG2GEO) then begin
-  dprint,'MAG-->GEO'
-  subMAG2GEO,TIMES,data_in.Y,DATA_outARR
-endif else begin
-  dprint,'GEO-->MAG'
-  subGEO2MAG,TIMES,data_in.Y,DATA_outARR
-endelse
-
-data_out.Y=DATA_outARR
-
-dprint,'done'
-
-;RETURN,data_out
+    data_out=data_in
+    
+    ;convert the time
+    timeS=time_struct(data_in.X)
+    
+    ;get direction
+    if keyword_set(MAG2GEO) then begin
+      dprint,'MAG-->GEO'
+      subMAG2GEO,TIMES,data_in.Y,DATA_outARR
+    endif else begin
+      dprint,'GEO-->MAG'
+      subGEO2MAG,TIMES,data_in.Y,DATA_outARR
+    endelse
+    
+    data_out.Y=DATA_outARR
+    
+    dprint,'done'
+    
+    ;RETURN,data_out
 end
 
-
 ;#################################################
-
-
-
-
-
 ;#################################################
 ;#################################################
 ;################## sub functions ################
 ;#################################################
 ;#################################################
-
 
 ;+
 ;proceddure: subGEI2GSE
@@ -341,37 +303,31 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-
-
 pro subGEI2GSE,TIMES,DATA_in,DATA_out
-
-
-
-; get array sizes
-count=SIZE(DATA_in[*,0],/N_ELEMENTS)
-DPRINT,'number of records: ' + string(count)
-
-DATA_out=dblarr(count,3)
-
-tgeigse_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgse,ygse,zgse
-
-;for i=0L,count-1L do begin
-		;ctimpar,iyear,imonth,iday,ih,im,is
-		;This has to be changed to be faster!!!!!!!!!!!!!!!
-;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
-;		tgeigse,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgse,ygse,zgse
-		DATA_out[*,0]=xgse
-		DATA_out[*,1]=ygse
-		DATA_out[*,2]=zgse
-;endfor
-
-
-;return,DATA_out
+    ; get array sizes
+    count=SIZE(DATA_in[*,0],/N_ELEMENTS)
+    DPRINT,'number of records: ' + string(count)
+    
+    DATA_out=dblarr(count,3)
+    
+    tgeigse_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgse,ygse,zgse
+    
+    ;for i=0L,count-1L do begin
+    		;ctimpar,iyear,imonth,iday,ih,im,is
+    		;This has to be changed to be faster!!!!!!!!!!!!!!!
+    ;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
+    ;		tgeigse,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgse,ygse,zgse
+    DATA_out[*,0]=xgse
+    DATA_out[*,1]=ygse
+    DATA_out[*,2]=zgse
+    ;endfor
+    
+    ;return,DATA_out
 end
 
 ;#################################################
@@ -391,42 +347,32 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-
 pro subGSE2GEI,TIMES,DATA_in,DATA_out
-
-
-
-; get array sizes
-count=SIZE(DATA_in[*,0],/N_ELEMENTS)
-DPRINT,'number of records: ' + string(count)
-
-DATA_out=dblarr(count,3)
-
-
-tgsegei_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgei,ygei,zgei
-
-;for i=0L,count-1L do begin
-;		;ctimpar,iyear,imonth,iday,ih,im,is
-;		;This has to be changed to be faster!!!!!!!!!!!!!!!
-;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
-;		tgsegei,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgei,ygei,zgei
-		DATA_out[*,0]=xgei
-		DATA_out[*,1]=ygei
-		DATA_out[*,2]=zgei
-;endfor
-
-
-;return,DATA_out
+    ; get array sizes
+    count=SIZE(DATA_in[*,0],/N_ELEMENTS)
+    DPRINT,'number of records: ' + string(count)
+    
+    DATA_out=dblarr(count,3)
+    
+    tgsegei_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgei,ygei,zgei
+    
+    ;for i=0L,count-1L do begin
+    ;		;ctimpar,iyear,imonth,iday,ih,im,is
+    ;		;This has to be changed to be faster!!!!!!!!!!!!!!!
+    ;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
+    ;		tgsegei,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgei,ygei,zgei
+	DATA_out[*,0]=xgei
+	DATA_out[*,1]=ygei
+	DATA_out[*,2]=zgei
+    ;endfor
+    
+    ;return,DATA_out
 end
-
-
-
-
 
 ;#################################################
 
@@ -445,38 +391,32 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-
 pro subGSE2GSM,TIMES,DATA_in,DATA_out
-
-
-
-; get array sizes
-count=SIZE(DATA_in[*,0],/N_ELEMENTS)
-DPRINT,'number of records: '+string(count)
-
-DATA_out=dblarr(count,3)
-
-tgsegsm_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgsm,ygsm,zgsm
-
-;for i=0L,count-1L do begin
-;		;ctimpar,iyear,imonth,iday,ih,im,is
-;		;This has to be changed to be faster!!!!!!!!!!!!!!!
-;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
-;		tgsegsm,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgsm,ygsm,zgsm
-		DATA_out[*,0]=xgsm
-		DATA_out[*,1]=ygsm
-		DATA_out[*,2]=zgsm
-;endfor
-
-
-;return,DATA_out
+    ; get array sizes
+    count=SIZE(DATA_in[*,0],/N_ELEMENTS)
+    DPRINT,'number of records: '+string(count)
+    
+    DATA_out=dblarr(count,3)
+    
+    tgsegsm_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgsm,ygsm,zgsm
+    
+    ;for i=0L,count-1L do begin
+    ;		;ctimpar,iyear,imonth,iday,ih,im,is
+    ;		;This has to be changed to be faster!!!!!!!!!!!!!!!
+    ;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
+    ;		tgsegsm,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgsm,ygsm,zgsm
+    DATA_out[*,0]=xgsm
+    DATA_out[*,1]=ygsm
+    DATA_out[*,2]=zgsm
+    ;endfor
+    
+    ;return,DATA_out
 end
-
 
 ;#################################################
 
@@ -495,39 +435,31 @@ end
 ;
 ;Notes: under construction!!  will run faster in the near future!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-
 pro subGSM2GSE,TIMES,DATA_in,DATA_out
-
-
-
-; get array sizes
-count=SIZE(DATA_in[*,0],/N_ELEMENTS)
-DPRINT,'number of records: ' + string(count)
-
-DATA_out=dblarr(count,3)
-
-tgsmgse_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgse,ygse,zgse
-
-;for i=0L,count-1L do begin
-;		;ctimpar,iyear,imonth,iday,ih,im,is
-;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
-;		tgsmgse,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgse,ygse,zgse
-		DATA_out[*,0]=xgse
-		DATA_out[*,1]=ygse
-		DATA_out[*,2]=zgse
-;endfor
-
-
-;return,DATA_out
+    ; get array sizes
+    count=SIZE(DATA_in[*,0],/N_ELEMENTS)
+    DPRINT,'number of records: ' + string(count)
+    
+    DATA_out=dblarr(count,3)
+    
+    tgsmgse_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgse,ygse,zgse
+    
+    ;for i=0L,count-1L do begin
+    ;		;ctimpar,iyear,imonth,iday,ih,im,is
+    ;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
+    ;		tgsmgse,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgse,ygse,zgse
+    DATA_out[*,0]=xgse
+    DATA_out[*,1]=ygse
+    DATA_out[*,2]=zgse
+    ;endfor
+    
+    ;return,DATA_out
 end
-
-
-
 
 ;#################################################
 
@@ -546,39 +478,31 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-
 pro subGSM2SM,TIMES,DATA_in,DATA_out
-
-
-
-; get array sizes
-count=SIZE(DATA_in[*,0],/N_ELEMENTS)
-DPRINT,'number of records: ' + string(count)
-
-DATA_out=dblarr(count,3)
-
-tgsmsm_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xsm,ysm,zsm
-
-;for i=0L,count-1L do begin
-;		;ctimpar,iyear,imonth,iday,ih,im,is
-;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
-;		tgsmgse,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgse,ygse,zgse
-		DATA_out[*,0]=xsm
-		DATA_out[*,1]=ysm
-		DATA_out[*,2]=zsm
-;endfor
-
-
-;return,DATA_out
+    ; get array sizes
+    count=SIZE(DATA_in[*,0],/N_ELEMENTS)
+    DPRINT,'number of records: ' + string(count)
+    
+    DATA_out=dblarr(count,3)
+    
+    tgsmsm_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xsm,ysm,zsm
+    
+    ;for i=0L,count-1L do begin
+    ;		;ctimpar,iyear,imonth,iday,ih,im,is
+    ;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
+    ;		tgsmgse,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgse,ygse,zgse
+    DATA_out[*,0]=xsm
+    DATA_out[*,1]=ysm
+    DATA_out[*,2]=zsm
+    ;endfor
+    
+    ;return,DATA_out
 end
-
-
-
 
 ;#################################################
 
@@ -597,38 +521,32 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-
 pro subSM2GSM,TIMES,DATA_in,DATA_out
-
-
-
-; get array sizes
-count=SIZE(DATA_in[*,0],/N_ELEMENTS)
-DPRINT,'number of records: '+string(count)
-
-DATA_out=dblarr(count,3)
-
-tsmgsm_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgsm,ygsm,zgsm
-
-;for i=0L,count-1L do begin
-;		;ctimpar,iyear,imonth,iday,ih,im,is
-;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
-;		tgsmgse,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgse,ygse,zgse
-		DATA_out[*,0]=xgsm
-		DATA_out[*,1]=ygsm
-		DATA_out[*,2]=zgsm
-;endfor
-
-
-;return,DATA_out
+    ; get array sizes
+    count=SIZE(DATA_in[*,0],/N_ELEMENTS)
+    DPRINT,'number of records: '+string(count)
+    
+    DATA_out=dblarr(count,3)
+    
+    tsmgsm_vect,TIMES[*].year,TIMES[*].doy,TIMES[*].hour,TIMES[*].min,double(TIMES[*].sec)+TIMES[*].fsec,DATA_in[*,0],DATA_in[*,1],DATA_in[*,2],xgsm,ygsm,zgsm
+    
+    ;for i=0L,count-1L do begin
+    ;		;ctimpar,iyear,imonth,iday,ih,im,is
+    ;		ctimpar,TIMES[i].year,TIMES[i].month,TIMES[i].date,TIMES[i].hour,TIMES[i].min,double(TIMES[i].sec)+TIMES[i].fsec
+    ;		tgsmgse,DATA_in[i,0],DATA_in[i,1],DATA_in[i,2],xgse,ygse,zgse
+    DATA_out[*,0]=xgsm
+    DATA_out[*,1]=ygsm
+    DATA_out[*,2]=zgsm
+    ;endfor
+    
+    ;return,DATA_out
 end
 
- 
 ;#################################################
 
 ;+
@@ -646,30 +564,23 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
 pro subGEI2GEO,TIMES,DATA_in,DATA_out
-
-
       csundir_vect,TIMES.year,TIMES.doy,TIMES.hour,TIMES.min,TIMES.sec,gst,slong,srasn,sdecl,obliq
 
       sgst=sin(gst)
       cgst=cos(gst)				
 
       x_out = cgst*DATA_IN[*,0] + sgst*DATA_IN[*,1]
-
       y_out = -sgst*DATA_IN[*,0] + cgst*DATA_IN[*,1]
-
       z_out = DATA_IN[*,2]
 
       DATA_out = [[x_out],[y_out],[z_out]]
-
-
 end
-
 
 ;#################################################
 
@@ -688,29 +599,23 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
 pro subGEO2GEI,TIMES,DATA_in,DATA_out
-
   csundir_vect,TIMES.year,TIMES.doy,TIMES.hour,TIMES.min,TIMES.sec,gst,slong,srasn,sdecl,obliq
 
       sgst=sin(gst)
       cgst=cos(gst)				
 
       x_out = cgst*DATA_IN[*,0] - sgst*DATA_IN[*,1]
-
       y_out = sgst*DATA_IN[*,0] + cgst*DATA_IN[*,1]
-
       z_out = DATA_IN[*,2]
 
       DATA_out = [[x_out],[y_out],[z_out]]
-
-
 end
-
 
 ;#################################################
 
@@ -729,19 +634,15 @@ end
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
 pro subGEO2MAG,TIMES,DATA_in,DATA_out
-
-geo2mag, DATA_in, DATA_out, TIMES
-               
+    geo2mag, DATA_in, DATA_out, TIMES
 END
 ;===============================================================================
-
-
 
 ;#################################################
 
@@ -760,19 +661,15 @@ END
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
 pro subMAG2GEO,TIMES,DATA_in,DATA_out
-
    mag2geo, DATA_in, DATA_out, TIMES
-
 END
 ;================================================================================
-
-
 
 ;#################################################
 
@@ -796,9 +693,9 @@ END
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
 pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
@@ -842,7 +739,6 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
       pisd= pi/180.
 
 ; *** Julian day and greenwich mean sideral time
-
       fday=double(ih*3600.+im*60.+is)/86400.d
       jj=365L*long(iyear-1900)+fix((iyear-1901)/4)+idoy
       dj=double(jj) -0.5d + fday
@@ -850,14 +746,12 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
          mod 360d )*pisd
 
 ; *** longitude along ecliptic
-
       vl= float( (279.696678d +0.9856473354d*dj) mod 360d )
       t=float(dj/36525d)
       g=float( (358.475845d +0.985600267d*dj) mod  360d )*pisd
       slong=(vl+(1.91946 -0.004789*t)*sin(g) +0.020094*sin(2.*g))*pisd
 
 ; *** inclination of Earth's axis
-
       obliq=(23.45229 -0.0130125*t)*pisd
       sob=sin(obliq)
       cob=cos(obliq)
@@ -871,11 +765,9 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ; calculate this number yourself. The original number (Mead and mine) are 
 ; correct."
 ; JWL 2014-11-05
-
       pre= (0.005686 - 0.025e-4*t)*pisd
 
 ; *** declination of the sun
-
       slp=slong -pre
       sind=sob*sin(slp)
       cosd=sqrt(1. -sind^2 )
@@ -883,15 +775,11 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
       sdec=atan(sc)
 
 ; *** right ascension of the sun
-
 ;     sra=pi -atan2((cob/sob)*sc, -cos(slp)/cosd)
       sra=pi -atan ((cob/sob)*sc, -cos(slp)/cosd)
 
       return
-      end
-
-
-
+end
 
 ;+
 ;procedure: tgeigse_vect
@@ -904,12 +792,12 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-      pro tgeigse_vect,iyear,idoy,ih,im,is,xgei,ygei,zgei,xgse,ygse,zgse
+pro tgeigse_vect,iyear,idoy,ih,im,is,xgei,ygei,zgei,xgse,ygse,zgse
 
 ;----------------------------------------------------------------------
 ; *   Class  : transform modules of Rocotlib Software
@@ -942,10 +830,9 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
       zgse=   ge1*xgei +   ge2*ygei +   ge3*zgei
 
       return
-      end
+end
 
 ;     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
 
 ;+
 ;procedure: tgsegei_vect
@@ -958,12 +845,12 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-      pro tgsegei_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgei,ygei,zgei
+pro tgsegei_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgei,ygei,zgei
 
 ;----------------------------------------------------------------------
 ; *   Class  : transform modules of Rocotlib Software
@@ -996,11 +883,9 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
       zgei= gs3*xgse + gegs3*ygse + ge3*zgse
 
       return
-      end
+end
 
 ;     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-
 
 ;+
 ;procedure: tgsegsm_vect
@@ -1013,21 +898,15 @@ pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-
 pro tgsegsm_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgsm,ygsm,zgsm
-
-
-
 	  cdipdir_vect,iyear,idoy,gd1,gd2,gd3
 
       ; ok from here on
-
-
       csundir_vect,iyear,idoy,ih,im,is,gst,slong,srasn,sdecl,obliq
 
       gs1=cos(srasn)*cos(sdecl)  ;tttttt
@@ -1045,14 +924,11 @@ pro tgsegsm_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgsm,ygsm,zgsm
       ge2= -sin(obliq)           ;*
       ge3=  cos(obliq)           ;*
 
-
-
 ; *** dipole direction in GEI system
 
       gm1= gd1*cgst - gd2*sgst   ;* gd1 ->from internal field
       gm2= gd1*sgst + gd2*cgst   ;* gd2 ->from internal field
       gm3= gd3                   ;* gd3 ->from internal field
-
 
 	  ; *** cross product MxS in GEI system
 
@@ -1071,16 +947,10 @@ pro tgsegsm_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgsm,ygsm,zgsm
 ;         stop
 ;      endif
 
-
 	  xgsm= xgse
       ygsm=  cdze*ygse + sdze*zgse
       zgsm= -sdze*ygse + cdze*zgse
-
-
 END
-
-
-
 
 ;+
 ;procedure: tgsmgse_vect
@@ -1093,19 +963,15 @@ END
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
 pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
-
-
-
 	  cdipdir_vect,iyear,idoy,gd1,gd2,gd3
 
       ; ok from here on
-
       csundir_vect,iyear,idoy,ih,im,is,gst,slong,srasn,sdecl,obliq
 
       gs1=cos(srasn)*cos(sdecl)  ;tttttt
@@ -1113,27 +979,21 @@ pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
       gs3=sin(sdecl)             ;tttttt
 
 ; *** sin and cos of GMST
-
       sgst=sin(gst)				;*
       cgst=cos(gst)				;*
 
 ; *** ecliptic pole in GEI system
-
       ge1=  0.                   ;*
       ge2= -sin(obliq)           ;*
       ge3=  cos(obliq)           ;*
 
-
-
 ; *** dipole direction in GEI system
-
       gm1= gd1*cgst - gd2*sgst   ;* gd1 ->from internal field
       gm2= gd1*sgst + gd2*cgst   ;* gd2 ->from internal field
       gm3= gd3                   ;* gd3 ->from internal field
 
 
 	  ; *** cross product MxS in GEI system
-
       gmgs1= gm2*gs3 - gm3*gs2    ;*
       gmgs2= gm3*gs1 - gm1*gs3    ;*
       gmgs3= gm1*gs2 - gm2*gs1    ;*
@@ -1149,16 +1009,10 @@ pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
 ;         stop
 ;      endif
 
-
       xgse= xgsm
       ygse= cdze*ygsm - sdze*zgsm
       zgse= sdze*ygsm + cdze*zgsm
-
-
-      END
-
-
-
+END
 
 ;+
 ;procedure: tgsmsm_vect
@@ -1171,15 +1025,12 @@ pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
 pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
-
-
-
 	  cdipdir_vect,iyear,idoy,gd1,gd2,gd3
 
       ; ok from here on
@@ -1191,18 +1042,15 @@ pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
       gs3=sin(sdecl)             ;tttttt
 
 ; *** sin and cos of GMST
-
       sgst=sin(gst)
       cgst=cos(gst)
 
 ; *** direction of the sun in GEO system
-
       ps1=  gs1*cgst + gs2*sgst
       ps2= -gs1*sgst + gs2*cgst
       ps3=  gs3
 
 ; *** computation of mu angle
-
       smu= ps1*gd1 + ps2*gd2 + ps3*gd3
       cmu= sqrt(1.-smu*smu)
 
@@ -1212,13 +1060,8 @@ pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
       ysm= ygsm
       zsm= smu*xgsm + cmu*zgsm
 
-
-      END
-
-
-
-
-
+END
+      
 ;+
 ;procedure: tsmgsm_vect
 ;
@@ -1230,15 +1073,12 @@ pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
 pro tsmgsm_vect,iyear,idoy,ih,im,is,xsm,ysm,zsm,xgsm,ygsm,zgsm
-
-
-
 	  cdipdir_vect,iyear,idoy,gd1,gd2,gd3
 
       ; ok from here on
@@ -1250,34 +1090,23 @@ pro tsmgsm_vect,iyear,idoy,ih,im,is,xsm,ysm,zsm,xgsm,ygsm,zgsm
       gs3=sin(sdecl)             ;tttttt
 
 ; *** sin and cos of GMST
-
       sgst=sin(gst)
       cgst=cos(gst)
 
 ; *** direction of the sun in GEO system
-
       ps1=  gs1*cgst + gs2*sgst
       ps2= -gs1*sgst + gs2*cgst
       ps3=  gs3
 
 ; *** computation of mu angle
-
       smu= ps1*gd1 + ps2*gd2 + ps3*gd3
       cmu= sqrt(1.-smu*smu)
-
 
 ; do the transformation
 	  xgsm=  cmu*xsm + smu*zsm
       ygsm=  ysm
       zgsm= -smu*xsm + cmu*zsm
-
-
-      END
-
-
-
-
-
+END
 
 ;+
 ;procedure: cdipdir_vect
@@ -1288,17 +1117,15 @@ pro tsmgsm_vect,iyear,idoy,ih,im,is,xsm,ysm,zsm,xgsm,ygsm,zgsm
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ;
 ; faster algorithm (for loop across all points avoided) Hannes 05/25/2007
 ;
 ; $URL $
 ;-
 PRO cdipdir_vect,iyear,idoy,gd1,gd2,gd3
-
-
 		n=n_elements(iyear)
 
 		IF (n eq 1) THEN BEGIN
@@ -1372,8 +1199,7 @@ PRO cdipdir_vect,iyear,idoy,gd1,gd2,gd3
 ;		MESSAGE,/CONTINUE,'Time compare: Old:'
 ;		MESSAGE,/CONTINUE,t4-t3
 ;
-	  END
-
+END
 
 ;+
 ;procedure: cdipdir
@@ -1384,12 +1210,12 @@ PRO cdipdir_vect,iyear,idoy,gd1,gd2,gd3
 ;
 ;Notes: under construction!!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-05 14:26:45 -0800 (Wed, 05 Nov 2014) $
-; $LastChangedRevision: 16140 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-03-20 10:55:37 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17155 $
 ; $URL $
 ;-
-      pro cdipdir,iyear,idoy,d1,d2,d3
+pro cdipdir,iyear,idoy,d1,d2,d3
 ;----------------------------------------------------------------------
 ;
 ; *   Class  : basic compute modules of Rocotlib Software
@@ -1907,11 +1733,9 @@ G300: s=1.
       d3=ct0
 
       return
-      end
+end
 
 ;     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-
 
 pro cotrans_lib
 ; does nothing.

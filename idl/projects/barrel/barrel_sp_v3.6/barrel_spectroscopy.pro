@@ -1,3 +1,8 @@
+;2/10/15 DMS - change the way altitude is picked (now done in barrel_sp_pick_datatime()
+;            - also how lat/lon are picked for bkg model (now in
+;              chosen time interval ("source") rather than midpoint of
+;              returned interval of all data.
+
 pro barrel_spectroscopy,$
    specstruct,$                              ;output structure
    date,hours,payload, $                     ;define data interval
@@ -37,40 +42,7 @@ if not keyword_set(method) then method=1
 if not keyword_set(model) then model=1
 if not keyword_set(maxcycles) then maxcycles=30
 if not keyword_set(residuals) then residuals=1
-if not keyword_set(altitude) then begin
-   ;Dig out altitude at center of time interval from GPS data, 
-   ;for DRM and bkg modeling
-   timespan,date,hours,/hour
-   barrel_load_data,probe=payload,datatype=['GPS'],level=level,/no_clobber,version=version
-   varname='brl'+payload+'_GPS_Alt'
-   tplot_names,varname,NAMES=matches,/ASORT
-   if (n_elements(matches) EQ 1) then get_data, matches[0], data=gpsalt $
-        else message, 'Bad number of variable name matches (GPS_Alt): '+ $
-        strtrim(n_elements(matches))
-   altitude=gpsalt.y[n_elements(gpsalt.y)/2]
-endif
-if (not keyword_set(maglat)) and (bkgmethod eq 2) then begin
-   ;Dig out lat/lon at center of time interval from GPS data for bkg modeling:
 
-   timespan,date,hours,/hour
-   barrel_load_data,probe=payload,datatype=['GPS'],level=level,/no_clobber,version=version
-
-   varname='brl'+payload+'_GPS_Lat'
-   tplot_names,varname,NAMES=matches,/ASORT
-   if (n_elements(matches) EQ 1) then get_data, matches[0], data=gpslat $
-        else message, 'Bad number of variable name matches (GPS_LAT): '+ $
-        strtrim(n_elements(matches))
-   geolat=gpslat.y[n_elements(gpslat.y)/2]
-
-   varname='brl'+payload+'_GPS_Lon'
-   tplot_names,varname,NAMES=matches,/ASORT
-   if (n_elements(matches) EQ 1) then get_data, matches[0], data=gpslon $
-        else message, 'Bad number of variable name matches (GPS_LON): '+ $
-        strtrim(n_elements(matches))
-   geolon=gpslon.y[n_elements(gpslon.y)/2]
-
-   maglat = abs((geo2mag([geolat,geolon]))[0])
-endif
 if (keyword_set(starttimes) ne keyword_set(endtimes)) then message,$
    'starttimes and endtimes must be set together'
 if (keyword_set(startbkgs) ne keyword_set(endbkgs)) then message,$
@@ -84,10 +56,51 @@ if (keyword_set(startbkgs) ne keyword_set(endbkgs)) then message,$
 ;Make the structure:
 specstruct=barrel_sp_make(numsrc=numsrc,numbkg=numbkg,slow=slow)
 
-;Pick data times graphically:
+;Pick data times graphically (or if not, collect the altitude):
 barrel_sp_pick_datatime,specstruct,date,hours,payload,bkgmethod,version=version,$
    lcband=lcband,starttimes=starttimes,endtimes=endtimes,startbkgs=startbkgs,$
-   endbkgs=endbkgs,mticks=mticks,sticks=sticks
+   endbkgs=endbkgs,mticks=mticks,sticks=sticks,altitude=altitude
+
+
+if (not keyword_set(maglat)) and (bkgmethod eq 2) then begin
+   ;Dig out lat/lon at center of time interval from GPS data for bkg modeling:
+
+   timespan,date,hours,/hour
+   barrel_load_data,probe=payload,datatype=['GPS'],level=level,/no_clobber,version=version
+
+   latsum=0.d
+   latnorm=0.d
+   varname='brl'+payload+'_GPS_Lat'
+   tplot_names,varname,NAMES=matches,/ASORT
+   if (n_elements(matches) EQ 1) then get_data, matches[0], data=gpslat $
+        else message, 'Bad number of variable name matches (GPS_LAT): '+ $
+        strtrim(n_elements(matches))
+   for ns=0,specstruct.numsrc-1 do begin
+      w=where(gpslat.x ge specstruct.trange[0,ns] and gpslat.x le specstruct.trange[1,ns],nw)
+      latsum += total(gpslat.y[w])
+      latnorm += 1.d * nw
+   end
+   geolat = latsum/latnorm
+
+   lonsum=0.d
+   lonnorm=0.d
+   varname='brl'+payload+'_GPS_Lon'
+   tplot_names,varname,NAMES=matches,/ASORT
+   if (n_elements(matches) EQ 1) then get_data, matches[0], data=gpslon $
+        else message, 'Bad number of variable name matches (GPS_LON): '+ $
+        strtrim(n_elements(matches))
+   for ns=0,specstruct.numsrc-1 do begin
+      w=where(gpslon.x ge specstruct.trange[0,ns] and gpslon.x le specstruct.trange[1,ns],nw)
+      lonsum += total(gpslon.y[w])
+      lonnorm += 1.d * nw
+   end
+   geolon = lonsum/lonnorm
+
+   maglat = abs((geo2mag([geolat,geolon]))[0])
+
+endif
+
+
 
 ;Collect spectra:
 barrel_sp_collect_spectra,specstruct,level=level,version=version,$

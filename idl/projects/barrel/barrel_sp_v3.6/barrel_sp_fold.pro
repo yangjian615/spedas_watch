@@ -74,7 +74,7 @@
 ;                           energies from over-dominating the fit, and
 ;                           represents, e.g., systematic uncertainties
 ;                           in the response matrix.
-;
+;          3.6 2/12/15      pass altitude to _m1 for initial param. guess
 ;-
 
 
@@ -161,7 +161,7 @@ endif
 ;Do the actual fitting according to the chosen method:
 case method of
 1: barrel_sp_fold_m1, subspec, subspecerr, model, ss.drm, ss.elebins, elmean, elwidth, ctwidth, ctmean, usebins, maxcycles, $
-         params, param_ranges, elecmodel, modvals, chisquare, dof, quiet=quiet, verbose=verbose
+         params, param_ranges, elecmodel, modvals, chisquare, dof, ss.altitude, quiet=quiet, verbose=verbose
 2: barrel_sp_fold_m2, subspec, subspecerr, modlfile, ss.drm, ss.elebins, elmean, elwidth, ctwidth, usebins, maxcycles, $
          params, param_ranges, elecmodel, modvals, chisquare, dof, quiet=quiet, verbose=verbose
 3: barrel_sp_fold_m3, subspec, subspecerr, modlfile, secondmodlfile, ss.drm, ss.elebins, elmean, elwidth, ctwidth, usebins, maxcycles,  $

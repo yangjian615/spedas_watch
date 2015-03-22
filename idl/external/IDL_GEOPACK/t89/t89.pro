@@ -41,35 +41,40 @@
 ;                   N is the number of time elements for the data.  M is the number of periods in the time interval.(determined by the period keyword)
 ;                   If an N length array is provided, the data will be re-sampled to an M length array. Consequently, if
 ;                   the values change quickly, the period may need to be shortened. 
-;                   set_tilt will cause add_tilt to be ignored. 
+;                   Notes:
+;                       1) set_tilt will cause add_tilt to be ignored
+;                       2) Due to this routine adding IGRF to the returned field, you cannot use set_tilt = 0 and give input 
+;                           position values in SM coordinates; input position values are required to be in GSM coordinates due to the
+;                           IGRF calculation
 ;                   
 ;         get_nperiod: Returns the number of periods used for the time interval=  ceil((end_time-start_time)/period)
 ;
 ;         geopack_2008 (optional): Set this keyword to use the latest version (2008) of the Geopack
 ;              library. Version 9.2 of the IDL Geopack DLM is required for this keyword to work. 
 ;
-;Returns: an Nx3 length array or -1L on failure
+;Returns: 
+;    an Nx3 length array of field model data (T89 + IGRF) or -1L on failure
 ;
 ;Example:
 ;   mag_array = t89(time_array,pos_array)
 ;   mag_array = t89(time_array,pos_array,kp=5,rlength=10)
+;   
 ;Notes:
 ;  1. Relies on the IDL/Geopack Module provided by Haje Korth JHU/APL
-;  and N.A. Tsyganenko NASA/GSFC, if the module is not installed
-;  this function will fail.  
-;  2. Sums the contribution from the internal field model and the
-;  external field model.
-;  3. Has a loop with number of iterations =
-;  (tarray[n_elements(t_array)]-tarray[0])/period
-;  This means that as period becomes smaller the amount time of this
-;  function should take will grow quickly.
+;      and N.A. Tsyganenko NASA/GSFC, if the module is not installed
+;      this function will fail.  
+;  2. Sums the contribution from the internal field model (IGRF) and the
+;      external field model (t89).
+;  3. Has a loop with number of iterations = (tarray[n_elements(t_array)]-tarray[0])/period
+;      This means that as period becomes smaller the amount time of this
+;      function should take will grow quickly.
 ;  4. Position units are earth radii, be sure to divide your normal
-;  units by 6371.2 km to convert them.
-;  6371.2 = the value used in the GEOPACK FORTRAN code for Re
+;      units by 6371.2 km to convert them.
+;      6371.2 = the value used in the GEOPACK FORTRAN code for Re
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-03-18 08:30:33 -0700 (Wed, 18 Mar 2015) $
-; $LastChangedRevision: 17146 $
+; $LastChangedDate: 2015-03-20 12:48:33 -0700 (Fri, 20 Mar 2015) $
+; $LastChangedRevision: 17157 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t89/t89.pro $
 ;-
 

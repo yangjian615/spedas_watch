@@ -23,7 +23,7 @@ if keyword_set(show) then  loadct,13
 altstr=strtrim(floor(altitude),2)
 
 ; 27 electron energy input curve fitting parms a[0-5]
-filename=barrel_find_file(pitch+'_sphere_'+altstr+'k_fit_parms','barrel_sp_v3.5')
+filename=barrel_find_file(pitch+'_sphere_'+altstr+'k_fit_parms','barrel_sp_v3.6')
 n1=datin(filename,8,d)
 es=reform(d[0,*])
 if (ein lt es[0])||(ein gt 4000.) then begin
