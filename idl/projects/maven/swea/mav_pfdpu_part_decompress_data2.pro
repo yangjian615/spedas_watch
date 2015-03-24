@@ -12,9 +12,9 @@
 ;
 ;KEYWORDS:
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-03-19 09:11:54 -0700 (Thu, 19 Mar 2015) $
-; $LastChangedRevision: 17147 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-03-22 14:24:35 -0700 (Sun, 22 Mar 2015) $
+; $LastChangedRevision: 17163 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mav_pfdpu_part_decompress_data2.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -202,7 +202,7 @@ function mav_pfdpu_part_decompress_data2, bfr
 
   cmpbyte = bfr[12]
   if (cmpbyte and 128) eq 0 then return,bfr   ; pkt not actually compressed return raw data.
-  pktbits = 8*(bfr(4)*256+bfr(5) + 7)
+  pktbits = 8*(bfr[4]*256+bfr[5] + 7)
   pktbits = pktbits - 32
   
   decomp_bfr = bytarr(4096)   ; max possible size uncompressed
