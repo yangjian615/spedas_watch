@@ -19,10 +19,14 @@
 ;
 ;KEYWORDS:
 ;   SILENT:    Minimize to show the processing information in the terminal.
-;   MASK:      Mask the expected angular bins whose field of view is
-;              blocked by the spacecraft body and solar
+;
+;   MASK:      Mask the expected angular bins whose field of view (FOV)
+;              is blocked by the spacecraft body and solar
 ;              paddles. Automatically identifying the mission phases
-;              (cruise or science mapping).
+;              (cruise or science mapping). Default = 1. 
+;
+;   NO_MASK:   If set, not masking the expected angular bins whose FOV is blocked.
+;              This keyword is identical to mask = 0.
 ;
 ;   STOW:      (Obsolete). Mask the angular bins whose field of view
 ;              is blocked before the boom deploy. 
@@ -113,12 +117,11 @@
 ;              1+2, or 3. This basic idea is same as that
 ;              [x][y][z]style keyword included in default PLOT options.
 ;
-;CREATED BY: 
-;	Takuya Hara
+;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:53:11 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16882 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2015-03-24 00:35:49 -0700 (Tue, 24 Mar 2015) $
+; $LastChangedRevision: 17170 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -332,20 +335,21 @@ FUNCTION mvn_swe_pad_resample_cscale, data, mincol=mincol, maxcol=maxcol, mindat
   RETURN, (dat - mindat) * colrange/FLOAT(datrange) + mincol
 END 
 ; Main routine
-PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
+PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
                           nbins=nbins, abins=abins, dbins=dbins, archive=archive, $
-                          pans=pans, window=wi, result=result, $
+                          pans=pans, window=wi, result=result, no_mask=no_mask, $
                           units=units, erange=erange, normal=normal, _extra=extra, $
                           snap=plot, tplot=tplot, map3d=map3d, swia=swia, $
                           mbins=mbins, sc_pot=sc_pot, symdir=symdir, interpolate=interpolate, $
-                          cut=cut, spec=spec, pstyle=pstyle
+                          cut=cut, spec=spec, pstyle=pstyle, silent=sil, verbose=vb
   COMPILE_OPT idl2
   @mvn_swe_com
   nan = !values.f_nan 
-  ;; fifb = fifteenb()
+
   fifb = string("15b) ;"
-  
-  if (size(silent,/type) eq 0) then silent = 0
+  IF keyword_set(sil) THEN silent = sil ELSE silent = 0
+  IF keyword_set(vb) THEN verbose = vb ELSE verbose = 0
+  verbose -= silent
 
   IF SIZE(mvn_swe_engy, /type) NE 8 THEN BEGIN
      print, ptrace()
@@ -439,11 +443,13 @@ PRO mvn_swe_pad_resample, var, silent=silent, mask=mask, stow=stow, ddd=ddd, pad
 
      IF SIZE(tplot, /type) EQ 0 THEN tplot = 1
   ENDELSE 
-  IF keyword_set(swia) THEN mk = mvn_spice_kernels(/load, /all, trange=trange, verbose=silent)
+  IF keyword_set(swia) THEN mk = mvn_spice_kernels(/load, /all, trange=trange, verbose=verbose)
   IF NOT keyword_set(units) THEN units = 'eflux'
   IF NOT keyword_set(nbins) THEN nbins = 128.
   IF NOT keyword_set(wi) THEN wnum = 0 ELSE wnum = wi
   IF NOT keyword_set(erange) AND keyword_set(tplot) THEN erange = 280.
+  IF (SIZE(mask, /type) EQ 0) AND (SIZE(no_mask, /type) EQ 0) THEN mask = 1
+  IF keyword_set(no_mask) THEN mask = 0
 
   IF SIZE(pstyle, /type) EQ 0 THEN BEGIN
      pstyle = 0

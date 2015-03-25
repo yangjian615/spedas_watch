@@ -8,7 +8,8 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
 
 
   ; 'mms_soca_fomstr' (latest ABS selection or SITL target)
-  unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, state.PARENT); Whatever tspan is, we retrieve unix_FOMStr to get 'tfom'.
+  ;unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, state.PARENT); Whatever tspan is, we retrieve unix_FOMStr to get 'tfom'.
+  unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF, state.PARENT); Whatever tspan is, we retrieve unix_FOMStr to get 'tfom'.
   tfom = eva_sitl_tfom(unix_FOMstr)
   log.o,'tfom:'+time_string(tfom[0],prec=7)+' - '+time_string(tfom[1],prec=7)
   dgrand = ['mms_soca_fomstr']

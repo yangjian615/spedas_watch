@@ -1,12 +1,21 @@
-Function eva_sitl_load_soca_getfom, CACHE_DATA_DIR, parent
+Function eva_sitl_load_soca_getfom, pref, parent
   compile_opt idl2
   @moka_logger_com
-  
+  ;////////////////////////////////////
+  cache_data_dir = pref.CACHE_DATA_DIR
+  TESTMODE       = pref.TESTMODE
+  ;/////////////////////////////////////
   local_dir = cache_data_dir+'abs_data/'
   
   get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_message
   
-  if error_flag then begin
+  if TESTMODE then begin
+    ; 'dir' produces the directory name with a path separator character that can be OS dependent.
+    local_dir = file_search(ProgramRootDir(/twoup)+'data',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
+    fom_file = local_dir + 'abs_selections_sample.sav'
+  endif
+  
+  if error_flag AND (TESTMODE eq 0) then begin
     msg='FOMStr not found in SDC. Ask Super SITL.'
     log.o,msg
     result=dialog_message(msg,/center)
@@ -20,12 +29,6 @@ Function eva_sitl_load_soca_getfom, CACHE_DATA_DIR, parent
     discussion = strarr(nmax)
     discussion[0:nmax-1] = ' '
     str_element,/add,unix_FOMStr,'discussion',discussion
-    
-    ;//////////////////////////////////////
-;    fom_file = local_dir + 'abs_selections_2014-03-07-22-07-35.sav'
-;    restore, fom_file ; retrieves 'FOMstr'
-;    mms_convert_fom_tai2unix, FOMstr, unix_FOMstr, start_string
-    ;//////////////////////////////////////
     
     ;---- update cw_sitl label ----
     nmax = n_elements(unix_FOMstr.timestamps)

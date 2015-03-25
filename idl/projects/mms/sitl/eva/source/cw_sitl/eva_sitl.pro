@@ -405,9 +405,11 @@ FUNCTION eva_sitl_event, ev
     state.btnSubmit: begin
       log.o,'***** EVENT: btnSubmit *****'
       submit_code = 1
-      if state.PREF.ENABLE_ADVANCED $
-        then eva_sitl_submit_bakstr,ev.top $
-      else eva_sitl_submit_fomstr,ev.top
+      if state.PREF.ENABLE_ADVANCED then begin 
+        eva_sitl_submit_bakstr,ev.top, state.PREF.TESTMODE
+      endif else begin
+        eva_sitl_submit_fomstr,ev.top, state.PREF.TESTMODE
+      endelse
       end
     state.cbMulti:  begin
       log.o,'***** EVENT: cbMulti *****'
@@ -454,7 +456,8 @@ FUNCTION eva_sitl, parent, $
     FOMSkew:  0,  $
     FOMBias:  1, $
     ENABLE_ADVANCED: 0,$
-    USER_FLAG: 0 }
+    USER_FLAG: 0, $
+    TESTMODE: 1 }
   socs  = {$; SOC Auto Simulated
     pmdq: ['a','b','c','d'], $ ; probes to be used for calculating MDQs
     input: 'thm_archive'}    ; input to be used for simulating SOC-Auto

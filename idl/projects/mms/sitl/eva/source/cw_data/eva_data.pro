@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-27 19:17:56 -0800 (Fri, 27 Feb 2015) $
-; $LastChangedRevision: 17057 $
+; $LastChangedDate: 2015-03-23 22:17:13 -0700 (Mon, 23 Mar 2015) $
+; $LastChangedRevision: 17169 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -209,29 +209,24 @@ FUNCTION eva_data_login, state, evTop
   ;---------------------
   r = get_mms_sitl_connection(group_leader=evTop); establish connection with login-widget 
   type = size(r, /type) ;will be 11 if object has been created
-  connected = (type eq 11)  
-  msg = 'Log-in Failed'
+  connected = (type eq 11)
+  user_flag = state.USER_FLAG  
+  FAILED=1
+
   if connected then begin
     
-    ;---------------------
-    ; Identify User Type
-    ;---------------------
-    user_flag  = 3; [0] Guest [1] MMS member [2] SITL [3] Super-SITL [4] FPI
-    user = eva_flag2user(user_flag)
-    
     ;----- Update CW_DATA -----
-    state.pref.USER_FLAG = user_flag
     state.paramID = 0
-    state = eva_data_paramSetList(state,user_flag=user_flag)
-    widget_control, state.lblLogin, SET_VALUE=user
+    state = eva_data_paramSetList(state)
     widget_control, state.sbMMS, SENSITIVE=1
     widget_control, state.drpSet, SET_VALUE=state.paramSetList
-    
     
     ;---------------------
     ; Get Target Time
     ;---------------------
-    unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, evTop)
+
+    ;unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, evTop)
+    unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF, evTop)
     if n_tags(unix_FOMstr) gt 0 then begin
       nmax = n_elements(unix_FOMstr.timestamps)
       start_time = time_string(unix_FOMstr.timestamps[0],precision=3)
@@ -245,7 +240,6 @@ FUNCTION eva_data_login, state, evTop
       sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
       widget_control, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY;******* GET
       widget_control, sitl_state.lblTgtTimeMain, SET_VALUE=lbl
-      sitl_state.PREF.USER_FLAG = user_flag
       widget_control, sitl_state.bsAction0, SENSITIVE=(user_flag ge 2);...... SITL
       widget_control, sitl_state.bsActionSubmit, SENSITIVE=(user_flag ge 2)
       this_hlSet = (user_flag ge 3) ? sitl_state.hlSet2 : sitl_state.hlSet;...Super-SITL
@@ -257,16 +251,31 @@ FUNCTION eva_data_login, state, evTop
       str_element,/add,state,'start_time',start_time
       str_element,/add,state,'end_time',end_time
       eva_data_update_time, state,/update
-      msg = 'Logged in as a '+user+'!'
+      FAILED=0
     endif; if n_tags(unix_FOMstr)
   endif
+;  msg = (FAILED) ? 'Log-in Failed' : 'Logged in as a '+state.userType[user_flag]+'!'
+  if FAILED then begin
+    str_element,/add,state,'user_flag',0
+    widget_control, state.drpUserType, SET_DROPLIST_SELECT=0
+    msg = 'Log-in Failed'
+  endif else begin
+    msg = 'Logged-in!'
+    if(user_flag ge 2)then begin
+      ut = state.userType[user_flag]
+      nl = ssl_newline()
+      msg = 'Logged-in! with '+ut+' features enabled.'+nl+nl+$
+        'If you are not an active member of '+ut+', you can still play'+nl+$
+        'around with the features, but your submission will be rejected'+nl+$
+        'by the SDC.'
+    endif 
+  endelse
   answer = dialog_message(msg,/info,title='MMS LOG-IN',/center)
-
   return, state
 END
 
-FUNCTION eva_data_paramSetList, state, user_flag=user_flag
-  if n_elements(user_flag) eq 0 then user_flag = 0
+FUNCTION eva_data_paramSetList, state
+  user_flag = state.USER_FLAG
   ; 'dir' produces the directory name with a path separator character that can be OS dependent.
   dir = file_search(ProgramRootDir(/twoup)+'parameterSets',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
   paramFileList_tmp = file_search(dir,'*',/FULLY_QUALIFY_PATH,count=cmax); full path to the files
@@ -312,10 +321,28 @@ FUNCTION eva_data_event, ev
 
   ;-----
   case ev.id of
-    state.btnLogin: begin
-      log.o,'***** EVENT: login *****' 
-      state = eva_data_login(state,ev.TOP)
+    state.drpUserType: begin
+      log.o,'***** EVENT: drpUserType *****'
+      str_element,/add,state,'user_flag',ev.INDEX
+      
+      if state.USER_FLAG eq 0 then begin
+        log.o,'resetting cw_data start and end times'
+        start_time = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/00:00:00'
+        end_time   = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/24:00:00'
+        str_element,/add,state,'start_time',start_time
+        str_element,/add,state,'end_time',end_time
+        eva_data_update_time, state,/update
+        state = eva_data_paramSetList(state)
+        widget_control, state.sbMMS, SENSITIVE=0
+        widget_control, state.drpSet, SET_VALUE=state.paramSetList
+      endif else begin
+        state = eva_data_login(state,ev.TOP)
+      endelse
       end
+;    state.btnLogin: begin
+;      log.o,'***** EVENT: login *****' 
+;      state = eva_data_login(state,ev.TOP)
+;      end
     state.fldStartTime: begin
       log.o,'***** EVENT: fldStartTime *****'
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
@@ -428,19 +455,20 @@ FUNCTION eva_data, parent, $
   IF NOT (KEYWORD_SET(uname))  THEN uname = 'eva_data'
   
   ; ----- INITIALIZE -----
-  user_flag = 0
+  
   eventdate = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)
   start_time = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/00:00:00'
   end_time   = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/24:00:00'
   ProbeNamesTHM = ['P1 (THB)','P2 (THC)','P3 (THD)','P4 (THA)','P5 (THE)']
   ProbeNamesMMS = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
   SetTimeList = ['Default','SITL Current Target Time', 'SITL Back-Structure Time']
-  
+  user_flag = 0
+  userType = ['Guest','MMS member','SITL','Super SITL','FPI cal']
   
   ;----- PREFERENCES -----
   cd,current = c
-  pref = {CACHE_DATA_DIR: c+'/eva_cache/',$
-    USER_FLAG: user_flag}
+  pref = {CACHE_DATA_DIR: c+'/eva_cache/', $
+    TESTMODE: 1}
   
   ;----- STATE ----- 
   state = { $
@@ -457,8 +485,10 @@ FUNCTION eva_data, parent, $
     probelist_thm: 'thb',        $; which THM probe(s) to be used
     probelist_mms: -1,           $; which MMS probe(s) to be used
     paramSetList:  '', $; List of ParameterSets
-    paramFileList: ''}
-  state = eva_data_paramSetList(state, user_flag=pref.USER_FLAG)
+    paramFileList: '',$
+    userType: userType, $
+    user_flag: user_flag}
+  state = eva_data_paramSetList(state)
   
   ; ----- CONFIG (READ and VALIDATE) -----
   cfg = eva_config_read()         ; Read config file and
@@ -484,10 +514,12 @@ FUNCTION eva_data, parent, $
     XSIZE = xsize, YSIZE = ysize)
   str_element,/add,state,'mainbase',mainbase
   
-  baseInit = widget_base(mainbase,/row, SPACE=0, YPAD=0)
-  str_element,/add,state,'btnLogin',widget_button(baseInit,VALUE=' Log-in to MMS SOC ')
-  str_element,/add,state,'lblLogin0',widget_label(baseInit,VALUE='   ')
-  str_element,/add,state,'lblLogin',widget_label(baseInit,VALUE='Guest user')
+;  baseInit = widget_base(mainbase,/row, SPACE=0, YPAD=0)
+  str_element,/add,state,'drpUserType',widget_droplist(mainbase,VALUE=state.userType,$
+    TITLE='User Type ')
+  ;str_element,/add,state,'btnLogin',widget_button(baseInit,VALUE=' Log-in to MMS SOC ')
+  ;str_element,/add,state,'lblLogin0',widget_label(baseInit,VALUE='   ')
+  
   
   ; calendar icon
   getresourcepath,rpath

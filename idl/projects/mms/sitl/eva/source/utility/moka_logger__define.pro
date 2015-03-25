@@ -36,7 +36,10 @@ Pro moka_logger::_CreateDebugFile
 ;    Root = LogDir)
 ;  self._DebugFile = FilePath('EVA.log', $
 ;    Root = LogDir)
-  self._DebugFile = getenv('HOME') + '/.eva_log.txt'
+  ;self._DebugFile = getenv('HOME') + '/.eva_log.txt'
+  cd,current=c
+  self._DebugFile = c + '/.eva_log.txt'
+  
   If (File_Test(self._DebugFile)) then Begin
     File_Delete, self._DebugFile
   EndIf

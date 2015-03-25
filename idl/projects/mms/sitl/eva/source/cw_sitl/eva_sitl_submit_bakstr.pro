@@ -1,4 +1,4 @@
-PRO eva_sitl_submit_bakstr, tlb
+PRO eva_sitl_submit_bakstr, tlb, TESTING
 
   ; initialize
   title = 'Back Structure Submission'
@@ -66,9 +66,6 @@ PRO eva_sitl_submit_bakstr, tlb
   found = file_test(local_dir); check if the directory exists
   if not found then file_mkdir, local_dir
   
-  ;////////////////////////
-  TESTING = 0
-  ;////////////////////////
 
   if TESTING then begin
     problem_status = 0

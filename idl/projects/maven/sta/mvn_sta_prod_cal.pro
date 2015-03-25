@@ -6778,7 +6778,7 @@ endif
 	if size(/type,t6) eq 8 then tt6=1 else tt6=0
 	if tt1 or tt2 or tt3 or tt4 or tt5 or tt6 then begin
 		store_data,'mvn_sta_mode',data=['mvn_sta_C0_mode','mvn_sta_C2_mode','mvn_sta_C4_mode','mvn_sta_C6_mode','mvn_sta_C8_mode','mvn_sta_CA_mode']
-			ylim,'mvn_sta_mode',-1,7
+			ylim,'mvn_sta_mode',-1,7,0
 			options,'mvn_sta_mode',ytitle='sta!Cmode'
 			options,'mvn_sta_C0_mode',colors=cols.black
 			options,'mvn_sta_C2_mode',colors=cols.red

@@ -1,4 +1,4 @@
-PRO eva_sitl_submit_FOMStr, tlb
+PRO eva_sitl_submit_FOMStr, tlb, TESTING
 
   ; initialize 
   title = 'FOM Submission'
@@ -42,10 +42,6 @@ PRO eva_sitl_submit_FOMStr, tlb
   found = file_test(local_dir); check if the directory exists
   if not found then file_mkdir, local_dir
   
-  ;////////////////////////
-  TESTING = 0
-  ;////////////////////////
-  
   if TESTING then begin
     problem_status = 0
     msg='TEST MODE: The modified FOMStr was not sent to SDC.'
@@ -64,7 +60,7 @@ PRO eva_sitl_submit_FOMStr, tlb
       msg='Submission Failed.'
       rst = dialog_message(msg,/error,/center,title=title)
     endelse
+    ptr_free, error_times, orange_warning_times, yellow_warning_times
+    ptr_free, error_indices, orange_warning_indices, yellow_warning_indices
   endelse
-  ptr_free, error_times, orange_warning_times, yellow_warning_times
-  ptr_free, error_indices, orange_warning_indices, yellow_warning_indices
 END

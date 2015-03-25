@@ -51,7 +51,7 @@ mvn_sta_l0_load,pathname=pathname,files=files,mag=mag,all=all
 	date = strmid(tt_str,0,4)+strmid(tt_str,5,2)+strmid(tt_str,8,2)
 	title = 'MAVEN STATIC Quicklook '+date
 	options,'mvn_sta_mode',panel_size=.5
-	ylim,'mvn_sta_mode',-1,7,1
+	ylim,'mvn_sta_mode',-1,7,0
 	options,'mvn_sta_C0_att',panel_size=.5
 	ylim,'mvn_sta_C0_P1A_tot',1,1.e5,1
 	options,'mvn_sta_C0_P1A_tot',ytitle='sta!CP1A-C0!C!CCounts'
