@@ -31,6 +31,27 @@
 ;
 ;-
 
+function thm_fit_fgm_err,vals1,vals2,lag_array
+nsteps=n_elements(lag_array)
+retvals=dblarr(nsteps)
+for i=0,nsteps-1 do begin
+   lag=lag_array[i]
+   nvals=n_elements(vals1)-abs(lag)
+   sse=0.0D
+   abslag=abs(lag)
+   if lag LE 0 then begin
+      for j=0,nvals-1 do begin
+          sse = sse + (vals2[j]-vals1[j+abslag])*(vals2[j]-vals1[j+abslag])
+      endfor
+   endif else begin
+      for j=0,nvals-1 do begin
+          sse = sse + (vals2[j+abslag]-vals1[j])*(vals2[j+abslag]-vals1[j])
+      endfor
+   endelse
+   retvals[i]=sse/nvals
+endfor
+return, retvals
+end
 
 pro thm_fit_fgm_crosscheck, date=date, probe=probe
 
@@ -127,9 +148,16 @@ for i=0, pkt_count-1 do begin
             result=c_correlate(fit_vals,interpol_vals,lag_vector)
             max_corr=max(result,index)
             max_offset=lag_vector[index]
-            print,'correlation result: ',result
+            print,'corr result: ',result
             print,'best offset: ',max_offset
-            fge_offset[i]=max_offset
+            result_sse=thm_fit_fgm_err(fit_vals,interpol_vals,lag_vector)
+            min_sse=min(result_sse,index_sse)
+            min_offset=lag_vector[index_sse]
+            print,'sse result: ',result_sse
+            print,'best offset: ',min_offset
+            fge_offset[i]=min_offset
+            plot,fit_times,fit_vals,psym=2
+            oplot,fit_times,interpol_vals
          endelse
       endif else begin
          print,"No overlap for FGE"
@@ -158,7 +186,12 @@ for i=0, pkt_count-1 do begin
             max_offset=lag_vector[index]
             print,'correlation result: ',result
             print,'best offset: ',max_offset
-            fgl_offset[i]=max_offset
+            result_sse=thm_fit_fgm_err(fit_vals,interpol_vals,lag_vector)
+            min_sse=min(result_sse,index_sse)
+            min_offset=lag_vector[index_sse]
+            print,'sse result: ',result_sse
+            print,'best offset: ',min_offset
+            fgl_offset[i]=min_offset
          endelse
       endif else begin
          print,"No overlap for FGL"

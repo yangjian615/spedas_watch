@@ -1,81 +1,70 @@
 ;+
-;PROCEDURE:   GET_MVN_EPH
-;PURPOSE:
-;  Locates and reads MAVEN spacecraft ephemeris data.  The result is
-;  packaged into a common block structure and returned.
 ;
-;  The available coordinate frames are:
+;PROCEDURE:       GET_MVN_EPH
 ;
-;   GEO = body-fixed Mars geographic coordinates (non-inertial) = IAU_MARS
-;         (sometimes called planetocentric (PC) coordinates)
-;              X ->  0 deg E longitude, 0 deg latitude
-;              Y -> 90 deg E longitude, 0 deg latitude
-;              Z -> 90 deg N latitude (= X x Y)
-;              origin = center of Mars
-;              units = kilometers
+;PURPOSE:         Loads the MAVEN ephemeris data. The result is
+;                 packaged into a common block structure and returned.
 ;
-;   MSO = Mars-Sun-Orbit coordinates (approx. inertial)
+;                 The available coordinate frames are:
 ;
-;              X -> from center of Mars to center of Sun
-;              Y -> opposite to Mars' orbital angular velocity vector
-;              Z = X x Y
-;              origin = center of Mars
-;              units = kilometers
+;                 GEO = body-fixed Mars geographic coordinates (non-inertial) = IAU_MARS
+;                 (sometimes called planetocentric (PC) coordinates)
+;                 X ->  0 deg E longitude, 0 deg latitude
+;                 Y -> 90 deg E longitude, 0 deg latitude
+;                 Z -> 90 deg N latitude (= X x Y)
+;                 origin = center of Mars
+;                 units = kilometers
 ;
-;USAGE:
-;  get_mvn_eph, trange, eph
+;                 MSO = Mars-Sun-Orbit coordinates (approx. inertial)
+;
+;                 X -> from center of Mars to center of Sun
+;                 Y -> opposite to Mars' orbital angular velocity vector
+;                 Z = X x Y
+;                 origin = center of Mars
+;                 units = kilometers
+;
+;USAGE:           get_mvn_eph, trange, eph
 ;
 ;INPUTS:
-;       tvar:       An array in any format accepted by time_double().
-;                   You explicitly input the specified time you want to get.
 ;
-;       eph:        A named variable to hold the result.
+;    tvar:        An array in any format accepted by time_double().
+;                 You explicitly input the specified time you want to get.
+;
+;    eph:         A named variable to hold the result.
 ;
 ;KEYWORDS:
-;       resolution: The time resolution with which you want to get
-;                   the ephemeris data can be determined.
 ;
-;       silent:     Minimizes the information shown in the terminal.
+;    resolution:  The time resolution with which you want to get
+;                 the ephemeris data can be determined.
 ;
-;       make_array: Even if you do not use the "resolution" keyword,  
-;                   10,000 elements structure array is automatically returned.
+;    silent:      Minimizes the information shown in the terminal.
 ;
-;       status:     Returns the calculation status:
-;                      0 = no data found
-;                      1 = partial data found
-;                      2 = complete data found
+;    make_array:  Even if you do not use the "resolution" keyword,  
+;                 10,000 elements structure array is automatically returned.
 ;
-;CREATED BY:	Takuya Hara  on 2014-10-07.
+;    status:      Returns the calculation status:
+;                 0 = no data found
+;                 1 = partial data found
+;                 2 = complete data found
+;
+;CREATED BY:	  Takuya Hara on 2014-10-07.
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-11-26 11:42:32 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16310 $
+; $LastChangedDate: 2015-03-24 17:20:51 -0700 (Tue, 24 Mar 2015) $
+; $LastChangedRevision: 17179 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/eph/get_mvn_eph.pro $
 ;
-;MODIFICATION LOG:  
-;(YYYY-MM-DD)
-; 2014-10-07: Initial version. Usage is very limited.
-; 2014-10-13: Enables to directly load SPICE/kernels information. 
-; 2014-10-21: Added "vss" keyword. It can restore the spacecraft
-;             velocity in the MSO coordinate system. But the data
-;             format has not been confirmed yet. It's just TBD now.
-; 2014-11-24: No longer using IDL save files utilized by 'maven_orbit_tplot'.
-;             Hence, "sav", "date" and "extended" keywords are removed.
-;             Removed "vss" keyword. Information about spacecraft
-;             velocity is included in default.   
-; 2014-11-25: Header description is completely written up.
-;             Results are stored into common blocks. 
-;
 ;-
-PRO get_mvn_eph, tvar, eph, resolution=res, silent=silent, load=load, $
-                 make_array=make_array, status=status, verbose=verbose
+PRO get_mvn_eph, tvar, eph, resolution=res, silent=sil, load=load, $
+                 make_array=make_array, status=status, verbose=vb
 
   @mvn_eph_com
   R_m = 3389.9d0
   nan = !values.f_nan
-  IF ~keyword_set(silent) THEN silent = 0
-  IF ~keyword_set(verbose) THEN verbose = - silent
+  IF keyword_set(sil) THEN silent = sil ELSE silent = 0
+  IF keyword_set(vb) THEN verbose = vb ELSE verbose = 0 
+  verbose -= silent
 
 ;  IF (SIZE(tvar, /type) EQ 2) OR (SIZE(tvar, /type) EQ 3) THEN BEGIN
 ;     trange = minmax(mvn_read_orbit_times(tvar))
@@ -142,7 +131,7 @@ PRO get_mvn_eph, tvar, eph, resolution=res, silent=silent, load=load, $
      maven_g.x = REFORM(pos_pc[0, *])
      maven_g.y = REFORM(pos_pc[1, *])
      maven_g.z = REFORM(pos_pc[2, *])
-     undefine, pos_ss, pos_pc, vss, dformat
+     undefine, pos_ss, vss, dformat
      
      time = maven.t
      xss = maven.x
@@ -159,15 +148,32 @@ PRO get_mvn_eph, tvar, eph, resolution=res, silent=silent, load=load, $
      xpc = maven_g.x
      ypc = maven_g.y
      zpc = maven_g.z
-     lon = ATAN(ypc, xpc)
-     lat = ASIN(zpc / r)
-     hgt = r - R_m
+
+     cspice_bodvrd, 'MARS', 'RADII', 3, radii
+     re = TOTAL(radii[0:1])/2
+     rp = radii[2]
+     f = (re-rp)/re
+
+     cspice_recgeo, pos_pc, re, f, lon, lat, hgt
+     undefine, pos_pc
+;     lon = ATAN(ypc, xpc)
+;     lat = ASIN(zpc / r)
+;     hgt = r - R_m
     
      idx = WHERE(lon LE 0., count)
      IF (count GT 0L) THEN lon[idx] += 2.*!DPI
      undefine, idx
 
      ndat = N_ELEMENTS(time)
+
+     lst = FLTARR(ndat)
+     FOR i=0L, ndat-1L DO BEGIN
+        cspice_et2lst, time_ephemeris(utc[i]), 499, lon[i], 'PLANETOCENTRIC', $
+                       hr, min, sec, ltm, ampm
+        lst[i] = FLOAT(hr) + (FLOAT(min)/60.) + (FLOAT(sec)/3600.)
+        undefine, hr, min, sec, ltm, ampm
+     ENDFOR 
+
      eph = mvn_eph_struct(ndat, init=nan)
      eph.time = time
      eph.x_ss = xss
@@ -183,6 +189,7 @@ PRO get_mvn_eph, tvar, eph, resolution=res, silent=silent, load=load, $
      eph.lat = lat
      eph.alt = hgt
      eph.sza = sza
+     eph.lst = lst
      mvn_eph_dat = eph
   ENDIF ELSE $
      mvn_eph_resample, utc, mvn_eph_dat, eph 

@@ -61,7 +61,8 @@ pro mvn_sta_qf14_load
 
 	ind = where((md_c6 eq 1 or md_c6 eq 2) and $
 		((orb ge 713 and orb le 753) or $
-		((((orb mod 2) eq 1) and orb gt 754) and ((orb ne 755) and (orb ne 759) and (orb ne 823) and (orb ne 841)) )   ),count)
+		((((orb mod 2) eq 1) and orb gt 754) and $
+		((orb ne 755) and (orb ne 759) and (orb ne 823) and (orb ne 841)) )   ),count)
 
 	if count eq 0 then begin
 		qf_c6 = qf_c6 and bit14zero

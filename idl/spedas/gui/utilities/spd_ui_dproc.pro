@@ -33,8 +33,8 @@
 ;HISTORY:
 ; 20-oct-2008, jmm, jimm@ssl.berkeley.edu
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-02-13 09:42:34 -0800 (Fri, 13 Feb 2015) $
-;$LastChangedRevision: 16978 $
+;$LastChangedDate: 2015-03-24 11:51:48 -0700 (Tue, 24 Mar 2015) $
+;$LastChangedRevision: 17175 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_dproc.pro $
 
 
@@ -258,7 +258,7 @@ Function spd_ui_dproc, info, uval, $
                               gui_id=guiid)  
           Endelse
           if msg ne '' then begin
-             ok = dialog_message(msg,/center,title='Error Initializing Wavelet: ')
+           ;  ok = dialog_message(msg,/center,title='Error Initializing Wavelet: ')
              hwin -> update, msg
              sbar -> update, msg
           endif

@@ -79,16 +79,18 @@
 ;   SWIA:         Overplots the SWIA FOV in STATIC coordidates in
 ;                 order to make sure the FOV overlap each other.
 ;
-;NOTE:            This routine is written based on parially 'swe_3d_snap'
+;   ZLOG:         Sets a logarithmic color bar scaling. 
+;
+;NOTE:            This routine is written based on partially 'swe_3d_snap'
 ;                 created by Dave Mitchell.
 ;
 ;USAGE EXAMPLES: 
 ;                 1.
-;                 mvn_sta_3d_snap, erange=[0.1, 1.d4], wi=1, /keep, /mso, /app, /label
-
+;                 mvn_sta_3d_snap, erange=[0.1, 1.d4], wi=1, /mso, /app, /label, /plot_sc
+;
 ;                 2.
 ;                 ctime, t ; Clicks once or twice on the tplot window.
-;                 mvn_sta_3d_snap, t, erange=[0.1, 1.d4], wi=1, /keep, /mso, /app, /label
+;                 mvn_sta_3d_snap, t, erange=[0.1, 1.d4], wi=1, /mso, /app, /label, /plot_sc
 ;
 ;                 3.
 ;                 ctime, routine='mvn_sta_3d_snap'
@@ -96,8 +98,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-03-09 14:24:19 -0700 (Mon, 09 Mar 2015) $
-; $LastChangedRevision: 17111 $
+; $LastChangedDate: 2015-03-25 02:55:34 -0700 (Wed, 25 Mar 2015) $
+; $LastChangedRevision: 17182 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -106,7 +108,10 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
                      label=label, smo=smo, sundir=sundir, map=map, $
                      abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst, $
                      mass=mass, m_int=mq, erange=erange, window=window, msodir=mso, apid=id, $
-                     appdir=app, mmin=mmin, mmax=mmax, plot_sc=plot_sc, swia=swia
+                     appdir=app, mmin=mmin, mmax=mmax, plot_sc=plot_sc, swia=swia, $
+                     _extra=extra, $ ; for 'plot3d_new' options.
+                     zlog=zlog
+
   COMMON mvn_c6
   tplot_options, get_option=topt
   IF SIZE(var1, /type) NE 0 AND SIZE(var2, /type) EQ 0 THEN var2 = var1
@@ -281,7 +286,8 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
 ;        ddd.data = reform(dats[*,8:23,*],64,96)
 ;      endif else ddd.data = ddd.data*omask[*,*,boom]
       
-           plot3d_new, ddd, lat, lon, ebins=ebins, sum_ebins=sebins
+           plot3d_new, ddd, lat, lon, ebins=ebins, sum_ebins=sebins, $
+                       _extra=extra, log=zlog
            lab2 = ''
            IF keyword_set(mso) THEN BEGIN
               vec = [ [1., 0., 0.], [0., 1., 0.], [0., 0., 1.] ]

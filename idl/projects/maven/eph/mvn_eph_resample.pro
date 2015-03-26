@@ -1,42 +1,34 @@
 ;+
-;PROCEDURE:   MVN_EPH_RESAMPLE
-;PURPOSE:
-;  Samples MAVEN ephemeris data at times specified by user.  Uses
-;  spline interpolation.
 ;
-;USAGE:
-;  mvn_eph_resample, time, eph_in, eph_out
+;PROCEDURE:       MVN_EPH_RESAMPLE
+;
+;PURPOSE:         Samples MAVEN ephemeris data at the times specirided
+;                 by user. Uses spline interpolation.
+;
+;USAGE:           mvn_eph_resample, time, eph_in, eph_out
 ;
 ;INPUTS:
-;       time:      An array of times at which ephemeris data are
-;                  desired.  Can be in any format accepted by
-;                  time_double().
+;      time:      An array of times at which ephemeris data are
+;                 desired.  Can be in any format accepted by
+;                 time_double().
 ;
-;       eph_in:    An MAVEN ephemeris structure obtained from 'get_mvn_eph'.
-;                  These data should have at least some overlap with 
-;                  the input time array (obviously).
+;    eph_in:      An MAVEN ephemeris structure obtained from 'get_mvn_eph'.
+;                 These data should have at least some overlap with 
+;                 the input time array (obviously).
 ;
-;                     *** This routine WILL NOT extrapolate. ***
+;                 *** This routine WILL NOT extrapolate. ***
 ;
-;       eph_out:   The ephemeris data sampled at the input times.  
+;   eph_out:      The ephemeris data sampled at the input times.  
 ;
-;KEYWORDS:
+;KEYWORDS:        None.
 ;
-;CREATED BY:	Takuya Hara  on 2014-10-07.
+;CREATED BY:	  Takuya Hara on 2014-10-07.
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-11-26 11:42:32 -0800 (Wed, 26 Nov 2014) $
-; $LastChangedRevision: 16310 $
+; $LastChangedDate: 2015-03-24 16:28:09 -0700 (Tue, 24 Mar 2015) $
+; $LastChangedRevision: 17176 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/eph/mvn_eph_resample.pro $
-;
-;MODIFICATION LOG:
-;(YYYY-MM-DD)
-; 2014-10-07: Initial procedure is made. This procedure is based on
-;             the MGS routine written by David L. Mitchell. The
-;             original routine name is 'mgs_eph_resample' (created on
-;             2003-01-28, and the last version is 1.1 on 2011-03-06).
-; 2014-11-25: Minor revision and header description is written. 
 ;
 ;-
 pro mvn_eph_resample, time, eph_in, eph_out
@@ -50,8 +42,8 @@ pro mvn_eph_resample, time, eph_in, eph_out
 
   str_element,eph_in,'x_ss',success=ok
   if (not ok) then begin
-    print, "Second input does not appear to be an MGS EPH structure."
-    print, "Use get_mgs_eph to obtain data in the proper format."
+    print, "Second input does not appear to be an MAVEN ephemeris structure."
+    print, "Use get_mvn_eph to obtain data in the proper format."
     return
   endif
   npts = n_elements(eph_in)
@@ -109,14 +101,16 @@ pro mvn_eph_resample, time, eph_in, eph_out
   eph_out[k].alt  = spline(eph_in.time, eph_in.alt, time[k])
   eph_out[k].sza  = spline(eph_in.time, eph_in.sza, time[k])
 
-  ;; x = spline(eph_in.time, cos(eph_in.lst), time[k])
-  ;; y = spline(eph_in.time, sin(eph_in.lst), time[k])
-  ;; lst = atan(y,x)
+  hr2rad = !DPI / 12.d0 ; local time unit conversion hour -> radian 
 
-  ;; indx = where(lst lt 0., count)
-  ;; if (count gt 0L) then lst[indx] = lst[indx] + (2.*!pi)
+  x = spline(eph_in.time, cos(eph_in.lst * hr2rad), time[k])
+  y = spline(eph_in.time, sin(eph_in.lst * hr2rad), time[k])
+  lst = atan(y, x)
 
-  ;; eph_out[k].lst = lst
+  indx = where(lst lt 0., count)
+  if (count gt 0L) then lst[indx] = lst[indx] + (2.*!pi)
+  lst /= hr2rad 
+  eph_out[k].lst = lst
 
   ;; sun = interpol(double(eph_in.sun), eph_in.time, time[k])
   ;; eph_out[k].sun = byte(round(sun))

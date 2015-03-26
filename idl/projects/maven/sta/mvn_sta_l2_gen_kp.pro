@@ -669,14 +669,14 @@ if keyword_set(test) then tplot,/add,'mvn_sta_counts'
 		get_data,'mvn_sta_PU_wc_ce',data=tmp1
 			tmp1a = interp(tmp1.y,tmp1.x,time)
 			if count1 gt 0 then tmp1a[ind1,*]=0.
-	endif else tmp1a=fltarr(npts,3)
+	endif else tmp1a=fltarr(npts)
 
 	if dtype_ce ne 0 then begin
 		tmp2=0
 		get_data,'mvn_sta_PU_wc_d0',data=tmp2
 			tmp2a = interp(tmp2.y,tmp2.x,time)
 			if count2 gt 0 then tmp2a[ind2,*]=0.
-	endif else tmp2a=fltarr(npts,3)
+	endif else tmp2a=fltarr(npts)
 
 	store_data,'mvn_sta_PU_wc',data={x:time,y:tmp1a+tmp2a}
 

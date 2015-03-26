@@ -58,9 +58,9 @@
 ;                  if not there
 ; 2013-02-27, jmm, Added comment to test SVN commit
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16146 $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2015-03-24 17:01:08 -0700 (Tue, 24 Mar 2015) $
+;$LastChangedRevision: 17177 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_init.pro $
 ;-
 pro thm_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
@@ -82,6 +82,18 @@ endif
 
 
 !themis = file_retrieve(/structure_format)    ; force setting of all elements to default values.
+
+;
+; 2015-01-16
+; 
+; file_retrieve has preserve_mtime=1 as the default.  This causes
+; problems on Windows machines that also have a "touch" executable
+; installed (e.g. via a cygwin installation).  Disabling it here
+; should fix that issue.  -- JWL
+;
+
+!themis.preserve_mtime = 0
+
 
 thm_config,no_color_setup=no_color_setup,no_download=no_download
 
