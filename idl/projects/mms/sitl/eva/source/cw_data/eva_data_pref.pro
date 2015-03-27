@@ -52,6 +52,9 @@ FUNCTION eva_data_pref_event, ev
         pref.CACHE_DATA_DIR = file
       endif
       end
+    state.bgTestmode:  begin
+      pref.TESTMODE = ev.SELECT
+      end
     else:
   endcase
   ;-----
@@ -95,6 +98,9 @@ FUNCTION eva_data_pref, parent, GROUP_LEADER=group_leader, $
     str_element,/add,state,'txtPath',widget_text(baseInput,VALUE=state.PREF.CACHE_DATA_DIR,XSIZE=55,/editable)
     str_element,/add,state,'btnPath',widget_button(baseInput,VALUE=openBMP,/Bitmap)
   
+  ; test mode
+  str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Test Mode',$
+    /NONEXCLUSIVE,SET_VALUE=state.PREF.TESTMODE)
 
 
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY

@@ -72,6 +72,16 @@ store_data,'th'+probe+'_fgs_btotal',data={x:fit_dat.x, y:fgs_btotal}
 n=n_elements(fit_dat.x)
 t_last=fit_dat.x[n-1] + 0.5
 
+; Look for overlaps and repeated timestamps
+
+ts_diffs=fit_dat.x[1:n-1]-fit_dat.x[0:n-2]
+
+gap_ind=where(ts_diffs GT 5.5,gap_count)
+dup_ind=where(ts_diffs LT 0.1,dup_count)
+
+print,'gap count: ',gap_count
+print,'dup_count: ',dup_count
+
 ; Get packet boundaries
 
 get_data,'tha_fit_hed',data=d
@@ -94,9 +104,24 @@ fge_lag=intarr(pkt_count)
 fgl_lag=intarr(pkt_count)
 fge_offset=intarr(pkt_count)
 fgl_offset=intarr(pkt_count)
+pkt_status_before=intarr(pkt_count)
+pkt_status_after=intarr(pkt_count)
+pkt_spinphase=fltarr(pkt_count)
+
+thm_load_state,probe=probe,/get_supp
+smp=spinmodel_get_ptr(probe,use_eclipse_correction=0)
+smp->interp_t,time=d.x,spinphase=pkt_spinphase
+
+status_codes=['first','gap', 'dup', 'ok', 'last']
+pkt_status_before[*]=3
+pkt_status_after[*]=3
+
+pkt_status_before[0]=0
+pkt_status_after[pkt_count-1]=4
+
 
 for i=0, pkt_count-1 do begin
-   print,"next packet:",time_string(pkt_times[i])
+   print,"next packet:",time_string(pkt_times[i]), ' spinphase: ',pkt_spinphase[i]
    ts=pkt_times[i]
    te=pkt_times[i+1]
    fit_ind=where((fit_dat.x GE ts) AND (fit_dat.x LT te), fit_count)
@@ -107,6 +132,24 @@ for i=0, pkt_count-1 do begin
       ts=obs_trange[0]
       te=obs_trange[1]
    endif
+
+   if (i GE 1) then begin
+      ; check for gaps and dupes
+      first_fit_ind=fit_ind[0]
+      nearby_times=fit_dat.x[first_fit_ind-5:first_fit_ind+1]
+      nearby_diffs=nearby_times[1:6]-nearby_times[0:5]
+      dup_ind=where(nearby_diffs LT 1.0,dup_count)
+      gap_ind=where(nearby_diffs GT 5.5 ,gap_count)
+      if (dup_count GT 0) then begin
+        pkt_status_before[i]=2
+        pkt_status_after[i-1]=2 
+      endif
+      if (gap_count GT 0) then begin
+        pkt_status_before[i]=1
+        pkt_status_after[i-1]=1 
+      endif
+   endif
+
     
    fge_ind=where((fge_dat.x GE ts) AND (fge_dat.x LT te), fge_count);
    fgl_ind=where((fgl_dat.x GE ts) AND (fgl_dat.x LT te), fgl_count);
@@ -156,8 +199,8 @@ for i=0, pkt_count-1 do begin
             print,'sse result: ',result_sse
             print,'best offset: ',min_offset
             fge_offset[i]=min_offset
-            plot,fit_times,fit_vals,psym=2
-            oplot,fit_times,interpol_vals
+            ;plot,fit_times,fit_vals,psym=2
+            ;oplot,fit_times,interpol_vals
          endelse
       endif else begin
          print,"No overlap for FGE"
@@ -213,7 +256,7 @@ if (fge_pkt_count GT 0) then begin
     print,'Packets with nonzero offset compared to FGE'
     for i=0,pkt_count-1 do begin
        if (fge_offset[i] NE 0) then begin
-          print,time_string(original_fit_times[i]), ' offset(spins): ', fge_offset[i]
+          print,time_string(original_fit_times[i]), ' offset(spins): ', fge_offset[i], ' spinphase: ', pkt_spinphase[i], ' status_before: ',status_codes[pkt_status_before[i]], ' status_after: ',status_codes[pkt_status_after[i]]
        endif
     endfor
     
@@ -229,7 +272,7 @@ if (fgl_pkt_count GT 0) then begin
     print,'Packets with nonzero offset compared to FGL'
     for i=0,pkt_count-1 do begin
        if (fgl_offset[i] NE 0) then begin
-          print,time_string(original_fit_times[i]), ' offset(spins): ', fgl_offset[i]
+          print,time_string(original_fit_times[i]), ' offset(spins): ', fgl_offset[i], ' spinphase: ', pkt_spinphase[i], ' status_before: ',status_codes[pkt_status_before[i]], ' status_after: ',status_codes[pkt_status_after[i]]
        endif
     endfor
 endif

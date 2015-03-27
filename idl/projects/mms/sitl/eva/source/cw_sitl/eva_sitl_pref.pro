@@ -42,7 +42,10 @@ FUNCTION eva_sitl_pref_event, ev
   case ev.id of
     state.bgAdvanced:  begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
       pref.ENABLE_ADVANCED = ev.SELECT 
-      widget_control, state.MODULE_STATE.drpSave, SENSITIVE=(~ev.SELECT)
+      widget_control, state.STATE_SITL.drpSave, SENSITIVE=(~ev.SELECT)
+      end
+    state.bgTestmode:  begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
+      pref.TESTMODE = ev.SELECT
       end
     else:
   endcase
@@ -63,10 +66,13 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
   IF NOT (KEYWORD_SET(uname))  THEN uname = 'eva_sitl_pref'
   if not (keyword_set(title)) then title='   SITL   '
 
-  ; ----- GET CURRENT PREFERENCES FROM THE MAIN MODULE -----
-  widget_control, widget_info(group_leader,find='eva_sitl'), GET_VALUE=module_state
-  state = {pref:module_state.PREF, module_state:module_state}
-  
+  ; ----- GET STATE FROM EACH MODULE -----
+  widget_control, widget_info(group_leader,find='eva_sitl'), GET_VALUE=state_sitl
+  widget_control, widget_info(group_leader,find='eva_data'), GET_VALUE=state_data
+
+  ; ----- STATE OF THIS WIDGET -----  
+  state = {pref:state_sitl.PREF, state_sitl:state_sitl}
+    
   ; ----- WIDGET LAYOUT -----
   geo = widget_info(parent,/geometry)
   if n_elements(xsize) eq 0 then xsize = geo.xsize
@@ -77,10 +83,13 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
     XSIZE = xsize, YSIZE = ysize,sensitive=1)
   str_element,/add,state,'mainbase',mainbase
 
-  bsAdvanced = widget_base(mainbase,space=0,ypad=0,SENSITIVE=(module_state.PREF.user_flag ge 3))
+  bsAdvanced = widget_base(mainbase,space=0,ypad=0,SENSITIVE=(state_data.USER_FLAG eq 3)); Super SITL only
     str_element,/add,state,'bsAdvanced',bsAdvanced
     str_element,/add,state,'bgAdvanced',cw_bgroup(bsAdvanced,'Enable advanced features (for Super SITL)',$
      /NONEXCLUSIVE,SET_VALUE=state.PREF.ENABLE_ADVANCED)
+  
+  str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Test Mode',$
+     /NONEXCLUSIVE,SET_VALUE=state.PREF.TESTMODE)
 
 
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY

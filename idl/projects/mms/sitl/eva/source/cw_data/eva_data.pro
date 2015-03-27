@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-23 22:17:13 -0700 (Mon, 23 Mar 2015) $
-; $LastChangedRevision: 17169 $
+; $LastChangedDate: 2015-03-25 16:11:56 -0700 (Wed, 25 Mar 2015) $
+; $LastChangedRevision: 17186 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -102,7 +102,7 @@ FUNCTION eva_data_load_and_plot, state
   idx=where(strpos(paramlist,'stlm') gt 0,ct)
   paramlist_stlm = (ct ge 1) ? paramlist[idx] : ''
   str_element,/add,state,'paramlist_stlm',paramlist_stlm
-  rst_stlm = (ct ge 1) ? eva_sitl_load_stlm(state) : 'No'
+  rst_stlm = (ct ge 1) ? eva_data_load_sitl(state) : 'No'
   log.o, 'load SITL: number of parameters:'+string(ct)
 
   ;----------------------
@@ -254,6 +254,7 @@ FUNCTION eva_data_login, state, evTop
       FAILED=0
     endif; if n_tags(unix_FOMstr)
   endif
+
 ;  msg = (FAILED) ? 'Log-in Failed' : 'Logged in as a '+state.userType[user_flag]+'!'
   if FAILED then begin
     str_element,/add,state,'user_flag',0
@@ -325,6 +326,10 @@ FUNCTION eva_data_event, ev
       log.o,'***** EVENT: drpUserType *****'
       str_element,/add,state,'user_flag',ev.INDEX
       
+      if state.USER_FLAG ne 0 then begin
+        state = eva_data_login(state,ev.TOP)
+      endif
+
       if state.USER_FLAG eq 0 then begin
         log.o,'resetting cw_data start and end times'
         start_time = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/00:00:00'
@@ -335,9 +340,7 @@ FUNCTION eva_data_event, ev
         state = eva_data_paramSetList(state)
         widget_control, state.sbMMS, SENSITIVE=0
         widget_control, state.drpSet, SET_VALUE=state.paramSetList
-      endif else begin
-        state = eva_data_login(state,ev.TOP)
-      endelse
+      endif
       end
 ;    state.btnLogin: begin
 ;      log.o,'***** EVENT: login *****' 

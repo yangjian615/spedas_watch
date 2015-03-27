@@ -80,9 +80,9 @@ ESA Background:
   -The average of the smallest N points is taken to be the background value.
   -The background value multiplied by the scale is subtracted from the distribution prior to calculating products.
   -Background subtraction is applied differently depending on the type:
-    angle:  The entire distribution is used.
-    omni:  The data is first averaged over all look directions (phi & theta).
-           The resulting array with an average value at each energy is then used.
+    angle:  A separate background is determined for each look direction (phi/theta).
+    omni:  The data is first averaged over all look directions (phi/theta).
+           A single background value is calculated from the averaged values.
     anode:  Data in each of 16 theta bins is averaged over all look directions.
             The resulting arrays of average values at each energy for each of the 16 theta
             bins are then used to determined the background for their respective theta bin.

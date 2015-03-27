@@ -1,7 +1,12 @@
 ; activate = 0; not sensitive
 ; activate = 1; sensitive (update)
 ; activate = 2; sensitive (initialize)
-
+; 
+; $LastChangedBy: moka $
+; $LastChangedDate: 2015-03-25 22:36:45 -0700 (Wed, 25 Mar 2015) $
+; $LastChangedRevision: 17189 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_update_board.pro $
+;
 PRO eva_sitl_update_board, state, activate
   compile_opt idl2
   @eva_sitl_com
@@ -200,11 +205,18 @@ PRO eva_sitl_update_board, state, activate
       css = 'remaining '+rem_hr+':'+rem_mn+':'+rem_ss
       sg.oTimeCtdn ->SetProperty,STRING=css
       
-      txt = strtrim(string(f.NSegs),2)+' Segs';........... # of Segment
+      if (f.Nsegs eq 1) and (f.NBuffs eq 1) then begin
+        fNsegs = 0
+        fNBuffs = 0
+      endif else begin
+        fNsegs = f.Nsegs
+        fNBuffs = f.NBuffs
+      endelse
+      txt = strtrim(string(fNSegs),2)+' Segs';........... # of Segment
       if f.NBuffs ge 3600 then txt = 'Hard Limit'
       sg.oNsegs ->SetProperty,STRING=txt, COLOR=color
       
-      txt = strtrim(string(f.NBuffs),2)+' Buffs';........ # of Buffs
+      txt = strtrim(string(fNBuffs),2)+' Buffs';........ # of Buffs
       if f.NBuffs ge 3600 then txt = '3600 Buffs'
       sg.oNBuffs ->SetProperty,STRING = txt, COLOR=color
       

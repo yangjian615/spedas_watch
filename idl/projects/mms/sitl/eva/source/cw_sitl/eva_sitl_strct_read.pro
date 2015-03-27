@@ -1,5 +1,13 @@
-
-; type: 'FOMStr' or 'BAKStr'
+; NAME: eva_sitl_strct_read
+; PURPOSE: Read a FOM or BAK structure and generate a tplot data stucture, i.e. D = {x:fom_x, y:fom_y}
+; INPUT: 
+;   s: stucture (either FOMstr or BAKstr)
+;   tstart: the start time
+;   
+; $LastChangedBy: moka $
+; $LastChangedDate: 2015-03-25 22:36:45 -0700 (Wed, 25 Mar 2015) $
+; $LastChangedRevision: 17189 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_read.pro $
 Function eva_sitl_strct_read, s, tstart, $
   isPending=isPending, inPlaylist=inPlaylist, status=status, exclude_deleted=exclude_deleted
   

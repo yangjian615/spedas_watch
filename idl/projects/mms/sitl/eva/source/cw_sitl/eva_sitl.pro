@@ -456,7 +456,6 @@ FUNCTION eva_sitl, parent, $
     FOMSkew:  0,  $
     FOMBias:  1, $
     ENABLE_ADVANCED: 0,$
-    USER_FLAG: 0, $
     TESTMODE: 1 }
   socs  = {$; SOC Auto Simulated
     pmdq: ['a','b','c','d'], $ ; probes to be used for calculating MDQs
@@ -472,7 +471,7 @@ FUNCTION eva_sitl, parent, $
     set_multi: 0,$
     set_trange: 0,$
     rehighlight: 0,$
-    launchtime: systime(1,/utc) }
+    launchtime: systime(1,/utc)}
 
   ; ----- CONFIG (READ) -----
   cfg = eva_config_read()         ; Read config file and

@@ -1,5 +1,5 @@
-
-FUNCTION eva_sitl_load_stlm, state
+; The input "state" is the DATA MODULE state.
+FUNCTION eva_data_load_sitl, state
   compile_opt idl2
   @moka_logger_com
   
@@ -23,20 +23,37 @@ FUNCTION eva_sitl_load_stlm, state
       else: stop
     endcase
     r=tnames()
+    ysubtitle='(SITL)'
+    
     
     ; 'mms_stlm_fomstr'
     idx=where(strmatch(r,'mms_'+stlm.input+'_fomstr',/fold_case),ct)
     codeFOM = (ct eq 1)
     if codeFOM then begin
       get_data,'mms_'+stlm.input+'_fomstr',data=D,lim=lim,dl=dl
-      store_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
+      
+      if (state.USER_FLAG ne 4) then begin 
+        store_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
+      endif else begin
+        ; Hack original FOMStr
+        s = lim.UNIX_FOMstr_org
+        str_element,/add,s,'FOM',[0.]; FOM value = 0
+        str_element,/add,s,'START',[0L]; start of the 1st cycle
+        str_element,/add,s,'STOP',[1L]; end fo the 1st cycle
+        str_element,/add,s,'NSEGS',1L
+        str_element,/add,s,'NBUFFS',1L
+        str_element,/add,lim,'UNIX_FOMstr_org',s; put the hacked FOMstr into 'lim'
+        D_hacked = eva_sitl_strct_read(s,min(lim.unix_FOMstr_org.START,/nan)); change the tplot-data accordingly
+        store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl; here is the faked 'mms_stlm_fomstr'
+        ysubtitle = '(FPI)'
+      endelse
       options,   'mms_stlm_fomstr','unix_FOMStr_mod',lim.unix_FOMStr_org; add unixFOMStr_mod
       options,   'mms_stlm_fomstr','unix_FOMStr_org'; remove unixFOMStr_org
       options,   'mms_stlm_fomstr','ytitle','FOM'
-      options,   'mms_stlm_fomstr','ysubtitle','(SITL)'
+      options,   'mms_stlm_fomstr','ysubtitle',ysubtitle
       dgrand = ['mms_stlm_fomstr']
     endif else message, "This can't be happening!"
-        
+    
     ; 'mms_soca_bakstr'
     idx=where(strmatch(r,'mms_'+stlm.input+'_bakstr',/fold_case),ct)
     codeBAK = (ct eq 1)
@@ -46,7 +63,7 @@ FUNCTION eva_sitl_load_stlm, state
       options,   'mms_stlm_bakstr','unix_BAKStr_mod',lim.unix_BAKStr_org; add unix_BAKStr_mod
       options,   'mms_stlm_bakstr','unix_BAKStr_org'; remove unix_BAKStr_org
       options,   'mms_stlm_bakstr','ytitle','BAK'
-      options,   'mms_stlm_bakstr','ysubtitle','(SITL)'
+      options,   'mms_stlm_bakstr','ysubtitle',ysubtitle
       dgrand = [dgrand,'mms_stlm_bakstr']
     endif
     
@@ -63,7 +80,7 @@ FUNCTION eva_sitl_load_stlm, state
     options, 'mms_stlm_output_fom','codeFOM',codeFOM
     options, 'mms_stlm_output_fom','codeBAK',codeBAK
     options,'mms_stlm_output_fom','ytitle','FOM'
-    options,'mms_stlm_output_fom','ysubtitle','(SITL)'
+    options,'mms_stlm_output_fom','ysubtitle',ysubtitle
     eva_sitl_strct_yrange,'mms_stlm_output_fom'
   endif
 

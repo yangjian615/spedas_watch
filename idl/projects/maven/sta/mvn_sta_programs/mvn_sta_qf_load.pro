@@ -77,7 +77,10 @@ pro mvn_sta_qf_load,verbose=verbose
   temp=execute("temp1=mvn_da_dat")
   if size(temp1,/type) ne 8 then mvn_sta_l2_load, sta_apid=['da']
   temp=execute("temp1=mvn_da_dat")
-  if size(temp1,/type) ne 8 then stop, 'mvn_da_dat needs to be loaded for.'
+  if size(temp1,/type) ne 8 then begin
+     dprint, 'mvn_da_dat needs to be loaded.'
+     return
+  endif
 
 
 
