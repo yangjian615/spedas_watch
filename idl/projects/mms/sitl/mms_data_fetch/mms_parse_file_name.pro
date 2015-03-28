@@ -1,11 +1,12 @@
 ; This routine will parse the names of a list of files and obtain relevant info
 ; for caching MMS data.
 ; NOTE: we are assuming the directory path is ALREADY truncated off of each
-; file name!!!!!!!!
+; file name, unless "contains_dir" keyword is set.
 
 
 pro mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
-                         optional_descriptors, version_strings, start_strings, years
+                         optional_descriptors, version_strings, start_strings, years, $
+                         contains_dir = contains_dir
 
 sc_ids = strarr(n_elements(flist))
 inst_ids = sc_ids
@@ -19,6 +20,12 @@ years = sc_ids
 for i = 0, n_elements(flist)-1 do begin
   
   temp = flist(i)
+  
+  if keyword_set(contains_dir) then begin
+    first_slash = strpos(flist(i), '/', /reverse_search)
+    temp = strmid(flist(i), first_slash+1, strlen(flist(i)))
+  endif
+  
   field_array = strsplit(temp, '_', /extract)
   sc_ids(i) = field_array(0)
   inst_ids(i) = field_array(1)

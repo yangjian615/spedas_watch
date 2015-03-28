@@ -1,30 +1,100 @@
-; This is the program which will get MMS data files. It operates in three steps:
-; 
-; 1. It checks the SDC filename list to see what files in the query are available.
-; 
-; 2. It then parses the filenames to determine if they already exist locally.
-; 
-; 3. It then downloads the files that don't exist, and caches them
+; PROCEDURE: MMS_DATA_FETCH
 ;
-; Eventually I will add a feature where you can not specify a "level," and it will download the most recent,
+; PURPOSE: Execute an SDC HTTP query with local caching possibilities.
 ;
-; or 
+; INPUT:
+;   local_flist      - REQUIRED. Name for an array of strings. This will have
+;                    - names of all of the files consistent with the query.
 ;
-; You can specify multiple levels and it will download all. THIS IS NOT YET DONE.
+;   local_dir        - REQUIRED. (String) Directory where MMS data will be 
+;                      stored. Routine creates subfolder '/data/mms/' with cache
+;                      structure. A '/' at the end is not required, 
+;                      although the procedure will recognize it.
+;                      
+;                      EXAMPLE: local_dir = '/Users/yourname/' creates directory
+;                      '/Users/yourname/data/mms/'
+;                      
+;   start_date       - REQUIRED. (String) Start date in the format for SDC 
+;                      HTTP queries (YYYY-MM-DD).
+;                      
+;   end_date         - REQUIRED. (String) End date in the format for SDC
+;                      HTTP queries (YYYY-MM-DD). If the same as start_date,
+;                      procedure will only query for that day.
+;                      
+;   login_flag       - REQUIRED. (Integer) Flag which determines if connection
+;                      to SDC was successful. If connection fails, will need to
+;                      call "mms_check_local_cache" to see if data already exists
+;                      locally.
+;                      
+;   
+;
+; KEYWORDS:
+;
+;   sc_id            - OPTIONAL. (String) Array of strings containing spacecraft
+;                      ids for http query (e.g. 'mms1' or ['mms1', 'mms3']. 
+;                      If not used, query defaults to all four spacecraft.
+;
+;   instrument_id    - OPTIONAL. (String) Instrument ID for http query (see CDF
+;                      format guide for possible values). If not set, query defaults
+;                      to all instruments (NOT RECOMMENDED).
+;
+;   mode             - OPTIONAL. (String) Data collection mode for http query 
+;                      (e.g. 'slow','srvy','fast','brst'). If not set, query defaults
+;                      to all modes (NOT RECOMMENDED).
+;
+;   level            - OPTIONAL. (String) Data level for http query (e.g. 'l0', 'l1a',
+;                      'l1b','ql','sitl','l2'). If not set, query defaults to 'l2.'
+;                      
+;   optional_descriptor
+;                    - OPTIONAL. (String) Descriptor for data product (e.g. 'bpsd' for
+;                      the instrument 'dsp' provides search coil data). If not set,
+;                      all descriptors are queried if they exist (e.g. 'afg' does not
+;                      have an optional descriptor).
+;                      
+;   no_update        - OPTIONAL. Set if you don't wish to replace earlier file versions
+;                      with the latest version. If not set, earlier versions are deleted
+;                      and replaced.
+;                      
+;   reload           - OPTIONAL. Set if you wish to download all files in query, regardless
+;                      of whether file exists locally. Useful if obtaining recent data files
+;                      that may not have been full when you last cached them.
+;                      
+;                      NOTE: no_update and reload should NEVER be simultaneously set. Will
+;                      give an error if it happens.
+;
 
-pro mms_data_fetch, local_flist, local_dir, start_date, end_date, login_flag, file_base, sc_id=sc_id, $
-  instrument_id=instrument_id, mode=mode, optional_descriptor=optional_descriptor, $
-  level=level,  no_update=no_update
+;
+; INITIAL VERSION: FDW 2015-03-17
+; MODIFICATION HISTORY:
+;
+; LASP, University of Colorado
+;-
+
+
+pro mms_data_fetch, local_flist, local_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+  instrument_id=instrument_id, mode=mode, level=level, optional_descriptor=optional_descriptor, $
+  no_update=no_update, reload=reload
 
 login_flag = 0
 
 lastpos = strlen(local_dir)
+
+on_error, 2
+
+if keyword_set(no_update) and keyword_set(reload) then message, 'ERROR: Keywords /no_update and /reload are ' + $
+  'conflicting and should never be used simultaneously.'
 
 if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
   data_dir = local_dir + 'data/mms/'
 endif else begin
   data_dir = local_dir + '/data/mms/'
 endelse
+
+if ~keyword_set(level) then begin
+  print, 'Level not set, defaulting to Level 2.'
+  level = 'l2'
+endif
+
 
 ; Get list of available file names consistent with query. This will let us check whether file exists
 ; This will be replaced by the actual SDC wrapper when available
@@ -133,7 +203,24 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
       loc_version = where(search_versions eq version_strings, count_version)
       
       ; Matching file exists
-      if count_version gt 1 then download_flags(i) = 0
+      
+      if count_version ge 1 then begin 
+        download_flags(i) = 0
+        local_file_info = file_info(search_results(loc_version(0)))
+        local_file_size = local_file_info.size
+        
+        if local_file_size lt file_sizes(i) and ~keyword_set(no_update) then begin
+          outstring = 'The following local file is smaller than file at SDC, re-downloading: ' + $
+                      cut_filenames(i)
+          print, outstring
+          download_flags(i) = 1
+        endif
+        
+        if keyword_set(reload) then begin
+          download_flags(i) = 1
+        endif
+        
+      endif
       
       ; Matching file doesn't exist - update as long as keyword 'no_update'
       ; isn't set.

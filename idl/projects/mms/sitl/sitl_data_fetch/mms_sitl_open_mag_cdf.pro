@@ -1,4 +1,6 @@
-function mms_open_dsp_acb_cdf, filename
+function mms_sitl_open_mag_cdf, filename
+
+; Currently defaults to near-gse (DMPA) coordinates
 
   var_type = ['data']
   CDF_str = cdf_load_vars(filename, varformat=varformat, var_type=var_type, $
@@ -14,13 +16,17 @@ function mms_open_dsp_acb_cdf, filename
   
   times_unix =  86400D * (times_jul - julday(1, 1, 1970, 0, 0, 0 ))
   
-  ; Says data is in orthogonalized boom coordinates.
-  b1_spec = *cdf_str.vars[1].dataptr
-  b2_spec = *cdf_str.vars[2].dataptr
-  b3_spec = *cdf_str.vars[3].dataptr
-  freq = *cdf_str.vars[7].dataptr
   
-  outstruct = {x: times_unix, b1: b1_spec, b2: b2_spec, b3: b3_spec, freq: freq}
+  vector_data = *cdf_str.vars[2].dataptr
+  
+  ; Says data is in orthogonalized boom coordinates.
+  bx = vector_data(*,0)
+  by = vector_data(*,1)
+  bz = vector_data(*,2)
+  
+  bvector = [[bx], [by], [bz]]
+  
+  outstruct = {x: times_unix, y: bvector}
   
   return, outstruct
   

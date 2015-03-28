@@ -53,10 +53,10 @@ endfor
 return, retvals
 end
 
-pro thm_fit_fgm_crosscheck, date=date, probe=probe
+pro thm_fit_fgm_crosscheck, start_date=date, days=days, probe=probe
 
 ; Set timespan
-timespan,date,1,/day
+timespan,date,days,/day
 
 ; Load L1 fit and support data
 
@@ -76,11 +76,10 @@ t_last=fit_dat.x[n-1] + 0.5
 
 ts_diffs=fit_dat.x[1:n-1]-fit_dat.x[0:n-2]
 
-gap_ind=where(ts_diffs GT 5.5,gap_count)
-dup_ind=where(ts_diffs LT 0.1,dup_count)
+gap_ind=where(ts_diffs GT 5.5,global_gap_count)
+dup_ind=where(ts_diffs LT 0.1,global_dup_count)
 
-print,'gap count: ',gap_count
-print,'dup_count: ',dup_count
+; The gap and dup counts will be printed at the end of the report.
 
 ; Get packet boundaries
 
@@ -93,7 +92,7 @@ pkt_count=n_elements(pkt_times)-1
 
 ; Load FGE and FGL using L2 data
 
-thm_load_fgm,probe=probe,level=2
+thm_load_fgm,probe=probe,level=2,datatype='fge fgl fge_btotal fgl_btotal'
 
 get_data,'th'+probe+'_fge_btotal',data=fge_dat
 get_data,'th'+probe+'_fgl_btotal',data=fgl_dat
@@ -276,5 +275,13 @@ if (fgl_pkt_count GT 0) then begin
        endif
     endfor
 endif
+
+print,'total gap count: ',global_gap_count
+print,'total dup count: ',global_dup_count
+
+print,'FGE comparison: '
+print,fge_pkt_count,' packets compared ',fge_zero_count,' no-offset',fge_good_pct,'%'
+print,'FGL comparison: '
+print,fgl_pkt_count,' packets compared ',fgl_zero_count,' no-offset',fgl_good_pct,'%'
 
 end

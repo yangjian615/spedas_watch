@@ -3,12 +3,16 @@
 ; Use coord = 'pgse' for pseudo-gse
 ; Use coord = 'dsl' for DSL
 
-pro mms_sitl_get_dce, start_date, end_date, cache_dir, sdp_status, sc_id=sc_id, coord=coord, no_update = no_update
+pro mms_sitl_get_dce, start_date, end_date, cache_dir, sdp_status, sc_id=sc_id, coord=coord, no_update = no_update, reload = reload
 
   sdp_status = 0
   
   level = 'sitl'
   mode = 'fast'
+  
+  on_error, 2
+  if keyword_set(no_update) and keyword_set(reload) then message, 'ERROR: Keywords /no_update and /reload are ' + $
+    'conflicting and should never be used simultaneously.'
   
   ; See if spacecraft id is set
   if ~keyword_set(sc_id) then begin
@@ -39,13 +43,19 @@ pro mms_sitl_get_dce, start_date, end_date, cache_dir, sdp_status, sc_id=sc_id, 
   ;----------------------------------------------------------------------------------------------------------
   
   if keyword_set(no_update) then begin
-    mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, file_base, sc_id=sc_id, $
+    mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
       instrument_id='sdp', mode=mode, $
       level=level, optional_descriptor = 'dce', /no_update
   endif else begin
-    mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, file_base, sc_id=sc_id, $
-      instrument_id='sdp', optional_descriptor = 'dce', mode=mode, $
-      level=level
+    if keyword_set(reload) then begin
+      mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+        instrument_id='sdp', optional_descriptor = 'dce', mode=mode, $
+        level=level, /reload
+    endif else begin
+      mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+        instrument_id='sdp', optional_descriptor = 'dce', mode=mode, $
+        level=level
+    endelse
   endelse
   
   ;
@@ -63,7 +73,7 @@ pro mms_sitl_get_dce, start_date, end_date, cache_dir, sdp_status, sc_id=sc_id, 
   file_flag = 0
   if login_flag eq 1 then begin
     print, 'Unable to locate files on the SDC server, checking local cache...'
-    mms_check_local_cache, local_flist, cache_dir, start_date, end_date, file_flag, file_base, $
+    mms_check_local_cache, local_flist, cache_dir, start_date, end_date, file_flag, $
       mode, 'sdp', level, sc_id, optional_descriptor = 'dce'
   endif
   
@@ -76,14 +86,14 @@ pro mms_sitl_get_dce, start_date, end_date, cache_dir, sdp_status, sc_id=sc_id, 
     ; Now we can open the files and create tplot variables
     ; First, we open the initial file
     
-    efield_struct = mms_open_sdp_dce_sitl_cdf(files_open(0), coord)
+    efield_struct = mms_sitl_open_sdp_dce_sitl_cdf(files_open(0), coord)
     times = efield_struct.x
     e_field = efield_struct.y
     sdpvarname = efield_struct.varname
     
     if n_elements(files_open) gt 1 then begin
       for i = 1, n_elements(files_open)-1 do begin
-        temp_struct = mms_open_sdp_dce_sitl_cdf(files_open(i), coord)
+        temp_struct = mms_sitl_open_sdp_dce_sitl_cdf(files_open(i), coord)
         times = [times, temp_struct.x]
         e_field = [e_field, temp_struct.y]
       endfor

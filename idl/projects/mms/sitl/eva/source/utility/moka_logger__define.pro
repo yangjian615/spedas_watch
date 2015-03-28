@@ -39,10 +39,10 @@ Pro moka_logger::_CreateDebugFile
   ;self._DebugFile = getenv('HOME') + '/.eva_log.txt'
   cd,current=c
   self._DebugFile = c + '/.eva_log.txt'
-  
-  If (File_Test(self._DebugFile)) then Begin
-    File_Delete, self._DebugFile
-  EndIf
+;  
+;  If (File_Test(self._DebugFile)) then Begin
+;    File_Delete, self._DebugFile
+;  EndIf
   OpenW, DebugLUN, self._DebugFile, /Get_LUN
   self._DebugLUN = DebugLUN
   File_ChMod, self._DebugFile, /A_Read, /A_Write

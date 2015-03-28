@@ -2,7 +2,7 @@
 ; 
 
 
-function mms_open_sdp_dce_sitl_cdf, filename, coord
+function mms_sitl_open_sdp_dce_sitl_cdf, filename, coord
 
   var_type = ['data']
   CDF_str = cdf_load_vars(filename, varformat=varformat, var_type=var_type, $
@@ -12,7 +12,7 @@ function mms_open_sdp_dce_sitl_cdf, filename, coord
   ; Get time data
   
   times_TT_nanosec = *cdf_str.vars[0].dataptr
-  times_TT_days = times_tt_nanosec/(1e9*86400.)
+  times_TT_days = times_tt_nanosec/(1e9*86400D)
   
   times_jul = times_TT_days + julday(1, 1, 2000, 12, 0, 0)
   

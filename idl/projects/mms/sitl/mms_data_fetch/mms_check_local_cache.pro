@@ -5,7 +5,7 @@
 ; Lets keep this simple: assume one s/c, one instrument_id, one mode, one level, 
 ; and one, if any, optional descriptor
 
-pro mms_check_local_cache, local_flist, local_dir, start_date, end_date, file_flag, file_base, $
+pro mms_check_local_cache, local_flist, local_dir, start_date, end_date, file_flag, $
     mode, instrument_id, level, sc_id, optional_descriptor=optional_descriptor
   
 file_flag = 0  
@@ -39,6 +39,9 @@ end_day = fix(strmid(end_date, 8, 2))
 end_jul = julday(end_month, end_day, end_year, 0, 0, 0)
 
 if start_year ne end_year then file_flag = 1
+
+; Check only over a day boundary
+if end_jul-start_jul gt 86400 then file_flag = 1
 
 lastpos = strlen(local_dir)
 

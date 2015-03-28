@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-27 19:17:56 -0800 (Fri, 27 Feb 2015) $
-; $LastChangedRevision: 17057 $
+; $LastChangedDate: 2015-03-26 14:15:36 -0700 (Thu, 26 Mar 2015) $
+; $LastChangedRevision: 17194 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -62,13 +62,20 @@ PRO eva
 
   ;////////// INITIALIZE /////////////////////////////////
 
-
+  catch, error_status
+  if error_status ne 0 then begin
+    catch, /cancel
+    eva_error_message, error_status
+    message, /reset
+    return
+  endif
+  
   If(xregistered('eva') ne 0) then begin
     message, /info, 'You are already running EVA.'
     answer = dialog_message('You are already running EVA.',title='EVA (Event Search and Analysisl)',/center)
     return
   endif
-
+  
   vsn=float(strmid(!VERSION.RELEASE,0,3))
   if vsn eq 8.0 then begin
     answer = dialog_message("You are using IDL version 8.0. With IDL 8.0, "+ $

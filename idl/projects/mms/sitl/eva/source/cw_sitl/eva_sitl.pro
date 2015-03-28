@@ -192,7 +192,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
     endif else begin
       if keyword_set(delete) then begin;....... DELETE
         segSelect.FOM = 0.
-        eva_sitl_strct_update, segSelect
+        eva_sitl_strct_update, segSelect, user_flag=state.user_flag
         eva_sitl_stack
         tplot,verbose=0
       endif else begin;.......................... EDIT
@@ -256,7 +256,8 @@ FUNCTION eva_sitl_event, ev
   set_multi = widget_info(state.cbMulti,/button_set)
   set_trange= widget_info(state.cbWTrng,/button_set)
   submit_code = 0
-
+  sanitize_fpi = 1
+  
   case ev.id of
     state.btnAdd:  begin
       log.o,'***** EVENT: btnAdd *****'
@@ -285,6 +286,7 @@ FUNCTION eva_sitl_event, ev
       end
     state.btnSplit: begin
       res = dialog_message('Sorry, still under development.',/center,/info)
+      sanitize_fpi=0
       end
     state.btnUndo: begin
       log.o,'***** EVENT: btnUndo *****'
@@ -419,10 +421,29 @@ FUNCTION eva_sitl_event, ev
     state.drDash: begin
       ;log.o,'***** EVENT: drDash *****'
       widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
+      sanitize_fpi=0
       end
     else:
   endcase
 
+  FPI = (state.USER_FLAG eq 4)
+  if(FPI and sanitize_fpi) then begin; Revert hacked FOMstr (i.e. remove the fake segment)
+    get_data,'mms_stlm_fomstr',data=D,dl=dl,lim=lim
+    s = lim.unix_FOMstr_mod
+    snew = s
+    if (s.NSEGS gt 1) and (s.START[0] eq 0) and (s.STOP[0] eq 1) and (s.FOM[0] eq 0.) then begin
+      str_element,/add,snew, 'FOM', s.FOM[1:s.NSEGS-1]
+      str_element,/add,snew, 'START', s.START[1:s.NSEGS-1]
+      str_element,/add,snew, 'STOP', s.STOP[1:s.NSEGS-1]
+      str_element,/add,snew, 'NSEGS', s.NSEGS-1L
+      str_element,/add,snew, 'NBUFFS', s.NBUFFS-1L
+      str_element,/add,snew, 'FPICAL', 0L
+      str_element,/add,lim,'unix_FOMstr_mod',snew
+      D_hacked = eva_sitl_strct_read(snew,min(snew.START,/nan))
+      store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl
+    endif
+  endif
+  
   if ~submit_code then begin
     tn = tnames('*_stlm_*',ct)
     if ct gt 0 then s=1 else s=0
@@ -471,7 +492,9 @@ FUNCTION eva_sitl, parent, $
     set_multi: 0,$
     set_trange: 0,$
     rehighlight: 0,$
-    launchtime: systime(1,/utc)}
+    launchtime: systime(1,/utc),$
+    user_flag: 0, $
+    userType: ['Guest','MMS member','SITL','Super SITL','FPI cal']}
 
   ; ----- CONFIG (READ) -----
   cfg = eva_config_read()         ; Read config file and

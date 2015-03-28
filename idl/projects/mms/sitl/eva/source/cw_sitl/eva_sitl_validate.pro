@@ -48,6 +48,19 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
         error_times, orange_warning_times, $
         error_indices, orange_warning_indices
       end
+    3: begin
+      s = tai_FOMstr_mod
+      idx = where(strmatch(tag_names(s),'FPICAL'),ct)
+      if(ct eq 1)then begin; Make sure the FPICAL tag exists
+        if(s.FPICAL eq 1) then begin; and it is set 1
+          nmax = n_elements(s.FOM)
+          if nmax ne 1 then message,'Something is wrong'
+          sourceid='dummy'
+          mms_check_fpi_calibration_segment, s.START[0], s.STOP[0], s.FOM[0], sourceid, $
+            error_flags, error_msg, orange_warning_flags, orange_warning_msg
+        endif; s.FPICAL eq 1
+      endif; ct eq 1
+      end
     else: message,'Something is wrong!!'
   endcase
   
@@ -59,7 +72,7 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
      orange_warning_times,orange_warning_indices)
   
   ptr_free, error_times, orange_warning_times, error_indices, orange_warning_indices
-  if vcase ne 2 then begin
+  if vcase lt 2 then begin
     yellow = eva_sitl_validate_msg('YELLOW_WARNING',yellow_warning_flags, yellow_warning_msg,$
       yellow_warning_times,yellow_warning_indices)
     ptr_free, yellow_warning_times, yellow_warning_indices
@@ -75,7 +88,7 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
   endelse
   
   ct_total = error.COUNT+orange.COUNT
-  if vcase ne 2 then begin
+  if vcase lt 2 then begin
     msg = [msg, yellow.MESSAGE]
     ct_total += yellow.COUNT
   endif
@@ -108,7 +121,7 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
     msg = newmsg[1:n_elements(newmsg)-1]
     xdisplayfile,'dummy',done='Close',group=tlb,text=msg, title='VALIDATION',/grow_to_screen
   endif
-  if vcase ne 2 then begin
+  if vcase lt 2 then begin
     result = {error:error, orange:orange, yellow:yellow, msg:msg}
   endif else begin
     result = {error:error, orange:orange, msg:msg}

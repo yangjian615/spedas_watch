@@ -42,6 +42,7 @@ FUNCTION eva_data_load_sitl, state
         str_element,/add,s,'STOP',[1L]; end fo the 1st cycle
         str_element,/add,s,'NSEGS',1L
         str_element,/add,s,'NBUFFS',1L
+        str_element,/add,s,'FPICAL',1L
         str_element,/add,lim,'UNIX_FOMstr_org',s; put the hacked FOMstr into 'lim'
         D_hacked = eva_sitl_strct_read(s,min(lim.unix_FOMstr_org.START,/nan)); change the tplot-data accordingly
         store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl; here is the faked 'mms_stlm_fomstr'

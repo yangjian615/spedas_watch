@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-25 16:11:56 -0700 (Wed, 25 Mar 2015) $
-; $LastChangedRevision: 17186 $
+; $LastChangedDate: 2015-03-26 12:57:08 -0700 (Thu, 26 Mar 2015) $
+; $LastChangedRevision: 17193 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -215,7 +215,9 @@ FUNCTION eva_data_login, state, evTop
 
   if connected then begin
     
-    ;----- Update CW_DATA -----
+    ;---------------------
+    ; Update DATA MODULE
+    ;---------------------
     state.paramID = 0
     state = eva_data_paramSetList(state)
     widget_control, state.sbMMS, SENSITIVE=1
@@ -232,21 +234,28 @@ FUNCTION eva_data_login, state, evTop
       start_time = time_string(unix_FOMstr.timestamps[0],precision=3)
       end_time = time_string(unix_FOMstr.timestamps[nmax-1],precision=3)
       
-      ;---- Update CW_SITL ----
+      ;---------------------
+      ; Update SITL MODULE
+      ;---------------------
       lbl = ' '+start_time+' - '+end_time
       log.o,'updating cw_sitl target_time label:'
       log.o, lbl
       id_sitl = widget_info(state.parent, find_by_uname='eva_sitl')
       sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
       widget_control, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY;******* GET
-      widget_control, sitl_state.lblTgtTimeMain, SET_VALUE=lbl
-      widget_control, sitl_state.bsAction0, SENSITIVE=(user_flag ge 2);...... SITL
-      widget_control, sitl_state.bsActionSubmit, SENSITIVE=(user_flag ge 2)
-      this_hlSet = (user_flag ge 3) ? sitl_state.hlSet2 : sitl_state.hlSet;...Super-SITL
-      widget_control, sitl_state.drpHighlight, SET_VALUE=this_hlSet
+      widget_control, sitl_state.lblTgtTimeMain, SET_VALUE=lbl; target time time label
+      widget_control, sitl_state.bsAction0, SENSITIVE=(user_flag ge 2); main SITL control
+      widget_control, sitl_state.bsActionSubmit, SENSITIVE=(user_flag ge 2); submit button
+      this_hlSet = (user_flag ge 3) ? sitl_state.hlSet2 : sitl_state.hlSet; hightlight list
+      widget_control, sitl_state.drpHighlight, SET_VALUE=this_hlSet; highlight droplit
+      str_element,/add,sitl_state,'user_flag',user_flag; synchronize user_flag/userType
+      str_element,/add,sitl_state,'userType',state.userType;
+      widget_control, sitl_state.btnSplit, SENSITIVE= (user_flag ne 4); disable "split" if FPI-cal
       widget_control, sitl_stash, SET_UVALUE=sitl_state, /NO_COPY;******* SET
-  
-      ;---- Update CW_DATA ----
+      
+      ;---------------------
+      ; Update DATA MODULE
+      ;---------------------
       log.o,'updating cw_data start and end times'
       str_element,/add,state,'start_time',start_time
       str_element,/add,state,'end_time',end_time
@@ -265,7 +274,7 @@ FUNCTION eva_data_login, state, evTop
     if(user_flag ge 2)then begin
       ut = state.userType[user_flag]
       nl = ssl_newline()
-      msg = 'Logged-in! with '+ut+' features enabled.'+nl+nl+$
+      msg = 'Logged-in with <'+ut+'> features enabled.'+nl+nl+$
         'If you are not an active member of '+ut+', you can still play'+nl+$
         'around with the features, but your submission will be rejected'+nl+$
         'by the SDC.'
@@ -325,11 +334,9 @@ FUNCTION eva_data_event, ev
     state.drpUserType: begin
       log.o,'***** EVENT: drpUserType *****'
       str_element,/add,state,'user_flag',ev.INDEX
-      
       if state.USER_FLAG ne 0 then begin
         state = eva_data_login(state,ev.TOP)
       endif
-
       if state.USER_FLAG eq 0 then begin
         log.o,'resetting cw_data start and end times'
         start_time = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/00:00:00'
@@ -342,10 +349,6 @@ FUNCTION eva_data_event, ev
         widget_control, state.drpSet, SET_VALUE=state.paramSetList
       endif
       end
-;    state.btnLogin: begin
-;      log.o,'***** EVENT: login *****' 
-;      state = eva_data_login(state,ev.TOP)
-;      end
     state.fldStartTime: begin
       log.o,'***** EVENT: fldStartTime *****'
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
@@ -380,41 +383,6 @@ FUNCTION eva_data_event, ev
       eva_data_update_time, state
       obj_destroy, otime
     end
-    ;    state.btnCal: begin
-    ;      otime = obj_new('spd_ui_time')
-    ;      otime->SetProperty,tstring=state.eventdate
-    ;      spd_ui_calendar,'EVA Calendar',otime,ev.top
-    ;      otime->GetProperty,tstring=tstring
-    ;      str_element,/add,state,'eventdate',strmid(tstring,0,10)
-    ;      widget_control, state.fldDate, SET_VALUE=state.eventdate
-    ;      eva_data_update_date, state
-    ;    end
-    ;    state.fldDura:  begin
-    ;      widget_control, ev.id, GET_VALUE=new_duration
-    ;      new_duration = double(new_duration[0]); in unit of days
-    ;      str_element,/add,state,'duration',new_duration
-    ;      eva_data_update_date, state
-    ;    end
-    ;    state.fldDate:   begin
-    ;      widget_control, ev.id, GET_VALUE=new_eventdate;get new eventdate
-    ;      str_element,/add,state,'eventdate',new_eventdate
-    ;      eva_data_update_date, state ; not updating fldDate
-    ;    end
-    ;    state.btnDateF:  begin
-    ;      new_eventdate = strmid(time_string(str2time(state.eventdate)+86400.d*state.stepdate),0,10)
-    ;      str_element,/add,state,'eventdate',new_eventdate
-    ;      eva_data_update_date, state,/update
-    ;    end
-    ;    state.btnDateP:  begin
-    ;      new_eventdate = strmid(time_string(str2time(state.eventdate)-86400.d*state.stepdate),0,10)
-    ;      str_element,/add,state,'eventdate',new_eventdate
-    ;      eva_data_update_date, state,/update
-    ;    end
-    ;    state.fldDateS:  begin
-    ;      widget_control, ev.id, GET_VALUE=new_step
-    ;      str_element,/add,state,'stepdate',new_step
-    ;    end
-    
     state.bgTHM: state = eva_data_probelist(state)
     state.bgMMS: state = eva_data_probelist(state)
     state.drpSet: begin

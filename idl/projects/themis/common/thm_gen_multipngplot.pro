@@ -26,8 +26,8 @@
 ;HISTORY:
 ; 21-may-2008, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-03-19 12:11:26 -0700 (Thu, 19 Mar 2015) $
-; $LastChangedRevision: 17148 $
+; $LastChangedDate: 2015-03-26 11:16:29 -0700 (Thu, 26 Mar 2015) $
+; $LastChangedRevision: 17191 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_gen_multipngplot.pro $
 ;-
 Pro thm_gen_multipngplot, filename_proto, date0, directory = directory, $
@@ -42,7 +42,6 @@ Pro thm_gen_multipngplot, filename_proto, date0, directory = directory, $
   ymd = year+month+day
 
   date_double = time_double(date[0])
-  timespan,date_double,1
   if keyword_set(directory) then begin
     dir = directory[0]
     dir = strtrim(dir, 2)
@@ -50,7 +49,8 @@ Pro thm_gen_multipngplot, filename_proto, date0, directory = directory, $
     If(ll Ne '/' And ll Ne '\') Then dir = dir+'/'
   endif else dir = './'
 ;Full day plot
-  If(keyword_set(vars24)) Then tplot, vars24 Else tplot
+  tr24 = date_double+3600.0d0*[0, 24]
+  If(keyword_set(vars24)) Then tplot, vars24, trange=tr24 Else tplot,trange=tr24
   makepng,dir+filename_proto+'_'+ymd+'_0024',/no_expose,_extra = _extra
 ;six-hour plots
   For j = 0, 3 Do Begin

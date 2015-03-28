@@ -157,10 +157,10 @@ endif else begin
   ; Expand start time (-1 hour) and duration (+2 hours)
   ; so that there are no gaps due to packets missing 
   ; at the beginning or the end of the time span 
-  date_orig = date 
-  dur_orig = dur
-  date=time_string(time_double(date)-60*60D)
-  dur = dur + 2.0/24.0
+  date_ext=time_string(time_double(date)-60*60D)
+  dur_ext = dur + 2.0/24.0
+  ;t0_ext = time_double(date_ext)  
+ ; t1_ext = time_double(t0_ext + dur_ext*60D*60D*24D)
  
   t0 = time_double(date)
   t1 = t0+dur*60D*60D*24D
@@ -208,7 +208,7 @@ if not keyword_set(dont_delete_data) then begin
   dcache = ''
 endif
 
-timespan,date,dur
+timespan,date_ext,dur_ext
 
 ;load magnetic field fit data
 ;-----------------------------
@@ -226,7 +226,7 @@ index_state=where(thx+'_state_spinras' eq tnames())
 if (index_fit[0] eq -1 or index_state[0] eq -1) then begin
   filler=fltarr(2,3)
   filler[*,*]=float('NaN')
-  store_data,thx+'_fgs_gse',data={x:time_double(date)+findgen(2),y:filler}
+  store_data,thx+'_fgs_gse',data={x:time_double(date_ext)+findgen(2),y:filler}
   ylim,thx+'_fgs_gse',-100,100,0
 endif else begin
   thm_cotrans,thx+'_fgs',out_suf='_gse', in_c='dsl', out_c='gse'
@@ -262,7 +262,7 @@ for i=0,n_elements(fbk_tvars)-1 do begin
     filler = fltarr(2, 6)
     filler[*, *] = float('NaN')
     name = thx+'_fb_'+strcompress(string(i+1), /remove_all)
-    store_data, name, data = {x:time_double(date)+findgen(2), y:filler, v:findgen(6)}
+    store_data, name, data = {x:time_double(date_ext)+findgen(2), y:filler, v:findgen(6)}
     options, name, 'spec', 1
     ylim, name, 1, 1000, 1
     zlim, name, 0, 0, 1
@@ -319,7 +319,7 @@ if index_sst eq -1 then begin
   filler = fltarr(2, 16)
   filler[*,*]=float('NaN')
   store_data, thx+'_psif_en_eflux', $
-    data = {x:time_double(date)+findgen(2)*86400., y:filler, v:findgen(16)}
+    data = {x:time_double(date_ext)+findgen(2)*86400., y:filler, v:findgen(16)}
   name = thx+'_psif_en_eflux'
   options, name, 'spec', 1
   ylim, name, 1, 1000, 1
@@ -346,7 +346,7 @@ if index_sst eq -1 then begin
   filler = fltarr(2, 16)
   filler[*, *] = float('NaN')
   store_data, thx+'_psef_en_eflux', $
-    data = {x:time_double(date)+findgen(2), y:filler, v:findgen(16)}
+    data = {x:time_double(date_ext)+findgen(2), y:filler, v:findgen(16)}
   name = thx+'_psef_en_eflux'
   options, name, 'spec', 1
   ylim, name, 1, 1000, 1
@@ -420,7 +420,7 @@ For j = 0, 1 Do Begin
     filler = fltarr(2, 32)
     filler[*, *] = float('Nan')
     name1 = itest+'_en_eflux'
-    store_data, name1, data = {x:time_double(date)+findgen(2), y:filler, v:findgen(32)}
+    store_data, name1, data = {x:time_double(date_ext)+findgen(2), y:filler, v:findgen(32)}
     zlim, name1, 1d3, 7.5d8, 1
     ylim, name1, 3., 40000., 1
 ;    options, name1, 'ztitle', 'Eflux !C!C eV/cm!U2!N!C-s-sr-eV'
@@ -446,7 +446,7 @@ For j = 0, 1 Do Begin
   if index_esa_i_d[0] eq -1 then begin
     filler = fltarr(2)
     filler[*] = float('Nan')
-    store_data, itest+'_density', data = {x:time_double(date)+findgen(2), y:filler}
+    store_data, itest+'_density', data = {x:time_double(date_ext)+findgen(2), y:filler}
 ;    options, itest+'_density', 'ytitle', 'Ni '+thx+'!C!C1/cm!U3'
     options, itest+'_density', 'ytitle', 'Ni'
   endif else begin
@@ -460,7 +460,7 @@ For j = 0, 1 Do Begin
   if index_esa_i_v[0] eq -1 then begin
     filler = fltarr(2, 3)
     filler[*, *] = float('Nan')
-    store_data, itest+'_velocity_dsl', data = {x:time_double(date)+findgen(2), y:filler}
+    store_data, itest+'_velocity_dsl', data = {x:time_double(date_ext)+findgen(2), y:filler}
     options, itest+'_velocity_dsl', 'ytitle', 'VI!C[km/s]'
     options, itest+'_velocity_dsl', 'ysubtitle', ''
   endif else begin
@@ -484,7 +484,7 @@ For j = 0, 1 Do Begin
   if index_esa_i_t[0] eq -1 then begin
     filler = fltarr(2, 3)
     filler[*, *] = float('Nan')
-    store_data, itest+'_t3', data = {x:time_double(date)+findgen(2), y:filler}
+    store_data, itest+'_t3', data = {x:time_double(date_ext)+findgen(2), y:filler}
     options, itest+'_t3', 'ytitle', 'Ti!C[eV]'
     options, itest+'_t3', 'ysubtitle', ''
   endif else begin
@@ -501,7 +501,7 @@ For j = 0, 1 Do Begin
     filler = fltarr(2, 32)
     filler[*, *] = float('Nan')
     name1 = etest+'_en_eflux'
-    store_data, name1, data = {x:time_double(date)+findgen(2), y:filler, v:findgen(32)}
+    store_data, name1, data = {x:time_double(date_ext)+findgen(2), y:filler, v:findgen(32)}
     zlim, name1, 1d4, 7.5d8, 1
     ylim, name1, 3., 40000., 1
 ;    options, name1, 'ztitle', 'Eflux !C!C eV/cm!U2!N!C-s-sr-eV'
@@ -527,14 +527,14 @@ For j = 0, 1 Do Begin
   if index_esa_e_d[0] eq -1 then begin
     filler = fltarr(2)
     filler[*] = float('Nan')
-    store_data, etest+'_density', data = {x:time_double(date)+findgen(2), y:filler}
+    store_data, etest+'_density', data = {x:time_double(date_ext)+findgen(2), y:filler}
 ;    options, etest+'_density', 'ytitle', 'Ne '+thx+'!C!C1/cm!U3'
     options, etest+'_density', 'ytitle', 'Ne!C[1/cc]'
     options, etest+'_density', 'ysubtitle', ''
 no_npot:
     filler = fltarr(2)
     filler[*] = float('Nan')
-    store_data, etest+'_density_npot', data = {x:time_double(date)+findgen(2), y:filler}
+    store_data, etest+'_density_npot', data = {x:time_double(date_ext)+findgen(2), y:filler}
     options, etest+'_density_npot', 'ytitle', 'Ne!C[1/cc]'
     options, etest+'_density_npot', 'ysubtitle', ''
   endif else begin 
@@ -559,7 +559,7 @@ no_npot:
   if index_esa_e_v[0] eq -1 then begin
     filler = fltarr(2, 3)
     filler[*, *] = float('Nan')
-    store_data, etest+'_velocity_dsl', data = {x:time_double(date)+findgen(2), y:filler}
+    store_data, etest+'_velocity_dsl', data = {x:time_double(date_ext)+findgen(2), y:filler}
 ;    options, etest+'_velocity_dsl', 'ytitle', 'Ve '+thx+'!C!Ckm/s'
     options, etest+'_velocity_dsl', 'ytitle', 'VE!C[km/s]'
     options, etest+'_velocity_dsl', 'ysubtitle', ''
@@ -575,7 +575,7 @@ no_npot:
   if index_esa_e_t[0] eq -1 then begin
     filler = fltarr(2, 3)
     filler[*, *] = float('Nan')
-    store_data, etest+'_t3', data = {x:time_double(date)+findgen(2), y:filler}
+    store_data, etest+'_t3', data = {x:time_double(date_ext)+findgen(2), y:filler}
     options, etest+'_t3', 'ytitle', 'Te!C[eV]'
     options, etest+'_t3', 'ysubtitle', ''
   endif else begin
@@ -638,7 +638,7 @@ load_position='gmag'
 
 thm_load_pseudoAE,datatype='ae'
 if tnames('thg_idx_ae') eq '' then begin
-  store_data,'thg_idx_ae',data={x:time_double(date)+dindgen(2), y:replicate(!values.d_nan,2)}
+  store_data,'thg_idx_ae',data={x:time_double(date_ext)+dindgen(2), y:replicate(!values.d_nan,2)}
 endif
 options,'thg_idx_ae',ytitle='THEMIS!CAE Index'
 
@@ -660,7 +660,7 @@ filler[*, *] = float('NaN')
 ;Harald requests using FSMI as first choice:
 fsmi_site = tnames('*ask*fsmi*')
 if fsmi_site[0] ne '' then copy_data, fsmi_site[0], 'Keogram' else begin
-  if asi_sites[0] ne '' then copy_data, asi_sites[0], 'Keogram' else store_data, 'Keogram', data = {x:time_double(date)+findgen(2), y:filler, v:findgen(10)}
+  if asi_sites[0] ne '' then copy_data, asi_sites[0], 'Keogram' else store_data, 'Keogram', data = {x:time_double(date_ext)+findgen(2), y:filler, v:findgen(10)}
 endelse
 
 ; Get position info
@@ -822,21 +822,17 @@ if keyword_set(gui_plot) then begin ; for GUI plots we have some differences
     Endif Else Begin
         filler=fltarr(2,16)
         filler[*,*]=float('NaN')
-        store_data,thx+'_roi_bar',data={x:time_double(date)+findgen(2),y:filler}
+        store_data,thx+'_roi_bar',data={x:time_double(date_ext)+findgen(2),y:filler}
         roi_bar=thx+'_roi_bar'
     Endelse
     
-    date = date_orig
-    dur = dur_orig
     timespan,date,dur
-    tplot_gui,vars_full,/no_verify,/no_update,/add_panel,no_draw=keyword_set(no_draw),  var_label = [thx+'_state_pos_gse_z', thx+'_state_pos_gse_y', thx+'_state_pos_gse_x']
+    tplot_gui,vars_full,trange=[t0,t1],/no_verify,/no_update,/add_panel,no_draw=keyword_set(no_draw),  var_label = [thx+'_state_pos_gse_z', thx+'_state_pos_gse_y', thx+'_state_pos_gse_x']
 
 endif else begin
   ;for server plots
-  date = date_orig
-  dur = dur_orig
   timespan,date,dur
-  tplot, vars_full, title = probes_title[pindex[0]]+' (TH-'+strupcase(sc)+')', $
+  tplot, vars_full,trange=[t0,t1], title = probes_title[pindex[0]]+' (TH-'+strupcase(sc)+')', $
     var_label = [thx+'_state_pos_gse_z', thx+'_state_pos_gse_y', thx+'_state_pos_gse_x']
 endelse
 

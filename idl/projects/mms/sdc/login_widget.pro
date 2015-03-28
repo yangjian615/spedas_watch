@@ -93,11 +93,11 @@ function login_widget, title=title, cancel=cancel, $
   base = widget_base(title=title, column=1, /modal, /base_align_center, group_leader=group_leader)
   
   ; Username and password fields
-  unbase = widget_base(base, row=1)
-  usernameID= cw_field(unbase, title='Username: ', value=username)
-  pwbase = widget_base(base, row=1)
+  unbase = widget_base(base, row=1,tab_mode=1)
+  usernameID= cw_field(unbase, title='Username: ', value=username, tab_mode=1)
+  pwbase = widget_base(base, row=1,tab_mode=1)
   passwordLabel = widget_label(pwbase, value='Password: ')
-  passwordID = widget_text(pwbase, /all_events, editable=0)
+  passwordID = widget_text(pwbase, /all_events, editable=0, tab_mode=1)
   
   ; Buttons
   bbase = widget_base(base, row=1)
