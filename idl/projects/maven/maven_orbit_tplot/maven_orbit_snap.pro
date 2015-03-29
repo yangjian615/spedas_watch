@@ -17,7 +17,9 @@
 ;KEYWORDS:
 ;       PREC:     Plot the position of the spacecraft at the selected time,
 ;                 superimposed on the orbit.  Otherwise, the periapsis 
-;                 location for each orbit is plotted.
+;                 location for each orbit is plotted.  For time ranges less
+;                 than one day, the default is PREC = 1.  Otherwise the 
+;                 default is 0.
 ;
 ;       MHD:      Plot the orbit superimposed on an image of an MHD simulation
 ;                 of the solar wind interaction with Mars (from Ma).
@@ -31,6 +33,8 @@
 ;
 ;       LATLON:   Plot MSO longitudes and latitudes of periapsis (PREC=0) or 
 ;                 the spacecraft (PREC=1) in a separate window.
+;
+;       CYL:      Plot cylindrical projection (x, sqrt(y^2 + z^2)).
 ;
 ;       XZ:       Plot only the XZ projection.
 ;
@@ -55,14 +59,14 @@
 ;       KEEP:     Do not kill the plot windows on exit.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 17:01:07 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16929 $
+; $LastChangedDate: 2015-03-27 15:15:27 -0700 (Fri, 27 Mar 2015) $
+; $LastChangedRevision: 17201 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
-    npole=npole, noerase=noerase, keep=keep, color=color, reset=reset
+    npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex
@@ -70,6 +74,10 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)
   usersym,a*cos(phi),a*sin(phi),/fill
+
+  tplot_options, get_opt=topt
+  delta_t = abs(topt.trange[1] - topt.trange[0])
+  if ((size(prec,/type) eq 0) and (delta_t lt 86400D)) then prec = 1
 
   if keyword_set(prec) then pflg = 1 else pflg = 0
   if (size(color,/type) gt 0) then cflg = 1 else cflg = 0  
@@ -111,6 +119,8 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   endif else mflg = 0
   
   if keyword_set(orbit) then oflg = 1 else oflg = 0
+  
+  if keyword_set(cyl) then cyflg = 1 else cyflg = 0
 
   Twin = !d.window
 
@@ -154,7 +164,14 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     Gwin = !d.window
   endif
 
-  if (mflg gt 0) then mag_mola_orbit, -100., -100., big=mbig, /reset
+  if (cyflg) then begin
+    window,/free,xsize=600,ysize=350
+    Cwin = !d.window
+  endif
+
+  if (mflg gt 0) then begin
+    if (~noerase or reset) then mag_mola_orbit, -100., -100., big=mbig, /reset
+  endif
 
   wset,Twin
   ctime2,trange,npoints=1,/silent,button=button
@@ -494,6 +511,73 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
     !p.multi = 0
 
+; Put up cylindrical projection
+
+   if (cyflg) then begin
+     wset, Cwin
+
+     x = xo
+     y = yo
+     z = zo
+     s = sqrt(y*y + z*z)
+
+     plot,xm,ym,xrange=xrange,yrange=[0,yrange[1]],/xsty,/ysty, $
+         xtitle='X (Rp)',ytitle='S (Rp)',charsize=2.0,title=msg
+     oplot,xm,ym,color=6
+     oplot,x,s
+
+    if (pflg) then i = imid else i = imin
+    oplot,[x[i]],[s[i]],psym=8,color=5
+
+    oplot,xs,sqrt(ys*ys + zs*zs),color=4
+    oplot,xp,sqrt(yp*yp + zp*zp),color=5
+    oplot,xw,sqrt(yw*yw + zw*zw),color=2
+
+; Shock conic
+
+    phi = (-150. + findgen(301))*!dtor
+    rho = L/(1. + psi*cos(phi))
+
+    xshock = x0 + rho*cos(phi)
+    zshock = rho*sin(phi)
+    oplot,xshock,zshock,color=3,line=1
+
+; MPB conic
+
+    phi = (-160. + findgen(160))*!dtor
+
+    rho = L_p1/(1. + psi_p1*cos(phi))
+    x1 = x0_p1 + rho*cos(phi)
+    z1 = rho*sin(phi)
+
+    rho = L_p2/(1. + psi_p2*cos(phi))
+    x2 = x0_p2 + rho*cos(phi)
+    z2 = rho*sin(phi)
+
+    indx = where(x1 ge 0)
+    jndx = where(x2 lt 0)
+    xpileup = [x2[jndx], x1[indx]]
+    zpileup = [z2[jndx], z1[indx]]
+
+    phi = findgen(161)*!dtor
+
+    rho = L_p1/(1. + psi_p1*cos(phi))
+    x1 = x0_p1 + rho*cos(phi)
+    z1 = rho*sin(phi)
+
+    rho = L_p2/(1. + psi_p2*cos(phi))
+    x2 = x0_p2 + rho*cos(phi)
+    z2 = rho*sin(phi)
+
+    indx = where(x1 ge 0)
+    jndx = where(x2 lt 0)
+    xpileup = [xpileup, x1[indx], x2[jndx]]
+    zpileup = [zpileup, z1[indx], z2[jndx]]
+
+    oplot,xpileup,zpileup,color=3,line=1
+
+   endif
+
 ; Put up the ground track
 
     if (gflg) then begin
@@ -610,6 +694,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   if not keyword_set(keep) then begin
     wdelete, Owin
     if (gflg) then wdelete, Gwin
+    if (cyflg) then wdelete, Cwin
     if (npflg gt 0) then wdelete, 27
     if (mflg gt 0)  then wdelete, 29
     if (nflg gt 0)  then wdelete, 30

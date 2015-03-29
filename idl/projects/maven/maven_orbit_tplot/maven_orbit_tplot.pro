@@ -39,7 +39,7 @@
 ;                 pointing.
 ;
 ;       IALT:     Ionopause altitude.  Highly variable, but nominally ~400 km.
-;                 For display only - not included in statistics.
+;                 For display only - not included in statistics.  Default is NaN.
 ;
 ;       RESULT:   Named variable to hold the MSO ephemeris with some calculated
 ;                 quantities.
@@ -50,22 +50,25 @@
 ;                 uses reconstructed SPK kernels, as available, then predicts.
 ;                 This is the default.
 ;
-;       EXTENDED: Load the long-term predict ephemeris.
+;       EXTENDED: Load the long-term predict ephemeris (out to Nov. 2018).
+;
+;       HIRES:    Only works when EXTENDED is set.  If set, load the 20-sec ephemeris;
+;                 otherwise, load the 60-sec ephemeris.
 ;
 ;       LOADONLY: Create the TPLOT variables, but do not plot.
 ;
 ;       VARS:     Array of TPLOT variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 17:00:47 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16928 $
+; $LastChangedDate: 2015-03-27 15:14:37 -0700 (Fri, 27 Mar 2015) $
+; $LastChangedRevision: 17200 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
-                       extended=extended, eph=eph, current=current, loadonly=loadonly, vars=vars, $
-                       ellip=ellip
+                       extended=extended, eph=eph, current=current, loadonly=loadonly, $
+                       vars=vars, ellip=ellip, hires=hires
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex
@@ -76,9 +79,10 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   R_vol = (R_equ*R_equ*R_pol)^(1D/3D)
 
   if keyword_set(domex) then domex = 1 else domex = 0
-  if not keyword_set(ialt) then ialt = 400.
+  if not keyword_set(ialt) then ialt = !values.f_nan
   if keyword_set(ellip) then eflg = 1 else eflg = 0
   if keyword_set(extended) then cflg = 0 else cflg = 1
+  if keyword_set(hires) then res = '20sec' else res = '60sec'
 
   rootdir = 'maven/anc/spice/sav/'
   
@@ -126,7 +130,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   endif else begin
     if (cflg) then fname = 'maven_spacecraft_mso_??????' + '.sav' $
-              else fname = 'maven_orb_mso_28oct11.sav'
+              else fname = 'maven_spacecraft_mso_ref_' + res + '.sav'
 
     file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
     nfiles = n_elements(file)
@@ -137,8 +141,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
       if (finfo.exists) then begin
         print, "Loading: ", file_basename(file[i])
         restore, file[i]
-        if (cflg) then eph = [temporary(eph), maven_mso] $
-                  else eph = [temporary(eph), maven]
+        eph = [temporary(eph), maven_mso]
       endif else print, "File not found: ", file[i]
     endfor
     maven = temporary(eph[1:*])
@@ -170,7 +173,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     maven = 0
 
     if (cflg) then fname = 'maven_spacecraft_geo_??????' + '.sav' $
-              else fname = 'maven_orb_geo_28oct11.sav'
+              else fname = 'maven_spacecraft_geo_ref_' + res + '.sav'
 
     file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
     nfiles = n_elements(file)
@@ -181,8 +184,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
       if (finfo.exists) then begin
         print, "Loading: ", file_basename(file[i])
         restore, file[i]
-        if (cflg) then eph = [temporary(eph), maven_geo] $
-                  else eph = [temporary(eph), maven_g]
+        eph = [temporary(eph), maven_geo]
       endif else print, "File not found: ", file[i]
     endfor
     maven_g = temporary(eph[1:*])
