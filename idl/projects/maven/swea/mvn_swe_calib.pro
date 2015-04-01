@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-04 13:37:36 -0800 (Wed, 04 Feb 2015) $
-; $LastChangedRevision: 16855 $
+; $LastChangedDate: 2015-03-30 17:26:08 -0700 (Mon, 30 Mar 2015) $
+; $LastChangedRevision: 17205 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -93,6 +93,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 
   if (not ok) then begin
     if keyword_set(chksum) then begin
+      nhsk = n_elements(swe_hsk)
       swe_active_chksum = chksum
       tabnum = mvn_swe_tabnum(swe_active_chksum)
       if (nhsk eq 0L) then begin
@@ -157,6 +158,15 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
   swe_swp[*,0] = swp.e
   for i=0,31 do swe_swp[(2*i):(2*i+1),1] = sqrt(swe_swp[(2*i),0] * swe_swp[(2*i+1),0])
   for i=0,15 do swe_swp[(4*i):(4*i+3),2] = sqrt(swe_swp[(4*i),1] * swe_swp[(4*i+3),1])
+
+  energy = swe_swp[*,0]
+  denergy = energy
+  denergy[0] = abs(energy[0] - energy[1])
+  for i=1,62 do denergy[i] = abs(energy[i-1] - energy[i+1])/2.
+  denergy[63] = abs(energy[62] - energy[63])
+
+  swe_energy  = energy
+  swe_denergy = denergy
 
 ; Energy Resolution (dE/E, FWHM), which can be a function of elevation, 
 ; so this array has an additional dimension.  Calibrations show that the

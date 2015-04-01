@@ -6,7 +6,7 @@
 local_dir = '/Users/frederickwilder/'
 ;
 ;Grab latest fom structure from SOC
-get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_message
+get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_msg
 
 restore, fom_file, /verbose
 
@@ -53,8 +53,8 @@ test_seglengths = (new_stops-new_starts)+1
 ; Lets create some errors
 new_foms(2) = new_foms(2) + 175
 new_foms(4) = new_foms(4) + 175
-new_foms(7) = new_foms(7) + 300
-new_foms(9) = new_foms(9) + 300
+new_foms(6) = new_foms(6) + 300
+;new_foms(9) = new_foms(9) + 300
 
 new_seglengths = (new_stops-new_starts) + 1
 
@@ -89,6 +89,8 @@ new_fomstr = {valid:            old_fomstr.valid, $
               oldestavailableburstdata: old_fomstr.oldestavailableburstdata, $
               metadataevaltime: old_fomstr.metadataevaltime}
 
+
+stop
 ; convert back to TAI before checking
 
 mms_convert_fom_unix2tai, new_fomstr, new_tai_fomstr
@@ -189,8 +191,11 @@ print, orange_warning_msg(loc_orange)
 print, 'Yellow_warnings: '
 loc_yellow = where(yellow_warning_flags ne 0, count_yellow)
 print, yellow_warning_msg(loc_yellow)
+stop
+print, *yellow_warning_times(loc_yellow(0))
 print, '-------------------------------------------------------------'
 print, ' '
+
 
 ;----------------------------------------------------------------------------
 ; Finally, we will submit the FOM structure and override the warning

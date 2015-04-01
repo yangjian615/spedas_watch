@@ -20,6 +20,8 @@ END
 
 FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
   quiet=quiet, vcase=vcase
+  compile_opt idl2
+
   if n_elements(vcase) eq 0 then vcase = 0
   
   ;---------------------
@@ -43,23 +45,47 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
       end
     2: begin
       mms_back_structure_check_modifications, tai_FOMStr_mod, tai_FOMStr_org, $
-        error_flags, orange_warning_flags, $
-        error_msg,   orange_warning_msg,   $
-        error_times, orange_warning_times, $
-        error_indices, orange_warning_indices
+        error_flags,  yellow_warning_flags, orange_warning_flags, $
+        error_msg,    yellow_warning_msg,   orange_warning_msg, $
+        error_times,  yellow_warning_times, orange_warning_times, $
+        error_indices,yellow_warning_indices,orange_warning_indices
       end
     3: begin
       s = tai_FOMstr_mod
       idx = where(strmatch(tag_names(s),'FPICAL'),ct)
       if(ct eq 1)then begin; Make sure the FPICAL tag exists
-        if(s.FPICAL eq 1) then begin; and it is set 1
-          nmax = n_elements(s.FOM)
-          if nmax ne 1 then message,'Something is wrong'
-          sourceid='dummy'
-          mms_check_fpi_calibration_segment, s.START[0], s.STOP[0], s.FOM[0], sourceid, $
-            error_flags, error_msg, orange_warning_flags, orange_warning_msg
-        endif; s.FPICAL eq 1
-      endif; ct eq 1
+        nmax = n_elements(s.FOM)
+        ;if nmax ne 1 then message,'Something is wrong'
+        sourceid = eva_sourceid()
+        mms_check_fpi_calibration_segment, s.START[0], s.STOP[0], s.FOM[0], sourceid, $
+          error_flags, error_msg, $
+          yellow_warning_flags, yellow_warning_msg, $
+          orange_warning_flags, orange_warning_msg
+        ct = n_elements(error_flags);.......... dummy times/indices
+        error_times = ptrarr(ct, /allocate_heap)
+        error_indices = ptrarr(ct, /allocate_heap)
+        convert_time_stamp, s.cyclestart, replicate(s.START[0],ct), temp_times
+        for c=0,ct-1 do begin
+          (*error_times[c]) = temp_times[c]
+          (*error_indices[c]) = 1L;replicate(1L,ct)
+        endfor
+        ct = n_elements(yellow_warning_flags);.......... dummy times/indices
+        yellow_warning_times = ptrarr(ct, /allocate_heap)
+        yellow_warning_indices = ptrarr(ct, /allocate_heap)
+        convert_time_stamp, s.cyclestart, replicate(s.START[0],ct), temp_times
+        for c=0,ct-1 do begin
+          (*yellow_warning_times[c]) = temp_times[c]
+          (*yellow_warning_indices[c]) = 1L;replicate(1L,ct)
+        endfor
+        ct = n_elements(orange_warning_flags);.......... dummy times/indices
+        orange_warning_times = ptrarr(ct, /allocate_heap)
+        orange_warning_indices = ptrarr(ct, /allocate_heap)
+        convert_time_stamp, s.cyclestart, replicate(s.START[0],ct), temp_times
+        for c=0,ct-1 do begin
+          (*orange_warning_times[c]) = temp_times[c]
+          (*orange_warning_indices[c]) = 1L;replicate(1L,ct)
+        endfor
+      endif else stop; ct eq 1
       end
     else: message,'Something is wrong!!'
   endcase
@@ -67,32 +93,40 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
   ;---------------------
   ; REFORMAT MESSAGES
   ;---------------------
+  if n_elements(error_flags) eq 0 then stop
   error  = eva_sitl_validate_msg('ERROR', error_flags, error_msg, error_times, error_indices)
   orange = eva_sitl_validate_msg('ORANGE_WARNING',orange_warning_flags, orange_warning_msg,$
      orange_warning_times,orange_warning_indices)
+  yellow = eva_sitl_validate_msg('YELLOW_WARNING',yellow_warning_flags, yellow_warning_msg,$
+     yellow_warning_times,yellow_warning_indices)
   
-  ptr_free, error_times, orange_warning_times, error_indices, orange_warning_indices
-  if vcase lt 2 then begin
-    yellow = eva_sitl_validate_msg('YELLOW_WARNING',yellow_warning_flags, yellow_warning_msg,$
-      yellow_warning_times,yellow_warning_indices)
-    ptr_free, yellow_warning_times, yellow_warning_indices
-  endif
+  ptr_free, error_times, error_indices
+  ptr_free, orange_warning_times, orange_warning_indices
+  ptr_free, yellow_warning_times, yellow_warning_indices
   
   ;---------------------
   ; DISPLAY MESSAGES
   ;---------------------
+  if vcase eq 3 then begin
+     msg = ['****************************',$
+            '******* FPI CAL MODE *******',$
+            '****************************']
+  endif else msg = ''
+  
   if n_elements(header) eq 0 then begin
-    msg = [error.MESSAGE, orange.MESSAGE]
+    msg = [msg, error.MESSAGE, orange.MESSAGE, yellow.MESSAGE]
   endif else begin
-    msg = [header, error.MESSAGE, orange.MESSAGE]
+    msg = [msg, header, error.MESSAGE, orange.MESSAGE, yellow.MESSAGE]
   endelse
   
-  ct_total = error.COUNT+orange.COUNT
-  if vcase lt 2 then begin
-    msg = [msg, yellow.MESSAGE]
-    ct_total += yellow.COUNT
-  endif
+
+  ct_total = error.COUNT+orange.COUNT+yellow.COUNT
   
+;  if vcase lt 2 then begin
+;    msg = [msg, yellow.MESSAGE]
+;    ct_total += yellow.COUNT
+;  endif
+;  
   if(ct_total eq 0)then begin
     ex = '####################'
     msg = [msg, ex,' No error/warning',ex]
@@ -121,10 +155,11 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
     msg = newmsg[1:n_elements(newmsg)-1]
     xdisplayfile,'dummy',done='Close',group=tlb,text=msg, title='VALIDATION',/grow_to_screen
   endif
-  if vcase lt 2 then begin
-    result = {error:error, orange:orange, yellow:yellow, msg:msg}
-  endif else begin
-    result = {error:error, orange:orange, msg:msg}
-  endelse
+  result = {error:error, orange:orange, yellow:yellow, msg:msg}
+;  if vcase lt 2 then begin
+;    result = {error:error, orange:orange, yellow:yellow, msg:msg}
+;  endif else begin
+;    result = {error:error, orange:orange, msg:msg}
+;  endelse
   return, result
 END

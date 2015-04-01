@@ -332,9 +332,8 @@ FUNCTION eva_sitl_event, ev
         mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
         mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
         header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
-        r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, header=header)
-        ;ct_total = r.error.COUNT+r.orange.COUNT+r.yellow.COUNT
-        ;if ct_total eq 0 then result = dialog_message('No error/warning !',/center)
+        vcase = (state.USER_FLAG eq 4) ? 3 : 0
+        r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, vcase=vcase, header=header)
       endelse
       end
     state.btnEmail: begin
@@ -410,7 +409,8 @@ FUNCTION eva_sitl_event, ev
       if state.PREF.ENABLE_ADVANCED then begin 
         eva_sitl_submit_bakstr,ev.top, state.PREF.TESTMODE
       endif else begin
-        eva_sitl_submit_fomstr,ev.top, state.PREF.TESTMODE
+        vcase = (state.USER_FLAG eq 4) ? 3 : 0
+        eva_sitl_submit_fomstr,ev.top, state.PREF.TESTMODE, vcase
       endelse
       end
     state.cbMulti:  begin
@@ -437,7 +437,7 @@ FUNCTION eva_sitl_event, ev
       str_element,/add,snew, 'STOP', s.STOP[1:s.NSEGS-1]
       str_element,/add,snew, 'NSEGS', s.NSEGS-1L
       str_element,/add,snew, 'NBUFFS', s.NBUFFS-1L
-      str_element,/add,snew, 'FPICAL', 0L
+      str_element,/add,snew, 'FPICAL', 0L; Set 0 because the dummy segment does not exist anymore
       str_element,/add,lim,'unix_FOMstr_mod',snew
       D_hacked = eva_sitl_strct_read(snew,min(snew.START,/nan))
       store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl

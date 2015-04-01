@@ -3,9 +3,10 @@
 ;
 ; Assumes new_backstr.start and new_backstr.start are both in TAI time.
 
-pro mms_back_structure_check_modifications, new_backstr, old_backstr, mod_error_flags, mod_warning_flags, $
-                                             mod_error_msg, mod_warning_msg, mod_error_times, mod_warning_times, $
-                                             mod_error_indices, mod_warning_indices
+pro mms_back_structure_check_modifications, new_backstr, old_backstr, mod_error_flags, mod_yellow_warning_flags, mod_orange_warning_flags, $
+                                            mod_error_msg, mod_yellow_warning_msg, mod_orange_warning_msg, $
+                                            mod_error_times, mod_yellow_warning_times, mod_orange_warning_times, $
+                                            mod_error_indices, mod_yellow_warning_indices, mod_orange_warning_indices
 
 ;--------------------------------------------------------------------------------------
 ; Define parameters that lead to errors and warnings
@@ -100,7 +101,6 @@ endif
 ; Create the appropriate variables with flags and output
 ;-----------------------------------------------------------------------------------
 
-
 ; First do the errors for modified segments
 mod_error_flags = 0
 mod_error_times = ptrarr(n_elements(mod_error_flags), /allocate_heap)
@@ -122,10 +122,10 @@ mod_error_flags = count_fom_errors gt 0
 *(mod_error_times[0]) = fom_error_times
 *(mod_error_indices[0]) = loc_fom_error
 
-; Now we will deal for the warnings for both modified and deleted segments
-mod_warning_flags = intarr(2)
-mod_warning_times = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
-mod_warning_indices = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
+; Now we will deal for the yellow warnings
+mod_yellow_warning_flags = intarr(2)
+mod_yellow_warning_times = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
+mod_yellow_warning_indices = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
 
 delete_warning_text = 'WARNING: The segments at the following times with FOM greater than ' + fom_del_max_str + ' have been deleted: '
 mod_warning_text = 'WARNING: The segments at the following times have a modified FOM value which differs from the original value by more than ' + $
@@ -145,14 +145,19 @@ endif else begin
   mod_percent_times = ''
 endelse
 
-mod_warning_flags = [count_del_warnings gt 0, $
+mod_yellow_warning_flags = [count_del_warnings gt 0, $
                     count_mod_percent gt 0]
-mod_warning_msg = [delete_warning_text, $
+mod_yellow_warning_msg = [delete_warning_text, $
                    mod_warning_text]
-*(mod_warning_times[0]) = del_warning_times
-*(mod_warning_times[1]) = mod_percent_times
-*(mod_warning_indices[0]) = loc_del_warning
-*(mod_warning_indices[1]) = loc_mod_percent
+*(mod_yellow_warning_times[0]) = del_warning_times
+*(mod_yellow_warning_times[1]) = mod_percent_times
+*(mod_yellow_warning_indices[0]) = loc_del_warning
+*(mod_yellow_warning_indices[1]) = loc_mod_percent
 
+; Now we will deal for the orange warnings
+mod_orange_warning_flags = intarr(1)
+mod_orange_warning_times = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
+mod_orange_warning_indices = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
+mod_orange_warning_msg = strarr(n_elements(orange_warning_flags))
 
 end 

@@ -2,7 +2,7 @@
 
 pro mms_check_fpi_calibration_segment, seg_start, seg_stop, fom, sourceid, $
                                        error_flags, error_msg, yellow_warning_flags, $
-                                       yellow_warning_msg
+                                       yellow_warning_msg, orange_warning_flags, orange_warning_msg
                                        
 valstruct = mms_load_fom_validation()
 
@@ -44,6 +44,14 @@ fom_warning_msg = 'Warning: FOM for FPI calibration segments should be greater t
                    
 yellow_warning_flags = fom_warning
 yellow_warning_msg = fom_warning_msg
+
+
+;-------------------------------------------------------------
+; Orange warnings
+;-------------------------------------------------------------
+
+orange_warning_flags = 0
+orange_warning_msg = ''
 
 end
 

@@ -18,8 +18,8 @@
 ;       Use 'mvn_ngi_read_csv' to load ql data
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-01-29 20:00:45 -0800 (Thu, 29 Jan 2015) $
-; $LastChangedRevision: 16790 $
+; $LastChangedDate: 2015-03-30 14:21:43 -0700 (Mon, 30 Mar 2015) $
+; $LastChangedRevision: 17202 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_load.pro $
 ;-
 
@@ -31,7 +31,7 @@ pro mvn_ngi_load, trange=trange, filetype=filetype, verbose=verbose, _extra=_ext
   for i_filetype=0,n_elements(filetype)-1 do begin
 
 ;- retrieve files
-     pformat = 'maven/data/sci/ngi/l2/YYYY/MM/mvn_ngi_l2_'+filetype[i_filetype]+'-abund-*_YYYYMMDDThh????_v??_r??.csv'
+     pformat = 'maven/data/sci/ngi/l2/YYYY/MM/mvn_ngi_l2_'+filetype[i_filetype]+'-abund-*_YYYYMMDD?hh????_v??_r??.csv'
      f = mvn_pfp_file_retrieve(pformat,/hourly_names,/last_version,/valid_only,trange=trange,verbose=verbose, _extra=_extra)
 
 ;- check files

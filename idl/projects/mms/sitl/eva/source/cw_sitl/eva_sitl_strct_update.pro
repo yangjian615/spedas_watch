@@ -8,22 +8,23 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-26 12:57:08 -0700 (Thu, 26 Mar 2015) $
-; $LastChangedRevision: 17193 $
+; $LastChangedDate: 2015-03-30 19:11:00 -0700 (Mon, 30 Mar 2015) $
+; $LastChangedRevision: 17206 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
   compile_opt idl2
-  common mms_sitl_connection, netUrl, connection_time, login_source
+;  common mms_sitl_connection, netUrl, connection_time, login_source
   
   if n_elements(user_flag) eq 0 then user_flag = 0
-  type = size(netUrl, /type) ;will be 11 if object has been created
-  if (type eq 11) then begin
-    netUrl->GetProperty, URL_USERNAME = username
-  endif else begin
-    message,'Something is wrong'
-  endelse
-  defSourceID = username+'(EVA)'
+;  type = size(netUrl, /type) ;will be 11 if object has been created
+;  if (type eq 11) then begin
+;    netUrl->GetProperty, URL_USERNAME = username
+;  endif else begin
+;    message,'Something is wrong'
+;  endelse
+;  defSourceID = username+'(EVA)'
+  defSourceID = eva_sourceid()
   
   get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
   tfom = eva_sitl_tfom(lim.UNIX_FOMSTR_MOD)
@@ -139,6 +140,8 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
           str_element,/add,s,'NSEGS',1L
           str_element,/add,s,'NBUFFS',1L
           str_element,/add,s,'FPICAL',1L
+          str_element,/add,s,'SOURCEID',defSourceID
+          str_element,/add,s,'DISCUSSION',segSelect.DISCUSSION
           ;str_element,/add,lim,'UNIX_FOMstr_org',s; put the hacked FOMstr into 'lim'
           D_hacked = eva_sitl_strct_read(s,tfom[0]); change the tplot-data accordingly
           store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl; here is the faked 'mms_stlm_fomstr'

@@ -35,14 +35,16 @@ FUNCTION eva_data_load_sitl, state
       if (state.USER_FLAG ne 4) then begin 
         store_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
       endif else begin
-        ; Hack original FOMStr
+        ; [Hack original FOMStr] 
+        ; Here, add a dummy segment because a FOMstr has to have at least one segment.
+        ; But, FPIcal wants to start fresh from no segment.
         s = lim.UNIX_FOMstr_org
         str_element,/add,s,'FOM',[0.]; FOM value = 0
         str_element,/add,s,'START',[0L]; start of the 1st cycle
         str_element,/add,s,'STOP',[1L]; end fo the 1st cycle
         str_element,/add,s,'NSEGS',1L
         str_element,/add,s,'NBUFFS',1L
-        str_element,/add,s,'FPICAL',1L
+        str_element,/add,s,'FPICAL',1L; Set 1 to indicate that a dummy segment exists.
         str_element,/add,lim,'UNIX_FOMstr_org',s; put the hacked FOMstr into 'lim'
         D_hacked = eva_sitl_strct_read(s,min(lim.unix_FOMstr_org.START,/nan)); change the tplot-data accordingly
         store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl; here is the faked 'mms_stlm_fomstr'

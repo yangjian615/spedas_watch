@@ -1,7 +1,8 @@
 ; Test of FPI calibration submission
 ; 
 
-local_dir = '/Users/moka/abs_data/'
+local_dir = '/Users/frederickwilder/'
+local_dir = '/Users/moka/'
 
 start_jul = julday(2, 7, 2009, 2, 0, 0)
 stop_jul = julday(2, 7, 2009, 2, 0, 50)
@@ -18,7 +19,8 @@ fom = 150
 
 mms_check_fpi_calibration_segment, start_tai, stop_tai, fom, sourceid, $
                                    error_flags, error_msg, yellow_warning_flags, $
-                                   yellow_warning_msg
+                                   yellow_warning_msg, orange_warning_flags, $
+                                   orange_warning_msg
                                    
 ; There will be errors
 
@@ -28,7 +30,8 @@ stop
 
 mms_submit_fpi_calibration_segment, start_tai, stop_tai, fom, sourceid, local_dir, $
                                     error_flags, error_msg, yellow_warning_flags, $
-                                    yellow_warning_msg, problem_status
+                                    yellow_warning_msg, orange_warning_flags, $
+                                    orange_warning_msg, problem_status
 
 stop
 
@@ -40,7 +43,8 @@ stop_tai = mms_unix2tai(new_stop_unix)
 
 mms_submit_fpi_calibration_segment, start_tai, stop_tai, fom, sourceid, local_dir, $
                                     error_flags, error_msg, yellow_warning_flags, $
-                                    yellow_warning_msg, problem_status, /warning_override
+                                    yellow_warning_msg, orange_warning_flags, $
+                                    orange_warning_msg, problem_status, /warning_override
 
 stop
 
@@ -50,6 +54,7 @@ fom = 215
 
 mms_submit_fpi_calibration_segment, start_tai, stop_tai, fom, sourceid, local_dir, $
   error_flags, error_msg, yellow_warning_flags, $
-  yellow_warning_msg, problem_status, /warning_override
+  yellow_warning_msg, orange_warning_flags, $
+  orange_warning_msg, problem_status
 
 end

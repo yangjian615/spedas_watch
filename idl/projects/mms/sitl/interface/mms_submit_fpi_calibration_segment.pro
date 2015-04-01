@@ -1,16 +1,17 @@
 pro mms_submit_fpi_calibration_segment, seg_start, seg_stop, fom, sourceid, local_dir, $
   error_flags, error_msg, yellow_warning_flags, $
-  yellow_warning_msg, problem_status, warning_override=warning_override
+  yellow_warning_msg, orange_warning_flags, orange_warning_msg, problem_status, warning_override=warning_override
 
 mms_check_fpi_calibration_segment, seg_start, seg_stop, fom, sourceid, $
   error_flags, error_msg, yellow_warning_flags, $
-  yellow_warning_msg
+  yellow_warning_msg, orange_warning_flags, orange_warning_msg
   
 loc_yellow = where(yellow_warning_flags eq 1, count_yellow)
+loc_orange = where(orange_warning_flags eq 1, count_orange)
 loc_error = where(error_flags eq 1, count_error)
 
 if count_error eq 0 then begin
-  if count_yellow eq 0 or keyword_set(warning_override) then begin
+  if ((count_yellow eq 0) and (count_orange eq 0)) or keyword_set(warning_override) then begin
     seed_segment = {id: '0', $
                     datasegmentid: -1, $
                     starttime: seg_start, $

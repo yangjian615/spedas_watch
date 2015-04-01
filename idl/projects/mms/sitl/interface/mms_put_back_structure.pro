@@ -1,7 +1,8 @@
 pro mms_put_back_structure, new_backstr, old_backstr, local_dir, $
-                            mod_error_flags, mod_warning_flags, $
-                            mod_error_msg, mod_warning_msg, mod_error_times, mod_warning_times, $
-                            mod_error_indices, mod_warning_indices, $
+                            mod_error_flags, mod_yellow_warning_flags, mod_orange_warning_flags, $
+                            mod_error_msg, mod_yellow_warning_msg, mod_orange_warning_msg, $
+                             mod_error_times, mod_yellow_warning_times, $
+                            mod_error_indices, mod_yellow_warning_indices, $
                             new_segs, new_error_flags, orange_warning_flags, $
                             yellow_warning_flags, new_error_msg, orange_warning_msg, yellow_warning_msg, $
                             new_error_times, orange_warning_times, yellow_warning_times, $
@@ -11,9 +12,10 @@ pro mms_put_back_structure, new_backstr, old_backstr, local_dir, $
 
 ; First we need to check the backstructure for errors and warnings
 
-mms_back_structure_check_modifications, new_backstr, old_backstr, mod_error_flags, mod_warning_flags, $
-                                        mod_error_msg, mod_warning_msg, mod_error_times, mod_warning_times, $
-                                        mod_error_indices, mod_warning_indices
+mms_back_structure_check_modifications, new_backstr, old_backstr, mod_error_flags, mod_yellow_warning_flags, mod_orange_warning_flags, $
+                                        mod_error_msg, mod_yellow_warning_msg, mod_orange_warning_msg, $
+                                        mod_error_times, mod_yellow_warning_times, mod_orange_warning_times, $
+                                        mod_error_indices, mod_yellow_warning_indices, mod_orange_warning_indices
                                        
 mms_back_structure_check_new_segments, new_backstr, new_segs, new_error_flags, orange_warning_flags, $
                                        yellow_warning_flags, new_error_msg, orange_warning_msg, yellow_warning_msg, $
@@ -23,7 +25,8 @@ mms_back_structure_check_new_segments, new_backstr, new_segs, new_error_flags, o
 
 
 loc_mod_errors = where(mod_error_flags gt 0, count_mod_errors)
-loc_mod_warnings = where(mod_warning_flags gt 0, count_mod_warnings)
+loc_mod_yellow_warnings = where(mod_yellow_warning_flags gt 0, count_mod_yellow_warnings)
+loc_mod_orange_warnings = where(mod_orange_warning_flags gt 0, count_mod_orange_warnings)
 loc_new_errors = where(new_error_flags gt 0, count_new_errors)
 loc_orange_warnings = where(orange_warning_flags gt 0, count_orange)
 loc_yellow_warnings = where(yellow_warning_flags gt 0, count_yellow)
@@ -32,7 +35,8 @@ loc_yellow_warnings = where(yellow_warning_flags gt 0, count_yellow)
 
 if count_mod_errors eq 0 and count_new_errors eq 0 then begin
 
-  if ((count_mod_warnings eq 0) and (count_orange eq 0) and (count_yellow eq 0)) or keyword_set(warning_override) then begin
+  if ((count_mod_yellow_warnings eq 0) and (count_mod_orange_warnings eq 0) and $
+    (count_orange eq 0) and (count_yellow eq 0)) or keyword_set(warning_override) then begin
 
 ;-------------------------------------------------------------------------------------
 ; Translate the backstructure into the format necessary to submit to soc

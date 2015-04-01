@@ -1,4 +1,4 @@
-PRO eva_sitl_submit_FOMStr, tlb, TESTING
+PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase
 
   ; initialize 
   title = 'FOM Submission'
@@ -24,7 +24,7 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING
   ;------------------
   ; Validation
   ;------------------
-  r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, header=header)
+  r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, header=header, vcase=vcase)
   
   if r.error.COUNT ne 0 then return
   if r.yellow.COUNT ne 0 then begin
@@ -47,12 +47,22 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING
     msg='TEST MODE: The modified FOMStr was not sent to SDC.'
     rst = dialog_message(msg,/information,/center,title=title)
   endif else begin
-    mms_put_fom_structure, tai_FOMstr_mod, tai_FOMStr_org, local_dir,$
-      error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
-      error_msg,    orange_warning_msg,    yellow_warning_msg,  $; Error Messages
-      error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
-      error_indices,orange_warning_indices,yellow_warning_indices,$; Error Indices (ptr_arr)
-      problem_status, /warning_override
+    case vcase of
+      0:  mms_put_fom_structure, tai_FOMstr_mod, tai_FOMStr_org, local_dir,$
+            error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
+            error_msg,    orange_warning_msg,    yellow_warning_msg,  $; Error Messages
+            error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
+            error_indices,orange_warning_indices,yellow_warning_indices,$; Error Indices (ptr_arr)
+            problem_status, /warning_override
+      3:begin
+          mms_submit_fpi_calibration_segment, start_tai, stop_tai, fom, sourceid, local_dir, $
+            error_flags, error_msg, yellow_warning_flags, $
+            yellow_warning_msg, orange_warning_flags, $
+            orange_warning_msg, problem_status
+        end    
+      else: message, "Something is wrong"
+    endcase
+      
     if problem_status eq 0 then begin
       msg='The FOM structure was sent successfully to SDC.'
       rst = dialog_message(msg,/information,/center,title=title)
