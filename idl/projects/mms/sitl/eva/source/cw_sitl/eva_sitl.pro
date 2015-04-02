@@ -37,6 +37,7 @@ PRO eva_sitl_fom_recover,strcmd
         options,'mms_stlm_bakstr','unix_BAKStr_mod',dr.B
       endif
       eva_sitl_strct_yrange,'mms_stlm_output_fom'
+      eva_sitl_strct_yrange,'mms_stlm_fomstr'
       tplot,verbose=0
     end
   endcase
@@ -100,7 +101,11 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
   endif
 
   BAK = eva_sitl_seg_validate(trange); Validate against FOM time interval
-
+  ; This function validates the input 't' and returns the variable "BAK"
+  ; BAK =  1 .... If 't' falls in the BAKStr time
+  ; BAK =  0 .... If 't' falls in the FOMStr time
+  ; BAK = -1 .... If 't' was crossing the FOM/BAK border or too big.
+  
   if BAK eq 1 then begin
     ; validation (BAKStr: make sure 'trange' does not overlap with existing segments)
     get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
@@ -120,19 +125,35 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
       rst = dialog_message('A new segment must not overlap with existing segments.',/info,/center)
       return
     endif
+    wgrid = s.TIMESTAMPS
   endif
 
+  if BAK eq 0 then begin
+    get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
+    wgrid = lim.unix_FOMStr_mod.TIMESTAMPS
+  endif
+  
   if BAK ne -1 then begin
     ; calculate new FOM value
     ;  tbl       = state.fom_table
     ;  FOMWindow = mms_burst_fom_window(nind,tbl.FOMSlope, tbl.FOMSkew, tbl.FOMBias)
     ;  seg       = Din.y[ind]
     ;  RealFOM   = (total(seg[sort(seg)]*FOMWindow) <255.0) > 2.0
-    RealFOM = 40
-
+    ;RealFOM = 40
+    
+    if (state.USER_FLAG eq 4) then begin
+      RealFOM = 200
+      valval = mms_load_fom_validation()
+      tedef = trange[0] + valval.FPI_SEG_BOUNDS[1]*10d0
+    endif else begin
+      RealFOM = 40
+      tedef = trange[1]
+    endelse
+    
     ; segSelect
-    segSelect = {ts:trange[0], te:trange[1], fom:RealFOM, BAK:BAK, discussion:' '}
-    eva_sitl_FOMedit, state, segSelect; Here, change FOM value only. No trange change.
+    if n_elements(var) eq 0 then message,'Must pass tplot-variable name'
+    segSelect = {ts:trange[0], te:tedef, fom:RealFOM, BAK:BAK, discussion:' ', var:var}
+    eva_sitl_FOMedit, state, segSelect, wgrid=wgrid ;Here, change FOM value only. No trange change.
   endif
 END
 
@@ -151,7 +172,13 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
     return
   endif
 
+  if n_elements(var) eq 0 then message,'Must pass tplot-variable name'
+  
   BAK = eva_sitl_seg_validate(t); Validate against FOM time interval
+  ; This function validates the input 't' and returns the variable "BAK"
+  ; BAK =  1 .... If 't' falls in the BAKStr time
+  ; BAK =  0 .... If 't' falls in the FOMStr time
+  ; BAK = -1 .... If 't' was crossing the FOM/BAK border or too big.
   log.o,'BAK='+string(long(BAK))
   if n_elements(t) eq 1 then begin
     case BAK of
@@ -161,8 +188,9 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
         idx = where((s.START le t) and (t le s.STOP), ct)
         if ct eq 1 then begin
           segSelect = {ts:s.START[idx[0]],te:s.STOP[idx[0]],fom:s.FOM[idx[0]],$
-            BAK:BAK,discussion:' '};s.DISCUSSION[idx[0]]}
+            BAK:BAK,discussion:' ', var:var}
         endif else segSelect = 0
+        wgrid = s.TIMESTAMPS
       end
       0: begin
         get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
@@ -172,20 +200,21 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
         idx = where((stime le t) and (t le etime), ct)
         if ct eq 1 then begin
           segSelect = {ts:stime[idx[0]],te:etime[idx[0]],fom:s.FOM[idx[0]],$
-            BAK:BAK, discussion:s.DISCUSSION[idx[0]]}
+            BAK:BAK, discussion:s.DISCUSSION[idx[0]], var:var}
         endif else segSelect = 0
+        wgrid = s.TIMESTAMPS
       end
       else: segSelect = -1
     endcase
   endif else begin
     if (BAK eq 0) or (BAK eq 1) then begin
       stop
-      segSelect = {ts:t[0], te:t[1], fom:0., BAK: BAK, discussion:' '}
+      segSelect = {ts:t[0], te:t[1], fom:0., BAK: BAK, discussion:' ', var:var}
     endif else segSelect = -1
   endelse
 
-
-  if n_tags(segSelect) eq 5 then begin
+  
+  if n_tags(segSelect) eq 6 then begin
     if segSelect.BAK and ~state.pref.ENABLE_ADVANCED then begin
       msg ='This is a back-structure segment. Ask Super SITL if you really need to modify this.'
       rst = dialog_message(msg,/info,/center)
@@ -196,7 +225,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
         eva_sitl_stack
         tplot,verbose=0
       endif else begin;.......................... EDIT
-        eva_sitl_FOMedit, state, segSelect
+        eva_sitl_FOMedit, state, segSelect, wgrid=wgrid
       endelse
     endelse
   endif else begin
@@ -405,6 +434,7 @@ FUNCTION eva_sitl_event, ev
       end
     state.btnSubmit: begin
       log.o,'***** EVENT: btnSubmit *****'
+      log.o,'TESTMODE='+string(state.PREF.TESTMODE)
       submit_code = 1
       if state.PREF.ENABLE_ADVANCED then begin 
         eva_sitl_submit_bakstr,ev.top, state.PREF.TESTMODE

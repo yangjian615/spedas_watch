@@ -1,47 +1,5 @@
 ;+
 ;NAME:
-; dproc_status_update
-; 
-;PURPOSE:
-; Outputs messages to history window, status bar, or IDL console
-;
-;CALLING SEQUENCE:
-; dproc_status_update, 'There was an error', sbar, hwin
-; dproc_status_update, 'There was an error', hwin
-; dproc_status_update, 'There was an error', sbar
-;
-;INPUT:
-; msg: string or string array containing message
-; sbar: obj reference for status bar
-; hwin: obj reference for history window
-; 
-;NOTES:
-; Messages will be printed to the IDL console if the history window
-; reference is missing or invalid. The order in which the history 
-; window and status bar refernces are passed in should be irrelevant. 
-;
-;-
-pro dproc_status_update, msg, sbar, hwin, _extra=_extra
-
-    compile_opt idl2, hidden
-
-  h = arg_present(hwin) && obj_valid(hwin) 
-  s = arg_present(sbar) && obj_valid(sbar)
-  c = (h && obj_isa(hwin,'SPD_UI_HISTORY')) or (s && obj_isa(sbar,'SPD_UI_HISTORY')) 
-
-  for i=0, n_elements(msg)-1 do begin
-  
-    if h then hwin -> update, msg[i]
-    if s then sbar -> update, msg[i]
-    if ~c then dprint, msg[i], _extra=_extra
-  
-  endfor
-
-end
-
-
-;+
-;NAME:
 ; spd_ui_loaded_data::dproc
 ;
 ;PURPOSE:
@@ -89,9 +47,9 @@ end
 ;                   process.
 ; 10-Feb-2009, jmm, Added hwin, sbar keywords
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-02-13 09:42:34 -0800 (Fri, 13 Feb 2015) $
-;$LastChangedRevision: 16978 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-03-31 15:24:44 -0700 (Tue, 31 Mar 2015) $
+;$LastChangedRevision: 17210 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__dproc.pro $
 Function spd_ui_loaded_data::dproc, dp_task, dp_pars,callSequence=callSequence,replay=replay,in_vars=in_vars, names_out = names_out, $
                            no_setactive = no_setactive, hwin = hwin, sbar = sbar, gui_id = gui_id, $
@@ -172,11 +130,11 @@ For j = 0, nav-1 Do Begin
     If(is_struct(d)) Then Begin
         sy = size(d.y, /n_dim)
         If(sy Gt 2) And (dpt Ne 'subavg') And (dpt Ne 'submed') Then Begin
-            dproc_status_update, varname+' data has too many dimensions', sbar, hwin
+            spd_ui_message, varname+' data has too many dimensions', sb=sbar, hw=hwin
             yes_data = 0b
         Endif Else yes_data = 1b
     Endif Else Begin
-        dproc_status_update,varname+' has no data', sbar, hwin
+        spd_ui_message,varname+' has no data', sb=sbar, hw=hwin
         yes_data = 0b
     Endelse
 
@@ -222,7 +180,7 @@ For j = 0, nav-1 Do Begin
                   join_vec, active_v, dp_pars.new_name[0], $
                             display_object=display_object, fail = jfail
                   if keyword_set(jfail) then begin
-                    dproc_status_update,'Could not join selected variables.', sbar, hwin
+                    spd_ui_message,'Could not join selected variables.', sb=sbar, hw=hwin
                     nn=''
                   endif else begin
                     nn = dp_pars.new_name
@@ -246,7 +204,7 @@ For j = 0, nav-1 Do Begin
                                _extra={nsmooth:( dp_pars.setswidth ? dp_pars.swidth:0b)}
                    nn = tnames(nn0+dp_pars.suffix)
                 Endif Else Begin
-                   dproc_status_update,'Unable to get time derivative for '+varname+'; not enough time elements.',sbar, hwin
+                   spd_ui_message,'Unable to get time derivative for '+varname+'; not enough time elements.',sb=sbar, hw=hwin
                    canceled = 1b
                 Endelse
             End
@@ -300,11 +258,11 @@ For j = 0, nav-1 Do Begin
                             nn = tnames(nn0+dp_pars.suffix)
                         endif
                     Endif Else Begin
-                        dproc_status_update,'Smooth process for: '+nn0+' cancelled.', sbar, hwin
+                        spd_ui_message,'Smooth process for: '+nn0+' cancelled.', sb=sbar, hw=hwin
                         canceled = 1b ;prevent variable from being added later
                     Endelse
                 endif else begin
-                    dproc_status_update,'Unable to smooth '+nn0+' not enough elements in time range.', sbar, hwin
+                    spd_ui_message,'Unable to smooth '+nn0+' not enough elements in time range.', sb=sbar, hw=hwin
                     canceled = 1b
                 endelse
             End
@@ -349,11 +307,11 @@ For j = 0, nav-1 Do Begin
                               _extra = {trange:( dp_pars.limit ? dp_pars.trange:0b)}
                     nn = tnames(nn0+dp_pars.suffix)
                 Endif Else Begin
-                    dproc_status_update,'Block Average process for: '+nn0+' cancelled.', sbar, hwin
+                    spd_ui_message,'Block Average process for: '+nn0+' cancelled.', sb=sbar, hw=hwin
                     canceled = 1b ;prevent variable from being added later
                 Endelse
               endif else begin
-                dproc_status_update,'Unable to block average '+nn0+' not enough elements in time range.', sbar, hwin
+                spd_ui_message,'Unable to block average '+nn0+' not enough elements in time range.', sb=sbar, hw=hwin
                 canceled = 1b
               endelse
             End
@@ -381,7 +339,7 @@ For j = 0, nav-1 Do Begin
                 
                 ;filter variables who no dt larger than threshold+margin (seems to be how xdegap works)
                 if (dp_pars.dt[0] + dp_pars.margin[0]) gt max_dt then begin
-                  dproc_status_update,'No gaps below threshold in '+nn0+'.', sbar, hwin
+                  spd_ui_message,'No gaps below threshold in '+nn0+'.', sb=sbar, hw=hwin
                   canceled = 1b ;prevent variable from being added later
                   break
                 endif
@@ -423,11 +381,11 @@ For j = 0, nav-1 Do Begin
                     nn = tnames(nn0+dp_pars.suffix)
 
                 Endif Else Begin
-                    dproc_status_update,'Degap process for: '+nn0+' cancelled.', sbar, hwin
+                    spd_ui_message,'Degap process for: '+nn0+' cancelled.', sb=sbar, hw=hwin
                     canceled = 1b ;prevent variable from being added later
                 Endelse
               endif else begin
-                dproc_status_update,'Unable to process '+nn0+' not enough elements', sbar, hwin
+                spd_ui_message,'Unable to process '+nn0+' not enough elements', sb=sbar, hw=hwin
                 canceled = 1b
               endelse
                 
@@ -452,7 +410,7 @@ For j = 0, nav-1 Do Begin
                sstx = where(t Ge dp_pars.trange[0] And $
                             t Lt dp_pars.trange[1], nsstx)
                If(nsstx Gt 0) Then Begin
-                  dproc_status_update,'Processing Wavelet for: '+varname, sbar, hwin
+                  spd_ui_message,'Processing Wavelet for: '+varname, sb=sbar, hw=hwin
 ;Here just increase maxpoints to be larger than nsstx, the memory
 ;check should do enough so that the user knows when he has memory
 ;issues, jmm 2015-01-20
@@ -464,7 +422,7 @@ For j = 0, nav-1 Do Begin
                      store_data, temp_names, /delete
                   endif
                Endif Else Begin
-                  dproc_status_update, 'Wavelet process for: '+varname+' cancelled.', sbar, hwin
+                  spd_ui_message, 'Wavelet process for: '+varname+' cancelled.', sb=sbar, hw=hwin
                   canceled = 1b ;prevent variable from being added later
                Endelse
             End
@@ -504,11 +462,11 @@ For j = 0, nav-1 Do Begin
                         if n_elements(warning_result) gt 0 && warning_result eq 0 then break
                         nn = tnames(nn0+dp_pars.suffix)
                     Endif Else Begin
-                        dproc_status_update,'High Pass Filter process for: '+nn0+' cancelled.', sbar, hwin
+                        spd_ui_message,'High Pass Filter process for: '+nn0+' cancelled.', sb=sbar, hw=hwin
                         canceled = 1b ;prevent variable from being added later
                     Endelse
                 endif else begin
-                    dproc_status_update,'Unable to High Pass filter '+nn0+' not enough elements in time range.', sbar, hwin
+                    spd_ui_message,'Unable to High Pass filter '+nn0+' not enough elements in time range.', sb=sbar, hw=hwin
                     canceled = 1b
                 endelse
             End
@@ -549,16 +507,16 @@ For j = 0, nav-1 Do Begin
             newObject->setProperty,name=nn[k],isSpect=isSpect, coordsys='',units=''  
             
             if self->addTvarObject(newObject,added_name=added_name) then begin
-              dproc_status_update,'Added variable: '+nn[k], sbar, hwin
+              spd_ui_message,'Added variable: '+nn[k], sb=sbar, hw=hwin
             endif else begin
-              dproc_status_update,'Failed to add variable: '+nn[k], sbar, hwin
+              spd_ui_message,'Failed to add variable: '+nn[k], sb=sbar, hw=hwin
             endelse
         
             names_out = [names_out, nn[k]]
         endfor
 
     Endif Else Begin
-        dproc_status_update,varname+' not processed.', sbar, hwin
+        spd_ui_message,varname+' not processed.', sb=sbar, hw=hwin
         skipped = 1b
     Endelse
     if canceled or skipped then addmessage = 1b ; set flag to notify user later
@@ -580,8 +538,8 @@ Endif
 return_sequence:
 
 ;Notify user if quantities were dropped (this should be the last item added).
-if addmessage then dproc_status_update, 'Finished.  Some quantities not processed. '+ $
-                '  (Scroll back in status bar or check history window for details.)', sbar, hwin
+if addmessage then spd_ui_message, 'Finished.  Some quantities not processed. '+ $
+                '  (Scroll back in status bar or check history window for details.)', sb=sbar, hw=hwin
 
 
 ;dump any tplot variables that you didn't start with

@@ -7,8 +7,8 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-17 22:38:35 -0800 (Tue, 17 Feb 2015) $
-; $LastChangedRevision: 16996 $
+; $LastChangedDate: 2015-03-31 18:28:04 -0700 (Tue, 31 Mar 2015) $
+; $LastChangedRevision: 17216 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
@@ -28,24 +28,36 @@ PRO eva_sitl_FOMedit_event, ev
         segSelect.FOM = FOMvalue
       endif
     end
-    wid.ssStart: begin
-      if (ev.type eq 0) or (ev.type eq 4) then begin
-        if ev.type eq 4 then widget_control,wid.ssStart, SET_VALUE=time_string(ev.value)
-        len = (segSelect.Te-ev.value)/10.d0
-        txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
-        widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
-        segSelect.TS = ev.value
-      endif
-    end
-    wid.ssStop: begin
-      if (ev.type eq 0) or (ev.type eq 4) then begin
-        if ev.type eq 4 then widget_control,wid.ssStop, SET_VALUE=time_string(ev.value)
-        len = (ev.value-segSelect.Ts)/10.d0
-        txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
-        widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
-        segSelect.TE = ev.value
-      endif
-    end
+;    wid.ssStart: begin
+;      if (ev.type eq 0) or (ev.type eq 4) then begin
+;        if ev.type eq 4 then widget_control,wid.ssStart, SET_VALUE=time_string(ev.value)
+;        len = (segSelect.Te-ev.value)/10.d0
+;        txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
+;        widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
+;        segSelect.TS = ev.value
+;      endif
+;    end
+    wid.sldStart: begin
+      len = (segSelect.Te-ev.value)/10.d0
+      txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
+      widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
+      segSelect.TS = ev.value
+      end
+    wid.sldStop: begin
+      len = (ev.value-segSelect.Ts)/10.d0
+      txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
+      widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
+      segSelect.TE = ev.value
+      end
+;    wid.ssStop: begin
+;      if (ev.type eq 0) or (ev.type eq 4) then begin
+;        if ev.type eq 4 then widget_control,wid.ssStop, SET_VALUE=time_string(ev.value)
+;        len = (ev.value-segSelect.Ts)/10.d0
+;        txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
+;        widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
+;        segSelect.TE = ev.value
+;      endif
+;    end
     wid.txtDiscussion: begin
       widget_control, ev.id, GET_VALUE=new_discussion;get new discussion
       segSelect.DISCUSSION = new_discussion[0]
@@ -70,7 +82,7 @@ PRO eva_sitl_FOMedit_event, ev
     tplot,verbose=0
     widget_control, ev.top, /destroy
   endif else begin
-    eva_sitl_highlight, segSelect.TS, segSelect.TE, segSelect.FOM, /rehighlight
+    eva_sitl_highlight, segSelect.TS, segSelect.TE, segSelect.FOM, segSelect.VAR, /rehighlight
     str_element,/add,wid,'segSelect',segSelect
     widget_control, ev.top, SET_UVALUE=wid
   endelse
@@ -78,12 +90,13 @@ end
 
 ; INPUT:
 ;   STATE: state for cw_sitl; this information is needed to call >eva_sitl_update_board, wid.state, 1
-PRO eva_sitl_FOMedit, state, segSelect
+PRO eva_sitl_FOMedit, state, segSelect, wgrid=wgrid
   if xregistered('eva_sitl_FOMedit') ne 0 then return
   
   ;//// user setting  /////////////////////////////
-  dTh             = 3600.0 ; one half of the allowable range of time change.
-  scroll          = 10.0 ; how many seconds to be moved by sliders
+  dTfrac          = 0.3; fraction of the current time range --> range of time change
+  ;dTh             = 50.0 ; one half of the allowable range of time change.
+  scroll          = 1.0 ; how many seconds to be moved by sliders
   drag            = 1   ; use drag keyword for sliders?
   fom_min_value   = 2.0  ; min allowable value of FOM
   fom_max_value   = 255.0 ; max allowable value of FOM
@@ -92,18 +105,25 @@ PRO eva_sitl_FOMedit, state, segSelect
 
   ; initialize
   device, get_graphics=old_graphics, set_graphics=6
-  eva_sitl_highlight, segSelect.TS, segSelect.TE, segSelect.FOM
+  eva_sitl_highlight, segSelect.TS, segSelect.TE, segSelect.FOM, segSelect.VAR
+  if n_elements(wgrid) eq 0 then message, "Need wgrid"
+  
+  time = timerange(/current)
+  dTh = double(dTfrac)*(time[1]-time[0])
+  ;dTh = double(dTh)
   Ts  = segSelect.TS
   Te  = segSelect.TE
   Tc  = 0.5*(Ts+Te)
-  start_min_value = Ts-dTh
+  start_min_value = Ts-dTh > time[0]
   start_max_value = Ts+dTh < Tc
   stop_min_value  = Te-dTh > Tc
-  stop_max_value  = Te+dTh
+  stop_max_value  = Te+dTh < time[1]
   len = (Te-Ts)/10.d0
   wid = {STATE:state, segSelect:segSelect, SCROLL:scroll, OLD_GRAPHICS:old_graphics, DISLEN:dislen, $
     START_MIN_VALUE: start_min_value, STOP_MIN_VALUE: stop_min_value, FOM_MIN_VALUE: fom_min_value, $
-    START_MAX_VALUE: start_max_value, STOP_MAX_VALUE: stop_max_value, FOM_MAX_VALUE: fom_max_value }
+    START_MAX_VALUE: start_max_value, STOP_MAX_VALUE: stop_max_value, FOM_MAX_VALUE: fom_max_value,$
+    WGRID: wgrid }
+    
   ; widget layout
   sensitive = (segSelect.BAK eq 0)
   base = widget_base(TITLE='Edit FOM',/column);,/modal,group_leader=group_leader)
@@ -111,14 +131,21 @@ PRO eva_sitl_FOMedit, state, segSelect
     MAX_VALUE=255, MIN_VALUE=0, DRAG=drag, XLABELSIZE=40)
   txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
   str_element,/add,wid,'lblBuffs',widget_label(base,VALUE=txtbuffs)
-  str_element,/add,wid,'ssStart',sliding_spinner(base,LABEL='START',VALUE=time_string(Ts),/time,$
-    MAX_VALUE=start_max_value, MIN_VALUE=start_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
-  str_element,/add,wid,'ssStop',sliding_spinner(base,LABEL='STOP',VALUE=time_string(Te),/time,$
-    MAX_VALUE=stop_max_value, MIN_VALUE=stop_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
+  str_element,/add,wid,'sldStart',eva_slider(base,title='Start',SENSITIVE=sensitive,$
+    VALUE=Ts, MIN_VALUE=start_min_value, MAX_VALUE=start_max_value,/LIMIT, WGRID=wgrid)
+  str_element,/add,wid,'sldStop',eva_slider(base,title='Stop ',SENSITIVE=sensitive,$
+    VALUE=Te, MIN_VALUE=stop_min_value, MAX_VALUE=stop_max_value, /LIMIT, WGRID=wgrid)
+;  str_element,/add,wid,'ssStart',sliding_spinner(base,LABEL='START',VALUE=time_string(Ts),/time,$
+;    MAX_VALUE=start_max_value, MIN_VALUE=start_min_value,DRAG=drag,XLABELSIZE=40,SENSITIVE=sensitive)
+;  str_element,/add,wid,'ssStop',sliding_spinner(base,LABEL='STOP',VALUE=time_string(Te),/time,$
+;    MAX_VALUE=stop_max_value, MIN_VALUE=stop_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
   comlen = string(strlen(segSelect.DISCUSSION), format='(I4)')
   str_element,/add,wid,'lblDiscussion',widget_label(base,VALUE='COMMENT: '+comlen+wid.DISLEN)
   str_element,/add,wid,'txtDiscussion',widget_text(base,VALUE=segSelect.DISCUSSION,/all_events,/editable)
   
+
+
+    
   baseDeci = widget_base(base,/ROW)
   str_element,/add,wid,'btnSave',widget_button(baseDeci,VALUE='Save',ACCELERATOR = "Return")
   str_element,/add,wid,'btnCancel',widget_button(baseDeci,VALUE='Cancel')

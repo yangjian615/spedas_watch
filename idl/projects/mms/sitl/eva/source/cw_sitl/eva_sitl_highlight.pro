@@ -1,8 +1,8 @@
-PRO eva_sitl_highlight, left_edges, right_edges, data, $
-  color=color, target=target, rehighlight=rehighlight, noline=noline
+PRO eva_sitl_highlight, left_edges, right_edges, data, var, $
+  color=color, rehighlight=rehighlight, noline=noline
   compile_opt idl2
   @xtplot_com
-;  @tplot_com
+  @tplot_com
   @eva_sitl_com
   @moka_logger_com
   
@@ -12,25 +12,35 @@ PRO eva_sitl_highlight, left_edges, right_edges, data, $
     return
   endif
   if n_elements(color) eq 0 then color=1; 128
-  if n_elements(target) eq 0 then target='mms_stlm_output_fom'
-  
-  ; target panel position
-  widget_control, xtplot_base, GET_UVALUE=widf; get widf which contains plot_pos
-  ind = where(strcmp(tnames(/tplot),target)); find target 
-  pos = widf.plot_pos[*,ind[0]]
-  xs = pos[0] & ys = pos[1] & xe = pos[2] & ye = pos[3]
-  
-  
-  ; timerange (data-x)
+;  if n_elements(target) eq 0 then target='mms_stlm_output_fom'
+
+  ind = where(strcmp(tplot_vars.SETTINGS.VARNAMES,var),ct)
+  if ct ne 1 then message, 'Something is wrong'
+  varID = ind[0]
+  xs   = tplot_vars.SETTINGS.X.WINDOW[0]
+  xe   = tplot_vars.SETTINGS.X.WINDOW[1]
+  ys   = tplot_vars.SETTINGS.Y[varID].WINDOW[0]
+  ye   = tplot_vars.SETTINGS.Y[varID].WINDOW[1]
+  ;fmin = tplot_vars.SETTINGS.Y[varID].CRANGE[0]
+  ;fmax = tplot_vars.SETTINGS.Y[varID].CRANGE[1]
+  ts   = tplot_vars.SETTINGS.TRANGE_CUR[0]
+  te   = tplot_vars.SETTINGS.TRANGE_CUR[1]
+
+;;  ; target panel position
+;  widget_control, xtplot_base, GET_UVALUE=widf; get widf which contains plot_pos
+;  ind = where(strcmp(tnames(/tplot), var)); find target variable 
+;  pos = widf.plot_pos[*,ind[0]]
+;  xs = pos[0] & ys = pos[1] & xe = pos[2] & ye = pos[3]
+;  ; timerange (data-x)
   time = timerange(/current)
   ts = time[0]
   te = time[1]
   
-  ; frange (data-y)
-  eva_sitl_strct_yrange, target, yrange=frange
+;  ; frange (data-y)
+  eva_sitl_strct_yrange, var, yrange=frange
   fmin = frange[0]
   fmax = frange[1]
-  
+
   ; coefficients
   xc = (xe-xs)/(te-ts)
   yc = (ye-ys)/(fmax-fmin)

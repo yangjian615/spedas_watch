@@ -150,16 +150,7 @@ pro mvn_lpw_load, utc_in, data_dir=data_dir, tplot_var=tplot_var, filetype=filet
 sl=path_sep()  ;/ for linux, \ for Windows 
 
 ;jmm, 29-jan-2015, locate mvn_lpw_software directory if not preset
-If(getenv('mvn_lpw_software')) Eq '' Then Begin
-   If(float(!version.release) Ge 7.0) Then Begin ;fixed for pre 7.0, jmm, 31-Mar-2015
-      setenv, 'mvn_lpw_software='+file_dirname(routine_filepath('mvn_lpw_load'))+sl
-   Endif Else Begin
-      tmp_info = routine_info(/source) ;This exists at run time because mvn_lpw_load has been compiled
-      tw = where(tmp_info.name Eq 'MVN_LPW_LOAD')
-      swdir = file_dirname(tmp_info[tw].path)
-      setenv, 'mvn_lpw_software='+swdir+sl
-   Endelse
-Endif
+If(getenv('mvn_lpw_software')) Eq '' Then setenv, 'mvn_lpw_software='+file_dirname(routine_filepath('mvn_lpw_load'))+sl
 
 ;If the user doesn't want to use SPICE, we can skip a lot of code which checks and finds kernels:
 ;==========================
@@ -176,7 +167,7 @@ if not keyword_set(data_dir) and getenv('ROOT_DATA_DIR') eq '' then begin  ;if n
       print, "###NOTE###: the SSL software requires a specific file structure to store L0 and SPICE kernels. Your setenv directory"
       print, "should be a parent directory to where you want the SSL software to setup the required folder tree."
       print, "Set the environment variable ROOT_DATA_DIR before trying again. Returning to terminal."
-      setenv, 'ROOT_DATA_DIR='+root_data_dir()
+      retall
 endif
 
 if keyword_set(data_dir) then begin
@@ -319,21 +310,17 @@ if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
             print, "mvn_lpw_load: WARNING: your SSL password and username was not found. These are required to access the latest L0 data." 
             print, "Enter these in a startup file as the variable"
             print, "setenv, 'MAVENPFP_USER_PASS = username:password'"
- ;           print, "Enter 'yes' if you wish to continue anyway (you may not be able to get the L0 file you wanted) or 'no' to return to terminal..."
- ;           response=''
- ;           read, response, prompt='yes or no...'
+            print, "Enter 'yes' if you wish to continue anyway (you may not be able to get the L0 file you wanted) or 'no' to return to terminal..."
+            response='yes'
+;            read, response, prompt='yes or no...'
             
- ;           if response ne 'yes' then begin
- ;                 print, "Returning to terminal."
- ;                 retall
- ;           endif 
-            print, "Otherwise, Using default values"
+            if response ne 'yes' then begin
+                  print, "Returning to terminal."
+                  retall
+            endif 
             password = getenv('USER')+':'+getenv('USER')+'_pfp'
-      endif else begin
-         if getenv('MAVENPFP_USER_PASS') eq '' then password = getenv('USER')+':'+getenv('USER')+'_pfp' $
-         else password = getenv('MAVENPFP_USER_PASS') ;Same as SSL;over mavenpfp_user_pass
-      endelse
-
+      endif else password = getenv('MAVENPFP_USER_PASS')  ;Same as SSL;over mavenpfp_user_pass
+      
       ;password = getenv('SSL_log_in')  ;get password if it isn't ''.  ;OLD version, line below conforms with SSL software.
 
       

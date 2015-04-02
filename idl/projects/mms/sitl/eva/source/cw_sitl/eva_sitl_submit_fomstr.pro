@@ -48,17 +48,30 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase
     rst = dialog_message(msg,/information,/center,title=title)
   endif else begin
     case vcase of
-      0:  mms_put_fom_structure, tai_FOMstr_mod, tai_FOMStr_org, local_dir,$
+      0:begin
+          mms_put_fom_structure, tai_FOMstr_mod, tai_FOMStr_org, local_dir,$
             error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
             error_msg,    orange_warning_msg,    yellow_warning_msg,  $; Error Messages
             error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
             error_indices,orange_warning_indices,yellow_warning_indices,$; Error Indices (ptr_arr)
             problem_status, /warning_override
+          ptr_free, error_times, orange_warning_times, yellow_warning_times
+          ptr_free, error_indices, orange_warning_indices, yellow_warning_indices
+        end
       3:begin
-          mms_submit_fpi_calibration_segment, start_tai, stop_tai, fom, sourceid, local_dir, $
-            error_flags, error_msg, yellow_warning_flags, $
-            yellow_warning_msg, orange_warning_flags, $
-            orange_warning_msg, problem_status
+        s = tai_FOMstr_mod
+        idx = where(strmatch(tag_names(s),'FPICAL'),ct)
+        if(ct eq 1)then begin; Make sure the FPICAL tag exists
+          nmax = n_elements(s.FOM)
+          sourceid = eva_sourceid()
+          tai_start = s.TIMESTAMPS[s.START[0]]
+          tai_stop = s.TIMESTAMPS[s.STOP[0]]
+          mms_submit_fpi_calibration_segment, tai_start,tai_stop, s.FOM[0], sourceid, local_dir, $
+            error_flags, error_msg, $
+            yellow_warning_flags, yellow_warning_msg, $
+            orange_warning_flags, orange_warning_msg, $
+            problem_status
+        endif else stop
         end    
       else: message, "Something is wrong"
     endcase
@@ -70,7 +83,6 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase
       msg='Submission Failed.'
       rst = dialog_message(msg,/error,/center,title=title)
     endelse
-    ptr_free, error_times, orange_warning_times, yellow_warning_times
-    ptr_free, error_indices, orange_warning_indices, yellow_warning_indices
+    
   endelse
 END

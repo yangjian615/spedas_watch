@@ -214,7 +214,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 data.x       = time                                                                                                                
                 for i=0,nn_pktnum-1 do begin
                   data.y[i]  = bias_arr[2048-output_swp_dyn_offset[i],swpn]    ; Volt 
-                  data.dy[i] = (bias_arr[(output_swp_dyn_offset[i]-1)>0,1]-bias_arr[(output_swp_dyn_offset[i]+1)<4095,1])*0.5  
+                  data.dy[i] = (bias_arr[(output_swp_dyn_offset[i]-1)>0,1]-bias_arr[((output_swp_dyn_offset[i]+1)<4095)>0,1])*0.5  
                                                                          ; the derived error is the dV/2 of the two next to each other bins              
                  endfor  
                 ;-------------------------------------------

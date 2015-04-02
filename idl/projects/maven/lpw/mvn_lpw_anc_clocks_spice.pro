@@ -175,7 +175,7 @@ utc_time = time_string(unix_time2, precision=5)   ;precision give you dp to have
 et_time = time_ephemeris(utc_time, /ut2et)
 
 utc_time_time=dblarr(nele_sclk)
-for i=0,nele_sclk-1 do begin
+for i=0l,nele_sclk-1 do begin
    aa= strsplit(utc_time[i],'/',/extract)  ;this is 'T' when using utc times ouput by SPICE
    bb= strsplit(aa[0],'-',/extract)
    cc= strsplit(aa[1],':',/extract)
@@ -194,7 +194,7 @@ cspice_dtpool, 'DELTET/DELTA_AT', found1, n, type  ;found=1 if kernel is found, 
 IF found1 EQ 1 THEN cspice_gdpool, 'DELTET/DELTA_AT', 0, n, values, found2  ;extract the leapsecs kernel. One column = #, second column = leapsecond date          
 
 ;Go through each UTC time and convert to Julian:
-FOR bbb = 0, nele_sclk -1 DO BEGIN
+FOR bbb = 0l, nele_sclk -1 DO BEGIN
         ;old way to get JD: identical to 3rd dp with spice routine, so good either way, but old way is probably longer
         ;  ;UTC time is given in the format "2013 NOV 09 19:00:46.690", so split up strings based on the characters " :"
         ;  utc_elements = strsplit(utc_time[bbb], "-T:.", /extract)  ;utc_elements is a 6 element array in the format [year, month, day, hour, min, sec.subsec]    
@@ -235,7 +235,7 @@ ENDFOR  ;over nele_sclk2
 ;The Idl routine requires the UTC time to be in this format: 2014-10-10T01:34:05.765, this format is output by cspice_et2utc already, but not by Davin's routines
 
 utc_time_temp = utc_time
-for ttt = 0, n_elements(utc_time)-1 do begin
+for ttt = 0l, n_elements(utc_time)-1 do begin
   dd = strsplit(utc_time[ttt], '/', /extract)  ;break up string based on '/'
   utc_time[ttt] = dd[0]+'T'+dd[1]  ;recombine with new delimeter 'T'
 endfor

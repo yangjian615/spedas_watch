@@ -44,7 +44,9 @@ FUNCTION eva_data_load_sitl, state
         str_element,/add,s,'STOP',[1L]; end fo the 1st cycle
         str_element,/add,s,'NSEGS',1L
         str_element,/add,s,'NBUFFS',1L
+        str_element,/add,s,'SEGLENGTHS',1L
         str_element,/add,s,'FPICAL',1L; Set 1 to indicate that a dummy segment exists.
+        str_element,/add,s,'SOURCEID', eva_sourceid()
         str_element,/add,lim,'UNIX_FOMstr_org',s; put the hacked FOMstr into 'lim'
         D_hacked = eva_sitl_strct_read(s,min(lim.unix_FOMstr_org.START,/nan)); change the tplot-data accordingly
         store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl; here is the faked 'mms_stlm_fomstr'
@@ -85,6 +87,7 @@ FUNCTION eva_data_load_sitl, state
     options,'mms_stlm_output_fom','ytitle','FOM'
     options,'mms_stlm_output_fom','ysubtitle',ysubtitle
     eva_sitl_strct_yrange,'mms_stlm_output_fom'
+    eva_sitl_strct_yrange,'mms_stlm_fomstr'
   endif
 
   eva_toc,clock,str=str,report=report

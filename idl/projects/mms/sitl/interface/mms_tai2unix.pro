@@ -10,7 +10,7 @@ function mms_tai2unix, tinput
   
   tinput_juls = tinput/double(86400) + julday(1, 1, 1958, 0, 0, 0)
   
-  toutput = lonarr(n_elements(tinput))
+  toutput = dblarr(n_elements(tinput))
   
   for i = 0, n_elements(tinput)-1 do begin
     loc_greater = where(tinput_juls(i) gt juls, count_greater)

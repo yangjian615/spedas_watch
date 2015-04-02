@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-30 19:11:00 -0700 (Mon, 30 Mar 2015) $
-; $LastChangedRevision: 17206 $
+; $LastChangedDate: 2015-03-31 18:28:04 -0700 (Tue, 31 Mar 2015) $
+; $LastChangedRevision: 17216 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
@@ -128,8 +128,11 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
         store_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl; update data points
         options,'mms_stlm_fomstr','unix_FOMStr_mod',s ; update structure
         
-        ;update 'mms_stlm_output_fom'
+        
+        ;update yrange
         eva_sitl_strct_yrange,'mms_stlm_output_fom'
+        eva_sitl_strct_yrange,'mms_stlm_fomstr'
+        
       endif else begin; No segment
         if user_flag ne 4 then begin; if not FPI-cal
           r = dialog_message("You can't delete all segments.",/center)
@@ -146,7 +149,8 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
           D_hacked = eva_sitl_strct_read(s,tfom[0]); change the tplot-data accordingly
           store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl; here is the faked 'mms_stlm_fomstr'
           options,'mms_stlm_fomstr','unix_FOMStr_mod',s ; update structure
-          ;eva_sitl_strct_yrange,'mms_stlm_output_fom'
+          eva_sitl_strct_yrange,'mms_stlm_output_fom'
+          eva_sitl_strct_yrange,'mms_stlm_fomstr'
         endelse
       endelse
       end; FOMStr case
@@ -203,8 +207,9 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
       store_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl; update data points
       options,'mms_stlm_bakstr','unix_BAKStr_mod',s ; update structure
       
-      ;update 'mms_stlm_output_fom'
+      ;update yrange
       eva_sitl_strct_yrange,'mms_stlm_output_fom'
+      eva_sitl_strct_yrange,'mms_stlm_fomstr'
       
       end; BAKStr
     else: message,'Something is wrong'

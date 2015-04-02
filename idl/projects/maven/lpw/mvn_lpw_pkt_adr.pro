@@ -716,8 +716,8 @@ pro mvn_lpw_pkt_adr, output,lpw_const,tplot_var=tplot_var,spice=spice
       ;*******************************************************************************************
       ;adr is always after atr, hence match to a atr before this time stamp 
       
-  ;    IF tplot_var EQ 'all' THEN BEGIN
-       IF 'all' EQ 'all' THEN BEGIN
+      IF tplot_var EQ 'all' THEN BEGIN
+;       IF 'all' EQ 'all' THEN BEGIN
             ;-------------- Set up the fundamental so  Expected ATR can be derived (12 different values is created below)----------------
             ;------------------------------ This is will then be compared to ADR_raw*const ----------------------------------------------
             ;----------------------------------   The time is based on the ATR time stamp ----------------------------------------------
@@ -725,6 +725,7 @@ pro mvn_lpw_pkt_adr, output,lpw_const,tplot_var=tplot_var,spice=spice
             get_data,'mvn_lpw_atr_dac',data=data0,dlimit=dlimit0    ; this is what we based it on
             get_data,'mvn_lpw_adr_surface_pot1_raw',data=data1,dlimit=dlimit1  ;data1.y(*,3)=output.adr_w_v1  
             ;-------------
+            If(size(data0, /type) Eq 8) Then Begin
                   data =  create_struct(  $             
                                          'x',    dblarr(n_elements(data0.x)) ,  $     ; double 1-D arr
                                          'y',    fltarr(n_elements(data0.x)) )     ;1-D 
@@ -777,144 +778,147 @@ pro mvn_lpw_pkt_adr, output,lpw_const,tplot_var=tplot_var,spice=spice
                   'xlim2'    ,      [min(data.x),max(data.x)])              ;for plotting lpw pkt lab data
                 ;------------- store --------------------                        
             ;-------------  
+             Endif Else dprint, 'Missing mvn_lpw_atr_dac'
              ;---------------- Create 10 of the 12 variables ----------------------
             ;---------------- mvn_lpw_expect_ATR_bias1_wave --------------------
                                               ;mvn_lpw_atr_dac:  data0.y(*,0)=output.ATR_W_BIAS1(i)
             get_data,'mvn_lpw_atr_dac_raw',data=data0,dlimit=dlimit0    ; this is what we based it on
             get_data,'mvn_lpw_adr_surface_pot1_raw',data=data1,dlimit=dlimit1  ;data1.y(*,3)=output.adr_w_v1                                   
-            sort_data1=fltarr(n_elements(data0.x))     ;DO I HAVE TO DO THIS ON ALL VARIABLES BELOW?
-            for i=0,n_elements(data0.x)-1 do BEGIN
-                 qq=min(abs( (data0.x[i]-data1.x) +1e9*(data0.x[i]-data1.x LT 0)),nq)  ;find the right ADR(data1) match to the ATR(data0) time
-                 sort_data1[i]=nq
-              endfor  
-            dlimit.cal_y_const1='PKT level:' + strcompress(const_w_bias1_DAC,/remove_all) +' # '+ $
-                                               strcompress(const_V1_readback,/remove_all)
-            data.y = (data0.y[*,0]-const_sign)*const_w_bias1_DAC +(data1.y[sort_data1,3]*const_V1_readback)
+            If(size(data0, /type) Eq 8) Then Begin
+            
+               sort_data1=fltarr(n_elements(data0.x)) ;DO I HAVE TO DO THIS ON ALL VARIABLES BELOW?
+               for i=0,n_elements(data0.x)-1 do BEGIN
+                  qq=min(abs( (data0.x[i]-data1.x) +1e9*(data0.x[i]-data1.x LT 0)),nq) ;find the right ADR(data1) match to the ATR(data0) time
+                  sort_data1[i]=nq
+               endfor  
+               dlimit.cal_y_const1='PKT level:' + strcompress(const_w_bias1_DAC,/remove_all) +' # '+ $
+                                   strcompress(const_V1_readback,/remove_all)
+               data.y = (data0.y[*,0]-const_sign)*const_w_bias1_DAC +(data1.y[sort_data1,3]*const_V1_readback)
             ;dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
             ;          bias_file+' # V1 readback '+strcompress(const_V1_readback,/remove_all)
             ;data.y = bias_arr(data0.y[*,0],1) +(data1.y[sort_data1,3]*const_V1_readback)
-            limit.yrange=[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_bias1_wave'
-            store_data,'mvn_lpw_exp_ATR_bias1_wave',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_bias1_wave'
+               store_data,'mvn_lpw_exp_ATR_bias1_wave',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_guard1_wave --------------------
                                               ;mvn_lpw_atr_dac:  data0.y[i,1]=output.ATR_W_GUARD1[i]
-            get_data,'mvn_lpw_adr_surface_pot1_raw',data=data1,dlimit=dlimit1  ;data1.y[*,3]=output.adr_w_v1              
-            dlimit.cal_y_const1='PKT level:' + strcompress(const_w_guard1_DAC,/remove_all) +' # '+ $
-                                               strcompress(const_V1_readback,/remove_all)                         
-            data.y = (data0.y[*,1]-const_sign)*const_w_guard1_DAC +(data1.y[sort_data1,3]*const_V1_readback)
+               get_data,'mvn_lpw_adr_surface_pot1_raw',data=data1,dlimit=dlimit1 ;data1.y[*,3]=output.adr_w_v1              
+               dlimit.cal_y_const1='PKT level:' + strcompress(const_w_guard1_DAC,/remove_all) +' # '+ $
+                                   strcompress(const_V1_readback,/remove_all)                         
+               data.y = (data0.y[*,1]-const_sign)*const_w_guard1_DAC +(data1.y[sort_data1,3]*const_V1_readback)
 ;             dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
 ;                      guard_file+' # V1 readback '+strcompress(const_V1_readback,/remove_all)
 ;            data.y = guard_arr(data0.y[*,1],1) +(data1.y[sort_data1,3]*const_V1_readback)          
-            limit.yrange=[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_guard1_wave'
-            store_data,'mvn_lpw_exp_ATR_guard1_wave',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_guard1_wave'
+               store_data,'mvn_lpw_exp_ATR_guard1_wave',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_stub1_wave --------------------
                                               ;mvn_lpw_atr_dac:  data0.y[i,2]=output.ATR_W_STUB1[i]
-            get_data,'mvn_lpw_adr_surface_pot1_raw',data=data1,dlimit=dlimit1  ;data1.y[*,3]=output.adr_w_v1                           
-            data.y = (data0.y[*,2]-const_sign)*const_w_stub1_DAC +(data1.y[sort_data1,3]*const_V1_readback)
+               get_data,'mvn_lpw_adr_surface_pot1_raw',data=data1,dlimit=dlimit1 ;data1.y[*,3]=output.adr_w_v1                           
+               data.y = (data0.y[*,2]-const_sign)*const_w_stub1_DAC +(data1.y[sort_data1,3]*const_V1_readback)
             ;dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
             ;          stub_file+' # V1 readback '+strcompress(const_V1_readback,/remove_all)
             ;data.y = stub_arr(data0.y[*,2],1) +(data1.y[sort_data1,3]*const_V1_readback)
-            limit.yrange=[-5,5] ;[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_stub1_wave'
-            store_data,'mvn_lpw_exp_ATR_stub1_wave',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[-5,5] ;[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_stub1_wave'
+               store_data,'mvn_lpw_exp_ATR_stub1_wave',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_bias2_wave --------------------
                                               ;mvn_lpw_atr_dac:  data0.y[*,6]=output.ATR_W_BIAS2[i]
-            get_data,'mvn_lpw_adr_surface_pot2_raw',data=data1,dlimit=dlimit1  ;data1.y[*,3]=output.adr_w_v2             
-            dlimit.cal_y_const1='PKT level:' + strcompress(const_w_bias2_DAC,/remove_all) +' # '+ $
-                                               strcompress(const_V2_readback,/remove_all)                               
-            data.y = (data0.y[*,6]-const_sign)*const_w_bias2_DAC +(data1.y[sort_data1,3]*const_V2_readback)
+               get_data,'mvn_lpw_adr_surface_pot2_raw',data=data1,dlimit=dlimit1 ;data1.y[*,3]=output.adr_w_v2             
+               dlimit.cal_y_const1='PKT level:' + strcompress(const_w_bias2_DAC,/remove_all) +' # '+ $
+                                   strcompress(const_V2_readback,/remove_all)                               
+               data.y = (data0.y[*,6]-const_sign)*const_w_bias2_DAC +(data1.y[sort_data1,3]*const_V2_readback)
             ;dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
             ;          bias_file+' # V2 readback '+strcompress(const_V2_readback,/remove_all)                           
             ;data.y = bias_arr(data0.y[*,6],2) +(data1.y[sort_data1,3]*const_V2_readback)      
-            limit.yrange=[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_bias2_wave'
-            store_data,'mvn_lpw_exp_ATR_bias2_wave',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_bias2_wave'
+               store_data,'mvn_lpw_exp_ATR_bias2_wave',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_guard2_wave --------------------
                                               ;mvn_lpw_atr_dac:  data0.y[i,7]=output.ATR_W_GUARD2[i]
-            get_data,'mvn_lpw_adr_surface_pot2_raw',data=data1,dlimit=dlimit1  ;data1.y[*,3]=output.adr_w_v2            
-            dlimit.cal_y_const1='PKT level:' + strcompress(const_w_guard2_DAC,/remove_all) +' # '+ $
-                                               strcompress(const_V2_readback,/remove_all)                                
-            data.y = (data0.y[*,7]-const_sign)*const_w_guard2_DAC +(data1.y[sort_data1,3]*const_V2_readback)
+               get_data,'mvn_lpw_adr_surface_pot2_raw',data=data1,dlimit=dlimit1 ;data1.y[*,3]=output.adr_w_v2            
+               dlimit.cal_y_const1='PKT level:' + strcompress(const_w_guard2_DAC,/remove_all) +' # '+ $
+                                   strcompress(const_V2_readback,/remove_all)                                
+               data.y = (data0.y[*,7]-const_sign)*const_w_guard2_DAC +(data1.y[sort_data1,3]*const_V2_readback)
             ;dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
             ;          guard_file+' # V2 readback '+strcompress(const_V2_readback,/remove_all)                           
             ;data.y = guard_arr(data0.y[*,7],2) +(data1.y[sort_data1,3]*const_V2_readback)                  
-            limit.yrange=[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_guard2_wave'
-            store_data,'mvn_lpw_exp_ATR_guard2_wave',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_guard2_wave'
+               store_data,'mvn_lpw_exp_ATR_guard2_wave',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_stub2_wave --------------------
                                               ;mvn_lpw_atr_dac:  data0.y[i,8]=output.ATR_W_STUB2[i]
-            get_data,'mvn_lpw_adr_surface_pot2_raw',data=data1,dlimit=dlimit1  ;data1.y[*,3]=output.adr_w_v2            
-            dlimit.cal_y_const1='PKT level:' + strcompress(const_w_stub2_DAC,/remove_all) +' # '+ $
-                                               strcompress(const_V2_readback,/remove_all)                                
-            data.y = (data0.y[*,8]-const_sign)*const_w_stub2_DAC +(data1.y[sort_data1,3]*const_V2_readback)
+               get_data,'mvn_lpw_adr_surface_pot2_raw',data=data1,dlimit=dlimit1 ;data1.y[*,3]=output.adr_w_v2            
+               dlimit.cal_y_const1='PKT level:' + strcompress(const_w_stub2_DAC,/remove_all) +' # '+ $
+                                   strcompress(const_V2_readback,/remove_all)                                
+               data.y = (data0.y[*,8]-const_sign)*const_w_stub2_DAC +(data1.y[sort_data1,3]*const_V2_readback)
             ;dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
             ;          stub_file+' # V2 readback '+strcompress(const_V2_readback,/remove_all)                           
             ;data.y = stub_arr(data0.y[*,8],2) +(data1.y[sort_data1,3]*const_V2_readback)                            
-            limit.yrange=[-5,5] ;[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_stub2_wave'
-            store_data,'mvn_lpw_exp_ATR_stub2_wave',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[-5,5] ;[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_stub2_wave'
+               store_data,'mvn_lpw_exp_ATR_stub2_wave',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_bias1_LP   moved down since this will be 128 of them --------------------
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_guard1_LP --------------------
                                               ;mvn_lpw_atr_dac:  data0.y[i,4]=output.ATR_LP_GUARD1[i]
-            get_data,'mvn_lpw_adr_lp_bias1_raw',data=data1,dlimit=dlimit1           ;data1.y[*,127]=output.adr_lp_bias1[*,127]           
-            dlimit.cal_y_const1='PKT level:' + strcompress(const_lp_guard1_DAC,/remove_all) +' # '+ $
-                                               strcompress(const_bias1_readback,/remove_all)                             
-            data.y = (data0.y[*,4]-const_sign)*const_lp_guard1_DAC +(data1.y[sort_data1,126]*const_bias1_readback)
+               get_data,'mvn_lpw_adr_lp_bias1_raw',data=data1,dlimit=dlimit1 ;data1.y[*,127]=output.adr_lp_bias1[*,127]           
+               dlimit.cal_y_const1='PKT level:' + strcompress(const_lp_guard1_DAC,/remove_all) +' # '+ $
+                                   strcompress(const_bias1_readback,/remove_all)                             
+               data.y = (data0.y[*,4]-const_sign)*const_lp_guard1_DAC +(data1.y[sort_data1,126]*const_bias1_readback)
   ;          dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
   ;                    guard_file+' # V2 readback '+strcompress(const_V2_readback,/remove_all)                           
        ;     data.y = guard_arr(data0.y[*,4],2) +(data1.y[sort_data1,3]*const_V2_readback)                                      
-            limit.yrange=[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_guard1_LP'
-            store_data,'mvn_lpw_exp_ATR_guard1_LP',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_guard1_LP'
+               store_data,'mvn_lpw_exp_ATR_guard1_LP',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_stub1_LP --------------------
                                               ;mvn_lpw_atr_dac:  data0.y[i,5]=output.ATR_LP_STUB1[i]
-            get_data,'mvn_lpw_adr_lp_bias1_raw',data=data1,dlimit=dlimit1           ;data1.y[*,127]=output.adr_lp_bias1[*,127]           
-            dlimit.cal_y_const1='PKT level:' + strcompress(const_lp_stub1_DAC,/remove_all) +' # '+ $
-                                               strcompress(const_bias1_readback,/remove_all)                               
-            data.y = (data0.y[*,5]-const_sign)*const_lp_stub1_DAC +(data1.y[sort_data1,126]*const_bias1_readback)          
+               get_data,'mvn_lpw_adr_lp_bias1_raw',data=data1,dlimit=dlimit1 ;data1.y[*,127]=output.adr_lp_bias1[*,127]           
+               dlimit.cal_y_const1='PKT level:' + strcompress(const_lp_stub1_DAC,/remove_all) +' # '+ $
+                                   strcompress(const_bias1_readback,/remove_all)                               
+               data.y = (data0.y[*,5]-const_sign)*const_lp_stub1_DAC +(data1.y[sort_data1,126]*const_bias1_readback)          
             ;dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
             ;          stub_file+' # '+bias_file                          
             ;data.y = stub_arr(data0.y[*,5],1) +bias_arr(data1.y[sort_data1,126],1)                                                
-            limit.yrange=[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_stub1_LP'
-            store_data,'mvn_lpw_exp_ATR_stub1_LP',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_stub1_LP'
+               store_data,'mvn_lpw_exp_ATR_stub1_LP',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_bias2_LP   moved down since this will be 128 of them --------------------
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_guard12_LP --------------------
                                               ;mvn_lpw_atr_dac:  data0.y[i,10]=output.ATR_LP_GUARD2[i]
-            get_data,'mvn_lpw_adr_lp_bias2_raw',data=data1,dlimit=dlimit1           ;data1.y[*,127]=output.adr_lp_bias2[*,127]           
-            dlimit.cal_y_const1='PKT level:' + strcompress(const_lp_guard2_DAC,/remove_all) +' # '+ $
-                                               strcompress(const_bias2_readback,/remove_all)                               
-            data.y = (data0.y[*,10]-const_sign)*const_lp_guard2_DAC +(data1.y[sort_data1,126]*const_bias2_readback)            
+               get_data,'mvn_lpw_adr_lp_bias2_raw',data=data1,dlimit=dlimit1 ;data1.y[*,127]=output.adr_lp_bias2[*,127]           
+               dlimit.cal_y_const1='PKT level:' + strcompress(const_lp_guard2_DAC,/remove_all) +' # '+ $
+                                   strcompress(const_bias2_readback,/remove_all)                               
+               data.y = (data0.y[*,10]-const_sign)*const_lp_guard2_DAC +(data1.y[sort_data1,126]*const_bias2_readback)            
             ;dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
             ;          guard_file+' # '+bias_file                          
             ;data.y = guard_arr(data0.y[*,10],2) +bias_arr(data1.y[sort_data1,126],2)                                                           
-            limit.yrange=[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_guard2_LP'
-            store_data,'mvn_lpw_exp_ATR_guard2_LP',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_guard2_LP'
+               store_data,'mvn_lpw_exp_ATR_guard2_LP',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
             ;---------------- mvn_lpw_expect_ATR_stub2_LP --------------------
                                               ;mvn_lpw_atr_dac:  data0.y[i,11]=output.ATR_LP_STUB2[i]
-            get_data,'mvn_lpw_adr_lp_bias2_raw',data=data1,dlimit=dlimit1           ;data1.y[*,127]=output.adr_lp_bias2[*,127]           
-            dlimit.cal_y_const1='PKT level:' + strcompress(const_lp_stub2_DAC,/remove_all) +' # '+ $
-                                               strcompress(const_bias2_readback,/remove_all)                               
-            data.y = (data0.y[*,11]-const_sign)*const_lp_stub2_DAC +(data1.y[sort_data1,126]*const_bias2_readback)            
+               get_data,'mvn_lpw_adr_lp_bias2_raw',data=data1,dlimit=dlimit1 ;data1.y[*,127]=output.adr_lp_bias2[*,127]           
+               dlimit.cal_y_const1='PKT level:' + strcompress(const_lp_stub2_DAC,/remove_all) +' # '+ $
+                                   strcompress(const_bias2_readback,/remove_all)                               
+               data.y = (data0.y[*,11]-const_sign)*const_lp_stub2_DAC +(data1.y[sort_data1,126]*const_bias2_readback)            
             ;dlimit.cal_y_const1='Used: '+ dlimit0.cal_y_const1+' # '+ dlimit1.cal_y_const1 +' # ' + $
             ;          stub_file+' # '+bias_file                          
             ;data.y = stub_arr(data0.y[*,11],2) +bias_arr(data1.y[sort_data1,126],2)                                                                                  
-            limit.yrange=[min(data.y),max(data.y)]
-            limit.ytitle='expected_ATR_stub2_LP'
-            store_data,'mvn_lpw_exp_ATR_stub2_LP',data=data,limit=limit,dlimit=dlimit
+               limit.yrange=[min(data.y),max(data.y)]
+               limit.ytitle='expected_ATR_stub2_LP'
+               store_data,'mvn_lpw_exp_ATR_stub2_LP',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------    
             ;---------------- Create the last 2 of the 12 variables ----------------------
             ;;LP
@@ -969,12 +973,14 @@ pro mvn_lpw_pkt_adr, output,lpw_const,tplot_var=tplot_var,spice=spice
                  for i=0,n_elements(data0.x)-1 do begin                       
                     data.y[i,*] =(data0.y[i,9]-const_sign)*const_lp_bias2_DAC+data1.y[sort_data1[i],*] + 0.  ;the '0' is because this is grounded
                     ;data.y[i,*] =bias_arr(data0.y[i,9],2)+data1.y[sort_data1[i],*] + 0.  ;the '0' is because this is grounded
-                endfor   
+                 endfor   
                  limit.zrange=[min(data.y),max(data.y)]
                  limit.ytitle='expected_ATR_bias2_LP'
                  store_data,'mvn_lpw_exp_ATR_bias2_LP',data=data,limit=limit,dlimit=dlimit
             ;---------------------------------------------
+              Endif Else dprint, 'Missing mvn_lpw_atr_dac_raw'
           endif  
+
             
             
             

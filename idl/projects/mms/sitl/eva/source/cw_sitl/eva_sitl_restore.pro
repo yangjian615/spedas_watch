@@ -32,6 +32,7 @@ PRO eva_sitl_restore, auto=auto
   
   ;update 'mms_stlm_output_fom'
   eva_sitl_strct_yrange,'mms_stlm_output_fom'
+  eva_sitl_strct_yrange,'mms_stlm_fomstr'
   
   tplot
   answer = dialog_message('FOMstr successfully restored!',/center,/info)

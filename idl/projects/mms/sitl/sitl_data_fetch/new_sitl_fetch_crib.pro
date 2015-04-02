@@ -5,7 +5,7 @@
 ;cache_dir = '/Users/frederickwilder/'
 cache_dir = '/Users/moka/'
 start_date = '2015-03-17'
-end_date = '2015-03-17'
+end_date = '2015-03-20'
 
 mms_sitl_get_dcb, start_date, end_date, cache_dir, afg_status, dfg_status, sc_id='mms2'
 

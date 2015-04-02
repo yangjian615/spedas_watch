@@ -4,11 +4,11 @@
 ;
 ;
 ;Purpose:
-;  Searches for and adds plugin items to the GUI plugin menu.
+;  Builds GUI plugin menu.
 ;
 ;
 ;Calling Sequence:
-;  spd_ui_plugin_menu, menu_id
+;  spd_ui_plugin_menu, menu_id [,plugin_menu_items]
 ;
 ;
 ;Input:
@@ -21,14 +21,12 @@
 ;
 ;Notes:
 ;
-;  In Development...
 ;
 ;
-;
-;$LastChangedBy:  $
-;$LastChangedDate:  $
-;$LastChangedRevision:  $
-;$URL:  $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-03-31 16:53:14 -0700 (Tue, 31 Mar 2015) $
+;$LastChangedRevision: 17214 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_plugin_menu.pro $
 ;
 ;-
 
@@ -36,18 +34,6 @@ pro spd_ui_plugin_menu, menu_id, plugin_menu_items
 
     compile_opt idl2, hidden
 
-
-;  ;error catch block in case of incorrect setup
-;  ;todo: this should be removed or updated when development is complete
-;  err=0
-;  catch, err
-;  if err ne 0 then begin
-;    catch, /cancel
-;    help, /last_message ;, output=err_msg
-;    ok = error_message('An unknown error occured while populating the Plugins menu.', $
-;                       /noname, /center, title='Plugin Menu Error')
-;    return
-;  endif
   
 
   if ~is_struct(plugin_menu_items) then begin
