@@ -46,8 +46,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-27 16:07:01 -0800 (Fri, 27 Feb 2015) $
-; $LastChangedRevision: 17055 $
+; $LastChangedDate: 2015-04-02 02:29:54 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17222 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/models/mvn_model_bcrust_load.pro $
 ;
 ;-
@@ -97,8 +97,7 @@ PRO mvn_model_bcrust_load, var, orbit=orbit, silent=sl, verbose=vb, calc=calc, s
         READ,  '  Do you want to calculate now (Yes=1 / No=0)?: ', yes 
      ENDELSE 
      IF yes EQ 1 THEN BEGIN
-        IF SIZE(morschhauser, /type) NE 0 THEN $
-           IF morschhauser NE 0 THEN morschhauser = 1
+        IF SIZE(morschhauser, /type) EQ 0 THEN morschhauser = 1
         dotplot = INTARR(5)
         dotplot[*] = 0
         dotplot[0] = keyword_set(morschhauser)

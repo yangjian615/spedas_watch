@@ -195,7 +195,7 @@ if keyword_set(data_dir) then begin
                
         print, "#### WARNING ####: By specifying the keyword data_dir you are choosing to work offline."
         print, "Your offline kernel and orbit data directory must contain the following Berkeley determined"
-        print, "directories: /data/misc/spice/naif/MAVEN/kernels/ for SPICE use, and 
+        print, "directories: /data/misc/spice/naif/MAVEN/kernels/ for SPICE use, and "
         print, "/data/maven/pfp/l0 to find and load MAVEN orbit data (with '\' on Windows machine). If it does not, this routine will create them"
         print, "for you and download required orbit data and SPICE kernels here. You can work offline without using SPICE;"
         print, "this directory tree must still be present so that the software can locate orbit data."
@@ -328,9 +328,9 @@ if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
  ;                 retall
  ;           endif 
             print, "Otherwise, Using default values"
-            password = getenv('USER')+':'+getenv('USER')+'_pfp'
+            password = ''
       endif else begin
-         if getenv('MAVENPFP_USER_PASS') eq '' then password = getenv('USER')+':'+getenv('USER')+'_pfp' $
+         if getenv('MAVENPFP_USER_PASS') eq '' then password = '' $
          else password = getenv('MAVENPFP_USER_PASS') ;Same as SSL;over mavenpfp_user_pass
       endelse
 
@@ -341,15 +341,22 @@ if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
       print, "Getting latest L0 file..."
       print, "#########################"      
       
-      if keyword_set(noserver) then begin    ;These two routines set common blocks that tell the SSL routines whether to use servers or not
+      If(password ne '') Then Begin
+         if keyword_set(noserver) then begin ;These two routines set common blocks that tell the SSL routines whether to use servers or not
             dummy = mvn_file_source(/set, USER_PASS=password, no_server=1)
             dummy = spice_file_source(/set, no_server=1)
-      endif else begin       
+         endif else begin       
             dummy = mvn_file_source(/set, USER_PASS=password) 
             dummy = spice_file_source(/set)
-      endelse
+         endelse
+      Endif Else Begin ;stick to default behavior
+         if keyword_set(noserver) then begin
+            dummy = mvn_file_source(/set, no_server=1)
+            dummy = spice_file_source(/set, no_server=1)
+         endif
+      Endelse
       ;---------------------
-      
+
       ;Retrieve files:
       ;Extract year, month, day out of utc_in:
       year = strmid(utc_in, 0, 4)  ;first four characters
@@ -363,7 +370,7 @@ if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
       ;Sometimes Davin's software will get v1,2,3; make sure we take the latest version, the last element in files
       nnf = n_elements(files)
       files = files[nnf-1]
-      
+
       IF strpos(files, '??') NE -1 THEN BEGIN  ;Data not available if we have v???.dat on the file name
           print, "#### WARNING ####: Date entered (", utc_in[0], ") is outside of the MAVEN mission time frame or is not yet available."
           print, "Exiting routine."
@@ -386,7 +393,6 @@ if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
           print, "Locating correct SPICE kernels..."
           mvn_lpw_anc_get_spice_kernels, [utc_in[0], utc_in[0]], notatlasp = notatlasp ;add notatlasp, jmm, 2015-01-29
       endif 
-      
       ;==========================
       ;---Save tplot variables---
       ;==========================

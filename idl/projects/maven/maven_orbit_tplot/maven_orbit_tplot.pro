@@ -57,18 +57,23 @@
 ;
 ;       LOADONLY: Create the TPLOT variables, but do not plot.
 ;
+;       TIMECROP: An array with at least two elements, in any format accepted by 
+;                 time_double.  Only ephemeris data between the earliest and
+;                 latest times in this array are retained.  Default is to retain all
+;                 available data.
+;
 ;       VARS:     Array of TPLOT variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-03-27 15:14:37 -0700 (Fri, 27 Mar 2015) $
-; $LastChangedRevision: 17200 $
+; $LastChangedDate: 2015-04-01 10:57:17 -0700 (Wed, 01 Apr 2015) $
+; $LastChangedRevision: 17219 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
-                       vars=vars, ellip=ellip, hires=hires
+                       vars=vars, ellip=ellip, hires=hires, timecrop=timecrop
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex
@@ -83,6 +88,10 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   if keyword_set(ellip) then eflg = 1 else eflg = 0
   if keyword_set(extended) then cflg = 0 else cflg = 1
   if keyword_set(hires) then res = '20sec' else res = '60sec'
+  if (n_elements(timecrop) gt 1L) then begin
+    tspan = minmax(time_double(timecrop))
+    docrop = 1
+  endif else docrop = 0
 
   rootdir = 'maven/anc/spice/sav/'
   
@@ -125,8 +134,11 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     mso_v[*,0] = mex.vx
     mso_v[*,1] = mex.vy
     mso_v[*,2] = mex.vz
+    
+    geo_x = 0.  ; no GEO coordinates for MEX
+    geo_v = 0.
 
-    eph = {time:time, mso_x:mso_x, mso_v:mso_v}
+    eph = {time:time, mso_x:mso_x, mso_v:mso_v, geo_x:geo_x, geo_v:geo_v}
 
   endif else begin
     if (cflg) then fname = 'maven_spacecraft_mso_??????' + '.sav' $
@@ -211,6 +223,34 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     eph = {time:time, mso_x:mso_x, mso_v:mso_v, geo_x:geo_x, geo_v:geo_v}
 
   endelse
+  
+  if (docrop) then begin
+    indx = where((time ge tspan[0]) and (time le tspan[1]), count)
+    if (count gt 0L) then begin
+      eph = {time:time[indx], mso_x:mso_x[indx,*], mso_v:mso_v[indx,*]}
+      if (n_elements(geo_x[*,0]) eq n_elements(time)) then begin
+        str_element, eph, 'geo_x', geo_x[indx,*], /add
+        str_element, eph, 'geo_v', geo_v[indx,*], /add
+      endif
+      time = time[indx]
+      x = x[indx]
+      y = y[indx]
+      z = z[indx]
+      vx = vx[indx]
+      vy = vy[indx]
+      vz = vz[indx]
+      r = r[indx]
+      s = s[indx]
+      sza = sza[indx]
+      if (n_elements(lon) ge count) then begin
+        lon = lon[indx]
+        lat = lat[indx]
+      endif
+    endif else begin
+      print,"No ephemeris data within requested range: ",time_string(tspan)
+      print,"Retaining all ephemeris data."
+    endelse
+  endif
   
   npts = n_elements(time)
   state = eph

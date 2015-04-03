@@ -51,7 +51,7 @@ sl = path_sep()
 
 ;May need password:
 if getenv('MAVENPFP_USER_PASS') eq '' then begin
-   passwd = getenv('USER')+':'+getenv('USER')+'_pfp'
+   passwd = ''
 endif else passwd = getenv('MAVENPFP_USER_PASS')
 
 ;Check date is correct format:
@@ -107,7 +107,9 @@ for ll = 0, nl-1 do begin
 ;If requested, use alternate directory
        if keyword_set(newdir) then fbase = newdir
        fname2 = fbase+levels[ll]+sl+yr+sl+mm+sl+fname+'_v??_r??.cdf' ;full directory to file, minus v and r numbers.
-       fname2 = mvn_pfp_file_retrieve(fname2, user_pass = passwd)
+       If(sl ne '/') Then fname2 = strjoin(strsplit(fname2, sl, /extract), '/') ;fix to PC issue, jmm, 1-apr-2015
+       if(passwd Ne '') then fname2 = mvn_pfp_file_retrieve(fname2, user_pass = passwd) $
+       else fname2 = mvn_pfp_file_retrieve(fname2)
        ff = mvn_lpw_cdf_latest_file(fname2) ;latest file
        if ff ne 'none_found' then fvars = [fvars, ff]     
     endfor 

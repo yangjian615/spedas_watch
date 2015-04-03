@@ -59,8 +59,8 @@
 ;       KEEP:     Do not kill the plot windows on exit.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-03-27 15:15:27 -0700 (Fri, 27 Mar 2015) $
-; $LastChangedRevision: 17201 $
+; $LastChangedDate: 2015-04-01 10:57:52 -0700 (Wed, 01 Apr 2015) $
+; $LastChangedRevision: 17220 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -150,7 +150,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     Owin = !d.window
   endif else begin
     device, get_screen_size=scr
-    oscale = 0.965*(scr[1]/943.)
+    oscale = 0.965*(scr[1]/943.) < 1.06
 
     xsize = round(350.*oscale)
     ysize = round(943.*oscale)
