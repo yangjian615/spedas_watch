@@ -4,7 +4,7 @@ PRO eva_sitl_highlight, left_edges, right_edges, data, var, $
   @xtplot_com
   @tplot_com
   @eva_sitl_com
-  @moka_logger_com
+  @eva_logger_com
   
   nmax = n_elements(left_edges)
   if (nmax ne n_elements(right_edges)) or (nmax ne n_elements(data)) then begin

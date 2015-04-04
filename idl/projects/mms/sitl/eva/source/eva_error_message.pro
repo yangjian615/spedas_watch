@@ -1,5 +1,5 @@
 PRO eva_error_message, error_status, msg=msg
-  @moka_logger_com
+  @eva_logger_com
   
   help, /last_message, output=error_message; get error message
   vsn=float(strmid(!VERSION.RELEASE,0,3))

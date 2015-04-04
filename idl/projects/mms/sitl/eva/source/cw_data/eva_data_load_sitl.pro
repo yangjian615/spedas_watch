@@ -1,7 +1,7 @@
 ; The input "state" is the DATA MODULE state.
 FUNCTION eva_data_load_sitl, state
   compile_opt idl2
-  @moka_logger_com
+  @eva_logger_com
   
   
   clock = eva_tic('EVA_DATA_LOAD_STLM',/profiler) 
@@ -12,7 +12,7 @@ FUNCTION eva_data_load_sitl, state
     input: 'soca', $ ; input type (default: 'soca'; or 'socs','stla')
     update: 1 } ; update input data everytime plotting STLM variables
   
-  fomfile = state.PREF.CACHE_DATA_DIR+'FOMstr_'+stlm.input+'.sav'
+  fomfile = state.PREF.EVA_CACHE_DIR+'FOMstr_'+stlm.input+'.sav'
   
   ; Should use "execute" to reduce number of codes?
   if stlm.update then begin

@@ -1,19 +1,13 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-27 19:17:56 -0800 (Fri, 27 Feb 2015) $
-; $LastChangedRevision: 17057 $
+; $LastChangedDate: 2015-04-02 18:34:10 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17228 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data_load_thm.pro $
 
-PRO eva_data_load_magcap, sname, max=max; sname can be, for example, 'thb_fgs_gsm'
-  if ~keyword_set(max) then max=100.0
-  get_data,  sname,data=D,limit=limit,dlimit=dlimit
-  index = where(abs(D.y) gt max)
-  if (index[0] ne -1) then D.y[index] = float('NaN')
-  store_data,sname,data={x:D.x,y:D.y},limit=limit, dlimit=dlimit
-END
+
 
 FUNCTION eva_data_load_thm, state
   compile_opt idl2
-  @moka_logger_com
+  @eva_logger_com
 
   catch, error_status
   if error_status ne 0 then begin
@@ -23,7 +17,7 @@ FUNCTION eva_data_load_thm, state
   endif
 
   ;--- INITIALIZE ---
-  dir       = state.PREF.cache_data_dir
+  dir       = state.PREF.EVA_CACHE_DIR
   ;duration  = state.duration
   duration  = (str2time(state.end_time)-str2time(state.start_time))/86400.d0; duration in unit of days.
   eventdate = state.eventdate
@@ -235,8 +229,8 @@ FUNCTION eva_data_load_thm, state
             endelse
 
             ; POST DATA PROCESSING
-            if strmatch(refilelist[r],'*_fg*'     ) then eva_data_load_magcap, refilelist[r]
-            ;if strmatch(refilelist[r],'*_density*') then eva_data_load_magcap, refilelist[r], max=10.0
+            if strmatch(refilelist[r],'*_fg*'     ) then eva_cap, refilelist[r]
+            ;if strmatch(refilelist[r],'*_density*') then eva_cap, refilelist[r], max=10.0
 
           endelse; result.size
         endif; result.exists

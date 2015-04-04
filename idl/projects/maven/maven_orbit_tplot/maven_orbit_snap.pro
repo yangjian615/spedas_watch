@@ -59,8 +59,8 @@
 ;       KEEP:     Do not kill the plot windows on exit.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-01 10:57:52 -0700 (Wed, 01 Apr 2015) $
-; $LastChangedRevision: 17220 $
+; $LastChangedDate: 2015-04-02 18:54:40 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17231 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -69,7 +69,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex
+                       lon, lat, hgt, mex, rcols
 
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)
@@ -278,7 +278,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         x[indx] = !values.f_nan
         y[indx] = !values.f_nan
       endif
-      oplot,x,y,color=4
+      oplot,x,y,color=rcols[0]
 
       x = xp
       y = yp
@@ -289,7 +289,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         x[indx] = !values.f_nan
         y[indx] = !values.f_nan
       endif
-      oplot,x,y,color=5
+      oplot,x,y,color=rcols[1]
 
       x = xw
       y = yw
@@ -300,7 +300,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         x[indx] = !values.f_nan
         y[indx] = !values.f_nan
       endif
-      oplot,x,y,color=2
+      oplot,x,y,color=rcols[2]
 
 ; Shock conic
 
@@ -379,7 +379,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       x[indx] = !values.f_nan
       z[indx] = !values.f_nan
     endif
-    oplot,x,z,color=4
+    oplot,x,z,color=rcols[0]
 
     x = xp
     y = yp
@@ -390,7 +390,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       x[indx] = !values.f_nan
       y[indx] = !values.f_nan
     endif
-    oplot,x,z,color=5
+    oplot,x,z,color=rcols[1]
 
     x = xw
     y = yw
@@ -401,7 +401,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       x[indx] = !values.f_nan
       z[indx] = !values.f_nan
     endif
-    oplot,x,z,color=2
+    oplot,x,z,color=rcols[2]
 
 ; Shock conic
 
@@ -477,7 +477,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         y[indx] = !values.f_nan
         z[indx] = !values.f_nan
       endif
-      oplot,y,z,color=4
+      oplot,y,z,color=rcols[0]
 
       x = xp
       y = yp
@@ -488,7 +488,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         x[indx] = !values.f_nan
         y[indx] = !values.f_nan
       endif
-      oplot,y,z,color=5
+      oplot,y,z,color=rcols[1]
 
       x = xw
       y = yw
@@ -499,7 +499,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         y[indx] = !values.f_nan
         z[indx] = !values.f_nan
       endif
-      oplot,y,z,color=2
+      oplot,y,z,color=rcols[2]
 
       L0 = sqrt((L + psi*x0)^2. - x0*x0)
       oplot,L0*xm,L0*ym,color=3,line=1
@@ -529,9 +529,9 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     if (pflg) then i = imid else i = imin
     oplot,[x[i]],[s[i]],psym=8,color=5
 
-    oplot,xs,sqrt(ys*ys + zs*zs),color=4
-    oplot,xp,sqrt(yp*yp + zp*zp),color=5
-    oplot,xw,sqrt(yw*yw + zw*zw),color=2
+    oplot,xs,sqrt(ys*ys + zs*zs),color=rcols[0]
+    oplot,xp,sqrt(yp*yp + zp*zp),color=rcols[1]
+    oplot,xw,sqrt(yw*yw + zw*zw),color=rcols[2]
 
 ; Shock conic
 

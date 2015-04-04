@@ -62,21 +62,32 @@
 ;                 latest times in this array are retained.  Default is to retain all
 ;                 available data.
 ;
+;       COLORS:   Color indices the nominal plasma regimes: [sheath, pileup, wake].
+;                 The solar wind is always plotted in the default foreground color,
+;                 typically white or black.  For other regimes, the defaults are:
+;
+;                   regime       index       color (table 34)
+;                   -----------------------------------------
+;                   sheath         4         green
+;                   pileup         5         yellow
+;                   wake           2         blue
+;                   -----------------------------------------
+;
 ;       VARS:     Array of TPLOT variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-01 10:57:17 -0700 (Wed, 01 Apr 2015) $
-; $LastChangedRevision: 17219 $
+; $LastChangedDate: 2015-04-02 18:54:17 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17230 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
-                       vars=vars, ellip=ellip, hires=hires, timecrop=timecrop
+                       vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, colors=colors
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex
+                       lon, lat, hgt, mex, rcols
 
   R_m = 3389.9D
   R_equ = 3396.2D
@@ -92,6 +103,13 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     tspan = minmax(time_double(timecrop))
     docrop = 1
   endif else docrop = 0
+  case n_elements(colors) of
+    0 : rcols = [4, 5, 2]
+    1 : rcols = [round(colors), 5, 2]
+    2 : rcols = [round(colors), 2]
+    3 : rcols = round(colors)
+    else : rcols = round(colors[0:2])
+  endcase
 
   rootdir = 'maven/anc/spice/sav/'
   
@@ -392,13 +410,13 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   options,'sza','ytitle','Solar Zenith Angle'
 
   store_data,'sheath',data={x:time, y:(sheath[*,3] - 1D)*R_m}
-  options,'sheath','color',4
+  options,'sheath','color',rcols[0]
 
   store_data,'pileup',data={x:time, y:(pileup[*,3] - 1D)*R_m}
-  options,'pileup','color',5
+  options,'pileup','color',rcols[1]
 
   store_data,'wake',data={x:time, y:(wake[*,3] - 1D)*R_m}
-  options,'wake','color',2
+  options,'wake','color',rcols[2]
 
   store_data,'wind',data={x:time, y:(wind[*,3] - 1D)*R_m}
 
@@ -548,9 +566,9 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   store_data, 'tpileup', data = {x:torb, y:tpileup}
   store_data, 'twake'  , data = {x:torb, y:twake}
 
-  options, 'tsheath', 'color', 4
-  options, 'tpileup', 'color', 5
-  options, 'twake', 'color', 2
+  options, 'tsheath', 'color', rcols[0]
+  options, 'tpileup', 'color', rcols[1]
+  options, 'twake', 'color', rcols[2]
 
   store_data, 'stat', data = ['twind','tsheath','tpileup','twake']
   ylim, 'stat', 0, 1

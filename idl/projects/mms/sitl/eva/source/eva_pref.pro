@@ -12,11 +12,11 @@ PRO eva_pref_event, event
       
       widget_control, wid.pfSitl,                          GET_VALUE=pfState
       widget_control, widget_info(wid.gl,find='eva_sitl'), SET_VALUE=pfState.pref
-      eva_config_write, pfState.pref
+      mms_config_write, pfState.pref
       
       widget_control, wid.pfData,                          GET_VALUE=pfState
       widget_control, widget_info(wid.gl,find='eva_data'), SET_VALUE=pfState.pref
-      eva_config_write, pfState.pref
+      mms_config_write, pfState.pref
       
       exitcode=1
       end

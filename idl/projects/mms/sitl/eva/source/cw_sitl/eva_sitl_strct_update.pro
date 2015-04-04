@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-31 18:28:04 -0700 (Tue, 31 Mar 2015) $
-; $LastChangedRevision: 17216 $
+; $LastChangedDate: 2015-04-02 20:50:49 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17233 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
@@ -65,7 +65,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
         se = s.TIMESTAMPS[s.STOP[N]+1]; segment stop time
         fv = s.FOM[N]; segment FOM value
         
-        ; Each segment is compared to the User's new/modified segement
+        ; Each segment is compared to the User's new/modified segment
         rr = segment_overlap([ss,se],segSelectTime)
         case abs(rr) of; 
           1: begin; partial overlap --> split
@@ -99,7 +99,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
       endfor
       
       ;add selected segment
-      if segSelect.FOM gt 0. then begin
+      if segSelect.FOM gt 0. then begin; The segment will be removed if segSelect.FOM==0
         newSEGLENGTHS = [newSEGLENGTHS, segSTOP-segSTART+1]
         newFOM        = [newFOM,segSelect.FOM]
         ;newISPENDING  = [newISPENDING, 1L]

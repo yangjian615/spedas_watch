@@ -3,8 +3,8 @@
 ; activate = 2; sensitive (initialize)
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-30 19:11:00 -0700 (Mon, 30 Mar 2015) $
-; $LastChangedRevision: 17206 $
+; $LastChangedDate: 2015-04-02 18:34:10 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17228 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_update_board.pro $
 ;
 PRO eva_sitl_update_board, state, activate
@@ -156,7 +156,7 @@ PRO eva_sitl_update_board, state, activate
   ; update
   if activate eq 1 then begin
     ok = 1
-    if state.PREF.ENABLE_ADVANCED then begin
+    if state.PREF.EVA_BAKSTRUCT then begin
       mywindow->Draw, sg.myviewB
     endif else begin
     ;if ok then begin
@@ -225,7 +225,7 @@ PRO eva_sitl_update_board, state, activate
       sg.oMinu ->SetProperty,STRING = txt, COLOR=cwhite
       
       ;....................................................... Error Counts
-      if state.PREF.ENABLE_ADVANCED then begin
+      if state.PREF.EVA_BAKSTRUCT then begin
         msg = 'Validation for Back Structure Mode is under construction.'
         result = dialog_message(msg,/center)
       endif else begin

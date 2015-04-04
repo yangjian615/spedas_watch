@@ -7,12 +7,12 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-31 18:28:04 -0700 (Tue, 31 Mar 2015) $
-; $LastChangedRevision: 17216 $
+; $LastChangedDate: 2015-04-02 18:34:10 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17228 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
-  @moka_logger_com
+  @eva_logger_com
   widget_control, ev.top, GET_UVALUE=wid
   
   code_exit = 0
@@ -20,23 +20,9 @@ PRO eva_sitl_FOMedit_event, ev
    
   case ev.id of
     wid.ssFOM: begin
-      if (ev.type eq 0) or (ev.type eq 4) then begin; (0: text change; 4: slider change)
-        if (ev.value gt wid.fom_max_value) then $
-          answer=dialog_message('FOM must be less than 255',/center) 
-        FOMvalue = (ev.value < wid.fom_max_value) > wid.fom_min_value
-        if ev.type eq 4 then widget_control,wid.ssFOM, SET_VALUE=strtrim(string(FOMvalue),2)
-        segSelect.FOM = FOMvalue
-      endif
-    end
-;    wid.ssStart: begin
-;      if (ev.type eq 0) or (ev.type eq 4) then begin
-;        if ev.type eq 4 then widget_control,wid.ssStart, SET_VALUE=time_string(ev.value)
-;        len = (segSelect.Te-ev.value)/10.d0
-;        txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
-;        widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
-;        segSelect.TS = ev.value
-;      endif
-;    end
+      FOMvalue = (ev.value < wid.fom_max_value) > wid.fom_min_value
+      segSelect.FOM = FOMvalue
+      end
     wid.sldStart: begin
       len = (segSelect.Te-ev.value)/10.d0
       txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
@@ -49,15 +35,6 @@ PRO eva_sitl_FOMedit_event, ev
       widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
       segSelect.TE = ev.value
       end
-;    wid.ssStop: begin
-;      if (ev.type eq 0) or (ev.type eq 4) then begin
-;        if ev.type eq 4 then widget_control,wid.ssStop, SET_VALUE=time_string(ev.value)
-;        len = (ev.value-segSelect.Ts)/10.d0
-;        txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
-;        widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
-;        segSelect.TE = ev.value
-;      endif
-;    end
     wid.txtDiscussion: begin
       widget_control, ev.id, GET_VALUE=new_discussion;get new discussion
       segSelect.DISCUSSION = new_discussion[0]
@@ -127,18 +104,13 @@ PRO eva_sitl_FOMedit, state, segSelect, wgrid=wgrid
   ; widget layout
   sensitive = (segSelect.BAK eq 0)
   base = widget_base(TITLE='Edit FOM',/column);,/modal,group_leader=group_leader)
-  str_element,/add,wid,'ssFOM',sliding_spinner(base,LABEL='FOM',VALUE=strtrim(string(segSelect.FOM),2),$
-    MAX_VALUE=255, MIN_VALUE=0, DRAG=drag, XLABELSIZE=40)
+  str_element,/add,wid,'ssFOM',eva_slider(base,title=' FOM ',VALUE=segSelect.FOM,MAX_VALUE=255, MIN_VALUE=0)
   txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
   str_element,/add,wid,'lblBuffs',widget_label(base,VALUE=txtbuffs)
   str_element,/add,wid,'sldStart',eva_slider(base,title='Start',SENSITIVE=sensitive,$
-    VALUE=Ts, MIN_VALUE=start_min_value, MAX_VALUE=start_max_value,/LIMIT, WGRID=wgrid)
+    VALUE=Ts, MIN_VALUE=start_min_value, MAX_VALUE=start_max_value,  WGRID=wgrid, /time)
   str_element,/add,wid,'sldStop',eva_slider(base,title='Stop ',SENSITIVE=sensitive,$
-    VALUE=Te, MIN_VALUE=stop_min_value, MAX_VALUE=stop_max_value, /LIMIT, WGRID=wgrid)
-;  str_element,/add,wid,'ssStart',sliding_spinner(base,LABEL='START',VALUE=time_string(Ts),/time,$
-;    MAX_VALUE=start_max_value, MIN_VALUE=start_min_value,DRAG=drag,XLABELSIZE=40,SENSITIVE=sensitive)
-;  str_element,/add,wid,'ssStop',sliding_spinner(base,LABEL='STOP',VALUE=time_string(Te),/time,$
-;    MAX_VALUE=stop_max_value, MIN_VALUE=stop_min_value,DRAG=drag,SCROLL=scroll,XLABELSIZE=40,SENSITIVE=sensitive)
+    VALUE=Te, MIN_VALUE=stop_min_value, MAX_VALUE=stop_max_value, WGRID=wgrid, /time)
   comlen = string(strlen(segSelect.DISCUSSION), format='(I4)')
   str_element,/add,wid,'lblDiscussion',widget_label(base,VALUE='COMMENT: '+comlen+wid.DISLEN)
   str_element,/add,wid,'txtDiscussion',widget_text(base,VALUE=segSelect.DISCUSSION,/all_events,/editable)

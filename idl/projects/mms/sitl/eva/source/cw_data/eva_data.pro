@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-26 12:57:08 -0700 (Thu, 26 Mar 2015) $
-; $LastChangedRevision: 17193 $
+; $LastChangedDate: 2015-04-02 19:02:24 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17232 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -68,7 +68,7 @@ END
 
 FUNCTION eva_data_load_and_plot, state
   @tplot_com
-  @moka_logger_com
+  @eva_logger_com
   
   ; validate time range
   msg = eva_data_validate_time(state.start_time, state.end_time)
@@ -200,7 +200,7 @@ END
 
 FUNCTION eva_data_login, state, evTop
   compile_opt idl2
-  @moka_logger_com
+  @eva_logger_com
   
   log.o,'accessing MMS SDC...'
 
@@ -227,7 +227,6 @@ FUNCTION eva_data_login, state, evTop
     ; Get Target Time
     ;---------------------
 
-    ;unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, evTop)
     unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF, evTop)
     if n_tags(unix_FOMstr) gt 0 then begin
       nmax = n_elements(unix_FOMstr.timestamps)
@@ -274,13 +273,14 @@ FUNCTION eva_data_login, state, evTop
     if(user_flag ge 2)then begin
       ut = state.userType[user_flag]
       nl = ssl_newline()
-      msg = 'Logged-in with <'+ut+'> features enabled.'+nl+nl+$
-        'If you are not an active member of '+ut+', you can still play'+nl+$
-        'around with the features, but your submission will be rejected'+nl+$
-        'by the SDC.'
+      msg = 'Logged-in as a '+ut
+;      msg = 'Logged-in with <'+ut+'> features enabled.'+nl+nl+$
+;        'If you are not an active member of '+ut+', you can still play'+nl+$
+;        'around with the features, but your submission will be rejected'+nl+$
+;        'by the SDC.'
     endif 
   endelse
-  answer = dialog_message(msg,/info,title='MMS LOG-IN',/center)
+  answer = dialog_message(msg,/info,title='EVA',/center)
   return, state
 END
 
@@ -313,7 +313,7 @@ END
 
 FUNCTION eva_data_event, ev
   compile_opt idl2
-  @moka_logger_com
+  @eva_logger_com
   
   catch, error_status
   if error_status ne 0 then begin
@@ -420,6 +420,7 @@ END
 FUNCTION eva_data, parent, $
   UVALUE = uval, UNAME = uname, TAB_MODE = tab_mode, XSIZE = xsize, YSIZE = ysize
   compile_opt idl2
+  @eva_logger_com
   
   IF (N_PARAMS() EQ 0) THEN MESSAGE, 'Must specify a parent for eva_data'
   IF NOT (KEYWORD_SET(uval))  THEN uval = 0
@@ -438,9 +439,9 @@ FUNCTION eva_data, parent, $
   
   ;----- PREFERENCES -----
   cd,current = c
-  pref = {CACHE_DATA_DIR: c+'/eva_cache/', $
-    TESTMODE: 1}
-  
+  pref = {EVA_CACHE_DIR: c+'/eva_cache/', $
+    EVA_TESTMODE: 1}
+
   ;----- STATE ----- 
   state = { $
     pref:          pref,         $; preferences
@@ -462,19 +463,17 @@ FUNCTION eva_data, parent, $
   state = eva_data_paramSetList(state)
   
   ; ----- CONFIG (READ and VALIDATE) -----
-  cfg = eva_config_read()         ; Read config file and
-  pref = eva_config_push(cfg,pref); push the values into preferences
-  ll = strmid(pref.CACHE_DATA_DIR, strlen(pref.CACHE_DATA_DIR)-1, 1); validate
-  if ~(ll eq '/' or ll eq '\') then pref.cache_data_dir += '/'
+  cfg = mms_config_read()         ; Read config file and
+  pref = mms_config_push(cfg,pref); push the values into preferences
+  ll = strmid(pref.EVA_CACHE_DIR, strlen(pref.EVA_CACHE_DIR)-1, 1); validate
+  if ~(ll eq '/' or ll eq '\') then pref.EVA_CACHE_DIR += '/'
   str_element,/add,state,'pref',pref
+  log.o,'EVA_CACHE_DIR='+pref.EVA_CACHE_DIR
+  
   
   ;----- CACHE DIRECTORY -----
-  found = file_test(pref.cache_data_dir); check if the directory exists
-  if not found then file_mkdir, pref.cache_data_dir
-  found = file_test(pref.cache_data_dir+'/abs_data')
-  if not found then file_mkdir, pref.cache_data_dir+'/abs_data'
-  
-  
+  found = file_test(pref.EVA_CACHE_DIR+'/abs_data')
+  if not found then file_mkdir, pref.EVA_CACHE_DIR+'/abs_data'
   
   ; ----- WIDGET LAYOUT -----
   

@@ -23,7 +23,7 @@ END
 FUNCTION eva_data_pref_event, ev
   compile_opt idl2
   @eva_sitl_com
-  @moka_logger_com
+  @eva_logger_com
   
   catch, error_status
   if error_status ne 0 then begin
@@ -42,18 +42,18 @@ FUNCTION eva_data_pref_event, ev
   case ev.id of
     state.txtPath:begin
       widget_control,state.txtPath, GET_VALUE = file
-      pref.CACHE_DATA_DIR = file
+      pref.EVA_CACHE_DIR = file
       end
     state.btnPath:begin
       cd,current = c; store path to current directory
       file = dialog_pickfile(path=c, /directory,TITLE=' Choose directory')
       if strlen(file) ne 0 then begin
         widget_control, state.txtPath, SET_VALUE = file
-        pref.CACHE_DATA_DIR = file
+        pref.EVA_CACHE_DIR = file
       endif
       end
     state.bgTestmode:  begin
-      pref.TESTMODE = ev.SELECT
+      pref.EVA_TESTMODE = ev.SELECT
       end
     else:
   endcase
@@ -95,12 +95,12 @@ FUNCTION eva_data_pref, parent, GROUP_LEADER=group_leader, $
   spd_ui_match_background, mainbase, openBMP
   str_element,/add,state,'lblCurrent',widget_label(mainbase,VALUE='EVA cache (.tplot files) location',XSIZE=xsize*0.9)
   baseInput = widget_base(mainbase,/row,/align_center)
-    str_element,/add,state,'txtPath',widget_text(baseInput,VALUE=state.PREF.CACHE_DATA_DIR,XSIZE=55,/editable)
+    str_element,/add,state,'txtPath',widget_text(baseInput,VALUE=state.PREF.EVA_CACHE_DIR,XSIZE=55,/editable)
     str_element,/add,state,'btnPath',widget_button(baseInput,VALUE=openBMP,/Bitmap)
   
   ; test mode
   str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Test Mode',$
-    /NONEXCLUSIVE,SET_VALUE=state.PREF.TESTMODE)
+    /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_TESTMODE)
 
 
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY

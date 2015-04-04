@@ -38,7 +38,8 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase
   ; Submit
   ;------------------
   widget_control, widget_info(tlb,find='eva_data'), GET_VALUE=module_state
-  local_dir = module_state.PREF.cache_data_dir+'sitl_data/'
+  ;local_dir = module_state.PREF.EVA_CACHE_DIR+'sitl_data/'
+  local_dir = !MMS.LOCAL_DATA_DIR
   found = file_test(local_dir); check if the directory exists
   if not found then file_mkdir, local_dir
   

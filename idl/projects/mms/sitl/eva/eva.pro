@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-26 14:15:36 -0700 (Thu, 26 Mar 2015) $
-; $LastChangedRevision: 17194 $
+; $LastChangedDate: 2015-04-02 18:34:10 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17228 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -58,7 +58,7 @@ PRO eva_event, event
 END
 
 PRO eva
-  @moka_logger_com
+  @eva_logger_com
 
   ;////////// INITIALIZE /////////////////////////////////
 
@@ -83,18 +83,21 @@ PRO eva
       "while using EVA, please punch OK and EVA should continue running but without SST data.")
   endif
 
-  log = moka_logger(/on)
+
+  thm_init
+  mms_init
+  
+  ;cfg = eva_config_read()
+  ;if n_tags(cfg) eq 0 then dir = eva_config_filedir(); create config directory if not found
+
+  log = eva_logger(/on)
   ; Force logging during development. For an official release,
   ; enable the LOG keyword by using the following line.
-  ; d = moka_logger(on=keyword_set(log), no_file=~keyword_set(log))
+  ; d = eva_logger(on=keyword_set(log), no_file=~keyword_set(log))
   log.o, '--------'
   log.o, ' LAUNCH '
   log.o, '--------'
-  thm_init
-
-  cfg = eva_config_read()
-  if n_tags(cfg) eq 0 then dir = eva_config_filedir()
-
+    
   !EXCEPT = 0; stop reporting of floating point errors
   ;use themis bitmap as toolbar icon for newer versions
   if double(!version.release) ge 6.4d then begin

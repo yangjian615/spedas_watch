@@ -1,6 +1,6 @@
 PRO eva_data_plot, wid
   compile_opt idl2
-  @moka_logger_com
+  @eva_logger_com
 
   ; INITIALIZE
   thm_init

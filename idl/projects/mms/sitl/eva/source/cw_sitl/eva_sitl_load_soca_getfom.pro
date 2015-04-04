@@ -1,11 +1,10 @@
 Function eva_sitl_load_soca_getfom, pref, parent
   compile_opt idl2
-  @moka_logger_com
+  @eva_logger_com
   ;////////////////////////////////////
-  cache_data_dir = pref.CACHE_DATA_DIR
-  TESTMODE       = pref.TESTMODE
+  local_dir = !MMS.LOCAL_DATA_DIR
+  TESTMODE  = pref.EVA_TESTMODE
   ;/////////////////////////////////////
-  local_dir = cache_data_dir+'abs_data/'
   
   get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_message
   

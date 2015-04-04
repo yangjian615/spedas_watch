@@ -6,13 +6,22 @@
 ; -Class-for-IDL-Developers.aspx
 ;
 ; 2014/08/18 Copied
-; 2014/08/19 Modified for EVA
+; 2014/08/19 Modified for use by EVA
 ;          1. Removed TicToc (Because EVA has to work on IDL6.4)
 ;          2. Renamed the object name to avoid conflict with the original one
 ;          3. Changed log output format
 ;          4. Changed the log-file name
 ;          5. Disabled widget
-Pro moka_logger::_ConstructDebugWidget, Group_Leader
+; 2015/04/02 minor changes
+;          1. Renamed the object name (from moka_ to eva_)
+;          2. Changed the log-file location
+;
+; $LastChangedBy: moka $
+; $LastChangedDate: 2015-04-02 18:34:10 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17228 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/eva_logger__define.pro $
+;
+Pro eva_logger::_ConstructDebugWidget, Group_Leader
   Compile_Opt IDL2
   self._DebugTLB = Widget_Base(/Column, $
     Title = Obj_Class(self) + ' Debug', $
@@ -22,7 +31,7 @@ Pro moka_logger::_ConstructDebugWidget, Group_Leader
     XSize = 140, YSize = 24, /Scroll)
   Widget_Control, self._DebugTLB, /Realize
 End
-Pro moka_logger::_CreateDebugFile
+Pro eva_logger::_CreateDebugFile
   Compile_Opt IDL2
 ;  LogDir = FilePath('', $
 ;    Root = File_DirName(Routine_Filepath()), $
@@ -37,8 +46,16 @@ Pro moka_logger::_CreateDebugFile
 ;  self._DebugFile = FilePath('EVA.log', $
 ;    Root = LogDir)
   ;self._DebugFile = getenv('HOME') + '/.eva_log.txt'
-  cd,current=c
-  self._DebugFile = c + '/.eva_log.txt'
+  
+  dir = mms_config_filedir(/app_query); look for the config directory
+  if(dir[0] ne '') then begin
+    ;Is there a trailing slash? Not for linux or windows, not sure about Mac
+    ll = strmid(dir, strlen(dir)-1, 1)
+    If(ll Eq '/' Or ll Eq '\') Then filex = dir+'eva_log.txt' $
+    Else filex = dir+'/'+'eva_log.txt'
+  endif else message,'a config dir should have been made by eva.pro' 
+
+  self._DebugFile = filex
 ;  
 ;  If (File_Test(self._DebugFile)) then Begin
 ;    File_Delete, self._DebugFile
@@ -47,14 +64,14 @@ Pro moka_logger::_CreateDebugFile
   self._DebugLUN = DebugLUN
   File_ChMod, self._DebugFile, /A_Read, /A_Write
 End
-Pro moka_logger::Cleanup
+Pro eva_logger::Cleanup
   Compile_Opt IDL2
   If (self._DebugLUN ne 0) then $
     Free_LUN, self._DebugLUN
   If (Widget_Info(self._DebugTLB, /Valid_ID)) then $
     Widget_Control, self._DebugTLB, /Destroy
 End
-Pro moka_logger::DebugOutput, Output, $
+Pro eva_logger::DebugOutput, Output, $
   No_Print = NoPrint, $
   Up = Up, plain=plain
   Compile_Opt IDL2
@@ -117,19 +134,19 @@ Pro moka_logger::DebugOutput, Output, $
 ;  Widget_Control, DebugText, Set_Text_Top_Line = $
 ;    NLines - DebugYSize + 3 > 0
 End
-Pro moka_logger::O, Output, _Extra = Extra
+Pro eva_logger::O, Output, _Extra = Extra
   Compile_Opt IDL2
   self->DebugOutput, Output, /Up, /No_Print, _Extra = Extra
 End
-Pro moka_logger::Off
+Pro eva_logger::Off
   Compile_Opt IDL2
   self._DebugOn = 0
 End
-Pro moka_logger::On
+Pro eva_logger::On
   Compile_Opt IDL2
   self._DebugOn = 1
 End
-Pro moka_logger::GetProperty, $
+Pro eva_logger::GetProperty, $
   On = On, $
   File = File
   Compile_Opt IDL2
@@ -137,7 +154,7 @@ Pro moka_logger::GetProperty, $
   If (Arg_Present(File)) then $
     File = self._DebugFile
 End
-Function moka_logger::Init, $
+Function eva_logger::Init, $
   On = On, $
   Group_Leader = Group_Leader, $
   No_File = No_File
@@ -151,8 +168,8 @@ Function moka_logger::Init, $
     self->_CreateDebugFile
   Return, 1
 End
-Pro moka_logger__Define
-  !null = {moka_logger, Inherits IDL_Object, $
+Pro eva_logger__Define
+  !null = {eva_logger, Inherits IDL_Object, $
     _DebugOn : 0B, $
     _DebugLUN : 0L, $
     _DebugFile : '', $

@@ -50,7 +50,7 @@ END
 ; BAK = -1 .... If 't' was crossing the FOM/BAK border or too big.
 FUNCTION eva_sitl_seg_validate, t
   compile_opt idl2
-  @moka_logger_com
+  @eva_logger_com
   get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
   tfom = eva_sitl_tfom(lim.UNIX_FOMSTR_MOD)
   case n_elements(t) of
@@ -162,8 +162,8 @@ END
 ; For a given time 't', find the corresponding segment from
 ; FOMStr/BAKStr and then create "segSelect" which will be passed
 ; to eva_sitl_FOMedit for editing
-PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
-  @moka_logger_com
+PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
+  @eva_logger_com
   compile_opt idl2
   catch, error_status
   if error_status ne 0 then begin
@@ -215,19 +215,51 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete
 
   
   if n_tags(segSelect) eq 6 then begin
-    if segSelect.BAK and ~state.pref.ENABLE_ADVANCED then begin
+    if segSelect.BAK and ~state.pref.EVA_BAKSTRUCT then begin
       msg ='This is a back-structure segment. Ask Super SITL if you really need to modify this.'
       rst = dialog_message(msg,/info,/center)
     endif else begin
       if keyword_set(delete) then begin;....... DELETE
-        segSelect.FOM = 0.
+        segSelect.FOM = 0.; See line 102 of eva_sitl_strct_update
         eva_sitl_strct_update, segSelect, user_flag=state.user_flag
         eva_sitl_stack
         tplot,verbose=0
-      endif else begin;.......................... EDIT
+      endif; DELETE
+      if keyword_set(split) then begin;........... SPLIT
+        gTmin = segSelect.TS
+        gTmax = segSelect.TE
+        gTdel = double((mms_load_fom_validation()).NOMINAL_SEG_RANGE[1]*10.)
+        gFOM = segSelect.FOM
+        gBAK = segSelect.BAK
+        gDIS = segSelect.DISCUSSION
+        gVAR = segSelect.VAR
+        nmax = floor((gTmax-gTmin)/gTdel)
+        if nmax gt 0 then begin
+          
+          ; delete the segment
+          segSelect.FOM = 0.; See line 102 of eva_sitl_strct_update
+          eva_sitl_strct_update, segSelect, user_flag=state.user_flag
+          
+          ; add split segment
+          for n=0,nmax-1 do begin
+            Ts = gTmin+gTdel*n
+            Te = gTmin+gTdel*(n+1)
+            segSelect = {ts:Ts,te:Te,fom:gFOM,BAK:gBAK, discussion:gDIS, var:gVAR}
+            eva_sitl_strct_update, segSelect, user_flag=state.user_flag
+          endfor
+          Ts = gTmin+gTdel*nmax
+          Te = gTmax
+          segSelect = {ts:Ts,te:Te,fom:gFOM,BAK:gBAK, discussion:gDIS, var:gVAR}
+          eva_sitl_strct_update, segSelect, user_flag=state.user_flag
+          
+        endif; if nmax
+        eva_sitl_stack
+        tplot,verbose=0
+      endif; SPLIT
+      if (~keyword_set(delete) and ~keyword_set(split)) then begin;............. EDIT
         eva_sitl_FOMedit, state, segSelect, wgrid=wgrid
-      endelse
-    endelse
+      endif
+    endelse; if segSelect.BAK
   endif else begin
     log.o,'segSelect = '+strtrim(string(segSelect),2)
     ;if segSelect eq 0 then rst = dialog_message('Please choose a segment.',/info,/center)
@@ -236,6 +268,10 @@ END
 
 PRO eva_sitl_seg_delete, t, state=state, var=var
   eva_sitl_seg_edit, t, state=state, var=var, /delete
+END
+
+PRO eva_sitl_seg_split, t, state=state, var=var
+  eva_sitl_seg_edit, t, state=state, var=var, /split
 END
 
 PRO eva_sitl_set_value, id, value ;In this case, value = activate
@@ -266,7 +302,7 @@ END
 FUNCTION eva_sitl_event, ev
   compile_opt idl2
   @eva_sitl_com
-  @moka_logger_com
+  @eva_logger_com
 
   parent=ev.handler
   stash = WIDGET_INFO(parent, /CHILD)
@@ -314,7 +350,9 @@ FUNCTION eva_sitl_event, ev
       eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
       end
     state.btnSplit: begin
-      res = dialog_message('Sorry, still under development.',/center,/info)
+      log.o,'***** EVENT: btnSplit *****'
+      str_element,/add,state,'group_leader',ev.top
+      eva_ctime,/silent,routine_name='eva_sitl_seg_split',state=state,occur=1,npoints=1;npoints
       sanitize_fpi=0
       end
     state.btnUndo: begin
@@ -332,7 +370,7 @@ FUNCTION eva_sitl_event, ev
     state.btnValidate: begin
       log.o,'***** EVENT: btnValidate *****'
       title = 'Validation'
-      if state.PREF.ENABLE_ADVANCED then begin
+      if state.PREF.EVA_BAKSTRUCT then begin
         tn = tnames()
         idx = where(strmatch(tn,'mms_stlm_bakstr'),ct)
         if ct eq 0 then begin
@@ -367,7 +405,7 @@ FUNCTION eva_sitl_event, ev
       end
     state.btnEmail: begin
       log.o,'***** EVENT: btnEmail *****'
-      if state.PREF.ENABLE_ADVANCED then begin
+      if state.PREF.EVA_BAKSTRUCT then begin
         msg = 'Email for Back Structure Mode is under construction.'
         result = dialog_message(msg,/center)
       endif else begin
@@ -434,13 +472,13 @@ FUNCTION eva_sitl_event, ev
       end
     state.btnSubmit: begin
       log.o,'***** EVENT: btnSubmit *****'
-      log.o,'TESTMODE='+string(state.PREF.TESTMODE)
+      log.o,'TESTMODE='+string(state.PREF.EVA_TESTMODE_SUBMIT)
       submit_code = 1
-      if state.PREF.ENABLE_ADVANCED then begin 
-        eva_sitl_submit_bakstr,ev.top, state.PREF.TESTMODE
+      if state.PREF.EVA_BAKSTRUCT then begin 
+        eva_sitl_submit_bakstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT
       endif else begin
         vcase = (state.USER_FLAG eq 4) ? 3 : 0
-        eva_sitl_submit_fomstr,ev.top, state.PREF.TESTMODE, vcase
+        eva_sitl_submit_fomstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT, vcase
       endelse
       end
     state.cbMulti:  begin
@@ -503,11 +541,8 @@ FUNCTION eva_sitl, parent, $
 
   ; ----- STATE -----
   pref = {$
-    FOMSlope: 20, $
-    FOMSkew:  0,  $
-    FOMBias:  1, $
-    ENABLE_ADVANCED: 0,$
-    TESTMODE: 1 }
+    EVA_BAKSTRUCT: 0,$
+    EVA_TESTMODE_SUBMIT: 1 }
   socs  = {$; SOC Auto Simulated
     pmdq: ['a','b','c','d'], $ ; probes to be used for calculating MDQs
     input: 'thm_archive'}    ; input to be used for simulating SOC-Auto
@@ -527,9 +562,9 @@ FUNCTION eva_sitl, parent, $
     userType: ['Guest','MMS member','SITL','Super SITL','FPI cal']}
 
   ; ----- CONFIG (READ) -----
-  cfg = eva_config_read()         ; Read config file and
-  pref = eva_config_push(cfg,pref); push the values into preferences
-  pref.ENABLE_ADVANCED = 0
+  cfg = mms_config_read()         ; Read config file and
+  pref = mms_config_push(cfg,pref); push the values into preferences
+  pref.EVA_BAKSTRUCT = 0
   str_element,/add,state,'pref',pref
 
   ; ----- WIDGET LAYOUT -----

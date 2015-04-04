@@ -2,14 +2,16 @@
 
 PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   compile_opt idl2
-  @moka_logger_com
+  @eva_logger_com
   tspan = time_double(str_tspan)
   log.o,'tspan:'+str_tspan[0]+' - '+str_tspan[1]
 
 
   ; 'mms_soca_fomstr' (latest ABS selection or SITL target)
-  ;unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF.CACHE_DATA_DIR, state.PARENT); Whatever tspan is, we retrieve unix_FOMStr to get 'tfom'.
   unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF, state.PARENT); Whatever tspan is, we retrieve unix_FOMStr to get 'tfom'.
+  sz = size(unix_FOMstr,/type)
+  if sz[0] ne 8 then return
+  
   tfom = eva_sitl_tfom(unix_FOMstr)
   log.o,'tfom:'+time_string(tfom[0],prec=7)+' - '+time_string(tfom[1],prec=7)
   dgrand = ['mms_soca_fomstr']

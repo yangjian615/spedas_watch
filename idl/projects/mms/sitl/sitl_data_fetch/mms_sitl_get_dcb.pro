@@ -86,17 +86,22 @@ if login_flag eq 0 or file_flag eq 0 then begin
     times = mag_struct.x
     b_field = mag_struct.y
     varname = mag_struct.varname
+    etimes = mag_struct.ephemx
+    pos_vect = mag_struct.ephemy
+    evarname = mag_struct.ephem_varname
     
     if n_elements(files_open) gt 1 then begin
       for i = 1, n_elements(files_open)-1 do begin
         temp_struct = mms_sitl_open_afg_cdf(files_open(i))
         times = [times, temp_struct.x]
+        etimes = [times, temp_struct.ephemx]
+        pos_vect = [pos_vect, temp_struct.ephemy]
         b_field = [b_field, temp_struct.y]
       endfor
     endif
     
-    afgvarname = varname
     store_data, varname, data = {x: times, y:b_field}    
+    store_data, evarname, data = {x: etimes, y:pos_vect}
     
   ;
   

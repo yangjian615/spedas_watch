@@ -23,7 +23,7 @@ END
 FUNCTION eva_sitl_pref_event, ev
   compile_opt idl2
   @eva_sitl_com
-  @moka_logger_com
+  @eva_logger_com
   
   catch, error_status
   if error_status ne 0 then begin
@@ -41,11 +41,11 @@ FUNCTION eva_sitl_pref_event, ev
   ;-----
   case ev.id of
     state.bgAdvanced:  begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
-      pref.ENABLE_ADVANCED = ev.SELECT 
+      pref.EVA_BAKSTRUCT = ev.SELECT 
       widget_control, state.STATE_SITL.drpSave, SENSITIVE=(~ev.SELECT)
       end
     state.bgTestmode:  begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
-      pref.TESTMODE = ev.SELECT
+      pref.EVA_TESTMODE_SUBMIT = ev.SELECT
       end
     else:
   endcase
@@ -86,10 +86,10 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
   bsAdvanced = widget_base(mainbase,space=0,ypad=0,SENSITIVE=(state_data.USER_FLAG eq 3)); Super SITL only
     str_element,/add,state,'bsAdvanced',bsAdvanced
     str_element,/add,state,'bgAdvanced',cw_bgroup(bsAdvanced,'Enable advanced features (for Super SITL)',$
-     /NONEXCLUSIVE,SET_VALUE=state.PREF.ENABLE_ADVANCED)
+     /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_BAKSTRUCT)
   
   str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Test Mode',$
-     /NONEXCLUSIVE,SET_VALUE=state.PREF.TESTMODE)
+     /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_TESTMODE_SUBMIT)
 
 
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY

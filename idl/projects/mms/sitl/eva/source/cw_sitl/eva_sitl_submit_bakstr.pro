@@ -62,7 +62,7 @@ PRO eva_sitl_submit_bakstr, tlb, TESTING
   ; Submit
   ;------------------
   widget_control, widget_info(tlb,find='eva_data'), GET_VALUE=module_state
-  local_dir = module_state.PREF.cache_data_dir+'sitl_data/'
+  local_dir = module_state.PREF.EVA_DATA_DIR+'sitl_data/'
   found = file_test(local_dir); check if the directory exists
   if not found then file_mkdir, local_dir
   

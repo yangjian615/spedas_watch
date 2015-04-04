@@ -38,7 +38,7 @@ FUNCTION eva_data_load_daily_prbarr, arr, ilbl
   return, prbarr
 END
 
-FUNCTION eva_data_load_daily, filename, cache_data_dir
+FUNCTION eva_data_load_daily, filename, dir
   @tplot_com
 
   catch, error_status
@@ -67,7 +67,6 @@ FUNCTION eva_data_load_daily, filename, cache_data_dir
   probes   = eva_data_load_daily_prbarr(arr[1],1)
   pmax     = n_elements(prbs)
   tname    = strmid(filename,11,strlen(filename)-17)
-  dir      = cache_data_dir
   timespan, str2time(date),1
   save_var = strarr(1)
   instr    = strmid(type,0,2)

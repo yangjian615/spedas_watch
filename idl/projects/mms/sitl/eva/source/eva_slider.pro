@@ -23,9 +23,25 @@
 ;   Value is the modified time-value (double)
 ;   
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-31 18:28:04 -0700 (Tue, 31 Mar 2015) $
-; $LastChangedRevision: 17216 $
+; $LastChangedDate: 2015-04-02 12:48:50 -0700 (Thu, 02 Apr 2015) $
+; $LastChangedRevision: 17225 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/eva_slider.pro $
+;
+PRO eva_slider_set_value, id, value 
+  compile_opt idl2
+  stash = WIDGET_INFO(id, /CHILD)
+  WIDGET_CONTROL, stash, GET_UVALUE=state, /NO_COPY
+  ;field
+  str_value = (keyword_set(state.time)) ? time_string(value) : strtrim(string(value),2)
+  widget_control, state.field, SET_VALUE=str_value
+  ;slider
+  this_value = (keyword_set(state.time)) ? str2time(value) : double(value)
+  return_value = (this_value < state.max_value) > state.min_value
+  vnew = long(100*(return_value-state.min_value)/(state.max_value-state.min_value))
+  widget_control, state.slider, SET_VALUE=vnew
+  WIDGET_CONTROL, stash, SET_UVALUE=state, /NO_COPY
+END
+
 FUNCTION eva_slider_event, ev
   compile_opt idl2
 
@@ -47,18 +63,20 @@ FUNCTION eva_slider_event, ev
   case ev.id of
     state.slider: begin; ID, TOP, HANDLER, VALUE, DRAG
       return_value = (0.01d0*double(ev.value))*state.DIF_VALUE + state.MIN_VALUE
-      if state.LIMIT then begin
-        time = timerange(/current)
-        return_value = (return_value < time[1]) > time[0]
-      endif
+;      if state.LIMIT then begin
+;        time = timerange(/current)
+;        return_value = (return_value < time[1]) > time[0]
+;      endif
       if(n_elements(state.WGRID) gt 1)then begin
         result = min(double(state.WGRID)-return_value,idx, /absolute, /nan)
         return_value = state.WGRID[idx]
       endif
-      widget_control, state.field, SET_VALUE=time_string(return_value)
+      str_value = (keyword_set(state.time)) ? time_string(return_value) : strtrim(string(return_value),2)
+      widget_control, state.field, SET_VALUE=str_value
       end;state.slider
     state.field: begin
-      return_value = (str2time(ev.value) < state.max_value) > state.min_value
+      this_value = (keyword_set(state.time)) ? str2time(ev.value) : double(ev.value)
+      return_value = (this_value < state.max_value) > state.min_value
       vnew = long(100*(return_value-state.min_value)/(state.max_value-state.min_value))
       widget_control, state.slider, SET_VALUE=vnew
       end;state.field
@@ -70,8 +88,8 @@ FUNCTION eva_slider_event, ev
   RETURN, { ID:parent, TOP:ev.top, HANDLER:ev.handler, VALUE:return_value}
 END
 
-FUNCTION eva_slider, parent, WGRID=wgrid, $
-  VALUE=value, MIN_VALUE=min_value, MAX_VALUE=max_value, limit=limit, $
+FUNCTION eva_slider, parent, WGRID=wgrid, TIME=time,$
+  VALUE=value, MIN_VALUE=min_value, MAX_VALUE=max_value,$; limit=limit, $
   UVALUE = uval, UNAME = uname, TAB_MODE = tab_mode, TITLE=title,SENSITIVE=sensitive
 
   IF (N_PARAMS() EQ 0) THEN MESSAGE, 'Must specify a parent for CW_sitl'
@@ -82,13 +100,18 @@ FUNCTION eva_slider, parent, WGRID=wgrid, $
   if n_elements(min_value) eq 0 then min_value = 0
   if n_elements(max_value) eq 0 then max_value = 0
   if n_elements(wgrid) eq 0 then wgrid = [0]
+  if keyword_set(time) eq 0 then time = 0
+  min_value = double(min_value)
+  max_value = double(max_value)
+  value = double(value)
   
   state = {$
+    TIME: time, $
     VALUE: value,$
     DIF_VALUE: max_value-min_value,$
     MIN_VALUE: min_value, $
     MAX_VALUE: max_value,$
-    LIMIT: limit, $
+;    LIMIT: limit, $
     WGRID: wgrid}
   
   ;-------------
@@ -104,7 +127,8 @@ FUNCTION eva_slider, parent, WGRID=wgrid, $
   ;-------------
   ; FIELD
   ;-------------
-  str_element,/add,state,'field',cw_field(base,VALUE=time_string(value),TITLE=title,$
+  str_value = (keyword_set(time)) ? time_string(value) : strtrim(string(value),2) 
+  str_element,/add,state,'field',cw_field(base,VALUE=str_value,TITLE=title,$
     /ALL_EVENTS,XSIZE=19)
 
   ;-------------

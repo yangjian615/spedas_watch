@@ -1,5 +1,5 @@
-; read_ascii template for moka_config_read 
-FUNCTION eva_config_read_template
+; read_ascii template for mms_config_read 
+FUNCTION mms_config_read_template
   anan = fltarr(1) & anan[0] = 'NaN'
   ppp = {$
     VERSION:1.00, $
@@ -15,16 +15,16 @@ FUNCTION eva_config_read_template
   return, ppp
 End
 
-FUNCTION eva_config_read
+FUNCTION mms_config_read
   cfg = -1
-  dir = eva_config_filedir(/app_query); look for the config directory
+  dir = mms_config_filedir(/app_query); look for the config directory
   if(dir[0] ne '') then begin
     ;Is there a trailing slash? Not for linux or windows, not sure about Mac
     ll = strmid(dir, strlen(dir)-1, 1)
-    If(ll Eq '/' Or ll Eq '\') Then filex = dir+'eva_config.txt' $
-    Else filex = dir+'/'+'eva_config.txt'
+    If(ll Eq '/' Or ll Eq '\') Then filex = dir+'mms_config.txt' $
+    Else filex = dir+'/'+'mms_config.txt'
     if file_test(filex) then begin;........ if dir found, look for the config file
-      ttt = eva_config_read_template()
+      ttt = mms_config_read_template()
       rst = read_ascii(filex,template=ttt,header=hhh)
       nmax = n_elements(rst.VALUE)
       for n=0,nmax-1 do begin
