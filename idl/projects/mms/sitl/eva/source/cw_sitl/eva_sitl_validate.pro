@@ -107,6 +107,8 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
     else: message,'Something is wrong!!'
   endcase
   
+
+  
   ;---------------------
   ; REFORMAT MESSAGES
   ;---------------------
@@ -149,12 +151,14 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
     msg = [msg, ex,' No error/warning',ex]
   endif 
   
+  ;---------------------
+  ; WRAP TEXTS
+  ;---------------------
   if ~keyword_set(quiet) then begin 
     nmax = n_elements(msg)
     LL=76
     newmsg = ''
     for n=0,nmax-1 do begin
-      
       if (strlen(msg[n]) ge LL) then begin
         s0 = msg[n]
         ct = 0

@@ -26,8 +26,8 @@
 ; 5-dec-2014, jmm, uses thm_part_products directly
 ; common blocks to using the dtc_private common block in thm_esa_convert_units
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-06 15:09:32 -0800 (Tue, 06 Jan 2015) $
-; $LastChangedRevision: 16604 $
+; $LastChangedDate: 2015-04-03 10:45:07 -0700 (Fri, 03 Apr 2015) $
+; $LastChangedRevision: 17235 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_esa_dtc4mom.pro $
 ;-
 
@@ -103,7 +103,8 @@ Pro thm_esa_dtc4mom, probe = probe, trange = trange, noload = noload, $
 ;'ptot' variable
         get_data, thx+'_'+datat[i]+'_ptens_temp4dtc_0', data = ptd, dlimits = dl
         If(is_struct(ptd)) Then Begin
-           ptot = total(ptd.y[*, 0:2], 2)/3.0
+           IF(n_elements(ptd.x) Gt 1) Then ptot = total(ptd.y[*, 0:2], 2)/3.0 $
+           Else ptot = total(ptd.y[0:2])/3.0
            store_data, thx+'_'+datat[i]+'_ptot_temp4dtc_0', data = {x:ptd.x, y:ptot}, $
                        dlimits = dl
         Endif
@@ -116,7 +117,8 @@ Pro thm_esa_dtc4mom, probe = probe, trange = trange, noload = noload, $
 ;'ptot' variable
         get_data, thx+'_'+datat[i]+'_ptens_temp4dtc', data = ptd, dlimits = dl
         If(is_struct(ptd)) Then Begin
-           ptot = total(ptd.y[*, 0:2], 2)/3.0
+           IF(n_elements(ptd.x) Gt 1) Then ptot = total(ptd.y[*, 0:2], 2)/3.0 $
+           Else ptot = total(ptd.y[0:2])/3.0
            store_data, thx+'_'+datat[i]+'_ptot_temp4dtc', data = {X:ptd.x, y:ptot}, $
                        dlimits = dl
         Endif

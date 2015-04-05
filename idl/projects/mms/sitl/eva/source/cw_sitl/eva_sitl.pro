@@ -207,8 +207,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
       else: segSelect = -1
     endcase
   endif else begin
-    if (BAK eq 0) or (BAK eq 1) then begin
-      stop
+    if (BAK eq 0) or (BAK eq 1) then begin; Will be important when deleting multiple segments
       segSelect = {ts:t[0], te:t[1], fom:0., BAK: BAK, discussion:' ', var:var}
     endif else segSelect = -1
   endelse
@@ -228,7 +227,8 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
       if keyword_set(split) then begin;........... SPLIT
         gTmin = segSelect.TS
         gTmax = segSelect.TE
-        gTdel = double((mms_load_fom_validation()).NOMINAL_SEG_RANGE[1]*10.)
+        ;gTdel = double((mms_load_fom_validation()).NOMINAL_SEG_RANGE[1]*10.)
+        gTdel = double(state.PREF.EVA_SPLIT_SIZE*10.)
         gFOM = segSelect.FOM
         gBAK = segSelect.BAK
         gDIS = segSelect.DISCUSSION
@@ -336,17 +336,29 @@ FUNCTION eva_sitl_event, ev
       end
     state.btnDelete:begin
       log.o,'***** EVENT: btnDelete *****'
-      if ~set_multi then begin;................ Default (1 segment with 1 1-click)
-        npoints = 1 & occur = 1
-      endif else begin
-        if ~set_trange then begin;.............. set_multi (N segment with N 1-click)
-          npoints = 2000 & occur = 1
-        endif else begin;......................... set_multi & set_trange (N segment with 2 click)
-          npoints = 2 & occur = 2
-        endelse
-      endelse
-      print, 'npoints=',npoints
-      print, 'occur =',occur
+      npoints = 1 & occur = 1
+      eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
+;      if ~set_multi then begin;................ Default (1 segment with 1 1-click)
+;        npoints = 1 & occur = 1
+;      endif else begin
+;        if ~set_trange then begin;.............. set_multi (N segment with N 1-click)
+;          npoints = 2000 & occur = 1
+;        endif else begin;......................... set_multi & set_trange (N segment with 2 click)
+;          npoints = 2 & occur = 2
+;        endelse
+;      endelse
+;      print, 'npoints=',npoints
+;      print, 'occur =',occur
+;      eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
+      end
+    state.cbMulti:begin; Delete N segments with N clicks
+      log.o,'***** EVENT: cbMulti *****'
+      npoints = 2000 & occur = 1
+      eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
+      end
+    state.cbWTrng: begin; Delete N segment within a range specified by 2-clicks
+      log.o,'***** EVENT: cbWTrng *****'
+      npoints = 2 & occur = 2
       eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
       end
     state.btnSplit: begin
@@ -403,30 +415,30 @@ FUNCTION eva_sitl_event, ev
         r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, vcase=vcase, header=header)
       endelse
       end
-    state.btnEmail: begin
-      log.o,'***** EVENT: btnEmail *****'
-      if state.PREF.EVA_BAKSTRUCT then begin
-        msg = 'Email for Back Structure Mode is under construction.'
-        result = dialog_message(msg,/center)
-      endif else begin
-        get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
-        mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
-        header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
-        body = ''
-        nmax = n_elements(header)
-        for n=0,nmax-1 do begin
-          body += header[n] + 'rtn'
-        endfor
-        email_address = 'mitsuo.oka@gmail.com'
-        syst = systime(/utc)
-        oUrl = obj_new('IDLnetUrl')
-        txturl = 'http://www.ssl.berkeley.edu/~moka/evasendmail.php?email='$
-          +email_address+'&fomstr='+body+'&time='+syst
-        ok = oUrl->Get(URL=txturl,/STRING_ARRAY)
-        obj_destroy, oUrl
-        result=dialog_message('Email sent to '+email_address,/center,/info)
-      endelse
-      end
+;    state.btnEmail: begin
+;      log.o,'***** EVENT: btnEmail *****'
+;      if state.PREF.EVA_BAKSTRUCT then begin
+;        msg = 'Email for Back Structure Mode is under construction.'
+;        result = dialog_message(msg,/center)
+;      endif else begin
+;        get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
+;        mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
+;        header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
+;        body = ''
+;        nmax = n_elements(header)
+;        for n=0,nmax-1 do begin
+;          body += header[n] + 'rtn'
+;        endfor
+;        email_address = 'mitsuo.oka@gmail.com'
+;        syst = systime(/utc)
+;        oUrl = obj_new('IDLnetUrl')
+;        txturl = 'http://www.ssl.berkeley.edu/~moka/evasendmail.php?email='$
+;          +email_address+'&fomstr='+body+'&time='+syst
+;        ok = oUrl->Get(URL=txturl,/STRING_ARRAY)
+;        obj_destroy, oUrl
+;        result=dialog_message('Email sent to '+email_address,/center,/info)
+;      endelse
+;      end
     state.drpHighlight: begin
       log.o,'***** EVENT: drpHighlight *****'
       tplot
@@ -478,7 +490,7 @@ FUNCTION eva_sitl_event, ev
         eva_sitl_submit_bakstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT
       endif else begin
         vcase = (state.USER_FLAG eq 4) ? 3 : 0
-        eva_sitl_submit_fomstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT, vcase
+        eva_sitl_submit_fomstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT, vcase, user_flag=state.USER_FLAG
       endelse
       end
     state.cbMulti:  begin
@@ -529,7 +541,7 @@ END
 
 FUNCTION eva_sitl, parent, $
   UVALUE = uval, UNAME = uname, TAB_MODE = tab_mode, TITLE=title,XSIZE = xsize, YSIZE = ysize
-
+  compile_opt idl2
 
 
   IF (N_PARAMS() EQ 0) THEN MESSAGE, 'Must specify a parent for CW_sitl'
@@ -538,11 +550,13 @@ FUNCTION eva_sitl, parent, $
   IF NOT (KEYWORD_SET(uname))  THEN uname = 'eva_sitl'
   if not (keyword_set(title)) then title='   SITL   '
 
-
+   val = mms_load_fom_validation()
+   
   ; ----- STATE -----
   pref = {$
     EVA_BAKSTRUCT: 0,$
-    EVA_TESTMODE_SUBMIT: 1 }
+    EVA_TESTMODE_SUBMIT: 1,$
+    EVA_SPLIT_SIZE:val.NOMINAL_SEG_RANGE[1]}
   socs  = {$; SOC Auto Simulated
     pmdq: ['a','b','c','d'], $ ; probes to be used for calculating MDQs
     input: 'thm_archive'}    ; input to be used for simulating SOC-Auto
@@ -567,6 +581,7 @@ FUNCTION eva_sitl, parent, $
   pref.EVA_BAKSTRUCT = 0
   str_element,/add,state,'pref',pref
 
+  
   ; ----- WIDGET LAYOUT -----
   geo = widget_info(parent,/geometry)
   if n_elements(xsize) eq 0 then xsize = geo.xsize
@@ -598,9 +613,9 @@ FUNCTION eva_sitl, parent, $
     str_element,/add,state,'btnAdd',widget_button(bsActionButton,VALUE='  Add  ')
     str_element,/add,state,'btnEdit',widget_button(bsActionButton,VALUE='  Edit  ')
     str_element,/add,state,'btnDelete',widget_button(bsActionButton,VALUE=' Del ');,/TRACKING_EVENTS)
-    bsActionCheck = widget_base(bsActionButton,/COLUMN,/NONEXCLUSIVE)
-    str_element,/add,state,'cbMulti',widget_button(bsActionCheck, VALUE='Multi-segment',SENSITIVE=0)
-    str_element,/add,state,'cbWTrng',widget_button(bsActionCheck, VALUE='Within a timerange',SENSITIVE=0)
+    bsActionCheck = widget_base(bsActionButton,/COLUMN);,/NONEXCLUSIVE)
+    str_element,/add,state,'cbMulti',widget_button(bsActionCheck, VALUE=' Delete multi seg ',SENSITIVE=1)
+    str_element,/add,state,'cbWTrng',widget_button(bsActionCheck, VALUE=' Delete w/in a range ',SENSITIVE=1)
     bsActionHistory = widget_base(bsAction0,/ROW, SPACE=0, YPAD=0)
     str_element,/add,state,'btnUndo',widget_button(bsActionHistory,VALUE=' Undo ')
     str_element,/add,state,'btnRedo',widget_button(bsActionHistory,VALUE=' Redo ')
@@ -620,7 +635,8 @@ FUNCTION eva_sitl, parent, $
   bsActionSubmit = widget_base(subbase,/ROW, SENSITIVE=0)
   str_element,/add,state,'bsActionSubmit',bsActionSubmit
     str_element,/add,state,'btnValidate',widget_button(bsActionSubmit,VALUE=' Validate ')
-    str_element,/add,state,'btnEmail',widget_button(bsActionSubmit,VALUE=' Email ')
+;    str_element,/add,state,'btnEmail',widget_button(bsActionSubmit,VALUE=' Email ')
+    dumSubmit2 = widget_base(bsActionSubmit,xsize=80); Comment out this line when using Email
     dumSubmit = widget_base(bsActionSubmit,xsize=60)
     str_element,/add,state,'btnSubmit',widget_button(bsActionSubmit,VALUE='   SUBMIT   ')
   

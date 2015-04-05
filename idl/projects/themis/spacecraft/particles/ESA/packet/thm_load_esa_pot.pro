@@ -655,58 +655,56 @@ endif else begin
 ;End of default block
 	endif else if string(efi_datatype) eq 'mom' then begin
 
-		thm_load_mom,probe=probes[i], trange=trange
-		get_data,'th'+probes[i]+'_pxxm_pot',data=tmp,index=index
-		if index ne 0 then begin
-			npts=n_elements(tmp.x)
-			if tmp.x[npts-1] lt mom_pot_adjust[isc[i],0] then begin
-					; do nothing
-			endif else if tmp.x[npts-1] lt mom_pot_adjust[isc[i],1] then begin 
-				ind=where(tmp.x gt mom_pot_adjust[isc[i],0],count)
-				if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)/1.15
-			endif else if tmp.x[npts-1] lt mom_pot_adjust[isc[i],2] then begin 
-				ind=where(tmp.x lt mom_pot_adjust[isc[i],1],count)
-				if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)/1.15
-				ind=where(tmp.x gt mom_pot_adjust[isc[i],1],count)
-				if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)
-			endif else begin
-				ind=where(tmp.x lt mom_pot_adjust[isc[i],2],count)
-				if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)
-				ind=where(tmp.x gt mom_pot_adjust[isc[i],2],count)
-				if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)/1.15
-			endelse
+           thm_load_mom,probe=probes[i], trange=trange
+           get_data,'th'+probes[i]+'_pxxm_pot',data=tmp,index=index
+           if index ne 0 then begin
+              npts=n_elements(tmp.x)
+              if tmp.x[npts-1] lt mom_pot_adjust[isc[i],0] then begin
+                                ; do nothing
+              endif else if tmp.x[npts-1] lt mom_pot_adjust[isc[i],1] then begin 
+                 ind=where(tmp.x gt mom_pot_adjust[isc[i],0],count)
+                 if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)/1.15
+              endif else if tmp.x[npts-1] lt mom_pot_adjust[isc[i],2] then begin 
+                 ind=where(tmp.x lt mom_pot_adjust[isc[i],1],count)
+                 if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)/1.15
+                 ind=where(tmp.x gt mom_pot_adjust[isc[i],1],count)
+                 if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)
+              endif else begin
+                 ind=where(tmp.x lt mom_pot_adjust[isc[i],2],count)
+                 if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)
+                 ind=where(tmp.x gt mom_pot_adjust[isc[i],2],count)
+                 if count gt 0 then tmp.y[ind]=(tmp.y[ind]-1.215)/1.15
+              endelse
 
-		get_data,'th'+probes[i]+'_state_spinper',data=spinper
-		if not keyword_set(spinper) then begin
-			thm_load_state,/get_support_data,probe=probes[i], trange=trange
-			get_data,'th'+probes[i]+'_state_spinper',data=spinper
-			if not keyword_set(spinper) then begin
-				dprint, 'No state data available for probe ',probes[i]
-				dprint, 'Using default 3 sec spin period'
-				spin_period=replicate(3.,n_elements(tmp.x))
-			endif else spin_period = interp(spinper.y,spinper.x,tmp.x)
-		endif else spin_period = interp(spinper.y,spinper.x,tmp.x)
-
-		if tmp.x[0] ge mom_tim_adjust[isc[i]] then time=tmp.x-tshft_mom[1]*spin_period else $
-		if tmp.x[npts-1] le mom_tim_adjust[isc[i]] then time=tmp.x-tshft_mom[0]*spin_period else begin
-			min_tim=min(abs(tmp.x-mom_tim_adjust[isc[i]]),ind)
-			if tmp.x[ind] gt mom_tim_adjust[isc[i]] then ind=ind-1
-			time=tmp.x
-			time[0:ind]=time[0:ind]-tshft_mom[0]*spin_period[0:ind]
-			time[ind+1:npts-1]=time[ind+1:npts-1]-tshft_mom[1]*spin_period[ind+1:npts-1]
-		endelse	
-		scpot=tmp.y
-		endif else begin
-			dprint, 'No moment data available for probe ',probes[i]
-		endelse
-
-			if keyword_set(make_plot) then store_data,'th'+sc+'_mom_pot',data={x:time,y:scpot}
-
-		scpot=(scale*(tmp.y+offset)) > min_pot
-		store_data,'th'+probes[i]+'_esa_pot',data={x:time,y:scpot}
-
-	endif else begin
-
+              get_data,'th'+probes[i]+'_state_spinper',data=spinper
+              if not keyword_set(spinper) then begin
+                 thm_load_state,/get_support_data,probe=probes[i], trange=trange
+                 get_data,'th'+probes[i]+'_state_spinper',data=spinper
+                 if not keyword_set(spinper) then begin
+                    dprint, 'No state data available for probe ',probes[i]
+                    dprint, 'Using default 3 sec spin period'
+                    spin_period=replicate(3.,n_elements(tmp.x))
+                 endif else spin_period = interp(spinper.y,spinper.x,tmp.x)
+              endif else spin_period = interp(spinper.y,spinper.x,tmp.x)
+              
+              if tmp.x[0] ge mom_tim_adjust[isc[i]] then time=tmp.x-tshft_mom[1]*spin_period else $
+                 if tmp.x[npts-1] le mom_tim_adjust[isc[i]] then time=tmp.x-tshft_mom[0]*spin_period else begin
+                 min_tim=min(abs(tmp.x-mom_tim_adjust[isc[i]]),ind)
+                 if tmp.x[ind] gt mom_tim_adjust[isc[i]] then ind=ind-1
+                 time=tmp.x
+                 time[0:ind]=time[0:ind]-tshft_mom[0]*spin_period[0:ind]
+                 time[ind+1:npts-1]=time[ind+1:npts-1]-tshft_mom[1]*spin_period[ind+1:npts-1]
+              endelse	
+              scpot=tmp.y
+           endif else begin
+              dprint, 'No moment data available for probe ',probes[i]
+              dprint, 'Using min_pot = '+string(min_pot)
+              tmp = {x:timerange(), y:[min_pot, min_pot]}
+           endelse
+           if keyword_set(make_plot) then store_data,'th'+sc+'_mom_pot',data={x:time,y:scpot}
+           scpot=(scale*(tmp.y+offset)) > min_pot
+           store_data,'th'+probes[i]+'_esa_pot',data={x:time,y:scpot}
+        endif else begin
 		get_data,'th'+probes[i]+'_state_spinper',data=spinper
 		if not keyword_set(spinper) then begin
 			thm_load_state,/get_support_data,probe=probes[i], trange=trange

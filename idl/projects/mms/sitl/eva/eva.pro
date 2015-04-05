@@ -9,12 +9,12 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-02 18:34:10 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17228 $
+; $LastChangedDate: 2015-04-03 21:07:50 -0700 (Fri, 03 Apr 2015) $
+; $LastChangedRevision: 17237 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
-  
+  compile_opt idl2
   widget_control, event.top, GET_UVALUE=wid
 
 

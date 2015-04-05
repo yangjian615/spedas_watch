@@ -1,5 +1,6 @@
-PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase
+PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
 
+  if n_elements(user_flag) eq 0 then user_flag = 2
   ; initialize 
   title = 'FOM Submission'
     
@@ -26,7 +27,16 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase
   ;------------------
   r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, header=header, vcase=vcase)
   
-  if r.error.COUNT ne 0 then return
+  if r.error.COUNT ne 0 then begin
+    rst = dialog_message('Please fix the error before submission.',/center,/error)
+    return
+  endif
+  
+  if (r.orange.COUNT ne 0) and (user_flag ne 3) then begin
+    rst = dialog_message('Only Super SITL can override orange warnings.',/center,/error)
+    return
+  endif
+  
   if r.yellow.COUNT ne 0 then begin
     msg = 'An yellow warning exists. Still submit?'
     if r.yellow.COUNT gt 1 then msg = 'Yellow warnings exist. Still submit?'
