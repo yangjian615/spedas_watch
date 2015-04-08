@@ -1,9 +1,59 @@
-
+;+ 
+;NAME:
+;  thm_ui_part_getspec_options
+; 
+;PURPOSE:
+;  A interface to thm_part_products.pro for creating and loading THEMIS energy/
+;  angular particle spectra into the GUI.  Intended to be called from
+;  SPD_UI_INIT_LOAD_WINDOW.PRO using the SPEDAS load API.
+; 
+;CALLING SEQUENCE:
+;  thm_ui_part_getspec_options, tab_id, loadedData, historyWin, statusBar, $
+;                               treecopy, trObj, callSequence, $
+;                               loadTree=loadTree, $
+;                               timeWidget=timeid
+;
+;INPUT:
+;  tab_id:  The widget id of the tab.
+;  loadedData:  The loadedData object.
+;  historyWin:  The history window object.
+;  statusText:  The status bar object for the main Load window.
+;  treeCopyPtr:  Pointer variable to a copy of the load widget tree.
+;  trObj:  The GUI timerange object.
+;  callSequence:  Reference to GUI call sequence object
+;
+;OUTPUT:
+;  loadTree = The Load widget tree.
+;  timeWidget = The time widget object.
+;
+;NOTES:
+;
+; 
+;HISTORY:
+; 5-jan-2009, jmm, jimm@ssl.berkeley.edu
+; 14-jan-2009, jmm, added statusbar object
+; 15-jan-2009, jmm, added external_state, so that the active data
+;                   widget on the dproc panel can be updated.
+; 23-jan-2009, jmm, deletes tplot variables created during processing,
+;                   correctly updates active data
+; 13-may-2009, bck, moved code from Data Processing window to Load window
+; 16-jul-2012, aaf, rewrote error checking on input values to match the 
+;                   behavior of other GUI windows
+; ??-sept-2013, aaf, modified to use new spectrogram code
+; 01-jul-2014, aaf, now conforms to standard SPEDAS load API
+; 19-mar-2015, aaf, moments, combined data, eclipse corrections, use plugin replay API 
+; 
+; 
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-06 11:43:23 -0700 (Mon, 06 Apr 2015) $
+;$LastChangedRevision: 17241 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_part_getspec_options.pro $
+;-
 
 ; Helper function
 ; Checks if input from text widget is a valid number, returns NaN if not 
 ; (imitates check done within spinner) 
-function spd_ui_part_getspec_check_num, num
+function thm_ui_part_getspec_check_num, num
 
     compile_opt idl2, hidden
 
@@ -24,7 +74,7 @@ end
 
 ; Helper function to abstract sensitization of FAC related widgets
 ;
-pro spd_ui_part_getspec_sens_fac, top_id
+pro thm_ui_part_getspec_sens_fac, top_id
 
     compile_opt idl2, hidden
 
@@ -52,7 +102,7 @@ end
 
 ; Helper function to abstract sensitization of energy range widgets
 ;
-pro spd_ui_part_getspec_sens_erange, top_id
+pro thm_ui_part_getspec_sens_erange, top_id
 
     compile_opt idl2, hidden
 
@@ -74,7 +124,7 @@ end
 
 ; Helper function to abstract sensitization of ESA background widgets
 ;
-pro spd_ui_part_getspec_sens_esabgnd, top_id
+pro thm_ui_part_getspec_sens_esabgnd, top_id
 
     compile_opt idl2, hidden
 
@@ -93,7 +143,7 @@ end
 ; Helper function to edit data type list with regards to 
 ; combed data and sst calibration options. 
 ;
-pro spd_ui_part_getspec_datatype, state
+pro thm_ui_part_getspec_datatype, state
 
     compile_opt idl2, hidden
 
@@ -148,7 +198,7 @@ end
 ;          of the widget
 ;
 ;-
-function spd_ui_part_getspec_check_input, state, uname, namestring, $
+function thm_ui_part_getspec_check_input, state, uname, namestring, $
                                           min=min, max=max, value=value
 
     compile_opt idl2, hidden
@@ -162,7 +212,7 @@ function spd_ui_part_getspec_check_input, state, uname, namestring, $
   
   ;convert to numerical if string is passed in
   if size(/type,value) eq 7 then begin
-    value = spd_ui_part_getspec_check_num(value)
+    value = thm_ui_part_getspec_check_num(value)
   endif
   
   ;if number is valid check against min & max values
@@ -196,7 +246,7 @@ end
 
 ; Helper function to reset one or more widgets' value(s)
 ;
-pro spd_ui_part_getspec_reset_widget, state, uname
+pro thm_ui_part_getspec_reset_widget, state, uname
 
     compile_opt idl2, hidden
 
@@ -229,7 +279,7 @@ end
 ; Helper function to copy a widget's value into the 
 ; appropriate variable
 ;
-pro spd_ui_part_getspec_set_value, state, uname
+pro thm_ui_part_getspec_set_value, state, uname
 
     compile_opt idl2, hidden
 
@@ -264,7 +314,7 @@ end
 ;    valid input and stores valid entries.
 ;  -If the input is invalid the widgets will be reset
 ;   
-pro spd_ui_part_getspec_set_values, state, error=error
+pro thm_ui_part_getspec_set_values, state, error=error
 
     compile_opt idl2, hidden
 
@@ -274,23 +324,23 @@ pro spd_ui_part_getspec_set_values, state, error=error
 
   ;Check phi input
   ; first check in inputs are valid, min > max allowed
-  a0 = spd_ui_part_getspec_check_input(state,'phi_min','Phi min',min=0,max=360,value=pmin)
-  a1 = spd_ui_part_getspec_check_input(state,'phi_max','Phi max',min=0,max=360,value=pmax)
+  a0 = thm_ui_part_getspec_check_input(state,'phi_min','Phi min',min=0,max=360,value=pmin)
+  a1 = thm_ui_part_getspec_check_input(state,'phi_max','Phi max',min=0,max=360,value=pmax)
   if ~a0 || ~a1 then begin
     return
   endif
 
 
   ;check start angle
-  a3 = spd_ui_part_getspec_check_input(state,'start_angle','Start angle',value=sa)
+  a3 = thm_ui_part_getspec_check_input(state,'start_angle','Start angle',value=sa)
   if ~a3 then begin
     return
   endif
 
 
   ;check theta input
-  a0 = spd_ui_part_getspec_check_input(state,'theta_min','Theta min',min=-90,max=90,value=tmin)
-  a1 = spd_ui_part_getspec_check_input(state,'theta_max','Theta max',min=-90,max=90,value=tmax)
+  a0 = thm_ui_part_getspec_check_input(state,'theta_min','Theta min',min=-90,max=90,value=tmin)
+  a1 = thm_ui_part_getspec_check_input(state,'theta_max','Theta max',min=-90,max=90,value=tmax)
   if ~a0 || ~a1 || tmin ge tmax then begin
     if a0 && a1 && tmin ge tmax then x=dialog_message('Theta minimum must be less than maximum.',/center)
     return
@@ -298,8 +348,8 @@ pro spd_ui_part_getspec_set_values, state, error=error
 
 
   ;check pitch angle input
-  a0 = spd_ui_part_getspec_check_input(state,'pa_min','Pitch Angle min',min=0,max=180,value=pamin)
-  a1 = spd_ui_part_getspec_check_input(state,'pa_max','Pitch Angle max',min=0,max=180,value=pamax)
+  a0 = thm_ui_part_getspec_check_input(state,'pa_min','Pitch Angle min',min=0,max=180,value=pamin)
+  a1 = thm_ui_part_getspec_check_input(state,'pa_max','Pitch Angle max',min=0,max=180,value=pamax)
   if ~a0 || ~a1 || pamin ge pamax then begin
     if a0 && a1 && pamin ge pamax then x=dialog_message('Pitch angle minimum must be less than maximum.',/center)
     return
@@ -307,8 +357,8 @@ pro spd_ui_part_getspec_set_values, state, error=error
 
 
   ;check gyrophase input
-  a0 = spd_ui_part_getspec_check_input(state,'gyro_min','Gyrophase min',min=0,max=360,value=gvmin)
-  a1 = spd_ui_part_getspec_check_input(state,'gyro_max','Gyrophase max',min=0,max=360,value=gvmax)
+  a0 = thm_ui_part_getspec_check_input(state,'gyro_min','Gyrophase min',min=0,max=360,value=gvmin)
+  a1 = thm_ui_part_getspec_check_input(state,'gyro_max','Gyrophase max',min=0,max=360,value=gvmax)
   if ~a0 || ~a1 || gvmin ge gvmax then begin
     if a0 && a1 && gvmin ge gvmax then x=dialog_message('Gyrophase minimum must be less than maximum.',/center)
     return
@@ -318,8 +368,8 @@ pro spd_ui_part_getspec_set_values, state, error=error
   ;check energy limit input if option is selected
   id = widget_info(state.tab_id, find_by_uname='energy_button')
   if widget_info(id, /button_set) then begin
-    e0 = spd_ui_part_getspec_check_input(state,'energy_min','Energy min',min=0,value=emin)
-    e1 = spd_ui_part_getspec_check_input(state,'energy_max','Energy max',min=0,value=emax)
+    e0 = thm_ui_part_getspec_check_input(state,'energy_min','Energy min',min=0,value=emin)
+    e1 = thm_ui_part_getspec_check_input(state,'energy_max','Energy max',min=0,value=emax)
     if ~e0 || ~e1 || emin ge emax then begin
       if e0 && e1 && emin ge emax then x=dialog_message('Phi minimun must be less than maximum.',/center)
       return
@@ -328,8 +378,8 @@ pro spd_ui_part_getspec_set_values, state, error=error
 
 
   ;check regrid input
-  r0 = spd_ui_part_getspec_check_input(state,'regrid_phi','Regrid dimension (long)',min=4)
-  r1 = spd_ui_part_getspec_check_input(state,'regrid_theta','Regrid dimension (lat)',min=2)
+  r0 = thm_ui_part_getspec_check_input(state,'regrid_phi','Regrid dimension (long)',min=4)
+  r1 = thm_ui_part_getspec_check_input(state,'regrid_theta','Regrid dimension (lat)',min=2)
   if ~r0 then begin
     return
   endif
@@ -339,8 +389,8 @@ pro spd_ui_part_getspec_set_values, state, error=error
 
 
   ;check background removal input
-  bnp = spd_ui_part_getspec_check_input(state,'bgnd_npoints','Background points',min=1)
-  bs = spd_ui_part_getspec_check_input(state,'bgnd_scale','Background scale',min=0)
+  bnp = thm_ui_part_getspec_check_input(state,'bgnd_npoints','Background points',min=1)
+  bs = thm_ui_part_getspec_check_input(state,'bgnd_scale','Background scale',min=0)
   if ~bnp or ~bs then begin
     return
   endif
@@ -348,7 +398,7 @@ pro spd_ui_part_getspec_set_values, state, error=error
 
   ;if no errors then set all options and clear error flag
   error = 0b
-  spd_ui_part_getspec_set_value, state, state.widget_list
+  thm_ui_part_getspec_set_value, state, state.widget_list
 
 
 ;  ;set suffix
@@ -390,7 +440,7 @@ end
 ;  -Sets all widget to their default states/values
 ;  -Called on startup and upon user requested options reset
 ;
-pro spd_ui_part_getspec_set_defaults, state
+pro thm_ui_part_getspec_set_defaults, state
 
   compile_opt idl2, hidden
 
@@ -443,10 +493,10 @@ pro spd_ui_part_getspec_set_defaults, state
   ;-------------------------------------------------------
   
   ;update applicable widgets from state structures values
-  spd_ui_part_getspec_reset_widget, state, state.widget_list
+  thm_ui_part_getspec_reset_widget, state, state.widget_list
   
   ;update datatype list from other settings
-  spd_ui_part_getspec_datatype, state
+  thm_ui_part_getspec_datatype, state
   
   ;update output selection buttons
   for i=0, n_elements(state.validOutputs)-1 do begin
@@ -455,13 +505,13 @@ pro spd_ui_part_getspec_set_defaults, state
   endfor
   
   ;sensitize/desensitize FAC options
-  spd_ui_part_getspec_sens_fac, state.tab_id
+  thm_ui_part_getspec_sens_fac, state.tab_id
 
   ;sensitize/desensitize energy range options
-  spd_ui_part_getspec_sens_erange, state.tab_id
+  thm_ui_part_getspec_sens_erange, state.tab_id
 
   ;sensitize/desensitize ESA background options
-  spd_ui_part_getspec_sens_esabgnd, state.tab_id
+  thm_ui_part_getspec_sens_esabgnd, state.tab_id
   
   spd_ui_message, 'Using default settings.', sb=state.statusbar, hw=state.historywin
 
@@ -473,7 +523,7 @@ end
 ;  -Takes the current settings and calls the lower level
 ;   spectrogram generation routine.
 ;
-pro spd_ui_part_getspec_apply, state, error=error
+pro thm_ui_part_getspec_apply, state, error=error
 
     compile_opt idl2, hidden
 
@@ -543,7 +593,7 @@ pro spd_ui_part_getspec_apply, state, error=error
 
   ;Check editable widget values and copy into appropriate variables
   ;in the state structure if valid.
-  spd_ui_part_getspec_set_values, state, error=error
+  thm_ui_part_getspec_set_values, state, error=error
   if keyword_set(error) then return
 
 
@@ -775,7 +825,7 @@ end
 
 
 ;event handler
-Pro spd_ui_part_getspec_options_event, event
+Pro thm_ui_part_getspec_options_event, event
 
 
   err_xxx = 0
@@ -819,17 +869,17 @@ Pro spd_ui_part_getspec_options_event, event
   
     'energy_button': begin
       ;sensitize energy limit spinners
-      spd_ui_part_getspec_sens_erange, state.tab_id
+      thm_ui_part_getspec_sens_erange, state.tab_id
     end
     
     'fac_set': begin
       ;sensitize FAC options as needed
-      spd_ui_part_getspec_sens_fac, state.tab_id
+      thm_ui_part_getspec_sens_fac, state.tab_id
     end
     
     'esa_bgnd_remove':begin
       ;sensitize/desensitize ESA background options
-      spd_ui_part_getspec_sens_esabgnd, state.tab_id
+      thm_ui_part_getspec_sens_esabgnd, state.tab_id
     end
 
     'CLEARDATA': begin
@@ -842,28 +892,28 @@ Pro spd_ui_part_getspec_options_event, event
     
     'SST_CAL': begin
       ;update datatype list from other settings
-      spd_ui_part_getspec_datatype, state
+      thm_ui_part_getspec_datatype, state
     end
 
     'COMBINED': begin
       ;update datatype list from other settings
-      spd_ui_part_getspec_datatype, state
+      thm_ui_part_getspec_datatype, state
     end
     
     'HELP':begin
       ;assume help file is in this dir
-      info = routine_info('spd_ui_part_getspec_options',/source)
-      xdisplayfile, file_dirname(info.path,/mark)+'spd_ui_part_getspec_options.txt', $
+      info = routine_info('thm_ui_part_getspec_options',/source)
+      xdisplayfile, file_dirname(info.path,/mark)+'thm_ui_part_getspec_options.txt', $
                     group=state.tab_id, /modal, done_button='Done', $
                     title='HELP: THEMIS Derived Particle Products'
     end
     
     'RESET':begin
-      spd_ui_part_getspec_set_defaults, state
+      thm_ui_part_getspec_set_defaults, state
     end
     
     'APPLY':begin
-      spd_ui_part_getspec_apply, state, error=error
+      thm_ui_part_getspec_apply, state, error=error
     end
   
     else:
@@ -877,61 +927,7 @@ Pro spd_ui_part_getspec_options_event, event
 
 end
 
-
-
-
-;+ 
-;NAME:
-;  spd_ui_part_getspec_options
-; 
-;PURPOSE:
-;  A interface to thm_part_products.pro for creating and loading SPEDAS energy/
-;  angular particle spectra into the GUI.  Intended to be called from
-;  SPD_UI_INIT_LOAD_WINDOW.PRO using the SPEDAS load API.
-; 
-;CALLING SEQUENCE:
-;  spd_ui_part_getspec_options, tab_id, loadedData, historyWin, statusBar, $
-;                               treecopy, trObj, callSequence, $
-;                               loadTree=loadTree, $
-;                               timeWidget=timeid
-;
-;INPUT:
-;  tab_id:  The widget id of the tab.
-;  loadedData:  The loadedData object.
-;  historyWin:  The history window object.
-;  statusText:  The status bar object for the main Load window.
-;  treeCopyPtr:  Pointer variable to a copy of the load widget tree.
-;  trObj:  The GUI timerange object.
-;  callSequence:  Reference to GUI call sequence object
-;
-;OUTPUT:
-;  loadTree = The Load widget tree.
-;  timeWidget = The time widget object.
-;
-;NOTES:
-;
-; 
-;HISTORY:
-; 5-jan-2009, jmm, jimm@ssl.berkeley.edu
-; 14-jan-2009, jmm, added statusbar object
-; 15-jan-2009, jmm, added external_state, so that the active data
-;                   widget on the dproc panel can be updated.
-; 23-jan-2009, jmm, deletes tplot variables created during processing,
-;                   correctly updates active data
-; 13-may-2009, bck, moved code from Data Processing window to Load window
-; 16-jul-2012, aaf, rewrote error checking on input values to match the 
-;                   behavior of other GUI windows
-; ??-sept-2013, aaf, modified to use new spectrogram code
-; 01-jul-2014, aaf, now conforms to standard SPEDAS load API
-; 19-mar-2015, aaf, moments, combined data, eclipse corrections, use plugin replay API 
-; 
-; 
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-03-19 19:25:12 -0700 (Thu, 19 Mar 2015) $
-;$LastChangedRevision: 17152 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_part_getspec_options.pro $
-;-
-Pro spd_ui_part_getspec_options, tab_id, loadedData, historyWin, statusBar, $
+Pro thm_ui_part_getspec_options, tab_id, loadedData, historyWin, statusBar, $
                                  treecopy, trObj, callSequence, $
                                  loadTree=loadTree, $
                                  timeWidget=timeid
@@ -943,7 +939,7 @@ widget_control, /hourglass
 ;------------------------------------------------------------------------------
 ;Set up initial widget bases for easier formatting
 ;------------------------------------------------------------------------------
-mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_options_event')
+mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='thm_ui_part_getspec_options_event')
   topBase = widget_base(mainBase, /row, ypad=8)
     topCol1Base =  widget_base(topBase, /col, space=4)
       instrLabelBase = widget_base(topcol1base, /row)
@@ -988,7 +984,7 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='spd_ui_part_getspec_
 
 ;------------------------------------------------------------------------------
 ; NOTE: Default widget values and states will be handled in the helper funtion
-;       spd_ui_part_getspec_set_defaults.
+;       thm_ui_part_getspec_set_defaults.
 ;       Changes to any defaults shoudl be made there.
 ;------------------------------------------------------------------------------
 
@@ -1289,9 +1285,9 @@ state = {tab_id:tab_id, $
          validCombinedTypes:validCombinedTypes, $
          validOutputs:validOutputs, $
         
-        ; Stored Options (initialized in spd_ui_part_getspec_set_defaults)
+        ; Stored Options (initialized in thm_ui_part_getspec_set_defaults)
         ; The nomenclature here should match the uvalue of the corresponding
-        ; widget so that it's value can be set with spd_ui_part_getspec_set_value 
+        ; widget so that it's value can be set with thm_ui_part_getspec_set_value 
          phi_min:0d,    phi_max:0d, $
          theta_min:0d,  theta_max:0d, $
          pa_min:0d,     pa_max:0d, $
@@ -1333,7 +1329,7 @@ state = {tab_id:tab_id, $
 
 
 ;Set widget values and states
-spd_ui_part_getspec_set_defaults, state
+thm_ui_part_getspec_set_defaults, state
 
 
 widget_control, widget_info(tab_id, /child), set_uvalue=state, /no_copy

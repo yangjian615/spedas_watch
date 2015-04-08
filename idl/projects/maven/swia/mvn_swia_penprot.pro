@@ -13,8 +13,8 @@
 ;	NPO: number of determinations per orbit
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-20 06:12:41 -0800 (Thu, 20 Nov 2014) $
-; $LastChangedRevision: 16252 $
+; $LastChangedDate: 2015-04-06 13:11:09 -0700 (Mon, 06 Apr 2015) $
+; $LastChangedRevision: 17244 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot.pro $
 ;
 ;-
@@ -60,8 +60,8 @@ for i = 0,norb-1 do begin
 		denergy = total(denergies(*,w),2,/nan)/nw
 		
 		wr = where(energy gt 200 and energy lt 4000)
-		nout(i) = Const*4*!pi*total(denergy(wr)*energy(wr)^(-1.5)*spec(wr))
 		spec = spec-min(spec(wr)) > 0
+		nout(i) = Const*2*sqrt(2)*!pi*total(denergy(wr)*energy(wr)^(-1.5)*spec(wr))
 
 		maxc = max(spec(wr),maxi)
 		eout = energy(wr(maxi))

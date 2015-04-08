@@ -19,8 +19,8 @@
 ;	VTHRESH: Percentage difference from upstream velocity to allow
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-03-11 06:58:40 -0700 (Wed, 11 Mar 2015) $
-; $LastChangedRevision: 17116 $
+; $LastChangedDate: 2015-04-06 13:11:09 -0700 (Mon, 06 Apr 2015) $
+; $LastChangedRevision: 17244 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_dir.pro $
 ;
 ;-
@@ -86,7 +86,7 @@ for i = 0,norb-1 do begin
 		
 		wr = where(energy gt 200 and energy lt 4000)
 		spec = spec-min(spec[wr]) > 0
-		nout(i) = Const*!pi*total(denergy[wr]*energy[wr]^(-1.5)*spec[wr])
+		nout(i) = Const*!pi/sqrt(2)*total(denergy[wr]*energy[wr]^(-1.5)*spec[wr])
 
 		maxc = max(spec[wr],maxi)
 		eout = energy(wr[maxi])

@@ -27,9 +27,9 @@
 ;bgnd_scale(Default=1): Set to a scaling factor that the background will be multiplied by before it is subtracted
 ;
 ;
-; $LastChangedBy: aaflores1 $
-; $LastChangedDate: 2014-01-24 15:20:50 -0800 (Fri, 24 Jan 2014) $
-; $LastChangedRevision: 14010 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-06 17:11:34 -0700 (Mon, 06 Apr 2015) $
+; $LastChangedRevision: 17247 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/packet/thm_esa_bgnd_remove.pro $
 ;- 
 
@@ -61,10 +61,14 @@ pro thm_esa_bgnd_remove, dat, gf, eff, nenergy, nbins, theta, bgnd_scale = bgnd_
                minjmin(dat/gf,jmin_points=bgnd_npoints)
              if (n_elements(narrdims) eq 2) then begin ; here compute anode dependent bgnd, 22.5 deg at a time
                bgnd = make_array(nenergy,nbins,value=0,/float)
-               nths=16 ; max number of anodes, general case
-               thmin=[0,22.5,45.,56.25,67.5,73.125,78.75,84.375] & thmin=-[90.-thmin,-thmin]
-               thmax=[22.5,45.,56.25,67.5,73.125,78.75,84.375,90.] & thmax=-[90.-thmax,-thmax]
-               for ith=0,nths-1 do begin 
+;               nths=16 ; max number of anodes, general case
+;               thmin=[0,22.5,45.,56.25,67.5,73.125,78.75,84.375] & thmin=-[90.-thmin,-thmin]
+;               thmax=[22.5,45.,56.25,67.5,73.125,78.75,84.375,90.] & thmax=-[90.-thmax,-thmax]
+               ;set theta bins
+               thbins = [67.5, 45.0, 33.75, 22.5, 16.875, 11.25, 5.625] 
+               thmin = [-90, -thbins, 0, reverse(thbins) ] 
+               thmax =      [-thbins, 0, reverse(thbins), 90]
+               for ith=0, n_elements(thmin)-1 do begin 
                  ian=where((theta[0,*] ge thmin[ith]) and (theta[0,*] lt thmax[ith]),jan)
                  if jan gt 0 then begin
                    if jan eq 1 then begin

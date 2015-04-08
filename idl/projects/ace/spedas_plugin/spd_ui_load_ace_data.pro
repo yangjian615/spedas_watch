@@ -7,10 +7,10 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16146 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spd_ui_load_ace_data.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-06 14:44:41 -0700 (Mon, 06 Apr 2015) $
+;$LastChangedRevision: 17245 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/ace/spedas_plugin/spd_ui_load_ace_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 

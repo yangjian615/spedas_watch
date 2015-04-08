@@ -3,6 +3,8 @@
 ;       mvn_ngi_load
 ; PURPOSE:
 ;       Loads NGIMS L2 data
+;       Time-series densities for each mass will be storead in tplot variables:
+;       'mvn_ngi_(filetype)_(focusmode)_abundance_mass???'
 ; CALLING SEQUENCE:
 ;       mvn_ngi_load
 ; INPUTS:
@@ -23,8 +25,8 @@
 ;       Use 'mvn_ngi_read_csv' to load ql data
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-04-02 15:43:55 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17227 $
+; $LastChangedDate: 2015-04-06 16:23:30 -0700 (Mon, 06 Apr 2015) $
+; $LastChangedRevision: 17246 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_load.pro $
 ;-
 
