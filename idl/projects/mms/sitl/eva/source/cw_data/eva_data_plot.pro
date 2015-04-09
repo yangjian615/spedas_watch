@@ -67,9 +67,9 @@ PRO eva_data_plot, wid
         vars = [vars,vmst[i]]
       endif
     endfor; for each parameter in 'vmst'
-    kmax = n_elements(vars)
-    vars = vars[1:kmax-1]
-
+    idx = where(strlen(vars) gt 0, kmax)
+    vars = vars[idx]
+    
     if ~SORT_BY_VARIABLE then begin; Sort by Probes
       vold = vars
       vnew = ''

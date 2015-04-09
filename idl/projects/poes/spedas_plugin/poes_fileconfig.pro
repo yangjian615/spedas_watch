@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-; spd_ui_poes_fileconfig
+; poes_fileconfig
 ;
 ;PURPOSE:
 ; A widget that allows the user to set some of the !poes variable. The user
@@ -9,9 +9,9 @@
 ;HISTORY:
 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-10-06 14:49:45 -0700 (Mon, 06 Oct 2014) $
-;$LastChangedRevision: 15933 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/spd_ui_poes_fileconfig.pro $
+;$LastChangedDate: 2015-04-07 09:30:39 -0700 (Tue, 07 Apr 2015) $
+;$LastChangedRevision: 17248 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/poes_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
 pro poes_init_struct,state,struct
@@ -170,7 +170,7 @@ Return
 END ;--------------------------------------------------------------------------------
 
 
-PRO spd_ui_poes_fileconfig, tab_id, historyWin, statusBar
+PRO poes_fileconfig, tab_id, historyWin, statusBar
 
 ;check whether the !poes system variable has been initialized
   defsysv, 'poes', exists=exists
@@ -250,7 +250,7 @@ PRO spd_ui_poes_fileconfig, tab_id, historyWin, statusBar
     widget_control, master, xoffset=0, yoffset=0
   endif
 
-  xmanager, 'spd_ui_poes_fileconfig', master, /no_block
+  xmanager, 'poes_fileconfig', master, /no_block
   
 END ;--------------------------------------------------------------------------------
 
