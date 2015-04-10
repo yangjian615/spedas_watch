@@ -19,8 +19,8 @@
 ;                  Units: km, deg, deg
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-02 18:52:14 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17229 $
+; $LastChangedDate: 2015-04-08 17:51:58 -0700 (Wed, 08 Apr 2015) $
+; $LastChangedRevision: 17260 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_trace.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
@@ -60,14 +60,14 @@ pro mvn_mag_trace, alt=alt, trace=T
   S2 = reform([total(S*S,2)])
 
 ; Determine if/where the projected magnetic field line intersects the
-; atmosphere at 170 km altitude
+; atmosphere at 170 km altitude and the spacecraft is above 170 km.
 
   SdotB = reform([total(S*B,2)])
   SdotB2 = SdotB*SdotB
 
   S2mR2 = S2 - (R_exo*R_exo)
 
-  indx = where(SdotB2 ge S2mR2, count)
+  indx = where((SdotB2 ge S2mR2) and (S2mR2 gt 0), count)
 
   if (count gt 0L) then begin
   

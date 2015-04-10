@@ -29,8 +29,8 @@
 ;HISTORY:
 ; Hacked from mvn_sep_gen_ql, 2013-06-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
-; $LastChangedRevision: 17150 $
+; $LastChangedDate: 2015-04-08 16:52:37 -0700 (Wed, 08 Apr 2015) $
+; $LastChangedRevision: 17256 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_sep_overplot.pro $
 Pro mvn_sep_overplot, date = date, time_range = time_range, $
                       makepng = makepng, device = device, directory = directory, $
@@ -79,7 +79,7 @@ d0 = time_double(time_string(date))
 tr = tr > d0
 tplot_options, 'title', 'MAVEN SEP Quicklook '+date
 
-mvn_sep_tplot,'Ql'
+mvn_sep_tplot,'SUM'
 If(keyword_set(multipngplot)) Then makepng = 1b
 If(keyword_set(makepng)) Then Begin
    If(keyword_set(directory)) Then pdir = directory Else pdir = './'

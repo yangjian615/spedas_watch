@@ -60,8 +60,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
-; $LastChangedRevision: 17150 $
+; $LastChangedDate: 2015-04-08 16:52:37 -0700 (Wed, 08 Apr 2015) $
+; $LastChangedRevision: 17256 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_overplot.pro $
 ;-
 Pro mvn_gen_overplot, date = date, time_range = time_range, $
@@ -118,6 +118,9 @@ Endif Else Begin
    swe_v1 = 'swe_espec'
    swi_v = 'mvn_swis_en_counts'
 Endelse
+
+;The definition of mvn_SEPS_OL changed somewhere, 
+store_data,'mvn_SEPS_QL' , data='mvn_sep?_?_?????_tot mvn_sep?_svy_ATT',dlim={yrange:[.8,1e5],ylog:1,panel_size:2.}
 
 varlist=[swe_v1, 'swe_pad', swi_v, 'mvn_sta_C0_P1A_E',$
          'mvn_sta_C6_P1D_M', $

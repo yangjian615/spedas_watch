@@ -1,3 +1,21 @@
+;+
+;FUNCTION: MVN_PHOBOS_TPLOT
+;PURPOSE:
+;     Create tplot variable for the distance between MAVEN and Phobos
+;
+;USAGE:
+;    IDL> mvn_phobos_tplot
+;
+;INPUTS:
+;
+;KEYWORDS:
+;   trange:     time interval
+;   loadspice:  In case you need to load spice variables
+;   rm:         Use units of Mars radii instead of [km]
+;
+;CREATED BY:    Roberto Livi  03-30-15
+;- 
+
 
 pro mvn_phobos_tplot,trange=trange, loadspice=loadspice, rm=rm
 

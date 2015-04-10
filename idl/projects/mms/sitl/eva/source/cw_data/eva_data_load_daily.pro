@@ -40,6 +40,7 @@ END
 
 FUNCTION eva_data_load_daily, filename, dir
   @tplot_com
+  @eva_logger_com
 
   catch, error_status
   if error_status ne 0 then begin
@@ -72,19 +73,14 @@ FUNCTION eva_data_load_daily, filename, dir
   instr    = strmid(type,0,2)
   msn      = strmid(sc,0,2)
 
-
-
-
-
-  verbose =1; set this 1 to show messages below
-  dprint,dlevel=1,verbose = verbose,'Generating file : ', filename
-  dprint,dlevel=1,verbose = verbose,'msn  = ',msn
-  dprint,dlevel=1,verbose = verbose,'date = ',date
-  dprint,dlevel=1,verbose = verbose,'type = ',type
-  dprint,dlevel=1,verbose = verbose,'prod = ',prod
-  dprint,dlevel=1,verbose = verbose,'prbs = ', prbs
-  dprint,dlevel=1,verbose = verbose,'probes = ', probes
-  dprint,dlevel=1,verbose = verbose,'tname = ', tname
+  log.o, '----- Generating file : '+ filename+ ' -----'
+  log.o, 'msn  = '+msn
+  log.o, 'date = '+date
+  log.o, 'type = '+type
+  log.o, 'prod = '+prod
+  log.o, 'prbs = '+prbs
+  log.o, 'probes = '+probes
+  log.o, 'tname = '+tname
 
 
 
@@ -110,13 +106,14 @@ FUNCTION eva_data_load_daily, filename, dir
       options,'thg_idx_ae',ytitle='THEMIS!CAE Index'
       matched = 1
     endif
-    
+
     if strmatch(type,'fb') then begin
       thm_load_fbk,probe=prbs,level=2;,datatype=['fb_'+type]
       matched = 1
     endif
 
     if strmatch(type,'fg?') then begin
+      stop
       thm_load_fgm,probe=prbs,level=2,coord=coord,datatype=type
       matched = 1
     endif
@@ -129,13 +126,49 @@ FUNCTION eva_data_load_daily, filename, dir
     if strmatch(type,'pe?m') then begin
       thm_load_mom,probe=prbs,level=2,coord=coord; there is only one option for datatype (default)
       matched = 1
-    endif else begin
-      if strmatch(type,'pe??') then begin
-        ;thm_load_esa,probe=prbs,level=2,coord=coord,datatype=type+'*'
-        thm_load_esa,probe=prbs,level=2,coord=coord,datatype=[type+'_density',type+'_velocity_*',type+'_avgtemp']
-        matched = 1
-      endif
-    endelse
+    endif
+
+    if (strmatch(type,'pe?r') or strmatch(type,'pe?f') or strmatch(type,'pe?b')) then begin
+      thm_load_esa,probe=prbs,level=2,coord=coord,datatype=[type+'_density',type+'_velocity_*',type+'_avgtemp']
+      matched = 1
+    endif
+
+
+    
+    if strmatch(type,'pt*') then begin
+      idx = where(strmatch(tnames(),tname),ct)
+      if ct ne 1 then begin
+        trange = time_string(timerange(/current))
+        spc = strmid(type,2,1)
+        esa_datatype = 'pe'+spc+strmid(type,3,1)
+        sst_datatype = 'ps'+spc+strmid(type,4,1)
+        ;----------------
+        ; Load
+        ;----------------
+        ;time intervals longer than 1-2 hours may be memory and times intensive
+        combined = thm_part_combine(probe=prbs[0], trange=trange, $
+          esa_datatype=esa_datatype, sst_datatype=sst_datatype, $
+          orig_esa=esa, orig_sst=sst)
+        ;----------------
+        ; Process
+        ;----------------
+        if (strpos(tname,'energy') ge 0) then begin
+          if (strpos(tname,'df') ge 0) then begin
+            thm_part_products, dist_array=combined, outputs='energy',units='df'
+          endif else begin
+            thm_part_products, dist_array=combined, outputs='energy'
+          endelse
+        endif else begin
+          thm_part_products, dist_array=combined, outputs='moments'
+          if strpos(tname,'velocity') ge 0 then begin
+            thm_load_state,probe=prbs, /get_support_data
+            code = probes+'_'+type+'_'+prod
+            thm_cotrans,code,out_suf='_'+coord,out_c=coord
+          endif
+        endelse
+      endif; if ct ne 1
+      matched=1
+    endif
 
     if strmatch(type,'ps??') then begin
       allzeros=[0,8,24,32,40,47,48,55,56]
@@ -146,10 +179,44 @@ FUNCTION eva_data_load_daily, filename, dir
         /energy;, enoise_bins=bins2mask, enoise_remove_method='fill';,/sst_cal
       matched = 1
     endif
-
+    
+    if strmatch(type,'ef*') then begin
+      idx = where(strmatch(tnames(),tname),ct)
+      if ct ne 1 then begin
+        thm_load_state,probe=prbs,/get_sup
+        thm_load_efi,probe=prbs,coord='dsl',type='calibrated'
+      endif
+      matched=1
+    endif
+    
+    if strmatch(type,'np*') then begin
+      probe=probes[0]
+      thm_load_esa, probe=prbs, datat=' peer_avgtemp pe?r_density peer_sc_pot ', level=2
+      get_data,probe+'_peer_density',data=d & dens_e= d.y & dens_e_time= d.x
+      get_data,probe+'_peir_density',data=d & dens_i= d.y & dens_i_time= d.x
+      get_data,probe+'_peer_sc_pot',data=d & sc_pot = d.y & sc_pot_time = d.x
+      get_data,probe+'_peer_avgtemp',data=d & Te = d.y & Te_time = d.x
+      Npot = thm_scpot2dens(sc_pot, sc_pot_time, Te, Te_time, dens_e, dens_e_time, dens_i, dens_i_time, prbs)
+      store_data, probe+'_Npot', data= { x: sc_pot_time, y: Npot }
+      store_data, probe+'_Npot_compare', data = [probe+'_Npot',probe+'_peer_density',probe+'_peir_density' ]
+      options, probe+'_peer_density', 'color', 2  ;trace .............. blue
+      options, probe+'_peer_density', 'colors', 2  ;label
+      options, probe+'_peer_density', 'labels', 'Ne'
+      options, probe+'_peir_density', 'color', 4 ;........ green
+      options, probe+'_peir_density', 'colors', 4
+      options, probe+'_peir_density', 'labels', 'Ni'
+      options, probe+'_Npot', 'labels', probe+'_Npot;......black
+      options, probe+'_Npot', 'colors', 0
+      options, probe+'_Npot', 'color', 0
+      options, probe+'_Npot', 'ylog', 1
+      matched=1  
+    endif
+    
     if ~matched then begin
-      msgtxt = filename + ' cannot be loaded.'
+      stop
+      msgtxt = filename + ' could not be loaded.'
       result = dialog_message(msgtxt)
+      log.o, msgtxt
       return, 'No'
     endif
 

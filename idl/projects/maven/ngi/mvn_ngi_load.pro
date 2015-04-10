@@ -5,12 +5,13 @@
 ;       Loads NGIMS L2 data
 ;       Time-series densities for each mass will be storead in tplot variables:
 ;       'mvn_ngi_(filetype)_(focusmode)_abundance_mass???'
+;       Each column in csv files will be stored in 'mvn_ngi_(filetype)_(focusmode)_(tagname)'
 ; CALLING SEQUENCE:
 ;       mvn_ngi_load
 ; INPUTS:
 ;       None
 ; OPTIONAL KEYWORDS:
-;       trange: time range
+;       trange: time range (if not present then timerange() is called)
 ;       filetype: (Def. ['csn','cso','ion'])
 ;       files: paths to local files to read in
 ;              if set, does not retreive files from server
@@ -21,12 +22,11 @@
 ;       Yuki Harada on 2015-01-29
 ; NOTES:
 ;       Requires IDL 7.1 or later to read in .csv files
-;       Currently only for abundance data files
 ;       Use 'mvn_ngi_read_csv' to load ql data
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-04-06 16:23:30 -0700 (Mon, 06 Apr 2015) $
-; $LastChangedRevision: 17246 $
+; $LastChangedDate: 2015-04-08 09:59:17 -0700 (Wed, 08 Apr 2015) $
+; $LastChangedRevision: 17251 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_load.pro $
 ;-
 

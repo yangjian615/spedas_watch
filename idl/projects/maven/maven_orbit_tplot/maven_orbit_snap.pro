@@ -58,15 +58,20 @@
 ;
 ;       KEEP:     Do not kill the plot windows on exit.
 ;
+;       TIMES:    An array of times for snapshots.  Snapshots are overlain onto
+;                 a single version of the plot.  This overrides the interactive
+;                 entry of times with the cursor.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-02 18:54:40 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17231 $
+; $LastChangedDate: 2015-04-08 17:40:56 -0700 (Wed, 08 Apr 2015) $
+; $LastChangedRevision: 17259 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
-    npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl
+    npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl, times=times, $
+    nodot=nodot
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex, rcols
@@ -83,6 +88,19 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   if (size(color,/type) gt 0) then cflg = 1 else cflg = 0  
   if keyword_set(noerase) then noerase = 1 else noerase = 0
   if keyword_set(reset) then reset = 1 else reset = 0
+  if keyword_set(nodot) then dodot = 0 else dodot = 1
+
+  if keyword_set(times) then begin
+    times = time_double(times)
+    ntimes = n_elements(times)
+    reset = 1
+    noerase = 1
+    keep = 1
+    tflg = 1
+  endif else begin
+    ntimes = 1L
+    tflg = 0
+  endelse
   
   if keyword_set(xz) then xzflg = 1 else xzflg = 0
 
@@ -141,9 +159,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   psi_p2 = 1.009
   L_p2   = 0.528
 
-; Get the orbit closest the selected time
-
-  print,'Use button 1 to select time; button 3 to quit.'
+; Create snapshot windows
 
   if (xzflg) then begin
     window,26,xsize=600,ysize=538
@@ -173,14 +189,27 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     if (~noerase or reset) then mag_mola_orbit, -100., -100., big=mbig, /reset
   endif
 
-  wset,Twin
-  ctime2,trange,npoints=1,/silent,button=button
+; Get the orbit closest the selected time
 
-  if (size(trange,/type) eq 2) then begin
-    wdelete,Owin
+  print,'Use button 1 to select time; button 3 to quit.'
+
+  if (tflg) then begin
+    k = 0L
+    if (k ge ntimes) then begin
+      wdelete,Owin
+      wset,Twin
+      return
+    endif
+    trange = times[k]
+  endif else begin
     wset,Twin
-    return
-  endif
+    ctime2,trange,npoints=1,/silent,button=button
+    if (size(trange,/type) eq 2) then begin
+      wdelete,Owin
+      wset,Twin
+      return
+    endif
+  endelse
 
   tref = trange[0]
   dt = min(abs(time - tref), iref, /nan)
@@ -190,13 +219,14 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   dt = min(abs(torb - tref), jref, /nan)
   dj = round(double(period[jref])*3600D/(time[1] - time[0]))
   
-  
   ok = 1
+  first = 1
 
   while (ok) do begin
     title = string(time_string(tref),floor(ndays),format='(a19,2x,"(Day ",i3,")")')
 
     wset, Owin
+    if (first) then erase
 
     npts = n_elements(ss[*,0])
 
@@ -239,12 +269,11 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     xrange = [-rmax,rmax]
     yrange = xrange
 
-    if (xzflg eq 0) then !p.multi = [3,1,3]
-    erase
-
 ; X-Y Projection
 
     if (xzflg eq 0) then begin
+      !p.multi = [3,1,3]
+
       x = xo
       y = yo
       z = zo
@@ -262,12 +291,12 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       alt = (ro[i] - 1D)*R_m
       szaref = acos(cos(mlon)*cos(mlat))
 
-      plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty, $
+      plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty,/noerase, $
            xtitle='X (Rp)',ytitle='Y (Rp)',charsize=2.0,title=title
       oplot,xm,ym,color=6
       oplot,x,y
 
-      oplot,[x[i]],[y[i]],psym=8,color=5
+      if (dodot) then oplot,[x[i]],[y[i]],psym=8,color=5
 
       x = xs
       y = ys
@@ -349,6 +378,8 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
 ; X-Z Projection
 
+    if (xzflg) then !p.multi = [1,1,1] else !p.multi = [2,1,3]
+
     x = xo
     y = yo
     z = zo
@@ -362,13 +393,13 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
     if (xzflg) then msg = title else msg = ''
 
-    plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty, $
+    plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty,/noerase, $
          xtitle='X (Rp)',ytitle='Z (Rp)',charsize=2.0,title=msg
     oplot,xm,ym,color=6
     oplot,x,z
 
     if (pflg) then i = imid else i = imin
-    oplot,[x[i]],[z[i]],psym=8,color=5
+    if (dodot) then oplot,[x[i]],[z[i]],psym=8,color=5
 
     x = xs
     y = ys
@@ -449,6 +480,8 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 ; Y-Z Projection
 
     if (xzflg eq 0) then begin
+      !p.multi = [1,1,3]
+
       x = xo
       y = yo
       z = zo
@@ -460,13 +493,13 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         z[indx] = !values.f_nan
       endif
 
-      plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty, $
+      plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty,/noerase, $
            xtitle='Y (Rp)',ytitle='Z (Rp)',charsize=2.0
       oplot,xm,ym,color=6
       oplot,y,z
 
       if (pflg) then i = imid else i = imin
-      oplot,[y[i]],[z[i]],psym=8,color=5
+      if (dodot) then oplot,[y[i]],[z[i]],psym=8,color=5
 
       x = xs
       y = ys
@@ -515,19 +548,20 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
    if (cyflg) then begin
      wset, Cwin
+     if (first) then erase
 
      x = xo
      y = yo
      z = zo
      s = sqrt(y*y + z*z)
 
-     plot,xm,ym,xrange=xrange,yrange=[0,yrange[1]],/xsty,/ysty, $
-         xtitle='X (Rp)',ytitle='S (Rp)',charsize=2.0,title=msg
+     plot,xm,ym,xrange=xrange,yrange=[0,yrange[1]],/xsty,/ysty,/noerase, $
+          xtitle='X (Rp)',ytitle='S (Rp)',charsize=2.0,title=msg
      oplot,xm,ym,color=6
      oplot,x,s
 
     if (pflg) then i = imid else i = imin
-    oplot,[x[i]],[s[i]],psym=8,color=5
+    if (dodot) then oplot,[x[i]],[s[i]],psym=8,color=5
 
     oplot,xs,sqrt(ys*ys + zs*zs),color=rcols[0]
     oplot,xp,sqrt(yp*yp + zp*zp),color=rcols[1]
@@ -582,6 +616,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
     if (gflg) then begin
       wset, Gwin
+      if (first) then erase
       mlon = mlon*!radeg
       mlat = mlat*!radeg
       szaref = szaref*!radeg
@@ -590,7 +625,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
                 format='("Lon = ",f6.1,2x,"Lat = ",f5.1,2x,"Alt = ",f5.0,2x,"SZA = ",f5.1)')
 
       plot,[mlon],[mlat],xrange=[-180,180],/xsty,yrange=[-90,90],/ysty,$
-           xticks=12,xminor=3,yticks=6,yminor=4,title=title,$
+           xticks=12,xminor=3,yticks=6,yminor=4,title=title,/noerase,$
            xtitle='MSO Longitude',ytitle='MSO Latitude',psym=3
       oplot,[-90,-90],[-90,90],color=4,line=1
       oplot,[90,90],[-90,90],color=4,line=1
@@ -677,17 +712,23 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
 ; Get the next button press
 
-    wset,Twin
-    ctime2,trange,npoints=1,/silent,button=button
+    if (tflg) then begin
+      k++
+      if (k lt ntimes) then begin
+        trange = times[k]
+        first = 0
+      endif else ok = 0
+    endif else begin
+      wset,Twin
+      ctime2,trange,npoints=1,/silent,button=button
+      if (size(trange,/type) ne 5) then ok = 0
+    endelse
 
-    if (size(trange,/type) eq 5) then begin
-      tref = trange[0]
-      dt = min(abs(time - tref), iref)
-      ok = 1
-    endif else ok = 0
-
-    tref = time[iref]
-    ndays = (tref - time[0])/86400D
+    if (ok) then begin
+      dt = min(abs(time - trange[0]), iref)
+      tref = time[iref]
+      ndays = (tref - time[0])/86400D
+    endif
 
   endwhile
 

@@ -75,16 +75,19 @@
 ;
 ;       VARS:     Array of TPLOT variables created.
 ;
+;       NOW:      Plot a vertical dotted line at the current time.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-02 18:54:17 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17230 $
+; $LastChangedDate: 2015-04-08 17:40:41 -0700 (Wed, 08 Apr 2015) $
+; $LastChangedRevision: 17258 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
-                       vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, colors=colors
+                       vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
+                       colors=colors
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex, rcols
@@ -110,6 +113,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     3 : rcols = round(colors)
     else : rcols = round(colors[0:2])
   endcase
+  if keyword_set(now) then donow = 1 else donow = 0
 
   rootdir = 'maven/anc/spice/sav/'
   
@@ -604,6 +608,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     tplot_options,'charsize',1.2
     timespan,[tmin,tmax],/sec
     tplot,vars[0:2]
+    if (donow) then timebar,systime(/utc,/sec),line=1
   endif
 
   return

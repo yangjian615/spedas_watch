@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-02 19:02:24 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17232 $
+; $LastChangedDate: 2015-04-08 11:48:06 -0700 (Wed, 08 Apr 2015) $
+; $LastChangedRevision: 17253 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -402,7 +402,9 @@ FUNCTION eva_data_event, ev
       endelse
     end
     state.load: begin
-      log.o,'***** EVENT: load *****'
+      log.o,'--------------'
+      log.o,' EVENT: load '
+      log.o,'--------------'
       state = eva_data_load_and_plot(state)
       end
     state.bgOPOD: str_element,/add,state,'OPOD',ev.select
