@@ -8,7 +8,7 @@
 ;for spd_gui
 ;
 ;CALLING SEQUENCE:
-; spedas_gui_new_init
+; spd_gui_init
 ;
 ;INPUT:
 ; none
@@ -18,9 +18,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-11 14:17:27 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14333 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 14:49:49 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17277 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_gui_init.pro $
 ;-----------------------------------------------------------------------------------
 

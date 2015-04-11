@@ -1,10 +1,66 @@
-
-
-;=============================================================
-;  This is an example plugin for developers using the SPEDAS API.
-;  Scroll down for the main plugin routine.
-;  See spd_ui_plugin_config.txt to enable.
-;=============================================================
+;+
+;Procedure:
+;  yyy_ui_plugin
+;
+;Purpose:
+;  A basic example menu plugin for the SPEDAS GUI API.
+;
+;Calling Sequence:
+;  See instructions in spedas/gui/resources/spd_ui_plugin_config.txt
+;  to enable the plugin in the GUI.
+;
+;Input:
+;  gui_id:  The widget ID of the top level GUI base.
+;  loaded_data:  The GUI loaded data object.  This object stores all
+;                data and corresponding metadata currently loaded
+;                into the GUI.
+;  call_sequence:  The GUI call sequence object.  This object stores
+;                  a list of calls to external routines.  These calls
+;                  are replicated when a GUI document is opened to
+;                  reproduce those operations.
+;  history_window:  The GUI history window object.  This object 
+;                   provides a viewable textual history of GUI
+;                   operations and error reports. 
+;  status_bar:  The GUI status bar object.  This object displays 
+;               informational messages at the bottom of the main 
+;               GUI window.
+;  data_tree:  The GUI data tree object.  This object provides a 
+;              graphical tree of all loaded data variables.
+;              A copy of this object can be used to create a
+;              tree display within the plugin.
+;  time_trange:  The GUI's main time range object.  This object
+;                stores the current time range for the GUI and
+;                may be used/modified by the plugin.
+;
+;Input/Output:
+;  data_structure: This keyword may be used to return a data structure
+;                  that will be saved by the GUI and passed back to
+;                  the plugin the next time it is called.  This can be 
+;                  used to save any information that could be needed
+;                  on subsequent calls (e.g. time ranges, previous 
+;                  operations, plugin specific option selections, etc.)  
+;
+;API Requirements:
+;  -Plugins must accept the GUI top widget ID, loaded data object, 
+;   call sequence object, history window object, and status bar object
+;   (in that order) and must include the _extra keyword.
+;  -The GUI data tree and time range objects may also be accessed
+;   via the corresponding keywords, but are not required.
+;  -Information for subsequent calls can be stored using the
+;   data_structure keyword (described above).
+;  -All operations performed by a plugin must be executed in separate
+;   helper routines to be compatible with GUI document files.  See
+;   yyy_ui_plugin_add, yyy_ui_plugin_delete, and yyy_ui_plugin_randomize 
+;   for examples.
+;
+;Notes:
+;
+;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 13:48:35 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17272 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/plugin_menu/yyy_ui_plugin.pro $
+;-
 
 
 ;+
@@ -180,70 +236,6 @@ pro yyy_ui_plugin_event, event
   
 end
 
-
-;+
-;Procedure:
-;  yyy_ui_plugin
-;
-;Purpose:
-;  A basic example plugin for the SPEDAS GUI API.
-;
-;Calling Sequence:
-;  See instructions in spedas/gui/resources/spd_ui_plugin_config.txt
-;  to enable the plugin in the GUI.
-;
-;Input:
-;  gui_id:  The widget ID of the top level GUI base.
-;  loaded_data:  The GUI loaded data object.  This object stores all
-;                data and corresponding metadata currently loaded
-;                into the GUI.
-;  call_sequence:  The GUI call sequence object.  This object stores
-;                  a list of calls to external routines.  These calls
-;                  are replicated when a GUI document is opened to
-;                  reproduce those operations.
-;  history_window:  The GUI history window object.  This object 
-;                   provides a viewable textual history of GUI
-;                   operations and error reports. 
-;  status_bar:  The GUI status bar object.  This object displays 
-;               informational messages at the bottom of the main 
-;               GUI window.
-;  data_tree:  The GUI data tree object.  This object provides a 
-;              graphical tree of all loaded data variables.
-;              A copy of this object can be used to create a
-;              tree display within the plugin.
-;  time_trange:  The GUI's main time range object.  This object
-;                stores the current time range for the GUI and
-;                may be used/modified by the plugin.
-;
-;Input/Output:
-;  data_structure: This keyword may be used to return a data structure
-;                  that will be saved by the GUI and passed back to
-;                  the plugin the next time it is called.  This can be 
-;                  used to save any information that could be needed
-;                  on subsequent calls (e.g. time ranges, previous 
-;                  operations, plugin specific option selections, etc.)  
-;
-;API Requirements:
-;  -Plugins must accept the GUI top widget ID, loaded data object, 
-;   call sequence object, history window object, and status bar object
-;   (in that order) and must include the _extra keyword.
-;  -The GUI data tree and time range objects may also be accessed
-;   via the corresponding keywords, but are not required.
-;  -Information for subsequent calls can be stored using the
-;   data_structure keyword (described above).
-;  -All operations performed by a plugin must be executed in separate
-;   helper routines to be compatible with GUI document files.  See
-;   yyy_ui_plugin_add, yyy_ui_plugin_delete, and yyy_ui_plugin_randomize 
-;   for examples.
-;
-;Notes:
-;
-;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-18 18:27:19 -0700 (Tue, 18 Mar 2014) $
-;$LastChangedRevision: 14584 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/plugin_menu/yyy_ui_plugin.pro $
-;-
 
 pro yyy_ui_plugin, gui_id=gui_id, $
                    loaded_data=loaded_data, $

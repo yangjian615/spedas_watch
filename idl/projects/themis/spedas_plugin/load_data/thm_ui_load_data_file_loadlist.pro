@@ -1,15 +1,15 @@
 ;+ 
 ;NAME:
-; spd_ui_load_data_file_loadlist.pro
+; thm_ui_load_data_file_loadlist.pro
 ;
 ;PURPOSE:
 ; ROUTINE IS DEPRECATED.  WAS MAINTAINING COPIES OF SELECTION THAT WERE ALREADY MAINTAINED ELSEWHERE.
 ;
 ; Controls selection of loaded data from "Loaded Data" list.  Called by
-; spd_ui_load_data_file event handler.
+; thm_ui_load_data_file event handler.
 ;
 ;CALLING SEQUENCE:
-; spd_ui_load_data_file_loadlist, state
+; thm_ui_load_data_file_loadlist, state
 ;
 ;INPUT:
 ; state     State structure
@@ -18,8 +18,13 @@
 ; None
 ;
 ;HISTORY:
+;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 14:56:06 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17278 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_loadlist.pro $
 ;-
-pro spd_ui_load_data_file_loadlist, state, event
+pro thm_ui_load_data_file_loadlist, state, event
 
   Compile_Opt idl2, hidden
 

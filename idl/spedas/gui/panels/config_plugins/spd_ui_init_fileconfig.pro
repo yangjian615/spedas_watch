@@ -20,8 +20,12 @@
 ;
 ;OUTPUT:
 ;  none
+;  
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 12:28:22 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17266 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_init_fileconfig.pro $
 ;-
-
 
 ;restores user selects from previous panel open
 pro spd_ui_init_fileconfig_set_user_select,state

@@ -1,13 +1,13 @@
 ;+ 
 ;NAME:
-; spd_ui_load_data_file_del.pro
+; thm_ui_load_data_file_del.pro
 ;
 ;PURPOSE:
 ; Controls deleting of loaded data from "Loaded Data" list.  Called by
-; spd_ui_load_data_file event handler.
+; thm_ui_load_data_file event handler.
 ;
 ;CALLING SEQUENCE:
-; spd_ui_load_data_file_del, state
+; thm_ui_load_data_file_del, state
 ;
 ;INPUT:
 ; state     State structure
@@ -16,12 +16,12 @@
 ; None
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-10 17:29:19 -0700 (Thu, 10 Jul 2014) $
-;$LastChangedRevision: 15554 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file_del.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 13:39:19 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17268 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_del.pro $
 ;-
-pro spd_ui_load_data_file_del, state
+pro thm_ui_load_data_file_del, state
 
   Compile_Opt idl2, hidden
   

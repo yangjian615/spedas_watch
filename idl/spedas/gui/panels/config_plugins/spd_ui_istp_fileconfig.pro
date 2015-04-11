@@ -6,9 +6,9 @@
 ; A widget that allows the user to set some of the !istp variable. The user
 ; can resettodefault, modify, and save the system variable.
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2014-06-02 15:01:50 -0700 (Mon, 02 Jun 2014) $
-;$LastChangedRevision: 15289 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 12:30:18 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17267 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_istp_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -96,7 +96,7 @@ PRO spd_ui_istp_fileconfig_event, event
     
     'NDOFF': BEGIN
 
-        IF event.select EQ 1 then !themis.no_download=1 else !istp.no_download=0
+        IF event.select EQ 1 then !istp.no_download=1 else !istp.no_download=0
 
     END
     

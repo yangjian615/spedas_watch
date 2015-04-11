@@ -1,13 +1,13 @@
 ;+ 
 ;NAME:
-; spd_ui_load_data_file_itype_sel.pro
+; thm_ui_load_data_file_itype_sel.pro
 ;
 ;PURPOSE:
 ; Controls actions that occur when Instrument Type menu is selected.  Called by
-; spd_ui_load_data_file event handler.
+; thm_ui_load_data_file event handler.
 ;
 ;CALLING SEQUENCE:
-; spd_ui_load_data_file_itype_sel, state
+; thm_ui_load_data_file_itype_sel, state
 ;
 ;INPUT:
 ; state     State structure
@@ -15,12 +15,12 @@
 ;OUTPUT:
 ; None
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-25 15:04:42 -0800 (Wed, 25 Feb 2015) $
-;$LastChangedRevision: 17041 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file_itype_sel.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 14:43:23 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17275 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_itype_sel.pro $
 ;-
-pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
+pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
 
   Compile_Opt idl2, hidden
   
@@ -99,7 +99,7 @@ pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
   endif
  
   ; Get a list of data types that can be loaded for each instrument.
-  dlist = spd_ui_valid_datatype(state.instr, ilist, llist)
+  dlist = thm_ui_valid_datatype(state.instr, ilist, llist)
   
   ; temporarily remove the "all processors" variables until data object can handle 3D data
   ; 2011-01-24 JWL  When the new FFF datatype was added, the number of
@@ -248,11 +248,11 @@ pro spd_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
   ; and the list contains one element ('None') when there is no data.
   if n_elements(dlist1) eq 2 && n_elements(dlist2) eq 1 then begin ;ie only * and one datatype
     widget_control, state.level1List, set_list_select=0
-    spd_ui_load_data_file_l1_sel, state
+    thm_ui_load_data_file_l1_sel, state
   endif
   if n_elements(dlist2) eq 2 && n_elements(dlist1) eq 1 then begin ;ie only * and one datatype
     widget_control, state.level2List, set_list_select=0
-    spd_ui_load_data_file_l2_sel, state
+    thm_ui_load_data_file_l2_sel, state
   endif
 
   h = 'Selected Output Coordinates: '+state.outCoord

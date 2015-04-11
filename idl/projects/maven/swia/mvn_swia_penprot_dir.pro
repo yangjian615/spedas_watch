@@ -19,8 +19,8 @@
 ;	VTHRESH: Percentage difference from upstream velocity to allow
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-04-06 13:11:09 -0700 (Mon, 06 Apr 2015) $
-; $LastChangedRevision: 17244 $
+; $LastChangedDate: 2015-04-09 06:51:01 -0700 (Thu, 09 Apr 2015) $
+; $LastChangedRevision: 17263 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_dir.pro $
 ;
 ;-
@@ -38,10 +38,29 @@ common mvn_swia_data
 if keyword_set(archive) then begin
 	get_data,'mvn_swica_en_eflux_MSO_mX',data = data 
 	denergy = data.v*(info_str[swica.info_index].deovere_coarse#replicate(1,48))
+
+	get_data,'mvn_swica_en_eflux_MSO_pX',data = pX
+	get_data,'mvn_swica_en_eflux_MSO_pY',data = pY
+	get_data,'mvn_swica_en_eflux_MSO_mY',data = mY
+	get_data,'mvn_swica_en_eflux_MSO_pZ',data = pZ
+	get_data,'mvn_swica_en_eflux_MSO_mZ',data = mZ
 endif else begin
 	get_data,'mvn_swics_en_eflux_MSO_mX',data = data
 	denergy = data.v*(info_str[swics.info_index].deovere_coarse#replicate(1,48))
+
+	get_data,'mvn_swics_en_eflux_MSO_pX',data = pX
+	get_data,'mvn_swics_en_eflux_MSO_pY',data = pY
+	get_data,'mvn_swics_en_eflux_MSO_mY',data = mY
+	get_data,'mvn_swics_en_eflux_MSO_pZ',data = pZ
+	get_data,'mvn_swics_en_eflux_MSO_mZ',data = mZ
 endelse
+
+
+w = where(1-finite(pX.y)) & if w(0) ne -1 then pX.y(w) = 0
+w = where(1-finite(pY.y)) & if w(0) ne -1 then pY.y(w) = 0
+w = where(1-finite(mY.y)) & if w(0) ne -1 then mY.y(w) = 0
+w = where(1-finite(pZ.y)) & if w(0) ne -1 then pZ.y(w) = 0
+w = where(1-finite(mZ.y)) & if w(0) ne -1 then mZ.y(w) = 0
 
 if keyword_set(invec) then get_data,invec,data = data
 
@@ -52,11 +71,15 @@ if keyword_set(reg) then begin
 	spectra = data.y[w,*]
 	energies = data.v[w,*]
 	denergies = denergy[w,*]
+
+	bspectra = pX.y[w,*]*2.22 + pY.y[w,*]*2.22 + mY.y[w,*]*2.22 + pZ.y[w,*]*1.84 + mZ.y[w,*]*1.84
 endif else begin
 	times = data.x
 	spectra = data.y
 	energies = data.v
 	denergies = denergy
+
+	bspectra = pX.y*2.22+pY.y*2.22+mY.y*2.22+pZ.y*1.84+mZ.y*1.84
 endelse
 
 if keyword_set(attfilt) then begin
@@ -74,6 +97,7 @@ maxo = max(orb)
 norb = maxo-mino+1
 
 nout = fltarr(norb)
+nbout = fltarr(norb)
 vout = fltarr(norb)
 tout = dblarr(norb)
 
@@ -81,12 +105,15 @@ for i = 0,norb-1 do begin
 	w = where(orb eq (mino+i) and abs(zx) lt 1/sqrt(2),nw)		
 	if nw gt 2 then begin
 		spec = total(spectra[w,*],1,/nan)/nw
+		bspec = total(bspectra[w,*],1,/nan)/nw
 		energy = total(energies[w,*],1,/nan)/nw
 		denergy = total(denergies[w,*],1,/nan)/nw
 		
 		wr = where(energy gt 200 and energy lt 4000)
 		spec = spec-min(spec[wr]) > 0
+		bspec = bspec-min(bspec[wr]) > 0
 		nout(i) = Const*!pi/sqrt(2)*total(denergy[wr]*energy[wr]^(-1.5)*spec[wr])
+		nbout(i) = Const*total(denergy[wr]*energy[wr]^(-1.5)*bspec[wr])
 
 		maxc = max(spec[wr],maxi)
 		eout = energy(wr[maxi])
@@ -105,6 +132,7 @@ if keyword_set(vfilt) then begin
 endif
 
 store_data,'npen',data = {x:tout[w],y:nout[w]}
+store_data,'nbpen',data = {x:tout[w],y:nbout[w]}
 store_data,'vpen',data = {x:tout[w],y:vout[w]}
 
 end

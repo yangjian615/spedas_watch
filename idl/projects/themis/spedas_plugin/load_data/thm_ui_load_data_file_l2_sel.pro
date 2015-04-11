@@ -1,13 +1,13 @@
 ;+ 
 ;NAME:
-; spd_ui_load_data_file_l2_sel.pro
+; thm_ui_load_data_file_l2_sel.pro
 ;
 ;PURPOSE:
 ; Controls actions that occur when selecting items in Level 2 box.  Called by
-; spd_ui_load_data_file event handler.
+; thm_ui_load_data_file event handler.
 ;
 ;CALLING SEQUENCE:
-; spd_ui_load_data_file_l2_sel, state
+; thm_ui_load_data_file_l2_sel, state
 ;
 ;INPUT:
 ; state     State structure
@@ -16,8 +16,13 @@
 ; None
 ;
 ;HISTORY:
+;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 14:56:06 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17278 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_l2_sel.pro $
 ;-
-pro spd_ui_load_data_file_l2_sel, state
+pro thm_ui_load_data_file_l2_sel, state
 
   Compile_Opt idl2, hidden
   

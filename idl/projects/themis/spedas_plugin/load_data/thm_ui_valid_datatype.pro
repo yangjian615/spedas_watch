@@ -1,12 +1,12 @@
 ;+
 ;NAME:
-; spd_ui_valid_datatype
+; thm_ui_valid_datatype
 ;PURPOSE:
 ; get valid datatype names from thm_load_* routines, using the
 ; valid_names keyword and returns a list of data types that can be
 ; loaded for each instrument.
 ;CALLING SEQUENCE:
-; datalist = spd_ui_valid_datatype(instrument, ilist, llist)
+; datalist = thm_ui_valid_datatype(instrument, ilist, llist)
 ;INPUT:
 ; instr_in = three letter symbol of datatype.
 ;OUTPUT:
@@ -24,13 +24,13 @@
 ; 4-feb-2007, jmm, Rewritten back to the old hard-wired version....
 ; 5-jul-2007, jmm, Added level information
 ; 11-apr-2008, jmm, now calls thm_data2load.pro, for 1 instrument
-; 16-sep-2008, bck, modified from spd_ui_valid_dtype
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_valid_datatype.pro $
+; 16-sep-2008, bck, modified from thm_ui_valid_dtype
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 14:43:23 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17275 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_valid_datatype.pro $
 ;-
-Function spd_ui_valid_datatype, instr_in, ilist, llist
+Function thm_ui_valid_datatype, instr_in, ilist, llist
 
   Compile_Opt idl2, hidden
 

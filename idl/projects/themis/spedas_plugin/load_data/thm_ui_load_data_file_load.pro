@@ -1,13 +1,13 @@
 ;+ 
 ;NAME:
-; spd_ui_load_data_file_load.pro
+; thm_ui_load_data_file_load.pro
 ;
 ;PURPOSE:
 ; Loads SPEDAS data by calling spd_ui_load_data_fn.  Called by
-; spd_ui_load_data_file event handler.
+; thm_ui_load_data_file event handler.
 ;
 ;CALLING SEQUENCE:
-; spd_ui_load_data_file_load, state, event
+; thm_ui_load_data_file_load, state, event
 ;
 ;INPUT:
 ; state     State structure
@@ -17,8 +17,13 @@
 ; None
 ;
 ;HISTORY:
+;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 14:56:06 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17278 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_load.pro $
 ;-
-pro spd_ui_load_data_file_load, state, event
+pro thm_ui_load_data_file_load, state, event
 
   Compile_Opt idl2, hidden
   err_xxx = 0
@@ -152,7 +157,7 @@ pro spd_ui_load_data_file_load, state, event
     eclipse:eclipse}
     
 
-  spd_ui_load_data2obj, loadStruct,$ 
+  thm_ui_load_data2obj, loadStruct,$ 
                         state.loadedData, $
                         state.statusText, $
                         state.historyWin,$
@@ -162,7 +167,7 @@ pro spd_ui_load_data_file_load, state, event
                        
   
   callSeqStruct = {type:'loadapidata',$
-                  subtype:'spd_ui_load_data2obj',$
+                  subtype:'thm_ui_load_data2obj',$
                   loadStruc:loadStruct,$
                   overwrite_selections:overwrite_selections}
 

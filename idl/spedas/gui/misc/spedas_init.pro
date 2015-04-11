@@ -80,6 +80,6 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
 
   if spedas_reset then spedas_write_config ;if i twas just re-loaded from file, we do not re-write the values
 
-  printdat,/values,!spedas,varname='!spedas
+  printdat,/values,!spedas,varname='!spedas'
   
 end

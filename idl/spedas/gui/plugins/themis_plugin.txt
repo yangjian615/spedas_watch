@@ -1,5 +1,5 @@
 project: THEMIS
-load_data: spd_ui_load_data_file, THEMIS: Load Ground and Probe Data
+load_data: thm_ui_load_data_file, THEMIS: Load Ground and Probe Data
 load_data: thm_ui_part_getspec_options, THEMIS Derived Products
 menu: thm_ui_gen_overplot,Overview Plots, THEMIS Overview Plot...
 menu: thm_ui_slice2d, ,THEMIS Particle Distribution Slices...

@@ -1,13 +1,13 @@
 ;+
 ;NAME:
-; spd_ui_load_data_file_coord_sel.pro
+; thm_ui_load_data_file_coord_sel.pro
 ;
 ;PURPOSE:
 ; Controls actions that occur when Output Coordinates menu is selected.  Called
-; by spd_ui_load_data_file event handler.
+; by thm_ui_load_data_file event handler.
 ;
 ;CALLING SEQUENCE:
-; spd_ui_load_data_file_coord_sel, state
+; thm_ui_load_data_file_coord_sel, state
 ;
 ;INPUT:
 ; state     State structure
@@ -16,9 +16,13 @@
 ; None
 ;
 ;HISTORY:
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 14:56:06 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17278 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_coord_sel.pro $
 ;-
 
-pro spd_ui_load_data_file_coord_sel, state
+pro thm_ui_load_data_file_coord_sel, state
 
   Compile_Opt idl2, hidden
 
@@ -46,7 +50,7 @@ pro spd_ui_load_data_file_coord_sel, state
   state.historyWin->Update, 'LOAD DATA: ' + h
 
   ; reset Level 2 datatype list based on coord type
-  spd_ui_load_data_file_itype_sel, state, /from_coord_sel
+  thm_ui_load_data_file_itype_sel, state, /from_coord_sel
 
   ; now check if the old selections are in the new list
   ; if they are, select them again
@@ -74,6 +78,6 @@ pro spd_ui_load_data_file_coord_sel, state
       widget_control, state.level2list, set_list_select=pindex2
     endif
   endif
-  spd_ui_load_data_file_l2_sel, state
+  thm_ui_load_data_file_l2_sel, state
 
 END

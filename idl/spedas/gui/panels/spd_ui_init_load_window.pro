@@ -45,42 +45,48 @@ pro spd_ui_init_load_update_tree_copy,state
 end
 
 ;restores user selects from previous panel open
-pro spd_ui_load_data_set_user_select,state
-
- widget_control,widget_info(state.tabArray[0],/child),get_uvalue=load_data_state
-
-  if widget_valid(load_data_state.itypeDropList) && (*state.userSelectPtr).inst ne -1 then begin
-    widget_control,load_data_state.itypeDroplist,set_combobox_select=(*state.userSelectPtr).inst
-  endif
-  spd_ui_load_data_file_itype_sel, load_data_state
-   
-  if widget_valid(load_data_state.coordDropList) && (*state.userSelectPtr).coord ne -1 then begin
-    widget_control,load_data_state.coordDropList,set_combobox_select=(*state.userSelectPtr).coord
-  endif 
-  spd_ui_load_data_file_coord_sel, load_data_state
-  
-  if widget_valid(load_data_state.observList) && ptr_valid((*state.userSelectPtr).observPtr) && (*(*state.userSelectPtr).observPtr)[0] ne -1 then begin
-    widget_control,load_data_state.observList,set_list_select=*(*state.userSelectPtr).observPtr
-  endif    
-  spd_ui_load_data_file_obs_sel, load_data_state
-  
-  if widget_valid(load_data_state.level1List) && ptr_valid((*state.userSelectPtr).level1Ptr) && (*(*state.userSelectPtr).level1Ptr)[0] ne -1 then begin
-    widget_control,load_data_state.level1List,set_list_select=*(*state.userSelectPtr).level1Ptr
-  endif    
-  spd_ui_load_data_file_l1_sel, load_data_state
-  
-  if widget_valid(load_data_state.level2List) && ptr_valid((*state.userSelectPtr).level2Ptr) && (*(*state.userSelectPtr).level2Ptr)[0] ne -1 then begin
-    widget_control,load_data_state.level2List,set_list_select=*(*state.userSelectPtr).level2Ptr
-  endif    
-  spd_ui_load_data_file_l2_sel, load_data_state
-
-  raw_data_widget_id = widget_info(widget_info(state.tabArray[0],/child),find_by_uname='raw_data')
-  if widget_valid(raw_data_widget_id) then begin
-    widget_control,raw_data_widget_id,set_button=(*state.userSelectPtr).uncalibrated
-  endif
-
-  widget_control,widget_info(state.tabArray[0],/child),set_uvalue=load_data_state,/no_copy
-end
+; Note: This procedure is specific to the THEMIS panel, and was
+;       commented out because it doesn't work when the THEMIS panel
+;       isn't the first load data panel in the Load Data window. It 
+;       also references several files that only exist in ../../projects/themis/
+;       and the names of these files have changed as of 4/9/2015
+;       
+;pro spd_ui_load_data_set_user_select,state
+;
+; widget_control,widget_info(state.tabArray[0],/child),get_uvalue=load_data_state
+;
+;  if widget_valid(load_data_state.itypeDropList) && (*state.userSelectPtr).inst ne -1 then begin
+;    widget_control,load_data_state.itypeDroplist,set_combobox_select=(*state.userSelectPtr).inst
+;  endif
+;  spd_ui_load_data_file_itype_sel, load_data_state
+;   
+;  if widget_valid(load_data_state.coordDropList) && (*state.userSelectPtr).coord ne -1 then begin
+;    widget_control,load_data_state.coordDropList,set_combobox_select=(*state.userSelectPtr).coord
+;  endif 
+;  spd_ui_load_data_file_coord_sel, load_data_state
+;  
+;  if widget_valid(load_data_state.observList) && ptr_valid((*state.userSelectPtr).observPtr) && (*(*state.userSelectPtr).observPtr)[0] ne -1 then begin
+;    widget_control,load_data_state.observList,set_list_select=*(*state.userSelectPtr).observPtr
+;  endif    
+;  spd_ui_load_data_file_obs_sel, load_data_state
+;  
+;  if widget_valid(load_data_state.level1List) && ptr_valid((*state.userSelectPtr).level1Ptr) && (*(*state.userSelectPtr).level1Ptr)[0] ne -1 then begin
+;    widget_control,load_data_state.level1List,set_list_select=*(*state.userSelectPtr).level1Ptr
+;  endif    
+;  spd_ui_load_data_file_l1_sel, load_data_state
+;  
+;  if widget_valid(load_data_state.level2List) && ptr_valid((*state.userSelectPtr).level2Ptr) && (*(*state.userSelectPtr).level2Ptr)[0] ne -1 then begin
+;    widget_control,load_data_state.level2List,set_list_select=*(*state.userSelectPtr).level2Ptr
+;  endif    
+;  spd_ui_load_data_file_l2_sel, load_data_state
+;
+;  raw_data_widget_id = widget_info(widget_info(state.tabArray[0],/child),find_by_uname='raw_data')
+;  if widget_valid(raw_data_widget_id) then begin
+;    widget_control,raw_data_widget_id,set_button=(*state.userSelectPtr).uncalibrated
+;  endif
+;
+;  widget_control,widget_info(state.tabArray[0],/child),set_uvalue=load_data_state,/no_copy
+;end
 
 pro spd_ui_load_data_select_copy,state
 

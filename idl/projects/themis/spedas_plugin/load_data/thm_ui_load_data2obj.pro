@@ -1,12 +1,12 @@
 ;+   
 ;NAME:
-;  spd_ui_load_data2obj
+;  thm_ui_load_data2obj
 ;
 ;PURPOSE:
 ;  A widget interface to load CDF data for whatever instrument
 ;
 ;CALLING SEQUENCE:
-;  spd_ui_load_data2obj, st_time, en_time, $
+;  thm_ui_load_data2obj, st_time, en_time, $
 ;                              dtype = dtype, $
 ;                              observ = observ, $
 ;                              scm_cal = scm_cal, $
@@ -39,14 +39,14 @@
 ;HISTORY:
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-25 15:04:42 -0800 (Wed, 25 Feb 2015) $
-;$LastChangedRevision: 17041 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data2obj.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 13:39:19 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17268 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data2obj.pro $
 ;
 ;-
 
-pro spd_ui_del_temp_tvar, pre_names, post_names, del_names=del_names, $
+pro thm_ui_del_temp_tvar, pre_names, post_names, del_names=del_names, $
                               pre_times, post_times, $
                               owrite_names=owrite_names, $
                               arr_owrite_names=arr_owrite_names
@@ -102,7 +102,7 @@ end
 ;NOTE, this routine is called in several places.
 ;If you change these arguments, make sure to search the distribution
 ;and update the code in all instances where it is called.
-pro spd_ui_load_data2obj,$
+pro thm_ui_load_data2obj,$
   loadStruct,$
   loadedData,$
   statusBar,$
@@ -258,7 +258,7 @@ pro spd_ui_load_data2obj,$
 
       post_tnames_tmp = tnames(create_time=post_times) ;get tplotvars after current load
       
-      spd_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
+      thm_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
                                pre_times, post_times, $
                                del_names=del_names, owrite_names=owrite_names
       if array_equal(overwrite_vars, '') then overwrite_vars=owrite_names $
@@ -337,7 +337,7 @@ pro spd_ui_load_data2obj,$
           ; code to look for which requested dtypes were not loaded
           ; \/
             post_tnames_tmp = tnames(create_time=post_times)
-            spd_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
+            thm_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
                                pre_times, post_times, $
                                del_names=del_names, arr_owrite_names=arr_owrite_names
 
@@ -386,7 +386,7 @@ pro spd_ui_load_data2obj,$
       
       post_tnames_tmp = tnames(create_time=post_times) ;get tplotvars after current load
       
-      spd_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
+      thm_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
                                pre_times, post_times, $
                                del_names=del_names, owrite_names=owrite_names
       if array_equal(overwrite_vars, '') then overwrite_vars=owrite_names $
@@ -438,7 +438,7 @@ pro spd_ui_load_data2obj,$
 
       post_tnames_tmp = tnames(create_time=post_times) ;get tplotvars after current load
       
-      spd_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
+      thm_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
                                pre_times, post_times, $
                                del_names=del_names, owrite_names=owrite_names
       if array_equal(overwrite_vars, '') then overwrite_vars=owrite_names $
@@ -498,7 +498,7 @@ pro spd_ui_load_data2obj,$
 
       post_tnames_tmp = tnames(create_time=post_times) ;get tplotvars after current load
       
-      spd_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
+      thm_ui_del_temp_tvar, pre_tnames_tmp, post_tnames_tmp, $
                                pre_times, post_times, $
                                del_names=del_names, owrite_names=owrite_names
       if array_equal(overwrite_vars, '') then overwrite_vars=owrite_names $

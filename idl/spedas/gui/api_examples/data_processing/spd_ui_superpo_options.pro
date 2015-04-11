@@ -7,11 +7,11 @@
 ;    window to the data processing panel for the time series analysis routine
 ;    superpo_histo. This interface allows the GUI user to
 ;    calculate the minimum, maximum, average, median, and difference between min and max
-;    for several time series (as specified by the tplot variables in the active data 
+;    for several time series datasets (as specified by the tplot variables in the active data 
 ;    in the data processing panel).
 ;
 ;CALLING SEQUENCE:
-;    return_values = spd_ui_superpo_options(gui_id, statusbar, historywindow)
+;    plugin_options = spd_ui_superpo_options(gui_id, statusbar, historywindow)
 ;
 ;INPUT:
 ;    gui_id: widget id of group leader
@@ -19,32 +19,42 @@
 ;    historywindow: history window object ref.
 ;
 ;OUTPUT:
-;    return_values: anonymous structure containing input parameters for the data 
-;    processing plugin code (in the case of this example, superpo_histo);
-;    {
-;       dproc_routine: 'superpo_histo' ; name of the data processing routine that we're providing 
+;    plugin_options: anonymous structure containing input and keyword parameters for the data processing 
+;                   plugin code (in the case of this example, superpo_histo)
+;    plugin_options = {
+;           dproc_routine: 'superpo_histo' ; name of the data processing routine that we're providing 
 ;                                        an interface to.
-;       ok: flag indicating success (user clicked OK in the window)
-;       process_all_vars_at_once: 1b ; flag for whether this data processing operation should
+;           ok: flag indicating success (user clicked OK in the window)
+;           process_all_vars_at_once: 1b ; flag for whether this data processing operation should
 ;                                      apply to all variables at once (1), or one at a time (0)?
-;       keywords: keyword_values ; structure that contains keywords to pass to the data processing 
+;           keywords: keyword_values ; structure that contains keywords to pass to the data processing 
 ;                                  plugin; see below for an example specific to this plugin
-;    }
-;    keyword_values = {
-;       min: 'minarr' ; specific to this example, passes this value to the 'min' keyword 
+;        }
+;    
+;    where 'keyword_values' is the following structure:
+;    
+;        keyword_values = {
+;           min: 'minarr' ; specific to this example, passes this value to the 'min' keyword 
 ;                       in superpo_histo 
-;       max: 'maxarr' ; similar to above
-;       med: 'medarr' ; similar to above
-;       avg: 'avgarr' ; similar to above
-;       dif: 'difarr' ; similar to above
-;    }
-;    add new tags to pass additional information to the data processing routine via 
-;    the routine's keywords. 
+;           max: 'maxarr' ; similar to above
+;           med: 'medarr' ; similar to above
+;           avg: 'avgarr' ; similar to above
+;           dif: 'difarr' ; similar to above
+;        }
+;    
+;    To pass additional information to the data processing routine via 
+;    the routine's keywords, add new tags to the keyword_values structure. 
+;    
+;    
+;    For example, when the user clicks OK in this dialog, the following call is made:
+;        superpo_histo, '[list of variables in the active data list]', min='minarr', max='maxarr', $
+;            med='medarr', avg='avgarr', dif='difarr'
+;    
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-02-13 09:51:22 -0800 (Fri, 13 Feb 2015) $
-;$LastChangedRevision: 16979 $
+;$LastChangedDate: 2015-04-09 13:46:47 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17271 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/data_processing/spd_ui_superpo_options.pro $
 ;-
 

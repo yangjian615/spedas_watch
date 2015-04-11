@@ -1,12 +1,12 @@
 ;+ 
 ;NAME:
-;  spd_ui_load_data_file
+;  thm_ui_load_data_file
 ;
 ;PURPOSE:
 ;  A widget interface for loading THEMIS data into the SPEDAS GUI
 ;
 ;CALLING SEQUENCE:
-;  spd_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
+;  thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
 ;                         treeCopyPtr, trObj, callSequence, $
 ;                         loadTree=loadList, timeWidget=timeid
 ;
@@ -26,15 +26,15 @@
 ;NOTES:
 ;  
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-25 15:04:42 -0800 (Wed, 25 Feb 2015) $
-;$LastChangedRevision: 17041 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/spd_ui_load_data_file/spd_ui_load_data_file.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 14:43:23 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17275 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file.pro $
 ;
 ;-
 
 ; TODO: When we get around to loading non-spedas data, might need a pop-up window for when we don't know the coordsys of incoming data
-Pro spd_ui_load_data_file_event, event;, info
+Pro thm_ui_load_data_file_event, event;, info
   Compile_Opt idl2, hidden
 
   ; get the state structure from the widget
@@ -66,7 +66,7 @@ Pro spd_ui_load_data_file_event, event;, info
   IF (Tag_Names(event, /Structure_Name) EQ 'WIDGET_KILL_REQUEST') THEN BEGIN  
     exit_sequence:
     dprint,  'Load SPEDAS Data widget killed.' 
-    state.historyWin->Update,'SPD_UI_LOAD_DATA_FILE: Widget closed' 
+    state.historyWin->Update,'THM_UI_LOAD_DATA_FILE: Widget closed' 
     if obj_valid(state.loadList) then begin
       *state.treeCopyPtr = state.loadList->getCopy()
     endif 
@@ -78,7 +78,7 @@ Pro spd_ui_load_data_file_event, event;, info
   ; get the uval from this event so we know which widget was used 
   Widget_Control, event.id, Get_UValue=uval
   
-  state.historywin->update,'SPD_UI_LOAD_DATA_FILE: User value: '+uval  ,/dontshow
+  state.historywin->update,'THM_UI_LOAD_DATA_FILE: User value: '+uval  ,/dontshow
 
   CASE uval OF
     'ADD': BEGIN
@@ -97,7 +97,7 @@ Pro spd_ui_load_data_file_event, event;, info
         if ~array_equal(*state.observ, '', /no_typeconv) then begin
           widget_control, /hourglass
           state.statusText->Update, 'Loading data...'
-          spd_ui_load_data_file_load, state, event
+          thm_ui_load_data_file_load, state, event
         endif else begin
           if state.instr eq 'none' then begin
             h = 'No instrument selected.  Please select an instrument.'
@@ -106,7 +106,7 @@ Pro spd_ui_load_data_file_event, event;, info
           endelse
           
           state.statusText->Update, h
-          state.historyWin->Update, 'SPD_UI_LOAD_DATA_FILE: ' + h
+          state.historyWin->Update, 'THM_UI_LOAD_DATA_FILE: ' + h
         endelse
       endif else begin
         state.statusText->update, 'Invalid Start and/or Stop Time.  ' + $
@@ -116,7 +116,7 @@ Pro spd_ui_load_data_file_event, event;, info
     END
     'CANC': BEGIN
        dprint,  'New File widget canceled' 
-       state.historyWin->Update, 'SPD_UI_LOAD_DATA_FILE: Widget closed.'
+       state.historyWin->Update, 'THM_UI_LOAD_DATA_FILE: Widget closed.'
        if obj_valid(state.loadList) then begin
         *state.treeCopyPtr = state.loadList->getCopy()
        endif  
@@ -133,11 +133,11 @@ Pro spd_ui_load_data_file_event, event;, info
         IF result EQ 'Yes' THEN BEGIN
           widget_control, /hourglass
           ;val_data = state.loadeddata->getall();/times)
-          spd_ui_load_data_file_del, state
+          thm_ui_load_data_file_del, state
           state.callSequence->clearCalls
           h = 'All data deleted.'
           state.statusText->Update, h
-          state.historyWin->Update, 'SPD_UI_LOAD_DATA_FILE: ' + h
+          state.historyWin->Update, 'THM_UI_LOAD_DATA_FILE: ' + h
           state.loadedData->reset
           state.loadlist->update    ; update tree widget
         ENDIF
@@ -169,28 +169,28 @@ Pro spd_ui_load_data_file_event, event;, info
       widget_control,state.observlist, set_value=*state.validobservlist
     END
     'COORD_DLIST':BEGIN ; Output Coordinates dropdown list
-      spd_ui_load_data_file_coord_sel, state    
+      thm_ui_load_data_file_coord_sel, state    
     END
     'DELDATA':BEGIN ; Clear selected data (tplot vars)
       widget_control, /hourglass
-      spd_ui_load_data_file_del, state
+      thm_ui_load_data_file_del, state
       state.loadlist->update
     END
     'ITYPE_DLIST':BEGIN ; Instrument Type dropdown list
-      spd_ui_load_data_file_itype_sel, state
+      thm_ui_load_data_file_itype_sel, state
     END
     'LEVEL1': BEGIN ; Level 1 data list
-      spd_ui_load_data_file_l1_sel, state
+      thm_ui_load_data_file_l1_sel, state
     END
     'LEVEL2': BEGIN ; Level 2 data list
-      spd_ui_load_data_file_l2_sel, state
+      thm_ui_load_data_file_l2_sel, state
     END
     'LOADLIST':BEGIN
       ;this isn't needed, this code spends a lot of time and effort maintain copies of lists already maintained by ui widgets
-      ;spd_ui_load_data_file_loadlist, state, event
+      ;thm_ui_load_data_file_loadlist, state, event
     END
     'OBSERV_LIST':BEGIN ; Observatory list (probes, ground stations, etc.)
-      spd_ui_load_data_file_obs_sel, state
+      thm_ui_load_data_file_obs_sel, state
     END
     'CHECK_DATA_AVAIL': BEGIN ; launch browser to data availability page
       spd_ui_open_url, 'http://themis.ssl.berkeley.edu/data_products/'
@@ -204,7 +204,7 @@ Pro spd_ui_load_data_file_event, event;, info
   RETURN
 END
 
-pro spd_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
+pro thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
                            treeCopyPtr, trObj, callSequence, $
                            loadTree=loadList, $
                            timeWidget=timeid
@@ -250,7 +250,7 @@ pro spd_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
   ;outCoord = 'N/A'
 
  ; Get valid datatypes, probes, etc for different data types  
-  dlist = spd_ui_valid_datatype(instr, ilist, llist)
+  dlist = thm_ui_valid_datatype(instr, ilist, llist)
   dlist1_all = ['*', dlist]
   dlist2_all = 'None'
   dlist1 = ptr_new(dlist1_all) & dlist2 = ptr_new(dlist2_all)
@@ -259,7 +259,7 @@ pro spd_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
                    
   ; create base widgets
   topBase = Widget_Base(tab_id, /Row, /Align_Top,  tab_mode=1, /Align_Left, YPad=1, $
-                        event_pro='spd_ui_load_data_file_event') 
+                        event_pro='thm_ui_load_data_file_event') 
   dataBase = Widget_Base(topBase, /Col, /Align_Left, YPad=1)
   data_label = Widget_Label(dataBase, Value='Data Selection:', /Align_Left)  
   dlistBase = Widget_Base(dataBase, /Col, XPad=2, Frame=3)     

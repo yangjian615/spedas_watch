@@ -30,8 +30,8 @@
 ; development for the next 6 months or so.
 ; 9-apr-2008, jmm, added all instruments, for Version 4_00
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-04-30 15:55:39 -0700 (Wed, 30 Apr 2014) $
-;$LastChangedRevision: 14981 $
+;$LastChangedDate: 2015-04-09 14:27:44 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17274 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_data2load.pro $
 ;-
 function thm_valid_variables, instrument, level
@@ -212,34 +212,34 @@ function thm_valid_variables, instrument, level
 end
 
 function thm_data2load, instrument, level
-compile_opt idl2, hidden
-
-; clean up inputs
-instru = strcompress(strlowcase(instrument),/remove_all)
-lvl = strcompress(strlowcase(level),/remove_all)
-
-instru_list = ['asi', 'ask', 'esa', 'efi', 'fbk', 'fft', 'fgm', 'fit', 'gmag', $
-               'mom', 'scm', 'spin', 'sst', 'state', 'bau', 'hsk', 'trg']
-               
-; 'l1': any data that can be gotten from the l1 file -- including calibrated, etc... 
-; 'l10': data that is only loaded from L1 files. 
-; 'l2': data gotten from L2 files. 
-; For ESA data, 'l10' data and 'l1' data are gotten from the packet files.
-lvl_list = ['l1', 'l2', 'l10']
-
-; make sure instrument input is in the instrument list
-if ~in_set(instru, instru_list) then begin
-    dprint, 'Invalid input: ' + instrument
-    dprint, 'Try, doc_library, ''thm_data2load'''
-    return, ''
-endif
-
-; make sure level input is in the level list
-if ~in_set(lvl, lvl_list) then begin
-    dprint, 'Invalid input: ' + level
-    dprint, 'Try, doc_library, ''thm_data2load'''
-    return, ''
-endif
-
-return, thm_valid_variables(instru, lvl)
+    compile_opt idl2, hidden
+    
+    ; clean up inputs
+    instru = strcompress(strlowcase(instrument),/remove_all)
+    lvl = strcompress(strlowcase(level),/remove_all)
+    
+    instru_list = ['asi', 'ask', 'esa', 'efi', 'fbk', 'fft', 'fgm', 'fit', 'gmag', $
+                   'mom', 'scm', 'spin', 'sst', 'state', 'bau', 'hsk', 'trg']
+                   
+    ; 'l1': any data that can be gotten from the l1 file -- including calibrated, etc... 
+    ; 'l10': data that is only loaded from L1 files. 
+    ; 'l2': data gotten from L2 files. 
+    ; For ESA data, 'l10' data and 'l1' data are gotten from the packet files.
+    lvl_list = ['l1', 'l2', 'l10']
+    
+    ; make sure instrument input is in the instrument list
+    if ~in_set(instru, instru_list) then begin
+        dprint, 'Invalid input: ' + instrument
+        dprint, 'Try, doc_library, ''thm_data2load'''
+        return, ''
+    endif
+    
+    ; make sure level input is in the level list
+    if ~in_set(lvl, lvl_list) then begin
+        dprint, 'Invalid input: ' + level
+        dprint, 'Try, doc_library, ''thm_data2load'''
+        return, ''
+    endif
+    
+    return, thm_valid_variables(instru, lvl)
 end

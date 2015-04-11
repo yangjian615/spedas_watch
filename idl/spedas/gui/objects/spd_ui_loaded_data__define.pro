@@ -52,9 +52,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-18 16:47:42 -0800 (Tue, 18 Nov 2014) $
-;$LastChangedRevision: 16236 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-09 16:47:11 -0700 (Thu, 09 Apr 2015) $
+;$LastChangedRevision: 17280 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -819,30 +819,32 @@ function SPD_UI_LOADED_DATA::detectInstrument, name, dl,mission
               success = 1
             end
             else: begin
-              
-              ; check for matches with efi data names
-              efi_names = spd_ui_valid_datatype('efi')
-              efi_ind = where(strlowcase(inst_string) eq efi_names, n_efi)
-              if n_efi gt 0 then begin
-                instrument='efi'
-                success = 1
-              endif
-  
-              ; check for matches with fft data names
-              fft_names = spd_ui_valid_datatype('fft')
-              fft_ind = where(strlowcase(inst_string) eq fft_names, n_fft)
-              if n_fft gt 0 then begin
-                instrument='fft'
-                success = 1
-              endif
-  
-              ; check for matches with scm data names
-              scm_names = spd_ui_valid_datatype('scm')
-              scm_ind = where(strlowcase(inst_string) eq scm_names, n_scm)
-              if n_scm gt 0 then begin
-                instrument='scm'
-                success = 1
-              endif
+              ;;;;; 4/9/2015, egrimes, commented out calls to thm_ui_valid_datatype 
+              ;;;;;           because it lives in projects/themis. The regex that follows
+              ;;;;;           should pick up these variables, and more.
+;              ; check for matches with efi data names
+;              efi_names = thm_ui_valid_datatype('efi')
+;              efi_ind = where(strlowcase(inst_string) eq efi_names, n_efi)
+;              if n_efi gt 0 then begin
+;                instrument='efi'
+;                success = 1
+;              endif
+;  
+;              ; check for matches with fft data names
+;              fft_names = thm_ui_valid_datatype('fft')
+;              fft_ind = where(strlowcase(inst_string) eq fft_names, n_fft)
+;              if n_fft gt 0 then begin
+;                instrument='fft'
+;                success = 1
+;              endif
+;  
+;              ; check for matches with scm data names
+;              scm_names = thm_ui_valid_datatype('scm')
+;              scm_ind = where(strlowcase(inst_string) eq scm_names, n_scm)
+;              if n_scm gt 0 then begin
+;                instrument='scm'
+;                success = 1
+;              endif
               
               if mission ne 'THEMIS' && mission ne 'GOES' then begin
                 instrument = dl.cdf.gatt.data_type
