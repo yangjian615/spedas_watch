@@ -68,8 +68,8 @@
 ;                      the 3D plot.  EXPERIMENTAL - Still debugging.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-13 13:15:54 -0800 (Fri, 13 Feb 2015) $
-; $LastChangedRevision: 16986 $
+; $LastChangedDate: 2015-04-10 10:16:43 -0700 (Fri, 10 Apr 2015) $
+; $LastChangedRevision: 17293 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -318,7 +318,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
         endif
       endif
       
-      if (plot_sc) then mvn_spc_fov_blockage, /swea, /oplot, clr=6
+      if (plot_sc) then  mvn_spc_fov_blockage, clr=200, /swea, /invert_phi, /invert_theta
 
       if (sflg) then begin
         wset, Swin

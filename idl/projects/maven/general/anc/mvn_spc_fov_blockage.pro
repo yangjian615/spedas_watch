@@ -37,9 +37,9 @@
 ;
 ;
 ; VERSION:
-;   $LastChangedBy: rlivi2 $
-;   $LastChangedDate: 2015-02-27 14:10:42 -0800 (Fri, 27 Feb 2015) $
-;   $LastChangedRevision: 17050 $
+;   $LastChangedBy: dmitchell $
+;   $LastChangedDate: 2015-04-10 09:45:23 -0700 (Fri, 10 Apr 2015) $
+;   $LastChangedRevision: 17284 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/anc/mvn_spc_fov_blockage.pro $
 ;-
 
@@ -203,7 +203,7 @@ pro mvn_spc_fov_blockage, trange=trange,$
   ;;NOTE: Vertices are originally in spacecraft coordinates.
   old_ver=reform(coord,nn1,nn2*nn3)
   new_ver=old_ver*0.
-  for i=0, nn2*nn3-1 do $
+  for i=0L, nn2*nn3-1L do $
      new_ver[*,i]= inst_rot # old_ver[*,i]
   coord=reform(new_ver,nn1,nn2,nn3)
   new_shift=inst_rot # inst_loc
@@ -242,7 +242,7 @@ pro mvn_spc_fov_blockage, trange=trange,$
   ;;Select Color
   if keyword_set(clr) then clr1=clr else clr1=250
   
-  for iobj=0, nn3-1 do begin
+  for iobj=0L, nn3-1L do begin
      phi_temp=phi[*,iobj]
      theta_temp=theta[*,iobj]
      if keyword_set(polyfill) then $

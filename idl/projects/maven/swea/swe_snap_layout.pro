@@ -16,12 +16,14 @@
 ;                        3 --> Macbook 1440x900 with ViewSonic 1680x1050 (above)
 ;                        4 --> Macbook 1440x900 with Samsung 1600x900 (left)
 ;                        5 --> Macbook 1440x900 (below) with twin Dell 1920x1200 (left, right)
+;                        6 --> Macbook 1440x900 (below) with Monoprice 2560x1440 (left)
+;                                                            and Dell 1920x1200 (right)
 ;
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2015-04-10 10:11:55 -0700 (Fri, 10 Apr 2015) $
+; $LastChangedRevision: 17289 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_snap_layout.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -38,14 +40,15 @@ pro swe_snap_layout, layout
     print,"  3 --> Macbook 1440x900 with ViewSonic 1680x1050 (above)"
     print,"  4 --> Macbook 1440x900 with Samsung 1600x900 (left)"
     print,"  5 --> Macbook 1440x900 (below) with twin Dell 1920x1200 (left, right)"
+    print,"  6 --> Macbook 1440x900 (below) with 2560x1440 (left), 1920x1200 (right)"
     print,""
-    layout = 0
+    layout = ''
     read, layout, prompt='Layout > '
   endif
 
   case layout[0] of
 
-    1    : begin  ; Macbook 1440x900 with Dell 1920x1200 (above)
+    '1'  : begin  ; Macbook 1440x900 with Dell 1920x1200 (above)
              Dopt = {xsize:800, ysize:600, xpos:300,  ypos:-600}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:1130, ypos:-600}
 
@@ -57,7 +60,7 @@ pro swe_snap_layout, layout
              Hopt = {xsize:225, ysize:545, xpos:480, ypos:-600}
            end
     
-    2    : begin  ; Twin Dell 1920x1200 (left, right)
+    '2'   : begin  ; Twin Dell 1920x1200 (left, right)
              Dopt = {xsize:800, ysize:600, xpos:1120, ypos:640}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:880,  ypos:500}
 
@@ -69,7 +72,7 @@ pro swe_snap_layout, layout
              Hopt = {xsize:200, ysize:545, xpos:880,  ypos:500}
            end
     
-    3    : begin  ; Macbook 1440x900 with ViewSonic 1680x1050 (above)
+    '3'  : begin  ; Macbook 1440x900 with ViewSonic 1680x1050 (above)
              Dopt = {xsize:800, ysize:600, xpos:240,  ypos:-600}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:1100, ypos:-600}
 
@@ -81,7 +84,7 @@ pro swe_snap_layout, layout
              Hopt = {xsize:200, ysize:545, xpos:700,  ypos:-540}
            end
     
-    4    : begin  ; Macbook 1440x900 with Samsung 1600x900 (left)
+    '4'  : begin  ; Macbook 1440x900 with Samsung 1600x900 (left)
              Dopt = {xsize:800, ysize:600, xpos:1600, ypos:300}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:2420, ypos:300}
 
@@ -93,7 +96,7 @@ pro swe_snap_layout, layout
              Hopt = {xsize:200, ysize:545, xpos:2020, ypos:355}
            end
     
-    5    : begin  ; Macbook 1440x900 with Twin Dell 1920x1200 (left, right)
+    '5'  : begin  ; Macbook 1440x900 with Twin Dell 1920x1200 (left, right)
              Dopt = {xsize:800, ysize:600, xpos:1920+100, ypos:640}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:1920+1000, ypos:640}
 
@@ -103,6 +106,18 @@ pro swe_snap_layout, layout
 
              Eopt = {xsize:400, ysize:600, xpos:1920+100, ypos:640}  ; SPEC
              Hopt = {xsize:200, ysize:545, xpos:1920+600, ypos:640}
+           end
+    
+    '6'  : begin  ; Macbook 1440x900 with 2560x1440 (left) and 1920x1200 (right)
+             Dopt = {xsize:800, ysize:600, xpos:2560+100, ypos:640}  ; 3D
+             Sopt = {xsize:450, ysize:600, xpos:2560+1000, ypos:640}
+
+             Popt = {xsize:800, ysize:600, xpos:2560+100, ypos:640}  ; PAD
+             Nopt = {xsize:600, ysize:450, xpos:2560+1000, ypos:640}
+             Copt = {xsize:500, ysize:700, xpos:1000, ypos:-700}
+
+             Eopt = {xsize:400, ysize:600, xpos:2560+100, ypos:640}  ; SPEC
+             Hopt = {xsize:200, ysize:545, xpos:2560+600, ypos:640}
            end
     
     else : begin  ; Default.  No fixed window positions

@@ -70,9 +70,11 @@
 ;
 ;       LOADONLY:      Download data but do not process.
 ;
+;       SPICEINIT:     Force a re-initialization of SPICE.  Use with caution!
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-11 12:07:02 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16950 $
+; $LastChangedDate: 2015-04-10 10:07:51 -0700 (Fri, 10 Apr 2015) $
+; $LastChangedRevision: 17286 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -80,7 +82,7 @@
 ;-
 pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
                              cdrift=cdrift, sumplot=sumplot, status=status, orbit=orbit, $
-                             loadonly=loadonly
+                             loadonly=loadonly, spiceinit=spiceinit
 
   @mvn_swe_com
 
@@ -165,7 +167,7 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
   mk = spice_test('*', verbose=-1)
   indx = where(mk ne '', count)
-  if (count eq 0) then mvn_swe_spice_init
+  if (keyword_set(spiceinit) or (count eq 0)) then mvn_swe_spice_init
 
 ; Define decompression, telemetry conversion factors, and data structures
 
@@ -190,11 +192,7 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
   mvn_swe_stat, npkt=npkt, /silent
   
-  if (total(npkt) eq 0L) then begin
-    print,"No data were loaded!"
-    return
-  endif
-  
+  if (size(npkt,/type) eq 0) then return
   if (npkt[7] eq 0L) then begin
     print,"No SWEA housekeeping!"
     return

@@ -18,7 +18,7 @@
 ;       UNITS:         Plot the data in these units.  See mvn_swe_convert_units.
 ;                      Default = 'eflux'.
 ;
-;       FIXY:          Use a fixed y-axis range.
+;       FIXY:          Use a fixed y-axis range.  Default = 1 (yes).
 ;
 ;       KEEPWINS:      If set, then don't close the snapshot window(s) on exit.
 ;
@@ -71,9 +71,11 @@
 ;
 ;       NOERASE:       Overplot all spectra after the first.
 ;
+;       RAINBOW:       With NOERASE, overplot spectra using up to 6 different colors.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-10 21:41:01 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16947 $
+; $LastChangedDate: 2015-04-10 10:10:23 -0700 (Fri, 10 Apr 2015) $
+; $LastChangedRevision: 17287 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -82,7 +84,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
                    ddd=ddd, abins=abins, dbins=dbins, sum=sum, pot=pot, pdiag=pdiag, $
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
                    noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
-                   dEmax=dEmax, burst=burst
+                   dEmax=dEmax, burst=burst, rainbow=rainbow
 
   @mvn_swe_com
   common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -103,6 +105,9 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   if not keyword_set(scp) then scp = 0. else scp = float(scp[0])
   if (size(thresh,/type) eq 0) then thresh = 0.05
   if (size(dEmax,/type) eq 0) then dEmax = 4.
+  if (size(fixy,/type) eq 0) then fixy = 1
+  if keyword_set(fixy) then fflg = 1 else fflg = 0
+  if keyword_set(rainbow) then rflg = 1 else rflg = 0
 
   get_data,'alt',data=alt
   if (size(alt,/type) eq 8) then doalt = 1 else doalt = 0
@@ -150,18 +155,18 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     endif
   endelse
   
-  if keyword_set(fixy) then begin
+  if (fflg) then begin
     case strupcase(units) of
       'COUNTS' : drange = [1e0, 1e5]
       'RATE'   : drange = [1e1, 1e6]
       'CRATE'  : drange = [1e1, 1e6]
       'FLUX'   : drange = [1e1, 3e8]
       'EFLUX'  : drange = [1e4, 3e9]
+      'E2FLUX' : drange = [1e6, 1e11]
       'DF'     : drange = [1e-18, 1e-8]
       else     : drange = [0,0]
     endcase
-    fflg = 1
-  endif else fflg = 0
+  endif
 
   if (size(swe_hsk,/type) eq 8) then begin
     if (n_elements(swe_hsk) gt 2L) then hflg = 1 else hflg = 0
@@ -195,7 +200,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   print,'Use button 1 to select time; button 3 to quit.'
 
   wset,Twin
-  ctime2,trange,npoints=npts,/silent,button=button
+  trange = 0
+  ctime,trange,npoints=npts,/silent
 
   if (size(trange,/type) ne 5) then begin
     wdelete,Ewin
@@ -213,6 +219,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     'RATE'   : ytitle = 'Raw Count Rate'
     'CRATE'  : ytitle = 'Count Rate'
     'EFLUX'  : ytitle = 'Energy Flux (eV/cm2-s-ster-eV)'
+    'E2FLUX' : ytitle = 'Energy Flux (eV/cm2-s-ster)'
     'FLUX'   : ytitle = 'Flux (1/cm2-s-ster-eV)'
     'DF'     : ytitle = 'Dist. Function (1/cm3-(km/s)3)'
     else     : ytitle = 'Unknown Units'
@@ -220,7 +227,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
 
   if (hflg) then dt = min(abs(swe_hsk.time - spec.time), jref)  ; closest HSK
   
-  first = 1
+  nplot = 0
   xs = 0.71
   dys = 0.03
 
@@ -237,9 +244,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
 
     psym = 10
 
-    if (first or oflg) then plot_oo,x,y,yrange=yrange,/ysty,xtitle='Energy (eV)',ytitle=ytitle, $
-            charsize=1.4,psym=psym,title=time_string(spec.time) $
-                       else oplot,x,y,psym=psym
+    if ((nplot eq 0) or oflg) then plot_oo,x,y,yrange=yrange,/ysty,xtitle='Energy (eV)', $
+            ytitle=ytitle,charsize=1.4,psym=psym,title=time_string(spec.time) $
+                              else oplot,x,y,psym=psym
+    
+    if (rflg) then oplot,x,y,psym=psym,color=(nplot mod 6)+1
 
     if (dflg) then begin
       if (npts gt 1) then ddd = mvn_swe_get3d([tmin,tmax],/all,/sum) $
@@ -268,7 +277,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     
     if (mb) then begin
       E1 = spec.energy
-      F1 = spec.data
+      F1 = spec.data - spec.bkg
       
       counts = conv_units(spec,'counts')
       cnts = counts.data
@@ -349,14 +358,14 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
 
       if (scat) then begin
         kndx = where((E1 gt phi) and (E1 lt Epeak), count)
-        if (count gt 0L) then oplot,E1[kndx],(F1[kndx] - swe_maxbol(E1[kndx], par=p)),color=5,psym=10
+        if (count gt 0L) then oplot,E1[kndx],(F1[kndx] - swe_maxbol(E1[kndx], par=p)),color=3,psym=10
       endif
     endif
-      
+
     if (mom) then begin
       eflux = conv_units(spec,'eflux')
       E1 = eflux.energy
-      F1 = eflux.data
+      F1 = eflux.data - eflux.bkg
 
       dE = E1
       dE[0] = abs(E1[1] - E1[0])
@@ -517,10 +526,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
 
 ; Get the next button press
 
-    first = 0
+    nplot++
 
     wset,Twin
-    ctime2,trange,npoints=npts,/silent,button=button
+    trange = 0
+    ctime,trange,npoints=npts,/silent
 
     if (size(trange,/type) eq 5) then begin
       spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)

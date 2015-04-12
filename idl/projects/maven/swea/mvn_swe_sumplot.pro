@@ -53,11 +53,13 @@
 ;       TIMING:       Plot packet timing.  Useful to identify instrument mode and
 ;                     dropped packets.  Default = 0 (no).
 ;
+;       LOADONLY:     Load tplot variables but do not plot.
+;
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 12:52:09 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16920 $
+; $LastChangedDate: 2015-04-10 10:15:36 -0700 (Fri, 10 Apr 2015) $
+; $LastChangedRevision: 17292 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -65,7 +67,7 @@
 pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a4_sum, $
                      tfirst=tfirst, title=title, tspan=tspan, apid=apid, hsk=hsk, $
                      lut=lut, timing=timing, sifctl=sifctl, tplot_vars_out=pans, $
-                     eunits=eunits, png=png, pad_smo=smo, eph=eph, orb=orb
+                     eunits=eunits, png=png, pad_smo=smo, eph=eph, orb=orb, loadonly=loadonly
 
   @mvn_swe_com
 
@@ -78,6 +80,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   if keyword_set(tfirst) then tfirst = time_double(tfirst) else tfirst = 0D
   if keyword_set(timing) then tflg = 1 else tflg = 0
   if keyword_set(png) then dopng = 1 else dopng = 0
+  if keyword_set(loadonly) then doplot = 0 else doplot = 1
   
   if not keyword_set(apid) then apid = ['A2','A4']
   
@@ -930,8 +933,10 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     tplot_options,'var_label','orbnum'
   endif
 
-  tplot,pans,trange=[tmin,tmax]
-  timebar,t_cfg,/line
+  if (doplot) then begin
+    tplot,pans,trange=[tmin,tmax]
+    timebar,t_cfg,/line
+  endif
   
   if (dopng) then begin
     tstr = time_struct(tmin)

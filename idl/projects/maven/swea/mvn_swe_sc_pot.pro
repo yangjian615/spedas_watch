@@ -34,7 +34,7 @@
 ;   DEMAX:     The largest allowable energy width of the spacecraft 
 ;              potential feature.  This excludes features not related
 ;              to the spacecraft potential at higher energies (often 
-;              observed downstream of the shock).  Default = 4 eV.
+;              observed downstream of the shock).  Default = 6 eV.
 ;
 ;   FUDGE:     Multiply the derived potential by this fudge factor.
 ;              (for calibration against LPW).  Default = 1.
@@ -68,8 +68,8 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:51:27 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16880 $
+; $LastChangedDate: 2015-04-10 10:13:04 -0700 (Fri, 10 Apr 2015) $
+; $LastChangedRevision: 17290 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -108,7 +108,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
   if keyword_set(mask_sc) then obins = swe_sc_mask * obins
 
   if (size(thresh,/type) eq 0) then thresh = 0.05
-  if (size(dEmax,/type) eq 0) then dEmax = 4.
+  if (size(dEmax,/type) eq 0) then dEmax = 6.
   
   if (dflg) then begin
     ok = 0

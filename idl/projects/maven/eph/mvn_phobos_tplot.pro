@@ -21,11 +21,12 @@ pro mvn_phobos_tplot,trange=trange, loadspice=loadspice, rm=rm
 
   ;;-------------------------------------------
   ;;Get time range
-  tt  = timerange()
+  if (n_elements(trange) gt 1L) then tt = minmax(time_double(trange)) $
+                                else tt  = timerange()
 
   ;;-------------------------------------------
   ;;1 Second resolution
-  time  = findgen(tt[1]-tt[0])+tt[0]
+  time  = dindgen(tt[1]-tt[0])+tt[0]
   utc = time_string(time)
 
   

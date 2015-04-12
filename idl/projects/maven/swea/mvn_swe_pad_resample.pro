@@ -119,9 +119,9 @@
 ;
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-03-24 00:35:49 -0700 (Tue, 24 Mar 2015) $
-; $LastChangedRevision: 17170 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-04-10 10:14:28 -0700 (Fri, 10 Apr 2015) $
+; $LastChangedRevision: 17291 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -439,7 +439,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
   ENDIF ELSE BEGIN
      trange = minmax(dat_time)
      ndat = N_ELEMENTS(dat_time)
-     idx = INDGEN(ndat)
+     idx = LINDGEN(ndat)
 
      IF SIZE(tplot, /type) EQ 0 THEN tplot = 1
   ENDELSE 
