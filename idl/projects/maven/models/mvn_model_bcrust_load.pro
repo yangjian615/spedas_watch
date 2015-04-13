@@ -46,8 +46,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-04-02 02:29:54 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17222 $
+; $LastChangedDate: 2015-04-12 02:36:33 -0700 (Sun, 12 Apr 2015) $
+; $LastChangedRevision: 17297 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/models/mvn_model_bcrust_load.pro $
 ;
 ;-
@@ -132,7 +132,10 @@ PRO mvn_model_bcrust_load, var, orbit=orbit, silent=sl, verbose=vb, calc=calc, s
               store_data, tname + '_amp_' + modeler[i], newname=nname + '_amp' + suf
               store_data, tname + '_mso_' + modeler[i], newname=nname + '_mso' + suf
               options, nname + ['_amp' , '_mso'] + suf, ytitle='Model'
-              IF SIZE(suffix, /type) NE 0 THEN RETURN
+              IF SIZE(suffix, /type) NE 0 THEN BEGIN
+                 status = 1
+                 RETURN
+              ENDIF 
               undefine, suf
               undefine, mor, c03, c11, ark, pur
            ENDIF 
