@@ -28,18 +28,20 @@
 ;       RADIAN:   If set, the computed unit set to be radian.
 ;                 Default is degree.
 ;
+;           LS:   Computes also the Martian solar longitude (=Ls).
+;
 ;CREATED BY:      Takuya Hara on 2015-03-27.
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-03-27 02:01:41 -0700 (Fri, 27 Mar 2015) $
-; $LastChangedRevision: 17199 $
+; $LastChangedDate: 2015-04-12 17:04:33 -0700 (Sun, 12 Apr 2015) $
+; $LastChangedRevision: 17298 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/eph/mvn_eph_subsol_pos.pro $
 ;
 ;-
 PRO mvn_eph_subsol_pos, var, orbit=orbit, verbose=verbose, $
                         resolution=resolution, data=data,  $
-                        radian=radian 
+                        radian=radian, ls=ls 
 
   nan = !values.f_nan
   dnan = !values.d_nan
@@ -111,13 +113,29 @@ PRO mvn_eph_subsol_pos, var, orbit=orbit, verbose=verbose, $
      undefine, lon, lat, spgalt
   ENDFOR 
 
+  IF keyword_set(ls) THEN BEGIN
+     sl = FLTARR(ndat)
+     FOR i=0L, ndat-1 DO $
+        sl[i] = cspice_dpr() * cspice_lspcn('MARS', et[i], 'LT+S')
+     IF unit EQ 'rad' THEN sl *= !DTOR
+     str_element, data, 'ls', sl, /add
+  ENDIF 
+
   tit = '[' + unit + ']'
   store_data, 'mvn_eph_subsol_lat', data={x: utc, y: data.lat}, $
               dlim={ytitle: 'Subsolar Lat', ysubtitle: tit, yticks: 4, yminor: 3}
-  ylim, 'mvn_eph_subsol_lat', -90., 90., /def
+  IF unit NE 'rad' THEN ylim, 'mvn_eph_subsol_lat', -90., 90., /def $
+  ELSE ylim, 'mvn_eph_subsol_lat', -0.5*!PI, 0.5*!PI, /def
   store_data, 'mvn_eph_subsol_elon', data={x: utc, y: data.elon}, $
               dlim={ytitle: 'Subsolar Elon', ysubtitle: tit, yticks: 4, yminor: 3}
-  ylim, 'mvn_eph_subsol_elon', 0., 360., /def
+  IF unit NE 'rad' THEN ylim, 'mvn_eph_subsol_elon', 0., 360., /def $
+  ELSE ylim, 'mvn_eph_subsol_elon', 0., 2.*!PI, /def 
+  IF keyword_set(ls) THEN BEGIN
+     store_data, 'mvn_eph_ls', data={x: utc, y: data.ls}, $
+                 dlim={ytitle: 'Mars Ls', ysubtitle: tit, yticks: 4, yminor: 3}
+     IF unit NE 'rad' THEN ylim, 'mvn_eph_ls', 0., 360., /def $
+     ELSE ylim, 'mvn_eph_ls', 0., 2.*!PI, /def
+  ENDIF 
   tplot_options, option=topt
   RETURN
 END
