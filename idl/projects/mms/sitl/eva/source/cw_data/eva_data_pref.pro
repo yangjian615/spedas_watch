@@ -40,6 +40,9 @@ FUNCTION eva_data_pref_event, ev
   
   ;-----
   case ev.id of
+    ;------------------
+    ; EVA_CACHE_DIR
+    ;------------------
     state.txtPath:begin
       widget_control,state.txtPath, GET_VALUE = file
       pref.EVA_CACHE_DIR = file
@@ -50,6 +53,21 @@ FUNCTION eva_data_pref_event, ev
       if strlen(file) ne 0 then begin
         widget_control, state.txtPath, SET_VALUE = file
         pref.EVA_CACHE_DIR = file
+      endif
+      end
+    ;------------------
+    ; EVA_PARAMSET_DIR
+    ;------------------
+    state.txtPath2:begin
+      widget_control,state.txtPath2, GET_VALUE = file
+      pref.EVA_PARAMSET_DIR = file
+      end
+    state.btnPath2:begin
+      cd,current = c; store path to current directory
+      file = dialog_pickfile(path=c, /directory,TITLE=' Choose directory')
+      if strlen(file) ne 0 then begin
+        widget_control, state.txtPath2, SET_VALUE = file
+        pref.EVA_PARAMSET_DIR = file
       endif
       end
     state.bgTestmode:  begin
@@ -98,6 +116,11 @@ FUNCTION eva_data_pref, parent, GROUP_LEADER=group_leader, $
     str_element,/add,state,'txtPath',widget_text(baseInput,VALUE=state.PREF.EVA_CACHE_DIR,XSIZE=55,/editable)
     str_element,/add,state,'btnPath',widget_button(baseInput,VALUE=openBMP,/Bitmap)
   
+  str_element,/add,state,'lblParamSetList',widget_label(mainbase,VALUE='Location of customized parameterSet',XSIZE=xsize*0.9)
+    baseInput2 = widget_base(mainbase,/row,/align_center)
+    str_element,/add,state,'txtPath2',widget_text(baseInput2,VALUE=state.PREF.EVA_PARAMSET_DIR,XSIZE=55,/editable)
+    str_element,/add,state,'btnPath2',widget_button(baseInput2,VALUE=openBMP,/Bitmap)
+    
   ; test mode
   str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Test Mode',$
     /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_TESTMODE)

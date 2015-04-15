@@ -120,8 +120,8 @@
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-10 10:14:28 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17291 $
+; $LastChangedDate: 2015-04-13 13:32:42 -0700 (Mon, 13 Apr 2015) $
+; $LastChangedRevision: 17300 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -520,7 +520,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
         ;; pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]), pad.nenergy, pad.nbins)
         pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]*mobins[pad.k3d, stow[i]]), pad.nenergy, pad.nbins)
         block = WHERE(~FINITE(obins[pad.k3d]*mobins[pad.k3d, stow[i]]), nblock)
-        IF nblock GT 0 THEN BEGIN
+        IF ((nblock GT 0) and prt) THEN BEGIN
            tblk = 'Removed anode bin(s) data due to the FOV blockage: ['
            FOR iblk=0, nblock-1 DO BEGIN
               tblk += STRING(block[iblk], '(I0)')

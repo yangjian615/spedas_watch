@@ -113,7 +113,6 @@ FUNCTION eva_data_load_daily, filename, dir
     endif
 
     if strmatch(type,'fg?') then begin
-      stop
       thm_load_fgm,probe=prbs,level=2,coord=coord,datatype=type
       matched = 1
     endif

@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-08 11:48:06 -0700 (Wed, 08 Apr 2015) $
-; $LastChangedRevision: 17253 $
+; $LastChangedDate: 2015-04-13 17:34:35 -0700 (Mon, 13 Apr 2015) $
+; $LastChangedRevision: 17305 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -290,6 +290,16 @@ FUNCTION eva_data_paramSetList, state
   dir = file_search(ProgramRootDir(/twoup)+'parameterSets',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
   paramFileList_tmp = file_search(dir,'*',/FULLY_QUALIFY_PATH,count=cmax); full path to the files
   filename = strmid(paramFileList_tmp,strlen(dir),1000); extract filenames only
+  if strlen(state.pref.EVA_PARAMSET_DIR) gt 0 then begin
+    paramFileList_tmp2 = file_search(state.pref.EVA_PARAMSET_DIR,'*',/FULLY_QUALIFY_PATH,count=cmax2); full path to the files
+    if cmax2 gt 0 then begin
+      filename2 = strmid(paramFileList_tmp2,strlen(state.pref.EVA_PARAMSET_DIR),1000); extract filenames only
+      filename = [filename, filename2]
+      paramFileList_tmp = [paramFileList_tmp, paramFileList_tmp2]
+      cmax = n_elements(paramFileList_tmp)
+    endif
+  endif
+  
   paramSetList = ['dummy']
   paramFileList = ['dummy']
   for c=0,cmax-1 do begin; for each file
@@ -442,6 +452,7 @@ FUNCTION eva_data, parent, $
   ;----- PREFERENCES -----
   cd,current = c
   pref = {EVA_CACHE_DIR: c+'/eva_cache/', $
+    EVA_PARAMSET_DIR: '',$
     EVA_TESTMODE: 1}
 
   ;----- STATE ----- 
@@ -462,7 +473,7 @@ FUNCTION eva_data, parent, $
     paramFileList: '',$
     userType: userType, $
     user_flag: user_flag}
-  state = eva_data_paramSetList(state)
+  
   
   ; ----- CONFIG (READ and VALIDATE) -----
   cfg = mms_config_read()         ; Read config file and
@@ -472,7 +483,8 @@ FUNCTION eva_data, parent, $
   str_element,/add,state,'pref',pref
   log.o,'EVA_CACHE_DIR='+pref.EVA_CACHE_DIR
   
-  
+  state = eva_data_paramSetList(state)
+
   ;----- CACHE DIRECTORY -----
   found = file_test(pref.EVA_CACHE_DIR+'/abs_data')
   if not found then file_mkdir, pref.EVA_CACHE_DIR+'/abs_data'

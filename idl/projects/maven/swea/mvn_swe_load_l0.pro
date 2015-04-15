@@ -73,8 +73,8 @@
 ;       SPICEINIT:     Force a re-initialization of SPICE.  Use with caution!
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-10 10:07:51 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17286 $
+; $LastChangedDate: 2015-04-13 13:33:20 -0700 (Mon, 13 Apr 2015) $
+; $LastChangedRevision: 17301 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -167,7 +167,7 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
   mk = spice_test('*', verbose=-1)
   indx = where(mk ne '', count)
-  if (keyword_set(spiceinit) or (count eq 0)) then mvn_swe_spice_init
+  if (keyword_set(spiceinit) or (count eq 0)) then mvn_swe_spice_init,/force
 
 ; Define decompression, telemetry conversion factors, and data structures
 

@@ -33,12 +33,12 @@
 ; 2015-04-10, moka, Created based on 'thm_init'
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-10 16:29:01 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17296 $
+; $LastChangedDate: 2015-04-13 14:32:19 -0700 (Mon, 13 Apr 2015) $
+; $LastChangedRevision: 17302 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_init.pro $
 ;-
 
-pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir,
+pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir,$
   no_color_setup=no_color_setup
   
   defsysv,'!mms',exists=exists
