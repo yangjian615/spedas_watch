@@ -5,15 +5,7 @@
 ; INPUT:
 ;   local_flist      - REQUIRED. Name for an array of strings. This will have
 ;                    - names of all of the files consistent with the query.
-;
-;   local_dir        - REQUIRED. (String) Directory where MMS data will be 
-;                      stored. Routine creates subfolder '/data/mms/' with cache
-;                      structure. A '/' at the end is not required, 
-;                      although the procedure will recognize it.
-;                      
-;                      EXAMPLE: local_dir = '/Users/yourname/' creates directory
-;                      '/Users/yourname/data/mms/'
-;                      
+;                                           
 ;   start_date       - REQUIRED. (String) Start date in the format for SDC 
 ;                      HTTP queries (YYYY-MM-DD).
 ;                      
@@ -26,7 +18,6 @@
 ;                      call "mms_check_local_cache" to see if data already exists
 ;                      locally.
 ;                      
-;   
 ;
 ; KEYWORDS:
 ;
@@ -62,52 +53,48 @@
 ;                      NOTE: no_update and reload should NEVER be simultaneously set. Will
 ;                      give an error if it happens.
 ;
-
 ;
-; INITIAL VERSION: FDW 2015-03-17
+; HISTORY:
+; 
+; 2015-03-17, FDW, wrapper for SDC routine get_mms_science_file that includes local caching.
+; LASP, University of Colorado
+
 ; MODIFICATION HISTORY:
 ;
-; LASP, University of Colorado
 ;-
 
+;  $LastChangedBy: rickwilder $
+;  $LastChangedDate: 2015-04-14 13:22:28 -0700 (Tue, 14 Apr 2015) $
+;  $LastChangedRevision: 17310 $
+;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_data_fetch.pro $
 
-pro mms_data_fetch, local_flist, local_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+
+pro mms_data_fetch, local_flist, start_date, end_date, login_flag, sc_id=sc_id, $
   instrument_id=instrument_id, mode=mode, level=level, optional_descriptor=optional_descriptor, $
   no_update=no_update, reload=reload
 
 login_flag = 0
 
-lastpos = strlen(local_dir)
-
 on_error, 2
 
 if keyword_set(no_update) and keyword_set(reload) then message, 'ERROR: Keywords /no_update and /reload are ' + $
   'conflicting and should never be used simultaneously.'
+;
+;lastpos = strlen(local_dir)
+;if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
+;  data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
+;endif else begin
+;  data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
+;endelse
 
-if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
-  data_dir = local_dir + 'data/mms/'
-endif else begin
-  data_dir = local_dir + '/data/mms/'
-endelse
+; Due to a problem the SDC downloader has with '~', we need to unwrap the directory
+temp_dir = !MMS.LOCAL_DATA_DIR
+spawnstring = 'echo ' + temp_dir
+spawn, spawnstring, data_dir
 
-if ~keyword_set(level) then begin
-  print, 'Level not set, defaulting to Level 2.'
-  level = 'l2'
-endif
-
-
-; Get list of available file names consistent with query. This will let us check whether file exists
-; This will be replaced by the actual SDC wrapper when available
-;mms_get_dummy_files, filenames, status
-
-;filenames = mms_get_science_file_names(sc_id=sc_id, $
-;                                       instrument_id=instrument_id, data_rate_mode=mode, $
-;                                       data_level=level, start_date=start_date, end_date=end_date)
-
-;type_string = typename(filenames)
-
-; Get file info (e.g. sizes)
-
+;HACK - delete following line
+;
+;data_dir = local_dir + path_sep() + 'mms' + path_sep()
 
 if keyword_set(optional_descriptor) then begin
   file_data = mms_get_science_file_info(sc_id=sc_id, $
@@ -163,12 +150,18 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
   for i = 0, n_elements(cut_filenames)-1 do begin
     
     if strlen(optional_descriptors(i)) eq 0 then begin
-      file_dir(i) = data_dir + sc_ids(i) + '/' + levels(i) + '/' + $
-                    modes(i) + '/' + inst_ids(i) + '/' + years(i) + '/'
+      file_dir(i) = filepath('', root_dir=data_dir, $
+         subdirectory = [sc_ids(i), levels(i), modes(i),inst_ids(i),years(i)])
+      
+;      file_dir(i) = data_dir + sc_ids(i) + '/' + levels(i) + '/' + $
+;                    modes(i) + '/' + inst_ids(i) + '/' + years(i) + '/'
     endif else begin
-      file_dir(i) = data_dir + sc_ids(i) + '/' + levels(i) + '/' + $
-                    modes(i) + '/' + inst_ids(i) + '/' + optional_descriptors(i) $
-                    + '/' + years(i) + '/'
+      file_dir(i) = filepath('', root_dir=data_dir, $
+        subdirectory = [sc_ids(i), levels(i), modes(i),inst_ids(i), optional_descriptors(i), years(i)])
+      
+;      file_dir(i) = data_dir + sc_ids(i) + '/' + levels(i) + '/' + $
+;                    modes(i) + '/' + inst_ids(i) + '/' + optional_descriptors(i) $
+;                    + '/' + years(i) + '/'
     endelse
         
     full_filename = file_dir(i) + cut_filenames(i)
@@ -200,7 +193,7 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
         version_score(j) = 100*version1 + 10*version2 + version3
       endfor
       
-      loc_version = where(search_versions eq version_strings, count_version)
+      loc_version = where(search_versions eq version_strings(i), count_version)
       
       ; Matching file exists
       
@@ -262,21 +255,6 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
                                     local_dir = download_dirs(j))
       print, disp_string
     endfor
-
-    ; Try a while loop to allow keyboard interrupts
-;    
-;    j = 0
-;    junk = 1
-;    while j lt n_elements(download_filenames) and byte(junk) ne 27 do begin
-;            file_mkdir, download_dirs(j)
-;            disp_string = 'Downloaded File ('  + strtrim(string(j+1),2) + ' of ' + $
-;              strtrim(string(count_download),2) + '): ' + download_filenames(j)
-;            status = get_mms_science_file(filename = download_filenames(j), $
-;                                          local_dir = download_dirs(j))
-;            print, disp_string
-;            j += 1
-;            junk = get_kbrd(0)
-;    endwhile
     
   endif
   

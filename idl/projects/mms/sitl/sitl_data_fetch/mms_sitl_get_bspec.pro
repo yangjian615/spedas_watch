@@ -1,44 +1,67 @@
 ; This program will fetch the power spectral density from the mms E-field booms
 
-pro mms_sitl_get_bspec, start_date, end_date, cache_dir, data_status, sc_id=sc_id, no_update = no_update, reload = reload
+pro mms_sitl_get_bspec, cache_dir, data_status, sc_id=sc_id, no_update = no_update, reload = reload
 
 
   on_error, 2
   if keyword_set(no_update) and keyword_set(reload) then message, 'ERROR: Keywords /no_update and /reload are ' + $
     'conflicting and should never be used simultaneously.'
 
+
+  t = timerange(/current)
+  st = time_string(t)
+  start_date = strmid(st[0],0,10)
+  end_date = strmatch(strmid(st[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(st[1],0,10)
+
   data_status = 0
   
   level = 'l1b'
   mode = 'srvy'
   
+  
+  
   ; See if spacecraft id is set
+; See if spacecraft id is set
   if ~keyword_set(sc_id) then begin
-    print, 'Spacecraft ID not set, defaulting to mms1.'
+    print, 'Spacecraft ID not set, defaulting to mms1'
     sc_id = 'mms1'
   endif else begin
-    sc_id=strlowcase(sc_id) ; this turns any data type to a string
-    if sc_id ne 'mms1' and sc_id ne 'mms2' and sc_id ne 'mms3' and sc_id ne 'mms4' then begin
-      message,"Invalid spacecraft id. Using default spacecraft mms1.",/continue
+    ivalid = intarr(n_elements(sc_id))
+    for j = 0, n_elements(sc_id)-1 do begin
+      sc_id(j)=strlowcase(sc_id(j)) ; this turns any data type to a string
+      if sc_id(j) ne 'mms1' and sc_id(j) ne 'mms2' and sc_id(j) ne 'mms3' and sc_id(j) ne 'mms4' then begin
+        ivalid(j) = 1
+      endif
+    endfor
+    if min(ivalid) eq 1 then begin
+      message,"Invalid spacecraft ids. Using default spacecraft mms1",/continue
       sc_id='mms1'
+    endif else if max(ivalid) eq 1 then begin
+      message,"Both valid and invalid entries in spacecraft id array. Neglecting invalid entries...",/continue
+      print,"... using entries: ", sc_id(where(ivalid eq 0))
+      sc_id=sc_id(where(ivalid eq 0))
     endif
   endelse
+
+  data_status = intarr(n_elements(sc_id))
+
   
   ;----------------------------------------------------------------------------------------------------------
   ; Check for espec data
   ;----------------------------------------------------------------------------------------------------------
   
+  for j = 0, n_elements(sc_id)-1 do begin
   if keyword_set(no_update) then begin
-    mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+    mms_data_fetch, local_flist, start_date, end_date, login_flag, sc_id=sc_id(j), $
       instrument_id='dsp', mode=mode, $
       level=level, optional_descriptor = 'bpsd', /no_update
   endif else begin
     if keyword_set(reload) then begin
-      mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+      mms_data_fetch, local_flist, start_date, end_date, login_flag, sc_id=sc_id(j), $
         instrument_id='dsp', optional_descriptor = 'bpsd', mode=mode, $
         level=level, /reload
     endif else begin
-      mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+      mms_data_fetch, local_flist, start_date, end_date, login_flag, sc_id=sc_id(j), $
         instrument_id='dsp', optional_descriptor = 'bpsd', mode=mode, $
         level=level
     endelse
@@ -60,14 +83,18 @@ pro mms_sitl_get_bspec, start_date, end_date, cache_dir, data_status, sc_id=sc_i
   if login_flag eq 1 then begin
     print, 'Unable to locate files on the SDC server, checking local cache...'
     mms_check_local_cache, local_flist, cache_dir, start_date, end_date, file_flag, $
-      mode, 'dsp', level, sc_id, optional_descriptor = 'bpsd'
+      mode, 'dsp', level, sc_id(j), optional_descriptor = 'bpsd'
   endif
   
   if login_flag eq 0 or file_flag eq 0 then begin
     ; We can safely verify that there is some data file to open, so lets do it
     
-    
-    files_open = local_flist
+    ; SDC doesn't necessarily provide files in correct chronological order...
+    if n_elements(local_flist) gt 1 then begin
+      files_open = mms_sort_filenames_by_date(local_flist)
+    endif else begin
+      files_open = local_flist
+    endelse
     
     ; Now we can open the files and create tplot variables
     ; First, we open the initial file
@@ -101,10 +128,10 @@ pro mms_sitl_get_bspec, start_date, end_date, cache_dir, data_status, sc_id=sc_i
     ;
     
   endif else begin
-    data_status = 1
+    data_status(j) = 1
     print, 'No BPSD data available locally or at SDC or invalid query!'
   endelse
-  
+  endfor
   
   
 end

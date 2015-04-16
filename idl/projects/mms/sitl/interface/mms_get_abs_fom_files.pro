@@ -1,68 +1,40 @@
 ; File to get historic ABS selections. Note that the time stamps on sitl and abs files are not referring
 ; to the contents of the files, but the date and time at which the foms were created.
  
-pro mms_get_abs_fom_files, local_dir, local_flist, start_time_unix, stop_time_unix, pw_flag, pw_message
+pro mms_get_abs_fom_files, local_flist, start_time_unix, stop_time_unix, pw_flag, pw_message
+
+
 
 login_flag = 0
 
 pw_flag = 0
 
-lastpos = strlen(local_dir)
+;lastpos = strlen(local_dir)
+;if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
+;  data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
+;endif else begin
+;  data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
+;endelse
 
-if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
-  data_dir = local_dir + 'data/mms/'
-endif else begin
-  data_dir = local_dir + '/data/mms/'
-endelse
+temp_dir = !MMS.LOCAL_DATA_DIR
+spawnstring = 'echo ' + temp_dir
+spawn, spawnstring, data_dir
 
 ;----------------------------------------------------------------------------
 ; Convert start and stop times to the format the sdc code wants
-;----------------------------------------------------------------------------
+;;----------------------------------------------------------------------------
 
-start_jul = start_time_unix/double(86400) + julday(1, 1, 1970, 0, 0, 0)
-stop_jul = stop_time_unix/double(86400) + julday(1, 1, 1970, 0, 0, 0)
+t = timerange(/current)
+st = time_string(t)
+start_date = strmid(st[0],0,10)
+end_date = strmatch(strmid(st[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(st[1],0,10)
 
-caldat, start_jul, smo, sdy, syr, shr
-caldat, stop_jul, emo, edy, eyr, ehr
-
-if emo lt 10 then begin
-  emostr = '0'+string(emo, format = '(I1)')
-endif else begin
-  emostr = string(emo, format = '(I2)')
-endelse
-if edy lt 10 then begin
-  edystr = '0'+string(edy, format = '(I1)')
-endif else begin
-  edystr = string(edy, format = '(I2)')
-endelse
-if ehr lt 10 then begin
-  ehrstr = '0'+string(ehr, format = '(I1)')
-endif else begin
-  ehrstr = string(ehr, format = '(I2)')
-endelse
-
-if smo lt 10 then begin
-  smostr = '0'+string(smo, format = '(I1)')
-endif else begin
-  smostr = string(smo, format = '(I2)')
-endelse
-if sdy lt 10 then begin
-  sdystr = '0'+string(sdy, format = '(I1)')
-endif else begin
-  sdystr = string(sdy, format = '(I2)')
-endelse
-if shr lt 10 then begin
-  shrstr = '0'+string(shr, format = '(I1)')
-endif else begin
-  shrstr = string(shr, format = '(I2)')
-endelse
-
-eyrstr = string(eyr, format = '(I4)')
-syrstr = string(syr, format = '(I4)')
-
-; Now concatenate the strings
-start_date = syrstr + '-' + smostr + '-' + sdystr + '-' + shrstr
-end_date = eyrstr + '-' + emostr + '-' + edystr + '-' + ehrstr
+start_hour = strmid(st[0], 11, 2)
+end_hour = strmid(st[1], 11, 2)
+start_date += '-'
+start_date += start_hour
+end_date += '-'
+end_date += end_hour
 
 ; Now query the SDC to see what files exist.
 filenames = mms_get_abs_file_names(start_date=start_date, end_date=end_date)
@@ -89,7 +61,10 @@ endif else begin
       file_year(i) = strmid(split_string(2), 0, 4)
     
       ; now we create the directory path
-      file_dir(i) = data_dir + 'sitl/' + file_type(i) + '/' + file_year(i) + '/'
+      file_dir(i) = filepath('', root_dir=data_dir, $
+        subdirectory=['sitl',file_type(i), file_year(i)])
+        
+      ;file_dir(i) = data_dir + 'sitl/' + file_type(i) + '/' + file_year(i) + '/'
       full_filenames(i) = file_dir(i) + cut_filenames(i)
     
       ; Now check and see if this crap is already in the 
@@ -126,7 +101,7 @@ endelse
 ; Alternative - we check local cache if unable to connect to SDC
 if login_flag eq 1 then begin
   print, 'Unable to connect to SDC, checking local cache.'
-  abs_check_local_cache, local_flist, local_dir, start_date, end_date, file_flag
+  abs_check_local_cache, local_flist, start_date, end_date, file_flag
   
   if file_flag eq 1 then pw_flag = 1
   

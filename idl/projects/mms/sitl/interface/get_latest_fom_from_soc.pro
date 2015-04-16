@@ -1,20 +1,26 @@
-pro get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_msg
+pro get_latest_fom_from_soc, fom_file, error_flag, error_msg
 
   ; For now, lets ignore start and end time, and just grab the most recent file
   
-  lastpos = strlen(local_dir)
-  
-  if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
-    data_dir = local_dir + 'data/mms/'
-  endif else begin
-    data_dir = local_dir + '/data/mms/'
-  endelse
-  
+;  lastpos = strlen(local_dir)
+;  if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
+;    data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
+;  endif else begin
+;    data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
+;  endelse
+
+  temp_dir = !MMS.LOCAL_DATA_DIR
+  spawnstring = 'echo ' + temp_dir
+  spawn, spawnstring, data_dir
+
   temptime = systime(/utc)
 
   yearstr = strmid(temptime, 20, 4)
-    
-  dir_path = data_dir + 'sitl/abs_selections/' + yearstr + '/'
+  
+  dir_path = filepath('',root_dir=data_dir, $
+    subdirectory=['sitl', 'abs_selections', yearstr])
+  
+  ;dir_path = data_dir + 'sitl/abs_selections/' + yearstr + '/'
   
   error_flag = 0
   error_msg = 'ERROR: Either no FOM structure exists for the time specified, or login failed.'
@@ -36,7 +42,7 @@ pro get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_msg
     fjul = dblarr(n_elements(flist))
     
     for i = 0, n_elements(flist)-1 do begin
-      last_slash = strpos(flist(i), '/', /reverse_search)
+      last_slash = strpos(flist(i), path_sep(), /reverse_search)
       fyear = fix(strmid(flist(i), last_slash+16, 4))
       fmonth = fix(strmid(flist(i), last_slash+21, 2))
       fday = fix(strmid(flist(i), last_slash+24, 2))

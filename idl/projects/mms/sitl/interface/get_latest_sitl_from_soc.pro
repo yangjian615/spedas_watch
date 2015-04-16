@@ -1,4 +1,4 @@
-pro get_latest_sitl_from_soc, local_dir, fom_file, error_flag, error_message
+pro get_latest_sitl_from_soc, fom_file, error_flag, error_message
 
   ; For now, lets ignore start and end time, and just grab the most recent file
   
@@ -7,19 +7,25 @@ pro get_latest_sitl_from_soc, local_dir, fom_file, error_flag, error_message
   
   current_leap = 35
   
-  lastpos = strlen(local_dir)
-
-  if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
-    data_dir = local_dir + 'data/mms/'
-  endif else begin
-    data_dir = local_dir + '/data/mms/'
-  endelse
+;  lastpos = strlen(local_dir)
+;  if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
+;    data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
+;  endif else begin
+;    data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
+;  endelse
+  
+  temp_dir = !MMS.LOCAL_DATA_DIR
+  spawnstring = 'echo ' + temp_dir
+  spawn, spawnstring, data_dir
   
   temptime = systime(/utc)
 
   yearstr = strmid(temptime, 20, 4)
+  
+  dir_path = filepath('', root_dir=dir_path, $
+    subdirectory=['sitl','sitl_selections',yearstr])
 
-  dir_path = data_dir + 'sitl/sitl_selections/' + yearstr + '/'
+  ;dir_path = data_dir + 'sitl/sitl_selections/' + yearstr + '/'
 
   file_mkdir, dir_path
   
@@ -35,6 +41,7 @@ pro get_latest_sitl_from_soc, local_dir, fom_file, error_flag, error_message
     fjul = dblarr(n_elements(flist))
     
     for i = 0, n_elements(flist)-1 do begin
+      last_slash = strpos(flist(i), path_sep(), /reverse_search)
       fyear = fix(strmid(flist(i), dir_length+15, 4))
       fmonth = fix(strmid(flist(i), dir_length+20, 2))
       fday = fix(strmid(flist(i), dir_length+23, 2))

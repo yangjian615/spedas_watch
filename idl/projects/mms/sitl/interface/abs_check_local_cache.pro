@@ -1,6 +1,6 @@
 ; Checks local cache if download fails
 
-pro abs_check_local_cache, local_flist, local_dir, start_date, end_date, file_flag
+pro abs_check_local_cache, local_flist, start_date, end_date, file_flag
 
   file_flag = 0
 
@@ -18,17 +18,20 @@ pro abs_check_local_cache, local_flist, local_dir, start_date, end_date, file_fl
 
   if start_year ne end_year then file_flag = 1
 
-  lastpos = strlen(local_dir)
+;  lastpos = strlen(local_dir)
+;  if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
+;    data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
+;  endif else begin
+;    data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
+;  endelse
 
-  if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
-    data_dir = local_dir + 'data/mms/'
-  endif else begin
-    data_dir = local_dir + '/data/mms/'
-  endelse
+data_dir = !MMS.LOCAL_DATA_DIR
 
   if file_flag eq 0 then begin
     ; First, get the directory to search
-    file_dir = data_dir + 'sitl/abs_selections/' + start_year_str + '/'
+    file_dir = filepath('', root_dir=data_dir, $
+      subdirectory=['sitl','abs_selections',start_year_str])
+    ;file_dir = data_dir + 'sitl/abs_selections/' + start_year_str + '/'
     search_string = file_dir + '*.sav'
     search_results = file_search(search_string)
     
@@ -42,7 +45,7 @@ pro abs_check_local_cache, local_flist, local_dir, start_date, end_date, file_fl
     endif else begin
 
       for i = 0, n_elements(search_results)-1 do begin
-        slash = strpos(search_results(i), '/', /reverse_search)
+        slash = strpos(search_results(i), path_sep(), /reverse_search)
         cut_filenames(i) = strmid(search_results(i), slash+1, strlen(search_results(i))-slash-1)
         split_string = strsplit(cut_filenames(i), '_', /extract)
         date_string = split_string(2)

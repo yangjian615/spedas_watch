@@ -1,4 +1,4 @@
-pro mms_submit_fpi_calibration_segment, seg_start, seg_stop, fom, sourceid, local_dir, $
+pro mms_submit_fpi_calibration_segment, seg_start, seg_stop, fom, sourceid, $
   error_flags, error_msg, yellow_warning_flags, $
   yellow_warning_msg, orange_warning_flags, orange_warning_msg, problem_status, warning_override=warning_override
 
@@ -53,17 +53,23 @@ if count_error eq 0 then begin
       daystr = string(day_val, format = '(I2)')
     endelse
 
-    lastpos = strlen(local_dir)
-    
-    if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
-      data_dir = local_dir + 'data/mms/'
-    endif else begin
-      data_dir = local_dir + '/data/mms/'
-    endelse
+;    lastpos = strlen(local_dir)
+;    if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
+;      data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
+;    endif else begin
+;      data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
+;    endelse
 
+    temp_dir = !MMS.LOCAL_DATA_DIR
+    spawnstring = 'echo ' + temp_dir
+    spawn, spawnstring, data_dir
+    
     temptime = systime(/utc)
 
-    dir_path = data_dir + 'sitl/fpi_cal_segments/' + yearstr + '/'
+    ;dir_path = data_dir + 'sitl/fpi_cal_segments/' + yearstr + '/'
+    
+    dirpath = filepath('', root_dir=data_dir, $
+      subdirectory = ['sitl', 'fpi_cal_segments', yearstr])
 
     file_mkdir, dir_path
 

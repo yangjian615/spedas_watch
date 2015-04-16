@@ -1,24 +1,29 @@
-pro mms_put_fom_structure, new_fomstr, old_fomstr, local_dir, error_flags, $
+pro mms_put_fom_structure, new_fomstr, old_fomstr, error_flags, $
                            orange_warning_flags, yellow_warning_flags, $
                            error_msg, orange_warning_msg, yellow_warning_msg, $
                            error_times, orange_warning_times, yellow_warning_times, $
                            error_indices, orange_warning_indices, yellow_warning_indices, $
                            problem_status, warning_override = warning_override
                            
-lastpos = strlen(local_dir)
-                           
-                           
-if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
-  data_dir = local_dir + 'data/mms/'
-endif else begin
-  data_dir = local_dir + '/data/mms/'
-endelse
+;lastpos = strlen(local_dir)
+;if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
+;  data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
+;endif else begin
+;  data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
+;endelse
+
+temp_dir = !MMS.LOCAL_DATA_DIR
+spawnstring = 'echo ' + temp_dir
+spawn, spawnstring, data_dir
 
 temptime = systime(/utc)
 
 yearstr = strmid(temptime, 20, 4)
 
-dir_path = data_dir + 'sitl/sitl_selections/' + yearstr + '/'
+dir_path = filepath('', root_dir=data_dir,
+  subdirectory=['sitl','sitl_selections',yearstr])
+
+;dir_path = data_dir + 'sitl/sitl_selections/' + yearstr + '/'
 
 ; Check the fom structure
 mms_check_fom_structure, new_fomstr, old_fomstr, error_flags, orange_warning_flags, $

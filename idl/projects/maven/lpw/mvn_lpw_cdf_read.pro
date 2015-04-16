@@ -51,7 +51,7 @@ sl = path_sep()
 
 ;May need password:
 if getenv('MAVENPFP_USER_PASS') eq '' then begin
-   passwd = ''
+   passwd = getenv('USER')+':'+getenv('USER')+'_pfp';this is the default password, jmm, 2015-02-07
 endif else passwd = getenv('MAVENPFP_USER_PASS')
 
 ;Check date is correct format:
@@ -73,9 +73,16 @@ ENDIF ELSE BEGIN
 ENDELSE
 
 ;Check vars, levels. Make lower case, as all file names will be lower case.
-if keyword_set(vars) then vars = strlowcase(vars) else vars=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'euv', 'e12']  ;default ;make everything lower case
-if keyword_set(levels) then levels = strlowcase(levels) else levels = ['l1a', 'l1b', 'l2']
-  
+if keyword_set(vars) then vars = strlowcase(vars) else vars=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'e12']  ;default ;make everything lower case
+if keyword_set(levels) then levels = strlowcase(levels) else levels = ['l2']
+euvcall = 0.
+euvget = 0.
+if total(strmatch(vars, 'euv')) eq 1. then begin
+    neleV = n_elements(vars)
+    if neleV gt 1 then euvcall = 1.  ;print error message at end of routine
+    if neleV eq 1 then euvget = 1.  ;if vars='EUV' then get EUV
+endif
+
 ;Determine how many levels we have. Then, for each level, find the correct file based on vars:
 yr = strmid(date, 0, 4)
 mm = strmid(date, 5, 2)
@@ -86,32 +93,30 @@ nv = n_elements(vars)
 
 ;To get the base dir to the server, root_data_dir os /spg/maven/data; the production files are saved on /spg/mavenlpw/. BUT, spg mounts differently depending on desktop vs laptop. Need to use getenv and break apart the variable.
 udir = getenv('ROOT_DATA_DIR')  ;at LASP this is usually /Volumes/spg/maven/data/ or /spg/maven/data
-
-;fbase=udir+'maven'+sl+'data'+sl+'sci'+sl+'lpw'+sl   ;Need some files to test this, so it may not work yet!
+fbase=udir+'maven'+sl+'data'+sl+'sci'+sl+'lpw'+sl   ;Need some files to test this, so it may not work yet!
+if euvget eq 1. then fbase=udir+'maven'+sl+'data'+sl+'sci'+sl+'euv'+sl
 
 ;if strmatch(udir, '*Volumes*') eq 1. then fbase = '/Volumes/spg/mavenlpw/products/automatic_production/' else fbase = '/spg/mavenlpw/products/automatic_production/'
-
+if keyword_set(newdir) then fbase = newdir  ;### NOT checked or tested yet
 
 fvars = ['']  ;store found variables
 
 for ll = 0, nl-1 do begin
     for vv = 0, nv -1 do begin
-;Search for latest file: fixed for euv, jmm, 2014-02-25
-       if vars[vv] eq 'euv' then begin
-          fname = 'mvn_euv_'+levels[ll]+'_bands_'+yr+mm+dd
-          fbase='maven'+sl+'data'+sl+'sci'+sl+'euv'+sl
-       endif else begin
-          fname = 'mvn_lpw_'+levels[ll]+'_'+vars[vv]+'_'+yr+mm+dd ;cdf_latest will find latest v and r; this is first part of filename
-          fbase='maven'+sl+'data'+sl+'sci'+sl+'lpw'+sl
-       endelse
-;If requested, use alternate directory
-       if keyword_set(newdir) then fbase = newdir
-       fname2 = fbase+levels[ll]+sl+yr+sl+mm+sl+fname+'_v??_r??.cdf' ;full directory to file, minus v and r numbers.
-       If(sl ne '/') Then fname2 = strjoin(strsplit(fname2, sl, /extract), '/') ;fix to PC issue, jmm, 1-apr-2015
-       if(passwd Ne '') then fname2 = mvn_pfp_file_retrieve(fname2, user_pass = passwd) $
-       else fname2 = mvn_pfp_file_retrieve(fname2)
-       ff = mvn_lpw_cdf_latest_file(fname2) ;latest file
-       if ff ne 'none_found' then fvars = [fvars, ff]     
+          ;Search for latest file:
+          fname = 'mvn_lpw_'+levels[ll]+'_'+vars[vv]+'_'+yr+mm+dd   ;cdf_latest will find latest v and r; this is first part of filename
+          if euvget eq 1. then fname = 'mvn_euv_'+levels[ll]+'_bands_'+yr+mm+dd
+          
+          fname2 = fbase+levels[ll]+sl+yr+sl+mm+sl+fname   ;full directory to file, minus v and r numbers.
+;jmm, 2015-02-05 to use mvn_pfp_file_retrieve, don't include the root_data_dir 
+          fname2_tst = 'maven'+sl+'data'+sl+'sci'+sl+'lpw'+sl+ $
+                       levels[ll]+sl+yr+sl+mm+sl+fname+'_v??_r??.cdf'
+          if euvget eq 1. then fname2_tst = 'maven'+sl+'data'+sl+'sci'+sl+'euv'+sl+ $  ;get EUV based on euvget
+                                            levels[ll]+sl+yr+sl+mm+sl+fname+'_v??_r??.cdf'
+          fname2 = mvn_pfp_file_retrieve(fname2_tst, user_pass = passwd)
+
+          ff = mvn_lpw_cdf_latest_file(fname2)  ;latest file
+          if ff ne 'none_found' then fvars = [fvars, ff]     
     endfor 
 endfor
 
@@ -124,6 +129,7 @@ if nfound eq 1 then begin
     print, vars
     print, levels
     print, ""
+    fvars = 'none_found'
 endif else begin
     fvars = fvars[1:nfound-1]  ;first point is a dummy point
     nfound -= 1.   ;subtract first dummy point
@@ -142,14 +148,21 @@ endif else begin
        names[ff] = file_basename(fvars[ff])
     endfor    
 
-;Feed found files into read routine:
-mvn_lpw_cdf_read_file, dir=dirs, varlist=names
-
-
-
+    ;Feed found files into read routine:
+    mvn_lpw_cdf_read_file, dir=dirs, varlist=names
+   
 endelse
 
-
+if (euvcall eq 1.) and (euvget eq 0.) then begin
+    print, name, "### WARNING ### : currently you must load EUV data in a separate call to mvn_lpw_cdf_read, which does not call on any LP data. This run"
+    print, "will load the following variables: "
+    print, ""
+    print, fvars
+    print, ""
+    print, "Now run mvn_lpw_cdf_read, date, vars='euv'
+    print, "To load EUV data as well."
+    print,""
+endif
 
 
 end

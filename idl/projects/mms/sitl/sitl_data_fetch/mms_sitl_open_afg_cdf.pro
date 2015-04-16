@@ -32,8 +32,9 @@ ephem_times_unix =  86400D * (ephem_times_jul - julday(1, 1, 1970, 0, 0, 0 ))
 posx = ephem_data(*,0)
 posy = ephem_data(*,1)
 posz = ephem_data(*,2)
+posr = ephem_data(*,3)
 
-posvector = [[posx],[posy],[posz]]
+posvector = [[posx],[posy],[posz],[posr]]
 
 ; Says data is in orthogonalized boom coordinates.
 bx = vector_data(*,0)

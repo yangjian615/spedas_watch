@@ -1,4 +1,4 @@
-pro mms_put_back_structure, new_backstr, old_backstr, local_dir, $
+pro mms_put_back_structure, new_backstr, old_backstr, $
                             mod_error_flags, mod_yellow_warning_flags, mod_orange_warning_flags, $
                             mod_error_msg, mod_yellow_warning_msg, mod_orange_warning_msg, $
                              mod_error_times, mod_yellow_warning_times, $
@@ -121,17 +121,23 @@ if count_mod_errors eq 0 and count_new_errors eq 0 then begin
         daystr = string(day_val, format = '(I2)')
       endelse
 
-      lastpos = strlen(local_dir)
+;        lastpos = strlen(local_dir)
+;        if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
+;          data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
+;        endif else begin
+;          data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
+;        endelse
 
-      if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
-        data_dir = local_dir + 'data/mms/'
-      endif else begin
-        data_dir = local_dir + '/data/mms/'
-      endelse
+      temp_dir = !MMS.LOCAL_DATA_DIR
+      spawnstring = 'echo ' + temp_dir
+      spawn, spawnstring, data_dir
 
       temptime = systime(/utc)
 
-      dir_path = data_dir + 'sitl/bdm_sitl_changes/' + yearstr + '/'
+      dir_path = filepath('', root_dir=data_dir, $
+        subdirectory=['sitl','bdm_sitl_changes',yearstr])
+
+      ;dir_path = data_dir + 'sitl/bdm_sitl_changes/' + yearstr + '/'
       
       file_mkdir, dir_path
       

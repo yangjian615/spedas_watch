@@ -4,8 +4,68 @@
 ;
 ; Lets keep this simple: assume one s/c, one instrument_id, one mode, one level, 
 ; and one, if any, optional descriptor
+;
 
-pro mms_check_local_cache, local_flist, local_dir, start_date, end_date, file_flag, $
+; PROCEDURE: MMS_CHECK_LOCAL_CACHE
+;
+; PURPOSE: Checks local cache for files within a date range for a specific
+;          instrument, spacecraft, descriptor, level and mode.
+;
+; INPUT:
+;   local_flist      - REQUIRED. Name for an array of strings. This will have
+;                    - names of all of the files consistent with the query.
+;
+;   start_date       - REQUIRED. (String) Start date in the format for SDC
+;                      HTTP queries (YYYY-MM-DD).
+;
+;   end_date         - REQUIRED. (String) End date in the format for SDC
+;                      HTTP queries (YYYY-MM-DD). If the same as start_date,
+;                      procedure will only query for that day.
+;
+;   file_flag        - REQUIRED. (Integer) Flag which determines if data is
+;                      available locally. Returns 1 if no files found.
+;                      
+;   sc_id            - REQUIRED. (String) String containing spacecraft id.
+;                      Only one is allowed at a time.
+;
+;   instrument_id    - REQUIRED. (String) String containing instrument id.
+;                      Only one is allowed at a time.
+;
+;   mode             - REQUIRED. (String) String containing instrument id.
+;                      Only one is allowed at a time.
+;
+;   level            - REQUIRED. (String) String containing instrument id.
+;                      Only one is allowed at a time.
+;
+;
+;
+; KEYWORDS:
+;
+;   optional_descriptor
+;                    - OPTIONAL. (String) Descriptor for data product (e.g. 'bpsd' for
+;                      the instrument 'dsp' provides search coil data). If not set,
+;                      and the data product you are interested has a descriptor, it
+;                      will not be found.
+;                      
+; HISTORY:
+;
+; 2015-03-17, FDW, to go along with mms_data_fetch.
+; LASP, University of Colorado
+
+; MODIFICATION HISTORY:
+;
+;-
+
+;  $LastChangedBy: rickwilder $
+;  $LastChangedDate: 2015-04-14 13:24:43 -0700 (Tue, 14 Apr 2015) $
+;  $LastChangedRevision: 17311 $
+;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_check_local_cache.pro $
+
+;
+
+
+
+pro mms_check_local_cache, local_flist, start_date, end_date, file_flag, $
     mode, instrument_id, level, sc_id, optional_descriptor=optional_descriptor
   
 file_flag = 0  
@@ -41,25 +101,29 @@ end_jul = julday(end_month, end_day, end_year, 0, 0, 0)
 if start_year ne end_year then file_flag = 1
 
 ; Check only over a day boundary
-if end_jul-start_jul gt 86400 then file_flag = 1
+;if end_jul-start_jul gt 86400 then file_flag = 1
 
-lastpos = strlen(local_dir)
+;lastpos = strlen(local_dir)
+;if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
+;  data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
+;endif else begin
+;  data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
+;endelse
 
-if strmid(local_dir, lastpos-1, lastpos) eq '/' then begin
-  data_dir = local_dir + 'data/mms/'
-endif else begin
-  data_dir = local_dir + '/data/mms/'
-endelse
+data_dir = !MMS.LOCAL_DATA_DIR
 
 if file_flag eq 0 then begin
       ; First, get the directory to search
   if strlen(optional_descriptor) eq 0 then begin
-    file_dir = data_dir + sc_id + '/' + level + '/' + $
-      mode + '/' + instrument_id + '/' + start_year_str + '/'
+      
+    file_dir = filepath('', root_dir=data_dir, $
+      subdirectory = [sc_id, level, mode, instrument_id, start_year_str])
+      
   endif else begin
-    file_dir = data_dir + sc_id + '/' + level + '/' + $
-      mode + '/' + instrument_id + '/' + optional_descriptor $
-      + '/' + start_year_str + '/'
+    
+    file_dir = filepath('', root_dir=data_dir, $
+      subdirectory = [sc_id, level, mode, instrument_id, optional_descriptor, start_year_str])
+
     endelse
     
   search_string = file_dir + '*.cdf'
@@ -75,7 +139,7 @@ if file_flag eq 0 then begin
     cut_filenames = strarr(n_elements(search_results))
     file_bases = cut_filenames
     for i = 0, n_elements(search_results)-1 do begin
-      slash = strpos(search_results(i), '/', /reverse_search)
+      slash = strpos(search_results(i), path_sep(), /reverse_search)
       cut_filenames(i) = strmid(search_results(i), slash+1, strlen(search_results(i))-slash-1)
       first_space = strpos(cut_filenames(i), '_', /reverse_search)
       file_bases(i) = strmid(cut_filenames(i), 0, first_space)
