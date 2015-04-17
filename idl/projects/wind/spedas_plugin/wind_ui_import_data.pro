@@ -1,19 +1,19 @@
 ;+
 ;NAME:
-;  spd_ui_load_wind_import
+;  wind_ui_import_data
 ;
 ;PURPOSE:
 ;  Modularized gui wind data loader
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-03 12:32:48 -0700 (Thu, 03 Jul 2014) $
-;$LastChangedRevision: 15504 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/wind/spedas_plugin/spd_ui_load_wind_import.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
+;$LastChangedRevision: 17332 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/wind/spedas_plugin/wind_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
-pro spd_ui_load_wind_import,$
+pro wind_ui_import_data,$
                          loadStruc,$
                          loadedData,$
                          statusBar,$

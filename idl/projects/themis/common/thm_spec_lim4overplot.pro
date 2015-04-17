@@ -6,8 +6,8 @@ Pro thm_spec_lim4overplot, var, zmin = zmin, zmax = zmax, zlog = zlog, $
                            overwrite = overwrite, _extra = _extra
 ;Version:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2007-11-28 13:32:47 -0800 (Wed, 28 Nov 2007) $
-; $LastChangedRevision: 2091 $
+; $LastChangedDate: 2015-04-15 16:23:46 -0700 (Wed, 15 Apr 2015) $
+; $LastChangedRevision: 17335 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_spec_lim4overplot.pro $
 ;-
   If(keyword_set(zmin)) Then zmin0 = zmin Else zmin0 = 0
@@ -23,14 +23,16 @@ Pro thm_spec_lim4overplot, var, zmin = zmin, zmax = zmax, zlog = zlog, $
   If(size(d, /type) Eq 8) Then Begin
     vlv = where(finite(d.y) And (d.y Ne 0), nvlv)
     If(nvlv Gt 0) Then Begin
-      y0 = where(d.y Eq 0, ny0)
-      If(ny0 Gt 0) Then Begin
-        zminv = min(d.y[vlv], max = zmaxv)
-        d.y[y0] = zminv
-      Endif
+       If(zminv Eq 0) Then zminv = min(d.y[vlv])
+       If(zmaxv Eq 0) Then zmaxv = max(d.y[vlv])
+       y0 = where(d.y Eq 0, ny0)
+       If(ny0 Gt 0) Then Begin
+          d.y[y0] = zminv
+       Endif
     Endif
     If(tag_exist(d, 'v')) Then Begin
-      yminv = min(d.v, max = ymaxv)
+       If(yminv Eq 0) Then yminv = min(d.v)
+       If(ymaxv Eq 0) Then ymaxv = max(d.v)
     Endif
   Endif
   If(keyword_set(overwrite)) Then varnew = var $

@@ -19,8 +19,8 @@
 ;                  Units: km, deg, deg
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-08 17:51:58 -0700 (Wed, 08 Apr 2015) $
-; $LastChangedRevision: 17260 $
+; $LastChangedDate: 2015-04-15 13:20:23 -0700 (Wed, 15 Apr 2015) $
+; $LastChangedRevision: 17327 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_trace.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
@@ -88,20 +88,22 @@ pro mvn_mag_trace, alt=alt, trace=T
 
     loc = S + (dist # replicate(1.,3))*B
 
-    lon = atan(loc[*,1], loc[*,0])/!dtor
-    jndx = where(lon lt 0., jcnt)
-    if (jcnt gt 0L) then lon[jndx] = lon[jndx] + 360.
-    lat = asin((loc[*,2] / R_exo) < 1.)/!dtor
+    tlon = atan(loc[*,1], loc[*,0])/!dtor
+    jndx = where(tlon lt 0., jcnt)
+    if (jcnt gt 0L) then tlon[jndx] = tlon[jndx] + 360.
+    tlat = asin((loc[*,2] / R_exo) < 1.)/!dtor
 
     T[indx,0] = reform(dist)
-    T[indx,1] = reform(lon)
-    T[indx,2] = reform(lat)
+    T[indx,1] = reform(tlon)
+    T[indx,2] = reform(tlat)
     
     polarity = replicate(!values.f_nan, nsam, 2)
     jndx = where(dist lt 0., count)
     if (count gt 0L) then polarity[indx[jndx],*] = -1.
     jndx = where(dist ge 0., count)
     if (count gt 0L) then polarity[indx[jndx],*] = 1.
+    jndx = where(S2 le (R_exo*R_exo), count)
+    if (count gt 0L) then polarity[jndx,*] = 0.
     store_data,'B_trace_pol',data={x:mag.x, y:polarity, v:[0,1]}
     ylim,'B_trace_pol',0,1,0
     zlim,'B_trace_pol',-1,1,0

@@ -1,2 +1,2 @@
 project: ACE
-load_data: spd_ui_load_ace_data
+load_data: ace_ui_load_data

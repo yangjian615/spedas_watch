@@ -1,19 +1,19 @@
 ;+
 ;NAME:
-;  spd_ui_load_barrel_data
+;  barrel_ui_load_data
 ;
 ;PURPOSE:
 ;  Generates the tab that loads BARREL data for the SPEDAS GUI.
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16146 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/barrel/spedas_plugin/spd_ui_load_barrel_data.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
+;$LastChangedRevision: 17332 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/barrel/spedas_plugin/barrel_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 
-pro spd_ui_load_barrel_data_event,event
+pro barrel_ui_load_data_event,event
 
   compile_opt hidden,idl2
 
@@ -153,7 +153,7 @@ pro spd_ui_load_barrel_data_event,event
 
         widget_control, /hourglass
 
-        spd_ui_load_barrel_import,$
+        barrel_ui_import_data,$
           loadStruc, $
           state.loadedData, $
           state.statusBar, $
@@ -164,7 +164,7 @@ pro spd_ui_load_barrel_data_event,event
         state.loadTree->update
 
         callSeqStruc = { type:'loadapidata',       $
-          subtype:'spd_ui_load_barrel_import',  $
+          subtype:'barrel_ui_import_data',  $
           loadStruc:loadStruc,     $
           overwrite_selections:overwrite_selections }
 
@@ -200,7 +200,7 @@ pro spd_ui_load_barrel_data_event,event
 
 end
 
-pro spd_ui_load_barrel_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
+pro barrel_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
 
   compile_opt idl2,hidden
 
@@ -212,7 +212,7 @@ pro spd_ui_load_barrel_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,ti
   spd_ui_match_background, tabid, rightArrow
   spd_ui_match_background, tabid, trashcan
 
-  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='spd_ui_load_barrel_data_event')
+  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='barrel_ui_load_data_event')
 
   leftBase = widget_base(topBase,/col)
   middleBase = widget_base(topBase,/col,/align_center)

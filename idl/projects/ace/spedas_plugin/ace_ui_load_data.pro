@@ -1,19 +1,20 @@
 ;+ 
 ;NAME:
-;  spd_ui_load_wind_data
+;  ace_ui_load_data
 ;
 ;PURPOSE:
-;  Generates the tab that loads wind data for the gui.
+;  Generates the tab that loads ace data for the gui.
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16146 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/wind/spedas_plugin/spd_ui_load_wind_data.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
+;$LastChangedRevision: 17332 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/ace/spedas_plugin/ace_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
-pro spd_ui_load_wind_data_event,event
+
+pro ace_ui_load_data_event,event
 
   compile_opt hidden,idl2
 
@@ -22,11 +23,10 @@ pro spd_ui_load_wind_data_event,event
   IF (err_xxx NE 0) THEN BEGIN
     Catch, /Cancel
     Help, /Last_Message, Output = err_msg
-    
     Print, 'Error--See history'
     ok=error_message('An unknown error occured and the window must be restarted. See console for details.',$
       /noname, /center, title='Error in Load Data')
-      
+
     if is_struct(state) then begin
       ;send error message
       FOR j = 0, N_Elements(err_msg)-1 DO state.historywin->update,err_msg[j]
@@ -45,7 +45,6 @@ pro spd_ui_load_wind_data_event,event
       
     endif
   
-
     widget_control, event.top,/destroy
   
     RETURN
@@ -91,7 +90,7 @@ pro spd_ui_load_wind_data_event,event
             endfor
           endif
           state.loadTree->update
-          state.callSequence->clearCalls  
+          state.callSequence->clearCalls
         endif
         
       end   
@@ -107,10 +106,11 @@ pro spd_ui_load_wind_data_event,event
             endif else begin
               ; store deletion in the call sequence object
               state.callSequence->adddeletecall,(*datanames[i]).groupname
-            endelse 
+            endelse
           endfor
         endif
-        state.loadTree->update
+        state.loadTree->update   
+   
    
       end
       'ADD': begin
@@ -124,7 +124,7 @@ pro spd_ui_load_wind_data_event,event
      
         if typeSelect[0] eq -1 then begin
           state.statusBar->update,'You must select one type'
-          state.historyWin->update,'WIND add attempted without selecting type'
+          state.historyWin->update,'ACE add attempted without selecting type'
           break
         endif
         
@@ -135,7 +135,7 @@ pro spd_ui_load_wind_data_event,event
         
         if paramSelect[0] eq -1 then begin
           state.statusBar->update,'You must select at least one parameter'
-          state.historyWin->update,'WIND add attempted without selecting parameter'
+          state.historyWin->update,'ACE add attempted without selecting parameter'
           break
         endif
         
@@ -154,7 +154,7 @@ pro spd_ui_load_wind_data_event,event
         
         if startTimeDouble ge endTimeDouble then begin
           state.statusBar->update,'Cannot add data unless end time is greater than start time.'
-          state.historyWin->update,'WIND add attempted with start time greater than end time.'
+          state.historyWin->update,'ACE add attempted with start time greater than end time.'
           break
         endif
         
@@ -164,21 +164,20 @@ pro spd_ui_load_wind_data_event,event
                       datatype:typeText  , $
                       parameters:paramText, $
                       timeRange:[startTimeString, endTimeString] }   
-        
-        spd_ui_load_wind_import, $
-                                  loadStruc,$
+                           
+        ace_ui_import_data, $
+                                  loadStruc, $
                                   state.loadedData,$
                                   state.statusBar,$
                                   state.historyWin,$
                                   state.baseid,$
                                   overwrite_selections=overwrite_selections
-                                  
       
       
         state.loadTree->update
         
         callSeqStruc = { type:'loadapidata', $
-                         subtype:'spd_ui_load_wind_import', $
+                         subtype:'ace_ui_import_data', $
                          loadStruc:loadStruc, $
                          overwrite_selections:overwrite_selections }
                         
@@ -196,7 +195,7 @@ pro spd_ui_load_wind_data_event,event
 end
 
 
-pro spd_ui_load_wind_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
+pro ace_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
   compile_opt idl2,hidden
   
   ;load bitmap resources
@@ -207,13 +206,13 @@ pro spd_ui_load_wind_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
   spd_ui_match_background, tabid, rightArrow 
   spd_ui_match_background, tabid, trashcan
   
-  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='spd_ui_load_wind_data_event') 
+  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='ace_ui_load_data_event') 
   
   leftBase = widget_base(topBase,/col)
   middleBase = widget_base(topBase,/col,/align_center)
   rightBase = widget_base(topBase,/col)
   
-  leftLabel = widget_label(leftBase,value='Wind Data Selection:',/align_left)
+  leftLabel = widget_label(leftBase,value='ACE Data Selection:',/align_left)
   rightLabel = widget_label(rightBase,value='Data Loaded:',/align_left)
   
   selectionBase = widget_base(leftBase,/col,/frame)
@@ -247,19 +246,17 @@ pro spd_ui_load_wind_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
   
   instrumentLabel = widget_label(instrumentBase,value='Instrument Type: ')
   
-  instrumentArray = ['or','mfi','swe','3dp']
+  instrumentArray = ['mfi','swe']
   
   instrumentCombo = widget_combobox(instrumentBase,$
                                        value=instrumentArray,$
                                        uvalue='INSTRUMENT',$
                                        uname='instrument')
                                               
-  typeArray = ptrarr(4)
+  typeArray = ptrarr(2)
   
-  typeArray[0] = ptr_new(['pre','def'])
-  typeArray[1] = ptr_new(['k0','h0'])
-  typeArray[2] = ptr_new(['k0','h0','h1'])
-  typeArray[3] = ptr_new(['k0','pm','elpd','elsp','sfpd','sfsp'])
+  typeArray[0] = ptr_new(['k0','h0','h1','h2', 'h3'])
+  typeArray[1] = ptr_new(['k0','k1','h0','h2'])
                                      
   dataBase = widget_base(selectionBase,/row)
   typeBase = widget_base(dataBase,/col)
@@ -273,51 +270,21 @@ pro spd_ui_load_wind_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
   
   widget_control,typeList,set_list_select=0
   
-  paramArray = ptrarr(4)
-  paramArray[0] = ptr_new(ptrarr(2))
-  paramArray[1] = ptr_new(ptrarr(2))
-  paramArray[2] = ptr_new(ptrarr(3))
-  paramArray[3] = ptr_new(ptrarr(6))
+  paramArray = ptrarr(2)
+  paramArray[0] = ptr_new(ptrarr(5))
+  paramArray[1] = ptr_new(ptrarr(5))
   
-  ;'def_or_GSE_POS'
-  ;'h0_mfi_B3GSE'
-  ;'swe_THERMAL_SPD'
-  ;'3dp_k0_ion_density'
-  
-  (*paramArray[0])[0] = ptr_new(['*','Time_PB5','GCI_POS','GCI_VEL','GSE_POS','GSE_VEL','GSM_POS','GSM_VEL','SUN_VECTOR','HEC_POS','HEC_VEL',$
-                                 'CRN_EARTH','LONG_EARTH','LAT_EARTH','LONG_SPACE','LAT_SPACE'])
-  (*paramArray[0])[1] = ptr_new(['*','Time_PB5','GCI_POS','GCI_VEL','GSE_POS','GSE_VEL','GSM_POS','GSM_VEL','SUN_VECTOR','HEC_POS','HEC_VEL',$
-                                 'CRN_EARTH','LONG_EARTH','LAT_EARTH','LONG_SPACE','LAT_SPACE'])
-  (*paramArray[1])[0] = ptr_new(['*','Time_PB5','MODE','N','BF1','RMS','BGSMc','BGSMa','BGSEc','BGSEa','DIST','PGSM','PGSE','DQF','Gap_Flag'])
-  (*paramArray[1])[1] = ptr_new(['*','Time_PB5','NUM_PTS','BF1','BRMSF1','BGSM','BRMSGSM','BGSE','BRGSGSE','DIST',$
-                                 'PGSM','PGSE','SGSM','SGSE','DB_SC','TILTANG','RANGE_I','RANGE_O','SPC_MODE','MAG_MODE',$
-                                 'Time3_PB5','NUM3_PTS','B3F1','B3RMSF1','B3GSM','B3RMSGSM','B3GSE','B3RMSGSE','Time1_PB5',$
-                                 'NUM1_PTS','B1F1','B1RMSF1','B1GSM','B1RMSGSM','B1GSE','B1RMSGSE','DIST1','P1GSM','P1GSE',$
-                                 'S1GSM','S1GSE'])
-  (*paramArray[2])[0] = ptr_new(['*','Delta_time','Time_PB5','GAP_FLAG','MODE','SC_pos_gse','SC_pos_GSM','SC_pos_R','DQF','QF_V','QD_Vth',$
-                                 'QF_Np','QF_a/p','V_GSE','V_GSM','V_GSE_p','THERMAL_SPD','Np','Alpha_Percent'])
-                                 
-  (*paramArray[2])[1] = ptr_new(['*',['time_PB5','Te','Te_anisotropy','average_energy','pa_press_tensor','pa_dot_B',$
-                                 'heat_flux_magn','heat_flux_el','heat_flux_az','Q_dot_B','sc_position','el_bulk_vel_magn',$
-                                 'el_bulk_vel_el','el_bulk_vel_az','el_density','sc_pot','flag','major_fr_rec','major_fr_spin_number']])
-                                 
-  (*paramArray[2])[2] = ptr_new(['*','Proton_' + ['V','sigmaV','VX','sigmaVX','VY','sigmaVY','VZ','sigmaVZ','W',$
-                                 'sigmaW','Wperp','sigmaWperp','Wpar','sigmaWpar'] + '_nonlin','swe_'+['EW','flowangle','NS','SigmaNS'] + '_flowangle',$
-                                 'Alpha_'+ ['Np','sigmaNp','V','sigmaV','VX','sigmaVX','VY','sigmaVY','VZ','sigmaVZ','W','sigmaW','Na','sigmaNa'] + '_nonlin',$
-                                 'ChisQ_DOF_nonlin','swe_Proton_' + ['V','VX','VY','VZ','W','Wperp','Wpar','Np'] + '_moment', $
-                                 ['BX','BY','BZ','Ang_dev','dev','Xgse','Ygse','Zgse','Ygsm','Zgsm']])
-                                 
-  (*paramArray[3])[0] = ptr_new(['*','Time_PB5','DQ_Flag','PG_Flag','instr_mode','sc_position','sc_velocity','elect_flux','elect_density',$
-                                 'elect_vel','elect_temp','elect_qdotb','ion_flux','ion_density','ion_vel','ion_temp'])
-  (*paramArray[3])[1] = ptr_new(['*','TIME','SPIN','P_DENS','P_VELS','P_TENS','P_TEMP','A_DENS','A_VELS','A_TENS','A_TEMP',$
-                                 'E_RANGE','VC','GAP','VALID'])
-                                 
-  (*paramArray[3])[2] = ptr_new(['*','TIME','ENERGY','PANGLE','INTEG_T','EDENS','TEMP',$
-                                   'QP','QM','QT','REDF','VSW','MAGF'])
-  (*paramArray[3])[3] = ptr_new(['*',['TIME','FLUX','ENERGY']])                        
-  (*paramArray[3])[4] = ptr_new(['*',['TIME','ENERGY','PANGLE','INTEG_T','MAGF']])
-  (*paramArray[3])[5] = ptr_new(['*',['TIME','FLUX','ENERGY']])
-                                                                           
+  (*paramArray[0])[0] = ptr_new(['*','Weight','Magnitude','BGSEc'])
+  (*paramArray[0])[1] = ptr_new(['*','Magnitude','BGSEc','BGSM','dBrms','Q_FLAG','SC_pos_GSE','SC_pos_GSM'])
+  (*paramArray[0])[2] = ptr_new(['*','Magnitude','BGSEc','BGSM','Q_FLAG','SC_pos_GSE','SC_pos_GSM'])
+  (*paramArray[0])[3] = ptr_new(['*','Magnitude','BGSEc','BGSM','Q_FLAG','SC_pos_GSE','SC_pos_GSM'])
+  (*paramArray[0])[4] = ptr_new(['*','Magnitude','BRTN','BGSEc','BGSM','Q_FLAG'])
+  (*paramArray[1])[0] = ptr_new(['*','Np','Vp','He_ratio','Tpr'])
+  (*paramArray[1])[1] = ptr_new(['*','Np','Vp','He_ratio','Tpr'])
+  (*paramArray[1])[2] = ptr_new(['*','Np','Vp','Tpr','alpha_ratio','V_GSE','V_RTN','V_GSM','SC_pos_GSE','SC_pos_GSM'])
+  (*paramArray[1])[3] = ptr_new(['*','Np','Vp','Tpr','alpha_ratio','V_GSE','V_RTN','V_GSM','SC_pos_GSE','SC_pos_GSM'])
+  (*paramArray[1])[4] = ptr_new(['*','Np','Vp','Tpr','alpha_ratio','V_GSE','V_RTN','V_GSM','SC_pos_GSE','SC_pos_GSM'])
+                                                                
   paramBase = widget_base(dataBase,/col)
   paramLabel = widget_label(paramBase,value='Parameter(s):')
   paramList = widget_list(paramBase,$

@@ -1,19 +1,19 @@
 ;+ 
 ;NAME:
-;  spd_ui_load_goes_data
+;  poes_ui_load_data
 ;
 ;PURPOSE:
-;  Generates the tab that loads goes data for the gui.
+;  Generates the tab that loads poes data for the gui.
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16146 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/spedas_plugin/spd_ui_load_goes_data.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
+;$LastChangedRevision: 17332 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/poes_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
-pro spd_ui_load_goes_data_event,event
+pro poes_ui_load_data_event,event
 
   compile_opt hidden,idl2
 
@@ -42,7 +42,7 @@ pro spd_ui_load_goes_data_event,event
       Widget_Control, event.TOP, Set_UValue=state, /No_Copy
       
     endif
-  
+   
 
     widget_control, event.top,/destroy
   
@@ -109,29 +109,19 @@ pro spd_ui_load_goes_data_event,event
         
         if typeSelect[0] eq -1 then begin
           state.statusBar->update,'You must select at least one data type'
-          state.historyWin->update,'GOES add attempted without selecting data type'
+          state.historyWin->update,'POES add attempted without selecting data type'
           break
         endif
 
         types = state.typeArray[typeSelect]
-        
-        reslist = widget_info(event.handler,find_by_uname='reslist')
-        resSelect = widget_info(reslist,/list_select)
-
-        if resSelect[0] eq -1 then begin
-            state.statusBar->update, 'You must select at least one resolution'
-            state.historyWin->update, 'GOES add attempted without selecting resolution'
-            break
-        endif 
-        
-        resolution = state.resArray[resSelect]
+       
         
         probelist = widget_info(event.handler,find_by_uname='probelist')
         probeSelect = widget_info(probelist,/list_select)
         
         if probeSelect[0] eq -1 then begin
           state.statusBar->update,'You must select at least one probe'
-          state.historyWin->update,'GOES add attempted without selecting probe'
+          state.historyWin->update,'POES add attempted without selecting probe'
           break
         endif
         
@@ -145,18 +135,17 @@ pro spd_ui_load_goes_data_event,event
         
         if startTimeDouble ge endTimeDouble then begin
           state.statusBar->update,'Cannot add data unless end time is greater than start time.'
-          state.historyWin->update,'GOES add attempted with start time greater than end time.'
+          state.historyWin->update,'POES add attempted with start time greater than end time.'
           break
         endif
         
         loadStruc = { probe:probes,    $
                       datatype:types,  $
-                      restype:resolution, $
                       timeRange:[startTimeString,endTimeString] }
         
         widget_control, /hourglass
         
-        spd_ui_load_goes_import,$
+        poes_ui_import_data,$
                       loadStruc, $
                       state.loadedData, $
                       state.statusBar, $
@@ -167,18 +156,19 @@ pro spd_ui_load_goes_data_event,event
         state.loadTree->update
         
         callSeqStruc = { type:'loadapidata',       $
-                         subtype:'spd_ui_load_goes_import',  $
+                         subtype:'poes_ui_import_data',  $
                          loadStruc:loadStruc,     $
                          overwrite_selections:overwrite_selections }
                       
         state.callSequence->addSt, callSeqStruc
      
       end
+      ;;; TODO: will need to implement once these two links are available for POES
       'CHECK_DATA_AVAIL': begin
-        spd_ui_open_url, 'http://themis.ssl.berkeley.edu/data_products/#goes'
+        spd_ui_open_url, 'http://themis.ssl.berkeley.edu/data_products/#poes'
       end
       'RULESOFTHEROAD': begin
-        spd_ui_open_url, 'http://spedas.org/wiki/index.php?title=GOES_Rules_of_the_Road'
+        spd_ui_open_url, 'http://spedas.org/wiki/index.php?title=POES_Rules_of_the_Road'
       end
       else:
     endcase
@@ -191,7 +181,7 @@ pro spd_ui_load_goes_data_event,event
 end
 
 
-pro spd_ui_load_goes_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
+pro poes_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
   compile_opt idl2,hidden
 
   ;load bitmap resources
@@ -202,13 +192,13 @@ pro spd_ui_load_goes_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
   spd_ui_match_background, tabid, rightArrow 
   spd_ui_match_background, tabid, trashcan
   
-  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='spd_ui_load_goes_data_event') 
+  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='poes_ui_load_data_event') 
   
   leftBase = widget_base(topBase,/col)
   middleBase = widget_base(topBase,/col,/align_center)
   rightBase = widget_base(topBase,/col)
   
-  leftLabel = widget_label(leftBase,value='GOES Data Selection:',/align_left)
+  leftLabel = widget_label(leftBase,value='POES Data Selection:',/align_left)
   rightLabel = widget_label(rightBase,value='Data Loaded:',/align_left)
   
   selectionBase = widget_base(leftBase,/col,/frame)
@@ -235,17 +225,17 @@ pro spd_ui_load_goes_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
                                   timeRangeObj=timeRangeObj,$
                                   uvalue='TIME_WIDGET',$
                                   uname='time_widget',$
-                                  startyear=1995)
+                                  startyear=2000)
     
- ; probeArrayValues = ['*','g10','g11','g12']
- ; probeArrayDisplayed = ['*(All)','GOES 10','GOES 11','GOES 12']
-  probeArrayValues = ['8', '9', '10', '11', '12', '13', '14', '15']
-  probeArrayDisplayed = ['GOES 8', 'GOES 9', 'GOES 10', 'GOES 11', 'GOES 12', 'GOES 13', 'GOES 14', 'GOES 15']
+
+  probeArrayValues = ['metop1', 'metop2', 'noaa15', 'noaa16', 'noaa18', 'noaa19']
+  probeArrayDisplayed = ['MetOp 1', 'MetOp 2', 'NOAA 15', 'NOAA 16', 'NOAA 18', 'NOAA 19']
   
-  typeArray = ['xrs', 'fgm', 'eps', 'maged', 'magpd', 'epead', 'hepad']
-  ;typeArray = ['*','b_gsm','b_gei','b_enp','b_total','pos_gsm','pos_gei','vel_gei','t1_counts','t2_counts','dataqual','longitude','mlt']
-  
-  resArray = ['full', '1-m', '5-m']
+  typeArray = ['*', 'ted_ele_flux', 'ted_pro_flux', 'ted_ele_eflux', 'ted_pro_eflux', 'ted_ele_eflux_atmo', 'ted_pro_eflux_atmo', $
+               'ted_total_eflux_atmo', 'ted_ele_energy', 'ted_pro_energy', 'ted_ele_max_flux', $
+               'ted_pro_max_flux', 'ted_ele_eflux_bg', 'ted_pro_eflux_bg', 'ted_pitch_angles', 'ted_ifc_flag', $
+               'mep_ele_flux', 'mep_pro_flux', 'mep_pro_flux_p6', 'mep_omni_flux', 'mep_pitch_angles', 'mep_ifc_flag']
+ 
 
   ;create the list box that lists all the probes
   dataBase = widget_base(selectionBase,/row)
@@ -255,9 +245,10 @@ pro spd_ui_load_goes_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
                           value=probeArrayDisplayed,$
                           uname='probelist',$
                           uvalue='PROBELIST',$
-                          xsize=16,$
+                          xsize=26,$
                           ysize=15)
-  ; default the index list should be AE
+
+  ; default to the first probe in the list 
   widget_control, probeList, set_list_select = 0
   
   clearprobesButton = widget_button(probeBase,value='Clear Probe',uvalue='CLEARPROBE',ToolTip='Deselect all spacecraft')
@@ -269,34 +260,17 @@ pro spd_ui_load_goes_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
                          value=typeArray,$
                          uname='datalist',$
                          uvalue='DATALIST',$
-                         xsize=16,$
-                         ysize=15)                         
+                         xsize=26,$
+                         ysize=15,$
+                         /multiple)                         
   clearTypeButton = widget_button(typeBase,value='Clear Data Type',uvalue='CLEARTYPE',ToolTip='Deselect all datatypes')
 
   ; default of the data type list should be *
   widget_control, typeList, set_list_select = 0
   
-  ;create the list box and a clear all button for the resolution options
-  resBase = widget_base(dataBase,/col)
-  resLabel = widget_label(resBase,value='Resolution:')
-  resList = widget_list(resBase,$
-                         value=resArray,$
-                         uname='reslist',$
-                         uvalue='RESLIST',$
-                         xsize=16,$
-                         ysize=15)
-                         
-  ; set the default resolution to full
-  widget_control, resList, set_list_select = 0
-           
-  clearResButton = widget_button(resBase,value='Clear Resolution',uvalue='CLEARRES',ToolTip='Deselect all resolutions')
+  contamination_label = widget_label(leftBase, value='These data have known contamination problems: please consult')
+  contamination_label2 = widget_label(leftBase, value='Rob Redmon (sem.poes@noaa.gov) for usage recommendations')
 
-  davailabilitybutton = widget_button(leftBase, val = ' Check data availability', $
-                                      uval = 'CHECK_DATA_AVAIL', /align_center, $
-                                      ToolTip = 'Check data availability on the web')
-  davaRoRbutton = widget_button(leftBase, val = 'Rules of the Road', $
-                                      uval = 'RULESOFTHEROAD', /align_center, $
-                                      ToolTip = 'See the GOES Rules of the Road on the web')
                                                                 
   state = {baseid:topBase,$
            loadTree:loadTree,$
@@ -307,7 +281,6 @@ pro spd_ui_load_goes_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
            loadedData:loadedData,$
            callSequence:callSequence,$
            probeArray:probeArrayValues,$
-           resArray:resArray,$
            typeArray:typeArray}
            
   widget_control,topBase,set_uvalue=state

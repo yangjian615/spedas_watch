@@ -1,20 +1,20 @@
 ;+
 ;NAME:
-;  spd_ui_load_goes_import
+;  poes_ui_import_data
 ;
 ;PURPOSE:
-;  Modularized gui goes data loader
+;  Modularized SPEDAS/GUI POES data loader
 ;
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-10-07 11:22:49 -0700 (Tue, 07 Oct 2014) $
-;$LastChangedRevision: 15937 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/spedas_plugin/spd_ui_load_goes_import.pro $
+;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
+;$LastChangedRevision: 17332 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/poes_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 
-pro spd_ui_load_goes_import,     $
+pro poes_ui_import_data,     $
                       loadStruc,        $
                       loadedData,       $
                       statusBar,        $
@@ -27,15 +27,14 @@ pro spd_ui_load_goes_import,     $
 
   probe = loadStruc.probe
   dataType = loadStruc.datatype
-  resType = loadStruc.restype
   timeRange = loadStruc.timeRange
   
   instrument = dataType
   loaded = 0
   
-  goesmintime = '1995-01-01'
+  poesmintime = '2013-01-01'
   ; allow the user to load data up until the current time
-  goesmaxtime = time_string(systime(/seconds))
+  poesmaxtime = time_string(systime(/seconds))
 
   new_vars = ''
 
@@ -47,22 +46,16 @@ pro spd_ui_load_goes_import,     $
   endif
 
   ; check that the requested time falls within our valid range
-  if time_double(goesmaxtime) lt time_double(timerange[0]) || $
-     time_double(goesmintime) gt time_double(timerange[1]) then begin
-     statusBar->update,'No GOES Data Loaded, GOES data is only available between ' + goesmintime + ' and ' + goesmaxtime
-     historyWin->update,'No GOES Data Loaded,  GOES data is only available between ' + goesmintime + ' and ' + goesmaxtime
+  if time_double(poesmaxtime) lt time_double(timerange[0]) || $
+     time_double(poesmintime) gt time_double(timerange[1]) then begin
+     statusBar->update,'No POES Data Loaded, POES data is only available between ' + poesmintime + ' and ' + poesmaxtime
+     historyWin->update,'No POES Data Loaded,  POES data is only available between ' + poesmintime + ' and ' + poesmaxtime
      return
   endif
     
   tn_before = [tnames('*',create_time=cn_before)]
 
-  if resType eq 'full' then begin
-      goes_load_data, trange = timeRange, probes = probe, datatype = datatype
-  endif else if resType eq '1-m' then begin
-      goes_load_data, trange = timeRange, probes = probe, datatype = datatype, /avg_1m
-  endif else if resType eq '5-m' then begin
-      goes_load_data, trange = timeRange, probes = probe, datatype = datatype, /avg_5m
-  endif
+  poes_load_data, trange = timeRange, probes=probe, datatype = datatype
 
   if undefined(to_delete) then begin
       spd_ui_cleanup_tplot,tn_before,create_time_before=cn_before,del_vars=to_delete,new_vars=new_vars
@@ -81,12 +74,12 @@ pro spd_ui_load_goes_import,     $
       if strmid(overwrite_selection, 0, 2) eq 'no' then continue
 
       ; this statement adds the variable to the loadedData object
-      result = loadedData->add(new_vars[i],mission='GOES',observatory='G'+probe,instrument=strupcase(datatype))
+      result = loadedData->add(new_vars[i],mission='POES/MetOp',observatory=strupcase(probe), instrument='SEM2')
       
       ; report errors to the status bar and add them to the history window
       if ~result then begin
-        statusBar->update,'Error loading: ' + new_vars[i]
-        historyWin->update,'GOES: Error loading: ' + new_vars[i]
+        statusBar->update,'POES: Error loading: ' + new_vars[i]
+        historyWin->update,'POES: Error loading: ' + new_vars[i]
         return
       endif
     endfor
@@ -97,11 +90,11 @@ pro spd_ui_load_goes_import,     $
   endif
      
   if loaded eq 1 then begin
-    statusBar->update,'GOES Data Loaded Successfully'
-    historyWin->update,'GOES Data Loaded Successfully'
+    statusBar->update,'POES Data Loaded Successfully'
+    historyWin->update,'POES Data Loaded Successfully'
   endif else begin
-    statusBar->update,'No GOES Data Loaded'
-    historyWin->update,'No GOES Data Loaded'
+    statusBar->update,'No POES Data Loaded'
+    historyWin->update,'No POES Data Loaded'
   endelse
 
 end

@@ -1,20 +1,20 @@
 ;+ 
 ;NAME:
-;  spd_ui_load_fast_data
+;  fast_ui_load_data
 ;
 ;PURPOSE:
 ;  Generates the tab that loads fast data for the gui.
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16146 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/fast/spedas_plugin/spd_ui_load_fast_data.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
+;$LastChangedRevision: 17332 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/fast/spedas_plugin/fast_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 
-pro spd_ui_load_fast_data_event,event
+pro fast_ui_load_data_event,event
 
   compile_opt hidden,idl2
 
@@ -169,7 +169,7 @@ pro spd_ui_load_fast_data_event,event
                       parameters:paramText, $
                       timeRange:[startTimeString, endTimeString] }   
                            
-        spd_ui_load_fast_import, $
+        fast_ui_import_data, $
                                   loadStruc, $
                                   state.loadedData,$
                                   state.statusBar,$
@@ -181,7 +181,7 @@ pro spd_ui_load_fast_data_event,event
         state.loadTree->update
         
         callSeqStruc = { type:'loadapidata', $
-                         subtype:'spd_ui_load_fast_import', $
+                         subtype:'fast_ui_import_data', $
                          loadStruc:loadStruc, $
                          overwrite_selections:overwrite_selections }
                         
@@ -199,7 +199,7 @@ pro spd_ui_load_fast_data_event,event
 end
 
 
-pro spd_ui_load_fast_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
+pro fast_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
   compile_opt idl2,hidden
   
   ;load bitmap resources
@@ -210,7 +210,7 @@ pro spd_ui_load_fast_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
   spd_ui_match_background, tabid, rightArrow 
   spd_ui_match_background, tabid, trashcan
   
-  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='spd_ui_load_fast_data_event') 
+  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='fast_ui_load_data_event') 
   
   leftBase = widget_base(topBase,/col)
   middleBase = widget_base(topBase,/col,/align_center)

@@ -8,7 +8,7 @@
 ;
 ;CALLING SEQUENCE: 
 ;       mvn_swe_etspec, ['2014-11-17/08:04:19', '2014-11-17/12:40:31'], $
-;                      /silent, units='eflux', data_type='3d', $
+;                      units='eflux', data_type='3d', $
 ;                      angle='pa', /default
 ;
 ;INPUTS: 
@@ -23,7 +23,7 @@
 ;   TRANGE:    Instead of an input variable, you can alternatively specify
 ;              the time interval when you want to create a tplot variable.
 ;
-;   DATE_TYPE: Chooses the data product type ('3d', 'pad', or 'spec')
+;   DATA_TYPE: Chooses the data product type ('3d', 'pad', or 'spec')
 ;              Default is 'spec'.
 ;
 ;   ERANGE:    Specifies energy range over which you want to plot .
@@ -75,8 +75,8 @@
 ;   SC_POT:    Account for the spacecraft potential correction.
 ;              (Not completely activated yet)
 ;
-;   SILENT:    Minimizes to show the processing information in the terminal.
-;              "VERBOSE" keyword can be also used this purpose. 
+;   VERBOSE:   Controls how often the processing information is shown
+;              onto the terminal.
 ;
 ;   Default:   If you use this keyword, the following tplot variables
 ;              are automatically created:
@@ -101,12 +101,11 @@
 ;              derived from the SPICE/Kernels are available, 
 ;              e.g., 'MAVEN_MSO', 'IAU_MARS', 'MAVEN_SWEA' or so on.
 ;
-;CREATED BY: 
-;	Takuya Hara on 2014-11-22.
+;CREATED BY:      Takuya Hara on 2014-11-22. 
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-11-24 14:24:20 -0800 (Mon, 24 Nov 2014) $
-; $LastChangedRevision: 16293 $
+; $LastChangedDate: 2015-04-15 17:23:54 -0700 (Wed, 15 Apr 2015) $
+; $LastChangedRevision: 17337 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_etspec.pro $
 ;
 ;MODIFICATION LOG:
@@ -179,7 +178,7 @@ PRO mvn_swe_etspec, var, trange=trange, data_type=data_type, erange=erange, unit
                     angle=angle, phi=phrange, theta=thrange, pitch=pitch, suffix=suffix, $
                     mask=mask, stow=stow, archive=archive, window=wi, _extra=extra, $
                     abins=abins, dbins=dbins, mbins=mbins, sc_pot=sc_pot, $
-                    silent=silent, verbose=verbose, default=default, frame=frame 
+                    verbose=vb, verbose=verbose, default=default, frame=frame 
 
   COMPILE_OPT idl2
   @mvn_swe_com
@@ -187,15 +186,12 @@ PRO mvn_swe_etspec, var, trange=trange, data_type=data_type, erange=erange, unit
   fifb = string("15b) ;"
   from = 'MAVEN_SWEA'
   IF keyword_set(archive) THEN aflg = 1 ELSE aflg = 0
+  IF (aflg) THEN pname = 'Archive' ELSE pname = 'Survey' ; product name
   IF ~keyword_set(suffix) THEN suffix = '' 
-  IF keyword_set(silent)  THEN verbose = - silent ELSE verbose = 0
+  ;; IF keyword_set(silent)  THEN verbose = - silent ELSE verbose = 0
+  IF keyword_set(vb) THEN verbose = vb
   IF ~keyword_set(frame)  THEN to = 'MAVEN_SWEA' ELSE to = frame
   IF keyword_set(default) THEN to = 'MAVEN_MSO'
-  IF SIZE(mvn_swe_engy, /type) NE 8 THEN BEGIN
-     print, ptrace()
-     print, '  No SWEA data loaded.  Use mvn_swe_load_l0 first.'
-     RETURN
-  ENDIF 
 
   ; Data types
   ;--------------- 
@@ -211,51 +207,38 @@ PRO mvn_swe_etspec, var, trange=trange, data_type=data_type, erange=erange, unit
   ENDCASE 
 
   CASE dtype OF 
-     0: BEGIN
-        IF ~keyword_set(aflg) THEN dat = mvn_swe_engy ELSE dat = mvn_swe_engy_arc
-        IF SIZE(dat, /type) NE 8 THEN BEGIN
-           PRINT, ptrace()
-           IF keyword_set(aflg) THEN BEGIN
-              PRINT, '  No SPEC archive data. Instead, SPEC survey data is used.'
-              dat = mvn_swe_engy
-              aflg = 0
-           ENDIF ELSE BEGIN
-              PRINT, '  No SPEC survey data.'
-              RETURN
-           ENDELSE 
-        ENDIF 
-     END 
-     1: BEGIN
-        IF ~keyword_set(aflg) THEN dat = swe_3d ELSE dat = swe_3d_arc
-        IF SIZE(dat, /type) NE 8 THEN BEGIN
-           PRINT, ptrace()
-           IF keyword_set(aflg) THEN BEGIN
-              PRINT, '  No 3D archive data. Instead, 3D survey data is used'
-              dat = swe_3d
-              aflg = 0
-           ENDIF ELSE BEGIN
-              PRINT, '  No 3D survey data.'
-              RETURN
-           ENDELSE  
-        ENDIF
-     END 
-     2: BEGIN
-        IF ~keyword_set(aflg) THEN dat = a2 ELSE dat = a3
-        IF SIZE(dat, /type) NE 8 THEN BEGIN
-           PRINT, ptrace()
-           IF keyword_set(aflg) THEN BEGIN
-              PRINT, '  No PAD archive data. Instead, PAD survey data is used.'
-              dat = a2
-              aflg = 0
-           ENDIF ELSE BEGIN
-              PRINT, '  No PAD survey data.'
-              RETURN
-           ENDELSE 
-        ENDIF 
-     END   
+     0: IF (aflg) THEN dname = 'mvn_swe_engy_arc' ELSE dname = 'mvn_swe_engy'
+     1: IF (aflg) THEN dname = 'mvn_swe_3d_arc' ELSE dname = 'mvn_swe_3d'
+     2: IF (aflg) THEN dname = 'mvn_swe_pad_arc' ELSE dname = 'mvn_swe_pad'
   ENDCASE
-  ndat = N_ELEMENTS(dat)
 
+  status = EXECUTE('dat = ' + dname)
+  IF SIZE(dat, /type) NE 8 THEN BEGIN
+     dprint, '', dlevel=1, verbose=verbose, /print_trace
+     dprint, '  No ' + STRUPCASE(data_type) + ' ' + pname + ' L2 data. Try to search L0 data instead.', $
+             print_trace=0, dlevel=1, verbose=verbose
+     dprint, "  If you want to use L2 data, please use 'mvn_swe_load_l2' first.", print_trace=0, dlevel=2, verbose=verobse
+
+     CASE dtype OF 
+        0: IF (aflg) THEN dname = 'a5' ELSE dname = 'a4'
+        1: IF (aflg) THEN dname = 'swe_3d_arc' ELSE dname = 'swe_3d'
+        2: IF (aflg) THEN dname = 'a3' ELSE dname = 'a2'
+     ENDCASE
+     
+     undefine, dat
+     status = EXECUTE('dat = ' + dname)
+     IF SIZE(dat, /type) NE 8 THEN BEGIN
+        dprint, '', dlevel=1, verbose=verbose, /print_trace
+        dprint, '  No ' + STRUPCASE(data_type) + ' ' + pname + ' L0 data.', print_trace=0, dlevel=1, verbose=verbose
+        dprint, "  Use 'mvn_swe_load_l0' first.", print_trace=0, dlevel=2, verbose=verbose
+        dprint, print_trace=1, dwait=10.
+        RETURN     
+     ENDIF 
+  ENDIF
+  undefine, status
+
+  dprint, 'Uses SWEA ' + STRUPCASE(data_type) + ' ' + pname + ' data.', dlevel=1, verbose=verbose, /print_trace
+  ndat = N_ELEMENTS(dat)
   IF SIZE(var, /type) NE 0 THEN BEGIN
      trange = var
      IF SIZE(trange, /type) EQ 7 THEN trange = time_double(trange)
@@ -369,7 +352,7 @@ PRO mvn_swe_etspec, var, trange=trange, data_type=data_type, erange=erange, unit
            1: BEGIN
               FOR i=0LL, ndat-1 DO BEGIN
                  j = 0
-                 swe = mvn_swe_get3d(dat[i].time, unit=units)
+                 swe = mvn_swe_get3d(dat[i].time, unit=units, archive=aflg)
                  swe.data *= REBIN(TRANSPOSE(obins*mobins[*, stow[i]]), swe.nenergy, swe.nbins)
                  theta = swe.theta
                  phi = swe.phi
@@ -390,7 +373,7 @@ PRO mvn_swe_etspec, var, trange=trange, data_type=data_type, erange=erange, unit
            2: BEGIN
               FOR i=0LL, ndat-1 DO BEGIN
                  j = 0
-                 swe = mvn_swe_getpad(dat[i].time, unit=units)
+                 swe = mvn_swe_getpad(dat[i].time, unit=units, archive=aflg)
                  swe.data *= REBIN(TRANSPOSE(obins[swe.k3d]*mobins[swe.k3d, stow[i]]), swe.nenergy, swe.nbins)
                  theta = swe.theta
                  phi = swe.phi
@@ -412,7 +395,7 @@ PRO mvn_swe_etspec, var, trange=trange, data_type=data_type, erange=erange, unit
            'pa': BEGIN
               IF SIZE(swe_mag1, /type) NE 8 THEN BEGIN
                  print, ptrace()
-                 print, '  No MAG1 data loaded.  Use swe_getmag_ql first.'
+                 print, '  No MAG1 data loaded.  Use mvn_swe_addmag first.'
                  RETURN
               ENDIF
 
@@ -430,7 +413,7 @@ PRO mvn_swe_etspec, var, trange=trange, data_type=data_type, erange=erange, unit
               ENDIF  
               mvn_swe_pad_resample, trange, result=result, snap=0, tplot=0, mask=mask,  $
                                     abins=abins, dbins=dbins, mbins=mbins, nbins=nbins, $
-                                    archive=aflg, map3d=2-dtype, silent=-verbose
+                                    archive=aflg, map3d=2-dtype, verbose=verbose
 
               x = result.time
               default_loop_pa:

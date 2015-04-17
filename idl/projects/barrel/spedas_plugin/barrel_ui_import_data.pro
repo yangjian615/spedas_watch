@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-;  spd_ui_load_barrel_import
+;  barrel_ui_import_data
 ;
 ;PURPOSE:
 ;  Modularized GUI data loader for BARREL
@@ -12,14 +12,14 @@
 ;   October 2014: only v00 is available for the 2013-14 campaign year, this might change in the future
 ;   
 ;HISTORY:
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-10-15 10:48:52 -0700 (Wed, 15 Oct 2014) $
-;$LastChangedRevision: 15994 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/barrel/spedas_plugin/spd_ui_load_barrel_import.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
+;$LastChangedRevision: 17332 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/barrel/spedas_plugin/barrel_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 
-pro spd_ui_load_barrel_import,     $
+pro barrel_ui_import_data,     $
   loadStruc,        $
   loadedData,       $
   statusBar,        $

@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-;  spd_ui_load_fast_import
+;  fast_ui_import_data
 ;
 ;PURPOSE:
 ;  Modularized gui FAST mission data loader/importer
@@ -8,15 +8,15 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-03 12:31:53 -0700 (Thu, 03 Jul 2014) $
-;$LastChangedRevision: 15502 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/fast/spedas_plugin/spd_ui_load_fast_import.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
+;$LastChangedRevision: 17332 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/fast/spedas_plugin/fast_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 
 
-pro spd_ui_load_fast_import,$
+pro fast_ui_import_data,$
                          loadStruc, $
                          loadedData,$
                          statusBar,$

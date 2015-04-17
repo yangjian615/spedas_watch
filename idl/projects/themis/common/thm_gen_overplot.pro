@@ -704,10 +704,10 @@ load_position='bound'
 load_position='plot'
 
 ; plot it!
-thm_spec_lim4overplot, thx+'_peif_en_eflux', zlog = 1, ylog = 1, /overwrite
-thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, /overwrite
-thm_spec_lim4overplot, thx+'_peir_en_eflux', zlog = 1, ylog = 1, /overwrite
-thm_spec_lim4overplot, thx+'_peer_en_eflux', zlog = 1, ylog = 1, /overwrite
+thm_spec_lim4overplot, thx+'_peif_en_eflux', zlog = 1, ylog = 1, ymin = 3.0, /overwrite
+thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, ymin = 3.0, /overwrite
+thm_spec_lim4overplot, thx+'_peir_en_eflux', zlog = 1, ylog = 1, ymin = 3.0, /overwrite
+thm_spec_lim4overplot, thx+'_peer_en_eflux', zlog = 1, ylog = 1, ymin = 3.0, /overwrite
 ssti_name=thx+'_psif_en_eflux'
 sste_name=thx+'_psef_en_eflux'
 thm_spec_lim4overplot, ssti_name, zlog = 1, ylog = 1, /overwrite
@@ -755,8 +755,8 @@ tplot_options,'ygap',0.0D
 ;2013-09-10
 esa_peif_overlay = thx+'_peif_en_eflux'
 esa_peir_overlay = thx+'_peir_en_eflux'
-esa_peef_overlay = scpot_overlay(thx+'_peef_sc_pot', thx+'_peef_en_eflux', sc_line_thick=2.0)
-esa_peer_overlay = scpot_overlay(thx+'_peer_sc_pot', thx+'_peer_en_eflux', sc_line_thick=2.0)
+esa_peef_overlay = scpot_overlay(thx+'_peef_sc_pot', thx+'_peef_en_eflux', sc_line_thick=2.0, /use_yrange)
+esa_peer_overlay = scpot_overlay(thx+'_peer_sc_pot', thx+'_peer_en_eflux', sc_line_thick=2.0, /use_yrange)
  
 esaif_flux_name = esa_peif_overlay
 If(ok_esai_flux[0] Eq 0) Then Begin  ;esa ion flux is not present full resolution,

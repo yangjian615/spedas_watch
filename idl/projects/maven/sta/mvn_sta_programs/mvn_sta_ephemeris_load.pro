@@ -67,7 +67,7 @@ pro mvn_sta_ephemeris_load,frame=frame,verbose=verbose
   ;Load ephemeris and create tplot structures
   for api=0, nn_apid-1 do begin
      temp=execute('nn1=size(mvn_'+apid[api]+'_dat,/type)')
-     if nn1 ne 0 then begin        
+     if nn1 eq 8 then begin        
         temp=execute('tt=tag_names(mvn_'+apid[api]+'_dat)')
         temp=where(tt eq 'POS_SC_MSO' or $
                    tt eq 'QUAT_SC' or $

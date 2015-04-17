@@ -15,8 +15,8 @@
 ;    LIST:          List all configuration changes.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-28 10:18:06 -0700 (Tue, 28 Oct 2014) $
-; $LastChangedRevision: 16047 $
+; $LastChangedDate: 2015-04-15 13:18:48 -0700 (Wed, 15 Apr 2015) $
+; $LastChangedRevision: 17326 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -63,6 +63,10 @@ pro mvn_swe_config, list=list, timebar=timebar
   t_swp = [t_swp, time_double('2014-10-06/12:00:00')]  ; sweep table 5 and 6 upload
 
 ; Deployed MAG1-to-SWE rotation matrix, with corrected MICD.
+;   Deployed boom matrix was uploaded as part of EEPROM load executed on 2014-09-22
+;   Boom separation nut pyro was fired at 2014-10-10/15:08:14.684
+;   Boom shows evidence for motion a few seconds later
+;   Boom fully deployed by about 15:09:30
 
   t_mtx = [t_mtx, time_double('2014-10-10/15:08:40')]  ; deployed boom matrix upload
 

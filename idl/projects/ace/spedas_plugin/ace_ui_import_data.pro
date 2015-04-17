@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-;  spd_ui_load_ace_import
+;  ace_ui_import_data
 ;
 ;PURPOSE:
 ;  Modularized gui ace data loader
@@ -8,14 +8,14 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-06 14:44:41 -0700 (Mon, 06 Apr 2015) $
-;$LastChangedRevision: 17245 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/ace/spedas_plugin/spd_ui_load_ace_import.pro $
+;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
+;$LastChangedRevision: 17332 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/ace/spedas_plugin/ace_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 
 
-pro spd_ui_load_ace_import,$
+pro ace_ui_import_data,$
                          loadStruc, $
                          loadedData,$
                          statusBar,$
