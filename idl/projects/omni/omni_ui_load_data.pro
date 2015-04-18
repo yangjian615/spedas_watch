@@ -1,6 +1,6 @@
 ;+ 
 ;NAME:
-;  spd_ui_load_omni_data
+;  omni_ui_load_data
 ;
 ;PURPOSE:
 ;  This routine is an example of how to build a load data panel and handle the 
@@ -10,13 +10,13 @@
 ;  the data set to be loaded or some may not be needed. 
 ;
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-11-06 19:32:47 -0800 (Thu, 06 Nov 2014) $
-;$LastChangedRevision: 16146 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spd_ui_load_omni_data.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-16 16:11:35 -0700 (Thu, 16 Apr 2015) $
+;$LastChangedRevision: 17345 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/omni_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
-pro spd_ui_load_omni_data_event,event
+pro omni_ui_load_data_event,event
 
   compile_opt hidden,idl2
 
@@ -171,7 +171,7 @@ pro spd_ui_load_omni_data_event,event
                       datatypes:types, $
                       timerange:[startTimeString,endTimeString] }
                       
-        spd_ui_load_omni_import, $
+        omni_ui_import_data, $
                          loadStruc, $
                          state.loadedData,$
                          state.statusBar,$
@@ -182,7 +182,7 @@ pro spd_ui_load_omni_data_event,event
         state.loadTree->update
         
         callSeqStruc = { type:'loadapidata', $
-                         subtype:'spd_ui_load_omni_import', $
+                         subtype:'omni_ui_import_data', $
                          loadStruc:loadStruc, $
                          overwrite_selections:overwrite_selections }
                         
@@ -203,7 +203,7 @@ end
 ;this is the procedure called by the main load data panel when this tab is selected by the 
 ;user. this is where the tab panel is created and it's widgets are initialized. this is 
 ;only an example. each mission may choose to add or remove widgets as required by their data.
-pro spd_ui_load_omni_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
+pro omni_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
   compile_opt idl2,hidden
   
   ;load bitmap resources
@@ -215,7 +215,7 @@ pro spd_ui_load_omni_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,time
   spd_ui_match_background, tabid, trashcan
   
   ;create all the bases needed for the widgets on the panel 
-  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='spd_ui_load_omni_data_event') 
+  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='omni_ui_load_data_event') 
   
   leftBase = widget_base(topBase,/col)
   middleBase = widget_base(topBase,/col,/align_center)

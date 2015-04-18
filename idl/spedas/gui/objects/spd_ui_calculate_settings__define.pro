@@ -26,14 +26,15 @@
 ;  SetProperty
 ;
 ;NOTES:
-;  Methods: GetProperty,SetProperty,GetAll,SetAll are now managed automatically using the parent class
-;  spd_ui_getset.  You can still call these methods when using objects of type spd_ui_configuration_Settings, and
+;  Methods: GetAll,SetAll are now managed automatically using the parent class spd_ui_getset.  
+;  You can still call these methods when using objects of type spd_ui_calculate_settings__define, and
 ;  call them in the same way as before
 ;
-;$LastChangedBy:pcruce $
-;$LastChangedDate:2009-09-10 09:15:19 -0700 (Thu, 10 Sep 2009) $
-;$LastChangedRevision:6707 $
-;$URL:svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/spedas/spd_ui/objects/spd_ui_calculate_settings__define.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-16 11:55:55 -0700 (Thu, 16 Apr 2015) $
+;$LastChangedRevision: 17342 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_calculate_settings__define.pro $
+;
 ;-----------------------------------------------------------------------------------
 
 pro spd_ui_calculate_settings::setProperty,$

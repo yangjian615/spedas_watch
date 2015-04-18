@@ -26,15 +26,18 @@
 ;
 ;       NOERASE:   Do not refresh the plot for each [lon, lat] point.
 ;
+;       TERMINATOR: Overlay the terminator.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-05 15:31:37 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16592 $
+; $LastChangedDate: 2015-04-16 13:30:22 -0700 (Thu, 16 Apr 2015) $
+; $LastChangedRevision: 17343 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mag_npole_orbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  04-02-03
 ;-
 pro mag_npole_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
-                     reset=reset, noerase=noerase, title=title
+                     reset=reset, noerase=noerase, title=title, $
+                     terminator=ttime
 
   common magpole_orb_com, img, ppos
 
@@ -47,13 +50,12 @@ pro mag_npole_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
   if (~size(lstyle,/type)) then lstyle = 0 else lstyle = fix(lstyle)
   if (~size(color,/type)) then color = 2 else color = fix(color)
   if not keyword_set(noerase) then eflg = 1 else eflg = 0
+  if keyword_set(ttime) then doterm = 1 else doterm = 0
 
-  if (psym gt 7) then begin
-    psym = 8
-    a = 0.8
-    phi = findgen(49)*(2.*!pi/49)
-    usersym,a*cos(phi),a*sin(phi),/fill
-  endif
+  if (psym gt 7) then psym = 8
+  a = 0.8
+  phi = findgen(49)*(2.*!pi/49)
+  usersym,a*cos(phi),a*sin(phi),/fill
 
   if ((size(img,/type) eq 0) or keyword_set(reset)) then begin
     fname = file_which('MAG_Npole.jpg')
@@ -93,6 +95,13 @@ pro mag_npole_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
 
   oplot,[r*cos(phi)],[r*sin(phi)],psym=psym,color=color, $
     linestyle=lstyle,thick=2,symsize=1.4
+  
+  if (doterm) then begin
+    mvn_mars_terminator, ttime, result=tdat
+    r = 90. - tdat.tlat
+    phi = (tdat.tlon - 90.)*!dtor
+    oplot,r*cos(phi),r*sin(phi),linestyle=2,color=1,thick=2
+  endif
 
   wset,twin
 

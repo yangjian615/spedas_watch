@@ -15,8 +15,8 @@
 ;	ALPHAPROTON: if set, calculate alpha/proton quantities
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-02 10:02:54 -0800 (Fri, 02 Jan 2015) $
-; $LastChangedRevision: 16562 $
+; $LastChangedDate: 2015-04-16 06:28:16 -0700 (Thu, 16 Apr 2015) $
+; $LastChangedRevision: 17339 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_swindave.pro $
 ;
 ;-
@@ -75,11 +75,16 @@ norb = maxo-mino+1
 nout = fltarr(norb)
 vout = fltarr(norb)
 tout = dblarr(norb)
+nstd = fltarr(norb)
+vstd = fltarr(norb)
 
 if keyword_set(imf) then begin
 	bxout = fltarr(norb)
 	byout = fltarr(norb)
 	bzout = fltarr(norb)
+	bxstd = fltarr(norb)
+	bystd = fltarr(norb)
+	bzstd = fltarr(norb)
 endif
 
 if keyword_set(alphaproton) then begin
@@ -99,14 +104,19 @@ for i = 0,norb-1 do begin
 	w = where(orb eq (mino+i),nw)
 	if nw gt 10 then begin
 		nout[i] = mean(densities[w],/nan)
-
+		nstd[i] = stddev(densities[w],/nan)
 		vout[i] = mean(vels[w],/nan)
+		vstd[i] = stddev(vels[w],/nan)
 		tout[i] = mean(uswim[w].time_unix,/double,/nan)
+		
 
 		if keyword_set(imf) then begin
 			bxout[i] = mean(bx[w],/nan)
 			byout[i] = mean(by[w],/nan)
 			bzout[i] = mean(bz[w],/nan)
+			bxstd[i] = stddev(bx[w],/nan)
+			bystd[i] = stddev(by[w],/nan)
+			bzstd[i] = stddev(bz[w],/nan)
 		endif
 
 		if keyword_set(alphaproton) then begin
@@ -128,8 +138,13 @@ w = where(tout ne 0)
 
 store_data,'nsw',data = {x:tout[w],y:nout[w]}
 store_data,'vsw',data = {x:tout[w],y:vout[w]}
+store_data,'nswstd',data = {x:tout[w],y:nstd[w]}
+store_data,'vswstd',data = {x:tout[w],y:vstd[w]}
 
-if keyword_set(imf) then store_data,'bsw',data = {x:tout[w],y:[[bxout[w]],[byout[w]],[bzout[w]]],v:[0,1,2]}
+if keyword_set(imf) then begin
+	store_data,'bsw',data = {x:tout[w],y:[[bxout[w]],[byout[w]],[bzout[w]]],v:[0,1,2]}
+	store_data,'bswstd',data = {x:tout[w],y:[[bxstd[w]],[bystd[w]],[bzstd[w]]],v:[0,1,2]}
+endif
 
 if keyword_set(alphaproton) then begin
 	store_data,'npsw',data = {x:tout[w],y:npout[w]}

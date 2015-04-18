@@ -7,9 +7,9 @@
 ; can resettodefault, modify, and save the system variable.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 12:30:18 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17267 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/config_plugins/spd_ui_istp_fileconfig.pro $
+;$LastChangedDate: 2015-04-16 16:29:38 -0700 (Thu, 16 Apr 2015) $
+;$LastChangedRevision: 17346 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/spd_ui_istp_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
 pro spd_ui_istp_init_struct,state,struct

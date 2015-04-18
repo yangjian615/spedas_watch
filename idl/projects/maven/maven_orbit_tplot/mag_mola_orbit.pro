@@ -16,28 +16,31 @@
 ;                        of elements.
 ;
 ;KEYWORDS:
-;       PSYM:      Symbol type (same as for plot).
+;       PSYM:       Symbol type (same as for plot).
 ;
-;       LSTYLE:    Line style (same as for plot).
+;       LSTYLE:     Line style (same as for plot).
 ;
-;       COLOR:     Line/symbol color (same as for plot).
+;       COLOR:      Line/symbol color (same as for plot).
 ;
-;       RESET:     Read in the MAG-MOLA image and calculate the
-;                  plot size and position.
+;       RESET:      Read in the MAG-MOLA image and calculate the
+;                   plot size and position.
 ;
-;       NOERASE:   Do not refresh the plot for each [lon, lat] point.
+;       NOERASE:    Do not refresh the plot for each [lon, lat] point.
 ;
-;       BIG:       Use a 1000x500 MAG-MOLA image.
+;       BIG:        Use a 1000x500 MAG-MOLA image.
+;
+;       TERMINATOR: Overlay the terminator.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-05 15:32:54 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16593 $
+; $LastChangedDate: 2015-04-16 13:30:22 -0700 (Thu, 16 Apr 2015) $
+; $LastChangedRevision: 17343 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mag_mola_orbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  04-02-03
 ;-
 pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
-                    reset=reset, big=big, noerase=noerase, title=title
+                    reset=reset, big=big, noerase=noerase, title=title, $
+                    terminator=ttime
 
   common magmola_orb_com, img, ppos
 
@@ -50,13 +53,12 @@ pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
   if (~size(lstyle,/type)) then lstyle = 0 else lstyle = fix(lstyle)
   if (~size(color,/type)) then color = 2 else color = fix(color)
   if not keyword_set(noerase) then eflg = 1 else eflg = 0
+  if keyword_set(ttime) then doterm = 1 else doterm = 0
 
-  if (psym gt 7) then begin
-    psym = 8
-    a = 0.8
-    phi = findgen(49)*(2.*!pi/49)
-    usersym,a*cos(phi),a*sin(phi),/fill
-  endif
+  if (psym gt 7) then psym = 8
+  a = 0.8
+  phi = findgen(49)*(2.*!pi/49)
+  usersym,a*cos(phi),a*sin(phi),/fill
 
   if ((size(img,/type) eq 0) or keyword_set(reset)) then begin
     if keyword_set(big) then fname = file_which('MAG_MOLA_lg.bmp') $
@@ -93,6 +95,12 @@ pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
     xtitle = 'East Longitude', ytitle = 'Latitude', title=title
 
   oplot,[lon],[lat],psym=psym,color=color,linestyle=lstyle,thick=2,symsize=1.4
+  
+  if (doterm) then begin
+    mvn_mars_terminator, ttime, result=tdat
+    oplot,tdat.tlon,tdat.tlat,linestyle=2,color=1,thick=2
+    oplot,[tdat.slon],[tdat.slat],color=5,psym=8,symsize=3
+  endif
 
   wset,twin
 

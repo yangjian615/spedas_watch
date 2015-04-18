@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-;  spd_ui_load_omni_import
+;  omni_ui_import_data
 ;
 ;PURPOSE:
 ;  This routine provides an example for loading data into the GUI from the load
@@ -12,14 +12,14 @@
 ;
 ;HISTORY:
 ;
-;;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-11-03 11:56:50 -0800 (Mon, 03 Nov 2014) $
-;$LastChangedRevision: 16127 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spd_ui_load_omni_import.pro $
+;;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-16 16:11:35 -0700 (Thu, 16 Apr 2015) $
+;$LastChangedRevision: 17345 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/omni_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
 
-pro spd_ui_load_omni_import,$
+pro omni_ui_import_data,$
                          loadStruc, $
                          loadedData,$
                          statusBar,$

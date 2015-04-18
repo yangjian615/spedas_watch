@@ -1,18 +1,18 @@
 ;+ 
 ;NAME:
-;  spd_ui_load_indices
+;  idx_ui_load_data
 ;
 ;PURPOSE:
 ;  Widget interface for loading Geomagnetic/Solar indices data into the GUI
 ;
 ;HISTORY:
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-11-05 11:20:01 -0800 (Wed, 05 Nov 2014) $
-;$LastChangedRevision: 16137 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spedas_plugin/spd_ui_load_indices.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-16 16:09:24 -0700 (Thu, 16 Apr 2015) $
+;$LastChangedRevision: 17344 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spedas_plugin/idx_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
-pro spd_ui_load_indices_event,event
+pro idx_ui_load_data_event,event
   compile_opt hidden,idl2
   
   ;handle and report errors, reset variables
@@ -212,7 +212,7 @@ pro spd_ui_load_indices_event,event
                       timeRange:[startTimeString, endTimeString] }
 
         ;call the routine that loads the indices
-        spd_ui_load_indices_load, $
+        idx_ui_import_data, $
                          loadStruc,$
                          state.loadedData,$
                          state.statusBar,$
@@ -229,7 +229,7 @@ pro spd_ui_load_indices_event,event
          ;executed during a gui session. This is so it can be replayed in a 
          ;later session. 
          callSeqStruc = { type:'loadapidata', $
-                          subtype:'spd_ui_load_indices_load', $
+                          subtype:'idx_ui_import_data', $
                           loadStruc:loadStruc, $
                           overwrite_selections:overwrite_selections }
                           
@@ -327,7 +327,7 @@ function spd_ui_index_resolutions
   resArray[10] = ptr_new(symRes)
   return, resArray
 end
-pro spd_ui_load_indices,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
+pro idx_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
   compile_opt idl2,hidden
   
   ;load bitmap resources
@@ -339,7 +339,7 @@ pro spd_ui_load_indices,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRa
   spd_ui_match_background, tabid, trashcan
   
   ;create all the bases needed for the widgets on the panel 
-  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='spd_ui_load_indices_event') 
+  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='idx_ui_load_data_event') 
   
   leftBase = widget_base(topBase,/col)
   middleBase = widget_base(topBase,/col,/align_center)

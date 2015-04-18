@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-;  spd_ui_load_indices_load
+;  idx_ui_import_data
 ;
 ;PURPOSE:
 ;  Provides a single interface for accessing the geomagnetic/solar index load routines
@@ -9,13 +9,13 @@
 ;  
 ;REVISION HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-11-05 11:21:52 -0800 (Wed, 05 Nov 2014) $
-;$LastChangedRevision: 16138 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spedas_plugin/spd_ui_load_indices_load.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-16 16:09:24 -0700 (Thu, 16 Apr 2015) $
+;$LastChangedRevision: 17344 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/spedas_plugin/idx_ui_import_data.pro $
 ;-
 
-pro spd_ui_load_indices_load,$
+pro idx_ui_import_data,$
                          loadStruc,$
                          loadedData,$
                          statusBar,$

@@ -63,15 +63,15 @@
 ;                 entry of times with the cursor.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-08 17:40:56 -0700 (Wed, 08 Apr 2015) $
-; $LastChangedRevision: 17259 $
+; $LastChangedDate: 2015-04-16 13:30:22 -0700 (Thu, 16 Apr 2015) $
+; $LastChangedRevision: 17343 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl, times=times, $
-    nodot=nodot
+    nodot=nodot, terminator=terminator
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex, rcols
@@ -89,6 +89,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   if keyword_set(noerase) then noerase = 1 else noerase = 0
   if keyword_set(reset) then reset = 1 else reset = 0
   if keyword_set(nodot) then dodot = 0 else dodot = 1
+  if keyword_set(terminator) then doterm = 1 else doterm = 0
 
   if keyword_set(times) then begin
     times = time_double(times)
@@ -698,7 +699,9 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       if (pflg) then i = iref else i = rndx[imin]
       title = ''
       if (cflg) then j = color else j = 2
-      mag_mola_orbit, lon[i], lat[i], big=mbig, noerase=noerase, title=title, color=j
+      if (doterm) then ttime = trange[0] else ttime = 0
+      mag_mola_orbit, lon[i], lat[i], big=mbig, noerase=noerase, title=title, color=j, $
+                      terminator=ttime
     endif
 
 ; Put up Mars North polar plot
@@ -707,7 +710,9 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       if (pflg) then i = iref else i = rndx[imin]
       title = ''
       if (cflg) then j = color else j = 2
-      mag_Npole_orbit, lon[i], lat[i], noerase=noerase, title=title, color=j
+      if (doterm) then ttime = trange[0] else ttime = 0
+      mag_Npole_orbit, lon[i], lat[i], noerase=noerase, title=title, color=j, $
+                       terminator=ttime
     endif
 
 ; Get the next button press
