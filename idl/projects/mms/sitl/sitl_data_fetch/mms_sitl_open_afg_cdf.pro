@@ -9,14 +9,10 @@ CDF_str = cdf_load_vars(filename, varformat=varformat, var_type=var_type, $
   convert_int1_to_int2=convert_int1_to_int2)
     
 ; Get time data
-  
+
 times_TT_nanosec = *cdf_str.vars[0].dataptr
-times_TT_days = times_tt_nanosec/(1e9*86400D)
-  
-times_jul = times_TT_days + julday(1, 1, 2000, 12, 0, 0)
-
-times_unix =  86400D * (times_jul - julday(1, 1, 1970, 0, 0, 0 ))
-
+cdf_leap_second_init
+times_unix = time_double(times_TT_nanosec, /tt2000)
   
 vector_data = *cdf_str.vars[2].dataptr
 varname = cdf_str.vars(2).name
@@ -24,9 +20,7 @@ varname = cdf_str.vars(2).name
 ephem_data = *cdf_str.vars[10].dataptr
 ephem_name = cdf_str.vars[10].name
 ephem_times_TT_nanosec = *cdf_str.vars[5].dataptr
-ephem_times_TT_days = ephem_times_tt_nanosec/(1e9*86400D)
-ephem_times_jul = ephem_times_TT_days + julday(1, 1, 2000, 12, 0, 0)
-ephem_times_unix =  86400D * (ephem_times_jul - julday(1, 1, 1970, 0, 0, 0 ))
+ephem_times_unix = time_double(ephem_times_TT_nanosec, /tt2000)
 
 ; Grab epehem data
 posx = ephem_data(*,0)

@@ -13,7 +13,9 @@ function mms_sitl_open_dsp_ace_cdf, filename
   times_jul = times_TT_days + julday(1, 1, 2000, 12, 0, 0)
   
   times_unix =  86400D * (times_jul - julday(1, 1, 1970, 0, 0, 0 ))
-    
+  cdf_leap_second_init
+  times_unix = time_double(times_TT_nanosec, /tt2000)
+
   ; Says data is in orthogonalized boom coordinates.
   ex_spec = *cdf_str.vars[2].dataptr
   ey_spec = *cdf_str.vars[3].dataptr

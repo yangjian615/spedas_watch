@@ -11,11 +11,8 @@ CDF_str = cdf_load_vars(filename, varformat=varformat, var_type=var_type, $
 ; Get time data
   
 times_TT_nanosec = *cdf_str.vars[0].dataptr
-times_TT_days = times_tt_nanosec/(1e9*86400D)
-  
-times_jul = times_TT_days + julday(1, 1, 2000, 12, 0, 0)
-
-times_unix =  86400D * (times_jul - julday(1, 1, 1970, 0, 0, 0 ))
+cdf_leap_second_init
+times_unix = time_double(times_TT_nanosec, /tt2000)
 
   
 vector_data = *cdf_str.vars[2].dataptr

@@ -12,11 +12,8 @@ function mms_sitl_open_sdp_dce_sitl_cdf, filename, coord
   ; Get time data
   
   times_TT_nanosec = *cdf_str.vars[0].dataptr
-  times_TT_days = times_tt_nanosec/(1e9*86400D)
-  
-  times_jul = times_TT_days + julday(1, 1, 2000, 12, 0, 0)
-  
-  times_unix =  86400D * (times_jul - julday(1, 1, 1970, 0, 0, 0 ))
+  cdf_leap_second_init
+  times_unix = time_double(times_TT_nanosec, /tt2000)
   
   if coord eq 'pgse' then begin
     vector_data = *cdf_str.vars[2].dataptr

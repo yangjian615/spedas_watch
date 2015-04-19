@@ -51,7 +51,11 @@ sl = path_sep()
 
 ;May need password:
 if getenv('MAVENPFP_USER_PASS') eq '' then begin
-   passwd = getenv('USER')+':'+getenv('USER')+'_pfp';this is the default password, jmm, 2015-02-07
+;see mvn_file_source, 2015-04-17, jmm
+   if getenv('USER') ne '' then passwd = getenv('USER')+':'+getenv('USER')+'_pfp' $
+   else if getenv('USERNAME') ne '' then passwd = getenv('USERNAME')+':'+getenv('USERNAME')+'_pfp' $
+   else if getenv('LOGNAME') ne '' then passwd = getenv('LOGNAME')+':'+getenv('LOGNAME')+'_pfp' $
+   else passwd = ''
 endif else passwd = getenv('MAVENPFP_USER_PASS')
 
 ;Check date is correct format:
@@ -113,6 +117,7 @@ for ll = 0, nl-1 do begin
                        levels[ll]+sl+yr+sl+mm+sl+fname+'_v??_r??.cdf'
           if euvget eq 1. then fname2_tst = 'maven'+sl+'data'+sl+'sci'+sl+'euv'+sl+ $  ;get EUV based on euvget
                                             levels[ll]+sl+yr+sl+mm+sl+fname+'_v??_r??.cdf'
+          If(sl ne '/') Then fname2_tst = strjoin(strsplit(fname2_tst, sl, /extract), '/') ;fix to PC issue, jmm, 17-apr-2015
           fname2 = mvn_pfp_file_retrieve(fname2_tst, user_pass = passwd)
 
           ff = mvn_lpw_cdf_latest_file(fname2)  ;latest file

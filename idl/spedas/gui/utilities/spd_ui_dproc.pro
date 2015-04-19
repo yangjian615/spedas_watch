@@ -33,8 +33,8 @@
 ;HISTORY:
 ; 20-oct-2008, jmm, jimm@ssl.berkeley.edu
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-03-24 11:51:48 -0700 (Tue, 24 Mar 2015) $
-;$LastChangedRevision: 17175 $
+;$LastChangedDate: 2015-04-17 07:45:56 -0700 (Fri, 17 Apr 2015) $
+;$LastChangedRevision: 17347 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_dproc.pro $
 
 
@@ -185,12 +185,6 @@ Function spd_ui_dproc, info, uval, $
       endif
     End
     'smooth': Begin
-;      opar = obj_new('spd_ui_dproc_par', dp_string = uv, $
-;                     dp_struct = {plabel:'Smoothing Resolution (sec)', $
-;                                  pvalue:'61'})
-;      smooth_res = spd_ui_dproc_par_choose(opar, gui_id = guiid, $
-;                                           title = 'Choose Smoothing Time Resolution')
-;      obj_destroy, opar
       values = spd_ui_smooth_data_options(guiid, sbar, info.historywin)
       If ~values.ok Then Begin ;check par values
         msg = 'Operation Cancelled: '+uvlong[is_possible]
