@@ -74,8 +74,8 @@
 ;       RAINBOW:       With NOERASE, overplot spectra using up to 6 different colors.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-10 10:10:23 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17287 $
+; $LastChangedDate: 2015-04-19 11:34:01 -0700 (Sun, 19 Apr 2015) $
+; $LastChangedRevision: 17361 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -87,7 +87,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
                    dEmax=dEmax, burst=burst, rainbow=rainbow
 
   @mvn_swe_com
-  common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   mass = 5.6856297d-06             ; electron rest mass [eV/(km/s)^2]
   c1 = (mass/(2D*!dpi))^1.5

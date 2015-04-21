@@ -12,8 +12,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-04 13:36:53 -0800 (Wed, 04 Feb 2015) $
-; $LastChangedRevision: 16854 $
+; $LastChangedDate: 2015-04-19 11:35:25 -0700 (Sun, 19 Apr 2015) $
+; $LastChangedRevision: 17363 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-01-15
@@ -22,6 +22,9 @@
 pro mvn_swe_init
 
   @mvn_swe_com
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  
+  if (size(snap_index,/type) eq 0) then swe_snap_layout,0
 
 ; Decompression: 19-to-8
 ;   16-bit instrument messages are summed into 19-bit counters 

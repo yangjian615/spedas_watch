@@ -68,8 +68,8 @@
 ;                      the 3D plot.  EXPERIMENTAL - Still debugging.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-10 10:16:43 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17293 $
+; $LastChangedDate: 2015-04-19 11:34:01 -0700 (Sun, 19 Apr 2015) $
+; $LastChangedRevision: 17361 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -82,7 +82,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  plot_sc=plot_sc
 
   @mvn_swe_com
-  common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if keyword_set(burst) then aflg = 1

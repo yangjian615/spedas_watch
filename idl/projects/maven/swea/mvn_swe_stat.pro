@@ -11,8 +11,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-04 13:43:31 -0800 (Wed, 04 Feb 2015) $
-; $LastChangedRevision: 16865 $
+; $LastChangedDate: 2015-04-19 12:09:05 -0700 (Sun, 19 Apr 2015) $
+; $LastChangedRevision: 17367 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_stat.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -20,12 +20,13 @@
 pro mvn_swe_stat, npkt=npkt, silent=silent
 
   @mvn_swe_com
-  
+
+  npkt = replicate(0,8)
+
   if (size(swe_hsk,/type) ne 8) then begin
     print,""
     print,"No SWEA data loaded."
     print,""
-    n_pkt = 0
     return
   endif
 

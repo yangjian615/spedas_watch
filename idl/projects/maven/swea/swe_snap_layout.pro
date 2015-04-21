@@ -22,25 +22,25 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-10 10:11:55 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17289 $
+; $LastChangedDate: 2015-04-19 11:34:01 -0700 (Sun, 19 Apr 2015) $
+; $LastChangedRevision: 17361 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_snap_layout.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_snap_layout, layout
 
-  common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
   
   if (size(layout,/type) eq 0) then begin
     print,"Hardware-dependent positions for snapshot windows (optional)."
     print,"  0 --> Default.  No fixed window positions."
-    print,"  1 --> Macbook 1440x900 with Dell 1920x1200 (above)"
-    print,"  2 --> Twin Dell 1920x1200 (left, right)"
-    print,"  3 --> Macbook 1440x900 with ViewSonic 1680x1050 (above)"
-    print,"  4 --> Macbook 1440x900 with Samsung 1600x900 (left)"
-    print,"  5 --> Macbook 1440x900 (below) with twin Dell 1920x1200 (left, right)"
-    print,"  6 --> Macbook 1440x900 (below) with 2560x1440 (left), 1920x1200 (right)"
+    print,"  1 --> 1440x900 (below) with 1920x1200 (above)"
+    print,"  2 --> 1920x1200 (left) with 1920x1200 (right)"
+    print,"  3 --> 1440x900 (below) with 1680x1050 (above)"
+    print,"  4 --> 1440x900 (right) with 1600x900 (left)"
+    print,"  5 --> 1440x900 (below) with 1920x1200 (left), 1920x1200 (right)"
+    print,"  6 --> 1440x900 (below) with 2560x1440 (left), 1920x1200 (right)"
     print,""
     layout = ''
     read, layout, prompt='Layout > '
@@ -49,6 +49,8 @@ pro swe_snap_layout, layout
   case layout[0] of
 
     '1'  : begin  ; Macbook 1440x900 with Dell 1920x1200 (above)
+             snap_index = 1
+
              Dopt = {xsize:800, ysize:600, xpos:300,  ypos:-600}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:1130, ypos:-600}
 
@@ -61,6 +63,8 @@ pro swe_snap_layout, layout
            end
     
     '2'   : begin  ; Twin Dell 1920x1200 (left, right)
+             snap_index = 2
+
              Dopt = {xsize:800, ysize:600, xpos:1120, ypos:640}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:880,  ypos:500}
 
@@ -73,6 +77,8 @@ pro swe_snap_layout, layout
            end
     
     '3'  : begin  ; Macbook 1440x900 with ViewSonic 1680x1050 (above)
+             snap_index = 3
+
              Dopt = {xsize:800, ysize:600, xpos:240,  ypos:-600}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:1100, ypos:-600}
 
@@ -85,6 +91,8 @@ pro swe_snap_layout, layout
            end
     
     '4'  : begin  ; Macbook 1440x900 with Samsung 1600x900 (left)
+             snap_index = 4
+
              Dopt = {xsize:800, ysize:600, xpos:1600, ypos:300}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:2420, ypos:300}
 
@@ -97,6 +105,8 @@ pro swe_snap_layout, layout
            end
     
     '5'  : begin  ; Macbook 1440x900 with Twin Dell 1920x1200 (left, right)
+             snap_index = 5
+
              Dopt = {xsize:800, ysize:600, xpos:1920+100, ypos:640}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:1920+1000, ypos:640}
 
@@ -109,6 +119,8 @@ pro swe_snap_layout, layout
            end
     
     '6'  : begin  ; Macbook 1440x900 with 2560x1440 (left) and 1920x1200 (right)
+             snap_index = 6
+
              Dopt = {xsize:800, ysize:600, xpos:2560+100, ypos:640}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:2560+1000, ypos:640}
 
@@ -121,6 +133,8 @@ pro swe_snap_layout, layout
            end
     
     else : begin  ; Default.  No fixed window positions
+             snap_index = 0
+
              Dopt = {xsize:800, ysize:600, xpos:0, ypos:0}  ; 3D
              Sopt = {xsize:450, ysize:600, xpos:0, ypos:0}
 

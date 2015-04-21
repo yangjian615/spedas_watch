@@ -40,9 +40,11 @@
 ;
 ;       MASK_SC:       Mask PA bins that are blocked by the spacecraft.
 ;
+;       PA_CUT:        Plot and energy spectrum at this pitch angle.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-10 21:41:01 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16947 $
+; $LastChangedDate: 2015-04-19 11:34:01 -0700 (Sun, 19 Apr 2015) $
+; $LastChangedRevision: 17361 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -50,10 +52,11 @@
 pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
                   label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
-                  abins=abins, dbins=dbins, obins=obins, burst=burst
+                  abins=abins, dbins=dbins, obins=obins, burst=burst, $
+                  pa_cut=pa_cut
 
   @mvn_swe_com
-  common snap_layout, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if keyword_set(burst) then aflg = 1
@@ -85,6 +88,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   endif else obins = byte(obins # [1B,1B])
   if (size(mask_sc,/type) eq 0) then mask_sc = 1
   if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+  if keyword_set(pa_cut) then cflg = 1 else cflg = 0
 
 ; Put up snapshot window(s)
 
@@ -103,6 +107,11 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if (dflg) then begin
     window, /free, xsize=Copt.xsize, ysize=Copt.ysize, xpos=Copt.xpos, ypos=Copt.ypos
     Cwin = !d.window
+  endif
+  
+  if (cflg) then begin
+    window, /free, xsize=Eopt.xsize, ysize=Eopt.ysize, xpos=Eopt.xpos, ypos=Eopt.ypos
+    Ewin = !d.window
   endif
 
 ; Set plot options
@@ -320,6 +329,11 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           ddd.magf[2] = sin(pad.Bel)
           plot3d_new,ddd,0.,180.,ebins=[ebin,ebin+1]
         endif
+      endif
+      
+      if (cflg) then begin
+        wset, Ewin
+        dpa = min(pad.pa - pa_cut, i)
       endif
     endif
 

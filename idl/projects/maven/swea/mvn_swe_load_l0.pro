@@ -73,8 +73,8 @@
 ;       SPICEINIT:     Force a re-initialization of SPICE.  Use with caution!
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-13 13:33:20 -0700 (Mon, 13 Apr 2015) $
-; $LastChangedRevision: 17301 $
+; $LastChangedDate: 2015-04-19 12:07:55 -0700 (Sun, 19 Apr 2015) $
+; $LastChangedRevision: 17366 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -192,7 +192,6 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
   mvn_swe_stat, npkt=npkt, /silent
   
-  if (size(npkt,/type) eq 0) then return
   if (npkt[7] eq 0L) then begin
     print,"No SWEA housekeeping!"
     return
