@@ -11,13 +11,15 @@
 ; routine app_user_dir to create/obtain it: my linux example:
 ; /disks/ice/home/jimm/.idl/themis/thm_config-4-linux
 ;OUTPUT:
-; cstruct = a structure with the changeable fields of the !istp
+; otp = a structure with the changeable fields of the !goes
 ;           structure
+;           
+;           
 ; Copied from thm_read_config and tt2000_read_config lphilpott 20-jun-2012
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
-;$LastChangedRevision: 14467 $
+;$LastChangedDate: 2015-04-20 12:42:25 -0700 (Mon, 20 Apr 2015) $
+;$LastChangedRevision: 17376 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_read_config.pro $
 ;-
 

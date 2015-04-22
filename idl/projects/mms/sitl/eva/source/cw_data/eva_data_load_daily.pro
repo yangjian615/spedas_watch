@@ -188,6 +188,14 @@ FUNCTION eva_data_load_daily, filename, dir
       matched=1
     endif
     
+    if strmatch(type,'ffp') then begin
+      idx = where(strmatch(tnames(),tname),ct)
+      if ct ne 1 then begin
+        thm_load_fft,probe=prbs
+      endif
+      matched=1  
+    endif
+    
     if strmatch(type,'np*') then begin
       probe=probes[0]
       thm_load_esa, probe=prbs, datat=' peer_avgtemp pe?r_density peer_sc_pot ', level=2

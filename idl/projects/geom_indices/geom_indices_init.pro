@@ -1,10 +1,8 @@
 ;+
 ;NAME: geom_indices_init
 ;
-;DESCRIPTION: Initializes system variables for geom_indices.  Can be called
-;  from idl_startup or customized for non-standard installations.  The
-;  system variable !geom_indices is defined here.  The elements of this
-;  structure are (mostly) the same as for !SPEDAS.
+;DESCRIPTION: Initializes system variables for geomagnetic indices in SPEDAS (!geom_indices).  Can be called
+;  from idl_startup or customized for non-standard installations.  
 ;
 ;REQUIRED INPUTS:
 ; none
@@ -19,9 +17,9 @@
 ;
 ;REVISION HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-11-05 11:21:52 -0800 (Wed, 05 Nov 2014) $
-;$LastChangedRevision: 16138 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-20 16:29:03 -0700 (Mon, 20 Apr 2015) $
+;$LastChangedRevision: 17383 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/geom_indices/geom_indices_init.pro $
 ;-
 

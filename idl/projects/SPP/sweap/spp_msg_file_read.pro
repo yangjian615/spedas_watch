@@ -21,7 +21,9 @@ pro spp_msg_file_read,files
       psize = msg_header[2]*2
       if sync ne 'a829'x then begin
         hexprint,msg_header
-        dprint,sync,code,psize,fp   ,  ' Sync not recognized'    
+        dprint,sync,code,psize,fp   ,  ' Sync not recognized'   
+        point_lun,lun, fp+2
+        continue
       endif
 
       if psize lt 12 then begin

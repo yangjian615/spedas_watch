@@ -11,8 +11,8 @@
 ;   
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-25 09:20:33 -0700 (Tue, 25 Mar 2014) $
-; $LastChangedRevision: 14659 $
+; $LastChangedDate: 2015-04-20 16:12:32 -0700 (Mon, 20 Apr 2015) $
+; $LastChangedRevision: 17382 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_lib.pro $
 ;-
 
@@ -226,90 +226,53 @@ pro goes_epead_contam_cor, e_uncor, p_uncor
     mine1flux = mincr/e1g ; convert minimum cr to minimum E1 flux
     mine2flux = mincr/e2g ; convert minimum cr to minimum E2 flux
     
-    for e_uncor_idx = 0, n_elements(e_uncor)-1 do begin
-        e_uncor_tname = e_uncor[e_uncor_idx]
-        if e_uncor_idx eq 0 then begin
-            get_data, e_uncor_tname, data=e_uncor_data, dlimits = e_uncor_dlimits
-            
-            ; check that valid structs were returned
-            if ~is_struct(e_uncor_data) || ~is_struct(e_uncor_dlimits) then begin
-                dprint, dlevel = 1, 'Error calculating EPEAD contamination corrections, possibly due to invalid tplot variables.'
-                return
-            endif
-            
-            newe_uncor_data = fltarr(e_uncor_data.Y, 2)
-            newe_uncor_data[*,0] = e_uncor_data.Y
-            ; we're going to need the fill value
-            e_fillvalue = e_uncor_dlimits.cdf.vatt.fillval
-        endif else begin
-            get_data, e_uncor_tname, data=e_uncor_data, dlimits = e_uncor_dlimits
-            
-            ; check that valid structs were returned
-            if ~is_struct(e_uncor_data) || ~is_struct(e_uncor_dlimits) then begin
-                dprint, dlevel = 1, 'Error calculating EPEAD contamination corrections, possibly due to invalid tplot variables.'
-                return
-            endif
-            
-            newe_uncor_data[*,1] = e_uncor_data.Y
-        endelse
-    endfor
+    ; get the uncorrected data
+    get_data, e_uncor[0], data=e1_uncor, dlimits=e1_uncor_dlimits
+    get_data, e_uncor[1], data=e2_uncor, dlimits=e2_uncor_dlimits
     
-    for p_uncor_idx = 0, n_elements(p_uncor)-1 do begin
-        p_uncor_tname = p_uncor[p_uncor_idx]
-        if p_uncor_idx eq 0 then begin
-            get_data, p_uncor_tname, data = p_uncor_data, dlimits = p_uncor_dlimits
-            
-            ; check that valid structs were returned
-            if ~is_struct(p_uncor_data) || ~is_struct(p_uncor_dlimits) then begin
-                dprint, dlevel = 1, 'Error calculating EPEAD contamination corrections, possibly due to invalid tplot variables.'
-                return
-            endif
-            
-            newp_uncor_data = fltarr(p_uncor_data.Y,4)
-            newp_uncor_data[*,0] = p_uncor_data.Y
-            ; we're going to need the fill value
-            p_fillvalue = p_uncor_dlimits.cdf.vatt.fillval
-        endif else begin
-            get_data, p_uncor_tname, data = p_uncor_data, dlimits = p_uncor_dlimits
-         
-            ; check that valid structs were returned
-            if ~is_struct(p_uncor_data) || ~is_struct(p_uncor_dlimits) then begin
-                dprint, dlevel = 1, 'Error calculating EPEAD contamination corrections, possibly due to invalid tplot variables.'
-                return
-            endif
-            
-            newp_uncor_data[*,p_uncor_idx] = p_uncor_data.Y
-        endelse
-    endfor
+    ; and the uncorrected proton data
+    get_data, p_uncor[0], data=p3_uncor, dlimits=p3_uncor_dlimits
+    get_data, p_uncor[1], data=p4_uncor, dlimits=p4_uncor_dlimits
+    get_data, p_uncor[2], data=p5_uncor, dlimits=p5_uncor_dlimits
+    get_data, p_uncor[3], data=p6_uncor, dlimits=p6_uncor_dlimits
     
-    e1_fill = where(newe_uncor_data[*,0] eq e_fillvalue or newp_uncor_data[*,0] eq p_fillvalue or newp_uncor_data[*,1] $
-        eq p_fillvalue or newp_uncor_data[*,2] eq p_fillvalue or newp_uncor_data[*,3] eq p_fillvalue, e1fillcount)
-    e2_fill = where(newe_uncor_data[*,1] eq e_fillvalue or newp_uncor_data[*,0] eq p_fillvalue or newp_uncor_data[*,1] $
-        eq p_fillvalue or newp_uncor_data[*,2] eq p_fillvalue or newp_uncor_data[*,3] eq p_fillvalue, e2fillcount)
-
-    ; count rate corrections, convert to integral flux
-    de1 = (e1coeff[0]*newp_uncor_data[*,0] + e1coeff[1]*newp_uncor_data[*,1] + e1coeff[2]*newp_uncor_data[*,2] + $
-            e1coeff[3]*newp_uncor_data[*,3])/e1g
-    de2 = (e2coeff[0]*newp_uncor_data[*,0] + e2coeff[1]*newp_uncor_data[*,1] + e2coeff[2]*newp_uncor_data[*,2] + $
-            e2coeff[3]*newp_uncor_data[*,3])/e2g
+    ; what's the fill value? should be -99999
+    if is_struct(e1_uncor_dlimits) then begin
+        FillVal = double(e1_uncor_dlimits.cdf.vatt.fillval)
+    endif else begin
+        dprint, dlevel = 0, 'Error, invalid tplot variable for E1 in GOES_EPEAD_CONTAM_COR'
+        return
+    endelse
+    
+    WhE1Fill = where(e1_uncor.Y eq FillVal or p3_uncor.Y eq FillVal or p4_uncor.Y eq FillVal $
+      or p5_uncor.Y eq FillVal or p6_uncor.Y eq FillVal, CtE1Fill)
+    WhE2Fill = where(e2_uncor.Y eq FillVal or p3_uncor.Y eq FillVal or p4_uncor.Y eq FillVal $
+      or p5_uncor.Y eq FillVal or p6_uncor.Y eq FillVal, CtE2Fill)
+    
+    ; Calculate count rate corrections and convert to integral flux         
+    de1 = (e1coeff[0]*p3_uncor.Y + e1coeff[1]*p4_uncor.Y + e1coeff[2]*p5_uncor.Y + $
+            e1coeff[3]*p6_uncor.Y)/e1g
+    de2 = (e2coeff[0]*p3_uncor.Y + e2coeff[1]*p4_uncor.Y + e2coeff[2]*p5_uncor.Y + $
+            e2coeff[3]*p6_uncor.Y)/e2g
     
     ; subtract this from the uncorrected integral flux
-    e1_cor = newe_uncor_data[*,0] - de1
-    e2_cor = newe_uncor_data[*,1] - de2
+    e1_cor = e1_uncor.Y - de1
+    e2_cor = e2_uncor.Y - de2
     
     ; replace fluxes less than minimum flux with minimum flux values
     e1low = where(e1_cor lt mine1flux, e1lowcount)
     e2low = where(e2_cor lt mine2flux, e2lowcount)
+    
     if e1lowcount gt 0 then e1_cor[e1low] = mine1flux
     if e2lowcount gt 0 then e2_cor[e2low] = mine2flux
     
     ; replace fluxes with fill value if uncorrected flux or the protons fluxes used to correct are fill values
-    if e1fillcount gt 0 then e1_cor[e1_fill] = e_fillvalue
-    if e2fillcount gt 0 then e2_cor[e2_fill] = e_fillvalue
+    if CtE1Fill gt 0 then e1_cor[WhE1Fill] = FillVal
+    if CtE2Fill gt 0 then e2_cor[WhE2Fill] = FillVal   
     
     ; store the corrected fluxes
-    store_data, 'e1_cor', data = e1_cor, dlimits = e_uncor_dlimits
-    store_data, 'e2_cor', data = e2_cor, dlimits = e_uncor_dlimits
+    store_data, 'e1_cor', data = {x: e1_uncor.X, y: e1_cor}, dlimits = e_uncor_dlimits
+    store_data, 'e2_cor', data = {x: e1_uncor.X, y: e2_cor}, dlimits = e_uncor_dlimits
 end
 ; Procedure: goes_part_omni_flux
 ; 

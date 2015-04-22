@@ -704,10 +704,10 @@ load_position='bound'
 load_position='plot'
 
 ; plot it!
-thm_spec_lim4overplot, thx+'_peif_en_eflux', zlog = 1, ylog = 1, ymin = 3.0, /overwrite
-thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, ymin = 3.0, /overwrite
-thm_spec_lim4overplot, thx+'_peir_en_eflux', zlog = 1, ylog = 1, ymin = 3.0, /overwrite
-thm_spec_lim4overplot, thx+'_peer_en_eflux', zlog = 1, ylog = 1, ymin = 3.0, /overwrite
+thm_spec_lim4overplot, thx+'_peif_en_eflux', zlog = 1, ylog = 1, /overwrite
+thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, /overwrite
+thm_spec_lim4overplot, thx+'_peir_en_eflux', zlog = 1, ylog = 1, /overwrite
+thm_spec_lim4overplot, thx+'_peer_en_eflux', zlog = 1, ylog = 1, /overwrite
 ssti_name=thx+'_psif_en_eflux'
 sste_name=thx+'_psef_en_eflux'
 thm_spec_lim4overplot, ssti_name, zlog = 1, ylog = 1, /overwrite

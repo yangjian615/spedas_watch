@@ -11,12 +11,12 @@
 ; routine app_user_dir to create/obtain it: my linux example:
 ; /disks/ice/home/jimm/.idl/themis/poes_config-4-linux
 ;OUTPUT:
-; cstruct = a structure with the changeable fields of the !istp
+; otp = a structure with the changeable fields of the !poes
 ;           structure
 ; Copied from thm_read_config and tt2000_read_config lphilpott 20-jun-2012
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-09-18 13:30:13 -0700 (Thu, 18 Sep 2014) $
-;$LastChangedRevision: 15821 $
+;$LastChangedDate: 2015-04-20 12:45:40 -0700 (Mon, 20 Apr 2015) $
+;$LastChangedRevision: 17377 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_read_config.pro $
 ;-
 Function poes_config_template

@@ -11,9 +11,9 @@
 ;            no_color_setup: skip setting up the graphics configuration
 ;            
 ;             
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-16 10:29:42 -0700 (Wed, 16 Jul 2014) $
-;$LastChangedRevision: 15581 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-20 12:22:16 -0700 (Mon, 20 Apr 2015) $
+;$LastChangedRevision: 17375 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_init.pro $
 ;-
 pro goes_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, no_color_setup = no_color_setup
@@ -47,9 +47,6 @@ Endif else begin; use defaults
     !goes.remote_data_dir = 'http://satdat.ngdc.noaa.gov/sem/goes/data/'
 endelse
 !goes.min_age_limit = 900    ; Don't check for new files if local file is less than 900 seconds old.
-
-;if keyword_set(local_data_dir) then  $
-;   !istp.local_data_dir = local_data_dir
 
 if file_test(!goes.local_data_dir+'.master') then begin ; Local directory IS the master directory
    !goes.no_server = 1

@@ -471,7 +471,7 @@ end
 
 pro spp_swp_apid_data_init,save=save
 
-if 0 then begin
+if 1 then begin
   spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom_version_50x',tname='spp_spanai_hkp_',tfields='*',save=save
   spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_50x',tname='spp_spanai_rates_',tfields='*',save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
@@ -518,11 +518,11 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
     if keyword_set(apdat.routine) then begin
       strct = call_function(apdat.routine,ccsds,ptp_header=ptp_header,apdat=apdat)
       if  apdat.save && keyword_set(strct) then begin
-        if ccsds.gap eq 1 then append_array, *apdat.dataptr, fill_nan(strct), index = *apdat.dataindex
+;        if ccsds.gap eq 1 then append_array, *apdat.dataptr, fill_nan(strct), index = *apdat.dataindex
         append_array, *apdat.dataptr, strct, index = *apdat.dataindex
       endif
       if apdat.rt_flag && apdat.rt_tags then begin
-        if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
+;        if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
         store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags, /append
       endif
     endif
