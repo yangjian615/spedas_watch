@@ -128,7 +128,8 @@ FUNCTION eva_data_load_daily, filename, dir
     endif
 
     if (strmatch(type,'pe?r') or strmatch(type,'pe?f') or strmatch(type,'pe?b')) then begin
-      thm_load_esa,probe=prbs,level=2,coord=coord,datatype=[type+'_density',type+'_velocity_*',type+'_avgtemp']
+      datatype = [type+'_density',type+'_velocity_*',type+'_avgtemp',type+'_magt3']
+      thm_load_esa,probe=prbs,level=2,coord=coord,datatype=datatype
       matched = 1
     endif
 

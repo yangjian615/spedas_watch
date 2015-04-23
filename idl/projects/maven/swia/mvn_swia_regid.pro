@@ -18,8 +18,8 @@
 ;	REGOUT: Tplot structure containing region IDs
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-02-23 07:13:25 -0800 (Mon, 23 Feb 2015) $
-; $LastChangedRevision: 17024 $
+; $LastChangedDate: 2015-04-21 12:37:59 -0700 (Tue, 21 Apr 2015) $
+; $LastChangedRevision: 17384 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_regid.pro $
 ;
 ;-
@@ -112,7 +112,7 @@ regid(w) = 2	;Sheath
 w = where((vel lt 100 or dens lt 0.1) and magstd/mag lt 0.1 and mag gt 10 and alt lt 500)
 regid(w) = 3	;Ionosphere
 
-w = where((vel lt 100 or dens lt 0.1) and magstd/mag lt 0.1 and mag gt 10 and alt lt 250 and (ux gt 0 or uyz gt RM))
+w = where((vel lt 100 or dens lt 0.1) and magstd/mag lt 0.1 and mag gt 10 and alt lt 250 and alt gt 140 and (ux gt 0 or uyz gt RM))
 regid(w) = 4 ;Periapsis Dayside Ionosphere
 
 w = where(vel lt 200 and magstd/mag lt 0.1 and abs(magx/mag) gt 0.9 and ux lt 0 and alt gt 300)
