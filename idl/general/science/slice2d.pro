@@ -63,8 +63,8 @@
 ;       Modified from 'thm_esa_slice2d'
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-01-28 11:38:05 -0800 (Wed, 28 Jan 2015) $
-; $LastChangedRevision: 16771 $
+; $LastChangedDate: 2015-04-22 16:35:53 -0700 (Wed, 22 Apr 2015) $
+; $LastChangedRevision: 17401 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
@@ -268,9 +268,10 @@ newdata.v = newdata.v # rot
 vvec = vvec # rot
 if keyword_set(sundir) then begin
    sundir = sundir # rot
-   if sundir[1] ne 0 then $
-      ysun = sqrt( sundir[1]^2 + sundir[2]^2 )*sundir[1]/abs(sundir[1]) $
-   else ysun = 0.
+;;    if sundir[1] ne 0 then $     ;- assumes axisymmetry
+;;       ysun = sqrt( sundir[1]^2 + sundir[2]^2 )*sundir[1]/abs(sundir[1]) $
+;;    else ysun = 0.
+   ysun = sundir[1]             ;- simple projection
    xsun = sundir[0]
 endif
 ;=== rotation to the required frame of reference ===

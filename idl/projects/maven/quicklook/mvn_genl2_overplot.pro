@@ -61,8 +61,8 @@
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; CHanged to use thara's mvn_pl_pfp_tplot.pro, 2015-04-14, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-04-15 15:47:19 -0700 (Wed, 15 Apr 2015) $
-; $LastChangedRevision: 17333 $
+; $LastChangedDate: 2015-04-22 17:37:04 -0700 (Wed, 22 Apr 2015) $
+; $LastChangedRevision: 17402 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_genl2_overplot.pro $
 ;-
 Pro mvn_genl2_overplot, orbit_number = orbit_number, $
@@ -77,14 +77,25 @@ Pro mvn_genl2_overplot, orbit_number = orbit_number, $
 ;First load the data
 ;Orbit number
   orbdata = mvn_orbit_num()
+  norbits = n_elements(orbdata.num)
   If(keyword_set(orbit_number)) Then Begin
      orb_range = minmax(orbit_number)
      If(n_elements(orbit_number) Eq 1) Then orb_range[1]=orb_range[1]+1
      tr0 = interpol(orbdata.peri_time, orbdata.num, orb_range)
+     tr0x = tr0
   Endif Else If(keyword_set(time_range)) Then Begin
      tr0 = time_double(time_range) & tr0x = tr0
   Endif Else If(keyword_set(date)) Then Begin
      tr0 = time_double(date)+[0.0d0, 86400.0d0] & tr0x = tr0
+;reset time range to start and end of orbits, note we are making the
+;assumption that the orbit data is always ahead of the time processed.
+    If(tr0[0] Ge orbdata[0].peri_time And $
+        tr0[1] Le orbdata[norbits-1].peri_time) Then Begin
+        o1 = max(where(orbdata.peri_time Le tr0[0]))
+        o2 = min(where(orbdata.peri_time ge tr0[1]))
+        tr0 = orbdata[[o1, o2]].peri_time
+        print, 'Orbit start and end:', orbdata[[o1, o2]].num
+     Endif
   Endif Else Begin
      dprint, 'Need orbit_number, date or time_range input keywords set'
      Return
@@ -120,17 +131,17 @@ Pro mvn_genl2_overplot, orbit_number = orbit_number, $
   tplot_options, 'ygap', 0.0d0
 
 ;Get the date-time range
-  d0 = time_string(tr0[0])
-  d1 = time_string(tr0[1])
+  d0 = time_string(tr0x[0])
+  d1 = time_string(tr0x[1])
 
 ;plot the data
   tplot, varlist, title = 'MAVEN PFP Quicklook '+d0+'-'+d1, var_label = 'mvn_orbnum'
-  tlimit, tr0[0], tr0[1]
+  tlimit, tr0x[0], tr0x[1]
 
   If(keyword_set(multipngplot) && keyword_set(date)) Then makepng = 1b
   If(keyword_set(makepng)) Then Begin
      If(keyword_set(directory)) Then pdir = directory Else pdir = './'
-     fname = pdir+mvn_qlook_filename('pfp', tr, _extra=_extra)
+     fname = pdir+mvn_qlook_filename('l2', tr0x, _extra=_extra)
      If(keyword_set(multipngplot) && keyword_set(date)) Then mvn_gen_multipngplot, fname, directory = pdir $
      Else makepng, fname
   Endif

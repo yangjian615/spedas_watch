@@ -15,8 +15,8 @@
 ; The structure 'cfg' contains your variables in addition to the default variables.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-02 18:34:10 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17228 $
+; $LastChangedDate: 2015-04-22 12:11:28 -0700 (Wed, 22 Apr 2015) $
+; $LastChangedRevision: 17391 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_config_write.pro $
 ; 
 PRO mms_config_write, pref
@@ -48,7 +48,7 @@ PRO mms_config_write, pref
       if(size(x1, /type) eq 1) Then x1 = fix(x1)
       x1 = strcompress(/remove_all, string(x1))
     endelse
-    printf, nf, x0+':'+x1
+    printf, nf, x0+'='+x1
   endfor
   free_lun, nf
 END

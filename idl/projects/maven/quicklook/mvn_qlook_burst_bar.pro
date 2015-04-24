@@ -19,8 +19,8 @@
 ;HISTORY:
 ; 20-nov-2007, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-04-15 13:41:45 -0700 (Wed, 15 Apr 2015) $
-; $LastChangedRevision: 17328 $
+; $LastChangedDate: 2015-04-22 17:37:04 -0700 (Wed, 22 Apr 2015) $
+; $LastChangedRevision: 17402 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_qlook_burst_bar.pro $
 ;-
 Function mvn_qlook_burst_bar, date, duration, outline=outline, from_l2 = from_l2, _extra = _extra
@@ -31,8 +31,10 @@ Function mvn_qlook_burst_bar, date, duration, outline=outline, from_l2 = from_l2
 ; make tplot variable tracking the presence of archive data
 ;------------------------------------------------------------------
   If(keyword_set(from_l2)) Then Begin
-; Load SWIA L2 data 
-     trange_fill = timerange()
+;Load SWIA L2 data 
+     trange_full = timerange()
+;Need all days for this
+     trange_full = time_double(time_string(trange_full, tformat='YYYY-MM-DD') )
      mvn_swia_load_l2_data, trange=trange_full, /tplot, /loadcoarse
      get_data, 'mvn_swica_ph_counts', data = ddd
      If(is_struct(ddd)) Then Begin
@@ -80,7 +82,6 @@ Function mvn_qlook_burst_bar, date, duration, outline=outline, from_l2 = from_l2
   ylim, 'mvn_arcflag', 0.0, 1.0, 0
   options, 'mvn_arcflag', 'panel_size', 0.2
   options,'mvn_arcflag', ytitle='BST'
-  
 
 ;end mode bar code block
 ;--------------->

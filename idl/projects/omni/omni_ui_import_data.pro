@@ -13,8 +13,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-16 16:11:35 -0700 (Thu, 16 Apr 2015) $
-;$LastChangedRevision: 17345 $
+;$LastChangedDate: 2015-04-22 15:41:37 -0700 (Wed, 22 Apr 2015) $
+;$LastChangedRevision: 17398 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/omni_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -62,8 +62,8 @@ pro omni_ui_import_data,$
       IF strpos('1min',res[i]) GT -1 THEN min1res=1
   ENDFOR
  
-  IF min5res EQ 1 THEN omni_hro_load, res5min=1, trange=timeRange
-  IF min1res EQ 1 THEN omni_hro_load, trange=timeRange
+  IF min5res EQ 1 THEN omni_load_data, res5min=1, trange=timeRange
+  IF min1res EQ 1 THEN omni_load_data, trange=timeRange
    
   ; determine which tplot vars to delete and which ones are the new temporary vars
   spd_ui_cleanup_tplot, tn_before, create_time_before=cn_before, del_vars=to_delete,$

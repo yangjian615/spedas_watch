@@ -6,7 +6,7 @@ Function eva_sitl_load_soca_getfom, pref, parent
   TESTMODE  = pref.EVA_TESTMODE
   ;/////////////////////////////////////
   
-  get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_message
+  get_latest_fom_from_soc, fom_file, error_flag, error_msg
   
   if TESTMODE then begin
     ; 'dir' produces the directory name with a path separator character that can be OS dependent.

@@ -223,6 +223,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
         eva_sitl_strct_update, segSelect, user_flag=state.user_flag
         eva_sitl_stack
         tplot,verbose=0
+        
       endif; DELETE
       if keyword_set(split) then begin;........... SPLIT
         gTmin = segSelect.TS
@@ -303,7 +304,9 @@ FUNCTION eva_sitl_event, ev
   compile_opt idl2
   @eva_sitl_com
   @eva_logger_com
-
+  @xtplot_com.pro
+ 
+  
   parent=ev.handler
   stash = WIDGET_INFO(parent, /CHILD)
   WIDGET_CONTROL, stash, GET_UVALUE=state, /NO_COPY
@@ -322,6 +325,7 @@ FUNCTION eva_sitl_event, ev
   set_trange= widget_info(state.cbWTrng,/button_set)
   submit_code = 0
   sanitize_fpi = 1
+  xtplot_right_click = 1
   
   case ev.id of
     state.btnAdd:  begin
@@ -338,22 +342,20 @@ FUNCTION eva_sitl_event, ev
       log.o,'***** EVENT: btnDelete *****'
       npoints = 1 & occur = 1
       eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
-;      if ~set_multi then begin;................ Default (1 segment with 1 1-click)
-;        npoints = 1 & occur = 1
-;      endif else begin
-;        if ~set_trange then begin;.............. set_multi (N segment with N 1-click)
-;          npoints = 2000 & occur = 1
-;        endif else begin;......................... set_multi & set_trange (N segment with 2 click)
-;          npoints = 2 & occur = 2
-;        endelse
-;      endelse
-;      print, 'npoints=',npoints
-;      print, 'occur =',occur
-;      eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
       end
     state.cbMulti:begin; Delete N segments with N clicks
       log.o,'***** EVENT: cbMulti *****'
       npoints = 2000 & occur = 1
+      
+      ; The right-click-event during eva_ctime seems to be executed
+      ; AFTER this eva_sitl/cbMulti event has ended. So, it is not meaningful to
+      ; set xtplot_right_click back to 1 before the end of this event handler.
+      ; We set xtplot_right_click 0 here, but we have to execute another widget
+      ; event in order to set it back to 1. We have xtplot_right_click=1 at the 
+      ; beggining of this event handler so that the right click will be turned back
+      ; on after any addition SITL event (except cbMulti).
+      xtplot_right_click = 0
+    
       eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
       end
     state.cbWTrng: begin; Delete N segment within a range specified by 2-clicks
@@ -493,11 +495,6 @@ FUNCTION eva_sitl_event, ev
         eva_sitl_submit_fomstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT, vcase, user_flag=state.USER_FLAG
       endelse
       end
-    state.cbMulti:  begin
-      log.o,'***** EVENT: cbMulti *****'
-      if  ev.select then widget_control,state.cbWTrng,SENSITIVE=1
-      if ~ev.select then widget_control,state.cbWTrng,SENSITIVE=0
-      end
     state.drDash: begin
       ;log.o,'***** EVENT: drDash *****'
       widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
@@ -533,6 +530,9 @@ FUNCTION eva_sitl_event, ev
       str_element,/add,state,'stack',1           ; stacking.
     endif
   endif
+  
+
+  
   WIDGET_CONTROL, stash, SET_UVALUE=state, /NO_COPY
   RETURN, { ID:parent, TOP:ev.top, HANDLER:0L }
 END
@@ -542,7 +542,7 @@ END
 FUNCTION eva_sitl, parent, $
   UVALUE = uval, UNAME = uname, TAB_MODE = tab_mode, TITLE=title,XSIZE = xsize, YSIZE = ysize
   compile_opt idl2
-
+  ;@xtplot_com.pro
 
   IF (N_PARAMS() EQ 0) THEN MESSAGE, 'Must specify a parent for CW_sitl'
 
@@ -550,8 +550,8 @@ FUNCTION eva_sitl, parent, $
   IF NOT (KEYWORD_SET(uname))  THEN uname = 'eva_sitl'
   if not (keyword_set(title)) then title='   SITL   '
 
-   val = mms_load_fom_validation()
-   
+  val = mms_load_fom_validation()
+  
   ; ----- STATE -----
   pref = {$
     EVA_BAKSTRUCT: 0,$

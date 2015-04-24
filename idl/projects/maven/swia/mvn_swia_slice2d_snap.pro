@@ -9,30 +9,33 @@
 ; INPUTS:
 ;       
 ; KEYWORDS:
-;       same as 'slice2d' except ARCHIVE: Returns archive distribution
-;       instead of survey
+;       same as 'slice2d' except...
+;       ARCHIVE: Returns archive distribution instead of survey
+;       TWINDOW: Specifies tplot window to click (Def. is current window)
+;       WINDOW: Specifies window to plot (Def: generates new window)
 ; CREATED BY:
 ;       Yuki Harada on 2014-10-10
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-01-16 13:06:52 -0800 (Fri, 16 Jan 2015) $
-; $LastChangedRevision: 16666 $
+; $LastChangedDate: 2015-04-22 12:14:53 -0700 (Wed, 22 Apr 2015) $
+; $LastChangedRevision: 17392 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_slice2d_snap.pro $
 ;-
 
-pro mvn_swia_slice2d_snap, archive=archive, _extra=_extra
+pro mvn_swia_slice2d_snap, archive=archive, twindow=twindow, window=window, _extra=_extra
 
 dsize = get_screen_size()
 
 ;- set up windows
 
 ;- tplot window (current window)
-Twin = !d.window
+if keyword_set(twindow) then Twin = twindow else Twin = !d.window
 
 ;- slice2d window
-window, /free, xsize=dsize[0]/2., ysize=dsize[1]*2./3., $
-        xpos=0., ypos=0.
-Dwin = !d.window
+if keyword_set(window) then Dwin = window else begin
+   window, /free, xsize=dsize[0]/2., ysize=dsize[1]*2./3.,xpos=0., ypos=0.
+   Dwin = !d.window
+endelse
 
 print, 'Use button 1 to select time; button 3 to quit.'
 

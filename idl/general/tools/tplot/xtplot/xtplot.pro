@@ -9,8 +9,8 @@
 ; 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-03-06 20:15:25 -0800 (Fri, 06 Mar 2015) $
-; $LastChangedRevision: 17104 $
+; $LastChangedDate: 2015-04-22 18:03:34 -0700 (Wed, 22 Apr 2015) $
+; $LastChangedRevision: 17403 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -77,6 +77,25 @@ PRO xtplot_change_ylimit, widf
   tplot,verbose=0
 END
 
+PRO xtplot_refresh, widf, gpp=gpp
+  compile_opt idl2
+
+  if ~widf.auto_refresh then begin
+    x = widf.refresh_window_size[0]
+    y = widf.refresh_window_size[1]
+    xmin = widf.refresh_window_size[2]
+    ofs = widf.refresh_window_size[3]
+    widget_control, widf.baseTL, xsize=x>xmin, ysize=y-ofs
+    widget_control, widf.drwPlot, Draw_XSize=x>xmin, Draw_YSize=(y-ofs-widf.resYsize)>0
+    gpp = 1
+  endif
+  
+  if keyword_set(gpp) then begin
+    tplot,verbose=0, get_plot_pos = plot_pos
+    str_element,/add,widf,'plot_pos',plot_pos
+  endif else tplot
+END
+
 PRO xtplot_event, event
   compile_opt idl2
   @tplot_com.pro
@@ -85,49 +104,65 @@ PRO xtplot_event, event
   ; initialize
   widget_control, event.top, GET_UVALUE=widf
 
-
-
   tplot_vars = widf.tplot_vars
   code_exit=0
 
   ; main
   case event.id of
-
+    ;-----------------------------------
+    ; TOOL BAR
+    ;-----------------------------------
     widf.btnTlm:      begin
       xtplot_right_click = 0 
       xtplot_change_tlimit,'default'
       xtplot_right_click = 1
       end
-    widf.btnTlmRedo:  xtplot_recovr_tlimit,'redo'
-    widf.btnTlmUndo:  xtplot_recovr_tlimit,'undo'
-    widf.btnTlmFull:  xtplot_change_tlimit,'full'
-    widf.btnTlmRefresh: begin
-      tplot;,verbose=0, get_plot_pos = plot_pos
-      ;str_element,/add,widf,'plot_pos',plot_pos
-    end
+    widf.btnBackward: xtplot_change_tlimit,'backward'
+    widf.btnForward:  xtplot_change_tlimit,'forward'
     widf.btnExpand:   xtplot_change_tlimit,'expand'
     widf.btnShrink:   xtplot_change_tlimit,'shrink'
-    widf.btnForward:  xtplot_change_tlimit,'forward'
-    widf.btnBackward: xtplot_change_tlimit,'backward'
+    widf.btnTlmFull:  xtplot_change_tlimit,'full'
+    widf.btnTlmUndo:  xtplot_recovr_tlimit,'undo'
+    widf.btnTlmRedo:  xtplot_recovr_tlimit,'redo'
+    widf.btnTlmRefresh: xtplot_refresh, widf
+    widf.bgRefresh: str_element,/add,widf,'auto_refresh',event.Select
+    
+    ;-----------------------------------
+    ; WINDOW (Resize or Kill)
+    ;-----------------------------------
     widf.baseTL:      begin
       thisEvent = tag_names(event,/structure_name)
       case thisEvent of
         'WIDGET_KILL_REQUEST': code_exit=1
-        'WIDGET_BASE'       : begin; Resize Event
-          geoB = widget_info(widf.baseTL,/geometry)
-          ;geoD = widget_info(widf.drwPlot,/geometry)
-          ;print, 'OLD (x,y)=(', geoB.xsize,',', geoB.ysize,')'
-          ;print, 'NEW (x,y)=(', event.x,',',event.y,')'
-          if (abs(geoB.xsize-event.x) gt 5.) or (abs(geoB.ysize-event.y) gt 5.) then begin  
-            widget_control, widf.drwPlot, Draw_XSize=(event.x)>0, Draw_YSize=(event.y-floor(widf.resYsize))>0
-            widget_control, widf.baseTL, xsize=(event.x), ysize=(event.y)
+        'WIDGET_BASE'       : begin; Resize Event       
+          wsize = widf.refresh_window_size
+          if widf.auto_refresh then begin
+            xmin = wsize[2]
+            ofs  = wsize[3]
+            widget_control, widf.baseTL, xsize=event.x>xmin, ysize=(event.y-ofs)
+            widget_control, widf.drwPlot, Draw_XSize=event.x>xmin, Draw_YSize=(event.y-ofs-widf.resYsize)>0
             tplot,verbose=0, get_plot_pos = plot_pos
             str_element,/add,widf,'plot_pos',plot_pos
-          endif
+          endif else begin
+            ; Sometimes, the auto-refresh feature causes flickering/flashing.
+            ; Removing 'tplot' greatly reduced the time of flickering.
+            ; Removing widget_control completely stopped flickering. 
+            ; Here, we just save the desired window size. Later on, when the user
+            ; decides to refresh the display, we can execute both tplot and widget_control
+            ; with the saved window size. By the way, there is also an UPDATE keyword 
+            ; for widget_control, but I couldn't come up with a good way of using it.
+            wsize[0] = event.x
+            wsize[1] = event.y
+            str_element,/add,widf,'refresh_window_size', wsize 
+          endelse
           end
         else:
       endcase
     end
+    
+    ;-----------------------------------
+    ; PLOT (Cursor, Status-Bar, Right-Click)
+    ;-----------------------------------
     widf.drwPlot: begin
       thisEvent = tag_names(event,/structure_name)
       if strmatch(thisEvent,'WIDGET_DRAW') then begin
@@ -142,17 +177,19 @@ PRO xtplot_event, event
         xC = event.x/geo.xsize ; clicked position
         tC = (xC-xL)*((tR-tL)/(xR-xL)) + tL; clicked time
 
-        ; updating selected time interval
-        if widf.selected.state ge 1 then begin; if left-button has been pressed
-          tL = widf.selected.tL
-          if abs(tL-tC) gt 0 then begin ; if cursor has moved since the first left-press
-            if widf.selected.state eq 2 then begin
-              xtplot_timebar,widf.selected.oldtC,/transient; Delete Line 2
-            endif else str_element,/add,widf,'selected.state',2
-            xtplot_timebar,tC,/transient; Plot Line 2
-            str_element,/add,widf,'selected.oldtC',tC
-          endif
-        endif
+        ;--- This block will be used when the XTPLOT_MOUSE_EVENT is enabled.
+        ;    See explanation a few blocks below. 
+        ;    Here, updating selected time interval
+;        if widf.selected.state ge 1 then begin; if left-button has been pressed
+;          tL = widf.selected.tL
+;          if abs(tL-tC) gt 0 then begin ; if cursor has moved since the first left-press
+;            if widf.selected.state eq 2 then begin
+;              xtplot_timebar,widf.selected.oldtC,/transient; Delete Line 2
+;            endif else str_element,/add,widf,'selected.state',2
+;            xtplot_timebar,tC,/transient; Plot Line 2
+;            str_element,/add,widf,'selected.oldtC',tC
+;          endif
+;        endif
 
         ;cursor and status bar
         sz=size(widf.plot_pos,/dim); to obtain number of panels
@@ -196,12 +233,20 @@ PRO xtplot_event, event
           ', value = '+strtrim(string(value),2)+' ( '+tn+' )'
 
         ; RIGHT CLICK EVENT
-        if (event.release EQ 4) and (xtplot_right_click=1) then begin
+        if (event.release eq 4) and (xtplot_right_click) then begin
           print,'right clicked on '+tn
           xtplot_options_panel, group_leader=widf.baseTL, target=tn
         endif
 
+        ;/////////////////////////////////////////////
         ; XTPLOT_MOUSE_EVENT
+        ; This part lets you click and slide left/right to select a time interval.
+        ; This is more intuitive than the 'tlimit' interface.
+        ; However, when combined with an external interactive program (e.g. EVA),
+        ; there would be a conflict and makes the programming complex.
+        ; For now, this feature has been turned off.
+        ; When turning it on, make sure you have the 'xtplot_mouse_event' in xtplot_com
+        xtplot_mouse_event = 0
         if xtplot_mouse_event then begin
           if event.press eq 4 then begin; right-press
             ; WIDGET_DISPLAYCONTEXTMENU, Parent, X, Y, ContextBase_ID
@@ -227,9 +272,7 @@ PRO xtplot_event, event
               str_element,/add,widf,'selected.xL',xL
               str_element,/add,widf,'selected.xR',xR
             endif
-
             xtplot_timebar,widf.selected.tL,/transient;....... Delete Line 1
-
             if widf.selected.state eq 2 then begin; cursor moved
               xtplot_timebar,widf.selected.oldtC,/transient; ... Delete Line 2
               if abs(tL-tR) gt 0 then begin
@@ -241,18 +284,21 @@ PRO xtplot_event, event
             endif
             str_element,/add,widf,'selected.state',0
           endif; left-release
-        endif
-
+        endif; xtplot_mouse_event
+        ;///////////////////////////////////////////////////
       endif
-
-    end
+      end; widf.drwPlot: begin
+    
+    ;-----------------------------------
+    ; MENU BAR
+    ;-----------------------------------
     widf.mnClip:      begin
       widget_control, widf.drwPlot, GET_VALUE=win1
       clipboard,win1
-    end
+      end
     widf.mnExJPG:     begin
       makejpg,'xtplot'
-    end
+      end
     widf.mnExPNG:     makepng,'xtplot'
     widf.mnExGIF:     makegif,'xtplot'
     widf.mnConfig:    begin
@@ -290,14 +336,11 @@ PRO xtplot_event, event
     widf.mnC_ZoomOut: xtplot_change_tlimit,'shrink'
     widf.mnC_Forward: xtplot_change_tlimit,'forward'
     widf.mnC_Backward:xtplot_change_tlimit,'backward'
-    widf.mnC_Refresh: begin
-      tplot,verbose=0, get_plot_pos = plot_pos
-      str_element,/add,widf,'plot_pos',plot_pos
-    end
+    widf.mnC_Refresh: xtplot_refresh, widf
     widf.mnP_Pick:    begin
       tplot,/pick, get_plot_pos = plot_pos, verbose=0
       str_element,/add,widf,'plot_pos',plot_pos
-    end
+      end
     widf.mnP_Rmv:     begin
       ctime, panel=pan
       tnms = tnames(/tplot); variables used in tplot
@@ -312,18 +355,18 @@ PRO xtplot_event, event
       endfor
       tplot, nnms, verbose=0, get_plot_pos = plot_pos
       str_element,/add,widf,'plot_pos',plot_pos
-    end
+      end
     widf.mnP_AddRmv:  xtplot_panel
     widf.mnP_Restore: begin
       tplot, tplot_vars.options.def_datanames, get_plot_pos = plot_pos, verbose=0
       str_element,/add,widf,'plot_pos',plot_pos
-    end
+      end
     widf.mnO_AutoExec: xtplot_options
     widf.mnO_PanelOptions: begin
       ctime,prompt='Click on desired panels. (button 3 to quit)',panel=mix,/silent,npoints=1
       tn = tplot_vars.options.def_datanames[mix]
       xtplot_options_panel, group_leader=widf.baseTL, target=tn
-    end
+      end
     widf.mnO_TplotOptions: xtplot_options_tplot, group_leader=widf.baseTL
     ;    widf.mnH_Guide:   begin
     ;      fullpath = filepath(root_dir=ProgramRootDir(), 'xtplot.pdf')
@@ -386,10 +429,10 @@ pro xtplot,datanames,     $
   XOFFSET = xoffset,     $
   YOFFSET = yoffset,     $
   EXECCOM = execcom,     $
-  MOUSE_EVENT  = mouse_event, $
   ROUTINE_NAME = routine_name,$; this routine is called everytime a time interval is selected by mouse. Valid only when MOUSE_EVENT=1
   widf    = widf, $
-  GROUP_LEADER = group_leader
+  GROUP_LEADER = group_leader,$
+  xtplot_right_click=xtplot_rclick
   compile_opt idl2
   @tplot_com.pro
   @xtplot_com.pro
@@ -397,10 +440,9 @@ pro xtplot,datanames,     $
   ;===== initialize ===================================================================
 
   ; xtplot_com
-  
   xtplot_right_click = 1
-  if ~keyword_set(mouse_event) then mouse_event = 0; obsolete?
-  xtplot_mouse_event = mouse_event
+  if n_elements(xtplot_rclick) ne 0 then xtplot_right_click = xtplot_rclick
+
   if ~keyword_set(routine_name) then routine_name = 'xtplot_tlimit'; obsolete?
   xtplot_routine_name = routine_name
   
@@ -556,7 +598,7 @@ pro xtplot,datanames,     $
     sxsize=10
     bsTool = widget_base(baseTL,/row)
     str_element,/add,widf,'bsTool',bsTool
-    str_element,/add,widf,'btnTlm', widget_button(bsTool,VALUE='Trange',$
+    str_element,/add,widf,'btnTlm', widget_button(bsTool,VALUE='tlimit',$
       TOOLTIP='Left-click twice to define a time range (call to "tlimit")')
 
 
@@ -582,6 +624,11 @@ pro xtplot,datanames,     $
     str_element,/add,widf,'btnTlmRefresh',widget_button(bsTool,VALUE='Refresh', $
       TOOLTIP='Refresh the plot')
 
+    auto_refresh = strmatch(!VERSION.OS_FAMILY,'Windows')
+    str_element,/add,widf,'bgRefresh',cw_bgroup(bsTool,'Auto Refresh', /NONEXCLUSIVE,$
+      SET_VALUE=auto_refresh)
+    str_element,/add,widf,'auto_refresh',auto_refresh
+    
     ; plot
     str_element,/add,widf,'drwPlot',widget_draw(baseTL,XSIZE=xsize,YSIZE=draw_ysize, $
       /BUTTON_EVENTS,/MOTION_EVENTS,/TRACKING_EVENTS)
@@ -617,10 +664,11 @@ pro xtplot,datanames,     $
 
   geo1 = widget_info(b,/geometry)
   geo2 = widget_info(widf.drwPlot,/geometry)
+  ofs = strmatch(!VERSION.OS_FAMILY,'Windows') ? 0 : 34. ; a magic number
   str_element,/add,widf,'resYsize',geo1.ysize-geo2.ysize
   str_element,/add,widf,'tplot_vars',tplot_vars
   str_element,/add,widf,'plot_pos',plot_pos
-
+  str_element,/add,widf,'refresh_window_size', [geo1.xsize, geo1.ysize, 500, ofs] 
   widget_control, b, SET_UVALUE=widf
   xtplot_base = b
 

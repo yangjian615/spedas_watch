@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-13 17:34:35 -0700 (Mon, 13 Apr 2015) $
-; $LastChangedRevision: 17305 $
+; $LastChangedDate: 2015-04-22 12:33:29 -0700 (Wed, 22 Apr 2015) $
+; $LastChangedRevision: 17393 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -450,8 +450,8 @@ FUNCTION eva_data, parent, $
   userType = ['Guest','MMS member','SITL','Super SITL','FPI cal']
   
   ;----- PREFERENCES -----
-  cd,current = c
-  pref = {EVA_CACHE_DIR: c+'/eva_cache/', $
+
+  pref = {EVA_CACHE_DIR: root_data_dir()+'eva_cache/', $
     EVA_PARAMSET_DIR: '',$
     EVA_TESTMODE: 1}
 

@@ -1,3 +1,3 @@
 project: OMNI
 load_data: omni_ui_load_data
-config: spd_ui_istp_fileconfig
+config: omni_fileconfig

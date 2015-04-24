@@ -11,8 +11,8 @@
 ;   
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-04-20 16:12:32 -0700 (Mon, 20 Apr 2015) $
-; $LastChangedRevision: 17382 $
+; $LastChangedDate: 2015-04-22 11:50:45 -0700 (Wed, 22 Apr 2015) $
+; $LastChangedRevision: 17390 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_lib.pro $
 ;-
 
@@ -238,7 +238,7 @@ pro goes_epead_contam_cor, e_uncor, p_uncor
     
     ; what's the fill value? should be -99999
     if is_struct(e1_uncor_dlimits) then begin
-        FillVal = double(e1_uncor_dlimits.cdf.vatt.fillval)
+        FillVal =e1_uncor_dlimits.cdf.vatt.fillval
     endif else begin
         dprint, dlevel = 0, 'Error, invalid tplot variable for E1 in GOES_EPEAD_CONTAM_COR'
         return
@@ -272,7 +272,11 @@ pro goes_epead_contam_cor, e_uncor, p_uncor
     
     ; store the corrected fluxes
     store_data, 'e1_cor', data = {x: e1_uncor.X, y: e1_cor}, dlimits = e_uncor_dlimits
-    store_data, 'e2_cor', data = {x: e1_uncor.X, y: e2_cor}, dlimits = e_uncor_dlimits
+    store_data, 'e2_cor', data = {x: e2_uncor.X, y: e2_cor}, dlimits = e_uncor_dlimits
+    
+    ; store the magnitude of the correction
+    store_data, 'de1', data = {x: e1_uncor.X, y: de1}
+    store_data, 'de2', data = {x: e2_uncor.X, y: de2}
 end
 ; Procedure: goes_part_omni_flux
 ; 

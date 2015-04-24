@@ -1,6 +1,5 @@
 ;COMMON BLOCK:  xtplot_com
 common xtplot_com, xtplot_base, $; base ID
-                   xtplot_mouse_event, $; mouse event enabled? 1 for Yes, 0 for No (obsolete)
                    xtplot_routine_name, $; routine name to be called after each mouse-event (obsolete)
                    xtplot_right_click, $; right click event enabled? 1 for Yes, 0 for No
                    xtplot_pcsrA, $; csrA point 

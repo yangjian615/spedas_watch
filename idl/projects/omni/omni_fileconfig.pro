@@ -1,18 +1,18 @@
 ;+
 ;NAME:
-; spd_ui_istp_fileconfig
+; omni_fileconfig
 ;
 ;PURPOSE:
-; A widget that allows the user to set some of the !istp variable. The user
+; A widget that allows the user to set some of the !omni variable. The user
 ; can resettodefault, modify, and save the system variable.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-16 16:29:38 -0700 (Thu, 16 Apr 2015) $
-;$LastChangedRevision: 17346 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/spd_ui_istp_fileconfig.pro $
+;$LastChangedDate: 2015-04-22 15:41:37 -0700 (Wed, 22 Apr 2015) $
+;$LastChangedRevision: 17398 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/omni_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
-pro spd_ui_istp_init_struct,state,struct
+pro spd_ui_omni_init_struct,state,struct
 
   compile_opt idl2,hidden
 
@@ -35,7 +35,7 @@ pro spd_ui_istp_init_struct,state,struct
 
 end
 
-PRO spd_ui_istp_fileconfig_event, event
+PRO omni_fileconfig_event, event
 
   ; Get State structure from top level base
   Widget_Control, event.handler, Get_UValue=state, /No_Copy
@@ -66,7 +66,7 @@ PRO spd_ui_istp_fileconfig_event, event
       Dialog_Parent=state.master,path=currentDir, /directory, /must_exist); /fix_filter doesn't seem to make a difference on Windows. Does on unix.  
       ; check to make sure the file selected actually is a tgt file
       IF is_string(dirName) THEN BEGIN
-          !istp.local_data_dir = dirName
+          !omni.local_data_dir = dirName
           widget_control, state.localDir, set_value=dirName             
       ENDIF ELSE BEGIN
         ;  ok = dialog_message('Selection is not a directory',/center)
@@ -77,44 +77,44 @@ PRO spd_ui_istp_fileconfig_event, event
     'LOCALDIR': BEGIN
     
         widget_control, state.localDir, get_value=currentDir
-        !istp.local_data_dir = currentDir
+        !omni.local_data_dir = currentDir
 
     END
 
     'REMOTEDIR': BEGIN
     
         widget_control, state.remoteDir, get_value=currentDir
-        !istp.remote_data_dir = currentDir
+        !omni.remote_data_dir = currentDir
 
     END
 
     'NDON': BEGIN
 
-        IF event.select EQ 1 then !istp.no_download=0 else !istp.no_download=1
+        IF event.select EQ 1 then !omni.no_download=0 else !omni.no_download=1
 
     END
     
     'NDOFF': BEGIN
 
-        IF event.select EQ 1 then !istp.no_download=1 else !istp.no_download=0
+        IF event.select EQ 1 then !omni.no_download=1 else !omni.no_download=0
 
     END
     
     'NUON': BEGIN
 
-        IF event.select EQ 1 then !istp.no_update=0 else !istp.no_update=1
+        IF event.select EQ 1 then !omni.no_update=0 else !omni.no_update=1
 
     END
     
     'NUOFF': BEGIN
 
-        IF event.select EQ 1 then !istp.no_update=1 else !istp.no_update=0
+        IF event.select EQ 1 then !omni.no_update=1 else !omni.no_update=0
 
     END
     
     'VERBOSE': BEGIN
 
-       !istp.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
+       !omni.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
 
     END
 
@@ -123,20 +123,20 @@ PRO spd_ui_istp_fileconfig_event, event
        ; this is basically a cancel and will reset all values to
        ; the original values at the time this window was first 
        ; displayed
-       !istp=state.istp_cfg_save
-       widget_control,state.localdir,set_value=!istp.local_data_dir
-       widget_control,state.remotedir,set_value=!istp.remote_data_dir
-       if !istp.no_download eq 1 then begin
+       !omni=state.omni_cfg_save
+       widget_control,state.localdir,set_value=!omni.local_data_dir
+       widget_control,state.remotedir,set_value=!omni.remote_data_dir
+       if !omni.no_download eq 1 then begin
           widget_control,state.nd_off_button,set_button=1
        endif else begin
           widget_control,state.nd_on_button,set_button=1
        endelse  
-       if !istp.no_update eq 1 then begin
+       if !omni.no_update eq 1 then begin
          widget_control,state.nu_off_button,set_button=1
        endif else begin
          widget_control,state.nu_on_button,set_button=1
        endelse  
-       widget_control,state.v_droplist,set_combobox_select=!istp.verbose
+       widget_control,state.v_droplist,set_combobox_select=!omni.verbose
        state.historywin->update,'Resetting controls to saved values.'
        state.statusbar->update,'Resetting controls to saved values.'           
 
@@ -144,8 +144,8 @@ PRO spd_ui_istp_fileconfig_event, event
     
    'RESETTODEFAULT': Begin
 
-      istp_init,  /reset
-      spd_ui_istp_init_struct,state,!istp
+      omni_init, /reset
+      spd_ui_omni_init_struct,state,!omni
       state.historywin->update,'Resetting configuration to default values.'
       state.statusbar->update,'Resetting configuration to default values.'
 
@@ -153,9 +153,9 @@ PRO spd_ui_istp_fileconfig_event, event
     
     'SAVE': BEGIN
 
-      istp_write_config 
-      state.statusBar->update,'Saved istp_config.txt'
-      state.historyWin->update,'Saved istp_config.txt'
+      omni_write_config 
+      state.statusBar->update,'Saved omni_config.txt'
+      state.historyWin->update,'Saved omni_config.txt'
 
     END
     
@@ -168,12 +168,12 @@ Return
 END ;--------------------------------------------------------------------------------
 
 
-PRO spd_ui_istp_fileconfig, tab_id, historyWin, statusBar
+PRO omni_fileconfig, tab_id, historyWin, statusBar
 
-;check whether the !istp system variable has been initialized
-  defsysv, 'istp', exists=exists
-  if not keyword_set(exists) then istp_init
-  istp_cfg_save = !istp
+;check whether the !omni system variable has been initialized
+  defsysv, '!omni', exists=exists
+  if not keyword_set(exists) then omni_init
+  omni_cfg_save = !omni
   
 ;Build the widget bases
   master = Widget_Base(tab_id, /col, tab_mode=1,/align_left, /align_top) 
@@ -184,7 +184,7 @@ PRO spd_ui_istp_fileconfig, tab_id, historyWin, statusBar
 
 ;Widget base for save, reset and exit buttons
   bmaster = widget_base(master, /row, /align_center, ypad=7)
-  ll = max(strlen([!istp.local_data_dir, !istp.remote_data_dir]))+12
+  ll = max(strlen([!omni.local_data_dir, !omni.remote_data_dir]))+12
 
 ;Now create directory text widgets
   configbase = widget_base(vmaster,/col)
@@ -192,13 +192,13 @@ PRO spd_ui_istp_fileconfig, tab_id, historyWin, statusBar
   lbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(lbase, value = 'Local data directory:    ')
   localdir = widget_text(lbase, /edit, /all_events, xsiz = ll, $
-                         uval = 'LOCALDIR', val = !istp.local_data_dir)
+                         uval = 'LOCALDIR', val = !omni.local_data_dir)
   loc_browsebtn = widget_button(lbase,value='Browse', uval='LOCALBROWSE',/align_center)
 
   rbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(rbase, value = 'Remote data directory: ')
   remotedir = widget_text(rbase, /edit, /all_events, xsiz = ll, $
-                          uval = 'REMOTEDIR', val = !istp.remote_data_dir)
+                          uval = 'REMOTEDIR', val = !omni.remote_data_dir)
 
 ;Next radio buttions
   nd_base = widget_base(configbase, /row, /align_left)
@@ -228,17 +228,17 @@ PRO spd_ui_istp_fileconfig, tab_id, historyWin, statusBar
   ;defaults for reset:
   def_values=[0,0,0,2]
   
-  state = {localdir:localdir, master:master, remotedir:remotedir, istp_cfg_save:istp_cfg_save, $
+  state = {localdir:localdir, master:master, remotedir:remotedir, omni_cfg_save:omni_cfg_save, $
            nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
            nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
            v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
            def_values:def_values, historyWin:historyWin, tab_id:tab_id}
 
-  spd_ui_istp_init_struct,state,!istp
+  spd_ui_omni_init_struct,state,!omni
 
   widget_control, master, set_uval = state, /no_copy
   widget_control, master, /realize
-;  msg = 'Editing istp configuration.'
+;  msg = 'Editing omni configuration.'
 ;  statusBar->update,msg
 ;  historywin->update, msg
 
@@ -248,7 +248,7 @@ PRO spd_ui_istp_fileconfig, tab_id, historyWin, statusBar
     widget_control, master, xoffset=0, yoffset=0
   endif
 
-  xmanager, 'spd_ui_istp_fileconfig', master, /no_block
+  xmanager, 'omni_fileconfig', master, /no_block
   
 END ;--------------------------------------------------------------------------------
 

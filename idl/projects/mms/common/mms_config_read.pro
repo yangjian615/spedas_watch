@@ -4,7 +4,8 @@ FUNCTION mms_config_read_template
   ppp = {$
     VERSION:1.00, $
     DATASTART:0L, $
-    DELIMITER:58b, $; <----------- Delimited by colon
+    DELIMITER:61b, $; <----------- Delimited by =
+    ;DELIMITER:58b, $; <----------- Delimited by colon
     MISSINGVALUE:anan[0], $
     COMMENTSYMBOL:';', $
     FIELDCOUNT: 2L, $
