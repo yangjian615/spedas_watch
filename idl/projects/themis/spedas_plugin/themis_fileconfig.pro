@@ -16,9 +16,9 @@
 ;              slightly to make things line up in both windows and linux.
 ; 24-oct-2013 clr, removed graphic buttons and goes wind and istp code. panel is now tabbed
 ; 
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-06-30 15:34:38 -0700 (Mon, 30 Jun 2014) $
-;$LastChangedRevision: 15483 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-23 14:26:34 -0700 (Thu, 23 Apr 2015) $
+;$LastChangedRevision: 17409 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/themis_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@
 ;  state.drawObject->draw
  
  ; drawWin->setCurrentZoom,cz
-;  !SPD_GUI.renderer = renderer
+;  !spedas.renderer = renderer
 
 ;end
 
@@ -187,10 +187,10 @@ PRO themis_fileconfig_event, event
       state.statusbar->update,'Resetting controls to saved values.'           
                
 ; Do not delete in case we reinstall  graphics buttons
-;      !spd_gui.renderer = state.spd_ui_cfg_sav.renderer
-;      !spd_gui.templatepath = state.spd_ui_cfg_sav.templatepath
+;      !spedas.renderer = state.spd_ui_cfg_sav.renderer
+;      !spedas.templatepath = state.spd_ui_cfg_sav.templatepath
         
-;      if !spd_gui.renderer eq 0 then begin
+;      if !spedas.renderer eq 0 then begin
 ;        widget_control,state.gr_hard_button,/set_button
 ;        themis_fileconfig_set_draw,state,0
 ;      endif else begin
@@ -208,7 +208,7 @@ PRO themis_fileconfig_event, event
       state.statusbar->update,'Resetting configuration to default values.'
 
 ;      Do Not delete may reinstall at later date    
-;      !spd_gui.renderer = 1
+;      !spedas.renderer = 1
 ;      widget_control,state.gr_soft_button,/set_button
 ;      themis_fileconfig_set_draw,state,1
     END
@@ -294,7 +294,7 @@ PRO themis_fileconfig, tab_id, historyWin, statusBar
 ;  gr_hard_button = widget_button(gr_buttonbase, value='Hardware Render     ', uval='GRHARD',xsize=120,/align_left)
 ;  gr_soft_button = widget_button(gr_buttonbase, value='Software Render   ', uval='GRSOFT',/align_left)
   
-;  if !SPD_GUI.renderer then begin
+;  if !spedas.renderer then begin
 ;    widget_control,gr_soft_button,/set_button
 ;  endif else begin
 ;    widget_control,gr_hard_button,/set_button

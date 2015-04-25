@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-22 12:33:29 -0700 (Wed, 22 Apr 2015) $
-; $LastChangedRevision: 17393 $
+; $LastChangedDate: 2015-04-23 17:54:20 -0700 (Thu, 23 Apr 2015) $
+; $LastChangedRevision: 17415 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -112,7 +112,16 @@ FUNCTION eva_data_load_and_plot, state
   idx=where(strmatch(plshort,'th'),ct)
   paramlist_thm = (ct ge 1) ? paramlist[idx] : ''
   str_element,/add,state,'paramlist_thm',paramlist_thm
-  rst_thm = (ct ge 1) ? eva_data_load_thm(state) : 'No'
+  rst_thm = 'No'
+  if (ct ge 1) then begin
+    rst_thm = eva_data_load_thm(state)
+    if strmatch(rst_thm,'Yes') then begin
+      paramlist = strlowcase(state.paramlist_thm)
+      probelist = state.probelist_thm
+      rst_thm = eva_data_load_reformat(paramlist, probelist)
+    endif 
+  endif
+  ;rst_thm = (ct ge 1) ? eva_data_load_thm(state) : 'No'
   log.o, 'load THEMIS: number of parameters:'+string(ct)
   
   ;----------------------
@@ -122,8 +131,18 @@ FUNCTION eva_data_load_and_plot, state
   idx=where(strmatch(plshort,'mm'),ct)
   paramlist_mms = (ct ge 1) ? paramlist[idx] : ''      
   str_element,/add,state,'paramlist_mms',paramlist_mms
-  rst_mms = (ct ge 1) ? eva_data_load_mms(state) : 'No'
+  rst_mms = 'No'
+  if (ct ge 1) then begin
+    rst_mms = eva_data_load_mms(state)
+    if strmatch(rst_mms,'Yes') then begin
+      paramlist = strlowcase(state.paramlist_mms)
+      probelist = state.probelist_mms
+      rst_mms = eva_data_load_reformat(paramlist, probelist,/FOURTH)
+    endif
+  endif
+  ;rst_mms = (ct ge 1) ? eva_data_load_mms(state) : 'No'
   log.o, 'load MMS: number of parameters'+string(ct)
+
   
   ;----------------------
   ; Plot
@@ -207,10 +226,13 @@ FUNCTION eva_data_login, state, evTop
   ;---------------------
   ; Establish Connection
   ;---------------------
-  r = get_mms_sitl_connection(group_leader=evTop); establish connection with login-widget 
+  user_flag = state.USER_FLAG  
+  ;lgn = eva_login_widget(title='Login as '+state.userType[user_flag], group_leader=evTop)
+  r = get_mms_sitl_connection(group_leader=evTop);, username=lgn.username, password=lgn.username)
+  ; establish connection with login-widget 
   type = size(r, /type) ;will be 11 if object has been created
   connected = (type eq 11)
-  user_flag = state.USER_FLAG  
+  
   FAILED=1
 
   if connected then begin
@@ -450,8 +472,9 @@ FUNCTION eva_data, parent, $
   userType = ['Guest','MMS member','SITL','Super SITL','FPI cal']
   
   ;----- PREFERENCES -----
-
-  pref = {EVA_CACHE_DIR: root_data_dir()+'eva_cache/', $
+  
+  local_dir = thm_addslash(!MMS.LOCAL_DATA_DIR)
+  pref = {EVA_CACHE_DIR: local_dir+'eva_cache/', $
     EVA_PARAMSET_DIR: '',$
     EVA_TESTMODE: 1}
 
@@ -498,11 +521,8 @@ FUNCTION eva_data, parent, $
     XSIZE = xsize, YSIZE = ysize)
   str_element,/add,state,'mainbase',mainbase
   
-;  baseInit = widget_base(mainbase,/row, SPACE=0, YPAD=0)
   str_element,/add,state,'drpUserType',widget_droplist(mainbase,VALUE=state.userType,$
     TITLE='User Type ')
-  ;str_element,/add,state,'btnLogin',widget_button(baseInit,VALUE=' Log-in to MMS SOC ')
-  ;str_element,/add,state,'lblLogin0',widget_label(baseInit,VALUE='   ')
   
   
   ; calendar icon

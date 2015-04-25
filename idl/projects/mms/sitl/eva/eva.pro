@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-03 21:07:50 -0700 (Fri, 03 Apr 2015) $
-; $LastChangedRevision: 17237 $
+; $LastChangedDate: 2015-04-23 16:19:09 -0700 (Thu, 23 Apr 2015) $
+; $LastChangedRevision: 17413 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -22,6 +22,7 @@ PRO eva_event, event
   if error_status ne 0 then begin
     catch, /cancel
     eva_error_message, error_status
+    message,/reset
     return
   endif
 
@@ -30,7 +31,14 @@ PRO eva_event, event
     wid.base        : if strmatch(tag_names(event,/structure_name),'WIDGET_KILL_REQUEST') then exitcode=1
     wid.exit        : exitcode = 1
     wid.mnPref      : eva_pref, GROUP_LEADER = event.top
-    wid.mnHelp_about: answer=dialog_message('EVA 1.0 beta (Created by Mitsuo Oka at UC Berkeley)',/info,/center)
+    wid.mnHelp_release:begin
+      dir = file_search(ProgramRootDir()+'data',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
+      online_help,BOOK=dir+'release_notes.html'
+      end
+    wid.mnHelp_about:begin
+      msg = ['EVA Version 0.4',' ','Created by Mitsuo Oka at UC Berkeley']
+      answer=dialog_message(msg,/info,/center)
+      end 
     ;wid.mnH_Guide  :   begin
     ;fullpath = filepath(root_dir=ProgramRootDir(), 'eva_help.pdf')
     ;online_help,'Getting Started', BOOK=fullpath,/full_path;fullpath,/full_path
@@ -129,7 +137,7 @@ PRO eva
   ;        str_element,/add,wid,'mnPref_orbs_hide',-1
   ;        str_element,/add,wid,'mnPref_orbu',widget_button(mnPref_orb,VALUE='Update data')
   mnHelp = widget_button(mbar, VALUE='Help',/menu)
-  ;str_element,/add,wid,'mnHelp_Guide',widget_button(mnHelp,VALUE='SDC SITL DOC')
+  str_element,/add,wid,'mnHelp_release',widget_button(mnHelp,VALUE='Release Notes')
   str_element,/add,wid,'mnHelp_about',widget_button(mnHelp,VALUE='About EVA')
 
   ;---------------------------------

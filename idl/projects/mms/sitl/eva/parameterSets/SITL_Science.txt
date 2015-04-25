@@ -1,11 +1,10 @@
 ; Test all science data for SITL 
 mms*_afg_srvy_gsm_dmpa
 mms*_dfg_srvy_gsm_dmpa
-
 mms*_dsp_sitl_epsd_x
 mms*_dsp_sitl_epsd_y
 mms*_dsp_sitl_epsd_z
 mms*_dsp_sitl_bpsd_1
-;mms*_dsp_sitl_bpsd_2
+mms*_dsp_sitl_bpsd_2
 mms*_dsp_sitl_bpsd_3
 mms*_sdp_dce_xyz_pgse

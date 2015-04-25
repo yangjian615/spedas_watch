@@ -13,16 +13,17 @@
 ;       ARCHIVE: Returns archive distribution instead of survey
 ;       TWINDOW: Specifies tplot window to click (Def. is current window)
 ;       WINDOW: Specifies window to plot (Def: generates new window)
+;       BLINE: Shows magnetic field direction by a black line
 ; CREATED BY:
 ;       Yuki Harada on 2014-10-10
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-04-22 12:14:53 -0700 (Wed, 22 Apr 2015) $
-; $LastChangedRevision: 17392 $
+; $LastChangedDate: 2015-04-23 13:09:09 -0700 (Thu, 23 Apr 2015) $
+; $LastChangedRevision: 17407 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_slice2d_snap.pro $
 ;-
 
-pro mvn_swia_slice2d_snap, archive=archive, twindow=twindow, window=window, _extra=_extra
+pro mvn_swia_slice2d_snap, archive=archive, twindow=twindow, window=window, bline=bline, _extra=_extra
 
 dsize = get_screen_size()
 
@@ -52,9 +53,10 @@ while (ok) do begin
 
    if get3d_func ne '' then begin
       d = call_function(get3d_func,t,archive=archive)
+      if keyword_set(bline) then bdir = d.magf/total(d.magf^2)^.5
 
       wset,Dwin
-      slice2d,d, _extra=_extra
+      slice2d,d, _extra=_extra, sundir=bdir
 
    endif
 

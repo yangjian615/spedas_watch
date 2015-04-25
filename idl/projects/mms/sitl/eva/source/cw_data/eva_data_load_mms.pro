@@ -2,25 +2,27 @@ FUNCTION eva_data_load_mms, state
   compile_opt idl2
   @eva_logger_com
 
-  catch, error_status
+  catch, error_status; !ERROR_STATE is set 
   if error_status ne 0 then begin
-    eva_error_message, error_status, msg='filename= '
-    catch, /cancel
-    return, -1
+    catch, /cancel; Disable the catch system
+    eva_error_message, error_status
+    msg = [!Error_State.MSG,' ','...EVA will try to igonore this error.'] 
+    ok = dialog_message(msg,/center,/error)
+    progressbar -> Destroy
+    message, /reset; Clear !ERROR_STATE
+    return, answer; 'answer' will be 'Yes', if at least some of the data were succesfully loaded.
   endif
-
+  
   ;--- INITIALIZE ---
-  cache_dir = !MMS.local_data_dir
-  ;duration  = (str2time(state.end_time)-str2time(state.start_time))/86400.d0; duration in unit of days.
-  ;eventdate = state.eventdate
   paramlist = strlowcase(state.paramlist_mms); list of parameters read from parameterSet file
   imax = n_elements(paramlist)
   sc_id = state.probelist_mms
   if (size(sc_id[0],/type) ne 7) then return, 'No'; STRING=7
   pmax = n_elements(sc_id)
   if pmax eq 1 then sc = sc_id[0] else sc = sc_id
-  start_date = strmid(state.start_time,0,10)
-  end_date = strmid(state.end_time,0,10)
+  ts = str2time(state.start_time)
+  te = str2time(state.end_time)
+  timespan,state.start_time, te-ts, /seconds
   
   ;--- Count Number of Parameters ---
   cparam = imax*pmax
@@ -33,14 +35,13 @@ FUNCTION eva_data_load_mms, state
   progressbar = Obj_New('progressbar', background='white', Text='Loading MMS data ..... 0 %')
   progressbar -> Start
   c = 0
-  answer = 'Yes'
+  answer = 'No'
   for p=0,pmax-1 do begin; for each requested probe
     sc = sc_id[p]
     for i=0,imax-1 do begin; for each requested parameter
       
       if progressbar->CheckCancel() then begin
         ok = Dialog_Message('User cancelled operation.',/center) ; Other cleanup, etc. here.
-        answer = 'No'
         break
       endif
       
@@ -49,9 +50,8 @@ FUNCTION eva_data_load_mms, state
       progressbar -> Update, prg, Text=sprg
       
       if (strmatch(paramlist[i],'*_afg*') or strmatch(paramlist[i],'*_dfg*')) then begin
-        mms_sitl_get_dcb,  start_date, end_date, cache_dir, afg_status, dfg_status, sc_id=sc
-        print,'afg_status=',afg_status
-        print,'dfg_status=',dfg_status
+        mms_sitl_get_dcb, afg_status, dfg_status, sc_id=sc;, no_update = no_update, reload = reload
+
         tplot_names,sc+'_afg_srvy_gsm_dmpa',names=tn
         jmax=n_elements(tn)
         if jmax ge 1 then begin
@@ -74,21 +74,24 @@ FUNCTION eva_data_load_mms, state
             options, sc+'_dfg_srvy_gsm_dmpa', 'colors',[2,4,6]
           endfor
         endif
-
+        
+        if (afg_status eq 0) or (dfg_status eq 0) then answer = 'Yes'
       endif
       
-      if strmatch(paramlist[i],'*_epsd*') then begin
-        mms_sitl_get_espec,start_date, end_date, cache_dir, edat_status, sc_id=sc
-      endif
-      
-      if strmatch(paramlist[i],'*_bpsd*') then begin
-        mms_sitl_get_bspec,start_date, end_date, cache_dir, bdat_status, sc_id=sc;, no_update = no_update
-      endif
-      
-      if strmatch(paramlist[i],'*_dce*') then begin
-        mms_sitl_get_dce,  start_date, end_date, cache_dir, sdp_status, sc_id=sc;, coord=coord, no_update = no_update
-        print,'spd_status=',sdp_status
-      endif
+;      if strmatch(paramlist[i],'*_epsd*') then begin
+;        mms_sitl_get_espec, edat_status, sc_id=sc
+;        if edat_status eq 0 then answer = 'Yes'
+;      endif
+;      
+;      if strmatch(paramlist[i],'*_bpsd*') then begin
+;        mms_sitl_get_bspec, bdat_status, sc_id=sc;, no_update = no_update
+;        if bdat_status eq 0 then answer = 'Yes'
+;      endif
+;      
+;      if strmatch(paramlist[i],'*_dce*') then begin
+;        mms_sitl_get_dce,  sdp_status, sc_id=sc;, coord=coord, no_update = no_update
+;        if sdp_status eq 0 then answer = 'Yes'
+;      endif
       
       c+=1
     endfor

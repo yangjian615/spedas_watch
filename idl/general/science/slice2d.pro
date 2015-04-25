@@ -9,7 +9,7 @@
 ;       dat: standard 3d data structure
 ; KEYWORDS:
 ;       all optional
-;       ROTATION:
+;       ROTATION: (case insensitive)
 ;         'xy': the x axis is v_x and the y axis is v_y. (DEFAULT)
 ;         'xz': the x axis is v_x and the y axis is v_z.
 ;         'yz': the x axis is v_y and the y axis is v_z.
@@ -63,29 +63,29 @@
 ;       Modified from 'thm_esa_slice2d'
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-04-22 16:35:53 -0700 (Wed, 22 Apr 2015) $
-; $LastChangedRevision: 17401 $
+; $LastChangedDate: 2015-04-23 13:13:58 -0700 (Thu, 23 Apr 2015) $
+; $LastChangedRevision: 17408 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
 ;- copied from 'thm_cal_rot' for non-THEMIS users
 function slice2d_cal_rot,v1,v2
 
-a=v1/(total(v1^2))^.5
-d=v2/(total(v2^2))^.5
-c=crossp(a,d)
-c=c/(total(c^2))^.5
-b=-crossp(a,c)
-b=b/(total(b^2))^.5
+  a=v1/(total(v1^2))^.5
+  d=v2/(total(v2^2))^.5
+  c=crossp(a,d)
+  c=c/(total(c^2))^.5
+  b=-crossp(a,c)
+  b=b/(total(b^2))^.5
 
-rotinv = dblarr(3,3)
-rotinv(0,*) = a
-rotinv(1,*) = b
-rotinv(2,*) = c
+  rotinv = dblarr(3,3)
+  rotinv(0,*) = a
+  rotinv(1,*) = b
+  rotinv(2,*) = c
 
-rot = invert(rotinv)
+  rot = invert(rotinv)
  
-return, rot
+  return, rot
 end
 
 
@@ -94,7 +94,7 @@ pro slice2d, dat, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrang
 
 ;- default setting
 if not keyword_set(units) then units = 'df'
-if not keyword_set(rotation) then rotation = 'xy'
+if not keyword_set(rotation) then rotation = 'xy' else rotation = strlowcase(rotation)
 if not keyword_set(angle) then angle = [-20.,20.]
 if not keyword_set(nlines) then nlines = 60
 if not keyword_set(nozlog) then zlog = 1 else zlog = 0
@@ -228,10 +228,10 @@ newdata.n = ncounts
 ;- set velocity
 if keyword_set(vel) then begin
    vvec = vel
-   dprint,'Velocity used for subtraction/rotation is '+vel
+   dprint,'Velocity used for subtraction/rotation/display is '+vel
 endif else begin 
    vvec = v_3d(dat2)
-   dprint,'Velocity used for subtraction/rotation is V_3D',vvec
+   dprint,'Velocity used for subtraction/rotation/display is V_3D',vvec
 endelse
 
 
@@ -246,8 +246,8 @@ endelse
 
 
 ;=== rotation to the required frame of reference ===
-if rotation eq 'BV' then rot = slice2d_cal_rot( bvec, vvec )
-if rotation eq 'BE' then rot = slice2d_cal_rot( bvec, crossp(bvec,vvec) )
+if rotation eq 'bv' then rot = slice2d_cal_rot( bvec, vvec )
+if rotation eq 'be' then rot = slice2d_cal_rot( bvec, crossp(bvec,vvec) )
 if rotation eq 'xy' then rot = slice2d_cal_rot( [1,0,0], [0,1,0] )
 if rotation eq 'xz' then rot = slice2d_cal_rot( [1,0,0], [0,0,1] )
 if rotation eq 'yz' then rot = slice2d_cal_rot( [0,1,0], [0,0,1] )
@@ -432,11 +432,11 @@ colors = round( (indgen(nlines)+1)*(!d.table_size-9)/nlines ) + 7
 
 
 ;- set x & y titles
-if rotation eq 'BV' then begin
+if rotation eq 'bv' then begin
    xtitle = 'v_para [km/s]'
    ytitle = 'v_perp_V [km/s]'
 endif
-if rotation eq 'BE' then begin
+if rotation eq 'be' then begin
    xtitle = 'v_para [km/s]'
    ytitle = 'v_perp_E [km/s]'
 endif
@@ -519,7 +519,7 @@ endif else begin
    endif
 endelse
 
-if keyword_set(sundir) then oplot,[0,xsun*max(xrange)],[0,ysun*max(xrange)]
+if keyword_set(sundir) then oplot,[0,xsun*xmax],[0,ysun*xmax]
 
 if not keyword_set(subtract) then begin
    if not keyword_set(novelline) then oplot,[0,vvec[0]],[0,vvec[1]],col= !d.table_size-9

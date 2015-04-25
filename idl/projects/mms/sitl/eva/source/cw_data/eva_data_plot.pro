@@ -3,12 +3,11 @@ PRO eva_data_plot, wid
   @eva_logger_com
 
   ; INITIALIZE
-  thm_init
+  ;thm_init
   duration   = wid.duration
   duration  = (str2time(wid.end_time)-str2time(wid.start_time))/86400.d0; duration in unit of days.
   timespan, wid.start_time, duration
-  ;eventdate  = wid.eventdate
-  ;timespan,eventdate,duration
+
   pmax_THM = n_elements(wid.probelist_thm)
   pmax_MMS = n_elements(wid.probelist_mms)
   if pmax_THM eq 1 and size(wid.probelist_thm[0],/type) ne 7 then pmax_THM=0
@@ -16,12 +15,14 @@ PRO eva_data_plot, wid
   plst_THM = wid.paramlist_thm
   plst_MMS = wid.paramlist_mms
   plst_STL = wid.paramlist_stlm
-  ;probelist  = wid.probelist & pmax = n_elements(probelist)
-  ;paramlist  = wid.paramlist & imax = n_elements(paramlist)
   OPOD     = wid.OPOD; One Probe One Display = separate windows
   SORT_BY_VARIABLE = wid.SRTV
 
+  
   if OPOD then begin; separate windows
+    ;------------------------
+    ; One Probe One Display (OPOD)
+    ;------------------------
     wmax = pmax_THM+pmax_MMS; number of windows (= number of probes)
     vars_arr = ptrarr(wmax)
     ; THEMIS
@@ -46,6 +47,9 @@ PRO eva_data_plot, wid
       endfor
     endif
   endif else begin; Data from all probes are shown in one display
+    ;------------------------
+    ; DEFAULT
+    ;------------------------
     vmst = wid.paramlist; Duplicate the grand paramlist (contains * at this point)
     imax = n_elements(vmst)
     vars = ''

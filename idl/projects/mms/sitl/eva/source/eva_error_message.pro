@@ -12,20 +12,23 @@ PRO eva_error_message, error_status, msg=msg
   format = '('+strtrim(string(r0),2)+'A)'
   
   ; IDL error message
-  log.o,'===== IDL Error Message ====='
+  log.o,'############################'
+  log.o,'     ERROR '
+  log.o,'############################'
   for jjjj=0,n_elements(error_message)-1 do begin
     print,error_message[jjjj]
     log.o,error_message[jjjj]
   endfor
   
   ; EVA error message
+  log.o,'----------------------------'
+  log.o,'Additional message from EVA'
+  log.o,'----------------------------'
   if n_elements(msg) ne 0 then begin
-    log.o,'===== EVA Error Message ====='
     log.o, msg
   endif
   
   ; ENVIRONMENT
-  log.o,'===== Environment ====='
   log.o, 'error index: '+string(error_status)
   log.o, 'OS name:   '+!VERSION.OS_NAME
   log.o, 'IDL version: '+!VERSION.RELEASE
@@ -34,7 +37,8 @@ PRO eva_error_message, error_status, msg=msg
   log.o, 'memory and file_offset bits: '+ $
     string(!VERSION.MEMORY_BITS, format=('(I3)')) + ' , ' + $
     string(!VERSION.FILE_OFFSET_BITS, format=('(I3)'))
-
+  log.o,'############################'
+  
   ; Message to user    
   print, format=format, stra
   print, "ERROR detected: Please find EVA's log file at"
