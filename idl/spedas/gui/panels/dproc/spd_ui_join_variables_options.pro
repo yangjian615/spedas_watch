@@ -22,10 +22,10 @@
 ;
 ;NOTES:
 ;
-;$LastChangedBy:  $
-;$LastChangedDate:  $
-;$LastChangedRevision:  $
-;$URL:  $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/dproc/spd_ui_join_variables_options.pro $
 ;-
 
 pro spd_ui_join_variables_options_event, event
@@ -121,7 +121,7 @@ function spd_ui_join_variables_options, gui_id, statusbar, historywin
   endif
 
 ;Constants
-  new_name = 'thm_new_var'    ;default name
+  new_name = 'new_var'    ;default name
 
 
   tlb = widget_base(title = 'Join Variables Options', /col, /base_align_center, $ 

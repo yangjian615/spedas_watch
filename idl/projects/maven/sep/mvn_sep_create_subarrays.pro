@@ -16,8 +16,9 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
 ;   smooth=1
    
    geoms = [!values.f_nan,.1,.001,!values.f_nan]        ; cm2-ster         ; temporary kludge
-   geoms = [!values.f_nan,.18, .0018, !values.f_nan]
-  ; geoms = [!values.f_nan,.1,.1,!values.f_nan]
+   geoms = [!values.f_nan,.18, .18/100, !values.f_nan]
+  ; geoms = [!values.f_nan,.18, .18/64, !values.f_nan]
+  ; geoms = [!values.f_nan,.1,.01,!values.f_nan]
    if keyword_set(smpar) then smooth=1
    if size(/type,data_str) eq 7 then begin                     ; input is a string
       mvn_sep_extract_data,data_str,rawdat,trange=trange,num=num
@@ -105,7 +106,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
                          units = 'Cnts/s'
                          spec = 1
                          zrange = [.03,10]
-                         if (det eq 1) || (det eq 3) then zrange=[.03,100]
+                         if (det eq 1) || (det eq 3) then zrange=[.03,1000]
                          tdata = total(data,2)
                       end
            'flux'   : begin
@@ -132,11 +133,11 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
 ;          rnorm[*,d] = ((nw gt 1) ? total(tdata,2) : tdata)
           tempdata = {x:ptr_new(t),y:ptr_new(data,/no_copy),v:ptr_new(vals,/no_copy),znorm:ptr_new(znorm,/no_copy),map:ptr_new(bmap)}
           store_data,tname+'_'+cname+'_'+zname+'_'+yval,data=tempdata, dlimit={spec:spec,ystyle:1,zrange:zrange,ylog:ylog,zlog:1,$
-             labels:energy_label,labflag:-1 ,panel_size:.5+nw/20.,ztitle:units,colors:'mybycygyry'}
+             labels:energy_label,labflag:-1 ,panel_size:.5+nw/80.,ztitle:units,colors:'mybycygyry'}
        endfor
 ;       tempdata = {x:ptr_new(t),y:ptr_new(rdata/rnorm,/no_copy),znorm:ptr_new(dt # replicate(1.,6),/no_copy),map:ptr_new(bmap)}
        tempdata = {x:ptr_new(t),y:ptr_new(rdata,/no_copy),map:ptr_new(bmap)}
-       store_data,tname+'_'+sidename[s]+'_'+zname+'_tot',data=tempdata,dlimit ={colors:[2,4,6,1,3,0],yrange:yrange,ylog:1,ystyle:1,panel_size:2.,psym:-3,reverse_order:1}
+       store_data,tname+'_'+sidename[s]+'_'+zname+'_tot',data=tempdata,dlimit ={colors:[2,4,6,1,3,0],yrange:yrange,ylog:1,ystyle:1,panel_size:1.,psym:-3,reverse_order:1}
      endfor
    endfor
 end

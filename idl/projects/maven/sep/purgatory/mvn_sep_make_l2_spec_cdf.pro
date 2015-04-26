@@ -28,12 +28,12 @@
 ; 7) Look_Directions - 4 x 3-element array of unit vectors of each of the four FOVs in Mars-solar-orbital coordinates.
 
 
-pro mvn_sep_make_spec_l2_cdf, sep_data, sep_info, global_attribute_names = global_attribute_names, $
+pro mvn_sep_make_l2_spec_cdf, sep_data, sep_info, global_attribute_names = global_attribute_names, $
   global_attribute_values = global_attribute_values, $
 ;  rawdat_sep1 = rawdat_sep1, rawdat_sep2 = rawdat_sep2, bmaps=bmaps, $
   file = file, archive = archive, data_version = data_version
 
-if not keyword_set(data_version) then data_version = '1'
+if not keyword_set(data_version) then data_version = '00'
 
 if not keyword_set(file) then file = 'test.cdf'
 

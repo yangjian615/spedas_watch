@@ -21,11 +21,11 @@ End
 
 ;+
 ;NAME:
-; thm_ui_cotrans
+; thm_ui_cotrans_old
 ;PURPOSE:
 ; Widget for coordinate transforms
 ;CALLING SEQUENCE:
-; thm_ui_cotrans, gui_id
+; thm_ui_cotrans_old, gui_id
 ;INPUT:
 ; gui_id = the widget id of the thm_gui widget that called this one.
 ;OUTPUT:
@@ -38,13 +38,14 @@ End
 ; 12-jul-2007, jmm, added a message widget, for invalid user input errors
 ; 06-may-2008, cg, rearranged gui so that message window is at bottom, is
 ;              longer and doesn't wrap
-;$LastChangedBy: cgoethel $
-;$LastChangedDate: 2008-07-08 08:41:22 -0700 (Tue, 08 Jul 2008) $
-;$LastChangedRevision: 3261 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/thm_ui/thm_ui_cotrans.pro $
+; 08-apr-2015, af, renaming to avoid conflict with new routine 
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/thm_ui/thm_ui_cotrans_old.pro $
 ;
 ;-
-Pro thm_ui_cotrans_event, event
+Pro thm_ui_cotrans_old_event, event
 
   Common thm_ui_cotrans_sav, from_sav, to_sav
 
@@ -182,7 +183,7 @@ Pro thm_ui_cotrans_event, event
   Endelse
   Return
 End
-Pro thm_ui_cotrans, calling_widget_id
+Pro thm_ui_cotrans_old, calling_widget_id
 
   Common thm_ui_cotrans_sav, from_sav, to_sav
 ;Build the widget
@@ -240,7 +241,7 @@ Pro thm_ui_cotrans, calling_widget_id
 
   widget_control, master, set_uval = state, /no_copy
   widget_control, master, /realize
-  xmanager, 'thm_ui_cotrans', master, /no_block
+  xmanager, 'thm_ui_cotrans_old', master, /no_block
 
 
 End

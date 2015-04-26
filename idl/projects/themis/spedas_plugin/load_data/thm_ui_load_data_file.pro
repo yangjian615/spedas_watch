@@ -26,9 +26,9 @@
 ;NOTES:
 ;  
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 14:43:23 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17275 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file.pro $
 ;
 ;-
@@ -310,7 +310,7 @@ pro thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
                            
   ;validCoords = [ ' DSL ', ' GSM ', ' SPG  ', ' SSL ',' GSE ', ' GEI ']
   ; make a list of valid coordinate systems 
-  coord_sys_obj = obj_new('spd_ui_coordinate_systems')
+  coord_sys_obj = obj_new('thm_ui_coordinate_systems')
   validCoords = coord_sys_obj->makeCoordSysList(/uppercase)
   obj_destroy, coord_sys_obj
 

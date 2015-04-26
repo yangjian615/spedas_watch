@@ -13,6 +13,8 @@ case plot_name of
 'TID': tplot,'mvn_sep?_?_*_tot',ADD=ADD
 'FOIL':tplot,'mvn_sep?_?-F_*',ADD=ADD
 'OPEN':tplot,'mvn_sep?_?-O_*',ADD=ADD
+'ION': tplot,'mvn_SEP??_ion_eflux',ADD=ADD
+'ELEC': tplot,'mvn_SEP??_elec_eflux',ADD=ADD
 'THICK':tplot,'mvn_sep?_?-T_*',ADD=ADD
 'FTO':tplot,'mvn_sep?_?-FTO_*',ADD=ADD
 'FT':tplot,'mvn_sep?_?-FT_*',ADD=ADD

@@ -61,8 +61,8 @@
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; CHanged to use thara's mvn_pl_pfp_tplot.pro, 2015-04-14, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-04-22 17:37:04 -0700 (Wed, 22 Apr 2015) $
-; $LastChangedRevision: 17402 $
+; $LastChangedDate: 2015-04-24 12:49:51 -0700 (Fri, 24 Apr 2015) $
+; $LastChangedRevision: 17424 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_genl2_overplot.pro $
 ;-
 Pro mvn_genl2_overplot, orbit_number = orbit_number, $
@@ -135,7 +135,7 @@ Pro mvn_genl2_overplot, orbit_number = orbit_number, $
   d1 = time_string(tr0x[1])
 
 ;plot the data
-  tplot, varlist, title = 'MAVEN PFP Quicklook '+d0+'-'+d1, var_label = 'mvn_orbnum'
+  tplot, varlist, title = 'MAVEN PFP L2 '+d0+'-'+d1, var_label = 'mvn_orbnum'
   tlimit, tr0x[0], tr0x[1]
 
   If(keyword_set(multipngplot) && keyword_set(date)) Then makepng = 1b

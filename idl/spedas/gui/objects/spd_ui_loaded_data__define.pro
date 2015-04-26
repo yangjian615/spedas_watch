@@ -52,9 +52,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 16:47:11 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17280 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1460,7 +1460,11 @@ Pro SPD_UI_LOADED_DATA::GetVarData,name=name,time=t,data=d,yaxis=y,limits=l,dlim
     if arg_present(dl) && keyword_set(duplicate) then begin
       dl = ptr_new(*dl)
     endif
-  
+    
+    if arg_present(trange) && obj_valid(timerange) then begin
+      trange = [timerange->getstarttime(),timerange->getendtime()]
+    endif
+
   endif else if self->isChild(name) then begin
   
     groups = *self.groupObjs
@@ -1472,7 +1476,7 @@ Pro SPD_UI_LOADED_DATA::GetVarData,name=name,time=t,data=d,yaxis=y,limits=l,dlim
       if obj_valid(dataObj) then begin
       
         dataObj[0]->updateDlimits
-        dataObj[0]->getProperty,name=name,mission=mission,observatory=observatory,coordSys=coordSys,instrument=instrument,timerange=trange,isTime=isTime,dataPtr=dataPtr,timeName=timeName,yaxisname=yaxisname,limitPtr=l,dlimitPtr=dl,units=units
+        dataObj[0]->getProperty,name=name,mission=mission,observatory=observatory,coordSys=coordSys,instrument=instrument,timerange=timerange,isTime=isTime,dataPtr=dataPtr,timeName=timeName,yaxisname=yaxisname,limitPtr=l,dlimitPtr=dl,units=units
       
         if arg_present(d) && keyword_set(duplicate) then begin
           d = ptr_new(*dataPtr)
@@ -1510,6 +1514,10 @@ Pro SPD_UI_LOADED_DATA::GetVarData,name=name,time=t,data=d,yaxis=y,limits=l,dlim
           endelse
           
         endelse
+        
+        if arg_present(trange) && obj_valid(timerange) then begin
+          trange = [timerange->getstarttime(),timerange->getendtime()]
+        endif
       
         return
       

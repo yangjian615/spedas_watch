@@ -39,9 +39,9 @@
 ;HISTORY:
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 13:39:19 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17268 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data2obj.pro $
 ;
 ;-
@@ -662,7 +662,7 @@ pro thm_ui_load_data2obj,$
       
       ;this loads any required spin model parameters and stores data to remove unrequested variables.
       if (in_set('pos',iname) || in_set('vel',iname)) && is_string(tnames('th'+observ[i]+'_state_pos')) && $
-         spd_ui_req_spin('gei',out_coord,observ[i],[st_time, en_time],loadedData) then begin
+         thm_ui_req_spin('gei',out_coord,observ[i],[st_time, en_time],loadedData) then begin
          
         thm_load_state,probe=observ[i],trange=[st_time, en_time],/get_support
       endif

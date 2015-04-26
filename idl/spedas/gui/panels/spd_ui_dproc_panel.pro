@@ -17,10 +17,11 @@
 ; 
 ;HISTORY:
 ; 21-nov-2008, jmm, jimm@ssl.berkeley.edu
+; 24-apr-2015, af, event handler uses uname instead of uvalue
 ; 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-02-13 09:56:57 -0800 (Fri, 13 Feb 2015) $
-;$LastChangedRevision: 16980 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_dproc_panel.pro $
 ;-
 
@@ -124,13 +125,16 @@ Endif
 If(obj_valid(dobj) Eq 0) Then message, 'No valid data object'
 
 ;now deal with the event
-widget_control, event.id, get_uvalue = uval
-SPL = strsplit(uval, ':', /extract)
+uname = widget_info(event.id, /uname)
+SPL = strsplit(uname, ':', /extract)
+
+;uvalues only used for plugins atm, coule be expanded if needed
+widget_control, event.id, get_uvalue=uvalue
 
 ;Handle most data processing options
 If(spl[0] Eq 'PROC') Then Begin
     ptree = ptr_new(state.treeobj->getcopy())
-    otp = spd_ui_dproc(state.info, spl[1], ext_statusbar = sobj, $ 
+    otp = spd_ui_dproc(state.info, spl[1], ext_statusbar = sobj, plugin_structure=uvalue, $ 
                            group_leader = state.master, ptree = ptree)
     
     ;synchronize tree expansion state.(Since Interpol popup uses data tree)
@@ -147,15 +151,15 @@ Endif Else If(spl[0] Eq 'COTRANS') Then Begin
 
     active = state.info.loadedData->getActive(/parent)
     state.info.windowStorage->getProperty,callSequence=callSequence
-    spd_ui_cotrans_new, event.top,spl[1],active,state.info.loadedData, sobj,historywin,callSequence
+    spd_ui_cotrans, event.top,spl[1],active,state.info.loadedData, sobj,historywin,callSequence
     widget_control, event.top, set_uvalue = state, /no_copy
     spd_ui_dproc_reset_act_data, dproc_id, /update_tree
 
 ;Handle window events
 Endif Else Begin
-    state.info.historywin->update,'SPD_UI_DPROC_PANEL: User Value: '+uval,/dontshow
+    state.info.historywin->update,'SPD_UI_DPROC_PANEL: User Value: '+uname,/dontshow
 ;    sobj->update,string('SPD_UI_DPROC_PANEL: User Value: '+uval)
-    Case uval of
+    Case uname of
         'CANC': Begin
             state.info.historywin-> update, 'Closing Data Processing Panel'
             if obj_valid(state.treeObj) then begin
@@ -238,12 +242,9 @@ Endif Else Begin
               state.info.historywin-> update, 'No Data has been selected'
             endelse
         End
-;        'PARTSPEC': BEGIN
-;            widget_control,state.loadedlist,get_value=treeobj
-;            widget_control, event.top, set_uvalue = state, /no_copy    
-;            spd_ui_part_getspec_options, dproc_id,treeobj
-;            widget_control, event.top, get_uvalue = state, /no_copy
-;        END
+        else:begin
+          ;nothing to do
+        end
     Endcase
     widget_control, event.top, set_uvalue = state, /no_copy
 Endelse
@@ -323,52 +324,52 @@ spd_ui_match_background, master, trashcan
 
 ;plusbmp = filepath('shift_right.bmp', SubDir = ['resource', 'bitmaps'])
 ;minusbmp = filepath('shift_left.bmp', SubDir = ['resource', 'bitmaps'])
-addButton = Widget_Button(addBase, Value = rightArrow, /Bitmap,  UValue = 'SETACTIVE', $
+addButton = Widget_Button(addBase, Value = rightArrow, /Bitmap,  uname = 'SETACTIVE', $
                           ToolTip = 'Set Selected Data to Active')
 minusButton = Widget_Button(addBase, Value = leftArrow, /Bitmap, $
-                            Uvalue = 'UNSETACTIVE', $
+                            uname = 'UNSETACTIVE', $
                             ToolTip = 'Unset selected data from Active')
-trashbutton = Widget_Button(addBase, Value=trashcan, /Bitmap,  UValue='TRASH', $
+trashbutton = Widget_Button(addBase, Value=trashcan, /Bitmap,  uname='TRASH', $
               ToolTip='Delete data selected in the list of loaded data', xsize=27, ysize=27) 
 activeLabel = Widget_Label(activeBase, value='Active Data')
 
 state.activelist = widget_list(activebase, value = *state.act_data_t, $
-                               uvalue = 'ACTIVELIST', $
+                               uname = 'ACTIVELIST', $
                                XSize = 55, YSize = 22, scr_ysize=ytree_size, /multiple)
 
 ;buttons along the bottom
 clear_button = Widget_Button(buttonBase, Value = ' Clear Active ', XSize = 85, $
-                             UValue = 'CLEAR')
+                             uname = 'CLEAR')
 ; Analysis Pull Down Menu, hacked from spd_gui.pro
 ;analysisMenu = Widget_Button(buttonbase, Value='Analysis ',/menu
 ;xsize = 85)
 subAvgMenu = Widget_Button(analysisMenu, Value='Subtract Average ', $
-                           UValue='PROC:SUBAVG', tooltip = 'Subtracts average of each trace')
+                           uname='PROC:SUBAVG', tooltip = 'Subtracts average of each trace')
 subMedMenu = Widget_Button(analysisMenu, Value='Subtract Median ', $
-                           UValue='PROC:SUBMED', tooltip = 'Subtracts median of each trace from each trace')
-smoothMenu = Widget_Button(analysisMenu, Value='Smooth Data... ', UValue='PROC:SMOOTH', $
+                           uname='PROC:SUBMED', tooltip = 'Subtracts median of each trace from each trace')
+smoothMenu = Widget_Button(analysisMenu, Value='Smooth Data... ', uname='PROC:SMOOTH', $
                           tooltip = 'Smooths data in time, using input resolution')
-hpfiltMenu = Widget_Button(analysisMenu, Value='High Pass filter... ', UValue='PROC:HPFILT', $
+hpfiltMenu = Widget_Button(analysisMenu, Value='High Pass filter... ', uname='PROC:HPFILT', $
                           tooltip = 'Subtracts smoothed values from each trace')
-blkAvgMenu = Widget_Button(analysisMenu, Value='Block Average... ', UValue='PROC:BLKAVG',$
+blkAvgMenu = Widget_Button(analysisMenu, Value='Block Average... ', uname='PROC:BLKAVG',$
                           tooltip = 'Block time average of each trace')
-clipMenu = Widget_Button(analysisMenu, Value='Clip... ', UValue='PROC:CLIP', $
+clipMenu = Widget_Button(analysisMenu, Value='Clip... ', uname='PROC:CLIP', $
                          tooltip = 'Clips traces at input max and min values')
-deflagMenu = Widget_Button(analysisMenu, Value='Deflag... ', UValue='PROC:DEFLAG', $
+deflagMenu = Widget_Button(analysisMenu, Value='Deflag... ', uname='PROC:DEFLAG', $
                            tooltip = 'Replaces NaN values with interpolated or repeated values')
-degapMenu = Widget_Button(analysisMenu, Value='Degap... ', UValue='PROC:DEGAP',$
+degapMenu = Widget_Button(analysisMenu, Value='Degap... ', uname='PROC:DEGAP',$
                           tooltip = 'Fills data gaps with NaN values')
-interpMenu = Widget_Button(analysisMenu, value='Interpolate...', uvalue='PROC:INTERPOL', $
+interpMenu = Widget_Button(analysisMenu, value='Interpolate...', uname='PROC:INTERPOL', $
                            tooltip = 'Performs interpolation on active data')
-spikeMenu = Widget_Button(analysisMenu, Value='Clean Spikes...', UValue='PROC:SPIKE', $
+spikeMenu = Widget_Button(analysisMenu, Value='Clean Spikes...', uname='PROC:SPIKE', $
                           tooltip = 'Replaces single-point spikes with NaN values')
-derivMenu = Widget_Button(analysisMenu, Value='Time Derivative...', UValue='PROC:DERIV', $
+derivMenu = Widget_Button(analysisMenu, Value='Time Derivative...', uname='PROC:DERIV', $
                           tooltip = 'Time derivatives of each trace')
-waveMenu = Widget_Button(analysisMenu, Value='Wavelet Transform...', UValue='PROC:WAVE', $
+waveMenu = Widget_Button(analysisMenu, Value='Wavelet Transform...', uname='PROC:WAVE', $
                          tooltip = 'Performs wavelet transform for each trace')
-pwrspecMenu = Widget_Button(analysisMenu, Value='Power Spectrum...', UValue='PROC:PWRSPC', $
+pwrspecMenu = Widget_Button(analysisMenu, Value='Power Spectrum...', uname='PROC:PWRSPC', $
                          tooltip = 'Performs Dynamic power spectrum for each trace')
-cotranMenu = Widget_Button(analysisMenu, Value='Coordinate Transform...', UValue='PROC:COTRAN', $
+cotranMenu = Widget_Button(analysisMenu, Value='Coordinate Transform...', uname='PROC:COTRAN', $
                          tooltip = 'Performs a coordinate transform on active data', /menu)
 ;validCoords = ['DSL', 'SSL', 'GSE', 'GEI', 'SPG', 'GSM', 'GEO', 'SM', 'SSE', 'SEL', 'MAG']
 
@@ -379,27 +380,26 @@ obj_destroy, coord_sys_obj
 
 coordMenus = LonArr(N_Elements(validCoords))
 FOR i = 0, N_Elements(validCoords)-1 DO $
-  coordMenus[i] = Widget_Button(cotranMenu, Value=string(validCoords[i]+'  '),UValue='COTRANS:'+validCoords[i])
-splitMenu = Widget_Button(analysisMenu, Value='Split Variable', UValue='PROC:SPLIT', $
+  coordMenus[i] = Widget_Button(cotranMenu, Value=string(validCoords[i]+'  '),uname='COTRANS:'+validCoords[i])
+splitMenu = Widget_Button(analysisMenu, Value='Split Variable', uname='PROC:SPLIT', $
                          tooltip = 'Splits a variable into its different componenets (e.g. _x,_y,_z)')
-joinMenu = Widget_Button(analysisMenu, Value='Join Variables...', UValue='PROC:JOIN', $
+joinMenu = Widget_Button(analysisMenu, Value='Join Variables...', uname='PROC:JOIN', $
                          tooltip = 'Joins similar variables into one. To be used after splitting.')
 
 valid_plugins = info.pluginManager->getDataProcessingPlugins()
 
-pluginsMenu = Widget_Button(analysisMenu, value='More...', UValue='PROC:PLUGIN', $
+pluginsMenu = Widget_Button(analysisMenu, value='More...', $ uname='PROC:PLUGIN', $
                             tooltip='More data processing options...', /menu)
 
-plugin_menus = lonarr(n_elements(valid_plugins))
-for i = 0, n_elements(plugin_menus)-1 do $
-    plugin_menus[i] = Widget_Button(pluginsMenu, value=valid_plugins[i].item, uvalue='PROC:PLUGIN;'+valid_plugins[i].procedure)
-    
+spd_ui_plugin_menu, pluginsMenu, valid_plugins, uname='PROC:PLUGIN'
 
-;getspecMenu = Widget_Button(analysisMenu, Value='Get Particle Spectra...', UValue='PARTSPEC', $
-;                            tooltip = 'Angular and/or energy spectra for ESA, SST')
+;plugin_menus = lonarr(n_elements(valid_plugins))
+;for i = 0, n_elements(plugin_menus)-1 do $
+;    plugin_menus[i] = Widget_Button(pluginsMenu, value=valid_plugins[i].item, uname='PROC:PLUGIN;'+valid_plugins[i].procedure)    
+
 ;Dude...
 cancel_button = Widget_Button(buttonBase, Value = '  Done   ', XSize = 85, $
-                              UValue = 'CANC')
+                              uname = 'CANC')
 CenterTlb, master
 Widget_Control, master, Set_UValue = state, /No_Copy
 Widget_Control, master, /Realize

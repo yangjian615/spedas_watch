@@ -175,15 +175,15 @@ function spd_ui_block_ave_options, gui_id, statusbar, historywin, datap
   active_data = (*datap)->getactive()
 
   for i=0, n_elements(active_data)-1 do begin
-    (*datap)->getvardata, name=active_data[i], trange=tr0
-    if obj_valid(tr0) then break
+    (*datap)->getvardata, name=active_data[i], trange=trange
+    if ~undefined(trange) then break
   endfor
 
   ;create new time range object
-  if obj_valid(tr0) then begin
+  if ~undefined(trange) then begin
     tr = obj_new('SPD_UI_TIME_RANGE')
-    ok = tr->SetStartTime(tr0->getstarttime())
-    ok = tr->setendtime(tr0->getendtime())
+    ok = tr->SetStartTime(trange[0])
+    ok = tr->setendtime(trange[1])
     widget_control, time, set_value=tr 
   endif else tr = obj_new('SPD_UI_TIME_RANGE')
 

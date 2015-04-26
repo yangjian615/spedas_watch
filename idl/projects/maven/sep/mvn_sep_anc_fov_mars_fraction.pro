@@ -71,7 +71,7 @@ Function mvn_sep_anc_fov_mars_fraction, times,dang = dang, check_objects = check
           cos_sza_intercept [M] = (solar_zenith_angle lt !pi/2)*cos(solar_zenith_angle)
         endif
       endfor  
-      print, time_string (times[ind[i]]), ' done' 
+      dprint, time_string (times[ind[i]]), ' done' 
       fraction_FOV_Mars [ind[i],J] = total (intercept_Mars*weighting_array_2d)/total (weighting_array_2d)
       fraction_FOV_sunlit_Mars [ind[i], J] = total (cos_sza_intercept*weighting_array_2d)/total(weighting_array_2d)
     endfor

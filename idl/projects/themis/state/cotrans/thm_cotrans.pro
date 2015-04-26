@@ -71,9 +71,9 @@
 ;  thm_cotrans,'mydslvar1 mydslvar2 mydslvar3', $
 ;              in_coord='dsl', probe='b c d', out_suff='_gse'
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-04 09:59:31 -0800 (Tue, 04 Mar 2014) $
-; $LastChangedRevision: 14487 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+; $LastChangedRevision: 17429 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/cotrans/thm_cotrans.pro $
 ;-
 
@@ -397,13 +397,15 @@ pro thm_cotrans, in_name, out_name, probe=probe, datatype=datatype,  $
                  use_eclipse_corrections=use_eclipse_corrections,$
                  slp_suffix=slp_suffix,no_update_labels=no_update_labels
 
+  compile_opt idl2
+
   thm_init
 ; If verbose keyword is defined, override !themis.verbose
   vb = size(verbose, /type) ne 0 ? verbose : !themis.verbose
 
    vprobes = ['a','b','c','d','e']
    ;vcoord = ['spg', 'ssl', 'dsl', 'gse', 'gsm','sm', 'gei','geo','sse','sel', 'mag']
-   coordSysObj = obj_new('spd_ui_coordinate_systems')
+   coordSysObj = obj_new('thm_ui_coordinate_systems')
    vcoord = coordSysObj->makeCoordSysList()
    obj_destroy, coordSysObj
    
@@ -589,7 +591,7 @@ for i = 0, n_elements(in_names)-1 do begin
     continue
   endif
   sizein=size(in.y)
-  if sizein[0] ne 2 or sizein(2) ne 3 then begin
+  if sizein[0] ne 2 or sizein[2] ne 3 then begin
     dprint,'Input tplot variable '+in_nam+' is not a 3-vector. Skipping'
     continue
   endif

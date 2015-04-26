@@ -20,22 +20,23 @@
 ; jimm@ssl.berkeley.edu
 ; Switched to plot singel orbit plots, 24-apr-2015, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-04-22 17:37:04 -0700 (Wed, 22 Apr 2015) $
-; $LastChangedRevision: 17402 $
+; $LastChangedDate: 2015-04-24 13:21:50 -0700 (Fri, 24 Apr 2015) $
+; $LastChangedRevision: 17426 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_multipngplot.pro $
 ;-
 Pro mvn_gen_multipngplot, filename_in, directory = directory, _extra = _extra
 
 ;Extract the date
   f0 = strsplit(file_basename(filename_in), '_', /extract)
-  date0 = f0[n_elements(f0)-1]
+  nf0 = n_elements(f0)
+  date0 = f0[nf0-1]
   date = time_string(date0)
   year = strmid(date, 0, 4)
   month = strmid(date, 5, 2)
   day = strmid(date, 8, 2)
   ymd = year+month+day
 
-  filename_proto = strjoin(f0[0:2], '_')
+  filename_proto = strjoin(f0[0:nf0-2], '_')
 
   date_double = time_double(date[0])
   if keyword_set(directory) then begin
@@ -71,13 +72,13 @@ Pro mvn_gen_multipngplot, filename_in, directory = directory, _extra = _extra
      norb = n_elements(tbins)-1
      For j = 0, norb-1 Do Begin
         trj = tbins[j:j+1]
-        tplot, trange = trj
-        trjstr = time_string(trj[0], format=6)
         orbno = 'o'+string(onums[j], format = '(i5.5)')
+        orbno0 = strcompress(onums[j], /remove_all)
+        tplot, trange = trj, title = 'MAVEN PFP L2: Orbit '+orbno0, var_label = 'mvn_orbnum'
+        trjstr = time_string(trj[0], format=6)
         makepng, dir+filename_proto+'_'+orbno+'_'+trjstr, /no_expose, _extra = _extra
      Endfor
   Endif
-;reset the time range to the full day
-  tlimit, 0, 0
+
   Return
 End

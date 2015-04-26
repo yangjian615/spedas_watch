@@ -1,50 +1,14 @@
 
-;+ 
-;NAME:
-; spd_ui_req_spin
-;
-;PURPOSE:
-; Determines availability of parameters for spin model.
-;
-;CALLING SEQUENCE:
-; if spd_ui_req_spin((coordSys,value,probe,trange,loadedData) then begin
-;   thm_load_state,probe=probe,trange=trange,/get_support
-; endif
-;
-;INPUT:
-; value:  a string storing the destination coordinate system
-; active: the set of variables to be transformed
-; loadedData: the loadedData object
-; sobj: the status bar object to which messages should be sent
-; silent(optional): set this keyword to suppress popup messages.(Used during replay)
-; 
-; 
-;OUTPUT:
-; none
-; 
-; SIDE EFFECT: New active variable for each prior active stored in loaded data
-;   and transformed into the new coordinate system with suffix added/changed
-;
-;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-21 13:54:28 -0800 (Fri, 21 Feb 2014) $
-;$LastChangedRevision: 14413 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_req_spin.pro $
-;
-;---------------------------------------------------------------------------------
-
-
 
 ;helper function for spin tvar requirement checking to simplify code organization
-function spd_ui_cotrans_new_req_spin_tvars_helper,in_coord,out_coord,trange,loadedData,varname
+function thm_ui_cotrans_new_req_spin_tvars_helper,in_coord,out_coord,trange,varname,loadedData
 
   compile_opt idl2,hidden
   
-  varList = loadedData->getAll(/parent)
   
  ; left_coords = ['gse','gsm','sm','gei','geo','sse','sel','mag']
  ; right_coords = ['spg','ssl','dsl']
-  coordSysObj = obj_new('spd_ui_coordinate_systems')
+  coordSysObj = obj_new('thm_ui_coordinate_systems')
   left_coords = coordSysObj->makeCoordSysListForSpinModel()
   right_coords = coordSysObj->makeCoordSysListforTHEMIS(/include_dsl)
   obj_destroy, coordSysObj
@@ -66,8 +30,8 @@ function spd_ui_cotrans_new_req_spin_tvars_helper,in_coord,out_coord,trange,load
        var_trange[0] - overlap_margin gt trange[0] || $
        var_trange[1] + overlap_margin lt trange[1] then begin
        
-       ;check gui loadedData
-       if ~in_set(varname,varList) then begin
+       ;check gui loadedData if available
+       if ~obj_valid(loadedData) || ~in_set(varname,loadedData->getAll(/parent)) then begin
          return,1
        endif else begin
        
@@ -94,7 +58,7 @@ end
 ;determine if spin tplot variables are required for transformation
 ;Needed for any transformations that require 'gse2dsl' or 'dsl2gse'
 ;If variables are found in gui loadedData, will also be exported to command line for use with tplot
-function spd_ui_cotrans_new_req_spin_tvars,in_coord,out_coord,probe,trange,loadedData
+function thm_ui_cotrans_new_req_spin_tvars,in_coord,out_coord,probe,trange,loadedData
 
   compile_opt idl2,hidden
 
@@ -105,10 +69,10 @@ function spd_ui_cotrans_new_req_spin_tvars,in_coord,out_coord,probe,trange,loade
   spindec = 'th'+probe+'_state_spindec'
   
   
-  if (~spd_ui_cotrans_new_req_spin_tvars_helper(in_coord,out_coord,trange,loadedData,spinras_cor) && $
-      ~spd_ui_cotrans_new_req_spin_tvars_helper(in_coord,out_coord,trange,loadedData,spindec_cor)) || $
-      (~spd_ui_cotrans_new_req_spin_tvars_helper(in_coord,out_coord,trange,loadedData,spinras) && $
-       ~spd_ui_cotrans_new_req_spin_tvars_helper(in_coord,out_coord,trange,loadedData,spindec)) then begin
+  if (~thm_ui_cotrans_new_req_spin_tvars_helper(in_coord,out_coord,trange,spinras_cor,loadedData) && $
+      ~thm_ui_cotrans_new_req_spin_tvars_helper(in_coord,out_coord,trange,spindec_cor,loadedData)) || $
+      (~thm_ui_cotrans_new_req_spin_tvars_helper(in_coord,out_coord,trange,spinras,loadedData) && $
+       ~thm_ui_cotrans_new_req_spin_tvars_helper(in_coord,out_coord,trange,spindec,loadedData)) then begin
     return,0
   endif else begin
     return,1
@@ -118,13 +82,13 @@ end
 
 ;determine if spin model is required for transformation
 ;Needed for any transformations that require 'ssl2dsl' or 'dsl2ssl'
-function spd_ui_cotrans_new_req_spin_model,in_coord,out_coord,probe,trange
+function thm_ui_cotrans_new_req_spin_model,in_coord,out_coord,probe,trange
 
   compile_opt idl2,hidden
 
   ;left_coords = ['dsl','gse','gsm','sm','gei','geo','sse']
   ;right_coords = ['spg','ssl']
-  coordsysobj = obj_new('spd_ui_coordinate_systems')
+  coordsysobj = obj_new('thm_ui_coordinate_systems')
   left_coords = coordsysobj->makeCoordSysListForSpinModel(/include_dsl)
   right_coords = coordsysobj->makeCoordSysListForTHEMIS()
   obj_destroy, coordsysobj
@@ -155,10 +119,49 @@ function spd_ui_cotrans_new_req_spin_model,in_coord,out_coord,probe,trange
   return,0
 end
 
-function spd_ui_req_spin,in_coord,out_coord,probe,trange,loadedData
+
+;+ 
+;NAME:
+;  thm_ui_req_spin
+;
+;PURPOSE:
+;  Determines availability of parameters for spin model.
+;
+;CALLING SEQUENCE:
+;  bool = thm_ui_req_spin(in_coord, out_coord, probe, trange [,loadedData])
+;
+;  Example:
+;    if thm_ui_req_spin(in_coord, out_coord, probe, trange) then begin
+;      thm_load_state, probe=probe, trange=trange, /get_support_data
+;    endif
+;
+;INPUT:
+;  in_coord:  string storing the original coordinate system
+;  out_coord:  a string storing the destination coordinate system
+;  probe:  string probe designation
+;  trange:  two element double storing requested time range
+;  loadedData:  (optional) SPEDAS loadedData object
+; 
+;OUTPUT:
+;  return value: 0 if required data is present for entire time range plus margin
+;                1 otherwise
+;
+;NOTES:
+;
+;HISTORY:
+;  2015-04-24 - loaded data object now optional
+;
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_cotrans/thm_ui_req_spin.pro $
+;
+;-
+function thm_ui_req_spin,in_coord,out_coord,probe,trange,loadedData
 
   compile_opt idl2,hidden
   
-  return,spd_ui_cotrans_new_req_spin_tvars(in_coord,out_coord,probe,trange,loadedData) || spd_ui_cotrans_new_req_spin_model(in_coord,out_coord,probe,trange)
+  return,thm_ui_cotrans_new_req_spin_tvars(in_coord,out_coord,probe,trange,loadedData) || thm_ui_cotrans_new_req_spin_model(in_coord,out_coord,probe,trange)
   
 end

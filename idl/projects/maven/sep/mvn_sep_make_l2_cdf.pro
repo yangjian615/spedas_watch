@@ -1,3 +1,6 @@
+
+obsolete
+
 ;+
 ;PROCEDURE: 
 ;	MVN_SEP_MAKE_L2_CDF

@@ -14,6 +14,7 @@
 ;Input:
 ;  menu_id: Widget ID of the parent menu into which plugin buttons will be placed.
 ;  plugin_menu_items: an array of structures containing the plugin menu items; loaded via pluginManager->getPluginMenus()
+;  uname: (optional) Specified uname of widget buttons (default='GUI_PLUGIN')
 ;
 ;
 ;Output:
@@ -24,31 +25,32 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-03-31 16:53:14 -0700 (Tue, 31 Mar 2015) $
-;$LastChangedRevision: 17214 $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_plugin_menu.pro $
 ;
 ;-
 
-pro spd_ui_plugin_menu, menu_id, plugin_menu_items
+pro spd_ui_plugin_menu, menu_id, plugin_menu_items, uname=uname
 
     compile_opt idl2, hidden
 
   
 
   if ~is_struct(plugin_menu_items) then begin
-        ; no valid menu items
-        dummy = widget_button(menu_id, value='None', sens=0)
-        return
+    ; no valid menu items
+    dummy = widget_button(menu_id, value='None', sens=0)
+    return
   endif
   nitems = n_elements(plugin_menu_items)
   
   if nitems lt 1 then begin
     dummy = widget_button(menu_id, value='None', sens=0)
-;    dprint, dlevel=2, 'No plugins found in config file.'
     return
   endif
   
+  if undefined(uname) then uname = 'GUI_PLUGIN'
+
   
   ;----------------------------------------------------
   ; Loop over plugins
@@ -111,7 +113,7 @@ pro spd_ui_plugin_menu, menu_id, plugin_menu_items
     ;----------------------------------------------------
     ; Add button to the current node
     ;----------------------------------------------------
-    button = widget_button(node, value=name, uval=plugin, uname='GUI_PLUGIN')
+    button = widget_button(node, value=name, uval=plugin, uname=uname)
     
   endfor
   

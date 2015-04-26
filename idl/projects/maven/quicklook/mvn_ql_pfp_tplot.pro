@@ -40,9 +40,9 @@
 ;CREATED BY:      Takuya Hara on 2015-04-09.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-04-10 01:26:30 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17282 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-04-24 11:37:54 -0700 (Fri, 24 Apr 2015) $
+; $LastChangedRevision: 17421 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -161,6 +161,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      trange_full[1] += oneday
   IF MEAN(trange - trange_full) NE 0.d0 THEN clip = 1 ELSE clip = 0
   mvn_swia_load_l2_data, trange=trange_full, /tplot, /loadspec, /eflux
+
   undefine, trange_full
   tname = tnames('mvn_swi*', ntplot)
   IF ntplot EQ 0 THEN BEGIN

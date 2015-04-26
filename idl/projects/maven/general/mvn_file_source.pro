@@ -34,8 +34,8 @@
 ;  see "FILE_RETRIEVE" for a description of each structure element.
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-12-09 09:58:48 -0800 (Tue, 09 Dec 2014) $
-; $LastChangedRevision: 16420 $
+; $LastChangedDate: 2015-04-24 10:19:57 -0700 (Fri, 24 Apr 2015) $
+; $LastChangedRevision: 17418 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_file_source.pro $
 ;-
 
@@ -64,7 +64,7 @@ if not keyword_set(psource) then begin    ; Create the default
 ;       psource.no_update=1   ; this can be set to 1 only because all files use version numbers and will not be updated.
        psource.min_age_limit=300  ; five minute delay before checking remote server for file index
     endelse
-;    psource.archive_ext = '.arc'   ; archive old files instead of deleting them
+    psource.archive_ext = '.arc'   ; archive old files instead of deleting them
 ;    psource.archive_dir = psource.local_data_dir+ 'maven/' + 'archive/'  ; archive directory
     psource.verbose=2
     str_element,/add,psource,'LAST_VERSION',1            ;  set this as default since version numbers are generally used.

@@ -61,7 +61,7 @@ Function mvn_qlook_filename, instrument, time_range, date_only = date_only, $
      Endelse
      fname = 'mvn_'+instrument+'_'+lvl+'_'+desc+'_'+date_ext+'_'+fv_str+'_'+sw_vsn_str
   Endif Else Begin
-     If(instrument Eq 'l2') Then fname = 'mvn_'+instrument+'_'+date_ext $
+     If(instrument Eq 'l2') Then fname = 'mvn_pfp_'+instrument+'_'+date_ext $
      Else fname = 'mvn_'+instrument+'_ql_'+date_ext
   Endelse
 

@@ -187,6 +187,7 @@ str_additions = {   $
     R_elec_flux_tot_unc:  nan, $
     F_lookdir:      [nan,nan,nan] , $
     R_lookdir:      [nan,nan,nan] , $
+;    sc_postion:  [nan,nan,nan], $
     quality_flag: 0ul $    
   }
   
@@ -211,6 +212,8 @@ str_additions = {   $
       dprint,dlevel=3,verbose=verbose,/phelp,mapids
       mapids=mapids1   ; do only most common one  
   endif 
+  
+ 
   
 
   for i = 0,n_elements(mapids)-1 do begin
@@ -243,6 +246,8 @@ str_additions = {   $
      caldata[wt].r_ion_denergy = dnrg
      caldata[wt].r_ion_eflux_tot = total(sub_eflux * dnrg,1)
      caldata[wt].r_ion_eflux_tot_unc = sqrt( total((unc_eflux * dnrg)^2,1))
+     caldata[wt].r_ion_flux_tot = total(subflux * dnrg,1)
+     caldata[wt].r_ion_flux_tot_unc = sqrt( total((uncflux * dnrg)^2,1))
 
      mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.f_elec ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux
      caldata[wt].f_elec_flux = subflux
@@ -253,6 +258,8 @@ str_additions = {   $
      caldata[wt].f_elec_denergy = dnrg
      caldata[wt].f_elec_eflux_tot = total(sub_eflux * dnrg,1)
      caldata[wt].f_elec_eflux_tot_unc = sqrt( total((unc_eflux * dnrg)^2,1))
+     caldata[wt].f_elec_flux_tot = total(subflux * dnrg,1)
+     caldata[wt].f_elec_flux_tot_unc = sqrt( total((uncflux * dnrg)^2,1))
 
      mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.r_elec ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux
      caldata[wt].r_elec_flux = subflux
@@ -263,6 +270,8 @@ str_additions = {   $
      caldata[wt].r_elec_denergy = dnrg
      caldata[wt].r_elec_eflux_tot = total(sub_eflux * dnrg,1)
      caldata[wt].r_elec_eflux_tot_unc = sqrt( total((unc_eflux * dnrg)^2,1))
+     caldata[wt].r_elec_flux_tot = total(subflux * dnrg,1)
+     caldata[wt].r_elec_flux_tot_unc = sqrt( total((uncflux * dnrg)^2,1))
 
      dprint,verbose=verbose,dlevel=3,/phelp,mapnum,mapname,sepn
    endfor
@@ -273,6 +282,21 @@ str_additions = {   $
 ;   if spice_test() then caldata. spice_vector_rotate(ldir
    
 ;   caldata.f_lookdir
+   if 1 then begin
+    qf = caldata.quality_flag
+    att = caldata.att
+    datt = shift(att,-1) ne shift(att,1)
+    qf = att ne 1
+    qf or= ishft( datt , 1 )
+    caldata.quality_flag  = qf
+    
+    
+    if 1 then begin
+      w=where(datt,nw)
+      if nw ne 0 then caldata[w] = fill_nan(caldata[0])
+      
+    endif
+   endif
    
    return,caldata
 end
@@ -280,93 +304,93 @@ end
 
 
 
-if 0
-mvn_sep_extract_data,'mvn_sep2_svy',rawdat;,trange=[time_double('14 9 22 21'),systime(1)]
-;printdat,rawdat
-
-raw_data=transpose(rawdat.data)
-raw_data=smooth_counts(raw_data)
-rawdat.data=transpose(raw_data)
-
-bkgfile=mvn_pfp_file_retrieve('maven/data/sci/sep/l1/sav/sep2_bkg.sav')
-restore,file=bkgfile,/verb
-; mvn_sep_spectra_plot,bkg2
-
-newdat = mvn_sep_get_cal_units(rawdat,background = bkg2)
-endif
-
-
+;if 0
+;mvn_sep_extract_data,'mvn_sep2_svy',rawdat;,trange=[time_double('14 9 22 21'),systime(1)]
+;;printdat,rawdat
 ;
-data = newdat.f_ion_flux
-;ddata = newdat.f_ion_flux_unc
+;raw_data=transpose(rawdat.data)
+;raw_data=smooth_counts(raw_data)
+;rawdat.data=transpose(raw_data)
 ;
-
-dim = size(/dimen,data)
-r = intarr( dim[0] )
-r[0:2] = 0
-r[3:9] = 0
-r[10:19] = 1
-r[20:*]  = 2
-;printdat,r
-;printdat,minmax(r)
-d1 = max(r) +1
-rr = fltarr( d1, dim[0] )
-h = histogram(r,reverse=rev)
-for i=0,d1-1 do if h[i] ne 0 then  rr[i,  Rev[Rev[i] : Rev[i+1]-1] ] =1
-
-rr = fltarr( d1, dim[0] )
-rr[0,5:12]=1
-rr[1,13:20]=1
-rr[2,21:27]=1
-
-
-data = newdat.f_ion_eflux
-ddata = newdat.f_ion_eflux_unc
-
-
-bad = data lt .0* ddata
-w = where(bad)
-;data[w] = !values.f_nan
-store_data,'sep2F_ion_eflux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[100.,1e5],zlog:1,panel_size:2}
-
-
-
-
-
-data = newdat.r_ion_eflux
-ddata = newdat.r_ion_eflux_unc
-bad = data lt .0* ddata
+;bkgfile=mvn_pfp_file_retrieve('maven/data/sci/sep/l1/sav/sep2_bkg.sav')
+;restore,file=bkgfile,/verb
+;; mvn_sep_spectra_plot,bkg2
+;
+;newdat = mvn_sep_get_cal_units(rawdat,background = bkg2)
+;endif
+;
+;
+;;
+;data = newdat.f_ion_flux
+;;ddata = newdat.f_ion_flux_unc
+;;
+;
+;dim = size(/dimen,data)
+;r = intarr( dim[0] )
+;r[0:2] = 0
+;r[3:9] = 0
+;r[10:19] = 1
+;r[20:*]  = 2
+;;printdat,r
+;;printdat,minmax(r)
+;d1 = max(r) +1
+;rr = fltarr( d1, dim[0] )
+;h = histogram(r,reverse=rev)
+;for i=0,d1-1 do if h[i] ne 0 then  rr[i,  Rev[Rev[i] : Rev[i+1]-1] ] =1
+;
+;rr = fltarr( d1, dim[0] )
+;rr[0,5:12]=1
+;rr[1,13:20]=1
+;rr[2,21:27]=1
+;
+;
+;data = newdat.f_ion_eflux
+;ddata = newdat.f_ion_eflux_unc
+;
+;
+;bad = data lt .0* ddata
 ;w = where(bad)
-data[w] = !values.f_nan
-store_data,'sep2R_ion_eflux',newdat.time,transpose(data),transpose(newdat.R_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[100.,1e5],zlog:1,panel_size:2}
-
-data = newdat.f_ion_flux
-ddata = newdat.f_ion_flux_unc
-bad = data lt .0* ddata
-w = where(bad)
+;;data[w] = !values.f_nan
+;store_data,'sep2F_ion_eflux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[100.,1e5],zlog:1,panel_size:2}
+;
+;
+;
+;
+;
+;data = newdat.r_ion_eflux
+;ddata = newdat.r_ion_eflux_unc
+;bad = data lt .0* ddata
+;;w = where(bad)
 ;data[w] = !values.f_nan
-store_data,'sep2F_ion_flux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1,1e4],zlog:1,panel_size:2}
-data= rr # data
-ddata= sqrt(rr # (ddata ^2))
-eval0 = newdat[0].f_ion_energy
-eval = (rr # eval0) / total(rr,2)
-store_data,'sep2F_ion_flux_red',newdat.time,transpose(data),eval,dlim={spec:0,yrange:[.01,1e5],ystyle:1,ylog:1,zrange:[1,1e4],zlog:1,panel_size:2}
-
-store_data,'sep2F_ion_eflux_tot',data={x:newdat.time,y:newdat.f_ion_eflux_tot},dlim={ylog:1,yrange:[1e3,1e8]}
-store_data,'sep2R_ion_eflux_tot',data={x:newdat.time,y:newdat.r_ion_eflux_tot},dlim={ylog:1,yrange:[1e3,1e8]}
-
-store_data,'sep2F_ion_flux_tot',data={x:newdat.time,y:newdat.f_ion_flux_tot},dlim={ylog:1,yrange:[10.,1e6]}
-store_data,'sep2R_ion_flux_tot',data={x:newdat.time,y:newdat.r_ion_flux_tot},dlim={ylog:1,yrange:[10.,1e6]}
-
-
-;print,(eval0* reform(rr[0,*]))
-;print,(eval0* reform(rr[1,*]))
-;print,(eval0* reform(rr[2,*]))
-print,eval0[where(rr[0,*])]
-print,eval0[where(rr[1,*])]
-print,eval0[where(rr[2,*])]
-end
-
+;store_data,'sep2R_ion_eflux',newdat.time,transpose(data),transpose(newdat.R_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[100.,1e5],zlog:1,panel_size:2}
+;
+;data = newdat.f_ion_flux
+;ddata = newdat.f_ion_flux_unc
+;bad = data lt .0* ddata
+;w = where(bad)
+;;data[w] = !values.f_nan
+;store_data,'sep2F_ion_flux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1,1e4],zlog:1,panel_size:2}
+;data= rr # data
+;ddata= sqrt(rr # (ddata ^2))
+;eval0 = newdat[0].f_ion_energy
+;eval = (rr # eval0) / total(rr,2)
+;store_data,'sep2F_ion_flux_red',newdat.time,transpose(data),eval,dlim={spec:0,yrange:[.01,1e5],ystyle:1,ylog:1,zrange:[1,1e4],zlog:1,panel_size:2}
+;
+;store_data,'sep2F_ion_eflux_tot',data={x:newdat.time,y:newdat.f_ion_eflux_tot},dlim={ylog:1,yrange:[1e3,1e8]}
+;store_data,'sep2R_ion_eflux_tot',data={x:newdat.time,y:newdat.r_ion_eflux_tot},dlim={ylog:1,yrange:[1e3,1e8]}
+;
+;store_data,'sep2F_ion_flux_tot',data={x:newdat.time,y:newdat.f_ion_flux_tot},dlim={ylog:1,yrange:[10.,1e6]}
+;store_data,'sep2R_ion_flux_tot',data={x:newdat.time,y:newdat.r_ion_flux_tot},dlim={ylog:1,yrange:[10.,1e6]}
+;
+;
+;;print,(eval0* reform(rr[0,*]))
+;;print,(eval0* reform(rr[1,*]))
+;;print,(eval0* reform(rr[2,*]))
+;print,eval0[where(rr[0,*])]
+;print,eval0[where(rr[1,*])]
+;print,eval0[where(rr[2,*])]
+;end
+;
 
 
 

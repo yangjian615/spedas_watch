@@ -1,44 +1,3 @@
-;+
-; This is a wrapper routine to create CDF variables within an open CDF file.
-; usage:
-;  CDF_VAR_ATT_CREATE,fileid,'RandomVariable',randomn(seed,3,1000),attributes = atts
-;  Attributes are contained in a structure and should have already been created.
-;-
-pro cdf_var_att_create,fileid,varname,data,attributes=attributes,rec_novary=rec_novary,cdf_type_string=cdf_type_string
-
-;if size(/type,attributes) ne 8 then attributes= {}
-if keyword_set(cdf_type_string) then type=-1 else type = size(/type,data)
-case type of
--1: cdf_type = create_struct(cdf_type_string,1)
- 0: message,'No valid data provided'
- 1: cdf_type = {cdf_int1:1}
- 2: cdf_type = {cdf_int2:1}
- 3: cdf_type = {cdf_int4:1}
- 4: cdf_type = {cdf_float:1}
- 5: cdf_type = {cdf_double:1}
- else: message,'Please add data type ',type,' to this case statement'
-endcase
-opts = struct(cdf_type,/zvariable,rec_novary=rec_novary)
-
-dim = size(/dimen,data)
-ndim= size(/n_dimen,data)
-if ~keyword_set(rec_novary) then dim=dim[0:ndim-2]
-dim_vary = dim * 0 +1
-dprint,dlevel=3,phelp=2,varname,dim,dim_vary,opts,data
-varid = cdf_varcreate(fileid, varname,dim_vary, DIM=dim,_extra=opts)
-
-if size(/type,attributes) eq 8 then tags= tag_names(attributes)
-  for i=0,n_elements(tags)-1 do begin
-    att = attributes.(i)
-    if size(/type,att) eq 7 && (att eq '') then continue      ; ignore null strings
-    cdf_attput,fileid,tags[i],varid,attributes.(i),/ZVARIABLE 
-  endfor     
-cdf_varput,fileid,varname,data
-
-end
-
-
-
 
 
 pro mvn_sep_eflux_make_l2_cdf_individual,fileid,det,spec,default_atts=default_atts,escale=escale
@@ -56,9 +15,9 @@ ef_atts.catdesc = 'differential energy flux for '+det+' FOV'
 e_atts.catdesc = 'energy values for '+det+' FOV'
 e_atts.units= 'keV'
 ef_atts.units = 'keV/(cm^2-s-sr-keV)'
-cdf_var_att_create,fileid,eflux_name,spec.eflux,attributes=ef_atts
-if keyword_set(unc) then cdf_var_att_create,fileid,eflux_name+'_unc',unc,attributes=uf_atts
-cdf_var_att_create,fileid,energy_name,spec.energy,attributes=e_atts
+mvn_sep_mvn_sep_cdf_var_att_create,fileid,eflux_name,spec.eflux,attributes=ef_atts
+if keyword_set(unc) then mvn_sep_mvn_sep_cdf_var_att_create,fileid,eflux_name+'_unc',unc,attributes=uf_atts
+mvn_sep_mvn_sep_cdf_var_att_create,fileid,energy_name,spec.energy,attributes=e_atts
 end
 
 
@@ -451,9 +410,9 @@ ef_atts.catdesc = partnames[p]+' differential energy flux for '+det+' FOV'
 e_atts.catdesc = partnames[p]+' energy values for '+det+' FOV'
 e_atts.units= 'keV'
 ef_atts.units = 'keV/(cm^2-s-sr-keV)'
-cdf_var_att_create,fileid,eflux_name,eflux,attributes=ef_atts
-cdf_var_att_create,fileid,eflux_name+'_unc',unc,attributes=uf_atts
-cdf_var_att_create,fileid,energy_name,energy,attributes=e_atts
+mvn_sep_cdf_var_att_create,fileid,eflux_name,eflux,attributes=ef_atts
+mvn_sep_cdf_var_att_create,fileid,eflux_name+'_unc',unc,attributes=uf_atts
+mvn_sep_cdf_var_att_create,fileid,energy_name,energy,attributes=e_atts
 endfor
 endfor
 endfor

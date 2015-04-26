@@ -3,7 +3,7 @@
 ; Returns 1 if data is required but is not available 
 ; or does not cover the time range. 
 ;
-function spd_ui_req_slp_check, name, in, out, trange, loadedData
+function thm_ui_req_slp_check, name, in, out, trange, loadedData
 
     compile_opt idl2, hidden
 
@@ -11,7 +11,7 @@ function spd_ui_req_slp_check, name, in, out, trange, loadedData
  ; pos = ['sel','sse'] ;transforms to/from these require position data
  ; att = ['sel'] ;transforms to/from these requre attitude data
  ; other = ['gse','gsm','sm','gei','geo','spg','ssl','dsl']
-  coordSysObj = obj_new('spd_ui_coordinate_systems')
+  coordSysObj = obj_new('thm_ui_coordinate_systems')
   pos = coordSysObj->makeCoordSysListForTHEMISReqPos()
   obj_destroy, coordSysObj
   
@@ -28,7 +28,7 @@ function spd_ui_req_slp_check, name, in, out, trange, loadedData
     tvar = tnames(name, trange=crange)
     
     ;check loaded data if not found
-    if ~is_string(tvar) then begin
+    if ~is_string(tvar) && obj_valid(loadedData) then begin
       dummy = loadedData->getTvarData(name)
       tvar = tnames(name, trange=crange)
     endif
@@ -51,17 +51,17 @@ end
 ;+
 ;
 ;NAME: 
-;  spd_ui_req_slp
+;  thm_ui_req_slp
 ;
 ;PURPOSE:
 ;  Determines availablity of solar/lunar ephemeris data.
 ;
 ;CALLING SEQUENCE:
 ;  General:
-;    bool = spd_ui_req_spin(inCoord,outCoord,trange,loadedData)
+;    bool = thm_ui_req_spin(inCoord,outCoord,trange [,loadedData])
 ;
 ;  Example:
-;    if spd_ui_req_spin(inCoord,outCoord,trange,loadedData) then begin
+;    if thm_ui_req_spin(inCoord,outCoord,trange,loadedData) then begin
 ;      thm_load_slp,datatype='all',trange=trange
 ;    endif
 ;
@@ -79,9 +79,17 @@ end
 ;  This code assumes that only explicit transformations into the
 ;  coordinates in question will require slp data.
 ;
+;HISTORY:
+;  2015-04-24 - loaded data object now optional
+;
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_cotrans/thm_ui_req_slp.pro $
 ;
 ;-
-function spd_ui_req_slp, inCoord, outCoord, trange, loadedData
+function thm_ui_req_slp, inCoord, outCoord, trange, loadedData
 
     compile_opt idl2, hidden
 
@@ -94,10 +102,10 @@ function spd_ui_req_slp, inCoord, outCoord, trange, loadedData
   in = strlowcase(inCoord[0])
   out = strlowcase(outCoord[0])
 
-  if spd_ui_req_slp_check(name_sun_pos, in, out, trange, loadedData) || $
-     spd_ui_req_slp_check(name_lun_pos, in, out, trange, loadedData) || $
-     spd_ui_req_slp_check(name_lun_att_x, in, out, trange, loadedData) || $
-     spd_ui_req_slp_check(name_lun_att_z, in, out, trange, loadedData) $
+  if thm_ui_req_slp_check(name_sun_pos, in, out, trange, loadedData) || $
+     thm_ui_req_slp_check(name_lun_pos, in, out, trange, loadedData) || $
+     thm_ui_req_slp_check(name_lun_att_x, in, out, trange, loadedData) || $
+     thm_ui_req_slp_check(name_lun_att_z, in, out, trange, loadedData) $
   then begin
     return, 1
   endif

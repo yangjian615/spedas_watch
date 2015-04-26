@@ -17,7 +17,7 @@ if keyword_set(ancillary) then begin
     if ~keyword_set(download_only) then cdf2tplot,cdf_files
     if arg_present (anc_structure) then mvn_sep_anc_read_cdf, cdf_files, sep_ancillary = anc_structure
   endelse
-  ; if return 
+  return
 endif
           
 if keyword_set(L0) then   format = 'L0_RAW'                   
@@ -28,6 +28,10 @@ if ~keyword_set(format) then format='L1_SAV'
 
 if format eq 'L1_SAV' then begin
   mvn_sep_var_restore,trange=trange,download_only=download_only
+  if ~keyword_set(download_only) then begin
+    mvn_sep_cal_to_tplot,sepn=1
+    mvn_sep_cal_to_tplot,sepn=2
+  endif
   return
 endif
 

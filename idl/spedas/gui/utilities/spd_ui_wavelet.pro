@@ -27,9 +27,9 @@
 ; 11-may-2009,prc(pcruce@igpp.ucla.edu) added keyword to return the  
 ;             names of temporary variables created in process
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-02-09 13:28:13 -0800 (Mon, 09 Feb 2015) $
-;$LastChangedRevision: 16922 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_wavelet.pro $
 ;-
 Pro spd_ui_wavelet, vnames, new_names, trange, polar = polar, $
@@ -67,7 +67,7 @@ Pro spd_ui_wavelet, vnames, new_names, trange, polar = polar, $
       nvnj = n_elements(vn_j)
       For k = 0, nvnj-1 Do Begin
 ;test the data first
-        get_data, vn_j[k], data = d
+        get_data, vn_j[k], data = d, dlimits=dl0
         If (is_struct(d)) ? n_elements(where(finite(d.y))) ge 2 : 0 Then Begin
           ok = where(d.x Gt trange[0] And d.x Le trange[1], nok)
           If(nok Gt 500000l) Then Begin
@@ -88,6 +88,24 @@ Pro spd_ui_wavelet, vnames, new_names, trange, polar = polar, $
           wav_data, vn_j[k], trange = trange, maxpoints=maxpoints, display_object=display_object
           new_names = [new_names, vn_j[k]+'_wv_pow']
           
+          ;copy data attributes manually since wav_data does not
+          ;this is needed by the GUI to correctly label the data
+          if tag_exist(dl0,'data_att', /quiet) then begin
+            
+            data_att = dl0.data_att
+            get_data, vn_j[k]+'_wv_pow', dlimits=dl1
+            
+            ;remove inappropriate tags and add to new dlimits
+            ;if dlimits are invalid then variable may be too, so no else case here
+            if is_struct(dl1) then begin 
+              str_element, data_att, 'coord_sys', /delete
+              str_element, data_att, 'units', /delete
+              str_element, dl1, 'data_att', data_att, /add
+              store_data, vn_j[k]+'_wv_pow', dlimits = dl1
+            endif
+
+          endif
+
         Endif Else Begin
           If(keyword_set(gui_id)) Then $
             spd_ui_update_progress, gui_id, 'SPD_UI_WAVELET: No data for: '+vn_j[k]

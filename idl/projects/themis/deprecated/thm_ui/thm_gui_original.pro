@@ -376,7 +376,7 @@ Pro thm_gui_original_event, event
         cto_id = state.cto_id
         widget_control, event.top, set_uval = state, /no_copy
         If(widget_valid(cto_id)) Then widget_control, cto_id, /show $
-        Else thm_ui_cotrans, event.top
+        Else thm_ui_cotrans_old, event.top
       End
       'PROC':Begin
         widget_control, event.top, get_uval = state, /no_copy

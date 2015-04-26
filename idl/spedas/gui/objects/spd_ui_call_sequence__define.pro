@@ -38,9 +38,9 @@
 ;       or data processing calls. 
 ; 
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-10-03 18:18:23 -0700 (Fri, 03 Oct 2014) $
-;$LastChangedRevision: 15925 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_call_sequence__define.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -274,16 +274,12 @@ end
 pro spd_ui_call_sequence::addCotransOp,$
                           value,$
                           active,$
-                          tvar_overwrite_selections,$
-                          load_support_selections,$
-                          load_slp_selections
+                          tvar_overwrite_selections
                           
   in_st = {type:'cotransop',$
            value:value,$
            active:active,$
-           tvar_overwrite_selections:tvar_overwrite_selections,$
-           load_support_selections:load_support_selections,$
-           load_slp_selections:load_slp_selections}
+           tvar_overwrite_selections:tvar_overwrite_selections}
   
   self->addSt,in_st
                           
@@ -501,7 +497,15 @@ pro spd_ui_call_sequence::reCall,historywin=historywin,statustext=statustext,gui
        coordinate_system=st.coord[0],$
        newname=st.newname[0]
    endif else if st.type eq 'cotransop' then begin
-     spd_ui_cotrans_new,guiId,st.value[0],st.active,self.loadedData,statustext,historywin,self,/replay,tvar_overwrite_selections=st.tvar_overwrite_selections,load_support_selections=st.load_support_selections,load_slp_selections=st.load_slp_selections
+     spd_ui_cotrans, guiId, $
+                     st.value[0], $
+                     st.active, $
+                     self.loadedData, $
+                     statustext, $
+                     historywin, $
+                     self, $
+                     /replay, $
+                     tvar_overwrite_selections=st.tvar_overwrite_selections
    endif else if st.type eq 'getspecop' then begin
      spd_ui_part_getspec_replay, st.probe[0], st.dtype[0], st.trange, $
               st.start_angle[0], st.suffix[0], st.outputs, $

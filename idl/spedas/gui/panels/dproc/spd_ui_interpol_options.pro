@@ -28,10 +28,10 @@
 ;
 ;NOTES:
 ;
-;$LastChangedBy:  $
-;$LastChangedDate:  $
-;$LastChangedRevision:  $
-;$URL:  $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/dproc/spd_ui_interpol_options.pro $
 ;-
 
 pro spd_ui_interp_match_event, event
@@ -418,15 +418,15 @@ function spd_ui_interpol_options, gui_ID, historywin, statusbar, datap, ptree = 
   active_data = (*datap)->getactive()
 
   for i=0, n_elements(active_data)-1 do begin
-    (*datap)->getvardata, name=active_data[i], trange=tr0
-    if obj_valid(tr0) then break
+    (*datap)->getvardata, name=active_data[i], trange=trange
+    if ~undefined(trange) then break
   endfor
 
   ;create new time range object
-  if obj_valid(tr0) then begin
+  if ~undefined(trange) then begin
     tr = obj_new('SPD_UI_TIME_RANGE')
-    ok = tr->SetStartTime(tr0->getstarttime())
-    ok = tr->setendtime(tr0->getendtime())
+    ok = tr->SetStartTime(trange[0])
+    ok = tr->setendtime(trange[1])
     widget_control, time, set_value=tr 
   endif else tr = obj_new('SPD_UI_TIME_RANGE')
 

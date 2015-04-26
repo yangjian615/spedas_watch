@@ -38,7 +38,8 @@ pro mvn_sep_spectra_plot,spectra,time,trange=tr,window=win,limit=lim,overplot=ov
 
 if size(/type,spectra) eq 7 then begin
   delta_t = [-300,300]*.05*0
-  sp = mvn_sep_spectra(time+delta_t,sep=2)
+  if strmid(spectra,0,7) eq 'mvn_sep' then sepn = fix(strmid(spectra,7,1)) else sepn = 1
+  sp = mvn_sep_spectra(time+delta_t,sep=sepn)
   if keyword_set(sp) then $
      mvn_sep_spectra_plot, sp,units='eflux'    ; useful for ctime,routine_name ='mvn_sep_spectra_plot'
   return
@@ -56,7 +57,7 @@ bmap = mvn_sep_get_bmap(mapnum,spectra.sensor)
 case strupcase(units) of
   'COUNTS' : yrange = minmax(spectra.data) > .5
   'RATE'   : yrange = [.000001,1e3]    
-  'EFLUX'  : yrange = [.0001,1e5]
+  'EFLUX'  : yrange = [.01,1e6]
   'FLUX'   : yrange = [.0000001,1e4] 
 endcase
 
@@ -95,7 +96,8 @@ for i=0,n_elements(tids)-1 do begin
           e[nw-1] += 1000./2
         endif
         y = spectra.data[w]               ;/ spectra.duration 
-geom = .18
+        nan = !values.f_nan
+geom = ([nan,.18,0.18/100,nan])[spectra.att]
         case strupcase(units) of
         'COUNTS' : norm = 1d
         'RATE'   : norm = 1d / spectra.duration     ; scaler

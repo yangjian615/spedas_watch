@@ -176,7 +176,7 @@ pro thm_load_esa,probe=probe, datatype=datatype, trange=trange, $
   endif
   
   ;vcoord=['dsl','gse','gsm','all']
-  coordSysObj = obj_new('spd_ui_coordinate_systems')
+  coordSysObj = obj_new('thm_ui_coordinate_systems')
   vcoord = coordSysObj->MakeCoordSysList(instrument = 'esa', /include_all)
   obj_destroy, coordSysObj
   

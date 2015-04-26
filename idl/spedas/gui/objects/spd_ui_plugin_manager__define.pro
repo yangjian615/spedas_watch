@@ -6,9 +6,9 @@
 ;    Interface for SPEDAS plugins
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-03-12 11:52:45 -0700 (Thu, 12 Mar 2015) $
-;$LastChangedRevision: 17123 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_plugin_manager__define.pro $
 ;-
 
@@ -124,8 +124,8 @@ end
 ;     add a new plugin to the "More..." menu in the data processing panel
 ;   
 ;-
-pro spd_ui_plugin_manager::addDataProcessingPlugin, item, procedure
-    plugin_struct = [{item: item, procedure: procedure}]
+pro spd_ui_plugin_manager::addDataProcessingPlugin, item, procedure, location
+    plugin_struct = [{item: item, procedure: procedure, location: location}]
     if ptr_valid(self.data_proc_plugins) eq 1 then begin
         append_array, (*self.data_proc_plugins), plugin_struct
     endif else self.data_proc_plugins = ptr_new(plugin_struct)
@@ -206,8 +206,8 @@ function spd_ui_plugin_manager::parseConfig, filename
             end
             'data_processing': begin
                 ; found a data processing plugin
-                if n_elements(info_components) eq 2 then begin
-                    self->addDataProcessingPlugin, info_components[1], info_components[0]
+                if n_elements(info_components) eq 3 then begin
+                    self->addDataProcessingPlugin, info_components[2], info_components[0], info_components[1]
                 endif else begin
                     dprint, dlevel = 0, 'Not enough arguments to add plugin item to the "Data Processing" panel'
                 endelse

@@ -18,7 +18,15 @@
 ;                      call "mms_check_local_cache" to see if data already exists
 ;                      locally.
 ;                      
-;
+;   download_fail    - REQUIRED. (Integer) Flag which determines whether each download
+;                      succeeded. It is an integer array that corresponds to local_flist.
+;                      Flag is 1 if download fails, flag is 0 is download is successful.
+;                      So if you define "success = where(download_fails eq 0, count),"
+;                      then files that successfully downloaded are local_flist(success).
+;                      This flag array is for the rare cases where the file exists on the
+;                      SDC, but for some reason the download fails (e.g. connection times out).
+;                      
+;   
 ; KEYWORDS:
 ;
 ;   sc_id            - OPTIONAL. (String) Array of strings containing spacecraft
@@ -64,12 +72,12 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-04-14 13:22:28 -0700 (Tue, 14 Apr 2015) $
-;  $LastChangedRevision: 17310 $
+;  $LastChangedDate: 2015-04-24 14:08:55 -0700 (Fri, 24 Apr 2015) $
+;  $LastChangedRevision: 17428 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_data_fetch.pro $
 
 
-pro mms_data_fetch, local_flist, start_date, end_date, login_flag, sc_id=sc_id, $
+pro mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id, $
   instrument_id=instrument_id, mode=mode, level=level, optional_descriptor=optional_descriptor, $
   no_update=no_update, reload=reload
 
@@ -110,6 +118,7 @@ type_string = typename(file_data)
 if type_string ne 'STRING' then begin
   login_flag = 1
   local_flist = ''
+  download_fail=1
 endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
  
   cut_filenames = strarr(n_elements(file_data)/2) ; Filename without the directory
@@ -235,10 +244,14 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
   
   ; Now, lets download the files which need downloading
   loc_download = where(download_flags eq 1, count_download)
-    
+  
+  download_fail = replicate(0l, n_elements(local_flist))
+
+  
   if count_download gt 0 then begin
     download_filenames = cut_filenames(loc_download)
     download_dirs = file_dir(loc_download)
+    download_errors = intarr(count_download)
     
     download_size = total(file_sizes)/1e6
     
@@ -253,14 +266,32 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
         strtrim(string(count_download),2) + '): ' + download_filenames(j)
       status = get_mms_science_file(filename = download_filenames(j), $
                                     local_dir = download_dirs(j))
+      download_errors(j) = status*(-1)
       print, disp_string
     endfor
+    
+    ; Need to find a handle on how to fix download fails/SDC timeouts
+    downloads = download_dirs + download_filenames
+    fail_loc = where(download_errors eq 1, count_fail)
+        
+    if count_fail gt 0 then begin
+      failed_downloads = downloads(fail_loc)
+      
+      for k = 0l, n_elements(local_flist)-1 do begin
+        ; Compare filename with failed downloads
+        loc_bad = where(failed_downloads eq local_flist(k), count_bad)
+        if count_bad gt 0 then begin
+          download_fail(k) = 1
+        endif
+      endfor
+    endif
     
   endif
   
 endif else begin
   local_flist = ''
   login_flag = 1
+  download_fail=1
 endelse
 
 

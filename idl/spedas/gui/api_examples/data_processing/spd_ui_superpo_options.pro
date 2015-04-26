@@ -15,8 +15,9 @@
 ;
 ;INPUT:
 ;    gui_id: widget id of group leader
-;    statusbar: status bar object ref.
-;    historywindow: history window object ref.
+;    status_bar: status bar object ref.
+;    history_window: history window object ref.
+;    loaded_data: loaded data object ref.
 ;
 ;OUTPUT:
 ;    plugin_options: anonymous structure containing input and keyword parameters for the data processing 
@@ -51,10 +52,12 @@
 ;            med='medarr', avg='avgarr', dif='difarr'
 ;    
 ;
+;NOTES:
+;    The _extra keyword should be included if any of the 4 input keywords are not used.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 13:46:47 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17271 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
+;$LastChangedRevision: 17429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/data_processing/spd_ui_superpo_options.pro $
 ;-
 
@@ -138,7 +141,10 @@ pro spd_ui_superpo_options_event, event
 end
 
 
-function spd_ui_superpo_options, gui_id, statusbar, historywin
+function spd_ui_superpo_options, gui_id=gui_id, $
+                                 status_bar=statusbar, $
+                                 history_window=historywin, $
+                                 _extra=_extra
     compile_opt idl2
 
     catch, _err
