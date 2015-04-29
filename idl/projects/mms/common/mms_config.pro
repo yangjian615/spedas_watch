@@ -29,8 +29,8 @@
 ; 2015-04-10, moka, Created based on 'thm_config'
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-10 16:29:01 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17296 $
+; $LastChangedDate: 2015-04-27 14:13:41 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17436 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_config.pro $
 ;
 ;-
@@ -85,7 +85,8 @@ PRO mms_config, no_color_setup=no_color_setup, colortable=colortable
   
   ;===========  DEBUGGING OPTIONS
 
-  if !prompt eq 'IDL> ' then !prompt = 'MMS> '
+  ;if !prompt eq 'IDL> ' then !prompt = 'MMS> '
+  if !prompt ne 'MMS> ' then !prompt = 'MMS> '
   
   ; The following calls set persistent flags in dprint that change subsequent output
   ;dprint,setdebug=3       ; set default debug level to value of 3

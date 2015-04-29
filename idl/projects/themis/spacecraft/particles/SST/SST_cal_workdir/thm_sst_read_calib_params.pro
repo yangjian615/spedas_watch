@@ -17,9 +17,9 @@
 ;     they are applied leads to duplicated parameter reads. And because there is not enough information
 ;     to apply parameters at load time.
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-03-11 16:02:06 -0700 (Mon, 11 Mar 2013) $
-;$LastChangedRevision: 11768 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+;$LastChangedRevision: 17433 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/SST_cal_workdir/thm_sst_read_calib_params.pro $
 ;-
 
@@ -27,7 +27,7 @@
 function thm_sst_read_calib_params,thx,species,dtype
 
   ;full distribution parameters used for all data types atm
-  file = file_retrieve(strlowcase(thx)+'/l1/sst/0000/'+strlowcase(thx)+'_ps'+strlowcase(species)+'f_calib_params_v02.txt',_extra=!themis)
+  file = spd_download(remote_file=strlowcase(thx)+'/l1/sst/0000/'+strlowcase(thx)+'_ps'+strlowcase(species)+'f_calib_params_v02.txt',_extra=!themis)
  
   ;testing new set of parameters
   ;cal_file_root = '~/IDLWorkspace/themis/spacecraft/particles/SST/SST_cal_workdir/cal_files/'

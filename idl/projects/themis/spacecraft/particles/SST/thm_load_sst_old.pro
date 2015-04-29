@@ -80,8 +80,7 @@ for s=0,n_elements(probe)-1 do begin
 
 ;     format = sc+'l1/sst/YYYY/'+sc+'_l1_sst_YYYYMMDD_v01.cdf'   ; Won't work!
      relpathnames = file_dailynames(sc+'/l1/sst/',dir='YYYY/',sc+'_l1_sst_','_v01.cdf',trange=trange,addmaster=addmaster)
-     files = file_retrieve(relpathnames, _extra=!themis, $
-                           progobj = progobj)
+     files = spd_download(remote_file=relpathnames, _extra=!themis, progobj = progobj)
 
      if vb ge 4 then print,ptrace(),'files: ',files
 

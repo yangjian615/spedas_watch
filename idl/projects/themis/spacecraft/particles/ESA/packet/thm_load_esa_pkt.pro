@@ -117,7 +117,7 @@ for s=0,n_elements(probes)-1 do begin
 		t1=t1+24.*3600.
 	endwhile
 
-     	files = file_retrieve(relpathnames, _extra=!themis)
+     	files = spd_download(remote_file=relpathnames, _extra=!themis)
 
 	thm_load_esa_cal
 

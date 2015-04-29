@@ -33,8 +33,8 @@
 ;
 ;Written by: Harald Frey,   Jan 26 2007
 ;   $LastChangedBy: aaflores $
-;   $LastChangedDate: 2012-01-09 09:54:03 -0800 (Mon, 09 Jan 2012) $
-;   $LastChangedRevision: 9515 $
+;   $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+;   $LastChangedRevision: 17433 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_asi_cal.pro $
 ;-
 ;
@@ -87,7 +87,7 @@ for i=0,n_elements(stats)-1 do begin
   relpathnames = file_dailynames(relpath,prefix,ending,$
      trange=['1970-01-01/00:00:00','1970-01-01/00:00:00'])
 
-  files = file_retrieve(relpathnames, _extra = !themis)
+  files = spd_download(remote_file=relpathnames, _extra = !themis)
 
   if keyword_set(verbose) then  dprint, files
 

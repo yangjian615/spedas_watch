@@ -12,7 +12,7 @@ Function tmp_load_mom_calfile, probe, version
   Endif Else Begin
     cal_relpathname = 'tha/l1/mom/0000/tha_l1_mom_cal_v01.sav'
   Endelse
-  cal_file = file_retrieve(cal_relpathname, _extra = calsource)
+  cal_file = spd_download(remote_file=cal_relpathname, _extra = calsource)
   If(file_test(cal_file)) Then Begin
     restore, file = cal_file, verbose = 0
   Endif Else Begin
@@ -42,8 +42,8 @@ End
 ;HISTORY:
 ; 8-feb-2010, jmm, jimm@ssl.berkeley.edu
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2012-01-26 16:43:39 -0800 (Thu, 26 Jan 2012) $
-;$LastChangedRevision: 9625 $ 
+;$LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+;$LastChangedRevision: 17433 $ 
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_corrected_pxxm_pot.pro $
 ;-
 Pro thm_corrected_pxxm_pot, suffix = suffix, no_time_shift = no_time_shift, _extra = _extra

@@ -11,9 +11,9 @@
 ;          2008-04-28, hfrey, run full full_minute with pgm
 ;
 ; VERSION:
-;   $LastChangedBy: hfrey $
-;   $LastChangedDate: 2013-06-12 15:13:14 -0700 (Wed, 12 Jun 2013) $
-;   $LastChangedRevision: 12520 $
+;   $LastChangedBy: aaflores $
+;   $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+;   $LastChangedRevision: 17433 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/asi_mosaic/thm_mosaic_array.pro $
 ;-
 
@@ -31,7 +31,7 @@ pro thm_mosaic_array,iyear_in,im1,id,ih,im,is,tgb_sites,$
 
   ;kbromund
   sav_relpathname = 'thg/l2/asi/cal/thm_map_add.sav'
-  sav_file = file_retrieve(sav_relpathname, _extra=!themis)
+  sav_file = spd_download(remote_file=sav_relpathname, _extra=!themis)
   restore, sav_file
   if iyear_in lt 50 then iy=2000+iyear_in else iy=iyear_in
   date_string=string(iy,im1,id,format='(i4.4,2i2.2)')

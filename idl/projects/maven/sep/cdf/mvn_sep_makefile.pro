@@ -1,4 +1,4 @@
-pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trange=trange ;,timestamp=timestamp ,prereq=prereq
+pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trange=trange  ,prereq_files=prereq_files
 
   @mvn_sep_handler_commonblock.pro
 
@@ -6,6 +6,7 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
 ;    dprint,dlevel=2,'Input data is not a structure... Skipping'
 ;    return
 ;  endif
+; 
 ;  if ~keyword_set(date) then  date = average(sep.time,/nan)
 ;  sepnum = round(median(sep.sensor))
   sepstr = 's'+strtrim(sepnum,2)
@@ -13,8 +14,8 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
   L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v01_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
-  source_fi = file_info(source_files)
-  if lri.mtime lt min(source_fi.mtime) then begin
+  source_fi = file_info([source_files,prereq_files])
+  if lri.mtime lt max([source_fi.mtime,source_fi.ctime]) then begin
     mvn_sep_load,/use_cache,files=source_files,trange=trange,/L0
     sepdata = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
     if size(/type,sepdata) ne 8 then begin
@@ -29,7 +30,7 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
     dependencies = [source_files,spice_test('*')]
     mvn_sep_make_raw_cdf,sepdata,bmaps,filename = nextrev_fname,global=global,dependencies=dependencies
 ;    print_cdf_info,nextrev_fname
-    if 0 then begin
+    if 1 then begin
       src = mvn_file_source()
       arcdir = src.local_data_dir+'maven/data/sci/sep/archive/'
       file_archive,lastrev_fname,archive_ext='.arc',archive_dir = arcdir
@@ -38,15 +39,15 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
 end
 
 
-pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=trange ;,timestamp=timestamp ,prereq=prereq
+pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=trange  ,prereq_files=prereq_files
   @mvn_sep_handler_commonblock.pro
   sepstr = 's'+strtrim(sepnum,2)
   data_type = sepstr+'-cal-svy-full'
   L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v01_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
-  source_fi = file_info(source_files)
-  if lri.mtime lt min(source_fi.mtime) then begin
+  source_fi = file_info([source_files,prereq_files])
+  if lri.mtime lt max([source_fi.mtime,source_fi.ctime]) then begin
     mvn_sep_load,/use_cache,files=source_files,trange=trange,/L0
     sepdata = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
     bkgfile=mvn_pfp_file_retrieve('maven/data/sci/sep/l1/sav/sep2_bkg.sav')
@@ -77,13 +78,13 @@ end
 
 
 
-pro mvn_sep_make_l2_cdfs,trange=trange,source_files=source_files   
+pro mvn_sep_make_l2_cdfs,trange=trange,source_files=source_files   ,prereq_files=prereq_files
 
-  mvn_sep_make_raw_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files
-  mvn_sep_make_raw_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files
+  mvn_sep_make_raw_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files ,prereq_files=prereq_files
+  mvn_sep_make_raw_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files ,prereq_files=prereq_files
 
-  mvn_sep_make_cal_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files
-  mvn_sep_make_cal_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files
+  mvn_sep_make_cal_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files ,prereq_files=prereq_files
+  mvn_sep_make_cal_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files ,prereq_files=prereq_files
 
 ;caldat=mvn_sep_get_cal_units(*sep1_svy.x,bkg =bkg)
 
@@ -148,7 +149,7 @@ for i=0L,nd-1 do begin
 ;    printdat,prereq_info
 ;  endelse
   
-  mvn_sep_make_l2_cdfs,source_files=l0_files,trange=tr
+  mvn_sep_make_l2_cdfs,source_files=l0_files,prereq_files=prereq_files,trange=tr
 
   if keyword_set(plotformat) then begin
     pf = str_sub(plotformat,'$NDAY',strtrim(ndaysload,2)+'day')

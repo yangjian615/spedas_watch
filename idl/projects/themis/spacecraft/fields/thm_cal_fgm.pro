@@ -71,9 +71,9 @@
 ;Notes: under construction!!
 ;
 ;Written by Hannes Schwarzl.
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-01-09 12:57:27 -0800 (Thu, 09 Jan 2014) $
-; $LastChangedRevision: 13833 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -138,7 +138,7 @@ if n_params() eq 0 then begin
    for i = 0, n_elements(probes)-1 do begin
       thx = 'th' + probes[i]
       cal_relpathname = thx+'/l1/fgm/0000/'+thx+'_fgmcal.txt'
-      cal_file = file_retrieve(cal_relpathname, _extra=!themis)
+      cal_file = spd_download(remote_file=cal_relpathname, _extra=!themis)
 
       files = file_search(cal_file,count=fc)
       if fc eq 0 then begin

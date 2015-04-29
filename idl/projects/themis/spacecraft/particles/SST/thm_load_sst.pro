@@ -38,8 +38,8 @@
 ; Update removed to not use thm_load_xxx by DEL
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2014-05-23 12:38:29 -0700 (Fri, 23 May 2014) $
-; $LastChangedRevision: 15224 $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_load_sst.pro $
 ;-
 
@@ -83,7 +83,7 @@ pro thm_load_sst_l1,datatype=datatype,vdatatypes=vdatatypes,probe=probe,$
     
     ;     format = sc+'l1/sst/YYYY/'+sc+'_l1_sst_YYYYMMDD_v01.cdf'   ; Won't work! for sst
     relpathnames = file_dailynames(sc+'/l1/sst/',dir='YYYY/',sc+'_l1_sst_','_v01.cdf',trange=trange,addmaster=addmaster)
-    files = file_retrieve(relpathnames, _extra=my_themis ) ;, nowait=downloadonly)
+    files = spd_download(remote_file=relpathnames, _extra=my_themis ) ;, nowait=downloadonly)
     
     if keyword_set(files) then begin
       files_out=array_concat(files,files_out)
@@ -434,7 +434,7 @@ if size(/type,datatype0) gt 0 then datatype = datatype0 ;keep input vars from be
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 15224 2014-05-23 19:38:29Z aaflores $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 17433 2015-04-27 18:26:29Z aaflores $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']

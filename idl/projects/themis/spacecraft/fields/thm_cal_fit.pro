@@ -29,9 +29,9 @@
 ;   -- time-dependent spinn axis offset implemented Hannes 05/25/2007
 ;   -- fixed trouble reading cal files with extra lines at the end,
 ;      jmm, 8-nov-2007
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-01-14 16:02:01 -0800 (Tue, 14 Jan 2014) $
-; $LastChangedRevision: 13869 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL $
 ;-
 pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = trange, $
@@ -116,7 +116,7 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
     ;start Hannes 05/25/2007
     ;get the calfile
     cal_relpathname = thx+'/l1/fgm/0000/'+thx+'_fgmcal.txt'
-    cal_file = file_retrieve(cal_relpathname, _extra = !themis)
+    cal_file = spd_download(remote_file=cal_relpathname, _extra = !themis)
     ;read the FGM calibration file
     DPRINT,  'read FGM calibration file:'
     DPRINT,  cal_file

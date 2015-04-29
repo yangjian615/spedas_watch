@@ -50,9 +50,9 @@
 ;   thm_load_scmode
 ;   thm_load_scmode,probe='a',trange=['2007-01-22/00:00:00','2007-01-24/00:00:00']
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-12-11 20:26:15 -0800 (Thu, 11 Dec 2014) $
-; $LastChangedRevision: 16475 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/thm_load_scmode.pro $
 ;-
 
@@ -158,7 +158,7 @@ pro thm_load_scmode, datatype = datatype,$
       params.verbose = verbose
     endif
     
-    files = file_retrieve(relpathnames_all,_extra=params)
+    files = spd_download(remote_file=relpathnames_all,_extra=params)
   
     if ~params.downloadonly then begin
       cdf2tplot,file=files,verbose=params.verbose,tplotnames=tplotnames,varformat=names

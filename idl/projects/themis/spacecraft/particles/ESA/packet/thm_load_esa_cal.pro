@@ -36,7 +36,7 @@ pro thm_load_esa_cal,file=file,themishome=themishome
 		name='tha_l1_esa_cal.txt'
 		file=themishome+dir+name
 		relpathnames=dir+name
-	    	files = file_retrieve(relpathnames, _extra=!themis)
+	    	files = spd_download(remote_file=relpathnames, _extra=!themis)
 		dprint, dlevel=2, 'Download ESA Cal file: ',files
 	endif
 

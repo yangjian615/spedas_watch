@@ -33,9 +33,9 @@
 ;   thm_load_state
 ;Notes:
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16596 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL $
 ;-
 pro thm_load_state2,probes=probes, datatype=datatype, trange=trange, $
@@ -51,7 +51,7 @@ pro thm_load_state2,probes=probes, datatype=datatype, trange=trange, $
                    version=version, $
                    progobj=progobj
 
-dprint,verbose=verbose,dlevel=4,'$Id: thm_load_state2.pro 16596 2015-01-06 01:01:57Z pcruce $'
+dprint,verbose=verbose,dlevel=4,'$Id: thm_load_state2.pro 17433 2015-04-27 18:26:29Z aaflores $'
 if not keyword_set(coords) then coords = 'gse'
 r_e = 6371.2  ;mean radius of earth in km
 
@@ -101,7 +101,7 @@ for s=0,nprobes-1 do begin
      relpathnames = file_dailynames(file_format=format,trange=trange,addmaster=addmaster)
 ;     if vb ge 4 then printdat,/pgmtrace,relpathnames
      dprint,dlevel=4,verbose=verbose,relpathnames,/phelp
-     files = file_retrieve(relpathnames, _extra=source_options, /last_version, $
+     files = spd_download(remote_file=relpathnames, _extra=source_options, /last_version, $
                            progobj = progobj)
 
      if keyword_set(downloadonly) then continue
@@ -150,7 +150,7 @@ wait,0  ;bp
      endif
      thm_setprobe_colors, tns,/def
 
-     options,/def,tns,code_id='$Id: thm_load_state2.pro 16596 2015-01-06 01:01:57Z pcruce $'
+     options,/def,tns,code_id='$Id: thm_load_state2.pro 17433 2015-04-27 18:26:29Z aaflores $'
 ;     options,/default,tns,colors = probe_colors[pn]
 
      dprint,dlevel=4,'Housekeeping data Loaded for probe: '+probe

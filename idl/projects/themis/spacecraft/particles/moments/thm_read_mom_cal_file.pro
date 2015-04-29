@@ -22,9 +22,9 @@
 ;            thm_load_mom message doesn't crash
 ;HISTORY:
 ; 4-Oct-2010, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2010-10-29 16:01:14 -0700 (Fri, 29 Oct 2010) $
-; $LastChangedRevision: 7891 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_read_mom_cal_file.pro $
 ;-
 Function thm_read_mom_cal_file, cal_file = cal_file, probe = probe
@@ -35,7 +35,7 @@ Function thm_read_mom_cal_file, cal_file = cal_file, probe = probe
   calsource =  !themis
   calsource.ignore_filesize =  1
   cal_relpathname =  thx+'/l1/mom/0000/'+thx+'_l1_mom_cal_v03.txt'
-  cal_file =  file_retrieve(cal_relpathname,  _extra = calsource)
+  cal_file =  spd_download(remote_file=cal_relpathname,  _extra = calsource)
   If(file_test(cal_file)) Then Begin
     nlines = file_lines(cal_file)
     arrx = strarr(nlines)

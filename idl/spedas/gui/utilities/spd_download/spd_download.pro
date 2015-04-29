@@ -19,7 +19,7 @@
 ;  Download file to current directory
 ;  ------------------------------------  
 ;    ;"file.dat" will be placed in current directory 
-;    paths = spd_download( remote_file='http://www.example.com/file.dat'
+;    paths = spd_download( remote_file='http://www.example.com/file.dat' )
 ;  
 ;  Download file to specific location
 ;  ------------------------------------
@@ -64,7 +64,6 @@
 ;    no_download:  Flag to not download remote files
 ;
 ;    user_agent:  Specifies user agent reported to remote server. (string)
-;    min_age_limit:  Files younger than this (in seconds) are assumed current
 ;
 ;    file_mode:  Bit mask specifying permissions for new files (see file_chmod)
 ;    dir_mode:  Bit mask specifying permissions for new directories (see file_chmod)
@@ -75,7 +74,8 @@
 ;    See "IDLnetURL Properties" in the IDL documentation for more information.
 ;    Some examples are:
 ;    ------------------
-;      url_username
+;      url_query
+;      url_username       
 ;      url_password
 ;      url_port
 ;      proxy_hostname
@@ -102,12 +102,12 @@
 ;Notes:
 ;  -unsupported file_retrieve keywords:
 ;     progress, preserve_mtime, progobj, ignore_filesize, 
-;     ignore_filedate, archive_ext, archive_dir 
+;     ignore_filedate, archive_ext, archive_dir, min_age_limit
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-18 16:27:58 -0800 (Wed, 18 Feb 2015) $
-;$LastChangedRevision: 17004 $
+;$LastChangedDate: 2015-04-27 11:22:51 -0700 (Mon, 27 Apr 2015) $
+;$LastChangedRevision: 17432 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_download/spd_download.pro $
 ;
 ;-

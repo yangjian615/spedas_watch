@@ -50,9 +50,9 @@
 ;    through to THM_CAL_EFI.PRO, W.M.Feuerstein, 4/7/2008 (M).
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;  Added _extra keyword to ease the passing of keywords to thm_cal_efi
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2014-02-14 10:22:23 -0800 (Fri, 14 Feb 2014) $
-; $LastChangedRevision: 14379 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi.pro $
 ;-
 
@@ -225,7 +225,7 @@ end
      ;;download files for this probe, level, and datatype
 
      ;; my_themis is a copy of !themis, which may have no_download set
-     files = file_retrieve(relpathnames, _extra=my_themis, progobj=progobj)
+     files = spd_download(remote_file=relpathnames, _extra=my_themis, progobj=progobj)
 
      if keyword_set(downloadonly) then continue
 

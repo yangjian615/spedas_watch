@@ -614,8 +614,8 @@ FUNCTION eva_sitl, parent, $
     str_element,/add,state,'btnEdit',widget_button(bsActionButton,VALUE='  Edit  ')
     str_element,/add,state,'btnDelete',widget_button(bsActionButton,VALUE=' Del ');,/TRACKING_EVENTS)
     bsActionCheck = widget_base(bsActionButton,/COLUMN);,/NONEXCLUSIVE)
-    str_element,/add,state,'cbMulti',widget_button(bsActionCheck, VALUE=' Delete multi seg ',SENSITIVE=1)
-    str_element,/add,state,'cbWTrng',widget_button(bsActionCheck, VALUE=' Delete w/in a range ',SENSITIVE=1)
+    str_element,/add,state,'cbMulti',widget_button(bsActionCheck, VALUE='Delete multi seg',SENSITIVE=1)
+    str_element,/add,state,'cbWTrng',widget_button(bsActionCheck, VALUE='Delete w/in a range',SENSITIVE=1)
     bsActionHistory = widget_base(bsAction0,/ROW, SPACE=0, YPAD=0)
     str_element,/add,state,'btnUndo',widget_button(bsActionHistory,VALUE=' Undo ')
     str_element,/add,state,'btnRedo',widget_button(bsActionHistory,VALUE=' Redo ')
@@ -623,14 +623,14 @@ FUNCTION eva_sitl, parent, $
     str_element,/add,state,'bsDummy',widget_base(bsActionHistory,xsize=40)
     str_element,/add,state,'btnSplit',widget_button(bsActionHistory,VALUE=' Split ')
     bsActionHighlight = widget_base(bsAction0,/ROW, SPACE=0, YPAD=0)
-    str_element,/add,state,'drpHighlight',widget_droplist(bsActionHighlight,VALUE=hlSet,$
-      TITLE='Segment status:',SENSITIVE=1)
-    str_element,/add,state,'hlSet',hlSet
-    str_element,/add,state,'hlSet2',hlSet2
-    bsActionSave = widget_base(bsAction0,/ROW, SPACE=0, YPAD=0)
-    str_element,/add,state,'drpSave',widget_droplist(bsActionSave,VALUE=svSet,$
-      TITLE='FOM save/restore:',SENSITIVE=1)
-    str_element,/add,state,'svSet',svSet
+      str_element,/add,state,'drpHighlight',widget_droplist(bsActionHighlight,VALUE=hlSet,$
+        TITLE='Status:',SENSITIVE=1)
+        str_element,/add,state,'hlSet',hlSet
+        str_element,/add,state,'hlSet2',hlSet2
+    ;bsActionSave = widget_base(bsAction0,/ROW, SPACE=0, YPAD=0)
+      str_element,/add,state,'drpSave',widget_droplist(bsActionHighlight,VALUE=svSet,$
+        TITLE='FOM:',SENSITIVE=1)
+        str_element,/add,state,'svSet',svSet
 
   bsActionSubmit = widget_base(subbase,/ROW, SENSITIVE=0)
   str_element,/add,state,'bsActionSubmit',bsActionSubmit

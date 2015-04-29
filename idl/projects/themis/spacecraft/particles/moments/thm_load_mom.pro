@@ -60,8 +60,8 @@
 ;
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-02-25 15:06:10 -0800 (Wed, 25 Feb 2015) $
-; $LastChangedRevision: 17042 $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
@@ -692,7 +692,7 @@ for s=0,n_elements(probes)-1 do begin
      dprint,dlevel=3,'pathformat: ',pathformat,verbose=verbose
 
      relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
-     files = file_retrieve(relpathnames, _extra=source)
+     files = spd_download(remote_file=relpathnames, _extra=source)
      
      if file_list_flag then begin ;concatenate the list
       if n_elements(file_list) eq 0 then begin

@@ -9,8 +9,8 @@ if ~keyword_set(newdat) then begin
     raw_data=smooth_counts(raw_data)
     rawdat.data=transpose(raw_data)    
   endif
-  bkgfile=mvn_pfp_file_retrieve('maven/data/sci/sep/l1/sav/sep2_bkg.sav')
-  restore,file=bkgfile,/verb
+  bkgfile= (mvn_pfp_file_retrieve('maven/data/sci/sep/l1/sav/sep2_bkg.sav'))[0]
+  if file_test(bkgfile[0]) then   restore,file=bkgfile,/verb
   ; mvn_sep_spectra_plot,bkg2
   newdat = mvn_sep_get_cal_units(rawdat,background = bkg2)
 endif

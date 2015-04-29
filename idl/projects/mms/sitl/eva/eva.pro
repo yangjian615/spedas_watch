@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-23 16:19:09 -0700 (Thu, 23 Apr 2015) $
-; $LastChangedRevision: 17413 $
+; $LastChangedDate: 2015-04-27 14:13:41 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17436 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -94,7 +94,7 @@ PRO eva
 
   thm_init
   mms_init
-  
+
   ;cfg = eva_config_read()
   ;if n_tags(cfg) eq 0 then dir = eva_config_filedir(); create config directory if not found
 

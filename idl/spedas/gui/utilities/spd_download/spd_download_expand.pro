@@ -21,8 +21,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-18 16:27:58 -0800 (Wed, 18 Feb 2015) $
-;$LastChangedRevision: 17004 $
+;$LastChangedDate: 2015-04-27 11:22:51 -0700 (Mon, 27 Apr 2015) $
+;$LastChangedRevision: 17432 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_download/spd_download_expand.pro $
 ;
 ;-
@@ -32,7 +32,7 @@ pro spd_download_expand, url, last_version=last_version
     compile_opt idl2, hidden
 
 
-;no need to querry if there are no wildcards
+;no need to query if there are no wildcards
 if total( stregex(url, '[]*?[]',/bool) ) eq 0 then return
 
 ;split URLs into base and filename

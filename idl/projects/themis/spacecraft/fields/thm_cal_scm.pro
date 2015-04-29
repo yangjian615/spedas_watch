@@ -114,9 +114,9 @@
 ; in step 6, start_step condition has been commented
 ; in outputs to tplot section, mode has been replaced by strlowcase(mode)
 ;
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2012-11-05 17:02:47 -0800 (Mon, 05 Nov 2012) $
-;$LastChangedRevision: 11187 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+;$LastChangedRevision: 17433 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_scm.pro $
 ;-
 
@@ -471,7 +471,7 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
   IF size(/type, k_dircal) EQ 0 Then begin
      ;; read calibration files from data repository, rather than source
     cal_relpathname = thx+'/l1/scm/0000/THEMIS_SCM'+str_probe_n+'.cal'
-    calfile = file_retrieve(cal_relpathname, _extra = !themis, $
+    calfile = spd_download(remote_file=cal_relpathname, _extra = !themis, $
                             no_download = no_download)
   Endif else begin
     if size(/type, k_dircal) EQ 7 and keyword_set(k_dircal) then begin

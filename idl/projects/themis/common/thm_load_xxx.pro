@@ -64,9 +64,9 @@
 ;Notes:
 ;  This routine is (should be) platform independent.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-01-08 16:26:27 -0800 (Wed, 08 Jan 2014) $
-; $LastChangedRevision: 13823 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_load_xxx.pro $
 ;-
 
@@ -191,7 +191,7 @@ pro thm_load_xxx, sname = sname, datatype = datatype, trange = trange, $
        ;get the full path name, save it for later for reading the cdf.
     my_themis.no_download = 1
     files_ptrarr[i, j, k] = $
-      ptr_new(file_retrieve(relpathnames, _extra = my_themis))
+      ptr_new(spd_download(remote_file=relpathnames, _extra = my_themis))
 
                                 ;build an array with all relpathnames, so all files can be downloaded
                                 ;with one call to file_retrieve.
@@ -205,7 +205,7 @@ pro thm_load_xxx, sname = sname, datatype = datatype, trange = trange, $
   if ~load_params.no_download && ~keyword_set(no_download) then begin
     if vb ge 7 then dprint,  'relpathnames', relpathnames_all
     my_themis.no_download = 0
-    files = file_retrieve(relpathnames_all, _extra = my_themis)
+    files = spd_download(remote_file=relpathnames_all, _extra = my_themis)
   endif
   if keyword_set(downloadonly) then begin
     ptr_free, files_ptrarr

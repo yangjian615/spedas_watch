@@ -54,8 +54,8 @@
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-06-19 16:22:32 -0700 (Tue, 19 Jun 2012) $
-; $LastChangedRevision: 10594 $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi_l2.pro $
 ;-
 
@@ -137,7 +137,7 @@ pro thm_load_efi_l2, probe = probe, datatype = datatype, trange = trange, $
 
 ;;download files for this probe, level, and datatype
 ;; my_themis is a copy of !themis, which may have no_download set
-    files = file_retrieve(relpathnames, _extra = my_themis, progobj = progobj)
+    files = spd_download(remote_file=relpathnames, _extra = my_themis, progobj = progobj)
 
     if keyword_set(downloadonly) then continue
 

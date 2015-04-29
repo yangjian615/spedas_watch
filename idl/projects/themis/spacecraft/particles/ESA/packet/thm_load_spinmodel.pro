@@ -54,7 +54,7 @@ FUNCTION thm_load_spinmodel,sc=sc,themishome=themishome,available=available
 		t1=t1+24.*3600.
 	endwhile
 
-   	files = file_retrieve(spinpathnames, _extra=!themis)
+   	files = spd_download(remote_file=spinpathnames, _extra=!themis)
 
 ; extract spin data
 

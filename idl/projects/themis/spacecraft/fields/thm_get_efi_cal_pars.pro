@@ -135,7 +135,7 @@ thx = 'th' + probes[0]
 ;To be propagated to all satellites like this:
 ;=============================================
 cal_relpathname = thx+'/l1/eff/0000/'+thx+'_efi_calib_params.txt'
-cal_file = file_retrieve(cal_relpathname, _extra=!themis)
+cal_file = spd_download(remote_file=cal_relpathname, _extra=!themis)
 ;cal_templ_relpathname = thx+'/l1/eff/0000/'+thx+'_efi_calib_templ.sav'
 ;
 ;cal_templ_file = file_retrieve(cal_templ_relpathname, _extra=!themis)

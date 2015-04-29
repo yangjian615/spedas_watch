@@ -7,9 +7,9 @@
 ;Disable print statements by calling "dprint,setdebug=-1" before running the crib
 ;
 ;Written by Hannes Schwarzl and Ken Bromund
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-03-03 15:31:42 -0800 (Tue, 03 Mar 2015) $
-; $LastChangedRevision: 17073 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_fgm.pro $
 ;
 ;-
@@ -150,7 +150,7 @@ thm_load_fgm,level=1,probe=['a'],/get_support_data,type='raw'
 ; file names for real calibration files are: th[a-e]_fgmcal.txt
 ; they can be found in the 'master' file directory of the data tree.
 cal_relpathname = 'tha/l1/fgm/0000/tha_fgmcal.txt'
-cal_file = file_retrieve(cal_relpathname, _extra=!themis)
+cal_file = spd_download(remote_file=cal_relpathname, _extra=!themis)
 
 thm_cal_fgm,'tha_fgl','tha_fgl_hed','tha_fgl_ssl',cal_file,datatype='fgl'
 

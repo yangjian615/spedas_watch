@@ -119,9 +119,9 @@
 ;   thm_load_slp
 ;   thm_load_slp,datatype='sun_pos',trange=['2007-01-22/00:00:00','2007-01-24/00:00:00']
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2011-08-18 14:55:47 -0700 (Thu, 18 Aug 2011) $
-; $LastChangedRevision: 8917 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_load_slp.pro $
 ;-
 function thm_load_slp_relpath,trange=trange
@@ -198,7 +198,7 @@ pro thm_load_slp,datatype = datatype, trange = trange, $
     params.verbose = verbose
   endif
   
-  files = file_retrieve(relpathnames_all,_extra=params)
+  files = spd_download(remote_file=relpathnames_all,_extra=params)
 
   if ~params.downloadonly then begin
     cdf2tplot,file=files,verbose=params.verbose,tplotnames=tplotnames,varformat=names,suffix=suffix

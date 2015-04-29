@@ -286,6 +286,7 @@ atts.fieldnam = varname
 atts.lablaxis = varname
 atts.var_type ='data'
 atts.catdesc = 'Ion Flux in Forward Facing look direction (#/cm^2/sec/keV)'
+atts.depend_1 = 'F_ION_ENERGY'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ION_FLUX,attributes=atts
 
 varname = 'F_ION_FLUX_UNC'
@@ -318,6 +319,7 @@ atts.fieldnam = varname
 atts.lablaxis = varname
 atts.var_type ='data'
 atts.catdesc = 'Electron Flux in Forward Facing look direction (#/cm^2/sec/keV)'
+atts.depend_1 = 'F_ELEC_ENERGY'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ELEC_FLUX,attributes=atts
 
 varname = 'F_ELEC_FLUX_UNC'
@@ -352,6 +354,7 @@ atts.fieldnam = varname
 atts.lablaxis = varname
 atts.var_type ='data'
 atts.catdesc = 'Ion Flux in Reverse Facing look direction (#/cm^2/sec/keV)'
+atts.depend_1 = 'R_ION_ENERGY'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ION_FLUX,attributes=atts
 
 varname = 'R_ION_FLUX_UNC'
@@ -384,6 +387,7 @@ atts.fieldnam = varname
 atts.lablaxis = varname
 atts.var_type ='data'
 atts.catdesc = 'Electron Flux in Reverse Facing look direction (#/cm^2/sec/keV)'
+atts.depend_1 = 'R_ELEC_ENERGY'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ELEC_FLUX,attributes=atts
 
 varname = 'R_ELEC_FLUX_UNC'

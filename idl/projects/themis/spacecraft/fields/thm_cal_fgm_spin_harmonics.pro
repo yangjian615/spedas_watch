@@ -35,8 +35,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2012-02-22 11:30:33 -0800 (Wed, 22 Feb 2012) $
-;$LastChangedRevision: 9811 $
+;$LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+;$LastChangedRevision: 17433 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm_spin_harmonics.pro $
 ;-
 
@@ -137,7 +137,7 @@ pro thm_cal_fgm_spin_harmonics,times,spinphase,fgmdata,probe,error=error,shadows
                     num_to_str_pad(etime_struct.date,2)+$
                     '_avgdist.txt'
                     
-      month_file = file_retrieve(relpathname, _extra=!themis)
+      month_file = spd_download(remote_file=relpathname, _extra=!themis)
       
       if ~file_test(month_file,/read) then begin
         dprint, dlevel=2,'WARNING: Could not find spin harmonic calibration for month starting at: ' + $
@@ -148,7 +148,7 @@ pro thm_cal_fgm_spin_harmonics,times,spinphase,fgmdata,probe,error=error,shadows
         
         relpathname = 'th'+probe+'/l1/fgm/0000/spin_cal/th'+probe+'_default_avgdist.txt'
          
-        month_file = file_retrieve(relpathname, _extra=!themis)
+        month_file = spd_download(remote_file=relpathname, _extra=!themis)
         
         if ~file_test(month_file,/read) then begin
           dprint,'ERROR: Could not find spin harmonic calibration file for month, or default calibration file.  No spin harmonic calibration will be performed.'

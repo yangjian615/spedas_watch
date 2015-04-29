@@ -45,9 +45,9 @@
 ;   thm_load_pseudoAE
 ;   thm_load_pseudoAE,datatype='AE',trange=['2007-01-22/00:00:00','2007-01-24/00:00:00']
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2009-08-28 15:27:21 -0700 (Fri, 28 Aug 2009) $
-; $LastChangedRevision: 6657 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_pseudoae.pro $
 ;-
 
@@ -126,7 +126,7 @@ pro thm_load_pseudoAE, datatype = datatype, trange = trange, $
     params.verbose = verbose
   endif
   
-  files = file_retrieve(relpathnames_all,_extra=params)
+  files = spd_download(remote_file=relpathnames_all,_extra=params)
 
   if ~params.downloadonly then begin
     cdf2tplot,file=files,verbose=params.verbose,tplotnames=tplotnames,varformat=names

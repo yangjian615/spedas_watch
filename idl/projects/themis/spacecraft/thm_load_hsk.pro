@@ -27,9 +27,9 @@
 ; 1. Written by Davin Larson, March 2007
 ; 2. If calibrating use dprint,setdebug=5 to see detailed calibration information
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2009-07-13 14:39:15 -0700 (Mon, 13 Jul 2009) $
-; $LastChangedRevision: 6424 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
+; $LastChangedRevision: 17433 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/thm_load_hsk.pro $
 ;-
 
@@ -41,7 +41,7 @@ pro thm_load_hsk,probe=probe, datatype=datatype, trange=trange, $
                  type=type
 
 thm_init
-dprint,verbose=verbose,dlevel=4,'$Id: thm_load_hsk.pro 6424 2009-07-13 21:39:15Z pcruce $'
+dprint,verbose=verbose,dlevel=4,'$Id: thm_load_hsk.pro 17433 2015-04-27 18:26:29Z aaflores $'
 
 if(keyword_set(probe)) then $
   p_var = probe
@@ -85,7 +85,7 @@ for s=0,n_elements(p_var)-1 do begin
      relpathnames = file_dailynames(file_format=format,trange=trange,addmaster=addmaster)
 ;     if vb ge 4 then printdat,/pgmtrace,relpathnames
      dprint,dlevel=3,verbose=verbose,relpathnames,/phelp
-     files = file_retrieve(relpathnames, _extra=!themis)
+     files = spd_download(remote_file=relpathnames, _extra=!themis)
 
      if keyword_set(!themis.downloadonly) or keyword_set(downloadonly) then continue
 
@@ -107,7 +107,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: thm_load_hsk.pro 6424 2009-07-13 21:39:15Z pcruce $'
+       options, /def, tns, code_id = '$Id: thm_load_hsk.pro 17433 2015-04-27 18:26:29Z aaflores $'
   
        c_var = [1, 2, 3, 4, 5, 6]
 
