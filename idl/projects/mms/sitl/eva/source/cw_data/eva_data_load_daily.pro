@@ -38,14 +38,21 @@ FUNCTION eva_data_load_daily_prbarr, arr, ilbl
   return, prbarr
 END
 
-FUNCTION eva_data_load_daily, filename, dir
+FUNCTION eva_data_load_daily, filename, dir, nolog=nolog
   @tplot_com
   @eva_logger_com
 
   catch, error_status
   if error_status ne 0 then begin
     catch, /cancel
-    eva_error_message, error_status, msg='filename= '+filename
+    if ~keyword_set(nolog) then begin
+      eva_error_message, error_status, msg='filename= '+filename
+    endif else begin
+      help, /last_message, output=error_message; get error message
+      for jjjj=0,n_elements(error_message)-1 do begin
+        print,error_message[jjjj]
+      endfor
+    endelse
     return, 'No'
   endif
 
@@ -73,6 +80,7 @@ FUNCTION eva_data_load_daily, filename, dir
   instr    = strmid(type,0,2)
   msn      = strmid(sc,0,2)
 
+  if ~keyword_set(nolog) then begin
   log.o, '----- Generating file : '+ filename+ ' -----'
   log.o, 'msn  = '+msn
   log.o, 'date = '+date
@@ -81,7 +89,7 @@ FUNCTION eva_data_load_daily, filename, dir
   log.o, 'prbs = '+prbs
   log.o, 'probes = '+probes
   log.o, 'tname = '+tname
-
+  endif
 
 
   ; COORDINATE
@@ -220,11 +228,23 @@ FUNCTION eva_data_load_daily, filename, dir
       matched=1  
     endif
     
+    if strmatch(type,'state') then begin
+      thm_load_state, probe=prbs
+      probe = probes[0]
+      if(coord eq 'gsm') then begin
+        cotrans,probe+'_state_pos',probe+'_state_pos_gse',/gei2gse
+        cotrans,probe+'_state_vel',probe+'_state_vel_gse',/gei2gse
+        cotrans,probe+'_state_pos_gse',probe+'_state_pos_gsm',/gse2gsm
+        cotrans,probe+'_state_vel_gse',probe+'_state_vel_gsm',/gse2gsm
+      endif
+      matched=1
+    endif
+    
     if ~matched then begin
       stop
       msgtxt = filename + ' could not be loaded.'
       result = dialog_message(msgtxt)
-      log.o, msgtxt
+      if ~keyword_set(nolog) then log.o, msgtxt
       return, 'No'
     endif
 
@@ -257,7 +277,8 @@ FUNCTION eva_data_load_daily, filename, dir
       yyyy  = strmid(date,0,4)
       mmdd  = strmid(date,5,5)
       svdir = dir+yyyy+'/'+mmdd+'/'
-      fullname = svdir + strmid(filename,0,strlen(filename)-6)
+      ;fullname = svdir + strmid(filename,0,strlen(filename)-6)
+      fullname = svdir + filename
       file_mkdir,svdir
 
       print, 'dir='+dir

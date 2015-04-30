@@ -14,7 +14,7 @@
 ;Keywords:
 ;(Input):
 ;  no_verify: value of the no_verify keyword supplied by user(optional)
-;  gui_id: Use a different widget_id from the !SPD_GUI.guiID (optional)
+;  gui_id: Use a different widget_id from the !spedas.guiID (optional)
 ;(Output):
 ;  out_names: csvector containing lists of validated names for plots
 ;  all_names: All the non-pseudo variables that will be used for verification
@@ -30,9 +30,9 @@
 ;  11/04/2011: lphilpott, moved spd_ui_tplot_gui_load_tvars_with_new_name to spd_ui_load_tvars_with_new_name - now it is also used by spd_ui_manage_data.
 ;                         Stopped it from looping when you click 'X' in the rename prompt dialogue.
 ;  
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-28 13:17:10 -0700 (Tue, 28 Apr 2015) $
+;$LastChangedRevision: 17440 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_tplot_gui_funcs/spd_ui_tplot_gui_load_tvars.pro $
 ;--------------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@
 ;
 ;  compile_opt idl2, hidden
 ;  fail = 1
-;  guiNames = !spd_gui.loadedData->GetAll(/Parent)
+;  guiNames = !spedas.loadedData->GetAll(/Parent)
 ;  tempint = 0
 ;  tempname = name+'_temp_'+strtrim(systime(/julian),1)+'_'+strtrim(tempint,1)
 ;  while in_set(tempname, guiNames) do begin
@@ -52,17 +52,17 @@
 ;    tempname = name +'_temp_'+strtrim(systime(/julian),1)+'_'+strtrim(tempint,1)
 ;  endwhile
 ;  ; Rename existing variable with temp name
-;  !spd_gui.loadedData->SetDataInfo,name,newname=tempname,fail=fail
+;  !spedas.loadedData->SetDataInfo,name,newname=tempname,fail=fail
 ;  if fail then return
 ;  ; Load new variable
-;  if  ~!spd_gui.loadedData->add(name) then begin
+;  if  ~!spedas.loadedData->add(name) then begin
 ;    dprint,"Problem adding: " + varsToRename[i] + " to GUI"
 ;  endif
 ;  ; Rename new variable with user specified name
-;  !spd_gui.loadedData->SetDataInfo,name,newname=newname,fail=fail
+;  !spedas.loadedData->SetDataInfo,name,newname=newname,fail=fail
 ;  if fail then return
 ;  ; Rename original variable with its original name
-;  !spd_gui.loadedData->SetDataInfo,tempname, newname=name, fail=fail
+;  !spedas.loadedData->SetDataInfo,tempname, newname=name, fail=fail
 ;  
 ;end
 ;NB: this routine is very similar to spd_ui_manage_data_import (in spd_ui_manage_data). If you 
@@ -78,7 +78,7 @@ pro spd_ui_tplot_gui_load_tvars,in_names,no_verify=no_verify,out_names=out_names
   undefine,dlimits
   
   if undefined(gui_id) then begin
-    gui_id = !spd_gui.guiId
+    gui_id = !spedas.guiId
   endif
   
   ; make sure indexes are converted array of tplot variable names
@@ -99,7 +99,7 @@ pro spd_ui_tplot_gui_load_tvars,in_names,no_verify=no_verify,out_names=out_names
   for i=0L,nd-1 do begin
   
     ; get pre-existing gui variable names
-    guiNames = !spd_gui.loadedData->GetAll(/Parent)
+    guiNames = !spedas.loadedData->GetAll(/Parent)
     if size(guiNames, /type) ne 7 then guiNames=''
   
     ; check if pseudovariable
@@ -138,24 +138,24 @@ pro spd_ui_tplot_gui_load_tvars,in_names,no_verify=no_verify,out_names=out_names
               'overwrite it with the new variable?'+ssl_newline()+' '+ssl_newline()+$
               'Click "No" to load the variable ' + strupcase(subNames[j]) + ' under a new name.' + ssl_newline()+$
               'Click "Cancel" to stop the load and continue with the existing '+ strupcase(subNames[j]) +'.'
-            clobber = spd_ui_prompt_widget(gui_id,obj_new(),!spd_gui.historyWin,promptText=promptText,$
+            clobber = spd_ui_prompt_widget(gui_id,obj_new(),!spedas.historyWin,promptText=promptText,$
               /no,/yes,/allno,/allyes,/cancel, title='LOAD DATA: Variable already exists.', defaultvalue='cancel', frame_attr=8)
          
           endif 
           if clobber eq 'yes' OR clobber eq 'yestoall' then begin
             h = 'TPLOT_GUI: ' + strupcase(subNames[j]) + ' will be overwritten.'
-            !spd_gui.historyWin->Update, h
-            ;tmp=!spd_gui.loadedData->Remove(newname) I'm not sure what this line was for.
+            !spedas.historyWin->Update, h
+            ;tmp=!spedas.loadedData->Remove(newname) I'm not sure what this line was for.
           endif
           if (clobber eq 'notoall') then begin
             subVarsToRename = array_concat(subNames[j], subVarsToRename)
           endif else if (clobber eq 'no') then begin
-            spd_ui_rename_variable,gui_id, subNames[j], !spd_gui.loadedData, $
-                       !spd_gui.windowStorage, !spd_gui.historywin, $
+            spd_ui_rename_variable,gui_id, subNames[j], !spedas.loadedData, $
+                       !spedas.windowStorage, !spedas.historywin, $
                        success=success,newnames=newname
             if ~success then begin
               dprint,'Data rename and load canceled.'
-              !SPD_GUI.historyWin->update,'Data rename and load canceled.'
+              !spedas.historyWin->update,'Data rename and load canceled.'
               continue
             endif else begin
               spd_ui_load_tvars_with_new_name, subNames[j], newname=newname, fail=fail
@@ -169,12 +169,12 @@ pro spd_ui_tplot_gui_load_tvars,in_names,no_verify=no_verify,out_names=out_names
           endif else if (clobber eq 'cancel') then begin
             h = 'LOAD DATA: ' + strupcase(subNames[j]) + $
                 ' not loaded to prevent overwrite of existing data.'
-            !spd_gui.historyWin->Update, h
-          endif else if ~!spd_gui.loadedData->addData(subNames[j],d,limit=sub_l,dlimit=sub_dl) then begin
+            !spedas.historyWin->Update, h
+          endif else if ~!spedas.loadedData->addData(subNames[j],d,limit=sub_l,dlimit=sub_dl) then begin
             dprint,"Problem adding: " + subNames[j] + " to GUI" 
             continue       
           endif
-        endif else if ~!spd_gui.loadedData->addData(subNames[j],d,limit=sub_l,dlimit=sub_dl) then begin
+        endif else if ~!spedas.loadedData->addData(subNames[j],d,limit=sub_l,dlimit=sub_dl) then begin
             dprint,"Problem adding: " + subNames[j] + " to GUI"      
             continue  
         endif
@@ -184,12 +184,12 @@ pro spd_ui_tplot_gui_load_tvars,in_names,no_verify=no_verify,out_names=out_names
       endfor
       ; Handle renaming of any pseudo var components.
       if n_elements(subVarsToRename) ne 0 then begin
-        spd_ui_rename_variable,gui_id, subVarsToRename, !spd_gui.loadedData, $
-                       !spd_gui.windowStorage, !spd_gui.historywin, $
+        spd_ui_rename_variable,gui_id, subVarsToRename, !spedas.loadedData, $
+                       !spedas.windowStorage, !spedas.historywin, $
                        success=success,newnames=newsubnames
         if ~success then begin
           dprint,'Data rename and load canceled.'
-          !SPD_GUI.historyWin->update,'Data rename and load canceled.'
+          !spedas.historyWin->update,'Data rename and load canceled.'
         endif else begin
           for i=0L,n_elements(subVarsToRename)-1 do begin
             get_data, subVarsToRename[i], dlimits=sub_dl, limits=sub_l,data=d
@@ -200,7 +200,7 @@ pro spd_ui_tplot_gui_load_tvars,in_names,no_verify=no_verify,out_names=out_names
               ok = error_message('Error renaming variable ' + subVarsToRename[i], $
                     /center, title='Error in Load TVars',traceback=0)
               continue
-            endif else if ~!spd_gui.loadedData->addData(newsubnames[i],d,limit=sub_l,dlimit=sub_dl) then begin; Not sure if this is necessary, but for consistency with other cases above it is included.
+            endif else if ~!spedas.loadedData->addData(newsubnames[i],d,limit=sub_l,dlimit=sub_dl) then begin; Not sure if this is necessary, but for consistency with other cases above it is included.
               dprint,"Problem adding: " + newsubnames[i] + "data to GUI" 
               continue       
             endif
@@ -223,24 +223,24 @@ pro spd_ui_tplot_gui_load_tvars,in_names,no_verify=no_verify,out_names=out_names
             'overwrite it with the new variable?'+ssl_newline()+' '+ssl_newline()+$
             'Click "No" to load the variable ' + strupcase(varnames[i]) + ' under a new name.' + ssl_newline()+$
             'Click "Cancel" to stop the load and continue with the existing '+ strupcase(varnames[i]) +'.'
-          clobber = spd_ui_prompt_widget(gui_id,obj_new(),!spd_gui.historyWin,promptText=promptText,$
+          clobber = spd_ui_prompt_widget(gui_id,obj_new(),!spedas.historyWin,promptText=promptText,$
             /no,/yes,/allno,/allyes,/cancel, title='LOAD DATA: Variable already exists.', defaultvalue='cancel', frame_attr=8)
     
         endif
       
         if clobber eq 'yes' OR clobber eq 'yestoall' then begin
           h = 'TPLOT_GUI: ' + strupcase(varnames[i]) + ' will be overwritten.'
-          !spd_gui.historyWin->Update, h
+          !spedas.historyWin->Update, h
         endif
         if (clobber eq 'notoall') then begin
           varsToRename = array_concat(varnames[i], varsToRename)
         endif else if (clobber eq 'no') then begin
-          spd_ui_rename_variable,gui_id, varnames[i], !spd_gui.loadedData, $
-                       !spd_gui.windowStorage, !spd_gui.historywin, $
+          spd_ui_rename_variable,gui_id, varnames[i], !spedas.loadedData, $
+                       !spedas.windowStorage, !spedas.historywin, $
                        success=success,newnames=newname
           if ~success then begin
             dprint,'Data rename and load canceled.'
-            !SPD_GUI.historyWin->update,'Data rename and load canceled.'
+            !spedas.historyWin->update,'Data rename and load canceled.'
             continue
           endif else begin
             spd_ui_load_tvars_with_new_name, varnames[i], newname=newname, fail=fail
@@ -254,13 +254,13 @@ pro spd_ui_tplot_gui_load_tvars,in_names,no_verify=no_verify,out_names=out_names
         endif else if (clobber eq 'cancel') then begin
           h = 'LOAD DATA: ' + strupcase(varnames[i]) + $
             ' not loaded to prevent overwrite of existing data.'
-          !spd_gui.historyWin->Update, h
-        endif else if ~!spd_gui.loadedData->add(varnames[i]) then begin; adds the data for yes and yestoall
+          !spedas.historyWin->Update, h
+        endif else if ~!spedas.loadedData->add(varnames[i]) then begin; adds the data for yes and yestoall
           dprint,"Problem adding: " + varnames[i] + " to GUI"
           continue
         endif
       ; if variable does not already exist:  
-      endif else if  ~!spd_gui.loadedData->add(varnames[i]) then begin
+      endif else if  ~!spedas.loadedData->add(varnames[i]) then begin
           dprint,"Problem adding: " + varnames[i] + " to GUI"
           continue
       endif
@@ -271,12 +271,12 @@ pro spd_ui_tplot_gui_load_tvars,in_names,no_verify=no_verify,out_names=out_names
     endelse
   endfor 
   if n_elements(varsToRename) ne 0 then begin
-    spd_ui_rename_variable,gui_id, varsToRename, !spd_gui.loadedData, $
-                       !spd_gui.windowStorage, !spd_gui.historywin, $
+    spd_ui_rename_variable,gui_id, varsToRename, !spedas.loadedData, $
+                       !spedas.windowStorage, !spedas.historywin, $
                        success=success,newnames=newnames
     if ~success then begin
       dprint,'Data rename and load canceled.'
-      !SPD_GUI.historyWin->update,'Data rename and load canceled.'
+      !spedas.historyWin->update,'Data rename and load canceled.'
     endif else begin
       for i=0L,n_elements(varsToRename)-1 do begin
         spd_ui_load_tvars_with_new_name, varsToRename[i], newname=newnames[i], fail=fail

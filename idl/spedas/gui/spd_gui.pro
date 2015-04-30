@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-03-05 09:35:01 -0800 (Thu, 05 Mar 2015) $
-;$LastChangedRevision: 17094 $
+;$LastChangedDate: 2015-04-28 13:17:10 -0700 (Tue, 28 Apr 2015) $
+;$LastChangedRevision: 17440 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -471,8 +471,8 @@ PRO spd_gui_event, event
 ;      info.drawDisableTimer = systime(/seconds)
        
       ; update the references in info to template
-      info.template_filename = !SPD_GUI.templatepath
-      !SPD_GUI.windowstorage->GetProperty,template = templateobj
+      info.template_filename = !spedas.templatepath
+      !spedas.windowstorage->GetProperty,template = templateobj
       info.template_object = templateobj 
 
     ;  print,info.drawDisableTimer                         
@@ -1362,10 +1362,10 @@ PRO spd_gui,reset=reset,template_filename=template_filename
     Return
   Endif
 
-  thm_init
+  ;thm_init
   spedas_init
   thm_graphics_config
-  spd_gui_init
+  ;spd_gui_init
   cdf_leap_second_init
   
   spd_ui_fix_performance, !spedas.linux_fix
@@ -1711,16 +1711,16 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   xsize = defaultxsize
   ysize = defaultysize
   
-  defsysv,'!SPD_GUI',exists=thm_exists
+  defsysv,'!spedas',exists=thm_exists
 
   ;these blocks determine whether to reload old state from memory
   ;or to restart with new settings
-  if thm_exists && in_set(strlowcase(tag_names(!SPD_GUI)),'loadeddata') && obj_valid(!SPD_GUI.loadeddata) then begin
+  if thm_exists && in_set(strlowcase(tag_names(!spedas)),'loadeddata') && obj_valid(!spedas.loadeddata) then begin
     if keyword_set(reset) then begin
-      obj_destroy,!SPD_GUI.loadedData
+      obj_destroy,!spedas.loadedData
       loadedData = Obj_New('SPD_UI_LOADED_DATA')
     endif else begin
-      loadedData = !SPD_GUI.loadedData
+      loadedData = !spedas.loadedData
     endelse
   endif else begin
     loadedData = Obj_New('SPD_UI_LOADED_DATA')
@@ -1728,7 +1728,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   
   template_file = ''
   
-  ;read template from file, if requested or read template if stored in !spd_gui.templatepath (obtained from config file) - give priority to keyword if passed in
+  ;read template from file, if requested or read template if stored in !spedas.templatepath (obtained from config file) - give priority to keyword if passed in
   if keyword_set(template_filename) then begin
     open_spedas_template,template=template,filename=template_filename,$
         statusmsg=statusmsg,statuscode=statuscode
@@ -1738,25 +1738,25 @@ PRO spd_gui,reset=reset,template_filename=template_filename
     endif else begin
       template_file = template_filename
     endelse
-  endif else if thm_exists && in_set(strlowcase(tag_names(!SPD_GUI)),'templatepath') && (size(!SPD_GUI.templatepath,/type) eq 7) then begin
-    if !SPD_GUI.templatepath ne '' then begin
-      open_spedas_template,template=template,filename=!SPD_GUI.templatepath,$
+  endif else if thm_exists && in_set(strlowcase(tag_names(!spedas)),'templatepath') && (size(!spedas.templatepath,/type) eq 7) then begin
+    if !spedas.templatepath ne '' then begin
+      open_spedas_template,template=template,filename=!spedas.templatepath,$
         statusmsg=statusmsg,statuscode=statuscode
       if statuscode lt 0 then begin
         ok = dialog_message(statusmsg,/error,/center)
         template=obj_new()
       endif else begin
-        template_file = !SPD_GUI.templatepath
+        template_file = !spedas.templatepath
       endelse
     endif
   endif
   
-  if thm_exists && in_set(strlowcase(tag_names(!SPD_GUI)),'windowstorage') && obj_valid(!SPD_GUI.windowstorage) then begin
+  if thm_exists && in_set(strlowcase(tag_names(!spedas)),'windowstorage') && obj_valid(!spedas.windowstorage) then begin
     if keyword_set(reset) then begin
-      obj_destroy,!SPD_GUI.windowStorage
+      obj_destroy,!spedas.windowStorage
       windowStorage = obj_new('spd_ui_windows',loadedData)
     endif else begin
-      windowStorage = !SPD_GUI.windowStorage
+      windowStorage = !spedas.windowStorage
     endelse
   endif else begin
     windowStorage = obj_new('spd_ui_windows',loadedData)
@@ -1798,7 +1798,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   ;in the call to WIDGET_DRAW in spd_ui_fileconfig that occurs when changing rendering
   ;mode
 
-  if !SPD_GUI.renderer eq 0 && strlowcase(!VERSION.os_family) eq 'windows' then begin
+  if !spedas.renderer eq 0 && strlowcase(!VERSION.os_family) eq 'windows' then begin
     retain = 2
   endif else begin
     retain = 1
@@ -1809,7 +1809,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   ; and x_scr_size rather than just the x_scr_size (as on windows). 
   toolbarGeom = Widget_Info(toolbarbase, /Geometry)
   drawID = WIDGET_DRAW(graphBase,/scroll,xsize=xsize,ysize=ysize,x_scroll_size=x_scr_size,y_scroll_size=y_scr_size,Frame=3, Motion_Event=1, $
-    /Button_Event,keyboard_events=2,graphics_level=2,renderer=!SPD_GUI.renderer,retain=retain,/expose_events,/tracking_events,/viewport_events)
+    /Button_Event,keyboard_events=2,graphics_level=2,renderer=!spedas.renderer,retain=retain,/expose_events,/tracking_events,/viewport_events)
 
  ; Create Context Menu (Right Click)
 
@@ -1941,7 +1941,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
           click:0,$
           rubberBandBox:[0.0, 0.0, 0.0, 0.0],$
           imageOptions:ptr_new(), $
-          oplot_calls:!SPD_GUI.oplot_calls,$
+          oplot_calls:!spedas.oplot_calls,$
           contextMenuOn:0,$
           guiTree:ptr_new(0l), $ ;Stores a copy of the widget tree, so that each panel can be expanded to the same place as the last one when opened
           scrollbar:obj_new(), $
@@ -1981,12 +1981,12 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   Widget_Control, drawID, Get_Value=drawWin 
   info.drawWin = drawWin
   
-  if thm_exists && in_set(strlowcase(tag_names(!SPD_GUI)),'drawobject') && obj_valid(!SPD_GUI.drawObject) then begin
+  if thm_exists && in_set(strlowcase(tag_names(!spedas)),'drawobject') && obj_valid(!spedas.drawObject) then begin
     if keyword_set(reset) then begin
-      obj_destroy,!SPD_GUI.drawObject
+      obj_destroy,!spedas.drawObject
       drawObj = OBJ_NEW('spd_ui_draw_object',drawWin,statusbar,historyWin)
     endif else begin
-      drawObj = !SPD_GUI.drawObject
+      drawObj = !spedas.drawObject
       drawObj->setProperty,historyWin=historyWin,destination=drawWin,statusBar=statusBar
     endelse
   endif else begin
@@ -2073,12 +2073,13 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   
   ;store relevant variables inside system variable, so that we 
   ;can integrate command line and gui
-  !spd_gui.drawObject = drawObj
-  !spd_gui.windowStorage = windowStorage
-  !spd_gui.loadedData = loadedData
-  !spd_gui.windowmenus = windowmenus
-  !spd_gui.historyWin = historyWin
-  !spd_gui.guiId = master
+  !spedas.drawObject = drawObj
+  !spedas.windowStorage = windowStorage
+  !spedas.loadedData = loadedData
+  !spedas.windowmenus = windowmenus
+  !spedas.historyWin = historyWin
+  !spedas.guiId = master
+  
   
   Widget_Control, master, set_UValue=info, /No_Copy
   

@@ -50,15 +50,24 @@ Pro spedas_write_config, copy = copy, _extra = _extra
     If(file_search(filex) Ne '') Then spedas_write_config, /copy
     filex_out = filex
     if ~keyword_set(!spedas) then begin
-      tmp_struct=file_retrieve(/structure_format)
-      str_element,tmp_struct,'browser_exe','',/add
-      str_element,tmp_struct,'temp_dir','',/add
-      str_element,tmp_struct,'temp_cdf_dir','',/add
-      str_element,tmp_struct,'linux_fix',0,/add
+     ; tmp_struct=file_retrieve(/structure_format)
+      tmp_struct = create_struct('browser_exe', '', 'temp_dir', '', $
+                   'temp_cdf_dir', '', 'linux_fix', 0)
+;      str_element,tmp_struct,'browser_exe','',/add
+;      str_element,tmp_struct,'temp_dir','',/add
+;      str_element,tmp_struct,'temp_cdf_dir','',/add
+;      str_element,tmp_struct,'linux_fix',0,/add
       ;str_element,tmp_struct,'temp_cdf_dir','',/add
       defsysv,'!spedas',tmp_struct
     endif
     cfg = !spedas
+    defsysv, '!spedas', exists=spd_gui_exists
+    if spd_gui_exists then begin
+      str_element,cfg,'renderer',!spedas.renderer,/add
+      if in_set('templatepath',strlowcase(tag_names(!spedas))) then begin
+        str_element,cfg,'templatepath',!spedas.templatepath,/add
+      endif
+    endif
 
     hhh = [';spedas_config.txt', ';spedas configuration file', $
     ';Created:'+time_string(systime(/sec))]
@@ -77,7 +86,8 @@ Pro spedas_write_config, copy = copy, _extra = _extra
     x1 = cfg.(j)
 
     If (size(x1, /type) eq 11) then x1 = '' ;ignore objects
-
+    if (size(x1, /type) eq 10) then x1 = '' ;ignore pointers
+    
     If(is_string(x1)) Then x1 = strtrim(x1, 2) $
     Else Begin                  ;Odd thing can happen with byte arrays
       If(size(x1, /type) Eq 1) Then x1 = fix(x1)

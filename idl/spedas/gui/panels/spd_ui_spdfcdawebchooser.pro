@@ -34,9 +34,9 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-07-30 18:17:41 -0700 (Wed, 30 Jul 2014) $
-;$LastChangedRevision: 15630 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-28 13:17:10 -0700 (Tue, 28 Apr 2015) $
+;$LastChangedRevision: 17440 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -581,7 +581,7 @@ pro spd_GetCdawebDataRun, event
     ;spd_ui_manage_data, info.master, info.loadedData, info.windowStorage, info.historywin,info.guiTree
  
     ;better import, although gui_load_tvars breaks abstraction a little bit
-    ;TODO: fix abstraction violation by allowing keyword override of !SPD_GUI variables that spd_ui_tplot_gui_load_tvars uses (I only fixed the funcitonally important one, gui_id)
+    ;TODO: fix abstraction violation by allowing keyword override of !spedas variables that spd_ui_tplot_gui_load_tvars uses (I only fixed the funcitonally important one, gui_id)
     spd_ui_tplot_gui_load_tvars,tplotnames,all_names=all_varnames,gui_id=event.top   
     spd_ui_verify_data,event.top, all_varnames,info.loadedData, info.windowStorage, info.historyWin, success=success,newnames=new_names
     

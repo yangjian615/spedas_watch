@@ -20,9 +20,9 @@
 ;OUTPUT:
 ;  mutates panel object
 ;  
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-20 13:46:54 -0800 (Fri, 20 Feb 2015) $
-;$LastChangedRevision: 17020 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-28 13:17:10 -0700 (Tue, 28 Apr 2015) $
+;$LastChangedRevision: 17440 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_tplot_gui_funcs/spd_ui_tplot_gui_panel_options.pro $
 ;-------------------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ pro spd_ui_tplot_gui_panel_options,panel,varnames=varnames,allnames=allnames,new
       return
     endif
   
-    !spd_gui.loadedData->getdatainfo,newnames[idx[0]],dlimit=dl_var,limit=l_var
+    !spedas.loadedData->getdatainfo,newnames[idx[0]],dlimit=dl_var,limit=l_var
     
     ;this ensures that all the settings are stored in dl for the purposes of this function.
     ;while maintaining precedence between different sources of limits/dlimits

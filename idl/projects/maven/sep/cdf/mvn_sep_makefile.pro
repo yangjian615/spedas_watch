@@ -96,7 +96,7 @@ end
 pro mvn_sep_makefile,init=init,trange=trange0
 
 if keyword_set(init) then begin
-  trange0 = [time_double('2013-12-5'), systime(1) ]
+  trange0 = [time_double('2014-9-20'), systime(1) ]
   if init lt 0 then trange0 = systime(1) + [init,0 ]*24L*3600
 endif else trange0 = timerange(trange0)
 

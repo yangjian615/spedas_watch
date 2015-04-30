@@ -18,32 +18,50 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
 
   defsysv,'!spedas',exists=exists
   if (not keyword_set(exists)) then begin ;if !spedas is not defined
-    tmp_struct=file_retrieve(/structure_format)
-    str_element,tmp_struct,'browser_exe','',/add
-    str_element,tmp_struct,'temp_dir','',/add
-    str_element,tmp_struct,'temp_cdf_dir','',/add
-    str_element,tmp_struct,'linux_fix',0,/add
+    tmp_struct = {browser_exe: '', $    ; location of the local browser executable
+                  temp_dir: '', $
+                  temp_cdf_dir: '', $
+                  linux_fix: 0b, $
+                  renderer:1B,$  ;OS specific rendering options should go here
+                  guiId:0L,  $ ; the widget id of the main gui, needed as an input to command line.
+                  drawObject:obj_new(),$ ;draw object, so that command line can interface with gui
+                  windowStorage:obj_new(),$ ; window_storage object, so that command line can interface with gui
+                  loadedData:obj_new(), $ ; loaded_data object, so that command line can interface with gui
+                  windowMenus:obj_new(), $ ; the window menu object, so that the command line can update the gui window menu
+                  historyWin:obj_new(), $ ; the history window object, so that we can log the tplot_gui
+                  templatePath:'',$; add the the template path if user specifies one
+                  oplot_calls:ptr_new(0) };kluge for spd_ui_overplot to prevent overwriting user data, uses an incrementing counter
+                  
     defsysv,'!spedas',tmp_struct
   endif
 
   ftest = spedas_read_config()
   if (keyword_set(reset)) or not (size(ftest, /type) eq 8) then begin ;if it was not saved before or if it is reset
-    tmp_struct=file_retrieve(/structure_format)
-    str_element,tmp_struct,'browser_exe','',/add
-    str_element,tmp_struct,'temp_dir','',/add
-    str_element,tmp_struct,'temp_cdf_dir','',/add
-    str_element,tmp_struct,'linux_fix',0,/add
+    tmp_struct = {browser_exe: '', $    ; location of the local browser executable
+                  temp_dir: '', $
+                  temp_cdf_dir: '', $
+                  linux_fix: 0b, $
+                  renderer:1B,$  ;OS specific rendering options should go here
+                  guiId:0L,  $ ; the widget id of the main gui, needed as an input to command line.
+                  drawObject:obj_new(),$ ;draw object, so that command line can interface with gui
+                  windowStorage:obj_new(),$ ; window_storage object, so that command line can interface with gui
+                  loadedData:obj_new(), $ ; loaded_data object, so that command line can interface with gui
+                  windowMenus:obj_new(), $ ; the window menu object, so that the command line can update the gui window menu
+                  historyWin:obj_new(), $ ; the history window object, so that we can log the tplot_gui
+                  templatePath:'',$; add the the template path if user specifies one
+                  oplot_calls:ptr_new(0) };kluge for spd_ui_overplot to prevent overwriting user data, uses an incrementing counter
+
     defsysv,'!spedas',tmp_struct
     data_dir =  spd_default_local_data_dir()
     data_dir = StrJoin( StrSplit(data_dir, '\\' , /Regex, /Extract, /Preserve_Null), path_sep())
     data_dir = StrJoin( StrSplit(data_dir, '/', /Regex, /Extract, /Preserve_Null), path_sep())    
     if STRMID(data_dir, 0, 1, /REVERSE_OFFSET) ne path_sep() then data_dir = data_dir + path_sep()
-    !spedas.local_data_dir = data_dir
+   ; !spedas.local_data_dir = data_dir
     !spedas.temp_dir =  data_dir + 'temp' + path_sep()
     !spedas.temp_cdf_dir =  data_dir + 'cdaweb' + path_sep()
     !spedas.browser_exe = ''
     !spedas.linux_fix = 0
-    !spedas.init = 1
+    ;!spedas.init = 1
     print,'Resetting !spedas to default configuration.'
   endif else begin ;retrieved from saved values
     ctags = tag_names(ftest)
@@ -72,7 +90,7 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
          endif
          return
       endif 
-      if (count gt 0) and not (size(!spedas.(index), /type) eq 11) then !spedas.(index) = x1
+      if (count gt 0) and not (size(!spedas.(index), /type) eq 11 || size(!spedas.(index), /type) eq 10) then !spedas.(index) = x1
     endfor
     spedas_reset = 0
     print,'Loaded !spedas from saved values.'

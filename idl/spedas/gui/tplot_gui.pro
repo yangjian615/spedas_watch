@@ -44,9 +44,9 @@
 ;NOTES:
 ;  tplot_gui supports many of the same settings that are selected in tplot using options and tplot_options. 
 ;  
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-01-23 19:30:24 -0800 (Fri, 23 Jan 2015) $
-;$LastChangedRevision: 16723 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-28 13:17:10 -0700 (Tue, 28 Apr 2015) $
+;$LastChangedRevision: 17440 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/tplot_gui.pro $
 ;--------------------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ pro spd_ui_tplot_gui_make_plots, newpanel, varname,template
   compile_opt idl2, hidden
     
   ; get group object and x-axis data quantity name
-  group = !spd_gui.loadedData->getGroup(varname)
+  group = !spedas.loadedData->getGroup(varname)
   
   if ~obj_valid(group) then return
   
@@ -63,7 +63,7 @@ pro spd_ui_tplot_gui_make_plots, newpanel, varname,template
   
   ; get dlimits/limits and merge into superstructure
  
-  !spd_gui.loadedData->getDataInfo,varname,limit=l,dlimit=dl
+  !spedas.loadedData->getDataInfo,varname,limit=l,dlimit=dl
   extract_tags,dl,l
 
   if (size(dl, /type) eq 8) then begin
@@ -72,7 +72,7 @@ pro spd_ui_tplot_gui_make_plots, newpanel, varname,template
         groupname = group->getName()
         yname = group->getYaxisName()
         
-        spd_ui_make_default_specplot, !spd_gui.loadedData, newpanel, xname,  $
+        spd_ui_make_default_specplot, !spedas.loadedData, newpanel, xname,  $
                                       yname, groupname, template
       
     endif else begin    ; create lineplot
@@ -81,7 +81,7 @@ pro spd_ui_tplot_gui_make_plots, newpanel, varname,template
         
         for j=0, n_elements(ynames)-1 do begin
         
-          spd_ui_make_default_lineplot, !spd_gui.loadedData, newpanel, xname, $
+          spd_ui_make_default_lineplot, !spedas.loadedData, newpanel, xname, $
                                         ynames[j], template
         endfor
     endelse
@@ -91,7 +91,7 @@ pro spd_ui_tplot_gui_make_plots, newpanel, varname,template
     
     for j=0, n_elements(ynames)-1 do begin
     
-      spd_ui_make_default_lineplot, !spd_gui.loadedData, newpanel, xname, $
+      spd_ui_make_default_lineplot, !spedas.loadedData, newpanel, xname, $
                                     ynames[j],template
     endfor
   endelse
@@ -127,7 +127,7 @@ pro tplot_gui, datanames,$
     dnames = strjoin(last_tplot,' ')
   endelse
    
-  defsysv,'!SPD_GUI',exists=thm_exists ;check if prexisting gui
+  defsysv,'!spedas',exists=thm_exists ;check if prexisting gui
   
   if keyword_set(reset) || keyword_set(add_panel) || keyword_set(overplot) || ~thm_exists then begin
     newwin = 0
@@ -139,7 +139,7 @@ pro tplot_gui, datanames,$
   if (xregistered('spd_gui') eq 0) then begin
     spd_gui, reset=reset,template_filename=template_filename
   endif else if keyword_set(reset) then begin
-    widget_control,!SPD_GUI.GUIID,/destroy
+    widget_control,!spedas.GUIID,/destroy
     spd_gui, reset=reset,template_filename=template_filename
   endif else begin
   
@@ -150,13 +150,13 @@ pro tplot_gui, datanames,$
       if statuscode lt 0 then begin
         ok = dialog_message(statusmsg,/error,/center)
       endif else begin
-        !spd_gui.windowstorage->setProperty,template=template
+        !spedas.windowstorage->setProperty,template=template
       endelse
     endif
     
   endelse
   
-  !spd_gui.windowStorage->getProperty,template=template
+  !spedas.windowStorage->getProperty,template=template
 
  
   spd_ui_tplot_gui_load_tvars,dnames,no_verify=no_verify,out_names=out_names,all_names=all_names
@@ -165,7 +165,7 @@ pro tplot_gui, datanames,$
   
     ;add buffer panel (keeps overview plots aligned)
     if keyword_set(add_panel) then begin
-      spd_ui_make_default_panel, !spd_gui.windowStorage, template
+      spd_ui_make_default_panel, !spedas.windowStorage, template
     endif
     
     dprint,"No valid input names"
@@ -198,19 +198,19 @@ pro tplot_gui, datanames,$
   all_names = all_names[uniq(all_names,sort(all_names))]
 
   ; verify incoming tplot variables
-  ;spd_ui_verify_data,!spd_gui.guiId, varnames, !spd_gui.loadedData, $
-  ;                   !spd_gui.windowStorage, !spd_gui.historywin, $
+  ;spd_ui_verify_data,!spedas.guiId, varnames, !spedas.loadedData, $
+  ;                   !spedas.windowStorage, !spedas.historywin, $
   ;                   success=success
   if ~keyword_set(no_verify) then begin
   
     dprint,'verify data for main plots'
-    spd_ui_verify_data,!spd_gui.guiId, all_names, !spd_gui.loadedData, $
-                       !spd_gui.windowStorage, !spd_gui.historywin, $
+    spd_ui_verify_data,!spedas.guiId, all_names, !spedas.loadedData, $
+                       !spedas.windowStorage, !spedas.historywin, $
                        success=success,newnames=new_names
   
     if ~success then begin
       dprint,'Data verify canceled.'
-      !SPD_GUI.historyWin->update,'Data verify canceled.'
+      !spedas.historyWin->update,'Data verify canceled.'
       return
     endif
   
@@ -225,26 +225,26 @@ pro tplot_gui, datanames,$
     ; add new window to gui
     if newwin then begin
             
-      if ~!spd_gui.windowStorage->add(isactive=1) then begin
+      if ~!spedas.windowStorage->add(isactive=1) then begin
         ok = error_message('Error initializing new window for TPLOT_GUI.',/traceback, /center, $
                title='Error in TPLOT_GUI')
         return
       endif  
     
-    activeWindow = !spd_gui.windowStorage->GetActive()
+    activeWindow = !spedas.windowStorage->GetActive()
     
     ; add window name to gui window menu
     activeWindow[0]->GetProperty, Name=name,settings=pagesettings
     spd_ui_tplot_gui_page_options,pagesettings
-    !spd_gui.windowMenus->Add, name
-    !spd_gui.windowMenus->Update, !spd_gui.windowStorage
+    !spedas.windowMenus->Add, name
+    !spedas.windowMenus->Update, !spedas.windowStorage
       
      ; update draw object and draw new window
- ;    !spd_gui.drawObject->Update, !spd_gui.windowStorage, !spd_gui.loadedData
- ;   !spd_gui.drawObject->draw
+ ;    !spedas.drawObject->Update, !spedas.windowStorage, !spedas.loadedData
+ ;   !spedas.drawObject->draw
     
     endif else begin
-      activeWindow = !spd_gui.windowStorage->GetActive()
+      activeWindow = !spedas.windowStorage->GetActive()
       ; add window name to gui window menu
       if ~obj_valid(activeWindow) then begin
         ok = error_message('Error, tplot_gui /add_panel called with no active window',/traceback, /center, $
@@ -269,7 +269,7 @@ pro tplot_gui, datanames,$
     for i=0L, var_num-1 do begin
     
       ; create panel
-      spd_ui_make_default_panel, !spd_gui.windowStorage, template,outpanel=newpanel
+      spd_ui_make_default_panel, !spedas.windowStorage, template,outpanel=newpanel
   
       add_names = csvector(i,out_names,/read)
      
@@ -290,8 +290,8 @@ pro tplot_gui, datanames,$
     spd_ui_tplot_gui_make_var_labels,newpanel,pagesettings,varnames=out_varnames,allnames=all_names,newnames=new_names
         
     if ~keyword_set(no_update) then begin
-      !spd_gui.drawObject->update,!spd_gui.windowStorage, !spd_gui.loadedData
-      !spd_gui.drawObject->draw
+      !spedas.drawObject->update,!spedas.windowStorage, !spedas.loadedData
+      !spedas.drawObject->draw
     endif
     
   endif

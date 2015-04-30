@@ -24,10 +24,10 @@ PRO spd_ui_fileconfig_load_template, fileName, topid, statusBar
       ok=dialog_message(statusmsg,/ERROR,/CENTER)
       statusBar->Update, 'Error: '+statusmsg
     endif else begin
-      !SPD_GUI.templatepath = fileName
+      !spedas.templatepath = fileName
       tmppathid = widget_info(topid, find_by_uname='TMPPATH')
       widget_control, tmppathid,set_value=filename
-      !SPD_GUI.windowStorage->setProperty,template=template
+      !spedas.windowStorage->setProperty,template=template
     ENDELSE
   ENDIF ELSE BEGIN
     statusBar->Update, 'Failed to load template: invalid filename'
@@ -47,14 +47,14 @@ pro spd_ui_spedas_init_struct,state,struct
   widget_control,state.tempdir,set_value=struct.temp_dir
   widget_control,state.browserexe,set_value=struct.browser_exe
   widget_control,state.tempcdfdir,set_value=struct.temp_cdf_dir  
-  widget_control,state.v_droplist,set_combobox_select=struct.verbose
+  ;widget_control,state.v_droplist,set_combobox_select=struct.verbose
   Widget_Control,  state.fixlinux, Set_Button=struct.linux_fix
 
-  if !SPD_GUI.templatepath ne '' then begin
+  if !spedas.templatepath ne '' then begin
     widget_control, state.tmp_button,/set_button
     widget_control, state.tmp_pathbase, sensitive=1
     widget_control, state.tmppath, /editable
-    widget_control, state.tmppath, /sensitive, set_value = !SPD_GUI.templatepath
+    widget_control, state.tmppath, /sensitive, set_value = !spedas.templatepath
   endif else begin
     widget_control, state.tmp_pathbase, sensitive=0
   endelse
@@ -96,8 +96,8 @@ PRO spd_ui_spedas_fileconfig_event, event
         state.historywin->update,'Using template ' + filename
       endif else begin
         ; if the user turns off template, close it
-        !SPD_GUI.templatepath = ''
-        !SPD_GUI.windowStorage->setProperty,template=obj_new('spd_ui_template')
+        !spedas.templatepath = ''
+        !spedas.windowStorage->setProperty,template=obj_new('spd_ui_template')
         state.statusbar->update,'Template disabled.'
         state.historywin->update,'Template disabled.'
       endelse
@@ -192,7 +192,7 @@ PRO spd_ui_spedas_fileconfig_event, event
   
   'VERBOSE': BEGIN
   
-    !spedas.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
+   ; !spedas.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
     
   END
   
@@ -207,15 +207,15 @@ PRO spd_ui_spedas_fileconfig_event, event
     widget_control,state.tempcdfdir,set_value=!spedas.temp_cdf_dir
     Widget_Control, state.fixlinux, Set_Button=!spedas.linux_fix
     
-    !spd_gui.templatepath = ''
+    !spedas.templatepath = ''
     widget_control, (widget_info(event.top, find_by_uname='TMPPATH')), set_value=''
     widget_control, (widget_info(event.top, find_by_uname='TMPBUTTON')), set_button=0
     widget_control, (widget_info(event.top, find_by_uname='TMPPATHBASE')), sensitive = 0
 
-    state.spd_ui_cfg_sav = !spd_gui
-    state.spedas_cfg_save = !spedas        
+    state.spd_ui_cfg_sav = !spedas
+    ;state.spedas_cfg_save = !spedas        
     
-    widget_control,state.v_droplist,set_combobox_select=!spedas.verbose
+   ; widget_control,state.v_droplist,set_combobox_select=!spedas.verbose
     state.historywin->update,'Resetting controls to saved values.'
     state.statusbar->update,'Resetting controls to saved values.'
     
@@ -241,12 +241,12 @@ END
     spedas_init,  /reset
     spd_ui_spedas_init_struct, state, !spedas
        
-    !spd_gui.templatepath = ''
+    !spedas.templatepath = ''
     widget_control, (widget_info(event.top, find_by_uname='TMPPATH')), set_value=''
     widget_control, (widget_info(event.top, find_by_uname='TMPBUTTON')), set_button=0
     widget_control, (widget_info(event.top, find_by_uname='TMPPATHBASE')), sensitive = 0
  
-    state.spd_ui_cfg_sav = !spd_gui
+    state.spd_ui_cfg_sav = !spedas
     state.spedas_cfg_save = !spedas
     
     state.historywin->update,'Resetting configuration to default values.'
@@ -282,7 +282,7 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   defsysv, '!spedas', exists=exists
   if not keyword_set(exists) then spedas_init
   spedas_cfg_save = !spedas
-  spd_ui_cfg_sav = !spd_gui
+  spd_ui_cfg_sav = !spedas
   linux_fix = !spedas.linux_fix 
   
   ;Build the widget bases
@@ -294,7 +294,7 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   
   ;Widget base for save, reset and exit buttons
   bmaster = widget_base(master, /row, /align_center, ypad=7)
-  ll = max(strlen([!spedas.local_data_dir, !spedas.remote_data_dir]))+12
+ ; ll = max(strlen([!spedas.local_data_dir, !spedas.remote_data_dir]))+12
   
   ;Now create directory text widgets
   configbase = widget_base(vmaster,/col)

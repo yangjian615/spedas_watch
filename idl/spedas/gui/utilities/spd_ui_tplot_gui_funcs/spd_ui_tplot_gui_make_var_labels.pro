@@ -20,9 +20,9 @@
 ;OUTPUT:
 ;  mutates panel object
 ;  
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-28 13:17:10 -0700 (Tue, 28 Apr 2015) $
+;$LastChangedRevision: 17440 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_ui_tplot_gui_funcs/spd_ui_tplot_gui_make_var_labels.pro $
 ;-------------------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ pro spd_ui_tplot_gui_make_var_labels,panel,page,varnames=varnames,allnames=allna
     panel->setProperty,variables=variables
   endif
   
-  !spd_gui.windowstorage->getProperty,template=template
+  !spedas.windowstorage->getProperty,template=template
   if obj_Valid(template) then begin
    template->getProperty,variable=variableTemplate
   endif
@@ -63,7 +63,7 @@ pro spd_ui_tplot_gui_make_var_labels,panel,page,varnames=varnames,allnames=allna
         return
       endif
     
-      dataGroup = !spd_gui.loadedData->getGroup(newnames[idx[0]])
+      dataGroup = !spedas.loadedData->getGroup(newnames[idx[0]])
       if ~obj_valid(dataGroup) then continue
       dataObjs = dataGroup->getDataObjects()
       
@@ -72,7 +72,7 @@ pro spd_ui_tplot_gui_make_var_labels,panel,page,varnames=varnames,allnames=allna
       for k = 0,n_elements(dataObjs)-1 do begin
         dataObj = dataObjs[k]
         dataObj->getProperty,indepname=indepname,timename=timename,isTime=isTime,name=dependname
-        if keyword_set(indepname) && !spd_gui.loadedData->isChild(indepname) then begin
+        if keyword_set(indepname) && !spedas.loadedData->isChild(indepname) then begin
           controlname = indepname
         endif else begin
           controlname = timename

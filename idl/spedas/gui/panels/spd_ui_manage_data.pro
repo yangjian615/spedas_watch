@@ -14,9 +14,9 @@
 ;OUTPUT:
 ; 
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-04-28 13:17:10 -0700 (Tue, 28 Apr 2015) $
+;$LastChangedRevision: 17440 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_manage_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ pro spd_ui_manage_data_import, state, datanames, newnames=newnames, success=succ
   for i=0L,nd-1 do begin
   
     ; get pre-existing gui variable names
-    guiNames = !spd_gui.loadedData->GetAll(/Parent)
+    guiNames = !spedas.loadedData->GetAll(/Parent)
     if size(guiNames, /type) ne 7 then guiNames=''
   
     ; check if pseudovariable

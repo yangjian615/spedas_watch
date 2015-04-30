@@ -7,7 +7,7 @@ pro spd_ui_load_tvars_with_new_name, name, newname=newname, fail=fail
 
   compile_opt idl2, hidden
   fail = 1
-  guiNames = !spd_gui.loadedData->GetAll(/Parent)
+  guiNames = !spedas.loadedData->GetAll(/Parent)
   tempint = 0
   tempname = name+'_temp_'+strtrim(systime(/julian),1)+'_'+strtrim(tempint,1)
   while in_set(tempname, guiNames) do begin
@@ -15,20 +15,20 @@ pro spd_ui_load_tvars_with_new_name, name, newname=newname, fail=fail
     tempname = name +'_temp_'+strtrim(systime(/julian),1)+'_'+strtrim(tempint,1)
   endwhile
   ; Rename existing variable with temp name
-  !spd_gui.loadedData->SetDataInfo,name,newname=tempname,fail=fail
+  !spedas.loadedData->SetDataInfo,name,newname=tempname,fail=fail
   if fail then return
   ; Load new variable
-  if  ~!spd_gui.loadedData->add(name) then begin
+  if  ~!spedas.loadedData->add(name) then begin
     dprint,"Problem adding: " + name + " to GUI"
     ; Rename original variable with its original name
-    !spd_gui.loadedData->SetDataInfo,tempname, newname=name, fail=fail
+    !spedas.loadedData->SetDataInfo,tempname, newname=name, fail=fail
     fail=1 ;unable to add variable so always a fail 
     return
   endif
   ; Rename new variable with user specified name
-  !spd_gui.loadedData->SetDataInfo,name,newname=newname,fail=fail
+  !spedas.loadedData->SetDataInfo,name,newname=newname,fail=fail
   if fail then return
   ; Rename original variable with its original name
-  !spd_gui.loadedData->SetDataInfo,tempname, newname=name, fail=fail
+  !spedas.loadedData->SetDataInfo,tempname, newname=name, fail=fail
   
 end

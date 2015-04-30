@@ -36,7 +36,6 @@ Function spedas_config_template
 
   Return, ppp
 End
-
 Function spedas_read_config, header = hhh
 
   ; Catch errors and return
@@ -47,13 +46,12 @@ Function spedas_read_config, header = hhh
     catch, /cancel
     return, -1
   endif
-
+  
   otp = -1
 ;First step is to get the filename
-;For this example the directory name has been hard coded
   dir = spedas_config_filedir()
   If(dir[0] Ne '') Then Begin
-;Is there a trailing slash? Not for linux or spedasows, not sure about Mac
+;Is there a trailing slash? Not for linux or windows, not sure about Mac
     ll = strmid(dir, strlen(dir)-1, 1)
     If(ll Eq '/' Or ll Eq '\') Then filex = dir+'spedas_config.txt' $
     Else filex = dir + PATH_SEP() + 'spedas_config.txt'
@@ -75,16 +73,16 @@ Function spedas_read_config, header = hhh
       Endif
     Endif
   Endif; Else message, /info, 'NO APP_USER_DIR'
-
+  
 ;check for slashes, add if necessary
-  temp_string = strtrim(!spedas.local_data_dir, 2)
-  ll = strmid(temp_string, strlen(temp_string)-1, 1)
-  If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+PATH_SEP()
-  !spedas.local_data_dir = temporary(temp_string)
-  temp_string = strtrim(!spedas.remote_data_dir, 2)
-  ll = strmid(temp_string, strlen(temp_string)-1, 1)
-  If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+PATH_SEP()
-  !spedas.remote_data_dir = temporary(temp_string)
+;  temp_string = strtrim(!spedas.local_data_dir, 2)
+;  ll = strmid(temp_string, strlen(temp_string)-1, 1)
+;  If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+PATH_SEP()
+;  !spedas.local_data_dir = temporary(temp_string)
+;  temp_string = strtrim(!spedas.remote_data_dir, 2)
+;  ll = strmid(temp_string, strlen(temp_string)-1, 1)
+;  If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+PATH_SEP()
+;  !spedas.remote_data_dir = temporary(temp_string)
 
   Return, otp
 End
