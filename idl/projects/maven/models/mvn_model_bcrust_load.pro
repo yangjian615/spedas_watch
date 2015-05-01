@@ -46,8 +46,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-04-12 02:36:33 -0700 (Sun, 12 Apr 2015) $
-; $LastChangedRevision: 17297 $
+; $LastChangedDate: 2015-04-29 12:56:13 -0700 (Wed, 29 Apr 2015) $
+; $LastChangedRevision: 17449 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/models/mvn_model_bcrust_load.pro $
 ;
 ;-
@@ -92,9 +92,11 @@ PRO mvn_model_bcrust_load, var, orbit=orbit, silent=sl, verbose=vb, calc=calc, s
   IF status EQ 0 THEN BEGIN
      IF (cflg) THEN yes = 1 $
      ELSE BEGIN
-        PRINT, ptrace()
-        PRINT, '  It seems that the tplot save files have not been generated yet.' 
-        READ,  '  Do you want to calculate now (Yes=1 / No=0)?: ', yes 
+        IF SIZE(calc, /type) EQ 0 THEN BEGIN
+           PRINT, ptrace()
+           PRINT, '  It seems that the tplot save files have not been generated yet.' 
+           READ,  '  Do you want to calculate now (Yes=1 / No=0)?: ', yes 
+        ENDIF ELSE yes = 0
      ENDELSE 
      IF yes EQ 1 THEN BEGIN
         IF SIZE(morschhauser, /type) EQ 0 THEN morschhauser = 1

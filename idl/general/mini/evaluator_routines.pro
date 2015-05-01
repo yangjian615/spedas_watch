@@ -5,9 +5,9 @@
 ; Purpose: When called this routine compiles a library of helper routines
 ;          for the evaluator of the mini_language
 ;           
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-10-28 09:23:38 -0700 (Mon, 28 Oct 2013) $
-; $LastChangedRevision: 13411 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-29 13:24:31 -0700 (Wed, 29 Apr 2015) $
+; $LastChangedRevision: 17451 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/evaluator_routines.pro $
 ;- 
 
@@ -413,7 +413,7 @@ pro store_var_data,name,value
          message,'store_data error'
        endif
        
-       if ~!mini_globals.gui_data_obj->addTvarObject(obj) then begin
+       if ~!mini_globals.gui_data_obj->addWithMetadata(obj) then begin
          message,'loaded_data error'
        endif
 

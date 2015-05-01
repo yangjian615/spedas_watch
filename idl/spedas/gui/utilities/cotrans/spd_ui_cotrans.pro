@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedDate: 2015-04-29 13:24:31 -0700 (Wed, 29 Apr 2015) $
+;$LastChangedRevision: 17451 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/cotrans/spd_ui_cotrans.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ if ~keyword_set(replay) then begin
 endif
  
 if ~keyword_set(active) then begin
-  sobj->update,'No active data is transformable'
+  sobj->update, 'No Active Data selected.'
   return
 endif
  
@@ -79,38 +79,34 @@ for i = 0,n_elements(active)-1 do begin
   
   sobj->update, 'Coordinate Transforming: ' + active[i]
 
-  ;reset output list
+  ;reset names
   out_name = ''
+  name = active[i]
 
-  ;export object and tplot variable from GUI data
-  var = loadedData->getTvarObject(active[i])      
+  ;export data to tplot variable
+  tname = loadedData->getTvarData(name)
 
-  ;get metadata
-  var->GetProperty, name=name, $
-                    coordSys=in_coord, $
-                    observatory=probe, $
-                    mission=mission, $
-                    timerange=timerange
+  ;get metadata 
+  ;  -this is to preserve GUI specific metadata when exporting to tplot
+  metadata = loadedData->getMetadataObject(name)
 
-  startTime = timerange->getStartTime()
-  endTime = timerange->getEndTime()
-  
-  trange = [starttime,endtime]
-  
-  origname=name
-  
-  ;check input coord validity
-  if strlowcase(in_coord) eq 'n/a' then begin
-    errors = array_concat(name + ':  Data has no defined coordinate system.', errors)
-    continue
-  endif
- 
+  ;get input coords
+  metadata->getproperty, coordsys=in_coord
+
   ;skip if variable is not a 3-vector
-  ;TODO: this is inefficient and is already checked in spd_cotrans
+  ;this is checked in spd_cotrans but checking here allows for a pop-up message
   get_data,name,data=dTest
   dDim = dimen(dTest.y)
   if n_elements(dDim) ne 2 || dDim[1] ne 3 then begin
     errors = array_concat(name + ':  Data is not a 3-vector.', errors)
+    continue
+  endif
+
+  ;check input coord validity
+  if ~in_set(strlowcase(in_coord),validcoords) then begin
+    errors = array_concat(name + ':  Input coordinates not recognized.  ' + $
+                                'See "More..." menu for more options.  ' + $
+                                'Verify coordinates with File > Manage Data.', errors)
     continue
   endif
 
@@ -157,16 +153,15 @@ for i = 0,n_elements(active)-1 do begin
   endelse
   
   ;add output to the GUI
-  out = var->copy()
-  out->setProperty,coordSys = out_coord,name=out_var
+  metadata->setProperty,coordSys = out_coord, name=out_var
   spd_ui_check_overwrite_data,out_var[0],loadedData,tlb,sobj,historyWin,tvar_overwrite_selection,tvar_overwrite_count,$
                          replay=replay,overwrite_selections=tvar_overwrite_selections
                          
-  if ~loadedData->addTvarObject(out) && ~keyword_set(replay) then begin
+  if ~loadedData->addwithmetadata(metadata) && ~keyword_set(replay) then begin
     ok = error_message('error adding data',traceback=0,/center,title='Error in Cotrans New')
   endif
         
-  loadedData->clearActive,origname
+  loadedData->clearActive,name
   loadedData->setActive,out_var
   
 endfor

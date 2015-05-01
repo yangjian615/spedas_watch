@@ -16,7 +16,6 @@
 ;
 ;METHODS:
 ; Add             adds a new tplot variable to the loaded data object by tplot variable name
-; AddTvarObject   An add routine replaces an object that was returned by getTvarObject in this data structure
 ; Remove          removes an object from the array by name or group name
 ; GetAll          returns an array of all data names
 ; GetActive       returns a list of all data that is currently displayed
@@ -31,13 +30,11 @@
 ;                 will need to compose the data first
 ; GetTvarData     gets a tplot variable,  For a group data structure it will construct
 ;                 a new tplot variable.  
-; GetTvarObject   gets object with an assembled data component from getTvarData, but with
-;                 the appropriate associated meta data 
 ; GetObjects      returns an array of all data objects, can also take a name or group name
 ;
 ;  NOTE: 
 ;  
-;  1. You should use 'getTvarData' or 'getTvarObject' to generate a
+;  1. You should use 'getTvarData' to generate a
 ;  tplot variable that has all the dimensions of the variable composed
 ;  as a single entity.  After you have modified the variable you
 ;  should you 'add', to add the data back in to the data structure. 
@@ -53,8 +50,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedDate: 2015-04-29 13:24:31 -0700 (Wed, 29 Apr 2015) $
+;$LastChangedRevision: 17451 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1077,7 +1074,16 @@ function SPD_UI_LOADED_DATA::detectunits, name, dl
   
 end ;--------------------------------------------------------------------------------
 
-function SPD_UI_LOADED_DATA::addTvarObject,obj,component_names=component_names,added_name=added_name
+
+;+
+; This is a kludge that shouldn't be employed in new code.
+;
+; This method employs the usual ::Add method but pulls metadata from 
+; an identically named spd_ui_data object.  A metadata-only data object 
+; can be exported with ::getMetadataObject.
+;
+;-
+function SPD_UI_LOADED_DATA::addWithMetadata,obj,component_names=component_names,added_name=added_name
 
   compile_opt idl2
 
@@ -1560,7 +1566,7 @@ end
 ;Call this method to read the metadata associated with a quantity, without the need for costly data operations
 ;Note that this operation can fail, if the quantity in question does not exist.
 ;Set fail to a named variable, which will be 0 on success and 1 on failure, after this method returns
-pro spd_ui_loaded_data::getdatainfo,name,mission=mission,observatory=observatory,instrument=instrument,units=units,coordinate_system=coordinate_system,filename=filename,limit=limit,dlimit=dlimit,fail=fail,st_type=st_type
+pro spd_ui_loaded_data::getdatainfo,name,mission=mission,observatory=observatory,instrument=instrument,units=units,coordinate_system=coordinate_system,trange=trange,filename=filename,limit=limit,dlimit=dlimit,fail=fail,st_type=st_type
 
   compile_opt idl2
 
@@ -1585,7 +1591,11 @@ pro spd_ui_loaded_data::getdatainfo,name,mission=mission,observatory=observatory
   
   if ~obj_valid(reference) || ~obj_valid(group) then return
       
-  reference->getProperty,mission=mission,observatory=observatory,instrument=instrument,units=units,coordSys=coordinate_system,filename=filename,limitptr=limitptr,dlimitptr=dlimitptr,st_type=st_type
+  reference->getProperty,mission=mission,observatory=observatory,instrument=instrument,units=units,coordSys=coordinate_system,timerange=timerange,filename=filename,limitptr=limitptr,dlimitptr=dlimitptr,st_type=st_type
+
+  if arg_present(trange) && obj_valid(timerange) then begin
+    trange = [timerange->getstarttime(),timerange->getendtime()]
+  endif
 
   limit = *limitptr
   dlimit =  *dlimitptr
@@ -1763,9 +1773,13 @@ PRO SPD_UI_LOADED_DATA::Cleanup
   
 END ;--------------------------------------------------------------------------------
 
-;assembles a data object from children, but with the correct private members
-;the only exception is the id, parent objects don't have data ids
-function SPD_UI_LOADED_DATA::GetTvarObject,name
+;+
+; This is a kludge that shouldn't be employed in new code.
+;
+; Returns an spd_ui_data object containing only metadata.    
+;
+;-
+function SPD_UI_LOADED_DATA::GetMetadataObject,name
 
   compile_opt idl2
 
@@ -1783,8 +1797,6 @@ function SPD_UI_LOADED_DATA::GetTvarObject,name
   
   objs[last_element_idx]->updateDlimits
   
-  varname = self->getTvarData(name)
-  
   objs[last_element_idx]->getproperty,groupname=groupname, $
                        filename=filename, $
                        isTime=isTime,     $
@@ -1800,8 +1812,6 @@ function SPD_UI_LOADED_DATA::GetTvarObject,name
                        dlimitPtr=dlimitPtr,$
                        limitPtr=limitPtr
 
-  if varname eq '' then return,0
-  
   newdlptr = ptr_new(*dlimitPtr)
   
   if ptr_valid(limitPtr) then begin

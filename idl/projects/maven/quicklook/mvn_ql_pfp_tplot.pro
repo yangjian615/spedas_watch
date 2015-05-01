@@ -12,7 +12,7 @@
 ;
 ;KEYWORDS:
 ;
-;       ORBIT:    Loads the Martian crustal magnetic field model(s) by
+;       ORBIT:    Specifies the time range to show by using
 ;                 orbit number or range of orbit numbers (trange is ignored).
 ;                 Orbits are numbered using the NAIF convention, where
 ;                 the orbit number increments at periapsis. Data are
@@ -22,7 +22,8 @@
 ;
 ;   NO_DELETE:    Not deleting pre-exist tplot variable(s).
 ;
-;         PAD:    Calculates the SWEA PAD resampling by using 'mvn_swe_pad_resample'.
+;         PAD:    Restores the SWEA resampling PAD tplot save files by
+;                 using 'mvn_swe_pad_restore'. 
 ;   
 ;       TPLOT:    Plots the summary tplots.
 ;
@@ -34,15 +35,21 @@
 ;
 ;      PHOBOS:    Computes the MAVEN and Phobos distance by 'mvn_phobos_tplot'.
 ;
+;      BCRUST:    Defines to execute calculating the crustal magnetic
+;                 field model, if tplot save files are not available. 
+;
+;   BURST_BAR:    Draw a color bar during the time intervals when the burst
+;                 (archive) PFP data has been already downlinked and available.  
+;
 ;NOTE:            This routine is assumed to be used when there are
 ;                 no tplot variables.
 ;
 ;CREATED BY:      Takuya Hara on 2015-04-09.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-04-24 11:37:54 -0700 (Fri, 24 Apr 2015) $
-; $LastChangedRevision: 17421 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2015-04-29 23:59:26 -0700 (Wed, 29 Apr 2015) $
+; $LastChangedRevision: 17454 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -84,12 +91,14 @@ END
 
 ; Main Routine
 PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
-                      pad=pad, tplot=tplot, window=window, tname=ptname, phobos=phobos
+                      pad=pad, tplot=tplot, window=window, tname=ptname, phobos=phobos, $
+                      bcrust=bcrust, burst_bar=bbar
 
   oneday = 24.d0 * 3600.d0
   nan = !values.f_nan
   IF ~keyword_set(no_delete) THEN store_data, '*', /delete, verbose=verbose
   IF keyword_set(window) THEN wnum = window ELSE wnum = 0
+  IF SIZE(bcrust, /type) NE 0 THEN bflg = bcrust
   @mvn_swe_com
 
   tplot_options, get_options=topt
@@ -104,25 +113,22 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
         imin = MIN(orbit, max=imax)
         trange = mvn_orbit_num(orbnum=[imin-0.5, imax+0.5])
         undefine, imin, imax
-     ENDIF
-
-     tspan_exists = (MAX(topt.trange_full) GT time_double('2014-09-22'))
-     IF (tspan_exists) THEN trange = topt.trange_full
-     undefine, tspan_exists
+     ENDIF ELSE BEGIN
+        tspan_exists = (MAX(topt.trange_full) GT time_double('2014-09-22'))
+        IF (tspan_exists) THEN trange = topt.trange_full
+        undefine, tspan_exists
+     ENDELSE 
   ENDELSE
   
   IF SIZE(trange, /type) EQ 0 THEN BEGIN
      dprint, 'You must set the specified time interval to load.'
      RETURN
   ENDIF
-  
+
   mvn_spice_load, trange=trange, /download_only, verbose=verbose
 
   ; SWEA
-  mvn_swe_load_l2, trange
-  mvn_swe_addmag
-  store_data, ['mvn_ql_mag1', 'Bphi1', 'Bthe1', 'Bamp1'], /delete, verbose=verbose
-  
+  mvn_swe_load_l2, trange, /spec
   IF (SIZE(mvn_swe_engy, /type) NE 8) THEN BEGIN
      dprint, 'No SWEA data found.'
      RETURN
@@ -152,38 +158,37 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   zlim, 'mvn_swe_etspec', 0, 0, 1, /def
   undefine, xswe, yswe, vswe
   undefine, emin, emax
-  IF keyword_set(pad) THEN $ ; 5 minutes is buffer.
-     mvn_swe_pad_resample, 300.d0*[-1D, 1D] + trange, /tplot, snap=0, /map3d, verbose=verbose  
+  IF keyword_set(pad) THEN mvn_swe_pad_restore, trange 
 
   ; SWIA
   trange_full = time_double( time_string(trange, tformat='YYYY-MM-DD') )
   IF time_string(trange[1], tformat='hh:mm:ss') NE '00:00:00' THEN $
      trange_full[1] += oneday
   IF MEAN(trange - trange_full) NE 0.d0 THEN clip = 1 ELSE clip = 0
-  mvn_swia_load_l2_data, trange=trange_full, /tplot, /loadspec, /eflux
+  mvn_swia_load_l2_data, trange=trange_full, /tplot, /loadspec, /loadcoarse, /eflux
 
   undefine, trange_full
-  tname = tnames('mvn_swi*', ntplot)
+  tname = tnames('mvn_swis_en_eflux', ntplot)
   IF ntplot EQ 0 THEN BEGIN
      dprint, 'There is no SWIA tplot variables.'
      RETURN
-  ENDIF
-  
-  FOR i=0, ntplot-1 DO BEGIN
-     get_data, tname[i], data=d, dlim=dl, lim=lim
-     extract_tags, d2, d, tags=['x', 'y', 'v']
-     extract_tags, dl, d, except=['x', 'y', 'v']
+  ENDIF ELSE BEGIN
+     aname = tnames('mvn_swi*')
+     idx = WHERE(aname NE tname)
+     store_data, aname[idx], /delete, verbose=verbose
+     undefine, aname, idx
+  ENDELSE
+
+  get_data, tname, data=d, dlim=dl, lim=lim
+  extract_tags, d2, d, tags=['x', 'y', 'v']
+  extract_tags, dl, d, except=['x', 'y', 'v']
      
-     store_data, tname[i], data=d2, dlim=dl, lim=lim
-     IF (clip) THEN time_clip, tname[i], trange[0], trange[1], /replace
-     undefine, d, d2, dl, lim
-  ENDFOR
-  undefine, i, tname, ntplot, clip
+  store_data, tname, data=d2, dlim=dl, lim=lim
+  IF (clip) THEN time_clip, tname, trange[0], trange[1], /replace
+  undefine, d, d2, dl, lim
   
-  tname = tnames('mvn_swi*_en_*', ntplot)
-  IF ntplot GT 0 THEN options, tname, ztitle='EFlux', ytitle='SWIA', ysubtitle='Energy [eV]', ytickformat='mvn_ql_pfp_tplot_exponent'
-  undefine, tname, ntplot
-  store_data, 'mvn_swis_decom_flag', /delete, verbose=verbose
+  options, tname, ztitle='EFlux', ytitle='SWIA', ysubtitle='Energy [eV]', ytickformat='mvn_ql_pfp_tplot_exponent'
+  undefine, tname, ntplot, clip
 
   ; STATIC
   mvn_sta_l2_load, trange=trange, sta_apid=['c0', 'c6'] 
@@ -282,15 +287,18 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   undefine, septn, tname, n, m
 
   ; MAG 
+  mvn_mag_load, trange=trange
   status = EXECUTE("spice_vector_rotate_tplot, 'mvn_B_1sec', 'MAVEN_MSO', trange=trange, verbose=verbose")
   IF status EQ 1 THEN BEGIN 
      store_data, 'mvn_B_1sec', /delete, verbose=verbose
      store_data, 'mvn_B_1sec_MAVEN_MSO', newname='mvn_mag_l1_bmso_1sec'
      bvec = 'mvn_mag_l1_bmso_1sec'
+     frame = 'MSO'
      options, bvec, ysubtitle='Bmso [nT]', def
   ENDIF ELSE BEGIN
      store_data, 'mvn_B_1sec', newname='mvn_mag_l1_bpl_1sec'
      bvec = 'mvn_mag_l1_bpl_1sec'
+     frame = 'PL'
      options, bvec, ysubtitle='Bpl [nT]', /def
   ENDELSE 
   options, bvec, labels=['Bx', 'By', 'Bz'], colors='bgr', $
@@ -301,7 +309,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
               data={x: b.x, y: SQRT(TOTAL(b.y*b.y, 2))}, $
               dlimits={ytitle: 'MAG', ysubtitle: '|B| [nT]'}
   
-  mvn_model_bcrust_load, trange, verbose=verbose
+  mvn_model_bcrust_load, trange, verbose=verbose, calc=bflg
   store_data, 'mvn_mag_bamp', data=['mvn_mag_l1_bamp_1sec', 'mvn_mod_bcrust_amp'], $
               dlimits={labels: ['Bobs.', 'Bmod.'], colors: [0, 2], labflag: 1, ytitle: 'MAG', ysubtitle: '|B| [nT]'} 
   bmax = MAX(SQRT(TOTAL(b.y*b.y, 2)), /nan)
@@ -325,17 +333,58 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   ;                    y2color: 2, y2title: 'Theta [deg]', constant: 180.}
 
   store_data, 'mvn_mag_l1_bang_1sec', data={x: b.x, y: [ [bthe*!RADEG + 180.], [bphi*!RADEG]]}, $
-              dlimits={psym: 3, colors: [2, 0], ytitle: 'MAG', ysubtitle: 'Angle [deg]', $
+              dlimits={psym: 3, colors: [2, 0], ytitle: 'MAG (' + frame + ')', ysubtitle: 'Angle [deg]', $
                        yticks: 4, yminor: 3, labels: ['Bthe + 180.', 'Bphi'], labflag: 1, constant: 180}
   ylim, 'mvn_mag_l1_bang_1sec', 0., 360., 0., /def
   undefine, bphi, bthe, b
 
   ; Ephemeris
-  maven_orbit_tplot, /current, /load, timecrop=[-1.d0, 1.d0]*oneday + trange ; +/- 1 day is buffer.
+  maven_orbit_tplot, /current, /load, timecrop=[-2.d0, 2.d0]*oneday + trange ; +/- 2 day is buffer.
   options, 'alt2', panel_size=2./3., ytitle='Alt. [km]'
   
   IF keyword_set(phobos) THEN $
      mvn_phobos_tplot, trange=trange
+
+  IF keyword_set(bbar) THEN BEGIN
+     status = EXECUTE("swica = SCOPE_VARFETCH('swica', common='mvn_swia_data')")
+     IF status EQ 1 THEN BEGIN
+        btime = swica.time_unix + 4.d0 * swica.num_accum/2.d0
+        bdata = FLTARR(N_ELEMENTS(btime))
+        bdata[*] = 1.
+        ; Forward survey
+        dt = btime[1:N_ELEMENTS(btime)-1] - btime[0:N_ELEMENTS(btime)-2]
+        gap = FLOAT(ROUND(MIN(dt))) 
+        idx = WHERE(dt GT 600., ndat)
+        IF ndat GT 0 THEN BEGIN
+           btime = [btime, btime[idx] + gap/2.d0]
+           bdata = [bdata, REPLICATE(nan, ndat)]
+           idx = SORT(btime)
+           btime = btime[idx]
+           bdata = bdata[idx]
+        ENDIF 
+        undefine, idx, ndat, dt
+        ; Backward survey
+        dt = ABS((REVERSE(btime))[1:N_ELEMENTS(btime)-1] - (REVERSE(btime))[0:N_ELEMENTS(btime)-2])
+        idx = WHERE(dt GT 600., ndat)
+        IF ndat GT 0 THEN BEGIN
+           btime = [btime, (REVERSE(btime))[idx] - gap/2.d0]
+           bdata = [bdata, REPLICATE(nan, ndat)]
+           idx = SORT(btime)
+           btime = btime[idx]
+           bdata = bdata[idx]
+        ENDIF 
+        undefine, idx, ndat, dt
+     ENDIF ELSE BEGIN
+        btime = trange
+        bdata = [nan, nan]
+     ENDELSE 
+     store_data, 'burst_flag', data={x: btime, y: [ [bdata], [bdata] ], v: [0, 1]}, $
+                 dlim={ytitle: 'BST', yticks: 1, yminor: 1, ytickname: [' ', ' '], spec: 1, $
+                       no_color_scale: 1, panel_size: 0.2, xticklen: 0.5}
+;     IF status EQ 1 THEN tdegap, 'mvn_arcflag', /overwrite, dt=600.0
+     options, 'burst_flag', bottom=0, top=6 
+     zlim, 'burst_flag', 0, 1, /def
+  ENDIF 
   
   tplot_options, opt=topt 
   IF keyword_set(tplot) THEN BEGIN
@@ -343,6 +392,8 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
         ptname = ['mvn_sep1_B-O_Eflux_Energy', 'mvn_sep2_B-O_Eflux_Energy', $
                   'mvn_sta_c0_e', 'mvn_sta_c6_m', 'mvn_swis_en_eflux', $
                   'mvn_swe_etspec', 'mvn_mag_bamp', bvec, 'alt2']
+
+     IF keyword_set(bbar) THEN ptname = [ptname, 'burst_flag'] 
      tplot, ptname, wi=wnum 
   ENDIF 
   RETURN

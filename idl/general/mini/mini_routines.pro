@@ -27,9 +27,9 @@
 ;      however
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-10 17:13:46 -0700 (Fri, 10 May 2013) $
-; $LastChangedRevision: 12336 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-29 13:24:31 -0700 (Wed, 29 Apr 2015) $
+; $LastChangedRevision: 17451 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/mini_routines.pro $
 ;- 
 
@@ -707,9 +707,13 @@ function mini_var,arg1
   if is_tvar_type(arg1) then begin
   
     if obj_valid(!mini_globals.gui_data_obj) then begin
-      obj = !mini_globals.gui_data_obj->getTvarObject(arg1.value)
+      ;export variable to tplot
+      tname = !mini_globals.gui_data_obj->getTvarData(arg1.value)
       
-      if ~obj_valid(obj) then begin
+      ;get object to store GUI-specific metadata
+      obj = !mini_globals.gui_data_obj->getMetadataObject(arg1.value)
+
+      if ~obj_valid(obj) or tname eq '' then begin
         message,'error reading gui variable: ' + arg1.value
       endif
       

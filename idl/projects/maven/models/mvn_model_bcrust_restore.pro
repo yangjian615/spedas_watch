@@ -33,8 +33,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-21 16:14:36 -0800 (Sat, 21 Feb 2015) $
-; $LastChangedRevision: 17021 $
+; $LastChangedDate: 2015-04-29 12:56:13 -0700 (Wed, 29 Apr 2015) $
+; $LastChangedRevision: 17449 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/models/mvn_model_bcrust_restore.pro $
 ;
 ;-
@@ -78,7 +78,7 @@ PRO mvn_model_bcrust_restore, var, orbit=orbit, silent=sl, verbose=vb, status=st
   
   idx = WHERE(file NE '', ndat)
   IF ndat EQ 0 THEN BEGIN
-     dprint, 'There has not been any tplot save files yet.'
+     dprint, 'No tplot save files found.'
      status = 0
      RETURN
   ENDIF

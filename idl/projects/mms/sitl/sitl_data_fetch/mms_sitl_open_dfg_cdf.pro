@@ -11,7 +11,6 @@ CDF_str = cdf_load_vars(filename, varformat=varformat, var_type=var_type, $
 ; Get time data
   
 times_TT_nanosec = *cdf_str.vars[0].dataptr
-cdf_leap_second_init
 times_unix = time_double(times_TT_nanosec, /tt2000)
 
   

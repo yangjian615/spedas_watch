@@ -12,7 +12,6 @@ function mms_sitl_open_sdp_dce_sitl_cdf, filename, coord
   ; Get time data
   
   times_TT_nanosec = *cdf_str.vars[0].dataptr
-  cdf_leap_second_init
   times_unix = time_double(times_TT_nanosec, /tt2000)
   
   if coord eq 'pgse' then begin
