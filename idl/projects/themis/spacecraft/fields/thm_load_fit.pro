@@ -42,9 +42,9 @@
 ;  J. McFadden passed through the NO_CAL kw to THM_CAL_FIT.PRO, WMF, 6/27/2008.
 ;Notes:
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-01-15 11:08:25 -0800 (Wed, 15 Jan 2014) $
-; $LastChangedRevision: 13904 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fit.pro $
 ;-
 
@@ -123,7 +123,7 @@ pro thm_load_fit,probe=probe, datatype=datatype, trange=trange, $
   if not keyword_set(datatype) then begin
     datatype = valid_datatypes
   endif else begin
-    datatype = thm_check_valid_name(strlowcase(datatype),valid_datatypes,/include_all,$
+    datatype = ssl_check_valid_name(strlowcase(datatype),valid_datatypes,/include_all,$
       invalid=msg_dt, type='data type')
   endelse
   
@@ -172,7 +172,7 @@ pro thm_load_fit,probe=probe, datatype=datatype, trange=trange, $
       If(level[0] Ne '') Then lvl = strcompress(strlowcase(level), /remove_all)
     endif else lvl = 'l'+strcompress(string(fix(level)), /remove_all)
   endif
-  lvls = thm_check_valid_name(strlowcase(lvl), vlevels)
+  lvls = ssl_check_valid_name(strlowcase(lvl), vlevels)
   if not keyword_set(lvls) then return
   if n_elements(lvls) gt 1 then begin
     dprint, dlevel = -1, 'only one value may be specified for level'

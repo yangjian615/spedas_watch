@@ -40,9 +40,9 @@
 ;   thg_load_fbk,/get_suppport_data,probe=['a', 'b']
 ;Notes:
 ; Added the new frequency center values, 24-oct-2008, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-01-15 11:08:25 -0800 (Wed, 15 Jan 2014) $
-; $LastChangedRevision: 13904 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fbk.pro $
 ;-
 
@@ -177,7 +177,7 @@ pro thm_load_fbk,probe=probe, $
   if not keyword_set(datatype) then begin
     datatype = valid_datatypes
   endif else begin
-    datatype = thm_check_valid_name(strlowcase(datatype),valid_datatypes,/include_all, $
+    datatype = ssl_check_valid_name(strlowcase(datatype),valid_datatypes,/include_all, $
                                     invalid=msg_dt, type='data type')
   endelse
   
@@ -187,7 +187,7 @@ pro thm_load_fbk,probe=probe, $
   if not keyword_set(myprobe) then begin
     myprobe = strsplit(vsnames,' ',/extract)
   endif else begin
-    myprobe = thm_check_valid_name(strlowcase(myprobe),strsplit(vsnames,' ',/extract), $
+    myprobe = ssl_check_valid_name(strlowcase(myprobe),strsplit(vsnames,' ',/extract), $
                                 /include_all, invalid=msg_sname, type='probe')
   endelse
   probe=myprobe

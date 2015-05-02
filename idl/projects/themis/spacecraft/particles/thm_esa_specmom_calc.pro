@@ -18,7 +18,7 @@ pro thm_esa_specmom_calc,date=date,dur=dur,probes=probes,mtypes=mtypes,species=s
 if keyword_set(probes) then sc=probes  ; quick switch of variable name
 vsc = ['a','b','c','d','e']
 if not keyword_set(sc) then sc=vsc
-sc=thm_check_valid_name(strtrim(strlowcase(sc),2),vsc,/include_all)
+sc=ssl_check_valid_name(strtrim(strlowcase(sc),2),vsc,/include_all)
 if sc(0) eq 'all' then sc=vsc
 if sc(0) eq '' then return
 
@@ -26,7 +26,7 @@ vmtyp=['spe','den','vel','tem']
 if not keyword_set(mtypes) then mtyp=vmtyp $
    else begin
         if size(mtypes,/dimen) eq 0 then mtypes=strsplit(mtypes,' ',/extract)
-        mtyp=thm_check_valid_name(strmid(strtrim(strlowcase(mtypes),2),0,3),vmtyp,/include_all)
+        mtyp=ssl_check_valid_name(strmid(strtrim(strlowcase(mtypes),2),0,3),vmtyp,/include_all)
         end
 if mtyp(0) eq 'all' then mtyp=vmtyp
 if mtyp(0) eq '' then return
@@ -37,7 +37,7 @@ if not keyword_set(distribution_types) then typ='f' $
         if size(distribution_types,/dimen) eq 0 then distribution_types=strsplit(distribution_types,' ',/extract)
         if total(strmatch(strtrim(strlowcase(distribution_types),2),'all')) gt 0 then typ='all' $
            else typ=strmid(strtrim(strlowcase(distribution_types),2),0,1)
-        typ=thm_check_valid_name(typ,vdtyp,/include_all)
+        typ=ssl_check_valid_name(typ,vdtyp,/include_all)
         endelse
 if typ(0) eq '' then return
 
@@ -47,7 +47,7 @@ if not keyword_set(species) then spe=vspe $
         if size(species,/dimen) eq 0 then species=strsplit(species,' ',/extract)
         if total(strmatch(strtrim(strlowcase(species),2),'all')) gt 0 then spe='all' $
            else spe=strmid(strtrim(strlowcase(species),2),0,1)
-        spe=thm_check_valid_name(spe,vspe,/include_all)
+        spe=ssl_check_valid_name(spe,vspe,/include_all)
         endelse
 if spe(0) eq '' then return
 

@@ -120,8 +120,8 @@
 ;   thm_load_slp,datatype='sun_pos',trange=['2007-01-22/00:00:00','2007-01-24/00:00:00']
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-; $LastChangedRevision: 17433 $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_load_slp.pro $
 ;-
 function thm_load_slp_relpath,trange=trange
@@ -172,7 +172,7 @@ pro thm_load_slp,datatype = datatype, trange = trange, $
     datatype = 'all'
   endif
   
-  dt = strlowcase(thm_check_valid_name(datatype,vdatatypes,/include_all,/ignore_case))
+  dt = strlowcase(ssl_check_valid_name(datatype,vdatatypes,/include_all,/ignore_case))
   
   if ~keyword_set(dt) then return
   

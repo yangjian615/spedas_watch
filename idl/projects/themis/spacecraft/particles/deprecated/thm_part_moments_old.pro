@@ -111,7 +111,7 @@ If(keyword_set(erange)) Then Begin ;error checking
   Endif
   erange_set = erange
 Endif Else erange_set = -1
-;probea = thm_check_valid_name(size(/type,probes) eq 7 ? probes : '*',vprobes)
+;probea = ssl_check_valid_name(size(/type,probes) eq 7 ? probes : '*',vprobes)
 
 if n_elements(data_type) gt 0 && n_elements(instruments) eq 0 then begin
   instruments=data_type

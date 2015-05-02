@@ -109,9 +109,9 @@
 ;                    called from the command line. Re-tabbed, to find
 ;                    an 'End of file encountered...' bug.
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-06-27 12:48:02 -0700 (Fri, 27 Jun 2014) $
-; $LastChangedRevision: 15455 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_scm.pro $
 ;-
 pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
@@ -302,7 +302,7 @@ pro thm_load_scm, probe = probe, datatype = datatype, trange = trange, $
     endif
     if keyword_set(coord) then begin
       thm_cotrans, out_coord = vcoord, /valid_names, verbose = 0
-      crd = thm_check_valid_name(strlowcase(coord), vcoord)
+      crd = ssl_check_valid_name(strlowcase(coord), vcoord)
       if not keyword_set(crd) then begin
         dprint,  '*** invalid coord specification'
         return

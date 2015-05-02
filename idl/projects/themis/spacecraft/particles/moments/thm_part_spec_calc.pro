@@ -2,7 +2,7 @@
 ; procedure: thm_part_spec_calc
 ; Purpose: Calculates moments and spectra for themis particle distributions.
 ; Author: Davin Larson 2007
-; $Id: thm_part_spec_calc.pro 7232 2010-02-09 01:11:58Z jimm $
+; $Id: thm_part_spec_calc.pro 17458 2015-04-30 22:28:49Z aaflores $
 ;-
 
 
@@ -41,7 +41,7 @@ if keyword_set(usage) then begin
    return
 endif
 
-;probea = thm_check_valid_name(size(/type,probes) eq 7 ? probes : '*',vprobes)
+;probea = ssl_check_valid_name(size(/type,probes) eq 7 ? probes : '*',vprobes)
 
 probes_a       = strfilter(vprobes,size(/type,probes) eq 7 ? probes : defprobes,/fold_case,delimiter=' ',count=nprobes)
 instruments_a  = strfilter(vinstruments,size(/type,instruments)  eq 7 ? instruments  : definstruments,/fold_case,delimiter=' ',count=ninstruments)

@@ -48,8 +48,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-04-29 23:59:26 -0700 (Wed, 29 Apr 2015) $
-; $LastChangedRevision: 17454 $
+; $LastChangedDate: 2015-04-30 17:46:37 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17461 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -130,32 +130,43 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   ; SWEA
   mvn_swe_load_l2, trange, /spec
   IF (SIZE(mvn_swe_engy, /type) NE 8) THEN BEGIN
-     dprint, 'No SWEA data found.'
-     RETURN
-  ENDIF
-  vswe = swe_swp[*, 0]
-  emin = MIN(vswe, max=emax)
-
-  mvn_swe_convert_units, mvn_swe_engy, 'EFLUX'
-  xswe = mvn_swe_engy.time
-  yswe = TRANSPOSE(mvn_swe_engy.data)
-
-  idx = WHERE(xswe GE trange[0] AND xswe LE trange[1], nidx)
-  IF nidx GT 0 THEN BEGIN
-     xswe = xswe[idx]
-     yswe = yswe[idx, *]
+     dprint, 'No SWEA data found.', verbose=verbose, dlevel=2
+     ;; RETURN
+     no_swe:
+     emin = 3.
+     emax = 4627.5
+     vswe = [emin, emax]
+     xswe = trange
+     yswe = REFORM(REPLICATE(nan, 4), [2, 2])
+     noswe = 1
   ENDIF ELSE BEGIN
-     dprint, 'There is no data in the specified time interval.'
-     RETURN
-  ENDELSE
-  undefine, idx, nidx
+     vswe = swe_swp[*, 0]
+     emin = MIN(vswe, max=emax)
 
+     mvn_swe_convert_units, mvn_swe_engy, 'EFLUX'
+     xswe = mvn_swe_engy.time
+     yswe = TRANSPOSE(mvn_swe_engy.data)
+     
+     idx = WHERE(xswe GE trange[0] AND xswe LE trange[1], nidx)
+     IF nidx GT 0 THEN BEGIN
+        xswe = xswe[idx]
+        yswe = yswe[idx, *]
+        noswe = 0
+     ENDIF ELSE BEGIN
+        dprint, 'There is no data in the specified time interval.', dlevel=2, verbose=verbose
+        GOTO, no_swe
+     ENDELSE
+     undefine, idx, nidx
+  ENDELSE 
   store_data, 'mvn_swe_etspec', data={x:xswe, y:yswe, v:vswe}, $
               dlimits={spec: 1, ytitle: 'SWEA', ysubtitle: 'Energy [eV]', yticks: 0, $
                        yminor: 0, y_no_interp: 1, x_no_interp: 1, $
                        ztitle: 'EFlux', datagap: 300}, limit={ytickformat: 'mvn_ql_pfp_tplot_exponent'}
   ylim, 'mvn_swe_etspec', emin, emax, 1, /def
-  zlim, 'mvn_swe_etspec', 0, 0, 1, /def
+  IF (noswe) THEN BEGIN
+     zlim, 'mvn_swe_etspec', 1.d4, 1.d9, 1, /def
+     options, 'mvn_swe_etspec', bottom=7, top=254, no_color_scale=0
+  ENDIF ELSE zlim, 'mvn_swe_etspec', 0, 0, 1, /def
   undefine, xswe, yswe, vswe
   undefine, emin, emax
   IF keyword_set(pad) THEN mvn_swe_pad_restore, trange 
@@ -170,51 +181,66 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   undefine, trange_full
   tname = tnames('mvn_swis_en_eflux', ntplot)
   IF ntplot EQ 0 THEN BEGIN
-     dprint, 'There is no SWIA tplot variables.'
-     RETURN
+     dprint, 'There is no SWIA tplot variables.', dlevel=2, verbose=verbose
+     ;; RETURN
+     tname = 'mvn_swis_en_flux'
+     store_data, tname, data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [25.9375, 23244.8]}, $
+                 dlim={datagap: [180L], ylog: [1L], zlog: [1L], spec: [1L], no_interp: [1L], $
+                       yrange: [4L, 30000], ystyle: [1L], zrange: [1.e4, 1.e8]}
   ENDIF ELSE BEGIN
      aname = tnames('mvn_swi*')
      idx = WHERE(aname NE tname)
      store_data, aname[idx], /delete, verbose=verbose
      undefine, aname, idx
-  ENDELSE
 
-  get_data, tname, data=d, dlim=dl, lim=lim
-  extract_tags, d2, d, tags=['x', 'y', 'v']
-  extract_tags, dl, d, except=['x', 'y', 'v']
+
+     get_data, tname, data=d, dlim=dl, lim=lim
+     extract_tags, d2, d, tags=['x', 'y', 'v']
+     extract_tags, dl, d, except=['x', 'y', 'v']
      
-  store_data, tname, data=d2, dlim=dl, lim=lim
-  IF (clip) THEN time_clip, tname, trange[0], trange[1], /replace
-  undefine, d, d2, dl, lim
-  
-  options, tname, ztitle='EFlux', ytitle='SWIA', ysubtitle='Energy [eV]', ytickformat='mvn_ql_pfp_tplot_exponent'
+     store_data, tname, data=d2, dlim=dl, lim=lim
+     IF (clip) THEN time_clip, tname, trange[0], trange[1], /replace
+     undefine, d, d2, dl, lim
+  ENDELSE 
+  options, tname, ztitle='EFlux', ytitle='SWIA', ysubtitle='Energy [eV]', ytickformat='mvn_ql_pfp_tplot_exponent', $
+           bottom=7, top=254, no_color_scale=0
   undefine, tname, ntplot, clip
 
   ; STATIC
   mvn_sta_l2_load, trange=trange, sta_apid=['c0', 'c6'] 
   mvn_sta_l2_tplot
   tname = tnames('mvn_sta*', ntplot, index=n)
-  statn = 'mvn_sta_c' + ['0_E', '0_H_E', '6_M']
-  statn = tnames(statn, index=m)
+  statn0 = 'mvn_sta_c' + ['0_E', '0_H_E', '6_M']
+  statn = tnames(statn0, index=m)
 
   IF ntplot EQ 0 THEN BEGIN
-     dprint, 'There is no STATIC tplot variables.'
-     RETURN
-  ENDIF
-  state = 'idx = WHERE('
-  FOR i=0, N_ELEMENTS(m)-1 DO BEGIN
-     state += '(n eq m[' + string(i, '(I0)') + '])'
-     IF i NE N_ELEMENTS(m)-1 THEN state += ' OR '
-  ENDFOR 
-  undefine, i
-  state += ', nidx, complement=jdx, ncomplement=njdx)'
+     dprint, 'There is no STATIC tplot variables.', dlevel=2, verbose=verbose
+     ;; RETURN
+     store_data, statn0[0], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [0.1046, 31380.]}, $
+                 dlim={yrange: [0.1, 4.e4], ystyle: 1, ylog: 1, zrange: [1.e3, 1.e9], zstyle: 1, zlog: 1, $
+                       datagap: 7., spec: 1}
+     store_data, statn0[1], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [0.1046, 31380.]}, $
+                 dlim={yrange: [0.1, 4.e4], ystyle: 1, ylog: 1, zrange: [1.e3, 1.e9], zstyle: 1, zlog: 1, $
+                       datagap: 7., spec: 1}
+     store_data, statn0[2], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [0.1046, 31380.]}, $
+                 dlim={yrange: [0.5, 100.], ystyle: 1, ylog: 1, zrange: [1.e3, 1.e9], zstyle: 1, zlog: 1, $
+                       datagap: 7., spec: 1}  
+     ;; options, statn0, bottom=7, top=254
+  ENDIF ELSE BEGIN
+     state = 'idx = WHERE('
+     FOR i=0, N_ELEMENTS(m)-1 DO BEGIN
+        state += '(n eq m[' + string(i, '(I0)') + '])'
+        IF i NE N_ELEMENTS(m)-1 THEN state += ' OR '
+     ENDFOR 
+     undefine, i
+     state += ', nidx, complement=jdx, ncomplement=njdx)'
 
-  status = EXECUTE(state)
-  IF status EQ 1 THEN IF njdx GT 0 THEN store_data, n[jdx], /delete, verbose=verbose
-  undefine, idx, jdx, nidx, njdx
-  undefine, state, status
-  undefine, statn, tname, n, m
-  
+     status = EXECUTE(state)
+     IF status EQ 1 THEN IF njdx GT 0 THEN store_data, n[jdx], /delete, verbose=verbose
+     undefine, idx, jdx, nidx, njdx
+     undefine, state, status
+  ENDELSE 
+  undefine, statn0, statn, tname, n, m
   tname = tnames('mvn_sta*', ntplot)
   options, tname, ytickformat='mvn_ql_pfp_tplot_exponent', ztitle='EFlux'
   options, tname[0], ysubtitle='Energy [eV]' 
@@ -248,25 +274,47 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   napid = N_ELEMENTS(apid)
   FOR i=0, napid-1 DO BEGIN
      idx = WHERE(product EQ apid[i], cnt)
-     IF cnt GT 0 THEN options, tname[idx], ytitle='STA ' + STRUPCASE(apid[i])
+     IF cnt GT 0 THEN options, tname[idx], ytitle='STA ' + STRUPCASE(apid[i]), $
+                               bottom=7, top=254, no_color_scale=0
      undefine, idx, cnt
   ENDFOR
   undefine, apid, napid
   undefine, tname, suffix, product
 
   ; SEP
-  mvn_sep_load, trange=trange
+  ; I might change tplot variables used as a quicklook, 
+  ; because the latest procedure to load SEP data creates
+  ; a lot of new tplot variables.                              
+  status = EXECUTE("mvn_sep_load, trange=trange")
   store_data, 'mvn_pfdpu*', /delete, verbose=verbose
+  store_data, 'mvn_SEP' + ['1F', '1R', '2F', '2R'] + '*', /delete, verbose=verbose
   store_data, ['APIDS', 'mvn_DPU_TEMP', 'mvn_SEPS_TEMP', 'mvn_pfp_TEMPS', $
                'mvn_SEPS_hkp_VCMD_CNTR', 'mvn_SEPS_hkp_MEM_CHECKSUM',     $
                'mvn_SEPS_svy_ATT', 'mvn_SEPS_svy_COUNTS_TOTAL', 'mvn_SEPS_svy_ALLTID', $
-               'mvn_SEPS_QL'], /delete, verbose=verbose
+               'mvn_SEPS_QL', 'mvn_SEP*_QUAL_FLAG'], /delete, verbose=verbose
+
+  IF status EQ 0 THEN BEGIN
+     septn = 'mvn_sep' + ['1_B-O', '2_B-O', '1_A-F', '2_A-F'] + '_Eflux_Energy'
+     store_data, septn[2], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [4.3399, 6813.39]}, $
+                 dlim={yrange: [4.3399, 6813.39], ystyle: 1, ylog: 1, zrange: [1., 1.e5], zstyle: 1, zlog: 1, $
+                       spec: 1, ztitle: 'keV/s/ster/keV'}     
+     store_data, septn[0], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [4.25304, 6677.02]}, $
+                 dlim={yrange: [4.25304, 6677.02], ystyle: 1, ylog: 1, zrange: [1., 1.e5], zstyle: 1, zlog: 1, $
+                       spec: 1, ztitle: 'keV/s/ster/keV'}     
+     store_data, septn[3], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [4.06606, 6383.48]}, $
+                 dlim={yrange: [4.06606, 6383.48], ystyle: 1, ylog: 1, zrange: [1., 1.e5], zstyle: 1, zlog: 1, $
+                       spec: 1, ztitle: 'keV/s/ster/keV'}     
+     store_data, septn[1], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [4.13003, 6483.91]}, $
+                 dlim={yrange: [4.13003, 6483.91], ystyle: 1, ylog: 1, zrange: [1., 1.e5], zstyle: 1, zlog: 1, $
+                       spec: 1, ztitle: 'keV/s/ster/keV'}
+     options, septn, bottom=7, top=254
+  ENDIF 
 
   options, 'mvn_sep1_B-O_Eflux_Energy', ytitle='SEP 1F!CIon', ysubtitle='Energy [keV]', /def
   options, 'mvn_sep2_B-O_Eflux_Energy', ytitle='SEP 2F!CIon', ysubtitle='Energy [keV]', /def
   options, 'mvn_sep1_A-F_Eflux_Energy', ytitle='SEP 1F!Ce!E-!N', ysubtitle='Energy [keV]', /def
   options, 'mvn_sep2_A-F_Eflux_Energy', ytitle='SEP 2F!Ce!E-!N', ysubtitle='Energy [keV]', /def
-
+  
   tname = tnames('mvn_sep*', index=n)
   septn = 'mvn_sep' + ['1_B-O', '2_B-O', '1_A-F', '2_A-F'] + '_Eflux_Energy'
   septn = tnames(septn, index=m)
@@ -288,19 +336,27 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
 
   ; MAG 
   mvn_mag_load, trange=trange
-  status = EXECUTE("spice_vector_rotate_tplot, 'mvn_B_1sec', 'MAVEN_MSO', trange=trange, verbose=verbose")
-  IF status EQ 1 THEN BEGIN 
-     store_data, 'mvn_B_1sec', /delete, verbose=verbose
-     store_data, 'mvn_B_1sec_MAVEN_MSO', newname='mvn_mag_l1_bmso_1sec'
+  tname = tnames('mvn_B*', ntplot)
+  IF ntplot GT 0 THEN BEGIN
+     status = EXECUTE("spice_vector_rotate_tplot, 'mvn_B_1sec', 'MAVEN_MSO', trange=trange, verbose=verbose")
+     IF status EQ 1 THEN BEGIN 
+        store_data, 'mvn_B_1sec', /delete, verbose=verbose
+        store_data, 'mvn_B_1sec_MAVEN_MSO', newname='mvn_mag_l1_bmso_1sec'
+        bvec = 'mvn_mag_l1_bmso_1sec'
+        frame = 'MSO'
+        options, bvec, ysubtitle='Bmso [nT]', def
+     ENDIF ELSE BEGIN
+        store_data, 'mvn_B_1sec', newname='mvn_mag_l1_bpl_1sec'
+        bvec = 'mvn_mag_l1_bpl_1sec'
+        frame = 'PL'
+        options, bvec, ysubtitle='Bpl [nT]', /def
+     ENDELSE 
+  ENDIF ELSE BEGIN
      bvec = 'mvn_mag_l1_bmso_1sec'
      frame = 'MSO'
-     options, bvec, ysubtitle='Bmso [nT]', def
-  ENDIF ELSE BEGIN
-     store_data, 'mvn_B_1sec', newname='mvn_mag_l1_bpl_1sec'
-     bvec = 'mvn_mag_l1_bpl_1sec'
-     frame = 'PL'
-     options, bvec, ysubtitle='Bpl [nT]', /def
+     store_data, bvec, data={x: trange, y: REFORM(REPLICATE(nan, 6), [2, 3])}, dlim={ysubtitle: 'Bmso [nT]'}
   ENDELSE 
+  undefine, tname, ntplot
   options, bvec, labels=['Bx', 'By', 'Bz'], colors='bgr', $
            labflag=1, constant=0, ytitle='MAG', /def
   get_data, bvec, data=b
@@ -347,7 +403,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
 
   IF keyword_set(bbar) THEN BEGIN
      status = EXECUTE("swica = SCOPE_VARFETCH('swica', common='mvn_swia_data')")
-     IF status EQ 1 THEN BEGIN
+     IF SIZE(swica, /type) EQ 8 THEN BEGIN
         btime = swica.time_unix + 4.d0 * swica.num_accum/2.d0
         bdata = FLTARR(N_ELEMENTS(btime))
         bdata[*] = 1.
@@ -381,7 +437,6 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      store_data, 'burst_flag', data={x: btime, y: [ [bdata], [bdata] ], v: [0, 1]}, $
                  dlim={ytitle: 'BST', yticks: 1, yminor: 1, ytickname: [' ', ' '], spec: 1, $
                        no_color_scale: 1, panel_size: 0.2, xticklen: 0.5}
-;     IF status EQ 1 THEN tdegap, 'mvn_arcflag', /overwrite, dt=600.0
      options, 'burst_flag', bottom=0, top=6 
      zlim, 'burst_flag', 0, 1, /def
   ENDIF 

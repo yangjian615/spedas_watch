@@ -184,7 +184,7 @@ if n_elements(probematch) eq 1 then if probematch eq 'f' then vprobes = ['f']
 ;probe = strfilter(vprobes, probematch ,delimiter=' ',/string)
 
 if not keyword_set(probematch) then probematch=vprobes
-probe=thm_check_valid_name(strtrim(strlowcase(probematch),2),vprobes,/include_all)
+probe=ssl_check_valid_name(strtrim(strlowcase(probematch),2),vprobes,/include_all)
 
 if probe[0] eq '' then begin
   dprint, "Invalid probes selected.  Valid probes: 'a','b','c','d' or 'e'  (ie, probe='a')"

@@ -60,8 +60,8 @@
 ;
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-; $LastChangedRevision: 17433 $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
@@ -593,7 +593,7 @@ if n_elements(probe) eq 1 then if probe eq 'f' then vprobes=[vprobes,'f']
 
 
 if not keyword_set(probe) then probe=vprobes
-probes = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+probes = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
 
 lvl = thm_valid_input(level,'Level',vinputs=strjoin(vlevels, ' '), $
                       definput=deflevel, format="('l', I1)", verbose=0)

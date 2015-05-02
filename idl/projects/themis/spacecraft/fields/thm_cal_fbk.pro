@@ -31,9 +31,9 @@
 ;--must include raw types in datatype input for calibration to
 ;work properly(hopefully will be fixed post-release)
 ;--support data must be loaded to function properly
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2012-11-20 10:40:28 -0800 (Tue, 20 Nov 2012) $
-; $LastChangedRevision: 11281 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL $
 ;-
 
@@ -64,13 +64,13 @@ endif
 
 ;probe validation
 if n_elements(probe) eq 1 then if probe eq 'f' then vprobes = ['f']
-if not keyword_set(probe) then myprobe = vprobes else myprobe = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+if not keyword_set(probe) then myprobe = vprobes else myprobe = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
 if not keyword_set(myprobe) then return
 if keyword_set(verbose) then dprint,  myprobe
 
 ;datatype validation
   if not keyword_set(datatype) then dts = fbk_valid_names $
-  else dts = thm_check_valid_name(strlowcase(datatype), fbk_valid_names, /include_all)
+  else dts = ssl_check_valid_name(strlowcase(datatype), fbk_valid_names, /include_all)
   if keyword_set(verbose) then printdat, dts, /value, 'Datatypes'
 
 ; If dts is a scalar, convert it to a 1-element array to avoid a problem

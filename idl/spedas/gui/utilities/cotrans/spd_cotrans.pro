@@ -161,7 +161,7 @@ pro spd_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
         end
       endswitch
       'agsm': begin
-        gse2agsm, in_name, out_name, rotation_angle = 4.0, /aGSM2GSE
+        agsm2gse, in_name, out_name, rotation_angle = 4.0
         recursive_in_coord='gse'
         break
       end
@@ -283,8 +283,8 @@ end
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+;$LastChangedRevision: 17458 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/cotrans/spd_cotrans.pro $
 ;
 ;-
@@ -339,7 +339,7 @@ if not keyword_set(out_coord) then begin
   dprint, dlevel=1, 'Must specify out_coord or out_suffix'
   return
 endif else begin
-  out_coord = thm_check_valid_name(strlowcase(out_coord), vcoord)
+  out_coord = ssl_check_valid_name(strlowcase(out_coord), vcoord)
 endelse
 
 if not keyword_set(out_coord) then return
@@ -357,7 +357,7 @@ if ~keyword_set(in_coord) && keyword_set(in_suf) then begin
 endif
 
 if keyword_set(in_coord) then begin
-  in_coord = thm_check_valid_name(strlowcase(in_coord), vcoord)
+  in_coord = ssl_check_valid_name(strlowcase(in_coord), vcoord)
   if not keyword_set(in_coord) then return
   if n_elements(in_coord) gt 1 then begin
     dprint, dlevel=1, 'Can only specify one in_coord'

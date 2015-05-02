@@ -33,9 +33,9 @@
 ; A. Shinbori, 24/01/2014.
 ; 
 ;ACKNOWLEDGEMENT:
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-02-10 16:12:40 -0800 (Mon, 10 Feb 2014) $
-; $LastChangedRevision: 14263 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL $
 ;-
   
@@ -59,7 +59,7 @@ datatype_all = strsplit('dawex misc',' ', /extract)
 
 ;--- check datatypes
 if(not keyword_set(datatype)) then datatype='all'
-datatypes = thm_check_valid_name(datatype, datatype_all, /ignore_case, /include_all)
+datatypes = ssl_check_valid_name(datatype, datatype_all, /ignore_case, /include_all)
 
 print, datatypes
 
@@ -71,7 +71,7 @@ site_all = strsplit('drw gpn ktb ktr sgk srp',' ', /extract)
 
 ;--- check site code
 if (not keyword_set(site)) then site='all'
-site_code = thm_check_valid_name(site, site_all, /ignore_case, /include_all)
+site_code = ssl_check_valid_name(site, site_all, /ignore_case, /include_all)
 
 print, site_code
                  

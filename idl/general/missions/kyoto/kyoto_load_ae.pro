@@ -122,7 +122,7 @@ if ~keyword_set(datatype) then datatype='ae'
 ;vns=['ae','al','ao','au','ax']
 ;if size(datatype,/type) eq 7 then begin
 ;stop
-;  datatype=thm_check_valid_name(datatype,vns,/include_all)
+;  datatype=ssl_check_valid_name(datatype,vns,/include_all)
 ;stop
 ;  if datatype[0] eq '' then return
 ;endif else begin

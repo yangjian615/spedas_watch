@@ -88,7 +88,7 @@ vsnames_all = strsplit(vsnames, ' ', /extract)
 
 ; validate sites
 if(keyword_set(site)) then site_in = site else site_in = 'all'
-sites = thm_check_valid_name(site_in, vsnames_all, $
+sites = ssl_check_valid_name(site_in, vsnames_all, $
                              /ignore_case, /include_all)
 if sites[0] eq '' then return
 

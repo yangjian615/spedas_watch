@@ -151,7 +151,7 @@ if keyword_set(usage) then begin
    return
 endif
 
-;probea = thm_check_valid_name(size(/type,probes) eq 7 ? probes : '*',vprobes)
+;probea = ssl_check_valid_name(size(/type,probes) eq 7 ? probes : '*',vprobes)
 
 probes_a       = strfilter(vprobes,size(/type,probes) eq 7 ? probes : defprobes,/fold_case,delimiter=' ',count=nprobes)
 instruments_a  = strfilter(vinstruments,size(/type,instruments)  eq 7 ? instruments  : definstruments,/fold_case,delimiter=' ',count=ninstruments)

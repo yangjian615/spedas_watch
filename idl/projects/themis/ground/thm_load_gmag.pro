@@ -102,9 +102,9 @@
 ;                         rather than by network.
 ; 04-Apr-2012, clrussell, Added units to the data_att structure
 ; 
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-01-02 09:13:31 -0800 (Fri, 02 Jan 2015) $
-; $LastChangedRevision: 16561 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag.pro $
 ;-
 
@@ -298,16 +298,16 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
     site_in = 'all'
   endif
 
-  thm_sites = thm_check_valid_name(site_in, vsnames_arr, /ignore_case, /include_all, /no_warning)
-  green_sites = thm_check_valid_name(site_in, vsnames_g_arr, /ignore_case, /include_all, /no_warning)
-  crsm_sites = thm_check_valid_name(site_in, vsnames_c_arr, /ignore_case, /include_all, /no_warning)
+  thm_sites = ssl_check_valid_name(site_in, vsnames_arr, /ignore_case, /include_all, /no_warning)
+  green_sites = ssl_check_valid_name(site_in, vsnames_g_arr, /ignore_case, /include_all, /no_warning)
+  crsm_sites = ssl_check_valid_name(site_in, vsnames_c_arr, /ignore_case, /include_all, /no_warning)
 
   ; If no sites are valid issue a warning to the user
-  ; Not using the default warning issued by thm_check_valid_name above because that step needs to check green and thm sites separately
+  ; Not using the default warning issued by ssl_check_valid_name above because that step needs to check green and thm sites separately
   ; We don't want to issue a warning unless site is neither thm nor green.
   ; Check should be performed anyway in order to notify the user of partially invalid input later.
   sites_found = is_string(crsm_sites) || is_string(green_sites) || is_string(thm_sites) 
-  tempallsites = thm_check_valid_name(site_in, vsnames_all[sort(vsnames_all)],/ignore_case, $
+  tempallsites = ssl_check_valid_name(site_in, vsnames_all[sort(vsnames_all)],/ignore_case, $
                            /include_all, invalid=msg_site, type='site name', no_warning=sites_found)
   
   If(keyword_set(valid_names)) Then Begin ;need to handle valid_names here too, jmm, 4-may-2009

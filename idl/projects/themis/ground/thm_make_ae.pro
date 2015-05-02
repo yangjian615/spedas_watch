@@ -48,9 +48,9 @@
 ;                   Added max deviation, extra despike of magnetic
 ;                   field prior to index calculation, 4-nov-2013, jmm
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-01-07 08:31:19 -0800 (Tue, 07 Jan 2014) $
-; $LastChangedRevision: 13810 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL $
 ;-
 
@@ -111,7 +111,7 @@ if not keyword_set(no_load) then begin
     thm_load_gmag, site = vsites, /valid_names ;check name validity here:
     x4 = where(strlen(vsites) Eq 4) ;avoid alt greenland sites
     vsites = vsites[x4]
-    site_load = thm_check_valid_name(sites, vsites, /ignore_case, /include_all, /no_warning)
+    site_load = ssl_check_valid_name(sites, vsites, /ignore_case, /include_all, /no_warning)
     If(is_string(site_load) Eq 0) Then Begin
       dprint, 'No Valid sites? '+sites
       Return

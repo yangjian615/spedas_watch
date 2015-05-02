@@ -22,8 +22,8 @@
 ; Written by: M.Yagi, Oct 2, 2012
 ;             PPARC, Tohoku Univ.
 ;
-;   $LastChangedBy: jwl $
-;   $LastChangedDate: 2014-02-10 16:12:40 -0800 (Mon, 10 Feb 2014) $
+;   $LastChangedBy: aaflores $
+;   $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
 ;   $URL:
 ;-
 
@@ -34,14 +34,14 @@ pro iug_load_hf_tohokuu, site=site, parameter=parameter,$
 ;--- site
 site_code_all = strsplit('iit', /extract)
 if(n_elements(site) eq 0) then site='iit'
-site_code=thm_check_valid_name(site, site_code_all, /ignore_case, /include_all)
+site_code=ssl_check_valid_name(site, site_code_all, /ignore_case, /include_all)
 if(site_code[0] eq '') then return
 print, site_code
 
 ;--- parameter
 param_all = strsplit('RH LH', /extract)
 if(n_elements(parameter) eq 0) then parameter='all'
-param = thm_check_valid_name(parameter, param_all, /ignore_case, /include_all)
+param = ssl_check_valid_name(parameter, param_all, /ignore_case, /include_all)
 if(param[0] eq '') then return
 print, param
 

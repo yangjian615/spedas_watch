@@ -33,8 +33,8 @@ PRO thm_sunpulse, time_state,spinpha,spinper,sunpulse,sunp_spinper, $
 ;
 ; Written by K. Bromund, SPSystems/NASA/GSFC, May 2007
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2012-02-13 14:41:42 -0800 (Mon, 13 Feb 2012) $
-;$LastChangedRevision: 9728 $ 
+;$LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+;$LastChangedRevision: 17458 $ 
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_sunpulse.pro $
 ;-
 ; ----------------------------------------------------------------------
@@ -43,7 +43,7 @@ PRO thm_sunpulse, time_state,spinpha,spinper,sunpulse,sunp_spinper, $
      if not keyword_set(suffix) then suff = '' else suff = suffix
      vprobes = ['a','b','c','d','e']
      if not keyword_set(probe) then prb = vprobes $
-     else prb = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+     else prb = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
      if not keyword_set(prb) then begin
         dprint, 'probe keyword required if no positional args present'
         return

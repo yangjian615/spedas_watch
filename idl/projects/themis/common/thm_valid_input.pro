@@ -45,7 +45,7 @@ function thm_valid_input, input, label, vinputs=vinputs, definput=definput, incl
         inp = string(input, format=format)
      endelse
   endif
-  inps = thm_check_valid_name(strlowcase(inp), vinp, include_all=include_all)
+  inps = ssl_check_valid_name(strlowcase(inp), vinp, include_all=include_all)
   if not keyword_set(inps) then begin 
      dprint, dlevel = -1, $
               'Invalid '+strlowcase(label)+ ' input.'

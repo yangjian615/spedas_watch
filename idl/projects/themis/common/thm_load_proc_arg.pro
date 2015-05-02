@@ -70,8 +70,8 @@
 ;  This routine is a utility function used to implement thm_load_??? routines.
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-06-19 16:12:58 -0700 (Tue, 19 Jun 2012) $
-; $LastChangedRevision: 10591 $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_load_proc_arg.pro $
 ;-
 pro thm_load_proc_arg,sname=sname, datatype=datatype, $
@@ -117,7 +117,7 @@ pro thm_load_proc_arg,sname=sname, datatype=datatype, $
       If(level[0] Ne '') Then lvl = strcompress(strlowcase(level), /remove_all)
     endif else lvl = 'l'+strcompress(string(fix(level)), /remove_all)
   endif
-  lvls = thm_check_valid_name(strlowcase(lvl), vlevels)
+  lvls = ssl_check_valid_name(strlowcase(lvl), vlevels)
   if not keyword_set(lvls) then return
   if n_elements(lvls) gt 1 then begin
      dprint, 'only one value may be specified for level'
@@ -169,7 +169,7 @@ pro thm_load_proc_arg,sname=sname, datatype=datatype, $
   if not keyword_set(sname) then begin
     snames = vsnames
   endif else begin
-    snames = thm_check_valid_name(strlowcase(sname), vsnames, /include_all, $
+    snames = ssl_check_valid_name(strlowcase(sname), vsnames, /include_all, $
                                   invalid=msg_snames, type='site or probe')
   endelse
   if not keyword_set(snames) then return
@@ -179,7 +179,7 @@ pro thm_load_proc_arg,sname=sname, datatype=datatype, $
   if not keyword_set(datatype) then begin
     dts = vdatatypes
   endif else begin
-    dts = thm_check_valid_name(strlowcase(datatype), vdatatypes, /include_all, $
+    dts = ssl_check_valid_name(strlowcase(datatype), vdatatypes, /include_all, $
                                invalid=msg_dt, type='data type')
   endelse
   if not keyword_set(dts) then return
@@ -190,7 +190,7 @@ pro thm_load_proc_arg,sname=sname, datatype=datatype, $
      if keyword_set(vtypes) then begin
         if not keyword_set(deftype) then deftype = 'calibrated'
         if not keyword_set(type) then typ = deftype $
-        else typ = thm_check_valid_name(strlowcase(type), vtypes)
+        else typ = ssl_check_valid_name(strlowcase(type), vtypes)
         if not keyword_set(typ) then return
         if keyword_set(vb) then printdat, typ, /value, varname='Type'
      endif else begin
@@ -208,7 +208,7 @@ pro thm_load_proc_arg,sname=sname, datatype=datatype, $
      if not keyword_set(coord) then begin
        crds = vL2coord
      endif else begin
-       crds = thm_check_valid_name(strlowcase(coord), vL2coord, /include_all, $
+       crds = ssl_check_valid_name(strlowcase(coord), vL2coord, /include_all, $
                                    invalid=msg_coord, type='coordinates')
      endelse
      if not keyword_set(crds) then return

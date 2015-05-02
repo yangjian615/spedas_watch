@@ -25,9 +25,9 @@
 ; 27-may-2011, jmm, This version deletes the temporary ESA moments
 ; 5-dec-2014, jmm, uses thm_part_products directly
 ; common blocks to using the dtc_private common block in thm_esa_convert_units
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-04-03 10:45:07 -0700 (Fri, 03 Apr 2015) $
-; $LastChangedRevision: 17235 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_esa_dtc4mom.pro $
 ;-
 
@@ -40,7 +40,7 @@ Pro thm_esa_dtc4mom, probe = probe, trange = trange, noload = noload, $
   thm_init                      ;this program can be called at start
   vprobes = ['a', 'b', 'c', 'd', 'e']
   If(keyword_set(probe)) Then Begin
-     probes = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+     probes = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
      If(is_string(probes) Eq 0) Then Begin
         dprint, 'No valid probe input: '+probe
         Return

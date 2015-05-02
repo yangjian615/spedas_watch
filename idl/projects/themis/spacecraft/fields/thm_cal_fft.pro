@@ -37,9 +37,9 @@
 ;work properly(hopefully will be fixed post-release)
 ;--support data must be loaded to function properly
 ;
-; $LastChangedBy: bsadeghi $
-; $LastChangedDate: 2012-02-22 12:09:24 -0800 (Wed, 22 Feb 2012) $
-; $LastChangedRevision: 9813 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL $
 ;-
 
@@ -78,14 +78,14 @@ pro thm_cal_fft, probe=probe, datatype=datatype,trange=trange, in_suffix = in_su
 ;probe validation
   if n_elements(probe) eq 1 then if probe eq 'f' then vprobes = ['f']
   if not keyword_set(probe) then probe = vprobes $
-  else probe = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+  else probe = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
   if not keyword_set(probe) then return
   if keyword_set(verbose) then printdat, snames, /value
   ;;;;if keyword_set(verbose) then printdat, snames, /value, type_sname+'s'
   
 ;datatype validation
   if not keyword_set(datatype) then dts = valid_datatypes $
-  else dts = thm_check_valid_name(strlowcase(datatype), valid_datatypes, /include_all)
+  else dts = ssl_check_valid_name(strlowcase(datatype), valid_datatypes, /include_all)
 
   if keyword_set(verbose) then printdat, datatype, /value, 'Datatypes'
 

@@ -66,7 +66,7 @@ if n_matches eq 1 then if matches eq '' then n_matches=0
 for i=0,n_elements(n_matches)-1 do begin
 
  probe = strmid(matches[i], 2, 1)
- probes = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+ probes = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
  thx = 'th'+probes[0]
 
  sizephase=size(thx_spinphase)

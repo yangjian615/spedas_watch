@@ -30,9 +30,9 @@
 ;              confusion, also passes out_suffix keyword through to
 ;              thm_esa_dtc4mom
 ; 9-aug-2011, jmm, added in_suffix keyword
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-05-20 16:42:39 -0700 (Tue, 20 May 2014) $
-; $LastChangedRevision: 15178 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_apply_esa_mom_dtc.pro $
 ;-
 Pro thm_apply_esa_mom_dtc,  probe = probe, instrument = instrument, $
@@ -43,7 +43,7 @@ Pro thm_apply_esa_mom_dtc,  probe = probe, instrument = instrument, $
 
   vprobes = ['a', 'b', 'c', 'd', 'e']
   If(keyword_set(probe)) Then Begin
-    probes = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+    probes = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
     If(is_string(probes) Eq 0) Then Begin
       dprint, 'No valid probe input: '+probe
       Return
@@ -51,7 +51,7 @@ Pro thm_apply_esa_mom_dtc,  probe = probe, instrument = instrument, $
   Endif Else probes = vprobes
   vinstruments = ['peim', 'peem']
   If(keyword_set(instrument)) Then Begin
-    instruments = thm_check_valid_name(strlowcase(instrument), $
+    instruments = ssl_check_valid_name(strlowcase(instrument), $
                                        vinstruments, /include_all)
     If(is_string(instruments) Eq 0) Then Begin
       dprint, 'No valid instrument input: '+instrument

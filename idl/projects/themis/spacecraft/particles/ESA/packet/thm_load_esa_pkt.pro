@@ -74,9 +74,9 @@ if not keyword_set(datatype) then datatype='*'
 if ~keyword_set(suffix) then suffix=''
 ;datatypes = strfilter(vdatatypes, datatype ,delimiter=' ',/string)
 
-probes = thm_check_valid_name(probe,vprobes,/include_all,/ignore_case)
+probes = ssl_check_valid_name(probe,vprobes,/include_all,/ignore_case)
 if(probes[0] eq '') then message,'incorrect probe input passed to thm_load_esa_pkt'
-datatypes = thm_check_valid_name(datatype,vdatatypes,/include_all,/ignore_case)
+datatypes = ssl_check_valid_name(datatype,vdatatypes,/include_all,/ignore_case)
 if(datatypes[0] eq '') then message,'incorrect datatype input passed to thm_load_esa_pkt'
 
 

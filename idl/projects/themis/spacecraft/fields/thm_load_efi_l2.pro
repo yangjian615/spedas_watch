@@ -54,8 +54,8 @@
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-; $LastChangedRevision: 17433 $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi_l2.pro $
 ;-
 
@@ -148,7 +148,7 @@ pro thm_load_efi_l2, probe = probe, datatype = datatype, trange = trange, $
     if ~keyword_set(varformat) then begin
       varformat = 'th?_'+dts
       If(keyword_set(coord)) Then Begin
-        crd = thm_check_valid_name(strlowcase(coord), ['dsl', 'gse', 'gsm'], /include_all, $
+        crd = ssl_check_valid_name(strlowcase(coord), ['dsl', 'gse', 'gsm'], /include_all, $
                                    invalid=msg_coord, type='coordinates')
       Endif Else crd = 'dsl'
       For vv = 0, n_elements(crd)-1 Do Begin

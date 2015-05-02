@@ -38,8 +38,8 @@
 ; Update removed to not use thm_load_xxx by DEL
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-; $LastChangedRevision: 17433 $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_load_sst.pro $
 ;-
 
@@ -434,7 +434,7 @@ if size(/type,datatype0) gt 0 then datatype = datatype0 ;keep input vars from be
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 17433 2015-04-27 18:26:29Z aaflores $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 17458 2015-04-30 22:28:49Z aaflores $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']
@@ -453,7 +453,7 @@ if n_elements(probematch) eq 1 then if probematch eq 'f' then vprobes = ['f']
 ;probe = strfilter(vprobes, probematch ,delimiter=' ',/string)
 
 if not keyword_set(probematch) then probematch=vprobes
-probe=thm_check_valid_name(strtrim(strlowcase(probematch),2),vprobes,/include_all, $
+probe=ssl_check_valid_name(strtrim(strlowcase(probematch),2),vprobes,/include_all, $
                            invalid=msg_probe, type='probe')
 
 if probe[0] eq '' then begin

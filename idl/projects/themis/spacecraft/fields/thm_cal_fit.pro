@@ -30,8 +30,8 @@
 ;   -- fixed trouble reading cal files with extra lines at the end,
 ;      jmm, 8-nov-2007
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-; $LastChangedRevision: 17433 $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL $
 ;-
 pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = trange, $
@@ -51,10 +51,10 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
   endif
   if n_elements(probe) eq 1 then if probe eq 'f' then vprobes = ['f']
   if not keyword_set(probe) then probes = vprobes $
-  else probes = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+  else probes = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
   if not keyword_set(probes) then return
   
-  dt_output = thm_check_valid_name(strlowcase(datatype), vdatatypes, /include_all)
+  dt_output = ssl_check_valid_name(strlowcase(datatype), vdatatypes, /include_all)
   
   if not keyword_set(in_suf) then in_suf = ''
   if not keyword_set(out_suf) then out_suf = ''

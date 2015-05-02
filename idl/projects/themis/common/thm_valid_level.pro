@@ -25,7 +25,7 @@ function thm_valid_level, level, vlevels, deflevel
       If(level[0] Ne '') then lvl = strcompress(strlowcase(level), /remove_all)
     endif else lvl = 'l'+strcompress(string(fix(level)), /remove_all)
   endif
-  lvls = thm_check_valid_name(strlowcase(lvl), vlevels)
+  lvls = ssl_check_valid_name(strlowcase(lvl), vlevels)
   if not keyword_set(lvls) then begin 
     dprint, dlevel = -1, $
       'level name invalid' + lvl

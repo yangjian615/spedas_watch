@@ -23,7 +23,14 @@
 ;
 ;OUTPUT:
 ;  none
-;-
+; 
+;HISTORY:
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-04-30 12:05:01 -0700 (Thu, 30 Apr 2015) $
+;$LastChangedRevision: 17455 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_init_load_window.pro $
+;-----------------------------------------------------------------------------------
+
 
 
 ;Helper function, used to guarantee that the tree is up-to-date.  
@@ -32,16 +39,20 @@ pro spd_ui_init_load_update_tree_copy,state
   Compile_Opt idl2, hidden
 
   tab = widget_info(state.tabBase,/tab_current)
-  
-  ;angular spectra panel has no data tree 
-  ;But can change the contents of the tree. So
-  ;tree copy still needs an update when GUI
-  ;closes.
-  if tab eq 1 then tab=0
+ 
+  ; THEMIS derived products tab has no data tree
+  ; but it can change the contents of the tree.
+  ; So we change the tree of the first tab 
 
   if obj_valid(state.treeArray[tab]) then begin
     *state.treeCopyPtr = state.treeArray[tab]->getCopy()
-  endif
+  endif else begin
+    if obj_valid(state.treeArray[0]) then begin
+      *state.treeCopyPtr = state.treeArray[0]->getCopy()
+    endif   
+  endelse
+  
+  
 end
 
 ;restores user selects from previous panel open
@@ -185,18 +196,23 @@ pro spd_ui_init_load_window_event, event
     
     widget_control,event.top,tlb_set_title=state.tabTitleText[tab]
     
-    ;angular spectra panel has no data tree
-    if state.previousTab ne 1 then begin
-      if obj_valid(state.treeArray[state.previousTab]) then begin
-        *state.treeCopyPtr = state.treeArray[state.previousTab]->getCopy()
+    ;THEMIS derived products tab has no data tree
+    if obj_valid(state.treeArray[state.previousTab]) then begin
+      *state.treeCopyPtr = state.treeArray[state.previousTab]->getCopy()
+    endif else begin
+      if obj_valid(state.treeArray[0]) then begin
+        *state.treeCopyPtr = state.treeArray[0]->getCopy()
       endif
-    endif
-      
-    if tab ne 1 then begin
-      if obj_valid(state.treeArray[tab]) then begin
-        state.treeArray[tab]->update,from_copy=*state.treeCopyPtr
+    endelse
+   
+    if obj_valid(state.treeArray[tab]) then begin
+      state.treeArray[tab]->update,from_copy=*state.treeCopyPtr
+    endif else begin
+      if obj_valid(state.treeArray[0]) then begin
+        *state.treeCopyPtr = state.treeArray[0]->getCopy()
       endif
-    endif
+    endelse
+   
   
     state.previousTab = tab
     

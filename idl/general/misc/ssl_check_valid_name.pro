@@ -1,43 +1,52 @@
 ;+
 ;NAME:
-;thm_check_valid_name
+; ssl_check_valid_name
+;
+;
 ;PURPOSE:
-;checks a string or array input against another array and 'all' to
-;find matches.
+; Checks a string or array input against another array to find matches.
+;
+;
 ;CALLING SEQUENCE:
-; ok_names = thm_check_valid_name(names, valid_names)
+; ok_names = ssl_check_valid_name(names, valid_names)
+;
+;
 ;INPUT:
-; names = a string array of possible names for data types, stations,
-; etc...
-; valid_names = those names that will be valid
+; names:  String or string array to be checked
+; valid_names:  String array specifying valid values
+;
+;
 ;OUTPUT:
-; ok_names = the valid data names, if there are none, then the null
-;            string is returned
+; return value: String array containing the subset set of input names determined
+;               to be valid.  A null string is returned if no matches are found.
+;
+;
 ;KEYWORDS:
-; include_all = if set, include 'all' in the possible datanames
-; ignore_case = if set converts all inputs 
-; loose_interpretation = if set, adds wild card '*'s to each end of
-;                        the input names -- used in thm_load_mom, and
-;                        thm_load_esa, where there are many L2
-;                        variables.
-; no_warning = if set, do not issue a warning if the input is invalid
-; invalid = returns string array containing non-valid names or a
+; include_all:  if set, include 'all' in the possible datanames
+; ignore_case: if set converts all inputs 
+; loose_interpretation:  if set, adds wild card '*'s to each end of
+;                        the input names
+; no_warning:  if set, do not issue a warning if the input is invalid
+; invalid: returns string array containing non-valid names or a
 ;           null string returned if all match, if the TYPE keyword
 ;           is set then a full error message will be returned
-; type = input string denoting what type of input is being check,
+; type:  input string denoting what type of input is being check,
 ;        will be used for error reporting 
 ;        (e.g. 'data type', 'probe', ...)
+;
 ;
 ;HISTORY:
 ; 22-jan-2007, jmm, jimm@ssl.berkeley.edu
 ; 11-feb-2007, jmm, Added loose_interpretation keyword
+; 30-apr-2015,  af, Moved to general branch
 ;
-; $LastChangedBy: kenb-mac $
-; $LastChangedDate: 2007-01-26 15:52:34 -0800 (Fri, 26 Jan 2007) $
-; $LastChangedRevision: 241 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/themis/common/thm_check_valid_name.pro $
+;
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:31:31 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17459 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/ssl_check_valid_name.pro $
 ;-
-Function thm_check_valid_name, names_in, valid_names, include_all = include_all, $
+Function ssl_check_valid_name, names_in, valid_names, include_all = include_all, $
                                ignore_case = ignore_case, invalid=invalid, $
                                loose_interpretation = loose_interpretation, $
                                type=type, no_warning = no_warning

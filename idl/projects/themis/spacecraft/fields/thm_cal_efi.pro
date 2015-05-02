@@ -358,7 +358,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
   vprobes = ['a', 'b', 'c', 'd', 'e']
   if n_elements(probe) eq 1 then if probe eq 'f' then vprobes = ['f']
   if not keyword_set(probe) then probes = vprobes else $
-    probes = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+    probes = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
   if not keyword_set(probes) then return
   if keyword_set(vb) then printdat, probes, /value, varname = 'Probes'
 ;Define "dts" (datatypes) variable.  Return if "dts" does not get defined:
@@ -366,7 +366,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
   eprimary = ['eff', 'efp', 'efw']
   if not keyword_set(datatype) then dts = efi_valid_names $
   else begin
-    dts = thm_check_valid_name(strlowcase(datatype), efi_valid_names, /include_all)
+    dts = ssl_check_valid_name(strlowcase(datatype), efi_valid_names, /include_all)
 ;If there are any _0 or _dot0 variables, add the appropriate eff, efw
 ;or efp, if not present
     For i = 0, 2 Do Begin
@@ -384,7 +384,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
         Endif
       Endif
     Endfor
-    dts = thm_check_valid_name(strlowcase(dts), efi_valid_names) ;just reordering
+    dts = ssl_check_valid_name(strlowcase(dts), efi_valid_names) ;just reordering
   endelse
   if not keyword_set(dts) then return
   if keyword_set(vb) then printdat, dts, /value, varname = 'Datatypes'

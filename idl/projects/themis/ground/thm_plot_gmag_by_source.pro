@@ -22,8 +22,8 @@
 ; MODIFICATION HISTORY:
 ;       jmm, 4-Jan-2010, jimm@ssl.berkeley.edu
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-01-26 16:42:13 -0800 (Thu, 26 Jan 2012) $
-; $LastChangedRevision: 9623 $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_plot_gmag_by_source.pro $
 ;-
 
@@ -45,7 +45,7 @@ Pro thm_plot_gmag_by_source, date, duration, no_data_load = no_data_load, $
     If(n_elements(source_in) Eq 1) Then Begin
       sources = strlowcase(strsplit(source_in, ' ', /extract))
     Endif Else sources = strlowcase(strcompress(source_in, /remove_all))
-    sources = thm_check_valid_name(sources, vsource, /include_all)
+    sources = ssl_check_valid_name(sources, vsource, /include_all)
     If(is_string(sources) Eq 0) Then Begin
       dprint, 'No valid sources input'
       Return

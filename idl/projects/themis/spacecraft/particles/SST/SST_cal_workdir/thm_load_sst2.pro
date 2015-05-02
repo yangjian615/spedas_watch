@@ -62,8 +62,8 @@
 ; 
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-; $LastChangedRevision: 17433 $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/SST_cal_workdir/thm_load_sst2.pro $
 ;-
 
@@ -320,7 +320,7 @@ my_themis = source_options
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst2.pro 17433 2015-04-27 18:26:29Z aaflores $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst2.pro 17458 2015-04-30 22:28:49Z aaflores $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']
@@ -345,7 +345,7 @@ if n_elements(probematch) eq 1 then if probematch eq 'f' then vprobes = ['f']
 ;probe = strfilter(vprobes, probematch ,delimiter=' ',/string)
 
 if not keyword_set(probematch) then probematch=vprobes
-probe=thm_check_valid_name(strtrim(strlowcase(probematch),2),vprobes,/include_all)
+probe=ssl_check_valid_name(strtrim(strlowcase(probematch),2),vprobes,/include_all)
 
 if probe[0] eq '' then begin
   dprint, "Invalid probes selected.  Valid probes: 'a','b','c','d' or 'e'  (ie, probe='a')"

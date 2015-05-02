@@ -60,7 +60,7 @@ if ~keyword_set(datatype) then datatype='dst'
 ;;*****************
 ;vns=['dst']
 ;if size(datatype,/type) eq 7 then begin
-;  datatype=thm_check_valid_name(datatype,vns,/include_all)
+;  datatype=ssl_check_valid_name(datatype,vns,/include_all)
 ;  if datatype[0] eq '' then return
 ;endif else begin
 ;  message,'DATATYPE kw must be of string type.',/info

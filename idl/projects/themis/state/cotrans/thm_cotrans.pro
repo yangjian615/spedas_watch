@@ -72,8 +72,8 @@
 ;              in_coord='dsl', probe='b c d', out_suff='_gse'
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-; $LastChangedRevision: 17429 $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/cotrans/thm_cotrans.pro $
 ;-
 
@@ -294,7 +294,7 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
         end
       endswitch
       'agsm': begin
-        gse2agsm, in_name, out_name, rotation_angle = 4.0, /aGSM2GSE
+        agsm2gse, in_name, out_name, rotation_angle = 4.0
         recursive_in_coord='gse'
         break
       end
@@ -435,7 +435,7 @@ pro thm_cotrans, in_name, out_name, probe=probe, datatype=datatype,  $
    if not keyword_set(out_coord) then begin
       dprint, 'thm_cotrans: must specify out_coord or out_suffix'
       return
-   endif else out_coord = thm_check_valid_name(strlowcase(out_coord), vcoord)
+   endif else out_coord = ssl_check_valid_name(strlowcase(out_coord), vcoord)
 
    if not keyword_set(out_coord) then return
 
@@ -452,7 +452,7 @@ pro thm_cotrans, in_name, out_name, probe=probe, datatype=datatype,  $
    endif
 
    if keyword_set(in_coord) then begin
-      in_coord = thm_check_valid_name(strlowcase(in_coord), vcoord)
+      in_coord = ssl_check_valid_name(strlowcase(in_coord), vcoord)
       if not keyword_set(in_coord) then return
       if n_elements(in_coord) gt 1 then begin
          dprint, 'thm_cotrans: can only specify one in_coord'
@@ -476,7 +476,7 @@ pro thm_cotrans, in_name, out_name, probe=probe, datatype=datatype,  $
 ; do 'standard' THEMIS name conventions to get tplot names
 if n_params() eq 0 then begin
    if not keyword_set(probe) then probe = vprobes $
-   else probe = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+   else probe = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
    if not keyword_set(probe) then begin
       dprint, 'probe keyword required if no positional args present'
       return

@@ -115,8 +115,8 @@
 ; in outputs to tplot section, mode has been replaced by strlowcase(mode)
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-;$LastChangedRevision: 17433 $
+;$LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+;$LastChangedRevision: 17458 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_scm.pro $
 ;-
 
@@ -209,11 +209,11 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
       return
     endif
     if not keyword_set(probe) then probes = vprobes $
-    else probes = thm_check_valid_name(strlowcase(probe), vprobes, /include_all)
+    else probes = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all)
     if not keyword_set(probes) then return
 
     if not keyword_set(datatype) then dts = defdatatypes $
-    else dts = thm_check_valid_name(strlowcase(datatype), vdatatypes, $
+    else dts = ssl_check_valid_name(strlowcase(datatype), vdatatypes, $
                                     /include_all)
     if not keyword_set(dts) then return
 
@@ -359,14 +359,14 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
     n_spinfit = k_n_spinfit else n_spinfit = 2
 
   if not keyword_set(str_cleanup) then cleanup = 'none' $
-  else cleanup = thm_check_valid_name(strlowcase(str_cleanup), $
+  else cleanup = ssl_check_valid_name(strlowcase(str_cleanup), $
                                       ['none', 'full', 'spin'])
 
   if not keyword_set(cleanup) then return
   cleanup = cleanup[0]
 
   if not keyword_set(str_clnup_author) then clnup_author = 'ole' $
-  else clnup_author = thm_check_valid_name(strlowcase(str_clnup_author), $
+  else clnup_author = ssl_check_valid_name(strlowcase(str_clnup_author), $
                                            ['ole', 'ccc'])
   if not keyword_set(clnup_author) then return
   clnup_author = clnup_author[0]
@@ -394,7 +394,7 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
 
   if keyword_set(k_coord) then begin
     thm_cotrans, out_coord = vcoord, /valid_names, verbose = 0
-    coord = thm_check_valid_name(strlowcase(k_coord), vcoord)
+    coord = ssl_check_valid_name(strlowcase(k_coord), vcoord)
     if not keyword_set(coord) then begin
       If(obj_valid(progobj)) Then progobj -> update, 0.0, text = $
         '*** invalid coord specification'

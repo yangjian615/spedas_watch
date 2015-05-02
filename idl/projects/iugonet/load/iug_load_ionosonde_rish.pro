@@ -35,9 +35,9 @@
 ;  A. Shinbori, 24/01/2014.
 ;   
 ;ACKNOWLEDGEMENT:
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-02-10 16:12:40 -0800 (Mon, 10 Feb 2014) $
-; $LastChangedRevision: 14263 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL $
 ;-
 
@@ -59,7 +59,7 @@ site_code_all = strsplit('sgk',' ', /extract)
 
 ;--- check site codes
 if (not keyword_set(site)) then site='all'
-site_code = strlowcase(thm_check_valid_name(site, site_code_all, /ignore_case, /include_all))
+site_code = strlowcase(ssl_check_valid_name(site, site_code_all, /ignore_case, /include_all))
 
 if n_elements(site_code) eq 1 then begin
    if site_code eq '' then begin

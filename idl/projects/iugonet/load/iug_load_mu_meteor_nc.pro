@@ -35,9 +35,9 @@
 ; A. Shinbori, 08/01/2014.
 ; 
 ;ACKNOWLEDGEMENT:
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-02-10 16:12:40 -0800 (Mon, 10 Feb 2014) $
-; $LastChangedRevision: 14263 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+; $LastChangedRevision: 17458 $
 ; $URL $
 ;-
 
@@ -65,7 +65,7 @@ parameter_all = strsplit('h1t60min00 h1t60min30 h2t60min00 h2t60min30',' ', /ext
 
 ;--- check parameters
 if(not keyword_set(parameter)) then parameter='all'
-parameters = thm_check_valid_name(parameter, parameter_all, /ignore_case, /include_all)
+parameters = ssl_check_valid_name(parameter, parameter_all, /ignore_case, /include_all)
 
 print, parameters
 

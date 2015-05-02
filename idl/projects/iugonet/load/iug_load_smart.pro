@@ -58,9 +58,9 @@ PRO iug_load_smart, datatype=datatype, filter=filter, $
   ;===== Check the arguments =====;
   IF ~KEYWORD_SET(datatype) THEN datatype='halpha'
   IF ~KEYWORD_SET(filter) THEN filter='p00'
-  datatype_arr = STRLOWCASE( thm_check_valid_name( datatype, datatype_all, $
+  datatype_arr = STRLOWCASE( ssl_check_valid_name( datatype, datatype_all, $
     /ignore_case, /include_all ) )
-  filter_arr = STRLOWCASE( thm_check_valid_name( filter, filter_all, $
+  filter_arr = STRLOWCASE( ssl_check_valid_name( filter, filter_all, $
     /ignore_case, /include_all ) )
   IF datatype_arr[0] EQ '' OR filter_arr[0] EQ '' THEN RETURN ;No valid datatype/filter
   

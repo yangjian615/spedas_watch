@@ -1,14 +1,14 @@
 ;+
-; Procedure: gse2agsm
+; Procedure: agsm2gse
 ;
 ; Purpose: 
-;      Converts between GSE coordinates and aberrated GSM coordinates
+;      Converts between aberrated GSM coordinates and GSE coordinates
 ;
 ; Inputs:
-;      in_data: structure containing data to be transformed in GSE coordinates
+;      in_data: structure containing data to be transformed in AGSM coordinates
 ;   
 ; Output: 
-;      out_data: structure containing the transformed data in aberrated GSM coordinates
+;      out_data: structure containing the transformed data in GSE coordinates
 ;   
 ; Keywords:
 ;      sw_velocity (optional): vector containing solar wind velocity data, [Vx, Vy, Vz] in GSE coordinates
@@ -19,10 +19,10 @@
 ;     needs to be defined to do the transformation
 ;      
 ; Examples:
-;    In the following example, the data to be transformed into aGSM coordinates 
-;      is in a standard tplot variable named 'position_gse'. 
+;    In the following example, the data to be transformed into GSE coordinates 
+;      is in a standard tplot variable named 'position_agsm'. 
 ;    
-;    get_data, 'position_gse', data=position_gse
+;    get_data, 'position_agsm', data=position_agsm
 ;     
 ;    ; load solar wind velocity data using OMNI (GSE coordinates, km/s)
 ;    omni_hro_load, varformat=['Vx', 'Vy', 'Vz']
@@ -37,26 +37,26 @@
 ;    
 ;    option 1:
 ;        ; do the transformation to aberrated GSM (aGSM) using a rotation angle
-;        gse2agsm, position_gse, agsm_pos_from_angle, rotation_angle=4.0
+;        agsm2gse, position_agsm, gse_pos_from_angle, rotation_angle=4.0
 ;    
 ;    option 2:
 ;        ; do the transformation to aberrated GSM (aGSM) using solar wind velocity loaded from OMNI
-;        gse2agsm, position_gse, agsm_pos_from_vel, sw_velocity = [[Vx_data.Y], [Vy_data.Y], [Vz_data.Y]]
+;        agsm2gse, position_agsm, gse_pos_from_vel, sw_velocity = [[Vx_data.Y], [Vy_data.Y], [Vz_data.Y]]
 ;    
 ;
 ; $LastChangedBy: egrimes $
 ; $LastChangedDate: 2015-04-30 13:42:53 -0700 (Thu, 30 Apr 2015) $
 ; $LastChangedRevision: 17457 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/gse2agsm.pro $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/agsm2gse.pro $
 ;-
-pro gse2agsm, data_in, data_out, sw_velocity = sw_velocity, rotation_angle = rotation_angle
-
+pro agsm2gse, data_in, data_out, sw_velocity = sw_velocity, rotation_angle = rotation_angle
     cotrans_lib
     ; check the input
     if is_string(data_in) then begin
         ; received a tplot variable as input
+        
         if n_elements(tnames(data_in)) gt 1 then begin
-            dprint, dlevel = 1, 'gse2agsm only supports one input at a time'
+            dprint, dlevel = 1, 'agsm2gse only supports one input at a time'
             return
         endif
         if ~tnames(data_in) then begin
@@ -69,13 +69,16 @@ pro gse2agsm, data_in, data_out, sw_velocity = sw_velocity, rotation_angle = rot
         ; received a structure as input
         in_data_struct = data_in
     endif else begin
-        dprint, dlevel = 1, 'Error in gse2agsm, input data must be a structure'
+        dprint, dlevel = 1, 'Error in agsm2gse, input data must be a structure'
         return
     endelse
 
-    dprint, 'GSE -> aGSM'
+    dprint, 'aGSM -> GSE'
+    
+    ; rotate to aGSE coordinates
+    sub_GSE2aGSM,in_data_struct,agse_out,/aGSM2GSE
 
-    ; first do the aberration in GSE coordinates
+    ; now do the abberation
     ; rotate about the z-GSE axis by an angle, rotation_angle
     if ~undefined(rotation_angle) then begin
         ; user provided the rotation angle
@@ -85,37 +88,37 @@ pro gse2agsm, data_in, data_out, sw_velocity = sw_velocity, rotation_angle = rot
         ; rotation angle about Z-GSE axis
         ; assumes Earth's orbital velocity relative to the sun is ~30km/s
         rot_y = atan((float(sw_velocity[*,1])+30.)/abs(float(sw_velocity[*,0])))
-
     endif else begin
         ; the user did not provide a rotation angle or solar wind velocity
-        dprint, dlevel = 1, 'Error converting between GSE and aGSM coordinates - no rotation angle provided'
+        dprint, dlevel = 1, 'Error converting between aGSE and GSE coordinates - no rotation angle provided'
         return
     endelse 
+    ; rotating from GSE to aGSE is ~+4 deg, from aGSE to GSE is ~-4 deg
+    rot_y = -rot_y
 
     sin_rot = sin(rot_y)
     cos_rot = cos(rot_y)
 
     thematrix = [[cos_rot, -sin_rot, 0.0],[sin_rot, cos_rot, 0.0], [0.0, 0.0, 1.0]]
 
-    in_data = [[in_data_struct.Y[*,0]], [in_data_struct.Y[*,1]], [in_data_struct.Y[*,2]]]
+    in_data = [[agse_out.Y[*,0]], [agse_out.Y[*,1]], [agse_out.Y[*,2]]]
 
     ; now do the aberration in GSE
     the_arr = thematrix#transpose(in_data)
+
     x_out = transpose(the_arr[0,*])
     y_out = transpose(the_arr[1,*])
     z_out = transpose(the_arr[2,*])
 
     if is_struct(in_dlimits_struct) && is_struct(data_att) then begin
-        str_element, data_att, 'coord_sys', 'agsm', /add_replace
+        str_element, data_att, 'coord_sys', 'gse', /add_replace
         str_element, in_dlimits_struct, 'data_att', data_att, /add_replace
     endif
-
-    ; now rotate into aGSM
-    sub_GSE2aGSM,{x: in_data_struct.X, y: [[x_out],[y_out],[z_out]]},agsm_out
     
     if is_string(data_out) then begin
-        store_data, data_out, data=agsm_out, dlimits=in_dlimits_struct
+        store_data, data_out, data={x: in_data_struct.X, y: [[x_out], [y_out], [z_out]]}, dlimits=in_dlimits_struct
     endif else begin
-        data_out = agsm_out
+        data_out = {x: data_in.X, y: [[x_out], [y_out], [z_out]]}
     endelse
+    
 end
