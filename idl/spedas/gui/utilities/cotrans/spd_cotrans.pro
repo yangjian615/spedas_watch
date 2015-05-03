@@ -282,9 +282,9 @@ end
 ;  This procedure was forked from thm_cotrans.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-;$LastChangedRevision: 17458 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-05-01 10:37:34 -0700 (Fri, 01 May 2015) $
+;$LastChangedRevision: 17466 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/cotrans/spd_cotrans.pro $
 ;
 ;-
@@ -308,7 +308,8 @@ compile_opt idl2, hidden
 
 
 ;if verbose keyword is defined, override !themis.verbose
-vb = size(verbose, /type) ne 0 ? verbose : !spedas.verbose
+;vb = size(verbose, /type) ne 0 ? verbose : !spedas.verbose
+vb = size(verbose, /type) ne 0 ? verbose : !themis.verbose
 
 ;get valid coordinates
 coordSysObj = obj_new('spd_ui_coordinate_systems')

@@ -32,8 +32,8 @@
 ;       TERMINATOR: Overlay the terminator.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-16 13:30:22 -0700 (Thu, 16 Apr 2015) $
-; $LastChangedRevision: 17343 $
+; $LastChangedDate: 2015-05-01 09:13:44 -0700 (Fri, 01 May 2015) $
+; $LastChangedRevision: 17465 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mag_mola_orbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  04-02-03
@@ -93,14 +93,14 @@ pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
     xrange=[0,360],yrange=[-90,90],xticks=4,xminor=3, $
     yticks=2,yminor=3,/xstyle,/ystyle,/noerase,charsize=csize, $
     xtitle = 'East Longitude', ytitle = 'Latitude', title=title
-
-  oplot,[lon],[lat],psym=psym,color=color,linestyle=lstyle,thick=2,symsize=1.4
   
   if (doterm) then begin
     mvn_mars_terminator, ttime, result=tdat
     oplot,tdat.tlon,tdat.tlat,linestyle=2,color=1,thick=2
     oplot,[tdat.slon],[tdat.slat],color=5,psym=8,symsize=3
   endif
+
+  oplot,[lon],[lat],psym=psym,color=color,linestyle=lstyle,thick=2,symsize=1.4
 
   wset,twin
 

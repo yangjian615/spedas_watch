@@ -29,8 +29,8 @@
 ;       TERMINATOR: Overlay the terminator.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-16 13:30:22 -0700 (Thu, 16 Apr 2015) $
-; $LastChangedRevision: 17343 $
+; $LastChangedDate: 2015-05-01 09:13:18 -0700 (Fri, 01 May 2015) $
+; $LastChangedRevision: 17464 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mag_npole_orbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  04-02-03
@@ -90,18 +90,18 @@ pro mag_npole_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
     yticks=6,yminor=3,xstyle=5,ystyle=5,/noerase,charsize=csize, $
     xtitle = 'This Way', ytitle = 'That Way', title=title
   
-  r = 90. - lat
-  phi = (lon - 90.)*!dtor
-
-  oplot,[r*cos(phi)],[r*sin(phi)],psym=psym,color=color, $
-    linestyle=lstyle,thick=2,symsize=1.4
-  
   if (doterm) then begin
     mvn_mars_terminator, ttime, result=tdat
     r = 90. - tdat.tlat
     phi = (tdat.tlon - 90.)*!dtor
     oplot,r*cos(phi),r*sin(phi),linestyle=2,color=1,thick=2
   endif
+  
+  r = 90. - lat
+  phi = (lon - 90.)*!dtor
+
+  oplot,[r*cos(phi)],[r*sin(phi)],psym=psym,color=color, $
+    linestyle=lstyle,thick=2,symsize=1.4
 
   wset,twin
 

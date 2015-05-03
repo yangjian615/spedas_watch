@@ -1,18 +1,24 @@
 ;+
-;Procedure: thm_crib_fac
+;Procedure:
+;  thm_crib_fac
 ;
-;Purpose:  A crib on showing how to transform into field aligned coordinates DSL coordinates
-
+;Purpose:
+;  A crib on showing how to transform into field aligned coordinates DSL coordinates
+;
 ;Notes:
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 10:56:58 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13080 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-05-01 13:40:39 -0700 (Fri, 01 May 2015) $
+; $LastChangedRevision: 17469 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_fac.pro $
 ;-
 
+;------------------------------------------------------------
 ; Example of FAC-Xgse matrix generation and rotation
+;------------------------------------------------------------
+
 timespan, '2007-03-23'
+
 thm_load_state,probe='c', /get_support_data
 thm_load_fgm,probe = 'c', coord = 'dsl', level = 'l2'
 
@@ -32,9 +38,12 @@ print, 'Just ran an example of FAC-Xgse matrix generation and rotation'
 
 stop
 
+;------------------------------------------------------------
 ; Example of FAC-Rgeo matrix generation and rotation
+;------------------------------------------------------------
 
 timespan, '2007-03-23'
+
 thm_load_state,probe='c', /get_support_data
 thm_load_fgm,probe = 'c', coord = 'dsl', level = 'l2'
 
@@ -54,8 +63,12 @@ print, 'Just ran an example of FAC-Rgeo matrix generation and rotation'
 
 stop
 
+;------------------------------------------------------------
 ; Example of FAC-Phigeo matrix generation and rotation
+;------------------------------------------------------------
+
 timespan, '2007-03-23'
+
 thm_load_state,probe='c', /get_support_data
 thm_load_fgm,probe = 'c', coord = 'dsl', level = 'l2'
 
@@ -75,8 +88,12 @@ print, 'Just ran an example of FAC-Phigeo matrix generation and rotation'
 
 stop
 
+;------------------------------------------------------------
 ; Example of FAC-Phism matrix generation and rotation
+;------------------------------------------------------------
+
 timespan, '2007-03-23'
+
 thm_load_state,probe='c', /get_support_data
 thm_load_fgm,probe = 'c', coord = 'dsl', level = 'l2'
 
@@ -96,8 +113,12 @@ print, 'Just ran an example of FAC-Phism matrix generation and rotation'
 
 stop
 
+;------------------------------------------------------------
 ; Example of FAC-Ygsm matrix generation and rotation
+;------------------------------------------------------------
+
 timespan, '2007-03-23'
+
 thm_load_state,probe='c', /get_support_data
 thm_load_fgm,probe = 'c', coord = 'dsl', level = 'l2'
 
@@ -117,11 +138,14 @@ print, 'Just ran an example of FAC-Ygsm matrix generation and rotation'
 
 stop
 
-;If the timestamps of your data are not monotonic you may have problems doing rotation
-;This is an example of how to correct non-monotonic timestamps.  This code sorts
-;and removes duplicates
+;------------------------------------------------------------
+; Correct non-monotonic timestamps.
+;   -If the timestamps of your data are not monotonic you may have 
+;    problems doing rotation.  This code sorts and removes duplicates.
+;------------------------------------------------------------
 
 timespan,'2008-03-01'
+
 thm_load_state,probe='e', /get_support_data
 thm_load_fgm,probe='e',coord='dsl', level = 'l2'
 
@@ -148,4 +172,5 @@ tvector_rotate, 'the_fgs_fac', 'the_fgs_sm', newname = 'the_fgs_rot'
 tplot, ['the_fgs_dsl','the_fgs_rot']
 
 stop
+
 end

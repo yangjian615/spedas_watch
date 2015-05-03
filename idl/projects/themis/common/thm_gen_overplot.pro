@@ -827,7 +827,8 @@ if keyword_set(gui_plot) then begin ; for GUI plots we have some differences
     Endelse
     
     timespan,date,dur
-    tplot_gui,vars_full,trange=[t0,t1],/no_verify,/no_update,/add_panel,no_draw=keyword_set(no_draw),  var_label = [thx+'_state_pos_gse_z', thx+'_state_pos_gse_y', thx+'_state_pos_gse_x']
+    tplot_gui,vars_full,trange=[t0,t1],/no_verify,/no_update,/add_panel,no_draw=keyword_set(no_draw), $
+      var_label = [thx+'_state_pos_gse_x', thx+'_state_pos_gse_y', thx+'_state_pos_gse_z']
 
 endif else begin
   ;for server plots

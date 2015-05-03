@@ -19,9 +19,9 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 14:49:49 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17277 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_gui_init.pro $
+;$LastChangedDate: 2015-05-01 10:38:15 -0700 (Fri, 01 May 2015) $
+;$LastChangedRevision: 17467 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/depreciated/spd_gui_init.pro $
 ;-----------------------------------------------------------------------------------
 
 pro spd_gui_init

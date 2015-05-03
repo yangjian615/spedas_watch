@@ -25,8 +25,8 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2015-01-15 08:12:08 -0800 (Thu, 15 Jan 2015) $
-;   $LastChangedRevision: 16655 $
+;   $LastChangedDate: 2015-05-01 08:09:06 -0700 (Fri, 01 May 2015) $
+;   $LastChangedRevision: 17462 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/ect/rbsp_load_ect_l3.pro $
 ;
 ;-
@@ -50,7 +50,7 @@ pro rbsp_load_ect_l3,probe,type,get_support_data=get_support_data
 
      if type eq 'mageis' then begin
 
-        format=rbspx+'/mageis/level3/'+rbspx+'_rel02_ect-mageis-L3_YYYYMMDD_v*.cdf'
+        format=rbspx+'/mageis/level3/'+rbspx+'_rel03_ect-mageis-L3_YYYYMMDD_v*.cdf'
         prefix=rbspx+'_ect_mageis_L'+slevel+'_'
         relpathnames=file_dailynames(file_format=format,trange=trange,addmaster=addmaster)
         dprint,dlevel=3,verbose=verbose,relpathnames,/phelp
@@ -160,7 +160,7 @@ pro rbsp_load_ect_l3,probe,type,get_support_data=get_support_data
 
      if type eq 'rept' then begin
 
-        format=rbspx+'/rept/level3/'+rbspx+'_rel02_ect-rept-sci-L3_YYYYMMDD_v*.cdf'
+        format=rbspx+'/rept/level3/'+rbspx+'_rel03_ect-rept-sci-L3_YYYYMMDD_v*.cdf'
         prefix=rbspx+'_ect_rept_L'+slevel+'_'
         relpathnames=file_dailynames(file_format=format,trange=trange,addmaster=addmaster)
         dprint,dlevel=3,verbose=verbose,relpathnames,/phelp

@@ -63,8 +63,8 @@
 ;                 entry of times with the cursor.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-16 13:30:22 -0700 (Thu, 16 Apr 2015) $
-; $LastChangedRevision: 17343 $
+; $LastChangedDate: 2015-05-01 09:11:39 -0700 (Fri, 01 May 2015) $
+; $LastChangedRevision: 17463 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -72,6 +72,8 @@
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl, times=times, $
     nodot=nodot, terminator=terminator
+
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex, rcols
@@ -557,7 +559,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
      s = sqrt(y*y + z*z)
 
      plot,xm,ym,xrange=xrange,yrange=[0,yrange[1]],/xsty,/ysty,/noerase, $
-          xtitle='X (Rp)',ytitle='S (Rp)',charsize=2.0,title=msg
+          xtitle='X (Rp)',ytitle='S (Rp)',charsize=2.0,title=title
      oplot,xm,ym,color=6
      oplot,x,s
 

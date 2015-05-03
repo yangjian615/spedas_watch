@@ -21,9 +21,9 @@
 ;OUTPUT:
 ;  none
 ;  
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-12-17 17:26:05 -0800 (Wed, 17 Dec 2014) $
-;$LastChangedRevision: 16506 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-01 18:01:59 -0700 (Fri, 01 May 2015) $
+;$LastChangedRevision: 17470 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_gen_overplot.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -397,9 +397,10 @@ pro thm_ui_fix_overview_panels, state=state
     vars = variables->get(/all)
     for i=0, n_elements(vars)-1 do begin
       vars[i]->getProperty, text=textobj
-      if i eq 0 then textobj->setProperty, value='X-GSE'
-      if i eq 1 then textobj->setProperty, value='Y-GSE'
-      if i eq 2 then textobj->setProperty, value='Z-GSE'
+      textobj->getproperty, value=text
+      ;get component dynamically since order may change
+      textobj->setProperty, value = $
+        strupcase( (stregex(text,'.*_([xyz])_.*$',/sub,/extract))[1] ) + '-GSE'
       vars[i]->setProperty, text=textobj
     endfor
   endif
