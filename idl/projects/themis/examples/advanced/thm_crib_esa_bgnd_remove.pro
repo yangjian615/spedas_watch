@@ -14,71 +14,17 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-11-24 16:22:50 -0800 (Mon, 24 Nov 2014) $
-;$LastChangedRevision: 16294 $
+;$LastChangedDate: 2015-05-04 16:23:01 -0700 (Mon, 04 May 2015) $
+;$LastChangedRevision: 17472 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_esa_bgnd_remove.pro $
-;
 ;-
 
 
 ;---------------------------------------------------------------------------
-; Set time range and load support data.
-; 
-; By default thm_part_products will look for tplot variables containing:
-;   Spacecraft Potential:  "th?_pxxm_pot"
-;         Magnetic Field:  "th?_fgs"
-;---------------------------------------------------------------------------
-
-;time range
-timespan,'8 6 15/08:00',4,/hours
-trange=['8 6 15/08:00','8 6 15/12:00']
-
-;probe
-probe = 'd'
-
-;load support data
-thm_load_state, probe=probe, /get_support
-thm_load_fit, probe=probe, data='fgs', coord='dsl'
-
-;load data for comparison
-thm_load_fit, probe=probe, data='fgs', coord='gsm', suffix='_gsm'
-thm_load_mom, probe=probe ; L2: onboard processed moms
-thm_load_esa, probe=probe ; L2: ground processed gmoms, omni spectra
-ylim,'thd_pe??_en_eflux',5,30000,1
-
-;load uncalibrated (l0) particle data into memory 
-thm_part_load, probe=probe, datatype='pe??'
-
-
-;---------------------------------------------------------------------------
-; There are various ways of using the keyword /bgnd_remove
-; One way is for producing moments and spectra (together in one call)
-; Note that this time we did not have full distribution functions - FDFs- at
-; full cadence but every 5min, which means we ground velocities will be 5min resolution.
-; However we have omni spectra (reduced distribution functions - RDFs) every spin.
-; Also note that FDFs are 3s snapshots, not 5min averages, so the statistics are no
-; better than 3s cadence FDFs. From those you can produce reasonable temperature
-; and density assuming isotropy and also spectra with removed background. See below:
-;---------------------------------------------------------------------------
-
-;disable background removal for comparison
-thm_part_products, probe=probe, datatype='peir', trange=trange, $ 
-                   suffix='_before', esa_bgnd_remove=0
-
-thm_part_products, probe=probe, datatype='peir', trange=trange, $ 
-                   suffix='_after'
-
-zlim,'thd_peir_eflux_energy*',1.e5,1.e7,1 ; fix eflux limits
-
-tplot, 'thd_peir_eflux_energy_before thd_peir_eflux_energy_after'
-
-
-stop
-
-
-;---------------------------------------------------------------------------
 ; Settings for background removal can be tweaked using keywords:
-; 
+;   
+;   BGND_REMOVE: This keyword switches background removal on/off.  It is set by
+;                default for most routines but usage varies.  See examples below.
 ;   BGND_TYPE: This specifies the method by which the background is determined.
 ;                "anode" - The data is divided into 16 theta bins. A background
 ;                           value is calculated for each bin.
@@ -93,15 +39,68 @@ stop
 ;   bgnd_type = "anode"
 ;   bgnd_npoints = 3
 ;   bgnd_scale = 1.
+;
 ;---------------------------------------------------------------------------
+
+
+;---------------------------------------------------------------------------
+; Generate particle data products for comparison
+;---------------------------------------------------------------------------
+
+;time range
+timespan,'8 6 15/08:00',4,/hours
+trange=['8 6 15/08:00','8 6 15/12:00']
+
+;probe
+probe = 'd'
+
+;load support data & comparison data
+;  -by default thm_part_products will look for tplot variables containing:
+;    spacecraft potential:  "th?_pxxm_pot"
+;    magnetic field:        "th?_fgs"
+thm_load_state, probe=probe, /get_support  ;ephemeris
+thm_load_fit, probe=probe, data='fgs', coord='dsl'  ;b field
+thm_load_fit, probe=probe, data='fgs', coord='gsm', suffix='_gsm' ;bfield
+thm_load_mom, probe=probe ; L2: onboard processed moms, spacecraft potential
+thm_load_esa, probe=probe ; L2: ground processed gmoms, omni spectra
+
+
+;---------------------------------------------------------------------------
+; There are various ways of using the keyword /bgnd_remove
+; One way is for producing moments and spectra (together in one call)
+; Note that this time we did not have full distribution functions - FDFs- at
+; full cadence but every 5min, which means we ground velocities will be 5min resolution.
+; However we have omni spectra (reduced distribution functions - RDFs) every spin.
+; Also note that FDFs are 3s snapshots, not 5min averages, so the statistics are no
+; better than 3s cadence FDFs. From those you can produce reasonable temperature
+; and density assuming isotropy and also spectra with removed background. See below:
+;---------------------------------------------------------------------------
+
+
+;load uncalibrated (l0) particle data into memory 
+thm_part_load, probe=probe, datatype='pe??'
+
+
+;generate spectrograms
+;  -removal on by default when using thm_part_products
+thm_part_products, probe=probe, datatype='peir', trange=trange, $
+                   esa_bgnd_remove=0, $
+                   suffix='_before' 
+
+thm_part_products, probe=probe, datatype='peir', trange=trange, $ 
+                   suffix='_after'
 
 thm_part_products, probe=probe, datatype='peir', trange=trange, $
                    bgnd_npoints=1, bgnd_scale=1.02, bgnd_type='angle' 
                    suffix='_after2'
 
+
 zlim,'thd_peir_eflux_energy*',1.e5,1.e7,1 ; fix eflux limits
+ylim,'thd_pe??_en_eflux*',5,30000,1
+
 
 tplot, 'thd_peir_eflux_energy*'
+
 
 stop
 

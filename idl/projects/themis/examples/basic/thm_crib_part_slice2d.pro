@@ -63,8 +63,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-02 14:57:59 -0700 (Wed, 02 Jul 2014) $
-;$LastChangedRevision: 15501 $
+;$LastChangedDate: 2015-05-04 16:23:01 -0700 (Mon, 04 May 2015) $
+;$LastChangedRevision: 17472 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_slice2d.pro $
 ;
 ;-
@@ -75,12 +75,11 @@ thm_init
 
 nl = ssl_newline()
 
-print, nl,'Basic 2D velocity slice crib. Type ".c" or press F8 to continue.',nl
+print, nl,'Starting basic 2D particle distribution slice crib.',nl
 
-stop
 
 ;--------------------------------------------------------------------------------------
-;Load Particle Data
+;Generate basic slice from ESA data
 ;--------------------------------------------------------------------------------------
 
 ;set time range
@@ -88,17 +87,6 @@ trange = '2008-02-26/' + ['04:54','04:55']
 
 ;esa ion burst data
 dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
-
-
-print, nl,'Load particle data structures for the desired '
-print, 'time range using thm_part_dist_array.',nl
-
-stop
-
-
-;--------------------------------------------------------------------------------------
-;Generate basic slice from ESA data
-;--------------------------------------------------------------------------------------
 
 ;generate a 30 second slice starting at the beginning of the time range
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice
@@ -117,6 +105,12 @@ stop
 ;Generate basic slice using 2D interpolation
 ;--------------------------------------------------------------------------------------
 
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
 ;generate an identical cut using 2D interpolation
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
                   /two_d_interp
@@ -133,6 +127,41 @@ stop
 ;--------------------------------------------------------------------------------------
 ;Generate basic slice using 3D interpolation
 ;--------------------------------------------------------------------------------------
+
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
+;generate an identical cut using 3D interpolation
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  /three_d_interp
+
+thm_part_slice2d_plot, slice
+
+print, nl,'Another identical cut using the 3D interpolation method,'
+print, 'Here the entire distribution is linearly interpolated in 
+print, 'three dimensions and a slice is extracted.',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;ESA background removal
+;--------------------------------------------------------------------------------------
+
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;Background removal keywords can be specified when loading particle data.
+;See thm_crib_esa_bgnd_remove for more.  Values shown are the defaults.
+;  bgnd_remove:  Flag to switch on background removal
+;  bgnd_type:  Type of removal ('anode', 'omni', 'angle')
+;  bgnd_npoints:  Number of points used to calculate background
+;  bgnd_scale:  Factor to multiply calculated background by
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange, $
+             /bgnd_remove, bgnd_type='anode', bgnd_npoints=3, bgnd_scale=1)
 
 ;generate an identical cut using 3D interpolation
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
@@ -151,6 +180,12 @@ stop
 ;--------------------------------------------------------------------------------------
 ;Smoothing
 ;--------------------------------------------------------------------------------------
+
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
 
 ;Increase the smoothing width to create smoother plots.
 ;The value supplied to the SMOOTH keyword is the width (in points)
@@ -173,6 +208,12 @@ stop
 ;Units
 ;--------------------------------------------------------------------------------------
 
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
 ;This example uses the UNITS keyword to create an energy flux slice.
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
                   units='eflux', /three_d_interp
@@ -188,6 +229,12 @@ stop
 ;--------------------------------------------------------------------------------------
 ;Plot Against Energy
 ;--------------------------------------------------------------------------------------
+
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
 
 ;Setting the /ENERGY keyword will plot the data against energy instead of velocity.
 ;By default this will use radial log scaling, to use linear scaling use LOG=0.
@@ -205,10 +252,16 @@ stop
 ;Basic Orientation
 ;--------------------------------------------------------------------------------------
 
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
 ;This will produce a slice along the DSL xz plane.
 ;See the top of this crib for more options.
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $ 
-                  rotation='xz', /two_d_interp
+                  rotation='xz', /three_d_interp
 
 thm_part_slice2d_plot, slice
 
@@ -224,6 +277,12 @@ stop
 ;Basic Field Aligned Orientation
 ;--------------------------------------------------------------------------------------
 
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
 ;Field aligned rotations require magnetic field data to be loaded beforehand.
 thm_load_fgm, probe='b', datatype='fgl', level=2, coord='dsl', trange=trange
 thm_load_esa, probe='b', datatype='peib_velocity_dsl', trange=trange 
@@ -234,7 +293,7 @@ thm_load_esa, probe='b', datatype='peib_velocity_dsl', trange=trange
 ;  -bulk velocity is calculated from distribution if tplot variable is not specified
 ;These vectors will be averaged over the time range of the slice.
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
-       rotation='BV', mag_data='thb_fgl_dsl', vel_data='thb_peib_velocity_dsl', /two_d_interp
+       rotation='BV', mag_data='thb_fgl_dsl', vel_data='thb_peib_velocity_dsl', /three_d_interp
 
 thm_part_slice2d_plot, slice
 
@@ -251,13 +310,19 @@ stop
 ;Basic Orientation and Coordinates
 ;--------------------------------------------------------------------------------------
 
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
 ;This example combines the COORD and ROTATION keywords.
 ;The COORD keyword specifies GSM coordinates and the ROTATION keyword specifies 
 ;the slice plane's orientation with respect to those coordinates.
 ;The 'xvel' rotation aligns the slice's x axis with the (GSM) x axis and the 
 ;slice's y axis is defined by the bulk velocity.
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
-                  coord='gsm', rotation='xvel', /two_d_interp
+                  coord='gsm', rotation='xvel', /three_d_interp
 
 thm_part_slice2d_plot, slice
 
@@ -271,6 +336,16 @@ stop
 ;--------------------------------------------------------------------------------------
 ;Plotting options (standard)
 ;--------------------------------------------------------------------------------------
+
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
+;generate slice
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  /three_d_interp
 
 ;Set tick numbers, character size, and range keywords.
 ;Keywords with an axis prefix can be set for all axes.
@@ -294,6 +369,16 @@ stop
 ;Plotting options (miscellaneous)
 ;--------------------------------------------------------------------------------------
 
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
+;generate slice
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  /three_d_interp
+
 ;Various keywords can be set called with thm_part_slice2d_plot
 ;to controll the plot annotations.
 thm_part_slice2d_plot, slice, $
@@ -312,6 +397,16 @@ stop
 ;--------------------------------------------------------------------------------------
 ;Plotting options (exporting)
 ;--------------------------------------------------------------------------------------
+
+;set time range
+trange = '2008-02-26/' + ['04:54','04:55']
+
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
+;generate slice
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  /three_d_interp
 
 ;The EXPORT keyword can be used to automatically produce .png or .eps 
 ;images of the plot.  Set export='filename' to write a .png file and

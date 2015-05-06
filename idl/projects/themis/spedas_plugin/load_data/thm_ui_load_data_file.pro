@@ -27,13 +27,12 @@
 ;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedDate: 2015-05-04 18:39:29 -0700 (Mon, 04 May 2015) $
+;$LastChangedRevision: 17476 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file.pro $
 ;
 ;-
 
-; TODO: When we get around to loading non-spedas data, might need a pop-up window for when we don't know the coordsys of incoming data
 Pro thm_ui_load_data_file_event, event;, info
   Compile_Opt idl2, hidden
 
@@ -47,18 +46,19 @@ Pro thm_ui_load_data_file_event, event;, info
   IF (err_xxx NE 0) THEN BEGIN
     Catch, /Cancel
     Help, /Last_Message, Output = err_msg
-    if is_struct(state) then begin
-      FOR j = 0, N_Elements(err_msg)-1 DO state.historywin->update,err_msg[j]
-      histobj=state.historywin
-    endif
     Print, 'Error--See history'
     ok=error_message('An unknown error occured and the window must be restarted. See console for details.',$
-       /noname, /center, title='Error in Load Data')
-    Widget_Control, event.TOP, Set_UValue=state, /No_Copy
-    widget_control, event.top,/destroy
-    if widget_valid(state.tab_id) && obj_valid(histobj) then begin 
-      spd_gui_error,state.tab_id,histobj
+                     /noname, /center, title='Error in Load Data')
+    if is_struct(state) then begin
+      if obj_valid(state.historywin) then begin
+        for j = 0, n_elements(err_msg)-1 do state.historywin->update,err_msg[j]
+        if widget_valid(state.tab_id) then begin 
+          spd_gui_error, state.tab_id, state.historywin
+        endif
+      endif
+      Widget_Control, event.TOP, Set_UValue=state, /No_Copy
     endif
+    widget_control, event.top, /destroy
     RETURN
   ENDIF
 

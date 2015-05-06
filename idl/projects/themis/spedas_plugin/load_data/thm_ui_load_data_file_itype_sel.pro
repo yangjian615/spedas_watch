@@ -16,8 +16,8 @@
 ; None
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedDate: 2015-05-04 18:39:29 -0700 (Mon, 04 May 2015) $
+;$LastChangedRevision: 17476 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_itype_sel.pro $
 ;-
 pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
@@ -76,16 +76,26 @@ pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
      widget_control,eclipse_id,sensitive=0
   endelse
 
-  ; reset selected output coordinate when new instrument is selected
+  ; select output coords based on instrument
   if ~keyword_set(from_coord_sel) then begin
+
     if state.instr eq 'state' then begin
-      ; make sure STATE defaults to GEI coords
-      widget_control, state.coordDroplist, set_value=*state.validCoords, $
-                      set_combobox_select=5
+      new_coord = 'gei'
     endif else begin
-      widget_control, state.coordDroplist, set_value=*state.validCoords, $
-                      set_combobox_select=0
+      new_coord = 'dsl'
     endelse
+
+    ;get combobox list so we can do this dynamically
+    widget_control, state.coorddroplist, get_value=coord_list
+    coord_match = where(new_coord eq strlowcase(coord_list), nc) 
+
+    ;if the correct coord system was not found then it should be fixed
+    if nc ne 1 then begin
+      message, 'Could not determined default coordinate system for selected instrument: '+state.instr
+    endif
+
+    widget_control, state.coorddroplist, set_combobox_select=coord_match
+
   endif
   
   ; get output coordinates
@@ -181,7 +191,7 @@ pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
               state.outCoord = 'N/A'
           endif else begin
               widget_control, state.coordDroplist, /Sensitive
-              coord_index = widget_info(state.coordDroplist, /droplist_select)
+;              coord_index = widget_info(state.coordDroplist, /droplist_select)
               outCoord = widget_info(state.coordDroplist, /combobox_gettext)
               state.outCoord = strlowcase(strcompress(outCoord, /remove_all))
           endelse
