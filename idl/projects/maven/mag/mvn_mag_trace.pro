@@ -9,8 +9,8 @@
 ;USAGE:
 ;  mvn_mag_trace
 ;INPUTS:
-;       None: All data obtained from tplot variables.  The result is 
-;             stored in tplot variables.
+;       None:      All data obtained from tplot variables.  The result is 
+;                  stored in tplot variables.
 ;  
 ;KEYWORDS:
 ;       ALT:       Electron absorption altitude.  Default = 170 km.
@@ -19,8 +19,8 @@
 ;                  Units: km, deg, deg
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-15 13:20:23 -0700 (Wed, 15 Apr 2015) $
-; $LastChangedRevision: 17327 $
+; $LastChangedDate: 2015-05-05 08:43:27 -0700 (Tue, 05 May 2015) $
+; $LastChangedRevision: 17477 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_trace.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
@@ -53,10 +53,12 @@ pro mvn_mag_trace, alt=alt, trace=T
 
   if (size(state,/type) ne 8) then maven_orbit_tplot,/load
   nsam = n_elements(mag.x)
+  tmin = min(mag.x, max=tmax)
+  indx = where((state.time ge (tmin - 600D)) and (state.time le (tmax + 600D)))
   S = fltarr(nsam,3)
-  S[*,0] = spline(state.time, state.geo_x[*,0], mag.x)
-  S[*,1] = spline(state.time, state.geo_x[*,1], mag.x)
-  S[*,2] = spline(state.time, state.geo_x[*,2], mag.x)
+  S[*,0] = spline(state.time[indx], state.geo_x[indx,0], mag.x)
+  S[*,1] = spline(state.time[indx], state.geo_x[indx,1], mag.x)
+  S[*,2] = spline(state.time[indx], state.geo_x[indx,2], mag.x)
   S2 = reform([total(S*S,2)])
 
 ; Determine if/where the projected magnetic field line intersects the

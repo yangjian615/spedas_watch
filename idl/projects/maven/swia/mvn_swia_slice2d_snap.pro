@@ -11,26 +11,23 @@
 ; KEYWORDS:
 ;       same as 'slice2d' except...
 ;       ARCHIVE: Returns archive distribution instead of survey
-;       TWINDOW: Specifies tplot window to click (Def. is current window)
 ;       WINDOW: Specifies window to plot (Def: generates new window)
 ;       BLINE: Shows magnetic field direction by a black line
+;       MSO: Rotates into MSO frame (no effect for 'BV', 'BE', and 'perp' cuts)
 ; CREATED BY:
 ;       Yuki Harada on 2014-10-10
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-04-23 13:09:09 -0700 (Thu, 23 Apr 2015) $
-; $LastChangedRevision: 17407 $
+; $LastChangedDate: 2015-05-05 14:46:35 -0700 (Tue, 05 May 2015) $
+; $LastChangedRevision: 17479 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_slice2d_snap.pro $
 ;-
 
-pro mvn_swia_slice2d_snap, archive=archive, twindow=twindow, window=window, bline=bline, _extra=_extra
+pro mvn_swia_slice2d_snap, archive=archive, window=window, bline=bline, mso=mso, _extra=_extra
 
 dsize = get_screen_size()
 
 ;- set up windows
-
-;- tplot window (current window)
-if keyword_set(twindow) then Twin = twindow else Twin = !d.window
 
 ;- slice2d window
 if keyword_set(window) then Dwin = window else begin
@@ -40,8 +37,6 @@ endelse
 
 print, 'Use button 1 to select time; button 3 to quit.'
 
-wset,Twin
-;tplot
 ctime,t,npoints=1,/silent,vname=vname
 
 ok = 1
@@ -54,13 +49,17 @@ while (ok) do begin
    if get3d_func ne '' then begin
       d = call_function(get3d_func,t,archive=archive)
       if keyword_set(bline) then bdir = d.magf/total(d.magf^2)^.5
+      if keyword_set(mso) then begin
+         mvn_pfp_cotrans, d, from='MAVEN_SWIA',to='MAVEN_MSO',theta=theta,phi=phi
+         d.theta = theta
+         d.phi = phi
+      endif
 
       wset,Dwin
       slice2d,d, _extra=_extra, sundir=bdir
 
    endif
 
-   wset,Twin
    ctime,t,npoints=1,/silent,vname=vname
    if (data_type(t) eq 5) then ok = 1 else ok = 0
 endwhile

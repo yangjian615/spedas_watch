@@ -12,7 +12,6 @@
 ;       same as 'plot3d_new' except...
 ;       ARCHIVE: Returns archive distribution instead of survey
 ;       ERANGE: Specifies energy range to plot
-;       TWINDOW: Specifies tplot window to click (Def. is current window)
 ;       WINDOW: Specifies window to plot (Def: generates new window)
 ;       STATIC: If set, shows STATIC field of view (SPICE kernels and STATIC CA data need to have been loaded)
 ;       SPC: If set, draws spacecraft blockage using mvn_spc_fov_blockage
@@ -21,21 +20,18 @@
 ;       Yuki Harada on 2015-04-22
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-04-22 16:01:48 -0700 (Wed, 22 Apr 2015) $
-; $LastChangedRevision: 17400 $
+; $LastChangedDate: 2015-05-05 14:49:08 -0700 (Tue, 05 May 2015) $
+; $LastChangedRevision: 17480 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_3d_snap.pro $
 ;-
 
-pro mvn_swia_3d_snap, archive=archive, erange=erange, twindow=twindow, window=window, static=static, spc=spc, mso=mso, _extra=_extra
+pro mvn_swia_3d_snap, archive=archive, erange=erange, window=window, static=static, spc=spc, mso=mso, _extra=_extra
 
 if keyword_set(erange) then erange = minmax(erange)
 
 dsize = get_screen_size()
 
 ;- set up windows
-
-;- tplot window (current window)
-if keyword_set(twindow) then Twin = twindow else Twin = !d.window
 
 ;- plot3d window
 if keyword_set(window) then Dwin = window else begin
@@ -45,8 +41,6 @@ endelse
 
 print, 'Use button 1 to select time; button 3 to quit.'
 
-wset,Twin
-;tplot
 ctime,t,npoints=1,/silent,vname=vname
 
 ok = 1
@@ -101,7 +95,6 @@ while (ok) do begin
 
    endif
 
-   wset,Twin
    ctime,t,npoints=1,/silent,vname=vname
    if (data_type(t) eq 5) then ok = 1 else ok = 0
 endwhile

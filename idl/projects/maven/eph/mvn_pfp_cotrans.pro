@@ -1,94 +1,107 @@
 ;+
-;PROCEDURE: 
-;	MVN_PFP_COTRANS
 ;
-;PURPOSE:
-;       Performs the coordinate transformation from the MAVEN PFP
-;       instrument cooridnate system to that of you set.
-;       Now SWIA, SWEA, STATIC coordinate systems are applicable.
+;PROCEDURE:       MVN_PFP_COTRANS
 ;
-;CALLING SEQUENCE: 
-;	mvn_pfp_cotrans, data, from='MAVEN_STATIC', to='MAVEN_MSO', $
-;                        vx=vx, vy=vy, vz=vz, theta=theta, phi=phi, $
-;                        px=px, py=py, pz=pz
+;PURPOSE:         Computes the MAVEN PFP instruments' angular (theta & phi)
+;                 arrays in the user specified new coordinate systems. 
+;                 The results are returned by using "theta" & "phi" keywords. 
+;                 Now SWIA, SWEA, STATIC are applicable.  
 ;
-;INPUTS: 
-;   Any SWIA, SWEA, and STATIC data.
-;   These data should be derived from the following functions:
-;      - SWIA: mvn_swia_get_3dc(), mvn_swia_get_3df(), mvn_swia_get_3ds().
-;      - SWEA: mvn_swe_get3d(), mvn_swe_getpad(), mvn_swe_getspec().   
-;      - STATIC: mvn_sta_get_**(); (** corresponds to any apid modes).
+;USAGE (EXAMPLE):
+;	          mvn_pfp_cotrans, data, from='MAVEN_STATIC', to='MAVEN_MSO', $
+;                                  vx=vx, vy=vy, vz=vz, theta=theta, phi=phi, $
+;                                  px=px, py=py, pz=pz
+;
+;INPUTS:          SWIA, SWEA, and STATIC snapshot data.
+;                 They can be obtained from the following functions:
+;
+;                 - SWIA: mvn_swia_get_3dc(), mvn_swia_get_3df(), mvn_swia_get_3ds().
+;                 - SWEA: mvn_swe_get3d(), mvn_swe_getpad(), mvn_swe_getspec().   
+;                 - STATIC: mvn_sta_get_**(); (** corresponds to any apid modes).
 ;
 ;KEYWORDS:
-;   FROM:      Defines the initial coordinate system as string. 
 ;
-;   TO:        Defines the coordinate system to which you want to convert. 
-;             
-;              Both "from" and "to" keywords must be defined the
-;              coordinate system written in the MAVEN SPICE frame kernels.
-;              It means that the coordinate system(s) derived from the 
-;              SPICE/Kernels can be utilized, such as 'MAVEN_MSO', 'IAU_MARS', 
-;              or so on in the present version.
+;   FROM:         Defines the initial coordinate system as string. 
 ;
-;              In additions, this procedure can convert to the 2 new
-;              useful coordinate system.  
+;   TO:           Defines the coordinate system to which you want to convert. 
+;                 
+;                 Both "from" and "to" keywords must be defined the
+;                 coordinates defined in the MAVEN SPICE frame kernels.
+;                 It means that the coordinate system(s) derived from the 
+;                 SPICE/Kernels can be utilized, such as 'MAVEN_MSO', 'IAU_MARS', 
+;                 or so on in the present version.
 ;
-;              One is the local geographic coordinate system, which is
-;              defined as 'LGEO'.
-;              The coordinate system is centered at the spacecraft and
-;              decomposes into zonal(East-West), meridional(North-South), 
-;              and radial components:
-;                  - X: Positive toward the local East.
-;                  - Y: Positive toward the local North.
-;                  - Z: Positive away from the planetary surface.        
-;              This coordinate system has been utilized in MGS IMF
-;              draping direction proxy.     
+;   Vi:           (i=X, Y, Z). 
+;                 Returns unit vector compnents in the new coordinates. 
 ;
-;              The other is the streamline-aligned geographic coordinate system,
-;              which is defined as 'SGEO'.
-;              The coordinate system is centered at the spacecraft.
-;              The streamline direction is determined under the assumption
-;              that flow is symmetrical both the Mars-Sun line and mainly 
-;              tangential(horizontal) to the obstracle.
-;                  - X: Streamline flown from the dayside to nightside.
-;                  - Y: Z x X (Completes right-handed system; horizontal).
-;                  - Z: Positive away from the planetary surface.  
-;              The detailed definision and useful figure are shown in  
-;              Strangeway and Russell [1996, JGR].
+;   THETA:        Returns the polar angle in the new coordinates.
 ;
-;   Vi:        (i=X, Y, Z). 
-;              Returns unit vector compnents in the new coordinate system. 
+;   PHI:          Returns the azimuth angle in the new coordinates.
 ;
-;   THETA:     Returns the polar angle in the new coordinate system.
+;   Pi:           (i=X, Y, Z). 
+;                 Returns the instrument axes in the new coordinates. 
 ;
-;   PHI:       Returns the azimuth angle in the new coordinate system.
+;   STATUS:       Returns the computation status (0: Failure / 1: Success). 
 ;
-;   Pi:        (i=X, Y, Z). 
-;              Returns the instrument axis direction in the new coordinate system. 
+;   SPICE_LOAD:   Loads the MAVEN SPICE/kernels. 
 ;
-;   STATUS:    Returns the conversion result (0:Fail/1:Success). 
+;   OVERWRITE:    Overwrites resultant angular (theta & phi) arrays in the
+;                 new coordinates into the input snapshot data structure.
 ;
-;   SPICE_LOAD: Loads the MAVEN SPICE/kernels. 
+;                 *** !!! ***
+;                 Be careful using this keyword. 
+;                 It does not guarantee unexpected behaviors caused
+;                 by using this keyword, because it does not take into
+;                 account effects of deformation of the solid angle 
+;                 (including dtheta, dphi) in the new coordinates.
+;                 For example, do not use this keyword for a purpose
+;                 of plasma moment calculation in the new coordinates.  
+;                 *** !!! ***
+;
+;
+;ADVANCED:        Specially, this procedure can use the 2 new coordinate
+;                 coordinate systems which are not defined in SPICE/kernels.  
+;
+;                 One is the local geographic coordinate system, which is
+;                 defined as 'LGEO'.
+;                 The coordinate system is centered at the spacecraft and
+;                 decomposes into zonal(East-West), meridional(North-South), 
+;                 and radial components:
+;
+;                 - X: Positive toward the local East.
+;                 - Y: Positive toward the local North.
+;                 - Z: Positive away from the planetary surface.
+;
+;                 This coordinate system has been utilized in MGS IMF
+;                 draping direction proxy.     
+;
+;                 The other is the streamline-aligned geographic coordinate system,
+;                 which is defined as 'SGEO'.
+;                 The coordinate system is centered at the spacecraft.
+;                 The streamline direction is determined under the assumption
+;                 that flow is symmetrical both the Mars-Sun line and mainly 
+;                 tangential(horizontal) to the obstracle.
+;              
+;                 - X: Streamline flown from the dayside to nightside.
+;                 - Y: Z x X (Completes right-handed system; horizontal).
+;                 - Z: Positive away from the planetary surface.  
+;
+;                 The detailed definision and useful figure are shown in  
+;                 Strangeway and Russell [1996, JGR].
 ; 
-;CREATED BY: 
-;	Takuya Hara  on 2014-11-24.
+;CREATED BY:      Takuya Hara on 2014-11-24.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2014-12-09 17:51:20 -0800 (Tue, 09 Dec 2014) $
-; $LastChangedRevision: 16430 $
+; $LastChangedDate: 2015-05-06 02:08:17 -0700 (Wed, 06 May 2015) $
+; $LastChangedRevision: 17481 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/eph/mvn_pfp_cotrans.pro $
-;
-;MODIFICATION LOG:
-;(YYYY-MM-DD)
-; 2014-11-24: Starts to prepare this routine.
-; 2014-12-09: Header description is written up.
 ;
 ;-
 PRO mvn_pfp_cotrans, var, from=from, to=to, verbose=verbose, $
                      vx=vxn, vy=vyn, vz=vzn, $
                      theta=thetan, phi=phin, status=status, $
                      spice_load=spice_load, $
-                     px=px, py=py, pz=pz;, no_ignore=no_ignore
+                     px=px, py=py, pz=pz, overwrite=overwrite
   dat = var
   time = (dat.time + dat.end_time)/2.d0 
   theta = dat.theta
@@ -117,7 +130,6 @@ PRO mvn_pfp_cotrans, var, from=from, to=to, verbose=verbose, $
   sphere_to_cart, 1.d0, dat.theta, dat.phi, vx, vy, vz
   et = time_ephemeris(time)
   objects = ['MARS', 'MAVEN_SPACECRAFT']
-;;  valid = spice_valid_times(et, object=objects, /no_ignore)
   valid = spice_valid_times(et, object=objects)
   IF valid EQ 0B THEN BEGIN
      dprint, 'SPICE/kernels are invalid.'
@@ -160,6 +172,10 @@ PRO mvn_pfp_cotrans, var, from=from, to=to, verbose=verbose, $
   
   IF NOT keyword_set(to2) THEN BEGIN
      status = 1
+     IF keyword_set(overwrite) THEN BEGIN
+        str_element, var, 'theta', thetan, /add_replace
+        str_element, var, 'phi', phin, /add_replace
+     ENDIF 
      RETURN
   ENDIF 
   undefine, vx, vy, vz, theta, phi
@@ -233,5 +249,9 @@ PRO mvn_pfp_cotrans, var, from=from, to=to, verbose=verbose, $
   pz = TRANSPOSE(mtx ## TRANSPOSE(pz))
   status = 1
   to = to2
+  IF keyword_set(overwrite) THEN BEGIN
+     str_element, var, 'theta', thetan, /add_replace
+     str_element, var, 'phi', phin, /add_replace
+  ENDIF 
   RETURN
 END
