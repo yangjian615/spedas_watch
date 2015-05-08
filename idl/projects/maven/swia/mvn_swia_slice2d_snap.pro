@@ -13,13 +13,13 @@
 ;       ARCHIVE: Returns archive distribution instead of survey
 ;       WINDOW: Specifies window to plot (Def: generates new window)
 ;       BLINE: Shows magnetic field direction by a black line
-;       MSO: Rotates into MSO frame (no effect for 'BV', 'BE', and 'perp' cuts)
+;       MSO: Rotates into MSO frame (no effect on 'BV', 'BE', and 'perp' cuts)
 ; CREATED BY:
 ;       Yuki Harada on 2014-10-10
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-05-05 14:46:35 -0700 (Tue, 05 May 2015) $
-; $LastChangedRevision: 17479 $
+; $LastChangedDate: 2015-05-06 08:33:12 -0700 (Wed, 06 May 2015) $
+; $LastChangedRevision: 17482 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_slice2d_snap.pro $
 ;-
 
@@ -42,23 +42,19 @@ ctime,t,npoints=1,/silent,vname=vname
 ok = 1
 while (ok) do begin
 
-   get3d_func = ''
+   get3d_func = 'mvn_swia_get_3dc' ;- coarse by default
    if strmatch(vname,'*swif*') eq 1 then get3d_func = 'mvn_swia_get_3df'
-   if strmatch(vname,'*swic*') eq 1 then get3d_func = 'mvn_swia_get_3dc'
 
-   if get3d_func ne '' then begin
-      d = call_function(get3d_func,t,archive=archive)
-      if keyword_set(bline) then bdir = d.magf/total(d.magf^2)^.5
-      if keyword_set(mso) then begin
-         mvn_pfp_cotrans, d, from='MAVEN_SWIA',to='MAVEN_MSO',theta=theta,phi=phi
-         d.theta = theta
-         d.phi = phi
-      endif
-
-      wset,Dwin
-      slice2d,d, _extra=_extra, sundir=bdir
-
+   d = call_function(get3d_func,t,archive=archive)
+   if keyword_set(mso) then begin
+      mvn_pfp_cotrans, d, from='MAVEN_SWIA',to='MAVEN_MSO',/overwrite
+      bnew = spice_vector_rotate(d.magf,(d.time+d.end_time)/2.d,'MAVEN_SWIA','MAVEN_MSO',check='MAVEN_SPACECRAFT',verb=-1)
+      str_element,d,'magf',bnew,/add_replace
    endif
+   if keyword_set(bline) then bdir = d.magf/total(d.magf^2)^.5
+
+   wset,Dwin
+   slice2d,d, _extra=_extra, sundir=bdir
 
    ctime,t,npoints=1,/silent,vname=vname
    if (data_type(t) eq 5) then ok = 1 else ok = 0

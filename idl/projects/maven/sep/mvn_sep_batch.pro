@@ -14,6 +14,7 @@ mvn_save_reduce_timeres,init=1,/mag,resstr='1sec',verbose=1
 mvn_save_reduce_timeres,init=1,/mag,resstr='30sec',verbose=1
 
 ;mvn_sep_gen_plots,init=-10
+timespan,[time_double('2014-9-20'),systime(1)]
 mvn_sep_makefile  ;,init=-200
 
 ;mvn_sta_tplot_restore,trange=[time_double('2014-9-30'),systime(1)],/create    ;  Since MOI

@@ -69,6 +69,7 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
     stags = tag_names(!spedas)
     sctags = n_elements(stags)
 
+
     For j = 0, nctags-1 Do Begin
       x0 = strtrim(ctags[j])
       x1 = ftest.(j)
@@ -81,10 +82,16 @@ pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=rem
       index = WHERE(stags eq x0, count)
       if count EQ 0 then begin
          dir = spedas_config_filedir()
-         msg='The configuration file '+dir+'\spedas_config.txt contains invalid or obsolete fields. Would you like a new file automatically generated for you? If not, you will need to modify your existing file before proceeding. Configuration information can be found in the Users Guide.'
+         dir = strjoin(strsplit(dir, '/', /regex, /extract, /preserve_null), path_sep())
+         msg=['The configuration file '+dir+'\spedas_config.txt contains invalid or obsolete fields.', '', 'Would you like a new file automatically generated for you?','', $
+         'If not, you will need to modify your existing file before proceeding. Configuration information can be found in the Users Guide.']
          answer = dialog_message(msg, /question)
          if answer EQ 'Yes' then begin
-            cmd='del '+dir+'\spedas_config.txt'
+            if strlowcase(!version.os_family) eq 'windows' then begin
+                cmd='del '+dir+'\spedas_config.txt'
+            endif else begin
+                cmd='rm '+dir+'/spedas_config.txt'
+            endelse
             spawn, cmd, res, errres
             spedas_init
          endif

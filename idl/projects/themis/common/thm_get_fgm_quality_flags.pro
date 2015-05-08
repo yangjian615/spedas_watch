@@ -19,7 +19,7 @@
 ;
 ;EXAMPLES:
 ; qf = thm_get_fgm_quality_flags('a',trange=['2014-02-01/00:00:00','2014-02-05/00:00:00'])
-; qf.qf_print()
+; qf->qf_print()
 ;
 ;NOTES:
 ;Quality flags:
@@ -46,22 +46,22 @@
 ;
 ;Data for thc are wrong for 2011:
 ;
-;Nov 26 10:10 – Nov. 26 24:00
-;Nov 28 23:10 – Nov. 29 03:00
-;Nov 30 05:00 – Nov. 30 24:00
-;Dec 07 15:00 – Dec. 08 24:00
-;Dec 27 15:00 – Dec. 27 24:00
+;Nov 26 10:10 – Nov 26 24:00
+;Nov 28 23:10 – Nov 29 03:00
+;Nov 30 05:00 – Nov 30 24:00
+;Dec 07 15:00 – Dec 08 24:00
+;Dec 27 15:00 – Dec 27 24:00
 ;
 ;Data for thb are wrong for 2012:;
-;Jan 04 20:45 – Jan. 04 24:00
+;Jan 04 20:45 – Jan 04 24:00
 ;
 ;RELATED:
 ;spd_qf_list__define
 ;
 ;HISTORY:;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-02-06 11:09:04 -0800 (Fri, 06 Feb 2015) $
-;$LastChangedRevision: 16899 $
+;$LastChangedDate: 2015-05-06 13:55:48 -0700 (Wed, 06 May 2015) $
+;$LastChangedRevision: 17486 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_get_fgm_quality_flags.pro $
 ;-
 
@@ -122,7 +122,7 @@ function thm_get_fgm_quality_flags, probe, trange=trange
     smp->interp_t,time=shadow_midpoints, segflag=segflag
     if segflag eq 3 then qf = 3 else qf = 2
     fgm_qf0= obj_new('SPD_QF_LIST', t_start=[shadow_start0], t_end=[shadow_end0], qf_bits=[qf])
-    fgm_qf = fgm_qf.qf_merge(fgm_qf0)
+    fgm_qf = fgm_qf->qf_merge(fgm_qf0)
   endfor
 
   ; noisy waveforms
@@ -130,16 +130,16 @@ function thm_get_fgm_quality_flags, probe, trange=trange
     t_start = [time_double('2012-01-04/20:45:00')]
     t_end = [time_double('2012-01-04/24:00:00')]
     fgm_qf4 = obj_new('SPD_QF_LIST', t_start=t_start, t_end=t_end, qf_bits=[4])
-    fgm_qf = fgm_qf.qf_merge(fgm_qf4)
+    fgm_qf = fgm_qf->qf_merge(fgm_qf4)
   endif else if (probe eq 'c') then begin
     t_start = [time_double('2011-11-26/10:10:00'),time_double('2011-11-28/23:10:00'),time_double('2011-11-30/05:00:00'),time_double('2011-12-07/15:00:00'),time_double('2011-12-27/15:00:00')]
     t_end = [time_double('2011-11-27/00:00:00'),time_double('2011-11-29/03:00:00'),time_double('2011-11-30/24:00:00'),time_double('2011-12-08/24:00:00'),time_double('2011-12-27/24:00:00')]
     fgm_qf4 = obj_new('SPD_QF_LIST', t_start=t_start, t_end=t_end, qf_bits=[4,4,4,4,4])    
-    fgm_qf = fgm_qf.qf_merge(fgm_qf4)
+    fgm_qf = fgm_qf->qf_merge(fgm_qf4)
   endif
   
   
-  fgm_qf = fgm_qf.qf_time_slice(trange[0],trange[1])
+  fgm_qf = fgm_qf->qf_time_slice(trange[0],trange[1])
 
   return, fgm_qf
 
