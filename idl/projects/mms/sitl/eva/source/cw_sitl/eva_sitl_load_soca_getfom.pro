@@ -1,6 +1,6 @@
 Function eva_sitl_load_soca_getfom, pref, parent
   compile_opt idl2
-  @eva_logger_com
+
   ;////////////////////////////////////
   local_dir = !MMS.LOCAL_DATA_DIR
   TESTMODE  = pref.EVA_TESTMODE
@@ -16,14 +16,14 @@ Function eva_sitl_load_soca_getfom, pref, parent
   
   if error_flag AND (TESTMODE eq 0) then begin
     msg='FOMStr not found in SDC. Ask Super SITL.'
-    log.o,msg
+    print,'EVA: '+msg
     result=dialog_message(msg,/center)
     unix_FOMstr = error_flag
   endif else begin
     if strlen(fom_file) eq 0 then message, 'Something is wrong in get_latest_fom_from_soc'
     restore,fom_file
     mms_convert_fom_tai2unix, FOMstr, unix_FOMstr, start_string
-    log.o,'fom_file = '+fom_file
+    print,'EVA: fom_file = '+fom_file
     nmax = unix_FOMStr.Nsegs
     discussion = strarr(nmax)
     discussion[0:nmax-1] = ' '
@@ -34,8 +34,8 @@ Function eva_sitl_load_soca_getfom, pref, parent
     start_time = time_string(unix_FOMstr.timestamps[0],precision=3)
     end_time = time_string(unix_FOMstr.timestamps[nmax-1],precision=3)
     lbl = ' '+start_time+' - '+end_time
-    log.o,'updating cw_sitl target_time label:'
-    log.o, lbl
+    print,'EVA: updating cw_sitl target_time label:'
+    print,'EVA: '+ lbl
     id_sitl = widget_info(parent, find_by_uname='eva_sitl')
     sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
     WIDGET_CONTROL, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY

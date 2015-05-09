@@ -23,7 +23,6 @@ END
 FUNCTION eva_data_pref_event, ev
   compile_opt idl2
   @eva_sitl_com
-  @eva_logger_com
   
   catch, error_status
   if error_status ne 0 then begin

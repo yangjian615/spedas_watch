@@ -53,8 +53,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-23 15:13:04 -0800 (Mon, 23 Feb 2015) $
-;$LastChangedRevision: 17025 $
+;$LastChangedDate: 2015-05-07 18:06:24 -0700 (Thu, 07 May 2015) $
+;$LastChangedRevision: 17517 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -112,6 +112,7 @@ if undefined(progress_object) then begin
   progress_object = obj_new()
 endif
 
+;local file name should be ignored if string_array is set 
 url = url_in
 filename = file_expand_path(filename_in)
 
@@ -229,11 +230,19 @@ if error eq 0 then begin
       file_chmod, filename, file_mode
     endif
 
+    ;output the final location
+    output = filename
+
     dprint, dlevel=2, 'Download complete:  '+filename
 
-  endif
+  endif else begin
 
-  output = filename
+    ;ouput file's contents
+    output = filepath
+
+    dprint, dlevel=2, 'Download complete'
+
+  endelse
 
 endif else begin
   catch, /cancel

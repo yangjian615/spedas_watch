@@ -1,11 +1,10 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-23 17:54:20 -0700 (Thu, 23 Apr 2015) $
-; $LastChangedRevision: 17415 $
+; $LastChangedDate: 2015-05-07 15:47:03 -0700 (Thu, 07 May 2015) $
+; $LastChangedRevision: 17514 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data_load_thm.pro $
 
 FUNCTION eva_data_load_thm, state
   compile_opt idl2
-  @eva_logger_com
 
   catch, error_status
   if error_status ne 0 then begin
@@ -48,9 +47,9 @@ FUNCTION eva_data_load_thm, state
   loaddateList = loaddateList[1:n_elements(loaddateList)-1]
   dmax = n_elements(loaddateList)
 
-  log.o,'paramlist_thm...'
+  print,'EVA: paramlist_thm...'
   for i=0,imax-1 do begin
-    log.o, '   '+strtrim(string(i),2)+': '+paramlist[i]
+    print,'EVA:    '+strtrim(string(i),2)+': '+paramlist[i]
   endfor
 
   ;--- LIST OF REQUIRED FILES ---
@@ -104,9 +103,9 @@ FUNCTION eva_data_load_thm, state
 
   rmax = n_elements(refilelist)
 
-  log.o,'Required files...'
+  print,'EVA: Required files...'
   for r=0,rmax-1 do begin
-    log.o,'   '+strtrim(string(r),2)+': '+refilelist[r]
+    print,'EVA:    '+strtrim(string(r),2)+': '+refilelist[r]
   endfor
 
 
@@ -142,15 +141,15 @@ FUNCTION eva_data_load_thm, state
     nofileList = nofileList[1:*]
     count = n_elements(nofileList)
   endif
-  log.o,'number of missing files:'+ string(count)
+  print,'EVA: number of missing files:'+ string(count)
 
   ;--- GENERATE MISSING CACHE FILES ---
 
   answer = 'Yes'
   if count gt 0 then begin
-    log.o, 'Files to be created are:
+    print,'EVA: Files to be created are:
     for c=0,count-1 do begin
-      log.o, nofileList[c]
+      print, 'EVA: '+nofileList[c]
     endfor
     answer = dialog_message(string(count)+' cache files will be created. Proceed?',$
       /question,title='LOAD DATA',/center)
@@ -213,10 +212,10 @@ FUNCTION eva_data_load_thm, state
         ; restore tplot file if file existed
         if result.exists then begin
           if result.size lt 20000.0 then begin
-            print, '!!!!!!!!!! WARNING !!!!!!!!!!'
-            print, 'file ', filename, ' is skipped because it contains'
-            print, 'no data or the file size is too small; ', result.size*0.001, ' KB'
-            print, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            print, 'EVA: !!!!!!!!!! WARNING !!!!!!!!!!'
+            print, 'EVA: file ', filename, ' is skipped because it contains'
+            print, 'EVA: no data or the file size is too small; ', result.size*0.001, ' KB'
+            print, 'EVA: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
             file_delete, fullname, /ALLOW_NONEXISTENT; delete the file
           endif else begin
             if first[r] eq 1 then begin

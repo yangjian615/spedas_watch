@@ -60,7 +60,7 @@ PRO eva_toc, clock, REPORT=profilerReport, str=str
     endif else begin
       str += string(tmin,format='(F10.3)')+' minutes.'
     endelse
-    print, str
+    print, 'EVA: '+str
   endfor
   
 END

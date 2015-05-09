@@ -2,9 +2,8 @@
 
 PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   compile_opt idl2
-  @eva_logger_com
   tspan = time_double(str_tspan)
-  log.o,'tspan:'+str_tspan[0]+' - '+str_tspan[1]
+  print,'EVA: tspan:'+str_tspan[0]+' - '+str_tspan[1]
 
 
   ; 'mms_soca_fomstr' (latest ABS selection or SITL target)
@@ -13,7 +12,7 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   if sz[0] ne 8 then return
   
   tfom = eva_sitl_tfom(unix_FOMstr)
-  log.o,'tfom:'+time_string(tfom[0],prec=7)+' - '+time_string(tfom[1],prec=7)
+  print,'EVA: tfom:'+time_string(tfom[0],prec=7)+' - '+time_string(tfom[1],prec=7)
   dgrand = ['mms_soca_fomstr']
   store_data,'mms_soca_fomstr',data=eva_sitl_strct_read(unix_FOMStr,tfom[0])
   options,'mms_soca_fomstr','ytitle','FOM'

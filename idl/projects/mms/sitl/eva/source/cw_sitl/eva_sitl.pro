@@ -50,7 +50,7 @@ END
 ; BAK = -1 .... If 't' was crossing the FOM/BAK border or too big.
 FUNCTION eva_sitl_seg_validate, t
   compile_opt idl2
-  @eva_logger_com
+
   get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
   tfom = eva_sitl_tfom(lim.UNIX_FOMSTR_MOD)
   case n_elements(t) of
@@ -69,7 +69,7 @@ FUNCTION eva_sitl_seg_validate, t
         4: msg = 'Segment too big.'
         else: message,'Something is wrong'
       end; case r of
-      log.o, 'selected segment validate result, r ='+strtrim(string(r),2)
+      print, 'EVA: selected segment validate result, r ='+strtrim(string(r),2)
       if ~strmatch(msg,'ok') then rst = dialog_message(msg,/info,/center)
     end; 2:begin
     else: message,'"t" must be 1 or 2 element array.'
@@ -163,7 +163,7 @@ END
 ; FOMStr/BAKStr and then create "segSelect" which will be passed
 ; to eva_sitl_FOMedit for editing
 PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
-  @eva_logger_com
+
   compile_opt idl2
   catch, error_status
   if error_status ne 0 then begin
@@ -179,7 +179,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
   ; BAK =  1 .... If 't' falls in the BAKStr time
   ; BAK =  0 .... If 't' falls in the FOMStr time
   ; BAK = -1 .... If 't' was crossing the FOM/BAK border or too big.
-  log.o,'BAK='+string(long(BAK))
+  print,'EVA: BAK='+string(long(BAK))
   if n_elements(t) eq 1 then begin
     case BAK of
       1: begin
@@ -262,7 +262,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
       endif
     endelse; if segSelect.BAK
   endif else begin
-    log.o,'segSelect = '+strtrim(string(segSelect),2)
+    print,'EVA: segSelect = '+strtrim(string(segSelect),2)
     ;if segSelect eq 0 then rst = dialog_message('Please choose a segment.',/info,/center)
   endelse
 END
@@ -303,7 +303,6 @@ END
 FUNCTION eva_sitl_event, ev
   compile_opt idl2
   @eva_sitl_com
-  @eva_logger_com
   @xtplot_com.pro
  
   
@@ -329,22 +328,22 @@ FUNCTION eva_sitl_event, ev
   
   case ev.id of
     state.btnAdd:  begin
-      log.o,'***** EVENT: btnAdd *****'
+      print,'EVA: ***** EVENT: btnAdd *****'
       str_element,/add,state,'group_leader',ev.top
       eva_ctime,/silent,routine_name='eva_sitl_seg_add',state=state,occur=2,npoints=2;npoints
       end
     state.btnEdit:  begin
-      log.o,'***** EVENT: btnEdit *****'
+      print,'EVA: ***** EVENT: btnEdit *****'
       str_element,/add,state,'group_leader',ev.top
       eva_ctime,/silent,routine_name='eva_sitl_seg_edit',state=state,occur=1,npoints=1;npoints
       end
     state.btnDelete:begin
-      log.o,'***** EVENT: btnDelete *****'
+      print,'EVA: ***** EVENT: btnDelete *****'
       npoints = 1 & occur = 1
       eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
       end
     state.cbMulti:begin; Delete N segments with N clicks
-      log.o,'***** EVENT: cbMulti *****'
+      print,'EVA: ***** EVENT: cbMulti *****'
       npoints = 2000 & occur = 1
       
       ; The right-click-event during eva_ctime seems to be executed
@@ -359,30 +358,30 @@ FUNCTION eva_sitl_event, ev
       eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
       end
     state.cbWTrng: begin; Delete N segment within a range specified by 2-clicks
-      log.o,'***** EVENT: cbWTrng *****'
+      print,'EVA: ***** EVENT: cbWTrng *****'
       npoints = 2 & occur = 2
       eva_ctime,/silent,routine_name='eva_sitl_seg_delete',state=state,occur=occur,npoints=npoints
       end
     state.btnSplit: begin
-      log.o,'***** EVENT: btnSplit *****'
+      print,'EVA: ***** EVENT: btnSplit *****'
       str_element,/add,state,'group_leader',ev.top
       eva_ctime,/silent,routine_name='eva_sitl_seg_split',state=state,occur=1,npoints=1;npoints
       sanitize_fpi=0
       end
     state.btnUndo: begin
-      log.o,'***** EVENT: btnUndo *****'
+      print,'EVA: ***** EVENT: btnUndo *****'
       eva_sitl_fom_recover,'undo'
       end
     state.btnRedo: begin
-      log.o,'***** EVENT: btnRedo *****'
+      print,'EVA: ***** EVENT: btnRedo *****'
       eva_sitl_fom_recover,'redo'
       end
     state.btnAllAuto: begin
-      log.o,'***** EVENT: btnAllAuto *****'
+      print,'EVA: ***** EVENT: btnAllAuto *****'
       eva_sitl_fom_recover,'rvrt'
       end
     state.btnValidate: begin
-      log.o,'***** EVENT: btnValidate *****'
+      print,'EVA: ***** EVENT: btnValidate *****'
       title = 'Validation'
       if state.PREF.EVA_BAKSTRUCT then begin
         tn = tnames()
@@ -418,7 +417,7 @@ FUNCTION eva_sitl_event, ev
       endelse
       end
 ;    state.btnEmail: begin
-;      log.o,'***** EVENT: btnEmail *****'
+;      print,'EVA: ***** EVENT: btnEmail *****'
 ;      if state.PREF.EVA_BAKSTRUCT then begin
 ;        msg = 'Email for Back Structure Mode is under construction.'
 ;        result = dialog_message(msg,/center)
@@ -442,7 +441,7 @@ FUNCTION eva_sitl_event, ev
 ;      endelse
 ;      end
     state.drpHighlight: begin
-      log.o,'***** EVENT: drpHighlight *****'
+      print,'EVA: ***** EVENT: drpHighlight *****'
       tplot
       type = state.hlSet2[ev.index]
       status = ''
@@ -474,7 +473,7 @@ FUNCTION eva_sitl_event, ev
       endif;if~skip
       end
     state.drpSave: begin
-      log.o,'***** EVENT: drpSave *****'
+      print,'EVA: ***** EVENT: drpSave *****'
       type = state.svSet[ev.index]
       case type of
         'Save': eva_sitl_save,/auto
@@ -485,8 +484,8 @@ FUNCTION eva_sitl_event, ev
       endcase
       end
     state.btnSubmit: begin
-      log.o,'***** EVENT: btnSubmit *****'
-      log.o,'TESTMODE='+string(state.PREF.EVA_TESTMODE_SUBMIT)
+      print,'EVA: ***** EVENT: btnSubmit *****'
+      print,'EVA: TESTMODE='+string(state.PREF.EVA_TESTMODE_SUBMIT)
       submit_code = 1
       if state.PREF.EVA_BAKSTRUCT then begin 
         eva_sitl_submit_bakstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT
@@ -496,7 +495,7 @@ FUNCTION eva_sitl_event, ev
       endelse
       end
     state.drDash: begin
-      ;log.o,'***** EVENT: drDash *****'
+      ;print,'EVA: ***** EVENT: drDash *****'
       widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
       sanitize_fpi=0
       end

@@ -1,6 +1,5 @@
 FUNCTION eva_data_load_reformat, paramlist, probelist, FOURTH=fourth
   compile_opt idl2
-  @eva_logger_com
   
   imax = n_elements(paramlist)
   spcidloc = 2
@@ -41,7 +40,7 @@ FUNCTION eva_data_load_reformat, paramlist, probelist, FOURTH=fourth
         tn = plist[q] + strmid(paramlist0,spcidloc+1,100)
         tname = tnames(tn,c)
         if c eq 0 then begin
-          print, 'ERROR: '+tn+' is not loaded'
+          print, 'EVA: ERROR: '+tn+' is not loaded'
           return, 'No'
         endif
         get_data, tname, data=DD, lim=lim, dl=dl

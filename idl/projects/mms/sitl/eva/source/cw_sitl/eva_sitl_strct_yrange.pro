@@ -26,7 +26,7 @@ PRO eva_sitl_strct_yrange, tpv, yrange=yrange
       end
     else:begin
       stop
-      print, sz
+      print, 'EVA: ', sz
       message,"Something is wrong"
       end
   endcase

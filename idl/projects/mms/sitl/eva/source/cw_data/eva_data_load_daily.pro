@@ -18,7 +18,7 @@ FUNCTION eva_data_load_daily_check, save_var, date
         if not (strcmp(date,da1) and strcmp(date,da2)) then tobeDL = 1; to be downloaded
       end
       else:begin
-      print, '!!!!! ERROR: something is wrong with count (eva_data_load_daily_check) !!!!!'
+      print, 'EVA: !!!!! ERROR: something is wrong with count (eva_data_load_daily_check) !!!!!'
       stop
     end
   endcase
@@ -40,7 +40,6 @@ END
 
 FUNCTION eva_data_load_daily, filename, dir, nolog=nolog
   @tplot_com
-  @eva_logger_com
 
   catch, error_status
   if error_status ne 0 then begin
@@ -81,14 +80,14 @@ FUNCTION eva_data_load_daily, filename, dir, nolog=nolog
   msn      = strmid(sc,0,2)
 
   if ~keyword_set(nolog) then begin
-  log.o, '----- Generating file : '+ filename+ ' -----'
-  log.o, 'msn  = '+msn
-  log.o, 'date = '+date
-  log.o, 'type = '+type
-  log.o, 'prod = '+prod
-  log.o, 'prbs = '+prbs
-  log.o, 'probes = '+probes
-  log.o, 'tname = '+tname
+  print, 'EVA: ----- Generating file : '+ filename+ ' -----'
+  print, 'EVA: msn  = '+msn
+  print, 'EVA: date = '+date
+  print, 'EVA: type = '+type
+  print, 'EVA: prod = '+prod
+  print, 'EVA: prbs = '+prbs
+  print, 'EVA: probes = '+probes
+  print, 'EVA: tname = '+tname
   endif
 
 
@@ -244,7 +243,7 @@ FUNCTION eva_data_load_daily, filename, dir, nolog=nolog
       stop
       msgtxt = filename + ' could not be loaded.'
       result = dialog_message(msgtxt)
-      if ~keyword_set(nolog) then log.o, msgtxt
+      if ~keyword_set(nolog) then print, 'EVA: '+msgtxt
       return, 'No'
     endif
 
@@ -281,8 +280,7 @@ FUNCTION eva_data_load_daily, filename, dir, nolog=nolog
       fullname = svdir + filename
       file_mkdir,svdir
 
-      print, 'dir='+dir
-      ;eva_tplot_save,file=fullname, tpv
+      print, 'EVA: dir='+dir
       tplot_save,file=fullname,tpv
     endif
     answer = 'Yes'

@@ -1,6 +1,5 @@
 PRO eva_data_plot, wid
   compile_opt idl2
-  @eva_logger_com
 
   ; INITIALIZE
   ;thm_init
@@ -120,8 +119,8 @@ PRO eva_data_plot, wid
   dim_scr = get_screen_size()
   width = 650 < (dim_scr[0]-width_main-30)
   height= 600 < (dim_scr[1]-60        )
-  print, 'dim_scr=',dim_scr
-  print, 'width=',width,'height=',height
+  print, 'EVA: dim_scr=',dim_scr
+  print, 'EVA: width=',width,'height=',height
   xoffset = dim_scr[0]-width
 
   j=0

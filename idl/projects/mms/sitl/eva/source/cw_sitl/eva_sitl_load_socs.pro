@@ -281,7 +281,7 @@ PRO eva_sitl_load_socs, probe=probe, input=input, pmdq=pmdq, filename=filename, 
   ;///////////////////////// STEP 4: FOM ////////////////////////////////////////////
   tn = tnames(msn+'s_socs_mdq', exist)
   if exist then begin
-    print, 'creating FOM .... '
+    print, 'EVA: creating FOM .... '
     get_data,msn+'s_socs_mdq',data=D
 
     ;generate FOMStr

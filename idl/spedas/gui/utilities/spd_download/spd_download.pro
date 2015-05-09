@@ -5,7 +5,7 @@
 ;
 ;Purpose:
 ;  Download one or more remote files and return their local paths.
-;  The function can be used in place of file_retrieve.
+;  This function can be used in place of file_retrieve.
 ;
 ;
 ;Calling Sequence:
@@ -44,6 +44,8 @@
 ;    remote_path:  String consisting of a common URL base for all remote files
 ;
 ;      -The full remote URL(s) will be:  remote_path + remote_file
+;      -If no url scheme is recognized (e.g. 'http') then it is 
+;       assumed that the url is a path to a local resource (e.g. /mount/data/)
 ;  
 ;    local_file:  String or string array of local destination file names
 ;    local_path:  String constisting of a common local path for all local files
@@ -100,14 +102,16 @@
 ;
 ;
 ;Notes:
+;  -wildcards, file_mode, and dir_mode are not supported when 
+;   copying from local resouce as per behavior of file_retrieve
 ;  -unsupported file_retrieve keywords:
 ;     progress, preserve_mtime, progobj, ignore_filesize, 
 ;     ignore_filedate, archive_ext, archive_dir, min_age_limit
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-27 11:22:51 -0700 (Mon, 27 Apr 2015) $
-;$LastChangedRevision: 17432 $
+;$LastChangedDate: 2015-05-07 19:15:22 -0700 (Thu, 07 May 2015) $
+;$LastChangedRevision: 17518 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_download/spd_download.pro $
 ;
 ;-
@@ -223,7 +227,8 @@ endif
 if undefined(local_file) then begin
   ;if remote_file is the entire url then only use the filename
   if array_equal(remote_path,'') then begin
-    local_file = (stregex(url, '/([^/]+$)',/subexpr,/extract))[1,*]
+    ;this should catch the end of urls and windows file paths
+    local_file = (stregex(url, '[/\]([^/\]+$)',/subexpr,/extract))[1,*]
   endif else begin
     local_file = (stregex(url, escape_string(remote_path)+'(.+$)',/fold_case,/subexp,/extract))[1,*]
   endelse
@@ -251,26 +256,40 @@ file_list = strarr(n_elements(filename))
 if ~keyword_set(no_download) then begin
 
   for i=0, n_elements(url)-1 do begin
-  
-    file_tmp = spd_download_file( $
-                       url = url[i], $
-                       filename = filename[i], $
 
-                       user_agent = user_agent, $
-                       headers = headers, $
-                       
-                       no_update = no_update, $
-                       force_download = force_download, $
-                       min_age_limit = min_age_limit, $
-                       
-                       file_mode = file_mode, $
-                       dir_mode = dir_mode, $
-                       
-                       progress_object = progress_object, $
-                       
-                       _extra=_extra )
+    ;if a url scheme is not recognized then assume the
+    ;reference is to a local resource and copy
+    if stregex(url[i], '^(http|ftp)s?://', /bool) then begin  
+
+      file_tmp = spd_download_file( $
+                         url = url[i], $
+                         filename = filename[i], $
   
-    if ~undefined(output_i) then begin
+                         user_agent = user_agent, $
+                         headers = headers, $
+                         
+                         no_update = no_update, $
+                         force_download = force_download, $
+                         min_age_limit = min_age_limit, $
+                         
+                         file_mode = file_mode, $
+                         dir_mode = dir_mode, $
+                         
+                         progress_object = progress_object, $
+                         
+                         _extra=_extra )
+    endif else begin
+
+      file_tmp = spd_copy_file( $
+                         source = url[i], $
+                         destination = filename[i], $
+                         
+                         force_copy = force_download, $
+                         no_update = no_update )
+      
+    endelse
+
+    if ~undefined(file_tmp) then begin
       file_list[i] = file_tmp
     endif
   

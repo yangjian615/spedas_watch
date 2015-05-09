@@ -1,7 +1,6 @@
 ; The input "state" is the DATA MODULE state.
 FUNCTION eva_data_load_sitl, state
   compile_opt idl2
-  @eva_logger_com
   
   
   clock = eva_tic('EVA_DATA_LOAD_STLM',/profiler) 
@@ -92,6 +91,6 @@ FUNCTION eva_data_load_sitl, state
 
   eva_toc,clock,str=str,report=report
   
-  log.o,str
+  print,'EVA: '+str
   return, 'Yes'
 END

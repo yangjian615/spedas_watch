@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-23 17:54:20 -0700 (Thu, 23 Apr 2015) $
-; $LastChangedRevision: 17415 $
+; $LastChangedDate: 2015-05-07 15:47:03 -0700 (Thu, 07 May 2015) $
+; $LastChangedRevision: 17514 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -68,12 +68,11 @@ END
 
 FUNCTION eva_data_load_and_plot, state
   @tplot_com
-  @eva_logger_com
   
   ; validate time range
   msg = eva_data_validate_time(state.start_time, state.end_time)
   if strlen(msg) gt 0 then begin
-    log.o, msg
+    print, 'EVA: '+msg
     result = dialog_message(msg,/center)
     return, state
   endif
@@ -84,7 +83,7 @@ FUNCTION eva_data_load_and_plot, state
   if n_elements(paramlist) eq 0 then begin
     msg =  '!!!!! WARNING: Selected parameter set '+state.paramSetList[state.paramID]+$
       ' is not available !!!!!'
-    log.o, msg
+    print, 'EVA: '+ msg
     result = dialog_message(msg,/center)
     return, state
   endif
@@ -103,7 +102,7 @@ FUNCTION eva_data_load_and_plot, state
   paramlist_stlm = (ct ge 1) ? paramlist[idx] : ''
   str_element,/add,state,'paramlist_stlm',paramlist_stlm
   rst_stlm = (ct ge 1) ? eva_data_load_sitl(state) : 'No'
-  log.o, 'load SITL: number of parameters:'+string(ct)
+  print, 'EVA: load SITL: number of parameters:'+string(ct)
 
   ;----------------------
   ; Load THEMIS
@@ -122,7 +121,7 @@ FUNCTION eva_data_load_and_plot, state
     endif 
   endif
   ;rst_thm = (ct ge 1) ? eva_data_load_thm(state) : 'No'
-  log.o, 'load THEMIS: number of parameters:'+string(ct)
+  print, 'EVA: load THEMIS: number of parameters:'+string(ct)
   
   ;----------------------
   ; Load MMS
@@ -141,7 +140,7 @@ FUNCTION eva_data_load_and_plot, state
     endif
   endif
   ;rst_mms = (ct ge 1) ? eva_data_load_mms(state) : 'No'
-  log.o, 'load MMS: number of parameters'+string(ct)
+  print, 'EVA: load MMS: number of parameters'+string(ct)
 
   
   ;----------------------
@@ -168,7 +167,6 @@ FUNCTION eva_data_load_and_plot, state
   endif
   
   eva_toc,clock,str=str
-  log.o,str
   return, state
 END
 
@@ -219,9 +217,8 @@ END
 
 FUNCTION eva_data_login, state, evTop
   compile_opt idl2
-  @eva_logger_com
   
-  log.o,'accessing MMS SDC...'
+  print,'EVA: accessing MMS SDC...'
 
   ;---------------------
   ; Establish Connection
@@ -259,8 +256,8 @@ FUNCTION eva_data_login, state, evTop
       ; Update SITL MODULE
       ;---------------------
       lbl = ' '+start_time+' - '+end_time
-      log.o,'updating cw_sitl target_time label:'
-      log.o, lbl
+      print,'EVA: updating cw_sitl target_time label:'
+      print, 'EVA: '+lbl
       id_sitl = widget_info(state.parent, find_by_uname='eva_sitl')
       sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
       widget_control, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY;******* GET
@@ -277,7 +274,7 @@ FUNCTION eva_data_login, state, evTop
       ;---------------------
       ; Update DATA MODULE
       ;---------------------
-      log.o,'updating cw_data start and end times'
+      print,'EVA: updating cw_data start and end times'
       str_element,/add,state,'start_time',start_time
       str_element,/add,state,'end_time',end_time
       eva_data_update_time, state,/update
@@ -345,7 +342,6 @@ END
 
 FUNCTION eva_data_event, ev
   compile_opt idl2
-  @eva_logger_com
   
   catch, error_status
   if error_status ne 0 then begin
@@ -364,13 +360,13 @@ FUNCTION eva_data_event, ev
   ;-----
   case ev.id of
     state.drpUserType: begin
-      log.o,'***** EVENT: drpUserType *****'
+      print,'EVA: ***** EVENT: drpUserType *****'
       str_element,/add,state,'user_flag',ev.INDEX
       if state.USER_FLAG ne 0 then begin
         state = eva_data_login(state,ev.TOP)
       endif
       if state.USER_FLAG eq 0 then begin
-        log.o,'resetting cw_data start and end times'
+        print,'EVA: resetting cw_data start and end times'
         start_time = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/00:00:00'
         end_time   = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/24:00:00'
         str_element,/add,state,'start_time',start_time
@@ -382,19 +378,17 @@ FUNCTION eva_data_event, ev
       endif
       end
     state.fldStartTime: begin
-      log.o,'***** EVENT: fldStartTime *****'
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
       str_element,/add,state,'start_time',new_time
       eva_data_update_time, state ; not updating fldStartTime
     end
     state.fldEndTime: begin
-      log.o,'***** EVENT: fldEndTime *****'
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
       str_element,/add,state,'end_time',new_time
       eva_data_update_time, state ; not updating fldEndTime
     end
     state.calStartTime: begin
-      log.o,'***** EVENT: calStartTime *****'
+      print,'EVA: ***** EVENT: calStartTime *****'
       otime = obj_new('spd_ui_time')
       otime->SetProperty,tstring=state.start_time
       spd_ui_calendar,'EVA Calendar',otime,ev.top
@@ -405,7 +399,7 @@ FUNCTION eva_data_event, ev
       obj_destroy, otime
     end
     state.calEndTime: begin
-      log.o,'***** EVENT: calEndTime *****'
+      print,'EVA: ***** EVENT: calEndTime *****'
       otime = obj_new('spd_ui_time')
       otime->SetProperty,tstring=state.end_time
       spd_ui_calendar,'EVA Calendar',otime,ev.top
@@ -418,7 +412,7 @@ FUNCTION eva_data_event, ev
     state.bgTHM: state = eva_data_probelist(state)
     state.bgMMS: state = eva_data_probelist(state)
     state.drpSet: begin
-      log.o,'***** EVENT: drpSet *****'
+      print,'EVA: ***** EVENT: drpSet *****'
       str_element,/add,state,'paramID',ev.index
       fname = state.paramFileList[state.paramID]
       fname_broken=strsplit(fname,'/',/extract,count=count)
@@ -426,17 +420,17 @@ FUNCTION eva_data_event, ev
       result = read_ascii(fname,template=eva_data_template(),count=count)
       if count gt 0 then begin
         str_element,/add,state,'paramlist',result.param
-        log.o, 'reading '+fname_param
+        print, 'EVA: reading '+fname_param
       endif else begin; if parameterSet list invalid
         msg = 'The selected parameter-set is not valid. Check the file: '+fname_param
         result = dialog_message(msg,/center)
-        log.o,msg
+        print,'EVA: '+msg
       endelse
     end
     state.load: begin
-      log.o,'--------------'
-      log.o,' EVENT: load '
-      log.o,'--------------'
+      print,'EVA: --------------'
+      print,'EVA:  EVENT: load '
+      print,'EVA: --------------'
       state = eva_data_load_and_plot(state)
       end
     state.bgOPOD: str_element,/add,state,'OPOD',ev.select
@@ -454,7 +448,6 @@ END
 FUNCTION eva_data, parent, $
   UVALUE = uval, UNAME = uname, TAB_MODE = tab_mode, XSIZE = xsize, YSIZE = ysize
   compile_opt idl2
-  @eva_logger_com
   
   IF (N_PARAMS() EQ 0) THEN MESSAGE, 'Must specify a parent for eva_data'
   IF NOT (KEYWORD_SET(uval))  THEN uval = 0
@@ -504,7 +497,7 @@ FUNCTION eva_data, parent, $
   ll = strmid(pref.EVA_CACHE_DIR, strlen(pref.EVA_CACHE_DIR)-1, 1); validate
   if ~(ll eq '/' or ll eq '\') then pref.EVA_CACHE_DIR += '/'
   str_element,/add,state,'pref',pref
-  log.o,'EVA_CACHE_DIR='+pref.EVA_CACHE_DIR
+  print,'EVA: EVA_CACHE_DIR='+pref.EVA_CACHE_DIR
   
   state = eva_data_paramSetList(state)
 

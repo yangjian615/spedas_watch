@@ -1,5 +1,4 @@
 PRO eva_error_message, error_status, msg=msg
-  @eva_logger_com
   
   help, /last_message, output=error_message; get error message
   vsn=float(strmid(!VERSION.RELEASE,0,3))
@@ -11,40 +10,17 @@ PRO eva_error_message, error_status, msg=msg
   strb = strarr(r0) & strb[0:*] = '-'
   format = '('+strtrim(string(r0),2)+'A)'
   
-  ; IDL error message
-  log.o,'############################'
-  log.o,'     ERROR '
-  log.o,'############################'
+  ; message from IDL
   for jjjj=0,n_elements(error_message)-1 do begin
     print,error_message[jjjj]
-    log.o,error_message[jjjj]
   endfor
   
-  ; EVA error message
-  log.o,'----------------------------'
-  log.o,'Additional message from EVA'
-  log.o,'----------------------------'
+  ; message from EVA
   if n_elements(msg) ne 0 then begin
-    log.o, msg
+    print, 'EVA: '+msg
   endif
+  print, 'EVA: error index: '+string(error_status)
+  print, 'EVA: OS name:   '+!VERSION.OS_NAME
+  print, 'EVA: IDL version: '+!VERSION.RELEASE
   
-  ; ENVIRONMENT
-  log.o, 'error index: '+string(error_status)
-  log.o, 'OS name:   '+!VERSION.OS_NAME
-  log.o, 'IDL version: '+!VERSION.RELEASE
-  log.o, 'build date: '+ !VERSION.BUILD_DATE
-  log.o, 'architecture: '+!VERSION.ARCH
-  log.o, 'memory and file_offset bits: '+ $
-    string(!VERSION.MEMORY_BITS, format=('(I3)')) + ' , ' + $
-    string(!VERSION.FILE_OFFSET_BITS, format=('(I3)'))
-  log.o,'############################'
-  
-  ; Message to user    
-  print, format=format, stra
-  print, "ERROR detected: Please find EVA's log file at"
-  print, ""
-  print, log.FILE
-  print, ""
-  print, 'and send this to Mitsuo Oka (moka@ssl.berkeley.edu)'
-  print, format=format, stra
 END

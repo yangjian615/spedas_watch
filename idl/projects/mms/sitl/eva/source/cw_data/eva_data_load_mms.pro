@@ -1,6 +1,5 @@
 FUNCTION eva_data_load_mms, state
   compile_opt idl2
-  @eva_logger_com
 
   catch, error_status; !ERROR_STATE is set 
   if error_status ne 0 then begin

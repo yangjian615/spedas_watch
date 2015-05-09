@@ -7,12 +7,11 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-02 18:34:10 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17228 $
+; $LastChangedDate: 2015-05-07 15:47:03 -0700 (Thu, 07 May 2015) $
+; $LastChangedRevision: 17514 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
-  @eva_logger_com
   widget_control, ev.top, GET_UVALUE=wid
   
   code_exit = 0
@@ -42,13 +41,13 @@ PRO eva_sitl_FOMedit_event, ev
       widget_control, wid.lblDiscussion, SET_VALUE='COMMENT: '+comlen+wid.DISLEN 
       end
     wid.btnSave: begin
-      log.o,'***** EVENT: btnSave *****'
+      print,'EVA: ***** EVENT: btnSave *****'
       eva_sitl_strct_update, segSelect
       eva_sitl_stack
       code_exit = 1
     end
     wid.btnCancel: begin
-      log.o,'***** EVENT: btnCancel *****'
+      print,'EVA: ***** EVENT: btnCancel *****'
       code_exit = 1 ; Do nothing
     end
     else:

@@ -1,11 +1,11 @@
 ;+
-;PROCEDURE:   mvn_swe_sumplot_long
+;PROCEDURE:   mvn_swe_specplot
 ;PURPOSE:
 ;  Plots time series summary plots of SWEA SPEC data over arbitrarily long
 ;  time spans.  The result is stored in a single TPLOT variable.
 ;
 ;USAGE:
-;  mvn_swe_sumplot_long, trange=trange, orbit=orbit
+;  mvn_swe_specplot, trange=trange, orbit=orbit
 ;
 ;INPUTS:
 ;
@@ -20,14 +20,16 @@
 ;
 ;       UNITS:        Units for plotting energy spectra.  Default = 'eflux'.
 ;
+;       ENERGY:       Energy for line plot.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-06 17:35:48 -0700 (Wed, 06 May 2015) $
-; $LastChangedRevision: 17495 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot_long.pro $
+; $LastChangedDate: 2015-05-07 12:22:19 -0700 (Thu, 07 May 2015) $
+; $LastChangedRevision: 17510 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_specplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2015-05-06
 ;-
-pro mvn_swe_sumplot_long, trange=trange, orbit=orbit, units=units
+pro mvn_swe_specplot, trange=trange, orbit=orbit, units=units, energy=energy
 
   @mvn_swe_com
   
@@ -85,6 +87,16 @@ pro mvn_swe_sumplot_long, trange=trange, orbit=orbit, units=units
   endwhile
   
   store_data,'swe_a4',data={x:x, y:y, v:v}
+  
+  if keyword_set(energy) then begin
+    de = min(abs(energy[0] - v),i)
+    vname = 'e' + string(i,format='(i2.2)')
+    store_data,vname,data={x:x, y:y[*,i]}
+    ymax = 10.^ceil(alog10(max(y,/nan)))
+    ymin = 1.
+    ylim,vname,ymin,ymax,1
+  endif
+
   mvn_swe_clear
   store_data,'dC',/delete
   store_data,'dT',/delete
