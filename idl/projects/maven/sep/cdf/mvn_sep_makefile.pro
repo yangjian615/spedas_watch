@@ -11,7 +11,7 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
 ;  sepnum = round(median(sep.sensor))
   sepstr = 's'+strtrim(sepnum,2)
   data_type = sepstr+'-raw-svy-full'  
-  L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v01_r??.cdf'
+  L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v02_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
   source_fi = file_info([source_files,prereq_files])
@@ -30,7 +30,7 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
     dependencies = [source_files,spice_test('*')]
     mvn_sep_make_raw_cdf,sepdata,bmaps,filename = nextrev_fname,global=global,dependencies=dependencies
 ;    print_cdf_info,nextrev_fname
-    if 1 then begin
+    if 0 then begin
       src = mvn_file_source()
       arcdir = src.local_data_dir+'maven/data/sci/sep/archive/'
       file_archive,lastrev_fname,archive_ext='.arc',archive_dir = arcdir
@@ -43,7 +43,7 @@ pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=
   @mvn_sep_handler_commonblock.pro
   sepstr = 's'+strtrim(sepnum,2)
   data_type = sepstr+'-cal-svy-full'
-  L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v01_r??.cdf'
+  L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v02_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
   source_fi = file_info([source_files,prereq_files])

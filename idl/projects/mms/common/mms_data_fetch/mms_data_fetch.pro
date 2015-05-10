@@ -72,14 +72,16 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-04-24 14:08:55 -0700 (Fri, 24 Apr 2015) $
-;  $LastChangedRevision: 17428 $
+;  $LastChangedDate: 2015-05-08 12:14:47 -0700 (Fri, 08 May 2015) $
+;  $LastChangedRevision: 17531 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_data_fetch.pro $
 
 
 pro mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id, $
   instrument_id=instrument_id, mode=mode, level=level, optional_descriptor=optional_descriptor, $
   no_update=no_update, reload=reload
+
+mms_init
 
 login_flag = 0
 
@@ -118,7 +120,7 @@ type_string = typename(file_data)
 if type_string ne 'STRING' then begin
   login_flag = 1
   local_flist = ''
-  download_fail=1
+  download_fail=0
 endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
  
   cut_filenames = strarr(n_elements(file_data)/2) ; Filename without the directory
@@ -291,7 +293,7 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
 endif else begin
   local_flist = ''
   login_flag = 1
-  download_fail=1
+  download_fail=0
 endelse
 
 

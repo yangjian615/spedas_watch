@@ -33,6 +33,7 @@
 ; instrument     instrument of the data
 ; units          the units for this data qunatity
 ; yaxisunits     the units of the yaxis for this quantity(not important internally, but when we are passing around metadata during a tplot operation, it becomes more important)
+;                yaxisunits is stored but does not appear to be used anywhere (af, 2015-05-08)
 ; suffix         the suffix of the quantity(if applicable)
 ; settings       object representing the default data settings
 ;
@@ -53,9 +54,9 @@
 ;  spd_ui_getset.  You can still call these methods when using objects of type spd_ui_data, and
 ;  call them in the same way as before
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-20 14:07:15 -0800 (Thu, 20 Feb 2014) $
-;$LastChangedRevision: 14405 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
+;$LastChangedRevision: 17542 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_data__define.pro $
 ;-----------------------------------------------------------------------------------
 

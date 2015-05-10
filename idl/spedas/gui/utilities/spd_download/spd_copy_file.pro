@@ -19,7 +19,10 @@
 ;  destination:  Path to destination file
 ;  no_update:  Flag to not overwrite existing file 
 ;  force_copy:  Flag to always overwrite existing file
-;
+;  file_mode:  Bit mask specifying permissions for new files (see file_chmod)
+;  dir_mode:  Bit mask specifying permissions for new directories (see file_chmod)
+;  
+; 
 ;
 ;Output:
 ;  return value:  Full path to destination file if successful, empty string otherwise
@@ -28,13 +31,11 @@
 ;Notes:
 ;  -precedence of boolean keywords:
 ;     force_download > no_update > default behavior
-;  -this routine does not implement file_mode or dir_mode keywords
-;   because it was designed to mimic file_retrieve/file_copy2
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-07 11:40:50 -0700 (Thu, 07 May 2015) $
-;$LastChangedRevision: 17505 $
+;$LastChangedDate: 2015-05-08 11:26:49 -0700 (Fri, 08 May 2015) $
+;$LastChangedRevision: 17524 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_download/spd_copy_file.pro $
 ;
 ;-
@@ -43,6 +44,9 @@ function spd_copy_file, $
 
                   source=source, $
                   destination=destination, $
+
+                  file_mode=file_mode, $
+                  dir_mode=dir_mode, $
 
                   no_update=no_update, $
                   force_copy = force_copy
@@ -97,13 +101,14 @@ endif
 dprint, dlevel=2, 'Copying:  ' + source_info.name
 
 ;make parent directory if it doesn't exist
-destination_folder = file_dirname(destination_info.name) 
-if ~file_test(destination_folder,/directory) then begin
-  file_mkdir, destination_folder
-endif
+spd_download_mkdir, file_dirname(destination_info.name), dir_mode
 
 ;copy file
 file_copy, source_info.name, destination_info.name, /overwrite
+
+if ~undefined(file_mode)then begin
+  file_chmod, destination_info.name, file_mode
+endif
 
 dprint, dlevel=2, 'Copy complete:  ' + destination_info.name
 

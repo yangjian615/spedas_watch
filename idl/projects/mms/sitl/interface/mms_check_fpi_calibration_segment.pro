@@ -3,8 +3,10 @@
 pro mms_check_fpi_calibration_segment, seg_start, seg_stop, fom, sourceid, $
                                        error_flags, error_msg, yellow_warning_flags, $
                                        yellow_warning_msg, orange_warning_flags, orange_warning_msg
-                                       
+on_error, 2                                   
 valstruct = mms_load_fom_validation()
+if typename(valstruct) eq 'INT' then message, 'ERROR: Unable to load FOM validation parameters ' + $
+  'from SDC. Check your internet connection.'
 
 fom_fpi_min = valstruct.fom_fpi_min
 fpi_seg_bounds = valstruct.fpi_seg_bounds

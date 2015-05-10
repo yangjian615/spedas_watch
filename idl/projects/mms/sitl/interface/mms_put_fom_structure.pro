@@ -20,7 +20,7 @@ temptime = systime(/utc)
 
 yearstr = strmid(temptime, 20, 4)
 
-dir_path = filepath('', root_dir=data_dir,
+dir_path = filepath('', root_dir=data_dir,$
   subdirectory=['sitl','sitl_selections',yearstr])
 
 ;dir_path = data_dir + 'sitl/sitl_selections/' + yearstr + '/'

@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-18 16:27:58 -0800 (Wed, 18 Feb 2015) $
-;$LastChangedRevision: 17004 $
+;$LastChangedDate: 2015-05-08 11:26:49 -0700 (Fri, 08 May 2015) $
+;$LastChangedRevision: 17524 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_download/spd_download_mkdir.pro $
 ;
 ;-
@@ -34,7 +34,7 @@ pro spd_download_mkdir, path, mode, error=error
     compile_opt idl2, hidden
 
 
-if undefined(path) || undefined(mode) then begin
+if undefined(path) then begin
   return
 endif
 
@@ -64,7 +64,9 @@ endif
 ;make directory and set permissions
 if ~keyword_set(error) then begin
   file_mkdir, path
-  file_chmod, path, mode
+  if ~undefined(mode) then begin
+    file_chmod, path, mode
+  endif
 endif
 
 

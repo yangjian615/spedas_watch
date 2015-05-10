@@ -703,11 +703,24 @@ load_position='bound'
 
 load_position='plot'
 
-; plot it!
-thm_spec_lim4overplot, thx+'_peif_en_eflux', zlog = 1, ylog = 1, /overwrite
-thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, /overwrite
-thm_spec_lim4overplot, thx+'_peir_en_eflux', zlog = 1, ylog = 1, /overwrite
-thm_spec_lim4overplot, thx+'_peer_en_eflux', zlog = 1, ylog = 1, /overwrite
+;set the low limit of the ESA en_eflux variables to be the lower limit
+;of either the ion or electron energies
+get_data,  thx+'_peif_en_eflux', data = dion
+get_data,  thx+'_peef_en_eflux', data = dele
+If(is_struct(dion) && is_struct(dele)) Then Begin
+   mineval = min([min(dion.v), min(dele.v)])
+Endif Else mineval = 0
+thm_spec_lim4overplot, thx+'_peif_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
+thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
+
+get_data,  thx+'_peir_en_eflux', data = dion
+get_data,  thx+'_peer_en_eflux', data = dele
+If(is_struct(dion) && is_struct(dele)) Then Begin
+   mineval = min([min(dion.v), min(dele.v)])
+Endif Else mineval = 0
+thm_spec_lim4overplot, thx+'_peir_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
+thm_spec_lim4overplot, thx+'_peer_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
+
 ssti_name=thx+'_psif_en_eflux'
 sste_name=thx+'_psef_en_eflux'
 thm_spec_lim4overplot, ssti_name, zlog = 1, ylog = 1, /overwrite

@@ -57,8 +57,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-04-14 13:24:43 -0700 (Tue, 14 Apr 2015) $
-;  $LastChangedRevision: 17311 $
+;  $LastChangedDate: 2015-05-08 12:15:58 -0700 (Fri, 08 May 2015) $
+;  $LastChangedRevision: 17532 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_check_local_cache.pro $
 
 ;
@@ -67,7 +67,9 @@
 
 pro mms_check_local_cache, local_flist, start_date, end_date, file_flag, $
     mode, instrument_id, level, sc_id, optional_descriptor=optional_descriptor
-  
+
+mms_init
+
 file_flag = 0  
 
 num_optional = n_elements(optional_descriptor)

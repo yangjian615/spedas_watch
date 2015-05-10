@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-07 15:47:03 -0700 (Thu, 07 May 2015) $
-; $LastChangedRevision: 17514 $
+; $LastChangedDate: 2015-05-08 15:31:32 -0700 (Fri, 08 May 2015) $
+; $LastChangedRevision: 17539 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -137,6 +137,7 @@ PRO eva
   str_element,/add,wid,'data',eva_data(base,xsize=330); DATA MODULE
   baseTab = widget_tab(base)
 
+  
   ;---------------------------------
   ;  SITL
   ;---------------------------------

@@ -1,4 +1,4 @@
-PRO eva_clean
+PRO eva_cleanup
   cfg = -1
   dir = mms_config_filedir(/app_query); look for the config directory
   if(dir[0] ne '') then begin

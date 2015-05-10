@@ -120,8 +120,8 @@
 ;   thm_load_slp,datatype='sun_pos',trange=['2007-01-22/00:00:00','2007-01-24/00:00:00']
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedDate: 2015-05-08 18:56:06 -0700 (Fri, 08 May 2015) $
+; $LastChangedRevision: 17543 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_load_slp.pro $
 ;-
 function thm_load_slp_relpath,trange=trange
@@ -203,6 +203,11 @@ pro thm_load_slp,datatype = datatype, trange = trange, $
   if ~params.downloadonly then begin
     cdf2tplot,file=files,verbose=params.verbose,tplotnames=tplotnames,varformat=names,suffix=suffix
   
+    if ~is_string(tplotnames) then begin
+      dprint, dlevel=1, 'Error loading CDF; verify file is present'
+      return
+    endif
+
     for i = 0,n_elements(tplotnames)-1 do begin
       if n_elements(trange) EQ 0 then trange = timerange(/current)
       ;clip data to requested interval

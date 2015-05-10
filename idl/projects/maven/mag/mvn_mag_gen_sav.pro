@@ -71,7 +71,7 @@ pro mvn_mag_gen_sav,trange=trange0,$
 
      ;; Trigger regeneration of long term plots.
      timestamp  = systime(1)         
-     data       = mvn_mag_sts_read_v2(mag_l1_file,header=header)  
+     data       = mvn_mag_sts_read(mag_l1_file,header=header)  
      dependents = file_checksum(mag_l1_file,/add_mtime)
 
      ;;;;; prereq_info = file_checksum(prereq_files,/add_mtime)
@@ -136,7 +136,7 @@ pro mvn_mag_gen_sav,trange=trange0,$
      
      ;; Trigger regeneration of long term plots.
      timestamp  = systime(1)         
-     data       = mvn_mag_sts_read_v2(mag_l2_file,header=header)  
+     data       = mvn_mag_sts_read(mag_l2_file,header=header)  
      dependents = file_checksum(mag_l2_file,/add_mtime)
 
      ;; prereq_info = file_checksum(prereq_files,/add_mtime)

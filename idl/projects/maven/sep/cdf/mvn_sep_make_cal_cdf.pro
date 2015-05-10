@@ -297,6 +297,22 @@ atts.var_type ='data'
 atts.catdesc = 'Ion Flux Uncertainty (#/cm^2/sec/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ION_FLUX_UNC,attributes=atts
 
+varname = 'F_ION_FLUX_TOT'
+atts = default_atts
+atts.fieldnam = varname
+atts.lablaxis = varname
+atts.var_type ='data'
+atts.catdesc = 'Total Ion Flux in Forward Facing look direction (#/cm^2/sec)'
+mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ION_FLUX_TOT,attributes=atts
+
+varname = 'F_ION_FLUX_TOT_UNC'
+atts = default_atts
+atts.fieldnam = varname
+atts.lablaxis = varname
+atts.var_type ='data'
+atts.catdesc = 'Total Ion Flux Uncertainty (#/cm^2/sec)'
+mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ION_FLUX_TOT_UNC,attributes=atts
+
 varname = 'F_ION_ENERGY'
 atts = default_atts
 atts.fieldnam = varname
@@ -329,6 +345,23 @@ atts.lablaxis = varname
 atts.var_type ='data'
 atts.catdesc = 'Electron Flux Uncertainty (#/cm^2/sec/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ELEC_FLUX_UNC,attributes=atts
+
+
+varname = 'F_ELEC_FLUX_TOT'
+atts = default_atts
+atts.fieldnam = varname
+atts.lablaxis = varname
+atts.var_type ='data'
+atts.catdesc = 'Integrated Electron Flux in Forward Facing look direction (#/cm^2/sec)'
+mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ELEC_FLUX_TOT,attributes=atts
+
+varname = 'F_ELEC_FLUX_TOT_UNC'
+atts = default_atts
+atts.fieldnam = varname
+atts.lablaxis = varname
+atts.var_type ='data'
+atts.catdesc = 'Integrated Electron Flux Uncertainty (#/cm^2/sec)'
+mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ELEC_FLUX_TOT_UNC,attributes=atts
 
 varname = 'F_ELEC_ENERGY'
 atts = default_atts
@@ -365,6 +398,23 @@ atts.var_type ='data'
 atts.catdesc = 'Ion Flux Uncertainty (#/cm^2/sec/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ION_FLUX_UNC,attributes=atts
 
+
+varname = 'R_ION_FLUX_TOT'
+atts = default_atts
+atts.fieldnam = varname
+atts.lablaxis = varname
+atts.var_type ='data'
+atts.catdesc = 'Integrated Ion Flux in Reverse Facing look direction (#/cm^2/sec/keV)'
+mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ION_FLUX_TOT,attributes=atts
+
+varname = 'R_ION_FLUX_TOT_UNC'
+atts = default_atts
+atts.fieldnam = varname
+atts.lablaxis = varname
+atts.var_type ='data'
+atts.catdesc = 'Integrated Ion Flux Uncertainty (#/cm^2/sec/keV)'
+mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ION_FLUX_TOT_UNC,attributes=atts
+
 varname = 'R_ION_ENERGY'
 atts = default_atts
 atts.fieldnam = varname
@@ -397,6 +447,22 @@ atts.lablaxis = varname
 atts.var_type ='data'
 atts.catdesc = 'Electron Flux Uncertainty (#/cm^2/sec/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ELEC_FLUX_UNC,attributes=atts
+
+varname = 'R_ELEC_FLUX_TOT'
+atts = default_atts
+atts.fieldnam = varname
+atts.lablaxis = varname
+atts.var_type ='data'
+atts.catdesc = 'Integrated Electron Flux in Reverse Facing look direction (#/cm^2/sec/keV)'
+mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ELEC_FLUX_TOT,attributes=atts
+
+varname = 'R_ELEC_FLUX_TOT_UNC'
+atts = default_atts
+atts.fieldnam = varname
+atts.lablaxis = varname
+atts.var_type ='data'
+atts.catdesc = 'Integrated Electron Flux Uncertainty (#/cm^2/sec/keV)'
+mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ELEC_FLUX_TOT_UNC,attributes=atts
 
 varname = 'R_ELEC_ENERGY'
 atts = default_atts

@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-29 13:24:31 -0700 (Wed, 29 Apr 2015) $
-;$LastChangedRevision: 17451 $
+;$LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
+;$LastChangedRevision: 17542 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/cotrans/spd_ui_cotrans.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -86,12 +86,8 @@ for i = 0,n_elements(active)-1 do begin
   ;export data to tplot variable
   tname = loadedData->getTvarData(name)
 
-  ;get metadata 
-  ;  -this is to preserve GUI specific metadata when exporting to tplot
-  metadata = loadedData->getMetadataObject(name)
-
   ;get input coords
-  metadata->getproperty, coordsys=in_coord
+  loadedData->getdatainfo, name, coordinate_system=in_coord
 
   ;skip if variable is not a 3-vector
   ;this is checked in spd_cotrans but checking here allows for a pop-up message
@@ -153,12 +149,11 @@ for i = 0,n_elements(active)-1 do begin
   endelse
   
   ;add output to the GUI
-  metadata->setProperty,coordSys = out_coord, name=out_var
   spd_ui_check_overwrite_data,out_var[0],loadedData,tlb,sobj,historyWin,tvar_overwrite_selection,tvar_overwrite_count,$
                          replay=replay,overwrite_selections=tvar_overwrite_selections
                          
-  if ~loadedData->addwithmetadata(metadata) && ~keyword_set(replay) then begin
-    ok = error_message('error adding data',traceback=0,/center,title='Error in Cotrans New')
+  if ~loadedData->add(out_var[0]) && ~keyword_set(replay) then begin
+    ok = error_message('Unknown error adding data',traceback=0,/center,title='Coordinate Transform Error')
   endif
         
   loadedData->clearActive,name

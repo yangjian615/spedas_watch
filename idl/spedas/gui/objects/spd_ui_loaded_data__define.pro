@@ -50,8 +50,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-29 13:24:31 -0700 (Wed, 29 Apr 2015) $
-;$LastChangedRevision: 17451 $
+;$LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
+;$LastChangedRevision: 17542 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -519,7 +519,7 @@ END ;---------------------------------------------------------------------------
 
 pro spd_ui_loaded_data::detectDlimits,name,dl,mission=mission,observatory=observatory,instrument=instrument,file=file,coordsys=coordsys,units=units,st_type=st_type
 
-  compile_opt idl2
+  compile_opt idl2, hidden
 
   ;**************************
   ; Set mission/project name
@@ -1075,34 +1075,6 @@ function SPD_UI_LOADED_DATA::detectunits, name, dl
 end ;--------------------------------------------------------------------------------
 
 
-;+
-; This is a kludge that shouldn't be employed in new code.
-;
-; This method employs the usual ::Add method but pulls metadata from 
-; an identically named spd_ui_data object.  A metadata-only data object 
-; can be exported with ::getMetadataObject.
-;
-;-
-function SPD_UI_LOADED_DATA::addWithMetadata,obj,component_names=component_names,added_name=added_name
-
-  compile_opt idl2
-
-  if ~obj_valid(obj) then return,0
-  
-  obj->getproperty,name=name,filename=filename,mission=mission,observatory=observatory,coordSys=coordSys,instrument=instrument,isSpect=isSpect,isTime=isTime,isYaxis=isYaxis,timerange=timerange,groupname=groupname,units=units,yaxisunits=yaxisunits,suffix=suffix
-  
-  if obj_valid(timerange) then begin
-    timerange->getProperty,startTime=st,endTime=et
-    st->getProperty,tDouble=std
-    et->getProperty,tDouble=etd
-    tr = [std,etd]
-  endif
-  
-  if ~self->add(name,file=filename,mission=mission,observatory=observatory,coordSys=coordSys,instrument=instrument,isSpect=isSpect,timerange=tr,groupname=groupname,component_names=component_names,added_name=added_name,units=units,yaxisunits=yaxisunits,suffix=suffix) then return,0
-  
-  return,1
-
-end
 
 FUNCTION SPD_UI_LOADED_DATA::Remove, name,nodelete=nodelete
 
@@ -1773,70 +1745,7 @@ PRO SPD_UI_LOADED_DATA::Cleanup
   
 END ;--------------------------------------------------------------------------------
 
-;+
-; This is a kludge that shouldn't be employed in new code.
-;
-; Returns an spd_ui_data object containing only metadata.    
-;
-;-
-function SPD_UI_LOADED_DATA::GetMetadataObject,name
 
-  compile_opt idl2
-
-  objs = self->getObjects(name=name)
-  
-  ; use the properties from the last object in the group instead of the first object
-  ; this prevents GUI cotrans operations from using properties (such as units)
-  ; from the time object
-  ; 
-  ; This assumes the objects in the group, other than the time object, have 
-  ; the same properties (units, coordinate systems, etc.)
-  last_element_idx = n_elements(objs)-1
-  
-  if ~obj_valid(objs[last_element_idx]) then return,0
-  
-  objs[last_element_idx]->updateDlimits
-  
-  objs[last_element_idx]->getproperty,groupname=groupname, $
-                       filename=filename, $
-                       isTime=isTime,     $
-                       isYaxis=isYaxis,   $
-                       isSpect=isSpect,   $
-                       mission=mission, $
-                       observatory=observatory, $
-                       coordSys=coordSys, $
-                       instrument=instrument, $
-                       timerange=timerange,$
-                       units=units,$
-                       yaxisunits=yaxisunits,$
-                       dlimitPtr=dlimitPtr,$
-                       limitPtr=limitPtr
-
-  newdlptr = ptr_new(*dlimitPtr)
-  
-  if ptr_valid(limitPtr) then begin
-    newlimitptr = ptr_new(*limitPtr)
-  endif else begin
-    newlimitptr = ptr_new(0)
-  endelse 
-  
-  return,obj_new('spd_ui_data',varname,-1, $
-    groupname=groupname, $
-    filename=filename, $
-    isTime=isTime,     $
-    isYaxis=isYaxis,   $
-    isSpect=isSpect,   $
-    mission=mission, $
-    observatory=observatory, $
-    coordSys=coordSys, $
-    instrument=instrument, $
-    timerange=timerange,$
-    units=units,$
-    yaxisunits=yaxisunits,$
-    limitPtr=newlimitPtr,$
-    dlimitptr = newdlptr)
-
-end ;--------------------------------------------------------------------------------
 
 FUNCTION SPD_UI_LOADED_DATA::GetObjects,name=name
 

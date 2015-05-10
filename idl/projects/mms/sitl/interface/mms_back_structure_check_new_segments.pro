@@ -9,7 +9,12 @@ pro mms_back_structure_check_new_segments, new_backstr, new_segs, new_error_flag
 
 ;--------------------------------------------------------------------------------------
 ; Define parameters that lead to errors and warnings
+on_error, 2
 valstruct = mms_load_fom_validation()
+
+if typename(valstruct) eq 'INT' then message, 'ERROR: Unable to load FOM validation parameters ' + $
+  'from SDC. Check your internet connection.'
+
 fom_gmax = valstruct.fom_gmax
 fom_bounds = valstruct.fom_bounds
 seg_bounds = valstruct.seg_bounds

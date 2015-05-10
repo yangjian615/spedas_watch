@@ -6,8 +6,8 @@
 ;          for the evaluator of the mini_language
 ;           
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-29 13:24:31 -0700 (Wed, 29 Apr 2015) $
-; $LastChangedRevision: 17451 $
+; $LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
+; $LastChangedRevision: 17542 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/evaluator_routines.pro $
 ;- 
 
@@ -403,9 +403,6 @@ pro store_var_data,name,value
        tmp_limits = make_dlimits_type(value)
        
        dlimits = tmp_limits.dlimits
-       obj = tmp_limits.object
-       
-       obj->setProperty,name=name.value
               
        store_data,name.value,data=data,limits=limits,dlimits=dlimits,error=e
 
@@ -413,7 +410,7 @@ pro store_var_data,name,value
          message,'store_data error'
        endif
        
-       if ~!mini_globals.gui_data_obj->addWithMetadata(obj) then begin
+       if ~!mini_globals.gui_data_obj->add(name.value) then begin
          message,'loaded_data error'
        endif
 

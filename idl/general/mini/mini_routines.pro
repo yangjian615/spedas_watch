@@ -28,8 +28,8 @@
 ;
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-29 13:24:31 -0700 (Wed, 29 Apr 2015) $
-; $LastChangedRevision: 17451 $
+; $LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
+; $LastChangedRevision: 17542 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/mini_routines.pro $
 ;- 
 
@@ -710,18 +710,16 @@ function mini_var,arg1
       ;export variable to tplot
       tname = !mini_globals.gui_data_obj->getTvarData(arg1.value)
       
-      ;get object to store GUI-specific metadata
-      obj = !mini_globals.gui_data_obj->getMetadataObject(arg1.value)
-
-      if ~obj_valid(obj) or tname eq '' then begin
+      if tname eq '' then begin
         message,'error reading gui variable: ' + arg1.value
       endif
-      
       get_data,arg1.value,data=d,limit=l,dlimit=dl
       
       ;quick hack to implement gui variables
       ;I store the inherited meta-data in the dlimits
-      dl = {object:obj,dlimits:dl}
+      ;(af 2015-05-08) - Hack no longer necessary, but 
+      ; I'm leaving the struct-in-struct lest everything break
+      dl = {dlimits:dl}
     endif else begin
   
       get_data,arg1.value,data=d,limit=l,dlimit=dl

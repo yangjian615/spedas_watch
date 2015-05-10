@@ -17,8 +17,8 @@
 ;AUTHOR:	J. Halekas	
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-02-23 06:42:11 -0800 (Mon, 23 Feb 2015) $
-; $LastChangedRevision: 17022 $
+; $LastChangedDate: 2015-05-08 13:38:59 -0700 (Fri, 08 May 2015) $
+; $LastChangedRevision: 17535 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_alfven_test.pro $
 ;
 ;-
@@ -87,7 +87,7 @@ for i = 1,300 do begin
 	vyth = vyth-mvy+mean(vy,/nan)
 	vzth = vzth-mvz+mean(vz,/nan)
 
-	rms[i-1] = total((abs(vx-vxth) + abs(vy-vyth) + abs(vz-vzth)))
+	rms[i-1] = sqrt(total(((vx-vxth-mean(vx,/nan)+mvx)^2 + (vy-vyth-mean(vy,/nan)+mvy)^2 + (vz-vzth-mean(vz,/nan)+mvz)^2)))
 
 endfor
 

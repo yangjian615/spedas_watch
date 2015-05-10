@@ -102,16 +102,14 @@
 ;
 ;
 ;Notes:
-;  -wildcards, file_mode, and dir_mode are not supported when 
-;   copying from local resouce as per behavior of file_retrieve
 ;  -unsupported file_retrieve keywords:
 ;     progress, preserve_mtime, progobj, ignore_filesize, 
 ;     ignore_filedate, archive_ext, archive_dir, min_age_limit
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-07 19:15:22 -0700 (Thu, 07 May 2015) $
-;$LastChangedRevision: 17518 $
+;$LastChangedDate: 2015-05-08 11:26:49 -0700 (Fri, 08 May 2015) $
+;$LastChangedRevision: 17524 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/utilities/spd_download/spd_download.pro $
 ;
 ;-
@@ -283,6 +281,9 @@ if ~keyword_set(no_download) then begin
       file_tmp = spd_copy_file( $
                          source = url[i], $
                          destination = filename[i], $
+                         
+                         file_mode = file_mode, $
+                         dir_mode = dir_mode, $
                          
                          force_copy = force_download, $
                          no_update = no_update )

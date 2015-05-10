@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-07 15:47:03 -0700 (Thu, 07 May 2015) $
-; $LastChangedRevision: 17514 $
+; $LastChangedDate: 2015-05-08 18:08:33 -0700 (Fri, 08 May 2015) $
+; $LastChangedRevision: 17541 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -466,10 +466,10 @@ FUNCTION eva_data, parent, $
   
   ;----- PREFERENCES -----
   
-  local_dir = thm_addslash(!MMS.LOCAL_DATA_DIR)
-  pref = {EVA_CACHE_DIR: local_dir+'eva_cache/', $
+  home_dir = (file_search('~',/expand_tilde))[0]+'/'
+  pref = {EVA_CACHE_DIR: home_dir + 'data/eva_cache/', $
     EVA_PARAMSET_DIR: '',$
-    EVA_TESTMODE: 1}
+    EVA_TESTMODE: 0}
 
   ;----- STATE ----- 
   state = { $
@@ -483,8 +483,8 @@ FUNCTION eva_data, parent, $
     paramID:       0,            $; which parameter set to be used
     OPOD:          0,            $; One Plot One Display
     SRTV:          0,            $; Sort by Variables when display
-    probelist_thm: 'thb',        $; which THM probe(s) to be used
-    probelist_mms: -1,           $; which MMS probe(s) to be used
+    probelist_thm: -1,        $; which THM probe(s) to be used
+    probelist_mms: 'mms1',           $; which MMS probe(s) to be used
     paramSetList:  '', $; List of ParameterSets
     paramFileList: '',$
     userType: userType, $
@@ -557,11 +557,11 @@ FUNCTION eva_data, parent, $
   
   subbase = widget_base(mainbase,/row,/frame, space=0, ypad=0)
     str_element,/add,state,'bgTHM',cw_bgroup(subbase, ProbeNamesTHM, /COLUMN, /NONEXCLUSIVE,$
-      SET_VALUE=[1,0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
+      SET_VALUE=[0,0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
     sbMMS = widget_base(subbase,space=0,ypad=0,SENSITIVE=0)
       str_element,/add,state,'sbMMS',sbMMS
       str_element,/add,state,'bgMMS',cw_bgroup(sbMMS, ProbeNamesMMS, /COLUMN, /NONEXCLUSIVE,$
-        SET_VALUE=[0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
+        SET_VALUE=[1,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
     bsCtrl = widget_base(subbase, /COLUMN,/align_center, space=0, ypad=0)
       str_element,/add,state,'lblPS',widget_label(bsCtrl,VALUE='Parameter Set')
       str_element,/add,state,'drpSet',widget_droplist(bsCtrl,VALUE=state.paramSetList,$

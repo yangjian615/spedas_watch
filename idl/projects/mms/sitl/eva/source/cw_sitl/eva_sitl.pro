@@ -229,6 +229,10 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
         gTmin = segSelect.TS
         gTmax = segSelect.TE
         ;gTdel = double((mms_load_fom_validation()).NOMINAL_SEG_RANGE[1]*10.)
+        if(state.PREF.EVA_SPLIT_SIZE eq 0) then begin
+          val = mms_load_fom_validation()
+          str_element,/add,state,'pref.EVA_SPLIT_SIZE',val.NOMINAL_SEG_RANGE[1]
+        endif
         gTdel = double(state.PREF.EVA_SPLIT_SIZE*10.)
         gFOM = segSelect.FOM
         gBAK = segSelect.BAK
@@ -549,13 +553,13 @@ FUNCTION eva_sitl, parent, $
   IF NOT (KEYWORD_SET(uname))  THEN uname = 'eva_sitl'
   if not (keyword_set(title)) then title='   SITL   '
 
-  val = mms_load_fom_validation()
+  ;val = mms_load_fom_validation()
   
   ; ----- STATE -----
   pref = {$
     EVA_BAKSTRUCT: 0,$
     EVA_TESTMODE_SUBMIT: 1,$
-    EVA_SPLIT_SIZE:val.NOMINAL_SEG_RANGE[1]}
+    EVA_SPLIT_SIZE:0}; val.NOMINAL_SEG_RANGE[1]}
   socs  = {$; SOC Auto Simulated
     pmdq: ['a','b','c','d'], $ ; probes to be used for calculating MDQs
     input: 'thm_archive'}    ; input to be used for simulating SOC-Auto
