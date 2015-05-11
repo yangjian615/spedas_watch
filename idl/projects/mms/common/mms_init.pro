@@ -33,8 +33,8 @@
 ; 2015-04-10, moka, Created based on 'thm_init'
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-28 14:45:01 -0700 (Tue, 28 Apr 2015) $
-; $LastChangedRevision: 17442 $
+; $LastChangedDate: 2015-05-09 16:05:16 -0700 (Sat, 09 May 2015) $
+; $LastChangedRevision: 17544 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_init.pro $
 ;-
 
@@ -90,7 +90,7 @@ pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
   endif
   if cdf_version lt cdf_version_writemin then begin
     print,ptrace()
-    print,'Your version of the CDF library ('+cdf_version+') is unable to correctly write THEMIS CDF data files.'
+    print,'Your version of the CDF library ('+cdf_version+') is unable to correctly write THEMIS/MMS CDF data files.'
     print,'If you ever need to create CDF files then go to the following URL to learn how to patch your system:'
     print,'http://cdf.gsfc.nasa.gov/html/idl62_or_earlier_and_cdf3_problems.html'
   endif

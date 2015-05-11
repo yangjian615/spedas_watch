@@ -29,8 +29,8 @@
 ; 2015-04-10, moka, Created based on 'thm_config'
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-27 14:13:41 -0700 (Mon, 27 Apr 2015) $
-; $LastChangedRevision: 17436 $
+; $LastChangedDate: 2015-05-09 16:05:16 -0700 (Sat, 09 May 2015) $
+; $LastChangedRevision: 17544 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_config.pro $
 ;
 ;-
@@ -39,7 +39,9 @@ PRO mms_config, no_color_setup=no_color_setup, colortable=colortable
   ;--------------------
   ; LOCAL_DATA_DIR
   ;--------------------
-  !mms.local_data_dir = root_data_dir() + 'mms/'
+  ;!mms.local_data_dir = root_data_dir() + 'mms/'
+  !mms.local_data_dir = spd_default_local_data_dir() + 'mms/'
+  
   ; Settings of environment variables can override thm_config
   if getenv('MMS_DATA_DIR') ne '' then $
     !mms.local_data_dir = getenv('MMS_DATA_DIR')
