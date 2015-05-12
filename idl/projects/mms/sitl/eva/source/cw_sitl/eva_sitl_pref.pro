@@ -61,7 +61,10 @@ FUNCTION eva_sitl_pref_event, ev
     state.fldSplit: begin
       pref.EVA_SPLIT_SIZE = long(ev.VALUE)
       end
-
+    state.bgPath: begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
+      pref.EVA_STLM_INPUT = state.PATH_VALUES[ev.VALUE]
+      print, pref.EVA_STLM_INPUT,' is chosen'
+      end
     else:
   endcase
   ;-----
@@ -86,7 +89,8 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
   widget_control, widget_info(group_leader,find='eva_data'), GET_VALUE=state_data
 
   ; ----- STATE OF THIS WIDGET -----  
-  state = {pref:state_sitl.PREF, state_sitl:state_sitl}
+  path_values = ['soca','socs','stla']
+  state = {pref:state_sitl.PREF, state_sitl:state_sitl, path_values:path_values}
     
   ; ----- WIDGET LAYOUT -----
   geo = widget_info(parent,/geometry)
@@ -113,9 +117,16 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
     str_element,/add,state,'bgAdvanced',cw_bgroup(bsAdvanced,'Enable advanced features (for Super SITL)',$
      /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_BAKSTRUCT)
   
-  str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Test Mode',$
+  str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Test Mode (EVA will not submit files to SDC)',$
      /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_TESTMODE_SUBMIT)
 
+  
+  path_values_labels = ['SOC Auto (ABS)', 'SOC Auto (ABS) Simulated','SITL Auto']
+  idx = where(strmatch(path_values,state.PREF.EVA_STLM_INPUT),ct)
+  if ct ne 1 then idx = [0]
+  str_element,/add,state,'bgPath',cw_bgroup(mainbase, path_values_labels,$
+    /EXCLUSIVE, LABEL_TOP='Default FOM Selection',/FRAME, SET_VALUE=idx[0])
+     
 
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY
   RETURN, mainbase

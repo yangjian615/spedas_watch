@@ -10,6 +10,8 @@ PRO eva_error_message, error_status, msg=msg
   strb = strarr(r0) & strb[0:*] = '-'
   format = '('+strtrim(string(r0),2)+'A)'
   
+  print, stra,format=format
+  
   ; message from IDL
   for jjjj=0,n_elements(error_message)-1 do begin
     print,error_message[jjjj]
@@ -22,5 +24,5 @@ PRO eva_error_message, error_status, msg=msg
   print, 'EVA: error index: '+string(error_status)
   print, 'EVA: OS name:   '+!VERSION.OS_NAME
   print, 'EVA: IDL version: '+!VERSION.RELEASE
-  
+  print, stra, format=format
 END

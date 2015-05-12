@@ -559,7 +559,10 @@ FUNCTION eva_sitl, parent, $
   pref = {$
     EVA_BAKSTRUCT: 0,$
     EVA_TESTMODE_SUBMIT: 1,$
-    EVA_SPLIT_SIZE:0}; val.NOMINAL_SEG_RANGE[1]}
+    EVA_SPLIT_SIZE:0, $; val.NOMINAL_SEG_RANGE[1]}
+    EVA_STLM_INPUT:'soca',$;
+    EVA_STLM_UPDATE:1 }
+    
   socs  = {$; SOC Auto Simulated
     pmdq: ['a','b','c','d'], $ ; probes to be used for calculating MDQs
     input: 'thm_archive'}    ; input to be used for simulating SOC-Auto

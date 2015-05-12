@@ -29,8 +29,8 @@
 ; 2015-04-10, moka, Created based on 'thm_config'
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-09 16:05:16 -0700 (Sat, 09 May 2015) $
-; $LastChangedRevision: 17544 $
+; $LastChangedDate: 2015-05-10 17:33:29 -0700 (Sun, 10 May 2015) $
+; $LastChangedRevision: 17545 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_config.pro $
 ;
 ;-
@@ -68,7 +68,7 @@ PRO mms_config, no_color_setup=no_color_setup, colortable=colortable
     !mms.LOCAL_DATA_DIR = cfg.local_data_dir
   endif else begin; if cfg not found,
     dir = mms_config_filedir(); create config directory
-    !mms.LOCAL_DATA_DIR = root_data_dir()+'mms/'
+    !mms.LOCAL_DATA_DIR = spd_default_local_data_dir() + 'mms/'
     pref = {LOCAL_DATA_DIR: !mms.LOCAL_DATA_DIR}
     mms_config_write, pref
   endelse

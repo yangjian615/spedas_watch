@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-08 18:08:33 -0700 (Fri, 08 May 2015) $
-; $LastChangedRevision: 17541 $
+; $LastChangedDate: 2015-05-10 23:48:21 -0700 (Sun, 10 May 2015) $
+; $LastChangedRevision: 17546 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -128,7 +128,11 @@ FUNCTION eva_data_load_and_plot, state
   ;----------------------
   
   idx=where(strmatch(plshort,'mm'),ct)
-  paramlist_mms = (ct ge 1) ? paramlist[idx] : ''      
+  paramlist_mms = (ct ge 1) ? paramlist[idx] : ''  
+  ;--exceptional parameter --
+  idx=where(strmatch(paramlist,'thg_idx_ae'),ct2)
+  if ct2 eq 1 then paramlist_mms = [paramlist_mms,'thg_idx_ae']
+  ;----    
   str_element,/add,state,'paramlist_mms',paramlist_mms
   rst_mms = 'No'
   if (ct ge 1) then begin
@@ -467,7 +471,7 @@ FUNCTION eva_data, parent, $
   ;----- PREFERENCES -----
   
   home_dir = (file_search('~',/expand_tilde))[0]+'/'
-  pref = {EVA_CACHE_DIR: home_dir + 'data/eva_cache/', $
+  pref = {EVA_CACHE_DIR: home_dir + 'data/mms/sitl/eva_cache/', $
     EVA_PARAMSET_DIR: '',$
     EVA_TESTMODE: 0}
 

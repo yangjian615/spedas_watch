@@ -77,6 +77,15 @@ FUNCTION eva_data_load_mms, state
         if (afg_status eq 0) or (dfg_status eq 0) then answer = 'Yes'
       endif
       
+      
+      if strmatch(paramlist[i],'thg_idx_ae') then begin
+        thm_load_pseudoAE,datatype='ae'
+        if tnames('thg_idx_ae') eq '' then begin
+          store_data,'thg_idx_ae',data={x:[ts,te], y:replicate(!values.d_nan,2)}
+        endif
+        options,'thg_idx_ae',ytitle='THEMIS!CAE Index'
+      endif
+      
 ;      if strmatch(paramlist[i],'*_epsd*') then begin
 ;        mms_sitl_get_espec, edat_status, sc_id=sc
 ;        if edat_status eq 0 then answer = 'Yes'
