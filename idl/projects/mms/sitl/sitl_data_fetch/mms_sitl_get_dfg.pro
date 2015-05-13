@@ -29,8 +29,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-08 11:33:34 -0700 (Fri, 08 May 2015) $
-;  $LastChangedRevision: 17526 $
+;  $LastChangedDate: 2015-05-12 13:55:02 -0700 (Tue, 12 May 2015) $
+;  $LastChangedRevision: 17578 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_dfg.pro $
 
 
@@ -141,22 +141,16 @@ pro mms_sitl_get_dfg, sc_id=sc_id, no_update = no_update, reload = reload
       times = mag_struct.x
       b_field = mag_struct.y
       varname = mag_struct.varname
-      etimes = mag_struct.ephemx
-      pos_vect = mag_struct.ephemy
-      evarname = mag_struct.ephem_varname
 
       if n_elements(files_open) gt 1 then begin
         for i = 1, n_elements(files_open)-1 do begin
           temp_struct = mms_sitl_open_dfg_cdf(files_open(i))
           times = [times, temp_struct.x]
-          etimes = [times, temp_struct.ephemx]
-          pos_vect = [pos_vect, temp_struct.ephemy]
           b_field = [b_field, temp_struct.y]
         endfor
       endif
 
       store_data, varname, data = {x: times, y:b_field}
-      store_data, evarname, data = {x: etimes, y:pos_vect}
 
       ;
 
@@ -164,6 +158,6 @@ pro mms_sitl_get_dfg, sc_id=sc_id, no_update = no_update, reload = reload
       print, 'No DFG data available locally or at SDC or invalid query!'
     endelse
 
+  endfor
 
-
-  end
+end

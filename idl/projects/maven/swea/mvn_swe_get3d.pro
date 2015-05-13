@@ -26,8 +26,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16918 $
+; $LastChangedDate: 2015-05-11 13:11:20 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17561 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -36,6 +36,9 @@
 function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, burst=burst
 
   @mvn_swe_com
+  
+  n_e = swe_3d_struct.nenergy  ; number of energy bins
+  n_a = swe_3d_struct.nbins    ; number of solid angle bins
 
   if (size(time,/type) eq 0) then begin
     print,"You must specify a time."
@@ -43,6 +46,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
   endif
 
   time = time_double(time)
+  tmin = min(time, max=tmax, /nan)
   
   if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
   if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
@@ -54,7 +58,6 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
   if keyword_set(archive) then begin
     if (size(mvn_swe_3d_arc,/type) eq 8) then begin
       if keyword_set(all) then begin
-        tmin = min(time, max=tmax, /nan)
         indx = where((mvn_swe_3d_arc.time ge tmin) and (mvn_swe_3d_arc.time le tmax), npts)
         if (npts gt 0L) then time = mvn_swe_3d_arc[indx].time $
                         else print,"No 3D archive data at specified time(s)."        
@@ -62,13 +65,14 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
       
       if (npts gt 0L) then begin
         ddd = replicate(swe_3d_struct, npts)
+        ddd.data_name = 'SWEA 3D Archive'
+        ddd.apid = 'A1'XB
         aflg = 1
       endif
     endif else npts = 0L
   endif else begin
     if (size(mvn_swe_3d,/type) eq 8) then begin
       if keyword_set(all) then begin
-        tmin = min(time, max=tmax, /nan)
         indx = where((mvn_swe_3d.time ge tmin) and (mvn_swe_3d.time le tmax), npts)
         if (npts gt 0L) then time = mvn_swe_3d[indx].time $
                         else print,"No 3D survey data at specified time(s)."
@@ -76,6 +80,8 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
 
       if (npts gt 0L) then begin
         ddd = replicate(swe_3d_struct, npts)
+        ddd.data_name = 'SWEA 3D Survey'
+        ddd.apid = 'A0'XB
         aflg = 0
       endif
     endif else npts = 0L
@@ -84,10 +90,18 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
   for n=0L,(npts-1L) do begin
     if (aflg) then begin
       tgap = min(abs(mvn_swe_3d_arc.time - time[n]), i)
-      ddd[n] = mvn_swe_3d_arc[i]
+      ddd[n].met   = mvn_swe_3d_arc[i].met
+      ddd[n].time  = mvn_swe_3d_arc[i].time
+      ddd[n].group = mvn_swe_3d_arc[i].group
+      ddd[n].gf    = mvn_swe_3d_arc[i].gf
+      ddd[n].data  = mvn_swe_3d_arc[i].data
     endif else begin
       tgap = min(abs(mvn_swe_3d.time - time[n]), i)
-      ddd[n] = mvn_swe_3d[i]
+      ddd[n].met   = mvn_swe_3d[i].met
+      ddd[n].time  = mvn_swe_3d[i].time
+      ddd[n].group = mvn_swe_3d[i].group
+      ddd[n].gf    = mvn_swe_3d[i].gf
+      ddd[n].data  = mvn_swe_3d[i].data
     endelse
 
     if (addmag) then begin
@@ -103,8 +117,52 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
   endfor
 
   if (npts gt 0L) then begin
+    ddd.end_time = ddd.time + (1.95D/2D)
     if keyword_set(sum) then ddd = mvn_swe_3dsum(ddd)
+    ddd.delta_t = double(round(ddd.time - shift(ddd.time,1)))
+    ddd[0].delta_t = ddd[1].delta_t
+    ddd.integ_t = swe_integ_t
+
+    dt_arr = fltarr(n_e,n_a)
+    dt_arr[*, 0:15] = 2.  ; adjacent anode (azimuth) bins summed
+    dt_arr[*,16:79] = 1.  ; no summing for mid-elevations
+    dt_arr[*,80:95] = 2.  ; adjacent anode (azimuth) bins summed
+    ddd.dt_arr = reform(reform(dt_arr, n_e*n_a) # (2.^ddd.group), n_e, n_a, npts)
+
+    ddd.gf = swe_ddd_gf
+    ddd.eff = 1.
+    ddd.mass = mass_e
+
+    ddd.chksum = swe_active_chksum
+    ddd.energy = reform(swe_energy # replicate(1., n_a*npts), n_e, n_a, npts)
+    ddd.denergy = reform(swe_denergy # replicate(1., n_a*npts), n_e, n_a, npts)
+
+    theta = fltarr(n_e,n_a)
+    dtheta = theta
+    elev = transpose(swe_el[*,*,0])
+    delev = transpose(swe_del[*,*,0])
+    for i=0,(n_a-1) do theta[*,i] = elev[*,i/16]
+    structure.theta = theta
+
+    rate = ddd.data/(swe_integ_t*ddd.dt_arr)         ; raw count rate
+    dtc = 1. - rate*swe_dead                         ; deadtime correction
+    indx = where(dtc lt swe_min_dtc, count)          ; maximum deadtime correction
+    if (count gt 0L) then dtc[indx] = !values.f_nan
+    ddd.dtc = dtc
+
+; Variance: recompress the raw counts to 8-bit value, use this to index devar (swe_com)
+
+    x = alog(ddd.data > 1.)/alog(2.)
+    i = floor(x)
+    j = floor((2.^(x - i) - 1.)*16.)
+    k = (i - 3)*16 + j
+    indx = where(ddd.data lt 32., cnt)
+    if (cnt gt 0L) then k[indx] = round((ddd.data)[indx])
+    ddd.var = devar[k]
+
+    if (keyword_set(sum) and (npts gt 1)) then ddd = mvn_swe_dddsum(ddd)
     mvn_swe_convert_units, ddd, units
+
     return, ddd
   endif
 
@@ -351,7 +409,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
 ; Adjust MCP efficiency for bias adjustments
 
   indx = where(ddd.time gt t_mcp[0], count)
-  if (count gt 0L) then ddd[indx].eff = ddd[indx].eff * 1.5
+  if (count gt 0L) then ddd[indx].eff = ddd[indx].eff * (1.5*0.85)
 
 ; Sum the data.  This is done by summing raw counts corrected by deadtime
 ; and then setting dtc to unity.  Also, note that summed 3D's can be 

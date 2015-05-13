@@ -43,8 +43,8 @@
 ;       PA_CUT:        Plot and energy spectrum at this pitch angle.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-19 11:34:01 -0700 (Sun, 19 Apr 2015) $
-; $LastChangedRevision: 17361 $
+; $LastChangedDate: 2015-05-11 12:53:41 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17555 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -53,7 +53,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
                   label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
                   abins=abins, dbins=dbins, obins=obins, burst=burst, $
-                  pa_cut=pa_cut
+                  pa_cut=pa_cut, pot=pot
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -73,6 +73,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     doall = 0
   endelse
   if not keyword_set(smo) then smo = 1
+  if keyword_set(pot) then dopot = 1 else dopot = 0
   if keyword_set(label) then begin
     dolab = 1
     abin = string(indgen(16),format='(i2.2)')
@@ -188,8 +189,10 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
       !p.multi = [0,1,2]
       specplot,x,y[*,0:7],z[*,0:7],limits=limits
+      if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],[0,180],line=2
       limits.title = ''
       specplot,x,y[*,8:15],z[*,8:15],limits=limits
+      if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],[0,180],line=2
       !p.multi = 0
 
       if (sflg) then begin

@@ -29,8 +29,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-08 11:33:21 -0700 (Fri, 08 May 2015) $
-;  $LastChangedRevision: 17525 $
+;  $LastChangedDate: 2015-05-12 13:27:08 -0700 (Tue, 12 May 2015) $
+;  $LastChangedRevision: 17575 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_afg.pro $
 
 
@@ -164,6 +164,6 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload
       print, 'No AFG data available locally or at SDC or invalid query!'
     endelse
 
-
+endfor
 
 end

@@ -26,8 +26,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-19 11:34:40 -0700 (Sun, 19 Apr 2015) $
-; $LastChangedRevision: 17362 $
+; $LastChangedDate: 2015-05-11 11:36:49 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17554 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_cal_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -82,9 +82,10 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
 
     if keyword_set(ddd) then begin
       dat = mvn_swe_get3d(trange[0],archive=aflg)
-      mvn_swe_convert_units, dat, units
 
       if (size(dat,/type) eq 8) then begin
+        mvn_swe_convert_units, dat, units
+
         x = dat.energy[*,0]
         y = findgen(dat.nbins)
         z1 = dat.data
@@ -120,9 +121,9 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
     
     if keyword_set(pad) then begin
       dat = mvn_swe_getpad(trange[0],archive=aflg)
-      mvn_swe_convert_units, dat, units
 
       if (size(dat,/type) eq 8) then begin
+        mvn_swe_convert_units, dat, units
         x = dat.energy[*,0]
         y = findgen(dat.nbins)
         z1 = dat.data
@@ -157,13 +158,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
     endif
     
     if keyword_set(spec) then begin
-      if (aflg) then begin
-        dt = min(abs(mvn_swe_engy_arc.time - trange[0]),k)
-        dat = mvn_swe_engy_arc[k]
-      endif else begin
-        dt = min(abs(mvn_swe_engy.time - trange[0]),k)
-        dat = mvn_swe_engy[k]
-      endelse
+      dat = mvn_swe_getspec(trange[0],archive=aflg)
 
       if (size(dat,/type) eq 8) then begin
         mvn_swe_convert_units, dat, units

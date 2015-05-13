@@ -1,8 +1,9 @@
-PRO eva_sitl_restore, auto=auto
+PRO eva_sitl_restore, auto=auto, dir=dir
   compile_opt idl2
 
   if keyword_set(auto) then begin
-    fname = getenv('HOME')+'/eva-fom-modified.sav'
+    if n_elements(dir) eq 0 then dir = spd_default_local_data_dir() + 'mms/'
+    fname = thm_addslash(dir)+'eva-fom-modified.sav'
   endif else begin
     fname = dialog_pickfile(/READ)
     if strlen(fname) eq 0 then begin

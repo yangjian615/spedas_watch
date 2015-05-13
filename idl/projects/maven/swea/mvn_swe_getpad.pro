@@ -18,17 +18,16 @@
 ;
 ;       BURST:         Synonym for ARCHIVE.
 ;
-;       ALL:           Get all PAD spectra bounded by the earliest and latest times in
-;                      the input time array.
+;       ALL:           Get all PAD spectra bounded by the input time array.
 ;
-;       SUM:           If set, then sum all PAD's selected.
+;       SUM:           Sum all PAD's selected.
 ;
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;                      Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 12:35:12 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16918 $
+; $LastChangedDate: 2015-05-11 13:11:20 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17561 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -37,6 +36,9 @@
 function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, burst=burst
 
   @mvn_swe_com
+  
+  n_e = swe_pad_struct.nenergy  ; number of energy bins
+  n_a = swe_pad_struct.nbins    ; number of pitch angle bins
 
   if (size(time,/type) eq 0) then begin
     print,"You must specify a time."
@@ -44,7 +46,8 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
   endif
   
   time = time_double(time)
-  
+  tmin = min(time, max=tmax, /nan)
+
   if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
   if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
   if (size(units,/type) ne 7) then units = 'eflux'
@@ -55,7 +58,6 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
   if keyword_set(archive) then begin
     if (size(mvn_swe_pad_arc,/type) eq 8) then begin
       if keyword_set(all) then begin
-        tmin = min(time, max=tmax, /nan)
         indx = where((mvn_swe_pad_arc.time ge tmin) and (mvn_swe_pad_arc.time le tmax), npts)
         if (npts gt 0L) then time = mvn_swe_pad_arc[indx].time $
                         else print,"No PAD archive data at specified time(s)."        
@@ -63,13 +65,14 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
       
       if (npts gt 0L) then begin
         pad = replicate(swe_pad_struct, npts)
+        pad.data_name = 'SWEA PAD Archive'
+        pad.apid = 'A3'XB
         aflg = 1
       endif
     endif else npts = 0L
   endif else begin
     if (size(mvn_swe_pad,/type) eq 8) then begin
       if keyword_set(all) then begin
-        tmin = min(time, max=tmax, /nan)
         indx = where((mvn_swe_pad.time ge tmin) and (mvn_swe_pad.time le tmax), npts)
         if (npts gt 0L) then time = mvn_swe_pad[indx].time $
                         else print,"No PAD survey data at specified time(s)."
@@ -77,6 +80,8 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 
       if (npts gt 0L) then begin
         pad = replicate(swe_pad_struct, npts)
+        pad.data_name = 'SWEA PAD Survey'
+        pad.apid = 'A2'XB
         aflg = 0
       endif
     endif else npts = 0L
@@ -85,10 +90,22 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
   for n=0L,(npts-1L) do begin
     if (aflg) then begin
       tgap = min(abs(mvn_swe_pad_arc.time - time[n]), i)
-      pad[n] = mvn_swe_pad_arc[i]
+      pad[n].met   = mvn_swe_pad_arc[i].met
+      pad[n].time  = mvn_swe_pad_arc[i].time
+      pad[n].group = mvn_swe_pad_arc[i].group
+      pad[n].Baz   = mvn_swe_pad_arc[i].Baz
+      pad[n].Bel   = mvn_swe_pad_arc[i].Bel
+      pad[n].gf    = swe_padarc_gf[*,*,i]
+      pad[n].data  = mvn_swe_pad_arc[i].data
     endif else begin
       tgap = min(abs(mvn_swe_pad.time - time[n]), i)
-      pad[n] = mvn_swe_pad[i]
+      pad[n].met   = mvn_swe_pad[i].met
+      pad[n].time  = mvn_swe_pad[i].time
+      pad[n].group = mvn_swe_pad[i].group
+      pad[n].Baz   = mvn_swe_pad[i].Baz
+      pad[n].Bel   = mvn_swe_pad[i].Bel
+      pad[n].gf    = swe_padsvy_gf[*,*,i]
+      pad[n].data  = mvn_swe_pad[i].data
     endelse
 
     if (addmag) then begin
@@ -104,6 +121,35 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
   endfor
 
   if (npts gt 0L) then begin
+    pad.end_time = pad.time + (1.95D/2D)
+    pad.delta_t = double(round(pad.time - shift(pad.time,1)))
+    pad[0].delta_t = pad[1].delta_t
+    pad.integ_t = swe_integ_t
+    
+    pad.dt_arr = reform(replicate(1.,n_e*n_a) # (2.^pad.group), n_e, n_a, npts)
+    pad.gf = swe_pad_gf
+    pad.eff = 1.
+    pad.mass = mass_e
+
+    pad.chksum = swe_active_chksum
+    pad.energy = reform(swe_energy # replicate(1., n_a*npts), n_e, n_a, npts)
+    pad.denergy = reform(swe_denergy # replicate(1., n_a*npts), n_e, n_a, npts)
+
+    rate = pad.data/(swe_integ_t*pad.dt_arr)         ; raw count rate
+    dtc = 1. - rate*swe_dead                         ; deadtime correction
+    indx = where(dtc lt swe_min_dtc, count)          ; maximum deadtime correction
+    if (count gt 0L) then dtc[indx] = !values.f_nan
+    pad.dtc = dtc
+
+; Variance: recompress the raw counts to 8-bit value, use this to index devar (swe_com)
+
+    x = alog(pad.data > 1.)/alog(2.)
+    i = floor(x)
+    j = floor((2.^(x - i) - 1.)*16.)
+    k = (i - 3)*16 + j
+    indx = where(pad.data lt 32., cnt)
+    if (cnt gt 0L) then k[indx] = round((pad.data)[indx])
+    pad.var = devar[k]
 
 ; Fill in bookkeeping parameters used by snapshot and diagnostic procedures
 ; Add magnetic field and spacecraft potential, if available
@@ -117,9 +163,10 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     fake_pkt.group = pad.group
 
     for i=0L,(npts-1L) do begin
-      pam = mvn_swe_padmap(fake_pkt[i])
-;     pad[i].pa     = pam.pa     ; obtained from the CDF
-;     pad[i].dpa    = pam.dpa    ; obtained from the CDF
+      if (addmag) then magf = pad[i].magf else magf = 0
+      pam = mvn_swe_padmap(fake_pkt[i], magf=magf)
+      pad[i].pa     = pam.pa
+      pad[i].dpa    = pam.dpa
       pad[i].pa_min = transpose(pam.pa_min)
       pad[i].pa_max = transpose(pam.pa_max)
       pad[i].theta  = transpose(swe_el[pam.jel,*,pad[i].group])
@@ -133,7 +180,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 
     pad.domega = (2.*!dtor)*pad.dphi*cos(pad.theta*!dtor)*sin(pad.dtheta*!dtor/2.)
 
-    if keyword_set(sum) then pad = mvn_swe_padsum(pad)
+    if (keyword_set(sum) and (npts gt 1)) then pad = mvn_swe_padsum(pad)
     mvn_swe_convert_units, pad, units
 
     return, pad
@@ -230,9 +277,19 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 
     pad[n].dt_arr = 2.^(pkt.group)        ; energy bin summing only
 
-; Pitch angle map
+; Insert MAG1 data, if available.  This is distinct from the MAG angles
+; included in the PAD packets (A2, A3), which are calculated by flight
+; software using a basic calibration.
 
-    pam = mvn_swe_padmap(pkt)
+    if (addmag) then begin
+      dt = min(abs(pad[n].time - swe_mag1.time),i)
+      magf = swe_mag1[i].magf
+      if (dt lt 1D) then pad[n].magf = magf
+    endif else magf = 0
+
+; Pitch angle map (override onboard calculation with L1 or L2 data, if available)
+
+    pam = mvn_swe_padmap(pkt, magf=magf)
     pad[n].pa = transpose(pam.pa)
     pad[n].dpa = transpose(pam.dpa)
     pad[n].pa_min = transpose(pam.pa_min)
@@ -306,15 +363,6 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     pad[n].jel = pam.jel
     pad[n].k3d = pam.k3d
 
-; Insert MAG1 data, if available.  This is distinct from the MAG angles
-; included in the PAD packets (A2, A3), which are calculated by flight
-; software using a basic calibration.
-
-    if (addmag) then begin
-      dt = min(abs(pad[n].time - swe_mag1.time),i)
-      if (dt lt 1D) then pad[n].magf = swe_mag1[i].magf
-    endif
-
 ; Insert spacecraft potential, if available
 
     if (addpot) then begin
@@ -346,7 +394,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 ; Adjust MCP efficiency for bias increases
 
   indx = where(pad.time gt t_mcp[0], count)
-  if (count gt 0L) then pad[indx].eff = pad[indx].eff * 1.5
+  if (count gt 0L) then pad[indx].eff = pad[indx].eff * (1.5*0.85)
 
 ; Sum the data
 

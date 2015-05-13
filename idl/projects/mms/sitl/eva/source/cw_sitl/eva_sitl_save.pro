@@ -1,4 +1,4 @@
-PRO eva_sitl_save, auto=auto
+PRO eva_sitl_save, auto=auto, dir=dir
   compile_opt idl2
   
   stn = tnames('mms_stlm_fomstr',ct)
@@ -10,7 +10,8 @@ PRO eva_sitl_save, auto=auto
   get_data,'mms_stlm_fomstr',data=D,lim=eva_lim,dl=eva_dl
   
   if keyword_set(auto) then begin 
-    fname = getenv('HOME')+'/eva-fom-modified.sav'
+    if n_elements(dir) eq 0 then dir = spd_default_local_data_dir() + 'mms/'
+    fname = thm_addslash(dir)+'eva-fom-modified.sav'
   endif else begin
     fname_default = 'eva-fom-modified-'+time_string(systime(1,/utc),format=2)+'.sav'
     fname = dialog_pickfile(DEFAULT_EXTENSION='sav', /WRITE, $

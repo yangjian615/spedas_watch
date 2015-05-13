@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-10 23:48:21 -0700 (Sun, 10 May 2015) $
-; $LastChangedRevision: 17546 $
+; $LastChangedDate: 2015-05-11 19:01:54 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17570 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -17,8 +17,8 @@ PRO eva_data_update_time, state, update=update
     widget_control, state.fldStartTime, SET_VALUE=state.start_time
     widget_control, state.fldEndTime,   SET_VALUE=state.end_time
   endif
-  sstime = time_string(str2time(state.start_time))
-  eetime = time_string(str2time(state.end_time))
+;  sstime = time_string(str2time(state.start_time))
+;  eetime = time_string(str2time(state.end_time))
 ;  orbit_state = { stime: sstime, etime: eetime, ttime: state.eventdate, $;location to be emphasized
 ;    probelist: state.probelist}
 END
@@ -384,12 +384,12 @@ FUNCTION eva_data_event, ev
     state.fldStartTime: begin
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
       str_element,/add,state,'start_time',new_time
-      eva_data_update_time, state ; not updating fldStartTime
+      ;eva_data_update_time, state ; not updating fldStartTime
     end
     state.fldEndTime: begin
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
       str_element,/add,state,'end_time',new_time
-      eva_data_update_time, state ; not updating fldEndTime
+      ;eva_data_update_time, state ; not updating fldEndTime
     end
     state.calStartTime: begin
       print,'EVA: ***** EVENT: calStartTime *****'
@@ -399,7 +399,7 @@ FUNCTION eva_data_event, ev
       otime->GetProperty,tstring=tstring         ; get tstring
       str_element,/add,state,'start_time',tstring; put tstring into state structure
       widget_control, state.fldStartTime, SET_VALUE=state.start_time; update GUI field
-      eva_data_update_time, state
+      ;eva_data_update_time, state
       obj_destroy, otime
     end
     state.calEndTime: begin
@@ -410,7 +410,7 @@ FUNCTION eva_data_event, ev
       otime->GetProperty,tstring=tstring
       str_element,/add,state,'end_time',tstring
       widget_control, state.fldEndTime, SET_VALUE=state.end_time
-      eva_data_update_time, state
+      ;eva_data_update_time, state
       obj_destroy, otime
     end
     state.bgTHM: state = eva_data_probelist(state)
@@ -537,28 +537,6 @@ FUNCTION eva_data, parent, $
   str_element,/add,state,'fldEndTime',cw_field(baseEndTime,VALUE=state.end_time,TITLE='',/ALL_EVENTS,XSIZE=24)
   str_element,/add,state,'calEndTime',widget_button(baseEndTime,VALUE=cal)
   
-  ;  baseDate = widget_base(mainbase,/row)
-  ;    baseDateMain = widget_base(baseDate,/column)
-  ;      baseDate1 = widget_label(baseDateMain, VALUE='Date',/align_left)
-  ;      baseDate2 = widget_base(baseDateMain,/row)
-  ;      str_element,/add,state,'fldDate',cw_field(baseDate2,VALUE=state.eventdate,TITLE='',/ALL_EVENTS,XSIZE=10)
-  ;      getresourcepath,rpath
-  ;      cal = read_bmp(rpath + 'cal.bmp', /rgb)
-  ;      thm_ui_match_background, parent, cal
-  ;      str_element,/add,state,'btnCal',widget_button(baseDate2,VALUE=cal)
-  ;    baseDateStep = widget_base(baseDate,/column)
-  ;      baseDateStep1 = widget_label(baseDateStep,VALUE='Step',/align_left)
-  ;      baseDateStep2 = widget_base(baseDateStep,/row)
-  ;      str_element,/add,state,'btnDateP',widget_button(baseDateStep2,VALUE='<')
-  ;      str_element,/add,state,'fldDateS',widget_text(baseDateStep2,VALUE='1',/ALL_EVENTS,/EDITABLE,XSIZE=2)
-  ;      str_element,/add,state,'btnDateF',widget_button(baseDateStep2,VALUE='>')
-  ;    baseDateDur = widget_base(baseDate,/column)
-  ;      baseDateDur1 = widget_label(baseDateDur,VALUE='Duration',/align_left)
-  ;      baseDateDur2 = widget_base(baseDateDur,/row)
-  ;      str_element,/add,state,'fldDura',widget_text(baseDateDur2,VALUE=string(fix(state.duration)),/ALL_EVENTS,/EDITABLE,XSIZE=4)
-  ;      str_element,/add,state,'lblUnit',widget_label(baseDateDur2,VALUE='Day')
-  
-  
   subbase = widget_base(mainbase,/row,/frame, space=0, ypad=0)
     str_element,/add,state,'bgTHM',cw_bgroup(subbase, ProbeNamesTHM, /COLUMN, /NONEXCLUSIVE,$
       SET_VALUE=[0,0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
@@ -569,7 +547,7 @@ FUNCTION eva_data, parent, $
     bsCtrl = widget_base(subbase, /COLUMN,/align_center, space=0, ypad=0)
       str_element,/add,state,'lblPS',widget_label(bsCtrl,VALUE='Parameter Set')
       str_element,/add,state,'drpSet',widget_droplist(bsCtrl,VALUE=state.paramSetList,$
-        TITLE='')
+        TITLE='',DYNAMIC_RESIZE=strmatch(!VERSION.OS_FAMILY,'Windows'))
       str_element,/add,state,'bgOPOD',cw_bgroup(bsCtrl,'separate windows', /NONEXCLUSIVE,$
         SET_VALUE=0)
       widget_control,state.bgOPOD,SENSITIVE=0
@@ -578,7 +556,7 @@ FUNCTION eva_data, parent, $
       widget_control,state.bgSRTV,SENSITIVE=0
 
   str_element,/add,state,'load',widget_button(mainbase, VALUE = 'LOAD',ysize=30,$;xsize=330,$
-    TOOLTIP='Restore from .tplot files or load from THEMIS archive server.')
+    TOOLTIP='Restore from cache or retrieve from a remote server and then plot.')
     
   ; Save out the initial state structure into the first childs UVALUE.
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY

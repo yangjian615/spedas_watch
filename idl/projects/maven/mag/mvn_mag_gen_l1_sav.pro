@@ -46,7 +46,7 @@ for i=0L,nd-1 do begin
   if prereq_timestamp lt target_timestamp then continue    ; skip if L1 does not need to be regenerated
   dprint,dlevel=1,verbose=verbose,'Generating L1 file: '+sav_filename
   timestamp= systime(1)    ; trigger regeneration of long term plots
-  data = mvn_mag_sts_read(mag_l1_file,header=header)
+  data = mvn_mag_l1_sts_read(mag_l1_file,header=header)
   
   dependents = file_checksum(mag_l1_file,/add_mtime)
   

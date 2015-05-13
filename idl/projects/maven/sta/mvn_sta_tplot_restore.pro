@@ -3,7 +3,8 @@ pro mvn_sta_tplot_restore,trange=trange,create=create,verbose=verbose,append=app
 
 tplt_format = 'maven/data/sci/sta/tplot/YYYY/MM/mvn_sta_l2_c6-32e64m_YYYYMMDD.tplot'
 ; http://sprg.ssl.berkeley.edu/data/maven/data/sci/sta/l2/2014/11/mvn_sta_l2_c6-32e64m_20141129_v00.cdf
-ts_format = 'maven/data/sci/sta/l2/YYYY/MM/mvn_sta_l2_c6-32e64m_YYYYMMDD_v00.cdf'
+ts_format = 'maven/data/sci/sta/l2/YYYY/MM/mvn_sta_l2_c6-32e64m_YYYYMMDD_v??_r??.cdf'
+;ts_format = 'maven/data/sci/sta/l2/YYYY/MM/mvn_sta_l2_c6-32e64m_YYYYMMDD_v??.cdf'
 tpltnames_format = 'mvn_sta_*c6*'
 
 tr = timerange(trange)

@@ -10,15 +10,7 @@ pro mms_back_structure_check_modifications, new_backstr, old_backstr, mod_error_
 
 ;--------------------------------------------------------------------------------------
 ; Define parameters that lead to errors and warnings
-
-on_error, 2
-
 valstruct = mms_load_fom_validation()
-
-if typename(valstruct) eq 'INT' then message, 'ERROR: Unable to load FOM validation parameters ' + $
-  'from SDC. Check your internet connection.'
-
-
 fom_gmax = valstruct.fom_gmax
 fom_bounds = valstruct.fom_bounds
 seg_bounds = valstruct.seg_bounds
@@ -132,8 +124,8 @@ mod_error_flags = count_fom_errors gt 0
 
 ; Now we will deal for the yellow warnings
 mod_yellow_warning_flags = intarr(2)
-mod_yellow_warning_times = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
-mod_yellow_warning_indices = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
+mod_yellow_warning_times = ptrarr(n_elements(mod_yellow_warning_flags), /allocate_heap)
+mod_yellow_warning_indices = ptrarr(n_elements(mod_yellow_warning_flags), /allocate_heap)
 
 delete_warning_text = 'WARNING: The segments at the following times with FOM greater than ' + fom_del_max_str + ' have been deleted: '
 mod_warning_text = 'WARNING: The segments at the following times have a modified FOM value which differs from the original value by more than ' + $

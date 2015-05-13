@@ -49,12 +49,17 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   EPS = 0.001d
   if tspan[0]+EPS lt tfom[0] then begin
 
-    mms_get_back_structure, tspan[0], tspan[1], BAKStr, pw_flag, pw_message; START,STOP are ULONG
-    ;//////////////////////////////////////////////
+    if state.pref.EVA_TESTMODE then begin
+      ; 'dir' produces the directory name with a path separator character that can be OS dependent.
+      local_dir = file_search(ProgramRootDir(/twoup)+'data',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
+      fom_file = local_dir + 'BAKStr_for_demo.sav'
+      restore, fom_file
+      pw_flag = 0
+      pw_message = 'sample file used.'
+    endif else begin
+      mms_get_back_structure, tspan[0], tspan[1], BAKStr, pw_flag, pw_message; START,STOP are ULONG
+    endelse
 
-    ;BAKStr = test_fake_backstructure()
-
-    ;//////////////////////////////////////////////
     if pw_flag then begin
       rst=dialog_message(pw_message,/info,/center)
     endif else begin

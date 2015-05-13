@@ -22,14 +22,16 @@
 ;
 ;       ENERGY:       Energy for line plot.
 ;
+;       TAVG:         Time averaging of when using ENERGY keyword.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-07 12:22:19 -0700 (Thu, 07 May 2015) $
-; $LastChangedRevision: 17510 $
+; $LastChangedDate: 2015-05-11 11:36:24 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17553 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_specplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2015-05-06
 ;-
-pro mvn_swe_specplot, trange=trange, orbit=orbit, units=units, energy=energy
+pro mvn_swe_specplot, trange=trange, orbit=orbit, units=units, energy=energy, tavg=tavg
 
   @mvn_swe_com
   
@@ -91,11 +93,16 @@ pro mvn_swe_specplot, trange=trange, orbit=orbit, units=units, energy=energy
   if keyword_set(energy) then begin
     de = min(abs(energy[0] - v),i)
     vname = 'e' + string(i,format='(i2.2)')
-    store_data,vname,data={x:x, y:y[*,i]}
-    ymax = 10.^ceil(alog10(max(y,/nan)))
-    ymin = 1.
-    ylim,vname,ymin,ymax,1
+    if keyword_set(tavg) then yi = smooth_in_time(y[*,i], x, tavg) $
+                         else yi = y[*,i]
+    store_data,vname,data={x:x, y:yi}
+    ymax = 10.^(ceil(alog10(max(y,/nan))))
+    ylim,vname,1e3,(ymax < 3e9),1
+    emsg = strcompress(string(round(sigfig(v[i],2)), format='(i)'),/remove_all)
+    options,vname,'ytitle','Eflux (' + emsg + ' eV)'
   endif
+
+; Clean up
 
   mvn_swe_clear
   store_data,'dC',/delete

@@ -16,8 +16,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:58:38 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16890 $
+; $LastChangedDate: 2015-05-11 13:07:37 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17559 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_3dsum.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -40,10 +40,15 @@ function mvn_swe_3dsum, ddd
   dddsum.delta_t = (tmax - tmin) > ddd[0].delta_t
   dddsum.dt_arr = total(ddd.dt_arr,3)      ; normalization for the sum
 
-  dddsum.sc_pot = mean(ddd.sc_pot)    
-  dddsum.magf = total(ddd.magf,2)/float(npts)
-  dddsum.v_flow = total(ddd.v_flow,2)/float(npts)
-  dddsum.bkg = mean(ddd.bkg)
+  dddsum.sc_pot = mean(ddd.sc_pot, /nan)    
+  dddsum.bkg = mean(ddd.bkg, /nan)
+
+  padsum.magf[0] = mean(pad.magf[0], /nan)
+  padsum.magf[1] = mean(pad.magf[1], /nan)
+  padsum.magf[2] = mean(pad.magf[2], /nan)
+  padsum.v_flow[0] = mean(pad.v_flow[0], /nan)
+  padsum.v_flow[1] = mean(pad.v_flow[1], /nan)
+  padsum.v_flow[2] = mean(pad.v_flow[2], /nan)
 
   dddsum.data = total(ddd.data/ddd.dtc,3)  ; corrected counts
   dddsum.var = total(ddd.var/ddd.dtc,3)    ; variance

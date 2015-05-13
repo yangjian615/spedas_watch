@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-04 13:43:05 -0800 (Wed, 04 Feb 2015) $
-; $LastChangedRevision: 16864 $
+; $LastChangedDate: 2015-05-11 13:10:30 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17560 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -182,9 +182,16 @@ pro mvn_swe_struct
                    sc_pot          : 0.                      , $  ; spacecract potential
                    magf            : fltarr(3)               , $  ; magnetic field
                    v_flow          : fltarr(3)               , $  ; bulk flow velocity
-                   bkg             : 0.                      , $  ; background
+                   bkg             : fltarr(n_e,n_a)         , $  ; background
                    data            : fltarr(n_e,n_a)         , $  ; data
                    var             : fltarr(n_e,n_a)            } ; variance
+
+; Stripped down 3D structure for common block storage
+
+  swe_3d_l2_str = {met             : 0D                      , $  ; mission elapsed time
+                   time            : 0D                      , $  ; unix time
+		           group           : 0                       , $  ; energy grouping parameter
+                   counts          : fltarr(n_e,n_a)            } ; raw counts
 
 ; Define PAD data structure
 ;  The magnetic field appears twice.  Baz and Bel are the magnetic field angles in SWEA coordinates
@@ -221,20 +228,29 @@ pro mvn_swe_struct
                     domega          : fltarr(n_e,n_az)        , $  ; solid angle
                     gf              : fltarr(n_e,n_az)        , $  ; geometric factor
                     dtc             : fltarr(n_e,n_az)        , $  ; dead time correction
-                    mass            : 0.                      , $  ; electron rest mass [eV/(km/s)^2]
-                    sc_pot          : 0.                      , $  ; spacecract potential
                     Baz             : 0.                      , $  ; magnetic field azimuth in SWEA coord.
                     Bel             : 0.                      , $  ; magnetic field elevation in SWEA coord.
                     iaz             : intarr(16)              , $  ; anode bin numbers (0-15)
                     jel             : intarr(16)              , $  ; deflection bin numbers (0-5)
                     k3d             : intarr(16)              , $  ; 3D bin numbers (0-95)
+                    mass            : 0.                      , $  ; electron rest mass [eV/(km/s)^2]
+                    sc_pot          : 0.                      , $  ; spacecract potential
                     magf            : fltarr(3)               , $  ; magnetic field
                     v_flow          : fltarr(3)               , $  ; bulk flow velocity
-                    bkg             : 0.                      , $  ; background
+                    bkg             : fltarr(n_e,n_az)        , $  ; background
                     data            : fltarr(n_e,n_az)        , $  ; data
                     var             : fltarr(n_e,n_az)           } ; variance
 
-; Define Energy Spectrum data structure
+; Stripped down PAD structure for common block storage
+
+  swe_pad_l2_str = {met             : 0D                      , $  ; mission elapsed time
+                    time            : 0D                      , $  ; unix time
+		            group           : 0                       , $  ; energy grouping parameter
+                    Baz             : 0.                      , $  ; magnetic field azimuth in SWEA coord.
+                    Bel             : 0.                      , $  ; magnetic field elevation in SWEA coord.
+                    data            : fltarr(n_e,n_az)           } ; data
+
+; Define Energy Spectrum (SPEC) data structure
 
   swe_engy_struct = {project_name    : 'MAVEN'                 , $
                      data_name       : 'SWEA SPEC Survey'      , $
@@ -258,9 +274,17 @@ pro mvn_swe_struct
                      mass            : 0.                      , $  ; electron rest mass [eV/(km/s)^2]
                      sc_pot          : 0.                      , $  ; spacecract potential
                      magf            : fltarr(3)               , $  ; magnetic field
-                     bkg             : 0.                      , $  ; background
+                     bkg             : fltarr(n_e)             , $  ; background
                      data            : fltarr(n_e)             , $  ; data
                      var             : fltarr(n_e)                } ; variance
+
+; Stripped down SPEC structure for common block storage
+
+  swe_engy_l2_str = {met             : 0D                      , $  ; mission elapsed time
+                     time            : 0D                      , $  ; unix time
+                     chksum          : 0B                      , $  ; LUT checksum
+                     dt_arr          : fltarr(n_e,n_az)        , $  ; weighting array for summing bins
+                     data            : fltarr(n_e,n_az)           } ; data
 
 ; Define Magnetic Field data structure
 

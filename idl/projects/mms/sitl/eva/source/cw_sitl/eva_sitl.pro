@@ -125,7 +125,7 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
       rst = dialog_message('A new segment must not overlap with existing segments.',/info,/center)
       return
     endif
-    wgrid = s.TIMESTAMPS
+    wgrid = [0];s.TIMESTAMPS
   endif
 
   if BAK eq 0 then begin
@@ -190,7 +190,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
           segSelect = {ts:s.START[idx[0]],te:s.STOP[idx[0]],fom:s.FOM[idx[0]],$
             BAK:BAK,discussion:' ', var:var}
         endif else segSelect = 0
-        wgrid = s.TIMESTAMPS
+        wgrid = [0];s.TIMESTAMPS
       end
       0: begin
         get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
@@ -478,10 +478,12 @@ FUNCTION eva_sitl_event, ev
       end
     state.drpSave: begin
       print,'EVA: ***** EVENT: drpSave *****'
+      widget_control, widget_info(ev.Top,find='eva_data'), GET_VALUE=state_data
+      dir = state_data.pref.EVA_CACHE_DIR
       type = state.svSet[ev.index]
       case type of
-        'Save': eva_sitl_save,/auto
-        'Restore': eva_sitl_restore,/auto
+        'Save': eva_sitl_save,/auto,dir=dir
+        'Restore': eva_sitl_restore,/auto,dir=dir
         'Save As': eva_sitl_save
         'Restore From': eva_sitl_restore
         else: answer = dialog_message('Something is wrong.')
@@ -570,6 +572,7 @@ FUNCTION eva_sitl, parent, $
     input: 'socs', $ ; input type (default: 'soca'; or 'socs','stla')
     update_input: 1 } ; update input data everytime plotting STLM variables
   state = {$
+    parent:parent, $
     pref:pref, $
     socs:socs, $
     stlm:stlm, $

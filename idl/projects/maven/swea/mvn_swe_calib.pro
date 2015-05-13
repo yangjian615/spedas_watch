@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-03-30 17:26:08 -0700 (Mon, 30 Mar 2015) $
-; $LastChangedRevision: 17205 $
+; $LastChangedDate: 2015-05-11 11:32:11 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17550 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -85,22 +85,23 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
         swe_hsk = replicate(swe_hsk_str,2)
         swe_hsk.time = topt.trange_full
         swe_hsk.chksum = swe_active_chksum
+        swe_chksum = swe_hsk.chksum
       endif
-      swe_chksum = replicate(swe_active_chksum,n_elements(swe_hsk))
       if (swe_active_chksum ne 0B) then ok = 1
     endif
   endif
 
   if (not ok) then begin
     if keyword_set(chksum) then begin
-      nhsk = n_elements(swe_hsk)
       swe_active_chksum = chksum
       tabnum = mvn_swe_tabnum(swe_active_chksum)
-      if (nhsk eq 0L) then begin
-        nhsk = 2
-        swe_hsk = replicate(swe_hsk_str,nhsk)
+      if (size(swe_hsk,/type) ne 8) then begin
+        tplot_options, get=topt
+        swe_hsk = replicate(swe_hsk_str,2)
+        swe_hsk.time = topt.trange_full
+        swe_hsk.chksum = swe_active_chksum
+        swe_chksum = swe_hsk.chksum
       endif
-      swe_chksum = replicate(swe_active_chksum,nhsk)
       if (tabnum ne 0) then ok = 1
     endif
   endif
@@ -240,7 +241,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 ;   based on analyzer measurements in a calibrated beam.
 
   geom_factor = 0.009/16.            ; geometric factor per anode (cm2-ster-eV/eV)
-  geom_factor = geom_factor/2.9      ; scale factor from cross calibration
+  geom_factor = geom_factor/2.9      ; scale factor from cruise
 
   swe_gf = replicate(!values.f_nan,64,3)
 
@@ -348,14 +349,15 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 
   swe_dgf[*] = 1.  ; disable for now
 
-; Spacecraft blockage mask (~8% of sky, deployed boom, approximate)
+; Spacecraft blockage mask (~27% of sky, deployed boom, approximate)
 ;   Complete blockage: 0, 1, 2, 3, 17, 18
-;   Partial blockage: 14 & 15 (summed onboard), 16, 31
+;   Partial blockage: 4, 14 & 15 (summed onboard), 16, 19, 20, 30, 31
 
   swe_sc_mask = replicate(1B, 96, 2)  ; 96 solid angle bins, 2 boom states
   
-  swe_sc_mask[0:31,0] = 0B                         ; stowed boom
-  swe_sc_mask[[0,1,2,3,14,15,16,17,18,31],1] = 0B  ; deployed boom
+  swe_sc_mask[0:31,0] = 0B                                    ; stowed boom
+;  swe_sc_mask[[0,1,2,3,4,14,15,16,17,18,19,20,30,31],1] = 0B ; deployed boom
+  swe_sc_mask[[0,1,2,3,14,15,16,17,18,31],1] = 0B             ; deployed boom
 
 ; Dead time (from IRAP calibration: MCP-Anode-Preamp chain)
 ; This is for ONE of the 16 chains.  Energy spectra combine all 16 chains, so

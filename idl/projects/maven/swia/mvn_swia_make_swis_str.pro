@@ -14,8 +14,8 @@
 ;	Swis_Str_Array: An array of structures containing energy spectra
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-04-11 13:42:27 -0700 (Fri, 11 Apr 2014) $
-; $LastChangedRevision: 14811 $
+; $LastChangedDate: 2015-05-11 11:11:08 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17549 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_swis_str.pro $
 ;
 ;-
@@ -74,7 +74,7 @@ endif
 
 if nw gt 0 then begin
 	for i = 0,nw-1 do begin
-		sample = swis_str_array[waswitch[i]-16:waswitch[i]].data
+		sample = swis_str_array[waswitch[i]-16:waswitch[i]+1].data
 		scounts = total(sample,1)
 		af = info[swis_str_array[waswitch[i]].info_index].geom_fine_atten/info[swis_str_array[waswitch[i]].info_index].geom_fine
 		af = total(af,1)/10
@@ -82,8 +82,9 @@ if nw gt 0 then begin
 
 		mvn_swia_fit_step,scounts,ratio,ind
 		if ind lt 16 then swis_str_array[waswitch[i]-16+ind:waswitch[i]-1].atten_state = 3-swis_str_array[waswitch[i]-16+ind:waswitch[i]-1].atten_state
+		if ind eq 17 then swis_str_array[waswitch[i]].atten_state = 3-swis_str_array[waswitch[i]].atten_state
 
-		swis_str_array[waswitch[i]-16:waswitch[i]].decom_flag = 0.5
+		swis_str_array[waswitch[i]-16:waswitch[i]+1].decom_flag = 0.5
 		swis_str_array[waswitch[i]-16+ind-1:waswitch[i]-16+ind].decom_flag = 0.25
 
 	endfor

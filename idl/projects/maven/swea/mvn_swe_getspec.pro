@@ -26,8 +26,8 @@
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-24 19:03:51 -0800 (Tue, 24 Feb 2015) $
-; $LastChangedRevision: 17038 $
+; $LastChangedDate: 2015-05-11 13:11:42 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17562 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -96,10 +96,10 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
     spec0.data = total(spec.data/spec.dtc, 2, /nan)
     spec0.var = total(spec.var/spec.dtc, 2, /nan)
     spec0.dtc = 1.  ; summing corrected counts is not reversible
-    spec0.sc_pot = mean(spec.sc_pot)
-    spec0.magf[0] = mean(spec.magf[0])
-    spec0.magf[1] = mean(spec.magf[1])
-    spec0.magf[2] = mean(spec.magf[2])
+    spec0.sc_pot = mean(spec.sc_pot,/nan)
+    spec0.magf[0] = mean(spec.magf[0],/nan)
+    spec0.magf[1] = mean(spec.magf[1],/nan)
+    spec0.magf[2] = mean(spec.magf[2],/nan)
     spec = spec0
   endif
 

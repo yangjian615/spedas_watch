@@ -12,11 +12,17 @@
 ;
 ;    TRANGE:        Time range for MAVEN spacecraft spk and ck kernels.
 ;
-;    LIST:          If set, list the kernels in use.
+;    LIST:          After loading, list the kernels in use.
+;
+;    FORCE:         If set, then clear all kernels and reload them based on TRANGE
+;                   or the current value of trange_full.  Otherwise, ask the user
+;                   for permission to clear and reload.
+;
+;    STATUS:        Don't load anything; just list kernels in use.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-11 12:07:43 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16951 $
+; $LastChangedDate: 2015-05-11 11:32:53 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17551 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_spice_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -27,6 +33,8 @@ pro mvn_swe_spice_init, trange=trange, list=list, force=force, status=status
 
   common mvn_spc_met_to_unixtime_com, cor_clkdrift, icy_installed, kernel_verified, $
          time_verified, sclk, tls
+
+  if keyword_set(force) then noguff = 1 else noguff = 0
 
   if keyword_set(status) then begin
     mk = spice_test('*')
@@ -40,7 +48,7 @@ pro mvn_swe_spice_init, trange=trange, list=list, force=force, status=status
     return
   endif
 
-  if (not keyword_set(force)) then begin
+  if (~noguff) then begin
     mk = spice_test('*')
     indx = where(mk ne '', n_ker)
     if (n_ker gt 0) then begin
@@ -67,6 +75,7 @@ pro mvn_swe_spice_init, trange=trange, list=list, force=force, status=status
   
   dprint, "Initializing SPICE ...", getdebug=old_dbug, setdebug=0
 
+  if (noguff) then cspice_kclear ; remove any previously loaded kernels
   swe_kernels = mvn_spice_kernels(/all,/load,trange=srange,verbose=-1)
   swe_kernels = spice_test('*')  ; only loaded kernels, no wildcards
   n_ker = n_elements(swe_kernels)

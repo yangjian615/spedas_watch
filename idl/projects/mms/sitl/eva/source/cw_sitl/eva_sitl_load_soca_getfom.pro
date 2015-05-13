@@ -3,7 +3,7 @@ Function eva_sitl_load_soca_getfom, pref, parent
 
   ;////////////////////////////////////
   local_dir = !MMS.LOCAL_DATA_DIR
-  TESTMODE  = pref.EVA_TESTMODE
+  TESTMODE  = 0; pref.EVA_TESTMODE
   ;/////////////////////////////////////
   
   get_latest_fom_from_soc, fom_file, error_flag, error_msg

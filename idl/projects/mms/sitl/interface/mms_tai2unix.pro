@@ -1,6 +1,6 @@
 function mms_tai2unix, tinput
 
-  tai_minus_unix = 378691200l
+  tai_minus_unix = 378691200d0
 
   load_leap_table2, leaps, juls
   

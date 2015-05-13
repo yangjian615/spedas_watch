@@ -48,36 +48,43 @@ FUNCTION eva_data_load_mms, state
       sprg = 'Loading MMS data ....... '+string(prg,format='(I2)')+' %'
       progressbar -> Update, prg, Text=sprg
       
-      if (strmatch(paramlist[i],'*_afg*') or strmatch(paramlist[i],'*_dfg*')) then begin
-        mms_sitl_get_dcb, afg_status, dfg_status, sc_id=sc;, no_update = no_update, reload = reload
-
+      ;-----------
+      ; AFG
+      ;-----------
+      if (strmatch(paramlist[i],'*_afg*')) then begin
+        mms_sitl_get_afg, sc_id=sc;, no_update = no_update, reload = reload
         tplot_names,sc+'_afg_srvy_gsm_dmpa',names=tn
         jmax=n_elements(tn)
-        if jmax ge 1 then begin
-          for j=0,jmax-1 do begin
-            eva_cap, sc+'_afg_srvy_gsm_dmpa'
-            options, sc+'_afg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|']
-            options, sc+'_afg_srvy_gsm_dmpa', 'ytitle', sc+'!CAFG_srvy'
-            options, sc+'_afg_srvy_gsm_dmpa', 'ysubtitle', '[nT]'
-            options, sc+'_afg_srvy_gsm_dmpa', 'colors',[2,4,6]
-          endfor
-        endif
+        if jmax eq 1 then begin
+          eva_cap, sc+'_afg_srvy_gsm_dmpa'
+          options, sc+'_afg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|']
+          options, sc+'_afg_srvy_gsm_dmpa', 'ytitle', sc+'!CAFG_srvy'
+          options, sc+'_afg_srvy_gsm_dmpa', 'ysubtitle', '[nT]'
+          options, sc+'_afg_srvy_gsm_dmpa', 'colors',[2,4,6]
+          answer = 'Yes'
+        endif 
+      endif
+
+      ;-----------
+      ; DFG
+      ;-----------
+      if (strmatch(paramlist[i],'*_dfg*')) then begin
+        mms_sitl_get_dfg, sc_id=sc;, no_update = no_update, reload = reload
         tplot_names,sc+'_dfg_srvy_gsm_dmpa',names=tn
         jmax=n_elements(tn)
         if jmax ge 1 then begin
-          for j=0,jmax-1 do begin
-            eva_cap, sc+'_dfg_srvy_gsm_dmpa'
-            options, sc+'_dfg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|']
-            options, sc+'_dfg_srvy_gsm_dmpa', 'ytitle', sc+'!CDFG_srvy'
-            options, sc+'_dfg_srvy_gsm_dmpa', 'ysubtitle', '[nT]'
-            options, sc+'_dfg_srvy_gsm_dmpa', 'colors',[2,4,6]
-          endfor
+          eva_cap, sc+'_dfg_srvy_gsm_dmpa'
+          options, sc+'_dfg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|']
+          options, sc+'_dfg_srvy_gsm_dmpa', 'ytitle', sc+'!CDFG_srvy'
+          options, sc+'_dfg_srvy_gsm_dmpa', 'ysubtitle', '[nT]'
+          options, sc+'_dfg_srvy_gsm_dmpa', 'colors',[2,4,6]
+          answer = 'Yes'
         endif
-        
-        if (afg_status eq 0) or (dfg_status eq 0) then answer = 'Yes'
       endif
       
-      
+      ;-----------
+      ; AE Index
+      ;-----------
       if strmatch(paramlist[i],'thg_idx_ae') then begin
         thm_load_pseudoAE,datatype='ae'
         if tnames('thg_idx_ae') eq '' then begin

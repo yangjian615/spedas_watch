@@ -30,16 +30,18 @@
 ;
 ;   MINDEN:   Smallest reliable density (cm-3).  Default = 0.08
 ;
+;   ERANGE:   Restrict calculation to this energy range.
+;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:53:52 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16884 $
+; $LastChangedDate: 2015-05-11 11:33:41 -0700 (Mon, 11 May 2015) $
+; $LastChangedRevision: 17552 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-
 pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, $
-                 mom=mom, minden=minden
+                 mom=mom, minden=minden, erange=erange
 
   compile_opt idl2
 
@@ -123,6 +125,7 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask
     mvn_swe_convert_units, mvn_swe_engy, 'eflux'    
     energy = mvn_swe_engy.energy
     eflux = mvn_swe_engy.data
+    bkg = mvn_swe_engy.bkg
     sc_pot = mvn_swe_engy.sc_pot
   endelse
 
@@ -134,15 +137,34 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask
 
   sdev = sqrt(sig2)
 
+; Trim data to desired energy range
+   
+  if (n_elements(erange) gt 1) then begin
+    Emin = min(erange, max=Emax)
+    endx = where((E ge Emin) and (E le Emax), n_e)
+    if (n_e eq 0L) then begin
+      print,"No data within energy range: ",erange
+      return
+    endif
+    E = E[endx]
+    dE = dE[endx]
+    eflux = eflux[endx,*]
+    sdev = sdev[endx,*]
+  endif
+
+; Calculate the moments
+
   for i=0L,(npts-1L) do begin
-    F = eflux[*,i]
+    F = (eflux[*,i] - bkg[i]) > 0.
     S = sdev[*,i]
     pot = sc_pot[i]
 
     if (finite(pot)) then begin
       j = where(E gt pot, n_e)
-      j = j[0:(n_e-2)]  ; one channel cushion from s/c potential
-      n_e--
+      if (n_e lt n_elements(E)) then begin
+        j = j[0:(n_e-2)]  ; one channel cushion from s/c potential
+        n_e--
+      endif
     endif else n_e = 0
 
     if (mom) then begin

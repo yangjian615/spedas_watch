@@ -155,7 +155,11 @@ FUNCTION eva_sitl_load_socs_getfom, tfom,$
   ; Brms/|B|
   Mtdq  = 0
   for p=0, pmax-1 do begin; for each probe
+    
     strp = 'mms'+strtrim(string(probes[p]),2)
+    print,'EVA:------------'
+    print,'EVA: TDN for '+strp
+    print,'EVA:------------'
     tpv = strp+'_dfg_srvy_gsm_dmpa'
     tn = tnames(tpv,c)
     if c ne 1 then begin; if magnetic field data not yet loaded
@@ -209,23 +213,23 @@ FUNCTION eva_sitl_load_socs_getfom, tfom,$
         csum = total(temp[reverse(sort(temp))],/cumulative); cumulative sum of the data in descending order
         if count ge 8 then begin
           tdn_p[N,Mtdq  ,p] = csum[7]/8.d; take 8 highest peaks and average (ignore if count < 8)
-          tdn_p[N,Mtdq+1,p] = 1*tdn_p[N,Mtdq,p]; fake (to be deleted later)
-          tdn_p[N,Mtdq+2,p] = 2*tdn_p[N,Mtdq,p]; fake (to be deleted later)
-          tdn_p[N,Mtdq+3,p] = fake[N]*1.5*tdn_p[N,Mtdq,p]; fake (to be deleted later)
-          tdn_p[N,Mtdq+4,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
-          tdn_p[N,Mtdq+5,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
-          tdn_p[N,Mtdq+6,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
-          tdn_p[N,Mtdq+7,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
+;          tdn_p[N,Mtdq+1,p] = 1*tdn_p[N,Mtdq,p]; fake (to be deleted later)
+;          tdn_p[N,Mtdq+2,p] = 2*tdn_p[N,Mtdq,p]; fake (to be deleted later)
+;          tdn_p[N,Mtdq+3,p] = fake[N]*1.5*tdn_p[N,Mtdq,p]; fake (to be deleted later)
+;          tdn_p[N,Mtdq+4,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
+;          tdn_p[N,Mtdq+5,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
+;          tdn_p[N,Mtdq+6,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
+;          tdn_p[N,Mtdq+7,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
         endif else begin
           if (count gt 0 and count lt 8) then begin
-            tdn_p[N,Mtdq  ,p] = csum[count-1]/count; take all and average
-            tdn_p[N,Mtdq+1,p] = 1*tdn_p[N,Mtdq,p]; fake (to be deleted later)
-            tdn_p[N,Mtdq+2,p] = 2*tdn_p[N,Mtdq,p]; fake (to be deleted later)
-            tdn_p[N,Mtdq+3,p] = fake[N]*1.5*tdn_p[N,Mtdq,p]; fake (to be deleted later)
-            tdn_p[N,Mtdq+4,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
-            tdn_p[N,Mtdq+5,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
-            tdn_p[N,Mtdq+6,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
-            tdn_p[N,Mtdq+7,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
+;            tdn_p[N,Mtdq  ,p] = csum[count-1]/count; take all and average
+;            tdn_p[N,Mtdq+1,p] = 1*tdn_p[N,Mtdq,p]; fake (to be deleted later)
+;            tdn_p[N,Mtdq+2,p] = 2*tdn_p[N,Mtdq,p]; fake (to be deleted later)
+;            tdn_p[N,Mtdq+3,p] = fake[N]*1.5*tdn_p[N,Mtdq,p]; fake (to be deleted later)
+;            tdn_p[N,Mtdq+4,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
+;            tdn_p[N,Mtdq+5,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
+;            tdn_p[N,Mtdq+6,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
+;            tdn_p[N,Mtdq+7,p] = (1.d0-fake[N])*tdn_p[N,Mtdq,p]
           endif
         endelse
       endfor; for N=0, Npts-1
