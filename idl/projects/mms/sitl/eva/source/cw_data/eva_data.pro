@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-11 19:01:54 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17570 $
+; $LastChangedDate: 2015-05-13 14:29:58 -0700 (Wed, 13 May 2015) $
+; $LastChangedRevision: 17591 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -543,7 +543,7 @@ FUNCTION eva_data, parent, $
     sbMMS = widget_base(subbase,space=0,ypad=0,SENSITIVE=0)
       str_element,/add,state,'sbMMS',sbMMS
       str_element,/add,state,'bgMMS',cw_bgroup(sbMMS, ProbeNamesMMS, /COLUMN, /NONEXCLUSIVE,$
-        SET_VALUE=[1,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
+        SET_VALUE=[0,0,1,0],BUTTON_UVALUE=bua,ypad=0,space=0)
     bsCtrl = widget_base(subbase, /COLUMN,/align_center, space=0, ypad=0)
       str_element,/add,state,'lblPS',widget_label(bsCtrl,VALUE='Parameter Set')
       str_element,/add,state,'drpSet',widget_droplist(bsCtrl,VALUE=state.paramSetList,$

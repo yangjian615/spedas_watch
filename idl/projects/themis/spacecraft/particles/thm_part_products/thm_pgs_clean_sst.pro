@@ -34,15 +34,16 @@
 ;Keywords:
 ;  sst_sun_bins:  The bin numbers that should be flagged as contaminated by sun and interpolated
 ;  sst_method_clean: how to decontaminate the sst data.  Right now the only option is 'manual', but selects a good set of default sst_sun_bins, if not user specified.
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-03-19 17:18:03 -0700 (Thu, 19 Mar 2015) $
-;$LastChangedRevision: 17151 $
+;  sst_min_energy: Set to minimum energy to toss bins that are having problems from instrument degradation. 
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-05-13 15:54:49 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17597 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_sst.pro $
 ;-
 
 
 ;Note: Keep options for vectorizing open
-pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_method_clean=sst_method_clean,_extra=ex
+pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_method_clean=sst_method_clean,sst_min_energy=sst_min_energy,_extra=ex
 
   compile_opt idl2,hidden
   
@@ -141,6 +142,34 @@ pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_met
       sc_pot:udata.sc_pot $ ;placeholder for spacecraft potential (1-element float scalar)
     }
   endelse
+
+  ;doesn't work if energy is varying across phi...
+  if ~undefined(sst_min_energy) then begin
+
+    idx = where(output.energy[*,0] ge sst_min_energy,c)
+    
+    if c eq 0 then begin
+      message,'ERROR: sst_min_energy identifies zero valid bins' 
+    endif
+    
+    output = {data:udata.data[idx,*], $ ;particle data 2-d array, energy by angle. (Float or double)
+      scaling:scale[idx,*], $ ;scaling coefficient corresponding to 1 count/bin, used for error calculation (float or double)
+      time:udata.time, $ ;sample start time(1-element double precision scalar)
+      end_time:udata.end_time, $ ;sample end time(1-element double precision scalar)
+      phi:udata.phi[idx,*], $ ;Measurment angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
+      dphi:udata.dphi[idx,*], $ ;Width of measurement angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
+      theta:udata.theta[idx,*], $ ;Measurment angle in plane perpendicular to spacecraft spin.(2-d array matching data array.) (Float or double)
+      dtheta:udata.dtheta[idx,*], $ ;Width of measurement angle in plane perpendicular to spacecraft spin. (2-d array matching data array.) (Float or double)
+      energy:udata.energy[idx,*], $ ;Contains measurment energy for each component of data array. (2-d array matching data array.) (Float or double)
+      denergy:udata.denergy[idx,*], $ ;Width of measurment energy for each component of data array. (2-d array matching data array.)
+      bins:udata.bins[idx,*], $ ; 0-1 array, indicating which bins are enabled for subsequent calculations. (2-d array matching data array.)  (Integer type.)
+      charge:udata.charge, $ ;expected particle charge (1-element float scalar)
+      mass:udata.mass, $ ;expected particle mass (1-element float scalar)
+      magf:udata.magf, $ ;placeholder for magnetic field vector(3-element float array)
+      sc_pot:udata.sc_pot $ ;placeholder for spacecraft potential (1-element float scalar)
+    }
+
+  endif
 
   ;perform sst sun contamination
   ;

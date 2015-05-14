@@ -371,12 +371,41 @@ function mvn_mag_sts_read, filename,$
 
   for i=0, vnn-1 do $
      temp=execute("data2."+vtags[i]+" = data."+vtags[i])
-  data = data2
+  ;data = data2
+  data = 0
 
-
+  ;;--------------------------------------
+  ;; SPECIAL CASE FOR L1 FILES
+  ;; L1 files use a different structure than
+  ;; L2 files because the mag team changed the 
+  ;; sts file structure.
+  pp = where(vtags eq 'OB_BPL_X',cc)
+  if level eq 'l1' and cc ne 0 then begin          
+     data = replicate({time:0.D,vec:[0.,0.,0.],range:0.},nn)
+     data.range  = data2.ob_bpl_range
+     data.vec[0] = data2.ob_bpl_x
+     data.vec[1] = data2.ob_bpl_y
+     data.vec[2] = data2.ob_bpl_z
+     data.time   = data2.time
+  endif else data = data2
+  
   return, data
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

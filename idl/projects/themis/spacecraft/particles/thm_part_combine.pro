@@ -32,6 +32,7 @@
 ;  energies:  Array specifying the energies used to replace the default SST energies
 ;             and cover the ESA-SST energy gap (in ascending order) (float).
 ;  sst_sun_bins:  Array list of SST bins to mask (bin indices) (int).
+;  sst_min_energy: Set to minimum energy to toss bins that are having problems from instrument degradation. (float)
 ;  only_sst: Interpolates ESA to match SST and returns SST(only) with interpolated bins.(Backwards compatibility: functionality of thm_sst_load_calibrate)
 ;  interp_to_esa: Combined product but data interpolated to match ESA(instead of always interpolating to higher resolution)
 ;  interp_to_sst: Combined product but data interpolated to match SST(instead of always interpolating to higher resolution)
@@ -82,8 +83,8 @@
 ;     
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-03-05 17:20:40 -0800 (Wed, 05 Mar 2014) $
-;$LastChangedRevision: 14508 $
+;$LastChangedDate: 2015-05-13 15:54:49 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17597 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_combine.pro $
 ;
 ;-
@@ -96,6 +97,7 @@ function thm_part_combine, probe=probe, $
                       regrid=regrid, $
                       energies=energies, $
                       sst_sun_bins=sst_sun_bins, $
+                      sst_min_energy=sst_min_energy,$
                       orig_esa=orig_esa, $
                       orig_sst=orig_sst, $
                       only_sst=only_sst,$ ;Interpolates ESA to match SST and returns SST(only) with interpolated bins. (Backwards compatibility: functionality of thm_sst_load_calibrate)
@@ -190,7 +192,7 @@ function thm_part_combine, probe=probe, $
 
   ;convert to flux and remove unnecessary fields from structures
   ;(energy interpolation should be perfomed in flux)
-  thm_cmb_clean_sst, sst, units='flux', sst_sun_bins=sst_sun_bins, method_clean=method_clean ;<-unused keyword
+  thm_cmb_clean_sst, sst, units='flux', sst_sun_bins=sst_sun_bins,sst_min_energy=sst_min_energy,method_clean=method_clean ;<-unused keyword
   thm_cmb_clean_esa, esa, units='flux'
   
   

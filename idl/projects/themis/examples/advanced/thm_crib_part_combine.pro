@@ -29,9 +29,9 @@
 ;   If you see any useful examples missing from these cribs, please let us know.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-02 14:57:59 -0700 (Wed, 02 Jul 2014) $
-;$LastChangedRevision: 15501 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-05-13 15:54:49 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17597 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine.pro $
 ;
 ;-
@@ -254,6 +254,24 @@ print,'SST data & interpolated bins used to generate particle products.'
 
 stop
 
+;----------------------------------------------------------------------------------------
+;Generate data with SST energy bins below the limit removed before filling the ESA/SST gap
+;For later mission dates those bins may be unreliable due to instrument degration
+;----------------------------------------------------------------------------------------
+combined = thm_part_combine(probe=probe, trange=trange, $
+  esa_datatype=esa_datatype, sst_datatype=sst_datatype, $
+  orig_esa=esa, orig_sst=sst,sst_min_energy=50000.)
+
+
+;Pass the combined data into processing routines the same way you
+;would use output from thm_part_dist_array.
+thm_part_products, dist_array=combined, outputs='energy'
+
+tplot,'thd_psif_eflux_energy'
+
+print,'SST data & interpolated bins used to generate particle products.'
+
+stop
 ;--------------------------------------------------------------------------------------
 ;End
 ;--------------------------------------------------------------------------------------

@@ -6,11 +6,47 @@
 ;    Interface for SPEDAS plugins
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-05-13 14:30:53 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17592 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/objects/spd_ui_plugin_manager__define.pro $
 ;-
+
+;+
+; NAME: 
+;     addAboutPlugin
+;     
+; PURPOSE: 
+;     Add an about page with information on the plugin. For example, the "rules of the road"
+;     statement, developer credits, acknowledgements, etc.
+;     
+; INPUT: 
+;     mission name: name of the mission to add to the load data panel
+;     procedure name: name of the procedure containing the load data panel widget for this mission
+;     panel title: title of the load data panel
+;-
+pro spd_ui_plugin_manager::addAboutPlugin, mission_name, text_file
+    plugin_struct = [{mission_name: mission_name, text_file: text_file}]
+    if ptr_valid(self.plugin_about_pages) then begin
+        append_array, (*self.plugin_about_pages), plugin_struct
+    endif else self.plugin_about_pages = ptr_new(plugin_struct)
+end 
+
+;+
+; NAME: 
+;     getAboutPlugins
+;     
+; PURPOSE: 
+;     returns an array of structures, one struct for each plugin's about page
+;     
+;
+;-
+function spd_ui_plugin_manager::getAboutPlugins
+    if ptr_valid(self.plugin_about_pages) then begin
+        return, *self.plugin_about_pages
+    endif else return, 0
+end
+
 
 ;+
 ; NAME: 
@@ -212,6 +248,14 @@ function spd_ui_plugin_manager::parseConfig, filename
                     dprint, dlevel = 0, 'Not enough arguments to add plugin item to the "Data Processing" panel'
                 endelse
             end
+            'about': begin
+                ; found an "about" page for the plugin
+                if n_elements(info_components) eq 1 then begin
+                    self->addAboutPlugin, mission_name, info_components[0]
+                endif else begin
+                    dprint, dlevel = 0, 'Not enough arguments to add plugin''s About Page to the GUI'
+                endelse
+            end
             else: dprint, dlevel = 0, 'Error loading plugin, unknown plugin type: ' + string(plugin_type)
         endcase
     endfor
@@ -259,6 +303,7 @@ pro spd_ui_plugin_manager__define
         plugin_menus: ptr_new(), $
         plugin_file_config_panels: ptr_new(), $
         plugin_load_data_panels: ptr_new(), $
+        plugin_about_pages: ptr_new(), $
         data_proc_plugins: ptr_new() $
     }
 end

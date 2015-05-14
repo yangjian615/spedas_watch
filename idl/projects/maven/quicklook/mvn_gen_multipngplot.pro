@@ -18,10 +18,11 @@
 ;HISTORY:
 ; Hacked from thm_gen_multipngplot, 15-oct-2014, jmm,
 ; jimm@ssl.berkeley.edu
-; Switched to plot singel orbit plots, 24-apr-2015, jmm
+; Switched to plot single orbit plots, 24-apr-2015, jmm
+; PLots from apoapsis to apoapsis, suggested by Takuya Hara, 2015-05-13
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-04-24 13:21:50 -0700 (Fri, 24 Apr 2015) $
-; $LastChangedRevision: 17426 $
+; $LastChangedDate: 2015-05-13 11:14:47 -0700 (Wed, 13 May 2015) $
+; $LastChangedRevision: 17585 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_multipngplot.pro $
 ;-
 Pro mvn_gen_multipngplot, filename_in, directory = directory, _extra = _extra
@@ -54,12 +55,14 @@ Pro mvn_gen_multipngplot, filename_in, directory = directory, _extra = _extra
 ;Orbit plots, filename_proto+'_'+orbit_number+'_'+yymmddhhmmss
 
 ; Get all orbits for this day
-  get_data, 'mvn_orbnum', data = dorb
+  get_data, 'mvn_orbnum1', data = dorb
   If(~is_struct(dorb)) Then Begin
      orbdata = mvn_orbit_num()
      store_data, 'mvn_orbnum', orbdata.peri_time, orbdata.num, $
                  dlimit={ytitle:'Orbit'}
-     get_data, 'mvn_orbnum', data = dorb
+     store_data, 'mvn_orbnum1', orbdata.apo_time, orbdata.num, $
+                 dlimit={ytitle:'Orbit-APO'}
+     get_data, 'mvn_orbnum1', data = dorb
   Endif
   norbits = n_elements(dorb.x)
   tr0 = date_double+[0.0d0, 86400.0d0]
@@ -74,7 +77,8 @@ Pro mvn_gen_multipngplot, filename_in, directory = directory, _extra = _extra
         trj = tbins[j:j+1]
         orbno = 'o'+string(onums[j], format = '(i5.5)')
         orbno0 = strcompress(onums[j], /remove_all)
-        tplot, trange = trj, title = 'MAVEN PFP L2: Orbit '+orbno0, var_label = 'mvn_orbnum'
+        orbno1 = strcompress(onums[j]+1, /remove_all)
+        tplot, trange = trj, title = 'MAVEN PFP L2: Orbit '+orbno0+'-'+orbno1, var_label = 'mvn_orbnum'
         trjstr = time_string(trj[0], format=6)
         makepng, dir+filename_proto+'_'+orbno+'_'+trjstr, /no_expose, _extra = _extra
      Endfor

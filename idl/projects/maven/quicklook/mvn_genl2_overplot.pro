@@ -6,8 +6,7 @@
 ;CALLING SEQUENCE:
 ; mvn_genl2_overplot, date = date, time_range = time_range, $
 ;      makepng=makepng, device = device, directory = pdir, $
-;      l0_input_file = l0_input_file, multipngplot = multipngplot, $
-;      _extra=_extra
+;      multipngplot = multipngplot
 ;INPUT:
 ; No explicit input, everthing is via keyword.
 ;OUTPUT:
@@ -17,8 +16,6 @@
 ; time_range = If set, plot this time range, note that this supercedes
 ;              the date keyword, if both are set, the time range is
 ;              attempted.
-; l0_input_file = A filename for an input file, if this is set, the
-;                 date and time_range keywords are ignored.
 ; makepng = If set, make a png file, with filename
 ;           'mvn_gen_qlook_start_time_end_time.png'
 ; device = a device for set_plot, the default is to use the current
@@ -27,42 +24,14 @@
 ;          program.
 ; directory = If a png is created, this is the output directory, the
 ;             default is the current working directory.
-; noload_data = If set, assume that all of the data is loaded, and
-;               just plot.
 ; multipngplot = if set, then make multiple plots of 2 and 6 hour
 ;               duration, in addition to the regular png plot
-;Quicklook Tplot Panels
-;-------------------------
-;STATIC
-; variables:
-;mvn_sta_C0_P1A_E
-;mvn_sta_C6_P1D_M
-;     mass spectrogram
-;     energy spectrogram
-;SWIA
-;     energy spectrogram
-;SWEA
-;     energy spectrogram
-;     pitch angle distribution (at 280 eV)
-;SEP
-;     energy line plot electrons
-;     energy line plot ions
-;LPW
-;     wave power (LF+MF+HF)
-;     IV-spectra+SC, potential+HTIME (see note)
-;EUV
-;     EUV diodes + temperature
-;MAG
-;     Bx, By, Bz, |B|
-;     RMS panel
-;NGIMS
-;     CSN, OSNT, OSNB, OSI
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; CHanged to use thara's mvn_pl_pfp_tplot.pro, 2015-04-14, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-04-24 12:49:51 -0700 (Fri, 24 Apr 2015) $
-; $LastChangedRevision: 17424 $
+; $LastChangedDate: 2015-05-13 11:14:47 -0700 (Wed, 13 May 2015) $
+; $LastChangedRevision: 17585 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_genl2_overplot.pro $
 ;-
 Pro mvn_genl2_overplot, orbit_number = orbit_number, $
@@ -81,7 +50,7 @@ Pro mvn_genl2_overplot, orbit_number = orbit_number, $
   If(keyword_set(orbit_number)) Then Begin
      orb_range = minmax(orbit_number)
      If(n_elements(orbit_number) Eq 1) Then orb_range[1]=orb_range[1]+1
-     tr0 = interpol(orbdata.peri_time, orbdata.num, orb_range)
+     tr0 = interpol(orbdata.apo_time, orbdata.num, orb_range)
      tr0x = tr0
   Endif Else If(keyword_set(time_range)) Then Begin
      tr0 = time_double(time_range) & tr0x = tr0
@@ -89,11 +58,11 @@ Pro mvn_genl2_overplot, orbit_number = orbit_number, $
      tr0 = time_double(date)+[0.0d0, 86400.0d0] & tr0x = tr0
 ;reset time range to start and end of orbits, note we are making the
 ;assumption that the orbit data is always ahead of the time processed.
-    If(tr0[0] Ge orbdata[0].peri_time And $
-        tr0[1] Le orbdata[norbits-1].peri_time) Then Begin
-        o1 = max(where(orbdata.peri_time Le tr0[0]))
-        o2 = min(where(orbdata.peri_time ge tr0[1]))
-        tr0 = orbdata[[o1, o2]].peri_time
+    If(tr0[0] Ge orbdata[0].apo_time And $
+        tr0[1] Le orbdata[norbits-1].apo_time) Then Begin
+        o1 = max(where(orbdata.apo_time Le tr0[0]))
+        o2 = min(where(orbdata.apo_time ge tr0[1]))
+        tr0 = orbdata[[o1, o2]].apo_time
         print, 'Orbit start and end:', orbdata[[o1, o2]].num
      Endif
   Endif Else Begin
@@ -123,10 +92,11 @@ Pro mvn_genl2_overplot, orbit_number = orbit_number, $
      Return
   Endif
 
-;load orbit data into a tplot variable
+;load orbit data into tplot variables
   store_data, 'mvn_orbnum', orbdata.peri_time, orbdata.num, $
               dlimit={ytitle:'Orbit'}
-
+  store_data, 'mvn_orbnum1', orbdata.apo_time, orbdata.num, $
+              dlimit={ytitle:'Orbit-APO'}
 ;Remove gap between plot panels
   tplot_options, 'ygap', 0.0d0
 
@@ -142,8 +112,9 @@ Pro mvn_genl2_overplot, orbit_number = orbit_number, $
   If(keyword_set(makepng)) Then Begin
      If(keyword_set(directory)) Then pdir = directory Else pdir = './'
      fname = pdir+mvn_qlook_filename('l2', tr0x, _extra=_extra)
-     If(keyword_set(multipngplot) && keyword_set(date)) Then mvn_gen_multipngplot, fname, directory = pdir $
-     Else makepng, fname
+     If(keyword_set(multipngplot) && keyword_set(date)) Then Begin
+        mvn_gen_multipngplot, fname, directory = pdir
+     Endif Else makepng, fname
   Endif
 
   Return
