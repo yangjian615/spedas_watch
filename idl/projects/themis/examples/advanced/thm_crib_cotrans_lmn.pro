@@ -1,15 +1,22 @@
-; +
-; NAME:
-;     THM_CRIB_COTRANS_LMN
-; 
-; PURPOSE:
-; Crib sheet showing the use of thm_cotrans_lmn.
-;        
-; Written by: Vladimir Kondratovich
-; -
-PRO thm_crib_cotrans_lmn
+;+
+;Procedure:
+;  thm_crib_cotrans_lmn
+;
+;Purpose:
+;  Crib sheet showing the use of thm_cotrans_lmn.
+;
+;Notes:
+;  Written by: Vladimir Kondratovich
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-13 18:00:26 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17598 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_cotrans_lmn.pro $
+;-
+
 
 ; thm_cotrans_lmn method 1
+;-------------------------
 probe = 'a'
 timespan, '7 7 17', 1, /day
 
@@ -25,6 +32,7 @@ stop
 
 
 ; thm_cotrans_lmn method 2
+;-------------------------
 probe = 'a'
 timespan, '7 7 17', 1, /day
 

@@ -1,6 +1,26 @@
 
+;+
+;Procedure:
+;  thm_crib_cleanefp
+;
+;Purpose:
+;  Crib sheet for testing thm_efi_clean_efp
+;
+;Notes:
+;  
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-13 18:00:26 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17598 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_cleanefp.pro $
+;-
+
+
 print, "--- Start of crib sheet ---"
+
+;   re=6371.2      ;tplot default
    re=6378.16     ;Earth equatorial radius [km]  ;;1 - EH, tha, 2008-03-28 ;
+
    eventdate = ['c2008-01-29-tail', 'a2008-03-28-tail', 'd2008-03-24-tail', $
       'a2008-03-14-tail', 'd2008-03-15-tail', 'a2008-08-18-subsolar', $
       'e2008-09-05-subsolar', 'a2008-08-28-subsolar', 'd2008-08-03-subsolar',$
@@ -23,7 +43,6 @@ print, "--- Start of crib sheet ---"
    thm_efi_clean_efp, probe=probe, subsolar = subsolar
    thm_efi_clean_efp, probe=sc, minrat=0.01
 
-;   tplot, 'th'+probe+'_efp_clean*'
    tplot, 'th' + probe + '_' + ['efp', 'efp_clean_dsl', 'efp_clean_fac']
 
 print, "--- End of crib sheet ---"

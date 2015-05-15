@@ -5,6 +5,12 @@
 ;Purpose:
 ;  Demonstrate basic examples of loading ground magnetometer data.
 ;
+;Acknowledgements:
+;  MACCS:
+;    If these data are used in a publication, you must acknowledge the source:
+;    "Acknowledgement: MACCS magnetometer data were provided by Mark Engebretson,
+;    Augsburg College"
+;
 ;See also:
 ;  thm_crib_greenland_gmag
 ;  thm_crib_maccs_gmag
@@ -16,8 +22,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-27 16:08:10 -0800 (Fri, 27 Feb 2015) $
-;$LastChangedRevision: 17056 $
+;$LastChangedDate: 2015-05-13 18:00:26 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17598 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_gmag.pro $
 ;-
 
@@ -39,22 +45,6 @@ tplot, 'thg_mag_'+['bmls','ccnv','fykn']
 
 stop
 
-;------------------------------------------------------------------------------
-; Subract average/median when loading data
-;------------------------------------------------------------------------------
-
-;set time range
-trange = ['2006-10-02', '2006-10-04' ]
-
-;load data
-thm_load_gmag, site='bmls', trange=trange, /subtract_average, suffix='_ave'
-thm_load_gmag, site='bmls', trange=trange, /subtract_median, suffix='_med'
-thm_load_gmag, site='bmls', trange=trange
-
-;plot all three versions
-tplot, 'thg_mag_bmls*'
-
-stop
 
 ;------------------------------------------------------------------------------
 ; Loading entire networks
@@ -62,6 +52,7 @@ stop
 
 ;  To include all sites from a specific network use the following keywords.
 ;  Manually specified sites from other networks will also be loaded.
+;  Consult network websites for terms of use.
 ;       /thm_sites      (THEMIS GBO network)
 ;       /epo_sites      (THEMIS EPO network)
 ;       /tgo_sites      (TGO network)
@@ -84,6 +75,25 @@ thm_load_gmag, /thm_sites, /subtract_average, trange=trange
 tplot, 'thg_mag_????'
 
 stop
+
+
+;------------------------------------------------------------------------------
+; Subract average/median when loading data
+;------------------------------------------------------------------------------
+
+;set time range
+trange = ['2006-10-02', '2006-10-04' ]
+
+;load data
+thm_load_gmag, site='bmls', trange=trange, /subtract_average, suffix='_ave'
+thm_load_gmag, site='bmls', trange=trange, /subtract_median, suffix='_med'
+thm_load_gmag, site='bmls', trange=trange
+
+;plot all three versions
+tplot, 'thg_mag_bmls*'
+
+stop
+
 
 ;------------------------------------------------------------------------------
 ; Splitting data components

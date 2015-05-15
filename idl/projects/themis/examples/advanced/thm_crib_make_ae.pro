@@ -1,6 +1,8 @@
 ;+
-;pro thm_crib_make_AE
+;Procedure:
+; thm_crib_make_ae
 ;
+;Purpose:
 ; This is an example crib sheet that will calculate and plot "pseudo" geomagnetic
 ; indices (thmAE, thmAU, thmAL) as derived from THEMIS ground magnetometer data.
 ; In future, it is planned to include ground magnetometer data from other magnetometer
@@ -10,16 +12,16 @@
 ; Open this file in a text editor and then use copy and paste to copy
 ; selected lines into an idl window.
 ;
-;
+;Notes:
 ; Written by Andreas Keiling, 15 May 2008
 ;
 ; Modifications:
 ;   Changed name from thm_crib_AE to thm_crib_make_AE, added print info/stops,
 ;     remove DEL_DATA,'*' command, W.M.Feuerstein, 6/2/2008.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-05-13 18:00:26 -0700 (Wed, 13 May 2015) $
+; $LastChangedRevision: 17598 $
 ; $URL $
 ;-
 

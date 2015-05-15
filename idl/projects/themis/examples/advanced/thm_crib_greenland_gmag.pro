@@ -1,38 +1,37 @@
 ;+
-; NAME:
-;       thm_crib_greenland_gmag.pro 
+;Procedure:
+;  thm_crib_greenland_gmag
 ;
-; PURPOSE:
-;       crib sheet demonstrating loading GMAG data from Greenland stations
-;      
-; CATEGORY:
-;       THEMIS-SOC
+;Purpose:
+;  Crib sheet demonstrating loading GMAG data from Greenland stations
 ;
-; CALLING SEQUENCE:
-;       .run thm_crib_greenland_gmag.pro
-;
-; In addition to the NRSQ site included in the standard THEMIS GMAG
-; data distribution, Jurgen Matzka(jrgm@space.dtu.dk) from the Technical
-; University of Denmark has made data gmag data available from the DTU(previously DMI) and
-; the TGO gmag networks.  Availability is 2007 through to the present.
-; Although not all gmags are available at all times.
-; To access these data, simply use the program thm_load_gmag
-; More DMI data can be added upon request.  Otherwise, THEMIS archives will be updated 
-; approximately every 3 months. 
+;Notes:
+;  In addition to the NRSQ site included in the standard THEMIS GMAG
+;  data distribution, Jurgen Matzka(jrgm@space.dtu.dk) from the Technical
+;  University of Denmark has made data gmag data available from the DTU(previously DMI) and
+;  the TGO gmag networks.  Availability is 2007 through to the present.
+;  Although not all gmags are available at all times.
+;  To access these data, simply use the program thm_load_gmag
+;  More DMI data can be added upon request.  Otherwise, THEMIS archives will be updated 
+;  approximately every 3 months. 
 ; 
-; WARNING:  As with all GMAG data, users should be careful to verify data units and coordinate
-;           systems, as calibrations can drift from true values over time.  Users should be particularly
-;           careful with the older data from the DMI/DTU network. 
-;           In particular, DMI/DTU data from the first part of 2009 and earlier is uncalibrated.
+;  WARNING:  As with all GMAG data, users should be careful to verify data units
+;            and coordinate systems, as calibrations can drift from true values 
+;            over time.  Users should be particularly careful with the older data
+;            from the DMI/DTU network. In particular, DMI/DTU data from the first 
+;            part of 2009 and earlier is uncalibrated.
 ;
 ;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-13 18:00:26 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17598 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_greenland_gmag.pro $
+;-
+
 
 print, "--- Start of crib sheet ---"
-thm_load_gmag, trange = ['2009-01-01', '2009-01-02']
 
-; loads all sites for 1-jan-2009, icluding the greenland stations. The
-; greenland sites are handled in the same way as the other GMAG sites. 
-;
+
 ;To get data for individual sites, use the site keyword with one of the following values:
 ;
 ;  amk and atu bfe bjn dmh dnb dob don fhb gdh ghb hop jck kar kuv lyr

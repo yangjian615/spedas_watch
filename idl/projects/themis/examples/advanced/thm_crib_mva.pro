@@ -1,14 +1,16 @@
 ;+
-;Procedure: thm_crib_mva
+;Procedure:
+;  thm_crib_mva
 ;
-;Purpose:  A crib on showing how to transform into minimum variance
-;analysis coordinates
-
+;Purpose:
+;  A crib on showing how to transform into minimum variance
+;  analysis coordinates
+;
 ;Notes:
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 10:56:58 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13080 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-05-13 18:00:26 -0700 (Wed, 13 May 2015) $
+; $LastChangedRevision: 17598 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_mva.pro $
 ;-
 

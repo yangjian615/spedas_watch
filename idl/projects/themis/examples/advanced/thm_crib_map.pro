@@ -1,6 +1,30 @@
-;9 examples of how to use thm_map_set and thm_map_add
-;note all these examples reset the plotting window
-;-----------------------------------------------------------------
+;+
+;Procedure:
+;  thm_map_ex_[1:13]
+;  thm_map_ex_cdf_full
+;
+;Purpose:
+;  Multiple examples of how to use thm_map_set and thm_map_add.
+;
+;Calling Sequence:
+;  thm_map_ex_<#>
+;  thm_map_ex_cdf_full
+;
+;Input:
+;  None
+;
+;Notes:
+;  -all these examples reset the plotting window
+;
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-13 18:00:26 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17598 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_map.pro $
+;-
+
+
+
 pro thm_map_ex_1
    window
    thm_map_set

@@ -1,16 +1,27 @@
 
-; *** WARNING: This crib runs code that is under development.  Query Jianbao Tao (Jianbao.Tao@colorado.edu) or
-; John Bonnel (jbonnell@ssl.berkeley.edu) about the quality of the data products.
+;+
+;Procedure:
+;  thm_crib_eclean_subsolar
 ;
+;Purpose:
+;  ?
+;
+;Notes:
+;  WARNING: This crib runs code that is under development.  
+;           Query Jianbao Tao (Jianbao.Tao@colorado.edu) or
+;           John Bonnel (jbonnell@ssl.berkeley.edu) about 
+;           the quality of the data products.
+;
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-13 18:00:26 -0700 (Wed, 13 May 2015) $
+;$LastChangedRevision: 17598 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_eclean_subsolar.pro $
+;-
+
+
 print, "--- Start of crib sheet ---"
 
-message, /info, '*** WARNING: This crib runs code that is under development.  Query Jianbao Tao (Jianbao.Tao@colorado.edu),
-message, /info, 'John Bonnel (jbonnell@ssl.berkeley.edu), or Michael Feuerstein (Michael@igpp.ucla.edu) about the quality of the data products.
-message, /info, "Enter '.c' to continue."
-stop
-
-;OTHER DLs
-;MAKE BLOW UP
 
 ; SET DAY AMD SC
 timespan,'2008-08-17'    ; PICK YOR DATE
@@ -21,6 +32,7 @@ probe = sc               ; ONLY ONE PROBE AT A TIME!!!!
 thm_load_state,probe=sc,/get_support
 
 ; LOAD AND SET UP TPLOT FOR GSM  (USE YOUR OWN)
+;re=6371.2                ;tplot default
 re=6378.16d              ;Earth equatorial radius [km]
 thm_cotrans,'th'+sc+'_state_pos','th'+sc+'_state_pos_gsm',out_c='gsm'
 get_data,'th'+sc+'_state_pos_gsm',data=pgsm
@@ -66,7 +78,6 @@ tsmooth2, Vname, 129, newname=Vname  ; FILTER VELOCITY TO 1 S
 tplot, [Btot, EdotB, Vname], tran=tpb
 
 
-; ADD ELECTRONS AND IONS
 print, "--- End of crib sheet ---"
 
 end
