@@ -1,16 +1,38 @@
 ;+
+;Name:
 ;  thm_crib_slp_sse
 ;
 ;Purpose:
 ;  Crib to demonstrate how to use Solar Lunar Planetary Data,
 ;  And how to perform SSE transformation
 ;
+;Notes:
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 10:56:58 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13080 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-05-14 17:01:41 -0700 (Thu, 14 May 2015) $
+; $LastChangedRevision: 17619 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_slp_sse.pro $
 ;-
+
+
+;=============================
+; Notes
+;=============================
+;
+;     SSE is defined as:
+;        X: Moon->Sun Line
+;        Y: Ecliptic North cross X
+;        Z: X cross Y
+;         
+;     GSE is defined as:
+;        X: Earth Sun Line(naturally in the ecliptic plane)
+;        Y: Z x X
+;        Z: Ecliptic North
+
+
+;=============================
+; Crib
+;=============================
 
 ;set the time
 timespan,'2007-03-23'
@@ -24,16 +46,6 @@ thm_load_fgm, probe = 'a', coord = 'gse', level = 'l2'
 ;Calling this routine is necessary for thm_cotrans to do the transform
 thm_load_slp
 
-
-;     SSE is defined as:
-;        X: Moon->Sun Line
-;        Y: Ecliptic North cross X
-;        Z: X cross Y
-;         
-;     GSE is defined as:
-;        X: Earth Sun Line(naturally in the ecliptic plane)
-;        Y: Z x X
-;        Z: Ecliptic North
 thm_cotrans,'tha_fgl_gse','tha_fgl_sse',out_coord='sse'
 
 ;The difference here should be very small.
@@ -50,11 +62,15 @@ thm_cotrans,'tha_state_pos','tha_state_pos_sse',out_coord='sse'
 ;rotation is performed, and the frame of reference is translated to moon-center
 tplot,['tha_state_pos','tha_state_pos_sse']
 
-;position/velocity/acceleration/none labels can be found in
-;dlimits.data_att.st_type, allowed values are 'pos','vel','acc','none'
+stop
 
 ;if you want to coord transform a position without the translational component use
+;  -position/velocity/acceleration/none labels can be found in
+;   dlimits.data_att.st_type, allowed values are 'pos','vel','acc','none'
 thm_cotrans,'tha_state_pos',in_coord='gei','tha_state_pos_sse',out_coord='sse',/ignore_dlimits
 
+tplot,['tha_state_pos','tha_state_pos_sse']
+
+stop
 
 end

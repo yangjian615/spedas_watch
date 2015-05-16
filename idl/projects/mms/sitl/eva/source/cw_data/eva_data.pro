@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-13 14:29:58 -0700 (Wed, 13 May 2015) $
-; $LastChangedRevision: 17591 $
+; $LastChangedDate: 2015-05-14 13:01:05 -0700 (Thu, 14 May 2015) $
+; $LastChangedRevision: 17607 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -238,6 +238,7 @@ FUNCTION eva_data_login, state, evTop
 
   if connected then begin
     
+
     ;---------------------
     ; Update DATA MODULE
     ;---------------------
@@ -273,6 +274,8 @@ FUNCTION eva_data_login, state, evTop
       str_element,/add,sitl_state,'user_flag',user_flag; synchronize user_flag/userType
       str_element,/add,sitl_state,'userType',state.userType;
       widget_control, sitl_state.btnSplit, SENSITIVE= (user_flag ne 4); disable "split" if FPI-cal
+      val = mms_load_fom_validation(); Add/update validation structure
+      str_element,/add,sitl_state,'val',val
       widget_control, sitl_stash, SET_UVALUE=sitl_state, /NO_COPY;******* SET
       
       ;---------------------
@@ -488,7 +491,7 @@ FUNCTION eva_data, parent, $
     OPOD:          0,            $; One Plot One Display
     SRTV:          0,            $; Sort by Variables when display
     probelist_thm: -1,        $; which THM probe(s) to be used
-    probelist_mms: 'mms1',           $; which MMS probe(s) to be used
+    probelist_mms: 'mms3',           $; which MMS probe(s) to be used
     paramSetList:  '', $; List of ParameterSets
     paramFileList: '',$
     userType: userType, $
@@ -544,6 +547,8 @@ FUNCTION eva_data, parent, $
       str_element,/add,state,'sbMMS',sbMMS
       str_element,/add,state,'bgMMS',cw_bgroup(sbMMS, ProbeNamesMMS, /COLUMN, /NONEXCLUSIVE,$
         SET_VALUE=[0,0,1,0],BUTTON_UVALUE=bua,ypad=0,space=0)
+        ; If you edit the above line, DON'T forget to edit the line for probelist_mms 
+        ; It should be at around line 491: probelist_mms: 'mms3'  
     bsCtrl = widget_base(subbase, /COLUMN,/align_center, space=0, ypad=0)
       str_element,/add,state,'lblPS',widget_label(bsCtrl,VALUE='Parameter Set')
       str_element,/add,state,'drpSet',widget_droplist(bsCtrl,VALUE=state.paramSetList,$

@@ -1,7 +1,49 @@
+;+
+;Name:
+;  thm_crib_recovery_Vxy_mom_early_2007
 ;
-;   Written by Larry Kepko (larry.kepko@unh.edu)
 ;
+;Purpose:
+;  This command gets the onboard moments, which are wrong because of an
+;  error in uploading the onboard tables.
+;
+;  Correlation likely depends on temperature, so the same coefficients
+;   may not be applicable to the entire day.  In these cases it may be
+;   necessary to narrow the interval (intervals of 1/3 day is probably
+;   about right).  The variables ii and nn mark the start and stop of
+;   the interval calculated, so adjust those to find appropriate time
+;   periods.  Adjust the sc and timespan lines to change spacecraft and
+;   days. Also, the moment data end up being a bit noisy, so you may
+;   want to run 'avg_data', with a small timestep (maybe 10 seconds or so).
+;   th?_v?_corr contains the high resolution velocity, and th?_v?_dec
+;   contains the data decimated to match the low resolution data, for
+;   comparison.
+;
+;
+;Notes:
+;  2015-05-14: This in an old crib and may or may not be valid and up to date.
+;
+;
+;History:
+;  Written by Larry Kepko (larry.kepko@unh.edu)
+;
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-14 16:11:04 -0700 (Thu, 14 May 2015) $
+;$LastChangedRevision: 17618 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_recovery_Vxy_mom_early_2007.pro $
+;-
 
+
+;====================================================
+; Scroll down for crib sheet...
+;====================================================
+
+
+
+;+
+; Crib helper function
+;-
 function whatindices, data, times
     nn = n_elements(times) 
     retindis = lonarr(nn, 1)
@@ -13,6 +55,10 @@ function whatindices, data, times
     return, retindis
 end
 
+
+;+
+; Crib helper function
+;-
 function whatindex, data, time
     direction = 1;
     tolerance = 0;
@@ -56,23 +102,13 @@ function whatindex, data, time
     endif
     return, indi
 end
-;
-;   This command gets the onboard moments, which are wrong because of an
-;   error in uploading the onboard tables
 
-;  Correlation likely depends on temperature, so the same coefficients
-;   may not be applicable to the entire day.  In these cases it may be
-;   necessary to narrow the interval (intervals of 1/3 day is probably
-;   about right).  The variables ii and nn mark the start and stop of
-;   the interval calculated, so adjust those to find appropriate time
-;   periods.  Adjust the sc and timespan lines to change spacecraft and
-;   days. Also, the moment data end up being a bit noisy, so you may
-;   want to run 'avg_data', with a small timestep (maybe 10 seconds or so).
-;   th?_v?_corr contains the high resolution velocity, and th?_v?_dec
-;   contains the data decimated to match the low resolution data, for
-;   comparison.
 
-;Written by Larry Kepko (larry.kepko@unh.edu)
+
+;====================================================
+; Crib sheet:
+;====================================================
+
 
 sc = 'c'
 

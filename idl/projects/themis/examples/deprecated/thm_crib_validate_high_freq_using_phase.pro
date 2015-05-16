@@ -1,4 +1,10 @@
 
+
+;***********************************************************
+;  2015-05-14   Merged into thm_crib_poynting_flux
+;*********************************************************** 
+
+
 ; This routine is used for verifying the relative phase between EFI and SCM data.
 ; For a whistler, E and B should be 90 degrees out of phase
 ; (or 270, depending on the definition of the axes).

@@ -1,9 +1,11 @@
 ;+
-; **********************************************************************
-; thm_crib_twavpol.pro : with twavpol.pro
-; **********************************************************************
-;This version stores these outputs as tplot variables with the
-;specified prefix
+;Name:
+;  thm_crib_twavpol
+;
+;Purpose:
+;  
+;  This version stores these outputs as tplot variables with the
+;  specified prefix
 ;         These are follows:
 ;
 ;         Wave power: On a linear scale, at this stage no units
@@ -46,7 +48,8 @@
 ;       minimum variance direction without sign.
 ;
 ;
-;Written by : Kaori(I'll remember to get her last name soon)
+;History:
+;  Written by : Kaori(I'll remember to get her last name soon)
 ;
 ;
 ; $LastChangedBy: pcruce $

@@ -17,3 +17,4 @@ data_processing: thm_ui_cotrans_options, THEMIS Coordinate Transform, GEI
 data_processing: thm_ui_cotrans_options, THEMIS Coordinate Transform, GEO
 data_processing: thm_ui_cotrans_options, THEMIS Coordinate Transform, SM
 data_processing: thm_ui_cotrans_options, THEMIS Coordinate Transform, MAG
+about: about_themis.txt

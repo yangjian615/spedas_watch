@@ -1,32 +1,40 @@
 
 ;+
-; Purpose:  Crib sheet exampling production of 1D plots from
-;           2D particle velocity contours.
+;Name:
+;  thm_crib_part_slice1d
 ;
-; Calling sequence for thm_part_slice1d:
-;   thm_part_slice1d, slice, [,xcut=xcut | ,ycut=ycut | ,vcut=vcut | ,ecut=ecut ]
-;                            [,angle=angle] [,/overplot] [,data=data] [,window=window]
+;Purpose:
+;  Demonstrate production of 1D plots from 2D particle distribution contours.
 ;
-; Plotting:
-;   IDL graphics keywords may also be used in calls to thm_part_slice1d.
-;   
-; See Also:
-;   thm_crib_part_slice2d.pro
+;See Also:
+;   thm_crib_part_slice2d
+;
+;Notes:
+;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-03-19 12:51:00 -0700 (Thu, 19 Mar 2015) $
-;$LastChangedRevision: 17149 $
+;$LastChangedDate: 2015-05-14 14:38:31 -0700 (Thu, 14 May 2015) $
+;$LastChangedRevision: 17616 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_slice1d.pro $
-;
-;
 ;-
 
+;================================================
+;Notes
+;================================================
+;
+;Calling sequence for thm_part_slice1d:
+;
+;  thm_part_slice1d, slice, [,xcut=xcut | ,ycut=ycut | ,vcut=vcut | ,ecut=ecut ]
+;                           [,angle=angle] [,/overplot] [,data=data] [,window=window]
+;
+;  IDL graphics keywords may also be used in calls to thm_part_slice1d.
+;
 
 
-;-------------------------------------------
-; **** SETUP **** 
-; Run this section before proceeding to examples
-;-------------------------------------------
+;================================================
+; SETUP  
+;   -Run this section before proceeding to examples
+;================================================
 
 ;set day and time
 day = '2008-02-26/'
@@ -52,6 +60,10 @@ thm_part_slice2d_plot, slice
 
 stop
 
+
+;================================================
+;Examples
+;================================================
 
 ;-------------------------------------------
 ;plot 1D cut along the slice's x axis

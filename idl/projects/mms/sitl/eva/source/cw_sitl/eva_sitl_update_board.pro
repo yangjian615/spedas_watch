@@ -3,8 +3,8 @@
 ; activate = 2; sensitive (initialize)
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-02 18:34:10 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17228 $
+; $LastChangedDate: 2015-05-14 13:01:05 -0700 (Thu, 14 May 2015) $
+; $LastChangedRevision: 17607 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_update_board.pro $
 ;
 PRO eva_sitl_update_board, state, activate
@@ -164,8 +164,7 @@ PRO eva_sitl_update_board, state, activate
       f = lim.unix_FOMStr_mod
       
       ; level setting
-      val = mms_load_fom_validation()
-      NBuffsMax       = val.BUFF_MAX
+      NBuffsMax       = state.val.BUFF_MAX; The validation structure is added at the time of login. See eva_data_login of eva_data.pro
       if NBuffsMax lt f.TargetBuffs then message, "something is wrong with Target Buffers or Buffer Max"
       BuffExtra = NBuffsMax - f.TargetBuffs
       NBuffsTarget    = f.TargetBuffs
@@ -235,7 +234,8 @@ PRO eva_sitl_update_board, state, activate
         mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
         header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
         vcase = (state.USER_FLAG eq 4) ? 3 : 0
-        r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, header=header, /quiet, vcase=vcase)
+        r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, header=header, /quiet, vcase=vcase,$
+          valstruct=state.val)
         terr = r.error.COUNT
       endelse
       

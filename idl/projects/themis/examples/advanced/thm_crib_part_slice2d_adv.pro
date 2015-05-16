@@ -1,11 +1,34 @@
 ;+
-;Purpose: A crib showing advanced usage of the 2D velocity slices code.
-;         
-;         Run "thm_ui_slice2d" on the IDL console to use for the GUI version.
-;         (Also part of the Analysis menu on the main THEMIS GUI) 
+;Name
+;  thm_crib_part_slice2d_adv
 ;
+;Purpose:
+;  A crib showing advanced usage of the 2D velocity slices code.
+;     
+;See also:
+;  thm_crib_part_slice2d
+;  thm_crib_part_slice2d_plot
+;  thm_crib_part_slice2d_multi
+;  thm_crib_part_slice1d
 ;
-;Methods:
+;Notes: 
+;  Run "thm_ui_slice2d" on the IDL console to use for the GUI version.
+;   (Also part of the plugins menu in the SPEDAS GUI) 
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-14 14:38:31 -0700 (Thu, 14 May 2015) $
+;$LastChangedRevision: 17616 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_slice2d_adv.pro $;
+;-
+
+compile_opt idl2
+
+;===========================================================
+; Notes
+;===========================================================
+
+; Interpolation methods:
+;------------------------------------
 ;  Geomtric:
 ;    Each point on the plot is given the value of the bin it instersects.
 ;    This allows bin boundaries to be drawn at high resolutions.
@@ -17,12 +40,27 @@
 ;  3D Interpolation:
 ;    The entire 3-dimensional distribution is linearly interpolated onto a 
 ;    regular 3D grid and a slice is extracted from the volume.
-;     
+
+
+; Slice Orientation:
+;------------------------------------
+; There are three options which specify the orientation of the slice plane:
+;   Coordinates (COORD):
+;     Specifies the starting coordinate system.
 ;
-;Coordinates:
-;  The coordinate system in which the slice will be oriented.
-;  Options are 'DSL' (default), 'GSM', 'GSE' and the following magnetic
-;  field aligned coordinates (field parallel to z axis).
+;   Rotation (ROTATION):
+;     Specifies the slice's x and y axes with respect to the coordinate system.
+;
+;   Custom (SLICE_NORM,SLICE_X):
+;     The slice plane's normal and x axis can be specified by passing a vectors
+;     into the corresponding keyword.  These vectors are interpreted as being in 
+;     system defined by the COORD and ROTATION.  
+;
+;
+; Coordinates:
+;   The coordinate system in which the slice will be oriented.
+;   Options are 'DSL' (default), 'GSM', 'GSE' and the following magnetic
+;   field aligned coordinates (field parallel to z axis).
 ;        
 ;    'xgse':  The x axis is the projection of the GSE x-axis
 ;    'ygsm':  The y axis is the projection of the GSM y-axis
@@ -35,10 +73,10 @@
 ;    'mphiSM':  The y axis is the projection of the negative azimuthal spacecraft position vector in Solar Magnetic coords
 ;
 ;        
-;Slice Orientation
-;  The slice plane is oriented by using the following options to specify
-;  its x and y axes with respect to the coordinate system.
-;  ("BV," "BE", and "perp" will be invariant between coordinate systems).
+; Slice Orientation
+;   The slice plane is oriented by using the following options to specify
+;   its x and y axes with respect to the coordinate system.
+;   ("BV," "BE", and "perp" will be invariant between coordinate systems).
 ;       
 ;    'BV':  The x axis is parallel to B field; the bulk velocity defines the x-y plane
 ;    'BE':  The x axis is parallel to B field; the B x V(bulk) vector defines the x-y plane
@@ -50,29 +88,61 @@
 ;    'perp_xy':  The coordinate's x & y axes are projected onto the plane normal to the B field
 ;    'perp_xz':  The coordinate's x & z axes are projected onto the plane normal to the B field
 ;    'perp_yz':  The coordinate's y & z axes are projected onto the plane normal to the B field
-;     
-;
-;Contamination removal: 
-;  TBD
-;
-;
-;Other: 
-;  Detailed information on keywords and usage can be found in the documentation for:
-;       thm_part_slice2d.pro        (main slices routine)
-;       thm_part_slice2d_plot.pro   (slices plotting routine)
-;       thm_part_dist_array.pro     (particle data load routine)
-;
-;
-;Notes: 
-;
-;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-12-18 15:17:19 -0800 (Wed, 18 Dec 2013) $
-;$LastChangedRevision: 13704 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_slice2d_adv.pro $;
-;-
 
-compile_opt idl2
+
+
+;===========================================================
+; Keyword list
+;   -examples of all keyword options to thm_part_slice2d
+;===========================================================
+
+;two_d_interp = 1 ; use 2D interpolation method
+                  ; (see description at the top of this document) 
+
+;three_d_interp = 1 ; use 2D interpolation method
+                  ; (see description at the top of this document)
+
+;coord = 'GSM' ; use GSM/GSE to use those coordinates
+               ; (see description at the top of this document)
+
+;rotation = 'BE' ; use BE rotation to orient slice
+                 ; (see description at the top of this document)
+
+;slice_norm = [1,0,0]  ; cut the slice perpendicular to the x-axis, and 
+;slice_x    = [0,0,1]  ; use the z-axis as the slice's x-axis
+                       ;  -both vectors are interpreted as being in the coordinates
+                       ;   defined by COORD and/or ROTATION
+                       ;  -SLICE_X is ignored if the normal is not specified
+                       ;  -the projection of SLICE_X is used if it is not 
+                       ;   already in the slice plane
+
+;erange = [0,5000] ; set this keyword to the desired energy limits in eV
+                   ; data outside this range will not be plotted
+
+;units = 'eflux' ; set this keyword to change the units used ('DF' is default)
+                 ; 'Counts', 'DF', 'Rate', 'CRate', 'Flux', 'EFlux'
+
+;count_threshold = 1 ; set to 1 to remove any bins that fall below one-count after averaging
+
+;subtract_counts = 2 ; subtract 2 counts from all data after averaging
+
+;smooth = 9   ; apply gaussian smoothing to slice (number specifies window size in points)
+
+;center_time = 1  ; set this keyword to make SLICE_TIME the center of the time window
+
+;resolution = 150  ; set this keyword to change the resolution of the final plot
+
+;average_angle = [-30,30]  ; average all data withing +- 30 degrees of the x axis
+
+;regrid = [24,16,32] ; (2d/3d inerpolation only)
+                     ; -The data will be interpolated using the nearest neighbor to
+                     ;  24 x 16 x 32 points in phi, theta, and energy respectively.
+                     ; -Energy will only be interpolated to an integer multiple of 
+                     ;  its original resolution (e.g. 16 energies will only be 
+                     ;  interpolated to 32, 64, ... other values will be rounded
+                     ;  to these) 
+
+
 
 ;===========================================================
 ; Load Data
@@ -104,34 +174,18 @@ vel_data = 'thb_peib_velocity_dsl'
 
 
 ; Create array of ESA particle distributions
-;  -Background removal options can be used inthis call (examples later)
+;  -ESA background removal options can be used inthis call (examples later)
 peib_arr = thm_part_dist_array(probe=probe, type='peib', trange=trange)
 
 
 ; Create array of SST particle distributions
-;  -The /SST_CAL keyword can be added to use the beta sst calibrations
-psif_arr = thm_part_dist_array(probe=probe, type='psif', trange=trange, /sst_cal)
+psif_arr = thm_part_dist_array(probe=probe, type='psif', trange=trange)
 
 
 
 ;===========================================================
-; Slice Options
+; Examples
 ;===========================================================
-
-
-; Slice Orientation:
-; ----------------------------
-; There are three options which specify the orientation of the slice plane:
-;   Coordinates (COORD):
-;     Specifies the starting coordinate system.  See the top of this crib for options
-;   Rotation (ROTATION):
-;     Specifies the slice's x and y axes with respect to the coordinate system.
-;     See the top of this crib for options.
-;   Custom (SLICE_NORM,SLICE_X):
-;     The slice plane's normal and x axis can be specified by passing a vectors
-;     into the corresponding keyword.  These vectors are interpreted as being in 
-;     system defined by the COORD and ROTATION.  
-
 
 
 ; SST slice in GSM coordinates
@@ -139,6 +193,7 @@ psif_arr = thm_part_dist_array(probe=probe, type='psif', trange=trange, /sst_cal
 ;  -Use GSM coordinates
 ;  -Align the slice to the GSM x-z plane
 thm_part_slice2d, psif_arr, slice_time=slice_time, timewin=timewin, $
+                  /three_d_interp, $
                   COORD='GSM', $
                   rotation='xz', $
                   part_slice=part_slice
@@ -157,6 +212,7 @@ stop
 ;  -All field aligned coordinates and roations require a tplot
 ;   variable containing magnetic field data
 thm_part_slice2d, peib_arr, slice_time=slice_time, timewin=timewin, $
+                  /three_d_interp, $
                   coord='rGeo', $        ; FAC list/descriptions at top of crib
                   mag_data=mag_data, $   ; must pass in tplot variable with magnetic field
                   part_slice=part_slice
@@ -175,6 +231,7 @@ stop
 ;   slice's x axis will be along the rGEO y axis and its y axis
 ;   will be along rGEO z. 
 thm_part_slice2d, peib_arr, slice_time=slice_time, timewin=timewin, $
+                  /three_d_interp, $
                   coord='rGeo', $
                   rotation='yz', $   
                   mag_data=mag_data, $
@@ -193,6 +250,7 @@ stop
 ;   The slice's x-axis will be parallel to the B field and the y-axis 
 ;   will be in the direction of the positive radial position vector.
 thm_part_slice2d, peib_arr, slice_time=slice_time, timewin=timewin, $
+                  /three_d_interp, $
                   coord='rGeo', $
                   mag_data=mag_data, $
                   slice_norm=[0,1,0], $   ;slice will be in x-z plane
@@ -214,6 +272,7 @@ stop
 ;  -A tplot variable containing velocity data can be specified.  If it is 
 ;   omitted the bulk velocity will be calculated from the particle distribution.
 thm_part_slice2d, peib_arr, slice_time=slice_time, timewin=timewin, $
+                  /three_d_interp, $
                   rotation='bv', $
                   mag_data=mag_data, $    ; specify mag data for rotation
                   vel_data=vel_data, $    ; specify velocity data for rotation
@@ -232,11 +291,11 @@ stop
 ; - Averaging may take up to 60+ seconds with full resolution (500)
 ;   this example uses lower resolution to decrease computation time.
 thm_part_slice2d, peib_arr, slice_time=slice_time, timewin=timewin, $
+                  /three_d_interp, $
                   rotation='bv', $
                   mag_data=mag_data, $    ; specify mag data for rotation
                   vel_data=vel_data, $    ; specify velocity data for rotation
                   average_angle=[-30,30], $   ; min/max to average about x
-                  resolution=150, smooth=7, $ ; lower resolution for performance
                   part_slice=part_slice
 
 thm_part_slice2d_plot, part_slice
@@ -251,10 +310,10 @@ stop
 ;  -The performs the same operation as the last example with SST data.
 ;  -The averaging range has been increased to include the entire distribution. 
 thm_part_slice2d, psif_arr, slice_time=slice_time, timewin=timewin, $
+                  /three_d_interp, $
                   rotation='bv', $ 
                   mag_data=mag_data, $
                   average_angle=[-90,90], $   ; min/max to average about x
-                  resolution=150, smooth=7, $ ; lower resolution for performance
                   part_slice=part_slice
 
 thm_part_slice2d_plot, part_slice
@@ -331,59 +390,6 @@ thm_part_slice2d_plot, part_slice
 stop
 
   
-
-;===========================================================
-; Slice Options Overview
-;  **This section only contains documentation, for more
-;    examples scroll down to the plotting options section**
-;===========================================================
-;
-;Examples of all keywords to thm_part_slice2d:
-; ----------------------------
-
-;two_d_interp = 1 ; use 2D interpolation method
-                  ; (see description at the top of this document) 
-
-;three_d_interp = 1 ; use 2D interpolation method
-                  ; (see description at the top of this document)
-
-;coord = 'GSM' ; use GSM/GSE to use those coordinates
-               ; (see description at the top of this document)
-
-;rotation = 'BE' ; use BE rotation to orient slice
-                 ; (see description at the top of this document)
-
-;slice_norm = [1,0,0]  ; cut the slice perpendicular to the x-axis, and 
-;slice_x    = [0,0,1]  ; use the z-axis as the slice's x-axis
-                       ;  -both vectors are interpreted as being in the coordinates
-                       ;   defined by COORD and/or ROTATION
-                       ;  -SLICE_X is ignored if the normal is not specified
-                       ;  -the projection of SLICE_X is used if it is not 
-                       ;   already in the slice plane
-
-;erange = [0,5000] ; set this keyword to the desired energy limits in eV
-                   ; data outside this range will not be plotted
-
-;units = 'eflux' ; set this keyword to change the units used ('DF' is default)
-                 ; 'Counts', 'DF', 'Rate', 'CRate', 'Flux', 'EFlux'
-
-;count_threshold = 1 ; set to 1 to remove any bins that fall below one-count after averaging
-
-;subtract_counts = 2 ; subtract 2 counts from all data after averaging
-
-;smooth = 9   ; apply gaussian smoothing to slice (number specifies window size in points)
-
-;center_time = 1  ; set this keyword to make SLICE_TIME the center of the time window
-
-;resolution = 150  ; set this keyword to change the resolution of the final plot
-
-;regrid = [24,16,32] ; (2d/3d inerpolation only)
-                     ; -The data will be interpolated using the nearest neighbor to
-                     ;  24 x 16 x 32 points in phi, theta, and energy respectively.
-                     ; -Energy will only be interpolated to an integer multiple of 
-                     ;  its original resolution (e.g. 16 energies will only be 
-                     ;  interpolated to 32, 64, ... other values will be rounded
-                     ;  to these) 
                      
 
 END

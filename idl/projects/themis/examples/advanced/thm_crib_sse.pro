@@ -1,23 +1,32 @@
 ;+
-;Procedure: sse_crib.pro
+;Procedure:
+;  thm_crib_sse
 ;
-;Purpose:  A crib showing how to transform data from GSE to SSE coordinate system. 
-;   SSE is defined as:
-;        X: Moon->Sun Line projected into the ecliptic plane
-;        Y: Z x X
-;        Z: Ecliptic north
+;Purpose:
+;  A crib showing how to transform data from GSE to SSE coordinate system. 
 ;
 ;Notes:
+;  -Code heavily based on make_mat_Rxy.pro & transform_gsm_to_rxy.pro 
+;   by Christine Gabrielse(cgabrielse@ucla.edu)
+;  -SSE is defined as:
+;     X: Moon->Sun Line projected into the ecliptic plane
+;     Y: Z x X
+;     Z: Ecliptic north
 ;
-;  Code heavily based on make_mat_Rxy.pro & transform_gsm_to_rxy.pro by Christine Gabrielse(cgabrielse@ucla.edu)
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 10:56:58 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13080 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-05-14 17:01:41 -0700 (Thu, 14 May 2015) $
+; $LastChangedRevision: 17619 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_sse.pro $
 ;-
 
+
+;==================================================
+; Load data
+;==================================================
+
 probe = 'a'
+
 timespan,'2008-03-23'
 
 thm_load_slp
@@ -28,10 +37,15 @@ cotrans,'slp_lun_pos','slp_lun_pos_gse',/gei2gse
 sse_matrix_make,'slp_sun_pos_gse','slp_lun_pos_gse',newname='sse_mat'
 
 ;load fgm data to be transformed
-thm_load_fgm,probe=probe,coord='gse'
+thm_load_fgm,probe=probe,coord='gse',level=2
 
-;----------------------------------------------
-;simple rotation
+;load state data to be transformed
+thm_load_state,probe=probe
+
+
+;==================================================
+; Simple rotation
+;==================================================
 
 ;because fgm data is not specified relative to the coordinate system's frame of reference
 ;transformation is rotational only
@@ -39,26 +53,29 @@ tvector_rotate,'sse_mat','th'+probe+'_fgl_gse'
 
 tplot,['th'+probe+'_fgl_gse','th'+probe+'_fgl_gse_rot']
 
-;----------------------------------------------
+stop
 
-;----------------------------------------------
-;inverse rotation
+
+;==================================================
+; Inverse rotation
+;==================================================
 
 tvector_rotate,'sse_mat','th'+probe+'_fgl_gse_rot',newname='th'+probe+'_fgl_gse_inv',/invert
 
 tplot,['th'+probe+'_fgl_gse','th'+probe+'_fgl_gse_inv','th'+probe+'_fgl_gse_rot']
 
-;----------------------------------------------
+stop
 
-;load state data to be transformed
-thm_load_state,probe=probe
-cotrans,'th'+probe+'_state_pos','th'+probe+'_state_pos',/gei2gse
 
-;----------------------------------------------
-;position transformation
+;==================================================
+; Position transformation
+;==================================================
 
 ;position is trickier, because it is measured with respect to coordinate center
 ;We need to perform an affine transformation which we do in 3 steps.
+
+;transform position data
+cotrans,'th'+probe+'_state_pos','th'+probe+'_state_pos',/gei2gse
 
 ;first interpolate the moon position onto state position
 tinterpol_mxn,'slp_lun_pos_gse','th'+probe+'_state_pos'
@@ -69,10 +86,22 @@ calc,'"th'+probe+'_state_pos_sub"="th'+probe+'_state_pos"-"slp_lun_pos_gse_inter
 ;last perform the rotational component of the transformation.
 tvector_rotate,'sse_mat','th'+probe+'_state_pos_sub',newname='th'+probe+'_state_pos_sse'
 
-;----------------------------------------------
-;velocity transformation
+tplot, '*_state_pos*'
+
+stop
+
+
+;==================================================
+; Velocity transformation
+;==================================================
 
 ;velocity is even trickier, because the coordinate systems are in motion themselves.
+
+;Note:
+; 1. This same affine transformation can be done for accelerations, 
+;    by taking an additional derivative.
+; 2. Taking discrete derivatives will lead to approximation errors
+;    on the edges of the time series
 
 ;first generate spacecraft velocity in gse coordinates.
 ;Cotrans cannot properly account for relative velocity of coordinate systems
@@ -92,20 +121,23 @@ calc,'"th'+probe+'_state_vel_sub"="th'+probe+'_state_vel"-"slp_lun_vel_gse_inter
 ;finally rotate the data into the new coordinate system
 tvector_rotate,'sse_mat','th'+probe+'_state_vel_sub',newname='th'+probe+'_state_vel_sse'
 
-;----------------------------------------------
+tplot, '*_state_vel*'
 
-;----------------------------------------------
-;inverse velocity transformation
+stop
+
+
+;==================================================
+; Inverse velocity transformation
+;==================================================
 
 ;just do the transformation backwards.  First invert rotation, then invert offset
-
 tvector_rotate,'sse_mat','th'+probe+'_state_vel_sse',newname='th'+probe+'_state_vel_sub_inv',/invert
 
 calc,'"th'+probe+'_state_vel_sse_inv"="th'+probe+'_state_vel_sub_inv"+"slp_lun_vel_gse_interp"',/verbose
 
-;Note:
-; 1. This same affine transformation can be done for accelerations, by taking an additional
-;derivative
-; 2. Taking discrete derivatives will lead to approximation errors on the edges of the time series
-end
+tplot, '*_state_vel*'
 
+stop
+
+
+end

@@ -1,18 +1,12 @@
 ; PROCEDURE: MMS_DATA_FETCH
 ;
-; PURPOSE: Execute an SDC HTTP query with local caching possibilities.
+; PURPOSE: Execute an SDC HTTP query with local caching possibilities. Must run SPEDAS routine
+;          'timespan' to use.
 ;
 ; INPUT:
 ;   local_flist      - REQUIRED. Name for an array of strings. This will have
 ;                    - names of all of the files consistent with the query.
-;                                           
-;   start_date       - REQUIRED. (String) Start date in the format for SDC 
-;                      HTTP queries (YYYY-MM-DD).
-;                      
-;   end_date         - REQUIRED. (String) End date in the format for SDC
-;                      HTTP queries (YYYY-MM-DD). If the same as start_date,
-;                      procedure will only query for that day.
-;                      
+;                                                                 
 ;   login_flag       - REQUIRED. (Integer) Flag which determines if connection
 ;                      to SDC was successful. If connection fails, will need to
 ;                      call "mms_check_local_cache" to see if data already exists
@@ -72,39 +66,38 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-08 12:14:47 -0700 (Fri, 08 May 2015) $
-;  $LastChangedRevision: 17531 $
+;  $LastChangedDate: 2015-05-14 14:50:51 -0700 (Thu, 14 May 2015) $
+;  $LastChangedRevision: 17617 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_data_fetch.pro $
 
 
-pro mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id, $
+pro mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id, $
   instrument_id=instrument_id, mode=mode, level=level, optional_descriptor=optional_descriptor, $
   no_update=no_update, reload=reload
 
 mms_init
 
+date_struct = mms_convert_timespan_to_date()
+
+start_date = date_struct.start_date
+end_date = date_struct.end_date
+start_jul = date_struct.start_jul
+end_jul = date_struct.end_jul
+
+
 login_flag = 0
 
-on_error, 2
+;on_error, 2
 
 if keyword_set(no_update) and keyword_set(reload) then message, 'ERROR: Keywords /no_update and /reload are ' + $
   'conflicting and should never be used simultaneously.'
-;
-;lastpos = strlen(local_dir)
-;if strmid(local_dir, lastpos-1, lastpos) eq path_sep() then begin
-;  data_dir = local_dir + 'data' + path_sep() + 'mms' + path_sep()
-;endif else begin
-;  data_dir = local_dir + path_sep() + 'data' + path_sep() + 'mms' + path_sep()
-;endelse
+
+
 
 ; Due to a problem the SDC downloader has with '~', we need to unwrap the directory
 temp_dir = !MMS.LOCAL_DATA_DIR
 spawnstring = 'echo ' + temp_dir
 spawn, spawnstring, data_dir
-
-;HACK - delete following line
-;
-;data_dir = local_dir + path_sep() + 'mms' + path_sep()
 
 if keyword_set(optional_descriptor) then begin
   file_data = mms_get_science_file_info(sc_id=sc_id, $
@@ -121,6 +114,7 @@ if type_string ne 'STRING' then begin
   login_flag = 1
   local_flist = ''
   download_fail=0
+  
 endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
  
   cut_filenames = strarr(n_elements(file_data)/2) ; Filename without the directory
@@ -146,7 +140,7 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
 ;    print, i, j
   endfor
   
-;  
+;  stop
 ;  ;Old way - uses the file_names data
 ;  for i = 0, n_elements(filenames)-1 do begin
 ;    first_slash = strpos(filenames(i), '/', /reverse_search)
@@ -157,7 +151,33 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
   mms_parse_file_name, cut_filenames, sc_ids, inst_ids, modes, levels, $
     optional_descriptors, version_strings, start_strings, years
     
+  ; Here is where we will trim the list of files based on timespan
+  
+  mms_parse_start_string, start_strings, months, days, fyears, hours, minutes, seconds, num_chars
+  
+  file_juls = julday(months, days, fyears, hours, minutes, seconds)
+  
+;  out_of_range = intarr(n_elements(cut_filenames))
+;;  for i = 0, n_elements(cut_filenames)-1 do begin
+;;    if num_chars(i) eq 8 then begin
+;;       out_of_range = 0
+;;    endif else begin
+;;       if file_juls(i) ge start_jul or file_juls(i) le
+;;    endelse
+;;  endfor
+  
+  loc_time = where((file_juls ge start_jul and file_juls le end_jul) or modes ne 'brst', count_time)
+  
+  if count_time eq 0 then message, 'ERROR: Invalid or inconsistent time range.'
+  
+  cut_filenames = cut_filenames[loc_time]
+  file_sizes = file_sizes[loc_time]
+  download_flags = download_flags[loc_time] ; Determines whether to download file
+  file_dir = file_dir[loc_time] ; Directory in local cache for file
+  file_base = file_base[loc_time] ; Filename without directory or version number
+  local_flist = strarr(count_time) ; List of local filenames consistent with query
   ; Loop through and see if each file exists. If not, download it
+  
   for i = 0, n_elements(cut_filenames)-1 do begin
     
     if strlen(optional_descriptors(i)) eq 0 then begin

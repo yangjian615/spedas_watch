@@ -327,6 +327,7 @@ FUNCTION eva_sitl_event, ev
   set_multi = widget_info(state.cbMulti,/button_set)
   set_trange= widget_info(state.cbWTrng,/button_set)
   submit_code = 0
+  refresh_dash = 0
   sanitize_fpi = 1
   xtplot_right_click = 1
   
@@ -406,9 +407,9 @@ FUNCTION eva_sitl_event, ev
           str_element,/add,tai_BAKStr_mod,'STOP',  mms_unix2tai(lmod.unix_BAKStr_mod.STOP) ; LONG
           vsp = '////////////////////////////'
           header = [vsp+' NEW SEGMENTS '+vsp]
-          r = eva_sitl_validate(tai_BAKStr_mod, -1, vcase=1, header=header, /quiet); Validate New Segs
+          r = eva_sitl_validate(tai_BAKStr_mod, -1, vcase=1, header=header, /quiet, valstruct=state.val); Validate New Segs
           header = [r.msg,' ', vsp+' MODIFIED SEGMENTS '+vsp]
-          r2 = eva_sitl_validate(tai_BAKStr_mod, tai_BAKStr_org, vcase=2, header=header); Validate Modified Seg
+          r2 = eva_sitl_validate(tai_BAKStr_mod, tai_BAKStr_org, vcase=2, header=header, valstruct=state.val); Validate Modified Seg
         endelse; if ct eq 0
       endif else begin
         get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
@@ -417,7 +418,7 @@ FUNCTION eva_sitl_event, ev
         mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
         header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
         vcase = (state.USER_FLAG eq 4) ? 3 : 0
-        r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, vcase=vcase, header=header)
+        r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, vcase=vcase, header=header, valstruct=state.val)
       endelse
       end
 ;    state.btnEmail: begin
@@ -504,8 +505,9 @@ FUNCTION eva_sitl_event, ev
       ;print,'EVA: ***** EVENT: drDash *****'
       widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
       sanitize_fpi=0
+      refresh_dash = 1
       end
-    else:
+    else: print, 'EVA: else'
   endcase
 
   FPI = (state.USER_FLAG eq 4)
@@ -524,6 +526,15 @@ FUNCTION eva_sitl_event, ev
       D_hacked = eva_sitl_strct_read(snew,min(snew.START,/nan))
       store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl
     endif
+  endif
+  
+  ;When not refreshing the dashboard, we update validation structure as often as possible.
+  ;The dashboard, whenever refreshing, will use the updated validation structure to
+  ;refresh the information. Technically, we could update validation structure within
+  ; the dashboard refreshing process, but this will cause numerous access to SDC.
+  if ~refresh_dash then begin
+    val = mms_load_fom_validation()
+    str_element,/add,state,'val',val
   endif
   
   if ~submit_code then begin
@@ -554,8 +565,6 @@ FUNCTION eva_sitl, parent, $
   IF NOT (KEYWORD_SET(uval))  THEN uval = 0
   IF NOT (KEYWORD_SET(uname))  THEN uname = 'eva_sitl'
   if not (keyword_set(title)) then title='   SITL   '
-
-  ;val = mms_load_fom_validation()
   
   ; ----- STATE -----
   pref = {$

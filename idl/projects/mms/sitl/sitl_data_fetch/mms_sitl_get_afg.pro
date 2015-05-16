@@ -29,8 +29,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-12 13:27:08 -0700 (Tue, 12 May 2015) $
-;  $LastChangedRevision: 17575 $
+;  $LastChangedDate: 2015-05-14 14:12:27 -0700 (Thu, 14 May 2015) $
+;  $LastChangedRevision: 17609 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_afg.pro $
 
 
@@ -80,16 +80,16 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload
   for j = 0, n_elements(sc_id)-1 do begin
 
     if keyword_set(no_update) then begin
-      mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+      mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id(j), $
         instrument_id='afg', mode=mode, $
         level=level, /no_update
     endif else begin
       if keyword_set(reload) then begin
-        mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+        mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id(j), $
           instrument_id='afg', mode=mode, $
           level=level, /reload
       endif else begin
-        mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+        mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id(j), $
           instrument_id='afg', mode=mode, $
           level=level
       endelse
@@ -149,7 +149,7 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload
         for i = 1, n_elements(files_open)-1 do begin
           temp_struct = mms_sitl_open_afg_cdf(files_open(i))
           times = [times, temp_struct.x]
-          etimes = [times, temp_struct.ephemx]
+          etimes = [etimes, temp_struct.ephemx]
           pos_vect = [pos_vect, temp_struct.ephemy]
           b_field = [b_field, temp_struct.y]
         endfor

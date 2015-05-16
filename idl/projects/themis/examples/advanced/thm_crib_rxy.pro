@@ -1,18 +1,19 @@
 ;+
-;Procedure: rxy_crib.pro
+;Procedure:
+;  rxy_crib.pro
 ;
-;Purpose:  A crib showing how to transform data into the RXY coordinate system. This
+;Purpose:
+;  A crib showing how to transform data into the RXY coordinate system. This
 ;  coordinate system is a variant of GSM that has the GSM Z axis, but the XY-plane is 
 ;  rotated so that the X-axis is on the Earth->Spacecraft line, and more positive values
 ;  are further from the earth.
 ;
 ;Notes:
-;
 ;  Code heavily based on make_mat_Rxy.pro & transform_gsm_to_rxy.pro by Christine Gabrielse(cgabrielse@ucla.edu)
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 10:56:58 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13080 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-05-14 16:11:04 -0700 (Thu, 14 May 2015) $
+; $LastChangedRevision: 17618 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_rxy.pro $
 ;-
 

@@ -5,12 +5,13 @@
 pro mms_back_structure_check_new_segments, new_backstr, new_segs, new_error_flags, orange_warning_flags, $
   yellow_warning_flags, new_error_msg, orange_warning_msg, yellow_warning_msg, $
   new_error_times, orange_warning_times, yellow_warning_times, $
-  new_error_indices, orange_warning_indices, yellow_warning_indices
+  new_error_indices, orange_warning_indices, yellow_warning_indices, $
+  valstruct=valstruct
 
 ;--------------------------------------------------------------------------------------
 ; Define parameters that lead to errors and warnings
 on_error, 2
-valstruct = mms_load_fom_validation()
+if n_elements(valstruct) eq 0 then valstruct = mms_load_fom_validation()
 
 if typename(valstruct) eq 'INT' then message, 'ERROR: Unable to load FOM validation parameters ' + $
   'from SDC. Check your internet connection.'

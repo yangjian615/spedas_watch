@@ -1,7 +1,7 @@
 ; Parses the strings so that we can easily convert to jul
 ; 
 
-pro mms_parse_start_string, starts, months, days, years, hours, minutes, seconds
+pro mms_parse_start_string, starts, months, days, years, hours, minutes, seconds, num_chars
 
 months = intarr(n_elements(starts))
 days = months
@@ -9,10 +9,11 @@ years = months
 hours = months
 minutes = months
 seconds = months
+num_chars = intarr(n_elements(starts))
 
 for i = 0, n_elements(starts)-1 do begin
   length = strlen(starts(i))
-  
+  num_chars(i) = length
   case length of
     8:  begin
           years(i) = fix(strmid(starts(i), 0, 4))

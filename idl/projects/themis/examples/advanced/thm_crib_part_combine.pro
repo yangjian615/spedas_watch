@@ -1,42 +1,27 @@
 
 ;+
-;
-;
-; *** WARNING: The software demostrated in this crib is still undergoing testing. ***
-;
-;
-; NAME: thm_crib_part_combine
+;Name:
+;  thm_crib_part_combine
 ; 
-; PURPOSE:  Crib demonstrating basic usage of combined ESA/SST particle code. 
+;Purpose:
+;  Crib demonstrating basic usage of combined ESA/SST particle code.
 ;
-;           You can run this crib by pressing F8 or typing:
-;           IDL>.compile thm_crib_part_combine
-;           IDL>.go
-;           
-;           When you reach a stop press F8 or type
-;           IDL>.c
-;           to continue
-;           
-;           Or you can copy and paste commands directly onto the command line
-;           
-;           
+;See also:
+;  thm_crib_part_products
+;  thm_crib_part_slice2d
+;  thm_crib_sst_load_calibrate
 ;
-; SEE ALSO: thm_crib_part_products.pro
-;           thm_crib_part_slice2d.pro
-;           thm_crib_sst_load_calibrate.pro
+;Notes:
+;  If you see any useful examples missing from these cribs, please let us know.
 ;
-; NOTES:
-;   If you see any useful examples missing from these cribs, please let us know.
-;
-;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-05-13 15:54:49 -0700 (Wed, 13 May 2015) $
-;$LastChangedRevision: 17597 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-14 14:38:31 -0700 (Thu, 14 May 2015) $
+;$LastChangedRevision: 17616 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine.pro $
-;
 ;-
 
-  compile_opt idl2
+compile_opt idl2
+
 
 
 print, ' ', ' Load times may be as long as 60+ seconds when producing combined data sets. ', ' '

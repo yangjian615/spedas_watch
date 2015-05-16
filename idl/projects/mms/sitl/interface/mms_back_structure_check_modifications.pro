@@ -6,11 +6,12 @@
 pro mms_back_structure_check_modifications, new_backstr, old_backstr, mod_error_flags, mod_yellow_warning_flags, mod_orange_warning_flags, $
                                             mod_error_msg, mod_yellow_warning_msg, mod_orange_warning_msg, $
                                             mod_error_times, mod_yellow_warning_times, mod_orange_warning_times, $
-                                            mod_error_indices, mod_yellow_warning_indices, mod_orange_warning_indices
+                                            mod_error_indices, mod_yellow_warning_indices, mod_orange_warning_indices, $
+                                            valstruct=valstruct
 
 ;--------------------------------------------------------------------------------------
 ; Define parameters that lead to errors and warnings
-valstruct = mms_load_fom_validation()
+if n_elements(valstruct) eq 0 then valstruct = mms_load_fom_validation()
 fom_gmax = valstruct.fom_gmax
 fom_bounds = valstruct.fom_bounds
 seg_bounds = valstruct.seg_bounds

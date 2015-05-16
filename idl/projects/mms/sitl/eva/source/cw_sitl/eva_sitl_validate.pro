@@ -19,7 +19,7 @@ FUNCTION eva_sitl_validate_msg, title, flags, msg, times, indices
 END
 
 FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
-  quiet=quiet, vcase=vcase
+  quiet=quiet, vcase=vcase, valstruct=valstruct
   compile_opt idl2
 
   if n_elements(vcase) eq 0 then vcase = 0
@@ -34,21 +34,24 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
         error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
         error_msg,    orange_warning_msg,    yellow_warning_msg,  $; Error Messages
         error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
-        error_indices,orange_warning_indices,yellow_warning_indices; Error Indices (ptr_arr)
+        error_indices,orange_warning_indices,yellow_warning_indices, $; Error Indices (ptr_arr)
+        valstruct=valstruct
       end
     1: begin
       mms_back_structure_check_new_segments, tai_FOMStr_mod, new_seg, $
         error_flags, orange_warning_flags, yellow_warning_flags, $
         error_msg,   orange_warning_msg,   yellow_warning_msg, $
         error_times, orange_warning_times, yellow_warning_times, $
-        error_indices, orange_warning_indices, yellow_warning_indices
+        error_indices, orange_warning_indices, yellow_warning_indices, $
+        valstruct=valstruct
       end
     2: begin
       mms_back_structure_check_modifications, tai_FOMStr_mod, tai_FOMStr_org, $
         error_flags,  yellow_warning_flags, orange_warning_flags, $
         error_msg,    yellow_warning_msg,   orange_warning_msg, $
         error_times,  yellow_warning_times, orange_warning_times, $
-        error_indices,yellow_warning_indices,orange_warning_indices
+        error_indices,yellow_warning_indices,orange_warning_indices, $
+        valstruct=valstruct
       end
     3: begin
       s = tai_FOMstr_mod
@@ -76,7 +79,8 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
         mms_check_fpi_calibration_segment, tai_start,tai_stop, s.FOM[0], sourceid, $
           error_flags, error_msg, $
           yellow_warning_flags, yellow_warning_msg, $
-          orange_warning_flags, orange_warning_msg
+          orange_warning_flags, orange_warning_msg, $
+          valstruct=valstruct
         
         ct = n_elements(error_flags);.......... dummy times/indices
         error_times = ptrarr(ct, /allocate_heap)

@@ -1,23 +1,30 @@
 ;+
-;	Batch File: THM_CRIB_SUPERPOSED_INTERPOL_HISTO
+;Name:
+;  thm_crib_superpo_interpol_histo
 ;
-;	Purpose:  Demonstrates the application of the routines
-; 		      superpo_interpol and superpo_histo
+;Purpose:
+;  Demonstrates the application of the routines
+;  superpo_interpol and superpo_histo
 ;
-;   Note:  The examples in this crib sheet call 'superpo_interpol'. Simply
-;          replace the calls with 'superpo_histo' to try the other routine.
-;          Both routines accept the same input parameters.
+;Notes:
+;  The examples in this crib sheet call 'superpo_interpol'. Simply
+;  replace the calls with 'superpo_histo' to try the other routine.
+;  Both routines accept the same input parameters.
 ;
-;   Written by Andreas Keiling
+;History:
+;  Written by Andreas Keiling
+;  2015-05-14 (af) load only THEMIS GBO sites instead of all (there are a lot now)
+;   
 ;
-; $LastChangedBy:   $
-; $LastChangedDate:   $
-; $LastChangedRevision:  $
-; $URL $
+;$LastChangedBy:   $
+;$LastChangedDate:   $
+;$LastChangedRevision:  $
+;$URL $
 ;-
 
-
-;;;;;;;;;;;;;;;;;EXAMPLE #1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;=========================================================
+; Example 1
+;=========================================================
 
 del_data,'*'
 thm_init
@@ -57,13 +64,15 @@ tplot,'*_x thg_pseudoAU thg_pseudoAL thg_pseudoAE thg_avg thg_median'
 stop
 
 
-;;;;;;;;;;;;;;  EXAMPLE #2  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;=========================================================
+; Example 2
+;=========================================================
 
 del_data,'*'
 thm_init
 timespan,'2006-12-23/00:00:00'   ; one whole day by default
 
-thm_load_gmag,/subtract_median    ; load all stations and subtract median from each station
+thm_load_gmag, /thm_sites, /subtract_median    ; load all stations and subtract median from each station
 split_vec,'thg_mag_????'
 
 superpo_interpol,'thg_mag_????_x',min='thg_pseudoAL', res=600.0  ; use all available stations
@@ -74,13 +83,15 @@ tplot,'*pseudo*'
 stop
 
 
-;;;;;;;;;;;;;;;;;EXAMPLE #3;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;=========================================================
+; Example 3
+;=========================================================
 
 del_data,'*'
 thm_init
 timespan,'2006-12-23/00:00:00',18,/hour
 
-thm_load_gmag,/subtract_median    ; load all stations and subtract median from each station
+thm_load_gmag, /thm_sites, /subtract_median    ; load all stations and subtract median from each station
 split_vec,'thg_mag_????'
 
 superpo_interpol,'thg_mag_????_x', res=1.0   ; does default values for all keywords except res
@@ -91,13 +102,15 @@ tplot,'*arr*'
 stop
 
 
-;;;;;;;;;;;;;;;;;EXAMPLE #4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;=========================================================
+; Example 4
+;=========================================================
 
 del_data,'*'
 thm_init
 timespan,'2006-12-23/00:00:00',18,/hour
 
-thm_load_gmag    ; load all stations
+thm_load_gmag, /thm_sites    ; load all stations
 split_vec,'thg_mag_????'
 
 superpo_interpol,'thg_mag_????_x'    ; does default values for all keywords

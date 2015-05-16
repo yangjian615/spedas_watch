@@ -55,11 +55,13 @@ FUNCTION eva_data_load_mms, state
         mms_sitl_get_fpi_basic, sc_id=sc
         tplot_names,'*fpi*',names=tn
         jmax= n_elements(tn)
-        for j=0,jmax-1 do begin
-          get_data,tn[j],data=D,dl=dl,lim=lim
-          tn_main = strsplit(tn[j],'_',/extract)
-          store_data,strjoin([sc,tn_main[1:*]],'_'),data=D,dl=dl,lim=lim
-        endfor
+        if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
+          for j=0,jmax-1 do begin
+            get_data,tn[j],data=D,dl=dl,lim=lim
+            tn_main = strsplit(tn[j],'_',/extract)
+            store_data,strjoin([sc,tn_main[1:*]],'_'),data=D,dl=dl,lim=lim
+          endfor
+        endif
       endif
 
       

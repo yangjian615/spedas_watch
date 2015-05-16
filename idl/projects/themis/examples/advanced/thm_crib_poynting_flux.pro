@@ -1,17 +1,39 @@
+;+
+;Procedure:
+;  thm_crib_poynting_flux
+;
+;Purpose:
+;  This crib sheet shows how to correct the THEMIS-EFI high-frequency
+;  data to compensate for the transfer function, and then shows how to 
+;  calculate Poynting flux from the EFI and SCM data.
+;
+;Notes:
+;  
+;
+;History:
+;  2012-05-23, jmm, changed input to have user prompted for test case.
+;  2015-05-14,  af, integrating thm_validate_high_freq_using_phase into this crib 
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-05-14 17:01:41 -0700 (Thu, 14 May 2015) $
+;$LastChangedRevision: 17619 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_poynting_flux.pro $
+;-
 
 
-; This crib sheet shows how to correct the THEMIS-EFI high-frequency
-; data to compensate for the transfer function, and then shows how to calculate
-; Poynting flux from the EFI and SCM data.
-; 2012-05-23, jmm, changed input to have user prompted for test case.
-
+;===============================
 ; Set the time and satellite for the event
+;===============================
+
 start_input:
-print, 'Choose test case:'
+
+
 print, 'Input 1 for Whistler sampled at 8 kHz, THEMIS D, 2008-06-05 12:48:47 to 2008-06-05 12:48:54'
 print, 'Input 2 for Oblique whistler sampled at 16 kHz, THEMIS D, 2010-01-01 00:10:02 to 2010-01-01 00:10:07.9'
 print, 'Input 3 for Whistler sampled at 16 kHz, THEMIS E, 2009-07-26 12:26:40 to 2009-07-26 12:27:00'
-read, tc
+
+read, tc, prompt='Choose test case (1, 2, or 3):  '
+
 case tc of
   1: begin ; Whistler sampled at 8 kHz
        timespan,'2008-06-05'
@@ -46,7 +68,7 @@ endcase
 ;===============================
 ; Load the data
 ;===============================
-; Load the data
+
 thm_load_state,probe=probe[0], /get_support_data
 thm_load_efi,probe=probe[0],datatype='efw',coord='dsl',trange=interval+[-10,10]
 thm_load_scm,probe=probe[0],datatype='scw',coord='dsl',trange=interval+[-10,10],nk=256,/edge_truncate,fmin=10.0,fcut=10.0,despin=0
@@ -211,5 +233,87 @@ window,0,ysize=900
 window,1,ysize=900
 tplot,['??w_*fft_?'],trange=trange,title='Calibrated data with transfer function corrected',window=0
 tplot,['th'+probe[0]+'_scw_'+['powspec','degpol','waveangle'],'S_?','S_timeseries'],trange=trange,title='Poynting flux',window=1
+
+
+
+stop
+
+
+
+;===============================
+; Phase analysis
+;===============================
+;   -this section was previously part of thm_crib_validate_high_freq_using_phase
+
+; Calculate E-B phase lag
+phase=dblarr(n_elements(efw_fft[*,0,0]),nfft,3)
+for k=0,2 do phase[*,*,k]=atan(efw_fft[*,*,k],/phase)-atan(scw_fft[*,*,k],/phase)
+phase/=!dtor
+phase=phase mod 360
+phase[where(abs(scw_fft) lt median(abs(scw_fft[*,nfft*0.25:*,*])))]=!values.f_nan
+phaselim={spec:1,zlog:0,ylog:0,yrange:[100,4096],ystyle:1,zrange:ave_phase_yrange}
+store_data,'phase_x',data={x:t,y:phase[*,*,0],v:freq},lim=phaselim
+store_data,'phase_y',data={x:t,y:phase[*,*,1],v:freq},lim=phaselim
+store_data,'phase_z',data={x:t,y:phase[*,*,2],v:freq},lim=phaselim
+
+
+; Calculate averaged power phase difference, E/B, etc. for in-band power
+phase_max=dblarr(n_elements(efw_fft[*,0,0]),4)
+power_max=dblarr(n_elements(efw_fft[*,0,0]),3)
+freq_max=dblarr(n_elements(efw_fft[*,0,0]))
+eb_ratio=dblarr(n_elements(efw_fft[*,0,0]),3)
+waveangle=dblarr(n_elements(efw_fft[*,0,0]),2)
+for i=0,n_elements(power_max[*,0])-1 do begin
+  pow=total(reform(scw_fft[i,*,*]*conj(scw_fft[i,*,*])),2)
+  indx=where(pow eq max(pow[nfft*0.1:nfft*0.5]))
+  indx=indx[0] < (nfft/2-2)
+  freq_max[i]=indx[0]
+  indx=indx[0]+indgen(3)-1
+  indx=indx[0]+indgen(3)-1
+  for k=0,2 do begin
+    power_max[i,k]=mean(abs(efw_fft[i,indx,k])^2)
+  endfor
+endfor
+power_cutoff=max(power_max)*power_cutoff
+for i=0,n_elements(power_max[*,0])-1 do begin
+  indx=freq_max[i]
+  freq_max[i]=freq[indx]
+  if total(power_max[i,0:1]) gt power_cutoff then begin
+    indx=indx[0]+indgen(3)-1
+    for k=0,2 do begin
+      power_max[i,k]=mean(abs(efw_fft[i,indx,k])^2)
+      phase_max[i,k]=atan(total(efw_fft[i,indx,k]),/phase)-atan(total(scw_fft[i,indx,k]),/phase)
+      phase_max[i,k]=(phase_max[i,k]/!dtor + 360) mod 360
+      eb_ratio[i,k]=mean(abs(efw_fft[i,indx,k]))/mean(abs(scw_fft[i,indx,k]))*1d3
+    endfor
+  endif else begin
+    for k=0,2 do $
+      power_max[i,k]=mean(abs(efw_fft[i,indx,k])^2)
+    phase_max[i,*]=!values.f_nan
+    eb_ratio[i,*]=!values.f_nan
+    waveangle[i,*]=!values.f_nan
+  endelse
+endfor
+store_data,'freq',data={x:t,y:freq_max}
+store_data,'ave_phase_x',data={x:t,y:[[phase_max[*,0]],[90+ave_phase_yrange[0]+fltarr(n_elements(phase_max[*,0]))]]},lim={yrange:ave_phase_yrange,ystyle:1,psym:0}
+store_data,'ave_phase_y',data={x:t,y:[[phase_max[*,1]],[90+ave_phase_yrange[0]+fltarr(n_elements(phase_max[*,0]))]]},lim={yrange:ave_phase_yrange,ystyle:1,psym:0}
+store_data,'ave_phase_z',data={x:t,y:[[phase_max[*,2]],[90+ave_phase_yrange[0]+fltarr(n_elements(phase_max[*,0]))]]},lim={yrange:ave_phase_yrange,ystyle:1,psym:0}
+store_data,'power',data={x:t,y:power_max},lim={ytitle:'In-band B power'}
+store_data,'eb_ratio',data={x:t,y:eb_ratio},lim={yrange:[0,4e4],ytitle:'E/B [km/s]'}
+
+
+
+;===============================
+; Plot
+;===============================
+window,0,ysize=900
+window,1,ysize=900
+;window,4,ysize=900
+;window,5,ysize=900
+tplot,['??w_*fft_?','th'+probe[0]+'_scw_'+['powspec','degpol','waveangle']],trange=trange,title='Calibrated data with transfer function corrected',window=0
+tplot,['S_?','S_timeseries','S_tot'],trange=trange,title='Poynting flux',window=1
+;tplot,'phase_?',trange=trange,title='Phase lags',window=4
+;tplot,['freq','power','ave_phase_x','ave_phase_y','ave_phase_perp','eb_ratio','wave_angle'],trange=trange,window=5
+
 
 end

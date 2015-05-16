@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-13 11:36:22 -0700 (Wed, 13 May 2015) $
-;  $LastChangedRevision: 17587 $
+;  $LastChangedDate: 2015-05-14 14:13:51 -0700 (Thu, 14 May 2015) $
+;  $LastChangedRevision: 17611 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_fpi_basic.pro $
 
 
@@ -51,16 +51,16 @@ endelse
 for j = 0, n_elements(sc_id)-1 do begin
 
   if keyword_set(no_update) then begin
-    mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+    mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id(j), $
       instrument_id='fpi', mode=mode, $
       level=level, /no_update
   endif else begin
     if keyword_set(reload) then begin
-      mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+      mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id(j), $
 	instrument_id='fpi', mode=mode, $
 	level=level, /reload
     endif else begin
-      mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+      mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id(j), $
 	instrument_id='fpi', mode=mode, $
 	level=level
     endelse
