@@ -1,8 +1,8 @@
 pro mms_put_back_structure, new_backstr, old_backstr, $
                             mod_error_flags, mod_yellow_warning_flags, mod_orange_warning_flags, $
                             mod_error_msg, mod_yellow_warning_msg, mod_orange_warning_msg, $
-                             mod_error_times, mod_yellow_warning_times, $
-                            mod_error_indices, mod_yellow_warning_indices, $
+                            mod_error_times, mod_yellow_warning_times, mod_orange_warning_times, $
+                            mod_error_indices, mod_yellow_warning_indices, mod_orange_warning_indices, $
                             new_segs, new_error_flags, orange_warning_flags, $
                             yellow_warning_flags, new_error_msg, orange_warning_msg, yellow_warning_msg, $
                             new_error_times, orange_warning_times, yellow_warning_times, $

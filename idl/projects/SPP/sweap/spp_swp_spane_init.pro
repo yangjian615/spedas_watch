@@ -270,7 +270,7 @@ pro spp_swp_spane_init,save=save
   spp_apid_data,apdata=ap
   print_struct,ap
 
-spp_init
+;spp_init
 
 end
 

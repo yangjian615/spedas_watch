@@ -18,6 +18,10 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
   if strmatch(diff,'unchanged') then begin
     msg = "The FOM structure has not been modified at all."
     msg = [msg,'Woud you still like to submit?']
+    msg = [msg,' ']
+    msg = [msg,'If you want to submit a back-structure,']
+    msg = [msg,'please log-in as a Super-SITL and enable']
+    msg = [msg,'the back-structure mode.']
     answer = dialog_message(msg,/question,/center,title=title)
     if strcmp(answer,'No') then return
   endif
@@ -79,12 +83,12 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
           sourceid = eva_sourceid()
           tai_start = s.TIMESTAMPS[s.START[0]]
           tai_stop = s.TIMESTAMPS[s.STOP[0]]
-          mms_submit_fpi_calibration_segment, tai_start,tai_stop, s.FOM[0], sourceid, local_dir, $
+          mms_submit_fpi_calibration_segment, tai_start, tai_stop, s.FOM[0], sourceid,  $
             error_flags, error_msg, $
             yellow_warning_flags, yellow_warning_msg, $
             orange_warning_flags, orange_warning_msg, $
             problem_status
-        endif else stop
+          endif else stop
         end    
       else: message, "Something is wrong"
     endcase

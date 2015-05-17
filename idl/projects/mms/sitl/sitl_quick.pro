@@ -4,8 +4,8 @@
 ; 
 ; PURPOSE:
 ;   This is an emergency script to be used when EVA is not working but 
-;   a SITL scientists still needs to modify the ABS selection. There
-;   won't be any display (because it won't generate any tplot-variable).
+;   a SITL still needs to modify the ABS selection within a limited time.
+;   There won't be any display (because it won't generate any tplot-variable).
 ;
 ; INPUT:
 ;   Prepare an input ASCII file which contains a list of
@@ -14,16 +14,16 @@
 ;   each delimited by space.)
 ;
 ; NOTE:
-;   - This program is completely independent from EVA but it still requires
-;     TDAS (SPEDAS) because TDAS contains programs provided by SDC and Rick.  
+;   - This program is completely independent from EVA but still requires
+;     SPEDAS because SPEDAS contains programs provided by LASP.  
 ;   - Each segment will be attached a label 'SITL(Quick):<username>' where
 ;     <username> is the user's login ID.
 ;
 ; CREATED BY: Mitsuo Oka   Feb 2015
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-02-12 12:57:25 -0800 (Thu, 12 Feb 2015) $
-; $LastChangedRevision: 16969 $
+; $LastChangedDate: 2015-05-15 12:20:58 -0700 (Fri, 15 May 2015) $
+; $LastChangedRevision: 17625 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_quick.pro $
 Function sitl_quick_template
   anan = fltarr(1) & anan[0] = 'NaN'
@@ -40,21 +40,23 @@ Function sitl_quick_template
   return, ppp
 End
 
-PRO sitl_quick, filename=filename, cache_dir=cache_dir
+PRO sitl_quick, filename=filename
   common mms_sitl_connection, netUrl, connection_time, login_source
   
-  ;------------------
-  ; Local Cache Dir
-  ;------------------
-  if n_elements(cache_dir) eq 0 then cache_dir = getenv('HOME')  
-  local_dir = cache_dir+'/abs_data/'
-  found = file_test(local_dir); check if the directory exists
-  if not found then file_mkdir, local_dir
+;  ;------------------
+;  ; Local Cache Dir
+;  ;------------------
+;  if n_elements(cache_dir) eq 0 then cache_dir = getenv('HOME')  
+;  local_dir = cache_dir+'/abs_data/'
+;  found = file_test(local_dir); check if the directory exists
+;  if not found then file_mkdir, local_dir
+  
+  mms_init
   
   ;------------------
   ; Fetch ABS
   ;------------------
-  get_latest_fom_from_soc, local_dir, fom_file, error_flag, error_message
+  get_latest_fom_from_soc, fom_file, error_flag, error_msg
   if error_flag then message,'FOMStr not found in SDC. Ask Super SITL.'
   restore,fom_file
   mms_convert_fom_tai2unix, FOMstr, unix_FOMstr, start_string
@@ -118,13 +120,15 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
   ;------------------
   ; Validation
   ;------------------
+  valstruct = mms_load_fom_validation(); validation structure
   problem_status = 0; 0 means 'no error'
   mms_check_fom_structure, tai_FOMstr, FOMstr, $
     error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
     error_msg,    orange_warning_msg,    yellow_warning_msg,  $; Error Messages
     error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
-    error_indices,orange_warning_indices,yellow_warning_indices; Error Indices (ptr_arr)
-
+    error_indices,orange_warning_indices,yellow_warning_indices,$; Error Indices (ptr_arr)
+    valstruct=val
+    
   print, ''
   print, '--------------'
   print, 'ERROR'
@@ -201,7 +205,7 @@ PRO sitl_quick, filename=filename, cache_dir=cache_dir
   ;------------------
   print, ''
   if (ct_error eq 0) and (ct_orange eq ct_override) then begin
-    mms_put_fom_structure, tai_FOMstr, FOMStr, local_dir,$
+    mms_put_fom_structure, tai_FOMstr, FOMStr,$
       error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
       error_msg,    orange_warning_msg,    yellow_warning_msg,  $; Error Messages
       error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)

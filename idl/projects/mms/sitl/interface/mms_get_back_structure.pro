@@ -4,7 +4,7 @@
 pro mms_get_back_structure, start_time_unix, stop_time_unix, backstr, pw_flag, pw_message
 
 pw_flag = 0
-pw_message = 'ERROR: Unable to retrieve data from SDC. Login failed or no data available for specified time range.'
+pw_message = 'ERROR: Unable to retrieve back-structure from SDC. Login failed or no data available for specified time range.'
 
 ; Convert start and stop times to tai
 load_leap_table2, leaps, juls

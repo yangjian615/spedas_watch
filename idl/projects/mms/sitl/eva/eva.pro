@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-14 13:01:05 -0700 (Thu, 14 May 2015) $
-; $LastChangedRevision: 17607 $
+; $LastChangedDate: 2015-05-15 16:27:12 -0700 (Fri, 15 May 2015) $
+; $LastChangedRevision: 17631 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -63,8 +63,6 @@ PRO eva_event, event
       str_element,tplot_vars,'options.window',!d.window,/add_replace
       str_element,tplot_vars,'settings.window',!d.window,/add_replace
     endif
-    
-    PROFILER, /REPORT, /CODE_COVERAGE
   endif else begin
     widget_control, event.top, SET_UVALUE=wid
   endelse
@@ -73,9 +71,6 @@ END
 PRO eva
 
   ;////////// INITIALIZE /////////////////////////////////
-  PROFILER
-  PROFILER, /SYSTEM
-  
   catch, error_status
   if error_status ne 0 then begin
     catch, /cancel

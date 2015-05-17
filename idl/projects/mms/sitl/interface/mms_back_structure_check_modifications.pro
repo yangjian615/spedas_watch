@@ -157,8 +157,8 @@ mod_yellow_warning_msg = [delete_warning_text, $
 
 ; Now we will deal for the orange warnings
 mod_orange_warning_flags = intarr(1)
-mod_orange_warning_times = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
-mod_orange_warning_indices = ptrarr(n_elements(mod_warning_flags), /allocate_heap)
-mod_orange_warning_msg = strarr(n_elements(orange_warning_flags))
+mod_orange_warning_times = ptrarr(n_elements(mod_orange_warning_flags), /allocate_heap)
+mod_orange_warning_indices = ptrarr(n_elements(mod_orange_warning_flags), /allocate_heap)
+mod_orange_warning_msg = strarr(n_elements(mod_orange_warning_flags))
 
 end 

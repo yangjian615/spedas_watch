@@ -63,14 +63,14 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
         tai_start = s.TIMESTAMPS[s.START[0]]
         tai_stop = s.TIMESTAMPS[s.STOP[0]]
         if (tai_start eq s.CYCLESTART) and (s.FOM[0] eq 0.) then begin
-          msg = 'Choose a segment'
+          msg = 'Please define a segment.'
           ct_error=1
           if ~keyword_set(quiet) then res=dialog_message(msg,/center)
           error = {message:msg, count:ct_error}
           return, {error:error}
         endif
         if nmax ge 2 then begin
-          msg = 'Choose only 1 segment'
+          msg = 'Please define only 1 segment.'
           ct_error=1
           if ~keyword_set(quiet) then res=dialog_message(msg,/center)
           error = {message:msg, count:ct_error}
@@ -106,7 +106,7 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
           (*orange_warning_times[c]) = temp_times[c]
           (*orange_warning_indices[c]) = 1L;replicate(1L,ct)
         endfor
-      endif else stop; ct eq 1
+      endif else message,'Something is wrong!'; ct eq 1
       end
     else: message,'Something is wrong!!'
   endcase

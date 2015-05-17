@@ -42,7 +42,7 @@ PRO eva_sitl_submit_bakstr, tlb, TESTING
   header = [vsp+' NEW SEGMENTS '+vsp]
   r = eva_sitl_validate(tai_BAKStr_mod, -1, vcase=1, header=header, /quiet); Validate New Segs
   header = [r.msg,' ', vsp+' MODIFIED SEGMENTS '+vsp]
-  r2 = eva_sitl_validate(tai_BAKStr_mod, tai_BAKStr_org, vcase=2, header=header); Validate Modified Seg
+  r2 = eva_sitl_validate(tai_BAKStr_mod, tai_BAKStr_org, vcase=2, header=header,/quiet); Validate Modified Seg
 
   ct_err = r.error.COUNT+r2.error.COUNT
   if ct_err ne 0 then begin
@@ -61,37 +61,35 @@ PRO eva_sitl_submit_bakstr, tlb, TESTING
   ;------------------
   ; Submit
   ;------------------
-  widget_control, widget_info(tlb,find='eva_data'), GET_VALUE=module_state
-  local_dir = module_state.PREF.EVA_DATA_DIR+'sitl_data/'
-  found = file_test(local_dir); check if the directory exists
-  if not found then file_mkdir, local_dir
-  
 
   if TESTING then begin
     problem_status = 0
     msg='TEST MODE: The modified BAKStr was not sent to SDC.'
     rst = dialog_message(msg,/information,/center,title=title)
-  endif else begin
-    mms_put_back_structure, tai_BAKStr_mod, tai_BAKStr_org, local_dir, $
-      mod_error_flags,   mod_warning_flags, $
-      mod_error_msg,     mod_warning_msg,   $
-      mod_error_times,   mod_warning_times, $
-      mod_error_indices, mod_warning_indices, $
+  endif else begin  
+    mms_put_back_structure, tai_BAKStr_mod, tai_BAKStr_org, $
+      mod_error_flags,   mod_yellow_warning_flags, mod_orange_warning_flags, $
+      mod_error_msg,     mod_yellow_warning_msg,   mod_orange_warning_msg, $
+      mod_error_times,   mod_yellow_warning_times, mod_orange_warning_times, $
+      mod_error_indices, mod_yellow_warning_indices, mod_orange_warning_indices, $
       new_segs, $
       new_error_flags,   orange_warning_flags,   yellow_warning_flags, $
       new_error_msg,     orange_warning_msg,     yellow_warning_msg, $
       new_error_times,   orange_warning_times,   yellow_warning_times, $
       new_error_indices, orange_warning_indices, yellow_warning_indices, $
-      problem_status,    /warning_override
-    if problem_status eq 0 then begin
-      msg='The back-structure was sent successfully to SDC.'
-      rst = dialog_message(msg,/information,/center,title=title)
-    endif else begin
-      msg='Submission Failed.'
-      rst = dialog_message(msg,/error,/center,title=title)
-    endelse
-    ptr_free, mod_error_times, new_error_times, orange_warning_times, yellow_warning_times
-    ptr_free, mod_error_indices, new_error_indices, orange_warning_indices, yellow_warning_indices
+      problem_status, /warning_override
+    case problem_status of
+      0: msg = 'The back-structure was sent successfully to SDC.'
+      1: msg = 'Something is wrong with the selection. Please validate and try again.'
+      2: msg = 'There was nothing to submit. Please check the selection again.'
+      3: msg = 'The structure passed the tests, but an error at the SDC prevented final submission.'
+      else: message,'Something is wrong.'
+    endcase
+    answer = dialog_message(msg,/center,/info,title=title)
+    ptr_free, mod_error_times, mod_orange_warning_times, mod_yellow_warning_times
+    ptr_free, mod_error_indices, mod_orange_warning_indices, mod_yellow_warning_indices
+    ptr_free, new_error_times, orange_warning_times, yellow_warning_times
+    ptr_free, new_error_indices, orange_warning_indices, yellow_warning_indices
   endelse
 
   

@@ -68,7 +68,7 @@ if count_error eq 0 then begin
 
     ;dir_path = data_dir + 'sitl/fpi_cal_segments/' + yearstr + '/'
     
-    dirpath = filepath('', root_dir=data_dir, $
+    dir_path = filepath('', root_dir=data_dir, $
       subdirectory = ['sitl', 'fpi_cal_segments', yearstr])
 
     file_mkdir, dir_path

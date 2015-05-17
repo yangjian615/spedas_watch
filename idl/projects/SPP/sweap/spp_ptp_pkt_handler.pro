@@ -587,6 +587,7 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
     dprint,time_string(time,/local_time),' PTP size error- size is ',ptp_size
 ;    hexprint,buffer
 ;    savetomain,buffer,time
+    stop
     return
   endif
   ptp_code = buffer[2]
