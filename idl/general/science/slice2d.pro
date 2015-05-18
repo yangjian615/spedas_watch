@@ -58,13 +58,14 @@
 ;                 ThirdDirLim keyword to select data points
 ;       RESOLUTION: resolution of the mesh (DEFAULT 51)
 ;       ISOTROPIC: forces the scaling of the X and Y axes to be equal
+;       XTITLE, YTITLE, ZTITLE, TITLE: set titles
 ; CREATED BY:
 ;       Yuki Harada on 2014-05-26
 ;       Modified from 'thm_esa_slice2d'
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-04-23 13:13:58 -0700 (Thu, 23 Apr 2015) $
-; $LastChangedRevision: 17408 $
+; $LastChangedDate: 2015-05-16 21:25:50 -0700 (Sat, 16 May 2015) $
+; $LastChangedRevision: 17633 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
@@ -88,8 +89,8 @@ function slice2d_cal_rot,v1,v2
   return, rot
 end
 
-
-pro slice2d, dat, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrange=xrange, range=range, erange=erange, units=units, nozlog=nozlog, position=position, nofill=nofill, nlines=nlines, noolines=noolines, numolines=numolines, removezero=removezero, showdata=showdata, vel=vel, nogrid=nogrid, nosmooth=nosmooth, sundir=sundir, novelline=novelline, subtract=subtract, resolution=resolution, isotropic=isotropic
+;- main procedure
+pro slice2d, dat, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrange=xrange, range=range, erange=erange, units=units, nozlog=nozlog, position=position, nofill=nofill, nlines=nlines, noolines=noolines, numolines=numolines, removezero=removezero, showdata=showdata, vel=vel, nogrid=nogrid, nosmooth=nosmooth, sundir=sundir, novelline=novelline, subtract=subtract, resolution=resolution, isotropic=isotropic, xtitle=xtitle, ytitle=ytitle, ztitle=ztitle, title=title
 
 
 ;- default setting
@@ -433,46 +434,47 @@ colors = round( (indgen(nlines)+1)*(!d.table_size-9)/nlines ) + 7
 
 ;- set x & y titles
 if rotation eq 'bv' then begin
-   xtitle = 'v_para [km/s]'
-   ytitle = 'v_perp_V [km/s]'
+   if ~keyword_set(xtitle) then xtitle = 'v_para [km/s]'
+   if ~keyword_set(ytitle) then ytitle = 'v_perp_V [km/s]'
 endif
 if rotation eq 'be' then begin
-   xtitle = 'v_para [km/s]'
-   ytitle = 'v_perp_E [km/s]'
+   if ~keyword_set(xtitle) then xtitle = 'v_para [km/s]'
+   if ~keyword_set(ytitle) then ytitle = 'v_perp_E [km/s]'
 endif
 if rotation eq 'xy' then begin
-   xtitle = 'v_x [km/s]'
-   ytitle = 'v_y [km/s]'
+   if ~keyword_set(xtitle) then xtitle = 'v_x [km/s]'
+   if ~keyword_set(ytitle) then ytitle = 'v_y [km/s]'
 endif
 if rotation eq 'xz' then begin
-   xtitle = 'v_x [km/s]'
-   ytitle = 'v_z [km/s]'
+   if ~keyword_set(xtitle) then xtitle = 'v_x [km/s]'
+   if ~keyword_set(ytitle) then ytitle = 'v_z [km/s]'
 endif
 if rotation eq 'yz' then begin
-   xtitle = 'v_y [km/s]'
-   ytitle = 'v_z [km/s]'
+   if ~keyword_set(xtitle) then xtitle = 'v_y [km/s]'
+   if ~keyword_set(ytitle) then ytitle = 'v_z [km/s]'
 endif
 if rotation eq 'perp' then begin
-   xtitle = 'v_perp_V [km/s]'
-   ytitle = 'v_perp_E [km/s]'
+   if ~keyword_set(xtitle) then xtitle = 'v_perp_V [km/s]'
+   if ~keyword_set(ytitle) then ytitle = 'v_perp_E [km/s]'
 endif
 if rotation eq 'perp_xy' then begin
-   xtitle = 'v_perp_x [km/s]'
-   ytitle = 'v_perp_y [km/s]'
+   if ~keyword_set(xtitle) then xtitle = 'v_perp_x [km/s]'
+   if ~keyword_set(ytitle) then ytitle = 'v_perp_y [km/s]'
 endif
 if rotation eq 'perp_xz' then begin
-   xtitle = 'v_perp_x [km/s]'
-   ytitle = 'v_perp_z [km/s]'
+   if ~keyword_set(xtitle) then xtitle = 'v_perp_x [km/s]'
+   if ~keyword_set(ytitle) then ytitle = 'v_perp_z [km/s]'
 endif
 if rotation eq 'perp_yz' then begin
-   xtitle = 'v_perp_y [km/s]'
-   ytitle = 'v_perp_z [km/s]'
+   if ~keyword_set(xtitle) then xtitle = 'v_perp_y [km/s]'
+   if ~keyword_set(ytitle) then ytitle = 'v_perp_z [km/s]'
 endif
 
 
 ;=== plot the data ===
-title = dat2.data_name+' '+time_string(dat2.time) $
-        +'->'+strmid(time_string(dat2.end_time),11,8)
+if ~keyword_set(title) then $
+   title = dat2.data_name+' '+time_string(dat2.time) $
+           +'->'+strmid(time_string(dat2.end_time),11,8)
 
 if not keyword_set(nogrid) then begin
    spacing = (xrange[1]-xrange[0])/(resolution-1)
@@ -533,7 +535,8 @@ if not keyword_set(subtract) then begin
    oplot,circx,circy,thick=2
 endif ;- Since velocity subtraction modifies energy boundaries, inner & outer circles are plotted only when no subtraction is conducted
 
-draw_color_scale, range=[cntmin,cntmax], log=zlog, yticks=10, title =units_string(dat2.units_name)
+if ~keyword_set(ztitle) then ztitle = units_string(dat2.units_name)
+draw_color_scale, range=[cntmin,cntmax], log=zlog, yticks=10, title = ztitle
 
 if keyword_set(showdata) then oplot,xplot,yplot,psym=1
 ;=== plot the data ===
