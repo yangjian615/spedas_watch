@@ -15,8 +15,8 @@
 ;    LIST:          List all configuration changes.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-15 13:18:48 -0700 (Wed, 15 Apr 2015) $
-; $LastChangedRevision: 17326 $
+; $LastChangedDate: 2015-05-18 14:43:14 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17641 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -66,13 +66,14 @@ pro mvn_swe_config, list=list, timebar=timebar
 ;   Deployed boom matrix was uploaded as part of EEPROM load executed on 2014-09-22
 ;   Boom separation nut pyro was fired at 2014-10-10/15:08:14.684
 ;   Boom shows evidence for motion a few seconds later
-;   Boom fully deployed by about 15:09:30
+;   Boom fully deployed by about 2014-10-10/15:09:30
 
   t_mtx = [t_mtx, time_double('2014-10-10/15:08:40')]  ; deployed boom matrix upload
 
 ; MCP bias adjustments.
 
-  t_mcp = time_double('2014-10-17/02:26:41')  ; bias adjustment (2500 -> 2600 V)
+  t_mcp = time_double('2013-11-18/18:28')              ; MAVEN launch (bias = 2500 V)
+  t_mcp = [t_mcp, time_double('2014-10-17/02:26:41')]  ; bias adjustment (2500 -> 2600 V)
 
 ; Gather all the configuration change times into one variable (for timebar).
 
@@ -88,7 +89,7 @@ pro mvn_swe_config, list=list, timebar=timebar
     print,time_string(t_mtx[1]),' --> stowed boom matrix upload #2 (correct MICD)'
     print,time_string(t_swp[1]),' --> sweep tables 5 and 6 upload'
     print,time_string(t_mtx[2]),' --> boom deploy'
-    print,time_string(t_mcp[0]),' --> MCP bias adjustment (2500 -> 2600 V)'
+    print,time_string(t_mcp[1]),' --> MCP bias adjustment (2500 -> 2600 V)'
   endif
 
 ; Overplot dotted time bars on the current tplot window (assumed to exist)

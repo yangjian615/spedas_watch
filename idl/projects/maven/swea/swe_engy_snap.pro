@@ -62,6 +62,9 @@
 ;                      as the low-energy residual after subtracting the best-fit
 ;                      Maxwell-Boltzmann.
 ;
+;       SEC:           Calculate secondary electron spectrum using McFadden's
+;                      semi-empirical approach.
+;
 ;       DDD:           Create an energy spectrum from the nearest 3D spectrum and
 ;                      plot for comparison.
 ;
@@ -69,22 +72,29 @@
 ;
 ;       DBINS:         Deflector bin mask (6 elements: 0=off, 1=on).  Default = all on.
 ;
+;       OBINS:         3D solid angle bin mask (96 elements: 0=off, 1=on).
+;                      Default = reform(ABINS # DBINS).
+;
+;       MASK_SC:       Mask solid angle bins that view the spacecraft.  Default = yes.
+;                      This masking is in addition to OBINS.
+;
 ;       NOERASE:       Overplot all spectra after the first.
 ;
 ;       RAINBOW:       With NOERASE, overplot spectra using up to 6 different colors.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-19 11:34:01 -0700 (Sun, 19 Apr 2015) $
-; $LastChangedRevision: 17361 $
+; $LastChangedDate: 2015-05-18 14:39:24 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17639 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
-pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
-                   ddd=ddd, abins=abins, dbins=dbins, sum=sum, pot=pot, pdiag=pdiag, $
+pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, ddd=ddd, $
+                   abins=abins, dbins=dbins, obins=obins, sum=sum, pot=pot, pdiag=pdiag, $
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
                    noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
-                   dEmax=dEmax, burst=burst, rainbow=rainbow
+                   dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
+                   bkg=bkg
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -99,8 +109,6 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   if not keyword_set(units) then units = 'eflux'
   if keyword_set(sum) then npts = 2 else npts = 1
   if keyword_set(ddd) then dflg = 1 else dflg = 0
-  if not keyword_set(abins) then abins = replicate(1, 16)
-  if not keyword_set(dbins) then dbins = replicate(1, 6)
   if keyword_set(noerase) then oflg = 0 else oflg = 1
   if not keyword_set(scp) then scp = 0. else scp = float(scp[0])
   if (size(thresh,/type) eq 0) then thresh = 0.05
@@ -108,14 +116,26 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
   if (size(fixy,/type) eq 0) then fixy = 1
   if keyword_set(fixy) then fflg = 1 else fflg = 0
   if keyword_set(rainbow) then rflg = 1 else rflg = 0
+  if keyword_set(sec) then dosec = 1 else dosec = 0
+  if keyword_set(bkg) then dobkg = 1 else dobkg = 0
 
   get_data,'alt',data=alt
-  if (size(alt,/type) eq 8) then doalt = 1 else doalt = 0
-  
-  obins = reform(abins # dbins, 96)
-  indx = where(obins eq 1, onorm)
-  omask = replicate(1.,64) # obins
-  onorm = float(onorm)
+  if (size(alt,/type) eq 8) then begin
+    doalt = 1
+    get_data,'sza',data=sza
+    get_data,'lon',data=lon
+    get_data,'lat',data=lat
+  endif else doalt = 0
+
+  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
+  if (n_elements(obins) ne 96) then begin
+    obins = replicate(1B, 96, 2)
+    obins[*,0] = reform(abins # dbins, 96)
+    obins[*,1] = obins[*,0]
+  endif else obins = reform(byte(obins)) # [1B,1B]
+  if (size(mask_sc,/type) eq 0) then mask_sc = 1
+  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
   
   if keyword_set(pot) then dopot = 1 else dopot = 0
   if keyword_set(pepeaks) then dopep = 1 else dopep = 0
@@ -251,16 +271,100 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     if (rflg) then oplot,x,y,psym=psym,color=(nplot mod 6)+1
 
     if (dflg) then begin
-      if (npts gt 1) then ddd = mvn_swe_get3d([tmin,tmax],/all,/sum) $
+      if (npts gt 1) then ddd = mvn_swe_get3d(trange,/all,/sum) $
                      else ddd = mvn_swe_get3d(spec.time)
       mvn_swe_convert_units, ddd, spec.units_name
       dt = min(abs(swe_hsk.time - ddd.time), kref)
+
+      if (ddd.time gt t_mtx[2]) then boom = 1 else boom = 0
+      indx = where(obins[*,boom] eq 1B, onorm)
+      omask = replicate(1.,64) # obins[*,boom]
+      onorm = float(onorm)
+
       spec3d = total(ddd.data*omask,2)/onorm
       oplot,ddd.energy[*,0],spec3d,psym=psym,color=4
     endif
 
+; Secondary electrons produced by primary electron impact inside the instrument.
+; Method from McFadden, adapted from Dave Evans.
+
+    if (dosec) then begin
+      units = spec.units_name
+      odat = conv_units(spec,'crate')
+
+      energy = odat.energy
+      nenergy = odat.nenergy
+      sec_spec = dblarr(nenergy)
+
+      if (scp ne 0.) then pot = scp $
+                     else if (finite(phi)) then pot = phi else pot = 0.
+      kndx = where(energy gt pot)
+      kmax = max(kndx)
+
+      alpha = 1.35
+      Tmax = 2.283
+      Emax = 325.
+      k = 2.2
+      scale = 5.0D
+
+      Vbias = 0.                     ; primaries not passing through exit grid
+      Erat = (energy + Vbias)/Emax   ; effect of V0 cancels when using swe_swp
+      arg = Tmax*(Erat^alpha) < 80.  ; avoid underflow
+
+      delta = (Erat^(1. - alpha))*(1. - exp(-arg))/(1. - exp(-Tmax))
+      eff = scale*(1. - exp(-k*delta))/(1. - exp(-k))
+
+      for k=1,kmax-1 do sec_spec[k:kmax] += eff[k]*odat.data[k]/energy[k:kmax]^2.0
+
+      odat.data = sec_spec
+      sec_dat = conv_units(odat, units)
+      dif_dat = spec
+      dif_dat.data = (spec.data - sec_dat.data) > 1.
+      oplot,sec_dat.energy[kndx],sec_dat.data[kndx],color=5,line=2
+      oplot,dif_dat.energy,dif_dat.data,color=5,psym=10
+    endif
+
+; Background counts resulting from the wings of the energy response function.
+; Empirical: based on fits to solar wind core
+; Experimental.
+
+    if (dobkg) then begin
+      units = spec.units_name
+      odat = conv_units(spec,'crate')
+
+      energy = odat.energy
+      nenergy = odat.nenergy
+
+      if (scp ne 0.) then pot = scp $
+                     else if (finite(phi)) then pot = phi else pot = 0.
+      kndx = where(energy le pot, kcnt)
+
+      if (kcnt gt 0L) then begin
+        bkg_spec = dblarr(nenergy)
+        kmax = nenergy - 1
+
+        scale = 1.5d-1
+
+        for k=1,(nenergy-2) do begin
+          denergy = energy - energy[k]
+          bkg_spec[0:k-1] += scale*odat.data[k]/denergy[0:k-1]^2.0
+          bkg_spec[k+1:kmax] += scale*odat.data[k]/denergy[k+1:kmax]^2.0
+        endfor
+        bkg_spec[kndx] = !values.f_nan
+
+        odat.data = bkg_spec
+        bkg_dat = conv_units(odat, units)
+        dif_dat = spec
+        dif_dat.data = (spec.data - bkg_dat.data) > 1.
+        oplot,bkg_dat.energy,bkg_dat.data,color=5,line=2
+        oplot,dif_dat.energy,dif_dat.data,color=5,psym=10
+      endif
+    endif
+
     if (dopot) then begin
-      if (finite(phi)) then pot = phi else pot = scp
+      if (scp ne 0.) then pot = scp $
+                     else if (finite(phi)) then pot = phi else pot = 0.
+     
       oplot,[pot,pot],yrange,line=2,color=6
     endif
     
@@ -271,8 +375,12 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
     
     if (doalt) then begin
       dt = min(abs(alt.x - spec.time), aref)
-      xyouts,xs,ys,string(alt.y[aref], format='("ALT = ",f6.1)'),charsize=1.2,/norm
+      xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
       ys -= dys
+      if (~mb and ~mom) then begin
+        xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+        ys -= dys
+      endif
     endif
     
     if (mb) then begin
@@ -285,7 +393,9 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       sdev = F1 * (sqrt(sig2)/(cnts > 1.))
 
       p = swe_maxbol()
-      if (finite(phi)) then p.pot = phi else p.pot = scp
+      if (scp ne 0.) then p.pot = scp $
+                     else if (finite(phi)) then p.pot = phi else p.pot = 0.
+
       indx = where(E1 gt 2.*p.pot)
       Fpeak = max(F1[indx],k,/nan)
       Epeak = E1[indx[k]]
@@ -293,6 +403,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
       p.n = Fpeak/(4.*c1*c2*sqrt(p.t)*exp((p.pot/p.t) - 2.))
       Elo = Epeak*0.8 < ((Epeak/2.) > (2.*phi))
       imb = where((E1 gt Elo) and (E1 lt Epeak*3.))
+
+      if (n_elements(erange) gt 1) then begin
+        Emin = min(erange, max=Emax)
+        imb = where((E1 ge Emin) and (E1 le Emax))
+      endif
 
       fit,E1[imb],F1[imb],dy=sdev[imb],func='swe_maxbol',par=p,names='N T',/silent
       
@@ -358,7 +473,16 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
 
       if (scat) then begin
         kndx = where((E1 gt phi) and (E1 lt Epeak), count)
-        if (count gt 0L) then oplot,E1[kndx],(F1[kndx] - swe_maxbol(E1[kndx], par=p)),color=3,psym=10
+        if (count gt 0L) then begin
+          x_scat = E1[kndx]
+          y_scat = F1[kndx] - swe_maxbol(E1[kndx], par=p)
+          kndx = where(E1 le phi, count)
+          if (count gt 0L) then begin
+            x_scat = [x_scat, E1[kndx]]
+            y_scat = [y_scat, F1[kndx]]
+          endif
+          oplot,x_scat,y_scat,color=3,psym=10
+        endif
       endif
     endif
 
@@ -376,7 +500,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, $
         Emin = min(erange, max=Emax)
         j = where((E1 ge Emin) and (E1 le Emax), n_e)
       endif else begin
-        if finite(phi) then pot = phi else pot = scp
+        if (scp ne 0.) then pot = scp $
+                       else if (finite(phi)) then pot = phi else pot = 0.
         j = where(E1 gt pot, n_e)
         j = j[0:(n_e-2)]  ; one channel cushion from s/c potential
         n_e--

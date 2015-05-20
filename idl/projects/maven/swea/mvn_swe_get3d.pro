@@ -26,8 +26,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-13 08:57:44 -0700 (Wed, 13 May 2015) $
-; $LastChangedRevision: 17581 $
+; $LastChangedDate: 2015-05-18 14:43:14 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17641 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -348,10 +348,18 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
 
   endfor
 
-; Adjust MCP efficiency for bias adjustments
+; Apply cross calibration factor.  A new factor is calculated after each 
+; MCP bias adjustment. See mvn_swe_config for these times.  See 
+; mvn_swe_calib for the cross calibration factors.
 
-  indx = where(ddd.time gt t_mcp[0], count)
-  if (count gt 0L) then ddd[indx].eff = ddd[indx].eff * (1.5*0.85)
+  scale = replicate(swe_crosscal[0], 64, 96, npts)
+
+  for i=1,(n_elements(t_mcp)-1) do begin
+    indx = where(ddd.time gt t_mcp[i], count)
+    if (count gt 0L) then scale[*,*,indx] = swe_crosscal[i]
+  endfor
+  
+  ddd.eff /= scale
 
 ; Sum the data.  This is done by summing raw counts corrected by deadtime
 ; and then setting dtc to unity.  Also, note that summed 3D's can be 

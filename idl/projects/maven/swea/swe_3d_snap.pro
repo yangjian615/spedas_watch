@@ -65,11 +65,11 @@
 ;       MASK_SC:       Mask solid angle bins that are blocked by the spacecraft.
 ;
 ;       PLOT_SC:       Draw an outline of the spacecraft as seen from SWEA on 
-;                      the 3D plot.  EXPERIMENTAL - Still debugging.
+;                      the 3D plot.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-19 11:34:01 -0700 (Sun, 19 Apr 2015) $
-; $LastChangedRevision: 17361 $
+; $LastChangedDate: 2015-05-18 14:37:21 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17638 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -79,10 +79,14 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  energy=energy, label=label, smo=smo, symdir=symdir, sundir=sundir, $
                  symenergy=symenergy, symdiag=symdiag, power=pow, map=map, $
                  abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst, $
-                 plot_sc=plot_sc
+                 plot_sc=plot_sc, padmap=padmap
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+
+  a = 0.8
+  phi = findgen(49)*(2.*!pi/49)
+  usersym,a*cos(phi),a*sin(phi),/fill
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if keyword_set(burst) then aflg = 1
@@ -162,15 +166,15 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
     if (i gt 0) then begin
       t = [temporary(t), sun.x]
       xyz_to_polar, sun, theta=th, phi=ph, /ph_0_360
-      the = [temporary(the), th]
-      phi = [temporary(phi), ph]
+      the = [temporary(the), th.y]
+      phi = [temporary(phi), ph.y]
     endif
     get_data,'Sun_MAVEN_SWEA',data=sun,index=i
     if (i gt 0) then begin
       t = [temporary(t), sun.x]
       xyz_to_polar, sun, theta=th, phi=ph, /ph_0_360
-      the = [temporary(the), th]
-      phi = [temporary(phi), ph]
+      the = [temporary(the), th.y]
+      phi = [temporary(phi), ph.y]
     endif
     if (n_elements(t) gt 1) then begin
       sun = {time:t[1L:*], the:the[1L:*], phi:phi[1L:*]}
@@ -245,6 +249,10 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
         ddd.data = reform(dats[*,8:23,*],64,96)
       endif else ddd.data = ddd.data*omask[*,*,boom]
 
+      if keyword_set(padmap) then begin
+        ddat = mvn_swe_pad_resample_map3d(ddd[0])
+        ddd.data = ddat.pa
+      endif
       plot3d_new, ddd, lat, lon, ebins=ebins
     
       if (pflg) then begin
@@ -266,11 +274,11 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
         dt = min(abs(sun.time - mean(ddd.time)),j)
         Saz = sun.phi[j]
         Sel = sun.the[j]
-        if (abs(Sel) gt 61.) then col=255 else col=0
-        oplot,[Saz],[Sel],psym=6,color=col,thick=2,symsize=1.2
-        Saz = (Saz + 180.) mod 360.
-        Sel = -Sel
-        oplot,[Saz],[Sel],psym=7,color=col,thick=2,symsize=1.2
+        if (abs(Sel) gt 61.) then col=!p.color else col=!p.color
+        oplot,[Saz],[Sel],psym=8,color=5,thick=2,symsize=2.0
+;        Saz = (Saz + 180.) mod 360.
+;        Sel = -Sel
+;        oplot,[Saz],[Sel],psym=7,color=col,thick=2,symsize=1.2
       endif
       
       if keyword_set(symdir) then begin

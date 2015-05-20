@@ -16,8 +16,8 @@
 ;       UNITS:    Convert data to these units.  Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-11 13:06:00 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17557 $
+; $LastChangedDate: 2015-05-18 14:43:14 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17641 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makespec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -95,10 +95,18 @@ pro mvn_swe_makespec, sum=sum, units=units
     
     mvn_swe_engy.dtc = dtc                    ; corrected count rate = rate/dtc
 
-; Adjust MCP efficiency for bias increases
+; Apply cross calibration factor.  A new factor is calculated after each 
+; MCP bias adjustment. See mvn_swe_config for these times.  See 
+; mvn_swe_calib for the cross calibration factors.
 
-  indx = where(mvn_swe_engy.time gt t_mcp[0], count)
-  if (count gt 0L) then mvn_swe_engy[indx].eff = mvn_swe_engy[indx].eff * (1.5*0.85)
+    scale = replicate(swe_crosscal[0], 64, npts)
+
+    for i=1,(n_elements(t_mcp)-1) do begin
+      indx = where(mvn_swe_engy.time gt t_mcp[i], count)
+      if (count gt 0L) then scale[*,indx] = swe_crosscal[i]
+    endfor
+
+    mvn_swe_engy.eff /= scale
 
 ; Electron rest mass [eV/(km/s)^2]
 
@@ -172,10 +180,18 @@ pro mvn_swe_makespec, sum=sum, units=units
     
     mvn_swe_engy_arc.dtc = dtc                ; corrected count rate = rate/dtc
 
-; Adjust MCP efficiency for bias increases
+; Apply cross calibration factor.  A new factor is calculated after each 
+; MCP bias adjustment. See mvn_swe_config for these times.  See 
+; mvn_swe_calib for the cross calibration factors.
 
-    indx = where(mvn_swe_engy_arc.time gt t_mcp[0], count)
-    if (count gt 0L) then mvn_swe_engy_arc[indx].eff = mvn_swe_engy_arc[indx].eff * (1.5*0.85)
+    scale = replicate(swe_crosscal[0], 64, npts)
+
+    for i=1,(n_elements(t_mcp)-1) do begin
+      indx = where(mvn_swe_engy_arc.time gt t_mcp[i], count)
+      if (count gt 0L) then scale[*,indx] = swe_crosscal[i]
+    endfor
+  
+    mvn_swe_engy_arc.eff /= scale
 
 ; Electron rest mass [eV/(km/s)^2]
 

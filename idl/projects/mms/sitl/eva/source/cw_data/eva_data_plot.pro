@@ -16,7 +16,6 @@ PRO eva_data_plot, wid
   plst_STL = wid.paramlist_stlm
   OPOD     = wid.OPOD; One Probe One Display = separate windows
   SORT_BY_VARIABLE = wid.SRTV
-
   
   if OPOD then begin; separate windows
     ;------------------------
@@ -63,7 +62,7 @@ PRO eva_data_plot, wid
       if strpos(vmst[i],'mms*') eq 0 then begin; if 'mms*' found
         match=1
         for p=0,pmax_MMS-1 do begin
-          vars = [vars, wid.probelist_mms[p]+strmid(vmst[i],3,1000)]; replace * with probe name
+          vars = [vars, wid.probelist_mms[p]+strmid(vmst[i],4,1000)]; replace * with probe name
         endfor
       endif
       if match eq 0 then begin

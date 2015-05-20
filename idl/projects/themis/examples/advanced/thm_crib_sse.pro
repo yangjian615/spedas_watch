@@ -5,6 +5,9 @@
 ;Purpose:
 ;  A crib showing how to transform data from GSE to SSE coordinate system. 
 ;
+;See also:
+;  thm_crib_cotrans
+;
 ;Notes:
 ;  -Code heavily based on make_mat_Rxy.pro & transform_gsm_to_rxy.pro 
 ;   by Christine Gabrielse(cgabrielse@ucla.edu)
@@ -15,8 +18,8 @@
 ;
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-05-14 17:01:41 -0700 (Thu, 14 May 2015) $
-; $LastChangedRevision: 17619 $
+; $LastChangedDate: 2015-05-18 16:11:30 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17643 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_sse.pro $
 ;-
 
@@ -29,11 +32,13 @@ probe = 'a'
 
 timespan,'2008-03-23'
 
+;load solar/lunar position data
 thm_load_slp
 
 cotrans,'slp_sun_pos','slp_sun_pos_gse',/gei2gse
 cotrans,'slp_lun_pos','slp_lun_pos_gse',/gei2gse
 
+;create series of rotation matrices
 sse_matrix_make,'slp_sun_pos_gse','slp_lun_pos_gse',newname='sse_mat'
 
 ;load fgm data to be transformed
@@ -47,10 +52,13 @@ thm_load_state,probe=probe
 ; Simple rotation
 ;==================================================
 
-;because fgm data is not specified relative to the coordinate system's frame of reference
-;transformation is rotational only
+;because fgm data is not specified relative to the coordinate system's
+;frame of reference the transformation is rotational only
 tvector_rotate,'sse_mat','th'+probe+'_fgl_gse'
 
+;data appears identical as the gse -> sse rotation is very small
+;use get_data or check in GUI to verify numerically
+options, 'th'+probe+'_fgl_gse_rot', ytitle='th'+probe+'_fgl_sse', ysubtitle='[nt SSE]'
 tplot,['th'+probe+'_fgl_gse','th'+probe+'_fgl_gse_rot']
 
 stop
@@ -62,7 +70,8 @@ stop
 
 tvector_rotate,'sse_mat','th'+probe+'_fgl_gse_rot',newname='th'+probe+'_fgl_gse_inv',/invert
 
-tplot,['th'+probe+'_fgl_gse','th'+probe+'_fgl_gse_inv','th'+probe+'_fgl_gse_rot']
+options, 'th'+probe+'_fgl_gse_inv', ytitle='th'+probe+'_fgl_gse_inv', ysubtitle='[nt GSE]'
+tplot, 'th'+probe+'_fgl_gse' + ['','_inv','_rot']
 
 stop
 
@@ -86,7 +95,8 @@ calc,'"th'+probe+'_state_pos_sub"="th'+probe+'_state_pos"-"slp_lun_pos_gse_inter
 ;last perform the rotational component of the transformation.
 tvector_rotate,'sse_mat','th'+probe+'_state_pos_sub',newname='th'+probe+'_state_pos_sse'
 
-tplot, '*_state_pos*'
+options, 'th'+probe+'_state_pos_sse', ytitle='pos SSE', ysubtitle='[km]'
+tplot, 'th'+probe+'_state_pos' + ['','_sse']
 
 stop
 
@@ -121,7 +131,8 @@ calc,'"th'+probe+'_state_vel_sub"="th'+probe+'_state_vel"-"slp_lun_vel_gse_inter
 ;finally rotate the data into the new coordinate system
 tvector_rotate,'sse_mat','th'+probe+'_state_vel_sub',newname='th'+probe+'_state_vel_sse'
 
-tplot, '*_state_vel*'
+options, 'th'+probe+'_state_vel_sse', ytitle='vel SSE', ysubtitle='[km/s]'
+tplot, 'th'+probe+'_state_vel' + ['','_sse']
 
 stop
 
@@ -135,7 +146,8 @@ tvector_rotate,'sse_mat','th'+probe+'_state_vel_sse',newname='th'+probe+'_state_
 
 calc,'"th'+probe+'_state_vel_sse_inv"="th'+probe+'_state_vel_sub_inv"+"slp_lun_vel_gse_interp"',/verbose
 
-tplot, '*_state_vel*'
+tplot, 'th'+probe+'_state_vel' + ['','_sse_inv','_sse']
+
 
 stop
 

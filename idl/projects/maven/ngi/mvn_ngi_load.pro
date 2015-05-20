@@ -25,8 +25,8 @@
 ;       Use 'mvn_ngi_read_csv' to load ql data
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-04-08 09:59:17 -0700 (Wed, 08 Apr 2015) $
-; $LastChangedRevision: 17251 $
+; $LastChangedDate: 2015-05-18 20:44:38 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17647 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_load.pro $
 ;-
 
@@ -39,15 +39,26 @@ pro mvn_ngi_load, trange=trange, filetype=filetype, verbose=verbose, _extra=_ext
 
 ;- retrieve files
      if ~keyword_set(files) then begin
-        pformat = 'maven/data/sci/ngi/l2/YYYY/MM/mvn_ngi_l2_'+filetype[i_filetype]+'-abund-*_YYYYMMDD?hh????_v??_r??.csv'
-        f = mvn_pfp_file_retrieve(pformat,/hourly_names,/last_version,/valid_only,trange=trange,verbose=verbose, _extra=_extra)
+        pformat = 'maven/data/sci/ngi/l2/YYYY/MM/mvn_ngi_l2_'+filetype[i_filetype]+'-abund-*_YYYYMMDDthh????_v??_r??.csv'
+        f1 = mvn_pfp_file_retrieve(pformat,/hourly_names,/last_version,/valid_only,trange=trange,verbose=verbose, _extra=_extra)
+        pformat = 'maven/data/sci/ngi/l2/YYYY/MM/mvn_ngi_l2_'+filetype[i_filetype]+'-abund-*_YYYYMMDDThh????_v??_r??.csv' ;- cope w/ loose naming convention (which makes this code unnecessarily complicated! grrrrrr.....)
+        f2 = mvn_pfp_file_retrieve(pformat,/hourly_names,/last_version,/valid_only,trange=trange,verbose=verbose, _extra=_extra)
+        if total(strlen(f1)) eq 0 and total(strlen(f2)) ne 0 then f = f2 $
+        else if total(strlen(f1)) ne 0 and total(strlen(f2)) eq 0 then f = f1 $
+        else if total(strlen(f1))+total(strlen(f2)) ne 0 then begin
+           ftmp = [f1,f2]                      ;- input files that have mixed, case-sensitive names
+           ftmp = ftmp[sort(strlowcase(ftmp))] ;- case-insensitively sort in alphabetical order
+           prefnames = strmid(ftmp,0,strpos(ftmp[0],'_v')) ;- assuming all files have the same case-insensitive format
+           lastidx = uniq(strlowcase(prefnames))           ;- case-insensitively select the latest version
+           f = ftmp[lastidx]
+        endif else f = ''
      endif else begin ;- local files
         w = where( strmatch(files,'*'+filetype[i_filetype]+'*',/fold_case) eq 1, nw )
         if nw gt 0 then begin
-           ftmp = files[w]
-           ftmp = ftmp[sort(strlowcase(ftmp))] ;- sort in alphabetical order
-           prefnames = strmid(ftmp,0,strpos(ftmp[0],'_v')) ;- assuming all files have the same format
-           lastidx = uniq(strlowcase(prefnames)) ;- select the latest version
+           ftmp = files[w]                     ;- input files that possibly have mixed, case-sensitive names
+           ftmp = ftmp[sort(strlowcase(ftmp))] ;- case-insensitively sort in alphabetical order
+           prefnames = strmid(ftmp,0,strpos(ftmp[0],'_v')) ;- assuming all files have the same case-insensitive format
+           lastidx = uniq(strlowcase(prefnames)) ;- case-insensitively select the latest version
            f = ftmp[lastidx]
         endif else f = ''
      endelse

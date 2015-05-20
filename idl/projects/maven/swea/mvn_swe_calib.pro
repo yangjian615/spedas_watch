@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-11 11:32:11 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17550 $
+; $LastChangedDate: 2015-05-18 17:02:50 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17645 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -238,16 +238,28 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 ;   deceleration of the incoming electrons effectively reduces the geometric
 ;   factor in an energy dependent manner (see mvn_swe_sweep for details).
 ;   This geometric factor includes the absolute MCP efficiency, since it is 
-;   based on analyzer measurements in a calibrated beam.
+;   based on analyzer measurements in a calibrated beam.  This geometric factor
+;   does not take into account cross calibration with SWIA, STATIC, and LPW.
 
   geom_factor = 0.009/16.            ; geometric factor per anode (cm2-ster-eV/eV)
-  geom_factor = geom_factor/2.9      ; scale factor from cruise
 
   swe_gf = replicate(!values.f_nan,64,3)
 
   swe_gf[*,0] = geom_factor*swp.gfw
   for i=0,31 do swe_gf[(2*i):(2*i+1),1] = (swe_gf[(2*i),0] + swe_gf[(2*i+1),0])/2.
   for i=0,15 do swe_gf[(4*i):(4*i+3),2] = (swe_gf[(4*i),1] + swe_gf[(4*i+3),1])/2.
+
+; Correction factor from cross calibration with SWIA in the solar wind or sheath.
+; This factor changes whenever an MCP bias correction is made.  The times of
+; these corrections are recorded in mvn_swe_config.
+;
+;     Factor		Calib. Date                    Note
+;   ---------------------------------------------------------------------------------
+;      2.585        2014-10-14/12:10 to 13:50      S/C in sun point (rare in trans.)
+;      2.275        2014-12-21                     Steady solar wind; S/C sun point
+;
+
+  swe_crosscal = [2.585, 2.275]
 
 ; Add a dimension for relative variation among the 16 anodes.  This variation is
 ; dominated by the MCP efficiency, but I include the same dimension here for ease

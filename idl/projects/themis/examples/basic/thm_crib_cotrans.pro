@@ -20,9 +20,9 @@
 ;    examples/advanced/thm_crib_slp_sse.pro (selenocentric coordinate systems)
 ;    
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-11-17 12:29:10 -0800 (Mon, 17 Nov 2014) $
-; $LastChangedRevision: 16201 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-05-18 16:12:17 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17644 $
 ; $URL $
 ;-
 
@@ -75,6 +75,12 @@ help, dl, /struc
 help, dl.data_att, /struc
 print, 'Above is an example of the updated tplot variable coordinate sytem 
 print, ' ' 
+
+; This shows a list of supported coordinate systems for thm_cotrans
+coordSysObj = obj_new('thm_ui_coordinate_systems')
+print, 'Supported coordinate systems:  '
+print, coordSysObj->makeCoordSysList()
+print, ' '
 
 ; Plot results
 tplot, ['tha_fgl_raw', 'tha_fgl_ssl', 'tha_fgl_dsl', 'tha_fgl_gse','tha_fgl_gsm']

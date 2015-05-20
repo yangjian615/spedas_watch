@@ -58,8 +58,8 @@
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-10 10:15:36 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17292 $
+; $LastChangedDate: 2015-05-18 14:40:28 -0700 (Mon, 18 May 2015) $
+; $LastChangedRevision: 17640 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -863,19 +863,19 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   if keyword_set(lut) then begin
     nhsk = n_elements(swe_hsk)
     lutnum = swe_hsk.ssctl
-    chksum = bytarr(nhsk)
+    tabnum = replicate(0B,nhsk)
     
-    for i=0L,(nhsk-1L) do chksum[i] = swe_hsk[i].chksum[lutnum[i] < 3]
+    for i=0L,(nhsk-1L) do tabnum[i] = mvn_swe_tabnum(swe_hsk[i].chksum[lutnum[i] < 3])
     indx = where(lutnum gt 3, count)
-    if (count gt 0L) then chksum[indx] = 'FF'XB  ; table load during turn-on
+    if (count gt 0L) then tabnum[indx] = 0  ; table load during turn-on
 
-    store_data,'CHKSUM',data={x:swe_hsk.time, y:chksum}
-    ylim,'CHKSUM',0,256,0
-    options,'CHKSUM','ytitle','LUT'
-    options,'CHKSUM','yticks',4
-    options,'CHKSUM','yminor',4
-    options,'CHKSUM','psym',10
-    pans = [pans, 'CHKSUM']
+    store_data,'TABNUM',data={x:swe_hsk.time, y:tabnum}
+    ylim,'TABNUM',0,8,0
+    options,'TABNUM','panel_size',0.5
+    options,'TABNUM','yminor',1
+    options,'TABNUM','ytitle','SWE LUT'
+    options,'TABNUM','psym',10
+    pans = [pans, 'TABNUM']
   endif
   
   if keyword_set(SIFCTL) then begin
