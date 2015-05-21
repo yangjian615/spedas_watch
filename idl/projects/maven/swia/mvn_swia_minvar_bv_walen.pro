@@ -22,8 +22,8 @@
 ;AUTHOR:	J. Halekas	& Yuki Harada (Walen test)
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-04-29 11:43:04 -0700 (Wed, 29 Apr 2015) $
-; $LastChangedRevision: 17448 $
+; $LastChangedDate: 2015-05-19 09:16:30 -0700 (Tue, 19 May 2015) $
+; $LastChangedRevision: 17648 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_minvar_bv_walen.pro $
 ;
 ;-
@@ -66,7 +66,7 @@ tvminv = vel.x                  ;- for Walen
 
 
 ;- Walen test
-get_data,'mvn_swim_density',data=ddens
+get_data,ndata,data=ddens
 dens = interp( ddens.y, ddens.x, tbminv ,/no_ex)
 nt = n_elements(tbminv)
 v0 = [ interp(vminv[*,0],tvminv,tbminv[0], /no_ex), $

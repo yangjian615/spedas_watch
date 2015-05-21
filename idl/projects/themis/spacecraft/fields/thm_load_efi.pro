@@ -51,8 +51,8 @@
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;  Added _extra keyword to ease the passing of keywords to thm_cal_efi
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-; $LastChangedRevision: 17433 $
+; $LastChangedDate: 2015-05-19 14:26:27 -0700 (Tue, 19 May 2015) $
+; $LastChangedRevision: 17650 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi.pro $
 ;-
 
@@ -68,28 +68,34 @@ pro thm_load_efi, probe = probe, datatype = datatype, trange = trange, $
                   onthefly_edc_offset = onthefly_edc_offset, $
                   _extra = _extra
 
-  ; Make sure SUFFIX is an array (and not just a space-separated list), and make lower case:
-  ;
+
+  thm_init
+
+  ; Make sure SUFFIX is an array (and not just a space-separated list),
+  ; and make lower case:
   if keyword_set(suffix) then begin
     if n_elements(suffix) eq 1 then begin
       suffix = strsplit(strlowcase(suffix), ' ', /extract)
     endif else begin
       suffix = strlowcase(suffix)
     endelse
-  endif
+  endif else begin
+    suffix = ''
+  endelse
 
-if n_elements(use_eclipse_corrections) LT 1 then begin
-   ; Eclipse corrections default to disabled for now.
-   use_eclipse_corrections = 0
-end
+  ;no eclipse correction by default
+  if undefined(use_eclipse_corrections) then begin
+    use_eclipse_corrections = 0
+  end
 
-  thm_init
-; If verbose keyword is defined, override !themis.verbose
-  vb = size(verbose, /type) ne 0 ? verbose : !themis.verbose
-  if not keyword_set(suffix) then suffix=''
+  ;check !themis for undefined options
+  vb = undefined(verbose) ? !themis.verbose : verbose
+  downloadonly = undefined(downloadonly) ? !themis.downloadonly : downloadonly 
+
+  ;expected behavior appears to be that this overrides defaults
   if arg_present(relpathnames_all) then begin
-     downloadonly=1
-     no_download=1
+    downloadonly=1
+    no_download=1
   end
 
   vl1datatypes = ['vaf', 'vap', 'vaw', 'vbf', 'vbp', 'vbw', $

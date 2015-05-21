@@ -65,8 +65,8 @@
 ;  This routine is (should be) platform independent.
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-; $LastChangedRevision: 17433 $
+; $LastChangedDate: 2015-05-19 14:26:27 -0700 (Tue, 19 May 2015) $
+; $LastChangedRevision: 17650 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_load_xxx.pro $
 ;-
 
@@ -207,10 +207,16 @@ pro thm_load_xxx, sname = sname, datatype = datatype, trange = trange, $
     my_themis.no_download = 0
     files = spd_download(remote_file=relpathnames_all, _extra = my_themis)
   endif
-  if keyword_set(downloadonly) then begin
+
+  ;there appear to be mulitple copies of this and other settings 
+  ;in my_themis, load_params, & specific keywords - these should
+  ;be sorted out more explicitly, but for now I'm copying
+  ;the logic of the no_download implementation above
+  if load_params.downloadonly || keyword_set(downloadonly) then begin
     ptr_free, files_ptrarr
     return
   endif
+
 ;load data into tplot variables  loop over all snames, levels and datatypes
 
   for k = 0, nlvls-1 do $

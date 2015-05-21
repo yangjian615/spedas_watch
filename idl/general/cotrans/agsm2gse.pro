@@ -45,8 +45,8 @@
 ;    
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-04-30 13:42:53 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17457 $
+; $LastChangedDate: 2015-05-19 15:55:02 -0700 (Tue, 19 May 2015) $
+; $LastChangedRevision: 17652 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/agsm2gse.pro $
 ;-
 pro agsm2gse, data_in, data_out, sw_velocity = sw_velocity, rotation_angle = rotation_angle
@@ -87,7 +87,9 @@ pro agsm2gse, data_in, data_out, sw_velocity = sw_velocity, rotation_angle = rot
         ; user provided the solar wind velocity
         ; rotation angle about Z-GSE axis
         ; assumes Earth's orbital velocity relative to the sun is ~30km/s
-        rot_y = atan((float(sw_velocity[*,1])+30.)/abs(float(sw_velocity[*,0])))
+        avg_sw_y = average(sw_velocity[*,1])
+        avg_sw_x = average(sw_velocity[*,0])
+        rot_y = atan((float(avg_sw_y)+30.)/abs(float(avg_sw_x)))
     endif else begin
         ; the user did not provide a rotation angle or solar wind velocity
         dprint, dlevel = 1, 'Error converting between aGSE and GSE coordinates - no rotation angle provided'

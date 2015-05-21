@@ -60,8 +60,8 @@
 ;
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedDate: 2015-05-19 14:26:27 -0700 (Tue, 19 May 2015) $
+; $LastChangedRevision: 17650 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
@@ -603,6 +603,11 @@ if lvl eq 'l2' and keyword_set(type) then begin
    dprint,dlevel=0,"Type keyword not valid for level 2 data."
    return
 endif
+
+;grab downloadonly flag from !themis structure
+if undefined(downloadonly) then begin
+  downloadonly = !themis.downloadonly
+endif 
 
 if keyword_set(type) && ~keyword_set(raw) then begin ;if type is set to 'raw' then set the raw keyword
   if strcompress(/remove_all, strlowcase(type)) Eq 'raw' then raw = 1b else raw = 0b
