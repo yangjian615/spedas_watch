@@ -68,8 +68,8 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-10 10:13:04 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17290 $
+; $LastChangedDate: 2015-05-20 13:09:56 -0700 (Wed, 20 May 2015) $
+; $LastChangedRevision: 17656 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -310,12 +310,14 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
     ylim,'swe_a4_pot',3,5000,1
 
     tplot_options, get=opt
-    i = (where(opt.varnames eq 'swe_a4'))[0]
-    if (i ne -1) then opt.varnames[i] = 'swe_a4_pot'
-    i = (where(opt.varnames eq 'swe_a4_pot'))[0]
-    if (i eq -1) then opt.varnames = [opt.varnames, 'swe_a4_pot']
-
-    tplot, opt.varnames
+    str_element, opt, 'varnames', varnames, success=ok
+    if (ok) then begin
+      i = (where(varnames eq 'swe_a4'))[0]
+      if (i ne -1) then begin
+        varnames[i] = 'swe_a4_pot'
+        tplot, varnames
+      endif
+    endif
   endif
 
   return

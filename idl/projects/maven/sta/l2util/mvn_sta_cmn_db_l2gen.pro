@@ -38,8 +38,8 @@
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; 22-Dec-2014, jmm, Added eprom_ver, header
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-30 13:38:25 -0800 (Fri, 30 Jan 2015) $
-; $LastChangedRevision: 16798 $
+; $LastChangedDate: 2015-05-20 21:41:21 -0700 (Wed, 20 May 2015) $
+; $LastChangedRevision: 17660 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_db_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -335,7 +335,7 @@ Pro mvn_sta_cmn_db_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
               dvar = num_dists
            End        
            'nswp': Begin
-              dvar = fix(n_elements(uniq(cmn_dat.swp_ind)))
+              dvar = fix(21)
            End
            'ntof': Begin
               dvar = fix(n_elements(cmn_dat.tof))

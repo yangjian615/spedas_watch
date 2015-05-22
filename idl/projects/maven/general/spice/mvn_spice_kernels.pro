@@ -21,8 +21,8 @@
 ; 
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-01-14 19:18:36 -0800 (Wed, 14 Jan 2015) $
-; $LastChangedRevision: 16654 $
+; $LastChangedDate: 2015-05-20 17:39:00 -0700 (Wed, 20 May 2015) $
+; $LastChangedRevision: 17659 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear,reconstruct=reconstruct
@@ -74,17 +74,22 @@ if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
      'SPK':  begin     ; Spacecraft position   
                tr= timerange(trange)   ; + [-1,1] * 3600d*24
                ;   load if (tr[0] lt trf[1]) && (tr[1] gt trf[0])
-               if (tr[1] ge time_double('2013-11-18')) && (tr[0] le time_double('2014-08-11'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_131118-140811_rec_v?.bsp',_extra=source)  
-               if keyword_set(reconstruct) then begin
-                  append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb_rec.bsp',_extra=source)   
-;                  if (tr[1] ge mvn_orbit_num(orbnum=1))   && (tr[0] le mvn_orbit_num(orbnum=83))   then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00001-00083_rec_v?.bsp',_extra=source)
-;                  if (tr[1] ge mvn_orbit_num(orbnum=82))  && (tr[0] le mvn_orbit_num(orbnum=120))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00082-00120_rec_v?.bsp',_extra=source)
-;                  if (tr[1] ge mvn_orbit_num(orbnum=119)) && (tr[0] le mvn_orbit_num(orbnum=183))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00119-00183_rec_v?.bsp',_extra=source)
-               endif else begin
-                  if (tr[1] ge time_double('2014-07-08')) && (tr[0] le time_double('2014-09-22'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_od030b_140708-140927_plm1-10.0_final_v1.bsp',_extra=source)
-                  append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb.bsp',_extra=source)    
-                  append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb_rec.bsp',_extra=source)   
-               endelse
+;               if (tr[1] ge time_double('2013-11-18')) && (tr[0] le time_double('2014-08-11'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_131118-140811_rec_v?.bsp',_extra=source)    ; file now missing!
+               if (tr[1] ge time_double('2013-11-18')) && (tr[0] le time_double('2014-09-23'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_131118-140923_rec_v?.bsp',_extra=source)
+               if (tr[1] ge time_double('2014-09-22')) && (tr[0] le time_double('2015-01-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_140922_150101_v1.bsp',_extra=source)
+               if (tr[1] ge time_double('2015-01-01')) && (tr[0] le time_double('2015-04-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_150101_150401_v1.bsp',_extra=source)
+               if (tr[1] ge time_double('2015-04-01')) && (tr[0] le time_double('2035-04-01'))  then begin
+                 if keyword_set(reconstruct) then begin
+                   append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb_rec.bsp',_extra=source)   
+;                    if (tr[1] ge mvn_orbit_num(orbnum=1))   && (tr[0] le mvn_orbit_num(orbnum=83))   then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00001-00083_rec_v?.bsp',_extra=source)
+;                    if (tr[1] ge mvn_orbit_num(orbnum=82))  && (tr[0] le mvn_orbit_num(orbnum=120))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00082-00120_rec_v?.bsp',_extra=source)
+;                    if (tr[1] ge mvn_orbit_num(orbnum=119)) && (tr[0] le mvn_orbit_num(orbnum=183))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00119-00183_rec_v?.bsp',_extra=source)
+                 endif else begin
+;                     if (tr[1] ge time_double('2014-07-08')) && (tr[0] le time_double('2014-09-22'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_od030b_140708-140927_plm1-10.0_final_v1.bsp',_extra=source)  ; file now missing!
+                     append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb.bsp',_extra=source)    
+                     append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb_rec.bsp',_extra=source)   
+                 endelse
+               endif
              end
      'CK':  begin      ; Spacecraft Attitude  (CK)
        tr= timerange(trange)
