@@ -19,12 +19,14 @@
 ;		dif	       = e.g., 'thg_pseudoAE
 ;		avg	       = average values
 ;       med        = median values
+;       output_names: an array that stores the tplot variable names created 
+;                     by this routine
 ;
 ;	Example:
 ; 		superpo_histo,'thg_mag_ccnv_x thg_mag_drby_x thg_mag_fsim_x
 ;				       thg_mag_fsmi_x thg_mag_fykn_x',
 ;			           min='thg_pseudoAL',avg='thg_avg'
-;					   res=600.0,
+;					   res=600.0
 ;
 ;		superpo_histo,'thg_mag_????_x',min='thg_pseudoAL', res=30.0
 ;
@@ -45,7 +47,8 @@
 ;-
 
 
-pro superpo_histo, quantities,res=res,min=min,max=max,dif=dif,avg=avg,med=med,extra=_extra ;, _ref_extra = _ref_extra
+pro superpo_histo, quantities,res=res,min=min,max=max,dif=dif,avg=avg,med=med,$
+                   output_names=output_names,_extra=_extra ;, _ref_extra = _ref_extra
 
 ;#######################################################
 ;               initialize variables
@@ -150,11 +153,24 @@ endfor
 ;               create tplot variables
 ;#######################################################
 
-if keyword_set(min) then store_data,min,data={x:t,y:min_array}
-if keyword_set(max) then store_data,max,data={x:t,y:max_array}
-if keyword_set(dif) then store_data,dif,data={x:t,y:dif_array}
-if keyword_set(avg) then store_data,avg,data={x:t,y:avg_array}
-if keyword_set(med) then store_data,med,data={x:t,y:med_array}
-
-
+if keyword_set(min) then begin
+    store_data,min,data={x:t,y:min_array}
+    append_array, output_names, min
+endif
+if keyword_set(max) then begin
+    store_data,max,data={x:t,y:max_array}
+    append_array, output_names, max
+endif
+if keyword_set(dif) then begin
+    store_data,dif,data={x:t,y:dif_array}
+    append_array, output_names, dif
+endif
+if keyword_set(avg) then begin 
+    store_data,avg,data={x:t,y:avg_array}
+    append_array, output_names, avg
+endif
+if keyword_set(med) then begin
+    store_data,med,data={x:t,y:med_array}
+    append_array, output_names, med
+endif
 end

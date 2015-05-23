@@ -29,7 +29,7 @@ if (systime(1) - time_cached) gt 3600 then begin   ; generate no more than once 
   alldat = 0
   if ~keyword_set(source) then source = spice_file_source(preserve_mtime=1,verbose=verbose,ignore_filesize=1)
   dprint,dlevel=2,verbose=verbose,'Checking server: ' +source.remote_data_dir+' for new orbit file.'
-  if ~keyword_set(filename) then filename = file_retrieve('MAVEN/kernels/spk/maven_orb.orb',_extra=source)
+  if ~keyword_set(filename) then filename = file_retrieve('MAVEN/kernels/spk/maven_orb.orb.long',_extra=source)
   openr,lun,filename,/get_lun
   i=0L
   MOI_time = time_double('2014-9-22/02:06')        ; this is only approximate!

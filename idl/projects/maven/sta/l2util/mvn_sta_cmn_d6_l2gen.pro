@@ -49,12 +49,15 @@
 ;HISTORY:
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-30 13:38:25 -0800 (Fri, 30 Jan 2015) $
-; $LastChangedRevision: 16798 $
+; $LastChangedDate: 2015-05-21 12:52:38 -0700 (Thu, 21 May 2015) $
+; $LastChangedRevision: 17668 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_d6_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
                           no_compression = no_compression, _extra = _extra
+
+;Need to keep track of spice kernels
+  common mvn_spc_met_to_unixtime_com, cor_clkdrift, icy_installed, kernel_verified, time_verified, sclk, tls
 
 ;Keep track of software versioning here
   sw_vsn = mvn_sta_current_sw_version()
@@ -89,6 +92,8 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
                 PDS_sclk_stop_count:0.0d0, $
                 PDS_start_time:'YYYY-MM-DDThh:mm:ss.sssZ', $
                 PDS_stop_time:'YYYY-MM-DDThh:mm:ss.sssZ', $
+                Spacecraft_clock_kernel:'', $
+                Leapseconds_kernel:'', $
                 Planet:'Mars', $
                 Project:'MAVEN', $
                 Rules_of_use:'Open Data for Scientific Use' , $
@@ -414,6 +419,9 @@ Pro mvn_sta_cmn_d6_l2gen, cmn_dat, otp_struct = otp_struct, directory = director
   global_att.PDS_sclk_stop_count = pds_sclk1
   global_att.PDS_start_time = pds_time[0]
   global_att.PDS_stop_time = pds_time[1]
+;save kernel values
+  If(is_string(sclk)) Then global_att.Spacecraft_clock_kernel = sclk[0]
+  If(is_string(tls)) Then global_att.Leapseconds_kernel = tls[0]
 
   otp_struct = {filename:'', g_attributes:global_att, inq:inq, nv:nvars, vars:vstr}
 
