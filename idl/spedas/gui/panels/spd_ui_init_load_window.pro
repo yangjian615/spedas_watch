@@ -25,9 +25,9 @@
 ;  none
 ; 
 ;HISTORY:
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-04-30 12:05:01 -0700 (Thu, 30 Apr 2015) $
-;$LastChangedRevision: 17455 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-05-22 10:59:17 -0700 (Fri, 22 May 2015) $
+;$LastChangedRevision: 17673 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/panels/spd_ui_init_load_window.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -215,6 +215,7 @@ pro spd_ui_init_load_window_event, event
    
   
     state.previousTab = tab
+    (*state.userSelectPtr).panelID = tab
     
     Widget_Control, event.TOP, Set_UValue=state, /No_Copy
     return
@@ -279,7 +280,15 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
      
   bottomBase = widget_base(tlb, /Col, YPad=6, /Align_Left)
   
-  widget_control, tabBase, set_tab_current=0
+  ; the following struct saves information on the currently selected panel
+  ; so that the correct panel is restored on reopening the load data window
+  userSelectStruct = {panelID: 0}
+   
+  if ~ptr_valid(userSelectPtr) then begin
+    userSelectPtr = ptr_new(userSelectStruct)
+  endif
+  
+  widget_control, tabBase, set_tab_current=(*userSelectPtr).panelID
     
   ; Create Status Bar Object
   okButton = Widget_Button(bottomBase, Value='Done', XSize=75, uValue='DISMISS', $
@@ -291,17 +300,16 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
   windowStorage->getProperty, callSequence=callSequence
   
   ;At the moment, this saves user preferences only for the main SPEDAS load window.  
-  userSelectStruct = $
-    {inst:-1,$
-     coord:-1,$
-     observPtr:ptr_new(-1),$
-     level1Ptr:ptr_new(-1),$
-     level2Ptr:ptr_new(-1),$
-     uncalibrated:0}
-   
-  if ~ptr_valid(userSelectPtr) then begin
-    userSelectPtr = ptr_new(userSelectStruct)
-  endif
+  ; commented out after load data plugins were added since the ordering of 
+  ; tabs in this panel is dependent on the plugin file names. We're now using a 
+  ; struct with a similar name to persist tab # throughout a SPEDAS session
+;  userSelectStruct = $
+;    {inst:-1,$
+;     coord:-1,$
+;     observPtr:ptr_new(-1),$
+;     level1Ptr:ptr_new(-1),$
+;     level2Ptr:ptr_new(-1),$
+;     uncalibrated:0}
 
   treeArray = objarr(tabNum)
   timeArray = lonarr(tabNum)
@@ -317,7 +325,7 @@ pro spd_ui_init_load_window, gui_id, windowStorage, loadedData, historyWin, $
   endfor     
   
   tabTitleText=loadDataTabs.panel_title
-                   
+
   state = {tlb:tlb, gui_id:gui_id,tabBase:tabBase, historyWin:historyWin, statusText:statusText,treeArray:treeArray,$
         timeArray:timeArray,tabArray:tabArray,treeCopyPtr:treeCopyPtr,previousTab:0,tabTitleText:tabTitleText, userSelectPtr:userSelectPtr}
 

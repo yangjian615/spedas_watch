@@ -284,7 +284,7 @@ function spp_swp_spanai_slow_hkp_decom_version_64x,ccsds , ptp_header=ptp_header
 
   sf0 = ccsds.data[11] and 3
   if sf0 ne 0 then dprint, 'Odd time at: ',time_string(ccsds.time)
-  ref = 5. ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
+  ref = 4. ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
 n=0
 
   temp_par= spp_sweap_therm_temp()
@@ -346,6 +346,9 @@ n=0
   return,spai
 
 end
+
+
+
 
 
 function spp_log_message_decom,ccsds, ptp_header=ptp_header, apdat=apdat
@@ -471,7 +474,7 @@ end
 
 pro spp_swp_apid_data_init,save=save
 
-if 1 then begin
+if 0 then begin
   spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom_version_50x',tname='spp_spanai_hkp_',tfields='*',save=save
   spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_50x',tname='spp_spanai_rates_',tfields='*',save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save

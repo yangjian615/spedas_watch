@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-14 13:01:05 -0700 (Thu, 14 May 2015) $
-; $LastChangedRevision: 17607 $
+; $LastChangedDate: 2015-05-22 10:26:51 -0700 (Fri, 22 May 2015) $
+; $LastChangedRevision: 17670 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -275,6 +275,9 @@ FUNCTION eva_data_login, state, evTop
       str_element,/add,sitl_state,'userType',state.userType;
       widget_control, sitl_state.btnSplit, SENSITIVE= (user_flag ne 4); disable "split" if FPI-cal
       val = mms_load_fom_validation(); Add/update validation structure
+      if n_tags(val) eq 0 then begin
+        message,'Failed to load validation structure.'
+      endif
       str_element,/add,sitl_state,'val',val
       widget_control, sitl_stash, SET_UVALUE=sitl_state, /NO_COPY;******* SET
       

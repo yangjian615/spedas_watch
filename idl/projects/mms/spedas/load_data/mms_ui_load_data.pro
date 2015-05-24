@@ -1,23 +1,18 @@
 ;+ 
 ;NAME:
-;  yyy_ui_load_data
+;      mms_ui_load_data
 ;
 ;PURPOSE:
-;  This routine provides examples for building load data panel widgets and 
-;  handles the widget events it produces. This is a template only and creates 
-;  basic widgets that are common to most missions. 
-;  Each mission is different. Some widgets may need to be added to fully specify
-;  the data set to be loaded or some may not be needed. 
+;      This is the start of a SPEDAS Load Data plugin for the MMS mission
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-05-22 15:25:01 -0700 (Fri, 22 May 2015) $
-;$LastChangedRevision: 17677 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/load_data_tab/yyy_ui_load_data.pro $
+;$LastChangedDate: 2015-05-22 15:38:04 -0700 (Fri, 22 May 2015) $
+;$LastChangedRevision: 17680 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
-pro yyy_ui_load_data_event,event
-
+pro mms_ui_load_data_event,event
   compile_opt hidden,idl2
 
   ;handle and report errors, reset variables
@@ -44,12 +39,9 @@ pro yyy_ui_load_data_event,event
       
       ;restore the state structure 
       Widget_Control, event.TOP, Set_UValue=state, /No_Copy
-      
     endif
   
-
     widget_control, event.top,/destroy
-  
     RETURN
   ENDIF
 
@@ -130,11 +122,9 @@ pro yyy_ui_load_data_event,event
         
         ;if no selections were made, report this to the user via the 
         ;status bar and log the error to the history window
-        state.statusBar->update,'Nothing to load. Widgets for probe and data type selection have not yet been provided.'
-        state.historyWin->update,'There are no widgets for probe and data type selection.'
         if typeSelect[0] eq -1 then begin
           state.statusBar->update,'You must select at least one data type'
-          state.historyWin->update,'YYY add attempted without selecting data type'
+          state.historyWin->update,'MMS add attempted without selecting data type'
           break
         endif
         
@@ -147,7 +137,7 @@ pro yyy_ui_load_data_event,event
         ;history window
         if probeSelect[0] eq -1 then begin
           state.statusBar->update,'You must select at least one probe'
-          state.historyWin->update,'YYY add attempted without selecting probe'
+          state.historyWin->update,'MMS add attempted without selecting probe'
           break
         endif
          
@@ -156,11 +146,10 @@ pro yyy_ui_load_data_event,event
         instlist = widget_info(event.handler,find_by_uname='instrument')
         instrument = widget_info(instlist,/combobox_gettext)        
         instNum = widget_info(instlist,/combobox_number)        
-        
         ;report errors to status bar and history window
         if  instNum eq -1 then begin
           state.statusBar->update,'You must select at least one instrument'
-          state.historyWin->update,'YYY add attempted without selecting an instrument'
+          state.historyWin->update,'MMS add attempted without selecting an instrument'
           break
         endif
 
@@ -173,7 +162,7 @@ pro yyy_ui_load_data_event,event
         ;report errors
         if startTimeDouble ge endTimeDouble then begin
           state.statusBar->update,'Cannot add data unless end time is greater than start time.'
-          state.historyWin->update,'YYY add attempted with start time greater than end time.'
+          state.historyWin->update,'MMS add attempted with start time greater than end time.'
           break
         endif
         
@@ -182,14 +171,13 @@ pro yyy_ui_load_data_event,event
         
         ;create a load structure to pass the parameters needed by the load
         ;procedure
-        loadStruc = { probe:probes, $
+        loadStruc = { probes:probes, $
                       instrument:instrument, $
-                      datatypes:types, $
-                      timeRange:[startTimeString, endTimeString] }
-  
+                      datatype:types, $
+                      trange:[startTimeString, endTimeString] }
+
         ;call the routine that loads the data and update the loaded data tree
-        ;this routine is specific to each mission 
-        yyy_ui_load_data_import, $
+        mms_ui_load_data_import, $
                          loadStruc,$
                          state.loadedData,$
                          state.statusBar,$
@@ -207,7 +195,7 @@ pro yyy_ui_load_data_event,event
          ;later session. The callSeqStruc.type for ALL new missions is 
          ;'loadapidata'.
          callSeqStruc = { type:'loadapidata', $
-                          subtype:'yyy_ui_load_data_import', $
+                          subtype:'mms_ui_load_data_import', $
                           loadStruc:loadStruc, $
                           overwrite_selections:overwrite_selections }
          ; add the information regarding this load to the call sequence object
@@ -229,13 +217,7 @@ pro yyy_ui_load_data_event,event
   
 end
 
-;this procedure is called by the main load data panel when this tab is 
-;selected by the user. This is where the mission specific load data panel is
-;created and initialized. This routine is an example only. Each mission may 
-;choose to add or remove widgets as required by their data. The name of the
-;load procedure (called later by the event handler) is the load procedure 
-;in the spd_ui_load_data_config.txt file.
-pro yyy_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
+pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
   compile_opt idl2,hidden
   
   ;load bitmap resources
@@ -247,13 +229,13 @@ pro yyy_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   spd_ui_match_background, tabid, trashcan
   
   ;create all the bases needed for the widgets on the panel 
-  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='yyy_ui_load_data_event') 
+  topBase = Widget_Base(tabid, /Row, /Align_Top, /Align_Left, YPad=1,event_pro='mms_ui_load_data_event') 
   
   leftBase = widget_base(topBase,/col)
   middleBase = widget_base(topBase,/col,/align_center)
   rightBase = widget_base(topBase,/col)
   
-  leftLabel = widget_label(leftBase,value='YYY Data Selection:',/align_left)
+  leftLabel = widget_label(leftBase,value='MMS Data Selection:',/align_left)
   rightLabel = widget_label(rightBase,value='Data Loaded:',/align_left)
   
   selectionBase = widget_base(leftBase,/col,/frame)
@@ -287,11 +269,11 @@ pro yyy_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
                                   uvalue='TIME_WIDGET',$
                                   uname='time_widget')
     
-  ;create the dropdown menu that lists the various instrument types for this mission
-  probeArrayValues = ['*','y']
-  probeArrayDisplayed = ['*(All)', 'Probe y']
-  instrumentArray = ['inst1', '*']
-  typeArray = ['*(All)','type1']
+  ;create the dropdown menu that lists the various instrument types for MMS
+  probeArrayValues = ['1', '2', '3', '4']
+  probeArrayDisplayed = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
+  instrumentArray = ['DFG', 'AFG', '*']
+  typeArray = ['*']
   instrumentBase = widget_base(selectionBase,/row) 
   instrumentLabel = widget_label(instrumentBase,value='Instrument Type: ')
   instrumentCombo = widget_combobox(instrumentBase,$
@@ -299,14 +281,13 @@ pro yyy_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
                                        uvalue='INSTRUMENT',$
                                        uname='instrument')
                                   
-  ;create the list box that lists all the probes that are associated with this 
-  ;mission along with the clear all button
+  ;create the list box that lists all the probes that are associated with MMS
   dataBase = widget_base(selectionBase,/row)
   probeBase = widget_base(dataBase,/col)
   probeLabel = widget_label(probeBase,value='Probe: ')
   probeList = widget_list(probeBase,$
                           value=probeArrayDisplayed,$
-                          /multiple,$
+                      ;    /multiple,$
                           uname='probelist',$
                           xsize=16,$
                           ysize=15)
@@ -318,10 +299,14 @@ pro yyy_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   typeLabel = widget_label(typeBase,value='Data Type:')
   typeList = widget_list(typeBase,$
                          value=typeArray,$
-                         /multiple,$
+                        ; /multiple,$
                          uname='datalist',$
                          xsize=16,$
-                         ysize=15)                         
+                         ysize=15)
+                         
+  ; default to all data types
+  widget_control, typeList, set_list_select = 0
+                                                
   clearTypeButton = widget_button(typeBase,value='Clear Data Type',uvalue='CLEARTYPE',ToolTip='Deselect all parameter types')
 
   ;create the state variable with all the parameters that are needed by this 

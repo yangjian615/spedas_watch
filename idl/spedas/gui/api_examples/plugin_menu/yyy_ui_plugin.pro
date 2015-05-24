@@ -57,8 +57,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 13:48:35 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17272 $
+;$LastChangedDate: 2015-05-22 15:25:24 -0700 (Fri, 22 May 2015) $
+;$LastChangedRevision: 17678 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas/gui/api_examples/plugin_menu/yyy_ui_plugin.pro $
 ;-
 
@@ -321,7 +321,7 @@ pro yyy_ui_plugin, gui_id=gui_id, $
            }
   
   ;Create/update output structure.  In general this structure can 
-  ;contain and information that the plugin may need on subsequent calls.
+  ;contain any information that the plugin may need on subsequent calls.
   ;For the purpose of this example it will simply store the number of
   ;times the plugin has been opened.
   if is_struct(data_structure) then begin

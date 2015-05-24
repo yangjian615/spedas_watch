@@ -13,9 +13,9 @@
 ;         loaded from the netCDF file
 ;         
 ; 
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-09-24 10:33:11 -0700 (Tue, 24 Sep 2013) $
-; $LastChangedRevision: 13142 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-05-22 12:04:59 -0700 (Fri, 22 May 2015) $
+; $LastChangedRevision: 17674 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/netCDF/netcdf_load_vars.pro $
 ;-
 
@@ -74,6 +74,7 @@ function netcdf_load_vars, ncfile
     
             data = {name: varinq.name, datatype: varinq.datatype, ndims: varinq.ndims, natts: varinq.natts, dimids: varinq.dim}
             ; loop through the variable attributes
+            undefine, var_str ;This needs to be reinitialized for each variable so that attributes are not retained, 2015-05-22, jmm
             for k = 0, varinq.natts-1 do begin
                 var_attr_name = ncdf_attname(file, i, k)
                 var_attr_inq = ncdf_attinq(file, i, var_attr_name)

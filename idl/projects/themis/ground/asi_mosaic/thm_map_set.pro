@@ -6,10 +6,11 @@
 ; OUTPUT:
 ; KEYWORDS:
 ; HISTORY:
+;   2015-05-22 - af - don't reset window if /noerase set, updating (some) documentation
 ; VERSION:
-;   $LastChangedBy: hfrey $
-;   $LastChangedDate: 2009-10-27 16:56:18 -0700 (Tue, 27 Oct 2009) $
-;   $LastChangedRevision: 6900 $
+;   $LastChangedBy: aaflores $
+;   $LastChangedDate: 2015-05-22 16:54:25 -0700 (Fri, 22 May 2015) $
+;   $LastChangedRevision: 17683 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/asi_mosaic/thm_map_set.pro $
 ;-
 
@@ -35,11 +36,11 @@ pro thm_map_set,scale=scale,$                         ;scale for map set
                    central_lat=central_lat,$          ;geographic latitude of center of plot
                    central_lon=central_lon,$          ;geographic longitude of center of plot
                    color_continent=color_continent,$  ;shade of continent fill
-                   color_background=color_background,$;shade of background
+                   color_background=color_background,$;shade of background (2015-05-22: this keyword doesn't work)
                    position=position,$                ;position of plot on window (normal coordinates)
-                   xsize=xsize,$                      ;xsize of window
-                   ysize=ysize,$                      ;ysize of window
-                   noerase=noerase,$                  ;do not erase current window (no effect if {x,y}size set
+                   xsize=xsize,$                      ;xsize of window (ignored if /noerase set)
+                   ysize=ysize,$                      ;ysize of window (ignored if /noerase set)
+                   noerase=noerase,$                  ;do not erase current window
                    zbuffer=zbuffer,$		      ; do it in z-buffer
                    projection=projection,$	      ; which projection to use
                    window=window,$		      ; select window number
@@ -87,7 +88,12 @@ pro thm_map_set,scale=scale,$                         ;scale for map set
    if keyword_set(zbuffer) then begin
       set_plot,'z'
       device,set_resolution=[xs,ys]
-      endif else window,win_num,xsize=xs,ysize=ys
+   endif else begin
+      ;old plot always erased if window is reset
+      if ~keyword_set(noerase) then begin
+         window,win_num,xsize=xs,ysize=ys
+      endif
+   endelse
       
    if keyword_set(projection) then name=projection else name='mercator'
    if keyword_set(rotation) then rot=rotation else rot=0.

@@ -34,21 +34,21 @@ pro thm_map_add_asi_fovs,t_in,asi_fovs=asi_fovs,$
       if jt eq 7 then begin
         nt=0
         for i=0,n_elements(kk)-1 do begin
-           b=strlowcase(kk(i))
+           b=strlowcase(kk[i])
            wt=where(strlowcase(t_in.abbreviation) eq b)
-           if wt(0) ne -1 then begin
-              if nt eq 0 then w(nt)=wt(0)
-              if nt eq 1 then w=[w,wt(0)]
+           if wt[0] ne -1 then begin
+              if nt eq 0 then w[nt]=wt[0]
+              if nt eq 1 then w=[w,wt[0]]
               nt=1
            endif
         endfor
       endif
-      if w(0) ne -1 then begin
+      if w[0] ne -1 then begin
         afc=0 & if keyword_set(asi_fov_color) then afc=asi_fov_color
-        tt=t_in(w)
+        tt=t_in[w]
         for i=0,n_elements(tt)-1 do begin
-           pos=thm_map_add_site_fieldofview([0.0,tt(i).latitude,tt(i).longitude],elevation,height)
-           oplot,pos(2,*),pos(1,*),color=afc,thick=asi_fov_thick,linestyle=0
+           pos=thm_map_add_site_fieldofview([0.0,tt[i].latitude,tt[i].longitude],elevation,height)
+           oplot,pos[2,*],pos[1,*],color=afc,thick=asi_fov_thick,linestyle=0
         endfor
       endif
    endif

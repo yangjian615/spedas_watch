@@ -33,8 +33,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedDate: 2015-05-22 16:55:11 -0700 (Fri, 22 May 2015) $
+;$LastChangedRevision: 17684 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_cotrans/thm_ui_cotrans_options.pro $
 ;
 ;-
@@ -158,8 +158,6 @@ for i = 0,n_elements(active)-1 do begin
 
 
   ;check if state data is required for transform
-  ;  -if the required support data is present in the GUI then this check will also
-  ;   copy that data into a tplot variable that can be used by thm_cotrans
   ;--------------------------------------------------
   if thm_ui_req_spin(in_coord,out_coord,probe,trange) then begin
      
@@ -184,8 +182,6 @@ for i = 0,n_elements(active)-1 do begin
   
 
   ;check if slp data is required for transform
-  ;  -if the required support data is present in the GUI then this check will also
-  ;   copy that data into a tplot variable that can be used by thm_cotrans
   ;--------------------------------------------------
   if thm_ui_req_slp(in_coord,out_coord,trange) then begin
     

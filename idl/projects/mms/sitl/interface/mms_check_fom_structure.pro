@@ -174,8 +174,11 @@ orange_warning_msg = [fom_gwarning_txt]
 ; Define yellow warnings
 ;-----------------------------------------------------------------------------
 
-loc_seg_warning = where(new_fomstr.seglengths lt nominal_seg_range(0) $
-  or new_fomstr.seglengths gt nominal_seg_range(1), $
+; Note - also makes sure segment isn't already in error.
+
+loc_seg_warning = where((new_fomstr.seglengths lt nominal_seg_range(0) $
+  or new_fomstr.seglengths gt nominal_seg_range(1)) and $
+  (new_fomstr.seglengths ge seg_bounds(0) and new_fomstr.seglengths le seg_bounds(1)), $
   count_seg_warning)
   
 ; Now check the number of buffers with priority 1 events
