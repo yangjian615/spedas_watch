@@ -49,85 +49,71 @@
 ;
 ;       EPH:       Named variable to hold the ephemeris structure.
 ;
-;       FRAME:     Coordiante frame.  Can be "J2000", "IAU_MARS", or "MSO".
+;       FRAME:     Coordinate frame.  Can be "J2000", "IAU_MARS", or "MSO".
 ;                  (Also accepts "GEO" as a synomym for "IAU_MARS".)
 ;
 ;       TSTART:    Start time for output save file ephemeris.
 ;
 ;       TSTOP:     Stop time for output save file ephemeris.
 ;
-;       CURRENT:   Generate ephemeris based on MAVEN kernels, both reconstructions
-;                  and predictions.  Otherwise, use the design reference mission.
+;       MVN_SPK:   Include the specified spacecraft kernel(s) in the loadlist.  
+;                  Full path and filename is required.  Used for the long-range 
+;                  predict kernels, such as the design reference mission (DRM).
 ;
-;       UNLOAD:    Unload the kernels after completion.
+;       UNLOAD:    Unload all kernels (cspice_kclear) after completion.
 ;
-;       RESET:     Force loading of the kernels, even if some kernels are already
-;                  loaded.
+;       RESET:     Unload all kernels (cspice_kclear) and start fresh.
 ;
 ;       STAT:      Return statistics of ephemeris coverage.  (Useful to determine
 ;                  the boundary between reconstructions and predictions.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 17:01:32 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16930 $
+; $LastChangedDate: 2015-05-24 11:25:17 -0700 (Sun, 24 May 2015) $
+; $LastChangedRevision: 17690 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_makeeph.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
 ;-
 pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop=tstop, $
-                         current=current, unload=unload, reset=reset, stat=stat, $
-                         loadlist=loadlist
+                         unload=unload, reset=reset, stat=stat, mvn_spk=mvn_spk
 
   common mvn_orbit_makeeph, kernels, tstart1, tstop1
 
-; Initialize SPICE
+; Initialize SPICE and load kernels (if needed)
 
-  if (size(loadlist,/type) eq 7) then begin
-    kernels = loadlist
-    indx = where(kernels ne '', count)
-    if (count gt 0) then kernels = kernels[indx] else return
-    cspice_furnsh, kernels
+  if keyword_set(reset) then begin
+    cspice_kclear
+    kernels = 0
+    tstart1 = 0
+    tstop1 = 0
   endif
 
-  if ((size(kernels,/type) eq 0) or keyword_set(reset)) then begin
+  if (size(kernels,/type) ne 7) then begin
+  
+    moi = time_double('2014-09-22/02:24:00')
+    now = systime(/sec,/utc)
+    oneday = 86400D
+    twoweeks = 14D*oneday
+    trange = [(moi - oneday), (now + twoweeks)]
 
-    if keyword_set(current) then begin
-
-      moi = time_double('2014-09-22/02:24:00')
-      now = systime(/sec,/utc)
-      oneday = 86400D
-      twoweeks = 14D*oneday
-      trange = [(moi - oneday), (now + twoweeks)]
-
-      kernels = mvn_spice_kernels(['STD','SCK','FRM','SPK'], trange=trange, /valid, verbose=-1, /load)
-      indx = where(kernels ne '', count)
-      if (count gt 0) then kernels = kernels[indx] else return
-
-      if not keyword_set(tstart) then tstart = trange[0]
-      if not keyword_set(tstop) then tstop = trange[1]
-
+    if (size(mvn_spk,/type) eq 7) then begin
+      finfo = file_info(mvn_spk)
+      indx = where(~finfo.exists, nbad)
+      for i=0,(nbad-1) do print,"Kernel not found: ",mvn_spk[indx[i]]
+      if (nbad gt 0L) then return
+      kernels = mvn_spice_kernels(['STD','SCK','FRM'], trange=trange, /valid, verbose=-1)
+      spk = mvn_spice_kernels(['SPK'], trange=trange, /valid, verbose=-1)
+      indx = where(file_basename(spk) ne 'maven_orb.bsp')
+      spk = spk[indx]  ; don't include the short-range predicts
+      kernels = [kernels, mvn_spk, spk]
     endif else begin
-
-      homedir = '/Users/mitchell/Documents/Home/'
-      kpath = homedir + 'Earth/THEMIS/TDAS/tdas_3_02/idl/personal/SPICE/kernels/'
-
-      planet_spk  = kpath + 'spk/de421.bsp'                         ; JPL Planetary Ephemeris
-      planet_pck  = kpath + 'pck/pck00009.tpc'                      ; Planet shape/orientation/rotation
-      leapsec_lsk = kpath + 'lsk/naif0010.tls'                      ; Leap seconds
-      maven_fk    = kpath + 'fk/maven_v01.tf'                       ; Spacecraft frame definitions
-      mars_mso_fk = kpath + 'fk/mars_mso_v01.tf'                    ; MSO coordinate frame definition
-      maven_spk   = kpath + 'spk/trj_orb_od029a_140708-151108_reference_v1.bsp' ; MAVEN spk ephemeris
-
-;     maven_spk   = kpath + 'spk/spk_m_141028-151029_120412.bsp'    ; MAVEN spk ephemeris
-
-      kernels = [planet_spk, planet_pck, leapsec_lsk, maven_fk, mars_mso_fk, maven_spk]
-
-      indx = where(kernels ne '', count)
-      if (count gt 0) then kernels = kernels[indx] else return
-      cspice_furnsh, kernels
-
+      kernels = mvn_spice_kernels(['STD','SCK','FRM','SPK'], trange=trange, /valid, verbose=-1)
     endelse
 
+    indx = where(kernels ne '', count)
+    if (count gt 0) then kernels = kernels[indx] else return
+
+    cspice_furnsh, kernels
     print," "
     print,"Kernels in use:"
     for i=0,(n_elements(kernels)-1) do print,file_basename(kernels[i]),format="(3x,a)"
@@ -222,19 +208,14 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
 ; Get time range for generating ephemeris
 
   if not keyword_set(tstart) then begin
-    if not keyword_set(tstart1) then begin
-      print,''
-      tstart = ''
-      read,tstart,prompt="Ephemeris Start Time [YYYY-MM-DD/HH:MM:SS]: "
-    endif else tstart = tstart1
+    if not keyword_set(tstart1) then tstart = moi - oneday $
+                                else tstart = tstart1
   endif
   tstart = time_double(tstart) > estart
   
   if not keyword_set(tstop) then begin
-    if not keyword_set(tstop1) then begin
-      tstop = ''
-      read,tstop,prompt="Ephemeris Stop Time [YYYY-MM-DD/HH:MM:SS]: "
-    endif else tstop = tstop1
+    if not keyword_set(tstop1) then tstop = estop $
+                               else tstop = tstop1
   endif
   tstop = time_double(tstop) < estop
   

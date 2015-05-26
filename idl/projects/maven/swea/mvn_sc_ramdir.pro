@@ -37,16 +37,19 @@
 ;
 ;       APP:      Rotate to APP coordinates instead of Spacecraft coord.
 ;
+;       FRAME:    Rotate to FRAME coordinates instead of Spacecraft coord.
+;                 Any frame defined in the MAVEN frames kernel is allowed.
+;
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-03-02 10:05:31 -0800 (Mon, 02 Mar 2015) $
-; $LastChangedRevision: 17060 $
+; $LastChangedDate: 2015-05-24 12:36:35 -0700 (Sun, 24 May 2015) $
+; $LastChangedRevision: 17693 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
-pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app
+pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex
@@ -69,6 +72,8 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app
   
   if keyword_set(app) then to_frame = 'MAVEN_APP' $
                       else to_frame = 'MAVEN_SPACECRAFT'
+
+  if keyword_set(frame) then to_frame = strupcase(frame)
 
   if (size(state,/type) eq 0) then maven_orbit_tplot, /loadonly, /current
 

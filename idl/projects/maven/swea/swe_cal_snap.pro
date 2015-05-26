@@ -26,8 +26,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-11 11:36:49 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17554 $
+; $LastChangedDate: 2015-05-24 12:37:10 -0700 (Sun, 24 May 2015) $
+; $LastChangedRevision: 17694 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_cal_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -103,12 +103,13 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
         limits.zlog = 1
         limits.ztitle = strupcase(dat.units_name)
         specplot,x,y,z1,limits=limits
-        limits.title = 'Geometric Factor'
+        limits.title = 'Geometric Factor (x10!u4!n)'
         limits.zlog = 0
         limits.ztitle = ''
         if (dz2 lt 1e-5) then begin
           plot_oi,x,z2[*,0], xrange=limits.xrange, xstyle=limits.xstyle, $
-            xmargin=limits.xmargin, xtitle=limits.xtitle, ytitle='Geometric Factor', $
+            xmargin=limits.xmargin, xtitle=limits.xtitle, $
+            ytitle='Geometric Factor (x10!u4!n)', $
             charsize=limits.charsize, title=limits.title
         endif else specplot,x,y,z2,limits=limits
         limits.title = 'MCP Efficiency'
@@ -127,7 +128,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
         x = dat.energy[*,0]
         y = findgen(dat.nbins)
         z1 = dat.data
-        z2 = dat.gf
+        z2 = dat.gf * 1.e4
         z3 = dat.eff
         z4 = dat.dtc
         
@@ -141,12 +142,13 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
         limits.zlog = 1
         limits.ztitle = strupcase(dat.units_name)
         specplot,x,y,z1,limits=limits
-        limits.title = 'Geometric Factor'
+        limits.title = 'Geometric Factor (x10!u4!n)'
         limits.zlog = 0
         limits.ztitle = ''
         if (dz2 lt 1e-5) then begin
           plot_oi,x,z2[*,0], xrange=limits.xrange, xstyle=limits.xstyle, $
-            xmargin=limits.xmargin, xtitle=limits.xtitle, ytitle='Geometric Factor', $
+            xmargin=limits.xmargin, xtitle=limits.xtitle, $
+            ytitle='Geometric Factor (x10!u4!n)', $
             charsize=limits.charsize, title=limits.title
         endif else specplot,x,y,z2,limits=limits
         limits.title = 'MCP Efficiency'
@@ -165,14 +167,14 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
 
         x = dat.energy
         y1 = dat.data
-        y2 = dat.gf
+        y2 = dat.gf * 1.e4
         y3 = dat.eff
         y4 = dat.dtc
 
         !p.multi = [0,2,2]
         plot_oo,x,y1,xtitle='Energy (eV)',ytitle=strupcase(dat.units_name),$
                      yrange=[1.,10.^(ceil(alog10(max(y1,/nan))))],psym=10
-        plot_oi,x,y2,xtitle='Energy (eV)',ytitle='Geometric Factor',psym=10
+        plot_oi,x,y2,xtitle='Energy (eV)',ytitle='Geometric Factor (x10!u4!n)',psym=10
         plot_oi,x,y3,xtitle='Energy (eV)',ytitle='MCP Efficiency',psym=10
         plot_oi,x,y4,xtitle='Energy (eV)',ytitle='Deadtime Correction',psym=10
         !p.multi = 0

@@ -15,8 +15,8 @@
 ;                 updated.  Set this keyword to rebuild the entire database.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-01-05 15:00:17 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16588 $
+; $LastChangedDate: 2015-05-24 11:26:04 -0700 (Sun, 24 May 2015) $
+; $LastChangedRevision: 17691 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_update.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
@@ -35,7 +35,7 @@ pro maven_orbit_update, tstep=tstep, rebuild=rebuild
 
 ; Generate and process ephemeris in MSO frame
 
-  maven_orbit_makeeph, tstep=tstep, frame='mso', eph=eph, /current, /reset, stat=stat
+  maven_orbit_makeeph, tstep=tstep, frame='mso', eph=eph, /reset, stat=stat
   
   tmin = min(eph.t, max=tmax)
   
@@ -49,7 +49,7 @@ pro maven_orbit_update, tstep=tstep, rebuild=rebuild
   while(trange[0] lt tmax) do begin
     indx = where((eph.t ge trange[0]) and (eph.t lt trange[1]), count)
     if (count gt 0L) then begin
-      maven_mso = eph[indx]
+      maven_mso = temporary(eph[indx])
       if (max(maven_mso.t) gt trec) then begin
         tstr = time_struct(trange[0])
         yyyy = string(tstr.year, format='(i4.4)')
@@ -67,7 +67,7 @@ pro maven_orbit_update, tstep=tstep, rebuild=rebuild
 
 ; Generate and process ephemeris in IAU_MARS frame
 
-  maven_orbit_makeeph, tstep=tstep, frame='geo', eph=eph, /current, /unload
+  maven_orbit_makeeph, tstep=tstep, frame='geo', eph=eph, /unload
 
   tmin = min(eph.t, max=tmax)
   
@@ -77,7 +77,7 @@ pro maven_orbit_update, tstep=tstep, rebuild=rebuild
   while(trange[0] lt tmax) do begin
     indx = where((eph.t ge trange[0]) and (eph.t lt trange[1]), count)
     if (count gt 0L) then begin
-      maven_geo = eph[indx]
+      maven_geo = temporary(eph[indx])
       if (max(maven_geo.t) gt trec) then begin
         tstr = time_struct(trange[0])
         yyyy = string(tstr.year, format='(i4.4)')

@@ -39,12 +39,23 @@
 ;                      in the MSO and LGEO(local geographic coordinate). 
 ;
 ;       MASK_SC:       Mask PA bins that are blocked by the spacecraft.
+;                      Default = 1 (yes).
 ;
-;       PA_CUT:        Plot and energy spectrum at this pitch angle.
+;       SPEC:          Plot energy spectra for parallel and anti-parallel
+;                      populations.  The value of this keyword is the pitch 
+;                      angle width (deg) to include:
+;
+;                        parallel      : 0 to SPEC degrees
+;                        anti-parallel : (180 - SPEC) to 180 degrees
+;
+;                      Pitch angle bins must be entirely contained within
+;                      one of these ranges to be included.
+;
+;                      Any value of SPEC < 30 deg is taken to be 30 deg.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-11 12:53:41 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17555 $
+; $LastChangedDate: 2015-05-24 13:10:11 -0700 (Sun, 24 May 2015) $
+; $LastChangedRevision: 17695 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -53,14 +64,14 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
                   label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
                   abins=abins, dbins=dbins, obins=obins, burst=burst, $
-                  pa_cut=pa_cut, pot=pot
+                  pot=pot, spec=spec
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if keyword_set(burst) then aflg = 1
-  if (size(units,/type) ne 7) then units = 'crate'
+  if (size(units,/type) ne 7) then units = 'eflux'
   if keyword_set(energy) then sflg = 1 else sflg = 0
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   if not keyword_set(zrange) then zrange = 0
@@ -89,7 +100,41 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   endif else obins = byte(obins # [1B,1B])
   if (size(mask_sc,/type) eq 0) then mask_sc = 1
   if keyword_set(mask_sc) then obins = swe_sc_mask * obins
-  if keyword_set(pa_cut) then cflg = 1 else cflg = 0
+  if (size(spec,/type) ne 0) then begin
+    dospec = 1
+    swidth = (float(abs(spec)) > 30.)*!dtor
+  endif else dospec = 0
+
+  case strupcase(units) of
+    'COUNTS' : drange = [1e0, 1e5]
+    'RATE'   : drange = [1e1, 1e6]
+    'CRATE'  : drange = [1e1, 1e6]
+    'FLUX'   : drange = [1e1, 3e8]
+    'EFLUX'  : drange = [1e4, 3e9]
+    'E2FLUX' : drange = [1e6, 1e11]
+    'DF'     : drange = [1e-18, 1e-8]
+    else     : drange = [0,0]
+  endcase
+  
+  case strupcase(units) of
+    'COUNTS' : ytitle = 'Raw Counts'
+    'RATE'   : ytitle = 'Raw Count Rate'
+    'CRATE'  : ytitle = 'Count Rate'
+    'EFLUX'  : ytitle = 'Energy Flux (eV/cm2-s-ster-eV)'
+    'E2FLUX' : ytitle = 'Energy Flux (eV/cm2-s-ster)'
+    'FLUX'   : ytitle = 'Flux (1/cm2-s-ster-eV)'
+    'DF'     : ytitle = 'Dist. Function (1/cm3-(km/s)3)'
+    else     : ytitle = 'Unknown Units'
+  endcase
+
+  get_data,'alt',data=alt
+  if (size(alt,/type) eq 8) then begin
+    doalt = 1
+    get_data,'sza',data=sza
+    get_data,'lon',data=lon
+    get_data,'lat',data=lat
+    get_data,'sza',data=sza
+  endif else doalt = 0
 
 ; Put up snapshot window(s)
 
@@ -110,7 +155,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     Cwin = !d.window
   endif
   
-  if (cflg) then begin
+  if (dospec) then begin
     window, /free, xsize=Eopt.xsize, ysize=Eopt.ysize, xpos=Eopt.xpos, ypos=Eopt.ypos
     Ewin = !d.window
   endif
@@ -133,6 +178,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
     wdelete,Pwin                          ; Don't keep empty windows.
     if (sflg) then wdelete,Nwin
+    if (dospec) then wdelete,Ewin
     wset,Twin
     return
   endif
@@ -242,6 +288,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                  wdelete, Pwin
                  if (sflg) then wdelete, Nwin
                  if (dflg) then wdelete, Cwin
+                 if (dospec) then wdelete, Ewin
               endif
               
               wset, Twin
@@ -333,12 +380,43 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           plot3d_new,ddd,0.,180.,ebins=[ebin,ebin+1]
         endif
       endif
-      
-      if (cflg) then begin
+            
+      if (dospec) then begin
         wset, Ewin
-        dpa = min(pad.pa - pa_cut, i)
+        x = pad.energy[*,0]
+        pndx = where(reform(pad.pa_max[63,*]) lt swidth, count)
+        if (count gt 0L) then Fp = average(pad.data[*,pndx],2,/nan) $
+                         else Fp = replicate(!values.f_nan,64)
+        mndx = where(reform(pad.pa_min[63,*]) gt (!pi - swidth), count)
+        if (count gt 0L) then Fm = average(pad.data[*,mndx],2,/nan) $
+                         else Fm = replicate(!values.f_nan,64)
+        
+        plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
+          xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
+          charsize=1.4
+        oplot, x, Fp, psym=10, color=6
+        oplot, x, Fm, psym=10, color=2
+        if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],drange,line=2
+        endif
+
+        xs = 0.71
+        ys = 0.90
+        dys = 0.03
+        pa_min = round(swidth*!radeg)
+        pa_max = 180 - pa_min
+        xyouts,xs,ys,string(pa_min, format='("0 - ",i2)'),charsize=1.2,/norm,color=6
+        ys -= dys
+        xyouts,xs,ys,string(pa_max, format='(i3," - 180")'),charsize=1.2,/norm,color=2
+        ys -= dys
+
+        if (doalt) then begin
+          dt = min(abs(alt.x - pad.time), aref)
+          xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
+          ys -= dys
+          xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+          ys -= dys
+        endif
       endif
-    endif
 
 ; Get the next button press
 
@@ -352,6 +430,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     wdelete, Pwin
     if (sflg) then wdelete, Nwin
     if (dflg) then wdelete, Cwin
+    if (dospec) then wdelete, Ewin
   endif
 
   wset, Twin

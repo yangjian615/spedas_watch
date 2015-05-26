@@ -48,7 +48,7 @@
 ;
 ;       CURRENT:  Load the ephemeris from MOI to the current date + 2 weeks.  This
 ;                 uses reconstructed SPK kernels, as available, then predicts.
-;                 This is the default.
+;                 This is the default.  OBSOLETE.
 ;
 ;       EXTENDED: Load the long-term predict ephemeris (out to Nov. 2018).
 ;
@@ -78,8 +78,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-08 17:40:41 -0700 (Wed, 08 Apr 2015) $
-; $LastChangedRevision: 17258 $
+; $LastChangedDate: 2015-05-24 11:24:04 -0700 (Sun, 24 May 2015) $
+; $LastChangedRevision: 17689 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -97,11 +97,25 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   R_pol = 3376.2D
   R_vol = (R_equ*R_equ*R_pol)^(1D/3D)
 
+  rootdir = 'maven/anc/spice/sav/'
+
   if keyword_set(domex) then domex = 1 else domex = 0
   if not keyword_set(ialt) then ialt = !values.f_nan
   if keyword_set(ellip) then eflg = 1 else eflg = 0
-  if keyword_set(extended) then cflg = 0 else cflg = 1
   if keyword_set(hires) then res = '20sec' else res = '60sec'
+  if keyword_set(extended) then begin
+    cflg = 0
+    msoext = 'maven_spacecraft_mso_ref_' + res + '.sav'
+    geoext = 'maven_spacecraft_geo_ref_' + res + '.sav'
+    if (size(extended,/type) eq 7) then begin
+      i = strpos(extended,'mso')
+      j = where(i ge 0, count)
+      if (count gt 0L) then msoext = extended[j[0]]
+      i = strpos(extended,'geo')
+      j = where(i ge 0, count)
+      if (count gt 0L) then geoext = extended[j[0]]
+    endif
+  endif else cflg = 1
   if (n_elements(timecrop) gt 1L) then begin
     tspan = minmax(time_double(timecrop))
     docrop = 1
@@ -114,8 +128,6 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     else : rcols = round(colors[0:2])
   endcase
   if keyword_set(now) then donow = 1 else donow = 0
-
-  rootdir = 'maven/anc/spice/sav/'
   
 ; Restore the orbit ephemeris
 
@@ -164,7 +176,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   endif else begin
     if (cflg) then fname = 'maven_spacecraft_mso_??????' + '.sav' $
-              else fname = 'maven_spacecraft_mso_ref_' + res + '.sav'
+              else fname = msoext
 
     file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
     nfiles = n_elements(file)
@@ -207,7 +219,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     maven = 0
 
     if (cflg) then fname = 'maven_spacecraft_geo_??????' + '.sav' $
-              else fname = 'maven_spacecraft_geo_ref_' + res + '.sav'
+              else fname = geoext
 
     file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
     nfiles = n_elements(file)
