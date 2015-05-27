@@ -54,8 +54,8 @@
 ;                      Any value of SPEC < 30 deg is taken to be 30 deg.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-24 13:10:11 -0700 (Sun, 24 May 2015) $
-; $LastChangedRevision: 17695 $
+; $LastChangedDate: 2015-05-25 16:17:52 -0700 (Mon, 25 May 2015) $
+; $LastChangedRevision: 17698 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -103,7 +103,10 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if (size(spec,/type) ne 0) then begin
     dospec = 1
     swidth = (float(abs(spec)) > 30.)*!dtor
-  endif else dospec = 0
+  endif else begin
+    dospec = 0
+    swidth = 30.*!dtor
+  endelse
 
   case strupcase(units) of
     'COUNTS' : drange = [1e0, 1e5]
@@ -397,7 +400,6 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         oplot, x, Fp, psym=10, color=6
         oplot, x, Fm, psym=10, color=2
         if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],drange,line=2
-        endif
 
         xs = 0.71
         ys = 0.90
@@ -417,6 +419,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           ys -= dys
         endif
       endif
+    endif
 
 ; Get the next button press
 

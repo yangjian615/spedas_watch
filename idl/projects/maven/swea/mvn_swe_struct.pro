@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-11 13:10:30 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17560 $
+; $LastChangedDate: 2015-05-25 16:20:18 -0700 (Mon, 25 May 2015) $
+; $LastChangedRevision: 17703 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -181,6 +181,7 @@ pro mvn_swe_struct
                    mass            : 0.                      , $  ; electron rest mass [eV/(km/s)^2]
                    sc_pot          : 0.                      , $  ; spacecract potential
                    magf            : fltarr(3)               , $  ; magnetic field
+                   maglev          : 0B                      , $  ; MAG data level (0-2)
                    v_flow          : fltarr(3)               , $  ; bulk flow velocity
                    bkg             : fltarr(n_e,n_a)         , $  ; background
                    data            : fltarr(n_e,n_a)         , $  ; data
@@ -236,6 +237,7 @@ pro mvn_swe_struct
                     mass            : 0.                      , $  ; electron rest mass [eV/(km/s)^2]
                     sc_pot          : 0.                      , $  ; spacecract potential
                     magf            : fltarr(3)               , $  ; magnetic field
+                    maglev          : 0B                      , $  ; MAG data level (0-2)
                     v_flow          : fltarr(3)               , $  ; bulk flow velocity
                     bkg             : fltarr(n_e,n_az)        , $  ; background
                     data            : fltarr(n_e,n_az)        , $  ; data
@@ -274,6 +276,7 @@ pro mvn_swe_struct
                      mass            : 0.                      , $  ; electron rest mass [eV/(km/s)^2]
                      sc_pot          : 0.                      , $  ; spacecract potential
                      magf            : fltarr(3)               , $  ; magnetic field
+                     maglev          : 0B                      , $  ; MAG data level (0-2)
                      bkg             : fltarr(n_e)             , $  ; background
                      data            : fltarr(n_e)             , $  ; data
                      var             : fltarr(n_e)                } ; variance

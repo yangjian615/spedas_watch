@@ -26,8 +26,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 14:43:14 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17641 $
+; $LastChangedDate: 2015-05-25 16:18:29 -0700 (Mon, 25 May 2015) $
+; $LastChangedRevision: 17699 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -317,7 +317,15 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
 
     if (addmag) then begin
       dt = min(abs(ddd[n].time - swe_mag1.time),i)
-      if (dt lt 1D) then ddd[n].magf = swe_mag1[i].magf
+      if (dt lt 1D) then begin
+        magf = swe_mag1[i].magf
+        magl = swe_mag1[i].level
+      endif else begin
+        magf = 0.
+        magl = 0B
+      endelse
+      ddd[n].magf = magf
+      ddd[n].maglev = magl
     endif
 
 ; Insert spacecraft potential, if available
@@ -359,7 +367,7 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
     if (count gt 0L) then scale[*,*,indx] = swe_crosscal[i]
   endfor
   
-  ddd.eff /= scale
+  ddd.gf /= scale
 
 ; Sum the data.  This is done by summing raw counts corrected by deadtime
 ; and then setting dtc to unity.  Also, note that summed 3D's can be 

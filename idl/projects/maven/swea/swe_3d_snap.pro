@@ -20,6 +20,8 @@
 ;
 ;       SPEC:          Plot energy spectra using spec3d.
 ;
+;       POT:           Plot the spacecraft potential on the SPEC plots.
+;
 ;       UNITS:         Units for the spec3d.
 ;
 ;       ENERGY:        One or more energies to plot.  Overrides EBINS.
@@ -68,8 +70,8 @@
 ;                      the 3D plot.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 14:37:21 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17638 $
+; $LastChangedDate: 2015-05-25 16:19:57 -0700 (Mon, 25 May 2015) $
+; $LastChangedRevision: 17702 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -79,7 +81,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  energy=energy, label=label, smo=smo, symdir=symdir, sundir=sundir, $
                  symenergy=symenergy, symdiag=symdiag, power=pow, map=map, $
                  abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst, $
-                 plot_sc=plot_sc, padmap=padmap
+                 plot_sc=plot_sc, padmap=padmap, pot=pot
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
@@ -143,6 +145,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   if not keyword_set(symenergy) then symenergy = 130.
   if not keyword_set(pow) then pow = 3.
   if keyword_set(symdiag) then dflg = 1 else dflg = 0
+  if keyword_set(padmap) then dopam = 1 else dopam = 0
 
   if (n_elements(smo) gt 0) then begin
     nsmo = [1,1,1]
@@ -199,6 +202,11 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
     window, /free, xsize=Sopt.xsize, ysize=Sopt.ysize, xpos=Sopt.xpos, ypos=Sopt.ypos
     Fwin = !d.window
   endif
+  
+  if (dopam) then begin
+    window, /free, xsize=Nopt.xsize, ysize=Nopt.ysize, xpos=Nopt.xpos, ypos=Nopt.ypos
+    Pwin = !d.window
+  endif
 
 ; Select the first time, then get the 3D spectrum closest that time
 
@@ -208,9 +216,10 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   ctime2,trange,npoints=npts,/silent,button=button
 
   if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
-    wdelete,Dwin                          ; Don't keep empty windows.
+    wdelete,Dwin                           ; Don't keep empty windows.
     if (sflg) then wdelete,Swin
     if (dflg) then wdelete,Fwin
+    if (dopam) then wdelete,Pwin
     wset,Twin
     return
   endif
@@ -249,10 +258,6 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
         ddd.data = reform(dats[*,8:23,*],64,96)
       endif else ddd.data = ddd.data*omask[*,*,boom]
 
-      if keyword_set(padmap) then begin
-        ddat = mvn_swe_pad_resample_map3d(ddd[0])
-        ddd.data = ddat.pa
-      endif
       plot3d_new, ddd, lat, lon, ebins=ebins
     
       if (pflg) then begin
@@ -328,9 +333,23 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
       
       if (plot_sc) then  mvn_spc_fov_blockage, clr=200, /swea, /invert_phi, /invert_theta
 
+      if (dopam) then begin
+        wset, Pwin
+        mvn_swe_padmap_3d, ddd
+        pa = reform(ddd.pa[63,*],16,6)*!radeg
+
+        contour,pa,levels=10*indgen(19),c_labels=replicate(1,19),$
+              xtitle='Azimuth Bin',ytitle='Elevation Bin',charsize=1.4
+
+;        plot,[0,15],[90,90],yrange=[0,180],/ysty,yticks=6,yminor=3,$
+;              xtitle='Azimuth Bin',ytitle='Pitch Angle (deg)',charsize=1.4
+;        for i=0,5 do oplot,pa[(i*16):(i*16+15)],color=i+1
+      endif
+
       if (sflg) then begin
         wset, Swin
         spec3d, ddd, units=units, limits={yrange:yrange, ystyle:1, ylog:1, psym:0}
+        if keyword_set(pot) then oplot, [ddd.sc_pot, ddd.sc_pot], yrange, line=1, color=6
       endif
     endif
 
@@ -346,6 +365,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
     wdelete, Dwin
     if (sflg) then wdelete, Swin
     if (dflg) then wdelete, Fwin
+    if (dopam) then wdelete, Pwin
   endif
 
   wset, Twin

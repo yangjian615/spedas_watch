@@ -16,8 +16,8 @@
 ;       UNITS:    Convert data to these units.  Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 14:43:14 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17641 $
+; $LastChangedDate: 2015-05-25 16:19:20 -0700 (Mon, 25 May 2015) $
+; $LastChangedRevision: 17701 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makespec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -106,7 +106,7 @@ pro mvn_swe_makespec, sum=sum, units=units
       if (count gt 0L) then scale[*,indx] = swe_crosscal[i]
     endfor
 
-    mvn_swe_engy.eff /= scale
+    mvn_swe_engy.gf /= scale
 
 ; Electron rest mass [eV/(km/s)^2]
 
@@ -191,7 +191,7 @@ pro mvn_swe_makespec, sum=sum, units=units
       if (count gt 0L) then scale[*,indx] = swe_crosscal[i]
     endfor
   
-    mvn_swe_engy_arc.eff /= scale
+    mvn_swe_engy_arc.gf /= scale
 
 ; Electron rest mass [eV/(km/s)^2]
 

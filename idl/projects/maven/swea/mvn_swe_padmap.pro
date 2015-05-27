@@ -7,19 +7,21 @@
 ;  pam = mvn_swe_padmap(pkt)
 ;
 ;INPUTS:
-;       pkt :          A raw PAD packet (APID A2 or A3).
+;       pkt  :         A raw PAD packet (APID A2 or A3).
 ;
 ;KEYWORDS:
+;       MAGF :         Magnetic field direction in SWEA coordinates.  Overrides
+;                      the nominal direction contained in the A2 or A3 packet.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-07-10 18:10:32 -0700 (Thu, 10 Jul 2014) $
-; $LastChangedRevision: 15558 $
+; $LastChangedDate: 2015-05-25 17:12:25 -0700 (Mon, 25 May 2015) $
+; $LastChangedRevision: 17705 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_padmap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-18-14
 ;FILE: mvn_swe_padmap.pro
 ;-
-function mvn_swe_padmap, pkt
+function mvn_swe_padmap, pkt, magf=magf
 
   @mvn_swe_com
 
@@ -27,19 +29,24 @@ function mvn_swe_padmap, pkt
 
   if (ok) then begin
 
+; Anode, deflector, and 3D bins for each PAD bin
+
     aBaz = pkt.Baz
     aBel = pkt.Bel
     group = pkt.group
 
-; Magnetic field azimuth and elevation in SWEA coordinates
-
-    mvn_swe_magdir, pkt.time, aBaz, aBel, Baz, Bel
-
-; Anode, deflector, and 3D bins for each PAD bin
-    
     i = fix((indgen(16) + aBaz/16) mod 16)   ; 16 anode bins at each time
     j = swe_padlut[*,aBel]                   ; 16 deflector bins at each time
     k = j*16 + i                             ; 16 3D angle bins at each time
+
+; Magnetic field azimuth and elevation in SWEA coordinates
+; Use L1 or L2 MAG data, if available.
+
+    if (n_elements(magf) eq 3) then begin
+      Baz = atan(magf[1],magf[0])
+      if (Baz lt 0.) then Baz += 2.*!pi
+      Bel = asin(magf[2]/sqrt(total(magf*magf)))
+    endif else mvn_swe_magdir, pkt.time, aBaz, aBel, Baz, Bel
 
 ; nxn azimuth-elevation array for each of the 16 PAD bins
 ; Elevations are energy dependent above ~2 keV.
@@ -68,7 +75,7 @@ function mvn_swe_padmap, pkt
 
     pam = acos(cos(Saz - Baz)*cos(Sel)*cos(Bel) + sin(Sel)*sin(Bel))
 
-    pa = total(pam,1)/float(n*n)    ; mean pitch angle
+    pa = average(pam,1)             ; mean pitch angle
     pa_min = min(pam,dim=1)         ; minimum pitch angle
     pa_max = max(pam,dim=1)         ; maximum pitch angle
     dpa = pa_max - pa_min           ; pitch angle range

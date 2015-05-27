@@ -52,8 +52,8 @@
 ;                     This only works for table numbers > 3.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 17:02:50 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17645 $
+; $LastChangedDate: 2015-05-25 18:17:24 -0700 (Mon, 25 May 2015) $
+; $LastChangedRevision: 17708 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -65,7 +65,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 
 ; Set the SWEA Ground Software Version
 
-    mvn_swe_version = 1
+    mvn_swe_version = 2
 
 ; Initialize
 

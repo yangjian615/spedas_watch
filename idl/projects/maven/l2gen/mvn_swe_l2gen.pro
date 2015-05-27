@@ -11,15 +11,18 @@
 ; date = If set, the input date. The default is today
 ; directory = If set, output into this directory, for testing
 ;             purposes, don't forget a slash '/'  at the end.
+; l2only = If set, only generate PAD L2 data if MAG L2 data are available.
+; nokp = If set, do not generate SWEA KP data.
 ;HISTORY:
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14, jmm,
 ; jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-24 18:45:38 -0800 (Tue, 24 Feb 2015) $
-; $LastChangedRevision: 17037 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-05-25 17:28:44 -0700 (Mon, 25 May 2015) $
+; $LastChangedRevision: 17707 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
-Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
+Pro mvn_swe_l2gen, date = date, directory = directory, l2only = l2only, nokp = nokp, $
+                   _extra = _extra
 ; crib for loading l0 data, creating L2 CDF files, and populating structures
 ; only works for one day at a time -- that's how we make L2 CDFs
 
@@ -44,8 +47,20 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
 ; get SPICE kernels
   mvn_swe_spice_init, trange = trange, /force
 
-; load L0 data
+; Load L0 SWEA data
   mvn_swe_load_l0, trange_str
+
+; Load highest level MAG data available (for pitch angle sorting)
+;   L0 --> MAG angles computed onboard (stored in A2/A3 packets)
+;   L1 --> MAG data processed on ground with nominal gains and offsets
+;   L2 --> MAG data processed on ground with all corrections
+
+  mvn_swe_addmag
+  if (size(swe_mag1,/type) eq 8) then maglev = swe_mag1[0].level else maglev = 0B
+  if (keyword_set(l2only) and (maglev lt 2B)) then begin
+    print,"No MAG L2 data.  No CDF files created."
+    return
+  endif
 
 ; data variables that will populate CDF files
   ddd_svy = mvn_swe_get3d(trange_str, /all) ; trange_str changed by program
@@ -63,9 +78,7 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
   spec_arc = mvn_swe_getspec(trange_str, /archive)
 
 ; create CDFs -- 6 of them
-; someday include version number (comes direct from Dave Mitchell)
-; if so, inlcude version keyword below 
-; i.e,. mvn_swe_makecdf_xxx, data, version = version
+; version number is inserted from the swea common block
 
   mvn_swe_makecdf_3d, ddd_svy, directory=directory
   mvn_swe_makecdf_3d, ddd_arc, directory=directory
@@ -80,7 +93,8 @@ Pro mvn_swe_l2gen, date = date, directory = directory, _extra = _extra
 ; Make kp save file:
   del_data, '*'                 ;delete all tplot variables so files 
                                 ;aren't made from the previous day's data
-  mvn_swe_kp, trange
+
+  if ~keyword_set(nokp) then mvn_swe_kp, trange
 
 Return
 End

@@ -27,8 +27,8 @@
 ;                      Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 14:43:14 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17641 $
+; $LastChangedDate: 2015-05-25 16:18:55 -0700 (Mon, 25 May 2015) $
+; $LastChangedRevision: 17700 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -230,9 +230,27 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 
     pad[n].dt_arr = 2.^(pkt.group)        ; energy bin summing only
 
-; Pitch angle map
+; Insert MAG1 data, if available.  This is distinct from the MAG angles
+; included in the PAD packets (A2, A3), which are calculated by flight
+; software using a basic calibration.
 
-    pam = mvn_swe_padmap(pkt)
+    if (addmag) then begin
+      dt = min(abs(pad[n].time - swe_mag1.time),i)
+      if (dt lt 1D) then begin
+        magf = swe_mag1[i].magf
+        magl = swe_mag1[i].level
+      endif else begin
+        magf = 0.
+        magl = 0B
+      endelse
+      pad[n].magf = magf
+      pad[n].maglev = magl
+    endif
+
+; Pitch angle map.  Use MAG L1 or L2 data, if available, via MAGF keyword.
+; Otherwise, use the MAG angles contained in the A2/A3 packets.
+
+    pam = mvn_swe_padmap(pkt,magf=magf)
     pad[n].pa = transpose(pam.pa)
     pad[n].dpa = transpose(pam.dpa)
     pad[n].pa_min = transpose(pam.pa_min)
@@ -266,7 +284,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     pad[n].theta = transpose(swe_el[pam.jel,*,pkt.group])
     pad[n].dtheta = transpose(swe_del[pam.jel,*,pkt.group])
 
-; Fill in the azimuth array - no energy dependance (units = deg)
+; Fill in the azimuth array - no energy dependence (units = deg)
 
     pad[n].phi = replicate(1.,64) # swe_az[pam.iaz]
     pad[n].dphi = replicate(1.,64) # swe_daz[pam.iaz]
@@ -305,15 +323,6 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     pad[n].iaz = pam.iaz
     pad[n].jel = pam.jel
     pad[n].k3d = pam.k3d
-
-; Insert MAG1 data, if available.  This is distinct from the MAG angles
-; included in the PAD packets (A2, A3), which are calculated by flight
-; software using a basic calibration.
-
-    if (addmag) then begin
-      dt = min(abs(pad[n].time - swe_mag1.time),i)
-      if (dt lt 1D) then pad[n].magf = swe_mag1[i].magf
-    endif
 
 ; Insert spacecraft potential, if available
 
@@ -354,7 +363,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     if (count gt 0L) then scale[*,*,indx] = swe_crosscal[i]
   endfor
   
-  pad.eff /= scale
+  pad.gf /= scale
 
 ; Sum the data
 
