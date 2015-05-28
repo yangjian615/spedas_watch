@@ -22,15 +22,15 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-19 11:34:01 -0700 (Sun, 19 Apr 2015) $
-; $LastChangedRevision: 17361 $
+; $LastChangedDate: 2015-05-26 12:05:22 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17721 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_snap_layout.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_snap_layout, layout
 
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
   
   if (size(layout,/type) eq 0) then begin
     print,"Hardware-dependent positions for snapshot windows (optional)."
@@ -57,6 +57,7 @@ pro swe_snap_layout, layout
              Popt = {xsize:800, ysize:600, xpos:300,  ypos:-600}  ; PAD
              Nopt = {xsize:450, ysize:600, xpos:1130, ypos:-600}
              Copt = {xsize:500, ysize:700, xpos:1000, ypos:-700}
+             Fopt = {xsize:400, ysize:600, xpos:1130,  ypos:-600}
 
              Eopt = {xsize:400, ysize:600, xpos:720,  ypos:-600}  ; SPEC
              Hopt = {xsize:225, ysize:545, xpos:480, ypos:-600}
@@ -71,6 +72,7 @@ pro swe_snap_layout, layout
              Popt = {xsize:800, ysize:600, xpos:1120, ypos:640}  ; PAD
              Nopt = {xsize:450, ysize:600, xpos:880,  ypos:500}
              Copt = {xsize:500, ysize:700, xpos:1000, ypos:-700}
+             Fopt = {xsize:400, ysize:600, xpos:880, ypos:640}
 
              Eopt = {xsize:400, ysize:600, xpos:1120, ypos:640}  ; SPEC
              Hopt = {xsize:200, ysize:545, xpos:880,  ypos:500}
@@ -85,6 +87,7 @@ pro swe_snap_layout, layout
              Popt = {xsize:800, ysize:600, xpos:240,  ypos:-600}  ; PAD
              Nopt = {xsize:600, ysize:450, xpos:1050, ypos:-600}
              Copt = {xsize:500, ysize:700, xpos:1000, ypos:-700}
+             Fopt = {xsize:400, ysize:600, xpos:1050,  ypos:-600}
 
              Eopt = {xsize:400, ysize:600, xpos:240,  ypos:-600}  ; SPEC
              Hopt = {xsize:200, ysize:545, xpos:700,  ypos:-540}
@@ -99,6 +102,7 @@ pro swe_snap_layout, layout
              Popt = {xsize:800, ysize:600, xpos:1600, ypos:300}  ; PAD
              Nopt = {xsize:600, ysize:450, xpos:2420, ypos:450}
              Copt = {xsize:500, ysize:700, xpos:1000, ypos:-700}
+             Fopt = {xsize:400, ysize:600, xpos:2420, ypos:300}
 
              Eopt = {xsize:400, ysize:600, xpos:1600, ypos:300}  ; SPEC
              Hopt = {xsize:200, ysize:545, xpos:2020, ypos:355}
@@ -113,6 +117,7 @@ pro swe_snap_layout, layout
              Popt = {xsize:800, ysize:600, xpos:1920+100, ypos:640}  ; PAD
              Nopt = {xsize:600, ysize:450, xpos:1920+1000, ypos:640}
              Copt = {xsize:500, ysize:700, xpos:1000, ypos:-700}
+             Fopt = {xsize:400, ysize:600, xpos:1920+1000, ypos:640}
 
              Eopt = {xsize:400, ysize:600, xpos:1920+100, ypos:640}  ; SPEC
              Hopt = {xsize:200, ysize:545, xpos:1920+600, ypos:640}
@@ -127,6 +132,7 @@ pro swe_snap_layout, layout
              Popt = {xsize:800, ysize:600, xpos:2560+100, ypos:640}  ; PAD
              Nopt = {xsize:600, ysize:450, xpos:2560+1000, ypos:640}
              Copt = {xsize:500, ysize:700, xpos:1000, ypos:-700}
+             Fopt = {xsize:400, ysize:600, xpos:2560+1000, ypos:640}
 
              Eopt = {xsize:400, ysize:600, xpos:2560+100, ypos:640}  ; SPEC
              Hopt = {xsize:200, ysize:545, xpos:2560+600, ypos:640}
@@ -141,6 +147,7 @@ pro swe_snap_layout, layout
              Popt = {xsize:800, ysize:600, xpos:0, ypos:0}  ; PAD
              Nopt = {xsize:600, ysize:450, xpos:0, ypos:0}
              Copt = {xsize:500, ysize:700, xpos:0, ypos:0}
+             Fopt = {xsize:400, ysize:600, xpos:0, ypos:0}
 
              Eopt = {xsize:400, ysize:600, xpos:0, ypos:0}  ; SPEC
              Hopt = {xsize:200, ysize:545, xpos:0, ypos:0}

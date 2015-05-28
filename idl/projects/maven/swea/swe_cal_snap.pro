@@ -26,8 +26,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-24 12:37:10 -0700 (Sun, 24 May 2015) $
-; $LastChangedRevision: 17694 $
+; $LastChangedDate: 2015-05-26 12:05:22 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17721 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_cal_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -36,7 +36,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
                   archive=archive
 
   @mvn_swe_com
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
 
   if not keyword_set(units) then units = 'rate'
   if keyword_set(archive) then aflg = 1 else aflg = 0

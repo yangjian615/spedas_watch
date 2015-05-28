@@ -27,8 +27,8 @@
 ;                      Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 16:18:55 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17700 $
+; $LastChangedDate: 2015-05-26 12:03:52 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17719 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -93,7 +93,13 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 
     if (addmag) then begin
       dt = min(abs(pad[n].time - swe_mag1.time),j)
-      if (dt lt 1D) then pad[n].magf = swe_mag1[j].magf
+      if (dt lt 1D) then begin
+        pad[n].magf = swe_mag1[j].magf
+        pad[n].maglev = swe_mag1[j].level
+      endif else begin
+        pad[n].magf = 0.
+        pad[n].maglev = 0B
+      endelse
     endif
 
     if (addpot) then begin
@@ -117,9 +123,10 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     fake_pkt.group = pad.group
 
     for i=0L,(npts-1L) do begin
-      pam = mvn_swe_padmap(fake_pkt[i])
-;     pad[i].pa     = pam.pa     ; obtained from the CDF
-;     pad[i].dpa    = pam.dpa    ; obtained from the CDF
+      if (pad[i].maglev gt 0B) then magf = pad[i].magf else magf = 0
+      pam = mvn_swe_padmap(fake_pkt[i],magf=magf)
+      pad[i].pa     = transpose(pam.pa)
+      pad[i].dpa    = transpose(pam.dpa)
       pad[i].pa_min = transpose(pam.pa_min)
       pad[i].pa_max = transpose(pam.pa_max)
       pad[i].theta  = transpose(swe_el[pam.jel,*,pad[i].group])

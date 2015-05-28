@@ -18,7 +18,9 @@
 ;           process. This ignores the input time. This option
 ;           replicates the proceesing done by
 ;           thm_reprocess_l2gen_days.
-; out_dir = the directory in which you write the data, default is './'
+; out_dir = the directory in which you write the data, default defined
+;           by the MAVEN directory structure, e.g.:
+;               '/disks/data/maven/data/sci/swe/l2/YYYY/MM/'
 ; use_file4time = if set, use filenames for time test instead of file
 ;                 modified time, useful for reprocessing
 ; search_time_range = if set, then use this time range to find files
@@ -28,11 +30,16 @@
 ;                L0's. Note that L0 is still used for file
 ;                searching, so you might want to use this with the
 ;                days_in option. (passed through to mvn_swe_l2gen.pro)
+; l2only = if set, then insist on using L2 MAG data for generating 
+;          L2 PAD data
+; no_reset_time = if set, then don't reset the time in 
+;                 most_recent_l0_processed.txt (useful for repocessing
+;                 data without affecting the cron job)
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen, 17-Apr-2014, jmm
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-11-19 10:38:49 -0800 (Wed, 19 Nov 2014) $
-; $LastChangedRevision: 16239 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-05-26 13:42:56 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17724 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_swe_l2gen.pro $
 ;-
 Pro mvn_call_swe_l2gen, time_in = time_in, $
@@ -41,6 +48,8 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
                         use_file4time = use_file4time, $
                         search_time_range = search_time_range, $
                         days_in = days_in, $
+                        l2only = l2only, $
+                        no_reset_time = no_reset_time, $
                         _extra = _extra
   
   common temp_call_swe_l2gen, load_position
@@ -69,7 +78,8 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
      endcase
   endif
   If(keyword_set(out_dir)) Then odir = out_dir Else odir = '/disks/data/maven/data/sci/'
-
+  If(keyword_set(l2only)) Then l2only = 1 Else l2only = 0
+  
 ;--------------------------------
   instr = 'swe'
   ninstr = n_elements(instr)
@@ -183,8 +193,10 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
            load_position = 'l2gen'
            message, /info, 'PROCESSING: '+instrk+' FOR: '+timei
            Case instrk Of
-              'swe': mvn_swe_l2gen, date = timei, directory = filei_dir, _extra=_extra
-              Else: mvn_swe_l2gen, date = timei, directory = filei_dir, _extra=_extra
+              'swe': mvn_swe_l2gen, date = timei, directory = filei_dir, $
+                                    l2only = l2only, _extra=_extra
+              Else: mvn_swe_l2gen, date = timei, directory = filei_dir, $
+                                    l2only = l2only, _extra=_extra
            Endcase
            SKIP_FILE: 
            del_data, '*'
@@ -194,6 +206,8 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
      Endelse
   Endfor
 ;reset file time
+  If(keyword_set(no_reset_time)) Then btime_set_from_file = 0b
+
   If(btime_set_from_file && times_of_procfiles[0] Gt 0) Then Begin
      message, /info, 'Resetting last file time:'
      timefile = file_search(odir+'swe/l2/most_recent_l0_processed.txt')

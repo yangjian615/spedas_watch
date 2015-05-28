@@ -55,8 +55,8 @@
 ;                      allows multiple calls to load subsets of the data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-11 12:10:20 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16954 $
+; $LastChangedDate: 2015-05-26 12:01:06 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17717 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l2.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-02-15
@@ -160,9 +160,9 @@ pro mvn_swe_load_l2, trange, filename=filename, latest=latest, spec=spec, pad=pa
     trange = [0D]
     for i=0,(nfiles-1) do begin
       fbase = file_basename(file[i])
-      yyyy = strmid(fbase,20,4,/reverse)
-      mm = strmid(fbase,16,2,/reverse)
-      dd = strmid(fbase,14,2,/reverse)
+      yyyy = strmid(fbase,19,4,/reverse)
+      mm = strmid(fbase,15,2,/reverse)
+      dd = strmid(fbase,13,2,/reverse)
       t0 = time_double(yyyy + '-' + mm + '-' + dd)
       trange = [trange, t0, (t0 + oneday)]
     endfor

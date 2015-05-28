@@ -6,7 +6,7 @@
 ; CALLING SEQUENCE:
 ;       slice2d, dat
 ; INPUTS:
-;       dat: standard 3d data structure
+;       dat: standard 3d data structure (cf. 3d_structure.pro)
 ; KEYWORDS:
 ;       all optional
 ;       ROTATION: (case insensitive)
@@ -52,7 +52,7 @@
 ;                 IF NOT SET, DEFAULT IS SMOOTH (boxcar smoothing w/ width=3)
 ;       SUNDIR: specifies the sun direction in the instrument coordinates
 ;               if set, sun direction line is plotted
-;       NOVELLINE: suppresses the velocity line
+;       NOVELLINE: suppresses the red velocity line
 ;       SUBTRACT: subtracts the bulk velocity before plot
 ;                 if there are few data points around (0,0), use
 ;                 ThirdDirLim keyword to select data points
@@ -61,11 +61,11 @@
 ;       XTITLE, YTITLE, ZTITLE, TITLE: set titles
 ; CREATED BY:
 ;       Yuki Harada on 2014-05-26
-;       Modified from 'thm_esa_slice2d'
+;       Modified from 'thm_esa_slice2d' written by Arjun Raj & Xuzhi Zhou
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-05-16 21:25:50 -0700 (Sat, 16 May 2015) $
-; $LastChangedRevision: 17633 $
+; $LastChangedDate: 2015-05-26 15:23:45 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17730 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
@@ -170,7 +170,7 @@ endif else begin
    dprint,'Add a mass tag to the structure by using, e.g., str_element'
    dprint,'for electrons:'
    dprint,"> str_element,dat, 'MASS', 5.6856591e-6, /add"
-   dprint,'for protons, mass is 1836*5.6856591e-6 eV/(km/sec)^2'
+   dprint,'for protons, mass = 1836*5.6856591e-6 eV/(km/sec)^2'
    return
 endelse
 
@@ -205,6 +205,10 @@ for i=0,dat2.nenergy-1 do begin
                      and finite(dat2.data[i,*]) eq 1 , nbins )
    if nbins gt 0 then begin
       x = fltarr(nbins) & y = fltarr(nbins) & z = fltarr(nbins)
+
+      w = where( dat2.phi eq 0. , nw ) ;- deals w/ colinear err @triangulate
+      if nw gt 0 then dat2.phi = dat2.phi + .00001
+
       sphere_to_cart,1,reform(dat2.theta[i,currbins]),reform(dat2.phi[i,currbins]), x,y,z
       totalx = [totalx, x * reform(sqrt(2*dat2.energy[i,currbins]/mass))]
       totaly = [totaly, y * reform(sqrt(2*dat2.energy[i,currbins]/mass))]

@@ -15,14 +15,27 @@
 ;
 ;	Keywords:   res     = sampling interval (by default 60 sec)
 ;                   sites   = observatory name; default is to use high-latitude
-;                             THEMIS sites  plus a few more: 
+;                             For dates prior to 2015-01-01 THEMIS sites are: 
 ;                             ['atha', 'chbg', 'ekat', 'fsim', 'fsmi', 'fykn', $
 ;                              'gako', 'gbay', 'gill', 'inuv', 'kapu', 'kian', $
 ;                              'kuuj', 'mcgr', 'pgeo', 'pina', 'rank', 'snap', $
 ;                              'snkq', 'tpas', 'whit', 'yknf', 'fcc', 'cmo', $
 ;                              'naq', 'lrv'] ;made an array to facilitate the use of split_vec later
+;                             For dates on or after 2015-01-01 sites are:
+;                   sites = ['atha', 'chbg', 'ekat', 'fsim', 'fsmi', 'fykn', $
+;                             'gako', 'gbay', 'gill', 'inuv', 'kapu', 'kian', $
+;                             'kuuj', 'mcgr', 'pgeo', 'pina', 'rank', 'snap', $
+;                             'snkq', 'tpas', 'whit', 'yknf', 'fcc', 'cmo', $
+;                             'naq', 'lrv'] 
+;                              ** Sites were changed from 2015 because many of the 
+;                                 original sites were no longer operational or 
+;                                 had poor quality data. Also because so many new
+;                                 networks were added to the magnetometer data
+;                                 served at UCB and UCLA
 ;                             If set to 'all', all available sites
 ;                             will be loaded and used.
+;                             
+;                             
 ;                   no_load = if set, use existing gmag (THEMIS) tplot variables which have
 ;                             already been loaded into the active TDAS environment
 ;                             if not set, load gmag data (either
@@ -47,10 +60,11 @@
 ;                   jmm
 ;                   Added max deviation, extra despike of magnetic
 ;                   field prior to index calculation, 4-nov-2013, jmm
+;                   Added new site list for 2015 and later 22-may-2015, clr
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2015-05-26 09:04:42 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17714 $
 ; $URL $
 ;-
 
@@ -96,12 +110,13 @@ end
 
 pro thm_make_AE, res = res, sites = sites, no_load = no_load, max_deviation = max_deviation, _extra = _extra
 
+@tplot_com
 
 ; set default time resolution
 ;----------------------------
 if not keyword_set(res) then res = 60d   ; 60 sec resolution
 res=double(res)
-
+date2015=time_double('2015-01-01')
 
 ; load gmag data
 ;----------------
@@ -109,19 +124,28 @@ if not keyword_set(no_load) then begin
 ;allow for sites keyword to operate
   if keyword_set(sites) then begin
     thm_load_gmag, site = vsites, /valid_names ;check name validity here:
-    x4 = where(strlen(vsites) Eq 4) ;avoid alt greenland sites
-    vsites = vsites[x4]
+    ;x4 = where(strlen(vsites) Eq 4) ;avoid alt greenland sites
+    ;vsites = vsites[x4]
     site_load = ssl_check_valid_name(sites, vsites, /ignore_case, /include_all, /no_warning)
     If(is_string(site_load) Eq 0) Then Begin
       dprint, 'No Valid sites? '+sites
       Return
     Endif
   endif else begin
-    site_load = ['atha', 'chbg', 'ekat', 'fsim', 'fsmi', 'fykn', $
+    if tplot_vars.options.trange[0] EQ 0 OR tplot_vars.options.trange GE date2015 then begin
+     site_load = ['pbk', 'tik', 'dik', 'amd', 'nor', 'hop', 'jck', 'and', 'nal',   $
+           'roe', 'dob', 'sol', 'dmh', 'lvr', 'leth', 'naq', 'stf', 'kuv',   $
+           'nain', 'sept', 'thl', 'salu', 'vldr', 'inuk', 'rbay', 'rank',   $
+           'fsmi', 'atha', 'gill', 'fsim', 'inuv', 'whit', 'sit', 'kako',   $
+           'fykn', 'cigo', 'trap', 'ded', 'brw', 'kian', 'shu']
+    endif else begin
+     site_load = ['atha', 'chbg', 'ekat', 'fsim', 'fsmi', 'fykn', $
                  'gako', 'gbay', 'gill', 'inuv', 'kapu', 'kian', $
                  'kuuj', 'mcgr', 'pgeo', 'pina', 'rank', 'snap', $
                  'snkq', 'tpas', 'whit', 'yknf', 'fcc', 'cmo', $
                  'naq', 'lrv'] ;made an array to facilitate the use of split_vec later
+    endelse   
+
   endelse
   thm_load_gmag, /subtract_median, site = site_load
   sites_varnames = tnames('thg_mag_'+site_load)

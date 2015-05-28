@@ -10,6 +10,14 @@
 ;                 automatically show the snapshot. In this case, the
 ;                 cursor does not appear in a tplot window.
 ;
+;CAUTION:         *** !!! ***
+;                 The velocity is computed under the assumption that  
+;                 all the observed ions are protons (i.e., m/q = 1) as default.
+;                 If user wants to show it as the other ion species, such as O+ or O2+, 
+;                 user must use the "m_int" keyword like m_int=16 or m_int=32. 
+;                 Please see also the usage example #2.
+;                 *** !!! ***
+;
 ;KEYWORDS:        All the keywords included in 'slice2d' are acceptable. 
 ;
 ;   ARCHIVE:      Returns archive distribution instead of survey.
@@ -51,7 +59,7 @@
 ;                 ; Draws the oxygen ion velocity distribution
 ;                 ; function in the plane perpendicular to the B field.   
 ;
-;                 mvn_sta_3d_snap, t, mass=[12., 20.], m_int=16., _extra={rot: 'perp'} 
+;                 mvn_sta_slice2d_snap, t, mass=[12., 20.], m_int=16., _extra={rot: 'perp'} 
 ;
 ;         3.      ; Advanced case
 ;                 ; Uses 'ctime' procedure with "routine" keyword.
@@ -65,8 +73,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-05-22 23:49:09 -0700 (Fri, 22 May 2015) $
-; $LastChangedRevision: 17688 $
+; $LastChangedDate: 2015-05-26 16:28:09 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17732 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
@@ -92,9 +100,9 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
   ENDELSE 
   ochsz = !p.charsize
   IF keyword_set(chsz) THEN !p.charsize = chsz
-  IF keyword_set(archive) THEN aflg = 1 ELSE aflg = 0
-  IF keyword_set(burst) THEN aflg = 1 ELSE aflg = 0
-
+  IF keyword_set(archive) THEN aflg = 1
+  IF keyword_set(burst) THEN aflg = 1
+  IF SIZE(aflg, /type) EQ 0 THEN aflg = 0
   IF keyword_set(mass) THEN mmin = MIN(mass, max=mmax)
   IF keyword_set(mmin) AND ~keyword_set(mmax) THEN mtit = STRING(mmin, '(F0.1)') + ' < m/q'
   IF keyword_set(mmax) AND ~keyword_set(mmin) THEN mtit = 'm/q < ' + STRING(mmax, '(F0.1)')

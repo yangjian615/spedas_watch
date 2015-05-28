@@ -5,8 +5,8 @@
 ; displayed using doc_library.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-09 12:35:33 -0800 (Mon, 09 Feb 2015) $
-; $LastChangedRevision: 16919 $
+; $LastChangedDate: 2015-05-26 17:21:07 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17734 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crib.pro $
 ;--------------------------------------------------------------------
 ;
@@ -80,7 +80,16 @@ mvn_swe_sumplot, /eph, /orb
 ; Load MAG data, rotate to SWEA coordinates, and smooth to SWEA PAD 
 ; resolution (1-sec averages over second half of sweep).  These data 
 ; are stored in a common block for quick access by mvn_swe_getpad and 
-; mvn_swe_get3d.
+; mvn_swe_get3d.  This procedure loads the highest level MAG data
+; available:
+;
+;   L0 --> unit vector in direction of B (calculated onboard)
+;   L1 --> MAG "quicklook" with only gains and offsets applied
+;   L2 --> MAG Level 2 data with all corrections
+;
+; See the MAGLEV tag in the SWEA PAD and 3D structures to see which
+; MAG level you have.  Pitch angle mapping is performed with the 
+; level shown in the structure.
 
 mvn_swe_addmag
 
@@ -113,9 +122,13 @@ mvn_swe_sc_pot, /overlay, /ddd, /mask_sc
 
 mvn_swe_sundir, pans=pans
 
-; Determine the RAM direction in spacecraft or APP coordinates
+; Determine the RAM direction in spacecraft coordinates
 ;   Requires SPICE.  The RAM direction is calculated with respect to
 ;   the IAU_MARS frame (planetocentric, body-fixed).
+;
+;   Use keyword FRAME to calculate the RAM direction in any MAVEN 
+;   frame recognized by SPICE.  (Keyword APP is shorthand for 
+;   FRAME='MAVEN_APP'.)
 
 mvn_sc_ramdir, pans=pans
 
@@ -153,6 +166,12 @@ mvn_swe_pad_resample, nbins=128., erange=[100., 150.], /norm, /mask, /silent
 mvn_swe_pad_resample, nbins=128., erange=[100., 150.], /norm, /mask, $
                      /ddd, /map3d, /silent
 
+; Load resampled PAD data from pre-calculated IDL save/restore files into
+; a TPLOT variable.  (Much faster than above, but may use L1 MAG data, and
+; there are no options.)
+
+mvn_swe_pad_restore
+
 ; Snapshots selected by the cursor in the tplot window
 ;   Return data by keyword (ddd, pad, spec) at the last place clicked
 ;   Use keyword SUM to sum data between two clicks.  (Careful with
@@ -175,3 +194,24 @@ swe_3d_snap,/spec,/symdir,energy=130,ddd=ddd,smo=[5,1,1]
 ddd = mvn_swe_get3d(time, units='eflux')
 pad = mvn_swe_getpad(time)
 spec = mvn_swe_getspec(time)
+
+;
+; Visualizing the orbit and spacecraft location
+
+; Load the spacecraft ephemeris from MOI to the current date plus
+; a few weeks into the future.  Uses reconstructed ephemeris data
+; as much as possible, then predicts as far as NAIF provides them.
+; Use the LOADONLY keyword to load the ephemeris into TPLOT without
+; resetting the time range.
+;
+; Ephemeris data are updated daily at 3:30 am Pacific.
+
+maven_orbit_tplot,/loadonly
+
+; Plot snapshots of the orbit in three orthogonal MSO planes.
+; Optionally plot the orbit in cylintrical coordinates (/CYL),
+; IAU_MARS coordinates (MARS=1 or MARS=2), etc.  Use doc_library 
+; to see all the options. (Each keyword opens a separate window.)
+; Press and hold the left mouse button and drag for a movie effect.
+
+maven_orbit_snap

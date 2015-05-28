@@ -70,8 +70,8 @@
 ;                      the 3D plot.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 16:19:57 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17702 $
+; $LastChangedDate: 2015-05-26 12:02:39 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17718 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -84,7 +84,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  plot_sc=plot_sc, padmap=padmap, pot=pot
 
   @mvn_swe_com
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
 
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)
@@ -140,7 +140,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
   if keyword_set(spec) then sflg = 1 else sflg = 0
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
-  if keyword_set(padmag) then pflg = 1 else pflg = 0
+  if (keyword_set(padmag) and (size(a2,/type) eq 8)) then pflg = 1 else pflg = 0
   if (size(ebins,/type) eq 0) then ebins = reverse(4*indgen(16))
   if not keyword_set(symenergy) then symenergy = 130.
   if not keyword_set(pow) then pow = 3.
@@ -266,8 +266,18 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
         Baz = Baz*!radeg
         Bel = Bel*!radeg
         if (abs(Bel) gt 61.) then col=255 else col=0
-        oplot,[Baz],[Bel],psym=1,color=col,thick=2,symsize=1.5
-        oplot,[Baz+180.],[-Bel],psym=4,color=col,thick=2,symsize=1.5
+        oplot,[Baz],[Bel],psym=1,color=col,thick=2,symsize=1.7
+        oplot,[Baz+180.],[-Bel],psym=4,color=col,thick=2,symsize=1.7
+      endif
+      
+      if (ddd.maglev gt 0B) then begin
+        magf = ddd.magf
+        Bamp = sqrt(total(magf*magf))
+        Baz = atan(magf[1],magf[0])*!radeg
+        Bel = asin(magf[2]/Bamp)*!radeg
+        if (abs(Bel) gt 61.) then col=255 else col=0
+        oplot,[Baz],[Bel],psym=1,color=col,thick=2,symsize=1.7
+        oplot,[Baz+180.],[-Bel],psym=4,color=col,thick=2,symsize=1.7
       endif
 
       if keyword_set(label) then begin
@@ -339,7 +349,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
         pa = reform(ddd.pa[63,*],16,6)*!radeg
 
         contour,pa,levels=10*indgen(19),c_labels=replicate(1,19),$
-              xtitle='Azimuth Bin',ytitle='Elevation Bin',charsize=1.4
+              xtitle='Azimuth Bin',ytitle='Elevation Bin',charsize=1.4,$
+              title='Pitch Angle Map'
 
 ;        plot,[0,15],[90,90],yrange=[0,180],/ysty,yticks=6,yminor=3,$
 ;              xtitle='Azimuth Bin',ytitle='Pitch Angle (deg)',charsize=1.4

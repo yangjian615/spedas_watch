@@ -54,8 +54,8 @@
 ;                      Any value of SPEC < 30 deg is taken to be 30 deg.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 16:17:52 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17698 $
+; $LastChangedDate: 2015-05-26 17:08:56 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17733 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -67,7 +67,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   pot=pot, spec=spec
 
   @mvn_swe_com
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if keyword_set(burst) then aflg = 1
@@ -159,7 +159,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   endif
   
   if (dospec) then begin
-    window, /free, xsize=Eopt.xsize, ysize=Eopt.ysize, xpos=Eopt.xpos, ypos=Eopt.ypos
+    window, /free, xsize=Fopt.xsize, ysize=Fopt.ysize, xpos=Fopt.xpos, ypos=Fopt.ypos
     Ewin = !d.window
   endif
 
@@ -179,16 +179,31 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   ctime2,trange,npoints=npts,/silent,button=button
 
   if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
-    wdelete,Pwin                          ; Don't keep empty windows.
+    wdelete,Pwin                           ; Don't keep empty windows.
     if (sflg) then wdelete,Nwin
     if (dospec) then wdelete,Ewin
     wset,Twin
     return
   endif
   
-  IF keyword_set(dir) THEN $
-     IF (aflg) THEN get_mvn_eph, a3.time, pos, verbose=-1 $
-     ELSE get_mvn_eph, a2.time, pos, verbose=-1 
+  if keyword_set(dir) then begin
+    if (aflg) then begin
+      str_element, mvn_swe_pad_arc, 'time', ptime, success=ok
+      if (not ok) then str_element, a3, 'time', ptime, success=ok
+    endif else begin
+      str_element, mvn_swe_pad, 'time', ptime, success=ok
+      if (not ok) then str_element, a2, 'time', ptime, success=ok
+    endelse
+    if (not ok) then begin
+      print,"No PAD data!"
+      wdelete,Pwin                         ; Don't keep empty windows.
+      if (sflg) then wdelete,Nwin
+      if (dospec) then wdelete,Ewin
+      wset,Twin
+      return
+    endif
+    get_mvn_eph, ptime, pos, verbose=-1
+  endif
 
   ok = 1
 

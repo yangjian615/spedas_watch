@@ -47,8 +47,8 @@
 ;
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-09-16 16:26:35 -0700 (Tue, 16 Sep 2014) $
-;   $LastChangedRevision: 15808 $
+;   $LastChangedDate: 2015-05-26 07:02:22 -0700 (Tue, 26 May 2015) $
+;   $LastChangedRevision: 17713 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/utils/rbsp_rotate_field_2_vec.pro $
 ;-
 
@@ -233,6 +233,7 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
      Emax = fltarr(n_elements(vec.x),3)
      Eint = fltarr(n_elements(vec.x),3)
      Emin = fltarr(n_elements(vec.x),3)
+     khat = fltarr(n_elements(vec.x),3)
      theta_kb = fltarr(n_elements(vec.x))
      dtheta_kb = fltarr(n_elements(vec.x))
 
@@ -248,12 +249,14 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
         Emaxt = vals.eigenvectors[*,2]*vals.eigenvalues[0]
         Eintt = vals.eigenvectors[*,1]*vals.eigenvalues[1]
         Emint = vals.eigenvectors[*,0]*vals.eigenvalues[2]
-        
+
+
         Emax_mag = sqrt(total(Emaxt^2))
         Eint_mag = sqrt(total(Eintt^2))
         Emin_mag = sqrt(total(Emint^2))
         Emax_hat = Emaxt/Emax_mag
-        
+ 
+       
         zs = reform(vec.y[j,*]/Vecmag[j])
         ys = crossp(zs,Emax_hat)
         ysmag = sqrt(ys[0]^2 + ys[1]^2 + ys[2]^2)
@@ -276,6 +279,7 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
         Emax[j,*] = [total(Emaxt*xs),total(Emaxt*ys),total(Emaxt*zs)]
         Eint[j,*] = [total(Eintt*xs),total(Eintt*ys),total(Eintt*zs)]
         Emin[j,*] = [total(Emint*xs),total(Emint*ys),total(Emint*zs)]
+        khat[j,*] = vals.k_hat
         theta_kb[j,*] = vals.theta_kb
         dtheta_kb[j,*] = vals.dtheta
 
@@ -306,6 +310,10 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
      store_data,'eint2emin',data={x:vec.x,y:Eint_mag/Emin_mag}
      store_data,'theta_kb',data={x:vec.x,y:theta_kb}
      store_data,'dtheta_kb',data={x:vec.x,y:dtheta_kb}
+     store_data,'emax_unitvec',data={x:vec.x,y:Emax/Emax_mag}  ;defined in terms of input coord
+     store_data,'eint_unitvec',data={x:vec.x,y:Eint/Eint_mag}  
+     store_data,'emin_unitvec',data={x:vec.x,y:Emin/Emin_mag}  
+     store_data,'k_unitvec',data={x:vec.x,y:khat}
      
      struct = {notes:['ROTATED TO MIN-VAR COORDINATES']}
      

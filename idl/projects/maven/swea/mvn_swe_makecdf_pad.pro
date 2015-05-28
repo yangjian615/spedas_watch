@@ -23,8 +23,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-05-25 17:11:51 -0700 (Mon, 25 May 2015) $
-;   $LastChangedRevision: 17704 $
+;   $LastChangedDate: 2015-05-26 22:17:11 -0700 (Tue, 26 May 2015) $
+;   $LastChangedRevision: 17735 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_pad.pro $
 ;
 ;-
@@ -45,9 +45,12 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
 ; Access MAG L2 data
 
   if keyword_set(l2_only) then begin
-    if (size(swe_mag1,/type) ne 8) then begin
+    str_element, swe_mag1, 'level', maglev, success=ok
+    if (ok) then if (maglev[0] lt 2B) then ok = 0
+    if (not ok) then begin
       print,"No L2 MAG data!"
       print,"CDF file not created."
+      return
     endif
   endif
 
@@ -116,6 +119,8 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
 ; Read version number from common block (SWE_CFG) defined in mvn_swe_calib.pro
 
     if (not keyword_set(version)) then version = mvn_swe_version
+    ver_str = string(version, format='(i2.2)')
+    file = file + '_v' + ver_str
 
 ; Search for previously generated CDF files for this date.
 ; Check for latest reversion number, add one to it (delete/overwrite old version)
@@ -131,14 +136,15 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
 
 ; Append version and revision to the file name
 
-    vers_str = string(version, format='(i2.2)')
     rev_str = string(revision, format='(i2.2)')
 
-    head_file = file + '_v' + vers_str + '_r' + rev_str + '.cdf'
+    head_file = file + '_r' + rev_str + '.cdf'
     file = path + head_file
 
-  endif else $ ; if (not keyword_set(file))
-    rev_str = '01' ; needed in the header
+  endif else begin ; if (not keyword_set(file))
+    ver_str = '00' ; needed in the header
+    rev_str = '00' ; needed in the header
+  endelse
 
   print, file
 
@@ -231,7 +237,7 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   cdf_attput, fileid, 'Data_type',                  0, $
     'CAL>Calibrated'
   cdf_attput, fileid, 'Data_version',               0, $
-    rev_str ; revision
+    ver_str ; version
   cdf_attput, fileid, 'TEXT',                       0, $
     'MAVEN SWEA Pitch Angle Distributions'
   cdf_attput, fileid, 'Mods',                       0, $

@@ -26,8 +26,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 16:18:29 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17699 $
+; $LastChangedDate: 2015-05-26 12:04:24 -0700 (Tue, 26 May 2015) $
+; $LastChangedRevision: 17720 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -92,7 +92,13 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
 
     if (addmag) then begin
       dt = min(abs(ddd[n].time - swe_mag1.time),j)
-      if (dt lt 1D) then ddd[n].magf = swe_mag1[j].magf
+      if (dt lt 1D) then begin
+        ddd[n].magf = swe_mag1[j].magf
+        ddd[n].maglev = swe_mag1[j].level
+      endif else begin
+        ddd[n].magf = 0.
+        ddd[n].maglev = 0B
+      endelse
     endif
 
     if (addpot) then begin
