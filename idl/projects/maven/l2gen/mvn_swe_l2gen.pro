@@ -13,42 +13,44 @@
 ;             purposes, don't forget a slash '/'  at the end.
 ; l2only = If set, only generate PAD L2 data if MAG L2 data are available.
 ; nokp = If set, do not generate SWEA KP data.
+; nol2 = If set, do not generate SWEA L2 data.
 ;HISTORY:
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14, jmm,
 ; jimm@ssl.berkeley.edu
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 17:28:44 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17707 $
+; $LastChangedDate: 2015-05-27 18:04:20 -0700 (Wed, 27 May 2015) $
+; $LastChangedRevision: 17754 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
-Pro mvn_swe_l2gen, date = date, directory = directory, l2only = l2only, nokp = nokp, $
-                   _extra = _extra
-; crib for loading l0 data, creating L2 CDF files, and populating structures
-; only works for one day at a time -- that's how we make L2 CDFs
+pro mvn_swe_l2gen, date = date, directory = directory, l2only = l2only, nokp = nokp, $
+                   nol2=nol2, _extra = _extra
 
-@ mvn_swe_com
+  @mvn_swe_com
+  
+  if keyword_set(l2only) then l2only = 1 else l2only = 0
 
-;Root data directory, sometimes isn't defined
+; Root data directory, sometimes isn't defined
+
   setenv, 'ROOT_DATA_DIR=/disks/data/'
 
-; pick a day
-  If(keyword_set(date)) Then time = time_string(date[0], /date_only) $
-  Else time = time_string(systime(/sec), /date_only)
+; Pick a day
 
-;time = '2014-03-26'
-;time = '2014-10-22'
-  t_start = time_double(time)
-  t_end = time_double(time) + 86400.D ; a full day
-  trange = [t_start, t_end]
-  trange_str = time_string(trange)
-;You need a timespan, so that the clock drift doesn't prompt for one
-  message, /info, 'PROCESSING: '+time_string(t_start)
-  timespan, t_start, 1
+  if (keyword_set(date)) then time = time_string(date[0], /date_only) $
+                         else time = time_string(systime(/sec,/utc), /date_only)
+
+  t0 = time_double(time)
+  t1 = t0 + 86400D
+
+  message, /info, 'PROCESSING: '+time_string(t0)
+  timespan, t0, 1
+
 ; get SPICE kernels
-  mvn_swe_spice_init, trange = trange, /force
+
+  mvn_swe_spice_init, /force
 
 ; Load L0 SWEA data
-  mvn_swe_load_l0, trange_str
+
+  mvn_swe_load_l0
 
 ; Load highest level MAG data available (for pitch angle sorting)
 ;   L0 --> MAG angles computed onboard (stored in A2/A3 packets)
@@ -57,45 +59,50 @@ Pro mvn_swe_l2gen, date = date, directory = directory, l2only = l2only, nokp = n
 
   mvn_swe_addmag
   if (size(swe_mag1,/type) eq 8) then maglev = swe_mag1[0].level else maglev = 0B
-  if (keyword_set(l2only) and (maglev lt 2B)) then begin
+  if (l2only and (maglev lt 2B)) then begin
     print,"No MAG L2 data.  No CDF files created."
     return
   endif
 
-; data variables that will populate CDF files
-  ddd_svy = mvn_swe_get3d(trange_str, /all) ; trange_str changed by program
-  trange_str = time_string(trange)
-  ddd_arc = mvn_swe_get3d(trange_str, /all, /archive)
+; Create CDF files (up to 6 of them)
 
-  trange_str = time_string(trange)
-  pad_svy = mvn_swe_getpad(trange_str, /all)
-  trange_str = time_string(trange)
-  pad_arc = mvn_swe_getpad(trange_str, /all, /archive)
+  if ~keyword_set(nol2) then begin
 
-  trange_str = time_string(trange)
-  spec_svy = mvn_swe_getspec(trange_str)
-  trange_str = time_string(trange)
-  spec_arc = mvn_swe_getspec(trange_str, /archive)
+    ddd_svy = mvn_swe_get3d([t0,t1], /all)
+    mvn_swe_makecdf_3d, ddd_svy, directory=directory
+    ddd_svy = 0
 
-; create CDFs -- 6 of them
-; version number is inserted from the swea common block
+    ddd_arc = mvn_swe_get3d([t0,t1], /all, /archive)
+    mvn_swe_makecdf_3d, ddd_arc, directory=directory
+    ddd_arc = 0
 
-  mvn_swe_makecdf_3d, ddd_svy, directory=directory
-  mvn_swe_makecdf_3d, ddd_arc, directory=directory
-  
-  mvn_swe_makecdf_pad, pad_svy, directory=directory
-  mvn_swe_makecdf_pad, pad_arc, directory=directory
+    pad_svy = mvn_swe_getpad([t0,t1], /all)
+    mvn_swe_makecdf_pad, pad_svy, directory=directory
+    pad_svy = 0
 
-  mvn_swe_makecdf_spec, spec_svy, directory=directory
-  mvn_swe_makecdf_spec, spec_arc, directory=directory
+    pad_arc = mvn_swe_getpad([t0,t1], /all, /archive)
+    mvn_swe_makecdf_pad, pad_arc, directory=directory
+    pad_arc = 0
 
-; stop here if you're only making L2 files
-; Make kp save file:
-  del_data, '*'                 ;delete all tplot variables so files 
-                                ;aren't made from the previous day's data
+    spec_svy = mvn_swe_getspec([t0,t1])
+    mvn_swe_makecdf_spec, spec_svy, directory=directory
+    spec_svy = 0
 
-  if ~keyword_set(nokp) then mvn_swe_kp, trange
+    spec_arc = mvn_swe_getspec([t0,t1], /archive)
+    mvn_swe_makecdf_spec, spec_arc, directory=directory
+    spec_arc = 0
 
-Return
-End
+  endif
+
+; Create KP save file
+
+  if ~keyword_set(nokp) then mvn_swe_kp, l2only=l2only
+
+; Clean up
+
+  store_data, '*', /delete 
+
+  return
+
+end
 

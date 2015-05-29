@@ -38,7 +38,15 @@
 ; NOTE: Minor modifications made by Patrick Cruce at IGPP/UCLA for use with
 ; THEMIS TDAS Software in July/August 2008
 ; 
-; 
+;     5/27/2015:
+;         modified by egrimes@igpp, added a note to aacgmidl to load the coefficients
+;         before trying to use these routines. also note that this previously 
+;         loaded the coefficients for year = 2000 by batch executing default.pro
+;         
+;ALSO NOTE:
+;    Haje Korth's AACGM DLM interface to the C code is significantly faster:
+;         http://ampere.jhuapl.edu/code/idl_aacgm.html
+;         
 ; 
 ; 
 ;
@@ -569,7 +577,6 @@ pro aacgmidl
   common aacgm_com,coef,cint,height_old,first_coeff_old
   common mlt_com,sol_dec_old,told,mslon1,mslon2
 
-
   coef=fltarr(121,3,5,2)
   cint=fltarr(121,3,2)
   height_old=[-1.,-1.]
@@ -578,8 +585,13 @@ pro aacgmidl
   told=1e12
   mslon1=0
   mslon2=0
-
-;@default.pro
-
+  
+  ; NOTE: must load the coefficients! they can be found in:
+  ; general/cotrans/aacgm/coef
+  rt_info = routine_info('aacgmidl',/source)
+  path = file_dirname(rt_info.path) + '/coef/'
+  load_coef, path+'aacgm_coeffs2010.asc'
+  
+  ;@default.pro
 end
 

@@ -11,8 +11,8 @@
 ;
 ; Author: Davin Larson and Roberto Livi
 ; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2015-05-07 09:37:05 -0700 (Thu, 07 May 2015) $
-; $LastChangedRevision: 17498 $
+; $LastChangedDate: 2015-05-27 14:40:14 -0700 (Wed, 27 May 2015) $
+; $LastChangedRevision: 17749 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load.pro $
 
 ;-
@@ -28,7 +28,7 @@ pro mvn_mag_load,format,$
                  pathname=pathname,$
                  data=str_all,$
                  spice_frame=spice_frame,$
-                 data_product=data_product
+                 mag_product=mag_product
   
 
   dirr_l1='maven/data/sci/mag/l1/sav/'
@@ -39,7 +39,7 @@ pro mvn_mag_load,format,$
   if n_elements(tplot_flag) eq 0 then tplot_flag=1                
   if keyword_set(format_old)     then format = format_old
   if ~keyword_set(format)        then format = 'L1_1SEC'               
-  if ~keyword_set(data_product)  then data_product = 'MAG1'
+  if ~keyword_set(mag_product)  then mag_product = 'MAG1'
 
 
   ;;------------------------------------------------------
@@ -366,18 +366,18 @@ pro mvn_mag_load,format,$
         tags = tag_names(str_all)
         pp = where(tag_names(str_all) eq 'OB_BPL_X',cc1)
         str_temp.time = str_all.time
-        if data_product eq 'MAG1' and cc1 ne 0 then begin
+        if mag_product eq 'MAG1' and cc1 ne 0 then begin
            str_temp.vec[0] = str_all.ob_bpl_x
            str_temp.vec[1] = str_all.ob_bpl_y
            str_temp.vec[2] = str_all.ob_bpl_z
         endif 
         pp = where(tag_names(str_all) eq 'IB_BPL_X',cc2)
-        if data_product eq 'MAG2' and cc2 ne 0 then begin
+        if mag_product eq 'MAG2' and cc2 ne 0 then begin
            str_temp.vec[0] = str_all.ib_bpl_x
            str_temp.vec[1] = str_all.ib_bpl_y
            str_temp.vec[2] = str_all.ib_bpl_z
         endif 
-        if cc1 eq 0 and cc2 eq 0 then stop, data_product+' is not available.'
+        if cc1 eq 0 and cc2 eq 0 then stop, mag_product+' is not available.'
         str_all = 0
         str_all = str_temp
         str_temp = 0
@@ -437,18 +437,18 @@ pro mvn_mag_load,format,$
         tags = tag_names(str_all)
         pp = where(tag_names(str_all) eq 'OB_BPL_X',cc1)
         str_temp.time = str_all.time
-        if data_product eq 'MAG1' and cc1 ne 0 then begin
+        if mag_product eq 'MAG1' and cc1 ne 0 then begin
            str_temp.vec[0] = str_all.ob_bpl_x
            str_temp.vec[1] = str_all.ob_bpl_y
            str_temp.vec[2] = str_all.ob_bpl_z
         endif 
         pp = where(tag_names(str_all) eq 'IB_BPL_X',cc2)
-        if data_product eq 'MAG2' and cc2 ne 0 then begin
+        if mag_product eq 'MAG2' and cc2 ne 0 then begin
            str_temp.vec[0] = str_all.ib_bpl_x
            str_temp.vec[1] = str_all.ib_bpl_y
            str_temp.vec[2] = str_all.ib_bpl_z
         endif 
-        if cc1 eq 0 and cc2 eq 0 then stop, data_product+' is not available.'
+        if cc1 eq 0 and cc2 eq 0 then stop, mag_product+' is not available.'
         str_all = 0
         str_all = str_temp
         str_temp = 0
@@ -507,18 +507,18 @@ pro mvn_mag_load,format,$
         tags = tag_names(str_all)
         pp = where(tag_names(str_all) eq 'OB_BPL_X',cc1)
         str_temp.time = str_all.time
-        if data_product eq 'MAG1' and cc1 ne 0 then begin
+        if mag_product eq 'MAG1' and cc1 ne 0 then begin
            str_temp.vec[0] = str_all.ob_bpl_x
            str_temp.vec[1] = str_all.ob_bpl_y
            str_temp.vec[2] = str_all.ob_bpl_z
         endif 
         pp = where(tag_names(str_all) eq 'IB_BPL_X',cc2)
-        if data_product eq 'MAG2' and cc2 ne 0 then begin
+        if mag_product eq 'MAG2' and cc2 ne 0 then begin
            str_temp.vec[0] = str_all.ib_bpl_x
            str_temp.vec[1] = str_all.ib_bpl_y
            str_temp.vec[2] = str_all.ib_bpl_z
         endif 
-        if cc1 eq 0 and cc2 eq 0 then stop, data_product+' is not available.'
+        if cc1 eq 0 and cc2 eq 0 then stop, mag_product+' is not available.'
         str_all = 0
         str_all = str_temp
         str_temp = 0

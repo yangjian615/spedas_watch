@@ -3,9 +3,7 @@
 ; Use coord = 'pgse' for pseudo-gse
 ; Use coord = 'dsl' for DSL
 
-pro mms_sitl_get_dce, sdp_status, sc_id=sc_id, coord=coord, no_update = no_update, reload = reload
-
-  sdp_status = 0
+pro mms_sitl_get_dce, sc_id=sc_id, coord=coord, no_update = no_update, reload = reload
   
   t = timerange(/current)
   st = time_string(t)
@@ -13,7 +11,7 @@ pro mms_sitl_get_dce, sdp_status, sc_id=sc_id, coord=coord, no_update = no_updat
   end_date = strmatch(strmid(st[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(st[1],0,10)
   
   level = 'sitl'
-  mode = 'fast'
+  mode = 'ql'
   
   on_error, 2
   if keyword_set(no_update) and keyword_set(reload) then message, 'ERROR: Keywords /no_update and /reload are ' + $
@@ -48,17 +46,17 @@ pro mms_sitl_get_dce, sdp_status, sc_id=sc_id, coord=coord, no_update = no_updat
   ;----------------------------------------------------------------------------------------------------------
   
   if keyword_set(no_update) then begin
-    mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+    mms_data_fetch, local_flist, cache_dir, login_flag, sc_id=sc_id, $
       instrument_id='sdp', mode=mode, $
-      level=level, optional_descriptor = 'dce', /no_update
+      level=level, optional_descriptor = 'dce2d', /no_update
   endif else begin
     if keyword_set(reload) then begin
-      mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
-        instrument_id='sdp', optional_descriptor = 'dce', mode=mode, $
+      mms_data_fetch, local_flist, cache_dir, login_flag, sc_id=sc_id, $
+        instrument_id='sdp', optional_descriptor = 'dce2d', mode=mode, $
         level=level, /reload
     endif else begin
-      mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
-        instrument_id='sdp', optional_descriptor = 'dce', mode=mode, $
+      mms_data_fetch, local_flist, cache_dir, login_flag, sc_id=sc_id, $
+        instrument_id='sdp', optional_descriptor = 'dce2d', mode=mode, $
         level=level
     endelse
   endelse
@@ -91,8 +89,8 @@ pro mms_sitl_get_dce, sdp_status, sc_id=sc_id, coord=coord, no_update = no_updat
   file_flag = 0
   if login_flag eq 1 then begin
     print, 'Unable to locate files on the SDC server, checking local cache...'
-    mms_check_local_cache, local_flist, cache_dir, start_date, end_date, file_flag, $
-      mode, 'sdp', level, sc_id, optional_descriptor = 'dce'
+    mms_check_local_cache, local_flist, cache_dir, file_flag, $
+      mode, 'sdp', level, sc_id, optional_descriptor = 'dce2d'
   endif
   
   if login_flag eq 0 or file_flag eq 0 then begin
@@ -122,7 +120,6 @@ pro mms_sitl_get_dce, sdp_status, sc_id=sc_id, coord=coord, no_update = no_updat
     ;
     
   endif else begin
-    sdp_status = 1
     print, 'No E-field data available locally or at SDC or invalid query!'
   endelse
   

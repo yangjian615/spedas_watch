@@ -48,13 +48,14 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-05-15 17:09:10 -0700 (Fri, 15 May 2015) $
-; $LastChangedRevision: 17632 $
+; $LastChangedDate: 2015-05-27 23:04:09 -0700 (Wed, 27 May 2015) $
+; $LastChangedRevision: 17756 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
+
 ; Subroutine
-FUNCTION mvn_ql_pfp_tplot_exponent, axis, index, number
+FUNCTION mvn_ql_pfp_tplot_ytickname_plus_log, axis, index, number
   times = 'x'
   ; A special case.
   IF number EQ 0 THEN RETURN, '0'
@@ -89,11 +90,46 @@ FUNCTION mvn_ql_pfp_tplot_exponent, axis, index, number
   ENDELSE
 END
 
+FUNCTION mvn_ql_pfp_tplot_ytickname_minus_log, axis, index, number
+  times = 'x'
+  ; A special case.
+  IF number EQ 0 THEN RETURN, '0'
+
+  ; Assuming multiples of 10 with format.
+  ex = String(number, Format='(e8.0)')
+  pt = StrPos(ex, '.')
+  
+  first = StrMid(ex, 0, pt)
+  sign = StrMid(ex, pt+2, 1)
+  thisExponent = StrMid(ex, pt+3)
+
+  ; Shave off leading zero in exponent
+  WHILE StrMid(thisExponent, 0, 1) EQ '0' DO thisExponent = StrMid(thisExponent, 1)
+
+  ; Fix for sign and missing zero problem.
+  IF (Long(thisExponent) EQ 0) THEN BEGIN
+     sign = ''
+     thisExponent = '0'
+  ENDIF
+  
+  IF (first EQ '  1') OR (first EQ ' 1') THEN BEGIN
+     first = ''
+     times = ''
+  ENDIF
+  
+  ; Make the exponent a superscript.
+  IF sign EQ '-' THEN BEGIN
+     RETURN, '-' + first + times + '10!U' + sign + thisExponent + '!N'
+  ENDIF ELSE BEGIN
+     RETURN, '-' + first + times + '10!U' + thisExponent + '!N'
+  ENDELSE
+END
+
 ; Main Routine
 PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
                       pad=pad, tplot=tplot, window=window, tname=ptname, phobos=phobos, $
                       bcrust=bcrust, burst_bar=bbar, $
-                      swia=swi, swea=swe, static=sta, sep=sep, mag=mag
+                      swia=swi, swea=swe, static=sta, sep=sep, mag=mag, lpw=lpw
 
   oneday = 24.d0 * 3600.d0
   nan = !values.f_nan
@@ -129,8 +165,13 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   IF SIZE(sta, /type) EQ 0 THEN tflg = 1 ELSE tflg = sta 
   IF SIZE(sep, /type) EQ 0 THEN pflg = 1 ELSE pflg = sep 
   IF SIZE(mag, /type) EQ 0 THEN mflg = 1 ELSE mflg = mag 
-  
-  mvn_spice_load, trange=trange, /download_only, verbose=verbose
+  IF SIZE(lpw, /type) EQ 0 THEN lflg = 1 ELSE lflg = lpw 
+
+  ; SPICE
+  status = EXECUTE("mvn_spice_load, trange=trange, /download_only, verbose=verbose")
+  IF status EQ 0 THEN $
+     dprint, 'SPICE/kernels are unexpectedly unable to load.', dlevel=2, verbose=verbose
+  undefine, status
 
   ; SWEA
   IF (eflg) THEN BEGIN
@@ -168,7 +209,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      store_data, 'mvn_swe_etspec', data={x:xswe, y:yswe, v:vswe}, $
                  dlimits={spec: 1, ytitle: 'SWEA', ysubtitle: 'Energy [eV]', yticks: 0, $
                           yminor: 0, y_no_interp: 1, x_no_interp: 1, $
-                          ztitle: 'EFlux', datagap: 300}, limit={ytickformat: 'mvn_ql_pfp_tplot_exponent'}
+                          ztitle: 'EFlux', datagap: 300}, limit={ytickformat: 'mvn_ql_pfp_tplot_ytickname_plus_log'}
      ylim, 'mvn_swe_etspec', emin, emax, 1, /def
      IF (noswe) THEN BEGIN
         zlim, 'mvn_swe_etspec', 1.d4, 1.d9, 1, /def
@@ -209,7 +250,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
         IF (clip) THEN time_clip, tname, trange[0], trange[1], /replace
         undefine, d, d2, dl, lim
      ENDELSE 
-     options, tname, ztitle='EFlux', ytitle='SWIA', ysubtitle='Energy [eV]', ytickformat='mvn_ql_pfp_tplot_exponent', $
+     options, tname, ztitle='EFlux', ytitle='SWIA', ysubtitle='Energy [eV]', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log', $
               bottom=7, top=254, no_color_scale=0
      undefine, tname, ntplot, clip
   ENDIF 
@@ -250,7 +291,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      ENDELSE 
      undefine, statn0, statn, tname, n, m
      tname = tnames('mvn_sta*', ntplot)
-     options, tname, ytickformat='mvn_ql_pfp_tplot_exponent', ztitle='EFlux'
+     options, tname, ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log', ztitle='EFlux'
      options, tname[0], ysubtitle='Energy [eV]' 
      options, tname[1], ysubtitle='Energy [eV]!CM/q > 12' 
      options, tname[2], ysubtitle='Mass [amu]'
@@ -328,7 +369,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      tname = tnames('mvn_sep*', index=n)
      septn = 'mvn_sep' + ['1_B-O', '2_B-O', '1_A-F', '2_A-F'] + '_Eflux_Energy'
      septn = tnames(septn, index=m)
-     options, septn, panel_size=1., ytickformat='mvn_ql_pfp_tplot_exponent', /def 
+     options, septn, panel_size=1., ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log', /def 
      
      state = 'idx = WHERE('
      FOR i=0, N_ELEMENTS(m)-1 DO BEGIN
@@ -345,49 +386,114 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      undefine, septn, tname, n, m
   ENDIF 
 
+  ; LPW
+  IF (lflg) THEN BEGIN
+     lpath = 'maven/data/sci/lpw/l2/'
+     lname = 'YYYY/MM/mvn_lpw_l2_wspecpas_YYYYMMDD_*.cdf'
+     lfile = mvn_pfp_file_retrieve(lpath + lname, trange=trange, /daily, /valid_only, /last)
+
+     IF lfile[0] NE '' THEN BEGIN
+        mvn_lpw_cdf_cdf2tplot, file=lfile, varformat='data'
+
+        get_data, 'mvn_lpw_w_spec_pas_l2', data=d, dl=dl, lim=lim
+        extract_tags, nlim, lim, tags=['yrange', 'ylog', 'zlog', 'spec', 'no_interp', 'ystyle']
+        store_data, 'mvn_lpw_w_spec_pas_l2', data=d, dl=dl, lim=nlim
+        zlim, 'mvn_lpw_w_spec_pas_l2', 1.e-15, 1.e-8, /def
+        undefine, d, dl, lim, nlim
+     ENDIF ELSE BEGIN
+        store_data, 'mvn_lpw_w_spec_pas_l2', data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [1., 2.d6]}, $
+                    dlim={yrange: [1, 2.d6], ystyle: 1, ylog: 1, zrange: [1.e-14, 1.e-5], zstyle: 1, zlog: 1, spec: 1}  
+        options, 'mvn_lpw_w_spec_pas_l2', bottom=7, top=254
+     ENDELSE 
+     options, 'mvn_lpw_w_spec_pas_l2', ytitle='LPW (pas)', ysubtitle='f [Hz]', ztitle='Pwr', $
+              xsubtitle='', zsubtitle=''
+     undefine, lpath, lname, lfile
+  ENDIF 
+
   ; MAG 
-  bvec = 'mvn_mag_l1_bmso_1sec'
+  bvec = 'mvn_mag_bmso_1sec'
   IF (mflg) THEN BEGIN
-     mvn_mag_load, trange=trange
+     lvl = 'L2'
+     mvn_mag_load, 'L2_1sec', trange=trange
+     tname = tnames('mvn_B*', ntplot)
+     IF ntplot EQ 0 THEN BEGIN
+        mvn_mag_load, trange=trange
+        lvl = 'L1'
+     ENDIF 
      tname = tnames('mvn_B*', ntplot)
      IF ntplot GT 0 THEN BEGIN
         status = EXECUTE("spice_vector_rotate_tplot, 'mvn_B_1sec', 'MAVEN_MSO', trange=trange, verbose=verbose")
         IF status EQ 1 THEN BEGIN 
            store_data, 'mvn_B_1sec', /delete, verbose=verbose
-           store_data, 'mvn_B_1sec_MAVEN_MSO', newname='mvn_mag_l1_bmso_1sec'
-           bvec = 'mvn_mag_l1_bmso_1sec'
+           bvec = 'mvn_mag_' + STRLOWCASE(lvl) + '_bmso_1sec'
+           store_data, 'mvn_B_1sec_MAVEN_MSO', newname=bvec
            frame = 'MSO'
            options, bvec, ysubtitle='Bmso [nT]', def
         ENDIF ELSE BEGIN
-           store_data, 'mvn_B_1sec', newname='mvn_mag_l1_bpl_1sec'
-           bvec = 'mvn_mag_l1_bpl_1sec'
+           bvec = 'mvn_mag_' + STRLOWCASE(lvl) + '_bpl_1sec'
+           store_data, 'mvn_B_1sec', newname=bvec
            frame = 'PL'
            options, bvec, ysubtitle='Bpl [nT]', /def
         ENDELSE 
      ENDIF ELSE BEGIN
-        bvec = 'mvn_mag_l1_bmso_1sec'
+        lvl = ''
+        bvec = 'mvn_mag_bmso_1sec'
         frame = 'MSO'
         store_data, bvec, data={x: trange, y: REFORM(REPLICATE(nan, 6), [2, 3])}, dlim={ysubtitle: 'Bmso [nT]'}
      ENDELSE 
      undefine, tname, ntplot
      options, bvec, labels=['Bx', 'By', 'Bz'], colors='bgr', $
-              labflag=1, constant=0, ytitle='MAG', /def
-     get_data, bvec, data=b
-     undefine, status
-     store_data, 'mvn_mag_l1_bamp_1sec', $
+              labflag=1, constant=0, ytitle='MAG ' + lvl, /def
+     get_data, bvec, data=b, dl=bl
+     bmax = MAX(SQRT(TOTAL(b.y*b.y, 2)), /nan)
+     IF bmax GT 100. THEN blog = 1 ELSE blog = 0 ; It means B field Log scale or not.     
+
+     bp = b.y ; positive sign
+     bm = b.y ; negative sign
+     lbp = ['Bx', 'By', 'Bz']
+     lbm = lbp
+     FOR il=0, 2 DO IF b.y[N_ELEMENTS(b.x)-1, il] GT 0. THEN lbm[il] = '' ELSE lbp[il] = '' 
+
+     IF status EQ 1 THEN BEGIN
+        idx = WHERE(bp LT 0., nidx)
+        IF nidx GT 0 THEN bp[idx] = nan
+        idx = WHERE(bm GT 0., nidx)
+        IF nidx GT 0 THEN bm[idx] = nan
+        store_data, bvec + '_plus', data={x: b.x, y: bp}, dl=bl
+
+        IF (blog) THEN store_data, bvec + '_minus', data={x: b.x, y: ABS(bm)}, dl=bl $
+        ELSE store_data, bvec + '_minus', data={x: b.x, y: bm}, dl=bl
+        options, bvec + '_plus', panel_size=0.5, labels=lbp, $
+                 ytitle='MAG ' + lvl, ysubtitle='+B' + STRLOWCASE(frame) + '[nT]', /def
+        options, bvec + '_minus', panel_size=0.5, labels=lbm, $
+                 ytitle='MAG ' + lvl, ysubtitle='-B' + STRLOWCASE(frame) + '[nT]', /def
+        options, bvec +  ['_plus', '_minus'], labflag=1
+     ENDIF 
+
+     store_data, 'mvn_mag_' + STRLOWCASE(lvl) + '_bamp_1sec', $
                  data={x: b.x, y: SQRT(TOTAL(b.y*b.y, 2))}, $
-                 dlimits={ytitle: 'MAG', ysubtitle: '|B| [nT]'}
+                 dlimits={ytitle: 'MAG ' + lvl, ysubtitle: '|B| [nT]'}
      
      mvn_model_bcrust_load, trange, verbose=verbose, calc=bflg
-     store_data, 'mvn_mag_bamp', data=['mvn_mag_l1_bamp_1sec', 'mvn_mod_bcrust_amp'], $
-                 dlimits={labels: ['Bobs.', 'Bmod.'], colors: [0, 2], labflag: 1, ytitle: 'MAG', ysubtitle: '|B| [nT]'} 
-     bmax = MAX(SQRT(TOTAL(b.y*b.y, 2)), /nan)
-     IF bmax GT 100. THEN blog = 1 ELSE blog = 0 ; It means B field Log scale or not.
-     IF (blog) THEN BEGIN
-        ylim, 'mvn_mag_bamp', 0.5, bmax*1.1, blog
-        options, 'mvn_mag_bamp', ytickformat='mvn_ql_pfp_tplot_exponent'
-     ENDIF 
-     undefine, bmax, blog
+     store_data, 'mvn_mag_bamp', data=['mvn_mag_' + STRLOWCASE(lvl) + '_bamp_1sec', 'mvn_mod_bcrust_amp'], $
+                 dlimits={labels: ['Bobs.', 'Bmod.'], colors: [0, 2], labflag: 1, ytitle: 'MAG ' + lvl, ysubtitle: '|B| [nT]'} 
+
+     IF status EQ 1 THEN BEGIN
+        IF (blog) THEN BEGIN
+           ylim, 'mvn_mag_bamp', 0.5, bmax*1.1, 1
+           options, 'mvn_mag_bamp', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
+        
+           ylim, bvec + '_plus', 0.5, bmax*1.1, 1
+           ylim, bvec + '_minus', bmax*1.1, 0.5, 1
+           options, bvec + '_plus', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
+           options, bvec + '_minus', ytickformat='mvn_ql_pfp_tplot_ytickname_minus_log'
+        ENDIF ELSE BEGIN
+           ylim, bvec + '_plus', 0., MAX([bp, ABS(bm)], /nan)*1.1, 0
+           ylim, bvec + '_minus', -MAX([bp, ABS(bm)], /nan)*1.1, 0., 0
+           options, bvec + ['_plus', '_minus'], yminor=4 
+        ENDELSE 
+     ENDIF
+     undefine, bmax, blog, status
      
      bphi = ATAN(b.y[*, 1], b.y[*, 0])
      bthe = ASIN(b.y[*, 2] / SQRT(TOTAL(b.y*b.y, 2)))
@@ -401,10 +507,10 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      ;            limits={yticks: 4, yminor: 3, y2axis: 1, y2range: 90.*[-1., 1.], y2ticks: 4, y2minor: 3, $
      ;                    y2color: 2, y2title: 'Theta [deg]', constant: 180.}
 
-     store_data, 'mvn_mag_l1_bang_1sec', data={x: b.x, y: [ [bthe*!RADEG + 180.], [bphi*!RADEG]]}, $
-                 dlimits={psym: 3, colors: [2, 0], ytitle: 'MAG (' + frame + ')', ysubtitle: 'Angle [deg]', $
+     store_data, 'mvn_mag_' + STRLOWCASE(lvl) + '_bang_1sec', data={x: b.x, y: [ [bthe*!RADEG + 180.], [bphi*!RADEG]]}, $
+                 dlimits={psym: 3, colors: [2, 0], ytitle: 'MAG ' + lvl + '(' + frame + ')', ysubtitle: 'Angle [deg]', $
                           yticks: 4, yminor: 3, labels: ['Bthe + 180.', 'Bphi'], labflag: 1, constant: 180}
-     ylim, 'mvn_mag_l1_bang_1sec', 0., 360., 0., /def
+     ylim, 'mvn_mag_' + STRLOWCASE(lvl) + '_bang_1sec', 0., 360., 0., /def
      undefine, bphi, bthe, b
   ENDIF 
 

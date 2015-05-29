@@ -12,8 +12,8 @@
 ;	DATA_VERSION: Data version to put in file (default = '1')
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-02-10 11:01:05 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16941 $
+; $LastChangedDate: 2015-05-27 06:43:06 -0700 (Wed, 27 May 2015) $
+; $LastChangedRevision: 17736 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_swis_cdf.pro $
 ;
 ;-
@@ -75,6 +75,8 @@ id18 = cdf_attcreate(fileid,'PDS_start_time',/global_scope)
 id19 = cdf_attcreate(fileid,'PDS_stop_time',/global_scope)
 id20 = cdf_attcreate(fileid,'PDS_sclk_start_count',/global_scope)
 id21 = cdf_attcreate(fileid,'PDS_sclk_stop_count',/global_scope)
+id22 = cdf_attcreate(fileid,'leapseconds_kernel',/global_scope)
+id23 = cdf_attcreate(fileid,'Spacecraft_clock_kernel',/global_scope)
 
 
 cdf_attput,fileid,'TITLE',0,'MAVEN SWIA Onboard Energy Spectra'
@@ -106,6 +108,13 @@ cspice_sce2c,-202,etend,sclkdp1
 cdf_attput,fileid,'PDS_sclk_start_count',0,sclkdp0
 cdf_attput,fileid,'PDS_sclk_stop_count',0,sclkdp1
 
+tls = mvn_spice_kernels('LSK')
+sclk = mvn_spice_kernels('SCK')
+leap = strmid(tls,strpos(tls,'naif',/reverse_search),12)
+clock = strmid(sclk,strpos(sclk,'MVN_SCLKSCET',/reverse_search),22)
+
+cdf_attput,fileid,'leapseconds_kernel',0,leap[0]
+cdf_attput,fileid,'Spacecraft_clock_kernel',0,clock[0]
 
 dummy = cdf_attcreate(fileid,'FIELDNAM',/variable_scope)
 dummy = cdf_attcreate(fileid,'MONOTON',/variable_scope)

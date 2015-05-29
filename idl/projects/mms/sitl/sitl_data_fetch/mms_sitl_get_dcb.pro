@@ -39,8 +39,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-04-27 11:47:59 -0700 (Mon, 27 Apr 2015) $
-;  $LastChangedRevision: 17434 $
+;  $LastChangedDate: 2015-05-27 10:14:00 -0700 (Wed, 27 May 2015) $
+;  $LastChangedRevision: 17739 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_dcb.pro $
 
 
@@ -97,16 +97,16 @@ dfg_status = intarr(n_elements(sc_id))
 for j = 0, n_elements(sc_id)-1 do begin
 
 if keyword_set(no_update) then begin
-  mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+  mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id(j), $
     instrument_id='afg', mode=mode, $
     level=level, /no_update
 endif else begin
   if keyword_set(reload) then begin
-    mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+    mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id(j), $
       instrument_id='afg', mode=mode, $
       level=level, /reload
   endif else begin
-    mms_data_fetch, local_flist, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+    mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id(j), $
       instrument_id='afg', mode=mode, $
       level=level
   endelse
@@ -139,7 +139,7 @@ endif
 file_flag = 0
 if login_flag eq 1 then begin
   print, 'Unable to locate files on the SDC server, checking local cache...'    
-    mms_check_local_cache, local_flist, start_date, end_date, file_flag, $
+    mms_check_local_cache, local_flist, file_flag, $
                            mode, 'afg', level, sc_id(j)                           
 endif
 
@@ -187,16 +187,16 @@ endelse
 ;----------------------------------------------------------------------------------------------------------
 
 if keyword_set(no_update) then begin
-  mms_data_fetch, local_flist2, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+  mms_data_fetch, local_flist2, login_flag, download_fail, sc_id=sc_id(j), $
     instrument_id='dfg', mode=mode, $
     level=level, /no_update
 endif else begin
   if keyword_set(reload) then begin
-    mms_data_fetch, local_flist2, start_date, end_date, login_flag, download_fail,  sc_id=sc_id(j), $
+    mms_data_fetch, local_flist2, login_flag, download_fail,  sc_id=sc_id(j), $
       instrument_id='dfg', mode=mode, $
       level=level, /reload
   endif else begin
-    mms_data_fetch, local_flist2, start_date, end_date, login_flag, download_fail, sc_id=sc_id(j), $
+    mms_data_fetch, local_flist2, login_flag, download_fail, sc_id=sc_id(j), $
       instrument_id='dfg', mode=mode, $
       level=level
   endelse
@@ -230,7 +230,7 @@ endif
 file_flag = 0
 if login_flag eq 1 then begin
   print, 'Unable to locate dfg files on the SDC server, checking local cache...'
-  mms_check_local_cache, local_flist2, start_date, end_date, file_flag, $
+  mms_check_local_cache, local_flist2, file_flag, $
     mode, 'dfg', level, sc_id(j)
 endif
 

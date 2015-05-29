@@ -1,6 +1,6 @@
 ; This program will fetch the power spectral density from the mms E-field booms
 
-pro mms_sitl_get_espec, start_date, end_date, cache_dir, data_status, sc_id=sc_id, no_update = no_update
+pro mms_sitl_get_espec, sc_id=sc_id, no_update = no_update
 
   data_status = 0
     
@@ -24,16 +24,16 @@ pro mms_sitl_get_espec, start_date, end_date, cache_dir, data_status, sc_id=sc_i
   ;----------------------------------------------------------------------------------------------------------
   
   if keyword_set(no_update) then begin
-    mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+    mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id, $
       instrument_id='dsp', mode=mode, $
       level=level, optional_descriptor = 'epsd', /no_update
   endif else begin
     if keyword_set(reload) then begin
-      mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+      mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id, $
         instrument_id='dsp', optional_descriptor = 'epsd', mode=mode, $
         level=level, /reload
     endif else begin
-      mms_data_fetch, local_flist, cache_dir, start_date, end_date, login_flag, sc_id=sc_id, $
+      mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id, $
         instrument_id='dsp', optional_descriptor = 'epsd', mode=mode, $
         level=level
     endelse
@@ -67,7 +67,7 @@ pro mms_sitl_get_espec, start_date, end_date, cache_dir, data_status, sc_id=sc_i
   file_flag = 0
   if login_flag eq 1 then begin
     print, 'Unable to locate files on the SDC server, checking local cache...'
-    mms_check_local_cache, local_flist, cache_dir, start_date, end_date, file_flag, $
+    mms_check_local_cache, local_flist, file_flag, $
       mode, 'dsp', level, sc_id, optional_descriptor = 'epsd'
   endif
   

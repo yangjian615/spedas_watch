@@ -49,6 +49,11 @@
 ;                 background image is the north polar magnetic anomalies observed
 ;                 at 180-km altitude by MGS (from Acuna).
 ;
+;       TERMINATOR: Overplot the terminator and sub-solar point onto the Mars
+;                   topography plots (see MARS and NPOLE above).  SPICE must be 
+;                   installed and initialized (e.g., mvn_swe_spice_init) before 
+;                   using this keyword.
+;
 ;       NOERASE:  Don't erase previously plotted positions.  Can be used to build
 ;                 up a visual representation of sampling.
 ;
@@ -63,8 +68,8 @@
 ;                 entry of times with the cursor.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-01 09:11:39 -0700 (Fri, 01 May 2015) $
-; $LastChangedRevision: 17463 $
+; $LastChangedDate: 2015-05-27 18:08:12 -0700 (Wed, 27 May 2015) $
+; $LastChangedRevision: 17755 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11

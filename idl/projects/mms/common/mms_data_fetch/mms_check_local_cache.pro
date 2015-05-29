@@ -9,18 +9,12 @@
 ; PROCEDURE: MMS_CHECK_LOCAL_CACHE
 ;
 ; PURPOSE: Checks local cache for files within a date range for a specific
-;          instrument, spacecraft, descriptor, level and mode.
+;          instrument, spacecraft, descriptor, level and mode. Requires timespan
+;          be set before calling.
 ;
 ; INPUT:
 ;   local_flist      - REQUIRED. Name for an array of strings. This will have
 ;                    - names of all of the files consistent with the query.
-;
-;   start_date       - REQUIRED. (String) Start date in the format for SDC
-;                      HTTP queries (YYYY-MM-DD).
-;
-;   end_date         - REQUIRED. (String) End date in the format for SDC
-;                      HTTP queries (YYYY-MM-DD). If the same as start_date,
-;                      procedure will only query for that day.
 ;
 ;   file_flag        - REQUIRED. (Integer) Flag which determines if data is
 ;                      available locally. Returns 1 if no files found.
@@ -57,18 +51,22 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-08 12:15:58 -0700 (Fri, 08 May 2015) $
-;  $LastChangedRevision: 17532 $
+;  $LastChangedDate: 2015-05-27 10:11:08 -0700 (Wed, 27 May 2015) $
+;  $LastChangedRevision: 17737 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_check_local_cache.pro $
 
 ;
 
 
 
-pro mms_check_local_cache, local_flist, start_date, end_date, file_flag, $
+pro mms_check_local_cache, local_flist, file_flag, $
     mode, instrument_id, level, sc_id, optional_descriptor=optional_descriptor
 
 mms_init
+
+date_strings = mms_convert_timespan_to_date()
+start_date = date_strings.start_date
+end_date = date_strings.end_date
 
 file_flag = 0  
 
@@ -125,7 +123,7 @@ if file_flag eq 0 then begin
     
     file_dir = filepath('', root_dir=data_dir, $
       subdirectory = [sc_id, level, mode, instrument_id, optional_descriptor, start_year_str])
-
+      
     endelse
     
   search_string = file_dir + '*.cdf'

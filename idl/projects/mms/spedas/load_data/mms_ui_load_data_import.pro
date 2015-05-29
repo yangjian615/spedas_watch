@@ -12,8 +12,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-05-22 15:38:04 -0700 (Fri, 22 May 2015) $
-;$LastChangedRevision: 17680 $
+;$LastChangedDate: 2015-05-27 14:37:31 -0700 (Wed, 27 May 2015) $
+;$LastChangedRevision: 17748 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -98,8 +98,8 @@ pro mms_ui_load_data_import,$
      ; of available data for this mission and instrument then inform the user 
      if time_double(mmsmaxtime) lt time_double(timerange[0]) || $
         time_double(mmsmintime) gt time_double(timerange[1]) then begin
-        statusBar->update,'No MMS Data Loaded, MMS data is only available between ' + mmsmintime + ' and ' + xxxmaxtime
-        historyWin->update,'No MMS Data Loaded, MMS data is only available between ' + mmsmintime + ' and ' + xxxmaxtime
+        statusBar->update,'No MMS Data Loaded, MMS data is only available between ' + mmsmintime + ' and ' + mmsmaxtime
+        historyWin->update,'No MMS Data Loaded, MMS data is only available between ' + mmsmintime + ' and ' + mmsmaxtime
      endif else begin   
         statusBar->update,'No MMS Data Loaded'
         historyWin->update,'No MMS Data Loaded'
