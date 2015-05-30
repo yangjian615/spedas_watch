@@ -63,8 +63,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-04 16:23:01 -0700 (Mon, 04 May 2015) $
-;$LastChangedRevision: 17472 $
+;$LastChangedDate: 2015-05-28 14:27:55 -0700 (Thu, 28 May 2015) $
+;$LastChangedRevision: 17760 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_slice2d.pro $
 ;
 ;-
@@ -329,6 +329,40 @@ thm_part_slice2d_plot, slice
 print,nl,'This example plots a slice oriented along the GSM x axis and the ' 
 print, 'bulk velocity vector.  See the documentation at the top of this crib '
 print, 'for a list of valid inputs to the COORD and ROTATION keywords.',nl
+
+stop
+
+
+;--------------------------------------------------------------------------------------
+;Eclipse Corrections
+;--------------------------------------------------------------------------------------
+
+;set time range
+trange = '2011-11-28/' + ['21:50','22:55']
+
+;Eclipse corrections are loaded when the raw data is loaded.
+;  use_eclipse_corrections = 0  No corrections are loaded (default).
+;                          = 1  Load partial corrections (not recommended)
+;                          = 2  Load full corrections.
+dist_corr = thm_part_dist_array(probe='b',type='peif', trange=trange, $
+                                    use_eclipse_corrections=2)
+
+;load data without corrections for comparison
+dist_uncorr = thm_part_dist_array(probe='b',type='peif', trange=trange)
+
+;create idential plots from each data set
+thm_part_slice2d, dist_corr, slice_time=trange[0], timewin=300, part_slice=slice_corr
+thm_part_slice2d, dist_uncorr, slice_time=trange[0], timewin=300, part_slice=slice_uncorr
+
+;compare
+zrange = [1e-13,1e-7]
+thm_part_slice2d_plot, slice_corr, zrange=zrange, window=0, title='Corrected' 
+thm_part_slice2d_plot, slice_uncorr, zrange=zrange, window=1, title='Uncorrected'
+
+
+print,nl,'This example demonstrates how to use spin corrections when the ' 
+print, 'spacecraft is in the Earth''s shadow.  Corrections are loaded with '
+print, 'the raw particle data and applied when plot is generated.',nl
 
 stop
 

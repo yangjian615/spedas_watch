@@ -83,11 +83,11 @@ pro mvn_sta_bkg_load, tplot_test=tplot_test
   ;; ----------- Selection Criteria --------------
   ;; 1. Below specified altitude
   ;; 2. Within mode 3 (electrostatic + mechanical)
-  ;; 3. After 2015-03-01 (check with Jim)
+  ;; 3. Only near Deep Dip #2
   pp = where(alt  lt alt_limit and $
              mode eq 3         and $
-             time gt time_double('2015-03-01'),cc)
-
+             time gt time_double('2015-04-12') and $
+             time lt time_double('2015-04-28'),cc)
   ;; Create time index
   ind     = intarr(n_elements(time))
   ind[pp] = 1 

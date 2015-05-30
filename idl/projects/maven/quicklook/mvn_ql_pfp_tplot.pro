@@ -41,6 +41,9 @@
 ;   BURST_BAR:    Draw a color bar during the time intervals when the burst
 ;                 (archive) PFP data has been already downlinked and available.  
 ;
+;     SWIA, SWEA, STATIC, SEP, MAG, LPW individual instruments' switches to load:
+;                 Default = 1. If they set to be zero (e.g., swia=0), it skips to load.                 
+;
 ;NOTE:            This routine is assumed to be used when there are
 ;                 no tplot variables.
 ;
@@ -48,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-05-27 23:04:09 -0700 (Wed, 27 May 2015) $
-; $LastChangedRevision: 17756 $
+; $LastChangedDate: 2015-05-28 17:28:05 -0700 (Thu, 28 May 2015) $
+; $LastChangedRevision: 17761 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -453,22 +456,21 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      lbp = ['Bx', 'By', 'Bz']
      lbm = lbp
      FOR il=0, 2 DO IF b.y[N_ELEMENTS(b.x)-1, il] GT 0. THEN lbm[il] = '' ELSE lbp[il] = '' 
+     undefine, il
 
-     IF status EQ 1 THEN BEGIN
-        idx = WHERE(bp LT 0., nidx)
-        IF nidx GT 0 THEN bp[idx] = nan
-        idx = WHERE(bm GT 0., nidx)
-        IF nidx GT 0 THEN bm[idx] = nan
-        store_data, bvec + '_plus', data={x: b.x, y: bp}, dl=bl
+     idx = WHERE(bp LT 0., nidx)
+     IF nidx GT 0 THEN bp[idx] = nan
+     idx = WHERE(bm GT 0., nidx)
+     IF nidx GT 0 THEN bm[idx] = nan
+     store_data, bvec + '_plus', data={x: b.x, y: bp}, dl=bl
 
-        IF (blog) THEN store_data, bvec + '_minus', data={x: b.x, y: ABS(bm)}, dl=bl $
-        ELSE store_data, bvec + '_minus', data={x: b.x, y: bm}, dl=bl
-        options, bvec + '_plus', panel_size=0.5, labels=lbp, $
-                 ytitle='MAG ' + lvl, ysubtitle='+B' + STRLOWCASE(frame) + '[nT]', /def
-        options, bvec + '_minus', panel_size=0.5, labels=lbm, $
-                 ytitle='MAG ' + lvl, ysubtitle='-B' + STRLOWCASE(frame) + '[nT]', /def
-        options, bvec +  ['_plus', '_minus'], labflag=1
-     ENDIF 
+     IF (blog) THEN store_data, bvec + '_minus', data={x: b.x, y: ABS(bm)}, dl=bl $
+     ELSE store_data, bvec + '_minus', data={x: b.x, y: bm}, dl=bl
+     options, bvec + '_plus', panel_size=0.5, labels=lbp, $
+              ytitle='MAG ' + lvl, ysubtitle='+B' + STRLOWCASE(frame) + ' [nT]', /def
+     options, bvec + '_minus', panel_size=0.5, labels=lbm, $
+              ytitle='MAG ' + lvl, ysubtitle='-B' + STRLOWCASE(frame) + ' [nT]', /def
+     options, bvec +  ['_plus', '_minus'], labflag=1
 
      store_data, 'mvn_mag_' + STRLOWCASE(lvl) + '_bamp_1sec', $
                  data={x: b.x, y: SQRT(TOTAL(b.y*b.y, 2))}, $
@@ -478,21 +480,19 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      store_data, 'mvn_mag_bamp', data=['mvn_mag_' + STRLOWCASE(lvl) + '_bamp_1sec', 'mvn_mod_bcrust_amp'], $
                  dlimits={labels: ['Bobs.', 'Bmod.'], colors: [0, 2], labflag: 1, ytitle: 'MAG ' + lvl, ysubtitle: '|B| [nT]'} 
 
-     IF status EQ 1 THEN BEGIN
-        IF (blog) THEN BEGIN
-           ylim, 'mvn_mag_bamp', 0.5, bmax*1.1, 1
-           options, 'mvn_mag_bamp', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
+     IF (blog) THEN BEGIN
+        ylim, 'mvn_mag_bamp', 0.5, bmax*1.1, 1
+        options, 'mvn_mag_bamp', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
         
-           ylim, bvec + '_plus', 0.5, bmax*1.1, 1
-           ylim, bvec + '_minus', bmax*1.1, 0.5, 1
-           options, bvec + '_plus', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
-           options, bvec + '_minus', ytickformat='mvn_ql_pfp_tplot_ytickname_minus_log'
-        ENDIF ELSE BEGIN
-           ylim, bvec + '_plus', 0., MAX([bp, ABS(bm)], /nan)*1.1, 0
-           ylim, bvec + '_minus', -MAX([bp, ABS(bm)], /nan)*1.1, 0., 0
-           options, bvec + ['_plus', '_minus'], yminor=4 
-        ENDELSE 
-     ENDIF
+        ylim, bvec + '_plus', 0.5, bmax*1.1, 1
+        ylim, bvec + '_minus', bmax*1.1, 0.5, 1
+        options, bvec + '_plus', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
+        options, bvec + '_minus', ytickformat='mvn_ql_pfp_tplot_ytickname_minus_log'
+     ENDIF ELSE BEGIN
+        ylim, bvec + '_plus', 0., MAX([bp, ABS(bm)], /nan)*1.1, 0
+        ylim, bvec + '_minus', -MAX([bp, ABS(bm)], /nan)*1.1, 0., 0
+        options, bvec + ['_plus', '_minus'], yminor=4 
+     ENDELSE 
      undefine, bmax, blog, status
      
      bphi = ATAN(b.y[*, 1], b.y[*, 0])

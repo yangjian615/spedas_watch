@@ -22,8 +22,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-05-26 15:09:14 -0700 (Tue, 26 May 2015) $
-;   $LastChangedRevision: 17728 $
+;   $LastChangedDate: 2015-05-28 07:09:51 -0700 (Thu, 28 May 2015) $
+;   $LastChangedRevision: 17758 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_3d.pro $
 ;
 ;-
@@ -34,7 +34,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   nrec = n_elements(data)
 
-  if (nrec eq 1) then begin
+  if (nrec lt 2) then begin
     print, 'No 3D data!'
     print, 'CDF file not created.'
     return
@@ -51,8 +51,8 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
     data[(indx - 1L) > 0L].valid = 0B
     data[(indx + 1L) < (nrec - 1L)].valid = 0B
 
-    indx = where(data.valid, count)
-    if (count eq 0L) then begin
+    indx = where(data.valid, nrec)
+    if (nrec eq 0L) then begin
       print, 'No valid 3D data!'
       print, 'CDF file not created.'
       return
