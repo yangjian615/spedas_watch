@@ -30,8 +30,8 @@
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; CHanged to use thara's mvn_pl_pfp_tplot.pro, 2015-04-14, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-05-13 11:14:47 -0700 (Wed, 13 May 2015) $
-; $LastChangedRevision: 17585 $
+; $LastChangedDate: 2015-05-29 15:34:35 -0700 (Fri, 29 May 2015) $
+; $LastChangedRevision: 17767 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_genl2_overplot.pro $
 ;-
 Pro mvn_genl2_overplot, orbit_number = orbit_number, $
@@ -84,7 +84,7 @@ Pro mvn_genl2_overplot, orbit_number = orbit_number, $
   mvn_bb = mvn_qlook_burst_bar(tr0[0], (tr0[1]-tr0[0])/86400.0d0, /outline, /from_l2)
   varlist = ['mvn_sep1_B-O_Eflux_Energy', 'mvn_sep2_B-O_Eflux_Energy', $
              'mvn_sta_c0_e', 'mvn_sta_c6_m', 'mvn_swis_en_eflux', $
-             'mvn_swe_etspec', 'mvn_mag_bamp', bvec, 'alt2', mvn_bb]
+             'mvn_swe_etspec', 'mvn_lpw_w_spec_pas_l2', 'mvn_mag_bamp', bvec, 'alt2', mvn_bb]
 
   varlist = mvn_qlook_vcheck(varlist, tr = tr, /blankp)
   If(varlist[0] Eq '')  Then Begin

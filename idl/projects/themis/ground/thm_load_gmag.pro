@@ -76,6 +76,8 @@
 ;
 ; /nrcan_sites = Set this keyword to load magnetometers that are nrcan sites
 ;
+; /step_sites = Set this keyword to load magnetometers that are STEP sites
+; 
 ;Example:
 ;   thm_load_gmag, site = 'bmls', trange =
 ;   ['2007-01-22/00:00:00','2007-01-24/00:00:00']
@@ -102,9 +104,9 @@
 ;                         rather than by network.
 ; 04-Apr-2012, clrussell, Added units to the data_att structure
 ; 
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2015-05-29 07:45:44 -0700 (Fri, 29 May 2015) $
+; $LastChangedRevision: 17762 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag.pro $
 ;-
 
@@ -206,6 +208,7 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
                    epo_sites = epo_sites, $
                    mcmac_sites = mcmac_sites, $
                    nrcan_sites = nrcan_sites, $
+                   step_sites = step_sites, $
                    suffix=suffix
 ;                   _extra = _extra ;krb 5/4
 
@@ -223,9 +226,9 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
       site = 'all'
     Endif
   Endif else begin
-    vsnames = 'abk akul amd amer arct atha benn bett blc bmls bou brw bsl cbb ccnv cdrt chbg cigo cmo crvr ded dik drby eagl ekat fcc frd frn fsim fsmi fykn '+ $
-      'fyts gako gbay gill gjoa glyn gua hlms homr hon hots iglo inuk inuv iqa kako kapu kian kjpk kuuj larg leth loys lrv lyfd mcgr mea nain new nrsq '+ $
-      'ott pang pbk pcel pg1 pg2 pg3 pg4 pgeo pina pine pokr ptrs puvr radi rank rbay redr rich rmus roth salu satx schf sept shu sit sjg snap snkq stfl stj swno tik tpas trap tuc ukia vic vldr whit wrth ykc yknf'
+    vsnames = 'abk akul amd amer arct atha benn bett blc bmls bou brw bsl cbb ccnv cdrt chbg cigo cmo crvr ded dik drby eagl ekat fcc frd frn fsim fsj fsmi ftn fykn '+ $
+      'fyts gako gbay gill gjoa glyn gua hlms homr hon hots hrp iglo inuk inuv iqa kako kapu kian kjpk kuuj larg lcl leth loys lrg lrv lyfd mcgr mea nain new nrsq '+ $
+      'ott pang pbk pcel pg1 pg2 pg3 pg4 pgeo pina pine pks pokr ptrs puvr radi rank rbay redr rich rmus roth salu satx schf sept shu sit sjg snap snkq stfl stj swno tik tpas trap tuc ukia vic vldr whit whs wrth ykc yknf'
     vsnames_arr = strsplit(vsnames, ' ', /extract)
     vsnames_g =  'amk and atu bfe bjn dob dmh dnb don fhb gdh ghb hop jck kar kuv lyr nal naq nor nrd roe rvk sco skt sol sor stf svs tdc thl tro umq upn'
     vsnames_g_arr = strsplit(vsnames_g, ' ', /extract)
@@ -284,7 +287,11 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
     if keyword_set(nrcan_sites) then begin
       site_in = array_concat(['blc', 'cbb', 'iqa', 'mea', 'ott', 'stj', 'vic'],site_in)
     endif 
-
+    
+    if keyword_set(step_sites) then begin
+      site_in = array_concat(['fsj', 'ftn', 'hrp', 'lcl', 'lrg', 'pks', 'whs'],site_in)
+    endif 
+    
   ; if this list of valid names changes, please also update version in thm_load_gmag
     if keyword_set(carisma_sites) then begin
        site_in = array_concat(['anna', 'back', 'cont', 'daws', 'eski', 'fchp', 'fchu', $

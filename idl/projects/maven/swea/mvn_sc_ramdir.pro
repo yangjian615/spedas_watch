@@ -2,8 +2,8 @@
 ;PROCEDURE:   mvn_sc_ramdir
 ;PURPOSE:
 ;  Determines the spacecraft orbital velocity vector relative to
-;  the body-fixed rotating Mars frame (IAU_MARS), rotated into either
-;  spacecraft or APP coordinates.
+;  the body-fixed rotating Mars frame (IAU_MARS).  The default is
+;  to rotate this vector into spacecraft coordinates.
 ;
 ;  In the spacecraft frame, phi is the angle in the X-Y plane:
 ;      0 --> +X axis (APP boom)
@@ -33,18 +33,19 @@
 ;       trange:   Time range for calculating the RAM direction.
 ;
 ;KEYWORDS:
-;       DT:       Time resolution (sec).  Default = 1.
-;
-;       APP:      Rotate to APP coordinates instead of Spacecraft coord.
+;       DT:       Time resolution (sec).  Default is to use the time resolution
+;                 of maven_orbit_tplot (usually 10 sec).
 ;
 ;       FRAME:    Rotate to FRAME coordinates instead of Spacecraft coord.
 ;                 Any frame defined in the MAVEN frames kernel is allowed.
 ;
+;       APP:      Shorthand for FRAME='MAVEN_APP'.
+;
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-24 12:36:35 -0700 (Sun, 24 May 2015) $
-; $LastChangedRevision: 17693 $
+; $LastChangedDate: 2015-05-29 09:53:07 -0700 (Fri, 29 May 2015) $
+; $LastChangedRevision: 17766 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -68,8 +69,18 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
   indx = where(mk ne '', count)
   if (count eq 0) then mvn_swe_spice_init, trange=[tmin,tmax]
   
-  if not keyword_set(dt) then dt = 1D else dt = double(dt[0])
-  
+  if keyword_set(dt) then begin
+    npts = ceil((tmax - tmin)/dt)
+    Tsc = tmin + dt*dindgen(npts)
+    Vsc = fltarr(npts,3)
+    Vsc[*,0] = spline(state.time, state.geo_v[*,0], Tsc)
+    Vsc[*,1] = spline(state.time, state.geo_v[*,1], Tsc)
+    Vsc[*,2] = spline(state.time, state.geo_v[*,2], Tsc)
+  endif else begin
+    Tsc = state.time
+    Vsc = state.geo_v
+  endelse
+
   if keyword_set(app) then to_frame = 'MAVEN_APP' $
                       else to_frame = 'MAVEN_SPACECRAFT'
 
@@ -79,7 +90,7 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
 
 ; Spacecraft velocity in IAU_MARS frame --> rotate to S/C or APP frame
   
-  store_data,'V_sc',data={x:state.time, y:state.geo_v}
+  store_data,'V_sc',data={x:Tsc, y:Vsc, v:[0,1,2]}
   options,'V_sc',spice_frame='IAU_MARS',spice_master_frame='MAVEN_SPACECRAFT'
   spice_vector_rotate_tplot,'V_sc',to_frame,trange=[tmin,tmax]
 
@@ -97,7 +108,7 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
   indx = where(Vphi lt 0., count)
   if (count gt 0L) then Vphi[indx] = Vphi[indx] + 360.
   Vthe = asin(V_ram.y[*,2]/Vmag)*!radeg
-  
+
   phiname = 'Vphi_' + to_frame
   thename = 'Vthe_' + to_frame
 
