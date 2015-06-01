@@ -12,14 +12,19 @@
 ;
 ;KEYWORDS:
 ;
+;    FULL:          The default priority order for loading is (highest to lowest):
+;                     L2_1SEC, L2_FULL, L1_1SEC, L1_FULL.
+;
+;                   If set, then the priority order is: L2_FULL, L1_FULL.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 17:13:34 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17706 $
+; $LastChangedDate: 2015-05-30 17:57:15 -0700 (Sat, 30 May 2015) $
+; $LastChangedRevision: 17770 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_addmag.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
 ;-
-pro mvn_swe_addmag, level
+pro mvn_swe_addmag, full=full
 
   @mvn_swe_com
   
@@ -27,17 +32,49 @@ pro mvn_swe_addmag, level
 
 ; Get the highest level MAG data available
 
-  maglev = 2B
-  mvn_mag_load, 'L2_1SEC'
-  get_data,'mvn_B_1sec',data=mag1,index=i
-  if (i eq 0) then begin
-    maglev = 1B
+  maglev = 0B
+
+  if ((maglev eq 0B) and ~keyword_set(full)) then begin
+    get_data,'mvn_B_1sec',index=i
+    if (i gt 0) then store_data, i, /delete
+    mvn_mag_load, 'L2_1SEC'
+    get_data,'mvn_B_1sec',data=mag1,index=i
+    if (i gt 0) then maglev = 2B
+  endif
+
+  if (maglev eq 0B) then begin
+    get_data,'mvn_B_full',index=i
+    if (i gt 0) then store_data, i, /delete
+    mvn_mag_load, 'L2_FULL'
+    get_data,'mvn_B_full',data=mag1,index=i
+    if (i gt 0) then begin
+      mag1.y = smooth_in_time(mag1.y, mag1.x, 1D)
+      maglev = 2B
+    endif
+  endif
+
+  if ((maglev eq 0B) and ~keyword_set(full)) then begin
+    get_data,'mvn_B_1sec',index=i
+    if (i gt 0) then store_data, i, /delete
     mvn_mag_load, 'L1_1SEC'
     get_data,'mvn_B_1sec',data=mag1,index=i
-    if (i eq 0) then begin
-      print,"No MAG data found."
-      return
+    if (i gt 0) then maglev = 1B
+  endif
+
+  if (maglev eq 0B) then begin
+    get_data,'mvn_B_full',index=i
+    if (i gt 0) then store_data, i, /delete
+    mvn_mag_load, 'L1_FULL'
+    get_data,'mvn_B_full',data=mag1,index=i
+    if (i gt 0) then begin
+      mag1.y = smooth_in_time(mag1.y, mag1.x, 1D)
+      maglev = 1B
     endif
+  endif
+  
+  if (maglev eq 0B) then begin
+    print,"No MAG data found!"
+    return
   endif
 
   print, string(maglev,format='("Using MAG L",i1," data.")')
@@ -83,13 +120,16 @@ pro mvn_swe_addmag, level
   options,'Bphi1','yticks',4
   options,'Bphi1','yminor',3
   options,'Bphi1','psym',3
+  options,'Bphi1','ytitle','Bphi (deg)'
 
   ylim,'Bthe1',-90,90,0
   options,'Bthe1','yticks',2
   options,'Bthe1','yminor',3
   options,'Bthe1','psym',3
+  options,'Bthe1','ytitle','Bthe (deg)'
 
-  ylim,'Bamp1',0,0,1
+  ylim,'Bamp1',0.1,500,1
+  options,'Bamp1','ytitle','|B| (nT)'
 
 ; Compare MAG1 angles with SWEA PAD angles
 

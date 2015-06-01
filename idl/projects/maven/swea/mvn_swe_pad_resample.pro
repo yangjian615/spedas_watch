@@ -120,8 +120,8 @@
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-13 13:32:42 -0700 (Mon, 13 Apr 2015) $
-; $LastChangedRevision: 17300 $
+; $LastChangedDate: 2015-05-30 12:41:37 -0700 (Sat, 30 May 2015) $
+; $LastChangedRevision: 17768 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -139,11 +139,9 @@ FUNCTION mvn_swe_pad_resample_map3d, var, prf=prf
      IF Baz LT 0. THEN Baz += 2.*!DPI
      Bel = ASIN(magf[2])
      
-     FOR jel=0, 5 DO BEGIN
-        append_array, i, INDGEN(16)
-        append_array, j, REPLICATE(jel, 16)
-     ENDFOR 
-     k = j*16 + i
+     k = indgen(96)
+     i = k mod 16
+     j = k / 16
      
      ddtor = !dpi/180D
      ddtors = REPLICATE(ddtor, 64)
@@ -496,6 +494,8 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
   FOR i=0L, ndat-1L DO BEGIN
      IF keyword_set(dtype) THEN BEGIN
         ddd = mvn_swe_get3d(dat_time[idx[i]], units=units, archive=archive)
+        dtime = ddd.time
+        tabok = ddd.chksum eq 'CC'X
         energy = average(ddd.energy, 2)
 
         IF keyword_set(swia) OR keyword_set(sc_pot) THEN $
@@ -515,6 +515,8 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
            ddd = mvn_swe_pad_resample_map3d(ddd, prf=interpolate)
      ENDIF ELSE BEGIN
         pad = mvn_swe_getpad(dat_time[idx[i]], units=units, archive=archive)
+        dtime = pad.time
+        tabok = pad.chksum eq 'CC'X
         dname = pad.data_name
         energy = average(pad.energy, 2)
         ;; pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]), pad.nenergy, pad.nbins)
@@ -575,7 +577,18 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
      IF keyword_set(map3d) THEN BEGIN
         pad = ddd
         GOTO, pad_resample
-     ENDIF 
+     ENDIF
+
+     IF (not tabok) THEN BEGIN
+        pa.time  = dtime
+        pa.xax   = !values.f_nan
+        pa.index = !values.f_nan
+        pa.avg   = !values.f_nan
+        pa.std   = !values.f_nan
+        pa.nbins = !values.f_nan
+        GOTO, skip_spec
+     ENDIF
+
      IF keyword_set(dtype) THEN BEGIN
         angle = FLTARR(nene, ddd.nbins)
         FOR j=0, nene-1 DO FOR k=0, ddd.nbins-1 DO BEGIN
@@ -633,23 +646,20 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
               FOR k=0, pad.nbins-1 DO BEGIN
                  l = WHERE(~FINITE(pad.data[edx[j], k]), cnt)
                  IF cnt EQ 0 THEN BEGIN
-                    l = WHERE(xax GE pad.pa[edx[j], k] - (pad.dpa[edx[j], k]/2.) AND $
-                              xax LE pad.pa[edx[j], k] + (pad.dpa[edx[j], k]/2.), cnt)
+                    l = WHERE((xax GE pad.pa_min[edx[j],k]) AND (xax LE pad.pa_max[edx[j],k]), cnt)
                     IF cnt GT 0 THEN BEGIN
-                       tot[l] = tot[l] + pad.data[edx[j], k]
-                       index[l] = index[l] + 1.
+                       tot[l] += pad.data[edx[j], k]
+                       index[l] += 1.
                     ENDIF 
                  ENDIF 
                  undefine, l, cnt
               ENDFOR 
               undefine, k
 
-              pa.avg[j, *] = tot / index
-              pa.nbins[j, *] = index
-              k = WHERE(index LE 0., cnt)
-              
-              pa.index[j, *] = LONG(index / index)
-              IF cnt GT 0 THEN pa.index[j, k] = 0
+              pa.avg[j,*] = tot/index            ; average signal of overlapping PA bins
+              pa.nbins[j,*] = index              ; normalization factor (# overlapping PA bins)
+              pa.index[j,*] = float(index gt 0.) ; bins that have signal (1=yes, 0=no)
+
               undefine, k, cnt
               undefine, tot, index
            ENDFOR  
@@ -657,6 +667,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
            undefine, tot, index
         ENDELSE 
      ENDELSE  
+     skip_spec:
      result[i] = pa
      undefine, pa, data, xax
      undefine, ddd, pad, magf

@@ -57,9 +57,11 @@
 ;
 ;       PNG:          Create a PNG image and place it in the default location.
 ;
+;       BURST:        Plot a color bar showing PAD burst coverage.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 14:40:28 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17640 $
+; $LastChangedDate: 2015-05-30 17:56:27 -0700 (Sat, 30 May 2015) $
+; $LastChangedRevision: 17769 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -67,7 +69,8 @@
 pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a4_sum, $
                      tfirst=tfirst, title=title, tspan=tspan, apid=apid, hsk=hsk, $
                      lut=lut, timing=timing, sifctl=sifctl, tplot_vars_out=pans, $
-                     eunits=eunits, png=png, pad_smo=smo, eph=eph, orb=orb, loadonly=loadonly
+                     eunits=eunits, png=png, pad_smo=smo, eph=eph, orb=orb, $
+                     burst=burst, loadonly=loadonly
 
   @mvn_swe_com
 
@@ -663,6 +666,30 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     options,mname,'labels',['AZ','EL']
     options,mname,'labflag',1
     options,mname,'psym',3
+    
+    if keyword_set(burst) then begin
+      bname = 'swe_a3_bar'
+      y = replicate(1.,n_elements(a3.time),2)
+      dta3 = a3.time - shift(a3.time,1)
+      indx = where(dta3 gt 16D, count)
+      if (count gt 0L) then begin
+        y[indx,*] = !values.f_nan
+        y[(indx-1L) > 0L,*] = !values.f_nan
+      endif
+      store_data,bname,data={x:a3.time, y:y, v:[0,1]}
+      ylim,bname,0,1,0
+      zlim,bname,0,1,0
+      options,bname,'spec',1
+      options,bname,'panel_size',0.1
+      options,bname,'ytitle',''
+      options,bname,'yticks',1
+      options,bname,'yminor',1
+      options,bname,'no_interp',1
+      options,bname,'xstyle',4
+      options,bname,'ystyle',4
+      options,bname,'no_color_scale',1
+      pans = [pans, bname]
+    endif
 
     if (n_elements(a3) gt 1L) then begin
       dca3 = a3.npkt - shift(a3.npkt,1)
