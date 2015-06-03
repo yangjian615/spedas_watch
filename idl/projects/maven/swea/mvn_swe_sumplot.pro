@@ -60,8 +60,8 @@
 ;       BURST:        Plot a color bar showing PAD burst coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-30 17:56:27 -0700 (Sat, 30 May 2015) $
-; $LastChangedRevision: 17769 $
+; $LastChangedDate: 2015-06-01 22:07:48 -0700 (Mon, 01 Jun 2015) $
+; $LastChangedRevision: 17785 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -362,9 +362,9 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     y = fltarr(npkt,16)
     for i=0L,(npkt-1L) do begin
       de = min(abs(mvn_swe_pad[i].energy[*,0] - pad_e),j)
-      x[i] = mvn_swe_pad[i].time                   ; center time
-      a2dat = smooth(mvn_swe_pad[i].data,[smo,1])  ; smooth in energy
-      y[i,*] = a2dat[j,*]                          ; data
+      x[i] = mvn_swe_pad[i].time                        ; center time
+      a2dat = smooth(mvn_swe_pad[i].data,[smo,1],/nan)  ; smooth in energy
+      y[i,*] = a2dat[j,*]                               ; data
     endfor
     
     case strupcase(mvn_swe_pad[0].units_name) of
@@ -533,9 +533,9 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     y = fltarr(npkt,16)
     for i=0L,(npkt-1L) do begin
       de = min(abs(mvn_swe_pad_arc[i].energy[*,0] - pad_e),j)
-      x[i] = mvn_swe_pad_arc[i].time                   ; center time
-      a2dat = smooth(mvn_swe_pad_arc[i].data,[smo,1])  ; smooth in energy
-      y[i,*] = a2dat[j,*]                              ; data
+      x[i] = mvn_swe_pad_arc[i].time                        ; center time
+      a2dat = smooth(mvn_swe_pad_arc[i].data,[smo,1],/nan)  ; smooth in energy
+      y[i,*] = a2dat[j,*]                                   ; data
     endfor
     
     case strupcase(mvn_swe_pad_arc[0].units_name) of
@@ -588,6 +588,32 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
       ylim,pname,zlo,zmax,1
     endelse
     
+    if keyword_set(burst) then begin
+      bname = 'swe_a3_bar'
+      y = replicate(1.,npkt,2)
+      dta3 = mvn_swe_pad_arc.time - shift(mvn_swe_pad_arc.time,1)
+      indx = where(dta3 gt 16D, count)
+      if (count gt 0L) then begin
+        y[indx,*] = !values.f_nan
+        y[(indx-1L) > 0L,*] = !values.f_nan
+      endif
+      y[0L,*] = !values.f_nan
+      y[npkt-1L,*] = !values.f_nan
+      store_data,bname,data={x:mvn_swe_pad_arc.time, y:y, v:[0,1]}
+      ylim,bname,0,1,0
+      zlim,bname,0,1,0
+      options,bname,'spec',1
+      options,bname,'panel_size',0.05
+      options,bname,'ytitle',''
+      options,bname,'yticks',1
+      options,bname,'yminor',1
+      options,bname,'no_interp',1
+      options,bname,'xstyle',4
+      options,bname,'ystyle',4
+      options,bname,'no_color_scale',1
+      pans = [pans, bname]
+    endif
+
     Baz = mvn_swe_pad_arc.Baz*!radeg
     Bel = mvn_swe_pad_arc.Bel*!radeg + 90.
     
@@ -669,18 +695,20 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     
     if keyword_set(burst) then begin
       bname = 'swe_a3_bar'
-      y = replicate(1.,n_elements(a3.time),2)
+      y = replicate(1.,npkt,2)
       dta3 = a3.time - shift(a3.time,1)
       indx = where(dta3 gt 16D, count)
       if (count gt 0L) then begin
         y[indx,*] = !values.f_nan
         y[(indx-1L) > 0L,*] = !values.f_nan
       endif
+      y[0L,*] = !values.f_nan
+      y[npkt-1L,*] = !values.f_nan
       store_data,bname,data={x:a3.time, y:y, v:[0,1]}
       ylim,bname,0,1,0
       zlim,bname,0,1,0
       options,bname,'spec',1
-      options,bname,'panel_size',0.1
+      options,bname,'panel_size',0.05
       options,bname,'ytitle',''
       options,bname,'yticks',1
       options,bname,'yminor',1

@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 16:20:18 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17703 $
+; $LastChangedDate: 2015-06-01 15:41:38 -0700 (Mon, 01 Jun 2015) $
+; $LastChangedRevision: 17777 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -229,8 +229,8 @@ pro mvn_swe_struct
                     domega          : fltarr(n_e,n_az)        , $  ; solid angle
                     gf              : fltarr(n_e,n_az)        , $  ; geometric factor
                     dtc             : fltarr(n_e,n_az)        , $  ; dead time correction
-                    Baz             : 0.                      , $  ; magnetic field azimuth in SWEA coord.
-                    Bel             : 0.                      , $  ; magnetic field elevation in SWEA coord.
+                    Baz             : 0.                      , $  ; raw magnetic field azimuth in SWEA coord.
+                    Bel             : 0.                      , $  ; raw magnetic field elevation in SWEA coord.
                     iaz             : intarr(16)              , $  ; anode bin numbers (0-15)
                     jel             : intarr(16)              , $  ; deflection bin numbers (0-5)
                     k3d             : intarr(16)              , $  ; 3D bin numbers (0-95)
@@ -248,8 +248,8 @@ pro mvn_swe_struct
   swe_pad_l2_str = {met             : 0D                      , $  ; mission elapsed time
                     time            : 0D                      , $  ; unix time
 		            group           : 0                       , $  ; energy grouping parameter
-                    Baz             : 0.                      , $  ; magnetic field azimuth in SWEA coord.
-                    Bel             : 0.                      , $  ; magnetic field elevation in SWEA coord.
+                    Baz             : 0.                      , $  ; raw magnetic field azimuth in SWEA coord.
+                    Bel             : 0.                      , $  ; raw magnetic field elevation in SWEA coord.
                     data            : fltarr(n_e,n_az)           } ; data
 
 ; Define Energy Spectrum (SPEC) data structure

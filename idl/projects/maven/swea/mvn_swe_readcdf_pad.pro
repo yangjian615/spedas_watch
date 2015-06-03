@@ -15,9 +15,9 @@
 ; HISTORY:
 ;   Created by Matt Fillingim
 ; VERSION:
-;   $LastChangedBy: mattf $
-;   $LastChangedDate: 2015-02-06 12:34:20 -0800 (Fri, 06 Feb 2015) $
-;   $LastChangedRevision: 16903 $
+;   $LastChangedBy: dmitchell $
+;   $LastChangedDate: 2015-06-01 15:40:56 -0700 (Mon, 01 Jun 2015) $
+;   $LastChangedRevision: 17776 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_readcdf_pad.pro $
 ;
 ;-
@@ -216,23 +216,12 @@ pro mvn_swe_readcdf_pad, infile, structure
   structure.dpa = dpa*!dtor   ; d_pa in degrees --> dpa in radians
 
 ; Magnetic field azimuth and elevation
-;  Conversion to telemetry bytes to be moved to getpad
 
   CDF_VARGET, id, 'b_azim', Baz, /ZVAR, rec_count = nrec
-  Baz = reform(Baz)*!dtor   ; b_azim in degrees --> Baz in radians
+  structure.Baz = reform(Baz)*!dtor   ; b_azim in degrees --> Baz in radians
 
   CDF_VARGET, id, 'b_elev', bel, /ZVAR, rec_count = nrec
-  Bel = reform(Bel)*!dtor   ; b_elev in degrees --> Bel in radians
-  
-  mvn_swe_magdir, time, aBaz, aBel, reform(Baz)*!dtor, reform(Bel)*!dtor, /inverse
-
-; *** Baz (radians)
-
-  structure.Baz = Baz
-
-; *** Bel (radians)
-
-  structure.Bel = Bel
+  structure.Bel = reform(Bel)*!dtor   ; b_elev in degrees --> Bel in radians
 
 ; let us assume a priori that the energy sweep table is either 5 or 6
 ; (according to DM - not backward compatible to earlier tables)

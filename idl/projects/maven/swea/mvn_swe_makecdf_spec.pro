@@ -22,8 +22,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-05-28 07:09:51 -0700 (Thu, 28 May 2015) $
-;   $LastChangedRevision: 17758 $
+;   $LastChangedDate: 2015-06-01 09:39:47 -0700 (Mon, 01 Jun 2015) $
+;   $LastChangedRevision: 17772 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_spec.pro $
 ;
 ;-
@@ -270,6 +270,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
   dummy = cdf_attcreate(fileid, 'VAR_TYPE',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'FILLVAL',      /variable_scope)
   dummy = cdf_attcreate(fileid, 'DEPEND_0',     /variable_scope)
+; dummy = cdf_attcreate(fileid, 'DEPEND_1',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'DISPLAY_TYPE', /variable_scope)
   dummy = cdf_attcreate(fileid, 'VALIDMIN',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'VALIDMAX',     /variable_scope)
@@ -417,6 +418,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
   cdf_attput, fileid, 'UNITS',    'counts', 'counts',                /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'counts', 'Raw Instrument Counts', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'counts', 'epoch',                 /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'counts', 'energy',                /ZVARIABLE
 
 ; Convert to units of raw counts
 
@@ -458,6 +460,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
   cdf_attput, fileid, 'CATDESC',  'diff_en_fluxes', $
     'Calibrated differential energy flux', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'diff_en_fluxes', 'epoch', /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'diff_en_fluxes', 'energy',/ZVARIABLE
 
 ; convert to units of energy flux
 
@@ -526,6 +529,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
   cdf_attput, fileid, 'SCALEMAX', 'g_engy', 0.2, /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_engy', $
     'Relative sensitivity as a function of energy', /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'g_engy', 'energy',        /ZVARIABLE
 
   g_engy = data[mid].eff*data[mid].gf/geom_factor ; [64]
   cdf_varput, fileid, 'g_engy', g_engy
@@ -550,6 +554,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
   cdf_attput, fileid, 'SCALEMAX', 'de_over_e', 0.3,               /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'de_over_e', 'eV/eV',           /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'de_over_e', 'DeltaE/E (FWHM)', /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'de_over_e', 'energy',          /ZVARIABLE
 
   cdf_varput, fileid, 'de_over_e', data[mid].denergy/data[mid].energy ; [64]
 

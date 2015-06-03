@@ -27,8 +27,8 @@
 ;                      Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 12:03:52 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17719 $
+; $LastChangedDate: 2015-06-01 17:29:27 -0700 (Mon, 01 Jun 2015) $
+; $LastChangedRevision: 17782 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -50,6 +50,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
   if (size(units,/type) ne 7) then units = 'eflux'
   if keyword_set(burst) then archive = 1
 
+;---------------------------------------------------------------------------------
 ; First attempt to get extract PAD(s) from L2 data
 
   if keyword_set(archive) then begin
@@ -113,6 +114,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 
 ; Fill in bookkeeping parameters used by snapshot and diagnostic procedures
 ; Add magnetic field and spacecraft potential, if available
+; Note: pad.Baz and pad.Bel are the raw magnetic field direction.
 
     mvn_swe_magdir, pad.time, iBaz, jBel, pad.Baz, pad.Bel, /inverse
 
@@ -123,19 +125,23 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     fake_pkt.group = pad.group
 
     for i=0L,(npts-1L) do begin
+      iaz = fix((indgen(16) + iBaz[i]/16) mod 16)
+      jel = swe_padlut[*,jBel[i]]
+      k3d = jel*16 + iaz
+
       if (pad[i].maglev gt 0B) then magf = pad[i].magf else magf = 0
       pam = mvn_swe_padmap(fake_pkt[i],magf=magf)
       pad[i].pa     = transpose(pam.pa)
       pad[i].dpa    = transpose(pam.dpa)
       pad[i].pa_min = transpose(pam.pa_min)
       pad[i].pa_max = transpose(pam.pa_max)
-      pad[i].theta  = transpose(swe_el[pam.jel,*,pad[i].group])
-      pad[i].dtheta = transpose(swe_del[pam.jel,*,pad[i].group])
-      pad[i].phi    = replicate(1.,pad[i].nenergy) # swe_az[pam.iaz]
-      pad[i].dphi   = replicate(1.,pad[i].nenergy) # swe_daz[pam.iaz]
-      pad[i].iaz    = pam.iaz
-      pad[i].jel    = pam.jel
-      pad[i].k3d    = pam.k3d
+      pad[i].theta  = transpose(swe_el[jel,*,pad[i].group])
+      pad[i].dtheta = transpose(swe_del[jel,*,pad[i].group])
+      pad[i].phi    = replicate(1.,pad[i].nenergy) # swe_az[iaz]
+      pad[i].dphi   = replicate(1.,pad[i].nenergy) # swe_daz[iaz]
+      pad[i].iaz    = iaz
+      pad[i].jel    = jel
+      pad[i].k3d    = k3d
     endfor
 
     pad.domega = (2.*!dtor)*pad.dphi*cos(pad.theta*!dtor)*sin(pad.dtheta*!dtor/2.)
@@ -146,6 +152,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     return, pad
   endif
 
+;---------------------------------------------------------------------------------
 ; If necessary (npts = 0), extract PAD(s) from L0 data
 
   if keyword_set(archive) then begin
@@ -254,6 +261,15 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
       pad[n].maglev = magl
     endif
 
+; Mapping between PAD bins and 3D bins uses the raw magnetic field direction
+;   rBaz, rBel    --> magnetic field direction as determined onboard
+;   iaz, jel, k3d --> mapping between PAD bins and 3D bins
+
+    mvn_swe_magdir, pkt.time, pkt.Baz, pkt.Bel, rBaz, rBel
+    iaz = fix((indgen(16) + pkt.Baz/16) mod 16)
+    jel = swe_padlut[*,pkt.Bel]
+    k3d = jel*16 + iaz
+
 ; Pitch angle map.  Use MAG L1 or L2 data, if available, via MAGF keyword.
 ; Otherwise, use the MAG angles contained in the A2/A3 packets.
 
@@ -280,21 +296,21 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 ; Geometric factor.  When using V0, the geometric factor is a function of
 ; energy.  There is also variation in azimuth and elevation.
 
-    pad[n].gf = swe_gf[*,pam.iaz,pkt.group] * swe_dgf[*,pam.jel,pkt.group]
+    pad[n].gf = swe_gf[*,iaz,pkt.group] * swe_dgf[*,jel,pkt.group]
 
 ; Relative MCP efficiency.
 
-    pad[n].eff = swe_mcp_eff[*,pam.iaz,pkt.group]
+    pad[n].eff = swe_mcp_eff[*,iaz,pkt.group]
 
 ; Fill in the elevation array (units = deg)
 
-    pad[n].theta = transpose(swe_el[pam.jel,*,pkt.group])
-    pad[n].dtheta = transpose(swe_del[pam.jel,*,pkt.group])
+    pad[n].theta = transpose(swe_el[jel,*,pkt.group])
+    pad[n].dtheta = transpose(swe_del[jel,*,pkt.group])
 
 ; Fill in the azimuth array - no energy dependence (units = deg)
 
-    pad[n].phi = replicate(1.,64) # swe_az[pam.iaz]
-    pad[n].dphi = replicate(1.,64) # swe_daz[pam.iaz]
+    pad[n].phi = replicate(1.,64) # swe_az[iaz]
+    pad[n].dphi = replicate(1.,64) # swe_daz[iaz]
 
 ; Calculate solid angles from elevation and azimuth
 
@@ -320,16 +336,18 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     
     pad[n].dtc = dtc                           ; corrected count rate = rate/dtc
 
-; Fill in the magnetic field direction
+; Fill in the raw magnetic field direction, as determined onboard.
+; This encodes the information needed to reconstruct the mapping between
+; PAD bins and 3D bins in the next section.
 
-    pad[n].Baz = pam.Baz
-    pad[n].Bel = pam.Bel
+    pad[n].Baz = rBaz
+    pad[n].Bel = rBel
 
 ; Fill in bin numbers (useful for comparing PAD and 3D data)
 
-    pad[n].iaz = pam.iaz
-    pad[n].jel = pam.jel
-    pad[n].k3d = pam.k3d
+    pad[n].iaz = iaz    ; 16 anode bins at each time
+    pad[n].jel = jel    ; 16 deflector bins at each time
+    pad[n].k3d = k3d    ; 16 3D angle bins at each time
 
 ; Insert spacecraft potential, if available
 

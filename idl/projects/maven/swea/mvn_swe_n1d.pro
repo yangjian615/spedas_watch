@@ -24,9 +24,10 @@
 ;   OBINS:    3D solid angle bin mask -> 96 elements (0 = off, 1 = on)
 ;             Default = reform(ABINS # DBINS)
 ;
-;   MASK_SC:  Mask the spacecraft blockage.  Takes precedence over OBINS.
+;   MASK_SC:  Mask the spacecraft blockage.  This is in addition to any
+;             masking defined by the ABINS, DBINS, and OBINS.
 ;             Default = 1 (yes).  Set this to 0 to disable and use the
-;             above 3 keywords instead.
+;             above 3 keywords only.
 ;
 ;   MINDEN:   Smallest reliable density (cm-3).  Default = 0.08
 ;
@@ -35,8 +36,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-11 11:33:41 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17552 $
+; $LastChangedDate: 2015-06-01 16:39:42 -0700 (Mon, 01 Jun 2015) $
+; $LastChangedRevision: 17781 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-

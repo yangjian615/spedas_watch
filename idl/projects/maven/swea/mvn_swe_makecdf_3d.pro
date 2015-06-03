@@ -22,8 +22,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-05-28 07:09:51 -0700 (Thu, 28 May 2015) $
-;   $LastChangedRevision: 17758 $
+;   $LastChangedDate: 2015-06-01 09:39:47 -0700 (Mon, 01 Jun 2015) $
+;   $LastChangedRevision: 17772 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_3d.pro $
 ;
 ;-
@@ -276,6 +276,9 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   dummy = cdf_attcreate(fileid, 'VAR_TYPE',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'FILLVAL',      /variable_scope)
   dummy = cdf_attcreate(fileid, 'DEPEND_0',     /variable_scope)
+; dummy = cdf_attcreate(fileid, 'DEPEND_1',     /variable_scope)
+; dummy = cdf_attcreate(fileid, 'DEPEND_2',     /variable_scope)
+; dummy = cdf_attcreate(fileid, 'DEPEND_3',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'DISPLAY_TYPE', /variable_scope)
   dummy = cdf_attcreate(fileid, 'VALIDMIN',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'VALIDMAX',     /variable_scope)
@@ -415,6 +418,9 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'UNITS',    'counts', 'counts',                /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'counts', 'Raw Instrument Counts', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'counts', 'epoch',                 /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'counts', 'energy',                /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_2', 'counts', 'azim',                  /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_3', 'counts', 'elev',                  /ZVARIABLE
 
 ; Convert to units of raw counts
 
@@ -462,6 +468,9 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'CATDESC',  'diff_en_fluxes', $
     'Calibrated differential energy flux', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'diff_en_fluxes', 'epoch', /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'diff_en_fluxes', 'energy',/ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_2', 'diff_en_fluxes', 'azim',  /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_3', 'diff_en_fluxes', 'elev',  /ZVARIABLE
 
 ; convert to units of energy flux
 
@@ -509,12 +518,13 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'g_engy', 0,   /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'g_engy', 1.0, /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'g_engy', 0,   /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'g_engy', 0.2, /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'g_engy', 0,               /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'g_engy', 1.0,             /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'g_engy', 0,               /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'g_engy', 0.2,             /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_engy', $
-    'Relative sensitivity as a function of energy', /ZVARIABLE
+    'Relative sensitivity as a function of energy',          /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'g_engy', 'energy',        /ZVARIABLE
 
 ; Average over angles to get gf as a function of energy
 ; Use midpoint of the data because the efficiency is constant
@@ -547,6 +557,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMAX', 'de_over_e', 0.3,               /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'de_over_e', 'eV/eV',           /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'de_over_e', 'DeltaE/E (FWHM)', /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'de_over_e', 'energy',          /ZVARIABLE
 
   de_over_e = data[mid].denergy[*,0]/data[mid].energy[*,0] ; [64]
 
@@ -617,6 +628,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMAX', 'elev', 90,                        /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'elev', 'degrees',                 /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'elev', 'Elevation angle (theta)', /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'elev', 'energy',                  /ZVARIABLE
 
 ; reform arrays: [64, 96] --> [64, 16, 6] --> just want [64, 6]
 
@@ -644,7 +656,9 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMIN', 'g_elev', 0, /ZVARIABLE
   cdf_attput, fileid, 'SCALEMAX', 'g_elev', 2, /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_elev', $
-    'Relative sensitivity as a function of elevation', /ZVARIABLE
+    'Relative sensitivity as a function of elevation',       /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'g_elev', 'energy',        /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_2', 'g_elev', 'elev',          /ZVARIABLE
 
 ; Decompose relative angular sensitivity into azimuth and elevation terms
 
@@ -705,6 +719,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMAX', 'g_azim', 2, /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_azim', $
     'Relative sensitivity as a function of azimuth', /ZVARIABLE
+; cdf_attput, fileid, 'DEPEND_1', 'g_azim', 'azim',  /ZVARIABLE
 
   cdf_varput, fileid, 'g_azim', g_azim
 
