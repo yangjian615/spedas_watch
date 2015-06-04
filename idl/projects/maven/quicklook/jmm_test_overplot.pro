@@ -1,8 +1,7 @@
 set_plot, 'z'
 date = '2015-03-28'
 date = '2015-01-01'
-date = '2015-04-23'
-date = '2015-04-22'
+;date = ['2015-04-22', '2015-04-23']
 For j = 0, n_elements(date)-1 Do Begin
    filex = mvn_l0_db2file(date[j])
 ;   mvn_over_shell, l0_input_file = filex, /makepng, $

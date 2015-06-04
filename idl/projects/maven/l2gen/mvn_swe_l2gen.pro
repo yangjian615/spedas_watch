@@ -37,8 +37,8 @@
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14: jmm
 ; Better memory management and added keywords to control processing: dlm
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-01 22:06:40 -0700 (Mon, 01 Jun 2015) $
-; $LastChangedRevision: 17784 $
+; $LastChangedDate: 2015-06-02 08:08:06 -0700 (Tue, 02 Jun 2015) $
+; $LastChangedRevision: 17788 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
 pro mvn_swe_l2gen, date=date, directory=directory, l2only=l2only, nokp=nokp, $
@@ -116,22 +116,33 @@ pro mvn_swe_l2gen, date=date, directory=directory, l2only=l2only, nokp=nokp, $
 ; Create CDF files (up to 6 of them)
 
   if ~keyword_set(nol2) then begin
+    print,""
 
+    timer_start = systime(/sec)
     print,"Generating 3D Survey data"
     ddd = mvn_swe_get3d([t0,t1], /all)
-    indx = where(ddd.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
-    if (icnt gt 0L) then ddd[indx].data *= reform(dmask1 # replicate(1.,icnt),64,96,icnt)
-    if (jcnt gt 0L) then ddd[jndx].data *= reform(dmask0 # replicate(1.,jcnt),64,96,jcnt)
-    mvn_swe_makecdf_3d, ddd, directory=directory
+    if (size(ddd,/type) eq 8) then begin
+      indx = where(ddd.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
+      if (icnt gt 0L) then ddd[indx].data *= reform(dmask1 # replicate(1.,icnt),64,96,icnt)
+      if (jcnt gt 0L) then ddd[jndx].data *= reform(dmask0 # replicate(1.,jcnt),64,96,jcnt)
+      mvn_swe_makecdf_3d, ddd, directory=directory
+      dt = systime(/sec) - timer_start
+      print,dt/60D,format='("Time to process (min): ",f6.2)'
+    endif
     ddd = 0
     print,""
 
+    timer_start = systime(/sec)
     print,"Generating 3D Archive data"
     ddd = mvn_swe_get3d([t0,t1], /all, /archive)
-    indx = where(ddd.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
-    if (icnt gt 0L) then ddd[indx].data *= reform(dmask1 # replicate(1.,icnt),64,96,icnt)
-    if (jcnt gt 0L) then ddd[jndx].data *= reform(dmask0 # replicate(1.,jcnt),64,96,jcnt)
-    mvn_swe_makecdf_3d, ddd, directory=directory
+    if (size(ddd,/type) eq 8) then begin
+      indx = where(ddd.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
+      if (icnt gt 0L) then ddd[indx].data *= reform(dmask1 # replicate(1.,icnt),64,96,icnt)
+      if (jcnt gt 0L) then ddd[jndx].data *= reform(dmask0 # replicate(1.,jcnt),64,96,jcnt)
+      mvn_swe_makecdf_3d, ddd, directory=directory
+      dt = systime(/sec) - timer_start
+      print,dt/60D,format='("Time to process (min): ",f6.2)'
+    endif
     ddd = 0
     print,""
 
@@ -143,33 +154,53 @@ pro mvn_swe_l2gen, date=date, directory=directory, l2only=l2only, nokp=nokp, $
       if (i gt 0) then mname = strmid(mname,0,i) + '.sts' else mname = 'mag_level_2'
     endif else mname = 'mag_level_1'
 
+    timer_start = systime(/sec)
     print,"Generating PAD Survey data"
     pad = mvn_swe_getpad([t0,t1], /all)
-    indx = where(pad.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
-    if (icnt gt 0L) then pad[indx].data *= reform(pmask1[*,pad[indx].k3d],64,16,icnt)
-    if (jcnt gt 0L) then pad[jndx].data *= reform(pmask0[*,pad[jndx].k3d],64,16,jcnt)
-    mvn_swe_makecdf_pad, pad, directory=directory, mname=mname
+    if (size(pad,/type) eq 8) then begin
+      indx = where(pad.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
+      if (icnt gt 0L) then pad[indx].data *= reform(pmask1[*,pad[indx].k3d],64,16,icnt)
+      if (jcnt gt 0L) then pad[jndx].data *= reform(pmask0[*,pad[jndx].k3d],64,16,jcnt)
+      mvn_swe_makecdf_pad, pad, directory=directory, mname=mname
+      dt = systime(/sec) - timer_start
+      print,dt/60D,format='("Time to process (min): ",f6.2)'
+    endif
     pad = 0
     print,""
 
+    timer_start = systime(/sec)
     print,"Generating PAD Archive data"
     pad = mvn_swe_getpad([t0,t1], /all, /archive)
-    indx = where(pad.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
-    if (icnt gt 0L) then pad[indx].data *= reform(pmask1[*,pad[indx].k3d],64,16,icnt)
-    if (jcnt gt 0L) then pad[jndx].data *= reform(pmask0[*,pad[jndx].k3d],64,16,jcnt)
-    mvn_swe_makecdf_pad, pad, directory=directory, mname=mname
+    if (size(pad,/type) eq 8) then begin
+      indx = where(pad.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
+      if (icnt gt 0L) then pad[indx].data *= reform(pmask1[*,pad[indx].k3d],64,16,icnt)
+      if (jcnt gt 0L) then pad[jndx].data *= reform(pmask0[*,pad[jndx].k3d],64,16,jcnt)
+      mvn_swe_makecdf_pad, pad, directory=directory, mname=mname
+      dt = systime(/sec) - timer_start
+      print,dt/60D,format='("Time to process (min): ",f6.2)'
+    endif
     pad = 0
     print,""
 
+    timer_start = systime(/sec)
     print,"Generating SPEC Survey data"
     spec = mvn_swe_getspec([t0,t1])
-    mvn_swe_makecdf_spec, spec, directory=directory
+    if (size(spec,/type) eq 8) then begin
+      mvn_swe_makecdf_spec, spec, directory=directory
+      dt = systime(/sec) - timer_start
+      print,dt/60D,format='("Time to process (min): ",f6.2)'
+    endif
     spec = 0
     print,""
 
+    timer_start = systime(/sec)
     print,"Generating SPEC Archive data"
     spec = mvn_swe_getspec([t0,t1], /archive)
-    mvn_swe_makecdf_spec, spec, directory=directory
+    if (size(spec,/type) eq 8) then begin
+      mvn_swe_makecdf_spec, spec, directory=directory
+      dt = systime(/sec) - timer_start
+      print,dt/60D,format='("Time to process (min): ",f6.2)'
+    endif
     spec = 0
     print,""
 
@@ -178,8 +209,11 @@ pro mvn_swe_l2gen, date=date, directory=directory, l2only=l2only, nokp=nokp, $
 ; Create KP save file
 
   if ~keyword_set(nokp) then begin
+    timer_start = systime(/sec)
     print,"Generating Key Parameters"
     mvn_swe_kp, l2only=l2only
+    dt = systime(/sec) - timer_start
+    print,dt/60D,format='("Time to process (min): ",f6.2)'
     print,""
   endif
 

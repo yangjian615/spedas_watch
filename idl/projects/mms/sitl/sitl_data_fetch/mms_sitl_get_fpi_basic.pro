@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-27 10:14:00 -0700 (Wed, 27 May 2015) $
-;  $LastChangedRevision: 17739 $
+;  $LastChangedDate: 2015-06-02 16:09:06 -0700 (Tue, 02 Jun 2015) $
+;  $LastChangedRevision: 17794 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_fpi_basic.pro $
 
 
@@ -117,7 +117,7 @@ for j = 0, n_elements(sc_id)-1 do begin
     ; Concatenate data if more than one file
     if n_elements(files_open) gt 1 then begin
       for i = 1, n_elements(files_open)-1 do begin
-	temp = mms_sitl_open_fpi_basic_cdf(files_open(0))
+	temp_struct = mms_sitl_open_fpi_basic_cdf(files_open(i))
 	times = [times, temp_struct.times]
 	espec = [espec, temp_struct.espec]
 	ispec = [ispec, temp_struct.ispec]
