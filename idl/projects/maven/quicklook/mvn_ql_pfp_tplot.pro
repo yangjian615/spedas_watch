@@ -51,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-05-28 17:28:05 -0700 (Thu, 28 May 2015) $
-; $LastChangedRevision: 17761 $
+; $LastChangedDate: 2015-06-03 14:44:00 -0700 (Wed, 03 Jun 2015) $
+; $LastChangedRevision: 17802 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -131,7 +131,7 @@ END
 ; Main Routine
 PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
                       pad=pad, tplot=tplot, window=window, tname=ptname, phobos=phobos, $
-                      bcrust=bcrust, burst_bar=bbar, $
+                      bcrust=bcrust, burst_bar=bbar, bvec=bvec, $
                       swia=swi, swea=swe, static=sta, sep=sep, mag=mag, lpw=lpw
 
   oneday = 24.d0 * 3600.d0

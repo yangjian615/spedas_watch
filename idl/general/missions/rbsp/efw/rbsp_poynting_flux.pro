@@ -83,9 +83,9 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
 
   if is_struct(Bw_test) then begin
 
-                                ;-----------------------------------------------------------
-                                ;Get DC magnetic field and use to define P1,P2,P3 directions
-                                ;-----------------------------------------------------------
+     ;; -----------------------------------------------------------
+     ;; Get DC magnetic field and use to define P1,P2,P3 directions
+     ;; -----------------------------------------------------------
 
      if ~keyword_set(Bo) then begin		
         rbsp_downsample,Bw,suffix='_DC',1/40.
@@ -97,9 +97,9 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
 
 
 
-                                ;------------------------------------------------------------------------------
-                                ;Interpolate to get MagDC and Ew data to be on the same times as the Bw data
-                                ;------------------------------------------------------------------------------
+     ;; ------------------------------------------------------------------------------
+     ;; Interpolate to get MagDC and Ew data to be on the same times as the Bw data
+     ;; ------------------------------------------------------------------------------
      
      get_data,Bw,data=goo
      times = goo.x
@@ -111,9 +111,9 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
      Bdc = Bdc + '_interp'
 
      
-                                ;----------------------------
-                                ;Define new coordinate system
-                                ;----------------------------
+     ;; ----------------------------
+     ;; Define new coordinate system
+     ;; ----------------------------
      
      nelem = n_elements(times)
      
@@ -155,13 +155,12 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
 ;**************************************************
 
 
-;-----------------------------------------------------------------------------------
-;Now we've defined our Poynting flux unit vectors as P1mgse,P2mgse,P3mgse=Bmgse_uvec.
-;Project the Ew, Bw and Bo data into these three directions. 
-;-----------------------------------------------------------------------------------
+;; -----------------------------------------------------------------------------------
+;; Now we've defined our Poynting flux unit vectors as P1mgse,P2mgse,P3mgse=Bmgse_uvec.
+;; Project the Ew, Bw and Bo data into these three directions. 
+;; -----------------------------------------------------------------------------------
      
-
-                                ;Background magnetic field in Pflux coord
+     ;; Background magnetic field in Pflux coord
      Bmag_dc = sqrt(Bmgse_dc.y[*,0]^2 + Bmgse_dc.y[*,1]^2 + Bmgse_dc.y[*,2]^2)
      Bmgse_dc_uvec = Bmgse_dc.y
      Bmgse_dc_uvec[*,0] = Bmgse_dc.y[*,0]/Bmag_dc
@@ -199,9 +198,9 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
 
 
 
-;--------------------------------------------------
-;Method 1 - use IDL's smooth function
-;--------------------------------------------------
+;; --------------------------------------------------
+;; Method 1 - use IDL's smooth function (default method)
+;; --------------------------------------------------
 
 
      if ~keyword_set(method2) then begin
@@ -242,14 +241,14 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
 
      endif else begin
 
-;--------------------------------------------------
-;Method 2 - use bandpass filter
-;--------------------------------------------------
+;; --------------------------------------------------
+;; Method 2 - use bandpass filter
+;; --------------------------------------------------
 
-                                ;----------------------------------------------------
-                                ;Downsample both the Bw and Ew based on Tshort. 
-                                ;No need to have the cadence at a higher rate than 1/Tshort
-                                ;----------------------------------------------------
+        ;; ----------------------------------------------------
+        ;; Downsample both the Bw and Ew based on Tshort. 
+        ;; No need to have the cadence at a higher rate than 1/Tshort
+        ;; ----------------------------------------------------
 
         sr = 2/Tshort
         nyquist = sr/2.
@@ -260,20 +259,20 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
         Ew = Ew +  '_DS_tmp'
         
         
-                                ;--------------------------------------------------
-                                ;At this point Ep, Bp and Bdc have a sample rate of 
-                                ;2/Tshort and are sampled at the same times. 
-                                ;We want to bandpass so that the lowest possible 
-                                ;frequency is 1/Tlong Samples/sec  
-                                ;--------------------------------------------------
+        ;; --------------------------------------------------
+        ;; At this point Ep, Bp and Bdc have a sample rate of 
+        ;; 2/Tshort and are sampled at the same times. 
+        ;; We want to bandpass so that the lowest possible 
+        ;; frequency is 1/Tlong Samples/sec  
+        ;; --------------------------------------------------
 
 
-                                ;Define frequencies as a fraction of Nyquist
+        ;; Define frequencies as a fraction of Nyquist
         flow = (1/Tlong)/nyquist		
         fhigh = (1/Tshort)/nyquist
 
         
-                                ;Zero-pad these arrays to speed up FFT	
+        ;; Zero-pad these arrays to speed up FFT	
         fac = 1
         nelem = n_elements(Ep[*,0])
         while 2L^fac lt n_elements(Ep[*,0]) do fac++	
@@ -302,9 +301,9 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
 
 
 
-;--------------------------------------------------
-;Calculate Poynting flux
-;--------------------------------------------------
+;; --------------------------------------------------
+;; Calculate Poynting flux
+;; --------------------------------------------------
 
      muo = 4d0*!DPI*1d-7        ; -Permeability of free space (N/A^2)
 
@@ -322,11 +321,67 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
      Sp1 = Sp1*(1d7/1d4)
      Sp2 = Sp2*(1d7/1d4)
 
+;; --------------------------------------------------
+;; Find angle b/t Poynting flux and Bo
+;; --------------------------------------------------
+
+     Bbkgnd = [[B1bg],[B2bg],[B3bg]]
+
+;Bmgse_dc_uvec[*,0]
+     S_mag = sqrt(S1^2 + S2^2 + S3^2)
+
+ 	;Bo defined to be along the third component
+     angle_SB = acos((S3*Bbkgnd[*,2])/S_mag)/!dtor
+
+     store_data,'angle_pflux_Bo',data={x:times,y:angle_SB}
 
 
-;------------------------------------
-;Estimate mapped Poynting flux
-;------------------------------------
+	;Smooth the wave normal angle calculation
+	stime = 100.*(1/rate)
+	if stime lt (times[n_elements(times)-1]-times[0]) then rbsp_detrend,'angle_pflux_Bo',stime
+
+	;tplot,['angle_pflux_Bo','angle_pflux_Bo2']
+	tplot,[Bw,Ew,'pflux_para','pflux_perp1','pflux_perp2','pflux_Ew','pflux_Bw',$
+		'angle_pflux_Bo','angle_pflux_Bo_smoothed','Mag_mgse_DC_interp']
+
+
+
+
+;************
+;Define the P unit vectors in terms of MGSE(xhat,yhat,zhat)
+;; P1M = -By*zhat + Bz*yhat =  [0,B3bg,-B2bg]
+;; P2M = Bx*By*yhat + Bx*Bz*zhat - By^2*xhat - Bz^2*xhat = [-B2bg^2 - B3bg^2,B1bg*B2bg,B1bg*B3bg]
+;; P3M = Bx*xhat + By*yhat + Bz*zhat = [B1bg,B2bg,B3bg]
+
+
+;;Normally our Poynting flux vector is defined as
+;Svec = [S1,S2,S3] = S1*P1 + S2*P2 + S3*P3
+;;Poynting flux defined in terms of P[MGSE]
+;Svec = S1*P1M + S2*P2M + S3*P3M
+
+Svecx = -1*S2*B2bg^2 - 1*S2*B3bg^2 + S3
+Svecy = S1*B3bg + S2*B1bg*B2bg + S3*B2bg
+Svecz = -1*S1*B2bg + S2*B1bg*B3bg + S3*B3bg
+
+
+;This should be the Poynting flux vector in terms of MGSE
+;coord....need to test!!!
+Svec_MGSE = [[Svecx],[Svecy],[Svecz]]
+
+;******************
+
+
+
+
+
+
+
+
+
+
+;; ------------------------------------
+;; Estimate mapped Poynting flux
+;; ------------------------------------
      
 ;From flux tube conservation B1*A1 = B2*A2  (A=cross sectional area of flux tube)
 ;B2/B1 = A1/A2
@@ -344,9 +399,9 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
 
 
 
-;--------------------------------------------------
-;Store all as tplot variables
-;--------------------------------------------------
+;; --------------------------------------------------
+;; Store all as tplot variables
+;; --------------------------------------------------
      
      
      store_data,'pflux_para',data={x:times,y:S3}
@@ -361,7 +416,17 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
      store_data,'pflux_perp2_iono',data={x:times,y:S2_ion}
      store_data,'pflux_nospinaxis_para_iono',data={x:times,y:Sp2_ion}
      store_data,'pflux_nospinaxis_perp_iono',data={x:times,y:Sp1_ion}
+     store_data,'angle_pflux_Bo',data={x:times,y:angle_SB}
+     ;; store_data,'pflux_para_mgse',data={x:times,y:pflux_para_mgse}
+     ;; store_data,'pflux_perp1_mgse',data={x:times,y:pflux_perp1_mgse}
+     ;; store_data,'pflux_perp2_mgse',data={x:times,y:pflux_perp2_mgse}
 
+     store_data,'pflux_mgse',data={x:times,y:Svec_mgse}
+
+	;tplot,['pflux_para_mgse','pflux_perp1_mgse','pflux_perp2_mgse']
+	;stop
+
+     ;store_data,'angle_pflux_Bo2',data={x:times,y:angle_SB2}
 
 
      options,'pflux_Ew','ytitle','Ew!Cpflux coord!C[mV/m]'
@@ -378,7 +443,8 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
      options,'pflux_perp1_iono','ytitle','pflux!Cmapped!Cperp1 to Bo!C[erg/cm^2/s]'
      options,'pflux_perp2_iono','ytitle','pflux!Cmapped!Cperp2 to Bo!C[erg/cm^2/s]'
      options,'pflux_para_iono','ytitle','pflux!Cmapped!Cparallel to Bo!C[erg/cm^2/s]'
-
+     options,'angle_pflux_Bo','ytitle','Angle (deg) b/t!CBo and Pflux'
+     options,'pflux_mgse','ytitle','Pflux in MGSE coord'
 
      options,'pflux_nospinaxis_perp','labels','No spin axis!C comp'
      options,'pflux_nospinaxis_para','labels','No spin axis!C comp!C+ along Bo'
@@ -400,6 +466,28 @@ pro rbsp_poynting_flux,Bw,Ew,Tshort,Tlong,Bo=Bo,method2=method2
      options,'pflux_nospinaxis_perp_iono','colors',1
      
 
+
+
+	;; ;Define the Poynting flux perp and parallel values in terms of MGSE coord
+	;; get_data,'pflux_para',data=ppara
+	;; get_data,'pflux_perp1',data=pperp1
+	;; get_data,'pflux_perp2',data=pperp2
+	;; pflux_para_mgse = [[ppara.y * Bmgse_dc.y[*,0]],[ppara.y * Bmgse_dc.y[*,1]],[ppara.y * Bmgse_dc.y[*,2]]]
+	;; pflux_perp1_mgse = [[pperp1.y * p1mgse[*,0]],[pperp1.y * p1mgse[*,1]],[pperp1.y * p1mgse[*,2]]]
+	;; pflux_perp2_mgse = [[pperp2.y * p2mgse[*,0]],[pperp2.y * p2mgse[*,1]],[pperp2.y * p2mgse[*,2]]]
+
+	;; pf1mag = sqrt(pflux_para_mgse[*,0]^2 + pflux_para_mgse[*,1]^2 + pflux_para_mgse[*,2]^2)
+	;; pf2mag = sqrt(pflux_perp1_mgse[*,0]^2 + pflux_perp1_mgse[*,1]^2 + pflux_perp1_mgse[*,2]^2)
+	;; pf3mag = sqrt(pflux_perp2_mgse[*,0]^2 + pflux_perp2_mgse[*,1]^2 + pflux_perp2_mgse[*,2]^2)
+
+	;; for i=0,300 do print,acos(total(pflux_para_mgse[i,*]*pflux_perp1_mgse[i,*])/(pf1mag[i]*pf2mag[i]))/!dtor   ;perp!
+	;; for i=0,300 do print,acos(total(pflux_para_mgse[i,*]*pflux_perp2_mgse[i,*])/(pf1mag[i]*pf3mag[i]))/!dtor   ;perp!
+	;; for i=0,300 do print,acos(total(pflux_perp1_mgse[i,*]*pflux_perp2_mgse[i,*])/(pf2mag[i]*pf3mag[i]))/!dtor   ;perp!
+
+
+	 ;; options,'pflux_para_mgse','ytitle','pflux para!Cin MGSE'
+	 ;; options,'pflux_perp1_mgse','ytitle','pflux perp1!Cin MGSE'
+	 ;; options,'pflux_perp2_mgse','ytitle','pflux perp2!Cin MGSE'
 
 
 ;; ylim,['pflux_para','pflux_nospinaxis_para','pflux_perp1','pflux_nospinaxis_perp1','pflux_perp2','pflux_nospinaxis_perp2'],-2d-5,1.5d-4

@@ -29,8 +29,8 @@
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen.pro 2015-06-02, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-06-02 16:18:12 -0700 (Tue, 02 Jun 2015) $
-; $LastChangedRevision: 17795 $
+; $LastChangedDate: 2015-06-03 13:04:11 -0700 (Wed, 03 Jun 2015) $
+; $LastChangedRevision: 17799 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_call_pfpl2plot.pro $
 ;-
 Pro mvn_call_pfpl2plot, time_in = time_in, $
@@ -67,7 +67,7 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
         else: goto, SKIP_ALL
      endcase
   endif
-  If(keyword_set(out_dir)) Then odir = out_dir Else odir = 0b
+  If(keyword_set(out_dir)) Then odir = out_dir Else odir = '/disks/data/maven/data/sci/'
 
 ;--------------------------------
   instr = 'pfpl2'
@@ -95,11 +95,16 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
         timep_do = strmid(days, 0, 4)+strmid(days, 5, 2)+strmid(days, 8, 2)
      Endif Else Begin
         Case instrk Of ;some instruments require multiple directories
-           'pfpl2': instr_dir = ['lpw','mag','sep','sta','swe','swi']
-           Else: instr_dir = instrk
+           'pfpl2': Begin
+              instr_dir = ['lpw','mag','sep','sta','swe','swi']
+              suffix = ['cdf','sts','cdf','cdf','cdf','cdf']
+              sdir = '/disks/data/maven/data/sci/'+instr_dir+'/l2/*/*/*.'+suffix
+;Add bcrust save files:
+              sdir = [sdir, '/disks/data/maven/data/mod/bcrust/*/*/*.tplot']
+           End
+           Else: sdir = '/disks/data/maven/data/sci/'+instrk+'/l2/*/*/*.cdf'
         Endcase
 ;Set up check directories
-        sdir = '/disks/data/maven/data/sci/'+instr_dir+'/l2/*/*/*.cdf'
         pfile = file_search(sdir)
         If(keyword_set(use_file4time)) Then Begin
  ;Get the file date
@@ -159,11 +164,22 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
               dprint, 'Not processing: '+timei
               Continue
            Endif
+           yr = strmid(timei0, 0, 4)
+           mo = strmid(timei0, 4, 2)
+;filei_dir is the output directory, not necessarily the search
+;directory
+           filei_dir = odir+'/pfp/l2/plots/'+yr+'/'+mo+'/'
+           If(is_string(file_search(filei_dir)) Eq 0) Then Begin
+              message, /info, 'Creating: '+filei_dir
+              file_mkdir, filei_dir
+           Endif
            load_position = 'pfp12'
            message, /info, 'PROCESSING: '+instrk+' FOR: '+timei
            Case instrk Of
-              'pfpl2': mvn_genl2_overplot, date = timei, _extra =_extra
-              Else: mvn_genl2_overplot, date = timei, _extra =_extra
+              'pfpl2': mvn_pfpl2_overplot, date = timei, directory = filei_dir, $
+                                           device = 'z', /multipngplot, _extra =_extra
+              Else: mvn_pfpl2_overplot, date = timei, directory = filei_dir, $
+                                        device = 'z', /multipngplot, _extra =_extra
            Endcase
            SKIP_FILE: 
            del_data, '*'

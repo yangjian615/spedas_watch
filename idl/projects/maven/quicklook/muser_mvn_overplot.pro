@@ -4,10 +4,10 @@
 ;date = ['2014-10-17', '2014-10-18', '2014-10-19']
 set_plot, 'z'
 
-date = '2015-01-02'
+date = '2015-05-21'
 
 For j = 0, n_elements(date)-1 Do Begin
-   mvn_over_shell, date=date[j], /date_only
+   mvn_over_shell, date=date[j], /date_only, /multipngplot, device='z', instr=['pfpl2']
 Endfor
 
 End

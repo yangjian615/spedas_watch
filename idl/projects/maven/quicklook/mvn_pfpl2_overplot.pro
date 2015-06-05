@@ -1,10 +1,10 @@
 ;+
 ;NAME:
-; mvn_genl2_overplot
+; mvn_pfpl2_overplot
 ;PURPOSE:
 ; MAVEN PFP GEN Quicklook Plot
 ;CALLING SEQUENCE:
-; mvn_genl2_overplot, date = date, time_range = time_range, $
+; mvn_pfpl2_overplot, date = date, time_range = time_range, $
 ;      makepng=makepng, device = device, directory = pdir, $
 ;      multipngplot = multipngplot
 ;INPUT:
@@ -29,12 +29,12 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; CHanged to use thara's mvn_pl_pfp_tplot.pro, 2015-04-14, jmm
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-05-29 15:34:35 -0700 (Fri, 29 May 2015) $
-; $LastChangedRevision: 17767 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_genl2_overplot.pro $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2015-06-03 15:04:07 -0700 (Wed, 03 Jun 2015) $
+; $LastChangedRevision: 17803 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_pfpl2_overplot.pro $
 ;-
-Pro mvn_genl2_overplot, orbit_number = orbit_number, $
+Pro mvn_pfpl2_overplot, orbit_number = orbit_number, $
                         date = date, time_range = time_range, $
                         makepng=makepng, device = device, $
                         directory = directory, $
@@ -70,12 +70,7 @@ Pro mvn_genl2_overplot, orbit_number = orbit_number, $
      Return
   Endelse
 
-  mvn_ql_pfp_tplot, tr0
-
-;In the mvn_ql_pfp_tplot program, bvec may be one of two variables
-  get_data, 'mvn_mag_l1_bmso_1sec', data = dddb
-  If(is_struct(dddb)) Then bvec = 'mvn_mag_l1_bmso_1sec' $
-  Else bvec = 'mvn_mag_l1_bpl_1sec'
+  mvn_ql_pfp_tplot, tr0, bcrust=0, /tplot, bvec = bvec
 
 ;Re-init here
   mvn_qlook_init, device = device

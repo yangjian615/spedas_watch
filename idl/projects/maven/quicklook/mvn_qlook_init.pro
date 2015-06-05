@@ -16,14 +16,16 @@
 ;          program.
 ;HISTORY:
 ; 2013-05-13, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimmpc1 $
-; $LastChangedDate: 2014-04-02 15:40:48 -0700 (Wed, 02 Apr 2014) $
-; $LastChangedRevision: 14744 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2015-06-03 12:18:13 -0700 (Wed, 03 Jun 2015) $
+; $LastChangedRevision: 17797 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_qlook_init.pro $
 ;-
 Pro mvn_qlook_init, no_color_setup = no_color_setup,  device = device, _extra = _extra
 
 common mvn_qlook_init_private, init_done, sw_vsn
+
+setenv, 'ROOT_DATA_DIR='+root_data_dir()
 
 If(keyword_set(device)) Then Begin
    set_plot, strcompress(/remove_all, strupcase(device[0]))
