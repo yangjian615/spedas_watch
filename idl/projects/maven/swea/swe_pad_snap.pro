@@ -53,9 +53,12 @@
 ;
 ;                      Any value of SPEC < 30 deg is taken to be 30 deg.
 ;
+;        PLOTLIMS:     Plot dashed lines at the limits of the pitch angle
+;                      coverage.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 17:08:56 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17733 $
+; $LastChangedDate: 2015-06-04 11:43:42 -0700 (Thu, 04 Jun 2015) $
+; $LastChangedRevision: 17804 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -64,7 +67,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
                   label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
                   abins=abins, dbins=dbins, obins=obins, burst=burst, $
-                  pot=pot, spec=spec
+                  pot=pot, spec=spec, plotlims=plotlims
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -90,6 +93,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     abin = string(indgen(16),format='(i2.2)')
     dbin = string(indgen(6),format='(i1)')
   endif else dolab = 0
+  if keyword_set(plotlims) then plot_pa_lims = 1 else plot_pa_lims = 0
   
   if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
   if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
@@ -237,26 +241,61 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
       x = pad.energy[*,0]
       y = pad.pa*!radeg
+      ylo = pad.pa_min*!radeg
+      yhi = pad.pa_max*!radeg
       z = smooth(pad.data,[smo,1],/nan)
+
+; Add extra elements to force specplot to show the full pitch angle range
+
+      y1 = fltarr(64,10)
+      ylo1 = y1
+      yhi1 = y1
+      z1 = y1
+      y2 = y1
+      ylo2 = y1
+      yhi2 = y1
+      z2 = y1
 
       for i=0,63 do begin
         indx = sort(reform(y[i,0:7]))
-        y[i,0:7] = y[i,indx]
-        z[i,0:7] = z[i,indx]
+        y1[i,1:8] = y[i,indx]
+        z1[i,1:8] = z[i,indx]
+        ylo1[i,1:8] = ylo[i,indx]
+        yhi1[i,1:8] = yhi[i,indx]
         jndx = sort(reform(y[i,8:15])) + 8
-        y[i,8:15] = y[i,jndx]
-        z[i,8:15] = z[i,jndx]
+        y2[i,1:8] = y[i,jndx]
+        z2[i,1:8] = z[i,jndx]
+        ylo2[i,1:8] = ylo[i,jndx]
+        yhi2[i,1:8] = yhi[i,jndx]
       endfor
-      
+      y1[*,0] = ylo1[*,1]
+      y1[*,9] = yhi1[*,8]
+      z1[*,0] = z1[*,1]
+      z1[*,9] = z1[*,8]
+
+      y2[*,0] = ylo2[*,1]
+      y2[*,9] = yhi2[*,8]
+      z2[*,0] = z2[*,1]
+      z2[*,9] = z2[*,8]
+
       zmin = min(z, max=zmax, /nan) > zlo
       str_element,limits,'zrange',[zmin,zmax],/add
 
       !p.multi = [0,1,2]
-      specplot,x,y[*,0:7],z[*,0:7],limits=limits
+      specplot,x,y1,z1,limits=limits
       if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],[0,180],line=2
+      if (plot_pa_lims) then begin
+        oplot,[3,5000],[ylo1[63,1],ylo1[63,1]],line=2
+        oplot,[3,5000],[yhi1[63,8],yhi1[63,8]],line=2
+      endif
       limits.title = ''
-      specplot,x,y[*,8:15],z[*,8:15],limits=limits
+      specplot,x,y2,z2,limits=limits
       if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],[0,180],line=2
+      if (plot_pa_lims) then begin
+        oplot,[3,5000],[ylo2[63,1],ylo2[63,1]],line=2
+        oplot,[3,5000],[yhi2[63,8],yhi2[63,8]],line=2
+      endif
+
       !p.multi = 0
 
       if (sflg) then begin

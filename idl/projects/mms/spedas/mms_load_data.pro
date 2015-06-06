@@ -27,21 +27,34 @@
 ;         released to the public and feedback comes in from scientists - egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-05-22 15:37:18 -0700 (Fri, 22 May 2015) $
-;$LastChangedRevision: 17679 $
+;$LastChangedDate: 2015-06-04 12:37:05 -0700 (Thu, 04 Jun 2015) $
+;$LastChangedRevision: 17806 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
+
+pro mms_fix_metadata, tplotnames
+
+    for tname_idx = 0, n_elements(tplotnames)-1 do begin
+    
+    
+    endfor
+end
 
 pro mms_load_data, probes = probes, datatype = datatype, instrument = instrument, $
                    trange = trange, source = source, level = level, $
                    remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
 
     if not keyword_set(datatype) then datatype = '*'
+    ; currently, datatype = level
+    if datatype ne '*' && undefined(level) then level = datatype
     if not keyword_set(level) then level = 'ql'
     if not keyword_set(instrument) then instrument = 'dfg' ; default to DFG
-    instrument = strlowcase(instrument)
     if not keyword_set(probes) then probes = ['1']
     if probes[0] eq '*' then probes = [1, 2, 3, 4]
+    
+    ; make sure important strings are lower case
+    instrument = strlowcase(instrument)
+    level = strlowcase(level)
     
     if not keyword_set(remote_data_dir) then remote_data_dir = 'http://lasp.colorado.edu/mms/sdc/about/browse/'
     if not keyword_set(local_data_dir) then local_data_dir = 'c:\data\mms\'
@@ -59,7 +72,9 @@ pro mms_load_data, probes = probes, datatype = datatype, instrument = instrument
     for probe_idx = 0, n_elements(probes)-1 do begin
         ; currently defaulting to V0.0.0 of the CDFs 
         ; TODO: this needs to be updated to grab the latest version of the CDF file.
-        pathformat[probe_idx] = 'PROBE' + strcompress(string(probes[probe_idx]), /rem) + '/' + instrument + '/srvy/'+level+'/YYYY/MM/PROBE' + strcompress(string(probes[probe_idx]), /rem) + '_' + instrument + '_srvy_'+level+'_YYYYMMDD_v0.0.0.cdf'
+        pathformat[probe_idx] = 'PROBE' + strcompress(string(probes[probe_idx]), /rem) + '/' + $
+            instrument + '/srvy/'+level+'/YYYY/MM/PROBE' + strcompress(string(probes[probe_idx]), /rem) + $
+            '_' + instrument + '_srvy_'+level+'_YYYYMMDD_v0.0.0.cdf'
     endfor
 
     for probe_idx = 0, n_elements(probes)-1 do begin

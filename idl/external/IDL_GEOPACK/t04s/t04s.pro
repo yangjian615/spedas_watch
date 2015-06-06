@@ -55,6 +55,29 @@
 ;         geopack_2008 (optional): Set this keyword to use the latest version (2008) of the Geopack
 ;              library. Version 9.2 of the IDL Geopack DLM is required for this keyword to work.
 ;              
+;         IOPGEN (optional): General option flag to pass to geopack_ts04. From Tsyganenko's Fortran:
+;                                  IOPGEN=0 - CALCULATE TOTAL FIELD
+;                                  IOPGEN=1 - DIPOLE SHIELDING ONLY
+;                                  IOPGEN=2 - TAIL FIELD ONLY
+;                                  IOPGEN=3 - BIRKELAND FIELD ONLY
+;                                  IOPGEN=4 - RING CURRENT FIELD ONLY
+;                                  IOPGEN=5 - INTERCONNECTION FIELD ONLY
+;
+;         IOPT (optional)
+;         -  TAIL FIELD FLAG:       IOPT=0  -  BOTH MODES
+;                                   IOPT=1  -  MODE 1 ONLY
+;                                   IOPT=2  -  MODE 2 ONLY
+;
+;         IOPB (optional)
+;         -  BIRKELAND FIELD FLAG: IOPB=0  -  ALL 4 TERMS
+;                                  IOPB=1  -  REGION 1, MODES 1 AND 2
+;                                  IOPB=2  -  REGION 2, MODES 1 AND 2
+;
+;         IOPR (optional)
+;         -  RING CURRENT FLAG:    IOPR=0  -  BOTH SRC AND PRC
+;                                  IOPR=1  -  SRC ONLY
+;                                  IOPR=2  -  PRC ONLY
+;              
 ;Returns: an Nx3 length array of field model data (TS04 + IGRF) or -1L on failure
 ;
 ;Example:
@@ -84,18 +107,23 @@
 ;      Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-03-20 12:48:33 -0700 (Fri, 20 Mar 2015) $
-; $LastChangedRevision: 17157 $
+; $LastChangedDate: 2015-06-04 16:15:16 -0700 (Thu, 04 Jun 2015) $
+; $LastChangedRevision: 17809 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t04s/t04s.pro $
 ;-
 
 function t04s,tarray,rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, $
     period=period,add_tilt=add_tilt,get_tilt=get_tilt,set_tilt=set_tilt, $
-    get_nperiod=get_nperiod,get_period_times=get_period_times,geopack_2008=geopack_2008
+    get_nperiod=get_nperiod,get_period_times=get_period_times,geopack_2008=geopack_2008, $
+    iopgen=iopgen, iopt=iopt, iopb=iopb, iopr=iopr
 
   ;sanity tests, setting defaults
   if igp_test(geopack_2008=geopack_2008) eq 0 then return, -1L
   if not keyword_set(period) then period = 600
+  if not keyword_set(iopgen) then iopgen = 0 ; total field by default
+  if not keyword_set(iopt) then iopt = 0 ; both modes
+  if not keyword_set(iopb) then iopb = 0 ; all 4 terms
+  if not keyword_set(iopr) then iopr = 0 ; both SRC and PRC
 
   if period le 0. then begin
     message, /contiune, 'period must be positive'
@@ -362,7 +390,7 @@ function t04s,tarray,rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, $
         ; Geopack 2008 uses the GSW coordinate system instead of GSM
         geopack_igrf_gsw_08, rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by, igrf_bz 
       endif else begin
-        geopack_igrf_gsm, rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by, igrf_bz 
+        geopack_igrf_gsm, rgsm_x, rgsm_y, rgsm_z, igrf_bx, igrf_by, igrf_bz
       endelse
 
       ;account for user tilt.
@@ -380,7 +408,9 @@ function t04s,tarray,rgsm_array,pdyn,dsti,yimf,zimf,w1,w2,w3,w4,w5,w6, $
 
       ;calculate external contribution
       ;iopt = kp+1
-      geopack_ts04, parmod[id, *], rgsm_x, rgsm_y, rgsm_z, t04s_bx, t04s_by, t04s_bz, tilt = tilt
+
+      geopack_ts04, parmod[id, *], rgsm_x, rgsm_y, rgsm_z, t04s_bx, t04s_by, t04s_bz, tilt = tilt, $
+        iopgen = iopgen, iopt = iopt, iopb = iopb, iopr = iopr
 
       ;total field
       out_array[idx, 0] = igrf_bx + t04s_bx

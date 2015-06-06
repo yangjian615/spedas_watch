@@ -57,6 +57,11 @@
 ;
 ;       LOADONLY: Create the TPLOT variables, but do not plot.
 ;
+;       RESET_TRANGE: If set, then reset the time span to cover the entire ephemeris
+;                     time range, overwriting any existing time range.  This will
+;                     affect any routines that use timespan for determining what
+;                     data to process.  Use with caution.
+;
 ;       TIMECROP: An array with at least two elements, in any format accepted by 
 ;                 time_double.  Only ephemeris data between the earliest and
 ;                 latest times in this array are retained.  Default is to retain all
@@ -78,8 +83,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-24 11:24:04 -0700 (Sun, 24 May 2015) $
-; $LastChangedRevision: 17689 $
+; $LastChangedDate: 2015-06-04 13:44:06 -0700 (Thu, 04 Jun 2015) $
+; $LastChangedRevision: 17807 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -87,7 +92,7 @@
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
-                       colors=colors
+                       colors=colors, reset_trange=reset_trange
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex, rcols
@@ -98,6 +103,11 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   R_vol = (R_equ*R_equ*R_pol)^(1D/3D)
 
   rootdir = 'maven/anc/spice/sav/'
+
+  treset = 0  
+  tplot_options, get=topt
+  if (max(topt.trange_full) eq 0D) then treset = 1
+  if keyword_set(reset_trange) then treset = 1
 
   if keyword_set(domex) then domex = 1 else domex = 0
   if not keyword_set(ialt) then ialt = !values.f_nan
@@ -615,11 +625,9 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   vars = ['alt2','stat','sza','period','palt','lon','lat']
 
   if not keyword_set(loadonly) then begin
-    Twin = 28
-    window, Twin, xsize=900, ysize=700
-    tplot_options,'charsize',1.2
-    timespan,[tmin,tmax],/sec
-    tplot,vars[0:2]
+    str_element, topt, 'varnames', tvars, success=add
+    if (treset) then timespan,[tmin,tmax],/sec
+    tplot,vars[0:2],add=add
     if (donow) then timebar,systime(/utc,/sec),line=1
   endif
 

@@ -7,8 +7,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-05-22 15:38:04 -0700 (Fri, 22 May 2015) $
-;$LastChangedRevision: 17680 $
+;$LastChangedDate: 2015-06-04 12:37:05 -0700 (Thu, 04 Jun 2015) $
+;$LastChangedRevision: 17806 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -273,7 +273,7 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   probeArrayValues = ['1', '2', '3', '4']
   probeArrayDisplayed = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
   instrumentArray = ['DFG', 'AFG', '*']
-  typeArray = ['*']
+  typeArray = ['ql', 'l1b']
   instrumentBase = widget_base(selectionBase,/row) 
   instrumentLabel = widget_label(instrumentBase,value='Instrument Type: ')
   instrumentCombo = widget_combobox(instrumentBase,$
@@ -296,7 +296,7 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   ;create the list box aand a clear all button for the data types for a given 
   ;instrument             
   typeBase = widget_base(dataBase,/col)
-  typeLabel = widget_label(typeBase,value='Data Type:')
+  typeLabel = widget_label(typeBase,value='Level:')
   typeList = widget_list(typeBase,$
                          value=typeArray,$
                         ; /multiple,$
@@ -307,7 +307,7 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   ; default to all data types
   widget_control, typeList, set_list_select = 0
                                                 
-  clearTypeButton = widget_button(typeBase,value='Clear Data Type',uvalue='CLEARTYPE',ToolTip='Deselect all parameter types')
+  clearTypeButton = widget_button(typeBase,value='Clear Level',uvalue='CLEARTYPE',ToolTip='Deselect all parameter types')
 
   ;create the state variable with all the parameters that are needed by this 
   ;panels event handler routine                                                               

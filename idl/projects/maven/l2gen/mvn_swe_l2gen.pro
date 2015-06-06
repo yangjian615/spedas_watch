@@ -37,8 +37,8 @@
 ; Hacked from Matt F's crib_l0_to_l2.txt, 2014-11-14: jmm
 ; Better memory management and added keywords to control processing: dlm
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-02 08:08:06 -0700 (Tue, 02 Jun 2015) $
-; $LastChangedRevision: 17788 $
+; $LastChangedDate: 2015-06-04 11:45:17 -0700 (Thu, 04 Jun 2015) $
+; $LastChangedRevision: 17805 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_l2gen.pro $
 ;- 
 pro mvn_swe_l2gen, date=date, directory=directory, l2only=l2only, nokp=nokp, $
@@ -108,10 +108,7 @@ pro mvn_swe_l2gen, date=date, directory=directory, l2only=l2only, nokp=nokp, $
 
   mvn_swe_addmag
   if (size(swe_mag1,/type) eq 8) then maglev = swe_mag1[0].level else maglev = 0B
-  if (l2only and (maglev lt 2B)) then begin
-    print,"No MAG L2 data.  No CDF files created."
-    return
-  endif
+  if (l2only and (maglev lt 2B)) then dopad = 0 else dopad = 1
 
 ; Create CDF files (up to 6 of them)
 
@@ -146,41 +143,45 @@ pro mvn_swe_l2gen, date=date, directory=directory, l2only=l2only, nokp=nokp, $
     ddd = 0
     print,""
 
-    if (maglev eq 2B) then begin
-      mfile = 'maven/data/sci/mag/l2/YYYY/MM/mvn_mag_l2_YYYY???pl_YYYYMMDD_v??_r??.xml'
-      mname = mvn_pfp_file_retrieve(mfile,trange=trange,/daily,/valid,verbose=-1)
-      mname = file_basename(mname[0])
-      i = strpos(mname,'.xml')
-      if (i gt 0) then mname = strmid(mname,0,i) + '.sts' else mname = 'mag_level_2'
-    endif else mname = 'mag_level_1'
+    if (dopad) then begin
 
-    timer_start = systime(/sec)
-    print,"Generating PAD Survey data"
-    pad = mvn_swe_getpad([t0,t1], /all)
-    if (size(pad,/type) eq 8) then begin
-      indx = where(pad.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
-      if (icnt gt 0L) then pad[indx].data *= reform(pmask1[*,pad[indx].k3d],64,16,icnt)
-      if (jcnt gt 0L) then pad[jndx].data *= reform(pmask0[*,pad[jndx].k3d],64,16,jcnt)
-      mvn_swe_makecdf_pad, pad, directory=directory, mname=mname
-      dt = systime(/sec) - timer_start
-      print,dt/60D,format='("Time to process (min): ",f6.2)'
-    endif
-    pad = 0
-    print,""
+      if (maglev eq 2B) then begin
+        mfile = 'maven/data/sci/mag/l2/YYYY/MM/mvn_mag_l2_YYYY???pl_YYYYMMDD_v??_r??.xml'
+        mname = mvn_pfp_file_retrieve(mfile,trange=trange,/daily,/valid,verbose=-1)
+        mname = file_basename(mname[0])
+        i = strpos(mname,'.xml')
+        if (i gt 0) then mname = strmid(mname,0,i) + '.sts' else mname = 'mag_level_2'
+      endif else mname = 'mag_level_1'
 
-    timer_start = systime(/sec)
-    print,"Generating PAD Archive data"
-    pad = mvn_swe_getpad([t0,t1], /all, /archive)
-    if (size(pad,/type) eq 8) then begin
-      indx = where(pad.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
-      if (icnt gt 0L) then pad[indx].data *= reform(pmask1[*,pad[indx].k3d],64,16,icnt)
-      if (jcnt gt 0L) then pad[jndx].data *= reform(pmask0[*,pad[jndx].k3d],64,16,jcnt)
-      mvn_swe_makecdf_pad, pad, directory=directory, mname=mname
-      dt = systime(/sec) - timer_start
-      print,dt/60D,format='("Time to process (min): ",f6.2)'
+      timer_start = systime(/sec)
+      print,"Generating PAD Survey data"
+      pad = mvn_swe_getpad([t0,t1], /all)
+      if (size(pad,/type) eq 8) then begin
+        indx = where(pad.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
+        if (icnt gt 0L) then pad[indx].data *= reform(pmask1[*,pad[indx].k3d],64,16,icnt)
+        if (jcnt gt 0L) then pad[jndx].data *= reform(pmask0[*,pad[jndx].k3d],64,16,jcnt)
+        mvn_swe_makecdf_pad, pad, directory=directory, mname=mname
+        dt = systime(/sec) - timer_start
+        print,dt/60D,format='("Time to process (min): ",f6.2)'
+      endif
+      pad = 0
+      print,""
+
+      timer_start = systime(/sec)
+      print,"Generating PAD Archive data"
+      pad = mvn_swe_getpad([t0,t1], /all, /archive)
+      if (size(pad,/type) eq 8) then begin
+        indx = where(pad.time gt t_mtx[2], icnt, complement=jndx, ncomplement=jcnt)
+        if (icnt gt 0L) then pad[indx].data *= reform(pmask1[*,pad[indx].k3d],64,16,icnt)
+        if (jcnt gt 0L) then pad[jndx].data *= reform(pmask0[*,pad[jndx].k3d],64,16,jcnt)
+        mvn_swe_makecdf_pad, pad, directory=directory, mname=mname
+        dt = systime(/sec) - timer_start
+        print,dt/60D,format='("Time to process (min): ",f6.2)'
+      endif
+      pad = 0
+      print,""
+
     endif
-    pad = 0
-    print,""
 
     timer_start = systime(/sec)
     print,"Generating SPEC Survey data"

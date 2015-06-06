@@ -119,7 +119,30 @@
 ;
 ;         geopack_2008 (optional): Set this keyword to use the latest version (2008) of the Geopack
 ;              library. Version 9.2 of the IDL Geopack DLM is required for this keyword to work.
+;              
+;         iopgen (optional): General option flag to pass to geopack_ts04. From Tsyganenko's Fortran:
+;                                  IOPGEN=0 - CALCULATE TOTAL FIELD
+;                                  IOPGEN=1 - DIPOLE SHIELDING ONLY
+;                                  IOPGEN=2 - TAIL FIELD ONLY
+;                                  IOPGEN=3 - BIRKELAND FIELD ONLY
+;                                  IOPGEN=4 - RING CURRENT FIELD ONLY
+;                                  IOPGEN=5 - INTERCONNECTION FIELD ONLY
+;              
+;         IOPT (optional)
+;         -  TAIL FIELD FLAG:       IOPT=0  -  BOTH MODES
+;                                   IOPT=1  -  MODE 1 ONLY
+;                                   IOPT=2  -  MODE 2 ONLY
 ;
+;         IOPB (optional)
+;         -  BIRKELAND FIELD FLAG: IOPB=0  -  ALL 4 TERMS
+;                                  IOPB=1  -  REGION 1, MODES 1 AND 2
+;                                  IOPB=2  -  REGION 2, MODES 1 AND 2
+;
+;         IOPR (optional)
+;         -  RING CURRENT FLAG:    IOPR=0  -  BOTH SRC AND PRC
+;                                  IOPR=1  -  SRC ONLY
+;                                  IOPR=2  -  PRC ONLY
+;                                  
 ; Output: Stores the result of the field model calculations in tplot variables
 ;          
 ; Notes: 
@@ -146,15 +169,16 @@
 ;            Res., v. 110 (A3), A03208, doi: 10.1029/2004JA010798, 2005
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-03-20 08:27:55 -0700 (Fri, 20 Mar 2015) $
-; $LastChangedRevision: 17153 $
+; $LastChangedDate: 2015-06-04 16:15:16 -0700 (Thu, 04 Jun 2015) $
+; $LastChangedRevision: 17809 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/t04s/tt04s.pro $
 ;-
 
 pro tt04s, pos_gsm_tvar, pdyn=pdyn, dsti=dsti, yimf=yimf, zimf=zimf, $
     w1=w1, w2=w2, w3=w3, w4=w4, w5=w5, w6=w6, parmod=parmod, period=period, $
     get_nperiod=get_nperiod, newname=newname, error=error, get_tilt=get_tilt, $
-    set_tilt=set_tilt, add_tilt=add_tilt, geopack_2008=geopack_2008
+    set_tilt=set_tilt, add_tilt=add_tilt, geopack_2008=geopack_2008, $
+    iopgen=iopgen, iopt=iopt, iopb=iopb, iopr=iopr
     
   error = 0
 
@@ -313,15 +337,18 @@ pro tt04s, pos_gsm_tvar, pdyn=pdyn, dsti=dsti, yimf=yimf, zimf=zimf, $
   if n_elements(set_tilt) gt 0 then begin
     mag_array = t04s(d.x, d.y/6371.2, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, w1_dat, $
         w2_dat, w3_dat, w4_dat, w5_dat, w6_dat, period=period, get_nperiod=get_nperiod, $
-        get_period_times=period_times_dat, get_tilt=tilt_dat, set_tilt=set_tilt_dat, geopack_2008=geopack_2008)
+        get_period_times=period_times_dat, get_tilt=tilt_dat, set_tilt=set_tilt_dat, $
+        iopgen=iopgen, geopack_2008=geopack_2008, iopt=iopt, iopb=iopb, iopr=iopr)
   endif else if n_elements(add_tilt) gt 0 then begin
     mag_array = t04s(d.x, d.y/6371.2, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, w1_dat, $
         w2_dat, w3_dat, w4_dat, w5_dat, w6_dat, period=period, get_nperiod=get_nperiod, $
-        get_period_times=period_times_dat, get_tilt=tilt_dat, add_tilt=add_tilt_dat, geopack_2008=geopack_2008)
+        get_period_times=period_times_dat, get_tilt=tilt_dat, add_tilt=add_tilt_dat, $
+        iopgen=iopgen, geopack_2008=geopack_2008, iopt=iopt, iopb=iopb, iopr=iopr)
   endif else begin
     mag_array = t04s(d.x, d.y/6371.2, pdyn_dat, dsti_dat, yimf_dat, zimf_dat, w1_dat, $
         w2_dat, w3_dat, w4_dat, w5_dat, w6_dat, period=period, get_nperiod=get_nperiod, $
-        get_period_times=period_times_dat, get_tilt=tilt_dat, geopack_2008=geopack_2008)
+        get_period_times=period_times_dat, get_tilt=tilt_dat, iopgen=iopgen, geopack_2008=geopack_2008, $
+        iopt=iopt, iopb=iopb, iopr=iopr)
   endelse
  
   if size(mag_array, /n_dim) eq 0 && mag_array[0] eq -1L then begin
