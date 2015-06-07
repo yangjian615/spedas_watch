@@ -19,13 +19,15 @@
 ;	VTHRESH: Percentage difference from upstream velocity to allow
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-04-09 06:51:01 -0700 (Thu, 09 Apr 2015) $
-; $LastChangedRevision: 17263 $
+; $LastChangedDate: 2015-06-05 10:19:41 -0700 (Fri, 05 Jun 2015) $
+; $LastChangedRevision: 17811 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_dir.pro $
 ;
 ;-
 
-pro mvn_swia_penprot_dir, reg = reg, npo = npo, archive = archive, attfilt = attfilt, invec = invec, vfilt = vfilt, vthresh = vthresh
+pro mvn_swia_penprot_dir, reg = reg, npo = npo, archive = archive, attfilt = attfilt, invec = invec, vfilt = vfilt, vthresh = vthresh, minsamp = minsamp
+
+if not keyword_set(minsamp) then minsamp = 3
 
 mass = 0.0104389*1.6e-22
 Const = (mass/(2.*1.6e-12))^0.5
@@ -103,7 +105,7 @@ tout = dblarr(norb)
 
 for i = 0,norb-1 do begin
 	w = where(orb eq (mino+i) and abs(zx) lt 1/sqrt(2),nw)		
-	if nw gt 2 then begin
+	if nw gt (minsamp-1) then begin
 		spec = total(spectra[w,*],1,/nan)/nw
 		bspec = total(bspectra[w,*],1,/nan)/nw
 		energy = total(energies[w,*],1,/nan)/nw

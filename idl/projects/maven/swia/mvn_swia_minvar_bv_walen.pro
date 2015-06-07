@@ -22,8 +22,8 @@
 ;AUTHOR:	J. Halekas	& Yuki Harada (Walen test)
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-05-19 09:16:30 -0700 (Tue, 19 May 2015) $
-; $LastChangedRevision: 17648 $
+; $LastChangedDate: 2015-06-05 16:31:53 -0700 (Fri, 05 Jun 2015) $
+; $LastChangedRevision: 17815 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_minvar_bv_walen.pro $
 ;
 ;-
@@ -79,6 +79,7 @@ v0arr = transpose(rebin(v0,3,nt))
 v1arr = transpose(rebin(v1,3,nt))
 b0arr = transpose(rebin(reform(bminv[0,*]),3,nt))
 b1arr = transpose(rebin(reform(bminv[nt-1,*]),3,nt))
+densarr = rebin(dens,nt,3)
 
 if ~keyword_set(trev) then trev = mean(trange) $
 else if typename(trev) eq 'STRING' or typename(trev) eq 'DOUBLE' then trev = time_double(trev) $
@@ -90,10 +91,10 @@ endelse
 
 w0 = where( tbminv lt trev , comp=w1 )
 
-vpredp0 = v0arr[w0,*] + (bminv[w0,*]-b0arr[w0,*])/dens[0]^.5 * 21.8122
-vpredm0 = v0arr[w0,*] - (bminv[w0,*]-b0arr[w0,*])/dens[0]^.5 * 21.8122
-vpredp1 = v1arr[w1,*] + (bminv[w1,*]-b1arr[w1,*])/dens[nt-1]^.5 * 21.8122
-vpredm1 = v1arr[w1,*] - (bminv[w1,*]-b1arr[w1,*])/dens[nt-1]^.5 * 21.8122
+vpredp0 = v0arr[w0,*] + (bminv[w0,*]/densarr[w0,*]-b0arr[w0,*]/dens[0])*dens[0]^.5 * 21.8122
+vpredm0 = v0arr[w0,*] - (bminv[w0,*]/densarr[w0,*]-b0arr[w0,*]/dens[0])*dens[0]^.5 * 21.8122
+vpredp1 = v1arr[w1,*] + (bminv[w1,*]/densarr[w1,*]-b1arr[w1,*]/dens[nt-1])*dens[nt-1]^.5 * 21.8122
+vpredm1 = v1arr[w1,*] - (bminv[w1,*]/densarr[w1,*]-b1arr[w1,*]/dens[nt-1])*dens[nt-1]^.5 * 21.8122
 
 vpredpm = [ vpredp0, vpredm1 ]
 vpredmp = [ vpredm0, vpredp1 ]

@@ -137,6 +137,16 @@ PRO spd_ui_spedas_fileconfig_event, event
 
   END
   
+  'ROOTHELP': BEGIN
+
+    message = 'This field displays the current value of the ROOT_DATA_DIR '+ $
+              'environment variable.  If present, most missions will use it '+ $
+              'as their default local data directory.'
+
+    spd_ui_message, message, /dialog, /info, title='Root Data Directory' 
+
+  END
+
   'TEMPCDFDIR': BEGIN
 
     widget_control, state.tempcdfdir, get_value=currentDir
@@ -302,12 +312,12 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   genlabel = widget_label(gbase, value = 'General Settings for SPEDAS    ')
   
   lbase = widget_base(configbase, /row, /align_left, ypad=1)
-  flabel = widget_label(lbase,  value = 'Web browser executable:    ')
+  flabel = widget_label(lbase,  value = 'Web browser executable:  ')
   browserexe = widget_text(lbase, /edit, xsiz = 50, /all_events, uval='BROWSEREXE', val = !spedas.browser_exe)
   loc_browsebtn = widget_button(lbase,value='Browse', uval='BROWSEREXEBTN',/align_center)
   
   rbase = widget_base(configbase, /row, /align_left, ypad=1)
-  flabel1 = widget_label(rbase, value = 'Temp directory:                    ')
+  flabel1 = widget_label(rbase, value = 'Temp directory:  ')
   tempdir = widget_text(rbase, /edit, xsiz = 50, /all_events, uval='TEMPDIR', val = !spedas.temp_dir)
   temp_dirbtn = widget_button(rbase,value='Browse', uval='TEMPDIRBTN', /align_center)
 
@@ -316,6 +326,22 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   tempcdfdir = widget_text(rbase1, /edit, xsiz = 50, /all_events, uval='TEMPCDFDIR', val = !spedas.temp_cdf_dir)
   tempcdfdirbtn = widget_button(rbase1,value='Browse', uval='TEMPCDFDIRBTN', /align_center)
   
+  root_base = widget_base(configbase, /row, /align_left, ypad=1)  
+  root_label = widget_label(root_base, value='Root Data Directory:  ')
+  root_dir_text = widget_text(root_base, xsize=50, value=getenv('ROOT_DATA_DIR'))
+  root_dir_help = widget_button(root_base, value=' ? ',uval='ROOTHELP')
+  
+  ;dynamically ensure label sizes are equal
+  label_xsize = 0
+  dir_labels = [flabel, flabel1, flabel2, root_label]
+  for i=0, n_elements(dir_labels)-1 do begin
+    geo = widget_info(dir_labels[i],/geo)
+    label_xsize = geo.scr_xsize > label_xsize
+  endfor
+  for i=0, n_elements(dir_labels)-1 do begin
+    widget_control, dir_labels[i], xsize=label_xsize, units=0
+  endfor
+
   v_base = widget_base(configbase, /row, ypad=7)
   v_label = widget_label(v_base, value='Verbose level for tplot (higher value = more comments):      ')
   v_values = ['0', '1', '2','3', '4', '5', '6', '7', '8', '9', '10']

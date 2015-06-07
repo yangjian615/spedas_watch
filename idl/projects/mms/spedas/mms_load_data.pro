@@ -27,17 +27,49 @@
 ;         released to the public and feedback comes in from scientists - egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-04 12:37:05 -0700 (Thu, 04 Jun 2015) $
-;$LastChangedRevision: 17806 $
+;$LastChangedDate: 2015-06-05 09:54:04 -0700 (Fri, 05 Jun 2015) $
+;$LastChangedRevision: 17810 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
-pro mms_fix_metadata, tplotnames
+function mms_load_defatt_file, filename
+    ; from ascii_template on a definitive attitude file
+    defatt_template = { VERSION: 1.00000, $
+        DATASTART: 49, $
+        DELIMITER: 32b, $
+        MISSINGVALUE: !values.D_NAN, $
+        COMMENTSYMBOL: 'COMMENT', $
+        FIELDCOUNT: 21, $
+        FIELDTYPES: [7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7], $
+        FIELDNAMES: ['Time', 'Elapsed', 'q1', 'q2', 'q3', 'qc', 'wX', 'wY', 'wZ', 'wPhase', 'zRA', 'zDec', 'ZPhase', 'LRA', 'LDec', 'LPhase', 'PRA', 'PDec', 'PPhase', 'Nut', 'QF'], $
+        FIELDLOCATIONS: [0, 22, 38, 47, 55, 65, 73, 80, 87, 94, 102, 111, 118, 126, 135, 142, 150, 159, 166, 176, 183], $
+        FIELDGROUPS: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
+    
+    def_att = read_ascii(filename, template=defatt_template, count=num_items)
+    
+    ; note on time format in this file:
+    ; date/time values are stored in the format: YYYY-DOYThh:mm:ss.fff
+    ; so to convert the first time value to a time_double, time = time_double(def_att.time[0], tformat='YYYY-DOYThh:mm:ss.fff')
 
-    for tname_idx = 0, n_elements(tplotnames)-1 do begin
+    return, def_att
+end
+
+pro mms_load_defatt_tplot, filename
+    ; load the data from the ASCII file
+    def_att_data = mms_load_defatt_file(filename)
     
-    
+    ; the last datapoint in the file is 'DATA_STOP', so
+    ; we use n_elements-1 here to not copy the last element
+    time_vals = dblarr(n_elements(def_att_data.time)-1)
+
+    ; n_elements-2 here to avoid copying the last element, as above
+    for time_idx = 0l, n_elements(def_att_data.time)-2 do begin
+        if def_att_data.time[time_idx] ne 'DATA_STOP' then $
+            time_vals[time_idx] = time_double(def_att_data.time[time_idx], tformat='YYYY-DOYThh:mm:ss.fff')
     endfor
+    store_data, 'mms_defatt_spinras', data={x: time_vals, y: def_att_data.LRA[0:n_elements(def_att_data.LRA)-2]}
+    store_data, 'mms_defatt_spindec', data={x: time_vals, y: def_att_data.LDEC[0:n_elements(def_att_data.LDEC)-2]}
+
 end
 
 pro mms_load_data, probes = probes, datatype = datatype, instrument = instrument, $

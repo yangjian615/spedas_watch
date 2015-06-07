@@ -1,6 +1,7 @@
 
 function spp_spc_met_to_unixtime,met
-  epoch =  946771200d - 12L*3600   ; long(time_double('2000-1-1/12:00'))  ; Normal use
+  epoch =  946771200d - 12L*3600   ; long(time_double('2000-1-1/12:00'))  ;Early SWEM definition
+  epoch =  1262304000   ; long(time_double('2010-1-1/0:00'))  ; Correct SWEM use
   unixtime =  met +  epoch
   return,unixtime
 end
@@ -92,6 +93,7 @@ function spp_swp_spanai_rates_decom_50x,ccsds, ptp_header=ptp_header, apdat=apda
     multi_cnts: reform( rates[1,*]), $
     start_cnts: reform( rates[2,*] ), $
     stop_cnts:  reform( rates[3,*]) }
+
 
   return,rates_str
 end
@@ -501,6 +503,8 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
   ccsds=spp_ccsds_decom(buffer)
   
   ;dprint,time_string(ccsds.time)
+  
+;  printdat,ccsds,/hex
     
   if ~keyword_set(ccsds) then begin
     dprint,'Invalid CCSDS packet'
@@ -590,7 +594,7 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
     dprint,time_string(time,/local_time),' PTP size error- size is ',ptp_size
 ;    hexprint,buffer
 ;    savetomain,buffer,time
-    stop
+;    stop
     return
   endif
   ptp_code = buffer[2]

@@ -128,6 +128,7 @@ endif
 
 if keyword_set(xlog) && ~keyword_set(xrange) then begin
   xrange = minmax(/pos,xb) > 10
+  xrange = [10,2500]
 endif
 
 
@@ -203,7 +204,7 @@ exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
 host = 'ABIAD-SW'
 ;host = 'localhost'
 ;host = '128.32.98.101'
-recorder,recorder_base,title='GSEOS PTP',port=2025,host=host,exec_proc='spp_ptp_stream_read',destination='spp_raw_YYYYMMDD_hhmmss.ptp';,/set_proc,/set_connect,get_filename=filename
+recorder,recorder_base,title='GSEOS PTP',port=2024,host=host,exec_proc='spp_ptp_stream_read',destination='spp_raw_YYYYMMDD_hhmmss.ptp';,/set_proc,/set_connect,get_filename=filename
 printdat,recorder_base,filename,exec_base,/value
 
 spp_swp_apid_data_init,save=1
