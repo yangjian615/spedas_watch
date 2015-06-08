@@ -49,11 +49,13 @@ FUNCTION eva_sitl_pref_event, ev
       pref.EVA_TESTMODE_SUBMIT = ev.SELECT
       end
     state.btnSplitNominal: begin
+      r = get_mms_sitl_connection(group_leader=ev.TOP)
       val = mms_load_fom_validation()
       pref.EVA_SPLIT_SIZE = val.NOMINAL_SEG_RANGE[1]
       widget_control, state.fldSplit, SET_VALUE=strtrim(string(pref.EVA_SPLIT_SIZE),2)
       end
     state.btnSplitMaximum: begin
+      r = get_mms_sitl_connection(group_leader=ev.TOP)
       val = mms_load_fom_validation()
       pref.EVA_SPLIT_SIZE = val.SEG_BOUNDS[1]
       widget_control, state.fldSplit, SET_VALUE=strtrim(string(pref.EVA_SPLIT_SIZE),2)
@@ -102,15 +104,11 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
     XSIZE = xsize, YSIZE = ysize,sensitive=1)
   str_element,/add,state,'mainbase',mainbase
 
-  val = mms_load_fom_validation()
-  str_nl = strtrim(string(val.nominal_seg_range[1]),2)
-  str_ml = strtrim(string(val.seg_bounds[1]),2)
   str_cs = strtrim(string(state.PREF.EVA_SPLIT_SIZE),2)
   baseSplit = widget_base(mainbase,space=0,ypad=0,/ROW)
   str_element,/add,state,'fldSplit',cw_field(baseSplit,VALUE=str_cs,TITLE='Split Size: ',/ALL_EVENTS,XSIZE=7)
-  str_element,/add,state,'btnSplitNominal',widget_button(baseSplit,VALUE=' Nominal Limit '+str_nl+' ')
-  str_element,/add,state,'btnSplitMaximum',widget_button(baseSplit,VALUE=' Maximum Limit '+str_ml+' ')
-  
+  str_element,/add,state,'btnSplitNominal',widget_button(baseSplit,VALUE=' Nominal Limit ')
+  str_element,/add,state,'btnSplitMaximum',widget_button(baseSplit,VALUE=' Maximum Limit ')
     
   bsAdvanced = widget_base(mainbase,space=0,ypad=0,SENSITIVE=(state_data.USER_FLAG eq 3)); Super SITL only
     str_element,/add,state,'bsAdvanced',bsAdvanced

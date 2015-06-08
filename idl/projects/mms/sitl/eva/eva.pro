@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-15 16:27:12 -0700 (Fri, 15 May 2015) $
-; $LastChangedRevision: 17631 $
+; $LastChangedDate: 2015-06-06 14:20:56 -0700 (Sat, 06 Jun 2015) $
+; $LastChangedRevision: 17816 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -31,7 +31,7 @@ PRO eva_event, event
     wid.base        : if strmatch(tag_names(event,/structure_name),'WIDGET_KILL_REQUEST') then exitcode=1
     wid.exit        : exitcode = 1
     wid.mnPref      : begin
-      r = get_mms_sitl_connection(group_leader=event.TOP)
+      ;r = get_mms_sitl_connection(group_leader=event.TOP)
       eva_pref, GROUP_LEADER = event.top
       end
     wid.mnHelp_release:begin

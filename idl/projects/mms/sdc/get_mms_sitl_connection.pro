@@ -3,7 +3,10 @@
 ; Use common block to manage a singleton instance of a IDLnetURL
 ; so it will remain alive in the IDL session unless it has expired.
 function get_mms_sitl_connection, host=host, port=port, authentication=authentication, $
-  group_leader=group_leader, username=username, password=password
+  group_leader=group_leader, rebuild=rebuild, username=username, password=password, $
+  PROXY_AUTHENTICATION=proxy_authentication, PROXY_HOSTNAME=proxy_hostname, $
+  PROXY_PASSWORD=proxy_password, PROXY_PORT=proxy_port, PROXY_USERNAME=proxy_username
+  
   common mms_sitl_connection, netUrl, connection_time, login_source
   
   ; Define the length of time the login will remain valid, in seconds.
@@ -23,7 +26,13 @@ function get_mms_sitl_connection, host=host, port=port, authentication=authentic
   ;Make sure the singleton instance has been created
   ;TODO: consider error cases, avoid leaving incomplete netURL in common block
   type = size(netUrl, /type) ;will be 11 if object has been created
-  if (type ne 11) then begin
+  doRebuild = 0
+  if (type eq 11) then begin
+    if keyword_set(rebuild) then doRebuild = 1
+  endif else begin
+    doRebuild = 1
+  endelse
+  if (doRebuild eq 1) then begin
     ; Construct the IDLnetURL object and set the login properties.
     netUrl = OBJ_NEW('IDLnetUrl')
     netUrl->SetProperty, URL_HOST = host
@@ -44,37 +53,41 @@ function get_mms_sitl_connection, host=host, port=port, authentication=authentic
         username = login.username
         password = login.password
       endif
-
+      
       netUrl->SetProperty, URL_SCHEME = 'https'
       netUrl->SetProperty, SSL_VERIFY_HOST = 0 ;don't worry about certificate
       netUrl->SetProperty, SSL_VERIFY_PEER = 0
+      ;1: basic only, 2: digest, 3: try both
       netUrl->SetProperty, AUTHENTICATION = authentication
-      ;1: basic only, 2: digest
       netUrl->SetProperty, URL_USERNAME = username
       netUrl->SetProperty, URL_PASSWORD = password
-      
-;      ;Try up to 3 times to authenticate the login.
-;      ;Need limit since automated tests will keep trying same login.
-;      ;TODO: skip if gui user selects cancel
-;      for try = 1, 3 do begin
-;        if authenticate() break  $ ;worked
-;        else begin
-;          mms_sitl_logout ;clear the common block
-;          c = get_mms_sitl_connection(host=host, port=port, authentication=authentication, gui=gui)
-;     ;TODO: recursive, loop of 3 tries won't help?
-;        endelse
-;      endfor
-      
+
+      ; if proxy_hostname is given, set up for proxy authentication
+      if n_elements(proxy_hostname) gt 0 && strlen(proxy_hostname) gt 0 then begin
+        if n_elements(proxy_authentication) eq 0 then begin
+          ; default to trying both basic and digest
+          proxy_authentication = 3
+        endif
+        netUrl->SetProperty, PROXY_AUTHENTICATION = proxy_authentication
+        netUrl->SetProperty, PROXY_HOSTNAME = proxy_hostname
+        netUrl->SetProperty, PROXY_PASSWORD = proxy_password
+        netUrl->SetProperty, PROXY_PORT = proxy_port
+        netUrl->SetProperty, PROXY_USERNAME = proxy_username
+      endif
+
+      ; check that the connection is valid
+      ; only when authentication enabled to avoid
+      ; breaking tests, which assume a single connection on a specified port
+      status = validate_mms_sitl_connection(netUrl)
+      if status ne 0 then begin
+        ; clear the connection
+        junk = size(temporary(netUrl))
+        return, status
+      endif
     endif
     
     ; Set the time of the login so we can make it expire.
     connection_time = systime(/seconds)
-  endif
-
-  ; check that the connection is valid
-  status = validate_mms_sitl_connection(netUrl)
-  if status ne 0 then begin
-    return, status
   endif
   
   ;TODO: if parameters are set and netURL already exists, reset properties
