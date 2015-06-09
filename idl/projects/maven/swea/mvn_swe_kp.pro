@@ -46,8 +46,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-27 17:58:01 -0700 (Wed, 27 May 2015) $
-; $LastChangedRevision: 17753 $
+; $LastChangedDate: 2015-06-07 13:22:30 -0700 (Sun, 07 Jun 2015) $
+; $LastChangedRevision: 17819 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_kp.pro $
 ;
 ;-
@@ -311,11 +311,11 @@ pro mvn_swe_kp, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
 
   path = kp_path + '/' + yyyy
   finfo = file_info(path)
-  if (not finfo.exists) then file_mkdir, path
+  if (not finfo.exists) then file_mkdir2, path, mode = '0774'o
 
   path = path + '/' + mm
   finfo = file_info(path)
-  if (not finfo.exists) then file_mkdir, path
+  if (not finfo.exists) then file_mkdir2, path, mode = '0774'o
 
   fname = path + '/' + froot + yyyy + mm + dd
 

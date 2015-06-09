@@ -25,8 +25,8 @@
 ;                      Default = 1
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-19 13:42:31 -0700 (Sun, 19 Apr 2015) $
-; $LastChangedRevision: 17369 $
+; $LastChangedDate: 2015-06-07 13:35:34 -0700 (Sun, 07 Jun 2015) $
+; $LastChangedRevision: 17820 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_save.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -91,7 +91,7 @@ pro mvn_swe_pad_save, start_day=start_day, interval=interval, ndays=ndays
         mm = strmid(tstring,5,2)
         dd = strmid(tstring,8,2)
         opath = dpath + yyyy + '/' + mm + '/'
-        file_mkdir2, opath  ; create directory structure, if needed
+        file_mkdir2, opath, mode='0774'o  ; create directory structure, if needed
         ofile = opath + froot + yyyy + mm + dd
         tplot_save,tname,file=ofile
       endif
@@ -113,7 +113,7 @@ pro mvn_swe_pad_save, start_day=start_day, interval=interval, ndays=ndays
     mm = strmid(tstring,5,2)
     dd = strmid(tstring,8,2)
     opath = dpath + yyyy + '/' + mm + '/'
-    file_mkdir2, opath  ; create directory structure, if needed
+    file_mkdir2, opath, mode='0774'o  ; create directory structure, if needed
     ofile = opath + froot + yyyy + mm + dd
 
     mvn_swe_load_l0,/spiceinit

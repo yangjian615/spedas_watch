@@ -10,18 +10,28 @@
 ;INPUTS: 
 ;
 ;KEYWORDS:
-;   PANS:      Named variable to return tplot variable created
+;   PANS:      Named variable to return tplot variable created.
+;
+;   VAR:       Get SPEC data from tplot instead of SWEA common block.
+;              In this case, you are responsible for making sure the
+;              data are in units of EFLUX.  Any other units will give
+;              bogus results.
+;              (Set this keyword to the variable name or index.)
+;
+;   KEEP_NAN:  If set, then include results for all input spectra, using
+;              NaN for invalid results.  Otherwise, only valid results
+;              are returned.
 ;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-04 13:43:51 -0800 (Wed, 04 Feb 2015) $
-; $LastChangedRevision: 16866 $
+; $LastChangedDate: 2015-06-07 13:22:00 -0700 (Sun, 07 Jun 2015) $
+; $LastChangedRevision: 17818 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_par.pro $
 ;
 ;-
 
-pro mvn_swe_shape_par, pans=pans
+pro mvn_swe_shape_par, pans=pans, var=var, keep_nan=keep_nan
 
   compile_opt idl2
 
@@ -38,39 +48,55 @@ pro mvn_swe_shape_par, pans=pans
                -0.0191, -0.0712, -0.1264, -0.1769, -0.2073, -0.2146, -0.2251]
   endif
   
-  npts = n_elements(mvn_swe_engy)
+  if keyword_set(keep_nan) then dofilter = 0 else dofilter = 1
 
-  if (npts eq 0L) then begin
-    print,"No SWEA SPEC data."
-    pans = ''
-    return
-  endif
+  if keyword_set(var) then begin
+    get_data, var, data=spec, index=i
+    if (i eq 0) then begin
+      print,"Tplot variable not found: ", var
+      pans = ''
+      return
+    endif
 
-  old_units = mvn_swe_engy[0].units_name
-  mvn_swe_convert_units, mvn_swe_engy, 'eflux'
+    print,"Warning: data are assumed to have units of EFLUX!"
+    t = spec.x
+    e = spec.v # replicate(1.,n_elements(t))
+    f = transpose(spec.y)
+  endif else begin
+    npts = n_elements(mvn_swe_engy)
 
-  t = mvn_swe_engy.time
-  e = mvn_swe_engy.energy
-  f = mvn_swe_engy.data
-  
+    if (npts eq 0L) then begin
+      print,"No SWEA SPEC data."
+      pans = ''
+      return
+    endif
+
+    old_units = mvn_swe_engy[0].units_name
+    mvn_swe_convert_units, mvn_swe_engy, 'eflux'
+
+    t = mvn_swe_engy.time
+    e = mvn_swe_engy.energy
+    f = mvn_swe_engy.data
+  endelse
+
+; Select energy channels
+
   n_e = n_elements(df_iono)
   indx = indgen(n_e) + (64 - n_e)
-
   e = e[indx,*]
   f = alog10(f[indx,*])
 
-; Filter out bad spectra (typically hot electron voids)
+; Filter out bad spectra (such as hot electron voids)
 
+  npts = n_elements(t)
   gndx = round(total(finite(f),1))
-  gndx = where(gndx eq n_e, npts)
-  t = t[gndx]
-  e = e[*,gndx]
-  f = f[*,gndx]
+  gndx = where(gndx eq n_e, ngud)
 
 ; Take first derivative of log(eflux) w.r.t. log(E)
 
   df = f
-  for i=0L,(npts-1L) do df[*,i] = deriv(f[*,i])
+  df[*,*] = !values.f_nan
+  for i=0L,(ngud-1L) do df[*,gndx[i]] = deriv(f[*,gndx[i]])
 
 ; Calculate electron energy shape parameter
 
@@ -78,10 +104,15 @@ pro mvn_swe_shape_par, pans=pans
   indx = where(e[*,0] lt 100.)
   par = total(abs(par[indx,*]),1)
 
+  if (dofilter) then begin
+    t = t[gndx]
+    par = par[gndx]
+  endif
+
   store_data,'mvn_swe_shape_par',data={x:t, y:par}
   pans = 'mvn_swe_shape_par'
   
-  mvn_swe_convert_units, mvn_swe_engy, old_units
+  if (size(old_units,/type) eq 7) then mvn_swe_convert_units, mvn_swe_engy, old_units
 
   return
 
