@@ -12,6 +12,16 @@
 ;         datatype: not implemented yet
 ;         local_data_dir: local directory to store the CDF files; should be set if 
 ;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         remote_data_dir: server location where the data files are located; see
+;             notes below for the default
+;         attitude_data: load L-right ascension and L-declination attitude data
+;             from the definitive attitude data files located at:
+;         
+;             http://lasp.colorado.edu/mms/sdc/about/browse/ancillary/mms#/defatt/
+;             
+;             WARNING: these data files are large (70MB+, in some cases), and the 
+;             load routine may grab more than a single file to get full coverage
+;             for a single day.
 ; 
 ; OUTPUT:
 ; 
@@ -26,13 +36,79 @@
 ;     2) I expect this routine to change significantly as the MMS data products are 
 ;         released to the public and feedback comes in from scientists - egrimes@igpp
 ;
+;     3) See the following regarding rules for the use of MMS data:
+;         https://lasp.colorado.edu/galaxy/display/mms/MMS+Data+Rights+and+Rules+for+Data+Use
+;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-05 09:54:04 -0700 (Fri, 05 Jun 2015) $
-;$LastChangedRevision: 17810 $
+;$LastChangedDate: 2015-06-08 16:58:08 -0700 (Mon, 08 Jun 2015) $
+;$LastChangedRevision: 17838 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
+; takes in 4-d AFG/DFG data as a tplot variable and splits into 2 tplot variables: 1) b_total, 2) b_vector (Bx, By, Bz)
+pro mms_split_fgm_data, tplot_name
+    get_data, tplot_name, data=fgm_data, dlimits=fgm_dlimits
+    
+    store_data, tplot_name + '_bvec', data={x: fgm_data.X, y: [[fgm_data.Y[*, 0]], [fgm_data.Y[*, 1]], [fgm_data.Y[*, 2]]]}, dlimits=fgm_dlimits
+    store_data, tplot_name + '_btot', data={x: fgm_data.X, y: fgm_data.Y[*, 3]}, dlimits=fgm_dlimits
+    
+    ; remove the old variable
+    del_data, tplot_name
+end
+
+; sets colors and labels for tplot
+pro mms_load_fix_metadata, tplotnames, prefix = prefix
+    if undefined(prefix) then prefix = ''
+    
+    for name_idx = 0, n_elements(tplotnames)-1 do begin
+        tplot_name = tplotnames[name_idx]
+
+        case tplot_name of
+            prefix + '_dfg_srvy_dmpa_bvec': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [2,4,6]
+                options, /def, tplot_name, 'ytitle', 'MMS DFG'
+                options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
+            end
+            prefix + '_dfg_srvy_dmpa_btot': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [0]
+                options, /def, tplot_name, 'ytitle', 'MMS DFG'
+                options, /def, tplot_name, 'labels', ['B_total']
+            end
+            prefix + '_afg_srvy_dmpa_bvec': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [2,4,6]
+                options, /def, tplot_name, 'ytitle', 'MMS AFG'
+                options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
+            end
+            prefix + '_afg_srvy_dmpa_btot': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [0]
+                options, /def, tplot_name, 'ytitle', 'MMS AFG'
+                options, /def, tplot_name, 'labels', ['B_total']
+            end
+            prefix + '_ql_pos_gsm': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8]
+                options, /def, tplot_name, 'labels', ['Xgsm', 'Ygsm', 'Zgsm', 'R']
+            end
+            prefix + '_ql_pos_gse': begin
+                options, /def, tplot_name, 'labflag', 1
+                options, /def, tplot_name, 'colors', [2,4,6,8]
+                options, /def, tplot_name, 'labels', ['Xgse', 'Ygse', 'Zgse', 'R']
+            
+            end
+            else: ; not doing anything
+        endcase
+    endfor
+end
+
 function mms_load_defatt_file, filename
+    if filename eq '' then begin
+        dprint, dlevel = 0, 'Error loading a definitive attitude file - no filename given.'
+        return, 0
+    endif
     ; from ascii_template on a definitive attitude file
     defatt_template = { VERSION: 1.00000, $
         DATASTART: 49, $
@@ -47,34 +123,80 @@ function mms_load_defatt_file, filename
     
     def_att = read_ascii(filename, template=defatt_template, count=num_items)
     
-    ; note on time format in this file:
-    ; date/time values are stored in the format: YYYY-DOYThh:mm:ss.fff
-    ; so to convert the first time value to a time_double, time = time_double(def_att.time[0], tformat='YYYY-DOYThh:mm:ss.fff')
-
     return, def_att
 end
 
-pro mms_load_defatt_tplot, filename
-    ; load the data from the ASCII file
-    def_att_data = mms_load_defatt_file(filename)
-    
-    ; the last datapoint in the file is 'DATA_STOP', so
-    ; we use n_elements-1 here to not copy the last element
-    time_vals = dblarr(n_elements(def_att_data.time)-1)
+pro mms_load_defatt_tplot, filenames, tplotnames = tplotnames, prefix = prefix
+    ; print a warning about how long this takes so user's do not
+    ; assume the process is frozen after a few seconds
+    dprint, dlevel = 1, 'Loading definitive attitude files can take some time; please be patient...'
+    if undefined(prefix) then prefix = 'mms'
 
-    ; n_elements-2 here to avoid copying the last element, as above
-    for time_idx = 0l, n_elements(def_att_data.time)-2 do begin
-        if def_att_data.time[time_idx] ne 'DATA_STOP' then $
-            time_vals[time_idx] = time_double(def_att_data.time[time_idx], tformat='YYYY-DOYThh:mm:ss.fff')
+    for file_idx = 0, n_elements(filenames)-1 do begin
+        ; load the data from the ASCII file
+        new_def_att_data = mms_load_defatt_file(filenames[file_idx])
+        if is_struct(new_def_att_data) then begin
+            ; note on time format in this file:
+            ; date/time values are stored in the format: YYYY-DOYThh:mm:ss.fff
+            ; so to convert the first time value to a time_double, 
+            ;    time_values = time_double(new_def_att_data.time, tformat='YYYY-DOYThh:mm:ss.fff')
+            append_array, time_values, time_double(new_def_att_data.time[0:n_elements(new_def_att_data.time)-2], tformat='YYYY-DOYThh:mm:ss.fff')
+            append_array, def_att_data_ras, new_def_att_data.LRA[0:n_elements(new_def_att_data.time)-2]
+            append_array, def_att_data_dec, new_def_att_data.LDEC[0:n_elements(new_def_att_data.time)-2]
+        endif
     endfor
-    store_data, 'mms_defatt_spinras', data={x: time_vals, y: def_att_data.LRA[0:n_elements(def_att_data.LRA)-2]}
-    store_data, 'mms_defatt_spindec', data={x: time_vals, y: def_att_data.LDEC[0:n_elements(def_att_data.LDEC)-2]}
+    
+    ; check that some data was actually loaded in
+    if undefined(time_values) then begin
+        dprint, dlevel = 0, 'Error loading attitude data - no data was loaded.'
+        return
+    endif
+    
+    store_data, prefix + '_defatt_spinras', data={x: time_values, y: def_att_data_ras}
+    store_data, prefix + '_defatt_spindec', data={x: time_values, y: def_att_data_dec}
+    
+    append_array, tplotnames, ['mms_defatt_spinras', 'mms_defatt_spindec']
+end
 
+pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotnames
+    
+    if undefined(trange) then begin
+        dprint, dlevel = 0, 'Error loading the definitive attitude data - no time range given.'
+        return
+    endif
+    if undefined(probe) then begin
+        dprint, dlevel = 0, 'Error loading MMS definitive attitude data - no probe given.'
+        return
+    endif 
+    if not keyword_set(remote_data_dir) then remote_data_dir = 'http://lasp.colorado.edu/mms/sdc/about/browse/'
+    if not keyword_set(local_data_dir) then local_data_dir = 'c:\data\mms\'
+    mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
+    if not keyword_set(source) then source = !mms
+    probe = strcompress(string(probe), /rem)
+    start_time = time_struct(trange[0])
+    end_time = time_struct(trange[1])
+    
+    ; these aren't by day, so we should get several days to ensure we have overlap
+    doys = end_time.doy-start_time.doy+1
+    
+    for doy=0, doys-1 do begin
+        start_doy = strcompress(string(doy+start_time.doy-1), /rem)
+        end_doy = strcompress(string(start_time.doy+doy), /rem)
+
+        the_path_format = 'ancillary/mms'+probe+'/defatt/MMS'+probe+'_DEFATT_2015'+start_doy+'_2015'+end_doy+'.V00'
+        append_array, daily_names, the_path_format
+    endfor
+    
+    files = file_retrieve(daily_names, _extra=source, /last_version)
+    
+    ; load the data into tplot variables
+    mms_load_defatt_tplot, files, tplotnames = tplotnames, prefix = 'mms'+probe
 end
 
 pro mms_load_data, probes = probes, datatype = datatype, instrument = instrument, $
                    trange = trange, source = source, level = level, $
-                   remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
+                   remote_data_dir = remote_data_dir, local_data_dir = local_data_dir, $
+                   attitude_data = attitude_data
 
     if not keyword_set(datatype) then datatype = '*'
     ; currently, datatype = level
@@ -122,6 +244,22 @@ pro mms_load_data, probes = probes, datatype = datatype, instrument = instrument
         endfor
         files = file_retrieve(relpathnames, _extra=source, /last_version)
         cdf2tplot, files, tplotnames = tplotnames
+        
+        ; if this is AFG/DFG data, split the tplot variables into one for the vector
+        ; and one for the magnitude
+        mms_split_fgm_data, 'mms' + strcompress(string(probes[probe_idx]), /rem) + '_' + instrument + '_srvy_dmpa'
+        
+        ; need to add the newly created variables from the previous procedure to the list of tplot names
+        append_array, tplotnames, 'mms' + strcompress(string(probes[probe_idx]), /rem) + '_' + instrument + '_srvy_dmpa_bvec'
+        append_array, tplotnames, 'mms' + strcompress(string(probes[probe_idx]), /rem) + '_' + instrument + '_srvy_dmpa_btot'
+
+        ; fix the metadata. currently sets the colors
+        mms_load_fix_metadata, tplotnames, prefix = 'mms' + strcompress(string(probes[probe_idx]), /rem)
+        
+        ; load the attitude data for this probe, if the user requested it
+        if ~undefined(attitude_data) then begin
+            mms_load_defatt_data, probe=strcompress(string(probes[probe_idx]), /rem), trange=tr, tplotnames = tplotnames
+        endif
     endfor
     
     ; time clip the data

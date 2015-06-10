@@ -51,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-06-03 14:44:00 -0700 (Wed, 03 Jun 2015) $
-; $LastChangedRevision: 17802 $
+; $LastChangedDate: 2015-06-08 15:26:22 -0700 (Mon, 08 Jun 2015) $
+; $LastChangedRevision: 17836 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -463,9 +463,8 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      idx = WHERE(bm GT 0., nidx)
      IF nidx GT 0 THEN bm[idx] = nan
      store_data, bvec + '_plus', data={x: b.x, y: bp}, dl=bl
+     store_data, bvec + '_minus', data={x: b.x, y: ABS(bm)}, dl=bl
 
-     IF (blog) THEN store_data, bvec + '_minus', data={x: b.x, y: ABS(bm)}, dl=bl $
-     ELSE store_data, bvec + '_minus', data={x: b.x, y: bm}, dl=bl
      options, bvec + '_plus', panel_size=0.5, labels=lbp, $
               ytitle='MAG ' + lvl, ysubtitle='+B' + STRLOWCASE(frame) + ' [nT]', /def
      options, bvec + '_minus', panel_size=0.5, labels=lbm, $
@@ -483,16 +482,16 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      IF (blog) THEN BEGIN
         ylim, 'mvn_mag_bamp', 0.5, bmax*1.1, 1
         options, 'mvn_mag_bamp', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
-        
-        ylim, bvec + '_plus', 0.5, bmax*1.1, 1
-        ylim, bvec + '_minus', bmax*1.1, 0.5, 1
-        options, bvec + '_plus', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
-        options, bvec + '_minus', ytickformat='mvn_ql_pfp_tplot_ytickname_minus_log'
-     ENDIF ELSE BEGIN
-        ylim, bvec + '_plus', 0., MAX([bp, ABS(bm)], /nan)*1.1, 0
-        ylim, bvec + '_minus', -MAX([bp, ABS(bm)], /nan)*1.1, 0., 0
-        options, bvec + ['_plus', '_minus'], yminor=4 
-     ENDELSE 
+     ENDIF ;ELSE BEGIN
+;        ylim, bvec + '_plus', 0., MAX([bp, ABS(bm)], /nan)*1.1, 0
+;        ylim, bvec + '_minus', -MAX([bp, ABS(bm)], /nan)*1.1, 0., 0
+;        options, bvec + ['_plus', '_minus'], yminor=4 
+;     ENDELSE 
+     ylim, bvec + '_plus', 0.5, bmax*1.1, 1
+     ylim, bvec + '_minus', bmax*1.1, 0.5, 1
+     options, bvec + '_plus', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
+     options, bvec + '_minus', ytickformat='mvn_ql_pfp_tplot_ytickname_minus_log'
+
      undefine, bmax, blog, status
      
      bphi = ATAN(b.y[*, 1], b.y[*, 0])
