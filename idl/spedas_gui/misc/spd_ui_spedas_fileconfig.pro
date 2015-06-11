@@ -202,7 +202,8 @@ PRO spd_ui_spedas_fileconfig_event, event
   
   'VERBOSE': BEGIN
   
-   ; !spedas.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
+    !spedas.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
+    dprint, setverbose=!spedas.verbose
     
   END
   
@@ -346,6 +347,7 @@ PRO spd_ui_spedas_fileconfig, tab_id, historyWin, statusBar
   v_label = widget_label(v_base, value='Verbose level for tplot (higher value = more comments):      ')
   v_values = ['0', '1', '2','3', '4', '5', '6', '7', '8', '9', '10']
   v_droplist = widget_Combobox(v_base, value=v_values, uval='VERBOSE', /align_center)
+  widget_control, v_droplist, set_combobox_select=!spedas.verbose
   
   n_base = widget_base(configbase,/row,/nonexclusive,uval='FL')
   fixlinux = widget_button(n_base,value=' Fix drawing performance  ',uval='FIXLINUX',uname='FIXLINUX', tooltip="For Linux only, disables STROKED_LINES to improve IDL 8.3 perfomance") 

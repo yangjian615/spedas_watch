@@ -7,7 +7,7 @@ PRO eva_proxy_test_event, ev
     wid.fldAuth: str_element,/add,wid,'prox.auth',long(ev.value)
     wid.fldHost: str_element,/add,wid,'prox.host',ev.value
     wid.fldPort: str_element,/add,wid,'prox.port',ev.value
-    wid.fldUser: str_element,/add,wid,'prox.user',ev.value
+    wid.fldUser: str_element,/add,wid,'prox.user',ev.value[0]
     wid.txPass: begin 
 
       ;Handle character insertion (type=0)
@@ -42,17 +42,18 @@ PRO eva_proxy_test_event, ev
       end
     wid.btnClose: exitcode=1
     wid.btnExecute: begin
-;      print, wid.prox.auth
-;      print, wid.prox.host
-;      print, wid.prox.port
-;      print, wid.prox.user
-;      print, wid.prox.pass
+      print, wid.prox.auth
+      print, wid.prox.host
+      print, wid.prox.port
+      print, wid.prox.user
+      print, wid.prox.pass
+      
       r = get_mms_sitl_connection($
         group_leader = ev.top,$
         PROXY_AUTHENTICATION = wid.prox.auth,$
         PROXY_HOSTNAME = wid.prox.host, $
         PROXY_PORT = wid.prox.port, $
-        PROXY_USER = wid.prox.user,$
+        PROXY_USERNAME = wid.prox.user,$
         PROXY_PASSWORD = wid.prox.pass)
 
       timespan,'2015-05-06/23:00',12,/hours
@@ -92,10 +93,10 @@ PRO eva_proxy_test
   ;-----------
   ; ELEMENTS
   ;-----------
-  str_element,/add,wid,'fldAuth',cw_field(base,VALUE=strtrim(string(prox.auth),2),/ALL_EVENTS,TITLE='Proxy Authentication: ')
-  str_element,/add,wid,'fldHost',cw_field(base,VALUE=prox.host,/ALL_EVENTS,TITLE='Proxy Hostname: ')
-  str_element,/add,wid,'fldPort',cw_field(base,VALUE=prox.port,/ALL_EVENTS,TITLE='Proxy Port:     ')
-  str_element,/add,wid,'fldUser',cw_field(base,VALUE=prox.user,/ALL_EVENTS,TITLE='Proxy Username: ')
+  str_element,/add,wid,'fldAuth',cw_field(base,VALUE=strtrim(string(prox.auth),2),/ALL_EVENTS,TITLE='Proxy Authentication: ',tab_mode=1)
+  str_element,/add,wid,'fldHost',cw_field(base,VALUE=prox.host,/ALL_EVENTS,TITLE='Proxy Hostname: ',tab_mode=1)
+  str_element,/add,wid,'fldPort',cw_field(base,VALUE=prox.port,/ALL_EVENTS,TITLE='Proxy Port:     ',tab_mode=1)
+  str_element,/add,wid,'fldUser',cw_field(base,VALUE=prox.user,/ALL_EVENTS,TITLE='Proxy Username: ',tab_mode=1)
   pwbase = widget_base(base, row=1,tab_mode=1)
   str_element,/add,wid,'bsPass', widget_label(pwbase, value='Proxy Password: ')
   str_element,/add,wid,'txPass', widget_text(pwbase, /all_events, editable=0, tab_mode=1)

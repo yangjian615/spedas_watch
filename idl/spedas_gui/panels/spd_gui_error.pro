@@ -5,8 +5,8 @@
 ; A widget to display, edit and save the file 'spd_gui_error.txt' error
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-02-12 08:15:22 -0800 (Wed, 12 Feb 2014) $
-;$LastChangedRevision: 14343 $
+;$LastChangedDate: 2015-06-09 09:54:22 -0700 (Tue, 09 Jun 2015) $
+;$LastChangedRevision: 17839 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_gui_error.pro $
 ;
 ;-
@@ -62,8 +62,8 @@ Pro spd_gui_error, gui_id,historywin
 ;Find the directory with the file
   p = expand_path('+'+!path, /array) ;get the path
   If(!version.os_family Eq 'Windows') Then Begin
-    d = strpos(p, 'spedas\gui\Resources')
-  Endif Else d = strpos(p, 'spedas/gui/Resources')
+    d = strpos(p, 'spedas_gui\Resources')
+  Endif Else d = strpos(p, 'spedas_gui/Resources')
   ok = where(d Ne -1)
   If(ok[0] Ne -1) Then Begin
     f = file_search(p[ok[0]]+'/'+'spedas_gui_error_message.txt')

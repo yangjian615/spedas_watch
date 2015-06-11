@@ -100,6 +100,35 @@ FUNCTION eva_data_load_mms, state
       endif
       
       ;-----------
+      ; DSP
+      ;-----------
+      if (strmatch(paramlist[i],'*_dsp_*')) then begin
+        data_type = (strmatch(paramlist[i],'*_lfb*')) ? 'bpsd' : 'epsd'
+        mms_load_dsp, sc = sc, data_type=data_type
+        case data_type of
+          'bpsd':begin
+            tpv = sc+'_dsp_lfb_'
+            yrange = [10,10000]
+            options, tpv+['x','y','z'], 'ylog',1
+            options, tpv+['x','y','z'], 'zlog',1
+            ylim, tpv+['x','y','z'], yrange[0], yrange[1]
+            end
+          'epsd':begin
+            tpv = [sc+'_dsp_lfe_',sc+'_dsp_mfe_']
+            yrange_min = [10, 100]
+            yrange_max = [10000,100000]
+            for m=0,1 do begin
+              options, tpv[m]+['x','y','z'], 'ylog',1
+              options, tpv[m]+['x','y','z'], 'zlog',1
+              ylim, tpv[m]+['x','y','z'], yrange_min[m], yrange_max[m]
+            endfor
+            end
+          else: stop
+        endcase
+        answer = 'Yes'
+      endif
+      
+      ;-----------
       ; AE Index
       ;-----------
       if strmatch(paramlist[i],'thg_idx_ae') then begin
@@ -109,21 +138,6 @@ FUNCTION eva_data_load_mms, state
         endif
         options,'thg_idx_ae',ytitle='THEMIS!CAE Index'
       endif
-      
-;      if strmatch(paramlist[i],'*_epsd*') then begin
-;        mms_sitl_get_espec, edat_status, sc_id=sc
-;        if edat_status eq 0 then answer = 'Yes'
-;      endif
-;      
-;      if strmatch(paramlist[i],'*_bpsd*') then begin
-;        mms_sitl_get_bspec, bdat_status, sc_id=sc;, no_update = no_update
-;        if bdat_status eq 0 then answer = 'Yes'
-;      endif
-;      
-;      if strmatch(paramlist[i],'*_dce*') then begin
-;        mms_sitl_get_dce,  sdp_status, sc_id=sc;, coord=coord, no_update = no_update
-;        if sdp_status eq 0 then answer = 'Yes'
-;      endif
       
       c+=1
     endfor

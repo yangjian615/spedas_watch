@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-06-05 11:28:30 -0700 (Fri, 05 Jun 2015) $
-;$LastChangedRevision: 17813 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-06-09 11:08:39 -0700 (Tue, 09 Jun 2015) $
+;$LastChangedRevision: 17840 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -472,8 +472,14 @@ PRO spd_gui_event, event
        
       ; update the references in info to template
       info.template_filename = !spedas.templatepath
-      !spedas.windowstorage->GetProperty,template = templateobj
-      info.template_object = templateobj 
+      
+      ; only update the template object if there is a window storage object
+      ; NOTE: I only come across this case (no windowStorage object) when resetting 
+      ;       the !spedas system variable via configuration settings - egrimes, 6/8/2015
+      if obj_valid(!spedas.windowstorage) then begin
+          !spedas.windowstorage->GetProperty,template = templateobj
+          info.template_object = templateobj 
+      endif
 
     ;  print,info.drawDisableTimer                         
     END

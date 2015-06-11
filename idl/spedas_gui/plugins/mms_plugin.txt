@@ -1,2 +1,2 @@
 project: MMS
-load_data: mms_ui_load_data
+;load_data: mms_ui_load_data

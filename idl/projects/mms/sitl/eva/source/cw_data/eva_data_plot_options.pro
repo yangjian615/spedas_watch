@@ -4,7 +4,7 @@ PRO eva_data_plot_options, paramlist
 
   for i=0,imax-1 do begin
     tpv = paramlist[i]
-
+    
     ;-----------
     ; MMS FPI
     ;-----------
