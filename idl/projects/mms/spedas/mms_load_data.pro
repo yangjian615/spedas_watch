@@ -40,20 +40,28 @@
 ;         https://lasp.colorado.edu/galaxy/display/mms/MMS+Data+Rights+and+Rules+for+Data+Use
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-08 16:58:08 -0700 (Mon, 08 Jun 2015) $
-;$LastChangedRevision: 17838 $
+;$LastChangedDate: 2015-06-10 15:09:43 -0700 (Wed, 10 Jun 2015) $
+;$LastChangedRevision: 17850 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
 ; takes in 4-d AFG/DFG data as a tplot variable and splits into 2 tplot variables: 1) b_total, 2) b_vector (Bx, By, Bz)
-pro mms_split_fgm_data, tplot_name
+pro mms_split_fgm_data, tplot_name, tplotnames = tplotnames
     get_data, tplot_name, data=fgm_data, dlimits=fgm_dlimits
     
-    store_data, tplot_name + '_bvec', data={x: fgm_data.X, y: [[fgm_data.Y[*, 0]], [fgm_data.Y[*, 1]], [fgm_data.Y[*, 2]]]}, dlimits=fgm_dlimits
-    store_data, tplot_name + '_btot', data={x: fgm_data.X, y: fgm_data.Y[*, 3]}, dlimits=fgm_dlimits
-    
-    ; remove the old variable
-    del_data, tplot_name
+    if is_struct(fgm_data) && is_struct(fgm_dlimits) then begin
+        store_data, tplot_name + '_bvec', data={x: fgm_data.X, y: [[fgm_data.Y[*, 0]], [fgm_data.Y[*, 1]], [fgm_data.Y[*, 2]]]}, dlimits=fgm_dlimits
+        store_data, tplot_name + '_btot', data={x: fgm_data.X, y: fgm_data.Y[*, 3]}, dlimits=fgm_dlimits
+        
+        ; need to add the newly created variables from the previous procedure to the list of tplot names
+        append_array, tplotnames, tplot_name + '_bvec'
+        append_array, tplotnames, tplot_name + '_btot'
+        
+        ; remove the old variable
+        del_data, tplot_name
+    endif else begin
+        dprint, dlevel = 0, 'Error splitting the tplot variable: ', tplot_name
+    endelse
 end
 
 ; sets colors and labels for tplot
@@ -155,7 +163,7 @@ pro mms_load_defatt_tplot, filenames, tplotnames = tplotnames, prefix = prefix
     store_data, prefix + '_defatt_spinras', data={x: time_values, y: def_att_data_ras}
     store_data, prefix + '_defatt_spindec', data={x: time_values, y: def_att_data_dec}
     
-    append_array, tplotnames, ['mms_defatt_spinras', 'mms_defatt_spindec']
+    append_array, tplotnames, prefix + ['_defatt_spinras', '_defatt_spindec']
 end
 
 pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotnames
@@ -196,7 +204,8 @@ end
 pro mms_load_data, probes = probes, datatype = datatype, instrument = instrument, $
                    trange = trange, source = source, level = level, $
                    remote_data_dir = remote_data_dir, local_data_dir = local_data_dir, $
-                   attitude_data = attitude_data
+                   attitude_data = attitude_data, no_download = no_download, $
+                   no_server = no_server
 
     if not keyword_set(datatype) then datatype = '*'
     ; currently, datatype = level
@@ -242,17 +251,13 @@ pro mms_load_data, probes = probes, datatype = datatype, instrument = instrument
             str_replace, real_path, 'PROBE', 'mms' ; str_replace only replaces the first it finds
             relpathnames[path_idx] = real_path
         endfor
-        files = file_retrieve(relpathnames, _extra=source, /last_version)
+        files = file_retrieve(relpathnames, _extra=source, /last_version, no_download=no_download, no_server=no_server)
         cdf2tplot, files, tplotnames = tplotnames
         
         ; if this is AFG/DFG data, split the tplot variables into one for the vector
         ; and one for the magnitude
-        mms_split_fgm_data, 'mms' + strcompress(string(probes[probe_idx]), /rem) + '_' + instrument + '_srvy_dmpa'
+        mms_split_fgm_data, 'mms' + strcompress(string(probes[probe_idx]), /rem) + '_' + instrument + '_srvy_dmpa', tplotnames = tplotnames
         
-        ; need to add the newly created variables from the previous procedure to the list of tplot names
-        append_array, tplotnames, 'mms' + strcompress(string(probes[probe_idx]), /rem) + '_' + instrument + '_srvy_dmpa_bvec'
-        append_array, tplotnames, 'mms' + strcompress(string(probes[probe_idx]), /rem) + '_' + instrument + '_srvy_dmpa_btot'
-
         ; fix the metadata. currently sets the colors
         mms_load_fix_metadata, tplotnames, prefix = 'mms' + strcompress(string(probes[probe_idx]), /rem)
         

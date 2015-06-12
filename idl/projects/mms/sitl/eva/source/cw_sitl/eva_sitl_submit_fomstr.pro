@@ -14,8 +14,10 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
   ;------------------
   ; Modification Check
   ;------------------
-  diff = eva_sitl_strct_comp(tai_FOMstr_mod, tai_FOMstr_org);
-  if strmatch(diff,'unchanged') then begin
+  ;diff = eva_sitl_strct_comp(tai_FOMstr_mod, tai_FOMstr_org);
+  same = compare_struct(tai_FOMstr_mod, tai_FOMstr_org)
+  ;if strmatch(diff,'unchanged') then begin
+  if same then begin
     msg = "The FOM structure has not been modified at all."
     msg = [msg,'Woud you still like to submit?']
     msg = [msg,' ']

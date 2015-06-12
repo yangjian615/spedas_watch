@@ -23,8 +23,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-06-01 09:39:47 -0700 (Mon, 01 Jun 2015) $
-;   $LastChangedRevision: 17772 $
+;   $LastChangedDate: 2015-06-10 11:55:37 -0700 (Wed, 10 Jun 2015) $
+;   $LastChangedRevision: 17848 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_pad.pro $
 ;
 ;-
@@ -222,7 +222,7 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   id21 = cdf_attcreate(fileid, 'PDS_stop_time',              /global_scope)
   id22 = cdf_attcreate(fileid, 'PDS_sclk_start_count',       /global_scope)
   id23 = cdf_attcreate(fileid, 'PDS_sclk_stop_count',        /global_scope)
-; id24 = cdf_attcreate(fileid, 'MAG_data_file',              /global_scope)
+  id24 = cdf_attcreate(fileid, 'MAG_data_file',              /global_scope)
 
   cdf_attput, fileid, 'Title',                      0, $
     title
@@ -278,8 +278,8 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
     PDS_sclk0
   cdf_attput, fileid, 'PDS_sclk_stop_count',        0, $
     PDS_sclk1
-;  cdf_attput, fileid, 'MAG_data_file',              0, $
-;    mname[0]
+  cdf_attput, fileid, 'MAG_data_file',              0, $
+    mname[0]
 
   dummy = cdf_attcreate(fileid, 'FIELDNAM',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'MONOTON',      /variable_scope)
@@ -289,8 +289,8 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   dummy = cdf_attcreate(fileid, 'VAR_TYPE',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'FILLVAL',      /variable_scope)
   dummy = cdf_attcreate(fileid, 'DEPEND_0',     /variable_scope)
-; dummy = cdf_attcreate(fileid, 'DEPEND_1',     /variable_scope)
-; dummy = cdf_attcreate(fileid, 'DEPEND_2',     /variable_scope)
+  dummy = cdf_attcreate(fileid, 'DEPEND_1',     /variable_scope)
+  dummy = cdf_attcreate(fileid, 'DEPEND_2',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'DISPLAY_TYPE', /variable_scope)
   dummy = cdf_attcreate(fileid, 'VALIDMIN',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'VALIDMAX',     /variable_scope)
@@ -430,8 +430,8 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   cdf_attput, fileid, 'UNITS',    'counts', 'counts',                /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'counts', 'Raw Instrument Counts', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'counts', 'epoch',                 /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_1', 'counts', 'energy',                /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_2', 'counts', 'pa',                    /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_1', 'counts', 'energy',                /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_2', 'counts', 'pa',                    /ZVARIABLE
 
 ; Convert to units of counts
 
@@ -474,8 +474,8 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   cdf_attput, fileid, 'CATDESC',  'diff_en_fluxes', $
     'Calibrated differential energy flux', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'diff_en_fluxes', 'epoch', /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_1', 'diff_en_fluxes', 'energy',/ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_2', 'diff_en_fluxes', 'pa',    /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_1', 'diff_en_fluxes', 'energy',/ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_2', 'diff_en_fluxes', 'pa',    /ZVARIABLE
 
 ; convert to units of energy flux
 
@@ -523,7 +523,7 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   cdf_attput, fileid, 'SCALEMAX', 'g_engy', 0.2, /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_engy', $
     'Relative sensitivity as a function of energy',   /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_1', 'g_engy', 'energy', /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_1', 'g_engy', 'energy', /ZVARIABLE
 
 ; Average over angles to get gf as a function of energy
 ; Use midpoint of the data because the efficiency is constant
@@ -556,7 +556,7 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   cdf_attput, fileid, 'SCALEMAX', 'de_over_e', 0.3,               /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'de_over_e', 'eV/eV',           /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'de_over_e', 'DeltaE/E (FWHM)', /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_1', 'de_over_e', 'energy',          /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_1', 'de_over_e', 'energy',          /ZVARIABLE
 
   de_over_e = data[mid].denergy[*, 0]/data[mid].energy[*, 0] ; 64
 
@@ -627,7 +627,7 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   cdf_attput, fileid, 'UNITS',    'pa', 'degrees',      /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'pa', 'Pitch Angle',  /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'pa', 'epoch',        /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_1', 'pa', 'energy',       /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_1', 'pa', 'energy',       /ZVARIABLE
 
   cdf_varput, fileid, 'pa', data.pa*!radeg
 
@@ -653,8 +653,8 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   cdf_attput, fileid, 'UNITS',    'd_pa', 'degrees',           /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'd_pa', 'Pitch Angle Width', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'd_pa', 'epoch',             /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_1', 'd_pa', 'energy',            /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_2', 'd_pa', 'pa',                /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_1', 'd_pa', 'energy',            /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_2', 'd_pa', 'pa',                /ZVARIABLE
 
   cdf_varput, fileid, 'd_pa', data.dpa*!radeg
 
@@ -679,8 +679,8 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
   cdf_attput, fileid, 'CATDESC',  'g_pa', $
     'Relative sensitivity as a function of pitch angle', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'g_pa', 'epoch',           /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_1', 'g_pa', 'energy',          /ZVARIABLE
-; cdf_attput, fileid, 'DEPEND_2', 'g_pa', 'pa',              /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_1', 'g_pa', 'energy',          /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_2', 'g_pa', 'pa',              /ZVARIABLE
 
 ; for each data point, for each energy, normalize data.eff across pa
 
