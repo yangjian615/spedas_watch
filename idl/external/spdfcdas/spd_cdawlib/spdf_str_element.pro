@@ -51,7 +51,7 @@
 ; $LastChangedBy: nikos $
 ; $LastChangedDate: 2014-06-30 13:42:31 -0700 (Mon, 30 Jun 2014) $
 ; $LastChangedRevision: 15467 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/spdfcdas/spdf_cdawlib/spdf_str_element.pro $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/spdfcdas/spd_cdawlib/spdf_str_element.pro $
 
 ;-
 pro spdf_str_element,struct,tagname,value,  $

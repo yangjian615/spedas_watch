@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-06-30 13:53:14 -0700 (Mon, 30 Jun 2014) $
+;$Date: 2015-06-11 12:39:17 -0700 (Thu, 11 Jun 2015) $
 ;$Header: /home/cdaweb/dev/control/RCS/spdf_read_mycdf.pro,v 1.302 2014/03/18 16:34:46 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 15469 $
+;$Revision: 17853 $
 ;+------------------------------------------------------------------------
 ; This package of IDL functions facilitates reading data and metadata from
 ; Common Data Format (CDF) files.  While CDF provides all the benefits
@@ -2628,12 +2628,12 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                                if keyword_set(DEBUG) then etime = systime(1)
 			       case size(epoch,/tname) of
 			          'LONG64': begin  ;TT2000 case
-				           valid_recs=where(cdf_epoch_compare(epoch, start_timett, stop_timett), rec_count)
+				           valid_recs=where(cdf_epoch_compare(epoch, start_timett), rec_count)
                                            ;print, '1st rec = ',valid_recs[0], 'last rec = ',valid_recs(n_elements(valid_recs)-1)
                                            if keyword_set(DEBUG) then print, 'Took ',systime(1)-etime, ' seconds to do cdf_epoch_compare'
 				    	   end
 			          'DCOMPLEX': begin ;Epoch16 case
-				           valid_recs=where(cdf_epoch_compare(epoch, start_time16, stop_time16), rec_count)
+				           valid_recs=where(cdf_epoch_compare(epoch, start_time16), rec_count)
                                            ;print, '1st rec = ',valid_recs[0], 'last rec = ',valid_recs(n_elements(valid_recs)-1)
                                            if keyword_set(DEBUG) then print, 'Took ',systime(1)-etime, ' seconds to do cdf_epoch_compare'
 				             end

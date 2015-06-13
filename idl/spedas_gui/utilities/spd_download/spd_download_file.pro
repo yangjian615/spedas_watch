@@ -52,9 +52,9 @@
 ;
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-07 18:06:24 -0700 (Thu, 07 May 2015) $
-;$LastChangedRevision: 17517 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-06-11 13:52:42 -0700 (Thu, 11 Jun 2015) $
+;$LastChangedRevision: 17854 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -189,8 +189,6 @@ net_object->setproperty, $
                            error: callback_error $
                            }
 
-
-
 ; Download
 ;  -an unsuccessful get will throw an exception and halt execution, 
 ;   the catch should allow these to be handled gracefully
@@ -198,6 +196,13 @@ net_object->setproperty, $
 ;   clobbering current files and/or leaving empty files
 ;   in the case of an error
 ;----------------------------------------
+
+; recreate the url to display without the username and password.
+; this prevents IDL from showing the username/password in the
+; console output for each downloaded file
+if url_struct.username ne '' then begin
+    url = url_struct.scheme + '://' + url_struct.host + '/' + url_struct.path
+endif
 
 dprint, dlevel=2, 'Downloading: '+url
 

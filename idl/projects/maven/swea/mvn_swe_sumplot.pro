@@ -60,8 +60,8 @@
 ;       BURST:        Plot a color bar showing PAD burst coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-01 22:07:48 -0700 (Mon, 01 Jun 2015) $
-; $LastChangedRevision: 17785 $
+; $LastChangedDate: 2015-06-11 14:54:03 -0700 (Thu, 11 Jun 2015) $
+; $LastChangedRevision: 17855 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -398,7 +398,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
                  end
     endcase
     
-    zmax = 10.^(ceil(alog10(max(y)))) < zhi
+    zmax = 10.^(ceil(alog10(max(y,/nan)))) < zhi
     
 
    pad_s = strtrim(string(round(pad_e)),2)
@@ -569,7 +569,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
                  end
     endcase
     
-    zmax = 10.^(ceil(alog10(max(y)))) < zhi
+    zmax = 10.^(ceil(alog10(max(y,/nan)))) < zhi
 
 
    pad_s = strtrim(string(round(pad_e)),2)
