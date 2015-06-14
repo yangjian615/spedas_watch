@@ -1,14 +1,14 @@
 ;$Author: nikos $
-;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
-;$Header: /home/cdaweb/dev/control/RCS/spdf_break_mystring.pro,v 1.4 2012/05/03 16:10:43 johnson Exp johnson $
+;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
+;$Header: /home/cdaweb/dev/control/RCS/spd_cdawlib_break_mystring.pro,v 1.4 2012/05/03 16:10:43 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 14512 $
+;$Revision: 17856 $
 ;+------------------------------------------------------------------------
-; NAME: spdf_break_mystring
+; NAME: spd_cdawlib_break_mystring
 ; PURPOSE: 
 ;       Convert a string into a string array given a delimiting character 
 ; CALLING SEQUENCE:
-;       out = spdf_break_mystring(instring)
+;       out = spd_cdawlib_break_mystring(instring)
 ; INPUTS:
 ;       instring = input text string
 ; KEYWORD PARAMETERS:
@@ -26,11 +26,11 @@
 ;
 ;------------------------------------------------------------------
 ;
-FUNCTION spdf_break_mystring, s, DELIMITER=delimiter
+FUNCTION spd_cdawlib_break_mystring, s, DELIMITER=delimiter
 ; Validate the input parameters
 s_size=size(s) & n_size=n_elements(s_size)
 if (s_size[(n_size - 2)] ne 7) then begin
-  print,'ERROR>Argument to spdf_break_mystring must be of type string'
+  print,'ERROR>Argument to spd_cdawlib_break_mystring must be of type string'
   return,-1
 endif
 if s eq '' then return, [ '' ]

@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-06-26 14:10:49 -0700 (Thu, 26 Jun 2014) $
-;$Header: /home/cdaweb/dev/control/RCS/spdf_hsave_struct.pro,v 1.2 2010/07/09 14:33:43 kovalick Exp johnson $
+;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
+;$Header: /home/cdaweb/dev/control/RCS/spd_cdawlib_hsave_struct.pro,v 1.2 2010/07/09 14:33:43 kovalick Exp johnson $
 ;$Locker: johnson $
-;$Revision: 15447 $
+;$Revision: 17856 $
 ;
 ;Copyright 1996-2013 United States Government as represented by the 
 ;Administrator of the National Aeronautics and Space Administration. 
@@ -13,11 +13,11 @@
 ;If data is stored in handles, make .dat structure tags and extract
 ;the data from the handles and put into the .dat tags, then wipe out
 ;the .handle tags.
-FUNCTION spdf_hsave_struct,a,fname, debug=debug, nosave=nosave
+FUNCTION spd_cdawlib_hsave_struct,a,fname, debug=debug, nosave=nosave
  
 if SIZE(a, /type) ne 8 then return,a 
 
-if (spdf_tagindex('HANDLE',tag_names(a.(0))) eq -1) then begin
+if (spd_cdawlib_tagindex('HANDLE',tag_names(a.(0))) eq -1) then begin
   if (not(keyword_set(nosave)))then begin ;save the buffer to the save file
     ; data is stored directly in the structure
     SAVE,a,FILENAME=fname

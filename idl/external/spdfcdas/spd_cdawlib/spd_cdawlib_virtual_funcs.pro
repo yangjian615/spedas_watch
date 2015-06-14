@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-07-01 11:24:32 -0700 (Tue, 01 Jul 2014) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/spdf_virtual_funcs.pro,v 1.0 
+;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
+;$Header: /home/rumba/cdaweb/dev/control/RCS/spd_cdawlib_virtual_funcs.pro,v 1.0 
 ;$Locker: kovalick $
-;$Revision: 15494 $
+;$Revision: 17856 $
 ;
 ;Copyright 1996-2013 United States Government as represented by the 
 ;Administrator of the National Aeronautics and Space Administration. 
@@ -31,7 +31,7 @@ function vtype_names, buf, vtype, NAMES=vNAMES
    ii=0
    for i=0, tagnums-1 do begin
     tagnames1=tag_names(buf.(i))
-    if(spdf_tagindex('VAR_TYPE', tagnames1) ge 0) then begin
+    if(spd_cdawlib_tagindex('VAR_TYPE', tagnames1) ge 0) then begin
         if(buf.(i).VAR_TYPE eq vtype) then begin
         ;if(buf.(i).VAR_TYPE eq 'data') then begin
            vnames[ii]=tagnames[i]
@@ -81,7 +81,7 @@ function buf_trap, a
   endif else begin
 ; Test for errors trapped in conv_map_image
    atags=tag_names(a)
-   rflag=spdf_tagindex('DATASET',atags)
+   rflag=spd_cdawlib_tagindex('DATASET',atags)
    if(rflag[0] ne -1) then ibad=1
   endelse
 
@@ -105,7 +105,7 @@ function vv_names, buf, NAMES=NAMES
    ii=0
    for i=0, tagnums-1 do begin
     tagnames1=tag_names(buf.(i))
-    if(spdf_tagindex('VIRTUAL', tagnames1) ge 0) then begin
+    if(spd_cdawlib_tagindex('VIRTUAL', tagnames1) ge 0) then begin
         if(buf.(i).VIRTUAL) then begin
            vnames[ii]=tagnames[i]
            vindices[ii]=i
@@ -146,8 +146,8 @@ end
 ; VARIABLES:
 ;
 ; Input:
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as
 ;               VAR_TYPE= data otherwise VAR_TYPE = metadata.
 ;
@@ -213,8 +213,8 @@ end
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -266,25 +266,25 @@ status=0
 
    for i=0, n_elements(vvtag_indices)-1 do begin
 ;    variable_name=arrayof_vvtags(i) 
-;    tag_index = spdf_tagindex(variable_name, tagnames)
+;    tag_index = spd_cdawlib_tagindex(variable_name, tagnames)
 
     tagnames1=tag_names(buf.(vvtag_indices[i]))
 
 ;now look for the COMPONENT_0 attribute tag for this VV.
 ;TJK had to change to check for 'ge 0', otherwise it wasn't true...
 
-    if(spdf_tagindex('COMPONENT_0', tagnames1) ge 0) then $
+    if(spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then $
               component0=buf.(vvtag_indices[i]).COMPONENT_0
 
 ; Check if the component0 variable exists 
 
-    component0_index = spdf_tagindex(component0,tagnames)
+    component0_index = spd_cdawlib_tagindex(component0,tagnames)
 
 ;print, buf.(vvtag_indices[i]).handle 
     vartags = tag_names(buf.(vvtag_indices[i]))
 ;11/5/04 - TJK - had to change FUNCTION to FUNCT for IDL6.* compatibility
-;    findex = spdf_tagindex('FUNCTION', vartags) ; find the FUNCTION index number
-    findex = spdf_tagindex('FUNCT', vartags) ; find the FUNCTION index number
+;    findex = spd_cdawlib_tagindex('FUNCTION', vartags) ; find the FUNCTION index number
+    findex = spd_cdawlib_tagindex('FUNCT', vartags) ; find the FUNCTION index number
     if (findex[0] ne -1) then $
      func_name=strlowcase(buf.(vvtag_indices[i]).(findex[0]))
 ; Loop through all vv's and assign image handle to all w/ 0 handles RTB 12/98
@@ -295,10 +295,10 @@ status=0
     if(component0_index ge 0) then begin
 ; WARNING if /NODATASTRUCT keyword not set an error will occur here
 ;TJK - changed this from tagnames to tagnames1
-      if(spdf_tagindex('HANDLE',tagnames1) ge 0) then begin
+      if(spd_cdawlib_tagindex('HANDLE',tagnames1) ge 0) then begin
         buf.(vvtag_indices[i]).HANDLE=buf.(component0_index).HANDLE 
       endif else begin 
-        print, "Set /NODATASTRUCT keyword in call to spdf_read_mycdf" 
+        print, "Set /NODATASTRUCT keyword in call to spd_cdawlib_read_mycdf" 
       endelse   
     endif else begin
      print, "ERROR= No COMPONENT0 variable found in alternate_view"
@@ -331,8 +331,8 @@ end
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  index      - variable index, so we deal with one variable at a time.
@@ -360,10 +360,10 @@ endif
 tagnames = tag_names(buf)
 tagnames1=tag_names(buf.(index))
 ;now look for the COMPONENT_0 attribute tag for this VV.
-if(spdf_tagindex('COMPONENT_0', tagnames1) ge 0) then $
+if(spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then $
    component0=buf.(index).COMPONENT_0
 ; Check if the component0 variable exists 
-component0_index = spdf_tagindex(component0,tagnames)
+component0_index = spd_cdawlib_tagindex(component0,tagnames)
 ; this line is useful if we are just replacing the old data w/ the new:
 ;buf.(index).HANDLE=buf.(component0_index).HANDLE
 ;handle_value,buf.(index).handle,img
@@ -376,13 +376,13 @@ handle_value,buf.(index).handle,img[19:38,*,*],/set
 ; RCJ 10/22/2003 If the image is being cropped then depend_1
 ; should also be cropped. Found this problem when trying to list the data,
 ; the number of depend_1s did not match the number of data columns.
-if(spdf_tagindex('DEPEND_1', tagnames1) ge 0) then $
+if(spd_cdawlib_tagindex('DEPEND_1', tagnames1) ge 0) then $
    depend1=buf.(index).DEPEND_1
 ; RCJ 05/16/2013  Good, but if alt_cdaweb_depend_1 exists, use it instead:
-if(spdf_tagindex('ALT_CDAWEB_DEPEND_1', tagnames1) ge 0) then if (buf.(index).alt_cdaweb_depend_1 ne '') then $
+if(spd_cdawlib_tagindex('ALT_CDAWEB_DEPEND_1', tagnames1) ge 0) then if (buf.(index).alt_cdaweb_depend_1 ne '') then $
    depend1=buf.(index).alt_cdaweb_depend_1
 ;
-depend1_index = spdf_tagindex(depend1,tagnames)
+depend1_index = spd_cdawlib_tagindex(depend1,tagnames)
 handle_value,buf.(depend1_index).handle,sp
 ; RCJ 12/29/2003  Check to see if this depend_1 wasn't already cropped
 ; because of another variable which also uses this var as it's depend_1
@@ -473,7 +473,7 @@ end
 ; INPUT:
 ;
 ;    buf           an IDL structure
-;    org_names     an array of original variables sent to spdf_read_mycdf
+;    org_names     an array of original variables sent to spd_cdawlib_read_mycdf
 ;
 ; KEYWORDS:
 ;    COORD         string corresponding to coordinate transformation
@@ -813,7 +813,7 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
  ;depend0=buf.(vvtag_indices(incep)).DEPEND_0
  depend0=buf.(INDEX).DEPEND_0
 ;print, depend0, INDEX
- incep=spdf_tagindex(depend0, namest)
+ incep=spd_cdawlib_tagindex(depend0, namest)
  incep=incep[0]
  names=tag_names(buf.(incep))
  ntags=n_tags(buf.(incep))
@@ -1291,8 +1291,8 @@ END
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -1341,7 +1341,7 @@ if (vv_tagindx[0] lt 0) then return, -1
 
 ; Segment below replaced to handle movie vv's
 ; RTB 12/98
-;v = spdf_tagindex('DAT',vtags)
+;v = spd_cdawlib_tagindex('DAT',vtags)
 ;if (v[0] ne -1) then begin
 ;   im_val = buf.(vv_tagindx[0]).dat
 ;endif else begin
@@ -1364,7 +1364,7 @@ ireturn=1
 im_val_arr=intarr(n_elements(vv_tagindx))
 for ig=0, n_elements(vv_tagindx)-1 do begin ; RTB added 9/98
  vtags=tag_names(buf.(vv_tagindx(ig)))
- v = spdf_tagindex('DAT',vtags)
+ v = spd_cdawlib_tagindex('DAT',vtags)
  if (v[0] ne -1) then begin
    im_val = buf.(vv_tagindx(ig)).dat
  endif else begin
@@ -1381,7 +1381,7 @@ for ig=0, n_elements(vv_tagindx)-1 do begin ; RTB added 9/98
 endfor
 if(ireturn) then return, buf ; Return only if all orig_names are already
 
-   a0=spdf_tagindex(tagnames,'IMAGE_DATA')
+   a0=spd_cdawlib_tagindex(tagnames,'IMAGE_DATA')
    if(a0 ne -1) then begin
     image_handle=buf.(a0).handle
     image_depend0=strupcase(buf.(a0).depend_0)
@@ -1393,34 +1393,34 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
     im_data=0B ; Release image data after we know the dimensionality
    endif
 
-   a0=spdf_tagindex(tagnames,image_depend0)
+   a0=spd_cdawlib_tagindex(tagnames,image_depend0)
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, im_time
    endif
 
-   a0=spdf_tagindex(tagnames,'ATTITUDE')
+   a0=spd_cdawlib_tagindex(tagnames,'ATTITUDE')
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, attit
    endif
 ;   attit=[-0.34621945,0.93623523,-0.059964006]
 ;
-   a0=spdf_tagindex(tagnames,'GCI_POSITION')
+   a0=spd_cdawlib_tagindex(tagnames,'GCI_POSITION')
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, gpos 
    endif
 ;   gpos=[11776.447,7885.8336,55474.6585]
 ;
-   a0=spdf_tagindex(tagnames,'SYSTEM')
+   a0=spd_cdawlib_tagindex(tagnames,'SYSTEM')
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, sys 
    endif
 ;
-   a0=spdf_tagindex(tagnames,'FILTER')
+   a0=spd_cdawlib_tagindex(tagnames,'FILTER')
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, filt 
    endif
 ;
-   a0=spdf_tagindex(tagnames,'DSP_ANGLE')
+   a0=spd_cdawlib_tagindex(tagnames,'DSP_ANGLE')
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, dsp 
    endif
@@ -1511,7 +1511,7 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
     org_names[wc]=temp[wc]
 ; Populate idl structure w/ geod_lat and geod_lon data
 ; Create handles and to existing structure
-   a0=spdf_tagindex(tagnames,'GEOD_LAT')
+   a0=spd_cdawlib_tagindex(tagnames,'GEOD_LAT')
    if(a0 ne -1) then begin
     gdlat_handle=handle_create(value=geod_lat)
     buf.(a0).handle=gdlat_handle
@@ -1522,7 +1522,7 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
      return, -1 
    endelse
 
-   a0=spdf_tagindex(tagnames,'GEOD_LONG')
+   a0=spd_cdawlib_tagindex(tagnames,'GEOD_LONG')
    if(a0 ne -1) then begin
     gdlon_handle=handle_create(value=geod_lon)
     buf.(a0).handle=gdlon_handle
@@ -1534,49 +1534,49 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
    endelse
 
 ; Copy IMAGE_DATA handle to GEOD_IMAGE ; Regular registered map
-   a0=spdf_tagindex(tagnames,'GEOD_IMAGE')
+   a0=spd_cdawlib_tagindex(tagnames,'GEOD_IMAGE')
    if(a0 ne -1) then begin
     buf.(a0).handle=image_handle
    endif 
 
 ; Copy IMAGE_DATA handle to GEOD_IMAGE_P; Geo. fixed registered map
-   a0=spdf_tagindex(tagnames,'GEOD_IMAGE_P')
+   a0=spd_cdawlib_tagindex(tagnames,'GEOD_IMAGE_P')
    if(a0 ne -1) then begin
     buf.(a0).handle=image_handle
    endif 
 
 ; Copy IMAGE_DATA handle to GEOD_IMAGE_PS; Geo. registered sun-fixed
-   a0=spdf_tagindex(tagnames,'GEOD_IMAGE_PS')
+   a0=spd_cdawlib_tagindex(tagnames,'GEOD_IMAGE_PS')
    if(a0 ne -1) then begin
     buf.(a0).handle=image_handle
    endif 
 
 ; Copy IMAGE_DATA handle to GEOD_IMAGE_O; Geo. map overlay (not-registered) 
-   a0=spdf_tagindex(tagnames,'GEOD_IMAGE_O')
+   a0=spd_cdawlib_tagindex(tagnames,'GEOD_IMAGE_O')
    if(a0 ne -1) then begin
     buf.(a0).handle=image_handle
    endif
 
 ; Copy IMAGE_DATA handle to GEOD_IMAGE_M; MLT registered map
-   a0=spdf_tagindex(tagnames,'GEOD_IMAGE_M')
+   a0=spd_cdawlib_tagindex(tagnames,'GEOD_IMAGE_M')
    if(a0 ne -1) then begin
     buf.(a0).handle=image_handle
    endif
 
 ; Copy IMAGE_DATA handle to IMAGE_MOVIE_PS; Geo. registered sun-fixed
-   a0=spdf_tagindex(tagnames,'IMAGE_MOVIE_PS')
+   a0=spd_cdawlib_tagindex(tagnames,'IMAGE_MOVIE_PS')
    if(a0 ne -1) then begin
     buf.(a0).handle=image_handle
    endif
 
 ; Copy IMAGE_DATA handle to IMAGE_MOVIE_O; Geo. map overlay (not-registered)
-   a0=spdf_tagindex(tagnames,'IMAGE_MOVIE_O')
+   a0=spd_cdawlib_tagindex(tagnames,'IMAGE_MOVIE_O')
    if(a0 ne -1) then begin
     buf.(a0).handle=image_handle
    endif
 
 ; Copy IMAGE_DATA handle to IMAGE_MOVIE_M; MLT registered map
-   a0=spdf_tagindex(tagnames,'IMAGE_MOVIE_M')
+   a0=spd_cdawlib_tagindex(tagnames,'IMAGE_MOVIE_M')
    if(a0 ne -1) then begin
     buf.(a0).handle=image_handle
    endif
@@ -1618,8 +1618,8 @@ FUNCTION calc_p, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -1679,7 +1679,7 @@ FUNCTION calc_p, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
  ;depend0=buf.(vvtag_indices(incep)).DEPEND_0
  depend0=buf.(INDEX).DEPEND_0
 ;print, depend0, INDEX
- incep=spdf_tagindex(depend0, namest)
+ incep=spd_cdawlib_tagindex(depend0, namest)
  incep=incep[0]
  names=tag_names(buf.(incep))
  ntags=n_tags(buf.(incep))
@@ -1740,8 +1740,8 @@ FUNCTION Add_51s, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -1852,8 +1852,8 @@ FUNCTION Add_seconds, buf, org_names, seconds=seconds, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  seconds    - the number of seconds to add to given time 
@@ -1969,8 +1969,8 @@ FUNCTION compute_magnitude, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2097,8 +2097,8 @@ FUNCTION extract_array, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2216,8 +2216,8 @@ end
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  index      - variable index, so we deal with one variable at a time.
@@ -2248,11 +2248,11 @@ tagnames = tag_names(buf)
 tagnames1=tag_names(buf.(index))
 
 ; look for the COMPONENT_0 attribute tag for this VV.
-if(spdf_tagindex('COMPONENT_0', tagnames1) ge 0) then $
+if(spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then $
    component0=buf.(index).COMPONENT_0
 
 ; Check if the component0 variable exists 
-component0_index = spdf_tagindex(component0,tagnames)
+component0_index = spd_cdawlib_tagindex(component0,tagnames)
 
 ; get coordinates
 handle_value,buf.(component0_index).handle,geo_coord
@@ -2261,7 +2261,7 @@ handle_value,buf.(component0_index).handle,geo_coord
 height=0
 for i=2L,n_elements(geo_coord)-1,3 do height=[height,geo_coord[i]]
 ; RCJ 10/01/2003 I would start the height array at [1:*] to eliminate the first
-; 0 but a few more 0's come from spdf_read_mycdf so I have to start it at [2:*] :
+; 0 but a few more 0's come from spd_cdawlib_read_mycdf so I have to start it at [2:*] :
 height=height[2:*]
 buf.(index).handle=handle_create()
 handle_value,buf.(index).handle,height,/set
@@ -2289,8 +2289,8 @@ end
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  index      - variable index, so we deal with one variable at a time.
@@ -2318,11 +2318,11 @@ tagnames = tag_names(buf)
 tagnames1=tag_names(buf.(idx))
 
 ; look for the COMPONENT_0 attribute tag for this VV.
-if(spdf_tagindex('COMPONENT_0', tagnames1) ge 0) then $
+if(spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then $
    component0=buf.(idx).COMPONENT_0
 
 ; Check if the component0 variable exists (this is the parent variable)
-index = spdf_tagindex(component0,tagnames)
+index = spd_cdawlib_tagindex(component0,tagnames)
 
 if (index ge 0) then begin
 ; Check to see if HANDLE a tag name
@@ -2410,15 +2410,15 @@ tagnames = tag_names(buf)
 tagnames1=tag_names(buf.(index))
 
 ;now look for the COMPONENT_0 and 1 attributes tag for this VV.
-if(spdf_tagindex('COMPONENT_0', tagnames1) ge 0) then $
+if(spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then $
    component0=buf.(index).COMPONENT_0
-if(spdf_tagindex('COMPONENT_1', tagnames1) ge 0) then $
+if(spd_cdawlib_tagindex('COMPONENT_1', tagnames1) ge 0) then $
    component1=buf.(index).COMPONENT_1
 ; Check if the component0 and 1 variables exist: 
-component0_index = spdf_tagindex(component0,tagnames)
-component1_index = spdf_tagindex(component1,tagnames)
+component0_index = spd_cdawlib_tagindex(component0,tagnames)
+component1_index = spd_cdawlib_tagindex(component1,tagnames)
 if((component0_index ge 0 )and (component1_index ge 0)) then begin
-   if(spdf_tagindex('HANDLE',tagnames1) ge 0) then begin
+   if(spd_cdawlib_tagindex('HANDLE',tagnames1) ge 0) then begin
       handle_value,buf.(component0_index).handle,zone
       handle_value,buf.(component1_index).handle,meri
       sz=size(zone)
@@ -2430,7 +2430,7 @@ if((component0_index ge 0 )and (component1_index ge 0)) then begin
       wind[1,*]=reform(meri[q[0],*])
       buf.(index).handle=handle_create()
       handle_value,buf.(index).HANDLE,wind,/set
-   endif else print, "Set /NODATASTRUCT keyword in call to spdf_read_mycdf";
+   endif else print, "Set /NODATASTRUCT keyword in call to spd_cdawlib_read_mycdf";
 endif else begin
    print, "ERROR= No COMPONENT0 and/or 1 variable found in wind_plot"
    print, "ERROR= Message: ",component0_index, component1_index
@@ -2465,8 +2465,8 @@ FUNCTION comp_epoch, buf, org_names, index=index, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2585,8 +2585,8 @@ FUNCTION comp_themis_epoch, buf, org_names, index=index, DEBUG=DEBUG, $
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2738,11 +2738,11 @@ function error_bar_array, buf, index=index, value=value
 ;
 tagnames=tag_names(buf)
 tagnames1=tag_names(buf.(index))
-if(spdf_tagindex('COMPONENT_0', tagnames1) ge 0) then $
+if(spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then $
               component0=buf.(index).COMPONENT_0
-component0_index = spdf_tagindex(component0,tagnames)
+component0_index = spd_cdawlib_tagindex(component0,tagnames)
 if(component0_index ge 0) then begin
-   if(spdf_tagindex('HANDLE',tagnames1) ge 0) then begin
+   if(spd_cdawlib_tagindex('HANDLE',tagnames1) ge 0) then begin
         handle_value,buf.(component0_index).HANDLE,comp0
 	sz=size(comp0,/n_elements)
 	er=fltarr(sz) & er[*]=value
@@ -2776,8 +2776,8 @@ FUNCTION convert_toev, buf, org_names, index=index, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2886,8 +2886,8 @@ FUNCTION convert_Ni, buf, org_names, index=index, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -2993,7 +2993,7 @@ end
 ;
 ; INPUT:
 ;    buf           an IDL structure
-;    org_names     an array of original variables sent to spdf_read_mycdf
+;    org_names     an array of original variables sent to spd_cdawlib_read_mycdf
 ;    index	   variable position in buf
 ;
 ; CALLING SEQUENCE:
@@ -3016,26 +3016,26 @@ tagnames = tag_names(buf)
 tagnames1=tag_names(buf.(index))
 
 ; look for the COMPONENT_0 attribute tag for this VV.
-if(spdf_tagindex('COMPONENT_0', tagnames1) ge 0) then begin
+if(spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then begin
    component0=buf.(index).COMPONENT_0
    ; Check if the component0 variable exists 
-   component0_index = spdf_tagindex(component0,tagnames)
+   component0_index = spd_cdawlib_tagindex(component0,tagnames)
    ; get coordinates
    handle_value,buf.(component0_index).handle,gse_xyz
 endif
 
 ; look for the COMPONENT_1 attribute tag for this VV.
-if(spdf_tagindex('COMPONENT_1', tagnames1) ge 0) then begin
+if(spd_cdawlib_tagindex('COMPONENT_1', tagnames1) ge 0) then begin
    component1=buf.(index).COMPONENT_1
-   component1_index = spdf_tagindex(component1,tagnames)
+   component1_index = spd_cdawlib_tagindex(component1,tagnames)
    if (component1_index ne -1) then handle_value,buf.(component1_index).handle,gse_dx_xyz
 endif
 
 ; get time values
-if(spdf_tagindex('DEPEND_0', tagnames1) ge 0) then $
+if(spd_cdawlib_tagindex('DEPEND_0', tagnames1) ge 0) then $
    depend0=buf.(index).DEPEND_0
 ; Check if the depend0 variable exists 
-depend0_index = spdf_tagindex(depend0,tagnames)
+depend0_index = spd_cdawlib_tagindex(depend0,tagnames)
 ; get time
 handle_value,buf.(depend0_index).handle,depend0
 
@@ -3092,8 +3092,8 @@ FUNCTION correct_FAST_By, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -3250,7 +3250,7 @@ end
 ;
 ; INPUT:
 ;    buf           an IDL structure
-;    org_names     an array of original variables sent to spdf_read_mycdf
+;    org_names     an array of original variables sent to spd_cdawlib_read_mycdf
 ;    index	   variable position in buf
 ;
 ; CALLING SEQUENCE:
@@ -3273,10 +3273,10 @@ tagnames = tag_names(buf)
 tagnames1=tag_names(buf.(index))
 
 ; look for the COMPONENT_0 attribute tag for this VV.
-if(spdf_tagindex('COMPONENT_0', tagnames1) ge 0) then begin
+if(spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then begin
    component0=buf.(index).COMPONENT_0
    ; Check if the component0 variable exists 
-   component0_index = spdf_tagindex(component0,tagnames)
+   component0_index = spd_cdawlib_tagindex(component0,tagnames)
    ; get epoch
    handle_value,buf.(component0_index).handle,epoch
 endif
@@ -3312,7 +3312,7 @@ end
 ;
 function apply_rtn_qflag, astruct, orig_names, index=index
 
-;Input: astruct: the structure, created by spdf_read_mycdf that should
+;Input: astruct: the structure, created by spd_cdawlib_read_mycdf that should
 ;		 contain at least one Virtual variable.
 ;	orig_names: the list of varibles that exist in the structure.
 ;	index: the virtual variable (index number) for which this function
@@ -3348,13 +3348,13 @@ endelse
 c_0 = astruct.(index).COMPONENT_0 ;1st component var (real flux var)
 
 if (c_0 ne '') then begin ;this should be the real data
-  var_idx = spdf_tagindex(c_0, atags)
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
-  d = spdf_tagindex('DAT',itags)
+  d = spd_cdawlib_tagindex('DAT',itags)
     if (d[0] ne -1) then  parent_data = astruct.(var_idx).DAT $
     else begin
-      d = spdf_tagindex('HANDLE',itags)
+      d = spd_cdawlib_tagindex('HANDLE',itags)
       handle_value, astruct.(var_idx).HANDLE, parent_data
     endelse
   fill_val = astruct.(var_idx).fillval
@@ -3368,13 +3368,13 @@ if (data_size[1] gt 0) then begin
 c_0 = astruct.(index).COMPONENT_1 ; should be the quality variable
 
 if (c_0 ne '') then begin ;
-  var_idx = spdf_tagindex(c_0, atags)
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
-  d = spdf_tagindex('DAT',itags)
+  d = spd_cdawlib_tagindex('DAT',itags)
     if (d[0] ne -1) then  quality_data = astruct.(var_idx).DAT $
     else begin
-      d = spdf_tagindex('HANDLE',itags)
+      d = spd_cdawlib_tagindex('HANDLE',itags)
       handle_value, astruct.(var_idx).HANDLE, quality_data
     endelse
   
@@ -3425,7 +3425,7 @@ end
 ;
 function apply_rtn_cadence, astruct, orig_names, index=index
 
-;Input: astruct: the structure, created by spdf_read_mycdf that should
+;Input: astruct: the structure, created by spd_cdawlib_read_mycdf that should
 ;		 contain at least one Virtual variable.
 ;	orig_names: the list of varibles that exist in the structure.
 ;	index: the virtual variable (index number) for which this function
@@ -3459,13 +3459,13 @@ endelse
 c_0 = astruct.(index).COMPONENT_0 ;1st component var (real variable)
 
 if (c_0 ne '') then begin ;this should be the real data
-  var_idx = spdf_tagindex(c_0, atags)
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
-  d = spdf_tagindex('DAT',itags)
+  d = spd_cdawlib_tagindex('DAT',itags)
     if (d[0] ne -1) then  parent_data = astruct.(var_idx).DAT $
     else begin
-      d = spdf_tagindex('HANDLE',itags)
+      d = spd_cdawlib_tagindex('HANDLE',itags)
       if (astruct.(var_idx).HANDLE ne 0) then begin
         handle_value, astruct.(var_idx).HANDLE, parent_data
       endif else begin ;need to call the virtual function to compute the quality variables when they don't exist
@@ -3487,13 +3487,13 @@ if (data_size[1] gt 0) then begin
 c_0 = astruct.(index).COMPONENT_1 ; should be the time cadence variable
 
 if (c_0 ne '') then begin ;
-  var_idx = spdf_tagindex(c_0, atags)
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
-  d = spdf_tagindex('DAT',itags)
+  d = spd_cdawlib_tagindex('DAT',itags)
     if (d[0] ne -1) then  cadence_data = astruct.(var_idx).DAT $
     else begin
-      d = spdf_tagindex('HANDLE',itags)
+      d = spd_cdawlib_tagindex('HANDLE',itags)
       if (astruct.(var_idx).HANDLE ne 0) then begin
         handle_value, astruct.(var_idx).HANDLE, cadence_data
       endif else begin ;need to call the virtual function to compute the epoch_cadence when it doesn't exist yet.
@@ -3568,8 +3568,8 @@ function expand_wave_data, astruct, org_names, INDEX=index, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -3611,13 +3611,13 @@ print, 'In Expand_wave_data'
 c_0 = astruct.(index).COMPONENT_0 ;1st component var (real/parent wave variable)
 
 if (c_0 ne '') then begin ;this should be the real data
-  var_idx = spdf_tagindex(c_0, atags)
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
-  d = spdf_tagindex('DAT',itags)
+  d = spd_cdawlib_tagindex('DAT',itags)
     if (d[0] ne -1) then  Samples = astruct.(var_idx).DAT $
     else begin
-      d = spdf_tagindex('HANDLE',itags)
+      d = spd_cdawlib_tagindex('HANDLE',itags)
       if (astruct.(var_idx).HANDLE ne 0) then $
         handle_value, astruct.(var_idx).HANDLE, Samples
     endelse
@@ -3627,13 +3627,13 @@ endif else print, 'expand_wave_data - parent variable not found'
 c_0 = astruct.(index).COMPONENT_1 ;2nd component var (Epoch)
 
 if (c_0 ne '') then begin ;this should be the Epoch base value
-  var_idx = spdf_tagindex(c_0, atags)
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
-  d = spdf_tagindex('DAT',itags)
+  d = spd_cdawlib_tagindex('DAT',itags)
     if (d[0] ne -1) then  Epoch_base = astruct.(var_idx).DAT $
     else begin
-      d = spdf_tagindex('HANDLE',itags)
+      d = spd_cdawlib_tagindex('HANDLE',itags)
       if (astruct.(var_idx).HANDLE ne 0) then $
         handle_value, astruct.(var_idx).HANDLE, Epoch_base
     endelse
@@ -3644,13 +3644,13 @@ endif else print, 'expand_wave_data - Epoch_base variable not found'
 c_0 = astruct.(index).COMPONENT_2 ;3rd component var (time_offsets)
 
 if (c_0 ne '') then begin ;this should be the time offset values
-  var_idx = spdf_tagindex(c_0, atags)
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
-  d = spdf_tagindex('DAT',itags)
+  d = spd_cdawlib_tagindex('DAT',itags)
     if (d[0] ne -1) then  time_offsets = astruct.(var_idx).DAT $
     else begin
-      d = spdf_tagindex('HANDLE',itags)
+      d = spd_cdawlib_tagindex('HANDLE',itags)
       if (astruct.(var_idx).HANDLE ne 0) then $
         handle_value, astruct.(var_idx).HANDLE, time_offsets
    endelse
@@ -3695,13 +3695,13 @@ astruct.(index).HANDLE = temp
 c_0 = astruct.(index).DEPEND_0 ;1st component var (real wave variable)
 
 if (c_0 ne '') then begin ;this should be the new Epoch variable
-  var_idx = spdf_tagindex(c_0, atags)
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
   itags = tag_names(astruct.(var_idx)) ;tags for the new Epoch variable.
 
   temp = handle_create(value=new_epoch)
-  d = spdf_tagindex('HANDLE',itags)
+  d = spd_cdawlib_tagindex('HANDLE',itags)
     if (d[0] ne -1) then  astruct.(var_idx).HANDLE = temp
-  d = spdf_tagindex('DAT',itags)
+  d = spd_cdawlib_tagindex('DAT',itags)
     if (d[0] ne -1) then  astruct.(var_idx).DAT = new_epoch
 
 endif else print, 'expand_wave_data - new epoch variable not found'
@@ -3728,8 +3728,8 @@ end
 ;
 ; Input:
 ;
-;  astruct    - an IDL structure built w/in spdf_read_mycdf
-;  org_names  - list of original variables input to spdf_read_mycdf. Any
+;  astruct    - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;  index - keyword - if set use this index value to find the virtual 
@@ -3787,23 +3787,23 @@ endelse
 c_0 = astruct.(index).COMPONENT_0 ;1st component var (real/parent wave variable)
 
 if (c_0 ne '') then begin ;this should be the real data
-  var_idx = spdf_tagindex(c_0, atags)
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
-  d = spdf_tagindex('DAT',itags)
+  d = spd_cdawlib_tagindex('DAT',itags)
   if (d[0] ne -1) then  parent_array = astruct.(var_idx).DAT $
   else begin
-    d = spdf_tagindex('HANDLE',itags)
+    d = spd_cdawlib_tagindex('HANDLE',itags)
     if (astruct.(var_idx).HANDLE ne 0) then $
       handle_value, astruct.(var_idx).HANDLE, parent_array
     endelse
 ;  help, parent_array
 
 ;don't think I need this...  fill_val = astruct.(var_idx).fillval
-  d = spdf_tagindex('DISPLAY_TYPE',itags)
+  d = spd_cdawlib_tagindex('DISPLAY_TYPE',itags)
   if (d[0] ne -1) then begin
      display_string = astruct.(index).DISPLAY_TYPE
-     a = spdf_break_mystring(display_string,delimiter='>')
+     a = spd_cdawlib_break_mystring(display_string,delimiter='>')
      new_display_type=''
      ; Count the number of '=' to determine the number of instructions
      b=0 
@@ -3848,7 +3848,7 @@ if (c_0 ne '') then begin ;this should be the real data
         b=strpos(ilist[inum],'y=') &  c=strpos(ilist[inum],'Y=')
         if c gt b then b=c
         if (b ne -1) then begin ; extract the name of the y variable and elist
-           c = spdf_break_mystring(ilist[inum],delimiter='(')
+           c = spd_cdawlib_break_mystring(ilist[inum],delimiter='(')
            if (n_elements(c) eq 2) then rem = strmid(c[1], 0,strlen(c[1])-1)
            if (rem ne '') then begin ;apply the reduction syntax to the parent array
               new_array = parent_array[rem,*];last dim. is records
@@ -3889,5 +3889,5 @@ astruct.(index).DISPLAY_TYPE = ndt ; should be just stack_plot
 return, astruct
 end
 
-pro spdf_virtual_funcs 
+pro spd_cdawlib_virtual_funcs 
 end

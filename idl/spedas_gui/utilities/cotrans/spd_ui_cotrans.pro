@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
-;$LastChangedRevision: 17542 $
+;$LastChangedDate: 2015-06-12 17:07:08 -0700 (Fri, 12 Jun 2015) $
+;$LastChangedRevision: 17873 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/cotrans/spd_ui_cotrans.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -108,12 +108,13 @@ for i = 0,n_elements(active)-1 do begin
 
   out_suffix = '_'+strlowcase(out_coord)
   in_suffix = ''
+  in_name = name
      
   ;break name into base and suffix
   for j = 0,n_elements(validCoords)-1 do begin
     if (pos = stregex(name,'_'+validCoords[j]+'$',/fold_case)) ne -1 then begin
       in_suffix = '_'+ validCoords[j]
-      name = strmid(name,0,pos)
+      in_name = strmid(name,0,pos)
       break
     endif
   endfor
@@ -130,7 +131,7 @@ for i = 0,n_elements(active)-1 do begin
     return
   endif else begin
   
-    spd_cotrans, name, $
+    spd_cotrans, in_name, $
                  in_coord=in_coord, $
                  out_coord=out_coord, $
                  in_suffix=in_suffix, $

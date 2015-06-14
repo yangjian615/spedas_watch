@@ -136,7 +136,7 @@ end
 ;    To see further info. about each variable type 
 ;        help, /struct, d."variablename"
 ;    To make a plot with the CDAWlib s/w type 
-;        s = spdf_plotmaster(d, /AUTO, /CDAWEB, /GIF, /SMOOTH, /SLOW)
+;        s = spd_cdawlib_plotmaster(d, /AUTO, /CDAWEB, /GIF, /SMOOTH, /SLOW)
 ;   </pre>
 ;-
 function SpdfGetData, $
@@ -251,11 +251,11 @@ function SpdfGetData, $
         localCdfNames2 = localCdfNames
         allVars = ''
         ; reads data into handles (memory) should be fastest
-        data = spdf_read_mycdf(allVars, localCdfNames2, all = 1, $
+        data = spd_cdawlib_read_mycdf(allVars, localCdfNames2, all = 1, $
                           /nodata) 
 
         ; reads data into .dat structure tags
-        ; data = spdf_read_mycdf(variables, localCdfNames) 
+        ; data = spd_cdawlib_read_mycdf(variables, localCdfNames) 
 
         if n_tags(data) eq 3 && $
            array_equal (tag_names(data), $
@@ -263,7 +263,7 @@ function SpdfGetData, $
  
             if keyword_set(verbose) then begin
 
-                print, 'Error in spdf_read_mycdf()'
+                print, 'Error in spd_cdawlib_read_mycdf()'
                 print, '  ERROR: ', data.error
                 print, '  STATUS: ', data.status
             endif
@@ -276,7 +276,7 @@ function SpdfGetData, $
             return, 1
         endif
 
-        newbuf = spdf_hsave_struct(data, /nosave) 
+        newbuf = spd_cdawlib_hsave_struct(data, /nosave) 
         ; don't use the /nosave if you want it saved
         ; to a save file, need to specify a file name though.
 
@@ -323,7 +323,7 @@ function SpdfGetData, $
         print, 'and the BGSEc values are in d.bgsec.dat'
         print, '   '
         print, 'To see further info. about each variable type help, /struct, d."variablename"'
-        print, 'To make a plot with the CDAWlib s/w type s = spdf_plotmaster(d, /AUTO, /CDAWEB, /GIF, /SMOOTH, /SLOW)
+        print, 'To make a plot with the CDAWlib s/w type s = spd_cdawlib_plotmaster(d, /AUTO, /CDAWEB, /GIF, /SMOOTH, /SLOW)
 
     endif
 

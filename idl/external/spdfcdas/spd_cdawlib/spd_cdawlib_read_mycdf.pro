@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2015-06-11 12:39:17 -0700 (Thu, 11 Jun 2015) $
-;$Header: /home/cdaweb/dev/control/RCS/spdf_read_mycdf.pro,v 1.302 2014/03/18 16:34:46 kovalick Exp kovalick $
+;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
+;$Header: /home/cdaweb/dev/control/RCS/spd_cdawlib_read_mycdf.pro,v 1.302 2014/03/18 16:34:46 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 17853 $
+;$Revision: 17856 $
 ;+------------------------------------------------------------------------
 ; This package of IDL functions facilitates reading data and metadata from
 ; Common Data Format (CDF) files.  While CDF provides all the benefits
@@ -10,7 +10,7 @@
 ; not always a simple matter.  To make it simple, I have created this IDL
 ; package so that all of the data and metadata from multiple variables can 
 ; be read from multiple CDF files ... in one single, simple command.  The 
-; function is called 'spdf_read_mycdf' and it returns an anonymous structure of
+; function is called 'spd_cdawlib_read_mycdf' and it returns an anonymous structure of
 ; the form:
 ;
 ;       structure_name.variable_name.attribute_name.attribute_value
@@ -58,11 +58,11 @@
 ; Modifications: 
 ;	As of October 2, 2000, this software can run on all of the following
 ;	IDL versions, 5.1, 5.2 and 5.3 (testing for 5.4 will commence soon).
-;	Some fairly major changes were necessary in order for spdf_read_mycdf
+;	Some fairly major changes were necessary in order for spd_cdawlib_read_mycdf
 ;	to work under 5.3.  IDL 5.3 enforces the variable naming rules for
 ;	structure tag names.  This change affects this s/w because we basically
 ;	had never checked our tag names, e.g. we used the CDF variable names
-;	and label attribute values directly.  So in spdf_read_mycdf the general
+;	and label attribute values directly.  So in spd_cdawlib_read_mycdf the general
 ;	concept to fixing this problem was to set up a table (which is shared
 ;	in a common block - not my favorite way to go, but definitely the 
 ;	easiest), where there are two tags, equiv and varname.  varname 
@@ -80,9 +80,9 @@
 ;+-----------------------------------------------------------------------
 ; Search the tnames array for the instring, returning the index in tnames
 ; if it is present, or -1 if it is not.
-;TJK this function is in a separate file called spdf_tagindex.pro
+;TJK this function is in a separate file called spd_cdawlib_tagindex.pro
 ;since its called from many different routines in this system.
-;FUNCTION spdf_tagindex, instring, tnames
+;FUNCTION spd_cdawlib_tagindex, instring, tnames
 ;instring = STRUPCASE(instring) ; tagnames are always uppercase
 ;a = where(tnames eq instring,count)
 ;if count eq 0 then return, -1 $
@@ -181,13 +181,13 @@ end
 ;-------------------------------------------------------------------------
 FUNCTION parse_DISPLAY_TYPE, instring
 num_vnames = 0L & spos = 0L & i=0L ; initialize
-a = spdf_break_mystring(instring,DELIMITER='>') ; break string into components
+a = spd_cdawlib_break_mystring(instring,DELIMITER='>') ; break string into components
 if n_elements(a) le 1 then return,-1 ; no '>' following plot type
 if a[1] eq '' then return,-1 ; no info past '>' to parse
 if strlowcase(a[0]) eq 'orbit' then return,-1 ; dont want to parse orbit.
 
 lastn=n_elements(a)-1  ; RTB added 3/98
-b = spdf_break_mystring(a[lastn],delimiter=',') ; Parse the string into substrings
+b = spd_cdawlib_break_mystring(a[lastn],delimiter=',') ; Parse the string into substrings
 for i=0,n_elements(b)-1 do begin ; examine each substring
    s = strpos(b[i],'=') & p = strpos(b[i],'(') ; find '=' and '(' signs
    if s ne -1 then begin ; probably a properly formated DISPLAY_TYPE vattr
@@ -1013,10 +1013,10 @@ common global_table, table
 
 cdf_attinq,CDFid,anum,aname,ascope,maxe,maxze ; inquire about the attribute
 aname = strtrim(aname,2) ; trim any possible leading or trailing blanks
-;TJK 2/28/2002 - call spdf_replace_bad_chars to replace any "illegal" characters in
+;TJK 2/28/2002 - call spd_cdawlib_replace_bad_chars to replace any "illegal" characters in
 ;the attribute name w/ a legal one.  This was necessary to go to IDL 5.3.
 
-aname = spdf_replace_bad_chars(aname,repchar="_",found)
+aname = spd_cdawlib_replace_bad_chars(aname,repchar="_",found)
 
 attval='' & astruct=create_struct(aname,attval) ; initialize anonymous structure
 ;TJK modified this error catch to re-set the !error value since not finding
@@ -1080,7 +1080,7 @@ CATCH,error_status & if error_status ne 0 then begin !ERROR=0 & return,astruct &
          endif 
 
          if (vcount ge 0) then begin
-      	    attval = spdf_replace_bad_chars(attval, diff)
+      	    attval = spd_cdawlib_replace_bad_chars(attval, diff)
 	    table.equiv[table_index[0]] = attval ;set equiv to either the
 	    ;new changed name or the original
 	    ;if it doesn't contain any bad chars..
@@ -1133,7 +1133,7 @@ for anum=0,cinfo.natts-1 do begin
    atnames = TAG_NAMES(astruct)
    for i=0,N_TAGS(astruct)-1 do begin
      if (atnames[i] ne 'fieldnam') and (atnames[i] ne 'DIM_SIZES') then nglobal=[nglobal,isglobal]
-     spdf_str_element, METADATA, atnames[i], astruct.(i), /add_replace
+     spd_cdawlib_str_element, METADATA, atnames[i], astruct.(i), /add_replace
    endfor
 endfor ; for each attribute
 ;11/20/2007 TJK after all attributes are read and put in metadata
@@ -1191,10 +1191,10 @@ if (cinfo.natts gt 0) then begin
     cdf_attinq,CDFid,anum,aname,ascope,maxe,maxze ; inquire about the attribute
     if (((all eq 0) and (ascope eq 'VARIABLE_SCOPE')OR(ascope eq 'VARIABLE_SCOPE_ASSUMED')) or (all eq 1)) then begin
       aname = strtrim(aname,2) ; trim any possible leading or trailing blanks
-      ;call spdf_replace_bad_chars to replace any "illegal" characters in
+      ;call spd_cdawlib_replace_bad_chars to replace any "illegal" characters in
       ;the attribute name w/ a legal one.  This was necessary for IDL 5.3.
 
-      aname = spdf_replace_bad_chars(aname,repchar="_",found)
+      aname = spd_cdawlib_replace_bad_chars(aname,repchar="_",found)
 
       att_array[i] = aname
       i = i +1
@@ -1297,7 +1297,7 @@ for i=0,cinfo.nvars-1 do begin
    if keyword_set(VAR_TYPE) then begin ; only get VAR_TYPE='data', for example
       ; RCJ 01/14/2013  Mabye this approach works better? My experience is that,
       ; because mode changes when read_mymetadata is called, I did not get all
-      ; requested vars back when all=2 (all 'data' types) in the call to spdf_read_mycdf.
+      ; requested vars back when all=2 (all 'data' types) in the call to spd_cdawlib_read_mycdf.
       cdf_attget,CDFindex,'VAR_TYPE',vinfo.name,attgot
       if ((attgot eq VAR_TYPE) and (vinfo.recvar eq 'VARY')) then vnames=[vnames,vinfo.name]
       ;metadata = read_myMETADATA(vinfo.name,CDFindex)
@@ -1350,9 +1350,9 @@ function write_fill, vn_sdat, burley, tmp_str
 ;v_err='ERROR=Instrument off; fillval=dat'
 v_stat='STATUS=Instrument off for variable '+vn_sdat+'.  Re-select variable or time. '
 atags=tag_names(burley.(0))
-b0 = spdf_tagindex('LOGICAL_SOURCE',atags)
-b1 = spdf_tagindex('LOGICAL_FILE_ID',atags)
-b2 = spdf_tagindex('Logical_file_id',atags)
+b0 = spd_cdawlib_tagindex('LOGICAL_SOURCE',atags)
+b1 = spd_cdawlib_tagindex('LOGICAL_FILE_ID',atags)
+b2 = spd_cdawlib_tagindex('Logical_file_id',atags)
 if (b0[0] ne -1) then  psrce = strupcase(burley.(0).LOGICAL_SOURCE)
 if (b1[0] ne -1) then $ 
    psrce = strupcase(strmid(burley.(0).LOGICAL_FILE_ID,0,9))
@@ -1374,7 +1374,7 @@ end
 function correct_varname, struct, varnames, index
 
 ;TJK 09/29/00 Put in a check to make the varname attribute value match
-;its variables structure tag name - if it doesn't spdf_list_mystruct won't work...
+;its variables structure tag name - if it doesn't spd_cdawlib_list_mystruct won't work...
 ;This is all necessary for the upgrade to IDL5.3
 str_index = strtrim(string(index),2) ;convert to string
 ;comm = execute('att_names = tag_names(struct.('+str_index+'))')
@@ -1584,7 +1584,7 @@ end
 ;end
 
 ;+------------------------------------------------------------------------
-; NAME: spdf_read_mycdf
+; NAME: spd_cdawlib_read_mycdf
 ; PURPOSE: 
 ;	Read all data and metadata for given variables, from given CDF
 ;       files, and return all information in a single anonymous structure
@@ -1592,7 +1592,7 @@ end
 ;          structure_name.variable_name.attribute_name.attribute_value
 ;
 ; CALLING SEQUENCE:
-;       out = spdf_read_mycdf(vnames,cnames)
+;       out = spd_cdawlib_read_mycdf(vnames,cnames)
 ; INPUTS:
 ;       vnames = string, array of variable names or a single string of
 ;                names separated by a comma.  (ex. 'Epoch,Magfld,Bmax')
@@ -1633,7 +1633,7 @@ end
 ; w/ one or the other keyword - right now they are only used if both
 ; are set.
 ;	Tami Kovalick, RSTX, 02/13/98, Carrie Gallap started modifications
-; to spdf_read_mycdf to accommodate "virtual variables" (VV) .  Tami finished 
+; to spd_cdawlib_read_mycdf to accommodate "virtual variables" (VV) .  Tami finished 
 ; up the code and made corrections to several sections.  One new routine was
 ; written add_myCOMPONENTS, this routine is called when a valid virtual
 ; variable is found in order to add any additional variables needed for
@@ -1652,7 +1652,7 @@ end
 ; actual "IDL function" to call, ie. conv_pos.
 ;-------------------------------------------------------------------------
 
-FUNCTION spdf_read_mycdf, vnames, cnames, ALL=ALL,NODATASTRUCT=NODATASTRUCT, $
+FUNCTION spd_cdawlib_read_mycdf, vnames, cnames, ALL=ALL,NODATASTRUCT=NODATASTRUCT, $
                                      NOQUIET=NOQUIET,DEBUG=DEBUG, $
 				     TSTART=TSTART, TSTOP=TSTOP, $
 START_MSEC=START_MSEC, STOP_MSEC=STOP_MSEC, START_USEC=START_USEC, $ 
@@ -1667,7 +1667,7 @@ if (!version.release ge '8.0') then CDF_SET_VALIDATE, /no  ;turn off CDF validat
 
 CATCH,error_status
 if (error_status ne 0) then begin
-   print,!ERR_string ," Trapped in spdf_read_mycdf."; output description of error
+   print,!ERR_string ," Trapped in spd_cdawlib_read_mycdf."; output description of error
    print,'Error Index=',error_status
    ;also need to check for -123 for IDL 5.02, -98 is for IDL 4.01b - TJK 1/23/98
    ;added check for -134 out of memory in IDL5.3
@@ -1679,9 +1679,9 @@ if (error_status ne 0) then begin
       ;
       if(n_elements(mydata) ne 0) then begin
          atags=tag_names(mydata.(0))
-         b0 = spdf_tagindex('LOGICAL_SOURCE',atags)
-         b1 = spdf_tagindex('LOGICAL_FILE_ID',atags)
-         b2 = spdf_tagindex('Logical_file_id',atags)
+         b0 = spd_cdawlib_tagindex('LOGICAL_SOURCE',atags)
+         b1 = spd_cdawlib_tagindex('LOGICAL_FILE_ID',atags)
+         b2 = spd_cdawlib_tagindex('Logical_file_id',atags)
          if (b0[0] ne -1) then  psrce = strupcase(mydata.(0).LOGICAL_SOURCE)
          if (b1[0] ne -1) then $
             psrce = strupcase(strmid(mydata.(0).LOGICAL_FILE_ID,0,9))
@@ -1707,7 +1707,7 @@ need_timeslice = 0L ;initialize
 ; Validate cnames parameter, remove .cdf extensions if present
 s = size(cnames) & ns = n_elements(s)
 if (s[ns-2] eq 7) then begin
-   if (s[0] eq 0) then cnames = spdf_break_mystring(cnames,DELIMITER=',')
+   if (s[0] eq 0) then cnames = spd_cdawlib_break_mystring(cnames,DELIMITER=',')
    for i=0,n_elements(cnames)-1 do begin
       j=strpos(cnames[i],'.cdf') & if (j eq -1) then j=strpos(cnames[i],'.CDF')
       if (j ne -1) then cnames[i] = strmid(cnames[i],0,j)
@@ -1768,7 +1768,7 @@ orig_names = vnames
 ;	for nreq =0, n_elements(vnames)-1 do begin
 ;	    atmp = read_myMETADATA (vnames(nreq), CDFid)
 ;	    atags = tag_names (atmp)
-;	    b0 = spdf_tagindex ('DELTA_PLUS_VAR', atags)
+;	    b0 = spd_cdawlib_tagindex ('DELTA_PLUS_VAR', atags)
 ;	    if (b0(0) ne -1) then begin
 ;	       if (atmp.(b0(0)) ne '') then begin
 ;	          ; avoiding duplication:
@@ -1776,7 +1776,7 @@ orig_names = vnames
 ;	          if q(0) eq -1 then vnames=[vnames,atmp.(b0(0))]
 ;	       endif	  
 ;	    endif
-;	    b1 = spdf_tagindex ('DELTA_MINUS_VAR', atags)
+;	    b1 = spd_cdawlib_tagindex ('DELTA_MINUS_VAR', atags)
 ;	    if (b1(0) ne -1) then begin
 ;	       if (atmp.(b1(0)) ne '') then begin
 ;	          ; avoiding duplication:
@@ -1793,7 +1793,7 @@ orig_names = vnames
 ; Validate vnames parameter.  May be a strarr or single string
 s = size(vnames) & ns = n_elements(s)
 if (s[ns-2] eq 7) then begin
-   if (s[0] eq 0) then vnames = spdf_break_mystring(vnames,DELIMITER=',')
+   if (s[0] eq 0) then vnames = spd_cdawlib_break_mystring(vnames,DELIMITER=',')
 endif else begin
    print,'ERROR=variable names must be given as strings.' & return,-1
 endelse
@@ -1854,7 +1854,7 @@ for cx=0,n_elements(cnames)-1 do begin
             ;TJK 09/28/2001 add code to flag whether we're looking at an ISIS mission, if so set
             ; a flag that's used lower down.  We need to check here in the master instead of in
             ; the data cdfs because lots of data cdf's don't have a mission_group global attribute.
-	    b0 = spdf_tagindex ('MISSION_GROUP', atags)
+	    b0 = spd_cdawlib_tagindex ('MISSION_GROUP', atags)
 	    if (b0[0] ne -1) then begin
 	 	if ((strupcase(atmp.mission_group[0]) eq 'ISIS') or $
 	           (strupcase(atmp.mission_group[0]) eq 'ALOUETTE')) $
@@ -1864,7 +1864,7 @@ for cx=0,n_elements(cnames)-1 do begin
 ;TJK 11/23/2005 add logic to look for virtual depend variables related
 ;to "regular" variables... for some reason we haven't needed this till
 ;now!
-            b1 = spdf_tagindex ('DEPEND_0', atags)
+            b1 = spd_cdawlib_tagindex ('DEPEND_0', atags)
             if (b1[0] ne -1 ) then begin
 	       if (atmp.depend_0 ne '') then begin
 	           num = where(chkvv_dep eq atmp.depend_0, cnt)
@@ -1874,11 +1874,11 @@ for cx=0,n_elements(cnames)-1 do begin
                    endif
 	       endif
 	    endif
-            b1 = spdf_tagindex ('DEPEND_1', atags)
+            b1 = spd_cdawlib_tagindex ('DEPEND_1', atags)
             if (b1[0] ne -1 ) then begin
 	        atmp_dep1=atmp.depend_1
 		; RCJ 05/16/2013 ok, but if alt_cdaweb_depend_1 exists, use it instead:
-	        q=spdf_tagindex ('ALT_CDAWEB_DEPEND_1', atags)
+	        q=spd_cdawlib_tagindex ('ALT_CDAWEB_DEPEND_1', atags)
 		if q[0] ne -1 then if (atmp.alt_cdaweb_depend_1 ne '') then atmp_dep1=atmp.alt_cdaweb_depend_1
                 ;if (atmp.depend_1 ne '') then begin
                 if (atmp_dep1 ne '') then begin
@@ -1889,11 +1889,11 @@ for cx=0,n_elements(cnames)-1 do begin
                     endif
                 endif
             endif
-            b1 = spdf_tagindex ('DEPEND_2', atags)
+            b1 = spd_cdawlib_tagindex ('DEPEND_2', atags)
 	    if (b1[0] ne -1 ) then begin
 	        atmp_dep2=atmp.depend_2
 		; RCJ 05/16/2013 ok, but if alt_cdaweb_depend_1 exists, use it instead:
-	        q=spdf_tagindex ('ALT_CDAWEB_DEPEND_2', atags)
+	        q=spd_cdawlib_tagindex ('ALT_CDAWEB_DEPEND_2', atags)
 	        if q[0] ne -1 then if (atmp.alt_cdaweb_depend_2 ne '') then atmp_dep2=atmp.alt_cdaweb_depend_2 
 		;if (atmp.depend_2 ne '') then begin
 		if (atmp_dep2 ne '') then begin
@@ -1907,7 +1907,7 @@ for cx=0,n_elements(cnames)-1 do begin
 
 ;TJK 4/17/2008 adding check for deltas here otherwise those vars
 ;get thrown out below (needed this for voyager coho datasets
-            b1 = spdf_tagindex ('DELTA_PLUS_VAR', atags)
+            b1 = spd_cdawlib_tagindex ('DELTA_PLUS_VAR', atags)
 	    if (b1[0] ne -1 ) then begin
 	        if (atmp.delta_plus_var ne '') then begin
 	            num = where(chkvv_dep eq atmp.delta_plus_var, cnt)
@@ -1917,7 +1917,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	            endif
 	         endif
             endif
-            b1 = spdf_tagindex ('DELTA_MINUS_VAR', atags)
+            b1 = spd_cdawlib_tagindex ('DELTA_MINUS_VAR', atags)
 	    if (b1[0] ne -1 ) then begin
 	        if (atmp.delta_minus_var ne '') then begin
 	             num = where(chkvv_dep eq atmp.delta_minus_var, cnt)
@@ -1934,8 +1934,8 @@ for cx=0,n_elements(cnames)-1 do begin
 ;TJK 11/23/2005 - end of new section, back to original section looking
 ;                 for virtual variables w/in virtual variables
 
-	    b0 = spdf_tagindex ('VIRTUAL', atags)
-            c0 = spdf_tagindex ('COMPONENT_0', atags) ;add check for component_0 value as well
+	    b0 = spd_cdawlib_tagindex ('VIRTUAL', atags)
+            c0 = spd_cdawlib_tagindex ('COMPONENT_0', atags) ;add check for component_0 value as well
             ;look through metadata and look for virtual variables...
             ; get components of the virtual variables and add them to the vnames  
             ; array...
@@ -1960,7 +1960,7 @@ for cx=0,n_elements(cnames)-1 do begin
                   ; Check VV's depends for other VV's and add to list
                   ;TJK 11/98 added logic to only add the variable if it doesn't
                   ;already exist in the chkvv_dep list.
-                  b1 = spdf_tagindex ('DEPEND_0', atags)
+                  b1 = spd_cdawlib_tagindex ('DEPEND_0', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.depend_0 ne '') then begin
 	                num = where(chkvv_dep eq atmp.depend_0, cnt)
@@ -1971,11 +1971,11 @@ for cx=0,n_elements(cnames)-1 do begin
 	                endif
 	             endif
 	          endif
-	          b1 = spdf_tagindex ('DEPEND_1', atags)
+	          b1 = spd_cdawlib_tagindex ('DEPEND_1', atags)
 	          if (b1[0] ne -1 ) then begin
 	             atmp_dep1=atmp.depend_1
 		     ; RCJ 05/16/2013 ok, but if alt_cdaweb_depend_1 exists, use it instead:
-	             q=spdf_tagindex ('ALT_CDAWEB_DEPEND_1', atags)
+	             q=spd_cdawlib_tagindex ('ALT_CDAWEB_DEPEND_1', atags)
 		     if (q[0] ne -1) then if (atmp.alt_cdaweb_depend_1 ne '') then atmp_dep1=atmp.alt_cdaweb_depend_1 
 	             ;if (atmp.depend_1 ne '') then begin
                      if (atmp_dep1 ne '') then begin
@@ -1987,11 +1987,11 @@ for cx=0,n_elements(cnames)-1 do begin
 	                endif
 	             endif
 	          endif
-	          b1 = spdf_tagindex ('DEPEND_2', atags)
+	          b1 = spd_cdawlib_tagindex ('DEPEND_2', atags)
 	          if (b1[0] ne -1 ) then begin
 	             atmp_dep2=atmp.depend_2
 		     ; RCJ 05/16/2013 ok, but if alt_cdaweb_depend_2 exists, use it instead:
-	             q=spdf_tagindex ('ALT_CDAWEB_DEPEND_2', atags)
+	             q=spd_cdawlib_tagindex ('ALT_CDAWEB_DEPEND_2', atags)
 		     if (q[0] ne -1) then if (atmp.alt_cdaweb_depend_2 ne '') then atmp_dep2=atmp.alt_cdaweb_depend_2 
 	             ;if (atmp.depend_2 ne '') then begin
                      if (atmp_dep2 ne '') then begin
@@ -2005,7 +2005,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	          endif
                   ;TJK - 1/29/2001 add a check to see whether the component 
                   ; variables are virtual
-	          b1 = spdf_tagindex ('COMPONENT_0', atags)
+	          b1 = spd_cdawlib_tagindex ('COMPONENT_0', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.component_0 ne '') then begin
 	                num = where(chkvv_dep eq atmp.component_0, cnt)
@@ -2018,7 +2018,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	          endif
                   ;TJK - 1/27/2009 add a check to see whether the component_1
                   ; variables are virtual
-	          b1 = spdf_tagindex ('COMPONENT_1', atags)
+	          b1 = spd_cdawlib_tagindex ('COMPONENT_1', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.component_1 ne '') then begin
 	                num = where(chkvv_dep eq atmp.component_1, cnt)
@@ -2031,7 +2031,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	          endif
                   ;TJK - 1/27/2009 add a check to see whether the component_2 
                   ; variables are virtual
-	          b1 = spdf_tagindex ('COMPONENT_2', atags)
+	          b1 = spd_cdawlib_tagindex ('COMPONENT_2', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.component_2 ne '') then begin
 	                num = where(chkvv_dep eq atmp.component_2, cnt)
@@ -2042,7 +2042,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	                endif
 	             endif
 	          endif
-	          b1 = spdf_tagindex ('DELTA_PLUS_VAR', atags)
+	          b1 = spd_cdawlib_tagindex ('DELTA_PLUS_VAR', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.delta_plus_var ne '') then begin
 	                num = where(chkvv_dep eq atmp.delta_plus_var, cnt)
@@ -2052,7 +2052,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	                endif
 	             endif
 	          endif
-	          b1 = spdf_tagindex ('DELTA_MINUS_VAR', atags)
+	          b1 = spd_cdawlib_tagindex ('DELTA_MINUS_VAR', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.delta_minus_var ne '') then begin
 	                num = where(chkvv_dep eq atmp.delta_minus_var, cnt)
@@ -2078,13 +2078,13 @@ for cx=0,n_elements(cnames)-1 do begin
                add_myDELTAS, atmp, vnames ;TJK add this here because we have regular variables w/ delta
                                           ;not only virtual variables (3/20/2014)
 
-               b0 = spdf_tagindex ('VIRTUAL', atags)
+               b0 = spd_cdawlib_tagindex ('VIRTUAL', atags)
 ;TJK 11/6/2009 add check for component_0 in order to determine if virtual
 ;variable definition is for real or not.
 ;               if (b0[0] ne -1 ) then begin
 ;                  if (strlowcase(atmp.VIRTUAL) eq 'true') then begin
 
-               c0 = spdf_tagindex ('COMPONENT_0', atags) ;add check for component_0 value as well
+               c0 = spd_cdawlib_tagindex ('COMPONENT_0', atags) ;add check for component_0 value as well
                if ((b0[0] ne -1) and (c0[0] ne -1)) then begin
                   if ((strlowcase(atmp.VIRTUAL) eq 'true') and (atmp.COMPONENT_0 ne '')) then begin
 
@@ -2178,14 +2178,14 @@ for cx=0,n_elements(cnames)-1 do begin
            atmp = read_myATTRIBUTE(all_cdf_vars[nvar],afound[0],CDFid)
            ;this section finds all virtual variables in the data cdf
             atags = tag_names (atmp)
-	    b0 = spdf_tagindex ('VIRTUAL', atags)
+	    b0 = spd_cdawlib_tagindex ('VIRTUAL', atags)
 ;TJK 3/12/2010 added the following because it was wrong before... atags only has 
 ;the virtual tag in it not all tags for the given variable (unlike way
 ;above)... so get the component_0 info. and store in btmp, btags and use t0 below
 
             btmp = read_myATTRIBUTE(all_cdf_vars[nvar],bfound[0],CDFid)
             btags = tag_names (btmp)
-            t0 = spdf_tagindex ('COMPONENT_0', btags);add check for component_0 value as well
+            t0 = spd_cdawlib_tagindex ('COMPONENT_0', btags);add check for component_0 value as well
 
 
 ;TJK 11/6/2009 add check for component_0 in order to determine if virtual
@@ -2194,7 +2194,7 @@ for cx=0,n_elements(cnames)-1 do begin
 ;               if (strlowcase(atmp.VIRTUAL) eq 'true') then begin
 ;TJK 3/12/2010 - this check was wrong since atags only had "virtual"
 ;                in it - instead use t0 and btmp defined above
-;            c0 = spdf_tagindex ('COMPONENT_0', atags) ;add check for component_0 value as well
+;            c0 = spd_cdawlib_tagindex ('COMPONENT_0', atags) ;add check for component_0 value as well
 ;            if ((b0[0] ne -1) and (c0[0] ne -1)) then begin
 ;               if ((strlowcase(atmp.VIRTUAL) eq 'true') and (atmp.COMPONENT_0 ne '')) then begin
 
@@ -2531,9 +2531,9 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 ;			  v_stat='STATUS=Depend0 variable for variable '+vnames[vx]+$
 ;				' not found. CDAWeb support staff has been notified. '
 ;			  atags=tag_names(atmp)
-;			  b0 = spdf_tagindex('LOGICAL_SOURCE',atags)
-;			  b1 = spdf_tagindex('LOGICAL_FILE_ID',atags)
-;			  b2 = spdf_tagindex('Logical_file_id',atags)
+;			  b0 = spd_cdawlib_tagindex('LOGICAL_SOURCE',atags)
+;			  b1 = spd_cdawlib_tagindex('LOGICAL_FILE_ID',atags)
+;			  b2 = spd_cdawlib_tagindex('Logical_file_id',atags)
 ;			  if (b0[0] ne -1) then  psrce = strupcase(atmp.LOGICAL_SOURCE)
 ;			  if (b1[0] ne -1) then psrce = strupcase(strmid(atmp.LOGICAL_FILE_ID,0,9))
 ;			  if (b2[0] ne -1) then psrce = strupcase(strmid(atmp.Logical_file_id,0,9))
@@ -2628,12 +2628,12 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                                if keyword_set(DEBUG) then etime = systime(1)
 			       case size(epoch,/tname) of
 			          'LONG64': begin  ;TT2000 case
-				           valid_recs=where(cdf_epoch_compare(epoch, start_timett), rec_count)
+				           valid_recs=where(cdf_epoch_compare(epoch, start_timett, stop_timett), rec_count)
                                            ;print, '1st rec = ',valid_recs[0], 'last rec = ',valid_recs(n_elements(valid_recs)-1)
                                            if keyword_set(DEBUG) then print, 'Took ',systime(1)-etime, ' seconds to do cdf_epoch_compare'
 				    	   end
 			          'DCOMPLEX': begin ;Epoch16 case
-				           valid_recs=where(cdf_epoch_compare(epoch, start_time16), rec_count)
+				           valid_recs=where(cdf_epoch_compare(epoch, start_time16, stop_time16), rec_count)
                                            ;print, '1st rec = ',valid_recs[0], 'last rec = ',valid_recs(n_elements(valid_recs)-1)
                                            if keyword_set(DEBUG) then print, 'Took ',systime(1)-etime, ' seconds to do cdf_epoch_compare'
 				             end
@@ -2948,7 +2948,7 @@ endif
    ; It is possible that some of the variable names may be padded with blanks
    ; This will likely cause problems later, so trim any blanks around vnames.
       
-   ;TJK took out on 3/12/01 - because the spdf_replace_bad_chars function now
+   ;TJK took out on 3/12/01 - because the spd_cdawlib_replace_bad_chars function now
    ;replaces any non-acceptable characters w/ dollars signs instead of just
    ;removing them.
    ;for i=0,n_elements(vnames)-1 do vnames[i] = strtrim(vnames[i],2)
@@ -2986,7 +2986,7 @@ endif
          table_index = where(table.varname eq vnames[t], vcount)
       endif
       if (vcount ge 0) then begin
-         vnames[t] = spdf_replace_bad_chars(vnames[t], diff)
+         vnames[t] = spd_cdawlib_replace_bad_chars(vnames[t], diff)
          table.equiv[table_index[0]] = vnames[t] 
          ;set equiv to either the new changed name or the original
          ;if it doesn't contain any bad chars..
@@ -3086,8 +3086,8 @@ endif
             ttags = tag_names(burley)
             ; RCJ 11/28/00 added line below. vn_sdat still had bad characters in
             ; the variable names and the search for var_type was failing.
-            vn_sdat[vi] = spdf_replace_bad_chars(vn_sdat[vi], diff)
-            tindex = strtrim(string(spdf_tagindex(vn_sdat[vi],ttags)),2) ;convert to string
+            vn_sdat[vi] = spd_cdawlib_replace_bad_chars(vn_sdat[vi], diff)
+            tindex = strtrim(string(spd_cdawlib_tagindex(vn_sdat[vi],ttags)),2) ;convert to string
             ;comm=execute('var_type=burley.('+tindex+').var_type')
             var_type=burley.(tindex).var_type
             if(var_type eq 'data') then begin
@@ -3215,12 +3215,12 @@ endif
 
 for i = 0, num_virs do begin
    vtags = tag_names(burley)
-   ;vindex = spdf_tagindex(vir_vars.name[i], vtags) ; find the VV index number
-   vindex = spdf_tagindex(spdf_replace_bad_chars(vir_vars.name[i],diff), vtags) ; find the VV index number
+   ;vindex = spd_cdawlib_tagindex(vir_vars.name[i], vtags) ; find the VV index number
+   vindex = spd_cdawlib_tagindex(spd_cdawlib_replace_bad_chars(vir_vars.name[i],diff), vtags) ; find the VV index number
    if (vindex[0] ge 0) then begin
       vartags = tag_names(burley.(vindex))
-;      findex = spdf_tagindex('FUNCTION', vartags) ; find the FUNCTION index number
-      findex = spdf_tagindex('FUNCT', vartags) ; find the FUNCT index number
+;      findex = spd_cdawlib_tagindex('FUNCTION', vartags) ; find the FUNCTION index number
+      findex = spd_cdawlib_tagindex('FUNCT', vartags) ; find the FUNCT index number
       if (findex[0] ne -1) then begin ;found a virtual value w/ a function definition
          if keyword_set(DEBUG) then print,'VV function being called ',$
             strlowcase(burley.(vindex).(findex)), ' for variable ',vir_vars.name[i]
@@ -3336,7 +3336,7 @@ for i = 0, num_virs do begin
       endif ;if function defined for this virtual variable    
    endif ;found the tag index for this virtual variable
 endfor ; for number of virtual variables
- if keyword_set(DEBUG) then print, 'spdf_read_mycdf took ',systime(1)-ttime, ' seconds to generate VVs.'
+ if keyword_set(DEBUG) then print, 'spd_cdawlib_read_mycdf took ',systime(1)-ttime, ' seconds to generate VVs.'
 endif ;no virtual variable population 
 
 ;Add a check for variables that have var_type of data, but that the user didn't request.
@@ -3352,7 +3352,7 @@ var_stat = 0
 
 if (n_tags(burley) ne 0) then begin
    var_stat = check_myvartype(burley, orig_names)
-   if (var_stat ne 0) then print, 'spdf_read_mycdf, no data to plot/list.'
+   if (var_stat ne 0) then print, 'spd_cdawlib_read_mycdf, no data to plot/list.'
    ; RCJ 01/14/2013  Add keyword 'all' to call to merge_metadata:
    ;burley = merge_metadata(cnames, burley)
    burley = merge_metadata(cnames, burley, all=all)
@@ -3371,4 +3371,6 @@ endif
 Return, burley
 end
 
-
+pro spd_cdawlib_read_mycdf
+;do nothing
+end

@@ -35,8 +35,8 @@
 ; MODIFICATION HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-06-08 10:38:43 -0700 (Mon, 08 Jun 2015) $
-;$LastChangedRevision: 17825 $
+;$LastChangedDate: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
+;$LastChangedRevision: 17856 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -197,10 +197,10 @@ pro spd_spdfGetCdawebDataExec, $
     
     ; make a copy of localCdfNames that read_mycdf can alter
     localCdfNames2 = localCdfNames
-    cdfData = spdf_read_mycdf(varNames, localCdfNames2)
+    cdfData = spd_cdawlib_read_mycdf(varNames, localCdfNames2)
     
     (scope_varFetch(dataVarName, /enter, level=1)) = $
-      spdf_hsave_struct(cdfData, /nosave)
+      spd_cdawlib_hsave_struct(cdfData, /nosave)
       
     resultMsgLines = n_elements(varNames) + 1
     
@@ -699,14 +699,7 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
 
   COMPILE_OPT IDL2
   
-  RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
-  RESOLVE_ROUTINE, 'spdf_list_mystruct', /IS_FUNCTION, /COMPILE_FULL_FILE
-  RESOLVE_ROUTINE, 'spdf_break_mystring', /IS_FUNCTION, /COMPILE_FULL_FILE
-  RESOLVE_ROUTINE, 'spdf_read_mycdf', /IS_FUNCTION, /COMPILE_FULL_FILE
-  RESOLVE_ROUTINE, 'spdf_replace_bad_chars', /IS_FUNCTION, /COMPILE_FULL_FILE
-  RESOLVE_ROUTINE, 'spdf_tagindex', /IS_FUNCTION, /COMPILE_FULL_FILE
-  RESOLVE_ROUTINE, 'spdf_version', /IS_FUNCTION, /COMPILE_FULL_FILE
-  RESOLVE_ROUTINE, 'spdfCdawebChooser', /COMPILE_FULL_FILE
+  spd_cdawlib
   
   if ~keyword_set(!spedas) then spedas_init
   localdir = !spedas.TEMP_CDF_DIR

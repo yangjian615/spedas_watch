@@ -1,5 +1,5 @@
 ;+
-;PROCEDURE:  spdf_str_element, struct,  tagname, value
+;PROCEDURE:  spd_cdawlib_str_element, struct,  tagname, value
 ;PURPOSE:
 ; Find (or add) an element of a structure.
 ; This procedure will not
@@ -31,30 +31,30 @@
 ;
 ;Examples:
 ;    Does an element exist?
-;    spdf_str_element,my_str,'my_tag_name',SUCCESS=s
+;    spd_cdawlib_str_element,my_str,'my_tag_name',SUCCESS=s
 ;    What is an element's value?
-;    spdf_str_element,my_str,'my_tag_name',v
+;    spd_cdawlib_str_element,my_str,'my_tag_name',v
 ;    Add an element
-;    spdf_str_element,my_str,'my_tag_name','value',/add
+;    spd_cdawlib_str_element,my_str,'my_tag_name','value',/add
 ;    Add an element to embedded structure:
-;    spdf_str_element,my_str,'my_substr_name.my_tag_name','value',/add
+;    spd_cdawlib_str_element,my_str,'my_substr_name.my_tag_name','value',/add
 ;
 ;Modifications:
 ;  5/7/97: Added recursive searching of structure hierarchy.  D. Larson
 ;  2014-1-20 : Added mulidimensional elements for arrays of structures
 ;
 ;CREATED BY:    Davin Larson
-;FILE:  spdf_str_element.pro
+;FILE:  spd_cdawlib_str_element.pro
 ;VERSION  1.10
 ;LAST MODIFICATION: 01/10/08
 ; CREATED BY: Davin Larson
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2014-06-30 13:42:31 -0700 (Mon, 30 Jun 2014) $
-; $LastChangedRevision: 15467 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/spdfcdas/spd_cdawlib/spdf_str_element.pro $
+; $LastChangedDate: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
+; $LastChangedRevision: 17856 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/spdfcdas/spd_cdawlib/spd_cdawlib_str_element.pro $
 
 ;-
-pro spdf_str_element,struct,tagname,value,  $
+pro spd_cdawlib_str_element,struct,tagname,value,  $
    ADD_REPLACE = add_rep, $
    DELETE = delete, $
    CLOSEST = closest, $
@@ -93,10 +93,10 @@ n = index
 
 if pos ge 0 then begin          ; make recursive call
    if index ge 0 then new_struct= struct.(index)
-   spdf_str_element,new_struct,ext,value, index=i, success=success,  $
+   spd_cdawlib_str_element,new_struct,ext,value, index=i, success=success,  $
           add_rep=add_rep,delete=delete
    if keyword_set(add_rep) then $
-          spdf_str_element,struct,base_name,new_struct,/add_rep
+          spd_cdawlib_str_element,struct,base_name,new_struct,/add_rep
    index = [index,i]
    return
 endif
@@ -143,7 +143,7 @@ if keyword_set(add_rep) or keyword_set(delete) then begin
          V0 = reform(value,product(dim,/preserve),last_dim)
          V0 = reform( v0[*,0], dim)
       endif else if ndim_value eq 1 then v0 = value[0]
-      spdf_str_element,/add,s0,base_name,v0,delete=delete,index=nj
+      spd_cdawlib_str_element,/add,s0,base_name,v0,delete=delete,index=nj
 ;  help,nj,s0,v0,/st
       new_struct = make_array(value=s0,dim=dimen(struct))
       ntags = n_tags(new_struct)
@@ -151,13 +151,13 @@ if keyword_set(add_rep) or keyword_set(delete) then begin
 ;      old_tags = tag_names(struct)
       for i=0,ntags-1 do begin
 ;         if i ne delete_var then begin                                     ;  NOTE: this routine still has a bug with the delete keyword
-           spdf_str_element,s0,tags[i],index=j
+           spd_cdawlib_str_element,s0,tags[i],index=j
            if i eq nj then new_value = value else new_value=struct.(j)
-;           spdf_str_element,s0,old_tags[i],index=j
+;           spd_cdawlib_str_element,s0,old_tags[i],index=j
            new_struct.(i) = new_value
 ;         endif
       endfor
-;      spdf_str_element,s0,base_name,index=j
+;      spd_cdawlib_str_element,s0,base_name,index=j
 ;      if not keyword_set(delete) then new_struct.(j) = value
       struct=new_struct
     endif else begin

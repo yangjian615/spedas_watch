@@ -1,8 +1,8 @@
 ;$Author: nikos $
-;$Date: 2014-03-07 11:23:39 -0800 (Fri, 07 Mar 2014) $
-;$Header: /home/cdaweb/dev/control/RCS/spdf_tagindex.pro,v 1.4 2012/05/02 21:29:57 johnson Exp johnson $
+;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
+;$Header: /home/cdaweb/dev/control/RCS/spd_cdawlib_tagindex.pro,v 1.4 2012/05/02 21:29:57 johnson Exp johnson $
 ;$Locker: johnson $
-;$Revision: 14512 $
+;$Revision: 17856 $
 ; Search the tnames array for the instring, returning the index in tnames
 ; if it is present, or -1 if it is not.
 ;
@@ -11,7 +11,7 @@
 ;All Rights Reserved.
 ;
 ;------------------------------------------------------------------
-FUNCTION spdf_tagindex, instring, tnames
+FUNCTION spd_cdawlib_tagindex, instring, tnames
 ;TJK 3/7/2000 change this to strip instring of any blanks since
 ;its possible that a variable name can have trialing blanks in it (new
 ;cdaw9 cdfs).

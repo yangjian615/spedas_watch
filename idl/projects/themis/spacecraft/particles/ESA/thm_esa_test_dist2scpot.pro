@@ -24,11 +24,12 @@
 ;HISTORY:
 ; 31-may-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-06-08 12:48:28 -0700 (Mon, 08 Jun 2015) $
-; $LastChangedRevision: 17829 $
+; $LastChangedDate: 2015-06-12 11:07:57 -0700 (Fri, 12 Jun 2015) $
+; $LastChangedRevision: 17858 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_test_dist2scpot.pro $
+;-
 
-Pro thm_esa_test_dist2scpot, date, probe, no_init = no_init, random_dp = random_dp
+Pro thm_esa_test_dist2scpot, date, probe, no_init = no_init, random_dp = random_dp, plot = plot, _extra=_extra
 
   If(~keyword_set(no_init)) Then Begin
      del_data, '*'

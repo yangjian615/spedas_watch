@@ -24,8 +24,8 @@
 ;   
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-13 11:46:39 -0700 (Wed, 13 May 2015) $
-;$LastChangedRevision: 17589 $
+;$LastChangedDate: 2015-06-12 11:30:44 -0700 (Fri, 12 Jun 2015) $
+;$LastChangedRevision: 17861 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_align_phi.pro $
 ;-
 
@@ -42,7 +42,7 @@ pro thm_pgs_align_phi, data
   cphi = complex(a,b)
 
   ;average in complex space to avoid 0=360 discontinuity
-  cmean = mean(cphi, dimension=1)
+  cmean = total(cphi, 1) / dimen1(cphi)
   cmean = cmean ## replicate(1,dimen1(data.phi))
  
   ;normalize complex mean so we can compare angular distances

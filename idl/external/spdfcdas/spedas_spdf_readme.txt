@@ -1,45 +1,75 @@
-This directory contains the following:
+*** 0. Description *** 
 
-1. spdfcdas - 25 Files
+This directory contains three types of files:
+- spdfcdas files (25 files)
+- cdawlib files (9 files)
+- files created by the SPEDAS team (4 files total)
+
+Files in this directory are required by the SPEDAS spd_spdfCdawebChooser.pro.
+Parts of the spdfCdawebChooser.pro file were used in spd_spdfCdawebChooser. 
+File spdfCdawebChooser.pro was created by SPDF (and it should work when it is called directly).
+
+In the following, we list the modifications we made to the original spdfcdas+cdawlib files. 
+
+
+*** 1. spdfcdas file - 25 Files *** 
 
 Release 1.7.10.7 of the CDAS Web Services IDL Library
 <http://cdaweb.gsfc.nasa.gov/WebServices/REST/CdasIdlLibrary.html> 
 that was deployed on March 27, 2014
 
+Local changes: 
 Add the following to spdfcdawebchooser.pro: 
-RESOLVE_ROUTINE, 'spdf_virtual_funcs', /COMPILE_FULL_FILE
+RESOLVE_ROUTINE, 'spd_cdawlib_virtual_funcs', /COMPILE_FULL_FILE
 also, commended tvimage since there is already a SPEDAS function with this name
 
-2. spdf_cdawlib - 9 files
+
+*** 2. spd_cdawlib file - 9 files (plus 3 files created by SPEDAS) *** 
 
 Modified version of CDAWlib
 release 2014/03/16 
 ftp://cdaweb.gsfc.nasa.gov/pub/software/cdawlib/source/
 
-Modifications are the following:
-a. Added spdf_ in front of the file names and changed any caps to lowercase
-b. Changed the main function of each file to match the filename 
-c. Added pro spdf_virtual_funcs at the end of spdf_virtual_funcs.pro
-b. Removed pro BREAK_MYSTRING from spdf_read_mycdf.pro since there is already a separate file with this
 
-Add the following to spdf_virtual_funcs.pro:
-pro spdf_virtual_funcs 
+*** 3. CDWlib file modifications *** 
+
+Modifications are the following:
+a. Added the spd_cdawlib_ prefix in front of the file names and changed any caps to lowercase.
+b. Changed the main function of each file to match the filename. 
+c. Added an empty pro spd_cdawlib_virtual_funcs at the end of spd_cdawlib_virtual_funcs.pro and similarly to other files that do not contain a main function or pro.
+b. Removed pro BREAK_MYSTRING from spd_cdawlib_read_mycdf.pro since there is already a separate file for this.
+
+Add the following to spd_cdawlib_virtual_funcs.pro:
+pro spd_cdawlib_virtual_funcs 
+; do nothing
 end
 
-3. For all the above files (25+9) the following text was replaced
-for all occurrences (when spdf_ was not already present):
 
-Before After
+*** 4. Replace strings *** 
+
+For all the above files (25+9) the following text was replaced
+for all occurrences (when spd_cdawlib_ was not already present):
+
+Before -> After
 	
-plotmaster    spdf_plotmaster
-read_mycdf    spdf_read_mycdf
-hsave_struct    spdf_hsave_struct
-list_mystruct    spdf_list_mystruct
-tagindex    spdf_tagindex
-break_mystring    spdf_break_mystring
-replace_bad_chars    spdf_replace_bad_chars
-virtual_funcs	spdf_virtual_funcs
-version    spdf_version (with care, only in spdfcdawebchooser.pro is needed)
+plotmaster    spd_cdawlib_plotmaster
+read_mycdf    spd_cdawlib_read_mycdf
+hsave_struct    spd_cdawlib_hsave_struct
+list_mystruct    spd_cdawlib_list_mystruct
+tagindex    spd_cdawlib_tagindex
+break_mystring    spd_cdawlib_break_mystring
+replace_bad_chars    spd_cdawlib_replace_bad_chars
+virtual_funcs	spd_cdawlib_virtual_funcs
+version    spd_cdawlib_version (with care, this is needed only in spdfcdawebchooser.pro, don't do a global replace)
+
+
+*** 5. SPEDAS files *** 
+
+Files created by SPEDAS:
+spedas_spdf_readme.txt
+spd_cdawlib_str_element.pro
+spd_cdawlib.pro
+spd_cdawlib_readme.txt
 
 
 

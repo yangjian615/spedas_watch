@@ -25,8 +25,8 @@
 ;       TAVG:         Time averaging of when using ENERGY keyword.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-11 11:36:24 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17553 $
+; $LastChangedDate: 2015-06-12 12:35:07 -0700 (Fri, 12 Jun 2015) $
+; $LastChangedRevision: 17862 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_specplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2015-05-06
@@ -60,7 +60,7 @@ pro mvn_swe_specplot, trange=trange, orbit=orbit, units=units, energy=energy, ta
   ok = 0
   while (not ok) do begin
     mvn_swe_load_l2, tsp, /spec
-    mvn_swe_sumplot, /loadonly
+    mvn_swe_sumplot, /loadonly, eunits=units
     get_data,'swe_a4',data=spec,index=j
     if (j gt 0) then begin
       x = spec.x
@@ -80,7 +80,7 @@ pro mvn_swe_specplot, trange=trange, orbit=orbit, units=units, energy=energy, ta
     tsp += oneday
     mvn_swe_load_l2, tsp, /spec
     store_data,'swe_a4',/delete
-    mvn_swe_sumplot, /loadonly
+    mvn_swe_sumplot, /loadonly, eunits=units
     get_data,'swe_a4',data=spec,index=j
     if (j gt 0) then begin
       x = [temporary(x), spec.x]

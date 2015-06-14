@@ -19,7 +19,7 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
   ;if strmatch(diff,'unchanged') then begin
   if same then begin
     msg = "The FOM structure has not been modified at all."
-    msg = [msg,'Woud you still like to submit?']
+    msg = [msg,'Would you still like to submit?']
     msg = [msg,' ']
     msg = [msg,'If you want to submit a back-structure,']
     msg = [msg,'please log-in as a Super-SITL and enable']

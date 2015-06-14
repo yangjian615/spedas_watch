@@ -112,7 +112,7 @@ return, b
 end
 ;
 ;12/13/2006 - TJK moved parse_mydepend0 out of this file to its own
-;file (w/ same name so that it can be called by spdf_read_mycdf.pro
+;file (w/ same name so that it can be called by spd_cdawlib_read_mycdf.pro
 ;
 
 ;----------------------------------------------------------------------------
@@ -504,11 +504,11 @@ if(sz eq 2) then begin
 ;      endelse   
 
 ;assign lab to lablaxis initially
-      if (spdf_tagindex('LABLAXIS',tag_names(a.(i))) ne -1) then begin
+      if (spd_cdawlib_tagindex('LABLAXIS',tag_names(a.(i))) ne -1) then begin
          lab=strupcase(a.(i).lablaxis)
       endif
 ;if labl_ptr_1 existing and isn't blank then use it instead
-      if (spdf_tagindex('LABL_PTR_1',tag_names(a.(i))) ne -1) then begin
+      if (spd_cdawlib_tagindex('LABL_PTR_1',tag_names(a.(i))) ne -1) then begin
        if(a.(i).labl_ptr_1(0) ne '') then lab=strupcase(a.(i).labl_ptr_1) 
       endif
     
@@ -525,11 +525,11 @@ if(sz eq 2) then begin
 	 ;
          ; RTB added code 3/98
          temp_names=tag_names(a)
-         z=spdf_tagindex(depend1,temp_names)
+         z=spd_cdawlib_tagindex(depend1,temp_names)
          if(z[0] ne -1) then begin
                 lab=a.(z[0]).labl_ptr_1 
          endif else begin
-                print, depend1, ' not found (ListImage section of spdf_list_mystruct).'
+                print, depend1, ' not found (ListImage section of spd_cdawlib_list_mystruct).'
          endelse
          if(lab[0] eq '') then begin
             ; RTB  3/98 
@@ -551,11 +551,11 @@ if(sz eq 4) then begin
                    label=a.(i).fieldnam
 
       ;assign lab to lablaxis initially
-      if (spdf_tagindex('LABLAXIS',tag_names(a.(i))) ne -1) then begin
+      if (spd_cdawlib_tagindex('LABLAXIS',tag_names(a.(i))) ne -1) then begin
          lab=strupcase(a.(i).lablaxis)
       endif
       ;if labl_ptr_1 existing and isn't blank then use it instead
-      if (spdf_tagindex('LABL_PTR_1',tag_names(a.(i))) ne -1) then begin
+      if (spd_cdawlib_tagindex('LABL_PTR_1',tag_names(a.(i))) ne -1) then begin
        if(a.(i).labl_ptr_1(0) ne '') then lab=strupcase(a.(i).labl_ptr_1) 
       endif
     
@@ -607,7 +607,7 @@ if(sz le 1) then begin
    if(a.(i).units ne '') then units=a.(i).units else begin
       ; RCJ 04/18/2003 'units' or 'unit_ptr' are *required* var attributes according to the
       ; ISTP guidelines but some cdfs come w/ neither of them, so here's a test:
-      z=spdf_tagindex('unit_ptr',tag_names(a.(i))) 
+      z=spd_cdawlib_tagindex('unit_ptr',tag_names(a.(i))) 
       if z[0] ne -1 then unts=a.(i).unit_ptr else unts=''
       units=unts[k]
    endelse   
@@ -627,7 +627,7 @@ if(sz eq 2) then begin
          ; RCJ 02/25/2004 'units' or 'unit_ptr' are *required* var attributes according to the
          ; ISTP guidelines but some cdfs come w/ neither of them, so here's the same
          ; test as above:
-         z=spdf_tagindex('unit_ptr',tag_names(a.(i))) 
+         z=spd_cdawlib_tagindex('unit_ptr',tag_names(a.(i))) 
          if z[0] ne -1 then unts=a.(i).unit_ptr else unts=''
          ;unts=a.(i).unit_ptr
          ;print,'this is units = ',unts,' and k = ', k
@@ -647,7 +647,7 @@ if(sz eq 4) then begin
          ; RCJ 02/25/2004 'units' or 'unit_ptr' are *required* var attributes according to the
          ; ISTP guidelines but some cdfs come w/ neither of them, so here's the same
          ; test as above:
-         z=spdf_tagindex('unit_ptr',tag_names(a.(i))) 
+         z=spd_cdawlib_tagindex('unit_ptr',tag_names(a.(i))) 
          if z[0] ne -1 then unts=a.(i).unit_ptr else unts=''
       endelse 
       ;if (n_elements(unts) gt 1) then units=unts[k] else units=unts[0]
@@ -715,31 +715,31 @@ for i=0L, ntags-5 do begin
       ;
       temp_names=tag_names(a)
       ; RTB added code 3/98
-      z=spdf_tagindex(depend1,temp_names)
+      z=spd_cdawlib_tagindex(depend1,temp_names)
       ;
       ; RCJ 05/24/2012 If a.(z[0]).dat does not exist, the execute command
       ;   a few lines further down will fail and throw out an error.
       ;   Let's try to make dep?_cmd="" and same for frm?_cmd
       ;
       ;if(z[0] ne -1) then dep1_cmd='dep1=a.(z[0]).dat' else $
-      ;         print, depend1, ' not found(ListImage section of spdf_list_mystruct).'
+      ;         print, depend1, ' not found(ListImage section of spd_cdawlib_list_mystruct).'
       ;if(z[0] ne -1) then frm1_cmd='frm1=a.(z[0]).format' else $
-      ;         print, depend1, ' not found (ListImage section of spdf_list_mystruct).'
+      ;         print, depend1, ' not found (ListImage section of spd_cdawlib_list_mystruct).'
       if(z[0] ne -1) then dep1=a.(z[0]).dat else dep1=""
       if(z[0] ne -1) then frm1=a.(z[0]).format else frm1=""
       ; RTB added code 3/98
       ; RCJ 12/99 changed z -> zz, otherwise energy and angle will have 
       ;the same values when the commands are executed
       ;
-      zz=spdf_tagindex(depend2,temp_names)
+      zz=spd_cdawlib_tagindex(depend2,temp_names)
       ;if(zz[0] ne -1) then dep2_cmd='dep2=a.(zz[0]).dat' else $
-      ;         print, depend2, ' not found (ListImage section of spdf_list_mystruct).'
+      ;         print, depend2, ' not found (ListImage section of spd_cdawlib_list_mystruct).'
       ;if(zz[0] ne -1) then frm2_cmd='frm2=a.(zz[0]).format' else $
-      ;         print, depend2, ' not found (ListImage section of spdf_list_mystruct).'
+      ;         print, depend2, ' not found (ListImage section of spd_cdawlib_list_mystruct).'
       if(zz[0] ne -1) then dep2=a.(zz[0]).dat else dep2=""
       if(zz[0] ne -1) then frm2=a.(zz[0]).format else frm2=""
       if (a.(i).var_notes eq 'ListImage3D') then begin
-         zz=spdf_tagindex(depend3,temp_names)
+         zz=spd_cdawlib_tagindex(depend3,temp_names)
          if(zz[0] ne -1) then dep3=a.(zz[0]).dat else dep3=""
          if(zz[0] ne -1) then frm3=a.(zz[0]).format else  frm3=""
       endif
@@ -1833,7 +1833,7 @@ if(error_status ne 0) then begin
 endif
 ;
 tagnames=tag_names(b)
-v1=spdf_tagindex(depd0,tagnames)
+v1=spd_cdawlib_tagindex(depd0,tagnames)
 if(n_elements(handle) eq 0) then handle=0
 
 if(handle eq 0) then begin
@@ -1931,13 +1931,13 @@ return, eptmp
 end 
 
 ;+ 
-; NAME:  spdf_list_mystruct.pro
+; NAME:  spd_cdawlib_list_mystruct.pro
 ;
 ; PURPOSE:  Generates a list output for CDAWweb
 ;
 ; CALLING SEQUENCE:
 ;
-; FUNCTION spdf_list_mystruct, a,NOGATT=nogatt,NOVATT=novatt,NORV=norv,$
+; FUNCTION spd_cdawlib_list_mystruct, a,NOGATT=nogatt,NOVATT=novatt,NORV=norv,$
 ;                         NONRV=nonrv,NO2DRV=no2drv,FILENAME=filename,$
 ;                         TSTART=TSTART,TSTOP=TSTOP,MAXRECS=maxrecs
 ;  
@@ -1972,7 +1972,7 @@ end
 ;
 ;------------------------------------------------------------------
 ;
-FUNCTION spdf_list_mystruct, a,NOGATT=nogatt,NOVATT=novatt,NORV=norv,$
+FUNCTION spd_cdawlib_list_mystruct, a,NOGATT=nogatt,NOVATT=novatt,NORV=norv,$
                         NONRV=nonrv,NO2DRV=no2drv,FILENAME=filename,$
                         TSTART=TSTART,TSTOP=TSTOP, START_msec=start_msec, STOP_msec=stop_msec,$
 			MAXRECS=maxrecs, SEC_OF_YEAR=sec_of_year, $
@@ -2012,7 +2012,7 @@ if(n_elements(DEBUG) eq 0) then debugflag=1L else debugflag=0L
 ; Establish error handler
 catch, error_status
 if(error_status ne 0) then begin
-   print, 'ERROR=Error number: ',error_status,' in listing (spdf_list_mystruct).'
+   print, 'ERROR=Error number: ',error_status,' in listing (spd_cdawlib_list_mystruct).'
    print, 'ERROR=Error Message: ', !ERR_STRING
    if(error_status eq -98) then begin
       if reportflag then printf, 1, 'STATUS=Data space too large. Cannot currently list these data.'
@@ -2058,12 +2058,12 @@ if(str_tst[str_tst[0]+1] ne 8) then begin
    print, v_stat
    return, 0
 endif else begin
-   ; Test for errors trapped in spdf_read_mycdf
+   ; Test for errors trapped in spd_cdawlib_read_mycdf
    atags=tag_names(a)
-   rflag=spdf_tagindex('DATASET',atags)
+   rflag=spd_cdawlib_tagindex('DATASET',atags)
    if(rflag[0] ne -1) then begin
       print, a.DATASET
-      ;    print, a.ERROR    1/97 spdf_read_mycdf change
+      ;    print, a.ERROR    1/97 spd_cdawlib_read_mycdf change
       print, a.STATUS
       return, 0
    endif
@@ -2108,7 +2108,7 @@ if(data_set eq '') then begin
    ;data_set=strmid(a.(0).LOGICAL_FILE_ID,0,9)
    ; RCJ 06/27/2013 Logical_file_id is a required attribute but it may not be there
    ;    so I added this test:
-   s=spdf_tagindex('LOGICAL_FILE_ID',tag_names(a.(0)))
+   s=spd_cdawlib_tagindex('LOGICAL_FILE_ID',tag_names(a.(0)))
    if s[0] ne -1 then begin
       s=strsplit(a.(0).LOGICAL_FILE_ID,'_',/extract)
       if n_elements(s) gt 1 then begin  ; only continue if '_' exists in logical_file_id
@@ -2161,11 +2161,11 @@ for mega_loop=1, mega.num do begin
    incep=-1
    incep=where(namest eq depend0,w)
    ; Remove any nasty variables
-   v1=spdf_tagindex(depend0,namest)
+   v1=spd_cdawlib_tagindex(depend0,namest)
    if(v1[0] ne -1) then begin
       station=a.(v1[0]).source_name 
       station=strmid(station,0,4)
-      v1=spdf_tagindex('delay_time',namest)
+      v1=spd_cdawlib_tagindex('delay_time',namest)
       ;if((station eq "ISIS") and (v1[0] ne -1)) then a.DELAY_TIME.var_type="metadata"
       if (((station eq "ISIS")or(station eq "ALOU")) and (v1[0] ne -1)) then a.DELAY_TIME.var_type="metadata"
    endif else begin
@@ -2285,7 +2285,7 @@ for mega_loop=1, mega.num do begin
 
    ; Reorder structue
    b_tagnames=tag_names(b)
-   v1=spdf_tagindex(depend0,b_tagnames)
+   v1=spd_cdawlib_tagindex(depend0,b_tagnames)
    if(v1[0] eq -1) then begin
       print, 'ERROR= No tag found for DEPEND0'
       return, -1
@@ -2476,12 +2476,12 @@ for mega_loop=1, mega.num do begin
    cols = 0 & d1cols = 0 & d2cols = 0 & d3cols = 0
    b_tagnames=tag_names(b)
    ;Find the number of records
-   idx = spdf_tagindex(depend0,b_tagnames)
+   idx = spd_cdawlib_tagindex(depend0,b_tagnames)
    var_size = size(b.(idx).dat)
    n_recs = var_size[1]
 
    for vars = 0, n_elements(dep1_values)-1 do begin
-	var_idx = spdf_tagindex(dep1_values[vars],b_tagnames)
+	var_idx = spd_cdawlib_tagindex(dep1_values[vars],b_tagnames)
         if (var_idx ge 0) then begin 
 	  var_size = size(b.(var_idx).dat)
 	  if (strupcase(b.(var_idx).var_type) eq 'SUPPORT_DATA') then begin
@@ -2495,7 +2495,7 @@ for mega_loop=1, mega.num do begin
    endfor
 
    for vars = 0, n_elements(dep2_values)-1 do begin
-	var_idx = spdf_tagindex(dep2_values[vars],b_tagnames)
+	var_idx = spd_cdawlib_tagindex(dep2_values[vars],b_tagnames)
         if (var_idx ge 0) then begin 
 	  var_size = size(b.(var_idx).dat)
 	  if (strupcase(b.(var_idx).var_type) eq 'SUPPORT_DATA') then begin
@@ -2509,7 +2509,7 @@ for mega_loop=1, mega.num do begin
 ;	  print, 'DEBUG DEP2 Cols = ',d2cols
    endfor
    for vars = 0, n_elements(dep3_values)-1 do begin
-	var_idx = spdf_tagindex(dep3_values[vars],b_tagnames)
+	var_idx = spd_cdawlib_tagindex(dep3_values[vars],b_tagnames)
         if (var_idx ge 0) then begin 
 	  var_size = size(b.(var_idx).dat)
 	  if (strupcase(b.(var_idx).var_type) eq 'SUPPORT_DATA') then begin
@@ -3034,4 +3034,6 @@ close,1
 free_lun, unit
 
 end
-
+pro spd_cdawlib_list_mystruct
+; do nothing
+end

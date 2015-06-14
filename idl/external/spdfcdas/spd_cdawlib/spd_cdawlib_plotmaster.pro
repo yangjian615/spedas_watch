@@ -1,17 +1,17 @@
 ;$author: baldwin $
-;$Date: 2015-06-11 12:33:46 -0700 (Thu, 11 Jun 2015) $
-;$Header: /home/cdaweb/dev/control/RCS/spdf_plotmaster.pro,v 1.289 2014/03/18 17:56:40 kovalick Exp kovalick $
+;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
+;$Header: /home/cdaweb/dev/control/RCS/spd_cdawlib_plotmaster.pro,v 1.289 2014/03/18 17:56:40 kovalick Exp kovalick $
 ;$Locker: kovalick $
-;$Revision: 17852 $ 
+;$Revision: 17856 $ 
 ;+------------------------------------------------------------------------
-; NAME: spdf_plotmaster
+; NAME: spd_cdawlib_plotmaster
 ; PURPOSE: To plot the data given in 1 to 10 anonymous structure of the type
-;          returned by the spdf_read_mycdf function.  This function determines
+;          returned by the spd_cdawlib_read_mycdf function.  This function determines
 ;          the plot type for each variable, and generates the plot.
 ; CALLING SEQUENCE:
-;       out = spdf_plotmaster(a,[more_structures])
+;       out = spd_cdawlib_plotmaster(a,[more_structures])
 ; INPUTS:
-;       a = structure returned by the spdf_read_mycdf procedure.
+;       a = structure returned by the spd_cdawlib_read_mycdf procedure.
 ;
 ; KEYWORD PARAMETERS:
 ;   TSTART =  String of the form '1996/01/02 12:00:00' or a DOUBLE CDF_EPOCH
@@ -59,7 +59,7 @@
 ;    CDAWEB
 ;    Set this keyword to force the margin on the right side of time series 
 ;    plots to be 100 pixels. This is the same margin used for spectrograms 
-;    for the color bar. By default, spdf_plotmaster will examine the data, and if 
+;    for the color bar. By default, spd_cdawlib_plotmaster will examine the data, and if 
 ;    ANY spectrograms will be produced, then it will align the margins 
 ;    properly. This keyword is only necessary for use in the CDAWeb system.
 ;
@@ -85,7 +85,7 @@
 ;
 ;    FRAME
 ;    Used to indicate the frame number within a series of images. If you 
-;    specify FRAME = 2, then spdf_plotmaster will produce a "full size" version 
+;    specify FRAME = 2, then spd_cdawlib_plotmaster will produce a "full size" version 
 ;    of the 3rd image in a sequence of images.
 ;
 ;       COMBINE  = if set, all time series and spectrogram plots will be
@@ -127,7 +127,7 @@
 ;Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
 ;
 ;-------------------------------------------------------------------------
-FUNCTION spdf_plotmaster, a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,$
+FUNCTION spd_cdawlib_plotmaster, a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,$
 		     a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,$
 		     a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,$
                      COMBINE=COMBINE,PANEL_HEIGHT=PANEL_HEIGHT,$
@@ -277,9 +277,9 @@ for i=0,n_params()-1 do begin ; process each structure parameter
       v_stat='STATUS=Cannot plot this data'
       a=create_struct('DATASET',v_data,'ERROR',v_err,'STATUS',v_stat)
    endif else begin  
-      ; Test for errors trapped in spdf_read_mycdf
+      ; Test for errors trapped in spd_cdawlib_read_mycdf
       atags=tag_names(a)
-      rflag=spdf_tagindex('DATASET',atags)
+      rflag=spd_cdawlib_tagindex('DATASET',atags)
       if(rflag[0] ne -1) then ibad=1 
    endelse
    ;
@@ -995,7 +995,7 @@ for i=0,n_elements(PS)-1 do begin
          s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Get the index of the time variable associated with variable to be plotted
-      b = a.(PS[i].vnum).DEPEND_0 & c = spdf_tagindex(b[0],tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_0 & c = spd_cdawlib_tagindex(b[0],tag_names(a))
       ; Produce debug output if requested
       if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as time series.'
       ;****** TJK adding code for handling the parsing of the DISPLAY_TYPE attribute 
@@ -1008,13 +1008,13 @@ for i=0,n_elements(PS)-1 do begin
       Yvar = (a.(PS[i].vnum))
       t = size(Yvar)
       if (t[n_elements(t)-2] ne 8) then begin
-         print,'ERROR=input to spdf_plotmaster not a structure' & return,-1
+         print,'ERROR=input to spd_cdawlib_plotmaster not a structure' & return,-1
       endif else begin
 	 YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
-         t = spdf_tagindex('DAT',YTAGS)
+         t = spd_cdawlib_tagindex('DAT',YTAGS)
          if (t[0] ne -1) then THEDATA = Yvar.DAT $
   	 else begin
-    	    t = spdf_tagindex('HANDLE',YTAGS)
+    	    t = spd_cdawlib_tagindex('HANDLE',YTAGS)
      	    if (t[0] ne -1) then handle_value,Yvar.HANDLE,THEDATA $
     	    else begin
       	       print,'ERROR=Yvariable does not have DAT or HANDLE tag' & return,-1
@@ -1023,7 +1023,7 @@ for i=0,n_elements(PS)-1 do begin
       endelse
       datasize = size(thedata)
       ; Determine if the display type variable attribute is present
-      d = spdf_tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
+      d = spd_cdawlib_tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
       if (d[0] ne -1) then begin
 	;TJK 5/14/2001 - added two "keywords" to the display_type syntax for time_series, scatter and noauto
 	; to allow for scatter plots vs. line plots and no auto scaling (use the values specified in
@@ -1121,8 +1121,8 @@ for i=0,n_elements(PS)-1 do begin
       ;
       ;Find out if we are supposed to use error bars:
       tags=tag_names(a.(PS[i].vnum))
-      err_p=spdf_tagindex('DELTA_PLUS_VAR',tags)
-      err_m=spdf_tagindex('DELTA_MINUS_VAR',tags)
+      err_p=spd_cdawlib_tagindex('DELTA_PLUS_VAR',tags)
+      err_m=spd_cdawlib_tagindex('DELTA_MINUS_VAR',tags)
       if ((err_p[0] ne -1) and (err_m[0] ne -1)) then begin
          ; get the names
          err_p=a.(PS[i].vnum).(err_p[0])
@@ -1133,14 +1133,14 @@ for i=0,n_elements(PS)-1 do begin
 	    ; RCJ 04/22/2003  'vnames' was here instead of 'tag_names(a)'
 	    ; but vnames will be the tag names of the *last* structure a
 	    ; read during another loop above.
-	    err_p1=spdf_tagindex(spdf_replace_bad_chars(err_p[0]),tag_names(a))
-	    err_m1=spdf_tagindex(spdf_replace_bad_chars(err_m[0]),tag_names(a))
+	    err_p1=spd_cdawlib_tagindex(spd_cdawlib_replace_bad_chars(err_p[0]),tag_names(a))
+	    err_m1=spd_cdawlib_tagindex(spd_cdawlib_replace_bad_chars(err_m[0]),tag_names(a))
 	    if a.(err_p1).var_type eq 'additional_data' then $
 	       err_p=-1 else $
-	       err_p=spdf_tagindex(spdf_replace_bad_chars(err_p[0]),tag_names(a))   
+	       err_p=spd_cdawlib_tagindex(spd_cdawlib_replace_bad_chars(err_p[0]),tag_names(a))   
 	    if a.(err_m1).var_type eq 'additional_data' then $
 	       err_m=-1 else $
-	       err_m=spdf_tagindex(spdf_replace_bad_chars(err_m[0]),tag_names(a))
+	       err_m=spd_cdawlib_tagindex(spd_cdawlib_replace_bad_chars(err_m[0]),tag_names(a))
 	 endif else begin ; RCJ 02/08/2005 Added this so the test below will work.
 	    err_m=-1 & err_p=-1
 	 endelse   
@@ -1269,15 +1269,15 @@ for i=0,n_elements(PS)-1 do begin
          s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Determine default x and y variable from depend attributes
-      b = a.(PS[i].vnum).DEPEND_0 & c = spdf_tagindex(b[0],tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_0 & c = spd_cdawlib_tagindex(b[0],tag_names(a))
       b = a.(PS[i].vnum).DEPEND_1 
       ; RCJ 05/16/2013 If alt_cdaweb_depend_1 exists use it instead:
-      if (spdf_tagindex('ALT_CDAWEB_DEPEND_1',tag_names(a.(PS[i].vnum)))) ne -1 then $
+      if (spd_cdawlib_tagindex('ALT_CDAWEB_DEPEND_1',tag_names(a.(PS[i].vnum)))) ne -1 then $
            if (a.(PS[i].vnum).ALT_CDAWEB_DEPEND_1 ne '') then b = a.(PS[i].vnum).ALT_CDAWEB_DEPEND_1
-      d = spdf_tagindex(b[0],tag_names(a))
+      d = spd_cdawlib_tagindex(b[0],tag_names(a))
 
       ; Determine if the display type variable attribute is present
-      b = spdf_tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
+      b = spd_cdawlib_tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
       if (b[0] ne -1) then begin
          ; examine_spectrogram_dt looks at the DISPLAY_TYPE structure member in detail.
          ; for spectrograms and stacked time series the DISPLAY_TYPE can contain syntax
@@ -1302,15 +1302,15 @@ for i=0,n_elements(PS)-1 do begin
           Yvar = (a.(PS[i].vnum))
           t = size(Yvar)
           if (t[n_elements(t)-2] ne 8) then begin
-            print,'ERROR=input to spdf_plotmaster not a structure' & return,-1
+            print,'ERROR=input to spd_cdawlib_plotmaster not a structure' & return,-1
           endif else begin
 	   YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
-           t = spdf_tagindex('DAT',YTAGS)
+           t = spd_cdawlib_tagindex('DAT',YTAGS)
            if (t[0] ne -1) then begin
 	     THEDATA = Yvar.DAT 
 	     dfillval=yvar.fillval
   	   endif else begin
-    	    t = spdf_tagindex('HANDLE',YTAGS)
+    	    t = spd_cdawlib_tagindex('HANDLE',YTAGS)
      	    if (t[0] ne -1) then begin
 	       handle_value,Yvar.HANDLE,THEDATA
 	       dfillval=yvar.fillval
@@ -1324,8 +1324,8 @@ for i=0,n_elements(PS)-1 do begin
 
 	 esize=size(e)
          if (esize[n_elements(esize)-2] eq 8) then begin ; results confirmed
-            if (e.x ne '') then c = spdf_tagindex(e.x,tag_names(a))
-            if (e.y ne '') then d = spdf_tagindex(e.y,tag_names(a))
+            if (e.x ne '') then c = spd_cdawlib_tagindex(e.x,tag_names(a))
+            if (e.y ne '') then d = spd_cdawlib_tagindex(e.y,tag_names(a))
          endif
       endif
       ; Produce debug output if requested.
@@ -1407,15 +1407,15 @@ for i=0,n_elements(PS)-1 do begin
       endif
       ; Get the index of the time variable associated with variable to be plotted
       ; Determine default x, y and z variables from depend attributes
-      b = a.(PS[i].vnum).DEPEND_0 & c = spdf_tagindex(b[0],tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_0 & c = spd_cdawlib_tagindex(b[0],tag_names(a))
       b = a.(PS[i].vnum).DEPEND_1 
       ; RCJ 05/16/2013 If alt_cdaweb_depend_1 exists use it instead:
-      if (spdf_tagindex('ALT_CDAWEB_DEPEND_1',tag_names(a.(PS[i].vnum)))) ne -1 then $
+      if (spd_cdawlib_tagindex('ALT_CDAWEB_DEPEND_1',tag_names(a.(PS[i].vnum)))) ne -1 then $
            if (a.(PS[i].vnum).ALT_CDAWEB_DEPEND_1 ne '') then b = a.(PS[i].vnum).ALT_CDAWEB_DEPEND_1 
-      z = spdf_tagindex(b[0],tag_names(a))
+      z = spd_cdawlib_tagindex(b[0],tag_names(a))
     
       ; Determine if the display type variable attribute is present
-      b = spdf_tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
+      b = spd_cdawlib_tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
       if (b[0] ne -1) then begin
          ;  RCJ 10/15/2013  added scatter:
 	  keywords=str_sep(a.(PS[i].vnum).display_type,'>')  ; keyword 1 or greater  
@@ -1450,13 +1450,13 @@ for i=0,n_elements(PS)-1 do begin
          Yvar = (a.(PS[i].vnum))
          t = size(Yvar)
 	 if (t[n_elements(t)-2] ne 8) then begin
-	    print,'ERROR=input to spdf_plotmaster not a structure' & return,-1
+	    print,'ERROR=input to spd_cdawlib_plotmaster not a structure' & return,-1
 	 endif else begin
 	    YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
-  	    t = spdf_tagindex('DAT',YTAGS)
+  	    t = spd_cdawlib_tagindex('DAT',YTAGS)
   	    if (t[0] ne -1) then THEDATA = Yvar.DAT $
   	    else begin
-    	       t = spdf_tagindex('HANDLE',YTAGS)
+    	       t = spd_cdawlib_tagindex('HANDLE',YTAGS)
      	       if (t[0] ne -1) then handle_value,Yvar.HANDLE,THEDATA $
     	       else begin
       	          print,'ERROR=Yvariable does not have DAT or HANDLE tag' & return,-1
@@ -1513,9 +1513,9 @@ for i=0,n_elements(PS)-1 do begin
          endelse
 
          if (esize[n_elements(esize)-2] eq 8) then begin ; results confirmed
-            if (e.x ne '') then c = spdf_tagindex(e.x,tag_names(a))
-            if (e.y ne '') then d = spdf_tagindex(e.y,tag_names(a))
-            if (e.z ne '') then f = spdf_tagindex(e.z,tag_names(a)) $
+            if (e.x ne '') then c = spd_cdawlib_tagindex(e.x,tag_names(a))
+            if (e.y ne '') then d = spd_cdawlib_tagindex(e.y,tag_names(a))
+            if (e.z ne '') then f = spd_cdawlib_tagindex(e.z,tag_names(a)) $
 	    else f = z
          endif
 
@@ -1639,7 +1639,7 @@ for i=0,n_elements(PS)-1 do begin
          s=execute('a=a'+strtrim(string(PS[i].snum),2)) & a_id = PS[i].snum
       endif
       ; Get the index of the time variable associated with variable to be plotted
-      b = a.(PS[i].vnum).DEPEND_0 & c = spdf_tagindex(b[0],tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_0 & c = spd_cdawlib_tagindex(b[0],tag_names(a))
       ; Produce debug output if requested
       if keyword_set(DEBUG) then print,'Plotting ',PS[i].vname,' as time text.'
       ;
@@ -1653,13 +1653,13 @@ for i=0,n_elements(PS)-1 do begin
       Yvar = (a.(PS[i].vnum))
       t = size(Yvar)
       if (t[n_elements(t)-2] ne 8) then begin
-         print,'ERROR=input to spdf_plotmaster not a structure' & return,-1
+         print,'ERROR=input to spd_cdawlib_plotmaster not a structure' & return,-1
       endif else begin
 	 YTAGS = tag_names(Yvar) ; avoid multiple calls to tag_names
-         t = spdf_tagindex('DAT',YTAGS)
+         t = spd_cdawlib_tagindex('DAT',YTAGS)
          if (t[0] ne -1) then THEDATA = Yvar.DAT $
   	 else begin
-    	    t = spdf_tagindex('HANDLE',YTAGS)
+    	    t = spd_cdawlib_tagindex('HANDLE',YTAGS)
      	    if (t[0] ne -1) then handle_value,Yvar.HANDLE,THEDATA $
     	    else begin
       	       print,'ERROR=Yvariable does not have DAT or HANDLE tag' & return,-1
@@ -1668,7 +1668,7 @@ for i=0,n_elements(PS)-1 do begin
       endelse
       datasize = size(thedata)
       ; Determine if the display type variable attribute is present
-      d = spdf_tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
+      d = spd_cdawlib_tagindex('DISPLAY_TYPE',tag_names(a.(PS[i].vnum)))
       if (d[0] ne -1) then begin
          ; examine_spectrogram_dt looks at the DISPLAY_TYPE structure member in 
          ; detail. for time series, time text, spectrograms and 
@@ -1806,14 +1806,14 @@ for i=0,n_elements(PS)-1 do begin
     ;now determine the pi and affiliation for this dataset
     ;only add a pi/affiliation to the pi_list if its a new one
     t_source = ''
-    b = spdf_tagindex('LOGICAL_SOURCE',tag_names(a.(0)))
+    b = spd_cdawlib_tagindex('LOGICAL_SOURCE',tag_names(a.(0)))
     if (b[0] ne -1) then begin
      if(n_elements(a.(0).LOGICAL_SOURCE) eq 1) then t_source = a.(0).LOGICAL_SOURCE
     endif
 
     if (t_source ne l_source) then begin  ; if logical source changed
       l_source = t_source ;set this for the next iteration
-      b = spdf_tagindex('PI_NAME',tag_names(a.(0)))
+      b = spd_cdawlib_tagindex('PI_NAME',tag_names(a.(0)))
       if (b[0] ne -1) then begin
        ;if(n_elements(a.(0).PI_NAME) eq 1) then pi = a.(0).PI_NAME else pi=' '
        ; RCJ 01/05/2004 Sometimes the pi_name can be an array of n elements so I changed
@@ -1825,7 +1825,7 @@ for i=0,n_elements(PS)-1 do begin
        ;for pii=1,n_elements(a.(0).PI_NAME)-1 do pi = pi +' '+ a.(0).PI_NAME(pii)
       endif else pi='' ; RCJ 02/10/2006  Added this 'else'. pi needed to be
                        ; initialized or program would break further down.
-      b = spdf_tagindex('PI_AFFILIATION',tag_names(a.(0)))
+      b = spd_cdawlib_tagindex('PI_AFFILIATION',tag_names(a.(0)))
       if (b[0] ne -1) then begin
         ;if((n_elements(a.(0).PI_AFFILIATION) eq 1) and (a.(0).PI_AFFILIATION[0] ne "")) then $
 	; RCJ 01/05/2004  Same as above, pi_affiliation can be an array of n elements
@@ -2164,7 +2164,7 @@ for i=0,n_elements(PS)-1 do begin
       endif
       ; Only DARN radar data is currently plottable.  Verify that the source
       ; of this variable is DARN.
-      proceed = 1L & b = spdf_tagindex('SOURCE_NAME',tag_names(a.(PS[i].vnum)))
+      proceed = 1L & b = spd_cdawlib_tagindex('SOURCE_NAME',tag_names(a.(PS[i].vnum)))
       if (b[0] eq -1) then begin
          proceed = 0L & print,'ERROR=Unable to determine source for radar plot...'
       endif
@@ -2456,7 +2456,7 @@ if(orbit_trip eq 1) then begin
       xsize=21000 & ysize=28000 ; TJK seems to work better...
    endif
 
-;Check to see if spdf_plotmaster is being called by ssc_plot, and
+;Check to see if spd_cdawlib_plotmaster is being called by ssc_plot, and
 ;Postscript option requested
 help, /traceback, output=trace_back
 if (n_elements(trace_back) gt 1) then begin
@@ -2491,7 +2491,7 @@ endif
    endif
 endif
 
-; Display of map images will be accomplished through calls to spdf_plotmaster
+; Display of map images will be accomplished through calls to spd_cdawlib_plotmaster
 ; where the DISPLAY_TYPE for map image variables will be set to "MAP_IMAGE"  
 ; These variables will be passed to a new function called plot_map_images.pro
 ; which will process and display each image in a fashion similar to plot_images
@@ -2695,7 +2695,7 @@ for i=0,n_elements(PS)-1 do begin
       print, 'DATASET=',PS[i].source
 
       ; Get the index of the time variable associated with variable to be plotted
-      b = a.(PS[i].vnum).DEPEND_0 & c = spdf_tagindex(b[0],tag_names(a))
+      b = a.(PS[i].vnum).DEPEND_0 & c = spd_cdawlib_tagindex(b[0],tag_names(a))
 
       if (strpos(a.(c[0]).CDFTYPE, 'CDF_EPOCH16') ge 0) then begin
          ;The following if statements are needed in the case where TSTART/TSTOP is not
