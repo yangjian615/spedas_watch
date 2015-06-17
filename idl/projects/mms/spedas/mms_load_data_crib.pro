@@ -5,9 +5,13 @@
 ; PURPOSE:
 ;         Crib sheet showing how to load and plot MMS AFG and DFG magnetometer data
 ; 
+; NOTES:
+;         Updated to use the MMS web services API, 6/12/2015
+;   
+;   
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-05-22 15:05:16 -0700 (Fri, 22 May 2015) $
-;$LastChangedRevision: 17675 $
+;$LastChangedDate: 2015-06-15 09:56:30 -0700 (Mon, 15 Jun 2015) $
+;$LastChangedRevision: 17876 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data_crib.pro $
 ;-
 
@@ -16,7 +20,7 @@
 mms_load_data, probes=['1', '2'], trange=['2015-03-18', '2015-03-19'], instrument='dfg', datatype='*', level='ql'
 
 ; plot the data in DMPA coordinates
-tplot, ['mms1_dfg_srvy_dmpa', 'mms2_dfg_srvy_dmpa']
+tplot, ['mms1_dfg_srvy_dmpa_btot', 'mms1_dfg_srvy_dmpa_bvec']
 stop
 
 ; plot the data in GSM-DMPA coordinates (GSE -> GSM transformation applied to DMPA coordinates)
@@ -32,7 +36,7 @@ stop
 mms_load_data, probes=['3', '4'], trange=['2015-03-18', '2015-03-19'], instrument='afg', level='ql' 
 
 ; plot the data in DMPA coordinates
-tplot, ['mms3_afg_srvy_dmpa', 'mms4_afg_srvy_dmpa']
+tplot, ['mms3_afg_srvy_dmpa_bvec', 'mms4_afg_srvy_dmpa_bvec']
 stop
 
 ; plot the data in GSM-DMPA coordinates

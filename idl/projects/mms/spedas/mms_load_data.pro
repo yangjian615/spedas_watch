@@ -32,10 +32,13 @@
 ;     3) Updated to use the MMS web services API
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-12 14:32:34 -0700 (Fri, 12 Jun 2015) $
-;$LastChangedRevision: 17871 $
+;$LastChangedDate: 2015-06-15 14:00:00 -0700 (Mon, 15 Jun 2015) $
+;$LastChangedRevision: 17879 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
+
+; to download definitive attitude data:
+; /mms/sdc/sitl/files/api/v1/download/ancillary?start_date=2015-03-23&end_date=2015-03-30&product=defatt&sc_id=mms1
 
 ; takes in 4-d AFG/DFG data as a tplot variable and splits into 2 tplot variables: 
 ;   1) b_total, 2) b_vector (Bx, By, Bz)
@@ -79,9 +82,9 @@ pro mms_load_fix_metadata, tplotnames, prefix = prefix
             end
             prefix + '_dfg_srvy_gsm_dmpa': begin
                 options, /def, tplot_name, 'labflag', 1
-                options, /def, tplot_name, 'colors', [2,4,6]
+                options, /def, tplot_name, 'colors', [2,4,6,8]
                 options, /def, tplot_name, 'ytitle', strupcase(prefix) + ' DFG'
-                options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
+                options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz', 'Btotal']
             end
             prefix + '_afg_srvy_dmpa_bvec': begin
                 options, /def, tplot_name, 'labflag', 1
@@ -97,9 +100,9 @@ pro mms_load_fix_metadata, tplotnames, prefix = prefix
             end
             prefix + '_afg_srvy_gsm_dmpa': begin
                 options, /def, tplot_name, 'labflag', 1
-                options, /def, tplot_name, 'colors', [2,4,6]
+                options, /def, tplot_name, 'colors', [2,4,6,8]
                 options, /def, tplot_name, 'ytitle', strupcase(prefix) + ' AFG'
-                options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
+                options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz', 'Btotal']
             end
             prefix + '_ql_pos_gsm': begin
                 options, /def, tplot_name, 'labflag', 1
@@ -119,10 +122,13 @@ end
 pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
                   level = level, instrument = instrument, data_rate = date_rate, $
                   local_data_dir = local_data_dir, source = source, $
-                  login_info = login_info
+                  get_support_data = get_support_data, login_info = login_info
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
+    
+    ; currently, datatype = level
+    if datatype ne '*' && undefined(level) then level = datatype
     if undefined(level) then level = 'ql' ; default to quick look
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rate) then data_rate = 'srvy'
@@ -146,6 +152,9 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
         return
     endelse
     
+    ; the IDLnetURL object returned here is also stored in the common block
+    ; (this is why we never use net_object after this line, but this call is still 
+    ; necessary to login)
     net_object = get_mms_sitl_connection(username=username, password=password)
     
     for probe_idx = 0, n_elements(probes)-1 do begin
@@ -165,8 +174,14 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             
             data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
                     data_rate_mode=data_rate, data_level=level, start_date=day_string, end_date=day_string)
-        
-            filename = (strsplit(data_file[0], '": "', /extract))[2] ;kldugy
+
+            if data_file eq '' then begin
+                dprint, dlevel = 0, 'Error, no data files found for this time.'
+                continue
+            endif
+            
+            ;kludgy to deal with IDL's lack of a parser for json
+            filename = (strsplit(data_file[0], '": "', /extract))[2]
             
             ; make sure the directory exists
             file_dir = local_data_dir + probe+'/'+month_directory
@@ -187,11 +202,14 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             endif
             
             if same_file eq 0 then begin
-                dprint, dlevel = 1, 'Downloading ' + filename + ' to ' + file_dir
+                dprint, dlevel = 0, 'Downloading ' + filename + ' to ' + file_dir
                 status = get_mms_science_file(filename=filename, local_dir=file_dir)
                 
                 if status eq 0 then append_array, files, file_dir + '/' + filename
-            endif else append_array, files, file_dir + '/' + filename
+            endif else begin
+                dprint, dlevel = 0, 'Loading local file ' + file_dir + '/' + filename
+                append_array, files, file_dir + '/' + filename
+            endelse
         endfor
         
         if ~undefined(files) then cdf2tplot, files, tplotnames = tplotnames
