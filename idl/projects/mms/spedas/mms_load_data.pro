@@ -32,8 +32,8 @@
 ;     3) Updated to use the MMS web services API
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-15 14:00:00 -0700 (Mon, 15 Jun 2015) $
-;$LastChangedRevision: 17879 $
+;$LastChangedDate: 2015-06-16 08:46:29 -0700 (Tue, 16 Jun 2015) $
+;$LastChangedRevision: 17880 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -175,7 +175,7 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
                     data_rate_mode=data_rate, data_level=level, start_date=day_string, end_date=day_string)
 
-            if data_file eq '' then begin
+            if ~is_array(data_file) && data_file eq '' then begin
                 dprint, dlevel = 0, 'Error, no data files found for this time.'
                 continue
             endif

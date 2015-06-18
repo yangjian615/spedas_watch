@@ -7,8 +7,8 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-07 15:47:03 -0700 (Thu, 07 May 2015) $
-; $LastChangedRevision: 17514 $
+; $LastChangedDate: 2015-06-16 17:03:15 -0700 (Tue, 16 Jun 2015) $
+; $LastChangedRevision: 17884 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
@@ -33,6 +33,7 @@ PRO eva_sitl_FOMedit_event, ev
       txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
       widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
       segSelect.TE = ev.value
+      print, 'EVA: (eva_sitl_fomedit) ',time_string(segSelect.TE)
       end
     wid.txtDiscussion: begin
       widget_control, ev.id, GET_VALUE=new_discussion;get new discussion

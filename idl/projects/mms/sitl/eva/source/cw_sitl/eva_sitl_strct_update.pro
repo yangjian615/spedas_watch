@@ -8,26 +8,20 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-03 13:42:35 -0700 (Fri, 03 Apr 2015) $
-; $LastChangedRevision: 17236 $
+; $LastChangedDate: 2015-06-16 17:03:15 -0700 (Tue, 16 Jun 2015) $
+; $LastChangedRevision: 17884 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
   compile_opt idl2
-;  common mms_sitl_connection, netUrl, connection_time, login_source
   
   if n_elements(user_flag) eq 0 then user_flag = 0
-;  type = size(netUrl, /type) ;will be 11 if object has been created
-;  if (type eq 11) then begin
-;    netUrl->GetProperty, URL_USERNAME = username
-;  endif else begin
-;    message,'Something is wrong'
-;  endelse
-;  defSourceID = username+'(EVA)'
+
   defSourceID = eva_sourceid()
   
   get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
-  tfom = eva_sitl_tfom(lim.UNIX_FOMSTR_MOD)
+  s = lim.UNIX_FOMSTR_MOD
+  tfom = eva_sitl_tfom(s)
 
   ;validation
   r = segment_overlap([segSelect.TS,segSelect.TE],tfom)
@@ -35,130 +29,147 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
     -1: segSelect.TS = tfom[0]
      1: segSelect.TE = tfom[1]
      2: message,'Something is wrong'
-     3: message,'Something is wrong'
+;     3: message,'Something is wrong'
+;     Commented out on 2015 Jun 16. We needed to select the entire target time for testing.
+;     So, it is okay if the selected segment was exactly the same as 'tfom'.
     else:;-2 or 0 --> OK
   endcase
 
-  ;main (Determine if segSelect if for FOMStr or BAKStr)
+  print, 'EVA: (eva_sitl_strct_update) tfom1 ', time_string(tfom[1])
+  print, 'EVA: (eva_sitl_strct_update) segSelect.Te ', time_string(segSelect.TE)
+  
+  ;main (Determine if segSelect is for FOMStr or BAKStr)
   r = segment_overlap([segSelect.TS,segSelect.TE],tfom)
-  case r of
+  if (r eq 0) or (r eq 3) then begin
     ;----------------------
     ; FOMStr
     ;----------------------
-    0: begin
-      s = lim.UNIX_FOMSTR_MOD
-      result = min(abs(s.TIMESTAMPS-segSelect.TS),segSTART)
-      result = min(abs(s.TIMESTAMPS-segSelect.TE),segSTOP)
-      segSTOP -= 1 ; 
-      segSelectTime = [s.TIMESTAMPS[segSTART], s.TIMESTAMPS[segSTOP+1]]
-      newSEGLENGTHS = 0L
-      newSOURCEID   = ' '
-      newSTART      = 0L
-      newSTOP       = 0L
-      newFOM        = 0.
-      newDISCUSSION    = ' '
-      newISPENDING  = 1L
+    
+    result = min(abs(s.TIMESTAMPS-segSelect.TS),segSTART)
+    result = min(abs(s.TIMESTAMPS-segSelect.TE),segSTOP); 1084
+    segSTOP -= 1 ; 1083
+    segSelectTime = [s.TIMESTAMPS[segSTART], s.TIMESTAMPS[segSTOP+1]]
+    
+    ; To properly select the last trigger-cycle, we need to consider
+    ; the end time of the last trigger-cycle. Note that TIMESTAMPS
+    ; refer to the start time of each trigger-cycle. Even if segSelect.TE
+    ; is larger than TIMESTAMPS[NUMCYCLES-1]+10 (or tfom[1]), the above lines
+    ; will select TIMESTAMPS[NUMCYCLES-1] as the end time of the
+    ; selected (desired) segment.
+    if (segSelect.TE ge tfom[1]) then begin
+      segSTOP += 1; 1084
+      segSelectTime[1] = tfom[1]
+    endif
+    
+    ; a plain clean selection with no segment
+    newSEGLENGTHS = 0L
+    newSOURCEID   = ' '
+    newSTART      = 0L
+    newSTOP       = 0L
+    newFOM        = 0.
+    newDISCUSSION    = ' '
+    newISPENDING  = 1L
+    
+    ; scan all segments
+    for N=0,s.Nsegs-1 do begin
+      ss = s.TIMESTAMPS[s.START[N]]; segment start time
+      ;se = s.TIMESTAMPS[s.STOP[N]+1]; segment stop time
       
-      ; scan all segments
-      for N=0,s.Nsegs-1 do begin
-        ss = s.TIMESTAMPS[s.START[N]]; segment start time
-        se = s.TIMESTAMPS[s.STOP[N]+1]; segment stop time
-        fv = s.FOM[N]; segment FOM value
-        
-        ; Each segment is compared to the User's new/modified segment
-        rr = segment_overlap([ss,se],segSelectTime)
-        case abs(rr) of; 
-          1: begin; partial overlap --> split
-            if rr eq -1 then begin
-              if segSTART eq 0 then segSTART += 1L
-              newSTART = [newSTART, s.START[N]]
-              newSTOP  = [newSTOP, segSTART-1]
-              newSEGLENGTHS = [newSEGLENGTHS,(segSTART-1L) - s.START[N] + 1L] 
-            endif else begin
-              if segSTOP ge s.NUMCYCLES-1 then segSTOP -= 1L
-              newSTART = [newSTART, segSTOP+1]
-              newSTOP  = [newSTOP, s.STOP[N]]
-              newSEGLENGTHS = [newSEGLENGTHS,s.STOP[N] - (segSTOP+1L) + 1L]
-            endelse
-            newDISCUSSION    = [newDISCUSSION, s.DISCUSSION[N]]
-            newSOURCEID   = [newSOURCEID, defSourceID]
-            newFOM        = [newFOM,s.FOM[N]]
-            ;newISPENDING  = [newISPENDING,s.ISPENDING[N]]
-            end
-          2: begin; no overlap --> preserve this segment
-            newSEGLENGTHS = [newSEGLENGTHS, s.SEGLENGTHS[N]]
-            ;newISPENDING  = [newISPENDING,s.ISPENDING[N]]
-            newSOURCEID   = [newSOURCEID, s.SOURCEID[N]]
-            newDISCUSSION    = [newDISCUSSION, s.DISCUSSION[N]]
-            newSTART      = [newSTART, s.START[N]]
-            newSTOP       = [newSTOP, s.STOP[N]]
-            newFOM        = [newFOM,s.FOM[N]]
-            end
-          else:; rr=0 or 3 --> contained in segSelect --> remove
-        endcase
-      endfor
+      dtlast = s.TIMESTAMPS[s.NUMCYCLES-1L]-s.TIMESTAMPS[s.NUMCYCLES-2L]
+      se = (s.STOP[N] ge s.NUMCYCLES-1L) ? s.TIMESTAMPS[s.NUMCYCLES-1]+dtlast : s.TIMESTAMPS[s.STOP[N]+1]
       
-      ;add selected segment
-      if segSelect.FOM gt 0. then begin; The segment will be removed if segSelect.FOM==0
-        newSEGLENGTHS = [newSEGLENGTHS, segSTOP-segSTART+1]
-        newFOM        = [newFOM,segSelect.FOM]
-        ;newISPENDING  = [newISPENDING, 1L]
-        newSOURCEID   = [newSOURCEID, defSourceID]
-        newSTART      = [newSTART, segSTART]
-        newSTOP       = [newSTOP, segSTOP]
-        newDISCUSSION    = [newDISCUSSION,segSelect.DISCUSSION]
-      endif
+      ; Each segment is compared to the User's new/modified segment
+      rr = segment_overlap([ss,se],segSelectTime)
+      case abs(rr) of; 
+        1: begin; partial overlap --> split
+          if rr eq -1 then begin
+            if segSTART eq 0 then message,'Something is wrong';segSTART += 1L
+            newSTART = [newSTART, s.START[N]]
+            newSTOP  = [newSTOP, segSTART-1]
+            newSEGLENGTHS = [newSEGLENGTHS, segSTART - s.START[N]] 
+          endif else begin
+            if segSTOP gt s.NUMCYCLES-1 then message,'Something is wrong'
+            newSTART = [newSTART, segSTOP+1]
+            newSTOP  = [newSTOP, s.STOP[N]]
+            newSEGLENGTHS = [newSEGLENGTHS, s.STOP[N] - segSTOP]
+          endelse
+          newDISCUSSION    = [newDISCUSSION, s.DISCUSSION[N]]
+          newSOURCEID   = [newSOURCEID, defSourceID]
+          newFOM        = [newFOM,s.FOM[N]]
+          end
+        2: begin; no overlap --> preserve this segment
+          newSEGLENGTHS = [newSEGLENGTHS, s.SEGLENGTHS[N]]
+          newSOURCEID   = [newSOURCEID, s.SOURCEID[N]]
+          newDISCUSSION    = [newDISCUSSION, s.DISCUSSION[N]]
+          newSTART      = [newSTART, s.START[N]]
+          newSTOP       = [newSTOP, s.STOP[N]]
+          newFOM        = [newFOM,s.FOM[N]]
+          end
+        else:; rr=0 or 3 --> contained in segSelect --> remove
+      endcase
+    endfor
+    
+    ;add selected segment
+    if segSelect.FOM gt 0. then begin; The segment will be removed if segSelect.FOM==0
+      newSEGLENGTHS = [newSEGLENGTHS, segSTOP-segSTART+1]
+      newFOM        = [newFOM,segSelect.FOM]
+      ;newISPENDING  = [newISPENDING, 1L]
+      newSOURCEID   = [newSOURCEID, defSourceID]
+      newSTART      = [newSTART, segSTART]
+      newSTOP       = [newSTOP, segSTOP]
+      newDISCUSSION    = [newDISCUSSION,segSelect.DISCUSSION]
+    endif
+    
+    ;update FOM structure
+    Nmax = n_elements(newFOM)
+    newNsegs = Nmax - 1
+    
+    if newNsegs ge 1 then begin
+      str_element,/add,s,'SEGLENGTHS',long(newSEGLENGTHS[1:Nmax-1])
+      str_element,/add,s,'SOURCEID', newSOURCEID[1:Nmax-1]
+      str_element,/add,s,'START',long(newSTART[1:Nmax-1])
+      str_element,/add,s,'STOP',long(newSTOP[1:Nmax-1])
+      str_element,/add,s,'FOM',float(newFOM[1:Nmax-1])
+      str_element,/add,s,'NSEGS',long(newNsegs)
+      str_element,/add,s,'NBUFFS',long(total(newSEGLENGTHS[1:Nmax-1]))
+      str_element,/add,s,'DISCUSSION',newDISCUSSION[1:Nmax-1]
       
-      ;update FOM structure
-      Nmax = n_elements(newFOM)
-      newNsegs = Nmax - 1
+      s = eva_sitl_strct_sort(s)
       
-      if newNsegs ge 1 then begin
-        str_element,/add,s,'SEGLENGTHS',long(newSEGLENGTHS[1:Nmax-1])
-        str_element,/add,s,'SOURCEID', newSOURCEID[1:Nmax-1]
-        str_element,/add,s,'START',long(newSTART[1:Nmax-1])
-        str_element,/add,s,'STOP',long(newSTOP[1:Nmax-1])
-        str_element,/add,s,'FOM',float(newFOM[1:Nmax-1])
-        str_element,/add,s,'NSEGS',long(newNsegs)
-        str_element,/add,s,'NBUFFS',long(total(newSEGLENGTHS[1:Nmax-1]))
-        str_element,/add,s,'DISCUSSION',newDISCUSSION[1:Nmax-1]
-        
+      
+      ;str_element,/add,s,'ISPENDING',newISPENDING[1:Nmax-1]
+      ;update 'mms_sitl_fomstr'
+      D = eva_sitl_strct_read(s,tfom[0])
+      store_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl; update data points
+      options,'mms_stlm_fomstr','unix_FOMStr_mod',s ; update structure
+      
+      
+      ;update yrange
+      eva_sitl_strct_yrange,'mms_stlm_output_fom'
+      eva_sitl_strct_yrange,'mms_stlm_fomstr'
+      
+    endif else begin; No segment
+      if user_flag ne 4 then begin; if not FPI-cal
+        r = dialog_message("You can't delete all segments.",/center)
+      endif else begin
+        str_element,/add,s,'FOM',[0.]; FOM value = 0
+        str_element,/add,s,'START',[0L]; start of the 1st cycle
+        str_element,/add,s,'STOP',[1L]; end fo the 1st cycle
+        str_element,/add,s,'NSEGS',1L
+        str_element,/add,s,'NBUFFS',1L
+        str_element,/add,s,'FPICAL',1L
+        str_element,/add,s,'SOURCEID',defSourceID
+        str_element,/add,s,'DISCUSSION',segSelect.DISCUSSION
         s = eva_sitl_strct_sort(s)
-        
-        
-        ;str_element,/add,s,'ISPENDING',newISPENDING[1:Nmax-1]
-        ;update 'mms_sitl_fomstr'
-        D = eva_sitl_strct_read(s,tfom[0])
-        store_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl; update data points
+        ;str_element,/add,lim,'UNIX_FOMstr_org',s; put the hacked FOMstr into 'lim'
+        D_hacked = eva_sitl_strct_read(s,tfom[0]); change the tplot-data accordingly
+        store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl; here is the faked 'mms_stlm_fomstr'
         options,'mms_stlm_fomstr','unix_FOMStr_mod',s ; update structure
-        
-        
-        ;update yrange
         eva_sitl_strct_yrange,'mms_stlm_output_fom'
         eva_sitl_strct_yrange,'mms_stlm_fomstr'
-        
-      endif else begin; No segment
-        if user_flag ne 4 then begin; if not FPI-cal
-          r = dialog_message("You can't delete all segments.",/center)
-        endif else begin
-          str_element,/add,s,'FOM',[0.]; FOM value = 0
-          str_element,/add,s,'START',[0L]; start of the 1st cycle
-          str_element,/add,s,'STOP',[1L]; end fo the 1st cycle
-          str_element,/add,s,'NSEGS',1L
-          str_element,/add,s,'NBUFFS',1L
-          str_element,/add,s,'FPICAL',1L
-          str_element,/add,s,'SOURCEID',defSourceID
-          str_element,/add,s,'DISCUSSION',segSelect.DISCUSSION
-          s = eva_sitl_strct_sort(s)
-          ;str_element,/add,lim,'UNIX_FOMstr_org',s; put the hacked FOMstr into 'lim'
-          D_hacked = eva_sitl_strct_read(s,tfom[0]); change the tplot-data accordingly
-          store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl; here is the faked 'mms_stlm_fomstr'
-          options,'mms_stlm_fomstr','unix_FOMStr_mod',s ; update structure
-          eva_sitl_strct_yrange,'mms_stlm_output_fom'
-          eva_sitl_strct_yrange,'mms_stlm_fomstr'
-        endelse
       endelse
-      end; FOMStr case
+    endelse
+  endif else begin;if (r eq 0) or (r eq 3) then begin
     ;----------------------
     ; BAKStr
     ;----------------------
@@ -166,7 +177,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
     ; (1) does not overlap with any other segment (ADD)
     ; (2) matches exactly with one of the existing segments. (EDIT)
     ; In case of DELETE, simply delete all segments within [segSelect.TS,segSelect.TE]
-    -2: begin
+    if (r eq -2) then begin
       get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
       s = lim.UNIX_BAKSTR_MOD
       Nsegs = n_elements(s.FOM)
@@ -216,7 +227,9 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
       eva_sitl_strct_yrange,'mms_stlm_output_fom'
       eva_sitl_strct_yrange,'mms_stlm_fomstr'
       
-      end; BAKStr
-    else: message,'Something is wrong'
-  endcase
+    endif else begin;if (r eq -2) then begin
+      print, 'r=',r
+      message,'Something is wrong'
+    endelse
+  endelse;if (r eq 0) or (r eq 3) then begin
 END

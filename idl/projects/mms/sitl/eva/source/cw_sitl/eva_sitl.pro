@@ -130,7 +130,9 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
 
   if BAK eq 0 then begin
     get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
-    wgrid = lim.unix_FOMStr_mod.TIMESTAMPS
+    s = lim.unix_FOMStr_mod
+    dtlast = s.TIMESTAMPS[s.NUMCYCLES-1]-s.TIMESTAMPS[s.NUMCYCLES-2]
+    wgrid = [s.TIMESTAMPS,s.TIMESTAMPS[s.NUMCYCLES-1]+dtlast] 
   endif
   
   if BAK ne -1 then begin
@@ -202,7 +204,9 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
           segSelect = {ts:stime[idx[0]],te:etime[idx[0]],fom:s.FOM[idx[0]],$
             BAK:BAK, discussion:s.DISCUSSION[idx[0]], var:var}
         endif else segSelect = 0
-        wgrid = s.TIMESTAMPS
+        ;wgrid = s.TIMESTAMPS
+        dtlast = s.TIMESTAMPS[s.NUMCYCLES-1]-s.TIMESTAMPS[s.NUMCYCLES-2]
+        wgrid = [s.TIMESTAMPS,s.TIMESTAMPS[s.NUMCYCLES-1]+dtlast]
       end
       else: segSelect = -1
     endcase

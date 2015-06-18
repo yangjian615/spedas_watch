@@ -3,8 +3,8 @@
 ; activate = 2; sensitive (initialize)
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-14 13:01:05 -0700 (Thu, 14 May 2015) $
-; $LastChangedRevision: 17607 $
+; $LastChangedDate: 2015-06-16 17:03:15 -0700 (Tue, 16 Jun 2015) $
+; $LastChangedRevision: 17884 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_update_board.pro $
 ;
 PRO eva_sitl_update_board, state, activate
@@ -247,17 +247,17 @@ PRO eva_sitl_update_board, state, activate
       ; Color Bar
       crd1 = [xC+wC,yC+hC];*NBuffsMax/NBuffsMax]
       crd2 = [xL   ,yL2-dy-0.02                  ]
-      sg.oL2_Number ->SetProperty,STRING=strtrim(string(long(NBuffsMax)),2),COLOR=cywhite
+      sg.oL2_Number ->SetProperty,STRING=strtrim(string(long(NBuffsMax)),2)+' buffs',COLOR=cywhite
       sg.oL2_Line ->SetProperty, DATAX = [crd1[0],xLL,crd2[0],xLLL], DATAY=[crd1[1],crd1[1],crd2[1],crd2[1]], COLOR=cwhite
       
       crd1 = [xC+wC,yC+hC*NBuffsWarning/NBuffsMax]
       crd2 = [xL   ,yL1-dy-0.02                    ]
-      sg.oL1_Number ->SetProperty,STRING=strtrim(string(long(NBuffsWarning)),2),COLOR=cwhite
+      sg.oL1_Number ->SetProperty,STRING=strtrim(string(long(NBuffsWarning)),2)+' buffs',COLOR=cwhite
       sg.oL1_Line ->SetProperty, DATAX = [crd1[0],xLL,crd2[0],xLLL], DATAY=[crd1[1],crd1[1],crd2[1],crd2[1]], COLOR=cwhite
       
       crd1 = [xC+wC,yC+hC*NBuffsTarget/NBuffsMax]
       crd2 = [xL   ,yL0-dy-0.02                 ]
-      sg.oL0_Number ->SetProperty,STRING=strtrim(string(long(NBuffsTarget)),2),COLOR=cwhite
+      sg.oL0_Number ->SetProperty,STRING=strtrim(string(long(NBuffsTarget)),2)+' buffs',COLOR=cwhite
       sg.oL0_Line ->SetProperty, DATAX = [crd1[0],xLL,crd2[0],xLLL], DATAY=[crd1[1],crd1[1],crd2[1],crd2[1]], COLOR=cwhite
       
       sg.oColorBar ->SetProperty, red_Values=redValues,green_values=grnValues,blue_values=bluValues,color=cwhite

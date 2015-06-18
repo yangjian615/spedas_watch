@@ -100,7 +100,7 @@ end
 
 
 
-pro spp_tof_histogram,trange=trange,xrange=xrange,ylog=ylog,binsize=binsize,noerase=noerase,channels=channels,xlog=xlog
+pro spp_tof_histogram,trange=trange,xrange=xrange,ylog=ylog,binsize=binsize,noerase=noerase,channels=channels,xlog=xlog,hist=h
 if ~keyword_set(trange) then ctime,trange,npoints=2
 
 csize = 2
@@ -135,7 +135,7 @@ endif
 plot,/nodata,xb,h * 1.1,xrange=xrange,/xstyle,charsize=csize,yrange=yrange,ylog=ylog,ystyle=3,noerase=noerase,xtitle='Time of Flight channel',ytitle='Counts',xlog=xlog
 mxt = max(h)
 
-if ~keyword_set(channels) then channels = reverse(indgen(16))
+if n_elements(channels) eq 0 then channels = reverse(indgen(16))
 
 for i=0,n_elements(channels)-1 do begin
   ch = channels[i]

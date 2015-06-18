@@ -33,8 +33,8 @@
 ; 2015-04-10, moka, Created based on 'thm_init'
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-09 16:05:16 -0700 (Sat, 09 May 2015) $
-; $LastChangedRevision: 17544 $
+; $LastChangedDate: 2015-06-16 17:03:15 -0700 (Tue, 16 Jun 2015) $
+; $LastChangedRevision: 17884 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_init.pro $
 ;-
 
@@ -81,7 +81,8 @@ pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
 
   cdf_version_readmin = '3.1.0'
   cdf_version_writemin = '3.1.1'
-
+  cdf_version_mms = '3.6'
+  
   if cdf_version lt cdf_version_readmin then begin
     print,'Your version of the CDF library ('+cdf_version+') is unable to read THEMIS and MMS data files.'
     print,'Please go to the following url to learn how to patch your system:'
@@ -93,6 +94,17 @@ pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
     print,'Your version of the CDF library ('+cdf_version+') is unable to correctly write THEMIS/MMS CDF data files.'
     print,'If you ever need to create CDF files then go to the following URL to learn how to patch your system:'
     print,'http://cdf.gsfc.nasa.gov/html/idl62_or_earlier_and_cdf3_problems.html'
+  endif
+  if cdf_version lt cdf_version_mms then begin
+    vsn=float(strmid(!VERSION.RELEASE,0,3))
+    r0 = (vsn ge 8.0) ?  (terminal_size())[0] : 5
+    stra = strarr(r0) & stra[0:*] = '#'
+    format = '('+strtrim(string(r0),2)+'A)'
+    print, stra,format=format
+    print,'WARNING'
+    print,'For correct interpretation of time tags for MMS data taken after June 30, 2015, please upgrade your CDF software to version 3.6 at http://cdf.gsfc.nasa.gov/html/cdf_patch_for_idl.html'
+    print,'WARNING'
+    print, stra,format=format
   endif
   
   cdf_leap_second_init

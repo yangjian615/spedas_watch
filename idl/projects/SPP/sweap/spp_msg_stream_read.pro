@@ -36,7 +36,9 @@ pro spp_msg_stream_read,buffer,time=time   ;,   fileunit=fileunit   ,ptr=ptr
     endif
     
     if sync ne 'a829'x then begin
-      dprint,format='(i,z,z,i)',ptr,sync,code,psize,dlevel=0,    ' Sync not recognized'
+ ;     printdat,ptr,sync,code,psize
+;      dprint,ptr,sync,code,psize,dlevel=0,    ' Sync not recognized'
+      dprint,format='(i,z,z,i,a)',ptr,sync,code,psize,dlevel=0,    ' Sync not recognized'
 ;      hexprint,buffer
       return
     endif

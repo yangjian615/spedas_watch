@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-22 10:26:51 -0700 (Fri, 22 May 2015) $
-; $LastChangedRevision: 17670 $
+; $LastChangedDate: 2015-06-16 17:03:15 -0700 (Tue, 16 Jun 2015) $
+; $LastChangedRevision: 17884 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -253,9 +253,11 @@ FUNCTION eva_data_login, state, evTop
 
     unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF, evTop)
     if n_tags(unix_FOMstr) gt 0 then begin
-      nmax = n_elements(unix_FOMstr.timestamps)
-      start_time = time_string(unix_FOMstr.timestamps[0],precision=3)
-      end_time = time_string(unix_FOMstr.timestamps[nmax-1],precision=3)
+      s = unix_FOMstr
+      start_time = time_string(s.timestamps[0],precision=3)
+      ;end_time = time_string(s.timestamps[nmax-1],precision=3)
+      dtlast = s.TIMESTAMPS[s.NUMCYCLES-1]-s.TIMESTAMPS[s.NUMCYCLES-2]
+      end_time = time_string(s.TIMESTAMPS[s.NUMCYCLES-1]+dtlast,precision=3)
       
       ;---------------------
       ; Update SITL MODULE
@@ -375,7 +377,7 @@ FUNCTION eva_data_event, ev
       if state.USER_FLAG ne 0 then begin
         state = eva_data_login(state,ev.TOP)
       endif
-      if state.USER_FLAG eq 0 then begin
+      if state.USER_FLAG eq 0 then begin;userType = ['Guest','MMS member','SITL','Super SITL','FPI cal']
         print,'EVA: resetting cw_data start and end times'
         start_time = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/00:00:00'
         end_time   = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/24:00:00'
