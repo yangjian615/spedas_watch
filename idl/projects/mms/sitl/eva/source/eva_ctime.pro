@@ -30,20 +30,20 @@
 PRO eva_ctime_exclusive, var, t, flag, buf, state, routine_name,occur
   case occur of
     1: begin
-      print, 'calling '+routine_name
+      print, 'EVA: calling '+routine_name
       call_procedure,routine_name, t, state=state, var=var
       end
     2: begin
       if flag>0 then begin
         buf     = t
-        print, 'segment start time = '+ time_string(buf)
+        print, 'EVA: segment start time = '+ time_string(buf)
       endif else begin
-        print, 'segment end   time = ', time_string(t)
+        print, 'EVA: segment end   time = ', time_string(t)
         trange = [buf,t]
-        print, 'Segment selected --> calling '+routine_name
+        print, 'EVA: segment selected --> calling '+routine_name
         call_procedure,routine_name, trange, state=state, var=var
         buf   = -1
-        print, 'Segment selected --> '+routine_name+' done'
+        print, 'EVA: segment selected --> '+routine_name+' done'
       end
       flag *= -1      
       end

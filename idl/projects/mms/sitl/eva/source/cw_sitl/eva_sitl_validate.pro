@@ -10,7 +10,7 @@ FUNCTION eva_sitl_validate_msg, title, flags, msg, times, indices
       tidx = *(indices[loc_error[c]]); a list of erroneous segment number
       nmax = n_elements(tstr)
       for n=0,nmax-1 do begin; for each erroneous segment
-        disp = [disp, '   segment '+strtrim(string(tidx[n]),2)+', '+tstr[n]]; record the seg info
+        disp = [disp, '   segment '+strtrim(string(tidx[n]),2)+', '+strmid(tstr[n],0,19)]; record the seg info
       endfor
     endfor; for each error type
   endif

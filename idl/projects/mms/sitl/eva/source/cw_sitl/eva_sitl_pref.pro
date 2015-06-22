@@ -44,9 +44,16 @@ FUNCTION eva_sitl_pref_event, ev
     state.bgAdvanced:  begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
       pref.EVA_BAKSTRUCT = ev.SELECT 
       widget_control, state.STATE_SITL.drpSave, SENSITIVE=(~ev.SELECT)
+;      widget_control, state.STATE_SITL.btnUndo, SENSITIVE=(~ev.SELECT)
+;      widget_control, state.STATE_SITL.btnRedo, SENSITIVE=(~ev.SELECT)
+;      widget_control, state.STATE_SITL.btnAllAuto, SENSITIVE=(~ev.SELECT)
+      widget_control, state.STATE_SITL.cbMulti, SENSITIVE=(~ev.SELECT)
+      widget_control, state.STATE_SITL.cbWTrng, SENSITIVE=(~ev.SELECT)
+      widget_control, state.STATE_SITL.btnSplit, SENSITIVE=(~ev.SELECT)
+;      widget_control, state.STATE_SITL.drpHighlight, SENSITIVE=ev.SELECT
       end
     state.bgTestmode:  begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
-      pref.EVA_TESTMODE_SUBMIT = ev.SELECT
+      pref.EVA_TESTMODE_SUBMIT = (~ev.SELECT); "Selected" means "submission enabled (i.e, not in test mode)"
       end
     state.btnSplitNominal: begin
       r = get_mms_sitl_connection(group_leader=ev.TOP)
@@ -101,29 +108,33 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
     EVENT_FUNC = "eva_sitl_pref_event", $
     FUNC_GET_VALUE = "eva_sitl_pref_get_value", $
     PRO_SET_VALUE = "eva_sitl_pref_set_value",/column,$
-    XSIZE = xsize, YSIZE = ysize,sensitive=1)
+    XSIZE = xsize, YSIZE = ysize,sensitive=1,/base_align_left)
   str_element,/add,state,'mainbase',mainbase
 
+  str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Enable file submission to SDC',$
+    /NONEXCLUSIVE,SET_VALUE=(~state.PREF.EVA_TESTMODE_SUBMIT))
+    
   str_cs = strtrim(string(state.PREF.EVA_SPLIT_SIZE),2)
   baseSplit = widget_base(mainbase,space=0,ypad=0,/ROW)
   str_element,/add,state,'fldSplit',cw_field(baseSplit,VALUE=str_cs,TITLE='Split Size: ',/ALL_EVENTS,XSIZE=7)
   str_element,/add,state,'btnSplitNominal',widget_button(baseSplit,VALUE=' Nominal Limit ')
   str_element,/add,state,'btnSplitMaximum',widget_button(baseSplit,VALUE=' Maximum Limit ')
-    
+  
+  lblSpace = widget_label(mainbase,VALUE=' ')
+  lblSuper = widget_label(mainbase,VALUE="Options for super-SITL:")
   bsAdvanced = widget_base(mainbase,space=0,ypad=0,SENSITIVE=(state_data.USER_FLAG eq 3)); Super SITL only
     str_element,/add,state,'bsAdvanced',bsAdvanced
-    str_element,/add,state,'bgAdvanced',cw_bgroup(bsAdvanced,'Enable advanced features (for Super SITL)',$
+    str_element,/add,state,'bgAdvanced',cw_bgroup(bsAdvanced,'Enable advanced features (i.e., editing back-structure)',$
      /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_BAKSTRUCT)
   
-  str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Test Mode (EVA will not submit files to SDC)',$
-     /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_TESTMODE_SUBMIT)
+
 
   
-  path_values_labels = ['SOC Auto (ABS)', 'SOC Auto (ABS) Simulated','SITL Auto']
-  idx = where(strmatch(path_values,state.PREF.EVA_STLM_INPUT),ct)
-  if ct ne 1 then idx = [0]
-  str_element,/add,state,'bgPath',cw_bgroup(mainbase, path_values_labels,$
-    /EXCLUSIVE, LABEL_TOP='Default FOM Selection',/FRAME, SET_VALUE=idx[0])
+;  path_values_labels = ['SOC Auto (ABS)', 'SOC Auto (ABS) Simulated','SITL Auto']
+;  idx = where(strmatch(path_values,state.PREF.EVA_STLM_INPUT),ct)
+;  if ct ne 1 then idx = [0]
+;  str_element,/add,state,'bgPath',cw_bgroup(mainbase, path_values_labels,$
+;    /EXCLUSIVE, LABEL_TOP='Default FOM Selection',/FRAME, SET_VALUE=idx[0])
      
 
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY

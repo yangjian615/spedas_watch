@@ -63,20 +63,26 @@
 ;
 ;   OVERLAY:   Overlay the result on the energy spectrogram.
 ;
+;   SETVAL:    Make no attempt to estimate the potential, just set it to
+;              this value.  Units = volts.  No default.
+;
+;   BADVAL:    If the algorithm cannot estimate the potential, then set it
+;              to this value.  Units = volts.  Default = NaN.
+;
 ;OUTPUTS:
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-20 13:09:56 -0700 (Wed, 20 May 2015) $
-; $LastChangedRevision: 17656 $
+; $LastChangedDate: 2015-06-17 12:51:22 -0700 (Wed, 17 Jun 2015) $
+; $LastChangedRevision: 17897 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
 pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
                     pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
-                    mask_sc=mask_sc
+                    mask_sc=mask_sc, setval=setval, badval=badval
 
   compile_opt idl2
   
@@ -87,10 +93,18 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
     phi = 0
     return
   endif
+  
+  if (size(setval,/type) ne 0) then begin
+    print,"Setting the s/c potential to: ",setval
+    mvn_swe_engy.sc_pot = setval
+    return
+  endif
+  
+  if (size(badval,/type) eq 0) then badval = !values.f_nan
 
 ; Clear any previous potential calculations
 
-  mvn_swe_engy.sc_pot = !values.f_nan
+  mvn_swe_engy.sc_pot = badval
   
   if not keyword_set(erange) then erange = [3.,20.]
   erange = minmax(float(erange))
@@ -212,7 +226,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
   zcross = d2fs*shift(d2fs,1,0)
   zcross[0,*] = 1.
 
-  phi = replicate(!values.f_nan, npts)
+  phi = replicate(badval, npts)
   for i=0L,(npts-1L) do begin
     indx = where((dfs[*,i] gt thresh) and (zcross[*,i] lt 0.), ncross) ; local maxima in slope
 
@@ -238,7 +252,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
 
   fmax = max(mvn_swe_engy[gndx].data, dim=1)
   indx = where(fmax lt 1.e7, count)
-  if (count gt 0L) then phi[indx] = !values.f_nan
+  if (count gt 0L) then phi[indx] = badval
 
 ; Filter out shadow regions
 
@@ -250,7 +264,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
   if (i gt 0) then begin
     shadow = interpol(float(finite(wake.y)), wake.x, mvn_swe_engy[gndx].time)
     indx = where(shadow gt 0., count)
-    if (count gt 0L) then phi[indx] = !values.f_nan
+    if (count gt 0L) then phi[indx] = badval
   endif
 
 ; Filter out altitudes below 250 km
@@ -263,7 +277,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
   if (i gt 0) then begin
     altitude = interpol(alt.y, alt.x, mvn_swe_engy[gndx].time)
     indx = where(altitude lt 250., count)
-    if (count gt 0L) then phi[indx] = !values.f_nan
+    if (count gt 0L) then phi[indx] = badval
   endif
 
 ; Apply fudge factor, and store the result

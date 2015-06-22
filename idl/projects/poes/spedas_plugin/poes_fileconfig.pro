@@ -8,9 +8,9 @@
 ; 
 ;HISTORY:
 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-07 09:30:39 -0700 (Tue, 07 Apr 2015) $
-;$LastChangedRevision: 17248 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-06-19 18:59:28 -0700 (Fri, 19 Jun 2015) $
+;$LastChangedRevision: 17927 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/spedas_plugin/poes_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -32,7 +32,13 @@ pro poes_init_struct,state,struct
   endif else begin
     widget_control,state.nu_on_button,set_button=1
   endelse
-  
+
+  if struct.downloadonly eq 1 then begin
+    widget_control,state.do_on_button,set_button=1
+  endif else begin
+    widget_control,state.do_off_button,set_button=1
+  endelse
+
   widget_control,state.v_droplist,set_combobox_select=struct.verbose
 
 end
@@ -47,7 +53,7 @@ PRO poes_fileconfig_event, event
   Catch, err_xxx
   IF (err_xxx NE 0) THEN BEGIN
     Catch, /Cancel
-    Help, /Last_Message, Output = err_msg  
+    Help, /Last_Message
     state.statusbar->update,'Error in File Config.' 
     state.historywin->update,'Error in File Config.'
     Widget_Control, event.TOP, Set_UValue=state, /No_Copy
@@ -113,6 +119,18 @@ PRO poes_fileconfig_event, event
 
     END
     
+    'DOON': BEGIN
+
+      IF event.select EQ 1 then !poes.downloadonly=1 else !poes.downloadonly=0
+
+    END
+
+    'DOOFF': BEGIN
+
+      IF event.select EQ 1 then !poes.downloadonly=0 else !poes.downloadonly=1
+
+    END
+    
     'VERBOSE': BEGIN
 
        !poes.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
@@ -136,7 +154,12 @@ PRO poes_fileconfig_event, event
          widget_control,state.nu_off_button,set_button=1
        endif else begin
          widget_control,state.nu_on_button,set_button=1
-       endelse  
+       endelse
+       if !poes.downloadonly eq 1 then begin
+         widget_control, state.do_on_button, set_button=1
+       endif else begin
+         widget_Control, state.do_off_button, set_button=1
+       endelse
        widget_control,state.v_droplist,set_combobox_select=!poes.verbose
        state.historywin->update,'Resetting controls to saved values.'
        state.statusbar->update,'Resetting controls to saved values.'       
@@ -217,6 +240,15 @@ PRO poes_fileconfig, tab_id, historyWin, statusBar
   nu_on_button = widget_button(nu_buttonbase, value='Update if Newer  ', uval='NUON',/align_left,xsize=120)
   nu_off_button = widget_button(nu_buttonbase, value='Use Local Data Only', uval='NUOFF',/align_left)
 
+  ;downloadonly option
+  do_base = widget_base(configbase, /row, /align_left)
+  do_labelbase = widget_base(do_base, /col, /align_center)
+  do_label = widget_label(do_labelbase, value='Load into GUI:', /align_left, xsize=95)
+  do_buttonbase = widget_base(do_base, /exclusive, column=2, uval='DO',/align_center)
+  do_off_button = widget_button(do_buttonbase, value='Load data', uval='DOOFF', /align_left, xsize=120)
+  do_on_button = widget_button(do_buttonbase, value='Download Files Only', uval='DOON', /align_left, xsize=120)
+
+;Verbosity
   v_base = widget_base(configbase, /row, ypad=7)
   v_label = widget_label(v_base, value='Verbose (higher value = more comments):      ')
   v_values = ['0', '1', '2','3', '4', '5', '6', '7', '8', '9', '10']
@@ -233,6 +265,7 @@ PRO poes_fileconfig, tab_id, historyWin, statusBar
   state = {localdir:localdir, remotedir:remotedir, poes_cfg_save:poes_cfg_save, $
            nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
            nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
+           do_on_button:do_on_button, do_off_button:do_off_button, $
            v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
            def_values:def_values, historyWin:historyWin, tab_id:tab_id, master:master}
 

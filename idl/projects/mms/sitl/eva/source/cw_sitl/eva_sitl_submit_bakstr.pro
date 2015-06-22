@@ -27,8 +27,9 @@ PRO eva_sitl_submit_bakstr, tlb, TESTING
   ;------------------
   ; Modification Check
   ;------------------
-  diff = eva_sitl_strct_comp(tai_BAKStr_mod, tai_BAKstr_org); (0) Not equal (1) Equal
-  if strmatch(diff,'unchanged') then begin
+  ;diff = eva_sitl_strct_comp(tai_BAKStr_mod, tai_BAKstr_org); (0) Not equal (1) Equal
+  same = compare_struct(tai_BAKstr_mod, tai_BAKstr_org)
+  if same then begin
     msg = "The back-structure has not been modified at all."
     msg = [msg,'EVA cannot submit unmodified back-structure.']
     answer = dialog_message(msg,/info,/center,title=title)

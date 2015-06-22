@@ -14,18 +14,18 @@
 ; KEYWORDS:
 ; - vars: variable that you wish to load. Entered as a string, or string array if you want multiple variables loaded. Entries can be upper or lower case. 
 ;         The default (if not set) is to load all. There are twelve products LPW produces:
-;         wspecact
-;         wspecpas
-;         we12burstlf
-;         we12burstmf
-;         we12bursthf
-;         wn
-;         lpiv
-;         lpnt
-;         mrgexb
-;         mrgscpot
-;         euv
-;         e12
+;         wspecact       - waves active spectra
+;         wspecpas       - waves passive spectra
+;         we12burstlf    - electric field burst, low frequency
+;         we12burstmf    - electric field burst, mid frequency
+;         we12bursthf    - electric field burst, high frequency
+;         wn             - density derived from waves
+;         lpiv           - IV curves from Langmuir Probe mode
+;         lpnt           - Density, Temperature, Vsc dervied from lpiv
+;         mrgexb         - Pointing flux
+;         mrgscpot       - Vsc (spacecraft potential)
+;         euv            - EUV data
+;         e12            - 1D electric field
 ; 
 ; - level: level of data to load, entered as a string, or string array for multiple levels. Entries can be uppder or lower case. The default (if not set) is just L2. There are four options:
 ;   l1a, l1b, l2, all 
@@ -40,6 +40,7 @@
 ;                    each cdf file)
 ; -140718 clean up for check out L. Andersson
 ; -2015-01-09: CF: routine changed to accept date. This routine calls upon mvn_lpw_cdf_read_file and provides the filenames to do the loading.
+; -2015-04-30: CF: previous updates include ability to get EUV data, default is L2, checking input variables for errors.
 ;
 ; Version 2.0
 ;-
@@ -77,7 +78,8 @@ ENDIF ELSE BEGIN
 ENDELSE
 
 ;Check vars, levels. Make lower case, as all file names will be lower case.
-if keyword_set(vars) then vars = strlowcase(vars) else vars=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'e12']  ;default ;make everything lower case
+varsALL=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'e12']
+if keyword_set(vars) then vars = strlowcase(vars) else vars=varsALL  ;default ;make everything lower case
 if keyword_set(levels) then levels = strlowcase(levels) else levels = ['l2']
 euvcall = 0.
 euvget = 0.
@@ -86,6 +88,24 @@ if total(strmatch(vars, 'euv')) eq 1. then begin
     if neleV gt 1 then euvcall = 1.  ;print error message at end of routine
     if neleV eq 1 then euvget = 1.  ;if vars='EUV' then get EUV
 endif
+
+;Make a list of any input variables that are not recognized; tell user available options:
+neleIn = n_elements(Vars)
+notValid = ['']
+for tt = 0, neleIn-1 do begin
+    if total(strmatch(varsALL, vars[tt])) ne 1 then begin
+        notValid = [notValid, vars[tt]]
+    endif
+endfor
+if n_elements(notValid) gt 1 then begin
+    print, ""
+    print, name, " : ### WARNING ### : The following variables are not recognized as inputs: ", notValid
+    print,""
+    print, "The following are acceptable inputs: ", varsALL
+    print, "Please correct and re-run. Returning."
+    return
+endif
+
 
 ;Determine how many levels we have. Then, for each level, find the correct file based on vars:
 yr = strmid(date, 0, 4)
@@ -155,6 +175,8 @@ endif else begin
 
     ;Feed found files into read routine:
     mvn_lpw_cdf_read_file, dir=dirs, varlist=names
+    
+    mvn_lpw_cdf_read_extras  ;extract Ne, Te, Vsc to separate tplot variables
    
 endelse
 

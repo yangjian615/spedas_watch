@@ -44,8 +44,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-29 09:53:07 -0700 (Fri, 29 May 2015) $
-; $LastChangedRevision: 17766 $
+; $LastChangedDate: 2015-06-17 12:52:17 -0700 (Wed, 17 Jun 2015) $
+; $LastChangedRevision: 17898 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -65,6 +65,13 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
   endif
   tmin = min(time_double(trange), max=tmax)
 
+  if (size(state,/type) eq 0) then maven_orbit_tplot, /loadonly, /current
+
+  if keyword_set(app) then to_frame = 'MAVEN_APP' $
+                      else to_frame = 'MAVEN_SPACECRAFT'
+
+  if keyword_set(frame) then to_frame = strupcase(frame)
+
   mk = spice_test('*', verbose=-1)
   indx = where(mk ne '', count)
   if (count eq 0) then mvn_swe_spice_init, trange=[tmin,tmax]
@@ -80,13 +87,6 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
     Tsc = state.time
     Vsc = state.geo_v
   endelse
-
-  if keyword_set(app) then to_frame = 'MAVEN_APP' $
-                      else to_frame = 'MAVEN_SPACECRAFT'
-
-  if keyword_set(frame) then to_frame = strupcase(frame)
-
-  if (size(state,/type) eq 0) then maven_orbit_tplot, /loadonly, /current
 
 ; Spacecraft velocity in IAU_MARS frame --> rotate to S/C or APP frame
   

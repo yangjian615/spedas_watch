@@ -5,14 +5,13 @@
 ;   tstart: the start time
 ;   
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-16 17:03:15 -0700 (Tue, 16 Jun 2015) $
-; $LastChangedRevision: 17884 $
+; $LastChangedDate: 2015-06-18 21:39:05 -0700 (Thu, 18 Jun 2015) $
+; $LastChangedRevision: 17918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_read.pro $
 Function eva_sitl_strct_read, s, tstart, $
-  isPending=isPending, inPlaylist=inPlaylist, status=status, exclude_deleted=exclude_deleted
+  isPending=isPending, inPlaylist=inPlaylist, status=status, quiet=quiet
   compile_opt idl2
   
-  if n_elements(exclude_deleted) eq 0 then exclude_deleted=1
   if n_elements(status) eq 0 then status = '' else status = strlowcase(status)
   
   
@@ -35,19 +34,46 @@ Function eva_sitl_strct_read, s, tstart, $
       fom_y = [fom_y, 0., s.FOM[N], s.FOM[N], 0.]
     endfor 
   endif else begin
+    if (not keyword_set(quiet)) then begin
+      title = strupcase(status)
+      if keyword_set(isPending) then title = 'PENDING'
+      if keyword_set(inPlaylist) then title = 'IN-PLAYLIST'
+      str1 = ''
+      print, 'EVA:  '
+      print, 'EVA:----- List of '+title+' segments -----'
+      if (strmatch(status,'complete') or strmatch(status,'finished')) then str1 = ', finish time        ' 
+      print, 'EVA: segID, start time         , FOM    '+str1+', sourceID'
+    endif
+    ct = 0
     for N=0,Nsegs-1 do begin
       OK = 1
-      if keyword_set(isPending) then OK *= s.ISPENDING[N]
-      if keyword_set(inPlaylist)then OK *= s.INPLAYLIST[N]
-      if strlen(status) gt 1    then OK *= strmatch(strlowcase(s.STATUS[N]),status)
-      if keyword_set(exclude_deleted) then OK *= ~(strpos(strlowcase(s.STATUS[N]),'deleted') ge 0)
+      if keyword_set(isPending) then OK = s.ISPENDING[N]
+      if keyword_set(inPlaylist)then OK = s.INPLAYLIST[N]
+      if strlen(status) gt 1    then OK = (strpos(strlowcase(s.STATUS[N]),status) ge 0)
+      if (strpos(strlowcase(s.STATUS[N]),'incomplete') ge 0) and strmatch(status,'complete') then OK = 0
+      
       if OK then begin
+        fv = (strpos(strlowcase(s.STATUS[N]),'deleted') ge 0) ? 0 : s.FOM[N]
+        if strmatch(status,'deleted') then fv = s.FOM[N]
         ss = double(s.START[N])
-        se = double(s.STOP[N])
+        se = double(s.STOP[N]+10.d0)
         fom_x = [fom_x, ss, ss, se, se]
-        fom_y = [fom_y, 0., s.FOM[N], s.FOM[N], 0.]
+        fom_y = [fom_y, 0., fv, fv, 0.]
+        
+        ; output in console
+        if not keyword_set(quiet) then begin
+          strN = string(N, format='(I5)')
+          strF = string(s.FOM[N], format='(F7.3)')
+          strout = 'EVA: '+strN+': '+time_string(ss)+', '+strF
+          if strlen(str1) gt 0 then strout += ', '+s.FINISHTIME[N]
+          print, strout+', '+s.SOURCEID[N]
+        endif
+        ct += 1
       endif
     endfor
+    if (ct eq 0) and (~keyword_set(quiet)) then begin
+      print, 'EVA: ... '+strupcase(status)+' segment not found!'
+    endif
   endelse
   
   D = {x:fom_x, y:fom_y}

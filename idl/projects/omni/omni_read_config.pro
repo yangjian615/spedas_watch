@@ -15,9 +15,9 @@
 ; cstruct = a structure with the changeable fields of the !istp
 ;           structure
 ; Copied from thm_read_config and tt2000_read_config lphilpott 20-jun-2012
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-22 15:41:37 -0700 (Wed, 22 Apr 2015) $
-;$LastChangedRevision: 17398 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-06-19 19:25:49 -0700 (Fri, 19 Jun 2015) $
+;$LastChangedRevision: 17928 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/omni_read_config.pro $
 ;-
 Function omni_config_template
@@ -40,8 +40,7 @@ End
 Function omni_read_config, header = hhh
   otp = -1
 ;First step is to get the filename
-;For this example the directory name has been hard coded
-  dir = 'C:\Users\clrussell\.idl\omni\'
+  dir = omni_config_filedir(/app_query)
   If(dir[0] Ne '') Then Begin
 ;Is there a trailing slash? Not for linux or Windows, not sure about Mac
     ll = strmid(dir, strlen(dir)-1, 1)

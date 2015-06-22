@@ -8,11 +8,11 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-16 17:03:15 -0700 (Tue, 16 Jun 2015) $
-; $LastChangedRevision: 17884 $
+; $LastChangedDate: 2015-06-19 15:50:00 -0700 (Fri, 19 Jun 2015) $
+; $LastChangedRevision: 17924 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
-PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
+PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVERRIDE
   compile_opt idl2
   
   if n_elements(user_flag) eq 0 then user_flag = 0
@@ -24,22 +24,23 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
   tfom = eva_sitl_tfom(s)
 
   ;validation
-  r = segment_overlap([segSelect.TS,segSelect.TE],tfom)
-  case r of
-    -1: segSelect.TS = tfom[0]
-     1: segSelect.TE = tfom[1]
-     2: message,'Something is wrong'
-;     3: message,'Something is wrong'
-;     Commented out on 2015 Jun 16. We needed to select the entire target time for testing.
-;     So, it is okay if the selected segment was exactly the same as 'tfom'.
-    else:;-2 or 0 --> OK
-  endcase
-
-  print, 'EVA: (eva_sitl_strct_update) tfom1 ', time_string(tfom[1])
-  print, 'EVA: (eva_sitl_strct_update) segSelect.Te ', time_string(segSelect.TE)
+  if not keyword_set(BAK) then begin
+    r = segment_overlap([segSelect.TS,segSelect.TE],tfom)
+    case r of
+      -1: segSelect.TS = tfom[0]
+       1: segSelect.TE = tfom[1]
+       2: message,'Something is wrong'
+  ;     3: message,'Something is wrong'
+  ;     Commented out on 2015 Jun 16. We needed to select the entire target time for testing.
+  ;     So, it is okay if the selected segment was exactly the same as 'tfom'.
+      else:;-2 or 0 --> OK
+    endcase
+  endif
   
   ;main (Determine if segSelect is for FOMStr or BAKStr)
   r = segment_overlap([segSelect.TS,segSelect.TE],tfom)
+  if (keyword_set(BAK) or segSelect.BAK) then r=-2
+  
   if (r eq 0) or (r eq 3) then begin
     ;----------------------
     ; FOMStr
@@ -150,7 +151,9 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
       
     endif else begin; No segment
       if user_flag ne 4 then begin; if not FPI-cal
-        r = dialog_message("You can't delete all segments.",/center)
+        if ~keyword_set(override) then begin
+          r = dialog_message("You can't delete all segments.",/center)
+        endif
       endif else begin
         str_element,/add,s,'FOM',[0.]; FOM value = 0
         str_element,/add,s,'START',[0L]; start of the 1st cycle
@@ -183,16 +186,16 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
       Nsegs = n_elements(s.FOM)
       matched=0
       for N=0,Nsegs-1 do begin; scan all segment
-        rr = segment_overlap([s.START[N],s.STOP[N]],[segSelect.TS,segSelect.TE])
-        if (rr eq 3) or (rr eq 0) then begin
+        rr = segment_overlap([s.START[N],s.STOP[N]+10.d0],[segSelect.TS,segSelect.TE])
+        if (rr eq 3)  then begin
           if segSelect.FOM gt 0 then begin;.................. EDIT
             s.FOM[N]    = segSelect.FOM
             s.STATUS[N] = 'MODIFIED'
-            s.CHANGESTATUS[N] = 1L
+            s.CHANGESTATUS[N] = 1L; REQUIRED BY RICK (signifies the segment was modified)
             s.SOURCEID[N] = defSourceID
           endif else begin;............................ DELETE
             s.STATUS[N] = 'DELETED'
-            s.CHANGESTATUS[N] = 0L
+            s.CHANGESTATUS[N] = 2L; REQUIRED BY RICK (signifies the segment was deleted) 
             s.SOURCEID[N] = defSourceID
           endelse
           matched=1
@@ -203,8 +206,8 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
         str_element,/add,s,'STOP', [s.STOP,  long(segSelect.TE)]
         str_element,/add,s,'FOM',  [s.FOM,   segSelect.FOM]
         str_element,/add,s,'SEGLENGTHS',[s.SEGLENGTHS, floor((segSelect.TE-segSelect.TS)/10.d)]
-        str_element,/add,s,'CHANGESTATUS',[s.CHANGESTATUS, 1L]
-        str_element,/add,s,'DATASEGMENTID',[s.DATASEGMENTID, -1L]
+        str_element,/add,s,'CHANGESTATUS',[s.CHANGESTATUS, 0L]; REQUIRED BY RICK (signifies the segment was added)
+        str_element,/add,s,'DATASEGMENTID',[s.DATASEGMENTID, -1L]; REQUIRED BY SDC (all segment must have an ID) 
         str_element,/add,s,'PARAMETERSETID',[s.PARAMETERSETID, ''];the revision ID of a BDM configuration file for FOM calculation
         str_element,/add,s,'ISPENDING',[s.ISPENDING,0L]
         str_element,/add,s,'INPLAYLIST',[s.INPLAYLIST,0L]
@@ -217,9 +220,9 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag
         str_element,/add,s,'CREATETIME',[s.CREATETIME,'']; the UTC time the segment was defined and entered into BDM
         str_element,/add,s,'FINISHTIME',[s.FINISHTIME,'']; the UTC time when the segment was no longer pending any more processing.
       endif
-      
+
       ;update 'mms_sitl_bakstr'
-      D = eva_sitl_strct_read(s,min(s.START,/nan))
+      D = eva_sitl_strct_read(s,min(s.START,/nan),/quiet)
       store_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl; update data points
       options,'mms_stlm_bakstr','unix_BAKStr_mod',s ; update structure
       

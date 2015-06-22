@@ -69,9 +69,6 @@ FUNCTION eva_data_pref_event, ev
         pref.EVA_PARAMSET_DIR = file
       endif
       end
-    state.bgTestmode:  begin
-      pref.EVA_TESTMODE = ev.SELECT
-      end
     else:
   endcase
   ;-----
@@ -119,10 +116,6 @@ FUNCTION eva_data_pref, parent, GROUP_LEADER=group_leader, $
     baseInput2 = widget_base(mainbase,/row,/align_center)
     str_element,/add,state,'txtPath2',widget_text(baseInput2,VALUE=state.PREF.EVA_PARAMSET_DIR,XSIZE=55,/editable)
     str_element,/add,state,'btnPath2',widget_button(baseInput2,VALUE=openBMP,/Bitmap)
-    
-  ; test mode
-  str_element,/add,state,'bgTestmode',cw_bgroup(mainbase,'Test Mode',$
-    /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_TESTMODE)
 
 
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY

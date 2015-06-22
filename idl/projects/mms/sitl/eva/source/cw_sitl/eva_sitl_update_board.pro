@@ -3,8 +3,8 @@
 ; activate = 2; sensitive (initialize)
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-16 17:03:15 -0700 (Tue, 16 Jun 2015) $
-; $LastChangedRevision: 17884 $
+; $LastChangedDate: 2015-06-19 22:17:56 -0700 (Fri, 19 Jun 2015) $
+; $LastChangedRevision: 17931 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_update_board.pro $
 ;
 PRO eva_sitl_update_board, state, activate
@@ -64,9 +64,15 @@ PRO eva_sitl_update_board, state, activate
     mymodel3 = obj_new('IDLgrModel')
     
     
-    oBackStr = obj_new('IDLgrText','Back Structure Mode',FONT=myfontL,COLOR=cred,  LOCATION=[x0,yB1])
+    oBackStr = obj_new('IDLgrText','Back Structure Mode',COLOR=cred,  LOCATION=[x0,yB1])
+    oBackStr2 = obj_new('IDLgrText','DELETED segments are not displayed.',COLOR=cblack,  LOCATION=[x0,yB2])
+    oBackStr3 = obj_new('IDLgrText','Use the Status dropdown menu to',COLOR=cblack,  LOCATION=[x0,yB3])
+    oBackStr4 = obj_new('IDLgrText','hightlight them (if exist).',COLOR=cblack,  LOCATION=[x0,yB4])
     myviewB->Add, mymodel3
     mymodel3 ->Add, oBackStr
+    mymodel3 ->Add, oBackStr2
+    mymodel3 ->Add, oBackStr3
+    mymodel3 ->Add, oBackStr4
 
     
     ;///// MAIN VIEW /////////////////////////////////
@@ -77,8 +83,8 @@ PRO eva_sitl_update_board, state, activate
     mymodel  = obj_new('IDLgrModel')
     mymodel2 = obj_new('IDLgrModel')
     
-    oTime    = obj_new('IDLgrText','time',FONT=myfont,COLOR=cwindow,   LOCATION=[x0,y1-dy])
-    oTimeCtdn= obj_new('IDLgrText','remaining',FONT=myfont,COLOR=cwindow,LOCATION=[x0,y1-2*dy])
+    oTime    = obj_new('IDLgrText','Current Time:',FONT=myfont,COLOR=cwindow,   LOCATION=[x0,y1-dy])
+    oTimeCtdn= obj_new('IDLgrText','',FONT=myfont,COLOR=cwindow,LOCATION=[x0,y1-2*dy])
     oNsegs   = obj_new('IDLgrText','Segs',FONT=myfontL,COLOR=cwindow,  LOCATION=[x0,yB1])
     oNBuffs  = obj_new('IDLgrText','NBuffs',FONT=myfontL,COLOR=cwindow,LOCATION=[x0,yB2])
     oMinu    = obj_new('IDLgrText','min',FONT=myfont,COLOR=cwindow,    LOCATION=[x0,yB3])
@@ -192,8 +198,10 @@ PRO eva_sitl_update_board, state, activate
       
       cst = time_string(systime(1,/utc));................. current time
       css = strmid(cst, 5,2)+'/'+strmid(cst, 8,2)+$
-        ' '+strmid(cst, 11,5) + ' UT'
-      sg.oTime ->SetProperty,STRING=css
+        ' '+strmid(cst, 11,5) + ' UTC'
+      css0 = css
+      sg.oTime ->SetProperty,STRING='Current Time:';css
+      
       
       ;..................................................... countdown
       dst = systime(1,/utc) - state.launchtime ; number of seconds passed since the launch of EVA
@@ -202,6 +210,7 @@ PRO eva_sitl_update_board, state, activate
       rem_mn = string(floor((rem_sec-rem_hr*3600.d0)/60.d0),format='(I02)')
       rem_ss = string(floor(rem_sec-rem_hr*3600.d0-rem_mn*60.d0),format='(I02)')
       css = 'remaining '+rem_hr+':'+rem_mn+':'+rem_ss
+      css = css0
       sg.oTimeCtdn ->SetProperty,STRING=css
       
       if (f.Nsegs eq 1) and (f.NBuffs eq 1) then begin

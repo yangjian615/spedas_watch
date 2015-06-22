@@ -30,15 +30,183 @@
 ;         https://lasp.colorado.edu/galaxy/display/mms/MMS+Data+Rights+and+Rules+for+Data+Use
 ;         
 ;     3) Updated to use the MMS web services API
+;     
+;     4) The LASP web services API uses SSL/TLS, which is only supported by IDLnetURL 
+;         in IDL 7.1 and later. 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-16 08:46:29 -0700 (Tue, 16 Jun 2015) $
-;$LastChangedRevision: 17880 $
+;$LastChangedDate: 2015-06-19 15:57:22 -0700 (Fri, 19 Jun 2015) $
+;$LastChangedRevision: 17925 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
-; to download definitive attitude data:
-; /mms/sdc/sitl/files/api/v1/download/ancillary?start_date=2015-03-23&end_date=2015-03-30&product=defatt&sc_id=mms1
+function mms_login_lasp, login_info = login_info
+    ; restore the login info
+    if undefined(login_info) then login_info = 'mms_auth_vassilis.sav'
+    restore, login_info
+    if is_struct(auth_info) then begin
+        username = auth_info.user
+        password = auth_info.password
+    endif else begin
+        ; need to login to access the web services API
+        dprint, dlevel = 0, 'Error, need to provide login information to access the web services API via the login_info keyword'
+        return, -1
+    endelse
+    
+    ; halt and warn the user if they're using IDL before 7.1 due to SSL/TLS issue
+    if double(!version.release) lt 7.1d then begin
+        dprint, dlevel = 0, 'Error, IDL 7.1 or later is required to use mms_load_data.'
+        return, -1
+    endif
+    
+    ; the IDLnetURL object returned here is also stored in the common block
+    ; (this is why we never use net_object after this line, but this call is still 
+    ; necessary to login)
+    net_object = get_mms_sitl_connection(username=username, password=password)
+    return, 1
+end
+
+; for some reason, the JSON object returned by the server is
+; an array of strings, with even indices (0, 2, 4, ..) containing
+; file names (along with other JSON stuff) and odd indices (1, 3, 5, ..) 
+; containing file sizes (also along with other JSON stuff). This
+; function parses out the filenames/filesizes from this array
+; and returns an array of structs with the names and sizes
+function mms_get_filename_size, json_object
+    ; kludgy to deal with IDL's lack of a parser for json
+    num_structs = n_elements(json_object)/2
+    counter = 0
+    remote_file_info = replicate({filename: '', filesize: 0l}, num_structs)
+    
+    for struct_idx = 0, n_elements(json_object)-1, 2 do begin
+        ; even indices are filenames
+        remote_file_info[counter].filename = (strsplit(json_object[struct_idx], '": "', /extract))[2]
+        ; odd indices are filesizes
+        remote_file_info[counter].filesize = (strsplit((strsplit(json_object[struct_idx+1], '": "', /extract))[1], '}', /extract))[0]
+        counter += 1
+    endfor
+    return, remote_file_info
+end
+
+function mms_load_defatt_file, filename
+    if filename eq '' then begin
+        dprint, dlevel = 0, 'Error loading a definitive attitude file - no filename given.'
+        return, 0
+    endif
+    ; from ascii_template on a definitive attitude file
+    defatt_template = { VERSION: 1.00000, $
+        DATASTART: 49, $
+        DELIMITER: 32b, $
+        MISSINGVALUE: !values.D_NAN, $
+        COMMENTSYMBOL: 'COMMENT', $
+        FIELDCOUNT: 21, $
+        FIELDTYPES: [7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7], $
+        FIELDNAMES: ['Time', 'Elapsed', 'q1', 'q2', 'q3', 'qc', 'wX', 'wY', 'wZ', 'wPhase', 'zRA', 'zDec', 'ZPhase', 'LRA', 'LDec', 'LPhase', 'PRA', 'PDec', 'PPhase', 'Nut', 'QF'], $
+        FIELDLOCATIONS: [0, 22, 38, 47, 55, 65, 73, 80, 87, 94, 102, 111, 118, 126, 135, 142, 150, 159, 166, 176, 183], $
+        FIELDGROUPS: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
+    
+    def_att = read_ascii(filename, template=defatt_template, count=num_items)
+    
+    return, def_att
+end
+
+pro mms_load_defatt_tplot, filenames, tplotnames = tplotnames, prefix = prefix
+    ; print a warning about how long this takes so user's do not
+    ; assume the process is frozen after a few seconds
+    dprint, dlevel = 1, 'Loading definitive attitude files can take some time; please be patient...'
+    if undefined(prefix) then prefix = 'mms'
+
+    for file_idx = 0, n_elements(filenames)-1 do begin
+        ; load the data from the ASCII file
+        new_def_att_data = mms_load_defatt_file(filenames[file_idx])
+        if is_struct(new_def_att_data) then begin
+            ; note on time format in this file:
+            ; date/time values are stored in the format: YYYY-DOYThh:mm:ss.fff
+            ; so to convert the first time value to a time_double, 
+            ;    time_values = time_double(new_def_att_data.time, tformat='YYYY-DOYThh:mm:ss.fff')
+            append_array, time_values, time_double(new_def_att_data.time[0:n_elements(new_def_att_data.time)-2], tformat='YYYY-DOYThh:mm:ss.fff')
+            append_array, def_att_data_ras, new_def_att_data.LRA[0:n_elements(new_def_att_data.time)-2]
+            append_array, def_att_data_dec, new_def_att_data.LDEC[0:n_elements(new_def_att_data.time)-2]
+        endif
+    endfor
+    
+    ; check that some data was actually loaded in
+    if undefined(time_values) then begin
+        dprint, dlevel = 0, 'Error loading attitude data - no data was loaded.'
+        return
+    endif
+    
+    store_data, prefix + '_defatt_spinras', data={x: time_values, y: def_att_data_ras}
+    store_data, prefix + '_defatt_spindec', data={x: time_values, y: def_att_data_dec}
+    
+    append_array, tplotnames, prefix + ['_defatt_spinras', '_defatt_spindec']
+end
+
+pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotnames, login_info = login_info
+    if undefined(trange) then begin
+        dprint, dlevel = 0, 'Error loading MMS definitive attitude data - no time range given.'
+        return
+    endif
+    if undefined(probe) then begin
+        dprint, dlevel = 0, 'Error loading MMS definitive attitude data - no probe given.'
+        return
+    endif
+    if not keyword_set(remote_data_dir) then remote_data_dir = 'https://lasp.colorado.edu/mms/sdc/about/browse/'
+    if not keyword_set(local_data_dir) then local_data_dir = 'c:\data\mms\'
+    mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
+    if not keyword_set(source) then source = !mms
+    
+    probe = strcompress(string(probe), /rem)
+    start_time = time_double(trange[0])-60*60*24.
+    end_time = time_double(trange[1])
+    
+    start_time_str = time_string(start_time, tformat='YYYY-MM-DD')
+    end_time_str = time_string(end_time, tformat='YYYY-MM-DD')
+    
+    file_dir = local_data_dir + 'ancillary/'
+
+    status = mms_login_lasp(login_info=login_info)
+    if status ne 1 then return
+    
+    ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, product='defatt', start_date=start_time_str, end_date=end_time_str)
+    
+    remote_file_info = mms_get_filename_size(ancillary_file_info)
+    
+    doys = n_elements(remote_file_info)
+    
+    
+    ; make sure the directory exists
+    dir_search = file_search(file_dir, /test_directory)
+    if dir_search eq '' then file_mkdir2, file_dir
+    
+    for doy_idx = 0, doys-1 do begin
+        ; check if the file exists
+        file_exists = file_test(file_dir + '/' + remote_file_info[doy_idx].filename, /regular)
+        
+        ; if it does, only download if it the sizes are different
+        same_file = 0
+        if file_exists eq 1 then begin
+            ; the file exists, check the size
+            f_info = file_info(file_dir + '/' + remote_file_info[doy_idx].filename)
+            local_file_size = f_info.size
+            remote_file_size = remote_file_info[doy_idx].filesize
+            if long(local_file_size) eq long(remote_file_size) then same_file = 1
+        endif
+        
+        if same_file eq 0 then begin
+            dprint, dlevel = 0, 'Downloading ' + remote_file_info[doy_idx].filename + ' to ' + file_dir
+            status = get_mms_ancillary_file(filename=remote_file_info[doy_idx].filename, local_dir=file_dir)
+    
+            if status eq 0 then append_array, daily_names, file_dir + remote_file_info[doy_idx].filename
+        endif else begin
+            dprint, dlevel = 0, 'Loading local file ' + file_dir + remote_file_info[doy_idx].filename
+            append_array, daily_names, file_dir + remote_file_info[doy_idx].filename
+        endelse
+    endfor
+    mms_load_defatt_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe
+
+end
+
 
 ; takes in 4-d AFG/DFG data as a tplot variable and splits into 2 tplot variables: 
 ;   1) b_total, 2) b_vector (Bx, By, Bz)
@@ -140,22 +308,8 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
     mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
     if undefined(source) then source = !mms
     
-    ; restore the login info
-    if undefined(login_info) then login_info = 'mms_auth_vassilis.sav'
-    restore, login_info
-    if is_struct(auth_info) then begin
-        username = auth_info.user
-        password = auth_info.password
-    endif else begin
-        ; need to login to access the web services API
-        dprint, dlevel = 0, 'Error, need to provide login information to access the web services API via the login_info keyword'
-        return
-    endelse
-    
-    ; the IDLnetURL object returned here is also stored in the common block
-    ; (this is why we never use net_object after this line, but this call is still 
-    ; necessary to login)
-    net_object = get_mms_sitl_connection(username=username, password=password)
+    status = mms_login_lasp(login_info = login_info)
+    if status ne 1 then return
     
     for probe_idx = 0, n_elements(probes)-1 do begin
         probe = 'mms' + strcompress(string(probes[probe_idx]), /rem)
@@ -180,11 +334,17 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
                 continue
             endif
             
-            ;kludgy to deal with IDL's lack of a parser for json
-            filename = (strsplit(data_file[0], '": "', /extract))[2]
+            remote_file_info = mms_get_filename_size(data_file)
+            
+            if ~is_struct(remote_file_info) then begin
+                dprint, dlevel = 0, 'Error getting the information on remote files'
+                return
+            endif
+            
+            filename = remote_file_info.filename
             
             ; make sure the directory exists
-            file_dir = local_data_dir + probe+'/'+month_directory
+            file_dir = strlowcase(local_data_dir + probe + '/' + month_directory)
             dir_search = file_search(file_dir, /test_directory)
             if dir_search eq '' then file_mkdir2, file_dir
             
@@ -197,7 +357,7 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
                 ; the file exists, check the size
                 f_info = file_info(file_dir + '/' + filename)
                 local_file_size = f_info.size
-                remote_file_size = (strsplit((strsplit(data_file[1], '": "', /extract))[1], '}', /extract))[0]
+                remote_file_size = remote_file_info.filesize
                 if long(local_file_size) eq long(remote_file_size) then same_file = 1
             endif
             

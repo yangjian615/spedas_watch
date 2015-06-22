@@ -1,7 +1,7 @@
 ;+
 ; NAME: EVA
 ;
-; PURPOSE: The burst-trigger management tool for MMS-SITL 
+; PURPOSE: burst-trigger management tool for MMS-SITL 
 ;
 ; CALLING SEQUENCE: Type in 'eva' into the IDL console and hit return.
 ;
@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-06 14:20:56 -0700 (Sat, 06 Jun 2015) $
-; $LastChangedRevision: 17816 $
+; $LastChangedDate: 2015-06-19 15:50:00 -0700 (Fri, 19 Jun 2015) $
+; $LastChangedRevision: 17924 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -31,21 +31,12 @@ PRO eva_event, event
     wid.base        : if strmatch(tag_names(event,/structure_name),'WIDGET_KILL_REQUEST') then exitcode=1
     wid.exit        : exitcode = 1
     wid.mnPref      : begin
-      ;r = get_mms_sitl_connection(group_leader=event.TOP)
       eva_pref, GROUP_LEADER = event.top
       end
-    wid.mnHelp_release:begin
-      dir = file_search(ProgramRootDir()+'data',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
-      online_help,BOOK=dir+'release_notes.html'
-      end
     wid.mnHelp_about:begin
-      msg = ['EVA Version 0.4',' ','Created by Mitsuo Oka at UC Berkeley']
+      msg = ['EVA for MMS/SITL',' ','Created by Mitsuo Oka at UC Berkeley']
       answer=dialog_message(msg,/info,/center)
       end 
-    ;wid.mnH_Guide  :   begin
-    ;fullpath = filepath(root_dir=ProgramRootDir(), 'eva_help.pdf')
-    ;online_help,'Getting Started', BOOK=fullpath,/full_path;fullpath,/full_path
-    ;end
     else:
   endcase
 
@@ -56,7 +47,7 @@ PRO eva_event, event
     if ct eq 1 then begin
       eva_sitl_cleanup
     endif
-    
+    del_data,'*'
     widget_control, event.top, /DESTROY
     
     if (!d.flags and 256) ne 0  then begin    ; windowing devices
@@ -96,9 +87,6 @@ PRO eva
   thm_init
   mms_init
 
-  ;cfg = eva_config_read()
-  ;if n_tags(cfg) eq 0 then dir = eva_config_filedir(); create config directory if not found
-
   !EXCEPT = 0; stop reporting of floating point errors
   ;use themis bitmap as toolbar icon for newer versions
   if double(!version.release) ge 6.4d then begin
@@ -109,7 +97,6 @@ PRO eva
   endif
 
   ;////////// WIDGET LAYOUT /////////////////////////////////
-
 
   scr_dim    = get_screen_size()
   xoffset = scr_dim[0]*0.3 > 0.;-650.-286-50. > 0.
@@ -123,14 +110,11 @@ PRO eva
   mnFile = widget_button(mbar, VALUE='File', /menu)
   str_element,/add,wid,'mnPref',widget_button(mnFile,VALUE='Preference')
   str_element,/add,wid,'exit',widget_button(mnFile,VALUE='Exit',/separator)
-  ;    mnPref = widget_button(mbar, VALUE='Preference',/menu)
-  ;      str_element,/add,wid,'mnPref_path',widget_button(mnPref,VALUE='Path',/checked_menu)
   ;      mnPref_orb = widget_button(mnPref,VALUE='Orbit',/menu)
   ;        str_element,/add,wid,'mnPref_orbs',widget_button(mnPref_orb,VALUE='Show')
   ;        str_element,/add,wid,'mnPref_orbs_hide',-1
   ;        str_element,/add,wid,'mnPref_orbu',widget_button(mnPref_orb,VALUE='Update data')
   mnHelp = widget_button(mbar, VALUE='Help',/menu)
-  str_element,/add,wid,'mnHelp_release',widget_button(mnHelp,VALUE='Release Notes')
   str_element,/add,wid,'mnHelp_about',widget_button(mnHelp,VALUE='About EVA')
 
   ;---------------------------------
@@ -138,7 +122,6 @@ PRO eva
   ;---------------------------------
   str_element,/add,wid,'data',eva_data(base,xsize=330); DATA MODULE
   baseTab = widget_tab(base)
-
   
   ;---------------------------------
   ;  SITL
@@ -157,9 +140,6 @@ PRO eva
   ; initiate modules
   widget_control, wid.sitl,  SET_VALUE=2
   ;widget_control, wid.orbit, SET_VALUE=1
-
-
-  ; str_element,/add,wid,'d',d
 
   ; end of initialization
   widget_control, base, SET_UVALUE=wid

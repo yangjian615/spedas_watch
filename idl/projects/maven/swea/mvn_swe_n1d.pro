@@ -33,16 +33,19 @@
 ;
 ;   ERANGE:   Restrict calculation to this energy range.
 ;
+;   BACKGROUND: Set the background to this value.  Units = EFLUX.  Default is
+;               to use the value in the data structure.
+;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-01 16:39:42 -0700 (Mon, 01 Jun 2015) $
-; $LastChangedRevision: 17781 $
+; $LastChangedDate: 2015-06-17 12:52:38 -0700 (Wed, 17 Jun 2015) $
+; $LastChangedRevision: 17899 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-
 pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, $
-                 mom=mom, minden=minden, erange=erange
+                 mom=mom, minden=minden, erange=erange, background=background
 
   compile_opt idl2
 
@@ -118,6 +121,7 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask
     temp = dens
     dsig = dens
     tsig = dens
+    bkg = dens
   
     mvn_swe_convert_units, mvn_swe_engy, 'counts'
     cnts = mvn_swe_engy.data
@@ -126,7 +130,8 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask
     mvn_swe_convert_units, mvn_swe_engy, 'eflux'    
     energy = mvn_swe_engy.energy
     eflux = mvn_swe_engy.data
-    bkg = mvn_swe_engy.bkg
+    if (size(background,/type) ne 0) then bkg[*] = float(background) $
+                                     else bkg = mvn_swe_engy.bkg
     sc_pot = mvn_swe_engy.sc_pot
   endelse
 

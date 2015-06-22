@@ -44,37 +44,30 @@ PRO eva_sitl_fom_recover,strcmd
   i_fom_stack = i
 END
 
-; This function validates the input 't' and returns the variable "BAK"
-; BAK =  1 .... If 't' falls in the BAKStr time
-; BAK =  0 .... If 't' falls in the FOMStr time
-; BAK = -1 .... If 't' was crossing the FOM/BAK border or too big.
+; This procedure validates the input 't' (in FOMstr mode)
 FUNCTION eva_sitl_seg_validate, t
   compile_opt idl2
 
   get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
   tfom = eva_sitl_tfom(lim.UNIX_FOMSTR_MOD)
-  case n_elements(t) of
-    1: BAK = (t lt tfom[0])
+  nt = n_elements(t)
+  case nt of
+    1: msg =  ((t lt tfom[0]) or (tfom[1] lt t)) ? 'Out of time range' : 'ok' 
     2: begin
       r = segment_overlap(t, tfom)
-      BAK = -1
-      msg = 'ok'
       case r of
-        -2: BAK = 1
-        -1: msg = 'The selected segment is crossing the FOM/BAK boundary.'
-        0: BAK = 0
+        -2: msg = 'Out of time range'
+        -1: msg = 'Out of time range'
         1: msg = 'Out of time range'
         2: msg = 'Out of time range'
-        3: msg = 'Segment too big.'
         4: msg = 'Segment too big.'
-        else: message,'Something is wrong'
+        else: msg = 'ok'
       end; case r of
-      print, 'EVA: selected segment validate result, r ='+strtrim(string(r),2)
-      if ~strmatch(msg,'ok') then rst = dialog_message(msg,/info,/center)
-    end; 2:begin
-    else: message,'"t" must be 1 or 2 element array.'
+      end
+    else:message,'"t" must be 1 or 2 element array.'
   endcase
-  return, BAK
+  if ~strmatch(msg,'ok') then rst = dialog_message(msg,/info,/center)
+  return, msg
 END
 
 ; For a given time range 'trange', create "segSelect"
@@ -100,11 +93,13 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
     trange = [trange[1], trange_temp]
   endif
 
-  BAK = eva_sitl_seg_validate(trange); Validate against FOM time interval
-  ; This function validates the input 't' and returns the variable "BAK"
-  ; BAK =  1 .... If 't' falls in the BAKStr time
-  ; BAK =  0 .... If 't' falls in the FOMStr time
-  ; BAK = -1 .... If 't' was crossing the FOM/BAK border or too big.
+  if ~state.pref.EVA_BAKSTRUCT then begin
+    BAK = 0
+    msg = eva_sitl_seg_validate(trange) ; Validate against FOM time interval
+    if ~strmatch(msg,'ok') then return
+  endif else BAK = 1
+  
+  time = timerange(/current)
   
   if BAK eq 1 then begin
     ; validation (BAKStr: make sure 'trange' does not overlap with existing segments)
@@ -114,8 +109,8 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
 
     ct_overlap = 0; count number of overlapped segments
     for N=0,Nsegs-1 do begin
-      if ~strcmp(s.STATUS[N],'DELETED') then begin
-        if s.START[N] gt s.STOP[N] then stop
+      if (strpos(s.STATUS[N],'DELETED') lt 0) then begin
+        if s.START[N] gt s.STOP[N] then message,'Something is wrong'
         rr = segment_overlap([s.START[N],s.STOP[N]],trange)
         if ((rr eq 4) or (rr eq 3) or (rr eq -1) or (rr eq 1) or (rr eq 0)) then ct_overlap += 1
       endif
@@ -126,13 +121,38 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
       return
     endif
     wgrid = [0];s.TIMESTAMPS
+    
+    ;if trange passed the overlap test, then find the limit for time-range modification
+    ;during ADD process.
+    
+    idx = where(strpos(s.STATUS,'DELETED') lt 0,ND_Nsegs)
+    ND_START = s.START[idx]
+    ND_STOP  = s.STOP[idx]
+    for N=0,ND_Nsegs-2 do begin
+      if (ND_STOP[N] lt trange[0]) and (trange[1] le ND_START[N+1]) then begin
+        ts_limit = ND_STOP[N]+10.d0
+        te_limit = ND_START[N+1]-10.d0
+      endif
+    endfor
+    if trange[1] lt ND_START[0] then begin
+      ts_limit = 0.d0
+      te_limit = ND_START[0]-10.d0
+    endif
+    if trange[0] gt ND_STOP[ND_Nsegs-1] then begin
+      ts_limit = ND_STOP[ND_Nsegs-1]+10.d0
+      te_limit = systime(1,/utc)
+    endif
+    if ts_limit lt time[0] then ts_limit = time[0]
+    if te_limit gt time[1] then te_limit = time[1]
   endif
 
   if BAK eq 0 then begin
     get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
     s = lim.unix_FOMStr_mod
     dtlast = s.TIMESTAMPS[s.NUMCYCLES-1]-s.TIMESTAMPS[s.NUMCYCLES-2]
-    wgrid = [s.TIMESTAMPS,s.TIMESTAMPS[s.NUMCYCLES-1]+dtlast] 
+    wgrid = [s.TIMESTAMPS,s.TIMESTAMPS[s.NUMCYCLES-1]+dtlast]
+    ts_limit = time[0]
+    te_limit = time[1] 
   endif
   
   if BAK ne -1 then begin
@@ -154,7 +174,8 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
     
     ; segSelect
     if n_elements(var) eq 0 then message,'Must pass tplot-variable name'
-    segSelect = {ts:trange[0], te:tedef, fom:RealFOM, BAK:BAK, discussion:' ', var:var}
+    segSelect = {ts:trange[0], te:tedef, fom:RealFOM, BAK:BAK, discussion:' ', var:var,$
+      ts_limit:ts_limit, te_limit:te_limit}
     eva_sitl_FOMedit, state, segSelect, wgrid=wgrid ;Here, change FOM value only. No trange change.
   endif
 END
@@ -176,12 +197,12 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
 
   if n_elements(var) eq 0 then message,'Must pass tplot-variable name'
   
-  BAK = eva_sitl_seg_validate(t); Validate against FOM time interval
-  ; This function validates the input 't' and returns the variable "BAK"
-  ; BAK =  1 .... If 't' falls in the BAKStr time
-  ; BAK =  0 .... If 't' falls in the FOMStr time
-  ; BAK = -1 .... If 't' was crossing the FOM/BAK border or too big.
-  print,'EVA: BAK='+string(long(BAK))
+  if ~state.pref.EVA_BAKSTRUCT then begin
+    BAK = 0
+    msg = eva_sitl_seg_validate(t) ; Validate against FOM time interval
+    if ~strmatch(msg,'ok') then return
+  endif else BAK = 1
+  
   if n_elements(t) eq 1 then begin
     case BAK of
       1: begin
@@ -189,23 +210,31 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
         s = lim.UNIX_BAKSTR_MOD
         idx = where((s.START le t) and (t le s.STOP), ct)
         if ct eq 1 then begin
-          segSelect = {ts:s.START[idx[0]],te:s.STOP[idx[0]],fom:s.FOM[idx[0]],$
-            BAK:BAK,discussion:' ', var:var}
+          m = idx[0] 
+          segSelect = {ts:s.START[m],te:s.STOP[m]+10.d0,fom:s.FOM[m],$
+            BAK:BAK,discussion:' ', var:var, $
+            createtime:s.CREATETIME[m],datasegmentid:s.DATASEGMENTID[m],finishtime:s.FINISHTIME[m],$
+            inplaylist:s.INPLAYLIST[m],ispending:s.ISPENDING[m],numevalcycles:s.NUMEVALCYCLES[m],$
+            parametersetid:s.PARAMETERSETID[m],seglengths:s.SEGLENGTHS[m],sourceid:s.SOURCEID[m],$
+            status:s.STATUS[m]}
         endif else segSelect = 0
         wgrid = [0];s.TIMESTAMPS
       end
       0: begin
         get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
         s = lim.UNIX_FOMSTR_MOD
+        dtlast = s.TIMESTAMPS[s.NUMCYCLES-1]-s.TIMESTAMPS[s.NUMCYCLES-2]
         stime = s.TIMESTAMPS[s.START]
         etime = s.TIMESTAMPS[s.STOP] + 10.d0
+        if s.STOP[s.NSEGS-1] eq s.NUMCYCLES - 1L then begin
+          etime[s.NSEGS-1] = s.TIMESTAMPS[s.NUMCYCLES-1] + dtlast
+        endif
         idx = where((stime le t) and (t le etime), ct)
         if ct eq 1 then begin
           segSelect = {ts:stime[idx[0]],te:etime[idx[0]],fom:s.FOM[idx[0]],$
             BAK:BAK, discussion:s.DISCUSSION[idx[0]], var:var}
         endif else segSelect = 0
-        ;wgrid = s.TIMESTAMPS
-        dtlast = s.TIMESTAMPS[s.NUMCYCLES-1]-s.TIMESTAMPS[s.NUMCYCLES-2]
+        
         wgrid = [s.TIMESTAMPS,s.TIMESTAMPS[s.NUMCYCLES-1]+dtlast]
       end
       else: segSelect = -1
@@ -217,14 +246,14 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
   endelse
 
   
-  if n_tags(segSelect) eq 6 then begin
+  if (n_tags(segSelect) eq 6) or (n_tags(segSelect) eq 16) then begin
     if segSelect.BAK and ~state.pref.EVA_BAKSTRUCT then begin
       msg ='This is a back-structure segment. Ask Super SITL if you really need to modify this.'
       rst = dialog_message(msg,/info,/center)
     endif else begin
       if keyword_set(delete) then begin;....... DELETE
         segSelect.FOM = 0.; See line 102 of eva_sitl_strct_update
-        eva_sitl_strct_update, segSelect, user_flag=state.user_flag
+        eva_sitl_strct_update, segSelect, user_flag=state.user_flag, BAK=BAK
         eva_sitl_stack
         tplot,verbose=0
         
@@ -247,7 +276,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
           
           ; delete the segment
           segSelect.FOM = 0.; See line 102 of eva_sitl_strct_update
-          eva_sitl_strct_update, segSelect, user_flag=state.user_flag
+          eva_sitl_strct_update, segSelect, user_flag=state.user_flag,/override, BAK=BAK
           
           ; add split segment
           for n=0,nmax-1 do begin
@@ -270,8 +299,14 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
       endif
     endelse; if segSelect.BAK
   endif else begin
-    print,'EVA: segSelect = '+strtrim(string(segSelect),2)
-    ;if segSelect eq 0 then rst = dialog_message('Please choose a segment.',/info,/center)
+    print,'EVA: n_tags(segSelect)=',n_tags(segSelect)
+    if n_tags(segSelect) eq 0 then print,'EVA: segSelect = '+strtrim(string(segSelect),2)
+    msg = 'Please choose a segment. '
+    msg = [msg,'']
+    msg = [msg,'If you are sure you are selecting a segment,']
+    msg = [msg,'then this may be an error. Please ask Super-SITL.']
+    print,'EVA: '+msg
+    rst = dialog_message(msg,/info,/center)
   endelse
 END
 
@@ -312,7 +347,7 @@ FUNCTION eva_sitl_event, ev
   compile_opt idl2
   @eva_sitl_com
   @xtplot_com.pro
- 
+  @tplot_com
   
   parent=ev.handler
   stash = WIDGET_INFO(parent, /CHILD)
@@ -453,33 +488,44 @@ FUNCTION eva_sitl_event, ev
       print,'EVA: ***** EVENT: drpHighlight *****'
       tplot
       type = state.hlSet2[ev.index]
+      isPending=0
+      inPlaylist=0
       status = ''
-      skip=0
+      default=0
       case type of
-        'Default'  : begin
-          isPending=0 & inPlaylist=0 & status = '' & skip=1
-        end
+        'Default':default=1
         'isPending': isPending=1
         'inPlaylist': inPlaylist=1
-        else: begin
-          isPending=0 & inPlaylist=0 & status = type
-        end
+        else: status = type
       endcase
-      if ~skip then begin
+      tn = tnames('*bakstr*',ct_bak)
+      if (ct_bak gt 0) then begin
         get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
-        if n_tags(lim) gt 0 then begin
-          D = eva_sitl_strct_read(lim.unix_BAKStr_mod, 0.d0,$
-            isPending=isPending,inPlaylist=inPlaylist,status=status)
-          nmax = n_elements(D.x)
-          if nmax ge 5 then begin
-            left_edges  = D.x[1:nmax-1:4]
-            right_edges = D.x[4:nmax-1:4]
-            data        = D.y[2:nmax-1:4]
-            eva_sitl_highlight, left_edges, right_edges, data, /noline
-            
-          endif; if nmax
-        endif; if n_tags
-      endif;if~skip
+        if (not default) then begin
+          if n_tags(lim) gt 0 then begin
+            D = eva_sitl_strct_read(lim.unix_BAKStr_mod, 0.d0,$
+              isPending=isPending,inPlaylist=inPlaylist,status=status)
+            nmax = n_elements(D.x)
+            if nmax ge 5 then begin
+              trange   = tplot_vars.OPTIONS.TRANGE
+              left_edges  = (D.x[1:nmax-1:4] > trange[0]) < trange[1]
+              right_edges = (D.x[4:nmax-1:4] > trange[0]) < trange[1]
+              data        = D.y[2:nmax-1:4]
+              eva_sitl_highlight, left_edges, right_edges, data, 'mms_stlm_bakstr',/noline
+            endif; if nmax
+          endif; if n_tags
+        endif else begin;if (not default)
+          s = lim.unix_BAKstr_mod
+          Nsegs = n_elements(s.FOM)
+          print, 'EVA:----- List of back-structure segments -----'
+          print, 'EVA:number, start time         , FOM    , status, sourceID'
+          for N=0,Nsegs-1 do begin
+            strN = string(N, format='(I5)')
+            strF = string(s.FOM[N], format='(F7.3)')
+            print, 'EVA: '+strN+': '+time_string(s.START[N])+', '+strF+', '+s.STATUS[N]+', '+s.SOURCEID[N]
+          endfor
+        endelse
+      endif
       end
     state.drpSave: begin
       print,'EVA: ***** EVENT: drpSave *****'
@@ -502,12 +548,13 @@ FUNCTION eva_sitl_event, ev
         eva_sitl_submit_bakstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT
       endif else begin
         vcase = (state.USER_FLAG eq 4) ? 3 : 0
+        ; Special submission, if FPI-cal (vcase=3 and USER_FLAG=4) 
         eva_sitl_submit_fomstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT, vcase, user_flag=state.USER_FLAG
       endelse
       end
     state.drDash: begin
       ;print,'EVA: ***** EVENT: drDash *****'
-      widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
+      ;widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
       sanitize_fpi=0
       refresh_dash = 1
       end
@@ -601,6 +648,7 @@ FUNCTION eva_sitl, parent, $
   cfg = mms_config_read()         ; Read config file and
   pref = mms_config_push(cfg,pref); push the values into preferences
   pref.EVA_BAKSTRUCT = 0
+  pref.EVA_TESTMODE_SUBMIT = 1
   str_element,/add,state,'pref',pref
 
   
@@ -609,7 +657,9 @@ FUNCTION eva_sitl, parent, $
   if n_elements(xsize) eq 0 then xsize = geo.xsize
 
   hlSet = ['Default','isPending','inPlaylist']
-  hlSet2 = [hlSet, 'New', 'Held', 'Realloc', 'Deferred', 'Derelict', 'Demoted',$
+  hlSet2 = [hlSet, 'New','Modified','Deleted','Aborted','Complete','Finished',$
+    'Incomplete','Held','Realloc', 'Deferred', 'Derelict', 'Demoted']
+  hlSet_full = [hlSet, 'New', 'Held', 'Realloc', 'Deferred', 'Derelict', 'Demoted',$
     'Modified','Deleted','Aborted','Incomplete','Complete','Finished']
   svSet = ['Save','Restore','Save As', 'Restore From']
   

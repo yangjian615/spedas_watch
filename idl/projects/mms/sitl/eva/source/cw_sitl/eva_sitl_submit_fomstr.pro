@@ -61,7 +61,7 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
   
   if TESTING then begin
     problem_status = 0
-    msg='TEST MODE: The modified FOMStr was not sent to SDC.'
+    msg='File submission disabled. The modified structure was not sent to SDC.'
     rst = dialog_message(msg,/information,/center,title=title)
   endif else begin
     case vcase of
