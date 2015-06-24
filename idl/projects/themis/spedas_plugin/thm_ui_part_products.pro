@@ -82,8 +82,8 @@ end
 ;  -Some particle routines pass keywords to lower level routines through _extra
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-03-19 19:25:12 -0700 (Thu, 19 Mar 2015) $
-;$LastChangedRevision: 17152 $
+;$LastChangedDate: 2015-06-22 16:14:14 -0700 (Mon, 22 Jun 2015) $
+;$LastChangedRevision: 17937 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_part_products.pro $
 ;
 ;-
@@ -140,6 +140,8 @@ if undefined(load_flags) then begin
 endif
 load_flags = reform(load_flags,flag_dimensions)
 
+;create display object for reporting information from command line routines
+display_object = obj_new('spd_ui_dprint_display', statusbar=sb, historywin=hw)
 
 ;loop over probe
 for k=0, n_elements(probe)-1 do begin
@@ -169,8 +171,8 @@ for k=0, n_elements(probe)-1 do begin
                    use_eclipse_corrections=use_eclipse_corrections
     
     ;generate combined data if requested
-    thm_ui_part_products_getcombined, probe=probe, $
-                                      datatype=datatype, $
+    thm_ui_part_products_getcombined, probe=probe[k], $
+                                      datatype=datatype[j], $
                                       trange=trange, $
                                       use_eclipse_corrections=use_eclipse_corrections, $
                                       esa_bgnd_remove=esa_bgnd_remove, $
@@ -182,12 +184,6 @@ for k=0, n_elements(probe)-1 do begin
                                       error=error, $
                                       _extra=_extra
 
-    if keyword_set(error) then begin
-      final_msg_suffix = ' Some quantities were not processed.'+ $
-                         ' Check history window for details.'
-      continue
-    endif
-  
     ;generate products
     thm_part_products, probe = probe[k], $
                        datatype = datatype[j], $
@@ -210,7 +206,16 @@ for k=0, n_elements(probe)-1 do begin
                        sst_method_clean = sst_method_clean, $
                        sst_cal=sst_cal, $
                        tplotnames=tplotnames, $
+                       display_object=display_object, $
+                       error=error
                        _extra=_extra
+
+
+    if keyword_set(error) then begin
+      final_msg_suffix = ' Some quantities were not processed.'+ $
+        ' Check history window for details.'
+      continue
+    endif
 
     
     ;set intrument name for data tree

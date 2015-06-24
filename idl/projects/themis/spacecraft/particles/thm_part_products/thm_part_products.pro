@@ -17,9 +17,9 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-01-06 14:54:23 -0800 (Tue, 06 Jan 2015) $
-;$LastChangedRevision: 16602 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-06-22 16:14:14 -0700 (Mon, 22 Jun 2015) $
+;$LastChangedRevision: 17937 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -48,10 +48,6 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
                      
                      get_error=get_error, $ ;flag to return error estimates (*_sigma variables)
                      
-                     ;Next two keywords(gui-related) disabled for now(uniform error helper?)
-                     gui_statusBar=gui_statusBar, $
-                     gui_historyWin=gui_historyWin, $
-                     
                      fac_type=fac_type,$ ;select the field aligned coordinate system variant. Existing options: "phigeo,mphigeo, xgse"
                      
                      mag_name=mag_name, $ ;tplot variable containing magnetic field data for moments and FAC transformations 
@@ -76,6 +72,8 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
                     
                      erange=erange, $ ; deprecated.  Here just to post a warning if someone is accidentally using the old keyword'
                     
+                     display_object=display_object, $ ;object allowing dprint to export output messages
+
                      _extra=ex ;TBD: consider implementing as _strict_extra 
 
 
@@ -295,15 +293,25 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
 
   times=times[time_idx]
 
+
   ;--------------------------------------------------------
   ;Prepare support data
   ;--------------------------------------------------------
   
+  ;create rotation matrix to field aligned coordinates if needed
   if in_set(outputs_lc,'pa') || in_set(outputs_lc,'gyro') || in_set(outputs_lc,'fac_energy') then begin
-    thm_pgs_make_fac,times,mag_name,pos_name,probe_lc,fac_output=fac_matrix,fac_type=fac_type_lc
+    thm_pgs_make_fac,times,mag_name,pos_name,probe_lc,fac_output=fac_matrix,fac_type=fac_type_lc,display_object=display_object
+    ;remove FAC outputs if there was an error, return if no outputs remain
+    if undefined(fac_matrix) then begin
+      outputs_lc = ssl_set_complement(['pa','gyro','fac_energy'],outputs_lc)
+      if array_equal(outputs_lc,-1) then begin
+        return
+      endif
+    endif
   endif
   
-   if in_set(outputs_lc,'moments') then begin
+  ;get support data for moments calculation
+  if in_set(outputs_lc,'moments') then begin
     if units_lc ne 'eflux' then begin
       dprint,dlevel=1,'Warning: Moments can only be calculated if data is in eflux.  Skipping product.'
       outputs_lc[where(outputs_lc eq 'moments')] = ''
@@ -319,7 +327,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
   
   for i = 0,n_elements(time_idx)-1 do begin
   
-    thm_pgs_progress_update,last_tm,i,n_elements(time_idx)-1,sb=gui_statusBar,hw=gui_historyWin,type_string=strupcase(inst_format)
+    thm_pgs_progress_update,last_tm,i,n_elements(time_idx)-1,display_object=display_object,type_string=strupcase(inst_format)
   
     ;Get the data structure for this samgple
     if size(dist_array,/type) eq 10 then begin

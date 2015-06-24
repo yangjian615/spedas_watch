@@ -1,25 +1,3 @@
-;+
-;PROCEDURE: thm_pgs_make_fac
-;PURPOSE:
-;  Generate the field aligned coordinate transformation matrix
-;  Specifically
-;  #1 guarantee mag_data is in dsl and pos data is in  gei
-;  #2 guarantee that time grid matches particle data
-;  
-;Inputs(required):
-;
-;Outputs:
-;
-;Keywords:
-;
-;Notes:
-;  Needs to be vectorized because thm_cotrans is waaaay too slow if fed single vectors at a time
-;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-11-25 18:43:11 -0800 (Mon, 25 Nov 2013) $
-;$LastChangedRevision: 13589 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_make_fac.pro $
-;-
 
 ;so we don't have one long routine of doom, all transforms should be separate helper functions
 pro thm_pgs_xgse,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
@@ -109,17 +87,49 @@ pro thm_pgs_mphigeo,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
 
 end
 
+
+;+
+;PROCEDURE: thm_pgs_make_fac
+;PURPOSE:
+;  Generate the field aligned coordinate transformation matrix
+;  Specifically
+;  #1 guarantee mag_data is in dsl and pos data is in  gei
+;  #2 guarantee that time grid matches particle data
+;
+;Inputs(required):
+;
+;Outputs:
+;
+;Keywords:
+;
+;Notes:
+;  Needs to be vectorized because thm_cotrans is waaaay too slow if fed single vectors at a time
+;  If an error occurs fac_output will be undfined on return
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-06-22 16:14:14 -0700 (Mon, 22 Jun 2015) $
+;$LastChangedRevision: 17937 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_make_fac.pro $
+;-
 pro thm_pgs_make_fac,times,$ ;the time grid of the particle data
                   mag_tvar_in,$ ;tplot variable containing the mag data
                   pos_tvar_in,$ ;position variable containing the position data
                   probe, $ ;string designating the probe being transformed
                   fac_output=fac_output,$ ; output time series field aligned coordinate transform matrix
-                  fac_type=fac_type ;field aligned coordinate transform type (only mphigeo, atm)
+                  fac_type=fac_type, $ ;field aligned coordinate transform type (only mphigeo, atm)
+                  display_object=display_object ;(optional) dprint display object
+
+    compile_opt idl2, hidden
+
                   
   valid_types = ['mphigeo','phigeo','xgse']
                   
   if ~undefined(fac_type) && ~in_set(fac_type,valid_types) then begin
-    message,'transform: ' + fac_type + ' not yet implemented.  Let us know you want it and we can add it ASAP'
+    ;ensure the user knows that the requested FAC variant is not being used 
+    dprint, 'Transform: ' + fac_type + ' not yet implemented.  ' + $
+            'Let us know you want it and we can add it ASAP.  ', $
+            dlevel=0, display_object=display_object
+    return
   endif              
   
   ;--------------------------------------------------------------------       
@@ -132,7 +142,10 @@ pro thm_pgs_make_fac,times,$ ;the time grid of the particle data
     thm_cotrans,mag_tvar_in,mag_temp,out_coord='dsl',probe=probe
     tinterpol_mxn,mag_temp,times,newname=mag_temp,/nan_extrapolate
   endif else begin
-    message,'Magnetic field variable undefined: ' + mag_tvar_in
+    dprint, 'Magnetic field variable not found: "' + mag_tvar_in + $
+            '"; skipping field-aligned outputs', $
+            dlevel=1, display_object=display_object
+    return
   endelse
 
   if (tnames(pos_tvar_in))[0] ne '' then begin
@@ -140,7 +153,10 @@ pro thm_pgs_make_fac,times,$ ;the time grid of the particle data
     thm_cotrans,pos_tvar_in,pos_temp,out_coord='gei',probe=probe
     tinterpol_mxn,pos_temp,times,newname=pos_temp,/nan_extrapolate
   endif else begin
-    message,'Position variable undefined: ' + pos_tvar_in
+    dprint, 'Position variable not found: "' + pos_tvar_in + $
+            '"; skippingfield-aligned outputs', $
+            dlevel=1, display_object=display_object
+    return
   endelse
 
   
@@ -170,7 +186,7 @@ pro thm_pgs_make_fac,times,$ ;the time grid of the particle data
     ;position isn't necessary for this one, but uniformity of interface and requirements trumps here 
     thm_pgs_xgse,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
     
-  endif
+  endif 
   
   ;--------------------------------------------------------------------
   ;create rotation matrix

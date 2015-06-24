@@ -44,9 +44,9 @@
 ; 19-mar-2015, aaf, moments, combined data, eclipse corrections, use plugin replay API 
 ; 
 ; 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-06 11:43:23 -0700 (Mon, 06 Apr 2015) $
-;$LastChangedRevision: 17241 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-06-22 14:47:12 -0700 (Mon, 22 Jun 2015) $
+;$LastChangedRevision: 17936 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_part_getspec_options.pro $
 ;-
 
@@ -1165,7 +1165,7 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='thm_ui_part_getspec_
 ; FAC Options
 ;------------------------------------------------------------------------------
   regrid = [16,8.]
-  facs =  ['MPHIGEO', 'PHIGEO', 'MPHISM', 'PHISM', 'MRGEO', 'RGEO', 'XGSE', 'YGSM']
+  facs =  ['MPHIGEO', 'PHIGEO', 'XGSE']
 
   fac_label = widget_label(fac_label_base, value='Field Aligned Coordinates:')
   
