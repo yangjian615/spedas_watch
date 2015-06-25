@@ -63,8 +63,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-28 14:27:55 -0700 (Thu, 28 May 2015) $
-;$LastChangedRevision: 17760 $
+;$LastChangedDate: 2015-06-23 13:31:39 -0700 (Tue, 23 Jun 2015) $
+;$LastChangedRevision: 17943 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_slice2d.pro $
 ;
 ;-
@@ -407,19 +407,31 @@ stop
 trange = '2008-02-26/' + ['04:54','04:55']
 
 ;esa ion burst data
-dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+;  -use /get_sun_direction keyword to load requisite 
+;   data for plotting sun direction vector
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange, /get_sun)
+
+;load B field data so it can be plotted on slice 
+thm_load_fgm, probe='b', datatype='fgl', level=2, coord='dsl', trange=trange
 
 ;generate slice
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
-                  /three_d_interp
+                  mag_data='thb_fgl_dsl', /three_d_interp
 
-;Various keywords can be set called with thm_part_slice2d_plot
-;to controll the plot annotations.
+;Various keywords control other aspects of the plot.
+;  -/sundir requires that thm_part_dist_array is called with /get_sun_direction
+;  -/plotbfield requires that mag_data was specified to thm_part_slice2d
+;  -sun direction and B field vectors are scaled to the size of the plotting
+;   area, i.e. an in-plane vector will be drawn to the x/y maximum
+;   while an orthogonal vector will not appear
 thm_part_slice2d_plot, slice, $
-                       plotbulk = 0, $ ;do not plot bulk v 
-                       plotaxes = 0, $ ;do not plot axis zeros
-                       sundir = 1, $   ;plot projection of sun direction
-                       olines = 0      ;remove contour lines
+                       olines = 0, $     ;do not plot contour lines
+                       plotbulk = 0, $   ;do not plot velocity vector 
+                       plotaxes = 0, $   ;do not plot axis zeros
+                       ecircle = 1, $    ;plot instrument's energy limits
+                       sundir = 1, $     ;plot projection of sun direction
+                       plotbfield = 1    ;plot projection of B field
+
 
 print,nl,'This example demonstrates the keywords that control some of the
 print, 'non-standard annotations seen on slice plots (plotting of bulk

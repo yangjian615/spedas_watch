@@ -208,6 +208,12 @@
 ;            Based on work by Bryan Kerr and Arjun Raj 
 ;
 ;EXAMPLES:  see the crib file: thm_crib_part_slice2d.pro
+;
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-06-23 13:33:45 -0700 (Tue, 23 Jun 2015) $
+;$LastChangedRevision: 17944 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d.pro $
 ;-
 
 pro thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
@@ -709,7 +715,8 @@ slice_struct = {  $
               rlog: keyword_set(log), $  ;flag for radial log plot
              ; Support Data
               shift: keyword_set(subtract_bulk) ? vbulk:0, $ ;for plotting energy limits
-              bulk: keyword_set(vbulk) ? vbulk:0, $     ;bulk velocity vector
+              bulk: keyword_set(vbulk) ? vbulk:0, $      ;averaged bulk velocity vector (km/s)
+              bfield: keyword_set(bfield) ? bfield: 0, $ ;averaged bfield vector (nT)
               sunvec: keyword_set(sunvec) ? sunvec:0, $  ;sun vector
               coord_m: keyword_set(ct) ? ct:-1, $ ;DSL to COORD matrix
               rot_m: keyword_set(rot) ? rot:-1, $ ;COORD to ROTATION matrix

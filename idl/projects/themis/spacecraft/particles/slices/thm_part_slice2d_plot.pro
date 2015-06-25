@@ -1,8 +1,10 @@
 
 ;+
-;Procedure: thm_part_slice2d_plot
+;Procedure:
+;  thm_part_slice2d_plot
 ;
-;Purpose: Create plots for 2D particle slices.
+;Purpose:
+;  Create plots for 2D particle slices.
 ;
 ;Calling Sequence:
 ;  thm_part_slice2d_plot, slice
@@ -11,23 +13,23 @@
 ;  SLICE: 2D array of values to plot 
 ;
 ;Plotting Keywords:
-;  ZRANGE: Two-element array specifying zaxis range (units vary)
-;  [XY]RANGE: Two-element array specifying x/y axis range
-; 
 ;  LEVELS: Number of color contour levels to plot (default is 60)
 ;  OLINES: Number of contour lines to plot (default is 0)
-;  PLOTSIZE: The size of the plot in device units (usually pixels)
-;            (Not yet implemented for postscript).
-;  ZLOG: Boolean indicating logarithmic countours (on by default)
-;  SUNDIR: Boolean to plot sun direction vector (on by default)
+;  ZLOG: Boolean indicating logarithmic countour scaling (on by default)
 ;  ECIRCLE: Boolean to plot circle(s) designating min/max energy 
 ;           from distribution (on by default)
+;  SUNDIR: Boolean to plot the projection of scaled sun direction (black line).
+;          Requires GET_SUN_DIRECTION set with thm_part_dist_array. 
 ;  PLOTAXES: Boolean to plot x=0 and y=0 axes (on by default)
-;  PLOTBULK: Boolean to plot projection of bulk velocity vector on the 
-;            slice plane (on by default)
+;  PLOTBULK: Boolean to plot projection of bulk velocity vector (red line).
+;            (on by default)
+;  PLOTBFIELD: Boolean to plot projection of scaled B field (cyan line).
+;              Requires B field data to be loaded and specified to
+;              thm_part_slice2d with mag_data keyword.
 ;            
 ;  CLABELS: Boolean to annotate contour lines.
 ;  CHARSIZE: Specifies character size of annotations (1 is normal)
+;  [XYZ]RANGE: Two-element array specifying x/y/z axis range.
 ;  [XYZ]TICKS: Integer(s) specifying the number of ticks for each axis 
 ;  [XYZ]PRECISION: Integer specifying annotation precision (sig. figs.).
 ;                  Set to zero to truncate printed values to inegers.
@@ -35,13 +37,16 @@
 ;             Set to 0 (default) for style to be chosen automatically. 
 ;             Set to 1 for decimal annotations only ('0.0123') 
 ;             Set to 2 for scientific notation only ('1.23e-2')
+;
 ;  WINDOW:  Index of plotting window to be used.
+;  PLOTSIZE: The size of the plot in device units (usually pixels)
+;            (Not implemented for postscript).
 ;
 ;Exporting keywords:
-; EXPORT: String designating the path and file name of the desired file. 
-;         The plot will be exported to a PNG image by default.
-; EPS: Boolean indicating that the plot should be exported to 
-;      encapsulated postscript.
+;  EXPORT: String designating the path and file name of the desired file. 
+;          The plot will be exported to a PNG image by default.
+;  EPS: Boolean indicating that the plot should be exported to 
+;       encapsulated postscript.
 ;
 ;
 ;Created by: A. Flores
@@ -49,8 +54,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-07-24 15:50:38 -0700 (Thu, 24 Jul 2014) $
-;$LastChangedRevision: 15604 $
+;$LastChangedDate: 2015-06-23 13:31:39 -0700 (Tue, 23 Jun 2015) $
+;$LastChangedRevision: 17943 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_plot.pro $
 ;
 ;-
@@ -77,7 +82,7 @@ pro thm_part_slice2d_plot, slice, $
                        olines=olines, levels=levels, nlines=nlines, clabels=clabels, $
                      ; Other plotting options
                        plotaxes=plotaxes, ecircle=ecircle, sundir=sundir, $ 
-                       plotbulk=plotbulk, $
+                       plotbulk=plotbulk, plotbfield=plotbfield, $
                      ; Eport
                        export=export, eps=eps, $
                        _extra=_extra
@@ -102,9 +107,7 @@ pro thm_part_slice2d_plot, slice, $
   
   if undefined(zlog) then zlog=1b
   if undefined(plotaxes) then plotaxes=1b
-;  if size(ecircle,/type) eq 0 then ecircle=1b ;todo: fix
   if undefined(plotbulk) then plotbulk=1b
-;  if size(sundir,/type) eq 0 then sundir=1b ;may require STATE data
 
   if undefined(z_ticks) then z_ticks=11
 
@@ -361,14 +364,31 @@ pro thm_part_slice2d_plot, slice, $
   ; loading of state data moved to thm_part_dist_array 2012-12
   if keyword_set(sundir) then begin
     if keyword_set(slice.sunvec) then begin
-      sund_p = slice.sunvec[0:1] ;already in slice plane's coords
-      sv_length = sqrt( max(xrange)^2 + max(yrange)^2 ) * 2
-      oplot,[0,sund_p[0]*sv_length],[0,sund_p[1]*sv_length]
+      ;sun vector is normalized & in slice plane's coords
+      ;make total length equal to the smallest axis limit and plot projection
+      sunvec = slice.sunvec * min( abs( [xrange,yrange] ) )
+      oplot, [0,sunvec[0]],[0,sunvec[1]]
     endif else begin
       dprint, dlevel=1, 'To plot sun direction /GET_SUN_DIRECTION must'+ $ 
                         ' be used on call to thm_part_dist_array.' 
     endelse
   endif
+
+
+  ; Plot B field
+  if keyword_set(plotbfield) then begin
+    if keyword_set(slice.bfield) && finite(total(slice.bfield)) then begin
+      ;bfield is in nT in the slice plane's coords
+      ;make total length equal to the smallest axis limit and plot projection
+      bfield = slice.bfield / sqrt(total(slice.bfield^2))
+      bfield = bfield * min( abs( [xrange,yrange] ) )
+      oplot, [0,bfield[0]],[0,bfield[1]], color=!d.table_size-165
+    endif else begin
+      dprint, dlevel=1, 'To plot the B field vector the mag_data keyword must'+ $ 
+                        ' be specified in call to thm_part_slice2d.' 
+    endelse
+  endif
+
 
 
   ; Finish export:  write .png or close postscript file 

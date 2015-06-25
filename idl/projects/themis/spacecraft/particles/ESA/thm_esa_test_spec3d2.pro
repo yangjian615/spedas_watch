@@ -1,4 +1,3 @@
-	
 ;+
 ;PROCEDURE: spec3d2,data
 ;   Plots 3d data as energy spectra.
@@ -44,7 +43,8 @@ pro spec3d2,tempdat,   $
   sec = sec, $
   pot = pot, $
   title=title, $
-  est_pot = est_pot    ;estimates potential, jmm, 2015-05-18
+  est_pot = est_pot, $    ;estimates potential, jmm, 2015-05-18
+  _extra = _extra
 ;@wind_com.pro
 
 if size(/type,tempdat) ne 8 || tempdat.valid eq 0 then begin
@@ -176,16 +176,11 @@ if keyword_set(sec) then begin
 endif
 
 if keyword_set(est_pot) then begin 
-   sc_pot_est = thm_esa_dist2scpot(tempdat, /pr_slope)
+   sc_pot_est = thm_esa_dist2scpot(tempdat, /pr_slope, _extra = _extra)
    oplot,[sc_pot_est,sc_pot_est],[1.e-30,1.e30], color = 6, thick =2
 endif
 
-
-
-
-
 time_stamp
-
 
 end
 ;+
@@ -209,8 +204,8 @@ end
 ;HISTORY:
 ; 31-may-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-06-08 13:44:44 -0700 (Mon, 08 Jun 2015) $
-; $LastChangedRevision: 17831 $
+; $LastChangedDate: 2015-06-23 13:45:53 -0700 (Tue, 23 Jun 2015) $
+; $LastChangedRevision: 17946 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_test_spec3d2.pro $
 ;-
 Pro thm_esa_test_spec3d2, date, probe, init = init, random_dp = random_dp, $
@@ -250,8 +245,8 @@ Pro thm_esa_test_spec3d2, date, probe, init = init, random_dp = random_dp, $
   !p.charsize = 2
   options, limits, 'xrange', [1.0d0, 1.0d5]
   options, limits, 'yrange', [1.0d4, 1.0d9]
-  spec3d2, d, /pot, /sec, limits = limits, /est_pot
-  spec3d2, d1, /pot, /sec, limits = limits, /est_pot
-  spec3d2, d2, /pot, /sec, limits = limits, /est_pot
+  spec3d2, d, /pot, /sec, limits = limits, /est_pot, _extra = _extra
+  spec3d2, d1, /pot, /sec, limits = limits, /est_pot, _extra = _extra
+  spec3d2, d2, /pot, /sec, limits = limits, /est_pot, _extra = _extra
 
 End

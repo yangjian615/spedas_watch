@@ -35,15 +35,38 @@
 ;         in IDL 7.1 and later. 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-19 15:57:22 -0700 (Fri, 19 Jun 2015) $
-;$LastChangedRevision: 17925 $
+;$LastChangedDate: 2015-06-23 13:00:04 -0700 (Tue, 23 Jun 2015) $
+;$LastChangedRevision: 17942 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
 function mms_login_lasp, login_info = login_info
+    ; halt and warn the user if they're using IDL before 7.1 due to SSL/TLS issue
+    if double(!version.release) lt 7.1d then begin
+      dprint, dlevel = 0, 'Error, IDL 7.1 or later is required to use mms_load_data.'
+      return, -1
+    endif
+    
     ; restore the login info
     if undefined(login_info) then login_info = 'mms_auth_vassilis.sav'
-    restore, login_info
+    
+    ; check that the auth file exists before trying to restore it
+    file_exists = file_test(login_info, /regular)
+    
+    if file_exists eq 1 then begin
+        restore, login_info
+    endif else begin
+        ; prompt the user for their SDC username/password
+        login_info_widget = login_widget(title='MMS SDC Login')
+        
+        if is_struct(login_info_widget) then begin
+            auth_info = {user: login_info_widget.username, password: login_info_widget.password}
+            
+            ; now save the user/pass to a sav file to remember it in future sessions
+            save, auth_info, filename = login_info
+        endif
+    endelse
+    
     if is_struct(auth_info) then begin
         username = auth_info.user
         password = auth_info.password
@@ -53,11 +76,6 @@ function mms_login_lasp, login_info = login_info
         return, -1
     endelse
     
-    ; halt and warn the user if they're using IDL before 7.1 due to SSL/TLS issue
-    if double(!version.release) lt 7.1d then begin
-        dprint, dlevel = 0, 'Error, IDL 7.1 or later is required to use mms_load_data.'
-        return, -1
-    endif
     
     ; the IDLnetURL object returned here is also stored in the common block
     ; (this is why we never use net_object after this line, but this call is still 
@@ -142,7 +160,13 @@ pro mms_load_defatt_tplot, filenames, tplotnames = tplotnames, prefix = prefix
     append_array, tplotnames, prefix + ['_defatt_spinras', '_defatt_spindec']
 end
 
-pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotnames, login_info = login_info
+; data product:
+;   defatt - definitive attitude data; currently loads RAs, decl of L vector
+;   defeph - definitive ephemeris data; should load position, velocity
+;   predatt - predicted attitude data
+;   predeph - predicted ephemeris data
+pro mms_load_support_data, probe = probe, trange = trange, tplotnames = tplotnames, $
+                           login_info = login_info, data_product = data_product
     if undefined(trange) then begin
         dprint, dlevel = 0, 'Error loading MMS definitive attitude data - no time range given.'
         return
@@ -168,7 +192,7 @@ pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotname
     status = mms_login_lasp(login_info=login_info)
     if status ne 1 then return
     
-    ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, product='defatt', start_date=start_time_str, end_date=end_time_str)
+    ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, product=data_product, start_date=start_time_str, end_date=end_time_str)
     
     remote_file_info = mms_get_filename_size(ancillary_file_info)
     
