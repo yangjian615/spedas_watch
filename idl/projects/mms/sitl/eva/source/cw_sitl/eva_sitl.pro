@@ -180,6 +180,59 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
   endif
 END
 
+PRO eva_sitl_seg_fill, t, state=state, var=var
+  compile_opt idl2
+  catch, error_status
+  if error_status ne 0 then begin
+    eva_error_message, error_status
+    catch, /cancel
+    return
+  endif
+
+  if n_elements(t) ne 1 then message,'Something is wrong'
+  if n_elements(var) eq 0 then message,'Must pass tplot-variable name'
+  
+  if ~state.pref.EVA_BAKSTRUCT then begin
+    BAK = 0
+    msg = eva_sitl_seg_validate(t) ; Validate against FOM time interval
+    if ~strmatch(msg,'ok') then return
+  endif else BAK = 1
+  
+  if BAK eq 0 then begin
+    
+    get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
+    s = lim.unix_FOMStr_mod
+    tfom = eva_sitl_tfom(s)
+    
+    tnew = -1
+    
+    for N=0,s.Nsegs-2 do begin
+      ts = s.TIMESTAMPS[s.STOP[N]]+10.d0
+      te = s.TIMESTAMPS[s.START[N+1]]
+      if (ts lt t) and (t lt te) then tnew = [ts,te]
+    endfor
+    
+    if (t lt s.TIMESTAMPS[s.START[0]]) then begin 
+      tnew = [tfom[0],s.TIMESTAMPS[s.START[0]]]
+    endif
+    if s.STOP[s.Nsegs-1] eq s.NUMCYCLES-1 then begin
+      dtlast = s.TIMESTAMPS[s.NUMCYCLES-1]-s.TIMESTAMPS[s.NUMCYCLES-2]
+      tfin = s.TIMESTAMPS[s.STOP[s.Nsegs-1]]+dtlast
+    endif else begin
+      tfin = s.TIMESTAMPS[s.STOP[s.Nsegs-1]]+10.d0
+    endelse
+    if (tfin lt t) then begin
+      tnew = [tfin,tfom[1]]
+    endif
+
+    if n_elements(tnew) ne 2 then message,'Something is wrong'
+  endif else begin
+    result = dialog_message("This feature is not needed in the back-structure mode.",/info,/center)
+    return
+  endelse
+
+  eva_sitl_seg_add, tnew, state=state, var=var
+END
 
 
 ; For a given time 't', find the corresponding segment from
@@ -206,6 +259,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
   if n_elements(t) eq 1 then begin
     case BAK of
       1: begin
+        print,time_string(t)
         get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
         s = lim.UNIX_BAKSTR_MOD
         idx = where((s.START le t) and (t le s.STOP), ct)
@@ -299,6 +353,8 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
       endif
     endelse; if segSelect.BAK
   endif else begin
+    print,'EVA: BAK=',BAK
+    print,'EVA: t=',time_string(t)
     print,'EVA: n_tags(segSelect)=',n_tags(segSelect)
     if n_tags(segSelect) eq 0 then print,'EVA: segSelect = '+strtrim(string(segSelect),2)
     msg = 'Please choose a segment. '
@@ -375,6 +431,11 @@ FUNCTION eva_sitl_event, ev
       print,'EVA: ***** EVENT: btnAdd *****'
       str_element,/add,state,'group_leader',ev.top
       eva_ctime,/silent,routine_name='eva_sitl_seg_add',state=state,occur=2,npoints=2;npoints
+      end
+    state.btnFill:  begin
+      print,'EVA: ***** EVENT: btnFill *****'
+      str_element,/add,state,'group_leader',ev.top
+      eva_ctime,/silent,routine_name='eva_sitl_seg_fill',state=state,occur=1,npoints=1;npoints
       end
     state.btnEdit:  begin
       print,'EVA: ***** EVENT: btnEdit *****'
@@ -682,7 +743,9 @@ FUNCTION eva_sitl, parent, $
   bsAction0 = widget_base(bsAction,/COLUMN,space=0,ypad=0, SENSITIVE=0)
   str_element,/add,state,'bsAction0',bsAction0
     bsActionButton = widget_base(bsAction0,/ROW)
-    str_element,/add,state,'btnAdd',widget_button(bsActionButton,VALUE='  Add  ')
+    bsActionAdd = widget_base(bsActionButton,/COLUMN)
+      str_element,/add,state,'btnAdd',widget_button(bsActionAdd,VALUE='  Add  ')
+      str_element,/add,state,'btnFill',widget_button(bsActionAdd,VALUE='  Fill  ')
     str_element,/add,state,'btnEdit',widget_button(bsActionButton,VALUE='  Edit  ')
     str_element,/add,state,'btnDelete',widget_button(bsActionButton,VALUE=' Del ');,/TRACKING_EVENTS)
     bsActionCheck = widget_base(bsActionButton,/COLUMN);,/NONEXCLUSIVE)

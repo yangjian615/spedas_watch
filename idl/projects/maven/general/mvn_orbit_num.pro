@@ -16,10 +16,10 @@
 ;  print ,  time_string( mvn_orbit_num(orbnum = 6.0)  ; prints the time of periapsis of orbit number 6
 ;  timebar, mvn_orbit_num( orbnum = indgen(300) )   ; plots a vertical line at periapsis for the first 300 orbits
 ;Author: Davin Larson  - October, 2014
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2015-06-24 09:44:11 -0700 (Wed, 24 Jun 2015) $
+; $LastChangedRevision: 17952 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_orbit_num.pro $
 ;-
 function mvn_orbit_num,orbnum=orbnum,time=time,verbose=verbose
 
@@ -28,48 +28,41 @@ if ~keyword_set(time_cached) then time_cached=1d
 if (systime(1) - time_cached) gt 3600 then begin   ; generate no more than once per hour
   alldat = 0
   if ~keyword_set(source) then source = spice_file_source(preserve_mtime=1,verbose=verbose,ignore_filesize=1)
-  dprint,dlevel=2,verbose=verbose,'Checking server: ' +source.remote_data_dir+' for new orbit file.'
-  if ~keyword_set(filename) then filename = file_retrieve('MAVEN/kernels/spk/maven_orb.orb.long',_extra=source)
-  openr,lun,filename,/get_lun
-  i=0L
+  dprint,dlevel=2,verbose=verbose,'Checking server: ' +source.remote_data_dir+' for new orbit files.'
+  filenames = file_retrieve('MAVEN/kernels/spk/maven_orb_rec_??????_??????_v?.orb',_extra=source)
+  filenames = [filenames,file_retrieve('MAVEN/kernels/spk/maven_orb.orb.long',_extra=source)]
   MOI_time = time_double('2014-9-22/02:06')        ; this is only approximate!
   nan = !values.f_nan
   dnan = !values.d_nan
   dat = {num:1L, peri_time:MOI_TIME,  peri_MET:dnan,  APO_time:moi_time+17.5*3600,  sol_lon:nan, sol_lat:nan,  sc_lon:nan, sc_lat:nan,  sc_alt:nan, sol_dist:dnan}
   append_array,alldat,dat,index=ind
-  while ~eof(lun) do begin
-     s=''
-     readf,lun,s
-     dprint,dlevel=3,s
- ;    if i lt 2 then dprint,s,dlevel=2
-     if i++ lt 2 then continue
-     if strmatch(s,'*Unable*') then continue
-;     ss =  strsplit(s,/extract)
-;     dat.num = long(ss[0])
-;     dat.peri_time = time_double(strjoin(ss[1:4],' ') ,tformat='YYYY MTH DD hh:mm:ss')
-;     dat.peri_met  = double( strmid(ss[5],2) )
-;     dat.apo_time =  time_double(strjoin(ss[6:9],' ') ,tformat='YYYY MTH DD hh:mm:ss')
-;     dat.sol_lon  =  double( ss[10] )
-;     dat.sol_lat  =  double( ss[11] )
-;     dat.sc_lon   =  double( ss[12] )
-;     dat.sc_lat   =  double( ss[13] )
-;     dat.sc_alt   =  double( ss[14] )
-;     dat.sol_dist =  double( ss[15] )
-     dat.num = long(strmid(s,0,5))
-     dat.peri_time = time_double( strmid(s,7,20) ,tformat='YYYY MTH DD hh:mm:ss')
-     dat.peri_met  = double( strmid(s,33,16)  ) 
-     dat.apo_time =  time_double( strmid(s,51,20) ,tformat='YYYY MTH DD hh:mm:ss')
-     dat.sol_lon  =  double(  strmid(s,72,8) )
-     dat.sol_lat  =  double(  strmid(s,81,8) )
-     dat.sc_lon   =  double(  strmid(s,90,8) )
-     dat.sc_lat   =  double(  strmid(s,99,8) )
-     dat.sc_alt   =  double(  strmid(s,108,11) )
-     dat.sol_dist =  double(  strmid(s,120,12) )
-     append_array,alldat,dat,index=ind
-  endwhile
-  append_array,alldat,index=ind,/done
-  free_lun,lun
-  time_cached = systime(1)
+  for fi=0,n_elements(filenames)-1 do begin
+    filename = filenames[fi]
+    dprint,dlevel=2,verbose=verbose,'Reading file: ',filename
+    openr,lun,filename,/get_lun
+    i=0L
+    while ~eof(lun) do begin
+       s=''
+       readf,lun,s
+       dprint,dlevel=3,s
+       if i++ lt 2 then continue
+       if strmatch(s,'*Unable*') then continue
+       dat.num = long(strmid(s,0,5))
+       dat.peri_time = time_double( strmid(s,7,20) ,tformat='YYYY MTH DD hh:mm:ss')
+       dat.peri_met  = double( strmid(s,33,16)  ) 
+       dat.apo_time =  time_double( strmid(s,51,20) ,tformat='YYYY MTH DD hh:mm:ss')
+       dat.sol_lon  =  double(  strmid(s,72,8) )
+       dat.sol_lat  =  double(  strmid(s,81,8) )
+       dat.sc_lon   =  double(  strmid(s,90,8) )
+       dat.sc_lat   =  double(  strmid(s,99,8) )
+       dat.sc_alt   =  double(  strmid(s,108,11) )
+       dat.sol_dist =  double(  strmid(s,120,12) )
+       append_array,alldat,dat,index=ind
+    endwhile
+    append_array,alldat,index=ind,/done
+    free_lun,lun
+    time_cached = systime(1)
+  endfor
 endif
 
 if n_elements(time) ne 0   then return, interp(double(alldat.num),alldat.peri_time,time_double(time))

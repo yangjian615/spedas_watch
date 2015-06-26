@@ -33,10 +33,13 @@
 ;     
 ;     4) The LASP web services API uses SSL/TLS, which is only supported by IDLnetURL 
 ;         in IDL 7.1 and later. 
+;         
+;     5) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
+;         will give incorrect time tags for data loaded after June 30, 2015 due to this issue.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-23 13:00:04 -0700 (Tue, 23 Jun 2015) $
-;$LastChangedRevision: 17942 $
+;$LastChangedDate: 2015-06-24 13:20:52 -0700 (Wed, 24 Jun 2015) $
+;$LastChangedRevision: 17959 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -82,6 +85,30 @@ function mms_login_lasp, login_info = login_info
     ; necessary to login)
     net_object = get_mms_sitl_connection(username=username, password=password)
     return, 1
+end
+
+; returns 1 for the file exists and has the same filesize as the remote file
+; returns 0 otherwise
+function mms_check_file_exists, remote_file_info, file_dir = file_dir
+    filename = remote_file_info.filename
+    
+    ; make sure the directory exists
+    dir_search = file_search(file_dir, /test_directory)
+    if dir_search eq '' then file_mkdir2, file_dir
+    
+    ; check if the file exists
+    file_exists = file_test(file_dir + '/' + filename, /regular)
+
+    ; if it does, only download if it the sizes are different
+    same_file = 0
+    if file_exists eq 1 then begin
+        ; the file exists, check the size
+        f_info = file_info(file_dir + '/' + filename)
+        local_file_size = f_info.size
+        remote_file_size = remote_file_info.filesize
+        if long(local_file_size) eq long(remote_file_size) then same_file = 1
+    endif
+    return, same_file
 end
 
 ; for some reason, the JSON object returned by the server is
@@ -165,7 +192,7 @@ end
 ;   defeph - definitive ephemeris data; should load position, velocity
 ;   predatt - predicted attitude data
 ;   predeph - predicted ephemeris data
-pro mms_load_support_data, probe = probe, trange = trange, tplotnames = tplotnames, $
+pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotnames, $
                            login_info = login_info, data_product = data_product
     if undefined(trange) then begin
         dprint, dlevel = 0, 'Error loading MMS definitive attitude data - no time range given.'
@@ -175,6 +202,7 @@ pro mms_load_support_data, probe = probe, trange = trange, tplotnames = tplotnam
         dprint, dlevel = 0, 'Error loading MMS definitive attitude data - no probe given.'
         return
     endif
+    if undefined(data_product) then data_product = 'defatt'
     if not keyword_set(remote_data_dir) then remote_data_dir = 'https://lasp.colorado.edu/mms/sdc/about/browse/'
     if not keyword_set(local_data_dir) then local_data_dir = 'c:\data\mms\'
     mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
@@ -194,6 +222,11 @@ pro mms_load_support_data, probe = probe, trange = trange, tplotnames = tplotnam
     
     ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, product=data_product, start_date=start_time_str, end_date=end_time_str)
     
+    if ~is_array(ancillary_file_info) && ancillary_file_info eq '' then begin
+        dprint, dlevel = 0, 'No MMS ' + data_product + ' files found for this time period.'
+        return
+    endif
+    
     remote_file_info = mms_get_filename_size(ancillary_file_info)
     
     doys = n_elements(remote_file_info)
@@ -205,17 +238,7 @@ pro mms_load_support_data, probe = probe, trange = trange, tplotnames = tplotnam
     
     for doy_idx = 0, doys-1 do begin
         ; check if the file exists
-        file_exists = file_test(file_dir + '/' + remote_file_info[doy_idx].filename, /regular)
-        
-        ; if it does, only download if it the sizes are different
-        same_file = 0
-        if file_exists eq 1 then begin
-            ; the file exists, check the size
-            f_info = file_info(file_dir + '/' + remote_file_info[doy_idx].filename)
-            local_file_size = f_info.size
-            remote_file_size = remote_file_info[doy_idx].filesize
-            if long(local_file_size) eq long(remote_file_size) then same_file = 1
-        endif
+        same_file = mms_check_file_exists(remote_file_info[doy_idx], file_dir = file_dir)
         
         if same_file eq 0 then begin
             dprint, dlevel = 0, 'Downloading ' + remote_file_info[doy_idx].filename + ' to ' + file_dir
@@ -366,24 +389,8 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             endif
             
             filename = remote_file_info.filename
-            
-            ; make sure the directory exists
             file_dir = strlowcase(local_data_dir + probe + '/' + month_directory)
-            dir_search = file_search(file_dir, /test_directory)
-            if dir_search eq '' then file_mkdir2, file_dir
-            
-            ; check if the file exists
-            file_exists = file_test(file_dir + '/' + filename, /regular)
-            
-            ; if it does, only download if it the sizes are different
-            same_file = 0
-            if file_exists eq 1 then begin
-                ; the file exists, check the size
-                f_info = file_info(file_dir + '/' + filename)
-                local_file_size = f_info.size
-                remote_file_size = remote_file_info.filesize
-                if long(local_file_size) eq long(remote_file_size) then same_file = 1
-            endif
+            same_file = mms_check_file_exists(remote_file_info, file_dir = file_dir)
             
             if same_file eq 0 then begin
                 dprint, dlevel = 0, 'Downloading ' + filename + ' to ' + file_dir
@@ -406,7 +413,17 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
         ; set some metadata
         mms_load_fix_metadata, tplotnames, prefix = probe
         
-        ; forget about the files for this probe
+        ; load the definitive attitude data (right ascension, declination) of the L vector
+        mms_load_defatt_data, probe = probes[probe_idx], trange = trange, tplotnames = tplotnames
+        
+        ; check that the definitive attitude data was loaded
+        if tnames(probe+'_defatt_spinras') ne '' && tnames(probe+'_defatt_spindec') ne '' then begin
+            ; go ahead and do the DMPA -> transformation on the DFG/AFG data
+            dmpa2gse, probe+'_'+instrument+'_srvy_dmpa_bvec', probe+'_defatt_spinras', probe+'_defatt_spindec',probe+'_'+instrument+'_srvy_gse'
+            append_array, tplotnames, probe+'_'+instrument+'_srvy_gse' ; for time clipping
+        endif
+        
+        ; forget about the daily files for this probe
         undefine, files
     endfor
     

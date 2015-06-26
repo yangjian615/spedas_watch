@@ -5,6 +5,23 @@ PRO eva_data_plot_options, paramlist
   for i=0,imax-1 do begin
     tpv = paramlist[i]
     
+;    get_data,tpv,data=D,dl=dl,lim=lim
+;    if size(D,/type) eq 8 then begin; check if structure 
+;      tn = strlowcase(tag_names(D))
+;      idx = where(strmatch(tn,'y'),ct)
+;      if ct eq 1 then begin; check if tag 'Y' exists
+;        sz=size(D.y,/dim)
+;        if n_elements(sz) eq 2 then begin; check if 2D array
+;          if sz[1] eq 3 then begin; check if 3-element vector
+;            coef = 0.5
+;            ymax = coef*max(D.y,/nan)
+;            ymin = coef*min(D.y,/nan)
+;            options,tpv,labflag=3, labpos=[ymax,0,ymin]
+;          endif
+;        endif; check if 2D
+;      endif; check if tag 'Y' exists
+;    endif; check if structure
+    
     ;-----------
     ; MMS FPI
     ;-----------

@@ -9,8 +9,8 @@
 ; 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-22 18:03:34 -0700 (Wed, 22 Apr 2015) $
-; $LastChangedRevision: 17403 $
+; $LastChangedDate: 2015-06-24 17:10:17 -0700 (Wed, 24 Jun 2015) $
+; $LastChangedRevision: 17966 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -233,10 +233,10 @@ PRO xtplot_event, event
           ', value = '+strtrim(string(value),2)+' ( '+tn+' )'
 
         ; RIGHT CLICK EVENT
-        if (event.release eq 4) and (xtplot_right_click) then begin
-          print,'right clicked on '+tn
-          xtplot_options_panel, group_leader=widf.baseTL, target=tn
-        endif
+;        if (event.release eq 4) and (xtplot_right_click) then begin
+;          print,'right clicked on '+tn
+;          xtplot_options_panel, group_leader=widf.baseTL, target=tn
+;        endif
 
         ;/////////////////////////////////////////////
         ; XTPLOT_MOUSE_EVENT

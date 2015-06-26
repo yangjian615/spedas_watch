@@ -7,8 +7,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-04 12:37:05 -0700 (Thu, 04 Jun 2015) $
-;$LastChangedRevision: 17806 $
+;$LastChangedDate: 2015-06-24 12:13:09 -0700 (Wed, 24 Jun 2015) $
+;$LastChangedRevision: 17955 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -272,7 +272,7 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   ;create the dropdown menu that lists the various instrument types for MMS
   probeArrayValues = ['1', '2', '3', '4']
   probeArrayDisplayed = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
-  instrumentArray = ['DFG', 'AFG', '*']
+  instrumentArray = ['DFG', 'AFG']
   typeArray = ['ql', 'l1b']
   instrumentBase = widget_base(selectionBase,/row) 
   instrumentLabel = widget_label(instrumentBase,value='Instrument Type: ')

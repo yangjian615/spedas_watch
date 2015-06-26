@@ -187,8 +187,37 @@ FUNCTION eva_data_load_mms, state
         endif
       endif;if ct eq 0 then begin; if not loaded
       c+=1
-    endfor
-  endfor
+    endfor; for each requested parameter
+    
+    ;-------------
+    ; ORBIT INFO
+    ;-------------
+    matched=0
+    Re = 6371.2
+    ; predicted orbit from AFG
+    tplot_names,sc+'_ql_pos_gsm',names=tn
+    if (n_elements(tn) eq 1) and (strlen(tn) gt 0) then begin
+      get_data,sc+'_ql_pos_gsm',data=D,lim=lim,dl=dl
+      wtime = D.x
+      wdist = D.y[*,3]/Re
+      wposx = D.y[*,0]/Re
+      wposy = D.y[*,1]/Re
+      wposz = D.y[*,2]/Re
+      matched=1
+    endif
+    
+    if matched then begin
+      store_data,sc+'_position_z',data={x:wtime,y:wposz}
+      options,sc+'_position_z',ytitle=sc+' Z (Re)'
+      store_data,sc+'_position_y',data={x:wtime,y:wposy}
+      options,sc+'_position_y',ytitle=sc+' Y (Re)'
+      store_data,sc+'_position_x',data={x:wtime,y:wposx}
+      options,sc+'_position_x',ytitle=sc+' X (Re)'
+    endif
+    
+    
+  endfor; for each requested probe
+  
   progressbar -> Destroy
   return, answer
 END

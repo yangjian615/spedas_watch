@@ -3,8 +3,8 @@
 ; activate = 2; sensitive (initialize)
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-19 22:17:56 -0700 (Fri, 19 Jun 2015) $
-; $LastChangedRevision: 17931 $
+; $LastChangedDate: 2015-06-24 12:13:17 -0700 (Wed, 24 Jun 2015) $
+; $LastChangedRevision: 17956 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_update_board.pro $
 ;
 PRO eva_sitl_update_board, state, activate
@@ -221,11 +221,11 @@ PRO eva_sitl_update_board, state, activate
         fNBuffs = f.NBuffs
       endelse
       txt = strtrim(string(fNSegs),2)+' Segs';........... # of Segment
-      if f.NBuffs ge 3600 then txt = 'Hard Limit'
+      ;if f.NBuffs ge 3600 then txt = 'Hard Limit'
       sg.oNsegs ->SetProperty,STRING=txt, COLOR=color
       
       txt = strtrim(string(fNBuffs),2)+' Buffs';........ # of Buffs
-      if f.NBuffs ge 3600 then txt = '3600 Buffs'
+      ;if f.NBuffs ge 3600 then txt = '3600 Buffs'
       sg.oNBuffs ->SetProperty,STRING = txt, COLOR=color
       
       minu = round((f.NBuffs*10.0)/60.0);................... Minutes

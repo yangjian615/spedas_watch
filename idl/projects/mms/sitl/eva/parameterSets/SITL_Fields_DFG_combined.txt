@@ -1,4 +1,5 @@
 thg_idx_ae
+mmsw_dfg_srvy_gsm_dmpa_m
 mmsw_dfg_srvy_gsm_dmpa_x
 mmsw_dfg_srvy_gsm_dmpa_y
 mmsw_dfg_srvy_gsm_dmpa_z

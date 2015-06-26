@@ -7,8 +7,8 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-20 09:29:36 -0700 (Sat, 20 Jun 2015) $
-; $LastChangedRevision: 17932 $
+; $LastChangedDate: 2015-06-24 12:49:34 -0700 (Wed, 24 Jun 2015) $
+; $LastChangedRevision: 17957 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
@@ -82,7 +82,7 @@ PRO eva_sitl_FOMedit, state, segSelect, wgrid=wgrid
   if xregistered('eva_sitl_FOMedit') ne 0 then return
   
   ;//// user setting  /////////////////////////////
-  dTfrac          = 0.3; fraction of the current time range --> range of time change
+  dTfrac          = 0.5; fraction of the current time range --> range of time change
   scroll          = 1.0 ; how many seconds to be moved by sliders
   drag            = 1   ; use drag keyword for sliders?
   fom_min_value   = 2.0  ; min allowable value of FOM

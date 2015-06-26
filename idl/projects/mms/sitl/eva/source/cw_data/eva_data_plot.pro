@@ -23,6 +23,7 @@ PRO eva_data_plot, wid
     ;------------------------
     wmax = pmax_THM+pmax_MMS; number of windows (= number of probes)
     vars_arr = ptrarr(wmax)
+    vars_lab = ptrarr(wmax)
     ; THEMIS
     if pmax_THM gt 0 then begin
       for p=0,pmax_THM-1 do begin; for each THM probe
@@ -31,17 +32,30 @@ PRO eva_data_plot, wid
         vars[idx] = wid.probelist_thm[p]+strmid(vars[idx],3,1000); replace * with probe name
         idx = where(strpos(vars,'mms*') eq 0, ct, complement=idxc); find variables with 'mms*' to be excluded
         vars_arr[p] = ptr_new(vars[idxc])
+        
+        var_lab = ''
+        vars_lab[p] = ptr_new(var_lab)
       endfor
     endif
 
     ; MMS
     if pmax_MMS gt 0 then begin
-      for p=0,pmax_MMS-1 do begin; for each THM probe
+      for p=0,pmax_MMS-1 do begin; for each MMS probe
         vars = wid.paramlist; Duplicate the grand paramlist (contains * at this point)
         idx = where(strpos(vars,'mms*') eq 0, ct); find variables with 'mms*'
         vars[idx] = wid.probelist_mms[p]+strmid(vars[idx],4,1000); replace * with probe name
         idx = where(strpos(vars,'th*') eq 0, ct, complement=idxc); find variables with 'th*' to be excluded
         vars_arr[p+pmax_THM] = ptr_new(vars[idxc])
+        
+        var_lab = ''
+        tplot_names,wid.probelist_mms[p]+'_position_z',names=tn
+        if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+        tplot_names,wid.probelist_mms[p]+'_position_y',names=tn
+        if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+        tplot_names,wid.probelist_mms[p]+'_position_x',names=tn
+        if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+        if n_elements(var_lab) gt 1 then var_lab = var_lab[1:*]
+        vars_lab[p+pmax_THM] = ptr_new(var_lab)
       endfor
     endif
   endif else begin; Data from all probes are shown in one display
@@ -98,6 +112,19 @@ PRO eva_data_plot, wid
 
     vars_arr = ptrarr(1); only 1 window
     vars_arr[0] = ptr_new(vars)
+    
+    var_lab = ''
+    for p=0,pmax_MMS-1 do begin; for each MMS probe
+      tplot_names,wid.probelist_mms[p]+'_position_z',names=tn
+      if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+      tplot_names,wid.probelist_mms[p]+'_position_y',names=tn
+      if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+      tplot_names,wid.probelist_mms[p]+'_position_x',names=tn
+      if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+    endfor
+    if n_elements(var_lab) gt 1 then var_lab = var_lab[1:*]
+    vars_lab = ptrarr(1); only 1 window
+    vars_lab[0] = ptr_new(var_lab)
   endelse
 
 
@@ -124,12 +151,12 @@ PRO eva_data_plot, wid
 
   j=0
   if n_elements(*vars_arr[0]) gt 0 then $
-    xtplot, *vars_arr[0], var_lab=var_lab, XSIZE=width, YSIZE=height, $
+    xtplot, *vars_arr[0], var_lab=*vars_lab[0], XSIZE=width, YSIZE=height, $
     XOFFSET = xoffset, GROUP_LEADER=wid.mainbase, widf=widf
 
   for j=1,jmax-1 do begin
     if n_elements(*vars_arr[j]) gt 0 then $
-      xtplot, *vars_arr[j], var_lab=var_lab, XSIZE=width, YSIZE=height, $
+      xtplot, *vars_arr[j], var_lab=*vars_lab[j], XSIZE=width, YSIZE=height, $
       XOFFSET = xoffset-j*30, YOFFSET= j*30, widf=widf, GROUP_LEADER=wid.mainbase,/xtnew
   endfor
 

@@ -44,10 +44,12 @@ FUNCTION eva_data_load_reformat, paramlist, probelist, FOURTH=fourth
           return, 'No'
         endif
         get_data, tname, data=DD, lim=lim, dl=dl
+        ysubtitle = ''
         if size(DD.y,/n_dim) eq 2 then begin
           if strpos(paramlist[i],'_m') ge 0 then begin
             sfx = '_m'
             pcolor = 0
+            ysubtitle = '(magnitude)'
             Dnew = sqrt(DD.y[*,0]^2+DD.y[*,1]^2+DD.y[*,2]^2)
           endif
           if strpos(paramlist[i],'_x') ge 0 then begin
@@ -65,8 +67,9 @@ FUNCTION eva_data_load_reformat, paramlist, probelist, FOURTH=fourth
             pcolor = 6
             Dnew = DD.y[*,2]
           endif
-          str_element,dl,'colors',pcolor,/add
-          str_element,dl,'labels',/delete
+          str_element,lim,'colors',[pcolor],/add
+          if strlen(ysubtitle) gt 0 then str_element,lim,'ysubtitle',ysubtitle,/add
+          str_element,lim,'labels',/delete
           store_data, tname+sfx, data={x:DD.x,y:Dnew},lim=lim,dl=dl
         endif; if size(DD.y
       endfor; for each probe

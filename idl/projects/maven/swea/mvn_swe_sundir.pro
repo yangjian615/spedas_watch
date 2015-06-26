@@ -20,14 +20,17 @@
 ;
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
+;       FRAME:    Also calculate the Sun direction in one or more 
+;                 frames specified by this keyword.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-03-02 10:09:42 -0800 (Mon, 02 Mar 2015) $
-; $LastChangedRevision: 17061 $
+; $LastChangedDate: 2015-06-24 07:34:09 -0700 (Wed, 24 Jun 2015) $
+; $LastChangedRevision: 17948 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
-pro mvn_swe_sundir, trange, dt=dt, pans=pans
+pro mvn_swe_sundir, trange, dt=dt, pans=pans, frame=frame
 
   @mvn_swe_com
 
@@ -64,6 +67,13 @@ pro mvn_swe_sundir, trange, dt=dt, pans=pans
   options,'Sun',spice_frame='MAVEN_SSO',spice_master_frame='MAVEN_SPACECRAFT'
   spice_vector_rotate_tplot,'Sun','MAVEN_SPACECRAFT',trange=[tmin,tmax]
   spice_vector_rotate_tplot,'Sun',swe_frame,trange=[tmin,tmax]
+  
+  if (size(frame,/type) eq 7) then begin
+    for i=0,(n_elements(frame)-1) do begin
+      to_frame = strupcase(frame[i])
+      spice_vector_rotate_tplot,'Sun',to_frame,trange=[tmin,tmax]
+    endfor
+  endif
 
   get_data,('Sun_' + swe_frame),data=sun
   xyz_to_polar, sun, theta=the, phi=phi, /ph_0_360

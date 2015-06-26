@@ -12,8 +12,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-05-27 14:37:31 -0700 (Wed, 27 May 2015) $
-;$LastChangedRevision: 17748 $
+;$LastChangedDate: 2015-06-24 13:58:54 -0700 (Wed, 24 Jun 2015) $
+;$LastChangedRevision: 17960 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -47,7 +47,7 @@ pro mms_ui_load_data_import,$
   
   ; need to update for MMS
   mmsmintime = '2015-03-01'
-  mmsmaxtime = '2050-12-31'
+  mmsmaxtime = time_string(systime(/seconds), tformat='YYYY-MM-DD')
   
 
   tn_before = [tnames('*',create_time=cn_before)]
