@@ -26,7 +26,7 @@
 ;           'esvy_despun'  (official L2 product)          (working)
 ;           'vsvy_hires'   (official L2 product)          (working)
 ;           'spinfit' (default, official L2 product)      (working)
-;           'combo_wygant'                                (working)
+;           'combo_wygant' (no hires data)                (working)
 ;           'pfaff_esvy'                                  (working)
 ;           'combo_pfaff'                                 (working)
 ;
@@ -37,8 +37,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2015-05-21 08:11:57 -0700 (Thu, 21 May 2015) $
-; $LastChangedRevision: 17661 $
+; $LastChangedDate: 2015-06-25 16:50:00 -0700 (Thu, 25 Jun 2015) $
+; $LastChangedRevision: 17975 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -51,7 +51,8 @@ pro rbsp_efw_make_l2,sc,date,$
                      save_flags = save_flags,$
                      no_spice_load = no_spice_load,$
                      no_cdf = no_cdf,$
-                     testing=testing
+                     testing=testing,$
+                     hires=hires
 
 
   if ~keyword_set(type) then type = 'spinfit'
@@ -101,8 +102,12 @@ pro rbsp_efw_make_l2,sc,date,$
                                 ; use skeleton from the staging dir until we go live in the main data tree
                                 ;skeletonFile='/Volumes/DataA/user_volumes/kersten/data/rbsp/'+skeleton
 
+     found = 1
                                 ; make sure we have the skeleton CDF
-     skeletonFile=file_search(skeleton,count=found) ; looking for single file, so count will return 0 or 1
+     if ~keyword_set(testing) then skeletonFile=file_search(skeleton,count=found) ; looking for single file, so count will return 0 or 1
+     if keyword_set(testing) then skeletonfile = '~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/rbsp'+sc+'_efw-l2_00000000_v01.cdf'
+
+
 	if ~found then begin
 		dprint,'Could not find skeleton CDF, returning.'
 		return
@@ -113,7 +118,6 @@ pro rbsp_efw_make_l2,sc,date,$
   endif
 
 
-  if keyword_set(testing) then skeletonfile = '~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/rbspa_efw-l2_00000000_v01.cdf'
   if keyword_set(testing) then folder = '~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/'
 
 
@@ -434,6 +438,8 @@ pro rbsp_efw_make_l2,sc,date,$
 ;set the eclipse flag in this program
      padec = 5.*60. ;plus/minus value (sec) outside of the eclipse start and stop times for throwing the eclipse flag
 
+stop
+
 ;Umbra
      if is_struct(eu) then begin
         for bb=0,n_elements(eu.x)-1 do begin
@@ -685,6 +691,10 @@ pro rbsp_efw_make_l2,sc,date,$
 
      ;;density
      goo = where(flag_arr[*,0] eq 1)
+
+
+stop
+
      if goo[0] ne -1 then dens.y[goo] = -1.e31
 
 
@@ -894,6 +904,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
   if type eq 'combo' then begin
 
+
      cdf_varput,cdfid,'epoch',epoch
      cdf_varput,cdfid,'epoch_e',epoch_e
 
@@ -922,7 +933,8 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;full cadence (only for hires version)
-     cdf_varput,cdfid,'esvy_vxb_mgse',transpose(esvy_vxb_mgse.y)
+     if keyword_set(hires) then cdf_varput,cdfid,'esvy_vxb_mgse',transpose(esvy_vxb_mgse.y)
+;     if keyword_set(hires) then cdf_varput,cdfid,'esvy',transpose(esvy_vxb_mgse.y)
 
 
 ;variables to delete
@@ -944,11 +956,12 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'bfield_magnitude'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse'
      cdf_vardelete,cdfid,'vel_coro_mgse'
-     cdf_vardelete,cdfid,'esvy_vxb_mgse'
      cdf_vardelete,cdfid,'efield_mgse'
      cdf_vardelete,cdfid,'vsvy_vavg'
      cdf_vardelete,cdfid,'vsvy'
+     cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
+     if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy_vxb_mgse'
 
   endif
 
@@ -1239,7 +1252,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'bias_current',transpose(ibias)
 
 ;full cadence
-     cdf_varput,cdfid,'esvy_vxb_mgse',transpose(esvy_vxb_mgse.y)
+     if keyword_set(hires) then cdf_varput,cdfid,'esvy_vxb_mgse',transpose(esvy_vxb_mgse.y)
 
 
 ;variables to delete
@@ -1265,7 +1278,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_mgse'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
-
+     if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy_vxb_mgse'
 
   endif
 

@@ -7,9 +7,9 @@
 ; A widget to display About information (SPEDAS Version)
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-05-13 15:50:09 -0700 (Wed, 13 May 2015) $
-;$LastChangedRevision: 17596 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-06-25 11:07:11 -0700 (Thu, 25 Jun 2015) $
+;$LastChangedRevision: 17972 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_help_about.pro $
 ;-
 
@@ -28,8 +28,8 @@ Pro spd_ui_help_about_event, ev
 
   case uval of
     'ABOUT': begin
-        getresourcepath, path ; start at the resources folder
-        xdisplayfile, path+'../../../projects/'+strlowcase(plugin_mission)+'/' $
+        GETRESOURCEPATH, path ; start at the resources folder
+        xdisplayfile, path+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY)+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY) + PATH_SEP() +  'projects'+ PATH_SEP() + strlowcase(plugin_mission) +PATH_SEP()  $
             +strlowcase(plugin_about_file), done_button='CLOSE', height=50, $
             /modal, title='About ' + plugin_mission
     end    

@@ -10,8 +10,8 @@
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2015-01-09 11:52:33 -0800 (Fri, 09 Jan 2015) $
-;   $LastChangedRevision: 16617 $
+;   $LastChangedDate: 2015-06-25 12:46:41 -0700 (Thu, 25 Jun 2015) $
+;   $LastChangedRevision: 17974 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
@@ -28,13 +28,13 @@ function rbsp_efw_get_flag_values,sc,times
 
 
 ;Possibly load state data
-get_data,'rbsp'+sc+'_state_lshell',data=test
-if ~is_struct(test) then rbsp_efw_position_velocity_crib
+  get_data,'rbsp'+sc+'_state_lshell',data=test
+  if ~is_struct(test) then rbsp_efw_position_velocity_crib
 
 
 
 ;--------------------------------------------------
-  ;Load other crap
+                                ;Load other crap
 
   rbsp_load_efw_waveform,probe=sc,type='calibrated',datatype='vsvy',/noclean
 
@@ -49,7 +49,7 @@ if ~is_struct(test) then rbsp_efw_position_velocity_crib
 
 
 ;--------------------------------------------------
-  ;load eclipse times
+                                ;load eclipse times
 ;--------------------------------------------------
 
   rbsp_load_eclipse_predict,sc,date,$
@@ -98,7 +98,7 @@ if ~is_struct(test) then rbsp_efw_position_velocity_crib
 ;finish of charging times (Scott indicates that this is a good thing
 ;to do)
 
-  padch = 10.*60.  ;plus/minus time from actual times of charging for triggering the charging flag.
+  padch = 10.*60. ;plus/minus time from actual times of charging for triggering the charging flag.
   
   charging_flag = replicate(0.,n_elements(times))
   tinterpol_mxn,'rbsp'+sc+'_state_lshell',times
@@ -199,12 +199,12 @@ if ~is_struct(test) then rbsp_efw_position_velocity_crib
 
 
 ;Some values we an set right away
-  flag_arr[*,9] = 1              ;V5 flag always set
-  flag_arr[*,10] = 1             ;V6 flag always set
-  flag_arr[*,11] = na_val        ;Espb_magnitude
-  flag_arr[*,12] = na_val        ;Eparallel_magnitude
-  flag_arr[*,13] = na_val        ;magnetic_wake
-  flag_arr[*,16:19] = na_val     ;undefined values
+  flag_arr[*,9] = 1             ;V5 flag always set
+  flag_arr[*,10] = 1            ;V6 flag always set
+  flag_arr[*,11] = na_val       ;Espb_magnitude
+  flag_arr[*,12] = na_val       ;Eparallel_magnitude
+  flag_arr[*,13] = na_val       ;magnetic_wake
+  flag_arr[*,16:19] = na_val    ;undefined values
 
 
 ;Set flag if antenna potential exceeds max value
@@ -215,7 +215,7 @@ if ~is_struct(test) then rbsp_efw_position_velocity_crib
   endfor
 
 ;set the eclipse flag in this program
-  padec = 5.*60.  ;plus/minus value (sec) outside of the eclipse start and stop times for throwing the eclipse flag
+  padec = 5.*60. ;plus/minus value (sec) outside of the eclipse start and stop times for throwing the eclipse flag
 
 ;Umbra
   if is_struct(eu) then begin
@@ -303,20 +303,20 @@ if ~is_struct(test) then rbsp_efw_position_velocity_crib
 ;--------------------------------------------------
 
 
-get_data, 'rbsp'+sc+'_efw_hsk_beb_analog_CONFIG0', data = BEB_config
-if is_struct(BEB_config) then begin
-	bias_sweep = intarr(n_elements(BEB_config.x))
-	boo = where(BEB_config.y eq 64)
-	if boo[0] ne -1 then bias_sweep[boo] = 1
-	store_data,'bias_sweep',data={x:BEB_config.x,y:bias_sweep}
-	tinterpol_mxn,'bias_sweep',times
-	;; ylim,['bias_sweep','bias_sweep_interp'],0,1.5
-	;; tplot,['bias_sweep','bias_sweep_interp']
-	get_data,'bias_sweep_interp',data=bias_sweep
-	bias_sweep_flag = bias_sweep.y
-endif else begin
-	bias_sweep_flag = replicate(fill_val,n_elements(times))
-endelse
+  get_data, 'rbsp'+sc+'_efw_hsk_beb_analog_CONFIG0', data = BEB_config
+  if is_struct(BEB_config) then begin
+     bias_sweep = intarr(n_elements(BEB_config.x))
+     boo = where(BEB_config.y eq 64)
+     if boo[0] ne -1 then bias_sweep[boo] = 1
+     store_data,'bias_sweep',data={x:BEB_config.x,y:bias_sweep}
+     tinterpol_mxn,'bias_sweep',times
+     ;; ylim,['bias_sweep','bias_sweep_interp'],0,1.5
+     ;; tplot,['bias_sweep','bias_sweep_interp']
+     get_data,'bias_sweep_interp',data=bias_sweep
+     bias_sweep_flag = bias_sweep.y
+  endif else begin
+     bias_sweep_flag = replicate(fill_val,n_elements(times))
+  endelse
 
 
 ;------------------------------------------------
@@ -345,12 +345,12 @@ endelse
 
 
 
-  ;Find times when auto biasing is active
+                                ;Find times when auto biasing is active
   get_data,'rbsp'+sc+'_efw_hsk_idpu_fast_TBD',data=tbd
   tbd.y = floor(tbd.y)
   ab_flag = intarr(n_elements(tbd.x))
 
-  ;Possible flag values for on and off
+                                ;Possible flag values for on and off
   ab_off = [1,2,3,8,10,11]
   ab_on = [4,5,6,7,12,13,14,15]
 
@@ -376,23 +376,26 @@ endelse
 ;ADD IN ACTUAL BIAS CURRENTS
 ;--------------------------------------------------
 
- tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS1',times
- tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS2',times
- tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS3',times
- tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS4',times
- tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS5',times
- tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS6',times
+  tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS1',times
+  tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS2',times
+  tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS3',times
+  tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS4',times
+  tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS5',times
+  tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS6',times
 ;tplot,['*IBIAS*','rbsp'+sc+'_efw_hsk_idpu_fast_TBD']
 
- get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS1_interp',data=ib1
- get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS2_interp',data=ib2
- get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS3_interp',data=ib3
- get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS4_interp',data=ib4
- get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS5_interp',data=ib5
- get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS6_interp',data=ib6
+  get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS1_interp',data=ib1
+  get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS2_interp',data=ib2
+  get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS3_interp',data=ib3
+  get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS4_interp',data=ib4
+  get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS5_interp',data=ib5
+  get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS6_interp',data=ib6
+
+  if is_struct(ib1) and is_struct(ib2) and is_struct(ib3) and $
+     is_struct(ib4) and is_struct(ib5) and is_struct(ib6) then $
+        ibias = [[ib1.y],[ib2.y],[ib3.y],[ib4.y],[ib5.y],[ib6.y]] else ibias = 0.
 
 
- ibias = [[ib1.y],[ib2.y],[ib3.y],[ib4.y],[ib5.y],[ib6.y]]
 
 
 
@@ -410,22 +413,22 @@ endelse
 ;Change values of certain arrays that are "fill_val" to 0
 ;--------------------------------------------------
 
-  goo = where(flag_arr[*,3] eq fill_val)   ;bias sweep
+  goo = where(flag_arr[*,3] eq fill_val) ;bias sweep
   if goo[0] ne -1 then flag_arr[goo,3] = 0
 
-  goo = where(flag_arr[*,4] eq fill_val)   ;antenna deploy
+  goo = where(flag_arr[*,4] eq fill_val) ;antenna deploy
   if goo[0] ne -1 then flag_arr[goo,4] = 0
 
-  goo = where(flag_arr[*,14] eq fill_val)  ;autobias
+  goo = where(flag_arr[*,14] eq fill_val) ;autobias
   if goo[0] ne -1 then flag_arr[goo,14] = 0
 
-  goo = where(flag_arr[*,15] eq fill_val)  ;charging
+  goo = where(flag_arr[*,15] eq fill_val) ;charging
   if goo[0] ne -1 then flag_arr[goo,15] = 0
 
-  goo = where(flag_arr[*,1] eq fill_val)  ;eclipse
+  goo = where(flag_arr[*,1] eq fill_val) ;eclipse
   if goo[0] ne -1 then flag_arr[goo,1] = 0
 
-  goo = where(flag_arr[*,2] eq fill_val)  ;maneuver
+  goo = where(flag_arr[*,2] eq fill_val) ;maneuver
   if goo[0] ne -1 then flag_arr[goo,2] = 0
 
 
@@ -444,21 +447,21 @@ endelse
   flag_arr[*,0] = 0
 
   goo = where((flag_arr[*,5] eq 1) or (flag_arr[*,6] eq 1) or (flag_arr[*,7] eq 1) or (flag_arr[*,8] eq 1))
-  if goo[0] ne -1 then flag_arr[goo,0] = 1   ;v1-v4 saturation
+  if goo[0] ne -1 then flag_arr[goo,0] = 1 ;v1-v4 saturation
 
-  goo = where(flag_arr[*,1] eq 1)  ;eclipse
+  goo = where(flag_arr[*,1] eq 1) ;eclipse
   if goo[0] ne -1 then flag_arr[goo,0] = 1
 
   goo = where(flag_arr[*,15] eq 1) ;charging
   if goo[0] ne -1 then flag_arr[goo,0] = 1
 
-  goo = where(flag_arr[*,3] eq 1)  ;bias sweep
+  goo = where(flag_arr[*,3] eq 1) ;bias sweep
   if goo[0] ne -1 then flag_arr[goo,0] = 1
   
-  goo = where(flag_arr[*,4] eq 1)  ;antenna deploy
+  goo = where(flag_arr[*,4] eq 1) ;antenna deploy
   if goo[0] ne -1 then flag_arr[goo,0] = 1
 
-  goo = where(flag_arr[*,2] eq 1)  ;maneuver
+  goo = where(flag_arr[*,2] eq 1) ;maneuver
   if goo[0] ne -1 then flag_arr[goo,0] = 1
 
 
