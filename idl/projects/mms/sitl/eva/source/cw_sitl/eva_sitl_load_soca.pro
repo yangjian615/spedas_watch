@@ -8,7 +8,8 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   ;============
   ; FOM
   ;============
-  unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF, state.PARENT); Whatever tspan is, we retrieve unix_FOMStr to get 'tfom'.
+  ; Whatever tspan is, we retrieve the latest unix_FOMStr to get 'tfom'.
+  unix_FOMstr = eva_sitl_load_soca_getfom(state.PREF, state.PARENT)
   sz = size(unix_FOMstr,/type)
   if sz[0] ne 8 then return
   
@@ -40,28 +41,29 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   store_data,'mms_soca_zero',data={x:zerox, y:zeroy}
   options,'mms_soca_zero','linestyle',1
 
-
+  ;==============
+  ; Historic FOM
+  ;==============
+  ts = str2time(str_tspan[0])
+  te = str2time(str_tspan[1])
+  if (ts lt tfom[0]) then begin
+    te = tfom[0]
+    ;mms_get_abs_fom_files, local_flist, ts, te, pw_flag, pw_message
+    ;stop
+  endif
+  
   ;=============
   ; BACK STRUCT
   ;=============
   ; 'mms_soca_backstr' (burst segment status)
   ; latest SITL target time is stored in "tfom"
-  EPS = 0.001d
-  if tspan[0]+EPS lt tfom[0] then begin
+;  EPS = 0.001d
+;  if tspan[0]+EPS lt tfom[0] then begin
 
-;    if state.pref.EVA_TESTMODE then begin
-;      ; 'dir' produces the directory name with a path separator character that can be OS dependent.
-;      local_dir = file_search(ProgramRootDir(/twoup)+'data',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
-;      fom_file = local_dir + 'BAKStr_for_demo.sav'
-;      restore, fom_file
-;      pw_flag = 0
-;      pw_message = 'sample file used.'
-;    endif else begin
     mms_get_back_structure, tspan[0], tspan[1], BAKStr, pw_flag, pw_message; START,STOP are ULONG
-;    endelse
 
     if pw_flag then begin
-      rst=dialog_message(pw_message,/info,/center)
+      ;rst=dialog_message(pw_message,/info,/center)
     endif else begin
 
       unix_BAKStr_org = BAKStr
@@ -74,8 +76,17 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
       options,'mms_soca_bakstr','colors',85; 179
       options,'mms_soca_bakstr','unix_BAKStr_org',unix_BAKStr_org
       dgrand = [dgrand,'mms_soca_bakstr']
+      
+      idx = where(strmatch(unix_BAKStr_org.STATUS,"*trimmed*"),ct_trimmed)
+      idx = where(strmatch(unix_BAKStr_org.STATUS,"*subsumed*"),ct_subsumed)
+      if (ct_trimmed+ct_subsumed gt 0) then begin
+        msg = ['TRIMMED or SUBSUMED segment detected.','']
+        msg = [msg,'There may have been an error at SDC.']
+        msg = [msg,'Please notify Super-SITL.']
+        result = dialog_message(msg,/center)
+      endif
     endelse
-  endif
+;  endif
   
   ;--------------------------
   ; 'mms_soca_zero' (update)
