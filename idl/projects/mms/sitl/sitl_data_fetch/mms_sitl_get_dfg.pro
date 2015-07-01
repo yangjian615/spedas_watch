@@ -29,8 +29,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-27 10:14:00 -0700 (Wed, 27 May 2015) $
-;  $LastChangedRevision: 17739 $
+;  $LastChangedDate: 2015-06-29 13:56:50 -0700 (Mon, 29 Jun 2015) $
+;  $LastChangedRevision: 17991 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_dfg.pro $
 
 
@@ -137,22 +137,45 @@ pro mms_sitl_get_dfg, sc_id=sc_id, no_update = no_update, reload = reload
       ; Now we can open the files and create tplot variables
       ; First, we open the initial file
 
+;      mag_struct = mms_sitl_open_dfg_cdf(files_open(0))
+;      times = mag_struct.x
+;      b_field = mag_struct.y
+;      varname = mag_struct.varname
+;
+;      if n_elements(files_open) gt 1 then begin
+;        for i = 1, n_elements(files_open)-1 do begin
+;          temp_struct = mms_sitl_open_dfg_cdf(files_open(i))
+;          times = [times, temp_struct.x]
+;          b_field = [b_field, temp_struct.y]
+;        endfor
+;      endif
+;
+;      store_data, varname, data = {x: times, y:b_field}
+
       mag_struct = mms_sitl_open_dfg_cdf(files_open(0))
       times = mag_struct.x
       b_field = mag_struct.y
       varname = mag_struct.varname
+      etimes = mag_struct.ephemx
+      pos_vect = mag_struct.ephemy
+      evarname = mag_struct.ephem_varname
 
       if n_elements(files_open) gt 1 then begin
         for i = 1, n_elements(files_open)-1 do begin
           temp_struct = mms_sitl_open_dfg_cdf(files_open(i))
           times = [times, temp_struct.x]
+          etimes = [etimes, temp_struct.ephemx]
+          pos_vect = [pos_vect, temp_struct.ephemy]
           b_field = [b_field, temp_struct.y]
         endfor
       endif
 
       store_data, varname, data = {x: times, y:b_field}
-
-      ;
+      if evarname ne '' then begin
+        store_data, evarname, data = {x: etimes, y:pos_vect}
+      endif else begin
+        print, 'No QL ephemeris in DFG file for ' + sc_id[j]
+      endelse
 
     endif else begin
       print, 'No DFG data available locally or at SDC or invalid query!'

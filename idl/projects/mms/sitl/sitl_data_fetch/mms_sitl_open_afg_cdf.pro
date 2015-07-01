@@ -16,18 +16,26 @@ times_unix = time_double(times_TT_nanosec, /tt2000)
 vector_data = *cdf_str.vars[2].dataptr
 varname = cdf_str.vars(2).name
 
-ephem_data = *cdf_str.vars[10].dataptr
-ephem_name = cdf_str.vars[10].name
-ephem_times_TT_nanosec = *cdf_str.vars[5].dataptr
-ephem_times_unix = time_double(ephem_times_TT_nanosec, /tt2000)
 
-; Grab epehem data
-posx = ephem_data(*,0)
-posy = ephem_data(*,1)
-posz = ephem_data(*,2)
-posr = ephem_data(*,3)
+if ptr_valid(cdf_str.vars[10].dataptr) then begin
+  ephem_data = *cdf_str.vars[10].dataptr
+  ephem_name = cdf_str.vars[10].name
+  ephem_times_TT_nanosec = *cdf_str.vars[5].dataptr
+  ephem_times_unix = time_double(ephem_times_TT_nanosec, /tt2000)
 
-posvector = [[posx],[posy],[posz],[posr]]
+  ; Grab epehem data
+  posx = ephem_data(*,0)
+  posy = ephem_data(*,1)
+  posz = ephem_data(*,2)
+  posr = ephem_data(*,3)
+
+  posvector = [[posx],[posy],[posz],[posr]]
+
+endif else begin
+  ephem_name = ''
+  ephem_times_unix = 0
+  posvector = [[0],[0],[0],[0]]
+endelse
 
 ; Says data is in orthogonalized boom coordinates.
 bx = vector_data(*,0)

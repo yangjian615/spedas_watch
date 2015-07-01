@@ -1348,6 +1348,9 @@ endif
 		store_data,'mvn_sta_d4_D',data={x:time,y:total(total(total(reform(eflux,npts,nenergy,ndef,nanode,nmass),5),4),2)/nanode,v:theta}
 		store_data,'mvn_sta_d4_A',data={x:time,y:total(total(total(reform(eflux,npts,nenergy,ndef,nanode,nmass),5),3),2)/ndef,v:phi}
 		store_data,'mvn_sta_d4_H_A',data={x:time,y:total(total(reform(eflux[*,*,*,1],npts,nenergy,ndef,nanode),3),2)/ndef,v:phi}
+		store_data,'mvn_sta_d4_L_A',data={x:time,y:total(total(reform(eflux[*,*,*,0],npts,nenergy,ndef,nanode),3),2)/ndef,v:phi}
+		store_data,'mvn_sta_d4_H_D',data={x:time,y:total(total(reform(eflux[*,*,*,1],npts,nenergy,ndef,nanode),4),2)/nanode,v:theta}
+		store_data,'mvn_sta_d4_L_D',data={x:time,y:total(total(reform(eflux[*,*,*,0],npts,nenergy,ndef,nanode),4),2)/nanode,v:theta}
 		store_data,'mvn_sta_d4_M',data={x:time,y:total(total(eflux,3),2),v:mass}
 		store_data,'mvn_sta_d4_tot',data={x:time,y:total(total(data,4),3)}
 		store_data,'mvn_sta_d4_att',data={x:time,y:iatt}
@@ -1361,6 +1364,9 @@ endif
 			ylim,'mvn_sta_d4_D',-50,50,0
 			ylim,'mvn_sta_d4_A',-180,200.,0
 			ylim,'mvn_sta_d4_H_A',-180,200.,0
+			ylim,'mvn_sta_d4_L_A',-180,200.,0
+			ylim,'mvn_sta_d4_H_D',-50,50.,0
+			ylim,'mvn_sta_d4_L_D',-50,50.,0
 			ylim,'mvn_sta_d4_M',.5,100,1
 			ylim,'mvn_sta_d4_att',-1,4,0
 
@@ -1370,6 +1376,9 @@ endif
 			zlim,'mvn_sta_d4_D',1.e3,1.e9,1
 			zlim,'mvn_sta_d4_A',1.e3,1.e9,1
 			zlim,'mvn_sta_d4_H_A',1.e3,1.e9,1
+			zlim,'mvn_sta_d4_L_A',1.e3,1.e9,1
+			zlim,'mvn_sta_d4_H_D',1.e3,1.e9,1
+			zlim,'mvn_sta_d4_L_D',1.e3,1.e9,1
 			zlim,'mvn_sta_d4_M',1.e3,1.e9,1
 
 			datagap=7.
@@ -1379,6 +1388,9 @@ endif
 			options,'mvn_sta_d4_D',datagap=datagap
 			options,'mvn_sta_d4_A',datagap=datagap
 			options,'mvn_sta_d4_H_A',datagap=datagap
+			options,'mvn_sta_d4_L_A',datagap=datagap
+			options,'mvn_sta_d4_H_D',datagap=datagap
+			options,'mvn_sta_d4_L_D',datagap=datagap
 			options,'mvn_sta_d4_M',datagap=datagap
 			options,'mvn_sta_d4_tot',datagap=datagap
 	
@@ -1388,6 +1400,9 @@ endif
 			options,'mvn_sta_d4_D','spec',1
 			options,'mvn_sta_d4_A','spec',1
 			options,'mvn_sta_d4_H_A','spec',1
+			options,'mvn_sta_d4_L_A','spec',1
+			options,'mvn_sta_d4_H_D','spec',1
+			options,'mvn_sta_d4_L_D','spec',1
 			options,'mvn_sta_d4_M','spec',1
 
 			options,'mvn_sta_d4_P4E_D',ytitle='sta!CP4E-d4!C!CTheta!Cdeg'
@@ -1396,6 +1411,9 @@ endif
 			options,'mvn_sta_d4_D',ytitle='sta!Cd4!C!CTheta!Cdeg'
 			options,'mvn_sta_d4_A',ytitle='sta!Cd4!C!CPhi!Cdeg'
 			options,'mvn_sta_d4_H_A',ytitle='sta!Cd4!CM>12!CPhi!Cdeg'
+			options,'mvn_sta_d4_L_A',ytitle='sta!Cd4!CM<12!CPhi!Cdeg'
+			options,'mvn_sta_d4_H_D',ytitle='sta!Cd4!CM>12!CPhi!Cdeg'
+			options,'mvn_sta_d4_L_D',ytitle='sta!Cd4!CM<12!CPhi!Cdeg'
 			options,'mvn_sta_d4_M',ytitle='sta!Cd4!C!CMass!Camu'
 			options,'mvn_sta_d4_tot',ytitle='sta!Cd4!C!CCounts'
 			options,'mvn_sta_d4_att',ytitle='sta!Cd4!C!CAttenuator'
@@ -1403,6 +1421,9 @@ endif
 			options,'mvn_sta_d4_D',ztitle='eflux'
 			options,'mvn_sta_d4_A',ztitle='eflux'
 			options,'mvn_sta_d4_H_A',ztitle='eflux'
+			options,'mvn_sta_d4_L_A',ztitle='eflux'
+			options,'mvn_sta_d4_H_D',ztitle='eflux'
+			options,'mvn_sta_d4_L_D',ztitle='eflux'
 			options,'mvn_sta_d4_M',ztitle='eflux'
 	endif
 

@@ -29,8 +29,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-27 10:14:00 -0700 (Wed, 27 May 2015) $
-;  $LastChangedRevision: 17739 $
+;  $LastChangedDate: 2015-06-29 13:56:50 -0700 (Mon, 29 Jun 2015) $
+;  $LastChangedRevision: 17991 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_afg.pro $
 
 
@@ -156,7 +156,11 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload
       endif
 
       store_data, varname, data = {x: times, y:b_field}
-      store_data, evarname, data = {x: etimes, y:pos_vect}
+      if evarname ne '' then begin
+        store_data, evarname, data = {x: etimes, y:pos_vect}
+      endif else begin
+        print, 'No QL ephemeris in DFG file for ' + sc_id[j]
+      endelse
 
       ;
 

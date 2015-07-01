@@ -25,7 +25,27 @@ bz = vector_data(*,2)
 
 bvector = [[bx], [by], [bz]]
 
-outstruct = {x: times_unix, y: bvector, varname: varname}
+if ptr_valid(cdf_str.vars[10].dataptr) then begin
+  ephem_data = *cdf_str.vars[10].dataptr
+  ephem_name = cdf_str.vars[10].name
+  ephem_times_TT_nanosec = *cdf_str.vars[5].dataptr
+  ephem_times_unix = time_double(ephem_times_TT_nanosec, /tt2000)
+
+  ; Grab epehem data
+  posx = ephem_data(*,0)
+  posy = ephem_data(*,1)
+  posz = ephem_data(*,2)
+  posr = ephem_data(*,3)
+
+  posvector = [[posx],[posy],[posz],[posr]]
+
+endif else begin
+  ephem_name = ''
+  ephem_times_unix = 0
+  posvector = [[0],[0],[0],[0]]
+endelse
+
+outstruct = {x: times_unix, y: bvector, varname: varname, ephemx:ephem_times_unix, ephemy: posvector, ephem_varname: ephem_name}
 
 return, outstruct
 

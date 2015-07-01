@@ -9,21 +9,35 @@
 ; would be expected from secondary electrons.
 ;INPUT:
 ; data = 3d data structure filled by themis routines get_th?_p???
+;KEYWORDS:
+; pr_slope = if set, show some diagnostics prints of the slope of the
+;            distribution
+; noise_threshold = values below Noise_threshold*max(flux) are
+;                   considered to be in noise, if there is a positive 
+;                   slope, it is ignored. The default is 1.0e-3
+; photoelectron_threshold = Only test for photoelctrons if the flux
+;                           is above this value, The default is 1.0e7
 ;HISTORY:
 ; Hacked from spec3d.pro, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-06-26 16:15:47 -0700 (Fri, 26 Jun 2015) $
-; $LastChangedRevision: 17984 $
+; $LastChangedDate: 2015-06-29 10:09:40 -0700 (Mon, 29 Jun 2015) $
+; $LastChangedRevision: 17986 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_dist2scpot.pro $
 ;
 ;-
 Function thm_esa_dist2scpot, tempdat, pr_slope = pr_slope, $
+                             noise_threshold = noise_threshold, $
+                             photoelectron_threshold = photoelectron_threshold, $
                              _extra=_extra
 
   If(~is_struct(tempdat) || tempdat.valid eq 0) Then Begin
      dprint, 'Invalid Data'
      Return, -1
   Endif
+
+  If(Keyword_set(noise_threshold)) Then nvalue = noise_threshold Else nvalue = 1.0e-3
+  If(Keyword_set(photoelectron_threshold)) Then pvalue = photoelectron_threshold $
+  Else pvalue = 1.0e7
 
   data3d = conv_units(tempdat,'Eflux')
   data3d.data = data3d.data*data3d.denergy/(data3d.denergy+.00001)
@@ -51,14 +65,14 @@ Function thm_esa_dist2scpot, tempdat, pr_slope = pr_slope, $
   nenergy = n_elements(energy)
 
   slope = alog10(dist[1:*]/dist[0:nenergy-2])/alog10(energy[1:*]/energy[0:nenergy-2])
-;Also add a restriction that the slope should go positive at some
-;point beyond the negative slope, and there should be a reasonable
-;non-noise like value of the distribution too,
+;Add a restriction that the slope should go positive at some point
+;beyond the negative slope, and there should be a reasonable non-noise
+;value of the distribution too,
   nen1 = n_elements(slope)
   pflag = bytarr(nen1)
   For j = 0, nen1-2 Do Begin
      pflj = where(slope[j:*] Gt 0 And $
-                  dist[j+1:*] Gt max(dist)/1.0e3, npflj)
+                  dist[j+1:*] Gt nvalue*max(dist), npflj)
      If(npflj Gt 0) Then Begin 
         pflag[j] = 1
      Endif
@@ -66,7 +80,7 @@ Function thm_esa_dist2scpot, tempdat, pr_slope = pr_slope, $
 
 ;and also the flux at the low energy part of the given slope should be
 ;greater than some threshold, say 1.0e7
- threshold_flag = dist[0:nenergy-2] Gt 1.0e7
+ threshold_flag = dist[0:nenergy-2] Gt pvalue
 
 ;Note that these numbers are empirical, except for the lower linit,
 ;which is determined by the slope of the secondary electrons.
