@@ -120,11 +120,13 @@ for i=0l,npts-1 do begin
 		qual[i]=qual[i]+16
 	endif
 
-	c0 = 1.d*reform(mvn_c0_dat.data[ind_c0,*,0]+mvn_c0_dat.data[ind_c0,*,1])#replicate(1.,16)	; apid c0 is valid counts vs energy, averaged over mass
-	da = 1.d*reform(mvn_da_dat.rates[i,*])*16.#replicate(1.,16)					; apid da is a rate (Hz), *16. keeps it a rate when normalized below by c8/ct
+	c0 = 1.d*reform(mvn_c0_dat.data[ind_c0,*,0]+mvn_c0_dat.data[ind_c0,*,1])#replicate(1.,16)		; apid c0 is valid counts vs energy, averaged over mass
+		if min_c0 gt 10. then c0 = round(0.28d*reform(0.004*mvn_da_dat.rates[i,*]))#replicate(1.,16)	; kluge if c0 data is missing
+
+	da = 1.d*reform(mvn_da_dat.rates[i,*])*16.#replicate(1.,16)						; apid da is a rate (Hz), *16. keeps it a rate when normalized below by c8/ct
 	c8 = 1.d*reform(replicate(1.,2)#reform(mvn_c8_dat.data[ind_c8,*,*],512),64,16)
 
-	ca = total(reform(mvn_ca_dat.data[ind_ca,*,*],16,4,16),2)				; assume dist of cnts on anode independent of deflectors
+	ca = total(reform(mvn_ca_dat.data[ind_ca,*,*],16,4,16),2)						; assume dist of cnts on anode independent of deflectors
 	ca1 = fltarr(16) 
 	ef1 = fltarr(16) 
 	for j=0,15 do begin
@@ -134,7 +136,7 @@ for i=0l,npts-1 do begin
 	ef1 = total(ca*(replicate(1.,16)#reform(eff_cal[*,4])),2)/total(ca,2)
 	ef2 = reform(replicate(1.,4)#ef1,64)#replicate(1.,16)					; correction for nominal efficiency to account for dist of cnts over anodes
 
-	ef3 = total(mvn_c0_dat.data[ind_c0,*,*])/(4.*mvn_d8_dat.rates[ind_d8,7])		; x4 converts rates to counts
+	ef3 = total(c0)/(4.*mvn_d8_dat.rates[ind_d8,7])						; x4 converts rates to counts
 
 	ct = 1.*total(c8,2)#replicate(1.,16) > 0.0001
 	r1 = mvn_d8_dat.rates[ind_d8,7]/mvn_d8_dat.rates[ind_d8,4]				; fully qualified processed events 

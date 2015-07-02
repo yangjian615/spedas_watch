@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-09 11:08:39 -0700 (Tue, 09 Jun 2015) $
-;$LastChangedRevision: 17840 $
+;$LastChangedDate: 2015-06-30 09:31:26 -0700 (Tue, 30 Jun 2015) $
+;$LastChangedRevision: 17995 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1394,7 +1394,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   gui_title = 'Space Physics Environment Data Analysis Software (SPEDAS)'
   master = Widget_Base(Title=gui_title, MBar=bar, /TLB_Kill_Request_Events, $
                      /Col, XPad=10, /Kbrd_Focus_Events,tlb_size_events=1, _extra=_extra, TAB_MODE=1)
-  toolBarBase = Widget_Base(master, /Row, /ToolBar)
+  toolBarBase = Widget_Base(master, /Row)
   scrollbase = widget_base(master, /row, xpad=0, ypad=0, space=0)
   pathBase = Widget_Base(master, /Col, /Align_Left)
   graphBase = Widget_Base(master, /Row)

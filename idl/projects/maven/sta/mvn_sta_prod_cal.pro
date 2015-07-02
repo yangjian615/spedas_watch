@@ -49,20 +49,20 @@
 ;
 ;			bit 0	test pulser on					- testpulser header bit set
 ;			bit 1	diagnostic mode					- diagnostic header bit set
-;			bit 2	dead time correction > factor of 2		- deadtime correction > 2
-;			bit 3	mcp detector gain droop flag 			- deadtime and beam width - flagged if correction > 2
+;			bit 2	dead time correction >2 flag			- deadtime correction > 2
+;			bit 3	detector droop correction >2 flag 		- mcp droop flagged if correction > 2
 ;			bit 4	dead time correction not at event time		- missing data quantity for deadtime
 ;			bit 5	electrostatic attenuator failing at low energy	- attE on and eprom_ver<2
 ;			bit 6   attenuator change during accumulation		- att 1->2 or 2->1 transition (one measurement)	
 ;			bit 7	mode change during accumulation			- only needed for packets that average data during mode transition
 ;			bit 8	lpw sweeps interfering with data 		- lpw mode not dust mode
 ;			bit 9	high background 		 		- minimum value in DA > 10000 Hz
-;			bit 10	missing background 		 		- dat.bkg = 0		- may not be needed
+;			bit 10	no background subtraction array		 	- dat.bkg = 0		- may not be needed
 ;			bit 11	missing spacecraft potential			- dat.sc_pot = 0	- may not be needed	
-;			bit 12	inflight calibration 				- date determined, set to 1 until calibration finalized
-;			bit 13	tbd
-;			bit 14	tbd
-;			bit 15	not used
+;			bit 12	inflight calibration incomplete			- date determined, set to 1 until calibration finalized
+;			bit 13	geometric factor problem			- 
+;			bit 14	ion suppression problem				- low energy ions <6eV have wrong geometric factor
+;			bit 15	not used =0
 ;
 ;
 ;-
@@ -81,7 +81,7 @@ pro mvn_sta_prod_cal,all=all,units=units,apids=apids,test=test,gf_nor=gf_nor,ign
 
 	get_data,'mvn_STA_2A_hkp_ch69_Config4',data=config4
 	if not keyword_set(config4) then begin
-		if not return_nrg then mvn_sta_hkp_cal,def_lim=1
+		if not keyword_set(return_nrg) then mvn_sta_hkp_cal,def_lim=1
 		get_data,'mvn_STA_2A_hkp_ch69_Config4',data=config4
 		if not keyword_set(config4) then begin
 			config4_def=0

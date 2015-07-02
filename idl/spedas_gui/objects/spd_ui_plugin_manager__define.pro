@@ -7,10 +7,18 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-05-13 14:30:53 -0700 (Wed, 13 May 2015) $
-;$LastChangedRevision: 17592 $
+;$LastChangedDate: 2015-06-30 13:52:41 -0700 (Tue, 30 Jun 2015) $
+;$LastChangedRevision: 18001 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_plugin_manager__define.pro $
 ;-
+
+pro spd_ui_plugin_manager::Cleanup
+    ptr_free, self.plugin_menus
+    ptr_free, self.plugin_file_config_panels
+    ptr_free, self.plugin_load_data_panels
+    ptr_free, self.plugin_about_pages
+    ptr_free, self.data_proc_plugins
+end
 
 ;+
 ; NAME: 

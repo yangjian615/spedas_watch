@@ -16,8 +16,8 @@
 ;       UNITS:    Convert data to these units.  Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 16:19:20 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17701 $
+; $LastChangedDate: 2015-06-30 17:27:13 -0700 (Tue, 30 Jun 2015) $
+; $LastChangedRevision: 18004 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makespec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -83,6 +83,24 @@ pro mvn_swe_makespec, sum=sum, units=units
         mvn_swe_engy[j0+j].data = a4[i].data[*,j]                   ; raw counts
         mvn_swe_engy[j0+j].var = a4[i].var[*,j]                     ; variance
       endfor
+    endfor
+
+; Correct timing during mode changes
+; (The measurement cadence can change while a 16-sample packet is being assembled.)
+
+    dt_mode = swe_dt[a4.period]*16D      ; nominal time interval between packets
+    dt_pkt = a4.time - shift(a4.time,1)  ; actual time interval between packets
+    dt_pkt[0] = dt_pkt[1]
+    j = where(abs(dt_pkt - dt_mode) gt 0.5D, count)
+    for i=0,(count-1) do begin
+      dt1 = dt_mode[(j[i] - 1L) > 0L]/16D
+      dt2 = dt_mode[j[i]]/16D
+      if (abs(dt1 - dt2) gt 0.5D) then begin
+        m = 16L*((j[i] - 1L) > 0L)
+        n = round((dt_pkt[j[i]] - 16D*dt2)/(dt1 - dt2)) + 1L
+        dt_fix = (dt2 - dt1)*(dindgen(16-n) + 1D)
+        mvn_swe_engy[(m+n):(m+15L)].time += dt_fix
+      endif
     endfor
 
 ; Correct for deadtime
@@ -168,6 +186,24 @@ pro mvn_swe_makespec, sum=sum, units=units
         mvn_swe_engy_arc[j0+j].data = a5[i].data[*,j]                   ; raw counts
         mvn_swe_engy_arc[j0+j].var = a5[i].var[*,j]                     ; variance
       endfor
+    endfor
+
+; Correct timing during mode changes
+; (The measurement cadence can change while a 16-sample packet is being assembled.)
+
+    dt_mode = swe_dt[a5.period]*16D      ; nominal time interval between packets
+    dt_pkt = a5.time - shift(a5.time,1)  ; actual time interval between packets
+    dt_pkt[0] = dt_pkt[1]
+    j = where(abs(dt_pkt - dt_mode) gt 0.5D, count)
+    for i=0,(count-1) do begin
+      dt1 = dt_mode[(j[i] - 1L) > 0L]/16D
+      dt2 = dt_mode[j[i]]/16D
+      if (abs(dt1 - dt2) gt 0.5D) then begin
+        m = 16L*((j[i] - 1L) > 0L)
+        n = round((dt_pkt[j[i]] - 16D*dt2)/(dt1 - dt2)) + 1L
+        dt_fix = (dt2 - dt1)*(dindgen(16-n) + 1D)
+        mvn_swe_engy_arc[(m+n):(m+15L)].time += dt_fix
+      endif
     endfor
 
 ; Correct for deadtime

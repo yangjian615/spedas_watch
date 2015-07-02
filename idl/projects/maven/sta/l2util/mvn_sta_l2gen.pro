@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-03-17 11:17:10 -0700 (Tue, 17 Mar 2015) $
-; $LastChangedRevision: 17144 $
+; $LastChangedDate: 2015-06-30 13:03:42 -0700 (Tue, 30 Jun 2015) $
+; $LastChangedRevision: 17997 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -207,6 +207,9 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      mvn_sta_qf14_load
   Endif Else Begin
      mvn_sta_l0_load, files = filex
+     mvn_sta_mag_load
+     mvn_sta_ephemeris_load
+     mvn_sta_qf14_load
   Endelse
 
 
