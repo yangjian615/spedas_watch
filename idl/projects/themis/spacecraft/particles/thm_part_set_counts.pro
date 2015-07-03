@@ -21,8 +21,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-03-19 12:51:00 -0700 (Thu, 19 Mar 2015) $
-;$LastChangedRevision: 17149 $
+;$LastChangedDate: 2015-07-01 19:05:28 -0700 (Wed, 01 Jul 2015) $
+;$LastChangedRevision: 18009 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_set_counts.pro $
 ;
 ;-
@@ -46,7 +46,7 @@ endif
 
 ;set all bins to requested value
 for i=0, n_elements(data)-1 do begin
-  (*data[i]).data[*] = float(counts)
+  (*data[i]).data = float(counts)
 endfor
 
 

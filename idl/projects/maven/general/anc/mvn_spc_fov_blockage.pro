@@ -30,22 +30,21 @@
 ;
 ;  SEP2:         Change coordinates/FOV to match SEP2.
 ;
+;  PHI:          Return the computed phi information.
+;
+;  THETA:        Return the computed theta information.
+;
 ;CREATED BY:     Roberto Livi on 2015-02-23.
 ;
 ;EXAMPLES:       1. SWEA
 ;                mvn_spc_fov_blockage,clr=200,/swea,/invert_phi,/invert_theta
 ;
-;
 ; VERSION:
-;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-04-10 09:45:23 -0700 (Fri, 10 Apr 2015) $
-;   $LastChangedRevision: 17284 $
+;   $LastChangedBy: hara $
+;   $LastChangedDate: 2015-07-01 15:26:56 -0700 (Wed, 01 Jul 2015) $
+;   $LastChangedRevision: 18007 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/anc/mvn_spc_fov_blockage.pro $
 ;-
-
-
-
-
 pro mvn_spc_fov_blockage, trange=trange,$
                           clr=clr,$  
                           polyfill=polyfill,$
@@ -55,9 +54,9 @@ pro mvn_spc_fov_blockage, trange=trange,$
                           swia=swia,$
                           sep1=sep1,$
                           sep2=sep2,$
-                          static=static
+                          static=static, phi=phi, theta=theta
 
-
+  common mvn_sta_fov_block, mvn_sta_fov_block_time, mvn_sta_fov_block_qrot1, mvn_sta_fov_block_qrot2, mvn_sta_fov_block_matrix
 
   ;;------------------------------
   ;;Get MAVEN Vertices
@@ -134,7 +133,7 @@ pro mvn_spc_fov_blockage, trange=trange,$
   ;;---------------------------------------------
   ;;Get STATIC location and rotation matrix
   if keyword_set(static) then begin
-
+        
      if ~keyword_set(trange) then begin
         timespan,['2015-01-10','2015-01-11']
         trange=timerange()
@@ -148,7 +147,28 @@ pro mvn_spc_fov_blockage, trange=trange,$
      cspice_str2et,utc,et
      time_valid = spice_valid_times(et[0],object=check_objects,tol=tol)     
 
-
+     IF SIZE(mvn_sta_fov_block_time, /type) EQ 0 THEN BEGIN
+        recompute:
+        status = EXECUTE("mvn_sta_fov_block_time = (SCOPE_VARFETCH('mvn_c0_dat', common='mvn_c0')).time")
+        IF status EQ 0 THEN GOTO, previous
+        undefine, status
+        mvn_sta_fov_block_qrot1 = spice_body_att('MAVEN_APP_OG', 'MAVEN_APP_IG', mvn_sta_fov_block_time, $
+                                                 /quaternion, check_objects='MAVEN_SPACECRAFT')
+        mvn_sta_fov_block_qrot2 = spice_body_att('MAVEN_APP_IG', 'MAVEN_APP_BP', mvn_sta_fov_block_time, $
+                                                 /quaternion, check_objects='MAVEN_SPACECRAFT')
+        mvn_sta_fov_block_matrix = spice_body_att('MAVEN_SPACECRAFT', 'MAVEN_STATIC', mvn_sta_fov_block_time, $
+                                                 check_objects='MAVEN_SPACECRAFT')
+     ENDIF
+     IF SIZE(mvn_sta_fov_block_time, /type) NE 0 THEN BEGIN
+        IF (time_double(utc) LT mvn_sta_fov_block_time[0]) OR (time_double(utc) GT mvn_sta_fov_block_time[N_ELEMENTS(mvn_sta_block_time)-1]) THEN GOTO, recompute
+        idx = NN(mvn_sta_fov_block_time, utc)
+        qrot1 = REFORM(mvn_sta_fov_block_qrot1[*, idx])
+        qrot2 = REFORM(mvn_sta_fov_block_qrot2[*, idx])
+        inst_loc = quaternion_rotation(((quaternion_rotation((inst_loc-g2_gim_loc), qrot1, /last_ind) + g2_gim_loc) - g1_gim_loc), qrot2, /last_ind) + g1_gim_loc
+        inst_rot = TRANSPOSE(REFORM(mvn_sta_fov_block_matrix[*, *, idx]))
+        undefine, idx
+        GOTO, draw
+     ENDIF
      ;;---------------------------------------------------
      ;;Change STATIC location depending on the rotation of
      ;;the inner and outer gimbal.
@@ -164,6 +184,7 @@ pro mvn_spc_fov_blockage, trange=trange,$
      ;;a. Use location of 1st gimbal as rotation axis
      ;;b. Perform rotation.
      ;;c. Shift back to original Spacecraft origin
+     previous:
      inst_loc_new=inst_loc-g2_gim_loc
      inst_loc_new2=$
         spice_vector_rotate(inst_loc_new,$
@@ -189,7 +210,7 @@ pro mvn_spc_fov_blockage, trange=trange,$
      cspice_kclear
 
   endif
-
+  draw:
   ;;---------------------------------
   ;;Shift to Instrument location
   coord[0,*,*]=coord[0,*,*]-inst_loc[0]

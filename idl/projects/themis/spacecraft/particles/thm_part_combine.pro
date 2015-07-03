@@ -33,6 +33,7 @@
 ;             and cover the ESA-SST energy gap (in ascending order) (float).
 ;  sst_sun_bins:  Array list of SST bins to mask (bin indices) (int).
 ;  sst_min_energy: Set to minimum energy to toss bins that are having problems from instrument degradation. (float)
+;  set_counts:  Set all data to this # of counts before interpolation (for comparison).
 ;  only_sst: Interpolates ESA to match SST and returns SST(only) with interpolated bins.(Backwards compatibility: functionality of thm_sst_load_calibrate)
 ;  interp_to_esa: Combined product but data interpolated to match ESA(instead of always interpolating to higher resolution)
 ;  interp_to_sst: Combined product but data interpolated to match SST(instead of always interpolating to higher resolution)
@@ -82,9 +83,9 @@
 ;  uniformity will be assumed as data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-05-13 15:54:49 -0700 (Wed, 13 May 2015) $
-;$LastChangedRevision: 17597 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-07-01 19:04:38 -0700 (Wed, 01 Jul 2015) $
+;$LastChangedRevision: 18008 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_combine.pro $
 ;
 ;-
@@ -98,6 +99,7 @@ function thm_part_combine, probe=probe, $
                       energies=energies, $
                       sst_sun_bins=sst_sun_bins, $
                       sst_min_energy=sst_min_energy,$
+                      set_counts=set_counts, $
                       orig_esa=orig_esa, $
                       orig_sst=orig_sst, $
                       only_sst=only_sst,$ ;Interpolates ESA to match SST and returns SST(only) with interpolated bins. (Backwards compatibility: functionality of thm_sst_load_calibrate)
@@ -189,6 +191,13 @@ function thm_part_combine, probe=probe, $
   ;(this is mainly for testing and may not be a useful feature)
   if arg_present(orig_sst) then thm_part_copy, sst, orig_sst
   if arg_present(orig_esa) then thm_part_copy, esa, orig_esa
+
+  ;fix counts to specified level if requested
+  ;in this case the output can then be used as comparison with real data
+  if ~undefined(set_counts) && is_num(set_counts) then begin
+    thm_part_set_counts, sst, set_counts
+    thm_part_set_counts, esa, set_counts
+  endif
 
   ;convert to flux and remove unnecessary fields from structures
   ;(energy interpolation should be perfomed in flux)

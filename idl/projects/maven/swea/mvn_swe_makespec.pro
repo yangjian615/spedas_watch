@@ -16,8 +16,8 @@
 ;       UNITS:    Convert data to these units.  Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-30 17:27:13 -0700 (Tue, 30 Jun 2015) $
-; $LastChangedRevision: 18004 $
+; $LastChangedDate: 2015-07-01 10:02:23 -0700 (Wed, 01 Jul 2015) $
+; $LastChangedRevision: 18006 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makespec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -85,21 +85,28 @@ pro mvn_swe_makespec, sum=sum, units=units
       endfor
     endfor
 
-; Correct timing during mode changes
-; (The measurement cadence can change while a 16-sample packet is being assembled.)
+; The measurement cadence can change while a 16-sample packet is being assembled.
+; It is possible to correct the timing during mode changes (typically 10 per day)
+; by comparing the nominal interval between packets (based on a4.period) with the
+; actual interval.  No correction can be made if a data gap coincides with a mode 
+; change, since the actual interval between packets cannot be determined.
 
-    dt_mode = swe_dt[a4.period]*16D      ; nominal time interval between packets
-    dt_pkt = a4.time - shift(a4.time,1)  ; actual time interval between packets
+    dt_mode = swe_dt[a4.period]*16D        ; nominal time interval between packets
+    dt_pkt = a4.time - shift(a4.time,1)    ; actual time interval between packets
     dt_pkt[0] = dt_pkt[1]
-    j = where(abs(dt_pkt - dt_mode) gt 0.5D, count)
+    dn_pkt = a4.npkt - shift(a4.npkt,1)    ; look for data gaps
+    dn_pkt[0] = 1B
+    j = where((abs(dt_pkt - dt_mode) gt 0.5D) and (dn_pkt eq 1B), count)
     for i=0,(count-1) do begin
-      dt1 = dt_mode[(j[i] - 1L) > 0L]/16D
-      dt2 = dt_mode[j[i]]/16D
+      dt1 = dt_mode[(j[i] - 1L) > 0L]/16D  ; cadence before mode change
+      dt2 = dt_mode[j[i]]/16D              ; cadence after mode change
       if (abs(dt1 - dt2) gt 0.5D) then begin
         m = 16L*((j[i] - 1L) > 0L)
         n = round((dt_pkt[j[i]] - 16D*dt2)/(dt1 - dt2)) + 1L
-        dt_fix = (dt2 - dt1)*(dindgen(16-n) + 1D)
-        mvn_swe_engy[(m+n):(m+15L)].time += dt_fix
+        if ((n gt 0) and (n lt 16)) then begin
+          dt_fix = (dt2 - dt1)*(dindgen(16-n) + 1D)
+          mvn_swe_engy[(m+n):(m+15L)].time += dt_fix
+        endif
       endif
     endfor
 
@@ -188,21 +195,28 @@ pro mvn_swe_makespec, sum=sum, units=units
       endfor
     endfor
 
-; Correct timing during mode changes
-; (The measurement cadence can change while a 16-sample packet is being assembled.)
+; The measurement cadence can change while a 16-sample packet is being assembled.
+; It is possible to correct the timing during mode changes (typically 10 per day)
+; by comparing the nominal interval between packets (based on a5.period) with the
+; actual interval.  No correction can be made if a data gap coincides with a mode 
+; change, since the actual interval between packets cannot be determined.
 
-    dt_mode = swe_dt[a5.period]*16D      ; nominal time interval between packets
-    dt_pkt = a5.time - shift(a5.time,1)  ; actual time interval between packets
+    dt_mode = swe_dt[a5.period]*16D        ; nominal time interval between packets
+    dt_pkt = a5.time - shift(a5.time,1)    ; actual time interval between packets
     dt_pkt[0] = dt_pkt[1]
-    j = where(abs(dt_pkt - dt_mode) gt 0.5D, count)
+    dn_pkt = a5.npkt - shift(a5.npkt,1)    ; look for data gaps
+    dn_pkt[0] = 1B
+    j = where((abs(dt_pkt - dt_mode) gt 0.5D) and (dn_pkt eq 1B), count)
     for i=0,(count-1) do begin
-      dt1 = dt_mode[(j[i] - 1L) > 0L]/16D
-      dt2 = dt_mode[j[i]]/16D
+      dt1 = dt_mode[(j[i] - 1L) > 0L]/16D  ; cadence before mode change
+      dt2 = dt_mode[j[i]]/16D              ; cadence after mode change
       if (abs(dt1 - dt2) gt 0.5D) then begin
         m = 16L*((j[i] - 1L) > 0L)
         n = round((dt_pkt[j[i]] - 16D*dt2)/(dt1 - dt2)) + 1L
-        dt_fix = (dt2 - dt1)*(dindgen(16-n) + 1D)
-        mvn_swe_engy_arc[(m+n):(m+15L)].time += dt_fix
+        if ((n gt 0) and (n lt 16)) then begin
+          dt_fix = (dt2 - dt1)*(dindgen(16-n) + 1D)
+          mvn_swe_engy_arc[(m+n):(m+15L)].time += dt_fix
+        endif
       endif
     endfor
 
