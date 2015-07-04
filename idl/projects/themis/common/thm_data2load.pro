@@ -29,9 +29,9 @@
 ; started on 31-Jan-2008, jmm, jimm@ssl.berkeley.edu, this is under
 ; development for the next 6 months or so.
 ; 9-apr-2008, jmm, added all instruments, for Version 4_00
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 14:27:44 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17274 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-07-02 18:47:11 -0700 (Thu, 02 Jul 2015) $
+;$LastChangedRevision: 18016 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_data2load.pro $
 ;-
 function thm_valid_variables, instrument, level
@@ -148,7 +148,7 @@ function thm_valid_variables, instrument, level
     'mom' : begin ; On-board moments
         instr_data = ''
         if(level eq 'l1' or level eq 'l10') then begin
-            instr_data = ['peim', 'peem', 'psim', 'psem', 'ptim', 'ptem', 'pxxm', 'iesa', 'eesa']
+            instr_data = ['peim', 'peem', 'psim', 'psem', 'ptim', 'ptem', 'pxxm', 'flags']
         endif else begin
 ;           instr_type = ['peim', 'peem', 'psim', 'psem', 'ptim', 'ptem']
             instr_type = ['peim', 'peem']

@@ -102,7 +102,7 @@ if keyword_set(starttimes) then begin
     ;get altitude
     for i=0,ss.numsrc-1 do begin
         w=where(gpsalt.x ge ss.trange[0,i] and gpsalt.x le ss.trange[1,i],nw)
-        altsum += total(gpsalt.y[w])
+        altsum += total(gpsalt.y[w],/nan)
         altnorm += 1.d * nw
     endfor
     altitude = altsum/altnorm
@@ -201,7 +201,7 @@ for ns=0,ss.numsrc-1 do begin
   
   ;Get the altitude
   w=where(gpsalt.x ge ss.trange[0,ns] and gpsalt.x le ss.trange[1,ns],nw)
-  altsum += total(gpsalt.y[w])
+  altsum += total(gpsalt.y[w],/nan)
   altnorm += 1.d * nw
 end
 

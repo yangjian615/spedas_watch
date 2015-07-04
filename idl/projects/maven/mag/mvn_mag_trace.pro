@@ -19,13 +19,13 @@
 ;                  Units: km, deg, deg
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-05 08:43:27 -0700 (Tue, 05 May 2015) $
-; $LastChangedRevision: 17477 $
+; $LastChangedDate: 2015-07-02 10:56:50 -0700 (Thu, 02 Jul 2015) $
+; $LastChangedRevision: 18012 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_trace.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
 ;-
-pro mvn_mag_trace, alt=alt, trace=T
+pro mvn_mag_trace, alt=alt, trace=result
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex, rcols
@@ -98,6 +98,7 @@ pro mvn_mag_trace, alt=alt, trace=T
     T[indx,0] = reform(dist)
     T[indx,1] = reform(tlon)
     T[indx,2] = reform(tlat)
+    result = {x:mag.x, y:T}
     
     polarity = replicate(!values.f_nan, nsam, 2)
     jndx = where(dist lt 0., count)

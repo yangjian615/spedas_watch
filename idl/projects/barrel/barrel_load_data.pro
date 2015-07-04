@@ -47,6 +47,7 @@
 ;EXAMPLE:
 ;
 ;REVISION HISTORY:
+;Version 0.96b JGS 07/02/2015 RC1, defaults to v04 dataset
 ;Version 0.96a KBY 07/07/2014 RC1, defaults to v03 dataset
 ;Version 0.95b KBY 12/29/2013 default to v02 dataset
 ;Version 0.93e KBY 08/16/2013 rename "barrel_load_gps.pro" to "barrel_load_ephm.pro";
@@ -76,7 +77,7 @@ pro barrel_load_data, probe=probe, datatype=datatype, trange=trange, $
 
 dprint, verbose=verbose, dlevel=4, 'BARREL data analysis software v0.96b' ; bdas_version
 
-file_version = 'v03'    ; default argument to VERSION (public release)
+file_version = 'v04'    ; default argument to VERSION (public release)
 vlevels = ['l2','l1']   ; master level: accepts multiple inputs
 vdatatypes = ['FSPC','EPHM','HKPG','MAGN','MSPC','MISC','RCNT','SSPC']   
                         ; master level: accepts multiple inputs 
@@ -226,5 +227,5 @@ IF TOTAL(strfilter(datatype,'SSPC', /BYTE), /INTEGER) THEN $
       CDF_DATA=cdf_data, GET_SUPPORT_DATA=get_support_data, $
       VARFORMAT=varformat, VALID_NAMES=valid_names, FILES=file_src, $
       CONVERT_L1_TO_PHYSICAL_UNITS=do_convert_L1
-
+print, "Data accessed is version: ", version, " Current default version is: ", file_version
 END

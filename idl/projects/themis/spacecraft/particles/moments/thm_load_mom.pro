@@ -7,10 +7,15 @@
 ;  probe = Probe name. The default is 'all', i.e., load all available probes.
 ;          This can be an array of strings, e.g., ['a', 'b'] or a
 ;          single string delimited by spaces, e.g., 'a b'
-;  datatype = The type of data to be loaded, for this case, there is only
-;          one option, the default value of 'mom', so this is a
-;          placeholder should there be more that one data type. 'all'
-;          can be passed in also, to get all variables.
+;  datatype = The type(s) of data to be loaded.  May be single string of 
+;             space-separate elements.  All data will be loaded if not set.
+;
+;             For level 1 this can specify type and specific quantity.
+;               e.g.  'psim', 'flags', 'ptem_density', 'pxxm_pot'
+;               
+;             For level 2 it must specify a specific variable.
+;               e.g.  'peim_flux', 'ptem_velocity_dsl'
+;                
 ;  TRANGE= (Optional) Time range of interest  (2 element array), if
 ;          this is not set, the default is to prompt the user. Note
 ;          that if the input time range is not a full day, a full
@@ -60,8 +65,8 @@
 ;
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-05-19 14:26:27 -0700 (Tue, 19 May 2015) $
-; $LastChangedRevision: 17650 $
+; $LastChangedDate: 2015-07-02 18:47:11 -0700 (Thu, 02 Jul 2015) $
+; $LastChangedRevision: 18016 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
@@ -85,28 +90,20 @@ end
 
 
 ;Helper function to perform coordinate transforms on valid moments data
-pro thm_transform_moment, coord, quantity, trange=trange, probe=probe, $ 
-                          prefix=prefix, suffix=suffix, $
-                          state_loaded=state_loaded
+pro thm_transform_moment, coord, tplotnames, $
+                          probe=probe, trange=trange, state_loaded=state_loaded
 
     compile_opt idl2, hidden
 
-  ;only transform valid 3-vectors
-  q = quantity[0] eq '*' ? ['flux','eflux','velocity']:quantity
-  types = where( stregex(q, '(flux|eflux|velocity)',/bool) eq 1, ct)
 
-  if ct gt 0 then begin
+  valid = where( stregex( tplotnames, '(flux|eflux|velocity)', /bool), n)
 
-    ;get tplot names
-    tplotnames = tnames()
+  if n gt 0 then begin
 
-    ;search for applicaple variables 
-    searchstring = '('+strjoin( prefix+q[types]+suffix,'|')+')'
-    valid = where( stregex(tplotnames, searchstring,/bool) eq 1, ct)
-
-    ;load state data now
+    ;load state data
     if ~keyword_set(state_loaded) then begin
       thm_load_state, probe=probe, /get_support_data, trange=trange
+      state_loaded = 1b
     endif
 
     cotrans_names = tplotnames[valid]
@@ -145,6 +142,9 @@ if use_eclipse_corrections GT 0 then begin
        correct_delta_phi_tensor,tens=mflux,delta_phi=delta_phi
     endif
 endif
+
+;if no specific datatypes were requested then store all
+if in_set(quantity, '') then quantity = '*'
 
 for j=0,n_elements(quantity)-1 do begin
   
@@ -280,36 +280,43 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
   bad = where((qf and 'c'x) ne 0,nbad)
   if nbad gt 0 then one[bad] = !values.f_nan
 
-    nt = n_elements(time)
-    thx = 'th'+probe
-    instrs= 'p'+['ei','ee','si','se'] +'m'
-;    sh = shft
-    me = 510998.918d/299792d^2
-    mi = 1836*me
-    mass=[mi,me,mi,me]
-    s2_cluge = [3,0,3,0]
-    totmom_flag = 1 &&  ~keyword_set(raw)
-    if keyword_set(totmom_flag) then begin
-         n_e_tot = 0
-         nv_e_tot = 0
-         nvv_e_tot = 0
-         nvvv_e_tot = 0
-         n_i_tot = 0
-         nv_i_tot = 0
-         nvv_i_tot = 0
-         nvvv_i_tot = 0
-    endif
+  nt = n_elements(time)
+  thx = 'th'+probe
+  instrs= 'p'+['ei','ee','si','se'] +'m'
+;  sh = shft
+  me = 510998.918d/299792d^2
+  mi = 1836*me
+  mass=[mi,me,mi,me]
+  s2_cluge = [3,0,3,0]
+  totmom_flag = 1 &&  ~keyword_set(raw)
+  if keyword_set(totmom_flag) then begin
+    n_e_tot = 0
+    nv_e_tot = 0
+    nvv_e_tot = 0
+    nvvv_e_tot = 0
+    n_i_tot = 0
+    nv_i_tot = 0
+    nvv_i_tot = 0
+    nvvv_i_tot = 0
+  endif
 
-     ; get mag data at same time steps
-    mag = data_cut(thx+'_fgs',time)  ; Note:  'thx_fgs' must be in spacecraft coordinates!
-    if(n_elements(mag) eq 1 && mag[0] eq 0) then mag = data_cut(thx+'_fgs_dsl',time) ;allow L2 fgs data
+  ;get any subquantities from the datatype
+  ;it would be preferable for the helper routines to worry about this
+  quantities = stregex( datatype, '[^_]+_(.*)', /subexpr, /extract)
+  quantities = reform(quantities[1,*])
 
-    ;reform calibration parameters so that it is easy to switch between solar-wind and non-solar wind mode using vectorized calculations.
-    cal_params = dblarr([dimen(caldata.mom_scale),2])
-    cal_params[*,*,0] = caldata.mom_scale
-    cal_params[*,*,1] = caldata.mom_scale_sw1
-     
-    for i=0,3 do begin
+  ; get mag data at same time steps
+  mag = data_cut(thx+'_fgs',time)  ; Note:  'thx_fgs' must be in spacecraft coordinates!
+  if(n_elements(mag) eq 1 && mag[0] eq 0) then mag = data_cut(thx+'_fgs_dsl',time) ;allow L2 fgs data
+
+  ;reform calibration parameters so that it is easy to switch between solar-wind and non-solar wind mode using vectorized calculations.
+  cal_params = dblarr([dimen(caldata.mom_scale),2])
+  cal_params[*,*,0] = caldata.mom_scale
+  cal_params[*,*,1] = caldata.mom_scale_sw1
+  
+  
+  ;loop over p[es][ie]m datatypes
+  for i=0,3 do begin
 ;       s2 = sh and 7
 ;       sh = sh / 16
         
@@ -321,38 +328,38 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
        ;bits 10-8 = eESA shift
        ;bits 14-12 = iESA shift
        
-       ;This unpacks the shift field.
-       s2 = ishft(shft,(i-3)*4) and 7
-              
-       instr = instrs[i]     
-       ion = (i and 1) eq 0
+    ;This unpacks the shift field.
+    s2 = ishft(shft,(i-3)*4) and 7
+            
+    instr = instrs[i]     
+    ion = (i and 1) eq 0
 
-       if (i eq 2) || (i eq 3) then begin   ; Special treatment for SST attenuators
-       
-          geom = replicate(!values.f_nan,n_elements(time))
-          geom[*] = 1.
-          w_open = where( (qf and '0f00'x) eq '0A00'x , nw_open )       
-          if nw_open gt 0 then geom[w_open] = 1.
-          
-          w_clsd = where( (qf and '0f00'x) eq '0500'x , nw_clsd )
-          ;if nw_clsd gt 0 then geom[w_clsd] = 1/128. ;old code
-          ;changing attenuator factor to 1/64.
-          if nw_clsd gt 0 then geom[w_clsd] = 1./64 ;new code
-;          printdat,instr,geom
+    if (i eq 2) || (i eq 3) then begin   ; Special treatment for SST attenuators
+     
+      geom = replicate(!values.f_nan,n_elements(time))
+      geom[*] = 1.
+      w_open = where( (qf and '0f00'x) eq '0A00'x , nw_open )       
+      if nw_open gt 0 then geom[w_open] = 1.
+      
+      w_clsd = where( (qf and '0f00'x) eq '0500'x , nw_clsd )
+      ;if nw_clsd gt 0 then geom[w_clsd] = 1/128. ;old code
+      ;changing attenuator factor to 1/64.
+      if nw_clsd gt 0 then geom[w_clsd] = 1./64 ;new code
 
-          ;Note, one attenuator on themis D broke during early April and was in ambiguous state for ~3 months.  Data during this interval is treated as missing.
-          if (nw_open + nw_clsd) ne n_elements(geom) then begin
-            dprint,'Attenuator flags are ambiguous for ' + strtrim(n_elements(geom) - nw_open - nw_clsd,2) + ' samples.'
-          endif
-
-       endif else begin
-          esa_cal = get_thm_esa_cal(time= time,sc=probe,ion=ion)
-          geom= esa_cal.rel_gf * esa_cal.geom_factor / 0.00153000 * 1.5  ; 1.5 fudge factor
-       endelse
+      ;Note, one attenuator on themis D broke during early April and was in ambiguous state for ~3 months.  Data during this interval is treated as missing.
+      if (nw_open + nw_clsd) ne n_elements(geom) then begin
+        dprint,'Attenuator flags are ambiguous for ' + strtrim(n_elements(geom) - nw_open - nw_clsd,2) + ' samples.'
+      endif
+  
+    endif else begin
+      esa_cal = get_thm_esa_cal(time= time,sc=probe,ion=ion)
+      geom= esa_cal.rel_gf * esa_cal.geom_factor / 0.00153000 * 1.5  ; 1.5 fudge factor
+    endelse
+    
 ;       s2=s2_cluge[i]
 ;       s2 = 0
-       if keyword_set(raw) then s2=0
-       dprint,dlevel=3,instrs[i],'  shift=',s2[0]
+    if keyword_set(raw) then s2=0
+    dprint,dlevel=3,instrs[i],'  shift=',s2[0]
        
        ;caldata.mom_scale factors for ESA determined by comparing data to ground processed moments when not in solar wind mode.
        ;Note that efficiency, dead time, and energy sweep variation corrections are only performed on ground.
@@ -383,41 +390,41 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
        ;THB 2008-08-18/00:00:00 24 hours
        ;THB 2008-08-19/00:00:00 24 hours
       
-       ;select appropriate parameters for solarwind/non-solar wind if correct inputs available, default is to use only non-solar wind parameters
-       if i eq 0 && ptr_valid(iesa_solarwind_flag) && ptr_valid(iesa_solarwind_time) then begin 
-         ;times don't always match exactly.  This interpolates to matching time grids.  Flag is boolean, so intermediate values are rounded.
-         sw_flags = 0 > round(interpol(*iesa_solarwind_flag,*iesa_solarwind_time,time)) < 1
-       endif else if i eq 1 && ptr_valid(eesa_solarwind_flag) && ptr_valid(eesa_solarwind_time) then begin
-         ;same intepolation as above, but for electrons
-         sw_flags = 0 > round(interpol(*eesa_solarwind_flag,*eesa_solarwind_time,time)) < 1
-       endif else begin
-         sw_flags = dblarr((dimen(momraw))[0])
-       endelse
+    ;select appropriate parameters for solarwind/non-solar wind if correct inputs available, default is to use only non-solar wind parameters
+    if i eq 0 && ptr_valid(iesa_solarwind_flag) && ptr_valid(iesa_solarwind_time) then begin 
+      ;times don't always match exactly.  This interpolates to matching time grids.  Flag is boolean, so intermediate values are rounded.
+      sw_flags = 0 > round(interpol(*iesa_solarwind_flag,*iesa_solarwind_time,time)) < 1
+    endif else if i eq 1 && ptr_valid(eesa_solarwind_flag) && ptr_valid(eesa_solarwind_time) then begin
+      ;same intepolation as above, but for electrons
+      sw_flags = 0 > round(interpol(*eesa_solarwind_flag,*eesa_solarwind_time,time)) < 1
+    endif else begin
+      sw_flags = dblarr((dimen(momraw))[0])
+    endelse
 
-       dens  = ulong(momraw[*,0,i]) * cal_params[0,i,sw_flags] * one * 2.^s2 / geom
-       flux = fltarr(nt,3)
-       for m = 0,2 do flux[*,m] = momraw[*,1+m,i]  * cal_params[1+m,i,sw_flags] * one * 2.^s2 / geom ;* 1e5
-       mflux = fltarr(nt,6)
-       for m = 0,5 do mflux[*,m] = momraw[*,4+m,i]  * cal_params[4+m,i,sw_flags] * one * 2.^s2  /geom  ; * 1e2; * mass[i]
-       eflux = fltarr(nt,3)
-        
-       ;1e5 is unit conversion from (eV/cm^2)*(km/sec) to eV/cm2/sec
-       for m = 0,2 do eflux[*,m] = momraw[*,10+m,i]  * cal_params[10+m,i,sw_flags] * one * 2.^s2  /geom * 1e5; * 1e1 ; * mass[i]   
-       
-       if not keyword_set(raw) then begin
-          if keyword_set(totmom_flag) then begin
-             if i and 1 eq 1 then begin   ; electrons
-                  n_e_tot     += dens
-                  nv_e_tot    += flux
-                  nvv_e_tot   += mflux
-                  nvvv_e_tot  += eflux
-             endif else begin             ; ions
-                  n_i_tot     += dens
-                  nv_i_tot    += flux
-                  nvv_i_tot   += mflux
-                  nvvv_i_tot  += eflux
-             endelse
-          endif
+    dens  = ulong(momraw[*,0,i]) * cal_params[0,i,sw_flags] * one * 2.^s2 / geom
+    flux = fltarr(nt,3)
+    for m = 0,2 do flux[*,m] = momraw[*,1+m,i]  * cal_params[1+m,i,sw_flags] * one * 2.^s2 / geom ;* 1e5
+    mflux = fltarr(nt,6)
+    for m = 0,5 do mflux[*,m] = momraw[*,4+m,i]  * cal_params[4+m,i,sw_flags] * one * 2.^s2  /geom  ; * 1e2; * mass[i]
+    eflux = fltarr(nt,3)
+      
+    ;1e5 is unit conversion from (eV/cm^2)*(km/sec) to eV/cm2/sec
+    for m = 0,2 do eflux[*,m] = momraw[*,10+m,i]  * cal_params[10+m,i,sw_flags] * one * 2.^s2  /geom * 1e5; * 1e1 ; * mass[i]   
+     
+    if not keyword_set(raw) then begin
+      if keyword_set(totmom_flag) then begin
+        if i and 1 eq 1 then begin   ; electrons
+          n_e_tot     += dens
+          nv_e_tot    += flux
+          nvv_e_tot   += mflux
+          nvvv_e_tot  += eflux
+        endif else begin             ; ions
+          n_i_tot     += dens
+          nv_i_tot    += flux
+          nvv_i_tot   += mflux
+          nvvv_i_tot  += eflux
+        endelse
+      endif
 ;          press_labels=['Pxx','Pyy','Pzz','Pxy','Pxz','Pyz']
 ;          store_data,thx+'_'+instr+'_velocity'+sfx, data={x:time,  y:flux/[dens,dens,dens]/1e5 } ,dlim={colors:'bgrmcy',labels:['Vx','Vy','Vz'],ysubtitle:'km/s'}
 ;               pressure = mflux
@@ -428,78 +435,76 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
 ;               pressure[*,4] -=  mass[i] * flux[*,0]*flux[*,2]/dens/1e5/1e5
 ;               pressure[*,5] -=  mass[i] * flux[*,1]*flux[*,2]/dens/1e5 /1e5
 ;          store_data,thx+'_'+instr+'_press'+sfx, data =    {x:time,  y:pressure } ,dlim={colors:'bgrmcy',labels:press_labels}
-       endif
-
-       ;check if current instrument is requested, continue if not
-       if keyword_set(datatype) then begin
-         dt_ind = where(strmid(datatype,0,4) eq instr, n)
-         if (n_elements(n) gt 0) &&((n eq 0)) then continue
-       endif
-       
-       ;extract requested quantities
-       if(n_elements(n) gt 0) then begin
-       quantity = strarr(n)
-         for j=0,n-1 do begin
-           qu = (strsplit(datatype[dt_ind[j]], '_', /extract))
-           if(n_elements(qu) gt 1) then quantity[j] = qu[1] else quantity[j] = '*';jmm,1-feb-2010
-;           quantity[j] = (strsplit(datatype[dt_ind[j]], '_', /extract))[1]
-         endfor
-         star = where(quantity eq '*', nstar)
-         if(nstar gt 0) then quantity = '*'
-       endif else quantity = '*'
-
-       thm_store_moment,time,dens,flux,mflux,eflux,mag,prefix = thx+'_'+instr+'_', $
-           suffix=sfx,mass=mass[i],raw=raw, quantity=quantity, tplotnames=tplotnames, $
-           probe=probe, use_eclipse_corrections=use_eclipse_corrections
-
-       if keyword_set(coord) then begin
-         thm_transform_moment, coord, quantity, probe=probe, trange=trange, $
-                               prefix=thx+'_'+instr+'_',suffix=sfx, $
-                               state_loaded=state_loaded
-       endif
-
-    endfor
-    if 1 then begin
-       if not keyword_set(raw) && totmom_flag then begin
-          thm_store_moment,time,n_i_tot,nv_i_tot,nvv_i_tot,nvvv_i_tot,mag,$
-            prefix = thx+'_'+'ptim_', suffix=sfx,mass=mass[0],raw=raw, quantity='*',$
-            probe=probe, use_eclipse_corrections=use_eclipse_corrections, $
-            tplotnames=tplotnames
-              
-          thm_store_moment,time,n_e_tot,nv_e_tot,nvv_e_tot,nvvv_e_tot,mag,$
-            prefix = thx+'_'+'ptem_', suffix=sfx,mass=mass[1],raw=raw, quantity='*',$
-            probe=probe, use_eclipse_corrections=use_eclipse_corrections, $
-            tplotnames=tplotnames
-       endif
-
     endif
 
-;time-dependent scpot scaling, jmm, 23-jul-2009,was removed on 8-feb-2010, jmm
+    ;check if current datatype is requested, continue if not
+    idx = where( stregex(datatype,'('+instr+'|\*)',/bool), n)
+    if n eq 0 then continue
 
-;now uses fixed scpot scaling
-    scpot = scpotraw*caldata.scpot_scale
+    ;store variables for this data type
+    thm_store_moment,time,dens,flux,mflux,eflux,mag,prefix = thx+'_'+instr+'_', $
+      suffix=sfx,mass=mass[i],raw=raw, quantity=quantities[idx], tplotnames=tplotnames, $
+      probe=probe, use_eclipse_corrections=use_eclipse_corrections
 
-    if keyword_set(datatype) then begin
-      if where(strmid(datatype,0,8) eq 'pxxm_pot') ne -1 then begin
-        store_data,thx+'_pxxm_pot'+sfx,data={x:time,  y:scpot },dlimit={ysubtitle:'[Volts]'}
-        tplotnames = array_concat(thx+'_pxxm_pot'+sfx,tplotnames)
-      endif
-      if where(strmid(datatype,0,7) eq 'pxxm_qf') ne -1 then begin
-        store_data,thx+'_pxxm_qf'+sfx,data={x:time, y:qf}, dlimit={tplot_routine:'bitplot'}
-        tplotnames = array_concat(thx+'_pxxm_qf'+sfx,tplotnames)
-      endif
-      if where(strmid(datatype,0,9) eq 'pxxm_shft') ne -1 then begin
-        store_data,thx+'_pxxm_shft'+sfx,data={x:time, y:shft}, dlimit={tplot_routine:'bitplot'}
-        tplotnames = array_concat(thx+'_pxxm_shft'+sfx,tplotnames)
-      endif
-    endif else begin
+  endfor
+    
+    
+  ;store pt?m variables
+  if not keyword_set(raw) && totmom_flag then begin
+     
+    idx = where( stregex(datatype,'(ptim|\*)',/bool), n)
+    if n gt 0 then begin
+      thm_store_moment,time,n_i_tot,nv_i_tot,nvv_i_tot,nvvv_i_tot,mag,$
+        prefix = thx+'_'+'ptim_', suffix=sfx,mass=mass[0],raw=raw, quantity=quantities[idx],$
+        probe=probe, use_eclipse_corrections=use_eclipse_corrections, $
+        tplotnames=tplotnames
+          
+    endif
+     
+    idx = where( stregex(datatype,'(ptem|\*)',/bool), n)
+    if n gt 0 then begin
+      thm_store_moment,time,n_e_tot,nv_e_tot,nvv_e_tot,nvvv_e_tot,mag,$
+        prefix = thx+'_'+'ptem_', suffix=sfx,mass=mass[1],raw=raw, quantity=quantities[idx],$
+        probe=probe, use_eclipse_corrections=use_eclipse_corrections, $
+        tplotnames=tplotnames
+    endif
+
+  endif
+
+
+  ;time-dependent scpot scaling, jmm, 23-jul-2009,was removed on 8-feb-2010, jmm
+  
+  ;now uses fixed scpot scaling
+  scpot = scpotraw*caldata.scpot_scale
+
+
+  ;store pxxm variables
+  idx = where(  stregex(datatype,'(pxxm|\*)',/bool), n)
+  if n gt 0 then begin
+    
+    quantity = quantities[idx]
+    if in_set(quantity, '') then quantity = '*'
+    
+    if total( stregex(quantity,'(pot|\*)',/bool) ) gt 0 then begin
       store_data,thx+'_pxxm_pot'+sfx,data={x:time,  y:scpot },dlimit={ysubtitle:'[Volts]'}
+      tplotnames = array_concat(thx+'_pxxm_pot'+sfx,tplotnames)
+    endif
+    if total( stregex(quantity,'(qf|\*)',/bool) ) gt 0 then begin
       store_data,thx+'_pxxm_qf'+sfx,data={x:time, y:qf}, dlimit={tplot_routine:'bitplot'}
+      tplotnames = array_concat(thx+'_pxxm_qf'+sfx,tplotnames)
+    endif
+    if total( stregex(quantity,'(shft|\*)',/bool) ) gt 0 then begin
       store_data,thx+'_pxxm_shft'+sfx,data={x:time, y:shft}, dlimit={tplot_routine:'bitplot'}
-      tplotnames = array_concat(thx+['_pxxm_pot','_pxxm_qf','_pxxm_shft']+sfx,tplotnames)
-    endelse
+      tplotnames = array_concat(thx+'_pxxm_shft'+sfx,tplotnames)
+    endif
+    
+  endif
 
-;ESA sweep mode variables, 1-mar-2010, jmm
+
+  ;store flags
+  if total( stregex(datatype, '(flags|\*)', /bool) ) gt 0 then begin
+    
+    ;ESA sweep mode variables, 1-mar-2010, jmm
     if(ptr_valid(iesa_sweep) && ptr_valid(iesa_sweep_time)) then begin
       store_data, thx+'_iesa_sweep'+sfx, data = {x:*iesa_sweep_time, y:*iesa_sweep}, dlimit={tplot_routine:'bitplot'}
       tplotnames = array_concat(thx+'_iesa_sweep'+sfx,tplotnames)
@@ -509,7 +514,7 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
       tplotnames = array_concat(thx+'_eesa_sweep'+sfx,tplotnames)
     endif
 
-;ESA solar wind mode variables, 1-mar-2010, jmm
+    ;ESA solar wind mode variables, 1-mar-2010, jmm
     if(ptr_valid(iesa_solarwind_flag) && ptr_valid(iesa_solarwind_time)) then begin
       store_data, thx+'_iesa_solarwind_flag'+sfx, data = {x:*iesa_solarwind_time, y:*iesa_solarwind_flag}
       tplotnames = array_concat(thx+'_iesa_solarwind_flag'+sfx,tplotnames)
@@ -519,7 +524,7 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
       tplotnames = array_concat(thx+'_eesa_solarwind_flag'+sfx,tplotnames)
     endif
 
-;ESA configuration
+    ;ESA configuration
     if(ptr_valid(iesa_config) && ptr_valid(iesa_config_time)) then begin
       store_data, thx+'_iesa_config'+sfx, data = {x:*iesa_config_time, y:*iesa_config}
       tplotnames = array_concat( thx+'_iesa_config'+sfx,tplotnames)
@@ -529,7 +534,7 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
       tplotnames = array_concat(thx+'_eesa_config'+sfx,tplotnames)
     endif
     
-;SST configuration
+    ;SST configuration
     if(ptr_valid(isst_config) && ptr_valid(isst_config_time)) then begin
       store_data, thx+'_isst_config'+sfx, data = {x:*isst_config_time, y:*isst_config}
       tplotnames = array_concat(thx+'_isst_config'+sfx,tplotnames)
@@ -538,6 +543,15 @@ pro thm_load_mom_cal_array,time,momraw,scpotraw,qf,shft,$
       store_data, thx+'_esst_config'+sfx, data = {x:*esst_config_time, y:*esst_config}
       tplotnames = array_concat(thx+'_esst_config'+sfx,tplotnames)
     endif
+  endif
+  
+  
+  ;transform 3-vectors if requested
+  if is_string(coord) then begin
+    thm_transform_moment, coord, tplotnames, $
+                          probe=probe, trange=trange, $
+                          state_loaded=state_loaded
+  endif
       
 end
 
@@ -570,7 +584,7 @@ end
 ;end
 
 
-pro thm_load_mom, probe = probe, datatype = datatype, trange = trange, all = all, $
+pro thm_load_mom, probe = probe, datatype = datatype_in, trange = trange, all = all, $
                   level = level, verbose = verbose, downloadonly = downloadonly, $
                   varnames = varnames, valid_names = valid_names, raw = raw, $
                   comptest = comptest, suffix = suffix, coord = coord, $
@@ -621,7 +635,7 @@ endelse
 
 ;Reads Level 2 data files
 if (lvl eq 'l2') or (lvl eq 'l1' and keyword_set(valid_names)) then begin
-  thm_load_mom_l2, probe = probe, datatype = datatype, $
+  thm_load_mom_l2, probe = probe, datatype = datatype_in, $
     trange = trange, level = lvl, verbose = verbose, $
     downloadonly = downloadonly, valid_names = valid_names, $
     source_options = source_options, progobj = progobj, files = files, $
@@ -629,27 +643,27 @@ if (lvl eq 'l2') or (lvl eq 'l1' and keyword_set(valid_names)) then begin
   return
 endif
 
-if keyword_set(valid_names) then begin
-   probe = vprobes
-   dprint, string(strjoin(probe, ','), $
-                          format = '( "Valid probes:",X,A,".")')
-   datatype = vdatatypes
-   dprint, string(strjoin(datatype, ','), $
-                          format = '( "Valid '+lvl+' datatypes:",X,A,".")')
+;this appears to be handled in thm_load_mom_l2
+;if keyword_set(valid_names) then begin
+;   probe = vprobes
+;   dprint, string(strjoin(probe, ','), $
+;                          format = '( "Valid probes:",X,A,".")')
+;   datatype_in = vdatatypes
+;   dprint, string(strjoin(datatype_in, ','), $
+;                          format = '( "Valid '+lvl+' datatypes:",X,A,".")')
+;
+;   level = vlevels
+;   dprint, string(strjoin(level, ','), format = '( "Valid levels:",X,A,".")')
+;   return
+;endif
 
-   level = vlevels
-   dprint, string(strjoin(level, ','), format = '( "Valid levels:",X,A,".")')
-   return
-endif
-
-if keyword_set(datatype) then begin
-  datatype=strlowcase(datatype)   ; Otherwise upper case datatypes will fail.
-endif
-
-if keyword_set(datatype) && n_elements(datatype) eq 1 then begin
-  dtest = strlowcase(strcompress(/remove_all, datatype))
-  if(dtest eq '*' or dtest eq 'all' or dtest eq 'mom') then datatype = 0 ;insures backward compatibility,jmm,2-feb-2010
-endif
+;get requested datatype(s)
+if is_string(datatype_in) then begin
+  datatype = strsplit(strlowcase(datatype_in),' ',/extract)
+  if n_elements(datatype) eq 1 && stregex(datatype,'(all|mom)',/bool) then datatype = '*'
+endif else begin
+  datatype = '*'
+endelse
 
 if not keyword_set(source) then source = !themis
 if not keyword_set(verbose) then verbose = source.verbose
