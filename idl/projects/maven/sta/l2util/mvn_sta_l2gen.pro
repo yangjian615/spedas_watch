@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-06-30 13:03:42 -0700 (Tue, 30 Jun 2015) $
-; $LastChangedRevision: 17997 $
+; $LastChangedDate: 2015-07-03 12:05:29 -0700 (Fri, 03 Jul 2015) $
+; $LastChangedRevision: 18017 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -152,6 +152,12 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   p1  = strsplit(file_basename(filex), '_',/extract)
   d0 = time_double(time_string(p1[4]))
   timespan, d0, 1
+
+;At this point, I have a date, check to see if it is reasonable
+  If(d0 Lt time_double('2013-12-04')) Then Begin
+     dprint, 'Bad File Date: '+time_string(d0)
+     Return
+  Endif
 
   datein = time_string(date)
   yyyy = strmid(datein, 0, 4)
