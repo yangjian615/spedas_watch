@@ -29,8 +29,8 @@
 ;	NO_SERVER: If set, will not go looking for files remotely
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-04-15 14:51:15 -0700 (Wed, 15 Apr 2015) $
-; $LastChangedRevision: 17330 $
+; $LastChangedDate: 2015-07-05 12:10:09 -0700 (Sun, 05 Jul 2015) $
+; $LastChangedRevision: 18018 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l2_data.pro $
 ;
 ;-
@@ -66,7 +66,7 @@ nfiles = n_elements(files)
 
 if nfiles eq 0 then begin
 	trange = timerange(trange)
-	days = (trange[1]-trange[0])/(24.*3600) > 1
+	days = ceil((trange[1]-trange[0])/(24.*3600))
 	t0 = time_double(strmid(time_string(trange[0]),0,10))
 	dates = time_string(t0 + indgen(days)*24.d*3600, format = 6)
 	files = strmid(dates, 0, 8)

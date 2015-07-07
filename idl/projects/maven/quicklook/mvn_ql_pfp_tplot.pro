@@ -51,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-06-08 15:26:22 -0700 (Mon, 08 Jun 2015) $
-; $LastChangedRevision: 17836 $
+; $LastChangedDate: 2015-07-05 14:25:04 -0700 (Sun, 05 Jul 2015) $
+; $LastChangedRevision: 18019 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -420,7 +420,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      mvn_mag_load, 'L2_1sec', trange=trange
      tname = tnames('mvn_B*', ntplot)
      IF ntplot EQ 0 THEN BEGIN
-        mvn_mag_load, trange=trange
+        mvn_mag_load, 'L1_1sec', trange=trange
         lvl = 'L1'
      ENDIF 
      tname = tnames('mvn_B*', ntplot)
