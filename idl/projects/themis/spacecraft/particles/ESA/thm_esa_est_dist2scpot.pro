@@ -26,17 +26,28 @@
 ;HISTORY:
 ; 31-may-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-06-29 13:52:51 -0700 (Mon, 29 Jun 2015) $
-; $LastChangedRevision: 17989 $
+; $LastChangedDate: 2015-07-06 14:07:27 -0700 (Mon, 06 Jul 2015) $
+; $LastChangedRevision: 18024 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_est_dist2scpot.pro $
 ;-
 
 Pro thm_esa_est_dist2scpot, date, probe, trange=trange, $
                             no_init = no_init, random_dp = random_dp, $
-                            plot = plot, esa_datatype = esa_datatype, _extra=_extra
+                            plot = plot, esa_datatype = esa_datatype, $
+                            load_all_esa = load_all_esa, _extra=_extra
+
+;The default is to Use peer data for this
+  If(is_string(esa_datatype)) Then Begin
+     dtyp = strlowcase(strcompress(/remove_all, esa_datatype[0])) 
+  Endif Else dtyp = 'peer'
+
+;Only load one type of data, unless you want it all for plotting or
+;random_dp options
+  If(keyword_set(load_all_esa) Or keyword_set(random_dp) Or keyword_set(plot)) Then Begin
+     only_dtyp = 0b
+  Endif Else only_dtyp = 1b
 
   If(~keyword_set(no_init)) Then Begin
-     del_data, '*'
      If(keyword_set(random_dp)) Then Begin
         probes = ['a', 'b', 'c', 'd', 'e']
         index = fix(5*randomu(seed))
@@ -51,21 +62,28 @@ Pro thm_esa_est_dist2scpot, date, probe, trange=trange, $
      dprint, 'Probe: ', strupcase(sc)
      If(keyword_set(trange)) Then Begin
         dprint, 'Time_range:', time_string(trange) 
-        thm_load_esa_pkt, probe = sc, trange = trange
-        thm_load_esa_pot, efi_datatype = 'mom', probe = sc, trange = trange
+        If(only_dtyp) Then thm_load_esa_pkt, probe = sc, trange = trange, datatype = dtyp Else Begin
+           thm_load_esa_pkt, probe = sc, trange = trange
+           thm_load_esa_pot, efi_datatype = 'mom', probe = sc, trange = trange
+        Endelse
         date = time_string(trange[0], /date_only)
-     Endif Else Begin
+     Endif Else If(keyword_set(date)) Then Begin
         timespan, date
         dprint, 'date: ', date
-        thm_load_esa_pkt, probe = sc
-        thm_load_esa_pot, efi_datatype = 'mom', probe = sc
+        If(only_dtyp) Then thm_load_esa_pkt, probe = sc, datatype = dtyp Else Begin
+           thm_load_esa_pkt, probe = sc
+           thm_load_esa_pot, efi_datatype = 'mom', probe = sc
+        Endelse
+     Endif Else Begin           ;no date is set explicitly, but there may have been a timespan earlier so call timerange
+        ppp2 = time_string(timerange(),/date_only)
+        date = ppp2[0]
+        dprint, 'date: ', date
+        If(only_dtyp) Then thm_load_esa_pkt, probe = sc, datatype = dtyp Else Begin
+           thm_load_esa_pkt, probe = sc
+           thm_load_esa_pot, efi_datatype = 'mom', probe = sc
+        Endelse
      Endelse
   Endif Else sc = probe
-
-;The default is to Use peer data for this
-  If(is_string(esa_datatype)) Then Begin
-     dtyp = strlowcase(strcompress(/remove_all, esa_datatype[0])) 
-  Endif Else dtyp = 'peer'
 
   thx = 'th'+sc
   get_data, thx+'_'+dtyp+'_en_counts', data = dr

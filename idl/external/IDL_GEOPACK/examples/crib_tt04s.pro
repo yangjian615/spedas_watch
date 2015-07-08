@@ -9,9 +9,9 @@
 ;
 ;        Sometimes these routines can take a while to run.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-12-16 17:16:12 -0800 (Mon, 16 Dec 2013) $
-; $LastChangedRevision: 13685 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-07-06 11:33:15 -0700 (Mon, 06 Jul 2015) $
+; $LastChangedRevision: 18020 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/examples/crib_tt04s.pro $
 ;-
 
@@ -166,11 +166,10 @@ wi_mfi_load
 
 wi_3dp_load
 
+stop
 cotrans,'wi_h0_mfi_B3GSE','wi_b3gsm',/GSE2GSM
 
-get_tsy_params,'kyoto_dst','wi_b3gsm',$
-
-'wi_3dp_k0_ion_density','wi_3dp_k0_ion_vel','T04s'
+get_tsy_params,'kyoto_dst','wi_b3gsm','wi_3dp_k0_ion_density','wi_3dp_k0_ion_vel','T04s'
 
 tt04s, 'thb_state_pos',parmod='t04s_par'
 
@@ -221,5 +220,37 @@ stop
 ;Can also add time varying tilts, or replace the default dipole tilt with a user defined value
 tt04s, 'thb_state_pos',parmod='t04s_par',get_tilt='tilt_vals',add_tilt=1
 tplot, ['thb_state_pos_bt04s', 'thb_fgs_gsm','tilt_vals']
+
+stop
+
+; The following examples show usage of option flags available in 
+; the TS04 model for turning on/off various current systems; for more 
+; details, see the TS04 paper:
+;   Tsyganenko and Sitnov (2005), Modeling the dynamics of the inner 
+;     magnetosphere during strong geomagnetic storms
+
+; general option flag example
+; generate the Birkeland field only (iopgen=3)
+tt04s, 'thb_state_pos', parmod='t04s_par', iopgen=3
+
+stop
+
+; tail field flag example
+; generate the field using only one of the tail field modes (mode 1)
+tt04s, 'thb_state_pos', parmod='t04s_par', iopt=1
+
+stop
+
+; birkeland field flag example
+; calculate the field without region 1 (modes 1 and 2) contributions
+tt04s, 'thb_state_pos', parmod='t04s_par', iopb=2
+
+stop
+; ring current flag example
+; geneate the field with only contributions from the symmetric 
+; ring current (SRC)
+tt04s, 'thb_state_pos', parmod='t04s_par', iopr=1
+
+stop
 
 end

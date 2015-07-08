@@ -6,6 +6,10 @@ setenv THEMIS_DATA_DIR /disks/themisdata/
 setenv IDL_STARTUP /home/jimm/temp_idl_startup.pro
 source /home/jimm/setup_themis
 
+# create a date to append to batch otput
+setenv datestr `date +%Y%m%d%H%M%S`
+set suffix="$datestr"
+
 #check for lock file here
 if (! -e /tmp/STAL2lock.txt) then
     cd /mydisks/home/maven
@@ -17,6 +21,10 @@ if (! -e /tmp/STAL2lock.txt) then
     echo exit >> run_sta_l2gen.bm
 
     idl run_sta_l2gen.bm > /tmp/run_sta_l2gen.txt &
+#If the log file has nonzero size, then move it into the process log directory
+    if (! -z /tmp/run_sta_l2gen.txt) then
+        /bin/mv /tmp/run_sta_l2gen.txt /disks/data/maven/ITF/L2ProcessLogs/sta/run_sta_l2gen.txt_$suffix
+    endif
 #else close quietly
 endif 
 
