@@ -32,8 +32,10 @@
 ;                      to all instruments (NOT RECOMMENDED).
 ;
 ;   mode             - OPTIONAL. (String) Data collection mode for http query 
-;                      (e.g. 'slow','srvy','fast','brst'). If not set, query defaults
-;                      to all modes (NOT RECOMMENDED).
+;                      (e.g. 'slow','srvy','fast','brst'). Because of a discrepancy
+;                      in how the SDC handles burst and comm mode files vs. survey, 
+;                      you may only call one mode at a time. If keyword isn't set, default
+;                      is fast survey'
 ;
 ;   level            - OPTIONAL. (String) Data level for http query (e.g. 'l0', 'l1a',
 ;                      'l1b','ql','sitl','l2'). If not set, query defaults to 'l2.'
@@ -66,8 +68,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-14 14:50:51 -0700 (Thu, 14 May 2015) $
-;  $LastChangedRevision: 17617 $
+;  $LastChangedDate: 2015-07-07 14:51:56 -0700 (Tue, 07 Jul 2015) $
+;  $LastChangedRevision: 18031 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_data_fetch.pro $
 
 
@@ -77,12 +79,33 @@ pro mms_data_fetch, local_flist, login_flag, download_fail, sc_id=sc_id, $
 
 mms_init
 
-date_struct = mms_convert_timespan_to_date()
+if keyword_set(mode) then begin
+  if n_elements(mode) gt 1 then begin
+    print, 'ERROR: Only one mode allowed at a time!'
+    local_flist = ''
+    login_flag = 1
+    download_fail=0
+    return
+  endif
+endif else begin
+  mode = 'srvy'
+endelse
+
+burst_flag = 0
+
+; Check and see if data product requires full timespan
+if mode eq 'brst' then begin
+  date_struct = mms_convert_timespan_to_date(/full_span)
+  burst_flag = 1
+endif else begin
+  date_struct = mms_convert_timespan_to_date()
+endelse
 
 start_date = date_struct.start_date
 end_date = date_struct.end_date
 start_jul = date_struct.start_jul
 end_jul = date_struct.end_jul
+
 
 
 login_flag = 0
@@ -109,6 +132,8 @@ endif else begin
     data_level=level, start_date=start_date, end_date=end_date)
 endelse
 type_string = typename(file_data)
+
+
 
 if type_string ne 'STRING' then begin
   login_flag = 1
@@ -166,16 +191,25 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
 ;;    endelse
 ;;  endfor
   
-  loc_time = where((file_juls ge start_jul and file_juls le end_jul) or modes ne 'brst', count_time)
+;  loc_time = where((file_juls ge start_jul and file_juls le end_jul) or (modes ne 'brst' and modes ne 'comm' and instrument_id ne 'hpca'), count_time)
+;  
+;  if count_time eq 0 then message, 'ERROR: Invalid or inconsistent time range.'
+;  
+;  cut_filenames = cut_filenames[loc_time]
+;  file_sizes = file_sizes[loc_time]
+;  download_flags = download_flags[loc_time] ; Determines whether to download file
+;  file_dir = file_dir[loc_time] ; Directory in local cache for file
+;  file_base = file_base[loc_time] ; Filename without directory or version number
+;  local_flist = strarr(count_time) ; List of local filenames consistent with query
+;  
   
-  if count_time eq 0 then message, 'ERROR: Invalid or inconsistent time range.'
+  cut_filenames = cut_filenames
+  file_sizes = file_sizes
+  download_flags = download_flags ; Determines whether to download file
+  file_dir = file_dir ; Directory in local cache for file
+  file_base = file_base ; Filename without directory or version number
+  local_flist = strarr(n_elements(cut_filenames)) ; List of local filenames consistent with query
   
-  cut_filenames = cut_filenames[loc_time]
-  file_sizes = file_sizes[loc_time]
-  download_flags = download_flags[loc_time] ; Determines whether to download file
-  file_dir = file_dir[loc_time] ; Directory in local cache for file
-  file_base = file_base[loc_time] ; Filename without directory or version number
-  local_flist = strarr(count_time) ; List of local filenames consistent with query
   ; Loop through and see if each file exists. If not, download it
   
   for i = 0, n_elements(cut_filenames)-1 do begin

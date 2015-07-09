@@ -30,8 +30,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-01-10 18:02:25 -0800 (Fri, 10 Jan 2014) $
-;$LastChangedRevision: 13850 $
+;$LastChangedDate: 2015-07-08 12:57:33 -0700 (Wed, 08 Jul 2015) $
+;$LastChangedRevision: 18038 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_cmb_clean_esa.pro $
 ;
 ;-
@@ -51,6 +51,12 @@ pro thm_cmb_clean_esa, data, units=units, _extra=ex
       
       ;sanitization
       thm_pgs_clean_esa, (*data[i])[j], units, output=temp, _extra=ex
+      
+      ;FIXME:
+      ;This *should* be a temporary fix to maintain gaps in cases where 
+      ;pe?r data is present but all zeroes.  This may be a processing problem,
+      ;and the data recoverable, or gaps/nans may be added at a lower level.
+      if total( temp.data ne 0 ) eq 0 then temp.data = !values.F_NAN
       
       ;new struct array must be built
       if j eq 0 then begin

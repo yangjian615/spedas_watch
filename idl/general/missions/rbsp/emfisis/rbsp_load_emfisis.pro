@@ -61,9 +61,9 @@
 ;Notes:
 ; 1. Written by Peter Schroeder, May 2012
 ;
-; $LastChangedBy: kersten $
-; $LastChangedDate: 2013-04-18 14:20:12 -0700 (Thu, 18 Apr 2013) $
-; $LastChangedRevision: 12097 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2015-07-07 10:41:21 -0700 (Tue, 07 Jul 2015) $
+; $LastChangedRevision: 18026 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/emfisis/rbsp_load_emfisis.pro $
 ;-
 
@@ -81,11 +81,11 @@ pro rbsp_load_emfisis,probe=probe, datatype=datatype, trange=trange, $
                  
  
 rbsp_emfisis_init
-dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_emfisis.pro 12097 2013-04-18 21:20:12Z kersten $'
+dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_emfisis.pro 18026 2015-07-07 17:41:21Z aaronbreneman $'
 
 
 ;Set the probe
-if(keyword_set(probe)) then p_var = probe
+if(keyword_set(probe)) then p_var = strlowcase(probe)
 
 
 vb = keyword_set(verbose) ? verbose : 0
@@ -252,7 +252,7 @@ for s=0,n_elements(p_var)-1 do begin
        pn = byte(p_var[s]) - byte('a')
        options, /def, tns, colors = probe_colors[pn]       
 
-       options, /def, tns, code_id = '$Id: rbsp_load_emfisis.pro 12097 2013-04-18 21:20:12Z kersten $'
+       options, /def, tns, code_id = '$Id: rbsp_load_emfisis.pro 18026 2015-07-07 17:41:21Z aaronbreneman $'
   
        c_var = [1, 2, 3, 4, 5, 6]
 

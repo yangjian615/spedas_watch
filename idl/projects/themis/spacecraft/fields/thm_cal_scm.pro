@@ -114,9 +114,9 @@
 ; in step 6, start_step condition has been commented
 ; in outputs to tplot section, mode has been replaced by strlowcase(mode)
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-;$LastChangedRevision: 17458 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2015-07-08 12:43:19 -0700 (Wed, 08 Jul 2015) $
+;$LastChangedRevision: 18037 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_scm.pro $
 ;-
 
@@ -756,9 +756,16 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
 
       thm_scm_casinus_vec, xfo, fe, fs, n_spinfit, $
         axvo, phaxvo, n, nbi, xsub, fe_max = 128
-      thm_scm_casinus_vec, yfo, fe, fs, n_spinfit, $
+;Try a reduced value of n_spinfit (1.25) if this failed:
+      If(mode Eq 'scw' And (n_elements(axvo) Eq 1 And axvo[0] Eq 0)) Then Begin
+         n_spinfit_temp = 1.25
+         Dprint, '*** Recalculating, using 1.25 for n_spinfit'
+         thm_scm_casinus_vec, xfo, fe, fs, n_spinfit_temp, $
+                              axvo, phaxvo, n, nbi, xsub, fe_max = 128
+      Endif Else n_spinfit_temp = n_spinfit
+      thm_scm_casinus_vec, yfo, fe, fs, n_spinfit_temp, $
         ayvo, phayvo, n, nbi, ysub, fe_max = 128
-      thm_scm_casinus_vec, zfo, fe, fs, n_spinfit, $
+      thm_scm_casinus_vec, zfo, fe, fs, n_spinfit_temp, $
         azvo, phazvo, n, nbi, zsub, fe_max = 128
 
       dl = {labels: [ 'x', 'y', 'z'], labflag: 1, colors: [ 2, 4, 6]}

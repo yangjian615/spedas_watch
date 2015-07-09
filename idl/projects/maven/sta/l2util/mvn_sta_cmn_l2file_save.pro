@@ -23,8 +23,8 @@
 ;HISTORY:
 ; 22-jul-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
-; $LastChangedRevision: 16613 $
+; $LastChangedDate: 2015-07-07 12:15:18 -0700 (Tue, 07 Jul 2015) $
+; $LastChangedRevision: 18029 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2file_save.pro $
 ;-
 Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, temp_dir = temp_dir, $
@@ -73,7 +73,7 @@ Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, temp_dir = temp_dir, $
   fullfilex = tdir_out+'/'+file
 
   dummy = cdf_save_vars2(otp_struct, fullfilex, /no_file_id_update)
-  spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfilex+' '+fullfilex+' -compression cdf:none -delete'
+  spawn, '/usr/local/pkg/cdf-3.6.0_CentOS-6.6/bin/cdfconvert '+fullfilex+' '+fullfilex+' -compression cdf:none -delete'
 
   md5file = ssw_str_replace(fullfile, '.cdf', '.md5')
   md5filex = ssw_str_replace(fullfilex, '.cdf', '.md5')
@@ -92,7 +92,7 @@ Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, temp_dir = temp_dir, $
   free_lun, unit
 
   If(~keyword_set(no_compression)) Then Begin
-     spawn, '/usr/local/pkg/cdf-3.5.0_CentOS-6.5/bin/cdfconvert '+fullfilex+' '+fullfilex+' -compression cdf:gzip.5 -delete'
+     spawn, '/usr/local/pkg/cdf-3.6.0_CentOS-6.6/bin/cdfconvert '+fullfilex+' '+fullfilex+' -compression cdf:gzip.5 -delete'
   Endif
 
 ;move the files to the output directory
