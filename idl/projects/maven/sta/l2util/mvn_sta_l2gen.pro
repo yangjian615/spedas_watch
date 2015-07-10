@@ -16,9 +16,9 @@
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-07-03 12:05:29 -0700 (Fri, 03 Jul 2015) $
-; $LastChangedRevision: 18017 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2015-07-08 17:52:27 -0700 (Wed, 08 Jul 2015) $
+; $LastChangedRevision: 18039 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -214,7 +214,7 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   Endif Else Begin
      mvn_sta_l0_load, files = filex
      mvn_sta_mag_load
-     mvn_sta_ephemeris_load
+;     mvn_sta_ephemeris_load
      mvn_sta_qf14_load
   Endelse
 

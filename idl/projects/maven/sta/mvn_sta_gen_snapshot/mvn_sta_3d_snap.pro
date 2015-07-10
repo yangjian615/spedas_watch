@@ -98,8 +98,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-03-25 02:55:34 -0700 (Wed, 25 Mar 2015) $
-; $LastChangedRevision: 17182 $
+; $LastChangedDate: 2015-07-08 20:23:22 -0700 (Wed, 08 Jul 2015) $
+; $LastChangedRevision: 18041 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -254,7 +254,10 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
         ENDIF 
         ddd = conv_units(ddd, units)
         ddd = sum4m(ddd)
-        IF SIZE(var2, /type) NE 0 THEN IF SIZE(erange, /type) EQ 0 THEN erange = minmax(ddd.energy)
+        IF SIZE(var2, /type) NE 0 THEN $
+           IF SIZE(var1, /type) EQ SIZE(var2, /type) THEN $
+              IF var1 EQ var2 THEN IF SIZE(erange, /type) EQ 0 THEN erange = minmax(ddd.energy)
+;        IF var1 EQ var2 THEN IF SIZE(erange, /type) EQ 0 THEN erange = minmax(ddd.energy)
         if (size(ddd,/type) eq 8) then begin
            data = ddd.data
            

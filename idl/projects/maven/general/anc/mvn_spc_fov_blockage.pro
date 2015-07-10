@@ -41,8 +41,8 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: hara $
-;   $LastChangedDate: 2015-07-01 15:26:56 -0700 (Wed, 01 Jul 2015) $
-;   $LastChangedRevision: 18007 $
+;   $LastChangedDate: 2015-07-08 20:18:04 -0700 (Wed, 08 Jul 2015) $
+;   $LastChangedRevision: 18040 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/anc/mvn_spc_fov_blockage.pro $
 ;-
 pro mvn_spc_fov_blockage, trange=trange,$
@@ -54,7 +54,7 @@ pro mvn_spc_fov_blockage, trange=trange,$
                           swia=swia,$
                           sep1=sep1,$
                           sep2=sep2,$
-                          static=static, phi=phi, theta=theta
+                          static=static, phi=phi, theta=theta, noplot=noplot
 
   common mvn_sta_fov_block, mvn_sta_fov_block_time, mvn_sta_fov_block_qrot1, mvn_sta_fov_block_qrot2, mvn_sta_fov_block_matrix
 
@@ -146,7 +146,7 @@ pro mvn_spc_fov_blockage, trange=trange,$
      utc=time_string(trange)
      cspice_str2et,utc,et
      time_valid = spice_valid_times(et[0],object=check_objects,tol=tol)     
-
+     recompute = 0
      IF SIZE(mvn_sta_fov_block_time, /type) EQ 0 THEN BEGIN
         recompute:
         status = EXECUTE("mvn_sta_fov_block_time = (SCOPE_VARFETCH('mvn_c0_dat', common='mvn_c0')).time")
@@ -158,9 +158,11 @@ pro mvn_spc_fov_blockage, trange=trange,$
                                                  /quaternion, check_objects='MAVEN_SPACECRAFT')
         mvn_sta_fov_block_matrix = spice_body_att('MAVEN_SPACECRAFT', 'MAVEN_STATIC', mvn_sta_fov_block_time, $
                                                  check_objects='MAVEN_SPACECRAFT')
+        recompute = 1
      ENDIF
      IF SIZE(mvn_sta_fov_block_time, /type) NE 0 THEN BEGIN
-        IF (time_double(utc) LT mvn_sta_fov_block_time[0]) OR (time_double(utc) GT mvn_sta_fov_block_time[N_ELEMENTS(mvn_sta_block_time)-1]) THEN GOTO, recompute
+        IF (time_double(utc) LT mvn_sta_fov_block_time[0]) OR (time_double(utc) GT mvn_sta_fov_block_time[N_ELEMENTS(mvn_sta_block_time)-1]) THEN $
+           IF recompute EQ 0 THEN GOTO, recompute ELSE GOTO, previous
         idx = NN(mvn_sta_fov_block_time, utc)
         qrot1 = REFORM(mvn_sta_fov_block_qrot1[*, idx])
         qrot2 = REFORM(mvn_sta_fov_block_qrot2[*, idx])
@@ -258,7 +260,7 @@ pro mvn_spc_fov_blockage, trange=trange,$
   if keyword_set(invert_theta) then $
         theta=-1.*theta
 
-
+  IF keyword_set(noplot) THEN RETURN
   ;;-------------------------------
   ;;Select Color
   if keyword_set(clr) then clr1=clr else clr1=250
