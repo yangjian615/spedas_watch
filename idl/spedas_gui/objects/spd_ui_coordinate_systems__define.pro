@@ -40,20 +40,17 @@
 ;      This routine was forked from the THEMIS coord object (thm_ui_coordinate_systems)
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-09 09:46:45 -0700 (Thu, 09 Jul 2015) $
+;$LastChangedRevision: 18042 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_coordinate_systems__define.pro $
 ;-
 
 
 ; destructor
-function spd_ui_coordinate_systems::cleanup
-
-    if ptr_valid(self.coordinate_systems) then ptr_free, self.coordinate_systems
-    if ptr_valid(self.misc_coord_sys_list) then ptr_free, self.misc_coord_sys_list
-
-    return, 1
+pro spd_ui_coordinate_systems::Cleanup
+    ptr_free, self.coordinate_systems
+    ptr_free, self.misc_coord_sys_list
 end
 
 
@@ -84,8 +81,8 @@ function spd_ui_coordinate_systems::init
 
     ; update the pointers to the lists
     ; elements of these lists need not be exclusive
-    self.coordinate_systems = ptr_new(geomag_coord_sys_list)
-    self.misc_coord_sys_list = ptr_new(misc_coord_sys_list)
+    self.coordinate_systems = ptr_new(geomag_coord_sys_list, /no_copy)
+    self.misc_coord_sys_list = ptr_new(misc_coord_sys_list, /no_copy)
 
     return, 1
 end
@@ -115,7 +112,7 @@ pro spd_ui_coordinate_systems__define
     compile_opt idl2, hidden
 
     state = {SPD_UI_COORDINATE_SYSTEMS, $
-            coordinate_systems: ptr_new(0), $
-            misc_coord_sys_list: ptr_new(0) $
+            coordinate_systems: ptr_new(), $
+            misc_coord_sys_list: ptr_new() $
             }
 end

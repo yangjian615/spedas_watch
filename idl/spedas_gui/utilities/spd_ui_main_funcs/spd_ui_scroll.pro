@@ -32,7 +32,6 @@ PRO spd_ui_scroll, windowStorage, drawObject, direction
    IF ~Obj_Valid(windowStorage) THEN RETURN
    
    activeWindow=windowStorage->GetActive()
-   newPanels=Obj_New('IDL_CONTAINER')
    IF N_Elements(activeWindow) GT 0 && Obj_Valid(activeWindow[0]) THEN BEGIN
       activeWindow[0]->GetProperty, Panels=panels,locked=locked
       IF Obj_Valid(panels) THEN BEGIN
@@ -52,6 +51,5 @@ PRO spd_ui_scroll, windowStorage, drawObject, direction
             endelse
          ENDIF
       ENDIF
-   ENDIF 
-   
+   ENDIF
 END

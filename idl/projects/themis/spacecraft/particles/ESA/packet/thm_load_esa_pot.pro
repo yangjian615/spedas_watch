@@ -21,7 +21,7 @@
 ;	offset:		real		EFI sensor to plasma potential offset, default=1.0 V
 ;	min_pot:	real		minimum potential allowed, default=2.0
 ;	make_plot:	0/1		if set, makes tplot structure of potential 
-;	min_pot_trange:		str/dbl		2 element array of times to fix s/c pot at min_pot
+;	tr4_min_pot:		str/dbl		2 element array of times to fix s/c pot at min_pot
 ;       use_vaf_offset  0/1             if set, uses vaf data for potential when available, calculates an offset 
 ;                                       between the (mom) pxxm_pot value and vaf value and appplies the offset 
 ;                                       to the pxxm_pot value for the times for which no vaf data is available.
@@ -40,7 +40,7 @@
 ;			09-06-24	force use of mom pot during sphere shadow season
 ;			09-06-25	better sphere shadow season bad point removal algorithm, removed forcing mom pot during sphere shadow season
 ;			09-09-12	change algorith to set sc_pot to min_pot for times before booms deployed
-;   2014-01-27  changing trange to min_pot_trange, implementing trange as requested data time range
+;   2014-01-27  changing trange to tr4_min_pot, implementing trange as requested data time range
 ;
 ;		TBDs
 ;			09-06-25	need to include an ~1.03 mom_pot correction factor for (v1234_avg)/(V3_snapshot) differences 
@@ -53,7 +53,7 @@
 ;	
 ;-
 
-pro thm_load_esa_pot,sc=sc,probe=probe,themishome=themishome,datatype=datatype,efi_datatype=efi_datatype,pot_scale=pot_scale,offset=offset,min_pot=min_pot,make_plot=make_plot,trange=trange,min_pot_trange=min_pot_trange, use_vaf_offset=use_vaf_offset,use_dist2scpot=use_dist2scpot,scpot_est_datatype=scpot_est_datatype
+pro thm_load_esa_pot,sc=sc,probe=probe,themishome=themishome,datatype=datatype,efi_datatype=efi_datatype,pot_scale=pot_scale,offset=offset,min_pot=min_pot,make_plot=make_plot,trange=trange,tr4_min_pot=tr4_min_pot, use_vaf_offset=use_vaf_offset,use_dist2scpot=use_dist2scpot,scpot_est_datatype=scpot_est_datatype
 
 compile_opt idl2, hidden
 
@@ -145,13 +145,13 @@ compile_opt idl2, hidden
   if not keyword_set(offset) then offset=def_offset
 
 ;***********************************************************************************
-; if keyword "min_pot_trange" is set, then set sc_pot to min_pot
-  if keyword_set(min_pot_trange) then begin
-     if n_elements(min_pot_trange) ne 2 then begin
-        dprint, 'min_pot_trange keyword must be 2 element array'
+; if keyword "tr4_min_pot" is set, then set sc_pot to min_pot
+  if keyword_set(tr4_min_pot) then begin
+     if n_elements(tr4_min_pot) ne 2 then begin
+        dprint, 'tr4_min_pot keyword must be 2 element array'
         return
      endif
-     tr2=time_double(min_pot_trange)
+     tr2=time_double(tr4_min_pot)
      if tr2[0] gt tr2[1] then tr2=reverse(tr2)
 	
      for i=0,nsc-1 do begin
@@ -380,7 +380,7 @@ compile_opt idl2, hidden
         endif
      endfor
 ;***********************************************************************************
-; if keyword "min_pot_trange" is not set, then set sc_pot with vaf (or mom_pot if vaf data unavailable)
+; if keyword "tr4_min_pot" is not set, then set sc_pot with vaf (or mom_pot if vaf data unavailable)
   endif else begin
 
      for i=0,nsc-1 do begin

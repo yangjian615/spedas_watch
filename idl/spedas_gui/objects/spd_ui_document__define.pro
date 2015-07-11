@@ -18,9 +18,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-06-10 19:11:37 -0700 (Tue, 10 Jun 2014) $
-;$LastChangedRevision: 15344 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-09 15:04:29 -0700 (Thu, 09 Jul 2015) $
+;$LastChangedRevision: 18054 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_document__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -158,7 +158,7 @@ PRO SPD_UI_DOCUMENT__DEFINE
 
    struct = { SPD_UI_DOCUMENT,    $
 
-              windowContainer: obj_new('IDL_CONTAINER'), $ 
+              windowContainer: obj_new(), $ 
               callSequence: obj_new(), $
               INHERITS spd_ui_readwrite $ 
 }

@@ -325,13 +325,14 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
         gBAK = segSelect.BAK
         gDIS = segSelect.DISCUSSION
         gVAR = segSelect.VAR
-        nmax = floor((gTmax-gTmin)/gTdel)
+        nmax = ceil((gTmax-gTmin)/gTdel)
+        gTdel = (gTmax-gTmin)/double(nmax)
         if nmax gt 0 then begin
-          
+
           ; delete the segment
           segSelect.FOM = 0.; See line 102 of eva_sitl_strct_update
           eva_sitl_strct_update, segSelect, user_flag=state.user_flag,/override, BAK=BAK
-          
+
           ; add split segment
           for n=0,nmax-1 do begin
             Ts = gTmin+gTdel*n
@@ -339,11 +340,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
             segSelect = {ts:Ts,te:Te,fom:gFOM,BAK:gBAK, discussion:gDIS, var:gVAR}
             eva_sitl_strct_update, segSelect, user_flag=state.user_flag
           endfor
-          Ts = gTmin+gTdel*nmax
-          Te = gTmax
-          segSelect = {ts:Ts,te:Te,fom:gFOM,BAK:gBAK, discussion:gDIS, var:gVAR}
-          eva_sitl_strct_update, segSelect, user_flag=state.user_flag
-          
+
         endif; if nmax
         eva_sitl_stack
         tplot,verbose=0
@@ -717,11 +714,9 @@ FUNCTION eva_sitl, parent, $
   geo = widget_info(parent,/geometry)
   if n_elements(xsize) eq 0 then xsize = geo.xsize
 
-  hlSet = ['Default','isPending','inPlaylist']
+  hlSet = ['Default','isPending','inPlaylist','Overwritten']
   hlSet2 = [hlSet, 'New','Modified','Deleted','Aborted','Complete','Finished',$
-    'Incomplete','Held','Realloc', 'Deferred', 'Derelict', 'Demoted']
-  hlSet_full = [hlSet, 'New', 'Held', 'Realloc', 'Deferred', 'Derelict', 'Demoted',$
-    'Modified','Deleted','Aborted','Incomplete','Complete','Finished']
+    'Incomplete','Held','Derelict', 'Demoted','Realloc', 'Deferred']
   svSet = ['Save','Restore','Save As', 'Restore From']
   
   mainbase = WIDGET_BASE(parent, UVALUE = uval, UNAME = uname, TITLE=title,$

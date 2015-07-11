@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-07 15:51:11 -0700 (Tue, 07 Jul 2015) $
-;  $LastChangedRevision: 18033 $
+;  $LastChangedDate: 2015-07-09 15:26:09 -0700 (Thu, 09 Jul 2015) $
+;  $LastChangedRevision: 18056 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_hpca_basic.pro $
 
 
@@ -117,13 +117,13 @@ pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
 ;      ispec = *cdr_str.vars(32).ispec
 ;      datav = hpca_struct.data  
       ispec = hpca_struct.data
-      ispecname = 'mms1_hpca_hplus_count_rate'
+      ispecname = 'mms1_hpca_hplus_RF_corrected'
       aspec = hpca_struct.data2
-      aspecname = 'mms1_hpca_heplusplus_count_rate'
+      aspecname = 'mms1_hpca_heplusplus_RF_corrected'
       hespec = hpca_struct.data3
-      hespecname = 'mms1_hpca_heplus_count_rate'
+      hespecname = 'mms1_hpca_heplus_RF_corrected'
       ospec = hpca_struct.data4
-      ospecname = 'mms1_hpca_oplus_count_rate'
+      ospecname = 'mms1_hpca_oplus_RF_corrected'
 ;      ispec = hpca_struct.ispec
 ;      hplus = *cdr_str.vars(15).hplus
 ;      hplus = hpca_struct.hplus

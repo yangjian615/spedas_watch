@@ -82,8 +82,8 @@ end
 ;  -Some particle routines pass keywords to lower level routines through _extra
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-06-22 16:14:14 -0700 (Mon, 22 Jun 2015) $
-;$LastChangedRevision: 17937 $
+;$LastChangedDate: 2015-07-09 19:17:31 -0700 (Thu, 09 Jul 2015) $
+;$LastChangedRevision: 18063 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_part_products.pro $
 ;
 ;-
@@ -110,6 +110,7 @@ pro thm_ui_part_products, loaded_data=loaded_data, $
                           fac_type=fac_type, $
                           
                           use_eclipse_corrections=use_eclipse_corrections, $
+                          use_sc_pot=use_sc_pot, $
 
                           esa_bgnd_remove=esa_bgnd_remove, $
                           bgnd_type=bgnd_type, $
@@ -126,6 +127,7 @@ pro thm_ui_part_products, loaded_data=loaded_data, $
 
 
 final_msg_suffix = ''
+support_suffix = '_pgs_gui_temp'
 
 ;get current tplot names so that extra varaibles can be cleaned later
 tnames_before = tnames('*',create_time=ct)
@@ -149,11 +151,25 @@ for k=0, n_elements(probe)-1 do begin
   ;skip probe if there are no quantities to load 
   if total(load_flags[k,*,*]) eq 0 then continue
 
-  ;load support data for this probe (state is only need for pa & gyro)
-  if in_set('pa',outputs) or in_set('gyro',outputs) or in_set('moments',outputs) then begin
+  ;determine what support data may be needed for this probe
+  load_fac = in_set('pa',outputs) or in_set('gyro',outputs)
+  load_mom = in_set('moments',outputs)
+  
+  ;state data required for FAC transform
+  if load_fac then begin
     thm_load_state, probe=probe[k], trange=trange, /get_support
-    thm_load_fit, probe=probe[k], trange=trange, datatype='fgs', level='l1', coord='dsl', $
-                  use_eclipse_corrections=use_eclipse_corrections
+  endif
+  
+  ;spacecraft potential used for moments
+  if load_mom && keyword_set(use_sc_pot) then begin
+    thm_load_mom, probe=probe[k], trange=trange, datatype='pxxm_pot', level=1, suffix=support_suffix
+  endif
+  
+  ;mag data required for FAC transform and full moments output
+  ; -must be eclipse-corrected if requested
+  if load_fac || load_mom then begin 
+    thm_load_fit, probe=probe[k], trange=trange, datatype='fgs', level=1, coord='dsl', $
+                  use_eclipse_corrections=use_eclipse_corrections, suffix=support_suffix
   endif
 
   ;loop over data type
@@ -199,6 +215,8 @@ for k=0, n_elements(probe)-1 do begin
                        start_angle = start_angle, $
                        suffix = suffix, $
                        fac_type = fac_type, $
+                       sc_pot_name = 'th'+probe+'_pxxm_pot'+support_suffix, $
+                       mag_name = 'th'+probe+'_fgs'+support_suffix, $
                        esa_bgnd_remove=esa_bgnd_remove, $
                        bgnd_type=bgnd_type, $
                        bgnd_npoints=bgnd_npoints, $

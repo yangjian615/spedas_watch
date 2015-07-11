@@ -11,8 +11,8 @@
 ;
 ; Author: Davin Larson and Roberto Livi
 ; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2015-07-02 14:38:59 -0700 (Thu, 02 Jul 2015) $
-; $LastChangedRevision: 18015 $
+; $LastChangedDate: 2015-07-09 16:12:05 -0700 (Thu, 09 Jul 2015) $
+; $LastChangedRevision: 18058 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load.pro $
 
 ;-
@@ -60,6 +60,22 @@ pro mvn_mag_load,format,$
      ;; Full Resolution
      'L2_FULL': begin
         pathname = dirr_l2+'full/YYYY/MM/mvn_mag_l2_pl_full_YYYYMMDD.sav'
+        ;;Check if files exist
+        file_exist = mvn_pfp_file_retrieve($
+                     pathname,$
+                     trange = trange,$
+                     /daily_names)
+        finfo=file_info(file_exist) 
+        indx = where(finfo.exists, nfiles, comp=jndx, ncomp=n)
+        if nfiles eq 0 then begin
+           print, ' '
+           print, '*****************************************'
+           print, 'WARNING:'
+           print, 'L2 files not available! Use L1 instead.'
+           print, '*****************************************'
+           print, ' '
+           goto, L1_FULL
+        endif
         files    = mvn_pfp_file_retrieve($
                    pathname,$
                    trange      = trange,$
@@ -67,7 +83,6 @@ pro mvn_mag_load,format,$
                    verbose     = verbose,$
                    /daily,$
                    /valid_only)
-        stop
         nfiles   = n_elements(files) * keyword_set(files)
         if nfiles eq 0 || keyword_set(download_only) then break
         str_all=0
@@ -104,12 +119,18 @@ pro mvn_mag_load,format,$
         ;; frame = header.spice_frame                 
         ;; Not all files are consistent yet.
         frame ='MAVEN_SPACECRAFT'
-        if keyword_set(tplot_flag) then $
+        if keyword_set(tplot_flag) then begin
            store_data,'mvn_B_full',$
                       str_all.time,$
                       transpose(str_all.vec),$
-                      dlimit={spice_frame:frame}
-        options, 'mvn_B_full', ytitle='L2 [Full] Mag [nT]'
+                      dlimit={spice_frame:frame},$
+                      limit={level:'L2'}
+           options, 'mvn_B_full', ytitle='L2 [Full] Mag [nT]',/def
+        endif
+
+
+
+
         if keyword_set(spice_frame) then begin
            from_frame = frame
            to_frame   = spice_frame
@@ -132,6 +153,21 @@ pro mvn_mag_load,format,$
      ;; Level 2: 30 Second Resolution     
      'L2_30SEC': begin
         pathname = dirr_l2+'30sec/YYYY/MM/mvn_mag_l2_pl_30sec_YYYYMMDD.sav'
+        file_exist = mvn_pfp_file_retrieve($
+                     pathname,$
+                     trange = trange,$
+                     /daily_names)
+        finfo=file_info(file_exist) 
+        indx = where(finfo.exists, nfiles, comp=jndx, ncomp=n)
+        if nfiles eq 0 then begin
+           print, ' '
+           print, '*****************************************'
+           print, 'WARNING:'
+           print, 'L2 files not available! Use L1 instead.'
+           print, '*****************************************'
+           print, ' '
+           goto, L1_30SEC
+        endif
         files    = mvn_pfp_file_retrieve($
                    pathname,$
                    /daily,$
@@ -175,13 +211,13 @@ pro mvn_mag_load,format,$
         str_temp = 0
 
         ;frame = header.spice_frame
-        frame ='MAVEN_SPACECRAFT'
+        frame = 'MAVEN_SPACECRAFT'
         store_data,'mvn_B_30sec',$
                    str_all.time,$
                    transpose(str_all.vec),$
-                   dlimit={spice_frame:frame}
-        options, 'mvn_B_30sec', ytitle='L2 [30sec] Mag [nT]'
-        ;store_data,'mvn_Brms_30sec',rms_all.time,transpose(rms_all.vec)
+                   dlimit={spice_frame:frame},$
+                   limit={level:'L2'}
+        options, 'mvn_B_30sec', ytitle='L2 [30sec] Mag [nT]',/def
         if keyword_set(spice_frame) then begin
            from_frame=frame
            to_frame=spice_frame
@@ -199,10 +235,27 @@ pro mvn_mag_load,format,$
         endif
      end
 
+
+
      ;;-----------------------------
      ;; Level 2: 1 Second Resolution          
      'L2_1SEC': begin
         pathname = dirr_l2+'1sec/YYYY/MM/mvn_mag_l2_pl_1sec_YYYYMMDD.sav'
+        file_exist = mvn_pfp_file_retrieve($
+                     pathname,$
+                     trange = trange,$
+                     /daily_names)
+        finfo=file_info(file_exist) 
+        indx = where(finfo.exists, nfiles, comp=jndx, ncomp=n)
+        if nfiles eq 0 then begin
+           print, ' '
+           print, '*****************************************'
+           print, 'WARNING:'
+           print, 'L2 files not available! Use L1 instead.'
+           print, '*****************************************'
+           print, ' '
+           goto, L1_1SEC
+        endif
         files    = mvn_pfp_file_retrieve($
                    pathname,$
                    /daily,$
@@ -211,7 +264,7 @@ pro mvn_mag_load,format,$
                    verbose=verbose,$
                    /valid_only)
         nfiles = n_elements(files) * keyword_set(files)
-        if nfiles eq 0 ||  keyword_set(download_only) then break
+        if nfiles eq 0 || keyword_set(download_only) then break
         str_all=0
         ind=0
         for i = 0, nfiles-1 do begin
@@ -250,8 +303,9 @@ pro mvn_mag_load,format,$
         store_data,'mvn_B_1sec',$
                    str_all.time,$
                    transpose(str_all.vec),$
-                   dlimit={spice_frame:frame}
-        options, 'mvn_B_1sec', ytitle='L2 [1sec] Mag [nT]'
+                   dlimit={spice_frame:frame},$
+                   limit={level:'L2'}
+        options, 'mvn_B_1sec', ytitle='L2 [1sec] Mag [nT]',/def
         if keyword_set(spice_frame) then begin
            from_frame=frame
            to_frame=spice_frame
@@ -296,10 +350,13 @@ pro mvn_mag_load,format,$
      ;;-------------------
      ;; Full Resolution
      'L1_FULL': begin
+        L1_FULL:
+        print, ' '
         print, '**********************************'
         print, 'WARNING: LEVEL 1 FORMAT'
         print, 'This data may not be used for publication.'
         print, '**********************************'
+        print, ' '
         pathname = dirr_l1+'full/YYYY/MM/mvn_mag_l1_pl_full_YYYYMMDD.sav'
         files    = mvn_pfp_file_retrieve($
                    pathname,$
@@ -348,8 +405,9 @@ pro mvn_mag_load,format,$
            store_data,'mvn_B_full',$
                       str_all.time,$
                       transpose(str_all.vec),$
-                      dlimit={spice_frame:frame}
-        options, 'mvn_B_full', ytitle='L1 [Full] Mag [nT]'
+                      dlimit = {spice_frame:frame},$
+                      limit  = {level:'L1'}
+        options, 'mvn_B_full', ytitle='L1 [Full] Mag [nT]',/def
         if keyword_set(spice_frame) then begin
            from_frame = frame
            to_frame   = spice_frame
@@ -363,18 +421,22 @@ pro mvn_mag_load,format,$
            store_data,'mvn_B_full_'+to_frame,$
                       str_all.time,$
                       transpose(new_vec),$
-                      dlimit={spice_frame:to_frame}
-           options, 'mvn_B_full', ytitle='L1 [Full] Mag [nT]'
+                      dlimit = {spice_frame:to_frame},$
+                      limit  = {level:'L1'}
+           options, 'mvn_B_full', ytitle='L1 [Full] Mag [nT]',/def
         endif
      end
      
      ;;-------------------------------
      ;; Level 1: 30 Second Resolution     
      'L1_30SEC': begin
+        L1_30SEC:
+        print, ' '
         print, '**********************************'
         print, 'WARNING: LEVEL 1 FORMAT'
         print, 'This data may not be used for publication.'
         print, '**********************************'
+        print, ' '
         pathname = dirr_l1+'30sec/YYYY/MM/mvn_mag_l1_pl_30sec_YYYYMMDD.sav'
         files    = mvn_pfp_file_retrieve($
                    pathname,$
@@ -421,8 +483,9 @@ pro mvn_mag_load,format,$
         store_data,'mvn_B_30sec',$
                    str_all.time,$
                    transpose(str_all.vec),$
-                   dlimit={spice_frame:frame}
-        options, 'mvn_B_full', ytitle='L1 [30sec] Mag [nT]'
+                   dlimit = {spice_frame:frame},$
+                   limit  = {level:'L1'}
+        options, 'mvn_B_full', ytitle='L1 [30sec] Mag [nT]',/def
         ;store_data,'mvn_Brms_30sec',rms_all.time,transpose(rms_all.vec)
         if keyword_set(spice_frame) then begin
            from_frame=frame
@@ -437,18 +500,22 @@ pro mvn_mag_load,format,$
            store_data,'mvn_B_30sec_'+to_frame,$
                       str_all.time,$
                       transpose(new_vec),$
-                      dlimit={spice_frame:to_frame}
-           options, 'mvn_B_30sec', ytitle='L1 [30sec] Mag [nT]'
+                      dlimit = {spice_frame:to_frame},$
+                      limit  = {level:'L1'}
+           options, 'mvn_B_30sec', ytitle='L1 [30sec] Mag [nT]',/def
         endif
      end
 
      ;;-----------------------------
      ;; Level 1: 1 Second Resolution          
      'L1_1SEC': begin
+        L1_1SEC:
+        print, ' '
         print, '**********************************'
         print, 'WARNING: LEVEL 1 FORMAT'
         print, 'This data may not be used for publication.'
         print, '**********************************'
+        print, ' '
         pathname = dirr_l1+'1sec/YYYY/MM/mvn_mag_l1_pl_1sec_YYYYMMDD.sav'
         files    = mvn_pfp_file_retrieve($
                    pathname,$
@@ -495,7 +562,9 @@ pro mvn_mag_load,format,$
         store_data,'mvn_B_1sec',$
                    str_all.time,$
                    transpose(str_all.vec),$
-                   dlimit={spice_frame:frame}
+                   dlimit = {spice_frame:frame},$
+                   limit  = {level:'L1'}
+        options, 'mvn_B_1sec', ytitle='L1 [1sec] Mag [nT]',/def
         if keyword_set(spice_frame) then begin
            from_frame=frame
            to_frame=spice_frame
@@ -509,19 +578,26 @@ pro mvn_mag_load,format,$
            store_data,'mvn_B_1sec_'+to_frame,$
                       str_all.time,$
                       transpose(new_vec),$
-                      dlimit={spice_frame:to_frame}
+                      dlimit = {spice_frame:to_frame},$
+                      limit  = {level:'L1'}
+           options, 'mvn_B_1sec', ytitle='L1 [1sec] Mag [nT]',/def
         endif
      end
      
      
+
+
+
      ;;---------------------------------------------------------------
      ;; Old Full Resolution          
      ;; Older style save files. Bigger and  Slower to read in 
      'L1_SAV': begin   
+        print, ' '
         print, '**********************************'
         print, 'WARNING: LEVEL 1 FORMAT'
         print, 'This data may not be used for publication.'
         print, '**********************************'
+        print, ' '
         pathname = 'maven/data/sci/mag/'+$
                    'l1_sav/YYYY/MM/mvn_mag_ql_YYYYdDOYpl_YYYYMMDD_v??_r??.sav'
         files = mvn_pfp_file_retrieve($
@@ -566,10 +642,12 @@ pro mvn_mag_load,format,$
      ;; Level 1: Read STS Files Directly    
      ;; Note: Can only read one file at a time.
      'L1_STS': begin
+        print, ' '
         print, '**********************************'
         print, 'WARNING: LEVEL 1 FORMAT'
         print, 'This data may not be used for publication.'
         print, '**********************************'
+        print, ' '
         pathname = 'maven/data/sci/mag/'+$
                    'l1/YYYY/MM/mvn_mag_ql_YYYYdDOYpl_YYYYMMDD_v??_r??.sts'
         files = mvn_pfp_file_retrieve($

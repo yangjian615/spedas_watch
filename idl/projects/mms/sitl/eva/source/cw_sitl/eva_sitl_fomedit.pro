@@ -7,8 +7,8 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-24 12:49:34 -0700 (Wed, 24 Jun 2015) $
-; $LastChangedRevision: 17957 $
+; $LastChangedDate: 2015-07-09 21:24:50 -0700 (Thu, 09 Jul 2015) $
+; $LastChangedRevision: 18065 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
@@ -130,6 +130,8 @@ PRO eva_sitl_FOMedit, state, segSelect, wgrid=wgrid
   
   base = widget_base(TITLE='Edit FOM',/column)
   
+  disable=0
+  
   if (segSelect.BAK) and (n_tags(segSelect) eq 16) then begin
     str_element,/add,wid,'lblBuffs',-1L
     str_element,/add,wid,'sldStart',-1L
@@ -152,9 +154,9 @@ PRO eva_sitl_FOMedit, state, segSelect, wgrid=wgrid
     lblFinish = widget_label(baseSeg,VALUE='FINISH-TIME: '+segSelect.FINISHTIME)
     lblNumEval= widget_label(baseSeg,VALUE='NUM-EVAL-CYCLES: '+strtrim(string(segSelect.NUMEVALCYCLES),2))
     lblParamID= widget_label(baseSeg,VALUE='PARAMETER-SET-ID:'+segSelect.PARAMETERSETID)
-    ;str_element,/add,wid,'drpStatus',widget_droplist(base,VALUE=['New','Modified','Deleted'],$
-    ;  TITLE='Segment Status:')
-    str_element,/add,wid,'ssFOM',eva_slider(base,title=' FOM ',VALUE=segSelect.FOM,MAX_VALUE=255, MIN_VALUE=0)
+    disable = strmatch(strlowcase(segSelect.STATUS),'*finished*') 
+    if disable then ssFOM = -1 else ssFOM = eva_slider(base,title=' FOM ',VALUE=segSelect.FOM,MAX_VALUE=255, MIN_VALUE=0) 
+    str_element,/add,wid,'ssFOM',ssFOM
     txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
   endif else begin
     str_element,/add,wid,'ssFOM',eva_slider(base,title=' FOM ',VALUE=segSelect.FOM,MAX_VALUE=255, MIN_VALUE=0)
@@ -167,15 +169,20 @@ PRO eva_sitl_FOMedit, state, segSelect, wgrid=wgrid
     str_element,/add,wid,'drpStatus',-1L    
   endelse
   
-  comlen = string(strlen(segSelect.DISCUSSION), format='(I4)')
-  str_element,/add,wid,'lblDiscussion',widget_label(base,VALUE='COMMENT: '+comlen+wid.DISLEN)
-  str_element,/add,wid,'txtDiscussion',widget_text(base,VALUE=segSelect.DISCUSSION,/all_events,/editable)
+  if disable then begin
+    comment = 'This is a FINISHED segment. No need to edit.'
+    txtDiscuss = -1
+  endif else begin
+    comlen = string(strlen(segSelect.DISCUSSION), format='(I4)')
+    comment = 'COMMENT: '+comlen+wid.DISLEN
+    txtDiscuss = widget_text(base,VALUE=segSelect.DISCUSSION,/all_events,/editable)
+  endelse
+  str_element,/add,wid,'lblDiscussion',widget_label(base,VALUE=comment)
+  str_element,/add,wid,'txtDiscussion',txtDiscuss
   
-
-
     
   baseDeci = widget_base(base,/ROW)
-  str_element,/add,wid,'btnSave',widget_button(baseDeci,VALUE='Save',ACCELERATOR = "Return")
+  str_element,/add,wid,'btnSave',widget_button(baseDeci,VALUE='Save',ACCELERATOR = "Return",SENSITIVE=~disable)
   str_element,/add,wid,'btnCancel',widget_button(baseDeci,VALUE='Cancel')
   widget_control, base, /REALIZE
   scr = get_screen_size()

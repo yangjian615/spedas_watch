@@ -1,6 +1,6 @@
 
 
-mms_init;, local_data_dir='/Users/frwi7273/data/mms/'
+mms_init, local_data_dir='/Users/jburch/data/mms/'
 
 
 Re = 6378.137
@@ -8,7 +8,7 @@ Re = 6378.137
 
 ;timespan, '2015-05-11/00:00:00', 24, /hour
 
-timespan, '2015-06-22/19:00:00', 1, /hour
+timespan, '2015-06-22/00:00:00', 24, /hour
 ;timespan, '2015-06-26/00:00:00', 24, /hour
 
 
@@ -43,45 +43,45 @@ options, 'mms1_r', 'ytitle', 'R'
 ;=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
 ;      H+
 ;    flux
-options,'mms1_hpca_hplus_count_rate','spec',1 
-options, 'mms1_hpca_hplus_count_rate','ylog',1
-options, 'mms1_hpca_hplus_count_rate','zlog',1
-options, 'mms1_hpca_hplus_count_rate','no_interp',1
-options, 'mms1_hpca_hplus_count_rate','ytitle','H+ (eV)'
-options, 'mms1_hpca_hplus_count_rate','ztitle','counts'
-ylim,    'mms1_hpca_hplus_count_rate', 1, 40000.
-zlim,    'mms1_hpca_hplus_count_rate', .1, 2000.
+options,'mms1_hpca_hplus_RF_corrected','spec',1 
+options, 'mms1_hpca_hplus_RF_corrected','ylog',1
+options, 'mms1_hpca_hplus_RF_corrected','zlog',1
+options, 'mms1_hpca_hplus_RF_corrected','no_interp',1
+options, 'mms1_hpca_hplus_RF_corrected','ytitle','H+ (eV)'
+;options, 'mms1_hpca_hplus_RF_corrected','ztitle','energy flux'
+ylim,    'mms1_hpca_hplus_RF_corrected', 1, 40000.
+zlim,    'mms1_hpca_hplus_RF_corrected', .1, 2000.
 
 ;    data quality
 ;ylim, 'mms1_hpca_hplus_data_quality',0, 255.
 ;options, 'mms1_hpca_hplus_data_quality','ytitle','Data Quality'
 
-options,'mms1_hpca_heplusplus_count_rate','spec',1 
-options, 'mms1_hpca_heplusplus_count_rate','ylog',1
-options, 'mms1_hpca_heplusplus_count_rate','zlog',1
-options, 'mms1_hpca_heplusplus_count_rate','no_interp',1
-options, 'mms1_hpca_heplusplus_count_rate','ytitle','He++ (eV)'
-options, 'mms1_hpca_heplusplus_count_rate','ztitle','counts'
-ylim,    'mms1_hpca_heplusplus_count_rate', 1, 40000.
-zlim,    'mms1_hpca_heplusplus_count_rate', .1, 2000.
+options,'mms1_hpca_heplusplus_RF_corrected','spec',1 
+options, 'mms1_hpca_heplusplus_RF_corrected','ylog',1
+options, 'mms1_hpca_heplusplus_RF_corrected','zlog',1
+options, 'mms1_hpca_heplusplus_RF_corrected','no_interp',1
+options, 'mms1_hpca_heplusplus_RF_corrected','ytitle','He++ (eV)'
+options, 'mms1_hpca_heplusplus_RF_corrected','ztitle','differential energy flux'
+ylim,    'mms1_hpca_heplusplus_RF_corrected', 1, 40000.
+zlim,    'mms1_hpca_heplusplus_RF_corrected', .1, 2000.
 
-options,'mms1_hpca_heplus_count_rate','spec',1 
-options, 'mms1_hpca_heplus_count_rate','ylog',1
-options, 'mms1_hpca_heplus_count_rate','zlog',1
-options, 'mms1_hpca_heplus_count_rate','no_interp',1
-options, 'mms1_hpca_heplus_count_rate','ytitle','He+ (eV)'
-options, 'mms1_hpca_heplus_count_rate','ztitle','counts'
-ylim,    'mms1_hpca_heplus_count_rate', 1, 40000.
-zlim,    'mms1_hpca_heplus_count_rate', .1, 2000.
+options,'mms1_hpca_heplus_RF_corrected','spec',1 
+options, 'mms1_hpca_heplus_RF_corrected','ylog',1
+options, 'mms1_hpca_heplus_RF_corrected','zlog',1
+options, 'mms1_hpca_heplus_RF_corrected','no_interp',1
+options, 'mms1_hpca_heplus_RF_corrected','ytitle','He+ (eV)'
+options, 'mms1_hpca_heplus_RF_corrected','ztitle','energy flux'
+ylim,    'mms1_hpca_heplus_RF_corrected', 1, 40000.
+zlim,    'mms1_hpca_heplus_RF_corrected', .1, 2000.
 
-options,'mms1_hpca_oplus_count_rate','spec',1 
-options, 'mms1_hpca_oplus_count_rate','ylog',1
-options, 'mms1_hpca_oplus_count_rate','zlog',1
-options, 'mms1_hpca_oplus_count_rate','no_interp',1
-options, 'mms1_hpca_oplus_count_rate','ytitle','O+ (eV)'
-options, 'mms1_hpca_oplus_count_rate','ztitle','counts'
-ylim,    'mms1_hpca_oplus_count_rate', 1, 40000.
-zlim,    'mms1_hpca_oplus_count_rate', .1, 2000.
+options,'mms1_hpca_oplus_RF_corrected','spec',1 
+options, 'mms1_hpca_oplus_RF_corrected','ylog',1
+options, 'mms1_hpca_oplus_RF_corrected','zlog',1
+options, 'mms1_hpca_oplus_RF_corrected','no_interp',1
+options, 'mms1_hpca_oplus_RF_corrected','ytitle','O+ (eV)'
+;options, 'mms1_hpca_oplus_RF_corrected','ztitle','energy flux'
+ylim,    'mms1_hpca_oplus_RF_corrected', 1, 40000.
+zlim,    'mms1_hpca_oplus_RF_corrected', .1, 2000.
 
 ylim, 'mms1_hpca_hplus_number_density', 1, 100
 options, 'mms1_hpca_hplus_number_density', 'ylog', 1
@@ -120,10 +120,16 @@ options, 'mms1_hpca_oplus_bulk_velocity', 'ytitle', 'o!U+!N km s!U-1!N'
 options, 'mms1_hpca_oplus_bulk_velocity', labels=['V!DX!N', 'V!DY!N', 'V!DZ!N']
 options, 'mms1_hpca_oplus_bulk_velocity','labflag',-1
 
-WINDOW, 1, XSIZE=1000, YSIZE=700
-tplot, ['mms1_hpca_hplus_count_rate','mms1_hpca_heplusplus_count_rate',$
-  'mms1_hpca_oplus_count_rate','mms1_hpca_hplusoplus_number_densities',$
-   'mms1_hpca_hplus_bulk_velocity','mms1_hpca_oplus_bulk_velocity'], window=1;, var_label=['mms1_r','mms1_z','mms1_y','mms1_x']
+;options, 'mms1_dfg_srvy_gsm_dmpa', -80, 80
+options, 'mms1_dfg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N']
+options, 'mms1_dfg_srvy_gsm_dmpa', 'labflag',-1
+
+
+tplot, ['mms1_hpca_hplus_RF_corrected','mms1_hpca_heplusplus_RF_corrected',$
+  'mms1_hpca_oplus_RF_corrected', $;'mms1_dfg_srvy_gsm_dmpa',$
+  'mms1_hpca_hplusoplus_number_densities', $
+   'mms1_hpca_hplus_bulk_velocity','mms1_hpca_oplus_bulk_velocity'],$
+    var_label=['mms1_r','mms1_z','mms1_y','mms1_x']
 
 
 end

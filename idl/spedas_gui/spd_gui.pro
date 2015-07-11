@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-30 09:31:26 -0700 (Tue, 30 Jun 2015) $
-;$LastChangedRevision: 17995 $
+;$LastChangedDate: 2015-07-09 13:54:22 -0700 (Thu, 09 Jul 2015) $
+;$LastChangedRevision: 18051 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1353,7 +1353,7 @@ PRO spd_gui_event, event
   info.drawDisabled = 0
   
   Widget_Control, event.TOP, Set_UValue=info, /No_Copy
-  
+  if double(!version.release) lt 8.0 then heap_gc
   RETURN
 
 END ;--------------------------------------------------------------------------------
@@ -2094,6 +2094,8 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   !P=plot_var
   
   XManager, 'spd_gui', master, /No_Block
+  
+  if double(!version.release) lt 8.0 then heap_gc
 
 RETURN
 

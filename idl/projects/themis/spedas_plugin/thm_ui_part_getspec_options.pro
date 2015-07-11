@@ -45,8 +45,8 @@
 ; 
 ; 
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-06-22 14:47:12 -0700 (Mon, 22 Jun 2015) $
-;$LastChangedRevision: 17936 $
+;$LastChangedDate: 2015-07-09 18:45:50 -0700 (Thu, 09 Jul 2015) $
+;$LastChangedRevision: 18062 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_part_getspec_options.pro $
 ;-
 
@@ -472,6 +472,7 @@ pro thm_ui_part_getspec_set_defaults, state
   state.sst_cal = 1b
   state.sst_method_clean = 0b
   state.eclipse = 0b
+  state.sc_pot = 1b
   state.esa_bgnd_remove = 1b
   state.bgnd_type = 'Anode'
   state.bgnd_npoints = 3.0
@@ -629,6 +630,7 @@ pro thm_ui_part_getspec_apply, state, error=error
   fac_type = strlowcase(state.fac_type)
 
   use_eclipse_corrections = state.eclipse ? 2:0
+  use_sc_pot = state.sc_pot
 
   esa_bgnd_remove = state.esa_bgnd_remove
   bgnd_type = state.bgnd_type
@@ -773,6 +775,7 @@ pro thm_ui_part_getspec_apply, state, error=error
                         fac_type=fac_type, $
 
                         use_eclipse_corrections=use_eclipse_corrections, $
+                        use_sc_pot=use_sc_pot, $
 
                         esa_bgnd_remove = esa_bgnd_remove, $
                         bgnd_type = bgnd_type, $
@@ -805,6 +808,7 @@ pro thm_ui_part_getspec_apply, state, error=error
                         fac_type=fac_type, $
 
                         use_eclipse_corrections=use_eclipse_corrections, $
+                        use_sc_pot=use_sc_pot, $
 
                         esa_bgnd_remove = esa_bgnd_remove, $
                         bgnd_type = bgnd_type, $
@@ -1033,6 +1037,8 @@ mainBase = widget_base(tab_id, /col, tab_mode=1, event_pro='thm_ui_part_getspec_
 
   eclipse_button = widget_button(dataButtonsBase, value='Apply Eclipse Corrections', $
                     uname='eclipse', tooltip='Apply spacecraft spin corrections during eclipses')
+  pot_button = widget_button(dataButtonsBase, value='Use Spacecraft Potential', $
+                 uname='sc_pot', tooltip='Apply spacecraft potential corrections when producing moments')
   sstButton = widget_button(dataButtonsBase, value='Use SST Calibrations', $
                             uname='sst_cal', uval='SST_CAL', tooltip= $
                             'Use newest SST calibrations (not available for reduced data).')
@@ -1299,6 +1305,7 @@ state = {tab_id:tab_id, $
          regrid_phi:0d, regrid_theta:0d, $
          fac_type:'',  $
          eclipse:0b, $
+         sc_pot:1b, $
          esa_bgnd_remove:0b, $
          bgnd_type:'', $
          bgnd_npoints:0d, $
@@ -1319,6 +1326,7 @@ state = {tab_id:tab_id, $
                        'regrid_phi', 'regrid_theta', $
                        'eclipse', $
                        'esa_bgnd_remove', $
+                       'sc_pot', $
                        'bgnd_type', $
                        'bgnd_npoints', $
                        'bgnd_scale', $

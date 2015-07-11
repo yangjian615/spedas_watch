@@ -92,8 +92,8 @@ for j = 0, n_elements(sc)-1 do begin
     if n_elements(files_open) gt 1 then begin
       for i = 1, n_elements(files_open)-1 do begin
         temp = mms_sitl_open_feeps_cdf(files_open(0))
-        times = [times, temp_struct.times]
-        elec_t1 = [elec_t1, temp_struct.elec_t1]
+        times = [times, temp.times]
+        elec_t1 = [elec_t1, temp.elec_t1]
       endfor
     endif
 

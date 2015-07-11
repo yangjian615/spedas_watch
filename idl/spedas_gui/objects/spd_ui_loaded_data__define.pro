@@ -49,9 +49,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
-;$LastChangedRevision: 17542 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-09 15:14:03 -0700 (Thu, 09 Jul 2015) $
+;$LastChangedRevision: 18055 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1741,7 +1741,11 @@ PRO SPD_UI_LOADED_DATA::Cleanup
     obj_destroy,*self.groupObjs
   endif
   
-  ptr_Free, self.groupobjs,self.groupnames
+  ptr_free,self.groupObjs
+  ptr_free,self.groupNames
+  ptr_free,self.insNames
+  ptr_free,self.misNames
+  ptr_free,self.obsNames
   
 END ;--------------------------------------------------------------------------------
 

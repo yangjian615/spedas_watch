@@ -9,9 +9,9 @@
 ;  
 ;  Examples on SST specific sun decontamination options can be found in thm_crib_sst.pro
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-01-28 10:38:31 -0800 (Wed, 28 Jan 2015) $
-;$LastChangedRevision: 16768 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-07-09 19:18:42 -0700 (Thu, 09 Jul 2015) $
+;$LastChangedRevision: 18064 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_products.pro $
 ;-
 
@@ -103,7 +103,7 @@ trange=['2008-02-23','2008-02-24']
 timespan,trange
 
 ;load potential and magnetic field data
-thm_load_mom,probe=probe,trange=trange
+thm_load_mom,probe=probe,trange=trange,datatype='pxxm_pot' 
 thm_load_fit,probe=probe,coord='dsl',trange=trange
 
 ;load particle data
@@ -128,7 +128,7 @@ datatype='peef'
 trange=['2008-02-23','2008-02-24']
 timespan,trange
  
-thm_load_mom,probe=probe,trange=trange
+thm_load_mom,probe=probe,trange=trange,datatype='pxxm_pot' 
 thm_load_fit,probe=probe,coord='dsl',trange=trange
 
 thm_part_load,probe=probe,trange=trange,datatype=datatype
@@ -157,7 +157,7 @@ timespan,trange
 
 thm_load_state,probe=probe,trange=trange ;this loads the spacecraft position
 
-thm_load_mom,probe=probe,trange=trange ;this routine loads the spacecraft calculated spacecraft potential
+thm_load_mom,probe=probe,trange=trange,datatype='pxxm_pot' ;this routine loads the spacecraft calculated spacecraft potential
 
 thm_load_fit,probe=probe,coord='dsl',trange=trange ;this loads the fluxgate mag data(spacecraft generated spin-fit)
 

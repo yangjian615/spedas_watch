@@ -16,9 +16,9 @@
 ;  Old version in particles/deprecated
 ;  
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-11-13 11:19:12 -0800 (Wed, 13 Nov 2013) $
-;$LastChangedRevision: 13531 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-07-09 16:27:16 -0700 (Thu, 09 Jul 2015) $
+;$LastChangedRevision: 18059 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_part_moments.pro $
 ;-
 pro thm_part_moments, probes = probes, $ ;string specifying probe(s)
@@ -212,14 +212,22 @@ pro thm_part_moments, probes = probes, $ ;string specifying probe(s)
   
   
     ;Convert support data suffixes to full names
+    ;Ensure names are defined, if not then the defaults used by thm_part_products
+    ;will be passed back and used in subsequent loop iterations.  This also 
+    ;preserves the behavior of the original thm_part_moments in that no potential
+    ;or mag data will be used unless explicitly specified by the user.
     
     if keyword_set(mag_suffix) then begin
       mag_name = 'th'+probes_lc[i]+mag_suffix
-    endif
+    endif else begin
+      mag_name = ''
+    endelse
     
     if keyword_set(scpot_suffix) then begin
       sc_pot_name = 'th'+probes_lc[i]+scpot_suffix
-    endif
+    endif else begin
+      sc_pot_name = ''
+    endelse
   
   
     ;Loop over data types

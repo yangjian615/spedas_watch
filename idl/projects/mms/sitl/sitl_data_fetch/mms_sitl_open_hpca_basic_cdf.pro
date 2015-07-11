@@ -2,8 +2,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-07 15:51:11 -0700 (Tue, 07 Jul 2015) $
-;  $LastChangedRevision: 18033 $
+;  $LastChangedDate: 2015-07-09 15:26:09 -0700 (Thu, 09 Jul 2015) $
+;  $LastChangedRevision: 18056 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_open_hpca_basic_cdf.pro $
 
 
@@ -16,37 +16,37 @@ function mms_sitl_open_hpca_basic_cdf, filename
 
   ; Find out what variables are in here
 
-;  for i = 0, n_elements(cdf_str.vars.name)-1 do begin
-;    print, i, '  ', cdf_str.vars(i).name
-;;    print, i, '  ', cdf_str.vars(i).dataptr
-;
-;  endfor
+  for i = 0, n_elements(cdf_str.vars.name)-1 do begin
+    print, i, '  ', cdf_str.vars(i).name
+;    print, i, '  ', cdf_str.vars(i).dataptr
+
+  endfor
 
   time_tt2000 = *cdf_str.vars(0).dataptr
   time_unix = time_double(time_tt2000, /tt2000)
   
-ispec = *cdf_str.vars(32).dataptr 
-aspec = *cdf_str.vars(42).dataptr  
-hespec = *cdf_str.vars(37).dataptr  
-ospec = *cdf_str.vars(47).dataptr  
+ispec = *cdf_str.vars(31).dataptr 
+aspec = *cdf_str.vars(41).dataptr  
+hespec = *cdf_str.vars(36).dataptr  
+ospec = *cdf_str.vars(46).dataptr  
  
   
 ;  hspecname = *cdf_str.vars(32).dataptr
   
 ;  specstrlen = strlen(cdf_str.vars(31).name)
-    ispecname = cdf_str.vars(32).name
-    aspecname = cdf_str.vars(42).name
-    hespecname = cdf_str.vars(37).name
-    ospecname = cdf_str.vars(47).name
+    ispecname = cdf_str.vars(31).name
+    aspecname = cdf_str.vars(41).name
+    hespecname = cdf_str.vars(36).name
+    ospecname = cdf_str.vars(46).name
   
 
   
   energies = *cdf_str.vars(12).dataptr
 
-  data3d = *cdf_str.vars(32).dataptr
-  data4d = *cdf_str.vars(42).dataptr
-  data5d = *cdf_str.vars(37).dataptr
-  data6d = *cdf_str.vars(47).dataptr
+  data3d = *cdf_str.vars(31).dataptr
+  data4d = *cdf_str.vars(41).dataptr
+  data5d = *cdf_str.vars(36).dataptr
+  data6d = *cdf_str.vars(46).dataptr
   
     
   

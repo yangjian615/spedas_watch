@@ -38,9 +38,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-05-09 14:33:45 -0700 (Fri, 09 May 2014) $
-;$LastChangedRevision: 15087 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-09 10:47:18 -0700 (Thu, 09 Jul 2015) $
+;$LastChangedRevision: 18043 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_message_bar__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -186,9 +186,9 @@ END ;---------------------------------------------------------------------------
 
 
 
-;PRO SPD_UI_MESSAGE_BAR::Cleanup 
-;   nothing to clean up (yet)
-;END ;--------------------------------------------------------------------------------
+PRO SPD_UI_MESSAGE_BAR::Cleanup 
+    if ptr_valid(self.messages) then ptr_free, self.messages
+END ;--------------------------------------------------------------------------------
 
 
 
@@ -254,7 +254,7 @@ PRO SPD_UI_MESSAGE_BAR__DEFINE
               name: ' ',            $ ; optional name
               state: 0,             $ ; on/off flag (for display)
               value: ' ',           $ ; text to be displayed in the bar 
-              messages:Ptr_New(),   $ ; max number of messages to buffer 
+              messages:Ptr_New(),   $ ; max number of messages to buffer
               currentMsgId: 0L,        $ ; current id for messages
               msgLimit: 0,          $ ; number of messages to buffer
               xSize: 0,             $ ; size of bar in x direction
