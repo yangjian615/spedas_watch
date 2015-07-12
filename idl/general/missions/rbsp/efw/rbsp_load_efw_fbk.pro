@@ -31,8 +31,8 @@
 ; 1. Written by Peter Schroeder, February 2012
 ;
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2013-10-03 11:10:13 -0700 (Thu, 03 Oct 2013) $
-; $LastChangedRevision: 13233 $
+; $LastChangedDate: 2015-07-10 07:53:49 -0700 (Fri, 10 Jul 2015) $
+; $LastChangedRevision: 18070 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_load_efw_fbk.pro $
 ;-
 
@@ -45,7 +45,7 @@ pro rbsp_load_efw_fbk,probe=probe, datatype=datatype, trange=trange, $
                  pT=pT
 
 rbsp_efw_init
-dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_fbk.pro 13233 2013-10-03 18:10:13Z aaronbreneman $'
+dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_fbk.pro 18070 2015-07-10 14:53:49Z aaronbreneman $'
 
 if keyword_set(etu) then probe = 'a'
 
@@ -53,7 +53,7 @@ if keyword_set(etu) then probe = 'a'
 v7 = [1., 2., 3., 4., 5., 6., 7.]
 v13 = [1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12., 13.]
 if(keyword_set(probe)) then $
-  p_var = probe
+  p_var = strlowcase(probe)
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > !rbsp_efw.verbose
@@ -140,7 +140,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_fbk.pro 13233 2013-10-03 18:10:13Z aaronbreneman $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_fbk.pro 18070 2015-07-10 14:53:49Z aaronbreneman $'
   
        dprint, dwait = 5., verbose = verbose, 'Flushing output'
        dprint, dlevel = 4, verbose = verbose, 'Filterbank 7 data Loaded for probe: '+p_var[s]
@@ -210,7 +210,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_fbk.pro 13233 2013-10-03 18:10:13Z aaronbreneman $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_fbk.pro 18070 2015-07-10 14:53:49Z aaronbreneman $'
   
        dprint, dwait = 5., verbose = verbose, 'Flushing output'
        dprint, dlevel = 4, verbose = verbose, 'Filterbank 13 data Loaded for probe: '+p_var[s]

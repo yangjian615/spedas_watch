@@ -43,9 +43,9 @@
 ;  spd_ui_getset.  You can still call these methods when using objects of type spd_ui_panel, and
 ;  call them in the same way as before
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-10 16:24:08 -0700 (Fri, 10 Jul 2015) $
+;$LastChangedRevision: 18086 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_panel__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -53,22 +53,22 @@ FUNCTION SPD_UI_PANEL::Copy
    out = Obj_New("SPD_UI_PANEL", self.id,/nosave)
    Struct_Assign, self, out
    ; copy panel settings
-   newSettings=Obj_New("SPD_UI_PANEL_SETTINGS")
+   ;newSettings=Obj_New("SPD_UI_PANEL_SETTINGS")
    IF Obj_Valid(self.Settings) THEN newSettings=self.settings->Copy() ELSE $
       newSettings=Obj_New()
    out->SetProperty, Settings=newSettings
    ; copy x axis
-   newAxis=Obj_New("SPD_UI_AXIS_SETTINGS")
+   ;newAxis=Obj_New("SPD_UI_AXIS_SETTINGS")
    IF Obj_Valid(self.xAxis) THEN newAxis=self.xAxis->Copy() ELSE $
       newAxis=Obj_New()
    out->SetProperty, XAxis=newAxis
    ; copy y axis
-   newAxis=Obj_New("SPD_UI_AXIS_SETTINGS")
+   ;newAxis=Obj_New("SPD_UI_AXIS_SETTINGS")
    IF Obj_Valid(self.yAxis) THEN newAxis=self.yAxis->Copy() ELSE $
       newAxis=Obj_New()
    out->SetProperty, YAxis=newAxis
    ; copy z axis
-   newAxis=Obj_New("SPD_UI_ZAXIS_SETTINGS")
+   ;newAxis=Obj_New("SPD_UI_ZAXIS_SETTINGS")
    IF Obj_Valid(self.zAxis) THEN newAxis=self.zAxis->Copy() ELSE $
       newAxis=Obj_New()
    out->SetProperty, ZAxis=newAxis

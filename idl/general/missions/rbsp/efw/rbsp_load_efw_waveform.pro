@@ -45,9 +45,9 @@
 ;         1. Added keywords *coord*, *tper*, and *tphase* that are passed into
 ;             *rbsp_efw_cal_waveform*.
 ;
-; $LastChangedBy: peters $
-; $LastChangedDate: 2013-05-06 16:23:33 -0700 (Mon, 06 May 2013) $
-; $LastChangedRevision: 12290 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2015-07-10 07:53:23 -0700 (Fri, 10 Jul 2015) $
+; $LastChangedRevision: 18069 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_load_efw_waveform.pro $
 ;-
 
@@ -61,12 +61,12 @@ pro rbsp_load_efw_waveform,probe=probe, datatype=datatype, trange=trange, $
                  tper = tper, tphase = tphase, _extra = _extra
 
 rbsp_efw_init
-dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_waveform.pro 12290 2013-05-06 23:23:33Z peters $'
+dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_waveform.pro 18069 2015-07-10 14:53:23Z aaronbreneman $'
 
 if keyword_set(etu) then probe = 'a'
 
 if(keyword_set(probe)) then $
-  p_var = probe
+  p_var = strlowcase(probe)
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > !rbsp_efw.verbose
@@ -165,7 +165,7 @@ for s=0,n_elements(p_var)-1 do begin
           
        colors = color_array[0:n_elements(labels)-1]
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_waveform.pro 12290 2013-05-06 23:23:33Z peters $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_waveform.pro 18069 2015-07-10 14:53:23Z aaronbreneman $'
   
        store_data,new_name,/delete
        store_data,old_name,newname=new_name
@@ -223,7 +223,7 @@ for s=0,n_elements(p_var)-1 do begin
              endif
           endfor
        endif
-       
+      
      endif else begin
 ;        dprint, dlevel = 0, verbose = verbose, 'No EFW ESVY data loaded...'+' Probe: '+p_var[s]
        dprint, dlevel = 0, verbose = verbose, 'No EFW ' + $

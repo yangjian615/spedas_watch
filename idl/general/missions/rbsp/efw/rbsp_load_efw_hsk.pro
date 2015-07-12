@@ -32,9 +32,9 @@
 ; 2. Fixed the verbose keyword so that it now actually has the intended effects.
 ;    JBT, SSL/UCB, 2012-11-03.
 ;
-; $LastChangedBy: peters $
-; $LastChangedDate: 2012-11-07 14:58:26 -0800 (Wed, 07 Nov 2012) $
-; $LastChangedRevision: 11201 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2015-07-10 07:53:58 -0700 (Fri, 10 Jul 2015) $
+; $LastChangedRevision: 18071 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_load_efw_hsk.pro $
 ;-
 
@@ -46,12 +46,12 @@ pro rbsp_load_efw_hsk,probe=probe, datatype=datatype, trange=trange, $
                  type=type, integration=integration, msim=msim, etu=etu, qa=qa
 
 rbsp_efw_init
-dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_hsk.pro 11201 2012-11-07 22:58:26Z peters $'
+dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_hsk.pro 18071 2015-07-10 14:53:58Z aaronbreneman $'
 
 if keyword_set(etu) then probe = 'a'
 
 if(keyword_set(probe)) then $
-  p_var = probe
+  p_var = strlowcase(probe)
 
 ; vb = keyword_set(verbose) ? verbose : 0
 ; vb = vb > !rbsp_efw.verbose
@@ -122,7 +122,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 11201 2012-11-07 22:58:26Z peters $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 18071 2015-07-10 14:53:58Z aaronbreneman $'
   
        c_var = [1, 2, 3, 4, 5, 6]
 
@@ -174,7 +174,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 11201 2012-11-07 22:58:26Z peters $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 18071 2015-07-10 14:53:58Z aaronbreneman $'
   
        c_var = [1, 2, 3, 4, 5, 6]
 
@@ -226,7 +226,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 11201 2012-11-07 22:58:26Z peters $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 18071 2015-07-10 14:53:58Z aaronbreneman $'
   
        c_var = [1, 2, 3, 4, 5, 6]
 
@@ -278,7 +278,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 11201 2012-11-07 22:58:26Z peters $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 18071 2015-07-10 14:53:58Z aaronbreneman $'
   
        c_var = [1, 2, 3, 4, 5, 6]
 
@@ -330,7 +330,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 11201 2012-11-07 22:58:26Z peters $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 18071 2015-07-10 14:53:58Z aaronbreneman $'
   
        c_var = [1, 2, 3, 4, 5, 6]
 
@@ -382,7 +382,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 11201 2012-11-07 22:58:26Z peters $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_hsk.pro 18071 2015-07-10 14:53:58Z aaronbreneman $'
   
        c_var = [1, 2, 3, 4, 5, 6]
 

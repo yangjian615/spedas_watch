@@ -68,19 +68,19 @@ FUNCTION SPD_UI_LINE_SETTINGS::Copy
        RETURN, 1
    END
    Struct_Assign, self, out
-   newLineStyle=Obj_New("SPD_UI_LINE_STYLE")
+   ;newLineStyle=Obj_New("SPD_UI_LINE_STYLE")
    IF Obj_Valid(self.lineStyle) THEN newLineStyle=self.LineStyle->Copy() ELSE $
       newLineStyle=Obj_New()
    out->SetProperty, LineStyle=newLineStyle
-   newSymbol=Obj_New("SPD_UI_SYMBOL")
+   ;newSymbol=Obj_New("SPD_UI_SYMBOL")
    IF Obj_Valid(self.symbol) THEN newSymbol=self.symbol->Copy() ELSE $
       newSymbol=Obj_New()
    out->SetProperty, Symbol=newSymbol
-   newBarLine=Obj_New("SPD_UI_LINE_STYLE")
+   ;newBarLine=Obj_New("SPD_UI_LINE_STYLE")
    IF Obj_Valid(self.barLine) THEN newBarLine=self.barLine->Copy() ELSE $
       newBarLine=Obj_New()
    out->SetProperty, BarLine=newBarLine
-   newMarkSymbol=Obj_New("SPD_UI_SYMBOL")
+   ; newMarkSymbol=Obj_New("SPD_UI_SYMBOL")
    IF Obj_Valid(self.markSymbol) THEN newMarkSymbol=self.markSymbol->Copy() ELSE $
       newMarkSymbol=Obj_New()
    out->SetProperty, MarkSymbol=newMarkSymbol
@@ -261,6 +261,7 @@ FUNCTION SPD_UI_LINE_SETTINGS::Init,           $
    self.barLine = barline                   
    self.markSymbol = marksymbol            
   
+   
    if ~keyword_set(nosave) then begin      
       self->save
    endif 

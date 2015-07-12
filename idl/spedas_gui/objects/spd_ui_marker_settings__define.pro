@@ -43,12 +43,12 @@
 FUNCTION SPD_UI_MARKER_SETTINGS::Copy
    out = Obj_New('SPD_UI_MARKER_SETTINGS',/nosave)
    Struct_Assign, self, out
-   newLineStyle=Obj_New("SPD_UI_LINE_STYLE")
+   ;newLineStyle=Obj_New("SPD_UI_LINE_STYLE")
    IF Obj_Valid(self.lineStyle) THEN newLineStyle=self.lineStyle->Copy() ELSE $
       newLineStyle=Obj_New()
    out->SetProperty, LineStyle=newLineStyle
    
-   newLabel = obj_new('spd_ui_text')
+   ;newLabel = obj_new('spd_ui_text')
    If obj_valid(self.label) then newLabel = self.label->copy() else $
      newLabel=Obj_new()
    out->setProperty, label=newLabel

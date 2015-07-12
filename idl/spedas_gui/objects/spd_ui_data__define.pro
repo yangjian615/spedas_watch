@@ -54,9 +54,9 @@
 ;  spd_ui_getset.  You can still call these methods when using objects of type spd_ui_data, and
 ;  call them in the same way as before
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
-;$LastChangedRevision: 17542 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-10 15:11:14 -0700 (Fri, 10 Jul 2015) $
+;$LastChangedRevision: 18081 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -153,9 +153,15 @@ FUNCTION SPD_UI_DATA::Copy
        RETURN, -1
    END
    Struct_Assign, self, out
-   newTime=Obj_New("SPD_UI_TIME_RANGE")
-   IF Obj_Valid(self.timeRange) THEN newTime=self.timeRange->Copy() ELSE $
+  ; the following leaks memory when self.timeRange isn't a valid object
+  ; to my knowledge, this line isn't needed anyway
+  ; newTime=Obj_New("SPD_UI_TIME_RANGE")
+   IF Obj_Valid(self.timeRange) THEN BEGIN
+      newTime=self.timeRange->Copy() 
+   ENDIF ELSE BEGIN 
       newTime=Obj_New()
+   ENDELSE
+   
    out->SetProperty, TimeRange=newTime
    
    if obj_valid(self.settings) then begin
@@ -200,10 +206,14 @@ END ;---------------------------------------------------------------------------
 
 
 
-;PRO SPD_UI_DATA::Cleanup
-;Obj_Destroy, self.timeRange
-;RETURN
-;END ;--------------------------------------------------------------------------------
+PRO SPD_UI_DATA::Cleanup
+    obj_destroy, self.timeRange
+    obj_destroy, self.settings
+    ptr_free, self.dataPtr
+    ptr_free, self.limitPtr
+    ptr_free, self.dlimitPtr
+    RETURN
+END ;--------------------------------------------------------------------------------
 
  
 FUNCTION SPD_UI_DATA::Init,             $ ; The INIT method of the data object.

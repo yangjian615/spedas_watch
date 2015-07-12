@@ -28,7 +28,7 @@ Pro temp_scw_degap, probe, max_degap_dt = max_degap_dt, _extra = _extra
     dtj = x[ppp[j]+1]-x[ppp[j]]
     nfill = long(dtj/dt0)
     If(nfill Eq 1) Then Begin
-        print, 'Gap of:'+dtj+' seconds at time:'
+        print, 'Gap of:'+string(dtj)+' seconds at time:'
         print, time_string(x[ppp[j]])
         print, 'Too small to fill'
         Continue                ;don't fill this small of a gap

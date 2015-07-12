@@ -68,8 +68,8 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-04-09 13:46:37 -0700 (Wed, 09 Apr 2014) $
-;   $LastChangedRevision: 14782 $
+;   $LastChangedDate: 2015-07-10 07:54:25 -0700 (Fri, 10 Jul 2015) $
+;   $LastChangedRevision: 18072 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_uvw_to_mgse.pro $
 ;
 ;-
@@ -83,7 +83,7 @@ pro rbsp_uvw_to_mgse,probe,tvar,suffix=suffix,$
 	
 	rbsp_efw_init
 	
-	probe=string(probe)
+	probe=string(strlowcase(probe))
 	if probe ne 'a' and probe ne 'b' then begin
 		message,'Invalid probe: "'+probe+'". Returning...',/continue
 		return

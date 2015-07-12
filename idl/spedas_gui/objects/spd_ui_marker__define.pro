@@ -32,9 +32,9 @@
 ;  spd_ui_getset.  You can still call these methods when using objects of type spd_ui_marker, and
 ;  call them in the same way as before
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-10 15:57:36 -0700 (Fri, 10 Jul 2015) $
+;$LastChangedRevision: 18083 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_marker__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ FUNCTION SPD_UI_MARKER::Copy
        RETURN, -1
    END
    Struct_Assign, self, out
-   newSettings=Obj_New("SPD_UI_MARKER_SETTINGS")
+  ; newSettings=Obj_New("SPD_UI_MARKER_SETTINGS")
    IF Obj_Valid(self.Settings) THEN newSettings=self.settings->Copy() ELSE $
       newSettings=Obj_New()
    out->SetProperty, Settings=newSettings

@@ -27,13 +27,13 @@
 ;  /VERBOSE  set to output some useful info
 ;  type:  set to 'calibrated' to automatically convert data into physical units
 ;Example:
-;   rbsp_load_efw_spec,/get_suppport_data,probe=['a', 'b']
+;   rbsp_load_efw_spec,/get_support_data,probe=['a', 'b']
 ;Notes:
 ; 1. Written by Peter Schroeder, February 2012
 ;
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2013-04-01 13:54:32 -0700 (Mon, 01 Apr 2013) $
-; $LastChangedRevision: 11927 $
+; $LastChangedDate: 2015-07-10 07:53:08 -0700 (Fri, 10 Jul 2015) $
+; $LastChangedRevision: 18068 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_load_efw_spec.pro $
 ;-
 
@@ -46,12 +46,12 @@ pro rbsp_load_efw_spec,probe=probe, datatype=datatype, trange=trange, $
                  pT=pT
 
 rbsp_efw_init
-dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_spec.pro 11927 2013-04-01 20:54:32Z aaronbreneman $'
+dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_spec.pro 18068 2015-07-10 14:53:08Z aaronbreneman $'
 
 if keyword_set(etu) then probe = 'a'
 
 if(keyword_set(probe)) then $
-  p_var = probe
+  p_var = strlowcase(probe)
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > !rbsp_efw.verbose
@@ -134,7 +134,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_spec.pro 11927 2013-04-01 20:54:32Z aaronbreneman $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_spec.pro 18068 2015-07-10 14:53:08Z aaronbreneman $'
   
        dprint, dwait = 5., verbose = verbose, 'Flushing output'
        dprint, dlevel = 4, verbose = verbose, 'SPEC 32 data Loaded for probe: '+p_var[s]
@@ -197,7 +197,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_spec.pro 11927 2013-04-01 20:54:32Z aaronbreneman $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_spec.pro 18068 2015-07-10 14:53:08Z aaronbreneman $'
   
        dprint, dwait = 5., verbose = verbose, 'Flushing output'
        dprint, dlevel = 4, verbose = verbose, 'SPEC 64 data Loaded for probe: '+p_var[s]
@@ -260,7 +260,7 @@ for s=0,n_elements(p_var)-1 do begin
 
        dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-       options, /def, tns, code_id = '$Id: rbsp_load_efw_spec.pro 11927 2013-04-01 20:54:32Z aaronbreneman $'
+       options, /def, tns, code_id = '$Id: rbsp_load_efw_spec.pro 18068 2015-07-10 14:53:08Z aaronbreneman $'
   
        dprint, dwait = 5., verbose = verbose, 'Flushing output'
        dprint, dlevel = 4, verbose = verbose, 'SPEC 112 data Loaded for probe: '+p_var[s]

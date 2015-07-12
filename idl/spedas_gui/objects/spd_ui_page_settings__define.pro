@@ -78,27 +78,27 @@ FUNCTION SPD_UI_PAGE_SETTINGS::Copy
    out = Obj_New("SPD_UI_PAGE_SETTINGS",/nosave)
    Struct_Assign, self, out
    ; copy title
-   newTitle=Obj_New("SPD_UI_TEXT")
+   ;newTitle=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.title) THEN newTitle=self.title->Copy() ELSE $
       newTitle=Obj_New()
    out->SetProperty, Title=newTitle
    ; copy labels
-   newLabel=Obj_New("SPD_UI_TEXT")
+   ;newLabel=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.labels) THEN newLabel=self.labels->Copy() ELSE $
       newLabel=Obj_New()
    out->SetProperty, Labels=newLabel
    ; copy Variables
-   newVariables=Obj_New("SPD_UI_TEXT")
+   ;newVariables=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.variables) THEN newVariables=self.variables->Copy() ELSE $
       newVariables=Obj_New()
    out->SetProperty, Variables=newVariables
    ; copy footer
-   newFooter=Obj_New("SPD_UI_TEXT")
+   ;newFooter=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.footer) THEN newFooter=self.footer->Copy() ELSE $
       newFooter=Obj_New()
    out->SetProperty, Footer=newFooter
    ; copy marker
-   newMarker=Obj_New("SPD_UI_TEXT")
+   ;newMarker=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.Marker) THEN newMarker=self.Marker->Copy() ELSE $
       newMarker=Obj_New()
    out->SetProperty, Marker=newMarker
@@ -238,6 +238,7 @@ FUNCTION SPD_UI_PAGE_SETTINGS::GetTokenValue, index
    timeObj = Obj_New("SPD_UI_TIME")
    timeObj->GetProperty, TString=timeString
    timeStruc = timeObj->GetStructure()
+   obj_destroy, timeObj
    
    CASE index OF
       0: titleValue = StrMid(timeString, 11, 8)   

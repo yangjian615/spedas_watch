@@ -115,8 +115,8 @@
 ; in outputs to tplot section, mode has been replaced by strlowcase(mode)
 ;
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-07-08 12:43:19 -0700 (Wed, 08 Jul 2015) $
-;$LastChangedRevision: 18037 $
+;$LastChangedDate: 2015-07-10 10:08:44 -0700 (Fri, 10 Jul 2015) $
+;$LastChangedRevision: 18073 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_scm.pro $
 ;-
 
@@ -855,9 +855,9 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
             thscs_cleaned = thx_scx+'cl_sp'
             store_data, thscs_cleaned, data = thscs_cl_sp, dl = dl
 
-            xfo      = thscs_cl_sp.y(*, 0)
-            yfo      = thscs_cl_sp.y(*, 1)
-            zfo      = thscs_cl_sp.y(*, 2)
+            xfo      = thscs_cl_sp.y[*, 0]
+            yfo      = thscs_cl_sp.y[*, 1]
+            zfo      = thscs_cl_sp.y[*, 2]
             nbpts_cl_sp = n_elements(thscs_cl_sp.x)
           end
         endcase
