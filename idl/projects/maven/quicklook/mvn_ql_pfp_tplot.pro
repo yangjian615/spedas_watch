@@ -51,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-05 14:25:04 -0700 (Sun, 05 Jul 2015) $
-; $LastChangedRevision: 18019 $
+; $LastChangedDate: 2015-07-12 16:03:57 -0700 (Sun, 12 Jul 2015) $
+; $LastChangedRevision: 18087 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -416,15 +416,13 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   ; MAG 
   bvec = 'mvn_mag_bmso_1sec'
   IF (mflg) THEN BEGIN
-     lvl = 'L2'
-     mvn_mag_load, 'L2_1sec', trange=trange
-     tname = tnames('mvn_B*', ntplot)
-     IF ntplot EQ 0 THEN BEGIN
-        mvn_mag_load, 'L1_1sec', trange=trange
-        lvl = 'L1'
-     ENDIF 
+     mvn_mag_load, trange=trange
      tname = tnames('mvn_B*', ntplot)
      IF ntplot GT 0 THEN BEGIN
+        get_data, tname, alim=alim
+        lvl = alim.level
+        undefine, alim
+
         status = EXECUTE("spice_vector_rotate_tplot, 'mvn_B_1sec', 'MAVEN_MSO', trange=trange, verbose=verbose")
         IF status EQ 1 THEN BEGIN 
            store_data, 'mvn_B_1sec', /delete, verbose=verbose
