@@ -265,6 +265,12 @@ pro spd_ui_scroll_bar::update
 
 end ;------------------------------------------
 
+pro spd_ui_scroll_bar::Cleanup
+    ptr_free, self.windowstorage
+    ptr_free, self.loadeddata
+    ptr_free, self.drawobject
+    ptr_free, self.statusbar
+end
 
 function spd_ui_scroll_bar::init, $
                           parent, $

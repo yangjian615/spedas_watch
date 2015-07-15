@@ -3,20 +3,27 @@
 ;       mvn_ngi_load
 ; PURPOSE:
 ;       Loads NGIMS L2 data
-;       Time-series densities for each mass will be storead in tplot variables:
-;       'mvn_ngi_(filetype)_(focusmode)_abundance_mass???'
-;       Each column in csv files will be stored in 'mvn_ngi_(filetype)_(focusmode)_(tagname)'
+;       Each column in csv files will be stored in tplot variables:
+;          'mvn_ngi_(filetype)_(focusmode)_(tagname)'
+;       Time-series densities for each mass will be storead in
+;          'mvn_ngi_(filetype)_(focusmode)_abundance_mass???'
+;       If /mspec is set, mass spectrograms are stored in
+;          'mvn_ngi_(filetype)_(focusmode)_abundance_mspec'
 ; CALLING SEQUENCE:
 ;       mvn_ngi_load
 ; INPUTS:
 ;       None
 ; OPTIONAL KEYWORDS:
+;       mspec: if set, generates mass spectrograms instead of each time series
 ;       trange: time range (if not present then timerange() is called)
 ;       filetype: (Def. ['csn','cso','ion'])
 ;       files: paths to local files to read in
 ;              if set, does not retreive files from server
 ;              if multiple versions are found, the latest version file will be loaded
 ;       cps_dt: generates cps_dt tplot variables for each unique mass
+;       nolatest: skip latest version check (not recommended)
+;       version: string of two digit version number (e.g., '04')
+;       revision: string of two digit revision number (e.g., '03')
 ;       other keywords are passed to 'mvn_pfp_file_retrieve'
 ; CREATED BY:
 ;       Yuki Harada on 2015-01-29
@@ -25,21 +32,24 @@
 ;       Use 'mvn_ngi_read_csv' to load ql data
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-05-19 14:14:18 -0700 (Tue, 19 May 2015) $
-; $LastChangedRevision: 17649 $
+; $LastChangedDate: 2015-07-13 13:19:37 -0700 (Mon, 13 Jul 2015) $
+; $LastChangedRevision: 18105 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_load.pro $
 ;-
 
-pro mvn_ngi_load, trange=trange, filetype=filetype, verbose=verbose, _extra=_extra, files=files, cps_dt=cps_dt
+pro mvn_ngi_load, mspec=mspec, trange=trange, filetype=filetype, verbose=verbose, _extra=_extra, files=files, cps_dt=cps_dt, nolatest=nolatest, version=version, revision=revision
 
   if ~keyword_set(filetype) then filetype = ['csn','cso','ion']
-
+  if ~keyword_set(nolatest) and ~keyword_set(version) and ~keyword_set(revision) then latest_flg = 1
+  if ~keyword_set(version) then version = '??'   ;- to be overwritten by latest version unless /nolatest is set
+  if ~keyword_set(revision) then revision = '??' ;- to be overwritten by latest revision unless /nolatest is set
 
   for i_filetype=0,n_elements(filetype)-1 do begin
 
 ;- retrieve files
      if ~keyword_set(files) then begin
-        pformat = 'maven/data/sci/ngi/l2/YYYY/MM/mvn_ngi_l2_'+filetype[i_filetype]+'-abund-*_YYYYMMDDThh????_v??_r??.csv'
+        if keyword_set(latest_flg) then urls = mvn_ngi_remote_list(trange=trange,filetype=filetype[i_filetype],latestversion=version,latestrevision=revision,_extra=_extra,verbose=verbose)
+        pformat = 'maven/data/sci/ngi/l2/YYYY/MM/mvn_ngi_l2_'+filetype[i_filetype]+'-abund-*_YYYYMMDDThh????_v'+version+'_r'+revision+'.csv'
         f = mvn_pfp_file_retrieve(pformat,/hourly_names,/last_version,/valid_only,trange=trange,verbose=verbose, _extra=_extra)
      endif else begin ;- local files
         w = where( strmatch(files,'*'+filetype[i_filetype]+'*',/fold_case) eq 1, nw )
@@ -127,11 +137,13 @@ pro mvn_ngi_load, trange=trange, filetype=filetype, verbose=verbose, _extra=_ext
            idx = where( mass eq uniqmass[i_mass] and focusmode eq modes[i_mode],idx_cnt )
            if idx_cnt eq 0 then continue
            if long(uniqmass[i_mass]) eq uniqmass[i_mass] then massstr = string(uniqmass[i_mass],f='(i3.3)') else massstr = string(uniqmass[i_mass],f='(i3.3)')+'_'+string((uniqmass[i_mass]-long(uniqmass[i_mass]))*1000,f='(i3.3)')
-           store_data,verbose=verbose,'mvn_ngi_'+filetype[i_filetype]+'_'+modes[i_mode]+'_abundance_mass'+massstr,data={x:t_unix[idx],y:abundance[idx]}
-           if keyword_set(cps_dt) then if total(finite(qcps_dt)) gt 0 then store_data,verbose=verbose,'mvn_ngi_'+filetype[i_filetype]+'_'+modes[i_mode]+'_cps_dt_mass'+massstr,data={x:t_unix[idx],y:qcps_dt[idx]}
+           store_data,verbose=verbose,'mvn_ngi_'+filetype[i_filetype]+'_'+modes[i_mode]+'_abundance_mass'+massstr,data={x:t_unix[idx],y:abundance[idx]},dlim={mass:uniqmass[i_mass],filetype:filetype[i_filetype],focusmode:modes[i_mode]}
+           if keyword_set(cps_dt) then if total(finite(qcps_dt)) gt 0 then store_data,verbose=verbose,'mvn_ngi_'+filetype[i_filetype]+'_'+modes[i_mode]+'_cps_dt_mass'+massstr,data={x:t_unix[idx],y:qcps_dt[idx]},dlim={mass:uniqmass[i_mass],filetype:filetype[i_filetype],focusmode:modes[i_mode]}
         endfor                  ;- i_mass
      endfor                     ;- i_mode
 
   endfor                        ;- i_filetype
+
+  if keyword_set(mspec) then mvn_ngi_mspec,/del
 
 end

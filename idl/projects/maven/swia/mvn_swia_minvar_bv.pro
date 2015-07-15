@@ -14,8 +14,8 @@
 ;AUTHOR:	J. Halekas	
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-12 06:27:49 -0800 (Fri, 12 Dec 2014) $
-; $LastChangedRevision: 16477 $
+; $LastChangedDate: 2015-07-13 14:28:53 -0700 (Mon, 13 Jul 2015) $
+; $LastChangedRevision: 18109 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_minvar_bv.pro $
 ;
 ;-
@@ -40,6 +40,10 @@ get_data,vdata,data  = vel
 
 vin = transpose(vel.y)
 vout = vin
+
+print,eig(*,0)
+print,eig(*,1)
+print,eig(*,2)
 
 vout(0,*) = eig(0,0)*vin(0,*) + eig(1,0)*vin(1,*) + eig(2,0)*vin(2,*)
 vout(1,*) = eig(0,1)*vin(0,*) + eig(1,1)*vin(1,*) + eig(2,1)*vin(2,*)

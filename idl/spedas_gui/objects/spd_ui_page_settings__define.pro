@@ -81,27 +81,28 @@ FUNCTION SPD_UI_PAGE_SETTINGS::Copy
    ;newTitle=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.title) THEN newTitle=self.title->Copy() ELSE $
       newTitle=Obj_New()
-   out->SetProperty, Title=newTitle
+   if obj_valid(newTitle) then out->SetProperty, Title=newTitle
    ; copy labels
    ;newLabel=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.labels) THEN newLabel=self.labels->Copy() ELSE $
       newLabel=Obj_New()
-   out->SetProperty, Labels=newLabel
+   if obj_valid(newLabel) then out->SetProperty, Labels=newLabel
    ; copy Variables
    ;newVariables=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.variables) THEN newVariables=self.variables->Copy() ELSE $
       newVariables=Obj_New()
-   out->SetProperty, Variables=newVariables
+   if obj_valid(newVariables) then out->SetProperty, Variables=newVariables
    ; copy footer
    ;newFooter=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.footer) THEN newFooter=self.footer->Copy() ELSE $
       newFooter=Obj_New()
-   out->SetProperty, Footer=newFooter
+   if obj_valid(newFooter) then out->SetProperty, Footer=newFooter
    ; copy marker
    ;newMarker=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.Marker) THEN newMarker=self.Marker->Copy() ELSE $
       newMarker=Obj_New()
-   out->SetProperty, Marker=newMarker
+   if obj_valid(newMarker) then out->SetProperty, Marker=newMarker
+   
    RETURN, out
 END ;--------------------------------------------------------------------------------
 
@@ -156,13 +157,15 @@ FUNCTION SPD_UI_PAGE_SETTINGS::GetTitleString
   compile_opt idl2
 
   self->GetProperty, title=title
+  if ~obj_valid(title) then return, ''
   title->GetProperty, Value=value
 
   value = self->interpolateTitle(value) 
 
   out = title->copy()
   out->setProperty,value=value
-
+  obj_destroy, title
+  
   RETURN,out
 
 END  ;----------------------------------------------------------------------------------
@@ -176,13 +179,14 @@ FUNCTION SPD_UI_PAGE_SETTINGS::GetFooterString
   compile_opt idl2
 
   self->GetProperty, footer=footer
+  if ~obj_valid(footer) then return, ''
   footer->GetProperty, Value=value
 
   value = self->interpolateTitle(value) 
 
   out = footer->copy()
   out->setProperty,value=value
-
+  obj_destroy, footer
   RETURN,out
 
 END  ;----------------------------------------------------------------------------------
@@ -319,7 +323,8 @@ PRO SPD_UI_PAGE_SETTINGS::Save
    if ptr_valid(self.origSettings) then ptr_free,self.origSettings
    
    self.origSettings = ptr_new(obj->getall())
-      
+   obj_destroy, obj
+   ;heap_gc, /verbose
 RETURN
 END ;--------------------------------------------------------------------------------
 
@@ -369,6 +374,14 @@ PRO SPD_UI_PAGE_SETTINGS::Reset
 RETURN
 END ;--------------------------------------------------------------------------------
 
+;PRO SPD_UI_PAGE_SETTINGS::Cleanup
+;    obj_destroy, self.title
+;    obj_destroy, self.labels
+;    obj_destroy, self.variables
+;    obj_destroy, self.footer
+;    obj_destroy, self.marker
+;    ptr_free, self.origSettings
+;END
 
 FUNCTION SPD_UI_PAGE_SETTINGS::Init,       $
       Title=title,                         $ ; text object for title
@@ -487,11 +500,11 @@ FUNCTION SPD_UI_PAGE_SETTINGS::Init,       $
    self.skipBlanks = skipblanks  
 
    if ~keyword_set(nosave) then self->save
-   
    ; Alternative fix for idl 8.1 problems, proposed by ITT. 
    ; Not using this fix. Making changes to reset method instead.
    ; if !version.release ge 8 then void=HEAP_REFCOUNT(self, /DISABLE)
    
+   ;heap_gc, /verbose
 RETURN, 1
 END ;--------------------------------------------------------------------------------
 

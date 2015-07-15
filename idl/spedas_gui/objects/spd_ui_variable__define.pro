@@ -42,9 +42,9 @@
 ;
 ;
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-13 16:07:09 -0700 (Mon, 13 Jul 2015) $
+;$LastChangedRevision: 18115 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_variable__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -59,10 +59,10 @@ FUNCTION SPD_UI_VARIABLE::Copy
        RETURN, -1
    END
    Struct_Assign, self, out
-   newText=Obj_New("SPD_UI_TEXT")
+   ; newText=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.text) THEN newText=self.text->Copy() ELSE $
       newText=Obj_New()
-   out->SetProperty, Text=newText
+   if obj_valid(newText) then out->SetProperty, Text=newText
    RETURN, out
 END ;--------------------------------------------------------------------------------
 
@@ -146,8 +146,9 @@ PRO SPD_UI_VARIABLE::Save
     ptr_free,self.origsettings
   endif
   self.origsettings = ptr_new(copy->getAll())
+  obj_destroy, copy
       
-RETURN
+  RETURN
 END ;--------------------------------------------------------------------------------
 
 PRO SPD_UI_VARIABLE::Reset
@@ -163,8 +164,8 @@ END ;---------------------------------------------------------------------------
 
 
 PRO SPD_UI_VARIABLE::Cleanup
-;Obj_Destroy, self.text
-;RETURN
+    Obj_Destroy, self.text
+    RETURN
 END ;--------------------------------------------------------------------------------
 
 

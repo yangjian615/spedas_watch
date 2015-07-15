@@ -63,11 +63,11 @@ FUNCTION SPD_UI_HIGHLIGHT_SETTINGS::Copy
        RETURN, -1
    END
    Struct_Assign, self, out
-   newLineStyle=Obj_New("SPD_UI_LINE_STYLE")
+  ; newLineStyle=Obj_New("SPD_UI_LINE_STYLE")
    IF Obj_Valid(self.lineStyle) THEN newLineStyle=self.lineStyle->Copy() ELSE $
       newLineStyle=Obj_New()
    out->SetProperty, LineStyle=newLineStyle
-   newSymbol=Obj_New("SPD_UI_SYMBOL")
+  ; newSymbol=Obj_New("SPD_UI_SYMBOL")
    IF Obj_Valid(self.symbol) THEN newSymbol=self.symbol->Copy() ELSE $
       newSymbol=Obj_New()
    out->SetProperty, Symbol=newSymbol

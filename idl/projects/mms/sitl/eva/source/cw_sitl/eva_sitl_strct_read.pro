@@ -5,14 +5,19 @@
 ;   tstart: the start time
 ;   
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-18 21:39:05 -0700 (Thu, 18 Jun 2015) $
-; $LastChangedRevision: 17918 $
+; $LastChangedDate: 2015-07-13 13:25:19 -0700 (Mon, 13 Jul 2015) $
+; $LastChangedRevision: 18107 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_read.pro $
 Function eva_sitl_strct_read, s, tstart, $
   isPending=isPending, inPlaylist=inPlaylist, status=status, quiet=quiet
   compile_opt idl2
   
-  if n_elements(status) eq 0 then status = '' else status = strlowcase(status)
+  if n_elements(status) eq 0 then begin 
+    status = '' 
+  endif else begin
+    status = strlowcase(status)
+    if strmatch(status,'*overwritten*') then status = 'demoted'
+  endelse
   
   
   ; determine FOMStr or BAKStr
@@ -34,6 +39,10 @@ Function eva_sitl_strct_read, s, tstart, $
       fom_y = [fom_y, 0., s.FOM[N], s.FOM[N], 0.]
     endfor 
   endif else begin
+
+    ;---------------------
+    ; HEADER (in console)
+    ;---------------------    
     if (not keyword_set(quiet)) then begin
       title = strupcase(status)
       if keyword_set(isPending) then title = 'PENDING'
@@ -44,6 +53,10 @@ Function eva_sitl_strct_read, s, tstart, $
       if (strmatch(status,'complete') or strmatch(status,'finished')) then str1 = ', finish time        ' 
       print, 'EVA: segID, start time         , FOM    '+str1+', sourceID'
     endif
+    
+    ;-------------------
+    ; SCAN each segment
+    ;-------------------
     ct = 0
     for N=0,Nsegs-1 do begin
       OK = 1
@@ -53,6 +66,8 @@ Function eva_sitl_strct_read, s, tstart, $
       if (strpos(strlowcase(s.STATUS[N]),'incomplete') ge 0) and strmatch(status,'complete') then OK = 0
       
       if OK then begin
+        
+        ; get the data
         fv = (strpos(strlowcase(s.STATUS[N]),'deleted') ge 0) ? 0 : s.FOM[N]
         if strmatch(status,'deleted') then fv = s.FOM[N]
         ss = double(s.START[N])
@@ -62,12 +77,17 @@ Function eva_sitl_strct_read, s, tstart, $
         
         ; output in console
         if not keyword_set(quiet) then begin
-          strN = string(N, format='(I5)')
-          strF = string(s.FOM[N], format='(F7.3)')
+          strN = string(N, format='(I5)'); segment number
+          strF = string(s.FOM[N], format='(F7.3)'); FOM value
           strout = 'EVA: '+strN+': '+time_string(ss)+', '+strF
           if strlen(str1) gt 0 then strout += ', '+s.FINISHTIME[N]
-          print, strout+', '+s.SOURCEID[N]
+          if strlen(status) eq 0 then begin
+            print, strout+', '+s.SOURCEID[N]
+          endif else begin
+            print, strout+', '+s.STATUS[N]
+          endelse
         endif
+        
         ct += 1
       endif
     endfor

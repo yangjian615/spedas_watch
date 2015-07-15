@@ -80,9 +80,8 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
       idx = where(strmatch(unix_BAKStr_org.STATUS,"*trimmed*"),ct_trimmed)
       idx = where(strmatch(unix_BAKStr_org.STATUS,"*subsumed*"),ct_subsumed)
       if (ct_trimmed+ct_subsumed gt 0) then begin
-        msg = ['TRIMMED or SUBSUMED segment detected.','']
-        msg = [msg,'There may have been an error at SDC.']
-        msg = [msg,'Please notify Super-SITL.']
+        msg = ['Overlapped (TRIMMED or SUBSUMED) segments detected.','']
+        msg = [msg,'Please notify SOC.']
         result = dialog_message(msg,/center)
       endif
     endelse

@@ -28,9 +28,9 @@
 ; SetEndTime   set end time
 ;HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-13 09:09:53 -0700 (Mon, 13 Jul 2015) $
+;$LastChangedRevision: 18094 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_time_range__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -38,8 +38,8 @@
 
 FUNCTION SPD_UI_TIME_RANGE::Copy
    out=Obj_New("SPD_UI_TIME_RANGE")
-   newStart=Obj_New("SPD_UI_TIME")
-   newEnd=Obj_New("SPD_UI_TIME")
+  ; newStart=Obj_New("SPD_UI_TIME")
+  ; newEnd=Obj_New("SPD_UI_TIME")
    IF Obj_Valid(self.startTime) THEN newStart = self.startTime->Copy() ELSE $
       newStart = Obj_New()
    IF Obj_Valid(self.endTime) THEN newEnd = self.endTime->Copy() ELSE $
@@ -105,8 +105,8 @@ END ;---------------------------------------------------------------------------
 
 
 PRO SPD_UI_TIME_RANGE::Cleanup
-;Obj_Destroy, self.startTime
-;Obj_Destroy, self.endTime
+    Obj_Destroy, self.startTime
+    Obj_Destroy, self.endTime
 END ;--------------------------------------------------------------------------------
 
 

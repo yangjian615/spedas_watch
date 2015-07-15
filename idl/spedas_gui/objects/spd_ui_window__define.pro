@@ -38,9 +38,9 @@
 ;  spd_ui_getset.  You can still call these methods when using objects of type spd_ui_window, and
 ;  call them in the same way as before
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-13 15:01:15 -0700 (Mon, 13 Jul 2015) $
+;$LastChangedRevision: 18111 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_window__define.pro $
 ;-----------------------------------------------------------------------------------
 

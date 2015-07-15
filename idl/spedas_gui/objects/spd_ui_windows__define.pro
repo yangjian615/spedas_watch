@@ -45,9 +45,9 @@
 ;  
 ;HISTORY:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-13 09:37:27 -0700 (Mon, 13 Jul 2015) $
+;$LastChangedRevision: 18098 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_windows__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -593,11 +593,13 @@ pro spd_ui_windows::updatedatareference,oldnames,newnames
 
 end
 
-;PRO SPD_UI_WINDOWS::Cleanup
-;Ptr_Free, self.windowObjs
-;Ptr_Free, self.windowButtons
-;Ptr_Free, self.windowNames
-;END ;--------------------------------------------------------------------------------
+PRO SPD_UI_WINDOWS::Cleanup
+    Ptr_Free, self.windowObjs
+    Ptr_Free, self.windowButtons
+    Ptr_Free, self.windowNames
+    obj_destroy, self.template
+    obj_destroy, self.callSequence
+END ;--------------------------------------------------------------------------------
 
 
 

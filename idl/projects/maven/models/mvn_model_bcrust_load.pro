@@ -46,8 +46,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-04-29 12:56:13 -0700 (Wed, 29 Apr 2015) $
-; $LastChangedRevision: 17449 $
+; $LastChangedDate: 2015-07-13 06:37:58 -0700 (Mon, 13 Jul 2015) $
+; $LastChangedRevision: 18088 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/models/mvn_model_bcrust_load.pro $
 ;
 ;-
@@ -95,7 +95,8 @@ PRO mvn_model_bcrust_load, var, orbit=orbit, silent=sl, verbose=vb, calc=calc, s
         IF SIZE(calc, /type) EQ 0 THEN BEGIN
            PRINT, ptrace()
            PRINT, '  It seems that the tplot save files have not been generated yet.' 
-           READ,  '  Do you want to calculate now (Yes=1 / No=0)?: ', yes 
+           result = EXECUTE("READ,  '  Do you want to calculate now (Yes=1 / No=0)?: ', yes ")
+           IF result EQ 0 THEN yes = 0
         ENDIF ELSE yes = 0
      ENDELSE 
      IF yes EQ 1 THEN BEGIN

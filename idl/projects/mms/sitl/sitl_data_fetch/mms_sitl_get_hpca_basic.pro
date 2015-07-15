@@ -3,16 +3,18 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-09 15:26:09 -0700 (Thu, 09 Jul 2015) $
-;  $LastChangedRevision: 18056 $
+;  $LastChangedDate: 2015-07-13 16:11:30 -0700 (Mon, 13 Jul 2015) $
+;  $LastChangedRevision: 18117 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_hpca_basic.pro $
 
 
-pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
+pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload, $
+  level = level, include_level = include
 
 
   
-  ;sc_id = 'mms1'
+ ; print, 'sc_id= ', sc_id
+  ;print, 'level= ', level
 
 
   date_strings = mms_convert_timespan_to_date()
@@ -24,7 +26,8 @@ pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
     'conflicting and should never be used simultaneously.'
 
 
-  level = 'l1b'
+  ;level = 'l1b'
+  if ~keyword_set(level) then level = 'l1b'
   mode = 'srvy'
 
   ; See if spacecraft id is set
@@ -114,39 +117,17 @@ pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
       hpca_struct = mms_sitl_open_hpca_basic_cdf(files_open(0))
 ;print, hpca_struct
       times = hpca_struct.times
-;      ispec = *cdr_str.vars(32).ispec
-;      datav = hpca_struct.data  
+
       ispec = hpca_struct.data
-      ispecname = 'mms1_hpca_hplus_RF_corrected'
+      ispecname = sc_id(j)+'_hpca_hplus_RF_corrected'
       aspec = hpca_struct.data2
-      aspecname = 'mms1_hpca_heplusplus_RF_corrected'
-      hespec = hpca_struct.data3
-      hespecname = 'mms1_hpca_heplus_RF_corrected'
+      aspecname = sc_id(j)+'_hpca_heplusplus_RF_corrected'
+
       ospec = hpca_struct.data4
-      ospecname = 'mms1_hpca_oplus_RF_corrected'
-;      ispec = hpca_struct.ispec
-;      hplus = *cdr_str.vars(15).hplus
-;      hplus = hpca_struct.hplus
-;      hplusname = hpca_struct.hplusname
+      ospecname = sc_id(j)+'_hpca_oplus_RF_corrected'
 
-;help, hpca_struct,/st  
-;stop
 
-;copied from fpi get
-
-;      epadm = hpca_struct.epadm
-;      epadh = hpca_struct.epadh
-;      ndens = hpca_struct.ndens
-;      padval = hpca_struct.padval
       energies = hpca_struct.energies
-;      vdsc = hpca_struct.vdsc
-;      ispecname = hpca_struct.ispecname
-;      especname = hpca_struct.especname
-;      densname = hpca_struct.densname
-;      epadmname = hpca_struct.epadmname
-;      epadhname = hpca_struct.epadhname
-;     vname = hpca_struct.vname
-
 
       ; Concatenate data if more than one file
       if n_elements(files_open) gt 1 then begin
@@ -156,21 +137,13 @@ pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
 ;          hplus_count_rate = [hplus_count_rate, temp_struct.hplus_count_rate]
           ispec = [ispec, temp_struct.data]
           aspec = [aspec, temp_struct.data2]
-          hespec = [hespec, temp_struct.data3]
           ospec = [ospec, temp_struct.data4]
 
-;          datav = [datav, temp_struct.data]  
-          
-;          epadm = [epadm, temp_struct.epadm]
-;          epadh = [epadh, temp_struct.epadh]
-;          ndens = [ndens, temp_struct.ndens]
-;          vdsc = [vdsc, temp_struct.vdsc]
         endfor
       endif
       
   ispec = ispec[*,*,0]
   aspec = aspec[*,*,0]
-  hespec = hespec[*,*,0]
   ospec = ospec[*,*,0]
   
   for m = 0, n_elements(files_open)-1 do begin
@@ -190,18 +163,9 @@ pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
     endfor
   endfor
  
-
-;      store_data, hspecname, data = {x:times, y:hpluscounts, v:energies}
-;      store_data, ispecname, data = {x:times, y:ispec, v:energies}
       store_data, ispecname, data = {x:times, y:ispec, v:energies}
       store_data, aspecname, data = {x:times, y:aspec, v:energies}
-      store_data, hespecname, data = {x:times, y:hespec, v:energies}
       store_data, ospecname, data = {x:times, y:ospec, v:energies}
-
- ;     store_data, epadmname, data = {x:times, y:epadm, v:padval}
- ;     store_data, epadhname, data = {x:times, y:epadh, v:padval}
- ;     store_data, densname, data = {x:times, y:ndens}
- ;     store_data, vname, data = {x:times, y:vdsc}
 
  
 print, min(ispec)

@@ -5,9 +5,9 @@
 ;PURPOSE:
 ; A widget to display the all messages generated during this session
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-29 12:47:11 -0700 (Thu, 29 May 2014) $
-;$LastChangedRevision: 15259 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-13 08:15:04 -0700 (Mon, 13 Jul 2015) $
+;$LastChangedRevision: 18090 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_history__define.pro $
 ;+ 
 ;NAME: 
@@ -45,9 +45,9 @@
 
 ;HISTORY:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-29 12:47:11 -0700 (Thu, 29 May 2014) $
-;$LastChangedRevision: 15259 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-07-13 08:15:04 -0700 (Mon, 13 Jul 2015) $
+;$LastChangedRevision: 18090 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_history__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -360,6 +360,11 @@ pro spd_ui_history::saveHistoryFile
   endwhile
 
 end
+
+pro SPD_UI_HISTORY::Cleanup
+    ptr_free, self.messages
+end
+
 
 FUNCTION SPD_UI_HISTORY::Init,       $ ; The INIT method of the bar object.
             menuID,                  $ ; id of checked menu button, required

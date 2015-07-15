@@ -75,15 +75,15 @@ FUNCTION SPD_UI_ZAXIS_SETTINGS::Copy
        RETURN, -1
    END
    Struct_Assign, self, out   
-   newLabel=Obj_New("SPD_UI_TEXT")
+   ;newLabel=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.labelTextObject) THEN newLabel=self.labelTextObject->Copy() ELSE $
       newLabel=Obj_New()
    out->SetProperty, LabelTextObject=newLabel
-   newsubtitle=Obj_New("SPD_UI_TEXT")
+   ;newsubtitle=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.subtitleTextObject) THEN newsubtitle=self.subtitleTextObject->Copy() ELSE $
       newsubtitle=Obj_New()
    out->SetProperty, subtitleTextObject=newsubtitle
-   newAnnotate=Obj_New("SPD_UI_TEXT")
+   ;newAnnotate=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.annotateTextObject) THEN newAnnotate=self.annotateTextObject->Copy() ELSE $
       newAnnotate=Obj_New()
    out->SetProperty, AnnotateTextObject=newAnnotate  
@@ -98,7 +98,7 @@ PRO SPD_UI_ZAXIS_SETTINGS::Save
     ptr_free,self.origsettings
   endif
   self.origsettings = ptr_new(copy->getall()) 
-  
+  obj_destroy, copy
 RETURN    
 END ;--------------------------------------------------------------------------------
 
@@ -184,6 +184,13 @@ END ;---------------------------------------------------------------------------
 ;  if (*self.origsettings).touchedautoticks ne self.minorticknum then self.touchedminorticknum = 1
 ;  
 ;end
+PRO SPD_UI_ZAXIS_SETTINGS::Cleanup
+    obj_destroy, self.annotateTextObject
+    obj_destroy, self.labelTextObject
+    obj_destroy, self.subtitleTextObject
+    ptr_free, self.origsettings
+    RETURN
+END
 
 FUNCTION SPD_UI_ZAXIS_SETTINGS::Init, $
                                   xAxisIndex=xAxisIndex, $

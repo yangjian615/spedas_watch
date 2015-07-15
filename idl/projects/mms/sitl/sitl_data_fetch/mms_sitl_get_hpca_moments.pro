@@ -3,12 +3,13 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-07 15:51:11 -0700 (Tue, 07 Jul 2015) $
-;  $LastChangedRevision: 18033 $
+;  $LastChangedDate: 2015-07-13 16:11:30 -0700 (Mon, 13 Jul 2015) $
+;  $LastChangedRevision: 18117 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_hpca_moments.pro $
 
 
-pro mms_sitl_get_hpca_moments, sc_id=sc_id, no_update = no_update, reload = reload
+pro mms_sitl_get_hpca_moments, sc_id=sc_id, no_update = no_update, reload = reload, $
+  level = level;, include_level = include
 
 
   
@@ -24,7 +25,9 @@ pro mms_sitl_get_hpca_moments, sc_id=sc_id, no_update = no_update, reload = relo
     'conflicting and should never be used simultaneously.'
 
 
-  level = 'l1b'
+;  level = 'l1b'
+  if ~keyword_set(level) then level = 'l1b'
+  
   mode = 'srvy'
 
   ; See if spacecraft id is set
@@ -49,10 +52,6 @@ pro mms_sitl_get_hpca_moments, sc_id=sc_id, no_update = no_update, reload = relo
     endif
   endelse
 
-
- 
-
-  ;hpca_status = intarr(n_elements(sc_id))
 
   for j = 0, n_elements(sc_id)-1 do begin
 
@@ -99,6 +98,9 @@ pro mms_sitl_get_hpca_moments, sc_id=sc_id, no_update = no_update, reload = relo
         mode, 'hpca', level, sc_id(j), optional_descriptor='moments'
     endif
 
+print, 'local_flist= ', local_flist
+
+
     if login_flag eq 0 or file_flag eq 0 then begin
       ; We can safely verify that there is some data file to open, so lets do it
 
@@ -109,71 +111,54 @@ pro mms_sitl_get_hpca_moments, sc_id=sc_id, no_update = no_update, reload = relo
       endelse
       ; Now we can open the files and create tplot variables
       ; First, we open the initial file
-      
-      
+         
       hpca_struct = mms_sitl_open_hpca_moments_cdf(files_open(0))
 ;print, hpca_struct
       times = hpca_struct.times
       hdens = hpca_struct.data5
-      hdensname = 'mms1_hpca_hplus_number_density'
-      adens = hpca_struct.data6
-      adensname = 'mms1_hpca_heplusplus_number_density'
-      hedens = hpca_struct.data7
-      hedensname = 'mms1_hpca_heplus_number_density'
+      hdensname = sc_id(j)+'_hpca_hplus_number_density'
       odens = hpca_struct.data8
-      odensname = 'mms1_hpca_oplus_number_density'
+      odensname = sc_id(j)+'_hpca_oplus_number_density'
       hvel = hpca_struct.data20
-      hvelname = 'mms1_hpca_hplus_bulk_velocity'
-      avel = hpca_struct.data21
-      avelname = 'mms1_hpca_heplusplus_bulk_velocity'
-      hevel = hpca_struct.data22
-      hevelname = 'mms1_hpca_heplus_bulk_velocity'
+      hvelname = sc_id(j)+'_hpca_hplus_bulk_velocity'
       ovel = hpca_struct.data23
-      ovelname = 'mms1_hpca_oplus_bulk_velocity'
-
-
-
+      ovelname = sc_id(j)+'_hpca_oplus_bulk_velocity'
+      htemp = hpca_struct.data24
+      htempname = sc_id(j)+'_hpca_hplus_scalar_temperature'      
+      otemp = hpca_struct.data25      
+      otempname = sc_id(j)+'_hpca_oplus_scalar_temperature'
+            
       ; Concatenate data if more than one file
       if n_elements(files_open) gt 1 then begin
         for i = 1, n_elements(files_open)-1 do begin
           temp_struct = mms_sitl_open_hpca_moments_cdf(files_open(i))
           times = [times, temp_struct.times]
              hdens = [hdens, temp_struct.data5]
-             adens = [adens, temp_struct.data6]
-             hedens = [hedens, temp_struct.data7]
              odens = [odens, temp_struct.data8]
              hvel = [hvel, temp_struct.data20]
-             avel = [avel, temp_struct.data21]
-             hevel = [hevel, temp_struct.data22]
              ovel = [ovel, temp_struct.data23]
+             htemp = [htemp, temp_struct.data24]
+             otemp = [otemp, temp_struct.data25]
                         
         endfor
       endif
        
-
       store_data, hdensname, data = {x:times, y:hdens}
-      store_data, adensname, data = {x:times, y:adens}
-      store_data, hedensname, data = {x:times, y:hedens}
       store_data, odensname, data = {x:times, y:odens}
       store_data, hvelname, data = {x:times, y:hvel}
-      store_data, avelname, data = {x:times, y:avel}
-      store_data, hevelname, data = {x:times, y:hevel}
       store_data, ovelname, data = {x:times, y:ovel}
+      store_data, htempname, data = {x:times, y:htemp}
+      store_data, otempname, data = {x:times, y:otemp}
 
+combined = sc_id(j)+'_hpca_hplusoplus_number_densities'
+combined2 = sc_id(j)+'_hpca_hplusoplus_scalar_temperatures'
 
-combined = 'mms1_hpca_hplusoplus_number_densities'
-
-
-store_data, combined, data = [hdensname, $
-  odensname]
-  
-
-
+store_data, combined, data = [hdensname, odensname]
+store_data, combined2, data = [htempname, otempname]
  
     endif else begin
       print, 'No hpca data available locally or at SDC or invalid query!'
     endelse
-
 
   endfor
 end

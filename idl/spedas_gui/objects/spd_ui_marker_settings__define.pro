@@ -95,11 +95,12 @@ END ;---------------------------------------------------------------------------
 
 
 
-;PRO SPD_UI_MARKER_SETTINGS::Cleanup
-;Obj_Destroy, self.lineStyle
-;Obj_destroy, self.label
-;RETURN
-;END ;--------------------------------------------------------------------------------
+PRO SPD_UI_MARKER_SETTINGS::Cleanup
+    Obj_Destroy, self.lineStyle
+    Obj_destroy, self.label
+    ptr_free, self.origsettings
+    RETURN
+END ;--------------------------------------------------------------------------------
 
 
 

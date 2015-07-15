@@ -70,7 +70,7 @@ FUNCTION SPD_UI_PANEL_SETTINGS::Copy
    END
    Struct_Assign, self, out
    ; copy title object
-   newTitle=Obj_New("SPD_UI_TEXT")
+   ; newTitle=Obj_New("SPD_UI_TEXT")
    IF Obj_Valid(self.titleObj) THEN newTitle=self.titleObj->Copy() ELSE $
       newTitle=Obj_New()
    out->SetProperty, TitleObj=newTitle
@@ -154,6 +154,7 @@ PRO SPD_UI_PANEL_SETTINGS::Save
       ptr_free,self.origsettings
    endif
    self.origsettings = ptr_new(obj->getall())
+   obj_destroy, obj
 
 RETURN
 END ;--------------------------------------------------------------------------------
@@ -176,6 +177,11 @@ pro spd_ui_panel_settings::getProperty,backgroundrgb=backgroundrgb,_ref_extra=ex
   self->spd_ui_getset::getProperty,_extra=ex
  
 end
+
+PRO SPD_UI_PANEL_SETTINGS::Cleanup
+    ptr_free, self.origsettings
+    obj_destroy, self.titleObj
+END
 
 FUNCTION SPD_UI_PANEL_SETTINGS::Init,     $
       TitleObj=titleObj,                  $ ; title obj panel
