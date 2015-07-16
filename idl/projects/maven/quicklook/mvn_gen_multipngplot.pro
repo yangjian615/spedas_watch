@@ -22,13 +22,16 @@
 ; Hacked from thm_gen_multipngplot, 15-oct-2014, jmm,
 ; jimm@ssl.berkeley.edu
 ; Switched to plot single orbit plots, 24-apr-2015, jmm
-; PLots from apoapsis to apoapsis, suggested by Takuya Hara, 2015-05-13
+; Plots from apoapsis to apoapsis, suggested by Takuya Hara,
+; 2015-05-13
+; Added date to filenames, 14-jul-2015, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-05-20 11:47:51 -0700 (Wed, 20 May 2015) $
-; $LastChangedRevision: 17655 $
+; $LastChangedDate: 2015-07-14 11:11:42 -0700 (Tue, 14 Jul 2015) $
+; $LastChangedRevision: 18122 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_multipngplot.pro $
 ;-
-Pro mvn_gen_multipngplot, filename_in, directory = directory, no_fdb = no_fdb, _extra = _extra
+Pro mvn_gen_multipngplot, filename_in, directory = directory, $
+                          no_fdb = no_fdb, _extra = _extra
 
 ;Extract the date
   f0 = strsplit(file_basename(filename_in), '_', /extract)
@@ -87,10 +90,11 @@ Pro mvn_gen_multipngplot, filename_in, directory = directory, no_fdb = no_fdb, _
         orbno = string(onums[j], format = '(i6.6)')
         orbno0 = strcompress(onums[j], /remove_all)
         orbno1 = strcompress(onums[j]+1, /remove_all)
-        tplot, trange = trj, title = 'MAVEN PFP L2: Orbit '+orbno0+'-'+orbno1, var_label = 'mvn_orbnum'
+        tplot, trange = trj, title = 'MAVEN PFP L2: Orbit '+$
+               orbno0+'-'+orbno1, var_label = 'mvn_orbnum'
         trjstr0 = time_string(trj[0], format=6)
         trjstr1 = time_string(trj[1], format=6)
-        fileid = filename_proto+'_'+orbno
+        fileid = filename_proto+'_'+ymd+'_'+orbno
         makepng, dir+fileid, /no_expose, _extra = _extra
         If(~keyword_set(no_fdb)) Then Begin
 ;use commas for delimiters, since jsp object ignores new lines when

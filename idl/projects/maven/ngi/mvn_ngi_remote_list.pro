@@ -16,15 +16,15 @@
 ;       Yuki Harada on 2015-07-13
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-07-13 14:36:43 -0700 (Mon, 13 Jul 2015) $
-; $LastChangedRevision: 18110 $
+; $LastChangedDate: 2015-07-14 08:09:35 -0700 (Tue, 14 Jul 2015) $
+; $LastChangedRevision: 18120 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_remote_list.pro $
 ;-
 
 function mvn_ngi_remote_list, trange=trange, filetype=filetype, verbose=verbose, _extra=_extra, latestversion=version, latestrevision=revision
 
   if ~keyword_set(filetype) then filetype = '???'
-  dprint,verbose=verbose,'checking remote file list: '+filetype
+  dprint,verbose=verbose,'checking ngi remote file list: '+filetype
 
   pformat = 'maven/data/sci/ngi/l2/YYYY/MM/mvn_ngi_l2_'+filetype+'-abund-*_YYYYMMDD?hh????_v??_r??.csv'
 
@@ -38,13 +38,13 @@ function mvn_ngi_remote_list, trange=trange, filetype=filetype, verbose=verbose,
   s = mvn_file_source(no_download=2,last_version=0,_extra=_extra)
 
   f = ''
-  if s.remote_data_dir ne '' then begin
+  if s.no_server eq 0 then begin
      for ipn=0,n_elements(pathnames)-1 do begin
         file_http_copy,pathnames[ipn],serverdir=s.remote_data_dir,url_info=url_info,verbose=verbose,_extra=s
         w = where( url_info.exists ne 0 , nw )
         if nw gt 0 then f = [f,url_info[w].url]
      endfor
-  endif else f = file_retrieve(pathnames,_extra=s,/valid_only) ;- for SSL server
+  endif else f = file_retrieve(pathnames,_extra=s,/valid_only)
   w = where( strlen(f) gt 0 , nw )
   if nw eq 0 then urls = '' else urls = f[w]
 
