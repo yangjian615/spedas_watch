@@ -68,9 +68,9 @@ FUNCTION eva_data_load_sitl, state
       options,   'mms_stlm_fomstr','ysubtitle',ysubtitle
       dgrand = ['mms_stlm_fomstr']
     endif else begin 
-      msg = 'EVA: FOMStr was not found for the specified time period.'
-      print, msg
-      answer = dialog_message(msg,/center)
+      print, 'EVA: FOMStr was not found for the specified time period.'
+      ;print, msg
+      ;answer = dialog_message(msg,/center)
       return, 'No'
     endelse
     

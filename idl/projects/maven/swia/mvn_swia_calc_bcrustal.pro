@@ -14,15 +14,15 @@
 ;		number of components (make sure this has 'SPICE_FRAME' set or you will fail)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-17 09:08:14 -0800 (Mon, 17 Nov 2014) $
-; $LastChangedRevision: 16194 $
+; $LastChangedDate: 2015-07-15 06:25:12 -0700 (Wed, 15 Jul 2015) $
+; $LastChangedRevision: 18132 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_calc_bcrustal.pro $
 ;
 ;-
 
 @mars_crust_model
 
-pro mvn_swia_calc_bcrustal, tr = tr, pdata = pdata
+pro mvn_swia_calc_bcrustal, tr = tr, pdata = pdata, s400 = s400
 
 
 if not keyword_set(pdata) then pdata = 'MAVEN_POS_(MARS-MSO)'
@@ -36,7 +36,15 @@ get_data,pdata+'_GEO',data = pos
 w = where(pos.x ge tr[0] and pos.x le tr[1],nel)
 
 time = pos.x[w]
-upos = pos.y[w,0:2]
+if keyword_set(s400) then begin
+	norm = sqrt(total(pos.y[w,*]*pos.y[w,*],2))
+	upos = pos.y[w,0:2]
+	upos[*,0] = upos[*,0]*3790./norm
+	upos[*,1] = upos[*,1]*3790./norm
+	upos[*,2] = upos[*,2]*3790./norm
+endif else begin
+	upos = pos.y[w,0:2]
+endelse
 
 mars_crust_model, upos, bout, /cain
 

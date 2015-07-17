@@ -1,7 +1,7 @@
 
 
 ;mms_init, local_data_dir='/Users/jburch/data/mms/'
-mms_init, local_data_dir='/Volumes/MMS/data/mms/'
+mms_init;, local_data_dir='/Volumes/MMS/data/mms/'
 
 
 Re = 6378.137
@@ -17,7 +17,7 @@ sc_id='mms1'
 level = 'sitl'
 ;level = 'l1b'
 
-mms_sitl_get_hpca_basic, sc_id=sc_id, level = level, 
+mms_sitl_get_hpca_basic, sc_id=sc_id, level = level 
 
 mms_sitl_get_hpca_moments, sc_id=sc_id, level = level
 

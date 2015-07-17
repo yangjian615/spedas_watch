@@ -3,45 +3,92 @@ Function eva_sitl_load_soca_getfom, pref, parent
 
   ;////////////////////////////////////
   local_dir = !MMS.LOCAL_DATA_DIR
-  TESTMODE  = 0; pref.EVA_TESTMODE
   ;/////////////////////////////////////
+;  if TESTMODE then begin
+;    ; 'dir' produces the directory name with a path separator character that can be OS dependent.
+;    local_dir = file_search(ProgramRootDir(/twoup)+'data',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
+;    fom_file = local_dir + 'abs_selections_sample.sav'
+;    error_flag = 0
+;    error_msg = ''
+;  endif
   
+  ;------------------------------------
+  ; Get the latest FOMstr
+  ;------------------------------------
   get_latest_fom_from_soc, fom_file, error_flag, error_msg
   
-  if TESTMODE then begin
-    ; 'dir' produces the directory name with a path separator character that can be OS dependent.
-    local_dir = file_search(ProgramRootDir(/twoup)+'data',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
-    fom_file = local_dir + 'abs_selections_sample.sav'
-  endif
-  
-  if error_flag AND (TESTMODE eq 0) then begin
-    msg='FOMStr not found in SDC. Ask Super SITL.'
+  ;------------------------------------
+  ; Abort if error (This should not happen often)
+  ;------------------------------------
+  if error_flag then begin
+    msg = error_msg
     print,'EVA: '+msg
     result=dialog_message(msg,/center)
     unix_FOMstr = error_flag
-  endif else begin
-    if strlen(fom_file) eq 0 then message, 'Something is wrong in get_latest_fom_from_soc'
-    restore,fom_file
-    mms_convert_fom_tai2unix, FOMstr, unix_FOMstr, start_string
-    print,'EVA: fom_file = '+fom_file
-    nmax = unix_FOMStr.Nsegs
-    discussion = strarr(nmax)
-    discussion[0:nmax-1] = ' '
-    str_element,/add,unix_FOMStr,'discussion',discussion
+    return, unix_FOMstr
+  endif
+  
+  ;--------------------------------------
+  ; Get a historical FOMstr if not valid
+  ;--------------------------------------
+  restore,fom_file
+  if (not FOMstr.VALID) then begin
+    print, 'EVA: FOMStr.VALID = ', FOMstr.VALID
+    print, 'EVA: FOMStr.ERROR = ', FOMstr.ERROR
+    print, 'EVA: FOMStr.ERRNO = ', FOMstr.ERRNO
+    msg = 'No valid buffers found in the latest FOMstr.'
+    msg = [msg,' ']
+    msg = [msg,'Perhaps, the latest metadata evaluation was']
+    msg = [msg,'performed on a ROI where no fast survey or']
+    msg = [msg,'burst data was collected.']
+    msg = [msg,' ']
+    msg = [msg,'EVA will search and load the latest and valid']
+    msg = [msg,'FOMstr.']
+    result=dialog_message(msg,/center)
     
-    ;---- update cw_sitl label ----
-    nmax = n_elements(unix_FOMstr.timestamps)
-    start_time = time_string(unix_FOMstr.timestamps[0],precision=3)
-    end_time = time_string(unix_FOMstr.timestamps[nmax-1],precision=3)
-    lbl = ' '+start_time+' - '+end_time
-    print,'EVA: updating cw_sitl target_time label:'
-    print,'EVA: '+ lbl
-    id_sitl = widget_info(parent, find_by_uname='eva_sitl')
-    sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
-    WIDGET_CONTROL, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY
-    widget_control, sitl_state.lblTgtTimeMain, SET_VALUE=lbl
-    WIDGET_CONTROL, sitl_stash, SET_UVALUE=sitl_state, /NO_COPY
-  endelse
+    sdur = 90.d0; Search from the last 90 days.
+    etime = systime(/seconds,/utc)
+    stime = etime - sdur*86400.d0
+    timespan, time_string(stime), sdur
+    mms_get_abs_fom_files,local_flist,pw_flag,pw_message
+    nmax = n_elements(local_flist)
+    found = 0
+    if nmax gt 0 then begin; if list exists
+      for n=0,nmax-1 do begin; for each file
+        restore,local_flist[n]; restore
+        if FOMstr.VALID then begin; and check the validity
+          found=1
+          break; if found, break
+        endif
+      endfor; for each file
+    endif
+    if (not found) then return, 0
+  endif
+  
+  ;--------------
+  ; Load FOMstr
+  ;--------------
+  
+  ;---- adjustment for EVA ----
+  mms_convert_fom_tai2unix, FOMstr, unix_FOMstr, start_string
+  print,'EVA: fom_file = '+fom_file
+  nmax = unix_FOMStr.Nsegs
+  discussion = strarr(nmax)
+  discussion[0:nmax-1] = ' '
+  str_element,/add,unix_FOMStr,'discussion',discussion
+  
+  ;---- update cw_sitl label ----
+  nmax = n_elements(unix_FOMstr.timestamps)
+  start_time = time_string(unix_FOMstr.timestamps[0],precision=3)
+  end_time = time_string(unix_FOMstr.timestamps[nmax-1],precision=3)
+  lbl = ' '+start_time+' - '+end_time
+  print,'EVA: updating cw_sitl target_time label:'
+  print,'EVA: '+ lbl
+  id_sitl = widget_info(parent, find_by_uname='eva_sitl')
+  sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
+  WIDGET_CONTROL, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY
+  widget_control, sitl_state.lblTgtTimeMain, SET_VALUE=lbl
+  WIDGET_CONTROL, sitl_stash, SET_UVALUE=sitl_state, /NO_COPY
   
   return, unix_FOMstr
 END

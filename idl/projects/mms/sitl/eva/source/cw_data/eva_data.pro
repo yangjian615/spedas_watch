@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-16 17:03:15 -0700 (Tue, 16 Jun 2015) $
-; $LastChangedRevision: 17884 $
+; $LastChangedDate: 2015-07-15 13:28:46 -0700 (Wed, 15 Jul 2015) $
+; $LastChangedRevision: 18142 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -49,7 +49,7 @@ FUNCTION eva_data_validate_time, str_stime, str_etime
   msg = ''
   stime = str2time(str_stime)
   etime = str2time(str_etime)
-  timec = systime(/seconds)
+  timec = systime(/seconds,/utc)
   timem = str2time('2015-03-12'); MMS launch date
   
   if stime gt etime then msg = 'Start time must be before end time.'
@@ -233,7 +233,7 @@ FUNCTION eva_data_login, state, evTop
   ; establish connection with login-widget 
   type = size(r, /type) ;will be 11 if object has been created
   connected = (type eq 11)
-  
+  msg2 = ''
   FAILED=1
 
   if connected then begin
@@ -291,8 +291,13 @@ FUNCTION eva_data_login, state, evTop
       str_element,/add,state,'end_time',end_time
       eva_data_update_time, state,/update
       FAILED=0
-    endif; if n_tags(unix_FOMstr)
-  endif
+    endif else begin; if n_tags(unix_FOMstr)
+      
+      if  unix_FOMstr eq 3 then begin
+        FAILED=0
+      endif
+    endelse
+  endif; if connected
 
 ;  msg = (FAILED) ? 'Log-in Failed' : 'Logged in as a '+state.userType[user_flag]+'!'
   if FAILED then begin

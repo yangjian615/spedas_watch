@@ -55,6 +55,13 @@ pro get_latest_fom_from_soc, fom_file, error_flag, error_msg
     fjulmax = max(fjul, maxidx)
     
     fom_file = flist(maxidx)
+    
+    restore, fom_file
+    
+    if n_tags(fomstr) eq 0 then begin
+      fom_file = ''
+      error_flag = 1
+    endif
 
   endif else begin
   

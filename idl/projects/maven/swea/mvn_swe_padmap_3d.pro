@@ -18,8 +18,8 @@
 ;CREATED BY:      D.L. Mitchell on 2014-09-24.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 16:17:12 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17697 $
+; $LastChangedDate: 2015-07-15 11:45:34 -0700 (Wed, 15 Jul 2015) $
+; $LastChangedRevision: 18137 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_padmap_3d.pro $
 ;
 ;-
@@ -44,7 +44,7 @@ pro mvn_swe_padmap_3d, data, pam=pam
   ddtor = !dpi/180D
   ddtors = replicate(ddtor, 64)
   n = 17  ; patch size - odd integer
-  nbins = data.nbins
+  nbins = data[0].nbins
 
   nrec = n_elements(data)
 

@@ -1,7 +1,7 @@
 ; File to get historic ABS selections. Note that the time stamps on sitl and abs files are not referring
 ; to the contents of the files, but the date and time at which the foms were created.
  
-pro mms_get_abs_fom_files, local_flist, start_time_unix, stop_time_unix, pw_flag, pw_message
+pro mms_get_abs_fom_files, local_flist, pw_flag, pw_message
 
 
 

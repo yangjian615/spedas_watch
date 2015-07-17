@@ -18,8 +18,8 @@
 ;	BDATA: Tplot variable for whisker data (defaults to MSO B)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-12 06:27:49 -0800 (Fri, 12 Dec 2014) $
-; $LastChangedRevision: 16477 $
+; $LastChangedDate: 2015-07-15 06:58:10 -0700 (Wed, 15 Jul 2015) $
+; $LastChangedRevision: 18133 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_plot_orb_whisk.pro $
 ;
 ;-
@@ -93,6 +93,24 @@ endfor
 oplot,xart,zart,thick = 2
 xyouts,xart[0],zart[0],time_string(time[0])
 xyouts,xart[nel-1],zart[nel-1],time_string(time[nel-1])
+
+
+
+window,3
+ang = findgen(360)*!pi/180
+plot,/iso,RM*cos(ang),RM*sin(ang),thick = 2,xrange = yrange, yrange = zrange,xtitle = 'Y (km)',ytitle = 'Z (km)',charsize=2
+
+
+for i = 0,nel-1,freq do begin
+
+	oplot,yart[i]+magy[i]*delta,zart[i]+magz[i]*delta, color = magx[i]/mag[i]*125 + 125
+	
+endfor
+oplot,yart,zart,thick = 2
+xyouts,yart[0],zart[0],time_string(time[0])
+xyouts,yart[nel-1],zart[nel-1],time_string(time[nel-1])
+
+
 
 
 

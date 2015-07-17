@@ -51,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-12 16:03:57 -0700 (Sun, 12 Jul 2015) $
-; $LastChangedRevision: 18087 $
+; $LastChangedDate: 2015-07-15 13:42:24 -0700 (Wed, 15 Jul 2015) $
+; $LastChangedRevision: 18145 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -419,11 +419,20 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      mvn_mag_load, trange=trange
      tname = tnames('mvn_B*', ntplot)
      IF ntplot GT 0 THEN BEGIN
-        get_data, tname, alim=alim
+        get_data, tname, alim=alim, data=b
         lvl = alim.level
-        undefine, alim
+        btot = SQRT(TOTAL(b.y*b.y, 2))
 
-        status = EXECUTE("spice_vector_rotate_tplot, 'mvn_B_1sec', 'MAVEN_MSO', trange=trange, verbose=verbose")
+        idx = WHERE(b.x GE trange[0] AND b.x LE trange[1], nidx) ; Scheduled to remove in near future.
+        IF nidx GT 0 THEN BEGIN
+           valid = spice_valid_times(time_ephemeris(b.x[idx]), object='MAVEN_SPACECRAFT')
+           idx = WHERE(valid EQ 1B, nidx)
+           IF FLOAT(nidx) / FLOAT(N_ELEMENTS(valid)) GT 0.5 THEN check_obj = 'MAVEN_SPACECRAFT'
+        ENDIF 
+
+        undefine, alim, b
+        undefine, valid, idx, nidx
+        status = EXECUTE("spice_vector_rotate_tplot, 'mvn_B_1sec', 'MAVEN_MSO', trange=trange, verbose=verbose, check_object=check_obj")
         IF status EQ 1 THEN BEGIN 
            store_data, 'mvn_B_1sec', /delete, verbose=verbose
            bvec = 'mvn_mag_' + STRLOWCASE(lvl) + '_bmso_1sec'
@@ -441,12 +450,13 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
         bvec = 'mvn_mag_bmso_1sec'
         frame = 'MSO'
         store_data, bvec, data={x: trange, y: REFORM(REPLICATE(nan, 6), [2, 3])}, dlim={ysubtitle: 'Bmso [nT]'}
+        btot = [nan, nan]
      ENDELSE 
      undefine, tname, ntplot
      options, bvec, labels=['Bx', 'By', 'Bz'], colors='bgr', $
               labflag=1, constant=0, ytitle='MAG ' + lvl, /def
      get_data, bvec, data=b, dl=bl
-     bmax = MAX(SQRT(TOTAL(b.y*b.y, 2)), /nan)
+     bmax = MAX(btot, /nan)
      IF bmax GT 100. THEN blog = 1 ELSE blog = 0 ; It means B field Log scale or not.     
 
      bp = b.y ; positive sign
@@ -470,7 +480,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      options, bvec +  ['_plus', '_minus'], labflag=1
 
      store_data, 'mvn_mag_' + STRLOWCASE(lvl) + '_bamp_1sec', $
-                 data={x: b.x, y: SQRT(TOTAL(b.y*b.y, 2))}, $
+                 data={x: b.x, y: btot}, $
                  dlimits={ytitle: 'MAG ' + lvl, ysubtitle: '|B| [nT]'}
      
      mvn_model_bcrust_load, trange, verbose=verbose, calc=bflg
@@ -493,7 +503,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      undefine, bmax, blog, status
      
      bphi = ATAN(b.y[*, 1], b.y[*, 0])
-     bthe = ASIN(b.y[*, 2] / SQRT(TOTAL(b.y*b.y, 2)))
+     bthe = ASIN(b.y[*, 2] / btot)
      idx = WHERE(bphi LT 0., nidx)
      IF nidx GT 0 THEN bphi[idx] += 2. * !pi
      undefine, idx, nidx

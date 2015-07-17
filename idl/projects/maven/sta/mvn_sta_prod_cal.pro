@@ -5667,9 +5667,9 @@ print,'Processing apid d6'
 	iy=0l
 	get_data,'mvn_STA_D6_DATA',data=t
 	if size(/type,t) eq 8 then begin
-
+	
 		npkts = dimen1(t.y)
-		
+
 		get_data,'mvn_STA_D6_MODE',data=md
 
 ; 		if any packet of a 48 event packet set is missing, throw away the entire set - too much trouble to reconstruct
@@ -5678,7 +5678,7 @@ print,'Processing apid d6'
 			mm = di.y and 63
 			ind1 = where(mm eq 0)
 			ind2 = where(mm[ind1+47] eq 47,ndis)
-	if ndis gt 0 then begin
+	if ndis gt 0 and npkts ge 48 then begin
 			ind1 = ind1[ind2]
 			n_events = n_elements(ind1)
 			if n_events ne npkts/48 then print,'Error 1 - D6 packets were missing'

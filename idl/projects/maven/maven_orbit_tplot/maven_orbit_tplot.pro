@@ -83,8 +83,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-04 13:44:06 -0700 (Thu, 04 Jun 2015) $
-; $LastChangedRevision: 17807 $
+; $LastChangedDate: 2015-07-15 13:34:52 -0700 (Wed, 15 Jul 2015) $
+; $LastChangedRevision: 18143 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -190,6 +190,16 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
     file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
     nfiles = n_elements(file)
+    
+    if (docrop) then begin
+      year = strmid(file,9,4,/rev)
+      month = strmid(file,5,2,/rev)
+      date = time_double(year + '-' + month + '-01')
+      i = (min(where(date ge tspan[0])) - 1) > 0
+      j = (max(where(date le tspan[1])) + 1) < (nfiles - 1)
+      file = file[i:j]
+      nfiles = n_elements(file)
+    endif
 
 	eph = [{t:0D, x:0D, y:0D, z:0D, vx:0D, vy:0D, vz:0D}]
     for i=0,(nfiles-1) do begin
@@ -233,6 +243,16 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
     file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
     nfiles = n_elements(file)
+    
+    if (docrop) then begin
+      year = strmid(file,9,4,/rev)
+      month = strmid(file,5,2,/rev)
+      date = time_double(year + '-' + month + '-01')
+      i = (min(where(date ge tspan[0])) - 1) > 0
+      j = (max(where(date le tspan[1])) + 1) < (nfiles - 1)
+      file = file[i:j]
+      nfiles = n_elements(file)
+    endif
 
 	eph = [{t:0D, x:0D, y:0D, z:0D, vx:0D, vy:0D, vz:0D}]
     for i=0,(nfiles-1) do begin
@@ -276,19 +296,19 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
         str_element, eph, 'geo_x', geo_x[indx,*], /add
         str_element, eph, 'geo_v', geo_v[indx,*], /add
       endif
-      time = time[indx]
-      x = x[indx]
-      y = y[indx]
-      z = z[indx]
-      vx = vx[indx]
-      vy = vy[indx]
-      vz = vz[indx]
-      r = r[indx]
-      s = s[indx]
-      sza = sza[indx]
+      time = temporary(time[indx])
+      x = temporary(x[indx])
+      y = temporary(y[indx])
+      z = temporary(z[indx])
+      vx = temporary(vx[indx])
+      vy = temporary(vy[indx])
+      vz = temporary(vz[indx])
+      r = temporary(r[indx])
+      s = temporary(s[indx])
+      sza = temporary(sza[indx])
       if (n_elements(lon) ge count) then begin
-        lon = lon[indx]
-        lat = lat[indx]
+        lon = temporary(lon[indx])
+        lat = temporary(lat[indx])
       endif
     endif else begin
       print,"No ephemeris data within requested range: ",time_string(tspan)

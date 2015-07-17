@@ -81,7 +81,7 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
     catch, /cancel
     return
   endif
-
+  trange_org = trange
   ; validation (trange)
   if n_elements(trange) ne 2 then begin
     rst = dialog_message('Select a time interval by two left-clicks.',/info,/center)
@@ -110,9 +110,18 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
     ct_overlap = 0; count number of overlapped segments
     for N=0,Nsegs-1 do begin
       if (strpos(s.STATUS[N],'DELETED') lt 0) then begin
-        if s.START[N] gt s.STOP[N] then message,'Something is wrong'
-        rr = segment_overlap([s.START[N],s.STOP[N]],trange)
-        if ((rr eq 4) or (rr eq 3) or (rr eq -1) or (rr eq 1) or (rr eq 0)) then ct_overlap += 1
+        if s.START[N] gt s.STOP[N] then begin
+;          print, 'N=',N
+;          print, 'start=',time_string(s.START[N])
+;          print, 'stop=',time_string(s.STOP[N])
+;          print, 'trange_org=',time_string(trange_org)
+;          stop
+;          message,'Something is wrong'
+          print, 'EVA: something is wrong'
+        endif else begin
+          rr = segment_overlap([s.START[N],s.STOP[N]],trange)
+          if ((rr eq 4) or (rr eq 3) or (rr eq -1) or (rr eq 1) or (rr eq 0)) then ct_overlap += 1
+        endelse
       endif
     endfor
     NOTOK = (ct_overlap gt 0)
@@ -559,7 +568,7 @@ FUNCTION eva_sitl_event, ev
       tn = tnames('*bakstr*',ct_bak)
       if (ct_bak gt 0) then begin
         get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
-        if (not default) then begin
+        if (not default) then begin;...... if (not DEFAULT)
           if n_tags(lim) gt 0 then begin
             D = eva_sitl_strct_read(lim.unix_BAKStr_mod, 0.d0,$
               isPending=isPending,inPlaylist=inPlaylist,status=status)
@@ -572,8 +581,8 @@ FUNCTION eva_sitl_event, ev
               eva_sitl_highlight, left_edges, right_edges, data, 'mms_stlm_bakstr',/noline
             endif; if nmax
           endif; if n_tags
-        endif else begin;if (not default)
-          s = lim.unix_BAKstr_mod
+        endif else begin
+          s = lim.unix_BAKstr_mod;...........  if DEFAULT
           Nsegs = n_elements(s.FOM)
           print, 'EVA:----- List of back-structure segments -----'
           print, 'EVA:number, start time         , FOM    , status, sourceID'
@@ -714,7 +723,7 @@ FUNCTION eva_sitl, parent, $
   geo = widget_info(parent,/geometry)
   if n_elements(xsize) eq 0 then xsize = geo.xsize
 
-  hlSet = ['Default','isPending','inPlaylist','Overwritten']
+  hlSet = ['Default','isPending','inPlaylist','Held','Complete','Overwritten']
   hlSet2 = [hlSet, 'New','Modified','Deleted','Aborted','Complete','Finished',$
     'Incomplete','Held','Derelict', 'Demoted','Realloc', 'Deferred']
   svSet = ['Save','Restore','Save As', 'Restore From']

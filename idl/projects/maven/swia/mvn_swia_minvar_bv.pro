@@ -14,8 +14,8 @@
 ;AUTHOR:	J. Halekas	
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-07-13 14:28:53 -0700 (Mon, 13 Jul 2015) $
-; $LastChangedRevision: 18109 $
+; $LastChangedDate: 2015-07-15 06:17:39 -0700 (Wed, 15 Jul 2015) $
+; $LastChangedRevision: 18130 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_minvar_bv.pro $
 ;
 ;-
@@ -31,7 +31,7 @@ get_data,bdata,data = data
 
 w= where(data.x ge trange(0) and data.x le trange(1))
 
-minvar,transpose(data.y(w,*)),eig,vrot = vrot
+minvar,transpose(data.y(w,*)),eig,vrot = vrot, lambda = lambda
 
 store_data,'bminv',data = {x:data.x(w),y:transpose(vrot)}
 options,'bminv','labels',['i','j','k']
@@ -41,6 +41,7 @@ get_data,vdata,data  = vel
 vin = transpose(vel.y)
 vout = vin
 
+print,lambda
 print,eig(*,0)
 print,eig(*,1)
 print,eig(*,2)
