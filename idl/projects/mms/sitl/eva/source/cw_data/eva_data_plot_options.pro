@@ -67,7 +67,6 @@ PRO eva_data_plot_options, paramlist
     endif
     
     if strmatch(tpv,'*_fpi_DISnumberDensity') then begin
-      ylim, tpv, 1, 10
       options, tpv, 'ylog', 1
       options, tpv, 'ytitle', 'n, cm!U-3!N'
     endif

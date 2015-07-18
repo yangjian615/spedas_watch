@@ -41,8 +41,8 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: hara $
-;   $LastChangedDate: 2015-07-08 20:18:04 -0700 (Wed, 08 Jul 2015) $
-;   $LastChangedRevision: 18040 $
+;   $LastChangedDate: 2015-07-16 13:57:22 -0700 (Thu, 16 Jul 2015) $
+;   $LastChangedRevision: 18157 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/anc/mvn_spc_fov_blockage.pro $
 ;-
 pro mvn_spc_fov_blockage, trange=trange,$
@@ -161,7 +161,7 @@ pro mvn_spc_fov_blockage, trange=trange,$
         recompute = 1
      ENDIF
      IF SIZE(mvn_sta_fov_block_time, /type) NE 0 THEN BEGIN
-        IF (time_double(utc) LT mvn_sta_fov_block_time[0]) OR (time_double(utc) GT mvn_sta_fov_block_time[N_ELEMENTS(mvn_sta_block_time)-1]) THEN $
+        IF (time_double(utc) LT mvn_sta_fov_block_time[0]) OR (time_double(utc) GT mvn_sta_fov_block_time[N_ELEMENTS(mvn_sta_fov_block_time)-1]) THEN $
            IF recompute EQ 0 THEN GOTO, recompute ELSE GOTO, previous
         idx = NN(mvn_sta_fov_block_time, utc)
         qrot1 = REFORM(mvn_sta_fov_block_qrot1[*, idx])

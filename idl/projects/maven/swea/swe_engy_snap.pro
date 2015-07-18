@@ -18,6 +18,9 @@
 ;       UNITS:         Plot the data in these units.  See mvn_swe_convert_units.
 ;                      Default = 'eflux'.
 ;
+;       TPLOT:         Get energy spectra from tplot variable instead of SWEA
+;                      common block.
+;
 ;       FIXY:          Use a fixed y-axis range.  Default = 1 (yes).
 ;
 ;       KEEPWINS:      If set, then don't close the snapshot window(s) on exit.
@@ -38,6 +41,8 @@
 ;
 ;       PEPEAKS:       Overplot the nominal energies of the photoelectron energy peaks
 ;                      at 23 and 27 eV.
+;
+;       MAGDIR:        Print magnetic field geometry (azim, elev, clock) on the plot.
 ;
 ;       PDIAG:         Plot potential estimator in a separate window.
 ;
@@ -83,8 +88,8 @@
 ;       RAINBOW:       With NOERASE, overplot spectra using up to 6 different colors.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 12:05:22 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17721 $
+; $LastChangedDate: 2015-07-16 11:37:35 -0700 (Thu, 16 Jul 2015) $
+; $LastChangedRevision: 18154 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -94,7 +99,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
                    noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
                    dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
-                   bkg=bkg
+                   bkg=bkg, tplot=tplot, magdir=magdir
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -119,6 +124,17 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(sec) then dosec = 1 else dosec = 0
   if keyword_set(bkg) then dobkg = 1 else dobkg = 0
 
+  tflg = 0
+  if keyword_set(tplot) then begin
+    get_data,'swe_a4',data=dat,limits=lim,index=i
+    if (i gt 0) then begin
+      str_element,lim,'ztitle',units,success=ok
+      if (ok) then units = strlowcase(units) else units = 'unknown'
+      tspec = {time:dat.x, data:dat.y, energy:dat.v, units_name:units}
+      tflg = 1
+    endif else print,'No SPEC data found in tplot.'
+  endif
+
   get_data,'alt',data=alt
   if (size(alt,/type) eq 8) then begin
     doalt = 1
@@ -126,6 +142,12 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     get_data,'lon',data=lon
     get_data,'lat',data=lat
   endif else doalt = 0
+
+  domag = 0
+  if keyword_set(magdir) then begin
+    get_data,'mvn_B_1sec_iau_mars',data=mag
+    if (size(mag,/type) eq 8) then domag = 1 else domag = 0
+  endif
 
   if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
   if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
@@ -159,21 +181,23 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     get_data,'d2f',data=d2f,index=i
     if (i gt 0) then pflg = 1 else pflg = 0
   endif else pflg = 0
+
+  if (not tflg) then begin
+    if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_makespec
   
-  if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_makespec
-  
-  if (aflg) then begin
-    if (size(mvn_swe_engy_arc,/type) ne 8) then begin
-      print,"No SPEC archive data."
-      return
-    endif
-    mvn_swe_convert_units, mvn_swe_engy_arc, units
-  endif else begin
-    if (size(mvn_swe_engy,/type) ne 8) then begin
-      print,"No SPEC survey data."
-      return
-    endif
-  endelse
+    if (aflg) then begin
+      if (size(mvn_swe_engy_arc,/type) ne 8) then begin
+        print,"No SPEC archive data."
+        return
+      endif
+      mvn_swe_convert_units, mvn_swe_engy_arc, units
+    endif else begin
+      if (size(mvn_swe_engy,/type) ne 8) then begin
+        print,"No SPEC survey data."
+        return
+      endif
+    endelse
+  endif
   
   if (fflg) then begin
     case strupcase(units) of
@@ -230,8 +254,24 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     wset,Twin
     return
   endif
-  
-  spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
+
+  if (tflg) then begin
+    if (npts eq 1) then begin
+      dt = min(abs(trange[0] - tspec.time), i)
+      spec = {time:tspec.time[i], data:reform(tspec.data[i,*]), $
+              energy:tspec.energy, units_name:tspec.units_name, $
+              sc_pot:0.}
+    endif else begin
+      tmin = min(trange, max=tmax)
+      i = where((tspec.time ge tmin) and (tspec.time le tmax), count)
+      if (count gt 0L) then begin
+        spec = {time:mean(tspec.time[i]), data:average(tspec.data[i,*],1,/nan), $
+                energy:tspec.energy, units_name:tspec.units_name, sc_pot:0.}
+      endif
+    endelse
+  endif else begin
+    spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
+  endelse
   if (fflg) then yrange = drange
   
   case strupcase(spec.units_name) of
@@ -379,6 +419,25 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       ys -= dys
       if (~mb and ~mom) then begin
         xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+        ys -= dys
+      endif
+    endif
+    
+    if (domag) then begin
+      dt = min(abs(mag.x - spec.time), mref)
+      str_element, mag, 'azim', success=ok
+      if (ok) then begin
+        xyouts,xs,ys,string(round(mag.azim[mref]), format='("Baz = ",i5)'),charsize=1.2,/norm
+        ys -= dys
+      endif
+      str_element, mag, 'elev', success=ok
+      if (ok) then begin
+        xyouts,xs,ys,string(round(mag.elev[mref]), format='("Bel = ",i5)'),charsize=1.2,/norm
+        ys -= dys
+      endif
+      str_element, mag, 'clock', success=ok
+      if (ok) then begin
+        xyouts,xs,ys,string(round(mag.clock[mref]), format='("Bclk = ",i5)'),charsize=1.2,/norm
         ys -= dys
       endif
     endif
@@ -658,7 +717,23 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     ctime,trange,npoints=npts,/silent
 
     if (size(trange,/type) eq 5) then begin
-      spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
+      if (tflg) then begin
+        if (npts eq 1) then begin
+          dt = min(abs(trange[0] - tspec.time), i)
+          spec = {time:tspec.time[i], data:reform(tspec.data[i,*]), $
+                  energy:tspec.energy, units_name:tspec.units_name, $
+                  sc_pot:0.}
+        endif else begin
+          tmin = min(trange, max=tmax)
+          i = where((tspec.time ge tmin) and (tspec.time le tmax), count)
+          if (count gt 0L) then begin
+            spec = {time:mean(tspec.time[i]), data:average(tspec.data[i,*],1,/nan), $
+                    energy:tspec.energy, units_name:tspec.units_name, sc_pot:0.}
+          endif
+        endelse
+      endif else begin
+        spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
+      endelse
       if (fflg) then yrange = drange
       if (hflg) then dt = min(abs(swe_hsk.time - trange[0]), jref)
     endif else ok = 0

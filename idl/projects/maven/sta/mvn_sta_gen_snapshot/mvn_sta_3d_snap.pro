@@ -98,8 +98,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-08 20:23:22 -0700 (Wed, 08 Jul 2015) $
-; $LastChangedRevision: 18041 $
+; $LastChangedDate: 2015-07-16 15:39:59 -0700 (Thu, 16 Jul 2015) $
+; $LastChangedRevision: 18159 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -119,13 +119,18 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
      trange = time_double(var2)
      IF SIZE(window, /type) EQ 0 THEN $
         IF !d.window EQ topt.window THEN window = !d.window + 1 ELSE window = !d.window
-     IF SIZE(mso, /type) EQ 0 THEN mso = 1
-     IF SIZE(app, /type) EQ 0 THEN app = 1
-     IF SIZE(label, /type) EQ 0 THEN label = 1
+     IF compare_struct(var1, var2) EQ 0 THEN BEGIN
+        IF SIZE(mso, /type) EQ 0 THEN mso = 1
+        IF SIZE(app, /type) EQ 0 THEN app = 1
+        IF SIZE(plot_sc, /type) EQ 0 THEN plot_sc = 1
+        IF SIZE(label, /type) EQ 0 THEN label = 1
+        IF SIZE(erange, /type) EQ 0 THEN erange = [0.01, 40.d3] ; whole energy range
+     ENDIF 
   ENDIF 
   IF keyword_set(archive) THEN aflg = 1 ELSE aflg = 0
   IF keyword_set(burst) THEN aflg = 1
-
+  IF keyword_set(energy) THEN e1flg = 1 ELSE e1flg = 0
+  IF keyword_set(erange) THEN e2flg = 1 ELSE e2flg = 0
 ;  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
 ;  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
 ;  if (n_elements(obins) ne 96) then begin
@@ -184,13 +189,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
     dosmo = 1
   endif else dosmo = 0
 
-  if keyword_set(sum) then begin
-    npts = 2
-    doall = 1
-  endif else begin
-    npts = 1
-    doall = 0
-  endelse
+  if keyword_set(sum) then npts = 2 else npts = 1
 
 ; Put up snapshot window(s)
   IF keyword_set(window) THEN wnum = window ELSE wnum = !d.window 
@@ -200,13 +199,14 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
   IF SIZE(var1, /type) EQ 0 THEN print,'Use button 1 to select time; button 3 to quit.'
 
   wset, wnum
-  IF SIZE(var2, /type) EQ 0 THEN ctime2, trange, npoints=npts, /silent, button=button
+  IF SIZE(var2, /type) EQ 0 THEN ctime2, trange, npoints=npts, /silent, button=button $
+  ELSE IF N_ELEMENTS(var2) EQ 2 THEN sum = 1
 
-  if (size(trange,/type) eq 2) then begin ; Abort before first time select.
-     if (sflg) then wdelete, wnum+1
-     wset, wnum
-     return
-  endif
+;  if (size(trange,/type) eq 2) then begin ; Abort before first time select.
+;     if (sflg) then wdelete, wnum+1
+;     wset, wnum
+;     return
+;  endif
   
   ok = 1
   IF ~keyword_set(id) THEN BEGIN
@@ -242,7 +242,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
         ENDELSE 
         undefine, idx, emode
      ENDIF ELSE apid = id 
-     
+
      IF keyword_set(sum) THEN ddd = mvn_sta_get(apid, tt=trange) $
      ELSE ddd = CALL_FUNCTION(func + '_' + apid, trange)
      
@@ -256,25 +256,37 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
         ddd = sum4m(ddd)
         IF SIZE(var2, /type) NE 0 THEN $
            IF SIZE(var1, /type) EQ SIZE(var2, /type) THEN $
-              IF var1 EQ var2 THEN IF SIZE(erange, /type) EQ 0 THEN erange = minmax(ddd.energy)
-;        IF var1 EQ var2 THEN IF SIZE(erange, /type) EQ 0 THEN erange = minmax(ddd.energy)
+              IF compare_struct(var1, var2) EQ 1 THEN IF ((e1flg EQ 0) AND (e2flg EQ 0)) THEN energy = average(ddd.energy, 2)
+
         if (size(ddd,/type) eq 8) then begin
            data = ddd.data
            
-           if keyword_set(energy) then begin
-              n_e = n_elements(energy)
-              ebins = intarr(n_e)
-              for k=0,(n_e-1) do begin
-                 de = min(abs(ddd.energy[*,0] - energy[k]), j)
-                 ebins[k] = j
-              endfor
-           endif
-           IF keyword_set(erange) THEN BEGIN
-              idx = where(ddd.energy[*, 0] GE erange[0] AND ddd.energy[*, 0] LE erange[1], nidx)
-              IF nidx GT 0 THEN BEGIN
-                 ebins = idx[0]
-                 sebins = nidx
-              ENDIF ELSE RETURN
+           IF (e1flg) THEN BEGIN
+              IF (e2flg) THEN BEGIN
+                 esweep = average(ddd.energy, 2)
+                 idx = WHERE(esweep GE MIN(erange) AND esweep LE MAX(erange), nidx)
+                 IF nidx GT 0 THEN BEGIN
+                    n_e = nidx
+                    ebins = idx
+                 ENDIF ELSE RETURN
+                 undefine, esweep, idx, nidx
+              ENDIF ELSE BEGIN
+                 n_e = n_elements(energy)
+                 ebins = intarr(n_e)
+                 FOR k=0,(n_e-1) DO BEGIN
+                    de = MIN(ABS(ddd.energy[*,0] - energy[k]), j)
+                    ebins[k] = j
+                 ENDFOR 
+              ENDELSE 
+           ENDIF 
+           IF (e2flg) THEN BEGIN
+              IF e1flg EQ 0 THEN BEGIN
+                 idx = where(ddd.energy[*, 0] GE erange[0] AND ddd.energy[*, 0] LE erange[1], nidx)
+                 IF nidx GT 0 THEN BEGIN
+                    ebins = idx[0]
+                    sebins = nidx
+                 ENDIF ELSE RETURN
+              ENDIF ELSE sebins = 1
            ENDIF ELSE sebins = 1
            if (size(ebins, /type) eq 0) then ebins = reverse(indgen(ddd.nenergy))
            nbins = float(n_elements(ebins))
@@ -288,7 +300,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
 ;        dats = smooth(dat,nsmo,/nan)
 ;        ddd.data = reform(dats[*,8:23,*],64,96)
 ;      endif else ddd.data = ddd.data*omask[*,*,boom]
-      
+
            plot3d_new, ddd, lat, lon, ebins=ebins, sum_ebins=sebins, $
                        _extra=extra, log=zlog
            lab2 = ''

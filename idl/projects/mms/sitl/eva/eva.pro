@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-19 15:50:00 -0700 (Fri, 19 Jun 2015) $
-; $LastChangedRevision: 17924 $
+; $LastChangedDate: 2015-07-16 11:34:01 -0700 (Thu, 16 Jul 2015) $
+; $LastChangedRevision: 18152 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -80,7 +80,11 @@ PRO eva
   if vsn eq 8.0 then begin
     answer = dialog_message("You are using IDL version 8.0. With IDL 8.0, "+ $
       "TDAS fails to process SST (high energy particle) data. If a system-error message appeared "+ $
-      "while using EVA, please punch OK and EVA should continue running but without SST data.")
+      "while using EVA, please punch OK and EVA should continue running but without SST data.",/center)
+  endif
+  if !VERSION.RELEASE lt 8.2 then begin
+    answer = dialog_message("You need IDL version 8.2.3 or higher for EVA",/center)
+    return
   endif
 
 

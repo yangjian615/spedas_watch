@@ -140,22 +140,22 @@ FUNCTION eva_data_load_mms, state
         if(strmatch(paramlist[i],'*_hpca_*number_density')) or (strmatch(paramlist[i],'*_hpca_*bulk_velocity')) then begin
           mms_sitl_get_hpca_moments, sc_id=sc, level=level
           
-          eva_data_load_mms_options, sc+'_hpca_hplus_number_density',ytitle='H!U+!N, cm!U-3!N',yrange=[1,100],/ylog
-          eva_data_load_mms_options, sc+'_hpca_aplus_number_density',ytitle='He!U+!U+!N, cm!U-3!N',yrange=[1, 10],/ylog
-          eva_data_load_mms_options, sc+'_hpca_heplus_number_density',ytitle='He!U+!N, cm!U-3!N',yrange=[1,100],/ylog
-          eva_data_load_mms_options, sc+'_hpca_oplus_number_density',ytitle='O!U+!N, cm!U-3!N',yrange=[1,100],/ylog
+          eva_data_load_mms_options, sc+'_hpca_hplus_number_density',ytitle='H!U+!N, cm!U-3!N',/ylog
+          eva_data_load_mms_options, sc+'_hpca_aplus_number_density',ytitle='He!U+!U+!N, cm!U-3!N',/ylog
+          eva_data_load_mms_options, sc+'_hpca_heplus_number_density',ytitle='He!U+!N, cm!U-3!N',/ylog
+          eva_data_load_mms_options, sc+'_hpca_oplus_number_density',ytitle='O!U+!N, cm!U-3!N',/ylog
           
-          eva_data_load_mms_options, sc+'_hpca_hplusoplus_number_densities',ytitle='cm!U-3!N',yrange=[1,100],/ylog
+          eva_data_load_mms_options, sc+'_hpca_hplusoplus_number_densities',ytitle='cm!U-3!N',/ylog
           options, sc+'_hpca_hplusoplus_number_densities', colors = [2,4]
           options, sc+'_hpca_hplusoplus_number_densities', labels=['h!U+!N', 'o!U+!N']
           options, sc+'_hpca_hplusoplus_number_densities','labflag',-1
           
-          eva_data_load_mms_options, sc+'_hpca_hplus_bulk_velocity',ytitle='H!U+!N km s!U-1!N',yrange=[-300,300],ylog=0
+          eva_data_load_mms_options, sc+'_hpca_hplus_bulk_velocity',ytitle='H!U+!N km s!U-1!N',ylog=0
           options, sc+'_hpca_hplus_bulk_velocity', colors = [6,4,2]
           options, sc+'_hpca_hplus_bulk_velocity', labels=['V!DX!N', 'V!DY!N', 'V!DZ!N']
           options, sc+'_hpca_hplus_bulk_velocity','labflag',-1
           
-          eva_data_load_mms_options, sc+'_hpca_oplus_bulk_velocity',ytitle='O!U+!N km s!U-1!N',yrange=[-300,300],ylog=0
+          eva_data_load_mms_options, sc+'_hpca_oplus_bulk_velocity',ytitle='O!U+!N km s!U-1!N',ylog=0
           options, sc+'_hpca_oplus_bulk_velocity', colors = [6,4,2]
           options, sc+'_hpca_oplus_bulk_velocity', labels=['V!DX!N', 'V!DY!N', 'V!DZ!N']
           options, sc+'_hpca_oplus_bulk_velocity','labflag',-1

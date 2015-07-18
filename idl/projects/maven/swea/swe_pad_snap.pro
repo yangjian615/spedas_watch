@@ -57,8 +57,8 @@
 ;                      coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-04 11:43:42 -0700 (Thu, 04 Jun 2015) $
-; $LastChangedRevision: 17804 $
+; $LastChangedDate: 2015-07-16 11:34:18 -0700 (Thu, 16 Jul 2015) $
+; $LastChangedRevision: 18153 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -357,6 +357,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
            ELSE fswe = 'MAVEN_SWEA'
            bmso = REFORM(spice_vector_rotate(pad.magf, pad.time, fswe, 'MAVEN_MSO', verbose=-1))
            bmso /= SQRT(TOTAL(bmso*bmso))
+           bgeo = REFORM(spice_vector_rotate(pad.magf, pad.time, fswe, 'IAU_MARS', verbose=-1))
+           bgeo /= SQRT(TOTAL(bgeo*bgeo))
            
            ;get_mvn_eph, pad.time, pos, /silent
            idx = nn(pos.time, pad.time)
@@ -373,18 +375,21 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
            mtx[0, 2] =  COS(lon) * COS(lat)
            mtx[1, 2] =  SIN(lon) * COS(lat)
            mtx[2, 2] =  SIN(lat)
-           bgeo = TRANSPOSE(mtx ## TRANSPOSE(bmso))
+           B_lg = TRANSPOSE(mtx ## TRANSPOSE(bgeo))
 
+           B_azim = atan(B_lg[1],B_lg[0])*!radeg
+           B_elev = asin(B_lg[2])*!radeg
+           
            IF bmso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
-           IF bgeo[2] GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
+           IF B_elev GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
            IF -bmso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
-           IF -bgeo[2] GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
+           IF -B_elev GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
            
            bperp = [bmso[1], bmso[2], -bgeo[0], -bgeo[1]]
            FOR j=0, 3 DO $
               IF bperp[j] GT 0. THEN append_array, dircol, 6 ELSE append_array, dircol, 2
            FOR j=0, 3 DO $
-              XYOUTS, 17.5+45.*j, 15., dirname[j], color=dircol[j], charsize=1.3, /data
+              XYOUTS, 17.5+45.*j, 15., dirname[j], color=!p.color, charsize=1.3, /data
 
            undefine, dircol
            PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.285892, 0.874722, 0.39075, 1.], $
@@ -470,6 +475,14 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
           ys -= dys
           xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+          ys -= dys
+        endif
+        
+        if keyword_set(dir) then begin
+          if (B_azim lt 0.) then B_azim += 360.
+          xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2,/norm
+          ys -= dys
+          xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2,/norm          
           ys -= dys
         endif
       endif

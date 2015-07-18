@@ -19,8 +19,8 @@
 ;
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-07 14:52:34 -0700 (Tue, 07 Jul 2015) $
-;  $LastChangedRevision: 18032 $
+;  $LastChangedDate: 2015-07-16 10:57:07 -0700 (Thu, 16 Jul 2015) $
+;  $LastChangedRevision: 18150 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_convert_timespan_to_date.pro $
 
 ;
@@ -30,15 +30,17 @@ function mms_convert_timespan_to_date, hour=hour, full_span=full_span
 
 t = timerange(/current)
 st = time_string(t)
-start_date = strmid(st[0],0,10)
+start_date = strmid(st[0],0,10) + '-00-00-00'
 
 end_date = strmatch(strmid(st[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(st[1],0,10)
 
 if end_date eq start_date then begin
   
-  tp1 = t(0)+86400D
-  tpstr = time_string(tp1)
-  end_date = strmid(tpstr, 0, 10)
+  end_date = end_date + '-23-59-59'
+  
+;  tp1 = t(0)+86400D
+;  tpstr = time_string(tp1)
+;  end_date = strmid(tpstr, 0, 10)
 endif
 
 ;end_date = strmatch(strmid(st[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(st[1],0,10)
