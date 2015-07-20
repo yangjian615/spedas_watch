@@ -98,11 +98,47 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-16 15:39:59 -0700 (Thu, 16 Jul 2015) $
-; $LastChangedRevision: 18159 $
+; $LastChangedDate: 2015-07-18 18:18:44 -0700 (Sat, 18 Jul 2015) $
+; $LastChangedRevision: 18175 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
+
+;sub program
+FUNCTION mvn_sta_3d_snap_exponent, axis, index, number
+  times = 'x'
+  ;; A special case.
+  IF number EQ 0 THEN RETURN, '0'
+  
+  ;; Assuming multiples of 10 with format.
+  ex = STRING(number, format='(e8.0)')
+  pt = STRPOS(ex, '.')
+
+  first = STRMID(ex, 0, pt)
+  sign  = STRMID(ex, pt+2, 1)
+  thisExponent = STRMID(ex, pt+3)
+
+  ;; Shave off leading zero in exponent
+  WHILE STRMID(thisExponent, 0, 1) EQ '0' DO thisExponent = STRMID(thisExponent, 1)
+
+  ;; Fix for sign and missing zero problem.
+  IF (Long(thisExponent) EQ 0) THEN BEGIN
+     sign = ''
+     thisExponent = '0'
+  ENDIF
+
+  IF (first EQ '  1') OR (first EQ ' 1') THEN BEGIN
+     first = ''
+     times = ''
+  ENDIF
+  ;; Make the exponent a superscript.
+  IF sign EQ '-' THEN BEGIN
+     RETURN, first + times + '10!U' + sign + thisExponent + '!N'
+  ENDIF ELSE BEGIN
+     RETURN, first + times + '10!U' + thisExponent + '!N'
+  ENDELSE
+END
+;main program
 PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins,  $
                      center=center, units=units, ddd=ddd, sum=sum, energy=energy, $
                      label=label, smo=smo, sundir=sundir, map=map, $
@@ -110,10 +146,11 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
                      mass=mass, m_int=mq, erange=erange, window=window, msodir=mso, apid=id, $
                      appdir=app, mmin=mmin, mmax=mmax, plot_sc=plot_sc, swia=swia, $
                      _extra=extra, $ ; for 'plot3d_new' options.
-                     zlog=zlog
+                     zlog=zlog, zrange=zrange, unnormalize=unnormalize
 
   COMMON mvn_c6
   tplot_options, get_option=topt
+  except = !except
   IF SIZE(var1, /type) NE 0 AND SIZE(var2, /type) EQ 0 THEN var2 = var1
   IF SIZE(var2, /type) NE 0 THEN BEGIN
      trange = time_double(var2)
@@ -131,20 +168,11 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
   IF keyword_set(burst) THEN aflg = 1
   IF keyword_set(energy) THEN e1flg = 1 ELSE e1flg = 0
   IF keyword_set(erange) THEN e2flg = 1 ELSE e2flg = 0
-;  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
-;  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
-;  if (n_elements(obins) ne 96) then begin
-;    obins = replicate(1B, 96, 2)
-;    obins[*,0] = reform(abins # dbins, 96)
-;    obins[*,1] = obins[*,0]
-;  endif else obins = byte(obins # [1B,1B])
-;  if (size(mask_sc,/type) eq 0) then mask_sc = 1
-;  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
-
-;  omask = replicate(1.,96,2)
-;  indx = where(obins eq 0B, count)
-;  if (count gt 0L) then omask[indx] = !values.f_nan
-;  omask = reform(replicate(1.,64) # reform(omask, 96*2), 64, 96, 2)
+  IF keyword_set(zrange) THEN unnormalize = 1
+  IF keyword_set(unnormalize) THEN BEGIN
+     nocolorbar = 1
+     IF SIZE(zlog, /type) EQ 0 THEN zlog = 1
+  ENDIF 
 
   IF (SIZE(units, /type) NE 7) THEN units = 'crate'
   IF (SIZE(map, /type) NE 7) THEN map = 'ait'
@@ -218,10 +246,8 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
   IF ~keyword_set(mmax) THEN mmin = 100.
 
   init_swi = 1
-  while (ok) do begin
-
-; Put up a 3D spectrogram
- 
+  WHILE (ok) DO BEGIN   
+     ;; Put up a 3D spectrogram
      wset, wnum
      IF ~keyword_set(id) THEN BEGIN
         idx = nn(mtime, trange)
@@ -258,7 +284,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
            IF SIZE(var1, /type) EQ SIZE(var2, /type) THEN $
               IF compare_struct(var1, var2) EQ 1 THEN IF ((e1flg EQ 0) AND (e2flg EQ 0)) THEN energy = average(ddd.energy, 2)
 
-        if (size(ddd,/type) eq 8) then begin
+        IF (SIZE(ddd, /type) EQ 8) THEN BEGIN
            data = ddd.data
            
            IF (e1flg) THEN BEGIN
@@ -288,21 +314,13 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
                  ENDIF ELSE RETURN
               ENDIF ELSE sebins = 1
            ENDIF ELSE sebins = 1
-           if (size(ebins, /type) eq 0) then ebins = reverse(indgen(ddd.nenergy))
-           nbins = float(n_elements(ebins))
-           
-;      if (dosmo) then begin
-;        ddat = reform(data*omask[*,*,boom],64,16,6)
-;        dat = fltarr(64,32,6)
-;        dat[*,8:23,*] = ddat
-;        dat[*,0:7,*] = ddat[*,8:15,*]
-;        dat[*,24:31,*] = ddat[*,0:7,*]
-;        dats = smooth(dat,nsmo,/nan)
-;        ddd.data = reform(dats[*,8:23,*],64,96)
-;      endif else ddd.data = ddd.data*omask[*,*,boom]
+           IF (SIZE(ebins, /type) EQ 0) THEN ebins = REVERSE(INDGEN(ddd.nenergy))
+           nbins = FLOAT(N_ELEMENTS(ebins))
 
+           IF N_ELEMENTS(ebins) GT 1 THEN nocolorbar = 0
            plot3d_new, ddd, lat, lon, ebins=ebins, sum_ebins=sebins, $
-                       _extra=extra, log=zlog
+                       _extra=extra, log=zlog, zrange=zrange, nocolorbar=nocolorbar
+
            lab2 = ''
            IF keyword_set(mso) THEN BEGIN
               vec = [ [1., 0., 0.], [0., 1., 0.], [0., 0., 1.] ]
@@ -310,8 +328,8 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
                  FOR i=0, 2 DO append_array, vmso, TRANSPOSE(spice_vector_rotate(vec[*, i], MEAN(trange), 'MAVEN_MSO', 'MAVEN_STATIC', verbose=-1)) $
               ELSE FOR i=0, 2 DO append_array, vmso, TRANSPOSE(quaternion_rotation(vec[*, i], qinv(ddd.quat_mso), /last_ind))
               xyz_to_polar, vmso, theta=tmso, phi=pmso, /ph_0_360
-              plots, pmso, tmso, psym=1, color=[2, 4, 6], thick=2, symsize=1.5
-              plots, pmso+180., -tmso, psym=4, color=[2, 4, 6], thick=2, symsize=1.5
+              PLOTS, pmso, tmso, psym=1, color=[2, 4, 6], thick=2, symsize=1.5
+              PLOTS, pmso+180., -tmso, psym=4, color=[2, 4, 6], thick=2, symsize=1.5
               undefine, vec, vmso, tmso, pmso 
               lab2 += ' Xmso (b) Ymso (g) Zmso (r) '
            ENDIF 
@@ -320,19 +338,19 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
                  xsc = TRANSPOSE(spice_vector_rotate([1., 0., 0.], MEAN(trange), 'MAVEN_SPACECRAFT', 'MAVEN_STATIC', verbose=-1)) $
               ELSE xsc = TRANSPOSE(quaternion_rotation([1., 0., 0.], qinv(ddd.quat_sc), /last_ind))
               xyz_to_polar, xsc, theta=tsc, phi=psc, /ph_0_360
-              plots, psc, tsc, psym=7, color=1, thick=2, symsize=1.5
+              PLOTS, psc, tsc, psym=7, color=1, thick=2, symsize=1.5
               undefine, xsc, tsc, psc 
               lab2 += 'APP (m) '
            ENDIF 
            IF keyword_set(plot_sc) THEN $
               mvn_spc_fov_blockage, trange=MEAN(trange), /static, clr=1, /invert_phi, /invert_theta
            
-           if keyword_set(label) then begin
-              lab=strcompress(indgen(ddd.nbins),/rem)
-              xyouts,reform(ddd.phi[ddd.nenergy-1,*]),reform(ddd.theta[ddd.nenergy-1, *]),lab,align=.5
-              xyouts, !x.window[1], !y.window[0]*1.2, lab2, charsize=!p.charsize, /normal, color=255, align=1.
-              xyouts, !x.window[1], !y.window[1]-!y.window[0]*0.5, '(+: Plus / -: Diamond) ', charsize=!p.charsize, /normal, color=255, align=1.
-           endif
+           IF keyword_set(label) THEN BEGIN
+              lab = STRCOMPRESS(INDGEN(ddd.nbins), /rem)
+              XYOUTS, REFORM(ddd.phi[ddd.nenergy-1, *]), REFORM(ddd.theta[ddd.nenergy-1, *]), lab, align=0.5
+              XYOUTS, !x.window[1], !y.window[0]*1.2, lab2, charsize=!p.charsize, /normal, color=255, align=1.
+              XYOUTS, !x.window[1], !y.window[1]-!y.window[0]*0.5, '(+: Plus / -: Diamond) ', charsize=!p.charsize, /normal, color=255, align=1.
+           ENDIF 
 
            XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal, color=255
 
@@ -375,15 +393,33 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
               spec3d, ddd, units=units, limits={yrange:yrange, ystyle:1, ylog:1, psym:0}
            endif
         endif
+
+        IF keyword_set(unnormalize) AND N_ELEMENTS(ebins) EQ 1 THEN BEGIN
+           IF keyword_set(zrange) THEN crange = zrange ELSE crange = minmax(TOTAL(data[ebins:ebins+sebins-1, *], 1), /pos)
+           xposmax = 0.
+           yposmax = 0.
+           yposmin = 1.
+           IF xposmax LT !x.window[1] THEN xposmax = !x.window[1]
+           IF yposmax LT !y.window[1] THEN yposmax = !y.window[1]
+           IF yposmin GT !y.window[1] THEN yposmin = !y.window[0]
+           IF !p.charsize EQ 0 THEN chsz = 1 ELSE chsz = !p.charsize
+           space = chsz * FLOAT(!d.x_ch_size)/!d.x_size
+           colbar_pos =[xposmax+space, yposmin, xposmax+3*space, yposmax]
+           !except = 0
+           draw_color_scale, range=crange, pos=colbar_pos, chars=chsz, log=zlog, ytickformat='mvn_sta_3d_snap_exponent'
+           !except = except
+           XYOUTS, colbar_pos[2], colbar_pos[3] + (colbar_pos[1]/!y.margin[0]), STRUPCASE(units), charsize=chsz, align=0.5, /normal
+           undefine, crange
+        ENDIF  
         
-; Get the next button press
-    ENDIF ELSE dprint, 'Click again.'
+        ;; Get the next button press
+     ENDIF ELSE dprint, 'Click again.'
      wset, wnum
      IF SIZE(var2, /type) EQ 0 THEN BEGIN
         ctime2,trange,npoints=npts,/silent,button=button
         if (size(trange,/type) eq 5) then ok = 1 else ok = 0
      ENDIF ELSE ok = 0
-  endwhile 
+  ENDWHILE  
   
   if (kflg) then begin
      IF SIZE(var2, /type) EQ 0 THEN BEGIN

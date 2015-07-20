@@ -67,10 +67,17 @@
 ;
 ;         error(optional): named variable in which to return the error state
 ;             of the procedure.  1 for success, 0 for failure
-;         
-;         R0(optional): Minimum trace distance in RE.
+;             
+;         R0(optional):  radius of a sphere (in re), defining the inner boundary of the tracing region
+;         (usually, earth's surface or the ionosphere, where r0~1.0)
+;         if the field line reaches that sphere from outside, its inbound tracing is
+;         terminated and the crossing point coordinates xf,yf,zf  are calculated.
+;         (units are km if /km is set)
 ;
-;         RLIM(optional): Maximum trace distance in RE (default 60 RE)
+;         RLIM(optional) - radius of a sphere (in re), defining the outer boundary of the tracing region;
+;         if the field line reaches that boundary from inside, its outbound tracing is
+;         terminated and the crossing point coordinates xf,yf,zf are calculated.(default 60 RE)
+;         (units are km if /km is set)   
 ;
 ;         NOBOUNDARY(optional): Override boundary limits.
 ;
@@ -119,8 +126,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 16:40:49 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16595 $
+; $LastChangedDate: 2015-07-18 14:10:46 -0700 (Sat, 18 Jul 2015) $
+; $LastChangedRevision: 18174 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/trace/trace2equator.pro $
 ;-
 

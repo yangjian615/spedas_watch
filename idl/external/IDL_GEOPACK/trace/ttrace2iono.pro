@@ -78,10 +78,16 @@
 ;             unmodified version instead of the Angelopoulos's 
 ;             refined version
 ;
-;         R0(optional): Minimum trace distance in RE,unless /km is set.
+;        R0(optional):  radius of a sphere (in re), defining the inner boundary of the tracing region
+;         (usually, earth's surface or the ionosphere, where r0~1.0)
+;         if the field line reaches that sphere from outside, its inbound tracing is
+;         terminated and the crossing point coordinates xf,yf,zf  are calculated.
+;         (units are km if /km is set)
 ;
-;         RLIM(optional): Maximum trace distance in RE
-;             unless,/km is set (default: 60 RE)
+;         RLIM(optional) - radius of a sphere (in re), defining the outer boundary of the tracing region;
+;         if the field line reaches that boundary from inside, its outbound tracing is
+;         terminated and the crossing point coordinates xf,yf,zf are calculated.(default 60 RE)
+;         (units are km if /km is set)
 ;
 ;         NOBOUNDARY(optional): Override boundary limits.
 ; 
@@ -206,9 +212,9 @@
 ;  4. All calculations are done internally in double precision
 ;
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-18 08:23:43 -0700 (Tue, 18 Mar 2014) $
-; $LastChangedRevision: 14569 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-07-18 14:10:46 -0700 (Sat, 18 Jul 2015) $
+; $LastChangedRevision: 18174 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/trace/ttrace2iono.pro $
 ;-
 
