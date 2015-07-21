@@ -18,8 +18,8 @@
 ;                   If set, then the priority order is: L2_FULL, L1_FULL.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-30 17:57:15 -0700 (Sat, 30 May 2015) $
-; $LastChangedRevision: 17770 $
+; $LastChangedDate: 2015-07-20 10:12:28 -0700 (Mon, 20 Jul 2015) $
+; $LastChangedRevision: 18177 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_addmag.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
@@ -29,55 +29,27 @@ pro mvn_swe_addmag, full=full
   @mvn_swe_com
   
   swe_mag1 = 0
+  maglev = 'L0'
 
 ; Get the highest level MAG data available
 
-  maglev = 0B
+  mvn_mag_load, 'L2_1SEC'
+  get_data, 'mvn_B_1sec', data=mag1, alim=lim, index=i
 
-  if ((maglev eq 0B) and ~keyword_set(full)) then begin
-    get_data,'mvn_B_1sec',index=i
-    if (i gt 0) then store_data, i, /delete
-    mvn_mag_load, 'L2_1SEC'
-    get_data,'mvn_B_1sec',data=mag1,index=i
-    if (i gt 0) then maglev = 2B
-  endif
-
-  if (maglev eq 0B) then begin
-    get_data,'mvn_B_full',index=i
-    if (i gt 0) then store_data, i, /delete
-    mvn_mag_load, 'L2_FULL'
-    get_data,'mvn_B_full',data=mag1,index=i
-    if (i gt 0) then begin
-      mag1.y = smooth_in_time(mag1.y, mag1.x, 1D)
-      maglev = 2B
-    endif
-  endif
-
-  if ((maglev eq 0B) and ~keyword_set(full)) then begin
-    get_data,'mvn_B_1sec',index=i
-    if (i gt 0) then store_data, i, /delete
-    mvn_mag_load, 'L1_1SEC'
-    get_data,'mvn_B_1sec',data=mag1,index=i
-    if (i gt 0) then maglev = 1B
-  endif
-
-  if (maglev eq 0B) then begin
-    get_data,'mvn_B_full',index=i
-    if (i gt 0) then store_data, i, /delete
-    mvn_mag_load, 'L1_FULL'
-    get_data,'mvn_B_full',data=mag1,index=i
-    if (i gt 0) then begin
-      mag1.y = smooth_in_time(mag1.y, mag1.x, 1D)
-      maglev = 1B
-    endif
-  endif
-  
-  if (maglev eq 0B) then begin
+  if (i eq 0) then begin
     print,"No MAG data found!"
     return
   endif
 
-  print, string(maglev,format='("Using MAG L",i1," data.")')
+  str_element, lim, 'level', maglev, success=ok
+  case strupcase(maglev) of
+    'L1' : maglev = 1
+    'L2' : maglev = 2
+    else : maglev = 0
+  endcase
+  
+  if (maglev eq 0) then print, "MAG level unknown!" $
+                   else print, string(maglev,format='("Using MAG L",i1," data.")')
 
 ; Rotate to the SWEA frame using same code as flight software (no SPICE)
 
