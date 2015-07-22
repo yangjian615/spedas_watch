@@ -51,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-15 13:42:24 -0700 (Wed, 15 Jul 2015) $
-; $LastChangedRevision: 18145 $
+; $LastChangedDate: 2015-07-21 02:46:38 -0700 (Tue, 21 Jul 2015) $
+; $LastChangedRevision: 18190 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -432,13 +432,13 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
 
         undefine, alim, b
         undefine, valid, idx, nidx
-        status = EXECUTE("spice_vector_rotate_tplot, 'mvn_B_1sec', 'MAVEN_MSO', trange=trange, verbose=verbose, check_object=check_obj")
+        status = EXECUTE("spice_vector_rotate_tplot, 'mvn_B_1sec', 'MAVEN_MSO', verbose=verbose, check_object=check_obj")
         IF status EQ 1 THEN BEGIN 
            store_data, 'mvn_B_1sec', /delete, verbose=verbose
            bvec = 'mvn_mag_' + STRLOWCASE(lvl) + '_bmso_1sec'
            store_data, 'mvn_B_1sec_MAVEN_MSO', newname=bvec
            frame = 'MSO'
-           options, bvec, ysubtitle='Bmso [nT]', def
+           options, bvec, ysubtitle='Bmso [nT]', /def
         ENDIF ELSE BEGIN
            bvec = 'mvn_mag_' + STRLOWCASE(lvl) + '_bpl_1sec'
            store_data, 'mvn_B_1sec', newname=bvec

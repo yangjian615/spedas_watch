@@ -59,8 +59,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-07 14:50:45 -0700 (Tue, 07 Jul 2015) $
-;  $LastChangedRevision: 18030 $
+;  $LastChangedDate: 2015-07-20 16:18:07 -0700 (Mon, 20 Jul 2015) $
+;  $LastChangedRevision: 18186 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_find_science_files.pro $
 
 ;
@@ -133,7 +133,8 @@ loc_fail = where(download_fail eq 1, count_fail)
 
 if count_fail gt 0 then begin
   loc_success = where(download_fail eq 0, count_success)
-  print, 'Some of the downloads from the SDC timed out. Try again later if plot is missing data.'
+  warning_string, 'Some of the ' + instrument_id + ' downloads from the SDC timed out. Try again later if plot is missing data.'
+  print, warning_string
   if count_success gt 0 then begin
     local_flist = local_flist(loc_success)
   endif else if count_success eq 0 then begin
@@ -146,14 +147,27 @@ endif
 
 file_flag = 0
 if login_flag eq 1 then begin
-  print, 'Unable to locate files on the SDC server, checking local cache...'
+  warning_string = 'Unable to locate ' + instrument_id + ' files on the SDC server, checking local cache...'
+  print, warning_string
   
   if keyword_set(descriptor) then begin
-    mms_check_local_cache, local_flist, file_flag, $
-      mode, instrument_id, level, sc_id
+    
+;    mms_check_local_cache, local_flist, file_flag, $
+;      mode, instrument_id, level, sc_id
+
+    mms_check_local_cache_multi, local_flist, file_flag, $
+      sc_id = sc_id, level=level, $
+      mode=mode, instrument_id=instrument_id, $
+      optional_descriptor=descriptor
+      
   endif else begin
-    mms_check_local_cache, local_flist, file_flag, $
-      mode, instrument_id, level, sc_id, optional_descriptor=descriptor
+    
+    mms_check_local_cache_multi, local_flist, file_flag, $
+      sc_id = sc_id, level=level, $
+      mode=mode, instrument_id=instrument_id
+      
+;    mms_check_local_cache, local_flist, file_flag, $
+;      mode, instrument_id, level, sc_id, optional_descriptor=descriptor
   endelse
 endif
 
@@ -167,7 +181,8 @@ if login_flag eq 0 or file_flag eq 0 then begin
   endif 
   
 endif else begin
-  print, 'No data available for timerange specified or invalid query!'
+  warning_string = 'No ' + instrument_id + ' data available for timerange specified or invalid query!'
+  print, warning_string
   fail_flag = 1
 endelse
 

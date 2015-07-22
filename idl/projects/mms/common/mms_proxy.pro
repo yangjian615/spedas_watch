@@ -1,4 +1,26 @@
-PRO eva_proxy_test_event, ev
+;+
+;NAME:    mms_proxy
+;
+;PURPOSE:
+;   (1) To set a proxy and establish a connection to SDC, on the fly.
+;   (2) To store/delete proxy information into/from a configuration file.
+;
+;NOTE:
+;   If the proxy requires proxy_username and proxy_password, then the user
+;   needs to use this program everytime he/she needs to access SDC because
+;   we do not store a password.
+;
+;KEYWORDS:
+;
+;HISTORY:
+; 2015-07-20, moka, Created
+;
+; $LastChangedBy: moka $
+; $LastChangedDate: 2015-07-20 22:46:29 -0700 (Mon, 20 Jul 2015) $
+; $LastChangedRevision: 18189 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_proxy.pro $
+;-
+PRO mms_proxy_event, ev
   compile_opt idl2
   widget_control, ev.top, GET_UVALUE=wid
 
@@ -51,14 +73,11 @@ PRO eva_proxy_test_event, ev
       r = get_mms_sitl_connection($
         group_leader = ev.top,$
         PROXY_AUTHENTICATION = wid.prox.auth,$
-        PROXY_HOSTNAME = wid.prox.host, $
+        PROXY_HOSTNAME = wid.prox.host[0], $
         PROXY_PORT = wid.prox.port, $
         PROXY_USERNAME = wid.prox.user,$
         PROXY_PASSWORD = wid.prox.pass)
 
-      timespan,'2015-05-06/23:00',12,/hours
-      mms_load_afg, sc='mms3'
-      xtplot,[1,2]
       end
     else:
   endcase
@@ -70,7 +89,7 @@ PRO eva_proxy_test_event, ev
   endelse
 END
 
-PRO eva_proxy_test
+PRO mms_proxy
   compile_opt idl2
   
   ;-----------
@@ -80,13 +99,13 @@ PRO eva_proxy_test
   ysize = 480
   xbtnsize = 80
   dimscr = get_screen_size()
-  prox = {auth:3L, host:'proxy-west.aero.org', port:'80', user:'', pass:''}
+  prox = {auth:3L, host:'example.org', port:'80', user:'', pass:''}
   str_element,/add,wid,'prox',prox
   
   ;-----------
   ; BASE
   ;-----------
-  base = widget_base(TITLE = 'EVA_PROXY_TEST',/column,$
+  base = widget_base(TITLE = 'MMS_PROXY',/column,$
     XSIZE=xsize,XOFFSET=dimscr[0]*0.5-xsize*0.5,YOFFSET=dimscr[1]*0.5-ysize*0.5)
   str_element,/add,wid,'base',base
 
@@ -110,6 +129,6 @@ PRO eva_proxy_test
   ;-----------
   widget_control, base, /REALIZE
   widget_control, base, SET_UVALUE=wid
-  xmanager, 'eva_proxy_test', base, /no_block
+  xmanager, 'mms_proxy', base, /no_block
   
 END

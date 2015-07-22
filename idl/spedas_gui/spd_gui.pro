@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-09 13:54:22 -0700 (Thu, 09 Jul 2015) $
-;$LastChangedRevision: 18051 $
+;$LastChangedDate: 2015-07-20 15:12:54 -0700 (Mon, 20 Jul 2015) $
+;$LastChangedRevision: 18182 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1367,6 +1367,8 @@ PRO spd_gui,reset=reset,template_filename=template_filename
     message, /info, 'You are already running spd_gui'
     Return
   Endif
+  
+  splash_widget = spd_ui_splash_widget()
 
   ;thm_init
   spedas_init
@@ -1379,9 +1381,9 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   ;stop reporting of floating point errors(which will get annoying)
   !EXCEPT=0
 
+  getresourcepath,rpath
   ;use spedas bitmap as toolbar icon for newer versions
   if double(!version.release) ge 6.4d then begin
-    getresourcepath,rpath
     palettebmp = read_bmp(rpath + 'thmLogo.bmp', /rgb)
     palettebmp = transpose(palettebmp, [1,2,0])
     _extra = {bitmap:palettebmp}
@@ -1593,7 +1595,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
 
   ; First get the bitmap full path name
   
-  getresourcepath,rpath
+ ; getresourcepath,rpath
   openBMP = read_bmp(rpath + 'folder_horizontal_open.bmp',/rgb)
   saveBMP = read_bmp(rpath + 'disk.bmp',/rgb)
   printBMP = read_bmp(rpath + 'printer.bmp',/rgb)
@@ -2086,16 +2088,18 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   !spedas.historyWin = historyWin
   !spedas.guiId = master
   
-  
   Widget_Control, master, set_UValue=info, /No_Copy
   
   ;reset the direct graphics plot device to whatever it was before the gui was started
   set_plot,dev
   !P=plot_var
   
-  XManager, 'spd_gui', master, /No_Block
+  ; close the splash screen
+  widget_control, splash_widget, /destroy
   
+  XManager, 'spd_gui', master, /No_Block
   if double(!version.release) lt 8.0 then heap_gc
+  
 
 RETURN
 
