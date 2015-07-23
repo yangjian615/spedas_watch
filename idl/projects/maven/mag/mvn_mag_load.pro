@@ -11,8 +11,8 @@
 ;
 ; Author: Davin Larson and Roberto Livi
 ; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2015-07-09 16:12:05 -0700 (Thu, 09 Jul 2015) $
-; $LastChangedRevision: 18058 $
+; $LastChangedDate: 2015-07-21 16:18:23 -0700 (Tue, 21 Jul 2015) $
+; $LastChangedRevision: 18197 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load.pro $
 
 ;-
@@ -32,6 +32,7 @@ pro mvn_mag_load,format,$
                  pathname      = pathname,$
                  data          = str_all,$
                  spice_frame   = spice_frame,$
+                 time_crop     = time_crop,$
                  mag_product   = mag_product
   
 
@@ -94,6 +95,16 @@ pro mvn_mag_load,format,$
            append_array,str_all,data,index=ind
         endfor
         append_array,str_all,index=ind        
+
+        ;;-----------------------------------------
+        ;; Crop save file according to trange
+        if keyword_set(time_crop) then begin           
+           if ~keyword_set(trange) then trange = timerange()
+           pp = where(str_all.time ge trange[0] and $
+                      str_all.time le trange[1],cc)
+           if cc ne 0 then str_all=str_all[pp]
+        endif
+
         ;;-----------------------------------------
         ;; Select data prodcut to plot
         nn = n_elements(str_all.time)
@@ -119,6 +130,10 @@ pro mvn_mag_load,format,$
         ;; frame = header.spice_frame                 
         ;; Not all files are consistent yet.
         frame ='MAVEN_SPACECRAFT'
+
+
+        ;;-----------------------------------------
+        ;; TPLOT
         if keyword_set(tplot_flag) then begin
            store_data,'mvn_B_full',$
                       str_all.time,$
@@ -186,6 +201,15 @@ pro mvn_mag_load,format,$
            append_array,str_all,data,index=ind
         endfor
         append_array,str_all,index=ind
+
+        ;;-----------------------------------------
+        ;; Crop save file according to trange
+        if keyword_set(time_crop) then begin           
+           if ~keyword_set(trange) then trange = timerange()
+           pp = where(str_all.time ge trange[0] and $
+                      str_all.time le trange[1],cc)
+           if cc ne 0 then str_all=str_all[pp]
+        endif
 
         ;;-----------------------------------------
         ;; Select data prodcut to plot
@@ -274,6 +298,15 @@ pro mvn_mag_load,format,$
            append_array,str_all,data,index=ind
         endfor
         append_array,str_all,index=ind
+
+        ;;-----------------------------------------
+        ;; Crop save file according to trange
+        if keyword_set(time_crop) then begin           
+           if ~keyword_set(trange) then trange = timerange()
+           pp = where(str_all.time ge trange[0] and $
+                      str_all.time le trange[1],cc)
+           if cc ne 0 then str_all=str_all[pp]
+        endif
 
         ;;-----------------------------------------
         ;; Select data prodcut to plot
@@ -378,6 +411,15 @@ pro mvn_mag_load,format,$
         append_array,str_all,index=ind
 
         ;;-----------------------------------------
+        ;; Crop save file according to trange
+        if keyword_set(time_crop) then begin           
+           if ~keyword_set(trange) then trange = timerange()
+           pp = where(str_all.time ge trange[0] and $
+                      str_all.time le trange[1],cc)
+           if cc ne 0 then str_all=str_all[pp]
+        endif
+
+        ;;-----------------------------------------
         ;; Check between new and old versions
         nn = n_elements(str_all.time)
         tags = tag_names(str_all)
@@ -458,6 +500,15 @@ pro mvn_mag_load,format,$
         append_array,str_all,index=ind
 
         ;;-----------------------------------------
+        ;; Crop save file according to trange
+        if keyword_set(time_crop) then begin           
+           if ~keyword_set(trange) then trange = timerange()
+           pp = where(str_all.time ge trange[0] and $
+                      str_all.time le trange[1],cc)
+           if cc ne 0 then str_all=str_all[pp]
+        endif
+
+        ;;-----------------------------------------
         ;; Check between new and old versions
         nn = n_elements(str_all.time)
         tags = tag_names(str_all)
@@ -535,6 +586,15 @@ pro mvn_mag_load,format,$
            append_array,str_all,data,index=ind
         endfor
         append_array,str_all,index=ind
+
+        ;;-----------------------------------------
+        ;; Crop save file according to trange
+        if keyword_set(time_crop) then begin           
+           if ~keyword_set(trange) then trange = timerange()
+           pp = where(str_all.time ge trange[0] and $
+                      str_all.time le trange[1],cc)
+           if cc ne 0 then str_all=str_all[pp]
+        endif
 
         ;;-----------------------------------------
         ;; Check between new and old versions
