@@ -59,8 +59,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-20 16:18:07 -0700 (Mon, 20 Jul 2015) $
-;  $LastChangedRevision: 18186 $
+;  $LastChangedDate: 2015-07-22 12:53:11 -0700 (Wed, 22 Jul 2015) $
+;  $LastChangedRevision: 18206 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_find_science_files.pro $
 
 ;
@@ -152,22 +152,22 @@ if login_flag eq 1 then begin
   
   if keyword_set(descriptor) then begin
     
-;    mms_check_local_cache, local_flist, file_flag, $
-;      mode, instrument_id, level, sc_id
+    mms_check_local_cache, local_flist, file_flag, $
+      mode, instrument_id, level, sc_id, optional_descriptor=descriptor
 
-    mms_check_local_cache_multi, local_flist, file_flag, $
-      sc_id = sc_id, level=level, $
-      mode=mode, instrument_id=instrument_id, $
-      optional_descriptor=descriptor
+;    mms_check_local_cache_multi, local_flist, file_flag, $
+;      sc_id = sc_id, level=level, $
+;      mode=mode, instrument_id=instrument_id, $
+;      optional_descriptor=descriptor
       
   endif else begin
     
-    mms_check_local_cache_multi, local_flist, file_flag, $
-      sc_id = sc_id, level=level, $
-      mode=mode, instrument_id=instrument_id
+;    mms_check_local_cache_multi, local_flist, file_flag, $
+;      sc_id = sc_id, level=level, $
+;      mode=mode, instrument_id=instrument_id
       
-;    mms_check_local_cache, local_flist, file_flag, $
-;      mode, instrument_id, level, sc_id, optional_descriptor=descriptor
+    mms_check_local_cache, local_flist, file_flag, $
+      mode, instrument_id, level, sc_id
   endelse
 endif
 

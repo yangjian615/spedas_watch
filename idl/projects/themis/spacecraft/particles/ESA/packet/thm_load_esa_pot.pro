@@ -53,7 +53,7 @@
 ;	
 ;-
 
-pro thm_load_esa_pot,sc=sc,probe=probe,themishome=themishome,datatype=datatype,efi_datatype=efi_datatype,pot_scale=pot_scale,offset=offset,min_pot=min_pot,make_plot=make_plot,trange=trange,tr4_min_pot=tr4_min_pot, use_vaf_offset=use_vaf_offset,use_dist2scpot=use_dist2scpot,scpot_est_datatype=scpot_est_datatype
+pro thm_load_esa_pot,sc=sc,probe=probe,themishome=themishome,datatype=datatype,efi_datatype=efi_datatype,pot_scale=pot_scale,offset=offset,min_pot=min_pot,make_plot=make_plot,trange=trange,tr4_min_pot=tr4_min_pot, use_vaf_offset=use_vaf_offset,use_dist2scpot=use_dist2scpot,est_scpot_datatype=est_scpot_datatype
 
 compile_opt idl2, hidden
 
@@ -386,7 +386,7 @@ compile_opt idl2, hidden
      for i=0,nsc-1 do begin
 
         if keyword_set(use_dist2scpot) And probes[i] ne 'f' then begin
-           thm_esa_est_dist2scpot, date_tmp, probes[i], esa_datatype=scpot_est_datatype
+           thm_esa_est_dist2scpot, date_tmp, probes[i], esa_datatype=est_scpot_datatype
            copy_data, 'th'+probes[i]+'_est_scpot', 'th'+probes[i]+'_esa_pot'
            get_data, 'th'+probes[i]+'_esa_pot', data = tmp
            if size(/type, tmp) eq 8 then begin

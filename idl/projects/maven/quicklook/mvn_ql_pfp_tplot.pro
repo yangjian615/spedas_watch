@@ -51,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-21 02:46:38 -0700 (Tue, 21 Jul 2015) $
-; $LastChangedRevision: 18190 $
+; $LastChangedDate: 2015-07-22 15:18:43 -0700 (Wed, 22 Jul 2015) $
+; $LastChangedRevision: 18212 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -416,19 +416,16 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   ; MAG 
   bvec = 'mvn_mag_bmso_1sec'
   IF (mflg) THEN BEGIN
-     mvn_mag_load, trange=trange
+     mvn_mag_load, trange=trange, timecrop=trange
      tname = tnames('mvn_B*', ntplot)
      IF ntplot GT 0 THEN BEGIN
         get_data, tname, alim=alim, data=b
         lvl = alim.level
         btot = SQRT(TOTAL(b.y*b.y, 2))
 
-        idx = WHERE(b.x GE trange[0] AND b.x LE trange[1], nidx) ; Scheduled to remove in near future.
-        IF nidx GT 0 THEN BEGIN
-           valid = spice_valid_times(time_ephemeris(b.x[idx]), object='MAVEN_SPACECRAFT')
-           idx = WHERE(valid EQ 1B, nidx)
-           IF FLOAT(nidx) / FLOAT(N_ELEMENTS(valid)) GT 0.5 THEN check_obj = 'MAVEN_SPACECRAFT'
-        ENDIF 
+        valid = spice_valid_times(time_ephemeris(b.x), object='MAVEN_SPACECRAFT')
+        idx = WHERE(valid EQ 1B, nidx)
+        IF FLOAT(nidx) / FLOAT(N_ELEMENTS(valid)) GT 0.5 THEN check_obj = 'MAVEN_SPACECRAFT'
 
         undefine, alim, b
         undefine, valid, idx, nidx

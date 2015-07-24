@@ -156,7 +156,7 @@ for j=0,n_elements(filenames)-1 do begin
 			nbins:nbins, $
 			nenergy:nenergy, $
 			geom_factor:geom_factor, $
-			data_ind:data_ind, $
+			data_ind:long(data_ind), $
 			gf_ind:gf_ind, $
 			bins_ind:bins_ind, $
 			mode_ind:mode_ind, $

@@ -1,7 +1,7 @@
-; ;+
+;+
 ; PROCEDURE: mms_load_dsp
 ;
-; PURPOSE: Fetches desired data from the DSP (Digital Signal Processor) instrument.
+; PURPOSE: Fetches desired data from the DSP (Digital Signal Processing) Board.
 ;
 ; INPUT:
 ; :Keywords:
@@ -9,32 +9,25 @@
 ;                    Default input is timespan input.
 ;    sc           : OPTIONAL - desired spacecraft, Ex: 'mms1'
 ;                    Default input is all s/c
-;    mode         : OPTIONAL - desired data sampling mode, Ex: ['slow', 'srvy']
-;                    Default input, all but brst (to avoid destroying your hard drive)
-;    level        : OPTIONAL - desired level, options are level 1a, 1b, ql, 1
+;    mode         : OPTIONAL - desired data sampling mode, Example: mode='srvy'
+;                             due to cataloging at the SDC, WE REQUIRE YOU LOAD ONLY ONE MODE AT A TIME
+;                    Default input - srvy mode
+;    level        : OPTIONAL - desired level, options are level 1a, 1b, ql, 2
 ;                    Default input - all levels
-;    data_type    : OPTIONAL - desired data type. Ex: ['epsd', 'bpsd', 'tdn', 'swd']
+;    data_type    : OPTIONAL - desired data type. Ex: ['epsd', 'tdn', 'swd']
 ;                    Default input - all data types!
 ;
 ;    no_update    : OPTIONAL - /no_update to ensure your current data is not reloaded due to an update at the SDC
 ;    reload       : OPTIONAL - /reload to ensure current data is reloaded due to an update at the SDC
 ;    DO NOT DO BOTH /NO_UPDATE AND /RELOAD TOGETHER. THAT IS SILLY!
-;    no_sweeps    : OPTIONAL - /no_sweeps to remove any sweeps done during commissioning.
-;                              Hopefully you'll never have to use this outside of commissioning
 ;    get_support  : OPTIONAL - /get_support to get support data within the CDF
-;                               Automatically called when /no_sweeps is called
+;   
 
 ;
 ;
 ; OUTPUT: tplot variables listed at the end of the procedure
 ; :Author: Katherine Goodrich, contact: katherine.goodrich@colorado.edu
 ;-
-
-; $LastChangedBy: rickwilder $
-; $LastChangedDate: 2015-06-01 15:54:08 -0700 (Mon, 01 Jun 2015) $
-; $LastChangedRevision: 17778 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_load_dsp.pro $
-
 
 
 pro mms_load_dsp, trange=trange, sc=sc, $
@@ -50,19 +43,29 @@ pro mms_load_dsp, trange=trange, sc=sc, $
   
   instrument_id = 'dsp'
   if not keyword_set(sc) then sc = ['mms1', 'mms2', 'mms3', 'mms4']  
-  if not keyword_set(mode) then mode = ['brst', 'fast', 'slow', 'srvy']
-  if not keyword_set(data_type) then data_type = ['epsd', 'bpsd','tdn', 'swd']
-  if not keyword_set(level) then level = ['l1a', 'l1b', 'l2']
-  if keyword_set(no_update) and keyword_set(reload) then begin
-    print, 'MMS_LOAD_DSP: Keywords NO_UPDATE and RELOAD are incompatible and cannot be called at once'
+  if not keyword_set(mode) then mode = 'srvy'
+  if n_elements(mode) gt 1 then begin
+    dprint, 'Cannot select more than one mode at a time.'
+    print, 'Please confine your query to one mode (Ex: mode="srvy")'
     print, 'Exiting, MMS_LOAD_DSP, no tplot variables loaded'
     return
   endif
-  if size(sc, /type) ne 7 then sc = string(sc)
+
+  if not keyword_set(data_type) then data_type = ['epsd', 'bpsd','tdn', 'swd']
+  if not keyword_set(level) then level = ['l1a', 'l1b', 'l2']
+  if keyword_set(no_update) and keyword_set(reload) then begin
+    dprint, 'Keywords NO_UPDATE and RELOAD are incompatible and cannot be called at once'
+    print, 'You silly person.'
+    print, 'Exiting, MMS_LOAD_DSP, no tplot variables loaded'
+    return
+  endif
+  if size(sc, /type) ne 7 then sc = strtrim(string(sc),1)
   sc_len = strlen(sc)
-  if sc_len[0] eq 1 then sc_id = 'mms'+sc
+
+  if sc_len[0] eq 1 then sc = 'mms'+sc
+  sc_len = strlen(sc)
   if sc_len[0] ne 4 or total(strmatch(['mms1', 'mms2', 'mms3', 'mms4'],sc[0])) eq 0 then begin
-    print, 'MMS_LOAD_EDP: INVALID SC ENTRY. VALID INPUTS EITHER "MMS#" OR "#"'
+    dprint, 'MMS_LOAD_EDP: INVALID SC ENTRY. VALID INPUTS EITHER "MMS#" OR "#"'
     print, 'Exiting, MMS_LOAD_DSP, no tplot variables loaded'
     return
   endif
@@ -87,7 +90,7 @@ pro mms_load_dsp, trange=trange, sc=sc, $
         print, 'PLEASE ALTER SEARCH'
         print, 'NO BPSD tplot variables loaded'
       endif else begin
-        mms_data_fetch, flist, login_flag, sc_id=sc, $
+        mms_data_fetch, flist, login_flag, dwnld_flag, sc_id=sc, $
           instrument_id=instrument_id, mode=mode, level=level, optional_descriptor=data_type_l1, $
           no_update=no_update, reload=reload
         nf = n_elements(flist)
@@ -165,7 +168,7 @@ pro mms_load_dsp, trange=trange, sc=sc, $
         print, 'PLEASE ALTER SEARCH'
         print, 'NO EPSD tplot variables loaded'
       endif else begin
-        mms_data_fetch, flist, login_flag, sc_id=sc, $
+        mms_data_fetch, flist, login_flag, dwnld_flag, sc_id=sc, $
           instrument_id=instrument_id, mode=mode, level=lower_level, optional_descriptor=data_type_l1, $
           no_update=no_update, reload=reload
         nf = n_elements(flist)
@@ -253,61 +256,61 @@ pro mms_load_dsp, trange=trange, sc=sc, $
       instrument_id=instrument_id, data_rate_mode=mode, $
       data_level=level, descriptor=data_type, start_date=start_date, end_date=end_date)
     if strlen(finfo[0]) eq 0 then begin
-      print, 'MMS_LOAD_DSP: COULD NOT FIND ANY DATA MATCHING CRITERIA:'
+      dprint, 'COULD NOT FIND ANY DATA MATCHING CRITERIA:'
       print, 'TIME RANGE = ', st
       print, 'SC = ', sc
       print, 'DATA_TYPE = ', data_type
-      print, 'LEVEL = ', level
+      print, 'LEVEL = ', 'l2'
       print, 'MODE = ', mode
       print, 'PLEASE ALTER SEARCH'
       print, 'No tplot variables loaded'
-      return
     endif 
-
-    mms_data_fetch, flist, login_flag, sc_id=sc, $
-      instrument_id=instrument_id, mode=mode, level='l2', optional_descriptor=data_type, $
-      no_update=no_update, reload=reload
-    mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
-      descriptors, version_strings, start_strings, years, /contains_dir
-      
-; sort filenames by data type, then mode, then date
-    ind = sort(descriptors)
-    ;  flist = flist[ind]
-    dtypes = descriptors[ind]
-    dtypes = dtypes[uniq(dtypes)]
-    nd = n_elements(dtypes)
-    mds = modes[sort(modes)]
-    mds = mds[uniq(mds)]
-    nm = n_elements(mds)
-    for obs = 0, n_elements(sc) -1  do begin
+    if finfo[0] ne 0 then begin
+      mms_data_fetch, flist, login_flag, dwnld_flag, sc_id=sc, $
+        instrument_id=instrument_id, mode=mode, level='l2', optional_descriptor=data_type, $
+        no_update=no_update, reload=reload
       mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
         descriptors, version_strings, start_strings, years, /contains_dir
-      ind = where(sc_ids eq sc[obs])
-      if total(ind) eq -1 then break
-      fles = flist[ind]
-      for d=0, nd-1 do begin
-        dtyp = dtypes[d]
-        mms_parse_file_name, fles, sc_ids, inst_ids, modes, levels, $
+      
+; sort filenames by data type, then mode, then date
+      ind = sort(descriptors)
+    ;  flist = flist[ind]
+      dtypes = descriptors[ind]
+      dtypes = dtypes[uniq(dtypes)]
+      nd = n_elements(dtypes)
+      mds = modes[sort(modes)]
+      mds = mds[uniq(mds)]
+      nm = n_elements(mds)
+      for obs = 0, n_elements(sc) -1  do begin
+        mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
           descriptors, version_strings, start_strings, years, /contains_dir
-        ind = where(descriptors eq dtyp)
+        ind = where(sc_ids eq sc[obs])
         if total(ind) eq -1 then break
-        fles1 = fles[ind]
-        for m=0, nm-1 do begin
-          mde = mds[m]
-          mms_parse_file_name, fles1, sc_ids, inst_ids, modes, levels, $
+        fles = flist[ind]
+        for d=0, nd-1 do begin
+          dtyp = dtypes[d]
+          mms_parse_file_name, fles, sc_ids, inst_ids, modes, levels, $
             descriptors, version_strings, start_strings, years, /contains_dir
-          ind = where(modes eq mde)
+          ind = where(descriptors eq dtyp)
           if total(ind) eq -1 then break
-          fles2 = fles1[ind]
-          fles2 = mms_sort_filenames_by_date(fles2)
-          cdfi = cdf_load_vars(fles2, var_type=var_type)
-          cdf_info_to_tplot, cdfi, tplotnames=tplotnames
-          names = [names, tplotnames]
+          fles1 = fles[ind]
+          for m=0, nm-1 do begin
+            mde = mds[m]
+            mms_parse_file_name, fles1, sc_ids, inst_ids, modes, levels, $
+              descriptors, version_strings, start_strings, years, /contains_dir
+            ind = where(modes eq mde)
+            if total(ind) eq -1 then break
+            fles2 = fles1[ind]
+            fles2 = mms_sort_filenames_by_date(fles2)
+            cdfi = cdf_load_vars(fles2, var_type=var_type)
+            cdf_info_to_tplot, cdfi, tplotnames=tplotnames
+            names = [names, tplotnames]
+          endfor
         endfor
       endfor
-    endfor
     
          
+    endif
   endif
   PRINT, 'LOADED THE FOLLOWING VARIABLES:'
   tplot_names, names, /sort

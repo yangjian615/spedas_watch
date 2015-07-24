@@ -11,8 +11,8 @@
 ;
 ; Author: Davin Larson and Roberto Livi
 ; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2015-07-21 16:18:23 -0700 (Tue, 21 Jul 2015) $
-; $LastChangedRevision: 18197 $
+; $LastChangedDate: 2015-07-22 14:59:48 -0700 (Wed, 22 Jul 2015) $
+; $LastChangedRevision: 18210 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load.pro $
 
 ;-
@@ -32,7 +32,7 @@ pro mvn_mag_load,format,$
                  pathname      = pathname,$
                  data          = str_all,$
                  spice_frame   = spice_frame,$
-                 time_crop     = time_crop,$
+                 timecrop      = timecrop,$
                  mag_product   = mag_product
   
 
@@ -98,7 +98,7 @@ pro mvn_mag_load,format,$
 
         ;;-----------------------------------------
         ;; Crop save file according to trange
-        if keyword_set(time_crop) then begin           
+        if keyword_set(timecrop) then begin           
            if ~keyword_set(trange) then trange = timerange()
            pp = where(str_all.time ge trange[0] and $
                       str_all.time le trange[1],cc)
@@ -204,7 +204,7 @@ pro mvn_mag_load,format,$
 
         ;;-----------------------------------------
         ;; Crop save file according to trange
-        if keyword_set(time_crop) then begin           
+        if keyword_set(timecrop) then begin           
            if ~keyword_set(trange) then trange = timerange()
            pp = where(str_all.time ge trange[0] and $
                       str_all.time le trange[1],cc)
@@ -301,7 +301,7 @@ pro mvn_mag_load,format,$
 
         ;;-----------------------------------------
         ;; Crop save file according to trange
-        if keyword_set(time_crop) then begin           
+        if keyword_set(timecrop) then begin           
            if ~keyword_set(trange) then trange = timerange()
            pp = where(str_all.time ge trange[0] and $
                       str_all.time le trange[1],cc)
@@ -412,7 +412,7 @@ pro mvn_mag_load,format,$
 
         ;;-----------------------------------------
         ;; Crop save file according to trange
-        if keyword_set(time_crop) then begin           
+        if keyword_set(timecrop) then begin           
            if ~keyword_set(trange) then trange = timerange()
            pp = where(str_all.time ge trange[0] and $
                       str_all.time le trange[1],cc)
@@ -501,7 +501,7 @@ pro mvn_mag_load,format,$
 
         ;;-----------------------------------------
         ;; Crop save file according to trange
-        if keyword_set(time_crop) then begin           
+        if keyword_set(timecrop) then begin           
            if ~keyword_set(trange) then trange = timerange()
            pp = where(str_all.time ge trange[0] and $
                       str_all.time le trange[1],cc)
@@ -589,7 +589,7 @@ pro mvn_mag_load,format,$
 
         ;;-----------------------------------------
         ;; Crop save file according to trange
-        if keyword_set(time_crop) then begin           
+        if keyword_set(timecrop) then begin           
            if ~keyword_set(trange) then trange = timerange()
            pp = where(str_all.time ge trange[0] and $
                       str_all.time le trange[1],cc)

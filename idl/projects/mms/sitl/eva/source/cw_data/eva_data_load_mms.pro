@@ -1,4 +1,6 @@
-PRO eva_data_load_mms_options, tpv, ytitle=ytitle,ztitle=ztitle,yrange=yrange,zrange=zrange,ylog=ylog,zlog=zlog,spec=spec
+PRO eva_data_load_mms_options, tpv, ytitle=ytitle,ztitle=ztitle,yrange=yrange,$
+  zrange=zrange,ylog=ylog,zlog=zlog,spec=spec,labels=labels,labflag=labflag,$
+  colors=colors
   tplot_names,tpv,names=tn
   if n_elements(tn) eq 1 then begin
     options, tpv,'spec',keyword_set(spec)
@@ -9,6 +11,9 @@ PRO eva_data_load_mms_options, tpv, ytitle=ytitle,ztitle=ztitle,yrange=yrange,zr
     if n_elements(ztitle) eq 1 then options, tpv,'ztitle',ztitle
     if n_elements(yrange) eq 2 then ylim, tpv, yrange[0],yrange[1]
     if n_elements(zrange) eq 2 then zlim, tpv, zrange[0],zrange[1]
+    if n_elements(labels) gt 0 then options, tpv, labels=labels
+    if n_elements(labflag) eq 1 then options,tpv,'labflag',labflag
+    if n_elements(colors) gt 0 then options,tpv,'colors',colors
   endif
 END
 
@@ -236,6 +241,22 @@ FUNCTION eva_data_load_mms, state
 ;            options,tpv,'spec',1
 ;          endelse
           
+          answer = 'Yes'
+        endif
+        
+        ;-----------
+        ; EDP
+        ;-----------
+        if (strmatch(paramlist[i],'*_edp_*')) then begin
+          mms_load_edp, sc = sc, level='l1b', mode='comm', data_type='dcecomm';, /no_sweeps
+          tplot_names,sc+'_edp_*',names=tn
+          jmax=n_elements(tn)
+          if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
+            for j=0,jmax-1 do begin
+              eva_data_load_mms_options, tn[j], ytitle='E, mV/m',labels=['X','Y','Z'],$
+                labflag=-1,colors=[2,4,6]
+            endfor
+          endif
           answer = 'Yes'
         endif
         

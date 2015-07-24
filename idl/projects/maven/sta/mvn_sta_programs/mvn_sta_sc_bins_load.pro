@@ -1,4 +1,62 @@
 ;;##########################################################################
+;; Taken from Coyote Progrmming Library
+
+function sc_bins_load_hist_nd,V,bs,MIN=mn,MAX=mx,NBINS=nbins,REVERSE_INDICES=ri
+  s=size(V,/DIMENSIONS)
+  if n_elements(s) ne 2 then message,'Input must be N (dimensions) x P (points)'
+  if s[0] gt 8 then message, 'Only up to 8 dimensions allowed'
+
+  imx=max(V,DIMENSION=2,MIN=imn)
+
+  if n_elements(mx) eq 0 then mx=imx
+  if n_elements(mn) eq 0 then mn=imn
+
+  if s[0] gt 1 then begin
+     if n_elements(mn)    eq 1 then mn=replicate(mn,s[0])
+     if n_elements(mx)    eq 1 then mx=replicate(mx,s[0])
+     if n_elements(bs)    eq 1 then bs=replicate(bs,s[0])
+     if n_elements(nbins) eq 1 then nbins=replicate(nbins,s[0])
+  endif else begin
+     mn=[mn] & mx=[mx]
+  endelse
+
+  if ~array_equal(mn le mx,1b) then $
+     message,'Min must be less than or equal to max.'
+
+  if n_elements(bs) eq 0 then begin
+     if n_elements(nbins) ne 0 then begin
+        nbins=long(nbins)       ;No fractional bins, please
+        bs=float(mx-mn)/nbins   ;a correct formulation
+     endif else message,'Must pass either binsize or NBINS'
+  endif else nbins=long((mx-mn)/bs+1)
+
+  total_bins=product(nbins,/PRESERVE_TYPE) ;Total number of bins
+  h=long((V[s[0]-1,*]-mn[s[0]-1])/bs[s[0]-1])
+  
+  ;; The scaled indices, s[n]+N[n-1]*(s[n-1]+N[n-2]*(s[n-2]+...
+  for i=s[0]-2,0,-1 do h=nbins[i]*temporary(h) + long((V[i,*]-mn[i])/bs[i])
+
+  out_of_range=[~array_equal(mn le imn,1b),~array_equal(mx ge imx,1b)]
+  if ~array_equal(out_of_range,0b) then begin
+     in_range=1
+     if out_of_range[0] then $  ;out of range low
+        in_range=total(V ge rebin(mn,s,/SAMP),1,/PRESERVE_TYPE) eq s[0]
+     if out_of_range[1] then $  ;out of range high
+        in_range AND= total(V le rebin(mx,s,/SAMP),1,/PRESERVE_TYPE) eq s[0]
+     h=(temporary(h) + 1L)*temporary(in_range) - 1L
+  endif
+
+  ret=make_array(TYPE=3,DIMENSION=nbins,/NOZERO)
+  if arg_present(ri) then $
+     ret[0]=histogram(h,MIN=0L,MAX=total_bins-1L,REVERSE_INDICES=ri) $
+  else $
+     ret[0]=histogram(h,MIN=0L,MAX=total_bins-1L)
+  return,ret
+end
+
+
+
+;;##########################################################################
 ;; Inside-> Take the dot and cross product of point an nearby vertices
 ;;          to determine whether the point is inside or outisde of box
 
@@ -113,8 +171,8 @@ function histt, map, orig_time, dat, phi_sc, theta_sc, xx, yy, perc_block=perc_b
         bins = [  22.5, ntheta]
      endif
 
-     orig_ff = hist_nd(orig_data,bins,min=minn, max=maxx)
-     ff      = hist_nd(data,     bins,min=minn, max=maxx)
+     orig_ff = sc_bins_load_hist_nd(orig_data,bins,min=minn, max=maxx)
+     ff      = sc_bins_load_hist_nd(data,     bins,min=minn, max=maxx)
      bins_sc_temp[i,*,*] = float(ff[0:nanode,0:ndef-1]) / $
                            float(orig_ff[0:nanode,0:ndef-1])
 
@@ -474,7 +532,6 @@ pro mvn_sta_sc_bins_load, perc_block=perc_block,test_plot=test_plot
      mvn_d4_dat.bins_sc = histt(map,time,mvn_d4_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
 
 
-  stop
 end
 
 

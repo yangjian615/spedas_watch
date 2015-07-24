@@ -51,8 +51,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-27 10:11:08 -0700 (Wed, 27 May 2015) $
-;  $LastChangedRevision: 17737 $
+;  $LastChangedDate: 2015-07-22 12:49:15 -0700 (Wed, 22 Jul 2015) $
+;  $LastChangedRevision: 18205 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_check_local_cache.pro $
 
 ;
@@ -64,7 +64,12 @@ pro mms_check_local_cache, local_flist, file_flag, $
 
 mms_init
 
-date_strings = mms_convert_timespan_to_date()
+if mode eq 'brst' then begin
+  date_strings = mms_convert_timespan_to_date(/fullspan)
+endif else begin
+  date_strings = mms_convert_timespan_to_date()
+endelse
+
 start_date = date_strings.start_date
 end_date = date_strings.end_date
 
@@ -88,15 +93,17 @@ if num_optional gt 1 then file_flag = 1
 ; Convert start date
 start_year_str = strmid(start_date, 0, 4)
 start_year = fix(start_year_str)
-start_month = fix(strmid(start_date, 5, 2))
-start_day = fix(strmid(start_date, 8, 2))
-start_jul = julday(start_month, start_day, start_year, 0, 0, 0)
+start_strings = strsplit(start_date, '-', /extract)
+start_jul = julday(start_strings(1), start_strings(2), start_strings(0), $
+  start_strings(3), start_strings(4), start_strings(5))
+start_mo_str = strmid(start_date, 5, 2) ; Used for generating directory.
 
 ; Convert end date
-end_year = fix(strmid(end_date, 0, 4))
-end_month = fix(strmid(end_date, 5, 2))
-end_day = fix(strmid(end_date, 8, 2))
-end_jul = julday(end_month, end_day, end_year, 0, 0, 0)
+end_year_str = strmid(end_date, 0, 4)
+end_year = fix(end_year_str)
+end_strings = strsplit(end_date, '-', /extract)
+end_jul = julday(end_strings(1), end_strings(2), end_strings(0), $
+  end_strings(3), end_strings(4), end_strings(5))
 
 if start_year ne end_year then file_flag = 1
 
