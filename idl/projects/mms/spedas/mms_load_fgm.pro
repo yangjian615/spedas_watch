@@ -22,8 +22,8 @@
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-23 11:10:33 -0700 (Thu, 23 Jul 2015) $
-;$LastChangedRevision: 18222 $
+;$LastChangedDate: 2015-07-23 13:05:38 -0700 (Thu, 23 Jul 2015) $
+;$LastChangedRevision: 18229 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -115,8 +115,6 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
     
-    ; currently, datatype = level
-    if datatype ne '*' && undefined(level) then level = datatype
     if undefined(level) then level = 'ql' ; default to quick look
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rate) then data_rate = 'srvy'

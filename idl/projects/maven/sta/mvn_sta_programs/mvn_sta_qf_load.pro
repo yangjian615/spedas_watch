@@ -2,7 +2,7 @@
 ;;Quality Flag Legend
 ;;
 ;;Location   	Definition   					Determined from                                                             
-;;---------------------------------------------------------------------------------------------------------------------------------                       
+;;---------------------------------------------------------------------------------------------------------------------------------
 ;bit 0		test pulser on					- testpulser header bit set
 ;bit 1		diagnostic mode					- diagnostic header bit set
 ;bit 2		dead time correction > factor of 2		- deadtime correction > 2
@@ -17,8 +17,9 @@
 ;bit 11		missing spacecraft potential			- dat.sc_pot = 0	- may not be needed	
 ;bit 12		inflight calibration 				- date determined, set to 1 until calibration finalized
 ;bit 13		tbd
-;bit 14		tbd
+;bit 14		Ion Suppression                                 - Date > 01-01-2015, Altitude < 500km, mode ne 1
 ;bit 15		not used
+
 
 
 ;;Bit Value Definition
@@ -114,7 +115,7 @@ pro mvn_sta_qf_load,verbose=verbose
 
   ;;Load c6 - Change structure name to dat
   print, 'Generate Quality Flags for APID c6...'
-  dat=mvn_c6_dat  
+  dat      = mvn_c6_dat  
   npts     = dimen1(dat.data)
   nmass    = dat.nmass
   nenergy  = dat.nenergy
@@ -278,9 +279,9 @@ pro mvn_sta_qf_load,verbose=verbose
   ;; transitions to and from mechanical. e.g. 1->2 or 2->1. For APIDs
   ;; that have a larger cadence we include all changes.
   bit6mask=2^6
-  pp1=[0,findgen(n_elements(att)-1)]        
-  temp=att-att[pp1]
-  ind=where(temp ne 0,cc)
+  pp1=[0,lindgen(n_elements(att)-1)]        
+  temp=abs(att-att[pp1])
+  ind=where(temp gt 0,cc)
   if cc ne 0 then dat.quality_flag[ind] = dat.quality_flag[ind] or bit6mask
   if keyword_set(verbose) then $
      print, 'Bit 6 flags - Total:  '+string(cc)+'/'+string(npts)
@@ -292,8 +293,8 @@ pro mvn_sta_qf_load,verbose=verbose
   ;;
   ;; Is allowed to land on boundaries   
   bit7mask=2^7
-  pp=[0,findgen(n_elements(mode)-1)]        
-  temp=mode-mode[pp]
+  pp=[0,lindgen(n_elements(mode)-1)]        
+  temp=abs(mode-mode[pp])
   pp=where(temp gt 0,cc)
   if cc ne 0 then dat.quality_flag[pp] = dat.quality_flag[pp] or bit7mask
   if keyword_set(verbose) then $
@@ -405,6 +406,11 @@ pro mvn_sta_qf_load,verbose=verbose
           16,  16,   4,   4, 128,  32,$
            4, 128,   4,   4]
 
+
+
+
+
+
   nn_apid=n_elements(apid)
   for api=0, nn_apid-1 do begin     
      temp=execute('nn7=size(mvn_'+apid[api]+'_dat,/type)')
@@ -414,16 +420,16 @@ pro mvn_sta_qf_load,verbose=verbose
        	qf_new = qf_new and (2^2+2^3+2^4)
         ;;---------------------------------------------------------
         ;;Time interval
-;        temp1=execute('nn1=n_elements(mvn_'+apid[api]+'_dat.time)')
+        ;temp1=execute('nn1=n_elements(mvn_'+apid[api]+'_dat.time)')
 	nn1 = n_elements(qf_new)
         temp2=execute('nn2=n_elements(mvn_'+apid[api]+'_dat.end_time)')
         ;start time
-;        if temp1 then temp=execute('t_start=mvn_'+apid[api]+'_dat.time') $
-;        else stop, 'No time instances.'
+        ;if temp1 then temp=execute('t_start=mvn_'+apid[api]+'_dat.time') $
+        ;else stop, 'No time instances.'
 	t_start = time_new
         ;stop time
         if temp2 then temp=execute('t_stop=mvn_'+apid[api]+'_dat.end_time') $
-;        else temp=execute('t_stop=mvn_'+apid[api]+'_dat.time')       
+        ;else temp=execute('t_stop=mvn_'+apid[api]+'_dat.time')       
         else t_stop = [t_start[1:nn1-1],2.*t_start[nn1-1]-t_start[nn1-2]] 
         for itime=0l, nn1-1 do begin
            pp=where( time+2. ge t_start[itime] and $
@@ -461,12 +467,10 @@ pro mvn_sta_qf_load,verbose=verbose
         ;;---------------------------------------------------------------------------
         ;;Insert new 
         temp=execute('mvn_'+apid[api]+'_dat.quality_flag=qf_new')
-
-        
      endif
   endfor
-
-	store_data,'mvn_sta_c6_quality_flag',data={x:(mvn_c6_dat.time+mvn_c6_dat.end_time)/2.,y:mvn_c6_dat.quality_flag}
-		options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
+  
+  store_data,'mvn_sta_c6_quality_flag',data={x:(mvn_c6_dat.time+mvn_c6_dat.end_time)/2.,y:mvn_c6_dat.quality_flag}
+  options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
 
 end

@@ -37,10 +37,13 @@
 ;         
 ;     5) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
 ;         will give incorrect time tags for data loaded after June 30, 2015 due to this issue.
+;         
+;     6) The local paths should be set to mirror the SDC directory structure to avoid
+;         downloading data more than once
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-23 09:55:18 -0700 (Thu, 23 Jul 2015) $
-;$LastChangedRevision: 18218 $
+;$LastChangedDate: 2015-07-23 15:58:32 -0700 (Thu, 23 Jul 2015) $
+;$LastChangedRevision: 18232 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -69,47 +72,56 @@ end
 pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
                   level = level, instrument = instrument, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
-                  get_support_data = get_support_data, login_info = login_info
+                  get_support_data = get_support_data, login_info = login_info, $
+                  tplotnames = tplotnames
+                  
+    mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
     
+    if undefined(source) then source = !mms
     if undefined(probes) then probes = ['1'] ; default to MMS 1
-    if undefined(datatype) then datatype = '*' ; grab all data in the CDF
+    if undefined(datatype) then datatype = '*' else datatype = strlowcase(datatype)
     
-    ; currently, datatype = level
-    if datatype ne '*' && undefined(level) then level = datatype
     if undefined(level) then level = 'ql' ; default to quick look
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rate) then data_rate = 'srvy'
-   ; if undefined(local_data_dir) then local_data_dir = 'c:\data\mms\'
-    if undefined(local_data_dir) then local_data_dir = ''
+    if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
       else tr = timerange()
       
-    mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
-    if undefined(source) then source = !mms
-    
     status = mms_login_lasp(login_info = login_info)
     if status ne 1 then return
     
     for probe_idx = 0, n_elements(probes)-1 do begin
         probe = 'mms' + strcompress(string(probes[probe_idx]), /rem)
-        pathformat = instrument + '/' + data_rate + '/'+level+'/YYYY/MM/DD'
-        
+        pathformat = '/YYYY/MM/DD'
         daily_names = file_dailynames(file_format=pathformat, trange=tr, /unique, times=times)
+        
+        ; updated to match the path at SDC; this path includes data type for 
+        ; the following instruments: EDP, DSP, EPD-EIS, FEEPS, FIELDS, HPCA, SCM (as of 7/23/2015)
+        sdc_path = instrument + '/' + data_rate + '/' + level
+        sdc_path = datatype ne '*' ? sdc_path + '/' + datatype + daily_names : sdc_path + daily_names
 
-        for name_idx = 0, n_elements(daily_names)-1 do begin
-            day_string = time_string(times[name_idx], tformat='YYYY-MM-DD')
-            end_string = time_string(times[name_idx]+86401, tformat='YYYY-MM-DD') ; +1 day
+        for name_idx = 0, n_elements(sdc_path)-1 do begin
+            day_string = time_string(tr[0], tformat='YYYY-MM-DD')
+            end_string = time_string(tr[1], tformat='YYYY-MM-DD')
             
             ; want to store all the CDFs in the month folder, not create a new folder for each day
             ; note: we still use /DD in the pathformat because file_dailynames needs it to 
             ; create a different name for each day
-            split_dir = strsplit(daily_names[name_idx], '/', /extract)
+            split_dir = strsplit(sdc_path[name_idx], '/', /extract)
             month_directory = strjoin(split_dir[0:n_elements(split_dir)-2], '/')
-            
-            data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
-                    data_rate_mode=data_rate, data_level=level, start_date=day_string, end_date=end_string)
-            
+
+            if datatype ne '*' && datatype ne '' then begin
+                data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
+                        data_rate_mode=data_rate, data_level=level, start_date=day_string, $
+                        end_date=end_string, descriptor=datatype)
+            endif else begin
+                data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
+                        data_rate_mode=data_rate, data_level=level, start_date=day_string, $
+                        end_date=end_string)
+            endelse
+                        
             if ~is_array(data_file) && data_file eq '' then begin
                 dprint, dlevel = 0, 'Error, no data files found for this time.'
                 continue
@@ -141,7 +153,7 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
                 endelse
             endfor
         endfor
-        
+
         if ~undefined(files) then cdf2tplot, files, tplotnames = tplotnames, varformat='*'
         
         ; forget about the daily files for this probe

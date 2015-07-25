@@ -20,7 +20,7 @@ function execute_mms_sitl_query, netURL, url_path, query, filename=filename
         mms_sitl_logout
         printf, -2, "ERROR in execute_mms_sitl_query: Login failed. Try again."
       end
-      500: printf, -2, "ERROR in execute_mms_sitl_query: Service failed to handle the query: " + query
+      500: printf, -2, "ERROR in execute_mms_sitl_query: Service failed to handle the query: " + url_path + '?' + query
       23: printf, -2, "ERROR in execute_mms_sitl_query: Not able to save result to: " + filename
       else: begin
         printf, -2, "ERROR in execute_mms_sitl_query: Service request failed with IDL error code: " + strtrim(error_status,2)  

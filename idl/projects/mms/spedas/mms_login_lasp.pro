@@ -14,8 +14,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-23 09:55:18 -0700 (Thu, 23 Jul 2015) $
-;$LastChangedRevision: 18218 $
+;$LastChangedDate: 2015-07-23 14:57:06 -0700 (Thu, 23 Jul 2015) $
+;$LastChangedRevision: 18231 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_login_lasp.pro $
 ;-
 
@@ -58,6 +58,8 @@ function mms_login_lasp, login_info = login_info
     ; the IDLnetURL object returned here is also stored in the common block
     ; (this is why we never use net_object after this line, but this call is still
     ; necessary to login)
+
     net_object = get_mms_sitl_connection(username=username, password=password)
-    return, 1
+
+    if obj_valid(net_object) then return, 1 else return, 0
 end

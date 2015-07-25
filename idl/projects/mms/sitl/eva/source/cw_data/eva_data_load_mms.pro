@@ -254,7 +254,7 @@ FUNCTION eva_data_load_mms, state
           if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
             for j=0,jmax-1 do begin
               eva_data_load_mms_options, tn[j], ytitle='E, mV/m',labels=['X','Y','Z'],$
-                labflag=-1,colors=[2,4,6]
+                labflag=-1,colors=[2,4,6],yrange=[-20,20]
             endfor
           endif
           answer = 'Yes'

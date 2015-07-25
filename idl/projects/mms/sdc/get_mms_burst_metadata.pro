@@ -19,26 +19,13 @@ function get_mms_burst_metadata_for_one_spacecraft, start_time, end_time, sc_id,
   query = query + "&TAITIMESTAMP>=" + strtrim(start_time,2)
   query = query + "&TAITIMESTAMP<"  + strtrim(end_time,2)
   
-  ;Get IDLnetUrl object. May prompt for login.
-  ;connection = get_mms_sitl_connection()
-  connection = get_mms_sitl_connection()
-  
-  ;Make the request. Get an array of comma separated value strings.
-  data = execute_mms_sitl_query(connection, path, query)
-  
-  ;Return -1 if no data was found. Only 1 header row.
-  ;This should also handle the case where a LONG error code is returned.
-  if n_elements(data) le 1 then begin
+  ;Execute the query. Get the results back in an array of structures.
+  ;  or an error code or -1 if no results were found.
+  result = execute_latis_query(path, query, struct)
+    
+  ;Print a warning if no data are found.
+  if size(result, /type) ne 8 then if result eq -1 then  $
     printf, -2, "WARN: No burst metadata found for " + sc_id + " with query: " + query
-    return, -1
-  endif
-  
-  ;Drop one line header
-  data = data[1:*]
-  
-  ;Convert the data from a array of records  with comma separated values
-  ;to an array of structures containing the data with the appropriate types.
-  result = parse_samples(data, struct)
   
   return, result
   
