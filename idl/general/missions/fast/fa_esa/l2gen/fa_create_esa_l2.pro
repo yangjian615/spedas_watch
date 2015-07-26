@@ -13,11 +13,54 @@
 ;       orbit = orbit range
 ; output keywords:
 ;       data_struct = the L2 data structure
+;   PROJECT_NAME    STRING    'FAST'
+;   DATA_NAME       STRING    'Iesa Burst'
+;   DATA_LEVEL      STRING    'Level 1'
+;   UNITS_NAME      STRING    'Compressed'
+;   UNITS_PROCEDURE STRING    'fa_convert_esa_units'
+;   VALID           INT       Array[59832]
+;   DATA_QUALITY    BYTE      Array[59832]
+;   TIME            DOUBLE    Array[59832]
+;   END_TIME        DOUBLE    Array[59832]
+;   INTEG_T         DOUBLE    Array[59832]
+;   DELTA_T         DOUBLE    Array[59832]
+;   NBINS           BYTE      Array[59832]
+;   NENERGY         BYTE      Array[59832]
+;   GEOM_FACTOR     FLOAT     Array[59832]
+;   DATA_IND        LONG      Array[59832]
+;   GF_IND          INT       Array[59832]
+;   BINS_IND        INT       Array[59832]
+;   MODE_IND        BYTE      Array[59832]
+;   THETA_SHIFT     FLOAT     Array[59832]
+;   THETA_MAX       FLOAT     Array[59832]
+;   THETA_MIN       FLOAT     Array[59832]
+;   BKG             FLOAT     Array[59832]
+;   DATA0           BYTE      Array[48, 32, 59832]
+;   DATA1           FLOAT     NaN (48, 64, ntimes1) (here single NaN
+;means there is no data for this mode)
+;   DATA2           FLOAT     NaN (96, 32, ntimes2)
+;   ENERGY          FLOAT     Array[96, 32, 2]
+;   BINS            BYTE      Array[96, 32]
+;   THETA           FLOAT     Array[96, 32, 2]
+;   GF              FLOAT     Array[96, 64]
+;   DENERGY         FLOAT     Array[96, 32, 2]
+;   DTHETA          FLOAT     Array[96, 32, 2]
+;   EFF             FLOAT     Array[96, 32, 2]
+;   DEAD            FLOAT       1.10000e-07
+;   MASS            FLOAT         0.0104389
+;   CHARGE          INT              1
+;   SC_POT          FLOAT     Array[59832]
+;   BKG_ARR         FLOAT     Array[96, 64]
+;   HEADER_BYTES    BYTE      Array[44, 59832]
+;   EFLUX0          FLOAT     Array[48, 32, 59832]
+;   EFLUX1          FLOAT     NaN (48, 64, ntimes1)
+;   EFLUX2          FLOAT     NaN (96, 32, ntimes2)
+;
 ;HISTORY:
 ; Dillon, 2009
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-07-23 16:44:54 -0700 (Thu, 23 Jul 2015) $
-; $LastChangedRevision: 18237 $
+; $LastChangedDate: 2015-07-24 15:15:02 -0700 (Fri, 24 Jul 2015) $
+; $LastChangedRevision: 18250 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2gen/fa_create_esa_l2.pro $
 ;-
 pro fa_create_esa_l2,type=type, $

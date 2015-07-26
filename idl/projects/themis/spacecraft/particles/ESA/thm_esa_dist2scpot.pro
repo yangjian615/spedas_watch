@@ -20,8 +20,8 @@
 ;HISTORY:
 ; Hacked from spec3d.pro, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-06-29 10:09:40 -0700 (Mon, 29 Jun 2015) $
-; $LastChangedRevision: 17986 $
+; $LastChangedDate: 2015-07-24 15:57:59 -0700 (Fri, 24 Jul 2015) $
+; $LastChangedRevision: 18252 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_dist2scpot.pro $
 ;
 ;-
@@ -37,7 +37,7 @@ Function thm_esa_dist2scpot, tempdat, pr_slope = pr_slope, $
 
   If(Keyword_set(noise_threshold)) Then nvalue = noise_threshold Else nvalue = 1.0e-3
   If(Keyword_set(photoelectron_threshold)) Then pvalue = photoelectron_threshold $
-  Else pvalue = 1.0e7
+  Else pvalue = 3.0e7
 
   data3d = conv_units(tempdat,'Eflux')
   data3d.data = data3d.data*data3d.denergy/(data3d.denergy+.00001)
@@ -45,7 +45,7 @@ Function thm_esa_dist2scpot, tempdat, pr_slope = pr_slope, $
 
   nb = data3d.nbins
 
-;Estimate potential by grabbing the lowest energy with a slope Gt M,
+;Estimate potential by grabbing the highest energy with a slope Gt M,
 ;where M is 2 at the low energy end, say 8 eV to 6 at 50 eV, to pick
 ;up photoelectrons.  The lower limit to the potential is the lowest
 ;energy, the upper limit will be 100 V
@@ -78,10 +78,10 @@ Function thm_esa_dist2scpot, tempdat, pr_slope = pr_slope, $
      Endif
   Endfor
 
-;and also the flux at the low energy part of the given slope should be
-;greater than some threshold, say 1.0e7
- threshold_flag = dist[0:nenergy-2] Gt pvalue
-
+;and also the flux below the low energy part of the given slope should be
+;greater than some threshold, say 5.0e7
+  threshold_flag = dist[0:nenergy-2] Gt pvalue
+  
 ;Note that these numbers are empirical, except for the lower linit,
 ;which is determined by the slope of the secondary electrons.
   yy0 = 2.0 & yy1 = 4.0
@@ -104,12 +104,15 @@ Function thm_esa_dist2scpot, tempdat, pr_slope = pr_slope, $
      sc_pot_est = energy[i]
 ;Here we estimate the fractional difference in energy band, to
 ;unquantize the sc_pot value. The steeper the slope, the closer to the
-;full value you get.
+;full value you get. ALso the slope really refers to the midpoint
+;between energies i and i-1
      If(i Gt 0) Then Begin
         delta_e = energy[i]-energy[i-1]
 ;since slope[i-1] < -1.0 , de is positive but less than delta_e
         de = delta_e*(1.0-slope[i-1]/2.0)/(1.0-slope[i-1])
-        sc_pot_est = sc_pot_est-(delta_e - de)
+        sc_pot_est_0 = sc_pot_est
+        sc_pot_est = energy[i-1]+de
+        If(keyword_set(pr_slope)) Then print, sc_pot_est_0, sc_pot_est
      Endif
   Endelse
 

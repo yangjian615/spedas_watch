@@ -9,9 +9,11 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
 ; 
 ;  if ~keyword_set(date) then  date = average(sep.time,/nan)
 ;  sepnum = round(median(sep.sensor))
-  sepstr = 's'+strtrim(sepnum,2)
+  sn = strtrim(sepnum,2)
+  sepstr = 's'+sn
+  sepname = 'SEP'+sn
   data_type = sepstr+'-raw-svy-full'  
-  L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v02_r??.cdf'
+  L2_fileformat =  'maven/data/sci/sep/.l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v03_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
   source_fi = file_info([source_files,prereq_files])
@@ -24,7 +26,7 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
       return
     endif
     nextrev_fname = mvn_pfp_file_next_revision(lastrev_fname)
-    global={ filename:nextrev_fname,  data_type:data_type+'>Survey Raw Particle Counts',   logical_source:'SEP.raw.spec_svy'}   ;'SEP.calibrated.spec_svy'
+    global={ filename:file_basename(nextrev_fname),  data_type:data_type+'>Survey Raw Particle Counts',   logical_source:'SEP'+sn+'.raw.spec_svy',  sensor: sepname}   
     mapid = round(median(sepdata.mapid))
     bmaps = mvn_sep_get_bmap(mapid,sepnum)
     dependencies = [source_files,spice_test('*')]
@@ -41,9 +43,11 @@ end
 
 pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=trange  ,prereq_files=prereq_files
   @mvn_sep_handler_commonblock.pro
-  sepstr = 's'+strtrim(sepnum,2)
+  sn = strtrim(sepnum,2)
+  sepstr = 's'+sn
+  sepname = 'SEP'+sn
   data_type = sepstr+'-cal-svy-full'
-  L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v02_r??.cdf'
+  L2_fileformat =  'maven/data/sci/sep/.l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v03_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
   source_fi = file_info([source_files,prereq_files])
@@ -60,7 +64,7 @@ pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=
       return
     endif
     nextrev_fname = mvn_pfp_file_next_revision(lastrev_fname)
-    global={ filename:nextrev_fname,  data_type:data_type+'>Survey Calibrated Particle Flux',   logical_source:'SEP.cal.spec_svy'}   
+    global={ filename:file_basename(nextrev_fname),  data_type:data_type+'>Survey Calibrated Particle Flux',   logical_source:'SEP'+sn+'.cal.spec_svy',  sensor: sepname}   
     mapid = round(median(sepdata.mapid))
     bmaps = mvn_sep_get_bmap(mapid,sepnum)
     dependencies = [source_files,spice_test('*')]

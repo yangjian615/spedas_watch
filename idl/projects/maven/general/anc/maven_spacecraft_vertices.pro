@@ -19,12 +19,13 @@
 ; VERSION:
 ;   $LastChangedBy: rlivi2 $
 ;   $LastChangedDate: 2015-02-23 13:05:25$
-;   $LastChangedRevision: 17051 $
+;   $LastChangedRevision: 18258 $
 ;   $URL svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;-
 
 
-function maven_spacecraft_vertices, prec=prec
+function maven_spacecraft_vertices, prec=prec, $
+                                    plot_sc=plot_sc
 
 
   if ~keyword_set(prec) then prec=100
@@ -68,10 +69,10 @@ function maven_spacecraft_vertices, prec=prec
                 [4,5,7,6],$       ;-z side 2
 
                 [0,2,6,4],$       ;+x side 3
-                [1,3,7,5],$       ;-x side 4
+                [1,5,7,3],$       ;-x side 4
 
                 [0,1,5,4],$       ;+y side 3
-                [2,3,7,6]]        ;-y side 4
+                [2,6,7,3]]        ;-y side 4
 
   ;;---------------------------
   ;;Antenna Body
@@ -82,6 +83,7 @@ function maven_spacecraft_vertices, prec=prec
   [    val1,    val1, 1984.00],$
   [-1.*val1,-1.*val1, 1984.00],$
   [    val1,-1.*val1, 1984.00],$
+
   [-1.*val2,    val2, 2957.00],$
   [    val2,    val2, 2957.00],$
   [-1.*val2,-1.*val2, 2957.00],$
@@ -407,35 +409,42 @@ function maven_spacecraft_vertices, prec=prec
      pos2=[0.1,0.3,0.9,0.6]
      pos3=[0.1,0.0,0.9,0.3]
      window, 1, xsize=600, ysize=900
-     for iobj=0, nn3-1 do $
-        ;;Cycle through all 8 vertices.
+     for iobj=0, nn3-1 do begin
+        ;;-----------------------------
+        ;; Cycle through all 8 vertices.
         for i=0, n2-1 do begin           
-        box=vertex[*,*,iobj]
-        ind=index[*,*,iobj]           
-        indd=[ind[*,i],ind[0,i]]
-        plot, box[0,indd],box[1,indd],$
-              /noerase,$
-              xrange=x1,$
-              yrange=y1,$
-              xstyle=1,$
-              ystyle=1,$
-              position=pos1
-        plot, box[1,indd],box[2,indd],$
-              /noerase,$
-              xrange=x1,$
-              yrange=y1,$
-              xstyle=1,$
-              ystyle=1,$
-              position=pos2
-        plot, box[0,indd],box[2,indd],$
-              /noerase,$
-              xrange=x1,$
-              yrange=y1,$
-              xstyle=1,$
-              ystyle=1,$
-              position=pos3
+           box=vertex[*,*,iobj]
+           ind=index[*,*,iobj]           
+           indd=[ind[*,i],ind[0,i]]
+           plot, box[0,indd],box[1,indd],$
+                 /noerase,$
+                 xrange=x1,$
+                 yrange=y1,$
+                 xstyle=1,$
+                 ystyle=1,$
+                 position=pos1
+           plot, box[1,indd],box[2,indd],$
+                 /noerase,$
+                 xrange=x1,$
+                 yrange=y1,$
+                 xstyle=1,$
+                 ystyle=1,$
+                 position=pos2
+           plot, box[0,indd],box[2,indd],$
+                 /noerase,$
+                 xrange=x1,$
+                 yrange=y1,$
+                 xstyle=1,$
+                 ystyle=1,$
+                 position=pos3
+        endfor
+        ;; ---- Step 1: Create 1x1 surface filled randomly
+        xx1 = randomu(seed,100,100)
+        ;; ---- Step 2:
+
      endfor
   endif
+
 
   ;;-----------------------------------
   ;;Create XYZ coordinates for plotting
@@ -459,17 +468,33 @@ function maven_spacecraft_vertices, prec=prec
      endfor
   endfor
   
+
+
+  ;;---------------------------------------------------
+  ;;Expand using 'prec'
+  ;nn=5.*n2
+  ;xx_new=fltarr(nn3,nn*prec-prec)
+  ;yy_new=fltarr(nn3,nn*prec-prec)
+  ;zz_new=fltarr(nn3,nn*prec-prec)
+  ;for iobj=0, nn3-1 do begin    
+  ;   xx_new[iobj,*]=interpol(xx[iobj,*],findgen(nn),findgen(nn*prec-prec)/prec)
+  ;   yy_new[iobj,*]=interpol(yy[iobj,*],findgen(nn),findgen(nn*prec-prec)/prec)
+  ;   zz_new[iobj,*]=interpol(zz[iobj,*],findgen(nn),findgen(nn*prec-prec)/prec)
+  ;endfor
+
   ;;---------------------------------------------------
   ;;Expand using 'prec'
   nn=5.*n2
-  xx_new=fltarr(nn3,nn*prec-prec)
-  yy_new=fltarr(nn3,nn*prec-prec)
-  zz_new=fltarr(nn3,nn*prec-prec)
+  xx_new=fltarr(nn3,nn*prec)
+  yy_new=fltarr(nn3,nn*prec)
+  zz_new=fltarr(nn3,nn*prec)
   for iobj=0, nn3-1 do begin    
-     xx_new[iobj,*]=interpol(xx[iobj,*],findgen(nn),findgen(nn*prec-prec)/prec)
-     yy_new[iobj,*]=interpol(yy[iobj,*],findgen(nn),findgen(nn*prec-prec)/prec)
-     zz_new[iobj,*]=interpol(zz[iobj,*],findgen(nn),findgen(nn*prec-prec)/prec)
+     xx_new[iobj,*]=interpol(xx[iobj,*],findgen(nn),findgen(nn*prec)/prec)
+     yy_new[iobj,*]=interpol(yy[iobj,*],findgen(nn),findgen(nn*prec)/prec)
+     zz_new[iobj,*]=interpol(zz[iobj,*],findgen(nn),findgen(nn*prec)/prec)
   endfor
+
+
 
 
 
@@ -487,27 +512,3 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-;;     plot, xx[iobj,0:max(ll)], zz[iobj,0:max(ll)], $
-;;           xrange=[-8000,8000], $
-;;           yrange=[-8000,8000], $
-;;           position=pos1,$
-;;           noerase=iobj
-;;     plot, xx[iobj,0:max(ll)], yy[iobj,0:max(ll)], $
-;;           xrange=[-8000,8000], $
-;;           yrange=[-8000,8000], $
-;;           position=pos2,$
-;;           /noerase
-;;     plot, yy[iobj,0:max(ll)], zz[iobj,0:max(ll)], $
-;;           xrange=[-8000,8000], $
-;;           yrange=[-8000,8000], $
-;;           position=pos3,$
-;;           /noerase     

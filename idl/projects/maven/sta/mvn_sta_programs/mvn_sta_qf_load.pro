@@ -2,7 +2,7 @@
 ;;Quality Flag Legend
 ;;
 ;;Location   	Definition   					Determined from                                                             
-;;---------------------------------------------------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------------------------------------                       
 ;bit 0		test pulser on					- testpulser header bit set
 ;bit 1		diagnostic mode					- diagnostic header bit set
 ;bit 2		dead time correction > factor of 2		- deadtime correction > 2
@@ -17,9 +17,8 @@
 ;bit 11		missing spacecraft potential			- dat.sc_pot = 0	- may not be needed	
 ;bit 12		inflight calibration 				- date determined, set to 1 until calibration finalized
 ;bit 13		tbd
-;bit 14		Ion Suppression                                 - Date > 01-01-2015, Altitude < 500km, mode ne 1
+;bit 14		tbd
 ;bit 15		not used
-
 
 
 ;;Bit Value Definition
@@ -115,7 +114,7 @@ pro mvn_sta_qf_load,verbose=verbose
 
   ;;Load c6 - Change structure name to dat
   print, 'Generate Quality Flags for APID c6...'
-  dat      = mvn_c6_dat  
+  dat=mvn_c6_dat  
   npts     = dimen1(dat.data)
   nmass    = dat.nmass
   nenergy  = dat.nenergy
@@ -278,10 +277,11 @@ pro mvn_sta_qf_load,verbose=verbose
   ;; 2. For APIDs with 4  second cadence we only want to include
   ;; transitions to and from mechanical. e.g. 1->2 or 2->1. For APIDs
   ;; that have a larger cadence we include all changes.
+	;; this is modified 20150724 to handle mech attenuator changes better
   bit6mask=2^6
-  pp1=[0,lindgen(n_elements(att)-1)]        
-  temp=abs(att-att[pp1])
-  ind=where(temp gt 0,cc)
+  pp=[0,lindgen(n_elements(att)-1)]        
+  temp=att-att[pp]
+  ind=where(temp ne 0,cc)-1
   if cc ne 0 then dat.quality_flag[ind] = dat.quality_flag[ind] or bit6mask
   if keyword_set(verbose) then $
      print, 'Bit 6 flags - Total:  '+string(cc)+'/'+string(npts)
@@ -293,15 +293,14 @@ pro mvn_sta_qf_load,verbose=verbose
   ;;
   ;; Is allowed to land on boundaries   
   bit7mask=2^7
-  pp=[0,lindgen(n_elements(mode)-1)]        
-  temp=abs(mode-mode[pp])
-  pp=where(temp gt 0,cc)
-  if cc ne 0 then dat.quality_flag[pp] = dat.quality_flag[pp] or bit7mask
+  pp=[0,lindgen(n_elements(att)-1)]        
+  temp=mode-mode[pp]
+  ind=where(temp ne 0,cc)-1
+  if cc ne 0 then dat.quality_flag[ind] = dat.quality_flag[ind] or bit7mask
   if keyword_set(verbose) then $
      print, 'Bit 7 flags - Total:  '+string(cc)+'/'+string(npts)
   
   
-
   ;;***************************************************************  
   ;;Bit 8  - LPW Sweep Interference
   ;;
@@ -395,20 +394,13 @@ pro mvn_sta_qf_load,verbose=verbose
   ;;-----------------------------------------------
   ;;Apply quality flag to all APIDs (except c6 since
   ;;it was already set).Define QF and APIDs
+
   qf=dat.quality_flag
-  qf_time=time
+
   apid=['2a','c0','c2','c4','c8','c6',$
         'ca','cc','cd','ce','cf','d0',$
         'd1','d2','d3','d4','d6','d7',$
         'd8','d9','da','db']
-  cade=[  32,   4,   4,   4,   4,   4,$
-           4,  32,   4,  32,   4, 128,$
-          16,  16,   4,   4, 128,  32,$
-           4, 128,   4,   4]
-
-
-
-
 
 
   nn_apid=n_elements(apid)
@@ -416,61 +408,43 @@ pro mvn_sta_qf_load,verbose=verbose
      temp=execute('nn7=size(mvn_'+apid[api]+'_dat,/type)')
      if nn7 eq 8 then begin
         temp=execute('qf_new=mvn_'+apid[api]+'_dat.quality_flag')        
-        temp=execute('time_new=mvn_'+apid[api]+'_dat.time')        
+        temp=execute('t_start=mvn_'+apid[api]+'_dat.time')        
        	qf_new = qf_new and (2^2+2^3+2^4)
         ;;---------------------------------------------------------
         ;;Time interval
-        ;temp1=execute('nn1=n_elements(mvn_'+apid[api]+'_dat.time)')
 	nn1 = n_elements(qf_new)
         temp2=execute('nn2=n_elements(mvn_'+apid[api]+'_dat.end_time)')
+
         ;start time
-        ;if temp1 then temp=execute('t_start=mvn_'+apid[api]+'_dat.time') $
-        ;else stop, 'No time instances.'
-	t_start = time_new
+        temp=execute('t_start=mvn_'+apid[api]+'_dat.time')        
+
         ;stop time
         if temp2 then temp=execute('t_stop=mvn_'+apid[api]+'_dat.end_time') $
-        ;else temp=execute('t_stop=mvn_'+apid[api]+'_dat.time')       
         else t_stop = [t_start[1:nn1-1],2.*t_start[nn1-1]-t_start[nn1-2]] 
+
         for itime=0l, nn1-1 do begin
            pp=where( time+2. ge t_start[itime] and $
                      time+2. le t_stop[itime],cc)
-           if cc ne 0 then for i=0, cc-1 do qf_new[itime]=qf_new[itime] or qf[pp[i]]
+           if cc eq 1 then begin
+		if (((att[pp] eq 1) and (att[(pp+1)<(npts-1)] eq 2)) or ((att[pp] eq 2) and (att[(pp+1)<(npts-1)] eq 1))) then tmpmask=2^15-1-bit7mask else tmpmask=2^15-1-bit6mask-bit7mask 
+		qf_new[itime]=qf_new[itime] or (qf[pp] and tmpmask)
+	   endif else if cc ge 2 then begin
+		for i=0, cc-2 do qf_new[itime]=qf_new[itime] or qf[pp[i]] 
+		if (((att[pp[cc-1]] eq 1) and (att[(pp[cc-1]+1)<(npts-1)] eq 2)) or ((att[pp[cc-1]] eq 2) and (att[(pp[cc-1]+1)<(npts-1)] eq 1))) then tmpmask=2^15-1-bit7mask else tmpmask=2^15-1-bit6mask-bit7mask 
+		qf_new[itime]=qf_new[itime] or (qf[pp[cc-1]] and tmpmask)
+	   endif
         endfor
 
 
         ;;---------------------------------------------------------------------------
-        ;;EXCEPTION
-        ;;---------------------------------------------------------------------------
-        ;;Bit 6 (attenuator change) and 7 (mode change) only apply
-        ;;to summed APIDs. Any flag set for not-summed APIDs (cadence
-        ;;of 4 seconds or less) be removed
-        cadence=cade[api]
-        if cade[api] le 4 then begin
-           ;;1. Make sure to 0 out for all bit 6 and bit 7 for this APID
-           qf_new=qf_new and (not (2^6 + 2^7))
-           ;;2. interpolate current APID attenuator with c6 attenuator           
-           att_int=round(interpol(att,time,time_new))
-           ;;3. find instances when att goes from 1->2 and 2->1
-;           pp1=[0,findgen(n_elements(att_int)-1)]        
-;           pp1=[0,indgen(n_elements(att_int)-1)]        
-           pp1=[indgen(n_elements(att_int)-1)+1,n_elements(att_int)-1]        
-           temp5=att_int-att_int[pp1]
-;           ind=where(temp5 ne 0,cc)
-;           att_ind_12=where(((att_int[ind] eq 1) and (temp5[ind] eq -1 )) or $
-;                            ((att_int[ind] eq 2) and (temp5[ind] eq 1)),cc)
-           att_ind_12=where(((att_int eq 1) and (temp5 eq -1 )) or $
-                            ((att_int eq 2) and (temp5 eq 1)),cc)
-           ;;4. insert flags back into APID
-           if cc gt 0 then qf_new[att_ind_12]=qf_new[att_ind_12] or 2^6
-        endif
-
-        ;;---------------------------------------------------------------------------
         ;;Insert new 
         temp=execute('mvn_'+apid[api]+'_dat.quality_flag=qf_new')
+
+        
      endif
   endfor
-  
-  store_data,'mvn_sta_c6_quality_flag',data={x:(mvn_c6_dat.time+mvn_c6_dat.end_time)/2.,y:mvn_c6_dat.quality_flag}
-  options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
+
+	store_data,'mvn_sta_c6_quality_flag',data={x:(mvn_c6_dat.time+mvn_c6_dat.end_time)/2.,y:mvn_c6_dat.quality_flag}
+		options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
 
 end

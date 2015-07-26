@@ -19,7 +19,7 @@
 ;					0,1=exclude,include
 ;	MASS:	intarr(nm)	optional, 
 ;PURPOSE:
-;	Returns the temperature of a beam in units of eV 
+;	Returns the temperature of a beam in units of eV, assumes no s/c charging 
 ;NOTES:	
 ;	Function normally called by "get_4dt" to
 ;	generate time series data for "tplot.pro".
@@ -115,6 +115,9 @@ if en_peak lt 1.5*en_min or en_peak gt en_max/1.5 then return,!Values.F_NAN
 charge=dat.charge
 if keyword_set(q) then charge=q
 sc_pot=dat.sc_pot
+
+
+
 ;if sc_pot eq 0. and keyword_set(mi) then if mi lt 5. then sc_pot = -1.1*energy[mind+1,0]  
 ;if keyword_set(mi) then if mi lt 5. then sc_pot = -1.1*energy[mind+1,0]  
 energy=(dat.energy+charge*sc_pot/abs(charge))>0.		; energy/charge analyzer, require positive energy
@@ -122,6 +125,8 @@ energy=(dat.energy+charge*sc_pot/abs(charge))>0.		; energy/charge analyzer, requ
 ; Note - we don't need to divide by mass
 
 v = (2.*energy*charge)^.5		; 
+
+
 v = v>0.001
 
 ; Notes	f ~ Counts/v^4 = C/v^4 

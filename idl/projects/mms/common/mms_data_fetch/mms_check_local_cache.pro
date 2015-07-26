@@ -51,8 +51,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-22 12:49:15 -0700 (Wed, 22 Jul 2015) $
-;  $LastChangedRevision: 18205 $
+;  $LastChangedDate: 2015-07-24 10:06:27 -0700 (Fri, 24 Jul 2015) $
+;  $LastChangedRevision: 18242 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_check_local_cache.pro $
 
 ;
@@ -93,7 +93,11 @@ if num_optional gt 1 then file_flag = 1
 ; Convert start date
 start_year_str = strmid(start_date, 0, 4)
 start_year = fix(start_year_str)
+;start_month = fix(strmid(start_date, 5, 2))
+;start_day = fix(strmid(start_date, 8, 2))
 start_strings = strsplit(start_date, '-', /extract)
+
+
 start_jul = julday(start_strings(1), start_strings(2), start_strings(0), $
   start_strings(3), start_strings(4), start_strings(5))
 start_mo_str = strmid(start_date, 5, 2) ; Used for generating directory.
@@ -102,6 +106,7 @@ start_mo_str = strmid(start_date, 5, 2) ; Used for generating directory.
 end_year_str = strmid(end_date, 0, 4)
 end_year = fix(end_year_str)
 end_strings = strsplit(end_date, '-', /extract)
+
 end_jul = julday(end_strings(1), end_strings(2), end_strings(0), $
   end_strings(3), end_strings(4), end_strings(5))
 
@@ -124,12 +129,12 @@ if file_flag eq 0 then begin
   if strlen(optional_descriptor) eq 0 then begin
       
     file_dir = filepath('', root_dir=data_dir, $
-      subdirectory = [sc_id, level, mode, instrument_id, start_year_str])
+      subdirectory = [sc_id, instrument_id, mode, level, start_year_str, start_mo_str])
       
   endif else begin
     
     file_dir = filepath('', root_dir=data_dir, $
-      subdirectory = [sc_id, level, mode, instrument_id, optional_descriptor, start_year_str])
+      subdirectory = [sc_id, instrument_id, mode, level, optional_descriptor, start_year_str, start_mo_str])
       
     endelse
     

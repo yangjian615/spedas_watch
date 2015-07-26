@@ -1,4 +1,4 @@
-;+
+;
 ;PROCEDURE: spec3d2,data
 ;   Plots 3d data as energy spectra.
 ;INPUTS:
@@ -20,8 +20,11 @@
 ;CREATED BY:	Davin Larson  June 1995
 ;FILE:  spec3d2.pro
 ;VERSION 1.25
-;LAST MODIFICATION: 09-05-24	mcfadden	keyword 'sec' added to plot internal secondary spectra
-;-
+;LAST MODIFICATION: 09-05-24	mcfadden keyword 'sec' added to plot
+;internal secondary spectra
+; 2015-05-15, jmm, added estimation of potential, changed the name to
+; avoid conflicts
+;
 pro spec3d2,tempdat,   $
   LIMITS = limits, $
   UNITS = units,   $         ; obsolete.  Use units function 
@@ -204,12 +207,12 @@ end
 ;HISTORY:
 ; 31-may-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-06-23 13:45:53 -0700 (Tue, 23 Jun 2015) $
-; $LastChangedRevision: 17946 $
+; $LastChangedDate: 2015-07-24 15:57:59 -0700 (Fri, 24 Jul 2015) $
+; $LastChangedRevision: 18252 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_test_spec3d2.pro $
 ;-
 Pro thm_esa_test_spec3d2, date, probe, init = init, random_dp = random_dp, $
-                          time_in = time_in
+                          time_in = time_in, _extra = _extra
 
   If(keyword_set(init)) Then Begin
      del_data, '*'

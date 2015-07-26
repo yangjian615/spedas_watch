@@ -488,47 +488,56 @@ pro mvn_sta_sc_bins_load, perc_block=perc_block,test_plot=test_plot
   ;;---------------------------
   ;; C8 - 16D     4s  Ram Conic
   print, 'Blocked Bins - Interpolate for APID-C8'
-  if n_elements(mvn_c8_dat.bins_sc) ne 0 then $
+  ss = size(mvn_c8_dat)
+  if ss[2] eq 8 then $
      mvn_c8_dat.bins_sc = histt(map,time,mvn_c8_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
   ;;---------------------------
   ;; CA - 4Dx16A    4s  Ram Conic
   print, 'Blocked Bins - Interpolate for APID-CA'
-  if n_elements(mvn_ca_dat.bins_sc) ne 0 then $
+  ss = size(mvn_ca_dat)
+  if ss[2] eq 8 then $
      mvn_ca_dat.bins_sc = histt(map,time,mvn_ca_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
   ;;---------------------------
   ;; CC - 8D       32s  Ram
   print, 'Blocked Bins - Interpolate for APID-CC'
-  if n_elements(mvn_cc_dat.bins_sc) ne 0 then $
+  ss = size(mvn_cc_dat)
+  if ss[2] eq 8 then $
      mvn_cc_dat.bins_sc = histt(map,time,mvn_cc_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
   ;;---------------------------
   ;; CD - 8D        4s  Ram
   print, 'Blocked Bins - Interpolate for APID-CD'
-  if n_elements(mvn_cd_dat.bins_sc) ne 0 then $
+  ss = size(mvn_cd_dat)
+  if ss[2] eq 8 then $
      mvn_cd_dat.bins_sc = histt(map,time,mvn_cd_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
   ;;---------------------------
   ;; CE - 4Dx16A   32s  Conic
   print, 'Blocked Bins - Interpolate for APID-CE'
-  if n_elements(mvn_ce_dat.bins_sc) ne 0 then $
+  ss = size(mvn_ce_dat)
+  if ss[2] eq 8 then $
      mvn_ce_dat.bins_sc = histt(map,time,mvn_ce_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
   ;;---------------------------
   ;; CF - 4Dx16A    4s  Conic
   print, 'Blocked Bins - Interpolate for APID-CF'
-  if n_elements(mvn_cf_dat.bins_sc) ne 0 then $
+  ss = size(mvn_cf_dat)
+  if ss[2] eq 8 then $
      mvn_cf_dat.bins_sc = histt(map,time,mvn_cf_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
   ;;---------------------------
   ;; D0 - 4Dx16A  128s  Pickup
   print, 'Blocked Bins - Interpolate for APID-D0'
-  if n_elements(mvn_d0_dat.bins_sc) ne 0 then $
+  ss = size(mvn_d0_dat)
+  if ss[2] eq 8 then $
      mvn_d0_dat.bins_sc = histt(map,time,mvn_d0_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
   ;;---------------------------
   ;; D1 - 4Dx16A   16s  Pickup
   print, 'Blocked Bins - Interpolate for APID-D1'
-  if n_elements(mvn_d1_dat.bins_sc) ne 0 then $
+  ss = size(mvn_d1_dat)
+  if ss[2] eq 8 then $
      mvn_d1_dat.bins_sc = histt(map,time,mvn_d1_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
   ;;---------------------------
   ;; D4 - 4Dx16A    4s  Pickup
   print, 'Blocked Bins - Interpolate for APID-D4'
-  if n_elements(mvn_d4_dat.bins_sc) ne 0 then $
+  ss = size(mvn_d4_dat)
+  if ss[2] eq 8 then $
      mvn_d4_dat.bins_sc = histt(map,time,mvn_d4_dat,phi_sc,theta_sc,xx,yy,perc_block=perc_block)
 
 

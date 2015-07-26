@@ -52,16 +52,21 @@ id4 = cdf_attcreate(fileid,'Descriptor',/global_scope)
 id5 = cdf_attcreate(fileid,'Data_type',/global_scope)
 id6 = cdf_attcreate(fileid,'Data_version',/global_scope)
 id7 = cdf_attcreate(fileid,'TEXT',/global_scope)
-id8 = cdf_attcreate(fileid,'Mods',/global_scope)
+id8 = cdf_attcreate(fileid,'MODS',/global_scope)
 id9 = cdf_attcreate(fileid,'Logical_file_id',/global_scope)
 id10 = cdf_attcreate(fileid,'Logical_source',/global_scope)
 id11 = cdf_attcreate(fileid,'Logical_source_description',/global_scope)
+id11 = cdf_attcreate(fileid,'Sensor',/global_scope)
 id12 = cdf_attcreate(fileid,'PI_name',/global_scope)
 id13 = cdf_attcreate(fileid,'PI_affiliation',/global_scope)
 id14 = cdf_attcreate(fileid,'Instrument_type',/global_scope)
 id15 = cdf_attcreate(fileid,'Mission_group',/global_scope)
 id16 = cdf_attcreate(fileid,'Parents',/global_scope)
+id16 = cdf_attcreate(fileid,'Planet',/global_scope)
+
+id17 = cdf_attcreate(fileid,'PDS_collection_id',/global_scope)
 id17 = cdf_attcreate(fileid,'PDS_start_time',/global_scope)
+id17 = cdf_attcreate(fileid,'PDS_stop_time',/global_scope)
 
 
 if keyword_set(extra) then exnames = tag_names(extra)
@@ -70,24 +75,28 @@ for i=0,n_elements(exnames)-1 do  idxx = cdf_attcreate(fileid,exnames[i],/global
 
 ;Load global Attributes
 
-cdf_attput,fileid,'Title',0,'MAVEN SEP Electron and Ion spectra'
-cdf_attput,fileid,'Project',0,'MAVEN'
+cdf_attput,fileid,'Title',0,'MAVEN SEP Electron and Ion Raw Counts'
+cdf_attput,fileid,'Project',0,'MAVEN>Mars Atmosphere and Volatile EvolutioN Mission'
 ;cdf_attput,fileid,'Discipline',0,'Planetary Space Physics>Particles'
-cdf_attput,fileid,'Discipline',0,'Space Physics>Interplanetary Studies'
+cdf_attput,fileid,'Discipline',0,'Planetary Physics>Particles'
 cdf_attput,fileid,'Source_name',0,'MAVEN>Mars Atmosphere and Volatile Evolution Mission'
 cdf_attput,fileid,'Descriptor',0,'SEP>Solar Energetic Particle Experiment'
 cdf_attput,fileid,'Data_type',0,global.data_type
 cdf_attput,fileid,'Data_version',0,ver_str
 cdf_attput,fileid,'TEXT',0,'MAVEN SEP electron and ion raw counts'
-cdf_attput,fileid,'Mods',0,'Revision 0'
+cdf_attput,fileid,'MODS',0,'Revision 0'
 cdf_attput,fileid,'Logical_file_id',0,global.filename
 cdf_attput,fileid,'Logical_source',0,global.logical_source  
 cdf_attput,fileid,'Logical_source_description',0,'DERIVED FROM: MAVEN SEP (Solar Energetic Particle) Instrument'
-cdf_attput,fileid,'PI_name',0,'Davin Larson (davin@ssl.berkeley.edu)'
+cdf_attput,fileid,'Sensor',0,global.sensor
+cdf_attput,fileid,'PI_name',0,'D. Larson (davin@ssl.berkeley.edu)'
 cdf_attput,fileid,'PI_affiliation',0,'U.C. Berkeley Space Sciences Laboratory'
-cdf_attput,fileid,'Instrument_type',0,'Energetic Particle Detector'
+cdf_attput,fileid,'Instrument_type',0,'Particles (space)'
 cdf_attput,fileid,'Mission_group',0,'MAVEN'
+cdf_attput,fileid,'Planet',0,'Mars'
 cdf_attput,fileid,'PDS_start_time',0,tstr[0]
+cdf_attput,fileid,'PDS_stop_time',0,tstr[1]
+cdf_attput,fileid,'PDS_collection_id',0,'MAVEN'
 for i=0,n_elements(dependencies)-1 do    cdf_attput,fileid,'Parents',i,  file_checksum(dependencies[i],/add_mtime)
 for i=0,n_elements(exnames)-1 do     cdf_attput,fileid,exnames[i],0,extra.(i)
 
@@ -123,7 +132,7 @@ cdf_varput,fileid,time_name,time
 
 
 ;Epoch
-
+if 0 then begin
 varid = cdf_varcreate(fileid, epoch_name, /CDF_EPOCH, /REC_VARY,/ZVARIABLE)
 cdf_attput,fileid,'FIELDNAM',varid,epoch_name,/ZVARIABLE
 cdf_attput,fileid,'FORMAT',varid,'F25.0',/ZVARIABLE
@@ -140,11 +149,11 @@ cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in NSSDC Epoch',/ZVARIABLE
 
 cdf_varput,fileid,epoch_name,epoch
-
+endif
 
 ;TT2000
 
-varname = 'Time_TT2000'
+varname = 'epoch'
 varid = cdf_varcreate(fileid, varname, /CDF_TIME_TT2000, /REC_VARY,/ZVARIABLE)
 cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'FORMAT',varid,'I22',/ZVARIABLE
@@ -164,7 +173,7 @@ cdf_varput,fileid,varname,timett2000
 
 
 ;MET
-varname = 'Time_MET'
+varname = 'time_met'
 varid = cdf_varcreate(fileid, varname, /CDF_DOUBLE, /REC_VARY,/ZVARIABLE)
 cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'FORMAT',varid,'F25.6',/ZVARIABLE
@@ -185,7 +194,7 @@ cdf_varput,fileid,varname,data_vary.met
 
 
 ;Ephemeris time
-varname = 'Time_Ephemeris'
+varname = 'time_ephemeris'
 varid = cdf_varcreate(fileid, varname, /CDF_DOUBLE, /REC_VARY,/ZVARIABLE)
 cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'FORMAT',varid,'F25.6',/ZVARIABLE
@@ -211,7 +220,7 @@ cdf_varput,fileid,varname,et
 ;Attenuator State
 ;dim_vary = [1]
 ;dim = 1
-varname = 'Attenuator_State'
+varname = 'attenuator_state'
 varid = cdf_varcreate(fileid, varname,/CDF_INT2, /REC_VARY,/ZVARIABLE)
 cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'FORMAT',varid,'I7',/ZVARIABLE
@@ -230,7 +239,7 @@ cdf_varput,fileid,varname,data_vary.att
 
 if 0 then begin
   ; Accumulation Time
-  varname = 'Accum_Time'
+  varname = 'accum_time'
   varid = cdf_varcreate(fileid, varname, /CDF_INT2, /REC_VARY,/ZVARIABLE)
   cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
   cdf_attput,fileid,'FORMAT',varid,'I7',/ZVARIABLE
@@ -247,7 +256,7 @@ if 0 then begin
   cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
   cdf_varput,fileid,varname,data_vary.duration  
 endif else begin
-  varname = 'Accum_Time'
+  varname = 'accum_time'
   atts = default_atts
   atts.fieldnam = varname
   atts.lablaxis = varname
@@ -257,14 +266,14 @@ endif else begin
 endelse
 
 
-varname = 'MAPID'
+varname = 'mapid'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
 atts.catdesc = 'Binning Map ID number'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.mapid,attributes=atts
 
-varname = 'SEQ_CNTR'
+varname = 'seq_cntr'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
@@ -272,7 +281,7 @@ atts.var_type ='data'
 atts.catdesc = 'CCSDS Sequence Counter'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.seq_cntr,attributes=atts
 
-varname = 'Raw_counts'
+varname = 'raw_counts'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname

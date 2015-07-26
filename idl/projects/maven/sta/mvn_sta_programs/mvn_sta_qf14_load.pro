@@ -1,20 +1,23 @@
 ;+
-;PROCEDURE:	mvn_sta_qf14_load
-;PURPOSE:	
-;	Loads quality flag bit 14 into static apid common blocks - set to 1 during anomolous ion suppression
+;PROCEDURE:     mvn_sta_qf14_load_v2
 ;
+;PURPOSE:
+;
+; Loads quality flag bit 14 into static apid common blocks - set
+; to 1 during anomolous ion suppression
+; 
+; Criteria:
+;
+;    1. Only time intervals after 2015-01-01.
+;    2. Only below 500km altitude. 
+;    3. All modes except protect mode (4).
+;
+
 pro mvn_sta_qf14_load
 
-  
-  ;;--------------------------------------------------------
-  ;;STATIC APIDs
-  apid=['2a','c0','c2','c4','c8',$
-        'ca','cc','cd','ce','cf','d0',$
-        'd1','d2','d3','d4','d6','d7',$
-        'd8','d9','da','db']
 
-  ;;--------------------------------------------------------
-  ;;Declare all the common block arrays
+  ;;------------------------------------
+  ;; Declare all the common block arrays
   common mvn_2a,mvn_2a_ind,mvn_2a_dat
   common mvn_c0,mvn_c0_ind,mvn_c0_dat
   common mvn_c2,mvn_c2_ind,mvn_c2_dat
@@ -39,64 +42,146 @@ pro mvn_sta_qf14_load
   common mvn_db,mvn_db_ind,mvn_db_dat
 
 
-  ;;------------------------
-  ;;Define bit
-  bit14mask=2^14  
-  bit14zero=2^14-1
 
-  ;;------------------------
-  ;;Orbit selection 
-  ;;All orbits: 713-753
-  ;;Odd orbits: 754-1e5
-  ;;(except 755,759,823,841)
 
-; do apid c6 then interpolate for all other apids
-	qf_c6 = mvn_c6_dat.quality_flag
-	tm_c6 = mvn_c6_dat.time
-	md_c6 = mvn_c6_dat.mode
-        orb = round(mvn_orbit_num(time=tm_c6))
+  ;;;********************************************************
+  ;;;Get APID c6
+  ;;;
+  ;;
+  ;;NOTE:
+  ;;
+  ;;     APID c6 is used as the base time. All other APIDs
+  ;;     will be prodcued based on the c6 time intervals.
 
-;	store_data,'mvn_sta_c6_quality_flag_old',data={x:tm_c6,y:qf_c6}
-;	options,'mvn_sta_c6_quality_flag_old',tplot_routine='bitplot',psym = 1,symsize=1
 
-	ind = where((md_c6 eq 1 or md_c6 eq 2) and $
-		((orb ge 713 and orb le 753) or $
-		((((orb mod 2) eq 1) and orb gt 754) and $
-		((orb ne 755) and (orb ne 759) and (orb ne 823) and (orb ne 841)) )   ),count)
+  ;;-----------------------------------------
+  ;; Check if APID c6 is loaded
+  print, 'Generate Quality Flags for APID c6...'
+  if n_elements(mvn_c6_dat) eq 0 then begin
+     print, 'APID c6 must be loaded! Skipping qf14.'
+     return
+  endif
 
-	if count eq 0 then begin
-		qf_c6 = qf_c6 and bit14zero
-		mvn_c6_dat.quality_flag = qf_c6
-		store_data,'mvn_sta_c6_quality_flag',data={x:tm_c6,y:qf_c6}
-		options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
-		return
-	endif else begin
-		qf_c6 = qf_c6 and bit14zero
-		qf_c6[ind] = qf_c6[ind] or bit14mask
-		mvn_c6_dat.quality_flag = qf_c6
-		qf_bm = intarr(n_elements(tm_c6))
-		qf_bm[ind] = bit14mask
-		store_data,'mvn_sta_c6_quality_flag',data={x:tm_c6+2.,y:qf_c6}
-		options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
-	endelse
+  ;;-----------------------------------------
+  ;; Load c6 - Change structure name to dat
+  dat       = mvn_c6_dat
+  qf_c6     = mvn_c6_dat.quality_flag
+  npts      = dimen1(dat.data)
+  nmass     = dat.nmass
+  nenergy   = dat.nenergy
+  nbins     = dat.nbins
+  time      = dat.time
+  time_end  = dat.end_time
+  mode      = dat.mode
+  att       = dat.att_ind
+  header    = dat.header
+  eprom     = dat.eprom_ver
+  bit14     = 2^14
+  bit14zero = 2^14-1
 
-  ;;------------------------
-  ;;Loop through all APIDs except c6
+
+  ;;-------------------------
+  ;; Find orbits and altitude
+  tt=timerange()
+  orb_time = tt[0]+360.*findgen(240)*(tt[1]-tt[0])/(24.*3600.)
+  orb_num = mvn_orbit_num(time=orb_time)-0.3
+  maven_orbit_tplot,result=result,/loadonly,/timecrop
+  R_m = 3389.9D
+  npts=n_elements(result.x)
+  ss = dblarr(npts, 4)
+  ss[*,0] = result.x
+  ss[*,1] = result.y
+  ss[*,2] = result.z
+  ss[*,3] = result.r
+  alt = (ss[*,3] - 1D)*R_m
+  pp = where(result.t ge tt[0] and result.t le tt[1],cc)
+  if cc eq 0 then begin
+     print, 'No altitude available.'
+     return
+  endif
+  alt = interp(alt[pp], result.t[pp], time)
+  
+
+
+
+  ;;-----------------------------------------------
+  ;; Zero out all quality flag 14
+  qf_c6 = qf_c6 and bit14zero
+
+  ;;-----------------------------------------------
+  ;; Find c6 time intervals which satisfy criteria 
+  ;; and apply qf14
+  time_2015 = time_double('2015-01-01')
+  pp = where(time ge time_2015 and $   ;; 1. Past 2015-01-01
+             mode ne 4         and $   ;; 2. Only mode 1
+             alt  le 500.d,cc)         ;; 3. Below 500 km
+  if cc eq 0 then begin
+     print, 'No quality flag 14 in selected intervals.'
+     return
+  endif
+
+  ;;---------------------------------------------
+  ;; Apply quality flag 14
+  qf_c6[pp] = qf_c6[pp] or bit14
+  mvn_c6_dat.quality_flag = qf_c6
+
+  ;;------------------------------------------
+  ;; Cycle through all APIDs
+  qf=qf_c6
+
+  apid=['2a','c0','c2','c4',     'c8',$
+        'ca','cc','cd','ce','cf','d0',$
+        'd1','d2','d3','d4','d6','d7',$
+        'd8','d9','da','db']
+
   nn_apid=n_elements(apid)
   for api=0, nn_apid-1 do begin
      temp=execute('nn7=size(mvn_'+apid[api]+'_dat,/type)')
      if nn7 eq 8 then begin
-        temp=execute('time=mvn_'+apid[api]+'_dat.time')
-        temp=execute('qf=mvn_'+apid[api]+'_dat.quality_flag')
-	qf = qf and bit14zero 
-	bm = interp(qf_bm,tm_c6,time)
-	ind = where ((bm ne bit14mask) and (bm ne 0),count)				; if interpolated, assume bit14=0 - works best for missing c6 packets
-; print,api,'  ',apid[api],' ',count,' ',minmax(bm)
-	if count gt 0 then bm[ind] = 0
-	bm = fix(round(bm))
-	temp=execute('mvn_'+apid[api]+'_dat.quality_flag = (qf or bm)')
+
+        ;;------------------------------------------------
+        ;; Get APID Data
+        res1 = execute('qf_new  = mvn_'+apid[api]+'_dat.quality_flag')
+        res2 = execute('t_start = mvn_'+apid[api]+'_dat.time')
+        res3 = execute('t_stop  = mvn_'+apid[api]+'_dat.end_time')
+
+        ;;------------------------------------------------
+        ;; Error Check
+        if res1 eq 0 or res2 eq 0 or res3 eq 0 then begin
+           print, 'No start/stop times.'
+           return
+        endif
+
+        ;;-----------------------------------------------------
+        ;; Cycle through all APID times and interpolate with c6
+        res4 = execute('nn = n_elements(t_start)')
+        for itime = 0, nn-1 do begin
+           
+           ;;--------------------------------------------------
+           ;; Check if any c6 times fall in current APID interval
+           pp=where( time+2. ge t_start[itime] and $
+                     time+2. le t_stop[itime],cc)
+           if cc eq 1 then $
+              if (mode[pp] eq 1)     and $
+                 (alt[pp]  le 500.D) and $
+                 (time[pp] ge time_2015) then $
+                 qf_new[itime] = qf_new[itime] or (qf_c6 and bit14)
+           if cc ge 2 then begin
+              for i=0, cc-2 do qf_new[itime]=qf_new[itime] or qf_c6[pp[i]]
+              if (mode[pp[cc-1]] eq 1)     and $
+                 (alt[pp[cc-1]]  le 500.D) and $
+                 (time[pp[cc-1]] ge time_2015) then $
+                 qf_new[itime] = qf_new[itime] or (qf_c6[pp[cc-1]] and bit14)
+           endif
+        endfor
+
+        ;;-----------------------------------
+        ;; Insert quality flags into APID
+        temp=execute('mvn_'+apid[api]+'_dat.quality_flag=qf_new')
+
      endif
   endfor
+
 
 
 end

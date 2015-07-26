@@ -11,7 +11,7 @@ pro mvn_sep_cdf_var_att_create,fileid,varname,data,attributes=attributes,rec_nov
   case type of
     -1: cdf_type = create_struct(cdf_type_string,1)
     0: message,'No valid data provided'
-    1: cdf_type = {cdf_int1:1}
+    1: cdf_type = {cdf_uint1:1}
     2: cdf_type = {cdf_int2:1}
     3: cdf_type = {cdf_int4:1}
     4: cdf_type = {cdf_float:1}

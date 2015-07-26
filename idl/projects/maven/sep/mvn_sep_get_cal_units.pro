@@ -165,10 +165,14 @@ str_additions = {   $
     R_elec_eflux_unc: replicate(nan,n_e),  $
     R_elec_energy:   replicate(nan,n_e) , $
     R_elec_denergy:   replicate(nan,n_e) , $
-    A_xray_rate:       replicate(nan,n_x) ,  $
-    B_xray_rate:       replicate(nan,n_x) ,  $
-    A_fto_rate:        replicate(nan,n_cr) ,  $
-    B_fto_rate:        replicate(nan,n_cr) ,  $
+    A_T_rate:       replicate(nan,n_x) ,  $
+    A_FTO_rate:       replicate(nan,n_cr) ,  $
+    B_T_rate:       replicate(nan,n_x) ,  $
+    B_FTO_rate:       replicate(nan,n_cr) ,  $
+    F_O_rate :     nan,  $
+    F_F_rate:      nan,  $
+    R_O_rate :     nan,  $
+    R_F_rate:      nan,  $
     F_Ion_eflux_tot:   nan, $
     F_elec_eflux_tot:  nan, $
     R_Ion_eflux_tot:   nan, $

@@ -3161,6 +3161,16 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 			sum = (cavg.y[ind[0:ndis-1]] and 8)/8
 			avg2 = sum*avg > 1
 
+
+;	correct CC mode transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_mode',data=md6
+		if size(/type,md6) eq 8 then begin
+			get_data,'mvn_sta_C6_rate',data=rt6
+			md2 = fix(round(interp(md6.y,md6.x,tdis)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tdis)))
+		endif
+		md1 = rt2*16+md2	 
+
 			tt1 = tdis - 2.*avg2 									; corrected timing for averaging, kluge for header mismatch
 			tt2 = tdis + 2.*avg2 
 
@@ -3175,6 +3185,10 @@ if ndis1 gt 1 then begin											; kluge for real time data stream which is mi
 					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
+
+;	correct CC attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tdis)))
 
 			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
 
@@ -3438,7 +3452,6 @@ print,'Processing apid cd'
 			avg2 = sum*avg > 1
 
 ;	correct CD mode transitions using C6 data if it is available
-
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
@@ -3727,6 +3740,15 @@ print,'Processing apid ce'
 			sum = (cavg.y[ind[0:ndis-1]] and 8)/8
 			avg2 = sum*avg > 1
 
+;	correct CE mode transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_mode',data=md6
+		if size(/type,md6) eq 8 then begin
+			get_data,'mvn_sta_C6_rate',data=rt6
+			md2 = fix(round(interp(md6.y,md6.x,tdis)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tdis)))
+		endif
+		md1 = rt2*16+md2	 
+
 			tt1 = tdis - 2.*avg2 									; corrected timing for averaging, kluge for header mismatch
 			tt2 = tdis + 2.*avg2 
 
@@ -3741,6 +3763,10 @@ print,'Processing apid ce'
 					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
+
+;	correct CE attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tdis)))
 
 			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
 
@@ -4005,7 +4031,6 @@ print,'Processing apid cf'
 			avg2 = sum*avg > 1
 
 ;	correct CF mode transitions using C6 data if it is available
-
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
@@ -4293,6 +4318,15 @@ print,'Processing apid d0'
 			sum = (cavg.y[ind[0:ndis-1]] and 8)/8
 			avg2 = sum*avg > 1
 
+;	correct D0 mode transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_mode',data=md6
+		if size(/type,md6) eq 8 then begin
+			get_data,'mvn_sta_C6_rate',data=rt6
+			md2 = fix(round(interp(md6.y,md6.x,tdis)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tdis)))
+		endif
+		md1 = rt2*16+md2	 
+
 			tt1 = tdis - 2.*avg2 									; corrected timing for averaging, kluge for header mismatch
 			tt2 = tdis + 2.*avg2 
 
@@ -4307,6 +4341,10 @@ print,'Processing apid d0'
 					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
+
+;	correct D0 attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tdis)))
 
 			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
 
@@ -4567,7 +4605,6 @@ print,'Processing apid d1'
 			avg2 = sum*avg > 1
 
 ;	correct D1 mode transitions using C6 data if it is available
-
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
@@ -4597,7 +4634,7 @@ print,'Processing apid d1'
 				endfor
 			endif
 
-;	correct D0 attenuator transitions using C6 data if it is available
+;	correct D1 attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
 		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tdis)))
 
@@ -4866,6 +4903,15 @@ print,'Processing apid d2'
 			sum = (cavg.y[ind[0:ndis-1]] and 8)/8
 			avg2 = sum*avg > 1
 
+;	correct D2 mode transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_mode',data=md6
+		if size(/type,md6) eq 8 then begin
+			get_data,'mvn_sta_C6_rate',data=rt6
+			md2 = fix(round(interp(md6.y,md6.x,tdis)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tdis)))
+		endif
+		md1 = rt2*16+md2	 
+
 			tt1 = tdis - 2.*avg2 									; corrected timing for averaging, kluge for header mismatch
 			tt2 = tdis + 2.*avg2 
 
@@ -4880,6 +4926,10 @@ print,'Processing apid d2'
 					if idelay gt 0 then att0[inds+1:(inds+idelay)<(ndis-1)] = att0[inds]
 				endfor
 			endif
+
+;	correct D2 attenuator transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_att',data=att6
+		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tdis)))
 
 			header = 256l^3*md.y[ind[0:ndis-1]] + 256l^2*cavg.y[ind[0:ndis-1]] + 256l*catt.y[ind[0:ndis-1]] + diag.y[ind[0:ndis-1]]
 
@@ -5142,7 +5192,6 @@ print,'Processing apid d3'
 			avg2 = sum*avg > 1
 
 ;	correct D3 mode transitions using C6 data if it is available
-
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
@@ -5402,7 +5451,6 @@ print,'Processing apid d4'
 		endif
 
 ;	correct D4 mode transitions using C6 data if it is available
-
 		get_data,'mvn_sta_C6_mode',data=md6
 		if size(/type,md6) eq 8 then begin
 			get_data,'mvn_sta_C6_rate',data=rt6
@@ -5464,7 +5512,7 @@ print,'Processing apid d4'
 			endfor
 		endif
 
-;	correct C8 attenuator transitions using C6 data if it is available
+;	correct D4 attenuator transitions using C6 data if it is available
 		get_data,'mvn_sta_C6_att',data=att6
 		if size(/type,att6) eq 8 then att0 = fix(round(interp(att6.y,att6.x,tt)))
 
@@ -5984,6 +6032,15 @@ print,'Processing apid d8'
 
 		comp = (cavg.y and replicate(192,nn))/128
 
+;	correct D8 mode transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_mode',data=md6
+		if size(/type,md6) eq 8 then begin
+			get_data,'mvn_sta_C6_rate',data=rt6
+			md2 = fix(round(interp(md6.y,md6.x,tt)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tt)))
+		endif
+		md1 = rt2*16+md2	 
+
 		tt1 = tt - 2.*avg2 	
 		tt2 = tt + 2.*avg2 
 
@@ -6125,6 +6182,15 @@ print,'Processing apid d9'
 			avg2 = sum*avg > 1
 
 		comp = (cavg.y and replicate(192,nn))/128
+
+;	correct D9 mode transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_mode',data=md6
+		if size(/type,md6) eq 8 then begin
+			get_data,'mvn_sta_C6_rate',data=rt6
+			md2 = fix(round(interp(md6.y,md6.x,tt)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tt)))
+		endif
+		md1 = rt2*16+md2	 
 
 		tt1 = tt - 2.*avg2 	
 		tt2 = tt + 2.*avg2 
@@ -6527,6 +6593,15 @@ print,'Processing apid db'
 			avg2 = sum*avg > 1
 
 		comp = (cavg.y and replicate(192,nn))/128
+
+;	correct DB mode transitions using C6 data if it is available
+		get_data,'mvn_sta_C6_mode',data=md6
+		if size(/type,md6) eq 8 then begin
+			get_data,'mvn_sta_C6_rate',data=rt6
+			md2 = fix(round(interp(md6.y,md6.x,tt)))
+			rt2 = fix(round(interp(rt6.y,rt6.x,tt)))
+		endif
+		md1 = rt2*16+md2	 
 
 		tt1 = tt - 2.*avg2 	
 		tt2 = tt + 2.*avg2 

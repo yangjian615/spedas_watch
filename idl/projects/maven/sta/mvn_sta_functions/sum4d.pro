@@ -28,6 +28,16 @@ value=0 & str_element,sum,'data',value
 value=0 & str_element,sum,'rates',value
 	if n_elements(value) gt 1 then sum.rates = (sum.rates*sum.integ_t+d2.rates*d2.integ_t)/(sum.integ_t+d2.integ_t)
 
+value=-1 & str_element,sum,'quality_flag',value
+	if value ge 0 then begin
+		value=-1 & str_element,sum,'att_ind',value
+		if value ge 0 then begin
+			sum.quality_flag = sum.quality_flag or d2.quality_flag or (64 * (sum.att_ind ne d2.att_ind))
+		endif else begin
+			sum.quality_flag = sum.quality_flag or d2.quality_flag
+		endelse
+	endif
+
 ;sum.delta_t =  d1.delta_t + d2.delta_t
 ;sum.delta_t =  d2.end_time - d1.time
 sum.integ_t =  d1.integ_t + d2.integ_t

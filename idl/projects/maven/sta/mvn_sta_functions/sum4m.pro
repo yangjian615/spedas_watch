@@ -10,7 +10,7 @@
 ; WARNING:  This is a very crude structure; use at your own risk.
 ;-
 
-function sum4m,inpdat         
+function sum4m,inpdat,mass=ms,m_int=mi         
 
 dat = inpdat
 units = dat.units_name
@@ -21,16 +21,23 @@ value=0 & str_element,dat,'nmass',value
 	if value eq 1 and ndimen(dat.data) le 2 and dat.data_name ne 'C8 Energy-Angle-Mass' then return,dat
 
 tags = ['project_name','spacecraft','data_name','apid','units_name','units_procedure','valid',  $
-	'time','end_time', 'delta_t', 'integ_t', $ 
-	'md', 'mode', 'rate', 'en_ind', 'mlut_ind', 'eff_ind', 'att_ind', $
-	'nenergy', 'nbins', 'ndef' ,'nanode', 'geom_factor', 'nmass', 'mass', $
+	'quality_flag','time','end_time', 'delta_t', 'integ_t', $ 
+	'md', 'mode', 'rate', 'swp_ind', 'mlut_ind', 'eff_ind', 'att_ind', $
+	'nenergy', 'nbins', 'ndef' ,'nanode', 'geom_factor','dead1','dead2','dead3','nmass', 'mass', $
 	'charge', 'sc_pot',$
 	'magf','quat_sc','quat_mso','pos_sc_mso']
 
 extract_tags,omni,dat,tags=tags
 
 	omni.nmass = 1
-	str_element,/add,omni, 'mass_arr',1.
+
+if keyword_set(ms) then begin
+	ind = where(dat.mass_arr lt ms[0] or dat.mass_arr gt ms[1],count)
+	if count ne 0 then dat.data[ind]=0.
+endif
+
+if not keyword_set(mi) then mi=1.
+	str_element,/add,omni, 'mass_arr',mi
 
 if dat.data_name eq 'C8 Energy-Angle-Mass' then begin
 
@@ -51,20 +58,20 @@ if dat.data_name eq 'C8 Energy-Angle-Mass' then begin
 
 endif else if ndimen(dat.data) eq 2 and dat.nbins eq 1 then begin
 
-	str_element,/add,omni, 'theta',dat.theta
-	str_element,/add,omni, 'dtheta',dat.dtheta
-	str_element,/add,omni, 'phi',dat.phi
-	str_element,/add,omni, 'dphi',dat.dphi
-	str_element,/add,omni, 'domega',dat.domega
-	str_element,/add,omni, 'denergy',reform(dat.denergy(*,0))
-	str_element,/add,omni, 'energy' ,reform(dat.energy(*,0))
+	str_element,/add,omni, 'theta',reform(dat.theta[*,0])
+	str_element,/add,omni, 'dtheta',reform(dat.dtheta[*,0])
+	str_element,/add,omni, 'phi',reform(dat.phi[*,0])
+	str_element,/add,omni, 'dphi',reform(dat.dphi[*,0])
+	str_element,/add,omni, 'domega',reform(dat.domega[*,0])
+	str_element,/add,omni, 'denergy',reform(dat.denergy[*,0])
+	str_element,/add,omni, 'energy' ,reform(dat.energy[*,0])
 	str_element,/add,omni, 'bins',dat.bins
 	str_element,/add,omni, 'bins_sc',dat.bins_sc
-	str_element,/add,omni, 'gf'   ,total(dat.gf(*,*),2)/dat.nmass
-	str_element,/add,omni, 'eff'   ,total(dat.eff(*,*),2)/dat.nmass
-	str_element,/add,omni, 'bkg'    ,total(dat.bkg(*,*),2)
-	str_element,/add,omni, 'dead'   ,total(dat.dead(*,*),2)
-	str_element,/add,omni, 'data'   ,total(dat.data(*,*),2)
+	str_element,/add,omni, 'gf'   ,total(dat.gf[*,*],2)/dat.nmass
+	str_element,/add,omni, 'eff'   ,total(dat.eff[*,*],2)/dat.nmass
+	str_element,/add,omni, 'bkg'    ,total(dat.bkg[*,*],2)
+	str_element,/add,omni, 'dead'   ,total(dat.dead[*,*],2)
+	str_element,/add,omni, 'data'   ,total(dat.data[*,*],2)
 
 endif else if ndimen(dat.data) eq 3 then begin
 
@@ -78,11 +85,11 @@ endif else if ndimen(dat.data) eq 3 then begin
 	str_element,/add,omni, 'energy' ,reform(dat.energy[*,*,0],dat.nenergy,dat.nbins)
 	str_element,/add,omni, 'bins',dat.bins
 	str_element,/add,omni, 'bins_sc',dat.bins_sc
-	str_element,/add,omni, 'gf'     ,reform(total(  dat.gf(*,*,*),3),dat.nenergy,dat.nbins)/dat.nmass
-	str_element,/add,omni, 'eff'    ,reform(total( dat.eff(*,*,*),3),dat.nenergy,dat.nbins)/dat.nmass
-	str_element,/add,omni, 'bkg'    ,reform(total( dat.bkg(*,*,*),3),dat.nenergy,dat.nbins)
-	str_element,/add,omni, 'dead'    ,reform(total( dat.dead(*,*,*),3),dat.nenergy,dat.nbins)
-	str_element,/add,omni, 'data'   ,reform(total(dat.data(*,*,*),3),dat.nenergy,dat.nbins)
+	str_element,/add,omni, 'gf'     ,reform(total(  dat.gf[*,*,*],3),dat.nenergy,dat.nbins)/dat.nmass
+	str_element,/add,omni, 'eff'    ,reform(total( dat.eff[*,*,*],3),dat.nenergy,dat.nbins)/dat.nmass
+	str_element,/add,omni, 'bkg'    ,reform(total( dat.bkg[*,*,*],3),dat.nenergy,dat.nbins)
+	str_element,/add,omni, 'dead'    ,reform(total( dat.dead[*,*,*],3),dat.nenergy,dat.nbins)
+	str_element,/add,omni, 'data'   ,reform(total(dat.data[*,*,*],3),dat.nenergy,dat.nbins)
 
 endif
 

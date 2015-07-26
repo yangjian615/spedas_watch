@@ -68,8 +68,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-07 14:51:56 -0700 (Tue, 07 Jul 2015) $
-;  $LastChangedRevision: 18031 $
+;  $LastChangedDate: 2015-07-24 10:06:27 -0700 (Fri, 24 Jul 2015) $
+;  $LastChangedRevision: 18242 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_data_fetch.pro $
 
 
@@ -133,7 +133,7 @@ endif else begin
 endelse
 type_string = typename(file_data)
 
-
+;stop
 
 if type_string ne 'STRING' then begin
   login_flag = 1
@@ -209,21 +209,24 @@ endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
   file_dir = file_dir ; Directory in local cache for file
   file_base = file_base ; Filename without directory or version number
   local_flist = strarr(n_elements(cut_filenames)) ; List of local filenames consistent with query
-  
+  months = strarr(n_elements(cut_filenames))
   ; Loop through and see if each file exists. If not, download it
   
   for i = 0, n_elements(cut_filenames)-1 do begin
-    
+    months(i) = strmid(start_strings(i), 4, 2)
     if strlen(optional_descriptors(i)) eq 0 then begin
+;      file_dir(i) = filepath('', root_dir=data_dir, $
+;         subdirectory = [sc_ids(i), levels(i), modes(i),inst_ids(i),years(i)])
       file_dir(i) = filepath('', root_dir=data_dir, $
-         subdirectory = [sc_ids(i), levels(i), modes(i),inst_ids(i),years(i)])
-      
+         subdirectory = [sc_ids(i), inst_ids(i), modes(i), levels(i),years(i), months(i)])
 ;      file_dir(i) = data_dir + sc_ids(i) + '/' + levels(i) + '/' + $
 ;                    modes(i) + '/' + inst_ids(i) + '/' + years(i) + '/'
     endif else begin
+;      file_dir(i) = filepath('', root_dir=data_dir, $
+;        subdirectory = [sc_ids(i), levels(i), modes(i),inst_ids(i), optional_descriptors(i), years(i)])
       file_dir(i) = filepath('', root_dir=data_dir, $
-        subdirectory = [sc_ids(i), levels(i), modes(i),inst_ids(i), optional_descriptors(i), years(i)])
-      
+        subdirectory = [sc_ids(i), inst_ids(i), modes(i), levels(i), optional_descriptors(i), years(i), months(i)])
+
 ;      file_dir(i) = data_dir + sc_ids(i) + '/' + levels(i) + '/' + $
 ;                    modes(i) + '/' + inst_ids(i) + '/' + optional_descriptors(i) $
 ;                    + '/' + years(i) + '/'
