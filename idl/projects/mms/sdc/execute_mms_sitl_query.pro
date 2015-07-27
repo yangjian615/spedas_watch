@@ -6,10 +6,14 @@
 ;
 function execute_mms_sitl_query, netURL, url_path, query, filename=filename
 
+  ; Check for bad netURL -- if not an objecct, simply return it
+  if (size(netURL, /type) ne 11) then return, result
+
   ;TODO: reuse for Put? diff set of error codes to look for
 
   catch, error_status
   if (error_status ne 0) then begin
+    catch, /cancel ; Cancel catch so other errors don't get caught here.
     netURL->GetProperty, RESPONSE_CODE=code
     ;TODO: let callers print messages?
     case code of
@@ -27,7 +31,6 @@ function execute_mms_sitl_query, netURL, url_path, query, filename=filename
         help, !error_state
       end
     endcase
-    catch, /cancel ; Cancel catch so other errors don't get caught here.
     return, code ;the http or other IDLnetURL error code (http://www.exelisvis.com/docs/IDLnetURL.html#objects_network_1009015_1417867)
   endif
   
