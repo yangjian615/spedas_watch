@@ -26,56 +26,56 @@ PRO eva_data_plot_options, paramlist
     ; MMS FPI
     ;-----------
     
-    if strmatch(tpv,'*_fpi_eEnergySpectr_omni') then begin
-      options, tpv, 'spec', 1
-      options, tpv, 'ylog', 1
-      options, tpv, 'zlog', 1
-      options, tpv, 'no_interp', 1
-      options, tpv, 'ytitle', 'elec E, eV'
-      ylim, tpv, 10, 26000
-      zlim, tpv, .1, 2000
-    endif
-    
-    if strmatch(tpv,'*_fpi_iEnergySpectr_omni') then begin
-      options, tpv, 'spec', 1
-      options, tpv, 'ylog', 1
-      options, tpv, 'zlog', 1
-      options, tpv, 'no_interp', 1
-      options, tpv, 'ytitle', 'ion E, eV'
-      ylim, tpv, 10, 26000
-      zlim, tpv, .1, 2000
-    endif
-    
-    if strmatch(tpv,'*_fpi_ePitchAngDist_midEn') then begin
-      options, tpv, 'spec', 1
-      options, tpv, 'ylog', 0
-      options, tpv, 'zlog', 1
-      options, tpv, 'no_interp', 1
-      options, tpv, 'ytitle', 'ePADM, eV'
-      ylim, tpv, 1, 180
-      zlim, tpv, 100, 10000
-    endif
-    
-    if strmatch(tpv,'*_fpi_ePitchAngDist_highEn') then begin
-      options, tpv, 'spec', 1
-      options, tpv, 'ylog', 0
-      options, tpv, 'zlog', 1
-      options, tpv, 'no_interp', 1
-      options, tpv, 'ytitle', 'ePADH, eV'
-      ylim, tpv, 1, 180
-      zlim, tpv, 100, 10000
-    endif
-    
-    if strmatch(tpv,'*_fpi_DISnumberDensity') then begin
-      options, tpv, 'ylog', 1
-      options, tpv, 'ytitle', 'n, cm!U-3!N'
-    endif
-    
-    if strmatch(tpv,'*_fpi_iBulkV_DSC') then begin
-      options, tpv, labels=['V!DX!N', 'V!DY!N', 'V!DZ!N']
-      options, tpv, 'ytitle', 'V!DDSC!N, km/s'
-      options, tpv, 'colors', [2,4,6]
-    endif
+;    if strmatch(tpv,'*_fpi_eEnergySpectr_omni') then begin
+;      options, tpv, 'spec', 1
+;      options, tpv, 'ylog', 1
+;      options, tpv, 'zlog', 1
+;      options, tpv, 'no_interp', 1
+;      options, tpv, 'ytitle', 'elec E, eV'
+;      ylim, tpv, 10, 26000
+;      zlim, tpv, .1, 2000
+;    endif
+;    
+;    if strmatch(tpv,'*_fpi_iEnergySpectr_omni') then begin
+;      options, tpv, 'spec', 1
+;      options, tpv, 'ylog', 1
+;      options, tpv, 'zlog', 1
+;      options, tpv, 'no_interp', 1
+;      options, tpv, 'ytitle', 'ion E, eV'
+;      ylim, tpv, 10, 26000
+;      zlim, tpv, .1, 2000
+;    endif
+;    
+;    if strmatch(tpv,'*_fpi_ePitchAngDist_midEn') then begin
+;      options, tpv, 'spec', 1
+;      options, tpv, 'ylog', 0
+;      options, tpv, 'zlog', 1
+;      options, tpv, 'no_interp', 1
+;      options, tpv, 'ytitle', 'ePADM, eV'
+;      ylim, tpv, 1, 180
+;      zlim, tpv, 100, 10000
+;    endif
+;    
+;    if strmatch(tpv,'*_fpi_ePitchAngDist_highEn') then begin
+;      options, tpv, 'spec', 1
+;      options, tpv, 'ylog', 0
+;      options, tpv, 'zlog', 1
+;      options, tpv, 'no_interp', 1
+;      options, tpv, 'ytitle', 'ePADH, eV'
+;      ylim, tpv, 1, 180
+;      zlim, tpv, 100, 10000
+;    endif
+;    
+;    if strmatch(tpv,'*_fpi_DISnumberDensity') then begin
+;      options, tpv, 'ylog', 1
+;      options, tpv, 'ytitle', 'n, cm!U-3!N'
+;    endif
+;    
+;    if strmatch(tpv,'*_fpi_iBulkV_DSC') then begin
+;      options, tpv, labels=['V!DX!N', 'V!DY!N', 'V!DZ!N']
+;      options, tpv, 'ytitle', 'V!DDSC!N, km/s'
+;      options, tpv, 'colors', [2,4,6]
+;    endif
     
     ; ESA spectrograms
     if strmatch(tpv,'*pe??_en_eflux*') then begin

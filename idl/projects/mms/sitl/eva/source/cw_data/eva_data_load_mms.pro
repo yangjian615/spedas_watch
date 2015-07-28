@@ -1,8 +1,8 @@
 PRO eva_data_load_mms_options, tpv, ytitle=ytitle,ztitle=ztitle,yrange=yrange,$
   zrange=zrange,ylog=ylog,zlog=zlog,spec=spec,labels=labels,labflag=labflag,$
-  colors=colors
-  tplot_names,tpv,names=tn
-  if n_elements(tn) eq 1 then begin
+  colors=colors,ysubtitle=ysubtitle,constant=constant,cap=cap
+  tn = tnames(tpv)
+  if (strlen(tn[0]) gt 0) and (n_elements(tn) eq 1) then begin
     options, tpv,'spec',keyword_set(spec)
     if keyword_set(spec) then options,tpv,'no_interp',1
     if n_elements(ylog) eq 1 then options, tpv,'ylog',ylog
@@ -14,6 +14,9 @@ PRO eva_data_load_mms_options, tpv, ytitle=ytitle,ztitle=ztitle,yrange=yrange,$
     if n_elements(labels) gt 0 then options, tpv, labels=labels
     if n_elements(labflag) eq 1 then options,tpv,'labflag',labflag
     if n_elements(colors) gt 0 then options,tpv,'colors',colors
+    if n_elements(ysubtitle) eq 1 then options, tpv,'ysubtitle',ysubtitle
+    if n_elements(constant) eq 1 then options, tpv,'constant',0
+    if keyword_set(cap) then eva_cap, tpv
   endif
 END
 
@@ -85,7 +88,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_fpi_*')) then begin
           mms_sitl_get_fpi_basic, sc_id=sc
-          tplot_names,'*fpi*',names=tn
+          tn=tnames('*fpi*')
           jmax= n_elements(tn)
           if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
             for j=0,jmax-1 do begin
@@ -95,8 +98,6 @@ FUNCTION eva_data_load_mms, state
             endfor
             answer = 'Yes'
           endif
-          
-
         endif
   
         ;-----------
@@ -104,12 +105,10 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_feeps_*')) then begin
           mms_load_epd_feeps, sc=sc
-          tplot_names,sc+'_epd_feeps_TOP_counts_per_accumulation_sensorID_4',names=tn
-          print,'tn=',tn
+          tn=tnames(sc+'_epd_feeps_TOP_counts_per_accumulation_sensorID_4')
           jmax = n_elements(tn)
-          if jmax eq 1 then begin
-            options, sc+'_epd_feeps_TOP_counts_per_accumulation_sensorID_4','ytitle','electrons'
-            options, sc+'_epd_feeps_TOP_counts_per_accumulation_sensorID_4','ylog',1
+          if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
+            eva_data_load_mms_options, tn[0], ytitle='electrons', ylog=1
             answer = 'Yes'
           endif
         endif
@@ -117,14 +116,12 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; EPD/EIS
         ;-----------
-        if (strmatch(paramlist[i],'*_feeps_*')) then begin
+        if (strmatch(paramlist[i],'*_epd_eis_*')) then begin
           mms_load_epd_eis, sc=sc
-          tplot_names,sc+'_epd_eis_electronenergy_electron_cps_t1',names=tn
+          tn=tnames(sc+'_epd_eis_electronenergy_electron_cps_t1')
           jmax = n_elements(tn)
-          if jmax eq 1 then begin
-            options, sc+'_epd_eis_electronenergy_electron_cps_t1', 'ytitle', 'electrons'
-            options, sc+'_epd_eis_electronenergy_electron_cps_t1', 'ylog', 1
-            ylim, sc+'_epd_eis_electronenergy_electron_cps_t1', 0.8, 1e5
+          if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
+            eva_data_load_mms_options,tn[0],ytitle='electrons',ylog=1,yrange=[0.8,1e+5]
             answer = 'Yes'
           endif
         endif
@@ -172,34 +169,22 @@ FUNCTION eva_data_load_mms, state
         ; AFG
         ;-----------
         if (strmatch(paramlist[i],'*_afg*')) then begin
-          mms_sitl_get_afg, sc_id=sc;, no_update = no_update, reload = reload
-          tplot_names,sc+'_afg_srvy_gsm_dmpa',names=tn
-          jmax=n_elements(tn)
-          if jmax eq 1 then begin
-            eva_cap, sc+'_afg_srvy_gsm_dmpa'
-            options, sc+'_afg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|']
-            options, sc+'_afg_srvy_gsm_dmpa', 'ytitle', sc+'!CAFG_srvy'
-            options, sc+'_afg_srvy_gsm_dmpa', 'ysubtitle', '[nT]'
-            options, sc+'_afg_srvy_gsm_dmpa', 'colors',[2,4,6]
-            answer = 'Yes'
-          endif 
+          mms_sitl_get_afg, sc_id=sc
+          eva_data_load_mms_options,sc+'_afg_srvy_gsm_dmpa',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG_srvy',ysubtitle='[nT]',$
+            colors=[2,4,6],labflag=-1,constant=0,cap=1
+          answer = 'Yes'
         endif
   
         ;-----------
         ; DFG
         ;-----------
         if (strmatch(paramlist[i],'*_dfg*')) then begin
-          mms_sitl_get_dfg, sc_id=sc;, no_update = no_update, reload = reload
-          tplot_names,sc+'_dfg_srvy_gsm_dmpa',names=tn
-          jmax=n_elements(tn)
-          if jmax ge 1 then begin
-            eva_cap, sc+'_dfg_srvy_gsm_dmpa'
-            options, sc+'_dfg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|']
-            options, sc+'_dfg_srvy_gsm_dmpa', 'ytitle', sc+'!CDFG_srvy'
-            options, sc+'_dfg_srvy_gsm_dmpa', 'ysubtitle', '[nT]'
-            options, sc+'_dfg_srvy_gsm_dmpa', 'colors',[2,4,6]
-            answer = 'Yes'
-          endif
+          mms_sitl_get_dfg, sc_id=sc
+          eva_data_load_mms_options,sc+'_dfg_srvy_gsm_dmpa',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG_srvy',ysubtitle='[nT]',$
+            colors=[2,4,6],labflag=-1,constant=0, cap=1
+          answer = 'Yes'
         endif
         
         ;-----------
@@ -208,7 +193,7 @@ FUNCTION eva_data_load_mms, state
         if (strmatch(paramlist[i],'*_dsp_*')) then begin
           data_type = (strmatch(paramlist[i],'*b*')) ? 'bpsd' : 'epsd'
           mms_load_dsp, sc = sc, data_type=data_type
-          tplot_names,sc+'_dsp*',names=tn
+          tn=tnames(sc+'_dsp*')
           jmax=n_elements(tn)
           if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
             for j=0,jmax-1 do begin
@@ -220,27 +205,6 @@ FUNCTION eva_data_load_mms, state
               endif
             endfor
           endif
-;          if strmatch(data_type,'bpsd') then begin
-;            get_data,sc+'_dsp_lfb_x',data=Dx,dl=dl,lim=lim
-;            get_data,sc+'_dsp_lfb_y',data=Dy
-;            get_data,sc+'_dsp_lfb_z',data=Dz
-;            Dt = Dx.y + Dy.y + Dz.y
-;            store_data,sc+'_dsp_lfb_omni',data={x:Dx.x,y:Dt,v:Dx.v};,dl=dl,lim=lim
-;            options,tpv,'ylog',1
-;            options,tpv,'zlog',1
-;            options,tpv,'spec',1
-;          endif else begin
-;            get_data,sc+'_dsp_lfe_x',data=Dx,dl=dl,lim=lim
-;            get_data,sc+'_dsp_lfe_y',data=Dy
-;            get_data,sc+'_dsp_lfe_z',data=Dz
-;            Dt = Dx.y + Dy.y + Dz.y
-;            tpv=sc+'_dsp_lfe_omni'
-;            store_data,tpv,data={x:Dx.x,y:Dt,v:Dx.v};,dl=dl,lim=lim
-;            options,tpv,'ylog',1
-;            options,tpv,'zlog',1
-;            options,tpv,'spec',1
-;          endelse
-          
           answer = 'Yes'
         endif
         
@@ -249,14 +213,9 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_edp_*')) then begin
           mms_load_edp, sc = sc, level='l1b', mode='comm', data_type='dcecomm';, /no_sweeps
-          tplot_names,sc+'_edp_*',names=tn
-          jmax=n_elements(tn)
-          if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
-            for j=0,jmax-1 do begin
-              eva_data_load_mms_options, tn[j], ytitle='E, mV/m',labels=['X','Y','Z'],$
-                labflag=-1,colors=[2,4,6],yrange=[-20,20]
-            endfor
-          endif
+          eva_data_load_mms_options,sc+'_edp_comm_dce_sensor', $
+            labels=['X','Y','Z'],ytitle=sc+'!CEDP_comm',ysubtitle='[mV/m]',$
+            colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
           answer = 'Yes'
         endif
         
