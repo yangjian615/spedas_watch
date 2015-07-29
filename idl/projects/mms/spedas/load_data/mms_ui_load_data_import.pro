@@ -12,8 +12,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-24 13:58:54 -0700 (Wed, 24 Jun 2015) $
-;$LastChangedRevision: 17960 $
+;$LastChangedDate: 2015-07-27 09:51:58 -0700 (Mon, 27 Jul 2015) $
+;$LastChangedRevision: 18273 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -42,7 +42,7 @@ pro mms_ui_load_data_import,$
   ; extract the variables from the load structure
   probes=loadStruc.probes
   instrument=loadStruc.instrument
-  datatype=loadStruc.datatype
+  level=loadStruc.level
   timeRange=loadStruc.trange
   
   ; need to update for MMS
@@ -52,7 +52,7 @@ pro mms_ui_load_data_import,$
 
   tn_before = [tnames('*',create_time=cn_before)]
 
-  mms_load_data, probes=probes, datatype=datatype, trange=timeRange, instrument=instrument
+  mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument
 
   ; determine which tplot vars to delete and which ones are the new temporary 
   ; vars

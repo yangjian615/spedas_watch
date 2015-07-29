@@ -89,7 +89,7 @@ PRO eva_data_plot_options, paramlist
     endif
 
     ; SST
-    if strpos(tpv,'ps') ge 0 then begin
+    if strmatch(tpv,'th*_ps*') then begin
       ;options, tpv,'ytitle', 'SST'+strmid(tpv,6,1);pmms+'!Cele'
       options, tpv,'ysubtitle','[keV]'
       spectrogram = 0

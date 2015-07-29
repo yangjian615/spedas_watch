@@ -407,24 +407,37 @@ pro mvn_sta_qf_load,verbose=verbose
   for api=0, nn_apid-1 do begin     
      temp=execute('nn7=size(mvn_'+apid[api]+'_dat,/type)')
      if nn7 eq 8 then begin
-        temp=execute('qf_new=mvn_'+apid[api]+'_dat.quality_flag')        
-        temp=execute('t_start=mvn_'+apid[api]+'_dat.time')        
+        
+        ;;------------------------------------------------
+        ;; Get APID Data
+        res1 = execute('qf_new  = mvn_'+apid[api]+'_dat.quality_flag')
+        res2 = execute('t_start = mvn_'+apid[api]+'_dat.time')
+        res3 = execute('t_stop  = mvn_'+apid[api]+'_dat.end_time')
+        
+        ;;------------------------------------------------
+        ;; Error Check
+        if res1 eq 0 and res2 eq 0 and res3 eq 0 then begin
+           print, 'No qf or start/stop times for '+apid[api]+'.'
+           goto, skip_apid
+        endif
+        if res2 eq 1 and res3 eq 0 then begin
+           nn  =n_elements(t_start)
+           nn1 = lindgen(nn-1)
+           t_stop = t_start + 0.004
+        endif
+        nn1 = n_elements(t_start)
+
+        ;;--------------------------------------------------
+        ;; Clear and insert bit 2,3, and 4
        	qf_new = qf_new and (2^2+2^3+2^4)
-        ;;---------------------------------------------------------
-        ;;Time interval
-	nn1 = n_elements(qf_new)
-        temp2=execute('nn2=n_elements(mvn_'+apid[api]+'_dat.end_time)')
-
-        ;start time
-        temp=execute('t_start=mvn_'+apid[api]+'_dat.time')        
-
-        ;stop time
-        if temp2 then temp=execute('t_stop=mvn_'+apid[api]+'_dat.end_time') $
-        else t_stop = [t_start[1:nn1-1],2.*t_start[nn1-1]-t_start[nn1-2]] 
 
         for itime=0l, nn1-1 do begin
            pp=where( time+2. ge t_start[itime] and $
                      time+2. le t_stop[itime],cc)
+		if cc eq 0 then begin
+			minval = min(abs(time-t_start[itime]),pp)
+			cc=1
+		endif
            if cc eq 1 then begin
 		if (((att[pp] eq 1) and (att[(pp+1)<(npts-1)] eq 2)) or ((att[pp] eq 2) and (att[(pp+1)<(npts-1)] eq 1))) then tmpmask=2^15-1-bit7mask else tmpmask=2^15-1-bit6mask-bit7mask 
 		qf_new[itime]=qf_new[itime] or (qf[pp] and tmpmask)
@@ -436,15 +449,61 @@ pro mvn_sta_qf_load,verbose=verbose
         endfor
 
 
-        ;;---------------------------------------------------------------------------
+        ;;-------------------------------------------------------
         ;;Insert new 
         temp=execute('mvn_'+apid[api]+'_dat.quality_flag=qf_new')
 
         
      endif
+     skip_apid:
   endfor
 
 	store_data,'mvn_sta_c6_quality_flag',data={x:(mvn_c6_dat.time+mvn_c6_dat.end_time)/2.,y:mvn_c6_dat.quality_flag}
 		options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;;-------------------
+;; Old Code
+
+        ;temp=execute('qf_new=mvn_'+apid[api]+'_dat.quality_flag')        
+        ;temp=execute('t_start=mvn_'+apid[api]+'_dat.time')        
+        ;;---------------------------------------------------------
+        ;;Time interval
+	;nn1 = n_elements(qf_new)
+        ;temp2=execute('nn2=n_elements(mvn_'+apid[api]+'_dat.end_time)')
+
+        ;start time
+        ;temp=execute('t_start=mvn_'+apid[api]+'_dat.time')        
+
+        ;stop time
+        ;if temp2 then temp=execute('t_stop=mvn_'+apid[api]+'_dat.end_time') $
+        ;else t_stop = [t_start[1:nn1-1],2.*t_start[nn1-1]-t_start[nn1-2]] 
+

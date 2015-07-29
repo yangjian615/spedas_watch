@@ -5,22 +5,22 @@
 ;
 ; INPUT:
 ; :Keywords:
-;    trange       : OPTIONAL - time range of desired data. Ex: ['2015-05-1', '2015-05-02']
+;    trange       : OPTIONAL - time range of desired data. Ex: ['2015-05-01', '2015-05-02']
 ;                    Default input is timespan input.
-;    sc           : OPTIONAL - desired spacecraft, Ex: 'mms1'
+;    probes       : OPTIONAL - desired spacecraft, Ex: '1' for mms1, '2' for mms2, etc.
 ;                    Default input is all s/c
-;    mode         : OPTIONAL - desired data sampling mode, Example: mode='srvy'
+;    data_rate    : OPTIONAL - desired data sampling mode, Example: mode='srvy'
 ;                             due to cataloging at the SDC, WE REQUIRE YOU LOAD ONLY ONE MODE AT A TIME
 ;                    Default input - srvy mode
 ;    level        : OPTIONAL - desired level, options are level 1a, 1b, ql, 2
 ;                    Default input - all levels
-;    data_type    : OPTIONAL - desired data type. Ex: ['epsd', 'tdn', 'swd']
+;    datatype    : OPTIONAL - desired data type. Ex: ['epsd', 'tdn', 'swd']
 ;                    Default input - all data types!
 ;
 ;    no_update    : OPTIONAL - /no_update to ensure your current data is not reloaded due to an update at the SDC
 ;    reload       : OPTIONAL - /reload to ensure current data is reloaded due to an update at the SDC
 ;    DO NOT DO BOTH /NO_UPDATE AND /RELOAD TOGETHER. THAT IS SILLY!
-;    get_support  : OPTIONAL - /get_support to get support data within the CDF
+;    get_support_data  : OPTIONAL - /get_support_data to get support data within the CDF
 ;   
 
 ;
@@ -30,20 +30,36 @@
 ;-
 
 
-pro mms_load_dsp, trange=trange, sc=sc, $
-  mode=mode, level=level, data_type=data_type, $
-  no_update=no_update, reload=reload, get_support=get_support
+pro mms_load_dsp, trange=trange, probes=probes, $
+  data_rate=data_rate, level=level, datatype=datatype, $
+  no_update=no_update, reload=reload, get_support_data=get_support_data
   
+  ; Handle trange
   if not keyword_set(trange) then begin
     t = timerange(/current)
     st = time_string(t)
-    start_date = strmid(st[0],0,10)
-    end_date = strmatch(strmid(st[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(st[1],0,10)
-  endif
+    datestrings=mms_convert_timespan_to_date()
+    start_date = datestrings.start_date
+    end_date = datestrings.end_date
+  endif else begin
+    t0 = time_double(trange[0])
+    t1 = time_double(trange[1])
+    t = [t0, t1]
+    st = time_string(t)
+    start_date = strmid(trange[0],0,10) + '-00-00-00'
+    end_date = strmatch(strmid(trange[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(trange[1],0,10)
+    end_date = end_date + '-23-59-59'
+  endelse
   
   instrument_id = 'dsp'
-  if not keyword_set(sc) then sc = ['mms1', 'mms2', 'mms3', 'mms4']  
-  if not keyword_set(mode) then mode = 'srvy'
+  
+;  status = mms_login_lasp(login_info = login_info)
+;  if status ne 1 then return
+  
+  if not keyword_set(probes) then sc = ['mms1', 'mms2', 'mms3', 'mms4'] else sc = 'mms' + strcompress(string(probes),/rem)
+  
+  ;if not keyword_set(sc) then sc = ['mms1', 'mms2', 'mms3', 'mms4']  
+  if not keyword_set(data_rate) then mode = 'srvy' else mode = data_rate
   if n_elements(mode) gt 1 then begin
     dprint, 'Cannot select more than one mode at a time.'
     print, 'Please confine your query to one mode (Ex: mode="srvy")'
@@ -51,7 +67,7 @@ pro mms_load_dsp, trange=trange, sc=sc, $
     return
   endif
 
-  if not keyword_set(data_type) then data_type = ['epsd', 'bpsd','tdn', 'swd']
+  if not keyword_set(datatype) then datatype = ['epsd', 'bpsd','tdn', 'swd']
   if not keyword_set(level) then level = ['l1a', 'l1b', 'l2']
   if keyword_set(no_update) and keyword_set(reload) then begin
     dprint, 'Keywords NO_UPDATE and RELOAD are incompatible and cannot be called at once'
@@ -70,12 +86,12 @@ pro mms_load_dsp, trange=trange, sc=sc, $
     return
   endif
   
-  if keyword_set(get_support) then var_type = ['support_data', 'data'] else var_type = 'data'
+  if keyword_set(get_support_data) then var_type = ['support_data', 'data'] else var_type = 'data'
   
   names = []
     
   if total(strmatch(level, 'l1a')) eq 1 or total(strmatch(level, 'l1b')) eq 1 then begin
-    if total(strmatch(data_type, 'bpsd')) eq 1 then begin
+    if total(strmatch(datatype, 'bpsd')) eq 1 then begin
       data_type_l1 = ['179', '17a', '17b']
       finfo = mms_get_science_file_info(sc_id=sc, $
         instrument_id=instrument_id, data_rate_mode=mode, $
@@ -150,7 +166,7 @@ pro mms_load_dsp, trange=trange, sc=sc, $
 
       endelse  
     endif
-    if total(strmatch(data_type, 'epsd')) eq 1 then begin
+    if total(strmatch(datatype, 'epsd')) eq 1 then begin
       data_type_l1 = ['173', '174', '175', '176', '177', '178']
       ;in the event of both level 1a and level 1b selected, default goes to level 1b
       if total([strmatch(level, 'l1a'), strmatch(level, 'l1b')]) eq 2 then lower_level = 'l1b' else lower_level = level
@@ -254,12 +270,12 @@ pro mms_load_dsp, trange=trange, sc=sc, $
   if total(strmatch(level, 'l2')) eq 1 then  begin
     finfo = mms_get_science_file_info(sc_id=sc, $
       instrument_id=instrument_id, data_rate_mode=mode, $
-      data_level=level, descriptor=data_type, start_date=start_date, end_date=end_date)
+      data_level=level, descriptor=datatype, start_date=start_date, end_date=end_date)
     if strlen(finfo[0]) eq 0 then begin
       dprint, 'COULD NOT FIND ANY DATA MATCHING CRITERIA:'
       print, 'TIME RANGE = ', st
       print, 'SC = ', sc
-      print, 'DATA_TYPE = ', data_type
+      print, 'DATA_TYPE = ', datatype
       print, 'LEVEL = ', 'l2'
       print, 'MODE = ', mode
       print, 'PLEASE ALTER SEARCH'
@@ -267,7 +283,7 @@ pro mms_load_dsp, trange=trange, sc=sc, $
     endif 
     if finfo[0] ne 0 then begin
       mms_data_fetch, flist, login_flag, dwnld_flag, sc_id=sc, $
-        instrument_id=instrument_id, mode=mode, level='l2', optional_descriptor=data_type, $
+        instrument_id=instrument_id, mode=mode, level='l2', optional_descriptor=datatype, $
         no_update=no_update, reload=reload
       mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
         descriptors, version_strings, start_strings, years, /contains_dir

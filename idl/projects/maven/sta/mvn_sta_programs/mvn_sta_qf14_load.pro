@@ -10,7 +10,7 @@
 ;
 ;    1. Only time intervals after 2015-01-01.
 ;    2. Only below 500km altitude. 
-;    3. All modes except protect mode (4).
+;    3. All modes except protect mode (6).
 ;
 
 pro mvn_sta_qf14_load
@@ -65,8 +65,8 @@ pro mvn_sta_qf14_load
   ;;-----------------------------------------
   ;; Load c6 - Change structure name to dat
   dat       = mvn_c6_dat
-  qf_c6     = mvn_c6_dat.quality_flag
   npts      = dimen1(dat.data)
+  qf_c6     = dat.quality_flag
   nmass     = dat.nmass
   nenergy   = dat.nenergy
   nbins     = dat.nbins
@@ -113,7 +113,7 @@ pro mvn_sta_qf14_load
   ;; and apply qf14
   time_2015 = time_double('2015-01-01')
   pp = where(time ge time_2015 and $   ;; 1. Past 2015-01-01
-             mode ne 4         and $   ;; 2. Only mode 1
+             mode ne 6         and $   ;; 2. Only mode 1
              alt  le 500.d,cc)         ;; 3. Below 500 km
   if cc eq 0 then begin
      print, 'No quality flag 14 in selected intervals.'
@@ -147,39 +147,52 @@ pro mvn_sta_qf14_load
 
         ;;------------------------------------------------
         ;; Error Check
-        if res1 eq 0 or res2 eq 0 or res3 eq 0 then begin
-           print, 'No start/stop times.'
-           return
+        if res1 eq 0 and res2 eq 0 and res3 eq 0 then begin
+           print, 'No qf or start/stop times for '+apid[api]+'.'
+           goto, skip_apid
+        endif
+        if res2 eq 1 and res3 eq 0 then begin
+           nn  = n_elements(t_start)
+           nn1 = lindgen(nn-1)
+           t_stop = t_start + 0.004
         endif
 
         ;;-----------------------------------------------------
         ;; Cycle through all APID times and interpolate with c6
-        res4 = execute('nn = n_elements(t_start)')
-        for itime = 0, nn-1 do begin
+        nn = n_elements(t_start)
+        for itime = 0l, nn-1l do begin
            
+           ;;-----------------------------------------------
+           ;; Zero out all quality flag 14
+           qf_new[itime] = qf_new[itime] and bit14zero              
+
            ;;--------------------------------------------------
            ;; Check if any c6 times fall in current APID interval
            pp=where( time+2. ge t_start[itime] and $
                      time+2. le t_stop[itime],cc)
+		if cc eq 0 then begin
+			minval = min(abs(time-t_start[itime]),pp)
+			cc=1
+		endif
+           ;;-------------------
+           ;; Single Time
            if cc eq 1 then $
-              if (mode[pp] eq 1)     and $
-                 (alt[pp]  le 500.D) and $
-                 (time[pp] ge time_2015) then $
-                 qf_new[itime] = qf_new[itime] or (qf_c6 and bit14)
+              qf_new[itime] = qf_new[itime] or qf_c6[pp]
+
+           ;;-------------------
+           ;; Mutliple Times
            if cc ge 2 then begin
               for i=0, cc-2 do qf_new[itime]=qf_new[itime] or qf_c6[pp[i]]
-              if (mode[pp[cc-1]] eq 1)     and $
-                 (alt[pp[cc-1]]  le 500.D) and $
-                 (time[pp[cc-1]] ge time_2015) then $
-                 qf_new[itime] = qf_new[itime] or (qf_c6[pp[cc-1]] and bit14)
+              qf_new[itime] = qf_new[itime] or qf_c6[pp[cc-1]]
            endif
         endfor
 
         ;;-----------------------------------
         ;; Insert quality flags into APID
         temp=execute('mvn_'+apid[api]+'_dat.quality_flag=qf_new')
-
+        
      endif
+     skip_apid:
   endfor
 
 

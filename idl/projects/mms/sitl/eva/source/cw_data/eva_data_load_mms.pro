@@ -1,25 +1,3 @@
-PRO eva_data_load_mms_options, tpv, ytitle=ytitle,ztitle=ztitle,yrange=yrange,$
-  zrange=zrange,ylog=ylog,zlog=zlog,spec=spec,labels=labels,labflag=labflag,$
-  colors=colors,ysubtitle=ysubtitle,constant=constant,cap=cap
-  tn = tnames(tpv)
-  if (strlen(tn[0]) gt 0) and (n_elements(tn) eq 1) then begin
-    options, tpv,'spec',keyword_set(spec)
-    if keyword_set(spec) then options,tpv,'no_interp',1
-    if n_elements(ylog) eq 1 then options, tpv,'ylog',ylog
-    if n_elements(zlog) eq 1 then options, tpv,'zlog',1
-    if n_elements(ytitle) eq 1 then options, tpv,'ytitle',ytitle
-    if n_elements(ztitle) eq 1 then options, tpv,'ztitle',ztitle
-    if n_elements(yrange) eq 2 then ylim, tpv, yrange[0],yrange[1]
-    if n_elements(zrange) eq 2 then zlim, tpv, zrange[0],zrange[1]
-    if n_elements(labels) gt 0 then options, tpv, labels=labels
-    if n_elements(labflag) eq 1 then options,tpv,'labflag',labflag
-    if n_elements(colors) gt 0 then options,tpv,'colors',colors
-    if n_elements(ysubtitle) eq 1 then options, tpv,'ysubtitle',ysubtitle
-    if n_elements(constant) eq 1 then options, tpv,'constant',0
-    if keyword_set(cap) then eva_cap, tpv
-  endif
-END
-
 FUNCTION eva_data_load_mms, state
   compile_opt idl2
 
@@ -59,6 +37,7 @@ FUNCTION eva_data_load_mms, state
   answer = 'No'
   for p=0,pmax-1 do begin; for each requested probe
     sc = sc_id[p]
+    prb = strmid(sc,3,1)
     for i=0,imax-1 do begin; for each requested parameter
       
       if progressbar->CheckCancel() then begin
@@ -72,8 +51,9 @@ FUNCTION eva_data_load_mms, state
       
       ; Check pre-loaded tplot variables. 
       ; Avoid reloading if already exists.
-      tplot_names,names=tn
-      jmax = n_elements(tn)
+      ;tplot_names,names=tn
+      ;jmax = n_elements(tn)
+      tn=tnames('*',jmax)
       param = sc+strmid(paramlist[i],4,1000)
       if jmax eq 0 then begin; if no pre-loaded variable
         ct = 0
@@ -88,8 +68,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_fpi_*')) then begin
           mms_sitl_get_fpi_basic, sc_id=sc
-          tn=tnames('*fpi*')
-          jmax= n_elements(tn)
+          tn=tnames('*fpi*',jmax)
           if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
             for j=0,jmax-1 do begin
               get_data,tn[j],data=D,dl=dl,lim=lim
@@ -105,12 +84,9 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_feeps_*')) then begin
           mms_load_epd_feeps, sc=sc
-          tn=tnames(sc+'_epd_feeps_TOP_counts_per_accumulation_sensorID_4')
-          jmax = n_elements(tn)
-          if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
-            eva_data_load_mms_options, tn[0], ytitle='electrons', ylog=1
-            answer = 'Yes'
-          endif
+;          set_options, sc+'_epd_feeps_TOP_counts_per_accumulation_sensorID_4',$
+;             ytitle='electrons', ylog=1
+          answer = 'Yes'
         endif
         
         ;-----------
@@ -118,10 +94,9 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_epd_eis_*')) then begin
           mms_load_epd_eis, sc=sc
-          tn=tnames(sc+'_epd_eis_electronenergy_electron_cps_t1')
-          jmax = n_elements(tn)
+          tn=tnames(sc+'_epd_eis_electronenergy_electron_cps_t1',jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
-            eva_data_load_mms_options,tn[0],ytitle='electrons',ylog=1,yrange=[0.8,1e+5]
+            set_options,tn[0],ytitle='electrons',ylog=1,yrange=[0.8,1e+5]
             answer = 'Yes'
           endif
         endif
@@ -132,35 +107,27 @@ FUNCTION eva_data_load_mms, state
         level = 'sitl';'l1b'
         if (strmatch(paramlist[i],'*_hpca_*rf_corrected')) then begin
           mms_sitl_get_hpca_basic, sc_id=sc, level=level
-          eva_data_load_mms_options, sc+'_hpca_hplus_RF_corrected', ytitle='H+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
-          eva_data_load_mms_options, sc+'_hpca_heplusplus_RF_corrected', ytitle='He++ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
-          eva_data_load_mms_options, sc+'_hpca_heplus_RF_corrected', ytitle='He+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
-          eva_data_load_mms_options, sc+'_hpca_oplus_RF_corrected', ytitle='O+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
+          set_options, sc+'_hpca_hplus_RF_corrected', ytitle='H+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
+          set_options, sc+'_hpca_heplusplus_RF_corrected', ytitle='He++ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
+          set_options, sc+'_hpca_heplus_RF_corrected', ytitle='He+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
+          set_options, sc+'_hpca_oplus_RF_corrected', ytitle='O+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
           answer = 'Yes'
         endif
         
         if(strmatch(paramlist[i],'*_hpca_*number_density')) or (strmatch(paramlist[i],'*_hpca_*bulk_velocity')) then begin
           mms_sitl_get_hpca_moments, sc_id=sc, level=level
           
-          eva_data_load_mms_options, sc+'_hpca_hplus_number_density',ytitle='H!U+!N, cm!U-3!N',/ylog
-          eva_data_load_mms_options, sc+'_hpca_aplus_number_density',ytitle='He!U+!U+!N, cm!U-3!N',/ylog
-          eva_data_load_mms_options, sc+'_hpca_heplus_number_density',ytitle='He!U+!N, cm!U-3!N',/ylog
-          eva_data_load_mms_options, sc+'_hpca_oplus_number_density',ytitle='O!U+!N, cm!U-3!N',/ylog
+          set_options, sc+'_hpca_hplus_number_density',ytitle='H!U+!N, cm!U-3!N',/ylog
+          set_options, sc+'_hpca_aplus_number_density',ytitle='He!U+!U+!N, cm!U-3!N',/ylog
+          set_options, sc+'_hpca_heplus_number_density',ytitle='He!U+!N, cm!U-3!N',/ylog
+          set_options, sc+'_hpca_oplus_number_density',ytitle='O!U+!N, cm!U-3!N',/ylog
           
-          eva_data_load_mms_options, sc+'_hpca_hplusoplus_number_densities',ytitle='cm!U-3!N',/ylog
-          options, sc+'_hpca_hplusoplus_number_densities', colors = [2,4]
-          options, sc+'_hpca_hplusoplus_number_densities', labels=['h!U+!N', 'o!U+!N']
-          options, sc+'_hpca_hplusoplus_number_densities','labflag',-1
-          
-          eva_data_load_mms_options, sc+'_hpca_hplus_bulk_velocity',ytitle='H!U+!N km s!U-1!N',ylog=0
-          options, sc+'_hpca_hplus_bulk_velocity', colors = [6,4,2]
-          options, sc+'_hpca_hplus_bulk_velocity', labels=['V!DX!N', 'V!DY!N', 'V!DZ!N']
-          options, sc+'_hpca_hplus_bulk_velocity','labflag',-1
-          
-          eva_data_load_mms_options, sc+'_hpca_oplus_bulk_velocity',ytitle='O!U+!N km s!U-1!N',ylog=0
-          options, sc+'_hpca_oplus_bulk_velocity', colors = [6,4,2]
-          options, sc+'_hpca_oplus_bulk_velocity', labels=['V!DX!N', 'V!DY!N', 'V!DZ!N']
-          options, sc+'_hpca_oplus_bulk_velocity','labflag',-1
+          set_options, sc+'_hpca_hplusoplus_number_densities',ytitle='cm!U-3!N',/ylog,$
+            colors=[2,4],labels=['h!U+!N', 'o!U+!N'],labflag=-1
+          set_options, sc+'_hpca_hplus_bulk_velocity',ytitle='H!U+!N km s!U-1!N',ylog=0,$
+            colors=[6,4,2],labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1
+          set_options, sc+'_hpca_oplus_bulk_velocity',ytitle='O!U+!N km s!U-1!N',ylog=0,$
+            colors=[6,4,2],labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1
           answer = 'Yes'
         endif
 
@@ -170,7 +137,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_afg*')) then begin
           mms_sitl_get_afg, sc_id=sc
-          eva_data_load_mms_options,sc+'_afg_srvy_gsm_dmpa',$
+          set_options,sc+'_afg_srvy_gsm_dmpa',$
             labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG_srvy',ysubtitle='[nT]',$
             colors=[2,4,6],labflag=-1,constant=0,cap=1
           answer = 'Yes'
@@ -181,7 +148,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_dfg*')) then begin
           mms_sitl_get_dfg, sc_id=sc
-          eva_data_load_mms_options,sc+'_dfg_srvy_gsm_dmpa',$
+          set_options,sc+'_dfg_srvy_gsm_dmpa',$
             labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG_srvy',ysubtitle='[nT]',$
             colors=[2,4,6],labflag=-1,constant=0, cap=1
           answer = 'Yes'
@@ -192,9 +159,8 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_dsp_*')) then begin
           data_type = (strmatch(paramlist[i],'*b*')) ? 'bpsd' : 'epsd'
-          mms_load_dsp, sc = sc, data_type=data_type
-          tn=tnames(sc+'_dsp*')
-          jmax=n_elements(tn)
+          mms_load_dsp, probes = prb, data_type=data_type
+          tn=tnames(sc+'_dsp*',jmax)
           if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
             for j=0,jmax-1 do begin
               options,tn[j],'ylog',1
@@ -212,8 +178,8 @@ FUNCTION eva_data_load_mms, state
         ; EDP
         ;-----------
         if (strmatch(paramlist[i],'*_edp_*')) then begin
-          mms_load_edp, sc = sc, level='l1b', mode='comm', data_type='dcecomm';, /no_sweeps
-          eva_data_load_mms_options,sc+'_edp_comm_dce_sensor', $
+          mms_load_edp, probes = [prb], level='l1b', data_rate='comm', datatype='dcecomm';, /no_sweeps
+          set_options,sc+'_edp_comm_dce_sensor', $
             labels=['X','Y','Z'],ytitle=sc+'!CEDP_comm',ysubtitle='[mV/m]',$
             colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
           answer = 'Yes'
@@ -239,17 +205,15 @@ FUNCTION eva_data_load_mms, state
     matched=0
     Re = 6371.2
     ; predicted orbit from AFG
-    tplot_names,sc+'_ql_pos_gsm',names=tn
-    if (n_elements(tn) eq 1) then begin
-      if (strlen(tn) gt 0) then begin
-        get_data,sc+'_ql_pos_gsm',data=D,lim=lim,dl=dl
-        wtime = D.x
-        wdist = D.y[*,3]/Re
-        wposx = D.y[*,0]/Re
-        wposy = D.y[*,1]/Re
-        wposz = D.y[*,2]/Re
-        matched=1
-      endif
+    tn=tnames(sc+'_ql_pos_gsm',jmax)
+    if (strlen(tn[0]) gt 0) and (jmax eq 1) then begin
+      get_data,sc+'_ql_pos_gsm',data=D,lim=lim,dl=dl
+      wtime = D.x
+      wdist = D.y[*,3]/Re
+      wposx = D.y[*,0]/Re
+      wposy = D.y[*,1]/Re
+      wposz = D.y[*,2]/Re
+      matched=1
     endif
     
     if matched then begin

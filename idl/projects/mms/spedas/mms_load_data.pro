@@ -40,34 +40,26 @@
 ;         
 ;     6) The local paths should be set to mirror the SDC directory structure to avoid
 ;         downloading data more than once
+;         
+;     7) Warning about datatypes and paths:
+;           -- many of the MMS instruments contain datatype details in their path names; for these CDFs
+;           to be stored in the correct location locally (i.e., mirroring the SDC directory structure)
+;           these datatypes must be passed to this routine by a higher level routine via the "datatype"
+;           keyword. If the datatype keyword isn't passed, or datatype "*" is passed, the directory names
+;           won't currently match the SDC. We can fix this by defining what "*" is for datatypes 
+;           (by a list of all datatypes) in the instrument specific load routine, and passing those to this one.
+;           
+;               Example for HPCA: mms1/hpca/srvy/l1b/moments/2015/07/
+;               
+;               "moments" is the datatype. without passing datatype=["moments", ..], the data are stored locally in:
+;                                 mms1/hpca/srvy/l1b/2015/07/
+;               
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-23 15:58:32 -0700 (Thu, 23 Jul 2015) $
-;$LastChangedRevision: 18232 $
+;$LastChangedDate: 2015-07-27 11:36:35 -0700 (Mon, 27 Jul 2015) $
+;$LastChangedRevision: 18291 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
-
-; for some reason, the JSON object returned by the server is
-; an array of strings, with even indices (0, 2, 4, ..) containing
-; file names (along with other JSON stuff) and odd indices (1, 3, 5, ..) 
-; containing file sizes (also along with other JSON stuff). This
-; function parses out the filenames/filesizes from this array
-; and returns an array of structs with the names and sizes
-function mms_get_filename_size, json_object
-    ; kludgy to deal with IDL's lack of a parser for json
-    num_structs = n_elements(json_object)/2
-    counter = 0
-    remote_file_info = replicate({filename: '', filesize: 0l}, num_structs)
-    
-    for struct_idx = 0, n_elements(json_object)-1, 2 do begin
-        ; even indices are filenames
-        remote_file_info[counter].filename = (strsplit(json_object[struct_idx], '": "', /extract))[2]
-        ; odd indices are filesizes
-        remote_file_info[counter].filesize = (strsplit((strsplit(json_object[struct_idx+1], '": "', /extract))[1], '}', /extract))[0]
-        counter += 1
-    endfor
-    return, remote_file_info
-end
 
 pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
                   level = level, instrument = instrument, data_rate = data_rate, $

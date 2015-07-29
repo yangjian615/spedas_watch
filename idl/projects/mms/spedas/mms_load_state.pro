@@ -35,8 +35,8 @@
 ;         will give incorrect time tags for data loaded after June 30, 2015 due to this issue.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-23 09:55:18 -0700 (Thu, 23 Jul 2015) $
-;$LastChangedRevision: 18218 $
+;$LastChangedDate: 2015-07-27 09:55:17 -0700 (Mon, 27 Jul 2015) $
+;$LastChangedRevision: 18277 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -120,8 +120,8 @@ pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotname
     start_time = time_double(trange[0])-60*60*24.
     end_time = time_double(trange[1])
 
-    start_time_str = time_string(start_time, tformat='YYYY-MM-DD')
-    end_time_str = time_string(end_time, tformat='YYYY-MM-DD')
+    start_time_str = time_string(start_time, tformat='YYYY-MM-DD-hh-mm-ss')
+    end_time_str = time_string(end_time, tformat='YYYY-MM-DD-hh-mm-ss')
 
     file_dir = local_data_dir + 'ancillary/'
 
@@ -160,4 +160,18 @@ pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotname
     endfor
     mms_load_defatt_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe
 
+    ; time clip the data
+    if ~undefined(tplotnames) then begin
+        if (tplotnames[0] ne '') then begin
+            time_clip, tplotnames, time_double(trange[0]), time_double(trange[1]), replace=1, error=error
+        endif
+    endif
+end
+
+pro mms_load_state, trange = trange, probes = probes, datatype = datatype, $
+    level = level, instrument = instrument, data_rate = data_rate, $
+    local_data_dir = local_data_dir, source = source
+
+    if undefined(datatype) then datatype = '*'
+    if undefined(level) then level = 'def' ; default to definitive state data
 end

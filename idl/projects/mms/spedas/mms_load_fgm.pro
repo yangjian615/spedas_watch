@@ -22,8 +22,8 @@
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-23 13:05:38 -0700 (Thu, 23 Jul 2015) $
-;$LastChangedRevision: 18229 $
+;$LastChangedDate: 2015-07-27 11:15:11 -0700 (Mon, 27 Jul 2015) $
+;$LastChangedRevision: 18290 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -114,15 +114,15 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
+    if undefined(trange) then trange = ['2015-06-22/18:00', '2015-06-23']
     
     if undefined(level) then level = 'ql' ; default to quick look
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rate) then data_rate = 'srvy'
-    if undefined(local_data_dir) then local_data_dir = ''
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
-        get_support_data = get_support_data, tplotnames = tplotnames
+        datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames
         
     ; set some of the metadata for the DFG/AFG instruments
     mms_load_fix_metadata, tplotnames, prefix = 'mms' + probes

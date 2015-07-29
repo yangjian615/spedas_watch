@@ -7,14 +7,14 @@
 ; :Keywords:
 ;    trange       : OPTIONAL - time range of desired data. Ex: ['2015-05-1', '2015-05-02']
 ;                    Default input is timespan input.
-;    sc           : OPTIONAL - desired spacecraft, Ex: 'mms1'
+;    probes       : OPTIONAL - desired spacecraft, Ex: '1' for mms1, '2' for mms2, etc.
 ;                    Default input is all s/c
 ;    mode         : OPTIONAL - desired data sampling mode, DEFAULT: mode='srvy'
 ;                             due to cataloging at the SDC, WE REQUIRE YOU LOAD ONLY ONE MODE AT A TIME
 ;                    Default input, all but brst (to avoid destroying your hard drive)
 ;    level        : OPTIONAL - desired level, options are level 1a, 1b, ql, 2
 ;                    Default input - all levels
-;    data_type    : OPTIONAL - desired data type. Ex: ['dce', 'dcv', 'ace', 'hmfe']
+;    datatype    : OPTIONAL - desired data type. Ex: ['dce', 'dcv', 'ace', 'hmfe']
 ;                    Default input - all data types!
 ;
 ;    no_update    : OPTIONAL - /no_update to ensure your current data is not reloaded due to an update at the SDC
@@ -31,32 +31,45 @@
 ; :Author: Katherine Goodrich, contact: katherine.goodrich@colorado.edu
 ;-
 pro mms_load_edp, trange=trange, $
-  sc=sc, $
-  mode=mode, $
+  probes=probes, $
+  data_rate=data_rate, $
   level=level, $
-  data_type=data_type, $
+  datatype=datatype, $
   no_update=no_update, $
   reload=reload, $
   no_sweeps=no_sweeps, $
   get_support=get_support
 
+  if not keyword_set(probes) then sc = ['mms1', 'mms2', 'mms3', 'mms4'] else sc = 'mms' + strcompress(string(probes),/rem)
 
+;  status = mms_login_lasp(login_info = login_info)
+;  if status ne 1 then return
 
   ;ESTABLISH TIME RANGE
   ;for now this only works in date time ranges, will work on it
   instrument_id = 'edp'
   if not keyword_set(trange) then begin
-    t = timerange()
+    t = timerange(/current)
     st = time_string(t)
-    start_date = strmid(st[0],0,10)
-    end_date = strmid(st[1],0,10)
-  endif
+    datestrings=mms_convert_timespan_to_date()
+    start_date = datestrings.start_date
+    end_date = datestrings.end_date
+  endif else begin
+    t0 = time_double(trange[0])
+    t1 = time_double(trange[1])
+    t = [t0, t1]
+    start_date = strmid(trange[0],0,10) + '-00-00-00'
+    end_date = strmatch(strmid(trange[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(trange[1],0,10)
+    end_date = end_date + '-23-59-59'
+  endelse
 
   ; SET DEFAULT SETTINGS
   if not keyword_set(end_date) then end_date = start_date ; assumes 1 day time range if no end date is set
   if not keyword_set(sc) then sc = ['mms1', 'mms2', 'mms3', 'mms4'] ; ALL THE SATELLITES!!
   if not keyword_set(level) then level = ['l1a', 'l1b', 'l2', 'ql', 'sitl']; all levels
-  if not keyword_set(mode) then mode = 'srvy' ; excludes burst data
+ ; if not keyword_set(mode) then mode = 'srvy' ; excludes burst data
+  if not keyword_set(data_rate) then mode = 'srvy' else mode = data_rate
+
   if n_elements(mode) gt 1 then begin
     dprint, 'Cannot select more than one mode at a time.'
     print, 'Please confine your query to one mode (Ex: mode="srvy")'
@@ -85,14 +98,14 @@ pro mms_load_edp, trange=trange, $
   ;FETCH THE DATA!!!!!!!
   mms_data_fetch, flist, login_flag, dwnld_flag ,sc_id = sc_id, instrument_id=instrument_id, $
     mode=mode, level=level, $
-    optional_descriptor=data_type, reload=reload
+    optional_descriptor=datatype, reload=reload
 
   ;Exits if it can't find any files matching your criteria
   if strlen(flist[0]) eq 0 then begin
     dprint, 'MMS_LOAD_EDP: COULD NOT LOCATE ANY CDF FILES MATCHING CRITERIA'
     print, 'TIME RANGE = ', st
     print, 'SC = ', sc
-    print, 'DATA_TYPE = ', data_type
+    print, 'DATA_TYPE = ', datatype
     print, 'LEVEL = ', level
     print, 'MODE = ', mode
     print, 'PLEASE ALTER SEARCH'

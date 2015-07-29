@@ -7,8 +7,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-24 12:13:09 -0700 (Wed, 24 Jun 2015) $
-;$LastChangedRevision: 17955 $
+;$LastChangedDate: 2015-07-27 09:51:58 -0700 (Mon, 27 Jul 2015) $
+;$LastChangedRevision: 18273 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -173,7 +173,7 @@ pro mms_ui_load_data_event,event
         ;procedure
         loadStruc = { probes:probes, $
                       instrument:instrument, $
-                      datatype:types, $
+                      level:types, $
                       trange:[startTimeString, endTimeString] }
 
         ;call the routine that loads the data and update the loaded data tree

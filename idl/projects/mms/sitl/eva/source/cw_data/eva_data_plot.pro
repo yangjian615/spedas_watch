@@ -48,12 +48,12 @@ PRO eva_data_plot, wid
         vars_arr[p+pmax_THM] = ptr_new(vars[idxc])
         
         var_lab = ''
-        tplot_names,wid.probelist_mms[p]+'_position_z',names=tn
-        if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
-        tplot_names,wid.probelist_mms[p]+'_position_y',names=tn
-        if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
-        tplot_names,wid.probelist_mms[p]+'_position_x',names=tn
-        if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+        tn=tnames(wid.probelist_mms[p]+'_position_z', jmax)
+        if (jmax eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+        tn=tnames(wid.probelist_mms[p]+'_position_y', jmax)
+        if (jmax eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+        tn=tnames(wid.probelist_mms[p]+'_position_x', jmax)
+        if (jmax eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
         if n_elements(var_lab) gt 1 then var_lab = var_lab[1:*]
         vars_lab[p+pmax_THM] = ptr_new(var_lab)
       endfor
