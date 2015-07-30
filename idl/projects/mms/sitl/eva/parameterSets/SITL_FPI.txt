@@ -1,3 +1,5 @@
+thg_idx_ae
+mms*_dfg_srvy_gsm_dmpa
 mms*_fpi_eEnergySpectr_omni
 mms*_fpi_iEnergySpectr_omni
 mms*_fpi_ePitchAngDist_midEn

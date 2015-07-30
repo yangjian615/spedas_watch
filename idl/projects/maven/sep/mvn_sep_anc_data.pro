@@ -8,7 +8,7 @@ function mvn_sep_anc_data, trange = trange, delta_t = delta_t ,load_kernels=load
 if ~keyword_set(times) then begin
   tr = timerange(trange)
   total_time = tr[1] - tr[0]
-  ntimes =ceil(total_time/delta_t)
+  ntimes =ceil(total_time/delta_t)  
   times = tr[0] + delta_t*dindgen(ntimes)
 endif
   et = time_ephemeris(times)
@@ -47,6 +47,10 @@ endif
                     ram_angle_SEP1_reverse: 0d, $
                     ram_angle_SEP2_forward: 0d, $
                     ram_angle_SEP2_reverse: 0d, $
+                    pitch_angle_SEP1_forward: 0d, $
+                    pitch_angle_SEP1_reverse: 0d, $
+                    pitch_angle_SEP2_forward: 0d, $
+                    pitch_angle_SEP2_reverse: 0d, $
                     fraction_FOV_Mars_SEP1_forward:0d, $
                     fraction_FOV_Mars_SEP1_reverse:0d, $
                     fraction_FOV_Mars_SEP2_forward:0d, $
@@ -80,19 +84,42 @@ endif
   tmp_SSO = mvn_sep_anc_look_directions(utc = times, coordinate_frame = 'MAVEN_SSO')
   tmp_GEO = mvn_sep_anc_look_directions(utc = times, coordinate_frame = 'IAU_MARS')
   
+; load up the magnetometer data to get the pitch angle ranges
+  mvn_mag_load, 'L2_1SEC', trange = trange, spice_frame =  'MAVEN_MSO', data = mag
+; now resample to the cadence of the ancillary data.
+  if size (mag,/type) eq 8 then begin
+    nmag_samples_per_anc = n_elements (mag)*1L/n_elements (times)
+    bmsox = interpol(smooth(mag.vec[0], nmag_samples_per_anc+1, /nan), mag.time, times, /nan)
+    bmsoy = interpol(smooth(mag.vec[1], nmag_samples_per_anc+1, /nan), mag.time, times, /nan)
+    bmsoz = interpol(smooth(mag.vec[2], nmag_samples_per_anc+1, /nan), mag.time, times, /nan)
+    mag_vector_resampled = transpose ([[bmsox], [bmsoy], [bmsoz]])
+    pitch_angle_SEP1_forward = separation_angle(mag_vector_resampled,tmp_MSO.look_direction_SEP1_forward)/!dtor
+    pitch_angle_SEP1_reverse = separation_angle(mag_vector_resampled,tmp_MSO.look_direction_SEP1_reverse)/!dtor
+    pitch_angle_SEP2_forward = separation_angle(mag_vector_resampled,tmp_MSO.look_direction_SEP2_forward)/!dtor
+    pitch_angle_SEP2_reverse = separation_angle(mag_vector_resampled,tmp_MSO.look_direction_SEP2_reverse)/!dtor
+  endif else begin
+    dhg = sqrt(-4.4)
+    pitch_angle_SEP1_forward = replicate (dhg, n_elements (times))
+    pitch_angle_SEP1_reverse = replicate (dhg, n_elements (times))
+    pitch_angle_SEP2_forward = replicate (dhg, n_elements (times))
+    pitch_angle_SEP2_reverse = replicate (dhg, n_elements (times))
+  endelse
+  
 ; calculate the angle of each the fields of view with respect to the sun line
-  sun_angle_SEP1_forward = acos(tmp_SSO.look_direction_SEP1_forward[0,*])/!dtor
-  sun_angle_SEP1_reverse = acos(tmp_SSO.look_direction_SEP1_reverse[0,*])/!dtor
-  sun_angle_SEP2_forward = acos(tmp_SSO.look_direction_SEP2_forward[0,*])/!dtor
-  sun_angle_SEP2_reverse = acos(tmp_SSO.look_direction_SEP2_reverse[0,*])/!dtor
+  sun_angle_SEP1_forward = acos(tmp_MSO.look_direction_SEP1_forward[0,*])/!dtor
+  sun_angle_SEP1_reverse = acos(tmp_MSO.look_direction_SEP1_reverse[0,*])/!dtor
+  sun_angle_SEP2_forward = acos(tmp_MSO.look_direction_SEP2_forward[0,*])/!dtor
+  sun_angle_SEP2_reverse = acos(tmp_MSO.look_direction_SEP2_reverse[0,*])/!dtor
   
 ; now calculate the angle between the center of the field of view and the RAM direction
   MAVEN_velocity_MSO = spice_body_vel('MAVEN','MARS',utc=times,et=et,frame='MAVEN_MSO',check_objects='MAVEN_SC_BUS')
   
-  ram_angle_SEP1_forward = separation_angle(MAVEN_velocity_MSO,tmp_MSO.look_direction_SEP1_forward)
-  ram_angle_SEP1_reverse = separation_angle(MAVEN_velocity_MSO,tmp_MSO.look_direction_SEP1_reverse)
-  ram_angle_SEP2_forward = separation_angle(MAVEN_velocity_MSO,tmp_MSO.look_direction_SEP2_forward)
-  ram_angle_SEP2_reverse = separation_angle(MAVEN_velocity_MSO,tmp_MSO.look_direction_SEP2_reverse)
+  ram_angle_SEP1_forward = separation_angle(MAVEN_velocity_MSO,tmp_MSO.look_direction_SEP1_forward)/!dtor
+  ram_angle_SEP1_reverse = separation_angle(MAVEN_velocity_MSO,tmp_MSO.look_direction_SEP1_reverse)/!dtor
+  ram_angle_SEP2_forward = separation_angle(MAVEN_velocity_MSO,tmp_MSO.look_direction_SEP2_forward)/!dtor
+  ram_angle_SEP2_reverse = separation_angle(MAVEN_velocity_MSO,tmp_MSO.look_direction_SEP2_reverse)/!dtor
+
+  
 
 ; calculate the quaternions for the rotations between the SEP coordinate systems and the relevant Mars ones
   ; maven_kernels = mvn_spice_kernels(trange = tr,/load,/all) 
@@ -107,6 +134,9 @@ endif
 ; also load up MAVEN position.
    spacecraft_position_MSO = spice_body_pos('MAVEN','MARS',utc=times,et=et,frame='MAVEN_MSO',check_objects='MAVEN_SC_BUS')
    spacecraft_position_GEO = spice_body_pos('MAVEN','MARS',utc=times,et=et,frame='IAU_MARS',check_objects='MAVEN_SC_BUS')
+  
+;   spacecraft_altitude = mvn_get_altitude(spacecraft_position_GEO [0,*], spacecraft_position_GEO [1,*], $
+                         ;                 spacecraft_position_GEO [2,*])
    spacecraft_position_EclipJ2000 = spice_body_pos('MAVEN','SUN',utc=times,et=et,frame='ECLIPJ2000',check_objects='MAVEN_SC_BUS')
    Earth_position_EclipJ2000 = spice_body_pos('EARTH','SUN',utc=times,et=et,frame='ECLIPJ2000')
    Mars_position_EclipJ2000 = spice_body_pos('MARS','SUN',utc=times,et=et,frame='ECLIPJ2000')
@@ -166,6 +196,11 @@ endif
    SEP_ancillary.ram_angle_SEP2_forward = reform (ram_angle_SEP2_forward)              
    SEP_ancillary.ram_angle_SEP2_reverse = reform (ram_angle_SEP2_reverse)              
 
+   SEP_ancillary.pitch_angle_SEP1_forward = reform (pitch_angle_SEP1_forward)            
+   SEP_ancillary.pitch_angle_SEP1_reverse = reform (pitch_angle_SEP1_reverse)              
+   SEP_ancillary.pitch_angle_SEP2_forward = reform (pitch_angle_SEP2_forward)              
+   SEP_ancillary.pitch_angle_SEP2_reverse = reform (pitch_angle_SEP2_reverse)              
+  
    SEP_ancillary.fraction_FOV_Mars_SEP1_forward = fraction.fraction_FOV_Mars [*, 0]
    SEP_ancillary.fraction_FOV_Mars_SEP1_reverse = fraction.fraction_FOV_Mars [*, 1]
    SEP_ancillary.fraction_FOV_Mars_SEP2_forward = fraction.fraction_FOV_Mars [*, 2]

@@ -60,6 +60,7 @@ pro thm_scpot2dens_opt_n, probe = probe, datatype_esa = datatype_esa, trange = t
   If(Not keyword_set(trange)) Then get_timespan, t Else t = trange
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;load data
+  esa_iontype = 'peim'
   If(Not keyword_set(no_data_load)) Then Begin
     if(datatype_esa eq 'peef' or datatype_esa eq 'peer' or datatype_esa eq 'peeb') then begin
       thm_load_esa, probe = sc, level = 2, datatype = datatype_esa+'_'+['density', 'vthermal', 'sc_pot'], trange = t
@@ -74,8 +75,14 @@ pro thm_scpot2dens_opt_n, probe = probe, datatype_esa = datatype_esa, trange = t
        thm_load_mom, probe = sc, level = 2, datatype = ['pe?m_density', 'pe?m_vthermal', 'pxxm_pot'], trange = t
        copy_data, thx+'_pxxm_pot', thx+'_peem_sc_pot'
        esa_iontype = 'peim'
-    endif
-  Endif
+    endif 
+  Endif else begin   
+    case datatype_esa of
+      'peef':esa_iontype = 'peif'
+      'peer':esa_iontype = 'peir'
+      'peeb':esa_iontype = 'peib'
+    endcase 
+  Endelse
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;SM position
   thm_load_state, probe = sc, coord = 'sm', trange = t, suffix = '_sm_coordinates'

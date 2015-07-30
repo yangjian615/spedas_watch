@@ -160,7 +160,7 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
   ;---------------------
   if ~keyword_set(quiet) then begin 
     nmax = n_elements(msg)
-    LL=76
+    LL=120;76
     newmsg = ''
     for n=0,nmax-1 do begin
       if (strlen(msg[n]) ge LL) then begin

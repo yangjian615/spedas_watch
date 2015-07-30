@@ -22,7 +22,7 @@ for i = 0, n_elements(flist)-1 do begin
   temp = flist(i)
   
   if keyword_set(contains_dir) then begin
-    first_slash = strpos(flist(i), '/', /reverse_search)
+    first_slash = strpos(flist(i), path_sep(), /reverse_search)
     temp = strmid(flist(i), first_slash+1, strlen(flist(i)))
   endif
   

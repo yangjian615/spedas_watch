@@ -1,3 +1,14 @@
+;+
+; NAME: set_options
+;
+; PURPOSE: May be useful when executing the 'options' command many times.
+;
+; CREATED BY: Mitsuo Oka   July 2015
+;
+; $LastChangedBy: moka $
+; $LastChangedDate: 2015-07-28 14:20:56 -0700 (Tue, 28 Jul 2015) $
+; $LastChangedRevision: 18303 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/set_options.pro $
 PRO set_options, tpv, $
   ytitle=ytitle,ztitle=ztitle,yrange=yrange,$
   zrange=zrange,ylog=ylog,zlog=zlog,spec=spec,labels=labels,labflag=labflag,$

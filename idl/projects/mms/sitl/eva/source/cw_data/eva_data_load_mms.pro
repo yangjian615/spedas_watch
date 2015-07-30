@@ -68,15 +68,21 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_fpi_*')) then begin
           mms_sitl_get_fpi_basic, sc_id=sc
-          tn=tnames('*fpi*',jmax)
-          if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
-            for j=0,jmax-1 do begin
-              get_data,tn[j],data=D,dl=dl,lim=lim
-              tn_main = strsplit(tn[j],'_',/extract)
-              store_data,strjoin([sc,tn_main[1:*]],'_'),data=D,dl=dl,lim=lim
-            endfor
-            answer = 'Yes'
-          endif
+          set_options,sc+'_fpi_eEnergySpectr_omni',/spec,/ylog,/zlog,$
+            ytitle=sc+'!CFPI e',ysubtitle='[eV]',zrange=[0.1,2000],yrange=[10,26000]
+          set_options,sc+'_fpi_iEnergySpectr_omni',/spec,/ylog,/zlog,$
+            ytitle=sc+'!CFPI i',ysubtitle='[eV]',zrange=[0.1,2000],yrange=[10,26000]
+          set_options,sc+'_fpi_ePitchAngDist_midEn',/spec,/zlog,$
+            ytitle=sc+'!CFPI e',ysubtitle='(PAD,mid-E)',zrange=[100,10000],yrange=[0,180]
+          set_options,sc+'_fpi_ePitchAngDist_highEn',/spec,/zlog,$
+            ytitle=sc+'!CFPI e',ysubtitle='(PAD,high-E)',zrange=[100,10000],yrange=[0,180]
+          set_options,sc+'_fpi_DISnumberDensity',/ylog,$
+            ytitle=sc+'!CFPI Ni',ysubtitle='[cm!U-3!N]'
+          set_options,sc+'_fpi_iBulkV_DSC',$
+            ytitle=sc+'!CFPI Vi',ysubtitle='(DSC) [km/s]',$
+            labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1,colors=[2,4,6]
+
+          answer = 'Yes'
         endif
   
         ;-----------
@@ -104,7 +110,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; HPCA
         ;-----------
-        level = 'sitl';'l1b'
+        level = 'l1b'
         if (strmatch(paramlist[i],'*_hpca_*rf_corrected')) then begin
           mms_sitl_get_hpca_basic, sc_id=sc, level=level
           set_options, sc+'_hpca_hplus_RF_corrected', ytitle='H+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
