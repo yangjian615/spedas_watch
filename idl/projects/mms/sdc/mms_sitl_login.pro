@@ -19,8 +19,13 @@ function mms_sitl_login, group_leader=group_leader
   endif else begin
     ;prompt the user at the IDL command line
     username = ''
+    password = ''
     read, username, prompt='username: '
-    password = read_password(prompt='password: ') ;don't echo password
+    
+    if !version.release ge 8.0 then begin
+        password = read_password(prompt='password: ') ;don't echo password
+    endif else read, password, prompt='password: ' ; no choice but to echo password for older versions of IDL
+
     login = {login, username: username, password: password}
   endelse
 

@@ -13,7 +13,7 @@ FUNCTION sitl_bakstr_stat_table_cat, s, fomRange,strlbl, isPending=isPending
   endelse
   if ct gt 0 then begin
     Nsegs = ct
-    Nbuffs = long(total(s.NUMEVALCYCLES[idx]))
+    Nbuffs = long(total(s.SEGLENGTHS[idx]))
     Tminutes = double(Nbuffs)/6.d0
     Toldest = time_string(min(s.START[idx],/NAN))
   endif else begin
@@ -49,7 +49,7 @@ FUNCTION sitl_bakstr_stat_table, isPending=isPending
   
   if ct gt 0 then begin
     Nsegs = ct
-    Nbuffs = long(total(s.NUMEVALCYCLES[idx])); Total number of buffers
+    Nbuffs = long(total(s.SEGLENGTHS[idx])); Total number of buffers
     Tminutes = double(Nbuffs)/6.d0 ; Total minutes 
     Toldest = time_string(min(s.START[idx],/NAN)); Oldest segment start time
   endif else begin

@@ -56,8 +56,8 @@
 ;               
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-27 11:36:35 -0700 (Mon, 27 Jul 2015) $
-;$LastChangedRevision: 18291 $
+;$LastChangedDate: 2015-07-29 14:47:37 -0700 (Wed, 29 Jul 2015) $
+;$LastChangedRevision: 18311 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -80,9 +80,12 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
       else tr = timerange()
-      
+
     status = mms_login_lasp(login_info = login_info)
     if status ne 1 then return
+    ; the following is for testing
+    ;net_object = get_mms_sitl_connection()
+    ;if ~obj_valid(net_object) then return
     
     for probe_idx = 0, n_elements(probes)-1 do begin
         probe = 'mms' + strcompress(string(probes[probe_idx]), /rem)
@@ -95,8 +98,8 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
         sdc_path = datatype ne '*' ? sdc_path + '/' + datatype + daily_names : sdc_path + daily_names
 
         for name_idx = 0, n_elements(sdc_path)-1 do begin
-            day_string = time_string(tr[0], tformat='YYYY-MM-DD')
-            end_string = time_string(tr[1], tformat='YYYY-MM-DD')
+            day_string = time_string(tr[0], tformat='YYYY-MM-DD') 
+            end_string = time_string(tr[1], tformat='YYYY-MM-DD-hh-mm-ss')
             
             ; want to store all the CDFs in the month folder, not create a new folder for each day
             ; note: we still use /DD in the pathformat because file_dailynames needs it to 
@@ -144,6 +147,12 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
                     append_array, files, file_dir + '/' + filename[file_idx]
                 endelse
             endfor
+            
+            ; sort the data files in time (this is required by 
+            ; HPCA (at least) due to multiple files per day
+            ; the intention is to order in time before passing
+            ; to cdf2tplot
+            files = files[bsort(files)]
         endfor
 
         if ~undefined(files) then cdf2tplot, files, tplotnames = tplotnames, varformat='*'
@@ -151,12 +160,10 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
         ; forget about the daily files for this probe
         undefine, files
     endfor
-    
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin
         if (n_elements(tr) eq 2) and (tplotnames[0] ne '') then begin
             time_clip, tplotnames, tr[0], tr[1], replace=1, error=error
         endif
     endif
-    
 end

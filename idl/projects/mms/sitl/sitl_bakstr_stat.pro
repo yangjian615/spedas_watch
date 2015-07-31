@@ -11,8 +11,8 @@
 ; CREATED BY: Mitsuo Oka   July 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-07-26 02:45:11 -0700 (Sun, 26 Jul 2015) $
-; $LastChangedRevision: 18265 $
+; $LastChangedDate: 2015-07-30 00:28:46 -0700 (Thu, 30 Jul 2015) $
+; $LastChangedRevision: 18315 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_bakstr_stat.pro $
 ;
 PRO sitl_bakstr_stat,t1=t1, dt=dt, isPending=isPending
@@ -27,8 +27,9 @@ PRO sitl_bakstr_stat,t1=t1, dt=dt, isPending=isPending
   endelse
 
   if n_elements(dt) eq 0 then dt = 60. ; DAYS
-  tspan = [t1,t1+dt*86400.d0]
-
+  tspan = [t1,t1+0.8*dt*86400.d0]
+  print, time_string(tspan)
+  
   ;------------------
   ; GET BACK-STRUCT
   ;------------------
@@ -53,7 +54,7 @@ PRO sitl_bakstr_stat,t1=t1, dt=dt, isPending=isPending
       options,'mms_stlm_bakstr','unix_BAKStr_mod',unix_BAKStr_mod
     endelse
   endif
-  
+
   ;------------------
   ; PLOT BACK-STRUCT
   ;------------------
@@ -85,7 +86,7 @@ PRO sitl_bakstr_stat,t1=t1, dt=dt, isPending=isPending
     str = string(c[n].Nsegs,format='(I8)')
     str+= string(c[n].Nbuffs,format='(I8)')
     str+= string(c[n].Tminutes,format='(I8)')
-    str+= string(100.d0*double(c[n].Tminutes)/double(ttlTmin),format='(F6.1)')
+    str+= string(100.d0*double(c[n].Tminutes)/double(ttlTmin),format='(F7.1)')
     print, c[n].strlbl+str
   endfor
   

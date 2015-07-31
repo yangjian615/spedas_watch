@@ -14,7 +14,8 @@ function get_mms_burst_segment_status, start_time=start_time, end_time=end_time,
              numEvalCycles  :0,  $
              sourceId       :"",  $
              createTime     :"",  $
-             finishTime     :""  $
+             finishTime     :"",  $
+             discussion     :"" $
            }
 
   ;Define the dataset name.

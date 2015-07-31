@@ -146,8 +146,12 @@ PRO xtplot_options_panel, group_leader=group_leader, target=target
       endif
     endif
     if DEFAULT then begin; Auto-scaling
-      this_min = min(D.y,/nan) & if this_min lt yrange[0] then yrange[0] = this_min
-      this_max = max(D.y,/nan) & if this_max gt yrange[1] then yrange[1] = this_max
+      if n_tags(D) gt 0 then begin
+        tn=tag_names(D)
+        idx=where(strmatch(strlowcase(tn),'y'),ct)
+        if ct eq 1 then this_min = min(D.y,/nan) & if this_min lt yrange[0] then yrange[0] = this_min
+        if ct eq 1 then this_max = max(D.y,/nan) & if this_max gt yrange[1] then yrange[1] = this_max
+      endif
     endif
       
     ; YLOG

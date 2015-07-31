@@ -1,0 +1,7 @@
+mms*_dfg_srvy_gsm_dmpa
+mms_soca_bakstr; BAK (SITL) (Latest BDM status after SITL modification)
+mms_stlm_bakstr; BAK (current) (begin modified now by a super-SITL)
+
+EVA:    79: 2015-07-19/15:12:03, 200.000, fwilder(EVA)
+EVA:    80: 2015-07-19/15:30:03, 200.000, fwilder(EVA)
+EVA:    81: 2015-07-19/17:25:03, 200.000, fwilder(EVA)

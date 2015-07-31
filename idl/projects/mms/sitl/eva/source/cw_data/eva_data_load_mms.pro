@@ -69,17 +69,17 @@ FUNCTION eva_data_load_mms, state
         if (strmatch(paramlist[i],'*_fpi_*')) then begin
           mms_sitl_get_fpi_basic, sc_id=sc
           set_options,sc+'_fpi_eEnergySpectr_omni',/spec,/ylog,/zlog,$
-            ytitle=sc+'!CFPI e',ysubtitle='[eV]',zrange=[0.1,2000],yrange=[10,26000]
+            ytitle=sc+'!CFPI!Cele',ysubtitle='[eV]',zrange=[0.1,2000],yrange=[10,26000]
           set_options,sc+'_fpi_iEnergySpectr_omni',/spec,/ylog,/zlog,$
-            ytitle=sc+'!CFPI i',ysubtitle='[eV]',zrange=[0.1,2000],yrange=[10,26000]
+            ytitle=sc+'!CFPI!Cion',ysubtitle='[eV]',zrange=[0.1,2000],yrange=[10,26000]
           set_options,sc+'_fpi_ePitchAngDist_midEn',/spec,/zlog,$
-            ytitle=sc+'!CFPI e',ysubtitle='(PAD,mid-E)',zrange=[100,10000],yrange=[0,180]
+            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,mid-E)',zrange=[100,10000],yrange=[0,180]
           set_options,sc+'_fpi_ePitchAngDist_highEn',/spec,/zlog,$
-            ytitle=sc+'!CFPI e',ysubtitle='(PAD,high-E)',zrange=[100,10000],yrange=[0,180]
+            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,high-E)',zrange=[100,10000],yrange=[0,180]
           set_options,sc+'_fpi_DISnumberDensity',/ylog,$
-            ytitle=sc+'!CFPI Ni',ysubtitle='[cm!U-3!N]'
+            ytitle=sc+'!CFPI!CNi',ysubtitle='[cm!U-3!N]'
           set_options,sc+'_fpi_iBulkV_DSC',$
-            ytitle=sc+'!CFPI Vi',ysubtitle='(DSC) [km/s]',$
+            ytitle=sc+'!CFPI!CVi',ysubtitle='[km/s]',$
             labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1,colors=[2,4,6]
 
           answer = 'Yes'
@@ -110,7 +110,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; HPCA
         ;-----------
-        level = 'l1b'
+        level = 'sitl'
         if (strmatch(paramlist[i],'*_hpca_*rf_corrected')) then begin
           mms_sitl_get_hpca_basic, sc_id=sc, level=level
           set_options, sc+'_hpca_hplus_RF_corrected', ytitle='H+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
@@ -120,20 +120,29 @@ FUNCTION eva_data_load_mms, state
           answer = 'Yes'
         endif
         
+        level = 'sitl'
         if(strmatch(paramlist[i],'*_hpca_*number_density')) or (strmatch(paramlist[i],'*_hpca_*bulk_velocity')) then begin
           mms_sitl_get_hpca_moments, sc_id=sc, level=level
-          
-          set_options, sc+'_hpca_hplus_number_density',ytitle='H!U+!N, cm!U-3!N',/ylog
-          set_options, sc+'_hpca_aplus_number_density',ytitle='He!U+!U+!N, cm!U-3!N',/ylog
-          set_options, sc+'_hpca_heplus_number_density',ytitle='He!U+!N, cm!U-3!N',/ylog
-          set_options, sc+'_hpca_oplus_number_density',ytitle='O!U+!N, cm!U-3!N',/ylog
-          
-          set_options, sc+'_hpca_hplusoplus_number_densities',ytitle='cm!U-3!N',/ylog,$
-            colors=[2,4],labels=['h!U+!N', 'o!U+!N'],labflag=-1
-          set_options, sc+'_hpca_hplus_bulk_velocity',ytitle='H!U+!N km s!U-1!N',ylog=0,$
-            colors=[6,4,2],labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1
-          set_options, sc+'_hpca_oplus_bulk_velocity',ytitle='O!U+!N km s!U-1!N',ylog=0,$
-            colors=[6,4,2],labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1
+          sh='(H!U+!N)'
+          so='(O!U+!N)'
+          set_options, sc+'_hpca_hplus_number_density',ytitle=sc+'!CHPCA!CN '+sh,ysubtitle='[cm!U-3!N]',/ylog,$
+            colors=1,labels=['N '+sh]
+          set_options, sc+'_hpca_oplus_number_density',ytitle=sc+'!CHPCA!CN '+so,ysubtitle='[cm!U-3!N]',/ylog,$
+            colors=3,labels=['N '+so]
+          set_options, sc+'_hpca_hplus_bulk_velocity',ytitle=sc+'!CHPCA!CV '+sh,ysubtitle='[km/s]',ylog=0,$
+            colors=[2,4,6],labels=['V!DX!N '+sh, 'V!DY!N '+sh, 'V!DZ!N '+sh],labflag=-1
+          set_options, sc+'_hpca_oplus_bulk_velocity',ytitle=sc+'!CHPCA!CV '+so,ysubtitle='[km/s]',ylog=0,$
+            colors=[2,4,6],labels=['V!DX!N '+so, 'V!DY!N '+so, 'V!DZ!N '+so],labflag=-1
+          set_options, sc+'_hpca_hplus_scalar_temperature',ytitle=sc+'!CHPCA!CT '+sh,ysubtitle='[eV]',/ylog,$
+            colors=1,labels=['T '+sh]
+          set_options, sc+'_hpca_oplus_scalar_temperature',ytitle=sc+'!CHPCA!CT '+so,ysubtitle='[eV]',/ylog,$
+            colors=3,labels=['T '+so]
+
+          set_options, sc+'_hpca_hplusoplus_number_densities',ytitle=sc+'!CHPCA!CDensity',ysubtitle='[cm!U-3!N]',/ylog,$
+            colors=[1,3],labels=['N '+sh, 'N '+so],labflag=-1
+          set_options, sc+'_hpca_hplusoplus_scalar_temperatures',ytitle=sc+'!CHPCA!CTemp',ysubtitle='[eV]',$
+            colors=[1,3],labels=['T '+sh, 'T '+so],labflag=-1
+
           answer = 'Yes'
         endif
 
@@ -144,7 +153,7 @@ FUNCTION eva_data_load_mms, state
         if (strmatch(paramlist[i],'*_afg*')) then begin
           mms_sitl_get_afg, sc_id=sc
           set_options,sc+'_afg_srvy_gsm_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG_srvy',ysubtitle='[nT]',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='[nT]',$
             colors=[2,4,6],labflag=-1,constant=0,cap=1
           answer = 'Yes'
         endif
@@ -155,7 +164,7 @@ FUNCTION eva_data_load_mms, state
         if (strmatch(paramlist[i],'*_dfg*')) then begin
           mms_sitl_get_dfg, sc_id=sc
           set_options,sc+'_dfg_srvy_gsm_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG_srvy',ysubtitle='[nT]',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='[nT]',$
             colors=[2,4,6],labflag=-1,constant=0, cap=1
           answer = 'Yes'
         endif
@@ -186,7 +195,7 @@ FUNCTION eva_data_load_mms, state
         if (strmatch(paramlist[i],'*_edp_*')) then begin
           mms_load_edp, probes = [prb], level='l1b', data_rate='comm', datatype='dcecomm';, /no_sweeps
           set_options,sc+'_edp_comm_dce_sensor', $
-            labels=['X','Y','Z'],ytitle=sc+'!CEDP_comm',ysubtitle='[mV/m]',$
+            labels=['X','Y','Z'],ytitle=sc+'!CEDP!Ccomm',ysubtitle='[mV/m]',$
             colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
           answer = 'Yes'
         endif
