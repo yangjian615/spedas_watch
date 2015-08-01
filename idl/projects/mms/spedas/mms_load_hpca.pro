@@ -20,8 +20,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-27 11:15:11 -0700 (Mon, 27 Jul 2015) $
-;$LastChangedRevision: 18290 $
+;$LastChangedDate: 2015-07-30 09:09:49 -0700 (Thu, 30 Jul 2015) $
+;$LastChangedRevision: 18316 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_hpca.pro $
 ;-
 
@@ -31,7 +31,7 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data
     if undefined(trange) then trange = ['2015-06-22', '2015-06-23']
     if undefined(probes) then probes = ['1'] ; default to MMS 1
-    if undefined(datatype) then datatype = 'moments' 
+    if undefined(datatype) then datatype = 'ion
     if undefined(level) then level = 'l1b' 
     if undefined(data_rate) then data_rate = 'srvy'
       

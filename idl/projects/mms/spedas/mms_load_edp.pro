@@ -68,7 +68,7 @@ pro mms_load_edp, trange=trange, $
   if not keyword_set(sc) then sc = ['mms1', 'mms2', 'mms3', 'mms4'] ; ALL THE SATELLITES!!
   if not keyword_set(level) then level = ['l1a', 'l1b', 'l2', 'ql', 'sitl']; all levels
  ; if not keyword_set(mode) then mode = 'srvy' ; excludes burst data
-  if not keyword_set(data_rate) then mode = 'srvy' else mode = data_rate
+  if not keyword_set(data_rate) then mode = 'fast' else mode = data_rate
 
   if n_elements(mode) gt 1 then begin
     dprint, 'Cannot select more than one mode at a time.'

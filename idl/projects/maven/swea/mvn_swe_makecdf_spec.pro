@@ -22,8 +22,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-06-10 11:55:37 -0700 (Wed, 10 Jun 2015) $
-;   $LastChangedRevision: 17848 $
+;   $LastChangedDate: 2015-07-30 13:51:51 -0700 (Thu, 30 Jul 2015) $
+;   $LastChangedRevision: 18319 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_spec.pro $
 ;
 ;-
@@ -281,27 +281,6 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
 
 ; for each item in varlist
 
-;; *** epoch ***
-;varid = cdf_varcreate(fileid, varlist[0], /CDF_EPOCH, /REC_VARY, /ZVARIABLE)
-;
-;cdf_attput, fileid, 'FIELDNAM',     varid, varlist[0],     /ZVARIABLE
-;cdf_attput, fileid, 'FORMAT',       varid, 'F25.16',       /ZVARIABLE
-;cdf_attput, fileid, 'LABLAXIS',     varid, varlist[0],     /ZVARIABLE
-;cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data', /ZVARIABLE
-;cdf_attput, fileid, 'FILLVAL',      varid, 0.0,            /ZVARIABLE
-;cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
-;
-;cdf_attput, fileid, 'VALIDMIN', 'epoch', epoch_range[0], /ZVARIABLE
-;cdf_attput, fileid, 'VALIDMAX', 'epoch', epoch_range[1], /ZVARIABLE
-;cdf_attput, fileid, 'SCALEMIN', 'epoch', epoch[0],       /ZVARIABLE
-;cdf_attput, fileid, 'SCALEMAX', 'epoch', epoch[nrec-1],  /ZVARIABLE
-;cdf_attput, fileid, 'UNITS',    'epoch', 'ms',           /ZVARIABLE
-;cdf_attput, fileid, 'MONOTON',  'epoch', 'INCREASE',     /ZVARIABLE
-;cdf_attput, fileid, 'CATDESC',  'epoch', $
-;  'Time, center of sample, in NSSDC Epoch', /ZVARIABLE
-;
-;cdf_varput, fileid, 'epoch', epoch
-
 ; *** epoch *** (Actually time_tt2000)
 
   varid = cdf_varcreate(fileid, varlist[0], /CDF_TIME_TT2000, /REC_VARY, /ZVARIABLE)
@@ -343,6 +322,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
   cdf_attput, fileid, 'MONOTON',  'time_met', 'INCREASE',       /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'time_met', $
     'Time, center of sample, in raw mission elapsed time', /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_0', 'time_met', 'epoch'    , /ZVARIABLE
 
   cdf_varput, fileid, 'time_met', data.met
 
@@ -365,12 +345,13 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
   cdf_attput, fileid, 'MONOTON',  'time_unix', 'INCREASE',        /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'time_unix', $
     'Time, center of sample, in Unix time', /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_0', 'time_unix', 'epoch'    , /ZVARIABLE
 
   cdf_varput, fileid, 'time_unix', data.time
 
 ; *** num_accum ***
 
-  varid = cdf_varcreate(fileid, varlist[4], /CDF_INT1, /REC_VARY, /ZVARIABLE)
+  varid = cdf_varcreate(fileid, varlist[4], /CDF_INT2, /REC_VARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[4],     /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'I7',           /ZVARIABLE
@@ -402,7 +383,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
 
   dim_vary = [1]
   dim = [64]  
-  varid = cdf_varcreate(fileid, varlist[5], dim_vary, DIM = dim, /REC_VARY, /ZVARIABLE) 
+  varid = cdf_varcreate(fileid, varlist[5], /CDF_FLOAT, dim_vary, DIM = dim, /REC_VARY, /ZVARIABLE) 
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[5],     /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',        /ZVARIABLE
@@ -440,7 +421,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
 
   dim_vary = [1]
   dim = [64]  
-  varid = cdf_varcreate(fileid, varlist[6], dim_vary, DIM = dim, /REC_VARY, $
+  varid = cdf_varcreate(fileid, varlist[6], /CDF_FLOAT, dim_vary, DIM = dim, /REC_VARY, $
     /ZVARIABLE) 
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[6],    /ZVARIABLE
@@ -469,7 +450,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
 
 ; *** weight_factor -- Weighting factor ***
 
-  varid = cdf_varcreate(fileid, varlist[7], /REC_NOVARY, /ZVARIABLE)
+  varid = cdf_varcreate(fileid, varlist[7], /CDF_FLOAT, /REC_NOVARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[7],     /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',        /ZVARIABLE
@@ -490,7 +471,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
 
 ; *** geom_factor -- Geometric factor ***
 
-  varid = cdf_varcreate(fileid, varlist[8], /REC_NOVARY, /ZVARIABLE)
+  varid = cdf_varcreate(fileid, varlist[8], /CDF_FLOAT, /REC_NOVARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[8],     /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',        /ZVARIABLE
@@ -513,7 +494,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
 
   dim_vary = [1]
   dim = 64
-  varid = cdf_varcreate(fileid, varlist[9], dim_vary, DIM = dim, /REC_NOVARY, $
+  varid = cdf_varcreate(fileid, varlist[9], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, $
     /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[9],     /ZVARIABLE
@@ -529,7 +510,6 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
   cdf_attput, fileid, 'SCALEMAX', 'g_engy', 0.2, /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_engy', $
     'Relative sensitivity as a function of energy', /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_1', 'g_engy', 'energy',        /ZVARIABLE
 
   g_engy = data[mid].eff*data[mid].gf/geom_factor ; [64]
   cdf_varput, fileid, 'g_engy', g_engy
@@ -538,7 +518,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
 
   dim_vary = [1]
   dim = 64
-  varid = cdf_varcreate(fileid, varlist[10], dim_vary, DIM = dim, /REC_NOVARY, $
+  varid = cdf_varcreate(fileid, varlist[10], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, $
     /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[10],     /ZVARIABLE
@@ -554,13 +534,12 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
   cdf_attput, fileid, 'SCALEMAX', 'de_over_e', 0.3,               /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'de_over_e', 'eV/eV',           /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'de_over_e', 'DeltaE/E (FWHM)', /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_1', 'de_over_e', 'energy',          /ZVARIABLE
 
   cdf_varput, fileid, 'de_over_e', data[mid].denergy/data[mid].energy ; [64]
 
 ; *** accum_time -- Accumulation Time ***
 
-  varid = cdf_varcreate(fileid, varlist[11], /REC_NOVARY, /ZVARIABLE)
+  varid = cdf_varcreate(fileid, varlist[11], /CDF_FLOAT, /REC_NOVARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[11],    /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',        /ZVARIABLE
@@ -584,7 +563,7 @@ pro mvn_swe_makecdf_spec, data, file = file, version = version, directory = dire
 
   dim_vary = [1]
   dim = 64
-  varid = cdf_varcreate(fileid, varlist[12], dim_vary, DIM = dim, /REC_NOVARY, $
+  varid = cdf_varcreate(fileid, varlist[12], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, $
     /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[12],    /ZVARIABLE

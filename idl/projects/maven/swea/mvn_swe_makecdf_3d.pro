@@ -22,8 +22,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-06-10 11:55:37 -0700 (Wed, 10 Jun 2015) $
-;   $LastChangedRevision: 17848 $
+;   $LastChangedDate: 2015-07-30 13:51:51 -0700 (Thu, 30 Jul 2015) $
+;   $LastChangedRevision: 18319 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_3d.pro $
 ;
 ;-
@@ -184,7 +184,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   varlist = ['epoch', 'time_tt2000', 'time_met', 'time_unix', $
              'binning', 'counts', 'diff_en_fluxes', 'geom_factor', $
              'g_engy', 'de_over_e', 'accum_time', 'energy', 'elev', $
-             'g_elev', 'azim', 'g_azim', 'num_dists']
+             'g_elev', 'azim', 'g_azim', 'num_dists', 'dindex']
 
   id0  = cdf_attcreate(fileid, 'Title',                      /global_scope)
   id1  = cdf_attcreate(fileid, 'Project',                    /global_scope)
@@ -287,30 +287,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   dummy = cdf_attcreate(fileid, 'UNITS',        /variable_scope)
   dummy = cdf_attcreate(fileid, 'CATDESC',      /variable_scope)
 
-; for each item in varlist
-
-;; *** epoch ***
-;varid = cdf_varcreate(fileid, varlist[0], /CDF_EPOCH, /REC_VARY, /ZVARIABLE)
-;
-;cdf_attput, fileid, 'FIELDNAM',     varid, varlist[0],     /ZVARIABLE
-;cdf_attput, fileid, 'FORMAT',       varid, 'F25.16',       /ZVARIABLE
-;cdf_attput, fileid, 'LABLAXIS',     varid, varlist[0],     /ZVARIABLE
-;cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data', /ZVARIABLE
-;cdf_attput, fileid, 'FILLVAL',      varid, 0.0,            /ZVARIABLE
-;cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
-;
-;cdf_attput, fileid, 'VALIDMIN', 'epoch', epoch_range[0], /ZVARIABLE
-;cdf_attput, fileid, 'VALIDMAX', 'epoch', epoch_range[1], /ZVARIABLE
-;cdf_attput, fileid, 'SCALEMIN', 'epoch', epoch[0],       /ZVARIABLE
-;cdf_attput, fileid, 'SCALEMAX', 'epoch', epoch[nrec-1],  /ZVARIABLE
-;cdf_attput, fileid, 'UNITS',    'epoch', 'ms',           /ZVARIABLE
-;cdf_attput, fileid, 'MONOTON',  'epoch', 'INCREASE',     /ZVARIABLE
-;cdf_attput, fileid, 'CATDESC',  'epoch', $
-;  'Time, center of sample, in NSSDC Epoch', /ZVARIABLE
-;
-;cdf_varput, fileid, 'epoch', epoch
-
-; *** epoch *** (Actually tt2000)
+; *** epoch *** (Points to tt2000)
 
   varid = cdf_varcreate(fileid, varlist[0], /CDF_TIME_TT2000, /REC_VARY, /ZVARIABLE)
 
@@ -351,6 +328,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'MONOTON',  'time_met', 'INCREASE',       /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'time_met', $
     'Time, center of sample, in raw mission elapsed time', /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_0', 'time_met', 'epoch', /ZVARIABLE
 
   cdf_varput, fileid, 'time_met', data.met
 
@@ -373,6 +351,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'MONOTON',  'time_unix', 'INCREASE',        /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'time_unix', $
     'Time, center of sample, in Unix time', /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_0', 'time_unix', 'epoch', /ZVARIABLE
 
   cdf_varput, fileid, 'time_unix', data.time
 
@@ -402,7 +381,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   dim_vary = [1, 1, 1]
   dim = [64, 16, 6]  
-  varid = cdf_varcreate(fileid, varlist[5], dim_vary, DIM = dim, /REC_VARY, /ZVARIABLE) 
+  varid = cdf_varcreate(fileid, varlist[5], /CDF_FLOAT, dim_vary, DIM = dim, /REC_VARY, /ZVARIABLE) 
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[5],     /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',        /ZVARIABLE
@@ -418,9 +397,13 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'UNITS',    'counts', 'counts',                /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'counts', 'Raw Instrument Counts', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'counts', 'epoch',                 /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_1', 'counts', 'energy',                /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_3', 'counts', 'energy',                /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_2', 'counts', 'azim',                  /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_3', 'counts', 'elev',                  /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_1', 'counts', 'dindex',                /ZVARIABLE
+
+; DEPEND_X are in reverse order for row-major (PDS) vs. column-major (IDL)
+; DEPEND_1 should point to 'elev', but 'elev' is 2-dimensional, so ...
+; dindex is a dummy variable (no information content) for ISTP compliance
 
 ; Convert to units of raw counts
 
@@ -448,7 +431,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   dim_vary = [1, 1, 1]
   dim = [64, 16, 6]  
-  varid = cdf_varcreate(fileid, varlist[6], dim_vary, DIM = dim, /REC_VARY, $
+  varid = cdf_varcreate(fileid, varlist[6], /CDF_FLOAT, dim_vary, DIM = dim, /REC_VARY, $
     /ZVARIABLE) 
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[6],    /ZVARIABLE
@@ -468,9 +451,13 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'CATDESC',  'diff_en_fluxes', $
     'Calibrated differential energy flux', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'diff_en_fluxes', 'epoch', /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_1', 'diff_en_fluxes', 'energy',/ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_3', 'diff_en_fluxes', 'energy',/ZVARIABLE
   cdf_attput, fileid, 'DEPEND_2', 'diff_en_fluxes', 'azim',  /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_3', 'diff_en_fluxes', 'elev',  /ZVARIABLE
+  cdf_attput, fileid, 'DEPEND_1', 'diff_en_fluxes', 'dindex',/ZVARIABLE
+
+; DEPEND_X are in reverse order for row-major (PDS) vs. column-major (IDL)
+; DEPEND_1 should point to 'elev', but 'elev' is 2-dimensional, so ...
+; dindex is a dummy variable (no information content) for ISTP compliance
 
 ; convert to units of energy flux
 
@@ -485,7 +472,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
 ; *** geom_factor -- Geometric factor ***
 
-  varid = cdf_varcreate(fileid, varlist[7], /REC_NOVARY, /ZVARIABLE)
+  varid = cdf_varcreate(fileid, varlist[7], /CDF_FLOAT, /REC_NOVARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[7],     /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',        /ZVARIABLE
@@ -508,7 +495,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   dim_vary = [1]
   dim = 64
-  varid = cdf_varcreate(fileid, varlist[8], dim_vary, DIM = dim, /REC_NOVARY, $
+  varid = cdf_varcreate(fileid, varlist[8], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, $
     /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[8],     /ZVARIABLE
@@ -524,7 +511,6 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMAX', 'g_engy', 0.2,             /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_engy', $
     'Relative sensitivity as a function of energy',          /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_1', 'g_engy', 'energy',        /ZVARIABLE
 
 ; Average over angles to get gf as a function of energy
 ; Use midpoint of the data because the efficiency is constant
@@ -541,7 +527,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   dim_vary = [1]
   dim = 64
-  varid = cdf_varcreate(fileid, varlist[9], dim_vary, DIM = dim, /REC_NOVARY, $
+  varid = cdf_varcreate(fileid, varlist[9], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, $
     /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[9],     /ZVARIABLE
@@ -557,7 +543,6 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMAX', 'de_over_e', 0.3,               /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'de_over_e', 'eV/eV',           /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'de_over_e', 'DeltaE/E (FWHM)', /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_1', 'de_over_e', 'energy',          /ZVARIABLE
 
   de_over_e = data[mid].denergy[*,0]/data[mid].energy[*,0] ; [64]
 
@@ -565,7 +550,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
 ; *** accum_time -- Accumulation Time ***
 
-  varid = cdf_varcreate(fileid, varlist[10], /REC_NOVARY, /ZVARIABLE)
+  varid = cdf_varcreate(fileid, varlist[10], /CDF_FLOAT, /REC_NOVARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[10],    /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',        /ZVARIABLE
@@ -587,7 +572,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   dim_vary = [1]
   dim = 64
-  varid = cdf_varcreate(fileid, varlist[11], dim_vary, DIM = dim, /REC_NOVARY, $
+  varid = cdf_varcreate(fileid, varlist[11], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, $
     /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[11],    /ZVARIABLE
@@ -612,7 +597,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   dim_vary = [1, 1]
   dim = [64, 6]
-  varid = cdf_varcreate(fileid, varlist[12], dim_vary, DIM = dim, /REC_NOVARY, $
+  varid = cdf_varcreate(fileid, varlist[12], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, $
   /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[12],    /ZVARIABLE
@@ -641,7 +626,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   dim_vary = [1, 1]
   dim = [64, 6]
-  varid = cdf_varcreate(fileid, varlist[13], dim_vary, DIM = dim, /REC_NOVARY, $
+  varid = cdf_varcreate(fileid, varlist[13], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, $
   /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[13],    /ZVARIABLE
@@ -672,11 +657,31 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   cdf_varput, fileid, 'g_elev', g_elev
 
+; *** Deflection Index
+
+  dim_vary = [1]
+  dim = 6
+
+  varid = cdf_varcreate(fileid, varlist[17], dim_vary, DIM = dim, /CDF_UINT1, /REC_NOVARY,/ZVARIABLE)
+  cdf_attput, fileid, 'FIELDNAM',    varid, varlist[17],    /ZVARIABLE
+  cdf_attput, fileid, 'FORMAT',      varid, 'I7',           /ZVARIABLE
+  cdf_attput, fileid, 'LABLAXIS',    varid, varlist[17],    /ZVARIABLE
+  cdf_attput, fileid, 'VAR_TYPE',    varid, 'support_data', /ZVARIABLE
+  cdf_attput, fileid, 'FILLVAL',     varid, 255B,           /ZVARIABLE
+  cdf_attput, fileid, 'DISPLAY_TYPE',varid, 'time_series',  /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'dindex', 0B,             /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'dindex', 5B,             /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'dindex', 0B,             /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'dindex', 5B,             /ZVARIABLE
+  cdf_attput, fileid, 'CATDESC',  'dindex', 'Deflection Index for CDF compatibility',/ZVARIABLE
+
+  cdf_varput,fileid,'dindex',indgen(6)
+
 ; *** azim -- Azimuth Angles ***
 
   dim_vary = [1]
   dim = 16
-  varid = cdf_varcreate(fileid, varlist[14], dim_vary, DIM = dim, /REC_NOVARY, $
+  varid = cdf_varcreate(fileid, varlist[14], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, $
   /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[14],    /ZVARIABLE
@@ -704,7 +709,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   dim_vary = [1]
   dim = 16
-  varid = cdf_varcreate(fileid, varlist[15], dim_vary, DIM = dim, /REC_NOVARY, /ZVARIABLE)
+  varid = cdf_varcreate(fileid, varlist[15], /CDF_FLOAT, dim_vary, DIM = dim, /REC_NOVARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[15],    /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',        /ZVARIABLE

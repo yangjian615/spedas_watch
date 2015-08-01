@@ -24,9 +24,9 @@
 ;           2. Standardize documentation.
 ;           3. Replace print with dprint.
 ; 
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2012-02-22 11:30:33 -0800 (Wed, 22 Feb 2012) $
-;$LastChangedRevision: 9811 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-07-30 17:39:29 -0700 (Thu, 30 Jul 2015) $
+;$LastChangedRevision: 18324 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm_spintone_removal.pro $
 ;-
 
@@ -110,6 +110,13 @@ case datatype of
 		ost		= 1.D / sqrt(3.D)	; offset standard deviation threshold (nT)
 	end
 endcase
+
+;generalize for any sampling period
+; for example, if sp=1/16, spp=40
+if (n_elements(time) gt 2) then begin
+  sp = Double(time[1]-time[0])
+  spp = Long(2.5/sp)
+endif
 
 ;ost	= sqrt(10.D) / sqrt(double(spp))	; offset standard deviation threshold
 
