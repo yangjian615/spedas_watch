@@ -15,9 +15,9 @@
 ;None, so far
 ;HISTORY:
 ; 26-nov-2014, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-07-07 12:14:40 -0700 (Tue, 07 Jul 2015) $
-; $LastChangedRevision: 18028 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-07-31 14:28:05 -0700 (Fri, 31 Jul 2015) $
+; $LastChangedRevision: 18334 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_l2file_compress.pro $
 ;-
 Pro mvn_l2file_compress, fullfile0, _extra = _extra
@@ -62,7 +62,8 @@ Pro mvn_l2file_compress, fullfile0, _extra = _extra
   free_lun, unit
   ppp = strsplit(md5str[0], /extract)
   openw, unit, md5file, /get_lun
-  printf, unit, ppp[0], '  ', file
+  md5outstr = strtrim(ppp[0],2) + '  ' + strtrim(file[0],2) ; make sure no extra spaces
+  printf, unit, md5outstr
   free_lun, unit
 
   spawn, '/usr/local/pkg/cdf-3.6.0_CentOS-6.6/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:gzip.5 -delete'

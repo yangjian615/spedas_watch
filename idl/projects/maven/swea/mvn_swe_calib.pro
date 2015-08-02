@@ -51,21 +51,23 @@
 ;       CHKSUM:       Specify the sweep table by its checksum.  See above.
 ;                     This only works for table numbers > 3.
 ;
+;       DFGON:        Turn on the elevation-dependent sensitivity.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-25 18:17:24 -0700 (Mon, 25 May 2015) $
-; $LastChangedRevision: 17708 $
+; $LastChangedDate: 2015-07-31 16:38:46 -0700 (Fri, 31 Jul 2015) $
+; $LastChangedRevision: 18346 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
 ;FILE: mvn_swe_calib.pro
 ;-
-pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
+pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
 
   @mvn_swe_com
 
 ; Set the SWEA Ground Software Version
 
-    mvn_swe_version = 2
+    mvn_swe_version = 3
 
 ; Initialize
 
@@ -251,7 +253,13 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
 
 ; Correction factor from cross calibration with SWIA in the solar wind or sheath.
 ; This factor changes whenever an MCP bias correction is made.  The times of
-; these corrections are recorded in mvn_swe_config.
+; these corrections are recorded in mvn_swe_config.  These values are derived by
+; comparing electron moments based on the SPEC data product to SWIA ion moments.
+; The SPEC product sums over all 96 solid angle bins, weighted by cos(theta).
+; However, 10 of the 96 bins are blocked by the spacecraft but are still included
+; in the sum.  This produces a ~10% underestimate of the mean differential energy
+; flux.  The cross calibration factors below absorb this underestimate.  A future
+; update should apply the 10% underestimate only to the SPEC spec data.
 ;
 ;     Factor		Calib. Date                    Note
 ;   ---------------------------------------------------------------------------------
@@ -359,7 +367,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum
   
   swe_dgf = transpose(swe_dgf,[1,0,2])
 
-  swe_dgf[*] = 1.  ; disable for now
+  if not keyword_set(dgfon) then swe_dgf[*] = 1.
 
 ; Spacecraft blockage mask (~27% of sky, deployed boom, approximate)
 ;   Complete blockage: 0, 1, 2, 3, 17, 18

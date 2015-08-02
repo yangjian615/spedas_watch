@@ -65,7 +65,7 @@ pro mms_load_edp, trange=trange, $
 
   ; SET DEFAULT SETTINGS
   if not keyword_set(end_date) then end_date = start_date ; assumes 1 day time range if no end date is set
-  if not keyword_set(sc) then sc = ['mms1', 'mms2', 'mms3', 'mms4'] ; ALL THE SATELLITES!!
+  ;if not keyword_set(sc) then sc = ['mms1', 'mms2', 'mms3', 'mms4'] ; ALL THE SATELLITES!!
   if not keyword_set(level) then level = ['l1a', 'l1b', 'l2', 'ql', 'sitl']; all levels
  ; if not keyword_set(mode) then mode = 'srvy' ; excludes burst data
   if not keyword_set(data_rate) then mode = 'fast' else mode = data_rate

@@ -21,8 +21,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-27 11:15:11 -0700 (Mon, 27 Jul 2015) $
-;$LastChangedRevision: 18290 $
+;$LastChangedDate: 2015-07-31 12:59:55 -0700 (Fri, 31 Jul 2015) $
+;$LastChangedRevision: 18327 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi.pro $
 ;-
 
@@ -39,5 +39,5 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'fpi', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data
-    stop
+
 end

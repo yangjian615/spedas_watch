@@ -3,92 +3,76 @@
 ;
 ; PURPOSE: to show statistics of back-structure segments
 ;
-; KEYWORD:
-;   t1 : start time (STRING or DOUBLE) e.g. '2015-06-22'
-;   dt : duration in DAYS
-;   isPending: set this keyword to analyze pending segments only.
+; USAGE:
+;   By default, this program analyzes all segments since the beginning of the mission. 
+;   Use the keyword 'trange' to specify a desired time-range.
 ;   
 ; CREATED BY: Mitsuo Oka   July 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-07-30 00:28:46 -0700 (Thu, 30 Jul 2015) $
-; $LastChangedRevision: 18315 $
+; $LastChangedDate: 2015-08-01 00:14:26 -0700 (Sat, 01 Aug 2015) $
+; $LastChangedRevision: 18352 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_bakstr_stat.pro $
 ;
-PRO sitl_bakstr_stat,t1=t1, dt=dt, isPending=isPending
+PRO sitl_bakstr_stat, isPending=isPending,trange=trange,fomt=fomt
   compile_opt idl2
 
   mms_init
 
-  if n_elements(t1) eq 0 then begin
-    t1 = systime(1,/utc)-60.d0*86400.d0
+  if n_elements(trange) eq 2 then begin
+    tr = (size(trange,/type) eq 5) ? trange: time_double(trange)
   endif else begin
-    if size(t1,/type) eq 7 then t1 = time_double(t1)
+    t0 = time_double('2015-3-12/22:44'); MMS launch date
+    tnow = systime(/utc,/seconds)
+    tr = [t0, tnow]
   endelse
-
-  if n_elements(dt) eq 0 then dt = 60. ; DAYS
-  tspan = [t1,t1+0.8*dt*86400.d0]
-  print, time_string(tspan)
+  print, time_string(tr)
+  
+;  tr = timerange(/current)
+;  print, time_string(tr)
   
   ;------------------
   ; GET BACK-STRUCT
   ;------------------
-  tn = tnames('mms_stlm_bakstr')
-  if strlen(tn[0]) eq 0 then begin
-    ;print, 'EVA: bakstr is not loaded as a tplot variable'
-    ;return, 0
-    mms_get_back_structure, tspan[0], tspan[1], BAKStr, pw_flag, pw_message; START,STOP are ULONG
-    if pw_flag then begin
-      print,'pw_flag = 1'
-      print, pw_message
-      return
-    endif else begin
-      unix_BAKStr_mod = BAKStr
-      str_element,/add,unix_BAKStr_mod,'START', mms_tai2unix(BAKStr.START); START,STOP are LONG
-      str_element,/add,unix_BAKStr_mod,'STOP',  mms_tai2unix(BAKStr.STOP)
-      D = eva_sitl_strct_read(unix_BAKStr_mod,tspan[0],/quiet); Do not put the isPending keyword here
-      store_data,'mms_stlm_bakstr',data=D
-      options,'mms_stlm_bakstr','ytitle','BAK'
-      options,'mms_stlm_bakstr','ysubtitle','(SOC)'
-      options,'mms_stlm_bakstr','colors',85; 179
-      options,'mms_stlm_bakstr','unix_BAKStr_mod',unix_BAKStr_mod
-    endelse
+  mms_get_back_structure, tr[0], tr[1], BAKStr, pw_flag, pw_message; START,STOP are ULONG
+  if pw_flag then begin
+    print,'pw_flag = 1'
+    print, pw_message
+    return
   endif
+  s = BAKStr
+  str_element,/add,s,'START', mms_tai2unix(BAKStr.START); START,STOP are LONG
+  str_element,/add,s,'STOP',  mms_tai2unix(BAKStr.STOP)
 
-  ;------------------
-  ; PLOT BACK-STRUCT
-  ;------------------
-  get_data,'mms_stlm_bakstr',data=D,dl=dl,lim=lim
-  D = eva_sitl_strct_read(lim.unix_BAKStr_mod,tspan[0],isPending=isPending,/quiet); Use isPending here
-  store_data,'mms_stlm_bakstr',data=D,dl=dl,lim=lim
-  tplot,'mms_stlm_bakstr'
+;  nmax= n_elements(s.FOM)
+;  for n=0,nmax-1 do begin
+;    if s.SEGLENGTHS[n] gt 1000 then begin
+;    print, n,' ',time_string(s.START[n]), ' ', s.STATUS[n],' ',s.SEGLENGTHS[n]
+;    endif
+;  endfor
+;  
+;  stop
+
+  print,'--------------------------------------------'
+  print,'          ,   Nsegs,  Nbuffs,   [min],     %'
+  print,'--------------------------------------------'
   
-  ;------------------
-  ; STAT BACK-STRUCT
-  ;------------------
-  c = sitl_bakstr_stat_table(isPending=isPending)
+  T = sitl_bakstr_stat_table(s,isPending=isPending,/quiet)
+  T0 = sitl_bakstr_stat_table(s,cat=0,title='Category 0',isPending=isPending,ttl=T.Tmin)
+  T1 = sitl_bakstr_stat_table(s,cat=1,title='Category 1',isPending=isPending,ttl=T.Tmin)
+  T2 = sitl_bakstr_stat_table(s,cat=2,title='Category 2',isPending=isPending,ttl=T.Tmin)
+  T3 = sitl_bakstr_stat_table(s,cat=3,title='Category 3',isPending=isPending,ttl=T.Tmin)
+  T4 = sitl_bakstr_stat_table(s,cat=4,title='Category 4',isPending=isPending,ttl=T.Tmin)
+  TT = sitl_bakstr_stat_table(s,title='Total     ',isPending=isPending,ttl=T.Tmin)
 
-  nmax = n_elements(c)
-  ttlNsegs = 0
-  ttlNbuffs = 0
-  ttlTmin = 0.
-  for n=0,nmax-2 do begin
-    ttlNsegs += c[n].Nsegs
-    ttlNbuffs += c[n].Nbuffs
-    ttlTmin += c[n].Tminutes
-  endfor
-
-  print,'-----------------------------------------'
-  print,'Category  ,  Nsegs, Nbuffs,  [min],     %'
-  print,'-----------------------------------------'
-  for n=0,nmax-1 do begin
-
-    str = string(c[n].Nsegs,format='(I8)')
-    str+= string(c[n].Nbuffs,format='(I8)')
-    str+= string(c[n].Tminutes,format='(I8)')
-    str+= string(100.d0*double(c[n].Tminutes)/double(ttlTmin),format='(F7.1)')
-    print, c[n].strlbl+str
-  endfor
-  
-  
+  ;------------
+  ; PLOT 
+  ;------------
+  if keyword_set(fomt) then begin
+    TT = sitl_bakstr_stat_table(s,title='Cmplt+Fnsd',ttl=T.Tmin,$
+      status1='COMPLETE',status2='FINISHED')
+    if n_elements(TT.wx) gt 1 then begin
+      plot, TT.wx, TT.wy,psym=2,xtitle='Number of Days',ytitle='FOM'
+    endif
+  endif
 END

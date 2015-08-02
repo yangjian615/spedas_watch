@@ -16,9 +16,9 @@
 ;  print ,  time_string( mvn_orbit_num(orbnum = 6.0)  ; prints the time of periapsis of orbit number 6
 ;  timebar, mvn_orbit_num( orbnum = indgen(300) )   ; plots a vertical line at periapsis for the first 300 orbits
 ;Author: Davin Larson  - October, 2014
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-06-24 09:44:11 -0700 (Wed, 24 Jun 2015) $
-; $LastChangedRevision: 17952 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2015-07-31 15:29:54 -0700 (Fri, 31 Jul 2015) $
+; $LastChangedRevision: 18336 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_orbit_num.pro $
 ;-
 function mvn_orbit_num,orbnum=orbnum,time=time,verbose=verbose
@@ -64,6 +64,7 @@ if (systime(1) - time_cached) gt 3600 then begin   ; generate no more than once 
     time_cached = systime(1)
   endfor
 endif
+alldat = alldat[UNIQ(alldat.num, SORT(alldat.num))]
 
 if n_elements(time) ne 0   then return, interp(double(alldat.num),alldat.peri_time,time_double(time))
 if n_elements(orbnum) ne 0 then return, interp(alldat.peri_time,double(alldat.num),double(orbnum))

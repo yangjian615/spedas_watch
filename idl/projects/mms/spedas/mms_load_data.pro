@@ -16,6 +16,8 @@
 ;         attitude_data: load L-right ascension and L-declination attitude data
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;             with "username" and "password" tags with your API login information
+;         varformat: format of the variable names in the CDF to load; especially useful to avoid
+;             memory issues while loading HPCA data
 ; 
 ; OUTPUT:
 ; 
@@ -54,10 +56,12 @@
 ;               "moments" is the datatype. without passing datatype=["moments", ..], the data are stored locally in:
 ;                                 mms1/hpca/srvy/l1b/2015/07/
 ;               
+;      8) When looking for data availability, look for the CDFs at:
+;               https://lasp.colorado.edu/mms/sdc/about/browse/
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-29 14:47:37 -0700 (Wed, 29 Jul 2015) $
-;$LastChangedRevision: 18311 $
+;$LastChangedDate: 2015-07-31 15:53:01 -0700 (Fri, 31 Jul 2015) $
+;$LastChangedRevision: 18339 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -65,7 +69,7 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
                   level = level, instrument = instrument, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, login_info = login_info, $
-                  tplotnames = tplotnames
+                  tplotnames = tplotnames, varformat = varformat
                   
     mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
     
@@ -77,15 +81,13 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
+    if undefined(varformat) then varformat = '*'
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
       else tr = timerange()
 
     status = mms_login_lasp(login_info = login_info)
     if status ne 1 then return
-    ; the following is for testing
-    ;net_object = get_mms_sitl_connection()
-    ;if ~obj_valid(net_object) then return
     
     for probe_idx = 0, n_elements(probes)-1 do begin
         probe = 'mms' + strcompress(string(probes[probe_idx]), /rem)
@@ -99,7 +101,8 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
 
         for name_idx = 0, n_elements(sdc_path)-1 do begin
             day_string = time_string(tr[0], tformat='YYYY-MM-DD') 
-            end_string = time_string(tr[1], tformat='YYYY-MM-DD-hh-mm-ss')
+            ; note, -1 second so we don't download the data for the next day accidently
+            end_string = time_string(tr[1]-1., tformat='YYYY-MM-DD-hh-mm-ss')
             
             ; want to store all the CDFs in the month folder, not create a new folder for each day
             ; note: we still use /DD in the pathformat because file_dailynames needs it to 
@@ -155,7 +158,7 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             files = files[bsort(files)]
         endfor
 
-        if ~undefined(files) then cdf2tplot, files, tplotnames = tplotnames, varformat='*'
+        if ~undefined(files) then cdf2tplot, files, tplotnames = tplotnames, varformat=varformat
         
         ; forget about the daily files for this probe
         undefine, files

@@ -68,8 +68,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-24 10:06:27 -0700 (Fri, 24 Jul 2015) $
-;  $LastChangedRevision: 18242 $
+;  $LastChangedDate: 2015-07-31 18:28:42 -0700 (Fri, 31 Jul 2015) $
+;  $LastChangedRevision: 18347 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_data_fetch.pro $
 
 
@@ -131,11 +131,11 @@ endif else begin
     instrument_id=instrument_id, data_rate_mode=mode, $
     data_level=level, start_date=start_date, end_date=end_date)
 endelse
-type_string = typename(file_data)
+type_int = size(file_data, /type)
 
 ;stop
 
-if type_string ne 'STRING' then begin
+if type_int ne 7 then begin
   login_flag = 1
   local_flist = ''
   download_fail=0

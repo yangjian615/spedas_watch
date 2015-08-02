@@ -724,8 +724,8 @@ FUNCTION eva_sitl, parent, $
   if n_elements(xsize) eq 0 then xsize = geo.xsize
 
   hlSet = ['Default','isPending','inPlaylist','Held','Complete','Overwritten']
-  hlSet2 = [hlSet, 'New','Modified','Deleted','Aborted','Complete','Finished',$
-    'Incomplete','Held','Derelict', 'Demoted','Realloc', 'Deferred']
+  hlSet2 = ['Default','isPending','inPlaylist','Held','Complete','New','Modified',$
+    'Deleted','Aborted','Finished','Incomplete','Derelict', 'Demoted','Realloc', 'Deferred']
   svSet = ['Save','Restore','Save As', 'Restore From']
   
   mainbase = WIDGET_BASE(parent, UVALUE = uval, UNAME = uname, TITLE=title,$

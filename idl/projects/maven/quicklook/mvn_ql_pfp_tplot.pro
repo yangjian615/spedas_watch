@@ -51,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-22 15:18:43 -0700 (Wed, 22 Jul 2015) $
-; $LastChangedRevision: 18212 $
+; $LastChangedDate: 2015-07-31 14:06:46 -0700 (Fri, 31 Jul 2015) $
+; $LastChangedRevision: 18333 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -505,16 +505,13 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      IF nidx GT 0 THEN bphi[idx] += 2. * !pi
      undefine, idx, nidx
 
-     ; In case for author's personal arranged tplot packages:
-     ;store_data, 'mvn_mag_l1_bang_1sec', data={x: b.x, y: [ [ 2.*(bthe*!RADEG + 90.) ], [bphi*!RADEG]]}, $
-     ;            dlimits={psym: 3, colors: [2, 0], ytitle: 'MAG!CPhi [deg]'}, $
-     ;            limits={yticks: 4, yminor: 3, y2axis: 1, y2range: 90.*[-1., 1.], y2ticks: 4, y2minor: 3, $
-     ;                    y2color: 2, y2title: 'Theta [deg]', constant: 180.}
-
-     store_data, 'mvn_mag_' + STRLOWCASE(lvl) + '_bang_1sec', data={x: b.x, y: [ [bthe*!RADEG + 180.], [bphi*!RADEG]]}, $
-                 dlimits={psym: 3, colors: [2, 0], ytitle: 'MAG ' + lvl + '(' + frame + ')', ysubtitle: 'Angle [deg]', $
-                          yticks: 4, yminor: 3, labels: ['Bthe + 180.', 'Bphi'], labflag: 1, constant: 180}
+     aopt = {yaxis: 1, ystyle: 1, yrange: [-90., 90.], ytitle: 'Bthe [deg]', color: 2, yticks: 4, yminor: 3}
+     IF tag_exist(topt, 'charsize') THEN str_element, aopt, 'charsize', topt.charsize, /add
+     store_data, 'mvn_mag_' + STRLOWCASE(lvl) + '_bang_1sec', data={x: b.x, y: [ [2.*bthe*!RADEG + 180.], [bphi*!RADEG]]}, $
+                 dlimits={psym: 3, colors: [2, 0], ytitle: 'MAG ' + lvl + '!CAngle (' + frame + ')', ysubtitle: 'Bphi [deg]', $
+                          yticks: 4, yminor: 3, constant: 180, axis: aopt}
      ylim, 'mvn_mag_' + STRLOWCASE(lvl) + '_bang_1sec', 0., 360., 0., /def
+     options, 'mvn_mag_' + STRLOWCASE(lvl) + '_bang_1sec', ystyle=9
      undefine, bphi, bthe, b
   ENDIF 
 

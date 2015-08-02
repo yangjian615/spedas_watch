@@ -22,8 +22,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-07-30 13:51:51 -0700 (Thu, 30 Jul 2015) $
-;   $LastChangedRevision: 18319 $
+;   $LastChangedDate: 2015-07-31 09:08:35 -0700 (Fri, 31 Jul 2015) $
+;   $LastChangedRevision: 18326 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_3d.pro $
 ;
 ;-
@@ -184,9 +184,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   varlist = ['epoch', 'time_tt2000', 'time_met', 'time_unix', $
              'binning', 'counts', 'diff_en_fluxes', 'geom_factor', $
              'g_engy', 'de_over_e', 'accum_time', 'energy', 'elev', $
-             'g_elev', 'azim', 'g_azim', 'num_dists', 'dindex']
+             'g_elev', 'azim', 'g_azim', 'num_dists', 'dindex', $
+             'az_label','el_label','en_label']
 
-  id0  = cdf_attcreate(fileid, 'Title',                      /global_scope)
+  id0  = cdf_attcreate(fileid, 'TITLE',                      /global_scope)
   id1  = cdf_attcreate(fileid, 'Project',                    /global_scope)
   id2  = cdf_attcreate(fileid, 'Discipline',                 /global_scope)
   id3  = cdf_attcreate(fileid, 'Source_name',                /global_scope)
@@ -194,7 +195,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   id5  = cdf_attcreate(fileid, 'Data_type',                  /global_scope)
   id6  = cdf_attcreate(fileid, 'Data_version',               /global_scope)
   id7  = cdf_attcreate(fileid, 'TEXT',                       /global_scope)
-  id8  = cdf_attcreate(fileid, 'Mods',                       /global_scope)
+  id8  = cdf_attcreate(fileid, 'MODS',                       /global_scope)
   id9  = cdf_attcreate(fileid, 'Logical_file_id',            /global_scope)
   id10 = cdf_attcreate(fileid, 'Logical_source',             /global_scope)
   id11 = cdf_attcreate(fileid, 'Logical_source_description', /global_scope)
@@ -211,7 +212,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   id22 = cdf_attcreate(fileid, 'PDS_sclk_start_count',       /global_scope)
   id23 = cdf_attcreate(fileid, 'PDS_sclk_stop_count',        /global_scope)
 
-  cdf_attput, fileid, 'Title',                      0, $
+  cdf_attput, fileid, 'TITLE',                      0, $
     title
   cdf_attput, fileid, 'Project',                    0, $
     'MAVEN'
@@ -228,7 +229,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
     ver_str ; version
   cdf_attput, fileid, 'TEXT',                       0, $
     'MAVEN SWEA 3D Distributions'
-  cdf_attput, fileid, 'Mods',                       0, $
+  cdf_attput, fileid, 'MODS',                       0, $
     'Revision 0'
   cdf_attput, fileid, 'Logical_file_id',            0, $
     head_file
@@ -273,6 +274,9 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   dummy = cdf_attcreate(fileid, 'FORMAT',       /variable_scope)
   dummy = cdf_attcreate(fileid, 'FORM_PTR',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'LABLAXIS',     /variable_scope)
+  dummy = cdf_attcreate(fileid, 'LABL_PTR_1',   /variable_scope)
+  dummy = cdf_attcreate(fileid, 'LABL_PTR_2',   /variable_scope)
+  dummy = cdf_attcreate(fileid, 'LABL_PTR_3',   /variable_scope)
   dummy = cdf_attcreate(fileid, 'VAR_TYPE',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'FILLVAL',      /variable_scope)
   dummy = cdf_attcreate(fileid, 'DEPEND_0',     /variable_scope)
@@ -454,6 +458,9 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'DEPEND_3', 'diff_en_fluxes', 'energy',/ZVARIABLE
   cdf_attput, fileid, 'DEPEND_2', 'diff_en_fluxes', 'azim',  /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_1', 'diff_en_fluxes', 'dindex',/ZVARIABLE
+  cdf_attput, fileid, 'LABL_PTR_1','diff_en_fluxes','el_label',/ZVARIABLE
+  cdf_attput, fileid, 'LABL_PTR_2','diff_en_fluxes','az_label',/ZVARIABLE
+  cdf_attput, fileid, 'LABL_PTR_3','diff_en_fluxes','en_label',/ZVARIABLE
 
 ; DEPEND_X are in reverse order for row-major (PDS) vs. column-major (IDL)
 ; DEPEND_1 should point to 'elev', but 'elev' is 2-dimensional, so ...
@@ -728,16 +735,67 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   cdf_varput, fileid, 'g_azim', g_azim
 
+; *** Azimuth Label
+
+  dim_vary = [1]
+  dim = 16
+
+  varid = cdf_varcreate(fileid, varlist[18], dim_vary, DIM = dim, /CDF_CHAR, /REC_NOVARY,/ZVARIABLE,numelem=3)
+  cdf_attput, fileid, 'FIELDNAM', varid, varlist[18], /ZVARIABLE
+  cdf_attput, fileid, 'FORMAT',   varid, 'A3',        /ZVARIABLE
+  cdf_attput, fileid, 'VAR_TYPE', varid, 'metadata',  /ZVARIABLE
+  cdf_attput, fileid, 'FILLVAL',  varid, " ",         /ZVARIABLE
+  cdf_attput, fileid, 'CATDESC', 'az_label','Azimuth Axis Label for CDF compatibility',/ZVARIABLE
+
+  labs = 'A' + strcompress(string(indgen(16)),/rem)
+  len = strlen(labs)
+  w = where(len lt 3)
+  if (w[0] ne -1) then labs(w) = ' ' + labs(w)
+
+  cdf_varput, fileid, 'az_label', labs
+
+
+; *** Elevation (deflection) Label
+
+  dim_vary = [1]
+  dim = 6
+
+  varid = cdf_varcreate(fileid, varlist[19], dim_vary, DIM = dim, /CDF_CHAR, /REC_NOVARY,/ZVARIABLE,numelem=2)
+  cdf_attput, fileid, 'FIELDNAM', varid, varlist[19], /ZVARIABLE
+  cdf_attput, fileid, 'FORMAT',   varid, 'A2',        /ZVARIABLE
+  cdf_attput, fileid, 'VAR_TYPE', varid, 'metadata',  /ZVARIABLE
+  cdf_attput, fileid, 'FILLVAL',  varid, " ",         /ZVARIABLE
+  cdf_attput, fileid, 'CATDESC', 'el_label','Deflection Axis Label for CDF compatibility',/ZVARIABLE
+
+  cdf_varput, fileid, 'el_label', 'D' + strcompress(string(indgen(6)),/rem)
+
+; *** Energy Label
+
+  dim_vary = [1]
+  dim = 64
+
+  varid = cdf_varcreate(fileid, varlist[20], dim_vary, DIM = dim, /CDF_CHAR, /REC_NOVARY,/ZVARIABLE,numelem=3)
+  cdf_attput, fileid, 'FIELDNAM', varid, varlist[20], /ZVARIABLE
+  cdf_attput, fileid, 'FORMAT',   varid, 'A3',        /ZVARIABLE
+  cdf_attput, fileid, 'VAR_TYPE', varid, 'metadata',  /ZVARIABLE
+  cdf_attput, fileid, 'FILLVAL',  varid, " ",         /ZVARIABLE
+  cdf_attput, fileid, 'CATDESC', 'en_label','Energy Axis Label for CDF compatibility',/ZVARIABLE
+
+  labs = 'E' + strcompress(string(indgen(64)),/rem)
+  len = strlen(labs)
+  w = where(len lt 3)
+  if (w[0] ne -1) then labs(w) = ' ' + labs(w)
+
+  cdf_varput, fileid, 'en_label', labs
+
 ; *** num_dists -- Number of Distributions ***
 
   varid = cdf_varcreate(fileid, varlist[16], /CDF_INT4, /REC_NOVARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[16],    /ZVARIABLE
- ;cdf_attput, fileid, 'FORMAT',       varid, 'I7',           /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'I12',           /ZVARIABLE
   cdf_attput, fileid, 'LABLAXIS',     varid, varlist[16],    /ZVARIABLE
   cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data', /ZVARIABLE
- ;cdf_attput, fileid, 'FILLVAL',      varid, -32768,         /ZVARIABLE
   cdf_attput, fileid, 'FILLVAL',      varid, -2147483648,    /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 

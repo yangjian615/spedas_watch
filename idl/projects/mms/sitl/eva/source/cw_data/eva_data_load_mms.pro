@@ -148,7 +148,7 @@ FUNCTION eva_data_load_mms, state
 
 
         ;-----------
-        ; AFG
+        ; FIELDS/AFG
         ;-----------
         if (strmatch(paramlist[i],'*_afg*')) then begin
           mms_sitl_get_afg, sc_id=sc
@@ -159,7 +159,7 @@ FUNCTION eva_data_load_mms, state
         endif
   
         ;-----------
-        ; DFG
+        ; FIELDS/DFG
         ;-----------
         if (strmatch(paramlist[i],'*_dfg*')) then begin
           mms_sitl_get_dfg, sc_id=sc
@@ -170,11 +170,11 @@ FUNCTION eva_data_load_mms, state
         endif
         
         ;-----------
-        ; DSP
+        ; FIELDS/DSP
         ;-----------
         if (strmatch(paramlist[i],'*_dsp_*')) then begin
           data_type = (strmatch(paramlist[i],'*b*')) ? 'bpsd' : 'epsd'
-          mms_load_dsp, probes = prb, data_type=data_type
+          mms_load_dsp, probes = prb, datatype=datatype
           tn=tnames(sc+'_dsp*',jmax)
           if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
             for j=0,jmax-1 do begin
@@ -193,9 +193,9 @@ FUNCTION eva_data_load_mms, state
         ; EDP
         ;-----------
         if (strmatch(paramlist[i],'*_edp_*')) then begin
-          mms_load_edp, probes = [prb], level='l1b', data_rate='comm', datatype='dcecomm';, /no_sweeps
-          set_options,sc+'_edp_comm_dce_sensor', $
-            labels=['X','Y','Z'],ytitle=sc+'!CEDP!Ccomm',ysubtitle='[mV/m]',$
+          mms_load_edp, probes = [prb], level='l1b', data_rate='fast', datatype='dce';, /no_sweeps
+          set_options,sc+'_edp_fast_dce_sensor', $
+            labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
             colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
           answer = 'Yes'
         endif

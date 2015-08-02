@@ -20,9 +20,9 @@
 ;PLEASE DO NOT USE this routine within general "LOAD" routines using the LOAD keyword. "LOAD" routines should assume that SPICE kernels are already loaded.
 ; 
 ;Author: Davin Larson  - January 2014
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-05-20 17:39:00 -0700 (Wed, 20 May 2015) $
-; $LastChangedRevision: 17659 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2015-07-31 13:48:43 -0700 (Fri, 31 Jul 2015) $
+; $LastChangedRevision: 18331 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear,reconstruct=reconstruct
@@ -78,7 +78,8 @@ if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
                if (tr[1] ge time_double('2013-11-18')) && (tr[0] le time_double('2014-09-23'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_c_131118-140923_rec_v?.bsp',_extra=source)
                if (tr[1] ge time_double('2014-09-22')) && (tr[0] le time_double('2015-01-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_140922_150101_v1.bsp',_extra=source)
                if (tr[1] ge time_double('2015-01-01')) && (tr[0] le time_double('2015-04-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_150101_150401_v1.bsp',_extra=source)
-               if (tr[1] ge time_double('2015-04-01')) && (tr[0] le time_double('2035-04-01'))  then begin
+               if (tr[1] ge time_double('2015-04-01')) && (tr[0] le time_double('2015-07-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_150401_150701_v1.bsp',_extra=source)
+               if (tr[1] ge time_double('2015-07-01')) && (tr[0] le time_double('2035-04-01'))  then begin
                  if keyword_set(reconstruct) then begin
                    append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb_rec.bsp',_extra=source)   
 ;                    if (tr[1] ge mvn_orbit_num(orbnum=1))   && (tr[0] le mvn_orbit_num(orbnum=83))   then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/trj_orb_00001-00083_rec_v?.bsp',_extra=source)
