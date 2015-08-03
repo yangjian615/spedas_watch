@@ -2,9 +2,9 @@
 ;  Modified for HPCA by J. Burch
 ;
 
-;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-13 16:11:30 -0700 (Mon, 13 Jul 2015) $
-;  $LastChangedRevision: 18117 $
+;  $LastChangedBy: moka $
+;  $LastChangedDate: 2015-08-01 23:11:11 -0700 (Sat, 01 Aug 2015) $
+;  $LastChangedRevision: 18354 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_hpca_basic.pro $
 
 
@@ -99,7 +99,9 @@ pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
     if login_flag eq 1 then begin
       print, 'Unable to locate files on the SDC server, checking local cache...'
       mms_check_local_cache, local_flist, file_flag, $
-        mode, 'hpca', level, sc_id(j), optional_descriptor='ion'
+;        mode, 'hpca', level, sc_id(j), optional_descriptor='ion'
+        sc_id(j), 'hpca', mode, level, optional_descriptor='ion'
+
     endif
 
     if login_flag eq 0 or file_flag eq 0 then begin
@@ -168,7 +170,7 @@ pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
       store_data, ospecname, data = {x:times, y:ospec, v:energies}
 
  
-print, min(ispec)
+print, min(ispec);, ispec
   
     endif else begin
       print, 'No hpca data available locally or at SDC or invalid query!'

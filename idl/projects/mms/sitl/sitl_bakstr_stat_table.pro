@@ -13,7 +13,7 @@ FUNCTION sitl_bakstr_stat_table, s, cat=cat, isPending=isPending, status1=status
   fomrng[5,*] = [  0,256]; in case FOM=255
 
 
-  ;remove eratic segments 
+  ;remove error segments 
   idx = where(s.SEGLENGTHS ne 429496728,ct,comp=nidx)
   idx0 = idx; NON-ERATIC
   nidx0 = nidx; ERATIC
@@ -73,22 +73,12 @@ FUNCTION sitl_bakstr_stat_table, s, cat=cat, isPending=isPending, status1=status
   Tmin = double(Nbuffs)/6.d0; total number of minutes
   
   ttlPrcnt = (n_elements(ttl) eq 0) ? 100.0 : 100.0*Tmin/ttl
-  
+  strTlast = time_string(min(s.START[idxE],n))
+   
   if ~keyword_set(quiet) then begin
     if n_elements(title) eq 0 then title = ''
-    print, title, Nsegs, Nbuffs, Tmin, ttlPrcnt, format='(A10," ",I8," ",I8," ",I8," ",F7.1)'
+    print, title, Nsegs, Nbuffs, Tmin, ttlPrcnt, strTlast, format='(A10," ",I8," ",I8," ",I8," ",F7.1," ",A20)'
   endif
   
-  ; FOM vs time plot
-  wx=[0]
-  wy=[0]
-  if (n_elements(status1) eq 1) and (n_elements(status2) eq 1) then begin
-    if strmatch(strlowcase(status1),'complete') and $
-       strmatch(strlowcase(status2),'finished') then begin
-      wx = (time_double(s.FINISHTIME[idxE])-time_double(s.CREATETIME[idxE]))/86400.d0
-      wy = s.FOM[idxE]
-    endif; if complete and finished
-  endif
-  stat = {Tmin:Tmin, wx:wx, wy:wy}
-  return, stat
+  return, Tmin
 END

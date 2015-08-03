@@ -1,9 +1,9 @@
 ; Read HPCA CDF
 ;
 
-;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-09 15:26:09 -0700 (Thu, 09 Jul 2015) $
-;  $LastChangedRevision: 18056 $
+;  $LastChangedBy: moka $
+;  $LastChangedDate: 2015-08-01 23:11:11 -0700 (Sat, 01 Aug 2015) $
+;  $LastChangedRevision: 18354 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_open_hpca_basic_cdf.pro $
 
 
@@ -27,7 +27,7 @@ function mms_sitl_open_hpca_basic_cdf, filename
   
 ispec = *cdf_str.vars(31).dataptr 
 aspec = *cdf_str.vars(41).dataptr  
-hespec = *cdf_str.vars(36).dataptr  
+;hespec = *cdf_str.vars(36).dataptr  
 ospec = *cdf_str.vars(46).dataptr  
  
   
@@ -45,7 +45,7 @@ ospec = *cdf_str.vars(46).dataptr
 
   data3d = *cdf_str.vars(31).dataptr
   data4d = *cdf_str.vars(41).dataptr
-  data5d = *cdf_str.vars(36).dataptr
+;  data5d = *cdf_str.vars(36).dataptr
   data6d = *cdf_str.vars(46).dataptr
   
     
@@ -53,7 +53,7 @@ ospec = *cdf_str.vars(46).dataptr
   outstruct = {times: time_unix, energies: energies, $
      ispecname:ispecname, aspecname:aspecname, $
      hespecname:hespecname, ospecname:ospecname, data:data3d, $
-     data2:data4d, data3:data5d, data4:data6d}
+     data2:data4d, data4:data6d} ;data3:data5d,
   
   return, outstruct
 

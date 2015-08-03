@@ -1,7 +1,7 @@
 
 
-;mms_init, local_data_dir='/Users/jburch/data/mms/'
-mms_init;, local_data_dir='/Volumes/MMS/data/mms/'
+mms_init, local_data_dir='/Users/jburch/data/mms/'
+;mms_init;, local_data_dir='/Volumes/MMS/data/mms/'
 
 
 Re = 6378.137
@@ -9,31 +9,31 @@ Re = 6378.137
 
 ;timespan, '2015-05-11/00:00:00', 24, /hour
 
-;timespan, '2015-07-06/00:00:00', 24, /hour
-timespan, '2015-06-22/16:00:00', 6, /hour
+timespan, '2015-07-30/13:41:03', 24, /hour
+;timespan, '2015-06-22/16:00:00', 6, /hour
 
-sc_id='mms1'
+sc_id='mms2'
 
 level = 'sitl'
 ;level = 'l1b'
 
 mms_sitl_get_hpca_basic, sc_id=sc_id, level = level 
 
-mms_sitl_get_hpca_moments, sc_id=sc_id, level = level
+;mms_sitl_get_hpca_moments, sc_id=sc_id, level = level
 
-mms_sitl_get_dfg, sc_id=['mms1','mms2','mms3','mms4']
+;mms_sitl_get_dfg, sc_id=sc_id;['mms1','mms2','mms3','mms4']
 
-get_data, 'mms1_ql_pos_gsm', data = mms1_ephem
+;get_data, 'mms1_ql_pos_gsm', data = mms1_ephem
 ;get_data, 'mms2_ql_pos_gsm', data = mms2_ephem
 ;get_data, 'mms3_ql_pos_gsm', data = mms3_ephem
 ;get_data, 'mms4_ql_pos_gsm', data = mms4_ephem
 
 
-ephem_times = mms1_ephem.x
-mms1_x = mms1_ephem.y(*,0)/Re
-mms1_y = mms1_ephem.y(*,1)/Re
-mms1_z = mms1_ephem.y(*,2)/Re
-mms1_r = sqrt(mms1_x^2 + mms1_y^2 + mms1_z^2)
+;ephem_times = mms1_ephem.x
+;mms1_x = mms1_ephem.y(*,0)/Re
+;mms1_y = mms1_ephem.y(*,1)/Re
+;mms1_z = mms1_ephem.y(*,2)/Re
+;mms1_r = sqrt(mms1_x^2 + mms1_y^2 + mms1_z^2)
 
 ;ephem_times = mms2_ephem.x
 ;mms2_x = mms2_ephem.y(*,0)/Re
@@ -53,14 +53,14 @@ mms1_r = sqrt(mms1_x^2 + mms1_y^2 + mms1_z^2)
 ;mms4_z = mms4_ephem.y(*,2)/Re
 ;mms4_r = sqrt(mms4_x^2 + mms4_y^2 + mms4_z^2)
 
-store_data, 'mms1_x', data = {x:ephem_times, y:mms1_x}
-options, 'mms1_x', 'ytitle', 'MMS1 X'
-store_data, 'mms1_y', data = {x:ephem_times, y:mms1_y}
-options, 'mms1_y', 'ytitle', 'MMS1 Y'
-store_data, 'mms1_z', data = {x:ephem_times, y:mms1_z}
-options, 'mms1_z', 'ytitle', 'MMS1 Z'
-store_data, 'mms1_r', data = {x:ephem_times, y:mms1_r}
-options, 'mms1_r', 'ytitle', 'R'
+;store_data, 'mms1_x', data = {x:ephem_times, y:mms1_x}
+;options, 'mms1_x', 'ytitle', 'MMS1 X'
+;store_data, 'mms1_y', data = {x:ephem_times, y:mms1_y}
+;options, 'mms1_y', 'ytitle', 'MMS1 Y'
+;store_data, 'mms1_z', data = {x:ephem_times, y:mms1_z}
+;options, 'mms1_z', 'ytitle', 'MMS1 Z'
+;store_data, 'mms1_r', data = {x:ephem_times, y:mms1_r}
+;options, 'mms1_r', 'ytitle', 'R'
 
 ;store_data, 'mms2_x', data = {x:ephem_times, y:mms2_x}
 ;options, 'mms2_x', 'ytitle', 'MMS2 X'
@@ -102,9 +102,9 @@ options, sc_id+'_hpca_hplus_RF_corrected','ylog',1
 options, sc_id+'_hpca_hplus_RF_corrected','zlog',1
 options, sc_id+'_hpca_hplus_RF_corrected','no_interp',1
 options, sc_id+'_hpca_hplus_RF_corrected','ytitle','H!U+!N(eV)'
-options, 'mms1_hpca_hplus_RF_corrected','ztitle',' '
+options, sc_id+'_hpca_hplus_RF_corrected','ztitle',' '
 ylim,    sc_id+'_hpca_hplus_RF_corrected', 1, 40000.
-zlim,    sc_id+'_hpca_hplus_RF_corrected', .1, 1000.
+;zlim,    sc_id+'_hpca_hplus_RF_corrected', .1, 1000.
 
 ;    data quality
 ;ylim, 'mms1_hpca_hplus_data_quality',0, 255.
@@ -117,7 +117,8 @@ options, sc_id+'_hpca_heplusplus_RF_corrected','no_interp',1
 options, sc_id+'_hpca_heplusplus_RF_corrected','ytitle','He!U++!N(eV)'
 options, sc_id+'_hpca_heplusplus_RF_corrected','ztitle','normalized energy flux'
 ylim,    sc_id+'_hpca_heplusplus_RF_corrected', 1, 40000.
-zlim,    sc_id+'_hpca_heplusplus_RF_corrected', .1, 1000.
+;zlim,    sc_id+'_hpca_heplusplus_RF_corrected', .1, 1000.
+
 
 options,sc_id+'_hpca_oplus_RF_corrected','spec',1 
 options, sc_id+'_hpca_oplus_RF_corrected','ylog',1
@@ -126,7 +127,7 @@ options, sc_id+'_hpca_oplus_RF_corrected','no_interp',1
 options, sc_id+'_hpca_oplus_RF_corrected','ytitle','O!U+!N(eV)'
 options, sc_id+'_hpca_oplus_RF_corrected','ztitle',' '
 ylim,    sc_id+'_hpca_oplus_RF_corrected', 1, 40000.
-zlim,    sc_id+'_hpca_oplus_RF_corrected', .1, 1000.
+;zlim,    sc_id+'_hpca_oplus_RF_corrected', .1, 1000.
 
 ylim, sc_id+'_hpca_hplusoplus_number_densities', 1, 50
 options, sc_id+'_hpca_hplusoplus_number_densities', 'ylog', 1
@@ -137,14 +138,14 @@ options, sc_id+'_hpca_hplusoplus_number_densities','labflag',-1
 
 ylim, sc_id+'_hpca_hplus_bulk_velocity', -100, 100
 options, sc_id+'_hpca_hplus_bulk_velocity', 'ylog', 0
-options, sc_id+'_hpca_hplus_bulk_velocity', colors = [6,4,2]
+options, sc_id+'_hpca_hplus_bulk_velocity', colors = [2,4,6]
 options, sc_id+'_hpca_hplus_bulk_velocity', 'ytitle', 'h!U+!N km s!U-1!N'
 options, sc_id+'_hpca_hplus_bulk_velocity', labels=['V!DX!N', 'V!DY!N', 'V!DZ!N']
 options, sc_id+'_hpca_hplus_bulk_velocity','labflag',-1
 
 ylim, sc_id+'_hpca_oplus_bulk_velocity', -100, 100
 options, sc_id+'_hpca_oplus_bulk_velocity', 'ylog', 0
-options, sc_id+'_hpca_oplus_bulk_velocity', colors = [6,4,2]
+options, sc_id+'_hpca_oplus_bulk_velocity', colors = [2,4,6]
 options, sc_id+'_hpca_oplus_bulk_velocity', 'ytitle', 'o!U+!N km s!U-1!N'
 options, sc_id+'_hpca_oplus_bulk_velocity', labels=['V!DX!N', 'V!DY!N', 'V!DZ!N']
 options, sc_id+'_hpca_oplus_bulk_velocity','labflag',-1
@@ -157,16 +158,17 @@ options, sc_id+'_hpca_hplusoplus_scalar_temperatures', labels=['h!U+!N', 'o!U+!N
 options, sc_id+'_hpca_hplusoplus_scalar_temperatures','labflag',-1
 
 
-options, sc_id+'_dfg_srvy_gsm_dmpa', -80, 80
-options, sc_id+'_dfg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N']
-options, sc_id+'_dfg_srvy_gsm_dmpa', 'labflag',-1
+;options, sc_id+'_dfg_srvy_gsm_dmpa', -80, 80
+;options, sc_id+'_dfg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N']
+;options, sc_id+'_dfg_srvy_gsm_dmpa', 'labflag',-1
 
 
 tplot, [sc_id+'_hpca_hplus_RF_corrected', sc_id+'_hpca_heplusplus_RF_corrected',$
   sc_id+'_hpca_oplus_RF_corrected', sc_id+'_hpca_hplusoplus_number_densities', $
   sc_id+'_hpca_hplus_bulk_velocity', sc_id+'_hpca_oplus_bulk_velocity', $
-  sc_id+'_hpca_hplusoplus_scalar_temperatures'], $
-    var_label=[sc_id+'_r',sc_id+'_z',sc_id+'_y',sc_id+'_x']
+  sc_id+'_hpca_hplusoplus_scalar_temperatures'];, $
+    ;var_label=[sc_id+'_r',sc_id+'_z',sc_id+'_y',sc_id+'_x']
+
 
 
 end
