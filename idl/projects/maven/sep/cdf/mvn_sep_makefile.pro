@@ -41,13 +41,14 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
 end
 
 
-pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=trange  ,prereq_files=prereq_files
+pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=trange  ,prereq_files=prereq_files,L2_fileformat=l2_fileformat
   @mvn_sep_handler_commonblock.pro
   sn = strtrim(sepnum,2)
   sepstr = 's'+sn
   sepname = 'SEP'+sn
   data_type = sepstr+'-cal-svy-full'
-  L2_fileformat =  'maven/data/sci/sep/.l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v03_r??.cdf'
+  if ~keyword_set(L2_fileformat) then $
+      L2_fileformat =  'maven/data/sci/sep/.l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v03_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
   source_fi = file_info([source_files,prereq_files])
@@ -64,7 +65,7 @@ pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=
       return
     endif
     nextrev_fname = mvn_pfp_file_next_revision(lastrev_fname)
-    global={ filename:file_basename(nextrev_fname),  data_type:data_type+'>Survey Calibrated Particle Flux',   logical_source:'SEP'+sn+'.cal.spec_svy',  sensor: sepname}   
+    global={ filename:file_basename(nextrev_fname),  data_type:data_type+'>Survey Calibrated Particle Flux',   logical_source:'SEP.cal.spec_svy',  sensor: sepname}   
     mapid = round(median(sepdata.mapid))
     bmaps = mvn_sep_get_bmap(mapid,sepnum)
     dependencies = [source_files,spice_test('*')]
@@ -112,8 +113,10 @@ ndaysload =1
 L1fmt = str_sub(L1_fileformat, '$NDAY', strtrim(ndaysload,2)+'day')
 
 res = 86400L
-trange = res* double(round( (timerange((trange0+ [ 0,res-1]) /res)) ))         ; round to days
-nd = round( (trange[1]-trange[0]) /res)
+daynum = round( timerange(trange0) /res )
+nd = daynum[1]-daynum[0]
+trange = res* double( daynum  )         ; round to days
+;nd = round( (trange[1]-trange[0]) /res)
 
 ;if n_elements(load) eq 0 then load =1
 

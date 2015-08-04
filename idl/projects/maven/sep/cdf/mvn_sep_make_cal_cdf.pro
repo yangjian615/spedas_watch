@@ -268,6 +268,7 @@ endelse
 
 varname = 'mapid'
 atts = default_atts
+atts.var_type ='support_data'
 atts.fieldnam = varname
 atts.lablaxis = varname
 atts.catdesc = 'Binning Map ID number'
@@ -275,6 +276,7 @@ mvn_sep_cdf_var_att_create,fileid,varname,uint(data_vary.mapid),attributes=atts
 
 varname = 'seq_cntr'
 atts = default_atts
+atts.var_type ='support_data'
 atts.fieldnam = varname
 atts.lablaxis = varname
 atts.var_type ='data'
@@ -302,7 +304,7 @@ varname = 'f_ion_flux_unc'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Ion Flux Uncertainty (#/cm^2/sec/ster/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ION_FLUX_UNC,attributes=atts
 
@@ -318,7 +320,7 @@ varname = 'f_ion_flux_tot_unc'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Total Ion Flux Uncertainty (#/cm^2/sec/ster)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ION_FLUX_TOT_UNC,attributes=atts
 
@@ -326,7 +328,7 @@ varname = 'f_ion_energy'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Ion Energy (keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ION_ENERGY,attributes=atts
 
@@ -334,7 +336,7 @@ varname = 'f_ion_denergy'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Ion Energy channel width (keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ION_DENERGY,attributes=atts
 
@@ -351,7 +353,7 @@ varname = 'f_elec_flux_unc'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Electron Flux Uncertainty (#/cm^2/sec/ster/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ELEC_FLUX_UNC,attributes=atts
 
@@ -368,7 +370,7 @@ varname = 'f_elec_flux_tot_unc'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Integrated Electron Flux Uncertainty (#/cm^2/sec/ster)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ELEC_FLUX_TOT_UNC,attributes=atts
 
@@ -376,7 +378,7 @@ varname = 'f_elec_energy'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Electron Energy (keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ELEC_ENERGY,attributes=atts
 
@@ -384,7 +386,7 @@ varname = 'f_elec_denergy'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Electron Energy channel width (keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.F_ELEC_DENERGY,attributes=atts
 
@@ -403,7 +405,7 @@ varname = 'r_ion_flux_unc'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Ion Flux Uncertainty (#/cm^2/sec/ster/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ION_FLUX_UNC,attributes=atts
 
@@ -420,7 +422,7 @@ varname = 'r_ion_flux_tot_unc'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Integrated Ion Flux Uncertainty (#/cm^2/sec/ster/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ION_FLUX_TOT_UNC,attributes=atts
 
@@ -428,7 +430,7 @@ varname = 'r_ion_energy'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Ion Energy (keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ION_ENERGY,attributes=atts
 
@@ -436,7 +438,7 @@ varname = 'r_ion_denergy'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Ion Energy channel width (keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ION_DENERGY,attributes=atts
 
@@ -453,7 +455,7 @@ varname = 'r_elec_flux_unc'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Electron Flux Uncertainty (#/cm^2/sec/ster/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ELEC_FLUX_UNC,attributes=atts
 
@@ -469,7 +471,7 @@ varname = 'r_elec_flux_tot_unc'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Integrated Electron Flux Uncertainty (#/cm^2/sec/ster/keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ELEC_FLUX_TOT_UNC,attributes=atts
 
@@ -477,7 +479,7 @@ varname = 'r_elec_energy'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Electron Energy (keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ELEC_ENERGY,attributes=atts
 
@@ -485,7 +487,7 @@ varname = 'r_elec_denergy'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Electron Energy channel width (keV)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.R_ELEC_DENERGY,attributes=atts
 
@@ -494,7 +496,7 @@ varname = 'a_t_rates'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Count Rate in THICK detectors of A Stack (#/sec)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.A_T_RATE,attributes=atts
 
@@ -502,7 +504,7 @@ varname = 'b_t_rates'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Count Rate in THICK detectors of B Stack (#/sec)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.B_T_RATE,attributes=atts
 
@@ -511,7 +513,7 @@ varname = 'a_fto_rates'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Count Rate of triple coincidence in A Stack (#/sec)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.A_FTO_RATE,attributes=atts
 
@@ -519,7 +521,7 @@ varname = 'b_fto_rates'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Count Rate in triple coincidence in B Stack (#/sec)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.B_FTO_RATE,attributes=atts
 
@@ -528,7 +530,7 @@ varname = 'f_o_rate'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Total Count Rate in Forward Open detector (#/sec)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.f_o_rate,attributes=atts
 
@@ -536,7 +538,7 @@ varname = 'f_f_rate'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Total Count Rate in Forward Foil detector (#/sec)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.f_f_rate,attributes=atts
 
@@ -544,7 +546,7 @@ varname = 'r_o_rate'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Total Count Rate in Rear Open detector (#/sec)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.r_o_rate,attributes=atts
 
@@ -552,7 +554,7 @@ varname = 'r_f_rate'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Total Count Rate in Rear Foil detector (#/sec)'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.r_f_rate,attributes=atts
 
@@ -563,7 +565,7 @@ varname = 'quality_flag'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+atts.var_type ='support_data'
 atts.catdesc = 'Quality FLAG'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.QUALITY_FLAG,attributes=atts
 
