@@ -60,8 +60,8 @@
 ;               https://lasp.colorado.edu/mms/sdc/about/browse/
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-31 15:53:01 -0700 (Fri, 31 Jul 2015) $
-;$LastChangedRevision: 18339 $
+;$LastChangedDate: 2015-08-03 16:06:33 -0700 (Mon, 03 Aug 2015) $
+;$LastChangedRevision: 18371 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -91,8 +91,7 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
     
     for probe_idx = 0, n_elements(probes)-1 do begin
         probe = 'mms' + strcompress(string(probes[probe_idx]), /rem)
-        pathformat = '/YYYY/MM/DD'
-        daily_names = file_dailynames(file_format=pathformat, trange=tr, /unique, times=times)
+        daily_names = file_dailynames(file_format='/YYYY/MM', trange=tr, /unique, times=times)
         
         ; updated to match the path at SDC; this path includes data type for 
         ; the following instruments: EDP, DSP, EPD-EIS, FEEPS, FIELDS, HPCA, SCM (as of 7/23/2015)
@@ -104,11 +103,7 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             ; note, -1 second so we don't download the data for the next day accidently
             end_string = time_string(tr[1]-1., tformat='YYYY-MM-DD-hh-mm-ss')
             
-            ; want to store all the CDFs in the month folder, not create a new folder for each day
-            ; note: we still use /DD in the pathformat because file_dailynames needs it to 
-            ; create a different name for each day
-            split_dir = strsplit(sdc_path[name_idx], '/', /extract)
-            month_directory = strjoin(split_dir[0:n_elements(split_dir)-2], '/')
+            month_directory = sdc_path[name_idx]
 
             if datatype ne '*' && datatype ne '' then begin
                 data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
@@ -158,8 +153,8 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             files = files[bsort(files)]
         endfor
 
-        if ~undefined(files) then cdf2tplot, files, tplotnames = tplotnames, varformat=varformat
-        
+        if ~undefined(files) then cdf2tplot, files, tplotnames = tplotnames, varformat=varformat, /all
+
         ; forget about the daily files for this probe
         undefine, files
     endfor

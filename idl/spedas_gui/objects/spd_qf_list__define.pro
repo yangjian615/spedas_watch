@@ -39,13 +39,14 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-05-06 13:56:39 -0700 (Wed, 06 May 2015) $
-;$LastChangedRevision: 17487 $
+;$LastChangedDate: 2015-08-03 13:08:10 -0700 (Mon, 03 Aug 2015) $
+;$LastChangedRevision: 18369 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_qf_list__define.pro $
 ;-----------------------------------------------------------------------------------
 
 
 function spd_qf_list::init, t_start=t_start, t_end=t_end, qf_bits=qf_bits
+  compile_opt idl2
   if undefined(t_start) then t_start = 0.0
   if undefined(t_end) then t_end = 0.0
   self.t_start = ptr_new(time_double(t_start))
@@ -56,7 +57,7 @@ end
 
 function spd_qf_list::qf_time_slice, tstart, tend
   ; returns a quality flag list object for times between tstart and tend
-  
+  compile_opt idl2
   tstart = time_double(tstart)
   tend = time_double(tend)
   result = obj_new("spd_qf_list")
@@ -100,7 +101,8 @@ end
 
 function spd_qf_list::qf_merge, qf
   ; merges self with qf
-  ; should be called as z = x.merge(y)
+  ; should be called as z = x.merge(y)  
+  compile_opt idl2
   result = obj_new("spd_qf_list")
 
   if (self->count() eq 0) then begin
@@ -151,6 +153,7 @@ end
 function spd_qf_list::get_qf, t
   ; get qualify flag for time t
   ; time t is assumed to be scalar time
+  compile_opt idl2
   t1 = self->t_start()
   t2 = self->t_end()
   qf_bits = self->qf_bits()
@@ -166,6 +169,7 @@ end
 
 function spd_qf_list::qf_check
   ; checks self for consistency
+  compile_opt idl2
   result = 1
   count = self->count()
   if (count gt 0) then begin
@@ -181,6 +185,7 @@ end
 
 function spd_qf_list::qf_total, qf_bits
   ; add an array of quality flags
+  compile_opt idl2
   result = 0
   if (n_elements(qf_bits) eq 0) then begin
     result = 0
@@ -195,13 +200,14 @@ end
 
 function spd_qf_list::qf_add, qf_bits1, qf_bits2
   ; add two quality flags, bitwise OR
+  compile_opt idl2
   result = qf_bits1 OR qf_bits2
   return, result
 end
 
 function spd_qf_list::qf_sort
   ; sorts self
-
+  compile_opt idl2
   if (self->count() eq 0) then return, 0
 
   ; sort for t_start
@@ -237,6 +243,7 @@ function spd_qf_list::qf_sort
 end
 
 function spd_qf_list::qf_print
+  compile_opt idl2
   print, time_string(self->t_start())
   print, time_string(self->t_end())
   print, self->qf_bits()
@@ -246,6 +253,7 @@ end
 function spd_qf_list::count
   ; find how many elements are in self
   ; if there are problems, returns 0
+  compile_opt idl2
   count = 0
   if (*self.t_start ne !NULL) then begin
     if (n_elements(self->t_start()) eq n_elements(self->t_end())) then begin
@@ -262,18 +270,22 @@ function spd_qf_list::count
 end
 
 function spd_qf_list::t_start
+  compile_opt idl2
   return, *self.t_start
 end
 
 function spd_qf_list::t_end
+  compile_opt idl2
   return, *self.t_end
 end
 
 function spd_qf_list::qf_bits
+  compile_opt idl2
   return, *self.qf_bits
 end
 
 pro spd_qf_list__define
+  compile_opt idl2
   struct = {SPD_QF_LIST,      $
     t_start:  ptr_new(),      $; start time, double precision Unix times, 0.0D
     t_end:    ptr_new(),      $; end time, double precision Unix times, 0.0D

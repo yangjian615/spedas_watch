@@ -7,18 +7,29 @@
 ;
 ; KEYWORDS:
 ;         trange: time range of interest
-;         probes: list of probes - values for MMS SC #
-;         instrument: instrument, AFG, DFG, etc.
-;         datatype: not implemented yet
+;         probes: list of probes - values for MMS SC # ['1','2','3','4']
+;         level: ['*', 'def', 'pred'] predicted or definitive attitude (default is definitive)
+;                   NOTE: predicted is not yet implemented
+;         datatypes: ephemeris or attitude or both ['pos', 'vel', 'spinras', 'spindec'] 
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
-;         attitude_data: load L-right ascension and L-declination attitude data
+;         attitude_data: flag to only load L-right ascension and L-declination attitude data 
+;         ephemeris_data: flag to only load position and velocity data
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;             with "username" and "password" tags with your API login information
 ;
 ; OUTPUT:
 ;
-;
+; EXAMPLE: 
+; 
+;   MMS> tr=['2015-07-21','2015-07-22']
+;   MMS> mms_load_state, probe='1', trange=tr
+;   MMS> mms_load_state, probe='*', level='def', trange=tr
+;   MMS> mms_load_state, probe=['1','3'], datatypes='pos', trange=tr
+;   MMS> mms_load_state, probe=['1','3'], datatypes=['pos', 'spinras'], trange=tr
+;   MMS> mms_load_state, probe=['1','2,','3'], datatypes='*', trange=tr
+;   
+;   
 ; NOTES:
 ;     1) I expect this routine to change significantly as the MMS data products are
 ;         released to the public and feedback comes in from scientists - egrimes@igpp
@@ -34,19 +45,19 @@
 ;     5) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
 ;         will give incorrect time tags for data loaded after June 30, 2015 due to this issue.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-27 09:55:17 -0700 (Mon, 27 Jul 2015) $
-;$LastChangedRevision: 18277 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-08-03 15:10:24 -0700 (Mon, 03 Aug 2015) $
+;$LastChangedRevision: 18370 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
-function mms_load_defatt_file, filename
+function mms_read_att_file, filename
     if filename eq '' then begin
-        dprint, dlevel = 0, 'Error loading a definitive attitude file - no filename given.'
+        dprint, dlevel = 0, 'Error loading a attitude file - no filename given.'
         return, 0
     endif
     ; from ascii_template on a definitive attitude file
-    defatt_template = { VERSION: 1.00000, $
+    att_template = { VERSION: 1.00000, $
         DATASTART: 49, $
         DELIMITER: 32b, $
         MISSINGVALUE: !values.D_NAN, $
@@ -57,28 +68,64 @@ function mms_load_defatt_file, filename
         FIELDLOCATIONS: [0, 22, 38, 47, 55, 65, 73, 80, 87, 94, 102, 111, 118, 126, 135, 142, 150, 159, 166, 176, 183], $
         FIELDGROUPS: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
 
-    def_att = read_ascii(filename, template=defatt_template, count=num_items)
+    att = read_ascii(filename, template=att_template, count=num_items)
 
-    return, def_att
+    return, att
 end
 
-pro mms_load_defatt_tplot, filenames, tplotnames = tplotnames, prefix = prefix
+function mms_read_eph_file, filename
+  if filename eq '' then begin
+    dprint, dlevel = 0, 'Error loading a attitude file - no filename given.'
+    return, 0
+  endif
+  ; from ascii_template on a definitive attitude file
+  eph_template = { VERSION: 1.00000, $
+    DATASTART: 14, $
+    DELIMITER: 32b, $
+    MISSINGVALUE: !values.D_NAN, $
+    COMMENTSYMBOL: 'COMMENT', $
+    FIELDCOUNT: 9, $
+    FIELDTYPES: [7, 4, 4, 4, 4, 4, 4, 4, 4], $
+    FIELDNAMES: ['Time', 'Elapsed', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'kg'], $
+    FIELDLOCATIONS: [0, 22, 40, 62, 88, 113, 138, 162, 188], $
+    FIELDGROUPS: [0, 1, 2, 3, 4, 5, 6, 7, 8]}
+
+  ephdata = read_ascii(filename, template=eph_template, count=num_items)
+
+  ephpos = make_array(n_elements(ephdata.x),3, /double)
+  ephpos[*,0] = ephdata.x
+  ephpos[*,1] = ephdata.y
+  ephpos[*,2] = ephdata.z
+  ephvel = make_array(n_elements(ephdata.x),3, /double)
+  ephvel[*,0] = ephdata.vx
+  ephvel[*,1] = ephdata.vy
+  ephvel[*,2] = ephdata.vz
+  eph={time:ephdata.time, pos:ephpos, vel:ephvel}
+
+  return, eph
+end
+
+pro mms_load_att_tplot, filenames, tplotnames = tplotnames, prefix = prefix, level = level, $
+  probe=probe, datatypes = datatypes
+
     ; print a warning about how long this takes so user's do not
     ; assume the process is frozen after a few seconds
-    dprint, dlevel = 1, 'Loading definitive attitude files can take some time; please be patient...'
+    dprint, dlevel = 1, 'Loading attitude files can take some time; please be patient...'
     if undefined(prefix) then prefix = 'mms'
-
+    if undefined(level) then level = 'def'
+    
     for file_idx = 0, n_elements(filenames)-1 do begin
         ; load the data from the ASCII file
-        new_def_att_data = mms_load_defatt_file(filenames[file_idx])
-        if is_struct(new_def_att_data) then begin
+        new_att_data = mms_read_att_file(filenames[file_idx])
+        if is_struct(new_att_data) then begin
             ; note on time format in this file:
             ; date/time values are stored in the format: YYYY-DOYThh:mm:ss.fff
             ; so to convert the first time value to a time_double,
-            ;    time_values = time_double(new_def_att_data.time, tformat='YYYY-DOYThh:mm:ss.fff')
-            append_array, time_values, time_double(new_def_att_data.time[0:n_elements(new_def_att_data.time)-2], tformat='YYYY-DOYThh:mm:ss.fff')
-            append_array, def_att_data_ras, new_def_att_data.LRA[0:n_elements(new_def_att_data.time)-2]
-            append_array, def_att_data_dec, new_def_att_data.LDEC[0:n_elements(new_def_att_data.time)-2]
+            ;    time_values = time_double(new__att_data.time, tformat='YYYY-DOYThh:mm:ss.fff')
+            append_array, time_values, time_double(new_att_data.time[0:n_elements(new_att_data.time)-2], tformat='YYYY-DOYThh:mm:ss.fff')
+            ; only load data products the user requested
+            if where(datatypes EQ 'spinras') NE -1 then append_array, att_data_ras, new_att_data.LRA[0:n_elements(new_att_data.time)-2]
+            if where(datatypes EQ 'spindec') NE -1 then append_array, att_data_dec, new_att_data.LDEC[0:n_elements(new_att_data.time)-2]
         endif
     endfor
 
@@ -88,10 +135,84 @@ pro mms_load_defatt_tplot, filenames, tplotnames = tplotnames, prefix = prefix
         return
     endif
 
-    store_data, prefix + '_defatt_spinras', data={x: time_values, y: def_att_data_ras}
-    store_data, prefix + '_defatt_spindec', data={x: time_values, y: def_att_data_dec}
+    data_att = {coord_sys:'', st_type:'none', units:'deg'}
+    dl = {filenames:filenames, data_att:data_att, ysubtitle:'[deg]'}
+    if where(datatypes EQ 'spinras') NE -1 then begin
+      spinras_name =  prefix + '_' + level + 'att_spinras'
+      str_element,dl,'vname',spinras_name, /add
+      store_data, spinras_name, data={x: time_values, y: att_data_ras}, dlimits=dl, l=0
+      append_array, tplotnames, [spinras_name]
+    endif
+    if where(datatypes EQ 'spindec') NE -1 then begin
+      spindec_name =  prefix + '_' + level + 'att_spindec'
+      str_element,dl,'vname',spindec_name, /add_replace
+      store_data, spindec_name, data={x: time_values, y: att_data_dec}, dlimits=dl, l=0
+      append_array, tplotnames, [spindec_name]
+    endif
 
-    append_array, tplotnames, prefix + ['_defatt_spinras', '_defatt_spindec']
+
+end
+
+pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, level = level, $
+  probe=probe, datatypes = datatypes
+  
+  ; print a warning about how long this takes so user's do not
+  ; assume the process is frozen after a few seconds
+  dprint, dlevel = 1, 'Loading ephemeris files can take some time; please be patient...'
+  if undefined(prefix) then prefix = 'mms'
+  if undefined(datatype) then datatype = 'def'
+
+  for file_idx = 0, n_elements(filenames)-1 do begin
+    ; load the data from the ASCII file
+    new_eph_data = mms_read_eph_file(filenames[file_idx])
+
+    if is_struct(new_eph_data) then begin
+      ; note on time format in this file:
+      ; date/time values are stored in the format: YYYY-DOYThh:mm:ss.fff
+      ; so to convert the first time value to a time_double,
+      ;    time_values = time_double(new__att_data.time, tformat='YYYY-DOYThh:mm:ss.fff')
+      append_array, time_values, time_double(new_eph_data.time[0:n_elements(new_eph_data.time)-2], tformat='YYYY-DOYThh:mm:ss.fff')
+      if where(datatypes EQ 'pos') NE -1 then append_array, eph_data_pos, new_eph_data.pos[0:n_elements(new_eph_data.time)-2,*]
+      if where(datatypes EQ 'vel') NE -1 then append_array, eph_data_vel, new_eph_data.vel[0:n_elements(new_eph_data.time)-2,*]
+    endif
+  endfor
+
+  ; check that some data was actually loaded in
+  if undefined(time_values) then begin
+    dprint, dlevel = 0, 'Error loading ephemeris data - no data was loaded.'
+    return
+  endif
+
+  default_colors = [2, 4, 6]
+  data_att = {coord_sys:'', st_type:'', units:''}
+  dl = {filenames:filenames, colors:default_colors, data_att:data_att}
+  ; Populate dlimits.colors to match tplot defaults
+  ; for pos and vel variables.
+  ;add labels indicating whether data is pos, vel, or neither
+  if where(datatypes EQ 'pos') NE -1 then begin
+    pos_name =  prefix + '_' + datatype + 'eph_pos'
+    str_element,dl,'data_att.st_type','pos',/add_replace
+    str_element,dl,'data_att.coord_sys','unknown', /add_replace
+    str_element,dl,'data_att.units','km', /add_replace
+    str_element,dl,'labels',['x','y','z'], /add
+    str_element,dl,'vname',pos_name, /add
+    str_element,dl,'ysubtitle','[km]', /add
+    store_data, pos_name, data={x: time_values, y: eph_data_pos}, dlimits=dl, l=0
+    append_array, tplotnames, [pos_name]
+  endif 
+  dl = {filenames:filenames, colors:default_colors, data_att:data_att}
+  if where(datatypes EQ 'vel') NE -1 then begin
+    vel_name =  prefix + '_' + datatype + 'eph_vel'
+    str_element,dl,'data_att.st_type','vel',/add_replace
+    str_element,dl,'data_att.coord_sys','unknown', /add_replace
+    str_element,dl,'data_att.units','km/s', /add_replace
+    str_element,dl,'labels',['vx','vy','vz'], /add
+    str_element,dl,'vname',vel_name, /add
+    str_element,dl,'ysubtitle','[km/s]', /add
+    store_data, vel_name, data={x: time_values, y: eph_data_vel}, dlimits=dl, l=0
+    append_array, tplotnames, [vel_name]
+  endif
+
 end
 
 ; data product:
@@ -99,22 +220,9 @@ end
 ;   defeph - definitive ephemeris data; should load position, velocity
 ;   predatt - predicted attitude data
 ;   predeph - predicted ephemeris data
-pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotnames, $
-    login_info = login_info, data_product = data_product
-    if undefined(trange) then begin
-        dprint, dlevel = 0, 'Error loading MMS definitive attitude data - no time range given.'
-        return
-    endif
-    if undefined(probe) then begin
-        dprint, dlevel = 0, 'Error loading MMS definitive attitude data - no probe given.'
-        return
-    endif
-    if undefined(data_product) then data_product = 'defatt'
-    if not keyword_set(remote_data_dir) then remote_data_dir = 'https://lasp.colorado.edu/mms/sdc/about/browse/'
-    ;if not keyword_set(local_data_dir) then local_data_dir = 'c:\data\mms\'
-    if undefined(local_data_dir) then local_data_dir = ''
-    mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
-    if not keyword_set(source) then source = !mms
+pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames, $
+  login_info = login_info, datatypes = datatypes, level = level, $
+  local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
 
     probe = strcompress(string(probe), /rem)
     start_time = time_double(trange[0])-60*60*24.
@@ -128,50 +236,128 @@ pro mms_load_defatt_data, probe = probe, trange = trange, tplotnames = tplotname
     status = mms_login_lasp(login_info=login_info)
     if status ne 1 then return
 
-    ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, product=data_product, start_date=start_time_str, end_date=end_time_str)
-
-    if ~is_array(ancillary_file_info) && ancillary_file_info eq '' then begin
-        dprint, dlevel = 0, 'No MMS ' + data_product + ' files found for this time period.'
-        return
+    idx=where(datatypes EQ 'pos' OR datatypes EQ 'vel',ephcnt)
+    if ephcnt gt 0 then filetype = ['eph']
+    idx=where(datatypes EQ 'spinras' OR datatypes EQ 'spindec',attcnt)
+    if attcnt gt 0 then begin
+      if undefined(filetype) then filetype = ['att'] else filetype = [filetype, 'att']
     endif
-
-    remote_file_info = mms_get_filename_size(ancillary_file_info)
-
-    doys = n_elements(remote_file_info)
-
-
-    ; make sure the directory exists
-    dir_search = file_search(file_dir, /test_directory)
-    if dir_search eq '' then file_mkdir2, file_dir
-
-    for doy_idx = 0, doys-1 do begin
-        ; check if the file exists
-        same_file = mms_check_file_exists(remote_file_info[doy_idx], file_dir = file_dir)
-
-        if same_file eq 0 then begin
-            dprint, dlevel = 0, 'Downloading ' + remote_file_info[doy_idx].filename + ' to ' + file_dir
-            status = get_mms_ancillary_file(filename=remote_file_info[doy_idx].filename, local_dir=file_dir)
-
-            if status eq 0 then append_array, daily_names, file_dir + remote_file_info[doy_idx].filename
-        endif else begin
-            dprint, dlevel = 0, 'Loading local file ' + file_dir + remote_file_info[doy_idx].filename
-            append_array, daily_names, file_dir + remote_file_info[doy_idx].filename
-        endelse
-    endfor
-    mms_load_defatt_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe
-
-    ; time clip the data
-    if ~undefined(tplotnames) then begin
-        if (tplotnames[0] ne '') then begin
-            time_clip, tplotnames, time_double(trange[0]), time_double(trange[1]), replace=1, error=error
+    
+    for i = 0, n_elements(filetype)-1 do begin
+        
+        product = level + filetype[i]
+        ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, $
+             product=product, start_date=start_time_str, end_date=end_time_str)    
+        if ~is_array(ancillary_file_info) && ancillary_file_info eq '' then begin
+            dprint, dlevel = 0, 'No MMS ' + product + ' files found for this time period.'
+            return
         endif
-    endif
+    
+        remote_file_info = mms_get_filename_size(ancillary_file_info)    
+        doys = n_elements(remote_file_info)
+    
+        ; make sure the directory exists
+        dir_search = file_search(file_dir, /test_directory)
+        if dir_search eq '' then file_mkdir2, file_dir
+    
+        for doy_idx = 0, doys-1 do begin
+            ; check if the file exists
+            same_file = mms_check_file_exists(remote_file_info[doy_idx], file_dir = file_dir)    
+            if same_file eq 0 then begin
+                dprint, dlevel = 0, 'Downloading ' + remote_file_info[doy_idx].filename + ' to ' + file_dir
+                status = get_mms_ancillary_file(filename=remote_file_info[doy_idx].filename, local_dir=file_dir)    
+                if status eq 0 then append_array, daily_names, file_dir + remote_file_info[doy_idx].filename
+            endif else begin
+                dprint, dlevel = 0, 'Loading local file ' + file_dir + remote_file_info[doy_idx].filename
+                append_array, daily_names, file_dir + remote_file_info[doy_idx].filename
+            endelse
+        endfor
+    
+        ; figure out the type of data and read and load the data
+        if filetype[i] EQ 'eph' then $
+          mms_load_eph_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe, level = level, $
+          probe=probe, datatypes = datatypes    
+        if filetype[i] EQ 'att' then $    
+           mms_load_att_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe, level = level, $
+                probe=probe, datatypes = datatypes
+    
+        ; time clip the data
+        if ~undefined(tplotnames) then begin
+            if (tplotnames[0] ne '') then begin
+                time_clip, tplotnames, time_double(trange[0]), time_double(trange[1]), replace=1, error=error
+            endif
+        endif
+        
+     endfor
 end
 
-pro mms_load_state, trange = trange, probes = probes, datatype = datatype, $
-    level = level, instrument = instrument, data_rate = data_rate, $
-    local_data_dir = local_data_dir, source = source
+pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
+    level = level, local_data_dir = local_data_dir, source = source, $
+    remote_data_dir = remote_data_dir, attitude_only=attitude_only, $
+    ephemeris_only = ephemeris_only
 
-    if undefined(datatype) then datatype = '*'
-    if undefined(level) then level = 'def' ; default to definitive state data
+    ; define probe, product, type, coordinate, and unit names
+    p_names = ['1', '2', '3', '4']
+    t_names = ['pos', 'vel', 'spinras', 'spindec']
+    l_names = ['def']      ; *** will need to add pred when that has been added
+    
+    if undefined(trange) then begin
+      dprint, dlevel = 0, 'Error loading MMS attitude data - no time range given.'
+      return
+    endif
+    if undefined(probes) then begin
+      dprint, dlevel = 0, 'Error loading MMS attitude data - no probe given.'
+      return
+    endif
+
+    ; set up system variable for MMS if not already set    
+    defsysv, '!mms', exists=exists
+    if not(exists) then mms_init
+ 
+    ; initialize undefined values
+    if undefined(level) then level = 'def'
+    if undefined(datatypes) then datatypes = '*' ; default to definitive 
+    if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
+    if undefined(remote_data_dir) then remote_data_dir = !mms.remote_data_dir
+    if not keyword_set(source) then source = !mms
+    
+    ; check for wild cards
+    if probes[0] EQ '*' then probes = ['1', '2', '3', '4']
+    if level[0] EQ '*' then level = ['def']      ; ***  Add 'pred' when implemented 
+    if datatypes[0] EQ '*' then datatypes = ['pos', 'vel', 'spinras', 'spindec']  
+    if keyword_set(ephemeris_only) then datatypes = ['pos', 'vel']
+    if keyword_set(attitude_only) then datatypes = ['spinras', 'spindec']
+
+    ; check for valid names
+    for i = 0, n_elements(datatypes)-1 do begin
+        idx = where(t_names eq datatypes[i], ncnt)
+        if ncnt EQ 0 then begin
+           dprint, 'mms_load_state error, found unrecognized datatypes: ' + datatypes[i]
+           return
+        endif
+    endfor
+    for i = 0, n_elements(level)-1 do begin
+      idx = where(l_names eq level[i], ncnt)
+      if ncnt EQ 0 then begin
+        dprint, 'mms_load_state error, found unrecognized level: ' + level[i]
+        return
+      endif
+    endfor
+    for i = 0, n_elements(probes)-1 do begin
+      idx = where(p_names eq probes[i], ncnt)
+      if ncnt EQ 0 then begin
+        dprint, 'mms_load_state error, found unrecognized probes: ' + probes[i]
+        return
+      endif
+    endfor
+
+    ; get state data for each probe and data type (def or pred) 
+    for i = 0, n_elements(probes)-1 do begin      
+       for j = 0, n_elements(level)-1 do begin
+              mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
+                   login_info = login_info, datatypes = datatypes, level = level[j], $
+                   local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
+       endfor
+    endfor
+
 end

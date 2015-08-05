@@ -60,13 +60,14 @@
 ;
 ;HISTORY:;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-05-06 13:55:48 -0700 (Wed, 06 May 2015) $
-;$LastChangedRevision: 17486 $
+;$LastChangedDate: 2015-08-03 13:08:10 -0700 (Mon, 03 Aug 2015) $
+;$LastChangedRevision: 18369 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_get_fgm_quality_flags.pro $
 ;-
 
 function thm_get_fgm_quality_flags, probe, trange=trange
 
+  compile_opt idl2
   ; boom deployment times
   if (probe eq 'a') then begin
     t1 = time_double('2007/056 21:00', TFORMAT='YYYY/DOY hh:mm')

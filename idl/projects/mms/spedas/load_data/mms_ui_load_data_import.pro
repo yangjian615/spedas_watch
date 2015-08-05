@@ -11,9 +11,9 @@
 ;  
 ;HISTORY:
 ;
-;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-27 09:51:58 -0700 (Mon, 27 Jul 2015) $
-;$LastChangedRevision: 18273 $
+;;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-08-03 15:10:24 -0700 (Mon, 03 Aug 2015) $
+;$LastChangedRevision: 18370 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -42,18 +42,22 @@ pro mms_ui_load_data_import,$
   ; extract the variables from the load structure
   probes=loadStruc.probes
   instrument=loadStruc.instrument
-  level=loadStruc.level
   timeRange=loadStruc.trange
-  
+  level=loadStruc.level
+    
   ; need to update for MMS
   mmsmintime = '2015-03-01'
-  mmsmaxtime = time_string(systime(/seconds), tformat='YYYY-MM-DD')
-  
+  mmsmaxtime = time_string(systime(/seconds), tformat='YYYY-MM-DD')  
 
   tn_before = [tnames('*',create_time=cn_before)]
 
-  mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument
-
+  if instrument eq 'STATE' then begin
+     type=loadStruc.type
+     mms_load_state, probes=probes, level=level, datatypes=type, trange=timeRange
+  endif else begin
+     mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument
+  endelse
+  
   ; determine which tplot vars to delete and which ones are the new temporary 
   ; vars
   spd_ui_cleanup_tplot, tn_before, create_time_before=cn_before, del_vars=to_delete,$

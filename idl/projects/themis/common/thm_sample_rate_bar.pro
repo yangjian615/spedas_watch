@@ -19,12 +19,13 @@
 ;HISTORY:
 ; 20-nov-2007, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2014-12-18 18:02:31 -0800 (Thu, 18 Dec 2014) $
-; $LastChangedRevision: 16516 $
+; $LastChangedDate: 2015-08-03 13:08:10 -0700 (Mon, 03 Aug 2015) $
+; $LastChangedRevision: 18369 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_sample_rate_bar.pro $
 ;-
 Function thm_sample_rate_bar, date, duration, probe,outline=outline, _extra = _extra
 
+  compile_opt idl2
   p = ''
   timespan, date, duration
   sc = strlowcase(strcompress(probe[0], /remove_all))
