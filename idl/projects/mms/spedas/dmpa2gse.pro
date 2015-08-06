@@ -1,5 +1,5 @@
 ;+
-;Procedure: dmps2gse
+;Procedure: dmpa2gse
 ;
 ;Purpose: MMS coordinate transformation:
 ;            DMPA <--> GSE
@@ -30,8 +30,8 @@
 ;    
 ;    
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-06-24 15:13:48 -0700 (Wed, 24 Jun 2015) $
-; $LastChangedRevision: 17963 $
+; $LastChangedDate: 2015-08-04 12:46:41 -0700 (Tue, 04 Aug 2015) $
+; $LastChangedRevision: 18385 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/dmpa2gse.pro $
 ;-
 

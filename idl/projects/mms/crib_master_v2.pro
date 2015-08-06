@@ -1,19 +1,33 @@
 ; Script to load MMS data from various instruments and plot a subset of parameters. Specfiy plot formats etc...
 
 ; created by Jim Burch, July, 2015.
-; updated: July 21, 2015
+; updated by Tai Phan: August 5, 2015
 
 ; to run this script, in IDL session, type: .r crib_master_v2 (or click the run button)
 
-; To create a poscript file of the plot, in the IDL command line, after plotting and zooming in using tlimit, type: tprint,'filename' (filename.ps will be created)
+
+; To change the font size of plot labels, use "!p.charsize= 1 or 0.5 or ...". 1 is the default. 
 
 i_load=1 ; =1 if data has not been loaded, =0 of data has already been loaded (no need to load again in this IDL session)
 
-timespan,'2015-06-22/00:00', 24, /hour ; (other often-used options are /day or /min)
+; To create a poscript file of the plot, select i_print=1 below
+
+i_print=1 ; = 1 to generate a postscript file of plot (default name is 'plot.ps')
+
+; to zoon in and out, use tlimit (various options in tlimit: 'tlimit,/last', 'tlimit,/full', 'tlimit,time1, time2')
+
+timespan,'2015-07-31/00:00', 24, /hour ; (other often-used options are /day or /min)
+
+;timespan,'2015-06-22/00:00', 24, /hour ; (other often-used options are /day or /min)
 
 sc_id='mms1' ; specify spacecraft
 
-level = 'lib' ; (current options are 'sitl' or 'l1b' for HPCA, more to come...)
+level = 'sitl' ; (current options are 'sitl' or 'l1b' for HPCA, more to come...)
+
+;level = 'l1b' ; (current options are 'sitl' or 'l1b' for HPCA, more to come...)
+
+; To change the font size of plot labels, use "!p.charsize= 1 or 0.5 or ...". 1 is the default. 
+!p.charsize=1
 
 if i_load eq 1 then begin
 
@@ -21,9 +35,9 @@ if i_load eq 1 then begin
 
 mms_sitl_get_fpi_basic, sc_id=sc_id
 
-mms_sitl_get_hpca_basic, sc_id=sc_id  ;, level = level
+mms_sitl_get_hpca_basic, sc_id=sc_id  , level = level
 
-mms_sitl_get_hpca_moments, sc_id=sc_id ;, level = level
+mms_sitl_get_hpca_moments, sc_id=sc_id , level = level
 
 mms_sitl_get_dfg, sc_id=sc_id
 
@@ -162,6 +176,17 @@ tplot_options,'ygap',0.3 ; set vertical gap size between panels (the default gap
 ;plotting
 
 tplot,[name_dfg,name_fpi,name_hpca,name_feeps],var_label=[sc_id+'_z',sc_id+'_y',sc_id+'_x']
+
+;create postscript file
+if i_print eq 1 then begin
+!p.charsize=0.6
+popen,land=1 ; a plot.ps file will be created (popen,land=1,filename='filename' creates filename.ps)
+tplot
+pclose
+!p.charsize=1; resetting the font size to default
+tplot ; back to screen mode
+endif
+
 
 stop
 

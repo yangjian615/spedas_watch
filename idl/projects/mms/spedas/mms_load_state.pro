@@ -45,9 +45,9 @@
 ;     5) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
 ;         will give incorrect time tags for data loaded after June 30, 2015 due to this issue.
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-08-03 15:10:24 -0700 (Mon, 03 Aug 2015) $
-;$LastChangedRevision: 18370 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-04 14:42:13 -0700 (Tue, 04 Aug 2015) $
+;$LastChangedRevision: 18391 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -280,14 +280,6 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
         if filetype[i] EQ 'att' then $    
            mms_load_att_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe, level = level, $
                 probe=probe, datatypes = datatypes
-    
-        ; time clip the data
-        if ~undefined(tplotnames) then begin
-            if (tplotnames[0] ne '') then begin
-                time_clip, tplotnames, time_double(trange[0]), time_double(trange[1]), replace=1, error=error
-            endif
-        endif
-        
      endfor
 end
 
@@ -327,6 +319,9 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     if datatypes[0] EQ '*' then datatypes = ['pos', 'vel', 'spinras', 'spindec']  
     if keyword_set(ephemeris_only) then datatypes = ['pos', 'vel']
     if keyword_set(attitude_only) then datatypes = ['spinras', 'spindec']
+    
+    ; allow users to pass probes as a list of ints
+    probes = strcompress(string(probes), /rem)
 
     ; check for valid names
     for i = 0, n_elements(datatypes)-1 do begin
@@ -360,4 +355,10 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
        endfor
     endfor
 
+    ; time clip the data
+    if ~undefined(tplotnames) then begin
+        if (tplotnames[0] ne '') then begin
+            time_clip, tplotnames, time_double(trange[0]), time_double(trange[1]), replace=1, error=error
+        endif
+    endif
 end

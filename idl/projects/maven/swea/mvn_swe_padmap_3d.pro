@@ -20,8 +20,8 @@
 ;CREATED BY:      D.L. Mitchell on 2014-09-24.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-07-16 17:22:21 -0700 (Thu, 16 Jul 2015) $
-; $LastChangedRevision: 18160 $
+; $LastChangedDate: 2015-08-04 17:15:05 -0700 (Tue, 04 Aug 2015) $
+; $LastChangedRevision: 18398 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_padmap_3d.pro $
 ;
 ;-
@@ -42,14 +42,14 @@ pro mvn_swe_padmap_3d, data
     return
   endif
 
-  twopi = 2D*!dpi
-  ddtor = !dpi/180D
-  ddtors = replicate(ddtor, 64)
-  n = 17  ; patch size - odd integer
-
   nrec = n_elements(data)
   n_a = data[0].nbins
   n_e = data[0].nenergy
+
+  twopi = 2D*!dpi
+  ddtor = !dpi/180D
+  ddtors = replicate(ddtor, n_e)
+  n = 17  ; patch size - odd integer
 
 ; Create structure tags to hold the pitch angle information.
 ; If data is a PAD structure, then these tags already exist
@@ -58,19 +58,23 @@ pro mvn_swe_padmap_3d, data
 ; populated.  This method works for a single structure or an
 ; array of structures.  (str_element.pro cannot do this.)
 
-  newstr = data[0]
-  str_element, newstr, 'pa'    , fltarr(n_e, n_a), /add
-  str_element, newstr, 'dpa'   , fltarr(n_e, n_a), /add
-  str_element, newstr, 'pa_min', fltarr(n_e, n_a), /add
-  str_element, newstr, 'pa_max', fltarr(n_e, n_a), /add
-  str_element, newstr, 'iaz'   , intarr(n_a)     , /add
-  str_element, newstr, 'jel'   , intarr(n_a)     , /add
-  str_element, newstr, 'k3d'   , intarr(n_a)     , /add
-  str_element, newstr, 'Baz'   , 0.              , /add
-  str_element, newstr, 'Bel'   , 0.              , /add
-  if (nrec gt 1L) then newstr = replicate(newstr, nrec)
-  struct_assign, data, newstr
-  data = temporary(newstr)
+  str_element, data, 'pa', success=pflg
+
+  if (not pflg) then begin
+    newstr = data[0]
+    str_element, newstr, 'pa'    , fltarr(n_e, n_a), /add
+    str_element, newstr, 'dpa'   , fltarr(n_e, n_a), /add
+    str_element, newstr, 'pa_min', fltarr(n_e, n_a), /add
+    str_element, newstr, 'pa_max', fltarr(n_e, n_a), /add
+    str_element, newstr, 'iaz'   , intarr(n_a)     , /add
+    str_element, newstr, 'jel'   , intarr(n_a)     , /add
+    str_element, newstr, 'k3d'   , intarr(n_a)     , /add
+    str_element, newstr, 'Baz'   , 0.              , /add
+    str_element, newstr, 'Bel'   , 0.              , /add
+    if (nrec gt 1L) then newstr = replicate(newstr, nrec)
+    struct_assign, data, newstr
+    data = temporary(newstr)
+  endif
 
 ; Calculate the pitch angle information.
 
@@ -82,14 +86,14 @@ pro mvn_swe_padmap_3d, data
     if (Baz lt 0.) then Baz += twopi
     Bel = asin(magu[2])
 
-    if (n_a eq 96) then begin
-      k = indgen(96)
-      i = k mod 16
-      j = k / 16
-    endif else begin
-      k = data[m].k3d
+    if (pflg) then begin
       i = data[m].iaz
       j = data[m].jel
+      k = data[m].k3d
+    endif else begin
+      k = indgen(n_a)
+      i = k mod 16
+      j = k / 16
     endelse
 
     daz = double((indgen(n*n) mod n) - (n-1)/2)/double(n-1) # double(swe_daz[i])
@@ -117,11 +121,14 @@ pro mvn_swe_padmap_3d, data
     data[m].dpa    = transpose(float(dpa))     ; pitch angle widths (radians)
     data[m].pa_min = transpose(float(pa_min))  ; minimum pitch angle (radians)
     data[m].pa_max = transpose(float(pa_max))  ; maximum pitch angle (radians)
-    data[m].iaz    = i                         ; anode bin (0-15)
-    data[m].jel    = j                         ; deflector bin (0-5)
-    data[m].k3d    = k                         ; 3D angle bin (0-95)
-    data[m].Baz    = float(Baz)                ; Baz in SWEA coord. (radians)
-    data[m].Bel    = float(Bel)                ; Bel in SWEA coord. (radians)
+
+    if (not pflg) then begin
+      data[m].iaz    = i                       ; anode bin (0-15)
+      data[m].jel    = j                       ; deflector bin (0-5)
+      data[m].k3d    = k                       ; 3D angle bin (0-95)
+      data[m].Baz    = float(Baz)              ; Baz in SWEA coord. (radians)
+      data[m].Bel    = float(Bel)              ; Bel in SWEA coord. (radians)
+    endif
 
   endfor
   

@@ -39,8 +39,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-08-03 13:08:10 -0700 (Mon, 03 Aug 2015) $
-;$LastChangedRevision: 18369 $
+;$LastChangedDate: 2015-08-04 13:34:01 -0700 (Tue, 04 Aug 2015) $
+;$LastChangedRevision: 18388 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_qf_list__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ function spd_qf_list::qf_time_slice, tstart, tend
  
   ; sort and eliminate douplicates
   t = [t1,t2, tstart, tend]
-  t = t(sort(t))
+  t = t[sort(t)]
   tn = [t[0]]
   tprev = t[0]
   for i = 1, n_elements(t)-1 do begin
@@ -117,7 +117,7 @@ function spd_qf_list::qf_merge, qf
   endif
 
   t = [self->t_start(), qf->t_start(), self->t_end(), qf->t_end()]
-  t = t(sort(t))
+  t = t[sort(t)]
 
   t1 = [t[0]]
   for i = 1, n_elements(t)-2  do begin
@@ -255,17 +255,16 @@ function spd_qf_list::count
   ; if there are problems, returns 0
   compile_opt idl2
   count = 0
-  if (*self.t_start ne !NULL) then begin
-    if (n_elements(self->t_start()) eq n_elements(self->t_end())) then begin
-      if (n_elements(self->t_start()) eq n_elements(self->qf_bits())) then begin
-        count = n_elements(self->t_start())
-      endif else begin
-        dprint, 'Quality flag error: Number of start times do not match with number of quality flags.', dlevel=1
-      endelse
+  if (n_elements(self->t_start()) eq n_elements(self->t_end())) then begin
+    if (n_elements(self->t_start()) eq n_elements(self->qf_bits())) then begin
+      count = n_elements(self->t_start())
     endif else begin
-      dprint, 'Quality flag error: Number of start and end times do not match.', dlevel=1
+      dprint, 'Quality flag error: Number of start times do not match with number of quality flags.', dlevel=1
     endelse
-  endif
+  endif else begin
+    dprint, 'Quality flag error: Number of start and end times do not match.', dlevel=1
+  endelse
+  
   return, count
 end
 

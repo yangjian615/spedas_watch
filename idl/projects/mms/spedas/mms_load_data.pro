@@ -59,9 +59,9 @@
 ;      8) When looking for data availability, look for the CDFs at:
 ;               https://lasp.colorado.edu/mms/sdc/about/browse/
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-03 16:06:33 -0700 (Mon, 03 Aug 2015) $
-;$LastChangedRevision: 18371 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-08-04 15:32:15 -0700 (Tue, 04 Aug 2015) $
+;$LastChangedRevision: 18395 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -86,6 +86,10 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
       then tr = timerange(trange) $
       else tr = timerange()
 
+    ;combine these flags for now, if we're not downloading files then there is
+    ;no reason to contact the server unless mms_get_local_files is unreliable
+    no_download = !mms.no_download or !mms.no_server
+
     status = mms_login_lasp(login_info = login_info)
     if status ne 1 then return
     
@@ -104,47 +108,64 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             end_string = time_string(tr[1]-1., tformat='YYYY-MM-DD-hh-mm-ss')
             
             month_directory = sdc_path[name_idx]
-
-            if datatype ne '*' && datatype ne '' then begin
-                data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
-                        data_rate_mode=data_rate, data_level=level, start_date=day_string, $
-                        end_date=end_string, descriptor=datatype)
-            endif else begin
-                data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
-                        data_rate_mode=data_rate, data_level=level, start_date=day_string, $
-                        end_date=end_string)
-            endelse
-                        
-            if ~is_array(data_file) && data_file eq '' then begin
-                dprint, dlevel = 0, 'Error, no data files found for this time.'
-                continue
-            endif
             
-            remote_file_info = mms_get_filename_size(data_file)
-            
-            if ~is_struct(remote_file_info) then begin
-                dprint, dlevel = 0, 'Error getting the information on remote files'
-                return
-            endif
-
-            filename = remote_file_info.filename
-            num_filenames = n_elements(filename)
-            
-            file_dir = strlowcase(local_data_dir + probe + '/' + month_directory)
-            
-            for file_idx = 0, num_filenames-1 do begin
-                same_file = mms_check_file_exists(remote_file_info[file_idx], file_dir = file_dir)
-                
-                if same_file eq 0 then begin
-                    dprint, dlevel = 0, 'Downloading ' + filename[file_idx] + ' to ' + file_dir
-                    status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir)
-                    
-                    if status eq 0 then append_array, files, file_dir + '/' + filename[file_idx]
+            ;get file info from remote server
+            ;if the server is contacted then a string array or empty string will be returned
+            ;depending on whether files were found, if there is a connection error the 
+            ;neturl response code is returned instead
+            if ~keyword_set(no_download) then begin
+                if datatype ne '*' && datatype ne '' then begin
+                    data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
+                            data_rate_mode=data_rate, data_level=level, start_date=day_string, $
+                            end_date=end_string, descriptor=datatype)
                 endif else begin
-                    dprint, dlevel = 0, 'Loading local file ' + file_dir + '/' + filename[file_idx]
-                    append_array, files, file_dir + '/' + filename[file_idx]
+                    data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
+                            data_rate_mode=data_rate, data_level=level, start_date=day_string, $
+                            end_date=end_string)
                 endelse
-            endfor
+            endif
+            
+            ;if a list of remote files was retrieved then compare remote and local files
+            if is_string(data_file) then begin
+              
+                remote_file_info = mms_get_filename_size(data_file)
+                
+                if ~is_struct(remote_file_info) then begin
+                    dprint, dlevel = 0, 'Error getting the information on remote files'
+                    return
+                endif
+    
+                filename = remote_file_info.filename
+                num_filenames = n_elements(filename)
+                
+                file_dir = strlowcase(local_data_dir + probe + '/' + month_directory)
+                
+                for file_idx = 0, num_filenames-1 do begin
+                    same_file = mms_check_file_exists(remote_file_info[file_idx], file_dir = file_dir)
+                    
+                    if same_file eq 0 then begin
+                        dprint, dlevel = 0, 'Downloading ' + filename[file_idx] + ' to ' + file_dir
+                        status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir)
+                        
+                        if status eq 0 then append_array, files, file_dir + '/' + filename[file_idx]
+                    endif else begin
+                        dprint, dlevel = 0, 'Loading local file ' + file_dir + '/' + filename[file_idx]
+                        append_array, files, file_dir + '/' + filename[file_idx]
+                    endelse
+                endfor
+            
+            ;if no remote list was retrieved then search locally   
+            endif else begin
+                local_files = mms_get_local_files(probe=probe, instrument=instrument, $
+                        data_rate=data_rate, level=level, datatype=datatype, trange=tr)
+                        
+                if is_string(local_files) then begin
+                    append_array, files, local_files
+                endif else begin
+                    dprint, dlevel = 0, 'Error, no data files found for this time.'
+                    continue
+                endelse
+            endelse       
             
             ; sort the data files in time (this is required by 
             ; HPCA (at least) due to multiple files per day
@@ -153,10 +174,12 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             files = files[bsort(files)]
         endfor
 
-        if ~undefined(files) then cdf2tplot, files, tplotnames = tplotnames, varformat=varformat, /all
-
+        if ~undefined(files) then cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, /all
+        if ~undefined(loaded_tnames) then append_array, tplotnames, loaded_tnames
+        
         ; forget about the daily files for this probe
         undefine, files
+        undefine, loaded_tnames
     endfor
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin

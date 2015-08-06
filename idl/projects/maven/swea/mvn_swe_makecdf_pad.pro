@@ -23,8 +23,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-07-31 09:08:35 -0700 (Fri, 31 Jul 2015) $
-;   $LastChangedRevision: 18326 $
+;   $LastChangedDate: 2015-08-04 11:15:07 -0700 (Tue, 04 Aug 2015) $
+;   $LastChangedRevision: 18376 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_pad.pro $
 ;
 ;-
@@ -110,7 +110,7 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
 
     if (keyword_set(directory)) then path = directory[0] else $
       path = '/disks/data/maven/data/sci/swe/l2/' + yyyy + '/' + mm + '/'
-    if (n_elements(file_search(path)) Eq 0) then file_mkdir2, path, mode = '0774'o
+    if (n_elements(file_search(path)) Eq 0) then file_mkdir2, path, mode = '0775'o
 
 ; Create file name using SIS convention
 
@@ -808,7 +808,7 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
 
   cdf_close,fileid
 
-; compression, and md5
+; compression, md5, and permissions (rw--rw--r--)
 
   mvn_l2file_compress, file
 

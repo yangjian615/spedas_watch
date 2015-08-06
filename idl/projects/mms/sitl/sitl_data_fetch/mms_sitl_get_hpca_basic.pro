@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: moka $
-;  $LastChangedDate: 2015-08-01 23:11:11 -0700 (Sat, 01 Aug 2015) $
-;  $LastChangedRevision: 18354 $
+;  $LastChangedDate: 2015-08-05 10:43:25 -0700 (Wed, 05 Aug 2015) $
+;  $LastChangedRevision: 18400 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_hpca_basic.pro $
 
 
@@ -122,6 +122,7 @@ pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
 
       ispec = hpca_struct.data
       ispecname = sc_id(j)+'_hpca_hplus_RF_corrected'
+      
       aspec = hpca_struct.data2
       aspecname = sc_id(j)+'_hpca_heplusplus_RF_corrected'
 
@@ -170,7 +171,7 @@ pro mms_sitl_get_hpca_basic, sc_id=sc_id, no_update = no_update, reload = reload
       store_data, ospecname, data = {x:times, y:ospec, v:energies}
 
  
-print, min(ispec);, ispec
+print, min(ispec), max(ispec), max(aspec), max(ospec);, aspec
   
     endif else begin
       print, 'No hpca data available locally or at SDC or invalid query!'

@@ -22,8 +22,8 @@
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-31 16:10:53 -0700 (Fri, 31 Jul 2015) $
-;$LastChangedRevision: 18342 $
+;$LastChangedDate: 2015-08-04 15:49:48 -0700 (Tue, 04 Aug 2015) $
+;$LastChangedRevision: 18396 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -48,48 +48,55 @@ pro mms_split_fgm_data, tplot_name, tplotnames = tplotnames
 end
 
 ; sets colors and labels for tplot
-pro mms_load_fix_metadata, tplotnames, prefix = prefix
+pro mms_load_fix_metadata, tplotnames, prefix = prefix, instrument = instrument
     if undefined(prefix) then prefix = ''
+    if undefined(instrument) then instrument = 'dfg'
+    instrument = strlowcase(instrument) ; just in case we get an upper case instrument
+    
     for sc_idx = 0, n_elements(prefix)-1 do begin
         for name_idx = 0, n_elements(tplotnames)-1 do begin
             tplot_name = tplotnames[name_idx]
     
             case tplot_name of
-                prefix[sc_idx] + '_dfg_srvy_dmpa_bvec': begin
+                prefix[sc_idx] + '_'+instrument+'_srvy_gse_bvec': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [2,4,6]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' DFG'
+                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
                 end
-                prefix[sc_idx] + '_dfg_srvy_dmpa_btot': begin
+                prefix[sc_idx] + '_'+instrument+'_srvy_gse_btot': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [0]
-                    options, /def, tplot_name, 'ytitle',  strupcase(prefix[sc_idx]) + ' DFG'
+                    options, /def, tplot_name, 'ytitle',  strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['B_total']
-                end
-                prefix[sc_idx] + '_dfg_srvy_gsm_dmpa': begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [2,4,6,8]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' DFG'
-                    options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz', 'Btotal']
-                end
-                prefix[sc_idx] + '_afg_srvy_dmpa_bvec': begin
+                end 
+                prefix[sc_idx] + '_'+instrument+'_srvy_dmpa_bvec': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [2,4,6]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' AFG'
+                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
                 end
-                prefix[sc_idx] + '_afg_srvy_dmpa_btot': begin
+                prefix[sc_idx] + '_'+instrument+'_srvy_dmpa_btot': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [0]
-                    options, /def, tplot_name, 'ytitle',  strupcase(prefix[sc_idx]) + ' AFG'
+                    options, /def, tplot_name, 'ytitle',  strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['B_total']
                 end
-                prefix[sc_idx] + '_afg_srvy_gsm_dmpa': begin
+                prefix[sc_idx] + '_'+instrument+'_srvy_gsm_dmpa': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [2,4,6,8]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' AFG'
+                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz', 'Btotal']
+                end
+                prefix[sc_idx] + '_'+instrument+'_srvy_omb': begin
+                    options, /def, tplot_name, 'labflag', 1
+                    options, /def, tplot_name, 'colors', [2,4,6,8]
+                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument) + ' OMB'
+                end 
+                prefix[sc_idx] + '_'+instrument+'_srvy_bcs': begin
+                    options, /def, tplot_name, 'labflag', 1
+                    options, /def, tplot_name, 'colors', [2,4,6,8]
+                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument) + ' BCS'
                 end
                 prefix[sc_idx] + '_ql_pos_gsm': begin
                     options, /def, tplot_name, 'labflag', 1
@@ -124,8 +131,27 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames
-        
-    ; set some of the metadata for the DFG/AFG instruments
-    mms_load_fix_metadata, tplotnames, prefix = 'mms' + probes
+
+    ; load the atttude data to do the coordinate transformation 
+    mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec']
+
+    ; DMPA coordinates to GSE, for each probe
+    for probe_idx = 0, n_elements(probes)-1 do begin
+        this_probe = 'mms'+strcompress(string(probes[probe_idx]), /rem)
+        ; make sure the attitude data has been loaded before doing the cotrans operation
+        if tnames(this_probe+'_defatt_spinras') ne '' && tnames(this_probe+'_defatt_spindec') ne '' $
+            && tnames(this_probe+'_'+instrument+'_srvy_dmpa') ne '' then begin
+            dmpa2gse, this_probe+'_'+instrument+'_srvy_dmpa', this_probe+'_defatt_spinras', $
+                this_probe+'_defatt_spindec', this_probe+'_'+instrument+'_srvy_gse'
+            append_array, tplotnames, this_probe+'_'+instrument+'_srvy_gse'
+            
+            ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
+            mms_split_fgm_data, this_probe+'_'+instrument+'_srvy_dmpa', tplotnames = tplotnames
+            mms_split_fgm_data, this_probe+'_'+instrument+'_srvy_gse', tplotnames = tplotnames
+        endif
+    endfor
     
+    ; set some of the metadata for the DFG/AFG instruments
+    mms_load_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument
+
 end

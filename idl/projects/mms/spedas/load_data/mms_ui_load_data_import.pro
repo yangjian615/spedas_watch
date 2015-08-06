@@ -11,9 +11,9 @@
 ;  
 ;HISTORY:
 ;
-;;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-08-03 15:10:24 -0700 (Mon, 03 Aug 2015) $
-;$LastChangedRevision: 18370 $
+;;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-04 13:58:17 -0700 (Tue, 04 Aug 2015) $
+;$LastChangedRevision: 18390 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -54,6 +54,8 @@ pro mms_ui_load_data_import,$
   if instrument eq 'STATE' then begin
      type=loadStruc.type
      mms_load_state, probes=probes, level=level, datatypes=type, trange=timeRange
+  endif else if instrument eq 'AFG' or instrument eq 'DFG' then begin
+     mms_load_fgm, probes=probes, level=level, trange=timeRange, instrument=instrument
   endif else begin
      mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument
   endelse

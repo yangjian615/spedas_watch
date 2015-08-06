@@ -46,8 +46,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-07 13:22:30 -0700 (Sun, 07 Jun 2015) $
-; $LastChangedRevision: 17819 $
+; $LastChangedDate: 2015-08-04 11:15:53 -0700 (Tue, 04 Aug 2015) $
+; $LastChangedRevision: 18377 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_kp.pro $
 ;
 ;-
@@ -311,15 +311,16 @@ pro mvn_swe_kp, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
 
   path = kp_path + '/' + yyyy
   finfo = file_info(path)
-  if (not finfo.exists) then file_mkdir2, path, mode = '0774'o
+  if (not finfo.exists) then file_mkdir2, path, mode = '0775'o
 
   path = path + '/' + mm
   finfo = file_info(path)
-  if (not finfo.exists) then file_mkdir2, path, mode = '0774'o
+  if (not finfo.exists) then file_mkdir2, path, mode = '0775'o
 
   fname = path + '/' + froot + yyyy + mm + dd
 
   tplot_save, pans, file=fname
+  file_chmod, fname + '.tplot', mode='0664'o
 
   return
 
