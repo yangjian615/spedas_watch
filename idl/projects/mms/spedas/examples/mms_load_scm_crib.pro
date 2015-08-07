@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-07-31 15:51:21 -0700 (Fri, 31 Jul 2015) $
-; $LastChangedRevision: 18338 $
+; $LastChangedDate: 2015-08-05 13:44:35 -0700 (Wed, 05 Aug 2015) $
+; $LastChangedRevision: 18404 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_scm_crib.pro $
 ;-
 
@@ -23,5 +23,11 @@ stop
 
 ; zoom into a time of 3:36-3:42 UT
 tlimit, ['2015-06-15/3:36', '2015-06-15/3:42']
+stop
 
+; calculate the dynamic power spectra
+tdpwrspc, 'mms1_scm_sc128_gse', nboxpoints=512
+window, 1
+tplot, 'mms1_scm_sc128_gse_?_*', window=1
+stop
 end

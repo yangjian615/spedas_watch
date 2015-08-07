@@ -173,6 +173,7 @@ for w=a,b do begin
 
 ;create tplot variables of components
   num_elements = n_elements(stations)
+  if(is_array(stations) lt 1) then num_elements=0
   h_axis_range = dblarr(2)
   d_axis_range = dblarr(2)
   z_axis_range = dblarr(2)

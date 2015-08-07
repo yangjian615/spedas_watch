@@ -23,6 +23,7 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   options,'mms_soca_fomstr','ytitle','FOM'
   options,'mms_soca_fomstr','ysubtitle','(ABS)'
   options,'mms_soca_fomstr','unix_FOMStr_org',unix_FOMStr
+  options,'mms_soca_fomstr','psym',0
 
   ;------------------------
   ; 'mms_soca_mdq'
@@ -55,37 +56,31 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   ;=============
   ; BACK STRUCT
   ;=============
-  ; 'mms_soca_backstr' (burst segment status)
-  ; latest SITL target time is stored in "tfom"
-;  EPS = 0.001d
-;  if tspan[0]+EPS lt tfom[0] then begin
+  mms_get_back_structure, tspan[0], tspan[1], BAKStr, pw_flag, pw_message; START,STOP are ULONG
 
-    mms_get_back_structure, tspan[0], tspan[1], BAKStr, pw_flag, pw_message; START,STOP are ULONG
+  if pw_flag then begin
+    ;rst=dialog_message(pw_message,/info,/center)
+  endif else begin
 
-    if pw_flag then begin
-      ;rst=dialog_message(pw_message,/info,/center)
-    endif else begin
-
-      unix_BAKStr_org = BAKStr
-      str_element,/add,unix_BAKStr_org,'START', mms_tai2unix(BAKStr.START); START,STOP are LONG
-      str_element,/add,unix_BAKStr_org,'STOP',  mms_tai2unix(BAKStr.STOP)
-      D = eva_sitl_strct_read(unix_BAKStr_org,tspan[0])
-      store_data,'mms_soca_bakstr',data=D
-      options,'mms_soca_bakstr','ytitle','BAK'
-      options,'mms_soca_bakstr','ysubtitle','(SOC)'
-      options,'mms_soca_bakstr','colors',85; 179
-      options,'mms_soca_bakstr','unix_BAKStr_org',unix_BAKStr_org
-      dgrand = [dgrand,'mms_soca_bakstr']
-      
-      idx = where(strmatch(unix_BAKStr_org.STATUS,"*trimmed*"),ct_trimmed)
-      idx = where(strmatch(unix_BAKStr_org.STATUS,"*subsumed*"),ct_subsumed)
-      if (ct_trimmed+ct_subsumed gt 0) then begin
-        msg = ['Overlapped (TRIMMED or SUBSUMED) segments detected.','']
-        msg = [msg,'Please notify super-SITL.']
-        result = dialog_message(msg,/center)
-      endif
-    endelse
-;  endif
+    unix_BAKStr_org = BAKStr
+    str_element,/add,unix_BAKStr_org,'START', mms_tai2unix(BAKStr.START); START,STOP are LONG
+    str_element,/add,unix_BAKStr_org,'STOP',  mms_tai2unix(BAKStr.STOP)
+    D = eva_sitl_strct_read(unix_BAKStr_org,tspan[0])
+    store_data,'mms_soca_bakstr',data=D
+    options,'mms_soca_bakstr','ytitle','BAK'
+    options,'mms_soca_bakstr','ysubtitle','(SOC)'
+    options,'mms_soca_bakstr','colors',85; 179
+    options,'mms_soca_bakstr','unix_BAKStr_org',unix_BAKStr_org
+    dgrand = [dgrand,'mms_soca_bakstr']
+    
+    idx = where(strmatch(unix_BAKStr_org.STATUS,"*trimmed*"),ct_trimmed)
+    idx = where(strmatch(unix_BAKStr_org.STATUS,"*subsumed*"),ct_subsumed)
+    if (ct_trimmed+ct_subsumed gt 0) then begin
+      msg = ['Overlapped (TRIMMED or SUBSUMED) segments detected.','']
+      msg = [msg,'Please notify super-SITL.']
+      result = dialog_message(msg,/center)
+    endif
+  endelse
   
   ;--------------------------
   ; 'mms_soca_zero' (update)
@@ -93,9 +88,5 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   dgrand = [dgrand,'mms_soca_zero']
   store_data, 'mms_soca_fom',data=dgrand
   options,    'mms_soca_fom','ytitle', 'FOM'
-;  if keyword_set(mdq) then begin
-;    ; ABSstr
-;    ;unix_ABSstr = eva_data_load_soca_getabs(str_tspan)
-;  endif
 
 END

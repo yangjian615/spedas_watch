@@ -110,13 +110,19 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; HPCA
         ;-----------
+        
+        
         level = 'sitl'
         if (strmatch(paramlist[i],'*_hpca_*rf_corrected')) then begin
+          sh='H!U+!N'
+          sa='He!U++!N'
+          sp='He!U+!N'
+          so='O!U+!N'
           mms_sitl_get_hpca_basic, sc_id=sc, level=level
-          set_options, sc+'_hpca_hplus_RF_corrected', ytitle='H+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
-          set_options, sc+'_hpca_heplusplus_RF_corrected', ytitle='He++ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
-          set_options, sc+'_hpca_heplus_RF_corrected', ytitle='He+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
-          set_options, sc+'_hpca_oplus_RF_corrected', ytitle='O+ (eV)',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
+          set_options, sc+'_hpca_hplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sh,ysubtitle='[eV]',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
+          set_options, sc+'_hpca_heplusplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sa,ysubtitle='[eV]',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
+          set_options, sc+'_hpca_heplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sp,ysubtitle='[eV]',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
+          set_options, sc+'_hpca_oplus_RF_corrected', ytitle=sc+'!CHPCA!C'+so,ysubtitle='[eV]',ztitle='eflux',yrange=[1,40000],zrange=[0.1,2000],/spec,/ylog,/zlog
           answer = 'Yes'
         endif
         

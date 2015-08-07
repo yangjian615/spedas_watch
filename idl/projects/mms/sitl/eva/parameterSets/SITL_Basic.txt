@@ -12,8 +12,9 @@ mms*_fpi_iBulkV_DSC
 ;mms*_epd_feeps_TOP_counts_per_accumulation_sensorID_4
 ;mms*_epd_feeps_BOTTOM_quality_sensorID_12
 
-mms*_hpca_hplus_number_density
-mms*_hpca_oplus_number_density
+mms*_hpca_hplus_RF_corrected
+mms*_hpca_heplusplus_RF_corrected
+mms*_hpca_oplus_RF_corrected
 
 mms*_edp_fast_dce_sensor
 
