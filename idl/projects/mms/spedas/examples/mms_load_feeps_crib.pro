@@ -5,32 +5,26 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-07-31 13:05:26 -0700 (Fri, 31 Jul 2015) $
-; $LastChangedRevision: 18329 $
+; $LastChangedDate: 2015-08-07 11:50:34 -0700 (Fri, 07 Aug 2015) $
+; $LastChangedRevision: 18424 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_feeps_crib.pro $
 ;-
 
-mms_load_feeps, probes='1', trange=['2015-07-22', '2015-07-23'], datatype='electron'
+mms_load_feeps, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='electron'
 
-top_cpa = ['mms1_epd_feeps_TOP_counts_per_accumulation_sensorID_3', $
-  'mms1_epd_feeps_TOP_counts_per_accumulation_sensorID_4', $
-  'mms1_epd_feeps_TOP_counts_per_accumulation_sensorID_5', $
-  'mms1_epd_feeps_TOP_counts_per_accumulation_sensorID_11', $
-  'mms1_epd_feeps_TOP_counts_per_accumulation_sensorID_12']
+top_intensity = 'mms1_epd_feeps_TOP_intensity_sensorID_*'
 
-bottom_cpa = ['mms1_epd_feeps_BOTTOM_counts_per_accumulation_sensorID_3', $
-  'mms1_epd_feeps_BOTTOM_counts_per_accumulation_sensorID_4', $
-  'mms1_epd_feeps_BOTTOM_counts_per_accumulation_sensorID_5', $
-  'mms1_epd_feeps_BOTTOM_counts_per_accumulation_sensorID_11', $
-  'mms1_epd_feeps_BOTTOM_counts_per_accumulation_sensorID_12']
+bottom_intensity = 'mms1_epd_feeps_BOTTOM_intensity_sensorID_*'
   
-options, top_cpa, spec=1, zlog=1, yrange=[1, 10]
-options, bottom_cpa, spec=1, zlog=1, yrange=[1, 10]
+options, top_intensity, spec=1, zlog=1
+options, bottom_intensity, spec=1, zlog=1
+tplot_options, 'xmargin', [20, 15]
 
-tplot, top_cpa, title='Top sensors'
+window, 0, ysize=650
+tplot, top_intensity
 
-window, 1
-tplot, bottom_cpa, window=1, title='Bottom sensors'
+window, 1, ysize=650
+tplot, bottom_intensity, window=1
 stop
 
 ; the pitch angles for each sensor; the following splits 
@@ -41,7 +35,7 @@ options, 'mms1_epd_feeps__pitchAngle_?', 'ysubtitle', '[deg]'
 
 window, 2, ysize=650
 ; plot the pitch angles for each sensor
-tplot, 'mms1_epd_feeps__pitchAngle_?', title='FEEPS pitch angles', window=2
+tplot, 'mms1_epd_feeps__pitchAngle_?', window=2
 stop
 
 end

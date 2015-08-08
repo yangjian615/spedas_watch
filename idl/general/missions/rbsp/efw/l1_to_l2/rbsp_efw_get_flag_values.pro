@@ -10,8 +10,8 @@
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2015-06-25 12:46:41 -0700 (Thu, 25 Jun 2015) $
-;   $LastChangedRevision: 17974 $
+;   $LastChangedDate: 2015-08-06 14:34:15 -0700 (Thu, 06 Aug 2015) $
+;   $LastChangedRevision: 18415 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
@@ -220,14 +220,14 @@ function rbsp_efw_get_flag_values,sc,times
 ;Umbra
   if is_struct(eu) then begin
      for bb=0,n_elements(eu.x)-1 do begin
-        goo = where((vsvy.x ge (eu.x[bb]-padec)) and (vsvy.x le (eu.x[bb]+eu.y[bb]+padec)))
+        goo = where((times ge (eu.x[bb]-padec)) and (times le (eu.x[bb]+eu.y[bb]+padec)))
         if goo[0] ne -1 then flag_arr[goo,1] = 1
      endfor
   endif
 ;Penumbra
   if is_struct(ep) then begin
      for bb=0,n_elements(ep.x)-1 do begin
-        goo = where((vsvy.x ge (ep.x[bb]-padec)) and (vsvy.x le (ep.x[bb]+ep.y[bb]+padec)))
+        goo = where((times ge (ep.x[bb]-padec)) and (times le (ep.x[bb]+ep.y[bb]+padec)))
         if goo[0] ne -1 then flag_arr[goo,1] = 1
      endfor
   endif

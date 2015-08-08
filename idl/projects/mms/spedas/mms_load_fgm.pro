@@ -22,8 +22,8 @@
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-04 15:49:48 -0700 (Tue, 04 Aug 2015) $
-;$LastChangedRevision: 18396 $
+;$LastChangedDate: 2015-08-07 11:52:50 -0700 (Fri, 07 Aug 2015) $
+;$LastChangedRevision: 18425 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -122,7 +122,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes)) ; force the array to be an array of strings
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
-    if undefined(trange) then trange = ['2015-06-22/18:00', '2015-06-23']
+    if undefined(trange) then trange = timerange() else trange = timerange(trange)
     
     if undefined(level) then level = 'ql' ; default to quick look
     if undefined(instrument) then instrument = 'dfg'

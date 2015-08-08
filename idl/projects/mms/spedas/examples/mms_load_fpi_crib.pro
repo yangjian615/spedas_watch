@@ -5,12 +5,12 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-07-31 13:05:26 -0700 (Fri, 31 Jul 2015) $
-; $LastChangedRevision: 18329 $
+; $LastChangedDate: 2015-08-07 13:09:15 -0700 (Fri, 07 Aug 2015) $
+; $LastChangedRevision: 18432 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fpi_crib.pro $
 ;-
 
-mms_load_fpi, probes='3', trange=['2015-06-22', '2015-06-23']
+mms_load_fpi, probes='1', trange=['2015-07-31', '2015-08-01']
 
 ; NOTE: though we loaded the data file for MMS3, the CDFs seem
 ; to be mislabeled as MMS1 - leading to tplot variable names that

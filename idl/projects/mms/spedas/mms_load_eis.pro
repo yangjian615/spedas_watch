@@ -20,8 +20,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-04 12:27:33 -0700 (Tue, 04 Aug 2015) $
-;$LastChangedRevision: 18384 $
+;$LastChangedDate: 2015-08-07 15:12:20 -0700 (Fri, 07 Aug 2015) $
+;$LastChangedRevision: 18437 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_eis.pro $
 ;-
 
@@ -40,18 +40,20 @@ pro mms_eis_cps_omni, probe, species = species
     if species eq 'ion' then species_str = 'partenergy_nonparticle'
 
     get_data, 'mms'+probe+'_epd_eis_'+species_str+'_cps_t0', data = d, dlimits=dl
-    counts_omni = dblarr(n_elements(d.x),n_elements(d.v))
-    for i=0, 5 do begin ; loop through each detector
-        get_data, 'mms'+probe+'_epd_eis_'+species_str+'_cps_t'+STRTRIM(i, 1), data = d
-        for t=0l, n_elements(d.x)-1 do begin ; loop through each time step
-            for v=0l, n_elements(d.v)-1 do begin ; loop on each energy channel
-                counts_omni[t,v] = counts_omni[t,v] + d.y[t,v]
+    if is_struct(d) then begin
+        counts_omni = dblarr(n_elements(d.x),n_elements(d.v))
+        for i=0, 5 do begin ; loop through each detector
+            get_data, 'mms'+probe+'_epd_eis_'+species_str+'_cps_t'+STRTRIM(i, 1), data = d
+            for t=0l, n_elements(d.x)-1 do begin ; loop through each time step
+                for v=0l, n_elements(d.v)-1 do begin ; loop on each energy channel
+                    counts_omni[t,v] = counts_omni[t,v] + d.y[t,v]
+                endfor
             endfor
         endfor
-    endfor
-    store_data, 'mms'+probe+'_epd_eis_'+species_str+'_cps_omni', data={x:d.x, y:counts_omni/6., v:d.v}, dlimits=dl
-    options, 'mms'+probe+'_epd_eis_'+species_str+'_cps_omni', ylog = 1, spec = 1, yrange = [30,3e3],$
-      zlog = 1, ytitle = 'MMS'+probe+' EIS '+species+' OMNI', ysubtitle='Energy [keV]', ztitle='Counts/s', /default
+        store_data, 'mms'+probe+'_epd_eis_'+species_str+'_cps_omni', data={x:d.x, y:counts_omni/6., v:d.v}, dlimits=dl
+        options, 'mms'+probe+'_epd_eis_'+species_str+'_cps_omni', ylog = 1, spec = 1, yrange = [30,3e3],$
+          zlog = 1, ytitle = 'MMS'+probe+' EIS '+species+' OMNI', ysubtitle='Energy [keV]', ztitle='Counts/s', /default
+    endif
 end
 
 ; PURPOSE:
@@ -65,26 +67,27 @@ pro mms_eis_flux_omni, probe, species = species
     if species eq 'ion' then species_str = 'partenergy_nonparticle'
 
     get_data, 'mms'+probe+'_epd_eis_'+species_str+'_flux_t0', data = d, dlimits=dl
-    flux_omni = dblarr(n_elements(d.x),n_elements(d.v))
-    for i=0, 5 do begin ; loop through each detector
-        get_data, 'mms'+probe+'_epd_eis_'+species_str+'_flux_t'+STRTRIM(i, 1), data = d
-        for t=0l, n_elements(d.x)-1 do begin ; loop through each time step
-            for v=0l, n_elements(d.v)-1 do begin ; loop on each energy channel
-                flux_omni[t,v] = flux_omni[t,v] + d.y[t,v]
+    if is_struct(d) then begin
+        flux_omni = dblarr(n_elements(d.x),n_elements(d.v))
+        for i=0, 5 do begin ; loop through each detector
+            get_data, 'mms'+probe+'_epd_eis_'+species_str+'_flux_t'+STRTRIM(i, 1), data = d
+            for t=0l, n_elements(d.x)-1 do begin ; loop through each time step
+                for v=0l, n_elements(d.v)-1 do begin ; loop on each energy channel
+                    flux_omni[t,v] = flux_omni[t,v] + d.y[t,v]
+                endfor
             endfor
         endfor
-    endfor
-    store_data, 'mms'+probe+'_epd_eis_'+species_str+'_flux_omni', data={x:d.x, y:flux_omni/6., v:d.v}, dlimits=dl
-    options, 'mms'+probe+'_epd_eis_'+species_str+'_flux_omni', ylog = 1, spec = 1, yrange = [30,3e3],$
-        zlog = 1, ytitle = 'MMS'+probe+' EIS '+species+' OMNI', ysubtitle='Energy [keV]', ztitle='#/(s-sr-cm^2-keV)', /default
+        store_data, 'mms'+probe+'_epd_eis_'+species_str+'_flux_omni', data={x:d.x, y:flux_omni/6., v:d.v}, dlimits=dl
+        options, 'mms'+probe+'_epd_eis_'+species_str+'_flux_omni', ylog = 1, spec = 1, yrange = [30,3e3],$
+            zlog = 1, ytitle = 'MMS'+probe+' EIS '+species+' OMNI', ysubtitle='Energy [keV]', ztitle='#/(s-sr-cm^2-keV)', /default
+    endif
 end
 
 pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data
-    ;if undefined(trange) then trange = ['2015-06-28', '2015-06-29'] ; for electrons
-    if undefined(trange) then trange = ['2015-07-08', '2015-07-09'] ; for ions
+    if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'partenergy' 
     ;if undefined(datatype) then datatype = 'electronenergy' 
@@ -101,7 +104,4 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
         mms_eis_cps_omni, probes[probe_idx], species=species
         mms_eis_flux_omni, probes[probe_idx], species=species
     endfor
-    
-    ; calculate the pitch angle distribution
-    for probe_idx = 0, n_elements(probes)-1 do mms_eis_pad, probe = probes[probe_idx], trange=trange, species = species
 end

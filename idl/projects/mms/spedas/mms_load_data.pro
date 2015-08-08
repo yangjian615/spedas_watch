@@ -16,8 +16,8 @@
 ;         attitude_data: load L-right ascension and L-declination attitude data
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;             with "username" and "password" tags with your API login information
-;         varformat: format of the variable names in the CDF to load; especially useful to avoid
-;             memory issues while loading HPCA data
+;         varformat: format of the variable names in the CDF to load; not currently used for HPCA ion data
+;         
 ; 
 ; OUTPUT:
 ; 
@@ -59,9 +59,9 @@
 ;      8) When looking for data availability, look for the CDFs at:
 ;               https://lasp.colorado.edu/mms/sdc/about/browse/
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-04 15:32:15 -0700 (Tue, 04 Aug 2015) $
-;$LastChangedRevision: 18395 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-07 13:13:09 -0700 (Fri, 07 Aug 2015) $
+;$LastChangedRevision: 18434 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -86,12 +86,23 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
       then tr = timerange(trange) $
       else tr = timerange()
 
+    ; check the local internet connection by connecting to Google's homepage; this
+    ; is so we don't prompt the user for a password if they're sitting in 
+    ; the airport without an internet connection...
+    dummy_obj = obj_new('IDLnetURL', url_host='google.com', url_port=80)
+    dummy_lasp_home = dummy_obj->get()
+    dummy_obj->GetProperty, RESPONSE_CODE=lasp_code
+    obj_destroy, dummy_obj
+
     ;combine these flags for now, if we're not downloading files then there is
     ;no reason to contact the server unless mms_get_local_files is unreliable
-    no_download = !mms.no_download or !mms.no_server
+    no_download = !mms.no_download or !mms.no_server or (lasp_code ne 200)
 
-    status = mms_login_lasp(login_info = login_info)
-    if status ne 1 then return
+    ; only prompt the user if they're going to download data
+    if no_download eq 0 then begin
+        status = mms_login_lasp(login_info = login_info)
+        if status ne 1 then return
+    endif
     
     for probe_idx = 0, n_elements(probes)-1 do begin
         probe = 'mms' + strcompress(string(probes[probe_idx]), /rem)
@@ -156,9 +167,12 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             
             ;if no remote list was retrieved then search locally   
             endif else begin
+                dprint, dlevel = 2, 'No remote files found for: '+ $
+                        probe+' '+instrument+' '+data_rate+' '+level+' '+datatype
+                
                 local_files = mms_get_local_files(probe=probe, instrument=instrument, $
                         data_rate=data_rate, level=level, datatype=datatype, trange=tr)
-                        
+                
                 if is_string(local_files) then begin
                     append_array, files, local_files
                 endif else begin
@@ -174,13 +188,20 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             files = files[bsort(files)]
         endfor
 
-        if ~undefined(files) then cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, /all
+        if ~undefined(files) then begin
+            ; kludge for HPCA ion data to avoid reinventing wheels
+            if instrument eq 'hpca' and datatype eq 'ion' then begin
+                mms_sitl_open_hpca_basic_cdf_jburch_skv_egrimes, files, measurement_id = [5, 5, 5], $
+                    sc_id = probe, fov=[0, 180], species=[1, 3, 4], tplotnames = loaded_tnames
+            endif else cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, /all
+        endif
         if ~undefined(loaded_tnames) then append_array, tplotnames, loaded_tnames
         
         ; forget about the daily files for this probe
         undefine, files
         undefine, loaded_tnames
     endfor
+
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin
         if (n_elements(tr) eq 2) and (tplotnames[0] ne '') then begin

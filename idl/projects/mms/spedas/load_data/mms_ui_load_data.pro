@@ -1,22 +1,139 @@
-;+ 
-;NAME:
-;      mms_ui_load_data
+
+;+
+;Purpose:
+;  Dynamically populate rate, level, and datatypes widgets
+;  for science instruments.
 ;
-;PURPOSE:
-;      This is the start of a SPEDAS Load Data plugin for the MMS mission
+;Usage:
+;  Called by mms_ui_load_data_update_widgets
 ;
-; NOTES:
-;      Need to add multiple select capabilities to probes and types
-;      mms_load_state can handle '*' for probes levels and types
-;      mms_load_data may not yet have this implemented
-;      
-;HISTORY:
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-08-03 15:10:24 -0700 (Mon, 03 Aug 2015) $
-;$LastChangedRevision: 18370 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data.pro $
+;-
+pro mms_ui_load_data_update_science, state, $
+                                     rate=get_rate, $
+                                     level=get_level
+
+    compile_opt idl2, hidden
+
+  ;get widget ids
+  instrument_id = widget_info(state.baseid, find_by_uname='instrument')
+  rate_id = widget_info(state.baseid, find_by_uname='ratelist')
+  level_id = widget_info(state.baseid, find_by_uname='levellist')
+  datatype_id = widget_info(state.baseid, find_by_uname='datatypelist')
+  
+  ;prepare inputs
+  instrument = widget_info(instrument_id, /combobox_gettext)
+  
+  rate_idx = widget_info(rate_id, /list_select)
+  if ~keyword_set(get_rate) && rate_idx ne -1 then begin
+    widget_control, rate_id, get_uvalue=current_rates
+    rate = current_rates[rate_idx]
+  endif
+  
+  level_idx = widget_info(level_id, /list_select)
+  if ~keyword_set(get_level) && level_idx ne -1 then begin
+    widget_control, level_id, get_uvalue=current_levels
+    level = current_levels[level_idx]
+  endif
+  
+  ;retrieve valid types based on selections
+  mms_load_options, instrument, rate=rate, level=level, datatype=datatype, valid=valid
+  
+  ;just in case
+  if ~valid then begin
+    spd_ui_message, 'WARNING: Invalid input selected, please report to SPEDAS development team', $
+                    sb=state.statusbar, hw=state.historywin
+    return
+  endif
+  
+  ;update rate/level fields as needed/requested
+  if keyword_set(get_rate) || rate_idx eq -1 then begin
+    widget_control, rate_id, set_value=rate, set_uvalue=rate
+  endif
+  
+  if keyword_set(get_rate) || level_idx eq -1 then begin
+    widget_control, level_id, set_value=level, set_uvalue=level
+  endif
+  
+  ;always update datatype
+  ;TODO: remove placeholder check once datatypes are implemented
+  if array_equal(datatype,'placeholder') then begin
+    widget_control, datatype_id, set_value='', set_uvalue=''
+  endif else begin
+    widget_control, datatype_id, set_value=datatype, set_uvalue=datatype
+  endelse
+
+end
+
+
+;+
+;Purpose:
+;  Update rate, level, and datatype widgets when state is selected. 
 ;
-;--------------------------------------------------------------------------------
+;Usage:
+;  Called by mms_ui_load_data_update_widgets
+;-
+pro mms_ui_load_data_update_state, state
+
+    compile_opt idl2, hidden
+
+  rateArray=state.stateRateArray
+  levelArray=state.stateLevelArray
+  datatypeArray=state.stateDatatypeArray
+
+  rateList = widget_info(state.baseid, find_by_uname='ratelist')
+  levelList = widget_info(state.baseid, find_by_uname='levellist')
+  datatypelist = widget_info(state.baseid, find_by_uname='datatypelist') 
+
+  widget_control, rateList, set_value=rateArray, set_uvalue=rateArray
+  widget_control, levelList, set_value=levelArray, set_uvalue=levelArray
+  widget_control, datatypelist, set_value=datatypeArray, set_uvalue=datatypeArray
+
+end
+
+
+;+
+;Purpose:
+;  Dynamically update rate, level, and datatype widgets as needed 
+;  based on instrument and any rate and level selections.  
+;
+;Calling Sequence:
+;  mms_ui_load_data_update_widgets, state, [,/rate] [,/level] [,/set_state]
+;
+;Usage:
+;  This should be called any time the instrument, rate, or level
+;  widgets are updated.
+;
+;  Widgets with valid selections will be queried for input and 
+;  those without will be populated. Datatype will always be
+;  populated.
+;
+;  Widget with valid selections can be forced to repopulate via 
+;  the corresponding keyword.
+;
+;Notes:
+;  Science instruments are populated dynamically, state is static
+;  and has its own special case.
+;
+;-
+pro mms_ui_load_data_update_widgets, state, rate=rate, level=level, set_state=set_state
+
+    compile_opt idl2, hidden
+
+  if state.currentInstrument ne 'STATE' then begin
+    mms_ui_load_data_update_science, state, rate=rate, level=level    
+  endif else if keyword_set(set_state) then begin
+    mms_ui_load_data_update_state, state
+  endif
+
+end
+
+
+
+;+
+;Purpose:
+;  Widget event handler for mms_ui_load_data.
+;
+;-
 pro mms_ui_load_data_event,event
   compile_opt hidden,idl2
 
@@ -53,42 +170,48 @@ pro mms_ui_load_data_event,event
   ;retrieve the state variable 
   widget_control, event.handler, Get_UValue=state, /no_copy
   
-  ;retrieve event information and the uvalue (or widget name)
-  ;note, not all widgets are assigned uvalues
-  widget_control, event.id, get_uvalue = uval
+  ;retrieve event information and the uname (or widget name)
+  ;note, not all widgets are assigned unames
+  uname = widget_info(event.id, /uname)
 
-  if is_string(uval) then begin
-    case uval of
+  if is_string(uname) then begin
+    case strupcase(uname) of
       'INSTRUMENT': begin
-        ;retrieve the instrument type that was selected by the user and 
-        ;update state
-        instrList = widget_info(event.handler,find_by_uname='instrument')
-        instrSel = widget_info(instrList, /combobox_gettext) 
-        if instrSel NE state.currentInstrument then begin
-           if instrSel NE 'STATE' then levelArray=state.sciLevelArray else levelArray=state.stateLevelArray
-           if instrSel NE 'STATE' then typeArray=state.sciTypeArray else typeArray=state.stateTypeArray
-           levelList = widget_info(event.handler,find_by_uname='levellist')
-           typeList = widget_info(event.handler,find_by_uname='typelist')
-           widget_control, levelList, set_value=levelArray
-           widget_control, typeList, set_value=typeArray
-           state.currentInstrument = instrSel
+        ;retrieve the instrument type 
+        instrList = widget_info(state.baseid,find_by_uname='instrument')
+        instrument = widget_info(instrList, /combobox_gettext)
+        if instrument NE state.currentInstrument then begin
+          state.currentInstrument = instrument
+          mms_ui_load_data_update_widgets, state, /rate, /level, /set_state
         endif
-        ;widget_control,instrList,set_list_select=instrSel
-      end    
+      end
+      'RATELIST': begin
+        mms_ui_load_data_update_widgets, state, /level
+      end
+      'LEVELLIST': begin
+        mms_ui_load_data_update_widgets, state
+      end
       'CLEARPROBE': begin
         ;clear the proble list widget of any selections
         probeList = widget_info(event.handler,find_by_uname='probelist')
         widget_control,probeList,set_list_select=-1
       end
+      'CLEARRATE': begin
+        ;clear the data level list widget of all selections
+        rateList = widget_info(event.handler,find_by_uname='ratelist')
+        widget_control,rateList,set_list_select=-1
+        mms_ui_load_data_update_widgets, state, /rate, /level
+      end
       'CLEARLEVEL': begin
-        ;clear the data type list widget of all selections
+        ;clear the data level list widget of all selections
         levelList = widget_info(event.handler,find_by_uname='levellist')
         widget_control,levelList,set_list_select=-1
+        mms_ui_load_data_update_widgets, state, /level
       end
-      'CLEARTYPE': begin
-        ;clear the data type list widget of all selections
-        typeList = widget_info(event.handler,find_by_uname='typeList')
-        widget_control,typeList,set_list_select=-1
+      'CLEARDATATYPE': begin
+        ;clear the data level list widget of all selections
+        levelList = widget_info(event.handler,find_by_uname='datatypelist')
+        widget_control,levelList,set_list_select=-1
       end
       'CLEARDATA': begin
         ;clear the actual data that has been loaded. this will delete all 
@@ -158,35 +281,52 @@ pro mms_ui_load_data_event,event
           break
         endif
 
-        ;retrieve the data level that were selected by the user
-        levellist = widget_info(event.handler,find_by_uname='levellist')
-        levelSelect = widget_info(levellist,/list_select)
+        ;retrieve the data rate that were selected by the user
+        ratelist = widget_info(event.handler,find_by_uname='ratelist')
+        rateSelect = widget_info(ratelist,/list_select)
+        widget_control, ratelist, get_uvalue=currentRates 
         ;if no selections were made, report this to the user via the
         ;status bar and log the error to the history window
-        ; Currently there are no levels for science types so for now only check state data
-        if levelSelect[0] eq -1 && state.currentInstrument eq 'STATE' then begin
-          state.statusBar->update,'You must select at least one level'
-          state.historyWin->update,'MMS add attempted without selecting level'
-          break
-        endif
-        if state.currentInstrument ne 'STATE' then levels = state.sciLevelArray[levelSelect] $
-           else levels = state.stateLevelArray[levelSelect] 
+        ; Currently there are no rates for science types so for now only check state data
+        if instrument eq 'STATE' then begin
+          rates = '' ;placeholder, not used
+        endif else begin
+          if rateSelect[0] eq -1 then begin
+            state.statusBar->update,'You must select at least one rate'
+            state.historyWin->update,'MMS add attempted without selecting rate'
+            break
+          endif
+          rates = currentRates[rateSelect]
+        endelse 
 
-        ;retrieve the levels that were selected by the user
-        ;if state.currentInstrumemt eq 'STATE' then levels = state.statelevelArray[levelSelect]
-      
-        ;retrieve the data types that were selected by the user
-        typelist = widget_info(event.handler,find_by_uname='typelist')
-        typeSelect = widget_info(typelist,/list_select)        
+        ;retrieve the data levels that were selected by the user
+        levellist = widget_info(event.handler,find_by_uname='levellist')
+        levelSelect = widget_info(levellist,/list_select)
+        widget_control, levellist, get_uvalue=currentLevels
         ;if no selections were made, report this to the user via the 
         ;status bar and log the error to the history window
-        if typeSelect[0] eq -1 then begin
-          state.statusBar->update,'You must select at least one data type'
-          state.historyWin->update,'MMS add attempted without selecting data type'
+        if levelSelect[0] eq -1 then begin
+          state.statusBar->update,'You must select at least one data level'
+          state.historyWin->update,'MMS add attempted without selecting data level'
           break
         endif
-        if state.currentInstrument ne 'STATE' then types = state.sciTypeArray[typeSelect] $
-           else types = state.stateTypeArray[typeSelect]
+        levels = currentLevels[levelSelect]
+        
+        ;retrieve datatype
+        datatypelist = widget_info(event.handler,find_by_uname='datatypelist')
+        datatypeSelect = widget_info(datatypelist,/list_select)
+        widget_control, datatypelist, get_uvalue=currentDatatypes
+        ;TODO: remove this check and else block once datatypes are all implemented
+        if ~array_equal(currentDatatypes,'') then begin
+          if datatypeSelect[0] eq -1 then begin
+            state.statusBar->update,'You must select at least one data type'
+            state.historyWin->update,'MMS add attempted without selecting data type'
+            break
+          endif
+          datatypes = currentDatatypes[datatypeSelect]
+        endif else begin
+          datatypes = ''
+        endelse
         
         ;get the start and stop times 
         timeRangeObj = state.timeRangeObj      
@@ -204,21 +344,14 @@ pro mms_ui_load_data_event,event
         ;turn on the hour glass while the data is being loaded
         widget_control, /hourglass
         
-        ;create a load structure to pass the parameters needed by the load
-        ;procedure
-        ; NOTE: Currently state data has both level and type but science
-        ; data does not. Eventually science data will probably have a level.
-        if instrument EQ 'STATE' then $
-           loadStruc = { probes:probes, $
-                         instrument:instrument, $
-                         level:levels, $
-                         type:types, $
-                         trange:[startTimeString, endTimeString] }  $
-        else loadStruc = { probes:probes, $
-                           instrument:instrument, $
-                           level:types, $
-                           trange:[startTimeString, endTimeString] }
-
+        ;create a load structure to pass the parameters needed by the load procedure
+        loadStruc =  { probes:probes, $
+                       instrument:instrument, $
+                       level:levels, $
+                       rate:rates, $
+                       datatype:datatypes, $
+                       trange:[startTimeString, endTimeString] }
+                       
         ;call the routine that loads the data and update the loaded data tree
         mms_ui_load_data_import, $
                          loadStruc,$
@@ -260,6 +393,26 @@ pro mms_ui_load_data_event,event
   
 end
 
+
+;+ 
+;NAME:
+;      mms_ui_load_data
+;
+;PURPOSE:
+;      This is the start of a SPEDAS Load Data plugin for the MMS mission
+;
+; NOTES:
+;      Need to add multiple select capabilities to probes and types
+;      mms_load_state can handle '*' for probes rates and types
+;      mms_load_data may not yet have this implemented
+;      
+;HISTORY:
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-08-07 16:33:49 -0700 (Fri, 07 Aug 2015) $
+;$LastChangedRevision: 18441 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data.pro $
+;
+;--------------------------------------------------------------------------------
 pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
   compile_opt idl2,hidden
   
@@ -287,10 +440,10 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   ;create the buttons to add or remove data to the gui. the bitmaps for 
   ;these buttons include a 'right arrow' for adding to the currently loaded 
   ;data, and a 'trashcan' for removing data from the data tree. 
-  addButton = Widget_Button(middleBase, Value=rightArrow, /Bitmap,  UValue='ADD', $
+  addButton = Widget_Button(middleBase, Value=rightArrow, /Bitmap, uname='add', $
               ToolTip='Load data selection')
   minusButton = Widget_Button(middleBase, Value=trashcan, /Bitmap, $
-                Uvalue='DEL', $
+                uname='del', $
                 ToolTip='Delete data selected in the list of loaded data')
   
   ;this creates and copies the loaded data tree for use within this routine
@@ -300,7 +453,8 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   
   ;create the buttons that removes all data
   clearDataBase = widget_base(rightBase,/row,/align_center)  
-  clearDataButton = widget_button(clearDataBase,value='Delete All Data',uvalue='CLEARDATA',/align_center,ToolTip='Deletes all loaded data')
+  clearDataButton = widget_button(clearDataBase,value='Delete All Data',$
+        uname='cleardata',/align_center,ToolTip='Deletes all loaded data')
   
   ;the ui time widget handles all widgets and events that are associated with the 
   ;time widget and includes Start/Stop Time labels, text boxes, calendar icons, and
@@ -309,28 +463,34 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
                                   statusBar,$
                                   historyWin,$
                                   timeRangeObj=timeRangeObj,$
-                                  uvalue='TIME_WIDGET',$
                                   uname='time_widget')
     
   probeArrayValues = ['1', '2', '3', '4']
   probeArrayDisplayed = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
-  instrumentArray = ['DFG', 'AFG', 'STATE']
-  sciLevelArray = ['']
-  sciTypeArray = ['ql', 'l1b']
-  stateLevelArray = ['def']
-  stateTypeArray = ['*','pos', 'vel', 'spinras', 'spindec']
+  instrumentArray = ['AFG', 'DFG','EIS', 'FEEPS', 'FPI', 'HPCA', 'SCM', 'STATE']
+  ;science fields now populated dynamically
+;  sciRateArray = ['srvy', 'slow', 'fast', 'brst']
+;  sciLevelArray = ['ql', 'l1a', 'l1b', 'l2', 'sitl']
+;  sciDataTypeArray = [''] ;not implemented
+  stateRateArray = [''] ;placeholder, no data rate for state
+  stateLevelArray = ['def', 'pred']
+  stateDataTypeArray = ['*','pos', 'vel', 'spinras', 'spindec']
 
-  ; default to science data 
-  currentLevelArray = sciLevelArray
-  currentTypeArray = sciTypeArray
+  ;default to science data 
   currentInstrument = instrumentArray[0]
+  mms_load_options, instrumentArray[0], $
+                    rate=currentRateArray, $
+                    level=currentLevelArray, $
+                    datatype=currentDatatypeArray
+
+  ;TODO: remove this one all datatypes are implemented
+  currentDatatypeArray = ''
   
   ;create the dropdown menu that lists the various instrument types for MMS
   instrumentBase = widget_base(selectionBase,/row) 
   instrumentLabel = widget_label(instrumentBase,value='Instrument Type: ')
   instrumentCombo = widget_combobox(instrumentBase,$
                                        value=instrumentArray,$
-                                       uvalue='INSTRUMENT',$
                                        uname='instrument')
                                   
   ;create the list box that lists all the probes that are associated with MMS
@@ -340,38 +500,56 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   probeList = widget_list(probeBase,$
                           value=probeArrayDisplayed,$
                         ;  /multiple,$
+                          uvalue=probeArrayValues, $
                           uname='probelist',$
-                          xsize=16,$
+                          xsize=12,$
                           ysize=15)
-  clearProbeButton = widget_button(probeBase,value='Clear Probe',uvalue='CLEARPROBE',ToolTip='Deselect all probes/stations')
+  clearProbeButton = widget_button(probeBase,value='Clear Probe', $
+       uname='clearprobe',ToolTip='Deselect all probes/stations')
                           
-  ;create the list box aand a clear all button for the data levels for a given 
+  ;create the list box aand a clear all button for the data rates for a given 
   ;instrument           
+  rateBase = widget_base(dataBase,/col)
+  rateLabel = widget_label(rateBase,value='Data Rate:')
+  rateList = widget_list(rateBase,$
+                         value=currentRateArray,$
+                       ;  /multiple,$
+                         uvalue=currentRateArray,$ ;can't use get_value on list
+                         uname='ratelist',$
+                         xsize=12,$
+                         ysize=15) 
+;  widget_control, rateList, set_list_select = 0                                               
+  clearRateButton = widget_button(rateBase,value='Clear Rate', $
+       uname='clearrate',ToolTip='Deselect all rates')
+
+  ;create the list box and a clear all button for the data levels for a given
+  ;instrument
   levelBase = widget_base(dataBase,/col)
   levelLabel = widget_label(levelBase,value='Level:')
   levelList = widget_list(levelBase,$
                          value=currentLevelArray,$
                        ;  /multiple,$
+                         uvalue=currentLevelArray,$ ;can't use get_value on list
                          uname='levellist',$
-                         xsize=16,$
+                         xsize=12,$
                          ysize=15)
-  ; default to all science data types 
-  widget_control, levelList, set_list_select = 0                                               
-  clearLevelButton = widget_button(levelBase,value='Clear Level',uvalue='CLEARLEVEL',ToolTip='Deselect all levels')
+  clearLevelButton = widget_button(levelBase,value='Clear Levels', $
+       uname='clearlevel', ToolTip='Deselect all data levels')
 
-  ;create the list box aand a clear all button for the data types for a given
-  ;instrument
-  typeBase = widget_base(dataBase,/col)
-  typeLabel = widget_label(typeBase,value='Type:')
-  typeList = widget_list(typeBase,$
-                         value=currentTypeArray,$
+  ;create the list box and a clear all button for datatype
+  datatypeBase = widget_base(dataBase,/col)
+  datatypeLabel = widget_label(datatypeBase,value='Data Type:')
+  datatypeList = widget_list(datatypeBase,$
+                         value=currentDatatypeArray,$
                        ;  /multiple,$
-                         uname='typelist',$
-                         xsize=16,$
+                         uvalue=currentDatatypeArray,$ ;can't use get_value on list
+                         uname='datatypelist',$
+                         xsize=12,$
                          ysize=15)
-  ; default to all science data types
-  widget_control, typeList, set_list_select = 0
-  clearLevelButton = widget_button(typeBase,value='Clear Types',uvalue='CLEARTYPE',ToolTip='Deselect all data types')
+;  widget_control, datatypeList, set_list_select = 0
+  clearButton = widget_button(datatypeBase,value='Clear Type', $
+       uname='cleardatatype', ToolTip='Deselect all datatypes')
+
 
   ;create the state variable with all the parameters that are needed by this 
   ;panels event handler routine                                                               
@@ -386,12 +564,15 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
            probeArray:probeArrayValues,$
            instrumentArray:instrumentArray,$
            currentInstrument:currentInstrument,$
-           sciLevelArray:sciLevelArray, $
-           sciTypeArray:sciTypeArray, $            
+;now stored as uvalue so array size can change
+;           sciRateArray:sciRateArray, $
+;           sciLevelArray:sciLevelArray, $
+;           sciDataTypeArray:sciDataTypeArray, $
+           stateRateArray:stateRateArray, $
            stateLevelArray:stateLevelArray, $
-           stateTypeArray:stateTypeArray, $
+           stateDataTypeArray:stateDataTypeArray, $
            currentLevelArray:currentLevelArray, $
-           currentTypeArray:currentTypeArray}
+           currentRateArray:currentRateArray}
   widget_control,topBase,set_uvalue=state
                                   
   return

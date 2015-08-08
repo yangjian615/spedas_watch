@@ -11,9 +11,9 @@
 ;  
 ;HISTORY:
 ;
-;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-04 13:58:17 -0700 (Tue, 04 Aug 2015) $
-;$LastChangedRevision: 18390 $
+;;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-08-07 16:33:49 -0700 (Fri, 07 Aug 2015) $
+;$LastChangedRevision: 18441 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -43,8 +43,13 @@ pro mms_ui_load_data_import,$
   probes=loadStruc.probes
   instrument=loadStruc.instrument
   timeRange=loadStruc.trange
+  rate=loadStruc.rate
   level=loadStruc.level
-    
+  datatype=loadStruc.datatype ;only used for state atm
+  
+  ;TODO: remove once datatypes implemented
+  if datatype eq '' then undefine, datatype
+
   ; need to update for MMS
   mmsmintime = '2015-03-01'
   mmsmaxtime = time_string(systime(/seconds), tformat='YYYY-MM-DD')  
@@ -52,16 +57,24 @@ pro mms_ui_load_data_import,$
   tn_before = [tnames('*',create_time=cn_before)]
 
   if instrument eq 'STATE' then begin
-     type=loadStruc.type
-     mms_load_state, probes=probes, level=level, datatypes=type, trange=timeRange
+     mms_load_state, probes=probes, level=level, datatypes=datatype, trange=timeRange
   endif else if instrument eq 'AFG' or instrument eq 'DFG' then begin
-     mms_load_fgm, probes=probes, level=level, trange=timeRange, instrument=instrument
+     mms_load_fgm, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate
+  endif else if instrument eq 'FPI' then begin
+     mms_load_fpi, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype
+  endif else if instrument eq 'SCM' then begin
+     mms_load_scm, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype
+  endif else if instrument eq 'FEEPS' then begin
+     mms_load_feeps, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype
+  endif else if instrument eq 'EIS' then begin
+     mms_load_eis, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype
+  endif else if instrument eq 'HPCA' then begin
+     mms_load_hpca, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype
   endif else begin
-     mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument
+     mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate
   endelse
-  
-  ; determine which tplot vars to delete and which ones are the new temporary 
-  ; vars
+
+  ; determine which tplot vars to delete and which ones are the new temporary vars
   spd_ui_cleanup_tplot, tn_before, create_time_before=cn_before, del_vars=to_delete,$
                         new_vars=new_vars
  
@@ -95,21 +108,21 @@ pro mms_ui_load_data_import,$
   endif
   
   ; inform the user that the load was successful and add it to the history   
-  if loaded eq 1 then begin  
+  if loaded eq 1 then begin   
      statusBar->update,'MMS Data Loaded Successfully'
      historyWin->update,'MMS Data Loaded Successfully'
   endif else begin
-  
      ; if the time range specified by the user is not within the time range 
      ; of available data for this mission and instrument then inform the user 
-     if time_double(mmsmaxtime) lt time_double(timerange[0]) || $
+     ; The min max times are only valid for definitive data
+     if level eq 'def' && time_double(mmsmaxtime) lt time_double(timerange[0]) || $
         time_double(mmsmintime) gt time_double(timerange[1]) then begin
-        statusBar->update,'No MMS Data Loaded, MMS data is only available between ' + mmsmintime + ' and ' + mmsmaxtime
-        historyWin->update,'No MMS Data Loaded, MMS data is only available between ' + mmsmintime + ' and ' + mmsmaxtime
-     endif else begin   
+        statusBar->update,'No MMS Data Loaded, MMS ' + instrument + ' data is only available between ' + mmsmintime + ' and ' + mmsmaxtime
+        historyWin->update,'No MMS Data Loaded, MMS ' + instrument + ' data is only available between ' + mmsmintime + ' and ' + mmsmaxtime
+     endif else begin
         statusBar->update,'No MMS Data Loaded'
         historyWin->update,'No MMS Data Loaded'
-     endelse
-    
+     endelse       
   endelse
+
 end

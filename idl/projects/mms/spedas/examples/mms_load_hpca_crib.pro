@@ -5,12 +5,18 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-07-31 16:30:05 -0700 (Fri, 31 Jul 2015) $
-; $LastChangedRevision: 18345 $
+; $LastChangedDate: 2015-08-07 13:08:04 -0700 (Fri, 07 Aug 2015) $
+; $LastChangedRevision: 18431 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib.pro $
 ;-
 
-mms_load_hpca, probes='1', trange=['2015-07-22', '2015-07-23'], datatype='moments'
+; set some reasonable margins
+tplot_options, 'xmargin', [20, 15]
+
+mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='moments'
+
+; there's a gap in the data in the morning of 7/31 ~(0530UT-1330UT)
+tdegap, tnames(), /overwrite
 
 ; show H+, O+ and He+ density
 tplot, ['mms1_hpca_hplus_number_density', $
@@ -33,19 +39,14 @@ tplot, ['mms1_hpca_hplus_ion_bulk_velocity', $
        
 stop
 
-mms_load_hpca, probes='1', trange=['2015-06-22', '2015-06-23'], datatype='ion', varformat='*_RF_corrected'
+mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='ion', level='l1b'
 
-rf_corrected = ['mms1_hpca_hplus_RF_corrected', $
-        'mms1_hpca_oplus_RF_corrected', $
-        'mms1_hpca_heplus_RF_corrected']
-        
-options, rf_corrected, 'spec', 1
-options, rf_corrected, 'no_interp', 1
-ylim, rf_corrected, 1, 40.,1
-zlim, rf_corrected, .1, 10000.,1
+rf_corrected = ['MMS1_HPCA_H+_RF_CORR_COUNTS_ELEV_0-180', $
+                'MMS1_HPCA_O+_RF_CORR_COUNTS_ELEV_0-180', $ 
+                'MMS1_HPCA_He++_RF_CORR_COUNTS_ELEV_0-180']
         
 ; show spectra for H+, O+ and He+
-window, 3
+window, 3, ysize=600
 tplot, rf_corrected, window=3
 
 end

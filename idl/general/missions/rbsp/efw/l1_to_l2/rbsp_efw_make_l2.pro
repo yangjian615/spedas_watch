@@ -31,14 +31,24 @@
 ;           'combo_pfaff'                                 (working)
 ;
 ;
+; OLD CDF files that are now obsolete are:
+;      rbspa_efw-l2_e-spinfit-mgse_20130103_v01.cdf
+;      rbspa_efw-l2_esvy_despun_20130105_v01.cdf
+;      rbspa_efw-l2_vsvy-hires_20130105_v01.cdf
+;      rbspa_efw-l2_combo_20130101_v03_hr.cdf
+;      rbspa_efw-l2_combo_20130101_v03.cdf
+;      rbspa_efw-l2_combo_pfaff_00000000_v01.cdf
+;      rbspa_efw-l2_combo_wygant_00000000_v01.cdf
+;
+;
 ; HISTORY:
 ;   2014-12-02: Created by Aaron W Breneman, U. Minnesota
 ;				
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2015-06-25 16:50:00 -0700 (Thu, 25 Jun 2015) $
-; $LastChangedRevision: 17975 $
+; $LastChangedDate: 2015-08-06 14:34:38 -0700 (Thu, 06 Aug 2015) $
+; $LastChangedRevision: 18416 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -95,7 +105,7 @@ pro rbsp_efw_make_l2,sc,date,$
      skeleton='/Volumes/UserA/user_homes/kersten/RBSP_l2/'+rbspx+'_efw-l2_00000000_v01.cdf'
 
 
-     ;skeletonFile=file_retrieve(skeleton,_extra=!rbsp_efw)
+                                ;skeletonFile=file_retrieve(skeleton,_extra=!rbsp_efw)
 
 
 
@@ -108,10 +118,10 @@ pro rbsp_efw_make_l2,sc,date,$
      if keyword_set(testing) then skeletonfile = '~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/rbsp'+sc+'_efw-l2_00000000_v01.cdf'
 
 
-	if ~found then begin
-		dprint,'Could not find skeleton CDF, returning.'
-		return
-	endif
+     if ~found then begin
+        dprint,'Could not find skeleton CDF, returning.'
+        return
+     endif
                                 ; fix single element source file array
      skeletonFile=skeletonFile[0]
 
@@ -125,31 +135,17 @@ pro rbsp_efw_make_l2,sc,date,$
 ;------------ Set up paths. END. ----------------------------
 
 
-
-
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-
   skip = 'no'
 
-
   if skip eq 'no' then begin
-
-
-
 
      store_data,tnames(),/delete
      timespan,date
      rbsp_load_spice_kernels
 
+     ;--------------------------------------------------
 
-                                ;--------------------------------------------------
-
-     rbsp_load_efw_waveform,probe=sc,type='calibrated',datatype=['vsvy'],/noclean
+     rbsp_load_efw_waveform,probe=sc,type='calibrated',datatype='vsvy',/noclean
 
      get_data,'rbsp'+sc+'_efw_vsvy',data=vsvy
      epoch_v = tplot_time_to_epoch(vsvy.x,/epoch16)
@@ -161,9 +157,6 @@ pro rbsp_efw_make_l2,sc,date,$
                   [(vsvy.y[*,4] - vsvy.y[*,5])/2.]]
      
 
-
-
-
                                 ;Interpolate data to times. This gives
                                 ;nearly the same result as
                                 ;downsampling to spinperiod
@@ -174,18 +167,19 @@ pro rbsp_efw_make_l2,sc,date,$
 
      
      if type eq 'combo' or type eq 'pfaff_esvy' or type eq 'esvy_despun' or type eq 'combo_pfaff' then begin
-        rbsp_load_efw_waveform,probe=sc,type='calibrated',datatype=['esvy'],/noclean
+        rbsp_load_efw_waveform,probe=sc,type='calibrated',datatype='esvy',/noclean
 
         get_data,'rbsp'+sc+'_efw_esvy',data=esvy
         epoch_e = tplot_time_to_epoch(esvy.x,/epoch16)
         times_e = esvy.x
 
-        if type eq 'combo' or type eq 'pfaff_esvy' then begin
+        if type eq 'combo' or type eq 'pfaff_esvy' or type eq 'combo_pfaff' then begin
            tinterpol_mxn,'rbsp'+sc+'_efw_esvy','rbsp'+sc+'_efw_vsvy',newname='rbsp'+sc+'_efw_esvy'
            get_data,'rbsp'+sc+'_efw_esvy',data=esvy_v
         endif
         
      endif
+
 
 
 
@@ -205,6 +199,8 @@ pro rbsp_efw_make_l2,sc,date,$
 
         get_data,'rbsp'+sc+'_efw_esvy_mgse',data=esvy_mgse
 
+;check cadence of esvy_vxb_mgse
+
      endif
 
      
@@ -221,6 +217,18 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 
+;--------------------------------------------------
+;Get flag values
+;--------------------------------------------------
+
+     flag_str = rbsp_efw_get_flag_values(sc,times)
+
+     flag_arr = flag_str.flag_arr
+     bias_sweep_flag = flag_str.bias_sweep_flag
+     ab_flag = flag_str.ab_flag
+     charging_flag = flag_str.charging_flag
+     ibias = flag_str.ibias
+
 
 ;--------------------------------------------------
 ;save all spinfit resolution Efield quantities
@@ -228,7 +236,8 @@ pro rbsp_efw_make_l2,sc,date,$
 
      get_data,'rbsp'+sc+'_efw_esvy_spinfit',data=tmp
      if type eq 'spinfit' then tmp.y[*,0] = -1.0E31
-     spinfit = tmp.y
+     spinfit_esvy = tmp.y
+
 
                                 ;Spinfit with corotation field
      get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit',data=tmp
@@ -247,17 +256,6 @@ pro rbsp_efw_make_l2,sc,date,$
      if type eq 'spinfit' then tmp.y[*,0] = -1.0E31
      spinfit_vxb_coro_edotb = tmp.y
 
-
-                                ;--------------------------------------------------
-                                ;load eclipse times
-                                ;--------------------------------------------------
-
-     rbsp_load_eclipse_predict,sc,date,$
-                               local_data_dir='~/data/rbsp/',$
-                               remote_data_dir='http://themis.ssl.berkeley.edu/data/rbsp/'
-
-     get_data,'rbsp'+sc + '_umbra',data=eu
-     get_data,'rbsp'+sc + '_penumbra',data=ep
 
 
 ;--------------------------------------
@@ -294,395 +292,9 @@ pro rbsp_efw_make_l2,sc,date,$
                                 ;Interpolate single-ended measurements
                                 ;to low cadence for combo file
      tinterpol_mxn,'rbsp'+sc+'_efw_vsvy',times,newname='rbsp'+sc+'_efw_vsvy_combo'
-     get_data,'rbsp'+sc+'_efw_vsvy_combo',data=vsvy_combo
+     get_data,'rbsp'+sc+'_efw_vsvy_combo',data=vsvy_spinres
      
 
-
-;--------------------------------------------------
-;Calculate density and remove bad values
-;--------------------------------------------------
-
-     ;;Determine density from sc potential. Remove values when dens < 10 and dens > 3000 cm-3
-     store_data,'sc_potential',data={x:times,y:sum12}
-     rbsp_efw_density_fit_from_uh_line,'sc_potential',sc,$
-                                       newname='rbsp'+sc+'_density',$
-                                       dmin=10.,$
-                                       dmax=3000.,$
-                                       setval=-1.e31
-
-;For density we have a special requirement
-;.....Remove when (V1+V2)/2 > -1  AND
-;.....Lshell > 4  (avoids hot plasma sheet)
-;But, we'll also remove values +/- 10 minutes at start and
-;finish of charging times (Scott indicates that this is a good thing
-;to do)
-
-     padch = 10.*60.   ;plus/minus time from actual times of charging for triggering the charging flag.
-     
-     charging_flag = replicate(0.,n_elements(times))
-     tinterpol_mxn,'rbsp'+sc+'_state_lshell',times
-     get_data,'rbsp'+sc+'_state_lshell_interp',data=lshell
-
-     ;;Find charging times
-     pot_tmp = replicate(0.,n_elements(times))
-     goo = where((lshell.y gt 4) and (sum12 gt -1))
-     if goo[0] ne -1 then pot_tmp[goo] = 1B
-
-     pot_diff = pot_tmp - shift(pot_tmp,1)
-     ;; store_data,'pot_diff',data={x:times,y:pot_diff}
-     ;; store_data,'Vavg',data={x:times,y:sum12}
-     ;; tplot,['pot_diff','rbsp'+sc+'_density','Vavg','rbsp'+sc+'_state_lshell']
-
-     ;;Shift the times...
-     boo = where(pot_diff eq 1.)  ;start of charging
-     moo = where(pot_diff eq -1.) ;end of charging
-
-     ;;equal number of elements in start and end of charging (usually the case)
-
-     if boo[0] ne -1 and moo[0] ne -1 then begin
-        if n_elements(boo) eq n_elements(moo) then begin
-           for jj=0,n_elements(boo)-1 do begin
-              l0 = times[boo[jj]] - padch
-              l1 = times[moo[jj]] + padch
-              bad = where((times ge l0) and (times le l1))
-              if bad[0] ne -1 then charging_flag[bad] = 1
-           endfor
-        endif
-     endif
-
-
-     ;;when day ends with charging flag thrown
-     if boo[0] ne -1 then begin
-        if n_elements(boo) gt n_elements(moo) then begin
-           for jj=0,n_elements(boo)-2 do begin
-              l0 = times[boo[jj]] - padch
-              l1 = times[moo[jj]] + padch
-              bad = where((times ge l0) and (times le l1))
-              if bad[0] ne -1 then charging_flag[bad] = 1
-           endfor
-           jj++
-           l0 = times[boo[jj]] - padch
-           l1 = times[n_elements(times)-1]
-           bad = where((times ge l0) and (times le l1))
-           if bad[0] ne -1 then charging_flag[bad] = 1
-        endif
-     endif
-
-     ;; store_data,'charging_flag',data={x:times,y:charging_flag}
-     ;; ylim,'charging_flag',-1,2
-     ;; tplot,['charging_flag','Vavg']
-
-
-     get_data,'rbsp'+sc+'_density',data=dens
-     goo = where(charging_flag eq 1)
-     if goo[0] ne -1 then dens.y[goo] = -1.e31
-     
-
-
-;----------------------------------------------------------------------------------------------------
-;FIND AND SET ALL FLAG VALUES
-;---------------------------------------------------------------------------------------------------- 
-
-     ;;    names = ['global_flag',$
-     ;;             'eclipse',$
-     ;;             'maneuver',$
-     ;;             'efw_sweep',$
-     ;;             'efw_deploy',$
-     ;;             'v1_saturation',$
-     ;;             'v2_saturation',$
-     ;;             'v3_saturation',$
-     ;;             'v4_saturation',$
-     ;;             'v5_saturation',$
-     ;;             'v6_saturation',$
-     ;;             'Espb_magnitude',$
-     ;;             'Eparallel_magnitude',$
-     ;;             'magnetic_wake',$
-     ;;             'autobias',$
-     ;;             'charging',$
-     ;;             'undefined',$
-     ;;             'undefined',$
-     ;;             'undefined',$
-     ;;             'undefined']
-
-
-;Load the HSK data to flag the bias sweeps
-     rbsp_load_efw_hsk,probe=sc,/get_support_data
-
-
-                                ;Get flag values
-     na_val = -2                ;not applicable value
-     fill_val = -1              ;value in flag array that indicates "dunno"
-     maxvolts = 195.            ;Max antenna voltage above which the saturation flag is thrown
-     offset = 5                 ;position in flag_arr of "v1_saturation" 
-
-     tmp = replicate(0,n_elements(times),6)
-     flag_arr = replicate(fill_val,n_elements(times),20)
-
-
-;Some values we an set right away
-     flag_arr[*,9] = 1          ;V5 flag always set
-     flag_arr[*,10] = 1         ;V6 flag always set
-     flag_arr[*,11] = na_val    ;Espb_magnitude
-     flag_arr[*,12] = na_val    ;Eparallel_magnitude
-     flag_arr[*,13] = na_val    ;magnetic_wake
-     flag_arr[*,16:19] = na_val ;undefined values
-
-
-;Set flag if antenna potential exceeds max value
-     for i=0,5 do begin
-        vbad = where(abs(vsvy.y[*,i]) ge maxvolts)
-        if vbad[0] ne -1 then tmp[vbad,i] = 1
-        flag_arr[*,i+offset] = tmp[*,i]
-     endfor
-
-;set the eclipse flag in this program
-     padec = 5.*60. ;plus/minus value (sec) outside of the eclipse start and stop times for throwing the eclipse flag
-
-stop
-
-;Umbra
-     if is_struct(eu) then begin
-        for bb=0,n_elements(eu.x)-1 do begin
-           goo = where((vsvy.x ge (eu.x[bb]-padec)) and (vsvy.x le (eu.x[bb]+eu.y[bb]+padec)))
-           if goo[0] ne -1 then flag_arr[goo,1] = 1
-        endfor
-     endif
-;Penumbra
-     if is_struct(ep) then begin
-        for bb=0,n_elements(ep.x)-1 do begin
-           goo = where((vsvy.x ge (ep.x[bb]-padec)) and (vsvy.x le (ep.x[bb]+ep.y[bb]+padec)))
-           if goo[0] ne -1 then flag_arr[goo,1] = 1
-        endfor
-     endif
-
-
-
-
-
-;--------------------------------------------------
-;Determine times of antenna deployment
-;--------------------------------------------------
-
-
-     dep = rbsp_efw_boom_deploy_history(date,allvals=av)
-
-     if sc eq 'a' then begin
-        ds12 = strmid(av.deploystarta12,0,10)  
-        ds34 = strmid(av.deploystarta34,0,10)  
-        ds5 = strmid(av.deploystarta5,0,10)  
-        ds6 = strmid(av.deploystarta6,0,10)  
-
-        de12 = strmid(av.deployenda12,0,10)  
-        de34 = strmid(av.deployenda34,0,10)  
-        de5 = strmid(av.deployenda5,0,10)  
-        de6 = strmid(av.deployenda6,0,10)  
-
-        deps_alltimes = time_double([av.deploystarta12,av.deploystarta34,av.deploystarta5,av.deploystarta6])
-        depe_alltimes = time_double([av.deployenda12,av.deployenda34,av.deployenda5,av.deployenda6])
-     endif else begin
-        ds12 = strmid(av.deploystartb12,0,10)  
-        ds34 = strmid(av.deploystartb34,0,10)  
-        ds5 = strmid(av.deploystartb5,0,10)  
-        ds6 = strmid(av.deploystartb6,0,10)  
-
-        de12 = strmid(av.deployendb12,0,10)  
-        de34 = strmid(av.deployendb34,0,10)  
-        de5 = strmid(av.deployendb5,0,10)  
-        de6 = strmid(av.deployendb6,0,10)  
-
-        deps_alltimes = time_double([av.deploystartb12,av.deploystartb34,av.deploystartb5,av.deploystartb6])
-        depe_alltimes = time_double([av.deployendb12,av.deployendb34,av.deployendb5,av.deployendb6])
-     endelse
-
-
-;all the dates of deployment times (note: all deployments start and
-;end on same date)
-     dep_alldates = [ds12,ds34,ds5,ds6]
-
-     goo = where(date eq dep_alldates)
-     if goo[0] ne -1 then begin
-        ;;for each deployment find timerange and flag
-        for y=0,n_elements(goo)-1 do begin
-           boo = where((times ge deps_alltimes[goo[y]]) and (times le depe_alltimes[goo[y]]))
-           if boo[0] ne -1 then flag_arr[boo,4] = 1
-        endfor
-     endif
-
-;--------------------------------------------------
-;Determine maneuver times
-;--------------------------------------------------
-
-     m = rbsp_load_maneuver_file(sc,date)
-     if is_struct(m) then begin
-        for bb=0,n_elements(m.m0)-1 do begin
-           goo = where((times ge m.m0[bb]) and (times le m.m1[bb]))
-           if goo[0] ne -1 then flag_arr[goo,2] = 1
-        endfor
-     endif
-
-
-;--------------------------------------------------
-;Determine times of bias sweeps
-;--------------------------------------------------
-
-
-     get_data, 'rbsp'+sc+'_efw_hsk_beb_analog_CONFIG0', data = BEB_config
-     if is_struct(BEB_config) then begin
-        bias_sweep = intarr(n_elements(BEB_config.x))
-        boo = where(BEB_config.y eq 64)
-        if boo[0] ne -1 then bias_sweep[boo] = 1
-        store_data,'bias_sweep',data={x:BEB_config.x,y:bias_sweep}
-        tinterpol_mxn,'bias_sweep',times
-        ;; ylim,['bias_sweep','bias_sweep_interp'],0,1.5
-        ;; tplot,['bias_sweep','bias_sweep_interp']
-        get_data,'bias_sweep_interp',data=bias_sweep
-        bias_sweep_flag = bias_sweep.y
-     endif else begin
-        bias_sweep_flag = replicate(fill_val,n_elements(times))
-     endelse
-
-
-;------------------------------------------------
-;ADD AUTO BIAS TO FLAG VALUES
-;------------------------------------------------
-     
-;; AutoBias starts actively controlling the bias currents at V12 = -1.0 V,
-;; ramping down the magnitude of the bias current so that when V12 = 0.0 V,
-;; the bias current is very near to zero after starting out around -20
-;; nA/sensor.
-
-;; For V12 > 0.0 V, the bias current continues to increase (become more
-;; positive), although at a slower rate, 0.2 nA/V or something like that.
-
-
-;Auto Bias flag values. From 'rbsp?_efw_hsk_idpu_fast_TBD'
-;Bit	Value	Meaning
-;3	8	Toggles off and on every other cycle when AutoBias is;
-;		active.
-;2	4	One when AutoBias is controlling the bias, Zero when
-;		AutoBias is not controlling the bias.
-;1	2	One when BIAS3 and BIAS4 can be controlled by AUtoBias,
-;		zero otherwise.
-;0	1	One when BIAS1 and BIAS2 can be controlled by AUtoBias,
-;		zero otherwise.
-
-
-
-                                ;Find times when auto biasing is active
-     get_data,'rbsp'+sc+'_efw_hsk_idpu_fast_TBD',data=tbd
-     tbd.y = floor(tbd.y)
-     ab_flag = intarr(n_elements(tbd.x))
-
-                                ;Possible flag values for on and off
-     ab_off = [1,2,3,8,10,11]
-     ab_on = [4,5,6,7,12,13,14,15]
-
-     goo = where((tbd.y eq 4) or (tbd.y eq 5) or (tbd.y eq 6) or (tbd.y eq 7) or (tbd.y eq 12) or (tbd.y eq 13) or (tbd.y eq 14) or (tbd.y eq 15))
-     if goo[0] ne -1 then ab_flag[goo] = 1
-     
-     store_data,'ab_flag',data={x:tbd.x,y:ab_flag}
-     ;; options,['rbsp'+sc+'_efw_hsk_idpu_fast_TBD','ab_flag'],'psym',4
-     ;; tplot,['rbsp'+sc+'_efw_hsk_idpu_fast_TBD','ab_flag','rbsp'+sc+'_state_lshell']
-     ;; timebar,eu.x
-     ;; timebar,eu.x+eu.y
-
-
-     tinterpol_mxn,'ab_flag',times
-     ;; tplot,['ab_flag','ab_flag_interp']
-
-     get_data,'ab_flag_interp',data=ab_flag
-     ab_flag = ab_flag.y
-
-
-
-;--------------------------------------------------
-;ADD IN ACTUAL BIAS CURRENTS
-;--------------------------------------------------
-
-     tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS1',times
-     tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS2',times
-     tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS3',times
-     tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS4',times
-     tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS5',times
-     tinterpol_mxn,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS6',times
-;tplot,['*IBIAS*','rbsp'+sc+'_efw_hsk_idpu_fast_TBD']
-
-     get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS1_interp',data=ib1
-     get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS2_interp',data=ib2
-     get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS3_interp',data=ib3
-     get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS4_interp',data=ib4
-     get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS5_interp',data=ib5
-     get_data,'rbsp'+sc+'_efw_hsk_beb_analog_IEFI_IBIAS6_interp',data=ib6
-
-
-     ibias = [[ib1.y],[ib2.y],[ib3.y],[ib4.y],[ib5.y],[ib6.y]]
-
-
-
-
-;--------------------------------------------------
-;Set individual flags based on above calculated values
-;--------------------------------------------------
-
-     flag_arr[*,3] = bias_sweep_flag
-     flag_arr[*,14] = ab_flag       ;autobias
-     flag_arr[*,15] = charging_flag ;charging
-     
-
-;--------------------------------------------------
-;Change values of certain arrays that are "fill_val" to 0
-;--------------------------------------------------
-
-     goo = where(flag_arr[*,3] eq fill_val) ;bias sweep
-     if goo[0] ne -1 then flag_arr[goo,3] = 0
-
-     goo = where(flag_arr[*,4] eq fill_val) ;antenna deploy
-     if goo[0] ne -1 then flag_arr[goo,4] = 0
-
-     goo = where(flag_arr[*,14] eq fill_val) ;autobias
-     if goo[0] ne -1 then flag_arr[goo,14] = 0
-
-     goo = where(flag_arr[*,15] eq fill_val) ;charging
-     if goo[0] ne -1 then flag_arr[goo,15] = 0
-
-     goo = where(flag_arr[*,1] eq fill_val) ;eclipse
-     if goo[0] ne -1 then flag_arr[goo,1] = 0
-
-     goo = where(flag_arr[*,2] eq fill_val) ;maneuver
-     if goo[0] ne -1 then flag_arr[goo,2] = 0
-
-
-
-;--------------------------------------------------
-;SET GLOBAL FLAG
-;--------------------------------------------------
-;Conditions for throwing global flag
-;..........any of the v1-v4 saturation flags are thrown
-;..........the eclipse flag is thrown
-;..........maneuver
-;..........charging flag thrown
-;..........antenna deploy
-;..........bias sweep
-
-     flag_arr[*,0] = 0
-
-     goo = where((flag_arr[*,5] eq 1) or (flag_arr[*,6] eq 1) or (flag_arr[*,7] eq 1) or (flag_arr[*,8] eq 1))
-     if goo[0] ne -1 then flag_arr[goo,0] = 1 ;v1-v4 saturation
-
-     goo = where(flag_arr[*,1] eq 1) ;eclipse
-     if goo[0] ne -1 then flag_arr[goo,0] = 1
-
-     goo = where(flag_arr[*,15] eq 1) ;charging
-     if goo[0] ne -1 then flag_arr[goo,0] = 1
-
-     goo = where(flag_arr[*,3] eq 1) ;bias sweep
-     if goo[0] ne -1 then flag_arr[goo,0] = 1
-     
-     goo = where(flag_arr[*,4] eq 1) ;antenna deploy
-     if goo[0] ne -1 then flag_arr[goo,0] = 1
-
-     goo = where(flag_arr[*,2] eq 1) ;maneuver
-     if goo[0] ne -1 then flag_arr[goo,0] = 1
 
 
 ;--------------------------------------------------
@@ -690,10 +302,9 @@ stop
 ;--------------------------------------------------
 
      ;;density
+
+     get_data,'rbsp'+sc+'_density',data=dens
      goo = where(flag_arr[*,0] eq 1)
-
-
-stop
 
      if goo[0] ne -1 then dens.y[goo] = -1.e31
 
@@ -702,8 +313,8 @@ stop
 ;Set a 3D flag variable for the survey plots
 ;--------------------------------------------------
 
-                                ;charging, autobias and eclipse flags all in one variable for convenience
-;     flags = [[flag_arr[*,15]],[flag_arr[*,14]],[flag_arr[*,1]]]
+     ;;charging, autobias and eclipse flags all in one variable for convenience
+     flags = [[flag_arr[*,15]],[flag_arr[*,14]],[flag_arr[*,1]]]
 
 
 
@@ -758,52 +369,22 @@ stop
      get_data,'angles',data=angles
 
      
-     if type eq 'L3' then filename = 'rbsp'+sc+'_efw-l3_'+strjoin(strsplit(date,'-',/extract))+'_v'+vstr+'.cdf'
-     if type eq 'hidden' then filename = 'rbsp'+sc+'_efw-l3_'+strjoin(strsplit(date,'-',/extract))+'_v'+vstr+'_hidden.cdf'
-     if type eq 'survey' then filename = 'rbsp'+sc+'_efw-l3_'+strjoin(strsplit(date,'-',/extract))+'_v'+vstr+'_survey.cdf'
 
 
+;; ;Set all globally-flagged data to the ISTP fill_value
 
+;;      badvs = where(flag_arr[*,0] eq 1)
+;;      if badvs[0] ne -1 then begin
 
-;Set all globally-flagged data to the ISTP fill_value
+;;         get_data,rbx+'efw_esvy_mgse_vxb_removed_spinfit',data=dtmp
+;;         newflags = ceil(interpol(flag_arr[*,0],times,dtmp.x))
+;;         goo = where(newflags eq 1)
+;;         if goo[0] ne -1 then dtmp.y[goo,*] = -1.0E31
+;;         store_data,rbx+'efw_esvy_mgse_vxb_removed_spinfit',data=dtmp
 
-     badvs = where(flag_arr[*,0] eq 1)
-     if badvs[0] ne -1 then begin
-
-        get_data,rbx+'efw_esvy_mgse_vxb_removed_spinfit',data=dtmp
-        newflags = ceil(interpol(flag_arr[*,0],times,dtmp.x))
-        goo = where(newflags eq 1)
-        if goo[0] ne -1 then dtmp.y[goo,*] = -1.0E31
-        store_data,rbx+'efw_esvy_mgse_vxb_removed_spinfit',data=dtmp
-
-     endif
-
-
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-     tplot_save,'*',filename='~/Desktop/l2_test'
-     save,filename='~/Desktop/l2_test.idl'
-
-
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
+;;      endif
 
   endif                         ;for skipping processing
-
-
-
-
-
-
-  tplot_restore,filename='~/Desktop/l2_test.tplot'
-  restore,'~/Desktop/l2_test.idl'
-
 
 
   year = strmid(date, 0, 4)
@@ -825,17 +406,8 @@ stop
   file_copy, skeletonFile, datafile, /overwrite ; Force to replace old file.
   cdfid = cdf_open(datafile)
 
-;; rbspa_efw-l2_e-spinfit-mgse_20130103_v01.cdf
-;; rbspa_efw-l2_esvy_despun_20130105_v01.cdf
-;; rbspa_efw-l2_vsvy-hires_20130105_v01.cdf
-;; rbspa_efw-l2_combo_20130101_v03_hr.cdf
-;; rbspa_efw-l2_combo_20130101_v03.cdf
-
-;; rbspa_efw-l2_combo_pfaff_00000000_v01.cdf
-;; rbspa_efw-l2_combo_wygant_00000000_v01.cdf
 
 
-;  stop
 
 ;--------------------------------------------------
 ;spinfit E12 files
@@ -847,6 +419,7 @@ stop
      cdf_varput,cdfid,'epoch',epoch
 
                                 ;spinfit resolution
+     cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
      cdf_varput,cdfid,'efield_spinfit_mgse',transpose(spinfit_vxb)
      cdf_varput,cdfid,'VxB_mgse',transpose(vxb.y)
      cdf_varput,cdfid,'e_spinfit_mgse_efw_qual',transpose(flag_arr)
@@ -861,6 +434,7 @@ stop
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      cdf_varput,cdfid,'bias_current',transpose(ibias)
+
 
 
 ;variables to delete
@@ -910,10 +484,12 @@ stop
 
 
 ;spinfit cadence
-     cdf_varput,cdfid,'vsvy_combo',transpose(vsvy_combo.y)
+     cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
+     cdf_varput,cdfid,'vsvy_combo',transpose(vsvy_spinres.y)
      cdf_varput,cdfid,'vsvy_vavg_combo',sum12
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
-     cdf_varput,cdfid,'e12_spinfit_mgse',transpose(spinfit)   
+
+     cdf_varput,cdfid,'e12_spinfit_mgse',transpose(spinfit_mgse)   
      cdf_varput,cdfid,'mag_model_mgse',transpose(mag_model.y)    
      cdf_varput,cdfid,'mag_minus_model_mgse',transpose(mag_diff.y) 
      cdf_varput,cdfid,'magnitude_minus_modelmagnitude',mag_diff_magnitude
@@ -930,6 +506,7 @@ stop
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      cdf_varput,cdfid,'bias_current',transpose(ibias)
+
 
 
 ;full cadence (only for hires version)
@@ -976,6 +553,7 @@ stop
 
 
 ;spinfit resolution
+     cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
      cdf_varput,cdfid,'mlt',transpose(mlt.y)
      cdf_varput,cdfid,'mlat',transpose(mlat.y)
@@ -987,6 +565,7 @@ stop
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      cdf_varput,cdfid,'bias_current',transpose(ibias)
+
 
 
 ;full resolution
@@ -1042,6 +621,7 @@ stop
      cdf_varput,cdfid,'epoch_v',epoch_v
 
 ;spinfit resolution
+     cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
      cdf_varput,cdfid,'mlt',transpose(mlt.y)
      cdf_varput,cdfid,'mlat',transpose(mlat.y)
@@ -1053,6 +633,7 @@ stop
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      cdf_varput,cdfid,'bias_current',transpose(ibias)
+
 
 
 ;full resolution
@@ -1106,7 +687,8 @@ stop
 
 ;spinfit resolution
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
-     cdf_varput,cdfid,'e12_spinfit_mgse',transpose(spinfit)           
+     cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
+;     cdf_varput,cdfid,'e12_spinfit_mgse',transpose(spinfit_mgse)           
      cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb)   
      cdf_varput,cdfid,'e12_vxb_coro_spinfit_mgse',transpose(spinfit_vxb_coro) 
      cdf_varput,cdfid,'efield_coro_mgse',transpose(ecoro_mgse.y)
@@ -1126,6 +708,7 @@ stop
 
 
 ;variables to delete
+     cdf_vardelete,cdfid,'e12_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_mgse'
      cdf_vardelete,cdfid,'VxB_mgse'
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
@@ -1167,6 +750,7 @@ stop
 
 ;spinfit cadence
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
+     cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
      cdf_varput,cdfid,'mlt',transpose(mlt.y)
      cdf_varput,cdfid,'mlat',transpose(mlat.y)
@@ -1227,12 +811,14 @@ stop
   if type eq 'combo_pfaff' then begin
 
      cdf_varput,cdfid,'epoch',epoch
-     cdf_varput,cdfid,'epoch_e',epoch_e
+     if keyword_set(hires) then cdf_varput,cdfid,'epoch_e',epoch_e
+     if keyword_set(hires) then cdf_varput,cdfid,'epoch_v',epoch_v
 
 ;spinfit cadence
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
+     cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
      cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb) 
-     cdf_varput,cdfid,'e12_spinfit_mgse',transpose(spinfit)         
+                                ;cdf_varput,cdfid,'e12_spinfit_mgse',transpose(spinfit_mgse)         
      cdf_varput,cdfid,'efield_coro_mgse',transpose(ecoro_mgse.y)
      cdf_varput,cdfid,'vel_coro_mgse',transpose(vcoro_mgse.y)
      cdf_varput,cdfid,'bfield_mgse',transpose(mag_mgse.y)
@@ -1250,12 +836,18 @@ stop
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      cdf_varput,cdfid,'bias_current',transpose(ibias)
+     if ~keyword_set(hires) then cdf_varput,cdfid,'vsvy_combo',transpose(vsvy_spinres.y)
+     if ~keyword_set(hires) then cdf_varput,cdfid,'vsvy_vavg_combo',transpose(sum12)
 
 ;full cadence
      if keyword_set(hires) then cdf_varput,cdfid,'esvy_vxb_mgse',transpose(esvy_vxb_mgse.y)
+     if keyword_set(hires) then cdf_varput,cdfid,'vsvy',transpose(vsvy.y)
+     if keyword_set(hires) then cdf_varput,cdfid,'esvy',transpose(esvy_v.y)
+     if keyword_set(hires) then cdf_varput,cdfid,'vsvy_vavg',transpose(vsvy_vavg)
 
 
 ;variables to delete
+     cdf_vardelete,cdfid,'e12_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_mgse'
      cdf_vardelete,cdfid,'VxB_mgse'
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
@@ -1267,10 +859,11 @@ stop
      cdf_vardelete,cdfid,'efield_raw_uvw'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse'
      cdf_vardelete,cdfid,'bfield_magnitude'
-     cdf_vardelete,cdfid,'vsvy'
-     cdf_vardelete,cdfid,'vsvy_combo'
-     cdf_vardelete,cdfid,'vsvy_vavg'
-     cdf_vardelete,cdfid,'vsvy_vavg_combo'
+     if ~keyword_set(hires) then cdf_vardelete,cdfid,'vsvy'
+     if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy_vxb_mgse'
+     if keyword_set(hires) then cdf_vardelete,cdfid,'vsvy_combo'
+     if ~keyword_set(hires) then cdf_vardelete,cdfid,'vsvy_vavg'
+     if keyword_set(hires) then cdf_vardelete,cdfid,'vsvy_vavg_combo'
      cdf_vardelete,cdfid,'mag_model_mgse'
      cdf_vardelete,cdfid,'mag_minus_model_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse'
@@ -1278,14 +871,10 @@ stop
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_mgse'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
+     if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy'
      if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy_vxb_mgse'
 
   endif
-
-
-;  stop
-
-
 
   cdf_close, cdfid
 
