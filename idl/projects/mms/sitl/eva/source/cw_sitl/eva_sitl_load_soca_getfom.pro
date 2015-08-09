@@ -4,18 +4,17 @@ Function eva_sitl_load_soca_getfom, pref, parent
   ;////////////////////////////////////
   local_dir = !MMS.LOCAL_DATA_DIR
   ;/////////////////////////////////////
-;  if TESTMODE then begin
-;    ; 'dir' produces the directory name with a path separator character that can be OS dependent.
-;    local_dir = file_search(ProgramRootDir(/twoup)+'data',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
-;    fom_file = local_dir + 'abs_selections_sample.sav'
-;    error_flag = 0
-;    error_msg = ''
-;  endif
-  
+
   ;------------------------------------
   ; Get the latest FOMstr
   ;------------------------------------
-  get_latest_fom_from_soc, fom_file, error_flag, error_msg
+  if strlen(pref.ABS_LOCAL) gt 0 then begin
+    fom_file = pref.ABS_LOCAL
+    error_flag = 0
+    error_msg = ''
+  endif else begin
+    get_latest_fom_from_soc, fom_file, error_flag, error_msg
+  endelse
   
   ;------------------------------------
   ; Abort if error (This should not happen often)

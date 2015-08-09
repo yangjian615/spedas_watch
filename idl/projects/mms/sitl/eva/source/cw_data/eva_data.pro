@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-07-15 13:28:46 -0700 (Wed, 15 Jul 2015) $
-; $LastChangedRevision: 18142 $
+; $LastChangedDate: 2015-08-07 21:14:06 -0700 (Fri, 07 Aug 2015) $
+; $LastChangedRevision: 18442 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -175,9 +175,6 @@ FUNCTION eva_data_load_and_plot, state
 END
 
 FUNCTION eva_data_probelist, state
-
-  
-  
   widget_control,state.bgTHM,GET_VALUE=gvl_thm
   thm_probes = ['thb','thc','thd','tha','the']
   idx = where(gvl_thm eq 1, ct)
@@ -189,27 +186,6 @@ FUNCTION eva_data_probelist, state
   idx = where(gvl_mms eq 1, ct)
   if ct ge 1 then probelist_mms = mms_probes[idx] else probelist_mms = -1
   str_element,/add,state,'probelist_mms',probelist_mms
-  
-;  probelist = strarr(1)
-;  if USE_THEMIS then begin
-;    if gvl_thm[0] then probelist = [probelist,'thb']
-;    if gvl_thm[1] then probelist = [probelist,'thc']
-;    if gvl_thm[2] then probelist = [probelist,'thd']
-;    if gvl_thm[3] then probelist = [probelist,'tha']
-;    if gvl_thm[4] then probelist = [probelist,'the']
-;  endif
-;  if USE_MMS then begin; When faking, I recommend using 'b','a','d','e' for mms 1,2,3,4
-;    if gvl_mms[0] then probelist = [probelist,'mms1']; (If this first probe is changed,
-;    if gvl_mms[1] then probelist = [probelist,'mms2'];  don't forget to update the initialization
-;    if gvl_mms[2] then probelist = [probelist,'mms3'];  of probelist in eva_data)
-;    if gvl_mms[3] then probelist = [probelist,'mms4'];
-;  endif
-;  pmax = n_elements(probelist)
-;  if pmax gt 1 then begin
-;    probelist = probelist[1:pmax-1]
-;  endif else begin
-;    probelist = -1
-;  endelse
 
   str_element,/add,state,'probelist',probelist
   eva_data_update_time, state,/update
@@ -513,8 +489,9 @@ FUNCTION eva_data, parent, $
   pref = mms_config_push(cfg,pref); push the values into preferences
   ll = strmid(pref.EVA_CACHE_DIR, strlen(pref.EVA_CACHE_DIR)-1, 1); validate
   if ~(ll eq '/' or ll eq '\') then pref.EVA_CACHE_DIR += '/'
+  str_element,/add,pref,'ABS_LOCAL',''
   str_element,/add,state,'pref',pref
-  print,'EVA: EVA_CACHE_DIR='+pref.EVA_CACHE_DIR
+  ;print,'EVA: EVA_CACHE_DIR='+pref.EVA_CACHE_DIR
   
   state = eva_data_paramSetList(state)
 

@@ -71,10 +71,10 @@ FUNCTION eva_sitl_pref_event, ev
     state.fldSplit: begin
       pref.EVA_SPLIT_SIZE = long(ev.VALUE)
       end
-    state.bgPath: begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
-      pref.EVA_STLM_INPUT = state.PATH_VALUES[ev.VALUE]
-      print, pref.EVA_STLM_INPUT,' is chosen'
-      end
+;    state.bgPath: begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }
+;      pref.EVA_STLM_INPUT = state.PATH_VALUES[ev.VALUE]
+;      print, pref.EVA_STLM_INPUT,' is chosen'
+;      end
     else:
   endcase
   ;-----

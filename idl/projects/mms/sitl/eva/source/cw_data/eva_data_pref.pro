@@ -69,6 +69,21 @@ FUNCTION eva_data_pref_event, ev
         pref.EVA_PARAMSET_DIR = file
       endif
       end
+    ;------------------
+    ; ABS_LOCAL
+    ;------------------
+    state.txtPath3:begin
+      widget_control,state.txtPath3, GET_VALUE = file
+      pref.ABS_LOCAL = file
+    end
+    state.btnPath3:begin
+      cd,current = c; store path to current directory
+      file = dialog_pickfile(path=c, TITLE='Choose an ABS file (.sav)', FILTER='*.sav')
+      if strlen(file) ne 0 then begin
+        widget_control, state.txtPath3, SET_VALUE = file
+        pref.ABS_LOCAL = file
+      endif
+      end
     else:
   endcase
   ;-----
@@ -104,19 +119,25 @@ FUNCTION eva_data_pref, parent, GROUP_LEADER=group_leader, $
   str_element,/add,state,'mainbase',mainbase
   
   ; path
+
   getresourcepath,rpath
   openBMP = read_bmp(rpath + 'folder_horizontal_open.bmp',/rgb)
   spd_ui_match_background, mainbase, openBMP
+
   str_element,/add,state,'lblCurrent',widget_label(mainbase,VALUE='EVA cache (.tplot files) location',XSIZE=xsize*0.9)
   baseInput = widget_base(mainbase,/row,/align_center)
     str_element,/add,state,'txtPath',widget_text(baseInput,VALUE=state.PREF.EVA_CACHE_DIR,XSIZE=55,/editable)
     str_element,/add,state,'btnPath',widget_button(baseInput,VALUE=openBMP,/Bitmap)
   
   str_element,/add,state,'lblParamSetList',widget_label(mainbase,VALUE='Location of customized parameterSet',XSIZE=xsize*0.9)
-    baseInput2 = widget_base(mainbase,/row,/align_center)
+  baseInput2 = widget_base(mainbase,/row,/align_center)
     str_element,/add,state,'txtPath2',widget_text(baseInput2,VALUE=state.PREF.EVA_PARAMSET_DIR,XSIZE=55,/editable)
     str_element,/add,state,'btnPath2',widget_button(baseInput2,VALUE=openBMP,/Bitmap)
 
+  str_element,/add,state,'lblPath',widget_label(mainbase,VALUE='Choose an ABS file (.sav)')
+  baseInput3 = widget_base(mainbase,/row,/align_center)
+    str_element,/add,state,'txtPath3',widget_text(baseInput3,VALUE=state.PREF.ABS_LOCAL,XSIZE=55,/editable)
+    str_element,/add,state,'btnPath3',widget_button(baseInput3,VALUE=openBMP,/Bitmap)
 
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY
   RETURN, mainbase
