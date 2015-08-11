@@ -63,8 +63,8 @@
 ;        
 ;         
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-08-07 12:53:43 -0700 (Fri, 07 Aug 2015) $
-;$LastChangedRevision: 18430 $
+;$LastChangedDate: 2015-08-10 07:52:35 -0700 (Mon, 10 Aug 2015) $
+;$LastChangedRevision: 18443 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -369,7 +369,7 @@ end
 pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     level = level, local_data_dir = local_data_dir, source = source, $
     remote_data_dir = remote_data_dir, attitude_only=attitude_only, $
-    ephemeris_only = ephemeris_only
+    ephemeris_only = ephemeris_only, no_download=no_download
 
     ; define probe, product, type, coordinate, and unit names
     p_names = ['1', '2', '3', '4']
@@ -391,7 +391,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
 
     ;combine these flags for now, if we're not downloading files then there is
     ;no reason to contact the server unless mms_get_local_files is unreliable
-    no_download = !mms.no_download or !mms.no_server
+    if undefined(no_download) then no_download = !mms.no_download or !mms.no_server
 
     ; initialize undefined values
     if undefined(level) then level = 'def'

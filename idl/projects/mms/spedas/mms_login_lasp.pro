@@ -11,13 +11,14 @@
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;             with "username" and "password" tags with your API login information
 ;         
-;         save_login_info: set this keyword to save the login information in a 
+;         save_login_info: set this keyword to save the login information in a local sav file named
+;             by the keyword login_info - or "mms_auth_info.sav" if the login_info keyword isn't set
 ;
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-30 11:04:26 -0700 (Thu, 30 Jul 2015) $
-;$LastChangedRevision: 18318 $
+;$LastChangedDate: 2015-08-10 13:38:30 -0700 (Mon, 10 Aug 2015) $
+;$LastChangedRevision: 18445 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_login_lasp.pro $
 ;-
 

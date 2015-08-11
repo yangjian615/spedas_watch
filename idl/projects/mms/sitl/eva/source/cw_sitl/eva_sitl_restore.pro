@@ -19,7 +19,13 @@ PRO eva_sitl_restore, auto=auto, dir=dir
   ;-----------------------------
   restore, fname; save, eva_lim, eva_dl, filename=fname
   ;-----------------------------
-  fomstr = eva_lim.UNIX_FOMSTR_MOD
+  if strmatch(fname,'eva-fom-modified*') then begin
+    fomstr = eva_lim.UNIX_FOMSTR_MOD
+  endif else begin
+    mms_convert_fom_tai2unix, FOMstr, unix_FOMstr, start_string
+    fomstr = unix_FOMstr
+  endelse
+  
   if n_tags(fomstr) eq 0 then begin
     answer = dialog_message('Not a valid FOMstr!',/center,/error)
     return

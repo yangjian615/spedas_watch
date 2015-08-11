@@ -4,6 +4,10 @@
 ;  Dynamically populate rate, level, and datatypes widgets
 ;  for science instruments.
 ;
+;Keywords:
+;  rate: force rate widget to be updated
+;  level: force level widget to be updated 
+;
 ;Usage:
 ;  Called by mms_ui_load_data_update_widgets
 ;
@@ -50,17 +54,12 @@ pro mms_ui_load_data_update_science, state, $
     widget_control, rate_id, set_value=rate, set_uvalue=rate
   endif
   
-  if keyword_set(get_rate) || level_idx eq -1 then begin
+  if keyword_set(get_level) || level_idx eq -1 then begin
     widget_control, level_id, set_value=level, set_uvalue=level
   endif
   
   ;always update datatype
-  ;TODO: remove placeholder check once datatypes are implemented
-  if array_equal(datatype,'placeholder') then begin
-    widget_control, datatype_id, set_value='', set_uvalue=''
-  endif else begin
-    widget_control, datatype_id, set_value=datatype, set_uvalue=datatype
-  endelse
+  widget_control, datatype_id, set_value=datatype, set_uvalue=datatype
 
 end
 
@@ -408,8 +407,8 @@ end
 ;      
 ;HISTORY:
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-07 16:33:49 -0700 (Fri, 07 Aug 2015) $
-;$LastChangedRevision: 18441 $
+;$LastChangedDate: 2015-08-10 14:27:01 -0700 (Mon, 10 Aug 2015) $
+;$LastChangedRevision: 18447 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -483,9 +482,6 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
                     level=currentLevelArray, $
                     datatype=currentDatatypeArray
 
-  ;TODO: remove this one all datatypes are implemented
-  currentDatatypeArray = ''
-  
   ;create the dropdown menu that lists the various instrument types for MMS
   instrumentBase = widget_base(selectionBase,/row) 
   instrumentLabel = widget_label(instrumentBase,value='Instrument Type: ')

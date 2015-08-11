@@ -79,8 +79,8 @@
 ; Modified for HPCA by Sarah Vines
 ;
 ;  $LastChangedBy: egrimes $
-;  $LastChangedDate: 2015-08-07 12:05:36 -0700 (Fri, 07 Aug 2015) $
-;  $LastChangedRevision: 18426 $
+;  $LastChangedDate: 2015-08-10 08:30:40 -0700 (Mon, 10 Aug 2015) $
+;  $LastChangedRevision: 18444 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_sitl_open_hpca_basic_cdf_jburch_skv_egrimes.pro $
 
 ;  HPCA ION STRUCTURE VARIABLES
@@ -142,7 +142,8 @@
 
 PRO mms_sitl_open_hpca_basic_cdf_jburch_skv_egrimes, filenames, sc_id = sc_id, measurement_id = measurement_id, $
    species = species, fov = fov, support = support, tplotnames = tplotnames
-
+   compile_opt DEFINT32
+   
    ; what time is it? for quantifying time in this routine
    start_time = systime(/sec)
 sp_name=['hplus','heplus', 'heplusplus', 'oplus','oplusplus','bkgd']
@@ -1393,8 +1394,8 @@ FOR tt = 0, n_elements(measurement_id)-1 DO BEGIN
             if n_elements(anode_index) eq 1 then begin
                hplus_rf_corr_tot = reform(hplus_rf_corr_sub)
             endif else begin
-               for ii=0,n_elements(energies)-1 do begin                                                          
-                  for jj=0, n_elements(times)-1 do begin                                
+               for ii=0l,n_elements(energies)-1 do begin                                                          
+                  for jj=0l, n_elements(times)-1 do begin                                
                         hplus_rf_corr_tot[ii,jj]=total(hplus_rf_corr_sub[ii,*,jj], /nan)
                   endfor
                endfor

@@ -35,9 +35,9 @@ PRO sitl_stat_buffplot, s, fomrng, tr
   ;----------------
   ; TIME GRID
   ;----------------
-
+  mmax = 4320L ; extra data point for display grey-shaded region
   dt = 600.d0;10min; 3600.d0; 1 hour
-  nmax = (tr[1]-tr[0])/dt + 4320L
+  nmax = (tr[1]-tr[0])/dt + mmax
   wt = tr[0]+ dindgen(nmax)*dt
 
   ;------------------
@@ -58,7 +58,8 @@ PRO sitl_stat_buffplot, s, fomrng, tr
     ndx = where( (time_double(s.START[j])+3.d0*86400.d0 le wt) and (wt le fintime[j]), ct)
     wcatT2[ndx] += s.SEGLENGTHS[j]
   endfor
-
+  wcatT2[nmax-mmax:nmax-1] = !VALUES.F_NAN
+  
   ; For each category
   wcat0 = sitl_stat_buffplot_cat(s, 0, fomrng,idc, cretime, fintime, wt)
   wcat1 = sitl_stat_buffplot_cat(s, 1, fomrng,idc, cretime, fintime, wt)

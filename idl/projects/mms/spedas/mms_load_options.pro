@@ -9,33 +9,20 @@ function mms_load_options_fgm
 
     compile_opt idl2, hidden
     
-;use placeholder where datatype will go
 s = { $
       brst: { $
-              l1a: { $
-                     placeholder: 0 $
-                   }, $
-              l1b: { $
-                     placeholder: 0 $
-                   } $
+              l1a: [ '' ], $
+              l1b: [ '' ] $
             }, $
       fast: { $
-              l1a: { $
-                     placeholder: 0 $
-                   } $
+              l1a: [ '' ] $
             }, $
       slow: { $
-              l1a: { $
-                     placeholder: 0 $
-                   } $
+              l1a: [ '' ] $
             }, $
       srvy: { $
-              l1a: { $
-                     placeholder: 0 $
-                   }, $
-              ql: { $
-                     placeholder: 0 $
-                   } $
+              l1a: [ '' ], $
+              ql:  [ '' ] $
             } $
     }
 
@@ -54,19 +41,29 @@ function mms_load_options_eis
     compile_opt idl2, hidden
     
 s = { $
+      brst: { $
+              l1a: [ $
+                     'extof', $
+                     'phxtof' $
+                   ], $
+              l1b: [ $
+                     'extof', $
+                     'phxtof' $
+                   ] $
+            }, $
       srvy: { $
-              l1a: { $
-                     electronenergy: 1, $
-                     extof: 1, $
-                     partenergy: 1, $
-                     phxtof: 1 $
-                   }, $
-              l1b: { $
-                     electronenergy: 1, $
-                     extof: 1, $
-                     partenergy: 1, $
-                     phxtof: 1 $
-                   } $
+              l1a: [ $
+                     'electronenergy', $
+                     'extof', $
+                     'partenergy', $
+                     'phxtof' $
+                   ], $
+              l1b: [ $
+                     'electronenergy', $
+                     'extof', $
+                     'partenergy', $
+                     'phxtof' $
+                   ] $
             } $
     }
 
@@ -86,24 +83,24 @@ function mms_load_options_feeps
     
 s = { $
       brst: { $
-              l1a: { $
-                     electron_bottom: 1, $
-                     electron_top: 1, $
-                     ion_bottom: 1, $
-                     ion_top: 1 $
-                   } $
+              l1a: [ $
+                     'electron-bottom', $
+                     'electron-top', $
+                     'ion-bottom', $
+                     'ion-top' $
+                   ] $
             }, $
       srvy: { $
-              l1a: { $
-                     electron_bottom: 1, $
-                     electron_top: 1, $
-                     ion_bottom: 1, $
-                     ion_top: 1 $
-                   }, $
-              l1b: { $
-                     electron: 1, $
-                     ion: 1 $
-                   } $
+              l1a: [ $
+                     'electron-bottom', $
+                     'electron-top', $
+                     'ion-bottom', $
+                     'ion-top' $
+                   ], $
+              l1b: [ $
+                     'electron', $
+                     'ion' $
+                   ] $
             } $
     }
 
@@ -123,9 +120,7 @@ function mms_load_options_fpi
     
 s = { $
       fast: { $
-              sitl: { $
-                      placeholder: 0 $
-                    } $
+              sitl: [ '' ] $
             } $
     }
 
@@ -145,22 +140,22 @@ function mms_load_options_hpca
     
 s = { $
       brst: { $
-              l1b: { $
-                     ion: 1, $
-                     logicals: 1, $
-                     moments: 1 $
-                   } $
+              l1b: [ $
+                     'ion', $
+                     'logicals', $
+                     'moments' $
+                   ] $
             }, $
       srvy: { $
-              l1b: { $
-                     ion: 1, $
-                     logicals: 1, $
-                     moments: 1 $
-                   }, $
-              sitl:{ $
-                     ion: 1, $
-                     moments: 1 $
-                   } $
+              l1b: [ $
+                     'ion', $
+                     'logicals', $
+                     'moments' $
+                   ], $
+              sitl:[ $
+                     'ion', $
+                     'moments' $
+                   ] $
             } $
     }
 
@@ -181,29 +176,29 @@ function mms_load_options_scm
 ;use placeholder where datatype will go
 s = { $
       brst: { $
-              l1a: { $
-                     scb: 1, $
-                     schb: 1 $
-                   } $
+              l1a: [ $
+                     'scb', $
+                     'schb' $
+                   ] $
             }, $
       fast: { $
-              l1a: { $
-                     scf: 1 $
-                   }, $
-              l1b: { $
-                     scf: 1 $
-                   } $
+              l1a: [ $
+                     'scf' $
+                   ], $
+              l1b: [ $
+                     'scf' $
+                   ] $
             }, $
       slow: { $
-              l1a: { $
-                     scs: 1 $
-                   } $
+              l1a: [ $
+                     'scs' $
+                   ] $
             }, $
       srvy: { $
-              l1a: { $
-                     cal: 1, $
-                     scm: 1 $
-                   } $
+              l1a: [ $
+                     'cal', $
+                     'scm' $
+                   ] $
             } $
     }
 
@@ -211,31 +206,6 @@ return, s
 
 end
 
-
-;+
-;Purpose:
-;  Replace underscores used to represent dashes in structure tags.
-;  This is neccessary because dashes cannot be used for structure tag names.
-;-
-pro mms_load_options_fixunderscores, sa
-
-    compile_opt idl2, hidden
-
-if ~is_string(sa) then return
-
-pos = strpos(sa,'_')
-
-for i=0, n_elements(sa)-1 do begin
-
-  if pos[i] gt 0 then begin
-    temp = sa[i] ;strput needs named var
-    strput, temp, '-', pos[i]
-    sa[i] = temp
-  endif
-
-endfor
-
-end
 
 
 ;+
@@ -285,7 +255,7 @@ for i=0, n_elements(valid_rates)-1 do begin
   ;loop over levels
   for j=0, n_elements(valid_levels)-1 do begin
 
-    ;if the input is specified and doesn't match then ignore
+    ;if the input is specified but doesn't match then ignore
     if is_string(level) then begin
       if valid_levels[j] ne strupcase(level) then continue
     endif
@@ -294,7 +264,7 @@ for i=0, n_elements(valid_rates)-1 do begin
     levels_out = array_concat(valid_levels[j], levels_out)
 
     ;get datatypes for this rate/level
-    valid_datatypes = tag_names(s.(i).(j))
+    valid_datatypes = s.(i).(j)
 
     ;if input is specified and matches then add that entry
     ;otherwise add all entries
@@ -358,8 +328,8 @@ end
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-07 16:25:53 -0700 (Fri, 07 Aug 2015) $
-;$LastChangedRevision: 18440 $
+;$LastChangedDate: 2015-08-10 16:58:14 -0700 (Mon, 10 Aug 2015) $
+;$LastChangedRevision: 18449 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $
@@ -374,6 +344,8 @@ pro mms_load_options, $
              
     compile_opt idl2, hidden
 
+
+valid = 0
 
 if ~is_string(instrument) then begin
   dprint, dlevel=1, 'No instrument provided'
@@ -414,9 +386,7 @@ endif
 
 if undefined(rate) then rate = strlowcase(spd_uniq(rates_out))
 if undefined(level) then level = strlowcase(spd_uniq(levels_out))
-if undefined(datatype) then begin
-  datatype = strlowcase(spd_uniq(datatypes_out))
-  mms_load_options_fixunderscores, datatype
-endif
+if undefined(datatype) then datatype = strlowcase(spd_uniq(datatypes_out))
+
 
 end

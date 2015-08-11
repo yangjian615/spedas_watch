@@ -68,8 +68,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-31 18:28:42 -0700 (Fri, 31 Jul 2015) $
-;  $LastChangedRevision: 18347 $
+;  $LastChangedDate: 2015-08-10 17:43:06 -0700 (Mon, 10 Aug 2015) $
+;  $LastChangedRevision: 18450 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_data_fetch.pro $
 
 
@@ -142,28 +142,39 @@ if type_int ne 7 then begin
   
 endif else if n_elements(file_data) gt 0 and file_data(0) ne '' then begin
  
-  cut_filenames = strarr(n_elements(file_data)/2) ; Filename without the directory
-  file_sizes = lonarr(n_elements(file_data)/2) ; Size of each file in bytes
-  download_flags = intarr(n_elements(file_data)/2) ; Determines whether to download file
-  file_dir = strarr(n_elements(file_data)/2) ; Directory in local cache for file
-  file_base = strarr(n_elements(file_data)/2) ; Filename without directory or version number
-  local_flist = strarr(n_elements(file_data)/2) ; List of local filenames consistent with query
+  ;cut_filenames = strarr(n_elements(file_data)/2) ; Filename without the directory
+  ;file_sizes = lonarr(n_elements(file_data)/2) ; Size of each file in bytes
+;  download_flags = intarr(n_elements(file_data)/2) ; Determines whether to download file
+;  file_dir = strarr(n_elements(file_data)/2) ; Directory in local cache for file
+;  file_base = strarr(n_elements(file_data)/2) ; Filename without directory or version number
+;  local_flist = strarr(n_elements(file_data)/2) ; List of local filenames consistent with query
   
   ; New way - obtains both file names and file sizes
   
-  j = 0
-  for i = 0, n_elements(file_data)-2, 2 do begin
-    name_dump = file_data(i)
-    size_dump = file_data(i+1)
-    
-    colon1 = strpos(name_dump, ':')
-    cut_filenames(j) = strmid(name_dump, colon1+3, strlen(name_dump)-colon1-4)
-    
-    colon1 = strpos(size_dump, ':')
-    file_sizes(j) = long(strmid(size_dump, colon1+2, strlen(size_dump)-colon1-3))
-    j += 1
-;    print, i, j
-  endfor
+  file_size_info = mms_get_filename_size(file_data)
+  cut_filenames = file_size_info.filename
+  file_sizes = file_size_info.filesize
+  
+  download_flags = intarr(n_elements(cut_filenames)) ; Determines whether to download file
+  file_dir = strarr(n_elements(cut_filenames)) ; Directory in local cache for file
+  file_base = strarr(n_elements(cut_filenames)) ; Filename without directory or version number
+  local_flist = strarr(n_elements(cut_filenames)) ; List of local filenames consistent with query
+  
+
+  
+;  j = 0
+;  for i = 0, n_elements(file_data)-2, 2 do begin
+;    name_dump = file_data(i)
+;    size_dump = file_data(i+1)
+;    
+;    colon1 = strpos(name_dump, ':')
+;    cut_filenames(j) = strmid(name_dump, colon1+3, strlen(name_dump)-colon1-4)
+;    
+;    colon1 = strpos(size_dump, ':')
+;    file_sizes(j) = long(strmid(size_dump, colon1+2, strlen(size_dump)-colon1-3))
+;    j += 1
+;;    print, i, j
+;  endfor
   
 ;  stop
 ;  ;Old way - uses the file_names data
