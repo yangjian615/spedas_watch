@@ -19,7 +19,7 @@ PRO eva_sitl_restore, auto=auto, dir=dir
   ;-----------------------------
   restore, fname; save, eva_lim, eva_dl, filename=fname
   ;-----------------------------
-  if strmatch(fname,'eva-fom-modified*') then begin
+  if strmatch(fname,'*eva-fom-modified*') then begin
     fomstr = eva_lim.UNIX_FOMSTR_MOD
   endif else begin
     mms_convert_fom_tai2unix, FOMstr, unix_FOMstr, start_string
