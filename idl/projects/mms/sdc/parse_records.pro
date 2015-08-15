@@ -2,7 +2,8 @@
 ;split each record by the optional delimiter (default is ",") and map the 
 ;values to the given structure.
 ;Return an array of structures (one for each record) containing the data.
-function parse_records, records, struct, delimiter=delimiter
+;If embedded delimiters is set, extra fields in the last column are combined into a single field
+function parse_records, records, struct, delimiter=delimiter, embedded_delimiters=embedded_delimiters
 
   ;Make a copy of the struct that we can mutate.
   tmp_struct = replicate(struct, 1)
@@ -33,7 +34,19 @@ function parse_records, records, struct, delimiter=delimiter
     ss = strsplit(records[i], delimiter, /extract, /preserve_null)
 
     ;Skip invalid records where the number of values != number of variables.
-    if n_elements(ss) ne nvar then continue
+    if n_elements(ss) ne nvar then begin
+      if keyword_set(embedded_delimiters) && n_elements(ss) gt nvar then begin
+        ;Combine the extra fields into the last field
+        last = ss[nvar-1]
+        for l=nvar,n_elements(ss)-1 do begin
+          last += delimiter + ss[l]
+        endfor
+        ss = [ss[0:nvar-2], last]
+      endif else begin
+        ;print,'skipping ' + records[i]
+        continue
+      endelse
+    endif
     
     for ivar = 0, n_elements(ss)-1 do begin
       if types[ivar] eq 7 then tmp_struct.(ivar) = ss[ivar]  $ ;string value
@@ -44,8 +57,11 @@ function parse_records, records, struct, delimiter=delimiter
     
     if size(result, /type) ne 8 then result = tmp_struct  $  ;first valid sample
     else result = [result, tmp_struct]  ;append sample
+    goto, ok
     
     skip: ;sent here if we get a double conversion error
+      ;print, 'skipping ' + records[i]
+    ok:
   endfor
   
   return, result

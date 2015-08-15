@@ -15,6 +15,7 @@
 ;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
 ;         attitude_data: flag to only load L-right ascension and L-declination attitude data 
 ;         ephemeris_data: flag to only load position and velocity data
+;         no_download: set flag to use local data only (no download)
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;             with "username" and "password" tags with your API login information
 ;
@@ -62,9 +63,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-08-10 07:52:35 -0700 (Mon, 10 Aug 2015) $
-;$LastChangedRevision: 18443 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-13 13:29:00 -0700 (Thu, 13 Aug 2015) $
+;$LastChangedRevision: 18486 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -157,6 +158,7 @@ pro mms_load_att_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
         ; load the data from the ASCII file
         if level EQ 'def' then new_att_data = mms_read_def_att_file(filenames[file_idx]) $
            else new_att_data = mms_read_pred_att_file(filenames[file_idx]) 
+
         if is_struct(new_att_data) then begin
             ; note on time format in this file:
             ; date/time values are stored in the format: YYYY-DOYThh:mm:ss.fff
@@ -184,7 +186,7 @@ pro mms_load_att_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
     if time_values[0] GT time_double(trange[0]) OR time_values[n_elements(time_values)-1] LT time_double(trange[1]) then $
       dprint, dlevel = 1, 'Warning, not all data in the requested time frame was loaded.'
     endelse
-
+    
     data_att = {coord_sys:'', st_type:'none', units:'deg'}
     dl = {filenames:filenames, data_att:data_att, ysubtitle:'[deg]'}
     if where(datatypes EQ 'spinras') NE -1 then begin
@@ -192,14 +194,15 @@ pro mms_load_att_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
       str_element,dl,'vname',spinras_name, /add
       store_data, spinras_name, data={x: time_values, y: att_data_ras}, dlimits=dl, l=0
       append_array, tplotnames, [spinras_name]
+      dprint, dlevel = 1, 'Tplot variable created: '+ spinras_name
     endif
     if where(datatypes EQ 'spindec') NE -1 then begin
       spindec_name =  prefix + '_' + level + 'att_spindec'
       str_element,dl,'vname',spindec_name, /add_replace
       store_data, spindec_name, data={x: time_values, y: att_data_dec}, dlimits=dl, l=0
       append_array, tplotnames, [spindec_name]
+      dprint, dlevel = 1, 'Tplot variable created: '+ spindec_name
     endif
-
 
 end
 
@@ -208,7 +211,7 @@ pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
   
   ; print a warning about how long this takes so user's do not
   ; assume the process is frozen after a few seconds
-  dprint, dlevel = 1, 'Loading ephemeris files can take some time; please be patient...'
+  ;dprint, dlevel = 1, 'Loading ephemeris files can take some time; please be patient...'
   if undefined(prefix) then prefix = 'mms'
   if undefined(datatype) then datatype = 'def'
 
@@ -222,7 +225,7 @@ pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
       ; date/time values are stored in the format: YYYY-DOYThh:mm:ss.fff
       ; so to convert the first time value to a time_double,
       ;    time_values = time_double(new__att_data.time, tformat='YYYY-DOYThh:mm:ss.fff')
-      append_array, time_values, time_double(new_eph_data.time[0:n_elements(new_eph_data.time)-2], tformat='YYYY-DOYThh:mm:ss.fff')
+      append_array, time_values, time_double(new_eph_data.time[0:n_elements(new_eph_data.time)-2], tformat='YYYY-DOY/hh:mm:ss.fff')
       if where(datatypes EQ 'pos') NE -1 then append_array, eph_data_pos, new_eph_data.pos[0:n_elements(new_eph_data.time)-2,*]
       if where(datatypes EQ 'vel') NE -1 then append_array, eph_data_vel, new_eph_data.vel[0:n_elements(new_eph_data.time)-2,*]
     endif
@@ -260,6 +263,7 @@ pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
     str_element,dl,'ysubtitle','[km]', /add
     store_data, pos_name, data={x: time_values, y: eph_data_pos}, dlimits=dl, l=0
     append_array, tplotnames, [pos_name]
+    dprint, dlevel = 1, 'Tplot variable created: ' + pos_name
   endif 
   dl = {filenames:filenames, colors:default_colors, data_att:data_att}
   if where(datatypes EQ 'vel') NE -1 then begin
@@ -272,6 +276,7 @@ pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
     str_element,dl,'ysubtitle','[km/s]', /add
     store_data, vel_name, data={x: time_values, y: eph_data_vel}, dlimits=dl, l=0
     append_array, tplotnames, [vel_name]
+    dprint, dlevel = 1, 'Tplot variable created: '+ vel_name
   endif
 
 end
@@ -288,15 +293,13 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
 
     probe = strcompress(string(probe), /rem)
     start_time = time_double(trange[0])-60*60*24.
-    end_time = time_double(trange[1])+60*60*24.
+    ;end_time = time_double(trange[1])+60*60*24.
+    end_time = time_double(trange[1])
 
     start_time_str = time_string(start_time, tformat='YYYY-MM-DD') 
     end_time_str = time_string(end_time, tformat='YYYY-MM-DD')    
-    
-    file_dir = local_data_dir + 'ancillary/'
-
-    status = mms_login_lasp(login_info=login_info)
-    if status ne 1 then return
+  
+    file_dir = local_data_dir + 'mms' + probe + '/state/' + level + '/' 
 
     idx=where(datatypes EQ 'pos' OR datatypes EQ 'vel',ephcnt)
     if ephcnt gt 0 then filetype = ['eph']
@@ -320,7 +323,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
             ancillary_file_info = mms_get_state_pred_info(sc_id='mms'+probe, $
                 product=product, start_date=start_time_str, end_date=end_time_str) 
         endif
-        
+
         if is_array(ancillary_file_info) && ancillary_file_info[0] ne '' then begin    
             remote_file_info = mms_get_filename_size(ancillary_file_info)    
             doys = n_elements(remote_file_info)
@@ -344,7 +347,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
 
         ; if no remote list was found then search locally
         endif else begin
-            local_files = mms_get_local_state_files(probe='mms'+probe, filetype=product, trange=trange) 
+            local_files = mms_get_local_state_files(probe='mms'+probe, level= level, filetype=filetype[i], trange=[start_time, end_time]) 
             if is_string(local_files) then begin
               append_array, daily_names, local_files
             endif else begin
@@ -369,7 +372,8 @@ end
 pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     level = level, local_data_dir = local_data_dir, source = source, $
     remote_data_dir = remote_data_dir, attitude_only=attitude_only, $
-    ephemeris_only = ephemeris_only, no_download=no_download
+    ephemeris_only = ephemeris_only, no_download=no_download, login_info=login_info, $
+    tplotnames = tplotnames
 
     ; define probe, product, type, coordinate, and unit names
     p_names = ['1', '2', '3', '4']
@@ -380,20 +384,25 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
       dprint, dlevel = 0, 'Error loading MMS attitude data - no time range given.'
       return
     endif
-    if undefined(probes) then begin
-      dprint, dlevel = 0, 'Error loading MMS attitude data - no probe given.'
-      return
-    endif
 
     ; set up system variable for MMS if not already set    
     defsysv, '!mms', exists=exists
     if not(exists) then mms_init
 
+    response_code = spd_check_internet_connection()
+
     ;combine these flags for now, if we're not downloading files then there is
     ;no reason to contact the server unless mms_get_local_files is unreliable
-    if undefined(no_download) then no_download = !mms.no_download or !mms.no_server
+    if undefined(no_download) then no_download = !mms.no_download or !mms.no_server or (response_code ne 200)
 
+    ; only prompt the user if they're going to download data
+    if no_download eq 0 then begin
+        status = mms_login_lasp(login_info=login_info)
+        if status ne 1 then no_download = 1
+    endif
+    
     ; initialize undefined values
+    if undefined(probes) then probes = p_names
     if undefined(level) then level = 'def'
     if undefined(datatypes) then datatypes = '*' ; default to definitive 
     if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
@@ -401,8 +410,8 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     if not keyword_set(source) then source = !mms
     
     ; check for wild cards
-    if probes[0] EQ '*' then probes = ['1', '2', '3', '4']
-    if datatypes[0] EQ '*' then datatypes = ['pos', 'vel', 'spinras', 'spindec']  
+    if probes[0] EQ '*' then probes = p_names
+    if datatypes[0] EQ '*' then datatypes = t_names  
     if keyword_set(ephemeris_only) then datatypes = ['pos', 'vel']
     if keyword_set(attitude_only) then datatypes = ['spinras', 'spindec']
     
@@ -448,5 +457,4 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
             time_clip, tplotnames, time_double(trange[0]), time_double(trange[1]), replace=1, error=error
         endif
     endif
-    
 end

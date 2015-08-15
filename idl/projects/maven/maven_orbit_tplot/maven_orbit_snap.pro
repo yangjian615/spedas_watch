@@ -34,7 +34,7 @@
 ;       LATLON:   Plot MSO longitudes and latitudes of periapsis (PREC=0) or 
 ;                 the spacecraft (PREC=1) in a separate window.
 ;
-;       CYL:      Plot cylindrical projection (x, sqrt(y^2 + z^2)).
+;       CYL:      Plot MSO cylindrical projection (x vs. sqrt(y^2 + z^2)).
 ;
 ;       XZ:       Plot only the XZ projection.
 ;
@@ -68,8 +68,8 @@
 ;                 entry of times with the cursor.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-27 18:08:12 -0700 (Wed, 27 May 2015) $
-; $LastChangedRevision: 17755 $
+; $LastChangedDate: 2015-08-14 14:01:04 -0700 (Fri, 14 Aug 2015) $
+; $LastChangedRevision: 18498 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -81,7 +81,12 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex, rcols
+                       lon, lat, hgt, mex, rcols, orbnum
+
+  if (size(time,/type) ne 5) then begin
+    print, "You must run maven_orbit_tplot first!"
+    return
+  endif
 
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)
@@ -222,6 +227,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   tref = trange[0]
   dt = min(abs(time - tref), iref, /nan)
   tref = time[iref]
+  oref = orbnum[iref]
   ndays = (tref - time[0])/86400D
 
   dt = min(abs(torb - tref), jref, /nan)
@@ -231,7 +237,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   first = 1
 
   while (ok) do begin
-    title = string(time_string(tref),floor(ndays),format='(a19,2x,"(Day ",i3,")")')
+    title = string(time_string(tref),oref,format='(a19,2x,"(Orbit ",i4,")")')
 
     wset, Owin
     if (first) then erase
@@ -739,6 +745,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     if (ok) then begin
       dt = min(abs(time - trange[0]), iref)
       tref = time[iref]
+      oref = orbnum[iref]
       ndays = (tref - time[0])/86400D
     endif
 

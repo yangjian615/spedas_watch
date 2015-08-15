@@ -16,9 +16,9 @@
 ;
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-10 13:38:30 -0700 (Mon, 10 Aug 2015) $
-;$LastChangedRevision: 18445 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-08-13 15:52:07 -0700 (Thu, 13 Aug 2015) $
+;$LastChangedRevision: 18490 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_login_lasp.pro $
 ;-
 
@@ -46,10 +46,11 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
 
         if is_struct(login_info_widget) then begin
             auth_info = {user: login_info_widget.username, password: login_info_widget.password}
-
-            ; now save the user/pass to a sav file to remember it in future sessions
-            ; (only if the user requested, which should never be by default)
-            if ~undefined(save_login_info) then save, auth_info, filename = login_info
+            
+            ;get save option from login widget
+            if undefined(save_login_info) then begin
+                str_element, login_info_widget, 'save', save_login_info
+            endif
         endif
     endelse
 
@@ -73,5 +74,13 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
         tries += 1
     endwhile
 
-    if obj_valid(net_object) then return, 1 else return, 0
+    if obj_valid(net_object) then begin
+        ; now save the user/pass to a sav file to remember it in future sessions
+        ; (only if the user requested, which should never be by default)
+        if keyword_set(save_login_info) then save, auth_info, filename = login_info
+        return, 1
+    endif else begin
+        return, 0
+    endelse
+
 end

@@ -186,12 +186,5 @@ help,data
                      END                    
   ENDCASE                             
   ;###############################################################
-  
-  
-options,'*euv*',DATAGAP=8
-options,'*IV*',DATAGAP=60*3
-options,'*spec_*f_*a*',DATAGAP=60*3
-  
-  
 end
 

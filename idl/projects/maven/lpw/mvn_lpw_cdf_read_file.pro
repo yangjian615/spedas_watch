@@ -1,6 +1,13 @@
 
 ;+
-;Routien renamed to mvn_lpw_cdf_read_file. This routine is given file names manually to load. mvn_lpw_cdf_read is given a date. That routine will call on this routine once it has figured out automatically which files to load.
+;Most users should not use this routine; you should instead use mvn_lpw_cdf_read.pro:
+;
+;   mvn_lpw_cdf_read.pro:  Retrieves CDF files based on input date in format 'yyyy-mm-dd'. Routine finds latest version and revision from available files and calls upon mvn_lpw_cdf_read.pro to load them. Keywords available, see routine. 
+;   
+;   mvn_lpw_cdf_read_file.pro (this file): Retrieves exact CDF files. User must give exact path and filename(s) to load. Primary use is calibration / file checking by LPW team. 
+;
+;
+;Routine renamed to mvn_lpw_cdf_read_file. This routine is given exact file names to load. mvn_lpw_cdf_read is given a date. That routine will call on this routine once it has figured out automatically which files to load, based on the date.
 ;
 ;Program written by Chris Fowler on Jan 6th 2014 as a wrapper for all the IDL routines needed to load cdf files into tplot memory
 ;for the lpw instrument.
@@ -8,7 +15,7 @@
 ; INPUTS:
 ; - dir: a string or string array containing the directory of the cdf files to be loaded into tplot memory (see example).
 ;        dir can be one element if all cdf files lie in the same path, or it must be the same length as varlist if 
-;        cdf files lie in different paths.
+;        cdf files lie in different paths. In this latter case, each element of dir maps to each element of varlist.
 ; - varlist: a string, or string array, of cdf filenames to be loaded into tplot memory. ".cdf" 
 ;            must be included in the filename (see example).
 ; 
@@ -16,17 +23,16 @@
 ; - the tplot variables and corresponding limit and dlimit data are loaded into IDL tplot memory.
 ; 
 ; KEYWORDS:
-; - See INPUTS.
+; - See INPUTS. These are required.
 ; 
 ; NOTE: tplot is required to run this routine.
-;       only one file directory can be specified - all cdf files to be loaded must be within the same folder and directory.
 ;
 ; EXAMPLE: to load the following two CDF files:
-; /Users/files/test_file1.cdf
-; /Users/files/test_file2.cdf
+; /Path1/test_file1.cdf
+; /Path2/test_file2.cdf
 ; 
-; Run: mvn_lpw_cdf_read, dir='/Users/files/', varlist=['test_file1.cdf','test_file2.cdf']
-;      mvn_lpw_cdf_read, dir=['path1', 'path2'],  varlist=['test_file1.cdf','test_file2.cdf']
+; Run: If Path1 == Path2:     mvn_lpw_cdf_read_file, dir='/Path1/', varlist=['test_file1.cdf','test_file2.cdf']
+;      If Path1 =/= Path2:    mvn_lpw_cdf_read_file, dir=['/Path1/', '/Path2/'],  varlist=['test_file1.cdf','test_file2.cdf']
 ; 
 ; EDITS:
 ; - Througn till Jan 7 2014 (CF).
@@ -34,6 +40,7 @@
 ;                    each cdf file)
 ; -140718 clean up for check out L. Andersson
 ; - 2015-01-09: CF: changed routine to mvn_lpw_cdf_read_file. This is given file names manually. mvn_lpw_cdf_read is given a date, and calls upon this routine.
+; - 2015-08-04: CMF: edited comments, cleaned up preamble.
 ;
 ; Version 2.0
 ;-

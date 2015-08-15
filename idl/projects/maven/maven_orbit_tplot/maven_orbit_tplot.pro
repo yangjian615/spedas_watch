@@ -83,8 +83,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-07-15 13:34:52 -0700 (Wed, 15 Jul 2015) $
-; $LastChangedRevision: 18143 $
+; $LastChangedDate: 2015-08-14 14:01:04 -0700 (Fri, 14 Aug 2015) $
+; $LastChangedRevision: 18498 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -95,7 +95,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
                        colors=colors, reset_trange=reset_trange
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex, rcols
+                       lon, lat, hgt, mex, rcols, orbnum
 
   R_m = 3389.9D
   R_equ = 3396.2D
@@ -639,6 +639,10 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   options,'lat','yticks',2
   options,'lat','yminor',3
   options,'lat','panel_size',0.5
+
+; Determine orbit numbers
+
+  orbnum = mvn_orbit_num(time=time, verbose=-1)
 
 ; Put up the plot
 

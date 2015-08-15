@@ -283,21 +283,29 @@ endif
                  const_E12_MF =         2.5  / 2d^15                                      ;20110921 EM1 & EM2 From David M  (used in MF_HSBM)
                  const_E12_HF =         1.667 * 2.0 / 2d^13                               ;20110921 EM1 & EM2 From David M   (used in HF_HSBM)   
                  const_E12_HF_HG =      0.333 * 2.0 / 2d^13                                                         
- 
-;  this is numbers Laila has started to derive from the calibration files, not final numbers  
+              
+  
+;  this is numbers Laila has started to derive from the calibration files
 ;yy1=(data1.y(a1:a2)-0.862597 )/0.982399
 ;yy2=(data1.y(a1:a2)-0.844507 )/0.980091
-boom1_corr=[0.862597,0.982399]
-boom2_corr=[0.844507,0.980091] 
+boom1_corr=[0.862597,0.982399]       ; to modify V1 in pkt_e12
+boom2_corr=[0.844507,0.980091]       ; to modify V2 in pkt_e12
+
 ;yy1=(data1.y(a1:a2)-0.00177851)*0.974763
 ;yy2=(data1.y(a1:a2)-0.00177851)*0.974763
-e12_corr=[0.00177851,0.974763]                      
+e12_corr=[0.00177851,0.974763]        ; to modify e12 in pkt_e12   
+e12_corr[1] = e12_corr[1] / 0.95    ;amplitude  decresed based on cal_wave_20120719_210940_telemetry.dat  LA20150315   
+    
 ; tt=(data1.y(tmp1)-0.00169450)* 0.983679
-e12_lf_corr=[0.00169450, 0.983679]     
+e12_lf_corr=[0.00169450, 0.983679] 
+    
 ;; tt=(data2.y(tmp2)+0.00039)*1.175  
-e12_mf_corr=[-0.00039, 1.175]                                    
+e12_mf_corr=[-0.00039, 1.175]    
+e12_mf_corr[1] = e12_mf_corr[1] / 1.3    ;amplitude  increase 1.25 to 1.4 based on cal_wave_20120719_210940_telemetry.dat  LA20150315  
+                                
 ; tt=(data2.y(tmp2)-0.0024)*1.10
-e12_hf_corr=[0.0024, 1.10]                             
+e12_hf_corr=[0.0024, 1.10]  
+e12_hf_corr[1] = e12_hf_corr[1] / 0.85    ;amplitude  decresed  0.5 to 1.2 based on cal_wave_20120719_210940_telemetry.dat  LA20150315                             
                           
    
    
@@ -547,11 +555,17 @@ f_high_hf = 1.0*[2,6,10,14,18,22,26,30,34,38,42,46,50,54,58,62,66,70,74,78,82,86
      cdf_istp_lpw[7] =  'LASP University of Colorado'                                   ;  Global ISTP required attribute 'PI_affiliation'
      cdf_istp_lpw[8] =  'Langmuir Probe and Waves (LPW) measurements of electron density and temperature in ionosphere.'+$
        ' Also spectral power density of waves in Mars ionosphere. NEED REFERENCE TO PAPER.'           ;  Global ISTP required attribute 'TEXT'
+   
+   ;above get reference to papaer
+   
+   
      cdf_istp_lpw[9] =  'MAVEN>Mars Atmosphere And Volatile EvolutioN Mission'                                                         ;  Global ISTP required attribute 'Mission_group'
      cdf_istp_lpw[10] = 'LPW/LASP/CU'                                    ;  Global ISTP required attribute 'generated_by'
      cdf_istp_lpw[11] = 'http://lasp.colorado.edu/home/maven/science/'                               ; web link to be inserted
      cdf_istp_lpw[12] = 'MAVEN project'                                                 ; project
      cdf_istp_lpw[13] = 'CITE for data reference'                        ;Acknowledgement
+
+; get acknowlwejghghdfgzhi/k
 
      cdf_istp_euv=strarr(14)
      cdf_istp_euv[0] = 'MAVEN>Mars Atmosphere And Volatile EvolutioN Mission'        ;  Global ISTP required attribute 'Source_name'

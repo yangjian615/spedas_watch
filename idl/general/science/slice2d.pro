@@ -64,8 +64,8 @@
 ;       Modified from 'thm_esa_slice2d' written by Arjun Raj & Xuzhi Zhou
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-05-26 15:23:45 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17730 $
+; $LastChangedDate: 2015-08-12 15:39:49 -0700 (Wed, 12 Aug 2015) $
+; $LastChangedRevision: 18471 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
@@ -525,19 +525,20 @@ endif else begin
    endif
 endelse
 
-if keyword_set(sundir) then oplot,[0,xsun*xmax],[0,ysun*xmax]
-
 if not keyword_set(subtract) then begin
-   if not keyword_set(novelline) then oplot,[0,vvec[0]],[0,vvec[1]],col= !d.table_size-9
 ;- inner circle (minimum energy)
    circx = cos(findgen(361)*!dtor)*sqrt(2.*erange[0]/mass)
    circy = sin(findgen(361)*!dtor)*sqrt(2.*erange[0]/mass)
+   polyfill,circx,circy,/fill,color=!p.background ;- fill the inner circle
    oplot,circx,circy,thick=2
 ;- outer circle (maximum energy)
    circx = cos(findgen(361)*!dtor)*sqrt(2.*erange[1]/mass)
    circy = sin(findgen(361)*!dtor)*sqrt(2.*erange[1]/mass)
    oplot,circx,circy,thick=2
+   if not keyword_set(novelline) then oplot,[0,vvec[0]],[0,vvec[1]],col= !d.table_size-9
 endif ;- Since velocity subtraction modifies energy boundaries, inner & outer circles are plotted only when no subtraction is conducted
+
+if keyword_set(sundir) then oplot,[0,xsun*xmax],[0,ysun*xmax]
 
 if ~keyword_set(ztitle) then ztitle = units_string(dat2.units_name)
 draw_color_scale, range=[cntmin,cntmax], log=zlog, yticks=10, title = ztitle

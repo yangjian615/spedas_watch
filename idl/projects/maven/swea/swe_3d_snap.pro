@@ -58,6 +58,8 @@
 ;
 ;       LABEL:         If set, label the 3D angle bins.
 ;
+;       LABSIZE:       Character size for the labels.  Default = 1.
+;
 ;       KEEPWINS:      If set, then don't close the snapshot window(s) on exit.
 ;
 ;       ARCHIVE:       If set, show snapshots of archive data.
@@ -69,9 +71,12 @@
 ;       PLOT_SC:       Draw an outline of the spacecraft as seen from SWEA on 
 ;                      the 3D plot.
 ;
+;       PLOT_FOV:      Replace the data with a "chess board" pattern to show the
+;                      field of view.  FOV masking, if any, will be shown.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 12:02:39 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17718 $
+; $LastChangedDate: 2015-08-13 12:24:48 -0700 (Thu, 13 Aug 2015) $
+; $LastChangedRevision: 18481 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -81,7 +86,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  energy=energy, label=label, smo=smo, symdir=symdir, sundir=sundir, $
                  symenergy=symenergy, symdiag=symdiag, power=pow, map=map, $
                  abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst, $
-                 plot_sc=plot_sc, padmap=padmap, pot=pot
+                 plot_sc=plot_sc, padmap=padmap, pot=pot, plot_fov=plot_fov, $
+                 labsize=labsize
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -103,6 +109,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   if (size(mask_sc,/type) eq 0) then mask_sc = 1
   if keyword_set(mask_sc) then obins = swe_sc_mask * obins
   if keyword_set(plot_sc) then plot_sc = 1 else plot_sc = 0
+  if keyword_set(plot_fov) then fov = 1 else fov = 0
+  if not keyword_set(labsize) then labsize = 1.
 
   omask = replicate(1.,96,2)
   indx = where(obins eq 0B, count)
@@ -257,6 +265,25 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
         dats = smooth(dat,nsmo,/nan)
         ddd.data = reform(dats[*,8:23,*],64,96)
       endif else ddd.data = ddd.data*omask[*,*,boom]
+      
+      if (fov) then begin
+        checker = fltarr(16)
+        checker[2*indgen(8)] = 4.
+        checker[2*indgen(8) + 1] = 6.
+        pattern = fltarr(96)
+        for i=0,4,2 do pattern[(i*16):(i*16 + 15)] = checker
+        for i=1,5,2 do pattern[(i*16):(i*16 + 15)] = reverse(checker)
+        for i=0,63 do ddd.data[i,*] = pattern
+        ddd.data = ddd.data*omask[*,*,boom]
+        ddd.dt_arr[*,*] = 1.
+        ddd.eff[*,*] = 1.
+        ddd.gf[*,*] = 1.
+        ddd.dtc[*,*] = 1.
+        ddd.bkg[*,*] = 0.
+        ddd.var[*,*] = 0.
+        ddd.theta = replicate(1.,64) # reform(ddd.theta[min(ebins),*])
+        ddd.dtheta = replicate(1.,64) # reform(ddd.dtheta[min(ebins),*])
+      endif
 
       plot3d_new, ddd, lat, lon, ebins=ebins
     
@@ -282,7 +309,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
       if keyword_set(label) then begin
         lab=strcompress(indgen(ddd.nbins),/rem)
-        xyouts,reform(ddd.phi[63,*]),reform(ddd.theta[63,*]),lab,align=.5
+        xyouts,reform(ddd.phi[63,*]),reform(ddd.theta[63,*]),lab,align=0.5,$
+               charsize=labsize
       endif
       
       if keyword_set(sundir) then begin

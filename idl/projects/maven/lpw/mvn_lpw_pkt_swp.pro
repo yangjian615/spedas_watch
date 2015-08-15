@@ -70,6 +70,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
             boom_corr               = lpw_const.boom2_corr   ; this should be the same number as for potential
             epsilon                  =lpw_const.const_epsilon1           
             ;-------------------------information from output-------------------------------------------
+            boom_corr            = lpw_const.boom2_corr
             output_swp_i            = output.swp1_i
             output_swp_ii           = output.swp1_I1
             output_swp_V            = output.swp1_V2
@@ -85,6 +86,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
              boom_corr              = lpw_const.boom1_corr  ; this should be the same number as for potential
             epsilon                 =lpw_const.const_epsilon2
             ;-------------------------------information from output-------------------------------------
+            boom_corr            = lpw_const.boom1_corr
             output_swp_i            = output.swp2_i
             output_swp_ii           = output.swp2_I2
             output_swp_V            = output.swp2_V1
@@ -147,8 +149,10 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 ;-------------- derive  time/variable ----------------     
                 data.x=time_dt                     
                 for i=0L,nn_pktnum-1 do begin
-                      data.y[nn_steps*i:nn_steps*(i+1)-1]  = output_swp_V[i, *] * const_V_readback 
-                      data.dy[nn_steps*i:nn_steps*(i+1)-1] = 2.                 * const_V_readback   ; ERROR assume two bit wrong
+  ;                    data.y[nn_steps*i:nn_steps*(i+1)-1]  = output_swp_V[i, *] * const_V_readback 
+  ;                    data.dy[nn_steps*i:nn_steps*(i+1)-1] = 2.                 * const_V_readback   ; ERROR assume two bit wrong
+                       data.y[nn_steps*i:nn_steps*(i+1)-1] = ((output_swp_V[i,*] * const_V_readback)-boom_corr(0))/boom_corr(1)
+                       data.dy[nn_steps*i:nn_steps*(i+1)-1] =((               10 * const_V_readback)-boom_corr(0))/boom_corr(1)  ; 10 DN
                 endfor                      
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
@@ -214,7 +218,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 data.x       = time                                                                                                                
                 for i=0,nn_pktnum-1 do begin
                   data.y[i]  = bias_arr[2048-output_swp_dyn_offset[i],swpn]    ; Volt 
-                  data.dy[i] = (bias_arr[(output_swp_dyn_offset[i]-1)>0,1]-bias_arr[((output_swp_dyn_offset[i]+1)<4095)>0,1])*0.5  
+                  data.dy[i] = (bias_arr[(output_swp_dyn_offset[i]-1)>0,1]-bias_arr[(output_swp_dyn_offset[i]+1)<4095,1])*0.5  
                                                                          ; the derived error is the dV/2 of the two next to each other bins              
                  endfor  
                 ;-------------------------------------------
@@ -289,9 +293,12 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                    aa             = long(nn_steps*i)
                    bb             = long(nn_steps*(i+1))-1
                    tmp            = min(abs(data.x[aa]-data2.x) +1e9*(data.x[aa]-data2.x LT -0.2) ,ui)                      ; find matching time, needs to check that it works at mode switches                                            
+             ;  data.y[aa:bb]  = (data2.y[ui,0:nn_steps-1] - const_sign +  output_swp_dyn_offset[i] ) * const_lp_bias_DAC     ;this is the potential of the sweep corrected for the dyn_offset
                    data.y[aa:bb]  = bias_arr[ data2.y[ui,0:nn_steps-1]  +  output_swp_dyn_offset[i] ,swpn]    ;this is the potential of the sweep corrected for the dyn_offset     
-                   data.dy[aa:bb] = bias_arr[ 2                         +  2                        ,swpn]    ;assume error from both the table sweep and the measured dynamic offset
-                 endfor
+                 ;  data.dy[aa:bb] = bias_arr[ 2                         +  2                        ,swpn]    ;assume error from both the table sweep and the measured dynamic offset
+                  ;for now assume dy is SQRT(y)
+                   data.dy[aa:bb] = SQRT(abs(data.y[aa:bb]))
+               endfor
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
                 dlimit=create_struct(   $                           
@@ -542,7 +549,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                    data.dy[aa:bb,2] = i_error
                    data.dy[aa:bb,3] = mvn_lpw_cal_swp_izero(data1.y[aa:bb],data.dy[aa:bb,2],I_ZERO[i],swpn)
                    data.dy[aa:bb,0] = data.dy[aa:bb,2] * const_I_readback
-                   data.dy[aa:bb,1] = data.dy[aa:bb,3] * const_I_readback
+                   data.dy[aa:bb,1] =  10e-9   ; data.dy[aa:bb,3] * const_I_readback   ; for now use 10 nA as uncertenty
                 endfor
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
@@ -595,8 +602,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 ;------------- store -------------------- 
                 store_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_I'+strtrim(swpn,2)+'_basic',data=data,limit=limit,dlimit=dlimit
                 ;---------------------------------------------
-             endif
-           
+             endif  
                      
              get_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_I'+strtrim(swpn,2)+'_basic',data=data1,limit=limit1,dlimit=dlimit1    
              tmp1=size(data1)
@@ -715,6 +721,9 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                  store_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_IV_bin',data=data,limit=limit,dlimit=dlimit
                 ;---------------------------------------------
          ENDIF
+  
+  
+ 
       
             get_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_I'+strtrim(swpn,2),       data=data1,dlimit=dlimit1
             get_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_I'+strtrim(swpn,2)+'_pot',data=data2,dlimit=dlimit2 ; this is created with the same time array as data2
@@ -731,12 +740,13 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 ;-------------- derive  time/variable ----------------     
                   ss=LINDGEN(nn_pktnum)*nn_steps                  ; start of each sweep                  
                   data.x = data1.x(ss)                            ; this should be the dame as time! but just to make sure use data2 and select one time per sweep  
-                  for i=0,nn_pktnum-1 do  begin
+                  If total(data1.x-data2.x) NE 0 then stanna  ; this indicate something wrong in the processing, this should not occur                 
+                  for i=0L,nn_pktnum-1 do  begin
                       sort_order= ss[i]+SORT(data2.y[ss[i]:ss[i]+nn_steps-1]) 
                       data.y[i,*]=data1.y(sort_order)           ;        ; this will be the fully corrected current
                       data.v[i,*]=data2.y(sort_order)           ;this is the potential corrected for dynamic offset  this contains infor from 'mvn_lpw_atr_swp'
                       data.dy[i,*]=data1.dy(sort_order)         ; keep the error
-                      data.dv[i,*]=data2.dy(sort_order)         ; keep the error                             
+                      data.dv[i,*]=0.1                          ; fix error keep the error                             
                   endfor                        
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
@@ -795,11 +805,10 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 ;------------- store --------------------    
                  store_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_IV',data=data,limit=limit,dlimit=dlimit
                 ;---------------------------------------------          
-              ENDIF 
-   
-      
-      
-      
+                 ENDIF 
+                 
+                 
+     
             get_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_I'+strtrim(swpn,2),       data=data1,dlimit=dlimit1
             get_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_I'+strtrim(swpn,2)+'_pot',data=data2,dlimit=dlimit2 ; this is created with the same time array as data2
             tmp1=size(data1)            
@@ -815,7 +824,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 ;-------------- derive  time/variable ----------------     
                   ss=LINDGEN(nn_pktnum)*nn_steps                  ; start of each sweep                  
                   data.x = data1.x[ss]                            ; this should be the dame as time! but just to make sure use data2 and select one time per sweep  
-                  for i=0,nn_pktnum-1 do  begin
+                  for i=0L,nn_pktnum-1 do  begin
                       sort_order= ss[i]+SORT(data2.y[ss[i]:ss[i]+nn_steps-1]) 
                       data.y[i,*]=alog10(abs(data1.y[sort_order]))          ; this will be the fully corrected current
                       data.v[i,*]=data2.y[sort_order]           ;this is the potential corrected for dynamic offset  this contains infor from 'mvn_lpw_atr_swp'
@@ -900,17 +909,60 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                   data.x = data1.x[ss]                            ; this should be the dame as time! but just to make sure use data2 and select one time per sweep                                    
                   tmp=fltarr(nn_steps)
                   iu=indgen(nn_steps-1) 
-                  for i=0,nn_pktnum-1 do  begin
-                      sort_order= ss[i]+SORT(data2.y[ss[i]:ss[i]+nn_steps-1]) 
-    
-                      tmp[*]=data1.y[ss[i]:ss[i]+nn_steps-1]
-                      tmp[iu]= tmp[iu+1]-tmp[iu] 
+                 ; vv=[0,1,2,3,4]
+                  edge=3   ; remove end points in the sweep
+                  for i=0L,nn_pktnum-1 do  begin
+                    ;  tmp_vv      = data2.y[ss[i]:ss[i]+nn_steps-1]
+                    ;  tmp_vv[           vv] = tmp_vv[5]           -(5-vv)*0.01 
+                    ;  tmp_vv[nn_steps-1-vv] = tmp_vv[nn_steps-1-5]+vv*0.01 
+                     ; sort_order=  i*nn_steps+SORT(tmp_vv)    
+                     ; tmp[*]=data1.y[ss[i]:ss[i]+nn_steps-1]
+                     ; tmp[iu]= tmp_vv[iu+1]-tmp_vv[iu] 
+                      
+                      
+                       tmp_vv      = data2.y[ss[i]+edge:ss[i]+nn_steps-1-2.*edge]
+                       sort_order   =  ss[i]+edge+SORT(tmp_vv) 
+                      
    ;                print,i,' # ',ss[i],ss[i]+nn_steps-1,tmp[10],tmp[11],tmp[12],tmp[13],sort_order[0],sort_order[1],sort_order[2],sort_order[3]   
-                      data.y[i,*]=tmp[sort_order]         ; current diff
-                      data.v[i,*]=data2.y[sort_order]           ;this is the potential corrected for dynamic offset  this contains infor from 'mvn_lpw_atr_swp'
-                      data.dy[i,*]=data1.dy[sort_order]         ; keep the error
-                      data.dv[i,*]=data2.dy[sort_order]         ; keep the error                             
+                      data.y[i ,edge:nn_steps-1-2.*edge]=data1.y[sort_order]         ; current diff
+                      data.v[i ,edge:nn_steps-1-2.*edge]=data2.y[sort_order]           ;this is the potential corrected for dynamic offset  this contains infor from 'mvn_lpw_atr_swp'
+                      data.v[i ,               0:edge-1]    =data.v[edge] +200
+                      data.v[i ,nn_steps-2.*edge:nn_steps-1]=data.v[nn_steps-2.*edge-1] -200
+                      data.dy[i,edge:nn_steps-1-2.*edge]=data1.dy[sort_order]         ; keep the error
+                      data.dv[i,edge:nn_steps-1-2.*edge]=data2.dy[sort_order]         ; keep the error                             
                   endfor                        
+               
+                   U      = fltarr(nn_steps)
+                   I      = fltarr(nn_steps)
+                   y_norm = fltarr(nn_pktnum,nn_steps)
+                 for ii=0,nn_pktnum-1 do begin
+                      U[*] = data.v[ii,*]  ;data2.y(ss[ii]:ss[ii]+nn_steps-1) ; transpose(data2.y(ss[i]:ss[i]+nn_steps-1))
+                      I[*] = data.y[ii,*]  ;data1.y(ss[ii]:ss[ii]+nn_steps-1) ; transpose(data1.y(ss[i]:ss[i]+nn_steps-1))
+                      U_sort = sort(U)
+                      U      = U(U_sort)
+                      I      = I(U_sort)
+                    if U(1) eq U(2) then begin    ;????
+                      pp = where(ts_diff(U,1) eq 0)
+                   
+                  
+                      for jj=0,n_elements(pp)-2 do begin
+                         I(pp(jj))   = mean(I([pp(jj),pp(jj)+1]))
+                         I(pp(jj)+1) = !values.F_nan
+                         U(pp(jj)+1) = !values.F_nan
+                      endfor
+                      U_sort = sort(U)
+                      U      = U(U_sort)
+                      I      = I(U_sort)
+                   endif       
+                  data.v[ii,*] = U
+                 ; data.y[ii,*] = deriv(U,I)
+                  data.y[ii,*] = deriv(U,I)/max(deriv(U,I),/nan)
+                  data.v[ii,               0:edge-1]    =0
+                  data.v[ii,nn_steps-2.*edge:nn_steps-1]=0
+                  data.dy[ii,*] = data.y[ii,*]*0.2
+                  data.dv[ii,*] = data.v[ii,*]*0.2
+                endfor
+                 
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
                 dlimit=create_struct(   $                           
@@ -956,10 +1008,10 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                   'char_size' ,     lpw_const.tplot_char_size ,$     
                   'xtitle' ,        str_xtitle                   ,$   
                   'ytitle' ,        'Sweep from ATR-file'     ,$   
-                  'yrange' ,        [min(data.v),max(data.v)] ,$   
+                  'yrange' ,        [-10,10] ,$   
                   'ystyle'  ,       1.                       ,$
                   'ztitle' ,        'dI (corrected)'   ,$   
-                  'zrange' ,        [min(data.y),max(data.y)],$  
+                  'zrange' ,        [0.,1.],$  
                   'spec'   ,        1.                       ,$       
                   'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data

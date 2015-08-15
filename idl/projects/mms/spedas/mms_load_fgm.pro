@@ -21,9 +21,9 @@
 ; NOTES:
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-07 11:52:50 -0700 (Fri, 07 Aug 2015) $
-;$LastChangedRevision: 18425 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-08-12 18:10:37 -0700 (Wed, 12 Aug 2015) $
+;$LastChangedRevision: 18477 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -42,6 +42,7 @@ pro mms_split_fgm_data, tplot_name, tplotnames = tplotnames
         
         ; remove the old variable
         del_data, tplot_name
+        tplotnames = ssl_set_complement([tplot_name], tplotnames)
     endif else begin
         dprint, dlevel = 0, 'Error splitting the tplot variable: ', tplot_name
     endelse
@@ -117,7 +118,8 @@ end
 pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   level = level, instrument = instrument, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
-                  get_support_data = get_support_data
+                  get_support_data = get_support_data, $
+                  tplotnames = tplotnames
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes)) ; force the array to be an array of strings

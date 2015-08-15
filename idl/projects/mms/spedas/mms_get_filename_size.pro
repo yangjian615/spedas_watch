@@ -21,8 +21,8 @@
 ; 11 Aug 2015 (LMI) Bugfix for multiple files
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-11 08:40:25 -0700 (Tue, 11 Aug 2015) $
-;$LastChangedRevision: 18455 $
+;$LastChangedDate: 2015-08-12 15:11:09 -0700 (Wed, 12 Aug 2015) $
+;$LastChangedRevision: 18469 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_get_filename_size.pro $
 ;-
 
@@ -60,7 +60,7 @@ function mms_get_filename_size, json_object
           counter+=1
         endif
         if strpos(json_elts[json_elt_index,json_index],'file_size') ne -1 then begin
-          remote_file_info[json_index].filesize = (strsplit(json_elts[json_elt_index,json_index], '": "', /extract))[1]
+          remote_file_info[json_index].filesize = (strsplit(json_elts[json_elt_index,json_index], '": ', /extract))[1]
         endif       
       endfor
     endfor

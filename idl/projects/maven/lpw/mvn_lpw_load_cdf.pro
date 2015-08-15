@@ -1,6 +1,7 @@
 ;+
 ;
-;Program written by Chris Fowler on May 23rd 2014 as a wrapper for loading cdf files using mvn-lpw-load.
+;Program written by Chris Fowler on May 23rd 2014 as a wrapper for loading cdf files using mvn-lpw-load. Most users should use the routine mvn_lpw_cdf_read.pro to load LPW data. This routine
+;cannot be used as a stand alone routine - it is called upon by mvn_lpw_load.pro.
 ;
 ; INPUTS:
 ; - cdf_files: a string or string array of full directory cdf files to load.

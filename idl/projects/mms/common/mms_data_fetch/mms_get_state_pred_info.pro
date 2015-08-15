@@ -44,29 +44,34 @@ function mms_get_state_pred_info, filename=filename, sc_id=sc_id, product=produc
 
   file_data = get_mms_file_info('ancillary', query=query)
 
-  file_data[0]=' '+file_data[0]
-  file_start = long(strmid(strtrim(file_data),29,7))
-  file_end = long(strmid(strtrim(file_data),37,7))
+  f = '_' 
+  name_pattern = strupcase(sc_id)+f+strupcase(product)+f+'[0-9]{7}'+f+'[0-9]{7}'
+  file_names = stregex( file_data, name_pattern, /subexpr, /extract)
+  date_pattern = '([0-9]{7})_([0-9]{7})'
+  date_strings = stregex( file_data, date_pattern, /subexpr, /extract)
+  file_starts = date_strings[1,*]
+  file_ends = date_strings[2,*]
+
   ; remove files that are not in this start/end date timeframe
-  idx = where(file_end GE start_time AND file_start LE end_time, ncnt)
+  idx = where(file_ends GE start_time AND file_starts LE end_time AND file_starts NE 0, ncnt)
   if ncnt EQ 0 then return, ''
 
   ; for the short term find the first file that spans the timerange
   ; eventually will want to handle large time spans that require multiple files
   for i = 0, n_elements(idx)-1 do begin
-      if file_start[idx[i]] LE start_time AND file_end[idx[i]] GE end_time then begin
-         new_idx = [idx[i],idx[i]+1]
+      if file_starts[idx[i]] LE start_time AND file_ends[idx[i]] GE end_time then begin
+         new_idx = [idx[i]:idx[i]+3]
+         new_files=file_data[new_idx]
          break
       endif
   endfor
+
+  ; TODO: need a better way to minimize the number of files returned 
   if undefined(new_idx) then begin
-    new_idx=[idx,idx+1]
-    new_idx=new_idx[sort(new_idx)]
+    new_idx=[idx, idx+1, idx+2, idx+3]
+    new_files=file_data[new_idx(sort[new_idx])]
   endif
 
-  ;remove duplicates
-;  didx=uniq(file_start[idx])
-
-  return, file_data[new_idx]
+  return, new_files 
 
 end

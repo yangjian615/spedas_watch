@@ -24,8 +24,8 @@
 ;                 frames specified by this keyword.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-24 07:34:09 -0700 (Wed, 24 Jun 2015) $
-; $LastChangedRevision: 17948 $
+; $LastChangedDate: 2015-08-13 12:26:19 -0700 (Thu, 13 Aug 2015) $
+; $LastChangedRevision: 18482 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -65,13 +65,13 @@ pro mvn_swe_sundir, trange, dt=dt, pans=pans, frame=frame
   options,'Sun','labels',['X','Y','Z']
   options,'Sun','labflag',1
   options,'Sun',spice_frame='MAVEN_SSO',spice_master_frame='MAVEN_SPACECRAFT'
-  spice_vector_rotate_tplot,'Sun','MAVEN_SPACECRAFT',trange=[tmin,tmax]
-  spice_vector_rotate_tplot,'Sun',swe_frame,trange=[tmin,tmax]
+  spice_vector_rotate_tplot,'Sun','MAVEN_SPACECRAFT',trange=[tmin,tmax],check='MAVEN_SPACECRAFT'
+  spice_vector_rotate_tplot,'Sun',swe_frame,trange=[tmin,tmax],check='MAVEN_SPACECRAFT'
   
   if (size(frame,/type) eq 7) then begin
     for i=0,(n_elements(frame)-1) do begin
       to_frame = strupcase(frame[i])
-      spice_vector_rotate_tplot,'Sun',to_frame,trange=[tmin,tmax]
+      spice_vector_rotate_tplot,'Sun',to_frame,trange=[tmin,tmax],check='MAVEN_SPACECRAFT'
     endfor
   endif
 
@@ -83,6 +83,7 @@ pro mvn_swe_sundir, trange, dt=dt, pans=pans, frame=frame
   options,'Sun_Phi','ynozero',1
   options,'Sun_The','psym',3
   options,'Sun_Phi','psym',3
+  options,'Sun_The','constant',[0,15]  ; sunlight incident on top cap
   
   pans = ['Sun_The','Sun_Phi']
   

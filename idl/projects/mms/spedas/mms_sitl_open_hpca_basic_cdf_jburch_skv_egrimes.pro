@@ -79,8 +79,8 @@
 ; Modified for HPCA by Sarah Vines
 ;
 ;  $LastChangedBy: egrimes $
-;  $LastChangedDate: 2015-08-10 08:30:40 -0700 (Mon, 10 Aug 2015) $
-;  $LastChangedRevision: 18444 $
+;  $LastChangedDate: 2015-08-11 10:52:09 -0700 (Tue, 11 Aug 2015) $
+;  $LastChangedRevision: 18457 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_sitl_open_hpca_basic_cdf_jburch_skv_egrimes.pro $
 
 ;  HPCA ION STRUCTURE VARIABLES
@@ -678,11 +678,13 @@ FOR tt = 0, n_elements(measurement_id)-1 DO BEGIN
    CASE measurement OF
       1: BEGIN  ; Normalized Counts -- Sum over anodes for counts
          IF ion ne 6 then begin
-            tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_NORM_COUNTS'+elevation_str
+            ;tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_NORM_COUNTS'+elevation_str
+            tvar_name = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion)+'_NORM_COUNTS'+elevation_str)
          endif else begin
             ion_full = [indgen(6)]
             tvar_name = strarr(6)
-            for ll = 0, 5 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_NORM_COUNTS'+elevation_str
+            ;for ll = 0, 5 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_NORM_COUNTS'+elevation_str
+            for ll = 0, 5 do tvar_name(ll) = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_NORM_COUNTS'+elevation_str)
          endelse
 
          IF ion eq 0 THEN BEGIN
@@ -871,11 +873,13 @@ FOR tt = 0, n_elements(measurement_id)-1 DO BEGIN
 
       2: BEGIN  ; Count Rate, Summing over anodes
          IF ion lt 5 then begin 
-            tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_COUNT_RATE'+elevation_str
+            ;tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_COUNT_RATE'+elevation_str
+            tvar_name = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion)+'_COUNT_RATE'+elevation_str)
          endif else if ion eq 6 THEN begin
             ion_full = [indgen(5)]
             tvar_name = strarr(5)
-            for ll = 0, 4 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_COUNT_RATE'+elevation_str
+            ;for ll = 0, 4 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_COUNT_RATE'+elevation_str
+            for ll = 0, 4 do tvar_name(ll) = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_COUNT_RATE'+elevation_str)
          endif else begin
             print, 'Data for BKGD not available'
          endelse
@@ -1045,11 +1049,13 @@ FOR tt = 0, n_elements(measurement_id)-1 DO BEGIN
 
       3: BEGIN     ; Flux, fill value for plotting on log scale is 0.01, averaging over anodes
          IF ion lt 5 then begin 
-            tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_FLUX'+elevation_str
+            ;tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_FLUX'+elevation_str
+            tvar_name = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion)+'_FLUX'+elevation_str)
          endif else if ion eq 6 then begin
             ion_full = [indgen(5)]
             tvar_name = strarr(5)
-            for ll = 0, 4 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_FLUX'+elevation_str
+            ;for ll = 0, 4 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_FLUX'+elevation_str
+            for ll = 0, 4 do tvar_name(ll) = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_FLUX'+elevation_str)
          endif else begin
             print, 'Data for BKGD not available'
          endelse
@@ -1213,11 +1219,13 @@ FOR tt = 0, n_elements(measurement_id)-1 DO BEGIN
 
       4: BEGIN    ; Velocity distribution functions, fill value is 10^-32, Averaging over anodes
          IF ion lt 5 then begin 
-            tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_VEL_DISTR'+elevation_str
+            ;tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_VEL_DISTR'+elevation_str
+            tvar_name = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion)+'_VEL_DISTR'+elevation_str)
          endif else if ion eq 6 then begin
             ion_full = [indgen(5)]
             tvar_name = strarr(5)
-            for ll = 0, 4 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_VEL_DISTR'+elevation_str
+            ;for ll = 0, 4 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_VEL_DISTR'+elevation_str
+            for ll = 0, 4 do tvar_name(ll) = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_VEL_DISTR'+elevation_str)
          endif else begin
             print, 'Data for BKGD not available'
          endelse
@@ -1379,11 +1387,13 @@ FOR tt = 0, n_elements(measurement_id)-1 DO BEGIN
 
       5: BEGIN                  ; RF corrected counts, fill value for 0 counts is 0.01
          IF ion lt 5 then begin
-            tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_RF_CORR_COUNTS'+elevation_str
+            ;tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_RF_CORR_COUNTS'+elevation_str
+            tvar_name = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion)+'_RF_CORR_COUNTS'+elevation_str)
          endif else if ion eq 6 then begin
             ion_full = [indgen(5)]
             tvar_name = strarr(5)
-            for ll = 0, 4 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_RF_CORR_COUNTS'+elevation_str
+            ;for ll = 0, 4 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_RF_CORR_COUNTS'+elevation_str
+            for ll = 0, 4 do tvar_name(ll) = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_RF_CORR_COUNTS'+elevation_str)
          endif else begin
             print, 'Data for BKGD not available.'
          endelse
@@ -1545,11 +1555,13 @@ FOR tt = 0, n_elements(measurement_id)-1 DO BEGIN
 
       6: BEGIN     ; Background corrected counts, fill value for 0 counts is 0.01
          IF ion lt 4 then begin
-            tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_BKGD_CORR_COUNTS'+elevation_str
+            ;tvar_name = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion)+'_BKGD_CORR_COUNTS'+elevation_str
+            tvar_name = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion)+'_BKGD_CORR_COUNTS'+elevation_str)
          endif else if ion eq 6 then begin
             ion_full = [indgen(4)]
             tvar_name = strarr(4)
-            for ll = 0, 3 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_BKGD_CORR_COUNTS'+elevation_str
+           ; for ll = 0, 3 do tvar_name(ll) = strupcase(sc_id)+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_BKGD_CORR_COUNTS'+elevation_str
+            for ll = 0, 3 do tvar_name(ll) = strlowcase(sc_id+'_HPCA_'+sp_name_tvar(ion_full(ll))+'_BKGD_CORR_COUNTS'+elevation_str)
          endif else begin
             print, 'Data for O++ and BKGD not available'
          endelse

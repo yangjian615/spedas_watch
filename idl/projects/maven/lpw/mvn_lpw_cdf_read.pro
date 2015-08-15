@@ -1,6 +1,8 @@
 
 ;+
-;Edited on 2015-01-09 by CF: this rouinte takes a date, works out which files to load, and sends those to mvn_lpw_cdf_read_file
+;This routine should be used by most people to get LPW data. See below for examples.
+;
+;Edited on 2015-01-09 by CF: this routine takes a date, works out which files to load, and sends those to mvn_lpw_cdf_read_file.pro.
 ;
 ;Program written by Chris Fowler on Jan 6th 2014 as a wrapper for all the IDL routines needed to load cdf files into tplot memory
 ;for the lpw instrument.
@@ -12,27 +14,37 @@
 ; - the tplot variables and corresponding limit and dlimit data are loaded into IDL tplot memory.
 ; 
 ; KEYWORDS:
-; - vars: variable that you wish to load. Entered as a string, or string array if you want multiple variables loaded. Entries can be upper or lower case. 
+; - vars: variable(s) that you wish to load. Entered as a string, or string array if you want multiple variables loaded. Entries can be upper or lower case. 
 ;         The default (if not set) is to load all. There are twelve products LPW produces:
 ;         wspecact       - waves active spectra
 ;         wspecpas       - waves passive spectra
-;         we12burstlf    - electric field burst, low frequency
-;         we12burstmf    - electric field burst, mid frequency
-;         we12bursthf    - electric field burst, high frequency
+;         we12burstlf    - electric field burst, low frequency    *** Burst mode data can take a long time to load and should be avoided if you don't want to use it.
+;         we12burstmf    - electric field burst, mid frequency    *** Burst mode data can take a long time to load and should be avoided if you don't want to use it.
+;         we12bursthf    - electric field burst, high frequency   *** Burst mode data can take a long time to load and should be avoided if you don't want to use it.
 ;         wn             - density derived from waves
 ;         lpiv           - IV curves from Langmuir Probe mode
 ;         lpnt           - Density, Temperature, Vsc dervied from lpiv
 ;         mrgexb         - Pointing flux
 ;         mrgscpot       - Vsc (spacecraft potential)
-;         euv            - EUV data
+;         euv            - EUV data              *** NOTE that due to directory formats EUV must be loaded in a separate call; it cannot be loaded with other LPW variables. See examples below.
 ;         e12            - 1D electric field
 ; 
 ; - level: level of data to load, entered as a string, or string array for multiple levels. Entries can be uppder or lower case. The default (if not set) is just L2. There are four options:
-;   l1a, l1b, l2, all 
+;   l1a, l1b, l2, l3 (euv only). 
 ; 
-; - newdir: the default directory should be a mirror of SSL. Set this keyword if you want to look at files stored at another location. Note that sub folders within newdir are assumed to have the structure newdir/yyyy/mm/file.cdf
+; - newdir: the default directory should be a mirror of SSL. Set this keyword if you want to look at files stored at another location. Note that sub folders within newdir are assumed to have the structure newdir/yyyy/mm/file.cdf. This hasn't been tested much and may break.
 ;
-; EXAMPLE: to load the following two CDF files:
+; EXAMPLES:
+; 
+; mvn_lpw_cdf_read, '2014-12-03', vars='lpiv', level='l2'                     ;Load L2 data, just the IV curves
+; mvn_lpw_cdf_read, '2014-12-03'                                              ;Load all variables for L2 (default is L2)
+; mvn_lpw_cdf_read, '2014-12-03', level=['l1a', 'l1b', 'l2'], vars = ['euv', 'lpnt']    ;load EUV and quantities derived from IV curves, for all levels (L1a, L1b, L2)
+; 
+; ;To load EUV:
+; mvn_lpw_cdf_read, '2015-01-02', vars='euv'     ;Load EUV, default is L2
+; 
+; mvn_lpw_cdf_read, '2015-01-02', vars=['euv', 'lpnt', 'wn']   ;Load several LPW variables and EUV. This will load the LPW variables first, and produce a copy and pastable line in the terminal that will then load EUV. This line is identical to that shown below. 
+;     mvn_lpw_cdf_read, '2015-01-02', vars='euv'               ;Identical copy and paste line to load EUV data.
 ; 
 ; EDITS:
 ; - Througn till Jan 7 2014 (CF).
@@ -41,6 +53,7 @@
 ; -140718 clean up for check out L. Andersson
 ; -2015-01-09: CF: routine changed to accept date. This routine calls upon mvn_lpw_cdf_read_file and provides the filenames to do the loading.
 ; -2015-04-30: CF: previous updates include ability to get EUV data, default is L2, checking input variables for errors.
+; -2015-08-04: CMF: edited preamble.
 ;
 ; Version 2.0
 ;-
@@ -78,9 +91,9 @@ ENDIF ELSE BEGIN
 ENDELSE
 
 ;Check vars, levels. Make lower case, as all file names will be lower case.
-varsALL=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'e12']
+varsALL=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'e12', 'euv']
 if keyword_set(vars) then vars = strlowcase(vars) else vars=varsALL  ;default ;make everything lower case
-if keyword_set(levels) then levels = strlowcase(levels) else levels = ['l2']
+if keyword_set(level) then levels = strlowcase(level) else levels = ['l2']   ;NOTE input is level, but code itself converts this to levels.
 euvcall = 0.
 euvget = 0.
 if total(strmatch(vars, 'euv')) eq 1. then begin
@@ -129,8 +142,9 @@ for ll = 0, nl-1 do begin
     for vv = 0, nv -1 do begin
           ;Search for latest file:
           fname = 'mvn_lpw_'+levels[ll]+'_'+vars[vv]+'_'+yr+mm+dd   ;cdf_latest will find latest v and r; this is first part of filename
-          if euvget eq 1. then fname = 'mvn_euv_'+levels[ll]+'_bands_'+yr+mm+dd
-          
+          if (euvget eq 1.) and (levels[ll] eq 'l2') then fname = 'mvn_euv_'+levels[ll]+'_bands_'+yr+mm+dd   ;Search for EUV specific names here
+          if (euvget eq 1.) and (levels[ll] eq 'l3') then fname = 'mvn_euv_'+levels[ll]+'_daily_'+yr+mm+dd
+                    
           fname2 = fbase+levels[ll]+sl+yr+sl+mm+sl+fname   ;full directory to file, minus v and r numbers.
 ;jmm, 2015-02-05 to use mvn_pfp_file_retrieve, don't include the root_data_dir 
           fname2_tst = 'maven'+sl+'data'+sl+'sci'+sl+'lpw'+sl+ $
@@ -181,14 +195,40 @@ endif else begin
 endelse
 
 if (euvcall eq 1.) and (euvget eq 0.) then begin
-    print, name, "### WARNING ### : currently you must load EUV data in a separate call to mvn_lpw_cdf_read, which does not call on any LP data. This run"
-    print, "will load the following variables: "
+    print, ""
+    print, name, "### WARNING ### : currently you must load EUV data in a separate call to mvn_lpw_cdf_read. This run"
+    print, "has loaded the following variables: "
     print, ""
     print, fvars
     print, ""
-    print, "Now run mvn_lpw_cdf_read, date, vars='euv'
+    print, "Now copy and paste the following:"
+    print, "    mvn_lpw_cdf_read, '", strtrim(date,2), "', vars='euv', level=['l2', 'l3'] "
     print, "To load EUV data as well."
     print,""
+endif
+
+;======
+;Extra:
+;======
+;Some EUV dates have timestamps of zero which causes tplot to crash. Remove them here.
+if euvget eq 1 then begin
+    get_data, 'mvn_euv_calib_bands', data=dd1, dlimit=dl1, limit=ll1
+    i = where(dd1.x gt 0., ni)
+    if ni gt 0. then begin
+        ddnew = create_struct('x'   ,   dd1.x[i]     , $
+                              'y'   ,   dd1.y[i,*]   , $
+                              'dy'  ,   dd1.dy[i,*]  , $
+                              'dv'  ,   dd1.dv[i,*]  , $
+                              'flag',   dd1.flag[i]  )
+    endif
+    
+    store_data, 'mvn_euv_calib_bands', data=ddnew, dlimit=dl1, limit=ll1
+    options, 'mvn_euv_calib_bands', ylog=0
+    ;Set yrange on plot:
+    ymax = max(ddnew.y, /nan)*1.1
+    ymin = min(ddnew.y, /nan)
+    ylim, 'mvn_euv_calib_bands', ymin, ymax
+    
 endif
 
 

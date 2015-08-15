@@ -3,7 +3,7 @@
 ; structures of the given type. 
 ; This may return an error code or -1 if no data are found.
 ;-
-function execute_latis_query, path, query, struct
+function execute_latis_query, path, query, struct, embedded_delimiters=embedded_delimiters
 
   ;Get IDLnetUrl object. May prompt for login.
   ;connection = get_mms_sitl_connection(host="sdc-web1", port="8080") ;for internal testing
@@ -28,7 +28,7 @@ function execute_latis_query, path, query, struct
   
   ;Convert the data from a array of records  with comma separated values
   ;to an array of structures containing the data with the appropriate types.
-  result = parse_records(data, struct)
+  result = parse_records(data, struct, embedded_delimiters=embedded_delimiters)
 
   return, result
 end

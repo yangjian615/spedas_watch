@@ -85,6 +85,8 @@ tmp              = where(packet EQ 'WPK',nn_act_w5)
 tmp              = where(packet EQ 'HSBM',nn_act_htime) 
 ;--------------------------------------------------------------------
 
+
+
   t2=systime(1,/seconds)
   Print,' ## Read the binary file took ',t2-t1,' seconds ##'
 ;;
@@ -115,8 +117,10 @@ LEAPID =(newfile_byte LT 8)                                     ;try to avoid SC
 ;this is a test....
 ADD1ID = (newfile_byte EQ 1*16+10) ; expect 1a  location 17
 
+ADDCLbyte = (newfile_byte(0:*)*256+newfile_byte(1:*)*256 GT 1*4096+12*256+5*16)    ; that first clock byte (byte no 17) are Greater or Equal to c1-hex and second  clock byte (byte no 18 ) are Greater or Equal to c1-hex
+
 ;THese are where the LPW packets are locates 12 appart
-tmp_ss1=SCAPID1(1:*)*INAPID1(12:*)*NNAPID(0:*)*NNAPID(11:*)*LEAPID(15:*)
+tmp_ss1=SCAPID1(1:*)*INAPID1(12:*)*NNAPID(0:*)*NNAPID(11:*)*LEAPID(15:*)  * ADDCLbyte(17:*)
 tmp_ss2=SCAPID2(1:*)*INAPID2(12:*)*NNAPID(0:*)*NNAPID(11:*)*LEAPID(15:*)
 ;since there is problem with getting false HSBM packet test thefollowing
 ;;this is a test....find the clock to use that as a discriminator - this assumes the first packet is correct
@@ -131,7 +135,15 @@ min_length=(2L^8*newfile_byte(15:*)+newfile_byte(16:*))  GT 10
 tmp_ss=(tmp_ss1 +tmp_ss2)*min_length
 nn=n_elements(tmp_ss)
 qq=where(tmp_ss(0:nn-8),nq)
+
+;******* special treatmenet
+keep=where((newfile_byte(qq+12) NE 94) or ((newfile_byte(qq+12) EQ 94) and (2L^8*newfile_byte(qq+15)+newfile_byte(qq+16) GT 256)) ,nq ) ;have issue with APID 5e == 94 , needs a longer packet to be an hit
+qq=qq[keep]
+;******* special treatmenet
+
 APID=newfile_byte(qq+12) 
+
+
 
 ;plot,newfile_byte(qq+17)
 
@@ -158,6 +170,7 @@ APID=newfile_byte(qq+12)
     SC_CLK1=double(2LL^24*newfile_byte(qq+17)+2LL^16*newfile_byte(qq+18)+2LL^8*newfile_byte(qq+19)+newfile_byte(qq+20))    ;seconds clock 32 bits
     SC_CLK2=double(2LL^8*newfile_byte(qq+21)+newfile_byte(qq+22))                 ;sub-secongs   16 bits
     length2=max(length)
+        
     IF total(length2 GT 2048) GT 0 then print,'Warning: the length of ',total(length GT 2048),' packet are too long'
     IF total(length2 GT 2048) GT 0 then stanna                                    ;crash the program...
     t2=systime(1,/seconds)
@@ -566,6 +579,7 @@ length        = length + 2          ;still true?
      I_ZERO2           = fltarr(nn_SWP2)
      SWP2_DYN_OFFSET2  = fltarr(nn_SWP2)
      FOR ni=0L,nn_SWP2-1 do begin
+   
          i                   = pkt_SWP2[ni]
        counter               = 12L + counter_specific[i]              ;pointing to the start of the DFB teriary header  
        ORB_MD[i]             = newfile_byte[counter+0] /  2^4        ;orb      DFB Tertiary header: format = '(B04,B01,B03,B05,B03)'
@@ -580,13 +594,19 @@ length        = length + 2          ;still true?
            ptr=1L*(counter+6)                                        ; which 8 bit package to start with
            ptr_end=ptr+length_byte[i]-14                             ; this has to be checked!!!
            nn_e=0                                                    ; this is when the data is not exact a factor of 16      
-          SWP2_I2[ni,*] = mvn_lpw_r_block16_byte(newfile_byte,ptr,nn_e,mask8,bin_c,index_arr,128,edac_on) 
-          if edac_on EQ 1 then print,'The compression check EDAC failed in packet no ',p7,i,ni,' pointer ',ptr,nn_e,' Packat SWP1 I1'
+      
+       
+          SWP2_I2[ni,*] = mvn_lpw_r_block16_byte(newfile_byte,ptr,nn_e,mask8,bin_c,index_arr,128,edac_on)           
+           if edac_on EQ 1 then print,'The compression check EDAC failed in packet no ',p7,i,ni,' pointer ',ptr,nn_e,' Packat SWP1 I1'
           SWP2_V1[ni,*] = mvn_lpw_r_block32_byte(newfile_byte,ptr,nn_e,mask8,bin_c,index_arr,128,edac_on) 
           if edac_on EQ 1 then print,'The compression check EDAC failed in packet no ',p7,i,ni,' pointer ',ptr,nn_e,' Packat SWP1 V2'       
+       
            p11 = p11 + 1
-     ENDFOR                                                         ;loop over the packets
-     
+  
+ 
+  
+     ENDFOR                                                         ;loop over the packets  
+        
       mvn_lpw_r_clock_check, 'SWP2', pkt_SWP2, SC, sc_clk1, sc_clk2  ;look for and correct and clock jitter (~0.5s)     
      
       t2=SYSTIME(1,/seconds)                                        ;to check on speed
@@ -598,6 +618,9 @@ length        = length + 2          ;still true?
       total_swp2_length = total(length[pkt_SWP2]+7) 
   endif ELSE BEGIN                                                  ; in case no packages
   SWP2_I2           = -1 &     SWP2_V1           = -1 &     I_ZERO2           = -1 &     SWP2_DYN_OFFSET2  = -1 & ENDELSE
+
+
+
 
 
 
@@ -879,7 +902,7 @@ length        = length + 2          ;still true?
  
 ;PAS_S_HF Packet 
    total_pas_s_hf_length = 0
-   if nn_PAS_HF GT 0 and nn_act_PAS_HF GT 0 then begin     
+   if nn_PAS_HF GT 0 and nn_act_PAS_HF GT 0  then begin      
       t1=SYSTIME(1,/seconds)                                          ;to check on speed
      PAS_S_HF          = !values.f_nan                                ;variable length fltarr(nn_ACT_LF*116)
      PAS_HF_PKTCNT     = fltarr(nn_PAS_HF)
@@ -901,7 +924,7 @@ length        = length + 2          ;still true?
        if ni EQ 0 then PAS_S_HF =                         [data_array] else  $  ;variable length!!
                        PAS_S_HF =               [PAS_S_HF, data_array]      
               p19                 = p19 + 1
-    ENDFOR                                                            ;loop over the packets
+     ENDFOR                                                            ;loop over the packets
     
       mvn_lpw_r_clock_check, 'PAS_HF', pkt_PAS_HF, SC, sc_clk1, sc_clk2  ;look for and correct and clock jitter (~0.5s)   
     

@@ -43,8 +43,22 @@
 ;
 ;mvn_lpw_anc_mvn_vel_J2000: MAVEN velocity in J2000, Vx, Vy, Vz in km/s.
 ;
-;mvn_lpw_anc_mvn_vel_sc: MAVEN velocity in the s/c frame, in km/s.
+;mvn_lpw_anc_mvn_vel_sc_mso: MAVEN velocity in the s/c frame, in km/s, based on the MSO frame
 ;
+;mvn_lpw_anc_mvn_vel_sc_iau: MAVEN velocity in the s/c frame, in km/s, based on the IAU frame.
+;
+;mvn_lpw_anc_mvn_longlat_iau: array is [N,2]: top row is geodetic longitude, bottom is dgeodetic latitude, both in degrees, in IAU frame. Longitude is EAST positive.
+;
+;mvn_lpw_anc_mvn_alt_iau: MAVEN altitude from surface, in geodetic coords (IAU frame), in km.
+;
+;mvn_lpw_anc_mars_shadow: 1 if MAVEN is within the geometric shadow Mars; 0 if MAVEN is in sunlight.
+;
+;With /css set:
+;mvn_lpw_anc_css_pos_mso: CSS position, in MSO frame, Rmars.
+;
+;mvn_lpw_anc_css_pos_iau: CSS position, in IAU frame, Rmars.
+;
+;With /moons set:
 ;mvn_lpw_anc_pho_pos_mso: Phobos position in MSO frame, Rmars.
 ;
 ;mvn_lpw_anc_dei_pos_mso: Deimos positions in MSO frame, Rmars.
@@ -53,15 +67,15 @@
 ;
 ;mvn_lpw_anc_dei_pos_iau: Deimos positions in IAU frame, Rmars.
 ;
-;mvn_lpw_anc_css_pos_mso: CSS position, in MSO frame, Rmars.
+;mvn_lpw_anc_phobos_pos_mvn  :Phobos position in MAVEN s/c frame, in km 
 ;
-;mvn_lpw_anc_css_pos_iau: CSS position, in IAU frame, Rmars.
+;mvn_lpw_anc_deimos_pos_mvn  :Deimos position in MAVEN s/c frame, in km
 ;
 ;                                                      
 ;KEYWORDS:
 ;Setting /not_quiet will plot mvn_abs_angles_z and the offset between MAVEN z axis and the Sun (used more for checking the routine worked).
 ;
-;Setting /moons will get the positions of the moons Phobos and Deimos in MSO and IAU frames.
+;Setting /moons will get the positions of the moons Phobos and Deimos in MSO, IAU and MAVEN s/c frames.
 ;
 ;Setting /css will get position information of Comet Siding Spring in MSO and IAU frames.
 ;
@@ -85,6 +99,7 @@
 ;            the necessary tplot variables.
 ;141006: CF: update dlimits for ISTP compliance.
 ;141031: CF: added keyword /moons, so get position of Phobos and Deimos in MSO and IAU co-ords.
+;150309: CF: added SPICE routines to get long, lat, and correct altitude based on geodetic co-ords. Also added Phobos and Deimos code as written by Brian Templeman.
 ;-
 ;=================
 
@@ -214,11 +229,11 @@ tplotnames = tnames()
 ;If there are no tplot variables stored then tplotnames is the string ''. If there are tplot variables stored tplotnames is either 'tplotname' or
 ;a string array of tplot names. We may have other tplot variables loaded, find those which are lpw ones:
 if tplotnames[0] ne '' and n_elements(tplotnames) gt 2 then begin  ;if we have tplot variables
-    wheret = where(strmatch(tplotnames, '*mvn_lpw_*') eq 1, nwheret)  ;look for where we have lpw variables
+    wheret = where(strmatch(tplotnames, '*mvn_lpw_*') eq 1 and (tplotnames ne 'mvn_lpw_load_kernel_files') and (tplotnames ne 'mvn_lpw_load_file'), nwheret)  ;look for where we have lpw variables
     
-    if nwheret ge 3 then begin  ;the first two lpw variables are usually the L0 load file and SPICE kernels which don't have the ISTP info        
-        get_data, tplotnames[wheret[2]], dlimit=dl, limit=ll  ;doesn't matter which variable for now, we just want the CDF fields from this which are identical
-                                                      ;for all variables. But, kernel and orbit info are in first two tplot variables
+    if nwheret ge 1 then begin  ;the first two lpw variables are usually the L0 load file and SPICE kernels which don't have the ISTP info        
+        get_data, tplotnames[wheret[0]], dlimit=dl, limit=ll  ;doesn't matter which variable for now, we just want the CDF fields from this which are identical
+                                                      ;for all variables. But, we don't want kernel information as this doesn't contain those fields.
         def = 'ISTP information not available.'
         cdf_istp = strarr(15)  ;copy across the fields from dlimit:
         if tag_exist(dl, 'Source_name') then cdf_istp[0] = dl.Source_name else cdf_istp[0] = def
@@ -932,7 +947,7 @@ mvn_vel_j2000[*,2] = state[5,*]  ;velocities in km
 ;========
 ;==6, 7==
 ;========
-;MAVEN position and velocity in MSO frame:
+;MAVEN position and velocity in MSO and IAU frames:
 ;General info:  
 frame    = 'MAVEN_MSO'
 frame2   = 'IAU_MARS'
@@ -991,6 +1006,7 @@ mvn_vel_iau[*,0] = stateezr2[3,*]  ;velocities in km/s
 mvn_vel_iau[*,1] = stateezr2[4,*]  ;velocities in km/s
 mvn_vel_iau[*,2] = stateezr2[5,*]  ;velocities in km/s
 mvn_vel_iau[*,3] = sqrt(mvn_vel_iau[*,0]^2 + mvn_vel_iau[*,1]^2 + mvn_vel_iau[*,2]^2)  ;total vel, km/s
+mvn_pos_iau_cp = stateezr2[0:2,*]  ;copy for getting long, lat, later on
     
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
@@ -1544,40 +1560,56 @@ endif
 ;========
 ;MAVEN velocity in s/c frame:
 ;General info:
-mvn_pointing_sc = dblarr(3,3,nele)  ;array to store all MAVEN pointing info, x in first column, y in second, z in third
 
 ;Here, need to check that there is always pointing info for MAVEN. Go through each timestep and check there is pointing.
 ;Use the encoded clock time, as determined at start of code using SPICE
-tmatrix_j2000=dblarr(3,3,nele)  ;store the rotation matrix in
+tmatrix_iau = dblarr(3,3,nele)  ;store the rotation matrix in
+tmatrix_mso = dblarr(3,3,nele)
 for aa = 0l, nele-1 do begin
-  cspice_ckgp, -202000, enc_time[aa], 0.0, 'J2000', mat1, clk, found
+  cspice_ckgp, -202000, enc_time[aa], 0.0, 'MAVEN_MSO', mat1, clk, found
+  cspice_ckgp, -202000, enc_time[aa], 0.0, 'IAU_MARS', mat1b, clk, foundb
   if found eq 1. then begin  ;if we have pointing info, carry on...
-    mat_j_2 = spice_body_att('J2000', 'MAVEN_SPACECRAFT', utc_time[aa])  ;one at a time to Davin's routine
+    mat_mso = spice_body_att('MAVEN_MSO', 'MAVEN_SPACECRAFT', utc_time[aa])  ;one at a time to Davin's routine  ;matrix to convert from MARS_MSO to MAVEN s/c frame.
     ;cspice_pxform, "MAVEN_SPACECRAFT", "J2000", et_time[aa], mat_j  ;MAVEN pointing in J2000 frame
-    tmatrix_j2000[*,*,aa] = mat_j_2[*,*]
-  endif else tmatrix_j2000[*,*,aa] = !values.f_nan  ;nans if we don't find pointing
+    ;tmatrix_j2000[*,*,aa] = mat_j_2[*,*]
+    tmatrix_mso[*,*,aa] = mat_mso[*,*]
+  endif else tmatrix_mso[*,*,aa] = !values.f_nan
+  
+  if foundb eq 1. then begin  ;if we have pointing info, carry on...
+    mat_iau = spice_body_att('IAU_MARS', 'MAVEN_SPACECRAFT', utc_time[aa])  ;one at a time to Davin's routine  ;matrix to convert from MARS_MSO to MAVEN s/c frame.
+
+    tmatrix_iau[*,*,aa] = mat_iau[*,*]
+  endif else tmatrix_iau[*,*,aa] = !values.f_nan 
+  
 endfor
 
-;mvn_vel_j2000[time,3] contains the mvn vel vector, in j2000 frame. Multiply this with the transform matrix tmatrix_j2000 to get this in s/c frame:
 
-mvn_vel_sc = dblarr(nele,3)  ;store x vector (3 components in J2000) in row 1, y in row 2, z in 3. Time in nele.
+mvn_vel_sc_mso = dblarr(nele,3)  ;store x vector (3 components) in row 1, y in row 2, z in 3. Time in nele.
+mvn_vel_sc_iau = dblarr(nele,3)
 
 for aa = 0L, nele-1 do begin
-  ;Transform MAVEN xyz vectors into J2000:
-  cspice_mxv, tmatrix_j2000[*,*,aa], transpose(mvn_vel_j2000[aa,*]), mvn_ram   ;can only take one vector at a time.
-  mvn_vel_sc[aa,*] = mvn_ram
+  ;Transform MAVEN xyz vectors:
+  cspice_mxv, tmatrix_mso[*,*,aa], transpose(mvn_vel_mso[aa,0:2]), mvn_ram   ;can only take one vector at a time.  
+  mvn_vel_sc_mso[aa,*] = mvn_ram
+  cspice_mxv, tmatrix_iau[*,*,aa], transpose(mvn_vel_iau[aa,0:2]), mvn_ram   ;can only take one vector at a time.
+  mvn_vel_sc_iau[aa,*] = mvn_ram  
 endfor  ;over aa
 
 ;Add in total vel vector here:
-mvn_vel_sc2 = dblarr(nele,4)
-for aa = 0, 2 do mvn_vel_sc2[*,aa] = mvn_vel_sc[*,aa]  ;add in x,y,z
-mvn_vel_sc2[*,3] = sqrt(mvn_vel_sc[*,0]^2 + mvn_vel_sc[*,1]^2 + mvn_vel_sc[*,2]^2)  ;total
+mvn_vel_sc_mso2 = dblarr(nele,4)
+mvn_vel_sc_iau2 = dblarr(nele,4)
+
+for aa = 0, 2 do mvn_vel_sc_mso2[*,aa] = mvn_vel_sc_mso[*,aa]  ;add in x,y,z
+mvn_vel_sc_mso2[*,3] = sqrt(mvn_vel_sc_mso[*,0]^2 + mvn_vel_sc_mso[*,1]^2 + mvn_vel_sc_mso[*,2]^2)  ;total
+
+for aa = 0, 2 do mvn_vel_sc_iau2[*,aa] = mvn_vel_sc_iau[*,aa]  ;add in x,y,z
+mvn_vel_sc_iau2[*,3] = sqrt(mvn_vel_sc_iau[*,0]^2 + mvn_vel_sc_iau[*,1]^2 + mvn_vel_sc_iau[*,2]^2)  ;total
 
 
 ;Store as tplot variable:
 ;--------------- dlimit   ------------------
 dlimit=create_struct(   $
-  'Product_name',                  'mvn_lpw_anc_mvn_vel_sc', $
+  'Product_name',                  'mvn_lpw_anc_mvn_vel_sc_mso', $
   'Project',                       cdf_istp[12], $
   'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
   'Discipline',                    cdf_istp[1], $
@@ -1600,7 +1632,7 @@ dlimit=create_struct(   $
   ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
   'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
   'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
-  'y_Var_notes',                   'Look vectors. MAVEN s/c frame: +Z is aligned with the main antenna. Y runs along the solar panels. X completes the system.' , $
+  'y_Var_notes',                   'Look vectors. MAVEN s/c frame: +Z is aligned with the main antenna. Y runs along the solar panels. X completes the system. Velocity determined from MARS_MSO to MAVEN s/c frame' , $
   ;'v_Var_notes',                   'Frequency bins', $
   'dy_Var_notes',                  'Not used.', $
   ;'dv_Var_notes',                   'Error on frequency', $
@@ -1635,8 +1667,8 @@ dlimit=create_struct(   $
 limit=create_struct(   $
   'char_size' ,     1.2                      ,$
   'xtitle' ,        str_xtitle                   ,$
-  'ytitle' ,        'mvn-velocity'                 ,$
-  'yrange' ,        [min(mvn_vel_sc),max(mvn_vel_sc)] ,$
+  'ytitle' ,        'mvn-velocity-mso'                 ,$
+  'yrange' ,        [min(mvn_vel_sc_mso2),max(mvn_vel_sc_mso2)] ,$
   'ystyle'  ,       1.                       ,$
   'labels',         ['Vx', 'Vy', 'Vz', 'TOTAL'], $
   'labflag',        1, $
@@ -1649,7 +1681,84 @@ limit=create_struct(   $
   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
   'noerrorbars', 1)
 ;---------------------------------
-store_data, 'mvn_lpw_anc_mvn_vel_sc', data={x:unix_in, y:mvn_vel_sc2, flag:att_flag}, dlimit=dlimit, limit=limit  ;#### no velocity yet
+store_data, 'mvn_lpw_anc_mvn_vel_sc_mso', data={x:unix_in, y:mvn_vel_sc_mso2, flag:att_flag}, dlimit=dlimit, limit=limit  ;#### no velocity yet
+;---------------------------------
+
+;--------------- dlimit   ------------------
+dlimit=create_struct(   $
+  'Product_name',                  'mvn_lpw_anc_mvn_vel_sc_iau', $
+  'Project',                       cdf_istp[12], $
+  'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
+  'Discipline',                    cdf_istp[1], $
+  'Instrument_type',               cdf_istp[2], $
+  'Data_type',                     'Support_data' ,  $
+  'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
+  'Descriptor',                    cdf_istp[5], $
+  'PI_name',                       cdf_istp[6], $
+  'PI_affiliation',                cdf_istp[7], $
+  'TEXT',                          cdf_istp[8], $
+  'Mission_group',                 cdf_istp[9], $
+  'Generated_by',                  cdf_istp[10],  $
+  'Generation_date',                today_date+' # '+t_routine, $
+  'Rules of use',                  cdf_istp[11], $
+  'Acknowledgement',               cdf_istp[13],   $
+  'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
+  'y_catdesc',                     'MAVEN attitude (pointing), in the MAVEN s/c frame.', $
+  ;'v_catdesc',                     'test dlimit file, v', $    ;###
+  'dy_catdesc',                    'Error on the data.', $     ;###
+  ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
+  'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
+  'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
+  'y_Var_notes',                   'Look vectors. MAVEN s/c frame: +Z is aligned with the main antenna. Y runs along the solar panels. X completes the system. Velocity determined from MARS_IAU to MAVEN sc frame.' , $
+  ;'v_Var_notes',                   'Frequency bins', $
+  'dy_Var_notes',                  'Not used.', $
+  ;'dv_Var_notes',                   'Error on frequency', $
+  'flag_Var_notes',                '0 = no flag: SPICE times available; 1 = flag: no SPICE times available.', $
+'xFieldnam',                     'x: More information.', $      ;###
+  'yFieldnam',                     'y: More information.', $
+  ; 'vFieldnam',                     'v: More information', $
+  'dyFieldnam',                    'dy: Not used.', $
+  ;  'dvFieldnam',                    'dv: More information', $
+  'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
+  'MONOTON', 'INCREASE', $
+  'SCALEMIN', min(mvn_vel_iau), $
+  'SCALEMAX', max(mvn_vel_iau), $        ;..end of required for cdf production.
+  't_epoch'         ,     t_epoch, $
+  'Time_start'      ,     time_start, $
+  'Time_end'        ,     time_end, $
+  'Time_field'      ,     time_field, $
+  'SPICE_kernel_version', kernel_version, $
+  'SPICE_kernel_flag'      ,     spice_used, $
+  'L0_datafile'     ,     L0_datafile , $
+  'cal_vers'        ,     kernel_version ,$
+  'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+  ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
+  ;'cal_datafile'    ,     'No calibration file used' , $
+  'cal_source'      ,     'SPICE kernels', $
+  'xsubtitle'       ,     '[sec]', $
+  'ysubtitle'       ,     '[km/s (S/C frame)]');, $
+;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
+;'zsubtitle'       ,     '[Attitude]')
+;-------------  limit ----------------
+limit=create_struct(   $
+  'char_size' ,     1.2                      ,$
+  'xtitle' ,        str_xtitle                   ,$
+  'ytitle' ,        'mvn-velocity-IAU'                 ,$
+  'yrange' ,        [min(mvn_vel_sc_iau2),max(mvn_vel_sc_iau2)] ,$
+  'ystyle'  ,       1.                       ,$
+  'labels',         ['Vx', 'Vy', 'Vz', 'TOTAL'], $
+  'labflag',        1, $
+  'colors',         [2,4,6,0], $
+  ;'ztitle' ,        'Z-title'                ,$
+  ;'zrange' ,        [min(data.y),max(data.y)],$
+  ;'spec'            ,     1, $
+  ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
+  ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
+  ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
+  'noerrorbars', 1)
+;---------------------------------
+store_data, 'mvn_lpw_anc_mvn_vel_sc_iau', data={x:unix_in, y:mvn_vel_sc_iau2, flag:att_flag}, dlimit=dlimit, limit=limit  ;#### no velocity yet
 ;---------------------------------
 
 if keyword_set(moons) then begin
@@ -2064,6 +2173,178 @@ if keyword_set(moons) then begin
     ;---------------------------------
     store_data, 'mvn_lpw_anc_dei_pos_iau', data={x:unix_in, y:dei_pos_iau, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
     ;---------------------------------
+
+    ;===================================================================================================================================
+    ;Get the positions of the moons Phobos and Deimos in MAVEN frames:
+    ;MOON positions and velocity in MAVEN frame:
+    ;General info:
+    frame    = 'MAVEN_SPACECRAFT'
+    abcorr   = 'LT+S'  ;correct for light travel time and something
+    observer = 'MAVEN'
+    targetPHOBOS = 'PHOBOS'
+    targetDEIMOS = 'DEIMOS'
+    ;=====
+    ;==1==
+    ;=====
+    ;Absolute angle between Moons and MAVEN
+    ;Get Moon position relative to MAVEN in s/c frame:
+    ;Information needed:
+
+    IF (spk_coverage EQ 'all') AND (ck_coverage EQ 'all') THEN BEGIN
+      statePHOBOS = spice_body_pos(targetPHOBOS, observer, utc=utc_time, frame=frame, abcorr=abcorr)
+      stateDEIMOS = spice_body_pos(targetDEIMOS, observer, utc=utc_time, frame=frame, abcorr=abcorr)
+    ENDIF ELSE BEGIN
+      statePHOBOS = DBLARR(3,nele)  ;must fill this rotation matrix in one time step at a time now. Here time goes in y axis for spice routines
+      stateDEIMOS = DBLARR(3,nele)  ;must fill this rotation matrix in one time step at a time now. Here time goes in y axis for spice routines
+      FOR aa = 0, nele-1 DO BEGIN  ;do each time point individually
+        IF (spkcov[aa] EQ 1) AND (ck_check[aa] EQ 1) THEN BEGIN
+          state_tempPHOBOS = spice_body_pos(targetPHOBOS, observer, utc=utc_time[aa], frame=frame, abcorr=abcorr)
+          state_tempDEIMOS = spice_body_pos(targetDEIMOS, observer, utc=utc_time[aa], frame=frame, abcorr=abcorr)
+        ENDIF ELSE BEGIN
+          state_tempPHOBOS = [!values.f_nan, !values.f_nan, !values.f_nan]
+          state_tempDEIMOS = [!values.f_nan, !values.f_nan, !values.f_nan]
+        ENDELSE
+        ;if we don't have coverage, use nans instead
+        statePHOBOS[0,aa] = state_tempPHOBOS[0]  ;add time step to overall array
+        statePHOBOS[1,aa] = state_tempPHOBOS[1]
+        statePHOBOS[2,aa] = state_tempPHOBOS[2]
+        stateDEIMOS[0,aa] = state_tempDEIMOS[0]  ;add time step to overall array
+        stateDEIMOS[1,aa] = state_tempDEIMOS[1]
+        stateDEIMOS[2,aa] = state_tempDEIMOS[2]
+      ENDFOR
+    ENDELSE
+
+    ;Extract PHOBOS position, in s/c frame:
+    pos_PHOBOS = DBLARR(nele,3)
+    pos_PHOBOS[*,0] = statePHOBOS[0,*]  ;positions in km
+    pos_PHOBOS[*,1] = statePHOBOS[1,*]
+    pos_PHOBOS[*,2] = statePHOBOS[2,*]
+    ;Extract Sun position, in s/c frame:
+    pos_DEIMOS = DBLARR(nele,3)
+    pos_DEIMOS[*,0] = stateDEIMOS[0,*]  ;positions in km
+    pos_DEIMOS[*,1] = stateDEIMOS[1,*]
+    pos_DEIMOS[*,2] = stateDEIMOS[2,*]
+
+
+    ;Store as tplot variable:
+    ;--------------- dlimit   ------------------
+    dlimit=create_struct(   $
+      'Product_name',                  'mvn_lpw_anc_PHOBOS_pos_mvn', $
+      'Project',                       cdf_istp[12], $
+      'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
+      'Discipline',                    cdf_istp[1], $
+      'Instrument_type',               cdf_istp[2], $
+      'Data_type',                     'Support_data' ,  $
+      'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
+      'Descriptor',                    cdf_istp[5], $
+      'PI_name',                       cdf_istp[6], $
+      'PI_affiliation',                cdf_istp[7], $
+      'TEXT',                          cdf_istp[8], $
+      'Mission_group',                 cdf_istp[9], $
+      'Generated_by',                  cdf_istp[10],  $
+      'Generation_date',                today_date+' # '+t_routine, $
+      'Rules of use',                  cdf_istp[11], $
+      'Acknowledgement',               cdf_istp[13],   $
+      'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
+      'y_catdesc',                     'PHOBOS position, in MAVEN frame.', $
+      'dy_catdesc',                    'Error on the data.', $     ;###
+      'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
+      'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
+      'y_Var_notes',                   'Units of km', $
+      'dy_Var_notes',                  'Not used.', $
+      'flag_Var_notes',                '0 = no flag: SPICE times available; 1 = flag: no SPICE times available.', $
+      'xFieldnam',                     'x: More information', $      ;###
+      'yFieldnam',                     'y: More information', $
+      'dyFieldnam',                    'dy: Not used.', $
+      'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
+      'MONOTON', 'INCREASE', $
+      'SCALEMIN', MIN(pos_PHOBOS), $
+      'SCALEMAX', MAX(pos_PHOBOS), $        ;..end of required for cdf production.
+      't_epoch'         ,     t_epoch, $
+      'Time_start'      ,     time_start, $
+      'Time_end'        ,     time_end, $
+      'Time_field'      ,     time_field, $
+      'SPICE_kernel_version', kernel_version, $
+      'SPICE_kernel_flag'      ,     spice_used, $
+      'L0_datafile'     ,     L0_datafile , $
+      'cal_vers'        ,     kernel_version ,$
+      'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+      'cal_source'      ,     'SPICE kernels', $
+      'xsubtitle'       ,     '[sec]', $
+      'ysubtitle'       ,     '[km]');, $
+    ;-------------  limit ----------------
+    limit=create_struct(   $
+      'char_size' ,     1.2                      ,$
+      'xtitle' ,        str_xtitle                   ,$
+      'ytitle' ,        'Phobos position (s/c frame)'                 ,$
+      'yrange' ,        [MIN(pos_PHOBOS),MAX(pos_PHOBOS)] ,$
+      'ystyle'  ,       1.                       ,$
+      'labflag',        1, $
+      'labels',         ['MVN X', 'MVN Y', 'MVN Z'], $
+      'noerrorbars', 1)
+    ;---------------------------------
+    store_data, 'mvn_lpw_anc_phobos_pos_mvn', data={x:unix_in, y:pos_PHOBOS, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
+    ;---------------------------------
+
+    ;Store as tplot variable:
+    ;--------------- dlimit   ------------------
+    dlimit=create_struct(   $
+      'Product_name',                  'mvn_lpw_anc_DEIMOS_pos_mvn', $
+      'Project',                       cdf_istp[12], $
+      'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
+      'Discipline',                    cdf_istp[1], $
+      'Instrument_type',               cdf_istp[2], $
+      'Data_type',                     'Support_data' ,  $
+      'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
+      'Descriptor',                    cdf_istp[5], $
+      'PI_name',                       cdf_istp[6], $
+      'PI_affiliation',                cdf_istp[7], $
+      'TEXT',                          cdf_istp[8], $
+      'Mission_group',                 cdf_istp[9], $
+      'Generated_by',                  cdf_istp[10],  $
+      'Generation_date',                today_date+' # '+t_routine, $
+      'Rules of use',                  cdf_istp[11], $
+      'Acknowledgement',               cdf_istp[13],   $
+      'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
+      'y_catdesc',                     'DEIMOS position, in MAVEN frame.', $
+      'dy_catdesc',                    'Error on the data.', $     ;###
+      'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
+      'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
+      'y_Var_notes',                   'Units of km', $
+      'dy_Var_notes',                  'Not used.', $
+      'flag_Var_notes',                '0 = no flag: SPICE times available; 1 = flag: no SPICE times available.', $
+      'xFieldnam',                     'x: More information', $      ;###
+      'yFieldnam',                     'y: More information', $
+      'dyFieldnam',                    'dy: Not used.', $
+      'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
+      'MONOTON', 'INCREASE', $
+      'SCALEMIN', MIN(pos_DEIMOS), $
+      'SCALEMAX', MAX(pos_DEIMOS), $        ;..end of required for cdf production.
+      't_epoch'         ,     t_epoch, $
+      'Time_start'      ,     time_start, $
+      'Time_end'        ,     time_end, $
+      'Time_field'      ,     time_field, $
+      'SPICE_kernel_version', kernel_version, $
+      'SPICE_kernel_flag'      ,     spice_used, $
+      'L0_datafile'     ,     L0_datafile , $
+      'cal_vers'        ,     kernel_version ,$
+      'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+      'cal_source'      ,     'SPICE kernels', $
+      'xsubtitle'       ,     '[sec]', $
+      'ysubtitle'       ,     '[km]');, $
+    ;-------------  limit ----------------
+    limit=create_struct(   $
+      'char_size' ,     1.2                      ,$
+      'xtitle' ,        str_xtitle                   ,$
+      'ytitle' ,        'Deimos position (s/c frame)'                 ,$
+      'yrange' ,        [MIN(pos_DEIMOS),MAX(pos_DEIMOS)] ,$
+      'ystyle'  ,       1.                       ,$
+      'labflag',        1, $
+      'labels',         ['MVN X', 'MVN Y', 'MVN Z'], $
+      'noerrorbars', 1)
+    ;---------------------------------
+    store_data, 'mvn_lpw_anc_deimos_pos_mvn', data={x:unix_in, y:pos_DEIMOS, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
+    ;---------------------------------
   
 endif  ;moons
 
@@ -2306,9 +2587,250 @@ if keyword_set(css) then begin
       
 endif
 
+
+;========================================================
+;Longitude, Latitude, Altitude, based on geodetic coords:
+;========================================================
+;Mars is not a sphere therefore the altitudes calculated above are off by upto ~20 km.
+;Check we have radius information about Mars:
+found = cspice_bodfnd( 499, "RADII" )
+
+if (found) then begin
+      cspice_bodvrd, 'MARS', "RADII", 499, radii
+      flat = (RADII[0] - RADII[2])/RADII[0]  ;flattening coefficient between polar and equatorial radii.
+      
+      cspice_recgeo, mvn_pos_iau_cp, radii[0], flat, lon, lat, alt   ;mvn_pos_iau is 3XN matrix of position.
+      
+      ;Covnert radians to degrees:
+      lon = lon * (180./!pi)
+      lat = lat * (180./!pi)
+      
+      ;Rearrange arrays for tplot storage:
+      longlat = fltarr(nele,2)
+      longlat[*,0] = lon
+      longlat[*,1] = lat
+      
+      alt_iau = alt
+      
+      ;Store data:
+      store_data, 'mvn_lpw_anc_mvn_longlat_iau', data={x:unix_in, y:longlat}
+      store_data, 'mvn_lpw_anc_mvn_alt_iau', data={x:unix_in, y:alt_iau}
+      
+    if keyword_set(notready) then begin  
+      ;COROTATION:
+      mvn_lpw_anc_corotation, CoRoV_iau=CoRoV_iau
+      
+      ;Transform IAU to MSO and SC frames:
+      CoRoV_MSO = dblarr(nele,3)  ;store CoRo information in MSO, x in first column, y in second, z in third
+      CoRoV_SC = CoRoV_MSO
+    
+    ;Here, need to check that there is always pointing info for MAVEN. Go through each timestep and check there is pointing.
+    ;Use the encoded clock time, as determined at start of code using SPICE
+    tmatrix_sc = dblarr(3,3,nele)  ;store the rotation matrix in
+    tmatrix_mso = dblarr(3,3,nele)
+    for aa = 0l, nele-1 do begin
+      cspice_ckgp, -202000, enc_time[aa], 0.0, 'MAVEN_MSO', mat1, clk, found
+      cspice_ckgp, -202000, enc_time[aa], 0.0, 'IAU_MARS', mat1b, clk, foundb
+      if found eq 1. then begin  ;if we have pointing info, carry on...
+        mat_mso = spice_body_att('IAU_MARS', 'MAVEN_MSO', utc_time[aa])  ;one at a time to Davin's routine  ;matrix to convert from MARS_MSO to MAVEN s/c frame.
+        tmatrix_mso[*,*,aa] = mat_mso[*,*]
+      endif else tmatrix_mso[*,*,aa] = !values.f_nan
+      
+      if foundb eq 1. then begin  ;if we have pointing info, carry on...
+        mat_sc = spice_body_att('IAU_MARS', 'MAVEN_SPACECRAFT', utc_time[aa])  ;one at a time to Davin's routine  ;matrix to convert from MARS_MSO to MAVEN s/c frame.   
+        tmatrix_sc[*,*,aa] = mat_sc[*,*]
+      endif else tmatrix_sc[*,*,aa] = !values.f_nan 
+      
+    endfor
+        
+    
+    for aa = 0L, nele-1 do begin
+      ;Transform MAVEN xyz vectors:
+      cspice_mxv, tmatrix_mso[*,*,aa], transpose(CoRoV_iau[aa,0:2]), CoRoV_MSO_TMP   ;can only take one vector at a time.  
+      CoRoV_MSO[aa,*] = CoRoV_MSO_TMP
+      cspice_mxv, tmatrix_sc[*,*,aa], transpose(CoRoV_iau[aa,0:2]), CoRoV_SC_TMP   ;can only take one vector at a time.
+      CoRoV_SC[aa,*] = CoRoV_SC_TMP 
+    endfor  ;over aa
+    
+    ;Add in total vel vector here:
+    CoRoV_MSO2 = dblarr(nele,4)
+    CoRoV_SC2 = dblarr(nele,4)
+    
+    for aa = 0, 2 do CoRoV_MSO2[*,aa] = CoRoV_MSO[*,aa]  ;add in x,y,z
+    CoRoV_MSO2[*,3] = sqrt(CoRoV_MSO2[*,0]^2 + CoRoV_MSO2[*,1]^2 + CoRoV_MSO2[*,2]^2)  ;total
+    
+    for aa = 0, 2 do CoRoV_SC2[*,aa] = CoRoV_SC[*,aa]  ;add in x,y,z
+    CoRoV_SC2[*,3] = sqrt(CoRoV_SC2[*,0]^2 + CoRoV_SC2[*,1]^2 + CoRoV_SC2[*,2]^2)  ;total
+  
+  
+      ;--------------- dlimit   ------------------
+    dlimit=create_struct(   $
+      'Product_name',                  'mvn_lpw_anc_mvn_CoRoV_SC', $
+      'Project',                       cdf_istp[12], $
+      'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
+      'Discipline',                    cdf_istp[1], $
+      'Instrument_type',               cdf_istp[2], $
+      'Data_type',                     'Support_data' ,  $
+      'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
+      'Descriptor',                    cdf_istp[5], $
+      'PI_name',                       cdf_istp[6], $
+      'PI_affiliation',                cdf_istp[7], $
+      'TEXT',                          cdf_istp[8], $
+      'Mission_group',                 cdf_istp[9], $
+      'Generated_by',                  cdf_istp[10],  $
+      'Generation_date',                today_date+' # '+t_routine, $
+      'Rules of use',                  cdf_istp[11], $
+      'Acknowledgement',               cdf_istp[13],   $
+      'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
+      'y_catdesc',                     'Mars co-rotation velocity in km/s in s/c frame, as computed from the IAU frame.', $
+      ;'v_catdesc',                     'test dlimit file, v', $    ;###
+      'dy_catdesc',                    'Error on the data.', $     ;###
+      ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
+      'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
+      'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
+      'y_Var_notes',                   'Units of km/s. IAU_MARS frame (areodetic): X points from center of Mars to 0 degrees east longitude and 0 degrees latitude; Y points from center of Mars to +90 degrees east longitude and 0 degrees latitude; Z completes the right handed system.' , $
+    ;'v_Var_notes',                   'Frequency bins', $
+    'dy_Var_notes',                  'Not used.', $
+      ;'dv_Var_notes',                   'Error on frequency', $
+      'flag_Var_notes',                '0 = no flag: SPICE times available; 1 = flag: no SPICE times available.', $
+    'xFieldnam',                     'x: More information', $      ;###
+      'yFieldnam',                     'y: 1 Mars radius = 3376.0 km.', $
+      ; 'vFieldnam',                     'v: More information', $
+      'dyFieldnam',                    'No used.', $
+      ;  'dvFieldnam',                    'dv: More information', $
+      'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
+      'SI_conversion',                 '1 Mars radius = 3376.0 km',  $
+      'MONOTON', 'INCREASE', $
+      'SCALEMIN', min(CoRoV_SC2), $
+      'SCALEMAX', max(CoRoV_SC2), $        ;..end of required for cdf production.
+      't_epoch'         ,     t_epoch, $
+      'Time_start'      ,     time_start, $
+      'Time_end'        ,     time_end, $
+      'Time_field'      ,     time_field, $
+      'SPICE_kernel_version', kernel_version, $
+      'SPICE_kernel_flag'      ,     spice_used, $
+      'L0_datafile'     ,     L0_datafile , $
+      'cal_vers'        ,     kernel_version ,$
+      'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+      ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
+      ;'cal_datafile'    ,     'No calibration file used' , $
+      'cal_source'      ,     'SPICE kernels', $
+      'xsubtitle'       ,     '[sec]', $
+      'ysubtitle'       ,     '[Velocity [km/s, S/C frame]]');, $
+    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
+    ;'zsubtitle'       ,     '[Attitude]')
+    ;-------------  limit ----------------
+    limit=create_struct(   $
+      'char_size' ,     1.2                      ,$
+      'xtitle' ,        str_xtitle                   ,$
+      'ytitle' ,        'CoRoV_SC'                 ,$
+      'yrange' ,        [min(CoRoV_SC2, /nan), max(CoRoV_SC2, /nan)] ,$     ;range of orbit at Mars
+      'ystyle'  ,       1.                       ,$
+      'labels',         ['X', 'Y', 'Z', 'TOTAL'], $
+      'labflag',        1, $
+      'colors',         [2, 4, 6, 0], $  ;blue, green, red, black
+      ;'ztitle' ,        'Z-title'                ,$
+      ;'zrange' ,        [min(data.y),max(data.y)],$
+      ;'spec'            ,     1, $
+      ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
+      ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
+      ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
+      'noerrorbars', 1)
+    ;---------------------------------
+    store_data, 'mvn_lpw_anc_mvn_CoRoV_SC', data={x:unix_in, y:CoRoV_SC2, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
+    ;---------------------------------
+    
+    ;--------------- dlimit   ------------------
+    dlimit=create_struct(   $
+      'Product_name',                  'mvn_lpw_anc_mvn_CoRoV_IAU', $
+      'Project',                       cdf_istp[12], $
+      'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
+      'Discipline',                    cdf_istp[1], $
+      'Instrument_type',               cdf_istp[2], $
+      'Data_type',                     'Support_data' ,  $
+      'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
+      'Descriptor',                    cdf_istp[5], $
+      'PI_name',                       cdf_istp[6], $
+      'PI_affiliation',                cdf_istp[7], $
+      'TEXT',                          cdf_istp[8], $
+      'Mission_group',                 cdf_istp[9], $
+      'Generated_by',                  cdf_istp[10],  $
+      'Generation_date',                today_date+' # '+t_routine, $
+      'Rules of use',                  cdf_istp[11], $
+      'Acknowledgement',               cdf_istp[13],   $
+      'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
+      'y_catdesc',                     'Mars co-rotation velocity in km/s, in IAU frame.', $
+      ;'v_catdesc',                     'test dlimit file, v', $    ;###
+      'dy_catdesc',                    'Error on the data.', $     ;###
+      ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
+      'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
+      'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
+      'y_Var_notes',                   'Units of km/s. IAU_MARS frame (areodetic): X points from center of Mars to 0 degrees east longitude and 0 degrees latitude; Y points from center of Mars to +90 degrees east longitude and 0 degrees latitude; Z completes the right handed system.' , $
+    ;'v_Var_notes',                   'Frequency bins', $
+    'dy_Var_notes',                  'Not used.', $
+      ;'dv_Var_notes',                   'Error on frequency', $
+      'flag_Var_notes',                '0 = no flag: SPICE times available; 1 = flag: no SPICE times available.', $
+    'xFieldnam',                     'x: More information', $      ;###
+      'yFieldnam',                     'y: 1 Mars radius = 3376.0 km.', $
+      ; 'vFieldnam',                     'v: More information', $
+      'dyFieldnam',                    'No used.', $
+      ;  'dvFieldnam',                    'dv: More information', $
+      'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
+      'SI_conversion',                 '1 Mars radius = 3376.0 km',  $
+      'MONOTON', 'INCREASE', $
+      'SCALEMIN', min(CoRoV_IAU), $
+      'SCALEMAX', max(CoRoV_IAU), $        ;..end of required for cdf production.
+      't_epoch'         ,     t_epoch, $
+      'Time_start'      ,     time_start, $
+      'Time_end'        ,     time_end, $
+      'Time_field'      ,     time_field, $
+      'SPICE_kernel_version', kernel_version, $
+      'SPICE_kernel_flag'      ,     spice_used, $
+      'L0_datafile'     ,     L0_datafile , $
+      'cal_vers'        ,     kernel_version ,$
+      'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+      ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
+      ;'cal_datafile'    ,     'No calibration file used' , $
+      'cal_source'      ,     'SPICE kernels', $
+      'xsubtitle'       ,     '[sec]', $
+      'ysubtitle'       ,     '[Velocity [km/s, IAU frame]]');, $
+    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
+    ;'zsubtitle'       ,     '[Attitude]')
+    ;-------------  limit ----------------
+    limit=create_struct(   $
+      'char_size' ,     1.2                      ,$
+      'xtitle' ,        str_xtitle                   ,$
+      'ytitle' ,        'CoRoV_IAU'                 ,$
+      'yrange' ,        [min(CoRoV_IAU, /nan), max(CoRoV_IAU, /nan)] ,$     ;range of orbit at Mars
+      'ystyle'  ,       1.                       ,$
+      'labels',         ['X', 'Y', 'Z', 'TOTAL'], $
+      'labflag',        1, $
+      'colors',         [2, 4, 6, 0], $  ;blue, green, red, black
+      ;'ztitle' ,        'Z-title'                ,$
+      ;'zrange' ,        [min(data.y),max(data.y)],$
+      ;'spec'            ,     1, $
+      ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
+      ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
+      ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
+      'noerrorbars', 1)
+    ;---------------------------------
+    store_data, 'mvn_lpw_anc_mvn_CoRoV_IAU', data={x:unix_in, y:CoRoV_IAU, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
+    ;---------------------------------
+
+stop
+  endif
+endif
+
+;========================================================
+
+mvn_lpw_anc_boom_mars_shadow, unix_in   ;is MAVEN in Mars' shadow or not
+
+
 ;==============
 
-mvn_spc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11
+mvn_lpw_anc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11
 
 ;print, "==========================="
 ;print, "Routine finished"

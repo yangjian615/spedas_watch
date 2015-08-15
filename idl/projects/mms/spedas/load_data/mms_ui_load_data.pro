@@ -315,7 +315,6 @@ pro mms_ui_load_data_event,event
         datatypelist = widget_info(event.handler,find_by_uname='datatypelist')
         datatypeSelect = widget_info(datatypelist,/list_select)
         widget_control, datatypelist, get_uvalue=currentDatatypes
-        ;TODO: remove this check and else block once datatypes are all implemented
         if ~array_equal(currentDatatypes,'') then begin
           if datatypeSelect[0] eq -1 then begin
             state.statusBar->update,'You must select at least one data type'
@@ -407,8 +406,8 @@ end
 ;      
 ;HISTORY:
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-10 14:27:01 -0700 (Mon, 10 Aug 2015) $
-;$LastChangedRevision: 18447 $
+;$LastChangedDate: 2015-08-12 18:10:37 -0700 (Wed, 12 Aug 2015) $
+;$LastChangedRevision: 18477 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -495,7 +494,7 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   probeLabel = widget_label(probeBase,value='Probe: ')
   probeList = widget_list(probeBase,$
                           value=probeArrayDisplayed,$
-                        ;  /multiple,$
+                          /multiple,$
                           uvalue=probeArrayValues, $
                           uname='probelist',$
                           xsize=12,$
@@ -509,12 +508,11 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   rateLabel = widget_label(rateBase,value='Data Rate:')
   rateList = widget_list(rateBase,$
                          value=currentRateArray,$
-                       ;  /multiple,$
+;                         /multiple,$
                          uvalue=currentRateArray,$ ;can't use get_value on list
                          uname='ratelist',$
                          xsize=12,$
                          ysize=15) 
-;  widget_control, rateList, set_list_select = 0                                               
   clearRateButton = widget_button(rateBase,value='Clear Rate', $
        uname='clearrate',ToolTip='Deselect all rates')
 
@@ -524,7 +522,7 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   levelLabel = widget_label(levelBase,value='Level:')
   levelList = widget_list(levelBase,$
                          value=currentLevelArray,$
-                       ;  /multiple,$
+;                         /multiple,$
                          uvalue=currentLevelArray,$ ;can't use get_value on list
                          uname='levellist',$
                          xsize=12,$
@@ -537,12 +535,11 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   datatypeLabel = widget_label(datatypeBase,value='Data Type:')
   datatypeList = widget_list(datatypeBase,$
                          value=currentDatatypeArray,$
-                       ;  /multiple,$
+                         /multiple,$
                          uvalue=currentDatatypeArray,$ ;can't use get_value on list
                          uname='datatypelist',$
                          xsize=12,$
                          ysize=15)
-;  widget_control, datatypeList, set_list_select = 0
   clearButton = widget_button(datatypeBase,value='Clear Type', $
        uname='cleardatatype', ToolTip='Deselect all datatypes')
 

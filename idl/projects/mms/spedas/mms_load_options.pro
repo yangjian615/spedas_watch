@@ -15,13 +15,16 @@ s = { $
               l1b: [ '' ] $
             }, $
       fast: { $
-              l1a: [ '' ] $
+              l1a: [ '' ], $
+              l1b: [ '' ] $
             }, $
       slow: { $
-              l1a: [ '' ] $
+              l1a: [ '' ], $
+              l1b: [ '' ] $
             }, $
       srvy: { $
               l1a: [ '' ], $
+              l1b: [ '' ], $
               ql:  [ '' ] $
             } $
     }
@@ -243,7 +246,7 @@ for i=0, n_elements(valid_rates)-1 do begin
 
   ;if the input is specified and doesn't match then ignore
   if is_string(rate) then begin
-    if valid_rates[i] ne strupcase(rate) then continue
+    if ~in_set(valid_rates[i], strupcase(rate)) then continue
   endif
 
   ;if input matched or wasn't specified then add this to the output list
@@ -257,7 +260,7 @@ for i=0, n_elements(valid_rates)-1 do begin
 
     ;if the input is specified but doesn't match then ignore
     if is_string(level) then begin
-      if valid_levels[j] ne strupcase(level) then continue
+      if ~in_set(valid_levels[j], strupcase(level)) then continue
     endif
     
     ;if input matched or wasn't specified then add this to the output list
@@ -266,12 +269,12 @@ for i=0, n_elements(valid_rates)-1 do begin
     ;get datatypes for this rate/level
     valid_datatypes = s.(i).(j)
 
-    ;if input is specified and matches then add that entry
+    ;if input is specified and matches then add matching entries
     ;otherwise add all entries
     if is_string(datatype) then begin
-      idx = where(valid_datatypes eq strupcase(datatype), n)
-      if n ne 0 then begin
-        datatypes_out = array_concat(valid_datatypes[idx], datatypes_out)
+      intersect = ssl_set_intersection(valid_datatypes,strupcase(datatype))
+      if is_string(intersect) then begin
+        datatypes_out = array_concat(intersect, datatypes_out)
       endif
     endif else begin
       datatypes_out = array_concat(valid_datatypes, datatypes_out)
@@ -310,9 +313,9 @@ end
 ;
 ;Input:
 ;  instrument:  (string) Instrument designation, e.g. 'afg'
-;  rate:  (string) Data rate, e.g. 'fast', 'srvy'
-;  level:  (string) Data processing level, e.g. 'l1b', 'ql' 
-;  datatype:  (string) Data type, e.g. 'moments'
+;  rate:  (string)(array) Data rate e.g. 'fast', 'srvy'
+;  level:  (string)(array) Data processing level e.g. 'l1b', 'ql' 
+;  datatype:  (string)(array) Data type, e.g. 'moments'
 ;
 ;Output:
 ;  rate:  If not used as an input this will contain all valid 
@@ -324,12 +327,11 @@ end
 ;  valid:  1 if valid outputs were found, 0 otherwise
 ;
 ;Notes:
-;  -
+;  
 ;
-;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-10 16:58:14 -0700 (Mon, 10 Aug 2015) $
-;$LastChangedRevision: 18449 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-14 13:52:41 -0700 (Fri, 14 Aug 2015) $
+;$LastChangedRevision: 18496 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $
@@ -353,9 +355,6 @@ if ~is_string(instrument) then begin
 endif
 
 
-;TODO:  Verify inputs aren't arrays (or allow?)
-
-
 ;Get structure specifying availability of data types
 ;---------------------------------------------------
 case strupcase(instrument) of 
@@ -375,6 +374,10 @@ endcase
 
 ;Extract information from structure
 ;---------------------------------------------------
+
+;get valid options based on input
+;  -if one or more of the *_out quantities is missing 
+;   afterward then no valid matches were found 
 mms_load_options_getvalid, s, rate_in=rate, level_in=level, datatype_in=datatype, $
        rates_out=rates_out, levels_out=levels_out, datatypes_out=datatypes_out
 
@@ -384,6 +387,7 @@ if ~valid then begin
   return
 endif
 
+;pass out any information that wasn't specified as input
 if undefined(rate) then rate = strlowcase(spd_uniq(rates_out))
 if undefined(level) then level = strlowcase(spd_uniq(levels_out))
 if undefined(datatype) then datatype = strlowcase(spd_uniq(datatypes_out))

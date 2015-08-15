@@ -14,24 +14,30 @@
 ;       VER:      Integer array indicating the SCLK versions to process.  
 ;                 Default is to analyze the latest six versions.
 ;
-;       TRUNC:    If set, then for each kernel only process times up to its 
-;                 release date.
+;       TRUNC:    If set, then for each kernel only process times up to the 
+;                 release date of the next kernel.
+;
+;       YLIM:     Set the vertical plot limits.  Default = [0.001,10]
 ;
 ;       RESULT:   Named variable to hold the result.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 11:00:04 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17635 $
+; $LastChangedDate: 2015-08-14 13:59:32 -0700 (Fri, 14 Aug 2015) $
+; $LastChangedRevision: 18497 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_sclk_test.pro $
 ;
 ;CREATED BY:    David L. Mitchell
 ;-
-pro mvn_sclk_test, ver=ver, trunc=trunc, result=result
+pro mvn_sclk_test, ver=ver, trunc=trunc, ylim=yrange, result=result
 
   if (not spice_test(verbose=-1)) then begin
     print,"You do not have SPICE installed."
     return
   endif
+  
+  ymin = 0.001
+  ymax = 10.
+  if (n_elements(yrange) gt 1) then ymin = min(yrange, max=ymax)
 
 ; Get a list of valid SCLK kernels to process
 
@@ -90,7 +96,7 @@ pro mvn_sclk_test, ver=ver, trunc=trunc, result=result
 ; Calculate differences between time conversions
 
   dt = time
-  for i=0L,(nmet-1L) do for j=0,(nver-1) do dt[i,j] = time[i,j] - time[i,0]
+  for i=0L,(nmet-1L) do for j=0,(nver-1) do dt[i,j] = abs(time[i,j] - time[i,0])
   
   if keyword_set(trunc) then begin
     for j=1,(nver-1) do begin
@@ -105,7 +111,7 @@ pro mvn_sclk_test, ver=ver, trunc=trunc, result=result
   tvar = 'mvn_sclk_dt'
 
   store_data,tvar,data={x:time[*,0], y:abs(dt), v:ver}
-  ylim,tvar,0.001,10,1
+  ylim,tvar,ymin,ymax,1
   options,tvar,'ytitle','Delta UNIX Time (sec)'
   options,tvar,'colors',cols
   options,tvar,'labels',string(ver,format='(i2.2)')

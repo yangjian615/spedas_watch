@@ -33,8 +33,8 @@ function get_mms_burst_segment_status, start_time=start_time, end_time=end_time,
   ;Add constraints
   if n_elements(data_segment_id) gt 0 then query = query + "&DATASEGMENTID=" + strtrim(data_segment_id,2)
   ;Time range: include segment if it is partially in the requested range
-  if n_elements(start_time)      gt 0 then query = query + "&TAIENDTIME>"    + strtrim(start_time,2)
-  if n_elements(end_time)        gt 0 then query = query + "&TAISTARTTIME<"  + strtrim(end_time,2)
+  if n_elements(start_time)      gt 0 then query = query + "&TAIENDTIME>"    + strtrim(string(start_time, format='(I10)'),2)
+  if n_elements(end_time)        gt 0 then query = query + "&TAISTARTTIME<"  + strtrim(string(end_time, format='(I10)'),2)
   ;is_pending is effectively a boolean
   if n_elements(is_pending)      gt 0 then begin
     if (is_pending) then query = query + "&ISPENDING=1"  $
@@ -43,7 +43,7 @@ function get_mms_burst_segment_status, start_time=start_time, end_time=end_time,
     
   ;Execute the query. Get the results back in an array of structures.
   ;  or an error code or -1 if no results were found.
-  result = execute_latis_query(path, query, struct)
+  result = execute_latis_query(path, query, struct, /embedded_delimiters)
     
   ;Print a warning if no data are found.
   if size(result, /type) ne 8 then if result eq -1 then  $

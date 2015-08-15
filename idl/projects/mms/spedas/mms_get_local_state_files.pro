@@ -31,6 +31,7 @@
 function mms_get_local_state_files, $
  
             probe = probe, $
+            level = level, $
             filetype = filetype, $             
             trange=trange_in
 
@@ -41,6 +42,7 @@ error = 0
 
 ;verify all inputs are present
 if undefined(probe) || $
+   undefined(level) || $
    undefined(filetype) || $
    undefined(trange_in) then begin
   dprint, dlevel=0, 'Missing required input to search for local files'
@@ -48,7 +50,7 @@ if undefined(probe) || $
 endif
 
 trange = time_double(trange_in)
-
+instrument = 'state'
 ;----------------------------------------------------------------
 ;Get list of files by probe and type of data
 ;----------------------------------------------------------------
@@ -58,7 +60,7 @@ s = path_sep()
 f = '_'
 
 ;inputs common to all file paths and folder names
-basic_inputs = [probe, filetype]
+basic_inputs = [probe, instrument, level, filetype]
 
 ;directory and file name search patterns
 ;  For now
@@ -70,7 +72,8 @@ basic_inputs = [probe, filetype]
 ;     and FILETYPE is either DEFATT, PREDATT, DEFEPH, PREDEPH in upppercase
 ;     and start/endDate is YYYYDOY
 ;     and version is Vnn (.V00, .V01, etc..)
-file_pattern = strupcase(probe)+f+strupcase(filetype)+f+'[0-9]{7}'+f+'[0-9]{7}'
+dir_pattern = strjoin( basic_inputs, s)+s
+file_pattern = strupcase(probe)+f+strupcase(level)+strupcase(filetype)+f+'[0-9]{7}'+f+'[0-9]{7}'
 
 ;escape backslash in case of Windows
 ;search_pattern =  escape_string(dir_pattern  + file_pattern, list='\')
@@ -113,6 +116,7 @@ end_times = time_double(date_strings[2,*], tformat=tformat)
 ;           first in-range file, then allow time_clip to remove 
 ;           unwanted data (kludgy)
 time_idx = where(start_times lt trange[1] and end_times gt trange[0] , n_times)
+
 ;time_idx = where((start_times ge trange[0] and start_times lt trange[1]) $
 ;                 OR (end_times ge trange[0] and end_times lt trange[1]) $
 ;                 OR (start_times lt trange[1] and end_times gt trange[0])  , n_times)
@@ -152,5 +156,5 @@ files_out = files_out[bsort(files_out)]
 
 return, files_out
 
-
+stop
 end

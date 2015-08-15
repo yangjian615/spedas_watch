@@ -42,6 +42,9 @@
 ;       PEPEAKS:       Overplot the nominal energies of the photoelectron energy peaks
 ;                      at 23 and 27 eV.
 ;
+;       BCK:           Plot background level (Potassium-40 decay and penetrating
+;                      particles only).
+;
 ;       MAGDIR:        Print magnetic field geometry (azim, elev, clock) on the plot.
 ;
 ;       PDIAG:         Plot potential estimator in a separate window.
@@ -88,8 +91,8 @@
 ;       RAINBOW:       With NOERASE, overplot spectra using up to 6 different colors.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-07-16 11:37:35 -0700 (Thu, 16 Jul 2015) $
-; $LastChangedRevision: 18154 $
+; $LastChangedDate: 2015-08-13 12:28:34 -0700 (Thu, 13 Aug 2015) $
+; $LastChangedRevision: 18484 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -99,7 +102,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
                    noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
                    dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
-                   bkg=bkg, tplot=tplot, magdir=magdir
+                   bkg=bkg, tplot=tplot, magdir=magdir, bck=bck
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -399,6 +402,20 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         oplot,bkg_dat.energy,bkg_dat.data,color=5,line=2
         oplot,dif_dat.energy,dif_dat.data,color=5,psym=10
       endif
+    endif
+    
+    if keyword_set(bck) then begin
+      bck = spec
+      bck.data[*] = 5.6/16.  ; background crate per anode at periapsis
+      bck.units_name = 'crate'
+      mvn_swe_convert_units, bck, spec.units_name
+      oplot, bck.energy, bck.data, line=2, color=4              ; periapsis
+      oplot, bck.energy, bck.data*(0.97/0.63), line=2, color=4  ; apoapsis
+      
+      bck.data[*] = 1.071e6  ; saturation crate per anode
+      bck.units_name = 'crate'
+      mvn_swe_convert_units, bck, spec.units_name
+      oplot, bck.energy, bck.data, line=2, color=4
     endif
 
     if (dopot) then begin

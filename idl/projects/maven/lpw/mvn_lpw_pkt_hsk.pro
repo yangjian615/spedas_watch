@@ -513,7 +513,7 @@ pro mvn_lpw_pkt_hsk, output,lpw_const,tplot_var=tplot_var,spice=spice
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules_of_use',                  cdf_istp[11], $
                    'Acknowledgement',               cdf_istp[13],   $
-                 ;;  'Title',                         'MAVEN LPW RAW HSK', $   ;####            ;As this is L0b, we need all info here, as there's no prd file for this
+                   'Title',                         'MAVEN LPW RAW HSK', $   ;####            ;As this is L0b, we need all info here, as there's no prd file for this
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'HSK data', $    ;### ARE UNITS CORRECT? v/m?
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###

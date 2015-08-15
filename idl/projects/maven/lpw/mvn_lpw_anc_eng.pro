@@ -34,6 +34,12 @@
 ;mvn_lpw_anc_sc-rot: rotation rate of s/c about s/c x,y,z axes. Units given are "rotation rate" - not sure on actual units. 
 ;
 ;mvn_lpw_anc_rel_rw: Speed of RWs in Hz, relative to RW1.
+;  
+;NOTES:
+;Correspondence with Boris Semenov: mvn_rec_*.sff (thruster) files are produced in ET time, with clock drift taken into account.
+;Correspondence with Mike Haggard: mvn_rec_*.drf (RW) files are produced in UTC time, with clock drift "should be" taken into account.                                        
+;
+;Davin's routines take string UTC dates and convert to UNIX, so there should be no need to include SPICE when usng these.
 ;                                                      
 ;KEYWORDS:
 ; NONE
@@ -70,8 +76,8 @@ sl = path_sep()
 
 
 ;We now have to add ~5 days either side of unix_in to ensure we get coverage for the day we want:
-t1 = unix_in[0] - (5.*86400.D)   ;+- five days
-t2 = unix_in[nele-1] + (5.*86400.D)
+t1 = unix_in[0] - (3.*86400.D)   ;+- three days
+t2 = unix_in[nele-1] + (3.*86400.D)
 
 
 ;For now, don't need all the ISTP information, as we're not documenting the engineering files:
@@ -153,13 +159,14 @@ t2c2 = t2
  
 ;Get thruster info:
 thruster = mvn_spc_anc_thruster(trange=[t1c1,t2c1])
+
 ;Reaction wheel info:
 reac = mvn_spc_anc_reactionwheels(trange=[t1c2,t2c2])
 
 ;Check we found files:
-if size(thruster, /type) eq 0 then print, "### WARNING ###: mvn_lpw_anc_eng: No thruster files found. Your date may be too recent."
+if (size(thruster, /type) eq 0) or (size(thruster, /type) eq 7) then print, "### WARNING ###: mvn_lpw_anc_eng: No thruster files found. Your date may be too recent."
 if size(reac, /type) eq 0 then print, "### WARNING ###: mvn_lpw_anc_eng: No reaction wheel informtion found. Your date may be too recent."
-if size(thruster, /type) eq 0 and size(reac, /type) eq 0 then begin
+if (size(thruster, /type) eq 0 or size(thruster, /type) eq 7) and size(reac, /type) eq 0 then begin
     print, "No engineering information found. Returning."
     retall
 endif
@@ -224,13 +231,18 @@ endif else begin
       nele_rot = 0.
 endelse
 ;----
-if size(thruster, /type) ne 0 then begin
-    ttime = thruster[*].time
-    ttime = ttime * (ttime gt unix_in[0]) * (ttime lt unix_in[nele-1])
-    ttimes = where(ttime ne 0, nt)
+if size(thruster, /type) ne 0 and size(thruster, /type) ne 7 then begin
+    ttime = thruster[*].time  ;old time was the start time of each gap
+    ttime = ttime * (ttime gt unix_in[0]) * (ttime lt unix_in[nele-1])  ;get rid of points outside of input UNIX time range
+    ttimes = where(ttime ne 0, nt)  ;find points inside time range
     
     if nt gt 0 then begin
-        thruster_th = thruster[ttimes]
+        thruster_th = thruster[ttimes]  ;get points inside time range
+        
+        ttime1 = thruster_th[*].trange[0]  ;start times
+        ttime2 = thruster_th[*].trange[1]  ;end times
+        ttimeMID = ttime1 + ((ttime2-ttime1)/2.d)  ;pick time in middle of time gap
+        
         nele_t = n_elements(thruster_th)
     endif else begin
         print, "### WARNING ###: mvn_lpw_anc_eng: no thruster information for times within input UNIX times."
@@ -323,7 +335,7 @@ if nele_r gt 1 then begin  ;reaction wheels
               'labflag',        1, $
               'labels',         ['RW1', 'RW2', 'RW3', 'RW4']   , $
               'colors',         [0,2,6,4]       , $
-              'psym'  ,         8              , $
+              'psym'  ,         0              , $
               'symsize',        0.5         ,$
               ;'ztitle' ,        'Z-title'                ,$   
               ;'zrange' ,        [min(data.y),max(data.y)],$                        
@@ -423,7 +435,7 @@ if nele_r gt 1 then begin  ;reaction wheels
               'labflag',        1, $
               'labels',         ['RW1', 'RW2', 'RW3', 'RW4']   , $
               'colors',         [0,2,6,4]       , $
-              'psym'  ,         8              , $
+              'psym'  ,         0              , $
               'symsize',        0.25         ,$
               ;'ztitle' ,        'Z-title'                ,$   
               ;'zrange' ,        [min(data.y),max(data.y)],$                        
@@ -438,14 +450,15 @@ if nele_r gt 1 then begin  ;reaction wheels
 endif  ;nele_r gt 1
 
 if nele_t gt 1 then begin
-    time_t = thruster_th[*].time  ;timestamps
+    ;time_t = thruster_th[*].time  ;timestamps  ;OLD
+    time_t = ttimeMID  ;start and stop times added below
     yy1 = fltarr(nele_t,8)
     yy2 = fltarr(nele_t,6)
     for ii = 0, 7 do yy1[*,ii] = thruster_th[*].L28[ii]  ;get ACS thruster firings
     for ii = 0, 5 do yy2[*,ii] = thruster_th[*].L28[ii+8]  ;get TCM thruster firings
     
             ;-------------------------------------------
-            data =  create_struct('x', time_t, 'y', yy1)
+            data =  create_struct('x', time_t, 'y', yy1, 'dy', ttime1, 'dv', ttime2)  ;add in start and stop times
             ;-------------------------------------------
             ;--------------- dlimit   ------------------
             dlimit=create_struct(   $                           
@@ -466,23 +479,23 @@ if nele_t gt 1 then begin
               'Rules of use',                  cdf_istp[11], $
               'Acknowledgement',               cdf_istp[13],   $ 
               'Title',                         '', $   ;####            
-              'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
-              'y_catdesc',                     'ACS thruster firings.', $    
+              'x_catdesc',                     'Timestamps for each data point, in UNIX time. Engineering files give time blocks; these are the mid points of each time block. The start and stop times of each time block are given in dy and dv.', $
+              'y_catdesc',                     'The number of ACS thruster firings per time block.', $    
               ;'v_catdesc',                     'test dlimit file, v', $    ;###
-              'dy_catdesc',                    'Error on the data.', $     ;###
-              ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
+              'dy_catdesc',                    'Start time of each time block, in UNIX time.', $     ;###
+              'dv_catdesc',                    'Finish time of each time block, in UNIX time.', $   ;###
               'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
               'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
               'y_Var_notes',                   'ACS thrusters fire mainly during reaction wheel desat manoeuvres.', $
               ;'v_Var_notes',                   'Frequency bins', $
-              'dy_Var_notes',                  'Not used.', $
-              ;'dv_Var_notes',                   'Error on frequency', $
+              'dy_Var_notes',                  'Size of time blocks varys.', $
+              'dv_Var_notes',                  'Size of time blocks varys', $
               'flag_Var_notes',                '0 = no flag: SPICE times available; 1 = flag: no SPICE times available.', $
               'xFieldnam',                     'x: More information', $      ;###
               'yFieldnam',                     'y: More information', $
              ; 'vFieldnam',                     'v: More information', $
-              'dyFieldnam',                    'dy: Not used.', $
-            ;  'dvFieldnam',                    'dv: More information', $
+              'dyFieldnam',                    'NA.', $
+              'dvFieldnam',                    'NA.', $
               'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
                'MONOTON', 'INCREASE', $
                'SCALEMIN', min(data.y,/nan), $
@@ -514,7 +527,7 @@ if nele_t gt 1 then begin
               'labflag',        1, $
               'labels',         ['ACS1', 'ACS2', 'ACS3', 'ACS4', 'ACS5', 'ACS6', 'ACS7', 'ACS8']   , $
               'colors',         [0,1,2,3,4,5,6,7]       , $
-              'psym',           8                         , $
+              'psym',           1                         , $
               'symsize',         3     ,$
               ;'ztitle' ,        'Z-title'                ,$   
               ;'zrange' ,        [min(data.y),max(data.y)],$                        
@@ -527,7 +540,7 @@ if nele_t gt 1 then begin
            store_data, 'mvn_lpw_anc_acs', data=data, dlimit=dlimit, limit=limit   
 
             ;-------------------------------------------
-            data =  create_struct('x', time_t, 'y', yy2)
+            data =  create_struct('x', time_t, 'y', yy2, 'dy', ttime1, 'dv', ttime2)
             ;-------------------------------------------
             ;--------------- dlimit   ------------------
             dlimit=create_struct(   $                           
@@ -548,23 +561,23 @@ if nele_t gt 1 then begin
               'Rules of use',                  cdf_istp[11], $
               'Acknowledgement',               cdf_istp[13],   $ 
               'Title',                         '', $   ;####            
-              'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
-              'y_catdesc',                     'TCM thruster firings.', $    
+              'x_catdesc',                     'Timestamps for each data point, in UNIX time. Engineering files give time blocks; these are the mid points of each time block. The start and stop times of each time block are given in dy and dv.', $
+              'y_catdesc',                     'Number of TCM thruster firings per time block.', $    
               ;'v_catdesc',                     'test dlimit file, v', $    ;###
-              'dy_catdesc',                    'Error on the data.', $     ;###
-              ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
+              'dy_catdesc',                    'Start time of each time block, in UNIX time.', $     ;###
+              'dv_catdesc',                    'Finish time of each time block, in UNIX time.', $   ;###
               'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
               'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
-              'y_Var_notes',                   'TCM thrusters are for large manoeuvres and shouldnt be seen once in orbit!', $
+              'y_Var_notes',                   'TCM thrusters are for large manoeuvres and are seen less often than the ACS thrusters.', $
               ;'v_Var_notes',                   'Frequency bins', $
-              'dy_Var_notes',                  'Not used.', $
-              ;'dv_Var_notes',                   'Error on frequency', $
+              'dy_Var_notes',                  'Size of time blocks varys.', $
+              'dv_Var_notes',                  'Size of time blocks varys.', $
               'flag_Var_notes',                '0 = no flag: SPICE times available; 1 = flag: no SPICE times available.', $
               'xFieldnam',                     'x: More information', $      ;###
               'yFieldnam',                     'y: More information', $
              ; 'vFieldnam',                     'v: More information', $
-              'dyFieldnam',                    'dy: Not used.', $
-            ;  'dvFieldnam',                    'dv: More information', $
+              'dyFieldnam',                    'NA.', $
+              'dvFieldnam',                    'NA.', $
               'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $ 
                'MONOTON', 'INCREASE', $
                'SCALEMIN', min(data.y,/nan), $
@@ -596,7 +609,7 @@ if nele_t gt 1 then begin
               'labflag',        1, $
               'labels',         ['TCM1', 'TCM2', 'TCM3', 'TCM4', 'TCM5', 'TCM6']   , $
               'colors',         [0,1,2,3,4,6]       , $
-              'psym',           8                   ,$
+              'psym',           3                   ,$
               'symsize',        3                   ,$
               ;'ztitle' ,        'Z-title'                ,$   
               ;'zrange' ,        [min(data.y),max(data.y)],$                        
@@ -688,7 +701,7 @@ if nele_rot gt 1 then begin
               'labflag',        1, $
               'labels',         ['s/c X', 's/c Y', 's/c Z']   , $
               'colors',         [0,2,6]       , $
-              'psym',            3                        ,$
+              'psym',            0                        ,$
               ;'ztitle' ,        'Z-title'                ,$   
               ;'zrange' ,        [min(data.y),max(data.y)],$                        
               ;'spec'            ,     1, $           

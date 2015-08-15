@@ -27,6 +27,7 @@
 ;LAST MODIFICATION:
 ; 2014-12-12 L. Andersson - modified to input the type, subcycle, and array of calibration files
 ; 2014-12-17 T. McEnulty - modified to check of on lpw_proc and if so, use specific path to master folder for cal file 
+; 2015-02-10 CF: removed hard coding to find file; environment variable 'mvn_lpw_software' is now used.
 
 pro  mvn_lpw_cal_read_spec_data,type,subcycle,hfgain,calib_file_spec,filename,background,f_low,f_high,amp_resp
 
@@ -52,7 +53,8 @@ pro  mvn_lpw_cal_read_spec_data,type,subcycle,hfgain,calib_file_spec,filename,ba
   
   ;--------------------------
   
-  dir0name = fbase+folder+sl+filename ;;txt file has to be in the master folder
+  ;dir0name = fbase+folder+sl+filename ;;txt file has to be in the master folder
+  dir0name = fbase+'mvn_lpw_cal_files'+sl+filename ;hard coded to work on production computer
   
   OPENR, Unit, dir0name, /GET_LUN
   
@@ -70,7 +72,7 @@ pro  mvn_lpw_cal_read_spec_data,type,subcycle,hfgain,calib_file_spec,filename,ba
   
   
   ;need 6 more
-  act_background=transpose(data(0:127,0))  * 8.1380211e-05
+  act_background=transpose(data(0:127,0))  * 8.1380211e-05  ;;includes correction for constant
   pas_background=transpose(data(0:127,1))  * 8.1380211e-05
   
   ;need 4 total

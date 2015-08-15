@@ -548,7 +548,7 @@ pro mvn_lpw_pkt_atr,output,lpw_const,tplot_var=tplot_var,spice=spice
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
                    'Acknowledgement',               cdf_istp[13],   $
-                 ;;  'Title',                         'MAVEN RAW LPW ATR', $   ;####            ;As this is L0b, we need all info here, as there's no prd file for this
+                   'Title',                         'MAVEN RAW LPW ATR', $   ;####            ;As this is L0b, we need all info here, as there's no prd file for this
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'ATR data', $    ;### ARE UNITS CORRECT? v/m?
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###

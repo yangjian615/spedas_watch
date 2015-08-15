@@ -89,6 +89,9 @@ if (count_errors eq 0) then begin
     problem_status = 0
     
     sub_status = submit_mms_sitl_selections(savefile)
+    
+    if sub_status eq -1 then problem_status = 2
+    
   endif else begin
     problem_status = 1
   endelse

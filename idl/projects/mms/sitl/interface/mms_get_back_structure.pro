@@ -14,19 +14,23 @@ table_length = n_elements(leaps)
 ;FDWHACK - The -9 seconds is to match my time with the SDC's SPICE
 ;based time conversion.
 
-start_jul = start_time_unix/double(86400) + julday(1, 1, 1970, 0, 0, 0)
-loc_greater = where(start_jul gt juls, count_greater)
-last_loc = loc_greater(count_greater-1)
-current_leap = leaps(last_loc)
-start_utc = double(86400)*(start_jul - julday(1, 1, 1958, 0, 0, 0))
-start_tai = long(start_utc + current_leap - 9)
+;start_jul = start_time_unix/double(86400) + julday(1, 1, 1970, 0, 0, 0)
+;loc_greater = where(start_jul gt juls, count_greater)
+;last_loc = loc_greater(count_greater-1)
+;current_leap = leaps(last_loc)
+;start_utc = double(86400)*(start_jul - julday(1, 1, 1958, 0, 0, 0))
+;start_tai = long(start_utc + current_leap - 9)
 
-stop_jul = stop_time_unix/double(86400) + julday(1, 1, 1970, 0, 0, 0)
-loc_greater = where(stop_jul gt juls, count_greater)
-last_loc = loc_greater(count_greater-1)
-current_leap = leaps(last_loc)
-stop_utc = double(86400)*(stop_jul - julday(1, 1, 1958, 0, 0, 0))
-stop_tai = long(stop_utc + current_leap - 9)
+start_tai = mms_unix2tai(start_time_unix)
+
+;stop_jul = stop_time_unix/double(86400) + julday(1, 1, 1970, 0, 0, 0)
+;loc_greater = where(stop_jul gt juls, count_greater)
+;last_loc = loc_greater(count_greater-1)
+;current_leap = leaps(last_loc)
+;stop_utc = double(86400)*(stop_jul - julday(1, 1, 1958, 0, 0, 0))
+;stop_tai = long(stop_utc + current_leap - 9)
+
+stop_tai = mms_unix2tai(stop_time_unix)
 
 ; Get the burst segment status table
 burst_segments = get_mms_burst_segment_status(start_time = start_tai, end_time = stop_tai)
@@ -62,7 +66,8 @@ if n_elements(burst_segments) gt 1 then begin
              numevalcycles: burst_segments.numevalcycles, $
              sourceid: burst_segments.sourceid, $
              createtime: burst_segments.createtime, $
-             finishtime: burst_segments.finishtime} 
+             finishtime: burst_segments.finishtime, $
+             discussion: burst_segments.discussion} 
               
 endif else begin
   if typename(burst_segments) eq 'INT' then begin
@@ -98,7 +103,8 @@ endif else begin
                numevalcycles: burst_segments.numevalcycles, $
                sourceid: burst_segments.sourceid, $
                createtime: burst_segments.createtime, $
-               finishtime: burst_segments.finishtime}
+               finishtime: burst_segments.finishtime, $
+               discussion: burst_segments.discussion}
   endelse
 endelse 
 

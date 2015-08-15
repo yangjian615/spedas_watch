@@ -114,7 +114,7 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
       if type EQ 'hf' THEN time_sc=time_sc-0.001                                                ;time here is corrected for start of the data array
       if type EQ 'mf' THEN time_sc=time_sc-0.0625 
       if type EQ 'lf' THEN time_sc=time_sc-1.0 
-    time=time_sc
+      time            = time_sc
       time_dt         = dblarr(nn_pktnum*nn_size)                                            ;the time of each individual point            
 
       for i=0L,nn_pktnum-1 do time_dt[nn_size*i:nn_size*(i+1)-1]  =time[i] + dindgen(nn_size)*dt   
@@ -122,6 +122,12 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
       IF keyword_set(spice)  THEN BEGIN                                                                                                ;if this computer has SPICE installed:
          aa=floor(time-t_epoch)
          bb=floor(((time-t_epoch) MOD 1) *2l^16)                                                                                    ;if this computer has SPICE installed:
+
+help, time
+print,time[0]
+
+if min(time) LT 0  then stanna  ; this means a incorrect identified packet
+
          mvn_lpw_anc_clocks_spice, aa, bb,clock_field_str,clock_start_t,clock_end_t,spice,spice_used,str_xtitle,kernel_version,time  ;correct times using SPICE   
          aa=floor(time_dt-t_epoch)
          bb=floor(((time_dt-t_epoch) MOD 1) *2l^16)                                                                                    ;if this computer has SPICE installed:
@@ -148,10 +154,10 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                 ;-------------- derive  time/variable ---------------- 
                 time_sort=sort(time)                
                 FOR i=0,nn_pktnum-1 do BEGIN  
-                      data.x[1L*nn_size*i:1L*nn_size*(i+1)-1]  = time_sc[time_sort[i]]+dindgen(nn_size)*dt    ;<----- need to do this here!!!                                                                                                                   
+                      data.x[1L*nn_size*i:1L*nn_size*(i+1)-1]  = time[time_sort[i]]+dindgen(nn_size)*dt    ;<----- need to do this here!!!                                                                                                                   
                       ;data.y[1L*nn_size*i:1L*nn_size*(i+1)-1]  = data_hsbm(*,time_sort[i])*const_E12                                                                                                                                                                                                                                                       
-                      data.y[1L*nn_size*i:1L*nn_size*(i+1)-1]  =(( data_hsbm(*,time_sort[i])*const_E12 )-e12_corr(0))/e12_corr(1)                                                                                               
-                      data.dy[1L*nn_size*i:1l*nn_size*(i+1)-1] = SQRT(ABS(data_hsbm(*,time_sort[i])))*const_E12 
+                      data.y[1L*nn_size*i:1L*nn_size*(i+1)-1]  =(( data_hsbm(*,time_sort[i])*const_E12 )-e12_corr(0))/e12_corr(1)                                                                                                                    
+                       data.dy[1L*nn_size*i:1l*nn_size*(i+1)-1] = ((  20  *const_E12 )  )/e12_corr(1)   ;  20 DN  uncertanty 
                 ENDFOR
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
@@ -183,12 +189,12 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                    'SPICE_kernel_flag'      ,     spice_used, $                       
                    'L0_datafile'     ,     filename_L0 , $ 
                    'cal_vers'        ,     cal_ver+' # '+pkt_ver ,$     
-                   'cal_y_const1'    ,     'Used: '+strcompress(const_E12,/remove_all)  ,$ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+                   'cal_y_const1'    ,     'Used: '+strcompress(const_E12,/remove_all)+' # '+strcompress(e12_corr(0),/remove_all)+' # '+strcompress(e12_corr(1)  ,/remove_all)  ,$ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :' , $  ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
                    'cal_source'      ,     'Information from PKT: HSBM'+type, $        
                    'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[uncorr Volt]')          
+                   'ysubtitle'       ,     '[Volt]')          
                 ;-------------  limit ---------------- 
                 limit=create_struct(   $               
                   'char_size' ,     lpw_const.tplot_char_size ,$    
@@ -203,6 +209,41 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                 ;------------- store --------------------             
                  store_data,'mvn_lpw_hsbm_'+type,data=data,limit=limit,dlimit=dlimit
                 ;--------------------------------------------------
+                  ;-------------- derive  time/variable ---------------- 
+                time_sort=sort(time)    
+                xx=lindgen(nn_size)   
+                
+                ; now remove any slope, if two burst are next to each other work with multiple bursts....
+                dt=data.x[1]-data.x[0]   ; time step
+                aa=data.x[1:*]-data.x[0:*]
+                tmpa=where(aa GT dt*1.5,nqa)          ;this is the last point in each time sequence
+                tmpa=[0,tmpa,n_elements(data.x)-1]   ; add first point
+                  
+                if type NE 'lf' then $        
+                 FOR i=0,nqa do BEGIN  
+                     xx=lindgen(tmpa[i+1]-tmpa[i]+1) ; make a index array of the time serie
+                     tmp                       =  data.y[tmpa[i]:tmpa[i+1]]
+                     tmp2                      = LADFIT(xx,tmp)  ;,nan )
+                     tmp3                      = (tmp -(tmp2[1]*xx+tmp2[0]) )                                      
+                     data.y[tmpa[i]:tmpa[i+1]] =  tmp3  
+                   if type EQ 'hf' then   data.y[1L*nn_size*(i+1)-1]  =  !values.f_nan     ; blank out the last point
+                endfor
+                xx=lindgen(nn_size)
+                 if type EQ 'lf' then  $
+                   FOR i=0,nn_pktnum-1 do begin
+                     tmp = (( data_hsbm(*,time_sort[i])*const_E12 )-e12_corr(0))/e12_corr(1) 
+                     tmp2= LADFIT(xx[32:nn_size-1],tmp[32:nn_size-1])  ;,nan )
+                     tmp3 = (tmp -(tmp2[1]*xx+tmp2[0]) )                                      
+                     data.y[1L*nn_size*i:1L*nn_size*(i+1)-1]  =  tmp3                                                                                                                                                     
+                     data.y[1L*nn_size*i:1L*nn_size*(i)+95]  =  !values.f_nan     ; blank out the 6 first E12-DC points == 96 e12 lf points                       
+                   ENDFOR   
+                     data.dy = SQRT(abs(data.dy))
+                     
+                   
+                  ;------------- store --------------------             
+                 store_data,'mvn_lpw_hsbm2_'+type,data=data,limit=limit,dlimit=dlimit
+                ;--------------------------------------------------
+   
    
       
                 ;-------------  E matrix each burst versus time ---------------------------
@@ -255,7 +296,7 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                    ;'cal_datafile'    ,     'No calibration file used' , $
                    'cal_source'      ,     'Information from PKT: HSBM'+type, $     
                    'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[uncorr Volt]', $        
+                   'ysubtitle'       ,     '[Volt]', $        
                    'cal_v_const1'    ,     'PKT level: ' +strcompress(dt,/remove_all) ,$ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    'zsubtitle'       ,     '[Time]')          
@@ -328,7 +369,7 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                  ;  'cal_datafile'    ,     'No calibration file used' , $
                    'cal_source'      ,     'Information from PKT: HSBM'+type, $     
                    'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[uncorr Volt]', $        
+                   'ysubtitle'       ,     '[Volt]', $        
                 ;   'cal_v_const1'    ,     'PKT level::' ,$ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                 ;   'cal_v_const2'    ,     'Used :'  ,$ ; Fixed convert information from measured binary values to physical units, variables from space testing
                    'zsubtitle'       ,     '[A]')          
@@ -950,7 +991,7 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules_of_use',                  cdf_istp[11], $
                    'Acknowledgement',               cdf_istp[13],   $ 
-                  ;; 'Title',                         'MAVEN LPW RAW HSBM '+type, $   ;####            ;As this is L0b, we need all info here, as there's no prd file for this
+                   'Title',                         'MAVEN LPW RAW HSBM '+type, $   ;####            ;As this is L0b, we need all info here, as there's no prd file for this
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'HSBM data', $    ;### ARE UNITS CORRECT? v/m?
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###

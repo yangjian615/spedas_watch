@@ -22,9 +22,14 @@
 ;
 ;       DDD:           If set, compare with the nearest 3D spectrum.
 ;
+;       CENTER:        Specify the center azimuth for 3D plots.  Only works when DDD
+;                      is set.
+;
 ;       SUM:           If set, use cursor to specify time ranges for averaging.
 ;
 ;       SMO:           Number of energy bins to smooth over.
+;
+;       NORM:          At each energy step, normalize the distribution to the mean.
 ;
 ;       LABEL:         If set, label the anode and deflection bin numbers.
 ;
@@ -57,8 +62,8 @@
 ;                      coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-07-16 11:34:18 -0700 (Thu, 16 Jul 2015) $
-; $LastChangedRevision: 18153 $
+; $LastChangedDate: 2015-08-13 12:28:00 -0700 (Thu, 13 Aug 2015) $
+; $LastChangedRevision: 18483 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -67,7 +72,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
                   label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
                   abins=abins, dbins=dbins, obins=obins, burst=burst, $
-                  pot=pot, spec=spec, plotlims=plotlims
+                  pot=pot, spec=spec, plotlims=plotlims, norm=norm, $
+                  center=center
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -79,6 +85,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   if not keyword_set(zrange) then zrange = 0
   if keyword_set(ddd) then dflg = 1 else dflg = 0
+  if (size(center,/type) eq 0) then center = 0
   if keyword_set(sum) then begin
     npts = 2
     doall = 1
@@ -87,6 +94,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     doall = 0
   endelse
   if not keyword_set(smo) then smo = 1
+  if keyword_set(norm) then nflg = 1 else nflg = 0
   if keyword_set(pot) then dopot = 1 else dopot = 0
   if keyword_set(label) then begin
     dolab = 1
@@ -111,6 +119,21 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     dospec = 0
     swidth = 30.*!dtor
   endelse
+
+  case n_elements(center) of
+    0 : begin
+          lon0 = 180.
+          lat0 = 0.
+        end
+    1 : begin
+          lon0 = center[0]
+          lat0 = 0.
+        end
+    else : begin
+             lon0 = center[0]
+             lat0 = center[1]
+           end
+  endcase
 
   case strupcase(units) of
     'COUNTS' : drange = [1e0, 1e5]
@@ -244,6 +267,11 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       ylo = pad.pa_min*!radeg
       yhi = pad.pa_max*!radeg
       z = smooth(pad.data,[smo,1],/nan)
+      
+      if (nflg) then begin
+        zmean = average(z,2,/nan) # replicate(1.,16)
+        z /= (zmean > 1.)
+      endif
 
 ; Add extra elements to force specplot to show the full pitch angle range
 
@@ -278,8 +306,17 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       z2[*,0] = z2[*,1]
       z2[*,9] = z2[*,8]
 
-      zmin = min(z, max=zmax, /nan) > zlo
-      str_element,limits,'zrange',[zmin,zmax],/add
+      str_element,limits,'zrange',success=ok
+      if (not ok) then begin
+        zmin = min(z, max=zmax, /nan) > zlo
+        if (nflg) then begin
+          zmin = 0.1
+          zmax = 10.0
+          str_element,limits,'zlog',1,/add
+          str_element,limits,'ztitle','NORM',/add
+        endif
+        str_element,limits,'zrange',[zmin,zmax],/add
+      endif
 
       !p.multi = [0,1,2]
       specplot,x,y1,z1,limits=limits
@@ -419,7 +456,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         ENDIF  
 
         if (dflg) then begin
-          ddd = mvn_swe_get3d(pad.time,archive=aflg,units=units)
+          ddd = mvn_swe_get3d(trange,archive=aflg,all=doall,/sum,units=units)
           indx = where(obins[*,boom] eq 0B, count)
           if (count gt 0L) then ddd.data[*,indx] = !values.f_nan
 
@@ -439,7 +476,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           ddd.magf[0] = cos(pad.Baz)*cos(pad.Bel)
           ddd.magf[1] = sin(pad.Baz)*cos(pad.Bel)
           ddd.magf[2] = sin(pad.Bel)
-          plot3d_new,ddd,0.,180.,ebins=[ebin,ebin+1]
+          plot3d_new,ddd,lat0,lon0,ebins=[ebin,ebin+1]
         endif
       endif
             

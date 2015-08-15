@@ -9,6 +9,8 @@
 ; Directories of the data file and required SPICe kernels are saved into tplot variables so they can be accessed by other routines.
 ; Routine can only take one utc date, as our load routines only do one orbit at a time.
 ; 
+; The common block is for storing clock jump times for statistics.
+; 
 ;
 ;USAGE:
 ; mvn_lpw_load, '2014-02-02'
@@ -42,7 +44,7 @@
 ;       filetype:   'cdf' archive files (L2-data), 'l0' (L0 data, binary file with sc header),  
 ;                    or 'ground'/'ground_dir'a (file from ground testing, binary file without sc header)
 ;                    Default is L0. Note that when 'ground' is set, you do not need to enter 'utc_in' - this will be set to a default value.
-;                    Filetype can be upper or lowercase (but not a mix) - it is corrected to upper case in the code.
+;                    Filetype can be upper or lowercase - it is corrected to upper case in the code.
 ;                    
 ;       packet:     Which packets to read into memeory, default all packets ['HSK','EUV','AVG','SPEC','HSBM','WPK'] 
 ;       
@@ -50,7 +52,7 @@
 ;       
 ;       tplot_var  'all' or 'sci' Which tplot variables to produce. 'sci' produces tplot variables which have physical unit 
 ;                                 associated with them, and is the default. 'all' produces all tplot variables and includes 
-;                                 master cycle information etc.
+;                                 master cycle information etc.  ### NOTE this currently doesn't work and the default is tplot_var='all'
 ;                                
 ;       nospice    setting /nospice will force IDL to NOT use the SPICE routines. Clock times will not be SPICE corrected, and spacecraft attitude
 ;                  information will not be available.
@@ -68,7 +70,15 @@
 ;                      are required. Pressing '.c' will continue the load process.
 ;     
 ;       The keywords filetype, packet, board and tplot_var are not checked for in this wrapper. This is because mvn_lpw_load checks for them, and
-;       sets them to default values if not present. See mvn_lpw_load.pro for more details.      
+;       sets them to default values if not present. See mvn_lpw_load.pro for more details. 
+;       
+;            
+;      get_clock_jumps: setting /get_clock_jumps will pause the routine right at the end, so that the user can get the array jump_times_nospice. This array contains
+;                       UNIX times for when clock jumps are corrected. These times are NOT SPICE corrected. They are derived straight from the s/c clock. Setting the keyword 
+;                       as a string will save the array as an IDL .sav file to that array. Using just /get_clock_jumps will not save the array. User must include last '/' in file directory. Filename
+;                       itself is created automatically within the routine.
+;                       For example: get_clock_jumps='/Users/name/' will create the file /Users/name/yyyy-mm-dd_clk_jumps.sav
+;            
 ;NOTES: 
 ; This routine is a wrapper for several of Davin Larons IDL routines: mvn_pfp_file_retrieve, mvn_spice_kernels, and routines within these. See comments in these
 ; programs for more information. Davin's routines are available from the Berkeley svn/ssh server.
@@ -114,6 +124,17 @@
 ;   - You want to work from an external HDD; you don't want to check Berkeley and NAIF for updates:
 ;   mvn_lpw_load, '2014-12-01', tplot_var='all', packet='nohsbm', /notatlasp, data_dir='/Volumes/HDD/', /noserver
 ;  
+;
+;=============================
+;Loading L2 files: an example:
+;=============================
+;For now, this will grab all L2 products found for the specfied date. To be written: to ability to select certain products (for example waves, EUV, spectra).
+;
+;ROOT_DATA_DIR is set to it's default:
+;mvn_lpw_load, '2014-11-01', filetype='CDF'
+;
+;ROOT_DATA_DIR is set to an external HDD, for example:
+;mvn_lpw_load, '2014-11-01', filetype='CDF', data_dir='/Volumes/HDD/'
 ;  
 ;
 ;CREATED BY:   Chris Fowler April 23rd 2014
@@ -137,12 +158,18 @@
 ;20141106: CF: changed path to look for L0 data to comply with SSL path. 
 ;20141216: CF: fixed bug when using data_dir= keyword, to be compliant with new SSL directories.                        
 ;20150107: CF: edited keyword /noserver so that usage means the SSL server is not checked for L0 files and NAIF website is not checked for
-;              SPICE kernels. Useful if you have no, or a very slow, internet connection.             
+;              SPICE kernels. Useful if you have no, or a very slow, internet connection.     
+;20150119: CF: added common block to store clock jump times for statistics.     
+;20150806: CMF forced tplot_var='all'as keyword  currently doesn't work.   
 ;            
 ;-
 
 pro mvn_lpw_load, utc_in, data_dir=data_dir, tplot_var=tplot_var, filetype=filetype, packet=packet, board=board, nospice=nospice, noserver=noserver, $
-                  notatlasp=notatlasp, get_file_info=get_file_info
+                  notatlasp=notatlasp, get_file_info=get_file_info, get_clock_jumps = get_clock_jumps
+
+common clock_check, jump_times_nospice
+jump_times_nospice = dblarr(1)
+tplot_var='all'  ;### CMF added this as default as keyword currently doesn't work
 
 ;Clear all tplot variables. Kernel and data information can be retained in tplot variables. This must be updated for each run, particularly if
 ;you switch between using and not using SPICE
@@ -150,16 +177,7 @@ pro mvn_lpw_load, utc_in, data_dir=data_dir, tplot_var=tplot_var, filetype=filet
 sl=path_sep()  ;/ for linux, \ for Windows 
 
 ;jmm, 29-jan-2015, locate mvn_lpw_software directory if not preset
-If(getenv('mvn_lpw_software')) Eq '' Then Begin
-   If(float(!version.release) Ge 7.0) Then Begin ;fixed for pre 7.0, jmm, 31-Mar-2015
-      setenv, 'mvn_lpw_software='+file_dirname(routine_filepath('mvn_lpw_load'))+sl
-   Endif Else Begin
-      tmp_info = routine_info(/source) ;This exists at run time because mvn_lpw_load has been compiled
-      tw = where(tmp_info.name Eq 'MVN_LPW_LOAD')
-      swdir = file_dirname(tmp_info[tw].path)
-      setenv, 'mvn_lpw_software='+swdir+sl
-   Endelse
-Endif
+If(getenv('mvn_lpw_software')) Eq '' Then setenv, 'mvn_lpw_software='+file_dirname(routine_filepath('mvn_lpw_load'))+sl
 
 ;If the user doesn't want to use SPICE, we can skip a lot of code which checks and finds kernels:
 ;==========================
@@ -176,7 +194,7 @@ if not keyword_set(data_dir) and getenv('ROOT_DATA_DIR') eq '' then begin  ;if n
       print, "###NOTE###: the SSL software requires a specific file structure to store L0 and SPICE kernels. Your setenv directory"
       print, "should be a parent directory to where you want the SSL software to setup the required folder tree."
       print, "Set the environment variable ROOT_DATA_DIR before trying again. Returning to terminal."
-      setenv, 'ROOT_DATA_DIR='+root_data_dir()
+      retall
 endif
 
 if keyword_set(data_dir) then begin
@@ -195,7 +213,7 @@ if keyword_set(data_dir) then begin
                
         print, "#### WARNING ####: By specifying the keyword data_dir you are choosing to work offline."
         print, "Your offline kernel and orbit data directory must contain the following Berkeley determined"
-        print, "directories: /data/misc/spice/naif/MAVEN/kernels/ for SPICE use, and "
+        print, "directories: /data/misc/spice/naif/MAVEN/kernels/ for SPICE use, and 
         print, "/data/maven/pfp/l0 to find and load MAVEN orbit data (with '\' on Windows machine). If it does not, this routine will create them"
         print, "for you and download required orbit data and SPICE kernels here. You can work offline without using SPICE;"
         print, "this directory tree must still be present so that the software can locate orbit data."
@@ -259,25 +277,13 @@ if keyword_set(data_dir) then begin
     endelse
 endif
 
-;==============================
-;---Check data is on machine---
-;==============================
-;We don't need this if loading CDF files:
-no_ssl = 0  ;default is to use SSL server
-if keyword_set(filetype) then begin
-    ;Set filetype to uppercase if needed:
-    filetype = strupcase(filetype)
- 
-    ;Check server settings:
-    if (filetype eq 'CDF') or (filetype eq 'GROUND') or (filetype eq 'GROUND_DIR') then no_ssl = 1  ;don't use SSL server if we want to load CDF or ground files.   
-endif
+;===============
+;---Find Data---
+;===============
+if not keyword_set(filetype) then filetype = 'L0'  ;default
+filetype = strupcase(filetype)
 
-
-;Download if not.
-;Check input time: if you want just one day, tr = ['2014-04-20','2014-04-20']. Davins routine will get files for the date of the first entry and
-;up to the day before of the second entry. For exampe, tr = ['2014-04-20','2014-04-25'] will get files for 04-20 up to and including 04-24.
-
-;First check that we are connected to the fast1 server:
+;First check that we are connected to the fast1 server, if working at LASP:
 ;I'm assuming that the file directory will be the same for Macs. I need to check what it is for Windows:
 rd = getenv('ROOT_DATA_DIR')  ;root dir
 
@@ -300,7 +306,7 @@ ENDIF ELSE BEGIN
     retall
 ENDELSE
 
-if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
+if filetype eq 'L0' then begin 
 
    IF NOT keyword_set(notatlasp) THEN BEGIN  ;quick fix as this section only works if you're on the lasp server!
       IF file_test(rd+'server_check'+sl+'lpw_server_check.rtf') EQ 0. THEN BEGIN
@@ -319,44 +325,32 @@ if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
             print, "mvn_lpw_load: WARNING: your SSL password and username was not found. These are required to access the latest L0 data." 
             print, "Enter these in a startup file as the variable"
             print, "setenv, 'MAVENPFP_USER_PASS = username:password'"
- ;           print, "Enter 'yes' if you wish to continue anyway (you may not be able to get the L0 file you wanted) or 'no' to return to terminal..."
- ;           response=''
- ;           read, response, prompt='yes or no...'
+            print, "Enter 'yes' if you wish to continue anyway (you may not be able to get the L0 file you wanted) or 'no' to return to terminal..."
+            response=''
+            read, response, prompt='yes or no...'
             
- ;           if response ne 'yes' then begin
- ;                 print, "Returning to terminal."
- ;                 retall
- ;           endif 
-            print, "Otherwise, Using default values"
-            password = ''
-      endif else begin
-         if getenv('MAVENPFP_USER_PASS') eq '' then password = '' $
-         else password = getenv('MAVENPFP_USER_PASS') ;Same as SSL;over mavenpfp_user_pass
-      endelse
-
+            if response ne 'yes' then begin
+                  print, "Returning to terminal."
+                  retall
+            endif 
+      endif  ;over mavenpfp_user_pass
+      
       ;password = getenv('SSL_log_in')  ;get password if it isn't ''.  ;OLD version, line below conforms with SSL software.
-
+      password = getenv('MAVENPFP_USER_PASS')  ;Same as SSL
       
       print, "#########################"
       print, "Getting latest L0 file..."
       print, "#########################"      
       
-      If(password ne '') Then Begin
-         if keyword_set(noserver) then begin ;These two routines set common blocks that tell the SSL routines whether to use servers or not
+      if keyword_set(noserver) then begin    ;These two routines set common blocks that tell the SSL routines whether to use servers or not
             dummy = mvn_file_source(/set, USER_PASS=password, no_server=1)
             dummy = spice_file_source(/set, no_server=1)
-         endif else begin       
+      endif else begin       
             dummy = mvn_file_source(/set, USER_PASS=password) 
             dummy = spice_file_source(/set)
-         endelse
-      Endif Else Begin ;stick to default behavior
-         if keyword_set(noserver) then begin
-            dummy = mvn_file_source(/set, no_server=1)
-            dummy = spice_file_source(/set, no_server=1)
-         endif
-      Endelse
+      endelse
       ;---------------------
-
+      
       ;Retrieve files:
       ;Extract year, month, day out of utc_in:
       year = strmid(utc_in, 0, 4)  ;first four characters
@@ -370,7 +364,7 @@ if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
       ;Sometimes Davin's software will get v1,2,3; make sure we take the latest version, the last element in files
       nnf = n_elements(files)
       files = files[nnf-1]
-
+      
       IF strpos(files, '??') NE -1 THEN BEGIN  ;Data not available if we have v???.dat on the file name
           print, "#### WARNING ####: Date entered (", utc_in[0], ") is outside of the MAVEN mission time frame or is not yet available."
           print, "Exiting routine."
@@ -391,8 +385,9 @@ if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
       
       if not keyword_set(nospice) then begin  ;/nospice means ignore this and don't use SPICE
           print, "Locating correct SPICE kernels..."
-          mvn_lpw_anc_get_spice_kernels, [utc_in[0], utc_in[0]], notatlasp = notatlasp ;add notatlasp, jmm, 2015-01-29
+          mvn_lpw_anc_get_spice_kernels, [utc_in[0], utc_in[0]], notatlasp = notatlasp  ;add notatlasp, jmm, 2015-01-29     
       endif 
+      
       ;==========================
       ;---Save tplot variables---
       ;==========================
@@ -403,34 +398,36 @@ if no_ssl eq 0 then begin  ;use SSL server, ie not loading CDF or ground files:
       ;SPICE information is now saved within mvn_lpw_anc_get_spice_kernels    
       
       
-endif else begin ;filetype = 'cdf' or 'ground'
-      ;Store UTC date for when we want to load CDF files:
-      if (filetype eq 'cdf') or (filetype eq 'CDF') then begin
-          store_data, 'mvn_lpw_load_file', data={x:1., y:1.}, dlimit={Data_file: utc_in, Purpose: "UTC date, to load CDF files."}
-          files = utc_in
-      endif
-      if (filetype eq 'GROUND') or (filetype eq 'ground') then begin
-          print, ""
-          print, "-------------------------"
-          print, "Filetype 'GROUND' selected. Enter full directory to the ground data you want to load:"
-          response3 = ''
-          read, response3, prompt="Enter full directory and file name, followed by return key..."
-         
-          if file_search(response3) eq '' then begin
-              print, "#### WARNING ####: File ", response3, " not found by IDL. Returning to terminal."
-              retall 
-          endif else begin
-              print, "File ", response3, " found."
-              files = response3
-          endelse
-      endif
-endelse
+endif ;Over loading L0
+
+if filetype eq 'CDF' then begin
+  mvn_lpw_cdf_read, utc_in   ;L2 data, grab it from SSL
+  files = 'CDF'
+endif  
+          
+if (filetype eq 'GROUND') then begin
+    print, ""
+    print, "-------------------------"
+    print, "Filetype 'GROUND' selected. Enter full directory and filename to the ground data you want to load:"
+    response3 = ''
+    read, response3, prompt="Enter full directory and file name, followed by return key..."
+   
+    if file_search(response3) eq '' then begin
+        print, "#### WARNING ####: File ", response3, " not found by IDL. Returning to terminal."
+        retall 
+    endif else begin
+        print, "File ", response3, " found."
+        files = response3
+    endelse
+endif
+
 
 ;Check that files has been defined:
 if size(files, /type) eq 0 then begin
     print, "### WARNING ###: Data file has not been defined. Did you enter keywords correctly? Returning."
     retall
 endif
+
 
 ;===============
 ;---Load data---
@@ -451,11 +448,37 @@ if keyword_set(get_file_info) then begin
       stop
 endif
 
-;Setting filetype selects L0, CDF, ground, etc
-if keyword_set(nospice) then mvn_lpw_load_file, files[0], tplot_var=tplot_var, filetype=filetype, packet=packet, board=board, /nospice else $  ;dont use spice
-                             mvn_lpw_load_file, files[0], tplot_var=tplot_var, filetype=filetype, packet=packet, board=board        ;use spice
+;=======================
+;Load L0 or ground data:
+;=======================
+if (filetype eq 'L0') or (filetype eq 'GROUND') then begin
+    if keyword_set(nospice) then mvn_lpw_load_file, files[0], tplot_var=tplot_var, filetype=filetype, packet=packet, board=board, /nospice else $  ;dont use spice
+                                 mvn_lpw_load_file, files[0], tplot_var=tplot_var, filetype=filetype, packet=packet, board=board        ;use spice
+endif
+;=======================
 
-
+if keyword_set(get_clock_jumps) then begin
+      nele = n_elements(jump_times_nospice)
+      if nele gt 1 then jump_times_nospice = jump_times_nospice[1:nele-1]  ;first element is a dummy entry
+      
+      if size(get_clock_jumps, /type) eq 7 then begin  ;save array
+          
+          ;Make sure there are clock jumps before saving:
+          if n_elements(jump_times_nospice) gt 1 then begin
+              fname = get_clock_jumps+utc_in+'_clk_jumps.sav'
+              save, jump_times_nospice, filename=fname
+              
+              print, ""
+              if file_test(fname) eq 1. then print, "Saved clock jumps at: ", fname
+              print, ""
+          endif else begin
+              print, ""
+              print, "No clock jumps found for this L0 file; no file saved."
+              print, ""
+          endelse
+      endif
+  
+endif  
 
 ;stop
 end

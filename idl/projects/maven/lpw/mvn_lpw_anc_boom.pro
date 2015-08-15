@@ -67,12 +67,12 @@ proname = 'mvn_lpw_anc_boom'
 tplotnames = tnames()  ;variables stored as tplot variables
 
 ;Variables needed: mvn_lpw_anc_mvn_vel_sc, mvn_lpw_anc_sun_pos_mvn
-if total(strmatch(tplotnames, 'mvn_lpw_anc_mvn_vel_sc')) eq 1 then begin
-      get_data, 'mvn_lpw_anc_mvn_vel_sc', data=dd1, dlimit=dl1, limit=ll1
+if total(strmatch(tplotnames, 'mvn_lpw_anc_mvn_vel_sc_iau')) eq 1 then begin
+      get_data, 'mvn_lpw_anc_mvn_vel_sc_iau', data=dd1, dlimit=dl1, limit=ll1
       yes1 = 1
       shad_flag = dd1.flag  ;flag info concerning velocity info
 endif else begin
-      print, proname, ": ### WARNING ### : tplot variable **mvn_lpw_anc_mvn_vel_sc** not found. Wake information not generated. "
+      print, proname, ": ### WARNING ### : tplot variable **mvn_lpw_anc_mvn_vel_sc_iau** not found. Wake information not generated. "
       print, "Run mvn_lpw_anc_spacecraft first to create required tplot variables."
       yes1 = 0
 endelse

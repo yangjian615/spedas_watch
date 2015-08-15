@@ -29,9 +29,9 @@
 ;
 ; Written by Davin Larson
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-10 11:41:54 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16942 $
+; $LastChangedBy: cfowler $
+; $LastChangedDate: 2015-08-13 08:02:55 -0700 (Thu, 13 Aug 2015) $
+; $LastChangedRevision: 18479 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/lpw/mvn_lpw_cdf_info_to_tplot.pro $
 ; #############
 ; 
@@ -47,7 +47,7 @@ function mvn_lpw_cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
         verbose=verbose,get_support_data=get_support_data,  $
         tplotnames=tplotnames
 
-dprint,verbose=verbose,dlevel=4,'$Id: mvn_lpw_cdf_info_to_tplot.pro 16942 2015-02-10 19:41:54Z jimm $'
+dprint,verbose=verbose,dlevel=4,'$Id: mvn_lpw_cdf_info_to_tplot.pro 18479 2015-08-13 15:02:55Z cfowler $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
@@ -235,12 +235,24 @@ if nqq eq 1 then begin  ;if we have only one 'data' structure
   j = (where(strcmp(cdfi.vars.name, 'freq', /fold_case), nj))[0]
   if nj gt 0 then freq = cdfi.vars[j]  ;save the freq information as data.v
 
+  j = (where(strcmp(cdfi.vars.name, 'volt', /fold_case), nj))[0]      ;For IV sweeps, data.v is the voltage, called 'volt' in the CDF files
+  if nj gt 0 then freq = cdfi.vars[j]  ;save the freq information as data.v
+  
   j = (where(strcmp(cdfi.vars.name, 'ddata', /fold_case), nj))[0]
   if nj gt 0 then ddata = cdfi.vars[j]  ;error on data, data.dy
+
+  j = (where(strcmp(cdfi.vars.name, 'ddata_up', /fold_case), nj))[0]   ;'ddata_up' is the error going into data.dy, which is stored as ddata_up in the CDF files
+  if nj gt 0 then ddata = cdfi.vars[j]  ;error on data, data.dy  
   
   j = (where(strcmp(cdfi.vars.name, 'dfreq', /fold_case), nj))[0]
   if nj gt 0 then dfreq = cdfi.vars[j]  ;error on freq, data.dv
   
+  j = (where(strcmp(cdfi.vars.name, 'ddata_lo', /fold_case), nj))[0]    ;'dfreq'
+  if nj gt 0 then dfreq = cdfi.vars[j]  ;error on freq, data.dv  which is stored as ddata_lo in the CDF files.
+
+  j = (where(strcmp(cdfi.vars.name, 'dvolt', /fold_case), nj))[0]    ;'dfreq'  in the CDF files, for IV Sweeps, dvolt the name for data.dv
+  if nj gt 0 then dfreq = cdfi.vars[j]  ;error on freq, data.dv  
+    
   j = (where(strcmp(cdfi.vars.name, 'flag', /fold_case), nj))[0]
   if nj gt 0 then flag = cdfi.vars[j]  ;flag information, data.flag
 

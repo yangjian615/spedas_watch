@@ -140,15 +140,22 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                                          'x',    dblarr(nn_size) ,  $     ; double 1-D arr
                                          'y',    fltarr(nn_size) ,  $     ; most of the time float and 1-D or 2-D
                                          'dy',   fltarr(nn_size))     ;1-D 
+                dataA =  create_struct(   $           
+                                         'x',    dblarr(nn_pktnum) ,  $     ; double 1-D arr
+                                         'y',    fltarr(nn_pktnum,nn_steps),  $     ; double 1-D arr
+                                         'v',    fltarr(nn_pktnum,nn_steps)) 
                 ;-------------- derive  time/variable ----------------                          
                  data.x = time_dt
-                  
-                 
+                 dataA.x = time 
+                 xx = indgen(nn_steps)
                  for i=0L,nn_pktnum-1 do begin
                          ;data.x[nn_steps*i:nn_steps*(i+1)-1] = time[i] + dindgen(nn_steps) * dt[i]  
                         ; data.y[nn_steps*i:nn_steps*(i+1)-1] = output_state_V1[i,*] * const_V1_readback
                          data.y[nn_steps*i:nn_steps*(i+1)-1] = ((output_state_V1[i,*] * const_V1_readback)-boom1_corr(0))/boom1_corr(1)
-                         data.dy[nn_steps*i:nn_steps*(i+1)-1] = 0
+                         data.dy[nn_steps*i:nn_steps*(i+1)-1] =((                  10 * const_V1_readback)-boom1_corr(0))/boom1_corr(1)  ; 10 DN
+                         dataA.y[i,*] =                        ((output_state_V1[i,*] * const_V1_readback)-boom1_corr(0))/boom1_corr(1)
+                         dataA.y[i,*] = dataA.y[i,*]  - mean(dataA.y[i,*])
+                         dataA.v[i,*] = xx
                  endfor        
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
@@ -200,6 +207,11 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                   'noerrorbars', 1)
                 ;------------- store --------------------                        
                  store_data,'mvn_lpw_'+strtrim(packet,2)+'_V1',data=data,limit=limit,dlimit=dlimit
+                 store_data,'mvn_lpw_'+strtrim(packet,2)+'2_V1',data=dataA,limit=limit,dlimit=dlimit
+                options,'mvn_lpw_'+strtrim(packet,2)+'2_V1',spec=1
+                options,'mvn_lpw_'+strtrim(packet,2)+'2_V1',  no_interp=1
+                options,'mvn_lpw_'+strtrim(packet,2)+'2_V1', yrange=[0,64]
+                options,'mvn_lpw_'+strtrim(packet,2)+'2_V1', zrange=[-.2,0.2]
                 ;--------------------------------------------------
  
       
@@ -208,13 +220,22 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                                          'x',    dblarr(nn_size) ,  $     ; double 1-D arr
                                          'y',    fltarr(nn_size) ,  $     ; most of the time float and 1-D or 2-D
                                          'dy',   fltarr(nn_size) )     ;1-D 
+                dataA =  create_struct(   $           
+                                         'x',    dblarr(nn_pktnum) ,  $     ; double 1-D arr
+                                         'y',    fltarr(nn_pktnum,nn_steps),  $     ; double 1-D arr
+                                         'v',    fltarr(nn_pktnum,nn_steps)) 
                 ;-------------- derive  time/variable ----------------                          
                  data.x = time_dt
+                 dataA.x = time
+                 xx = indgen(nn_steps)
                  for i=0L,nn_pktnum-1 do begin                                                        
                       ;data.x[nn_steps*i:nn_steps*(i+1)-1] = time[i] + dindgen(nn_steps)*dt[i]  
                       ;data.y[nn_steps*i:nn_steps*(i+1)-1] = output_state_V2[i,*]*const_V2_readback
-                      data.y[nn_steps*i:nn_steps*(i+1)-1] = ((output_state_V2[i,*] * const_V2_readback)-boom2_corr(0))/boom2_corr(1)
-                      data.dy[nn_steps*i:nn_steps*(i+1)-1] = 0
+                      data.y[nn_steps*i:nn_steps*(i+1)-1] =  ((output_state_V2[i,*] * const_V2_readback)-boom2_corr(0))/boom2_corr(1)
+                      data.dy[nn_steps*i:nn_steps*(i+1)-1] = ((                  10 * const_V2_readback)-boom2_corr(0))/boom2_corr(1) ;10 DN
+                      dataA.y[i,*] =                         ((output_state_V2[i,*] * const_V2_readback)-boom2_corr(0))/boom2_corr(1)
+                      dataA.y[i,*] = dataA.y[i,*]  - mean(dataA.y[i,*])
+                      dataA.v[i,*] = xx                     
                  endfor
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
@@ -266,6 +287,11 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                   'noerrorbars', 1)
                 ;------------- store --------------------                              
                 store_data,'mvn_lpw_'+strtrim(packet,2)+'_V2',data=data,limit=limit,dlimit=dlimit
+                store_data,'mvn_lpw_'+strtrim(packet,2)+'2_V2',data=dataA,limit=limit,dlimit=dlimit
+                options,'mvn_lpw_'+strtrim(packet,2)+'2_V2',spec=1
+                options,'mvn_lpw_'+strtrim(packet,2)+'2_V2',  no_interp=1
+                options,'mvn_lpw_'+strtrim(packet,2)+'2_V2', yrange=[0,64]
+                options,'mvn_lpw_'+strtrim(packet,2)+'2_V2', zrange=[-.2,0.2]
                 ;---------------------------------------------------
  
       
@@ -274,13 +300,18 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                                          'x',    dblarr(nn_size) ,  $     ; double 1-D arr
                                          'y',    fltarr(nn_size) ,  $     ; most of the time float and 1-D or 2-D
                                          'dy',   fltarr(nn_size)  )   ;1-D 
+                dataA =  create_struct(   $           
+                                         'x',    dblarr(nn_pktnum) ,  $     ; double 1-D arr
+                                         'y',    fltarr(nn_pktnum,nn_steps),  $     ; double 1-D arr
+                                         'v',    fltarr(nn_pktnum,nn_steps)) 
                 ;-------------- derive  time/variable ----------------   
                  data.x = time_dt
+                 dataA.x=time
                  for i=0L,nn_pktnum-1 do begin
                           ;data.x[nn_steps*i:nn_steps*(i+1)-1] = time[i] + dindgen(nn_steps) * dt[i]                                                                                                                                                                                                   
                          ; data.y[nn_steps*i:nn_steps*(i+1)-1] = output_state_E12_LF[i,*] *const_E12_LF                                                                                                                                                                                                  
                           data.y[nn_steps*i:nn_steps*(i+1)-1] = ((output_state_E12_LF[i,*] *const_E12_LF)-e12_corr(0))/e12_corr(1)
-                          data.dy[nn_steps*i:nn_steps*(i+1)-1] = SQRT(abs(output_state_E12_LF[i,*] *const_E12_LF))
+                          data.dy[nn_steps*i:nn_steps*(i+1)-1] =((10                       *const_E12_LF)-e12_corr(0))/e12_corr(1)  ;10 DN
                  endfor         
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
@@ -333,6 +364,116 @@ If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;De
                           ;------------- store --------------------
                           store_data,'mvn_lpw_'+strtrim(packet,2)+'_e12',data=data,limit=limit,dlimit=dlimit
                           ;---------------------------------------------                
+ ;   remove bad points and the DC signal               
+ 
+                 xx=indgen( nn_steps)  ; smallest value 1 second
+                 tmp=fltarr(nn_steps)                                                              
+                 for i=0L,nn_pktnum-1 do begin
+                           tmp[*]=((output_state_E12_LF[i,*] *const_E12_LF)-e12_corr(0))/e12_corr(1)                          
+                           tmp[0:1]=  !values.f_nan
+                           ;;dataA.y[i,*] = ((output_state_E12_LF[i,*] *const_E12_LF)-e12_corr(0))/e12_corr(1)                   
+                           flag= 1. ; (max(tmp) LT 5.)*(min(tmp) GT -5.)
+                           tmp0= LADFIT(xx[4:nn_steps-1],tmp[4:nn_steps-1])  ;,nan )
+                           dataA.y[i,*]            = (tmp -(tmp0[1]*xx+tmp0[0]) )/flag                           
+                           data.y[nn_steps*i:nn_steps*(i+1)-1] = ((output_state_E12_LF[i,*] *const_E12_LF)-e12_corr(0))/e12_corr(1)
+                           dataA.v[i,*]=xx    
+                           da=i*nn_steps     
+                           data.y[da:da+nn_steps-1]=(tmp -(tmp0[1]*xx+tmp0[0]) )/flag  
+                 endfor                                 
+                         ;------------- store --------------------
+  ;                       store_data,'mvn_lpw_'+strtrim(packet,2)+'2_e12',data=data,limit=limit,dlimit=dlimit
+  ;                       options,'mvn_lpw_'+strtrim(packet,2)+'2_e12',DATAGAP=60*5
+  ;this will give me the matrix to see trends
+                         store_data,'mvn_lpw_'+strtrim(packet,2)+'3_e12',data=dataA,limit=limit,dlimit=dlimit
+                         options,'mvn_lpw_'+strtrim(packet,2)+'3_e12',spec=1
+                         options,'mvn_lpw_'+strtrim(packet,2)+'3_e12',no_interp=1
+                         options,'mvn_lpw_'+strtrim(packet,2)+'3_e12',yrange=[0,64]
+                         options,'mvn_lpw_'+strtrim(packet,2)+'3_e12',zrange=[-0.02,0.02]
+                         
+                         
+
+get_data,'mvn_lpw_atr_dac_raw',data=d_dac,limit=limit2
+;#             Waves mode bias current = = -[(dac_setting -2048)   (50V/2048)] / 50000000 ohms
+yy=-1.0*([[d_dac.y[*,0]],[d_dac.y[*,6]]] -2048.)* (50./2048)* 1.0/50000000 *1e9
+store_data,'DAC',data={x:d_dac.x,y:yy}
+options,'DAC','labels',limit2.labels[[0,6]]
+options,'DAC','ytitle','Bias [nA]'
+options,'DAC','colors',[0,6]
+options,'DAC','labflag',1
+options,'DAC','psym',-2    
+                    
+                          dataM=dataA
+                          
+                          for i=0L,nn_pktnum-1 do begin
+                             dataA.v[i,*]  = 1.0*xx/nn_steps *subcycle_length[output.mc_len[output_state_i[i]] ]*4. ; smallest value 1 second
+                        
+                             tmp0=min(abs(d_dac.x-dataA.x[i]),nq)    ; get the DAC value
+                             if dataA.x[i] LT d_dac.x[nq] then nq=(nq-1) >0
+                             
+                             tmp= ((output_state_E12_LF[i,*] *const_E12_LF)-e12_corr(0))/e12_corr(1)  ; this is the potential                         
+                             tmp2= LADFIT(xx[4:nn_steps-1],tmp[4:nn_steps-1])  ;,nan )
+                             tmp3 = (tmp -(tmp2[1]*xx+tmp2[0]) )                     
+                  
+                             IF abs(yy[nq,0]+yy[nq,1]) GT 16          then tmp3[*] =  !values.f_nan  ; to large DAC value
+                             IF output.orb_md[output_state_i[i]] EQ 8 then tmp3[*] =  !values.f_nan  ; not in electric field mode
+                             ;fill in the matrix 
+                             if (max(tmp) GT 5.) OR (min(tmp) LT -5.) then  $     ; if saturated void
+                                 tmp3[*]  =    !values.f_nan 
+                                 tmp3[0:1] =  !values.f_nan                                    ; always remove first two points
+                            ; fill in the matrix   presently not used   
+                                          ;dataA.y[i,*]   =  tmp3                            
+                                          ;dataA.y[i,0]   = max(tmp,/nan) 
+                                          ;dataA.y[i,1]   = min(tmp,/nan) 
+                            
+                            ; fill in the time array  
+                             data.y[nn_steps*i:nn_steps*(i+1)-1] = tmp3                           
+                             dtmp= fltarr( nn_steps)   ; no corrections 
+                            ; if packet EQ 'act' then $
+                              void=3   ; finding the if there is a extreme value ignore the first points
+                              
+                             
+                               ;     print,i,' # ',total(tmp3,/nan), max(abs(tmp3),/nan)
+                               ;  if max(abs(tmp3),/nan) GT 0.1 then begin
+                                    
+                                ;    stanna
+                                
+                                     dtmp[0:void-1]= 0.5 * abs(tmp3[0:void-1])                        ;  first 2 points always 50 % error
+                                        
+                                      tt =    sort( abs(tmp3[   void:nn_steps-1]))                    ; find the largest values excluding the first points
+                                      tmp_mean=mean(abs(tmp3[tt[0   :nn_steps-1-void-3]+void]))       ; <- increase the error on the 3+3 extreme values when they stand out
+                                      if  abs(abs( tmp3[tt[nn_steps-1-void]+void])-tmp_mean)/tmp_mean GT 20 then begin 
+                                         dtmp[tt[nn_steps-1-void-5]+void] = abs(0.25 * tmp3[tt[nn_steps-1-void-5]+void])
+                                         dtmp[tt[nn_steps-1-void-4]+void] = abs(0.5 * tmp3[tt[nn_steps-1-void-4]+void])                                       
+                                         dtmp[tt[nn_steps-1-void-3]+void] = abs(0.75 * tmp3[tt[nn_steps-1-void-3]+void]) 
+                                         dtmp[tt[nn_steps-1-void-2]+void] = abs(1.0 * tmp3[tt[nn_steps-1-void-2]+void])
+                                         dtmp[tt[nn_steps-1-void-1]+void] = abs(1.0 * tmp3[tt[nn_steps-1-void-1]+void])
+                                         dtmp[tt[nn_steps-1-void-0]+void] = abs(1.0 * tmp3[tt[nn_steps-1-void-0]+void])                                                                  
+                                      endif                                       
+                               ; endif 
+                              if total(abs(dataA.y[i,*]),/nan) GT 0 then $
+                                data.dy[nn_steps*i:nn_steps*(i+1)-1] = 0.01  + dtmp else $  ;fix error
+                                data.dy[nn_steps*i:nn_steps*(i+1)-1] =  !values.f_nan
+                             
+                                                                               
+                          endfor  
+                          
+                    ;     store_data,'mvn_lpw_'+strtrim(packet,2)+'4_e12',data=dataA,limit=limit,dlimit=dlimit
+                    ;     options,'mvn_lpw_'+strtrim(packet,2)+'4_e12',spec=1
+                    ;     options,'mvn_lpw_'+strtrim(packet,2)+'4_e12',no_interp=1
+                    ;     options,'mvn_lpw_'+strtrim(packet,2)+'4_e12',yrange=[0,9]
+                    ;     options,'mvn_lpw_'+strtrim(packet,2)+'4_e12',zrange=[-0.02,0.02]
+                         store_data,'mvn_lpw_'+strtrim(packet,2)+'5_e12',data=data,limit=limit,dlimit=dlimit
+                         options,'mvn_lpw_'+strtrim(packet,2)+'5_e12',yrange=[-0.5,0.5]
+                         options,'mvn_lpw_'+strtrim(packet,2)+'5_e12','noerrorbars', 1
+                         
+                         options,'mvn_lpw_'+strtrim(packet,2)+'3_e12',DATAGAP=60*5                         
+                     ;    options,'mvn_lpw_'+strtrim(packet,2)+'4_e12',DATAGAP=60*5                    
+                         options,'mvn_lpw_'+strtrim(packet,2)+'5_e12',DATAGAP=60*5
+                         
+                         ;---------------------------------------------                
+                
+         
+                
                 
                  
      

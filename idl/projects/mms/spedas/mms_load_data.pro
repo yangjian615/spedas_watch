@@ -60,13 +60,13 @@
 ;               https://lasp.colorado.edu/mms/sdc/about/browse/
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-07 13:13:09 -0700 (Fri, 07 Aug 2015) $
-;$LastChangedRevision: 18434 $
+;$LastChangedDate: 2015-08-13 13:33:31 -0700 (Thu, 13 Aug 2015) $
+;$LastChangedRevision: 18487 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
-pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
-                  level = level, instrument = instrument, data_rate = data_rate, $
+pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
+                  levels = levels, instrument = instrument, data_rates = data_rates, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, login_info = login_info, $
                   tplotnames = tplotnames, varformat = varformat
@@ -74,44 +74,61 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
     mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
     
     if undefined(source) then source = !mms
+
     if undefined(probes) then probes = ['1'] ; default to MMS 1
-    if undefined(datatype) then datatype = '*' else datatype = strlowcase(datatype)
-    
-    if undefined(level) then level = 'ql' ; default to quick look
+    if undefined(levels) then levels = 'ql' ; default to quick look
     if undefined(instrument) then instrument = 'dfg'
-    if undefined(data_rate) then data_rate = 'srvy'
+    if undefined(data_rates) then data_rates = 'srvy'
+
+    ;ensure datatypes are explicitly set for simplicity 
+    if undefined(datatypes_in) || in_set('*',datatypes_in) then begin
+        mms_load_options, instrument, rate=data_rates, level=levels, datatype=datatypes
+    endif else begin
+        datatypes = datatypes_in
+    endelse
+
     if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
     if undefined(varformat) then varformat = '*'
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
       else tr = timerange()
 
-    ; check the local internet connection by connecting to Google's homepage; this
-    ; is so we don't prompt the user for a password if they're sitting in 
-    ; the airport without an internet connection...
-    dummy_obj = obj_new('IDLnetURL', url_host='google.com', url_port=80)
-    dummy_lasp_home = dummy_obj->get()
-    dummy_obj->GetProperty, RESPONSE_CODE=lasp_code
-    obj_destroy, dummy_obj
+    response_code = spd_check_internet_connection()
 
     ;combine these flags for now, if we're not downloading files then there is
     ;no reason to contact the server unless mms_get_local_files is unreliable
-    no_download = !mms.no_download or !mms.no_server or (lasp_code ne 200)
+    no_download = !mms.no_download or !mms.no_server or (response_code ne 200)
 
     ; only prompt the user if they're going to download data
     if no_download eq 0 then begin
         status = mms_login_lasp(login_info = login_info)
-        if status ne 1 then return
+        if status ne 1 then no_download = 1
     endif
     
+    ;clear so new names are not appended to existsing array
+    undefine, tplotnames
+
+    ;loop over probe, rate, level, and datatype
+    ;omitting some tabbing to keep format reasonable
     for probe_idx = 0, n_elements(probes)-1 do begin
+    for rate_idx = 0, n_elements(data_rates)-1 do begin
+    for level_idx = 0, n_elements(levels)-1 do begin
+    for datatype_idx = 0, n_elements(datatypes)-1 do begin
+        ;options for this iteration
         probe = 'mms' + strcompress(string(probes[probe_idx]), /rem)
+        data_rate = data_rates[rate_idx]
+        level = levels[level_idx]
+        datatype = datatypes[datatype_idx]
+
         daily_names = file_dailynames(file_format='/YYYY/MM', trange=tr, /unique, times=times)
         
         ; updated to match the path at SDC; this path includes data type for 
         ; the following instruments: EDP, DSP, EPD-EIS, FEEPS, FIELDS, HPCA, SCM (as of 7/23/2015)
         sdc_path = instrument + '/' + data_rate + '/' + level
-        sdc_path = datatype ne '*' ? sdc_path + '/' + datatype + daily_names : sdc_path + daily_names
+        sdc_path = datatype ne '' ? sdc_path + '/' + datatype + daily_names : sdc_path + daily_names
+
+        ;ensure no descriptor is used if instrument doesn't use datatypes
+        if datatype eq '' then undefine, descriptor else descriptor = datatype
 
         for name_idx = 0, n_elements(sdc_path)-1 do begin
             day_string = time_string(tr[0], tformat='YYYY-MM-DD') 
@@ -125,15 +142,9 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
             ;depending on whether files were found, if there is a connection error the 
             ;neturl response code is returned instead
             if ~keyword_set(no_download) then begin
-                if datatype ne '*' && datatype ne '' then begin
-                    data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
-                            data_rate_mode=data_rate, data_level=level, start_date=day_string, $
-                            end_date=end_string, descriptor=datatype)
-                endif else begin
-                    data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
-                            data_rate_mode=data_rate, data_level=level, start_date=day_string, $
-                            end_date=end_string)
-                endelse
+                data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
+                        data_rate_mode=data_rate, data_level=level, start_date=day_string, $
+                        end_date=end_string, descriptor=descriptor)
             endif
             
             ;if a list of remote files was retrieved then compare remote and local files
@@ -171,8 +182,8 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
                         probe+' '+instrument+' '+data_rate+' '+level+' '+datatype
                 
                 local_files = mms_get_local_files(probe=probe, instrument=instrument, $
-                        data_rate=data_rate, level=level, datatype=datatype, trange=tr)
-                
+                        data_rate=data_rate, level=level, datatype=datatype, trange=time_double([day_string, end_string]))
+
                 if is_string(local_files) then begin
                     append_array, files, local_files
                 endif else begin
@@ -200,7 +211,16 @@ pro mms_load_data, trange = trange, probes = probes, datatype = datatype, $
         ; forget about the daily files for this probe
         undefine, files
         undefine, loaded_tnames
+
+    ;end loops over probe, rate, leve, and datatype
     endfor
+    endfor
+    endfor
+    endfor
+
+    ; just in case multiple datatypes loaded identical variables
+    ; (this occurs with hpca moments & logicals)
+    if ~undefined(tplotnames) then tplotnames = spd_uniq(tplotnames)
 
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin

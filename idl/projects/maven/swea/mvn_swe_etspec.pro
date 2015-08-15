@@ -104,8 +104,8 @@
 ;CREATED BY:      Takuya Hara on 2014-11-22. 
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-04-15 17:23:54 -0700 (Wed, 15 Apr 2015) $
-; $LastChangedRevision: 17337 $
+; $LastChangedDate: 2015-08-12 20:41:21 -0700 (Wed, 12 Aug 2015) $
+; $LastChangedRevision: 18478 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_etspec.pro $
 ;
 ;MODIFICATION LOG:
@@ -124,7 +124,7 @@ PRO mvn_swe_etspec_cotrans, var, tvar, pvar, from=from, to=to, verbose=silent, $
 
   q = spice_body_att(from, to, time, $
                      /quaternion, check_object='MAVEN_SPACECRAFT', $
-                     verbose=-1, /no_ignore)
+                     verbose=-1)
   
   t2 =   q[0]*q[1]              ;- cf. quaternion_rotation.pro
   t3 =   q[0]*q[2]
@@ -166,9 +166,11 @@ PRO mvn_swe_etspec_default, dat, theta, phi, units=units, y=y, v=v, index=i, suf
      ENDCASE
 
      IF ndat GT 0 THEN BEGIN
+        weight = dat.data * 0.
+        weight[idx] = 1.
         IF STRLOWCASE(units) NE 'counts' THEN $
-           y[j, i, *] = TOTAL(dat.data[*, idx]*dat.domega[*, idx], 2, /nan) / TOTAL(dat.domega[*, idx], 2, /nan) $
-        ELSE y[j, i, *] = TOTAL(dat.data[*, idx], 2, /nan)
+           y[j, i, *] = TOTAL(dat.data*dat.domega*weight, 2, /nan) / TOTAL(dat.domega*weight, 2, /nan) $
+        ELSE y[j, i, *] = TOTAL(dat.data*weight, 2, /nan)
      ENDIF ELSE y[j, i, *] = nan
      v[j, i, *] = average(dat.energy, 2, /nan) 
      undefine, idx, ndat

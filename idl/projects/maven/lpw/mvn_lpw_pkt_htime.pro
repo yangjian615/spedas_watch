@@ -32,11 +32,11 @@
 ;;140718 clean up for check out L. Andersson
 ;-
 
-pro mvn_lpw_pkt_htime, output,lpw_const,tplot_var=tplot_var
+pro mvn_lpw_pkt_htime, output,lpw_const,tplot_var=tplot_var 
 
 If keyword_set(tplot_var) THEN tplot_var = tplot_var ELSE tplot_var = 'SCI'  ;Default setting is science tplot variables only.
 
-IF output.p23 GT 0 THEN BEGIN  ;check for data
+IF output.p23 GT 0 THEN BEGIN  ;check for data      
       
       ;--------------------- Constants ------------------------------------               
                t_routine=SYSTIME(0) 
@@ -48,15 +48,15 @@ IF output.p23 GT 0 THEN BEGIN  ;check for data
                filename_L0=output.filename
                nn_pktnum=n_elements(output.HTIME_i)
       ;--------------------------------------------------------------------
-      
+      ;      
       ;--------------------------------------------------------------------       
       ; time stamp of the packet it self
       time=double(output.SC_CLK1[output.HTIME_i]) + output.SC_CLK2[output.HTIME_i]/2l^16+t_epoch  ;number of packets
-      
+           
       length=(((long(output.length[output.HTIME_i])-1)/2)-7)/2+1
       lenght_cum0=total(length,/CUMULATIVE)
       time_long=dblarr(n_elements(output.htime_type))  ;make time so it matches htime_type
-      
+           
       for i=0,nn_pktnum-1 do $ 
         if length[i] GT 0 then $ 
               time_long[lenght_cum0[i]-length[i]:lenght_cum0[i]-1]=time[i]
@@ -68,13 +68,13 @@ IF output.p23 GT 0 THEN BEGIN  ;check for data
           str_xtitle       = 'Time (s/c)'  
           kernel_version    = 'N/A'     
       ;--------------------------------------------------------------------
-  
+      ;  
       IF tplot_var EQ 'ALL' THEN BEGIN      
             ;--------------------------------------------------------------------    
             for iu=0,2  do begin ; loop over the HSBM types lf mf hf
                 type=type_3[iu]
                 qq=where(output.htime_type EQ iu,nq)  
-                
+                               
                ;-------------  compare time with time as function of time  capture time and trensfere time---------------------------
                 data =  create_struct(   $           
                                          'x',    dblarr(nq) ,  $     ; double 1-D arr
@@ -132,12 +132,11 @@ IF output.p23 GT 0 THEN BEGIN  ;check for data
                     limit.ytitle='Xfer '+type 
                   store_data,'mvn_lpw_htime_xfer_'+type,data=data,limit=limit,dlimit=dlimit
                  ;--------------------------------------------------       
-            
+                 ;            
             endfor  ;end loop over the HSBM types lf mf hf
       ENDIF
       
-  
-  
+        
       IF 'yes' EQ 'no' and tplot_var EQ 'ALL' THEN BEGIN ; this is not archived since this is not imporatant information
                  ;------------- variable:  HTIME report rate ---------------------------
             
@@ -191,10 +190,10 @@ IF output.p23 GT 0 THEN BEGIN  ;check for data
                 ;------------- store --------------------                              
                     store_data,'mvn_lpw_htime_rate',data=data,limit=limit,dlimit=dlimit
                 ;---------------------------------------------
-     
-     
+                ;
+                ;    
      help,time_long
-     
+          
      print,'##'
      print,time_long
      print,'##'
@@ -202,14 +201,14 @@ IF output.p23 GT 0 THEN BEGIN  ;check for data
      print,'##'
      print,output.htime_type
      
-     
+          
               ;------------- variable:  htime L1-raw nn_size=??? ---------------------------
                 data =  create_struct(   $           
                                          'x',    dblarr(nn_pktnum) ,  $                       ; double 1-D arr
                                          'y',    fltarr(nn_pktnum,max(length)*3+1))                ;1-D 
                 ;-------------- derive  time/variable ----------------                          
                  for i=0L,nn_pktnum-1 do begin
- 
+                  
  help,output.cap_time,output.xfer_time,output.htime_type
  help,output.cap_time[i,*],output.xfer_time[i,*],output.htime_type[i,*]
  
@@ -289,8 +288,7 @@ IF output.p23 GT 0 THEN BEGIN  ;check for data
                 ;------------- store --------------------                        
                 store_data,'mvn_lpw_htime_l0b',data=data,limit=limit,dlimit=dlimit
                 ;---------------------------------------------
-   
-     
+                
       ENDIF
 ENDIF
 
@@ -298,12 +296,6 @@ IF output.p23 LE 0 THEN print, "mvn_lpw_htime.pro skipped as no packets found."
 
 end
 ;*******************************************************************
-
-
-
-
-
-
-
+;
 
 
