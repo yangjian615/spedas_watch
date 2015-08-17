@@ -64,8 +64,11 @@
 ;
 ;       TIMECROP: An array with at least two elements, in any format accepted by 
 ;                 time_double.  Only ephemeris data between the earliest and
-;                 latest times in this array are retained.  Default is to retain all
-;                 available data.
+;                 latest times in this array are retained.  Default is to crop
+;                 data to current timespan, if it exists -- otherwise, load and
+;                 display all available ephemeris data (same as NOCROP).
+;
+;       NOCROP:   Load and display all available ephemeris data.  Overrides TIMECROP.
 ;
 ;       COLORS:   Color indices the nominal plasma regimes: [sheath, pileup, wake].
 ;                 The solar wind is always plotted in the default foreground color,
@@ -83,8 +86,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-14 14:01:04 -0700 (Fri, 14 Aug 2015) $
-; $LastChangedRevision: 18498 $
+; $LastChangedDate: 2015-08-16 11:59:42 -0700 (Sun, 16 Aug 2015) $
+; $LastChangedRevision: 18500 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -92,7 +95,7 @@
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
-                       colors=colors, reset_trange=reset_trange
+                       colors=colors, reset_trange=reset_trange, nocrop=nocrop
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
                        lon, lat, hgt, mex, rcols, orbnum
@@ -126,10 +129,20 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
       if (count gt 0L) then geoext = extended[j[0]]
     endif
   endif else cflg = 1
+
   if (n_elements(timecrop) gt 1L) then begin
     tspan = minmax(time_double(timecrop))
     docrop = 1
-  endif else docrop = 0
+  endif else begin
+    tplot_options, get_opt=topt
+    tspan_exists = (max(topt.trange_full) gt time_double('2013-11-18'))
+    if (tspan_exists) then begin
+      tspan = topt.trange_full
+      docrop = 1
+    endif else docrop = 0
+  endelse  
+  if keyword_set(nocrop) then docrop = 0
+
   case n_elements(colors) of
     0 : rcols = [4, 5, 2]
     1 : rcols = [round(colors), 5, 2]
@@ -543,31 +556,32 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   endfor
 
-  sma = smooth(sma,[11,1],/edge_truncate) ; unit vector --> semi-minor axis
-  fov = sma                      ; unit vector --> perpendicular to SWIA FOV center plane
-  fov[*,0] = 0D                  ; cross product --> X x SMA
-  fov[*,1] = -sma[*,2]
-  fov[*,2] = sma[*,1]
-  for i=0L,n_elements(fov[*,0])-1L do begin
-     amp = sqrt(fov[i,1]*fov[i,1] + fov[i,2]*fov[i,2])
-     fov[i,*] = fov[i,*]/amp
-  endfor
+  if keyword_set(swia) then begin
+    if (norb gt 15) then sma = smooth(sma,[11,1],/edge_truncate) ; unit vector --> semi-minor axis
+    fov = sma                      ; unit vector --> perpendicular to SWIA FOV center plane
+    fov[*,0] = 0D                  ; cross product --> X x SMA
+    fov[*,1] = -sma[*,2]
+    fov[*,2] = sma[*,1]
+    for i=0L,n_elements(fov[*,0])-1L do begin
+       amp = sqrt(fov[i,1]*fov[i,1] + fov[i,2]*fov[i,2])
+       fov[i,*] = fov[i,*]/amp
+    endfor
 
 ; The vector fov changes smoothly over the mission lifetime.  I want to calulate the 
 ; angle between fov and nadir throughout all the orbits.
 
-  nx = -x/r   ; unit vector --> nadir
-  ny = -y/r
-  nz = -z/r
+    nx = -x/r   ; unit vector --> nadir
+    ny = -y/r
+    nz = -z/r
 
-  fx = replicate(0D, n_elements(time))
-  fy = spline(torb, fov[*,1], time)
-  fz = spline(torb, fov[*,2], time)
+    fx = replicate(0D, n_elements(time))
+    fy = spline(torb, fov[*,1], time)
+    fz = spline(torb, fov[*,2], time)
     
-  sdotf = dblarr(n_elements(time))
-  for i=0L, n_elements(time)-1L do sdotf[i] = (ny[i]*fy[i]) + (nz[i]*fz[i])
+    sdotf = dblarr(n_elements(time))
+    for i=0L, n_elements(time)-1L do sdotf[i] = (ny[i]*fy[i]) + (nz[i]*fz[i])
   
-  phi = 90D - (!radeg*acos(sdotf))
+    phi = 90D - (!radeg*acos(sdotf))
 
 ; phi is the elevation angle of nadir in SWIA's FOV.  The optimal FOV has phi = 0, 
 ; that is, nadir is in the center plane of the FOV.
@@ -575,9 +589,17 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
 ; Clip off the periapsis and apoapsis parts of the orbit -- focus on the sides only.
   
-  alt = (ss[*,3] - 1D)*R_m
-  indx = where((alt lt 500D) or (alt gt 5665D))
-  phi[indx] = !values.f_nan
+    alt = (ss[*,3] - 1D)*R_m
+    indx = where((alt lt 500D) or (alt gt 5665D))
+    phi[indx] = !values.f_nan
+  
+    swia = {time    : time    , $   ; time (UTC)
+            fx      : fx      , $   ; FOV unit vector (x component)
+            fy      : fy      , $   ; FOV unit vector (y component)
+            fz      : fz      , $   ; FOV unit vector (z component)
+            phi     : phi        }  ; elev of nadir in SWIA FOV
+
+  endif
 
 ; Package the results - statistics are on an orbit-by-orbit basis
 
@@ -592,12 +614,6 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
           hwake   : hwake   , $   ; hours in wake
           period  : period  , $   ; orbit period
           palt    : palt       }  ; periapsis altitude
-  
-  swia = {time    : time    , $   ; time (UTC)
-          fx      : fx      , $   ; FOV unit vector (x component)
-          fy      : fy      , $   ; FOV unit vector (y component)
-          fz      : fz      , $   ; FOV unit vector (z component)
-          phi     : phi        }  ; elev of nadir in SWIA FOV
 
 ; Stack up times for plotting in one panel
 
@@ -649,9 +665,15 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   vars = ['alt2','stat','sza','period','palt','lon','lat']
 
   if not keyword_set(loadonly) then begin
-    str_element, topt, 'varnames', tvars, success=add
+    avars = vars[0:2]
+    nvars = n_elements(avars)
+
+    str_element, topt, 'varnames', tvars, success=ok
+    if (not ok) then tvars = avars
+    for i=(nvars-1),0,-1 do if (~max(strcmp(avars[i],tvars))) then tvars = [avars[i],tvars]
+
     if (treset) then timespan,[tmin,tmax],/sec
-    tplot,vars[0:2],add=add
+    tplot,tvars
     if (donow) then timebar,systime(/utc,/sec),line=1
   endif
 
