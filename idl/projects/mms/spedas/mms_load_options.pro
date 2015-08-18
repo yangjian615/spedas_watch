@@ -1,3 +1,23 @@
+;+
+;Purpose:
+;  Helper function to return structure describing
+;  the available data types for EDI
+;-
+function mms_load_options_edi
+
+    compile_opt idl2, hidden
+
+s = { $
+      brst: { $
+              l1a: [ $
+                     'amb' $
+                   ] $
+            } $
+    }
+
+return, s
+
+end
 
 
 ;+
@@ -330,8 +350,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-14 13:52:41 -0700 (Fri, 14 Aug 2015) $
-;$LastChangedRevision: 18496 $
+;$LastChangedDate: 2015-08-17 15:23:14 -0700 (Mon, 17 Aug 2015) $
+;$LastChangedRevision: 18506 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $
@@ -365,6 +385,7 @@ case strupcase(instrument) of
   'FPI': s = mms_load_options_fpi()
   'HPCA': s = mms_load_options_hpca()
   'SCM': s = mms_load_options_scm()
+  'EDI': s = mms_load_options_edi()
   else: begin
     dprint, dlevel=1, 'Instrument "'+instrument+'" not recognized'
     return

@@ -58,10 +58,23 @@
 ;               
 ;      8) When looking for data availability, look for the CDFs at:
 ;               https://lasp.colorado.edu/mms/sdc/about/browse/
+;             
+;      9) Logging into the SDC: (NOTE on note: save PW option is not checked in yet, still debugging odd Linux bug)
+;           - If you have an internet connection, you'll be prompted for a username and password the 
+;           first time you use the MMS plugin. There's an option in the widget that allows you 
+;           to save your password in a save file on the local machine; if you select this option, 
+;           the login prompt will never come up again and your saved password will be used to 
+;           login to the SDC. This is insecure and should not be used if you use a common 
+;           password with other services.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-13 13:33:31 -0700 (Thu, 13 Aug 2015) $
-;$LastChangedRevision: 18487 $
+;           - If you don't have an internet connection or you can't login remotely, the plugin will 
+;           look for the files on the local machine using a directory structure that matches 
+;           the directory structure at the SDC.
+;      
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-08-17 17:36:42 -0700 (Mon, 17 Aug 2015) $
+;$LastChangedRevision: 18509 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -70,7 +83,13 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, login_info = login_info, $
                   tplotnames = tplotnames, varformat = varformat
-                  
+
+    ;temporary variables to track elapsed times
+    t0 = systime(/sec)
+    dt_query = 0d
+    dt_download = 0d
+    dt_load = 0d
+   
     mms_init, remote_data_dir = remote_data_dir, local_data_dir = local_data_dir
     
     if undefined(source) then source = !mms
@@ -142,9 +161,11 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             ;depending on whether files were found, if there is a connection error the 
             ;neturl response code is returned instead
             if ~keyword_set(no_download) then begin
+                qt0 = systime(/sec) ;temporary
                 data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
                         data_rate_mode=data_rate, data_level=level, start_date=day_string, $
                         end_date=end_string, descriptor=descriptor)
+                dt_query += systime(/sec) - qt0 ;temporary
             endif
             
             ;if a list of remote files was retrieved then compare remote and local files
@@ -166,9 +187,11 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                     same_file = mms_check_file_exists(remote_file_info[file_idx], file_dir = file_dir)
                     
                     if same_file eq 0 then begin
+                        td0 = systime(/sec) ;temporary
                         dprint, dlevel = 0, 'Downloading ' + filename[file_idx] + ' to ' + file_dir
                         status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir)
-                        
+
+                        dt_download += systime(/sec) - td0 ;temporary
                         if status eq 0 then append_array, files, file_dir + '/' + filename[file_idx]
                     endif else begin
                         dprint, dlevel = 0, 'Loading local file ' + file_dir + '/' + filename[file_idx]
@@ -200,11 +223,13 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         endfor
 
         if ~undefined(files) then begin
+            lt0 = systime(/sec) ;temporary
             ; kludge for HPCA ion data to avoid reinventing wheels
             if instrument eq 'hpca' and datatype eq 'ion' then begin
-                mms_sitl_open_hpca_basic_cdf_jburch_skv_egrimes, files, measurement_id = [5, 5, 5], $
-                    sc_id = probe, fov=[0, 180], species=[1, 3, 4], tplotnames = loaded_tnames
+                mms_sitl_open_hpca_basic_cdf_jburch_skv_egrimes, files, measurement_id = [5, 5, 5, 5], $
+                    sc_id = probe, fov=[0, 180], species=[1, 2, 3, 4], tplotnames = loaded_tnames
             endif else cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, /all
+            dt_load += systime(/sec) - lt0 ;temporary
         endif
         if ~undefined(loaded_tnames) then append_array, tplotnames, loaded_tnames
         
@@ -227,5 +252,13 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         if (n_elements(tr) eq 2) and (tplotnames[0] ne '') then begin
             time_clip, tplotnames, tr[0], tr[1], replace=1, error=error
         endif
+        ;temporary messages for diagnostic purposes
+        dprint, dlevel=2, 'Successfully loaded: '+ $
+            strjoin( ['mms'+probes, instrument, data_rates, levels, datatypes, time_string(tr)],' ')
+        dprint, dlevel=2, 'Time querying remote server: '+strtrim(dt_query,2)+' sec'
+        dprint, dlevel=2, 'Time downloading remote files: '+strtrim(dt_download,2)+' sec'
+        dprint, dlevel=2, 'Time loading files into IDL: '+strtrim(dt_load,2)+' sec'
+        dprint, dlevel=2, 'Total load time: '+strtrim(systime(/sec)-t0,2)+' sec'
+
     endif
 end

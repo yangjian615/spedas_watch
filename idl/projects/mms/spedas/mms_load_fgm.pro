@@ -22,8 +22,8 @@
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-12 18:10:37 -0700 (Wed, 12 Aug 2015) $
-;$LastChangedRevision: 18477 $
+;$LastChangedDate: 2015-08-17 17:35:44 -0700 (Mon, 17 Aug 2015) $
+;$LastChangedRevision: 18508 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -122,7 +122,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   tplotnames = tplotnames
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
-    probes = strcompress(string(probes)) ; force the array to be an array of strings
+    probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     

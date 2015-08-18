@@ -30,6 +30,16 @@
 ; OUTPUT: tplot variables listed at the end of the procedure
 ; :Author: Katherine Goodrich, contact: katherine.goodrich@colorado.edu
 ;-
+;
+; MODIFICATION HISTORY:
+;
+;
+;  $LastChangedBy: rickwilder $
+;  $LastChangedDate: 2015-08-17 09:28:27 -0700 (Mon, 17 Aug 2015) $
+;  $LastChangedRevision: 18502 $
+;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_edp.pro $
+
+
 pro mms_load_edp, trange=trange, $
   probes=probes, $
   data_rate=data_rate, $
@@ -92,13 +102,20 @@ pro mms_load_edp, trange=trange, $
     print, 'Exiting, MMS_LOAD_EDP, no tplot variables loaded'
     return
   endif
-  names = []
+ ; names = []
   sc_id = sc
 
   ;FETCH THE DATA!!!!!!!
   mms_data_fetch, flist, login_flag, dwnld_flag ,sc_id = sc_id, instrument_id=instrument_id, $
     mode=mode, level=level, $
     optional_descriptor=datatype, reload=reload
+
+  if strlen(flist[0]) eq 0 or login_flag eq 1 then begin
+    mms_check_local_cache_multi, flist, file_flag, $
+      sc_id = sc_id, level=level, $
+      mode=mode, instrument_id=instrument_id, $
+      optional_descriptor=datatype
+  endif
 
   ;Exits if it can't find any files matching your criteria
   if strlen(flist[0]) eq 0 then begin
@@ -118,7 +135,7 @@ pro mms_load_edp, trange=trange, $
   flist = mms_sort_filenames_by_date(flist)
   mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
     descriptors, version_strings, start_strings, years, /contains_dir
-  end_string = start_strings[-1]
+  end_string = start_strings[n_elements(start_strings)-1]
   end_year = strmid(end_string, 0, 4)
   end_month = strmid(end_string, 4, 2)
   end_day = strmid(end_string, 6, 2)
@@ -127,7 +144,8 @@ pro mms_load_edp, trange=trange, $
   end_sec = strmid(end_string, 12, 2)
   end_string = end_year+'-'+end_month+'-'+end_day+'/'+end_hour+':'+end_min+':'+end_sec
   t1 = time_double(end_string)
-  end_string = start_strings[-1]
+  ;end_string = start_strings[-1]
+  end_string = start_strings[n_elements(start_strings)-1]
   if t1 ge t[1] then begin
     ind = where(start_strings ne end_string)
     flist = flist[ind]
@@ -197,12 +215,13 @@ pro mms_load_edp, trange=trange, $
           cdf_info_to_tplot, cdfi, varnames
 
           ;Include mode string in tplot name
-          dat_names = []
+          ;dat_names = []
           id = cdf_open(flename)
           for v=0, n_elements(varnames)-1 do begin
             cdf_attget, id, 'VAR_TYPE', varnames[v], vtyp, /zvar
             strs = strsplit(varnames[v], '_', /extract)
-            if vtyp eq 'data' then dat_names = [dat_names, varnames[v]]
+           ; if vtyp eq 'data' then dat_names = [dat_names, varnames[v]]
+           if vtyp eq 'data' then append_array, dat_names, varnames[v]
           endfor
           cdf_close, id
          
@@ -244,9 +263,11 @@ pro mms_load_edp, trange=trange, $
             store_data,newname, data=data, dlim=dlim
             ;            stop
             if newname ne dat_names[v] then del_data, dat_names[v]
-            names = [names, newname]
+            ;names = [names, newname]
+            append_array, names, newname
 
           endfor
+          undefine, dat_names
         endfor
       endfor
     endfor

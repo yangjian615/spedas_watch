@@ -28,7 +28,13 @@
 ; OUTPUT: tplot variables listed at the end of the procedure
 ; :Author: Katherine Goodrich, contact: katherine.goodrich@colorado.edu
 ;-
-
+; MODIFICATION HISTORY:
+;
+;
+;  $LastChangedBy: rickwilder $
+;  $LastChangedDate: 2015-08-17 09:28:27 -0700 (Mon, 17 Aug 2015) $
+;  $LastChangedRevision: 18502 $
+;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_dsp.pro $
 
 pro mms_load_dsp, trange=trange, probes=probes, $
   data_rate=data_rate, level=level, datatype=datatype, $
@@ -88,7 +94,7 @@ pro mms_load_dsp, trange=trange, probes=probes, $
   
   if keyword_set(get_support_data) then var_type = ['support_data', 'data'] else var_type = 'data'
   
-  names = []
+  ;names = []
     
   if total(strmatch(level, 'l1a')) eq 1 or total(strmatch(level, 'l1b')) eq 1 then begin
     if total(strmatch(datatype, 'bpsd')) eq 1 then begin
@@ -158,7 +164,8 @@ pro mms_load_dsp, trange=trange, probes=probes, $
               get_data, oldname, data=data, dlim=dlim, lim=lim
               store_data, newname, data=data, dlim=dlim, lim=lim
               del_data, oldname
-              names = [names, newname]
+              ;names = [names, newname]
+              append_array, names, newname
 
             endfor
           endfor
@@ -239,8 +246,8 @@ pro mms_load_dsp, trange=trange, probes=probes, $
               get_data, oldname, data=data, dlim=dlim, lim=lim
               store_data, newname, data=data, dlim=dlim, lim=lim
               del_data, oldname
-              names = [names, newname]
-
+              ;names = [names, newname]
+              append_array, names, newname
             endfor
           endfor
         endfor
