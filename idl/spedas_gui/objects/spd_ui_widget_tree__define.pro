@@ -91,9 +91,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-18 12:18:04 -0700 (Tue, 18 Aug 2015) $
+;$LastChangedRevision: 18516 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_widget_tree__define.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -1205,7 +1205,9 @@ pro spd_ui_widget_tree::handleContextMenuEvent,event
     return
   endelse
 
-  if strlen(varname) lt self.context_width then begin
+  ; updated the following logic from self.context_width to self.context_width-1 so that pad_num
+  ; can't be set equal to 1, egrimes on 8/18/15
+  if strlen(varname) lt self.context_width-1 then begin
     pad_num = self.context_width-strlen(varname)
     var_text = strjoin(replicate(' ',pad_num/2)) + varname + strjoin(replicate(' ',pad_num/2))
   endif else begin

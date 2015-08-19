@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-17 15:24:47 -0700 (Mon, 17 Aug 2015) $
-; $LastChangedRevision: 18507 $
+; $LastChangedDate: 2015-08-18 09:52:32 -0700 (Tue, 18 Aug 2015) $
+; $LastChangedRevision: 18511 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib.pro $
 ;-
 
@@ -41,10 +41,10 @@ stop
 
 mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='ion', level='l1b'
 
-rf_corrected = ['mms1_hpca_h+_rf_corr_counts_elev_0-180', $
-                'mms1_hpca_o+_rf_corr_counts_elev_0-180', $ 
-                'mms1_hpca_he+_rf_corr_counts_elev_0-180', $
-                'mms1_hpca_he++_rf_corr_counts_elev_0-180']
+rf_corrected = ['mms1_hpca_h+_rf_corr_counts_elev_0-360', $
+                'mms1_hpca_o+_rf_corr_counts_elev_0-360', $ 
+                'mms1_hpca_he+_rf_corr_counts_elev_0-360', $
+                'mms1_hpca_he++_rf_corr_counts_elev_0-360']
         
 ; show spectra for H+, O+ and He+
 window, 3, ysize=600

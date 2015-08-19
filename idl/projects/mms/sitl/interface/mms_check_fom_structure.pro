@@ -74,7 +74,6 @@ loc_seg_error = where(new_fomstr.seglengths lt seg_bounds(0) or new_fomstr.segle
 loc_start_error = where(new_fomstr.start gt new_fomstr.stop, count_start_error)
 
 error_flags = [count_fom_error gt 0, $
-               total(new_fomstr.seglengths) gt buff_max, $
                count_seg_error gt 0, $
                count_start_error gt 0, $
                new_evaltime ne old_evaltime]
@@ -110,7 +109,6 @@ endelse
 fom_error_txt = 'ERROR: FOM value at following times out of bounds (' + fom_min_str + $
                 ' to ' + fom_max_str + '): '
 
-buff_error_txt = 'ERROR: Number of buffers exceeds maximum (' + buff_max_str + ')!'
 seg_error_txt = 'ERROR: Segment lengths at following times out of bounds (' + $
   seg_min_str + ' to ' + seg_max_str + '): '
 
@@ -119,7 +117,6 @@ start_error_txt = 'ERROR: Start time must be less than stop time for following s
 eval_error_txt = 'ERROR: The evaluation times for the automated system and SITL selections do not match!'
                
 error_msg = [fom_error_txt, $
-              buff_error_txt, $
               seg_error_txt, $
               start_error_txt, $
               eval_error_txt]
@@ -127,16 +124,14 @@ error_msg = [fom_error_txt, $
 
 ; Provides a list of time strings, as well as array indices for the fomstr.start where errors were found
 *(error_times[0]) = fom_error_times
-*(error_times[1]) = 'Orbit-wide error - no error times'
-*(error_times[2]) = seg_error_times
-*(error_times[3]) = start_error_times
-*(error_times[4]) = 'Orbit-wide error - no error times'
+*(error_times[1]) = seg_error_times
+*(error_times[2]) = start_error_times
+*(error_times[3]) = 'Orbit-wide error - no error times'
 
 *(error_indices[0]) = loc_fom_error
-*(error_indices[1]) = !values.f_nan
-*(error_indices[2]) = loc_seg_error
-*(error_indices[3]) = !values.f_nan
-*(error_indices[4]) = loc_start_error
+*(error_indices[1]) = loc_seg_error
+*(error_indices[2]) = !values.f_nan
+*(error_indices[3]) = loc_start_error
 
 
 
@@ -147,7 +142,8 @@ error_msg = [fom_error_txt, $
 loc_fom_approve = where(new_fomstr.fom gt fom_gmax, count_fom_appr)
 ;loc_fom_percentage = 
 
-orange_warning_flags = [count_fom_appr gt 0]
+orange_warning_flags = [count_fom_appr gt 0, $
+                        total(new_fomstr.seglengths) gt buff_max]
 
 orange_warning_times = ptrarr(n_elements(orange_warning_flags), /allocate_heap)
 orange_warning_indices = ptrarr(n_elements(orange_warning_flags), /allocate_heap)
@@ -165,10 +161,17 @@ Appr_msg = 'Submission needs SuperSITL Approval! '
 fom_gwarning_txt = Appr_msg + 'FOM value at the following times exceeds recommended value (' + fom_gmax_str + ') and should ' + $
   'be reserved for the highest priority events or FPI calibrations: '
 
-orange_warning_msg = [fom_gwarning_txt]
+buff_warning_txt = Appr_msg + 'Number of buffers exceeds maximum (' + buff_max_str + ')!'
+
+
+orange_warning_msg = [fom_gwarning_txt, $
+                      buff_warning_txt]
 
 (*orange_warning_times[0]) = fom_appr_times
+(*orange_warning_times[1]) = 'Orbit-wide error - no error times'
+
 (*orange_warning_indices[0]) = loc_fom_approve
+(*orange_warning_indices[1]) = !values.f_nan
                 
 ;-----------------------------------------------------------------------------
 ; Define yellow warnings

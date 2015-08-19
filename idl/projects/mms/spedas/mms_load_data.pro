@@ -72,9 +72,9 @@
 ;           the directory structure at the SDC.
 ;      
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-17 17:36:42 -0700 (Mon, 17 Aug 2015) $
-;$LastChangedRevision: 18509 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-18 09:50:16 -0700 (Tue, 18 Aug 2015) $
+;$LastChangedRevision: 18510 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -167,7 +167,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                         end_date=end_string, descriptor=descriptor)
                 dt_query += systime(/sec) - qt0 ;temporary
             endif
-            
+
             ;if a list of remote files was retrieved then compare remote and local files
             if is_string(data_file) then begin
               
@@ -185,7 +185,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 
                 for file_idx = 0, num_filenames-1 do begin
                     same_file = mms_check_file_exists(remote_file_info[file_idx], file_dir = file_dir)
-                    
+
                     if same_file eq 0 then begin
                         td0 = systime(/sec) ;temporary
                         dprint, dlevel = 0, 'Downloading ' + filename[file_idx] + ' to ' + file_dir
@@ -227,7 +227,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             ; kludge for HPCA ion data to avoid reinventing wheels
             if instrument eq 'hpca' and datatype eq 'ion' then begin
                 mms_sitl_open_hpca_basic_cdf_jburch_skv_egrimes, files, measurement_id = [5, 5, 5, 5], $
-                    sc_id = probe, fov=[0, 180], species=[1, 2, 3, 4], tplotnames = loaded_tnames
+                    sc_id = probe, fov=[0, 360], species=[1, 2, 3, 4], tplotnames = loaded_tnames
             endif else cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, /all
             dt_load += systime(/sec) - lt0 ;temporary
         endif
