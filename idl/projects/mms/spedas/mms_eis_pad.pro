@@ -28,8 +28,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-18 09:53:47 -0700 (Tue, 18 Aug 2015) $
-;$LastChangedRevision: 18512 $
+;$LastChangedDate: 2015-08-19 10:13:20 -0700 (Wed, 19 Aug 2015) $
+;$LastChangedRevision: 18524 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_eis_pad.pro $
 ;-
 
@@ -121,7 +121,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, $
           new_name = 'mms'+probe+'_epd_eis_ion_' + data_name + '_' + en_range_string + '_' + ion_type[ion_type_idx] + '_' + data_units + '_pad'
           store_data, new_name, data={x:d.x, y:pa_flux, v:pa_label}
           options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1 , $
-            zlog = 1, ytitle = 'MMS'+probe+' EIS ' + ion_type[ion_type_idx], ysubtitle='PA [Deg]', ztitle=units_label
+            zlog = 1, ytitle = 'MMS'+probe+' EIS ' + ion_type[ion_type_idx], ysubtitle=en_range_string+'!CPA [Deg]', ztitle=units_label
       endfor
                   
     endif

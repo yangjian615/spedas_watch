@@ -11,6 +11,9 @@
 ;         instrument: instrument, AFG, DFG, etc.
 ;         datatype: not implemented yet 
 ;         local_data_dir: local directory to store the CDF files
+;         no_color_setup: don't setup graphics configuration; use this
+;             keyword when you're using this load routine from a
+;             terminal without an X server running
 ; 
 ; OUTPUT:
 ; 
@@ -21,9 +24,9 @@
 ; NOTES:
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-17 17:35:44 -0700 (Mon, 17 Aug 2015) $
-;$LastChangedRevision: 18508 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-19 13:45:26 -0700 (Wed, 19 Aug 2015) $
+;$LastChangedRevision: 18529 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -119,7 +122,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   level = level, instrument = instrument, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, $
-                  tplotnames = tplotnames
+                  tplotnames = tplotnames, no_color_setup = no_color_setup
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
@@ -132,7 +135,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
-        datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames
+        datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, no_color_setup = no_color_setup
 
     ; load the atttude data to do the coordinate transformation 
     mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec']

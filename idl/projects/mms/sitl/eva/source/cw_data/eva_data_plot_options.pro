@@ -102,7 +102,7 @@ PRO eva_data_plot_options, paramlist
     endif
 
     ; FBK
-    if strpos(tpv,'fb_') ge 0 then begin
+    if strpos(tpv,'thb_fb_') ge 0 then begin
       if strpos(tpv,'edc') ge 0 then tag = 'E'
       if strpos(tpv,'scm') ge 0 then tag = 'B'
       options, tpv, 'spec',1

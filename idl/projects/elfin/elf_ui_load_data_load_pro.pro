@@ -15,16 +15,9 @@
 ;              is required by the procedure that loads the data. 
 ;              For purposes of demonstration, this rouine uses the following 
 ;              parameters:
-;              probe - character string or an array of strings which contain
-;                      the name of the probe. Examples include, 'a', 'b', 'c', 
-;                      'd', 'e', or 'g' (for SPEDAS). This routine uses 'y'.
 ;              instrument - character string (or array) containing the name of
-;                           the instrument such as 'fgm', 'esa', or in this
-;                           case 'inst1'
-;              datatype - character string or an array of strings containing the
-;                         type of data to be loaded. Examples include 'pos', 
-;                         'fge', or 'peir' for SPEDAS. This example simply uses
-;                         'type1'
+;                           the instrument such as 'fgm', 'epd', or eng
+;              datatype -not yet implemented
 ;              time range - an array of 2 character strings containing the 
 ;                           start and stop times of the data to be loaded.
 ;                           ['2007-03-23/00:00:00', '2007-03-24/00:00:00']       
@@ -64,7 +57,6 @@ pro elf_ui_load_data_load_pro,$
                          replay=replay,$
                          overwrite_selections=overwrite_selections
                          
-
   compile_opt hidden,idl2
   
   ; initialize variables
@@ -95,8 +87,8 @@ pro elf_ui_load_data_load_pro,$
   ; ***** This is the routine that loads the actual data *****
   ; ***** This routine is provided by each mission ***** 
   ; ***** Parameters for the load routines will vary per mission *****
-  elf_load_data, instrument=instrument, datatype=datatype,$
-                    timerange=timeRange  
+  elf_load_data, instrument=instrument, datatype=datatype, level=level, $
+                    timerange=timeRange 
 
   ; determine which tplot variables to delete and which ones are the new temporary 
   ; variables

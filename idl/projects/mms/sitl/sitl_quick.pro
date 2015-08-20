@@ -22,8 +22,8 @@
 ; CREATED BY: Mitsuo Oka   Feb 2015
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-05-15 12:20:58 -0700 (Fri, 15 May 2015) $
-; $LastChangedRevision: 17625 $
+; $LastChangedDate: 2015-08-19 11:56:03 -0700 (Wed, 19 Aug 2015) $
+; $LastChangedRevision: 18528 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_quick.pro $
 Function sitl_quick_template
   anan = fltarr(1) & anan[0] = 'NaN'
@@ -211,13 +211,15 @@ PRO sitl_quick, filename=filename
       error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
       error_indices,orange_warning_indices,yellow_warning_indices,$; Error Indices (ptr_arr)
       problem_status, /warning_override
-    if problem_status eq 0 then begin
-      print, '>>> The FOM structure was sent successfully to SDC.'
-    endif else begin
-      print, '>>> Submission Failed.'
-    endelse
+      
+    case problem_status of
+      0: print, '>>> The FOM structure was sent successfully to SDC.'
+      2: print, '>>> Attempt to submit FOM structure interrupted, check your internet connection and try again.'
+      else: print, '>>> Submission Failed.'
+    endcase
+
   endif else begin
-    print, '>>> The FOM structure was not sent to SDC because of the error/warning.'
+    print, '>>> The FOM structure was not sent to SDC because of an error/warning.'
   endelse
   print, ''
   ptr_free, error_times, orange_warning_times, yellow_warning_times

@@ -1,6 +1,83 @@
 ;+
 ;Purpose:
 ;  Helper function to return structure describing
+;  the available data types for EDP
+;-
+function mms_load_options_edp
+
+    compile_opt idl2, hidden
+
+    s = { $
+        fast: { $
+            ql: [ $
+            'dce', $
+            'dce2d' $
+            ] $
+    } $
+}
+
+return, s
+
+end
+
+;+
+;Purpose:
+;  Helper function to return structure describing
+;  the available data types for DSP
+;-
+function mms_load_options_dsp
+
+    compile_opt idl2, hidden
+
+s = { $
+      slow: { $
+            l1a: [ $
+                'epsd' $
+            ], $
+            l2: [ $
+                'bpsd', $
+                'epsd' $
+            ] $
+      }, $
+      fast: { $
+              l1a: [ $
+                     'epsd', $
+                     'swd' $
+                   ], $
+              l2: [ $
+                     'bpsd', $
+                     'epsd', $
+                     'swd' $
+                   ] $
+            }, $
+      srvy: { $
+              l1a: [ $
+                     '173', $
+                     '174', $
+                     '175', $
+                     '176', $
+                     '177', $
+                     '178', $
+                     '179' $
+                   ], $
+              l1b: [ $
+                     '173', $
+                     '174', $
+                     '175', $
+                     '176', $
+                     '177', $
+                     '178' $
+                   ] $
+            } $
+    }
+
+return, s
+
+end
+
+;+
+;Purpose:
+;  Helper function to return structure describing
 ;  the available data types for EDI
 ;-
 function mms_load_options_edi
@@ -350,8 +427,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-17 15:23:14 -0700 (Mon, 17 Aug 2015) $
-;$LastChangedRevision: 18506 $
+;$LastChangedDate: 2015-08-19 10:04:29 -0700 (Wed, 19 Aug 2015) $
+;$LastChangedRevision: 18522 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $
@@ -386,6 +463,8 @@ case strupcase(instrument) of
   'HPCA': s = mms_load_options_hpca()
   'SCM': s = mms_load_options_scm()
   'EDI': s = mms_load_options_edi()
+  'DSP': s = mms_load_options_dsp()
+  'EDP': s = mms_load_options_edp()
   else: begin
     dprint, dlevel=1, 'Instrument "'+instrument+'" not recognized'
     return

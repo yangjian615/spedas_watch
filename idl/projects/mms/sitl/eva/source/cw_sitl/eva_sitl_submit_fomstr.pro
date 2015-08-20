@@ -95,13 +95,20 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
       else: message, "Something is wrong"
     endcase
       
-    if problem_status eq 0 then begin
-      msg='The FOM structure was sent successfully to SDC.'
-      rst = dialog_message(msg,/information,/center,title=title)
-    endif else begin
-      msg='Submission Failed.'
-      rst = dialog_message(msg,/error,/center,title=title)
-    endelse
+    case problem_status of
+      0: begin
+        msg='The FOM structure was sent successfully to SDC.'
+        rst = dialog_message(msg,/information,/center,title=title)
+        end
+      2: begin
+        msg='Attempt to submit FOM structure interrupted, check your internet connection and try again.'
+        rst = dialog_message(msg,/error,/center,title=title)
+        end
+      else: begin
+        msg='Submission Failed.'
+        rst = dialog_message(msg,/error,/center,title=title)
+        end
+    endcase
     
   endelse
 END

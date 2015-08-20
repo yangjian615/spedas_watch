@@ -1,49 +1,80 @@
 ;+
 ;NAME: 
 ;  elf_load_data
-;           This routine is a template for loading data into tplot variables and
-;           must be replaced with mission specific load routines.
-;           For this example fake data is generated using dindgen.
-;           Typically SPEDAS load routines load data into tplot variables. The 
-;           SPEDAS load routines uses http copies to retrieve the cdf file. The
-;           file is then read and data placed into tplot variables.
-;          
+;           This routine loads local ELFIN Lomonosov data. 
+;           There is no server available yet so all files must
+;           be local. The default value is currently set to
+;          'C:/data/lomo/elfin/l1/'
+;          If you do not want to place your cdf files there you 
+;          must change the elfin system variable !elf.local_data_dir = 'yourdirectorypath'
 ;KEYWORDS (commonly used by other load routines):
-;  PROBE    = Probe name. The default is 'all', i.e., load all available probes.
-;             This can be an array of strings, e.g., ['a', 'b'] or a
-;             single string delimited by spaces, e.g., 'a b'
-;  DATATYPE = The type of data to be loaded, can be an array of strings
-;             or single string separate by spaces.  The default is 'all'
+;  INSTRUMENT = options are 'fgm', 'epd', 'eng' (This will probably change
+;               after launch 
+;  DATATYPE = This is not yet implemented and may not be needed
+;  LEVEL    = This is not yet implemented but options will  most likely include 
+;             levels 1 or 2. For Elfin lomo fgm will be the only instrument
+;             that has level 2 data. epd and eng only have level 1. Levels
+;             have also not been implemented in the load panel gui. 
 ;  TRANGE   = (Optional) Time range of interest  (2 element array), if
 ;             this is not set, the default is to prompt the user. Note
 ;             that if the input time range is not a full day, a full
 ;             day's data is loaded
-;  LEVEL    = Level is not used in this example but is common to many missions. 
-;             Please refer to the equivalent GOES, WIND, SPEDAS or ACE load 
-;             routines for examples. 
 ;          
 ;EXAMPLE:
 ;   elf_load_data,probe='x'
 ; 
 ;NOTES:
-;   Each mission is different and you may not need all of the keywords listed below
-;   or you may need more to adequately specify instrument, probe, and data types.
+;   Elfin lomo has not launched yet so naming conventions and file types
+;   and levels will most likely change.
+;   Since there is no data server - yet - files must reside locally.
+;   Current file naming convention is lomo_APID_APIDNAME_YYMMDD.cdf.
+;   It possible the Elfin load data gui will also include other missions
+;   and this should be kept in mind as this routine is expanded. 
 ;     
 ;--------------------------------------------------------------------------------------
-PRO elf_load_data, instrument=instrument, datatype=datatype, timerange=timerange
+PRO elf_load_data, instrument=instrument, datatype=datatype, level=level, timerange=timerange
 
   ; this sets the time range for use with the thm_load routines
   timespan, timerange
+  existing_tvar = tnames()
 
-  ; Generate fake data for the tplot variable
-  y=[[dindgen(1440)],[dindgen(1440)*2.],[dindgen(1440)-50.]]
-  x=dindgen(1440)*60+time_double(timerange[0])  
-  d={x:x, y:y}
-  ; Create some fake data limits
-  dl={colors:[2,4,6], labels:['x','y','z']}
- 
-  ; and store it data in the new tplot variable 
-  elf_tplot_name = 'elf_'+instrument[0]+'_'+datatype[0] 
-  store_data, elf_tplot_name, data=d, dlimits=dl
+  ; set up system variable for MMS if not already set
+  defsysv, '!elf', exists=exists
+  if not(exists) then elf_init
+  
+  ts = time_struct(timerange[0])
+  yr = strmid(timerange[0],0,4)
+  mo = strmid(timerange[0],5,2)
+  day = strmid(timerange[0],8,2)
+
+  ; Construct file name
+  ; TODO: The elfin lomo files must be located in the local_data_dir. Since the mission is not
+  ; in flight yet - there is no server for the data. This will change. Also the file name is 
+  ; currently lomo_APID_APIDNAME_YYMMDD.cdf. This will change - in the short term the names
+  ; are more or less hard coded. 
+  case instrument of 
+    'fgm' : fileName = 'lomo_3_PRM_'+yr+mo+day+'.cdf' 
+    'epd' : fileName = 'lomo_4_EPD_'+yr+mo+day+'.cdf' 
+    'eng' : fileName = 'lomo_2_ENG_'+yr+mo+day+'.cdf'
+  end
+
+  fileName = !elf.local_data_dir + fileName
+
+  init_time=systime(/sec)
+  cdf2tplot, file=fileName , get_support_data=1
+  tplotvars = tnames(create_time=create_times)
+  new_vars_ind = where(create_times gt init_time, n_new_vars_ind)
+
+  if n_new_vars_ind gt 0 then begin
+     tplot_gui, tplotvars[new_vars_ind], /no_draw, /no_verify
+     ; delete any new tplot variables (but not ones that overwrote existing variables)
+     if n_elements(existing_tvar) eq 1 then existing_tvar = [existing_tvar]
+     if n_elements(tplotvars) eq 1 then tplotvars = [tplotvars]
+     tvar_to_delete = ssl_set_complement(existing_tvar, tplotvars)
+     store_data, delete=tvar_to_delete
+  endif else begin
+     statusmsg = 'Unable to load data from file '+fileName+'. File may not conform to SPEDAS standards.'
+     result=dialog_message(statusmsg, /info,/center, title='Load SPEDAS CDF')
+  endelse
 
 END

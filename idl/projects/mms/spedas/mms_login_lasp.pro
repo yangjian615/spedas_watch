@@ -17,8 +17,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-13 15:52:07 -0700 (Thu, 13 Aug 2015) $
-;$LastChangedRevision: 18490 $
+;$LastChangedDate: 2015-08-19 10:50:28 -0700 (Wed, 19 Aug 2015) $
+;$LastChangedRevision: 18526 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_login_lasp.pro $
 ;-
 
@@ -29,7 +29,7 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
     ; halt and warn the user if they're using IDL before 7.1 due to SSL/TLS issue
     if double(!version.release) lt 7.1d then begin
         dprint, dlevel = 0, 'Error, IDL 7.1 or later is required to use mms_load_data.'
-        return, -1
+        return, 0
     endif
 
     ; restore the login info
@@ -40,31 +40,41 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
 
     if file_exists eq 1 then begin
         restore, login_info
-    endif else begin
-        ; prompt the user for their SDC username/password
-        login_info_widget = login_widget(title='MMS SDC Login')
-
+        if is_struct(auth_info) then begin
+            username = auth_info.user
+            password = auth_info.password
+        endif else begin
+            dprint, dlevel=1, 'No valid credentials found in '+file_expand_path(login_info)
+        endelse
+    endif 
+    
+    ; prompt the user for their SDC username/password none was found in file
+    if undefined(username) || undefined(password) then begin
+        ; catch errors from widget and ignore
+        ;   -this is primarily to catch cases where no X server is running on linux
+        ;   -login_widget has it's own handler that calls dialog_message, so
+        ;    any error caught here is likely to be a lack of X server
+        catch, err
+        if err eq 0 then begin
+            login_info_widget = login_widget(title='MMS SDC Login')
+        endif
+        catch, /cancel
+        
         if is_struct(login_info_widget) then begin
-            auth_info = {user: login_info_widget.username, password: login_info_widget.password}
-            
-            ;get save option from login widget
+            username = login_info_widget.username
+            password = login_info_widget.password
+            ; check if user wants credentials saved 
             if undefined(save_login_info) then begin
+                ; use str_element in case of old login_widget version without tag
                 str_element, login_info_widget, 'save', save_login_info
             endif
         endif
-    endelse
-
-    if is_struct(auth_info) then begin
-        username = auth_info.user
-        password = auth_info.password
-    endif else begin
-        ; need to login to access the web services API
-        dprint, dlevel = 0, 'Error, need to provide login information to access the web services API via the login_info keyword'
-        return, -1
-    endelse
+    endif
+    
     connected_to_lasp = 0
     tries = 0
     ; retry connecting to LASP if the connection fails at first
+    ; if no username/pw have been set then the user will be prompted on the command line
     while (connected_to_lasp eq 0 and tries lt 2) do begin
         ; the IDLnetURL object returned here is also stored in the common block
         ; (this is why we never use net_object after this line, but this call is still
@@ -77,7 +87,12 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
     if obj_valid(net_object) then begin
         ; now save the user/pass to a sav file to remember it in future sessions
         ; (only if the user requested, which should never be by default)
-        if keyword_set(save_login_info) then save, auth_info, filename = login_info
+        if keyword_set(save_login_info) then begin
+            ; this assumes username and password are passed out of get_mms_sitl_connection
+            ; the idlneturl getproperty method does not allow the pw to be retrieved (despite it being accessible with help command) 
+            auth_info = {user:username, password:password}
+            save, auth_info, filename = login_info
+        endif
         return, 1
     endif else begin
         return, 0
