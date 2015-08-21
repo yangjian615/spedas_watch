@@ -56,6 +56,11 @@
 ;11/12/13 - Add option for vertical ticks for medium and slow spectra
 ;11/12/13 - Add default "no update" for reading FSPC data
 ;2/10/15 DMS - collect altitude using correct source time interval (average)
+;3/5/15 DMS - cull out "NaNs" from altitude data before averaging
+;8/20/15 DMS - fix bug wherein 3/5 fix only applied to
+;              screen-selected, not predetermined time intervals.
+;              This reorders operations somewhat 
+
 ;-
 
 pro barrel_sp_pick_datatime,ss,startdatetime,duration,payload,bkgmethod,$
@@ -80,13 +85,15 @@ ss.bkgmethod = bkgmethod
 timespan,startdatetime,duration,/hour
 
 ;Get altitude data:
-barrel_load_data, probe=payload, datatype=['GPS'], level=level,/no_clobber,$
+if not keyword_set(altitude) then begin
+  barrel_load_data, probe=payload, datatype=['GPS'], level=level,/no_clobber,$
     version=version
-varname='brl'+payload+'_GPS_Alt'
-tplot_names,varname, NAMES=matches2,/ASORT
-if (n_elements(matches2) EQ 1) then get_data, matches2[0], data=gpsalt
-altsum=0.d
-altnorm=0.d
+  varname='brl'+payload+'_GPS_Alt'
+  tplot_names,varname, NAMES=matches2,/ASORT
+  if (n_elements(matches2) EQ 1) then get_data, matches2[0], data=gpsalt
+  altsum=0.d
+  altnorm=0.d
+endif
 
 ;If the times have already been specified by hand, use them and go: 
 if keyword_set(starttimes) then begin
@@ -99,14 +106,6 @@ if keyword_set(starttimes) then begin
        for i=0,ss.numsrc-1 do ss.trange[1,i] = endtimes[i]
     endelse
 
-    ;get altitude
-    for i=0,ss.numsrc-1 do begin
-        w=where(gpsalt.x ge ss.trange[0,i] and gpsalt.x le ss.trange[1,i],nw)
-        altsum += total(gpsalt.y[w],/nan)
-        altnorm += 1.d * nw
-    endfor
-    altitude = altsum/altnorm
-
     if ss.bkgmethod eq 1 then begin  
        typ = size(startbkgs[0],/type)
        if typ EQ 7 then begin
@@ -117,8 +116,7 @@ if keyword_set(starttimes) then begin
           for i=0,ss.numsrc-1 do ss.bkgtrange[1,i] = endbkgs[i]
        endelse
     endif
-    return
-endif 
+endif  else begin
 
 barrel_load_data, probe=payload, datatype=['FSPC'], level=level,/no_clobber,$
     version=version,/no_update
@@ -198,14 +196,8 @@ for ns=0,ss.numsrc-1 do begin
 
   ;Fill in the appropriate part of the structure:
   ss.trange[*,ns] = [lc.x[datause[0]], lc.x[datause[ndatause-1]]]
-  
-  ;Get the altitude
-  w=where(gpsalt.x ge ss.trange[0,ns] and gpsalt.x le ss.trange[1,ns],nw)
-  altsum += total(gpsalt.y[w],/nan)
-  altnorm += 1.d * nw
-end
 
-altitude = altsum/altnorm
+end
 
 if ss.bkgmethod eq 1 then begin  
 
@@ -220,5 +212,28 @@ if ss.bkgmethod eq 1 then begin
 
   end
 endif
+
+endelse
+
+if not keyword_set(altitude) then begin 
+      ;get altitude
+      for i=0,ss.numsrc-1 do begin
+        w=where(gpsalt.x ge ss.trange[0,i] and gpsalt.x le ss.trange[1,i],nw)
+        ;patch for NaN values possible on day boundary (?):
+        vals = gpsalt.y[w]
+        wbad = where(finite(vals) eq 0,nbad)
+        if nbad gt 0 then begin
+           wfin=where(finite(vals))
+           altave = average( vals[wfin] )
+           vals[wbad] = altave
+        endif
+        altsum += total(vals)
+        altnorm += 1.d * nw
+      endfor
+      altitude = altsum/altnorm
+endif
+  
+altitude = altsum/altnorm
+print,'ALTITUDE! ' , altitude
 
 end

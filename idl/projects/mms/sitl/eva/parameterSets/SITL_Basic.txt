@@ -16,7 +16,7 @@ mms*_hpca_hplus_RF_corrected
 mms*_hpca_heplusplus_RF_corrected
 mms*_hpca_oplus_RF_corrected
 
-mms*_edp_fast_dce_sensor
+mms*_edp_fast_dce_dsl
 
 mms*_dsp_mfe_y
 mms*_dsp_lfb_y

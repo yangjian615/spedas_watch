@@ -67,13 +67,13 @@ FUNCTION eva_data_load_mms, state
         ; EDP
         ;-----------
         if (strmatch(paramlist[i],'*_edp_*')) then begin
-          mms_load_edp, probes = [prb], level='l1b', data_rate='fast', datatype='dce';, /no_sweeps
-          options,sc+'_edp_fast_dce_sensor', $
+          mms_load_edp, probes = [prb], level='ql', data_rate='fast', datatype='dce';, /no_sweeps
+          options,sc+'_edp_fast_dce_dsl', $
             labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
             colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
           answer = 'Yes'
         endif
-
+        
         ;-----------
         ; EIS
         ;-----------
@@ -99,16 +99,26 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         if (strmatch(paramlist[i],'*_fpi_*')) then begin
           mms_sitl_get_fpi_basic, sc_id=sc
+          
           options, sc+'_fpi_eEnergySpectr_omni',spec=1,ylog=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cele',ysubtitle='[eV]',yrange=[10,26000]
+            ytitle=sc+'!CFPI!Cele',ysubtitle='[eV]'
+          ylim, sc+'_fpi_eEnergySpectr_omni', 10,26000
+          
           options,sc+'_fpi_iEnergySpectr_omni',spec=1,ylog=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cion',ysubtitle='[eV]',yrange=[10,26000]
+            ytitle=sc+'!CFPI!Cion',ysubtitle='[eV]'
+          ylim, sc+'_fpi_iEnergySpectr_omni', 10,26000
+          
           options,sc+'_fpi_ePitchAngDist_midEn',spec=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,mid-E)',yrange=[0,180]
+            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,mid-E)'
+          ylim, sc+'_fpi_ePitchAngDist_midEn', 0,180
+          
           options,sc+'_fpi_ePitchAngDist_highEn',spec=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,high-E)',yrange=[0,180]
+            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,high-E)'
+          ylim, sc+'_fpi_ePitchAngDist_highEn', 0, 180
+          
           options,sc+'_fpi_DISnumberDensity',ylog=1,$
             ytitle=sc+'!CFPI!CNi',ysubtitle='[cm!U-3!N]'
+          
           options,sc+'_fpi_iBulkV_DSC',$
             ytitle=sc+'!CFPI!CVi',ysubtitle='[km/s]',$
             labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1,colors=[2,4,6]
@@ -128,10 +138,19 @@ FUNCTION eva_data_load_mms, state
           sp='He!U+!N'
           so='O!U+!N'
           mms_sitl_get_hpca_basic, sc_id=sc, level=level
-          options, sc+'_hpca_hplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sh,ysubtitle='[eV]',ztitle='eflux',yrange=[1,40000],/spec,/ylog,/zlog
-          options, sc+'_hpca_heplusplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sa,ysubtitle='[eV]',ztitle='eflux',yrange=[1,40000],/spec,/ylog,/zlog
-          options, sc+'_hpca_heplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sp,ysubtitle='[eV]',ztitle='eflux',yrange=[1,40000],/spec,/ylog,/zlog
-          options, sc+'_hpca_oplus_RF_corrected', ytitle=sc+'!CHPCA!C'+so,ysubtitle='[eV]',ztitle='eflux',yrange=[1,40000],/spec,/ylog,/zlog
+          
+          options, sc+'_hpca_hplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sh,ysubtitle='[eV]',ztitle='eflux',/spec,/ylog,/zlog
+          ylim,    sc+'_hpca_hplus_RF_corrected', 1, 40000
+          
+          options, sc+'_hpca_heplusplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sa,ysubtitle='[eV]',ztitle='eflux',/spec,/ylog,/zlog
+          ylim,    sc+'_hpca_heplusplus_RF_corrected', 1, 40000
+          
+          options, sc+'_hpca_heplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sp,ysubtitle='[eV]',ztitle='eflux',/spec,/ylog,/zlog
+          ylim,    sc+'_hpca_heplus_RF_corrected', 1, 40000
+          
+          options, sc+'_hpca_oplus_RF_corrected', ytitle=sc+'!CHPCA!C'+so,ysubtitle='[eV]',ztitle='eflux',/spec,/ylog,/zlog
+          ylim,    sc+'_hpca_oplus_RF_corrected', 1, 40000
+          
           answer = 'Yes'
         endif
         

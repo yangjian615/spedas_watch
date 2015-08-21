@@ -16,9 +16,9 @@
 ;
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-19 10:50:28 -0700 (Wed, 19 Aug 2015) $
-;$LastChangedRevision: 18526 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-20 15:46:46 -0700 (Thu, 20 Aug 2015) $
+;$LastChangedRevision: 18549 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_login_lasp.pro $
 ;-
 
@@ -56,7 +56,7 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
         ;    any error caught here is likely to be a lack of X server
         catch, err
         if err eq 0 then begin
-            login_info_widget = login_widget(title='MMS SDC Login')
+            login_info_widget = spd_ui_login_widget(title='MMS SDC Login')
         endif
         catch, /cancel
         

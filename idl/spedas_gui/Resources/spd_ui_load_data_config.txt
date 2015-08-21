@@ -23,3 +23,4 @@ BARREL, spd_ui_load_barrel_data, BARREL: Load Data
 IUGONET, iug_ui_load_data, IUGONET: Load Data
 OMNI, spd_ui_load_omni_data, OMNI: Load Data
 Geomagnetic/Solar Indices, spd_ui_load_indices, Geomagnetic & Solar Indices: Load Data
+ELFIN Lomo, elf_ui_load_data, ELFIN Lomo: Load Data

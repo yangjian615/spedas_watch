@@ -81,6 +81,9 @@
 ;
 ;   ZLOG:         Sets a logarithmic color bar scaling. 
 ;
+;   CT:           Sets a color table number based on 'loadct2'.
+;                 Default is 34 (Rainbow).
+;
 ;NOTE:            This routine is written based on partially 'swe_3d_snap'
 ;                 created by Dave Mitchell.
 ;
@@ -98,8 +101,8 @@
 ;CREATED BY:      Takuya Hara on  2015-02-11.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-18 18:18:44 -0700 (Sat, 18 Jul 2015) $
-; $LastChangedRevision: 18175 $
+; $LastChangedDate: 2015-08-20 16:43:03 -0700 (Thu, 20 Aug 2015) $
+; $LastChangedRevision: 18552 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_3d_snap.pro $
 ;
 ;-
@@ -146,7 +149,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
                      mass=mass, m_int=mq, erange=erange, window=window, msodir=mso, apid=id, $
                      appdir=app, mmin=mmin, mmax=mmax, plot_sc=plot_sc, swia=swia, $
                      _extra=extra, $ ; for 'plot3d_new' options.
-                     zlog=zlog, zrange=zrange, unnormalize=unnormalize
+                     zlog=zlog, zrange=zrange, unnormalize=unnormalize, ct=ct
 
   COMMON mvn_c6
   tplot_options, get_option=topt
@@ -173,7 +176,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
      nocolorbar = 1
      IF SIZE(zlog, /type) EQ 0 THEN zlog = 1
   ENDIF 
-
+  IF ~keyword_set(ct) THEN ct = 34
   IF (SIZE(units, /type) NE 7) THEN units = 'crate'
   IF (SIZE(map, /type) NE 7) THEN map = 'ait'
   IF keyword_set(mass) THEN mmin = MIN(mass, max=mmax)
@@ -244,7 +247,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
   func = 'mvn_sta_get'
   IF ~keyword_set(mmin) THEN mmin = 0
   IF ~keyword_set(mmax) THEN mmin = 100.
-
+  loadct2, ct, previous=oldct
   init_swi = 1
   WHILE (ok) DO BEGIN   
      ;; Put up a 3D spectrogram
@@ -254,14 +257,16 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
         emode = mode[idx]
         emode = emode[uniq(emode)]
         IF N_ELEMENTS(emode) EQ 1 THEN BEGIN
-           CASE emode OF
-              1: IF (aflg) THEN apid = 'cd' ELSE apid = 'cc'
-              2: IF (aflg) THEN apid = 'cf' ELSE apid = 'ce'
-              3: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
-              5: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
-              6: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
-              ELSE: apid = 'ca'
-           ENDCASE 
+           IF MEAN(trange) LT time_double('2015-07') THEN BEGIN
+              CASE emode OF
+                 1: IF (aflg) THEN apid = 'cd' ELSE apid = 'cc'
+                 2: IF (aflg) THEN apid = 'cf' ELSE apid = 'ce'
+                 3: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
+                 5: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
+                 6: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
+                 ELSE: apid = 'ca'
+              ENDCASE 
+           ENDIF ELSE IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
         ENDIF ELSE BEGIN
            dprint, 'The selected time interval includes multiple APID modes.'
            apid = 'ca'
@@ -420,7 +425,7 @@ PRO mvn_sta_3d_snap, var1, var2, spec=spec, keepwins=keepwins, archive=archive, 
         if (size(trange,/type) eq 5) then ok = 1 else ok = 0
      ENDIF ELSE ok = 0
   ENDWHILE  
-  
+  loadct2, oldct
   if (kflg) then begin
      IF SIZE(var2, /type) EQ 0 THEN BEGIN
         wdelete, wnum

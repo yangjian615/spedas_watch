@@ -51,8 +51,8 @@
 ;-
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-24 10:06:27 -0700 (Fri, 24 Jul 2015) $
-;  $LastChangedRevision: 18242 $
+;  $LastChangedDate: 2015-08-20 11:02:18 -0700 (Thu, 20 Aug 2015) $
+;  $LastChangedRevision: 18539 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_check_local_cache.pro $
 
 ;
@@ -65,7 +65,7 @@ pro mms_check_local_cache, local_flist, file_flag, $
 mms_init
 
 if mode eq 'brst' then begin
-  date_strings = mms_convert_timespan_to_date(/fullspan)
+  date_strings = mms_convert_timespan_to_date(/full_span)
 endif else begin
   date_strings = mms_convert_timespan_to_date()
 endelse

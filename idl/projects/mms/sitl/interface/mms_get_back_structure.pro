@@ -70,12 +70,15 @@ if n_elements(burst_segments) gt 1 then begin
              discussion: burst_segments.discussion} 
               
 endif else begin
-  if typename(burst_segments) eq 'INT' then begin
+  if n_tags(burst_segments) eq 0 then begin
     backstr = 0
     pw_flag = 1
-  endif else if burst_segments.taistarttime eq 0 then begin
-    backstr = 0
-    pw_flag = 1
+;  if typename(burst_segments) eq 'INT' then begin
+;    backstr = 0
+;    pw_flag = 1
+;  endif else if burst_segments.taistarttime eq 0 then begin
+;    backstr = 0
+;    pw_flag = 1
   endif else begin
     burst_tags = tag_names(burst_segments)
     num_tags = n_tags(burst_segments)

@@ -23,8 +23,8 @@
 ;                    s_lat : sub-solar point latitude (deg)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-24 11:27:29 -0700 (Sun, 24 May 2015) $
-; $LastChangedRevision: 17692 $
+; $LastChangedDate: 2015-08-20 16:42:15 -0700 (Thu, 20 Aug 2015) $
+; $LastChangedRevision: 18551 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mvn_mars_localtime.pro $
 ;
 ;CREATED BY:	David L. Mitchell
@@ -32,7 +32,7 @@
 pro mvn_mars_localtime, result=result
 
   common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex, rcols
+                       lon, lat, hgt, mex, rcols, orbnum
 
   from_frame = 'MAVEN_MSO'
   to_frame = 'IAU_MARS'
@@ -59,8 +59,7 @@ pro mvn_mars_localtime, result=result
 
 ; Local time is IAU_MARS longitude relative to sub-solar longitude
 
-  get_data,'lon',data=lon,index=i
-  lst = (lon.y[indx] - s_lon)*(12D/180D)
+  lst = (lon[indx] - s_lon)*(12D/180D)
 
   jndx = where(lst lt 0., count)
   if (count gt 0L) then lst[jndx] = lst[jndx] + 24.

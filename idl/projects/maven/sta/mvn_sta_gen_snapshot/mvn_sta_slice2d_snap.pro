@@ -73,8 +73,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-05-26 16:28:09 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17732 $
+; $LastChangedDate: 2015-08-20 16:43:03 -0700 (Thu, 20 Aug 2015) $
+; $LastChangedRevision: 18552 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
@@ -138,14 +138,16 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         emode = mode[idx]
         emode = emode[uniq(emode)]
         IF N_ELEMENTS(emode) EQ 1 THEN BEGIN
-           CASE emode OF
-              1: IF (aflg) THEN apid = 'cd' ELSE apid = 'cc'
-              2: IF (aflg) THEN apid = 'cf' ELSE apid = 'ce'
-              3: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
-              5: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
-              6: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
-              ELSE: apid = 'ca'
-           ENDCASE
+           IF MEAN(trange) LT time_double('2015-07-01') THEN BEGIN
+              CASE emode OF
+                 1: IF (aflg) THEN apid = 'cd' ELSE apid = 'cc'
+                 2: IF (aflg) THEN apid = 'cf' ELSE apid = 'ce'
+                 3: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
+                 5: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
+                 6: IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
+                 ELSE: apid = 'ca'
+              ENDCASE
+           ENDIF ELSE IF (aflg) THEN apid = 'd1' ELSE apid = 'd0'
         ENDIF ELSE BEGIN
            dprint, 'The specified time range includes multiple APID modes.', dlevel=2, verbose=verbose
            apid = 'ca'
