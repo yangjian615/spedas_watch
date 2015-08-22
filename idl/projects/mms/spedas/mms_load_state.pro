@@ -18,7 +18,7 @@
 ;         no_download: set flag to use local data only (no download)
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;             with "username" and "password" tags with your API login information
-;
+;         def_or_pred: set this flag to first check for definitive data and if not found use predicted data
 ; OUTPUT:
 ;
 ; EXAMPLES: 
@@ -63,9 +63,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-13 13:29:00 -0700 (Thu, 13 Aug 2015) $
-;$LastChangedRevision: 18486 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-08-21 13:21:05 -0700 (Fri, 21 Aug 2015) $
+;$LastChangedRevision: 18559 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -289,7 +289,7 @@ end
 pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames, $
   login_info = login_info, datatypes = datatypes, level = level, $
   local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-  no_download=no_download
+  no_download=no_download, def_or_pred=def_or_pred
 
     probe = strcompress(string(probe), /rem)
     start_time = time_double(trange[0])-60*60*24.
@@ -316,12 +316,22 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
         ;depending on whether files were found, if there is a connection error the
         ;neturl response code is returned instead
         if ~keyword_set(no_download) then begin
-          if level EQ 'def' then $
+          if level EQ 'def' then begin
              ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, $
-               product=product, start_date=start_time_str, end_date=end_time_str) $
-          else $
+               product=product, start_date=start_time_str, end_date=end_time_str) 
+               if ~is_array(ancillary_file_info) or ancillary_file_info[0] eq '' then begin
+                  if ~undefined(def_or_pred) then begin
+                     dprint, 'Definitive state data not found for this time period. Looking for predicted state data'
+                     level = 'pred'
+                     product = level + filetype[i]
+                     ancillary_file_info = mms_get_state_pred_info(sc_id='mms'+probe, $
+                        product=product, start_date=start_time_str, end_date=end_time_str)  
+                  endif
+               endif
+          endif else begin
             ancillary_file_info = mms_get_state_pred_info(sc_id='mms'+probe, $
                 product=product, start_date=start_time_str, end_date=end_time_str) 
+          endelse
         endif
 
         if is_array(ancillary_file_info) && ancillary_file_info[0] ne '' then begin    
@@ -373,7 +383,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     level = level, local_data_dir = local_data_dir, source = source, $
     remote_data_dir = remote_data_dir, attitude_only=attitude_only, $
     ephemeris_only = ephemeris_only, no_download=no_download, login_info=login_info, $
-    tplotnames = tplotnames
+    tplotnames = tplotnames, def_or_pred=def_or_pred
 
     ; define probe, product, type, coordinate, and unit names
     p_names = ['1', '2', '3', '4']
@@ -447,7 +457,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
               mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
                    login_info = login_info, datatypes = datatypes, level = level[j], $
                    local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-                   no_download=no_download
+                   no_download=no_download, def_or_pred=def_or_pred
        endfor
     endfor
 

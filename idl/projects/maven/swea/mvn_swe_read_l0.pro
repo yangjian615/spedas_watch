@@ -57,8 +57,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-04 13:41:18 -0800 (Wed, 04 Feb 2015) $
-; $LastChangedRevision: 16860 $
+; $LastChangedDate: 2015-08-21 14:40:29 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18565 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -255,6 +255,53 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
   if (size(badpkt,/type) ne 8) then badpkt = replicate(bad_str,1)
 
 ; Housekeeping (APID 28)
+;   SWEA housekeeping includes 3 temperatures (thermistors on the LVPS, 
+;   digital board, and anode board), analyzer voltages, MCP bias, and
+;   numerous voltages provided by the LVPS to the front-end electronics
+;   and digital board.  A total of 24 values are multiplexed into 224
+;   housekeeping messages.  Time resolutions are:
+;
+;     anode counters   : 448 messages in 1.95 sec --> 0.00435 sec
+;     hsk per channel  :   9 messages in 1.95 sec --> 0.21 sec
+;     fast hsk (1 ch)  : 224 messages in 1.95 sec --> 0.00871 sec
+;     dwell hsk (1 ch) : 448 messages in 1.95 sec --> 0.00435 sec
+;
+;   Only one channel at a time can be the fast housekeeping channel, 
+;   with 224 messages per cycle.
+;
+;   In dwell mode, all 448 housekeeping messages are devoted to one 
+;   channel -- all other channels are ignored.
+;
+;   The 24 housekeeping channels are:
+;
+;   Channel   Value
+;  -----------------------------------------
+;      0      LVPST
+;      1      MCPHV
+;      2      NRV     (scaled)
+;      3      ANALV
+;      4      DEF1V
+;      5      DEF2V
+;      6      -       (unused)
+;      7      -       (unused)
+;      8      V0V
+;      9      ANALT
+;     10      P12V
+;     11      N12V
+;     12      MCP28V  (after enable plug)
+;     13      NR28V   (after enable plug)
+;     14      -       (unused)
+;     15      -       (unused)
+;     16      DIGT
+;     17      P2P5DV
+;     18      P5DV
+;     19      P3P3DV
+;     20      P5AV
+;     21      N5AV
+;     22      P28V    (before enable plug)
+;     23      -       (unused)
+;  -----------------------------------------
+;
 
   for k=0L,(n_28 - 1L) do begin
     n = ptr_28[k]

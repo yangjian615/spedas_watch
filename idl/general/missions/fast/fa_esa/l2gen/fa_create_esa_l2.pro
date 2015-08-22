@@ -52,20 +52,21 @@
 ;   SC_POT          FLOAT     Array[59832]
 ;   BKG_ARR         FLOAT     Array[96, 64]
 ;   HEADER_BYTES    BYTE      Array[44, 59832]
-;   EFLUX0          FLOAT     Array[48, 32, 59832]
-;   EFLUX1          FLOAT     NaN (48, 64, ntimes1)
-;   EFLUX2          FLOAT     NaN (96, 32, ntimes2)
+;Only data and eflux arrays are filled here, all else is input
+;   DATA            BYTE      Array[96, 64, 59832]
+;   EFLUX           FLOAT     Array[96, 64, 59832]
 ;
 ;HISTORY:
 ; Dillon, 2009
+; added eflux vairable, 2015-08-21, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-07-24 15:15:02 -0700 (Fri, 24 Jul 2015) $
-; $LastChangedRevision: 18250 $
+; $LastChangedDate: 2015-08-21 17:00:26 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18576 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2gen/fa_create_esa_l2.pro $
 ;-
 pro fa_create_esa_l2,type=type, $
                      orbit=orbit, $
-                     data_struct=data_struct
+                     data_struct=all_dat
 
   fa_init
 
@@ -115,63 +116,69 @@ pro fa_create_esa_l2,type=type, $
      end
   endcase
 
+;define eflux, data here
+  eflux = fltarr(96, 64, ntimes)
+  eflux[*] = 0.0
+  data = bytarr(96, 64, ntimes)
+  data[*] = 0
   for i=0,ntimes-1 do begin
 ;Instead of using get_fa1 routines and fa_convert_esa_units.pro, it is
 ;faster to convert to EFLUX here.
 ;EFLUX=COUNTS(after dead time correction)/(GEOM_FACTOR*GF*EFF*DT)
      case all_dat.mode_ind[i] of
         0: begin
-           data0_tmp=ccvt[all_dat.data0[*,*,all_dat.data_ind[i]]]
+           data_tmp=ccvt[all_dat.data0[*,*,all_dat.data_ind[i]]]
            gf_tmp=all_dat.geom_factor[i]*all_dat.gf[0:47,0:31,all_dat.gf_ind[i]]*all_dat.eff[0:47,0:31,0]
            dt=all_dat.integ_t[i]
-           denom = 1.- dead/dt_arr*data0_tmp/dt
+           denom = 1.- dead/dt_arr*data_tmp/dt
            void = where(denom lt .1,count)
            if count gt 0 then begin
               dprint,dlevel=1,min(denom,ind)
               denom = denom>.1 
               dprint,dlevel=1,' Error: convert_peace_units dead time error.'
            endif
-           data0_tmp=data0_tmp/denom
-           data0_tmp=data0_tmp/(gf_tmp*dt)
-           data0[*,*,all_dat.data_ind[i]]=data0_tmp
+           data_tmp=data_tmp/denom
+           data_tmp=data_tmp/(gf_tmp*dt)
+           eflux[0,0,i]=data_tmp
+           data[0,0,i] = all_dat.data0[*,*,all_dat.data_ind[i]]
         end
         1: begin
-           data1_tmp=ccvt[all_dat.data1[*,*,all_dat.data_ind[i]]]
+           data_tmp=ccvt[all_dat.data1[*,*,all_dat.data_ind[i]]]
            gf_tmp=all_dat.geom_factor[i]*all_dat.gf[0:47,0:63,all_dat.gf_ind[i]]*all_dat.eff[0:47,0:63,1]
            dt=all_dat.integ_t[i]
-           denom = 1.- dead/dt_arr*data1_tmp/dt
+           denom = 1.- dead/dt_arr*data_tmp/dt
            void = where(denom lt .1,count)
            if count gt 0 then begin
               dprint,dlevel=1,min(denom,ind)
               denom = denom>.1 
               dprint, dlevel=1,' Error: convert_peace_units dead time error.'
            endif
-           data1_tmp=data1_tmp/denom
-           data1_tmp=data1_tmp/(gf_tmp*dt)
-           data1[*,*,all_dat.data_ind[i]]=data1_tmp
+           data_tmp=data_tmp/denom
+           data_tmp=data_tmp/(gf_tmp*dt)
+           eflux[0,0,i]=data_tmp
+           data[0,0,i] = all_dat.data1[*,*,all_dat.data_ind[i]]
         end
         2: begin
-           data2_tmp=ccvt[all_dat.data2[*,*,all_dat.data_ind[i]]]
+           data_tmp=ccvt[all_dat.data2[*,*,all_dat.data_ind[i]]]
            gf_tmp=all_dat.geom_factor[i]*all_dat.gf[0:95,0:31,all_dat.gf_ind[i]]*all_dat.eff[0:95,0:31,2]
            dt=all_dat.integ_t[i]
-           denom = 1.- dead/dt_arr*data2_tmp/dt
+           denom = 1.- dead/dt_arr*data_tmp/dt
            void = where(denom lt .1,count)
            if count gt 0 then begin
               dprint,dlevel=1,min(denom,ind)
               denom = denom>.1 
               dprint,dlevel=1,' Error: convert_peace_units dead time error.'
            endif
-           data2_tmp=data2_tmp/denom
-           data2_tmp=data2_tmp/(gf_tmp*dt)
-           data2[*,*,all_dat.data_ind[i]]=data2_tmp
+           data_tmp=data_tmp/denom
+           data_tmp=data_tmp/(gf_tmp*dt)
+           eflux[0,0,i]=data_tmp
+           data[0,0,i] = all_dat.data2[*,*,all_dat.data_ind[i]]
         end
      endcase
   endfor
 
-  data_struct = all_dat
-  str_element, data_struct, 'eflux0', data0, /add_replace
-  str_element, data_struct, 'eflux1', data1, /add_replace
-  str_element, data_struct, 'eflux2', data2, /add_replace
+  str_element, all_dat, 'eflux', eflux, /add_replace
+  str_element, all_dat, 'data', data, /add_replace
 
   return
 

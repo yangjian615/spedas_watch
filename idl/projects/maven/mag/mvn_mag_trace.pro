@@ -19,16 +19,15 @@
 ;                  Units: km, deg, deg
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-07-02 10:56:50 -0700 (Thu, 02 Jul 2015) $
-; $LastChangedRevision: 18012 $
+; $LastChangedDate: 2015-08-21 14:39:32 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18564 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_trace.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
 ;-
 pro mvn_mag_trace, alt=alt, trace=result
 
-  common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex, rcols
+  @maven_orbit_common
 
   if not keyword_set(alt) then alt = 170.
 

@@ -91,8 +91,8 @@
 ;       RAINBOW:       With NOERASE, overplot spectra using up to 6 different colors.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-13 12:28:34 -0700 (Thu, 13 Aug 2015) $
-; $LastChangedRevision: 18484 $
+; $LastChangedDate: 2015-08-21 14:42:30 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18568 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -249,6 +249,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   wset,Twin
   trange = 0
   ctime,trange,npoints=npts,/silent
+  if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
 
   if (size(trange,/type) ne 5) then begin
     wdelete,Ewin
@@ -732,6 +733,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     wset,Twin
     trange = 0
     ctime,trange,npoints=npts,/silent
+    if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
 
     if (size(trange,/type) eq 5) then begin
       if (tflg) then begin

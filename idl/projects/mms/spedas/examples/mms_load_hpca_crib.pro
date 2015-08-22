@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-18 09:52:32 -0700 (Tue, 18 Aug 2015) $
-; $LastChangedRevision: 18511 $
+; $LastChangedDate: 2015-08-21 15:18:29 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18571 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib.pro $
 ;-
 
@@ -39,14 +39,14 @@ tplot, ['mms1_hpca_hplus_ion_bulk_velocity', $
        
 stop
 
-mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='ion', level='l1b'
+mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='rf_corr', level='l1b'
 
-rf_corrected = ['mms1_hpca_h+_rf_corr_counts_elev_0-360', $
-                'mms1_hpca_o+_rf_corr_counts_elev_0-360', $ 
-                'mms1_hpca_he+_rf_corr_counts_elev_0-360', $
-                'mms1_hpca_he++_rf_corr_counts_elev_0-360']
+rf_corrected = ['mms1_hpca_hplus_RF_corrected', $
+                'mms1_hpca_oplus_RF_corrected', $ 
+                'mms1_hpca_heplus_RF_corrected', $
+                'mms1_hpca_heplusplus_RF_corrected']
         
-; show spectra for H+, O+ and He+
+; show spectra for H+, O+ and He+, He++
 window, 3, ysize=600
 tplot, rf_corrected, window=3
 

@@ -44,16 +44,15 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-17 12:52:17 -0700 (Wed, 17 Jun 2015) $
-; $LastChangedRevision: 17898 $
+; $LastChangedDate: 2015-08-21 14:41:39 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18567 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
 pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
 
-  common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex
+  @maven_orbit_common
 
   if (size(trange,/type) eq 0) then begin
     tplot_options, get_opt=topt

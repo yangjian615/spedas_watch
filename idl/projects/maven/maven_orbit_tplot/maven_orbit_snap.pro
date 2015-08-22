@@ -68,8 +68,8 @@
 ;                 entry of times with the cursor.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-14 14:01:04 -0700 (Fri, 14 Aug 2015) $
-; $LastChangedRevision: 18498 $
+; $LastChangedDate: 2015-08-21 14:39:10 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18563 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -78,10 +78,9 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl, times=times, $
     nodot=nodot, terminator=terminator
 
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  @maven_orbit_common
 
-  common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex, rcols, orbnum
+  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
 
   if (size(time,/type) ne 5) then begin
     print, "You must run maven_orbit_tplot first!"

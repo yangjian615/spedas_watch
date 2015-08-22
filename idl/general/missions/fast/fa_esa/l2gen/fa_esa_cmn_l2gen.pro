@@ -45,9 +45,8 @@
 ;   SC_POT          FLOAT     Array[59832]
 ;   BKG_ARR         FLOAT     Array[96, 64]
 ;   HEADER_BYTES    BYTE      Array[44, 59832]
-;   EFLUX0          FLOAT     Array[48, 32, 59832]
-;   EFLUX1          FLOAT     NaN (48, 64, ntimes)
-;   EFLUX2          FLOAT     NaN (96, 32, ntimes)
+;   DATA            BYTE      Array[96, 64, 59832] ;save this and not data0,1,2
+;   EFLUX           FLOAT     Array[96, 64, 59832]
 ;KEYWORDS:
 ; otp_struct = this is the structure that is passed into
 ;              cdf_save_vars to create the file
@@ -58,8 +57,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-07-24 16:00:18 -0700 (Fri, 24 Jul 2015) $
-; $LastChangedRevision: 18255 $
+; $LastChangedDate: 2015-08-21 17:02:09 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18578 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2gen/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -120,16 +119,16 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
             ['GF_IND', 'INTEGER', 'Index for the value of the Geometrical factor for data (NUM_DISTS elements)', 'GF index'], $
             ['BINS_IND', 'INTEGER', 'Index for the number of angular bins for data (NUM_DISTS elements)', 'Bins index'], $
             ['MODE_IND', 'INTEGER', 'Index for the data mode (0-2 for survey data, 0-1 for burst data) (NUM_DISTS elements)', 'Mode index'], $
-            ['THETA_SHIFT', 'DOUBLE', 'Angular shift (NUM_DISTS elements)', 'Angular shift'], $
+            ['THETA_SHIFT', 'DOUBLE', 'Angular shift (NUM_DISTS elements)', 'Angular shift, converts theta bin values to pitch angles'], $
             ['THETA_MAX', 'DOUBLE', 'Angular maximum (NUM_DISTS elements)', 'Angular max'], $
             ['THETA_MIN', 'DOUBLE', 'Angular minimum (NUM_DISTS elements)', 'Angular min'], $
             ['BKG', 'FLOAT', 'Background counts array with dimensions (NUM_DISTS)', 'Background counts'], $
             ['SC_POT', 'FLOAT', 'Spacecraft potential (NUM_DISTS elements)', 'Spacecraft potential'], $
+            ['DATA', 'BYTE', 'Raw Counts data with dimensions (NUM_DISTS, 96, 64)', 'Raw Counts'], $
             ['EFLUX', 'FLOAT', 'Differential energy flux array with dimensions (NUM_DISTS, 96, 64)', 'Energy flux'], $
-            ['THETA_FULL', 'FLOAT', 'Angular values for each distribution (NUM_DISTS, 96, 64); Sparse variable', 'Theta'], $
-            ['DTHETA_FULL', 'FLOAT', 'Angular bin size for each distribution (NUM_DISTS, 96, 64); Sparse variable', 'DTheta'], $
-            ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (NUM_DISTS, 96, 64); Sparse variable', 'Energy'], $
-            ['DENERGY_FULL', 'FLOAT', 'Angular bin size for each distribution (NUM_DISTS, 96, 64); Sparse variable', 'DEnergy']]
+            ['PITCH_ANGLE', 'FLOAT', 'Pitch Angule values for each distribution (NUM_DISTS, 96, 64); Virtual variable'], $
+            ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'Energy'], $
+            ['DENERGY_FULL', 'FLOAT', 'Angular bin size for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'DEnergy']]
 
 ;Use Lower case for variable names
   rv_vt[0, *] = strlowcase(rv_vt[0, *])
@@ -152,32 +151,18 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
            ['CHARGE', 'FLOAT', 'Proton or Electron charge (1 or -1)'], $
            ['BKG_ARR', 'FLOAT', 'Background counts array with dimension (96, 64)']]
 
-STOPHERE
+
 ;Use Lower case for variable names
   nv_vt[0, *] = strlowcase(nv_vt[0, *])
 
-;Create variables for epoch, tt_2000, MET, hacked from fa_esa_pf_make_cdf.pro
+;Create variables for epoch
   cdf_leap_second_init
-  date_range = time_double(['2013-11-18/00:00','2040-12-31/23:59'])
-  met_range = date_range-date_range[0]
+  date_range = time_double(['1996-08-21/00:00:00','2009-05-01/00:00:00'])
   epoch_range = time_epoch(date_range)
-  et_range = time_ephemeris(date_range)
-  tt2000_range = long64((add_tt2000_offset(date_range)-time_double('2000-01-01/12:00'))*1e9)
 
 ;Use center time for time variables
   center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
-;Grab the date, and clip anything plus or minus 10 minutes from the
-;start or end of the date
-  date = time_string(median(center_time), precision=-3, format=6)
-  trange = time_double(date)+[-600.0d0, 87000.0d0]
-  cmn_dat = fa_esa_cmn_tclip(temporary(cmn_dat), trange)
-
-;Reset center time
-  center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
   num_dists = n_elements(center_time)
-;met_center at the spacecraft
-  timespan, date, 1
-  met_center = fa_esa_spc_met_to_unixtime(center_time, /reverse)
 
 ;Initialize
   otp_struct = -1
@@ -197,15 +182,7 @@ STOPHERE
 ;Case by case basis
         Case vj of
            'epoch': Begin
-              dvar = double(long64((add_tt2000_offset(center_time)-time_double('2000-01-01/12:00'))*1e9))
-              is_tvar = 1b
-           End
-           'time_met': Begin
-              dvar = met_center
-              is_tvar = 1b
-           End
-           'time_ephemeris': Begin
-              dvar = time_ephemeris(center_time)
+              dvar = time_epoch(center_time)
               is_tvar = 1b
            End
            'time_unix': Begin
@@ -222,16 +199,11 @@ STOPHERE
            End
            'time_delta': dvar = cmn_dat.delta_t
            'time_integ': dvar = cmn_dat.integ_t
-           'eflux': Begin       ;eflux is calculated
-              dvar = temp_fa_esa_eflux(cmn_dat)
-           End
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for.'
            End
         Endcase
      Endelse
-;change data to float from double
-     if(vj eq 'data') then dvar = float(dvar) 
 
      cdf_type = idl2cdftype(dvar, format_out = fmt, fillval_out = fll, validmin_out = vmn, validmax_out = vmx)
 ;Change types for CDF time variables
@@ -253,17 +225,9 @@ STOPHERE
      str_element, vatt, 'fillval', fll, /add
      str_element, vatt, 'format', fmt, /add
      If(vj Eq 'epoch') Then Begin
-        xtime = time_double('9999-12-31/23:59:59.999')
-        xtime = long64((add_tt2000_offset(xtime)-time_double('2000-01-01/12:00'))*1e9)
-        str_element, vatt, 'fillval', xtime, /add_replace
-        str_element, vatt, 'validmin', tt2000_range[0], /add
-        str_element, vatt, 'validmax', tt2000_range[1], /add
-     Endif Else If(vj Eq 'time_met') Then Begin
-        str_element, vatt, 'validmin', met_range[0], /add
-        str_element, vatt, 'validmax', met_range[1], /add
-     Endif Else If(vj Eq 'time_ephemeris') Then Begin
-        str_element, vatt, 'validmin', et_range[0], /add
-        str_element, vatt, 'validmax', et_range[1], /add
+        str_element, vatt, 'fillval', epoch_range[0], /add_replace
+        str_element, vatt, 'validmin', epoch_range[0], /add
+        str_element, vatt, 'validmax', epoch_range[1], /add
      Endif Else If(vj Eq 'time_unix' Or vj Eq 'time_start' Or vj Eq 'time_end') Then Begin
         str_element, vatt, 'validmin', date_range[0], /add
         str_element, vatt, 'validmax', date_range[1], /add
@@ -282,7 +246,7 @@ STOPHERE
      vatt.catdesc = rv_vt[2, j]
 ;data is log scaled, everything else is linear, set data, support data
 ;display type here
-     IF(vj Eq 'data' Or vj Eq 'bkg' Or vj Eq 'eflux') Then Begin
+     IF(vj Eq 'data' Or vj Eq 'eflux') Then Begin
         vatt.scaletyp = 'log' 
         vatt.display_type = 'spectrogram'
         vatt.var_type = 'data'
@@ -295,12 +259,12 @@ STOPHERE
      vatt.fieldnam = rv_vt[3, j] ;shorter name
 ;Units
      If(is_tvar) Then Begin ;Time variables
-        If(vj Eq 'epoch') Then vatt.units = 'nanosec' Else vatt.units = 'sec'
+        vatt.units = 'sec'
      Endif Else Begin
         If(strpos(vj, 'time') Ne -1) Then vatt.units = 'sec' $ ;time interval sizes
+        If(strpos(vj, 'theta') Ne -1) Then vatt.units = 'degrees' $
         Else If(vj Eq 'sc_pot') Then vatt.units = 'volts' $
-        Else If(vj Eq 'magf') Then vatt.units = 'nT' $
-        Else If(vj Eq 'data' Or vj Eq 'bkg') Then vatt.units = 'Counts' $
+        Else If(vj Eq 'data') Then vatt.units = 'Counts' $
         Else If(vj Eq 'eflux') Then vatt.units = 'eV/sr/sec' ;check this
      Endelse
 
@@ -310,39 +274,13 @@ STOPHERE
      vatt.lablaxis = rv_vt[3, j]
 
 ;Assign labels and components for vectors
-     If(vj Eq 'magf') Then Begin
-        vatt.depend_1 = 'compno_3'
-        vatt.labl_ptr_1 = 'magf_labl'
-     Endif Else If(vj Eq 'pos_sc_mso') Then Begin
-        vatt.depend_1 = 'compno_3'
-        vatt.labl_ptr_1 = 'pos_sc_mso_labl'
-     Endif Else If(vj Eq 'quat_sc') Then Begin
-        vatt.depend_1 = 'compno_4'
-        vatt.labl_ptr_1 = 'quat_sc_labl'
-     Endif Else If(vj Eq 'quat_mso') Then Begin
-        vatt.depend_1 = 'compno_4'
-        vatt.labl_ptr_1 = 'quat_mso_labl'
-     Endif Else IF(vj Eq 'data' Or vj Eq 'bkg' Or vj Eq 'eflux' Or vj Eq 'dead') Then Begin
-       If(cmn_dat.nbins Eq 1) Then Begin
+     If(vj Eq 'data' Or vj Eq 'eflux') Then Begin
 ;For ISTP compliance, it looks as if the depend's are switched,
 ;probably because we transpose it all in the file
-           vatt.depend_2 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nenergy))
-           vatt.depend_1 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nmass))
-           vatt.labl_ptr_2 = vj+'_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))
-           vatt.labl_ptr_1 = vj+'_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass))
-        Endif Else If(cmn_dat.nmass Eq 1) Then Begin
-           vatt.depend_2 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nenergy))
-           vatt.depend_1 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nbins))
-           vatt.labl_ptr_2 = vj+'_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))
-           vatt.labl_ptr_1 = vj+'_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins))
-        Endif Else Begin
-           vatt.depend_3 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nenergy))
-           vatt.depend_2 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nbins))
-           vatt.depend_1 = 'compno_'+strcompress(/remove_all, string(cmn_dat.nmass))
-           vatt.labl_ptr_3 = vj+'_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))
-           vatt.labl_ptr_2 = vj+'_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins))
-           vatt.labl_ptr_1 = vj+'_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass))
-        Endelse
+        vatt.depend_2 = 'compno_96'
+        vatt.depend_1 = 'compno_64'
+        vatt.labl_ptr_2 = vj+'_energy_labl_96'
+        vatt.labl_ptr_1 = vj+'_angle_labl_64'
      Endif
  
 ;Time variables are monotonically increasing:
@@ -383,7 +321,6 @@ STOPHERE
      If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
      count = count+1
   Endfor
-
 ;Now the non-record variables
   nrv = n_elements(nv_vt[0, *])
   For j = 0L, nrv-1 Do Begin
@@ -399,27 +336,6 @@ STOPHERE
            'num_dists': Begin
               dvar = num_dists
            End        
-           'natt': Begin
-              dvar = fix(4)
-           End
-           'nswp': Begin
-              dvar = fix(21)
-           End
-           'neff': Begin
-              dvar = fix(128)
-           End
-           'nmlut': Begin
-              dvar = fix(8)
-           End
-           'dead_time_1': Begin
-              dvar = cmn_dat.dead1
-           End
-           'dead_time_2': Begin
-              dvar = cmn_dat.dead2
-           End
-           'dead_time_3': Begin
-              dvar = cmn_dat.dead3
-           End
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for.'
            End
@@ -450,11 +366,7 @@ STOPHERE
      vatt.catdesc = nv_vt[2, j]
      vatt.fieldnam = nv_vt[0, j]
      If(vj Eq 'energy' Or vj Eq 'denergy') Then vatt.units = 'eV' $
-     Else If(vj Eq 'theta' Or vj Eq 'dtheta') Then vatt.units = 'Degrees' $
-     Else If(vj Eq 'phi' Or vj Eq 'dphi') Then vatt.units = 'Degrees' $
-     Else IF(vj Eq 'domega') Then vatt.units = 'Steradians' $
-     Else If(vj Eq 'mass_arr') Then vatt.units = 'AMU' $
-     Else If(vj Eq 'mass') Then vatt.units = 'MeV/c^2'
+     Else If(vj Eq 'theta' Or vj Eq 'dtheta') Then vatt.units = 'Degrees'
 
 ;Create and fill the variable structure
      vsj = {name:'', num:0, is_zvar:1, datatype:'', $
@@ -479,7 +391,8 @@ STOPHERE
      
 ;Now compnos, need 3, 4, nenergy, nbin, nmass, but only unique ones,
 ;and you only need compno_1 if nenergy is 1
-  ext_compno = [3, 4, cmn_dat.nenergy]
+  ext_compno = [96, 64]
+STOPHERE
   If(cmn_dat.nbins Gt 1) Then ext_compno = [ext_compno, cmn_dat.nbins]
   If(cmn_dat.nmass Gt 1) Then ext_compno = [ext_compno, cmn_dat.nmass]
   ss0 = sort(ext_compno)

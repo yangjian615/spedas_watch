@@ -44,16 +44,15 @@
 ;                  names for MAG data in other frames are derived from this.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-16 14:06:12 -0700 (Sun, 16 Aug 2015) $
-; $LastChangedRevision: 18501 $
+; $LastChangedDate: 2015-08-21 14:39:32 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18564 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_geom.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
 ;-
 pro mvn_mag_geom, alt=alt, var=var
 
-  common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex, rcols
+  @maven_orbit_common
 
   if (size(alt,/type) eq 0) then alt = 170.
 

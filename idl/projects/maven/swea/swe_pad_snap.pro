@@ -62,8 +62,8 @@
 ;                      coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-13 12:28:00 -0700 (Thu, 13 Aug 2015) $
-; $LastChangedRevision: 18483 $
+; $LastChangedDate: 2015-08-21 14:42:30 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18568 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -203,7 +203,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   print,'Use button 1 to select time; button 3 to quit.'
 
   wset,Twin
-  ctime2,trange,npoints=npts,/silent,button=button
+  ctime,trange,npoints=npts,/silent
+  if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
 
   if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
     wdelete,Pwin                           ; Don't keep empty windows.
@@ -401,7 +402,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
            idx = nn(pos.time, pad.time)
            lat = pos[idx].lat
            lon = pos[idx].elon
-           
+                      
            mtx = DBLARR(3, 3)
            mtx[0, 0] = -SIN(lon)
            mtx[1, 0] =  COS(lon)
@@ -413,7 +414,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
            mtx[1, 2] =  SIN(lon) * COS(lat)
            mtx[2, 2] =  SIN(lat)
            B_lg = TRANSPOSE(mtx ## TRANSPOSE(bgeo))
-
+           
            B_azim = atan(B_lg[1],B_lg[0])*!radeg
            B_elev = asin(B_lg[2])*!radeg
            
@@ -516,7 +517,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         endif
         
         if keyword_set(dir) then begin
-          if (B_azim lt 0.) then B_azim += 360.
+          if (B_azim lt 0.) then B_azim = (B_azim + 360.) mod 360.
           xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2,/norm
           ys -= dys
           xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2,/norm          
@@ -528,7 +529,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 ; Get the next button press
 
     wset,Twin
-    ctime2,trange,npoints=npts,/silent,button=button
+    ctime,trange,npoints=npts,/silent
+    if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
     if (size(trange,/type) eq 5) then ok = 1 else ok = 0
 
   endwhile

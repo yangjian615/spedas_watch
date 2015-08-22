@@ -23,16 +23,15 @@
 ;                    s_lat : sub-solar point latitude (deg)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-20 16:42:15 -0700 (Thu, 20 Aug 2015) $
-; $LastChangedRevision: 18551 $
+; $LastChangedDate: 2015-08-21 14:39:10 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18563 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mvn_mars_localtime.pro $
 ;
 ;CREATED BY:	David L. Mitchell
 ;-
 pro mvn_mars_localtime, result=result
 
-  common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex, rcols, orbnum
+  @maven_orbit_common
 
   from_frame = 'MAVEN_MSO'
   to_frame = 'IAU_MARS'

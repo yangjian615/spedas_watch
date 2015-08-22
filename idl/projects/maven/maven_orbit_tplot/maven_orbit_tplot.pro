@@ -86,8 +86,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-16 11:59:42 -0700 (Sun, 16 Aug 2015) $
-; $LastChangedRevision: 18500 $
+; $LastChangedDate: 2015-08-21 14:39:10 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18563 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -97,8 +97,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
                        colors=colors, reset_trange=reset_trange, nocrop=nocrop
 
-  common mav_orb_tplt, time, state, ss, wind, sheath, pileup, wake, sza, torb, period, $
-                       lon, lat, hgt, mex, rcols, orbnum
+  @maven_orbit_common
 
   R_m = 3389.9D
   R_equ = 3396.2D

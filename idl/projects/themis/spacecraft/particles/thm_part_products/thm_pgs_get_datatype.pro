@@ -20,8 +20,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-16 15:53:53 -0700 (Fri, 16 May 2014) $
-;$LastChangedRevision: 15157 $
+;$LastChangedDate: 2015-08-21 17:55:06 -0700 (Fri, 21 Aug 2015) $
+;$LastChangedRevision: 18579 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_get_datatype.pro $
 ;-
 
@@ -67,8 +67,10 @@ pro thm_pgs_get_datatype, dist_array, probe=probe, datatype=datatype, instrument
       's': instrument = 'sst'
       't': instrument = 'combined'
       else: begin
-        ;this should also never happen
-        message, 'Error: Cannot determine data type
+;        ;this should also never happen
+;        message, 'Error: Cannot determine data type
+        ;allow to proceed to allow for testing of MMS dist slices
+        instrument = 'other'
       end
     endcase
     

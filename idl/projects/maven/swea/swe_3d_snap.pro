@@ -75,8 +75,8 @@
 ;                      field of view.  FOV masking, if any, will be shown.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-13 12:24:48 -0700 (Thu, 13 Aug 2015) $
-; $LastChangedRevision: 18481 $
+; $LastChangedDate: 2015-08-21 14:42:30 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18568 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -221,7 +221,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   print,'Use button 1 to select time; button 3 to quit.'
 
   wset,Twin
-  ctime2,trange,npoints=npts,/silent,button=button
+  ctime,trange,npoints=npts,/silent
+  if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
 
   if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
     wdelete,Dwin                           ; Don't keep empty windows.
@@ -395,7 +396,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 ; Get the next button press
 
     wset,Twin
-    ctime2,trange,npoints=npts,/silent,button=button
+    ctime,trange,npoints=npts,/silent
+    if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
     if (size(trange,/type) eq 5) then ok = 1 else ok = 0
 
   endwhile

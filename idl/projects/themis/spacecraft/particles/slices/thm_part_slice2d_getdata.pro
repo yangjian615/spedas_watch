@@ -34,8 +34,8 @@
 ;  2012-12-21 - 2013-07-02 count threshold applied before averaging
 ; 
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-11-13 17:20:09 -0800 (Thu, 13 Nov 2014) $
-;$LastChangedRevision: 16181 $
+;$LastChangedDate: 2015-08-21 17:55:06 -0700 (Fri, 21 Aug 2015) $
+;$LastChangedRevision: 18579 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_getdata.pro $
 ;-
 
@@ -131,7 +131,8 @@ pro thm_part_slice2d_getdata, ptr_array, units=units, trange=trange, $
         thm_pgs_clean_cmb, dist, units_lc, output=clean_dist
       endif else begin
         dprint,dlevel=0,'WARNING: Instrument type unrecognized'
-        return
+        clean_dist = dist
+;        return
       endelse 
       
       

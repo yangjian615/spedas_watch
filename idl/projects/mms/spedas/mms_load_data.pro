@@ -76,8 +76,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-19 13:45:26 -0700 (Wed, 19 Aug 2015) $
-;$LastChangedRevision: 18529 $
+;$LastChangedDate: 2015-08-21 15:16:02 -0700 (Fri, 21 Aug 2015) $
+;$LastChangedRevision: 18569 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -227,11 +227,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
         if ~undefined(files) then begin
             lt0 = systime(/sec) ;temporary
-            ; kludge for HPCA ion data to avoid reinventing wheels
-            if instrument eq 'hpca' and datatype eq 'ion' then begin
-                mms_sitl_open_hpca_basic_cdf_jburch_skv_egrimes, files, measurement_id = [5, 5, 5, 5], $
-                    sc_id = probe, fov=[0, 360], species=[1, 2, 3, 4], tplotnames = loaded_tnames
-            endif else cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, /all
+            cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat
             dt_load += systime(/sec) - lt0 ;temporary
         endif
         if ~undefined(loaded_tnames) then append_array, tplotnames, loaded_tnames
@@ -253,7 +249,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin
         if (n_elements(tr) eq 2) and (tplotnames[0] ne '') then begin
+            tc0 = systime(/sec)
             time_clip, tplotnames, tr[0], tr[1], replace=1, error=error
+            dt_timeclip = systime(/sec)-tc0
         endif
         ;temporary messages for diagnostic purposes
         dprint, dlevel=2, 'Successfully loaded: '+ $
@@ -261,6 +259,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         dprint, dlevel=2, 'Time querying remote server: '+strtrim(dt_query,2)+' sec'
         dprint, dlevel=2, 'Time downloading remote files: '+strtrim(dt_download,2)+' sec'
         dprint, dlevel=2, 'Time loading files into IDL: '+strtrim(dt_load,2)+' sec'
+        dprint, dlevel=2, 'Time spent time clipping variables: '+strtrim(dt_timeclip,2)+' sec'
         dprint, dlevel=2, 'Total load time: '+strtrim(systime(/sec)-t0,2)+' sec'
 
     endif

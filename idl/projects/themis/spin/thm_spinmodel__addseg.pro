@@ -157,7 +157,17 @@ endif else begin
          endelse
       endif else begin
          ; Case 5: out of order sun pulse times.  This should never happen.
+         dprint,'ERROR: Modified segments:'
+         dprint,"lseg:"
+         help,lseg,/str
+         dprint,"fillseg:"
+         help,fillseg,/str
+         dprint,"newseg:"
+         help,newseg,/str
+         dprint,"Version:"
+         help,!VERSION,/str
          message,'Unexpected (out of order) sun pulse time sequence...this should not happen!'
+             
       endelse
       ;print,'Modified segments:'
       ;print,lseg

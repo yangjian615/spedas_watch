@@ -26,8 +26,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 12:05:22 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17721 $
+; $LastChangedDate: 2015-08-21 14:41:07 -0700 (Fri, 21 Aug 2015) $
+; $LastChangedRevision: 18566 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_cal_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -64,7 +64,8 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
   print,'Use button 1 to select time; button 3 to quit.'
 
   wset,Twin
-  ctime2,trange,npoints=1,/silent,button=button
+  ctime,trange,npoints=1,/silent
+; cursor,cx,cy,/norm,/up  ; make sure mouse button is released
 
   if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
     wdelete,Cwin                          ; Don't keep empty windows.
@@ -184,7 +185,8 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
 ; Get the next button press
 
     wset,Twin
-    ctime2,trange,npoints=1,/silent,button=button
+    ctime,trange,npoints=1,/silent
+;   cursor,cx,cy,/norm,/up  ; make sure mouse button is released
     if (size(trange,/type) eq 5) then ok = 1 else ok = 0
 
   endwhile

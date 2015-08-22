@@ -241,19 +241,29 @@ function mms_load_options_hpca
 s = { $
       brst: { $
               l1b: [ $
-                     'ion', $
-                     'logicals', $
+                     'count_rate', $
+                     'flux', $
+                     'vel_dist', $
+                     'rf_corr', $
+                     'bkgd_corr', $
                      'moments' $
                    ] $
             }, $
       srvy: { $
               l1b: [ $
-                     'ion', $
-                     'logicals', $
+                     'count_rate', $
+                     'flux', $
+                     'vel_dist', $
+                     'rf_corr', $
+                     'bkgd_corr', $
                      'moments' $
                    ], $
               sitl:[ $
-                     'ion', $
+                     'count_rate', $
+                     'flux', $
+                     'vel_dist', $
+                     'rf_corr', $
+                     'bkgd_corr', $
                      'moments' $
                    ] $
             } $
@@ -427,8 +437,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-19 10:04:29 -0700 (Wed, 19 Aug 2015) $
-;$LastChangedRevision: 18522 $
+;$LastChangedDate: 2015-08-21 13:54:11 -0700 (Fri, 21 Aug 2015) $
+;$LastChangedRevision: 18561 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $
