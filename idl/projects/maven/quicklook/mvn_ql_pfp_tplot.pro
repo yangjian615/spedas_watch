@@ -51,8 +51,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-31 14:06:46 -0700 (Fri, 31 Jul 2015) $
-; $LastChangedRevision: 18333 $
+; $LastChangedDate: 2015-08-22 16:21:02 -0700 (Sat, 22 Aug 2015) $
+; $LastChangedRevision: 18581 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -235,7 +235,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      tname = tnames('mvn_swis_en_eflux', ntplot)
      IF ntplot EQ 0 THEN BEGIN
         dprint, 'There is no SWIA tplot variables.', dlevel=2, verbose=verbose
-        tname = 'mvn_swis_en_flux'
+        tname = 'mvn_swis_en_eflux'
         store_data, tname, data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [25.9375, 23244.8]}, $
                     dlim={datagap: [180L], ylog: [1L], zlog: [1L], spec: [1L], no_interp: [1L], $
                           yrange: [4L, 30000], ystyle: [1L], zrange: [1.e4, 1.e8]}
