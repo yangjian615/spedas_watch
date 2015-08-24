@@ -2,9 +2,9 @@
 ;  Modified for HPCA by J. Burch
 ;
 
-;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-13 16:11:30 -0700 (Mon, 13 Jul 2015) $
-;  $LastChangedRevision: 18117 $
+;  $LastChangedBy: moka $
+;  $LastChangedDate: 2015-08-23 15:09:25 -0700 (Sun, 23 Aug 2015) $
+;  $LastChangedRevision: 18583 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_hpca_moments.pro $
 
 
@@ -129,19 +129,19 @@ print, 'local_flist= ', local_flist
       otempname = sc_id(j)+'_hpca_oplus_scalar_temperature'
             
       ; Concatenate data if more than one file
-      if n_elements(files_open) gt 1 then begin
-        for i = 1, n_elements(files_open)-1 do begin
-          temp_struct = mms_sitl_open_hpca_moments_cdf(files_open(i))
-          times = [times, temp_struct.times]
-             hdens = [hdens, temp_struct.data5]
-             odens = [odens, temp_struct.data8]
-             hvel = [hvel, temp_struct.data20]
-             ovel = [ovel, temp_struct.data23]
-             htemp = [htemp, temp_struct.data24]
-             otemp = [otemp, temp_struct.data25]
+      ;if n_elements(files_open) gt 1 then begin
+      ;  for i = 1, n_elements(files_open)-1 do begin
+      ;    temp_struct = mms_sitl_open_hpca_moments_cdf(files_open(i))
+      ;    times = [times, temp_struct.times]
+      ;       hdens = [hdens, temp_struct.data5]
+      ;       odens = [odens, temp_struct.data8]
+      ;       hvel = [hvel, temp_struct.data20]
+      ;       ovel = [ovel, temp_struct.data23]
+      ;       htemp = [htemp, temp_struct.data24]
+      ;       otemp = [otemp, temp_struct.data25]
                         
-        endfor
-      endif
+;        endfor
+;      endif
        
       store_data, hdensname, data = {x:times, y:hdens}
       store_data, odensname, data = {x:times, y:odens}

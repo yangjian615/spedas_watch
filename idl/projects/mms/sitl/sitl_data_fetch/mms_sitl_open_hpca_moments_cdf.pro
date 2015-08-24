@@ -1,9 +1,9 @@
 ; Read HPCA CDF
 ;
 
-;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-07-13 16:05:06 -0700 (Mon, 13 Jul 2015) $
-;  $LastChangedRevision: 18114 $
+;  $LastChangedBy: moka $
+;  $LastChangedDate: 2015-08-23 15:09:25 -0700 (Sun, 23 Aug 2015) $
+;  $LastChangedRevision: 18583 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_open_hpca_moments_cdf.pro $
 
 
@@ -24,16 +24,16 @@ function mms_sitl_open_hpca_moments_cdf, filename
   time_tt2000 = *cdf_str.vars(0).dataptr
   time_unix = time_double(time_tt2000, /tt2000)
   
-hdens = *cdf_str.vars(2).dataptr 
-;adens = *cdf_str.vars(4).dataptr  
-;hedens = *cdf_str.vars(3).dataptr  
-odens = *cdf_str.vars(5).dataptr
-hvel = *cdf_str.vars(7).dataptr 
-;avel = *cdf_str.vars(9).dataptr  
-;hevel = *cdf_str.vars(8).dataptr  
-ovel = *cdf_str.vars(10).dataptr 
-htemp = *cdf_str.vars(12).dataptr 
-otemp = *cdf_str.vars(15).dataptr 
+hdens = *cdf_str.vars(4).dataptr 
+adens = *cdf_str.vars(6).dataptr  
+;hedens = *cdf_str.vars(5).dataptr  
+odens = *cdf_str.vars(7).dataptr
+hvel = *cdf_str.vars(9).dataptr 
+avel = *cdf_str.vars(11).dataptr  
+;hevel = *cdf_str.vars(10).dataptr  
+ovel = *cdf_str.vars(12).dataptr 
+htemp = *cdf_str.vars(14).dataptr 
+otemp = *cdf_str.vars(17).dataptr 
 
   
  
@@ -41,30 +41,30 @@ otemp = *cdf_str.vars(15).dataptr
 ;  hspecname = *cdf_str.vars(32).dataptr
   
 ;  specstrlen = strlen(cdf_str.vars(31).name)
-    hdensname = cdf_str.vars(2).name
-;    adensname = cdf_str.vars(4).name
-;    hedensname = cdf_str.vars(3).name
-    odensname = cdf_str.vars(5).name
-    hvelname = cdf_str.vars(7).name
-;    avelname = cdf_str.vars(9).name
-;    hevelname = cdf_str.vars(8).name
-    ovelname = cdf_str.vars(10).name
-    htempname = cdf_str.vars(12).name
-    otempname = cdf_str.vars(15).name
+    hdensname = cdf_str.vars(4).name
+    adensname = cdf_str.vars(6).name
+;    hedensname = cdf_str.vars(5).name
+    odensname = cdf_str.vars(7).name
+    hvelname = cdf_str.vars(9).name
+    avelname = cdf_str.vars(11).name
+;    hevelname = cdf_str.vars(10).name
+    ovelname = cdf_str.vars(12).name
+    htempname = cdf_str.vars(14).name
+    otempname = cdf_str.vars(17).name
 
 
   
 
-  data5d = *cdf_str.vars(2).dataptr
-;  data6d = *cdf_str.vars(4).dataptr
-;  data7d = *cdf_str.vars(3).dataptr
-  data8d = *cdf_str.vars(5).dataptr
-  data20d = *cdf_str.vars(7).dataptr
-;  data21d = *cdf_str.vars(9).dataptr
-;  data22d = *cdf_str.vars(8).dataptr
-  data23d = *cdf_str.vars(10).dataptr
-  data24d = *cdf_str.vars(12).dataptr
-  data25d = *cdf_str.vars(15).dataptr
+  data5d = *cdf_str.vars(4).dataptr
+  data6d = *cdf_str.vars(6).dataptr
+;  data7d = *cdf_str.vars(5).dataptr
+  data8d = *cdf_str.vars(7).dataptr
+  data20d = *cdf_str.vars(9).dataptr
+  data21d = *cdf_str.vars(11).dataptr
+;  data22d = *cdf_str.vars(10).dataptr
+  data23d = *cdf_str.vars(12).dataptr
+  data24d = *cdf_str.vars(14).dataptr
+  data25d = *cdf_str.vars(17).dataptr
 
 
   

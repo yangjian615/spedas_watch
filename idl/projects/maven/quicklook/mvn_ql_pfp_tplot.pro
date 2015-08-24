@@ -41,6 +41,16 @@
 ;   BURST_BAR:    Draw a color bar during the time intervals when the burst
 ;                 (archive) PFP data has been already downlinked and available.  
 ;
+;      SUNDIR:    Computes the direction of the Sun in the payload coordinates.
+;                 It can be useful for Tohban to check the MAG rolls.
+;
+;      TOHBAN:    If set, some additional tplot variables, which burst request
+;                 "Tohban" should sometimes check, are automatically generated.
+;                    - Currently available burst data time segments,
+;                    - Phobos-MAVEN distance,
+;                    - Sun direction in the payload coordinates used
+;                      to check the MAG rolls.
+;
 ;     SWIA, SWEA, STATIC, SEP, MAG, LPW individual instruments' switches to load:
 ;                 Default = 1. If they set to be zero (e.g., swia=0), it skips to load.                 
 ;
@@ -51,8 +61,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-08-22 16:21:02 -0700 (Sat, 22 Aug 2015) $
-; $LastChangedRevision: 18581 $
+; $LastChangedDate: 2015-08-23 17:08:53 -0700 (Sun, 23 Aug 2015) $
+; $LastChangedRevision: 18584 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -131,7 +141,7 @@ END
 ; Main Routine
 PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
                       pad=pad, tplot=tplot, window=window, tname=ptname, phobos=phobos, $
-                      bcrust=bcrust, burst_bar=bbar, bvec=bvec, $
+                      bcrust=bcrust, burst_bar=bbar, bvec=bvec, sundir=sundir, tohban=tohban, tobhan=tobhan, $
                       swia=swi, swea=swe, static=sta, sep=sep, mag=mag, lpw=lpw
 
   oneday = 24.d0 * 3600.d0
@@ -169,6 +179,12 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   IF SIZE(sep, /type) EQ 0 THEN pflg = 1 ELSE pflg = sep 
   IF SIZE(mag, /type) EQ 0 THEN mflg = 1 ELSE mflg = mag 
   IF SIZE(lpw, /type) EQ 0 THEN lflg = 1 ELSE lflg = lpw 
+  IF keyword_set(tobhan) THEN tohban = 1 ; Many people tend to mistake its spelling...
+  IF keyword_set(tohban) THEN BEGIN
+     IF SIZE(bbar, /type) EQ 0 THEN bbar = 1
+     IF SIZE(phobos, /type) EQ 0 THEN phobos = 1
+     IF SIZE(sundir, /type) EQ 0 THEN sundir = 1
+  ENDIF 
 
   ; SPICE
   status = EXECUTE("mvn_spice_load, trange=trange, /download_only, verbose=verbose")
@@ -519,9 +535,10 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   maven_orbit_tplot, /current, /load, timecrop=[-2.d0, 2.d0]*oneday + trange ; +/- 2 day is buffer.
   options, 'alt2', panel_size=2./3., ytitle='Alt. [km]'
   
-  IF keyword_set(phobos) THEN $
+  IF keyword_set(phobos) THEN BEGIN
      mvn_phobos_tplot, trange=trange
-
+     options, 'Phobos-MAVEN', panel_size=0.75, ytitle='Phobos!CMAVEN', ylog=1, /def
+  ENDIF 
   IF keyword_set(bbar) THEN BEGIN
      status = EXECUTE("swica = SCOPE_VARFETCH('swica', common='mvn_swia_data')")
      IF SIZE(swica, /type) EQ 8 THEN BEGIN
@@ -561,15 +578,30 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      options, 'burst_flag', bottom=0, top=6 
      zlim, 'burst_flag', 0, 1, /def
   ENDIF 
+  IF keyword_set(sundir) THEN BEGIN
+     tsundir = dgen(range=trange, resolution=1.d0)
+     ; MAVEN_SSO direction of Sun
+     store_data,'mvn_sundir', data={x: tsundir, y: REPLICATE(1., N_ELEMENTS(tsundir)) # [1.,0.,0.], v: INDGEN(3)}, $
+                dlim={labels: ['X', 'Y', 'Z'], labflag: 1, colors: 'bgr', $
+                      spice_master_frame: 'MAVEN_SPACECRAFT', spice_frame: 'MAVEN_SSO'}
+     spice_vector_rotate_tplot, 'mvn_sundir', 'MAVEN_SPACECRAFT', trange=trange, $
+                                check='MAVEN_SPACECRAFT', suffix='_payload', verbose=verbose
+     store_data, 'mvn_sundir', /delete, verbose=verbose
+     options, 'mvn_sundir_payload', ytickinterval=1, yminor=4, constant=[-1., 0., 1.], $
+              ytitle='S/C!CSundir', panel_size=0.75, /def
+     ylim, 'mvn_sundir_payload', -1.25, 1.25, /def
+  ENDIF 
   
   tplot_options, opt=topt 
   IF keyword_set(tplot) THEN BEGIN
-     IF SIZE(ptname, /type) EQ 0 THEN $
+     IF SIZE(ptname, /type) EQ 0 THEN BEGIN
         ptname = ['mvn_sep1_B-O_Eflux_Energy', 'mvn_sep2_B-O_Eflux_Energy', $
                   'mvn_sta_c0_e', 'mvn_sta_c6_m', 'mvn_swis_en_eflux', $
                   'mvn_swe_etspec', 'mvn_mag_bamp', bvec, 'alt2']
 
-     IF keyword_set(bbar) THEN ptname = [ptname, 'burst_flag'] 
+        IF keyword_set(bbar) THEN ptname = [ptname, 'burst_flag'] 
+        IF keyword_set(tohban) THEN ptname = ['mvn_sundir_payload', 'Phobos-MAVEN', ptname]
+     ENDIF 
      tplot, ptname, wi=wnum 
   ENDIF 
   RETURN
