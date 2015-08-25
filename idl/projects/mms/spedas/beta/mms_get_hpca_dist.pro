@@ -3,7 +3,7 @@
 ;  mms_get_hpca_dist
 ;
 ;Purpose:
-;  Returns a pointer to a THEMIS-like array of particle distributions.
+;  Returns a pointer to a standard array of SPEDAS particle distribution structures.
 ;  This is intended for testing with THEMIS slice routines.
 ;
 ;Calling Sequence:
@@ -24,13 +24,13 @@
 ;    -Azimuths have not been synchronized with sun data and are currently
 ;     measured from an arbitrary point.
 ;    -Spacecraft spin and sweep times are assumed to be ideal.
-;    -Only tested with burst data.
-;    -Masses of ions larger than h+ slightly off.
+;    -Only tested with burst data.  (Support for survey data pending 
+;     resolution of time sample errors) 
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-21 19:29:30 -0700 (Fri, 21 Aug 2015) $
-;$LastChangedRevision: 18580 $
+;$LastChangedDate: 2015-08-24 15:57:34 -0700 (Mon, 24 Aug 2015) $
+;$LastChangedRevision: 18601 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_hpca_dist.pro $
 ;-
 
@@ -93,27 +93,27 @@ phi = phi_direction + phi_offset
 dtheta = replicate(22.5, dim)
 dphi = replicate(11.25, dim)
 
-;get mass & charge from species
-m = 0.0104389 ;proton mass in eV/(km/s)^2
+;mass & charge of species
+;  -slice routines assume mass in eV/(km/s)^2
 case species of 
   'hplus':begin
-    mass = m
+    mass = 1.04535e-2
     charge = 1.
   end
   'heplus':begin
-    mass = 4*m
+    mass = 4.18138e-2
     charge = 1.
   end
   'heplusplus':begin
-    mass = 4*m
+    mass = 4.18138e-2
     charge = 2.
   end
   'oplus':begin
-    mass = 16*m
+    mass = 0.167255
     charge = 1.
   end
   'oplusplus':begin
-    mass = 16*m
+    mass = 0.167255
     charge = 2.
   end
   else: begin
@@ -131,6 +131,7 @@ endcase
 ;-----------------------------------------------------------------
 
 ;basic template structure that should be compatible with slice2d routines
+;TODO: return from standard routine
 template = {  $
   project_name: 'MMS', $
   spacecraft: probe, $
@@ -166,7 +167,7 @@ dist = replicate(template, n_elements(d.x))
 ; Populate and correct the rest of the data
 ;-----------------------------------------------------------------
 
-;this time difference probably shouldn't be used for physical calculations yet
+;total time period covered by each sample
 dist.time = d.x
 dist.end_time = d.x + s.t_sweep
 

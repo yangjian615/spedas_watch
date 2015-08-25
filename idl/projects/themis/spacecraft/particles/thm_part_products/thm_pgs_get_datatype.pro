@@ -3,7 +3,7 @@
 ;  thm_pgs_get_datatype
 ;
 ;Purpose:
-;  Returns probe and datatype designations from an particle distribution pointer array.
+;  Returns probe and datatype designations from standard particle distribution pointer array.
 ;
 ;
 ;Arguments:
@@ -16,12 +16,16 @@
 ;  instrument: String denoting instrument ('esa', 'sst', 'combined')
 ;
 ;  
+;History:
+;  2015-08-24 - Allow to work on non-THEMIS data for testing with MMS 
+;
+;
 ;Notes:
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-21 17:55:06 -0700 (Fri, 21 Aug 2015) $
-;$LastChangedRevision: 18579 $
+;$LastChangedDate: 2015-08-24 11:31:21 -0700 (Mon, 24 Aug 2015) $
+;$LastChangedRevision: 18591 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_get_datatype.pro $
 ;-
 
@@ -53,23 +57,21 @@ pro thm_pgs_get_datatype, dist_array, probe=probe, datatype=datatype, instrument
         '45d'x: datatype = 'psef'
         '45e'x: datatype = 'pser'
         '45f'x: datatype = 'pseb'
-             0: datatype = (*dist_array[0])[0].data_name ;combined dist
         else: begin
-          ;this should never happen
-          message, 'Error: Cannot determine data type from input distribution.'
+          ;combined distribution or other
+          datatype = (*dist_array[0])[0].data_name
         end
       endcase
     endif
     
     ;instrument
-    case strmid(datatype,1,1) of 
+    intsr = stregex(datatype, 'p(.)[ei][frb][frb]?',/subexpr,/extract,/fold) 
+    case intsr[1] of 
       'e': instrument = 'esa'
       's': instrument = 'sst'
       't': instrument = 'combined'
       else: begin
-;        ;this should also never happen
-;        message, 'Error: Cannot determine data type
-        ;allow to proceed to allow for testing of MMS dist slices
+        ;allow to proceed with non-THEMIS data
         instrument = 'other'
       end
     endcase

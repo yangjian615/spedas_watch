@@ -62,9 +62,9 @@
 ;                   field prior to index calculation, 4-nov-2013, jmm
 ;                   Added new site list for 2015 and later 22-may-2015, clr
 ;
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-05-26 09:04:42 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17714 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-08-24 12:33:21 -0700 (Mon, 24 Aug 2015) $
+; $LastChangedRevision: 18592 $
 ; $URL $
 ;-
 
@@ -132,7 +132,7 @@ if not keyword_set(no_load) then begin
       Return
     Endif
   endif else begin
-    if tplot_vars.options.trange[0] EQ 0 OR tplot_vars.options.trange GE date2015 then begin
+    if tplot_vars.options.trange[0] EQ 0 OR tplot_vars.options.trange[0] GE date2015 then begin
      site_load = ['pbk', 'tik', 'dik', 'amd', 'nor', 'hop', 'jck', 'and', 'nal',   $
            'roe', 'dob', 'sol', 'dmh', 'lvr', 'leth', 'naq', 'stf', 'kuv',   $
            'nain', 'sept', 'thl', 'salu', 'vldr', 'inuk', 'rbay', 'rank',   $

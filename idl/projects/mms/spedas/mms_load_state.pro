@@ -8,8 +8,9 @@
 ; KEYWORDS:
 ;         trange: time range of interest
 ;         probes: list of probes - values for MMS SC ['*','1','2','3','4'] 
-;         level: ['def', 'pred'] predicted or definitive attitude (default is definitive)
-;                   NOTE: predicted for the future data is not fully implemented - use at your own risk
+;         level: ['def', 'pred'] predicted or definitive attitude the default is to search for definitive
+;              data first and if not found search for predicted data. To turn this feature off use the keyword
+;              pred_or_def (see below)
 ;         datatypes: ephemeris or attitude or both ['*','pos', 'vel', 'spinras', 'spindec']  (default is '*')
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
@@ -18,7 +19,9 @@
 ;         no_download: set flag to use local data only (no download)
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;             with "username" and "password" tags with your API login information
-;         def_or_pred: set this flag to first check for definitive data and if not found use predicted data
+;         pred_or_def: set this flag to turn off looking for predicted data if definitive not found
+;            (pred_or_def=0 will return only the level that was requested)
+;            
 ; OUTPUT:
 ;
 ; EXAMPLES: 
@@ -64,8 +67,8 @@
 ;        
 ;         
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-08-21 13:21:05 -0700 (Fri, 21 Aug 2015) $
-;$LastChangedRevision: 18559 $
+;$LastChangedDate: 2015-08-24 13:54:40 -0700 (Mon, 24 Aug 2015) $
+;$LastChangedRevision: 18598 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -289,7 +292,7 @@ end
 pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames, $
   login_info = login_info, datatypes = datatypes, level = level, $
   local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-  no_download=no_download, def_or_pred=def_or_pred
+  no_download=no_download, pred_or_def=pred_or_def
 
     probe = strcompress(string(probe), /rem)
     start_time = time_double(trange[0])-60*60*24.
@@ -320,7 +323,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
              ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, $
                product=product, start_date=start_time_str, end_date=end_time_str) 
                if ~is_array(ancillary_file_info) or ancillary_file_info[0] eq '' then begin
-                  if ~undefined(def_or_pred) then begin
+                  if pred_or_def then begin
                      dprint, 'Definitive state data not found for this time period. Looking for predicted state data'
                      level = 'pred'
                      product = level + filetype[i]
@@ -383,7 +386,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     level = level, local_data_dir = local_data_dir, source = source, $
     remote_data_dir = remote_data_dir, attitude_only=attitude_only, $
     ephemeris_only = ephemeris_only, no_download=no_download, login_info=login_info, $
-    tplotnames = tplotnames, def_or_pred=def_or_pred
+    tplotnames = tplotnames, pred_or_def=pred_or_def
 
     ; define probe, product, type, coordinate, and unit names
     p_names = ['1', '2', '3', '4']
@@ -417,6 +420,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     if undefined(datatypes) then datatypes = '*' ; default to definitive 
     if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
     if undefined(remote_data_dir) then remote_data_dir = !mms.remote_data_dir
+    if undefined(pred_or_def) then pred_or_def=1 else pred_or_def=pred_or_def
     if not keyword_set(source) then source = !mms
     
     ; check for wild cards
@@ -457,7 +461,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
               mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
                    login_info = login_info, datatypes = datatypes, level = level[j], $
                    local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-                   no_download=no_download, def_or_pred=def_or_pred
+                   no_download=no_download, pred_or_def=pred_or_def
        endfor
     endfor
 

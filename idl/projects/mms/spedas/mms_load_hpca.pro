@@ -24,8 +24,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-21 16:04:36 -0700 (Fri, 21 Aug 2015) $
-;$LastChangedRevision: 18574 $
+;$LastChangedDate: 2015-08-24 15:16:47 -0700 (Mon, 24 Aug 2015) $
+;$LastChangedRevision: 18600 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_hpca.pro $
 ;-
 
@@ -136,15 +136,18 @@ end
 
 pro mms_hpca_calc_anodes, tplotnames, fov = fov
     sum_anodes = ['*_count_rate', '*_RF_corrected', '*_bkgd_corrected', '*_norm_counts']
-    avg_anodes = ['*_flux', '*_vel_dist_fn']
+    ;avg_anodes = ['*_flux', '*_vel_dist_fn']
+    avg_anodes = ['*_flux']
     
     for sum_idx = 0, n_elements(sum_anodes)-1 do begin
         vars_to_sum = strmatch(tplotnames, sum_anodes[sum_idx])
         for vars_idx = 0, n_elements(vars_to_sum)-1 do begin
             if vars_to_sum[vars_idx] eq 1 then begin
                 get_data, tplotnames[vars_idx], data=var_data
-                updated_spectra = mms_hpca_sum_fov(var_data, fov=fov)
-                store_data, tplotnames[vars_idx], data=updated_spectra
+                if is_struct(var_data) then begin
+                    updated_spectra = mms_hpca_sum_fov(var_data, fov=fov)
+                    store_data, tplotnames[vars_idx], data=updated_spectra
+                endif
             endif
         endfor
     endfor
@@ -154,8 +157,10 @@ pro mms_hpca_calc_anodes, tplotnames, fov = fov
         for vars_idx = 0, n_elements(vars_to_avg)-1 do begin
             if vars_to_avg[vars_idx] eq 1 then begin
                 get_data, tplotnames[vars_idx], data=var_data
-                updated_spectra = mms_hpca_avg_fov(var_data, fov=fov)
-                store_data, tplotnames[vars_idx], data=updated_spectra
+                if is_struct(var_data) then begin
+                    updated_spectra = mms_hpca_avg_fov(var_data, fov=fov)
+                    store_data, tplotnames[vars_idx], data=updated_spectra
+                endif
             endif
         endfor
     endfor

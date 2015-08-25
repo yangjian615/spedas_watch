@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-07 13:09:15 -0700 (Fri, 07 Aug 2015) $
-; $LastChangedRevision: 18432 $
+; $LastChangedDate: 2015-08-24 14:01:15 -0700 (Mon, 24 Aug 2015) $
+; $LastChangedRevision: 18599 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fpi_crib.pro $
 ;-
 
@@ -23,8 +23,9 @@ ion_espec = ['mms1_fpi_iEnergySpectr_pX', $
              'mms1_fpi_iEnergySpectr_pY', $
              'mms1_fpi_iEnergySpectr_pZ']
 
-options, electron_espec, spec=1, zlog=1
-options, ion_espec, spec=1, zlog=1
+; set the Y (energy) axis to log scale
+ylim, 'mms?_fpi_?EnergySpectr_??', 0, 0, 1
+zlim, 'mms?_fpi_?EnergySpectr_??', 0, 0, 1
 
 tplot, electron_espec
 

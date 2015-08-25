@@ -109,15 +109,18 @@ function mms_load_options_fgm
 s = { $
       brst: { $
               l1a: [ '' ], $
-              l1b: [ '' ] $
+              l1b: [ '' ], $
+              ql: [ '' ] $
             }, $
       fast: { $
               l1a: [ '' ], $
-              l1b: [ '' ] $
+              l1b: [ '' ], $
+              ql: [ '' ] $
             }, $
       slow: { $
               l1a: [ '' ], $
-              l1b: [ '' ] $
+              l1b: [ '' ], $
+              ql: [ '' ] $
             }, $
       srvy: { $
               l1a: [ '' ], $
@@ -437,8 +440,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-21 13:54:11 -0700 (Fri, 21 Aug 2015) $
-;$LastChangedRevision: 18561 $
+;$LastChangedDate: 2015-08-24 08:46:07 -0700 (Mon, 24 Aug 2015) $
+;$LastChangedRevision: 18586 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $

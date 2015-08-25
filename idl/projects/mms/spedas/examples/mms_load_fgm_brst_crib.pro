@@ -15,43 +15,63 @@
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fgm_crib.pro $
 ;-
 ;----------------------------------------------------------------------------
+
+dprint, "--- Start of MMS FGM burst data crib sheet ---"
+
+; set the time span
+timespan, '2015-08-15', 1
+
 ; load MMS AFG burst data for MMS 1 
-mms_load_fgm, probes=['1'], trange=['2015-07-28','2015-07-29'], instrument='afg', data_rate='brst', level='l1b'
+mms_load_fgm, probes=['1'], instrument='afg', data_rate='brst', level='ql'
+
+tplot, ['mms1_afg_brst_gse_bvec', 'mms1_afg_brst_gse_btot']
+stop
+
+; zoom in to region of interest 
+tlimit, '2015-08-15/12:45','2015-08-15/13:15', window=1
+stop
+
+;----------------------------------------------------------------------------
+; do the same for DFG burst data for probes MMS 1 and 2 
+; Note the time frame keyword is used
+mms_load_fgm, probes=['1','2'], trange=['2015-08-15/00:00','2015-08-15/00:00'], instrument='dfg', data_rate='brst', level='ql'
+
+; add a title
+tplot, ['mms1_dfg_brst_gse_bvec','mms2_dfg_brst_gse_bvec']
+stop
+
+; zoom in and show both afg and dfg with attitude data and add a title
+tlimit, '2015-08-15/12:45','2015-08-15/13:15'
+
+; add a title
+tplot_options, 'title', 'MMS1 FGM Bvec, Btotal, Position, and Attitude'
+tplot, ['mms1_dfg_brst_gse_bvec','mms1_afg_brst_gse_bvec','mms1_ql_pos_gse','mms1_ql_RADec_gse']
+stop
+
+;----------------------------------------------------------------------------
+; load DFG burst data for the other MMS probes
+mms_load_fgm, probes=['3','4'], instrument='dfg', data_rate='brst', level='ql'
+
+; new window specified so that previous plot window will be preserved.
+window, 2
+tlimit, '2015-08-15/12:45','2015-08-15/13:15', window=2
+tplot_options, 'title', 'MMS FGM data for all Probes'
+; tplot accepts wild cards
+tplot, 'mms*_dfg_brst_gse_bvec'
+stop
+
+;-----------------------------------------------------------------------------
+; combine the bvector and btotal tplot variables - this pseudo variable 
+; is for plotting purposes
+pr='mms1'
+; tplot variables accept constructed strings
+store_data, pr+'_combined_fgm', data=[pr+'_dfg_brst_gse_btot',pr+'_dfg_brst_gse_bvec']
+tplot, pr+'_combined_fgm'
+stop
+
+; check out list of all the tplot variables that were loaded
 tplot_names
 
-window, 1
-tlimit, '2015-07-28','2015-07-29', window=1
-tplot, ['mms1_afg_brst_bcs','mms1_afg_brst_omb']
-stop
-
-; zoom in 
-tlimit, '2015-07-28/14:00','2015-07-28/16:00', window=1
-stop 
-
-; zoom in some more 
-tlimit, '2015-07-28/15:40','2015-07-28/16:00', window=1
-stop
-
-;----------------------------------------------------------------------------
-; do the same for DFG burst data for MMS 1
-mms_load_fgm, probes=['1'], trange=['2015-07-28','2015-07-29'], instrument='dfg', data_rate='brst', level='l1b'
-
-window, 2
-tlimit, '2015-07-28','2015-07-29', window=2
-tplot, ['mms1_dfg_brst_bcs','mms1_dfg_brst_omb']
-stop
-
-; show both afg and dfg with attitude data
-tplot, ['mms1_afg_brst_bcs','mms1_afg_brst_omg','mms1_dfg_brst_bcs','mms1_dfg_brst_omb','mms1_defatt_spinras','mms1_defatt_spindec']
-stop
-
-;----------------------------------------------------------------------------
-; load DFG burst data for all MMS probse
-mms_load_fgm, probes=['1','2','3','4'], trange=['2015-07-28','2015-07-29'], instrument='dfg', data_rate='brst', level='l1b'
-
-window, 3
-tlimit, '2015-07-28','2015-07-29', window=3
-tplot, ['mms1_dfg_brst_bcs','mms2_dfg_brst_bcs','mms3_dfg_brst_bcs','mms4_dfg_brst_bcs']
-stop
+dprint, "--- End of MMS FGM burst data crib sheet ---"
 
 end

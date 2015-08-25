@@ -14,12 +14,11 @@
 ;     measured from an arbitrary point.
 ;    -Spacecraft spin and sweep times are assumed to be ideal.
 ;    -Only tested with burst data.
-;    -Masses of ions larger than h+ are slightly off.
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-21 19:29:30 -0700 (Fri, 21 Aug 2015) $
-;$LastChangedRevision: 18580 $
+;$LastChangedDate: 2015-08-24 15:57:34 -0700 (Mon, 24 Aug 2015) $
+;$LastChangedRevision: 18601 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_part_slice2d_crib.pro $
 ;-
 
@@ -34,11 +33,11 @@ timespan, '2015-07-31'
 trange = timerange()
 
 
-;load data manually (for now)
+;load data into tplot
 ;---------------------------------------------
-mms_load_data, probes=probe, trange=trange, instrument='hpca', $
-               level=level, data_rate=data_rate, datatype='ion', $
-               varformat='*_vel_dist_fn', tplotnames=ion_names
+mms_load_hpca, probes=probe, trange=trange, $
+               data_rate=data_rate, level=level, datatype='vel_dist'
+
 
 ;use h+ dist function var for example
 tname = 'mms'+probe[0]+'_hpca_hplus_vel_dist_fn'
@@ -55,7 +54,7 @@ ptr = mms_get_hpca_dist(tname)
 ;  -built in coordinate transformations will be invalid (e.g. dsl, gsm, gse)
 ;  -rotations should still work if data supplied with tplot variable
 ;   in correct coordinates (though not currently since arbitrary coords are used)
-;  -some plot annotations will need to be set manually 
+;  -some plot annotations will need to be set manually for now
 ;---------------------------------------------
 
 ;slice setup

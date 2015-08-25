@@ -25,8 +25,8 @@
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-19 13:45:26 -0700 (Wed, 19 Aug 2015) $
-;$LastChangedRevision: 18529 $
+;$LastChangedDate: 2015-08-24 08:22:27 -0700 (Mon, 24 Aug 2015) $
+;$LastChangedRevision: 18585 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -52,9 +52,10 @@ pro mms_split_fgm_data, tplot_name, tplotnames = tplotnames
 end
 
 ; sets colors and labels for tplot
-pro mms_load_fix_metadata, tplotnames, prefix = prefix, instrument = instrument
+pro mms_load_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, data_rate = data_rate
     if undefined(prefix) then prefix = ''
     if undefined(instrument) then instrument = 'dfg'
+    if undefined(data_rate) then data_rate = 'srvy'
     instrument = strlowcase(instrument) ; just in case we get an upper case instrument
     
     for sc_idx = 0, n_elements(prefix)-1 do begin
@@ -62,42 +63,42 @@ pro mms_load_fix_metadata, tplotnames, prefix = prefix, instrument = instrument
             tplot_name = tplotnames[name_idx]
     
             case tplot_name of
-                prefix[sc_idx] + '_'+instrument+'_srvy_gse_bvec': begin
+                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_gse_bvec': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [2,4,6]
                     options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
                 end
-                prefix[sc_idx] + '_'+instrument+'_srvy_gse_btot': begin
+                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_gse_btot': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [0]
                     options, /def, tplot_name, 'ytitle',  strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['B_total']
                 end 
-                prefix[sc_idx] + '_'+instrument+'_srvy_dmpa_bvec': begin
+                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_dmpa_bvec': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [2,4,6]
                     options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
                 end
-                prefix[sc_idx] + '_'+instrument+'_srvy_dmpa_btot': begin
+                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_dmpa_btot': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [0]
                     options, /def, tplot_name, 'ytitle',  strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['B_total']
                 end
-                prefix[sc_idx] + '_'+instrument+'_srvy_gsm_dmpa': begin
+                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_gsm_dmpa': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [2,4,6,8]
                     options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz', 'Btotal']
                 end
-                prefix[sc_idx] + '_'+instrument+'_srvy_omb': begin
+                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_omb': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [2,4,6,8]
                     options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument) + ' OMB'
                 end 
-                prefix[sc_idx] + '_'+instrument+'_srvy_bcs': begin
+                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_bcs': begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [2,4,6,8]
                     options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument) + ' BCS'
@@ -126,7 +127,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
-    if undefined(datatype) then datatype = '*' ; grab all data in the CDF
+    if undefined(datatype) then datatype = '' ; grab all data in the CDF
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     
     if undefined(level) then level = 'ql' ; default to quick look
@@ -145,18 +146,18 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         this_probe = 'mms'+strcompress(string(probes[probe_idx]), /rem)
         ; make sure the attitude data has been loaded before doing the cotrans operation
         if tnames(this_probe+'_defatt_spinras') ne '' && tnames(this_probe+'_defatt_spindec') ne '' $
-            && tnames(this_probe+'_'+instrument+'_srvy_dmpa') ne '' then begin
-            dmpa2gse, this_probe+'_'+instrument+'_srvy_dmpa', this_probe+'_defatt_spinras', $
-                this_probe+'_defatt_spindec', this_probe+'_'+instrument+'_srvy_gse'
-            append_array, tplotnames, this_probe+'_'+instrument+'_srvy_gse'
+            && tnames(this_probe+'_'+instrument+'_'+data_rate+'_dmpa') ne '' then begin
+            dmpa2gse, this_probe+'_'+instrument+'_'+data_rate+'_dmpa', this_probe+'_defatt_spinras', $
+                this_probe+'_defatt_spindec', this_probe+'_'+instrument+'_'+data_rate+'_gse'
+            append_array, tplotnames, this_probe+'_'+instrument+'_'+data_rate+'_gse'
             
             ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
-            mms_split_fgm_data, this_probe+'_'+instrument+'_srvy_dmpa', tplotnames = tplotnames
-            mms_split_fgm_data, this_probe+'_'+instrument+'_srvy_gse', tplotnames = tplotnames
+            mms_split_fgm_data, this_probe+'_'+instrument+'_'+data_rate+'_dmpa', tplotnames = tplotnames
+            mms_split_fgm_data, this_probe+'_'+instrument+'_'+data_rate+'_gse', tplotnames = tplotnames
         endif
     endfor
     
     ; set some of the metadata for the DFG/AFG instruments
-    mms_load_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument
+    mms_load_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument, data_rate = data_rate
 
 end
