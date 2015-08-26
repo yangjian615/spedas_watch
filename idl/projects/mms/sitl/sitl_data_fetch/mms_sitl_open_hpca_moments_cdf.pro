@@ -1,9 +1,9 @@
 ; Read HPCA CDF
 ;
 
-;  $LastChangedBy: moka $
-;  $LastChangedDate: 2015-08-23 15:09:25 -0700 (Sun, 23 Aug 2015) $
-;  $LastChangedRevision: 18583 $
+;  $LastChangedBy: rickwilder $
+;  $LastChangedDate: 2015-08-25 15:56:43 -0700 (Tue, 25 Aug 2015) $
+;  $LastChangedRevision: 18612 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_open_hpca_moments_cdf.pro $
 
 
@@ -16,10 +16,10 @@ function mms_sitl_open_hpca_moments_cdf, filename
 
   ; Find out what variables are in here
 
-  for i = 0, n_elements(cdf_str.vars.name)-1 do begin
-    print, i, '  ', cdf_str.vars(i).name
-    print, i, '  ', cdf_str.vars(i).dataptr
-  endfor
+;  for i = 0, n_elements(cdf_str.vars.name)-1 do begin
+;    print, i, '  ', cdf_str.vars(i).name
+;    print, i, '  ', cdf_str.vars(i).dataptr
+;  endfor
 
   time_tt2000 = *cdf_str.vars(0).dataptr
   time_unix = time_double(time_tt2000, /tt2000)

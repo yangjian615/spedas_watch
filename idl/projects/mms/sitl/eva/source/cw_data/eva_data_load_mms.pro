@@ -1,18 +1,9 @@
 FUNCTION eva_data_load_mms, state
   compile_opt idl2
 
-  catch, error_status; !ERROR_STATE is set 
-  if error_status ne 0 then begin
-    catch, /cancel; Disable the catch system
-    eva_error_message, error_status
-    msg = [!Error_State.MSG,' ','...EVA will try to igonore this error.'] 
-    ok = dialog_message(msg,/center,/error)
-    progressbar -> Destroy
-    message, /reset; Clear !ERROR_STATE
-    return, answer; 'answer' will be 'Yes', if at least some of the data were succesfully loaded.
-  endif
-  
-  ;--- INITIALIZE ---
+  ;-------------
+  ; INITIALIZE
+  ;-------------
   paramlist = strlowcase(state.paramlist_mms); list of parameters read from parameterSet file
   imax = n_elements(paramlist)
   sc_id = state.probelist_mms
@@ -23,14 +14,34 @@ FUNCTION eva_data_load_mms, state
   te = str2time(state.end_time)
   timespan,state.start_time, te-ts, /seconds
   
-  ;--- Count Number of Parameters ---
+  ;----------------------
+  ; NUMBER OF PARAMETERS
+  ;----------------------
   cparam = imax*pmax
   if cparam ge 17 then begin
     rst = dialog_message('Total of '+strtrim(string(cparam),2)+' MMS parameters. Still plot?',/question,/center)
   endif else rst = 'Yes'
   if rst eq 'No' then return, 'No'
 
-  ;---- LOAD ----
+  ;-------------
+  ; CATCH ERROR
+  ;-------------
+  perror = -1
+  catch, error_status; !ERROR_STATE is set
+  if error_status ne 0 then begin
+    catch, /cancel; Disable the catch system
+    eva_error_message, error_status
+    msg = [!Error_State.MSG,' ','...EVA will igonore this error.']
+    ok = dialog_message(msg,/center,/error)
+    progressbar -> Destroy
+    message, /reset; Clear !ERROR_STATE
+    perror = [perror,pcode]
+    ;return, answer; 'answer' will be 'Yes', if at least some of the data were succesfully loaded.
+  endif
+
+  ;-------------
+  ; LOAD
+  ;-------------
   progressbar = Obj_New('progressbar', background='white', Text='Loading MMS data ..... 0 %')
   progressbar -> Start
   c = 0
@@ -51,8 +62,6 @@ FUNCTION eva_data_load_mms, state
       
       ; Check pre-loaded tplot variables. 
       ; Avoid reloading if already exists.
-      ;tplot_names,names=tn
-      ;jmax = n_elements(tn)
       tn=tnames('*',jmax)
       param = sc+strmid(paramlist[i],4,1000)
       if jmax eq 0 then begin; if no pre-loaded variable
@@ -66,7 +75,9 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; EDP
         ;-----------
-        if (strmatch(paramlist[i],'*_edp_*')) then begin
+        pcode=1
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_edp_*') and (cp eq 0)) then begin
           mms_load_edp, probes = [prb], level='ql', data_rate='fast', datatype='dce';, /no_sweeps
           options,sc+'_edp_fast_dce_dsl', $
             labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
@@ -77,7 +88,9 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; EIS
         ;-----------
-        if (strmatch(paramlist[i],'*_epd_eis_*')) then begin
+        pcode=2
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_epd_eis_*') and (cp eq 0)) then begin
           mms_load_epd_eis, sc=sc
           tn=tnames(sc+'_epd_eis_electronenergy_electron_cps_t1',jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
@@ -89,7 +102,9 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; FEEPS
         ;-----------
-        if (strmatch(paramlist[i],'*_feeps_*')) then begin
+        pcode=3
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_feeps_*') and (cp eq 0)) then begin
           mms_load_epd_feeps, sc=sc
           answer = 'Yes'
         endif
@@ -97,7 +112,9 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; FPI
         ;-----------
-        if (strmatch(paramlist[i],'*_fpi_*')) then begin
+        pcode=4
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_fpi_*') and (cp eq 0)) then begin
           mms_sitl_get_fpi_basic, sc_id=sc
           
           options, sc+'_fpi_eEnergySpectr_omni',spec=1,ylog=1,zlog=1,$
@@ -129,10 +146,10 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; HPCA
         ;-----------
-        
-        
+        pcode=5
+        ip=where(perror eq pcode,cp)
         level = 'sitl'
-        if (strmatch(paramlist[i],'*_hpca_*rf_corrected')) then begin
+        if (strmatch(paramlist[i],'*_hpca_*rf_corrected') and (cp eq 0)) then begin
           sh='H!U+!N'
           sa='He!U++!N'
           sp='He!U+!N'
@@ -154,8 +171,11 @@ FUNCTION eva_data_load_mms, state
           answer = 'Yes'
         endif
         
+        pcode=6
+        ip=where(perror eq pcode,cp)
         level = 'sitl'
-        if(strmatch(paramlist[i],'*_hpca_*number_density')) or (strmatch(paramlist[i],'*_hpca_*bulk_velocity')) then begin
+        if( (cp eq 0) and $
+          (strmatch(paramlist[i],'*_hpca_*number_density') or strmatch(paramlist[i],'*_hpca_*bulk_velocity'))) then begin
           mms_sitl_get_hpca_moments, sc_id=sc, level=level
           sh='(H!U+!N)'
           so='(O!U+!N)'
@@ -180,11 +200,12 @@ FUNCTION eva_data_load_mms, state
           answer = 'Yes'
         endif
 
-
         ;-----------
         ; FIELDS/AFG
         ;-----------
-        if (strmatch(paramlist[i],'*_afg*')) then begin
+        pcode=7
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_afg*') and (cp eq 0)) then begin
           mms_sitl_get_afg, sc_id=sc
           options,sc+'_afg_srvy_gsm_dmpa',$
             labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='[nT]',$
@@ -195,7 +216,9 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; FIELDS/DFG
         ;-----------
-        if (strmatch(paramlist[i],'*_dfg*')) then begin
+        pcode=8
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_dfg*') and (cp eq 0)) then begin
           mms_sitl_get_dfg, sc_id=sc
           options,sc+'_dfg_srvy_gsm_dmpa',$
             labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='[nT]',$
@@ -206,7 +229,9 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; FIELDS/DSP
         ;-----------
-        if (strmatch(paramlist[i],'*_dsp_*')) then begin
+        pcode=9
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_dsp_*') and (cp eq 0)) then begin
           data_type = (strmatch(paramlist[i],'*b*')) ? 'bpsd' : 'epsd'
           mms_load_dsp, probes = prb, datatype=datatype
           tn=tnames(sc+'*dsp*',jmax)
@@ -218,17 +243,18 @@ FUNCTION eva_data_load_mms, state
           answer = 'Yes'
         endif
         
-
-        
         ;-----------
         ; AE Index
         ;-----------
-        if strmatch(paramlist[i],'thg_idx_ae') then begin
+        pcode=10
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'thg_idx_ae') and (cp eq 0)) then begin
           thm_load_pseudoAE,datatype='ae'
           if tnames('thg_idx_ae') eq '' then begin
             store_data,'thg_idx_ae',data={x:[ts,te], y:replicate(!values.d_nan,2)}
           endif
           options,'thg_idx_ae',ytitle='THEMIS!CAE Index'
+          answer = 'Yes'
         endif
       endif;if ct eq 0 then begin; if not loaded
       c+=1

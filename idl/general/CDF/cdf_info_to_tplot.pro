@@ -6,9 +6,9 @@
 ;
 ; Written by Davin Larson
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-02-28 16:39:25 -0800 (Fri, 28 Feb 2014) $
-; $LastChangedRevision: 14473 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2015-08-25 15:51:15 -0700 (Tue, 25 Aug 2015) $
+; $LastChangedRevision: 18611 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_info_to_tplot.pro $
 ;-
 pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
@@ -20,7 +20,7 @@ pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
         load_labels=load_labels ;copy labels from labl_ptr_1 in attributes into dlimits
                                       ;resolve labels implemented as keyword to preserve backwards compatibility
 
-dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 14473 2014-03-01 00:39:25Z pcruce $'
+dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 18611 2015-08-25 22:51:15Z jwl $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
@@ -58,8 +58,10 @@ for i=0,nv-1 do begin
       defsysv,'!CDF_LEAP_SECONDS',exists=exists
   
       if ~keyword_set(exists) then begin
+        cdf_leap_second_init
+        defsysv,'!CDF_LEAP_SECONDS',exists=exists
         ;fatal error
-        message,'Error. !CDF_LEAP_SECONDS, must be defined to convert CDFs with TT2000 times.  Try calling cdf_leap_second_init'
+        if ~keyword_set(exists) then message,'Error. !CDF_LEAP_SECONDS, must be defined to convert CDFs with TT2000 times.'
      endif
      
     *(v.dataptr) =time_double(*(v.dataptr),/tt2000)     ; convert to UNIX_time but without leap seconds

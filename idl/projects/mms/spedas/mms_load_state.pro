@@ -66,9 +66,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-08-24 13:54:40 -0700 (Mon, 24 Aug 2015) $
-;$LastChangedRevision: 18598 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-08-25 10:59:43 -0700 (Tue, 25 Aug 2015) $
+;$LastChangedRevision: 18607 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -314,6 +314,8 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
     for i = 0, n_elements(filetype)-1 do begin
         
         product = level + filetype[i]
+        ;keep last iteration's file list from being appended to
+        undefine, daily_names
         ;get file info from remote server
         ;if the server is contacted then a string array or empty string will be returned
         ;depending on whether files were found, if there is a connection error the

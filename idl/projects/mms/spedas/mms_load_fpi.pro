@@ -22,8 +22,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-24 16:03:48 -0700 (Mon, 24 Aug 2015) $
-;$LastChangedRevision: 18602 $
+;$LastChangedDate: 2015-08-25 08:45:28 -0700 (Tue, 25 Aug 2015) $
+;$LastChangedRevision: 18603 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi.pro $
 ;-
 
@@ -155,8 +155,10 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup
 
     ; correct the energies in the spectra for each probe
-    for probe_idx = 0, n_elements(probes)-1 do begin
-        mms_load_fpi_fix_spectra, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem)
-        mms_load_fpi_fix_angles, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem)
-    endfor
+    if ~undefined(tplotnames) && n_elements(tplotnames) ne 0 then begin
+        for probe_idx = 0, n_elements(probes)-1 do begin
+            mms_load_fpi_fix_spectra, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem)
+            mms_load_fpi_fix_angles, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem)
+        endfor
+    endif
 end

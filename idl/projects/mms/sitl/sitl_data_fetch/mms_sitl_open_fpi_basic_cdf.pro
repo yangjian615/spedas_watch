@@ -2,8 +2,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-05-13 10:51:08 -0700 (Wed, 13 May 2015) $
-;  $LastChangedRevision: 17583 $
+;  $LastChangedDate: 2015-08-25 15:57:16 -0700 (Tue, 25 Aug 2015) $
+;  $LastChangedRevision: 18613 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_open_fpi_basic_cdf.pro $
 
 
@@ -16,9 +16,9 @@ function mms_sitl_open_fpi_basic_cdf, filename
 
   ; Find out what variables are in here
 
-  for i = 0, n_elements(cdf_str.vars.name)-1 do begin
-    print, i, '  ', cdf_str.vars(i).name
-  endfor
+;  for i = 0, n_elements(cdf_str.vars.name)-1 do begin
+;    print, i, '  ', cdf_str.vars(i).name
+;  endfor
 
   time_tt2000 = *cdf_str.vars(0).dataptr
   time_unix = time_double(time_tt2000, /tt2000)

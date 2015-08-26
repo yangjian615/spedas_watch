@@ -76,8 +76,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-21 15:16:02 -0700 (Fri, 21 Aug 2015) $
-;$LastChangedRevision: 18569 $
+;$LastChangedDate: 2015-08-25 16:00:45 -0700 (Tue, 25 Aug 2015) $
+;$LastChangedRevision: 18615 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -85,7 +85,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   levels = levels, instrument = instrument, data_rates = data_rates, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, login_info = login_info, $
-                  tplotnames = tplotnames, varformat = varformat, no_color_setup = no_color_setup
+                  tplotnames = tplotnames, varformat = varformat, no_color_setup = no_color_setup, $
+                  suffix = suffix
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -98,6 +99,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     if undefined(source) then source = !mms
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
+    probes = strcompress(string(probes), /rem) ; probes should be strings
     if undefined(levels) then levels = 'ql' ; default to quick look
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rates) then data_rates = 'srvy'
@@ -227,7 +229,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
         if ~undefined(files) then begin
             lt0 = systime(/sec) ;temporary
-            cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat
+            cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, suffix = suffix
             dt_load += systime(/sec) - lt0 ;temporary
         endif
         if ~undefined(loaded_tnames) then append_array, tplotnames, loaded_tnames

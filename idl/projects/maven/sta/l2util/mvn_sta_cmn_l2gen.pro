@@ -131,8 +131,8 @@ End
 ; 6-nov-2014, jmm, Corrects clock drift 
 ; 22-dec-2014, jmm, added eprom_ver and header
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-05-21 12:52:38 -0700 (Thu, 21 May 2015) $
-; $LastChangedRevision: 17668 $
+; $LastChangedDate: 2015-08-25 15:57:29 -0700 (Tue, 25 Aug 2015) $
+; $LastChangedRevision: 18614 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -275,21 +275,33 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
   et_range = time_ephemeris(date_range)
   tt2000_range = long64((add_tt2000_offset(date_range)-time_double('2000-01-01/12:00'))*1e9)
 
+;If TIME_MET is in the structure, then we're working from L2
+;files, use that version, and recalculate center, start and end times,
+;this is done to ensure that the latest SPICE clock kernel is used
+;during reprocessing
+  If(tag_exist(cmn_dat, 'met')) Then Begin
+     met_center = cmn_dat.met
+     center_time = mvn_spc_met_to_unixtime(met_center)
+     offset = center_time - 0.5*(cmn_dat.time+cmn_dat.end_time)
+     cmn_dat.time = cmn_dat.time+offset
+     cmn_dat.end_time = cmn_dat.end_time+offset
+     date = time_string(median(center_time), precision=-3, format=6)
+     num_dists = n_elements(center_time)
+  Endif Else Begin
 ;Use center time for time variables
-  center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
+     center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
 ;Grab the date, and clip anything plus or minus 10 minutes from the
 ;start or end of the date
-  date = time_string(median(center_time), precision=-3, format=6)
-  trange = time_double(date)+[-600.0d0, 87000.0d0]
-  cmn_dat = mvn_sta_cmn_tclip(temporary(cmn_dat), trange)
-
+     date = time_string(median(center_time), precision=-3, format=6)
+     trange = time_double(date)+[-600.0d0, 87000.0d0]
+     cmn_dat = mvn_sta_cmn_tclip(temporary(cmn_dat), trange)
 ;Reset center time
-  center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
-  num_dists = n_elements(center_time)
+     center_time = 0.5*(cmn_dat.time+cmn_dat.end_time)
+     num_dists = n_elements(center_time)
 ;met_center at the spacecraft
-  timespan, date, 1
-  met_center = mvn_spc_met_to_unixtime(center_time, /reverse)
-
+     timespan, date, 1
+     met_center = mvn_spc_met_to_unixtime(center_time, /reverse)
+     Endelse
 ;Initialize
   otp_struct = -1
   count = 0L
@@ -769,7 +781,7 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
   otp_struct.g_attributes.PDS_collection_id = ext
 
 ;save the file -- full database management
-  mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression
+  mvn_sta_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression, _extra = _extra
 
   Return
 End

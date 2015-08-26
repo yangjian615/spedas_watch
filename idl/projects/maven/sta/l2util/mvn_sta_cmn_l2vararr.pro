@@ -15,9 +15,10 @@
 ; variance.
 ;HISTORY:
 ; 16-jun-2014,jmm, jimm@ssl.berkeley.edu
+; 25-aug-2015, jmm, Added MET variable
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-09 10:12:13 -0800 (Fri, 09 Jan 2015) $
-; $LastChangedRevision: 16611 $
+; $LastChangedDate: 2015-08-25 09:59:17 -0700 (Tue, 25 Aug 2015) $
+; $LastChangedRevision: 18605 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2vararr.pro $
 ;-
 Function mvn_sta_cmn_l2vararr, apid
@@ -35,6 +36,7 @@ Function mvn_sta_cmn_l2vararr, apid
              ['VALID', 'VALID', 'Y'], $
              ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $ 
              ['TIME', 'TIME_START', 'Y'], $
+             ['MET', 'TIME_MET', 'Y'], $
              ['END_TIME', 'TIME_END', 'Y'], $
              ['DELTA_T', 'TIME_DELTA', 'Y'], $
              ['INTEG_T', 'TIME_INTEG', 'Y'], $
@@ -88,6 +90,7 @@ Function mvn_sta_cmn_l2vararr, apid
              ['VALID', 'VALID', 'Y'], $
              ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $ 
              ['TIME', 'TIME_START', 'Y'], $
+             ['MET', 'TIME_MET', 'Y'], $
              ['END_TIME', 'TIME_END', 'Y'], $
              ['INTEG_T', 'INTEG_TIME', 'Y'], $
              ['EPROM_VER', 'EPROM_VER', 'Y'], $
@@ -107,6 +110,7 @@ Function mvn_sta_cmn_l2vararr, apid
              ['VALID', 'VALID', 'Y'], $
              ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $ 
              ['TIME', 'TIME_START', 'Y'], $
+             ['MET', 'TIME_MET', 'Y'], $
              ['END_TIME', 'TIME_END', 'Y'], $
              ['INTEG_T', 'INTEG_TIME', 'Y'], $
              ['EPROM_VER', 'EPROM_VER', 'Y'], $
@@ -127,6 +131,7 @@ Function mvn_sta_cmn_l2vararr, apid
              ['VALID', 'VALID', 'Y'], $
              ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $
              ['TIME', 'TIME_UNIX', 'Y'], $
+             ['MET', 'TIME_MET', 'Y'], $
              ['TDC_1', 'TDC_1', 'Y'], $
              ['TDC_2', 'TDC_2', 'Y'], $
              ['TDC_3', 'TDC_3', 'Y'], $
@@ -155,6 +160,7 @@ Function mvn_sta_cmn_l2vararr, apid
              ['VALID', 'VALID', 'Y'], $
              ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $ 
              ['TIME', 'TIME_UNIX', 'Y'], $
+             ['MET', 'TIME_MET', 'Y'], $
              ['HKP_RAW', 'HKP_RAW', 'Y'], $
              ['HKP_CALIB', 'HKP_CALIB', 'Y'], $
              ['HKP_IND', 'HKP_IND', 'Y'], $
@@ -169,6 +175,7 @@ Function mvn_sta_cmn_l2vararr, apid
              ['VALID', 'VALID', 'Y'], $
              ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $ 
              ['TIME', 'TIME_START', 'Y'], $
+             ['MET', 'TIME_MET', 'Y'], $
              ['END_TIME', 'TIME_END', 'Y'], $
              ['INTEG_T', 'INTEG_TIME', 'Y'], $
              ['EPROM_VER', 'EPROM_VER', 'Y'], $
@@ -186,6 +193,7 @@ Function mvn_sta_cmn_l2vararr, apid
              ['APID', 'APID', 'N'], $
              ['QUALITY_FLAG', 'QUALITY_FLAG', 'Y'], $ 
              ['TIME', 'TIME_UNIX', 'Y'], $
+             ['MET', 'TIME_MET', 'Y'], $
              ['NHKP', 'NHKP', 'N'], $
              ['CALIB_CONSTANTS', 'CALIB_CONSTANTS', 'N'], $
              ['HKP_LABELS', 'HKP_LABELS', 'N'], $
