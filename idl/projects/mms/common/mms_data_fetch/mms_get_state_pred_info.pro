@@ -60,7 +60,7 @@ function mms_get_state_pred_info, filename=filename, sc_id=sc_id, product=produc
   ; eventually will want to handle large time spans that require multiple files
   for i = 0, n_elements(idx)-1 do begin
       if file_starts[idx[i]] LE start_time AND file_ends[idx[i]] GE end_time then begin
-         new_idx = [idx[i]:idx[i]+3]
+         new_idx=[idx[i], idx[i]+1, idx[i]+2, idx[i]+3] 
          new_files=file_data[new_idx]
          break
       endif

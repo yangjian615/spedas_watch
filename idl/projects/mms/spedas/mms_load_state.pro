@@ -66,9 +66,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-25 10:59:43 -0700 (Tue, 25 Aug 2015) $
-;$LastChangedRevision: 18607 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-26 15:42:27 -0700 (Wed, 26 Aug 2015) $
+;$LastChangedRevision: 18634 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -298,10 +298,15 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
     start_time = time_double(trange[0])-60*60*24.
     ;end_time = time_double(trange[1])+60*60*24.
     end_time = time_double(trange[1])
+    
+    ; check if end date is anything other than 00:00:00, if so
+    ; add a day to the end time to ensure that all data is downloaded
+    end_struct = time_struct(end_time)
+    if (end_struct.hour GT 0) or (end_struct.min GT 0) then add_day = 60*60*24. else add_day = 0. 
 
     start_time_str = time_string(start_time, tformat='YYYY-MM-DD') 
-    end_time_str = time_string(end_time, tformat='YYYY-MM-DD')    
-  
+    end_time_str = time_string(end_time+add_day, tformat= 'YYYY-MM-DD')    
+
     file_dir = local_data_dir + 'mms' + probe + '/state/' + level + '/' 
 
     idx=where(datatypes EQ 'pos' OR datatypes EQ 'vel',ephcnt)
@@ -321,26 +326,41 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
         ;depending on whether files were found, if there is a connection error the
         ;neturl response code is returned instead
         if ~keyword_set(no_download) then begin
+          
           if level EQ 'def' then begin
              ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, $
-               product=product, start_date=start_time_str, end_date=end_time_str) 
-               if ~is_array(ancillary_file_info) or ancillary_file_info[0] eq '' then begin
-                  if pred_or_def then begin
-                     dprint, 'Definitive state data not found for this time period. Looking for predicted state data'
-                     level = 'pred'
-                     product = level + filetype[i]
-                     ancillary_file_info = mms_get_state_pred_info(sc_id='mms'+probe, $
-                        product=product, start_date=start_time_str, end_date=end_time_str)  
-                  endif
-               endif
+                   product=product, start_date=start_time_str, end_date=end_time_str) 
+                   
+             ; if pred_or_def flag was set check that files were found and/or the time frame
+             ; covers the entire time requestd 
+             if pred_or_def then begin
+                switch_to_pred = 0    ; assume files found and start/end covers time span
+                if ~is_array(ancillary_file_info) or ancillary_file_info[0] eq '' then begin
+                   switch_to_pred = 1     ; no files found 
+                endif else begin
+                   remote_file_info = mms_parse_json(ancillary_file_info)
+                   file_start = min(time_double(remote_file_info.startdate))
+                   file_end = max(time_double(remote_file_info.enddate))
+                   if file_start gt start_time or file_end lt end_time then switch_to_pred = 1   ; time range not covered            
+                endelse
+                
+                if switch_to_pred then begin
+                   dprint, 'Definitive state data not found for this time period. Looking for predicted state data'
+                   level = 'pred'
+                   product = level + filetype[i]
+                   ancillary_file_info = mms_get_state_pred_info(sc_id='mms'+probe, $
+                           product=product, start_date=start_time_str, end_date=end_time_str)  
+                endif
+             endif
+
           endif else begin
             ancillary_file_info = mms_get_state_pred_info(sc_id='mms'+probe, $
                 product=product, start_date=start_time_str, end_date=end_time_str) 
           endelse
         endif
-
+        
         if is_array(ancillary_file_info) && ancillary_file_info[0] ne '' then begin    
-            remote_file_info = mms_get_filename_size(ancillary_file_info)    
+            remote_file_info = mms_parse_json(ancillary_file_info)    
             doys = n_elements(remote_file_info)
         
             ; make sure the directory exists
@@ -375,7 +395,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
         ; figure out the type of data and read and load the data
         if filetype[i] EQ 'eph' then $
            mms_load_eph_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe, level = level, $
-                probe=probe, datatypes = datatypes, trange = trange    
+                probe=probe, datatypes = datatypes, trange = trange 
         if filetype[i] EQ 'att' then $    
            mms_load_att_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe, level = level, $
                 probe=probe, datatypes = datatypes, trange = trange
@@ -388,7 +408,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     level = level, local_data_dir = local_data_dir, source = source, $
     remote_data_dir = remote_data_dir, attitude_only=attitude_only, $
     ephemeris_only = ephemeris_only, no_download=no_download, login_info=login_info, $
-    tplotnames = tplotnames, pred_or_def=pred_or_def
+    tplotnames = tplotnames, pred_or_def=pred_or_def, no_color_setup = no_color_setup
 
     ; define probe, product, type, coordinate, and unit names
     p_names = ['1', '2', '3', '4']
@@ -402,7 +422,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
 
     ; set up system variable for MMS if not already set    
     defsysv, '!mms', exists=exists
-    if not(exists) then mms_init
+    if not(exists) then mms_init, no_color_setup = no_color_setup
 
     response_code = spd_check_internet_connection()
 

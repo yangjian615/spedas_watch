@@ -5,12 +5,12 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-21 15:18:29 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18571 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib.pro $
+; $LastChangedDate: 2015-08-26 09:27:54 -0700 (Wed, 26 Aug 2015) $
+; $LastChangedRevision: 18625 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_brst_crib.pro $
 ;-
 
-mms_load_hpca, probes='1', trange=['2015-08-20', '2015-08-21'], datatype='moments', data_rate='brst
+mms_load_hpca, probes='1', trange=['2015-08-20', '2015-08-21'], datatype='moments', data_rate='brst'
 
 ; show H+, O+ and He+ density
 tplot, ['mms1_hpca_hplus_number_density', $

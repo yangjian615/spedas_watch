@@ -136,7 +136,7 @@ for i=0l,npts-1 do begin
 	ef1 = total(ca*(replicate(1.,16)#reform(eff_cal[*,4])),2)/total(ca,2)
 	ef2 = reform(replicate(1.,4)#ef1,64)#replicate(1.,16)					; correction for nominal efficiency to account for dist of cnts over anodes
 
-	ef3 = total(c0)/(4.*mvn_d8_dat.rates[ind_d8,7])						; x4 converts rates to counts
+	ef3 = total(c0)/16./(4.*mvn_d8_dat.rates[ind_d8,7])					; x4 converts rates to counts
 
 	ct = 1.*total(c8,2)#replicate(1.,16) > 0.0001
 	r1 = mvn_d8_dat.rates[ind_d8,7]/mvn_d8_dat.rates[ind_d8,4]				; fully qualified processed events 
@@ -279,10 +279,12 @@ if keyword_set(test) then begin
 		options,'mvn_sta_dl_eff_start',colors=cols.green
 	store_data,'mvn_sta_dl_eff_stop',data={x:time+2.,y:eff_stop}
 		options,'mvn_sta_dl_eff_stop',colors=cols.red
+	store_data,'mvn_sta_dl_eff_qual',data={x:time+2.,y:eff_qual}
+		options,'mvn_sta_dl_eff_qual',colors=cols.cyan
 	store_data,'mvn_sta_dl_eff_total',data={x:time+2.,y:eff_total}
 	store_data,'mvn_sta_dl_eff_expected',data={x:time+2.,y:eff_expected}
 		options,'mvn_sta_dl_eff_expected',colors=cols.magenta
-	store_data,'mvn_sta_dl_eff',data=['mvn_sta_dl_eff_total','mvn_sta_dl_eff_start','mvn_sta_dl_eff_stop','mvn_sta_dl_eff_expected']
+	store_data,'mvn_sta_dl_eff',data=['mvn_sta_dl_eff_total','mvn_sta_dl_eff_start','mvn_sta_dl_eff_qual','mvn_sta_dl_eff_stop','mvn_sta_dl_eff_expected']
 		ylim,'mvn_sta_dl_eff',.1,1,1
 
 	store_data,'mvn_sta_pk1_droop',data={x:time+2.,y:pk1_droop}

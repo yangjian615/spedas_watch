@@ -122,6 +122,12 @@ barrel_load_data, probe=payload, datatype=['FSPC'], level=level,/no_clobber,$
     version=version,/no_update
 varname='brl'+payload+'_FSPC'+strtrim(lcband,2)   
 tplot_names,varname, NAMES=matches,/ASORT
+if matches eq '' then begin
+     print,'Warning: original LC band '+string(lcband)+' not available, using 1b!'
+     varname='brl'+payload+'_FSPC1b'
+     tplot_names,varname, NAMES=matches,/ASORT
+endif    
+
 if (n_elements(matches) EQ 1) then get_data, matches[0], data=lc $
 else message, 'Bad number of variable name matches: '+ $
         strtrim(n_elements(matches))

@@ -133,7 +133,7 @@ year2 = ['201_2T_2','202_2I_2','203_2W_1',     '205_2K_2',$
          '216_2D_1','217_2P_2','218_2E_1','219_2F_1','220_2Q_2']
      ; note, no data available for payload 2J (launch 04, identifier 204_2J_2)
      ;  or payload 2Z (launch 10, identifier 210_2Z_1)
-year3 = ['301_3A_3','302_3B_3','303_3C_3','304_3D_3','305_3E_3','306_3F_3']
+year3 = ['301_3A_3','302_3B_3','303_3C_3','304_3D_3','305_3E_3','306_3F_3', '305_3G_3']
 
 ; non-campaign, pre-launch, and testing data         
   ; build order identifiers

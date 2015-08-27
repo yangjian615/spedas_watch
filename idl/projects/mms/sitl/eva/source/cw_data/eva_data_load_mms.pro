@@ -62,14 +62,13 @@ FUNCTION eva_data_load_mms, state
       
       ; Check pre-loaded tplot variables. 
       ; Avoid reloading if already exists.
-      tn=tnames('*',jmax)
-      param = sc+strmid(paramlist[i],4,1000)
+      tn=strlowcase(tnames('*',jmax))
+      param = strlowcase(sc+strmid(paramlist[i],4,1000))
       if jmax eq 0 then begin; if no pre-loaded variable
         ct = 0
       endif else begin; if pre-loaded variable exists...
         idx = where(strmatch(tn,param),ct); check if param is one of the preloaded variables.
       endelse
-      
       if ct eq 0 then begin; if not loaded
         
         ;-----------
@@ -279,11 +278,11 @@ FUNCTION eva_data_load_mms, state
     
     if matched then begin
       store_data,sc+'_position_z',data={x:wtime,y:wposz}
-      options,sc+'_position_z',ytitle=sc+' Z (Re)'
+      options,sc+'_position_z',ytitle=sc+' Zgsm (Re)'
       store_data,sc+'_position_y',data={x:wtime,y:wposy}
-      options,sc+'_position_y',ytitle=sc+' Y (Re)'
+      options,sc+'_position_y',ytitle=sc+' Ygsm (Re)'
       store_data,sc+'_position_x',data={x:wtime,y:wposx}
-      options,sc+'_position_x',ytitle=sc+' X (Re)'
+      options,sc+'_position_x',ytitle=sc+' Xgsm (Re)'
     endif
     
     

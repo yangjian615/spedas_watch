@@ -76,8 +76,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-25 16:00:45 -0700 (Tue, 25 Aug 2015) $
-;$LastChangedRevision: 18615 $
+;$LastChangedDate: 2015-08-26 08:27:09 -0700 (Wed, 26 Aug 2015) $
+;$LastChangedRevision: 18622 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -176,7 +176,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             ;if a list of remote files was retrieved then compare remote and local files
             if is_string(data_file) then begin
               
-                remote_file_info = mms_get_filename_size(data_file)
+                remote_file_info = mms_parse_json(data_file)
                 
                 if ~is_struct(remote_file_info) then begin
                     dprint, dlevel = 0, 'Error getting the information on remote files'

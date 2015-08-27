@@ -28,7 +28,7 @@ pro barrel_spectroscopy,$
 if not keyword_set(lcband) then lcband=1
 if not keyword_set(uselog) then uselog=0
 if not keyword_set(slow) then slow=0
-if not keyword_set(version) then version='.v02'
+if not keyword_set(version) then version='v05'
 if not keyword_set(level) then level=2
 if not keyword_set(numsrc) then numsrc=1
 if not keyword_set(bkgmethod) then bkgmethod=1
