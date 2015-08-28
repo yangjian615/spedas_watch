@@ -1,7 +1,10 @@
 ;+
 ; NAME: mms_bss_list
 ;
-; PURPOSE: To generate a list of segments from the back-structure
+; PURPOSE: 
+;   To generate a list of segments from the back-structure.
+;   'bss' stands for 'burst segment status' which is the official 
+;   name of the back-structure.
 ;
 ; USAGE: 
 ;   If you call this procedure with no keyword, then you will get
@@ -28,8 +31,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-08-26 18:01:27 -0700 (Wed, 26 Aug 2015) $
-; $LastChangedRevision: 18636 $
+; $LastChangedDate: 2015-08-26 23:12:16 -0700 (Wed, 26 Aug 2015) $
+; $LastChangedRevision: 18639 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_list.pro $
 ;-
 PRO mms_bss_list, bss=bss, overwritten=overwritten, bad=bad, _extra=_extra

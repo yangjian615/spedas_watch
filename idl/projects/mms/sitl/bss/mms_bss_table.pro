@@ -3,12 +3,23 @@
 ;
 ; PURPOSE: 
 ;   To create a table of segments in the back-structure
-;   organized by categories.
+;   organized by categories. 'bss' stands for 'burst segment status'
+;   which is the official name of the back-structure.
 ;
 ; USAGE:
 ;   With no keyword, this program diplays a table of segments from the
 ;   entire mission. Use the keywords to select certain types of segments.
 ;
+; EXAMPLE:
+;   To make a table of PENDING segmnents,
+;   
+;     MMS> mms_bss_table, /isPending
+;     
+;   Pending segments are actually non-FINISHED segments (if bad segments
+;   are removed). So, the same result can be obtained by
+;   
+;     MMS> mms_bss_table, exclude='FINISHED'
+;   
 ; KEYWORDS:
 ;   BSS: back-structure created by mms_bss_query
 ;   TRANGE: narrow the time range. It can be in either string or double.
@@ -16,14 +27,14 @@
 ;   BAD:         Set this keyword to show bad segments only. Bad segments mean
 ;                segments with TRIMMED, SUBSUMED, DELETED statuses. Some of
 ;                the bad segments have infinite number of buffers. In such
-;                cases, 'Nbuffs' and 'min' will be shown as *******.
+;                cases, 'Nbuffs' and 'min' will be displayed as *******.
 ;   _EXTRA: See 'mms_bss_query' for other optional keywords
 ;
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-08-26 18:01:27 -0700 (Wed, 26 Aug 2015) $
-; $LastChangedRevision: 18636 $
+; $LastChangedDate: 2015-08-26 23:12:16 -0700 (Wed, 26 Aug 2015) $
+; $LastChangedRevision: 18639 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_table.pro $
 ;-
 PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $

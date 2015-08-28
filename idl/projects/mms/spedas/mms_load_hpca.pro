@@ -24,8 +24,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-24 15:16:47 -0700 (Mon, 24 Aug 2015) $
-;$LastChangedRevision: 18600 $
+;$LastChangedDate: 2015-08-27 14:50:55 -0700 (Thu, 27 Aug 2015) $
+;$LastChangedRevision: 18643 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_hpca.pro $
 ;-
 
@@ -137,6 +137,8 @@ end
 pro mms_hpca_calc_anodes, tplotnames, fov = fov
     sum_anodes = ['*_count_rate', '*_RF_corrected', '*_bkgd_corrected', '*_norm_counts']
     ;avg_anodes = ['*_flux', '*_vel_dist_fn']
+    ; removed velocity distribution from above because
+    ; we need the full (non-avg'd) data for 2d slices
     avg_anodes = ['*_flux']
     
     for sum_idx = 0, n_elements(sum_anodes)-1 do begin
@@ -165,22 +167,6 @@ pro mms_hpca_calc_anodes, tplotnames, fov = fov
         endfor
     endfor
 end
-pro mms_hpca_set_metadata, tplotnames, prefix = prefix
-    valid_spectra = ['*_count_rate', '*_RF_corrected', '*_bkgd_corrected', '*_norm_counts', '*_flux', '*_vel_dist_fn']
-    
-    for valid_idx = 0, n_elements(valid_spectra)-1 do begin
-        vars_to_fix = strmatch(tplotnames, valid_spectra[valid_idx])
-        for vars_idx = 0, n_elements(vars_to_fix)-1 do begin
-            if vars_to_fix[vars_idx] eq 1 then begin
-                options, tplotnames[vars_idx], ystyle=1
-                ylim, tplotnames[vars_idx], 1, 40000., 1
-                zlim, tplotnames[vars_idx], 0, 0, 1
-            endif
-        endfor
-    endfor
-
-end
-
 pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
@@ -223,5 +209,5 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
     ; 2) average over anodes for flux, velocity distributions
     if datatype eq 'ion' then mms_hpca_calc_anodes, tplotnames, fov = fov
 
-    mms_hpca_set_metadata, tplotnames
+    for probe_idx = 0, n_elements(probes)-1 do mms_hpca_set_metadata, tplotnames, prefix = 'mms'+probes[probe_idx], fov = fov
 end

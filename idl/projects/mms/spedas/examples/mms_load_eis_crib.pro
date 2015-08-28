@@ -13,8 +13,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-19 10:16:17 -0700 (Wed, 19 Aug 2015) $
-; $LastChangedRevision: 18525 $
+; $LastChangedDate: 2015-08-27 11:50:13 -0700 (Thu, 27 Aug 2015) $
+; $LastChangedRevision: 18641 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib.pro $
 ;-
 
@@ -104,4 +104,13 @@ stop
 mms_eis_pad, probe='1', species='ion', data_name='phxtof', ion_type='oxygen', data_units='flux', energy=[0, 175]
 
 tplot, 'mms1_epd_eis_ion_phxtof_0-175keV_oxygen_flux_pad'
+stop
+
+; load some electron data; note that the datatype for electron data is "electronenergy"
+mms_load_eis, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='electronenergy'
+
+; plot the electron spectra
+tplot, 'mms1_epd_eis_electronenergy_electron_flux_omni'
+
+
 end

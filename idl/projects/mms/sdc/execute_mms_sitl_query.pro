@@ -6,7 +6,7 @@
 ;
 function execute_mms_sitl_query, netURL, url_path, query, filename=filename
 
-  ; Check for bad netURL -- if not an objecct, simply return it
+  ; Check for bad netURL -- if not an object, simply return it
   if (size(netURL, /type) ne 11) then return, result
 
   ;TODO: reuse for Put? diff set of error codes to look for

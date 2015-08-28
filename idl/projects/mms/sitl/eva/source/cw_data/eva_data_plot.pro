@@ -114,14 +114,22 @@ PRO eva_data_plot, wid
     vars_arr[0] = ptr_new(vars)
     
     var_lab = ''
-    for p=0,pmax_MMS-1 do begin; for each MMS probe
-      tplot_names,wid.probelist_mms[p]+'_position_z',names=tn
-      if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
-      tplot_names,wid.probelist_mms[p]+'_position_y',names=tn
-      if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
-      tplot_names,wid.probelist_mms[p]+'_position_x',names=tn
-      if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
-    endfor
+    if pmax_MMS gt 0 then begin
+      tn=tnames(wid.probelist_mms[0]+'_position_z',mmax)
+      if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
+      tn=tnames(wid.probelist_mms[0]+'_position_y',mmax)
+      if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
+      tn=tnames(wid.probelist_mms[0]+'_position_x',mmax)
+      if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
+    endif
+;    for p=0,pmax_MMS-1 do begin; for each MMS probe
+;      tplot_names,wid.probelist_mms[p]+'_position_z',names=tn
+;      if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+;      tplot_names,wid.probelist_mms[p]+'_position_y',names=tn
+;      if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+;      tplot_names,wid.probelist_mms[p]+'_position_x',names=tn
+;      if (n_elements(tn) eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+;    endfor
     if n_elements(var_lab) gt 1 then var_lab = var_lab[1:*]
     vars_lab = ptrarr(1); only 1 window
     vars_lab[0] = ptr_new(var_lab)

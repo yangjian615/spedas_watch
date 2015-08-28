@@ -5,15 +5,15 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-21 15:18:29 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18571 $
+; $LastChangedDate: 2015-08-27 11:42:08 -0700 (Thu, 27 Aug 2015) $
+; $LastChangedRevision: 18640 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib.pro $
 ;-
 
 ; set some reasonable margins
 tplot_options, 'xmargin', [20, 15]
 
-mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='moments'
+mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='moments', data_rate='srvy'
 
 ; there's a gap in the data in the morning of 7/31 ~(0530UT-1330UT)
 ;tdegap, tnames(), /overwrite
@@ -39,7 +39,7 @@ tplot, ['mms1_hpca_hplus_ion_bulk_velocity', $
        
 stop
 
-mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='rf_corr', level='l1b'
+mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='rf_corr', level='l1b', data_rate='srvy'
 
 rf_corrected = ['mms1_hpca_hplus_RF_corrected', $
                 'mms1_hpca_oplus_RF_corrected', $ 
