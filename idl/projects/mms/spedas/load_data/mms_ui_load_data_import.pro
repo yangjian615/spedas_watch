@@ -11,9 +11,9 @@
 ;  
 ;HISTORY:
 ;
-;;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-12 18:10:37 -0700 (Wed, 12 Aug 2015) $
-;$LastChangedRevision: 18477 $
+;;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-08-28 13:32:10 -0700 (Fri, 28 Aug 2015) $
+;$LastChangedRevision: 18662 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -45,8 +45,8 @@ pro mms_ui_load_data_import,$
   timeRange=loadStruc.trange
   rate=loadStruc.rate
   level=loadStruc.level
-  datatype=loadStruc.datatype ;only used for state atm
-  
+  datatype=loadStruc.datatype 
+
   ; need to update for MMS
   mmsmintime = '2015-03-01'
   mmsmaxtime = time_string(systime(/seconds), tformat='YYYY-MM-DD')  
@@ -76,6 +76,12 @@ pro mms_ui_load_data_import,$
         tplotnames =  n_valid gt 0 ? tplotnames[valid_idx] : ''
      endif
 
+  endif else if instrument eq 'EDP' then begin
+     mms_load_edp, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames
+  endif else if instrument eq 'DSP' then begin
+     mms_load_dsp, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames
+  endif else if instrument eq 'ASPOC' then begin
+     mms_load_aspoc, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames
   endif else begin
      mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate, tplotnames=tplotnames
   endelse

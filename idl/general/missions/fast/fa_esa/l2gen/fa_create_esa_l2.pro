@@ -52,16 +52,19 @@
 ;   SC_POT          FLOAT     Array[59832]
 ;   BKG_ARR         FLOAT     Array[96, 64]
 ;   HEADER_BYTES    BYTE      Array[44, 59832]
-;Only data and eflux arrays are filled here, all else is input
+;data, eflux and orbit are filled here, all else is input
 ;   DATA            BYTE      Array[96, 64, 59832]
 ;   EFLUX           FLOAT     Array[96, 64, 59832]
-;
+;   ORBIT_START     LONG
+;   ORBIT_END       LONG
+;;
 ;HISTORY:
 ; Dillon, 2009
-; added eflux vairable, 2015-08-21, jmm
+; added eflux variable, 2015-08-21, jmm
+; added orbit stat and end tags, 2015-08-24, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-08-21 17:00:26 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18576 $
+; $LastChangedDate: 2015-08-28 13:51:59 -0700 (Fri, 28 Aug 2015) $
+; $LastChangedRevision: 18665 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2gen/fa_create_esa_l2.pro $
 ;-
 pro fa_create_esa_l2,type=type, $
@@ -125,6 +128,9 @@ pro fa_create_esa_l2,type=type, $
 ;Instead of using get_fa1 routines and fa_convert_esa_units.pro, it is
 ;faster to convert to EFLUX here.
 ;EFLUX=COUNTS(after dead time correction)/(GEOM_FACTOR*GF*EFF*DT)
+;data0 is 48 energiesx32 angles
+;data0 is 48 energiesx64 angles
+;data0 is 96 energiesx32 angles
      case all_dat.mode_ind[i] of
         0: begin
            data_tmp=ccvt[all_dat.data0[*,*,all_dat.data_ind[i]]]
@@ -179,6 +185,8 @@ pro fa_create_esa_l2,type=type, $
 
   str_element, all_dat, 'eflux', eflux, /add_replace
   str_element, all_dat, 'data', data, /add_replace
+  str_element, all_dat, 'orbit_start', min(orbit), /add_replace
+  str_element, all_dat, 'orbit_end', max(orbit), /add_replace
 
   return
 

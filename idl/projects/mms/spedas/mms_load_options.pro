@@ -1,6 +1,30 @@
 ;+
 ;Purpose:
 ;  Helper function to return structure describing
+;  the available data types for ASPOC
+;-
+function mms_load_options_aspoc
+
+    compile_opt idl2, hidden
+
+
+    s = { srvy: { $
+        sitl: [ 'aspoc', 'asp1', 'asp2' ], $
+        l1b: [ 'aspoc', 'asp1', 'asp2' ], $
+        l2: [ 'aspoc', 'asp1', 'asp2' ], $
+        ql:  [ 'aspoc', 'asp1', 'asp2' ] $
+    } $
+
+}
+
+
+return, s
+
+end
+
+;+
+;Purpose:
+;  Helper function to return structure describing
 ;  the available data types for EDP
 ;-
 function mms_load_options_edp
@@ -440,8 +464,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-24 08:46:07 -0700 (Mon, 24 Aug 2015) $
-;$LastChangedRevision: 18586 $
+;$LastChangedDate: 2015-08-28 13:14:21 -0700 (Fri, 28 Aug 2015) $
+;$LastChangedRevision: 18661 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $
@@ -478,6 +502,7 @@ case strupcase(instrument) of
   'EDI': s = mms_load_options_edi()
   'DSP': s = mms_load_options_dsp()
   'EDP': s = mms_load_options_edp()
+  'ASPOC': s = mms_load_options_aspoc()
   else: begin
     dprint, dlevel=1, 'Instrument "'+instrument+'" not recognized'
     return

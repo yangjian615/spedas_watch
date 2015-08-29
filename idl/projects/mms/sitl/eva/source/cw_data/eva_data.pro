@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-08-07 21:14:06 -0700 (Fri, 07 Aug 2015) $
-; $LastChangedRevision: 18442 $
+; $LastChangedDate: 2015-08-28 16:41:05 -0700 (Fri, 28 Aug 2015) $
+; $LastChangedRevision: 18668 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update

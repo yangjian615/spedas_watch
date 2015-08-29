@@ -49,12 +49,12 @@
 ;Notes:
 ;  -precedence of boolean keywords:
 ;     string_array > force_download > no_update > default behavior
+;  -checks contents of "http_proxy" environment variable for proxy server
 ;
 ;
-;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-11 13:52:42 -0700 (Thu, 11 Jun 2015) $
-;$LastChangedRevision: 17854 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-08-28 14:36:40 -0700 (Fri, 28 Aug 2015) $
+;$LastChangedRevision: 18666 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -106,6 +106,9 @@ if ~is_string(filename_in,/blank) then begin
   dprint, dlevel=1, 'Invalid local file name'
   return, output
 endif
+
+;get proxy server info from environment variable and add to _extra struct if not present
+spd_get_proxy, _extra
 
 ;this must be defined later
 if undefined(progress_object) then begin

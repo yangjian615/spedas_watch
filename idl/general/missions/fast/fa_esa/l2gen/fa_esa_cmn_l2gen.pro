@@ -57,11 +57,12 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-08-21 17:02:09 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18578 $
+; $LastChangedDate: 2015-08-28 13:51:59 -0700 (Fri, 28 Aug 2015) $
+; $LastChangedRevision: 18665 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2gen/fa_esa_cmn_l2gen.pro $
 ;-
-Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
+Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_typ, $
+                      otp_struct = otp_struct, directory = directory, $
                       no_compression = no_compression, _extra = _extra
 
 ;Keep track of software versioning here
@@ -72,6 +73,11 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
      message,/info,'No Input Structure'
      Return
   Endif
+  If(cmn_dat.orbit_start Ne cmn_dat.orbit_end) Then Begin
+     message,/info,'No multiple orbit files plaese'
+     Return
+  Endif
+     
 ;First, global attributes
   global_att = {Acknowledgment:'None', $
                 Data_type:'CAL>Calibrated', $
@@ -85,8 +91,8 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
                 Instrument_type:'Particles (space)' , $
                 LINK_TEXT:'General Information about the FAST mission' , $
                 LINK_TITLE:'FAST home page' , $
-                Logical_file_id:'fa_esa_l2_XXX_00000000_v00_r00.cdf' , $
-                Logical_source:'' , $
+                Logical_file_id:'fa_l2_XXX_00000000_v00.cdf' , $
+                Logical_source:'fa_l2_XXX' , $
                 Logical_source_description:'FAST Ion and Electron Particle Distributions', $
                 Mission_group:'FAST' , $
                 MODS:'Rev-1 2015-07-28' , $
@@ -126,7 +132,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
             ['SC_POT', 'FLOAT', 'Spacecraft potential (NUM_DISTS elements)', 'Spacecraft potential'], $
             ['DATA', 'BYTE', 'Raw Counts data with dimensions (NUM_DISTS, 96, 64)', 'Raw Counts'], $
             ['EFLUX', 'FLOAT', 'Differential energy flux array with dimensions (NUM_DISTS, 96, 64)', 'Energy flux'], $
-            ['PITCH_ANGLE', 'FLOAT', 'Pitch Angule values for each distribution (NUM_DISTS, 96, 64); Virtual variable'], $
+            ['PITCH_ANGLE', 'FLOAT', 'Pitch Angule values for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'Pitch Angle'], $
             ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'Energy'], $
             ['DENERGY_FULL', 'FLOAT', 'Angular bin size for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'DEnergy']]
 
@@ -135,7 +141,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
 
 ;No need for lablaxis values here, just use the name
   nv_vt = [['PROJECT_NAME', 'STRING', 'FAST'], $
-           ['DATA_NAME', 'STRING', 'Iesa or Eesa burst or survey'], $
+           ['DATA_NAME', 'STRING', cmn_dat.data_name], $
            ['UNITS_NAME', 'STRING', 'eflux'], $
            ['UNITS_PROCEDURE', 'STRING', 'fa_esa_convert_esa_units, name of IDL routine used for units conversion '], $
            ['NUM_DISTS', 'INTEGER', 'Number of measurements or times in the file'], $
@@ -146,7 +152,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
            ['DTHETA', 'FLOAT', 'Delta Angle array with with dimension (96, 64 or 32, 2 or 3)'], $
            ['GF', 'FLOAT', 'Geometric Factor array with dimension (96, 64)'], $
            ['EFF', 'FLOAT', 'Efficiency array with dimension (96, 64 or 32, 2 or 3)'], $
-           ['DEAD', 'FLOAT', 'Dead time in seconds for 1 processed count', 'Dead_time (sec)'], $
+           ['DEAD', 'FLOAT', 'Dead time in seconds for 1 processed count'], $
            ['MASS', 'FLOAT', 'Proton or Electron mass in units of MeV/c2'], $
            ['CHARGE', 'FLOAT', 'Proton or Electron charge (1 or -1)'], $
            ['BKG_ARR', 'FLOAT', 'Background counts array with dimension (96, 64)']]
@@ -199,6 +205,18 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
            End
            'time_delta': dvar = cmn_dat.delta_t
            'time_integ': dvar = cmn_dat.integ_t
+           'pitch_angle': Begin ;Virtual variable
+              message, /info, 'Variable '+vj+' is Virtual.'
+              dvar = 0.0
+           End
+           'energy_full': Begin ;Virtual variable
+              message, /info, 'Variable '+vj+' is Virtual.'
+              dvar = 0.0
+           End
+           'denergy_full': Begin ;Virtual variable
+              message, /info, 'Variable '+vj+' is Virtual.'
+              dvar = 0.0
+           End
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for.'
            End
@@ -258,11 +276,11 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
 
      vatt.fieldnam = rv_vt[3, j] ;shorter name
 ;Units
-     If(is_tvar) Then Begin ;Time variables
+     If(is_tvar) Then Begin     ;Time variables
         vatt.units = 'sec'
      Endif Else Begin
         If(strpos(vj, 'time') Ne -1) Then vatt.units = 'sec' $ ;time interval sizes
-        If(strpos(vj, 'theta') Ne -1) Then vatt.units = 'degrees' $
+        Else If(strpos(vj, 'theta') Ne -1) Then vatt.units = 'degrees' $
         Else If(vj Eq 'sc_pot') Then vatt.units = 'volts' $
         Else If(vj Eq 'data') Then vatt.units = 'Counts' $
         Else If(vj Eq 'eflux') Then vatt.units = 'eV/sr/sec' ;check this
@@ -274,7 +292,9 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
      vatt.lablaxis = rv_vt[3, j]
 
 ;Assign labels and components for vectors
-     If(vj Eq 'data' Or vj Eq 'eflux') Then Begin
+     If(vj Eq 'data' Or vj Eq 'eflux' Or $
+        vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
+        vj Eq 'denergy_full') Then Begin
 ;For ISTP compliance, it looks as if the depend's are switched,
 ;probably because we transpose it all in the file
         vatt.depend_2 = 'compno_96'
@@ -285,6 +305,25 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
  
 ;Time variables are monotonically increasing:
      If(is_tvar) Then vatt.monoton = 'INCREASE' Else vatt.monoton = 'FALSE'
+
+;Add tags for virtual variables
+     If(vj Eq 'pitch_angle') Then Begin
+        str_element, vatt, 'virtual', 'TRUE', /add_replace
+        str_element, vatt, 'funct', 'fa_esa_pa', /add_replace
+        str_element, vatt, 'component_0', 'theta', /add_replace
+        str_element, vatt, 'component_1', 'theta_shift', /add_replace
+        str_element, vatt, 'component_2', 'mode_ind', /add_replace
+     Endif Else If(vj Eq 'energy_full') Then Begin
+        str_element, vatt, 'virtual', 'TRUE', /add_replace
+        str_element, vatt, 'funct', 'fa_esa_energy', /add_replace
+        str_element, vatt, 'component_0', 'energy', /add_replace
+        str_element, vatt, 'component_1', 'mode_ind', /add_replace
+     Endif Else If(vj Eq 'energy_full') Then Begin
+        str_element, vatt, 'virtual', 'TRUE', /add_replace
+        str_element, vatt, 'funct', 'fa_esa_energy', /add_replace
+        str_element, vatt, 'component_0', 'denergy', /add_replace
+        str_element, vatt, 'component_1', 'mode_ind', /add_replace
+     Endif
 
 ;delete all 'NA' tags
      vatt_tags = tag_names(vatt)
@@ -389,18 +428,9 @@ Pro fa_esa_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
      count = count+1
   Endfor
      
-;Now compnos, need 3, 4, nenergy, nbin, nmass, but only unique ones,
-;and you only need compno_1 if nenergy is 1
+;Now compnos, need 96, 64
   ext_compno = [96, 64]
-STOPHERE
-  If(cmn_dat.nbins Gt 1) Then ext_compno = [ext_compno, cmn_dat.nbins]
-  If(cmn_dat.nmass Gt 1) Then ext_compno = [ext_compno, cmn_dat.nmass]
-  ss0 = sort(ext_compno)
-  ext_compno = ext_compno(ss0)
-  ss = uniq(ext_compno)
-  ext_compno = ext_compno[ss]
   vcompno = 'compno_'+strcompress(/remove_all, string(ext_compno))
-
   For j = 0, n_elements(vcompno)-1 Do Begin
      vj = vcompno[j]
      xj = strsplit(vj, '_', /extract)
@@ -435,48 +465,16 @@ STOPHERE
   Endfor
      
 ;Labels now
-  lablvars = ['magf_labl', 'pos_sc_mso_labl', 'quat_sc_labl', 'quat_mso_labl', $
-              'data_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy)), $
-              'bkg_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy)), $
-              'eflux_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy)), $
-              'dead_energy_labl_'+strcompress(/remove_all, string(cmn_dat.nenergy))]
-  If(cmn_dat.nbins Gt 1) Then Begin
-     lablvars = [lablvars, $
-              'data_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins)), $
-              'bkg_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins)), $
-              'eflux_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins)), $
-              'dead_bin_labl_'+strcompress(/remove_all, string(cmn_dat.nbins))]
-  Endif
-  If(cmn_dat.nmass Gt 1) Then Begin
-     lablvars = [lablvars, $
-              'data_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass)), $
-              'bkg_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass)), $
-              'eflux_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass)), $
-              'dead_mass_labl_'+strcompress(/remove_all, string(cmn_dat.nmass))]
-  Endif
-
+  lablvars = ['data_energy_labl_96', $
+              'eflux_energy_labl_96', $
+              'data_angle_labl_64', $
+              'eflux_angle_labl_64']
   For j = 0, n_elements(lablvars)-1 Do Begin
      vj = lablvars[j]
-     Case vj of
-        'magf_labl':Begin
-           dvar = ['Bx', 'By', 'Bz']
-        End
-        'pos_sc_mso_labl':Begin
-           dvar = ['X (MSO)', 'Y (MSO)', 'Z (MSO)']
-        End
-        'quat_sc_labl':Begin
-           dvar = ['Q1 (SC)', 'Q2 (SC)', 'Q3 (SC)', 'Q4 (SC)']
-        End 
-        'quat_mso_labl':Begin
-           dvar = ['Q1 (MSO)', 'Q2 (MSO)', 'Q3 (MSO)', 'Q4 (MSO)']
-        End
-        Else: Begin
-           xj = strsplit(vj, '_', /extract)
-           nj = Fix(xj[3])
-           aj = xj[0]+'@'+strupcase(xj[1])
-           dvar = aj+strcompress(/remove_all, string(indgen(nj)))
-        End
-     Endcase
+     xj = strsplit(vj, '_', /extract)
+     nj = Fix(xj[3])
+     aj = xj[0]+'@'+strupcase(xj[1])
+     dvar = aj+strcompress(/remove_all, string(indgen(nj)))
      ndv = n_elements(dvar)
 
      numelem = strlen(dvar[ndv-1]) ;needed for numrec
@@ -523,20 +521,6 @@ STOPHERE
   Endif Else tres = '   0.0 sec'
   global_att.time_resolution = tres
 
-;times for PDS attributes
-  PDS_time = time_string(minmax(center_time), tformat='YYYY-MM-DDThh:mm:ss.fffZ')
-  PDS_met =  fa_esa_spc_met_to_unixtime(minmax(center_time), /reverse)
-  PDS_etime = time_ephemeris(minmax(center_time))
-  cspice_sce2c, -202, PDS_etime[0], PDS_sclk0
-  cspice_sce2c, -202, PDS_etime[1], PDS_sclk1
-  global_att.PDS_sclk_start_count = pds_sclk0
-  global_att.PDS_sclk_stop_count = pds_sclk1
-  global_att.PDS_start_time = pds_time[0]
-  global_att.PDS_stop_time = pds_time[1]
-;save kernel values
-  If(is_string(sclk)) Then global_att.Spacecraft_clock_kernel = sclk[0]
-  If(is_string(tls)) Then global_att.Leapseconds_kernel = tls[0]
-
   otp_struct = {filename:'', g_attributes:global_att, inq:inq, nv:nvars, vars:vstr}
 
 ;Create filename and call cdf_save_vars.
@@ -548,31 +532,33 @@ STOPHERE
      If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+'/'
      dir = temporary(temp_string)
   Endif Else dir = './'
+  
+;What type of data
+  If(keyword_set(esa_type)) Then Begin
+     ext = strlowcase(strcompress(/remove_all, esa_type[0])) 
+  Endif Else Begin
+     type_test = strlowcase(strcompress(/remove_all, cmn_dat.data_name))
+     Case type_test Of
+        'iesasurvey': ext = 'ies'
+        'iesaburst': ext = 'ieb'
+        'eesasurvey': ext = 'ees'
+        'eesaburst': ext = 'eeb'
+        Else: ext = 'oops'
+     Endcase
+  Endelse        
 
-  If(cmn_dat.nenergy Gt 1) Then estring = strcompress(/remove_all, string(cmn_dat.nenergy))+'e' Else estring = ''
-  If(cmn_dat.nmass Gt 1) Then mstring = strcompress(/remove_all, string(cmn_dat.nmass))+'m' Else mstring = ''
-  If(cmn_dat.ndef Gt 1) Then dstring = strcompress(/remove_all, string(cmn_dat.ndef))+'d' Else dstring = ''
-  If(cmn_dat.nanode Gt 1) Then astring = strcompress(/remove_all, string(cmn_dat.nanode))+'a' Else astring = ''
-
-  ext = strcompress(strlowcase(cmn_dat.apid), /remove_all)+'-'+estring+dstring+astring+mstring
-
-  file0 = 'fa_esa_l2_'+ext+'_'+date+'_'+sw_vsn_str+'.cdf'
+;date here, uses the median
+  date = time_string(median(center_time), precision=-3, format=6)
+  orb_string = string(long(cmn_dat.orbit_start), format = '(i5.5)')
+  file0 = 'fa_l2_'+ext+'_'+date+'_'+orb_string+'_'+sw_vsn_str+'.cdf'
   fullfile0 = dir+file0
-
-;Fix ISTP compliance for data types here, 
-  ext1_arr = [strcompress(/remove_all, string(cmn_dat.nenergy))+' Energies', $
-              strcompress(/remove_all, string(cmn_dat.ndef))+' Deflector Angle bins', $
-              strcompress(/remove_all, string(cmn_dat.nanode))+' Anode bins', $
-              strcompress(/remove_all, string(cmn_dat.nmass))+' Masses']
-
-
-  otp_struct.g_attributes.data_type = 'l2_'+ext+'>Level 2 data, APID: '+cmn_dat.apid+', '+strjoin(ext1_arr, ', ')
-
-  otp_struct.g_attributes.PDS_collection_id = ext
-
+  
+  otp_struct.g_attributes.data_type = 'l2_'+ext+'>Level 2 data: '+cmn_dat.data_name
+  otp_struct.g_attributes.logical_file_id = file0
+  otp_struct.g_attributes.logical_source = 'fa_l2_'+ext
 ;save the file -- full database management
-  fa_esa_cmn_l2file_save, otp_struct, fullfile0, no_compression = no_compression
+  dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update)
+
 
   Return
 End
->
