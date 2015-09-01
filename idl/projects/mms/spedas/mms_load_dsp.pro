@@ -32,8 +32,8 @@
 ;
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-08-17 09:28:27 -0700 (Mon, 17 Aug 2015) $
-;  $LastChangedRevision: 18502 $
+;  $LastChangedDate: 2015-08-31 11:45:43 -0700 (Mon, 31 Aug 2015) $
+;  $LastChangedRevision: 18674 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_dsp.pro $
 
 pro mms_load_dsp, trange=trange, probes=probes, $
@@ -288,7 +288,7 @@ pro mms_load_dsp, trange=trange, probes=probes, $
       print, 'PLEASE ALTER SEARCH'
       print, 'No tplot variables loaded'
     endif 
-    if finfo[0] ne 0 then begin
+    if strlen(finfo[0]) ne 0 then begin
       mms_data_fetch, flist, login_flag, dwnld_flag, sc_id=sc, $
         instrument_id=instrument_id, mode=mode, level='l2', optional_descriptor=datatype, $
         no_update=no_update, reload=reload

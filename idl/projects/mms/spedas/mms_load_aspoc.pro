@@ -24,8 +24,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-28 13:13:51 -0700 (Fri, 28 Aug 2015) $
-;$LastChangedRevision: 18660 $
+;$LastChangedDate: 2015-08-31 08:52:32 -0700 (Mon, 31 Aug 2015) $
+;$LastChangedRevision: 18673 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_aspoc.pro $
 ;-
 
@@ -33,7 +33,8 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, tplotnames = tplotnames, $
-                  no_color_setup = no_color_setup, instrument = instrument
+                  no_color_setup = no_color_setup, instrument = instrument, $
+                  time_clip = time_clip
                   
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -49,7 +50,7 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
-        no_color_setup = no_color_setup, $
+        no_color_setup = no_color_setup, time_clip = time_clip, $
         suffix = '_' + level ; set the suffix to the level to avoid clobbering l1b and l2 data
         
     for tvar_idx = 0, n_elements(tplotnames)-1 do begin

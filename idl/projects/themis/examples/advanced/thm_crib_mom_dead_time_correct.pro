@@ -8,9 +8,9 @@
 ;
 ;Notes:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-13 18:00:26 -0700 (Wed, 13 May 2015) $
-;$LastChangedRevision: 17598 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2015-08-31 15:15:16 -0700 (Mon, 31 Aug 2015) $
+;$LastChangedRevision: 18679 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_mom_dead_time_correct.pro $
 ;-
 
@@ -31,19 +31,27 @@
 ;                          applied.
 ;------------------------------------------------------------------
 
+; As of 7-November-2014, the dead-time correction is no longer the
+; default for any load of L1 or L2 moment data. The corrections that
+; were included in L2 cdf files are no longer there. All of the
+; load_mom commands will work for both L1 and L2
+
 ;set time range
 timespan, '2011-05-05', 1
 
 ;load data
 thm_load_mom,  probe = 'b'
 
-
 ;Calculate dead time correction
 ;------------------------------------------------------------------
-;THM_APPLY_ESA_MOM_DTC calculates the dead
-;time corrections for moments using the program THM_ESA_DTC4MOM.  This
-;program obtains dead time corrections for moments using the following
-;steps:
+;The program THM_APPLY_ESA_MOM_DTC applies a dead time correction to
+;On-board ESA moments (TH?_PE?M variavbles) using ground-calculated
+;ESA moments, in the program THM_ESA_DTC4MOM. Each ESA ground moment
+;is calculated twice, once with no dead-time correction, and once with
+;a dead-time correction. The on-board moment is then multiplied by the
+;ratio of (dead-time-corrected moment)/(non-dead-time-corrected
+;moment). This process can take a while, since the ESA ground moments
+;are calculated twice:
 
 ;1) Load ESA data, the default is to use full-mode data, but other
 ;modes can by set using the use_esa_mode keyword to 'f', 'r', or 'b'
@@ -77,6 +85,9 @@ thm_load_mom,  probe = 'b'
 ;calculate dead time corrections
 thm_apply_esa_mom_dtc, probe = 'b'
 
+;The moments for density, flux, mftens, eflux, velocity, ptens and
+;ptot are corrected for dead time.
+
 ;plot some dead time corrections:
 tplot, 'thb_pe?f_density_dtc'
 
@@ -90,8 +101,7 @@ thm_apply_esa_mom_dtc, probe = 'b'
 
 stop
 
-
-;If you wnat to compare corrected with uncorrected values, use the
+;If you want to compare corrected with uncorrected values, use the
 ;out_suffix keyword, this will avoid overwriting the MOM variables:
 ;------------------------------------------------------------------
 
@@ -109,7 +119,6 @@ tplot,  'thb_pe?m_density*'
 
 stop
 
-
 ;Using the out_suffix keyword, you can also compare different options
 ;for the correction. As mentioned above, the default is to use ESA
 ;full-mode data, you can change this using the 'use_esa_mode' keyword
@@ -125,11 +134,10 @@ tplot, 'thb_pei?_density_dtc*'   ;to compare the different corrections
 
 stop
 
-
-
 ;The default is to not include corrections for the spacecraft
-;potential in the moments when calculating the _dtc variables. To add
-;sc potential corrections, set the /scpot_correct keyword
+;potential in the moments when calculating the _dtc variables (because
+;photoelectrons affect the dead time). To add sc potential
+;corrections, set the /scpot_correct keyword
 ;------------------------------------------------------------------
 thm_apply_esa_mom_dtc,  probe = 'b', /scpot_correct, out_suffix = '_corrected_scpot'
 
@@ -142,13 +150,13 @@ tplot, 'thb_pei?_density_dtc*'   ;to compare the different corrections
 stop
 
 
-;As of 24-aug-2011, these corrections are only the default for L2 MOM
-;input. To get corrected values for L1:
+;As of 7-November-2014, these corrections are not the default for L2 MOM
+;input. To get corrected values for L2:
 ;------------------------------------------------------------------
-thm_load_mom, probe='b', suffix = '_corrected', /dead_time_correct
+thm_load_mom, probe='b', suffix = '_corrected', /dead_time_correct, level = 2
 
 ;If you want to make comparisons, load without corrections
-thm_load_mom, probe='b', suffix = '_uncorrected'
+thm_load_mom, probe='b', suffix = '_uncorrected', level = 2
 
 
 End

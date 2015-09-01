@@ -10,8 +10,8 @@
 ;Warning: this crib uses some data from the THEMIS branch.  You'll require those routines to run this crib
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16596 $
+; $LastChangedDate: 2015-08-31 12:55:36 -0700 (Mon, 31 Aug 2015) $
+; $LastChangedRevision: 18676 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_calc.pro $
 ;
 ;-
@@ -203,6 +203,27 @@ calc,'"out" = "tha_state_pos" + "tha_fgs"',/interp ; interpolates to variable on
 calc,'"out" = "tha_state_pos" + "tha_fgs"',interp="tha_fgs" ;interpolate to the specified variable
 
 calc,'"out" = "tha_state_pos" + "tha_fgs"',/interp,/quadratic ;can use keywords accepted by tinterpol.pro
+
+stop
+
+;example 17 globbing
+;If you put a globbing character(e.g. ?*) in a right hand variable and a left hand variable, it will match all tplot-variables on the right
+;and fill in the matching value in the left-hand output
+
+thm_load_state,probe='*'
+
+calc,'"th?_state_pos_re" = "th?_state_pos"/6371.2' ;globbing
+
+stop
+
+;example 18 line continuation
+;You can use built in IDL mechanisms if you want to do long lines with the continuation ($) operator
+
+
+thm_load_state,probe='*'
+
+calc,'"tha_state_pos_re" = ' + $
+     '"tha_state_pos"/6371.2' 
 
 stop
 

@@ -20,6 +20,8 @@
 ;         no_color_setup: don't setup graphics configuration; use this
 ;             keyword when you're using this load routine from a
 ;             terminal without an X server running
+;         time_clip: clip the data to the requested time range; note that if you
+;             do not use this keyword, you may load a longer time range than requested
 ;         
 ; 
 ; OUTPUT:
@@ -76,8 +78,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-26 08:27:09 -0700 (Wed, 26 Aug 2015) $
-;$LastChangedRevision: 18622 $
+;$LastChangedDate: 2015-08-31 08:52:32 -0700 (Mon, 31 Aug 2015) $
+;$LastChangedRevision: 18673 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -86,7 +88,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, login_info = login_info, $
                   tplotnames = tplotnames, varformat = varformat, no_color_setup = no_color_setup, $
-                  suffix = suffix
+                  suffix = suffix, time_clip = time_clip
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -250,7 +252,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin
-        if (n_elements(tr) eq 2) and (tplotnames[0] ne '') then begin
+        dt_timeclip = 0.0
+        if (n_elements(tr) eq 2) and (tplotnames[0] ne '') and ~undefined(time_clip) then begin
             tc0 = systime(/sec)
             time_clip, tplotnames, tr[0], tr[1], replace=1, error=error
             dt_timeclip = systime(/sec)-tc0

@@ -25,8 +25,8 @@
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-24 08:22:27 -0700 (Mon, 24 Aug 2015) $
-;$LastChangedRevision: 18585 $
+;$LastChangedDate: 2015-08-31 16:13:49 -0700 (Mon, 31 Aug 2015) $
+;$LastChangedRevision: 18680 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -92,6 +92,12 @@ pro mms_load_fix_metadata, tplotnames, prefix = prefix, instrument = instrument,
                     options, /def, tplot_name, 'colors', [2,4,6,8]
                     options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz', 'Btotal']
+                end 
+                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_dmpa': begin
+                    options, /def, tplot_name, 'labflag', 1
+                    options, /def, tplot_name, 'colors', [2,4,6,8]
+                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + ' ' + strupcase(instrument)
+                    options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz', 'Btotal']
                 end
                 prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_omb': begin
                     options, /def, tplot_name, 'labflag', 1
@@ -123,7 +129,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   level = level, instrument = instrument, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, $
-                  tplotnames = tplotnames, no_color_setup = no_color_setup
+                  tplotnames = tplotnames, no_color_setup = no_color_setup, $
+                  time_clip = time_clip
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
@@ -136,7 +143,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
-        datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, no_color_setup = no_color_setup
+        datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
+        no_color_setup = no_color_setup, time_clip = time_clip
 
     ; load the atttude data to do the coordinate transformation 
     mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec']

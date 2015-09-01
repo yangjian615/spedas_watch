@@ -23,8 +23,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-19 13:45:26 -0700 (Wed, 19 Aug 2015) $
-;$LastChangedRevision: 18529 $
+;$LastChangedDate: 2015-08-31 08:52:32 -0700 (Mon, 31 Aug 2015) $
+;$LastChangedRevision: 18673 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_eis.pro $
 ;-
 
@@ -92,7 +92,8 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, $
-                  tplotnames = tplotnames, no_color_setup = no_color_setup
+                  tplotnames = tplotnames, no_color_setup = no_color_setup, $
+                  time_clip = time_clip
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -103,7 +104,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'epd-eis', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
-        tplotnames = tplotnames, no_color_setup = no_color_setup
+        tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip
     
     ; calculate the omni-directional quantities
     for probe_idx = 0, n_elements(probes)-1 do begin
