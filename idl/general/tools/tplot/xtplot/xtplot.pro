@@ -9,8 +9,8 @@
 ; 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-24 17:10:17 -0700 (Wed, 24 Jun 2015) $
-; $LastChangedRevision: 17966 $
+; $LastChangedDate: 2015-09-01 12:49:48 -0700 (Tue, 01 Sep 2015) $
+; $LastChangedRevision: 18685 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -292,15 +292,19 @@ PRO xtplot_event, event
     ;-----------------------------------
     ; MENU BAR
     ;-----------------------------------
-    widf.mnClip:      begin
-      widget_control, widf.drwPlot, GET_VALUE=win1
-      clipboard,win1
-      end
+;    widf.mnClip:      begin
+;      widget_control, widf.drwPlot, GET_VALUE=win1
+;      clipboard,win1
+;      end
     widf.mnExJPG:     begin
-      makejpg,'xtplot'
+      widget_control, widf.drwPlot, GET_VALUE=drwin
+      makejpg,'xtplot',window=drwin
       end
-    widf.mnExPNG:     makepng,'xtplot'
-    widf.mnExGIF:     makegif,'xtplot'
+    widf.mnExPNG:     begin
+      widget_control, widf.drwPlot, GET_VALUE=drwin
+      makepng,'xtplot',window=drwin
+      end
+;    widf.mnExGIF:     makegif,'xtplot'
     widf.mnConfig:    begin
       formInfo = cmps_form(Cancel=canceled, Create=create, Defaults=widf.ps_config, $
         /color, parent=widf.baseTL)
@@ -563,10 +567,10 @@ pro xtplot,datanames,     $
     ; menu
     mnFile = widget_button(mbar, VALUE='File', /menu)
     mnExpr = widget_button(mnFile,VALUE='Export to Image Files',/menu)
-    str_element,/add,widf,'mnClip',widget_button(mnExpr,VALUE='clipboard')
+    ;str_element,/add,widf,'mnClip',widget_button(mnExpr,VALUE='clipboard')
     str_element,/add,widf,'mnExJPG',widget_button(mnExpr,VALUE='JPG')
     str_element,/add,widf,'mnExPNG',widget_button(mnExpr,VALUE='PNG')
-    str_element,/add,widf,'mnExGIF',widget_button(mnExpr,VALUE='GIF')
+    ;str_element,/add,widf,'mnExGIF',widget_button(mnExpr,VALUE='GIF')
     str_element,/add,widf,'mnConfig',widget_button(mnFile,VALUE='Export to PS/EPS Files')
     str_element,/add,widf,'mnPrin',widget_button(mnFile,VALUE='Print')
     str_element,/add,widf,'mnExit',widget_button(mnFile,VALUE='Exit',/separator)

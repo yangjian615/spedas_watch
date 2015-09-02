@@ -20,8 +20,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-08-26 23:12:16 -0700 (Wed, 26 Aug 2015) $
-; $LastChangedRevision: 18639 $
+; $LastChangedDate: 2015-09-01 11:40:44 -0700 (Tue, 01 Sep 2015) $
+; $LastChangedRevision: 18684 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_history.pro $
 ;-
 FUNCTION mms_bss_history_cat, bsh, category, wt
@@ -62,6 +62,26 @@ FUNCTION mms_bss_history_overwritten2, bsh, category, wt
     wcat[ndx] += s.SEGLENGTHS[i]; count segment size
   endfor
   return, (-1L)*wcat
+END
+
+FUNCTION mms_bss_history_threshold, wt
+  compile_opt idl2
+  hard_limit = 24576L
+  nmax=n_elements(wt)
+  wthres = lonarr(nmax)
+  
+  ; DEFAULT VALUE
+  wthres[0:nmax-1] = hard_limit-18000L
+  
+  ; TEMPRARY THRESHOLD INCREASE IN AUGUST
+  stime = time_double('2015-08-04')
+  etime = systime(/utc,/seconds)
+  idx=where(stime le wt and wt lt etime, ct)
+  if ct gt 0 then begin
+    wthres[idx] = hard_limit - 15000L
+  endif
+  
+  return, wthres
 END
 
 PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, dir=dir
@@ -107,7 +127,7 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
   ;------------------
   ; ANALYSIS
   ;------------------
-  
+  wthres= mms_bss_history_threshold(wt); Threshold
   wcatT = lonarr(nmax); All segmentes
   wcatT2= lonarr(nmax); Segments being HELD for more than 3 days
   imax = n_elements(bss.FOM); number of filtered-out segments
@@ -185,18 +205,18 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
   if keyword_set(csv) then begin
     
     ; PENDING SEGMENTS
-    write_csv, dir+'mms_bss_history.txt', wt,wcatT,wcatT2,wcat0,wcat1,wcat2,wcat3,wcat4,$
-      HEADER=['time','Total','HELD >3days','Category 0','Category 1','Category 2',$
-      'Category 3','Category 4']
+    write_csv, dir+'mms_bss_history.txt', time_string(wt),wthres,wcatT2,wcat0,wcat1,wcat2,$
+      wcat3,wcat4, HEADER=['time','Threshold','HELD >3days','Category 0','Category 1',$
+      'Category 2','Category 3','Category 4']
     
     ; OVERWRITTEN SEGMENTS
-    write_csv, dir+'mms_bss_overwritten.txt', wDt,wcat0o,wcat1o,wcat2o,wcat3o,wcat4o,$
+    write_csv, dir+'mms_bss_overwritten.txt', time_string(wDt),wcat0o,wcat1o,wcat2o,wcat3o,wcat4o,$
       HEADER=['time','Category 0','Category 1','Category 2','Category 3','Category 4']
     
     ; INCREASE/DECREASE
-    write_csv, dir+'mms_bss_diff.txt', wt,wInc,wDec,$
+    write_csv, dir+'mms_bss_diff.txt', time_string(wt),wInc,wDec,$
       HEADER=['time','Increase','Decrease']
-    write_csv, dir+'mms_bss_diff_per_day.txt', wDt,wDi,wDd,$
+    write_csv, dir+'mms_bss_diff_per_day.txt', time_string(wDt),wDi,wDd,$
       HEADER=['time','Increase/day','Decrease/day']  
        
   endif
@@ -207,17 +227,18 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
   if keyword_set(tplot) then begin
     
     ; PENDING SEGMENTS
-    wcat  = lonarr(nmax,6)
-    wcat[*,5] = wcatT2; HELD > 3 days
-    wcat[*,4] = wcat4; Category 4
-    wcat[*,3] = wcat[*,4] + wcat3; Category 4 + 3
-    wcat[*,2] = wcat[*,3] + wcat2; Category 4 + 3 + 2
-    wcat[*,1] = wcat[*,2] + wcat1; Category 4 + 3 + 2 + 1
-    wcat[*,0] = wcat[*,1] + wcat0; Category 4 + 3 + 2 + 1 + 0
-    store_data,'mms_bss_history',data={x:wt, y:wcat, v:[0,1,2,3,4,5]}
-    options,'mms_bss_history',colors=[1,6,5,4,2,0],ytitle='PENDING Buffers',$
-      title='MMS Burst Memory Management',labels=['Category 0','Category 1','Category 2',$
-      'Category 3','Category 4','HELD >3days'],labflag=-1
+    wcat  = lonarr(nmax,7)
+    wcat[*,6] = wcatT2; HELD > 3 days
+    wcat[*,5] = wcat4; Category 4
+    wcat[*,4] = wcat[*,5] + wcat3; Category 4 + 3
+    wcat[*,3] = wcat[*,4] + wcat2; Category 4 + 3 + 2
+    wcat[*,2] = wcat[*,3] + wcat1; Category 4 + 3 + 2 + 1
+    wcat[*,1] = wcat[*,2] + wcat0; Category 4 + 3 + 2 + 1 + 0
+    wcat[*,0] = wthres
+    store_data,'mms_bss_history',data={x:wt, y:wcat, v:[0,1,2,3,4,5,6]}
+    options,'mms_bss_history',colors=[3,1,6,5,4,2,0],ytitle='PENDING Buffers',$
+      title='MMS Burst Memory Management',labels=['Threshold','Category 0','Category 1',$
+      'Category 2','Category 3','Category 4','HELD >3days'],labflag=-1
   
     ; OVERWRITTEN SEGMENTS
     wDt += 43200.d0; Psym=10 makes a bar centered around wDt. Here, we shift by 12 hours to correct this.

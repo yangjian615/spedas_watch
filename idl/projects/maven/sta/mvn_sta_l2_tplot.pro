@@ -369,7 +369,7 @@ endif
 ;		eflux = mvn_c6_dat.eflux
 
 		cnt_low_nrg=fltarr(npts)
-		for i=0,npts-1 do begin
+		for i=0l,npts-1 do begin
 			ind = where(energy[i,*] le 10.,count)
 			if count ge 1 then cnt_low_nrg[i] = total(data[i,ind,*])
 		endfor
@@ -1552,7 +1552,7 @@ endif
 		peak_start_eff=fltarr(npts)
 		peak_stop_eff=fltarr(npts)
 		peak_eff=fltarr(npts)
-		for jj=0,npts-1 do begin
+		for jj=0l,npts-1 do begin
 			dd = data[jj,4,*]/mvn_d9_dat.integ_t[jj]
 			ind = where(dd gt 10000.,count)
 			if count gt 0 then dd[ind]=0.
@@ -1733,6 +1733,13 @@ endif
 ;***************************************************************************************************************
 
 ; form combined plots
+
+	get_data,'mvn_sta_d8_R1_Qual',data=tmp1
+	get_data,'mvn_sta_c6_tot',data=tmp2
+	d8 = interp(tmp2.y,tmp2.x,tmp1.x)
+	store_data,'mvn_sta_fq_eff',data={x:tmp1.x,y:d8/(4.*tmp1.y+.001)}
+	ylim,'mvn_sta_fq_eff',.1,1.1,1
+
 
 ;   Mixed product plots
 

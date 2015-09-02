@@ -101,14 +101,6 @@ sp_def = .47							; default stop efficiency at low rates
 ef3_def = .75
 ef_def = st_def*sp_def
 
-if keyword_set(test) then begin
-	get_data,'mvn_sta_d8_R1_Qual',data=tmp1
-	get_data,'mvn_sta_c6_tot',data=tmp2
-	d8 = interp(tmp2.y,tmp2.x,tmp1.x)
-	store_data,'mvn_sta_fq_eff',data={x:tmp1.x,y:d8/(4.*tmp1.y+.001)}
-	ylim,'mvn_sta_fq_eff',.1,1.1,1
-endif
-
 for i=0l,npts-1 do begin
 
 	min_c0 = min(abs(mvn_c0_dat.time-time[i]),ind_c0)
@@ -345,7 +337,7 @@ if size(mvn_c0_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -387,7 +379,7 @@ if size(mvn_c2_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -429,7 +421,7 @@ if size(mvn_c4_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -471,7 +463,7 @@ if size(mvn_c6_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -513,7 +505,7 @@ if size(mvn_c8_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -555,7 +547,7 @@ if size(mvn_ca_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -597,7 +589,7 @@ if size(mvn_cc_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
@@ -641,7 +633,7 @@ if size(mvn_cd_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -683,7 +675,7 @@ if size(mvn_ce_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
@@ -727,7 +719,7 @@ if size(mvn_cf_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -769,7 +761,7 @@ if size(mvn_d0_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
@@ -813,7 +805,7 @@ if size(mvn_d1_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
@@ -857,7 +849,7 @@ if size(mvn_d2_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da1 = min(abs(time-dat.time[i]),ind_da1)
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
@@ -901,7 +893,7 @@ if size(mvn_d3_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
@@ -943,7 +935,7 @@ if size(mvn_d4_dat,/type) eq 8 then begin
 	qf_tmp = intarr(npts)
 	dead_tmp = dblarr(npts,nenergy*nbins*nmass)
 
-	for i=0,npts-1 do begin
+	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
 ;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
