@@ -19,8 +19,8 @@
 ;	VTHRESH: Percentage difference from upstream velocity to allow
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-08-28 06:16:39 -0700 (Fri, 28 Aug 2015) $
-; $LastChangedRevision: 18650 $
+; $LastChangedDate: 2015-09-02 07:49:18 -0700 (Wed, 02 Sep 2015) $
+; $LastChangedRevision: 18689 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_dir.pro $
 ;
 ;-
@@ -114,8 +114,13 @@ endelse
 
 
 if keyword_set(attfilt) then begin
-	if keyword_set(archive) then get_data,'mvn_swica_MSO_Zvec',data = zvec else get_data,'mvn_swics_MSO_Zvec',data = zvec 
-	zx = interpol(zvec.y[*,0],zvec.x,times)
+	if keyword_set(swea) then begin
+		if keyword_set(archive) then get_data,'mvn_swica_MSO_Xvec',data = zvec else get_data,'mvn_swics_MSO_Xvec',data = zvec 
+		zx = interpol(zvec.y[*,0],zvec.x,times)
+	endif else begin
+		if keyword_set(archive) then get_data,'mvn_swica_MSO_Zvec',data = zvec else get_data,'mvn_swics_MSO_Zvec',data = zvec 
+		zx = interpol(zvec.y[*,0],zvec.x,times)
+	endelse
 endif else begin
 	zx = replicate(0,n_elements(times))
 endelse
@@ -133,7 +138,11 @@ vout = fltarr(norb)
 tout = dblarr(norb)
 
 for i = 0,norb-1 do begin
-	w = where(orb eq (mino+i) and abs(zx) lt 1/sqrt(2),nw)		
+	if keyword_set(swea) then begin
+		w = where(orb eq (mino+i) and abs(zx) lt 0.866,nw)
+	endif else begin
+		w = where(orb eq (mino+i) and abs(zx) lt 1/sqrt(2),nw)		
+	endelse
 	if nw gt (minsamp-1) then begin
 		spec = total(spectra[w,*],1,/nan)/nw
 		bspec = total(bspectra[w,*],1,/nan)/nw

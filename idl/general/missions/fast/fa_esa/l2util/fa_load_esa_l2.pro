@@ -14,8 +14,9 @@
 ;         figured out from the time range. Full path
 ;         please. Also,please use the same datatype
 ;  trange = read in the data from this time range, note that if both
-;          files and time range are set, files takes precedence in
+;          files and time range are set, files, and orbits take precedence in
 ;          finding files.
+;  orbit = if set, load the given orbit(s) 
 ; no_time_clip = if set do not clip the data to the time range. The
 ;                trange is only used for file selection.
 ;OUTPUT:
@@ -23,12 +24,12 @@
 ;HISTORY:
 ; 1-sep-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-01 11:34:22 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18683 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/cdf_load/fa_load_esa_l2.pro $
+; $LastChangedDate: 2015-09-02 13:24:36 -0700 (Wed, 02 Sep 2015) $
+; $LastChangedRevision: 18694 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_load_esa_l2.pro $
 ;-
 Pro fa_load_esa_l2, datatype = datatype, type = type, $
-   files = files, trange = trange, $
+   files = files, trange = trange, orbit = orbit, $
    no_time_clip = no_time_clip, $
    _extra = _extra
 
@@ -36,7 +37,7 @@ Pro fa_load_esa_l2, datatype = datatype, type = type, $
   fa_esa_init
 ;Keep track of software versioning here
   sw_vsn = fa_esa_current_sw_version()
-  sw_vsn_str = 'v'+string(sw_vsn, format='(i2.2)')
+  vxx = 'v'+string(sw_vsn, format='(i2.2)')
 
 ;The first step is to set up filenames, if there are any
   If(keyword_set(files)) Then Begin
@@ -59,14 +60,24 @@ Pro fa_load_esa_l2, datatype = datatype, type = type, $
      Endif
 ;Here we are loading one datatype now
      type = strlowcase(strcompress(/remove_all, type[0]))
-     tr0 = timerange(trange)
+     If(keyword_set(orbit)) Then Begin
+        start_orbit = long(min(orbit))
+        end_orbit = long(max(orbit))
+        ott = fa_orbit_to_time([start_orbit, end_orbit])
+;ott is a 3X2 array, orbit number, start and end time, so the overall
+;time range is:
+        tr0 = [ott[1, 0], ott[2, 1]]
+     Endif Else Begin
+;handle time range
+        tr0 = timerange(trange)
 ;Need orbits, hacked from fa_load_esa_l1.pro
-     start_orbit = long(fa_time_to_orbit(tr0[0]))
-     end_orbit = long(fa_time_to_orbit(tr0[1]))
+        start_orbit = long(fa_time_to_orbit(tr0[0]))
+        end_orbit = long(fa_time_to_orbit(tr0[1]))
+     Endelse
      orbits = indgen(end_orbit-start_orbit+1)+start_orbit
      orbits_str = strcompress(string(orbits,format='(i05)'), /remove_all)
      orbit_dir = strmid(orbits_str,0,2)+'000'
-     relpathnames='l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+orbits_str+'_'+vxx+'.cdf'
+     relpathnames='l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_*_'+orbits_str+'_'+vxx+'.cdf'
      filex=file_retrieve(relpathnames,_extra = !fast)
 ;Only files that exist here
      filex = file_search(filex)

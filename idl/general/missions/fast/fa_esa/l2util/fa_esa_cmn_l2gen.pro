@@ -51,19 +51,18 @@
 ; otp_struct = this is the structure that is passed into
 ;              cdf_save_vars to create the file
 ; directory = Set this keyword to direct the output into this
-;             directory; the default is to populate the MAVEN STA
-;             database. /disks/data/maven/pfp/sta/l2
-; no_compression = if set, do not compress the CDF file
+;             directory; the default is './'
+; fullfile_out = the output filename
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-01 15:45:13 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18686 $
+; $LastChangedDate: 2015-09-02 13:24:36 -0700 (Wed, 02 Sep 2015) $
+; $LastChangedRevision: 18694 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
-Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_typ, $
+Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
                       otp_struct = otp_struct, directory = directory, $
-                      no_compression = no_compression, _extra = _extra
+                      fullfile_out = fullfile0, _extra = _extra
 
 ;Keep track of software versioning here
   sw_vsn = fa_esa_current_sw_version()

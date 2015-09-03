@@ -1736,9 +1736,11 @@ endif
 
 	get_data,'mvn_sta_d8_R1_Qual',data=tmp1
 	get_data,'mvn_sta_c6_tot',data=tmp2
-	d8 = interp(tmp2.y,tmp2.x,tmp1.x)
-	store_data,'mvn_sta_fq_eff',data={x:tmp1.x,y:d8/(4.*tmp1.y+.001)}
-	ylim,'mvn_sta_fq_eff',.1,1.1,1
+	if (size(tmp1,/type) eq 8) and (size(tmp2,/type) eq 8) then begin
+		d8 = interp(tmp2.y,tmp2.x,tmp1.x)
+		store_data,'mvn_sta_fq_eff',data={x:tmp1.x,y:d8/(4.*tmp1.y+.001)}
+		ylim,'mvn_sta_fq_eff',.1,1.1,1
+	endif
 
 
 ;   Mixed product plots
