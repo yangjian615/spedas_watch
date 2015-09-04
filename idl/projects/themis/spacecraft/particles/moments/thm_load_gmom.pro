@@ -32,8 +32,8 @@
 ;Notes:
 ;  Temporary version, to avoid conflicts, but can read Level 2 data, jmm
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-05-06 17:12:12 -0700 (Wed, 06 May 2015) $
-; $LastChangedRevision: 17493 $
+; $LastChangedDate: 2015-09-03 14:19:50 -0700 (Thu, 03 Sep 2015) $
+; $LastChangedRevision: 18709 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_gmom.pro $
 ;-
 pro thm_load_gmom, probe = probe, datatype = datatype, trange = trange, $
@@ -115,7 +115,7 @@ endelse
 for s = 0, n_elements(probes)-1 do begin
   thx = 'th'+ probes[s]
   
-  pathformat = 'qa/' + thx+'/'+lvl+'/gmom/YYYY/'+thx+'_'+lvl+'_gmom_YYYYMMDD_v01.cdf'
+  pathformat = thx+'/'+lvl+'/gmom/YYYY/'+thx+'_'+lvl+'_gmom_YYYYMMDD_v01.cdf'
   dprint, dlevel = 3, 'pathformat: ', pathformat
 
   relpathnames = file_dailynames(file_format = pathformat, trange = trange, addmaster = addmaster)
@@ -134,7 +134,7 @@ for s = 0, n_elements(probes)-1 do begin
   if(keyword_set(varformat)) then vf = varformat else vf = '*'+datatype
   cdf2tplot, file = files, varformat = vf, verbose = verbose, varname = loaded_vars, suffix=suffix
 ;loaded_vars refers to CDF vars, not necessarily tplot vars
-  new_v = tnames(loaded_vars)
+  new_v = tnames(loaded_vars+suffix) ;kluge around issue
   If(new_v[0] Ne '') Then Begin
     thm_new_units, new_v  ;set units in dlimits using dlimits.cdf.vatt
     thm_new_coords, new_v       ;set coordinates in dlimits
@@ -146,8 +146,7 @@ for s = 0, n_elements(probes)-1 do begin
         If(has_data_att) Then Begin
           data_att = dl.data_att
           str_element, data_att, 'data_type', 'calibrated', /add_replace
-        Endif Else data_att = {data_typedl.ysubtitle='[eV]'
-:'calibrated'}
+        Endif Else data_att = {data_type:'calibrated'}
         str_element, dl, 'data_att', data_att, /add
       Endif Else Begin
         data_att = {data_type:'calibrated'}

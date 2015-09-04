@@ -22,6 +22,7 @@
 ;             terminal without an X server running
 ;         time_clip: clip the data to the requested time range; note that if you
 ;             do not use this keyword, you may load a longer time range than requested
+;         no_update: use local data only, don't query the SDC for updated files. 
 ;         
 ; 
 ; OUTPUT:
@@ -64,7 +65,7 @@
 ;      8) When looking for data availability, look for the CDFs at:
 ;               https://lasp.colorado.edu/mms/sdc/about/browse/
 ;             
-;      9) Logging into the SDC: (NOTE on note: save PW option is not checked in yet, still debugging odd Linux bug)
+;      9) Logging into the SDC: 
 ;           - If you have an internet connection, you'll be prompted for a username and password the 
 ;           first time you use the MMS plugin. There's an option in the widget that allows you 
 ;           to save your password in a save file on the local machine; if you select this option, 
@@ -78,8 +79,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-31 08:52:32 -0700 (Mon, 31 Aug 2015) $
-;$LastChangedRevision: 18673 $
+;$LastChangedDate: 2015-09-03 14:26:07 -0700 (Thu, 03 Sep 2015) $
+;$LastChangedRevision: 18710 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -88,7 +89,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, login_info = login_info, $
                   tplotnames = tplotnames, varformat = varformat, no_color_setup = no_color_setup, $
-                  suffix = suffix, time_clip = time_clip
+                  suffix = suffix, time_clip = time_clip, no_update = no_update
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -123,7 +124,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
     ;combine these flags for now, if we're not downloading files then there is
     ;no reason to contact the server unless mms_get_local_files is unreliable
-    no_download = !mms.no_download or !mms.no_server or (response_code ne 200)
+    no_download = !mms.no_download or !mms.no_server or (response_code ne 200) or ~undefined(no_update)
 
     ; only prompt the user if they're going to download data
     if no_download eq 0 then begin

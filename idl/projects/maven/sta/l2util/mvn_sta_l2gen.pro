@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-07-28 09:42:07 -0700 (Tue, 28 Jul 2015) $
-; $LastChangedRevision: 18300 $
+; $LastChangedDate: 2015-09-03 10:22:28 -0700 (Thu, 03 Sep 2015) $
+; $LastChangedRevision: 18702 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -336,6 +336,10 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   mvn_sta_cmn_db_l2gen, mvn_db_dat, directory = dir_out, _extra = _extra
   skip_db:
   print, 'All App_ids finished'
+
+;Manage htaccess here
+  mvn_manage_l2access, 'sta'
+
   Return
 
 End
