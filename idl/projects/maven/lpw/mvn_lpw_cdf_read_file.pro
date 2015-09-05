@@ -97,6 +97,8 @@ FOR ii = 0, nv -1 DO BEGIN
     endelse
 ENDFOR
 
+mvn_lpw_cdf_read_extras  ;extract Ne, Te, Vsc to separate tplot variables, if these are being loaded.
+
 ;stop
 end
 

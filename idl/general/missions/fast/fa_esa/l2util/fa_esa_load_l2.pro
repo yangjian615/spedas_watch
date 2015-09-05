@@ -1,10 +1,10 @@
 ;+
 ;NAME:
-; fa_load_esa_l2
+; fa_esa_load_l2
 ;PURPOSE:
-; Loads MVN FAST ESA L2 data for a given file(s), or time_range
+; Loads FAST ESA L2 data for a given file(s), or time_range, or orbit range
 ;CALLING SEQUENCE:
-; fa_load_esa_l2, files = files, trange=trange, sta_apid=sta_apid
+; fa_esa_load_l2, files = files, trange=trange, sta_apid=sta_apid
 ;INPUT:
 ; All via keyword, if none are set, then the output of timerange() is
 ; used, which may prompt for a time interval
@@ -24,11 +24,11 @@
 ;HISTORY:
 ; 1-sep-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-02 13:24:36 -0700 (Wed, 02 Sep 2015) $
-; $LastChangedRevision: 18694 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_load_esa_l2.pro $
+; $LastChangedDate: 2015-09-04 12:50:41 -0700 (Fri, 04 Sep 2015) $
+; $LastChangedRevision: 18715 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_load_l2.pro $
 ;-
-Pro fa_load_esa_l2, datatype = datatype, type = type, $
+Pro fa_esa_load_l2, datatype = datatype, type = type, $
    files = files, trange = trange, orbit = orbit, $
    no_time_clip = no_time_clip, $
    _extra = _extra
@@ -54,8 +54,8 @@ Pro fa_load_esa_l2, datatype = datatype, type = type, $
      Endelse
 ;Recursive call for different types
      If(n_elements(type) Gt 1) Then Begin
-        For j = 0, n_elements(type)-1 Do fa_load_esa_l2, type=type[j], $
-           trange = trange, no_time_clip = no_time_clip, _extra = _extra
+        For j = 0, n_elements(type)-1 Do fa_esa_load_l2, type=type[j], $
+           trange = trange, orbit = orbit, no_time_clip = no_time_clip, _extra = _extra
         Return
      Endif
 ;Here we are loading one datatype now

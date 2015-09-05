@@ -321,7 +321,7 @@ if total(strmatch(tplotnames, 'mvn_lpw_lp_n_t_l2')) eq 1. then begin
     ylim, 'mvn_lpw_lp_Te_L2', 0., 1.E4
     options, 'mvn_lpw_lp_Te_L2', psym=1
     
-    ylim, 'mvn_lpw_lp_Vsc_L2', 0., 20.
+    ylim, 'mvn_lpw_lp_Vsc_L2', -15, 5.
     options, 'mvn_lpw_lp_Vsc_L2', psym=1
     
   

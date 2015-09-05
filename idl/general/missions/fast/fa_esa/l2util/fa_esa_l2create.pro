@@ -1,6 +1,6 @@
 ;+
 ;NAME:
-; fa_create_esa_l2
+; fa_esa_l2create
 ;PURPOSE:
 ; Creates an L2 data structure from l1 data
 ;INPUT:
@@ -63,13 +63,13 @@
 ; added eflux variable, 2015-08-21, jmm
 ; added orbit stat and end tags, 2015-08-24, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-01 16:30:31 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18687 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_create_esa_l2.pro $
+; $LastChangedDate: 2015-09-04 11:06:02 -0700 (Fri, 04 Sep 2015) $
+; $LastChangedRevision: 18714 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2create.pro $
 ;-
-pro fa_create_esa_l2,type=type, $
-                     orbit=orbit, $
-                     data_struct=all_dat
+pro fa_esa_l2create,type=type, $
+                    orbit=orbit, $
+                    data_struct=all_dat
 
   fa_init
 

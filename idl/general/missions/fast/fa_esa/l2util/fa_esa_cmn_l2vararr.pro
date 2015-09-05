@@ -16,12 +16,10 @@
 ; the name in the CDF file, the third is 'Y' or 'N' for record
 ; variance.
 ;HISTORY:
-; 16-jun-2014,jmm, jimm@ssl.berkeley.edu
-; 25-aug-2015, jmm, Added MET variable
 ; 1-sep-2015, jmm, Hacked from mvn_sta_cmn_l2vararr
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-01 16:30:31 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18687 $
+; $LastChangedDate: 2015-09-04 12:50:41 -0700 (Fri, 04 Sep 2015) $
+; $LastChangedRevision: 18715 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2vararr.pro $
 ;-
 Function fa_esa_cmn_l2vararr, data_name
@@ -62,7 +60,7 @@ Function fa_esa_cmn_l2vararr, data_name
           ['CHARGE', 'CHARGE', 'N'], $
           ['SC_POT', 'SC_POT', 'Y'], $
           ['BKG_ARR', 'BKG_ARR', 'N'], $
-          ['HEADER_BYTES', 'HEADER_BYTES'], $
+          ['HEADER_BYTES', 'HEADER_BYTES', 'Y'], $
           ['DATA', 'DATA', 'Y'], $
           ['EFLUX', 'EFLUX', 'Y'], $
           ['ORBIT_START', 'ORBIT_START', 'N'], $

@@ -56,8 +56,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-02 13:24:36 -0700 (Wed, 02 Sep 2015) $
-; $LastChangedRevision: 18694 $
+; $LastChangedDate: 2015-09-04 12:50:41 -0700 (Fri, 04 Sep 2015) $
+; $LastChangedRevision: 18715 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -115,7 +115,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
             ['TIME_END', 'DOUBLE', 'Unix time at the end of data collection. (NUM_DISTS elements)', 'Interval end time (unix)'], $
             ['TIME_DELTA', 'DOUBLE', 'Averaging time. (TIME_END - TIME_START). (NUM_DISTS elements).', 'Averaging time'], $
             ['TIME_INTEG', 'DOUBLE', 'Integration time. (TIME_DELTA/N_ENERGY). (NUM_DISTS elements).', 'Integration time'], $
-            ['HEADER', 'BYTE', 'The packet header bytes. (44XNUM_DISTS elements)', 'Header'], $
+            ['HEADER_BYTES', 'BYTE', 'The packet header bytes. (44XNUM_DISTS elements)', 'Header'], $
             ['VALID', 'INTEGER', 'Validity flag codes valid data (bit 0), non-zero values are not necessarily valid (NUM_DISTS elements)', ' Valid flag'], $
             ['DATA_QUALITY', 'INTEGER', 'Quality flag (NUM_DISTS elements)', 'Quality flag'], $
             ['NBINS', 'INTEGER', 'Number of angluar bins (NUM_DISTS elements)', 'Number of bins'], $
@@ -141,6 +141,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 ;No need for lablaxis values here, just use the name
   nv_vt = [['PROJECT_NAME', 'STRING', 'FAST'], $
            ['DATA_NAME', 'STRING', cmn_dat.data_name], $
+           ['DATA_LEVEL', 'STRING', 'Level 2'], $
            ['UNITS_NAME', 'STRING', 'eflux'], $
            ['UNITS_PROCEDURE', 'STRING', 'fa_esa_convert_esa_units, name of IDL routine used for units conversion '], $
            ['NUM_DISTS', 'INTEGER', 'Number of measurements or times in the file'], $
@@ -154,8 +155,9 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
            ['DEAD', 'FLOAT', 'Dead time in seconds for 1 processed count'], $
            ['MASS', 'FLOAT', 'Proton or Electron mass in units of MeV/c2'], $
            ['CHARGE', 'FLOAT', 'Proton or Electron charge (1 or -1)'], $
-           ['BKG_ARR', 'FLOAT', 'Background counts array with dimension (96, 64)']]
-
+           ['BKG_ARR', 'FLOAT', 'Background counts array with dimension (96, 64)'], $
+           ['ORBIT_START', 'LONG', 'Start Orbit of file'], $
+           ['ORBIT_END', 'LONG', 'End Orbit of file']]
 
 ;Use Lower case for variable names
   nv_vt[0, *] = strlowcase(nv_vt[0, *])
@@ -183,6 +185,10 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      Have_tag = where(cvars Eq vj, nhave_tag)
      If(nhave_tag Gt 0) Then Begin
         dvar = cmn_dat.(have_tag)
+;cdf_save_vars2 expects the ntimes to be first for 2, 3-d variables
+        If(vj Eq 'data' Or vj Eq 'eflux') Then Begin 
+           dvar = transpose(dvar, [2, 0, 1])
+        Endif Else If(vj Eq 'header_bytes') Then dvar = transpose(dvar)
      Endif Else Begin
 ;Case by case basis
         Case vj of
@@ -317,7 +323,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
         str_element, vatt, 'funct', 'fa_esa_energy', /add_replace
         str_element, vatt, 'component_0', 'energy', /add_replace
         str_element, vatt, 'component_1', 'mode_ind', /add_replace
-     Endif Else If(vj Eq 'energy_full') Then Begin
+     Endif Else If(vj Eq 'denergy_full') Then Begin
         str_element, vatt, 'virtual', 'TRUE', /add_replace
         str_element, vatt, 'funct', 'fa_esa_energy', /add_replace
         str_element, vatt, 'component_0', 'denergy', /add_replace
@@ -343,17 +349,25 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
             type:0, numattr: -1, numelem: 1, recvary: 1b, $
             numrec:0L, ndimen: 0, d:lonarr(6), dataptr:ptr_new(), $
             attrptr:ptr_new()}
-     vsj.name = vj
-     vsj.datatype = cdf_type
-     vsj.type = dtype
-     vsj.numrec = num_dists
+;Virtual variable setup:
+     If(vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or vj Eq 'denergy_full') Then Begin
+        vsj.name = vj
+        vsj.datatype = cdf_type
+        vsj.type = dtype
+        vsj.attrptr = ptr_new(vatt)
+     Endif Else Begin
+        vsj.name = vj
+        vsj.datatype = cdf_type
+        vsj.type = dtype
+        vsj.numrec = num_dists
 ;It looks as if you do not include the time variation?
-     ndim = size(dvar, /n_dimen)
-     dims = size(dvar, /dimen)
-     vsj.ndimen = ndim-1
-     If(ndim Gt 1) Then vsj.d[0:ndim-2] = dims[1:*]
-     vsj.dataptr = ptr_new(dvar)
-     vsj.attrptr = ptr_new(vatt)
+        ndim = size(dvar, /n_dimen)
+        dims = size(dvar, /dimen)
+        vsj.ndimen = ndim-1
+        If(ndim Gt 1) Then vsj.d[0:ndim-2] = dims[1:*]
+        vsj.dataptr = ptr_new(dvar)
+        vsj.attrptr = ptr_new(vatt)
+     Endelse
      
 ;Append the variables structure
      If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]

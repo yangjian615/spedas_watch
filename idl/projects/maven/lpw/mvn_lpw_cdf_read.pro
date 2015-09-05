@@ -190,7 +190,7 @@ endif else begin
     ;Feed found files into read routine:
     mvn_lpw_cdf_read_file, dir=dirs, varlist=names
     
-    mvn_lpw_cdf_read_extras  ;extract Ne, Te, Vsc to separate tplot variables
+    ;mvn_lpw_cdf_read_extras  ;extract Ne, Te, Vsc to separate tplot variables   ;moved into mvn_lpw_cdf_read_file, by CMF on 2015-09-04
    
 endelse
 

@@ -14,8 +14,8 @@
 ;HISTORY:
 ; 2015-09-02, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-02 13:24:36 -0700 (Wed, 02 Sep 2015) $
-; $LastChangedRevision: 18694 $
+; $LastChangedDate: 2015-09-04 13:38:14 -0700 (Fri, 04 Sep 2015) $
+; $LastChangedRevision: 18718 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2gen.pro $
 ;-
 Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
@@ -27,34 +27,24 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
   load_position = 'init'
   catch, error_status
   
-  if error_status ne 0 then begin
+  If(error_status ne 0) Then Begin
      print, '%FA_ESA_L2GEN: Got Error Message'
      help, /last_message, output = err_msg
      For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
-     case load_position of
-        'init':begin
-           print, 'Problem with initialization'
-           goto, skip_eeb
-        end
-        'ies':begin
-           print, 'Problem in '+load_position
-           goto, skip_ies
-        end
-        'ees':begin
-           print, 'Problem in '+load_position
-           goto, skip_ees
-        end
-        'ieb':begin
-           print, 'Problem in '+load_position
-           goto, skip_ieb
-        end
-        'eeb':begin
-           print, 'Problem in '+load_position
-           goto, skip_eeb
-        end
-        else: goto, skip_eeb
-     endcase
-  endif
+     If(load_position Eq 'init') Then Begin
+        print, 'Problem with initialization'
+        goto, skip_all
+     Endif Else Begin
+        print, 'Problem with type: '+load_position+' Skipping:'+load_position
+        Case load_position Of
+           'ies':goto, skip_ies
+           'ees':goto, skip_ees
+           'ieb':goto, skip_ieb
+           'eeb':goto, skip_eeb
+           Else: goto, skip_all
+        Endcase
+     Endelse
+  Endif
   
   If(keyword_set(local_data_dir)) Then ldir = local_data-dir $
   Else Begin
@@ -73,10 +63,11 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
 ;Unlike L1 files, we put the date in L2 files
   dtemp = fa_orbit_to_time(orbit)
   date = time_string(dtemp[1], tformat='YYYYMMDD')
-;For each type, create and output the L2 structure, not in a loop
-;because of the way the catch is implemented
+
+;For each type, create and output the L2 structure
   type = 'ies'
-  fa_create_l2, type = type, orbit = orbit, data_struct = dat
+  load_position = type
+  fa_esa_l2create, type = type, orbit = orbit, data_struct = dat
   If(is_struct(dat)) Then Begin
      fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile
      If(~is_struct(otp_struct)) Then message, type+' Write to CDF failed: orbit'+strcompress(/remove_all, string(orbit))
@@ -84,53 +75,62 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
   Endelse
 ;move the file into the correct database directory
-  relpathname='l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
+  relpathname='fast/l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
   final_resting_place = ldir+relpathname
-  file_move, fullfile, final_resting_place
+  file_move, fullfile, final_resting_place, /overwrite
   skip_ies:
 
   type = 'ees'
-  fa_create_l2, type = type, orbit = orbit, data_struct = dat
+  load_position = type
+  fa_esa_l2create, type = type, orbit = orbit, data_struct = dat
   If(is_struct(dat)) Then Begin
-     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct
+     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile
      If(~is_struct(otp_struct)) Then message, type+' Write to CDF failed: orbit'+strcompress(/remove_all, string(orbit))
   Endif Else Begin
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
   Endelse
 ;move the file into the correct database directory
-  relpathname='l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
+  relpathname='fast/l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
   final_resting_place = ldir+relpathname
-  file_move, fullfile, final_resting_place
+  file_move, fullfile, final_resting_place, /overwrite
   skip_ees:
 
   type = 'ieb'
-  fa_create_l2, type = type, orbit = orbit, data_struct = dat
+  load_position = type
+  fa_esa_l2create, type = type, orbit = orbit, data_struct = dat
   If(is_struct(dat)) Then Begin
-     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct
+     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile
      If(~is_struct(otp_struct)) Then message, type+' Write to CDF failed: orbit'+strcompress(/remove_all, string(orbit))
   Endif Else Begin
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
   Endelse
 ;move the file into the correct database directory
-  relpathname='l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
+  relpathname='fast/l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
   final_resting_place = ldir+relpathname
-  file_move, fullfile, final_resting_place
+  file_move, fullfile, final_resting_place, /overwrite
   skip_ieb:
 
   type = 'eeb'
-  fa_create_l2, type = type, orbit = orbit, data_struct = dat
+  load_position = type
+  fa_esa_l2create, type = type, orbit = orbit, data_struct = dat
   If(is_struct(dat)) Then Begin
-     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct
+     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile
      If(~is_struct(otp_struct)) Then message, type+' Write to CDF failed: orbit'+strcompress(/remove_all, string(orbit))
   Endif Else Begin
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
   Endelse
 ;move the file into the correct database directory
-  relpathname='l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
+  relpathname='fast/l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
   final_resting_place = ldir+relpathname
-  file_move, fullfile, final_resting_place
+  file_move, fullfile, final_resting_place, /overwrite
   skip_eeb:
-  message, /info, 'All ESA datatypes finished'
+
+  load_position = 'done'
+
+  message, /info, 'All ESA datatypes finished, Orbit: '+strcompress(/remove_all, orbit)
+  
+  skip_all:
+
   Return
 
 End
