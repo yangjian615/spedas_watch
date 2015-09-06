@@ -10,9 +10,9 @@
 ; Output: A struct describing a token or an error struct
 ; 
 ; 
-; $LastChangedBy: lphilpott $
-; $LastChangedDate: 2011-03-14 14:11:19 -0700 (Mon, 14 Mar 2011) $
-; $LastChangedRevision: 8388 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-09-05 12:58:06 -0700 (Sat, 05 Sep 2015) $
+; $LastChangedRevision: 18719 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/get_token.pro $
 ;- 
 
@@ -192,7 +192,7 @@ endif else if stregex(s,'^([#]{1,2}|\*|\+|-|/|\<|\>|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][E
 ;punctuation
 ;endif else if stregex(s,'^([\(\)\*\^/\<\>~\?,\{}=]|\[|]|[+#-]{1,2}|&&|\|\|)',length=l) ne -1 then begin
 ;endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#+-]{1,2}|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt])',length=l) ne -1 then begin
-endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#]{1,2}|[+]{1,2}|[-]{1,2}|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt])',length=l) ne -1 then begin
+endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#]{1,2}|[+]{1,2}|[-]{1,2}|[+]\$|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt])',length=l) ne -1 then begin
   tok.type = 'operator'
   
   tok.name = strlowcase(strmid(s,0,l))  

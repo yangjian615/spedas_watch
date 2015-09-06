@@ -1,7 +1,7 @@
 S->Var Asm Exp
 
 Exp->Literal | VarExp | ~Exp | -Exp | +Exp |(Exp) 
-                      | FunExp | Exp Op Exp 
+                      | FunExp | Exp Op Exp | VarExp +$ VarExp
 
 VarExp-> Var | ++Var | --Var | Var++ | Var--
 

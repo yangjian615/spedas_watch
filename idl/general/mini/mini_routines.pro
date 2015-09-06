@@ -27,9 +27,9 @@
 ;      however
 ;
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
-; $LastChangedRevision: 17542 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-09-05 13:03:58 -0700 (Sat, 05 Sep 2015) $
+; $LastChangedRevision: 18720 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/mini_routines.pro $
 ;- 
 
@@ -754,6 +754,15 @@ function mini_var,arg1
   
 end
 
+function mini_svar,arg1,arg2,arg3
+  compile_opt hidden,strictarr
+  
+  ;stop
+  
+  return, {type:'string',name:'tvar',value:arg1.value+arg3.value,index:arg1.index}
+  
+end
+
 function mini_incdec,arg1,arg2
 
   compile_opt hidden,strictarr
@@ -1248,7 +1257,8 @@ function operator_list
     'le',$
     'lt',$
     'or',$
-    'xor']
+    'xor',$
+    '+$']
     
   op_values = [$ ;list of names as they will be called by 'call_function'
     'mini_not',$
@@ -1276,7 +1286,8 @@ function operator_list
     'mini_gt',$
     'mini_le',$
     'mini_lt',$
-    'mini_xor']
+    'mini_xor',$
+    'mini_svar']
     
   ;As it turns out, most of this stuff doesn't matter for operators
   ;Instead operators are handled by 

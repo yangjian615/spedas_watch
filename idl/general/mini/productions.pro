@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-10 17:04:22 -0700 (Fri, 10 May 2013) $
-; $LastChangedRevision: 12331 $
+; $LastChangedDate: 2015-09-05 12:58:06 -0700 (Sat, 05 Sep 2015) $
+; $LastChangedRevision: 18719 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/productions.pro $
 ;-
 
@@ -18,9 +18,9 @@
 
 function productions
 
-  nonterminals = ['sp','s','exp','args','keyword']
+  nonterminals = ['sp','s','exp','args','keyword','svar']
   terminals = ['var','asm','tvar','number','++',$
-               '--','~','u-','b-','not','(',')',$
+               '--','~','u-','b-','+$','not','(',')',$
                'func','^','*','#','##','k/','b/',$
                'mod','u+','b+','<','>','eq','ne',$
                'le','lt','ge','gt','and',$
@@ -28,7 +28,7 @@ function productions
   
   
   ;operators list
-  operators = reverse(['^','++','--',$
+  operators = reverse(['^','++','--','+$',$
                        '*','#','##','k/','b/','mod',$
                        'u+','u-','b+','b-','<','>','not','~',$
                        'eq','ne','le','lt','ge','gt',$
@@ -36,7 +36,7 @@ function productions
                        '&&','||'])
     
   ;list of operator precedences, same number indicates same precedence, lower number indicates lower precedence.
-  precedences = reverse([5,5,5,$
+  precedences = reverse([5,5,5,5,$
                          4,4,4,4,4,4,$
                          3,3,3,3,3,3,3,3,$
                          2,2,2,2,2,2,$
@@ -44,7 +44,7 @@ function productions
                          0,0])
   
   ;the number of rules in the grammar
-  n = 46
+  n = 50
   
   start = 's'
   augment = 'sp'
@@ -67,7 +67,10 @@ function productions
   left[3:40] = 'exp'
   left[41:44] = 'args'
   left[45] = 'keyword'
-  
+  left[46] = 'svar'
+  left[47] = 'exp'
+  left[48] = 'svar'
+ 
   plist = replicate(production,n)
   
   plist[*].left = left
@@ -290,7 +293,20 @@ function productions
   plist[i].right[0:1] = ['k/','var']
   plist[i].length = 2
   plist[i].fun = 'mini_keyword'
+  i++ 
+  plist[i].right[0:2] = ['tvar','+$','tvar']
+  plist[i].length = 3
+  plist[i].fun = 'mini_svar'
   i++
+  plist[i].right[0] = ['svar']
+  plist[i].length = 1
+  plist[i].fun = 'mini_var'
+  i++
+  plist[i].right[0:2] = ['svar', '+$', 'tvar']
+  plist[i].length = 3
+  plist[i].fun = 'mini_svar'
+  i++
+ 
   
   plist.index = lindgen(n_elements(plist))
   

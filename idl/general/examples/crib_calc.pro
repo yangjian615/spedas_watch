@@ -10,8 +10,8 @@
 ;Warning: this crib uses some data from the THEMIS branch.  You'll require those routines to run this crib
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-08-31 12:55:36 -0700 (Mon, 31 Aug 2015) $
-; $LastChangedRevision: 18676 $
+; $LastChangedDate: 2015-09-05 13:28:51 -0700 (Sat, 05 Sep 2015) $
+; $LastChangedRevision: 18722 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_calc.pro $
 ;
 ;-
@@ -226,5 +226,14 @@ calc,'"tha_state_pos_re" = ' + $
      '"tha_state_pos"/6371.2' 
 
 stop
+
+;example 19 string concatenation
+;You can use the +$ IDL operator to concatenate strings
+thm_load_state,probe='*'
+
+calc,'"tha_state_pos_re" = "tha_state" +$ "_pos"/6371.2'
+
+stop
+
 
 end
