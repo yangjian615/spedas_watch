@@ -14,8 +14,8 @@
 ;HISTORY:
 ; 2015-09-02, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-04 13:38:14 -0700 (Fri, 04 Sep 2015) $
-; $LastChangedRevision: 18718 $
+; $LastChangedDate: 2015-09-08 10:39:20 -0700 (Tue, 08 Sep 2015) $
+; $LastChangedRevision: 18725 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2gen.pro $
 ;-
 Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
@@ -46,6 +46,9 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
      Endelse
   Endif
   
+;Clear all common blocks
+  fa_esa_clear_common_blocks
+
   If(keyword_set(local_data_dir)) Then ldir = local_data-dir $
   Else Begin
      If(~is_string(getenv('ROOT_DATA_DIR'))) Then Begin

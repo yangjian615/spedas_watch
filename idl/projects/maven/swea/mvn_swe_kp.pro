@@ -45,9 +45,9 @@
 ;
 ;OUTPUTS:
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-04 11:15:53 -0700 (Tue, 04 Aug 2015) $
-; $LastChangedRevision: 18377 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-09-08 14:44:15 -0700 (Tue, 08 Sep 2015) $
+; $LastChangedRevision: 18730 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_kp.pro $
 ;
 ;-
@@ -320,7 +320,7 @@ pro mvn_swe_kp, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
   fname = path + '/' + froot + yyyy + mm + dd
 
   tplot_save, pans, file=fname
-  file_chmod, fname + '.tplot', mode='0664'o
+  file_chmod, fname + '.tplot', '0664'o
 
   return
 

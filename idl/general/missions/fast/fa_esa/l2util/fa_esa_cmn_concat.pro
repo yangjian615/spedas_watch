@@ -52,8 +52,8 @@
 ;HISTORY:
 ; 19-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-01 16:30:31 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18687 $
+; $LastChangedDate: 2015-09-08 09:15:11 -0700 (Tue, 08 Sep 2015) $
+; $LastChangedRevision: 18724 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_concat.pro $
 ;-
 Function fa_esa_cmn_concat, dat1, dat2
@@ -83,11 +83,19 @@ Function fa_esa_cmn_concat, dat1, dat2
         Return, -1
      Endif Else Begin
         If(rv_arr[2, j] Eq 'N') Then Begin
-;Arrays must be equal
-           If(Not array_equal(dat1.(x1), dat2.(x2))) Then Begin
-              dprint, dlev = [0], 'Array mismatch for: '+rv_arr[0, j]
-              Return, -1
+;Arrays must be equal, unless they are orbit_start and orbit_end
+           If(rv_arr[0, j] Eq 'ORBIT_START') Then Begin
+              If(count Eq 0) Then undefine, dat
+              count = count+1
+              str_element, dat, rv_arr[0, j], min([dat1.(x1), dat2.(x2)]), /add_replace
+           Endif Else If(rv_arr[0, j] Eq 'ORBIT_END') Then Begin
+              If(count Eq 0) Then undefine, dat
+              count = count+1
+              str_element, dat, rv_arr[0, j], max([dat1.(x1), dat2.(x2)]), /add_replace
            Endif Else Begin
+              If(Not array_equal(dat1.(x1), dat2.(x2))) Then Begin
+                 dprint, dlev = [0], 'Array mismatch for: '+rv_arr[0, j]+ ' Retaining Initial values'
+              Endif
               If(count Eq 0) Then undefine, dat
               count = count+1
               str_element, dat, rv_arr[0, j], dat1.(x1), /add_replace

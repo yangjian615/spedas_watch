@@ -20,8 +20,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-09-01 11:40:44 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18684 $
+; $LastChangedDate: 2015-09-07 22:08:33 -0700 (Mon, 07 Sep 2015) $
+; $LastChangedRevision: 18723 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_history.pro $
 ;-
 FUNCTION mms_bss_history_cat, bsh, category, wt
@@ -96,12 +96,12 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
   ;----------------
   tnow = systime(/utc,/seconds)
   tlaunch = time_double('2015-03-12/22:44')
-  t3m = tnow - 90.d0*86400.d0; 90 days
+  t3m = tnow - 93.d0*86400.d0; 90 days
   if n_elements(trange) eq 2 then begin
     tr = timerange(trange)
   endif else begin
     tr = [t3m,tnow]
-    ;tr = [tlaunch,tnow]
+   ; tr = [tlaunch,tnow]
     trange = time_string(tr)
   endelse
   

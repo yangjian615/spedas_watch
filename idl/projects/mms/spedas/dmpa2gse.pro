@@ -29,11 +29,34 @@
 ;    Based on dsl2gse from THEMIS, forked 6/22/2015
 ;    
 ;    
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-04 12:46:41 -0700 (Tue, 04 Aug 2015) $
-; $LastChangedRevision: 18385 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2015-09-08 14:29:29 -0700 (Tue, 08 Sep 2015) $
+; $LastChangedRevision: 18729 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/dmpa2gse.pro $
 ;-
+
+PRO mod2tod, vec_in, vec_out
+
+  ; vec_in and vec_out are double precision arrays nX4, [time, xpos, ypos, zpos] in 
+  ; gei coordinates
+  vec_out = make_array(n_elements(vec_in[*,0]), 4, /double)
+  vec_out[*,0] = vec_in[*,0]    ; keep the original time
+  
+  ; create an integer array for ic_conv_matrix
+  ; the format is  YYYYDDD for [n,0] and  sss (seconds of day) for [n,1]  
+  ts = time_struct(vec_in[*,0])  
+  orbtime = make_array(n_elements(vec_in[*,0]), 2, /long)
+  orbtime[*,0] = long((ts.year * 1000.) + ts.doy)
+  orbtime[*,1] = long(fix(ts.sod))
+
+  ; ic_conv_matrix can only handle one time and one vector - hence the loop
+  for i = 0, n_elements(vec_in[*,0])-1 do begin
+    ic_conv_matrix, reform(orbtime[i,*]), cmatrix
+    vec_out[i,1:3] = cmatrix # reform(vec_in[i,1:3])
+  endfor
+
+end
+
 
 pro dmpa2gse,name_mms_xxx_in,name_mms_spinras,name_mms_spindec,name_mms_xxx_out,GSE2DMPA=GSE2DMPA,ignore_dlimits=ignore_dlimits
 
