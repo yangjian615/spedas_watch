@@ -67,8 +67,8 @@
 ;        
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-26 15:42:27 -0700 (Wed, 26 Aug 2015) $
-;$LastChangedRevision: 18634 $
+;$LastChangedDate: 2015-09-09 07:58:00 -0700 (Wed, 09 Sep 2015) $
+;$LastChangedRevision: 18737 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -437,7 +437,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     endif
     
     ; initialize undefined values
-    if undefined(probes) then probes = p_names
+    if undefined(probes) then probes = p_names else probes = strcompress(string(probes), /rem)
     if undefined(level) then level = 'def'
     if undefined(datatypes) then datatypes = '*' ; default to definitive 
     if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir

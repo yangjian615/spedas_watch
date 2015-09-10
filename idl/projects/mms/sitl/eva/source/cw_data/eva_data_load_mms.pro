@@ -77,7 +77,7 @@ FUNCTION eva_data_load_mms, state
         pcode=1
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_edp_*') and (cp eq 0)) then begin
-          mms_load_edp, probes = [prb], level='ql', data_rate='fast', datatype='dce';, /no_sweeps
+          mms_sitl_get_edp,sc=sc
           options,sc+'_edp_fast_dce_dsl', $
             labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
             colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
@@ -232,7 +232,7 @@ FUNCTION eva_data_load_mms, state
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_dsp_*') and (cp eq 0)) then begin
           data_type = (strmatch(paramlist[i],'*b*')) ? 'bpsd' : 'epsd'
-          mms_load_dsp, probes = prb, datatype=datatype
+          mms_sitl_get_dsp, sc=sc, datatype=datatype
           tn=tnames(sc+'*dsp*',jmax)
           if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
             options,tn,ylog=1,zlog=1,yrange=[10,10000]

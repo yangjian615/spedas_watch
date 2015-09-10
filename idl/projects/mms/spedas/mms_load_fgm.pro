@@ -18,15 +18,15 @@
 ; OUTPUT:
 ; 
 ; 
-; EXAMPLE:
-;     See the crib sheet mms_load_data_crib.pro for usage examples
 ; 
 ; NOTES:
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
+;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
+;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-03 13:53:53 -0700 (Thu, 03 Sep 2015) $
-;$LastChangedRevision: 18708 $
+;$LastChangedDate: 2015-09-09 07:56:58 -0700 (Wed, 09 Sep 2015) $
+;$LastChangedRevision: 18736 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
