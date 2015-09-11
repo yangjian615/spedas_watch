@@ -72,6 +72,23 @@ FUNCTION eva_data_load_mms, state
       if ct eq 0 then begin; if not loaded
         
         ;-----------
+        ; EDI
+        ;-----------
+        pcode=1
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_edi_amb_*') and (cp eq 0)) then begin
+          mms_sitl_get_edi_amb,sc=sc
+          eva_data_proc_edi, sc
+          options,sc+'_edi_amb_pa0_raw_counts',ytitle=sc+'!CEDI!Cpa0',ysubtitle='[cts]'
+          options,sc+'_edi_amb_pa180_raw_counts',ytitle=sc+'!CEDI!Cpa180',ysubtitle='[cts]'
+          options,sc+'_edi_amb_gdu1_raw_counts1',ytitle=sc+'!CEDI!Cgdu1',ysubtitle='[cts]',ylog=1
+          options,sc+'_edi_amb_gdu2_raw_counts1',ytitle=sc+'!CEDI!Cgdu2',ysubtitle='[cts]',ylog=1
+          options,sc+'_edi_pitch_gdu1',ytitle=sc+'!CEDI!Cgdu1',ysubtitle='[pitch]'
+          options,sc+'_edi_pitch_gdu2',ytitle=sc+'!CEDI!Cgdu2',ysubtitle='[pitch]'
+          answer = 'Yes'
+        endif
+        
+        ;-----------
         ; EDP
         ;-----------
         pcode=1

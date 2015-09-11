@@ -14,9 +14,9 @@
 ;	IMF: if set, calculate upstream IMF
 ;	ALPHAPROTON: if set, calculate alpha/proton quantities
 ;
-; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-04-16 06:28:16 -0700 (Thu, 16 Apr 2015) $
-; $LastChangedRevision: 17339 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2015-09-10 15:18:07 -0700 (Thu, 10 Sep 2015) $
+; $LastChangedRevision: 18762 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_swindave.pro $
 ;
 ;-
@@ -36,7 +36,7 @@ endif else begin
 	uswim = swim
 endelse
 
-times = uswim.time_unix
+times = uswim.time_unix+2.0 ; centered time
 vels = sqrt(total(uswim.velocity*uswim.velocity,1))
 densities = uswim.density
 
@@ -107,7 +107,7 @@ for i = 0,norb-1 do begin
 		nstd[i] = stddev(densities[w],/nan)
 		vout[i] = mean(vels[w],/nan)
 		vstd[i] = stddev(vels[w],/nan)
-		tout[i] = mean(uswim[w].time_unix,/double,/nan)
+		tout[i] = mean(times[w],/double,/nan)
 		
 
 		if keyword_set(imf) then begin

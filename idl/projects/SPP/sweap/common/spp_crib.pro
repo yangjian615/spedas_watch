@@ -197,6 +197,24 @@ pro spp_set_tplot_options
 end
 
 
+pro temp
+if 1 then begin
+  spp_apid_data,959,apdata=fhkp
+  dat= *(fhkp.last_ccsds)
+  d=  swap_endian(/swap_if_little_endian,   uint(dat.data,20,512) )
+  plot,d,/ynozer,psym=-1
+  wshow
+endif
+end
+
+pro temp2
+  tplot,'*spane_hkp*MON* *RIO*'
+  tplot,'*spanai_hkp *rate*
+
+end
+
+
+
 pro spp_init_realtime,filename=filename,base=base
 common spp_crib_com2, recorder_base,exec_base
 exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
@@ -219,6 +237,8 @@ spp_set_tplot_options
 
 spp_apid_data,apdata=ap
 print_struct,ap
+
+
 
 if 0 then begin
   f1= file_search('spp*.ptp')

@@ -78,6 +78,8 @@ function spp_swp_spane_slow_hkp_decom,ccsds , ptp_header=ptp_header, apdat=apdat
 ;  psize =81   ; REV 19
 ;  psize =89   ; REV 26?
   psize = 101 ; REV 29
+  psize = 97  ;  REV 27
+  psize = 105  ; REV ??
   if n_elements(b) ne psize+7 then begin
     dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
     return,0
@@ -182,12 +184,17 @@ end
 function spp_swp_spane_prod1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   data = ccsds.data[20:*]
-  if n_elements(data) ne 2048 then begin
-    dprint,'Improper packet size'
+  
+  lll = 512
+  if n_elements(data) ne lll then begin
+    dprint,'Improper packet size',dlevel=2
+    dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+
     return,0
   endif
-  cnts = swap_endian(ulong(data,0,512) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
-  cnts = reform(cnts,16,512/16)
+  ns = lll/4
+  cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+  cnts = reform(cnts,16,ns/16)
   cnts1 = total(cnts,1)
   cnts2 = total(cnts,2)
   tot = total(cnts)   
@@ -264,7 +271,9 @@ pro spp_swp_spane_init,save=save
   if n_elements(save) eq 0 then save=1
   rt_flag = 1
 
+
   spp_apid_data,'360'x ,routine='spp_swp_spane_prod1_decom',tname='spp_spane_spec_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  spp_apid_data,'361'x ,routine='spp_swp_spane_prod1_decom',tname='spp_spane_spec2_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
   spp_apid_data,'36d'x ,routine='spp_generic_decom',tname='spp_spane_dump_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
   spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_decom',tname='spp_spane_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
 
