@@ -7,11 +7,12 @@
 ;  in the distribution to a particular number of counts.
 ;
 ;Calling Sequence:
-;  thm_part_set_counts, dist_array, counts
+;  thm_part_set_counts, dist_array, counts [,set_units]
 ;
 ;Input:
 ;  dist_array:  pointer array containing particle data (see thm_part_dist_array)
 ;  counts:  number of counts to set the distribution to
+;  set_units:  flag to set the units_name field to 'counts'
 ;
 ;Example:
 ;  ;set all data in the distribution to 1 count
@@ -21,13 +22,13 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-07-01 19:05:28 -0700 (Wed, 01 Jul 2015) $
-;$LastChangedRevision: 18009 $
+;$LastChangedDate: 2015-09-10 19:01:20 -0700 (Thu, 10 Sep 2015) $
+;$LastChangedRevision: 18768 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_set_counts.pro $
 ;
 ;-
 
-pro thm_part_set_counts, data, counts
+pro thm_part_set_counts, data, counts, set_units=set_units
 
     compile_opt idl2, hidden
 
@@ -47,6 +48,9 @@ endif
 ;set all bins to requested value
 for i=0, n_elements(data)-1 do begin
   (*data[i]).data = float(counts)
+  if keyword_set(set_units) then begin
+    (*data[i]).units_name = 'counts'
+  endif
 endfor
 
 

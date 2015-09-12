@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  spd_slice2d_ebounds
+;  spd_slice2d_get_ebounds
 ;
 ;
 ;Purpose:
@@ -21,9 +21,9 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_ebounds.pro $
+;$LastChangedDate: 2015-09-10 18:59:05 -0700 (Thu, 10 Sep 2015) $
+;$LastChangedRevision: 18767 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_get_ebounds.pro $
 ;-
 function spd_slice2d_get_ebounds, dist
 

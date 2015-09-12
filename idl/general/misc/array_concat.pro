@@ -1,5 +1,7 @@
-; + 
-;FUNCTION array_concat
+;+ 
+;FUNCTION:
+;  array_concat
+;
 ;PURPOSE:
 ;  Performs array concatenation in a way that handles an empty list.
 ;  Simple code that gets duplicated everywhere.
@@ -7,18 +9,19 @@
 ;Inputs:
 ;  arg: The argument to be concatenated
 ;  array: The array to which it should be concatenated, or nothing
-;  
+;  no_copy: Flag to effectively call array_concat( x, temporary(y) ), which 
+;           throws an exception in IDL versions without the null variable.  
+;
 ;Output:
-;  array + arg
+;  [ array , arg ]
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2013-10-21 15:49:38 -0700 (Mon, 21 Oct 2013) $
-;$LastChangedRevision: 13358 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-09-10 18:58:16 -0700 (Thu, 10 Sep 2015) $
+;$LastChangedRevision: 18766 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/array_concat.pro $
-;
-; -
+;-
 
-function array_concat,arg,array
+function array_concat,arg,array, no_copy=no_copy
 
   compile_opt idl2
   
@@ -26,7 +29,11 @@ function array_concat,arg,array
  ; if ~is_array(array) && ~keyword_set(array) then begin
     return,[arg]
   endif else begin
-    return,[array,arg]
+    if keyword_set(no_copy) then begin
+      return, [temporary(array),arg]
+    endif else begin
+      return,[array,arg]
+    endelse
   endelse
 
 end

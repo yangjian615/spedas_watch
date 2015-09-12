@@ -184,8 +184,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2015-09-10 18:59:05 -0700 (Thu, 10 Sep 2015) $
+;$LastChangedRevision: 18767 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -232,7 +232,7 @@ invalid = 0b
 fail = ''
 
 
-if ~ptr_valid(input1) || is_struct(input1) then begin
+if ~ptr_valid(input1[0]) and ~is_struct(input1[0]) then begin
   fail = 'Invalid data.  Input must be pointer or structure array.'
   dprint, dlevel=1, fail
   return, invalid

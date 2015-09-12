@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-03 10:22:28 -0700 (Thu, 03 Sep 2015) $
-; $LastChangedRevision: 18702 $
+; $LastChangedDate: 2015-09-11 11:49:40 -0700 (Fri, 11 Sep 2015) $
+; $LastChangedRevision: 18772 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -30,11 +30,22 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
 
   load_position = 'init'
   catch, error_status
-  
+  einit = 0
   if error_status ne 0 then begin
      print, '%MVN_STA_L2GEN: Got Error Message'
      help, /last_message, output = err_msg
      For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
+;Open a file print out the error message, only once
+     If(einit Eq 0) Then Begin
+        einit = 1
+        openw, eunit, '/tmp/sta_l2_err_msg.txt', /get_lun
+        For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
+        free_lun, eunit
+;mail it to jimm@ssl.berkeley.edu
+        cmd_rq = 'mailx -s "Problem with STA L2 process" jimm@ssl.berkeley.edu < /tmp/sta_l2_err_msg.txt'
+        spawn, cmd_rq
+     Endif
+
      case load_position of
         'init':begin
            print, 'Problem with initialization'
