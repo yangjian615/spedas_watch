@@ -13,8 +13,8 @@
 ; Keywords: error: Returns an error struct if illegal globbing is used
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2011-06-10 13:33:56 -0700 (Fri, 10 Jun 2011) $
-; $LastChangedRevision: 8731 $
+; $LastChangedDate: 2015-09-12 11:37:42 -0700 (Sat, 12 Sep 2015) $
+; $LastChangedRevision: 18779 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/string_glob_preprocess.pro $
 ;-
 
@@ -23,7 +23,7 @@ function sgp_is_globbable,s
 
   compile_opt idl2
   
-  return,s.type eq 'string' and (strpos(s.value,'*') ne -1 or strpos(s.value,'?') ne -1 or strpos(s.value,'[') ne -1)
+  return,is_string_type(s) and (strpos(s.value,'*') ne -1 or strpos(s.value,'?') ne -1 or strpos(s.value,'[') ne -1)
 
 end
 

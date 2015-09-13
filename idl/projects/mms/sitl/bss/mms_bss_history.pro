@@ -20,8 +20,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-09-07 22:08:33 -0700 (Mon, 07 Sep 2015) $
-; $LastChangedRevision: 18723 $
+; $LastChangedDate: 2015-09-12 00:44:04 -0700 (Sat, 12 Sep 2015) $
+; $LastChangedRevision: 18777 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_history.pro $
 ;-
 FUNCTION mms_bss_history_cat, bsh, category, wt
@@ -84,7 +84,7 @@ FUNCTION mms_bss_history_threshold, wt
   return, wthres
 END
 
-PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, dir=dir
+PRO mms_bss_history, bss=bss, trange=trange, tplot=tplot, csv=csv, dir=dir
   compile_opt idl2
   mms_init
   
@@ -101,12 +101,12 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
     tr = timerange(trange)
   endif else begin
     tr = [t3m,tnow]
-   ; tr = [tlaunch,tnow]
+    ;tr = [tlaunch,tnow]
     trange = time_string(tr)
   endelse
   
   ; time grid to be used for Pending buffer history
-  mmax = 4320L ; extra data point for displaying grey-shaded region
+  ;mmax = 4320L ; extra data point for displaying grey-shaded region
   dt = 600.d0;10min
   nmax = (tr[1]-tr[0])/dt; + mmax
   wt = tr[0]+ dindgen(nmax)*dt
@@ -116,8 +116,9 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
   wDe = time_double(time_string(tr[1],prec=-3))+86400.d0
   qmax = floor((wDe-wDs)/86400.d0); number of days
   wDt = wDs + 86400.d0*dindgen(qmax)
-  wDi = lonarr(qmax)
-  wDd = lonarr(qmax)
+  wDi = lonarr(qmax) & wDi0= lonarr(qmax) & wDi1= lonarr(qmax) & wDi2= lonarr(qmax)
+  wDi3= lonarr(qmax) & wDi4= lonarr(qmax) & wDd = lonarr(qmax) & wDd0= lonarr(qmax)
+  wDd1= lonarr(qmax) & wDd2= lonarr(qmax) & wDd3= lonarr(qmax) & wDd4= lonarr(qmax)
 
   ;----------------
   ; LOAD DATA
@@ -125,7 +126,7 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
   if n_elements(bss) eq 0 then bss = mms_bss_query(trange=trange)
 
   ;------------------
-  ; ANALYSIS
+  ; ANALYSIS (TOTAL)
   ;------------------
   wthres= mms_bss_history_threshold(wt); Threshold
   wcatT = lonarr(nmax); All segmentes
@@ -140,22 +141,6 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
   ;wcatT2[nmax-mmax:nmax-1] = !VALUES.F_NAN
   wcatT2[nmax-1] = wcatT2[nmax-2]
 
-  ; Newly held buffers and newly transmitted buffers
-  wInc = lonarr(nmax); increase --> mostly selected buffers by SITL
-  wDec = lonarr(nmax); decrease --> mostly transmitted buffers by SDC
-  for n=1,nmax-1 do begin; for each time step
-    this_wDt = time_double(time_string(wt[n],prec=-3))
-    result = min(wDt-this_wDt,q,/abs); determine the date
-    if wcatT[n]-wcatT[n-1] ge 0 then begin; if increased
-      wInc[n] = wcatT[n] - wcatT[n-1]
-      wDi[q] += wInc[n]
-    endif else begin
-      wDec[n] = wcatT[n-1] - wcatT[n]
-      wDd[q] += wDec[n]
-    endelse
-    
-  endfor
-  
   ; All segments (except bad segments and DELETED segments)
   wcat0  = mms_bss_history_cat(bss, 0, wt)
   wcat1  = mms_bss_history_cat(bss, 1, wt)
@@ -163,41 +148,64 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
   wcat3  = mms_bss_history_cat(bss, 3, wt)
   wcat4  = mms_bss_history_cat(bss, 4, wt)
   
+  ; Newly held buffers and newly transmitted buffers
+  wInc = lonarr(nmax); increase --> mostly selected buffers by SITL
+  wDec = lonarr(nmax); decrease --> mostly transmitted buffers by SDC
+  for n=1,nmax-1 do begin; for each time step of the master profile
+    this_wDt = time_double(time_string(wt[n],prec=-3))
+    result = min(wDt-this_wDt,q,/abs); determine the date (q)
+    a = wcatT[n]-wcatT[n-1]
+    if a ge 0 then begin; if increased
+      wInc[n] = a
+      wDi[q] += wInc[n]
+    endif else begin
+      wDec[n] = (-a)
+      wDd[q] += wDec[n]
+    endelse
+    a = wcat0[n]-wcat0[n-1] & if a ge 0 then wDi0[q] += a else wDd0[q] -= a
+    a = wcat1[n]-wcat1[n-1] & if a ge 0 then wDi1[q] += a else wDd1[q] -= a
+    a = wcat2[n]-wcat2[n-1] & if a ge 0 then wDi2[q] += a else wDd2[q] -= a
+    a = wcat3[n]-wcat3[n-1] & if a ge 0 then wDi3[q] += a else wDd3[q] -= a
+    a = wcat4[n]-wcat4[n-1] & if a ge 0 then wDi4[q] += a else wDd4[q] -= a
+  endfor
+  
+  
+  
   ; Overwritten segments
   bsA = mms_bss_query(bss=bss,exclude='INCOMPLETE'); exclude INCOMPLETE segments
   bsB = mms_bss_query(bss=bsA,status='DERELICT DEMOTED'); include DERELICT or DEMOTED segments
-  wcat0m = mms_bss_history_overwritten2(bsB, 0, wt)
-  wcat1m = mms_bss_history_overwritten2(bsB, 1, wt)
-  wcat2m = mms_bss_history_overwritten2(bsB, 2, wt)
-  wcat3m = mms_bss_history_overwritten2(bsB, 3, wt)
-  wcat4m = mms_bss_history_overwritten2(bsB, 4, wt)
+;  wcat0m = mms_bss_history_overwritten2(bsB, 0, wt)
+;  wcat1m = mms_bss_history_overwritten2(bsB, 1, wt)
+;  wcat2m = mms_bss_history_overwritten2(bsB, 2, wt)
+;  wcat3m = mms_bss_history_overwritten2(bsB, 3, wt)
+;  wcat4m = mms_bss_history_overwritten2(bsB, 4, wt)
   wcat0o = mms_bss_history_overwritten(bsB, 0, wDt)
   wcat1o = mms_bss_history_overwritten(bsB, 1, wDt)
   wcat2o = mms_bss_history_overwritten(bsB, 2, wDt)
   wcat3o = mms_bss_history_overwritten(bsB, 3, wDt)
   wcat4o = mms_bss_history_overwritten(bsB, 4, wDt)
   
-  ;------------------
-  ; TPLOT_ASCII
-  ;------------------
-  if keyword_set(ascii) then begin
-    ; tplot variables
-    store_data,'wcatT',data={x:wt, y:wcatT} & options,'wcatT','ytitle','Total'
-    store_data,'wcatT2',data={x:wt,y:wcatT2}& options,'wcatT2','ytitle','HELD >3days'
-    store_data,'wcat0',data={x:wt, y:wcat0} & options,'wcat0','ytitle','Cat 0'
-    store_data,'wcat1',data={x:wt, y:wcat1} & options,'wcat1','ytitle','Cat 1'
-    store_data,'wcat2',data={x:wt, y:wcat2} & options,'wcat2','ytitle','Cat 2'
-    store_data,'wcat3',data={x:wt, y:wcat3} & options,'wcat3','ytitle','Cat 3'
-    store_data,'wcat4',data={x:wt, y:wcat4} & options,'wcat4','ytitle','Cat 4'
-    store_data,'wcat0m',data={x:wt, y:wcat0m} & options,'wcat0m','ytitle','Cat 0'
-    store_data,'wcat1m',data={x:wt, y:wcat1m} & options,'wcat1m','ytitle','Cat 1'
-    store_data,'wcat2m',data={x:wt, y:wcat2m} & options,'wcat2m','ytitle','Cat 2'
-    store_data,'wcat3m',data={x:wt, y:wcat3m} & options,'wcat3m','ytitle','Cat 3'
-    store_data,'wcat4m',data={x:wt, y:wcat4m} & options,'wcat4m','ytitle','Cat 4'
-    tpv = ['wcatT','wcatT2','wcat0','wcat1','wcat2','wcat3','wcat4',$
-      'wcat0m','wcat1m','wcat2m','wcat3m','wcat4m']
-    tplot_ascii,/header, tpv,fname='sitl_stat',ext='.txt';,dir=!MMS.LOCAL_DATA_DIR
-  endif
+;  ;------------------
+;  ; TPLOT_ASCII
+;  ;------------------
+;  if keyword_set(ascii) then begin
+;    ; tplot variables
+;    store_data,'wcatT',data={x:wt, y:wcatT} & options,'wcatT','ytitle','Total'
+;    store_data,'wcatT2',data={x:wt,y:wcatT2}& options,'wcatT2','ytitle','HELD >3days'
+;    store_data,'wcat0',data={x:wt, y:wcat0} & options,'wcat0','ytitle','Cat 0'
+;    store_data,'wcat1',data={x:wt, y:wcat1} & options,'wcat1','ytitle','Cat 1'
+;    store_data,'wcat2',data={x:wt, y:wcat2} & options,'wcat2','ytitle','Cat 2'
+;    store_data,'wcat3',data={x:wt, y:wcat3} & options,'wcat3','ytitle','Cat 3'
+;    store_data,'wcat4',data={x:wt, y:wcat4} & options,'wcat4','ytitle','Cat 4'
+;    store_data,'wcat0m',data={x:wt, y:wcat0m} & options,'wcat0m','ytitle','Cat 0'
+;    store_data,'wcat1m',data={x:wt, y:wcat1m} & options,'wcat1m','ytitle','Cat 1'
+;    store_data,'wcat2m',data={x:wt, y:wcat2m} & options,'wcat2m','ytitle','Cat 2'
+;    store_data,'wcat3m',data={x:wt, y:wcat3m} & options,'wcat3m','ytitle','Cat 3'
+;    store_data,'wcat4m',data={x:wt, y:wcat4m} & options,'wcat4m','ytitle','Cat 4'
+;    tpv = ['wcatT','wcatT2','wcat0','wcat1','wcat2','wcat3','wcat4',$
+;      'wcat0m','wcat1m','wcat2m','wcat3m','wcat4m']
+;    tplot_ascii,/header, tpv,fname='sitl_stat',ext='.txt';,dir=!MMS.LOCAL_DATA_DIR
+;  endif
   
   ;------------------
   ; CSV
@@ -218,7 +226,10 @@ PRO mms_bss_history, bss=bss, trange=trange, ascii=ascii, tplot=tplot, csv=csv, 
       HEADER=['time','Increase','Decrease']
     write_csv, dir+'mms_bss_diff_per_day.txt', time_string(wDt),wDi,wDd,$
       HEADER=['time','Increase/day','Decrease/day']  
-       
+    write_csv, dir+'mms_bss_inc_per_day.txt', time_string(wDt),wDi,wDi0,wDi1,wDi2,wDi3,wDi4,$
+      HEADER=['time','Total','Category 0','Category 1','Category 2','Category 3','Category 4']
+    write_csv, dir+'mms_bss_dec_per_day.txt', time_string(wDt),wDd,wDd0,wDd1,wDd2,wDd3,wDd4,$
+      HEADER=['time','Total','Category 0','Category 1','Category 2','Category 3','Category 4']
   endif
   
   ;------------------

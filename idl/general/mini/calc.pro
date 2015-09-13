@@ -103,8 +103,8 @@
 ;       4. Implement control statements
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16596 $
+; $LastChangedDate: 2015-09-12 11:37:42 -0700 (Sat, 12 Sep 2015) $
+; $LastChangedRevision: 18779 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/calc.pro $
 ;-
 
@@ -265,7 +265,8 @@ pro calc,s,error=error,function_list=function_list,operator_list=operator_list,v
     return
   endif
   
-  string_glob_preprocess,token_list,globbed_token_list,error=error,verbose=!mini_globals.verbose
+  ;extra strings from variables in token list
+  string_var_preprocess,token_list,var_token_list,error=error,verbose=!mini_globals.verbose
   
   if keyword_set(error) then begin
     ptr_free,!mini_globals.extra
@@ -273,31 +274,45 @@ pro calc,s,error=error,function_list=function_list,operator_list=operator_list,v
     return
   endif
   
-  dim = dimen(globbed_token_list)
+  dim_var = dimen(var_token_list)
   
-  for i = 0,dim[0]-1 do begin
-  
-    ;evaluate the list of tokens using the parse table and grammar provided
-    evaluate,globbed_token_list[i,*],grammar,parse_tables,error=error
+  for i = 0,dim_var[0]-1 do begin
+    
+    string_glob_preprocess,reform(var_token_list[i,*]),globbed_token_list,error=error,verbose=!mini_globals.verbose
   
     if keyword_set(error) then begin
-  
-      if !mini_globals.verbose then begin
-    
-        if in_set('VALUE',tag_names(error)) then begin
-          for i = 0,n_elements(error.value)-1 do begin
-            dprint,error.value[i]
-          endfor
-        endif else begin
-          dprint,error
-        endelse
-     
-      endif
-  
-     ;return
-  
+      ptr_free,!mini_globals.extra
+      ptr_free,!mini_globals.interpolate
+      return
     endif
+  
+    dim_glob = dimen(globbed_token_list)
     
+    for j = 0,dim_glob[0]-1 do begin
+    
+      ;evaluate the list of tokens using the parse table and grammar provided
+      evaluate,globbed_token_list[j,*],grammar,parse_tables,error=error
+    
+      if keyword_set(error) then begin
+    
+        if !mini_globals.verbose then begin
+      
+          if in_set('VALUE',tag_names(error)) then begin
+            for j = 0,n_elements(error.value)-1 do begin
+              dprint,error.value[j]
+            endfor
+          endif else begin
+            dprint,error
+          endelse
+       
+        endif
+    
+       ;return
+    
+      endif
+      
+    endfor
+  
   endfor
   
   ptr_free,!mini_globals.extra
