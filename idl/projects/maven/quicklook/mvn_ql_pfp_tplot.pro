@@ -61,8 +61,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-08-23 17:08:53 -0700 (Sun, 23 Aug 2015) $
-; $LastChangedRevision: 18584 $
+; $LastChangedDate: 2015-09-12 20:20:47 -0700 (Sat, 12 Sep 2015) $
+; $LastChangedRevision: 18780 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -418,6 +418,7 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
         extract_tags, nlim, lim, tags=['yrange', 'ylog', 'zlog', 'spec', 'no_interp', 'ystyle']
         store_data, 'mvn_lpw_w_spec_pas_l2', data=d, dl=dl, lim=nlim
         zlim, 'mvn_lpw_w_spec_pas_l2', 1.e-15, 1.e-8, /def
+        options, 'mvn_lpw_w_spec_pas_l2', ylog=1
         undefine, d, dl, lim, nlim
      ENDIF ELSE BEGIN
         store_data, 'mvn_lpw_w_spec_pas_l2', data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [1., 2.d6]}, $

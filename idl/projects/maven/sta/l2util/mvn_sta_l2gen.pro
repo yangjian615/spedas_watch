@@ -16,9 +16,9 @@
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-11 11:49:40 -0700 (Fri, 11 Sep 2015) $
-; $LastChangedRevision: 18772 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2015-09-13 10:27:26 -0700 (Sun, 13 Sep 2015) $
+; $LastChangedRevision: 18782 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -219,13 +219,12 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      Endif Else mvn_sta_dead_load
  ;Added dead_time_load, 2015-03-03, jmm
  ;Add mag load, ephemeris_load, 2015-03-15, jmm
-     mvn_sta_qf14_load
      mvn_sta_mag_load
      mvn_sta_ephemeris_load
      mvn_sta_qf14_load
   Endif Else Begin
      mvn_sta_l0_load, files = filex
-     mvn_sta_qf14_load
+;     mvn_sta_qf14_load
      mvn_sta_mag_load
 ;Only call ephemeris_load if the date is more than 5 days ago
      ttest = systime(/sec)-time_double(date)
