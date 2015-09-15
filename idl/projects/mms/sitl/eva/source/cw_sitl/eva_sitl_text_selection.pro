@@ -1,8 +1,11 @@
 FUNCTION eva_sitl_text_selection, unix_FOMstr, email=email
   
-  
-  vsep = '---------------------------'
-  msg = [vsep,'SEGMENTS TO BE SENT TO SOC',vsep]
+  msg = eva_sitl_buffdistr(/msg)
+
+  msg = [msg,'']      
+  vsep = '================================================='
+  ;vsep = '---------------------------'
+  msg = [msg, vsep,'List of selections',vsep]
   msg = [msg,'START TIME          - END TIME           ,  FOM,  ID,  DISCUSSION']
   
   nmax = unix_FOMstr.NSEGS
@@ -14,6 +17,6 @@ FUNCTION eva_sitl_text_selection, unix_FOMstr, email=email
     srcID   = unix_FOMstr.SOURCEID[n]
     msg = [msg,stime+' - '+etime+', '+str_fom+', '+srcID+', '+discussion]
   endfor
-
+  msg = [msg, ' ']
   return, msg
 END

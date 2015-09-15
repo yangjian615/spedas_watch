@@ -22,9 +22,9 @@
 ; 11 Aug 2015 (LMI) Bugfix for multiple files
 ; 26 Aug 2015 (IGPP) added support for the 'start_date' and 'end_date' tags
 ; 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-26 08:25:08 -0700 (Wed, 26 Aug 2015) $
-;$LastChangedRevision: 18621 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-09-14 10:48:44 -0700 (Mon, 14 Sep 2015) $
+;$LastChangedRevision: 18792 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_parse_json.pro $
 ;-
 
@@ -49,7 +49,8 @@ function mms_parse_json, json_object
         endelse
       endelse
     endfor
-    if num_structs eq 1 then json_elts=[json_elts]
+
+    if num_structs eq 1 then json_elts=[json_elt]
     
     remote_file_info = replicate({filename: '', filesize: 0l, startdate:'', enddate:''}, num_structs)
     date_pattern = '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}'

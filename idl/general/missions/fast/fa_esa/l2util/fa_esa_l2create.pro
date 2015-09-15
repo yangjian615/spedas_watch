@@ -63,8 +63,8 @@
 ; added eflux variable, 2015-08-21, jmm
 ; added orbit stat and end tags, 2015-08-24, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-04 11:06:02 -0700 (Fri, 04 Sep 2015) $
-; $LastChangedRevision: 18714 $
+; $LastChangedDate: 2015-09-14 15:48:59 -0700 (Mon, 14 Sep 2015) $
+; $LastChangedRevision: 18793 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2create.pro $
 ;-
 pro fa_esa_l2create,type=type, $
@@ -87,6 +87,11 @@ pro fa_esa_l2create,type=type, $
   fa_orbitrange,orbit
   fa_load_l1,datatype=type
   get_fa1_common,type,data=all_dat
+  If(~is_struct(all_dat)) Then Begin
+     message, /info, 'No L1 data for type: '+type+' Orbit: '+strcompress(/remove_all, string(orbit))
+     Return
+  Endif
+
   ntimes=n_elements(all_dat.time)
 
 ;data0,1, and 2 will be the eflux data for each mode, if there is no

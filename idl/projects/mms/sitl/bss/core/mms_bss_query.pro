@@ -10,17 +10,17 @@
 ; CREATED BY: Mitsuo Oka   Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-08-26 18:01:27 -0700 (Wed, 26 Aug 2015) $
-; $LastChangedRevision: 18636 $
+; $LastChangedDate: 2015-09-13 22:04:34 -0700 (Sun, 13 Sep 2015) $
+; $LastChangedRevision: 18784 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/core/mms_bss_query.pro $
 ;-
 FUNCTION mms_bss_query, trange=trange, bss=bss, category=category, $
   frange=frange, status=status, IDs=IDs, withdeleted=withdelete, $
-  exclude=exclude,isPending=isPending, inPlayList=inPlayList
+  exclude=exclude,isPending=isPending, inPlayList=inPlayList, fin=fin
   compile_opt idl2
 
   if n_elements(bss) eq 0 then begin
-    bss = mms_bss_load(trange=trange)
+    bss = mms_bss_load(trange=trange,fin=fin)
     idx = mms_bss_cleanup(bss,withdeleted=withdeleted); remove bad segments
   endif else begin
     idx = lindgen(n_elements(bss.FOM))
@@ -68,7 +68,13 @@ FUNCTION mms_bss_query, trange=trange, bss=bss, category=category, $
       superset = [superset,mms_bss_filter_by_status(bss,sttarr[m],idx=idx)]
     endfor
     superset = superset[1:*]
-    idx = where(Histogram(superset,Omin=omin))+omin
+    idx0 = where(Histogram(superset,Omin=omin))+omin;; Return combined set
+    ; Here, we search elements in either one of the given statuses.
+    ; 'Histogram' returns the count of each index in superset
+    ; 'where' takes the index if the count (in the Histogram) is > 0
+    ; Thus, idx is the elements from the superset.
+    i = where(idx0 ge 0, ct)
+    idx = (ct eq 0) ? [-1] : idx0[i]
   endif
 
   ;----------------------

@@ -125,7 +125,12 @@ function histt, map, orig_time, dat, phi_sc, theta_sc, xx, yy, perc_block=perc_b
   ;; Interpolate map for new times
   nmap    = n_elements(map[0,*])
   new_map = intarr(ntime,nmap)
-  for i=0, nmap-1 do new_map[*,i] = ceil(interpol(map[*,i], orig_time, dat.time))
+  ttime =   (dat.end_time-dat.time) / 2. + dat.time 
+
+
+  for i=0, nmap-1 do new_map[*,i] = ceil(interpol(map[*,i], orig_time, ttime))
+
+
 
   ;;-------------------------------
   ;; Cycle through all times
@@ -179,7 +184,7 @@ function histt, map, orig_time, dat, phi_sc, theta_sc, xx, yy, perc_block=perc_b
      ;;---------------------------------------
      ;; Test Plot
      if keyword_set(test_plot) then begin
-        ind = nn(orig_time,dat.time[i])
+        ind = nn(orig_time,ttime[i])
         plot, phi_sc[ind,*,*], theta_sc[ind,*,*], $
               xrange=[-180,180], $
               yrange=[-90,90], $
@@ -279,6 +284,7 @@ pro mvn_sta_sc_bins_load, perc_block=perc_block,test_plot=test_plot
   endif
 
   print, 'Blocked Bins - Generate block map using apid C8 (~1 minute)'
+
   ;;----------------------------------------------------------------
   ;; Evenly spaced points in 2D with points seperated by nnn degrees
   ;; 1 degree per point
@@ -337,7 +343,7 @@ pro mvn_sta_sc_bins_load, perc_block=perc_block,test_plot=test_plot
 
   ;;--------------------------
   ;; Get matrices/quaternions
-  time = mvn_c8_dat.time
+  time = (mvn_c8_dat.end_time-mvn_c8_dat.time) / 2 + mvn_c8_dat.time
   qrot1_all = spice_body_att('MAVEN_APP_OG',$
                              'MAVEN_APP_IG', $
                              time, $
@@ -482,7 +488,7 @@ pro mvn_sta_sc_bins_load, perc_block=perc_block,test_plot=test_plot
 
 
   map  = final_map
-  time = mvn_c8_dat.time 
+  time = (mvn_c8_dat.end_time-mvn_c8_dat.time) / 2 + mvn_c8_dat.time
   final_map = 0
 
   ;;---------------------------

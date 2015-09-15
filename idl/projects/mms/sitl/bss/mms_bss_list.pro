@@ -31,8 +31,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-08-26 23:12:16 -0700 (Wed, 26 Aug 2015) $
-; $LastChangedRevision: 18639 $
+; $LastChangedDate: 2015-09-13 22:04:34 -0700 (Sun, 13 Sep 2015) $
+; $LastChangedRevision: 18784 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_list.pro $
 ;-
 PRO mms_bss_list, bss=bss, overwritten=overwritten, bad=bad, _extra=_extra
@@ -47,6 +47,7 @@ PRO mms_bss_list, bss=bss, overwritten=overwritten, bad=bad, _extra=_extra
   
     if keyword_set(overwritten) then begin
       a = mms_bss_query(exclude='INCOMPLETE',_extra=_extra)
+      stop
       bss = mms_bss_query(bss=a, status='DEMOTED DERELICT', _extra=_extra)
     endif
   

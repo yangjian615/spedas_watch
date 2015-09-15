@@ -185,7 +185,7 @@ loc_seg_warning = where((new_fomstr.seglengths lt nominal_seg_range(0) $
   count_seg_warning)
   
 ; Now check the number of buffers with priority 1 events
-loc_p1 = where(new_fomstr.fom ge 100 and new_fomstr.fom lt 200, count_p1)
+loc_p1 = where(new_fomstr.fom ge type1_range(0) and new_fomstr.fom lt type1_range(1), count_p1)
 
 if count_p1 gt 0 then begin
   num_p1_buffs = total(new_fomstr.seglengths(loc_p1))

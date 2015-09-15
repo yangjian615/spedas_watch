@@ -170,7 +170,8 @@ FUNCTION eva_data_load_mms, state
           sa='He!U++!N'
           sp='He!U+!N'
           so='O!U+!N'
-          mms_sitl_get_hpca_basic, sc_id=sc, level=level
+          ;mms_sitl_get_hpca_basic, sc_id=sc, level=level
+          mms_sitl_get_hpca, probes=prb, level=level, datatype='rf_corr'
           
           options, sc+'_hpca_hplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sh,ysubtitle='[eV]',ztitle='eflux',/spec,/ylog,/zlog
           ylim,    sc+'_hpca_hplus_RF_corrected', 1, 40000
@@ -192,7 +193,8 @@ FUNCTION eva_data_load_mms, state
         level = 'sitl'
         if( (cp eq 0) and $
           (strmatch(paramlist[i],'*_hpca_*number_density') or strmatch(paramlist[i],'*_hpca_*bulk_velocity'))) then begin
-          mms_sitl_get_hpca_moments, sc_id=sc, level=level
+          ;mms_sitl_get_hpca_moments, sc_id=sc, level=level
+          mms_sitl_get_hpca, probes=prb, level=level, datatype='moments'
           sh='(H!U+!N)'
           so='(O!U+!N)'
           options, sc+'_hpca_hplus_number_density',ytitle=sc+'!CHPCA!CN '+sh,ysubtitle='[cm!U-3!N]',/ylog,$
