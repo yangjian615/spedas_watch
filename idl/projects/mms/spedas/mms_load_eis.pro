@@ -22,9 +22,13 @@
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
+; HISTORY:
+;     9/15/2015 - Ian Cohen at APL: added modifications to omni-directional calculations to be able to handle 
+;                 ExTOF and PHxTOF data
+;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-03 13:53:53 -0700 (Thu, 03 Sep 2015) $
-;$LastChangedRevision: 18708 $
+;$LastChangedDate: 2015-09-15 12:36:24 -0700 (Tue, 15 Sep 2015) $
+;$LastChangedRevision: 18801 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_eis.pro $
 ;-
 
@@ -35,12 +39,12 @@
 ; NOTES:
 ;       based on Brian Walsh's EIS code from 7/29/2015
 ;
-pro mms_eis_cps_omni, probe, species = species, tplotnames = tplotnames
+pro mms_eis_cps_omni, probe, species = species, datatype = datatype, tplotnames = tplotnames, ion_type = ion_type
     ; default to electrons
     if undefined(species) then species = 'electron'
+    if undefined(datatype) then datatype = 'electronenergy'
     probe = strcompress(string(probe), /rem)
-    species_str = 'electronenergy_electron'
-    if species eq 'ion' then species_str = 'partenergy_nonparticle'
+    if species eq 'ion' then species_str = datatype+'_'+ion_type else species_str = datatype+'_'+species
 
     get_data, 'mms'+probe+'_epd_eis_'+species_str+'_cps_t0', data = d, dlimits=dl
     if is_struct(d) then begin
@@ -63,12 +67,12 @@ end
 ; PURPOSE:
 ;       Calculates the omni-directional flux for all 6 telescopes
 ;
-pro mms_eis_flux_omni, probe, species = species, tplotnames = tplotnames
+pro mms_eis_flux_omni, probe, species = species, datatype = datatype, tplotnames = tplotnames
     ; default to electrons
     if undefined(species) then species = 'electron'
+    if undefined(datatype) then species = 'electronenergy'
     probe = strcompress(string(probe), /rem)
-    species_str = 'electronenergy_electron'
-    if species eq 'ion' then species_str = 'partenergy_nonparticle'
+    species_str = datatype+'_'+species
 
     get_data, 'mms'+probe+'_epd_eis_'+species_str+'_flux_t0', data = d, dlimits=dl
     if is_struct(d) then begin
@@ -110,9 +114,21 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
     ; calculate the omni-directional quantities
     for probe_idx = 0, n_elements(probes)-1 do begin
         ;try both ions and electrons in case multiple datatypes were loaded
-        mms_eis_cps_omni, probes[probe_idx], species='ion', tplotnames = tplotnames
-        mms_eis_cps_omni, probes[probe_idx], species='electron', tplotnames = tplotnames
-        mms_eis_flux_omni, probes[probe_idx], species='ion', tplotnames = tplotnames
-        mms_eis_flux_omni, probes[probe_idx], species='electron', tplotnames = tplotnames
+        if (datatype eq 'electronenergy') then begin
+          mms_eis_cps_omni, probes[probe_idx], species='electron', datatype='electronenergy', tplotnames = tplotnames
+          mms_eis_flux_omni, probes[probe_idx], species='electron', datatype='electronenergy', tplotnames = tplotnames
+        endif
+        if (datatype eq 'extof') then begin
+          mms_eis_cps_omni, probes[probe_idx], species='proton', datatype='extof',tplotnames = tplotnames
+          mms_eis_cps_omni, probes[probe_idx], species='alpha', datatype='extof',tplotnames = tplotnames
+          mms_eis_cps_omni, probes[probe_idx], species='oxygen', datatype='extof',tplotnames = tplotnames
+          mms_eis_flux_omni, probes[probe_idx], species='proton', datatype='extof',tplotnames = tplotnames
+          mms_eis_flux_omni, probes[probe_idx], species='alpha', datatype='extof',tplotnames = tplotnames
+          mms_eis_flux_omni, probes[probe_idx], species='oxygen', datatype='extof',tplotnames = tplotnames
+        endif
+        if (datatype eq 'phxtof') then begin
+          mms_eis_cps_omni, probes[probe_idx], species='proton', datatype='phxtof',tplotnames = tplotnames      
+          mms_eis_flux_omni, probes[probe_idx], species='proton', datatype='phxtof',tplotnames = tplotnames
+        endif  
     endfor
 end

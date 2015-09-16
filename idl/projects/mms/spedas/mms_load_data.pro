@@ -79,10 +79,47 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-03 14:26:07 -0700 (Thu, 03 Sep 2015) $
-;$LastChangedRevision: 18710 $
+;$LastChangedDate: 2015-09-15 16:17:33 -0700 (Tue, 15 Sep 2015) $
+;$LastChangedRevision: 18803 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
+
+function mms_files_in_interval, remote_file_info, trange
+    if ~is_struct(remote_file_info) then begin
+        dprint, dlevel = 0, 'Error finding files inside the time interval - need a valid array of structures.'
+        return, -1
+    endif
+    tr = time_double(trange)
+    all_files = remote_file_info.filename
+
+    for file_idx = 0, n_elements(all_files)-1 do begin
+        filename = strsplit(all_files[file_idx], '\', /extract)
+        filename = filename[n_elements(filename)-1]
+        timeval = stregex(filename, '[0-9]{8}|[0-9]{12}|[0-9]{14}', /extract)
+
+        case strlen(timeval) of
+            8: timeformat = 'YYYYMMDD' 
+            12: timeformat = 'YYYYMMDDhhmm'
+            14: timeformat = 'YYYYMMDDhhmmss'
+        endcase
+        append_array, all_times, time_double(timeval, tformat=timeformat)
+    endfor
+
+    ; if there's only one file, return that file
+    if n_elements(all_times) eq 1 then return, remote_file_info
+    ; more than one file, sort the arrays by time
+    sorted_idx = bsort(all_times)
+    sorted_file_structs = remote_file_info[sorted_idx]
+    sorted_times = all_times[sorted_idx]
+    idx_interval = where(sorted_times ge tr[0] and sorted_times le tr[1], file_count)
+    if file_count ne 0 then files_in_interval = sorted_file_structs[idx_interval] else begin
+        dprint, dlevel =0, 'Error, no remote files found for this time interval'
+        return, -1
+    endelse
+    return, files_in_interval
+end
+
+
 
 pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   levels = levels, instrument = instrument, data_rates = data_rates, $
@@ -181,6 +218,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
               
                 remote_file_info = mms_parse_json(data_file)
                 
+                ; limit the CDF files to the requested time range
+                remote_file_info = mms_files_in_interval(remote_file_info, tr)
+
                 if ~is_struct(remote_file_info) then begin
                     dprint, dlevel = 0, 'Error getting the information on remote files'
                     return

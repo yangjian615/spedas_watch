@@ -5,9 +5,9 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-26 09:27:54 -0700 (Wed, 26 Aug 2015) $
-; $LastChangedRevision: 18625 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_brst_crib.pro $
+; $LastChangedDate: 2015-09-15 12:27:35 -0700 (Tue, 15 Sep 2015) $
+; $LastChangedRevision: 18799 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_burst_crib.pro $
 ;-
 
 mms_load_hpca, probes='1', trange=['2015-08-20', '2015-08-21'], datatype='moments', data_rate='brst'
