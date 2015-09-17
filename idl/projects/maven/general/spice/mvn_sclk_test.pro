@@ -21,9 +21,9 @@
 ;
 ;       RESULT:   Named variable to hold the result.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-14 13:59:32 -0700 (Fri, 14 Aug 2015) $
-; $LastChangedRevision: 18497 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-09-16 15:37:49 -0700 (Wed, 16 Sep 2015) $
+; $LastChangedRevision: 18810 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_sclk_test.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -42,12 +42,13 @@ pro mvn_sclk_test, ver=ver, trunc=trunc, ylim=yrange, result=result
 ; Get a list of valid SCLK kernels to process
 
   spath = root_data_dir() + 'misc/spice/naif/MAVEN/kernels/sclk/'
-  sck = findfile(spath)
+  sck = file_basename(file_search(spath+'*.tsc'))
   nsck = n_elements(sck)
   if (nsck eq 0L) then begin
     print,"No kernels found in: ",spath
     return
   endif
+
   maxver = fix(strmid(sck[nsck-1],8,5,/reverse))
 
   if not keyword_set(ver) then ver = maxver - indgen(6) $

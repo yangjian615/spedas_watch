@@ -1,5 +1,5 @@
 function thm_fgm_find_shift_1p1c, b, threshold, th_slope, jump, $
-	                      constant=constant, fixed=fixed, datatype=datatype
+	                      constant=constant, fixed=fixed, datatype=datatype, calc_freq=calc_freq
 ;+
 ; Function: thm_fgm_find_shift_1p1c
 ;
@@ -50,9 +50,9 @@ function thm_fgm_find_shift_1p1c, b, threshold, th_slope, jump, $
 ;    1. Changed Function Name
 ;    2. Disabled output of statistics to file.
 ; 
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2012-02-22 11:30:33 -0800 (Wed, 22 Feb 2012) $
-;$LastChangedRevision: 9811 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-09-16 10:41:52 -0700 (Wed, 16 Sep 2015) $
+;$LastChangedRevision: 18806 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_fgm_find_shift_1p1c.pro $
 ;-
 
@@ -130,9 +130,8 @@ function thm_fgm_find_shift_1p1c, b, threshold, th_slope, jump, $
       ; these are averaged data, we have to guess when the threshold
       ; has been crossed. 
       ; correction for i, using i-1 and i+1 
-            
-      threshold_up=  threshold+th_slope*(abs(b[i+1]-b[i-1])/2.0)/32
-      threshold_down=threshold-th_slope*(abs(b[i+1]-b[i-1])/2.0)/32
+      threshold_up=  threshold+th_slope*(abs(b[i+1]-b[i-1])/2.0)*(calc_freq/128.0)
+      threshold_down=threshold-th_slope*(abs(b[i+1]-b[i-1])/2.0)*(calc_freq/128.0)
       
       ; no correction:
       if (((b[i-1]+b[i])/2.0 lt threshold_down) and $

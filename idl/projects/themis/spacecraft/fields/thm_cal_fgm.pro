@@ -71,9 +71,9 @@
 ;Notes: under construction!!
 ;
 ;Written by Hannes Schwarzl.
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2015-09-16 10:41:52 -0700 (Wed, 16 Sep 2015) $
+; $LastChangedRevision: 18806 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -427,7 +427,10 @@ probe_letter=strmid(name_thx_fgx_in,2,1)
 ;This code block will remove DAC nonlinearity(Should only occur when data is at large magntitudes)
 If(n_elements(cal_dac_offset) Eq 0 || cal_dac_offset[0] Ne 0) Then Begin ;jmm, 6-jan-2010
   dat = thx_fgx.y
-  thm_cal_fgm_dac_offset,dat,probe_letter,datatype,error=error
+  ; fgl frequency can be either 4.0 or 16.0 and is needed by thm_fgm_find_shift_1p1c 
+  calc_freq = 4.0
+  if (n_elements(thx_fgx.x) gt 2) then calc_freq = 1.0/(thx_fgx.x[1]-thx_fgx.x[0])
+  thm_cal_fgm_dac_offset,dat,probe_letter,datatype,error=error, calc_freq=calc_freq
   ;skip generation of any error quanties.  Compromise between using message to halt execution and warning only
   if keyword_set(error) then return
   thx_fgx.y = dat

@@ -4,7 +4,7 @@
 ;
 ; PURPOSE:
 ;   Load spacecraft state.
-;   
+;
 ;   As of 10/29/12, valid data types are:
 ;     'pos'
 ;     'vel'
@@ -54,15 +54,15 @@
 ; ARGUMENTS:
 ;
 ; KEYWORDS:
-;   probe: (In, optional) RBSP spacecraft names, either 'a', or 'b', or 
+;   probe: (In, optional) RBSP spacecraft names, either 'a', or 'b', or
 ;         ['a', 'b']. The default is ['a', 'b']
 ;   datatype: (In, optional) See above.
-;   dt: (In, optional) Cadence in seconds of the loaded state data. 
+;   dt: (In, optional) Cadence in seconds of the loaded state data.
 ;         Default = 5.
 ;   /no_update: If set, will not check if the remote server has newer SPICE
 ;         kernels, and will use the local SPICE kernels.
 ;   klist: A named variable to return the loaded local spice kernels.
-;   /unload: If set, will not unload the loaded SPICE kernels. 
+;   /unload: If set, will not unload the loaded SPICE kernels.
 ;         !!!Use this with caution.!!!
 ;   /spice_only: If set, will only load SPICE kernels, and will not load regular
 ;         tplot state data.
@@ -70,7 +70,7 @@
 ;   verbose: IN, OPTIONAL
 ;         Verbose level for dprint. Default equals !rbsp_efw.verbose
 ;   /downloadonly:
-;         If set, only download data, no processing. 
+;         If set, only download data, no processing.
 ;         Default equals !rbsp_efw.downloadonly
 ;   no_eclipse: OUT, OPTIONAL
 ;         A named variable to receive 1 or 0 for no/with eclipse.
@@ -106,11 +106,17 @@
 ;   2013-04-04: JBT, SSL/UCB.
 ;         1. Added keyword *use_eph_predict*.
 ;         2. Added keyword *no_spice_load*.
+;	2015-08-29:  JWB, UCB SSL.
+;		1.  Changed behavior in loop over time calls to CSPICE_CKGPAV() from returning without completion
+;		to setting returned CMAT and AV to !VALUES.D_NAN (3x3 matrix and 3-array) and warning user.
+;		This is a bit of a kludge to keep missing attitude data from bombing STATE calls that
+;		are only interested in POS and VEL, for example.
+;		2.  Adjusted 'Lvec' TPLOT variable LABELS and COLOR options to be consistent with other 3-vectors.
 ;
 ; VERSION:
-; $LastChangedBy: jianbao_tao $
-; $LastChangedDate: 2013-07-19 10:17:46 -0700 (Fri, 19 Jul 2013) $
-; $LastChangedRevision: 12690 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2015-09-16 15:37:32 -0700 (Wed, 16 Sep 2015) $
+; $LastChangedRevision: 18809 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/spacecraft/rbsp_load_state.pro $
 ;
 ;-
@@ -174,9 +180,9 @@ compile_opt idl2, HIDDEN
 if ~keyword_set(probe) then probe = ['a', 'b']
 
 ; Determine remote and local data root dir.
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
-serverdir = !rbsp_efw.remote_data_dir 
+serverdir = !rbsp_efw.remote_data_dir
 localdir = datadir
 
 ; Determine individual spacecraft root dir
@@ -218,9 +224,9 @@ pro rbsp_load_state_download_spice_probe, probe = probe
 compile_opt idl2, HIDDEN
 if ~keyword_set(probe) then probe = ['a', 'b']
 
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
-serverdir = !rbsp_efw.remote_data_dir 
+serverdir = !rbsp_efw.remote_data_dir
 localdir = datadir
 
 nsc = n_elements(probe)
@@ -232,7 +238,7 @@ for ip = 0, nsc - 1 do begin
 endfor
 ind = where(strlen(scdirs) gt 0)
 scdirs = scdirs[ind]
-  
+
 ; subdirs = ['attitude_history' $
 ;   , 'ephemerides' $
 ;   , 'eclipse_predict' $
@@ -243,7 +249,7 @@ scdirs = scdirs[ind]
 ;   ] + '/'
 
 rbsp_load_state_download_spice_probe_attitude, probe = probe
-  
+
 subdirs = ['ephemerides' $
   , 'eclipse_predict' $
   , 'frame_kernel' $
@@ -279,9 +285,9 @@ pro rbsp_load_state_download_spice_general
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
-serverdir = !rbsp_efw.remote_data_dir 
+serverdir = !rbsp_efw.remote_data_dir
 localdir = datadir
 
 spicedir = 'teams/spice/'
@@ -311,7 +317,7 @@ function rbsp_load_state_lsk_kernel, sc
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
 sep = path_sep()
 
@@ -334,7 +340,7 @@ function rbsp_load_state_general_kernels, sc
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
 sep = path_sep()
 
@@ -378,7 +384,7 @@ function rbsp_load_state_eph_kernel, sc
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
 sep = path_sep()
 
@@ -406,7 +412,7 @@ function rbsp_load_state_eph_predict_kernel, sc
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
 sep = path_sep()
 
@@ -434,7 +440,7 @@ function rbsp_load_state_att_kernels, sc
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
 sep = path_sep()
 
@@ -490,7 +496,7 @@ function rbsp_load_state_sclk_kernel, sc
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
 sep = path_sep()
 moc = 'MOC_data_products' + sep
@@ -516,7 +522,7 @@ compile_opt idl2, HIDDEN
 
 if ~keyword_set(probe) then probe = ['a', 'b']
 
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
 sep = path_sep()
 moc = 'MOC_data_products' + sep
@@ -584,7 +590,7 @@ end
 function rbsp_load_state_eclipse_time_files, sc
 compile_opt idl2, HIDDEN
 ; dprint, 'Hello world.'
-datadir = !rbsp_efw.local_data_dir 
+datadir = !rbsp_efw.local_data_dir
 datadir = expand_tilde(datadir)
 sep = path_sep()
 
@@ -624,7 +630,7 @@ for i = 0L, days - 1 do begin
     dprint, 'No file available. Something is off.'
     stop
   endif
-  ; Find doy 
+  ; Find doy
   itmp = ind[nind-1]
   doy = doys[itmp]
   ind = where(doys eq doy, nind)
@@ -765,16 +771,16 @@ out_penumbra_len = thm_lsp_median_smooth(out_penumbra_len, 7)
 umbra_len = umbra_end - umbra_sta
 
 ; stop
-; 
+;
 ; help, in_penumbra_len
 ; help, out_penumbra_len
 ; help, umbra_sta
 ; help, umbra_end
-; 
-; plot, in_penumbra_len 
-; plot, out_penumbra_len 
+;
+; plot, in_penumbra_len
+; plot, out_penumbra_len
 ; plot, umbra_len
-; 
+;
 end
 
 
@@ -808,7 +814,7 @@ for ip = 0, nsc-1 do begin
   for i = 0, nfile-1 do begin
     file = files[i]
   ; Parse the eclipse time file, and return umbra times as tplot x, and penumbra
-  ; times as tplot y. 
+  ; times as tplot y.
     rbsp_load_state_parse_eclipse_time_file, file, sc, $
             umbra_sta, umbra_end, in_penumbra_len, out_penumbra_len, $
             no_eclipse = no_eclipse
@@ -830,7 +836,7 @@ for ip = 0, nsc-1 do begin
 
   ; Save umbra times and penumbra lengths into tplot variable
   if n_elements(umbra_end_all) eq 0 or n_elements(umbra_sta_all) eq 0 then $
-    continue 
+    continue
   ind = where(umbra_end_all gt tspan[0] and umbra_sta_all lt tspan[1], nind)
   if nind eq 0 then continue
   umbra_sta = umbra_sta_all[ind]
@@ -920,9 +926,9 @@ endif
 if keyword_set(spice_only) then return
 
 ; Set up time array for SPICE
-time_str=time_string(time, prec=3) ; turn it back into a string for 
+time_str=time_string(time, prec=3) ; turn it back into a string for
                                    ; ISO conversion
-strput,time_str,'T',10 ; convert TPLOT time string 'yyyy-mm-dd/hh:mm:ss.msec' 
+strput,time_str,'T',10 ; convert TPLOT time string 'yyyy-mm-dd/hh:mm:ss.msec'
                        ; to ISO 'yyyy-mm-ddThh:mm:ss.msec'
 cspice_str2et,time_str,et ; convert ISO time string to SPICE ET
 
@@ -988,9 +994,16 @@ for ip = 0, nsc-1 do begin
 ;     toltics = 0d
 ;     cspice_ckgpav, inst, sclkdp[i], toltics, 'GSE', cmat, av, clkout, found
     cspice_ckgpav, inst, sclkdp[i], 0d, 'GSE', cmat, av, clkout, found
+
+    ;stop
     if found le 0 then begin
-      dprint, 'Spacecraft pointing matrix not found. Abort.'
-      return
+      dprint, $
+      	string( i, $
+      		format='("WARNING:  Spacecraft pointing matrix not found for itime",X,I,".  Attitude products will be NaN (CMAT and AV set to NaN).")')
+
+      cmat = !values.d_nan*[ [ 1., 1., 1.], [ 1., 1., 1.], [ 1., 1., 1.]]
+      av = !values.d_nan*[ 1., 1., 1.]
+      ;return
     endif
 ;     dprint, 'found = ', found
 ;     stop
@@ -1064,8 +1077,8 @@ for ip = 0, nsc-1 do begin
     att = {units:'', coord_sys:'gse'}
     dl ={data_att:att}
     store_data, tvar, data = data, dlim = dl, verbose = verbose
-    options, tvar, colors = [0], $
-      labels = ['spin!C L vector'], $
+    options, tvar, colors = [2, 4, 6], $
+      labels = ['Lx GSE', 'Ly GSE', 'Lz GSE'], $
       labflag = 1
   endif
   ; spin period

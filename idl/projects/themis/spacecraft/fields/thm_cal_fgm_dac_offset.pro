@@ -18,12 +18,12 @@
 ;  
 ;Notes: This routine based largely upon routine fgm_correct_shift by Dragos Constantinescu
 ;  
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2012-02-22 11:30:33 -0800 (Wed, 22 Feb 2012) $
-;$LastChangedRevision: 9811 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-09-16 10:41:52 -0700 (Wed, 16 Sep 2015) $
+;$LastChangedRevision: 18806 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm_dac_offset.pro $
 ;-
-pro thm_cal_fgm_dac_offset,fgmdata,probe,datatype,error=error
+pro thm_cal_fgm_dac_offset,fgmdata,probe,datatype,error=error, calc_freq=calc_freq
 
   compile_opt idl2
 
@@ -60,7 +60,7 @@ pro thm_cal_fgm_dac_offset,fgmdata,probe,datatype,error=error
   for i = 0,2 do begin
   
     correction[*,i] = thm_fgm_find_shift_1p1c(fgmdata[*,i], threshold[pnum,i], $
-                          th_slope[pnum,i], jump[pnum,i], datatype=datatypes[dnum],/fixed)     
+                          th_slope[pnum,i], jump[pnum,i], datatype=datatypes[dnum], calc_freq=calc_freq, /fixed)     
   endfor
   
 ;  openw, 111, 'tmp_raw.dat'
