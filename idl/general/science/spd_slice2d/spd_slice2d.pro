@@ -184,8 +184,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-10 18:59:05 -0700 (Thu, 10 Sep 2015) $
-;$LastChangedRevision: 18767 $
+;$LastChangedDate: 2015-09-16 20:10:53 -0700 (Wed, 16 Sep 2015) $
+;$LastChangedRevision: 18811 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -355,6 +355,7 @@ if total(n_samples) lt 1 then begin
   dprint, dlevel=1, fail 
   return, invalid
 endif
+dprint, dlevel=3, strtrim(n_samples,2) + ' samples in time window'
 
 
 

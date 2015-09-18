@@ -16,8 +16,8 @@
 ;       Yuki Harada on 2015-07-13
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-07-14 08:09:35 -0700 (Tue, 14 Jul 2015) $
-; $LastChangedRevision: 18120 $
+; $LastChangedDate: 2015-09-17 10:20:42 -0700 (Thu, 17 Sep 2015) $
+; $LastChangedRevision: 18815 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_remote_list.pro $
 ;-
 
@@ -40,7 +40,7 @@ function mvn_ngi_remote_list, trange=trange, filetype=filetype, verbose=verbose,
   f = ''
   if s.no_server eq 0 then begin
      for ipn=0,n_elements(pathnames)-1 do begin
-        file_http_copy,pathnames[ipn],serverdir=s.remote_data_dir,url_info=url_info,verbose=verbose,_extra=s
+        file_http_copy,pathnames[ipn],serverdir=s.remote_data_dir,localdir=s.local_data_dir,url_info=url_info,verbose=verbose,_extra=s
         w = where( url_info.exists ne 0 , nw )
         if nw gt 0 then f = [f,url_info[w].url]
      endfor

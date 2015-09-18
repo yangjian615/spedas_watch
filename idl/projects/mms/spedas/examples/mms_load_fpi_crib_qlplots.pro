@@ -7,13 +7,13 @@
 ; BGILES UPDATED 1Sept2015
 ; BGILES UPDATED 31AUGUST2015
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-09 13:33:18 -0700 (Wed, 09 Sep 2015) $
-; $LastChangedRevision: 18751 $
+; $LastChangedDate: 2015-09-17 15:38:35 -0700 (Thu, 17 Sep 2015) $
+; $LastChangedRevision: 18833 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fpi_crib_qlplots.pro $
 ;-
 
-timespan, '15-08-15', 1, /day
 ;preparations and defaults
+timespan, '15-08-15', 1, /day
 ;probes = ['3']
 datatype = '*' ; grab all data in the CDF
 level = 'sitl'
@@ -38,6 +38,9 @@ mms_load_fpi, trange = trange, probes = [1, 2, 3, 4], datatype = datatype, $
 ; load ephemeris data for all 4 probes
 mms_load_state, trange = trange, probes = [1, 2, 3, 4], /ephemeris
 
+; load DFG data for all 4 probes
+mms_load_dfg, trange = trange, probes = [1, 2, 3, 4]
+
 FOR i=1,4 DO BEGIN    ;step through the observatories
 obsstr='mms'+STRING(i,FORMAT='(I1)')+'_fpi_'
 
@@ -60,15 +63,10 @@ position_vars = [eph_variable+'_re_z', eph_variable+'_re_y', eph_variable+'_re_x
 qual_bar = mms_quality_bar(obsstr+'dataQuality')
 
 ; combine bent pipe B DSC into a single tplot variable
-get_data, obsstr+'bentPipeB_X_DSC', xtimes, bx
-get_data, obsstr+'bentPipeB_Y_DSC', xtimes, by
-get_data, obsstr+'bentPipeB_Z_DSC', xtimes, bz
-bmag=SQRT(bx^2+by^2+bz^2)
-store_data, obsstr+'bentPipeB_MAG', data = {x:xtimes, y:bmag}
-join_vec, [obsstr+'bentPipeB_X_DSC', obsstr+'bentPipeB_Y_DSC', obsstr+'bentPipeB_Z_DSC', obsstr+'bentPipeB_MAG'], obsstr+'bentPipeB_DSC'
-options, obsstr+'bentPipeB_DSC', 'labels', ['Bx', 'By', 'Bz', 'Bmag']
-options, obsstr+'bentPipeB_DSC', 'labflag', -1
-options, obsstr+'bentPipeB_DSC', 'colors', [2, 4, 6, 8]
+prefix = 'mms'+strcompress(string(i), /rem)
+split_vec, prefix+'_dfg_srvy_gse_bvec'
+store_data, prefix+'_dfg_gse_srvy', data=prefix+['_dfg_srvy_gse_bvec'+['_x', '_y', '_z'], '_dfg_srvy_gse_btot']
+options, prefix+'_dfg_gse_srvy', labflag=-1
 
 ; setup electron energy spectra into tplot variables
 get_data, obsstr+'eEnergySpectr_pX', xtimes, pX, yenergies
@@ -163,7 +161,7 @@ options, electron_espec, spec=1, zlog=1, ylog=1, no_interp=1
 options, electron_espec_omni, spec=1, zlog=1, ylog=1, no_interp=1
 ylim, electron_espec, min(yenergies), max(yenergies)
 if autoscale eq 0 then zlim, electron_espec, min(e_omni_avg), max(e_omni_avg)
-panels=[qual_bar, obsstr+'bentPipeB_DSC', electron_espec, electron_espec_omni]
+panels=[qual_bar, prefix+'_dfg_gse_srvy', electron_espec, electron_espec_omni]
 window_caption="MMS FPI Electron energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
 window, iw, xsize=width, ysize=height
 tplot_options,'title', window_caption
@@ -181,7 +179,7 @@ options, ion_espec, spec=1, zlog=1, ylog=1, no_interp=1
 options, ion_espec_omni, spec=1, zlog=1, ylog=1, no_interp=1
 ylim, ion_espec, min(yenergies), max(yenergies)
 if autoscale eq 0 then zlim, ion_espec, min(i_omni_avg), max(i_omni_avg)
-panels=[qual_bar, obsstr+'bentPipeB_DSC',ion_espec, ion_espec_omni]
+panels=[qual_bar, prefix+'_dfg_gse_srvy',ion_espec, ion_espec_omni]
 window_caption="MMS FPI Ion energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
 window, iw, xsize=width, ysize=height
 tplot_options,'title', window_caption
@@ -199,7 +197,7 @@ options, e_pad_allE, spec=1, zlog=1, no_interp=1
 if autoscale eq 0 then zlim, e_pad, min(e_PAD_avg), max(e_PAD_avg)
 ylim, e_pad, 0, 180
 ylim, e_pad_allE, 0, 180
-panels=[qual_bar, obsstr+'bentPipeB_DSC',e_pad, e_pad_allE]
+panels=[qual_bar, prefix+'_dfg_gse_srvy',e_pad, e_pad_allE]
 window_caption="MMS FPI Electron PAD:  Counts, summed/averaged over energy bands
 window, iw, xsize=width, ysize=height
 tplot_options,'title', window_caption
@@ -209,7 +207,7 @@ iw=iw+1
  
           
 ;-----------ONE SPACECRAFT FPI SUMMARY PLOT--------------------
-fpi_moments = [obsstr+'numberDensity', obsstr+'bentPipeB_DSC', obsstr+'eBulkV_DSC',  $
+fpi_moments = [obsstr+'numberDensity', prefix+'_dfg_gse_srvy', obsstr+'eBulkV_DSC',  $
                obsstr+'iBulkV_DSC', obsstr+'temp']
 fpi_espects = [obsstr+'iEnergySpectr_omni_avg', obsstr+'eEnergySpectr_omni_avg']
 options, obsstr+'ePitchAngDist_avg', spec=1, zlog=1, no_interp=1
@@ -230,8 +228,9 @@ ENDFOR
 ;-----------FOUR SPACECRAFT SUMMARY PLOT--------------------
 panels=[obsstr+'dataQuality']
 FOR i=1,4 DO BEGIN
-   obsstr='mms'+STRING(i,FORMAT='(I1)')+'_fpi_'
-   panels=[panels,obsstr+'bentPipeB_DSC',obsstr+'eEnergySpectr_omni_sum',obsstr+'iEnergySpectr_omni_sum'] 
+   prefix = 'mms'+STRING(i,FORMAT='(I1)')
+   obsstr=prefix+'_fpi_'
+   panels=[panels,prefix+'_dfg_gse_srvy',obsstr+'eEnergySpectr_omni_sum',obsstr+'iEnergySpectr_omni_sum'] 
 ENDFOR
 window_caption="MMS FPI Observatory Summary: MMS1, MMS2, MMS3, MMS4"
 window, iw, xsize=width, ysize=height

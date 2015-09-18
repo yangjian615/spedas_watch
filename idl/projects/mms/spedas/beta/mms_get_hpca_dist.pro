@@ -3,18 +3,19 @@
 ;  mms_get_hpca_dist
 ;
 ;Purpose:
-;  Returns a pointer to a standard array of SPEDAS particle distribution structures.
-;  This is intended for testing with THEMIS slice routines.
+;  Returns pseudo-3D particle data structures containing mms hpca data
+;  for use with spd_slice2d.
 ;
 ;Calling Sequence:
-;  pointer = mms_get_hpca_dist(tname)
+;  data = mms_get_hpca_dist(tname)
 ;
 ;Input:
 ;  tname: Tplot variable containing the desired data.
-;         The data should be in three dimensions: (time, energy, elevation)  
+;         The data should be in three dimensions: (time, energy, elevation)
+;  pointer: Flag to return a pointer instead of structure array.  
 ;
 ;Output:
-;  return value: pointer to array of pseudo 3D particle distribution structures
+;  return value: array of pseudo 3D particle distribution structures
 ;                or 0 in case of error
 ;
 ;Notes:
@@ -24,17 +25,17 @@
 ;    -Azimuths have not been synchronized with sun data and are currently
 ;     measured from an arbitrary point.
 ;    -Spacecraft spin and sweep times are assumed to be ideal.
-;    -Only tested with burst data.  (Support for survey data pending 
-;     resolution of time sample errors) 
+;    -Only tested with burst data.
+;    -Masses of ions larger than h+ slightly off.
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-24 15:57:34 -0700 (Mon, 24 Aug 2015) $
-;$LastChangedRevision: 18601 $
+;$LastChangedDate: 2015-09-16 20:14:13 -0700 (Wed, 16 Sep 2015) $
+;$LastChangedRevision: 18812 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_hpca_dist.pro $
 ;-
 
-function mms_get_hpca_dist, tname
+function mms_get_hpca_dist, tname, pointer=pointer
 
     compile_opt idl2
 
@@ -84,7 +85,7 @@ theta = replicate(1.,dim[0]) # (90 - s.elevation[d.v1])
 
 ;azimuth offsets should be constant to first approximation
 ;populate phi with them now and add further adjustments later 
-phi_direction = replicate(1.,dim[0]) # s.azimuth_direction
+phi_direction = replicate(1.,dim[0]) # s.azimuth_direction[d.v1]
 phi_offset = s.azimuth_energy_offset # replicate(1.,dim[1])
 phi = phi_direction + phi_offset
 
@@ -123,34 +124,28 @@ case species of
 endcase
 
 ; Create pseudo-3D distributions
-;  -The simplest method to convert the data into a recognisable format is to treat
+;  -The simplest method to convert the data into a compatible format is to treat
 ;   each sample as a separate distribution.  Combining every 16 samples into a 
-;   THEMIS-like 3D distribution would yield a more memory efficient end product
-;   but would also be a more complex process.  The slice2d routines already 
-;   aggregate & average data across time so the results should be identical.
+;   3D distribution would yield a more memory efficient end product but would 
+;   also be a more complex process.  Spd_slice2d already aggregates & averages
+;   data across time so the results should be identical.
 ;-----------------------------------------------------------------
 
-;basic template structure that should be compatible with slice2d routines
-;TODO: return from standard routine
+;basic template structure that is compatible with spd_slice2d
 template = {  $
   project_name: 'MMS', $
   spacecraft: probe, $
   data_name: species, $
-  units_name: datatype, $
+  units_name: datatype, $ ;TODO: set units dynamically
   units_procedure: '', $ ;placeholder
-  apid: 0, $  ;placeholder
   valid: 1b, $
 
   charge: charge, $
   mass: mass, $  
-  magf: replicate(!values.f_nan,3), $ ;placeholder
-  velocity: replicate(!values.f_nan,3), $ ;placeholder
-
   time: 0d, $
   end_time: 0d, $
 
   data: base_arr, $
-;  scaling: base_arr, $ ;placeholder for spectra/moments
   bins: base_arr+1, $ ;must be set or data will be considered invalid
 
   energy: energy, $
@@ -167,7 +162,7 @@ dist = replicate(template, n_elements(d.x))
 ; Populate and correct the rest of the data
 ;-----------------------------------------------------------------
 
-;total time period covered by each sample
+;this time difference probably shouldn't be used for physical calculations yet
 dist.time = d.x
 dist.end_time = d.x + s.t_sweep
 
@@ -179,18 +174,21 @@ sun_pulse = d.x[0]
 for i=0,  n_elements(dist)-1 do begin
 
   ;azimuthal correction based on spin
-  phi_shift = 360./s.t_spin * ( d.x[i] - sun_pulse ) mod 360
-
+  phi_shift = 360./s.t_spin * ( dist[i].time - sun_pulse ) mod 360
+  
   dist[i].phi += phi_shift
   dist[i].data = d.y[i,*,*]
   
 endfor
 
 
-;THEMIS routines expect a pointer
-ptr = ptr_new(dist,/no_copy) 
-
-return, ptr
+;spd_slice2d accepts pointers or structures
+;pointers are more versatile & efficient, but less user friendly
+if keyword_set(pointer) then begin
+  return, ptr_new(dist,/no_copy) 
+endif else begin
+  return, dist
+endelse
 
 
 end
