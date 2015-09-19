@@ -11,8 +11,8 @@
 ; 
 ; 
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-05 12:58:06 -0700 (Sat, 05 Sep 2015) $
-; $LastChangedRevision: 18719 $
+; $LastChangedDate: 2015-09-18 09:09:44 -0700 (Fri, 18 Sep 2015) $
+; $LastChangedRevision: 18835 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/get_token.pro $
 ;- 
 
@@ -45,23 +45,23 @@ endif else if stregex(s,'(^&$|^&[^&])',/boolean) then begin  ;line terminate wit
   tok.value = tok.name
   
 ;dollar sign sys call
-endif else if stregex(s,'^\$.*[^[:blank:]]+.*',length=l) ne -1 then begin
-
-  tok.type = 'syscall'
-  
-  tok.name = strmid(s,0,l)
-  
-  tok.value = tok.name
-
-;dollar sign line extender
-endif else if stregex(s,'^\$[[:blank:]]*',/boolean) then begin 
-
-  tok.type = 'continuation'
-
-  tok.name = '$'
-  
-  tok.value = tok.name
-;whitespace
+;endif else if stregex(s,'^\$.*[^[:blank:]]+.*',length=l) ne -1 then begin
+;
+;  tok.type = 'syscall'
+;  
+;  tok.name = strmid(s,0,l)
+;  
+;  tok.value = tok.name
+;
+;;dollar sign line extender
+;endif else if stregex(s,'^\$[[:blank:]]*',/boolean) then begin 
+;
+;  tok.type = 'continuation'
+;
+;  tok.name = '$'
+;  
+;  tok.value = tok.name
+;;whitespace
 endif else if stregex(s,'^[[:blank:]]',/boolean) then begin
 
   tok.type = 'whitespace'
@@ -192,14 +192,15 @@ endif else if stregex(s,'^([#]{1,2}|\*|\+|-|/|\<|\>|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][E
 ;punctuation
 ;endif else if stregex(s,'^([\(\)\*\^/\<\>~\?,\{}=]|\[|]|[+#-]{1,2}|&&|\|\|)',length=l) ne -1 then begin
 ;endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#+-]{1,2}|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt])',length=l) ne -1 then begin
-endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#]{1,2}|[+]{1,2}|[-]{1,2}|[+]\$|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt])',length=l) ne -1 then begin
+endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#]{1,2}|[+]{1,2}|[-]{1,2}|\$\+|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt])',length=l) ne -1 then begin
   tok.type = 'operator'
   
   tok.name = strlowcase(strmid(s,0,l))  
   
   tok.value = tok.name
   
-end else if stregex(s,'^[@!]?[[:alnum:]$_]+',length=l) ne -1 then begin
+;end else if stregex(s,'^[@!]?[[:alnum:]$_]+',length=l) ne -1 then begin
+end else if stregex(s,'^[@!]?[[:alnum:]_]+',length=l) ne -1 then begin ;$ no longer legal inside variable name(to support $+ operator)
 
   tok.type = 'identifier'
 

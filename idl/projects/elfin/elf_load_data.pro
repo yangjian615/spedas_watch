@@ -61,7 +61,8 @@ PRO elf_load_data, instrument=instrument, datatype=datatype, level=level, timera
   fileName = !elf.local_data_dir + fileName
 
   init_time=systime(/sec)
-  cdf2tplot, file=fileName , get_support_data=1
+  cdf2tplot, file=fileName, get_support_data=1
+
   tplotvars = tnames(create_time=create_times)
   new_vars_ind = where(create_times gt init_time, n_new_vars_ind)
 

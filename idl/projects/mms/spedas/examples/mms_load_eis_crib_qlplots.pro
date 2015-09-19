@@ -5,13 +5,13 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-17 12:35:08 -0700 (Thu, 17 Sep 2015) $
-; $LastChangedRevision: 18822 $
+; $LastChangedDate: 2015-09-18 14:40:23 -0700 (Fri, 18 Sep 2015) $
+; $LastChangedRevision: 18844 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
 probe = '1'
-trange = ['2015-07-31', '2015-08-1']
+trange = ['2015-08-15', '2015-08-16']
 width = 650
 height = 750
 prefix = 'mms'+probe+'_epd_eis'
@@ -25,7 +25,7 @@ mms_load_eis, probes=probe, trange=trange, datatype='electronenergy', level='l1b
 mms_load_dfg, probes=probe, trange=trange, level='ql'
 
 ; setup for plotting the proton flux for all channels
-ylim, prefix+'_electronenergy_electron_flux_omni_spin', 30, 2000, 1
+ylim, prefix+'_electronenergy_electron_flux_omni_spin', 30, 1000, 1
 zlim, prefix+'_electronenergy_electron_flux_omni_spin', 0, 0, 1
 ylim, prefix+'_extof_proton_flux_omni_spin', 50, 500, 1
 zlim, prefix+'_extof_proton_flux_omni_spin', 0, 0, 1
@@ -62,7 +62,10 @@ position_vars = [eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
 
 tplot_options, 'ymargin', [5, 5]
 tplot_options, 'xmargin', [15, 15]
-tplot_options, 'title', 'Quicklook Plots for EIS Data'
+tplot_options, 'title', 'EIS - Quicklook'
+
+; clip the DFG data to -150nT to 150nT
+tclip, 'mms'+probe+'_dfg_srvy_gse_bvec', -150., 150., /overwrite
 
 panels = ['mms'+probe+'_dfg_srvy_gse_bvec', $
           prefix+'_electronenergy_electron_flux_omni_spin', $
@@ -72,6 +75,5 @@ panels = ['mms'+probe+'_dfg_srvy_gse_bvec', $
 
 window, xsize=width, ysize=height
 tplot, panels, var_label=position_vars
-stop
 
 end

@@ -10,8 +10,8 @@
 ;Warning: this crib uses some data from the THEMIS branch.  You'll require those routines to run this crib
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-05 13:28:51 -0700 (Sat, 05 Sep 2015) $
-; $LastChangedRevision: 18722 $
+; $LastChangedDate: 2015-09-18 11:02:58 -0700 (Fri, 18 Sep 2015) $
+; $LastChangedRevision: 18838 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_calc.pro $
 ;
 ;-
@@ -228,12 +228,19 @@ calc,'"tha_state_pos_re" = ' + $
 stop
 
 ;example 19 string concatenation
-;You can use the +$ IDL operator to concatenate strings
+;You can use the $+ operator to concatenate strings
+var = ["a","b"]
 thm_load_state,probe='*'
 
-calc,'"tha_state_pos_re" = "tha_state" +$ "_pos"/6371.2'
+calc,'"th" $+ var $+ "_state_pos_re"  = "th" $+ var $+ "_state_pos"/6371.2'
 
 stop
 
+;example 20 unary string variables
+;You can also use the $+ operator unarily to lookup tplot names in variables 
+var1 = ["tha_state_pos","thb_state_pos"]
+var2 = ["tha_state_pos_re","thb_state_pos_re"]
+thm_load_state,probe='*'
 
+calc,' $+var2  = $+var1/6371.2'
 end

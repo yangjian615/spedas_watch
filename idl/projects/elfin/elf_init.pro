@@ -45,6 +45,7 @@ pro elf_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
   endif
 
   !elf.local_data_dir = !elf.local_data_dir + 'lomo/elfin/l1/'
+  !elf.no_download = 1   ; this should be removed or changed to 0 once files are available via a server
   
   return
 END

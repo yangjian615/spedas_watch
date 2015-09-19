@@ -103,8 +103,8 @@
 ;       4. Implement control statements
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-12 11:37:42 -0700 (Sat, 12 Sep 2015) $
-; $LastChangedRevision: 18779 $
+; $LastChangedDate: 2015-09-17 20:51:36 -0700 (Thu, 17 Sep 2015) $
+; $LastChangedRevision: 18834 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/calc.pro $
 ;-
 
@@ -260,7 +260,7 @@ pro calc,s,error=error,function_list=function_list,operator_list=operator_list,v
   endif
 
   if is_endline_type(token_list[0]) then begin
-    ptr_free,!mini_globals.extra
+    ptr_free,!mini_globals.extrahe
     ptr_free,!mini_globals.interpolate
     return
   endif
@@ -291,7 +291,7 @@ pro calc,s,error=error,function_list=function_list,operator_list=operator_list,v
     for j = 0,dim_glob[0]-1 do begin
     
       ;evaluate the list of tokens using the parse table and grammar provided
-      evaluate,globbed_token_list[j,*],grammar,parse_tables,error=error
+      evaluate,reform(globbed_token_list[j,*]),grammar,parse_tables,error=error
     
       if keyword_set(error) then begin
     

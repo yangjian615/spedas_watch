@@ -43,9 +43,9 @@
 ;      Changes to this object should be reflected in the corresponding test procedure, thm_ui_test_coordinate_systems_obj
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-09-18 14:21:09 -0700 (Fri, 18 Sep 2015) $
+;$LastChangedRevision: 18843 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/thm_ui_cotrans/thm_ui_coordinate_systems__define.pro $
 ;
 ;-
@@ -74,7 +74,8 @@ function thm_ui_coordinate_systems::init
                              'gei', $ ; Geocentric Equatorial Inertial
                              'sm', $ ; Solar Magnetic
                              'geo', $ ; Geographic
-                             'mag' $ ; Magnetic
+                             'mag', $ ; Magnetic
+                             'j2000' $ ; J2000
                              ]
     
     ; additional coordinate systems

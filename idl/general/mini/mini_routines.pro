@@ -28,8 +28,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-05 13:03:58 -0700 (Sat, 05 Sep 2015) $
-; $LastChangedRevision: 18720 $
+; $LastChangedDate: 2015-09-17 20:51:36 -0700 (Thu, 17 Sep 2015) $
+; $LastChangedRevision: 18834 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/mini_routines.pro $
 ;- 
 
@@ -751,15 +751,6 @@ function mini_var,arg1
   endelse
  
   return,0
-  
-end
-
-function mini_svar,arg1,arg2,arg3
-  compile_opt hidden,strictarr
-  
-  ;stop
-  
-  return, {type:'string',name:'tvar',value:arg1.value+arg3.value,index:arg1.index}
   
 end
 

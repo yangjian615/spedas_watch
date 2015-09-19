@@ -5,9 +5,9 @@
 ; Purpose: When called this routine compiles a library of helper routines
 ;          for the evaluator of the mini_language
 ;           
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-05-08 18:28:54 -0700 (Fri, 08 May 2015) $
-; $LastChangedRevision: 17542 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2015-09-17 20:51:36 -0700 (Thu, 17 Sep 2015) $
+; $LastChangedRevision: 18834 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/evaluator_routines.pro $
 ;- 
 
@@ -122,6 +122,7 @@ function make_dlimits_type,tvar_type
   endelse
 
 end
+
 
 ;replaces the data component of variable or tplot variable
 ;This is for use in cases where the new data compnent may have

@@ -28,8 +28,8 @@
 ;     9/17/2015 - egrimes: large update, see svn log
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-17 12:17:06 -0700 (Thu, 17 Sep 2015) $
-;$LastChangedRevision: 18817 $
+;$LastChangedDate: 2015-09-18 14:42:39 -0700 (Fri, 18 Sep 2015) $
+;$LastChangedRevision: 18845 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_eis.pro $
 ;-
 
@@ -113,7 +113,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
-                  time_clip = time_clip, no_update = no_update
+                  time_clip = time_clip, no_update = no_update, no_interp = no_interp
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -150,4 +150,5 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
           mms_eis_omni, probes[probe_idx], species='oxygen', datatype='phxtof',tplotnames = tplotnames, suffix = '_spin', data_units = data_units
         endif  
     endfor
+    if undefined(no_interp) && data_rate eq 'srvy' then options, '*_omni_spin', no_interp=0, y_no_interp=0
 end
