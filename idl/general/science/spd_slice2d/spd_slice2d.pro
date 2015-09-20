@@ -184,8 +184,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-16 20:10:53 -0700 (Wed, 16 Sep 2015) $
-;$LastChangedRevision: 18811 $
+;$LastChangedDate: 2015-09-18 18:17:56 -0700 (Fri, 18 Sep 2015) $
+;$LastChangedRevision: 18847 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -433,6 +433,13 @@ if keyword_set(fail) then return, invalid
 spd_slice2d_orientslice, slice_x=slice_x_vec, slice_z=slice_z_vec, fail=fail, $ 
          vectors=xyz, bfield=bfield, vbulk=vbulk, sunvec=sunvec, matrix=orient_matrix
 if keyword_set(fail) then return, invalid 
+
+
+; Subtract bulk velocity vector
+if keyword_set(subtract_bulk) && ~keyword_set(log) then begin
+  spd_slice2d_subtract, vectors=xyz, velocity=vbulk, fail=fail
+  if keyword_set(fail) then return, invalid
+endif
 
 
 

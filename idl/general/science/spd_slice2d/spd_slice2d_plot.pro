@@ -54,8 +54,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2015-09-18 18:17:56 -0700 (Fri, 18 Sep 2015) $
+;$LastChangedRevision: 18847 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -135,9 +135,6 @@ pro spd_slice2d_plot, slice, $
     yrange = minmax(slice.ygrid)
   endelse
 
-  if keyword_set(range) and ~keyword_set(zrange) then begin
-    zrange = range ;maintain backwards compatability
-  endif
   if keyword_set(zrange) then begin
     zrange = minmax(zrange)    
   endif else begin

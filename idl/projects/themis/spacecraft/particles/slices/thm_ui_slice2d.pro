@@ -44,6 +44,9 @@ function thm_ui_slice2d_getvel, type, probe, trange, vel_name, suffix, err_msg=e
     if inst eq 'e' then begin
       name = 'th'+probe+'_'+type+'_velocity_dsl'+suffix
       thm_load_esa, probe=probe, datatype = type+'_velocity_dsl', suffix=suffix, trange=trange
+    endif else if inst eq 's' then begin
+      name = 'th'+probe+'_'+type+'_velocity_dsl'+suffix
+      thm_load_sst, probe=probe, datatype = type+'_velocity_dsl', level=2, suffix=suffix, trange=trange
     endif else begin 
       err_msg = 'Error:  This software does not load '+type+' velocity data.'
       return, 0b
@@ -208,21 +211,8 @@ pro thm_ui_slice2d_gen, tlb, state
   endif
   
   
-;  ; Get slice width if applicable
-;  if widget_info(state.width, /sens) then begin
-;    widget_control, state.width, get_value=slice_width
-;    if ~finite(slice_width) or slice_width le 0 or slice_width gt 100 then begin
-;      thm_ui_slice2d_error, state.statusbar, err_title, $
-;        'Invalid width, operation canceled.'
-;      return
-;    endif
-;  endif  
-  
-  
   ; Type of interpolation
   type=0 ;ensure this is set
-;  id = widget_info(tlb, find_by_uname='button2dnn')
-;  if widget_info(id, /button_set) then type=1
   id = widget_info(tlb, find_by_uname='button2di')
   if widget_info(id, /button_set) then type=2
   id = widget_info(tlb, find_by_uname='button3di')
@@ -716,7 +706,6 @@ pro thm_ui_slice2d_gen, tlb, state
                       mag_data=mag_data, vel_data=vel_data, $
                       zdirrange=zdirrange, thetarange=thetarange, $
                       average_angle=average_angle, $
-;                      slice_width=slice_width, $
                       subtract_bulk=subtract, $
                       sst_sun_bins=sst_sun_bins, $
                       count_threshold=count_threshold, $
@@ -1311,7 +1300,7 @@ pro thm_ui_slice2d_methodsens, state, id, select
   
   ; apply to widgets
   widget_control, state.rangebase2d, sens = two ;~s
-  widget_control, state.displacementbase, sens = ~two ;s
+  widget_control, state.displacementbase, sens = 0 ;~two ;s
   widget_control, state.averagebase, sens = geo ;y
   ;widget_control, state.width, sens = near
   
@@ -1714,8 +1703,8 @@ end ;----------------------------------------------------
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-01-23 18:41:54 -0800 (Fri, 23 Jan 2015) $
-;$LastChangedRevision: 16722 $
+;$LastChangedDate: 2015-09-18 18:47:55 -0700 (Fri, 18 Sep 2015) $
+;$LastChangedRevision: 18848 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
@@ -1726,7 +1715,7 @@ pro thm_ui_slice2d, gui_ID=gui_id, $
 
     compile_opt idl2
 
-  tlb_title = 'Particle Distribution Slices v4.2'
+  tlb_title = 'Particle Distribution Slices v4.3'
 
 if keyword_set(gui_ID) then begin
   tlb = widget_base(title = tlb_title, /col, /base_align_center, $ 
@@ -1826,24 +1815,32 @@ thm_graphics_config
 ;Main Tab Widgets
 ;------------
 
-;Data type selection
-
   probes = ['a','b','c','d','e']
   stypes = ['Velocity','Energy']
-  ctypes = ['DSL', 'GSE', 'GSM', $
-            'RGEO', 'MRGEO', 'PHIGEO', 'MPHIGEO', 'PHISM', 'MPHISM', $
-            'XGSE', 'YGSM', 'ZDSL']
-  coordmag = ['rgeo', 'mrgeo', 'phigeo', 'mphigeo', 'phism', 'mphism', $
-              'xgse', 'ygsm', 'zdsl'] ;coordinates requiring mag data
-  dtypes = ['peif','peir','peib','psif','psir', $ ;no 'psib'
+  dtypes = ['peif','peir','peib','psif','psir', $
             'peef','peer','peeb','psef','pser','pseb']
   utypes = ['Counts','DF','Rate','Flux','EFlux']
+
+  ;support data
   magtypes = ['fgl','fgh','fgs','fge']
-  rtypes = ['BV', 'BE', 'XY', 'XZ', 'YZ', 'XVEL', $ 
+  veltypes = ['<from distribution>','peim','peem','ptim','ptem', $
+              'peif','peib','peir','peef','peeb','peer', $
+              'psif', 'psef']
+
+  ;coordinate and rotations
+  ctypes = ['DSL', 'GSE', 'GSM', $  ;valid coordinates 
+            'RGEO', 'MRGEO', 'PHIGEO', 'MPHIGEO', 'PHISM', 'MPHISM', $
+            'XGSE', 'YGSM', 'ZDSL']
+  rtypes = ['BV', 'BE', 'XY', 'XZ', 'YZ', 'XVEL', $ ;valid rotations
             'PERP', 'PERP_XY', 'PERP_XZ', 'PERP_YZ']
+  coordmag = ['rgeo', 'mrgeo', 'phigeo', 'mphigeo', 'phism', 'mphism', $ ;coordinates requiring mag data
+              'xgse', 'ygsm', 'zdsl']
   rotmag = ['bv', 'be', 'perp', 'perp_xyz', $ ;rotations requiring mag data
             'perp_xy', 'perp_xz', 'perp_yz' ]
   rotvel = ['bv','be','xvel','perp'] ;rotations requiring vel data
+
+
+;Data type selection
 
   probebase = widget_base(typerow, /col)
     probelabel = widget_label(probebase, value='Probe: ')
@@ -1873,11 +1870,6 @@ thm_graphics_config
                              tooltip='The distribution is linearly interpolated in '+ $
                              'three dimensions then a slice is extracted along the '+ $
                              'designated orientation. (May interpolate over gaps in data).')
-;      button2dnn = widget_button(methodbase, value='2D Nearest Neighbor', $
-;                               uname='button2dnn', uval='METHOD', $
-;                               tooltip='A slice of data with user defined width is projected '+ $
-;                               'onto the slice plane and interpolated onto a regular grid '+ $
-;                               'using the nearest neighbor.')
 
 
 ;Time range widgets
@@ -1907,8 +1899,6 @@ thm_graphics_config
 
   orn = ['0','0','1'] ;default orienation vector
   ndisplacement = '0' ;km/s
-  vels = ['<from distribution>','peim','peem','ptim','ptem', $
-          'peif','peib','peir','peef','peeb','peer']
 
   slicetypebase = widget_base(moptbase1, /row, xpad=0, ypad=0)
     slicetypelabel = widget_label(slicetypebase, value='Slice Type: ')
@@ -1931,10 +1921,8 @@ thm_graphics_config
   velbase = widget_base(moptbase1, /row, xpad=0, ypad=0)
     vellabel = widget_label(velbase, value='Bulk Velocity, & Mag Data: ')
       mgeo = widget_info(vellabel,/geo)
-    veltype = widget_combobox(velbase, uname='vtype', uval='VTYPE', $
-                               value=vels)
-    magdata = widget_combobox(velbase, uname='mag', uval='MAG', $
-                              value=magtypes)
+    veltype = widget_combobox(velbase, uname='vtype', uval='VTYPE', value=veltypes)
+    magdata = widget_combobox(velbase, uname='mag', uval='MAG', value=magtypes)
   
   orientationbase = widget_base(moptbase1, /row, xpad=0, ypad=0)
     orientationlabel = widget_label(orientationbase, value='Slice Plane Normal (x,y,z): ')
@@ -1966,21 +1954,6 @@ thm_graphics_config
   regrid = ['32','16','32']  ;regrid defaults
   angleave = ['-25','25']
   res = '500' ;resolution
-  wth = '4' ;slice width (%)
-
-;2D Nearest Neighbor ranges
-
-;Obsolete (keep for testing)
-;  label2dnn = widget_label(rangebase2dnn, value='2D Nearest Neighbor Limits')
-;  subrangebase2dnn = widget_base(rangebase2dnn, /col, /base_align_center, $
-;                                 xpad=4, ypad=4, frame=1)
-;    widthbase = widget_base(subrangebase2dnn, /row)
-;      width = spd_ui_spinner(widthbase, value=wth, text_box_size=6, incr=1, $
-;                             uname='slice_width', label='Slice Width (%):   ', $
-;  ;                           xlabelsize=geo.scr_xsize-1, $
-;                             tooltip = $
-;                             'Entire width of the slice about the normal as'+ $
-;                             ' a percentage of the total range')
 
 ;2D Interpolation Ranges
 
@@ -2064,9 +2037,6 @@ thm_graphics_config
                         'the smoothing window in # of points (only use odd integers >=3)')
 
     suboptbase1 = widget_base(optbase1, /col, xpad=0, ypad=0, space=2, /nonexclusive)
-;      energyplot = widget_button(suboptbase1, value='Plot Against Energy', $
-;                               uname='energyplot', uval='ENERGYPLOT', tooltip = $
-;                               'Plot energy along the X and Y axes instead of velocity.')
       radiallog = widget_button(suboptbase1, value='Logarithmic Radial Scaling', $
                                uname='radiallog', uval='RADIALLOG', tooltip = $
                                'Plot against logarithmically scaled energy or velocity.')
