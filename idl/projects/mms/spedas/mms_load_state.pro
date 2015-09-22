@@ -67,8 +67,8 @@
 ;        
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-18 15:27:03 -0700 (Fri, 18 Sep 2015) $
-;$LastChangedRevision: 18846 $
+;$LastChangedDate: 2015-09-21 11:54:48 -0700 (Mon, 21 Sep 2015) $
+;$LastChangedRevision: 18862 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -259,8 +259,8 @@ pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
   if where(datatypes EQ 'pos') NE -1 then begin
     pos_name =  prefix + '_' + level + 'eph_pos'
     str_element,dl,'data_att.st_type','pos',/add_replace
-    ;str_element,dl,'data_att.coord_sys','j2000', /add_replace
-    str_element,dl,'data_att.coord_sys','unknown', /add_replace
+    str_element,dl,'data_att.coord_sys','j2000', /add_replace
+    ;str_element,dl,'data_att.coord_sys','unknown', /add_replace
     str_element,dl,'data_att.units','km', /add_replace
     str_element,dl,'labels',['x','y','z'], /add
     str_element,dl,'vname',pos_name, /add

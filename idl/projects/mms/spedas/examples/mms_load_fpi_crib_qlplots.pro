@@ -7,8 +7,8 @@
 ; BGILES UPDATED 1Sept2015
 ; BGILES UPDATED 31AUGUST2015
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-17 15:38:35 -0700 (Thu, 17 Sep 2015) $
-; $LastChangedRevision: 18833 $
+; $LastChangedDate: 2015-09-21 08:21:18 -0700 (Mon, 21 Sep 2015) $
+; $LastChangedRevision: 18849 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fpi_crib_qlplots.pro $
 ;-
 
@@ -65,8 +65,14 @@ qual_bar = mms_quality_bar(obsstr+'dataQuality')
 ; combine bent pipe B DSC into a single tplot variable
 prefix = 'mms'+strcompress(string(i), /rem)
 split_vec, prefix+'_dfg_srvy_gse_bvec'
+
+; time clip the data to -150nT to 150nT
+tclip, prefix+'_dfg_srvy_gse_bvec_?', -150, 150, /overwrite
+tclip, prefix+'_dfg_srvy_gse_btot', -150, 150, /overwrite
+
 store_data, prefix+'_dfg_gse_srvy', data=prefix+['_dfg_srvy_gse_bvec'+['_x', '_y', '_z'], '_dfg_srvy_gse_btot']
 options, prefix+'_dfg_gse_srvy', labflag=-1
+
 
 ; setup electron energy spectra into tplot variables
 get_data, obsstr+'eEnergySpectr_pX', xtimes, pX, yenergies

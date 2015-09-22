@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-18 14:40:23 -0700 (Fri, 18 Sep 2015) $
-; $LastChangedRevision: 18844 $
+; $LastChangedDate: 2015-09-21 08:50:33 -0700 (Mon, 21 Sep 2015) $
+; $LastChangedRevision: 18855 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -15,7 +15,6 @@ trange = ['2015-08-15', '2015-08-16']
 width = 650
 height = 750
 prefix = 'mms'+probe+'_epd_eis'
-smooth_the_data = 0
 
 ; load ExTOF and electron data:
 mms_load_eis, probes=probe, trange=trange, datatype='extof', level='l1b'
@@ -36,7 +35,6 @@ zlim, prefix+'_extof_alpha_flux_omni_spin', 0, 0, 1
 
 ; force the min/max of the Y axes to the limits
 options, '*_flux_omni*', ystyle=1
-if smooth_the_data then options, '*_flux_omni*', no_interp=0, y_no_interp=0, x_no_interp=0
 
 ; get ephemeris data for x-axis annotation
 mms_load_state, probes=probe, trange=trange, /ephemeris
@@ -54,11 +52,15 @@ calc,'"'+eph_gsm+'_re" = "'+eph_gsm+'"/6378.'
 ; split the position into its components
 split_vec, eph_gsm+'_re'
 
+; calculate R to spacecraft
+calc, '"mms'+probe+'_defeph_R_gsm" = sqrt("'+eph_gsm+'_re_x'+'"^2+"'+eph_gsm+'_re_y'+'"^2+"'+eph_gsm+'_re_z'+'"^2)'
+
 ; set the label to show along the bottom of the tplot
 options, eph_gsm+'_re_x',ytitle='X (Re)'
 options, eph_gsm+'_re_y',ytitle='Y (Re)'
 options, eph_gsm+'_re_z',ytitle='Z (Re)'
-position_vars = [eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
+options, 'mms'+probe+'_defeph_R_gsm',ytitle='R (Re)'
+position_vars = ['mms'+probe+'_defeph_R_gsm', eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
 
 tplot_options, 'ymargin', [5, 5]
 tplot_options, 'xmargin', [15, 15]
@@ -70,8 +72,8 @@ tclip, 'mms'+probe+'_dfg_srvy_gse_bvec', -150., 150., /overwrite
 panels = ['mms'+probe+'_dfg_srvy_gse_bvec', $
           prefix+'_electronenergy_electron_flux_omni_spin', $
           prefix+'_extof_proton_flux_omni_spin', $
-          prefix+'_extof_oxygen_flux_omni_spin', $
-          prefix+'_extof_alpha_flux_omni_spin']
+          prefix+'_extof_alpha_flux_omni_spin', $
+          prefix+'_extof_oxygen_flux_omni_spin']
 
 window, xsize=width, ysize=height
 tplot, panels, var_label=position_vars

@@ -195,6 +195,13 @@ pro spd_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
           recursive_in_coord='geo'
           break
         end
+        'j2000': begin
+          ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
+          spd_cotrans_check_valid_transform, in_name, in_coord, out_coord
+          cotrans,in_name,out_name,/gei2j2000,ignore_dlimits=ignore_dlimits
+          recursive_in_coord='j2000'
+          break
+        end
         else: begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
           spd_cotrans_check_valid_transform, in_name, in_coord, out_coord
@@ -221,6 +228,10 @@ pro spd_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
           cotrans,in_name,out_name,/mag2geo,ignore_dlimits=ignore_dlimits
           ;mag2geo,in_name,out_name
           recursive_in_coord='geo'
+      end
+      'j2000': begin
+          cotrans,in_name,out_name,/j20002gei,ignore_dlimits=ignore_dlimits
+          recursive_in_coord='gei'
       end
       else: begin
         dprint,"spd_cotrans: does not know how to transform "+in_coord+" to " + out_coord
@@ -282,9 +293,9 @@ end
 ;  This procedure was forked from thm_cotrans.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-22 16:56:46 -0700 (Fri, 22 May 2015) $
-;$LastChangedRevision: 17685 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-09-21 08:48:41 -0700 (Mon, 21 Sep 2015) $
+;$LastChangedRevision: 18854 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/cotrans/spd_cotrans.pro $
 ;
 ;-

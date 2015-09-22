@@ -8,6 +8,8 @@
 ;         GSM<-->SM;
 ;         GEI<-->GEO;
 ;         GEO<-->MAG;
+;         GEI<-->J2000;
+;         
 ;         interpolates the spinphase, right ascension, declination
 ;         updates coord_sys attribute of output tplot variable.
 ;
@@ -41,6 +43,9 @@
 ; /GEO2MAG
 ; /MAG2GEO
 ;
+; /GEI2J2000
+; /J20002GEI
+; 
 ; /IGNORE_DLIMITS: set so it won't require the coordinate
 ;system of the input tplot variable to match the coordinate
 ;system from which the data is being converted
@@ -62,15 +67,15 @@
 ;
 ;Written by: Hannes Schwarzl & Patrick Cruce(pcruce@igpp.ucla.edu)
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2013-09-26 10:11:07 -0700 (Thu, 26 Sep 2013) $
-; $LastChangedRevision: 13153 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2015-09-21 08:40:23 -0700 (Mon, 21 Sep 2015) $
+; $LastChangedRevision: 18853 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans.pro $
 ;-
 pro cotrans, name_in, name_out, time, GSM2GSE=GSM2GSE, GSE2GEI=GSE2GEI,          $
              GSE2GSM=GSE2GSM,GEI2GSE=GEI2GSE,GSM2SM=GSM2SM,SM2GSM=SM2GSM,        $
              GEI2GEO=GEI2GEO, GEO2GEI=GEO2GEI, GEO2MAG=GEO2MAG, MAG2GEO=MAG2GEO, $
-             ignore_dlimits=ignore_dlimits
+             GEI2J2000=GEI2J2000, J20002GEI=J20002GEI, ignore_dlimits=ignore_dlimits
 
 cotrans_lib
 
@@ -301,6 +306,46 @@ if keyword_set(MAG2GEO) then begin
    out_coord = 'geo'
 endif
 
+;GEI J2000
+if keyword_set(GEI2J2000) then begin
+
+  if keyword_set(ignore_dlimits) then begin
+
+    data_in_coord='gei'
+
+  endif
+
+  is_valid_keyws=1
+  if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
+    'gei') then begin
+    dprint, 'coord of input '+name_in+': '+data_in_coord+ $
+      'must be GEI'
+    return
+  end
+  sub_GEI2J2000,data_in,data_conv
+  out_coord = 'j2000'
+endif
+
+
+;J2000 GEI
+if keyword_set(J20002GEI) then begin
+
+  if keyword_set(ignore_dlimits) then begin
+
+    data_in_coord='j2000'
+
+  endif
+
+  is_valid_keyws=1
+  if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
+    'j2000') then begin
+    dprint, 'coord of input '+name_in+': '+data_in_coord+ $
+      'must be J2000'
+    return
+  end
+  sub_GEI2J2000,data_in,data_conv,/J20002GEI
+  out_coord = 'gei'
+endif
 
 if (is_valid_keyws eq 0) then begin
    DPRINT,'Not a valid combination of input arguments'
