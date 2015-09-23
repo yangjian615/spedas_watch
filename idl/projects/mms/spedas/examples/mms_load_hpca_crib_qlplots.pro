@@ -106,11 +106,13 @@ store_data, tplotvar+'_total_13_14_brst_srvy', data=[tplotvar+'_total_13_14_brst
 
 ; get ephemeris data for x-axis annotation
 mms_load_state, probes=pid, trange = trange, /ephemeris
-eph_gei = 'mms'+pid+'_defeph_pos'
+eph_j2000 = 'mms'+pid+'_defeph_pos'
+eph_gei = 'mms'+pid+'_defeph_pos_gei'
 eph_gse = 'mms'+pid+'_defeph_pos_gse'
 eph_gsm = 'mms'+pid+'_defeph_pos_gsm'
 
-; convert from gei to gsm coordinates
+; convert from J2000 to gsm coordinates
+cotrans, eph_j2000, eph_gei, /j20002gei
 cotrans, eph_gei, eph_gse, /gei2gse
 cotrans, eph_gse, eph_gsm, /gse2gsm
 

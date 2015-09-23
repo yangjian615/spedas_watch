@@ -28,8 +28,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-17 12:49:47 -0700 (Thu, 17 Sep 2015) $
-;$LastChangedRevision: 18824 $
+;$LastChangedDate: 2015-09-22 15:57:02 -0700 (Tue, 22 Sep 2015) $
+;$LastChangedRevision: 18878 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_eis_pad.pro $
 ;-
 
@@ -69,7 +69,8 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
     ; loop through the spins for this telescope
     for spin_idx = 0, n_elements(spin_starts)-1 do begin
         ; loop over energies
-        spin_sum_flux[spin_idx, *] = total(pad_data.Y[current_start:spin_starts[spin_idx], *], 1)
+       ; spin_sum_flux[spin_idx, *] = total(pad_data.Y[current_start:spin_starts[spin_idx], *], 1)
+        spin_sum_flux[spin_idx, *] = average(pad_data.Y[current_start:spin_starts[spin_idx], *], 1)
         spin_times[spin_idx] = pad_data.X[current_start]
         current_start = spin_starts[spin_idx]+1
     endfor

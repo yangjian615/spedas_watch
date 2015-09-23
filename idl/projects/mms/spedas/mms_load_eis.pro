@@ -28,8 +28,8 @@
 ;     9/17/2015 - egrimes: large update, see svn log
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-18 14:42:39 -0700 (Fri, 18 Sep 2015) $
-;$LastChangedRevision: 18845 $
+;$LastChangedDate: 2015-09-22 15:57:02 -0700 (Tue, 22 Sep 2015) $
+;$LastChangedRevision: 18878 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_eis.pro $
 ;-
 
@@ -58,7 +58,8 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, d
         ; loop through the spins for this telescope
         for spin_idx = 0, n_elements(spin_starts)-1 do begin
             ; loop over energies
-            spin_sum_flux[spin_idx, *] = total(flux_data.Y[current_start:spin_starts[spin_idx], *], 1)
+            ;spin_sum_flux[spin_idx, *] = total(flux_data.Y[current_start:spin_starts[spin_idx], *], 1)
+            spin_sum_flux[spin_idx, *] = average(flux_data.Y[current_start:spin_starts[spin_idx], *], 1)
             
             current_start = spin_starts[spin_idx]+1
         endfor

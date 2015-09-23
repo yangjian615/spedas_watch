@@ -114,9 +114,9 @@
 ;		2.  Adjusted 'Lvec' TPLOT variable LABELS and COLOR options to be consistent with other 3-vectors.
 ;
 ; VERSION:
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2015-09-16 15:37:32 -0700 (Wed, 16 Sep 2015) $
-; $LastChangedRevision: 18809 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-09-22 14:02:10 -0700 (Tue, 22 Sep 2015) $
+; $LastChangedRevision: 18876 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/spacecraft/rbsp_load_state.pro $
 ;
 ;-
@@ -417,13 +417,13 @@ datadir = expand_tilde(datadir)
 sep = path_sep()
 
 moc = datadir + 'MOC_data_products' + sep
-eph_dir = moc + strupcase('rbsp' + sc) + sep + 'ephemeris_predict' + sep
+eph_dir = moc + strupcase('rbsp' + sc) + sep + 'ephemeris_predict_longterm' + sep
 
 flist = file_search(eph_dir, 'rbsp*')
 fnames = file_basename(flist)
-years = long(strmid(fnames, 15, 4))
-doys  = long(strmid(fnames, 20, 3))
-versions = long(strmid(fnames, 24, 2))
+years = long(strmid(fnames, 6, 4))
+doys  = long(strmid(fnames, 11, 3))
+versions = long(strmid(fnames, 15, 2))
 
 jdays = julday(1, 1, years) + doys - 1L
 jday_max = max(jdays)
@@ -465,6 +465,7 @@ jday_sta = jbt_date2jday(strmid(time_string(tspan[0]+10),0,10)) - 3L
 jday_end = jbt_date2jday(strmid(time_string(tspan[1]-10),0,10)) + 3L
 
 ind = where(jdays ge jday_sta and jdays le jday_end, nind)
+
 jdays = jdays[ind]
 flist = flist[ind]
 versions = versions[ind]
@@ -472,8 +473,10 @@ versions = versions[ind]
 ind_uniq = uniq(jdays)
 nfile = n_elements(flist)
 
-nversions = ind_uniq[1:*] - ind_uniq  ; number of versions of each day
-nversions = [ind_uniq[0], nversions]
+If(n_elements(ind_uniq) Gt 1) Then Begin
+   nversions = ind_uniq[1:*] - ind_uniq ; number of versions of each day
+   nversions = [ind_uniq[0], nversions]   
+Endif Else nversions = ind_uniq[0]
 
 n = n_elements(nversions)
 klist = ['']
@@ -486,8 +489,9 @@ for i = 0L, n-1 do begin
   klist = [klist, f[imax]]
 endfor
 
-ind = where(strlen(klist) gt 0)
-return, klist[ind]
+ind = where(strlen(klist) gt 0, nind)
+If(nind Gt 0) Then return, klist[ind] $
+Else return, ''
 
 end
 
@@ -881,6 +885,23 @@ pro rbsp_load_state, probe = probe, datatype = datatype, dt = dt, $
   no_spice_load = no_spice_load
 
 compile_opt idl2
+
+;Catch errors here so that spice kernels can be unloaded
+err = 0
+catch, err
+If(err Ne 0) Then Begin
+   catch, /cancel
+   dprint, 'Error'
+   help, /last_message, output = err_msg
+   For j = 0, n_elements(err_msg)-1 Do print, err_msg[j]
+;Unload any open spice kernels
+   If(is_string(klist)) Then Begin
+      dprint, verbose = verbose, 'Unloading SPICE kernels...'
+      cspice_unload, klist
+   Endif
+   Return
+Endif
+
 ; if ~keyword_set(datatype) then datatype = ['pos', 'vel', 'spinper', $
 ;   'spinphase', 'mat_dsc', 'mat_xyz']
 if ~keyword_set(datatype) then datatype = ['pos', 'vel', 'spinper', $
@@ -989,6 +1010,7 @@ for ip = 0, nsc-1 do begin
   xdsc = fltarr(ntimes, 3) ; DSC x in the spacecraft XYZ coordinates
   per = dblarr(ntimes)  ; Spin period
   Lvec = dblarr(ntimes, 3)  ; Spin angular momentum direction
+  some_not_found = 0
   for i = 0L, ntimes - 1 do begin
 ;     toltics = 100d
 ;     toltics = 0d
@@ -997,12 +1019,9 @@ for ip = 0, nsc-1 do begin
 
     ;stop
     if found le 0 then begin
-      dprint, $
-      	string( i, $
-      		format='("WARNING:  Spacecraft pointing matrix not found for itime",X,I,".  Attitude products will be NaN (CMAT and AV set to NaN).")')
-
-      cmat = !values.d_nan*[ [ 1., 1., 1.], [ 1., 1., 1.], [ 1., 1., 1.]]
-      av = !values.d_nan*[ 1., 1., 1.]
+       some_not_found++
+       cmat = !values.d_nan*[ [ 1., 1., 1.], [ 1., 1., 1.], [ 1., 1., 1.]]
+       av = !values.d_nan*[ 1., 1., 1.]
       ;return
     endif
 ;     dprint, 'found = ', found
@@ -1026,6 +1045,11 @@ for ip = 0, nsc-1 do begin
 
 ;     stop
   endfor
+  If(some_not_found Gt 0) Then Begin
+    dprint, string(some_not_found, $
+                   format='("WARNING:  Spacecraft pointing matrix not found for ", I," times.  Attitude products will be NaN (CMAT and AV set to NaN).")')
+  Endif
+
   x = xdsc[*,0]
   y = xdsc[*,1]
   phase = -atan(y, x) * !radeg + 360. - 45.

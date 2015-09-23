@@ -67,9 +67,9 @@
 ;
 ;Written by: Hannes Schwarzl & Patrick Cruce(pcruce@igpp.ucla.edu)
 ;
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-09-21 08:40:23 -0700 (Mon, 21 Sep 2015) $
-; $LastChangedRevision: 18853 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-09-22 08:59:06 -0700 (Tue, 22 Sep 2015) $
+; $LastChangedRevision: 18869 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans.pro $
 ;-
 pro cotrans, name_in, name_out, time, GSM2GSE=GSM2GSE, GSE2GEI=GSE2GEI,          $
@@ -112,7 +112,7 @@ if keyword_set(GSE2GSM) then begin
    if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                          'gse') then begin
       dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-              'must be GSE'
+              ' must be GSE'
       return
    end
    sub_GSE2GSM,data_in,data_conv
@@ -133,7 +133,7 @@ if keyword_set(GSM2GSE) then begin
    if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                               'gsm') then begin
       dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-              'must be GSM'
+              ' must be GSM'
       return
    end
    sub_GSE2GSM,data_in,data_conv,/GSM2GSE
@@ -154,7 +154,7 @@ if keyword_set(GEI2GSE) then begin
   if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                         'gei') then begin
      dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-             'must be GEI'
+             ' must be GEI'
      return
   end
   sub_GEI2GSE,data_in,data_conv
@@ -175,7 +175,7 @@ if keyword_set(GSE2GEI) then begin
    if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                          'gse') then begin
       dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-                  'must be GSE'
+                  ' must be GSE'
       return
    end
    sub_GEI2GSE,data_in,data_conv,/GSE2GEI
@@ -195,7 +195,7 @@ if keyword_set(GSM2SM) then begin
    if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                          'gsm') then begin
       dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-                   'must be GSM'
+                   ' must be GSM'
       return
    end
    sub_GSM2SM,data_in,data_conv
@@ -215,7 +215,7 @@ if keyword_set(SM2GSM) then begin
    if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                          'sm') then begin
       dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-              'must be SM'
+              ' must be SM'
       return
    end
    sub_GSM2SM,data_in,data_conv,/SM2GSM
@@ -236,7 +236,7 @@ if keyword_set(GEI2GEO) then begin
    if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                          'gei') then begin
       dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-              'must be GEI'
+              ' must be GEI'
       return
    end
    sub_GEI2GEO,data_in,data_conv
@@ -257,7 +257,7 @@ if keyword_set(GEO2GEI) then begin
    if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                          'geo') then begin
       dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-              'must be GEO'
+              ' must be GEO'
       return
    end
    sub_GEI2GEO,data_in,data_conv,/GEO2GEI
@@ -278,7 +278,7 @@ if keyword_set(GEO2MAG) then begin
    if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                          'geo') then begin
       dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-              'must be GEO'
+              ' must be GEO'
       return
    end
    sub_GEO2MAG,data_in,data_conv
@@ -299,7 +299,7 @@ if keyword_set(MAG2GEO) then begin
    if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
                                                          'mag') then begin
       dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-              'must be MAG'
+              ' must be MAG'
       return
    end
    sub_GEO2MAG,data_in,data_conv,/MAG2GEO
@@ -319,7 +319,7 @@ if keyword_set(GEI2J2000) then begin
   if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
     'gei') then begin
     dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-      'must be GEI'
+      ' must be GEI'
     return
   end
   sub_GEI2J2000,data_in,data_conv
@@ -340,7 +340,7 @@ if keyword_set(J20002GEI) then begin
   if ~ strmatch(data_in_coord, 'unknown') && ~ strmatch(data_in_coord, $
     'j2000') then begin
     dprint, 'coord of input '+name_in+': '+data_in_coord+ $
-      'must be J2000'
+      ' must be J2000'
     return
   end
   sub_GEI2J2000,data_in,data_conv,/J20002GEI
