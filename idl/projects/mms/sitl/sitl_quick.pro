@@ -10,8 +10,14 @@
 ; INPUT:
 ;   Prepare an input ASCII file which contains a list of
 ;   startime, endtime, FOM value, and discussion (required for overriding
-;   warning) of desired segments.(There should be 3 or 4 columns,
-;   each delimited by space.)
+;   warning) of desired segments (There should be 3 or 4 columns,
+;   each delimited by space). You will be prompted for this input file 
+;   immediately after execution of this script.
+; 
+; INPUT (example)
+;   2015-05-06/23:30:04 , 2015-05-06/23:35:44,  4.7,
+;   2015-05-06 /23:36:34, 2015-05 -06/23:44:54, 50.0, 'This is a nice dipolarization front'
+;   2015-05-06/23:45:04, 2015-05-06/23:53:24,  1.8
 ;
 ; NOTE:
 ;   - This program is completely independent from EVA but still requires
@@ -22,8 +28,8 @@
 ; CREATED BY: Mitsuo Oka   Feb 2015
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-08-19 11:56:03 -0700 (Wed, 19 Aug 2015) $
-; $LastChangedRevision: 18528 $
+; $LastChangedDate: 2015-09-23 17:14:25 -0700 (Wed, 23 Sep 2015) $
+; $LastChangedRevision: 18898 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_quick.pro $
 Function sitl_quick_template
   anan = fltarr(1) & anan[0] = 'NaN'
@@ -42,14 +48,7 @@ End
 
 PRO sitl_quick, filename=filename
   common mms_sitl_connection, netUrl, connection_time, login_source
-  
-;  ;------------------
-;  ; Local Cache Dir
-;  ;------------------
-;  if n_elements(cache_dir) eq 0 then cache_dir = getenv('HOME')  
-;  local_dir = cache_dir+'/abs_data/'
-;  found = file_test(local_dir); check if the directory exists
-;  if not found then file_mkdir, local_dir
+  compile_opt idl2
   
   mms_init
   
@@ -93,8 +92,8 @@ PRO sitl_quick, filename=filename
   NSEGS = n_elements(r.FOM)
   SEGLENGTHS = lonarr(NSEGS)
   SOURCEID = strarr(NSEGS)
-  START = dblarr(NSEGS)
-  STOP = dblarr(NSEGS)
+  START = lonarr(NSEGS)
+  STOP = lonarr(NSEGS)
   for n=0,NSEGS-1 do begin
     strFOM = string(r.FOM[n],format='(F5.1)')
     print, r.STR_STIME[n], ' - ', r.STR_ETIME[n], ', FOM=',strFOM,', ',strtrim(r.DISCUSSION[n],2)
@@ -102,10 +101,10 @@ PRO sitl_quick, filename=filename
     etime = str2time(r.STR_ETIME[n])
     rs = min(abs(unix_FOMstr.TIMESTAMPS-stime), ids)
     re = min(abs(unix_FOMstr.TIMESTAMPS-etime), ide)
-    SEGLENGTHS[n] = STOP[n]-START[n]+1
     SOURCEID[n] = username+'(Quick)'
     START[n] = long(ids)
-    STOP[n]  = long(ide)
+    STOP[n]  = long(ide)-1L; because STOP should be the start of the stop-segment
+    SEGLENGTHS[n] = STOP[n]-START[n]+1L
   endfor
   str_element,/add,unix_FOMstr,'DISCUSSION', r.DISCUSSION
   str_element,/add,unix_FOMstr,'FOM', r.FOM
@@ -122,13 +121,14 @@ PRO sitl_quick, filename=filename
   ;------------------
   valstruct = mms_load_fom_validation(); validation structure
   problem_status = 0; 0 means 'no error'
+
   mms_check_fom_structure, tai_FOMstr, FOMstr, $
     error_flags,  orange_warning_flags,  yellow_warning_flags,$; Error Flags
     error_msg,    orange_warning_msg,    yellow_warning_msg,  $; Error Messages
     error_times,  orange_warning_times,  yellow_warning_times,$; Erroneous Segments (ptr_arr)
     error_indices,orange_warning_indices,yellow_warning_indices,$; Error Indices (ptr_arr)
-    valstruct=val
-    
+    valstruct=valstruct
+      
   print, ''
   print, '--------------'
   print, 'ERROR'

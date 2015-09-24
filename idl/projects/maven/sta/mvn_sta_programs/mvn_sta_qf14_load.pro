@@ -55,9 +55,9 @@ pro mvn_sta_qf14_load
 
 
   ;;-----------------------------------------
-  ;; Check if APID c6 is loaded
+  ;; Check if APID c6 is loaded, it may be set to 0
   print, 'Generate Quality Flags for APID c6...'
-  if n_elements(mvn_c6_dat) eq 0 then begin
+  if n_elements(mvn_c6_dat) eq 0 || size(mvn_c6_dat, /type) Ne 8 then begin
      print, 'APID c6 must be loaded! Skipping qf14.'
      return
   endif

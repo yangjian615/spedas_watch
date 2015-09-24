@@ -107,16 +107,24 @@
 ;         1. Added keyword *use_eph_predict*.
 ;         2. Added keyword *no_spice_load*.
 ;	2015-08-29:  JWB, UCB SSL.
-;		1.  Changed behavior in loop over time calls to CSPICE_CKGPAV() from returning without completion
-;		to setting returned CMAT and AV to !VALUES.D_NAN (3x3 matrix and 3-array) and warning user.
-;		This is a bit of a kludge to keep missing attitude data from bombing STATE calls that
+;		1.  Changed behavior in loop over time calls to
+;		CSPICE_CKGPAV() from returning without completion
+;		to setting returned CMAT and AV to !VALUES.D_NAN (3x3
+;		matrix and 3-array) and warning user.
+;		This is a bit of a kludge to keep missing attitude
+;		data from bombing STATE calls that
 ;		are only interested in POS and VEL, for example.
-;		2.  Adjusted 'Lvec' TPLOT variable LABELS and COLOR options to be consistent with other 3-vectors.
+;		2.  Adjusted 'Lvec' TPLOT variable LABELS and COLOR
+;		options to be consistent with other 3-vectors.
+;   2015-09-22: jmm, Fixed bug for when only 1 attitude file is
+;   available, added catch statement so that spice kernels can unload
+;   if the program crashes in a CSPICE routine, changed predict
+;   directory, and added logic to avoid full-mission downloads.
 ;
 ; VERSION:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-22 14:02:10 -0700 (Tue, 22 Sep 2015) $
-; $LastChangedRevision: 18876 $
+; $LastChangedDate: 2015-09-23 09:34:14 -0700 (Wed, 23 Sep 2015) $
+; $LastChangedRevision: 18886 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/spacecraft/rbsp_load_state.pro $
 ;
 ;-
@@ -154,8 +162,10 @@ ind_uniq = uniq(jdays)
 ; nfile = n_elements(flist)
 nfile = n_elements(fnames)
 
-nversions = ind_uniq[1:*] - ind_uniq  ; number of versions of each day
-nversions = [ind_uniq[0], nversions]
+If(n_elements(ind_uniq) Gt 1) Then Begin
+   nversions = ind_uniq[1:*] - ind_uniq ; number of versions of each day
+   nversions = [ind_uniq[0], nversions]   
+Endif Else nversions = ind_uniq[0]
 
 n = n_elements(nversions)
 klist = ['']
@@ -251,6 +261,7 @@ scdirs = scdirs[ind]
 rbsp_load_state_download_spice_probe_attitude, probe = probe
 
 subdirs = ['ephemerides' $
+  , 'ephemeris_predict_longterm' $
   , 'eclipse_predict' $
   , 'frame_kernel' $
   , 'leap_second_kernel' $
@@ -259,6 +270,7 @@ subdirs = ['ephemerides' $
   ] + '/'
 nsub = n_elements(subdirs)
 for ip = 0, nsc-1 do begin
+  sc = probe[ip]
   mocdir = scdirs[ip]
   for k = 0, nsub - 1 do begin
     subdir = subdirs[k]
@@ -266,7 +278,22 @@ for ip = 0, nsc-1 do begin
     tmpdir = datadir + mocdir
 ;     stop
     urls = jbt_fileurls(remote_dir, verbose = 0, localdir = tmpdir)
-    fnames = file_basename(urls)
+    fnamesk = file_basename(urls)
+    nfile = n_elements(fnamesk)
+;Here add some logic so that you don't need to download the
+;full mission. For each kernel, this just mirrors the
+;load_state_*_kernel logic 
+    case subdir of
+       'leap_second_kernel': fnames = rbsp_load_state_lsk_kernel(sc, files_in=fnamesk)
+       'operations_sclk_kernel': fnames = rbsp_load_state_sclk_kernel(sc, files_in=fnamesk)
+       'ephemerides':fnames = rbsp_load_state_eph_kernel(sc, files_in=fnamesk)
+       'ephemeris_predict_longterm':fnames = rbsp_load_state_eph_predict_kernel(sc, files_in=fnamesk)
+       'eclipse_predict':Begin
+          fnames = rbsp_load_state_eclipse_time_files(sc, files_in=fnamesk)
+       End
+       Else:fnames = fnamesk
+    Endcase
+    If(~is_string(fnames)) Then continue
     nfile = n_elements(fnames)
     for i = 0L, nfile-1 do begin
       fname = fnames[i]
@@ -313,20 +340,23 @@ endfor
 end
 
 ;-------------------------------------------------------------------------------
-function rbsp_load_state_lsk_kernel, sc
+;jmm, 2015-09-22 Added files_in so that URLS can be passed
+function rbsp_load_state_lsk_kernel, sc, files_in = files_in
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir
-datadir = expand_tilde(datadir)
-sep = path_sep()
+If(keyword_set(files_in)) Then flist = files_in Else Begin
+   datadir = !rbsp_efw.local_data_dir
+   datadir = expand_tilde(datadir)
+   sep = path_sep()
 
-moc = 'MOC_data_products' + sep
+   moc = 'MOC_data_products' + sep
 
-LSK = 'leap_second_kernel' + sep
-dir = datadir + moc + strupcase('rbsp' + sc) + sep + LSK
+   LSK = 'leap_second_kernel' + sep
+   dir = datadir + moc + strupcase('rbsp' + sc) + sep + LSK
+   flist = file_search(dir, 'naif*')
+Endelse
 
-flist = file_search(dir, 'naif*')
 fnames = file_basename(flist)
 day_number = long(strmid(fnames, 4, 4))
 dum = max(day_number, imax)
@@ -380,18 +410,20 @@ return, klist[ind]
 end
 
 ;-------------------------------------------------------------------------------
-function rbsp_load_state_eph_kernel, sc
+;jmm, 2015-09-22 Added files_in so that URLS can be passed
+function rbsp_load_state_eph_kernel, sc, files_in = files_in
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir
-datadir = expand_tilde(datadir)
-sep = path_sep()
+If(keyword_set(files_in)) Then flist = files_in Else Begin
+   datadir = !rbsp_efw.local_data_dir
+   datadir = expand_tilde(datadir)
+   sep = path_sep()
 
-moc = datadir + 'MOC_data_products' + sep
-eph_dir = moc + strupcase('rbsp' + sc) + sep + 'ephemerides' + sep
-
-flist = file_search(eph_dir, 'rbsp*')
+   moc = datadir + 'MOC_data_products' + sep
+   eph_dir = moc + strupcase('rbsp' + sc) + sep + 'ephemerides' + sep
+   flist = file_search(eph_dir, 'rbsp*')
+Endelse
 fnames = file_basename(flist)
 years = long(strmid(fnames, 15, 4))
 doys  = long(strmid(fnames, 20, 3))
@@ -408,18 +440,21 @@ return, f[imax]
 end
 
 ;-------------------------------------------------------------------------------
-function rbsp_load_state_eph_predict_kernel, sc
+;jmm, 2015-09-22 Added files_in so that URLS can be passed
+function rbsp_load_state_eph_predict_kernel, sc, files_in = files_in
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir
-datadir = expand_tilde(datadir)
-sep = path_sep()
+If(keyword_set(files_in)) Then flist = files_in Else Begin
+   datadir = !rbsp_efw.local_data_dir
+   datadir = expand_tilde(datadir)
+   sep = path_sep()
 
-moc = datadir + 'MOC_data_products' + sep
-eph_dir = moc + strupcase('rbsp' + sc) + sep + 'ephemeris_predict_longterm' + sep
+   moc = datadir + 'MOC_data_products' + sep
+   eph_dir = moc + strupcase('rbsp' + sc) + sep + 'ephemeris_predict_longterm' + sep
 
-flist = file_search(eph_dir, 'rbsp*')
+   flist = file_search(eph_dir, 'rbsp*')
+Endelse
 fnames = file_basename(flist)
 years = long(strmid(fnames, 6, 4))
 doys  = long(strmid(fnames, 11, 3))
@@ -496,20 +531,23 @@ Else return, ''
 end
 
 ;-------------------------------------------------------------------------------
-function rbsp_load_state_sclk_kernel, sc
+;2015-09-22, jmm, Added files_in keyword so that URLS can be passed in
+function rbsp_load_state_sclk_kernel, sc, files_in = files_In
 
 compile_opt idl2, HIDDEN
 
-datadir = !rbsp_efw.local_data_dir
-datadir = expand_tilde(datadir)
-sep = path_sep()
-moc = 'MOC_data_products' + sep
+If(keyword_set(files_in)) Then flist = files_in Else Begin
+   datadir = !rbsp_efw.local_data_dir
+   datadir = expand_tilde(datadir)
+   sep = path_sep()
+   moc = 'MOC_data_products' + sep
 
-SCLK = 'operations_sclk_kernel' + sep
-dir = datadir + moc + strupcase('rbsp' + sc) + sep + SCLK
+   SCLK = 'operations_sclk_kernel' + sep
+   dir = datadir + moc + strupcase('rbsp' + sc) + sep + SCLK
 
 ; print, dir
-flist = file_search(dir, 'rbsp*')
+   flist = file_search(dir, 'rbsp*')
+Endelse
 fnames = file_basename(flist)
 day_number = long(strmid(fnames, 11, 4))
 dum = max(day_number, imax)
@@ -584,27 +622,33 @@ if keyword_set(downloadonly) then return
 klist = rbsp_load_state_spice_kernel_list(probe = probe, $
   use_eph_predict = use_eph_predict)
 
-; dprint, 'Loading the following SPICE kernels:'
-; pm, klist
+dprint, 'Loading the following SPICE kernels:'
+pm, klist
 
 cspice_furnsh, klist
 end
 
 ;-------------------------------------------------------------------------------
-function rbsp_load_state_eclipse_time_files, sc
+;2015-09-22, jmm, Added files_in keyword so that URLS can be passed in
+function rbsp_load_state_eclipse_time_files, sc, files_in=files_in
 compile_opt idl2, HIDDEN
 ; dprint, 'Hello world.'
-datadir = !rbsp_efw.local_data_dir
-datadir = expand_tilde(datadir)
-sep = path_sep()
+If(keyword_set(files_in)) Then Begin
+   all_ecl_files = file_basename(files_in)
+   ecl_dir = file_dirname(files_in, /mark_directory)
+Endif Else Begin
+   datadir = !rbsp_efw.local_data_dir
+   datadir = expand_tilde(datadir)
+   sep = path_sep()
 
-moc = datadir + 'MOC_data_products' + sep
-ecl_dir = moc + strupcase('rbsp' + sc) + sep + 'eclipse_predict' + sep
+   moc = datadir + 'MOC_data_products' + sep
+   ecl_dir = moc + strupcase('rbsp' + sc) + sep + 'eclipse_predict' + sep
 
 ; Get all names of eclipse time files.
-all_ecl_files = file_basename(file_search(ecl_dir, 'rbsp*'))
+   all_ecl_files = file_basename(file_search(ecl_dir, 'rbsp*'))
 ; print, 'All eclipse time files (before stregex):'
 ; pm, all_ecl_files
+Endelse
 reg = '^rbsp' + strlowcase(sc) + '_201[0-9]{1}_[0-9]{3}_[0-9]{2}'
 ind = where(stregex(all_ecl_files, reg, /bool))
 all_ecl_files = all_ecl_files[ind]
@@ -631,8 +675,8 @@ for i = 0L, days - 1 do begin
   jday = jbt_date2jday(date)
   ind = where(jdays lt jday, nind)
   if nind eq 0 then begin
-    dprint, 'No file available. Something is off.'
-    stop
+    dprint, 'No eclipse file available. Something is off.'
+    Return, ''
   endif
   ; Find doy
   itmp = ind[nind-1]

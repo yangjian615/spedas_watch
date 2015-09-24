@@ -40,9 +40,9 @@
 ;      This routine was forked from the THEMIS coord object (thm_ui_coordinate_systems)
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-09 09:46:45 -0700 (Thu, 09 Jul 2015) $
-;$LastChangedRevision: 18042 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-09-23 08:48:08 -0700 (Wed, 23 Sep 2015) $
+;$LastChangedRevision: 18883 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_coordinate_systems__define.pro $
 ;-
 
@@ -64,7 +64,8 @@ function spd_ui_coordinate_systems::init
                              'gei', $ ; Geocentric Equatorial Inertial
                              'sm', $ ; Solar Magnetic
                              'geo', $ ; Geographic
-                             'mag' $ ; Magnetic
+                             'mag', $ ; Magnetic
+                             'j2000' $ ; J2000 (mean of date)                             
                              ]
     
     ; additional coordinate systems

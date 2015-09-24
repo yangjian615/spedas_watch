@@ -104,6 +104,6 @@ endif else begin
    newstring = strjoin(split, outsub[0])	;rebuild string via delimit out
    if sarray then newstring = strsplit(newstring, arr_delim, /extract) ;break up array if needed
 endelse
-if(source Eq 'gui/display/draw_object/thm_ui_draw_object__adddatestring.pro') Then stop
+
 return,newstring
 end
