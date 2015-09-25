@@ -178,7 +178,16 @@ FUNCTION eva_sitl_validate, tai_FOMstr_mod, tai_FOMstr_org, header=header, $
       endelse
     endfor
     msg = newmsg[1:n_elements(newmsg)-1]
+    ;----------------
     xdisplayfile,'dummy',done='Close',group=tlb,text=msg, title='VALIDATION',/grow_to_screen
+    ;----------------
+    mmax = n_elements(msg)
+    openw,nf,'eva_validate.txt',/get_lun ; open as a new file
+    for m=0,mmax-1 do begin
+      printf, nf, msg[m]
+    endfor
+    free_lun, nf
+    ;----------------
   endif
   result = {error:error, orange:orange, yellow:yellow, msg:msg}
 ;  if vcase lt 2 then begin

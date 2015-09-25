@@ -40,7 +40,7 @@ FUNCTION eva_data_load_reformat, paramlist, probelist, FOURTH=fourth
         tn = plist[q] + strmid(paramlist0,spcidloc+1,100)
         tname = tnames(tn,c)
         if c eq 0 then begin
-          print, 'EVA: ERROR: '+tn+' is not loaded'
+          print, 'EVA: ERROR: '+tn+' is not loaded (eva_data_load_reformat)'
           return, 'No'
         endif
         get_data, tname, data=DD, lim=lim, dl=dl

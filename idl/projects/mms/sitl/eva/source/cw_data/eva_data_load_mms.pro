@@ -70,6 +70,21 @@ FUNCTION eva_data_load_mms, state
         idx = where(strmatch(tn,param),ct); check if param is one of the preloaded variables.
       endelse
       if ct eq 0 then begin; if not loaded
+        ;-----------
+        ; ASPOC
+        ;-----------
+        pcode=1
+        ip=where(perror eq pcode,cp)
+        if(strmatch(paramlist[i],'*_asp1_*') and (cp eq 0))then begin
+          mms_load_aspoc,datatype='asp1',level='sitl',probe=prb
+          answer = 'Yes'
+        endif
+        pcode=1
+        ip=where(perror eq pcode,cp)
+        if(strmatch(paramlist[i],'*_asp2_*') and (cp eq 0))then begin
+          mms_load_aspoc,datatype='asp2',level='sitl',probe=prb
+          answer = 'Yes'
+        endif
         
         ;-----------
         ; EDI
@@ -122,6 +137,7 @@ FUNCTION eva_data_load_mms, state
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_feeps_*') and (cp eq 0)) then begin
           mms_load_epd_feeps, sc=sc
+          ;mms_load_feeps, probes=prb, datatype='electron'
           answer = 'Yes'
         endif
         
@@ -133,27 +149,30 @@ FUNCTION eva_data_load_mms, state
         if (strmatch(paramlist[i],'*_fpi_*') and (cp eq 0)) then begin
           mms_sitl_get_fpi_basic, sc_id=sc
           
+          tngap = tnames('*_fpi_*')
+          tdegap,  tngap, /overwrite
+
           options, sc+'_fpi_eEnergySpectr_omni',spec=1,ylog=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cele',ysubtitle='[eV]'
+            ytitle=sc+'!CFPI!Cele',ysubtitle='[eV]',no_interp=1
           ylim, sc+'_fpi_eEnergySpectr_omni', 10,26000
           
           options,sc+'_fpi_iEnergySpectr_omni',spec=1,ylog=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cion',ysubtitle='[eV]'
+            ytitle=sc+'!CFPI!Cion',ysubtitle='[eV]',no_interp=1
           ylim, sc+'_fpi_iEnergySpectr_omni', 10,26000
           
           options,sc+'_fpi_ePitchAngDist_midEn',spec=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,mid-E)'
+            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,mid-E)',no_interp=1
           ylim, sc+'_fpi_ePitchAngDist_midEn', 0,180
           
           options,sc+'_fpi_ePitchAngDist_highEn',spec=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,high-E)'
+            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,high-E)',no_interp=1
           ylim, sc+'_fpi_ePitchAngDist_highEn', 0, 180
           
-          options,sc+'_fpi_DISnumberDensity',ylog=1,$
+          options,sc+'_fpi_DISnumberDensity',ylog=0,$
             ytitle=sc+'!CFPI!CNi',ysubtitle='[cm!U-3!N]'
           
           options,sc+'_fpi_iBulkV_DSC',$
-            ytitle=sc+'!CFPI!CVi',ysubtitle='[km/s]',$
+            ytitle=sc+'!CFPI!CVi',ysubtitle='[km/s]',constant=0,$
             labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1,colors=[2,4,6]
 
           answer = 'Yes'
@@ -255,8 +274,9 @@ FUNCTION eva_data_load_mms, state
           tn=tnames(sc+'*dsp*',jmax)
           if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
             options,tn,ylog=1,zlog=1,yrange=[10,10000]
+            ylim,tn,30,6000
             idx = where(strmatch(tn,'*_mfe_*'),ct)
-            if ct gt 0 then ylim,tn[idx],100,10000
+            if ct gt 0 then ylim,tn[idx],500,130000
           endif
           answer = 'Yes'
         endif

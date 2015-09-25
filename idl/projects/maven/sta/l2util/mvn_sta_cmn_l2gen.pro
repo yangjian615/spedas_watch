@@ -131,8 +131,8 @@ End
 ; 6-nov-2014, jmm, Corrects clock drift 
 ; 22-dec-2014, jmm, added eprom_ver and header
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-08-25 15:57:29 -0700 (Tue, 25 Aug 2015) $
-; $LastChangedRevision: 18614 $
+; $LastChangedDate: 2015-09-24 12:59:50 -0700 (Thu, 24 Sep 2015) $
+; $LastChangedRevision: 18918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -526,13 +526,13 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
               dvar = fix(4)
            End
            'nswp': Begin
-              dvar = fix(21)
+              dvar = fix(n_elements(cmn_dat.energy[*,0,0]))
            End
            'neff': Begin
-              dvar = fix(128)
+              dvar = fix(n_elements(cmn_dat.eff[*,0,0]))
            End
            'nmlut': Begin
-              dvar = fix(8)
+              dvar = fix(n_elements(cmn_dat.tof_arr[*,0,0]))
            End
            'dead_time_1': Begin
               dvar = cmn_dat.dead1
@@ -785,4 +785,4 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
 
   Return
 End
->
+

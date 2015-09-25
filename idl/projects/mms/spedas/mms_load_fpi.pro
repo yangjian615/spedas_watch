@@ -22,8 +22,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-03 13:53:53 -0700 (Thu, 03 Sep 2015) $
-;$LastChangedRevision: 18708 $
+;$LastChangedDate: 2015-09-24 08:53:20 -0700 (Thu, 24 Sep 2015) $
+;$LastChangedRevision: 18908 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi.pro $
 ;-
 
@@ -105,6 +105,7 @@ function mms_fpi_energies
 end
 
 pro mms_load_fpi_fix_angles, tplotnames, prefix = prefix
+    if undefined(prefix) then prefix = 'mms1'
     fpi_angles = mms_fpi_angles()
 
     spectra_where = strmatch(tplotnames, prefix + '_fpi_?PitchAngDist_*En')
@@ -114,6 +115,13 @@ pro mms_load_fpi_fix_angles, tplotnames, prefix = prefix
             if spectra_where[var_idx] ne 0 then begin
                 get_data, tplotnames[var_idx], data=fpi_d, dlimits=dl
                 if is_struct(fpi_d) then begin
+                    ; set some metadata before saving
+                    en = strsplit(tplotnames[var_idx], '_', /extract)
+                    en = en[n_elements(strsplit(tplotnames[var_idx], '_', /extract))-1]
+                    options, tplotnames[var_idx], ysubtitle='[deg]'
+                    options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+en+'!CPAD'
+                    options, tplotnames[var_idx], ztitle='Counts'
+                    zlim, tplotnames[var_idx], 0, 0, 1
                     store_data, tplotnames[var_idx], data={x: fpi_d.X, y:fpi_d.Y, v: fpi_angles}, dlimits=dl
                 endif
             endif
@@ -121,6 +129,7 @@ pro mms_load_fpi_fix_angles, tplotnames, prefix = prefix
     endif
 end
 pro mms_load_fpi_fix_spectra, tplotnames, prefix = prefix
+    if undefined(prefix) then prefix = 'mms1'
     fpi_energies = mms_fpi_energies()
 
     spectra_where = strmatch(tplotnames, prefix + '_fpi_?EnergySpectr_??')
@@ -130,6 +139,21 @@ pro mms_load_fpi_fix_spectra, tplotnames, prefix = prefix
             if spectra_where[var_idx] ne 0 then begin
                 get_data, tplotnames[var_idx], data=fpi_d, dlimits=dl
                 if is_struct(fpi_d) then begin
+                    ; set some metadata before saving
+                    options, tplotnames[var_idx], ysubtitle='[keV]'
+                    
+                    ; get the direction and species from the variable name
+                    spec_pieces = strsplit(tplotnames[var_idx], '_', /extract)
+                    part_direction = (spec_pieces)[n_elements(spec_pieces)-1]
+                    species = strmid(spec_pieces[2], 0, 1)
+                    species = species eq 'e' ? 'electron' : 'ion'
+                    
+                    options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+species+'!C'+part_direction
+                    options, tplotnames[var_idx], ysubtitle='[keV]'
+                    options, tplotnames[var_idx], ztitle='Counts'
+                    ylim, tplotnames[var_idx], 0, 0, 1
+                    zlim, tplotnames[var_idx], 0, 0, 1
+                    
                     store_data, tplotnames[var_idx], data={x: fpi_d.X, y:fpi_d.Y, v: fpi_energies}, dlimits=dl
                 endif
             endif

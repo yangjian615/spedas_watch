@@ -39,8 +39,8 @@
 ; 13-jun-2014, jmm, hacked from mvn_sta_cmn_l2gen.pro
 ; 22-Dec-2014, jmm, Added eprom_ver, header
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-08-25 15:57:29 -0700 (Tue, 25 Aug 2015) $
-; $LastChangedRevision: 18614 $
+; $LastChangedDate: 2015-09-24 12:59:50 -0700 (Thu, 24 Sep 2015) $
+; $LastChangedRevision: 18918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_d89a_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_d89a_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -366,7 +366,7 @@ Pro mvn_sta_cmn_d89a_l2gen, cmn_dat, otp_struct = otp_struct, directory = direct
               dvar = num_dists
            End        
            'nswp': Begin
-              dvar = fix(21)
+              dvar = fix(n_elements(cmn_dat.energy[*,0]))
            End
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for. Skipping'

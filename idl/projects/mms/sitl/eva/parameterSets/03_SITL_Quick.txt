@@ -1,4 +1,4 @@
-thg_idx_ae
+
 
 mms*_dfg_srvy_gsm_dmpa; Bx, By, Bz
 mms*_dfg_srvy_gsm_dmpa_m; |B|

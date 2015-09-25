@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-08-28 16:41:05 -0700 (Fri, 28 Aug 2015) $
-; $LastChangedRevision: 18668 $
+; $LastChangedDate: 2015-09-24 15:14:07 -0700 (Thu, 24 Sep 2015) $
+; $LastChangedRevision: 18923 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -459,8 +459,9 @@ FUNCTION eva_data, parent, $
   
   ;----- PREFERENCES -----
   
-  home_dir = (file_search('~',/expand_tilde))[0]+'/'
-  pref = {EVA_CACHE_DIR: home_dir + 'data/mms/sitl/eva_cache/', $
+  ;home_dir = (file_search('~',/expand_tilde))[0]+'/'
+  ;pref = {EVA_CACHE_DIR: home_dir + 'data/mms/sitl/eva_cache/', $
+  pref = {EVA_CACHE_DIR: !MMS.LOCAL_DATA_DIR+'sitl/eva_cache/', $
     EVA_PARAMSET_DIR: '',$
     EVA_TESTMODE: 0}
 
@@ -487,17 +488,16 @@ FUNCTION eva_data, parent, $
   ; ----- CONFIG (READ and VALIDATE) -----
   cfg = mms_config_read()         ; Read config file and
   pref = mms_config_push(cfg,pref); push the values into preferences
-  ll = strmid(pref.EVA_CACHE_DIR, strlen(pref.EVA_CACHE_DIR)-1, 1); validate
-  if ~(ll eq '/' or ll eq '\') then pref.EVA_CACHE_DIR += '/'
+  
+  ; For the following itesm, ignore what's in the config file
   str_element,/add,pref,'ABS_LOCAL',''
   str_element,/add,state,'pref',pref
-  ;print,'EVA: EVA_CACHE_DIR='+pref.EVA_CACHE_DIR
-  
+  str_element,/add,pref,'EVA_CACHE_DIR',!MMS.LOCAL_DATA_DIR+'sitl/eva_cache/'
   state = eva_data_paramSetList(state)
 
   ;----- CACHE DIRECTORY -----
-  found = file_test(pref.EVA_CACHE_DIR+'/abs_data')
-  if not found then file_mkdir, pref.EVA_CACHE_DIR+'/abs_data'
+  ;found = file_test(pref.EVA_CACHE_DIR+'/abs_data')
+  ;if not found then file_mkdir, pref.EVA_CACHE_DIR+'/abs_data'
   
   ; ----- WIDGET LAYOUT -----
   

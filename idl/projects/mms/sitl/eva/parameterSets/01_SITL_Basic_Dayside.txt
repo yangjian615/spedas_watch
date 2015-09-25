@@ -1,5 +1,3 @@
-thg_idx_ae
-
 mms*_dfg_srvy_gsm_dmpa; Bx, By, Bz
 mms*_dfg_srvy_gsm_dmpa_m; |B|
 
@@ -8,9 +6,6 @@ mms*_fpi_eEnergySpectr_omni
 
 mms*_fpi_DISnumberDensity
 mms*_fpi_iBulkV_DSC
-
-;mms*_epd_feeps_TOP_counts_per_accumulation_sensorID_4
-;mms*_epd_feeps_BOTTOM_quality_sensorID_12
 
 mms*_hpca_hplus_RF_corrected
 mms*_hpca_heplusplus_RF_corrected

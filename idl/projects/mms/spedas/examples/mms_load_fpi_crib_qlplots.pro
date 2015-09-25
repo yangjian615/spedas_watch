@@ -3,18 +3,21 @@
 ; do you have suggestions for this crib sheet?  
 ;   please send them to egrimes@igpp.ucla.edu
 ; 
+; History:
+; egrimes updated 23Sep2015, to set some metadata for spectra/PADs
 ; egrimes updated 8Sept2015
 ; BGILES UPDATED 1Sept2015
 ; BGILES UPDATED 31AUGUST2015
+; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-21 08:21:18 -0700 (Mon, 21 Sep 2015) $
-; $LastChangedRevision: 18849 $
+; $LastChangedDate: 2015-09-24 09:02:47 -0700 (Thu, 24 Sep 2015) $
+; $LastChangedRevision: 18911 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fpi_crib_qlplots.pro $
 ;-
 
 ;preparations and defaults
 timespan, '15-08-15', 1, /day
-;probes = ['3']
+probes = [1, 2, 3, 4]
 datatype = '*' ; grab all data in the CDF
 level = 'sitl'
 data_rate = 'fast'
@@ -23,25 +26,25 @@ iw=0
 width = 650
 height = 750
 
-tplot_options,'xmargin',[15,10]              ; Set left/right margins to 10 characters
+tplot_options,'xmargin',[15,15]              ; Set left/right margins to 10 characters
 ;tplot_options,'ymargin',[4,2]                ; Set top/bottom margins to 4/2 lines
 
 ;load_undefined_fpi_arrays, ypad, yenergies   ;this is temporary until quantities can be added to FPI CDFs
 
 ;load data for all 4 probes
-mms_load_fpi, trange = trange, probes = [1, 2, 3, 4], datatype = datatype, $
+mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     level = level, data_rate = data_rate, $
     local_data_dir = local_data_dir, source = source, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup
 
 ; load ephemeris data for all 4 probes
-mms_load_state, trange = trange, probes = [1, 2, 3, 4], /ephemeris
+mms_load_state, trange = trange, probes = probes, /ephemeris
 
 ; load DFG data for all 4 probes
-mms_load_dfg, trange = trange, probes = [1, 2, 3, 4]
+mms_load_dfg, trange = trange, probes = probes
 
-FOR i=1,4 DO BEGIN    ;step through the observatories
+FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
 obsstr='mms'+STRING(i,FORMAT='(I1)')+'_fpi_'
 
 ;SET UP TPLOT VARIABLES
@@ -92,6 +95,12 @@ store_data, obsstr+'eEnergySpectr_mZ', data = {x:xtimes, y:mZ, v:yenergies}
 store_data, obsstr+'eEnergySpectr_omni_avg', data = {x:xtimes, y:e_omni_avg, v:yenergies}
 store_data, obsstr+'eEnergySpectr_omni_sum', data = {x:xtimes, y:e_omni_sum, v:yenergies}
 
+; set the metadata for omnidirectional spectra
+options, obsstr+'eEnergySpectr_omni_sum', ytitle='MMS'+STRING(i,FORMAT='(I1)')+'!Celectron!Csum'
+options, obsstr+'eEnergySpectr_omni_avg', ytitle='MMS'+STRING(i,FORMAT='(I1)')+'!Celectron!Cavg'
+options, obsstr+'eEnergySpectr_omni_sum', ysubtitle='[keV]'
+options, obsstr+'eEnergySpectr_omni_avg', ysubtitle='[keV]'
+
 ; setup ion energy spectra into tplot variables
 get_data, obsstr+'iEnergySpectr_pX', xtimes, pX, yenergies
 get_data, obsstr+'iEnergySpectr_mX', xtimes, mX, yenergies
@@ -110,6 +119,12 @@ store_data, obsstr+'iEnergySpectr_mZ', data = {x:xtimes, y:mZ, v:yenergies}
 store_data, obsstr+'iEnergySpectr_omni_sum', data = {x:xtimes, y:i_omni_sum, v:yenergies}
 store_data, obsstr+'iEnergySpectr_omni_avg', data = {x:xtimes, y:i_omni_avg, v:yenergies}
 
+; set the metadata for omnidirectional spectra
+options, obsstr+'iEnergySpectr_omni_sum', ytitle='MMS'+STRING(i,FORMAT='(I1)')+'!Cion!Csum'
+options, obsstr+'iEnergySpectr_omni_avg', ytitle='MMS'+STRING(i,FORMAT='(I1)')+'!Cion!Cavg'
+options, obsstr+'iEnergySpectr_omni_sum', ysubtitle='[keV]'
+options, obsstr+'iEnergySpectr_omni_avg', ysubtitle='[keV]'
+
 ; setup electron PAD into tplot variables
 get_data, obsstr+'ePitchAngDist_lowEn', xtimes, lowEn, ypad
 get_data, obsstr+'ePitchAngDist_midEn', xtimes, midEn, ypad
@@ -121,6 +136,12 @@ store_data, obsstr+'ePitchAngDist_midEn', data = {x:xtimes, y:midEn, v:ypad}
 store_data, obsstr+'ePitchAngDist_highEn', data = {x:xtimes, y:highEn, v:ypad}
 store_data, obsstr+'ePitchAngDist_sum', data = {x:xtimes, y:e_PAD_sum, v:ypad}
 store_data, obsstr+'ePitchAngDist_avg', data = {x:xtimes, y:e_PAD_avg, v:ypad}
+
+; set the metadata for the PADs
+options, obsstr+'ePitchAngDist_sum', ytitle='MMS'+STRING(i,FORMAT='(I1)')+'!Celectron!CPAD!Csum'
+options, obsstr+'ePitchAngDist_avg', ytitle='MMS'+STRING(i,FORMAT='(I1)')+'!Celectron!CPAD!Cavg'
+options, obsstr+'ePitchAngDist_sum', ysubtitle='[deg]'
+options, obsstr+'ePitchAngDist_avg', ysubtitle='[deg]'
 
 ; combine the densities into one tplot variable
 join_vec, [obsstr+'DESnumberDensity', obsstr+'fpi_DISnumberDensity'], obsstr+'numberDensity'

@@ -3,7 +3,8 @@ PRO eva_sitl_restore, auto=auto, dir=dir
 
   if keyword_set(auto) then begin
     if n_elements(dir) eq 0 then dir = spd_default_local_data_dir() + 'mms/'
-    fname = thm_addslash(dir)+'eva-fom-modified.sav'
+    ;fname = thm_addslash(dir)+'eva-fom-modified.sav'
+    fname = 'eva-fom-modified.sav'
   endif else begin
     fname = dialog_pickfile(/READ)
     if strlen(fname) eq 0 then begin

@@ -1,4 +1,3 @@
-thg_idx_ae
 mms*_dsp_lfe_x
 mms*_dsp_lfe_y
 mms*_dsp_lfe_z

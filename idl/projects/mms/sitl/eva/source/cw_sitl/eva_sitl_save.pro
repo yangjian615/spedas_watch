@@ -11,7 +11,8 @@ PRO eva_sitl_save, auto=auto, dir=dir
   
   if keyword_set(auto) then begin 
     if n_elements(dir) eq 0 then dir = spd_default_local_data_dir() + 'mms/'
-    fname = thm_addslash(dir)+'eva-fom-modified.sav'
+    ;fname = thm_addslash(dir)+'eva-fom-modified.sav'
+    fname = 'eva-fom-modified.sav'
   endif else begin
     fname_default = 'eva-fom-modified-'+time_string(systime(1,/utc),format=2)+'.sav'
     fname = dialog_pickfile(DEFAULT_EXTENSION='sav', /WRITE, $
