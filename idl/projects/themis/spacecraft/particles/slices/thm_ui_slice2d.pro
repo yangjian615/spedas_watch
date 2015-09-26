@@ -219,35 +219,6 @@ pro thm_ui_slice2d_gen, tlb, state
   if widget_info(id, /button_set) then type=3
   
   
-  ; Get regrid option
-  id = widget_info(tlb, find_by_uname='regridbase')
-  if widget_info(id, /sens) then begin
-    id = widget_info(tlb, find_by_uname='regridphi')
-    widget_control, id, get_value=regridphi 
-  
-    id = widget_info(tlb, find_by_uname='regridtheta')
-    widget_control, id, get_value=regridtheta 
-    
-    id = widget_info(tlb, find_by_uname='regride')
-    widget_control, id, get_value=regride
-    
-    regrid = [thm_ui_slice2d_checknum(regridphi),   $
-              thm_ui_slice2d_checknum(regridtheta), $
-              thm_ui_slice2d_checknum(regride) ]
-
-    if in_set(finite(regrid) and (regrid ge 8), 0) then begin
-      thm_ui_slice2d_error, state.statusbar, err_title, $
-        'Invalid regrid values; all values must be >= 8. Operation canceled.'
-      return
-    endif
-     
-  endif else begin
-  
-    regrid=0
-        
-  endelse
-  
-  
   ; Radial Log?
   id = widget_info(tlb, find_by_uname='radiallog')
   log = widget_info(id, /button_set)
@@ -384,14 +355,14 @@ pro thm_ui_slice2d_gen, tlb, state
     return
   endif
   
-  ; Get displacement from origin
-  id = widget_info(tlb, find_by_uname='displace')
-  widget_control, id, get_value=displacement
-  if ~finite(displacement) then begin
-    thm_ui_slice2d_error, state.statusbar, err_title, $
-      'Invalid displacement, operation canceled.'
-    return
-  endif 
+;  ; Get displacement from origin
+;  id = widget_info(tlb, find_by_uname='displace')
+;  widget_control, id, get_value=displacement
+;  if ~finite(displacement) then begin
+;    thm_ui_slice2d_error, state.statusbar, err_title, $
+;      'Invalid displacement, operation canceled.'
+;    return
+;  endif 
   
   
   ; Get Time Options
@@ -711,7 +682,6 @@ pro thm_ui_slice2d_gen, tlb, state
                       count_threshold=count_threshold, $
                       units=units, $
                       smooth=smooth, $
-                      regrid=regrid, $
                       part_slice=slice_tmp, $
                       msg_obj = state.statusbar, $ 
                       fail=fail
@@ -1294,15 +1264,13 @@ pro thm_ui_slice2d_methodsens, state, id, select
   ; determine new/old
   uname = widget_info(id, /uname)
   geo = (uname eq 'buttongeo') && select
-  near = (uname eq 'button2dnn') && select
   two = (uname eq 'button2di') && select
   three = (uname eq 'button3di') && select
   
   ; apply to widgets
   widget_control, state.rangebase2d, sens = two ;~s
-  widget_control, state.displacementbase, sens = 0 ;~two ;s
+;  widget_control, state.displacementbase, sens = 0 ;~two ;s
   widget_control, state.averagebase, sens = geo ;y
-  ;widget_control, state.width, sens = near
   
   ;smoothing
   id = widget_info(state.tlb, find_by_uname='smooth')
@@ -1327,13 +1295,6 @@ pro thm_ui_slice2d_methodsens, state, id, select
     endif
   endif
   
-  ;regridding
-  id = widget_info(state.tlb, find_by_uname='regrid')
-  widget_control, id, set_button = near
-  id = widget_info(state.tlb, find_by_uname='regridbase')
-  widget_control, id, sens = near
-  widget_control, state.regridbase, sens = ~geo
-
   ;bulk velocity subtraction
   thm_ui_slice2d_subtractsens, state
 
@@ -1353,7 +1314,7 @@ pro thm_ui_slice2d_subtractsens, state
   radial = widget_info(id, /button_set)
   
   id = widget_info(state.tlb, find_by_uname='subtract')
-  widget_control, id, sens = ~geo and ~radial
+  widget_control, id, sens = ~radial
   
 
 end
@@ -1621,12 +1582,7 @@ pro thm_ui_slice2d_event, event
         id = widget_info(event.top, find_by_uname='smoothbase')
         widget_control, id, sens=event.select
       end
-      
-      'REGRID': begin
-        id = widget_info(event.top, find_by_uname='regridbase')
-        widget_control, id, sens=event.select
-      end
-      
+
       'RES': begin
         id = widget_info(event.top, find_by_uname='resolution')
         widget_control, id, sens=event.select
@@ -1703,8 +1659,8 @@ end ;----------------------------------------------------
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-18 18:47:55 -0700 (Fri, 18 Sep 2015) $
-;$LastChangedRevision: 18848 $
+;$LastChangedDate: 2015-09-24 18:16:46 -0700 (Thu, 24 Sep 2015) $
+;$LastChangedRevision: 18930 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
@@ -1930,12 +1886,12 @@ thm_graphics_config
     ory = widget_text(orientationbase, value=orn[1], xsize=4, uname='ory', /edit)
     orz = widget_text(orientationbase, value=orn[2], xsize=4, uname='orz', /edit)
 
-  displacementbase = widget_base(moptbase1, /row, xpad=0, ypad=0)
-    displacement = spd_ui_spinner(displacementbase, text_box_size=6, incr=50, $
-                              uname='displace', label='Displacement: ', $
-                              xlabelsize=mgeo.scr_xsize-1, value=ndisplacement, $
-                              tooltip='Displacement of slice from zero along '+ $
-                              "the slice plane's normal")
+;  displacementbase = widget_base(moptbase1, /row, xpad=0, ypad=0)
+;    displacement = spd_ui_spinner(displacementbase, text_box_size=6, incr=50, $
+;                              uname='displace', label='Displacement: ', $
+;                              xlabelsize=mgeo.scr_xsize-1, value=ndisplacement, $
+;                              tooltip='Displacement of slice from zero along '+ $
+;                              "the slice plane's normal")
 
 
 
@@ -1951,7 +1907,6 @@ thm_graphics_config
   nemax = '30000'
   ct = '1'  ;masking threshold (counts)
   smth = '7'  ;smoothing width (# points)
-  regrid = ['32','16','32']  ;regrid defaults
   angleave = ['-25','25']
   res = '500' ;resolution
 
@@ -2002,19 +1957,7 @@ thm_graphics_config
 
 ;Other Options
   optbase1 = widget_base(optionsSubBase1, /col, /align_left, space=3, xpad=4, ypad=4)
-        
-    regridbase = widget_base(optbase1, /row, xpad=0, ypad=0)
-      regridbuttonbase = widget_base(regridbase, /row, xpad=0, ypad=0, /nonexclusive)
-        regridbutton = widget_button(regridbuttonbase, $
-                         value='Regrid Data (phi, theta, energy):', uval='REGRID', uname='regrid', $
-                         tooltip='Spherically interpolates values at each energy onto a '+ $
-                                 'new grid with N x M x L points in phi and theta and '+ $
-                                 'energy respectively. (Uses nearest neighbor)')
-      regridsubbase = widget_base(regridbase, /row, xpad=0, ypad=0, uname='regridbase')
-        regridphi = widget_text(regridsubbase, value=regrid[0], xsize=4, uname='regridphi', /edit)
-        regridtheta = widget_text(regridsubbase, value=regrid[1], xsize=4, uname='regridtheta', /edit)
-        regride = widget_text(regridsubbase, value=regrid[2], xsize=4, uname='regride', /edit)
-
+    
     averagebase = widget_base(optbase1, /row, xpad=0, ypad=0)
       averagebuttonbase = widget_base(averagebase, /row, xpad=0, ypad=0, /nonexclusive)
         averagebutton = widget_button(averagebuttonbase, $
@@ -2023,8 +1966,8 @@ thm_graphics_config
                                'The angle is measured from the slice plane and about '+ $
                                'the plane''s x-axis.')
       averagesubbase = widget_base(averagebase, /row, xpad=0, ypad=0, uname='averagebase')
-        regridphi = widget_text(averagesubbase, value=angleave[0], xsize=4, uname='angleavemin', /edit)
-        regridtheta = widget_text(averagesubbase, value=angleave[1], xsize=4, uname='angleavemax', /edit)
+        averagemin = widget_text(averagesubbase, value=angleave[0], xsize=4, uname='angleavemin', /edit)
+        averagemax = widget_text(averagesubbase, value=angleave[1], xsize=4, uname='angleavemax', /edit)
 
 
     smoothbase = widget_base(optbase1, /row, xpad=0, ypad=0)
@@ -2062,11 +2005,6 @@ thm_graphics_config
   esaBgndTypes = ['Anode','Angle','Omni'] ;types of background removal for esa (bgnd_type)
   esaNPoints = 3.0 ; bgnd_npoints 
   esaScaleVal = 1.0 ; bgnd_scale
-  sstMaskVal = 0.999 ;mask_remove
-  sstMethods = ['median','spinfit','z_score_mod'] ;method_sunpulse_clean
-  sstToleranceLimits = [1.8,3.5] ; limit_sunpulse_clean 
-                                 ; 3.5 is default for zmod, 2 for median/spinfit
-  sstFillMethods = ['Interpolation','Spin Fit'] ; fillin_method  
   
   ;ESA Widgets
   esaRemoveButtonbase = widget_base(esaContBase, /row, /nonexclusive)
@@ -2317,9 +2255,6 @@ thm_graphics_config
   widget_control, smoothbutton, set_button=0 ; smoothing off by default
     widget_control, smoothsubbase, sens=0
   
-  widget_control, regridbutton, set_button=0 ; regrid on by default
-    widget_control, regridsubbase, sens=0
-
   widget_control, averagesubbase, sens=0
 
   widget_control, resbutton, set_button=0 ;auto res by default
@@ -2375,9 +2310,8 @@ thm_graphics_config
     widget_control, minmaxbutton, xsize=zgeo.scr_xsize - 3
     widget_control, xyminmaxbutton, xsize=zgeo.scr_xsize - 3
 
-  ogeo = widget_info(regridbutton,/geo)
+  ogeo = widget_info(averagebutton,/geo)
     widget_control, smoothbutton, xsize=ogeo.scr_xsize
-    widget_control, averagebutton, xsize=ogeo.scr_xsize
     widget_control, resbutton, xsize=ogeo.scr_xsize
     
   ggeo = widget_info(generate,/geo)
@@ -2429,8 +2363,8 @@ thm_graphics_config
             zminmaxBase:minmaxBase2, xyminmaxBase:xyminmaxBase2, $
             thetarangebase:thetarangeBase, zdirrangebase:zdirrangebase, $
             rangebase2d:subrangebase2d, orientationbase:orientationbase, $
-            displacementbase:displacementbase, averagebase:averagebase, $
-            regridbase:regridbase, $ ;width:width, $
+;            displacementbase:displacementbase, $
+            averagebase:averagebase, $
             slider:slider, $
             rotvel:rotvel, rotmag:rotmag, coordmag:coordmag, $
             velbase:veltype, magbase:magdata, times:ptr_new(), $

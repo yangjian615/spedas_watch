@@ -81,7 +81,6 @@ PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
   bsf = mms_bss_query(bss=bsa, status='FINISHED')
   d_icmp = mms_bss_fom_read(bsf)
   print, 'incomplete', d_icmp.NSEGS
-  stop
   
   ;---------------
   ; PLOT

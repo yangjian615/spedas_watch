@@ -184,8 +184,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-18 18:17:56 -0700 (Fri, 18 Sep 2015) $
-;$LastChangedRevision: 18847 $
+;$LastChangedDate: 2015-09-24 18:15:16 -0700 (Thu, 24 Sep 2015) $
+;$LastChangedRevision: 18929 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -404,8 +404,8 @@ endif
 
 
 ; Get/apply coordinate transformations
-;  -for 2D/3D interpolation the data is rotated here
-;  -for geometric interpolation the data is rotated in spd_slice2d_geo
+;  -for 2D/3D interpolation the data is transformed here
+;  -for geometric interpolation the data is transformed in spd_slice2d_geo
 ;  -support data is always rotated at each step
 ;------------------------------------------------------------
 
@@ -439,6 +439,8 @@ if keyword_set(fail) then return, invalid
 if keyword_set(subtract_bulk) && ~keyword_set(log) then begin
   spd_slice2d_subtract, vectors=xyz, velocity=vbulk, fail=fail
   if keyword_set(fail) then return, invalid
+  ;as with rotations, this will be applied later for geometric interp
+  geo_shift = vbulk
 endif
 
 
@@ -485,10 +487,11 @@ endif else begin
 
   dprint, dlevel=4, 'Using geometric method'
   spd_slice2d_geo, data=datapoints, resolution=resolution, $
-                   rad=rad, phi=phi, theta=theta, dr=dr, dp=dp, dt=dt, $ 
+                   rad=rad, phi=phi, theta=theta, dr=dr, dp=dp, dt=dt, $
                    custom_matrix=custom_matrix, $
                    rotation_matrix=rotation_matrix, $
                    orient_matrix=orient_matrix, $
+                   shift = geo_shift, $
                    average_angle=average_angle, $
                    msg_obj=msg_obj, msg_prefix=msg, $
                    slice=slice, xgrid=xgrid, ygrid=ygrid, $

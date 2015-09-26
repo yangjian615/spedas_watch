@@ -30,8 +30,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-16 20:14:13 -0700 (Wed, 16 Sep 2015) $
-;$LastChangedRevision: 18812 $
+;$LastChangedDate: 2015-09-24 19:12:13 -0700 (Thu, 24 Sep 2015) $
+;$LastChangedRevision: 18931 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_hpca_dist.pro $
 ;-
 
@@ -181,6 +181,8 @@ for i=0,  n_elements(dist)-1 do begin
   
 endfor
 
+;ensure phi values are in [0,360]
+dist.phi = dist.phi mod 360
 
 ;spd_slice2d accepts pointers or structures
 ;pointers are more versatile & efficient, but less user friendly

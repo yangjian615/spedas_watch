@@ -20,8 +20,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2015-09-24 18:15:16 -0700 (Thu, 24 Sep 2015) $
+;$LastChangedRevision: 18929 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_3di.pro $
 ;-
 pro spd_slice2d_3di, datapoints, xyz, resolution, drange=drange, $ 
@@ -31,23 +31,6 @@ pro spd_slice2d_3di, datapoints, xyz, resolution, drange=drange, $
     compile_opt idl2, hidden
 
 
-  ;Error checks
-  normal = [0,0,1.]
-  xvec = [1.,0,0]
-
-  ; Create cube grid
-  mm = [ [minmax(xyz[*,0])], [minmax(xyz[*,1])], [minmax(xyz[*,1])] ]
-  xgrid = interpol(mm[*,0], resolution)
-  ygrid = interpol(mm[*,1], resolution)
-  zgrid = interpol(mm[*,2], resolution)
-
-  ; Get slice's center point
-  displacement = 0.
-  center = ( (normal * displacement)/(mm[1,*]-mm[0,*]) + 0.5) * resolution
-  if in_set(center le 0 or center gt resolution, 1) then begin
-    fail = 'Error: Slice displacement is outside the data range.'
-    return
-  endif  
 
   ; Must be copied to new variables for qhull
   x = xyz[*,0]
@@ -82,7 +65,26 @@ pro spd_slice2d_3di, datapoints, xyz, resolution, drange=drange, $
     vol[derp] = 0
   endif 
 
-  ; Extract slice from regular grid
+  ; Get data's bounds and create the x and y grids for plotting
+  xgrid = interpol(minmax(x), resolution)
+  ygrid = interpol(minmax(y), resolution)
+
+  ; Set up the slice's alignment
+  normal = [0,0,1.]
+  xvec = [1.,0,0]
+
+  ; Get slice's center point as an "index" into the grid
+  ;   -the actual translation is performed in floating point
+  ;   -center along the normal (z) should be at z=0, while x and y 
+  ;    should be centered on the volume so that the output matches 
+  ;     the grids calculated above
+  center = (resolution-1) * [ .5, .5, -min(z)/(max(z)-min(z)) ]
+  if in_set(center le 0 or center gt resolution-1, 1) then begin
+    fail = 'Error: Slice displacement is outside the data range.'
+    return
+  endif  
+
+  ; Extract slice from interpolated data
   slice = extract_slice(vol, resolution, resolution, $
                         center[0], center[1], center[2], $
                         normal, xvec, /sample)

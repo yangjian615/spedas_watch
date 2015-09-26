@@ -41,6 +41,10 @@
 ;                  the slice plane's final coordinates as defined by
 ;                  the user specified normal and x projection.
 ;                  (applied last)
+;   shift: Vector by which the slice should be shifted (e.g. bulk velocity subtraction).
+;          The slice plane will be shifted by the z value and the x & y values will be 
+;          subtracted from the corresponding axes' grids (it should already be in the 
+;          slice plane's coordinates). 
 ; 
 ; Output:
 ;   xgrid: R element array of x-axis values for the slice
@@ -60,6 +64,7 @@ pro spd_slice2d_geo, data=data, resolution=resolution, $
                      rad=r, phi=phi, theta=theta, $
                      dr=dr, dp=dp, dt=dt, $ 
                      custom_matrix=ct, rotation_matrix=rot, orient_matrix=mt, $
+                     shift=shift, $
                      average_angle=average_angle, $
                     ; Data Output
                      slice=slice, xgrid=xgrid, ygrid=ygrid, $
@@ -84,9 +89,10 @@ pro spd_slice2d_geo, data=data, resolution=resolution, $
   vrange = max(abs(r))*[-1,1]
   xgrid = interpol(vrange + [-1,1]*max(dr), n)
   ygrid = interpol(vrange + [-1,1]*max(dr), n)
+  z = undefined(shift) ? 0. : shift[2]
   u = [ [reform(xgrid # replicate(1.,n), n^2)], $  ;x
         [reform(replicate(1.,n) # ygrid, n^2)], $  ;y
-        [reform(replicate(0.,[n,n]), n^2)]   ]     ;z
+        [reform(replicate(z,[n,n]), n^2)]   ]      ;z
 
 
   ;Rotate slice coordinates to desired location. 
@@ -162,7 +168,7 @@ pro spd_slice2d_geo, data=data, resolution=resolution, $
     ;Convert transformed slice coordinates to spherical
     pcoords = rd * atan(ut[*,1],ut[*,0])                       ;phi
     tcoords = rd * atan(ut[*,2], sqrt(total(ut[*,0:1]^2,2)) )  ;theta
-    rcoords = sqrt(ut[*,0]^2 + ut[*,1]^2 + ut[*,2]^2);r
+    rcoords = sqrt(ut[*,0]^2 + ut[*,1]^2 + ut[*,2]^2)          ;r
     
     ;Loop over bins to determine what region each bin covers on the slice plane.
     for i=0, np-1 do begin
@@ -237,6 +243,13 @@ pro spd_slice2d_geo, data=data, resolution=resolution, $
   if na gt 0 then weight[adj] = 1b
   slice = slice / weight
   
+  
+  ;Align the x & y axis values if there was a shift
+  if ~undefined(shift) then begin
+    xgrid -= shift[0]
+    ygrid -= shift[1]
+  endif
+
   return
 
 end

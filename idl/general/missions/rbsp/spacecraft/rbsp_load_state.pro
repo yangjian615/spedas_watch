@@ -123,8 +123,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-23 09:34:14 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18886 $
+; $LastChangedDate: 2015-09-25 12:35:07 -0700 (Fri, 25 Sep 2015) $
+; $LastChangedRevision: 18935 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/spacecraft/rbsp_load_state.pro $
 ;
 ;-
@@ -940,7 +940,7 @@ If(err Ne 0) Then Begin
    For j = 0, n_elements(err_msg)-1 Do print, err_msg[j]
 ;Unload any open spice kernels
    If(is_string(klist)) Then Begin
-      dprint, verbose = verbose, 'Unloading SPICE kernels...'
+      dprint, 'Unloading SPICE kernels...'
       cspice_unload, klist
    Endif
    Return
@@ -1225,7 +1225,7 @@ if keyword_set(no_spice_load) then return
 
 ; Unload spice kernels
 if keyword_set(unload) then begin
-  dprint, verbose = verbose, 'Unloading SPICE kernels...'
+  dprint, 'Unloading SPICE kernels...'
   cspice_unload, klist
 endif else $
   dprint, verbose = verbose, 'SPICE not unloaded. !!!Keep this in mind!!!'

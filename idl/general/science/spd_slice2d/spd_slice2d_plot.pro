@@ -54,8 +54,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-18 18:17:56 -0700 (Fri, 18 Sep 2015) $
-;$LastChangedRevision: 18847 $
+;$LastChangedDate: 2015-09-24 18:15:16 -0700 (Thu, 24 Sep 2015) $
+;$LastChangedRevision: 18929 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -320,22 +320,13 @@ pro spd_slice2d_plot, slice, $
 
   ; Plot circle for minimum/maximum velocity 
   ; (based off energy limits) 
-  if keyword_set(ecircle) then begin
+  if keyword_set(ecircle) and ~keyword_set(slice.shift) then begin
     degrees = findgen(360)*!dtor
     
     ocircy=sin(degrees) * slice.rrange[1]
     ocircx=cos(degrees) * slice.rrange[1]
     icircy=sin(degrees) * slice.rrange[0]
     icircx=cos(degrees) * slice.rrange[0]
-    
-    
-    ;adjust for subtraction of bulk velocity
-    if keyword_set(slice.shift) then begin
-      ocircy -= slice.shift[1]
-      ocircx -= slice.shift[0]
-      icircy -= slice.shift[1]
-      icircx -= slice.shift[0]
-    endif
     
     if slice.rrange[1] gt 0 then $
       oplot,ocircx,ocircy,thick = 1
@@ -346,7 +337,7 @@ pro spd_slice2d_plot, slice, $
   
   ; Plot the bulk velocity
   if keyword_set(plotbulk) and keyword_set(slice.bulk) $
-    and ~keyword_set(shift) then begin
+    and ~keyword_set(slice.shift) then begin
     ; bulk velocity should already be in the coords defined for
     ; the slice plane
     oplot, [0,slice.bulk[0]], [0,slice.bulk[1]], color=!d.table_size-9
