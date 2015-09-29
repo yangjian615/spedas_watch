@@ -16,7 +16,7 @@
 ;-
 
 
-pro rbsp_read_ect_mag_ephem,sc,   perigeetimes
+pro rbsp_read_ect_mag_ephem,sc,   perigeetimes,pre=pre
 
 	rbsp_efw_init
 	rbsp_spice_init
@@ -25,8 +25,8 @@ pro rbsp_read_ect_mag_ephem,sc,   perigeetimes
 	local_data_dir = !rbsp_spice.local_data_dir
 	local_data_dir += 'ect_definitive_ephem/'
 
-	remote_data_dir = 'http://www.rbsp-ect.lanl.gov/data_pub/rbsp'+sc+'/MagEphem/def/'
-
+	if ~keyword_set(pre) then remote_data_dir = 'http://www.rbsp-ect.lanl.gov/data_pub/rbsp'+sc+'/MagEphem/def/'
+        if keyword_set(pre) then remote_data_dir = 'http://www.rbsp-ect.lanl.gov/data_pub/rbsp'+sc+'/MagEphem/pre/'
 
 	;Find number of days to load data for
 	tr = timerange()
@@ -69,7 +69,7 @@ pro rbsp_read_ect_mag_ephem,sc,   perigeetimes
 	pfn_ed_mlat = [0d]
 	pfn_ed_mlon = [0d]
 	pfn_ed_mlt = [0d]
-	pfn_geo = dblarr(1,3)
+	pfn_geo = dblarr(1,3)  ;Northern footpoint in GEO coord
 	pfn_geod_height = [0d]
 	pfn_geod_latlon = dblarr(1,2)
 	pfn_gsm = dblarr(1,3)
@@ -80,7 +80,7 @@ pro rbsp_read_ect_mag_ephem,sc,   perigeetimes
 	pfs_ed_mlat = [0d]
 	pfs_ed_mlon = [0d]
 	pfs_ed_mlt = [0d]
-	pfs_geo = dblarr(1,3)
+	pfs_geo = dblarr(1,3) ;Southern footpoint in GEO coord
 	pfs_geod_height = [0d]
 	pfs_geod_latlon = dblarr(1,2)
 	pfs_gsm = dblarr(1,3)
@@ -92,17 +92,20 @@ pro rbsp_read_ect_mag_ephem,sc,   perigeetimes
 		date2 = strmid(date,0,4)+strmid(date,5,2)+strmid(date,8,2)
 		dirpath = strmid(date,0,4) + '/'
 
-		fn = 'rbsp'+sc+'_def_MagEphem_OP77Q_'+date2+'_v?.?.?.h5'
-	
+		if ~keyword_set(pre) then fn = 'rbsp'+sc+'_def_MagEphem_OP77Q_'+date2+'_v?.?.?.h5'
+		if keyword_set(pre) then fn = 'rbsp'+sc+'_pre_MagEphem_OP77Q_'+date2+'_v?.?.?.h5'
+
+
 	;Find out what files are online
 	;	FILE_HTTP_COPY,dirpath,url_info=ui,links=links,localdir=local_data_dir,$
 	;		serverdir=remote_data_dir
 
 	;load file
-		relpathnames = dirpath + fn
+		if ~keyword_set(pre) then relpathnames = dirpath + fn
+                if keyword_set(pre) then relpathnames = fn
+;; relpathnames = '2015//rbspa_def_MagEphem_OP77Q_20150106_v?.?.?.h5'
 		file_loaded = file_retrieve(relpathnames,remote_data_dir=remote_data_dir,$
 			local_data_dir=local_data_dir,/last_version)
-
 
 	;	R2 = FILE_INFO(file_loaded)
 	;	help,r2,/st
@@ -113,6 +116,7 @@ pro rbsp_read_ect_mag_ephem,sc,   perigeetimes
 		endif
 
 		result = h5_parse(file_loaded,/READ_DATA)
+
 
 		;Time variable
 		;Get to GPS time (starts at Jan 6th 1980 at 0:00:00)

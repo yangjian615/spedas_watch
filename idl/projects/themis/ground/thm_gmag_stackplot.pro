@@ -129,6 +129,8 @@ for i=0,n_elements(stations)-1. do begin
 	get_data,'thg_mag_'+stations[i],dlimits=dl
 	lats[i]=float(dl.cdf.vatt.station_latitude)
 	lons[i]=float(dl.cdf.vatt.station_longitude)
+	if (lons[i] lt 0) then lons[i] = 360 + lons[i]
+	lons[i] = - lons[i]
 endfor
 
 hi_index=where(lats ge 49)

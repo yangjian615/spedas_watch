@@ -9,8 +9,8 @@
 ;HISTORY:
 ; Hacked from api_examples version, jmm, 2014-12-01, jimm@ssl.berkeley.edu 
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-12-01 13:53:09 -0800 (Mon, 01 Dec 2014) $
-;$LastChangedRevision: 16329 $
+;$LastChangedDate: 2015-09-28 13:39:58 -0700 (Mon, 28 Sep 2015) $
+;$LastChangedRevision: 18952 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/spedas_plugin/mvn_spd_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -41,7 +41,9 @@ pro mvn_spd_init_struct,state,struct
 end
 
 PRO mvn_spd_fileconfig_event, event
-
+  
+;No sys variable, but a common block
+  common mvn_file_source_com,  psource
   ; Get State structure from top level base
   Widget_Control, event.handler, Get_UValue=state, /No_Copy
 
@@ -51,8 +53,10 @@ PRO mvn_spd_fileconfig_event, event
   IF (err_xxx NE 0) THEN BEGIN
     Catch, /Cancel
     Help, /Last_Message, Output = err_msg  
-    state.statusbar->update,'Error in File Config.' 
-    state.historywin->update,'Error in File Config.'
+    If(widget_valid(state.statusbar) && widget_valid(state.historywin)) Then Begin
+       state.statusbar->update,'Error in File Config.' 
+       state.historywin->update,'Error in File Config.'
+    Endif
     Widget_Control, event.TOP, Set_UValue=state, /No_Copy
     widget_control, event.top,/destroy
     RETURN
@@ -62,7 +66,6 @@ PRO mvn_spd_fileconfig_event, event
   CASE uval OF
   
     'LOCALBROWSE':BEGIN
-
       ; get the local data dir text box value
       widget_control, state.localDir, get_value=currentDir
       if currentDir ne '' then path = file_dirname(currentDir)
@@ -72,7 +75,7 @@ PRO mvn_spd_fileconfig_event, event
       Dialog_Parent=state.master,path=currentDir, /directory, /must_exist)
       ; check to make sure the selection is valid
       IF is_string(dirName) THEN BEGIN
-          !maven_spd.local_data_dir = dirName
+          psource.local_data_dir = dirName
           widget_control, state.localDir, set_value=dirName             
       ENDIF ELSE BEGIN
           ok = dialog_message('Selection is not a directory',/center)
@@ -83,44 +86,46 @@ PRO mvn_spd_fileconfig_event, event
     'LOCALDIR': BEGIN
     
         widget_control, state.localDir, get_value=currentDir
-        !maven_spd.local_data_dir = currentDir
+        psource.local_data_dir = currentDir
 
     END
 
     'REMOTEDIR': BEGIN
     
         widget_control, state.remoteDir, get_value=currentDir
-        !maven_spd.remote_data_dir = currentDir
+        psource.remote_data_dir = currentDir
 
     END
 
     'VERBOSE': BEGIN
 
-       !maven_spd.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
+       psource.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
 
     END
 
     'RESET': BEGIN
 
-       ; set the system variable (!maven_spd) back to the state it was at the 
+       ; set the system variable (psource) back to the state it was at the 
        ; beginning of the window session. This cancels all changes since
        ; initialization of the configuration window
-       !maven_spd=state.mvn_spd_cfg_save
-       widget_control,state.localdir,set_value=!maven_spd.local_data_dir
-       widget_control,state.remotedir,set_value=!maven_spd.remote_data_dir
-       if !maven_spd.no_download eq 1 then begin
+       psource=state.mvn_spd_cfg_save
+       widget_control,state.localdir,set_value=psource.local_data_dir
+       widget_control,state.remotedir,set_value=psource.remote_data_dir
+       if psource.no_download eq 1 then begin
           widget_control,state.nd_off_button,set_button=1
        endif else begin
           widget_control,state.nd_on_button,set_button=1
        endelse  
-       if !maven_spd.no_update eq 1 then begin
+       if psource.no_update eq 1 then begin
          widget_control,state.nu_off_button,set_button=1
        endif else begin
          widget_control,state.nu_on_button,set_button=1
        endelse  
-       widget_control,state.v_droplist,set_combobox_select=!maven_spd.verbose
-       state.historywin->update,'Resetting controls to saved values.'
-       state.statusbar->update,'Resetting controls to saved values.'           
+       widget_control,state.v_droplist,set_combobox_select=psource.verbose
+       If(widget_valid(state.statusbar) && widget_valid(state.historywin)) Then Begin
+          state.historywin->update,'Resetting controls to saved values.'
+          state.statusbar->update,'Resetting controls to saved values.'
+       Endif
 
     END
     
@@ -132,28 +137,30 @@ PRO mvn_spd_fileconfig_event, event
       
       ; used the stored default values to set the download
       ; and update variables
-      !maven_spd.no_download = state.def_values[0]
-      !maven_spd.no_update = state.def_values[1]      
-      !maven_spd.downloadonly = state.def_values[2]
-      !maven_spd.verbose = state.def_values[3]
+      psource.no_download = state.def_values[0]
+      psource.no_update = state.def_values[1]      
+      psource.downloadonly = state.def_values[2]
+      psource.verbose = state.def_values[3]
 
       ; reset the widgets to these values
-      widget_control,state.localdir,set_value=!maven_spd.local_data_dir
-      widget_control,state.remotedir,set_value=!maven_spd.remote_data_dir
-      if !maven_spd.no_download eq 1 then begin
+      widget_control,state.localdir,set_value=psource.local_data_dir
+      widget_control,state.remotedir,set_value=psource.remote_data_dir
+      if psource.no_download eq 1 then begin
          widget_control,state.nd_off_button,set_button=1
       endif else begin
          widget_control,state.nd_on_button,set_button=1
       endelse  
-      if !maven_spd.no_update eq 1 then begin
+      if psource.no_update eq 1 then begin
         widget_control,state.nu_off_button,set_button=1
       endif else begin
         widget_control,state.nu_on_button,set_button=1
       endelse  
-      widget_control,state.v_droplist,set_combobox_select=!maven_spd.verbose
+      widget_control,state.v_droplist,set_combobox_select=psource.verbose
 
-      state.historywin->update,'Resetting configuration to default values.'
-      state.statusbar->update,'Resetting configuration to default values.'
+       If(widget_valid(state.statusbar) && widget_valid(state.historywin)) Then Begin
+          state.historywin->update,'Resetting configuration to default values.'
+          state.statusbar->update,'Resetting configuration to default values.'
+       Endif
 
     END
     
@@ -164,9 +171,10 @@ PRO mvn_spd_fileconfig_event, event
       ; and/or gui
       ; these values will also be used each time mvn_spd_init is called
       mvn_spd_write_config 
-      state.statusBar->update,'Saved mvn_spd_config.txt'
-      state.historyWin->update,'Saved mvn_spd_config.txt'
-
+      If(widget_valid(state.statusbar) && widget_valid(state.historywin)) Then Begin
+         state.statusBar->update,'Saved mvn_spd_config.txt'
+         state.historyWin->update,'Saved mvn_spd_config.txt'
+      Endif
     END
     
     ELSE:
@@ -180,13 +188,19 @@ END ;---------------------------------------------------------------------------
 
 PRO mvn_spd_fileconfig, tab_id, historyWin, statusBar
 
-  ;check whether the !maven_spd system variable has been initialized
-  defsysv, 'yyy', exists=exists
-  if not keyword_set(exists) then mvn_spd_init
-  mvn_spd_cfg_save = !maven_spd
+;check whether the psource system variable has been initialized
+;No sys variable, but a common block
+  common mvn_file_source_com,  psource
+
+  If(~is_struct(psource)) Then mvn_spd_init
+  mvn_spd_cfg_save = psource
   
-  ;Build the widget bases
-  master = Widget_Base(tab_id, /col, tab_mode=1,/align_left, /align_top) 
+;Build the widget bases
+  If(~keyword_set(tab_id)) Then Begin
+     master = widget_base(/col, tab_mode=1,/align_left, /align_top)
+     tab_id = master
+     statusbar = 0 & historywin = 0
+  Endif Else master = Widget_Base(tab_id, /col, tab_mode=1,/align_left, /align_top) 
 
 ;widget base for values to set
   vmaster = widget_base(master, /col, /align_left, /align_top)
@@ -194,7 +208,7 @@ PRO mvn_spd_fileconfig, tab_id, historyWin, statusBar
 
 ;Widget base for save, reset and exit buttons
   bmaster = widget_base(master, /row, /align_center, ypad=7)
-  ll = max(strlen([!maven_spd.local_data_dir, !maven_spd.remote_data_dir]))+12
+  ll = max(strlen([psource.local_data_dir, psource.remote_data_dir]))+12
 
 ;Now create directory text widgets
   configbase = widget_base(vmaster,/col)
@@ -202,13 +216,13 @@ PRO mvn_spd_fileconfig, tab_id, historyWin, statusBar
   lbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(lbase, value = 'Local data directory:    ')
   localdir = widget_text(lbase, /edit, /all_events, xsiz = 50, $
-                         uval = 'LOCALDIR', val = !maven_spd.local_data_dir)
+                         uval = 'LOCALDIR', val = psource.local_data_dir)
   loc_browsebtn = widget_button(lbase,value='Browse', uval='LOCALBROWSE',/align_center)
 
   rbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(rbase, value = 'Remote data directory: ')
   remotedir = widget_text(rbase, /edit, /all_events, xsiz = 50, $
-                          uval = 'REMOTEDIR', val = !maven_spd.remote_data_dir)
+                          uval = 'REMOTEDIR', val = psource.remote_data_dir)
 
 ;Next radio buttions
   nd_base = widget_base(configbase, /row, /align_left)
@@ -244,7 +258,7 @@ PRO mvn_spd_fileconfig, tab_id, historyWin, statusBar
            v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
            def_values:def_values, historyWin:historyWin, tab_id:tab_id}
 
-  mvn_spd_init_struct,state,!maven_spd
+  mvn_spd_init_struct,state,psource
 
   widget_control, master, set_uval = state, /no_copy
   widget_control, master, /realize

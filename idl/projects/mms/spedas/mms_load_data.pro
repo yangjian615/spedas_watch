@@ -79,8 +79,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-15 16:17:33 -0700 (Tue, 15 Sep 2015) $
-;$LastChangedRevision: 18803 $
+;$LastChangedDate: 2015-09-28 08:40:59 -0700 (Mon, 28 Sep 2015) $
+;$LastChangedRevision: 18943 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -229,7 +229,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 filename = remote_file_info.filename
                 num_filenames = n_elements(filename)
                 
-                file_dir = strlowcase(local_data_dir + probe + '/' + month_directory)
+                file_dir = local_data_dir + strlowcase(probe + '/' + month_directory)
                 
                 for file_idx = 0, num_filenames-1 do begin
                     same_file = mms_check_file_exists(remote_file_info[file_idx], file_dir = file_dir)

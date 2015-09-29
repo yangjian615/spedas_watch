@@ -32,9 +32,9 @@
 ;
 ;
 ; VERSION:
-; $LastChangedBy: jianbao_tao $
-; $LastChangedDate: 2013-03-22 15:08:33 -0700 (Fri, 22 Mar 2013) $
-; $LastChangedRevision: 11874 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2015-09-28 13:02:01 -0700 (Mon, 28 Sep 2015) $
+; $LastChangedRevision: 18950 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/utils/rbsp_decimate.pro $
 ;
 ;-
@@ -42,17 +42,21 @@
 pro rbsp_decimate_guts, tarr, Ex, level, newt, newEx
   compile_opt idl2, hidden
 
-  filter = digital_filter(0d, 0.5d, 50, 20, /double)
-
   ; Clean time stamp
   dt = median(tarr[1:*] - tarr)
-  srate = round(1d / dt)
+  ;; srate = round(1d / dt)
+  srate = 1d / dt
   dt = 1d / srate
   nt = n_elements(tarr)
   t = tarr[0] + dindgen(nt) * dt
 ;   y = interpol(Ex, tarr, t, /nan)
   y = interp(Ex, tarr, t, /ignore_nan)
 
+
+  nfilt = 20.
+;  nfilt = 10.
+
+  filter = digital_filter(0d, 0.5d, 50, nfilt, /double)
   for i = 1, level do begin
      y = convol(y, filter, /edge_truncate)
      y = y[0:*:2]
@@ -83,7 +87,7 @@ tmax = max(d.x)
 
 if keyword_set(upper) then level = round(alog(srate/upper) / alog(2d))
 
-rbsp_btrange, tvar, nb = nb, btr = btr, tind = tind
+rbsp_btrange, tvar, nb = nb, btr = btr, tind = tind;, tlen = tlen
 
 newx = dblarr(1)
 newx[0] = !values.d_nan
@@ -98,6 +102,8 @@ for ib = 0L, nb-1 do begin
   tarr = d.x[ista:iend]
   nt = n_elements(tarr)
   tmpy = dblarr(nt, ncomp)
+
+;stop
   for ic = 0, ncomp - 1 do begin
 ;     t0 = systime(/sec)
     Ex = d.y[ista:iend, ic]

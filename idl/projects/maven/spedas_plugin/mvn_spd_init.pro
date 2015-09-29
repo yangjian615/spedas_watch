@@ -1,68 +1,82 @@
 ;+
 ;NAME:
-;mvn_spd_init
+; mvn_spd_init
 ;PURPOSE:
-;Initializes SPEDAS system variables for MAVEN SPD data. Can be called
-;from idl_startup to set custom locations.
+; Initialization for MAVEN 
+;CALLING SEQUENCE:
+; mvn_spd_init, device = device
+;INPUT:
+; none
+;OUTPUT:
+; none
 ;KEYWORDS:
-;reset=resets configuration data already in place on the machine
-;local_data_dir=location to save data files on the local machine
-;remote_data_dir=location of the data on the remote machine
-;no_color_setup=skip setting up the graphics configuration
+; def_file_source = A default structure for the file_source; tags:
+;   INIT            INT              0
+;   LOCAL_DATA_DIR  STRING    '/disks/data/'
+;   REMOTE_DATA_DIR STRING    ''
+;   PROGRESS        INT              1
+;   USER_AGENT      STRING    'FILE_RETRIEVE: IDL8.4 linux/x86_64 (jimm)'
+;   FILE_MODE       INT            438
+;   DIR_MODE        INT            511
+;   PRESERVE_MTIME  INT              1
+;   PROGOBJ         OBJREF    <NullObject>
+;   MIN_AGE_LIMIT   LONG                30
+;   NO_SERVER       INT              1
+;   NO_DOWNLOAD     INT              0
+;   NO_UPDATE       INT              0
+;   NO_CLOBBER      INT              0
+;   ARCHIVE_EXT     STRING    '.arc'
+;   ARCHIVE_DIR     STRING    ''
+;   IGNORE_FILESIZE INT              0
+;   IGNORE_FILEDATE INT              0
+;   DOWNLOADONLY    INT              0
+;   USE_WGET        INT              0
+;   NOWAIT          INT              0
+;   VERBOSE         INT              2
+;   FORCE_DOWNLOAD  INT              0
+;   LAST_VERSION    INT              1
+; no_color_setup = if set, don't touch the colors setup
+; MVN_FILE_SOURCE keywords:
+; user_pass = a user pasword combination, example:
+;             "jimm:not_really_my Password"
 ;HISTORY:
-;2014-12-01 - Hacked from various _init programs, mostly goes_init,
-;             jmm, jimm@ssl.berkeley.edu
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-12-01 13:53:09 -0800 (Mon, 01 Dec 2014) $
-;$LastChangedRevision: 16329 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/spedas_plugin/mvn_spd_init.pro $
+; 2013-05-13, jmm, jimm@ssl.berkeley.edu
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-09-28 12:36:26 -0700 (Mon, 28 Sep 2015) $
+; $LastChangedRevision: 18949 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/spedas_plugin/mvn_spd_init.pro $
 ;-
-Pro mvn_spd_init, reset=reset, local_data_dir=local_data_dir, $
-                  remote_data_dir=remote_data_dir, $
-                  no_color_setup = no_color_setup
+Pro mvn_spd_init, def_file_source = def_file_source, no_color_setup = no_color_setup, _extra = _extra
 
-  defsysv,'!maven_spd',exists=exists
-  If(~keyword_set(exists)) Then Begin
-     defsysv,'!maven_spd',  file_retrieve(/structure_format)
+  common mvn_spd_init_private, init_done
+
+  setenv, 'ROOT_DATA_DIR='+root_data_dir()
+
+  If(n_elements(init_done) Eq 0) Then Begin
+     init_done = 1
+;Color setup
+     If(~keyword_set(no_color_setup)) Then Begin
+        if n_elements(colortable) eq 0 then colortable = 43 ; default color table
+        loadct2,colortable
+;Make black on white background
+        !p.background = !d.table_size-1 ; White background   (color table 34)
+        !p.color=0                      ; Black Pen
+        if !d.name eq 'WIN' then begin
+           device,decompose = 0
+        endif
+        if !d.name eq 'X' then begin
+           device,decompose = 0
+           if !version.os_family eq 'unix' then device,retain=2 ; Unix family does not provide backing store by default
+        endif
+     Endif
   Endif
 
-  If(keyword_set(reset)) Then !maven_spd.init=0
-
-  If(!maven_spd.init Ne 0) Then Return
-
-  !maven_spd = file_retrieve(/structure_format)
-;Read saved values from file
-  ftest = mvn_spd_read_config()
-  If(is_struct(ftest) && ~keyword_set(reset)) Then Begin
-     !maven_spd.local_data_dir = ftest.local_data_dir
-     !maven_spd.remote_data_dir = ftest.remote_data_dir
-     !maven_spd.no_download = ftest.no_download
-     !maven_spd.no_update = ftest.no_update
-     !maven_spd.downloadonly = ftest.downloadonly
-     !maven_spd.verbose = ftest.verbose
-  Endif Else Begin              ; use defaults
-     If(keyword_set(reset)) Then Begin
-        dprint, 'Resetting !MAVEN_SPD to default configuration'
-     Endif Else Begin
-        dprint,'No !MAVEN_SPD config found...creating default configuration'
-     Endelse
-     !maven_spd.local_data_dir  = spd_default_local_data_dir() + 'maven' + path_sep()
-     !maven_spd.remote_data_dir = 'http://sprg.ssl.berkeley.edu/data/maven/data/sci/'
+;Call mvn_file_source for the file setup, carefully
+  If(is_struct(def_file_source)) Then Begin
+     psource = mvn_file_source(def_file_source)
+  Endif Else Begin
+     psource = mvn_file_source(_extra=_extra)
   Endelse
-  !maven_spd.min_age_limit = 900 ; Don't check for new files if local file is less than 900 seconds old.
-
-;if keyword_set(local_data_dir) then  $
-;   !istp.local_data_dir = local_data_dir
-
-  If(file_test(!maven_spd.local_data_dir+'.master')) Then Begin ; Local directory IS the master directory
-     !maven_spd.no_server = 1
-  Endif
-
-  !maven_spd.init = 1
-
-  printdat, /values, !maven_spd, varname='!maven_spd'
 
   Return
 End
-
-
