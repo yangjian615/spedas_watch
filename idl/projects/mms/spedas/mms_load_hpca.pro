@@ -24,17 +24,33 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-03 13:53:53 -0700 (Thu, 03 Sep 2015) $
-;$LastChangedRevision: 18708 $
+;$LastChangedDate: 2015-09-29 12:07:31 -0700 (Tue, 29 Sep 2015) $
+;$LastChangedRevision: 18956 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_hpca.pro $
 ;-
 
 function mms_hpca_elevations
-    return, [123.75000, 101.25000, 78.750000, 56.250000, 33.750000, $
+    anode_theta = [123.75000, 101.25000, 78.750000, 56.250000, 33.750000, $
         11.250000, 11.250000, 33.750000, 56.250000, 78.750000, $
         101.25000, 123.75000, 146.25000, 168.75000, 168.75000, $
         146.25000]
+    anode_theta[6:13] += 180.
+    return, anode_theta
 end
+
+function mms_hpca_anodes, fov = fov
+    if undefined(fov) then begin
+        dprint, dlevel = 0, 'Error, must give a field of view'
+        return, -1
+    endif
+    
+    anodes = mms_hpca_elevations()
+    
+    fov_tmp = float(fov)
+    anodes_in_fov = where(anodes ge fov_tmp[0] and anodes le fov_tmp[1], anode_count)
+    return, anodes_in_fov
+end
+
 
 function mms_hpca_energies
     return, [1.35500, 1.57180, 1.84280, 2.22220, 2.60160, 3.08940, 3.63140, 4.28180, $
@@ -58,30 +74,27 @@ end
 ;
 ; output:
 ;   structure containing {x: times, y: flux, v: energies} 
-function mms_hpca_avg_fov, data_struct, fov = fov
+function mms_hpca_avg_fov, data_struct, fov = fov, anodes = anodes
     if ~is_struct(data_struct) then begin
         dprint, dlevel = 0, 'Error - invalid structure.'
         return, -1
     endif
-    if undefined(fov) then fov = [0, 360]
+    if ~undefined(fov) and ~undefined(anodes) then begin
+        dprint, dlevel = 0, 'Error, should only specify a field of view (fov) or list of anodes, but not both.'
+        return, -1
+    endif
+    if undefined(fov) and undefined(anodes) then begin
+        dprint, dlevel = 0, 'Error, must specify either field of view or a list of anodes'
+        return, -1
+    endif
+    if undefined(fov) then anodes_in_fov = anodes else anodes_in_fov = mms_hpca_anodes(fov=fov)
+    
     times = data_struct.X
     
-    anode_elevation = mms_hpca_elevations()
+    ;anode_elevation = mms_hpca_elevations()
     energies = mms_hpca_energies()
-
-    fov_tmp = float(fov)
-    anode_index = where(anode_elevation ge fov_tmp[0] and anode_elevation le fov_tmp[1], bin_cnt)
-
-    if bin_cnt eq 0 then begin
-        fov_tmp[0] = fov[0]-11.25
-        fov_tmp[1] = fov[1]+11.25
-        anode_index = where(anode_elevation ge fov_tmp[0] and anode_elevation le fov_tmp[1], bin_cnt2)
-        if bin_cnt2 eq 0 then begin
-            dprint, dlevel = 0, 'No data found within specified elevation range'
-            stop
-        endif
-    endif
-    data_within_fov = data_struct.Y[*,*,anode_index]
+    
+    if n_elements(anodes_in_fov) eq 1 then data_total = reform(data_within_fov) else data_total = total(data_within_fov, 3, /nan)
 
     data_mean = dblarr(n_elements(times), n_elements(energies))
     data_mean = average(data_within_fov, 3, /nan)
@@ -102,40 +115,51 @@ end
 ; output:
 ;   structure containing {x: times, y: flux, v: energies}
 
-function mms_hpca_sum_fov, data_struct, fov = fov
+function mms_hpca_sum_fov, data_struct, fov = fov, anodes = anodes
     if ~is_struct(data_struct) then begin
         dprint, dlevel = 0, 'Error - invalid structure.'
         return, -1
     endif
-    if undefined(fov) then fov = [0, 360]
+    if ~undefined(fov) and ~undefined(anodes) then begin
+        dprint, dlevel = 0, 'Error, should only specify a field of view (fov) or list of anodes, but not both.'
+        return, -1
+    endif
+    if undefined(fov) and undefined(anodes) then begin
+        dprint, dlevel = 0, 'Error, must specify either field of view or a list of anodes'
+        return, -1
+    endif
+    if undefined(fov) then anodes_in_fov = anodes else anodes_in_fov = mms_hpca_anodes(fov=fov)
     times = data_struct.X
 
-    anode_elevation = mms_hpca_elevations()
+    ;anode_elevation = mms_hpca_elevations()
     energies = mms_hpca_energies()
-        
-    fov_tmp = float(fov)
-    anode_index = where(anode_elevation ge fov_tmp[0] and anode_elevation le fov_tmp[1], bin_cnt)
-    
-    if bin_cnt eq 0 then begin
-         fov_tmp[0] = fov[0]-11.25
-         fov_tmp[1] = fov[1]+11.25
-         anode_index = where(anode_elevation ge fov_tmp[0] and anode_elevation le fov_tmp[1], bin_cnt2)
-         if bin_cnt2 eq 0 then begin
-            dprint, dlevel = 0, 'No data found within specified elevation range'
-            stop
-         endif 
-    endif
-    data_within_fov = data_struct.Y[*,*,anode_index]
+
+    data_within_fov = data_struct.Y[*,*,anodes_in_fov]
     
     data_total = dblarr(n_elements(times), n_elements(energies)) 
-    data_total = total(data_within_fov, 3, /nan)
+    if n_elements(anodes_in_fov) eq 1 then data_total = reform(data_within_fov) else data_total = total(data_within_fov, 3, /nan)
 
     data_total(where(data_total eq 0.)) = !VALUES.F_NAN
     return, {x: times, y: data_total, v: energies}
 end
 
-pro mms_hpca_calc_anodes, tplotnames, fov = fov
+pro mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probe=probe, anodes = anodes
     sum_anodes = ['*_count_rate', '*_RF_corrected', '*_bkgd_corrected', '*_norm_counts']
+    if ~undefined(fov) and ~undefined(anodes) then begin
+        dprint, dlevel = 0, 'Error, should only specify a field of view (fov) or list of anodes, but not both.'
+        return
+    endif
+    if undefined(fov) and undefined(anodes) then begin
+        dprint, dlevel = 0, 'Error, must specify either field of view or a list of anodes'
+        return
+    endif
+    if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
+    if undefined(tplotnames) then tplotnames = tnames()
+    
+    if ~undefined(fov) then begin
+        fov_str = strcompress('_elev_'+string(fov[0])+'-'+string(fov[1]), /rem)
+    endif else fov_str = '_anodes_' + strjoin(strcompress(string(anodes), /rem), '_')
+    
     ;avg_anodes = ['*_flux', '*_vel_dist_fn']
     ; removed velocity distribution from above because
     ; we need the full (non-avg'd) data for 2d slices
@@ -145,10 +169,11 @@ pro mms_hpca_calc_anodes, tplotnames, fov = fov
         vars_to_sum = strmatch(tplotnames, sum_anodes[sum_idx])
         for vars_idx = 0, n_elements(vars_to_sum)-1 do begin
             if vars_to_sum[vars_idx] eq 1 then begin
-                get_data, tplotnames[vars_idx], data=var_data
+                get_data, tplotnames[vars_idx], data=var_data, dlimits=var_dl
                 if is_struct(var_data) then begin
-                    updated_spectra = mms_hpca_sum_fov(var_data, fov=fov)
-                    store_data, tplotnames[vars_idx], data=updated_spectra
+                    updated_spectra = mms_hpca_sum_fov(var_data, fov=fov, anodes=anodes)
+                    store_data, tplotnames[vars_idx]+fov_str, data=updated_spectra, dlimits=var_dl
+                    append_array, tplotnames, tplotnames[vars_idx]+fov_str
                 endif
             endif
         endfor
@@ -158,20 +183,22 @@ pro mms_hpca_calc_anodes, tplotnames, fov = fov
         vars_to_avg = strmatch(tplotnames, avg_anodes[avg_idx])
         for vars_idx = 0, n_elements(vars_to_avg)-1 do begin
             if vars_to_avg[vars_idx] eq 1 then begin
-                get_data, tplotnames[vars_idx], data=var_data
+                get_data, tplotnames[vars_idx], data=var_data, dlimits=var_dl
                 if is_struct(var_data) then begin
-                    updated_spectra = mms_hpca_avg_fov(var_data, fov=fov)
-                    store_data, tplotnames[vars_idx], data=updated_spectra
+                    updated_spectra = mms_hpca_avg_fov(var_data, fov=fov, anodes=anodes)
+                    store_data, tplotnames[vars_idx]+fov_str, data=updated_spectra, dlimits=var_dl
+                    append_array, tplotnames, tplotnames[vars_idx]+fov_str
                 endif
             endif
         endfor
     endfor
+    mms_hpca_set_metadata, tplotnames, prefix = 'mms'+probe, fov = fov, anodes = anodes
 end
 pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, varformat = varformat, $
-                  tplotnames = tplotnames, no_color_setup = no_color_setup, fov = fov, $
+                  tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update
                 
 
@@ -210,7 +237,7 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
     ; 1) sum over anodes for normalized counts, count rate, 
     ;    RF and background corrected count rates
     ; 2) average over anodes for flux, velocity distributions
-    if datatype eq 'ion' then mms_hpca_calc_anodes, tplotnames, fov = fov
+    ;if datatype eq 'ion' then mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probes=probes
 
-    for probe_idx = 0, n_elements(probes)-1 do mms_hpca_set_metadata, tplotnames, prefix = 'mms'+probes[probe_idx], fov = fov
+    for probe_idx = 0, n_elements(probes)-1 do mms_hpca_set_metadata, tplotnames, prefix = 'mms'+probes[probe_idx]
 end

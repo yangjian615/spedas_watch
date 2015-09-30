@@ -16,8 +16,8 @@
 ;       occurs in the higher level routine, gse2agsm
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GSE2aGSM,data_in,data_out,aGSM2GSE=aGSM2GSE
@@ -60,8 +60,8 @@ end
 ;
 ;Written by Hannes Schwarzl
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GSE2GSM,data_in,data_out,GSM2GSE=GSM2GSE
@@ -111,8 +111,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro sub_GEI2GSE,data_in,data_out,GSE2GEI=GSE2GEI
@@ -161,8 +161,8 @@ end
 ;
 ;Written by Hannes Schwarzl
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GSM2SM,data_in,data_out,SM2GSM=SM2GSM
@@ -211,8 +211,8 @@ end
 ;
 ;Written by Patrick Cruce(pcruce@igpp.ucla.edu)
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GEI2GEO,data_in,data_out,GEO2GEI=GEO2GEI
@@ -255,8 +255,8 @@ end
 ;
 ;Written by Cindy Russell(clrussell@igpp.ucla.edu)
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GEO2MAG,data_in,data_out,MAG2GEO=MAG2GEO
@@ -280,6 +280,100 @@ pro sub_GEO2MAG,data_in,data_out,MAG2GEO=MAG2GEO
     
     ;RETURN,data_out
 end
+
+;#################################################
+
+
+;+
+;proceddure: subGEI2J2000
+;
+;Purpose: transforms data from GEI TOD to J2000
+;
+;INPUTS: TIMES as time_struct, DATA_in as nx3 array
+;
+;
+;keywords:
+;
+;Example:
+;
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
+; $URL $
+;-
+@matrix_array_lib
+pro subGEI2J2000,TIMES,DATA_in,DATA_out
+    ; get array sizes
+    count=SIZE(DATA_in[*,0],/N_ELEMENTS)
+    DPRINT,'number of records: ' + string(count)
+
+    DATA_out=dblarr(count,3)
+
+    ; create an integer array for ic_conv_matrix
+    ; the format is  YYYYDDD for [n,0] and  sss (seconds of day) for [n,1]
+    ts = time_struct(data_in[*,0])
+    orbtime = make_array(count, 2, /long)
+    orbtime[*,0] = long((ts.year * 1000.) + ts.doy)
+    orbtime[*,1] = long(fix(ts.sod))
+
+    ; spd_make_j2000_matrix can only handle one time and one vector - hence the loop
+
+    spd_make_j2000_matrix_vec,orbtime,cmatrix
+    data_out=ctv_mx_vec_rot(cmatrix,data_in)
+
+    ; spd_gei2j2000
+    ;  for i = 0, count-1 do begin
+    ;    spd_make_j2000_matrix, reform(orbtime[i,*]), cmatrix
+    ;    data_out[i,*] = reform(data_in[i,*]) # invert(cmatrix)
+    ;  endfor
+
+end
+
+;#################################################
+
+;+
+;procedure: subJ20002GEI
+;
+;Purpose: transforms data from J2000 to GEI TOD
+;
+;INPUTS: TIMES as time_struct, DATA_in as nx3 array
+;
+;
+;keywords:
+;
+;Example:
+;
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
+; $URL $
+;-
+pro subJ20002GEI,TIMES,DATA_in,DATA_out
+    ; get array sizes
+    count=SIZE(TIMES,/N_ELEMENTS)
+    DPRINT,'number of records: ' + string(count)
+
+    DATA_out=dblarr(count,3)
+
+    ; create an integer array for ic_conv_matrix
+    ts = time_struct(TIMES)
+    orbtime = make_array(count, 2, /long)
+    orbtime[*,0] = long((ts.year * 1000.) + ts.doy)
+    orbtime[*,1] = long(fix(ts.sod))
+
+    spd_make_j2000_matrix_vec,orbtime,cmatrix
+    data_out=ctv_mx_vec_rot(transpose(cmatrix,[0,2,1]),data_in) ;transpose is the inverse for rotation matrix
+
+    ; spd_make_j2000_matrix can only handle one time and one vector - hence the loop
+
+    ;  for i = 0l, count-1 do begin
+    ;    spd_make_j2000_matrix, orbtime[i,*], cmatrix
+    ;    data_out[i,*] = reform(data_in[i,*]) # cmatrix
+    ;  endfor
+
+end
+
+;#################################################
 
 ;+
 ;pro: sub_GEI2J2000
@@ -350,8 +444,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subGEI2GSE,TIMES,DATA_in,DATA_out
@@ -394,8 +488,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subGSE2GEI,TIMES,DATA_in,DATA_out
@@ -438,8 +532,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subGSE2GSM,TIMES,DATA_in,DATA_out
@@ -482,8 +576,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subGSM2GSE,TIMES,DATA_in,DATA_out
@@ -525,8 +619,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subGSM2SM,TIMES,DATA_in,DATA_out
@@ -568,8 +662,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subSM2GSM,TIMES,DATA_in,DATA_out
@@ -611,8 +705,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subGEI2GEO,TIMES,DATA_in,DATA_out
@@ -646,8 +740,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subGEO2GEI,TIMES,DATA_in,DATA_out
@@ -681,8 +775,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subGEO2MAG,TIMES,DATA_in,DATA_out
@@ -708,108 +802,14 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro subMAG2GEO,TIMES,DATA_in,DATA_out
    mag2geo, DATA_in, DATA_out, TIMES
 END
 ;================================================================================
-
-;#################################################
-
-
-;+
-;proceddure: subGEI2J2000
-;
-;Purpose: transforms data from GEI TOD to J2000
-;
-;INPUTS: TIMES as time_struct, DATA_in as nx3 array
-;
-;
-;keywords:
-;
-;Example:
-;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
-; $URL $
-;-
-@matrix_array_lib
-pro subGEI2J2000,TIMES,DATA_in,DATA_out
-  ; get array sizes
-  count=SIZE(DATA_in[*,0],/N_ELEMENTS)
-  DPRINT,'number of records: ' + string(count)
-
-  DATA_out=dblarr(count,3)
-
-  ; create an integer array for ic_conv_matrix
-  ; the format is  YYYYDDD for [n,0] and  sss (seconds of day) for [n,1]
-  ts = time_struct(data_in[*,0])
-  orbtime = make_array(count, 2, /long)
-  orbtime[*,0] = long((ts.year * 1000.) + ts.doy)
-  orbtime[*,1] = long(fix(ts.sod))
-
-  ; spd_make_j2000_matrix can only handle one time and one vector - hence the loop
-  
-  spd_make_j2000_matrix_vec,orbtime,cmatrix
-  data_out=ctv_mx_vec_rot(cmatrix,data_in)
-  
-  ; spd_gei2j2000
-;  for i = 0, count-1 do begin
-;    spd_make_j2000_matrix, reform(orbtime[i,*]), cmatrix
-;    data_out[i,*] = reform(data_in[i,*]) # invert(cmatrix)
-;  endfor
-
-end
-
-;#################################################
-
-;+
-;procedure: subJ20002GEI
-;
-;Purpose: transforms data from J2000 to GEI TOD
-;
-;INPUTS: TIMES as time_struct, DATA_in as nx3 array
-;
-;
-;keywords:
-;
-;Example:
-;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
-; $URL $
-;-
-pro subJ20002GEI,TIMES,DATA_in,DATA_out
-  ; get array sizes
-  count=SIZE(TIMES,/N_ELEMENTS)
-  DPRINT,'number of records: ' + string(count)
-
-  DATA_out=dblarr(count,3)
-
-  ; create an integer array for ic_conv_matrix
-  ts = time_struct(TIMES)
-  orbtime = make_array(count, 2, /long)
-  orbtime[*,0] = long((ts.year * 1000.) + ts.doy)
-  orbtime[*,1] = long(fix(ts.sod))
-
-  spd_make_j2000_matrix_vec,orbtime,cmatrix
-  data_out=ctv_mx_vec_rot(transpose(cmatrix,[0,2,1]),data_in) ;transpose is the inverse for rotation matrix
-
-  ; spd_make_j2000_matrix can only handle one time and one vector - hence the loop
-
-;  for i = 0l, count-1 do begin
-;    spd_make_j2000_matrix, orbtime[i,*], cmatrix
-;    data_out[i,*] = reform(data_in[i,*]) # cmatrix
-;  endfor
-
-end
-
-;#################################################
 
 ;+
 ;procedure: csundir_vect
@@ -832,8 +832,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
@@ -931,8 +931,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro tgeigse_vect,iyear,idoy,ih,im,is,xgei,ygei,zgei,xgse,ygse,zgse
@@ -984,8 +984,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro tgsegei_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgei,ygei,zgei
@@ -1037,8 +1037,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro tgsegsm_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgsm,ygsm,zgsm
@@ -1102,8 +1102,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
@@ -1164,8 +1164,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
@@ -1212,8 +1212,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro tsmgsm_vect,iyear,idoy,ih,im,is,xsm,ysm,zsm,xgsm,ygsm,zgsm
@@ -1256,8 +1256,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ;
 ; faster algorithm (for loop across all points avoided) Hannes 05/25/2007
 ;
@@ -1349,8 +1349,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-23 12:26:04 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18892 $
+; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18953 $
 ; $URL $
 ;-
 pro cdipdir,iyear,idoy,d1,d2,d3

@@ -120,11 +120,12 @@
 ;   available, added catch statement so that spice kernels can unload
 ;   if the program crashes in a CSPICE routine, changed predict
 ;   directory, and added logic to avoid full-mission downloads.
-;
+;   2015-09-29: jmm, More error checking, for attitude history files
+;   which fails for pre IDL 8.
 ; VERSION:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-25 12:35:07 -0700 (Fri, 25 Sep 2015) $
-; $LastChangedRevision: 18935 $
+; $LastChangedDate: 2015-09-29 13:54:47 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18958 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/spacecraft/rbsp_load_state.pro $
 ;
 ;-
@@ -153,6 +154,14 @@ jday_end = jbt_date2jday(strmid(time_string(tspan[1]-10),0,10)) + 3L
 
 ; Trim file list.
 ind = where(jdays ge jday_sta and jdays le jday_end, nind)
+
+If(nind Eq 0) Then Begin ;jmm, 2015-09-29 ind = -1 fails for IDL 7.1
+   dprint, verbose = verbose, 'No attitude files found within plus or minus 3 days, using last file'
+   print, time_string(tspan)
+   ind = n_elements(jdays)-1
+   nind = 1
+Endif
+
 jdays = jdays[ind]
 ; flist = flist[ind]
 fnames = fnames[ind]
@@ -178,8 +187,8 @@ for i = 0L, n-1 do begin
   klist = [klist, f[imax]]
 endfor
 
-ind = where(strlen(klist) gt 0)
-return, klist[ind]
+ind = where(strlen(klist) gt 0, nind)
+If(nind Eq 0) Then Return, '' Else return, klist[ind]
 
 end
 
@@ -276,7 +285,6 @@ for ip = 0, nsc-1 do begin
     subdir = subdirs[k]
     remote_dir = serverdir + mocdir + subdir
     tmpdir = datadir + mocdir
-;     stop
     urls = jbt_fileurls(remote_dir, verbose = 0, localdir = tmpdir)
     fnamesk = file_basename(urls)
     nfile = n_elements(fnamesk)
@@ -500,6 +508,12 @@ jday_sta = jbt_date2jday(strmid(time_string(tspan[0]+10),0,10)) - 3L
 jday_end = jbt_date2jday(strmid(time_string(tspan[1]-10),0,10)) + 3L
 
 ind = where(jdays ge jday_sta and jdays le jday_end, nind)
+If(nind Eq 0) Then Begin ;jmm, 2015-09-29 ind = -1 fails for IDL 7.1
+   dprint, verbose = verbose, 'No attitude files found within plus or minus 3 days, using last file'
+   print, time_string(tspan)
+   ind = n_elements(jdays)-1
+   nind = 1
+Endif
 
 jdays = jdays[ind]
 flist = flist[ind]
