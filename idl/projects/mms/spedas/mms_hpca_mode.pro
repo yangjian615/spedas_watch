@@ -41,11 +41,7 @@ function mms_hpca_mode, brst_in, srvy_in
   mode_data = { x:mode_x, y:mode_y }
 
   ; modify the dlimits and limits structure for this new data
-  this_l=brst_l
-  this_l.ysubtitle=''
-  this_l.ylog=0
-  this_l.ytitle='HPCA Modes'
-  this_l.yrange=[.5,2.5]
+  this_l = {ylog:0, ytitle:'HPCA Modes', ysubtitle:'', yrange:[.5,2.5]}
   this_dl=brst_dl
   this_dl.spec=0
   this_dl = create_struct(this_dl, 'colors', ['r','b'], 'labels', ['Survey','Burst'], 'labflag', 1, $

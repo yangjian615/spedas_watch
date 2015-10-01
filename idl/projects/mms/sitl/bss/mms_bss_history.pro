@@ -20,8 +20,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-09-25 17:51:19 -0700 (Fri, 25 Sep 2015) $
-; $LastChangedRevision: 18942 $
+; $LastChangedDate: 2015-09-29 21:07:02 -0700 (Tue, 29 Sep 2015) $
+; $LastChangedRevision: 18959 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_history.pro $
 ;-
 FUNCTION mms_bss_history_cat, bsh, category, wt
@@ -135,7 +135,14 @@ PRO mms_bss_history, bss=bss, trange=trange, tplot=tplot, csv=csv, dir=dir
   for i=0,imax-1 do begin; For each segment
     ndx = where( (bss.UNIX_CREATETIME[i] le wt) and (wt le bss.UNIX_FINISHTIME[i]), ct); extract pending period
     wcatT[ndx] += bss.SEGLENGTHS[i]; count segment size
-    ndx = where( (bss.START[i]+3.d0*86400.d0 le wt) and (wt le bss.UNIX_FINISHTIME[i]), ct)
+    ndx = where( (bss.START[i]+3.d0*86400.d0 le wt) and (wt le bss.UNIX_FINISHTIME[i]) and $
+      (strmatch(strlowcase(bss.STATUS[i]),'*complete*') or $; also contains INCOMPLETE
+       strmatch(strlowcase(bss.STATUS[i]),'*demoted*') or $
+       strmatch(strlowcase(bss.STATUS[i]),'*realloc*') or $
+       strmatch(strlowcase(bss.STATUS[i]),'*held*')), ct)
+       ; Here, we want segments that were 'HELD' or 'REALLOC' when they were isPending=1.
+       ; The problem is HELD and REALLOC are transitory and such segments can turn into
+       ; either COMPLETE, INCOMPLETE or DEMOTED.
     wcatT2[ndx] += bss.SEGLENGTHS[i]
   endfor
   ;wcatT2[nmax-mmax:nmax-1] = !VALUES.F_NAN

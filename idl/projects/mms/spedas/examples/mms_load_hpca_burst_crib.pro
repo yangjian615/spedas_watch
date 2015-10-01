@@ -4,18 +4,19 @@
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-15 12:27:35 -0700 (Tue, 15 Sep 2015) $
-; $LastChangedRevision: 18799 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2015-09-30 14:09:50 -0700 (Wed, 30 Sep 2015) $
+; $LastChangedRevision: 18971 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_burst_crib.pro $
 ;-
 
-mms_load_hpca, probes='1', trange=['2015-08-20', '2015-08-21'], datatype='moments', data_rate='brst'
+mms_load_hpca, probes='1',  trange=['2015-09-03', '2015-09-04'], datatype='moments', data_rate='brst'
 
+window, 1
 ; show H+, O+ and He+ density
 tplot, ['mms1_hpca_hplus_number_density', $
   'mms1_hpca_oplus_number_density', $
-  'mms1_hpca_heplus_number_density']
+  'mms1_hpca_heplus_number_density'], window=1
 stop
 
 ; show H+, O+ and He+ temperature
@@ -30,23 +31,32 @@ tplot_options, 'colors', [2, 4, 6]
 tplot_options, 'xmargin', [20, 15]
 ; show H+, O+ and He+ flow velocity
 tplot, 'mms1_hpca_*_ion_bulk_velocity'
-tplot, ['mms1_hpca_hplus_ion_bulk_velocity', $
-  'mms1_hpca_oplus_ion_bulk_velocity', $
-  'mms1_hpca_heplus_ion_bulk_velocity']
 stop
 
-; use wild card for and plot all ion bulk velocities
-tplot, 'mms1_hpca_*_ion_bulk_velocity'
-stop
+mms_load_hpca, probes='1', trange=['2015-09-03', '2015-09-04'], datatype='rf_corr', data_rate='brst'
+; sum over nodes
+mms_hpca_calc_anodes, anode=[5, 6], probe=pid
+mms_hpca_calc_anodes, anode=[13, 14], probe=pid
+mms_hpca_calc_anodes, anode=[0, 15], probe=pid
 
-mms_load_hpca, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='rf_corr', data_rate='brst'
-
-rf_corrected = ['mms1_hpca_hplus_RF_corrected', $
-  'mms1_hpca_oplus_RF_corrected', $
-  'mms1_hpca_heplus_RF_corrected', $
-  'mms1_hpca_heplusplus_RF_corrected']
-
+rf_corrected = ['mms1_hpca_hplus_RF_corrected_anodes_0_15', $
+  'mms1_hpca_oplus_RF_corrected_anodes_0_15', $
+  'mms1_hpca_heplus_RF_corrected_anodes_0_15', $
+  'mms1_hpca_heplusplus_RF_corrected_anodes_0_15']
+  
 ; show spectra for H+, O+ and He+, He++
 tplot, rf_corrected
+stop
 
+; sum over FOV's 
+mms_hpca_calc_anodes, fov=[0, 360], probe='1'
+mms_hpca_calc_anodes, fov=[0, 180], probe='1'
+mms_hpca_calc_anodes, fov=[180, 360], probe='1'
+; plot each view
+tplot, ['mms1_hpca_hplus_RF_corrected_elev_*']  
+stop
+
+; plot each species
+tplot, ['mms1_hpca_*plus_RF_corrected_elev_0-360']
+stop
 end

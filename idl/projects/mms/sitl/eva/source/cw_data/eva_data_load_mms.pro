@@ -79,7 +79,7 @@ FUNCTION eva_data_load_mms, state
           mms_load_aspoc,datatype='asp1',level='sitl',probe=prb
           answer = 'Yes'
         endif
-        pcode=1
+        pcode=2
         ip=where(perror eq pcode,cp)
         if(strmatch(paramlist[i],'*_asp2_*') and (cp eq 0))then begin
           mms_load_aspoc,datatype='asp2',level='sitl',probe=prb
@@ -89,7 +89,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; EDI
         ;-----------
-        pcode=1
+        pcode=3
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_edi_amb_*') and (cp eq 0)) then begin
           mms_sitl_get_edi_amb,sc=sc
@@ -106,7 +106,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; EDP
         ;-----------
-        pcode=1
+        pcode=4
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_edp_*') and (cp eq 0)) then begin
           mms_sitl_get_edp,sc=sc
@@ -119,7 +119,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; EIS
         ;-----------
-        pcode=2
+        pcode=5
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_epd_eis_*') and (cp eq 0)) then begin
           mms_load_epd_eis, sc=sc
@@ -133,7 +133,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; FEEPS
         ;-----------
-        pcode=3
+        pcode=6
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_feeps_*') and (cp eq 0)) then begin
           mms_load_epd_feeps, sc=sc
@@ -144,7 +144,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; FPI
         ;-----------
-        pcode=4
+        pcode=7
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_fpi_*') and (cp eq 0)) then begin
           mms_sitl_get_fpi_basic, sc_id=sc
@@ -181,7 +181,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; HPCA
         ;-----------
-        pcode=5
+        pcode=8
         ip=where(perror eq pcode,cp)
         level = 'sitl'
         if (strmatch(paramlist[i],'*_hpca_*rf_corrected') and (cp eq 0)) then begin
@@ -207,7 +207,7 @@ FUNCTION eva_data_load_mms, state
           answer = 'Yes'
         endif
         
-        pcode=6
+        pcode=9
         ip=where(perror eq pcode,cp)
         level = 'sitl'
         if( (cp eq 0) and $
@@ -240,7 +240,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; FIELDS/AFG
         ;-----------
-        pcode=7
+        pcode=10
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_afg*') and (cp eq 0)) then begin
           mms_sitl_get_afg, sc_id=sc
@@ -253,7 +253,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; FIELDS/DFG
         ;-----------
-        pcode=8
+        pcode=11
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_dfg*') and (cp eq 0)) then begin
           mms_sitl_get_dfg, sc_id=sc
@@ -266,7 +266,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; FIELDS/DSP
         ;-----------
-        pcode=9
+        pcode=12
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_dsp_*') and (cp eq 0)) then begin
           data_type = (strmatch(paramlist[i],'*b*')) ? 'bpsd' : 'epsd'
@@ -284,7 +284,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; AE Index
         ;-----------
-        pcode=10
+        pcode=13
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'thg_idx_ae') and (cp eq 0)) then begin
           thm_load_pseudoAE,datatype='ae'

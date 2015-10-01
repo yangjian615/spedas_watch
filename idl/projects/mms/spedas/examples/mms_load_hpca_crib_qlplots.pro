@@ -28,81 +28,44 @@ tplotvar = 'mms'+pid + '_hpca_' + tsid + '_RF_corrected'
 ; load mms survey HPCA data
 mms_load_hpca, probes=pid, trange=trange, datatype='rf_corr', level='l1b', data_rate='srvy'
 
-; retrieve data from tplot variable
+; sum over nodes
+mms_hpca_calc_anodes, anode=[5, 6], probe=pid
+mms_hpca_calc_anodes, anode=[13, 14], probe=pid
+mms_hpca_calc_anodes, anode=[0, 15], probe=pid
+
+; save so not clobbered when loading brst
 get_data, tplotvar, data=srvy_data, dlimits=dl_srvy, limits=l_srvy
 store_data, tplotvar+'_srvy', data=srvy_data, dlimits=dl_srvy, limits=l_srvy   ; save so not clobbered when loading brst
-
-if is_struct(srvy_data) then begin
-
-  ; sum over all anodes
-  updated_spectra = mms_hpca_sum_fov(srvy_data, fov=fov)
-  store_data, tplotvar+'_total_srvy', data=updated_spectra, dlimits=dl_srvy, limits=l_srvy
-
-  ; sum over anodes 5 and 6 
-  anodes=[4,5]
-  data2sum = srvy_data.Y[*,*,anodes]
-  datatotal = dblarr(n_elements(srvy_data.x), n_elements(srvy_data.v))
-  datatotal = total(data2sum, 3, /nan)
-  datatotal(where(datatotal eq 0.)) = !VALUES.F_NAN
-  hpca_data_total = {x: srvy_data.x, y: datatotal, v: srvy_data.v}
-  thisl = l_srvy
-  thisl.ysubtitle=thisl.ysubtitle + ' anodes 5-6'     ; 
-  store_data, tplotvar+'_total_5_6_srvy', data=hpca_data_total, dlimits=dl_srvy, limits=thisl
-  
-  ; sum over anodes 13 and 14
-  anodes=[12,13]
-  data2sum = srvy_data.Y[*,*,anodes]
-  datatotal = total(data2sum, 3, /nan)
-  datatotal(where(datatotal eq 0.)) = !VALUES.F_NAN
-  hpca_data_total = {x: srvy_data.x, y: datatotal, v: srvy_data.v}
-  thisl = l_srvy
-  thisl.ysubtitle=thisl.ysubtitle + ' anodes 13-14'     ;
-  store_data, tplotvar+'_total_13_14_srvy', data=hpca_data_total, dlimits=dl_srvy, limits=thisl
-  
-endif
+get_data, tplotvar+'_anodes_5_6', data=srvy_data_5_6
+store_data, tplotvar+'_srvy_anodes_5_6', data=srvy_data_5_6, dlimits=dl_srvy, limits=l_srvy   ; save so not clobbered when loading brst
+get_data, tplotvar+'_anodes_13_14', data=srvy_data_13_14
+store_data, tplotvar+'_srvy_anodes_13_14', data=srvy_data_13_14, dlimits=dl_srvy, limits=l_srvy   ; save so not clobbered when loading brst
+get_data, tplotvar+'_anodes_0_15', data=srvy_data_0_15
+store_data, tplotvar+'_srvy_anodes_0_15', data=srvy_data_0_15, dlimits=dl_srvy, limits=l_srvy   ; save so not clobbered when loading brst
 
 ; do the same for burst data
 mms_load_hpca, probes=pid, trange=trange, datatype='rf_corr', level='l1b', data_rate='brst'
+; sum over nodes
+mms_hpca_calc_anodes, anode=[5, 6], probe=pid
+mms_hpca_calc_anodes, anode=[13, 14], probe=pid
+mms_hpca_calc_anodes, anode=[0, 15], probe=pid
 
 get_data, tplotvar, data=brst_data, dlimits=dl_brst, limits=l_brst
-store_data, tplotvar+'_brst', data=brst_data, dlimits=dl_brst, limits=l_brst
-
-if is_struct(brst_data) then begin
-
-  ; sum over all anodes
-  updated_spectra = mms_hpca_sum_fov(brst_data, fov=fov)
-  store_data, tplotvar+'_total_brst', data=updated_spectra, dlimits=dl_brst, limits=l_brst
-
-  ; sum over anodes 5 and 6
-  anodes=[4,5]
-  data2sum = brst_data.Y[*,*,anodes]
-  datatotal = dblarr(n_elements(brst_data.x), n_elements(brst_data.v))
-  datatotal = total(data2sum, 3, /nan)
-  datatotal(where(datatotal eq 0.)) = !VALUES.F_NAN
-  hpca_data_total = {x: brst_data.x, y: datatotal, v: brst_data.v}
-  thisl = l_brst
-  thisl.ysubtitle=thisl.ysubtitle + ' 5-6'     ;
-  store_data, tplotvar+'_total_5_6_brst', data=hpca_data_total, dlimits=dl_brst, limits=thisl
-
-  ; sum over anodes 13 and 14
-  anodes=[12,13]
-  data2sum = brst_data.Y[*,*,anodes]
-  datatotal = total(data2sum, 3, /nan)
-  datatotal(where(datatotal eq 0.)) = !VALUES.F_NAN
-  hpca_data_total = {x: brst_data.x, y: datatotal, v: brst_data.v}
-  thisl = l_brst
-  thisl.ysubtitle=thisl.ysubtitle + ' 13-14'     ;
-  store_data, tplotvar+'_total_13_14_brst', data=hpca_data_total, dlimits=dl_brst, limits=thisl
-
-endif
+store_data, tplotvar+'_brst', data=brst_data, dlimits=dl_brst, limits=l_brst   ; save so not clobbered when loading brst
+get_data, tplotvar+'_anodes_5_6', data=brst_data_5_6
+store_data, tplotvar+'_brst_anodes_5_6', data=brst_data_5_6, dlimits=dl_brst, limits=l_brst
+get_data, tplotvar+'_anodes_13_14', data=brst_data_13_14
+store_data, tplotvar+'_brst_anodes_13_14', data=brst_data_13_14, dlimits=dl_brst, limits=l_brst
+get_data, tplotvar+'_anodes_0-15', data=brst_data_0_15
+store_data, tplotvar+'_brst_anodes_0-15', data=brst_data_0_15, dlimits=dl_brst, limits=l_brst
 
 ; create a tplot variable with flags for burst and survey data
 mode_var=mms_hpca_mode(tplotvar+'_brst', tplotvar+'_srvy')
 
 ; create pseudo variables for the combined burst and survey data
-store_data, tplotvar+'_brst_srvy', data=[tplotvar+'_brst', tplotvar+'_srvy'], dlimits=dl, limits=l
-store_data, tplotvar+'_total_5_6_brst_srvy', data=[tplotvar+'_total_5_6_brst', tplotvar+'_total_5_6_srvy'], dlimits=dl, limits=l
-store_data, tplotvar+'_total_13_14_brst_srvy', data=[tplotvar+'_total_13_14_brst', tplotvar+'_total_13_14_srvy'], dlimits=dl, limits=l
+store_data, tplotvar+'_brst_srvy_0_15', data=[tplotvar+'_brst_anodes_0-15', tplotvar+'_srvy_anodes_0-15'], dlimits=dl, limits=l
+store_data, tplotvar+'_brst_srvy_5_6', data=[tplotvar+'_brst_anodes_5_6', tplotvar+'_srvy_anodes_5_6'], dlimits=dl, limits=l
+store_data, tplotvar+'_brst_srvy_13_14', data=[tplotvar+'_brst_anodes_13_14', tplotvar+'_srvy_anodes_13_14'], dlimits=dl, limits=l
 
 ; get ephemeris data for x-axis annotation
 mms_load_state, probes=pid, trange = trange, /ephemeris
@@ -132,8 +95,11 @@ position_vars = [eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
 tplot_options, 'xmargin', [20, 15]
 tplot_options, 'ymargin', [5, 5]
 tplot_options, 'title', 'Quicklook Plots for HPCA '+sid+' Data'
-panels=[mode_var, tplotvar+'*_brst_srvy']
-tplot, panels, var_label=position_vars
+panels=[mode_var, 'mms1_hpca_hplus_RF_corrected_brst_srvy_0_15,tplotvar', $
+   'mms1_hpca_hplus_RF_corrected_brst_srvy_5_6', $
+    'mms1_hpca_hplus_RF_corrected_brst_srvy_13_14']
+window, 1
+tplot, panels, var_label=position_vars, window=1
 
 stop
 

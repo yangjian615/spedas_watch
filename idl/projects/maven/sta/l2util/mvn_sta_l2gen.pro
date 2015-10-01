@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: muser $
-; $LastChangedDate: 2015-09-13 10:27:26 -0700 (Sun, 13 Sep 2015) $
-; $LastChangedRevision: 18782 $
+; $LastChangedDate: 2015-09-30 07:48:22 -0700 (Wed, 30 Sep 2015) $
+; $LastChangedRevision: 18960 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -225,10 +225,13 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   Endif Else Begin
      mvn_sta_l0_load, files = filex
 ;     mvn_sta_qf14_load
-     mvn_sta_mag_load
 ;Only call ephemeris_load if the date is more than 5 days ago
+;Changed to 10 days, 2015-09-30, jmm
      ttest = systime(/sec)-time_double(date)
-     If(ttest Gt 5.0*86400.0d0) Then mvn_sta_ephemeris_load
+     If(ttest Gt 10.0*86400.0d0) Then Begin
+        mvn_sta_mag_load
+        mvn_sta_ephemeris_load
+     Endif
   Endelse
 
 ;If yyy is set, we are replicating some app id's
