@@ -30,8 +30,8 @@
 ;    
 ;    
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-21 11:54:48 -0700 (Mon, 21 Sep 2015) $
-; $LastChangedRevision: 18862 $
+; $LastChangedDate: 2015-10-01 14:49:44 -0700 (Thu, 01 Oct 2015) $
+; $LastChangedRevision: 18979 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/dmpa2gse.pro $
 ;-
 
@@ -162,7 +162,7 @@ pro dmpa2gse,name_mms_xxx_in,name_mms_spinras,name_mms_spindec,name_mms_xxx_out,
     
     endif else begin
       subJ20002GEI,timeS,zscs,zscsGEI
-    	subGEI2GSE,timeS,zscs,zscsGSE;unit vector that points along the spin axis in GSE
+      subGEI2GSE,timeS,zscsGEI,zscsGSE;unit vector that points along the spin axis in GSE
     	;zscsGSE=zscs;unit vector that points along the spin axis in GSE
     	sun=[1.d0,0.d0,0.d0]
     	;yscs= crossp(zscsGSE,sun) ;NORMALIZE

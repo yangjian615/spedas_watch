@@ -71,9 +71,9 @@
 ;  thm_cotrans,'mydslvar1 mydslvar2 mydslvar3', $
 ;              in_coord='dsl', probe='b c d', out_suff='_gse'
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-10-01 15:30:07 -0700 (Thu, 01 Oct 2015) $
+; $LastChangedRevision: 18981 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/cotrans/thm_cotrans.pro $
 ;-
 
@@ -342,6 +342,13 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
           recursive_in_coord='geo'
           break
         end
+        'j2000': begin
+          ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
+          thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
+          cotrans,in_name,out_name,/gei2j2000,ignore_dlimits=ignore_dlimits
+          recursive_in_coord='j2000'
+          break
+        end
         else: begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
           thm_cotrans_check_valid_transform, in_name, in_coord, out_coord
@@ -368,6 +375,10 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
           cotrans,in_name,out_name,/mag2geo,ignore_dlimits=ignore_dlimits
           ;mag2geo,in_name,out_name
           recursive_in_coord='geo'
+      end
+      'j2000': begin
+          cotrans,in_name,out_name,/j20002gei,ignore_dlimits=ignore_dlimits
+          recursive_in_coord='gei'
       end
       else: begin
         dprint,"thm_cotrans: does not know how to transform "+in_coord+" to " $
