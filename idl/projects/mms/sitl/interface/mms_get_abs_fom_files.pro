@@ -24,7 +24,8 @@ spawn, spawnstring, data_dir
 ; Convert start and stop times to the format the sdc code wants
 ;;----------------------------------------------------------------------------
 
-t = timerange(/current)
+t = timerange()
+t = [t[0],t[1]+3.d0*86400.d0,t[1]] 
 st = time_string(t)
 start_date = strmid(st[0],0,10)
 end_date = strmatch(strmid(st[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(st[1],0,10)

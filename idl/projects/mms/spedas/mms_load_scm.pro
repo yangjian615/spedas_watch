@@ -6,25 +6,50 @@
 ;         Load data from the MMS Search Coil Magnetometer (SCM)
 ; 
 ; KEYWORDS:
-;         trange: time range of interest
-;         probes: list of probes - values for MMS SC #
-;         local_data_dir: local directory to store the CDF files
-;         no_color_setup: don't setup graphics configuration; use this
-;             keyword when you're using this load routine from a
-;             terminal without an X server running
+;         trange: time range of interest [starttime, endtime] with the format ['YYYY-MM-DD','YYYY-MM-DD']
+;             or to specificy more or less than a day ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss'] 
+;         probes: list of probes, valid values for MMS probes are ['1','2','3','4']. If no probe 
+;             is specified the default is 1
+;         level: indicates level of data processing. scm levels include 'l1a', 'l1b', 'l2'. The default if
+;             no level is specified is 'l1b'
+;         datatype: scm data types include ['cal', 'scb', 'scf', 'schb', 'scm', 'scs'].
+;             If no value is given the default is scf.
+;         data_rate: instrument data rates for MMS scm include 'brst' 'fast' 'slow' 'srvy'. The 
+;             default is 'fast'. 
+;         local_data_dir: local directory to store the CDF files; should be set if
+;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         source: specifies a different system variable. By default the MMS mission system variable is !mms
+;         get_support_data: not yet implemented. when set this routine will load any support data 
+;             (support data is specified in the CDF file)
+;         tplotnames: names for tplot variables
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load
+;             routine from a terminal without an X server runningdo not set colors
+;         time_clip: clip the data to the requested time range; note that if you do not use this keyword
+;             you may load a longer time range than requested
+;         no_update: set this flag to preserve the original data. if not set and newer data is found the 
+;             existing data will be overwritten 
 ; 
 ; OUTPUT:
 ; 
-; 
-; EXAMPLE:
-;     See the crib sheet mms_load_data_crib.pro for usage examples
-; 
+; EXAMPLE:; 
+;     load scm burst data
+;     MMS> mms_load_scm, trange=['2015-09-13',2015-09-14'], probes='1', level='l1b', $
+;                    data_rate='brst', datatype='scb'
+;
+;     set time span and load probes 1 and 2 survey data
+;     timespan, '2015-09-13', 1d
+;     MMS> mms_load_scm, probes=['1','2'], level='l1b', data_rate='srvy', datatype='scm'
+;
+;     get list of valid scm rates, levels, and datatypes
+;     MMS> mms_load_options, 'scm', rate=r, level=l, datatype=dt 
+;     See crib sheets mms_load_scm_crib.pro and mms_load_data_crib.pro for more detailed usage examples
+;     
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-03 13:53:53 -0700 (Thu, 03 Sep 2015) $
-;$LastChangedRevision: 18708 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-10-02 14:22:22 -0700 (Fri, 02 Oct 2015) $
+;$LastChangedRevision: 18991 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_scm.pro $
 ;-
 pro mms_set_scm_options, tplotnames, prefix = prefix,datatype = datatype, coord=coord

@@ -28,8 +28,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-22 15:57:02 -0700 (Tue, 22 Sep 2015) $
-;$LastChangedRevision: 18878 $
+;$LastChangedDate: 2015-10-02 11:12:31 -0700 (Fri, 02 Oct 2015) $
+;$LastChangedRevision: 18984 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_eis_pad.pro $
 ;-
 
@@ -151,7 +151,6 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, $
           ; get pa from each detector
           get_data, 'mms'+probe+'_epd_eis_' + datatype + '_pitch_angle_t0'+suffix, data = d
           flux_file = fltarr(n_elements(d.x),6) ; time steps, look direction
-          flux_file2 = dblarr(n_elements(d.x),6) ; time steps, look direction
           pa_file = fltarr(n_elements(d.x),6) ; time steps, look direction
           pa_file[*,0] = d.y
           pa_flux = fltarr(n_elements(d.x),n_pabins)

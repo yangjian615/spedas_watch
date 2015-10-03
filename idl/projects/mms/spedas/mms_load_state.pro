@@ -6,23 +6,36 @@
 ;         Load MMS state (position, attitude) data
 ;
 ; KEYWORDS:
-;         trange: time range of interest
-;         probes: list of probes - values for MMS SC ['*','1','2','3','4'] 
-;         level: ['def', 'pred'] predicted or definitive attitude the default is to search for definitive
-;              data first and if not found search for predicted data. To turn this feature off use the keyword
-;              pred_or_def (see below)
-;         datatypes: ephemeris or attitude or both ['*','pos', 'vel', 'spinras', 'spindec']  (default is '*')
+;         trange: time range of interest [starttime, endtime] with the format ['YYYY-MM-DD','YYYY-MM-DD']
+;             or more specificaly ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss'] see examples below
+;         probes: list of probes, valid values for MMS probes are ['*','1','2','3','4'] where '*' specifies
+;             all probes. If no probe is specified the default is all probes 
+;         level: ['def', 'pred'] for predicted or definitive attitude or position data. The default is 
+;             to search for definitive data first and if not found search for predicted data. To turn 
+;             this feature off use the keyword pred_or_def (see below)
+;         datatypes: ephemeris and attitude data types include ['*','pos', 'vel', 'spinras', 'spindec'].
+;             If no value is given the default is '*' where all types will be loaded
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         source: specifies a different system variable. By default the MMS mission system variable is !mms
+;         remote_data_dir: This is the URL of the server that can provide the data files. if the software 
+;             does not find a needed file in LOCAL_DATA_DIR, then it will attempt to download the data from 
+;             the URL and REMOTE_DATA_DIR is defined, the software will attempt to download the file from 
+;             REMOTE_DATA_DIR, place it in LOCAL_DATA_DIR with the same relative pathname, and then continue 
+;             processing.the remote directory the data is downloaded from.
 ;         attitude_data: flag to only load L-right ascension and L-declination attitude data 
 ;         ephemeris_data: flag to only load position and velocity data
 ;         no_download: set flag to use local data only (no download)
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
-;             with "username" and "password" tags with your API login information
+;             with "username" and "password" tags that inclue your API login information
+;         tplotnames: names for tplot variables
 ;         pred_or_def: set this flag to turn off looking for predicted data if definitive not found
-;            (pred_or_def=0 will return only the level that was requested)
-;            
-; OUTPUT:
+;             (pred_or_def=0 will return only the level that was requested). The default is to load
+;             predicted data if definitive data is not found 
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load 
+;             routine from a terminal without an X server runningdo not set colors
+;
+; OUTPUT: tplot variables
 ;
 ; EXAMPLES: 
 ; 
@@ -66,9 +79,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-21 11:54:48 -0700 (Mon, 21 Sep 2015) $
-;$LastChangedRevision: 18862 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-10-02 11:14:57 -0700 (Fri, 02 Oct 2015) $
+;$LastChangedRevision: 18985 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -431,13 +444,8 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     ;no reason to contact the server unless mms_get_local_files is unreliable
     if undefined(no_download) then no_download = !mms.no_download or !mms.no_server or (response_code ne 200)
 
-    ; only prompt the user if they're going to download data
-    if no_download eq 0 then begin
-        status = mms_login_lasp(login_info=login_info)
-        if status ne 1 then no_download = 1
-    endif
-    
     ; initialize undefined values
+    if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = p_names else probes = strcompress(string(probes), /rem)
     if undefined(level) then level = 'def'
     if undefined(datatypes) then datatypes = '*' ; default to definitive 

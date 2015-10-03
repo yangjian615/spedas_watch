@@ -6,27 +6,49 @@
 ;         Load MMS AFG and/or DFG data
 ; 
 ; KEYWORDS:
-;         trange: time range of interest
-;         probes: list of probes - values for MMS SC #
-;         instrument: instrument, AFG, DFG, etc.
-;         datatype: not implemented yet 
-;         local_data_dir: local directory to store the CDF files
-;         no_color_setup: don't setup graphics configuration; use this
-;             keyword when you're using this load routine from a
-;             terminal without an X server running
-; 
+;         trange: time range of interest [starttime, endtime] with the format ['YYYY-MM-DD','YYYY-MM-DD']
+;             or to specificy less than a day ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
+;         probes: list of probes, valid values for MMS probes are ['1','2','3','4']. If no probe 
+;             is specified the default is probe 1
+;         level: indicates level of data processing. fgm levels include 'l1a', 'l1b', 'ql'. The default if
+;             no level is specified is 'ql'
+;         datatype: currently all data types for fgm are retrieved (datatype not specified)
+;         data_rate: instrument data rates for fgm include 'brst' 'fast' 'slow' 'srvy'. The
+;             default is 'srvy'.
+;         instrument: fgm instruments are 'dfg' and 'afg'. default value is 'dfg'
+;         local_data_dir: local directory to store the CDF files; should be set if
+;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         source: specifies a different system variable. By default the MMS mission system variable is !mms
+;         get_support_data: not yet implemented. when set this routine will load any support data
+;             (support data is specified in the CDF file)
+;         tplotnames: names for tplot variables
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load
+;             routine from a terminal without an X server runningdo not set colors
+;         time_clip: clip the data to the requested time range; note that if you do not use this keyword
+;             you may load a longer time range than requested
+;         no_update: set this flag to preserve the original data. if not set and newer data is found the
+;             existing data will be overwritten
+;             
 ; OUTPUT:
 ; 
-; 
-; 
+; EXAMPLE:
+;     For examples see crib sheets mms_load_fgm_crib.pro, mms_load_fgm_brst_crib.pro,
+;     and mms_load_data_crib.
+;     
+;     load MMS AFG burst data for MMS 1
+;     MMS>  mms_load_fgm, probes=['1'], instrument='afg', data_rate='brst', level='ql'
+;     
+;     load MMS QL DFG data for MMS 1 and MMS 2
+;     MMS>  mms_load_dfg, probes=[1, 2], trange=['2015-06-22', '2015-06-23'], level='ql'
+;
 ; NOTES:
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-09 07:56:58 -0700 (Wed, 09 Sep 2015) $
-;$LastChangedRevision: 18736 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-10-02 14:22:22 -0700 (Fri, 02 Oct 2015) $
+;$LastChangedRevision: 18991 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
