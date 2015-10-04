@@ -30,8 +30,9 @@
 ;
 ;
 ;Example Usage:
-;  See crib sheet:  
-;    TODO: make crib sheet
+;  See crib sheets:  
+;    THEMIS:  thm_crib_part_slice2d  (called by thm_part_slice2d)
+;    MMS:     mms_slice2d_crib
 ;    
 ;
 ;Arguments:
@@ -184,8 +185,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-24 18:15:16 -0700 (Thu, 24 Sep 2015) $
-;$LastChangedRevision: 18929 $
+;$LastChangedDate: 2015-10-02 20:03:16 -0700 (Fri, 02 Oct 2015) $
+;$LastChangedRevision: 18996 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -379,11 +380,28 @@ endif
 
 ; Get original data and radial ranges for plotting
 ;  -ignore outliers that may be the result of sanitizations performed outside this routine
+;  -this also effectively removes low-significance outliers at large velocities, which
+;   can lead to overly large velocity scales for some instruments 
 idx = where(datapoints gt 0,n)
 if n gt 0 then begin
   dmoms = moment(alog10(datapoints[idx]),maxmom=2)
   min = 10^(dmoms[0] - 2*sqrt(dmoms[1])) ;ignore if < mean - 2*sigma 
-  drange = minmax(datapoints[idx],min_value=min)
+
+  ;remove points below the minimum 
+  ;  -these points would be hidden on final plot if left and will only 
+  ;   slow the interpolation
+  idx = where(datapoints gt min, n)
+  if n gt 0 then begin
+    datapoints = datapoints[idx]
+    rad = rad[idx]
+    phi = phi[idx]
+    theta = theta[idx]
+    dr = dr[idx]
+    dp = dp[idx]
+    dt = dt[idx]
+  endif
+
+  drange = [min(datapoints),max(datapoints)]
 endif else begin
   drange = [0,0.]
 endelse

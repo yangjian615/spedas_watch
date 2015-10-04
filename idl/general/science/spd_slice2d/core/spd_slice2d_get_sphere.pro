@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2015-10-02 20:01:21 -0700 (Fri, 02 Oct 2015) $
+;$LastChangedRevision: 18995 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_get_sphere.pro $
 ;
 ;-
@@ -75,12 +75,13 @@ pro spd_slice2d_get_sphere, dist, data=data, energy=energy, $
     endelse
     
     ;get radial centers
-    rad = float(  (rbounds[0:n-1,*] + rbounds[1:n,*]) / 2  )
+    ;extra * indices needed in case of extra data dimension
+    rad = float(  (rbounds[0:n-1,*,*] + rbounds[1:n,*,*]) / 2  )
     phi = dist.phi
     theta = dist.theta
 
     ;get bin widths (mainly for geometric method)
-    dr = float(  abs(rbounds[1:n,*] - rbounds[0:n-1,*])  )
+    dr = float(  abs(rbounds[1:n,*,*] - rbounds[0:n-1,*,*])  )
     dp = dist.dphi
     dt = dist.dtheta 
     

@@ -11,11 +11,10 @@
 ;
 ;Input:
 ;  tname: Tplot variable containing the desired data.
-;         The data should be in three dimensions: (time, energy, elevation)
-;  pointer: Flag to return a pointer instead of structure array.  
+;  structure: Flag to return a structure array instead of a pointer.  
 ;
 ;Output:
-;  return value: array of pseudo 3D particle distribution structures
+;  return value: pointer to array of pseudo 3D particle distribution structures
 ;                or 0 in case of error
 ;
 ;Notes:
@@ -30,12 +29,12 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-24 19:12:13 -0700 (Thu, 24 Sep 2015) $
-;$LastChangedRevision: 18931 $
+;$LastChangedDate: 2015-10-02 20:00:08 -0700 (Fri, 02 Oct 2015) $
+;$LastChangedRevision: 18994 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_hpca_dist.pro $
 ;-
 
-function mms_get_hpca_dist, tname, pointer=pointer
+function mms_get_hpca_dist, tname, structure=structure
 
     compile_opt idl2
 
@@ -90,7 +89,6 @@ phi_offset = s.azimuth_energy_offset # replicate(1.,dim[1])
 phi = phi_direction + phi_offset
 
 ;not physical values, just for plotting
-;TODO: should be dynamic
 dtheta = replicate(22.5, dim)
 dphi = replicate(11.25, dim)
 
@@ -135,7 +133,7 @@ endcase
 template = {  $
   project_name: 'MMS', $
   spacecraft: probe, $
-  data_name: species, $
+  data_name: 'HPCA '+species, $
   units_name: datatype, $ ;TODO: set units dynamically
   units_procedure: '', $ ;placeholder
   valid: 1b, $
@@ -149,7 +147,7 @@ template = {  $
   bins: base_arr+1, $ ;must be set or data will be considered invalid
 
   energy: energy, $
-  denergy: base_arr, $
+  denergy: 0, $
   phi: phi, $
   dphi: dphi, $
   theta: theta, $
@@ -186,10 +184,10 @@ dist.phi = dist.phi mod 360
 
 ;spd_slice2d accepts pointers or structures
 ;pointers are more versatile & efficient, but less user friendly
-if keyword_set(pointer) then begin
-  return, ptr_new(dist,/no_copy) 
+if keyword_set(structure) then begin
+  return, dist 
 endif else begin
-  return, dist
+  return, ptr_new(dist,/no_copy)
 endelse
 
 

@@ -21,8 +21,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-10 18:59:05 -0700 (Thu, 10 Sep 2015) $
-;$LastChangedRevision: 18767 $
+;$LastChangedDate: 2015-10-02 20:01:21 -0700 (Fri, 02 Oct 2015) $
+;$LastChangedRevision: 18995 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_get_ebounds.pro $
 ;-
 function spd_slice2d_get_ebounds, dist
@@ -31,14 +31,17 @@ function spd_slice2d_get_ebounds, dist
 
   n = dimen1(dist.energy)
 
-  energies = fltarr(size(dist.energy,/dim)+[1,0])
+  dim = size(dist.energy,/dim)
+  dim[0] += 1
+  energies = fltarr(dim)
   
   ; use midpoints
-  energies[1:n-1,*] = (dist.energy[0:n-2,*] + dist.energy[1:n-1,*]) / 2.
+  ; extra * indices needed in case of extra data dimension
+  energies[1:n-1,*,*] = (dist.energy[0:n-2,*,*] + dist.energy[1:n-1,*,*]) / 2.
   
   ; top/bottom energies
-  energies[0,*] = dist.energy[0,*] + (dist.energy[0,*] - energies[1,*])
-  energies[n,*] = dist.energy[n-1,*] + (dist.energy[n-1,*] - energies[n-1,*])
+  energies[0,*,*] = dist.energy[0,*,*] + (dist.energy[0,*,*] - energies[1,*,*])
+  energies[n,*,*] = dist.energy[n-1,*,*] + (dist.energy[n-1,*,*] - energies[n-1,*,*])
   
   return, energies
   

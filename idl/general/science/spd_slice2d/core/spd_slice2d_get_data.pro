@@ -31,8 +31,8 @@
 ; 
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2015-10-02 20:01:21 -0700 (Fri, 02 Oct 2015) $
+;$LastChangedRevision: 18995 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_get_data.pro $
 ;-
 
@@ -96,8 +96,8 @@ pro spd_slice2d_get_data, ptr_array, trange=trange, erange=erange, energy=energy
       ;Find bins within energy limits
       if keyword_set(erange) then begin
         n = dimen1(dist.energy)
-        energies = spd_slice2d_ebounds(dist)
-        ecenters = (energies[0:n-1,*]+energies[1:n,*])/ 2
+        energies = spd_slice2d_get_ebounds(dist)
+        ecenters = (energies[0:n-1,*,*]+energies[1:n,*,*])/ 2
         bins = bins and (ecenters ge erange[0] and ecenters le erange[1])
       endif
   
