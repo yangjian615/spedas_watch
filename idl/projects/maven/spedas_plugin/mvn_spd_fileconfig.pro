@@ -2,15 +2,15 @@
 ;NAME:
 ; mvn_spd_fileconfig
 ;PURPOSE:
-; A widget that allows the user to set some of the !yyy environmental
-; variables. The user can save the changes permanently to file, reset 
+; A widget that allows the user to set parts of the mvn_file_source
+; structure. The user can save the changes permanently to file, reset 
 ; to default values, or cancel any changes made since the panel was
 ; displayed.
 ;HISTORY:
 ; Hacked from api_examples version, jmm, 2014-12-01, jimm@ssl.berkeley.edu 
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-09-28 13:39:58 -0700 (Mon, 28 Sep 2015) $
-;$LastChangedRevision: 18952 $
+;$LastChangedDate: 2015-10-05 11:02:19 -0700 (Mon, 05 Oct 2015) $
+;$LastChangedRevision: 18997 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/spedas_plugin/mvn_spd_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -42,9 +42,10 @@ end
 
 PRO mvn_spd_fileconfig_event, event
   
-;No sys variable, but a common block
+; No sys variable, but a common block
   common mvn_file_source_com,  psource
-  ; Get State structure from top level base
+
+; Get State structure from top level base
   Widget_Control, event.handler, Get_UValue=state, /No_Copy
 
   ; get the user value of the widget that caused this event
@@ -84,27 +85,20 @@ PRO mvn_spd_fileconfig_event, event
     END
 
     'LOCALDIR': BEGIN
-    
         widget_control, state.localDir, get_value=currentDir
         psource.local_data_dir = currentDir
-
     END
 
     'REMOTEDIR': BEGIN
-    
         widget_control, state.remoteDir, get_value=currentDir
         psource.remote_data_dir = currentDir
-
     END
 
     'VERBOSE': BEGIN
-
        psource.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
-
     END
 
     'RESET': BEGIN
-
        ; set the system variable (psource) back to the state it was at the 
        ; beginning of the window session. This cancels all changes since
        ; initialization of the configuration window
@@ -130,11 +124,9 @@ PRO mvn_spd_fileconfig_event, event
     END
     
    'RESETTODEFAULT': Begin
-
       ; to reset all values to their default values the system
       ; variable needs to be reinitialized
       mvn_spd_init,  /reset
-      
       ; used the stored default values to set the download
       ; and update variables
       psource.no_download = state.def_values[0]
@@ -161,11 +153,9 @@ PRO mvn_spd_fileconfig_event, event
           state.historywin->update,'Resetting configuration to default values.'
           state.statusbar->update,'Resetting configuration to default values.'
        Endif
-
     END
     
     'SAVE': BEGIN
-
       ; write the values to the text file stored on disk
       ; so the values will be set outside of the panel
       ; and/or gui
@@ -176,7 +166,6 @@ PRO mvn_spd_fileconfig_event, event
          state.historyWin->update,'Saved mvn_spd_config.txt'
       Endif
     END
-    
     ELSE:
   ENDCASE
   

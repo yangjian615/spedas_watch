@@ -5,27 +5,46 @@
 ; PURPOSE:
 ;         Load data from the Fly's Eye Energetic Particle Sensor (FEEPS) onboard MMS
 ; 
-; KEYWORDS:
-;         trange: time range of interest
-;         probes: list of probes - values for MMS SC #
-;         datatype: not implemented yet 
-;         local_data_dir: local directory to store the CDF files
-;         no_color_setup: don't setup graphics configuration; use this
-;             keyword when you're using this load routine from a
-;             terminal without an X server running
-; 
+; KEYWORDS: 
+;         trange: time range of interest [starttime, endtime] with the format ['YYYY-MM-DD','YYYY-MM-DD']
+;             or to specificy less than a day ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
+;         probes: list of probes, valid values for MMS probes are ['1','2','3','4']. If no probe
+;             is specified the default is 1
+;         level: indicates level of data processing. levels include 'l1a', 'l1b'. The default if
+;             no level is specified is 'l1b'
+;         datatype: feeps data types include ['electron', 'electron-bottom', 'electron-top', 'ion', $
+;             'ion-bottom', 'ion-top'].
+;             If no value is given the default is 'electron'.
+;         data_rate: instrument data rates for feeps include 'brst' 'srvy'. The
+;             default is 'srvy'.
+;         local_data_dir: local directory to store the CDF files; should be set if
+;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         source: specifies a different system variable. By default the MMS mission system variable is !mms
+;         get_support_data: not yet implemented. when set this routine will load any support data
+;             (support data is specified in the CDF file)
+;         tplotnames: names for tplot variables
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load
+;             routine from a terminal without an X server runningdo not set colors
+;         time_clip: clip the data to the requested time range; note that if you do not use this keyword
+;             you may load a longer time range than requested
+;         no_update: set this flag to preserve the original data. if not set and newer data is found the
+;             existing data will be overwritten
+;
 ; OUTPUT:
-; 
-; 
+;  
 ; EXAMPLE:
-;     See the crib sheet mms_load_data_crib.pro for usage examples
-; 
+;     See crib sheets mms_load_feeps_crib.pro and mms_load_data_crib.pro for usage examples
+;
+;     load electron data (srvy mode)
+;     MMS1> mms_load_feeps, probes='1', trange=['2015-08-15', '2015-08-16'], datatype='electron'
+;     MMS1> mms_feeps_pad,  probe='1', datatype='electron'
+;     
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-24 14:17:09 -0700 (Thu, 24 Sep 2015) $
-;$LastChangedRevision: 18919 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-10-05 14:30:07 -0700 (Mon, 05 Oct 2015) $
+;$LastChangedRevision: 19003 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_feeps.pro $
 ;-
 pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype

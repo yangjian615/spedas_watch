@@ -79,8 +79,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-28 08:40:59 -0700 (Mon, 28 Sep 2015) $
-;$LastChangedRevision: 18943 $
+;$LastChangedDate: 2015-10-05 12:23:26 -0700 (Mon, 05 Oct 2015) $
+;$LastChangedRevision: 19000 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -157,7 +157,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
       then tr = timerange(trange) $
       else tr = timerange()
 
-    response_code = spd_check_internet_connection()
+    ;response_code = spd_check_internet_connection()
+    response_code = 200
 
     ;combine these flags for now, if we're not downloading files then there is
     ;no reason to contact the server unless mms_get_local_files is unreliable

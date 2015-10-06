@@ -10,11 +10,11 @@
 ;             or to specificy less than a day ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
 ;         probes: list of probes, valid values for MMS probes are ['1','2','3','4']. If no probe
 ;             is specified the default is 1
-;         level: indicates level of data processing. hpca levels include 'l1b', 'sitl'. The default if
+;         level: indicates level of data processing. levels include 'l1b', 'sitl'. The default if
 ;             no level is specified is 'l1b'
-;         datatype: hpca data types include ['bkgd_corr', 'count_rate', 'flux', 'moments', 'rf_corr', 'vel_dist'].
+;         datatype: data types include ['bkgd_corr', 'count_rate', 'flux', 'moments', 'rf_corr', 'vel_dist'].
 ;             If no value is given the default is 'rf_corr'.
-;         data_rate: instrument data rates for MMS hpca include 'brst' 'srvy'. The
+;         data_rate: instrument data rates include 'brst' 'srvy'. The
 ;             default is 'srvy'.
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
@@ -45,8 +45,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-02 14:22:22 -0700 (Fri, 02 Oct 2015) $
-;$LastChangedRevision: 18991 $
+;$LastChangedDate: 2015-10-05 14:30:07 -0700 (Mon, 05 Oct 2015) $
+;$LastChangedRevision: 19003 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_hpca.pro $
 ;-
 

@@ -6,19 +6,49 @@
 ;         Load data from the MMS Energetic Ion Spectrometer (EIS)
 ; 
 ; KEYWORDS:
-;         trange: time range of interest
-;         probes: list of probes - values for MMS SC #
-;         local_data_dir: local directory to store the CDF files
-;         no_color_setup: don't setup graphics configuration; use this
-;             keyword when you're using this load routine from a
-;             terminal without an X server running
+;         trange: time range of interest [starttime, endtime] with the format ['YYYY-MM-DD','YYYY-MM-DD']
+;             or to specificy less than a day ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
+;         probes: list of probes, valid values for MMS probes are ['1','2','3','4']. If no probe
+;             is specified the default is 1
+;         level: indicates level of data processing. levels include 'l1a', 'l1b'. The default if
+;             no level is specified is 'l1b'
+;         datatype: eis data types include ['electronenergy', 'extof', 'partenergy', 'phxtof'].
+;             If no value is given the default is 'extof'.
+;         data_rate: instrument data rates for eis include 'brst' 'srvy'. The
+;             default is 'srvy'.
+;         data_units: desired units for data. for eis units are ['flux', 'cps', 'counts']. The 
+;             default is 'flux'.
+;         local_data_dir: local directory to store the CDF files; should be set if
+;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         source: specifies a different system variable. By default the MMS mission system variable is !mms
+;         get_support_data: not yet implemented. when set this routine will load any support data
+;             (support data is specified in the CDF file)
+;         tplotnames: names for tplot variables
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load
+;             routine from a terminal without an X server runningdo not set colors
+;         time_clip: clip the data to the requested time range; note that if you do not use this keyword
+;             you may load a longer time range than requested
+;         no_update: set this flag to preserve the original data. if not set and newer data is found the
+;             existing data will be overwritten
+;         no_interp: if this flag is set no interpolation of the data will occur.
+;
 ; 
 ; OUTPUT:
 ; 
 ; 
 ; EXAMPLE:
-;     See the crib sheet mms_load_data_crib.pro for usage examples
+;     See crib sheets mms_load_eis_crib.pro, mms_load_eis_burst_crib.pro, 
+;         mms_load_eis_crib_qlplots.pro, and mms_load_data_crib.pro for usage examples
 ; 
+;     load ExTOF burst data:
+;     MMS1> mms_load_eis, probes='1', trange=['2015-08-23', '2015-08-24'], $
+;            datatype='extof', data_rate='brst', level='l1b'
+;            
+;     load PHxTOF data:
+;     MMS1> mms_load_eis, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='phxtof'
+;     calculate the PHxTOF PAD for protons
+;     MMS1> mms_eis_pad, probe='1', species='ion', datatype='phxtof', ion_type='proton', data_units='flux', energy=[0, 30]
+;
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
@@ -27,9 +57,9 @@
 ;                 ExTOF and PHxTOF data
 ;     9/17/2015 - egrimes: large update, see svn log
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-22 15:57:02 -0700 (Tue, 22 Sep 2015) $
-;$LastChangedRevision: 18878 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-10-05 14:30:07 -0700 (Mon, 05 Oct 2015) $
+;$LastChangedRevision: 19003 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_eis.pro $
 ;-
 

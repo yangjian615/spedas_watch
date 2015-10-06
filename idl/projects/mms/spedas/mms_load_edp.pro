@@ -9,14 +9,13 @@
 ;                    Default input is timespan input.
 ;    probes       : OPTIONAL - desired spacecraft, Ex: '1' for mms1, '2' for mms2, etc.
 ;                    Default input is all s/c
-;    mode         : OPTIONAL - desired data sampling mode, DEFAULT: mode='srvy'
+;    data_rate    : OPTIONAL - desired data sampling mode, DEFAULT: mode='srvy'
 ;                             due to cataloging at the SDC, WE REQUIRE YOU LOAD ONLY ONE MODE AT A TIME
 ;                    Default input, all but brst (to avoid destroying your hard drive)
 ;    level        : OPTIONAL - desired level, options are level 1a, 1b, ql, 2
 ;                    Default input - all levels
 ;    datatype    : OPTIONAL - desired data type. Ex: ['dce', 'dcv', 'ace', 'hmfe']
 ;                    Default input - all data types!
-;
 ;    no_update    : OPTIONAL - /no_update to ensure your current data is not reloaded due to an update at the SDC
 ;    reload       : OPTIONAL - /reload to ensure current data is reloaded due to an update at the SDC
 ;    DO NOT DO BOTH /NO_UPDATE AND /RELOAD TOGETHER. THAT IS SILLY!
@@ -24,8 +23,13 @@
 ;                              Hopefully you'll never have to use this outside of commissioning
 ;    get_support  : OPTIONAL - /get_support to get support data within the CDF
 ;                               Automatically called when /no_sweeps is called
-
 ;
+; EXAMPLE:
+;
+;    set the time frame
+;    MMS1> timespan, '2015-08-15', 1, /day
+;    load quicklook edp dce data for all probes
+;    MMS1> mms_load_edp, data_rate='slow', probes=[1, 2, 3, 4], datatype='dce', level='ql'
 ;
 ; OUTPUT: tplot variables listed at the end of the procedure
 ; :Author: Katherine Goodrich, contact: katherine.goodrich@colorado.edu
@@ -34,9 +38,9 @@
 ; MODIFICATION HISTORY:
 ;
 ;
-;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-08-17 09:28:27 -0700 (Mon, 17 Aug 2015) $
-;  $LastChangedRevision: 18502 $
+;  $LastChangedBy: crussell $
+;  $LastChangedDate: 2015-10-05 15:30:32 -0700 (Mon, 05 Oct 2015) $
+;  $LastChangedRevision: 19006 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_edp.pro $
 
 
