@@ -13,8 +13,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-17 13:24:32 -0700 (Thu, 17 Sep 2015) $
-; $LastChangedRevision: 18827 $
+; $LastChangedDate: 2015-10-06 15:48:11 -0700 (Tue, 06 Oct 2015) $
+; $LastChangedRevision: 19021 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib.pro $
 ;-
 
@@ -33,13 +33,6 @@ options, '*_extof_proton_flux_omni_spin', ystyle=1
 
 tplot, '*_extof_proton_flux_omni_spin'
 stop
-
-; smooth these data in energy and time
-options, '*_extof_proton_flux_omni_spin', x_no_interp=0, y_no_interp=0, no_interp=0
-tsmooth_in_time, '*_extof_proton_flux_omni_spin', 60
-tplot, '*_extof_proton_flux_omni_spin'
-stop
-
 
 ; calculate the PAD for 48-106keV protons
 mms_eis_pad, probe='1', species='ion', datatype='extof', ion_type='proton', data_units='flux', energy=[48, 106]
@@ -94,7 +87,7 @@ tplot, ['*_phxtof_oxygen_flux_omni_spin', 'mms1_epd_eis_phxtof_0-175keV_oxygen_f
 stop
 
 ; load some electron data; note that the datatype for electron data is "electronenergy"
-mms_load_eis, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='electronenergy'
+mms_load_eis, probes='1', trange=['2015-08-15', '2015-08-16'], datatype='electronenergy'
 mms_eis_pad, probe='1', species='electron', datatype='electronenergy', data_units='flux'
 
 ; plot the electron spectra

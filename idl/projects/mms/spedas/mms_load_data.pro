@@ -10,12 +10,18 @@
 ;         trange: time range of interest
 ;         probes: list of probes - values for MMS SC #
 ;         instrument: instrument, AFG, DFG, etc.
-;         datatype: not implemented yet 
+;         datatypes: not implemented yet 
+;         levels: level of data processing 
+;         data_rates: instrument data rate
 ;         local_data_dir: local directory to store the CDF files; should be set if 
 ;             you're on *nix or OSX, the default currently assumes the IDL working directory
-;         attitude_data: load L-right ascension and L-declination attitude data
+;         source: sets a different system variable. By default the MMS mission system variable 
+;             is !mms
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;             with "username" and "password" tags with your API login information
+;         tplotnames: set to override default names for tplot variables
+;         get_support_data: when set this routine will load any support data
+;             (support data is specified in the CDF file)
 ;         varformat: format of the variable names in the CDF to load; not currently used for HPCA ion data
 ;         no_color_setup: don't setup graphics configuration; use this
 ;             keyword when you're using this load routine from a
@@ -23,10 +29,9 @@
 ;         time_clip: clip the data to the requested time range; note that if you
 ;             do not use this keyword, you may load a longer time range than requested
 ;         no_update: use local data only, don't query the SDC for updated files. 
-;         
+;         suffix: append a suffix to tplot variables names
 ; 
 ; OUTPUT:
-; 
 ; 
 ; EXAMPLE:
 ;     See the crib sheet mms_load_data_crib.pro for usage examples
@@ -78,9 +83,9 @@
 ;           the directory structure at the SDC.
 ;      
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-05 12:23:26 -0700 (Mon, 05 Oct 2015) $
-;$LastChangedRevision: 19000 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-10-06 08:33:32 -0700 (Tue, 06 Oct 2015) $
+;$LastChangedRevision: 19009 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 

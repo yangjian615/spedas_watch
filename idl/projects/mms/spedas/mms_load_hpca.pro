@@ -6,47 +6,54 @@
 ;         Load data from the MMS Hot Plasma Composition Analyzer (HPCA)
 ; 
 ; KEYWORDS:
-;         trange: time range of interest [starttime, endtime] with the format ['YYYY-MM-DD','YYYY-MM-DD']
-;             or to specificy less than a day ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
-;         probes: list of probes, valid values for MMS probes are ['1','2','3','4']. If no probe
-;             is specified the default is 1
-;         level: indicates level of data processing. levels include 'l1b', 'sitl'. The default if
-;             no level is specified is 'l1b'
-;         datatype: data types include ['bkgd_corr', 'count_rate', 'flux', 'moments', 'rf_corr', 'vel_dist'].
-;             If no value is given the default is 'rf_corr'.
-;         data_rate: instrument data rates include 'brst' 'srvy'. The
-;             default is 'srvy'.
+;         trange:       time range of interest [starttime, endtime] with the format 
+;                       ['YYYY-MM-DD','YYYY-MM-DD'] or to specify more or less than a day 
+;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
+;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4']. 
+;                       If no probe is specified the default is '1'
+;         level:        indicates level of data processing. levels include 'l1b', 'sitl'. 
+;                       the default if no level is specified is 'l1b'.
+;         datatype:     data types include 
+;                       ['bkgd_corr', 'count_rate', 'flux', 'moments', 'rf_corr', 'vel_dist'].
+;                       if no value is given the default is 'rf_corr'.
+;         data_rate:    instrument data rates include 'brst' 'srvy'. the default is 'srvy'.
 ;         local_data_dir: local directory to store the CDF files; should be set if
-;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
-;         varformat: format of the variable names in the CDF to load. default varformat='*_RF_corrected'
-;         source: specifies a different system variable. By default the MMS mission system variable is !mms
+;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         varformat:    format of the variable names in the CDF to load. the default 
+;                       varformat is '*_RF_corrected'
+;         source:       specifies a different system variable. By default the MMS mission system 
+;                       variable is !mms
 ;         get_support_data: not yet implemented. when set this routine will load any support data
-;             (support data is specified in the CDF file)
-;         tplotnames: names for tplot variables
-;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load
-;             routine from a terminal without an X server runningdo not set colors
-;         time_clip: clip the data to the requested time range; note that if you do not use this keyword
-;             you may load a longer time range than requested
-;         no_update: set this flag to preserve the original data. if not set and newer data is found the
-;             existing data will be overwritten
+;                       (support data is specified in the CDF file)
+;         tplotnames:   names for tplot variables
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this 
+;                       load routine from a terminal without an X server runningdo not set colors
+;         time_clip:    clip the data to the requested time range; note that if you do not use this 
+;                       keyword you may load a longer time range than requested
+;         no_update:    set this flag to preserve the original data. if not set and newer data is 
+;                       found the existing data will be overwritten
+;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
+;                       preserving original tplot variable.
 ; 
 ; OUTPUT:
 ; 
 ; EXAMPLE:
-;     See crib sheets mms_load_hpca_crib, mms_load_hpca_brst_crib, mms_load_hpca_crib_qlplots
-;     and mms_load_data_crib.pro for usage examples
+;     See crib sheet routines mms_load_hpca_crib, mms_load_hpca_brst_crib, and mms_load_hpca_crib_qlplots
+;     for usage examples
 ;    
 ;     load hpca data examples (burst mode)
-;     MMS>  mms_load_hpca, probes='1',  trange=['2015-09-03', '2015-09-04'], datatype='moments', data_rate='brst'
-;     MMS>  mms_load_hpca, probes='1', trange=['2015-09-03', '2015-09-04'], datatype='rf_corr', data_rate='brst'
+;     MMS>  mms_load_hpca, probes='1',  trange=['2015-09-03', '2015-09-04'], $
+;             datatype='moments', data_rate='brst'
+;     MMS>  mms_load_hpca, probes='1', trange=['2015-09-03', '2015-09-04'], $
+;             datatype='rf_corr', data_rate='brst'
 ;
 ; 
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-05 14:30:07 -0700 (Mon, 05 Oct 2015) $
-;$LastChangedRevision: 19003 $
+;$LastChangedDate: 2015-10-06 12:18:36 -0700 (Tue, 06 Oct 2015) $
+;$LastChangedRevision: 19011 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_hpca.pro $
 ;-
 
@@ -55,7 +62,7 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, varformat = varformat, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
-                  time_clip = time_clip, no_update = no_update
+                  time_clip = time_clip, no_update = no_update, suffix = suffix
                 
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
@@ -85,7 +92,7 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, varformat = varformat, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update
+        no_update = no_update, suffix = suffix
     
     if undefined(tplotnames) then return
     

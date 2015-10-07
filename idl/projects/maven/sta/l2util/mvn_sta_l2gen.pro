@@ -16,9 +16,9 @@
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: muser $
-; $LastChangedDate: 2015-09-30 07:48:22 -0700 (Wed, 30 Sep 2015) $
-; $LastChangedRevision: 18960 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-10-06 16:29:29 -0700 (Tue, 06 Oct 2015) $
+; $LastChangedRevision: 19023 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $

@@ -6,13 +6,10 @@
 ;
 ;
 ;
-; HISTORY:
-;     8/28/15: added modifications from Barbara Giles
-;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-28 11:59:21 -0700 (Fri, 28 Aug 2015) $
-; $LastChangedRevision: 18655 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fpi_crib.pro $
+; $LastChangedDate: 2015-10-06 15:46:20 -0700 (Tue, 06 Oct 2015) $
+; $LastChangedRevision: 19020 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fpi_burst_crib.pro $
 ;-
 timespan, '2015-09-08', 1, /day
 

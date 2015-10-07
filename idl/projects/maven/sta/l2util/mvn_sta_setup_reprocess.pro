@@ -1,9 +1,36 @@
-nproc = 2
-time_range = dblarr(2, nproc)
-time_range[*, 0] = time_double(['2014-09-22', '2015-03-01'])
-time_range[*, 1] = time_double(['2015-03-01', '2015-07-27'])
-file_copy, '/home/muser/export_socware/idl_socware/projects/maven/sta/l2util/mvn_sta_l2gen_1day.pro', '/mydisks/home/maven/mvn_sta_l2gen_1day.pro', /overwrite
-mvn_l2gen_multiprocess_a, 'mvn_sta_l2gen_1day', nproc, 0, time_range, '/mydisks/home/maven/'
+;+ call this file to set up reprocess, this will split up the input
+;time range equally. Run as muser
+Pro mvn_sta_setup_reprocess, start_date = start_date, $ ;default is 2014-10-06
+                             end_date = end_date, $     ;default is now
+                             use_l2_files = use_l2_files, $ ;default is 0 - use L0
+                             nproc = nproc                  ;default is 2
+;-
+  If(keyword_set(use_l2_files)) Then l2l2 = 1b Else l2l2 = 0b
+  if(~keyword_set(nproc)) Then nproc = 3
+  If(keyword_set(start_date)) Then Begin
+     st = time_string(start_date, precision = -3)
+  Endif Else st = '2014-10-06'
+  If(keyword_set(end_date)) Then Begin
+     en = time_string(en_date, precision = -3)
+  Endif Else en = time_string(systime(/sec), precision = -3)
 
+  one_day = 86400.0d0
+  t0 = time_double(st) & t1 = time_double(en)
+  ndays = (t1-t0)/one_day
+  ndnp = round(ndays/nproc)
+  tall = t0+ndnp*one_day*indgen(nproc+1)
+  tall[nproc] = tall[nproc] < t1
+  time_range = dblarr(2, nproc)
+  time_range[0, *] = tall[0:nproc-1]
+  time_range[1, *] = tall[1:nproc]
+  time_range = time_string(time_range, precision = -3)
+
+  If(l2l2) Then Begin
+     file_copy, '/home/muser/export_socware/idl_socware/projects/maven/sta/l2util/mvn_sta_l2l2_1day.pro', '/mydisks/home/maven/mvn_sta_l2l2_1day.pro', /overwrite
+     mvn_l2gen_multiprocess_a, 'mvn_sta_l2l2_1day', nproc, 0, time_range, '/mydisks/home/maven/'
+  Endif Else Begin
+     file_copy, '/home/muser/export_socware/idl_socware/projects/maven/sta/l2util/mvn_sta_l2gen_1day.pro', '/mydisks/home/maven/mvn_sta_l2gen_1day.pro', /overwrite
+     mvn_l2gen_multiprocess_a, 'mvn_sta_l2gen_1day', nproc, 0, time_range, '/mydisks/home/maven/'
+  Endelse
 End
 

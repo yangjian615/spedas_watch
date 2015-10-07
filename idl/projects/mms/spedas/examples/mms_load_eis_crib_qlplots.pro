@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-21 08:50:33 -0700 (Mon, 21 Sep 2015) $
-; $LastChangedRevision: 18855 $
+; $LastChangedDate: 2015-10-06 15:45:39 -0700 (Tue, 06 Oct 2015) $
+; $LastChangedRevision: 19019 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -38,11 +38,13 @@ options, '*_flux_omni*', ystyle=1
 
 ; get ephemeris data for x-axis annotation
 mms_load_state, probes=probe, trange=trange, /ephemeris
-eph_gei = 'mms'+probe+'_defeph_pos'
+eph_j2000 = 'mms'+probe+'_defeph_pos'
+eph_gei = 'mms'+probe+'defeph_pos_gei'
 eph_gse = 'mms'+probe+'_defeph_pos_gse'
 eph_gsm = 'mms'+probe+'_defeph_pos_gsm'
 
 ; convert from gei to gsm coordinates
+cotrans, eph_j2000, eph_gei, /j20002gei
 cotrans, eph_gei, eph_gse, /gei2gse
 cotrans, eph_gse, eph_gsm, /gse2gsm
 

@@ -6,32 +6,37 @@
 ;         Load data from the MMS Search Coil Magnetometer (SCM)
 ; 
 ; KEYWORDS:
-;         trange: time range of interest [starttime, endtime] with the format ['YYYY-MM-DD','YYYY-MM-DD']
-;             or to specificy more or less than a day ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss'] 
-;         probes: list of probes, valid values for MMS probes are ['1','2','3','4']. If no probe 
-;             is specified the default is 1
-;         level: indicates level of data processing. scm levels include 'l1a', 'l1b', 'l2'. The default if
-;             no level is specified is 'l1b'
-;         datatype: scm data types include ['cal', 'scb', 'scf', 'schb', 'scm', 'scs'].
-;             If no value is given the default is scf.
-;         data_rate: instrument data rates for MMS scm include 'brst' 'fast' 'slow' 'srvy'. The 
-;             default is 'fast'. 
+;         trange:       time range of interest [starttime, endtime] with the format 
+;                       ['YYYY-MM-DD','YYYY-MM-DD'] or to specify more or less than a day 
+;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss'] 
+;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4']. If 
+;                       no probe is specified the default is '1'
+;         level:        indicates level of data processing. scm levels include 'l1a', 'l1b', 
+;                       'l2'. The default if no level is specified is 'l1b'
+;         datatype:     scm data types include ['cal', 'scb', 'scf', 'schb', 'scm', 'scs'].
+;                       If no value is given the default is scf.
+;         data_rate:    instrument data rates for MMS scm include 'brst' 'fast' 'slow' 'srvy'. 
+;                       The default is 'fast'. 
 ;         local_data_dir: local directory to store the CDF files; should be set if
-;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
-;         source: specifies a different system variable. By default the MMS mission system variable is !mms
+;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         source:       specifies a different system variable. By default the MMS mission system 
+;                       ariable is !mms
 ;         get_support_data: not yet implemented. when set this routine will load any support data 
-;             (support data is specified in the CDF file)
-;         tplotnames: names for tplot variables
-;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load
-;             routine from a terminal without an X server runningdo not set colors
-;         time_clip: clip the data to the requested time range; note that if you do not use this keyword
-;             you may load a longer time range than requested
-;         no_update: set this flag to preserve the original data. if not set and newer data is found the 
-;             existing data will be overwritten 
+;                       (support data is specified in the CDF file)
+;         tplotnames:   names for tplot variables
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're 
+;                       using this load
+;                       routine from a terminal without an X server runningdo not set colors
+;         time_clip:    clip the data to the requested time range; note that if you do not use 
+;                       this keyword you may load a longer time range than requested
+;         no_update:    set this flag to preserve the original data. if not set and newer data 
+;                       is found the existing data will be overwritten 
+;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
+;                       preserving original tplot variable.
 ; 
 ; OUTPUT:
 ; 
-; EXAMPLE:; 
+; EXAMPLE:
 ;     load scm burst data
 ;     MMS> mms_load_scm, trange=['2015-09-13',2015-09-14'], probes='1', level='l1b', $
 ;                    data_rate='brst', datatype='scb'
@@ -42,14 +47,15 @@
 ;
 ;     get list of valid scm rates, levels, and datatypes
 ;     MMS> mms_load_options, 'scm', rate=r, level=l, datatype=dt 
-;     See crib sheets mms_load_scm_crib.pro and mms_load_data_crib.pro for more detailed usage examples
+;     
+;     See crib sheet mms_load_scm_crib.pro for more detailed usage examples
 ;     
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-02 14:22:22 -0700 (Fri, 02 Oct 2015) $
-;$LastChangedRevision: 18991 $
+;$LastChangedDate: 2015-10-06 12:18:36 -0700 (Tue, 06 Oct 2015) $
+;$LastChangedRevision: 19011 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_scm.pro $
 ;-
 pro mms_set_scm_options, tplotnames, prefix = prefix,datatype = datatype, coord=coord
@@ -79,7 +85,7 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, tplotnames = tplotnames, $
                   no_color_setup = no_color_setup, time_clip = time_clip, $
-                  no_update = no_update
+                  no_update = no_update, suffix = suffix
                   
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -90,7 +96,8 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'scm', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
-        no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update
+        no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
+        suffix = suffix
     
     if level eq 'l1a' then coord = '123'
     if level eq 'l1b' then coord = 'scm123'

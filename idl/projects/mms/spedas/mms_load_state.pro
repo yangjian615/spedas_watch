@@ -6,34 +6,42 @@
 ;         Load MMS state (position, attitude) data
 ;
 ; KEYWORDS:
-;         trange: time range of interest [starttime, endtime] with the format ['YYYY-MM-DD','YYYY-MM-DD']
-;             or more specificaly ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss'] see examples below
-;         probes: list of probes, valid values for MMS probes are ['*','1','2','3','4'] where '*' specifies
-;             all probes. If no probe is specified the default is all probes 
-;         level: ['def', 'pred'] for predicted or definitive attitude or position data. The default is 
-;             to search for definitive data first and if not found search for predicted data. To turn 
-;             this feature off use the keyword pred_or_def (see below)
-;         datatypes: ephemeris and attitude data types include ['*','pos', 'vel', 'spinras', 'spindec'].
-;             If no value is given the default is '*' where all types will be loaded
+;         trange:     time range of interest [starttime, endtime] with the format 
+;                     ['YYYY-MM-DD','YYYY-MM-DD'] or for more specifi times 
+;                     ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss'] see examples below 
+;         probes:     list of probes, valid values for MMS probes are ['*','1','2','3','4']
+;                     where '*' specifies all probes. If no probe is specified the default 
+;                     is all probes 
+;         level:      ['def', 'pred'] for predicted or definitive attitude or position data. 
+;                     the default is to search for definitive data first and if not found 
+;                     search for predicted data. To turn this feature off use the keyword 
+;                     pred_or_def (see below)
+;         datatypes:  ephemeris and attitude data types include ['*','pos', 'vel', 'spinras', 'spindec'].
+;                     If no value is given the default is '*' where all types will be loaded
 ;         local_data_dir: local directory to store the CDF files; should be set if
-;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
-;         source: specifies a different system variable. By default the MMS mission system variable is !mms
-;         remote_data_dir: This is the URL of the server that can provide the data files. if the software 
-;             does not find a needed file in LOCAL_DATA_DIR, then it will attempt to download the data from 
-;             the URL and REMOTE_DATA_DIR is defined, the software will attempt to download the file from 
-;             REMOTE_DATA_DIR, place it in LOCAL_DATA_DIR with the same relative pathname, and then continue 
-;             processing.the remote directory the data is downloaded from.
+;                     you're on *nix or OSX, the default currently assumes Windows 
+;                     (c:\data\mms\)
+;         source:     specifies a different system variable. By default the MMS mission 
+;                     system variable is !mms
+;         remote_data_dir: This is the URL of the server that can provide the data files. 
+;                     if the software does not find a needed file in LOCAL_DATA_DIR, then it will 
+;                     attempt to download the data from the URL and REMOTE_DATA_DIR is defined, 
+;                     the software will attempt to download the file from REMOTE_DATA_DIR, place it 
+;                     in LOCAL_DATA_DIR with the same relative pathname, and then continue 
+;                     processing.the remote directory the data is downloaded from.
 ;         attitude_data: flag to only load L-right ascension and L-declination attitude data 
 ;         ephemeris_data: flag to only load position and velocity data
 ;         no_download: set flag to use local data only (no download)
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
-;             with "username" and "password" tags that inclue your API login information
+;                     with "username" and "password" tags that inclue your API login information
 ;         tplotnames: names for tplot variables
 ;         pred_or_def: set this flag to turn off looking for predicted data if definitive not found
-;             (pred_or_def=0 will return only the level that was requested). The default is to load
-;             predicted data if definitive data is not found 
-;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load 
-;             routine from a terminal without an X server runningdo not set colors
+;                     (pred_or_def=0 will return only the level that was requested). The default is 
+;                     to load predicted data if definitive data is not found 
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this 
+;                     load routine from a terminal without an X server runningdo not set colors
+;         suffix:     appends a suffix to the end of the tplot variable name. this is useful for 
+;                     preserving original tplot variable. 
 ;
 ; OUTPUT: tplot variables
 ;
@@ -80,8 +88,8 @@
 ;        
 ;         
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-02 11:14:57 -0700 (Fri, 02 Oct 2015) $
-;$LastChangedRevision: 18985 $
+;$LastChangedDate: 2015-10-06 10:03:52 -0700 (Tue, 06 Oct 2015) $
+;$LastChangedRevision: 19010 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -162,13 +170,14 @@ function mms_read_eph_file, filename
 end
 
 pro mms_load_att_tplot, filenames, tplotnames = tplotnames, prefix = prefix, level = level, $
-  probe=probe, datatypes = datatypes, trange = trange
+  probe=probe, datatypes = datatypes, trange = trange, suffix = suffix
 
     ; print a warning about how long this takes so user's do not
     ; assume the process is frozen after a few seconds
     dprint, dlevel = 1, 'Loading attitude files can take some time; please be patient...'
     if undefined(prefix) then prefix = 'mms'
     if undefined(level) then level = 'def'
+    if undefined(suffix) then suffix = ''
     
     for file_idx = 0, n_elements(filenames)-1 do begin
         ; load the data from the ASCII file
@@ -206,14 +215,14 @@ pro mms_load_att_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
     data_att = {coord_sys:'', st_type:'none', units:'deg'}
     dl = {filenames:filenames, data_att:data_att, ysubtitle:'[deg]'}
     if where(datatypes EQ 'spinras') NE -1 then begin
-      spinras_name =  prefix + '_' + level + 'att_spinras'
+      spinras_name =  prefix + '_' + level + 'att_spinras' + suffix
       str_element,dl,'vname',spinras_name, /add
       store_data, spinras_name, data={x: time_values, y: att_data_ras}, dlimits=dl, l=0
       append_array, tplotnames, [spinras_name]
       dprint, dlevel = 1, 'Tplot variable created: '+ spinras_name
     endif
     if where(datatypes EQ 'spindec') NE -1 then begin
-      spindec_name =  prefix + '_' + level + 'att_spindec'
+      spindec_name =  prefix + '_' + level + 'att_spindec' + suffix
       str_element,dl,'vname',spindec_name, /add_replace
       store_data, spindec_name, data={x: time_values, y: att_data_dec}, dlimits=dl, l=0
       append_array, tplotnames, [spindec_name]
@@ -223,13 +232,14 @@ pro mms_load_att_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
 end
 
 pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, level = level, $
-  probe=probe, datatypes = datatypes, trange = trange
+  probe=probe, datatypes = datatypes, trange = trange, suffix = suffix
   
   ; print a warning about how long this takes so user's do not
   ; assume the process is frozen after a few seconds
   ;dprint, dlevel = 1, 'Loading ephemeris files can take some time; please be patient...'
   if undefined(prefix) then prefix = 'mms'
   if undefined(datatype) then datatype = 'def'
+  if undefined(suffix) then suffix = ''
 
   for file_idx = 0, n_elements(filenames)-1 do begin
     ; load the data from the ASCII file
@@ -270,7 +280,7 @@ pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
   ; for pos and vel variables.
   ;add labels indicating whether data is pos, vel, or neither
   if where(datatypes EQ 'pos') NE -1 then begin
-    pos_name =  prefix + '_' + level + 'eph_pos'
+    pos_name =  prefix + '_' + level + 'eph_pos' + suffix
     str_element,dl,'data_att.st_type','pos',/add_replace
     str_element,dl,'data_att.coord_sys','j2000', /add_replace
     ;str_element,dl,'data_att.coord_sys','unknown', /add_replace
@@ -284,7 +294,7 @@ pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
   endif 
   dl = {filenames:filenames, colors:default_colors, data_att:data_att}
   if where(datatypes EQ 'vel') NE -1 then begin
-    vel_name =  prefix + '_' + level + 'eph_vel'
+    vel_name =  prefix + '_' + level + 'eph_vel' + suffix
     str_element,dl,'data_att.st_type','vel',/add_replace
     str_element,dl,'data_att.coord_sys','unknown', /add_replace
     str_element,dl,'data_att.units','km/s', /add_replace
@@ -306,7 +316,7 @@ end
 pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames, $
   login_info = login_info, datatypes = datatypes, level = level, $
   local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-  no_download=no_download, pred_or_def=pred_or_def
+  no_download=no_download, pred_or_def=pred_or_def, suffix=suffix
 
     probe = strcompress(string(probe), /rem)
     start_time = time_double(trange[0])-60*60*24.
@@ -409,10 +419,10 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
         ; figure out the type of data and read and load the data
         if filetype[i] EQ 'eph' then $
            mms_load_eph_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe, level = level, $
-                probe=probe, datatypes = datatypes, trange = trange 
+                probe=probe, datatypes = datatypes, trange = trange, suffix=suffix 
         if filetype[i] EQ 'att' then $    
            mms_load_att_tplot, daily_names, tplotnames = tplotnames, prefix = 'mms'+probe, level = level, $
-                probe=probe, datatypes = datatypes, trange = trange
+                probe=probe, datatypes = datatypes, trange = trange, suffix=suffix
 
      endfor
 
@@ -422,17 +432,18 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     level = level, local_data_dir = local_data_dir, source = source, $
     remote_data_dir = remote_data_dir, attitude_only=attitude_only, $
     ephemeris_only = ephemeris_only, no_download=no_download, login_info=login_info, $
-    tplotnames = tplotnames, pred_or_def=pred_or_def, no_color_setup = no_color_setup
+    tplotnames = tplotnames, pred_or_def=pred_or_def, no_color_setup = no_color_setup, $
+    suffix = suffix
 
     ; define probe, product, type, coordinate, and unit names
     p_names = ['1', '2', '3', '4']
     t_names = ['pos', 'vel', 'spinras', 'spindec']
     l_names = ['def', 'pred']    
     
-    if undefined(trange) then begin
-      dprint, dlevel = 0, 'Error loading MMS attitude data - no time range given.'
-      return
-    endif
+;    if undefined(trange) then begin
+;      dprint, dlevel = 0, 'Error loading MMS attitude data - no time range given.'
+;      return
+;    endif
 
     ; set up system variable for MMS if not already set    
     defsysv, '!mms', exists=exists
@@ -492,7 +503,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
               mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
                    login_info = login_info, datatypes = datatypes, level = level[j], $
                    local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-                   no_download=no_download, pred_or_def=pred_or_def
+                   no_download=no_download, pred_or_def=pred_or_def, suffix = suffix
        endfor
     endfor
 

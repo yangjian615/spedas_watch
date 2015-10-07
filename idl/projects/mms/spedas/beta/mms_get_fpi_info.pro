@@ -9,8 +9,8 @@
 ;  The last energy row is a geometric average of first two and is applicable to fast survey data.
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-02 20:00:08 -0700 (Fri, 02 Oct 2015) $
-;$LastChangedRevision: 18994 $
+;$LastChangedDate: 2015-10-05 19:41:55 -0700 (Mon, 05 Oct 2015) $
+;$LastChangedRevision: 19007 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_info.pro $
 ;-
 function mms_get_fpi_info
@@ -97,7 +97,11 @@ elevation = ( findgen(16) * 11.25 + 5.625 ) - 90
 
 ;azimuth grid by index
 ;(0th index see particles moving towards -x) 
-azimuth = findgen(32) * 11.25 + 5.625 + 180.
+;(8th index see particles moving towards -y)
+;  -This *should* require adding 180 deg to grid but distribution slices
+;   do not appear to match bulk velocity in x & y when this is done.
+;   Perhaps this is factored into the _startDelPhi_angle offset?
+azimuth = findgen(32) * 11.25 + 5.625 ;+ 180.
 azimuth = azimuth mod 360
 
 s = { $

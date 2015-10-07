@@ -21,19 +21,25 @@
 ;    reload       : OPTIONAL - /reload to ensure current data is reloaded due to an update at the SDC
 ;    DO NOT DO BOTH /NO_UPDATE AND /RELOAD TOGETHER. THAT IS SILLY!
 ;    get_support_data  : OPTIONAL - /get_support_data to get support data within the CDF
-;   
-
 ;
 ;
 ; OUTPUT: tplot variables listed at the end of the procedure
 ; :Author: Katherine Goodrich, contact: katherine.goodrich@colorado.edu
+; 
+; EXAMPLE:
+;     See crib sheets mms_load_edp_crib.pro and mms_load_data_crib.pro for usage examples
+;     
+;     ; set time frame and load edp level 2 data
+;     MMS>  timespan, '2015-06-22', 1, /day
+;     MMS>  mms_load_dsp, data_rate='fast', probes=[1, 2, 3, 4], datatype='epsd', level='l2'
+; 
 ;-
 ; MODIFICATION HISTORY:
 ;
 ;
-;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-08-31 11:45:43 -0700 (Mon, 31 Aug 2015) $
-;  $LastChangedRevision: 18674 $
+;  $LastChangedBy: crussell $
+;  $LastChangedDate: 2015-10-06 07:56:30 -0700 (Tue, 06 Oct 2015) $
+;  $LastChangedRevision: 19008 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_dsp.pro $
 
 pro mms_load_dsp, trange=trange, probes=probes, $
