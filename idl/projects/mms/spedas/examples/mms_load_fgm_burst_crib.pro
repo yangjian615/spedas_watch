@@ -10,9 +10,9 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-04 15:49:48 -0700 (Tue, 04 Aug 2015) $
-;$LastChangedRevision: 18396 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fgm_crib.pro $
+;$LastChangedDate: 2015-10-07 13:18:23 -0700 (Wed, 07 Oct 2015) $
+;$LastChangedRevision: 19028 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fgm_burst_crib.pro $
 ;-
 ;----------------------------------------------------------------------------
 

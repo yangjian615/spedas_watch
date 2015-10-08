@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-27 11:42:08 -0700 (Thu, 27 Aug 2015) $
-; $LastChangedRevision: 18640 $
+; $LastChangedDate: 2015-10-07 13:16:25 -0700 (Wed, 07 Oct 2015) $
+; $LastChangedRevision: 19027 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib_qlplots.pro $
 ;-
 

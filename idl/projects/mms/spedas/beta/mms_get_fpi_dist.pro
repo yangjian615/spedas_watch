@@ -21,8 +21,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-02 20:00:08 -0700 (Fri, 02 Oct 2015) $
-;$LastChangedRevision: 18994 $
+;$LastChangedDate: 2015-10-06 19:07:42 -0700 (Tue, 06 Oct 2015) $
+;$LastChangedRevision: 19024 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_dist.pro $
 ;-
 
@@ -160,11 +160,6 @@ dist.data = transpose(d.y,[3,1,2,0])
 ;structure array with the correct dimensions
 e0 = reform(energy_table[*,step.y], [dim[0],1,1,n_elements(d.x)])
 dist.energy = rebin( e0, [dim,n_elements(d.x)] )
-
-;add phi offset to (near) GSE
-for i=0, n_elements(d.x)-1 do begin
-  dist[i].phi += azimuth.y[i]
-endfor
 
 ;phi must be in [0,360)
 dist.phi = dist.phi mod 360

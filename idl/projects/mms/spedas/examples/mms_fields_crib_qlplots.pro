@@ -1,13 +1,13 @@
 ;+
-; MMS DFG quick look plots crib sheet
+; MMS FIELDS quicklook plots crib sheet
 ;
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-27 11:42:08 -0700 (Thu, 27 Aug 2015) $
-; $LastChangedRevision: 18640 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib_qlplots.pro $
+; $LastChangedDate: 2015-10-07 09:20:46 -0700 (Wed, 07 Oct 2015) $
+; $LastChangedRevision: 19025 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_fields_crib_qlplots.pro $
 ;-
 
 

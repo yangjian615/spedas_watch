@@ -23,8 +23,8 @@
 ;     Based on the EIS pitch angle code by Brian Walsh
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-06 12:37:30 -0700 (Tue, 06 Oct 2015) $
-;$LastChangedRevision: 19012 $
+;$LastChangedDate: 2015-10-07 16:09:23 -0700 (Wed, 07 Oct 2015) $
+;$LastChangedRevision: 19030 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_feeps_pad.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -144,6 +144,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, suffix =
             endfor
         endfor
     endfor
+   ; feeps_bin_info, pa_bins, pa_flux, pa_num_in_bin, particle_pa, flux_file, 0
     
     ; calculate the average for each bin
     new_pa_flux = fltarr(n_elements(d.x),n_pabins)
@@ -155,11 +156,13 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, suffix =
             if pa_num_in_bin[i,bin_idx] ne 0.0  then new_pa_flux[i,bin_idx] = pa_flux[i,bin_idx]/pa_num_in_bin[i,bin_idx]
         endfor
     endfor
+    
+   ; feeps_bin_info, pa_bins, new_pa_flux, pa_num_in_bin, particle_pa, flux_file, 0
 
     en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV
     new_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'
 
-    store_data, new_name, data={x:d.x, y:pa_flux, v:pa_label}
+    store_data, new_name, data={x:d.x, y:new_pa_flux, v:pa_label}
     options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1 , $
         zlog = 1, ytitle = 'MMS'+probe+' FEEPS ' + datatype, ysubtitle=en_range_string+'!CPA [Deg]', ztitle=data_units
 
