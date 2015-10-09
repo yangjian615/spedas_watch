@@ -16,6 +16,8 @@
 ;   process_name: the name of the calling procedure
 ;   severity: 1-2-3, severity 4-5 is not reported (good for testing)
 ;   str_message: explanation about the error
+;   args: COMMAND_LINE_ARGS
+;   testing: prints a message that this log record is due to testing
 ;
 ;OUTPUT:
 ; Database logging
@@ -33,18 +35,20 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-09-12 12:22:11 -0700 (Fri, 12 Sep 2014) $
-;$LastChangedRevision: 15759 $
+;$LastChangedDate: 2015-10-08 10:27:56 -0700 (Thu, 08 Oct 2015) $
+;$LastChangedRevision: 19031 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_thmsoc_dblog.pro $
 ;-----------------------------------------------------------------------------------
 
-pro thm_thmsoc_dblog, server_run=server_run, process_name=process_name, severity=severity, str_message=str_message
+pro thm_thmsoc_dblog, server_run=server_run, process_name=process_name, severity=severity, str_message=str_message, testing=testing, args=args
 
   if ~keyword_set(process_name) then process_name='test'
   if ~keyword_set(severity) then severity='5'
   if ~keyword_set(str_message) then str_message='Not set'
 
   if ~keyword_set(server_run) then server=0
+  if keyword_set(testing) then str_message = 'Testing, please ignore!' + string(10B) + string(10B) + str_message
+  if keyword_set(args) then str_message = str_message + string(10B) + string(10B) + 'Command line args: ' + args
   if server_run eq 1 then begin
     spawn, '"/usr/local/bin/php" "/disks/socware/thmsoc_dp_current/src/php/thmsoc_dblog.php" ' + process_name + ' ' + severity + ' "' + str_message + '"'
   endif

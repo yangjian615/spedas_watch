@@ -44,8 +44,8 @@
 ;                  names for MAG data in other frames are derived from this.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-21 14:39:32 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18564 $
+; $LastChangedDate: 2015-10-08 11:27:00 -0700 (Thu, 08 Oct 2015) $
+; $LastChangedRevision: 19033 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_geom.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
@@ -113,8 +113,15 @@ pro mvn_mag_geom, alt=alt, var=var
 
   if (size(state,/type) ne 8) then maven_orbit_tplot,/load
   nsam = n_elements(mag_pc.x)
-  tmin = min(mag_pc.x, max=tmax)
-  indx = where((state.time ge (tmin - 600D)) and (state.time le (tmax + 600D)))
+  tmin = min(mag_pc.x, max=tmax) - 600D
+  tmax += 600D
+  if ((min(state.time) gt tmin) or (max(state.time) lt tmax)) then maven_orbit_tplot,/load
+
+  indx = where((state.time ge tmin) and (state.time le tmax), count)
+  if (count eq 0L) then begin
+    print,"Insufficient ephemeris data."
+    return
+  endif
 
   S_pc = fltarr(nsam,3)
   S_pc[*,0] = spline(state.time[indx], state.geo_x[indx,0], mag_pc.x)

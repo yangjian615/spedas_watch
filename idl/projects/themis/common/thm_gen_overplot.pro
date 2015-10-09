@@ -59,16 +59,32 @@ pro thm_gen_overplot, probes = probes, date = date, dur = dur, $
                       no_draw=no_draw, gui_plot = gui_plot, error=error, $
                       _extra=_extra
 
+compile_opt idl2, hidden
+
 ;catch errors and fail gracefully
 ;-------------------------------------------------------
-
-
 common overplot_position, load_position, error_count
-
-heap_gc 
+heap_gc
 quiet=0
 error_count=0
 load_position = 'init'
+                    
+if (keyword_set(gui_plot)) then gui_plot=1 else gui_plot=0
+
+; error reporting (database)
+report_errors = 0 ; do not report errors
+severity='5' ; error severity level
+CALDAT,SYSTIME(/julian), month0, day0, year0
+datetime0 = time_string(time_double(strtrim(string(year0),2) + "-" + strtrim(string(month0),2) + "-" + strtrim(string(day0),2)))
+datetime1 = time_string(time_double(date))
+
+if (datetime1 eq datetime0) then begin
+  ; for the same day, do not report errors since it is expected not to be able to produce a full summary plot
+endif else if (gui_plot eq 0) then begin
+  report_errors = 1 ; only report errors if this is not a gui plot
+endif
+
+
 if ~keyword_set(directory) then cd,current = directory
 
 ; set the suffix to identify different calls to overplot
@@ -83,9 +99,11 @@ if error_status ne 0 then begin
 
    error_count++
    if error_count ge 1000. and not keyword_set(fearless) then begin
+     str_message = 'The program is quitting because it fears its in an infinite loop.'
      dprint,  ' '
-     dprint,  'The program is quitting because it fears its in an infinite loop.'
+     dprint, str_message
      dprint,  'To eliminate this fear add the keyword /fearless to the call.'
+     if (report_errors eq 1) then thm_thmsoc_dblog, server_run=1, process_name='thm_gen_overplot', severity=severity, str_message=str_message
      error=1
      return
    endif
@@ -118,20 +136,26 @@ if keyword_set(probes) then sc = strlowcase(probes) ; quick change of variable n
 
 vsc = ['a','b','c','d','e']
 if not keyword_set(sc) then begin
-  dprint, 'You did not enter a spacecraft into the program call.'
+  str_message = 'You did not enter a spacecraft into the program call.'
+  dprint, str_message
   dprint,  "Valid inputs are: 'a','b','c','d','e'  (ie, sc='b')"
+  if (report_errors eq 1) then thm_thmsoc_dblog, server_run=1, process_name='thm_gen_overplot', severity=severity, str_message=str_message
   error=1
   return
 endif
 if total(strmatch(vsc,strtrim(strlowcase(sc)))) gt 1 then begin
-  dprint,  'This program is only designed to accept a single spacecraft as input.'
+  str_message = 'This program is only designed to accept a single spacecraft as input.'
+  dprint, str_message
   dprint,  "Valid inputs are: 'a','b','c','d','e'  (ie, sc='b')"
+  if (report_errors eq 1) then thm_thmsoc_dblog, server_run=1, process_name='thm_gen_overplot', severity=severity, str_message=str_message
   error=1
   return
 endif
 if total(strmatch(vsc,strtrim(strlowcase(sc)))) eq 0 then begin
-  dprint, "The input sc= '",strtrim(sc),"' is not a valid input."
-  dprint,  "Valid inputs are: 'a','b','c','d','e'  (ie, sc='b')"
+  str_message = "The input sc= '" + strtrim(sc) + "' is not a valid input."
+  dprint, str_message
+  dprint,  "Valid inputs are: 'a','b','c','d','e'  (ie, sc='b')" 
+  if (report_errors eq 1) then thm_thmsoc_dblog, server_run=1, process_name='thm_gen_overplot', severity=severity, str_message=str_message
   error=1
   return
 endif
@@ -148,8 +172,10 @@ endif
 if keyword_set(hours) then dur=dur/24.
 
 if not keyword_set(date) then begin
-  dprint, 'You did not enter a date into the program call.'
+  str_message = 'You did not enter a date into the program call.'
+  dprint, str_message
   dprint, "Example: thm_gen_overplot,sc='b',date='2007-03-23'"
+  if (report_errors eq 1) then thm_thmsoc_dblog, server_run=1, process_name='thm_gen_overplot', severity=severity, str_message=str_message
   error=1
   return
 endif else begin
@@ -166,11 +192,15 @@ endif else begin
   t1 = t0+dur*60D*60D*24D
   
   if t1 lt time_double('2007-02-17/00:00:00') then begin
-    dprint,  'Invalid time entered: ', time_string(date)
+    str_message = 'Invalid time entered: '+ time_string(date)
+    dprint, str_message
+    if (report_errors eq 1) then thm_thmsoc_dblog, server_run=1, process_name='thm_gen_overplot', severity=severity, str_message=str_message
     error=1
     return
   endif else if (t0 Gt systime(/seconds)) then begin
-    dprint,  'Invalid time entered: ', time_string(date)
+    str_message = 'Invalid time entered: '+ time_string(date)
+    dprint, str_message
+    if (report_errors eq 1) then thm_thmsoc_dblog, server_run=1, process_name='thm_gen_overplot', severity=severity, str_message=str_message
     error=1
     return
   endif
@@ -186,7 +216,9 @@ if ~keyword_set(device) then begin
 endif else begin
 
   if ~in_set(strlowcase(device),valid_devices) then begin
-    dprint,'Device keyword has invalid value. Returning'
+    str_message = 'Device keyword has invalid value. Returning'
+    dprint, str_message
+    if (report_errors eq 1) then thm_thmsoc_dblog, server_run=1, process_name='thm_gen_overplot', severity=severity, str_message=str_message
     error=1
     return
   endif  
@@ -804,7 +836,7 @@ vars_full = ['thg_idx_ae', roi_bar, 'Keogram', thx+'_fgs_gse', $
 options, 'Keogram', 'ytitle', 'Keogram'
 options, 'Keogram', 'ysubtitle', ''
 
-if keyword_set(gui_plot) then begin ; for GUI plots we have some differences 
+if (gui_plot eq 1) then begin ; for GUI plots we have some differences 
     title = probes_title[pindex[0]] + ' (TH-'+strupcase(sc)+')'
     tplot_options, 'title', title
     tplot_options, 'ymargin', [3,5]

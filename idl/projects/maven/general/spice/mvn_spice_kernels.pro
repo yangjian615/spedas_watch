@@ -20,9 +20,9 @@
 ;PLEASE DO NOT USE this routine within general "LOAD" routines using the LOAD keyword. "LOAD" routines should assume that SPICE kernels are already loaded.
 ; 
 ;Author: Davin Larson  - January 2014
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-31 13:48:43 -0700 (Fri, 31 Jul 2015) $
-; $LastChangedRevision: 18331 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-10-08 18:01:24 -0700 (Thu, 08 Oct 2015) $
+; $LastChangedRevision: 19038 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear,reconstruct=reconstruct
@@ -36,7 +36,7 @@ common mvn_spice_kernels_com,   kernels,retrievetime,tranges
  ;   sprg = mvn_file_source()
 ;all=1
 if keyword_set(sck) then names = ['STD','SCK']
-if keyword_set(all) or not keyword_set(names) then names=['STD','SCK','FRM','IK','SPK','CK','CK_APP']
+if keyword_set(all) or not keyword_set(names) then names=['STD','SCK','FRM','IK','SPK','CK','CK_APP','CK_SWE']
 if keyword_set(reset) then kernels=0
 ct = systime(1)
 waittime = 10.                 ; search no more often than this number of seconds
@@ -56,8 +56,8 @@ if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
      'FRM':    begin                                                                                                            ; Frame kernels
 ;               append_array,kernels,  file_retrieve('MAVEN/kernels/fk/maven_v??*.tf',_extra=source,/last)                
 ;               append_array,kernels,  file_retrieve('MAVEN/misc/updates/maven_v04_draft?.tf',_extra=source,/last)
-               append_array,kernels,  this_dir+'kernels/maven_v04.tf'   ; file_retrieve('MAVEN/misc/updates/maven_v04_draft?.tf',_extra=source,/last)
-               append_array,kernels,  this_dir+'kernels/maven_misc.tf'  ; Use this file to make temporary changes to the maven_v??.tf file
+               append_array,kernels,  this_dir+'kernels/fk/maven_v08.tf'   ; file_retrieve('MAVEN/misc/updates/maven_v04_draft?.tf',_extra=source,/last)
+               append_array,kernels,  this_dir+'kernels/fk/maven_misc.tf'  ; Use this file to make temporary changes to the maven_v??.tf file
                end
      'IK':    begin                                                                      ; Instrument Kernels                                                                               ; Frame kernels
                append_array,kernels,  this_dir+'kernels/ik/maven_ant.ti'  
@@ -157,7 +157,8 @@ if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
 ;       append_array,kernels,  appkern  ;APP Attitude ???  
 
        end 
-           
+     'CK_SWE': append_array, kernels, file_retrieve('MAVEN/kernels/ck/mvn_swea_nom_131118_300101_v??.bc',_extra=source,/last_version) 
+
       endcase
     endfor
     retrievetime = ct

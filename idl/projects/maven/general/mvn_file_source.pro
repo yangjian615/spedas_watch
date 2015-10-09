@@ -34,8 +34,8 @@
 ;  see "FILE_RETRIEVE" for a description of each structure element.
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-04-24 10:19:57 -0700 (Fri, 24 Apr 2015) $
-; $LastChangedRevision: 17418 $
+; $LastChangedDate: 2015-10-08 13:44:25 -0700 (Thu, 08 Oct 2015) $
+; $LastChangedRevision: 19037 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_file_source.pro $
 ;-
 
@@ -58,13 +58,13 @@ if not keyword_set(psource) then begin    ; Create the default
        user_pass = ''
        str_element,ex,'USER_PASS',user_pass                 ;  Get user_pass if it was passed in
        if ~keyword_set(user_pass) then  user_pass = getenv('MAVENPFP_USER_PASS')
-       if ~keyword_set(user_pass) then  user_pass = user + ':' + user + '_pfp'
+       if ~keyword_set(user_pass) then  user_pass = idl_base64(byte(user + ':' + user + '_pfp'))
        str_element,/add,psource,'USER_PASS',user_pass
        psource.preserve_mtime = 1
 ;       psource.no_update=1   ; this can be set to 1 only because all files use version numbers and will not be updated.
        psource.min_age_limit=300  ; five minute delay before checking remote server for file index
     endelse
-    psource.archive_ext = '.arc'   ; archive old files instead of deleting them
+;    psource.archive_ext = '.arc'   ; archive old files instead of deleting them
 ;    psource.archive_dir = psource.local_data_dir+ 'maven/' + 'archive/'  ; archive directory
     psource.verbose=2
     str_element,/add,psource,'LAST_VERSION',1            ;  set this as default since version numbers are generally used.
