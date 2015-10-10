@@ -887,6 +887,9 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                   'noerrorbars', 1)
                 ;------------- store --------------------    
                  store_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_IV_log',data=data,limit=limit,dlimit=dlimit
+     
+                 options,'*log',zrange=[-9,-4]
+                 options,'*log',yrange=[-10,10]
                 ;---------------------------------------------          
               ENDIF 
    
@@ -1235,26 +1238,13 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
                    'Acknowledgement',               cdf_istp[13],   $
-                  ;; 'Title',                         'MAVEN LPW RAW Spectra, L0b', $   ;####            ;As this is L0b, we need all info here, as there's no prd file for this
-                   'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
-                   'y_catdesc',                     'Info', $    ;### ARE UNITS CORRECT? v/m?
-                   ;'v_catdesc',                     'test dlimit file, v', $    ;###
-                   'dy_catdesc',                    'Error on the data.', $     ;###
-                   ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
-                   'flag_catdesc',                  'test dlimit file, flag.', $   ; ###
-                   'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
-                   'y_Var_notes',                   'Info', $
-                   ;'v_Var_notes',                   'Frequency bins', $
-                   'dy_Var_notes',                  'The value of dy is the +/- error value on the data.', $
-                   ;'dv_Var_notes',                   'Error on frequency', $
-                   'flag_Var_notes',                'Flag variable', $
-                   'xFieldnam',                     'x: More information', $      ;###
-                   'yFieldnam',                     'y: More information', $
-                   'vFieldnam',                     'v: More information', $
-                   'dyFieldnam',                    'dy: More information', $
-                   'dvFieldnam',                    'dv: More information', $
-                   'flagFieldnam',                  'flag: More information', $
-                   'derivn',                        'Equation of derivation', $    ;####
+                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
+        'y_catdesc',                     'See labels for individual lines', $    ;
+        'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
+        'y_Var_notes',                   'See labels for individual lines', $
+        'xFieldnam',                     'x: UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $     
+        'yFieldnam',                     'y: see labels for individual lines', $
+        'derivn',                        'Equation of derivation', $    ;####
                    'sig_digits',                    '# sig digits', $ ;#####
                    'SI_conversion',                 'Convert to SI units', $  ;#### 
                    'MONOTON',                     'INCREASE', $

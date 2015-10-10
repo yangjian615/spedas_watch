@@ -10,16 +10,26 @@
 ;OUTPUTS:
 ;tplot variable containing the kernels, used by mvn_lpw_anc_spacecraft.pro, mvn_lpw_load_kernel_files
 ;
+;KEYWORDS
+;Set /notatlasp if you are not using the LASP /spg/maven server to store kernels. This means the IDL environment variable ROOT_DATA_DIR is NOT set to /spg/maven at LASP.
+;
+;Set /load to load SPICE kernels into IDL memory.
+;
+;
+;
 ;NOTE: 
+;
 ;
 ;EXAMPLE
 ;mvn_lpw_anc_get_spice_kernels, ['2014-10-10', '2014-10-11']  ;get SPICE kernels for the date '2014-10-10/00:00:00 up to 2014:10:10/23:59:59, ie 24 hours worth.
 ;
+;EDITS:
+;2015-10-08: CMF added /load keyword.
 ;
 ;-
 ;
 
-pro mvn_lpw_anc_get_spice_kernels, utc_range, notatlasp=notatlasp
+pro mvn_lpw_anc_get_spice_kernels, utc_range, notatlasp=notatlasp, load=load
 
 proname = 'mvn_lpw_anc_get_spice_kernels'
 sl = path_sep()
@@ -41,6 +51,7 @@ if size(utc_in, /type) ne 7 and n_elements(utc_range) ne 2 then begin
 endif
 
 tt = mvn_spice_kernels(trange = utc_range)
+if keyword_set(load) then spice_kernel_load, tt   ;send in found SPICE kernels.
 
 ;tt contains the names of all SPICE kernels regardless of the type (ck, pck, lsk, etc). For now, we need ck, tls, spk, sclk. Remove files which
 ;don't contain any of these letters. Then, need to laod kernels in the correct order, which is tt[0] => tt[last].

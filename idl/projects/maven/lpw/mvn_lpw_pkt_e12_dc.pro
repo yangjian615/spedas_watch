@@ -437,25 +437,35 @@ options,'DAC','psym',-2
                                     
                                 ;    stanna
                                 
-                                     dtmp[0:void-1]= 0.5 * abs(tmp3[0:void-1])                        ;  first 2 points always 50 % error
+                                     dtmp[0:void-1]= 1.0 * abs(tmp3[0:void-1])                        ;  first 2 points always 100 % error
                                         
                                       tt =    sort( abs(tmp3[   void:nn_steps-1]))                    ; find the largest values excluding the first points
                                       tmp_mean=mean(abs(tmp3[tt[0   :nn_steps-1-void-3]+void]))       ; <- increase the error on the 3+3 extreme values when they stand out
+                                 
+                                 ; large spikes, give lare errors (this incase the number of points associated with void is not enough)
                                       if  abs(abs( tmp3[tt[nn_steps-1-void]+void])-tmp_mean)/tmp_mean GT 20 then begin 
-                                         dtmp[tt[nn_steps-1-void-5]+void] = abs(0.25 * tmp3[tt[nn_steps-1-void-5]+void])
-                                         dtmp[tt[nn_steps-1-void-4]+void] = abs(0.5 * tmp3[tt[nn_steps-1-void-4]+void])                                       
-                                         dtmp[tt[nn_steps-1-void-3]+void] = abs(0.75 * tmp3[tt[nn_steps-1-void-3]+void]) 
-                                         dtmp[tt[nn_steps-1-void-2]+void] = abs(1.0 * tmp3[tt[nn_steps-1-void-2]+void])
-                                         dtmp[tt[nn_steps-1-void-1]+void] = abs(1.0 * tmp3[tt[nn_steps-1-void-1]+void])
-                                         dtmp[tt[nn_steps-1-void-0]+void] = abs(1.0 * tmp3[tt[nn_steps-1-void-0]+void])                                                                  
+                                         dtmp[tt[nn_steps-1-void-5]+void] = abs(1.0 * tmp3[tt[nn_steps-1-void-5]+void])
+                                         dtmp[tt[nn_steps-1-void-4]+void] = abs(0.9 * tmp3[tt[nn_steps-1-void-4]+void])                                       
+                                         dtmp[tt[nn_steps-1-void-3]+void] = abs(0.8 * tmp3[tt[nn_steps-1-void-3]+void]) 
+                                         dtmp[tt[nn_steps-1-void-2]+void] = abs(0.7 * tmp3[tt[nn_steps-1-void-2]+void])
+                                         dtmp[tt[nn_steps-1-void-1]+void] = abs(0.6 * tmp3[tt[nn_steps-1-void-1]+void])
+                                         dtmp[tt[nn_steps-1-void-0]+void] = abs(0.5 * tmp3[tt[nn_steps-1-void-0]+void])                                                                  
                                       endif                                       
                                ; endif 
+                               
+                              ; data.y === tmp  ; dtmp is to make the error a fraction of the value at the begining of the time period
                               if total(abs(dataA.y[i,*]),/nan) GT 0 then $
-                                data.dy[nn_steps*i:nn_steps*(i+1)-1] = 0.01  + dtmp else $  ;fix error
+                                data.dy[nn_steps*i:nn_steps*(i+1)-1] = (0.0001  + abs(dtmp))  else $  ;0.01 is the minimum error and then increase the first points based on dtmp
                                 data.dy[nn_steps*i:nn_steps*(i+1)-1] =  !values.f_nan
-                             
+       
+                      
                                                                                
                           endfor  
+                         ;doublecheck
+                         data.dy = (abs(data.dy) < abs(data.y)) > 0.0001
+                         tmp = where( 0 EQ (finite(data.y)),nq)
+                         data.dy[tmp] = !values.f_nan
+     
                           
                     ;     store_data,'mvn_lpw_'+strtrim(packet,2)+'4_e12',data=dataA,limit=limit,dlimit=dlimit
                     ;     options,'mvn_lpw_'+strtrim(packet,2)+'4_e12',spec=1
@@ -625,26 +635,13 @@ options,'DAC','psym',-2
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules_of_use',                  cdf_istp[11], $
                    'Acknowledgement',               cdf_istp[13],   $
-               ;;    'Title',                         'MAVEN LPW RAW Electric field', $   ;####            ;As this is L0b, we need all info here, as there's no prd file for this
-                   'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
-                   'y_catdesc',                     'Electric field data, in units of [Volt]', $    ;### ARE UNITS CORRECT? v/m?
-                   ;'v_catdesc',                     'test dlimit file, v', $    ;###
-                   'dy_catdesc',                    'Error on the data.', $     ;###
-                   ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
-                   'flag_catdesc',                  'test dlimit file, flag.', $   ; ###
-                   'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
-                   'y_Var_notes',                   'For mode: '+strtrim(packet,2), $
-                   ;'v_Var_notes',                   'Frequency bins', $
-                   'dy_Var_notes',                  'The value of dy is the +/- error value on the data.', $
-                   ;'dv_Var_notes',                   'Error on frequency', $
-                   'flag_Var_notes',                'Flag variable', $
-                   'xFieldnam',                     'x: More information', $      ;###
-                   'yFieldnam',                     'y: More information', $
-                   'vFieldnam',                     'v: More information', $
-                   'dyFieldnam',                    'dy: More information', $
-                   'dvFieldnam',                    'dv: More information', $
-                   'flagFieldnam',                  'flag: More information', $  
-                   'derivn',                        'Equation of derivation', $    ;####
+                 'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
+        'y_catdesc',                     'See labels for individual lines', $    ;
+        'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
+        'y_Var_notes',                   'See labels for individual lines', $
+        'xFieldnam',                     'x: UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $     
+        'yFieldnam',                     'y: see labels for individual lines', $
+                 'derivn',                        'Equation of derivation', $    ;####
                    'sig_digits',                    '# sig digits', $ ;#####
                    'SI_conversion',                 'Convert to SI units', $  ;####                                                                            
                    'Var_type',  'Data', $    ;can be data, support data, metadata or ignore data 

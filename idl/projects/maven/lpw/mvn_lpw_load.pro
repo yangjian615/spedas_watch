@@ -78,10 +78,15 @@
 ;                       as a string will save the array as an IDL .sav file to that array. Using just /get_clock_jumps will not save the array. User must include last '/' in file directory. Filename
 ;                       itself is created automatically within the routine.
 ;                       For example: get_clock_jumps='/Users/name/' will create the file /Users/name/yyyy-mm-dd_clk_jumps.sav
-;            
+; 
+;      nospiceclear: set /nospiceclear to leave SPICE kernels in IDL memory at end of this routine. Default if not set is to clear them.
+;      
 ;NOTES: 
 ; This routine is a wrapper for several of Davin Larons IDL routines: mvn_pfp_file_retrieve, mvn_spice_kernels, and routines within these. See comments in these
 ; programs for more information. Davin's routines are available from the Berkeley svn/ssh server.
+; 
+; This routine looks up SPICE kernels and downloads them if necessary once, at the start of the routine, before looping over packets. SPICE kernels are cleared from IDL at the end of this routine.
+; Use /nospiceclear to keep them in IDL memory.
 ; 
 ; 
 ;EXAMPLES:
@@ -161,11 +166,13 @@
 ;              SPICE kernels. Useful if you have no, or a very slow, internet connection.     
 ;20150119: CF: added common block to store clock jump times for statistics.     
 ;20150806: CMF forced tplot_var='all'as keyword  currently doesn't work.   
+;2015-10-08: CMF: modified so that we don't spam NAIF with many requests for SPICE kernels. Kernels are looked up and downloaded (if needed) once at start of routine.
+;                 SPICE kernels are cleared by default once all processing done, but remain as a tplot variable.
 ;            
 ;-
 
 pro mvn_lpw_load, utc_in, data_dir=data_dir, tplot_var=tplot_var, filetype=filetype, packet=packet, board=board, nospice=nospice, noserver=noserver, $
-                  notatlasp=notatlasp, get_file_info=get_file_info, get_clock_jumps = get_clock_jumps
+                  notatlasp=notatlasp, get_file_info=get_file_info, get_clock_jumps = get_clock_jumps, nospiceclear=nospiceclear
 
 common clock_check, jump_times_nospice
 jump_times_nospice = dblarr(1)
@@ -385,7 +392,7 @@ if filetype eq 'L0' then begin
       
       if not keyword_set(nospice) then begin  ;/nospice means ignore this and don't use SPICE
           print, "Locating correct SPICE kernels..."
-          mvn_lpw_anc_get_spice_kernels, [utc_in[0], utc_in[0]], notatlasp = notatlasp  ;add notatlasp, jmm, 2015-01-29     
+          mvn_lpw_anc_get_spice_kernels, [utc_in[0], utc_in[0]], notatlasp = notatlasp, /load  ;add notatlasp, jmm, 2015-01-29     , CMF added /load keyword
       endif 
       
       ;==========================
@@ -479,6 +486,10 @@ if keyword_set(get_clock_jumps) then begin
       endif
   
 endif  
+
+
+;CLEAR SPICE kernels here:
+if not keyword_set(nospiceclear) then mvn_lpw_anc_clear_spice_kernels
 
 ;stop
 end

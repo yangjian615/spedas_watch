@@ -563,7 +563,9 @@ f_high_hf = 1.0*[2,6,10,14,18,22,26,30,34,38,42,46,50,54,58,62,66,70,74,78,82,86
      cdf_istp_lpw[10] = 'LPW/LASP/CU'                                    ;  Global ISTP required attribute 'generated_by'
      cdf_istp_lpw[11] = 'http://lasp.colorado.edu/home/maven/science/'                               ; web link to be inserted
      cdf_istp_lpw[12] = 'MAVEN project'                                                 ; project
-     cdf_istp_lpw[13] = 'CITE for data reference'                        ;Acknowledgement
+     cdf_istp_lpw[13] ='Andersson, L., R. E. Ergun, G. T. Delory, A. Eriksson, J. Westfall,  '+ $
+      'H. Reed, J. McCauly, D. Summers, and D. Meyers (2015), ' + $
+      'The langmuir probe and waves (lpw) instrument for MAVEN, SPAC-D-14-00089R1, Space Science Review.'                        ;Acknowledgement
 
 ; get acknowlwejghghdfgzhi/k
 

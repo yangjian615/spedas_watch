@@ -4,23 +4,27 @@
 ;
 ;PROCEDURE:   mvn_lpw_anc_spacecraft
 ;PURPOSE:
-; Routine to determine MAVEN pointing and position using the SPICE kernels. 
+; Routine to determine MAVEN pointing and position using the SPICE kernels.
 ; Routine determines angle between MAVEN x,y,z axes and the Sun.
-; Routine gets MAVEN and Sun pointing directions in MAVEN spacecraft frame. 
+; Routine gets MAVEN and Sun pointing directions in MAVEN spacecraft frame.
 ; SPICE is required to run this routine.
-; 
+;
 ;
 ;USAGE:
 ; mvn_lpw_cruciform, unix_in
-; 
+;
 ;INPUTS:
-;              
+;
 ;- unix_in: a dblarr of unix times for which attitude information is to be determined for. Routine will automatically check if pointing info
-;           is available at each of these time steps, and skip the SPICE routines if not, to avoid crashes. Skipped points appear as nans in the 
+;           is available at each of these time steps, and skip the SPICE routines if not, to avoid crashes. Skipped points appear as nans in the
 ;           produced tplot variables.
 ;
 ;OUTPUTS:
-;Tplot variables of the following: 
+;Tplot variables of the following:
+;mvn_lpw_anc_ck_flag: flag for s/c position for each timestep, 1 = no data, 0 = data present
+;
+;mvn_lpw_anc_spk_flag: flag for s/c pointing for each timestep, as above.
+;
 ;mvn_lpw_anc_mvn_att_mso: pointing vectors for MAVEN x,y,z axes in MSO frame. X,Y,Z vector for each MAVEN axis = 9 in total.
 ;
 ;mvn_lpw_anc_mvn_pos_mso: MAVEN position in MSO frame. X, Y, Z co-ords, in Rmars.
@@ -67,11 +71,11 @@
 ;
 ;mvn_lpw_anc_dei_pos_iau: Deimos positions in IAU frame, Rmars.
 ;
-;mvn_lpw_anc_phobos_pos_mvn  :Phobos position in MAVEN s/c frame, in km 
+;mvn_lpw_anc_phobos_pos_mvn  :Phobos position in MAVEN s/c frame, in km
 ;
 ;mvn_lpw_anc_deimos_pos_mvn  :Deimos position in MAVEN s/c frame, in km
 ;
-;                                                      
+;
 ;KEYWORDS:
 ;Setting /not_quiet will plot mvn_abs_angles_z and the offset between MAVEN z axis and the Sun (used more for checking the routine worked).
 ;
@@ -82,9 +86,9 @@
 ;NOTE: even though kernel_dir is a key word it must still be set. See inputs above.
 ;
 ;CREATED BY:   Chris Fowler April 16th 2014
-;FILE: 
+;FILE:
 ;VERSION:   2.1
-;LAST MODIFICATION: 
+;LAST MODIFICATION:
 ;April 17th 2014 CF added kernel_dir to inputs, outputs now saved as tplot variables. TO DO: add dlimit and limit fields to tplot variables.
 ;April 23rd 2014 CF added a check to make sure we have ck kernel pointing before trying to get the rotation matrix, to avoid crashes. Also added
 ;                   et_time as an input, which is needed for use with SPICE routines.
@@ -103,7 +107,7 @@
 ;-
 ;=================
 
-pro mvn_lpw_anc_spacecraft, unix_in, not_quiet=not_quiet, moons=moons, css=css
+pro mvn_lpw_anc_spacecraft, unix_in, not_quiet=not_quiet, moons=moons, css=css, dont_unload=dont_unload
 
 t_routine = SYSTIME(0)
 
@@ -123,7 +127,7 @@ endif
 ;---Kernel directory---
 ;======================
 ;The default will be to use the directory as set up by Davin's routines. As this will probably be on the server, there will also be an option
-;to work offline.  
+;to work offline.
 ;======================
 sl = path_sep()  ;/ for unix, \ for Windows
 ;Code for automatically loading found kernels:
@@ -136,14 +140,14 @@ if total(strmatch(tplotnames, 'mvn_lpw_load_kernel_files')) eq 1 then begin  ;fo
     loaded_kernels='';dummy string
     for aa = 0, nele_kernels-1 do begin
         cspice_furnsh, dl_kernels.Kernel_files[aa]  ;load all kernels for now
-        
+
         ;Extract just kernel name and remove directory:
         nind = strpos(dl_kernels.Kernel_files[aa], sl, /reverse_search)  ;nind is the indice of the last '/' in the directory before the kernel name
         lenstr = strlen(dl_kernels.Kernel_files[aa])  ;length of the string directory
         kname = strmid(dl_kernels.Kernel_files[aa], nind+1, lenstr-nind)  ;extract just the kernel name
-        loaded_kernels_arr[aa] = kname  ;copy kernels as a string   
+        loaded_kernels_arr[aa] = kname  ;copy kernels as a string
         loaded_kernels = loaded_kernels + " # " + kname  ;one long string so can save into dlimit
-        kernel_version = kernel_version + " # " + kname  ;add loaded kernel to dlimit field 
+        kernel_version = kernel_version + " # " + kname  ;add loaded kernel to dlimit field
     endfor  ;over aa
 endif else begin
       print, "####################"
@@ -206,10 +210,10 @@ endfor  ;over bb
 if n_elements(kernels_to_check) gt 1 then kernels_to_check = kernels_to_check[1:n_elements(kernels_to_check)-1] else begin  ;remove first '' from array
       print, "#### WARNING ####: No spk kernels loaded. Check these are loaded. Exiting."
       retall
-endelse  
+endelse
 
 spkcov = mvn_lpw_anc_covtest(unix_in, kernels_to_check, -202)  ;for now use unix times, may change to ET.   ### give spk kernel names here!
-if min(spkcov) eq 1 then spk_coverage = 'all' else begin 
+if min(spkcov) eq 1 then spk_coverage = 'all' else begin
     spk_coverage = 'some'
     print, "### WARNING ###: Position (spk) information not available for ", n_elements(where(spkcov) eq 0), " data point(s)."
 endelse
@@ -222,16 +226,16 @@ endelse
 ;=======================
 
 ;Get dlimit and limit info from a tplot variable:
-;tnames() is a string array containing the names of all tplot variables in memory. Check this exists, then grab dlimit and limit info 
-;from the first variable. This means we don't need to feed in instrument constants. The attitude variable specific fields will be edited 
+;tnames() is a string array containing the names of all tplot variables in memory. Check this exists, then grab dlimit and limit info
+;from the first variable. This means we don't need to feed in instrument constants. The attitude variable specific fields will be edited
 ;as that variable is stored.
 tplotnames = tnames()
 ;If there are no tplot variables stored then tplotnames is the string ''. If there are tplot variables stored tplotnames is either 'tplotname' or
 ;a string array of tplot names. We may have other tplot variables loaded, find those which are lpw ones:
 if tplotnames[0] ne '' and n_elements(tplotnames) gt 2 then begin  ;if we have tplot variables
     wheret = where(strmatch(tplotnames, '*mvn_lpw_*') eq 1 and (tplotnames ne 'mvn_lpw_load_kernel_files') and (tplotnames ne 'mvn_lpw_load_file'), nwheret)  ;look for where we have lpw variables
-    
-    if nwheret ge 1 then begin  ;the first two lpw variables are usually the L0 load file and SPICE kernels which don't have the ISTP info        
+
+    if nwheret ge 1 then begin  ;the first two lpw variables are usually the L0 load file and SPICE kernels which don't have the ISTP info
         get_data, tplotnames[wheret[0]], dlimit=dl, limit=ll  ;doesn't matter which variable for now, we just want the CDF fields from this which are identical
                                                       ;for all variables. But, we don't want kernel information as this doesn't contain those fields.
         def = 'ISTP information not available.'
@@ -250,12 +254,12 @@ if tplotnames[0] ne '' and n_elements(tplotnames) gt 2 then begin  ;if we have t
         if tag_exist(dl, 'Generation_data') then cdf_istp[11] = dl.Generation_date else cdf_istp[11] = def
         if tag_exist(dl, 'Rules_of_use') then cdf_istp[12] = dl.Rules_of_use else cdf_istp[12] = def
         if tag_exist(dl, 'Acknowledgement') then cdf_istp[13] = dl.Acknowledgement else cdf_istp[13] = def
-        t_epoch = dl.t_epoch  
-        L0_datafile = dl.L0_datafile
+        if tag_exist(dl, 't_epoch') then t_epoch = dl.t_epoch else t_epoch=-999.
+        if tag_exist(dl, 'L0_datafile') then L0_datafile = dl.L0_datafile else L0_datafile='NA'
     endif else begin
       cdf_istp = strarr(15) + 'ISTP information unavailable'
       t_epoch = 'ISTP information unavailable'
-      L0_datafile = 'ISTP information unavailable'    
+      L0_datafile = 'ISTP information unavailable'
     endelse
 endif else begin
     print, "################"
@@ -309,11 +313,11 @@ endelse
    aa= strsplit(utc_time[0],'T',/extract)  ;first time
    bb= strsplit(aa[0],'-',/extract)
    cc= strsplit(aa[1],':',/extract)
-   utc_time1 =10000000000.0 * double( bb[0]) + 100000000.0 * double(bb[1]) + 1000000.0 * double(bb[2]) + 10000.0 *double(cc[0]) + 100.0 * double(cc[1]) +double(cc[2]) 
+   utc_time1 =10000000000.0 * double( bb[0]) + 100000000.0 * double(bb[1]) + 1000000.0 * double(bb[2]) + 10000.0 *double(cc[0]) + 100.0 * double(cc[1]) +double(cc[2])
    aa= strsplit(utc_time[nele-1],'T',/extract)  ;last time
    bb= strsplit(aa[0],'-',/extract)
    cc= strsplit(aa[1],':',/extract)
-   utc_time2 =10000000000.0 * double( bb[0]) + 100000000.0 * double(bb[1]) + 1000000.0 * double(bb[2]) + 10000.0 *double(cc[0]) + 100.0 * double(cc[1]) +double(cc[2]) 
+   utc_time2 =10000000000.0 * double( bb[0]) + 100000000.0 * double(bb[1]) + 1000000.0 * double(bb[2]) + 10000.0 *double(cc[0]) + 100.0 * double(cc[1]) +double(cc[2])
 
 ;Check these times are predicted or reconstructed:
 time_check = mvn_lpw_anc_spice_time_check(et_time[nele-1])  ;we check the last time. If this is predicted, we must run entire orbit later. ## fix this routine
@@ -327,13 +331,21 @@ str_xtitle = 'Time (UNIX)'+time_check   ;### predicted or reconstructed?
 today_date = systime(0)
 ;===========
 
-;Make a flag array for spk and ck coverage, where a zero means a time stamp is covered, and a 1 means it isn't. These will apply for all position and velocity 
+;Make a flag array for spk and ck coverage, where a zero means a time stamp is covered, and a 1 means it isn't. These will apply for all position and velocity
 ;variables. Attitude variables depend on encoded s/c clock, which is dealt with under sections 8 and 9 below.
 ;ck_check and spkcov are fltarrs, where a 1 means coverage, 0 means no coverage. The flag array produced next will be reversed; 0 means coverage (no flag), 1 means
 ;no coverage (flag).
-ck_spk_flag = (ck_check ne 1) + (spkcov ne 1)  ;gives a zero when there is coverage, and a 1 with no coverage 
+ck_spk_flag = (ck_check ne 1) + (spkcov ne 1)  ;gives a zero when there is coverage, and a 1 with no coverage
 ck_flag = ck_check ne 1
 spk_flag  = spkcov ne 1
+
+;Store flags into tplot:
+dl_ck = create_struct('Type'  ,   'ck: MAVEN pointing flags for associated unix times.'   , $
+                      'Info'  ,   '0: coverage is present for this unix time. 1: flag: coverage is not present for this unix time.')
+dl_spk = create_struct('Type'  ,   'spk: MAVEN position flags for associated unix times.'   , $
+                       'Info'  ,   '0: coverage is present for this unix time. 1: flag: coverage is not present for this unix time.')
+store_data, 'mvn_lpw_anc_ck_flag', data={x:unix_in, y:ck_flag}, dlimit=dl_ck
+store_data, 'mvn_lpw_anc_spk_flag', data={x:unix_in, y:spk_flag}, dlimit=dl_spk
 
 ;########
 ;Now et_time and utc_time contain the time steps of input data points, which can be used with Davins SPICE routines.
@@ -353,9 +365,9 @@ mvn_z = [0.d, 0.d, 1.d]
 target = 'Sun'
 frame    = 'MAVEN_SPACECRAFT'
 abcorr   = 'LT+S'  ;correct for light travel time and something
-observer = 'MAVEN'  
+observer = 'MAVEN'
 
-if (spk_coverage eq 'all') and (ck_coverage eq 'all') then state = spice_body_pos(target, observer, utc=utc_time, frame=frame, abcorr=abcorr) else begin 
+if (spk_coverage eq 'all') and (ck_coverage eq 'all') then state = spice_body_pos(target, observer, utc=utc_time, frame=frame, abcorr=abcorr) else begin
 ;if spk_coverage eq 'all' then cspice_spkpos, target, et_time, frame, abcorr, observer, state, ltime else begin ;state contains R and V [0:5], ltime = light time between observer and object
     state = dblarr(3,nele)  ;must fill this rotation matrix in one time step at a time now. Here time goes in y axis for spice routines
     for aa = 0, nele-1 do begin  ;do each time point individually
@@ -388,15 +400,15 @@ dlimit=create_struct(   $
   'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
   'Descriptor',                    cdf_istp[5], $
   'PI_name',                       cdf_istp[6], $
-  'PI_affiliation',                cdf_istp[7], $     
+  'PI_affiliation',                cdf_istp[7], $
   'TEXT',                          cdf_istp[8], $
-  'Mission_group',                 cdf_istp[9], $     
+  'Mission_group',                 cdf_istp[9], $
   'Generated_by',                  cdf_istp[10],  $
   'Generation_date',                today_date+' # '+t_routine, $
   'Rules of use',                  cdf_istp[11], $
-  'Acknowledgement',               cdf_istp[13],   $ 
+  'Acknowledgement',               cdf_istp[13],   $
   'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
-  'y_catdesc',                     'Sun position, in MAVEN frame.', $    
+  'y_catdesc',                     'Sun position, in MAVEN frame.', $
   ;'v_catdesc',                     'test dlimit file, v', $    ;###
   'dy_catdesc',                    'Error on the data.', $     ;###
   ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
@@ -412,7 +424,7 @@ dlimit=create_struct(   $
  ; 'vFieldnam',                     'v: More information', $
   'dyFieldnam',                    'dy: Not used.', $
 ;  'dvFieldnam',                    'dv: More information', $
-  'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $  
+  'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
   'MONOTON', 'INCREASE', $
   'SCALEMIN', min(pos_s), $
   'SCALEMAX', max(pos_s), $        ;..end of required for cdf production.
@@ -459,7 +471,7 @@ sun_mag = dblarr(nele)
 vector_sun = dblarr(nele,3)
 mvn_abs_angles_z = dblarr(nele)   ;store absolute angle between Sun and MAVEN z axis.
 ;Get absolute angle between pointing vectors for MAVEN z axis (EUV boresight) (although this may not be useful)
-;cos(theta) = a-dot-b / mag(a) * mag(b)          
+;cos(theta) = a-dot-b / mag(a) * mag(b)
 mag_sun = 1.D  ;look vector therefore mag is one, as obtained above
 mag_mvnz = 1.D  ;by definition this is one.
 for aa = 0L, nele -1 do begin
@@ -471,7 +483,7 @@ endfor
 
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
-                dlimit=create_struct(   $                           
+                dlimit=create_struct(   $
                    'Product_name',                  'mvn_lpw_anc_abs_angle_z', $
                    'Project',                       cdf_istp[12], $
                    'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
@@ -481,9 +493,9 @@ endfor
                    'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
                    'Descriptor',                    cdf_istp[5], $
                    'PI_name',                       cdf_istp[6], $
-                   'PI_affiliation',                cdf_istp[7], $     
+                   'PI_affiliation',                cdf_istp[7], $
                    'TEXT',                          cdf_istp[8], $
-                   'Mission_group',                 cdf_istp[9], $     
+                   'Mission_group',                 cdf_istp[9], $
                    'Generated_by',                  cdf_istp[10],  $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
@@ -505,7 +517,7 @@ endfor
                    ; 'vFieldnam',                     'v: More information', $
                    'dyFieldnam',                    'dy: Not used.', $
                    ;  'dvFieldnam',                    'dv: More information', $
-                   'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $                      
+                   'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
                    'MONOTON', 'INCREASE', $
                    'SCALEMIN', min(mvn_abs_angles_z), $
                    'SCALEMAX', max(mvn_abs_angles_z), $        ;..end of required for cdf production.
@@ -514,36 +526,36 @@ endfor
                    'Time_end'        ,     time_end, $
                    'Time_field'      ,     time_field, $
                    'SPICE_kernel_version', kernel_version, $
-                   'SPICE_kernel_flag'      ,     spice_used, $                       
-                   'L0_datafile'     ,     L0_datafile , $ 
-                   'cal_vers'        ,     kernel_version ,$     
+                   'SPICE_kernel_flag'      ,     spice_used, $
+                   'L0_datafile'     ,     L0_datafile , $
+                   'cal_vers'        ,     kernel_version ,$
                    'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
-                   'cal_source'      ,     'SPICE kernels', $     
-                   'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[Degrees]');, $                     
+                   'cal_source'      ,     'SPICE kernels', $
+                   'xsubtitle'       ,     '[sec]', $
+                   'ysubtitle'       ,     '[Degrees]');, $
                    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
-                   ;'zsubtitle'       ,     '[Attitude]')          
-                ;-------------  limit ---------------- 
-                limit=create_struct(   $               
-                  'char_size' ,     1.2                      ,$    
-                  'xtitle' ,        str_xtitle                   ,$   
-                  'ytitle' ,        'mvn-abs_angles-z'                 ,$   
-                  'yrange' ,        [0.9*min(mvn_abs_angles_z),1.1*max(mvn_abs_angles_z)] ,$   
-                  'ystyle'  ,       1.                       ,$  
+                   ;'zsubtitle'       ,     '[Attitude]')
+                ;-------------  limit ----------------
+                limit=create_struct(   $
+                  'char_size' ,     1.2                      ,$
+                  'xtitle' ,        str_xtitle                   ,$
+                  'ytitle' ,        'mvn-abs_angles-z'                 ,$
+                  'yrange' ,        [0.9*min(mvn_abs_angles_z),1.1*max(mvn_abs_angles_z)] ,$
+                  'ystyle'  ,       1.                       ,$
                   'labflag',        1, $
-                  ;'ztitle' ,        'Z-title'                ,$   
-                  ;'zrange' ,        [min(data.y),max(data.y)],$                        
-                  ;'spec'            ,     1, $           
+                  ;'ztitle' ,        'Z-title'                ,$
+                  ;'zrange' ,        [min(data.y),max(data.y)],$
+                  ;'spec'            ,     1, $
                   ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
                   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
-                  'noerrorbars', 1)   
+                  'noerrorbars', 1)
                ;---------------------------------
                store_data, 'mvn_lpw_anc_mvn_abs_angle_z', data={x:unix_in, y:mvn_abs_angles_z, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
-                          
+
 ;=====
 ;==2==
 ;=====
@@ -552,16 +564,16 @@ offset = dblarr(nele,2)  ;store x,y offsets
 mvn_angles = dblarr(nele,2)  ;array to store angles, first row is radius, second is angle from x axis, counter clockwise
 
 ;Plot x and y distances from Sun vector to check the pointing routines are working - should get a cross for the cruciform!
-;Define the sun vector as the center:          
+;Define the sun vector as the center:
 for aa = 0L, nele-1 do begin
     center = [vector_sun[aa,0], vector_sun[aa,1]]  ;make Sun vector the 'zero' position for this time step
     mvn_point_z = [mvn_z[0], mvn_z[1]]  ;x,y pointing for z axis on MAVEN
     offset[aa,*] = [[mvn_point_z[0] - center[0]], [mvn_point_z[1] - center[1]]]  ;get offset
-    
+
     ;As co-ordinates are projected onto a 2D screen, we can get "radius angle" and angle from s/c x axis for the Sun vector.
     mvn_angles[aa,0] = acos(vector_sun[aa,2]) * (180.D/!pi)  ;in degrees. Use Sun z vector to get "radius displacement angle". If sun(z) = 1, this equals
                                                                  ;s/c z (also 1), so acos(1) = 0 degrees, which is correct!
-    mvn_angles[aa,1] = atan(vector_sun[aa,1], vector_sun[aa,0]) * (180.D/!pi)  ;degrees, tan(y/x) to get angle from s/c x axis.  
+    mvn_angles[aa,1] = atan(vector_sun[aa,1], vector_sun[aa,0]) * (180.D/!pi)  ;degrees, tan(y/x) to get angle from s/c x axis.
 endfor  ;over aa
 
 ydata = dblarr(nele,2)
@@ -569,7 +581,7 @@ ydata[*,0] = mvn_angles[*,0]
 ydata[*,1] = mvn_angles[*,1]
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
-                dlimit=create_struct(   $                           
+                dlimit=create_struct(   $
                    'Product_name',                  'mvn_lpw_anc_mvn_angles', $
                    'Project',                       cdf_istp[12], $
                    'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
@@ -579,13 +591,13 @@ ydata[*,1] = mvn_angles[*,1]
                    'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
                    'Descriptor',                    cdf_istp[5], $
                    'PI_name',                       cdf_istp[6], $
-                   'PI_affiliation',                cdf_istp[7], $     
+                   'PI_affiliation',                cdf_istp[7], $
                    'TEXT',                          cdf_istp[8], $
-                   'Mission_group',                 cdf_istp[9], $     
+                   'Mission_group',                 cdf_istp[9], $
                    'Generated_by',                  cdf_istp[10],  $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
-                   'Acknowledgement',               cdf_istp[13],   $   
+                   'Acknowledgement',               cdf_istp[13],   $
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'First row: angle between MAVEN Z axis and Sun position in MAVEN s/c frame. Second row: clock angle between Sun angle and MAVEN +X axis, in MAVEN s/c frame.', $
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###
@@ -612,37 +624,37 @@ ydata[*,1] = mvn_angles[*,1]
                    'Time_end'        ,     time_end, $
                    'Time_field'      ,     time_field, $
                    'SPICE_kernel_version', kernel_version, $
-                   'SPICE_kernel_flag'      ,     spice_used, $                       
-                   'L0_datafile'     ,     L0_datafile , $ 
-                   'cal_vers'        ,     kernel_version ,$     
+                   'SPICE_kernel_flag'      ,     spice_used, $
+                   'L0_datafile'     ,     L0_datafile , $
+                   'cal_vers'        ,     kernel_version ,$
                    'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
-                   'cal_source'      ,     'SPICE kernels', $     
-                   'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[Degrees]');, $                     
+                   'cal_source'      ,     'SPICE kernels', $
+                   'xsubtitle'       ,     '[sec]', $
+                   'ysubtitle'       ,     '[Degrees]');, $
                    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
-                   ;'zsubtitle'       ,     '[Attitude]')          
-                ;-------------  limit ---------------- 
-                limit=create_struct(   $               
-                  'char_size' ,     1.2                      ,$    
-                  'xtitle' ,        str_xtitle                   ,$   
-                  'ytitle' ,        'mvn-angles'                 ,$   
-                  'yrange' ,        [1.1*min(mvn_angles),1.1*max(mvn_angles)] ,$   
-                  'ystyle'  ,       1.                       ,$ 
-                  'labels',         ['Angular_separation', 'Clock_angle'], $ 
+                   ;'zsubtitle'       ,     '[Attitude]')
+                ;-------------  limit ----------------
+                limit=create_struct(   $
+                  'char_size' ,     1.2                      ,$
+                  'xtitle' ,        str_xtitle                   ,$
+                  'ytitle' ,        'mvn-angles'                 ,$
+                  'yrange' ,        [1.1*min(mvn_angles),1.1*max(mvn_angles)] ,$
+                  'ystyle'  ,       1.                       ,$
+                  'labels',         ['Angular_separation', 'Clock_angle'], $
                   'labflag',        1, $
-                  ;'ztitle' ,        'Z-title'                ,$   
-                  ;'zrange' ,        [min(data.y),max(data.y)],$                        
-                  ;'spec'            ,     1, $           
+                  ;'ztitle' ,        'Z-title'                ,$
+                  ;'zrange' ,        [min(data.y),max(data.y)],$
+                  ;'spec'            ,     1, $
                   ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
                   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
-                  'noerrorbars', 1)   
+                  'noerrorbars', 1)
                ;---------------------------------
                store_data, 'mvn_lpw_anc_mvn_angles', data={x:unix_in, y:ydata, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
-               
+
 ;=====
 ;==3==
 ;=====
@@ -650,12 +662,12 @@ ydata[*,1] = mvn_angles[*,1]
 target = 'Sun'
 frame    = 'J2000'
 abcorr   = 'LT+S'  ;correct for light travel time and something
-observer = 'MAVEN'  
+observer = 'MAVEN'
 
 ;cspice_spkpos, target, et_time, frame, abcorr, observer, state_j, ltime_j  ;state contains R and V [0:5], ltime = light time between observer and object
 
-if (spk_coverage eq 'all') then state_j = spice_body_pos(target, observer, utc=utc_time, frame=frame, abcorr=abcorr) else begin    
-;if spk_coverage eq 'all' then cspice_spkezr, target, et_time, frame, abcorr, observer, state_j, ltime else begin ;state contains R and V [0:5], 
+if (spk_coverage eq 'all') then state_j = spice_body_pos(target, observer, utc=utc_time, frame=frame, abcorr=abcorr) else begin
+;if spk_coverage eq 'all' then cspice_spkezr, target, et_time, frame, abcorr, observer, state_j, ltime else begin ;state contains R and V [0:5],
     state_j = dblarr(3,nele)  ;must fill this rotation matrix in one time step at a time now. Here time goes in y axis for spice routines
     for aa = 0, nele-1 do begin  ;do each time point individually
           if (spkcov[aa] eq 1) then state_temp = spice_body_pos(target, observer, utc=utc_time[aa], frame=frame, abcorr=abcorr) else state_temp=[!values.f_nan, !values.f_nan, !values.f_nan]
@@ -675,7 +687,7 @@ sun_pos_j2000[*,2] = state_j[2,*]
 
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
-                dlimit=create_struct(   $                           
+                dlimit=create_struct(   $
                    'Product_name',                  'mvn_lpw_anc_sun_pos_j2000', $
                    'Project',                       cdf_istp[12], $
                    'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
@@ -685,13 +697,13 @@ sun_pos_j2000[*,2] = state_j[2,*]
                    'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
                    'Descriptor',                    cdf_istp[5], $
                    'PI_name',                       cdf_istp[6], $
-                   'PI_affiliation',                cdf_istp[7], $     
+                   'PI_affiliation',                cdf_istp[7], $
                    'TEXT',                          cdf_istp[8], $
-                   'Mission_group',                 cdf_istp[9], $     
+                   'Mission_group',                 cdf_istp[9], $
                    'Generated_by',                  cdf_istp[10],  $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
-                   'Acknowledgement',               cdf_istp[13],   $   
+                   'Acknowledgement',               cdf_istp[13],   $
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'Sun position, in the Earth mean equator and equinox of J2000 frame (J2000) frame.', $
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###
@@ -709,7 +721,7 @@ sun_pos_j2000[*,2] = state_j[2,*]
                    ; 'vFieldnam',                     'v: More information', $
                    'dyFieldnam',                    'dy: Not used.', $
                    ;  'dvFieldnam',                    'dv: More information', $
-                   'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $                  
+                   'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
                    'MONOTON', 'INCREASE', $
                    'SCALEMIN', min(sun_pos_j2000), $
                    'SCALEMAX', max(sun_pos_j2000), $        ;..end of required for cdf production.
@@ -718,35 +730,35 @@ sun_pos_j2000[*,2] = state_j[2,*]
                    'Time_end'        ,     time_end, $
                    'Time_field'      ,     time_field, $
                    'SPICE_kernel_version', kernel_version, $
-                   'SPICE_kernel_flag'      ,     spice_used, $                       
-                   'L0_datafile'     ,     L0_datafile , $ 
-                   'cal_vers'        ,     kernel_version ,$     
+                   'SPICE_kernel_flag'      ,     spice_used, $
+                   'L0_datafile'     ,     L0_datafile , $
+                   'cal_vers'        ,     kernel_version ,$
                    'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
-                   'cal_source'      ,     'SPICE kernels', $     
-                   'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[km (J2000 frame)]');, $                     
+                   'cal_source'      ,     'SPICE kernels', $
+                   'xsubtitle'       ,     '[sec]', $
+                   'ysubtitle'       ,     '[km (J2000 frame)]');, $
                    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
-                   ;'zsubtitle'       ,     '[Attitude]')          
-                ;-------------  limit ---------------- 
-                limit=create_struct(   $               
-                  'char_size' ,     1.2                      ,$    
-                  'xtitle' ,        str_xtitle                   ,$   
-                  'ytitle' ,        'Sun-position'                 ,$   
-                  'yrange' ,        [0.9*min(sun_pos_J2000),1.1*max(sun_pos_j2000)] ,$   
+                   ;'zsubtitle'       ,     '[Attitude]')
+                ;-------------  limit ----------------
+                limit=create_struct(   $
+                  'char_size' ,     1.2                      ,$
+                  'xtitle' ,        str_xtitle                   ,$
+                  'ytitle' ,        'Sun-position'                 ,$
+                  'yrange' ,        [0.9*min(sun_pos_J2000),1.1*max(sun_pos_j2000)] ,$
                   'ystyle'  ,       1.                       ,$
-                  'labels',         ['X', 'Y', 'Z'], $ 
-                  'colors',         [2, 4, 6], $  ;blue, green, red 
+                  'labels',         ['X', 'Y', 'Z'], $
+                  'colors',         [2, 4, 6], $  ;blue, green, red
                   'labflag',        1, $
-                  ;'ztitle' ,        'Z-title'                ,$   
-                  ;'zrange' ,        [min(data.y),max(data.y)],$                        
-                  ;'spec'            ,     1, $           
+                  ;'ztitle' ,        'Z-title'                ,$
+                  ;'zrange' ,        [min(data.y),max(data.y)],$
+                  ;'spec'            ,     1, $
                   ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
                   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
-                  'noerrorbars', 1)   
+                  'noerrorbars', 1)
                ;---------------------------------
                store_data, 'mvn_lpw_anc_sun_pos_j2000', data={x:unix_in, y:sun_pos_j2000, flag:spk_flag}, dlimit=dlimit, limit=limit
 
@@ -758,7 +770,7 @@ sun_pos_j2000[*,2] = state_j[2,*]
 target = 'MAVEN'
 frame    = 'J2000'
 abcorr   = 'LT+S'  ;correct for light travel time and something
-observer = 'Sun' 
+observer = 'Sun'
 
 ;if (spk_coverage eq 'all') and (ck_coverage eq 'all') then state = spice_body_pos(target, observer, utc=utc_time, frame=frame, abcorr=abcorr) else begin  ;DAVINS ROUTINE
 if (spk_coverage eq 'all') then cspice_spkezr, target, et_time, frame, abcorr, observer, state, ltime else begin ;state contains R and V [0:5], USE THIS UNTIL DAVIN ADDS VEL INTO HIS ABOVE
@@ -781,16 +793,16 @@ mvn_pos_j2000 = dblarr(nele,3)
 mvn_vel_j2000 = dblarr(nele,3)
 mvn_pos_j2000[*,0] = state[0,*]  ;positions in km
 mvn_pos_j2000[*,1] = state[1,*]  ;positions in km
-mvn_pos_j2000[*,2] = state[2,*]  ;positions in km    
-mvn_vel_j2000[*,0] = state[3,*]  ;velocities in km   
+mvn_pos_j2000[*,2] = state[2,*]  ;positions in km
+mvn_vel_j2000[*,0] = state[3,*]  ;velocities in km
 mvn_vel_j2000[*,1] = state[4,*]  ;velocities in km
 mvn_vel_j2000[*,2] = state[5,*]  ;velocities in km
-    
+
 ;mvn_pos_au = mvn_pos_mso / (1.496D8)   ;position in AU
 
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
-                dlimit=create_struct(   $                           
+                dlimit=create_struct(   $
                    'Product_name',                  'mvn_lpw_anc_mvn_pos_j2000', $
                    'Project',                       cdf_istp[12], $
                    'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
@@ -800,13 +812,13 @@ mvn_vel_j2000[*,2] = state[5,*]  ;velocities in km
                    'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
                    'Descriptor',                    cdf_istp[5], $
                    'PI_name',                       cdf_istp[6], $
-                   'PI_affiliation',                cdf_istp[7], $     
+                   'PI_affiliation',                cdf_istp[7], $
                    'TEXT',                          cdf_istp[8], $
-                   'Mission_group',                 cdf_istp[9], $     
+                   'Mission_group',                 cdf_istp[9], $
                    'Generated_by',                  cdf_istp[10],  $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
-                   'Acknowledgement',               cdf_istp[13],   $   
+                   'Acknowledgement',               cdf_istp[13],   $
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'MAVEN position, in the Earth mean equator and equinox of J2000 frame (J2000) frame.', $
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###
@@ -833,42 +845,42 @@ mvn_vel_j2000[*,2] = state[5,*]  ;velocities in km
                    'Time_end'        ,     time_end, $
                    'Time_field'      ,     time_field, $
                    'SPICE_kernel_version', kernel_version, $
-                   'SPICE_kernel_flag'      ,     spice_used, $                       
-                   'L0_datafile'     ,     L0_datafile , $ 
-                   'cal_vers'        ,     kernel_version ,$     
+                   'SPICE_kernel_flag'      ,     spice_used, $
+                   'L0_datafile'     ,     L0_datafile , $
+                   'cal_vers'        ,     kernel_version ,$
                    'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
-                   'cal_source'      ,     'SPICE kernels', $     
-                   'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[km (J2000 frame)]');, $                     
+                   'cal_source'      ,     'SPICE kernels', $
+                   'xsubtitle'       ,     '[sec]', $
+                   'ysubtitle'       ,     '[km (J2000 frame)]');, $
                    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
-                   ;'zsubtitle'       ,     '[Attitude]')          
-                ;-------------  limit ---------------- 
-                limit=create_struct(   $               
-                  'char_size' ,     1.2                      ,$    
-                  'xtitle' ,        str_xtitle                   ,$   
-                  'ytitle' ,        'mvn-position'                 ,$   
-                  'yrange' ,        [min(mvn_pos_j2000),max(mvn_pos_j2000)] ,$   
-                  'ystyle'  ,       1.                       ,$ 
-                  'labels',         ['X', 'Y', 'Z'], $ 
+                   ;'zsubtitle'       ,     '[Attitude]')
+                ;-------------  limit ----------------
+                limit=create_struct(   $
+                  'char_size' ,     1.2                      ,$
+                  'xtitle' ,        str_xtitle                   ,$
+                  'ytitle' ,        'mvn-position'                 ,$
+                  'yrange' ,        [min(mvn_pos_j2000),max(mvn_pos_j2000)] ,$
+                  'ystyle'  ,       1.                       ,$
+                  'labels',         ['X', 'Y', 'Z'], $
                   'colors',         [2, 4, 6], $  ;blue, green, red
                   'labflag',        1, $
-                  ;'ztitle' ,        'Z-title'                ,$   
-                  ;'zrange' ,        [min(data.y),max(data.y)],$                        
-                  ;'spec'            ,     1, $           
+                  ;'ztitle' ,        'Z-title'                ,$
+                  ;'zrange' ,        [min(data.y),max(data.y)],$
+                  ;'spec'            ,     1, $
                   ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
                   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
-                  'noerrorbars', 1)   
+                  'noerrorbars', 1)
                ;---------------------------------
                store_data, 'mvn_lpw_anc_mvn_pos_j2000', data={x:unix_in, y:mvn_pos_j2000, flag:spk_flag}, dlimit=dlimit, limit=limit
                ;---------------------------------
-               
+
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
-                dlimit=create_struct(   $                           
+                dlimit=create_struct(   $
                    'Product_name',                  'mvn_lpw_anc_mvn_vel_j2000', $
                    'Project',                       cdf_istp[12], $
                    'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
@@ -878,13 +890,13 @@ mvn_vel_j2000[*,2] = state[5,*]  ;velocities in km
                    'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
                    'Descriptor',                    cdf_istp[5], $
                    'PI_name',                       cdf_istp[6], $
-                   'PI_affiliation',                cdf_istp[7], $     
+                   'PI_affiliation',                cdf_istp[7], $
                    'TEXT',                          cdf_istp[8], $
-                   'Mission_group',                 cdf_istp[9], $     
+                   'Mission_group',                 cdf_istp[9], $
                    'Generated_by',                  cdf_istp[10],  $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
-                   'Acknowledgement',               cdf_istp[13],   $    
+                   'Acknowledgement',               cdf_istp[13],   $
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'MAVEN velocity, in the Earth mean equator and equinox of J2000 frame (J2000) frame.', $
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###
@@ -911,36 +923,36 @@ mvn_vel_j2000[*,2] = state[5,*]  ;velocities in km
                    'Time_end'        ,     time_end, $
                    'Time_field'      ,     time_field, $
                    'SPICE_kernel_version', kernel_version, $
-                   'SPICE_kernel_flag'      ,     spice_used, $                       
-                   'L0_datafile'     ,     L0_datafile , $ 
-                   'cal_vers'        ,     kernel_version ,$     
+                   'SPICE_kernel_flag'      ,     spice_used, $
+                   'L0_datafile'     ,     L0_datafile , $
+                   'cal_vers'        ,     kernel_version ,$
                    'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
-                   'cal_source'      ,     'SPICE kernels', $     
-                   'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[km/s (J2000 frame)]');, $                     
+                   'cal_source'      ,     'SPICE kernels', $
+                   'xsubtitle'       ,     '[sec]', $
+                   'ysubtitle'       ,     '[km/s (J2000 frame)]');, $
                    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
-                   ;'zsubtitle'       ,     '[Attitude]')          
-                ;-------------  limit ---------------- 
-                limit=create_struct(   $               
-                  'char_size' ,     1.2                      ,$    
-                  'xtitle' ,        str_xtitle                   ,$   
-                  'ytitle' ,        'mvn-velocity'                 ,$   
-                  'yrange' ,        [min(mvn_vel_j2000),max(mvn_vel_j2000)] ,$   
-                  'ystyle'  ,       1.                       ,$ 
-                  'labels',         ['Vx', 'Vy', 'Vz'], $ 
+                   ;'zsubtitle'       ,     '[Attitude]')
+                ;-------------  limit ----------------
+                limit=create_struct(   $
+                  'char_size' ,     1.2                      ,$
+                  'xtitle' ,        str_xtitle                   ,$
+                  'ytitle' ,        'mvn-velocity'                 ,$
+                  'yrange' ,        [min(mvn_vel_j2000),max(mvn_vel_j2000)] ,$
+                  'ystyle'  ,       1.                       ,$
+                  'labels',         ['Vx', 'Vy', 'Vz'], $
                   'labflag',        1, $
                   'colors',         [2, 4, 6], $  ;blue, green, red
-                  ;'ztitle' ,        'Z-title'                ,$   
-                  ;'zrange' ,        [min(data.y),max(data.y)],$                        
-                  ;'spec'            ,     1, $           
+                  ;'ztitle' ,        'Z-title'                ,$
+                  ;'zrange' ,        [min(data.y),max(data.y)],$
+                  ;'spec'            ,     1, $
                   ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
                   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
-                  'noerrorbars', 1)   
-               ;---------------------------------             
+                  'noerrorbars', 1)
+               ;---------------------------------
                store_data, 'mvn_lpw_anc_mvn_vel_j2000', data={x:unix_in, y:mvn_vel_j2000, flag:spk_flag}, dlimit=dlimit, limit=limit
                ;---------------------------------
 
@@ -948,7 +960,7 @@ mvn_vel_j2000[*,2] = state[5,*]  ;velocities in km
 ;==6, 7==
 ;========
 ;MAVEN position and velocity in MSO and IAU frames:
-;General info:  
+;General info:
 frame    = 'MAVEN_MSO'
 frame2   = 'IAU_MARS'
 abcorr   = 'LT+S'
@@ -962,7 +974,7 @@ if (spk_coverage eq 'all') then begin  ;and (ck_coverage eq 'all') then begin
 endif else begin
     stateezr = dblarr(6,nele)  ;must fill this rotation matrix in one time step at a time now. Here time goes in y axis for spice routines
     stateezr2 = dblarr(6,nele)
-    for aa = 0, nele-1 do begin  ;do each time point individually          
+    for aa = 0, nele-1 do begin  ;do each time point individually
           ;if (spkcov[aa] eq 1) and (ck_check[aa] eq 1) then state_temp = spice_body_pos(target, observer, utc=utc_time[aa], frame=frame, abcorr=abcorr) else state_temp=[!values.f_nan, !values.f_nan, !values.f_nan]  ;DAVINS
           if (spkcov[aa] eq 1) then cspice_spkezr, target, et_time[aa], frame, abcorr, observer, state_temp, ltime else state_temp=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]  ;USE THIS FOR NOW UNTIL DAVINS HAS VEL
           if (spkcov[aa] eq 1) then cspice_spkezr, target, et_time[aa], frame2, abcorr, observer, state_temp2, ltime else state_temp2=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]  ;USE THIS FOR NOW UNTIL DAVINS HAS VEL
@@ -980,10 +992,10 @@ endif else begin
           stateezr2[2,aa] = state_temp2[2]
           stateezr2[3,aa] = state_temp2[3]  ;vel
           stateezr2[4,aa] = state_temp2[4]
-          stateezr2[5,aa] = state_temp2[5]                          
+          stateezr2[5,aa] = state_temp2[5]
     endfor
 endelse
- 
+
 mvn_pos_mso = dblarr(nele,4)  ;x,y,z,total (4 rows)
 mvn_vel_mso = dblarr(nele,4)
 mvn_pos_iau = dblarr(nele,4)  ;x,y,z,total (4 rows)
@@ -991,9 +1003,9 @@ mvn_vel_iau = dblarr(nele,4)
 Rmars = 3376.0d ;Mars radius, km
 mvn_pos_mso[*,0] = stateezr[0,*]/Rmars  ;positions in Rmars
 mvn_pos_mso[*,1] = stateezr[1,*]/Rmars  ;positions in Rmars
-mvn_pos_mso[*,2] = stateezr[2,*]/Rmars  ;positions in Rmars  
-mvn_pos_mso[*,3] = sqrt(mvn_pos_mso[*,0]^2 + mvn_pos_mso[*,1]^2 + mvn_pos_mso[*,2]^2)  ;total radius  
-mvn_vel_mso[*,0] = stateezr[3,*]  ;velocities in km/s   
+mvn_pos_mso[*,2] = stateezr[2,*]/Rmars  ;positions in Rmars
+mvn_pos_mso[*,3] = sqrt(mvn_pos_mso[*,0]^2 + mvn_pos_mso[*,1]^2 + mvn_pos_mso[*,2]^2)  ;total radius
+mvn_vel_mso[*,0] = stateezr[3,*]  ;velocities in km/s
 mvn_vel_mso[*,1] = stateezr[4,*]  ;velocities in km/s
 mvn_vel_mso[*,2] = stateezr[5,*]  ;velocities in km/s
 mvn_vel_mso[*,3] = sqrt(mvn_vel_mso[*,0]^2 + mvn_vel_mso[*,1]^2 + mvn_vel_mso[*,2]^2)  ;total vel, km/s
@@ -1007,10 +1019,10 @@ mvn_vel_iau[*,1] = stateezr2[4,*]  ;velocities in km/s
 mvn_vel_iau[*,2] = stateezr2[5,*]  ;velocities in km/s
 mvn_vel_iau[*,3] = sqrt(mvn_vel_iau[*,0]^2 + mvn_vel_iau[*,1]^2 + mvn_vel_iau[*,2]^2)  ;total vel, km/s
 mvn_pos_iau_cp = stateezr2[0:2,*]  ;copy for getting long, lat, later on
-    
+
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
-                dlimit=create_struct(   $                           
+                dlimit=create_struct(   $
                    'Product_name',                  'mvn_lpw_anc_mvn_pos_mso', $
                    'Project',                       cdf_istp[12], $
                    'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
@@ -1020,13 +1032,13 @@ mvn_pos_iau_cp = stateezr2[0:2,*]  ;copy for getting long, lat, later on
                    'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
                    'Descriptor',                    cdf_istp[5], $
                    'PI_name',                       cdf_istp[6], $
-                   'PI_affiliation',                cdf_istp[7], $     
+                   'PI_affiliation',                cdf_istp[7], $
                    'TEXT',                          cdf_istp[8], $
-                   'Mission_group',                 cdf_istp[9], $     
+                   'Mission_group',                 cdf_istp[9], $
                    'Generated_by',                  cdf_istp[10],  $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
-                   'Acknowledgement',               cdf_istp[13],   $    
+                   'Acknowledgement',               cdf_istp[13],   $
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'MAVEN position, in the Mars-Sun-orbit (MSO) frame.', $
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###
@@ -1045,7 +1057,7 @@ mvn_pos_iau_cp = stateezr2[0:2,*]  ;copy for getting long, lat, later on
                    'dyFieldnam',                    'No used.', $
                    ;  'dvFieldnam',                    'dv: More information', $
                    'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
-                   'SI_conversion',                 '1 Mars radius = 3376.0 km',  $  
+                   'SI_conversion',                 '1 Mars radius = 3376.0 km',  $
                    'MONOTON', 'INCREASE', $
                    'SCALEMIN', min(mvn_pos_mso), $
                    'SCALEMAX', max(mvn_pos_mso), $        ;..end of required for cdf production.
@@ -1054,42 +1066,42 @@ mvn_pos_iau_cp = stateezr2[0:2,*]  ;copy for getting long, lat, later on
                    'Time_end'        ,     time_end, $
                    'Time_field'      ,     time_field, $
                    'SPICE_kernel_version', kernel_version, $
-                   'SPICE_kernel_flag'      ,     spice_used, $                       
-                   'L0_datafile'     ,     L0_datafile , $ 
-                   'cal_vers'        ,     kernel_version ,$     
+                   'SPICE_kernel_flag'      ,     spice_used, $
+                   'L0_datafile'     ,     L0_datafile , $
+                   'cal_vers'        ,     kernel_version ,$
                    'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
-                   'cal_source'      ,     'SPICE kernels', $     
-                   'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[Mars radii (MSO frame)]');, $                     
+                   'cal_source'      ,     'SPICE kernels', $
+                   'xsubtitle'       ,     '[sec]', $
+                   'ysubtitle'       ,     '[Mars radii (MSO frame)]');, $
                    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
-                   ;'zsubtitle'       ,     '[Attitude]')          
-                ;-------------  limit ---------------- 
-                limit=create_struct(   $               
-                  'char_size' ,     1.2                      ,$    
-                  'xtitle' ,        str_xtitle                   ,$   
-                  'ytitle' ,        'mvn-position'                 ,$   
+                   ;'zsubtitle'       ,     '[Attitude]')
+                ;-------------  limit ----------------
+                limit=create_struct(   $
+                  'char_size' ,     1.2                      ,$
+                  'xtitle' ,        str_xtitle                   ,$
+                  'ytitle' ,        'mvn-position'                 ,$
                   'yrange' ,        [-4.,4.] ,$     ;range of orbit at Mars
-                  'ystyle'  ,       1.                       ,$ 
-                  'labels',         ['X', 'Y', 'Z', 'TOTAL'], $ 
+                  'ystyle'  ,       1.                       ,$
+                  'labels',         ['X', 'Y', 'Z', 'TOTAL'], $
                   'labflag',        1, $
                   'colors',         [2, 4, 6, 0], $  ;blue, green, red, black
-                  ;'ztitle' ,        'Z-title'                ,$   
-                  ;'zrange' ,        [min(data.y),max(data.y)],$                        
-                  ;'spec'            ,     1, $           
+                  ;'ztitle' ,        'Z-title'                ,$
+                  ;'zrange' ,        [min(data.y),max(data.y)],$
+                  ;'spec'            ,     1, $
                   ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
                   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
-                  'noerrorbars', 1)   
+                  'noerrorbars', 1)
                ;---------------------------------
                store_data, 'mvn_lpw_anc_mvn_pos_mso', data={x:unix_in, y:mvn_pos_mso, flag:spk_flag}, dlimit=dlimit, limit=limit
                ;---------------------------------
-               
+
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
-                dlimit=create_struct(   $                           
+                dlimit=create_struct(   $
                    'Product_name',                  'mvn_lpw_anc_mvn_vel_mso', $
                    'Project',                       cdf_istp[12], $
                    'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
@@ -1099,13 +1111,13 @@ mvn_pos_iau_cp = stateezr2[0:2,*]  ;copy for getting long, lat, later on
                    'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
                    'Descriptor',                    cdf_istp[5], $
                    'PI_name',                       cdf_istp[6], $
-                   'PI_affiliation',                cdf_istp[7], $     
+                   'PI_affiliation',                cdf_istp[7], $
                    'TEXT',                          cdf_istp[8], $
-                   'Mission_group',                 cdf_istp[9], $     
+                   'Mission_group',                 cdf_istp[9], $
                    'Generated_by',                  cdf_istp[10],  $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
-                   'Acknowledgement',               cdf_istp[13],   $    
+                   'Acknowledgement',               cdf_istp[13],   $
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'MAVEN velocity, in the Mars-Sun-orbit (MSO) frame.', $
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###
@@ -1132,43 +1144,43 @@ mvn_pos_iau_cp = stateezr2[0:2,*]  ;copy for getting long, lat, later on
                    'Time_end'        ,     time_end, $
                    'Time_field'      ,     time_field, $
                    'SPICE_kernel_version', kernel_version, $
-                   'SPICE_kernel_flag'      ,     spice_used, $                       
-                   'L0_datafile'     ,     L0_datafile , $ 
-                   'cal_vers'        ,     kernel_version ,$     
+                   'SPICE_kernel_flag'      ,     spice_used, $
+                   'L0_datafile'     ,     L0_datafile , $
+                   'cal_vers'        ,     kernel_version ,$
                    'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
-                   'cal_source'      ,     'SPICE kernels', $     
-                   'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[km/s (MSO frame)]');, $                     
+                   'cal_source'      ,     'SPICE kernels', $
+                   'xsubtitle'       ,     '[sec]', $
+                   'ysubtitle'       ,     '[km/s (MSO frame)]');, $
                    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
-                   ;'zsubtitle'       ,     '[Attitude]')          
-                ;-------------  limit ---------------- 
-                limit=create_struct(   $               
-                  'char_size' ,     1.2                      ,$    
-                  'xtitle' ,        str_xtitle                   ,$   
-                  'ytitle' ,        'mvn-velocity'                 ,$   
-                  'yrange' ,        [-5,5] ,$   
-                  'ystyle'  ,       1.                       ,$ 
-                  'labels',         ['Vx', 'Vy', 'Vz', 'TOTAL'], $ 
+                   ;'zsubtitle'       ,     '[Attitude]')
+                ;-------------  limit ----------------
+                limit=create_struct(   $
+                  'char_size' ,     1.2                      ,$
+                  'xtitle' ,        str_xtitle                   ,$
+                  'ytitle' ,        'mvn-velocity'                 ,$
+                  'yrange' ,        [-5,5] ,$
+                  'ystyle'  ,       1.                       ,$
+                  'labels',         ['Vx', 'Vy', 'Vz', 'TOTAL'], $
                   'labflag',        1, $
                   'colors',         [2, 4, 6, 0], $  ;blue, green, red, black
-                  ;'ztitle' ,        'Z-title'                ,$   
-                  ;'zrange' ,        [min(data.y),max(data.y)],$                        
-                  ;'spec'            ,     1, $           
+                  ;'ztitle' ,        'Z-title'                ,$
+                  ;'zrange' ,        [min(data.y),max(data.y)],$
+                  ;'spec'            ,     1, $
                   ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
                   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
-                  'noerrorbars', 1)   
-               ;---------------------------------             
+                  'noerrorbars', 1)
+               ;---------------------------------
                store_data, 'mvn_lpw_anc_mvn_vel_mso', data={x:unix_in, y:mvn_vel_mso, flag:spk_flag}, dlimit=dlimit, limit=limit  ;#### no velocity yet
                ;---------------------------------
-               
+
     ;=========
     ;IAU_MARS:
     ;=========
-            
+
     ;Store as tplot variable:
     ;--------------- dlimit   ------------------
     dlimit=create_struct(   $
@@ -1325,8 +1337,8 @@ mvn_pos_iau_cp = stateezr2[0:2,*]  ;copy for getting long, lat, later on
     ;---------------------------------
     store_data, 'mvn_lpw_anc_mvn_vel_iau', data={x:unix_in, y:mvn_vel_iau, flag:spk_flag}, dlimit=dlimit, limit=limit  ;#### no velocity yet
     ;---------------------------------
-              
-               
+
+
 ;========
 ;==8, 9==
 ;========
@@ -1340,13 +1352,13 @@ mvn_pointing = dblarr(3,3,nele)  ;array to store all MAVEN pointing info, x in f
 ;Use the encoded clock time, as determined at start of code using SPICE
 matrix_j2000=dblarr(3,3,nele)  ;store the rotation matrix in
 matrix_mso=dblarr(3,3,nele)  ;store MSO rotation matrix
-for aa = 0l, nele-1 do begin 
+for aa = 0l, nele-1 do begin
     cspice_ckgp, -202000, enc_time[aa], 0.0, 'MAVEN_SPACECRAFT', mat1, clk, found
     if found eq 1. then begin  ;if we have pointing info, carry on...
         mat_j = spice_body_att('MAVEN_SPACECRAFT', 'J2000', utc_time[aa])  ;one at a time to Davin's routine
         ;cspice_pxform, "MAVEN_SPACECRAFT", "J2000", et_time[aa], mat_j  ;MAVEN pointing in J2000 frame
         matrix_j2000[*,*,aa] = mat_j[*,*]
-            
+
         mat_mso = spice_body_att('MAVEN_SPACECRAFT', 'MAVEN_MSO', utc_time[aa])
         ;cspice_pxform, "MAVEN_SPACECRAFT", "MAVEN_MSO", et_time[aa], mat_mso  ;MAVEN pointing in MSO frame
         matrix_mso[*,*,aa] = mat_mso[*,*]
@@ -1372,14 +1384,14 @@ for aa = 0L, nele-1 do begin
           mvn_att_j2000[*,1,aa] = mvn_y_j2000
         cspice_mxv, matrix_j2000[*,*,aa], mvn_z, mvn_z_j2000
           mvn_att_j2000[*,2,aa] = mvn_z_j2000
-          
+
         ;Transform MAVEN xyz vectors into MSO:
         cspice_mxv, matrix_mso[*,*,aa], mvn_x, mvn_x_mso   ;can only take one vector at a time.
           mvn_att_mso[*,0,aa] = mvn_x_mso  ;store mvn x in mso for time nele
         cspice_mxv, matrix_mso[*,*,aa], mvn_y, mvn_y_mso
           mvn_att_mso[*,1,aa] = mvn_y_mso
         cspice_mxv, matrix_mso[*,*,aa], mvn_z, mvn_z_mso
-          mvn_att_mso[*,2,aa] = mvn_z_mso                                                        
+          mvn_att_mso[*,2,aa] = mvn_z_mso
 endfor  ;over aa
 
 ydata = dblarr(nele,9)
@@ -1388,7 +1400,7 @@ for bb = 0, 2 do ydata[*,3+bb] = mvn_att_j2000[bb,1,*]
 for bb = 0, 2 do ydata[*,6+bb] = mvn_att_j2000[bb,2,*]
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
-                dlimit=create_struct(   $                           
+                dlimit=create_struct(   $
                    'Product_name',                  'mvn_lpw_anc_mvn_att_j2000', $
                    'Project',                       cdf_istp[12], $
                    'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
@@ -1398,13 +1410,13 @@ for bb = 0, 2 do ydata[*,6+bb] = mvn_att_j2000[bb,2,*]
                    'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
                    'Descriptor',                    cdf_istp[5], $
                    'PI_name',                       cdf_istp[6], $
-                   'PI_affiliation',                cdf_istp[7], $     
+                   'PI_affiliation',                cdf_istp[7], $
                    'TEXT',                          cdf_istp[8], $
-                   'Mission_group',                 cdf_istp[9], $     
+                   'Mission_group',                 cdf_istp[9], $
                    'Generated_by',                  cdf_istp[10],  $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
-                   'Acknowledgement',               cdf_istp[13],   $    
+                   'Acknowledgement',               cdf_istp[13],   $
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'MAVEN attitude (pointing), in the Earth mean equator and equinox of J2000 frame (J2000) frame.', $
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###
@@ -1412,7 +1424,7 @@ for bb = 0, 2 do ydata[*,6+bb] = mvn_att_j2000[bb,2,*]
                    ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
                    'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
                    'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
-                   'y_Var_notes',                   'Unit vectors for pointing. J2000 frame: Origin is center of Earth. X-Y plane defined as Earths mean equator on 2000-01-01. X points to vernal equinox on 2000-01-01. Z completes system (celestial north). First row is MAVEN s/c X axis vector [x,y,z components], in the J2000 frame. Second row is MAVEN s/c Y axis vector [x,y,z components], in the J2000 frame. Third row is MAVEN s/c Z axis vector px,y,z components] in J2000 frame.', $        
+                   'y_Var_notes',                   'Unit vectors for pointing. J2000 frame: Origin is center of Earth. X-Y plane defined as Earths mean equator on 2000-01-01. X points to vernal equinox on 2000-01-01. Z completes system (celestial north). First row is MAVEN s/c X axis vector [x,y,z components], in the J2000 frame. Second row is MAVEN s/c Y axis vector [x,y,z components], in the J2000 frame. Third row is MAVEN s/c Z axis vector px,y,z components] in J2000 frame.', $
                    ;'v_Var_notes',                   'Frequency bins', $
                    'dy_Var_notes',                  'Not used.', $
                    ;'dv_Var_notes',                   'Error on frequency', $
@@ -1431,34 +1443,34 @@ for bb = 0, 2 do ydata[*,6+bb] = mvn_att_j2000[bb,2,*]
                    'Time_end'        ,     time_end, $
                    'Time_field'      ,     time_field, $
                    'SPICE_kernel_version', kernel_version, $
-                   'SPICE_kernel_flag'      ,     spice_used, $                       
-                   'L0_datafile'     ,     L0_datafile , $ 
-                   'cal_vers'        ,     kernel_version ,$     
+                   'SPICE_kernel_flag'      ,     spice_used, $
+                   'L0_datafile'     ,     L0_datafile , $
+                   'cal_vers'        ,     kernel_version ,$
                    'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
-                   'cal_source'      ,     'SPICE kernels', $     
-                   'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[Unit vector]');, $                     
+                   'cal_source'      ,     'SPICE kernels', $
+                   'xsubtitle'       ,     '[sec]', $
+                   'ysubtitle'       ,     '[Unit vector]');, $
                    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
-                   ;'zsubtitle'       ,     '[Attitude]')          
-                ;-------------  limit ---------------- 
-                limit=create_struct(   $               
-                  'char_size' ,     1.2                      ,$    
-                  'xtitle' ,        str_xtitle                   ,$   
-                  'ytitle' ,        'mvn-att_(Look-vector_J2000-frame)'                 ,$   
-                  'yrange' ,        [1.1*min(mvn_att_j2000),1.1*max(mvn_att_j2000)] ,$   
-                  'ystyle'  ,       1.                       ,$ 
-                  'labels',         ['Xx', 'Xy', 'Xz', 'Yx', 'Yy', 'Yz', 'Zx', 'Zy', 'Zz'], $ 
+                   ;'zsubtitle'       ,     '[Attitude]')
+                ;-------------  limit ----------------
+                limit=create_struct(   $
+                  'char_size' ,     1.2                      ,$
+                  'xtitle' ,        str_xtitle                   ,$
+                  'ytitle' ,        'mvn-att_(Look-vector_J2000-frame)'                 ,$
+                  'yrange' ,        [1.1*min(mvn_att_j2000),1.1*max(mvn_att_j2000)] ,$
+                  'ystyle'  ,       1.                       ,$
+                  'labels',         ['Xx', 'Xy', 'Xz', 'Yx', 'Yy', 'Yz', 'Zx', 'Zy', 'Zz'], $
                   'labflag',        1, $
-                  ;'ztitle' ,        'Z-title'                ,$   
-                  ;'zrange' ,        [min(data.y),max(data.y)],$                        
-                  ;'spec'            ,     1, $           
+                  ;'ztitle' ,        'Z-title'                ,$
+                  ;'zrange' ,        [min(data.y),max(data.y)],$
+                  ;'spec'            ,     1, $
                   ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
                   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
-                  'noerrorbars', 1)   
+                  'noerrorbars', 1)
                ;---------------------------------
                store_data, 'mvn_lpw_anc_mvn_att_j2000', data={x:unix_in, y:ydata, flag:att_flag}, dlimit=dlimit, limit=limit
 
@@ -1470,7 +1482,7 @@ for bb = 0, 2 do ydata[*,6+bb] = mvn_att_mso[bb,2,*]
 
                 ;Store as tplot variable:
                 ;--------------- dlimit   ------------------
-                dlimit=create_struct(   $                           
+                dlimit=create_struct(   $
                    'Product_name',                  'mvn_lpw_anc_mvn_att_mso', $
                    'Project',                       cdf_istp[12], $
                    'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
@@ -1480,13 +1492,13 @@ for bb = 0, 2 do ydata[*,6+bb] = mvn_att_mso[bb,2,*]
                    'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
                    'Descriptor',                    cdf_istp[5], $
                    'PI_name',                       cdf_istp[6], $
-                   'PI_affiliation',                cdf_istp[7], $     
+                   'PI_affiliation',                cdf_istp[7], $
                    'TEXT',                          cdf_istp[8], $
-                   'Mission_group',                 cdf_istp[9], $     
+                   'Mission_group',                 cdf_istp[9], $
                    'Generated_by',                  cdf_istp[10],  $
                    'Generation_date',                today_date+' # '+t_routine, $
                    'Rules of use',                  cdf_istp[11], $
-                   'Acknowledgement',               cdf_istp[13],   $    
+                   'Acknowledgement',               cdf_istp[13],   $
                    'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
                    'y_catdesc',                     'MAVEN attitude (pointing), in the Mars-Sun-orbit (MSO) frame.', $
                    ;'v_catdesc',                     'test dlimit file, v', $    ;###
@@ -1513,38 +1525,38 @@ for bb = 0, 2 do ydata[*,6+bb] = mvn_att_mso[bb,2,*]
                    'Time_end'        ,     time_end, $
                    'Time_field'      ,     time_field, $
                    'SPICE_kernel_version', kernel_version, $
-                   'SPICE_kernel_flag'      ,     spice_used, $                       
-                   'L0_datafile'     ,     L0_datafile , $ 
-                   'cal_vers'        ,     kernel_version ,$     
+                   'SPICE_kernel_flag'      ,     spice_used, $
+                   'L0_datafile'     ,     L0_datafile , $
+                   'cal_vers'        ,     kernel_version ,$
                    'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,     'No calibration file used' , $
-                   'cal_source'      ,     'SPICE kernels', $     
-                   'xsubtitle'       ,     '[sec]', $   
-                   'ysubtitle'       ,     '[Unit vector (MSO frame)]');, $                     
+                   'cal_source'      ,     'SPICE kernels', $
+                   'xsubtitle'       ,     '[sec]', $
+                   'ysubtitle'       ,     '[Unit vector (MSO frame)]');, $
                    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
-                   ;'zsubtitle'       ,     '[Attitude]')          
-                ;-------------  limit ---------------- 
-                limit=create_struct(   $               
-                  'char_size' ,     1.2                      ,$    
-                  'xtitle' ,        str_xtitle                   ,$   
-                  'ytitle' ,        'mvn-attitude'                 ,$   
-                  'yrange' ,        [1.1*min(mvn_att_mso),1.1*max(mvn_att_mso)] ,$   
-                  'ystyle'  ,       1.                       ,$ 
+                   ;'zsubtitle'       ,     '[Attitude]')
+                ;-------------  limit ----------------
+                limit=create_struct(   $
+                  'char_size' ,     1.2                      ,$
+                  'xtitle' ,        str_xtitle                   ,$
+                  'ytitle' ,        'mvn-attitude'                 ,$
+                  'yrange' ,        [1.1*min(mvn_att_mso),1.1*max(mvn_att_mso)] ,$
+                  'ystyle'  ,       1.                       ,$
                   'labels',         ['Xx', 'Xy', 'Xz', 'Yx', 'Yy', 'Yz', 'Zx', 'Zy', 'Zz'], $
-                  'labflag',        1, $ 
-                  ;'ztitle' ,        'Z-title'                ,$   
-                  ;'zrange' ,        [min(data.y),max(data.y)],$                        
-                  ;'spec'            ,     1, $           
+                  'labflag',        1, $
+                  ;'ztitle' ,        'Z-title'                ,$
+                  ;'zrange' ,        [min(data.y),max(data.y)],$
+                  ;'spec'            ,     1, $
                   ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
                   ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
                   ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
-                  'noerrorbars', 1)   
+                  'noerrorbars', 1)
                ;---------------------------------
                store_data, 'mvn_lpw_anc_mvn_att_mso', data={x:unix_in, y:ydata, flag:att_flag}, dlimit=dlimit, limit=limit
                ;---------------------------------
-              
+
 if keyword_set(not_quiet) then begin
     ;Plot offsets:
     ;window, 0, xsize=600, ysize=600  ;makes some machines crash using the window routine
@@ -1574,13 +1586,13 @@ for aa = 0l, nele-1 do begin
     ;tmatrix_j2000[*,*,aa] = mat_j_2[*,*]
     tmatrix_mso[*,*,aa] = mat_mso[*,*]
   endif else tmatrix_mso[*,*,aa] = !values.f_nan
-  
+
   if foundb eq 1. then begin  ;if we have pointing info, carry on...
     mat_iau = spice_body_att('IAU_MARS', 'MAVEN_SPACECRAFT', utc_time[aa])  ;one at a time to Davin's routine  ;matrix to convert from MARS_MSO to MAVEN s/c frame.
 
     tmatrix_iau[*,*,aa] = mat_iau[*,*]
-  endif else tmatrix_iau[*,*,aa] = !values.f_nan 
-  
+  endif else tmatrix_iau[*,*,aa] = !values.f_nan
+
 endfor
 
 
@@ -1589,10 +1601,10 @@ mvn_vel_sc_iau = dblarr(nele,3)
 
 for aa = 0L, nele-1 do begin
   ;Transform MAVEN xyz vectors:
-  cspice_mxv, tmatrix_mso[*,*,aa], transpose(mvn_vel_mso[aa,0:2]), mvn_ram   ;can only take one vector at a time.  
+  cspice_mxv, tmatrix_mso[*,*,aa], transpose(mvn_vel_mso[aa,0:2]), mvn_ram   ;can only take one vector at a time.
   mvn_vel_sc_mso[aa,*] = mvn_ram
   cspice_mxv, tmatrix_iau[*,*,aa], transpose(mvn_vel_iau[aa,0:2]), mvn_ram   ;can only take one vector at a time.
-  mvn_vel_sc_iau[aa,*] = mvn_ram  
+  mvn_vel_sc_iau[aa,*] = mvn_ram
 endfor  ;over aa
 
 ;Add in total vel vector here:
@@ -1618,13 +1630,13 @@ dlimit=create_struct(   $
   'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
   'Descriptor',                    cdf_istp[5], $
   'PI_name',                       cdf_istp[6], $
-  'PI_affiliation',                cdf_istp[7], $     
+  'PI_affiliation',                cdf_istp[7], $
   'TEXT',                          cdf_istp[8], $
-  'Mission_group',                 cdf_istp[9], $     
+  'Mission_group',                 cdf_istp[9], $
   'Generated_by',                  cdf_istp[10],  $
   'Generation_date',                today_date+' # '+t_routine, $
   'Rules of use',                  cdf_istp[11], $
-  'Acknowledgement',               cdf_istp[13],   $ 
+  'Acknowledgement',               cdf_istp[13],   $
   'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
   'y_catdesc',                     'MAVEN attitude (pointing), in the MAVEN s/c frame.', $
   ;'v_catdesc',                     'test dlimit file, v', $    ;###
@@ -1771,7 +1783,7 @@ if keyword_set(moons) then begin
     observer = 'Mars'
     target1 = 'PHOBOS'
     target2 = 'DEIMOS'
-    
+
     ;if (spk_coverage eq 'all') and (ck_coverage eq 'all') then stateezr = spice_body_pos(target, observer, utc=utc_time, frame=frame, abcorr=abcorr) else begin  ;DAVINS ROUTINE
     if (spk_coverage eq 'all') then begin
       cspice_spkezr, target1, et_time, frame1, abcorr, observer, stateezr1, ltime ;state contains R and V [0:5], USE FOR NOW UNTIL DAVIN ADDS VEL TO HIS ABOVE
@@ -1789,7 +1801,7 @@ if keyword_set(moons) then begin
           cspice_spkezr, target1, et_time[aa], frame1, abcorr, observer, state_temp1, ltime   ;USE THIS FOR NOW UNTIL DAVINS HAS VEL
           cspice_spkezr, target1, et_time[aa], frame2, abcorr, observer, state_temp2, ltime   ;USE THIS FOR NOW UNTIL DAVINS HAS VEL
           cspice_spkezr, target2, et_time[aa], frame1, abcorr, observer, state_temp3, ltime   ;USE THIS FOR NOW UNTIL DAVINS HAS VEL
-          cspice_spkezr, target2, et_time[aa], frame2, abcorr, observer, state_temp4, ltime   ;USE THIS FOR NOW UNTIL DAVINS HAS VEL      
+          cspice_spkezr, target2, et_time[aa], frame2, abcorr, observer, state_temp4, ltime   ;USE THIS FOR NOW UNTIL DAVINS HAS VEL
         endif else begin
             state_temp1=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]
             state_temp2=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]
@@ -1811,7 +1823,7 @@ if keyword_set(moons) then begin
         stateezr2[3,aa] = state_temp2[3]  ;vel
         stateezr2[4,aa] = state_temp2[4]
         stateezr2[5,aa] = state_temp2[5]
-        
+
         stateezr3[0,aa] = state_temp3[0]  ;add time step to overall array
         stateezr3[1,aa] = state_temp3[1]
         stateezr3[2,aa] = state_temp3[2]
@@ -1824,8 +1836,8 @@ if keyword_set(moons) then begin
         stateezr4[2,aa] = state_temp4[2]
         stateezr4[3,aa] = state_temp4[3]  ;vel
         stateezr4[4,aa] = state_temp4[4]
-        stateezr4[5,aa] = state_temp4[5]        
-        
+        stateezr4[5,aa] = state_temp4[5]
+
       endfor
     endelse
 
@@ -1833,9 +1845,9 @@ if keyword_set(moons) then begin
     pho_pos_iau = dblarr(nele,4)
     dei_pos_mso = dblarr(nele,4)  ;x,y,z,total (4 rows)
     dei_pos_iau = dblarr(nele,4)
-    
+
     Rmars = 3376.0d ;Mars radius, km
-    
+
     pho_pos_mso[*,0] = stateezr1[0,*]/Rmars  ;positions in Rmars
     pho_pos_mso[*,1] = stateezr1[1,*]/Rmars  ;positions in Rmars
     pho_pos_mso[*,2] = stateezr1[2,*]/Rmars  ;positions in Rmars
@@ -1844,7 +1856,7 @@ if keyword_set(moons) then begin
     pho_pos_iau[*,0] = stateezr2[0,*]/Rmars  ;positions in Rmars
     pho_pos_iau[*,1] = stateezr2[1,*]/Rmars  ;positions in Rmars
     pho_pos_iau[*,2] = stateezr2[2,*]/Rmars  ;positions in Rmars
-    pho_pos_iau[*,3] = sqrt(pho_pos_iau[*,0]^2 + pho_pos_iau[*,1]^2 + pho_pos_iau[*,2]^2)  ;total radius    
+    pho_pos_iau[*,3] = sqrt(pho_pos_iau[*,0]^2 + pho_pos_iau[*,1]^2 + pho_pos_iau[*,2]^2)  ;total radius
 
     dei_pos_mso[*,0] = stateezr3[0,*]/Rmars  ;positions in Rmars
     dei_pos_mso[*,1] = stateezr3[1,*]/Rmars  ;positions in Rmars
@@ -1854,7 +1866,7 @@ if keyword_set(moons) then begin
     dei_pos_iau[*,0] = stateezr4[0,*]/Rmars  ;positions in Rmars
     dei_pos_iau[*,1] = stateezr4[1,*]/Rmars  ;positions in Rmars
     dei_pos_iau[*,2] = stateezr4[2,*]/Rmars  ;positions in Rmars
-    dei_pos_iau[*,3] = sqrt(dei_pos_iau[*,0]^2 + dei_pos_iau[*,1]^2 + dei_pos_iau[*,2]^2)  ;total radius    
+    dei_pos_iau[*,3] = sqrt(dei_pos_iau[*,0]^2 + dei_pos_iau[*,1]^2 + dei_pos_iau[*,2]^2)  ;total radius
 
 
     ;Store as tplot variable:
@@ -2015,7 +2027,7 @@ if keyword_set(moons) then begin
     ;---------------------------------
     store_data, 'mvn_lpw_anc_pho_pos_iau', data={x:unix_in, y:pho_pos_iau, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
     ;---------------------------------
-    
+
     ;-------
     ;DEIMOS:
     ;--------------- dlimit   ------------------
@@ -2345,19 +2357,19 @@ if keyword_set(moons) then begin
     ;---------------------------------
     store_data, 'mvn_lpw_anc_deimos_pos_mvn', data={x:unix_in, y:pos_DEIMOS, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
     ;---------------------------------
-  
+
 endif  ;moons
 
-    
+
 if keyword_set(css) then begin
       ;Load CSS kernel, de file (planet ephemeris) and lsk file. Get them from tplot variable.
-      
-      
+
+
       cssfile = '/Volumes/spg/maven/data/misc/spice/naif/generic_kernels/spk/comets/siding_spring_s46.bsp'  ;hard coded, only one spk produced.
       css_kernels_to_check = cssfile
       css_loaded_kernels = cssfile
       cspice_furnsh, cssfile
-  
+
       ;Get the positions of the moons Phobos and Deimos in MSO and IAU frames:
       ;MAVEN position and velocity in MSO frame:
       ;General info:
@@ -2366,15 +2378,15 @@ if keyword_set(css) then begin
       abcorr   = 'LT+S'
       observer = 'Mars'
       target1 = '1003228'  ;CSS NAIF code
-      
-      css_cov = mvn_lpw_anc_covtest(unix_in, css_kernels_to_check, 1003228)  ;for now use unix times, may change to ET. 
+
+      css_cov = mvn_lpw_anc_covtest(unix_in, css_kernels_to_check, 1003228)  ;for now use unix times, may change to ET.
       if min(css_cov) eq 1 then css_coverage = 'all' else begin
         css_coverage = 'some'
         print, "### WARNING ###: CSS position (spk) information not available for ", n_elements(where(css_cov) eq 0), " data point(s)."
-      endelse  
-      
+      endelse
+
       css_flag = (css_cov ne 1)
-    
+
       if (css_coverage eq 'all') then begin
         cspice_spkezr, target1, et_time, frame1, abcorr, observer, stateezr1, ltime ;state contains R and V [0:5], USE FOR NOW UNTIL DAVIN ADDS VEL TO HIS ABOVE
         cspice_spkezr, target1, et_time, frame2, abcorr, observer, stateezr2, ltime  ;contains R and V in the IAU_MARS frame
@@ -2390,7 +2402,7 @@ if keyword_set(css) then begin
             state_temp1=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]
             state_temp2=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]
           endelse
-    
+
           ;if we don't have coverage, use nans instead
           stateezr1[0,aa] = state_temp1[0]  ;add time step to overall array
           stateezr1[1,aa] = state_temp1[1]
@@ -2405,27 +2417,27 @@ if keyword_set(css) then begin
           stateezr2[3,aa] = state_temp2[3]  ;vel
           stateezr2[4,aa] = state_temp2[4]
           stateezr2[5,aa] = state_temp2[5]
-    
+
         endfor
       endelse
-    
+
       css_pos_mso = dblarr(nele,4)  ;x,y,z,total (4 rows)
       css_pos_iau = dblarr(nele,4)
       css_pos_mso = dblarr(nele,4)  ;x,y,z,total (4 rows)
       css_pos_iau = dblarr(nele,4)
-    
+
       Rmars = 3376.0d ;Mars radius, km
-    
+
       css_pos_mso[*,0] = stateezr1[0,*]/Rmars  ;positions in Rmars
       css_pos_mso[*,1] = stateezr1[1,*]/Rmars  ;positions in Rmars
       css_pos_mso[*,2] = stateezr1[2,*]/Rmars  ;positions in Rmars
       css_pos_mso[*,3] = sqrt(css_pos_mso[*,0]^2 + css_pos_mso[*,1]^2 + css_pos_mso[*,2]^2)  ;total radius
-   
+
       css_pos_iau[*,0] = stateezr2[0,*]/Rmars  ;positions in Rmars
       css_pos_iau[*,1] = stateezr2[1,*]/Rmars  ;positions in Rmars
       css_pos_iau[*,2] = stateezr2[2,*]/Rmars  ;positions in Rmars
       css_pos_iau[*,3] = sqrt(css_pos_iau[*,0]^2 + css_pos_iau[*,1]^2 + css_pos_iau[*,2]^2)  ;total radius
-        
+
       ;Store as tplot variable:
       ;-------
       ;CSS:
@@ -2506,7 +2518,7 @@ if keyword_set(css) then begin
       ;---------------------------------
       store_data, 'mvn_lpw_anc_css_pos_mso', data={x:unix_in, y:css_pos_mso, flag:css_flag}, dlimit=dlimit, limit=limit
       ;---------------------------------
-    
+
       ;--------------- dlimit   ------------------
       dlimit=create_struct(   $
         'Product_name',                  'mvn_lpw_anc_css_pos_iau', $
@@ -2584,7 +2596,7 @@ if keyword_set(css) then begin
       ;---------------------------------
       store_data, 'mvn_lpw_anc_css_pos_iau', data={x:unix_in, y:css_pos_iau, flag:css_flag}, dlimit=dlimit, limit=limit
       ;---------------------------------
-      
+
 endif
 
 
@@ -2598,32 +2610,32 @@ found = cspice_bodfnd( 499, "RADII" )
 if (found) then begin
       cspice_bodvrd, 'MARS', "RADII", 499, radii
       flat = (RADII[0] - RADII[2])/RADII[0]  ;flattening coefficient between polar and equatorial radii.
-      
+
       cspice_recgeo, mvn_pos_iau_cp, radii[0], flat, lon, lat, alt   ;mvn_pos_iau is 3XN matrix of position.
-      
+
       ;Covnert radians to degrees:
       lon = lon * (180./!pi)
       lat = lat * (180./!pi)
-      
+
       ;Rearrange arrays for tplot storage:
       longlat = fltarr(nele,2)
       longlat[*,0] = lon
       longlat[*,1] = lat
-      
+
       alt_iau = alt
-      
+
       ;Store data:
       store_data, 'mvn_lpw_anc_mvn_longlat_iau', data={x:unix_in, y:longlat}
       store_data, 'mvn_lpw_anc_mvn_alt_iau', data={x:unix_in, y:alt_iau}
-      
-    if keyword_set(notready) then begin  
+
+    if keyword_set(notready) then begin
       ;COROTATION:
       mvn_lpw_anc_corotation, CoRoV_iau=CoRoV_iau
-      
+
       ;Transform IAU to MSO and SC frames:
       CoRoV_MSO = dblarr(nele,3)  ;store CoRo information in MSO, x in first column, y in second, z in third
       CoRoV_SC = CoRoV_MSO
-    
+
     ;Here, need to check that there is always pointing info for MAVEN. Go through each timestep and check there is pointing.
     ;Use the encoded clock time, as determined at start of code using SPICE
     tmatrix_sc = dblarr(3,3,nele)  ;store the rotation matrix in
@@ -2635,34 +2647,34 @@ if (found) then begin
         mat_mso = spice_body_att('IAU_MARS', 'MAVEN_MSO', utc_time[aa])  ;one at a time to Davin's routine  ;matrix to convert from MARS_MSO to MAVEN s/c frame.
         tmatrix_mso[*,*,aa] = mat_mso[*,*]
       endif else tmatrix_mso[*,*,aa] = !values.f_nan
-      
+
       if foundb eq 1. then begin  ;if we have pointing info, carry on...
-        mat_sc = spice_body_att('IAU_MARS', 'MAVEN_SPACECRAFT', utc_time[aa])  ;one at a time to Davin's routine  ;matrix to convert from MARS_MSO to MAVEN s/c frame.   
+        mat_sc = spice_body_att('IAU_MARS', 'MAVEN_SPACECRAFT', utc_time[aa])  ;one at a time to Davin's routine  ;matrix to convert from MARS_MSO to MAVEN s/c frame.
         tmatrix_sc[*,*,aa] = mat_sc[*,*]
-      endif else tmatrix_sc[*,*,aa] = !values.f_nan 
-      
+      endif else tmatrix_sc[*,*,aa] = !values.f_nan
+
     endfor
-        
-    
+
+
     for aa = 0L, nele-1 do begin
       ;Transform MAVEN xyz vectors:
-      cspice_mxv, tmatrix_mso[*,*,aa], transpose(CoRoV_iau[aa,0:2]), CoRoV_MSO_TMP   ;can only take one vector at a time.  
+      cspice_mxv, tmatrix_mso[*,*,aa], transpose(CoRoV_iau[aa,0:2]), CoRoV_MSO_TMP   ;can only take one vector at a time.
       CoRoV_MSO[aa,*] = CoRoV_MSO_TMP
       cspice_mxv, tmatrix_sc[*,*,aa], transpose(CoRoV_iau[aa,0:2]), CoRoV_SC_TMP   ;can only take one vector at a time.
-      CoRoV_SC[aa,*] = CoRoV_SC_TMP 
+      CoRoV_SC[aa,*] = CoRoV_SC_TMP
     endfor  ;over aa
-    
+
     ;Add in total vel vector here:
     CoRoV_MSO2 = dblarr(nele,4)
     CoRoV_SC2 = dblarr(nele,4)
-    
+
     for aa = 0, 2 do CoRoV_MSO2[*,aa] = CoRoV_MSO[*,aa]  ;add in x,y,z
     CoRoV_MSO2[*,3] = sqrt(CoRoV_MSO2[*,0]^2 + CoRoV_MSO2[*,1]^2 + CoRoV_MSO2[*,2]^2)  ;total
-    
+
     for aa = 0, 2 do CoRoV_SC2[*,aa] = CoRoV_SC[*,aa]  ;add in x,y,z
     CoRoV_SC2[*,3] = sqrt(CoRoV_SC2[*,0]^2 + CoRoV_SC2[*,1]^2 + CoRoV_SC2[*,2]^2)  ;total
-  
-  
+
+
       ;--------------- dlimit   ------------------
     dlimit=create_struct(   $
       'Product_name',                  'mvn_lpw_anc_mvn_CoRoV_SC', $
@@ -2740,7 +2752,7 @@ if (found) then begin
     ;---------------------------------
     store_data, 'mvn_lpw_anc_mvn_CoRoV_SC', data={x:unix_in, y:CoRoV_SC2, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
     ;---------------------------------
-    
+
     ;--------------- dlimit   ------------------
     dlimit=create_struct(   $
       'Product_name',                  'mvn_lpw_anc_mvn_CoRoV_IAU', $
@@ -2830,11 +2842,10 @@ mvn_lpw_anc_boom_mars_shadow, unix_in   ;is MAVEN in Mars' shadow or not
 
 ;==============
 
-mvn_lpw_anc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11
+if ~KEYWORD_SET(dont_unload) THEN mvn_lpw_anc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11
 
 ;print, "==========================="
 ;print, "Routine finished"
 ;print, "==========================="
 ;stop
 end
-

@@ -15,9 +15,9 @@
 ; HISTORY:
 ;   Created by Matt Fillingim
 ; VERSION:
-;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-06-01 15:40:56 -0700 (Mon, 01 Jun 2015) $
-;   $LastChangedRevision: 17776 $
+;   $LastChangedBy: mcfadden $
+;   $LastChangedDate: 2015-10-09 15:35:33 -0700 (Fri, 09 Oct 2015) $
+;   $LastChangedRevision: 19043 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_readcdf_pad.pro $
 ;
 ;-
@@ -34,7 +34,7 @@ pro mvn_swe_readcdf_pad, infile, structure
   n_el = 6                      ;  6 elevations
   n_a = swe_pad_struct.nbins    ; 16 pitch angles
 
-  if (data_type(infile) eq 0) then begin
+  if (size(infile,/type) eq 0) then begin
     print, 'You must specify a file name.'
     return
   endif
@@ -160,7 +160,7 @@ pro mvn_swe_readcdf_pad, infile, structure
 
   group = alog(binning)/alog(2.)
 
-  for i=0,(nrec-1) do dt_arr[*, *, i] = (2.^group[i])*dt_arr[*,*,i]
+  for i=0l,(nrec-1) do dt_arr[*, *, i] = (2.^group[i])*dt_arr[*,*,i]
 
   structure.dt_arr = dt_arr
   structure.group = group
@@ -175,7 +175,7 @@ pro mvn_swe_readcdf_pad, infile, structure
 
   CDF_VARGET, id, 'energy', tmp_energy, /ZVAR ; [64]
   energy = fltarr(n_e, n_az, nrec)
-  for i = 0, nrec-1 do energy[*,*,i] = tmp_energy # replicate(1.,n_az)
+  for i = 0l, nrec-1 do energy[*,*,i] = tmp_energy # replicate(1.,n_az)
 
   structure.energy = energy
 
@@ -260,7 +260,7 @@ pro mvn_swe_readcdf_pad, infile, structure
 
   gf_engy = geom_factor*(g_engy # replicate(1., n_az))
   gfe = fltarr(n_e, n_az, nrec)
-  for i=0,(nrec-1) do gfe[*,*,i] = gf_engy*g_pa[*,*,i]
+  for i=0l,(nrec-1) do gfe[*,*,i] = gf_engy*g_pa[*,*,i]
 
   structure.gf = gfe
 

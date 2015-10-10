@@ -24,6 +24,10 @@
 ;            str_xtitle       text out
 ;            kernel_version   text out
 ;            unix_time       this is the full time arry in unix time
+;            
+;KEYWORDS:
+;Set /clear_kernels to clear SPICE kernels from IDL memory once run. DO NOT set this when processing L0 data, as kernels must then be looked up from NAIF for each pkt variable.
+;
 ;Example:
 ; time = mvn_lpw_pkt_clocks_spice([0123456789], [12345]) ;for MET time of 0123456789.12345
 ; "time" will be a string array containing the outputs. 
@@ -40,12 +44,14 @@
 ;
 ;04/29/2014 CF: added automated kernel loading added. Also checks to see if times are predicted or reconstructed. 
 ;;140718 clean up for check out L. Andersson
+;2015-10-08 CMF made clearing SPICE kernels a keyword.
+;
 ;-
 
 
 
 
-pro mvn_lpw_anc_clocks_spice, sclk_in1, sclk_in2,clock_field_str,clock_start_t,clock_end_t,spice,spice_used,str_xtitle,kernel_version,unix_time2
+pro mvn_lpw_anc_clocks_spice, sclk_in1, sclk_in2,clock_field_str,clock_start_t,clock_end_t,spice,spice_used,str_xtitle,kernel_version,unix_time2, clear_kernels=clear_kernels
 
 ;------------------------------------------------
           spice_used = 'SPICE used'
@@ -256,7 +262,7 @@ time_check = mvn_lpw_anc_spice_time_check(et_time[nele_sclk-1])  ;give routine t
 str_xtitle = str_xtitle+' '+time_check  ;add to str_xtitle
 ;------------
 
-mvn_lpw_anc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11
+if keyword_set(clear_kernels) then mvn_lpw_anc_clear_spice_kernels ;Clear kernel_verified flag, jmm, 2015-02-11   ;CMF made this a keyword 2015-10-08
 
 ;Append values to array:
 tt = [[sclk], [utc_time], [string(et_time, format='(F16.5)')], $

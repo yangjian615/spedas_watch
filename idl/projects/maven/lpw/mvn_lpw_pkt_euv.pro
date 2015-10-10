@@ -452,25 +452,12 @@ pro mvn_lpw_pkt_euv, output,lpw_const,tplot_var=tplot_var, spice=spice
         'Generation_date',                today_date+' # '+t_routine, $
         'Rules_of_use',                  cdf_istp[11], $
         'Acknowledgement',               cdf_istp[13],   $
-        'Title',                         'MAVEN RAW LPW raw EUV', $   ;####            ;As this is L0b, we need all info here, as there's no prd file for this
         'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
-        'y_catdesc',                     'EUV', $    ;### ARE UNITS CORRECT? v/m?
-        ;'v_catdesc',                     'test dlimit file, v', $    ;###
-        'dy_catdesc',                    'Error on the data.', $     ;###
-        ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
-        'flag_catdesc',                  'test dlimit file, flag.', $   ; ###
+        'y_catdesc',                     'See labels for individual lines', $    ;
         'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
-        'y_Var_notes',                   'EUV notes', $
-        ;'v_Var_notes',                   'Frequency bins', $
-        'dy_Var_notes',                  'The value of dy is the +/- error value on the data.', $
-        ;'dv_Var_notes',                   'Error on frequency', $
-        'flag_Var_notes',                'Flag variable', $
-        'xFieldnam',                     'x: More information', $      ;###
-        'yFieldnam',                     'y: More information', $
-        'vFieldnam',                     'v: More information', $
-        'dyFieldnam',                    'dy: More information', $
-        'dvFieldnam',                    'dv: More information', $
-        'flagFieldnam',                  'flag: More information', $
+        'y_Var_notes',                   'See labels for individual lines', $
+        'xFieldnam',                     'x: UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
+        'yFieldnam',                     'y: see labels for individual lines', $
         'derivn',                        'Equation of derivation', $    ;####
         'sig_digits',                    '# sig digits', $ ;#####
         'SI_conversion',                 'Convert to SI units', $  ;####

@@ -20,9 +20,9 @@
 ;PLEASE DO NOT USE this routine within general "LOAD" routines using the LOAD keyword. "LOAD" routines should assume that SPICE kernels are already loaded.
 ; 
 ;Author: Davin Larson  - January 2014
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-10-08 18:01:24 -0700 (Thu, 08 Oct 2015) $
-; $LastChangedRevision: 19038 $
+; $LastChangedBy: rlillis2 $
+; $LastChangedDate: 2015-10-09 13:19:51 -0700 (Fri, 09 Oct 2015) $
+; $LastChangedRevision: 19042 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear,reconstruct=reconstruct
@@ -66,7 +66,7 @@ if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
                append_array,kernels,  this_dir+'kernels/ik/maven_lpw.ti'  
                append_array,kernels,  this_dir+'kernels/ik/maven_mag.ti'  
                append_array,kernels,  this_dir+'kernels/ik/maven_ngims.ti'  
-               append_array,kernels,  this_dir+'kernels/ik/maven_sep.ti'  
+               append_array,kernels,  this_dir+'kernels/ik/maven_sep_v12.ti'  
                append_array,kernels,  this_dir+'kernels/ik/maven_static.ti'  
                append_array,kernels,  this_dir+'kernels/ik/maven_swea.ti'  
                append_array,kernels,  this_dir+'kernels/ik/maven_swia.ti'  
