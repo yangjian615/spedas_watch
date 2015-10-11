@@ -28,6 +28,7 @@
 ;  INDEX:  if set then the indices are returned.
 ;  BYTES:  if set then a byte array is returned with same dimension as input string array (similar to STRMATCH).
 ;  NEGATE: pass only strings that do NOT match.
+;  DELIMITER: Set this to a delimiter that will break searchstring into an array of searchstrings
 ;  COUNT:  A named variable that will contain the number of matched strings.
 ;  NO_MATCH:  A named variable that will contain either a subset of searchstring that
 ;             failed to match stringarray, an array of indices to that subset, or a 
