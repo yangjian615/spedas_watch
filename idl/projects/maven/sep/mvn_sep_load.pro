@@ -9,15 +9,15 @@ pro mvn_sep_load,pathnames=pathnames,trange=trange,files=files,RT=RT,download_on
         
 ; loading the ancillary data.
 if keyword_set(ancillary) then begin
-  cdf_format = 'maven/data/sci/sep/anc/cdf/YYYY/MM/mvn_sep_anc_YYYYMMDD_v0?_r??.cdf'
+  cdf_format = 'maven/data/sci/sep/anc/cdf/YYYY/MM/mvn_sep_l2_anc_YYYYMMDD_v0?_r??.cdf'
   cdf_files = mvn_pfp_file_retrieve(cdf_format,/daily_names,trange=trange,/valid_only,/last_version)
   if CDF_files[0] eq '' then print, 'Ancillary files do not exist for this time range' else begin
   ;sav_format ='maven/data/sci/sep/anc/sav/YYYY/MM/mvn_sep_anc_YYYYMMDD_v0?_r??.sav'
   ;sav_files = mvn_pfp_file_retrieve(sav_format,/daily_names,trange=trange,/valid_only,/last_version)
     if ~keyword_set(download_only) then cdf2tplot,cdf_files
     if arg_present (anc_structure) then mvn_sep_anc_read_cdf, cdf_files, sep_ancillary = anc_structure
-  endelse
-  return
+ endelse  
+ return
 endif
           
 if keyword_set(L0) then   format = 'L0_RAW'                   
@@ -39,7 +39,6 @@ endif
 if format eq 'L2_CDF' then begin
   for sepnum = 1,2 do begin
     sepstr = 's'+strtrim(sepnum,2)
-    data_type = sepstr+'-raw-svy-full'
     data_type = sepstr+'-cal-svy-full'
     L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v03_r??.cdf'
     filenames = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange,verbose=verbose,/last_version,/valid_only)

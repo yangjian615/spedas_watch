@@ -21,8 +21,8 @@
 ; 
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: rlillis2 $
-; $LastChangedDate: 2015-10-09 13:19:51 -0700 (Fri, 09 Oct 2015) $
-; $LastChangedRevision: 19042 $
+; $LastChangedDate: 2015-10-12 10:27:18 -0700 (Mon, 12 Oct 2015) $
+; $LastChangedRevision: 19048 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear,reconstruct=reconstruct
@@ -56,7 +56,7 @@ if 1 || ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin
      'FRM':    begin                                                                                                            ; Frame kernels
 ;               append_array,kernels,  file_retrieve('MAVEN/kernels/fk/maven_v??*.tf',_extra=source,/last)                
 ;               append_array,kernels,  file_retrieve('MAVEN/misc/updates/maven_v04_draft?.tf',_extra=source,/last)
-               append_array,kernels,  this_dir+'kernels/fk/maven_v08.tf'   ; file_retrieve('MAVEN/misc/updates/maven_v04_draft?.tf',_extra=source,/last)
+               append_array,kernels,  this_dir+'kernels/fk/maven_v09.tf'   ; file_retrieve('MAVEN/misc/updates/maven_v04_draft?.tf',_extra=source,/last)
                append_array,kernels,  this_dir+'kernels/fk/maven_misc.tf'  ; Use this file to make temporary changes to the maven_v??.tf file
                end
      'IK':    begin                                                                      ; Instrument Kernels                                                                               ; Frame kernels
