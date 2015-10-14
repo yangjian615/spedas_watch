@@ -6,29 +6,32 @@
 ;         Load data from the Active Spacecraft Potential Control (ASPOC)
 ; 
 ; KEYWORDS:
-;         trange: time range of interest [starttime, endtime] with the format ['YYYY-MM-DD','YYYY-MM-DD']
-;             or to specificy less than a day ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
-;         probes: list of probes, valid values for MMS probes are ['1','2','3','4']. If no probe
-;             is specified the default is 1
-;         level: indicates level of data processing. levels include ['l1b', 'l2', 'ql', 'sitl']. 
-;             The default when no level is specified is 'l2' for data type 'aspoc' and 'l1b'
-;             for all others.
-;         datatype: data types include ['asp1', 'asp2', 'aspoc'].
-;             If no value is given the default is 'aspoc'.
-;         data_rate: instrument data rates include ['srvy', 'sitl']. The default is 'srvy'.
-;             Note only 'srvy' is available for 'aspoc' data type. 
+;         trange:       time range of interest [starttime, endtime] with the format
+;                       ['YYYY-MM-DD','YYYY-MM-DD'] or to specify more or less than a day
+;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
+;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4'].
+;                       if no probe is specified the default is probe '1'
+;         level:        indicates level of data processing. levels include ['l1b', 'l2', 'ql',
+;                       'sitl']. The default when no level is specified is 'l2' for data type 
+;                       'aspoc' and 'l1b' for all others.
+;         datatype:     data types include ['asp1', 'asp2', 'aspoc'].
+;                       If no value is given the default is 'aspoc'.
+;         data_rate:    instrument data rates include ['srvy', 'sitl']. The default is 'srvy'.
+;                       Note only 'srvy' is available for 'aspoc' data type. 
 ;         local_data_dir: local directory to store the CDF files; should be set if
-;             you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
-;         source: specifies a different system variable. By default the MMS mission system variable is !mms
+;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         source:       specifies a different system variable. By default the MMS mission system 
+;                       variable is !mms
 ;         get_support_data: not yet implemented. when set this routine will load any support data
-;             (support data is specified in the CDF file)
-;         tplotnames: names for tplot variables
-;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load
-;             routine from a terminal without an X server runningdo not set colors
-;         time_clip: clip the data to the requested time range; note that if you do not use this keyword
-;             you may load a longer time range than requested
-;         no_update: set this flag to preserve the original data. if not set and newer data is found the
-;             existing data will be overwritten
+;                       (support data is specified in the CDF file)
+;         tplotnames:   names for tplot variables
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're 
+;                       using this load routine from a terminal without an X server running
+;                       do not set colors
+;         time_clip:    clip the data to the requested time range; note that if you do not use 
+;                       this keyword you may load a longer time range than requested
+;         no_update:    set this flag to preserve the original data. if not set and newer data is 
+;                       found the existing data will be overwritten
 ; 
 ; OUTPUT:
 ; 
@@ -44,8 +47,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-06 08:33:32 -0700 (Tue, 06 Oct 2015) $
-;$LastChangedRevision: 19009 $
+;$LastChangedDate: 2015-10-13 12:32:32 -0700 (Tue, 13 Oct 2015) $
+;$LastChangedRevision: 19063 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_aspoc.pro $
 ;-
 
@@ -54,7 +57,7 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, tplotnames = tplotnames, $
                   no_color_setup = no_color_setup, instrument = instrument, $
-                  time_clip = time_clip, no_update = no_update
+                  time_clip = time_clip, no_update = no_update, suffix = suffix
                   
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -64,14 +67,15 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
     
     if undefined(level) && instrument eq 'aspoc' then level = 'l2' 
     if undefined(level) then level = 'l1b'
-
+    ; add the level to the suffix to avoid clobbering l1b and l2 data
+    if undefined(suffix) then suffix = '_'+level else suffix = '_' + level + suffix
     if undefined(data_rate) then data_rate = 'srvy'
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
-        suffix = '_' + level ; set the suffix to the level to avoid clobbering l1b and l2 data
+        suffix = suffix
         
     for tvar_idx = 0, n_elements(tplotnames)-1 do begin
         tvar_name = tplotnames[tvar_idx]
