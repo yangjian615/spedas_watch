@@ -7,7 +7,7 @@
 ;  data for use with spd_slice2d. 
 ;
 ;Calling Sequence:
-;  data = mms_get_hpca_dist(tname)
+;  data = mms_get_fpi_dist(tname, [trange=trange], [index=index], [/structure])
 ;
 ;Input:
 ;  tname: Tplot variable containing the desired data.
@@ -21,12 +21,12 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-06 19:07:42 -0700 (Tue, 06 Oct 2015) $
-;$LastChangedRevision: 19024 $
+;$LastChangedDate: 2015-10-14 17:28:32 -0700 (Wed, 14 Oct 2015) $
+;$LastChangedRevision: 19075 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_dist.pro $
 ;-
 
-function mms_get_fpi_dist, tname, structure=structure
+function mms_get_fpi_dist, tname, trange=trange, index, structure=structure
 
     compile_opt idl2
 
@@ -38,17 +38,45 @@ if name eq '' then begin
 endif
 
 ;pull data and metadata
-get_data, name, data=d, dlimits=dl
+get_data, name, ptr=p
 
-if ~is_struct(d) then begin
+if ~is_struct(p) then begin
   dprint, 'Variable: "'+tname+'" contains invalid data'
   return, 0
 endif
 
-if size(d.y,/n_dim) ne 4 then begin
+if size(*p.y,/n_dim) ne 4 then begin
   dprint, 'Variable: "'+tname+'" has wrong number of elements'
   return, 0
 endif
+
+
+; Allow calling code to request a time range and/or specify index
+; to specific sample.  This allows calling code to extract 
+; structures one at time and improves efficency in other cases.
+;-----------------------------------------------------------------
+
+;get range of indices corresponding to requested time range
+if ~undefined(trange) then begin
+  tr = time_double(trange)
+  indices = minmax(where( *p.x ge min(tr) and *p.x lt max(tr), n_times))
+endif else begin
+  n_times = n_elements(*p.x)
+  indices = [0,n_times-1]
+endelse
+
+;apply requisted index within requested time range so that calling 
+;code can loop without accessing sample times
+if ~undefined(index) then begin
+  if n_elements(index) ne 1 then return, 0
+  if index lt 0 or index gt n_times-1 then return, 0
+  indices += index
+  n_times = 1
+endif
+
+;for clarity later
+start = indices[0]
+stop = indices[1]
 
 ;get info from tplot variable name
 var_info = stregex(name, '(mms([1-4])_d([ei])s_)brstSkyMap_dist', /subexpr, /extract)
@@ -65,25 +93,17 @@ s = mms_get_fpi_info()
 ;dimensions
 ;data is stored as azimuth x elevation x energy
 ;slice code expects energy to be the first dimension
-dim = (size(d.y,/dim))[1:*]
+dim = (size(*p.y,/dim))[1:*]
 dim = dim[[2,0,1] ]
 base_arr = fltarr(dim)
 
 
 ;get support data
-azimuth_name = (tnames(var_info[1]+'startDelPhi_angle'))[0]
-if azimuth_name eq '' then begin
-  dprint, 'Cannot find azimuth data: "'+var_info[1]+'startDelPhi_angle'
-  return, 0
-endif
-
 step_name = (tnames(var_info[1]+'stepTable_parity'))[0]
 if step_name eq '' then begin
   dprint, 'Cannot find energy table data: "'+var_info[1]+'stepTable_parity'
   return, 0
 endif
-
-get_data, azimuth_name, data=azimuth 
 get_data, step_name, data=step
 
 
@@ -146,20 +166,22 @@ template = {  $
   dtheta: dtheta $
 }
 
-dist = replicate(template, n_elements(d.x))
+dist = replicate(template, n_times)
 
 
 ; Populate
 ;-----------------------------------------------------------------
-dist.time = d.x
-dist.end_time = d.x+.1499 ;TODO: get actual integration time
+dist.time = (*p.x)[start:stop]
+dist.end_time = (*p.x)[start:stop] + .1499 ;TODO: get actual integration time
 
-dist.data = transpose(d.y,[3,1,2,0])
+;shuffle data to be energy-azimuth-elevation-time
+;time must be last to be added to structure array
+dist.data = transpose((*p.y)[start:stop,*,*,*],[3,1,2,0])
 
 ;get energy values for each time sample and copy into
 ;structure array with the correct dimensions
-e0 = reform(energy_table[*,step.y], [dim[0],1,1,n_elements(d.x)])
-dist.energy = rebin( e0, [dim,n_elements(d.x)] )
+e0 = reform(energy_table[*,step.y[start:stop]], [dim[0],1,1,n_times])
+dist.energy = rebin( e0, [dim,n_times] )
 
 ;phi must be in [0,360)
 dist.phi = dist.phi mod 360

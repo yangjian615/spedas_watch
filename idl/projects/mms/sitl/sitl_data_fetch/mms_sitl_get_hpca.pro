@@ -24,8 +24,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: rickwilder $
-;$LastChangedDate: 2015-09-13 16:50:23 -0700 (Sun, 13 Sep 2015) $
-;$LastChangedRevision: 18783 $
+;$LastChangedDate: 2015-10-14 14:46:45 -0700 (Wed, 14 Oct 2015) $
+;$LastChangedRevision: 19074 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_hpca.pro $
 ;-
 
@@ -173,9 +173,13 @@ pro mms_sitl_get_hpca, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, varformat = varformat, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, fov = fov, $
                   time_clip = time_clip, no_update = no_update
-                
-
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
+    
+    
+    ;if undefined(trange) then trange = timerange() else trange = timerange(trange)
+    trange_temp = timerange()
+    
+    trange = [trange_temp(0)-2*3600d0, trange_temp(1)]
+    
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'ion'
     if undefined(level) then level = 'l1b' 
@@ -213,4 +217,6 @@ pro mms_sitl_get_hpca, trange = trange, probes = probes, datatype = datatype, $
     if datatype eq 'ion' then mms_hpca_calc_anodes_sitl, tplotnames, fov = fov
 
     for probe_idx = 0, n_elements(probes)-1 do mms_hpca_set_metadata_sitl, tplotnames, prefix = 'mms'+probes[probe_idx], fov = fov
+    
+    
 end

@@ -4,6 +4,7 @@
 ;  from MMS FPI data using spd_slice2d.
 ;
 ;  Run as script or copy-paste to command line.
+;    (examples containing loops cannot be copy-pasted to command line)
 ;
 ;
 ;Notes:
@@ -12,8 +13,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-08 13:37:49 -0700 (Thu, 08 Oct 2015) $
-;$LastChangedRevision: 19035 $
+;$LastChangedDate: 2015-10-14 18:07:03 -0700 (Wed, 14 Oct 2015) $
+;$LastChangedRevision: 19076 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_slice2d_fpi_crib.pro $
 ;-
 
@@ -29,6 +30,9 @@
 ;======================================================================
 
 
+;=============================
+; Setup and basic usage
+;=============================
 
 ;setup
 ;---------------------------------------------
@@ -48,7 +52,7 @@ name =  'mms'+probe+'_d'+species+'s_brstSkyMap_dist'
 ;reformat data from tplot variable into compatible 3D structures
 ;  -this will return a pointer to the structure array in order to save memory 
 ;---------------------------------------------
-dist = mms_get_fpi_dist(name)
+dist = mms_get_fpi_dist(name, trange=trange)
 
 
 ;load support data for later examples
@@ -84,7 +88,13 @@ slice.units = 'f (sec^3 / cm^6)'
 ;plot
 spd_slice2d_plot, slice
 
+
 stop
+
+
+;=============================
+; Field-aligned slices
+;=============================
 
 
 ;field/velocity aligned slice
@@ -99,6 +109,58 @@ slice.units = 'f (sec^3 / cm^6)'
 
 ;plot
 spd_slice2d_plot, slice
+
+
+stop
+
+
+;=============================
+; Time series
+;=============================
+
+;produce a plot of 2 seconds of data every 10 seconds for 1 minute
+time = time_double('2015-8-15/12:50')
+times = time + findgen(6) * 10.
+window = 2
+
+for i=0, n_elements(times)-1 do begin
+
+  slice = spd_slice2d(dist, time=times[i], window=window, /three)
+
+  ;verify success
+  if ~is_struct(slice) then continue
+
+  ;add slice structure to array for plotting later
+  slices = array_concat(slice,slices)
+
+endfor
+
+;set annotations (temporary)
+slices.coord = 'GSE'
+slices.units = 'f (sec^3 / cm^6)' 
+
+;create plots as needed
+spd_slice2d_plot, slices[0], window=0
+spd_slice2d_plot, slices[4], window=1
+
+
+stop
+
+
+;=============================
+; Export plots to png/eps
+;  -see makepng, popen/pclose for manual usage
+;=============================
+
+; export .png or .eps to current directory
+for i=0, n_elements(slices)-1 do begin
+
+  filename = 'fpi_'+species+'_'+time_string(slices[i].trange[0],format=2)
+
+  spd_slice2d_plot, slices[i], export=filename ;,/eps
+
+endfor
+
 
 
 end
