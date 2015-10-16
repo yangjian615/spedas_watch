@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-10-14 14:28:23 -0700 (Wed, 14 Oct 2015) $
-; $LastChangedRevision: 19073 $
+; $LastChangedDate: 2015-10-15 07:40:57 -0700 (Thu, 15 Oct 2015) $
+; $LastChangedRevision: 19078 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib_qlplots.pro $
 ;-
 
@@ -26,38 +26,28 @@ trange = ['2015-09-03', '2015-09-04']
 tplotvar = 'mms'+pid + '_hpca_' + tsid + '_RF_corrected'
 
 ; load mms survey HPCA data
-mms_load_hpca, probes=pid, trange=trange, datatype='rf_corr', level='l1b', data_rate='srvy'
+mms_load_hpca, probes=pid, trange=trange, datatype='rf_corr', level='l1b', data_rate='srvy', suffix='_srvy'
 
 ; sum over nodes
-mms_hpca_calc_anodes, anode=[5, 6], probe=pid
-mms_hpca_calc_anodes, anode=[13, 14], probe=pid
-mms_hpca_calc_anodes, anode=[0, 15], probe=pid
-
-; save so not clobbered when loading brst
-get_data, tplotvar, data=srvy_data, dlimits=dl_srvy, limits=l_srvy
-store_data, tplotvar+'_srvy', data=srvy_data, dlimits=dl_srvy, limits=l_srvy   ; save so not clobbered when loading brst
-get_data, tplotvar+'_anodes_5_6', data=srvy_data_5_6
-store_data, tplotvar+'_srvy_anodes_5_6', data=srvy_data_5_6, dlimits=dl_srvy, limits=l_srvy   ; save so not clobbered when loading brst
-get_data, tplotvar+'_anodes_13_14', data=srvy_data_13_14
-store_data, tplotvar+'_srvy_anodes_13_14', data=srvy_data_13_14, dlimits=dl_srvy, limits=l_srvy   ; save so not clobbered when loading brst
-get_data, tplotvar+'_anodes_0_15', data=srvy_data_0_15
-store_data, tplotvar+'_srvy_anodes_0_15', data=srvy_data_0_15, dlimits=dl_srvy, limits=l_srvy   ; save so not clobbered when loading brst
+mms_hpca_calc_anodes, anode=[5, 6], probe=pid, suffix='_srvy'
+mms_hpca_calc_anodes, anode=[13, 14], probe=pid, suffix='_srvy'
+mms_hpca_calc_anodes, anode=[0, 15], probe=pid, suffix='_srvy'
 
 ; do the same for burst data
-mms_load_hpca, probes=pid, trange=trange, datatype='rf_corr', level='l1b', data_rate='brst'
+mms_load_hpca, probes=pid, trange=trange, datatype='rf_corr', level='l1b', data_rate='brst', suffix='_brst'
 ; sum over nodes
-mms_hpca_calc_anodes, anode=[5, 6], probe=pid
-mms_hpca_calc_anodes, anode=[13, 14], probe=pid
-mms_hpca_calc_anodes, anode=[0, 15], probe=pid
-
-get_data, tplotvar, data=brst_data, dlimits=dl_brst, limits=l_brst
-store_data, tplotvar+'_brst', data=brst_data, dlimits=dl_brst, limits=l_brst   ; save so not clobbered when loading brst
-get_data, tplotvar+'_anodes_5_6', data=brst_data_5_6
-store_data, tplotvar+'_brst_anodes_5_6', data=brst_data_5_6, dlimits=dl_brst, limits=l_brst
-get_data, tplotvar+'_anodes_13_14', data=brst_data_13_14
-store_data, tplotvar+'_brst_anodes_13_14', data=brst_data_13_14, dlimits=dl_brst, limits=l_brst
-get_data, tplotvar+'_anodes_0-15', data=brst_data_0_15
-store_data, tplotvar+'_brst_anodes_0-15', data=brst_data_0_15, dlimits=dl_brst, limits=l_brst
+mms_hpca_calc_anodes, anode=[5, 6], probe=pid, suffix='_brst'
+mms_hpca_calc_anodes, anode=[13, 14], probe=pid, suffix='_brst'
+mms_hpca_calc_anodes, anode=[0, 15], probe=pid, suffix='_brst'
+stop
+;get_data, tplotvar, data=brst_data, dlimits=dl_brst, limits=l_brst
+;store_data, tplotvar+'_brst', data=brst_data, dlimits=dl_brst, limits=l_brst   ; save so not clobbered when loading brst
+;get_data, tplotvar+'_anodes_5_6', data=brst_data_5_6
+;store_data, tplotvar+'_brst_anodes_5_6', data=brst_data_5_6, dlimits=dl_brst, limits=l_brst
+;get_data, tplotvar+'_anodes_13_14', data=brst_data_13_14
+;store_data, tplotvar+'_brst_anodes_13_14', data=brst_data_13_14, dlimits=dl_brst, limits=l_brst
+;get_data, tplotvar+'_anodes_0-15', data=brst_data_0_15
+;store_data, tplotvar+'_brst_anodes_0-15', data=brst_data_0_15, dlimits=dl_brst, limits=l_brst
 
 ; create a tplot variable with flags for burst and survey data
 mode_var=mms_hpca_mode(tplotvar+'_brst', tplotvar+'_srvy')

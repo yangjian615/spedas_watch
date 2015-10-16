@@ -46,9 +46,9 @@
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-06 12:18:36 -0700 (Tue, 06 Oct 2015) $
-;$LastChangedRevision: 19011 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-15 15:59:10 -0700 (Thu, 15 Oct 2015) $
+;$LastChangedRevision: 19085 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi.pro $
 ;-
 
@@ -58,75 +58,79 @@ function mms_fpi_angles
             108,114,120,126,132,138,144,150,156,162,168,174] + 3
 end
 
-function mms_fpi_energies
-    nrg01 = [10.958904109589000, $
-       14.051833510123000, $
-       18.017679780904700, $
-       23.102806082448500, $
-       29.623106602709100, $
-       37.983630285592900, $
-       48.703742960593600, $
-       62.449390975440400, $
-       80.074470587586500, $
-       102.673873031106000, $
-       131.651500482625000, $
-       168.807478160251000, $
-       216.449980276406000, $
-       277.538616607854000, $
-       355.868287029812000, $
-       456.304925279898000, $
-       585.087776639255000, $
-       750.216987385536000, $
-       961.950583542695000, $
-       1233.441711847820000, $
-       1581.555729113560000, $
-       2027.917898564260000, $
-       2600.256777307640000, $
-       3334.126747794510000, $
-       4275.116699001150000, $
-       5481.682063277360000, $
-       7028.776138409860000, $
-       9012.506277013540000, $
-       11556.104191359900000, $
-       14817.581256189400000, $
-       18999.544366165800000, $
-       24361.782120892000000]
+function mms_fpi_energies, species
+    if undefined(species) || (species ne 'ion' && species ne 'electron') then begin
+        dprint, dlevel = 1, "Error, species type ('ion' or 'electron') required for FPI energies"
+        return, -1
+    endif
 
-    nrg02 = [12.409379356009200, $
-         15.911676106557200, $
-         20.402425395866400, $
-         26.160597993969600, $
-         33.543898537707400, $
-         43.010986574824500, $
-         55.149969049070800, $
-         70.714934213895700, $
-         90.672796505583000, $
-         116.263362435927000, $
-         149.076348870252000, $
-         191.150138159239000, $
-         245.098404912620000, $
-         314.272480622884000, $
-         402.969542425509000, $
-         516.699558933000000, $
-         662.527576140347000, $
-         849.512606615793000, $
-         1089.270386303560000, $
-         1396.694958070860000, $
-         1790.883907640650000, $
-         2296.324728683900000, $
-         2944.416015503820000, $
-         3775.417981638950000, $
-         4840.953472956760000, $
-         6207.214841191920000, $
-         7959.075892786910000, $
-         10205.364352263600000, $
-         13085.622371919000000, $
-         16778.775058872400000, $
-         21514.245518836000000, $
-         27586.206896551600000]
+    des_energies = [11.66161217, $
+        14.95286673, $
+        19.17301144, $
+        24.58420677, $
+        31.52260272, $
+        40.41922083, $
+        51.82672975, $
+        66.45377773, $
+        85.20901465, $
+        109.2575384, $
+        140.0932726, $
+        179.63177, $
+        230.3292099, $
+        295.3349785, $
+        378.6873127, $
+        485.5641602, $
+        622.6048397, $
+        798.322484, $
+        1023.632885, $
+        1312.532598, $
+        1682.968421, $
+        2157.952275, $
+        2766.99073, $
+        3547.917992, $
+        4549.246205, $
+        5833.179086, $
+        7479.476099, $
+        9590.4072, $
+        12297.10598, $
+        15767.71584, $
+        20217.83525, $
+        25923.91101]
+    
+    dis_energies = [11.32541789, $
+        14.54730661, $
+        18.68576787, $
+        24.00155096, $
+        30.82958391, $
+        39.60007608, $
+        50.86562406, $
+        65.33602881, $
+        83.92301755, $
+        107.7976884, $
+        138.4642969, $
+        177.8550339, $
+        228.4517655, $
+        293.4424065, $
+        376.9217793, $
+        484.1496135, $
+        621.8819424, $
+        798.7967759, $
+        1026.04087, $
+        1317.932043, $
+        1692.861289, $
+        2174.451528, $
+        2793.045997, $
+        3587.62007, $
+        4608.236949, $
+        5919.201968, $
+        7603.114233, $
+        9766.070893, $
+        12544.35193, $
+        16113.00665, $
+        20696.88294, $
+        26584.79405]
 
-    energies = (nrg01 + nrg02)/2.
-    return, energies
+    if species eq 'ion' then return, dis_energies else return, des_energies
 end
 
 pro mms_load_fpi_fix_angles, tplotnames, prefix = prefix
@@ -155,7 +159,6 @@ pro mms_load_fpi_fix_angles, tplotnames, prefix = prefix
 end
 pro mms_load_fpi_fix_spectra, tplotnames, prefix = prefix
     if undefined(prefix) then prefix = 'mms1'
-    fpi_energies = mms_fpi_energies()
 
     spectra_where = strmatch(tplotnames, prefix + '_fpi_?EnergySpectr_??')
 
@@ -172,6 +175,7 @@ pro mms_load_fpi_fix_spectra, tplotnames, prefix = prefix
                     part_direction = (spec_pieces)[n_elements(spec_pieces)-1]
                     species = strmid(spec_pieces[2], 0, 1)
                     species = species eq 'e' ? 'electron' : 'ion'
+                    fpi_energies = mms_fpi_energies(species)
                     
                     options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+species+'!C'+part_direction
                     options, tplotnames[var_idx], ysubtitle='[keV]'
@@ -186,18 +190,106 @@ pro mms_load_fpi_fix_spectra, tplotnames, prefix = prefix
     endif
 end
 
+pro mms_load_fpi_calc_omni, probe, autoscale = autoscale
+    if undefined(autoscale) then autoscale = 1
+    species = ['i', 'e']
+    species_str = ['ion', 'electron'] ; for the metadata
+    for sidx=0, n_elements(species)-1 do begin
+        obsstr='mms'+STRING(probe,FORMAT='(I1)')+'_fpi_'+species[sidx]
+        
+        ; get the energy spectra from the tplot variables
+        get_data, obsstr+'EnergySpectr_pX', data=pX, dlimits=dl
+        get_data, obsstr+'EnergySpectr_mX', data=mX, dlimits=dl
+        get_data, obsstr+'EnergySpectr_pY', data=pY, dlimits=dl
+        get_data, obsstr+'EnergySpectr_mY', data=mY, dlimits=dl
+        get_data, obsstr+'EnergySpectr_pZ', data=pZ, dlimits=dl
+        get_data, obsstr+'EnergySpectr_mZ', data=mZ, dlimits=dl
+        
+        ; skip avg/sum when we can't find the tplot names
+        if ~is_struct(pX) || ~is_struct(mX) || ~is_struct(pY) || ~is_struct(mY) || ~is_struct(pZ) || ~is_struct(mZ) then continue
+        
+        e_omni_sum=(pX.Y+mX.Y+pY.Y+mY.Y+pZ.Y+mZ.Y)
+        e_omni_avg=e_omni_sum/6.0
+
+        if is_array(e_omni_sum) then begin
+            store_data, obsstr+'EnergySpectr_omni_avg', data = {x:pX.X, y:e_omni_avg, v:pX.V}, dlimits=dl
+            store_data, obsstr+'EnergySpectr_omni_sum', data = {x:pX.X, y:e_omni_sum, v:pX.V}, dlimits=dl
+        endif
+    
+        ; set the metadata for omnidirectional spectra
+        options, obsstr+'EnergySpectr_omni_sum', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!Csum'
+        options, obsstr+'EnergySpectr_omni_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!Cavg'
+        options, obsstr+'EnergySpectr_omni_sum', ysubtitle='[keV]'
+        options, obsstr+'EnergySpectr_omni_avg', ysubtitle='[keV]'
+        options, obsstr+'EnergySpectr_omni_sum', ztitle='Counts'
+        options, obsstr+'EnergySpectr_omni_avg', ztitle='Counts'
+        ylim, obsstr+'EnergySpectr_omni_avg', min(pX.V), max(pX.V), 1
+        if autoscale then zlim, obsstr+'EnergySpectr_omni_avg', 0, 0, 1 else $
+            zlim, obsstr+'EnergySpectr_omni_avg', min(e_omni_avg), max(e_omni_avg), 1
+        ylim, obsstr+'EnergySpectr_omni_sum', min(pX.V), max(pX.V), 1
+        if autoscale then zlim, obsstr+'EnergySpectr_omni_sum', 0, 0, 1 else $
+            zlim, obsstr+'EnergySpectr_omni_sum', min(e_omni_sum), max(e_omni_sum), 1
+            
+        ; if autoscale isn't set, set the scale to the min/max of the average
+        if ~autoscale then zlim, obsstr+'EnergySpectr_'+['pX', 'mX', 'pY', 'mY', 'pZ', 'mZ'], min(e_omni_avg), max(e_omni_avg), 1
+    endfor
+end
+
+pro mms_load_fpi_calc_pad, probe, autoscale = autoscale
+    if undefined(autoscale) then autoscale = 1
+    species = ['i', 'e']
+    species_str = ['ion', 'electron'] ; for the metadata
+    for sidx=0, n_elements(species)-1 do begin
+        obsstr='mms'+STRING(probe,FORMAT='(I1)')+'_fpi_'+species[sidx]
+        
+        ; get the PAD from the tplot variables
+        get_data, obsstr+'PitchAngDist_lowEn', data=lowEn, dlimits=dl
+        get_data, obsstr+'PitchAngDist_midEn', data=midEn, dlimits=dl
+        get_data, obsstr+'PitchAngDist_highEn', data=highEn, dlimits=dl
+        
+        ; skip avg/sum when we can't find the tplot names
+        if ~is_struct(lowEn) || ~is_struct(midEn) || ~is_struct(highEn) then continue
+
+        e_PAD_sum=(lowEn.Y+midEn.Y+highEn.Y)
+        e_PAD_avg=e_PAD_sum/3.0
+
+        if is_array(e_PAD_sum) then begin
+            store_data, obsstr+'PitchAngDist_sum', data = {x:lowEn.X, y:e_PAD_sum, v:lowEn.V}, dlimits=dl
+            store_data, obsstr+'PitchAngDist_avg', data = {x:lowEn.X, y:e_PAD_avg, v:lowEn.V}, dlimits=dl
+        endif
+        
+        ; set the metadata for the PADs
+        options, obsstr+'PitchAngDist_sum', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!CPAD!Csum'
+        options, obsstr+'PitchAngDist_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!CPAD!Cavg'
+        options, obsstr+'PitchAngDist_sum', ysubtitle='[deg]'
+        options, obsstr+'PitchAngDist_avg', ysubtitle='[deg]'
+        options, obsstr+'PitchAngDist_sum', ztitle='Counts'
+        options, obsstr+'PitchAngDist_avg', ztitle='Counts'
+        if autoscale then zlim, obsstr+'PitchAngDist_avg', 0, 0, 1 else $
+            zlim, obsstr+'PitchAngDist_avg', min(e_PAD_avg), max(e_PAD_avg), 1
+        ylim, obsstr+'PitchAngDist_avg', 0, 180, 0
+        if autoscale then zlim, obsstr+'PitchAngDist_sum', 0, 0, 1 else $
+            zlim, obsstr+'PitchAngDist_sum', min(e_PAD_sum), max(e_PAD_sum), 1
+        ylim, obsstr+'PitchAngDist_sum', 0, 180, 0
+        
+        if ~autoscale then zlim, obsstr+'PitchAngDist_'+['lowEn', 'midEn', 'highEn'], min(e_PAD_avg), max(e_PAD_avg), 1
+    endfor
+end
+
 pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
-                  time_clip = time_clip, no_update = no_update, suffix = suffix
+                  time_clip = time_clip, no_update = no_update, suffix = suffix, $
+                  autoscale = autoscale
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['3'] ; default to MMS 3
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
     if undefined(level) then level = 'sitl' 
     if undefined(data_rate) then data_rate = 'fast'
+    if undefined(autoscale) then autoscale = 1
       
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'fpi', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
@@ -210,6 +302,8 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
         for probe_idx = 0, n_elements(probes)-1 do begin
             mms_load_fpi_fix_spectra, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem)
             mms_load_fpi_fix_angles, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem)
+            mms_load_fpi_calc_omni, probes[probe_idx], autoscale = autoscale
+            mms_load_fpi_calc_pad, probes[probe_idx]
         endfor
     endif
 end

@@ -23,6 +23,7 @@
 ;                              Hopefully you'll never have to use this outside of commissioning
 ;    get_support  : OPTIONAL - /get_support to get support data within the CDF
 ;                               Automatically called when /no_sweeps is called
+;    suffix       : OPTIONAL - appended to end of tplot  variable
 ;
 ; EXAMPLE:
 ;
@@ -38,9 +39,9 @@
 ; MODIFICATION HISTORY:
 ;
 ;
-;  $LastChangedBy: crussell $
-;  $LastChangedDate: 2015-10-14 11:38:42 -0700 (Wed, 14 Oct 2015) $
-;  $LastChangedRevision: 19071 $
+;  $LastChangedBy: rickwilder $
+;  $LastChangedDate: 2015-10-15 10:55:03 -0700 (Thu, 15 Oct 2015) $
+;  $LastChangedRevision: 19079 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_edp.pro $
 
 
@@ -52,9 +53,12 @@ pro mms_load_edp, trange=trange, $
   no_update=no_update, $
   reload=reload, $
   no_sweeps=no_sweeps, $
-  get_support=get_support
+  get_support=get_support, $
+  suffix = suffix
 
   if not keyword_set(probes) then sc = ['mms1', 'mms2', 'mms3', 'mms4'] else sc = 'mms' + strcompress(string(probes),/rem)
+
+  if not keyword_set(suffix) then suffix=''
 
 ;  status = mms_login_lasp(login_info = login_info)
 ;  if status ne 1 then return
@@ -264,11 +268,11 @@ pro mms_load_edp, trange=trange, $
 
 ;            newname = strjoin(strs, '_')
             newname = newname[0] ; <- this is stupid
-            store_data,newname, data=data, dlim=dlim
+            store_data,newname+suffix, data=data, dlim=dlim
             ;            stop
-            if newname ne dat_names[v] then del_data, dat_names[v]
+            if newname+suffix ne dat_names[v] then del_data, dat_names[v]
             ;names = [names, newname]
-            append_array, names, newname
+            append_array, names, newname+suffix
 
           endfor
           undefine, dat_names

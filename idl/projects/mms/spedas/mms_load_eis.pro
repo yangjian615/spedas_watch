@@ -62,9 +62,9 @@
 ;                 ExTOF and PHxTOF data
 ;     9/17/2015 - egrimes: large update, see svn log
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-12 13:54:05 -0700 (Mon, 12 Oct 2015) $
-;$LastChangedRevision: 19056 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-15 15:20:55 -0700 (Thu, 15 Oct 2015) $
+;$LastChangedRevision: 19084 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_eis.pro $
 ;-
 
@@ -165,6 +165,9 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix
+    
+    ; don't try to calculate omnidirectional quantities if no data was loaded
+    if undefined(tplotnames) || tplotnames[0] eq '' then return
     
     ; calculate the omni-directional quantities
     for probe_idx = 0, n_elements(probes)-1 do begin

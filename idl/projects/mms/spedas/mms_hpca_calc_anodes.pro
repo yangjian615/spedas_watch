@@ -19,9 +19,9 @@
 ;
 ; NOTES:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-30 15:43:33 -0700 (Wed, 30 Sep 2015) $
-;$LastChangedRevision: 18976 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-10-15 07:40:02 -0700 (Thu, 15 Oct 2015) $
+;$LastChangedRevision: 19077 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_hpca_calc_anodes.pro $
 ;-
 function mms_hpca_elevations
@@ -138,8 +138,8 @@ function mms_hpca_sum_fov, data_struct, fov = fov, anodes = anodes
     return, {x: times, y: data_total, v: energies}
 end
 
-pro mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probe=probe, anodes = anodes
-    sum_anodes = ['*_count_rate', '*_RF_corrected', '*_bkgd_corrected', '*_norm_counts']
+pro mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probe=probe, anodes = anodes, suffix = suffix
+    
     if ~undefined(fov) and ~undefined(anodes) then begin
         dprint, dlevel = 0, 'Error, should only specify a field of view (fov) or list of anodes, but not both.'
         return
@@ -150,6 +150,8 @@ pro mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probe=probe, anodes = 
     endif
     if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
     if undefined(tplotnames) then tplotnames = tnames()
+    if undefined(suffix) then suffix = ''
+    sum_anodes = ['*_count_rate', '*_RF_corrected', '*_bkgd_corrected', '*_norm_counts']+suffix
 
     if ~undefined(fov) then begin
         fov_str = strcompress('_elev_'+string(fov[0])+'-'+string(fov[1]), /rem)

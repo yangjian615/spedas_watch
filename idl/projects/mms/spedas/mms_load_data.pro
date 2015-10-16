@@ -83,9 +83,9 @@
 ;           the directory structure at the SDC.
 ;      
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-06 08:33:32 -0700 (Tue, 06 Oct 2015) $
-;$LastChangedRevision: 19009 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-15 15:08:57 -0700 (Thu, 15 Oct 2015) $
+;$LastChangedRevision: 19082 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -278,7 +278,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
         if ~undefined(files) then begin
             lt0 = systime(/sec) ;temporary
-            cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, suffix = suffix
+            cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, $
+                suffix = suffix, get_support_data = get_support_data
             dt_load += systime(/sec) - lt0 ;temporary
         endif
         if ~undefined(loaded_tnames) then append_array, tplotnames, loaded_tnames

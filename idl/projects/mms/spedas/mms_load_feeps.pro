@@ -29,7 +29,7 @@
 ;                       this load routine from a terminal without an X server runningdo not set 
 ;                       colors
 ;         time_clip:    clip the data to the requested time range; note that if you do not use 
-  ;                     this keyword you may load a longer time range than requested
+;                       this keyword you may load a longer time range than requested
 ;         no_update:    set this flag to preserve the original data. if not set and newer data is 
 ;                       found the existing data will be overwritten
 ;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
@@ -47,9 +47,9 @@
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-06 13:25:41 -0700 (Tue, 06 Oct 2015) $
-;$LastChangedRevision: 19015 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-15 15:20:55 -0700 (Thu, 15 Oct 2015) $
+;$LastChangedRevision: 19084 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_feeps.pro $
 ;-
 pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
@@ -89,7 +89,7 @@ pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatyp
         endfor
         store_data, prefix+sensor+'_spin'+suffix, data={x: spin_nums.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
         options, prefix+sensor+'_spin'+suffix, spec=1
-        ylim, prefix+sensor+'_spin'+suffix, 50., 500., 1
+        ylim, prefix+sensor+'_spin'+suffix, 50., 600., 1
         zlim, prefix+sensor+'_spin'+suffix, 0, 0, 1
     endfor
 end
@@ -114,8 +114,11 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix
     
-    for probe_idx = 0, n_elements(probes)-1 do mms_feeps_spin_avg, probe=probes[probe_idx], datatype=datatype, $
-        suffix = suffix
+    if undefined(tplotnames) || tplotnames[0] eq '' then return
+
+    for probe_idx = 0, n_elements(probes)-1 do $
+        mms_feeps_spin_avg, probe=probes[probe_idx], datatype=datatype, $
+            suffix = suffix
     
     ; interpolate to account for gaps in data near perigee for srvy data
     if data_rate eq 'srvy' then begin
