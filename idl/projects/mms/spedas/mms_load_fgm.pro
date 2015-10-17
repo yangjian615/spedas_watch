@@ -50,45 +50,54 @@
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-15 15:59:45 -0700 (Thu, 15 Oct 2015) $
-;$LastChangedRevision: 19086 $
+;$LastChangedDate: 2015-10-16 13:52:13 -0700 (Fri, 16 Oct 2015) $
+;$LastChangedRevision: 19092 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
 ; takes in 4-d AFG/DFG data as a tplot variable and splits into 2 tplot variables: 
 ;   1) b_total, 2) b_vector (Bx, By, Bz)
-pro mms_split_fgm_data, tplot_name, tplotnames = tplotnames, suffix = suffix
+pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate, instrument = instrument
+    if undefined(level) then level = ''
     if undefined(suffix) then suffix = ''
+    if level eq 'l2pre' then data_rate_mod = data_rate + '_l2pre' else data_rate_mod = data_rate
+    coords = ['dmpa', 'gse']
 
-    get_data, tplot_name, data=fgm_data, dlimits=fgm_dlimits
-   
-    if is_struct(fgm_data) && is_struct(fgm_dlimits) then begin
-      
-        ; strip suffix off tplot_name. this prevents suffix from occuring twice in tplot variable name
-        if suffix NE '' then tplot_name=strmid(tplot_name, 0, strpos(tplot_name, suffix))
-        store_data, tplot_name + '_bvec'+suffix, data={x: fgm_data.X, y: [[fgm_data.Y[*, 0]], [fgm_data.Y[*, 1]], [fgm_data.Y[*, 2]]]}, dlimits=fgm_dlimits
-        store_data, tplot_name + '_btot'+suffix, data={x: fgm_data.X, y: fgm_data.Y[*, 3]}, dlimits=fgm_dlimits
-        
-        ; need to add the newly created variables from the previous procedure to the list of tplot names
-        append_array, tplotnames, tplot_name + '_bvec'+suffix
-        append_array, tplotnames, tplot_name + '_btot'+suffix
-        
-        ; remove the old variable
-        del_data, tplot_name+suffix
-        tplotnames = ssl_set_complement([tplot_name+suffix], tplotnames)
-    endif else begin
-        dprint, dlevel = 0, 'Error splitting the tplot variable: ', tplot_name+suffix
-    endelse
+    for c_idx = 0, n_elements(coords)-1 do begin
+        tplot_name = probe + '_'+instrument+'_'+data_rate_mod+'_'+coords[c_idx]+suffix
+    
+        get_data, tplot_name, data=fgm_data, dlimits=fgm_dlimits
+    
+        if is_struct(fgm_data) && is_struct(fgm_dlimits) then begin
+          
+            ; strip suffix off tplot_name. this prevents suffix from occuring twice in tplot variable name
+            if suffix NE '' then tplot_name=strmid(tplot_name, 0, strpos(tplot_name, suffix))
+            store_data, tplot_name + '_bvec'+suffix, data={x: fgm_data.X, y: [[fgm_data.Y[*, 0]], [fgm_data.Y[*, 1]], [fgm_data.Y[*, 2]]]}, dlimits=fgm_dlimits
+            store_data, tplot_name + '_btot'+suffix, data={x: fgm_data.X, y: fgm_data.Y[*, 3]}, dlimits=fgm_dlimits
+            
+            ; need to add the newly created variables from the previous procedure to the list of tplot names
+            append_array, tplotnames, tplot_name + '_bvec'+suffix
+            append_array, tplotnames, tplot_name + '_btot'+suffix
+            
+            ; uncomment the following to remove the old variable
+            ; del_data, tplot_name+suffix
+            ; tplotnames = ssl_set_complement([tplot_name+suffix], tplotnames)
+        endif else begin
+            dprint, dlevel = 0, 'Error splitting the tplot variable: ', tplot_name+suffix
+        endelse
+    endfor
 end
 
 ; sets colors and labels for tplot
-pro mms_load_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, data_rate = data_rate, suffix = suffix
+pro mms_load_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, data_rate = data_rate, suffix = suffix, level=level
     if undefined(prefix) then prefix = ''
     if undefined(suffix) then suffix = ''
+    if undefined(level) then level = ''
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rate) then data_rate = 'srvy'
     instrument = strlowcase(instrument) ; just in case we get an upper case instrument
-    
+    if level eq 'l2pre' then data_rate = data_rate + '_l2pre'
+
     for sc_idx = 0, n_elements(prefix)-1 do begin
         for name_idx = 0, n_elements(tplotnames)-1 do begin
             tplot_name = tplotnames[name_idx]
@@ -193,13 +202,12 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                 this_probe+'_defatt_spindec'+suffix, this_probe+'_'+instrument+'_'+data_rate+'_gse'+suffix
             append_array, tplotnames, this_probe+'_'+instrument+'_'+data_rate+'_gse'+suffix
             
-            ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
-            mms_split_fgm_data, this_probe+'_'+instrument+'_'+data_rate+'_dmpa'+suffix, tplotnames = tplotnames, suffix = suffix
-            mms_split_fgm_data, this_probe+'_'+instrument+'_'+data_rate+'_gse'+suffix, tplotnames = tplotnames, suffix = suffix
         endif
+        ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
+        mms_split_fgm_data, this_probe, instrument=instrument, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate
     endfor
     
     ; set some of the metadata for the DFG/AFG instruments
-    mms_load_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument, data_rate = data_rate, suffix = suffix
+    mms_load_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument, data_rate = data_rate, suffix = suffix, level=level
 
 end

@@ -25,8 +25,8 @@
 ;HISTORY:
 ; 25-sep-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-25 13:58:11 -0700 (Fri, 25 Sep 2015) $
-; $LastChangedRevision: 18938 $
+; $LastChangedDate: 2015-10-16 13:54:18 -0700 (Fri, 16 Oct 2015) $
+; $LastChangedRevision: 19093 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_qlook_load_kp.pro $
 ;-
 Pro mvn_qlook_load_kp, trange = trange, files = files, $
@@ -218,6 +218,8 @@ Pro mvn_qlook_load_kp, trange = trange, files = files, $
         Endif
      Endif                    ; Else message, /info, tplot_namej+'already used'
   Endfor
+  If(n_elements(tvars) Gt 1) Then tvars=tnames(tvars[1:*])
+
   Return
 End
 

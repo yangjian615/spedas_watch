@@ -87,9 +87,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-06 10:03:52 -0700 (Tue, 06 Oct 2015) $
-;$LastChangedRevision: 19010 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-16 10:51:34 -0700 (Fri, 16 Oct 2015) $
+;$LastChangedRevision: 19091 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -449,12 +449,19 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     defsysv, '!mms', exists=exists
     if not(exists) then mms_init, no_color_setup = no_color_setup
 
-    response_code = spd_check_internet_connection()
+    ;response_code = spd_check_internet_connection()
+    response_code = 200
 
     ;combine these flags for now, if we're not downloading files then there is
     ;no reason to contact the server unless mms_get_local_files is unreliable
     if undefined(no_download) then no_download = !mms.no_download or !mms.no_server or (response_code ne 200)
 
+    ; only prompt the user if they're going to download data
+    if no_download eq 0 then begin
+        status = mms_login_lasp(login_info = login_info)
+        if status ne 1 then no_download = 1
+    endif
+    
     ; initialize undefined values
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = p_names else probes = strcompress(string(probes), /rem)

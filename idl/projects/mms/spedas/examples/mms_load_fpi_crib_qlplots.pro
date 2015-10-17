@@ -10,15 +10,15 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-10-15 16:27:04 -0700 (Thu, 15 Oct 2015) $
-; $LastChangedRevision: 19088 $
+; $LastChangedDate: 2015-10-16 14:04:40 -0700 (Fri, 16 Oct 2015) $
+; $LastChangedRevision: 19096 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fpi_crib_qlplots.pro $
 ;-
 
 start_time = systime(/seconds)
 
 ;preparations and defaults
-date = '15-10-06/06:00:00'
+date = '15-10-06/00:00:00'
 timespan, date, 1, /day
 probes = [1, 2, 3, 4]
 datatype = '*' ; grab all data in the CDF
@@ -98,7 +98,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     options, prefix+'_dfg_gse_srvy', labflag=-1
     
     ; combine the densities into one tplot variable
-    join_vec, [obsstr+'DESnumberDensity', obsstr+'fpi_DISnumberDensity'], obsstr+'numberDensity'
+    join_vec, [obsstr+'DESnumberDensity', obsstr+'DISnumberDensity'], obsstr+'numberDensity'
     options, obsstr+'numberDensity', 'labels', ['electrons', 'ions']
     options, obsstr+'numberDensity', 'labflag', -1
     options, obsstr+'numberDensity', 'colors', [2, 4]
@@ -178,7 +178,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
      
               
     ;-----------ONE SPACECRAFT FPI SUMMARY PLOT--------------------
-    fpi_moments = [obsstr+'numberDensity', prefix+'_dfg_gse_srvy', obsstr+'eBulkV_DSC',  $
+    fpi_moments = [prefix+'_dfg_gse_srvy', obsstr+'numberDensity', obsstr+'eBulkV_DSC',  $
                    obsstr+'iBulkV_DSC', obsstr+'temp']
     fpi_espects = [obsstr+'iEnergySpectr_omni_avg', obsstr+'eEnergySpectr_omni_avg']
     panels=[qual_bar, fpi_moments, obsstr+'ePitchAngDist_avg', fpi_espects]                    
