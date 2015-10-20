@@ -578,7 +578,7 @@ FUNCTION eva_sitl_event, ev
               left_edges  = (D.x[1:nmax-1:4] > trange[0]) < trange[1]
               right_edges = (D.x[4:nmax-1:4] > trange[0]) < trange[1]
               data        = D.y[2:nmax-1:4]
-              eva_sitl_highlight, left_edges, right_edges, data, 'mms_stlm_bakstr',/noline
+              eva_sitl_highlight, left_edges, right_edges, data, state, /noline
             endif; if nmax
           endif; if n_tags
         endif else begin

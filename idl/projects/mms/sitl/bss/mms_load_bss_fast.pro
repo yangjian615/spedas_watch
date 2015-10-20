@@ -1,4 +1,4 @@
-PRO mms_load_bss_fast, trange=trange
+PRO mms_load_bss_fast, trange=trange, include_labels=include_labels
   compile_opt idl2
   
   if ~undefined(trange) && n_elements(trange) eq 2 $
@@ -10,6 +10,7 @@ PRO mms_load_bss_fast, trange=trange
   ; DATA
   ;-------------------
   mms_get_abs_fom_files, local_flist, pw_flag, pw_message
+
   if pw_flag eq 0 then begin
     qmax = n_elements(local_flist)
     bar_x = trange[0]
@@ -26,6 +27,9 @@ PRO mms_load_bss_fast, trange=trange
   ; TPLOT VARIABLE
   ;-------------------
   store_data,'mms_bss_fast',data={x:bar_x, y:bar_y}
-  options,'mms_bss_fast',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
-    ticklen=0,panel_size=0.01,colors=6
+  
+  if undefined(include_labels) then panel_size= 0.01 else panel_size=0.09
+  if undefined(include_labels) then labels='' else labels=['Fast']
+  options,'mms_bss_fast',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],$
+    ticklen=0,panel_size=panel_size,colors=6, labels=labels, charsize=2.
 END

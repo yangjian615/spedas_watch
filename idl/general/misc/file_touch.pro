@@ -29,8 +29,8 @@
 ;   may change. 
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-12-02 21:10:34 -0800 (Tue, 02 Dec 2014) $
-;$LastChangedRevision: 16338 $
+;$LastChangedDate: 2015-10-19 16:18:58 -0700 (Mon, 19 Oct 2015) $
+;$LastChangedRevision: 19110 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_touch.pro $
 ;-
 
@@ -119,7 +119,7 @@ endif else if !version.os_family eq 'Windows' then begin
 endif
 
 ;confirm_mtime =1
-if keyword_set(confirm_mtime) then begin   
+if keyword_set(confirm_mtime) && keyword_set(time) then begin   
    fi = file_info(file)  
    if fi.mtime ne long64(time) then begin
       dprint,'Change of file modification time failed'

@@ -69,6 +69,7 @@ FUNCTION eva_data_load_mms, state
       endif else begin; if pre-loaded variable exists...
         idx = where(strmatch(tn,param),ct); check if param is one of the preloaded variables.
       endelse
+ 
       if ct eq 0 then begin; if not loaded
         ;-----------
         ; ASPOC
@@ -113,6 +114,21 @@ FUNCTION eva_data_load_mms, state
           options,sc+'_edp_fast_dce_dsl', $
             labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
             colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
+          tn = tnames(sc+'_edp_fast_dce_dsl',ct)
+          if ct eq 1 then begin
+            get_data,sc+'_edp_fast_dce_dsl',data=D,dl=dl,lim=lim
+            str_element,/add,'lim','labels',['X','Y']
+            str_element,/add,'lim','colors',[2,4]
+            store_data,sc+'_edp_fast_dce_dsl_xy',data={x:D.x,y:D.y[*,0:1]},dl=dl,lim=lim
+          endif
+          mms_sitl_get_edp, sc=sc, data_rate = 'fast', level='l2', datatype='scpot'
+          tn = tnames(sc+'_edp_fast_scpot',ct)
+          if ct eq 1 then begin
+            get_data,sc+'_edp_fast_scpot',data=D,dl=dl,lim=lim
+            ynew = (-1)*alog10(D.y > 0)
+            store_data,sc+'_edp_fast_scpot',data={x:D.x,y:ynew},dl=dl,lim=lim
+            options,sc+'_edp_fast_scpot',ytitle=sc+'!CEDP!C-log(scpot)';,ysubtitle='[arbitrary]'
+          endif
           answer = 'Yes'
         endif
         
@@ -147,34 +163,7 @@ FUNCTION eva_data_load_mms, state
         pcode=7
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_fpi_*') and (cp eq 0)) then begin
-          mms_sitl_get_fpi_basic, sc_id=sc
-          
-          tngap = tnames('*_fpi_*')
-          tdegap,  tngap, /overwrite
-
-          options, sc+'_fpi_eEnergySpectr_omni',spec=1,ylog=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cele',ysubtitle='[eV]',no_interp=1
-          ylim, sc+'_fpi_eEnergySpectr_omni', 10,26000
-          
-          options,sc+'_fpi_iEnergySpectr_omni',spec=1,ylog=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cion',ysubtitle='[eV]',no_interp=1
-          ylim, sc+'_fpi_iEnergySpectr_omni', 10,26000
-          
-          options,sc+'_fpi_ePitchAngDist_midEn',spec=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,mid-E)',no_interp=1
-          ylim, sc+'_fpi_ePitchAngDist_midEn', 0,180
-          
-          options,sc+'_fpi_ePitchAngDist_highEn',spec=1,zlog=1,$
-            ytitle=sc+'!CFPI!Cele',ysubtitle='(PAD,high-E)',no_interp=1
-          ylim, sc+'_fpi_ePitchAngDist_highEn', 0, 180
-          
-          options,sc+'_fpi_DISnumberDensity',ylog=0,$
-            ytitle=sc+'!CFPI!CNi',ysubtitle='[cm!U-3!N]'
-          
-          options,sc+'_fpi_iBulkV_DSC',$
-            ytitle=sc+'!CFPI!CVi',ysubtitle='[km/s]',constant=0,$
-            labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1,colors=[2,4,6]
-
+          eva_data_load_mms_fpi, sc=sc
           answer = 'Yes'
         endif
 
@@ -245,7 +234,10 @@ FUNCTION eva_data_load_mms, state
         if (strmatch(paramlist[i],'*_afg*') and (cp eq 0)) then begin
           mms_sitl_get_afg, sc_id=sc
           options,sc+'_afg_srvy_gsm_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='[nT]',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='GSM [nT]',$
+            colors=[2,4,6],labflag=-1,constant=0,cap=1
+          options,sc+'_afg_srvy_dmpa',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='DMPA [nT]',$
             colors=[2,4,6],labflag=-1,constant=0,cap=1
           answer = 'Yes'
         endif
@@ -258,7 +250,10 @@ FUNCTION eva_data_load_mms, state
         if (strmatch(paramlist[i],'*_dfg*') and (cp eq 0)) then begin
           mms_sitl_get_dfg, sc_id=sc
           options,sc+'_dfg_srvy_gsm_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='[nT]',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='GSM [nT]',$
+            colors=[2,4,6],labflag=-1,constant=0, cap=1
+          options,sc+'_dfg_srvy_dmpa',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='DMPA [nT]',$
             colors=[2,4,6],labflag=-1,constant=0, cap=1
           answer = 'Yes'
         endif
@@ -294,6 +289,17 @@ FUNCTION eva_data_load_mms, state
           options,'thg_idx_ae',ytitle='THEMIS!CAE Index'
           answer = 'Yes'
         endif
+        
+        ;-----------
+        ; ExB
+        ;-----------
+        pcode=14
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_exb_*') and (cp eq 0)) then begin
+          eva_data_load_mms_exb,sc=sc,vthres=500.
+          answer = 'Yes'
+        endif
+        
       endif;if ct eq 0 then begin; if not loaded
       c+=1
     endfor; for each requested parameter

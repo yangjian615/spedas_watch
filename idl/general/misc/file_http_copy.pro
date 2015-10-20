@@ -125,10 +125,15 @@
  ;   August 2007 - Added file_mode keyword.
  ;   April  2008 - Added dir_mode keyword
  ;   Sep 2009    - Fixed user-agent
+ ;   October 2015 - Major Overhaul
+ ;       It was found that the previous version was not "Network Friendly"
+ ;       The previous version would read the header from the 'GET' request and then make a quick decision whether to
+ ;       continue the download based on remote file modification time and file size. If the local version was current
+ ;       then the connection would be closed
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2014-12-06 11:08:02 -0800 (Sat, 06 Dec 2014) $
- ; $LastChangedRevision: 16363 $
+ ; $LastChangedDate: 2015-10-19 16:59:29 -0700 (Mon, 19 Oct 2015) $
+ ; $LastChangedRevision: 19111 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -168,27 +173,44 @@ function compare_urls, url1, url2
   return, result
 end
  
-;deprecated, see extract_html_links_regex pcruce 2013-04-09 
- pro extract_html_links,s,links, $   ; input: string  ;    output: links appended to array
-     relative=relative,$   ; Set to return only relative links
-     normal=normal         ; Set to return only normal links (without ? or *)
-     
-   ;compile_opt  idl2,hidden
-     
-   p0 = strpos(strlowcase(s),'<a href="')
-   if p0 ge 0 then begin
-     p1 = strpos(s,'">',p0)
-     if p1 ge p0+9 then begin
-       link = strmid(s,p0+9,p1-p0-9)
-       bad = strlen(link) eq 0
-       if keyword_set(normal) then bad = (strpos(link,'?') ge 0) or bad
-       if keyword_set(normal) then bad = (strpos(link,'*') ge 0) or bad
-       if keyword_set(relative) then bad = (strpos(link,'/') eq 0) or bad   ; remove absolute links (which start with '/')
-       if not bad then links = [links,link]
-     endif
-   endif
-   
- end
+ 
+ 
+;deprecated, see extract_html_links_regex pcruce 2013-04-09
+;undeprecated  Davin Larson - October 2015
+pro extract_html_links,s,links,ind, $   ; input: string  ;    output: links appended to array
+  relative=relative,$   ; Set to return only relative links
+  normal=normal , $     ; Set to return only normal links (without ? or *)
+  no_parent_links=no_parent_links,  $ ;Set to the parent domain to automatically exclude backlinks to the parent directory
+  regex=regex
+
+
+  if keyword_set(regex) then begin
+    extract_html_links_regex,s,links,relative=relative,normal=normal,no_parent_links=no_parent_links
+;;    if debug(5,verbose) then stop
+    return
+  endif
+
+  ;compile_opt  idl2,hidden
+
+  p0 = strpos(strlowcase(s),'<a href="')
+  if p0 ge 0 then begin
+    p1 = strpos(s,'">',p0)
+    if p1 ge p0+9 then begin
+      link = strmid(s,p0+9,p1-p0-9)
+      bad = strlen(link) eq 0
+      if keyword_set(normal) then bad = (strpos(link,'?') ge 0) or bad
+      if keyword_set(normal) then bad = (strpos(link,'*') ge 0) or bad
+      if keyword_set(relative) then bad = (strpos(link,'/') eq 0) or bad   ; remove absolute links (which start with '/')
+      if not bad then begin
+        if n_params() eq 3 then   append_array,links, link,index=ind   else  links = [links,link]
+      endif
+    endif
+  endif
+
+end
+
+
+ 
  
  ;Procedure: extract_html_links_regex
  ;Purpose: subroutine to parse <a>(link) tags from html.  
@@ -216,7 +238,7 @@ end
      no_parent_links=no_parent_links ;Set to the parent domain to automatically exclude backlinks to the parent directory
      
    compile_opt  idl2,hidden
-   
+
    s_copy = s ;prevent modification of string
    
    ;this regex is a little tricky, most of the complexity is to prevent it from matching two links when it should match one
@@ -294,13 +316,20 @@ end
    
  end
  
+ 
+ 
  ;FUNCTION file_extract_html_links(filename,count)
  ;PURPOSE:  returns links within an html file on disk.
- ;Used by file_http_copy to extract link tags from locally cached version of .remote-index.html files. 
+ ;Used by file_http_copy to extract link tags from locally cached version of html files. 
  ;INPUT:  filename: (string) valid filename
  ;OUTPUT:  count:  number of links found
- function file_extract_html_links,filename,count,verbose=verbose,no_parent_links=no_parent_links   ; Links with '*' or '?' or leading '/' are removed.
+ function file_extract_html_links,filename,count,verbose=verbose,no_parent_links=no_parent_links,regex=regex   ; Links with '*' or '?' or leading '/' are removed.
+
+   if  n_elements(regex) eq 0 then regex=0
+   
    count=0                                   ; this should only return the relative links.
+
+;   if debug(4,verbose) then stop
    on_ioerror, badfile
    openr,lun,filename,/get_lun
    s=''
@@ -308,10 +337,11 @@ end
    while not eof(lun) do begin
      readf,lun,s     
     ; The REGEX version of this code typically takes about 2.5 times longer to run than the older code - is there a way to avoid having to use REGEX?
-     ;extract_html_links,s,links,/relative,/normal ;deprecated, see extract_html_links_regex pcruce 2013-04-09
-     extract_html_links_regex,s,links,/relative,/normal,no_parent_links=no_parent_links
+     ; extract_html_links_regex,s,links,/relative,/normal,no_parent_links=no_parent_links   ; 
+       extract_html_links,s,links,ind,/relative,/normal,regex=regex,no_parent_links=no_parent_links  ; undeprecated - Davin Larson October 2015     ;deprecated, see extract_html_links_regex pcruce 2013-04-09
    endwhile
    free_lun,lun
+   append_array,links,index = ind,/done   
    bad = strlen(links) eq 0
    w = where(bad eq 0,count)
 ;   if count ne 0 then begin
@@ -425,7 +455,7 @@ end
    ; get file modification time
    last_modified = file_http_header_element(header,'Last-Modified:')
    hi.mtime = keyword_set(last_modified) ? str2time(last_modified, informat = 'DMYhms') : systime(1)
-   dprint,dlevel=4,verbose=verbose,'last_modified=',last_modified
+   dprint,dlevel=6,verbose=verbose,'last_modified=',last_modified
    
    ; Try to determine length
    len = file_http_header_element(header,'Content-Length:')
@@ -496,6 +526,7 @@ end
      ignore_filedate=ignore_filedate, $    ; NOT YET OPERATIONAL! input: (0/1)  if set then file date is ignored when evaluating need to download.
      url_info=url_info_s,  $         ; output:  structure containing URL info obtained from the HTTP Header.
      progobj=progobj, $            ; This keyword is experimental - please don't count on it
+     progress=progress, $
      links=links2, $               ; Output: links are returned in this variable if the file is an html file
      force_download=force_download, $  ;Allows download to be forced no matter modification time.  Useful when moving between different repositories(e.g. QA and production data)
      error = error
@@ -504,13 +535,22 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 16363 2014-12-06 19:08:02Z davin-mac $'
+   regex = 1    ;  set to 0 run fast;  set to 1 to for greater robustness with non-apache servers
+   
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19111 2015-10-19 23:59:29Z davin-mac $ 
+   if keyword_set(user_agent) eq 0 then begin
+     swver = strsplit('$Id: file_http_copy.pro 19111 2015-10-19 23:59:29Z davin-mac $',/extract)
+     user_agent =  strjoin(swver[1:3],' ')+' IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
+   endif
+
+
    request_url_info = arg_present(url_info_s)
    url_info_s = 0
 ;dprint,dlevel=3,verbose=verbose,no_url_info,/phelp
    if not keyword_set(localdir) then localdir = ''
    if not keyword_set(serverdir) then serverdir = ''
    
+   dprint,verbose=verbose,dlevel=4,pathnames
    for pni=0L,n_elements(pathnames)-1 do begin
      localname=''
      links2 = ''
@@ -555,11 +595,11 @@ end
      url_info.url = url
      url_info.ltime = systime(1)
      
-     dprint,dlevel=6,verbose=verbose,/phelp,serverdir
-     dprint,dlevel=6,verbose=verbose,/phelp,localdir
-     dprint,dlevel=6,verbose=verbose,/phelp,pathname
-     dprint,dlevel=6,verbose=verbose,/phelp,newpathname
-     dprint,dlevel=6,verbose=verbose,/phelp,url
+     dprint,dlevel=4,verbose=verbose,/phelp,pathname
+     dprint,dlevel=5,verbose=verbose,/phelp,serverdir
+     dprint,dlevel=5,verbose=verbose,/phelp,localdir
+     dprint,dlevel=5,verbose=verbose,/phelp,newpathname
+     dprint,dlevel=5,verbose=verbose,/phelp,url
      indexfilename =  '.remote-index.html'
      
      globpos = min( uint( [strpos(pathname,'*'),strpos(pathname,'?'),strpos(pathname,'['),strpos(pathname,']')] ) )
@@ -569,12 +609,10 @@ end
        slash='/'
        slashpos1 = strpos(pathname,slash,globpos,/reverse_search)
        sub_pathname = strmid(pathname,0,slashpos1+1)
-       dprint,dlevel=5,verbose=verbose,/phelp,sub_pathname
-       ; First get directory listing and extract links:  (listing will not be archived)
-       file_http_copy,sub_pathname,serverdir=serverdir,localdir=localdir,url_info=index, host=host ,ascii_mode=1 $
-         ,min_age_limit=min_age_limit,verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,if_modified_since=if_modified_since $
-         , links=links, user_agent=user_agent ,user_pass=user_pass,error=error ;, no_update=no_update  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
-
+       ; First get directory listing and extract links:  
+       file_http_copy,sub_pathname,serverdir=serverdir,localdir=localdir,url_info=index, host=host ,ascii_mode=1 ,progress=progress, progobj=progobj $
+            ,min_age_limit=min_age_limit,verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,if_modified_since=if_modified_since $
+            , links=links, user_agent=user_agent ,user_pass=user_pass,error=error ;, no_update=no_update  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
        if keyword_set(error) then begin
           dprint,dlevel=1,verbose=verbose,'Error detected ',error 
           goto, final_quit
@@ -608,10 +646,10 @@ end
          dprint,dlevel=5,verbose=verbose,/phelp,rec_pathnames
          if keyword_set(last_version) then i0 = nlinks-1  else i0=0L
          for i=i0,nlinks-1 do begin
-           dprint,dlevel=3,verbose=verbose,'Retrieve link#'+strtrim(i+1,2)+' of '+strtrim(nlinks,2)+': '+ rec_pathnames[i]
+           dprint,dlevel=4,verbose=verbose,'Retrieve link#'+strtrim(i+1,2)+' of '+strtrim(nlinks,2)+': '+ rec_pathnames[i]
            ; Recursively get files:
            file_http_copy,rec_pathnames[i],serverdir=serverdir,localdir=localdir, host=host  $
-             , verbose=verbose,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode  $
+             , verbose=verbose,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode,progress=progress, progobj=progobj  $
              , min_age_limit=min_age_limit, last_version=last_version, url_info=ui $
              , no_download=no_download, no_clobber=no_clobber, no_update=no_update, archive_ext=archive_ext, archive_dir=archive_dir $
              , force_download=force_download $
@@ -619,13 +657,13 @@ end
              , preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
 ;           dprint,dlevel=5,verbose=verbose,/phelp,lns
            if not keyword_set(ui)  then message,'URL info error'
-           w = where(ui.exists ne 0,nw)
-           if nw ne 0 then uis  = keyword_set(uis)  ?  [uis,ui[w]]   : ui[w]  ; only include existing files
+           w2 = where(ui.exists ne 0,nw2)
+           if nw2 ne 0 then uis  = keyword_set(uis)  ?  [uis,ui[w2]]   : ui[w2]  ; only include existing files
            dprint,dlevel=5,verbose=verbose,/phelp,localname
          endfor
          if keyword_set(uis) then url_info = uis
        endif else begin
-         dprint,dlevel=3,verbose=verbose,'No files found matching: '+sup_pathname
+         dprint,dlevel=2,verbose=verbose,'No files found matching: '+sup_pathname
        endelse
        goto, final
      endif             ;  End of globbed filenames
@@ -640,7 +678,7 @@ end
      lcl = file_info(localname)
 
      if  keyword_set(no_download) && no_download eq 2 then begin
-       dprint,dlevel=4,verbose=verbose,'Warning:  URL_INFO is not valid for: "'+url+'"'
+       dprint,dlevel=2,verbose=verbose,'Warning:  URL_INFO is not valid for: "'+url+'"'
        url_info.localname = localname
        url_info.exists = -1   ; remote existence is not known!
        goto, final     
@@ -651,7 +689,7 @@ end
        url_info.localname = localname
        url_info.exists = -1   ; remote file existence is not known!
        if arg_present(links2) then begin
-          links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)         ; Does this belong here?  this might be producing unneeded work
+          links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,regex=regex)         ; Does this belong here?  this might be producing unneeded work
        endif
        goto, final
      endif
@@ -661,7 +699,7 @@ end
        url_info.localname = localname
        url_info.exists = -1   ; existence is not known!
        if arg_present(links2) then begin
-           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)     ; Does this belong here?
+           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,regex=regex)     ; Does this belong here?
        endif
        goto, final
      endif
@@ -675,7 +713,8 @@ end
        url_info.localname = localname
        url_info.exists = 1
        if arg_present(links2) then begin
-           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url)
+           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,regex=regex)
+           dprint,/phelp,dlevel=3,verbose=verbose,links2
        endif
        goto, final
      endif
@@ -686,12 +725,14 @@ end
      read_timeout = 30
      connect_timeout = 10
      t_connect = systime(1)
+;     if debug(4,verbose) then stop
      
-     if n_elements(user_agent) eq 0 then user_agent =  'FILE_HTTP_COPY IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH
-     
-     stack = scope_traceback(/structure)
-     referrer = stack.routine + string(stack.line,format='("(",i0,")")')
-     referrer = strjoin(referrer,':')
+ ;    if keyword_set(referrer) and size(/type,referrer) ne 7 then begin
+     if 0 then begin
+       stack = scope_traceback(/structure)
+       referrer = stack.routine + string(stack.line,format='("(",i0,")")')
+       referrer = strjoin(referrer,':')
+     endif
      
      ;  filemodtime = lcl.mtime
      
@@ -723,6 +764,8 @@ end
        if error eq -292 then dprint,dlevel=1,verbose=verbose,"It appears that the server "+server+" is down."
        if error eq -291 then dprint,dlevel=1,verbose=verbose,"Do you need to set a proxy server?  (i.e. setenv,'http_proxy=www.proxy-example.com')"
        if error eq -290 then dprint,dlevel=1,verbose=verbose,"Are you connected to the internet?"
+       if error eq -297 then dprint,dlevel=1,verbose=verbose,"Are you connected to the internet?"
+       if error eq -298 then dpring,dlevel=1,verbose=verbose,"Connection refused. Do you need to provide a password?"
        dprint,dlevel=2,verbose=verbose,'error code:',error,!error_state.code,' ',!error_state.sys_msg
        goto, final_quit
      endif
@@ -736,20 +779,22 @@ end
      
      if keyword_set(user_agent) then begin
        printf, unit, 'User-Agent: ',user_agent
-       dprint,dlevel=4,verbose=verbose,'User Agent: ',user_agent
+       dprint,dlevel=4,verbose=verbose,'User Agent: '+user_agent
      endif
      if size(/type,referrer) eq 7 then begin
-       printf, unit,  'Referer: ',referrer
-       dprint,dlevel=4,verbose=verbose,'Referer: ',referrer
+       printf, unit,  'Referer: '+referrer
+       dprint,dlevel=4,verbose=verbose,'Referer: '+referrer
      endif
      if keyword_set(user_pass) then begin      
        printf, unit,  'Authorization: Basic ',strpos(user_pass,':') ge 0 ?  idl_base64(byte(user_pass)) : user_pass
-       dprint,dlevel=4,verbose=verbose,'USER_PASS: ',user_pass
+       dprint,dlevel=4,verbose=verbose,'USER_PASS: '+user_pass
      endif
+     
+     if n_elements(if_modified_since) eq 0 then if_modified_since=1 
      if keyword_set(if_modified_since) then begin
-       filemodtime = if_modified_since lt 2 ? lcl.mtime : if_modified_since
-       printf, unit, 'If-Modified-Since: ',time_string(filemodtime,tformat='DOW, DD MTH YYYY hh:mm:ss GMT')
-       dprint,dlevel=4,verbose=verbose,'If-Modified-Since: ',time_string(filemodtime,tformat='DOW, DD MTH YYYY hh:mm:ss GMT')
+       filemodtime = time_string(if_modified_since lt 2 ? lcl.mtime : if_modified_since , tformat='DOW, DD MTH YYYY hh:mm:ss GMT' )       
+       printf, unit, 'If-Modified-Since: ',filemodtime
+       dprint,dlevel=4,verbose=verbose,'If-Modified-Since: ',filemodtime
      endif
      printf, unit, ''
      
@@ -783,24 +828,38 @@ end
      file_http_header_info,header,url_info,verbose=verbose
      
      dprint,dlevel=4,verbose=verbose,'Server ',server,' Connect time= ',systime(1)-t_connect
-     dprint,dlevel=6,verbose=verbose,'Header= ',transpose(header)
+     dprint,dlevel=5,verbose=verbose,'Header= ',transpose(header)
      dprint,dlevel=6,verbose=verbose,phelp=2,url_info
      
      if url_info.status_code eq 401 then begin
+        dprint,dlevel=3,verbose=verbose,transpose(header)
         realm = file_http_header_element(header,'WWW-Authenticate:')
         prefix = keyword_set(user_pass) ? 'Invalid USER_PASS: "'+user_pass+'" for: '+realm  : 'keyword USER_PASS required for: '+realm
-        dprint,dlevel=1,prefix+' Authentication Error: "'+url+'"'
+        dprint,dlevel=1,verbose=verbose,prefix+' Authentication Error: "'+url+'"'
         goto , close_server   
      endif
      
+     if url_info.status_code eq 302 then begin     ; temporary redirect  (typically caused by user not logged into wi-fi)
+        dprint,dlevel=3,verbose=verbose,transpose(header)
+        dprint,dlevel=1,verbose=verbose,'Temporary redirect. Have you logged into WiFi yet?  "'+url+'"'
+        goto , close_server
+     endif 
      
-     ; lphilpott may-2012 call redirect code for permanent redirects (301) in addition to temporary redirects
+     if url_info.status_code eq 301 then begin     ; Permanent redirect  (typically caused by user not logged into wi-fi)
+       dprint,dlevel=2,verbose=verbose,transpose(header)
+       dprint,dlevel=1,verbose=verbose,'Permanent redirect to: '+location
+       dprint,dlevel=1,verbose=verbose,'Request Aborted'
+       goto , close_server
+     endif
+
+     
+     ; lphilpott may-2012 call redirect code for permanent redirects (301)
      if url_info.status_code eq 302 || url_info.status_code eq 301 then begin   ; Redirection
        location = file_http_header_element(header,'Location:')
-       dprint,dlevel=1,verbose=verbose,'Redirection to: ',location
+       dprint,dlevel=1,verbose=verbose,'Redirection to: '+location
        if keyword_set(location) then begin
          if compare_urls(location, url_info.url) then begin ; if it redirects to self then exit
-           dprint,dlevel=1,verbose=verbose,'Error! Redirects to self: ',location
+           dprint,dlevel=1,verbose=verbose,'Error! Redirects to self: '+location
            goto, close_server
          endif else begin  ; WARNING THIS SECTION OF CODE MIGHT BE INCOMPLETE BECAUSE RECURSIVE CALL IS MISSING MANY KEYWORDS !!!!
            dprint,'Warning:  Redirection may not work properly because not all keywords are set!'
@@ -813,7 +872,7 @@ end
            file_http_copy,location,keyword_set(newpathnames) ? newpathname : '', $
              localdir=file_dirname(localdir+pathname)+'/',verbose=verbose, links=links2,$; lphilpott may-2012 change localdir so that the final directory the file is saved to is the one intended
              ;localdir=localdir,verbose=verbose, $
-             url_info=url_info,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode,  $
+             url_info=url_info,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode,progress=progress, progobj=progobj,  $
              archive_ext=archive_ext, archive_dir=archive_dir, $
              user_agent=user_agent,user_pass=user_pass, if_modified_since=if_modified_since  ;,preserve_mtime=preserve_mtime,restore_mtime=restore_mtime              
            goto, close_server
@@ -824,8 +883,9 @@ end
      if abs(url_info.clock_offset) gt 30 then $
        dprint,dlevel=1,verbose=verbose,'Warning! Remote and local clocks differ by:',url_info.clock_offset,' Seconds'
        
-     if url_info.status_code eq 304 then begin   ;  Not modified since
-       dprint,dlevel=2,verbose=verbose,'Local file: ',localname,' is current'
+  
+     if url_info.status_code eq 304 then begin   ;  Not modified since.   Connection will be closed by the server.
+       dprint,dlevel=2,verbose=verbose,'Remote file: '+pathname +' has not been modified since '+filemodtime
        goto,  close_server      
      endif
      
@@ -837,18 +897,14 @@ end
        MB = 2.^20
        if lcl.exists then begin
          download_file = 0
-         dprint,verbose=verbose,dlevel=4,'tdiff=',tdiff,' sec'
+         dprint,verbose=verbose,dlevel=6,'tdiff=',tdiff,' sec'
          if tdiff gt 0  then begin
            if keyword_set(no_clobber) then dprint,dlevel=1,verbose=verbose, format="('Warning!  ',f0.1,' day old local file: ',a  )", tdiff/24d/3600d, localname
            download_file = 1
          endif
          
          if tdiff lt 0 and keyword_set(restore_mtime) then  begin
-;           file_touch,exists=texists
            dprint,dlevel=3,verbose=verbose,'File modification time mismatch. Restoring modification time.   ',lcl.name
-;           if ~texists then begin
-;               dprint,verbose=verbose,dlevel=3 ,'Executable "touch" not found. Could not preserve_mtime'
-;           endif else  $
            if keyword_set(preserve_mtime) and lcl.size eq url_info.size then begin  
              file_touch,lcl.name,url_info.mtime,/mtime,/no_create,verbose=verbose   ; ,toffset=time_zone_offset()
            endif
@@ -867,11 +923,22 @@ end
        
        if keyword_set(no_download) then  download_file = 0
        if keyword_set(force_download) then download_file = 1
+       if url_info.status_code ne 200 then begin
+        download_file = 0
+        dprint,verbose=verbose,dlevel=1,'Unknown status code: '+string(url_info.status_code)
+        dprint,verbose=verbose,dlevel=2,transpose(header)
+       endif
+       fi_part = file_info(localname+'.part')
+       if fi_part.exists and fi_part.mtime gt (systime(1) - 60) then begin
+         dprint,dlevel=1,verbose=verbose,'File: '+localname+' is in the process of being downloaded by another process. Request Aborted.'
+         download_file = 0
+       endif
        
        if download_file then begin    ;  begin file download
          dirname = file_dirname(localname)
          file_mkdir2,dirname,mode = dir_mode,dlevel=2,verbose=verbose
          On_IOERROR, file_error2
+if 0 then begin
          if file_test(localname,/regular,/write) then begin
              if keyword_set(archive_ext) || keyword_set(archive_dir) then begin
                  file_archive,localname,archive_ext=archive_ext,archive_dir=archive_dir,verbose=verbose,dlevel=2
@@ -880,7 +947,8 @@ end
                 file_delete,localname,/allow_nonexistent
              endelse
          endif
-         openw, wunit, localname, /get_lun
+endif
+         openw, wunit, localname+'.part', /get_lun
          ts = systime(1)
          t0 = ts
          if keyword_set(ascii_mode) || url_info.size lt 0 || strmid(url_info.type,0,4) eq 'html'  then begin         ; download text file (typically these are directory listings
@@ -889,15 +957,21 @@ end
            while  eof(unit) EQ 0 do begin
              readf, unit, text
              printf, wunit, text
-             if arg_present(links2) then extract_html_links_regex,text,links2 ,/relative, /normal,no_parent=url
-             dprint,dwait=10,dlevel=1,verbose=verbose,'Downloading "',localname,'"  Please wait ', lines++
+             if arg_present(links2) then begin
+                extract_html_links,regex=regex,text,links2 ,/relative, /normal,no_parent=url
+                dprint,/phelp,dlevel=5,verbose=verbose,links2
+             endif
+             dprint,dwait=5,dlevel=1,verbose=verbose,'Downloading "'+localname+'"  Please wait '+string( lines)+' lines'
+             lines = lines +1
            endwhile
            dprint,dlevel=2,verbose=verbose,'Downloaded '+strtrim(lines,2)+' lines in '+string(systime(1)-ts,format='(f0.2)')+' seconds. File:'+localname
+           dprint,/phelp,dlevel=3,verbose=verbose,links2
           ; if n_elements(links2) gt 1 then links2 = links2[1:*]   ; get rid of first ''
          endif else begin                                                      ; download Non-text (binary) files
            maxb = 2l^20   ; 1 Megabyte default buffer size
            nb=0l
            b=0l
+           messstr=''
            while nb lt url_info.size do begin
              buffsize = maxb  <  (url_info.size-nb)
              aaa = bytarr(buffsize,/nozero)
@@ -908,17 +982,26 @@ end
              dt = t1-t0
              b += buffsize
              percent = 100.*float(nb)/url_info.size
-             if (dt gt 10.) and (nb lt url_info.size) then begin   ; Wait 10 seconds between updates.
+;             dt1 = t11-t01
+;             rate1 = b/mb/dt1
+             if (dt gt 1.) and (nb lt url_info.size) then begin   ; Wait 10 seconds between updates.
                rate = b/mb/dt                             ; This will only display if the filesize (url_info.size) is greater than MAXB
                eta = (url_info.size-nb)/mb/rate +t1 - tstart
                messstr = string(format='("  ",f5.1," %  (",f0.1,"/",f0.1," secs)  @ ",f0.2," MB/s  File: ",a)', percent, t1-tstart,eta, rate,file_basename(localname) ,/print)
                t0 = t1
                b =0l
-               dprint,dlevel=2,verbose=verbose,messstr    &  wait,.01
-               if obj_valid(progobj)  then begin
-                 progobj->update,percent,text=messstr
-                 if progobj->checkcancel() then message,'Download cancelled by user',/ioerror
+               if keyword_set(progress) then begin 
+                  dprint,dlevel=2,verbose=verbose,messstr,dwait=10
+       ;           wait,.01   ; not sure why this wait is here - I think it insure that output is made
                endif
+;               if obj_valid(progobj)  then begin
+;                 progobj->update,0.,text=messstr
+;                 if progobj->checkcancel() then message,'Download cancelled by user',/ioerror
+;               endif              
+             endif
+             if obj_valid(progobj) && progobj->checkcancel(messstr) then begin
+               dprint,'Download Canceled by user',dlevel=0,verbose=verbose
+               Message,'File Download Canceled',/ioerror               
              endif
            endwhile
            t1 = systime(1)
@@ -926,21 +1009,23 @@ end
            messstr = string(/print,format = "('Downloaded ',f0.3,' MBytes in ',f0.1,' secs @ ',f0.2,' MB/s  File: ""', a,'""' )",nb/mb,dt,nb/mb/dt,localname )
            dprint,dlevel=2,verbose=verbose,messstr
            if obj_valid(progobj)  then begin
-             progobj->update,percent,text=messstr
+             progobj->update,0,text=messstr
            endif
          endelse
-         free_lun, wunit
+         free_lun, wunit    ; closes local file.
+         if file_test(localname,/regular,/write) then begin
+             file_archive,localname,archive_ext=archive_ext,archive_dir=archive_dir,verbose=verbose,dlevel=2   ; archive old version if archive_??? is set
+         endif
+         file_move,localname+'.part',localname,/overwrite
+         if 1 then begin
+            if file_test(localname,/regular) eq 0 then begin
+                dprint, dlevel=0,verbose=verbose,'RENAME did not work promptly!   '+localname
+            endif
+         endif
          if keyword_set(file_mode) then file_chmod,localname,file_mode
          if keyword_set(preserve_mtime) then begin
-;          file_touch,exists=texists          
-;           if texists then begin
-            ;file touch works in local time, but mtime is unix time
-              file_touch,localname,url_info.mtime,/mtime,/no_create,verbose=verbose   ;,toffset=time_zone_offset()
-;           endif else begin
-;             dprint,verbose=verbose,dlevel=3 ,'Executable "touch" not found. Could not preserve_mtime'
-;           endelse
+              file_touch,localname,url_info.mtime,/mtime,/no_create,verbose=verbose  
          endif 
-         
          if 0 then begin
            file_error2:
            dprint,dlevel=0,verbose=verbose,'Error downloading file: "'+url+'"'
@@ -951,13 +1036,13 @@ end
            endif
            if keyword_set(wunit) then begin
               free_lun, wunit
-              file_move,localname,localname+'.error'
+              file_archive,localname+'.part',archive_ext='.error'
            endif
          ;                 dprint,dlevel=0,verbose=verbose,'Deleting: "' + lcl.name +'"'
          ;                 file_delete,lcl.name     ; This is not desirable!!!
          endif
        endif else begin
-         dprint,dlevel=3,verbose=verbose,'Local file: "' + localname + '" is current (Not downloaded)'
+         dprint,dlevel=1,verbose=verbose,'Local file: "' + localname + '"  (Not downloaded).  Server '+server+' left hanging'
        endelse
      endif else begin
        dprint,dlevel=1,verbose=verbose,'Remote file not found! "'+ url + '" (increase VERBOSE to learn more)'
@@ -980,7 +1065,7 @@ end
        
        if not keyword_set(links) then begin   ; Get directory list
          file_http_copy,'',serverdir=serverdir,localdir=localdir, $
-           min_age_limit=min_age_limit,verbose=verbose,no_update=no_update, $
+           min_age_limit=min_age_limit,verbose=verbose,no_update=no_update,progress=progress, progobj=progobj, $
            file_mode=file_mode,dir_mode=dir_mode,ascii_mode=1 , host=host, $
            url_info=index,links=links,user_agent=user_agent,user_pass=user_pass,if_modified_since=if_modified_since   ;No need to preserve mtime on dir listings ,preserve_mtime=preserve_mtime
        endif
@@ -988,7 +1073,7 @@ end
        for i=0,ndirs-1 do begin
          dir = links[wdir[i]]
          file_http_copy,pathname,recurse_limit=recurse_limit-1,serverdir=serverdir+dir,localdir=localdir+dir $
-           , verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,ascii_mode=ascii_mode $
+           , verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,ascii_mode=ascii_mode,progress=progress, progobj=progobj $
            , min_age_limit=min_age_limit, last_version=last_version, url_info=ui $
            , no_download=no_download, no_clobber=no_clobber,no_update=no_update, archive_ext=archive_ext,archive_dir=archive_dir $
            , ignore_filesize=ignore_filesize,user_agent=user_agent,user_pass=user_pass, host=host $
@@ -1014,7 +1099,7 @@ end
    final_quit:
      if keyword_set(url_info_s) and keyword_set(url_info) then $
        url_info_s=[url_info_s,url_info] else url_info_s=url_info
-     dprint,dlevel=1,verbose=verbose,'Abnormal exit.  Aborting.'
+     dprint,dlevel=1,verbose=verbose,'Abnormal exit.  Aborting. Error:'+string(error)
    
    
  END

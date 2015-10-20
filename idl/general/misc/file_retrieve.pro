@@ -36,8 +36,8 @@
 ;                with the same # of elements as pathnames/newpathnames
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-12-06 11:05:16 -0800 (Sat, 06 Dec 2014) $
-;$LastChangedRevision: 16362 $
+;$LastChangedDate: 2015-10-19 16:59:29 -0700 (Mon, 19 Oct 2015) $
+;$LastChangedRevision: 19111 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_retrieve.pro $
 ;-
 function file_retrieve,pathnames, newpathnames, structure_format=structure_format,  $
@@ -56,6 +56,7 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     no_download=no_download,no_server=no_server, $
     no_update=no_update, $
     archive_ext=archive_ext, $
+    if_modified_since=if_modified_since, $
     archive_dir=archive_dir, $
     last_version = last_version , $
     oldversion_dir = oldversion_dir, $
@@ -64,9 +65,10 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     no_clobber=no_clobber, ignore_filesize=ignore_filesize, $
     verbose=verbose,progress=progress,progobj=progobj
 
-dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 16362 2014-12-06 19:05:16Z davin-mac $'
+dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 19111 2015-10-19 23:59:29Z davin-mac $'
 if keyword_set(structure_format) then begin
-   user_agent =  'FILE_RETRIEVE: IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
+   swver = strsplit('$Id: file_retrieve.pro 19111 2015-10-19 23:59:29Z davin-mac $',/extract)
+   user_agent =  strjoin(swver[1:3],' ')+' IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
    str= {   $
       retrieve_struct,       $
       init:0,                $
@@ -78,7 +80,7 @@ if keyword_set(structure_format) then begin
       dir_mode: '777'o  ,    $    ; permissions for newly created directories.
       preserve_mtime: 1 ,    $    ; Set file modification to same as on file on server  (uses file_touch executable)
       progobj: obj_new(),    $    ; Experimental option for a progress bar widget.  (please ignore for now)
-      min_age_limit: 30L   , $    ;   Files younger than this age (in seconds) are assumed current (avoids the need to recheck server)
+      min_age_limit: 300L  , $    ;   Files younger than this age (in seconds) are assumed current (avoids the need to recheck server)
       no_server:0     ,      $    ; Set to 1 to prevent any contact with a remote server.
       no_download:0   ,      $    ; similar to NO_SERVER keyword. Should still allow remote directory retrieval - but not files.
       no_update:0     ,      $    ; Set to 1 to prevent contact to server if local file already exists. (this is similar to no_clobber)
@@ -143,7 +145,9 @@ if keyword_set(remote_data_dir) and  not (keyword_set(no_server) or keyword_set(
                no_clobber=no_clobber,no_update=no_update,ignore_filesize=ignore_filesize,progobj=progobj, $
                no_download = no_download, archive_ext=archive_ext,archive_dir=archive_dir,  $
                ascii_mode=ascii_mode, $
+               progress=progress, $
                recurse_limit=recurse_limit, $
+               if_modified_since=if_modified_since, $
                user_agent=user_agent, user_pass=user_pass, $
                preserve_mtime = preserve_mtime, restore_mtime=restore_mtime, $
                file_mode=file_mode,dir_mode=dir_mode,last_version=last_version, $

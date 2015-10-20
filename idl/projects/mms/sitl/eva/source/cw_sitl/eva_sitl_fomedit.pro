@@ -7,8 +7,8 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-07-09 21:24:50 -0700 (Thu, 09 Jul 2015) $
-; $LastChangedRevision: 18065 $
+; $LastChangedDate: 2015-10-19 07:10:19 -0700 (Mon, 19 Oct 2015) $
+; $LastChangedRevision: 19105 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
@@ -70,7 +70,7 @@ PRO eva_sitl_FOMedit_event, ev
     tplot,verbose=0
     widget_control, ev.top, /destroy
   endif else begin
-    eva_sitl_highlight, segSelect.TS, segSelect.TE, segSelect.FOM, segSelect.VAR, /rehighlight
+    eva_sitl_highlight, segSelect.TS, segSelect.TE, segSelect.FOM, wid.state, /rehighlight
     str_element,/add,wid,'segSelect',segSelect
     widget_control, ev.top, SET_UVALUE=wid
   endelse
@@ -89,10 +89,10 @@ PRO eva_sitl_FOMedit, state, segSelect, wgrid=wgrid
   fom_max_value   = 255.0 ; max allowable value of FOM
   dislen          = ' characters (max 250)'; label for the Discussion Text Field
   ;////////////////////////////////////
-
+  
   ; initialize
   device, get_graphics=old_graphics, set_graphics=6
-  eva_sitl_highlight, segSelect.TS, segSelect.TE, segSelect.FOM, segSelect.VAR
+  eva_sitl_highlight, segSelect.TS, segSelect.TE, segSelect.FOM, state
   if n_elements(wgrid) eq 0 then message, "Need wgrid"
   
   time = timerange(/current)

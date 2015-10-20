@@ -1,4 +1,4 @@
-PRO mms_load_bss_burst, trange=trange
+PRO mms_load_bss_burst, trange=trange, include_labels=include_labels
   compile_opt idl2
   
   if ~undefined(trange) && n_elements(trange) eq 2 $
@@ -34,8 +34,11 @@ PRO mms_load_bss_burst, trange=trange
   ; TPLOT VARIABLE
   ;-------------------
   store_data,'mms_bss_burst',data={x:bar_x, y:bar_y}
+
+  if undefined(include_labels) then panel_size= 0.01 else panel_size=0.09
+  if undefined(include_labels) then labels='' else labels=['Burst']
   options,'mms_bss_burst',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
-    ticklen=0,panel_size=0.01,colors=4
+    ticklen=0,panel_size=panel_size,colors=4, labels=labels, charsize=2.
 
 END
 

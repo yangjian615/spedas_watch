@@ -1,4 +1,4 @@
-PRO eva_sitl_highlight, left_edges, right_edges, data, var, $
+PRO eva_sitl_highlight, left_edges, right_edges, data, state, $
   color=color, rehighlight=rehighlight, noline=noline
   compile_opt idl2
   @xtplot_com
@@ -11,8 +11,9 @@ PRO eva_sitl_highlight, left_edges, right_edges, data, var, $
     return
   endif
   if n_elements(color) eq 0 then color=1; 128
-;  if n_elements(target) eq 0 then target='mms_stlm_output_fom'
 
+  var = state.pref.EVA_BAKSTRUCT ? 'mms_stlm_bakstr' : 'mms_stlm_fomstr'
+  
   ind = where(strcmp(tplot_vars.SETTINGS.VARNAMES,var),ct)
   if ct eq 1 then begin 
     varID = ind[0]
@@ -20,14 +21,13 @@ PRO eva_sitl_highlight, left_edges, right_edges, data, var, $
     xe   = tplot_vars.SETTINGS.X.WINDOW[1]
     ys   = tplot_vars.SETTINGS.Y[varID].WINDOW[0]
     ye   = tplot_vars.SETTINGS.Y[varID].WINDOW[1]
-    ;fmin = tplot_vars.SETTINGS.Y[varID].CRANGE[0]
-    ;fmax = tplot_vars.SETTINGS.Y[varID].CRANGE[1]
+    fmin = tplot_vars.SETTINGS.Y[varID].CRANGE[0]
+    fmax = tplot_vars.SETTINGS.Y[varID].CRANGE[1]
     ts   = tplot_vars.SETTINGS.TRANGE_CUR[0]
     te   = tplot_vars.SETTINGS.TRANGE_CUR[1]
     time = timerange(/current)
     ts = time[0]
     te = time[1]
-    
   ;  ; frange (data-y)
     eva_sitl_strct_yrange, var, yrange=frange
     fmin = frange[0]

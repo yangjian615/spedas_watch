@@ -1,4 +1,4 @@
-PRO mms_load_bss_status, trange=trange
+PRO mms_load_bss_status, trange=trange, include_labels=include_labels
   compile_opt idl2
   
   if ~undefined(trange) && n_elements(trange) eq 2 $
@@ -64,10 +64,13 @@ PRO mms_load_bss_status, trange=trange
   bar_y[*,1] = bar_y_icmp
   bar_y[*,2] = bar_y_over
   bar_y[*,3] = bar_y_pend 
+  if undefined(include_labels) then panel_size= 0.01 else panel_size=0.09
+  if undefined(include_labels) then labels='' else labels=['Status']
+    
   store_data,'mms_bss_status',data={x:bar_x, y:bar_y, v:[0,1,2,3]}
   options,'mms_bss_status',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
-    ticklen=0,panel_size=0.01,colors=[0,2,6,5]
-    ; 0:black ... complete
+    ticklen=0,panel_size=panel_size,colors=[0,2,6,5], labels=labels, charsize=2.
+     ; 0:black ... complete
     ; 2:blue ... incomplete
     ; 6:red ... overwritten
     ; 5:yellow... pending 

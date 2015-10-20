@@ -25,13 +25,15 @@
 ;
 ;   See also "mms_load_bss_crib" for examples.
 ;
+;   5. To labels bss bars set the include_labels flag, /include_labels
+;   
 ; CREATED BY: Mitsuo Oka   Oct 2015
 ;
-; $LastChangedBy: moka $
-; $LastChangedDate: 2015-10-02 13:42:37 -0700 (Fri, 02 Oct 2015) $
-; $LastChangedRevision: 18989 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2015-10-19 14:10:49 -0700 (Mon, 19 Oct 2015) $
+; $LastChangedRevision: 19107 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_load_bss.pro $
-PRO mms_load_bss, trange=trange, datatype=datatype
+PRO mms_load_bss, trange=trange, datatype=datatype, include_labels=include_labels
   compile_opt idl2
 
   if undefined(datatype) then datatype = ['fast','burst','status','fom']
@@ -39,9 +41,9 @@ PRO mms_load_bss, trange=trange, datatype=datatype
   nmax = n_elements(datatype)
   for n=0,nmax-1 do begin
     case datatype[n] of
-      'fast':   mms_load_bss_fast, trange=trange
-      'burst':  mms_load_bss_burst, trange=trange
-      'status': mms_load_bss_status, trange=trange
+      'fast':   mms_load_bss_fast, trange=trange, include_labels=include_labels
+      'burst':  mms_load_bss_burst, trange=trange, include_labels=include_labels
+      'status': mms_load_bss_status, trange=trange, include_labels=include_labels
       'fom':    mms_load_bss_fom, trange=trange
       else: message,'datatype: '+datatype[n]+' is not allowed.'
     endcase

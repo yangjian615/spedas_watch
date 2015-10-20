@@ -1,0 +1,90 @@
+PRO eva_data_load_mms_exb, sc=sc, vthres=vthres
+  compile_opt idl2
+  if undefined(vthres) then vthres = 500.
+  
+  ; B
+  ;------------
+  tn = tnames(sc+'_dfg_srvy_dmpa',ct)
+  if ct ne 1 then begin
+    mms_sitl_get_dfg, sc_id=sc
+    options,sc+'_dfg_srvy_gsm_dmpa',$
+      labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='GSM [nT]',$
+      colors=[2,4,6],labflag=-1,constant=0, cap=1
+    options,sc+'_dfg_srvy_dmpa',$
+      labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='DMPA [nT]',$
+      colors=[2,4,6],labflag=-1,constant=0, cap=1
+  endif
+  
+  ; E
+  ;------------
+  tn = tnames(sc+'_edp_fast_dce_dsl',ct)
+  if ct ne 1 then begin
+    mms_sitl_get_edp,sc=sc
+    options,sc+'_edp_fast_dce_dsl', $
+      labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
+      colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
+  endif
+  
+  ; ExB
+  ;------------
+  get_data,sc+'_dfg_srvy_dmpa',data=B
+  get_data,sc+'_edp_fast_dce_dsl',data=E,dl=dl,lim=lim
+  ; E has a higher time resolution than B
+  ; Here, we interpolate B so that its timestamps will match with those of E.
+  Bip = fltarr(n_elements(E.x),3)
+  wBx = interpol(B.y[*,0], B.x, E.x,/spline)
+  wBy = interpol(B.y[*,1], B.x, E.x,/spline)
+  wBz = interpol(B.y[*,2], B.x, E.x,/spline)
+  iwB2 = 1000./(wBx^2 + wBy^2 + wBz^2)
+  EXB = fltarr(n_elements(E.x),3)
+  EXB[*,0] = ((E.y[*,1]*wBz - E.y[*,2]*wBy)*iwB2 > (-1)*vthres) < vthres
+  EXB[*,1] = ((E.y[*,2]*wBx - E.y[*,0]*wBz)*iwB2 > (-1)*vthres) < vthres
+  EXB[*,2] = ((E.y[*,0]*wBy - E.y[*,1]*wBx)*iwB2 > (-1)*vthres) < vthres
+  str_element,/delete,'lim','yrange'
+  store_data,sc+'_exb_dsl',data={x:E.x,y:EXB},dl=dl
+  options,sc+'_exb_dsl',labels=['(ExB)x','(ExB)y','(ExB)z'],labflag=-1,colors=[2,4,6],$
+    ytitle=sc+'!CExB',ysubtitle='[km/s]',constant=0,ystyle=1
+  
+  ; Compare with FPI
+  ;-------------------------
+  
+  ; extract E
+  comp = ['x','y','z']
+  clrs = [2,4,6]
+  cmax = n_elements(comp)
+  for c=0,cmax-1 do begin
+    store_data,sc+'_exb_dsl_'+comp[c],data={x:E.x,y:EXB[*,c]}
+    options,sc+'_exb_dsl_'+comp[c],labels='(ExB)'+comp[c],labflag=-1,colors=clrs[c],$
+      ytitle=sc+'!C(ExB)'+comp[c],ysubtitle='[km/s]',constant=0,ystyle=1
+  endfor
+  
+  ; extract Vperp
+  tn = tnames(sc+'_fpi_iBulkV_DSC',ct)
+  if ct ne 1 then begin
+    eva_data_load_mms_fpi, sc=sc
+  endif
+  ; V has a much lower time resolution than B
+  ; Here, we keep the lower time resolution by interpolating B.
+  get_data,sc+'_fpi_iBulkV_DSC',data=F
+  wBx = interpol(B.y[*,0], B.x, F.x)
+  wBy = interpol(B.y[*,1], B.x, F.x)
+  wBz = interpol(B.y[*,2], B.x, F.x)
+  iwB2 = 1./(wBx^2 + wBy^2 + wBz^2)
+  BdotV = iwB2*(wBx*F.y[*,0]+wBy*F.y[*,1]+wBz*F.y[*,2])
+  Vperp = fltarr(n_elements(F.x),3)
+  Vperp[*,0] = F.y[*,0] - BdotV*wBx
+  Vperp[*,1] = F.y[*,1] - BdotV*wBy
+  Vperp[*,2] = F.y[*,2] - BdotV*wBz
+  for c=0,cmax-1 do begin
+    store_data,sc+'_fpi_iBulkVperp_'+comp[c],data={x:F.x,y:Vperp[*,c]}
+    options,sc+'_fpi_iBulkVperp_'+comp[c],labels='Vperp,'+comp[c],labflag=-1,colors=clrs[c],$
+      ytitle=sc+'!CFPI!CVperp,'+comp[c],ysubtitle='[km/s]',constant=0,ystyle=1
+  endfor
+  
+  ; combine
+  for c=0,cmax-1 do begin
+    store_data,sc+'_exb_vperp_'+comp[c],data=sc+['_exb_dsl_','_fpi_iBulkVperp_']+comp[c]
+    options,sc+'_exb_vperp_'+comp[c],colors=[clrs[c],0],labflag=-1,$
+      labels=['(ExB)'+comp[c],'Vperp,'+comp[c]]
+  endfor
+END

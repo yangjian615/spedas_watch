@@ -15,8 +15,8 @@
 ; Author:
 ;   Davin Larson  June 2013   
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-04-18 13:04:07 -0700 (Fri, 18 Apr 2014) $
-; $LastChangedRevision: 14861 $
+; $LastChangedDate: 2015-10-19 16:17:21 -0700 (Mon, 19 Oct 2015) $
+; $LastChangedRevision: 19109 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_archive.pro $
 ;-
  
@@ -25,7 +25,7 @@ pro file_archive,filename,archive_ext=archive_ext,archive_dir=archive_dir,verbos
   if ~keyword_set(archive_ext) && ~keyword_set(archive_dir) then return
 ;  if size(/type,archive_ext) ne 7 then archive_ext = ''
 ;  if size(/type,archive_dir) ne 7 then archive_dir = ''
-  dl = n_elements(dlevel) ne 0 ? dlevel : 2
+  dl = n_elements(dlevel) ne 0 ? dlevel : 3
   if n_elements(max_arcs) eq 0 then max_arcs = 99
   
 for i = 0L,n_elements(filename)-1 do begin

@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-19 15:50:00 -0700 (Fri, 19 Jun 2015) $
-; $LastChangedRevision: 17924 $
+; $LastChangedDate: 2015-10-19 07:10:19 -0700 (Mon, 19 Oct 2015) $
+; $LastChangedRevision: 19105 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVERRIDE
@@ -227,7 +227,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVE
       options,'mms_stlm_bakstr','unix_BAKStr_mod',s ; update structure
       
       ;update yrange
-      eva_sitl_strct_yrange,'mms_stlm_output_fom'
+      eva_sitl_strct_yrange,'mms_stlm_bakstr';'mms_stlm_output_fom'
       eva_sitl_strct_yrange,'mms_stlm_fomstr'
       
     endif else begin;if (r eq -2) then begin
