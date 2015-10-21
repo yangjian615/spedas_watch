@@ -19,9 +19,9 @@
 ;       L2ONLY:       Use L2 MAG data only.  Skip any date(s) where L2 data are
 ;                     incomplete or not available.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-10-12 13:39:28 -0700 (Mon, 12 Oct 2015) $
-; $LastChangedRevision: 19054 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-10-20 17:23:53 -0700 (Tue, 20 Oct 2015) $
+; $LastChangedRevision: 19121 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_resample_pad_daily.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -65,7 +65,8 @@ pro mvn_swe_resample_pad_daily, trange, l2only=l2only
     if (ok) then begin
       mvn_swe_pad_resample,nbins=128,erange=[100.,150.],/norm,/mask,/silent
       tplot_save,'mvn_swe_pad_resample',file=ofile
-      spawn, 'chmod g+w '+ofile
+;      spawn, 'chmod g+w '+ofile
+      file_chmod, ofile, '664'o
     endif
 
   endfor

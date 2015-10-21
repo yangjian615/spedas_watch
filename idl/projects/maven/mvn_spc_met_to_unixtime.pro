@@ -5,14 +5,14 @@
 ;see also:  "mvn_spc_unixtime_to_met" for the reverse conversion
 ; This routine is in the process of being modified to use SPICE Kernels to correct for clock drift as needed.
 ; Author: Davin Larson
-; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-01-30 05:53:45 -0800 (Fri, 30 Jan 2015) $
-; $LastChangedRevision: 16793 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-10-20 12:11:46 -0700 (Tue, 20 Oct 2015) $
+; $LastChangedRevision: 19118 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mvn_spc_met_to_unixtime.pro $
 ;-
 function mvn_spc_met_to_unixtime,input,reverse=reverse,correct_clockdrift=correct_clockdrift   ,reset=reset   ;,prelaunch = prelaunch
 
-common mvn_spc_met_to_unixtime_com, cor_clkdrift, icy_installed  , kernel_verified, time_verified, sclk,tls
+common mvn_spc_met_to_unixtime_com, cor_clkdrift, icy_installed, kernel_verified, time_verified, sclk, tls
 
 ;Set clockdrift by default
 if n_elements(correct_clockdrift) eq 1 then begin
@@ -59,10 +59,9 @@ if keyword_set(reverse) then begin
     et = time_ephemeris(unixtime)
     met = double(et)
     for i = 0,n_elements(met)-1 do begin
-
-	    cspice_sce2s, -202, et[i], sclk
-	    seconds = double(strmid(sclk,2,10))
-	    subticks = double(strmid(sclk,13,5))	
+	    cspice_sce2s, -202, et[i], sclk_out
+	    seconds = double(strmid(sclk_out,2,10))
+	    subticks = double(strmid(sclk_out,13,5))	
 	    met[i] = seconds+subticks/(2.0^16)
     endfor  
     return,met  
@@ -84,9 +83,9 @@ endif else begin
    seconds = floor(met,/l64)
    subseconds = met mod 1
    subticks = round(subseconds*65536)
-   sclk = string(seconds)+':'+string(subticks)
+   sclk_in = string(seconds)+':'+string(subticks)
    n = n_elements(met)
-   cspice_scs2e, -202, sclk, ET
+   cspice_scs2e, -202, sclk_in, ET
    unixtime = time_ephemeris(ET,/et2ut)
 endelse
 

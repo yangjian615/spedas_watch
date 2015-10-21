@@ -39,9 +39,9 @@
 ; OUTPUT:
 ;
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-13 11:33:26 -0700 (Tue, 13 Oct 2015) $
-;$LastChangedRevision: 19062 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-20 11:10:54 -0700 (Tue, 20 Oct 2015) $
+;$LastChangedRevision: 19117 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_afg.pro $
 ;-
 
@@ -50,7 +50,7 @@ pro mms_load_afg, trange = trange, probes = probes, datatype = datatype, $
     local_data_dir = local_data_dir, source = source, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-    no_update = no_update, suffix = suffix
+    no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -62,6 +62,6 @@ pro mms_load_afg, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix
+        no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data
 
 end

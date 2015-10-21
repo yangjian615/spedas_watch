@@ -43,8 +43,9 @@ PRO mms_load_bss_status, trange=trange, include_labels=include_labels
     endif else begin
       bar_y_icmp = [bar_y_icmp,nan4]
     endelse
-    if (strmatch(strlowcase(s.STATUS[n]),'*demoted*')) and $
-       (strmatch(strlowcase(s.STATUS[n]),'*derelict*')) then begin
+    if (not strmatch(strlowcase(s.STATUS[n]),'*incomplete*')) and $
+       (strmatch(strlowcase(s.STATUS[n]),'*demoted*') or $
+        strmatch(strlowcase(s.STATUS[n]),'*derelict*') ) then begin
       bar_y_over = [bar_y_over, nan, 0.,0.,nan]
     endif else begin
       bar_y_over = [bar_y_over,nan4]

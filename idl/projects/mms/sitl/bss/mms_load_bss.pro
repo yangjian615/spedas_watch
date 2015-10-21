@@ -30,14 +30,16 @@
 ; CREATED BY: Mitsuo Oka   Oct 2015
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-10-19 14:10:49 -0700 (Mon, 19 Oct 2015) $
-; $LastChangedRevision: 19107 $
+; $LastChangedDate: 2015-10-20 07:31:50 -0700 (Tue, 20 Oct 2015) $
+; $LastChangedRevision: 19113 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_load_bss.pro $
 PRO mms_load_bss, trange=trange, datatype=datatype, include_labels=include_labels
   compile_opt idl2
 
+  if undefined(trange) then trange = timerange() else trange = timerange(trange)
   if undefined(datatype) then datatype = ['fast','burst','status','fom']
   datatype = strlowcase(datatype)
+  
   nmax = n_elements(datatype)
   for n=0,nmax-1 do begin
     case datatype[n] of

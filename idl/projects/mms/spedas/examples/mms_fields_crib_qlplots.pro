@@ -4,22 +4,22 @@
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-10-07 09:20:46 -0700 (Wed, 07 Oct 2015) $
-; $LastChangedRevision: 19025 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2015-10-20 12:40:58 -0700 (Tue, 20 Oct 2015) $
+; $LastChangedRevision: 19119 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_fields_crib_qlplots.pro $
 ;-
 
 
 ; initialize and define parameters
 probes = ['1', '2', '3', '4']
-trange = ['2015-09-05', '2015-09-06']
-
+;trange = ['2015-09-05', '2015-09-06']
+timespan, '2015-09-05', 1, /day
 ;
 ; START OF FIELDS PLOTS - ALL SPACECRAFT 
 ;  
 ; load mms survey Fields data
-mms_load_dfg, probes=probes, trange=trange,  level='ql', data_rate='srvy'
+mms_load_dfg, probes=probes, level='ql', data_rate='srvy'
 
 ; DMPA - Handle Btot and Bvec 
 
@@ -87,19 +87,24 @@ options, 'mms_*_gsm_dmpa_*', ysubtitle='GSM-DMPA [nT]'
 ;mms_load_dsp, data_rate='fast', probes=[1, 2, 3, 4], datatype='epsd', level='l2'
 ;mms_load_dsp,  data_rate='srvy', probes=[1, 2, 3, 4], datatype='bpsd', level='l2'
 
+mms_load_bss, /include_labels
+
 tplot_options, 'xmargin', [20, 15]
 tplot_options, 'ymargin', [5, 5]
-tplot_options, 'title', 'MMS Quicklook Plots for Fields Data'
 tplot_options, 'charsize', 1.
-window, 1, xsize=850, ysize=1000
-tplot, ['mms_*_btot', 'mms_*_gsm_dmpa_*', 'mms_*_bvec_*'], window=1
+tplot_options, 'panel_size', 0.2
+window, 1, xsize=600, ysize=850
+options, 'mms_bss_burst', charsize=2.5
+tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
+        'mms_*_btot', 'mms_*_gsm_dmpa_*', 'mms_*_bvec_*'], window=1
+title= 'MMS Quicklook Plots for Fields Data'
+xyouts, .25, .95, title, /normal, charsize=1.5
 stop
 
 ;
 ; START OF FIELDS2 E&B PLOTS - ALL SPACECRAFT
 ;
 ; Get dec data
-timespan, '2015-09-05', 1, /day
 mms_load_edp, data_rate='fast', probes=[1, 2, 3, 4], datatype='dce', level='ql'
 options, 'mms1*_dce_dsl', colors=[0]    ; black
 options, 'mms2*_dce_dsl', colors=[6]    ; red
@@ -134,15 +139,20 @@ store_data, 'mms_asp1_spot_l1b', data = ['mms1_asp1_spot_l1b', $
   'mms4_asp1_spot_l1b']
 options, 'mms_*spot_l1b', ytitle='ASP1 Scpot'
 
-tplot_options, 'title', 'MMS E&B Quicklook Plots'
-tplot, ['mms_*_dce_dsl_*', 'mms_asp1_spot_l1b', 'mms_*_btot', 'mms_*_gsm_dmpa_*'], window=1
+tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
+        'mms_*_dce_dsl_*', 'mms_asp1_spot_l1b', 'mms_*_btot', $
+        'mms_*_gsm_dmpa_*'], window=1
+title='MMS E&B Quicklook Plots'
+xyouts, .35, .95, title, /normal, charsize=1.5
 stop
 
 ;
 ; EDP QuickLook Plots 
 ;
-tplot_options, 'title', 'MMS EDP Quicklook Plots'
-tplot, ['mms_asp1_spot_l1b', 'mms_*_dce_dsl_*'], window=1
+tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
+        'mms_asp1_spot_l1b', 'mms_*_dce_dsl_*'], window=1
+title='MMS EDP Quicklook Plots'
+xyouts, .35, .95, title, /normal, charsize=1.5
 stop
 
 end

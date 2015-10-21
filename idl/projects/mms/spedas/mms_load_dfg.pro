@@ -40,9 +40,9 @@
 ;     to load MMS QL DFG data for MMS 1 and MMS 2
 ;     MMS> mms_load_dfg, probes=[1, 2], trange=['2015-06-22', '2015-06-23'], level='ql'
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-06 12:18:36 -0700 (Tue, 06 Oct 2015) $
-;$LastChangedRevision: 19011 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-20 11:07:47 -0700 (Tue, 20 Oct 2015) $
+;$LastChangedRevision: 19115 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_dfg.pro $
 ;-
 
@@ -51,7 +51,7 @@ pro mms_load_dfg, trange = trange, probes = probes, datatype = datatype, $
     local_data_dir = local_data_dir, source = source, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-    no_update = no_update, suffix = suffix
+    no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -62,6 +62,6 @@ pro mms_load_dfg, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix
+        no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data
 
 end

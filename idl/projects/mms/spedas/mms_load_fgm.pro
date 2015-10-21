@@ -50,8 +50,8 @@
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-16 13:52:13 -0700 (Fri, 16 Oct 2015) $
-;$LastChangedRevision: 19092 $
+;$LastChangedDate: 2015-10-20 11:08:04 -0700 (Tue, 20 Oct 2015) $
+;$LastChangedRevision: 19116 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -170,7 +170,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
-                  time_clip = time_clip, no_update = no_update, suffix = suffix
+                  time_clip = time_clip, no_update = no_update, suffix = suffix, $
+                  no_attitude_data = no_attitude_data
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
@@ -180,6 +181,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     if undefined(level) then level = 'ql' ; default to quick look
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rate) then data_rate = 'srvy'
+    if undefined(suffix) then suffix = ''
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
@@ -188,7 +190,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         suffix = suffix
 
     ; load the atttude data to do the coordinate transformation 
-    mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec'], $
+    if undefined(no_attitude_data) then mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec'], $
         suffix = suffix
 
     ; DMPA coordinates to GSE, for each probe
@@ -196,7 +198,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         this_probe = 'mms'+strcompress(string(probes[probe_idx]), /rem)
         ; make sure the attitude data has been loaded before doing the cotrans operation
         if tnames(this_probe+'_defatt_spinras'+suffix) ne '' && tnames(this_probe+'_defatt_spindec'+suffix) ne '' $
-            && tnames(this_probe+'_'+instrument+'_'+data_rate+'_dmpa'+suffix) ne '' then begin
+            && tnames(this_probe+'_'+instrument+'_'+data_rate+'_dmpa'+suffix) ne '' && undefined(no_attitude_data) then begin
 
             dmpa2gse, this_probe+'_'+instrument+'_'+data_rate+'_dmpa'+suffix, this_probe+'_defatt_spinras'+suffix, $
                 this_probe+'_defatt_spindec'+suffix, this_probe+'_'+instrument+'_'+data_rate+'_gse'+suffix

@@ -4,16 +4,17 @@
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-10-06 15:45:39 -0700 (Tue, 06 Oct 2015) $
-; $LastChangedRevision: 19019 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2015-10-20 07:31:50 -0700 (Tue, 20 Oct 2015) $
+; $LastChangedRevision: 19113 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
 probe = '1'
-trange = ['2015-08-15', '2015-08-16']
-width = 650
-height = 750
+;trange = ['2015-08-15', '2015-08-16']
+timespan, '2015-08-15', 1
+width = 850
+height = 1000
 prefix = 'mms'+probe+'_epd_eis'
 
 ; load ExTOF and electron data:
@@ -66,18 +67,22 @@ position_vars = ['mms'+probe+'_defeph_R_gsm', eph_gsm+'_re_z', eph_gsm+'_re_y', 
 
 tplot_options, 'ymargin', [5, 5]
 tplot_options, 'xmargin', [15, 15]
-tplot_options, 'title', 'EIS - Quicklook'
 
 ; clip the DFG data to -150nT to 150nT
 tclip, 'mms'+probe+'_dfg_srvy_gse_bvec', -150., 150., /overwrite
 
-panels = ['mms'+probe+'_dfg_srvy_gse_bvec', $
-          prefix+'_electronenergy_electron_flux_omni_spin', $
-          prefix+'_extof_proton_flux_omni_spin', $
-          prefix+'_extof_alpha_flux_omni_spin', $
-          prefix+'_extof_oxygen_flux_omni_spin']
+mms_load_bss, trange=trange, /include_labels 
+
+panels = ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
+  'mms'+probe+'_dfg_srvy_gse_bvec', $
+  prefix+'_electronenergy_electron_flux_omni_spin', $
+  prefix+'_extof_proton_flux_omni_spin', $
+  prefix+'_extof_alpha_flux_omni_spin', $
+  prefix+'_extof_oxygen_flux_omni_spin']
 
 window, xsize=width, ysize=height
 tplot, panels, var_label=position_vars
 
+title='EIS - Quicklook'
+xyouts, .4, .96, title, /normal, charsize=1.5
 end
