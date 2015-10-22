@@ -91,8 +91,8 @@
 ;   Send e-mail to:  tplot@ssl.berkeley.edu    someone might answer!
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-06-27 14:34:15 -0700 (Fri, 27 Jun 2014) $
-; $LastChangedRevision: 15459 $
+; $LastChangedDate: 2015-10-21 12:09:08 -0700 (Wed, 21 Oct 2015) $
+; $LastChangedRevision: 19128 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot.pro $
 ;-
 
@@ -136,6 +136,12 @@ if 1 then begin   ; check for embedded calls
         dprint,dlevel=2,'Calls to TPLOT are not allowed from within '+strupcase(nocallsfrom[w])
         return
     endif
+endif
+
+
+if keyword_set(names) and (arg_present(names)) eq 0 then begin
+  tplot_names,datanames
+  return  
 endif
 
 if size(verbose,/type) eq 0 then  str_element,tplot_vars,'options.verbose',verbose ; get default verbose value if it exists
@@ -263,6 +269,7 @@ str_element,tplot_vars,'settings.y',replicate(!y,nd),/add_replace
 str_element,tplot_vars,'settings.clip',lonarr(6,nd),/add_replace
 str_element,def_opts,'ygap',value = ygap
 str_element,def_opts,'charsize',value = chsize
+str_element,def_opts,'local_time',local_time
 
 if keyword_set(nocolor) then str_element,def_opts,'nocolor',nocolor,/add_replace
 

@@ -10,7 +10,7 @@
 ;
 ;Interpolation Methods:
 ;
-;   3D Interpolation:
+;   3D Interpolation (default):
 ;     The entire 3-dimensional distribution is linearly interpolated onto a 
 ;     regular 3d grid and a slice is extracted from the volume.
 ;     
@@ -44,9 +44,10 @@
 ;  TIME: Time at which the slice will be computed. (string or double)
 ;  WINDOW: Length in seconds over which data will be averaged. (double)
 ;  CENTER_TIME: Flag denoting that TIME should be midpoint or window instad of beginning.
-;        
+;  
+;  THREE_D_INTERP: Flag to use 3D interpolation method (described above)      
 ;  TWO_D_INTERP: Flag to use 2D interpolation method (described above)
-;  THREE_D_INTERP: Flag to use 3D interpolation method (described above)
+;  GEOMETRIC: Flag to use geometric interpolation method (described above)
 ; 
 ;
 ;Orientation Keywords:
@@ -185,8 +186,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-02 20:03:16 -0700 (Fri, 02 Oct 2015) $
-;$LastChangedRevision: 18996 $
+;$LastChangedDate: 2015-10-21 18:05:46 -0700 (Wed, 21 Oct 2015) $
+;$LastChangedRevision: 19132 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -275,7 +276,7 @@ if rotation eq 'perp_xyz' then rotation = 'perp_xy'
 if keyword_set(geometric) then type=0
 if keyword_set(two_d_interp) then type = 2
 if keyword_set(three_d_interp) then type = 3
-if undefined(type) then type = 0
+if undefined(type) then type = 3
 
 
 ; 2d interp

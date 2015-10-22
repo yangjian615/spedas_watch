@@ -13,14 +13,14 @@
 ;  If default_source is provided then the relevant structure elements are copied and used in the output
 ;KEYWORDS:
 ;  SET  : If set, then the values in DEFAULT_SOURCE are made permanent.
-;OUTPUT:
+;OUTPUT: 
 ; Structure:
 ;  see FILE_RETRIEVE for a description of the elements
 ;
-; $LastChangedBy:  $
-; $LastChangedDate:  $
-; $LastChangedRevision:  $
-; $URL:  $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2015-10-21 12:07:29 -0700 (Wed, 21 Oct 2015) $
+; $LastChangedRevision: 19127 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spice/spice_file_source.pro $
 ;-
 
 
@@ -41,6 +41,7 @@ if not keyword_set(psource) then begin
 ;    psource.no_update = 1
     psource.verbose=2
     psource.min_age_limit=3600  ; one hour delay before checking again
+    str_element,/add,psource,'strict_html',0
 ;    str_element,/add,psource,'LAST_VERSION',1        
 endif
 

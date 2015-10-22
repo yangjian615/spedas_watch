@@ -131,8 +131,8 @@ End
 ; 6-nov-2014, jmm, Corrects clock drift 
 ; 22-dec-2014, jmm, added eprom_ver and header
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-24 12:59:50 -0700 (Thu, 24 Sep 2015) $
-; $LastChangedRevision: 18918 $
+; $LastChangedDate: 2015-10-21 15:41:49 -0700 (Wed, 21 Oct 2015) $
+; $LastChangedRevision: 19131 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2gen.pro $
 ;-
 Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, $
@@ -744,8 +744,8 @@ Pro mvn_sta_cmn_l2gen, cmn_dat, otp_struct = otp_struct, directory = directory, 
   global_att.PDS_start_time = pds_time[0]
   global_att.PDS_stop_time = pds_time[1]
 ;save kernel values
-  If(is_string(sclk)) Then global_att.Spacecraft_clock_kernel = sclk[0]
-  If(is_string(tls)) Then global_att.Leapseconds_kernel = tls[0]
+  If(is_string(sclk)) Then global_att.Spacecraft_clock_kernel = file_basename(sclk[0])
+  If(is_string(tls)) Then global_att.Leapseconds_kernel = file_basename(tls[0])
 
   otp_struct = {filename:'', g_attributes:global_att, inq:inq, nv:nvars, vars:vstr}
 

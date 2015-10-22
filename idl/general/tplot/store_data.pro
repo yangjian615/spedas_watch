@@ -36,15 +36,16 @@
 ;SEE ALSO:    "GET_DATA", "TPLOT_NAMES",  "TPLOT", "OPTIONS"
 ;
 ;CREATED BY:    Davin Larson
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-07-24 18:00:36 -0700 (Fri, 24 Jul 2015) $
-; $LastChangedRevision: 18260 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2015-10-21 12:03:42 -0700 (Wed, 21 Oct 2015) $
+; $LastChangedRevision: 19125 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/store_data.pro $
 ;-
 pro store_data,name, time,ydata,values, $
    data = data, $
    append=append, $
    tagnames = tagnames, $
+   time_tag = time_tag, $
    limits= limits, $
    dlimits = dlimits, $
    newname = newname, $
@@ -77,14 +78,15 @@ if size(/type,tagnames) eq 7 then begin
     dprint,dlevel=3,'Data must be a structure'
     return
   endif
+  if size(/type,time_tag) ne 7 then time_tag = 'TIME'
   tags = tag_names(data)
-  time = data.time
+  str_element,data,time_tag,time    ;  time = data.time
   ok   = strfilter(tags,tagnames,delimiter=' ',/byte)
   if ~keyword_set(seperator) then seperator = ''
   nd = size(/n_elements,data)
   for i=0,n_elements(tags)-1 do begin
     if ok[i] eq 0 then continue
-    if tags[i] eq 'TIME' then continue
+    if tags[i] eq time_tag then continue
     y = data.(i)
     dimy = size(/n_dimen,y)
     if dimy eq 2 || nd eq 1 then begin

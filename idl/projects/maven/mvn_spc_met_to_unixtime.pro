@@ -5,9 +5,9 @@
 ;see also:  "mvn_spc_unixtime_to_met" for the reverse conversion
 ; This routine is in the process of being modified to use SPICE Kernels to correct for clock drift as needed.
 ; Author: Davin Larson
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-10-20 12:11:46 -0700 (Tue, 20 Oct 2015) $
-; $LastChangedRevision: 19118 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2015-10-21 11:55:01 -0700 (Wed, 21 Oct 2015) $
+; $LastChangedRevision: 19123 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mvn_spc_met_to_unixtime.pro $
 ;-
 function mvn_spc_met_to_unixtime,input,reverse=reverse,correct_clockdrift=correct_clockdrift   ,reset=reset   ;,prelaunch = prelaunch
@@ -17,7 +17,9 @@ common mvn_spc_met_to_unixtime_com, cor_clkdrift, icy_installed, kernel_verified
 ;Set clockdrift by default
 if n_elements(correct_clockdrift) eq 1 then begin
   cor_clkdrift = correct_clockdrift
-endif else cor_clkdrift = 1b
+endif 
+
+if n_elements(cor_clkdrift) eq 0 then cor_clkdrift = 1b
 
 if keyword_set(cor_clkdrift) then begin
    if  n_elements(kernel_verified) eq 0 || keyword_set(reset) then begin ; check for cspice first

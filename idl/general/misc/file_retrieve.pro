@@ -36,8 +36,8 @@
 ;                with the same # of elements as pathnames/newpathnames
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2015-10-19 16:59:29 -0700 (Mon, 19 Oct 2015) $
-;$LastChangedRevision: 19111 $
+;$LastChangedDate: 2015-10-21 11:58:15 -0700 (Wed, 21 Oct 2015) $
+;$LastChangedRevision: 19124 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_retrieve.pro $
 ;-
 function file_retrieve,pathnames, newpathnames, structure_format=structure_format,  $
@@ -53,6 +53,7 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     preserve_mtime=preserve_mtime,  $
     restore_mtime=restore_mtime, $
     ascii_mode=ascii_mode,   $
+    strict_html=strict_html, $
     no_download=no_download,no_server=no_server, $
     no_update=no_update, $
     archive_ext=archive_ext, $
@@ -65,10 +66,11 @@ function file_retrieve,pathnames, newpathnames, structure_format=structure_forma
     no_clobber=no_clobber, ignore_filesize=ignore_filesize, $
     verbose=verbose,progress=progress,progobj=progobj
 
-dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 19111 2015-10-19 23:59:29Z davin-mac $'
+dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 19124 2015-10-21 18:58:15Z davin-mac $'
 if keyword_set(structure_format) then begin
-   swver = strsplit('$Id: file_retrieve.pro 19111 2015-10-19 23:59:29Z davin-mac $',/extract)
-   user_agent =  strjoin(swver[1:3],' ')+' IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
+;   swver = strsplit('$Id: file_retrieve.pro 19124 2015-10-21 18:58:15Z davin-mac $',/extract)
+;   user_agent =  strjoin(swver[1:3],' ')+' IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
+   if n_elements(user_agent) eq 0 then user_agent=''
    str= {   $
       retrieve_struct,       $
       init:0,                $
@@ -146,6 +148,7 @@ if keyword_set(remote_data_dir) and  not (keyword_set(no_server) or keyword_set(
                no_download = no_download, archive_ext=archive_ext,archive_dir=archive_dir,  $
                ascii_mode=ascii_mode, $
                progress=progress, $
+               strict_html=strict_html, $
                recurse_limit=recurse_limit, $
                if_modified_since=if_modified_since, $
                user_agent=user_agent, user_pass=user_pass, $
@@ -189,7 +192,7 @@ for i=0,n_elements(fullnames)-1 do begin
    else: begin
            if keyword_set(last_version) then begin
 ;             dprint,dlevel=2,verbose=vb,strtrim(c,2)+' matches found for: "'+fullnames[i]+'"  Using last version.'
-             dprint,dlevel=2,verbose=vb,'Using last version of '+strtrim(c,2)+' matches: '+ff[c-1]
+             dprint,dlevel=3,verbose=vb,'Using last version of '+strtrim(c,2)+' matches: '+ff[c-1]
              append_array,fullnames2,ff[c-1]
              file_archive,ff[0:c-2],verbose=verbose,archive_dir=oldversion_dir,archive_ext=oldversion_ext
            endif else begin

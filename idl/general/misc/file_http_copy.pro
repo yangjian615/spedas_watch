@@ -63,6 +63,8 @@
  ;                          Setting this keyword will force ignore_filesize keyword to be set as well because
  ;                          files will be of different sizes typically.
  ;     USER_PASS:    string with format:  'user:password' for sites that require Basic authentication. Digest authentication is not supported.
+ ;     LINKS:   Set this keyword to a named variable in which to return the html links.
+ ;     STRICT_HTML:  Only useful when extracting links. Set this keyword to enforce strict rules when searching for links (Much slower but more robust)
  ;     VERBOSE:      (input; integer) Set level of verboseness:   Uses "DPRINT"
  ;           0-nearly silent;  2-typical messages;  4: debugging info
  ;      PRESERVE_MTIME:  Uses the server modification time instead of local modification time.  This keyword is ignored
@@ -132,8 +134,8 @@
  ;       then the connection would be closed
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2015-10-19 16:59:29 -0700 (Mon, 19 Oct 2015) $
- ; $LastChangedRevision: 19111 $
+ ; $LastChangedDate: 2015-10-21 11:58:15 -0700 (Wed, 21 Oct 2015) $
+ ; $LastChangedRevision: 19124 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
  ;-
  
@@ -181,11 +183,12 @@ pro extract_html_links,s,links,ind, $   ; input: string  ;    output: links appe
   relative=relative,$   ; Set to return only relative links
   normal=normal , $     ; Set to return only normal links (without ? or *)
   no_parent_links=no_parent_links,  $ ;Set to the parent domain to automatically exclude backlinks to the parent directory
-  regex=regex
+  strict_html=strict_html
 
 
-  if keyword_set(regex) then begin
-    extract_html_links_regex,s,links,relative=relative,normal=normal,no_parent_links=no_parent_links
+  if keyword_set(strict_html) then begin          ;  sort of slow routine
+    if n_params() eq 3 then      extract_html_links_regex,s,links,ind,relative=relative,normal=normal,no_parent_links=no_parent_links  $
+    else                         extract_html_links_regex,s,links    ,relative=relative,normal=normal,no_parent_links=no_parent_links       ; Very SLOW for large numbers of links
 ;;    if debug(5,verbose) then stop
     return
   endif
@@ -202,7 +205,7 @@ pro extract_html_links,s,links,ind, $   ; input: string  ;    output: links appe
       if keyword_set(normal) then bad = (strpos(link,'*') ge 0) or bad
       if keyword_set(relative) then bad = (strpos(link,'/') eq 0) or bad   ; remove absolute links (which start with '/')
       if not bad then begin
-        if n_params() eq 3 then   append_array,links, link,index=ind   else  links = [links,link]
+        if n_params() eq 3 then   append_array,links, link,index=ind ,/fillnan  else  append_array,links ,link
       endif
     endif
   endif
@@ -232,7 +235,7 @@ end
  ;Outputs:
  ;links:  extracted links are concatenated onto the links argument provided as input and returned through this argument
  ;
- pro extract_html_links_regex,s,links, $   ; input: string  ;    output: links appended to array
+ pro extract_html_links_regex,s,links_all,nlinks, $   ; input: string  ;    output: links appended to array
      relative=relative,$   ; Set to strip out everything but the filename from a link
      normal=normal,$       ; Set to links that don't have '*' or '?' (don't think this should every actually happen, but option retained just in case.
      no_parent_links=no_parent_links ;Set to the parent domain to automatically exclude backlinks to the parent directory
@@ -302,17 +305,19 @@ end
          link = strmid(link,rel_pos+1)
        endif
      endif
-     
-     if strlen(link) gt 0 then begin
-       if strlen(links[0]) gt 0 then begin
-         links = [links,link]
-       endif else begin
-         links = [link]
-       endelse
-     endif
+ 
+     append_array,links,link                     ;  Efficient as long as the array links has a small number of elements     
+;     if strlen(link) gt 0 then begin
+;       if strlen(links[0]) gt 0 then begin
+;         links = [links,link]
+;       endif else begin
+;         links = [link]
+;       endelse
+;     endif
       
      pos = stregex(s_copy,link_finder_regex,/subexp,length=length,/fold_case)
    endwhile
+   if n_params() eq 3 then append_array, links_all, links, index = nlinks,/fillnan   else   append_array,links_all,links
    
  end
  
@@ -323,9 +328,7 @@ end
  ;Used by file_http_copy to extract link tags from locally cached version of html files. 
  ;INPUT:  filename: (string) valid filename
  ;OUTPUT:  count:  number of links found
- function file_extract_html_links,filename,count,verbose=verbose,no_parent_links=no_parent_links,regex=regex   ; Links with '*' or '?' or leading '/' are removed.
-
-   if  n_elements(regex) eq 0 then regex=0
+ function file_extract_html_links,filename,count,verbose=verbose,no_parent_links=no_parent_links,STRICT_HTML=STRICT_HTML   ; Links with '*' or '?' or leading '/' are removed.
    
    count=0                                   ; this should only return the relative links.
 
@@ -338,10 +341,10 @@ end
      readf,lun,s     
     ; The REGEX version of this code typically takes about 2.5 times longer to run than the older code - is there a way to avoid having to use REGEX?
      ; extract_html_links_regex,s,links,/relative,/normal,no_parent_links=no_parent_links   ; 
-       extract_html_links,s,links,ind,/relative,/normal,regex=regex,no_parent_links=no_parent_links  ; undeprecated - Davin Larson October 2015     ;deprecated, see extract_html_links_regex pcruce 2013-04-09
+       extract_html_links,s,links,ind,/relative,/normal,STRICT_HTML=STRICT_HTML,no_parent_links=no_parent_links  ; undeprecated - Davin Larson October 2015     ;deprecated, see extract_html_links_regex pcruce 2013-04-09
    endwhile
    free_lun,lun
-   append_array,links,index = ind,/done   
+   append_array,links,index = ind,/done      ; Truncate links array to appropriate length
    bad = strlen(links) eq 0
    w = where(bad eq 0,count)
 ;   if count ne 0 then begin
@@ -526,6 +529,7 @@ end
      ignore_filedate=ignore_filedate, $    ; NOT YET OPERATIONAL! input: (0/1)  if set then file date is ignored when evaluating need to download.
      url_info=url_info_s,  $         ; output:  structure containing URL info obtained from the HTTP Header.
      progobj=progobj, $            ; This keyword is experimental - please don't count on it
+     STRICT_HTML=STRICT_HTML, $
      progress=progress, $
      links=links2, $               ; Output: links are returned in this variable if the file is an html file
      force_download=force_download, $  ;Allows download to be forced no matter modification time.  Useful when moving between different repositories(e.g. QA and production data)
@@ -535,11 +539,15 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   regex = 1    ;  set to 0 run fast;  set to 1 to for greater robustness with non-apache servers
-   
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19111 2015-10-19 23:59:29Z davin-mac $ 
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19124 2015-10-21 18:58:15Z davin-mac $
+
+   if n_elements(strict_html) eq 0 then begin
+      strict_html = 1      ;  set to 1 to be robust,  set to 0 to be much faster
+      dprint,verbose=verbose,dlevel=3,'STRICT_HTML is not set. Defaulting to: ',strict_html    
+   endif
+
    if keyword_set(user_agent) eq 0 then begin
-     swver = strsplit('$Id: file_http_copy.pro 19111 2015-10-19 23:59:29Z davin-mac $',/extract)
+     swver = strsplit('$Id: file_http_copy.pro 19124 2015-10-21 18:58:15Z davin-mac $',/extract)
      user_agent =  strjoin(swver[1:3],' ')+' IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
    endif
 
@@ -611,7 +619,7 @@ end
        sub_pathname = strmid(pathname,0,slashpos1+1)
        ; First get directory listing and extract links:  
        file_http_copy,sub_pathname,serverdir=serverdir,localdir=localdir,url_info=index, host=host ,ascii_mode=1 ,progress=progress, progobj=progobj $
-            ,min_age_limit=min_age_limit,verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,if_modified_since=if_modified_since $
+            ,min_age_limit=min_age_limit,verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,if_modified_since=if_modified_since,STRICT_HTML=STRICT_HTML $
             , links=links, user_agent=user_agent ,user_pass=user_pass,error=error ;, no_update=no_update  ;,preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
        if keyword_set(error) then begin
           dprint,dlevel=1,verbose=verbose,'Error detected ',error 
@@ -652,7 +660,7 @@ end
              , verbose=verbose,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode,progress=progress, progobj=progobj  $
              , min_age_limit=min_age_limit, last_version=last_version, url_info=ui $
              , no_download=no_download, no_clobber=no_clobber, no_update=no_update, archive_ext=archive_ext, archive_dir=archive_dir $
-             , force_download=force_download $
+             , force_download=force_download,STRICT_HTML=STRICT_HTML $
              , ignore_filesize=ignore_filesize,user_agent=user_agent,user_pass=user_pass,if_modified_since=if_modified_since $
              , preserve_mtime=preserve_mtime, restore_mtime=restore_mtime
 ;           dprint,dlevel=5,verbose=verbose,/phelp,lns
@@ -689,7 +697,7 @@ end
        url_info.localname = localname
        url_info.exists = -1   ; remote file existence is not known!
        if arg_present(links2) then begin
-          links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,regex=regex)         ; Does this belong here?  this might be producing unneeded work
+          links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,strict_html=strict_html)         ; Does this belong here?  this might be producing unneeded work
        endif
        goto, final
      endif
@@ -699,7 +707,7 @@ end
        url_info.localname = localname
        url_info.exists = -1   ; existence is not known!
        if arg_present(links2) then begin
-           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,regex=regex)     ; Does this belong here?
+           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,strict_html=strict_html)     ; Does this belong here?
        endif
        goto, final
      endif
@@ -713,7 +721,7 @@ end
        url_info.localname = localname
        url_info.exists = 1
        if arg_present(links2) then begin
-           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,regex=regex)
+           links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,strict_html=strict_html)
            dprint,/phelp,dlevel=3,verbose=verbose,links2
        endif
        goto, final
@@ -874,7 +882,7 @@ end
              ;localdir=localdir,verbose=verbose, $
              url_info=url_info,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode,progress=progress, progobj=progobj,  $
              archive_ext=archive_ext, archive_dir=archive_dir, $
-             user_agent=user_agent,user_pass=user_pass, if_modified_since=if_modified_since  ;,preserve_mtime=preserve_mtime,restore_mtime=restore_mtime              
+             user_agent=user_agent,user_pass=user_pass, if_modified_since=if_modified_since,STRICT_HTML=STRICT_HTML  ;,preserve_mtime=preserve_mtime,restore_mtime=restore_mtime              
            goto, close_server
          endelse
        endif
@@ -958,7 +966,7 @@ endif
              readf, unit, text
              printf, wunit, text
              if arg_present(links2) then begin
-                extract_html_links,regex=regex,text,links2 ,/relative, /normal,no_parent=url
+                extract_html_links,strict_html=strict_html,text,links2 ,/relative, /normal,no_parent=url
                 dprint,/phelp,dlevel=5,verbose=verbose,links2
              endif
              dprint,dwait=5,dlevel=1,verbose=verbose,'Downloading "'+localname+'"  Please wait '+string( lines)+' lines'
@@ -1067,7 +1075,7 @@ endif
          file_http_copy,'',serverdir=serverdir,localdir=localdir, $
            min_age_limit=min_age_limit,verbose=verbose,no_update=no_update,progress=progress, progobj=progobj, $
            file_mode=file_mode,dir_mode=dir_mode,ascii_mode=1 , host=host, $
-           url_info=index,links=links,user_agent=user_agent,user_pass=user_pass,if_modified_since=if_modified_since   ;No need to preserve mtime on dir listings ,preserve_mtime=preserve_mtime
+           url_info=index,links=links,user_agent=user_agent,user_pass=user_pass,if_modified_since=if_modified_since,STRICT_HTML=STRICT_HTML   ;No need to preserve mtime on dir listings ,preserve_mtime=preserve_mtime
        endif
        wdir = where(strpos(links,'/',0) gt 0,ndirs)   ; Look in each directory for the requested file
        for i=0,ndirs-1 do begin
@@ -1077,7 +1085,7 @@ endif
            , min_age_limit=min_age_limit, last_version=last_version, url_info=ui $
            , no_download=no_download, no_clobber=no_clobber,no_update=no_update, archive_ext=archive_ext,archive_dir=archive_dir $
            , ignore_filesize=ignore_filesize,user_agent=user_agent,user_pass=user_pass, host=host $
-           , preserve_mtime=preserve_mtime,restore_mtime=restore_mtime,if_modified_since=if_modified_since
+           , preserve_mtime=preserve_mtime,restore_mtime=restore_mtime,if_modified_since=if_modified_since,STRICT_HTML=STRICT_HTML
          if not keyword_set(ui)  then message,'URL error  (this error should never occur)'
          w = where(ui.exists ne 0,nw)
          if nw ne 0 then url_info  = keyword_set(url_info)  ?  [url_info,ui[w]]   : ui[w]  ; only include existing files

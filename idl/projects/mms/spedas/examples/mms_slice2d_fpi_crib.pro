@@ -13,8 +13,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-14 18:07:03 -0700 (Wed, 14 Oct 2015) $
-;$LastChangedRevision: 19076 $
+;$LastChangedDate: 2015-10-21 18:13:40 -0700 (Wed, 21 Oct 2015) $
+;$LastChangedRevision: 19134 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_slice2d_fpi_crib.pro $
 ;-
 
@@ -72,14 +72,14 @@ join_vec, vname + ['X','Y','Z'], vname
 ;---------------------------------------------
 
 time = '2015-8-15/12:50' ;start time of slice
-window = 2 ;window (sec) over which to average
+window = 1 ;window (sec) over which to average
 
 ;get slice
-;  -geometric interpolation is slow but shows bin boundaries
 ;  -3d/2d interpolation show smooth contours
-slice = spd_slice2d(dist, time=time, window=window) ;geometric interpolation
-;slice = spd_slice2d(dist, time=time, window=window, /three) ;3D interpolation
+;  -geometric interpolation is slow but shows bin boundaries
+slice = spd_slice2d(dist, time=time, window=window) ;3D interpolation
 ;slice = spd_slice2d(dist, time=time, window=window, /two) ;2D interpolation
+;slice = spd_slice2d(dist, time=time, window=window, /geo) ;geometric interpolation
 
 ;set annotations (temporary)
 slice.coord = 'GSE'
@@ -101,7 +101,7 @@ stop
 ;  -the plot's x axis is parallel to the B field
 ;  -the plot's y axis is defined by the bulk velocity
 ;---------------------------------------------
-slice = spd_slice2d(dist, time=time, window=window, /three, $
+slice = spd_slice2d(dist, time=time, window=window, $
                     rotation='bv', mag_data=bname, vel_data=vname)
 
 ;set annotations (temporary)
@@ -121,11 +121,11 @@ stop
 ;produce a plot of 2 seconds of data every 10 seconds for 1 minute
 time = time_double('2015-8-15/12:50')
 times = time + findgen(6) * 10.
-window = 2
+window = 1
 
 for i=0, n_elements(times)-1 do begin
 
-  slice = spd_slice2d(dist, time=times[i], window=window, /three)
+  slice = spd_slice2d(dist, time=times[i], window=window)
 
   ;verify success
   if ~is_struct(slice) then continue

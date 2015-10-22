@@ -199,8 +199,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-11 17:46:53 -0700 (Fri, 11 Sep 2015) $
-;$LastChangedRevision: 18776 $
+;$LastChangedDate: 2015-10-21 18:07:49 -0700 (Wed, 21 Oct 2015) $
+;$LastChangedRevision: 19133 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d.pro $
 ;-
 pro thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
@@ -283,10 +283,13 @@ if undefined(coord) then coord='dsl'
 if undefined(units) then units = 'df'
 
 ;Interpolation type:
-if ~undefined(type) then begin
+if undefined(type) then begin
+  geometric = 1
+endif else begin
+  if type[0] eq 0 then geometric = 1
   if type[0] eq 2 then two_d_interp = 1
   if type[0] eq 3 then three_d_interp = 1
-endif
+endelse
 
 probe = keyword_set((*ptrArray[0])[0].spacecraft) ? (*ptrArray[0])[0].spacecraft : $
                  strmid((*ptrArray[0])[0].project_name, 0, /reverse_offset)
@@ -366,6 +369,7 @@ slice = spd_slice2d(processed, $
                     vel_data=vel_data, $
                     sun_data=sun_data, $
                   ; Interpolation options
+                    geometric=geometric, $
                     two_d_interp=two_d_interp, $
                     three_d_interp=three_d_interp, $
                   ; 2D interpolation options

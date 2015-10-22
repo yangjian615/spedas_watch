@@ -8,8 +8,8 @@
 ;    Davin Larson - April 2011
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-02-11 14:14:39 -0800 (Wed, 11 Feb 2015) $
-; $LastChangedRevision: 16957 $
+; $LastChangedDate: 2015-10-21 12:05:04 -0700 (Wed, 21 Oct 2015) $
+; $LastChangedRevision: 19126 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/recorder.pro $
 ;
 ;-
@@ -267,7 +267,7 @@ if ~(keyword_set(base) && widget_info(base,/managed) ) then begin
     ids = create_struct(ids,'proc_button', widget_button(ids.proc_base2,uname='PROC_BUTTON',value='Procedure:'))
     ids = create_struct(ids,'proc_name',   widget_text(ids.proc_base,xsize=35, uname='PROC_NAME', value = keyword_set(exec_proc) ? exec_proc :'exec_proc_template',/editable, /no_newline))
 ;  endif
-    ids = create_struct(ids,'done',        WIDGET_BUTTON(ids.base, VALUE='Done', UNAME='DONE'))
+    ids = create_struct(ids,'done',        WIDGET_BUTTON(ids.proc_base, VALUE='Done', UNAME='DONE'))
     title_num = title+' ('+strtrim(ids.base,2)+'): '
     info = {wids:ids, $
 ;      hostname:host, hostport:port, $
