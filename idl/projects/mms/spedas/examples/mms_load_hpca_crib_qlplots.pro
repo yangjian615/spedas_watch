@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-10-20 10:36:09 -0700 (Tue, 20 Oct 2015) $
-; $LastChangedRevision: 19114 $
+; $LastChangedDate: 2015-10-22 09:06:31 -0700 (Thu, 22 Oct 2015) $
+; $LastChangedRevision: 19136 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib_qlplots.pro $
 ;-
 
@@ -21,9 +21,7 @@ pid = probes[0]      ; set probe to mms1
 sid = species[0]     ; set species to H+
 tsid = tplotvar_species[0]    
 
-;trange = ['2015-09-03', '2015-09-04']
-timespan, '2015-09-03', 1
-
+trange = ['2015-08-15', '2015-08-16']
 tplotvar = 'mms'+pid + '_hpca_' + tsid + '_RF_corrected'
 
 ; load mms survey HPCA data
@@ -42,15 +40,12 @@ mms_hpca_calc_anodes, anode=[5, 6], probe=pid, suffix='_brst'
 mms_hpca_calc_anodes, anode=[13, 14], probe=pid, suffix='_brst'
 mms_hpca_calc_anodes, anode=[0, 15], probe=pid, suffix='_brst'
 
-; create a tplot variable with flags for burst and survey data
-;mode_var=mms_hpca_mode(tplotvar+'_brst', tplotvar+'_srvy')
-; use bss routine to create tplot variables for fast, burst, status, and/or FOM 
-mms_load_bss, /include_labels
-
 ; create pseudo variables for the combined burst and survey data
 store_data, tplotvar+'_brst_srvy_0_15', data=[tplotvar+'_brst_anodes_0_15', tplotvar+'_srvy_anodes_0_15'], dlimits=dl, limits=l
 store_data, tplotvar+'_brst_srvy_5_6', data=[tplotvar+'_brst_anodes_5_6', tplotvar+'_srvy_anodes_5_6'], dlimits=dl, limits=l
 store_data, tplotvar+'_brst_srvy_13_14', data=[tplotvar+'_brst_anodes_13_14', tplotvar+'_srvy_anodes_13_14'], dlimits=dl, limits=l
+
+;options, tplotvar+'_brst_srvy_0_15', 'labels'
 
 ; get ephemeris data for x-axis annotation
 mms_load_state, probes=pid, trange = trange, /ephemeris
@@ -76,19 +71,32 @@ options, eph_gsm+'_re_y',ytitle='Y (Re)'
 options, eph_gsm+'_re_z',ytitle='Z (Re)'
 position_vars = [eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
 
+; create a tplot variable with flags for burst and survey data
+;mode_var=mms_hpca_mode(tplotvar+'_brst', tplotvar+'_srvy')
+; use bss routine to create tplot variables for fast, burst, status, and/or FOM
+mms_load_bss, trange=trange, /include_labels
+
 ; set up some plotting parameters
 tplot_options, 'xmargin', [20, 15]
 tplot_options, 'ymargin', [5, 5]
 ;tplot_options, 'title', 'Quicklook Plots for HPCA '+sid+' Data'
+;panels=['mms_bss_burst', 'mms_bss_fast','mms_bss_status', $
+;  'mms1_hpca_hplus_RF_corrected_brst_srvy_anodes_0_15', $
+;  'mms1_hpca_hplus_RF_corrected_brst_srvy_anodes_5_6', $
+;  'mms1_hpca_hplus_RF_corrected_brst_srvy_anodes_13_14']
 panels=['mms_bss_burst', 'mms_bss_fast','mms_bss_status', $
-   'mms1_hpca_hplus_RF_corrected_brst_srvy_0_15', $
-   'mms1_hpca_hplus_RF_corrected_brst_srvy_5_6', $
-   'mms1_hpca_hplus_RF_corrected_brst_srvy_13_14']
-window, 1, xsize=1500, ysize=900
+   'mms1_hpca_hplus_RF_corrected_brst_anodes_0_15', $
+   'mms1_hpca_hplus_RF_corrected_brst_anodes_5_6', $
+   'mms1_hpca_hplus_RF_corrected_brst_anodes_13_14', $
+   'mms1_hpca_hplus_RF_corrected_srvy_anodes_0_15', $
+   'mms1_hpca_hplus_RF_corrected_srvy_anodes_5_6', $
+   'mms1_hpca_hplus_RF_corrected_srvy_anodes_13_14']
+   
+window, 1, xsize=900, ysize=1200
 tplot, panels, var_label=position_vars, window=1
-
 title= 'Quicklook Plots for HPCA '+sid+' Data'
 xyouts, .33, .96, title, /normal, charsize=2
+
 stop
 
 end

@@ -199,8 +199,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-21 18:07:49 -0700 (Wed, 21 Oct 2015) $
-;$LastChangedRevision: 19133 $
+;$LastChangedDate: 2015-10-22 11:23:41 -0700 (Thu, 22 Oct 2015) $
+;$LastChangedRevision: 19140 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d.pro $
 ;-
 pro thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
@@ -427,6 +427,7 @@ if keyword_set(count_threshold) or keyword_set(subtract_counts) then begin
                     vel_data=vel_data, $
                     sun_data=sun_data, $
                   ; Interpolation options
+                    geometric=geometric, $
                     two_d_interp=two_d_interp, $
                     three_d_interp=three_d_interp, $
                   ; 2D interpolation options

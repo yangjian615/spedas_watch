@@ -34,7 +34,7 @@
 ; OUTPUT:
 ; 
 ; EXAMPLE:
-;     See the crib sheet mms_load_data_crib.pro for usage examples
+;     See the instrument specific crib sheets in the examples/ folder for usage examples
 ; 
 ; NOTES:
 ;     1) I expect this routine to change significantly as the MMS data products are 
@@ -84,8 +84,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-15 15:08:57 -0700 (Thu, 15 Oct 2015) $
-;$LastChangedRevision: 19082 $
+;$LastChangedDate: 2015-10-22 11:00:14 -0700 (Thu, 22 Oct 2015) $
+;$LastChangedRevision: 19139 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -279,7 +279,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         if ~undefined(files) then begin
             lt0 = systime(/sec) ;temporary
             cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, $
-                suffix = suffix, get_support_data = get_support_data
+                suffix = suffix, get_support_data = get_support_data, /load_labels
             dt_load += systime(/sec) - lt0 ;temporary
         endif
         if ~undefined(loaded_tnames) then append_array, tplotnames, loaded_tnames

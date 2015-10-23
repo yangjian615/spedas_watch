@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-15 07:40:02 -0700 (Thu, 15 Oct 2015) $
-;$LastChangedRevision: 19077 $
+;$LastChangedDate: 2015-10-22 09:04:30 -0700 (Thu, 22 Oct 2015) $
+;$LastChangedRevision: 19135 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_hpca_calc_anodes.pro $
 ;-
 function mms_hpca_elevations
@@ -164,13 +164,16 @@ pro mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probe=probe, anodes = 
 
     for sum_idx = 0, n_elements(sum_anodes)-1 do begin
         vars_to_sum = strmatch(tplotnames, sum_anodes[sum_idx])
+
         for vars_idx = 0, n_elements(vars_to_sum)-1 do begin
+
             if vars_to_sum[vars_idx] eq 1 then begin
-                get_data, tplotnames[vars_idx], data=var_data, dlimits=var_dl
+                get_data, tplotnames[vars_idx], data=var_data, dlimits=var_dl, limits=var_l
                 if is_struct(var_data) then begin
                     updated_spectra = mms_hpca_sum_fov(var_data, fov=fov, anodes=anodes)
-                    store_data, tplotnames[vars_idx]+fov_str, data=updated_spectra, dlimits=var_dl
+                    store_data, tplotnames[vars_idx]+fov_str, data=updated_spectra, dlimits=var_dl, limits=var_l
                     append_array, tplotnames, tplotnames[vars_idx]+fov_str
+                    options, tplotnames[vars_idx]+fov_str, spec=1
                 endif
             endif
         endfor
@@ -180,14 +183,17 @@ pro mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probe=probe, anodes = 
         vars_to_avg = strmatch(tplotnames, avg_anodes[avg_idx])
         for vars_idx = 0, n_elements(vars_to_avg)-1 do begin
             if vars_to_avg[vars_idx] eq 1 then begin
-                get_data, tplotnames[vars_idx], data=var_data, dlimits=var_dl
+                get_data, tplotnames[vars_idx], data=var_data, dlimits=var_dl, limits=var_l
                 if is_struct(var_data) then begin
                     updated_spectra = mms_hpca_avg_fov(var_data, fov=fov, anodes=anodes)
-                    store_data, tplotnames[vars_idx]+fov_str, data=updated_spectra, dlimits=var_dl
+                    store_data, tplotnames[vars_idx]+fov_str, data=updated_spectra, dlimits=var_dl, limits=var_l
                     append_array, tplotnames, tplotnames[vars_idx]+fov_str
+                    options, tplotnames[vars_idx]+fov_str, spec=1
                 endif
             endif
         endfor
     endfor
-    mms_hpca_set_metadata, tplotnames, prefix = 'mms'+probe, fov = fov, anodes = anodes
+   
+    mms_hpca_set_metadata, tplotnames, prefix = 'mms'+probe, fov = fov, anodes = anodes, suffix = suffix+fov_str
+
 end

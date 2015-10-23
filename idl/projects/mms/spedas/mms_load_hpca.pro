@@ -52,8 +52,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-06 12:18:36 -0700 (Tue, 06 Oct 2015) $
-;$LastChangedRevision: 19011 $
+;$LastChangedDate: 2015-10-22 09:04:30 -0700 (Thu, 22 Oct 2015) $
+;$LastChangedRevision: 19135 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_hpca.pro $
 ;-
 
@@ -64,12 +64,12 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix
                 
-
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'ion'
     if undefined(level) then level = 'l1b' 
     if undefined(data_rate) then data_rate = 'srvy'
+    if undefined(suffix) then suffix=''
     if undefined(varformat) then begin
        ; allow for the following datatypes:
        ; count_rate, flux, vel_dist, rf_corr, bkgd_corr
@@ -102,5 +102,5 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
     ; 2) average over anodes for flux, velocity distributions
     ;if datatype eq 'ion' then mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probes=probes
 
-    for probe_idx = 0, n_elements(probes)-1 do mms_hpca_set_metadata, tplotnames, prefix = 'mms'+probes[probe_idx]
+    for probe_idx = 0, n_elements(probes)-1 do mms_hpca_set_metadata, tplotnames, prefix = 'mms'+probes[probe_idx], suffix=suffix
 end

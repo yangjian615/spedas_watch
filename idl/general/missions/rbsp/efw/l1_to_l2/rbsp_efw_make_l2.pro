@@ -47,8 +47,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2015-08-06 14:34:38 -0700 (Thu, 06 Aug 2015) $
-; $LastChangedRevision: 18416 $
+; $LastChangedDate: 2015-10-22 11:53:21 -0700 (Thu, 22 Oct 2015) $
+; $LastChangedRevision: 19141 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -488,8 +488,6 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'vsvy_combo',transpose(vsvy_spinres.y)
      cdf_varput,cdfid,'vsvy_vavg_combo',sum12
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
-
-     cdf_varput,cdfid,'e12_spinfit_mgse',transpose(spinfit_mgse)   
      cdf_varput,cdfid,'mag_model_mgse',transpose(mag_model.y)    
      cdf_varput,cdfid,'mag_minus_model_mgse',transpose(mag_diff.y) 
      cdf_varput,cdfid,'magnitude_minus_modelmagnitude',mag_diff_magnitude
@@ -515,6 +513,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
+     cdf_vardelete,cdfid,'e12_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_mgse'
      cdf_vardelete,cdfid,'VxB_mgse'
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
