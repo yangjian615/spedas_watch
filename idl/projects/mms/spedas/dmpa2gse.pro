@@ -30,8 +30,8 @@
 ;    
 ;    
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-10-01 14:49:44 -0700 (Thu, 01 Oct 2015) $
-; $LastChangedRevision: 18979 $
+; $LastChangedDate: 2015-10-23 15:10:45 -0700 (Fri, 23 Oct 2015) $
+; $LastChangedRevision: 19144 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/dmpa2gse.pro $
 ;-
 
@@ -113,8 +113,13 @@ pro dmpa2gse,name_mms_xxx_in,name_mms_spinras,name_mms_spindec,name_mms_xxx_out,
     ;decInterp = interpol( mms_spindec.Y,mms_spindec.X,mms_xxx_in.X)
     
     
-    mms_spinras_highres=thm_interpolate_state(thx_xxx_in=mms_xxx_in,thx_spinras=mms_spinras) ;--> linear interpolation
-    mms_spindec_highres=thm_interpolate_state(thx_xxx_in=mms_xxx_in,thx_spindec=mms_spindec) ;--> linear interpolation
+   ; mms_spinras_highres=thm_interpolate_state(thx_xxx_in=mms_xxx_in,thx_spinras=mms_spinras) ;--> linear interpolation
+   ; mms_spindec_highres=thm_interpolate_state(thx_xxx_in=mms_xxx_in,thx_spindec=mms_spindec) ;--> linear interpolation
+    
+    rasInterp = interpol( mms_spinras.Y,mms_spinras.X,mms_xxx_in.X)
+    mms_spinras_highres = CREATE_STRUCT('X',mms_xxx_in.X ,'Y',rasInterp,'V',0.0)
+    decInterp = interpol( mms_spindec.Y,mms_spindec.X,mms_xxx_in.X)
+    mms_spindec_highres = CREATE_STRUCT('X',mms_xxx_in.X ,'Y',decInterp,'V',0.0)
     
     ;cdatj00,2,3,4,5
     

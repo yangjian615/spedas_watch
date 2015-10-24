@@ -22,9 +22,9 @@
 ; 11 Aug 2015 (LMI) Bugfix for multiple files
 ; 26 Aug 2015 (IGPP) added support for the 'start_date' and 'end_date' tags
 ; 
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-09-14 10:48:44 -0700 (Mon, 14 Sep 2015) $
-;$LastChangedRevision: 18792 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-23 15:24:51 -0700 (Fri, 23 Oct 2015) $
+;$LastChangedRevision: 19145 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_parse_json.pro $
 ;-
 
@@ -52,7 +52,7 @@ function mms_parse_json, json_object
 
     if num_structs eq 1 then json_elts=[json_elt]
     
-    remote_file_info = replicate({filename: '', filesize: 0l, startdate:'', enddate:''}, num_structs)
+    remote_file_info = replicate({filename: '', filesize: 0l, startdate:'', enddate:'', timetag:''}, num_structs)
     date_pattern = '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}'
   
     ;Filling remote_file_info
@@ -71,6 +71,9 @@ function mms_parse_json, json_object
          endif
         if strpos(json_elts[json_elt_index,json_index],'end_date') ne -1 then begin
           remote_file_info[json_index].enddate=stregex(json_elts[json_elt_index,json_index], date_pattern, /subexpr, /extract)
+        endif
+        if strpos(json_elts[json_elt_index,json_index],'timetag') ne -1 then begin
+          remote_file_info[json_index].timetag=stregex(json_elts[json_elt_index,json_index], date_pattern, /subexpr, /extract)
         endif
       endfor
     endfor

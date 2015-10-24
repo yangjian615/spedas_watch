@@ -84,8 +84,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-22 11:00:14 -0700 (Thu, 22 Oct 2015) $
-;$LastChangedRevision: 19139 $
+;$LastChangedDate: 2015-10-23 15:43:54 -0700 (Fri, 23 Oct 2015) $
+;$LastChangedRevision: 19148 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -190,95 +190,98 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         level = levels[level_idx]
         datatype = datatypes[datatype_idx]
 
-        daily_names = file_dailynames(file_format='/YYYY/MM', trange=tr, /unique, times=times)
-        
-        ; updated to match the path at SDC; this path includes data type for 
-        ; the following instruments: EDP, DSP, EPD-EIS, FEEPS, FIELDS, HPCA, SCM (as of 7/23/2015)
-        sdc_path = instrument + '/' + data_rate + '/' + level
-        sdc_path = datatype ne '' ? sdc_path + '/' + datatype + daily_names : sdc_path + daily_names
-
         ;ensure no descriptor is used if instrument doesn't use datatypes
         if datatype eq '' then undefine, descriptor else descriptor = datatype
 
-        for name_idx = 0, n_elements(sdc_path)-1 do begin
-            day_string = time_string(tr[0], tformat='YYYY-MM-DD') 
-            ; note, -1 second so we don't download the data for the next day accidently
-            end_string = time_string(tr[1]-1., tformat='YYYY-MM-DD-hh-mm-ss')
-            
-            month_directory = sdc_path[name_idx]
-            
-            ;get file info from remote server
-            ;if the server is contacted then a string array or empty string will be returned
-            ;depending on whether files were found, if there is a connection error the 
-            ;neturl response code is returned instead
-            if ~keyword_set(no_download) then begin
-                qt0 = systime(/sec) ;temporary
-                data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
-                        data_rate_mode=data_rate, data_level=level, start_date=day_string, $
-                        end_date=end_string, descriptor=descriptor)
-                dt_query += systime(/sec) - qt0 ;temporary
+        day_string = time_string(tr[0], tformat='YYYY-MM-DD') 
+        ; note, -1 second so we don't download the data for the next day accidently
+        end_string = time_string(tr[1]-1., tformat='YYYY-MM-DD-hh-mm-ss')
+        
+        ;get file info from remote server
+        ;if the server is contacted then a string array or empty string will be returned
+        ;depending on whether files were found, if there is a connection error the 
+        ;neturl response code is returned instead
+        if ~keyword_set(no_download) then begin
+            qt0 = systime(/sec) ;temporary
+            data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
+                    data_rate_mode=data_rate, data_level=level, start_date=day_string, $
+                    end_date=end_string, descriptor=descriptor)
+            dt_query += systime(/sec) - qt0 ;temporary
+        endif
+
+        ;if a list of remote files was retrieved then compare remote and local files
+        if is_string(data_file) then begin
+          
+            remote_file_info = mms_parse_json(data_file)
+
+            ; limit the CDF files to the requested time range
+            remote_file_info = mms_files_in_interval(remote_file_info, tr)
+
+            if ~is_struct(remote_file_info) then begin
+                dprint, dlevel = 0, 'Error getting the information on remote files'
+                return
             endif
 
-            ;if a list of remote files was retrieved then compare remote and local files
-            if is_string(data_file) then begin
-              
-                remote_file_info = mms_parse_json(data_file)
-                
-                ; limit the CDF files to the requested time range
-                remote_file_info = mms_files_in_interval(remote_file_info, tr)
-
-                if ~is_struct(remote_file_info) then begin
-                    dprint, dlevel = 0, 'Error getting the information on remote files'
-                    return
-                endif
-    
-                filename = remote_file_info.filename
-                num_filenames = n_elements(filename)
-                
-                file_dir = local_data_dir + strlowcase(probe + '/' + month_directory)
-                
-                for file_idx = 0, num_filenames-1 do begin
-                    same_file = mms_check_file_exists(remote_file_info[file_idx], file_dir = file_dir)
-
-                    if same_file eq 0 then begin
-                        td0 = systime(/sec) ;temporary
-                        dprint, dlevel = 0, 'Downloading ' + filename[file_idx] + ' to ' + file_dir
-                        status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir)
-
-                        dt_download += systime(/sec) - td0 ;temporary
-                        if status eq 0 then append_array, files, file_dir + '/' + filename[file_idx]
-                    endif else begin
-                        dprint, dlevel = 0, 'Loading local file ' + file_dir + '/' + filename[file_idx]
-                        append_array, files, file_dir + '/' + filename[file_idx]
-                    endelse
-                endfor
+            filename = remote_file_info.filename
+            num_filenames = n_elements(filename)
             
-            ;if no remote list was retrieved then search locally   
-            endif else begin
-                dprint, dlevel = 2, 'No remote files found for: '+ $
-                        probe+' '+instrument+' '+data_rate+' '+level+' '+datatype
-                
-                local_files = mms_get_local_files(probe=probe, instrument=instrument, $
-                        data_rate=data_rate, level=level, datatype=datatype, trange=time_double([day_string, end_string]))
+            for file_idx = 0, num_filenames-1 do begin
+                ; For Survey and SITL products, the bottommost level are monthly directories,
+                ; which are full of daily files. For Burst products, the bottommost level are daily
+                ; directories
+                dir_path = data_rate eq 'brst' ? '/YYYY/MM/DD' : '/YYYY/MM'
 
-                if is_string(local_files) then begin
-                    append_array, files, local_files
+                ;daily_names = file_dailynames(file_format=dir_path, trange=tr, /unique, times=times)
+                timetag = time_string(time_double(remote_file_info[file_idx].timetag), tformat ='YYYY-MM-DD')
+
+                daily_names = file_dailynames(file_format=dir_path, /unique, trange=timetag)
+
+                ; updated to match the path at SDC; this path includes data type for
+                ; the following instruments: EDP, DSP, EPD-EIS, FEEPS, FIELDS, HPCA, SCM (as of 7/23/2015)
+                sdc_path = instrument + '/' + data_rate + '/' + level
+                sdc_path = datatype ne '' ? sdc_path + '/' + datatype + daily_names : sdc_path + daily_names
+                file_dir = local_data_dir + strlowcase(probe + '/' + sdc_path)
+                
+                same_file = mms_check_file_exists(remote_file_info[file_idx], file_dir = file_dir)
+
+                if same_file eq 0 then begin
+                    td0 = systime(/sec) ;temporary
+                    dprint, dlevel = 0, 'Downloading ' + filename[file_idx] + ' to ' + file_dir
+                    status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir)
+
+                    dt_download += systime(/sec) - td0 ;temporary
+                    if status eq 0 then append_array, files, file_dir + '/' + filename[file_idx]
                 endif else begin
-                    dprint, dlevel = 0, 'Error, no data files found for this time.'
-                    continue
+                    dprint, dlevel = 0, 'Loading local file ' + file_dir + '/' + filename[file_idx]
+                    append_array, files, file_dir + '/' + filename[file_idx]
                 endelse
-            endelse       
+            endfor
+        
+        ;if no remote list was retrieved then search locally   
+        endif else begin
+            dprint, dlevel = 2, 'No remote files found for: '+ $
+                    probe+' '+instrument+' '+data_rate+' '+level+' '+datatype
             
-            ; sort the data files in time (this is required by 
-            ; HPCA (at least) due to multiple files per day
-            ; the intention is to order in time before passing
-            ; to cdf2tplot
-            files = files[bsort(files)]
-        endfor
+            local_files = mms_get_local_files(probe=probe, instrument=instrument, $
+                    data_rate=data_rate, level=level, datatype=datatype, trange=time_double([day_string, end_string]))
+
+            if is_string(local_files) then begin
+                append_array, files, local_files
+            endif else begin
+                dprint, dlevel = 0, 'Error, no data files found for this time.'
+                continue
+            endelse
+        endelse       
+        
+        ; sort the data files in time (this is required by 
+        ; HPCA (at least) due to multiple files per day
+        ; the intention is to order in time before passing
+        ; to cdf2tplot
+        files = files[bsort(files)]
 
         if ~undefined(files) then begin
             lt0 = systime(/sec) ;temporary
-            cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, $
+            mms_cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, $
                 suffix = suffix, get_support_data = get_support_data, /load_labels
             dt_load += systime(/sec) - lt0 ;temporary
         endif

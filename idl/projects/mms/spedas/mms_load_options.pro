@@ -1,3 +1,23 @@
+
+;+
+;Purpose:
+;  Helper function to return structure describing
+;  the available data types for MEC files
+;-
+function mms_load_options_mec
+
+    compile_opt idl2, hidden
+
+    s = { srvy: { $
+        l2: [ 'epht89d', 'epht89q', 'ephts04d' ] $
+    } $
+  }
+
+return, s
+
+end
+
+
 ;+
 ;Purpose:
 ;  Helper function to return structure describing
@@ -464,8 +484,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-28 13:14:21 -0700 (Fri, 28 Aug 2015) $
-;$LastChangedRevision: 18661 $
+;$LastChangedDate: 2015-10-23 15:30:07 -0700 (Fri, 23 Oct 2015) $
+;$LastChangedRevision: 19146 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $
@@ -503,6 +523,7 @@ case strupcase(instrument) of
   'DSP': s = mms_load_options_dsp()
   'EDP': s = mms_load_options_edp()
   'ASPOC': s = mms_load_options_aspoc()
+  'MEC': s = mms_load_options_mec()
   else: begin
     dprint, dlevel=1, 'Instrument "'+instrument+'" not recognized'
     return

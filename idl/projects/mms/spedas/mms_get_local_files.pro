@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-09-22 08:18:29 -0700 (Tue, 22 Sep 2015) $
-;$LastChangedRevision: 18866 $
+;$LastChangedDate: 2015-10-23 15:43:54 -0700 (Fri, 23 Oct 2015) $
+;$LastChangedRevision: 19148 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_get_local_files.pro $
 ;-
 
@@ -85,10 +85,15 @@ endelse
 
 ;directory and file name search patterns
 ;  -assume directories are of the form:
-;     spacecraft/instrument/rate/level[/datatype]/year/month/
+;     (srvy, SITL): spacecraft/instrument/rate/level[/datatype]/year/month/
+;     (brst): spacecraft/instrument/rate/level[/datatype]/year/month/day/
 ;  -assume file names are of the form:
 ;     spacecraft_instrument_rate_level[_datatype]_YYYYMMDD[hhmmss]_version.cdf
-dir_pattern = strjoin( basic_inputs, s) + '('+s+dir_datatype+')?' +s+ '[0-9]{4}' +s+ '[0-9]{2}' +s
+if data_rate eq 'brst' then begin
+    dir_pattern = strjoin( basic_inputs, s) + '('+s+dir_datatype+')?' +s+ '[0-9]{4}' +s+ '[0-9]{2}' + s + '[0-9]{2}' + s
+endif else begin
+    dir_pattern = strjoin( basic_inputs, s) + '('+s+dir_datatype+')?' +s+ '[0-9]{4}' +s+ '[0-9]{2}' + s
+endelse
 file_pattern = strjoin( basic_inputs, f) + '('+f+file_datatype+')?' +f+ '([0-9]{8,14})'
 
 ;escape backslash in case of Windows
