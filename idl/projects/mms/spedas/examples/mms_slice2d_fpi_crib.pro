@@ -13,8 +13,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-21 18:13:40 -0700 (Wed, 21 Oct 2015) $
-;$LastChangedRevision: 19134 $
+;$LastChangedDate: 2015-10-23 19:21:50 -0700 (Fri, 23 Oct 2015) $
+;$LastChangedRevision: 19150 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_slice2d_fpi_crib.pro $
 ;-
 
@@ -83,7 +83,6 @@ slice = spd_slice2d(dist, time=time, window=window) ;3D interpolation
 
 ;set annotations (temporary)
 slice.coord = 'GSE'
-slice.units = 'f (sec^3 / cm^6)' 
 
 ;plot
 spd_slice2d_plot, slice
@@ -103,9 +102,6 @@ stop
 ;---------------------------------------------
 slice = spd_slice2d(dist, time=time, window=window, $
                     rotation='bv', mag_data=bname, vel_data=vname)
-
-;set annotations (temporary)
-slice.units = 'f (sec^3 / cm^6)'
 
 ;plot
 spd_slice2d_plot, slice
@@ -137,7 +133,6 @@ endfor
 
 ;set annotations (temporary)
 slices.coord = 'GSE'
-slices.units = 'f (sec^3 / cm^6)' 
 
 ;create plots as needed
 spd_slice2d_plot, slices[0], window=0

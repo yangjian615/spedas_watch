@@ -44,6 +44,8 @@ dprint,'Download finished in ',systime(1)-starttime,' seconds'
 
 ;	mvn_sta_ephemeris_load		; preliminary version ready 20150119
 ;	mvn_sta_mag_load		; preliminary version ready 20150119
+;	mvn_sta_sc_bins_load
+
 ;	mvn_sta_scpot_load		; not developed yet
 
 endif

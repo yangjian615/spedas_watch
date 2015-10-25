@@ -42,6 +42,9 @@
 ;  PLOTSIZE: The size of the plot in device units (usually pixels)
 ;            (Not implemented for postscript).
 ;
+;  CUSTOM:  Flag that to disable automatic window creation and allow
+;           user-controlled plots.
+;
 ;Exporting keywords:
 ;  EXPORT: String designating the path and file name of the desired file. 
 ;          The plot will be exported to a PNG image by default.
@@ -54,8 +57,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-24 18:15:16 -0700 (Thu, 24 Sep 2015) $
-;$LastChangedRevision: 18929 $
+;$LastChangedDate: 2015-10-23 19:23:18 -0700 (Fri, 23 Oct 2015) $
+;$LastChangedRevision: 19151 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -80,6 +83,7 @@ pro spd_slice2d_plot, slice, $
                      ; Other plotting options
                        plotaxes=plotaxes, ecircle=ecircle, sundir=sundir, $ 
                        plotbulk=plotbulk, plotbfield=plotbfield, $
+                       custom=custom, $
                      ; Eport
                        export=export, eps=eps, $
                        _extra=_extra
@@ -197,7 +201,7 @@ pro spd_slice2d_plot, slice, $
 
 
   ;Format the plotting window
-  if !d.name ne 'PS' then begin
+  if !d.name ne 'PS' and ~keyword_set(custom) then begin
 
     device, window_state = wins
     
@@ -274,7 +278,8 @@ pro spd_slice2d_plot, slice, $
       xrange = xrange,$
       yrange = yrange,$
       xtitle = xtitle,$
-      ytitle = ytitle
+      ytitle = ytitle, $
+      _extra = _extra
 
 
   ; Get z axis ticks
@@ -307,7 +312,7 @@ pro spd_slice2d_plot, slice, $
     contour, slice.data, slice.xgrid, slice.ygrid, $
         levels = linelevels, charsize=charsize,  $
         /overplot, /closed, /isotropic, $
-        follow = clabels
+        follow = clabels, _extra=_extra
   endif
 
 

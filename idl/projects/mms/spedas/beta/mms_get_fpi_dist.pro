@@ -21,8 +21,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-14 17:28:32 -0700 (Wed, 14 Oct 2015) $
-;$LastChangedRevision: 19075 $
+;$LastChangedDate: 2015-10-23 19:21:50 -0700 (Fri, 23 Oct 2015) $
+;$LastChangedRevision: 19150 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_dist.pro $
 ;-
 
@@ -115,12 +115,14 @@ case strlowcase(species) of
          charge = 1.
          energy_table = transpose(s.ion_energy) 
          data_name = 'FPI Ion'
+         integ_time = .150
        end
   'e': begin
          mass = 5.68566e-06
          charge = -1.
          energy_table = transpose(s.electron_energy)
          data_name = 'FPI Electron'
+         integ_time = .03
        end
   else: begin
     dprint, 'Cannot determine species'
@@ -146,7 +148,7 @@ template = {  $
   project_name: 'MMS', $
   spacecraft: probe, $
   data_name: data_name, $
-  units_name: 'dist fn', $
+  units_name: 'f (s!U3!N/cm!U6!N)', $
   units_procedure: '', $ ;placeholder
   valid: 1b, $
 
@@ -172,7 +174,7 @@ dist = replicate(template, n_times)
 ; Populate
 ;-----------------------------------------------------------------
 dist.time = (*p.x)[start:stop]
-dist.end_time = (*p.x)[start:stop] + .1499 ;TODO: get actual integration time
+dist.end_time = (*p.x)[start:stop] + integ_time
 
 ;shuffle data to be energy-azimuth-elevation-time
 ;time must be last to be added to structure array
