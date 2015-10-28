@@ -1,3 +1,12 @@
+;Get current timespan from tplot_com or return 0's
+Function alttimerange
+@tplot_com.pro
+  If(is_struct(tplot_vars) && is_struct(tplot_vars.options)) Then Begin
+     t = tplot_vars.options.trange
+  Endif Else t = [0.0d0, 0.0d0]
+  Return, t
+End
+
 ;+
 ;NAME:
 ; mvn_sta_l2gen
@@ -17,8 +26,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-10-25 13:20:06 -0700 (Sun, 25 Oct 2015) $
-; $LastChangedRevision: 19155 $
+; $LastChangedDate: 2015-10-27 09:47:19 -0700 (Tue, 27 Oct 2015) $
+; $LastChangedRevision: 19166 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -29,8 +38,8 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   set_plot,'z'
 
   load_position = 'init'
-  catch, error_status
   einit = 0
+  catch, error_status
   if error_status ne 0 then begin
      print, '%MVN_STA_L2GEN: Got Error Message'
      help, /last_message, output = err_msg
@@ -40,6 +49,9 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
         einit = 1
         openw, eunit, '/tmp/sta_l2_err_msg.txt', /get_lun
         For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
+        If(keyword_set(datein)) Then Begin
+           printf, eunit, datein
+        Endif Else printf, eunit, time_string(alttimerange())
         free_lun, eunit
 ;mail it to jimm@ssl.berkeley.edu
         cmd_rq = 'mailx -s "Problem with STA L2 process" jimm@ssl.berkeley.edu < /tmp/sta_l2_err_msg.txt'

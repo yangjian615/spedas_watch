@@ -17,11 +17,6 @@
 ;             'xz': the x axis is V_x and the y axis is V_z.
 ;             'yz': the x axis is V_y and the y axis is V_z.
 ;             'perp': the x-y plane is perpendicular to the B field, while the x axis is the velocity projection on the plane.
-;             'perp_xy': the x-y plane is perpendicular to the B field, while the x axis is the x projection on the plane.
-;             'perp_xz': the x-y plane is perpendicular to the B field, while the x axis is the x projection on the plane.
-;             'perp_yz': the x-y plane is perpendicular to the B
-;             field, while the x axis is the y projection on the
-;             plane.
 
 ;             'lm': x: VL, y: VM
 ;             'ln': x:VL, y: VN
@@ -392,6 +387,9 @@ endelse
 
 totalx = fltarr(1) & totaly = fltarr(1) & totalz = fltarr(1)
 ncounts = fltarr(1)
+all_theta = fltarr(1) & all_phi = fltarr(1)
+all_dtheta=fltarr(1) & all_dphi=fltarr(1)
+all_energy=fltarr(1) & all_denergy=fltarr(1)
 
 if not keyword_set(erange) then begin
   erange = [thedata.energy(thedata.nenergy-1,0),thedata.energy(0,0)]
@@ -419,13 +417,34 @@ for i = 0, thedata.nenergy-1 do begin
     totalz = [totalz, z * reform(sqrt(2*1.6e-19*thedata.energy(i,currbins)/mass))]
 
     ncounts = [ncounts,reform(thedata.data(i, currbins))]
-  endif
+
+    all_theta = [all_theta,reform(thedata.theta[i,currbins])]
+    all_phi = [all_phi,reform(thedata.phi[i,currbins])]
+    all_dtheta = [all_dtheta,reform(thedata.dtheta[i,currbins])]
+    all_dphi = [all_dphi,reform(thedata.dphi[i,currbins])]
+    all_energy= [all_energy,reform(thedata.energy[i,currbins])]
+    all_denergy=[all_denergy,reform(thedata.denergy[i,currbins])]
+ endif
 endfor
 
 totalx = totalx(1:*)
 totaly = totaly(1:*)
 totalz = totalz(1:*)
 ncounts = ncounts(1:*)
+all_theta = all_theta[1:*]*!DTOR
+all_phi = all_phi[1:*]*!DTOR
+all_dtheta = all_dtheta[1:*]*!DTOR
+all_dphi = all_dphi[1:*]*!DTOR
+;set domega
+Const = (thedata.mass)^(-1.5)*(2.)^(.5)*1.0e15
+if thedata.units_name eq 'counts' then begin
+   domega = all_phi
+   domega[*] = 1.0
+   weight = domega
+endif else begin
+   domega=2.*all_dphi*cos(all_theta)*sin(0.5*all_dtheta)
+   weight = const*sqrt(all_energy)*all_denergy*domega
+endelse
 
 
 ;*****HERES SOMETHING NEW
@@ -440,28 +459,6 @@ newdata.n = ncounts
 ;stop
 
 
-;**********************************************
-
-;get the magnetic field into a variable
-
-;get_data,thebdata,data = mgf
-
-
-
-;************EXPERIMENTAL INTERPOLATION FIX************
-;get_data,thebdata,data = bdata
-;index = where(bdata.x le thedata.time + 600 and bdata.x ge thedata.time - 600)
-;store_data,thebdata+'cut',data={x:bdata.x(index),y:bdata.y(index,*)}
-;********
-
-;;store_data,'time',data = {x:thedata.time+thedata.integ_t*.5}
-;dprint,  thedata.integ_t, ' Thedata.integ_t'
-;interpolate,'time',thebdata+'cut','Bfield'
-;get_data,'Bfield',data = mgf
-;bfield = fltarr(3)
-;bfield[0] = mgf.y(0,0)
-;bfield[1] = mgf.y(0,1)
-;bfield[2] = mgf.y(0,2)
 ;
 if keyword_set(thebdata) then begin
 bfield = dat_avg(thebdata, thedata.time, thedata.end_time)
@@ -511,9 +508,9 @@ if not keyword_set(nosubtract) then begin
   newdata.dir(*,1) = newdata.dir(*,1) - thevel(1)*factor
   newdata.dir(*,2) = newdata.dir(*,2) - thevel(2)*factor
 endif else begin
-  newdata.dir(*,0) = newdata.dir(*,0)
-  newdata.dir(*,1) = newdata.dir(*,1)
-  newdata.dir(*,2) = newdata.dir(*,2)
+   newdata.dir(*,0) = newdata.dir(*,0)
+   newdata.dir(*,1) = newdata.dir(*,1)
+   newdata.dir(*,2) = newdata.dir(*,2)
 endelse
 
 
@@ -576,15 +573,7 @@ if rotation eq 'perp' then begin
       rot = cal_rot(crossp(efield,bfield),crossp(bfield,crossp(efield,bfield)))
    endelse
 endif
-if rotation eq 'perp_yz' then begin
-    rot=cal_rot(CROSSP(CROSSP(bfield,[0,1,0]),bfield),CROSSP(CROSSP(bfield,[0,0,1]),bfield))
-endif
-if rotation eq 'perp_xy' then begin
-    rot=cal_rot(CROSSP(CROSSP(bfield,[1,0,0]),bfield),CROSSP(CROSSP(bfield,[0,1,0]),bfield))
-endif
-if rotation eq 'perp_xz' then begin
-    rot=cal_rot(CROSSP(CROSSP(bfield,[1,0,0]),bfield),CROSSP(CROSSP(bfield,[0,0,1]),bfield))
-endif
+
 
 newdata.dir = newdata.dir#rot
 factor = 1000.
@@ -639,14 +628,17 @@ eachphi[ind1] = eachphi[ind1] + !pi
 ind2=where(vpara gt 0 and vperp lt 0)
 eachphi[ind2] = eachphi[ind2] + 2*!pi
 
+
 ind3 = where(eachphi ge 0 and eachphi le angbin[0],cc)
 if cc gt 0 then eachphi[ind3]+=2*!pi
-    if ~keyword_set(zcut) then zcut=0.
+    if ~keyword_set(zcut) then zcut_now=0.
     if data_type(zcut) eq 7 then begin
        if zcut eq 'bulk' then begin
-          zcut=veldir[2]
+          zcut_now=veldir[2]
        endif
-    endif
+    endif else zcut_now = zcut
+    print,'Cut at velocity '+string(zcut_now,format='(f11.2)')+ $
+          ' in the third direction'
 
 
   if ~keyword_set(ThirdDirLim) then begin
@@ -654,7 +646,7 @@ if cc gt 0 then eachphi[ind3]+=2*!pi
 
     r = sqrt(vpara^2 + vperp^2+vperp2^2)
 
-    eachangle = asin((zmag-zcut)/r)
+    eachangle = asin((zmag-zcut_now)/r)
     angle1=min(angle)
     angle2=max(angle)
 
@@ -675,13 +667,15 @@ if cc gt 0 then eachphi[ind3]+=2*!pi
 
         if count gt 0 then begin
            if method_reduce eq 'ave' then begin
-              index1 = where(zdata[index] gt 0,cn0)
+              index1 = where(zdata[index] ge 0,cn0)
               ;only take the average over non-zero bins
               if cn0 gt 0 then $
-              zimage[iv,iphi] = mean(zdata[index[index1]])
+              zimage[iv,iphi] = $
+                 total(zdata[index[index1]]*weight[index[index1]])/$
+                 total(weight[index[index1]])
            endif
            if method_reduce eq 'sum' then begin
-              zimage[iv,iphi] = total(zdata[index])
+              zimage[iv,iphi] = total(zdata[index]*weight[index],/nan)
            endif
         endif
 
@@ -712,47 +706,52 @@ if cc gt 0 then eachphi[ind3]+=2*!pi
 
 if keyword_set(ThirdDirlim) then begin
    if n_elements(ThirdDirlim) eq 2 then begin
+      print,'ThirdDirLim: ',ThirdDirLim
       for iv=0,thedata.nenergy-1 do begin
          for iphi=0,nphi-1 do begin
             index = where(sqrt(vpara^2+vperp^2) gt vbin[iv] and sqrt(vpara^2+vperp^2) le vbin[iv+1] and $
                           eachphi gt angbin[iphi] and eachphi le angbin[iphi+1] and $
-                          vperp2-zcut le max(ThirdDirlim) and vperp2-zcut ge min(ThirdDirlim),count)
+                          vperp2-zcut_now le max(ThirdDirlim) and vperp2-zcut_now ge min(ThirdDirlim),count)
             
             if count gt 0 then begin
                if method_reduce eq 'ave' then begin
-                  index1 = where(zdata[index] gt 0.,cn0)
+                  index1 = where(zdata[index] ge 0.,cn0)
                   if cn0 gt 0 then $
-                     zimage[iv,iphi] = mean(zdata[index[index1]])
+                     zimage[iv,iphi] = $
+                     total(zdata[index[index1]]*weight[index[index1]])/$
+                           total(weight[index[index1]])
                endif
                if method_reduce eq 'sum' then begin
-                  zimage[iv,iphi] = total(zdata[index])
+                  zimage[iv,iphi] = total(zdata[index]*weight[index],/nan)
                endif
             endif
             
          endfor      
       endfor
-   endif else begin;use nearest 2 bins at zcut
+   endif else begin;use nearest 2 bins at zcut_now
       for iv=0,thedata.nenergy-1 do begin
          for iphi=0,nphi-1 do begin
             index = where(sqrt(vpara^2+vperp^2) gt vbin[iv] and sqrt(vpara^2+vperp^2) le vbin[iv+1] and $
                           eachphi gt angbin[iphi] and eachphi le angbin[iphi+1],count)
             
             if count gt 0 then begin
-               index=index[sort(abs(vperp2[index]-zcut))]
+               index=index[sort(abs(vperp2[index]-zcut_now))]
                index=index[0:1]
-               print,'vperp2-zcut'
-               print,vperp2[index]-zcut
+               print,'vperp2-zcut_now'
+               print,vperp2[index]-zcut_now
                if method_reduce eq 'ave' then begin
-                  index1 = where(zdata[index] gt 0.,cn0)
+                  index1 = where(zdata[index] ge 0.,cn0)
                   print,'cn0'
                   print,cn0
                   if cn0 gt 0 then begin
-                     zimage[iv,iphi] = mean(zdata[index[index1]])
-                     print,vperp2[index[index1]]-zcut
+                     zimage[iv,iphi] = $
+                     total(zdata[index[index1]]*weight[index[index1]])/$
+                           total(weight[index[index1]])
+                     print,vperp2[index[index1]]-zcut_now 
                   endif
                endif
                if method_reduce eq 'sum' then begin
-                  zimage[iv,iphi] = total(zdata[index])
+                  zimage[iv,iphi] = total(zdata[index]*weight[index],/nan)
                endif
             endif
             
@@ -817,16 +816,16 @@ if not keyword_set(finished) then begin
    if coord ne 'fac' then begin
       if coord eq 'lmn' then begin
          if rotation eq 'xy' then begin
-            xtitle = 'V!LL!N (km/s)'
-            ytitle = 'V!LM!N (km/s)'
+            xtitle = 'VN (km/s)'
+            ytitle = 'VN (km/s)'
          endif
          if rotation eq 'xz' then begin
-            xtitle = 'V!LL!N (km/s)'
-            ytitle = 'V!LN!N (km/s)'
+            xtitle = 'VN (km/s)'
+            ytitle = 'VN (km/s)'
          endif
          if rotation eq 'yz' then begin
-            xtitle = 'V!LM!N (km/s)'
-            ytitle = 'V!LN!N (km/s)'
+            xtitle = 'VN (km/s)'
+            ytitle = 'VN (km/s)'
          endif
       endif else begin
          if rotation eq 'xy' then begin
@@ -901,6 +900,8 @@ if species eq 'i' then begin
    yts=strsplit(ytitle,'(',/extract)
    ytitle=yts[0]+'(10!U3!N'+yts[1]
 endif
+
+
  ;thedata.data_name+' '+time_string(thedata.time)
  if data_resolution eq 'brst' then precision=3 else precision=0
  case species of
@@ -959,7 +960,7 @@ endif
   ;  ystyle = 1,$
   ;  ticklen = -0.01,$
   ;  xstyle = 1,$
-  ;  vrange = vrange,$
+  ;  xrange = vrange,$
   ;  yrange = vrange,$
    ; xtitle = xtitle,$
    ; ytitle = ytitle,position = position,$

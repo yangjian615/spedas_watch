@@ -34,6 +34,8 @@
 ;                       found the existing data will be overwritten
 ;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
 ;                       preserving original tplot variable.
+;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
+;                       that should be loaded into tplot variables
 ;
 ; OUTPUT:
 ;  
@@ -48,8 +50,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-15 15:20:55 -0700 (Thu, 15 Oct 2015) $
-;$LastChangedRevision: 19084 $
+;$LastChangedDate: 2015-10-27 13:09:52 -0700 (Tue, 27 Oct 2015) $
+;$LastChangedRevision: 19169 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_feeps.pro $
 ;-
 pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
@@ -69,6 +71,10 @@ pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatyp
     get_data, prefix + 'spin' + suffix, data=spin_nums
 
     ; find where the spins start
+    if ~is_struct(spin_nums) then begin
+        dprint, dlevel = 0, 'Error, couldn''t find the tplot variable containing spin #s to do spin averaging'
+        return
+    endif
     spin_starts = uniq(spin_nums.Y)
 
     prefix = 'mms'+probe+'_epd_feeps_top_intensity_sensorID_'    
@@ -76,6 +82,10 @@ pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatyp
     for scope_idx = 0, num_sensors-1 do begin
         sensor = strcompress(string(sensors[scope_idx]+1), /rem)
         get_data, prefix+sensor+suffix, data=flux_data, dlimits=flux_dl
+        if ~is_struct(flux_data) || ~is_struct(flux_dl) then begin
+            dprint, dlevel = 0, 'Error, no data or metadata for the variable: ' + prefix+sensor+suffix
+            continue
+        endif
 
         spin_sum_flux = dblarr(n_elements(spin_starts), n_elements(flux_data.Y[0, *]))
 
@@ -99,7 +109,8 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
-                  time_clip = time_clip, no_update = no_update, suffix = suffix
+                  time_clip = time_clip, no_update = no_update, suffix = suffix, $
+                  varformat = varformat
 
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
@@ -112,7 +123,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix
+        no_update = no_update, suffix = suffix, varformat = varformat
     
     if undefined(tplotnames) || tplotnames[0] eq '' then return
 

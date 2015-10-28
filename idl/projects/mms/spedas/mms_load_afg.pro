@@ -19,8 +19,6 @@
 ;                       The default is 'srvy'. 
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
-;         varformat:    format of the variable names in the CDF to load. default 
-;                       varformat='*_RF_corrected'
 ;         source:       specifies a different system variable. By default the MMS mission 
 ;                       system variable is !mms
 ;         get_support_data: not yet implemented. when set this routine will load any support data
@@ -35,13 +33,15 @@
 ;                       data is found the existing data will be overwritten
 ;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
 ;                       preserving original tplot variable.
+;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
+;                       that should be loaded into tplot variables
 ;
 ; OUTPUT:
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-20 11:10:54 -0700 (Tue, 20 Oct 2015) $
-;$LastChangedRevision: 19117 $
+;$LastChangedDate: 2015-10-27 09:29:48 -0700 (Tue, 27 Oct 2015) $
+;$LastChangedRevision: 19164 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_afg.pro $
 ;-
 
@@ -50,7 +50,8 @@ pro mms_load_afg, trange = trange, probes = probes, datatype = datatype, $
     local_data_dir = local_data_dir, source = source, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-    no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data
+    no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data, $
+    varformat = varformat
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -62,6 +63,7 @@ pro mms_load_afg, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data
+        no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data, $
+        varformat = varformat
 
 end

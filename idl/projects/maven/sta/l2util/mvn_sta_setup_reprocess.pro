@@ -1,5 +1,15 @@
 ;+ call this file to set up reprocess, this will split up the input
 ;time range equally. Run as muser
+;sample crontab command
+;# STA L2 Reprocess, 2015-08-31
+;# 4,8,14,18,24,28,34,38,44,48,54,58 * * * * /bin/csh
+;/home/muser/export_socware/idl_socware/projects/maven/l2gen/mvn_l2gen_multiprocess_b.csh
+;mvn_sta_l2gen_1day 2 0 /mydisks/home/maven sta_l2_reprocess
+;>/dev/null 2>&1
+;# for l2l2
+;# 4,8,14,18,24,28,34,38,44,48,54,58 * * * * /bin/csh /home/muser/export_socware/idl_socware/projects/maven/l2gen/mvn_l2gen_multiprocess_b.csh mvn_sta_l2l2_1day 2 0 /mydisks/home/maven sta_l2l2_reprocess >/dev/null 2>&1
+;#
+
 Pro mvn_sta_setup_reprocess, start_date = start_date, $ ;default is 2014-10-06
                              end_date = end_date, $     ;default is now
                              use_l2_files = use_l2_files, $ ;default is 0 - use L0
@@ -11,7 +21,7 @@ Pro mvn_sta_setup_reprocess, start_date = start_date, $ ;default is 2014-10-06
      st = time_string(start_date, precision = -3)
   Endif Else st = '2014-10-06'
   If(keyword_set(end_date)) Then Begin
-     en = time_string(en_date, precision = -3)
+     en = time_string(end_date, precision = -3)
   Endif Else en = time_string(systime(/sec), precision = -3)
 
   one_day = 86400.0d0

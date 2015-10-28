@@ -29,6 +29,10 @@ PRO mms_load_bss_burst, trange=trange, include_labels=include_labels
     bar_x = [bar_x, ss, ss, se, se]
     bar_y = [bar_y, nan, 0.,0., nan]
   endfor
+  if n_elements(bar_x) gt 1 then begin
+    bar_x = bar_x[1:*]
+    bar_y = bar_y[1:*]
+  endif
   
   ;-------------------
   ; TPLOT VARIABLE

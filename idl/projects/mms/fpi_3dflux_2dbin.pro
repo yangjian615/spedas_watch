@@ -1,8 +1,11 @@
-;To arrange 3D data from the 4d array structure of data[time,phi(32),theta(16),energy(32)]
-;to 3d array data[time,phi and theta (32*16=512), energy] for the whole interval loaded in
+;To arrange 3D data from the structure of data[time,phi,theta,energy]
+;to data[time,phi and theta, energy], for the whole interval loaded in
 ;the tplot variable
-;The tplot variable from the 3D dist/counts file is required to be loaded
+;The tplot variable from the 3D counts file is required to be loaded
 ;in advance
+;update history
+;10/19/2015 store parity table, get_fpi_3dflux_2dbin.pro will set the
+;energy table according to the parity
 Pro fpi_3dflux_2dbin,sat,specie,resolution=resolution,rmsun=rmsun,$
     units_name=units_name,thebdata=thebdata,scp=scp
 
@@ -18,6 +21,8 @@ varname='mms'+sat_str+'_d'+specie+'s_'+resolution+'SkyMap_'+units_str
 if ~keyword_set(thebdata) then $
   ;thebdata='mms'+sat_str+'_d'+specie+'s_bentPipeB_DSC_rmsunpulse'
   thebdata = 'mms'+sat_str+'_dfg_srvy_l2pre_dmpa_xyz'
+;tplot_names,thebdata,names=nb
+;if ~keyword_set(nb) then thebdata='mms'+sat_str+'_dfg_srvy_dmpa_xyz'
 get_data,thebdata,data=ddb
 
 get_data,varname,data=dd
@@ -25,24 +30,26 @@ get_timespan,t
 ind=where(dd.x ge t[0] and dd.x le t[1],cnt)
 d={x:dd.x[ind],y:dd.y[ind,*,*,*]}
 
+get_data,'mms'+sat_str+'_d'+specie+'s_stepTable_parity',data=dparity
+parity = dparity.y[ind]
+
 magf= fltarr(cnt,3)
-for it=0,cnt-2 do begin
-  ind1=where(ddb.x ge dd.x[ind[it]] and ddb.x lt dd.x[ind[it]+1],cc)
+dt = dd.x[ind[1]] - dd.x[ind[0]]
+for it=0,cnt-1 do begin
+  ind1=where(ddb.x ge dd.x[ind[it]] and ddb.x lt dd.x[ind[it]]+dt,cc)
   if cc eq 0 then begin
     ;print,'B data not available at time '+time_string(d.x[it],precision=3)
     ;print,'interpolate..'
-    magf[it,0]=interpol(ddb.y[*,0], ddb.x, (dd.x[ind[it]] + dd.x[ind[it]+1])/2.)
-    magf[it,1]=interpol(ddb.y[*,1], ddb.x, (dd.x[ind[it]] + dd.x[ind[it]+1])/2.)
-    magf[it,2]=interpol(ddb.y[*,2], ddb.x, (dd.x[ind[it]] + dd.x[ind[it]+1])/2.)
+    magf[it,0]=interpol(ddb.y[*,0], ddb.x, dd.x[ind[it]]+0.5*dt)
+    magf[it,1]=interpol(ddb.y[*,1], ddb.x, dd.x[ind[it]]+0.5*dt)
+    magf[it,2]=interpol(ddb.y[*,2], ddb.x, dd.x[ind[it]]+0.5*dt)
     continue
   endif
   magf[it,0]=mean(ddb.y[ind1,0],/nan)
   magf[it,1]=mean(ddb.y[ind1,1],/nan)
   magf[it,2]=mean(ddb.y[ind1,2],/nan)
 endfor
-    magf[it,0]=interpol(ddb.y[*,0], ddb.x, dd.x[ind[it]]+(dd.x[ind[it]] - dd.x[ind[it]-1])/2.)
-    magf[it,1]=interpol(ddb.y[*,1], ddb.x, dd.x[ind[it]]+(dd.x[ind[it]] - dd.x[ind[it]-1])/2.)
-    magf[it,2]=interpol(ddb.y[*,2], ddb.x, dd.x[ind[it]]+(dd.x[ind[it]] - dd.x[ind[it]-1])/2.)
+
 
 name_scp = 'mms'+sat_str+'_edp_scpot'
 tplot_names,name_scp,names=name_scp
@@ -81,7 +88,8 @@ theta = one_en#theta1
 dphi = replicate(del_phi,size[4],size[2]*size[3])
 dtheta = replicate(del_theta,size[4],size[2]*size[3])
 
-
+IF 0 THEN BEGIN
+;average energy table
 if specie eq 'i' then begin
   energy = [11.32541789,14.54730661,18.68576787,24.00155096,$
      30.82958391,39.60007608, 50.86562406, 65.33602881,$
@@ -106,13 +114,13 @@ endif
 loge = alog10(energy)
 del_v = replicate(loge[1]-loge[0],size[4])
 denergy = energy*del_v/alog10(exp(1))
-;del_v = (alog10(3e4)-alog10(10.))/(size[4]-1)
-;vs = alog10(10.)+findgen(size[4])*del_v
-;energy = 10.^vs
+ENDIF
+
+
 
 one_bins = fltarr(size[2]*size[3])+1
-energy = energy#one_bins
-denergy = denergy#one_bins
+;energy = energy#one_bins
+;denergy = denergy#one_bins
 bins = replicate(1,size[4],size[2]*size[3])
 
 if specie eq 'e' then begin
@@ -138,9 +146,9 @@ dead=1.7e-7
 store_data,varname+'_2dbin',$
            data={spacecraft:sat,$
                  project_name: 'MMS',$
-                 data_name: 'mms'+sat_str+'_'+specie+'_cnts',$;*
+                 data_name: varname,$;*
                  units_name:units_name,$
-                 units_procedure: 'mms_fpi_convert_units',$;*
+                 ;units_procedure: 'mms_fpi_convert_units',$;*
                  valid: 1,$;*
                  time:d.x,$
                  end_time: d.x+delta_t,$;*
@@ -153,14 +161,15 @@ store_data,varname+'_2dbin',$
                  nenergy: size[4],$
                  nbins: size[2]*size[3],$
                  bins: bins,$
-                 energy: energy,$
-                 denergy: denergy,$
+                 ;energy: energy,$
+                 ;denergy: denergy,$
+                 parity: parity,$
                  theta: theta,$
                  phi: phi,$
                  dtheta: dtheta,$
                  dphi: dphi,$
                  data: d2,$
-                 dead: dead,$;*
+                 ;dead: dead,$;*
                  mass: mass,$;*
                  charge: charge,$
                  magf:magf,$

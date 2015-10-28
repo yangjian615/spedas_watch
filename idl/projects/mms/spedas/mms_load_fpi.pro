@@ -30,6 +30,8 @@
 ;                       data is found the existing data will be overwritten
 ;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
 ;                       preserving original tplot variable.
+;         varformat:    should be a string (wildcards accepted) that will match the CDF variables 
+;                       that should be loaded into tplot variables
 ; 
 ; 
 ; EXAMPLE:
@@ -47,8 +49,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-15 15:59:10 -0700 (Thu, 15 Oct 2015) $
-;$LastChangedRevision: 19085 $
+;$LastChangedDate: 2015-10-27 08:24:53 -0700 (Tue, 27 Oct 2015) $
+;$LastChangedRevision: 19162 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi.pro $
 ;-
 
@@ -282,7 +284,7 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
-                  autoscale = autoscale
+                  autoscale = autoscale, varformat = varformat
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['3'] ; default to MMS 3
@@ -295,7 +297,7 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix
+        no_update = no_update, suffix = suffix, varformat = varformat
 
     ; correct the energies in the spectra for each probe
     if ~undefined(tplotnames) && n_elements(tplotnames) ne 0 then begin

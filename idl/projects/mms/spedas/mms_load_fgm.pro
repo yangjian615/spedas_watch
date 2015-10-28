@@ -32,6 +32,8 @@
 ;                       found the existing data will be overwritten
 ;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
 ;                       preserving original tplot variable.
+;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
+;                       that should be loaded into tplot variables
 ;             
 ; OUTPUT:
 ; 
@@ -50,8 +52,8 @@
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-20 11:08:04 -0700 (Tue, 20 Oct 2015) $
-;$LastChangedRevision: 19116 $
+;$LastChangedDate: 2015-10-27 09:29:48 -0700 (Tue, 27 Oct 2015) $
+;$LastChangedRevision: 19164 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -171,7 +173,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
-                  no_attitude_data = no_attitude_data
+                  no_attitude_data = no_attitude_data, varformat = varformat
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
@@ -187,7 +189,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
-        suffix = suffix
+        suffix = suffix, varformat = varformat
 
     ; load the atttude data to do the coordinate transformation 
     if undefined(no_attitude_data) then mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec'], $

@@ -21,6 +21,10 @@ PRO mms_load_bss_fast, trange=trange, include_labels=include_labels
       bar_x = [bar_x, tsu[0],tsu[0],tsu[FOMstr.NUMCYCLES-1],tsu[FOMstr.NUMCYCLES-1]]
       bar_y = [bar_y, !VALUES.F_NAN, 0., 0., !VALUES.F_NAN]
     endfor
+    if n_elements(bar_x) gt 1 then begin
+      bar_x = bar_x[1:*]
+      bar_y = bar_y[1:*]
+    endif
   endif
   
   ;-------------------

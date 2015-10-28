@@ -55,7 +55,7 @@ species = 'e' ; select species
 t_chunk = 1.0 ; 1 second (do not change this)
 angle = [-20,20]
 ;outputfolder='~/MDAS/081515/mms_vdf_code/eVDF_FAC/'
-outputfolder='./test/'
+outputfolder='./test_chen_new/'
 
 if species eq 'e' then begin
 vrange = [-3.0e4,3.0e4] ;#'s optimized for des for 0815
@@ -71,7 +71,7 @@ ThirdDirLim = 0
 for i=0,nloops-1 do begin
    end_time = start_time + t_chunk
    flip_dist_crib,sat=sat,species=species,$ 
-		  /noload_cdf,/noreloadb,$
+		              /noreloadb,$
                   start_time=start_time,end_time=end_time,$
                   angle=angle,$
 		/noflip,$

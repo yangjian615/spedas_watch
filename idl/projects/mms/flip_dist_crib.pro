@@ -8,14 +8,16 @@ Pro flip_dist_crib,sat=sat,time_str=time_str,$
                    end_time=end_time,$
                    angle=angle,$
                    zcut=zcut,$
-                   noload_cdf=noload_cdf,$
                    noreload_3d=noreload_3d,$
                    noreloadb=noreloadb,$
                    noflip = noflip,$
                    zrange=zrange,$
                    vrange=vrange,$
                    outputfolder=outputfolder,$
-                   ThirdDirLim=ThirdDirLim
+                   ThirdDirLim=ThirdDirLim,$
+                   trange_bve=trange_bve,$
+                   datab = datab,$
+                   reduce = reduce
 
 if ~keyword_set(sat) then sat = 3
 sat_str=string(sat,format='(I1)')
@@ -28,26 +30,36 @@ if ~keyword_set(v2) then v2 = 'mms'+sat_str+'_V'+species+'_brst_LMN_'+time_str
 if ~keyword_set(v3) then v3 = 'mms'+sat_str+'_edp_dce_brstinterp_LMN_'+time_str
 
 coord_str='FAC'
-;ThirdDirLim=[-100,100]
 if ~keyword_set(angle) and ~keyword_set(ThirdDirLim) then angle=[-20,20]
 ;Choose start and end times
 if ~keyword_set(start_time) then start_time='2015-08-15/13:00:00.000'
-if ~keyword_set(end_time) then end_time = '2015-08-15/13:04:15.000'
-trange_bve = [start_time,end_time]
-;trange_bve = '2015-08-12/'+['22:43:00','22:44:30']
+if ~keyword_set(end_time) then _time = '2015-08-15/13:04:15.000'
+if ~keyword_set(trange_bve) then trange_bve = [start_time,end_time]
+;trange_bve = '2015-10-03/'+['15:35:40','15:36:40']
 
 if n_elements(zcut) eq 0 then zcut='bulk';'bulk'
 
 units='df'
 resolution='brst'
-noload_cdf=noload_cdf
 noreload_3d=noreload_3d
 noreloadb=noreloadb
 
+if keyword_set(reduce) then begin
+   if species eq 'i' then begin
+      ThirdDirLim=[-2400,2400]
+   endif
+   if species eq 'e' then begin
+      ThirdDirLim=[-10300,10300]
+   endif
+   zcut = 0
+endif
 
+
+;ThirdDirLim=[-200,200]
+;ThirdDirLim=1
 if keyword_set(angle) then begin
 if max(angle) lt 90 then begin
-   reduce_str='slice'
+   reduce_str='ang'+strtrim(ceil(angle[1]),2)
    method_reduce = 'ave'
 endif else begin
    method_reduce = 'ave';'sum' or 'ave'
@@ -55,6 +67,12 @@ endif else begin
    reduce_str='reduce_'+method_reduce
 endelse
 endif
+
+if keyword_set(ThirdDirLim) then begin
+   method_reduce='ave'
+   reduce_str='third'+strtrim(ceil(thirddirlim[1]),2)
+endif
+;method_reduce='ave'
 ;method_reduce='sum'
 ;reduce_str='slice_sum'
 
@@ -63,9 +81,9 @@ if units eq 'counts' then begin
    if species eq 'e' then zrange=[0.1,5000] else zrange=[0.01,500]
 endif else begin
    if species eq 'e' then begin
-      if method_reduce eq 'ave' then zrange=[5.E-32,1.e-28] else zrange=[1e-31,1e-27]
+      if method_reduce eq 'ave' then zrange=[5.E-30,5.e-26] else zrange=[1e-31,1e-26]
    endif else begin
-      if method_reduce eq 'ave' then zrange=[5.0e-27,5.0e-24] else zrange=[1e-26,1e-23]
+      if method_reduce eq 'ave' then zrange=[1.0e-25,1.0e-21] else zrange=[1e-26,1e-23]
    endelse
 endelse
 endif
@@ -73,7 +91,7 @@ endif
 if ~keyword_set(vrange) then begin
 if species eq 'e' then vrange=[-5e4,5e4] else vrange=[-2400,2400]
 endif
-;vrange=[-1000,1000]
+;xrange=[-1000,1000]
 
 
 start_time=time_double(start_time)
@@ -107,14 +125,11 @@ if data_type(zcut) eq 7 then zcut_title='_zbulk' else zcut_title='_z0'
 if ~keyword_set(outputfolder) then begin
 Case StrUpCase(!version.os_family) of
     'WINDOWS' : outputfolder='G:\data\PLOTS\MMS\'+date_str+'\mms'+sat_str+'_'+species+'flip_VDF_'+coord_str+'_'+resolution+zcut_title+'_'+reduce_str+'\'
-    Else : outputfolder='~/VDF/'+date_str+'/mms'+sat_str+'_'+species+'flip_VDF_'+coord_str+'_'+resolution+zcut_title+'_'+reduce_str+'/'
+    Else : outputfolder='/home/wang/mms/fig/'+date_str+'/mms'+sat_str+'_'+species+'flip_VDF_'+coord_str+'_'+resolution+zcut_title+'_'+reduce_str+'/'
  Endcase
 endif
-file_mkdir,outputfolder
+if filetype ne 'x' then  file_mkdir,outputfolder
 
-if ~keyword_set(noload_cdf) then begin
-load_fpi_dist,probe=sat,specie=species,/dirname,level='l1b'
-endif
 ;if ~keyword_set(noreloadb) then begin
 ;   plot_vector_inverse,'mms'+sat_str+'_d'+species+'s_bentPipeB_'+['X','Y','Z']+'_DSC',$
 ;                    name='mms'+sat_str+'_d'+species+'s_bentPipeB_DSC'
@@ -148,7 +163,7 @@ fig_dim=[1200,400]
 endif else begin
 row=2
 arrange_plots,x0,y0,x1,y1,nx=column,ny=row,ygap=0.1,x1margin=0.08,$
-              x0margin=0.1,y1margin=-0.04,xgap=0.08,y0margin=0.12
+              x0margin=0.1,y1margin=-0.04,xgap=0.1,y0margin=0.12
 x0=x0[3:5]
 x1=x1[3:5]
 y0=y0[3:5]
@@ -251,7 +266,6 @@ while current_time lt end_time do begin
     ;loadct,39
     ;DEVICE, FILENAME=outputfile+'.ps',/color,bits_per_pixel=8,/Times
  endif
-
 if filetype eq 'png' then begin
    set_plot,'Z'
    device,decomposed=0,set_pixel_depth=24,set_resolution=fig_dim
@@ -280,7 +294,7 @@ if filetype eq 'win' then begin
    ;loadct,39
    !P.background=255
    !P.color=0
-   window,0,xsize=fig_dim[0],ysize=fig_dim[1]
+   window,1,xsize=fig_dim[0],ysize=fig_dim[1]
    !P.charsize=1.2
    !P.font=-1
 endif
@@ -288,7 +302,7 @@ endif
 
 if coord ne 'fac' then nob=0 else nob=1
 if ~keyword_set(noflip) then begin
-  !P.region=[0,0.40,1.0,1.0]
+  !P.region=[0,0.45,1.0,1.0]
   tlimit,trange_bve
   yline,[v0,v1,v2,v3],linestyle=2
   ;timespan,trange_bve[0],time_double(trange_bve[1])-time_double(trange_bve[0]),/s
@@ -309,10 +323,11 @@ endif
       endelse
       if i eq 1 then notitle=0 else notitle=1
       mms_fpi_slice2d_regbin,sat,current_time,timeinterval,$
+                             ;theedata='mms'+sat_str+'_edp_brst_dce2d_xyz_dsl',$
                                 ;thebdata='mms'+sat_str+'_dfg_srvy_dmpa_xyz',$
                              vel = 'mms'+sat_str+'_d'+species+'s_brst_bulk_DSC',$
                           species=species,$
-                          zrange=zrange,$
+                           zrange=zrange,$
                           rotation=rotations[i],$
                           angle=angle,$
                           ThirdDirLim=ThirdDirLim,$

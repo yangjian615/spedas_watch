@@ -28,10 +28,13 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-05 14:59:26 -0700 (Mon, 05 Oct 2015) $
-;$LastChangedRevision: 19004 $
+;$LastChangedDate: 2015-10-27 09:24:15 -0700 (Tue, 27 Oct 2015) $
+;$LastChangedRevision: 19163 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_eis_pad.pro $
 ;-
+; REVISION HISTORY:
+;       + 2015-10-26, I. Cohen      : added "scopes" keyword to mms_eis_pad call-line to allow omittance of t3 (ions) & t2 (electrons)
+
 
 pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units, $
         datatype = datatype, energy = energy, bin_size = bin_size
@@ -104,7 +107,7 @@ end
 
 pro mms_eis_pad,probe = probe, trange = trange, species = species, $
                 energy = energy, bin_size = bin_size, data_units = data_units, $
-                datatype = datatype, ion_type = ion_type
+                datatype = datatype, ion_type = ion_type, scopes = scopes
 
     ;if not KEYWORD_SET(trange) then trange = ['2015-06-28', '2015-06-29']
     if not KEYWORD_SET(probe) then probe = '1'
@@ -116,6 +119,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, $
     if not KEYWORD_SET(data_units) then data_units = 'flux'
     ;suffix = '_spin'
     suffix = ''
+    if not KEYWORD_SET(scopes) then scopes = ['0','1','2','3','4','5']
   
     ; would be good to get this from the metadata eventually
     units_label = data_units eq 'cps' ? 'Counts/s': '#/(cm!U2!N-sr-s-keV)'
@@ -159,14 +163,14 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, $
           pa_flux = fltarr(n_elements(d.x),n_pabins)
           pa_num_in_bin = fltarr(n_elements(d.X), n_pabins)
           
-          for t=0, 5 do begin
-            get_data, 'mms'+probe+'_epd_eis_' + datatype + '_pitch_angle_t'+STRTRIM(t, 1)+suffix, data = d
+          for t=0, n_elements(scopes)-1 do begin
+            get_data, 'mms'+probe+'_epd_eis_' + datatype + '_pitch_angle_t'+scopes[t]+suffix, data = d
             pa_file[*,t] = reform(d.y)
           
           ; get flux from each detector
-            get_data, 'mms'+probe+'_epd_eis_' + datatype + '_' + ion_type[ion_type_idx] + '_' + data_units + '_t'+STRTRIM(t, 1)+suffix, data = d
+            get_data, 'mms'+probe+'_epd_eis_' + datatype + '_' + ion_type[ion_type_idx] + '_' + data_units + '_t'+scopes[t]+suffix, data = d
             
-            dprint, dlevel=1, 'mms'+probe+'_epd_eis_' + datatype + '_' + ion_type[ion_type_idx] + '_' + data_units + '_t'+STRTRIM(t, 1)+suffix
+            dprint, dlevel=1, 'mms'+probe+'_epd_eis_' + datatype + '_' + ion_type[ion_type_idx] + '_' + data_units + '_t'+scopes[t]+suffix
             ; get energy range of interest
             e = d.v
             indx = where((e lt energy[1]) and (e gt energy[0]), energy_count)

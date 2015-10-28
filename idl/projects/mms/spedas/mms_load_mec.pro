@@ -8,6 +8,8 @@
 ; KEYWORDS:
 ;         trange: time range of interest
 ;         probe: value for MMS SC #
+;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
+;                       that should be loaded into tplot variables
 ;
 ; EXAMPLES:
 ;
@@ -18,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-23 15:45:05 -0700 (Fri, 23 Oct 2015) $
-;$LastChangedRevision: 19149 $
+;$LastChangedDate: 2015-10-27 09:29:48 -0700 (Tue, 27 Oct 2015) $
+;$LastChangedRevision: 19164 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_mec.pro $
 ;-
 
@@ -28,7 +30,7 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
     local_data_dir = local_data_dir, source = source, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
-    time_clip = time_clip, no_update = no_update, suffix = suffix
+    time_clip = time_clip, no_update = no_update, suffix = suffix, varformat = varformat
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -41,6 +43,6 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix
+        no_update = no_update, suffix = suffix, varformat = varformat
 
 end

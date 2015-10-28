@@ -293,9 +293,9 @@ end
 ;  This procedure was forked from thm_cotrans.
 ;
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-09-21 08:48:41 -0700 (Mon, 21 Sep 2015) $
-;$LastChangedRevision: 18854 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-27 16:00:21 -0700 (Tue, 27 Oct 2015) $
+;$LastChangedRevision: 19171 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/cotrans/spd_cotrans.pro $
 ;
 ;-
@@ -319,6 +319,8 @@ compile_opt idl2, hidden
 
 
 ;get verbosity from !spedas is not defined
+defsysv, 'spedas', exists=spedas_defined
+if spedas_defined eq 0 then spedas_init
 vb = undefined(verbose) ? !spedas.verbose : verbose
 
 

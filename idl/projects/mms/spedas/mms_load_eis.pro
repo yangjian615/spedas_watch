@@ -36,6 +36,8 @@
 ;         no_interp:    if this flag is set no interpolation of the data will occur.
 ;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
 ;                       preserving original tplot variable.
+;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
+;                       that should be loaded into tplot variables
 ;
 ; 
 ; OUTPUT:
@@ -63,8 +65,8 @@
 ;     9/17/2015 - egrimes: large update, see svn log
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-15 15:20:55 -0700 (Thu, 15 Oct 2015) $
-;$LastChangedRevision: 19084 $
+;$LastChangedDate: 2015-10-27 09:29:48 -0700 (Tue, 27 Oct 2015) $
+;$LastChangedRevision: 19164 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_eis.pro $
 ;-
 
@@ -150,7 +152,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, no_interp = no_interp, $
-                  suffix = suffix
+                  suffix = suffix, varformat = varformat
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -164,7 +166,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix
+        no_update = no_update, suffix = suffix, varformat = varformat
     
     ; don't try to calculate omnidirectional quantities if no data was loaded
     if undefined(tplotnames) || tplotnames[0] eq '' then return
