@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-27 09:29:48 -0700 (Tue, 27 Oct 2015) $
-;$LastChangedRevision: 19164 $
+;$LastChangedDate: 2015-10-28 16:22:34 -0700 (Wed, 28 Oct 2015) $
+;$LastChangedRevision: 19180 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_mec.pro $
 ;-
 
@@ -45,4 +45,14 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat
 
+    ; turn the right ascension and declination of the L vector into separate tplot variables
+    ; this is for passing to dmpa2gse
+    for probe_idx = 0, n_elements(probes)-1 do begin
+        if tnames('mms'+strcompress(string(probes[probe_idx]), /rem)+'_mec_ang_mom_vec') ne '' then begin
+            split_vec, 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_mec_ang_mom_vec', $
+                names_out=ras_dec_vars
+            copy_data, ras_dec_vars[0], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spinras'
+            copy_data, ras_dec_vars[1], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spindec'
+        endif
+    endfor
 end

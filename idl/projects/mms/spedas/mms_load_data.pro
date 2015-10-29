@@ -22,7 +22,6 @@
 ;         tplotnames: set to override default names for tplot variables
 ;         get_support_data: when set this routine will load any support data
 ;             (support data is specified in the CDF file)
-;         varformat: format of the variable names in the CDF to load; not currently used for HPCA ion data
 ;         no_color_setup: don't setup graphics configuration; use this
 ;             keyword when you're using this load routine from a
 ;             terminal without an X server running
@@ -30,6 +29,8 @@
 ;             do not use this keyword, you may load a longer time range than requested
 ;         no_update: use local data only, don't query the SDC for updated files. 
 ;         suffix: append a suffix to tplot variables names
+;         varformat: should be a string (wildcards accepted) that will match the CDF variables
+;                       that should be loaded into tplot variables
 ; 
 ; OUTPUT:
 ; 
@@ -84,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-23 15:43:54 -0700 (Fri, 23 Oct 2015) $
-;$LastChangedRevision: 19148 $
+;$LastChangedDate: 2015-10-28 10:46:14 -0700 (Wed, 28 Oct 2015) $
+;$LastChangedRevision: 19174 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 

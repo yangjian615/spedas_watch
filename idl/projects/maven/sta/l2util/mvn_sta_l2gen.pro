@@ -26,8 +26,8 @@ End
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-10-27 09:47:19 -0700 (Tue, 27 Oct 2015) $
-; $LastChangedRevision: 19166 $
+; $LastChangedDate: 2015-10-28 14:57:36 -0700 (Wed, 28 Oct 2015) $
+; $LastChangedRevision: 19177 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -245,6 +245,7 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      If(ttest Gt 10.0*86400.0d0) Then Begin
         mvn_sta_mag_load
         mvn_sta_ephemeris_load
+        mk = mvn_spice_kernels(/all,/load,trange=timerange())
         mvn_sta_sc_bins_load
      Endif
   Endelse

@@ -28,8 +28,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-27 09:24:15 -0700 (Tue, 27 Oct 2015) $
-;$LastChangedRevision: 19163 $
+;$LastChangedDate: 2015-10-28 12:06:46 -0700 (Wed, 28 Oct 2015) $
+;$LastChangedRevision: 19176 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -108,7 +108,7 @@ end
 pro mms_eis_pad,probe = probe, trange = trange, species = species, $
                 energy = energy, bin_size = bin_size, data_units = data_units, $
                 datatype = datatype, ion_type = ion_type, scopes = scopes
-
+    compile_opt idl2
     ;if not KEYWORD_SET(trange) then trange = ['2015-06-28', '2015-06-29']
     if not KEYWORD_SET(probe) then probe = '1'
     if not KEYWORD_SET(species) then species = 'all'

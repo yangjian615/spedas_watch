@@ -12,8 +12,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-28 13:32:10 -0700 (Fri, 28 Aug 2015) $
-;$LastChangedRevision: 18662 $
+;$LastChangedDate: 2015-10-28 16:02:55 -0700 (Wed, 28 Oct 2015) $
+;$LastChangedRevision: 19179 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/load_data/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -82,6 +82,17 @@ pro mms_ui_load_data_import,$
      mms_load_dsp, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames
   endif else if instrument eq 'ASPOC' then begin
      mms_load_aspoc, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames
+  endif else if instrument eq 'MEC' then begin
+     mms_load_mec, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames
+
+     ;filter types with too many dimensions so that the user doesn't have to click
+     ;through multiple warnings, there must be a better way...
+     ;haven't found it yet - eric
+     if is_string(tplotnames) then begin
+        search = '(_model$)|(_label$)'
+        dummy = where( stregex(tplotnames,search, /bool), ncomp=n_valid, comp=valid_idx)
+        tplotnames =  n_valid gt 0 ? tplotnames[valid_idx] : ''
+     endif
   endif else begin
      mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate, tplotnames=tplotnames
   endelse

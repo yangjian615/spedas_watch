@@ -52,120 +52,11 @@
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-27 09:29:48 -0700 (Tue, 27 Oct 2015) $
-;$LastChangedRevision: 19164 $
+;$LastChangedDate: 2015-10-28 16:22:58 -0700 (Wed, 28 Oct 2015) $
+;$LastChangedRevision: 19181 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
-; takes in 4-d AFG/DFG data as a tplot variable and splits into 2 tplot variables: 
-;   1) b_total, 2) b_vector (Bx, By, Bz)
-pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate, instrument = instrument
-    if undefined(level) then level = ''
-    if undefined(suffix) then suffix = ''
-    if level eq 'l2pre' then data_rate_mod = data_rate + '_l2pre' else data_rate_mod = data_rate
-    coords = ['dmpa', 'gse']
-
-    for c_idx = 0, n_elements(coords)-1 do begin
-        tplot_name = probe + '_'+instrument+'_'+data_rate_mod+'_'+coords[c_idx]+suffix
-    
-        get_data, tplot_name, data=fgm_data, dlimits=fgm_dlimits
-    
-        if is_struct(fgm_data) && is_struct(fgm_dlimits) then begin
-          
-            ; strip suffix off tplot_name. this prevents suffix from occuring twice in tplot variable name
-            if suffix NE '' then tplot_name=strmid(tplot_name, 0, strpos(tplot_name, suffix))
-            store_data, tplot_name + '_bvec'+suffix, data={x: fgm_data.X, y: [[fgm_data.Y[*, 0]], [fgm_data.Y[*, 1]], [fgm_data.Y[*, 2]]]}, dlimits=fgm_dlimits
-            store_data, tplot_name + '_btot'+suffix, data={x: fgm_data.X, y: fgm_data.Y[*, 3]}, dlimits=fgm_dlimits
-            
-            ; need to add the newly created variables from the previous procedure to the list of tplot names
-            append_array, tplotnames, tplot_name + '_bvec'+suffix
-            append_array, tplotnames, tplot_name + '_btot'+suffix
-            
-            ; uncomment the following to remove the old variable
-            ; del_data, tplot_name+suffix
-            ; tplotnames = ssl_set_complement([tplot_name+suffix], tplotnames)
-        endif else begin
-            dprint, dlevel = 0, 'Error splitting the tplot variable: ', tplot_name+suffix
-        endelse
-    endfor
-end
-
-; sets colors and labels for tplot
-pro mms_load_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, data_rate = data_rate, suffix = suffix, level=level
-    if undefined(prefix) then prefix = ''
-    if undefined(suffix) then suffix = ''
-    if undefined(level) then level = ''
-    if undefined(instrument) then instrument = 'dfg'
-    if undefined(data_rate) then data_rate = 'srvy'
-    instrument = strlowcase(instrument) ; just in case we get an upper case instrument
-    if level eq 'l2pre' then data_rate = data_rate + '_l2pre'
-
-    for sc_idx = 0, n_elements(prefix)-1 do begin
-        for name_idx = 0, n_elements(tplotnames)-1 do begin
-            tplot_name = tplotnames[name_idx]
-  
-            case tplot_name of
-                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_gse_bvec'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [2,4,6]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument)
-                    options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
-                end
-                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_gse_btot'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [0]
-                    options, /def, tplot_name, 'ytitle',  strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument)
-                    options, /def, tplot_name, 'labels', ['B_total']
-                end 
-                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_dmpa_bvec'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [2,4,6]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument)
-                    options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
-                end
-                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_dmpa_btot'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [0]
-                    options, /def, tplot_name, 'ytitle',  strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument)
-                    options, /def, tplot_name, 'labels', ['B_total']
-                end
-                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_gsm_dmpa'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [2,4,6,8]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument)
-                    options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz', 'Btotal']
-                end 
-                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_dmpa'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [2,4,6,8]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument)
-                    options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz', 'Btotal']
-                end
-                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_omb'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [2,4,6,8]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument) + ' OMB'
-                end 
-                prefix[sc_idx] + '_'+instrument+'_'+data_rate+'_bcs'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [2,4,6,8]
-                    options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument) + ' BCS'
-                end
-                prefix[sc_idx] + '_ql_pos_gsm'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [2,4,6,8]
-                    options, /def, tplot_name, 'labels', ['Xgsm', 'Ygsm', 'Zgsm', 'R']
-                end
-                prefix[sc_idx] + '_ql_pos_gse'+suffix: begin
-                    options, /def, tplot_name, 'labflag', 1
-                    options, /def, tplot_name, 'colors', [2,4,6,8]
-                    options, /def, tplot_name, 'labels', ['Xgse', 'Ygse', 'Zgse', 'R']
-                end
-                else: ; not doing anything
-            endcase
-        endfor
-    endfor
-end
 
 pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   level = level, instrument = instrument, data_rate = data_rate, $
@@ -192,8 +83,9 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         suffix = suffix, varformat = varformat
 
     ; load the atttude data to do the coordinate transformation 
-    if undefined(no_attitude_data) then mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec'], $
-        suffix = suffix
+;    if undefined(no_attitude_data) then mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec'], $
+;        suffix = suffix
+    if undefined(no_attitude_data) then mms_load_mec, trange = trange, probes = probes, suffix = suffix
 
     ; DMPA coordinates to GSE, for each probe
     for probe_idx = 0, n_elements(probes)-1 do begin
@@ -212,6 +104,6 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     endfor
     
     ; set some of the metadata for the DFG/AFG instruments
-    mms_load_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument, data_rate = data_rate, suffix = suffix, level=level
+    mms_fgm_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument, data_rate = data_rate, suffix = suffix, level=level
 
 end
