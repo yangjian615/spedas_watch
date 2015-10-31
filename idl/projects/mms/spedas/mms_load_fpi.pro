@@ -49,8 +49,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-28 10:48:21 -0700 (Wed, 28 Oct 2015) $
-;$LastChangedRevision: 19175 $
+;$LastChangedDate: 2015-10-30 18:10:49 -0700 (Fri, 30 Oct 2015) $
+;$LastChangedRevision: 19200 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi.pro $
 ;-
 
@@ -68,6 +68,9 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     if undefined(level) then level = 'sitl' 
     if undefined(data_rate) then data_rate = 'fast'
     if undefined(autoscale) then autoscale = 1
+    
+    ; different datatypes for burst mode files
+    if data_rate eq 'brst' && datatype[0] eq '*' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
       
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'fpi', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

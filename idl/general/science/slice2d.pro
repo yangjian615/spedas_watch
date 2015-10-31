@@ -64,8 +64,8 @@
 ;       Modified from 'thm_esa_slice2d' written by Arjun Raj & Xuzhi Zhou
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-08-12 15:39:49 -0700 (Wed, 12 Aug 2015) $
-; $LastChangedRevision: 18471 $
+; $LastChangedDate: 2015-10-30 10:57:31 -0700 (Fri, 30 Oct 2015) $
+; $LastChangedRevision: 19188 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
@@ -206,8 +206,10 @@ for i=0,dat2.nenergy-1 do begin
    if nbins gt 0 then begin
       x = fltarr(nbins) & y = fltarr(nbins) & z = fltarr(nbins)
 
-      w = where( dat2.phi eq 0. , nw ) ;- deals w/ colinear err @triangulate
-      if nw gt 0 then dat2.phi = dat2.phi + .00001
+      ;- obsolete
+;;       w = where( dat2.phi eq 0. , nw ) ;- deals w/ colinear err @triangulate
+;;       if nw gt 0 then dat2.phi = dat2.phi + .00001
+      ;- obsolete
 
       sphere_to_cart,1,reform(dat2.theta[i,currbins]),reform(dat2.phi[i,currbins]), x,y,z
       totalx = [totalx, x * reform(sqrt(2*dat2.energy[i,currbins]/mass))]
@@ -482,7 +484,9 @@ if ~keyword_set(title) then $
 
 if not keyword_set(nogrid) then begin
    spacing = (xrange[1]-xrange[0])/(resolution-1)
-   triangulate, xplot, yplot, tr, b
+
+;;    triangulate, xplot, yplot, tr, b
+   qhull, xplot, yplot, tr, /delaunay ;- qhull generally performs better than triangulate (cf. spd_slice2d_2di.pro)
 
    idx = where( ( xplot[tr[0,*]] + xplot[tr[1,*]] + xplot[tr[2,*]] )^2 $
                 + ( yplot[tr[0,*]] + yplot[tr[1,*]] + yplot[tr[2,*]] )^2 $

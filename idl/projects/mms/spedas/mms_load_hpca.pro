@@ -47,13 +47,23 @@
 ;     MMS>  mms_load_hpca, probes='1', trange=['2015-09-03', '2015-09-04'], $
 ;             datatype='rf_corr', data_rate='brst'
 ;
+;     MMS>  mms_hpca_calc_anodes, fov=[0, 360] ; sum over the full field of view (FoV)
+;     MMS>  tplot, 'mms1_hpca_hplus_RF_corrected_elev_0-360' ; plot the H+ spectra (full FoV)
+;             
+;
 ; 
 ; NOTES:
+;     When loading HPCA energy spectra with this routine, all of the data are loaded in 
+;        initially. To plot a meaningful spectra, the user must call mms_hpca_calc_anodes
+;        to sum the data over the look directions for the instrument. This will append
+;        the field of view (or anodes) used in the calculation to the name of the tplot variable.
+;        See the example above, or in the crib sheets. 
+; 
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-10-22 09:04:30 -0700 (Thu, 22 Oct 2015) $
-;$LastChangedRevision: 19135 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-10-30 11:44:49 -0700 (Fri, 30 Oct 2015) $
+;$LastChangedRevision: 19195 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_hpca.pro $
 ;-
 

@@ -25,6 +25,8 @@ function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   ;; NO, first 10 bytes are PTP header
   ;;
   b = ccsds.data
+  
+;  dprint,'hello'
   manip = { $
           time:       ptp_header.ptp_time, $
           met:        ccsds.met,  $
@@ -78,7 +80,7 @@ end
 
 pro spp_swp_manip_init
 
-  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',tname='spp_manip_',tfields='*',name='SWEAP SPAN-I Manip',rt_tags='*',save=1
+  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',tname='spp_manip_',tfields='*',name='SWEAP SPAN-I Manip',rt_tags='M???POS',save=1,/rt_flag
 
 end
 

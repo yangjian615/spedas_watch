@@ -28,8 +28,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-28 12:06:46 -0700 (Wed, 28 Oct 2015) $
-;$LastChangedRevision: 19176 $
+;$LastChangedDate: 2015-10-30 15:32:04 -0700 (Fri, 30 Oct 2015) $
+;$LastChangedRevision: 19198 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -73,7 +73,7 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
     for spin_idx = 0, n_elements(spin_starts)-1 do begin
         ; loop over energies
        ; spin_sum_flux[spin_idx, *] = total(pad_data.Y[current_start:spin_starts[spin_idx], *], 1)
-        spin_sum_flux[spin_idx, *] = average(pad_data.Y[current_start:spin_starts[spin_idx], *], 1)
+        spin_sum_flux[spin_idx, *] = average(pad_data.Y[current_start:spin_starts[spin_idx], *], 1, /nan)
         spin_times[spin_idx] = pad_data.X[current_start]
         current_start = spin_starts[spin_idx]+1
     endfor
@@ -91,10 +91,9 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
     rebinned_data = congrid(spin_sum_flux, n_elements(spin_starts), n_elements(new_bins), /center, /interp)
     
     store_data, newname, data={x: spin_times, y: rebinned_data, v: new_bins}, dlimits=flux_dl
-    options, newname, spec=1, ystyle=1, ztitle=units_label, ytitle='MMS'+probe+' EIS '+species, ysubtitle=en_range_string+'!CPAD (deg)'
+    options, newname, zlog=1, minzlog=.01, spec=1, ystyle=1, ztitle=units_label, ytitle='MMS'+probe+' EIS '+species, ysubtitle=en_range_string+'!CPAD (deg)'
     ylim, newname, 1., 180.
-    zlim, newname, 0, 0, 1
-    ;options, newname, no_interp=0
+    ;zlim, newname, 0, 0, 1
     tdegap, newname, /overwrite
 end
 
@@ -161,6 +160,8 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, $
           pa_file = fltarr(n_elements(d.x),6) ; time steps, look direction
           pa_file[*,0] = d.y
           pa_flux = fltarr(n_elements(d.x),n_pabins)
+          pa_flux[where(pa_flux eq 0)] = !values.f_nan
+          
           pa_num_in_bin = fltarr(n_elements(d.X), n_pabins)
           
           for t=0, n_elements(scopes)-1 do begin
@@ -188,8 +189,13 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, $
               flux_file[i,t] = total(reform(d.y[i,indx]), /nan)  ; start with lowest energy
               for j=0, n_pabins-1 do begin ; loop through pa bins
                 if (pa_file[i,t] gt pa_bins[j]) and (pa_file[i,t] lt pa_bins[j+1]) then begin
-                  pa_flux[i,j] = pa_flux[i,j] + flux_file[i,t]
-                  
+                  if ~finite(pa_flux[i,j]) then begin
+                    pa_flux[i,j] = flux_file[i,t]
+                  endif else begin
+                    pa_flux[i,j] = pa_flux[i,j] + flux_file[i,t]
+                  endelse
+                  ;pa_flux[i,j] = pa_flux[i,j] + flux_file[i,t]
+
                   ; we track the number of data points we put in each bin 
                   ; so that we can average later
                   pa_num_in_bin[i,j] += 1.0
@@ -197,27 +203,31 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, $
               endfor
             endfor
           endfor
-          
           ; calculate the average for each bin
           new_pa_flux = fltarr(n_elements(d.x),n_pabins)
-          
+         
           ; loop over time
           for i=0, n_elements(pa_flux[*,0])-1 do begin
             ; loop over bins
             for bin_idx = 0, n_elements(pa_flux[i,*])-1 do begin
-                if pa_num_in_bin[i,bin_idx] ne 0.0  then new_pa_flux[i,bin_idx] = pa_flux[i,bin_idx]/pa_num_in_bin[i,bin_idx]
+                if pa_num_in_bin[i,bin_idx] ne 0.0  then begin
+                    new_pa_flux[i,bin_idx] = pa_flux[i,bin_idx]/pa_num_in_bin[i,bin_idx]
+                endif else begin
+                    new_pa_flux[i,bin_idx] = !values.f_nan
+                endelse
             endfor
           endfor
-          
+
           en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV
           new_name = 'mms'+probe+'_epd_eis_' + datatype + '_' + en_range_string + '_' + ion_type[ion_type_idx] + '_' + data_units + '_pad'
          ; store_data, new_name, data={x:d.x, y:pa_flux, v:pa_label}
           store_data, new_name, data={x:d.x, y:new_pa_flux, v:pa_label}
-          options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1 , $
-            zlog = 1, ytitle = 'MMS'+probe+' EIS ' + ion_type[ion_type_idx], ysubtitle=en_range_string+'!CPA [Deg]', ztitle=units_label
-      
+          options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1, x_no_interp=1, minzlog=0.01, zlog=1, $
+            ytitle = 'MMS'+probe+' EIS ' + ion_type[ion_type_idx], ysubtitle=en_range_string+'!CPA [Deg]', ztitle=units_label
+         
           ; now do the spin average
           mms_eis_pad_spinavg, probe=probe, species=ion_type[ion_type_idx], datatype=datatype, energy=energy, data_units=data_units, bin_size=bin_size
+          tdegap, new_name, /overwrite
       endfor
     endif
 end
