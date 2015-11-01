@@ -126,7 +126,12 @@ for i=0L,nd-1 do begin
   sw_version = mvn_sep_sw_version()
   prereq_files = sw_version.sw_time_stamp_file
 
-  L0_files = mvn_pfp_file_retrieve(/l0,trange=tr)
+  L0_files = mvn_pfp_file_retrieve(/l0,trange=tr)   ; should be scaler
+  
+  if total(file_test(/regular,l0_files)) eq 0 then begin
+    dprint,dlevel=2,'File not found: '+l0_files
+    continue
+  endif
 
   append_array,prereq_files,L0_files
 

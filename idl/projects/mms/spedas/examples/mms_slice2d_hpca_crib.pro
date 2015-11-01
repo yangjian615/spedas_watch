@@ -10,21 +10,20 @@
 ;
 ;  *** This is a work in progress ***
 ;
+;  *** Azimuth files not yet available for download *** 
+;       -can be loaded manually if present with:
+;           cdf2tplot, file_name, varform='*' 
+;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-08 11:53:25 -0700 (Thu, 08 Oct 2015) $
-;$LastChangedRevision: 19034 $
+;$LastChangedDate: 2015-10-30 19:45:39 -0700 (Fri, 30 Oct 2015) $
+;$LastChangedRevision: 19201 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_slice2d_hpca_crib.pro $
 ;-
 
 
 ;======================================================================
 ; HPCA
-;--------
-;  -Azimuths have not been synchronized with sun data and are currently
-;   measured from an arbitrary point.
-;  -Spacecraft spin and sweep times are assumed to be ideal.
-;  -Only tested with burst data.
 ;======================================================================
 
 

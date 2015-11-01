@@ -18,19 +18,14 @@
 ;                or 0 in case of error
 ;
 ;Notes:
-;  **EXPERIMENTAL!**
-;  
-;  Caveats:
-;    -Azimuths have not been synchronized with sun data and are currently
-;     measured from an arbitrary point.
-;    -Spacecraft spin and sweep times are assumed to be ideal.
-;    -Only tested with burst data.
-;    -Masses of ions larger than h+ slightly off.
+;  This is a work in progress
 ;
+;  **Currently requires angle data that is not available for download**
+;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-02 20:00:08 -0700 (Fri, 02 Oct 2015) $
-;$LastChangedRevision: 18994 $
+;$LastChangedDate: 2015-10-30 19:54:06 -0700 (Fri, 30 Oct 2015) $
+;$LastChangedRevision: 19203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_hpca_dist.pro $
 ;-
 
@@ -64,33 +59,31 @@ probe = var_info[1]
 species = var_info[2]
 datatype = var_info[3]
 
+
 ; Initialize energies, angles, and support data
 ;-----------------------------------------------------------------
 
-;get angle tables & info
 s = mms_get_hpca_info()
 
-;dimensions
-dim = (size(d.y,/dim))[1:*]
+;get azimuth data from ancillary file
+;this will be used to set phi angles and as the timestamps of the final distributions
+get_data, 'mms'+probe+'_hpca_azimuth_angles_degrees', data=azimuth 
+
+;find azimuth times with complete 1/2 spins of particle data
+;this is used to determine the number of 3D distributions that will be created
+;and where their corresponding data is located in the particle data structure
+n_times = n_elements(azimuth.y[0,0,*])
+idx = value_locate(d.x, azimuth.x)
+full = where( (idx[1:*] - idx[0:n_elements(idx)-2]) eq n_times, n_full)
+if n_full eq 0 then begin
+  dprint, 'No azimuth data found for current time range'
+  return, 0
+endif
+idx = idx[full]
+
+;dimensions (energy-azimuth-elevation)
+dim = [dimen2(d.y), dimen2(azimuth.y), (dimen(d.y))[2]]
 base_arr = fltarr(dim)
-
-;energy bins are constant
-energy = d.v2 # replicate(1.,dim[1])
-
-;elevations bins are constant
-;  -index by anode number in case order is inconsistent
-;  -convert to from colat to lat
-theta = replicate(1.,dim[0]) # (90 - s.elevation[d.v1])
-
-;azimuth offsets should be constant to first approximation
-;populate phi with them now and add further adjustments later 
-phi_direction = replicate(1.,dim[0]) # s.azimuth_direction[d.v1]
-phi_offset = s.azimuth_energy_offset # replicate(1.,dim[1])
-phi = phi_direction + phi_offset
-
-;not physical values, just for plotting
-dtheta = replicate(22.5, dim)
-dphi = replicate(11.25, dim)
 
 ;mass & charge of species
 ;  -slice routines assume mass in eV/(km/s)^2
@@ -121,12 +114,19 @@ case species of
   endelse
 endcase
 
-; Create pseudo-3D distributions
-;  -The simplest method to convert the data into a compatible format is to treat
-;   each sample as a separate distribution.  Combining every 16 samples into a 
-;   3D distribution would yield a more memory efficient end product but would 
-;   also be a more complex process.  Spd_slice2d already aggregates & averages
-;   data across time so the results should be identical.
+;energy bins are constant
+energy = rebin(d.v2, dim)
+
+;elevations bins are constant
+;  -index by anode number in case order is inconsistent
+;  -convert to from colat to lat
+theta = rebin( reform((90 - s.elevation[d.v1]),[1,1,dim[2]]), dim)
+dtheta = replicate(22.5, dim)
+
+;azimuths are be populated below
+
+
+; Create standard 3D distributions
 ;-----------------------------------------------------------------
 
 ;basic template structure that is compatible with spd_slice2d
@@ -134,7 +134,7 @@ template = {  $
   project_name: 'MMS', $
   spacecraft: probe, $
   data_name: 'HPCA '+species, $
-  units_name: datatype, $ ;TODO: set units dynamically
+  units_name: 'f (s!U3!N/cm!U6!N)', $
   units_procedure: '', $ ;placeholder
   valid: 1b, $
 
@@ -147,40 +147,62 @@ template = {  $
   bins: base_arr+1, $ ;must be set or data will be considered invalid
 
   energy: energy, $
-  denergy: 0, $
-  phi: phi, $
-  dphi: dphi, $
+  denergy: base_arr, $
+  phi: base_arr, $
+  dphi: base_arr, $
   theta: theta, $
   dtheta: dtheta $
 }
 
-dist = replicate(template, n_elements(d.x))
+dist = replicate(template, n_full)
 
 
-; Populate and correct the rest of the data
+; Populate the structures
 ;-----------------------------------------------------------------
 
-;this time difference probably shouldn't be used for physical calculations yet
-dist.time = d.x
-dist.end_time = d.x + s.t_sweep
+;get start/end times
+;  -this assumes that the times from the particle (and angle) data 
+;   are at the center of the corresponding energy sweep
+dt = azimuth.x[1:*] - azimuth.x[0:*]  ;delta-time for each 1/2 spin
+dt_sweep = d.x[1:*] - d.x[0:*]        ;delta-time for each full energy sweep
+dist.time = azimuth.x[full] - dt_sweep[idx[full]]
+dist.end_time = dist.time + dt[full]  ;index won't exceed elements due to selection criteria
 
-;time of last sun pulse
-;just use arbitrary reference point for testing
-sun_pulse = d.x[0]
+;shuffle and expand applicable azimuth data 
+;  -shift from from time-elevation-azimuth to azimuth-elevation-time
+;   (time must be last to be added to structure array)
+;  -expand to energy-azimuth-elevation-time
+;   (energy sweep offsets will be added later)
+phi = transpose(azimuth.y[full,*,*],[2,1,0])
+dist.phi = rebin( reform(phi,[1,dimen(phi)]), [dim,n_full] )
 
-;some items need a loop to be set
+;get dphi
+;  -no vairation across elevation, probably very little across time
+;  -median is used to discard large differences across 0=360
+dphi = median( phi[1:*,0,*] - phi[0:dim[1]-2,0,*], dim=1 )
+dist.dphi = rebin( reform(dphi, [1,1,1,n_full]), [dim,n_full] )
+
+;add phi energy sweep offsets 
+;  -phi values are for the center of each sweep
+;  -this approximates the time between energy acquisitions as constant
+;   (it is actually somewhat irregular)
+n_steps = dim[0]+1  ;add one to account for flyback step at end of sweep  
+dphi_energy = dphi / n_steps  ;delta-phi per energy step (approx.)
+seed = findgen(n_steps) - (n_steps-1)/2.
+seed = seed[0:n_steps-2]  ;discard flyback step
+phi_offset = seed # dphi_energy
+dist.phi += rebin( reform(phi_offset, [dim[0],1,1,n_full]), [dim,n_full])
+
+;copy particle data
 for i=0,  n_elements(dist)-1 do begin
 
-  ;azimuthal correction based on spin
-  phi_shift = 360./s.t_spin * ( dist[i].time - sun_pulse ) mod 360
-  
-  dist[i].phi += phi_shift
-  dist[i].data = d.y[i,*,*]
-  
+  ;shift from azimuth-energy-elevation to energy-azimuth-elevation
+  dist[i].data = transpose( d.y[idx[i]:idx[i]+(n_times-1),*,*], [1,0,2] )
+
 endfor
 
 ;ensure phi values are in [0,360]
-dist.phi = dist.phi mod 360
+dist.phi = (dist.phi + 360) mod 360
 
 ;spd_slice2d accepts pointers or structures
 ;pointers are more versatile & efficient, but less user friendly
