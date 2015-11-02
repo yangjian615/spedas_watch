@@ -1,18 +1,53 @@
 mms_init
 
+!mms.no_server = 0
+
+;timespan,'2015-08-28/14:53:30',45,/sec
+
+;timespan,'2015-08-28/14:50',5,/min
+
+;timespan,'2015-08-28/14:53:30',45,/sec
+
+;timespan,'2015-09-19/07:40', 6, /min
+
+;timespan,'2015-09-19/07:43:20', 20, /sec ; zoom
+
+;timespan,'2015-10-01/06:50', 6, /min
+
+;timespan,'2015-10-03/14:45', 4.4, /min
+
+;timespan,'2015-10-03/14:46:50', 35,/sec
+
+;timespan,'2015-10-16/10:30', 5,/min ; yuri; FPI not available
+
+;timespan,'2015-10-16/13:05', 2.5,/min ; Jonathan
+
+;timespan,'2015-10-16/13:06:30', 1,/min ; Jonathan
+
+timespan,'2015-09-19/09:04:30', 6.5, /min
+
+
+
+
+;timespan,'2015-09-19/07:40', 6, /min
+
+;timespan,'2015-09-19/07:43:20', 20, /sec ; zoom
+
+;timespan,'2015-09-19/09:59', 15, /min
+
 ;timespan,'2015-10-05/11:40',7,/min
 
 ;timespan,'2015-09-30/16:40',4,/min
 
-;timespan,'2015-09-19/09:59', 15, /min
-
-timespan,'2015-10-03/14:45', 5, /min
-
-;timespan,'2015-10-16/13:05', 5, /min
+;timespan,'2015-10-03/14:45', 5, /min
 
 ;timespan,'2015-10-16/10:30', 5, /min
 
-;timespan,'2015-09-19/07:40', 10, /min
+;timespan,'2015-10-16/13:05', 5, /min
+
+
+
+
 
 probe_id=3
 
@@ -116,7 +151,9 @@ store_data,'ti_tensor',data={x:tixx.x,y:ti_tensor}
 
 diag_t,'ti_tensor'
 copy_data,'T_diag','Ti'
-ylim,'Ti',0,0,1
+get_data,'Ti',data=d
+ylim,'Ti',min(d.y),max(d.y),1
+
 
 get_data,sc_id+'_des_TempXX',data=texx
 get_data,sc_id+'_des_TempYY',data=teyy
@@ -137,7 +174,9 @@ store_data,'te_tensor',data={x:texx.x,y:te_tensor}
 
 diag_t,'te_tensor'
 copy_data,'T_diag','Te'
-ylim,'Te',0,0,1
+
+get_data,'Te',data=d
+ylim,'Te',min(d.y),max(d.y),1
 
 store_data,'v_mag',data=['Vi_mag','Ve_mag']
 options,'v_mag','colors',[2,6]

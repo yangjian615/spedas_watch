@@ -1,8 +1,30 @@
 mms_init
 
-;timespan,'2015-09-19/09:05:00', 6, /min
-;timespan,'2015-09-19/07:40:00', 5, /min
-timespan,'2015-10-03/14:45', 5, /min
+!mms.no_server = 0
+
+;timespan,'2015-08-28/14:50',5,/min
+
+;timespan,'2015-08-28/14:53:30',45,/sec
+
+;timespan,'2015-09-19/07:40', 6, /min
+
+;timespan,'2015-09-19/07:43:20', 20, /sec ; zoom
+
+timespan,'2015-10-01/06:50', 6, /min
+
+;timespan,'2015-10-03/14:45', 4.4, /min
+
+;timespan,'2015-10-03/14:46:50', 35,/sec
+
+;timespan,'2015-10-16/10:30', 5,/min ; yuri; FPI not available
+
+;timespan,'2015-10-16/13:05', 2.5,/min ; Jonathan
+
+;timespan,'2015-10-16/13:06:30', 1,/min ; Jonathan
+
+;timespan,'2015-09-19/09:04:30', 6.5, /min
+
+
 
 iread=1
 
@@ -11,14 +33,29 @@ i_tshift=1
 probe_id=3
 sc_id='mms'+string(probe_id,format='(I1)')
 
+level='ql' ;'ql' or 'l2pre'   (specify DFG data level)
 
 if iread eq 1 then begin
 
+if level eq 'l2pre' then begin
+	mms_load_dfg, probes=probe_id, level='l2pre', data_rate='brst', /no_attitude_data 
+	copy_data,sc_id+'_dfg_brst_l2pre_dmpa','B'
+endif
+
+if level eq 'ql' then begin
+	mms_load_dfg, probes=probe_id, level='ql', data_rate='brst', /no_attitude_data 
+	copy_data,sc_id+'_dfg_brst_dmpa','B'
+
+endif
+
+
 mms_load_data, instrument='fpi',probes=probe_id, datatype='dis-moms', level='l1b', data_rate='brst'
 mms_load_data, instrument='fpi',probes=probe_id, datatype='des-moms', level='l1b', data_rate='brst'
-mms_load_data, instrument='dfg',probes=probe_id, datatype='', level='l2pre', data_rate='brst'
 mms_load_data, instrument='edp',probes=probe_id, level='ql', data_rate='fast', datatype='dce'
+
 endif
+
+
 
 ;timespan,'2015-09-19/09:08:00', 3, /min
 
@@ -85,12 +122,25 @@ store_data,'Ve_orig',data={x:vx.x,y:v}
 store_data,'V',data=['Vi','Ve']
 
 copy_data,sc_id+'_edp_dce_xyz_dsl','E'
-copy_data,sc_id+'_dfg_brst_l2pre_dmpa','B'
+
 
 ;extract B data from the 4 element vector
 get_data,'B',data=d
 store_data,'B',data={x:d.x,y:d.y(*,0:2)}
 store_data,'Bmag',data={x:d.x,y:d.y(*,3)}
+
+interpolate,'E','B','B_interp'
+
+get_data,'E',data=ee
+get_data,'B_interp',data=bb
+
+ez_dot0=(-ee.y(*,0)*bb.y(*,0)-ee.y(*,1)*bb.y(*,1))/bb.y(*,2)
+
+index=where(abs(bb.y(*,2)) lt 1 or abs(bb.y(*,1)/bb.y(*,2)) gt 5 or abs(bb.y(*,0)/bb.y(*,2)) gt 5)
+
+ez_dot0(index)=!values.f_nan
+
+store_data,'Ez_dot0',data={x:ee.x,y:ez_dot0}
 
 ;This does not work when there are gaps between burst segments
 ;get_data,'Ni',data=d
@@ -155,6 +205,28 @@ store_data,'Ex',data={x:d.x,y:d.y(*,0)}
 store_data,'Ey',data={x:d.x,y:d.y(*,1)}
 store_data,'Ez',data={x:d.x,y:d.y(*,2)}
 
+interpolate,'B','E','E_interp'
+
+get_data,'E_interp',data=ee
+get_data,'B',data=b
+get_data,'Bmag',data=bmag
+
+cross_prod=crossn3(ee.y, b.y)
+num=float(n_elements(b.x))
+e_cross_b=fltarr(num,3)
+
+for i=0,num-1 do begin
+	e_cross_b(i,0)=1e3*cross_prod(i,0)/bmag.y(i)^2 ; in km/s
+	e_cross_b(i,1)=1e3*cross_prod(i,1)/bmag.y(i)^2
+	e_cross_b(i,2)=1e3*cross_prod(i,2)/bmag.y(i)^2
+endfor
+
+store_data,'ExB',data={x:b.x,y:e_cross_b}
+store_data,'ExB_x',data={x:b.x,y:e_cross_b(*,0)}
+store_data,'ExB_y',data={x:b.x,y:e_cross_b(*,1)}
+store_data,'ExB_z',data={x:b.x,y:e_cross_b(*,2)}
+
+
 
 get_data,'VVi',data=v
 get_data,'B_dis',data=b
@@ -181,6 +253,7 @@ options,'vixB_Ez','colors',6
 store_data,'Exi',data=['Ex','vixB_Ex']
 store_data,'Eyi',data=['Ey','vixB_Ey']
 store_data,'Ezi',data=['Ez','vixB_Ez']
+store_data,'Ezi_dot0',data=['Ez_dot0','vixB_Ez']
 
 ;electrons
 
@@ -209,6 +282,42 @@ options,'vexB_Ez','colors',6
 store_data,'Exe',data=['Ex','vexB_Ex']
 store_data,'Eye',data=['Ey','vexB_Ey']
 store_data,'Eze',data=['Ez','vexB_Ez']
+store_data,'Eze_dot0',data=['Ez_dot0','vexB_Ez']
+
+
+
+vperppara_xyz, 'VVi', 'B_dis', vperp_mag=vperpi_mag, vpara='Vi_para', vperp_xyz='Vi_perp_xyz'
+
+get_data,'Vi_perp_xyz',data=d
+store_data,'Vi_perp_x',data={x:d.x,y:d.y(*,0)}
+store_data,'Vi_perp_y',data={x:d.x,y:d.y(*,1)}
+store_data,'Vi_perp_z',data={x:d.x,y:d.y(*,2)}
+
+options,'Vi_perp_x','colors',6
+options,'Vi_perp_y','colors',6
+options,'Vi_perp_z','colors',6
+
+store_data,'vperpi_x',data=['ExB_x','Vi_perp_x']
+store_data,'vperpi_y',data=['ExB_y','Vi_perp_y']
+store_data,'vperpi_z',data=['ExB_z','Vi_perp_z']
+
+vperppara_xyz, 'VVe', 'B_des', vperp_mag=vperpe_mag, vpara='Ve_para', vperp_xyz='Ve_perp_xyz'
+
+get_data,'Ve_perp_xyz',data=d
+store_data,'Ve_perp_x',data={x:d.x,y:d.y(*,0)}
+store_data,'Ve_perp_y',data={x:d.x,y:d.y(*,1)}
+store_data,'Ve_perp_z',data={x:d.x,y:d.y(*,2)}
+
+options,'Ve_perp_x','colors',6
+options,'Ve_perp_y','colors',6
+options,'Ve_perp_z','colors',6
+
+store_data,'vperpe_x',data=['ExB_x','Ve_perp_x']
+store_data,'vperpe_y',data=['ExB_y','Ve_perp_y']
+store_data,'vperpe_z',data=['ExB_z','Ve_perp_z']
+
+
+
 
 tplot_options,'ygap',0.3
 
@@ -216,9 +325,9 @@ tplot_options,'ygap',0.3
 
 ylim,'V',-300,300,0
 
-tplot,['B','Ni','V','VVi','VVe','Exi','Eyi','Ezi','Exe','Eye','Eze'],title=sc_id
+tplot,['B','Bmag','Ni','V','VVi','VVe','Exi','Eyi','Ezi','Ezi_dot0','vperpi_z','Exe','Eye','Eze','Eze_dot0','vperpe_z'],title=sc_id
 
-;tplot,['B','Ni','V','VVi','Vi_orig','VVe','Ve_orig','Exi','Eyi','Ezi','Exe','Eye','Eze'],title=sc_id
+;tplot,['B','Ni','V','VVi','Vi_orig','VVe','Ve_orig','Exi','Eyi','Ezi','Exe','Eye','Eze', 'Eze_dot0'],title=sc_id
 
 print,'dt DIS= ',dt_dis
 print,'dt DES= ',dt_des
@@ -226,6 +335,5 @@ print,'dt DES= ',dt_des
 stop
 
 end
-
 
 
