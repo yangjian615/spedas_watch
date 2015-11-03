@@ -39,3 +39,13 @@ cwd,prompt='IDL> '     ; Display current working directory
 ;!warn.PARENS = 1
 ;!warn.TRUNCATED_FILENAME = 1
 !quiet = 0
+
+
+; to run a custom startup script,  create a procedure (in your IDL path) with the name "idl_startup_USER"  where USER is replaced by your username
+user = getenv('USER')  ; Unix
+if not keyword_set(user) then user= getenv('USERNAME')   ; Windows
+if not keyword_set(user) then user= getenv('LOGNAME')    ; Other???
+libs,'idl_startup_'+user,routine_names=rtnames             ; Test to see if procedure exists
+if rtnames then call_procedure,'idl_startup_'+user
+
+

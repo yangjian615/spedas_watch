@@ -20,8 +20,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-24 18:15:16 -0700 (Thu, 24 Sep 2015) $
-;$LastChangedRevision: 18929 $
+;$LastChangedDate: 2015-11-02 14:51:25 -0800 (Mon, 02 Nov 2015) $
+;$LastChangedRevision: 19215 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_3di.pro $
 ;-
 pro spd_slice2d_3di, datapoints, xyz, resolution, drange=drange, $ 
@@ -37,6 +37,12 @@ pro spd_slice2d_3di, datapoints, xyz, resolution, drange=drange, $
   y = xyz[*,1]
   z = temporary(xyz[*,2])
   
+  ;qhull needs > 5 points
+  if n_elements(x) lt 5 then begin
+    fail = 'Not enough datapoints to perform interpolation.'
+    return
+  endif
+
   qhull, x, y, z, th, /DELAUNAY
   
   ; Remove tetrahedra whose total velocity (centroid) is less than

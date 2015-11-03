@@ -28,8 +28,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-07-16 14:11:26 -0700 (Thu, 16 Jul 2015) $
-; $LastChangedRevision: 18158 $
+; $LastChangedDate: 2015-11-02 14:14:58 -0800 (Mon, 02 Nov 2015) $
+; $LastChangedRevision: 19214 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_par.pro $
 ;
 ;-
@@ -101,6 +101,11 @@ pro mvn_swe_shape_par, pans=pans, var=var, keep_nan=keep_nan, erange=erange
   npts = n_elements(t)
   gndx = round(total(finite(f[endx,*]),1))
   gndx = where(gndx eq ecnt, ngud)
+  if (ngud eq 0L) then begin
+    print,"No good spectra!"
+    pans = ''
+    return
+  endif
 
 ; Take first derivative of log(eflux) w.r.t. log(E)
 
@@ -119,6 +124,7 @@ pro mvn_swe_shape_par, pans=pans, var=var, keep_nan=keep_nan, erange=erange
   endif
 
   store_data,'mvn_swe_shape_par',data={x:t, y:par}
+  options,'mvn_swe_shape_par','ytitle','SWE Electron!CShape Param'
   pans = 'mvn_swe_shape_par'
   
   if (size(old_units,/type) eq 7) then mvn_swe_convert_units, mvn_swe_engy, old_units

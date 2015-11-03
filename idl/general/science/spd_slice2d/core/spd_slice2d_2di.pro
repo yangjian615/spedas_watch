@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2015-11-02 14:51:25 -0800 (Mon, 02 Nov 2015) $
+;$LastChangedRevision: 19215 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_2di.pro $
 ;-
 pro spd_slice2d_2di, datapoints, xyz, resolution, $
@@ -132,6 +132,11 @@ pro spd_slice2d_2di, datapoints, xyz, resolution, $
   datapoints=datapoints[0:kk-1]
   ; ---------------
 
+  ;qhull needs > 5 points
+  if n_elements(x) lt 5 then begin
+    fail = 'Not enough datapoints to perform interpolation.'
+    return
+  endif
 
   ; Create triangulation
   ;  -qhull generally performs better than triangulate
