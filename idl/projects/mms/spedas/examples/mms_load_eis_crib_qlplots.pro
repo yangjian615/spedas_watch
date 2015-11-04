@@ -5,17 +5,25 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-10-20 07:31:50 -0700 (Tue, 20 Oct 2015) $
-; $LastChangedRevision: 19113 $
+; $LastChangedDate: 2015-11-03 07:10:10 -0800 (Tue, 03 Nov 2015) $
+; $LastChangedRevision: 19216 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
 probe = '1'
-;trange = ['2015-08-15', '2015-08-16']
+trange = ['2015-08-15', '2015-08-16']
 timespan, '2015-08-15', 1
 width = 850
 height = 1000
 prefix = 'mms'+probe+'_epd_eis'
+
+; handle any errors that occur in this script gracefully
+catch, errstats
+if errstats ne 0 then begin
+  error = 1
+  dprint, dlevel=1, 'Error: ', !ERROR_STATE.MSG
+  catch, /cancel
+endif
 
 ; load ExTOF and electron data:
 mms_load_eis, probes=probe, trange=trange, datatype='extof', level='l1b'

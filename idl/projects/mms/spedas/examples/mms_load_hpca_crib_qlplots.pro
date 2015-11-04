@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-10-22 09:06:31 -0700 (Thu, 22 Oct 2015) $
-; $LastChangedRevision: 19136 $
+; $LastChangedDate: 2015-11-03 07:10:10 -0800 (Tue, 03 Nov 2015) $
+; $LastChangedRevision: 19216 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib_qlplots.pro $
 ;-
 
@@ -22,7 +22,16 @@ sid = species[0]     ; set species to H+
 tsid = tplotvar_species[0]    
 
 trange = ['2015-08-15', '2015-08-16']
+trange = ['2015-11-02', '2015-11-03']
 tplotvar = 'mms'+pid + '_hpca_' + tsid + '_RF_corrected'
+
+; handle any errors that occur in this script gracefully
+catch, errstats
+if errstats ne 0 then begin
+  error = 1
+  dprint, dlevel=1, 'Error: ', !ERROR_STATE.MSG
+  catch, /cancel
+endif
 
 ; load mms survey HPCA data
 mms_load_hpca, probes=pid, trange=trange, datatype='rf_corr', level='l1b', data_rate='srvy', suffix='_srvy'

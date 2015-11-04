@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-10-20 12:40:58 -0700 (Tue, 20 Oct 2015) $
-; $LastChangedRevision: 19119 $
+; $LastChangedDate: 2015-11-03 07:10:10 -0800 (Tue, 03 Nov 2015) $
+; $LastChangedRevision: 19216 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_fields_crib_qlplots.pro $
 ;-
 
@@ -15,6 +15,15 @@
 probes = ['1', '2', '3', '4']
 ;trange = ['2015-09-05', '2015-09-06']
 timespan, '2015-09-05', 1, /day
+
+; handle any errors that occur in this script gracefully
+catch, errstats
+if errstats ne 0 then begin
+  error = 1
+  dprint, dlevel=1, 'Error: ', !ERROR_STATE.MSG
+  catch, /cancel
+endif
+
 ;
 ; START OF FIELDS PLOTS - ALL SPACECRAFT 
 ;  
@@ -93,7 +102,7 @@ tplot_options, 'xmargin', [20, 15]
 tplot_options, 'ymargin', [5, 5]
 tplot_options, 'charsize', 1.
 tplot_options, 'panel_size', 0.2
-window, 1, xsize=600, ysize=850
+window, 1, xsize=750, ysize=1000
 options, 'mms_bss_burst', charsize=2.5
 tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
         'mms_*_btot', 'mms_*_gsm_dmpa_*', 'mms_*_bvec_*'], window=1

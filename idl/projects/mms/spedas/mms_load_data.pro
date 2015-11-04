@@ -85,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-28 10:46:14 -0700 (Wed, 28 Oct 2015) $
-;$LastChangedRevision: 19174 $
+;$LastChangedDate: 2015-11-03 14:10:09 -0800 (Tue, 03 Nov 2015) $
+;$LastChangedRevision: 19224 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -118,10 +118,14 @@ function mms_files_in_interval, remote_file_info, trange
     sorted_file_structs = remote_file_info[sorted_idx]
     sorted_times = all_times[sorted_idx]
     idx_interval = where(sorted_times ge tr[0] and sorted_times le tr[1], file_count)
-    if file_count ne 0 then files_in_interval = sorted_file_structs[idx_interval] else begin
-        dprint, dlevel =0, 'Error, no remote files found for this time interval'
-        return, -1
+    if file_count eq 0 then begin
+        idx_interval = n_elements(sorted_times)-1
+    endif else begin
+        append_array, idx_interval, idx_interval[0]-1
     endelse
+    
+    files_in_interval = sorted_file_structs[idx_interval]
+    
     return, files_in_interval
 end
 
@@ -214,7 +218,6 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         if is_string(data_file) then begin
           
             remote_file_info = mms_parse_json(data_file)
-
             ; limit the CDF files to the requested time range
             remote_file_info = mms_files_in_interval(remote_file_info, tr)
 
