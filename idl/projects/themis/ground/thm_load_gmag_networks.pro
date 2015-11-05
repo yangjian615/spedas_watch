@@ -16,14 +16,15 @@
 ;
 ;HISTORY:
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-11-03 14:35:08 -0800 (Tue, 03 Nov 2015) $
-; $LastChangedRevision: 19225 $
+; $LastChangedDate: 2015-11-04 13:19:31 -0800 (Wed, 04 Nov 2015) $
+; $LastChangedRevision: 19241 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag_networks.pro $
 ;-
 
 ; reads a text file and returns lists of gmag networks and stations
 pro thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stations, selected_network=selected_network
-
+  Compile_Opt idl2, hidden
+  
   if ~keyword_set(selected_network) then selected_network=''
     
   station_file = 'gmag_stations.txt'
@@ -82,11 +83,12 @@ pro thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stat
 
   if (selected_network[0] ne '') then begin
     gmag_stations = ['']
+    gmag_compressed = strlowcase(strcompress(ggroupnames,/remove_all))
     for i=0, n_elements(selected_network)-1 do begin
-      idx = where(strlowcase(strcompress(ggroupnames,/remove_all)) eq strlowcase(strcompress(selected_network[i],/remove_all)), cidx)
+      idx = where(gmag_compressed eq strlowcase(strcompress(selected_network[i],/remove_all)), cidx)
       if (cidx gt 0) then begin
-        gmag_stations_sel = gstationcodes[where(gstationgroups eq idx[0])]
-        gmag_stations = [gmag_stations, gmag_stations_sel]
+        gmag_stations_sel = gstationcodes[where(gstationgroups eq idx[0], ids)]
+        if (ids gt 0) then gmag_stations = [gmag_stations, gmag_stations_sel]
       endif
     endfor
 
@@ -100,11 +102,11 @@ pro thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stat
   gmag_stations = strtrim(gmag_stations)
   gmag_stations = gmag_stations[where(gmag_stations ne '' and gmag_stations ne ' ')]
   gmag_stations = gmag_stations[sort(gmag_stations)]
-  gmag_stations = gmag_stations[UNIQ(gmag_stations)]
+  gmag_stations = gmag_stations[uniq(gmag_stations)]
 
   gmag_networks = strtrim(gmag_networks)
   gmag_networks = gmag_networks[where(gmag_networks ne '' and gmag_networks ne ' ')]
   gmag_networks = gmag_networks[sort(gmag_networks)]
 
-  gmag_networks = gmag_networks[UNIQ(gmag_networks)]
+  gmag_networks = gmag_networks[uniq(gmag_networks)]
 end

@@ -1,3 +1,12 @@
+;Get current timespan from tplot_com or return 0's
+Function alttimerange
+@tplot_com.pro
+  If(is_struct(tplot_vars) && is_struct(tplot_vars.options)) Then Begin
+     t = tplot_vars.options.trange
+  Endif Else t = [0.0d0, 0.0d0]
+  Return, t
+End
+
 ;+
 ;NAME:
 ; mvn_call_pfpl2plot
@@ -29,8 +38,8 @@
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen.pro 2015-06-02, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-06-03 13:04:11 -0700 (Wed, 03 Jun 2015) $
-; $LastChangedRevision: 17799 $
+; $LastChangedDate: 2015-11-04 15:30:06 -0800 (Wed, 04 Nov 2015) $
+; $LastChangedRevision: 19242 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_call_pfpl2plot.pro $
 ;-
 Pro mvn_call_pfpl2plot, time_in = time_in, $
@@ -44,13 +53,28 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
   
   common temp_call_sta_l2gen, load_position
   set_plot, 'z'
+
   load_position = 'init'
+  einit = 0
   catch, error_status
-  
   if error_status ne 0 then begin
      print, '%MVN_CALL_PFPL2PLOT: Got Error Message'
      help, /last_message, output = err_msg
      For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
+;Open a file print out the error message, only once
+     If(einit Eq 0) Then Begin
+        einit = 1
+        openw, eunit, '/tmp/pfpl2_err_msg.txt', /get_lun
+        For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
+        If(keyword_set(timei)) Then Begin
+           printf, eunit, time_string(timei)
+        Endif Else printf, eunit, time_string(alttimerange())
+        free_lun, eunit
+;mail it to jimm@ssl.berkeley.edu
+        cmd_rq = 'mailx -s "Problem with PFPL2 process" jimm@ssl.berkeley.edu < /tmp/pfpl2_err_msg.txt'
+        spawn, cmd_rq
+     Endif
+
      case load_position of
         'init':begin
            print, 'Problem with initialization'

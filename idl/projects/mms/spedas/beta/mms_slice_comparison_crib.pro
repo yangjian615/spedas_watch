@@ -6,9 +6,9 @@ folder = 'slice_test/'
 
 probe='3'
 species='e'
-timespan,'2015-09-21/13:52', 2, /min
-trange = timerange()
-
+;timespan,'2015-09-21/13:52', 2, /min
+;trange = timerange()
+trange = ['2015-09-21/13:52', '2015-09-21/13:54']
 
 ;load particle & support data
 mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-dist', $
@@ -60,7 +60,7 @@ for i=0, n_elements(*dist)-1 do begin
     ;use short window to ensure only a single sample is used
     ;use 2D interpolation for speed (uses data within 20 deg of plane)
     slice = spd_slice2d(dist, time=time, window=end_time-time, $
-                     rotation=rotation, slice_norm=norms[*,j], /two, $
+                     rotation=rotation, slice_norm=norms[*,j], /geometric, $
                      mag_data=bname, vel_data=vname)
     
     spd_slice2d_plot, slice, window=win, $

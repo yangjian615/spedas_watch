@@ -62,8 +62,8 @@
 ;                      coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-21 14:42:30 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18568 $
+; $LastChangedDate: 2015-11-04 17:41:43 -0800 (Wed, 04 Nov 2015) $
+; $LastChangedRevision: 19248 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -73,7 +73,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
                   abins=abins, dbins=dbins, obins=obins, burst=burst, $
                   pot=pot, spec=spec, plotlims=plotlims, norm=norm, $
-                  center=center
+                  center=center, pep=pep
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -86,6 +86,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if not keyword_set(zrange) then zrange = 0
   if keyword_set(ddd) then dflg = 1 else dflg = 0
   if (size(center,/type) eq 0) then center = 0
+  if keyword_set(pep) then pflg = 1 else pflg = 0
   if keyword_set(sum) then begin
     npts = 2
     doall = 1
@@ -307,14 +308,17 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       z2[*,0] = z2[*,1]
       z2[*,9] = z2[*,8]
 
-      str_element,limits,'zrange',success=ok
+;     str_element,limits,'zrange',success=ok
+      ok = 0
       if (not ok) then begin
         zmin = min(z, max=zmax, /nan) > zlo
         if (nflg) then begin
-          zmin = 0.1
-          zmax = 10.0
+          zmin = 0.3
+          zmax = 3.0
           str_element,limits,'zlog',1,/add
           str_element,limits,'ztitle','NORM',/add
+          str_element,limits,'zticks',2,/add
+          str_element,limits,'ztickname',['0.3','1.0','3.0'],/add
         endif
         str_element,limits,'zrange',[zmin,zmax],/add
       endif
@@ -490,20 +494,31 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         mndx = where(reform(pad.pa_min[63,*]) gt (!pi - swidth), count)
         if (count gt 0L) then Fm = average(pad.data[*,mndx],2,/nan) $
                          else Fm = replicate(!values.f_nan,64)
+        zndx = where((reform(pad.pa_max[63,*]) lt (!pi - swidth)) and $
+                     (reform(pad.pa_min[63,*]) gt swidth), count)
+        if (count gt 0L) then Fz = average(pad.data[*,zndx],2,/nan) $
+                         else Fz = replicate(!values.f_nan,64)
         
         plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
           xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
           charsize=1.4
         oplot, x, Fp, psym=10, color=6
         oplot, x, Fm, psym=10, color=2
+        oplot, x, Fz, psym=10, color=4
         if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],drange,line=2
+        if (pflg) then begin
+          oplot,[23.,23.],drange,line=2,color=1
+          oplot,[27.,27.],drange,line=2,color=1
+        endif
 
         xs = 0.71
         ys = 0.90
         dys = 0.03
         pa_min = round(swidth*!radeg)
         pa_max = 180 - pa_min
-        xyouts,xs,ys,string(pa_min, format='("0 - ",i2)'),charsize=1.2,/norm,color=6
+        xyouts,xs,ys,string(pa_min, format='("  0 - ",i2)'),charsize=1.2,/norm,color=6
+        ys -= dys
+        xyouts,xs,ys,string(pa_min, pa_max, format='(i3," - ",i3)'),charsize=1.2,/norm,color=4
         ys -= dys
         xyouts,xs,ys,string(pa_max, format='(i3," - 180")'),charsize=1.2,/norm,color=2
         ys -= dys

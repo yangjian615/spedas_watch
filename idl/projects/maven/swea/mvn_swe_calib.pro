@@ -54,8 +54,8 @@
 ;       DFGON:        Turn on the elevation-dependent sensitivity.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-07-31 16:38:46 -0700 (Fri, 31 Jul 2015) $
-; $LastChangedRevision: 18346 $
+; $LastChangedDate: 2015-11-04 17:42:27 -0800 (Wed, 04 Nov 2015) $
+; $LastChangedRevision: 19249 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -224,17 +224,17 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
   swe_padlut = lut
 
 ; Geometric Factor
-;   Simulations give a geometric factor of 0.032 (ignoring grids, posts, MCP 
+;   Simulations give a geometric factor of 0.03 (ignoring grids, posts, MCP 
 ;   efficiency, scattering, and fringing fields).
 ;
-;      posts          : 0.84  (7 deg per post * 8 posts)
-;      entrance grid  : 0.70  (for both grids combined)
-;      exit grid      : 0.90
-;      MCP Efficiency : 0.75  (nominal, energy dependent)
+;      posts          : 0.8  (7 deg per post * 8 posts)
+;      entrance grid  : 0.7  (for both grids combined)
+;      exit grid      : 0.9
+;      MCP Efficiency : 0.7  (nominal, energy dependent)
 ;    -------------------------
-;      product        : 0.40
+;      product        : 0.35
 ;
-;   Total estimated geometric factor from simulations: 0.032 * 0.4 = 0.013
+;   Total estimated geometric factor from simulations: 0.03 * 0.35 = 0.01
 ;
 ;   The measured geometric factor is 0.009 (IRAP calibration).  When using V0,
 ;   deceleration of the incoming electrons effectively reduces the geometric

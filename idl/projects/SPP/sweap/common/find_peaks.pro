@@ -1,16 +1,17 @@
 
 
-function find_peaks,verbose=verbose,xval=xval,dat,threshold=threshold,plotwindow=plotwindow,roiw=roiw
+function find_peaks,verbose=verbose,xval=xval,dat,threshold=threshold,plotwindow=plotwindow,roiw=roiw,nsmooth = nsm
 
 peak={a:!values.d_nan,x0:!values.d_nan,s:!values.d_nan}
-if not keyword_set(dat) then return,0
+if not keyword_set(dat) then return,0 
+if n_elements(dat) eq 1 then return,peak
 channels = dindgen(n_elements(dat))
 
 yran = 10.^floor(alog10(minmax(dat,/pos) > .1 )+[0,1])
 if n_elements(plotwindow) then begin
     plot,dat,xrange=[0,130],psym=1,/ylog,yrange=yran
 endif
-nsm = 3
+if not keyword_set(nsm) then nsm = 3
 if not keyword_set(roiw) then roiw = 9
 
 if not keyword_set(threshold) then threshold = average(dat)
