@@ -44,9 +44,9 @@
 ;
 ;CREATED BY:    Davin Larson  Oct 1996
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-19 18:04:05 -0800 (Wed, 19 Feb 2014) $
-;$LastChangedRevision: 14395 $
+;$LastChangedBy: davin-mac $
+;$LastChangedDate: 2015-11-04 21:35:03 -0800 (Wed, 04 Nov 2015) $
+;$LastChangedRevision: 19252 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/time_double.pro $
 ;
 ;-
@@ -71,6 +71,7 @@ case size(/type,time) of
    y = year-1
    daynum = (y*365l + y/4 - y/100 + y/400 - y/4000) + doy
    seconds = (daynum-dn1970) *3600.d*24 + seconds
+   seconds -= time.tdiff * 3600d                         ; correct for timezone difference
    if size(/n_dimen,dim) eq 1 then if dim[0] eq 1 then seconds=[seconds]  ;!!! IDL BUG
    return,seconds
    end

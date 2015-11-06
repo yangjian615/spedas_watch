@@ -22,7 +22,7 @@
 
 function average_hist,a,x,stdev=std,log=log, $
   range=range,binsize=binsize,nbins=nbins,xbins=xbins,$
-  binval=bins, minimum=minimum,shift=shft,nan=rnan,$
+  binval=bins, minimum=minimum,shift=shft,nan=rnan,ret_total=ret_total,$
   histogram=h,reverse=ri
   
 if keyword_set(x) then begin
@@ -52,7 +52,7 @@ for j=0l,count-1 do begin
   i = whn0[j]
   ind = ri[ ri[i]: ri[i+1]-1 ]
 if n_elements(ind) ne h[i] then dprint ,'Histogram error'
-  avg[i] = average(a[ind],stdev=s,nan=rnan)
+  avg[i] = average(a[ind],stdev=s,nan=rnan,ret_total=ret_total)
 if arg_present(minimum) && size(/type,a) lt 7 then  minimum[i] = min(a[ind])
   std[i] = s
 endfor

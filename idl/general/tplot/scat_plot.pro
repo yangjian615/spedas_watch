@@ -21,10 +21,13 @@ pro scat_plot,xname,yname, zname,$
    begin_time = t0,  $
    end_time  = t1,  $
    overplot = overplot, $
+   swap_interp = swap_interp, $
    trange=trn,  $
    xvalue=x, $
    tvalue=t, $
    yvalue=y, $
+   color = colors, $
+   ydimen = ny, $
    limits = limits
 
 
@@ -35,13 +38,20 @@ if n_elements(xdata) eq 0 then message,'No data associated with: '+xname
 
 prompt = 'Which dimension of '+xname+'? '
 if dimen2(xdata.y) gt 1 then read, nx, prompt = prompt else nx = 0
-prompt = 'Which dimension of '+yname+'? '
-if dimen2(ydata.y) gt 1 then read, ny, prompt = prompt else ny = 0
+if n_elements(ny) eq 0 then begin
+  prompt = 'Which dimension of '+yname+'? '
+  if dimen2(ydata.y) gt 1 then read, ny, prompt = prompt else ny = 0  
+endif
 
-
-x = xdata.y(*,nx)
-time = xdata.x
-y = interp(double(ydata.y(*,ny)),ydata.x,time)
+if ~keyword_set(swap_interp) then begin
+  x = xdata.y[*,nx]
+  time = xdata.x
+  y = interp(double(ydata.y[*,ny]),ydata.x,time)  
+endif else begin
+  y = ydata.y[*,ny]
+  time = ydata.x
+  x = interp(double(xdata.y[*,nx]),xdata.x,time)  
+endelse
 
 xtitle = xname
 ytitle = yname
@@ -58,7 +68,7 @@ if three then begin
     prompt = 'Which dimension of '+zname+'? '
     if dimen2(zdata.y) gt 1 then read, nz, prompt = prompt else nz = 0
 
-    z = interp(zdata.y(*,nz),zdata.x,time)
+    z = interp(zdata.y[*,nz],zdata.x,time)
     str_element, limits, 'zrange', value = zrange, index = index
     if index lt 0 then zrange = minmax(z)
     str_element, limits, 'log_color', value = log_color, index = index
@@ -71,8 +81,8 @@ endelse
 
 if n_elements(trn) eq 2 then begin
    trnx = gettime(trn)
-   t0 = trnx(0)
-   t1 = trnx(1)
+   t0 = trnx[0]
+   t1 = trnx[1]
 endif
 
 ; use reduced time range
@@ -80,10 +90,10 @@ if n_elements(t0) or n_elements(t1) then begin
    if n_elements(t0) eq 0 then t0 = double(0.)
    if n_elements(t1) eq 0 then t1 = double(1e20)
    i = where((time ge t0) and (time le t1))
-   x = x(i)
-   y = y(i)
+   x = x[i]
+   y = y[i]
    t = time[i]
-   if three then z = z(i)
+   if three then z = z[i]
 endif else t=time
 
 ; zap bad data
@@ -105,7 +115,7 @@ if not keyword_set(t1) then t1 = max(time)
 title = trange_str(t0,t1)
 
 
-if not keyword_set(overplot) then plot,x,y,xtitle=xtitle, ytitle=ytitle, title = title, /nodata, _EXTRA = plotstuff
+if not keyword_set(overplot) then plot,x,y,xtitle=xtitle, ytitle=ytitle,color=color, title = title, /nodata, _EXTRA = plotstuff
 plots,x,y,color=colors, psym = psym, noclip = 0
 
 return

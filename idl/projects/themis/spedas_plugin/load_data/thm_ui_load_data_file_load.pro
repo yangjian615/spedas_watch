@@ -18,9 +18,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 14:56:06 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17278 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-05 10:38:06 -0800 (Thu, 05 Nov 2015) $
+;$LastChangedRevision: 19267 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_load.pro $
 ;-
 pro thm_ui_load_data_file_load, state, event
@@ -59,12 +59,13 @@ pro thm_ui_load_data_file_load, state, event
   
   if array_equal(dtype,'',/no_typeconv) then begin
     h='Please choose a data type.'
+    If (state.instr eq 'gmag') then h='Please choose a gmag station.'
     state.statusText->Update, h
     return
   endif
   
   If(ptr_valid(state.station)) Then station = *state.station $
-    Else station = ''
+    Else station = ['']
   If(ptr_valid(state.astation)) Then astation = *state.astation $
     Else astation = ''
   If(ptr_valid(state.probe)) Then probe = *state.probe $
@@ -81,7 +82,10 @@ pro thm_ui_load_data_file_load, state, event
       h = 'No Chosen Gmag_station'
       state.statusText->Update, h
       return
-    endif
+    endif else begin
+      *state.observ = station
+      dtype=['gmag/mag/l2']
+    endelse
   Endif Else Begin
     if ~is_string(probe) then begin      
     ;h = 'probe = '+''''+''''

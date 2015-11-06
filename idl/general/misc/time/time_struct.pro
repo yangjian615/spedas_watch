@@ -53,9 +53,9 @@
 ;
 ;CREATED BY:    Davin Larson  Oct 1996
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-02-25 15:54:20 -0800 (Tue, 25 Feb 2014) $
-; $LastChangedRevision: 14441 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2015-11-04 21:35:03 -0800 (Wed, 04 Nov 2015) $
+; $LastChangedRevision: 19252 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/time_struct.pro $
 ;-
 function time_struct,time,epoch=epoch,no_clean=no_clean,$
@@ -94,7 +94,7 @@ if dt eq 7 then begin         ; input is a string
         dst = isdaylightsavingtime(t,tzone)
         t -= (dst+tzone)*3600
      endif
-     return,time_struct(t,timezone=timezone,local_time=local_time)
+     return,time_struct(t,timezone=tzone,local_time=local_time)
   endelse
 endif
 

@@ -17,9 +17,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 14:56:06 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17278 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-05 10:38:06 -0800 (Thu, 05 Nov 2015) $
+;$LastChangedRevision: 19267 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_l1_sel.pro $
 ;-
 pro thm_ui_load_data_file_l1_sel, state
@@ -35,7 +35,11 @@ pro thm_ui_load_data_file_l1_sel, state
     all_chosen = where(pindex Eq 0, nall)
     If(dlist1[0] Ne 'None') Then Begin
       If(nall Gt 0) Then dtyp10 = dlist1[1:*] Else dtyp10 = dlist1[pindex]
-      If(state.instr Eq 'esa_pkt') Then Begin
+      if (state.instr eq 'gmag') then begin ;gmag stations are saved in state.station
+        if ptr_valid(state.station) then ptr_free, state.station
+        state.station = ptr_new(dtyp10)
+        dtype = dtyp10
+      endif else If(state.instr Eq 'esa_pkt') Then Begin
         dtype = strmid(dtyp10, 0, 3)
       Endif Else dtype = dtyp10
       dtype = state.instr+'/'+dtype+'/l1'

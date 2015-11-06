@@ -119,9 +119,9 @@
 ;
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-30 12:41:37 -0700 (Sat, 30 May 2015) $
-; $LastChangedRevision: 17768 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2015-11-05 16:07:17 -0800 (Thu, 05 Nov 2015) $
+; $LastChangedRevision: 19275 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -339,7 +339,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
                           units=units, erange=erange, normal=normal, _extra=extra, $
                           snap=plot, tplot=tplot, map3d=map3d, swia=swia, $
                           mbins=mbins, sc_pot=sc_pot, symdir=symdir, interpolate=interpolate, $
-                          cut=cut, spec=spec, pstyle=pstyle, silent=sil, verbose=vb
+                          cut=cut, spec=spec, pstyle=pstyle, silent=sil, verbose=vb, hires=hires, fbdata=fbdata
   COMPILE_OPT idl2
   @mvn_swe_com
   nan = !values.f_nan 
@@ -448,7 +448,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
   IF NOT keyword_set(erange) AND keyword_set(tplot) THEN erange = 280.
   IF (SIZE(mask, /type) EQ 0) AND (SIZE(no_mask, /type) EQ 0) THEN mask = 1
   IF keyword_set(no_mask) THEN mask = 0
-
+  IF keyword_set(hires) THEN hflg = 1 ELSE hflg = 0
   IF SIZE(pstyle, /type) EQ 0 THEN BEGIN
      pstyle = 0
      IF keyword_set(plot) THEN IF plot GT 0 THEN pstyle += 1
@@ -515,6 +515,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
            ddd = mvn_swe_pad_resample_map3d(ddd, prf=interpolate)
      ENDIF ELSE BEGIN
         pad = mvn_swe_getpad(dat_time[idx[i]], units=units, archive=archive)
+        IF (hflg) THEN pad = mvn_swe_padmap_32hz(pad, fbdata=fbdata, verbose=verbose)
         dtime = pad.time
         tabok = pad.chksum eq 'CC'X
         dname = pad.data_name

@@ -19,12 +19,12 @@ if keyword_set(p_names) then begin
    nd = n_elements(f)
    pder_values = dblarr(nd,np)
    for i=0,np-1 do begin
-      case strupcase(p_names(i)) of
-          'A4': pder_values(*,i) = x^4
-          'A3': pder_values(*,i) = x^3
-          'A2': pder_values(*,i) = x^2
-          'A1': pder_values(*,i) = x
-          'A0': pder_values(*,i) = 1
+      case strupcase(p_names[i]) of
+          'A4': pder_values[*,i] = x^4
+          'A3': pder_values[*,i] = x^3
+          'A2': pder_values[*,i] = x^2
+          'A1': pder_values[*,i] = x
+          'A0': pder_values[*,i] = 1
       endcase
    endfor
 endif

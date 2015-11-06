@@ -48,7 +48,8 @@ REFDATE = refdate, $
 OLD_TVARS = old_tvars, $
 NEW_TVARS = new_tvars, $
 WINDOW = window, $
-SILENT = silent
+SILENT = silent,$
+current = current
 
 @tplot_com.pro
 
@@ -93,6 +94,11 @@ endif
 if keyword_set(last) then begin
   trange = trange_old
   n = -1
+endif
+
+if keyword_set(current) then begin
+  trange = current * 60 * [-.95,.05] + systime(1)
+  n=-1
 endif
 
 if n eq 0 then begin

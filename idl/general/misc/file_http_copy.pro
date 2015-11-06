@@ -134,10 +134,10 @@
  ;       then the connection would be closed
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2015-10-30 10:41:37 -0700 (Fri, 30 Oct 2015) $
- ; $LastChangedRevision: 19187 $
+ ; $LastChangedDate: 2015-11-05 11:18:39 -0800 (Thu, 05 Nov 2015) $
+ ; $LastChangedRevision: 19269 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
- ; $Id: file_http_copy.pro 19187 2015-10-30 17:41:37Z davin-mac $
+ ; $Id: file_http_copy.pro 19269 2015-11-05 19:18:39Z davin-mac $
  ;-
  
  
@@ -524,7 +524,8 @@ end
      no_clobber=no_clobber, $      ; input: (0/1)  set keyword to prevent overwriting existing files. (url_info is still returned however)
      archive_ext=archive_ext, $ ; input: set to ".ARC??" to rename older files instead of deleting them.
      archive_dir=archive_dir, $ ; input: set to "archive/" to move older files to sub directory archive/.
-     no_update=no_update,   $      ; input: (0/1)  set keyword to prevent contacting remote server if file already exists. Ignored if globbing is used. (NOT YET OPERATIONAL!)
+     no_update=no_update,   $      ; input: (0/1)  set keyword to prevent contacting remote server if file already exists.  
+     update_after=update_after, $    ; input: opposite of no_update - Updates to files only occur if the system time is greater than this time.
      no_download=no_download, $    ; input: (0/1/2)  set keyword to prevent downloading files, Useful to obtain url_info only. Set to 2 to get names only.
      ignore_filesize=ignore_filesize, $    ; input: (0/1)  if set then file size is ignored when evaluating need to download.
      ignore_filedate=ignore_filedate, $    ; NOT YET OPERATIONAL! input: (0/1)  if set then file date is ignored when evaluating need to download.
@@ -540,7 +541,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19187 2015-10-30 17:41:37Z davin-mac $
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19269 2015-11-05 19:18:39Z davin-mac $
 
    if n_elements(strict_html) eq 0 then begin
       strict_html = 1      ;  set to 1 to be robust,  set to 0 to be much faster
@@ -548,7 +549,7 @@ end
    endif
 
    if keyword_set(user_agent) eq 0 then begin
-     swver = strsplit('$Id: file_http_copy.pro 19187 2015-10-30 17:41:37Z davin-mac $',/extract)
+     swver = strsplit('$Id: file_http_copy.pro 19269 2015-11-05 19:18:39Z davin-mac $',/extract)
      user = getenv('USER')
      if ~user then user=getenv('USERNAME')
      if ~user then user=getenv('LOGNAME')
@@ -655,6 +656,7 @@ end
            file_http_copy,rec_pathnames[i],serverdir=serverdir,localdir=localdir, host=host  $
              , verbose=verbose,file_mode=file_mode,dir_mode=dir_mode, ascii_mode=ascii_mode,progress=progress, progobj=progobj  $
              , min_age_limit=min_age_limit, last_version=last_version, url_info=ui $
+             , update_after = update_after  $
              , no_download=no_download, no_clobber=no_clobber, no_update=no_update_temp, archive_ext=archive_ext, archive_dir=archive_dir $
              , force_download=force_download,STRICT_HTML=STRICT_HTML $
              , ignore_filesize=ignore_filesize,user_agent=user_agent,user_pass=user_pass,if_modified_since=if_modified_since $
@@ -693,8 +695,9 @@ end
        goto, final     
      endif
      
+     
      if keyword_set(no_update) && lcl.exists then begin
-       dprint,dlevel=3,verbose=verbose,'Warning: Updates to existing file: "'+lcl.name+'" are not being checked!'
+       dprint,dlevel=2,verbose=verbose,'Warning: Updates to existing file: "'+lcl.name+'" are not being checked! (use of this keyword is not recommended - Use UPDATE_AFTER)'
 ;       url_info.localname = localname
 ;       url_info.exists = -1   ; remote file existence is not known!
        if arg_present(links2) then begin
@@ -702,6 +705,15 @@ end
        endif
        goto, final
      endif
+
+     if keyword_set(update_after) && lcl.exists && (systime(1) lt time_double(update_after)) then begin
+       dprint,dlevel=2,verbose=verbose,'Warning: Updates to existing file: "'+lcl.name+'" will not be checked until '+time_string(update_after,/local_time)+ ' LT'
+       if arg_present(links2) then begin
+         links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,strict_html=strict_html)         ; Does this belong here?  this might be producing unneeded work
+       endif
+       goto, final
+     endif
+
      
      if lcl.exists eq 1 and lcl.write eq 0 then begin
        dprint,dlevel=2,verbose=verbose,'Local file: '+lcl.name+ ' exists and is write protected. Skipping.'
@@ -1111,6 +1123,7 @@ endif
          file_http_copy,pathname,recurse_limit=recurse_limit-1,serverdir=serverdir+dir,localdir=localdir+dir $
            , verbose=verbose,file_mode=file_mode,dir_mode=dir_mode,ascii_mode=ascii_mode,progress=progress, progobj=progobj $
            , min_age_limit=min_age_limit, last_version=last_version, url_info=ui $
+           , update_after = update_after $
            , no_download=no_download, no_clobber=no_clobber,no_update=no_update, archive_ext=archive_ext,archive_dir=archive_dir $
            , ignore_filesize=ignore_filesize,user_agent=user_agent,user_pass=user_pass, host=host $
            , preserve_mtime=preserve_mtime,restore_mtime=restore_mtime,if_modified_since=if_modified_since,STRICT_HTML=STRICT_HTML

@@ -85,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-04 10:21:29 -0800 (Wed, 04 Nov 2015) $
-;$LastChangedRevision: 19233 $
+;$LastChangedDate: 2015-11-05 08:09:05 -0800 (Thu, 05 Nov 2015) $
+;$LastChangedRevision: 19265 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -121,13 +121,16 @@ function mms_files_in_interval, remote_file_info, trange
     if file_count eq 0 then begin
         idx_interval = n_elements(sorted_times)-1
     endif else begin
-      ; there's a problem here; the idea is that this grabs one extra file, for 
+      ; Super kludgy - the idea is that this grabs one extra file, for 
       ; complete coverage
-      ;  append_array, idx_interval, idx_interval[0]-1
+      idx_before_exists_in_list = where(idx_interval eq idx_interval[0]-1)
+      if n_elements(idx_interval) ne n_elements(sorted_times) and idx_before_exists_in_list eq -1 then begin
+          if idx_interval[0] ne 0 then idx_interval = [idx_interval[0]-1, idx_interval]
+      endif
     endelse
 
     files_in_interval = sorted_file_structs[idx_interval]
-    
+
     return, files_in_interval
 end
 

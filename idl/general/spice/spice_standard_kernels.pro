@@ -30,14 +30,14 @@
 ; $LastChangedRevision: $
 ; $URL: $
 ;-
-function spice_standard_kernels,load=load,source=src,reset=reset,verbose=verbose,mars=mars
+function spice_standard_kernels,load=load,source=src,reset=reset,verbose=verbose,mars=mars,no_update=no_update
 common spice_standard_kernels_com, kernels,retrievetime,tranges
 if ~spice_test()  then return,''
 if keyword_set(reset) then kernels=0
 ct = systime(1)
 waittime = -300.           ; always check      ; search no more often than this number of seconds
 if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin     ; 
-    source = spice_file_source(src,verbose=verbose)
+    source = spice_file_source(src,verbose=verbose,no_update=no_update)   ; with no_update set to 1 the files are assumed correct if they exist.
 ;    sprg = mvn_file_source()
 ;    if not keyword_set(source) then source=naif
 ;    source.no_update =1      ;  Don't check for file if it exists

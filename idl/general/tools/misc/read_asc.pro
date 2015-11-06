@@ -83,8 +83,8 @@ openr,lun,filename,/get_lun,compress=compress
 
 if not keyword_set(ctype) then begin
   ctype = bytarr(256)
-  ctype([32,9]) = 1                 ; white space
-  ctype(byte('.-0123456789')) =2    ; numbers
+  ctype[[32,9]] = 1                 ; white space
+  ctype[byte('.-0123456789')] =2    ; numbers
 endif
 
 

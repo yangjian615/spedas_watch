@@ -34,9 +34,9 @@
 ;  see "FILE_RETRIEVE" for a description of each structure element.
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-06-14 11:34:33 -0700 (Sat, 14 Jun 2014) $
-; $LastChangedRevision: 15371 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_file_source.pro $
+; $LastChangedDate: 2015-11-04 22:02:16 -0800 (Wed, 04 Nov 2015) $
+; $LastChangedRevision: 19261 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/ace/spdf_file_source.pro $
 ;-
 
 
@@ -50,23 +50,24 @@ if not keyword_set(psource) then begin    ; Create the default
     user = getenv('USER')       ;  Unix 
     if ~keyword_set(user) then user = getenv('USERNAME')   ; PC's 
     if ~keyword_set(user) then user = getenv('LOGNAME')    
-    if ~keyword_set(user) then user = 'guest'                ; This line may get deleted in the future!
-    psource = file_retrieve(/struct)   ; get typical default values.    
-    psource.local_data_dir = psource.local_data_dir+'spdf/'
-    if file_test(psource.local_data_dir+'spdf/.master',/regular) then psource.no_server =1  $  ; local directory IS the server directory
+    if ~keyword_set(user) then user = 'guest'              
+    psource = file_retrieve(remote_data_dir = 'http://spdf.gsfc.nasa.gov/pub/data/', master_file = '.htaccess')   ; get typical default values.    
+    psource.local_data_dir = psource.local_data_dir+'misc/spdf/data/'
+    
+    if file_test(psource.local_data_dir+psource.master_file,/regular) then psource.no_server =1  $  ; local directory IS the server directory
     else begin   ; Files will be downloaded from the web
        psource.remote_data_dir = 'http://spdf.gsfc.nasa.gov/pub/data/'
 ;       user_pass = ''
 ;       str_element,ex,'USER_PASS',user_pass                 ;  Get user_pass if it was passed in
 ;       if ~keyword_set(user_pass) then  user_pass = getenv('MAVENPFP_USER_PASS')
 ;       str_element,/add,psource,'USER_PASS',user_pass
-       psource.preserve_mtime = 1
+;       psource.preserve_mtime = 1
 ;       psource.no_update=1   ; this can be set to 1 only because all files use version numbers and will not be updated.
-       psource.min_age_limit=300  ; five minute delay before checking remote server for file index
+;       psource.min_age_limit=300  ; five minute delay before checking remote server for file index
     endelse
 ;    psource.archive_ext = '.arc'   ; archive old files instead of deleting them
 ;    psource.archive_dir = 'archive/'  ; archive directory
-    psource.verbose=2
+;    psource.verbose=2
 ;    str_element,/add,psource,'LAST_VERSION',1            ;  set this as default since version numbers are generally used.
 endif
 

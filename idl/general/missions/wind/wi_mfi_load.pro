@@ -12,9 +12,9 @@
 ;  This routine is still in development.
 ; Author: Davin Larson
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2012-10-22 12:56:49 -0700 (Mon, 22 Oct 2012) $
-; $LastChangedRevision: 11095 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2015-11-04 21:58:31 -0800 (Wed, 04 Nov 2015) $
+; $LastChangedRevision: 19260 $
 ; $URL $
 ;-
 pro wi_mfi_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -30,15 +30,15 @@ if not keyword_set(source) then source = !istp
 ;URL deprecated by reorg at SPDF
 ;if datatype eq 'k0'  then    pathformat = 'wind/mfi/YYYY/wi_k0_mfi_YYYYMMDD_v0?.cdf'
 ;New URL 2012/10 pcruce@igpp
-if datatype eq 'k0'  then    pathformat = 'wind/mfi/mfi_k0/YYYY/wi_k0_mfi_YYYYMMDD_v0?.cdf'
+if datatype eq 'k0'  then    pathformat = 'wind/mfi/mfi_k0/YYYY/wi_k0_mfi_YYYYMMDD_v??.cdf'
 ;URL deprecated by reorg at SPDF
 ;if datatype eq 'h0'  then    pathformat = 'wind/mfi_h0/YYYY/wi_h0_mfi_YYYYMMDD_v0?.cdf'
 ;New URL 2012/10 pcruce@igpp
-if datatype eq 'h0'  then    pathformat = 'wind/mfi/mfi_h0/YYYY/wi_h0_mfi_YYYYMMDD_v0?.cdf'
+if datatype eq 'h0'  then    pathformat = 'wind/mfi/mfi_h0/YYYY/wi_h0_mfi_YYYYMMDD_v??.cdf'
 ;URL deprecated by reorg at SPDF
 ;if datatype eq 'h2'  then    pathformat = 'wind/mfi_h2/YYYY/wi_h2_mfi_YYYYMMDD_v0?.cdf'
 ;New URL 2012/10 pcruce@igpp
-if datatype eq 'h2'  then    pathformat = 'wind/mfi/mfi_h2/YYYY/wi_h2_mfi_YYYYMMDD_v0?.cdf'
+if datatype eq 'h2'  then    pathformat = 'wind/mfi/mfi_h2/YYYY/wi_h2_mfi_YYYYMMDD_v??.cdf'
 
 if not keyword_set(varformat) then begin
    if datatype eq  'k0' then    varformat = 'BGSEc PGSE'

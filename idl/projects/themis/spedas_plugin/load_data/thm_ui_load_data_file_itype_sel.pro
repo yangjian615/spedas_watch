@@ -15,9 +15,9 @@
 ;OUTPUT:
 ; None
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-04 18:39:29 -0700 (Mon, 04 May 2015) $
-;$LastChangedRevision: 17476 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-05 10:38:06 -0800 (Thu, 05 Nov 2015) $
+;$LastChangedRevision: 19267 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_itype_sel.pro $
 ;-
 pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
@@ -138,6 +138,9 @@ pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
     state.statusText->Update,'No Chosen data types or observatories'
   endif
   
+  level1Label = widget_info(state.tab_id,find_by_uname='level1Label')
+  widget_control, level1Label, set_value="Level 1:"
+  
   CASE 1 OF 
       ; Spacecraft/probe data selected
       (state.instr ne 'ask' and $
@@ -213,12 +216,19 @@ pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
           state.observ_label = state.observ_labels[1]+':'
           thm_load_gmag, /valid_names, site = gmag_stations
           validobserv = ['* (All)', gmag_stations[sort(gmag_stations)]]
+          
+          level1Label = widget_info(state.tab_id,find_by_uname='level1Label')
+          widget_control, level1Label, set_value="GMAG stations:"
+          thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stations, selected_network=selected_network
+          
+          validobserv = ['* (All)', gmag_networks]
           validobservlist = validobserv
           validobserv = strlowcase(strcompress(validobserv, /remove_all))
           dlist1_all = 'None'
           dlist2_all = ['*', dlist]
           widget_control, state.coordDroplist, Sensitive=0
           state.outCoord = 'N/A'
+          dlist1_all = ['* (All)', gmag_stations]
       END 
       ELSE: ;print,'DTYPE_DLIST bomb.'
   ENDCASE

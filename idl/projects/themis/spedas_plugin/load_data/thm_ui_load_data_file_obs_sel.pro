@@ -17,9 +17,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-09 14:56:06 -0700 (Thu, 09 Apr 2015) $
-;$LastChangedRevision: 17278 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-05 10:38:06 -0800 (Thu, 05 Nov 2015) $
+;$LastChangedRevision: 19267 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_obs_sel.pro $
 ;-
 pro thm_ui_load_data_file_obs_sel, state
@@ -69,6 +69,16 @@ pro thm_ui_load_data_file_obs_sel, state
      if(count gt 0) then begin
       h = h+ ' Warning: some data may be uncalibrated.'
      endif
+     matching_all = strfilter(observ0,'* (All)', count=count)
+     if count gt 0 then begin 
+       thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stations
+     endif else begin
+       thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stations, selected_network=observ0 
+     endelse
+     dlist1 = ['* (All)', gmag_stations]
+     state.dlist1 = ptr_new(dlist1)
+     widget_control,state.level1List, set_value=dlist1
+     
     endif
  
   endif else begin
@@ -78,9 +88,9 @@ pro thm_ui_load_data_file_obs_sel, state
       h = 'No Chosen Asi_station'
       state.statusText->Update, h
     Endif Else If(state.instr Eq 'gmag') Then Begin
-      If(ptr_valid(state.station)) Then ptr_free, state.station
-      h = 'No Chosen Gmag_station'
-      state.statusText->Update, h
+     ; If(ptr_valid(state.station)) Then ptr_free, state.station
+     ; h = 'No Chosen Gmag_station'
+     ; state.statusText->Update, h
     Endif Else Begin
       If(ptr_valid(state.probe)) Then ptr_free, state.probe      
       ;h = 'probe = '+''''+''''

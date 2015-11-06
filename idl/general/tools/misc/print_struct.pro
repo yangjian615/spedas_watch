@@ -74,6 +74,11 @@ end
 
 pro print_struct,str,tags=tags,format=format,file=file,append=append,width=width
 
+if size(/type,str) ne 8 then begin
+  dprint,'Input should be an array of structures'
+  return
+endif
+
 forms = strsplit(/extract,' i3 i4 i5 f7.3 f8.4 a10 a10',' ',/preserve_null)
 
 forms2 = strsplit(/extract,' i i i g g x a x x x x i i i i',' ',/preserve_null)

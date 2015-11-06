@@ -26,9 +26,9 @@
 ;NOTES:
 ;  
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-04 18:39:29 -0700 (Mon, 04 May 2015) $
-;$LastChangedRevision: 17476 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-05 11:18:59 -0800 (Thu, 05 Nov 2015) $
+;$LastChangedRevision: 19270 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file.pro $
 ;
 ;-
@@ -93,8 +93,8 @@ Pro thm_ui_load_data_file_event, event;, info
       widget_control, state.timeid, get_value=valid, func_get_value='spd_ui_time_widget_is_valid'
       widget_control, state.timeid, func_get_value='spd_ui_time_widget_get_value'
       if is_string(startt) AND is_string(stopt) AND valid then begin
-        ; make sure an observatory is selected
-        if ~array_equal(*state.observ, '', /no_typeconv) then begin
+        ; make sure an observatory is selected - for gmag this is optional
+        if ~array_equal(*state.observ, '', /no_typeconv) or (state.instr eq 'gmag') then begin
           widget_control, /hourglass
           state.statusText->Update, 'Loading data...'
           thm_ui_load_data_file_load, state, event
@@ -176,8 +176,14 @@ Pro thm_ui_load_data_file_event, event;, info
       thm_ui_load_data_file_del, state
       state.loadlist->update
     END
-    'ITYPE_DLIST':BEGIN ; Instrument Type dropdown list
+    'ITYPE_DLIST':BEGIN ; Instrument Type dropdown list      
       thm_ui_load_data_file_itype_sel, state
+      check_data_avail = widget_info(state.tab_id,find_by_uname='check_data_avail')
+      if (state.instr eq 'gmag') then begin
+        widget_control, check_data_avail, set_value=' Check GMAG names and data availability'
+      endif else begin        
+        widget_control, check_data_avail, set_value=' Check data availability'
+      endelse    
     END
     'LEVEL1': BEGIN ; Level 1 data list
       thm_ui_load_data_file_l1_sel, state
@@ -193,7 +199,11 @@ Pro thm_ui_load_data_file_event, event;, info
       thm_ui_load_data_file_obs_sel, state
     END
     'CHECK_DATA_AVAIL': BEGIN ; launch browser to data availability page
-      spd_ui_open_url, 'http://themis.ssl.berkeley.edu/data_products/'
+      if (state.instr eq 'gmag') then begin
+        spd_ui_open_url, 'http://themis.ssl.berkeley.edu/gmag/gmag_list.php?full=full'
+      endif else begin
+        spd_ui_open_url, 'http://themis.ssl.berkeley.edu/data_products/'
+      endelse
     END
     ELSE:
   ENDCASE
@@ -233,7 +243,7 @@ pro thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
   dtyp2 = ptr_new(dtyp2)
  
   
-  observ_labels=['All-Sky Ground Station','GMAG Ground Station','Probes']
+  observ_labels=['All-Sky Ground Station','GMAG Networks','Probes']
   observ_label=observ_labels[0]+':' ; default instrument label
 ;  instr_in0 = 'ASI' ; default data type
   instr_in0 = 'ASK' ; default data type
@@ -300,7 +310,7 @@ pro thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
   observList = Widget_List(o1ListBase, Value=*validobserv, uval='OBSERV_LIST', $
                          /Multiple, scr_xsize=100, scr_ysize=185)
   
-  level1Label = Widget_Label(level1Base, Value='Level 1:', /align_left)
+  level1Label = Widget_Label(level1Base, Value='Level 1:', /align_left, uname="level1Label")
   level1List = Widget_List(level1Base, Value=*dlist1, scr_xsize=120, /Multiple, scr_ysize=185, $
                            Uvalue='LEVEL1')
   
@@ -347,8 +357,8 @@ pro thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
                             ToolTip='Deselect all data types')
 
   davailabilitybutton = widget_button(dataBase, val = ' Check data availability', $
-                                      uval = 'CHECK_DATA_AVAIL', /align_center, $
-                                      ToolTip = 'Check data availability on the web')
+                                      uval = 'CHECK_DATA_AVAIL', /align_center, scr_xsize=250, $
+                                      ToolTip = 'Check data availability on the web', uname='check_data_avail')
   rightArrow = read_bmp(rpath + 'arrow_000_medium.bmp', /rgb)
   trashcan = read_bmp(rpath + 'trashcan.bmp', /rgb)
   
