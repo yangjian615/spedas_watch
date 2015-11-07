@@ -34,8 +34,8 @@
 ;  see "FILE_RETRIEVE" for a description of each structure element.
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-10-08 13:44:25 -0700 (Thu, 08 Oct 2015) $
-; $LastChangedRevision: 19037 $
+; $LastChangedDate: 2015-11-06 14:01:30 -0800 (Fri, 06 Nov 2015) $
+; $LastChangedRevision: 19295 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_file_source.pro $
 ;-
 
@@ -51,7 +51,7 @@ if not keyword_set(psource) then begin    ; Create the default
     if ~keyword_set(user) then user = getenv('USERNAME')   ; PC's 
     if ~keyword_set(user) then user = getenv('LOGNAME')    
     if ~keyword_set(user) then user = 'guest'                ; This line may get deleted in the future!
-    psource = file_retrieve(/struct)   ; get typical default values.    
+    psource = file_retrieve(/default_structure,local_data_dir=local_data_dir)   ; get typical default values.    
     if file_test(psource.local_data_dir+'maven/.master',/regular) then psource.no_server =1  $  ; local directory IS the server directory
     else begin   ; Files will be downloaded from the web
        psource.remote_data_dir = 'http://sprg.ssl.berkeley.edu/data/'
@@ -60,14 +60,14 @@ if not keyword_set(psource) then begin    ; Create the default
        if ~keyword_set(user_pass) then  user_pass = getenv('MAVENPFP_USER_PASS')
        if ~keyword_set(user_pass) then  user_pass = idl_base64(byte(user + ':' + user + '_pfp'))
        str_element,/add,psource,'USER_PASS',user_pass
-       psource.preserve_mtime = 1
-;       psource.no_update=1   ; this can be set to 1 only because all files use version numbers and will not be updated.
-       psource.min_age_limit=300  ; five minute delay before checking remote server for file index
+       str_element,/add,psource,'PRESERVE_MTIME',1
+;       psource.no_update=1   ; this can be set to 1 only because all files use version numbers and will not be updated.  (no longer true!)
+ ;      psource.min_age_limit=300  ; five minute delay before checking remote server for file index
     endelse
 ;    psource.archive_ext = '.arc'   ; archive old files instead of deleting them
 ;    psource.archive_dir = psource.local_data_dir+ 'maven/' + 'archive/'  ; archive directory
-    psource.verbose=2
-    str_element,/add,psource,'LAST_VERSION',1            ;  set this as default since version numbers are generally used.
+    str_element,/add,psource,'VERBOSE',2
+    str_element,/add,psource,'LAST_VERSION',1            ;  set this as default since version numbers are generally used.   This is sloppy!
 endif
 
 if size(/type,default_source) eq 8 then  source= default_source  else source = psource

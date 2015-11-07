@@ -48,9 +48,9 @@
 ; 10-Feb-2009, jmm, Added hwin, sbar keywords
 ; 24-Apr-2015, af, updating plugins, reformatting code
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-06 11:15:11 -0800 (Fri, 06 Nov 2015) $
+;$LastChangedRevision: 19278 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_loaded_data__dproc.pro $
 Function spd_ui_loaded_data::dproc, dp_task, dp_pars,callSequence=callSequence,replay=replay,in_vars=in_vars, names_out = names_out, $
                            no_setactive = no_setactive, hwin = hwin, sbar = sbar, gui_id = gui_id, $
@@ -269,7 +269,7 @@ For j = 0, n_elements(operation)-1 Do Begin
                         smooth_selections = array_concat_wrapper(smooth_selection,smooth_selections)
                     endif else begin
                         if smooth_count ge n_elements(smooth_selections) then begin
-                            spd_ui_messange, "ERROR:Discrepancy in spedas document, may have lead to a document load error", sb=sbar, hw=hwin
+                            spd_ui_message, "ERROR:Discrepancy in spedas document, may have lead to a document load error", sb=sbar, hw=hwin
                             smooth_selection = "yestoall"
                         endif else begin
                             smooth_selection = smooth_selections[smooth_count]

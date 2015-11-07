@@ -97,7 +97,7 @@ if ~keyword_set(RT) then begin
       return,files
     endif
     files = file_retrieve(pathnames,_extra=source)
-    dprint,dlevel=4,verbose=verbose,systime(1)-tstart,' seconds to retrieve ',n_elements(files),' files'
+    dprint,dlevel=3,verbose=verbose,systime(1)-tstart,' seconds to retrieve ',n_elements(files),' files'
   endif
   return,files
 endif

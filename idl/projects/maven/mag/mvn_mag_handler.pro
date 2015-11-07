@@ -3,8 +3,8 @@
 ;Purpose: 
 ; Author: Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-02-10 08:15:03 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16937 $
+; $LastChangedDate: 2015-11-06 14:02:07 -0800 (Fri, 06 Nov 2015) $
+; $LastChangedRevision: 19296 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_handler.pro $
 ; 
 ;-
@@ -281,7 +281,7 @@ pro mvn_mag_handler,ccsds,decom=decom,reset=reset,debug=debug,set_realtime=set_r
            dprint,phelp=debug,manage,realtime,mag1_svy,mag1_hkp,mag1_svy_misc
            return
         endif
-        dprint,'MAG handler: ', keyword_set(clear) ? 'Clearing' : 'Finalizing'
+        dprint,dlevel=3,verbose=verbose,'MAG handler: ', keyword_set(clear) ? 'Clearing' : 'Finalizing'
         if keyword_set(finish) then begin
  ;         if ~keyword_set(hkp_tags) then hkp_tags='None'
           if ~keyword_set(svy_tags) then svy_tags='BAVG'
@@ -299,7 +299,7 @@ pro mvn_mag_handler,ccsds,decom=decom,reset=reset,debug=debug,set_realtime=set_r
         if (magnum and 2) ne 0 then   mav_gse_structure_append, clear=clear,  mag2_arc_misc,   tname='mvn_mag2_arc' , tags = arc_tags
         if keyword_set(clear) then return
         if keyword_set(finish) then begin
-           dprint,'Finish mag stuff here'
+           dprint,dlevel=3,verbose=verbose,'Finish mag stuff here'
        ;   do other stuff here        
         endif
         if keyword_set(offset1) then begin   ;  must be in highest gain setting

@@ -7,17 +7,21 @@ dprint,'Loading ACE EPAM files at ',time_string(/local,tstart)
 ; Define trailing end of URL
 
 ;if keyword_set(k0) then begin
-  pathname = 'ace/epam/level_2_cdaweb/epm_k0/YYYY/ac_k0_epm_YYYYMMDD_v03.cdf'  
+  pathname = 'ace/epam/level_2_cdaweb/epm_k0/YYYY/ac_k0_epm_YYYYMMDD_v??.cdf'  
   prefix = 'ACE_EPM_K0_'
 ;endif
 if keyword_set(h1) then begin
-  pathname = 'ace/epam/level_2_cdaweb/epm_h1/YYYY/ac_h1_epm_YYYYMMDD_v03.cdf
+  pathname = 'ace/epam/level_2_cdaweb/epm_h1/YYYY/ac_h1_epm_YYYYMMDD_v??.cdf
   prefix = 'ACE_EPM_H1_'
 endif
 
 
 source = spdf_file_source(no_update=1)
-files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,files=files)
+
+
+;files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,files=files)
+tr = timerange(trange)
+files = file_retrieve(pathname,/daily,trange=tr,_extra=source,verbose=verbose,last_version=1)
 dprint,/phelp,files
 
 if keyword_set(download_only) then return

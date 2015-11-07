@@ -4,28 +4,33 @@
 ;   dir must be a scalar.
 ;D. Larson, April, 2008
 ;
-pro file_mkdir2,dir,mode=mode,dir_mode=dir_mode,writeable=writeable $
+pro file_mkdir2,dirs,mode=mode,dir_mode=dir_mode,writeable=writeable $
     ,dlevel=dlevel,verbose=verbose
 
-fi = file_info(dir)
-writeable = fi.write
-if keyword_set(dir_mode) then mode=dir_mode
-if fi.directory then  return
-if (~fi.directory and fi.exists) then begin ;if it is an existing file, return
-  dprint, 'File exists but it is not a directory: ',  dir, dlevel=dlevel,verbose=verbose
-  writable=0
-  return
-endif
-parent_dir = file_dirname(dir)
-;dprint,parent_dir
-if parent_dir ne dir then file_mkdir2,parent_dir,mode=mode,writeable=writeable   ; else message,'Unable to determine parent directory!'
-if writeable then begin
-  dprint,'Creating new directory: ',dir,dlevel=dlevel,verbose=verbose
-  file_mkdir,dir
-  if keyword_set(mode) then file_chmod,dir,mode
-  writeable = 1b
-endif else dprint,dlevel=dlevel,verbose=verbose,'Unable to create Directory: ',dir
-return
+for i = 0,n_elements(dirs)-1  do begin
+  dir = dirs[i]
+  fi = file_info(dir)
+  writeable = fi.write
+  if keyword_set(dir_mode) then mode=dir_mode
+  if fi.directory then  continue
+  if (~fi.directory and fi.exists) then begin ;if it is an existing file, skip
+    dprint, 'File exists but it is not a directory: ',  dir, dlevel=dlevel,verbose=verbose
+    writeable=0
+  endif else begin
+    parent_dir = file_dirname(dir)
+    ;dprint,parent_dir
+    if parent_dir ne dir then file_mkdir2,parent_dir,mode=mode,writeable=writeable   ; else message,'Unable to determine parent directory!'
+    if writeable then begin
+      dprint,'Creating new directory: ',dir,dlevel=dlevel,verbose=verbose
+      file_mkdir,dir
+      if keyword_set(mode) then file_chmod,dir,mode
+      writeable = 1b
+    endif else dprint,dlevel=dlevel,verbose=verbose,'Unable to create Directory: ',dir
+  endelse
+  
+endfor
+
+
 
 end
 

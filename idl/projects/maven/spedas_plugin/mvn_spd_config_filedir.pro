@@ -1,10 +1,11 @@
-f;+
-;Function: mvn_spd_config_filedir.pro Purpose: Get the applications
+;+
+;Function: mvn_spd_config_filedir.pro 
+;Purpose: Get the applications
 ;user directory for MAVEN SPD data analysis software
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-10-21 14:16:06 -0700 (Wed, 21 Oct 2015) $
-;$LastChangedRevision: 19130 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-06 11:29:09 -0800 (Fri, 06 Nov 2015) $
+;$LastChangedRevision: 19281 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/spedas_plugin/mvn_spd_config_filedir.pro $
 ;-
 

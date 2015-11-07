@@ -23,12 +23,12 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2015-11-06 11:30:56 -0800 (Fri, 06 Nov 2015) $
+;$LastChangedRevision: 19283 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/plotting/spd_slice2d_getinfo.pro $
 ;
 ;-
-pro spd_slice2d_getinfo, slice, title=title, $
+pro spd_slice2d_getinfo, slice, title=title, short_title=short_title, $
                          xtitle=xtitle, ytitle=ytitle, ztitle=ztitle
 
     compile_opt idl2, hidden
@@ -36,10 +36,24 @@ pro spd_slice2d_getinfo, slice, title=title, $
 
   ; Plot title
   if undefined(title) then begin
-    title = slice.project_name+' '+slice.spacecraft+' '+slice.data_name+ $
-            ' ('+strtrim(slice.coord+' '+slice.rot)+') ' + $
-                   time_string(slice.trange[0])+' -> ' + $
-            strmid(time_string(slice.trange[1]),11,8)
+    
+    coord = slice.coord eq '' ? '':slice.coord+' '
+    msec = slice.trange[1]-slice.trange[0] lt 1.
+    
+    if keyword_set(short_title) then begin
+      ;time range and # of samples only
+      title = strmid(time_string(slice.trange[0],msec=msec),11)+' > '+ $
+              strmid(time_string(slice.trange[1],msec=msec),11)+ $
+              ' ('+strtrim(fix(slice.n_samples),2)+')'
+    endif else begin
+      ;full title
+      title = slice.project_name+' '+slice.spacecraft+' '+slice.data_name+ $
+            ' ('+strtrim(coord+slice.rot)+') ' + $
+                   time_string(slice.trange[0],msec=msec)+' -> ' + $
+            strmid(time_string(slice.trange[1],msec=msec),11) + $
+            ' ('+strtrim(fix(slice.n_samples),2)+')'
+    endelse
+
   endif
 
 

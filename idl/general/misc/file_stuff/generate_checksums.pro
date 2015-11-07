@@ -113,7 +113,7 @@ if recurse_limit eq 0  then begin
 endif else begin
   if n_elements(checksum_file) eq 0 then checksum_file=default_name
 
-  dprint,verbose=verbose,dlevel=3,tab+startpath
+  dprint,verbose=verbose,dlevel=4,tab+startpath
 
   dirs=''
   for i=0,n_elements(DIR_PATTERN)-1 do begin
@@ -147,8 +147,8 @@ endelse
 if nfiles ne 0  then begin 
   if file_test(/directory,/write,startpath) then begin
     sum_info = file_info(startpath+checksum_file)
-    ;  fi = file_info([files,startpath+'.'])    ; test of the modificaton time of directory is really the only test needed.
-    fi = file_info(files)
+    fi = file_info([files,startpath+'.'])    ; test of the modificaton time of directory is really the only test needed.
+;    fi = file_info(files)
     last = max([fi.mtime,fi.ctime])
     if sum_info.mtime lt last  || keyword_set(force_regen) then begin
       dprint,verbose=verbose,dlevel=2,tab+startpath+':  '+strtrim(nfiles,2)+' files match ["'+strjoin(FILE_PATTERN,'",  "')+'"]'
@@ -160,7 +160,7 @@ if nfiles ne 0  then begin
       endif
     endif    
   endif else begin
-    dprint,dlevel=2,verbose=verbose,'Found '+strtrim(nfiles,2)+' But can not write to directory.'
+    dprint,dlevel=3,verbose=verbose,tab+startpath+' Found '+strtrim(nfiles,2)+' files, but can not write to directory. '
   endelse
 endif
 

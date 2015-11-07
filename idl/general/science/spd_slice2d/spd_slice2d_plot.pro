@@ -27,6 +27,8 @@
 ;              Requires B field data to be loaded and specified to
 ;              spd_slice2d with mag_data keyword.
 ;            
+;  TITLE: String used as plot's title
+;  SHORT_TITLE: Flag to only use time range and # of samples for title
 ;  CLABELS: Boolean to annotate contour lines.
 ;  CHARSIZE: Specifies character size of annotations (1 is normal)
 ;  [XYZ]RANGE: Two-element array specifying x/y/z axis range.
@@ -57,8 +59,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-23 19:23:18 -0700 (Fri, 23 Oct 2015) $
-;$LastChangedRevision: 19151 $
+;$LastChangedDate: 2015-11-06 11:30:56 -0800 (Fri, 06 Nov 2015) $
+;$LastChangedRevision: 19283 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -78,6 +80,7 @@ pro spd_slice2d_plot, slice, $
                        xstyle=xstyle, xprecision=xprecision, $
                        ystyle=ystyle, yprecision=yprecision, $
                        zstyle=zstyle, zprecision=zprecision, $
+                       short_title=short_title, $
                      ; Contours
                        olines=olines, levels=levels, nlines=nlines, clabels=clabels, $
                      ; Other plotting options
@@ -93,8 +96,10 @@ pro spd_slice2d_plot, slice, $
 
   ; Return if variables are not set
   if ~is_struct(slice) then begin
-    fail = 'No data structure provided, canceling plot.'
+    fail = 'No data structure provided.'
     dprint, dlevel=0, fail
+    ;esnure there is some output (for loops and multi-plot formats)
+    contour, [[0,0],[0,0]], title='Invalid input'
     return
   endif
 
@@ -102,22 +107,20 @@ pro spd_slice2d_plot, slice, $
   ; Defaults
   if keyword_set(nlines) and ~keyword_set(levels) then levels = nlines ;backward comp.
   if ~keyword_set(levels) then levels=60
-  if slice.type gt 1 then begin
-    if undefined(olines)then olines = 20
+  if slice.type ne 0 then begin
+    if undefined(olines)then olines = 8
   endif
   
   if undefined(zlog) then zlog=1b
   if undefined(plotaxes) then plotaxes=1b
   if undefined(plotbulk) then plotbulk=1b
 
-  if undefined(z_ticks) then z_ticks=11
-
   if undefined(xstyle) then xstyle=0
-  if undefined(xprecision) then xprecision=4
+  if undefined(xprecision) then xprecision=3
   if undefined(ystyle) then ystyle=0
-  if undefined(yprecision) then yprecision=4
+  if undefined(yprecision) then yprecision=3
   if undefined(zstyle) then zstyle=0
-  if undefined(zprecision) then zprecision=4
+  if undefined(zprecision) then zprecision=2
 
   if ~keyword_set(plotsize) then plotsize = 500.
   plotsize = 100. > plotsize ;min size
@@ -168,6 +171,7 @@ pro spd_slice2d_plot, slice, $
   ; Get general annotations
   spd_slice2d_getinfo, slice, $
                        title=title, $
+                       short_title=short_title, $
                        xtitle=xtitle, $
                        ytitle=ytitle, $
                        ztitle=ztitle
@@ -181,7 +185,7 @@ pro spd_slice2d_plot, slice, $
   xmargin = [11,15 + (zprecision-3 > 0)]
   ymargin = [4,2]
   
-  tsize = strlen(title) * 1.25
+  tsize = strlen(title) * 1.25 ;title always 1.25 larger than other text
 
   xcsize = (total(xmargin) + plotxcsize) > tsize
   ycsize = (total(ymargin) + plotycsize) 
@@ -300,7 +304,7 @@ pro spd_slice2d_plot, slice, $
   ;----------------------
 
   ; Plot contour lines
-  if keyword_set(olines) then begin
+  if keyword_set(olines) && slice.type ne 0 then begin
 
     ; set contour levels
     if keyword_set(zlog) then begin

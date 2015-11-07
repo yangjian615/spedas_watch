@@ -134,10 +134,10 @@
  ;       then the connection would be closed
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2015-11-05 11:18:39 -0800 (Thu, 05 Nov 2015) $
- ; $LastChangedRevision: 19269 $
+ ; $LastChangedDate: 2015-11-06 11:29:47 -0800 (Fri, 06 Nov 2015) $
+ ; $LastChangedRevision: 19282 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
- ; $Id: file_http_copy.pro 19269 2015-11-05 19:18:39Z davin-mac $
+ ; $Id: file_http_copy.pro 19282 2015-11-06 19:29:47Z davin-mac $
  ;-
  
  
@@ -541,7 +541,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19269 2015-11-05 19:18:39Z davin-mac $
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19282 2015-11-06 19:29:47Z davin-mac $
 
    if n_elements(strict_html) eq 0 then begin
       strict_html = 1      ;  set to 1 to be robust,  set to 0 to be much faster
@@ -549,7 +549,7 @@ end
    endif
 
    if keyword_set(user_agent) eq 0 then begin
-     swver = strsplit('$Id: file_http_copy.pro 19269 2015-11-05 19:18:39Z davin-mac $',/extract)
+     swver = strsplit('$Id: file_http_copy.pro 19282 2015-11-06 19:29:47Z davin-mac $',/extract)
      user = getenv('USER')
      if ~user then user=getenv('USERNAME')
      if ~user then user=getenv('LOGNAME')
@@ -619,7 +619,7 @@ end
      globpos = min( uint( [strpos(pathname,'*'),strpos(pathname,'?'),strpos(pathname,'['),strpos(pathname,']')] ) )
      ;if using globbing, then read the server remote index file and extract the links
      if (~ keyword_set(no_globbing)) && globpos le 1000 then begin   ; Look for globbed  ([*?]) filenames
-       dprint,dlevel=4,verbose=verbose,'Warning! Using Globbing!'
+       dprint,dlevel=3,verbose=verbose,'Warning! Using Globbing!'
        slash='/'
        slashpos1 = strpos(pathname,slash,globpos,/reverse_search)
        sub_pathname = strmid(pathname,0,slashpos1+1)
@@ -649,7 +649,10 @@ end
          if keyword_set(last_version) then begin
             i0 = nlinks-1 
             no_update_temp = (last_version eq 2) or keyword_set(no_update)
-         endif else i0=0L
+         endif else begin
+            i0=0L
+            no_update_temp = keyword_set(no_update)
+         endelse
          for i=i0,nlinks-1 do begin
            dprint,dlevel=4,verbose=verbose,'Retrieve link#'+strtrim(i+1,2)+' of '+strtrim(nlinks,2)+': '+ rec_pathnames[i]
            ; Recursively get files:
@@ -697,7 +700,7 @@ end
      
      
      if keyword_set(no_update) && lcl.exists then begin
-       dprint,dlevel=2,verbose=verbose,'Warning: Updates to existing file: "'+lcl.name+'" are not being checked! (use of this keyword is not recommended - Use UPDATE_AFTER)'
+       dprint,dlevel=2,verbose=verbose,'Warning: Updates to existing file: "'+lcl.name+'" are not being checked!'
 ;       url_info.localname = localname
 ;       url_info.exists = -1   ; remote file existence is not known!
        if arg_present(links2) then begin
@@ -736,7 +739,7 @@ end
 ;       url_info.exists = 1
        if arg_present(links2) then begin
            links2 = file_extract_html_links(localname,verbose=verbose,no_parent=url,strict_html=strict_html)
-           dprint,/phelp,dlevel=3,verbose=verbose,links2
+           dprint,/phelp,dlevel=4,verbose=verbose,links2
        endif
        goto, final
      endif

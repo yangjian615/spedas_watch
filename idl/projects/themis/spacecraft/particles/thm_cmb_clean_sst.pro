@@ -28,9 +28,9 @@
 ;  due to the loss of some support quantities.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-01-10 18:02:25 -0800 (Fri, 10 Jan 2014) $
-;$LastChangedRevision: 13850 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-11-06 17:07:31 -0800 (Fri, 06 Nov 2015) $
+;$LastChangedRevision: 19301 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_cmb_clean_sst.pro $
 ;
 ;-
@@ -57,6 +57,18 @@ pro thm_cmb_clean_sst, data, units=units, sst_sun_bins=sst_sun_bins,sst_method_c
       endelse
       
     endfor
+
+    ;remove repeated times
+    if n_elements(temp_arr) gt 1 then begin
+      idx = where(temp_arr.time ne shift(temp_arr.time,1),c)
+      if c gt 0 then begin
+        temp_arr = temp_arr[idx]
+      endif else begin
+        temp_arr = temp_arr[0]
+      endelse
+    endif
+    ;remove repeated times
+    ;idx = where((*data[i])
     
     ;replace data
     ptr_free, data[i]

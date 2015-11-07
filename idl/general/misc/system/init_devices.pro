@@ -14,9 +14,9 @@
 ;HISTORY
 ; Written by Davin Larson
 ;
-;$LastChangedBy: bsadeghi $
-;$LastChangedDate: 2012-02-23 10:06:42 -0800 (Thu, 23 Feb 2012) $
-;$LastChangedRevision: 9835 $
+;$LastChangedBy: davin $
+;$LastChangedDate: 2015-11-06 15:38:27 -0800 (Fri, 06 Nov 2015) $
+;$LastChangedRevision: 19299 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/system/init_devices.pro $
 ;-
 pro init_devices,colortable=colortable
@@ -47,9 +47,14 @@ pro init_devices,colortable=colortable
     device,decompose = 0
   endif
 
+  if !d.name eq 'X' && ~getenv('DISPLAY') then begin
+    dprint,'DISPLAY environment variable is not set. Switching to Z device'
+    set_plot,'z'
+  endif
+
   if !d.name eq 'X' then begin
-    ; device,pseudo_color=8  ;fixes color table problem for machines with 24-bit color
-    device,decompose = 0
+;    device,pseudo_color=8  ;fixes color table problem for machines with 24-bit color
+    device,decompose=0
     if !version.os_family eq 'unix' then device,retain=2  ; Unix family does not provide backing store by default
   endif
 

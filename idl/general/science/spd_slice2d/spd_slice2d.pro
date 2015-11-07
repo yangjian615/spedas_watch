@@ -186,8 +186,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-21 18:05:46 -0700 (Wed, 21 Oct 2015) $
-;$LastChangedRevision: 19132 $
+;$LastChangedDate: 2015-11-06 11:21:36 -0800 (Fri, 06 Nov 2015) $
+;$LastChangedRevision: 19279 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -351,7 +351,8 @@ for i=0, n_elements(ds)-1 do begin
   times_ind = spd_slice2d_intrange(ds[i], trange, n=ndat)
   n_samples = array_concat(ndat,n_samples)
 endfor
-if total(n_samples) lt 1 then begin
+n_samples = total(n_samples)
+if n_samples lt 1 then begin
   fail = 'No particle data in the time window: '+strjoin(time_string(trange),', ')+ $
          '. Time samples may be at low cadence; try adjusting the time window.'
   dprint, dlevel=1, fail 
@@ -565,6 +566,7 @@ slice = {  $
           project_name: ((*ds[0]).project_name)[0], $
           spacecraft: ((*ds[0]).spacecraft)[0], $
           data_name: data_name, $            ;names of distributions used (string)
+          n_samples: n_samples, $            ;number of distributions used
 
           mass: ((*ds[0]).mass)[0], $    ;mass in eV/(km/s)^2
           units: ((*ds[0]).units_name)[0], $   ;data units

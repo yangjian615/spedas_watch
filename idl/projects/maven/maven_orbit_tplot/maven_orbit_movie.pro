@@ -11,17 +11,23 @@
 ;       DIMENSIONS: [width,height] (Def: half of the screen size)
 ;       MOVIENAME: name of the output movie file (Def: 'maven_orbit.mp4')
 ;       RATE: speed of the movie (Def: 4*3600 = 4 hr/sec)
-;       BOXSIZE: minmax of the 3D box in km (Def: [-3.,3.]*R_M)
 ;       FPS: frames per sec of the movie (Def: 20)
-;       FONT_SIZE: font size of the time stamp (Def: 24)
 ;       ZOOMSCALE: zoom in/out scale (Def: 1.5)
-;       BCMODEL: specifies crustal field model (Def. 'morschhauser')
+;       FONT_SIZE: font size of the time stamp (Def: 24)
+;       BOXSIZE: minmax of the 3D box in km (Def: [-3.,3.]*R_M)
+;       BCMODEL: specifies crustal field model (Def: 'morschhauser')
+;       SNAP: if set, generate a snapshot instead of a movie
+;       TSNAP: time of the snapshot (Def: start time of timerange())
+;       FIGNAME: name of the snapshot file (Def: 'maven_orbit.png')
+;                most file formats are acceptable
+;                (http://www.exelisvis.com/docs/save_method.html)
+;       WINCLOSE: close the graphic window when finished
 ; CREATED BY:
 ;       Yuki Harada on 2015-11-04
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-11-04 12:17:42 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19237 $
+; $LastChangedDate: 2015-11-06 11:51:03 -0800 (Fri, 06 Nov 2015) $
+; $LastChangedRevision: 19287 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_movie.pro $
 ;-
 
@@ -62,7 +68,13 @@ function maven_orbit_movie_altidx, rmso
 end
 
 
-pro maven_orbit_movie, trange=trange, dimensions=dimensions, moviename=moviename, boxsize=boxsize, fps=fps, rate=rate, font_size=font_size, zoomscale=zoomscale, bcmodel=bcmodel, verbose=verbose
+pro maven_orbit_movie, trange=trange, dimensions=dimensions, moviename=moviename, boxsize=boxsize, fps=fps, rate=rate, font_size=font_size, zoomscale=zoomscale, bcmodel=bcmodel, verbose=verbose, snap=snap, tsnap=tsnap, figname=figname, winclose=winclose
+
+;- return if IDL version < 8
+if float(!version.release) lt 8 then begin
+   dprint,'This routine requires IDL version 8 or later...'
+   return
+endif
 
 ;- set parameters
 R_M = 3389.9
@@ -75,16 +87,17 @@ if ~keyword_set(fps) then fps = 20.
 if ~keyword_set(font_size) then font_size = 24
 if ~keyword_set(zoomscale) then  zoomscale = 1.5
 if ~keyword_set(bcmodel) then bcmodel = 'morschhauser'
+if ~keyword_set(tsnap) then tsnap = tr[0] else tsnap = time_double(tsnap)
+if ~keyword_set(figname) then figname = 'maven_orbit.png'
 
 
-;- load spice if not loaded
-status = EXECUTE("cbvars = SCOPE_VARNAME(common='mvn_spice_kernels_com')")
-if ~status then mvn_spice_load, trange=trange, verbose=verbose
+;- load spice if not loaded (trange is not checked)
+if total(strlen(spice_test('*mvn*'))) eq 0 then mvn_spice_load, trange=trange, verbose=verbose
 
 
 ;- read in crustal field data
 fbc = mvn_pfp_file_retrieve('maven/data/mod/bcrust/alt/' $
-                            +bcmodel+'_400km_360x180_pc.sav')
+                            +bcmodel+'_400km_360x180_pc.sav', verbose=verbose)
 if total(strlen(fbc)) gt 0 then begin
    restore,fbc
    br = model.br
@@ -103,14 +116,18 @@ zbr = R_M * transpose(rebin(sin(brlat*!dtor),180,360))
 
 
 ;- set up a video stream
-dtorb = double(rate/fps)
+dtorb = double(rate)/double(fps)
 nstep = long((tr[1] - tr[0])/dtorb) + 1
-ovid = idlffvideowrite(moviename)
-vidst = ovid.addvideostream(dimensions[0],dimensions[1],fps)
+if ~keyword_set(snap) then begin
+   ovid = idlffvideowrite(moviename)
+   vidst = ovid.addvideostream(dimensions[0],dimensions[1],fps)
+endif else nstep = 1
+
 
 for irot=0,nstep-1 do begin     ;- movie loop start
 
    tnow = tr[0] + irot*dtorb
+   if keyword_set(snap) then tnow = tsnap
    dprint,verbose=verbose,irot,' /',nstep,' : ',time_string(tnow)
 
 
@@ -321,12 +338,13 @@ for irot=0,nstep-1 do begin     ;- movie loop start
 ;- add time stamp
    gr_tx = text(/norm,.05,.9,/onglass,font_size=font_size,time_string(tnow),color='white')
 
-;- add a frame to the video stream
+;- add a frame to the video stream / create a snapshot file
    gr_win.refresh
-   tmp = ovid.put(vidst,gr_box.copywindow())
+   if ~keyword_set(snap) then tmp = ovid.put(vidst,gr_box.copywindow()) $
+   else gr_win.save,figname,width=dimensions[0],height=dimensions[1]
 endfor                          ;- movie loop end
-ovid = 0                        ;- close the movie file
-
+if ~keyword_set(snap) then ovid = 0 ;- close the movie file
+if keyword_set(winclose) then gr_win.close
 
 end
 

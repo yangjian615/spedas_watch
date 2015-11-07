@@ -21,8 +21,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-23 19:21:50 -0700 (Fri, 23 Oct 2015) $
-;$LastChangedRevision: 19150 $
+;$LastChangedDate: 2015-11-06 13:31:24 -0800 (Fri, 06 Nov 2015) $
+;$LastChangedRevision: 19293 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_dist.pro $
 ;-
 
@@ -58,8 +58,12 @@ endif
 
 ;get range of indices corresponding to requested time range
 if ~undefined(trange) then begin
-  tr = time_double(trange)
-  indices = minmax(where( *p.x ge min(tr) and *p.x lt max(tr), n_times))
+  tr = minmax(time_double(trange))
+  indices = minmax(where( *p.x ge tr[0] and *p.x lt tr[1], n_times))
+  if n_times eq 0 then begin
+    dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
+    return, 0
+  endif
 endif else begin
   n_times = n_elements(*p.x)
   indices = [0,n_times-1]

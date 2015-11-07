@@ -15,12 +15,13 @@
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu:36867/repos/idl_socware/trunk/projects/maven/general/mvn_file_source.pro $
 ;-
 
-pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,verbose=verbose
+pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,verbose=verbose,Quaternion=quaternion,Orbit_data=orbit_data
 
    ; Create
 
    orbdata = mvn_orbit_num(verbose=verbose)                 
    store_data,'orbnum',orbdata.peri_time,orbdata.num,dlimit={ytitle:'Orbit'}
+   if keyword_set(orbit_data) then    store_data,'mvn_ORB_',data=orbdata,tagnames='SOL_* SC_*',time_tag='PERI_TIME'
 ;   tplot,var_label='orbnum'
    tplot_options,'timebar','orbnum'
    tplot_options,'var_label','orbnum'
@@ -60,7 +61,7 @@ pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,ver
    
    frame = 'MAVEN_SPACECRAFT'
 ;   frame = 'MAVEN_SCALT'
-   spice_qrot_to_tplot,frame,'MSO',get_omega=3,res=60d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .5 *!pi/180  ; .5 degree error
+if keyword_set(Quaternion) then   spice_qrot_to_tplot,frame,'MSO',get_omega=3,res=60d,names=tn,check_obj='MAVEN_SPACECRAFT' ,error=  .5 *!pi/180  ; .5 degree error
  ;  spice_qrot_to_tplot,frame,'MAVEN_APP',get_omega=3,res=30d,names=tn,check_obj=['MAVEN_SPACECRAFT','MAVEN_APP_OG'] ,error=  .5 *!pi/180  ; .5 degree error
    
 end
