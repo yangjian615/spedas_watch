@@ -44,8 +44,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-21 14:41:39 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18567 $
+; $LastChangedDate: 2015-11-08 16:34:47 -0800 (Sun, 08 Nov 2015) $
+; $LastChangedRevision: 19306 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -96,6 +96,7 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
   vname = 'V_sc_' + to_frame
   options,vname,'labels',['X','Y','Z']
   options,vname,'labflag',1
+  options,vname,'constant',0
 
 ; Calculate angles and create tplot variables
 

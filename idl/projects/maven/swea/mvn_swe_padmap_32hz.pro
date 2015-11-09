@@ -3,7 +3,15 @@
 ;FUNCTION:        MVN_SWE_PADMAP_32HZ
 ;
 ;PURPOSE:         Calculates the pitch angle for a PAD, taking into
-;                 account differences of the 64 energy sweep timings.  
+;                 account differences of the 64 energy sweep timings.
+;
+;                 BEWARE! This routine requires accurate relative timing
+;                 between MAG and SWEA.  This is not guaranteed when using 
+;                 preliminary data that do not have accurate corrections
+;                 for spacecraft clock drift.  If you get a warning message
+;                 about using MAG quicklook data, then you are on thin ice!
+;                 You might still be OK if you can verify that the MAG and 
+;                 SWEA data were processed with the same SCLK kernel.
 ;
 ;INPUTS:          PAD data obtained from 'mvn_swe_getpad'.
 ;
@@ -15,19 +23,28 @@
 ;   STATUS:       Returns the calculation result
 ;                 (Success: 1 / Failure: 0).
 ;
+;   MAGLEV:       Returns the MAG data level.
+;                   0 -> on-board determination or unknown
+;                   1 -> nominal gains and zeroes only (quicklook)
+;                   2 -> fully calibrated
+;
+;   L2ONLY:       Insist on using MAG L2 data.
+;
 ;CREATED BY:      Takuya Hara on 2015-07-20.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-11-04 16:39:15 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19245 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-11-08 16:31:29 -0800 (Sun, 08 Nov 2015) $
+; $LastChangedRevision: 19303 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_padmap_32hz.pro $
 ;
 ;-
-FUNCTION mvn_swe_padmap_32hz, pdat, fbdata=fbdata, verbose=verbose, status=status
+FUNCTION mvn_swe_padmap_32hz, pdat, fbdata=fbdata, verbose=verbose, status=status, $
+                                    maglev=maglev, l2only=l2only
 
   @mvn_swe_com
   status = 1
+  maglev = 0
   opdat = pdat
   fpdat = pdat
   IF ~keyword_set(fbdata) THEN fbdata = 'mvn_B_full'
@@ -44,6 +61,21 @@ FUNCTION mvn_swe_padmap_32hz, pdat, fbdata=fbdata, verbose=verbose, status=statu
         status = 0
         RETURN, opdat
      ENDELSE 
+     str_element, alim, 'level', value=maglev
+     if (size(maglev,/type) eq 7) then begin
+       case strupcase(maglev) of
+         'L1' : maglev = 1
+         'L2' : maglev = 2
+         else : maglev = 0
+       endcase
+     endif else maglev = 0
+     if (maglev lt 2) then begin
+       print,"WARNING: Quicklook MAG data - timing may be inaccurate!"
+       if keyword_set(l2only) then begin
+         status = 0
+         return, opdat
+       endif
+     endif
      IF tag_exist(alim, 'SPICE_FRAME') THEN BEGIN
         IF alim.spice_frame NE 'MAVEN_SWEA' THEN BEGIN
            IF alim.spice_frame EQ 'MAVEN_SPACECRAFT' THEN BEGIN

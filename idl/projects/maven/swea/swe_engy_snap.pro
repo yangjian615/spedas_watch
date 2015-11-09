@@ -90,9 +90,11 @@
 ;
 ;       RAINBOW:       With NOERASE, overplot spectra using up to 6 different colors.
 ;
+;       POPEN:         Set this to the name of a postscript file for output.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-21 14:42:30 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18568 $
+; $LastChangedDate: 2015-11-08 16:34:11 -0800 (Sun, 08 Nov 2015) $
+; $LastChangedRevision: 19305 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -102,7 +104,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
                    noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
                    dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
-                   bkg=bkg, tplot=tplot, magdir=magdir, bck=bck
+                   bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
+                   xrange=xrange,sscale=sscale, popen=popen
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -125,7 +128,20 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(fixy) then fflg = 1 else fflg = 0
   if keyword_set(rainbow) then rflg = 1 else rflg = 0
   if keyword_set(sec) then dosec = 1 else dosec = 0
+  if not keyword_set(sscale) then sscale = 5D
   if keyword_set(bkg) then dobkg = 1 else dobkg = 0
+  if keyword_set(shiftpot) then spflg = 1 else spflg = 0
+  if (n_elements(xrange) ne 2) then xrange = [1.,1.e4]
+  if (size(popen,/type) eq 7) then begin
+    psflg = 1
+    psname = popen[0]
+    csize1 = 1.2
+    csize2 = 1.0
+  endif else begin
+    psflg = 0
+    csize1 = 1.2
+    csize2 = 1.4
+  endelse
 
   tflg = 0
   if keyword_set(tplot) then begin
@@ -278,6 +294,14 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   endelse
   if (fflg) then yrange = drange
   
+  if (spflg) then begin
+    if (scp ne 0.) then pot = scp $
+                   else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
+    spec = conv_units(spec,'df')
+    spec.energy -= pot
+    spec = conv_units(spec,units)
+  endif
+  
   case strupcase(spec.units_name) of
     'COUNTS' : ytitle = 'Raw Counts'
     'RATE'   : ytitle = 'Raw Count Rate'
@@ -294,7 +318,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   nplot = 0
   xs = 0.71
   dys = 0.03
-
+  
   while (ok) do begin
 
     x = spec.energy
@@ -302,14 +326,15 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     phi = spec.sc_pot
     ys = 0.90
 
-    wset, Ewin
+    if (psflg) then popen, psname + string(nplot,format='("_",i2.2)') $
+               else wset, Ewin
 
-; Put up an Energy Spectrum
+; Put up an Energy Spectrum with (optionally) model fit, background, scattering, etc.
 
     psym = 10
 
-    if ((nplot eq 0) or oflg) then plot_oo,x,y,yrange=yrange,/ysty,xtitle='Energy (eV)', $
-            ytitle=ytitle,charsize=1.4,psym=psym,title=time_string(spec.time) $
+    if ((nplot eq 0) or oflg) then plot_oo,x,y,yrange=yrange,/ysty,xrange=xrange, $
+            xtitle='Energy (eV)', ytitle=ytitle,charsize=csize2,psym=psym,title=time_string(spec.time) $
                               else oplot,x,y,psym=psym
     
     if (rflg) then oplot,x,y,psym=psym,color=(nplot mod 6)+1
@@ -349,7 +374,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       Tmax = 2.283
       Emax = 325.
       k = 2.2
-      scale = 5.0D
+      scale = sscale
 
       Vbias = 0.                     ; primaries not passing through exit grid
       Erat = (energy + Vbias)/Emax   ; effect of V0 cancels when using swe_swp
@@ -433,10 +458,10 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     
     if (doalt) then begin
       dt = min(abs(alt.x - spec.time), aref)
-      xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
+      xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=csize1,/norm
       ys -= dys
       if (~mb and ~mom) then begin
-        xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+        xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=csize1,/norm
         ys -= dys
       endif
     endif
@@ -445,17 +470,17 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       dt = min(abs(mag.x - spec.time), mref)
       str_element, mag, 'azim', success=ok
       if (ok) then begin
-        xyouts,xs,ys,string(round(mag.azim[mref]), format='("Baz = ",i5)'),charsize=1.2,/norm
+        xyouts,xs,ys,string(round(mag.azim[mref]), format='("Baz = ",i5)'),charsize=csize1,/norm
         ys -= dys
       endif
       str_element, mag, 'elev', success=ok
       if (ok) then begin
-        xyouts,xs,ys,string(round(mag.elev[mref]), format='("Bel = ",i5)'),charsize=1.2,/norm
+        xyouts,xs,ys,string(round(mag.elev[mref]), format='("Bel = ",i5)'),charsize=csize1,/norm
         ys -= dys
       endif
       str_element, mag, 'clock', success=ok
       if (ok) then begin
-        xyouts,xs,ys,string(round(mag.clock[mref]), format='("Bclk = ",i5)'),charsize=1.2,/norm
+        xyouts,xs,ys,string(round(mag.clock[mref]), format='("Bclk = ",i5)'),charsize=csize1,/norm
         ys -= dys
       endif
     endif
@@ -473,13 +498,14 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       if (scp ne 0.) then p.pot = scp $
                      else if (finite(phi)) then p.pot = phi else p.pot = 0.
 
-      indx = where(E1 gt 2.*p.pot)
+      psep = 2.0
+      indx = where(E1 gt psep*p.pot)
       Fpeak = max(F1[indx],k,/nan)
       Epeak = E1[indx[k]]
       p.t = Epeak/2.
       p.n = Fpeak/(4.*c1*c2*sqrt(p.t)*exp((p.pot/p.t) - 2.))
-      Elo = Epeak*0.8 < ((Epeak/2.) > (2.*phi))
-      imb = where((E1 gt Elo) and (E1 lt Epeak*3.))
+      Elo = Epeak*0.7 < ((Epeak/2.) > (psep*phi))
+      imb = where((E1 gt Elo) and (E1 lt Epeak*2.))
 
       if (n_elements(erange) gt 1) then begin
         Emin = min(erange, max=Emax)
@@ -528,23 +554,23 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 
       jndx = where(E1 gt p.pot)
       col = 4
-      oplot,E1[jndx],swe_maxbol(E1[jndx],par=p),color=col,line=1
+      oplot,E1[jndx],swe_maxbol(E1[jndx],par=p),thick=2,color=col,line=1
       oplot,E1[imb],swe_maxbol(E1[imb],par=p),color=col,thick=2
-      xyouts,xs,ys,string(N_tot,format='("N = ",f5.2)'),color=col,charsize=1.2,/norm
+      xyouts,xs,ys,string(N_tot,format='("N = ",f5.2)'),color=col,charsize=csize1,/norm
       ys -= dys
-      xyouts,xs,ys,string(p.T,format='("T = ",f5.2)'),color=col,charsize=1.2,/norm
+      xyouts,xs,ys,string(p.T,format='("T = ",f5.2)'),color=col,charsize=csize1,/norm
       ys -= dys
-      xyouts,xs,ys,string(p.pot,format='("V = ",f5.2)'),color=6,charsize=1.2,/norm
+      xyouts,xs,ys,string(p.pot,format='("V = ",f5.2)'),color=6,charsize=csize1,/norm
       ys -= dys
       if (kap) then begin
-        xyouts,xs,ys,string(p.k_n,format='("Nh = ",f5.2)'),color=3,charsize=1.2,/norm
+        xyouts,xs,ys,string(p.k_n,format='("Nh = ",f5.2)'),color=3,charsize=csize1,/norm
         ys -= dys
-        xyouts,xs,ys,string(p.k_vh,format='("Vh = ",f6.0)'),color=3,charsize=1.2,/norm
+        xyouts,xs,ys,string(p.k_vh,format='("Vh = ",f6.0)'),color=3,charsize=csize1,/norm
         ys -= dys
-        xyouts,xs,ys,string(p.k_k,format='("k = ",f5.2)'),color=3,charsize=1.2,/norm        
+        xyouts,xs,ys,string(p.k_k,format='("k = ",f5.2)'),color=3,charsize=csize1,/norm        
         ys -= dys
       endif else begin
-        xyouts,xs,ys,string(N_halo,format='("Nh = ",f5.2)'),color=1,charsize=1.2,/norm
+        xyouts,xs,ys,string(N_halo,format='("Nh = ",f5.2)'),color=1,charsize=csize1,/norm
         ys -= dys
       endelse
 
@@ -584,21 +610,28 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         n_e--
       endelse
 
-      oplot,E1[j],F1[j],color=1,psym=10
+      oplot,spec.energy[j],spec.data[j],color=1,psym=10
 
       prat = (pot/E1[j]) < 1.
       N_tot = c3*total(dE[j]*sqrt(1. - prat)*(E1[j]^(-1.5))*F1[j])      
       P_tot = (2./3.)*c3*total(dE[j]*((1. - prat)^1.5)*(E1[j]^(-0.5))*F1[j])
       temp = P_tot/N_tot  ; temperature corresponding to kinetic energy density
 
-      xyouts,xs,ys,string(N_tot,format='("N = ",f6.3)'),color=1,charsize=1.2,/norm
+      xyouts,xs,ys,string(N_tot,format='("N = ",f6.3)'),color=1,charsize=csize1,/norm
       ys -= dys
-      xyouts,xs,ys,string(temp,format='("T = ",f6.2)'),color=1,charsize=1.2,/norm
+      xyouts,xs,ys,string(temp,format='("T = ",f6.2)'),color=1,charsize=csize1,/norm
       ys -= dys
-      xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=6,charsize=1.2,/norm
+      xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=6,charsize=csize1,/norm
+      ys -= dys
+    endif
+     
+    if (dflg) then begin
+      xyouts,xs,ys,'3D',charsize=csize1,/norm,color=4
       ys -= dys
     endif
     
+    if (psflg) then pclose
+
     if (pflg) then begin
       wset, Pwin
 
@@ -625,7 +658,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       
       title = string(spec.sc_pot,format='("Potential = ",f5.1," V")')
       plot,px,py,xtitle='Potential (V)',ytitle='dF and d2F',$
-                  xrange=xlim,/xsty,yrange=ylim,/ysty,title=title,charsize=1.4
+                  xrange=xlim,/xsty,yrange=ylim,/ysty,title=title,charsize=csize2
       oplot,[spec.sc_pot,spec.sc_pot],ylim,line=2,color=6
       oplot,px,py2,color=4
       oplot,xlim,[0,0],line=2
@@ -650,15 +683,14 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         for j=0,(ncross-1) do oplot,[px[indx[j]],px[indx[j]]],ylim,color=2
 
         if (k gt 0) then begin
-          xyouts,xs,ys,string(px[k],format='("V = ",f6.2)'),color=6,charsize=1.2,/norm
+          xyouts,xs,ys,string(px[k],format='("V = ",f6.2)'),color=6,charsize=csize1,/norm
           oplot,[px[k],px[k]],ylim,color=6,line=2
         endif
 
         ys = ys - dys
-        xyouts,xs,ys,string(dE,format='("dE = ",f6.2)'),charsize=1.2,/norm
+        xyouts,xs,ys,string(dE,format='("dE = ",f6.2)'),charsize=csize1,/norm
 
       endif
-
     endif
 
 ; Print out housekeeping in another window
@@ -752,6 +784,14 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         endelse
       endif else begin
         spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
+  
+        if (spflg) then begin
+          if (scp ne 0.) then pot = scp $
+                         else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
+          spec = conv_units(spec,'df')
+          spec.energy -= pot
+          spec = conv_units(spec,units)
+        endif
       endelse
       if (fflg) then yrange = drange
       if (hflg) then dt = min(abs(swe_hsk.time - trange[0]), jref)

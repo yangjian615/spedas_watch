@@ -62,8 +62,8 @@
 ;                      coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-04 17:41:43 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19248 $
+; $LastChangedDate: 2015-11-08 16:33:17 -0800 (Sun, 08 Nov 2015) $
+; $LastChangedRevision: 19304 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -73,7 +73,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
                   abins=abins, dbins=dbins, obins=obins, burst=burst, $
                   pot=pot, spec=spec, plotlims=plotlims, norm=norm, $
-                  center=center, pep=pep
+                  center=center, pep=pep, resample=resample, hires=hires, $
+                  fbdata=fbdata, window=window, adiabatic=adiabatic
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -85,6 +86,10 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   if not keyword_set(zrange) then zrange = 0
   if keyword_set(ddd) then dflg = 1 else dflg = 0
+  if keyword_set(resample) then rflg = 1 else rflg = 0
+  if keyword_set(hires) then hflg = 1 else hflg = 0
+  if (size(fbdata, /type) eq 0) then fbdata = 'mvn_B_full'
+  if keyword_set(adiabatic) then mflg = 1 else mflg = 0
   if (size(center,/type) eq 0) then center = 0
   if keyword_set(pep) then pflg = 1 else pflg = 0
   if keyword_set(sum) then begin
@@ -169,26 +174,50 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
 ; Put up snapshot window(s)
 
-  Twin = !d.window
-
+  tplot_options, get_opt=topt
+  str_element, topt, 'window', value=Twin
+  if keyword_set(Twin) then begin
+     wnum = Twin
+     free = 0
+  endif else begin
+     Twin = 0
+     wnum = 0
+     free = 1
+     wstat = 0
+  endelse
   if (size(Dopt,/type) ne 8) then swe_snap_layout, 0
   IF keyword_set(dir) THEN wdy = 0.125*Nopt.ysize ELSE wdy = 0.
-  window, /free, xsize=Popt.xsize, ysize=Popt.ysize, xpos=Popt.xpos, ypos=Popt.ypos
+  if ~(free) then wstat = execute("wset, wnum")
+  if wstat eq 0 then window, wnum, free=free, xsize=Popt.xsize, ysize=Popt.ysize, xpos=Popt.xpos, ypos=Popt.ypos
   Pwin = !d.window
+  wnum += 1
 
   if (sflg) then begin
-    window, /free, xsize=Nopt.xsize, ysize=Nopt.ysize + wdy, xpos=Nopt.xpos, ypos=Nopt.ypos
+    if ~(free) then wstat = execute("wset, wnum")
+    if wstat eq 0 then window, wnum, free=free, xsize=Nopt.xsize, ysize=Nopt.ysize + wdy, xpos=Nopt.xpos, ypos=Nopt.ypos
     Nwin = !d.window
+    wnum += 1
   endif
   
   if (dflg) then begin
-    window, /free, xsize=Copt.xsize, ysize=Copt.ysize, xpos=Copt.xpos, ypos=Copt.ypos
+    if ~(free) then wstat = execute("wset, wnum")
+    if wstat eq 0 then window, wnum, free=free, xsize=Copt.xsize, ysize=Copt.ysize, xpos=Copt.xpos, ypos=Copt.ypos
     Cwin = !d.window
+    wnum += 1
   endif
   
   if (dospec) then begin
-    window, /free, xsize=Fopt.xsize, ysize=Fopt.ysize, xpos=Fopt.xpos, ypos=Fopt.ypos
+    if ~(free) then wstat = execute("wset, wnum")
+    if wstat eq 0 then window, wnum, free=free, xsize=Fopt.xsize, ysize=Fopt.ysize, xpos=Fopt.xpos, ypos=Fopt.ypos
     Ewin = !d.window
+    wnum += 1
+  endif
+
+  if (rflg or hflg) then begin
+     if ~(free) then wstat = execute("wset, wnum")
+     if wstat eq 0 then window, wnum, free=free, xsize=Popt.xsize, ysize=Popt.ysize*0.5*(rflg+hflg), xpos=Popt.xpos, ypos=Popt.ypos
+     Rwin = !d.window
+     wnum += 1
   endif
 
 ; Set plot options
@@ -200,17 +229,23 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if keyword_set(zrange) then str_element, limits, 'zrange', zrange, /add
 
 ; Select the first time, then get the PAD spectrum closest that time
-
-  print,'Use button 1 to select time; button 3 to quit.'
-
-  wset,Twin
-  ctime,trange,npoints=npts,/silent
-  if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
-
+  if size(pad, /type) ne 8 then begin
+     print,'Use button 1 to select time; button 3 to quit.'
+     
+     wset,Twin
+     ctime,trange,npoints=npts,/silent
+     if (npts gt 1) then cursor,cx,cy,/norm,/up ; make sure mouse button is released
+     pdflg = 1
+  endif else begin
+     trange = 0.5*(pad.time + pad.end_time)
+     pdflg = 0
+     kflg = 0
+  endelse 
   if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
     wdelete,Pwin                           ; Don't keep empty windows.
     if (sflg) then wdelete,Nwin
     if (dospec) then wdelete,Ewin
+    if (rflg or hflg) then wdelete,Rwin
     wset,Twin
     return
   endif
@@ -228,6 +263,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       wdelete,Pwin                         ; Don't keep empty windows.
       if (sflg) then wdelete,Nwin
       if (dospec) then wdelete,Ewin
+      if (rflg or hflg) then wdelete,Rwin
       wset,Twin
       return
     endif
@@ -241,8 +277,10 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 ; Put up a PAD spectrogram
  
     wset, Pwin
-
-    pad = mvn_swe_getpad(trange,archive=aflg,all=doall,/sum,units=units)
+    if (pdflg) then begin
+       pad = mvn_swe_getpad(trange,archive=aflg,all=doall,/sum,units=units)
+       if (hflg) then pad = mvn_swe_padmap_32hz(pad, fbdata=fbdata, /verbose, maglev=maglev)
+    endif
     
     if (size(pad,/type) eq 8) then begin
     
@@ -337,8 +375,60 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         oplot,[3,5000],[ylo2[63,1],ylo2[63,1]],line=2
         oplot,[3,5000],[yhi2[63,8],yhi2[63,8]],line=2
       endif
-
       !p.multi = 0
+
+      if (rflg) or (hflg) then begin
+         wset, Rwin
+         if (rflg + hflg) eq 2 then !p.multi = [0, 1, 2]
+         if (rflg) then begin
+            rlim = limits
+            rtime = minmax(trange)
+            if rtime[0] eq rtime[1] then rtime = rtime[0]
+            mvn_swe_pad_resample, rtime, snap=0, tplot=0, result=rpad, silent=3, hires=hflg, fbdata=fbdata
+            arpad = rpad.avg
+            if size(arpad, /n_dimension) eq 3 then arpad = average(arpad, 3)
+            if (nflg) then arpad /= rebin(average(arpad, 2, /nan), n_elements(arpad[*, 0]), n_elements(arpad[0, *]), /sample)
+            str_element, rlim, 'title', time_string(mean(rpad.time)) + ' (Resampled)', /add_replace
+            specplot, average(pad.energy, 2), rpad[0].xax, arpad, lim=rlim
+         endif 
+         if (hflg) then begin
+            if tag_exist(pad, 'ftime') then begin
+               ftime = pad.ftime - time_double(time_string(pad.ftime[0], tformat='YYYY-MM-DD/hh:mm'))
+               if (mflg) then begin
+                  get_data, 'dBdRg', data=dbdr, index=idbdr
+                  if (idbdr ne 0) then begin
+                     idx = where(dbdr.x ge pad.time and dbdr.x le pad.end_time, nidx)
+                     if nidx gt 0 then begin
+                        edbdr = dbdr.v
+                        dbdr = average(dbdr.y[idx, *], 1)
+                        fdbdr = strarr(3)
+                        jdx = where(floor(alog10(dbdr)) ge 0, njdx, complement=kdx, ncomplement=nkdx)
+                        if njdx gt 0 then fdbdr[jdx] = '(f0.1)'
+                        if nkdx gt 0 then fdbdr[kdx] = '(f0.' + string(abs(floor(alog10(dbdr[kdx]))) + 1, '(i0)') + ')'
+                        htit = 'dB/dRg = ' + string(dbdr[0], fdbdr[0]) + ' (' + string(edbdr[0], '(i0)') + ' eV), ' + $
+                               string(dbdr[1], fdbdr[1]) + ' (' + string(edbdr[1], '(i0)') + ' eV), ' + $
+                               string(dbdr[2], fdbdr[2]) + ' (' + string(edbdr[2], '(i0)') + ' eV)'
+                        undefine, jdx, njdx, kdx, nkdx
+                        undefine, edbdr, fdbdr
+                     endif else htit = ''
+                     undefine, idx, nidx
+                  endif else htit = ''
+                  undefine, dbdr, idbdr
+               endif else htit = ''
+               box, {xrange: minmax(ftime), xmargin: [15, 15], xstyle: 1, yrange: [0., 360.], yticks: 4, yminor: 3, ystyle: 9, $
+                     xtitle: 'Time (UT) Seconds after ' + time_string(pad.ftime[0], tformat='YYYY-MM-DD/hh:mm'), ytitle: 'Baz (deg)', charsize: 1.4}
+               ;oplot, minmax(ftime), [180., 180.], lines=1
+               oplot, minmax(ftime), replicate(pad.baz*!radeg, 2), lines=1
+               oplot, minmax(ftime), replicate(2.*pad.bel*!radeg + 180., 2), color=254, lines=1
+               oplot, ftime, pad.fbaz*!radeg, psym=1
+               oplot, ftime, 2. * pad.fbel*!radeg + 180., psym=1, color=254
+               axis, /yaxis, charsize=1.4, yrange=[-90., 90.], color=254, ytitle='Bel (deg)', yticks=4, yminor=3, /ystyle 
+               ;axis, /xaxis, charsize=1.4, xrange=reverse(minmax(pad.energy)), xtitle='Energy [eV]', /xstyle, /xlog
+               xyouts, mean(!x.window), mean([!y.window[1], !y.region[1]]), htit, align=.5, charsize=1.4, /normal
+            endif 
+         endif 
+         if (rflg + hflg) eq 2 then !p.multi = 0
+      endif
 
       if (sflg) then begin
         x = pad.energy[*,0]
@@ -388,6 +478,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                  if (sflg) then wdelete, Nwin
                  if (dflg) then wdelete, Cwin
                  if (dospec) then wdelete, Ewin
+                 if (rflg or hflg) then wdelete, Rwin
               endif
               
               wset, Twin
@@ -542,12 +633,12 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     endif
 
 ; Get the next button press
-
-    wset,Twin
-    ctime,trange,npoints=npts,/silent
-    if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
-    if (size(trange,/type) eq 5) then ok = 1 else ok = 0
-
+    if (pdflg) then begin
+       wset,Twin
+       ctime,trange,npoints=npts,/silent
+       if (npts gt 1) then cursor,cx,cy,/norm,/up ; make sure mouse button is released
+       if (size(trange,/type) eq 5) then ok = 1 else ok = 0
+    endif else ok = 0
   endwhile
 
   if (kflg) then begin
@@ -555,6 +646,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     if (sflg) then wdelete, Nwin
     if (dflg) then wdelete, Cwin
     if (dospec) then wdelete, Ewin
+    if (rflg or hflg) then wdelete, Rwin
   endif
 
   wset, Twin

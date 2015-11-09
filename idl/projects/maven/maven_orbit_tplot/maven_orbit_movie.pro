@@ -26,8 +26,8 @@
 ;       Yuki Harada on 2015-11-04
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-11-06 11:51:03 -0800 (Fri, 06 Nov 2015) $
-; $LastChangedRevision: 19287 $
+; $LastChangedDate: 2015-11-08 15:23:18 -0800 (Sun, 08 Nov 2015) $
+; $LastChangedRevision: 19302 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_movie.pro $
 ;-
 
@@ -158,8 +158,7 @@ for irot=0,nstep-1 do begin     ;- movie loop start
    if size(br,/type) ne 0 then begin
 ;- rotate into MSO (cf. quaternion_rotation.pro)
       q = spice_body_att('IAU_MARS','MAVEN_MSO',tnow, $ ;- using center time
-                         /quaternion,check_object='MAVEN_SPACECRAFT', $
-                         verbose=verbose)
+                         /quaternion,verbose=verbose)
       t2 =   q[0]*q[1]
       t3 =   q[0]*q[2]
       t4 =   q[0]*q[3]
