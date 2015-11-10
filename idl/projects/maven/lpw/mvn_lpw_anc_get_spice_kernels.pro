@@ -5,7 +5,8 @@
 ;Added notatlasp keyword to disable server check, jmm, 2015-01-29
 ;
 ;INPUTS:
-;utc_range: a two element string array contaning the UTC start and stop times to get kernels for.
+;utc_range: an array containing the times for which to search for SPICE kernels. Times can be double UNIX times, or string UTC times. The min and max values are fed into the SSL software
+;           to search for SPICE kernels covering this time range.
 ;
 ;OUTPUTS:
 ;tplot variable containing the kernels, used by mvn_lpw_anc_spacecraft.pro, mvn_lpw_load_kernel_files
@@ -22,9 +23,11 @@
 ;
 ;EXAMPLE
 ;mvn_lpw_anc_get_spice_kernels, ['2014-10-10', '2014-10-11']  ;get SPICE kernels for the date '2014-10-10/00:00:00 up to 2014:10:10/23:59:59, ie 24 hours worth.
+;mvn_lpw_anc_get_spice_kernels, [time_double('2014-10-10'), time_double('2014-10-11')]
 ;
 ;EDITS:
 ;2015-10-08: CMF added /load keyword.
+;2015-11-09: CMF: modified routine to take an array of double or string times, and use the max/min values to send into the Berkeley routines.
 ;
 ;-
 ;
@@ -44,13 +47,25 @@ IF ~keyword_set(notatlasp) && file_test(rd+'server_check'+sl+'lpw_server_check.r
   return
 ENDIF
 
+;Take min and max values from utc_range:
+stype = size(utc_range,/type)
 
-if size(utc_in, /type) ne 7 and n_elements(utc_range) ne 2 then begin
-    print, proname, " : ### WARNING ### : utc_in must be a 2 element string array containing a UTC time range in the format yyyy-mm-dd/hh:mm:ss"
-    retall
+if stype eq 7 then begin   ;STRINGS entered
+    unix_range = time_double(utc_range)
+    minT = min(unix_range,/nan)
+    maxT = max(unix_range,/nan)
+endif
+if stype eq 5 then begin  ;DOUBLE entered
+    unix_range = utc_range
+    minT = min(unix_range,/nan)
+    maxT = max(unix_range,/nan)
+endif
+if stype ne 5 and stype ne 7 then begin
+      print, proname, " : ### WARNING ### : utc_in must be a double precision array of UNIX times, or a string array of UTC times in the format yyyy-mm-dd/hh:mm:ss. Exiting."
+      retall
 endif
 
-tt = mvn_spice_kernels(trange = utc_range)
+tt = mvn_spice_kernels(trange = [minT, maxT])
 if keyword_set(load) then spice_kernel_load, tt   ;send in found SPICE kernels.
 
 ;tt contains the names of all SPICE kernels regardless of the type (ck, pck, lsk, etc). For now, we need ck, tls, spk, sclk. Remove files which
@@ -80,7 +95,7 @@ ENDELSE
 
 
 store_data, 'mvn_lpw_load_kernel_files', data={x:1., y:1.}, dlimit={Kernel_files: kernels, $
-  Purpose: "Directories to kernel files needed for UTC date "+utc_range[0]+" - "+utc_range[1], $
+  Purpose: "Directories to kernel files needed for UTC date "+time_string(minT)+" - "+time_string(maxT), $
   Notes: "Load in order first entry to last entry to ensure correct coverage"}
 
 

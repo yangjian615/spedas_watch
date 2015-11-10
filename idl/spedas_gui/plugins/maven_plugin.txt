@@ -1,3 +1,0 @@
-project: MAVEN PFP
-load_data: mvn_kp_ui_load_data
-config: mvn_spd_fileconfig

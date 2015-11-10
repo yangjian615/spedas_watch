@@ -61,9 +61,41 @@
 ;        PLOTLIMS:     Plot dashed lines at the limits of the pitch angle
 ;                      coverage.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-08 16:33:17 -0800 (Sun, 08 Nov 2015) $
-; $LastChangedRevision: 19304 $
+;        PEP:          Plot vertical dashed lines at the nominal photoelectron
+;                      energy peaks at 23 and 27 eV (due to ionization of CO2
+;                      and O by 304-Angstrom He-II line).
+;
+;        RESAMPLE:     Two independent pitch angle distributions are measured 
+;                      for each PAD data structure.  This keyword averages them
+;                      together.
+;
+;        UNCERTAINTY:  If set, the relative uncertainty of
+;                      the resampled PAD is shown.
+;
+;        HIRES:        Use 32-Hz MAG data to map pitch angle with high time 
+;                      resolution within a 2-second SWEA measurement cycle.  A
+;                      separate pitch angle map is determined for each of the
+;                      64 energy steps.  You must first load 32-Hz MAG data for 
+;                      this keyword to be effective.  Please read warnings in 
+;                      mvn_swe_padmap_32Hz.pro.
+;
+;        FBDATA:       Tplot variable name that contains the 32-Hz MAG data.
+;                      Default = 'mvn_B_full'.
+;
+;        WINDOW:       Window number for the first snapshot window.  Additional 
+;                      snapshot windows are in numerical sequence.  If not set,
+;                      then all snapshot window numbers are generated automatically.
+;
+;        ADIABATIC:    Calculate and display the adiabatic condition:
+;
+;                        (1/B)*(dB/dx)*Rg << 1
+;
+;                      which is the fractional change in the magnetic field over
+;                      one gyroradius.  Only works when HIRES is set.
+;
+; $LastChangedBy: hara $
+; $LastChangedDate: 2015-11-09 16:54:45 -0800 (Mon, 09 Nov 2015) $
+; $LastChangedRevision: 19326 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -74,7 +106,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   abins=abins, dbins=dbins, obins=obins, burst=burst, $
                   pot=pot, spec=spec, plotlims=plotlims, norm=norm, $
                   center=center, pep=pep, resample=resample, hires=hires, $
-                  fbdata=fbdata, window=window, adiabatic=adiabatic
+                  fbdata=fbdata, window=window, adiabatic=adiabatic, uncertainty=uncertainty
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -89,7 +121,15 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if keyword_set(resample) then rflg = 1 else rflg = 0
   if keyword_set(hires) then hflg = 1 else hflg = 0
   if (size(fbdata, /type) eq 0) then fbdata = 'mvn_B_full'
-  if keyword_set(adiabatic) then mflg = 1 else mflg = 0
+  if keyword_set(adiabatic) then begin
+    mflg = 1
+    get_data, 'dBdRg', index=idbdr
+    if (idbdr eq 0) then mvn_swe_eparam
+  endif else mflg = 0
+  if keyword_set(uncertainty) then begin
+     uflg = 1
+     rflg = 1
+  endif else uflg = 0
   if (size(center,/type) eq 0) then center = 0
   if keyword_set(pep) then pflg = 1 else pflg = 0
   if keyword_set(sum) then begin
@@ -175,13 +215,14 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 ; Put up snapshot window(s)
 
   tplot_options, get_opt=topt
-  str_element, topt, 'window', value=Twin
-  if keyword_set(Twin) then begin
-     wnum = Twin
+  str_element, topt, 'window', value=Twin, success=ok
+  if (not ok) then Twin = !d.window
+
+  if (size(window,/type) gt 0) then begin
+     wnum = window  ; snapshot window numbers determined by user
      free = 0
   endif else begin
-     Twin = 0
-     wnum = 0
+     wnum = 0       ; snapshot window numbers determined by IDL
      free = 1
      wstat = 0
   endelse
@@ -213,9 +254,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     wnum += 1
   endif
 
-  if (rflg or hflg) then begin
+  if (rflg or hflg or uflg) then begin
      if ~(free) then wstat = execute("wset, wnum")
-     if wstat eq 0 then window, wnum, free=free, xsize=Popt.xsize, ysize=Popt.ysize*0.5*(rflg+hflg), xpos=Popt.xpos, ypos=Popt.ypos
+     if wstat eq 0 then window, wnum, free=free, xsize=Popt.xsize, ysize=Popt.ysize*0.5*(rflg+hflg+uflg), xpos=Popt.xpos, ypos=Popt.ypos
      Rwin = !d.window
      wnum += 1
   endif
@@ -377,11 +418,17 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       endif
       !p.multi = 0
 
-      if (rflg) or (hflg) then begin
+      if (rflg or hflg or uflg) then begin
          wset, Rwin
-         if (rflg + hflg) eq 2 then !p.multi = [0, 1, 2]
+         if (rflg + hflg + uflg) gt 1 then !p.multi = [0, 1, rflg+hflg+uflg]
          if (rflg) then begin
             rlim = limits
+            if (rflg + hflg + uflg) eq 3 then begin
+               ymargin = !y.margin
+               str_element, rlim, 'charsize', rlim.charsize * 1.5, /add_replace
+               str_element, rlim, 'xmargin', rlim.xmargin / 1.5, /add_replace
+               !y.margin /= 1.5
+            endif 
             rtime = minmax(trange)
             if rtime[0] eq rtime[1] then rtime = rtime[0]
             mvn_swe_pad_resample, rtime, snap=0, tplot=0, result=rpad, silent=3, hires=hflg, fbdata=fbdata
@@ -390,6 +437,15 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
             if (nflg) then arpad /= rebin(average(arpad, 2, /nan), n_elements(arpad[*, 0]), n_elements(arpad[0, *]), /sample)
             str_element, rlim, 'title', time_string(mean(rpad.time)) + ' (Resampled)', /add_replace
             specplot, average(pad.energy, 2), rpad[0].xax, arpad, lim=rlim
+
+            if (uflg) then begin
+               urpad = rpad.std
+               if size(urpad, /n_dimension) eq 3 then urpad = average(urpad, 3)
+               str_element, rlim, 'ztitle', 'Relative Uncertainty', /add_replace
+               str_element, rlim, 'zrange', [1.d-2, 1.], /add_replace
+               str_element, rlim, 'title', 'Resampled PAD Relative Uncertainty', /add_replace
+               specplot, average(pad.energy, 2), rpad[0].xax, urpad/arpad, lim=rlim
+            endif 
          endif 
          if (hflg) then begin
             if tag_exist(pad, 'ftime') then begin
@@ -415,19 +471,24 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   endif else htit = ''
                   undefine, dbdr, idbdr
                endif else htit = ''
-               box, {xrange: minmax(ftime), xmargin: [15, 15], xstyle: 1, yrange: [0., 360.], yticks: 4, yminor: 3, ystyle: 9, $
-                     xtitle: 'Time (UT) Seconds after ' + time_string(pad.ftime[0], tformat='YYYY-MM-DD/hh:mm'), ytitle: 'Baz (deg)', charsize: 1.4}
+               box, {xrange: minmax(ftime), xstyle: 1, yrange: [0., 360.], yticks: 4, yminor: 3, ystyle: 9, $
+                     xtitle: 'Time (UT) Seconds after ' + time_string(pad.ftime[0], tformat='YYYY-MM-DD/hh:mm'), ytitle: 'Baz (deg)', $
+                     charsize: 0.7 * (rflg + uflg + hflg) > 1.4, xmargin: [15, 15] / ((rflg + uflg + hflg)/2. > 1.)}
                ;oplot, minmax(ftime), [180., 180.], lines=1
                oplot, minmax(ftime), replicate(pad.baz*!radeg, 2), lines=1
                oplot, minmax(ftime), replicate(2.*pad.bel*!radeg + 180., 2), color=254, lines=1
                oplot, ftime, pad.fbaz*!radeg, psym=1
                oplot, ftime, 2. * pad.fbel*!radeg + 180., psym=1, color=254
-               axis, /yaxis, charsize=1.4, yrange=[-90., 90.], color=254, ytitle='Bel (deg)', yticks=4, yminor=3, /ystyle 
+               axis, /yaxis, yrange=[-90., 90.], color=254, ytitle='Bel (deg)', yticks=4, yminor=3, /ystyle, charsize=(0.7 * (rflg + uflg + hflg) > 1.4)
                ;axis, /xaxis, charsize=1.4, xrange=reverse(minmax(pad.energy)), xtitle='Energy [eV]', /xstyle, /xlog
                xyouts, mean(!x.window), mean([!y.window[1], !y.region[1]]), htit, align=.5, charsize=1.4, /normal
             endif 
          endif 
-         if (rflg + hflg) eq 2 then !p.multi = 0
+         if (rflg + hflg + uflg) ge 2 then !p.multi = 0
+         if size(ymargin, /type) ne 0 then begin
+            !y.margin = ymargin
+            undefine, ymargin
+         endif 
       endif
 
       if (sflg) then begin

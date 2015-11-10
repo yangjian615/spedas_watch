@@ -1,7 +1,7 @@
 ; Created by Jianbao Tao, SSL/UCB.
 
 ; Set up
-date = '2012-10-13'
+date = '2015-08-07'
 sc = 'a'
 rbx = 'rbsp' + sc + '_'
 

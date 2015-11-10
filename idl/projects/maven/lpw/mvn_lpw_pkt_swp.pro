@@ -106,8 +106,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
       if output.p11 NE n_elements(output_swp_i) AND swpn EQ 2 then stanna
       if n_elements(output_swp_i) EQ 0 AND swpn EQ 2 then print,'(mvn_lpw_swp2) No packages where found <---------------'
       ;-----------------------------------------
-      
-      
+          
       
       ;-------------------- Get correct clock time ------------------------------     
       ;#############
@@ -216,9 +215,9 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                                          'dy',   fltarr(nn_pktnum ) )     ;1-D 
                 ;-------------- derive  time/variable ----------------                          
                 data.x       = time                                                                                                                
-                for i=0,nn_pktnum-1 do begin
+                for i=0L,nn_pktnum-1 do begin
                   data.y[i]  = bias_arr[2048-output_swp_dyn_offset[i],swpn]    ; Volt 
-                  data.dy[i] = (bias_arr[((output_swp_dyn_offset[i]-1)>0)<4095,1]-bias_arr[((output_swp_dyn_offset[i]+1)>0)<4095,1])*0.5  
+                  data.dy[i] = (bias_arr[(output_swp_dyn_offset[i]-1)>0,1]-bias_arr[(output_swp_dyn_offset[i]+1)<4095,1])*0.5  
                                                                          ; the derived error is the dV/2 of the two next to each other bins              
                  endfor  
                 ;-------------------------------------------
@@ -369,7 +368,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 index_pas_v=nn_pa*(lindgen(n_elements(data2.x)/nn_pa)) +(nn_pa-1) ; find the last voltage point in each packet               
                 pas_time=data2.x(index_pas_v)
                 pas_volt=data2.y(index_pas_v)                  
-                for i=0,nn_pktnum-1 do begin                                        
+                for i=0L,nn_pktnum-1 do begin                                        
                       data.y[i,0] = output_I_ZERO[i]*16                             ; this is the i_zero uncorrected from each packet,converted to the same resolution as all the other currents          
                       tmp2           = min( abs(data.x(i) -   pas_time),nq )   ;find the last measurement in the PAS paket which was taken at the same time as the i_zero measurement   
                       if  pas_time(nq) GT data.x(i) then nq=nq-1       ;make sure that the order of the packets are correct
@@ -658,7 +657,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                    ss=LINDGEN(nn_pktnum)*nn_steps                  ; start of each sweep                  
                   data.x = data2.x(ss) 
                   rt=0  ; which variable to use from  'mvn_lpw_swp'+strtrim(swpn,2)+'_I'+strtrim(swpn,2)+'_basic'  
-                  for i=0,nn_pktnum-1 do  begin
+                  for i=0L,nn_pktnum-1 do  begin
                       data.y[i,*]=data2.y(ss[i]:ss[i]+nn_steps-1,rt)           ; this will be the fully corrected current
                       data.v[i,*]=indgen(nn_steps)                      ; the potential-sweep based on the atr, do not use output information!!!
                       data.dy[i,*]=data2.dy(ss[i]:ss[i]+nn_steps-1,rt)         ; keep the error
@@ -938,7 +937,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                    U      = fltarr(nn_steps)
                    I      = fltarr(nn_steps)
                    y_norm = fltarr(nn_pktnum,nn_steps)
-                 for ii=0,nn_pktnum-1 do begin
+                 for ii=0L,nn_pktnum-1 do begin
                       U[*] = data.v[ii,*]  ;data2.y(ss[ii]:ss[ii]+nn_steps-1) ; transpose(data2.y(ss[i]:ss[i]+nn_steps-1))
                       I[*] = data.y[ii,*]  ;data1.y(ss[ii]:ss[ii]+nn_steps-1) ; transpose(data1.y(ss[i]:ss[i]+nn_steps-1))
                       U_sort = sort(U)

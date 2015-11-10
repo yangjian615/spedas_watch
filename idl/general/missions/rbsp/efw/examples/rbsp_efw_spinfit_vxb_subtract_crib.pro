@@ -8,7 +8,9 @@
 ;			qa -> select to load QA waveform data. Don't want to use this route for normal
 ;				  data processing. 
 ;			hiresl3 -> loads the EMFISIS high resolution 64 S/s L3 GSE data
-;                       level -> Level of EMFISIS data. Options are:  'ql', 'l2', 'l3'. Defaults to 'l3'
+;                       level -> Level of EMFISIS data. Options are:
+;'ql', 'l2', 'l3'. Defaults to 'l3'
+;                       boom_pair -> select the boom pair for the spinfitting. Options are '12','34'
 ;
 ;By Aaron W Breneman
 ;University of Minnesota
@@ -16,13 +18,16 @@
 
 
 
-pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,ql=ql,qa=qa,hiresl3=hiresl3,level=level
+pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,ql=ql,qa=qa,$
+                                       hiresl3=hiresl3,level=level,boom_pair=pair
 
 
+  if ~keyword_set(pair) then pair = '12'
   if ~keyword_set(level) and ~keyword_set(ql) then level = 'l3'
   if ~keyword_set(ql) then quickl = 0 else quickl = 1
   if keyword_set(ql) then level = 'ql'
   if level eq 'l3' or level eq 'l2' then quickl = 0
+
 
   type = ''
   if keyword_set(hiresl3) then type = 'hires' else type = '1sec'
@@ -85,13 +90,14 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
      end
   endcase
 
-  
+ 
 ;Spinfit data and transform to MGSE coordinates
-  rbsp_spinfit, rbspx + '_efw_esvy', plane_dim = 0 ; V12
+  if pair eq '12' then rbsp_spinfit, rbspx + '_efw_esvy', plane_dim = 0 ; V12
+  if pair eq '34' then rbsp_spinfit, rbspx + '_efw_esvy', plane_dim = 1 ; V34
 
 
-  store_data,[rbspx+'_efw_esvy',rbspx+'_efw_esvy_spinfit_e12_a',$
-              rbspx+'_efw_esvy_spinfit_e12_b',rbspx+'_efw_esvy_spinfit_e12_c'],/delete
+  store_data,[rbspx+'_efw_esvy',rbspx+'_efw_esvy_spinfit_e'+pair+'_a',$
+              rbspx+'_efw_esvy_spinfit_e'+pair+'_b',rbspx+'_efw_esvy_spinfit_e'+pair+'_c'],/delete
 
   
   if ~tdexists(rbspx + '_efw_esvy_spinfit',tr[0],tr[1]) then begin
@@ -101,7 +107,7 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
 
 
   
-  rbsp_cotrans, rbspx + '_efw_esvy_spinfit', rbspx + '_sfit12_mgse', /dsc2mgse
+  rbsp_cotrans, rbspx + '_efw_esvy_spinfit', rbspx + '_sfit'+pair+'_mgse', /dsc2mgse
 
 
 
@@ -204,8 +210,9 @@ if level eq 'l3' then begin
   
   if tdexists('vel_total',tr[0],tr[1]) and $
      tdexists(rbspx + '_mag_mgse',tr[0],tr[1]) and $
-     tdexists(rbspx+'_sfit12_mgse',tr[0],tr[1]) then $
-        rbsp_vxb_subtract,'vel_total',rbspx + '_mag_mgse',rbspx+'_sfit12_mgse'
+     tdexists(rbspx+'_sfit'+pair+'_mgse',tr[0],tr[1]) then $
+        rbsp_vxb_subtract,'vel_total',rbspx + '_mag_mgse',rbspx+'_sfit'+pair+'_mgse'
+  
 
   store_data,'vel_total',/delete
 
@@ -255,9 +262,10 @@ if level eq 'l3' then begin
               rbspx+'_state_vel_coro_gei',rbspx+'_E_coro_gei',$
               rbspx+'_emfisis_l3_'+type+'_gse_delta',rbspx+'_emfisis_l3_'+type+'_gse_lambda',$
               rbspx+'_emfisis_l3_4sec_gse_rms',rbspx+'_emfisis_l3_4sec_gse_coordinates',$
+              rbspx+'_emfisis_l3_1sec_gse_rms',rbspx+'_emfisis_l3_1sec_gse_coordinates',$
               rbspx+'_state_pos_gei',rbspx+'_efw_esvy_ccsds_data_BEB_config',$
               rbspx+'_efw_esvy_ccsds_data_DFB_config',$
-              'bfield_data',rbspx+'_sfit12_mgse'],/delete
+              'bfield_data',rbspx+'_sfit'+pair+'_mgse'],/delete
 
 end
 

@@ -79,7 +79,7 @@
 ;                       itself is created automatically within the routine.
 ;                       For example: get_clock_jumps='/Users/name/' will create the file /Users/name/yyyy-mm-dd_clk_jumps.sav
 ; 
-;      nospiceclear: set /nospiceclear to leave SPICE kernels in IDL memory at end of this routine. Default if not set is to clear them.
+;      leavespice: set /leavespice to leave SPICE kernels in IDL memory at end of this routine. Default if not set is to clear them.
 ;      
 ;NOTES: 
 ; This routine is a wrapper for several of Davin Larons IDL routines: mvn_pfp_file_retrieve, mvn_spice_kernels, and routines within these. See comments in these
@@ -168,11 +168,13 @@
 ;20150806: CMF forced tplot_var='all'as keyword  currently doesn't work.   
 ;2015-10-08: CMF: modified so that we don't spam NAIF with many requests for SPICE kernels. Kernels are looked up and downloaded (if needed) once at start of routine.
 ;                 SPICE kernels are cleared by default once all processing done, but remain as a tplot variable.
-;            
+;2015-11-09: CMF: modified SPICE kernel finder routines - they now add 20 minutes to each end to make sure we cover all times within the day; sometimes packets can be outside of the day by a few minutes.
+;           
+;           
 ;-
 
 pro mvn_lpw_load, utc_in, data_dir=data_dir, tplot_var=tplot_var, filetype=filetype, packet=packet, board=board, nospice=nospice, noserver=noserver, $
-                  notatlasp=notatlasp, get_file_info=get_file_info, get_clock_jumps = get_clock_jumps, nospiceclear=nospiceclear
+                  notatlasp=notatlasp, get_file_info=get_file_info, get_clock_jumps = get_clock_jumps, leavespice=leavespice
 
 common clock_check, jump_times_nospice
 jump_times_nospice = dblarr(1)
@@ -391,8 +393,12 @@ if filetype eq 'L0' then begin
       if spice_test() eq 0 then nospice=1.  ;set /nospice if SPICE is not installed on the machine
       
       if not keyword_set(nospice) then begin  ;/nospice means ignore this and don't use SPICE
+          ;Add 20 minutes to each end to make sure we cover all times; some packets can lie a few minutes outside of the day.
+          Tload = time_double(utc_in[0])
+          Tload1 = Tload - 1200.d  ;1200s = 20 minutes
+          Tload2 = Tload + 86400.d + 1200.d
           print, "Locating correct SPICE kernels..."
-          mvn_lpw_anc_get_spice_kernels, [utc_in[0], utc_in[0]], notatlasp = notatlasp, /load  ;add notatlasp, jmm, 2015-01-29     , CMF added /load keyword
+          mvn_lpw_anc_get_spice_kernels, [Tload1, Tload2], notatlasp = notatlasp, /load  ;add notatlasp, jmm, 2015-01-29     , CMF added /load keyword
       endif 
       
       ;==========================
@@ -489,7 +495,7 @@ endif
 
 
 ;CLEAR SPICE kernels here:
-if not keyword_set(nospiceclear) then mvn_lpw_anc_clear_spice_kernels
+if not keyword_set(leavespice) then mvn_lpw_anc_clear_spice_kernels
 
 ;stop
 end

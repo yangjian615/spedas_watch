@@ -15,10 +15,12 @@
 ;           Because of this a time span of +- 5 days is added to unix_in when searching for engineering files. Any "extra" timesteps within the found
 ;           engineering files are then removed, so that returned tplot variables match unix_in as closely as possible in terms of coverage start:stop times.
 ;
+;This code also requires access to the SSL svn library as it uses various IDL routines from there to fetch data and convert between UNIX and UTC times.
+;
 ;OUTPUTS:
 ;Tplot variables:
 ;
-;mvn_lpw_anc_rw: reaction wheel spin rates, in units of rad/s. There are four wheels, and can spin +-
+;mvn_lpw_anc_rw: reaction wheel spin rates, in units of Hz. There are four wheels, and can spin +-
 ;
 ;mvn_lpw_spec_lf_pas-rw: absolute reaction wheel spin rates, converted to Hz, overplotted on the passive lf spectra. mvn_lpw_spec_lf_pas 
 ;                        must be in tplot memory to produce this variable
@@ -33,13 +35,14 @@
 ;        
 ;mvn_lpw_anc_sc-rot: rotation rate of s/c about s/c x,y,z axes. Units given are "rotation rate" - not sure on actual units. 
 ;
-;mvn_lpw_anc_rel_rw: Speed of RWs in Hz, relative to RW1.
+;mvn_lpw_anc_rel_rw: Speed of RWs in Hz, relative to RW1. NOTE currently disabled as not sure this works correctly. 
 ;  
 ;NOTES:
 ;Correspondence with Boris Semenov: mvn_rec_*.sff (thruster) files are produced in ET time, with clock drift taken into account.
 ;Correspondence with Mike Haggard: mvn_rec_*.drf (RW) files are produced in UTC time, with clock drift "should be" taken into account.                                        
 ;
-;Davin's routines take string UTC dates and convert to UNIX, so there should be no need to include SPICE when usng these.
+;Davin's routines take string UTC dates and convert to UNIX, so there should be no need to include SPICE when using these, assuming your UNIX times have been SPICE corrected.
+;                          
 ;                                                      
 ;KEYWORDS:
 ; NONE
@@ -51,6 +54,7 @@
 ;2024-05-02: CF: added new tplot variables mvn-lpw-anc-sc-rot, mvn-lpw-anc-rel-rw. Added use of mvn-lpw-plus-sym to produce scalable plotting symbols.
 ; ;140718 clean up for check out L. Andersson
 ; 14-10-31: CF: removed ISTP dlimit information via keyword as this isn't needed and needs to be more complicated to work properly.
+; 15-08-12: CMF: cleaned up comments, disabled automatic production of mvn_lpw_anc_rel_r.
 ; 
 ;-
 
@@ -68,7 +72,7 @@ if size(unix_in, /type) ne 5 then begin
     print, "#######################"
     print, "WARNING: unix_in must be a double array of UNIX times."
     print, "#######################"
-    retall
+    return
 endif
 today_date = systime(0)
 nele = n_elements(unix_in)
@@ -82,7 +86,7 @@ t2 = unix_in[nele-1] + (3.*86400.D)
 
 ;For now, don't need all the ISTP information, as we're not documenting the engineering files:
 
-if keyword_set(noskip) then begin
+if keyword_set(noskip) then begin   ;Leave this keyword line in, otherwise code will try to get information not present and crash.
     ;Get dlimit info from an available tplot variable (this assumes the first two variables are L0 file info and kernel info):
     tplotnames = tnames()
     if tplotnames[0] ne '' and n_elements(tplotnames) gt 2 then begin  ;if we have tplot variables 
@@ -168,7 +172,7 @@ if (size(thruster, /type) eq 0) or (size(thruster, /type) eq 7) then print, "###
 if size(reac, /type) eq 0 then print, "### WARNING ###: mvn_lpw_anc_eng: No reaction wheel informtion found. Your date may be too recent."
 if (size(thruster, /type) eq 0 or size(thruster, /type) eq 7) and size(reac, /type) eq 0 then begin
     print, "No engineering information found. Returning."
-    retall
+    return
 endif
 
    ;Find engineering files, for dlimit:
@@ -445,7 +449,7 @@ if nele_r gt 1 then begin  ;reaction wheels
               ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
               'noerrorbars', 1)   
            ;---------------------------------
-           store_data, 'mvn_lpw_anc_rel_rw', data=data, dlimit=dlimit, limit=limit          
+           ;store_data, 'mvn_lpw_anc_rel_rw', data=data, dlimit=dlimit, limit=limit             ;### NOT sure this works correctly.
       
 endif  ;nele_r gt 1
 

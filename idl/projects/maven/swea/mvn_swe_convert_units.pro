@@ -16,8 +16,8 @@
 ;	Returns the same data structure in the new units
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-17 12:51:00 -0700 (Wed, 17 Jun 2015) $
-; $LastChangedRevision: 17896 $
+; $LastChangedDate: 2015-11-09 14:42:03 -0800 (Mon, 09 Nov 2015) $
+; $LastChangedRevision: 19319 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_convert_units.pro $
 ;
 ;-
@@ -79,7 +79,7 @@ pro mvn_swe_convert_units, data, units, scale=scale
 
   data.units_name = units
   data.data = data.data * scale
-  data.var = data.var * scale
+  data.var = data.var * (scale*scale)
   data.bkg = data.bkg * scale
 
   return

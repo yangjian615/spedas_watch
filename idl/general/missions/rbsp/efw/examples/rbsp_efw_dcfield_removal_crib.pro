@@ -50,7 +50,8 @@
 
 
 pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplot,model=model,ql=ql,$
-                                  cadence=cadence,nodelete=nodelete,decimate_level=decimate_level
+                                  cadence=cadence,nodelete=nodelete,decimate_level=decimate_level,$
+                                  boom_pair=bp
 
 
 
@@ -81,8 +82,8 @@ pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplo
 
                                 ;predicted kernels needed to convert very recent UVW mag data to GSE
   if ~keyword_set(no_spice_load) then rbsp_load_spice_kernels
-
-
+  if ~keyword_set(bp) then bp = '12'
+  if bp eq '12' then plane_dim = 0 else plane_dim = 1
 
 ;Load RBSP position data and transform to GSM which is needed for the model subtraction
 
@@ -166,7 +167,7 @@ pro rbsp_efw_dcfield_removal_crib,probe,no_spice_load=no_spice_load,noplot=noplo
 
                                 ;spinfit the mag data and transform to MGSE
      rbsp_decimate,rbspx +'_emfisis_quicklook_Mag', upper = 2
-     rbsp_spinfit,rbspx +'_emfisis_quicklook_Mag', plane_dim = 0
+     rbsp_spinfit,rbspx +'_emfisis_quicklook_Mag', plane_dim = plane_dim
      rbsp_cotrans,rbspx +'_emfisis_quicklook_Mag_spinfit', rbspx + '_mag_mgse', /dsc2mgse
 
 

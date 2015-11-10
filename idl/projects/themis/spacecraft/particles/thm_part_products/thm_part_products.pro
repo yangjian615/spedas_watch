@@ -17,9 +17,9 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-06-22 16:14:14 -0700 (Mon, 22 Jun 2015) $
-;$LastChangedRevision: 17937 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2015-11-09 08:57:36 -0800 (Mon, 09 Nov 2015) $
+;$LastChangedRevision: 19311 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -30,12 +30,13 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
                      trange=trange,$ ;required for now
                      energy=energy,$ ;energy range
                      
-                     phi=phi_in,$ ;angle limist 2-element array [min,max], in degrees, spacecraft spin plane
+                     phi=phi_in,$ ;angle limits 2-element array [min,max], in degrees, spacecraft spin plane
                      theta=theta,$ ;angle limits 2-element array [min,max], in degrees, normal to spacecraft spin plane
                      pitch=pitch,$ ;angle limits 2-element array [min,max], in degrees, magnetic field pitch angle
                      gyro=gyro_in,$ ;angle limits 2-element array [min,max], in degrees, gyrophase  
                      
                      outputs=outputs,$ ;list of requested output types (simpler than the angle=angle & /energy setup from before
+                     ;Options are "energy","theta","phi","pa",and "gyro"
                      
                      units=units,$ ;scalar unit conversion for data 
                      

@@ -120,8 +120,8 @@
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-11-05 16:07:17 -0800 (Thu, 05 Nov 2015) $
-; $LastChangedRevision: 19275 $
+; $LastChangedDate: 2015-11-09 15:59:08 -0800 (Mon, 09 Nov 2015) $
+; $LastChangedRevision: 19325 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -643,6 +643,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
            ; Resampling
            FOR j=0, nene-1 DO BEGIN
               tot = DBLARR(nbins)
+              variance = tot
               index = tot
               FOR k=0, pad.nbins-1 DO BEGIN
                  l = WHERE(~FINITE(pad.data[edx[j], k]), cnt)
@@ -650,6 +651,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
                     l = WHERE((xax GE pad.pa_min[edx[j],k]) AND (xax LE pad.pa_max[edx[j],k]), cnt)
                     IF cnt GT 0 THEN BEGIN
                        tot[l] += pad.data[edx[j], k]
+                       variance[l] += pad.var[edx[j], k]
                        index[l] += 1.
                     ENDIF 
                  ENDIF 
@@ -660,9 +662,9 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
               pa.avg[j,*] = tot/index            ; average signal of overlapping PA bins
               pa.nbins[j,*] = index              ; normalization factor (# overlapping PA bins)
               pa.index[j,*] = float(index gt 0.) ; bins that have signal (1=yes, 0=no)
-
+              pa.std[j,*] = SQRT(variance) / index  ; standard deviation (error propagation)
               undefine, k, cnt
-              undefine, tot, index
+              undefine, tot, index, variance
            ENDFOR  
            pa.xax = xax * !RADEG
            undefine, tot, index

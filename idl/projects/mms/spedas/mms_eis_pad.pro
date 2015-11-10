@@ -17,6 +17,7 @@
 ;         ion_type: array containing types of particles to include. 
 ;               for PHxTOF data, valid options are 'proton', 'oxygen'
 ;               for ExTOF data, valid options are 'proton', 'oxygen', and/or 'alpha'
+;         scopes: string array of telescopes to be included in PAD ('0'-'5’)”
 ;
 ; EXAMPLES:
 ; 
@@ -28,8 +29,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-30 15:32:04 -0700 (Fri, 30 Oct 2015) $
-;$LastChangedRevision: 19198 $
+;$LastChangedDate: 2015-11-09 15:11:11 -0800 (Mon, 09 Nov 2015) $
+;$LastChangedRevision: 19324 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:

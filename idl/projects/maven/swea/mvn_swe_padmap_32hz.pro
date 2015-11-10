@@ -2,10 +2,14 @@
 ;
 ;FUNCTION:        MVN_SWE_PADMAP_32HZ
 ;
-;PURPOSE:         Calculates the pitch angle for a PAD, taking into
-;                 account differences of the 64 energy sweep timings.
+;PURPOSE:         Maps pitch angle over the SWEA field of view with high time
+;                 resolution, taking into account magnetic field variations 
+;                 during the 2-second SWEA measurement cycle.  Separate pitch
+;                 angle maps are calculated for each of the 64 SWEA energy
+;                 steps using 32-Hz MAG data.  The results are appended as new
+;                 tags to the PAD data structure.
 ;
-;                 BEWARE! This routine requires accurate relative timing
+;                 BEWARE!  This routine requires accurate relative timing
 ;                 between MAG and SWEA.  This is not guaranteed when using 
 ;                 preliminary data that do not have accurate corrections
 ;                 for spacecraft clock drift.  If you get a warning message
@@ -13,19 +17,26 @@
 ;                 You might still be OK if you can verify that the MAG and 
 ;                 SWEA data were processed with the same SCLK kernel.
 ;
-;INPUTS:          PAD data obtained from 'mvn_swe_getpad'.
+;                 ALSO!  Since the purpose of this routine is to accurately
+;                 map pitch angles when the magnetic field varies on time
+;                 scales that are shorter than the 2-second SWEA measurement
+;                 cycle, you should ask yourself whether the electrons are
+;                 magnetized at all.  How good is the adiabatic approximation?
+;                 See mvn_swe_eparam.pro for more information.
+;
+;INPUTS:          PAD data structure obtained from 'mvn_swe_getpad'.
 ;
 ;KEYWORDS:
 ;
 ;   FBDATA:       Tplot variable name of full resolution magnetic
-;                 field data.
+;                 field data.  Default = 'mvn_B_full'.
 ;
 ;   STATUS:       Returns the calculation result
 ;                 (Success: 1 / Failure: 0).
 ;
-;   MAGLEV:       Returns the MAG data level.
+;   MAGLEV:       Returns the MAG data level.  See warning above.
 ;                   0 -> on-board determination or unknown
-;                   1 -> nominal gains and zeroes only (quicklook)
+;                   1 -> gains and zeroes only (quicklook)
 ;                   2 -> fully calibrated
 ;
 ;   L2ONLY:       Insist on using MAG L2 data.
@@ -34,8 +45,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-08 16:31:29 -0800 (Sun, 08 Nov 2015) $
-; $LastChangedRevision: 19303 $
+; $LastChangedDate: 2015-11-09 12:58:41 -0800 (Mon, 09 Nov 2015) $
+; $LastChangedRevision: 19318 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_padmap_32hz.pro $
 ;
 ;-

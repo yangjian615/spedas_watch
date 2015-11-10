@@ -15,9 +15,9 @@
 ; HISTORY:
 ;   Created by Matt Fillingim
 ; VERSION:
-;   $LastChangedBy: mattf $
-;   $LastChangedDate: 2015-02-06 12:34:20 -0800 (Fri, 06 Feb 2015) $
-;   $LastChangedRevision: 16903 $
+;   $LastChangedBy: dmitchell $
+;   $LastChangedDate: 2015-11-09 15:06:46 -0800 (Mon, 09 Nov 2015) $
+;   $LastChangedRevision: 19323 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_readcdf_3d.pro $
 ;
 ;-
@@ -34,7 +34,7 @@ pro mvn_swe_readcdf_3d, infile, structure
   n_el = 6                      ;  6 elevations
   n_a  = swe_3d_struct.nbins    ; 96 solid angles
 
-  if (data_type(infile) eq 0) then begin
+  if (size(infile, /type) eq 0) then begin
     print, 'You must specify a file name.'
     return
   endif
@@ -150,7 +150,7 @@ pro mvn_swe_readcdf_3d, infile, structure
 ; since binning = 2^group, group = log2(binning) = log(binning)/log(2)
 
   group = alog(binning)/alog(2.)
-  for i=0,(nrec-1) do dt_arr[*,*,i] = (2.^group[i])*dt_arr[*,*,i]
+  for i=0L,(nrec-1) do dt_arr[*,*,i] = (2.^group[i])*dt_arr[*,*,i]
 
   structure.dt_arr = dt_arr
   structure.group = group
@@ -165,7 +165,7 @@ pro mvn_swe_readcdf_3d, infile, structure
 
   CDF_VARGET, id, 'energy', tmp_energy, /ZVAR ; [64]
   energy = fltarr(n_e, n_a, nrec)
-  for i=0,(nrec-1) do energy[*,*,i] = tmp_energy # replicate(1.,n_a)
+  for i=0L,(nrec-1) do energy[*,*,i] = tmp_energy # replicate(1.,n_a)
   structure.energy = energy
 
 ; *** denergy
@@ -225,7 +225,7 @@ pro mvn_swe_readcdf_3d, infile, structure
 ; change dimensions [64, 6] --> [64, 96]
 
   theta = fltarr(n_e, n_a)
-  for i=0,(n_a-1) do theta[*,i] = elev[*,i/16]
+  for i=0L,(n_a-1) do theta[*,i] = elev[*,i/16]
   structure.theta = theta
 
 ; *** dtheta
@@ -253,7 +253,7 @@ pro mvn_swe_readcdf_3d, infile, structure
 
   phi = fltarr(n_e, n_a)
   dphi = fltarr(n_e, n_a)
-  for i=0,(n_a-1) do begin
+  for i=0L,(n_a-1) do begin
     k = i mod 16
     phi[*,i] = azim[k]
     dphi[*,i] = dazim[k]
@@ -277,7 +277,7 @@ pro mvn_swe_readcdf_3d, infile, structure
   CDF_VARGET, id, 'g_azim', g_azim, /ZVAR ; [16]
 
   gfe = fltarr(n_e, n_a)
-  for i=0,(n_a-1) do gfe[*,i] = geom_factor*g_engy*g_elev[*,i/16]*g_azim[i mod 16]
+  for i=0L,(n_a-1) do gfe[*,i] = geom_factor*g_engy*g_elev[*,i/16]*g_azim[i mod 16]
 
 ; average the first and last 16 bins (top and bottom elevation angles)
 
@@ -359,7 +359,7 @@ pro mvn_swe_readcdf_3d, infile, structure
 ;scale = 1.D/(dtc*integ_t*dt_arr*gfe) ; gfe only [64, 16]
 
   scale = 1.D/(dtc*integ_t*dt_arr*structure.gf) ; want [64, 16, nrec]
-  var = var*scale
+  var = var*(scale*scale)
   structure.var = var
 
 ; *** chksum and valid

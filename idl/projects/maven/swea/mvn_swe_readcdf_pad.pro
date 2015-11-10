@@ -15,9 +15,9 @@
 ; HISTORY:
 ;   Created by Matt Fillingim
 ; VERSION:
-;   $LastChangedBy: mcfadden $
-;   $LastChangedDate: 2015-10-09 15:35:33 -0700 (Fri, 09 Oct 2015) $
-;   $LastChangedRevision: 19043 $
+;   $LastChangedBy: dmitchell $
+;   $LastChangedDate: 2015-11-09 15:06:23 -0800 (Mon, 09 Nov 2015) $
+;   $LastChangedRevision: 19321 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_readcdf_pad.pro $
 ;
 ;-
@@ -330,7 +330,7 @@ pro mvn_swe_readcdf_pad, infile, structure
 ;scale = 1.D/(dtc*integ_t*dt_arr*gfe) ; gfe only [64, 16]
 
   scale = 1.D/(dtc*integ_t*dt_arr*structure.gf) ; want [64, 16, nrec]
-  var = var*scale
+  var = var*(scale*scale)
   structure.var = var
 
 ; *** chksum and valid

@@ -16,8 +16,8 @@
 ;
 ;HISTORY:
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-11-04 13:19:31 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19241 $
+; $LastChangedDate: 2015-11-09 11:05:59 -0800 (Mon, 09 Nov 2015) $
+; $LastChangedRevision: 19314 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag_networks.pro $
 ;-
 
@@ -68,6 +68,7 @@ pro thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stat
     FREE_LUN, unit
     gmag_networks = ggroupnames
     gmag_stations = gstationcodes
+    dprint, 'GMAG networks and stations were loaded from file: ' + filename
   endif else begin ; static loading if file is not found
     dprint, 'GMAG stations file not found. Static loading of stations. Missing file: ' + filename
     gmag_networks=['AARI','ASI','AUTUMN','AUTUMNX','CARISMA','CGSM','DTU','GIMA','KYOTO','Leirvogur','MACCS','McMAC','NRCan','PENGUIn','SGU','STEP','TGO','Themis AE', $

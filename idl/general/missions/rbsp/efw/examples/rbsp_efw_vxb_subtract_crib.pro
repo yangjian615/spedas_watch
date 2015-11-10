@@ -72,20 +72,21 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
   if keyword_set(qa)  then rbsp_load_efw_esvy_mgse,probe=probe,/no_spice_load,/qa
 
 
-
+;stop
 
 ;Load EMFISIS data
   if keyword_set(ql) then rbsp_load_emfisis,probe=probe,/quicklook
   if keyword_set(hires) and ~keyword_set(l2) then  rbsp_load_emfisis,probe=probe,coord='gse',cadence='hires',level='l3'
   if keyword_set(l2) then   rbsp_load_emfisis,probe=probe,coord='uvw',level='l2'
-  if ~keyword_set(hires) and ~keyword_set(ql) then rbsp_load_emfisis,probe=probe,coord='gse',cadence='4sec',level='l3'
+  if ~keyword_set(hires) and ~keyword_set(ql) and ~keyword_set(l2) then rbsp_load_emfisis,probe=probe,coord='gse',cadence='1sec',level='l3'
+
 
 
 ;Check for data existence
   if keyword_set(ql) then get_data,rbspx+'_emfisis_quicklook_Mag',data=dd2
   if keyword_set(hires) and ~keyword_set(l2) then get_data,rbspx+'_emfisis_l3_hires_gse_Mag',data=dd2
   if keyword_set(l2) then get_data,rbspx+'_emfisis_l2_uvw_Mag',data=dd2
-  if ~keyword_set(hires) and ~keyword_set(ql) and ~keyword_set(l2) then get_data,rbspx+'_emfisis_l3_4sec_gse_Mag',data=dd2
+  if ~keyword_set(hires) and ~keyword_set(ql) and ~keyword_set(l2) then get_data,rbspx+'_emfisis_l3_1sec_gse_Mag',data=dd2
 
   if ~is_struct(dd2) then begin
      print,'******NO MAG DATA TO LOAD.....rbsp_efw_DCfield_removal_crib.pro*******'
@@ -98,7 +99,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
   if ~keyword_set(ql) and ~keyword_set(l2) then begin
 
      if keyword_set(hires) then get_data,rbspx+'_emfisis_l3_hires_gse_Mag',data=tmpp else $
-        get_data,rbspx+'_emfisis_l3_4sec_gse_Mag',data=tmpp
+        get_data,rbspx+'_emfisis_l3_1sec_gse_Mag',data=tmpp
      get_data,rbspx+'_spinaxis_direction_gse',data=wsc_GSE	
 
      wsc_GSE_tmp = [[interpol(wsc_GSE.y[*,0],wsc_GSE.x,tmpp.x)],$
@@ -106,10 +107,10 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
                     [interpol(wsc_GSE.y[*,2],wsc_GSE.x,tmpp.x)]]
 
      if keyword_set(hires) then rbsp_gse2mgse,rbspx+'_emfisis_l3_hires_gse_Mag',reform(wsc_GSE_tmp),newname=rbspx+'_emfisis_l3_hires_mgse_Mag' else $
-        rbsp_gse2mgse,rbspx+'_emfisis_l3_4sec_gse_Mag',reform(wsc_GSE_tmp),newname=rbspx+'_emfisis_l3_4sec_mgse_Mag'
+        rbsp_gse2mgse,rbspx+'_emfisis_l3_1sec_gse_Mag',reform(wsc_GSE_tmp),newname=rbspx+'_emfisis_l3_1sec_mgse_Mag'
 
      if keyword_set(hires) then copy_data,rbspx+'_emfisis_l3_hires_mgse_Mag',rbspx+'_mag_mgse' else $
-        copy_data,rbspx+'_emfisis_l3_4sec_mgse_Mag',rbspx+'_mag_mgse'
+        copy_data,rbspx+'_emfisis_l3_1sec_mgse_Mag',rbspx+'_mag_mgse'
 
   endif
 

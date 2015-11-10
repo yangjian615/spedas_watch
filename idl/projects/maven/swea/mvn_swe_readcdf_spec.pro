@@ -15,9 +15,9 @@
 ; HISTORY:
 ;   Created by Matt Fillingim
 ; VERSION:
-;   $LastChangedBy: mattf $
-;   $LastChangedDate: 2015-02-06 12:34:20 -0800 (Fri, 06 Feb 2015) $
-;   $LastChangedRevision: 16903 $
+;   $LastChangedBy: dmitchell $
+;   $LastChangedDate: 2015-11-09 15:06:32 -0800 (Mon, 09 Nov 2015) $
+;   $LastChangedRevision: 19322 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_readcdf_spec.pro $
 ;
 ;-
@@ -31,7 +31,7 @@ pro mvn_swe_readcdf_spec, infile, structure
 
   n_e = swe_engy_struct.nenergy
 
-  if (data_type(infile) eq 0) then begin
+  if (size(infile, /type) eq 0) then begin
     print, 'You must specify a file name.'
     return
   endif
@@ -266,7 +266,7 @@ pro mvn_swe_readcdf_spec, infile, structure
 ;                   where dt = integ_t ; gf = gf*eff ; eff = 1
 
   scale = 1D/(dtc*integ_t*dt_arr*structure.gf)
-  var = var*scale
+  var = var*(scale*scale)
   structure.var = var
 
 ; *** chksum and valid (chksum is determined by mvn_swe_calib, above)
