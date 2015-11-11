@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-11-03 07:10:10 -0800 (Tue, 03 Nov 2015) $
-; $LastChangedRevision: 19216 $
+; $LastChangedDate: 2015-11-10 13:06:44 -0800 (Tue, 10 Nov 2015) $
+; $LastChangedRevision: 19327 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_fields_crib_qlplots.pro $
 ;-
 
@@ -15,6 +15,19 @@
 probes = ['1', '2', '3', '4']
 ;trange = ['2015-09-05', '2015-09-06']
 timespan, '2015-09-05', 1, /day
+iw = 0
+width = 750
+height = 1000
+
+; options for send_plots_to:
+;   ps: postscript files
+;   png: png files
+;   win: creates/opens all of the tplot windows
+
+send_plots_to = 'win'
+plot_directory = ''
+
+postscript = send_plots_to eq 'ps' ? 1 : 0
 
 ; handle any errors that occur in this script gracefully
 catch, errstats
@@ -102,12 +115,16 @@ tplot_options, 'xmargin', [20, 15]
 tplot_options, 'ymargin', [5, 5]
 tplot_options, 'charsize', 1.
 tplot_options, 'panel_size', 0.2
-window, 1, xsize=750, ysize=1000
 options, 'mms_bss_burst', charsize=2.5
+
+if ~postscript then window, iw, xsize=width, ysize=height
 tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
-        'mms_*_btot', 'mms_*_gsm_dmpa_*', 'mms_*_bvec_*'], window=1
+        'mms_*_btot', 'mms_*_gsm_dmpa_*', 'mms_*_bvec_*'], window=iw
 title= 'MMS Quicklook Plots for Fields Data'
 xyouts, .25, .95, title, /normal, charsize=1.5
+
+if postscript then tprint, plot_directory + "mms1_fields_data_quicklook_plots"
+iw=iw+1
 stop
 
 ;
@@ -148,20 +165,28 @@ store_data, 'mms_asp1_spot_l1b', data = ['mms1_asp1_spot_l1b', $
   'mms4_asp1_spot_l1b']
 options, 'mms_*spot_l1b', ytitle='ASP1 Scpot'
 
+if ~postscript then window, iw, xsize=width, ysize=height
 tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
         'mms_*_dce_dsl_*', 'mms_asp1_spot_l1b', 'mms_*_btot', $
-        'mms_*_gsm_dmpa_*'], window=1
+        'mms_*_gsm_dmpa_*'], window=iw
 title='MMS E&B Quicklook Plots'
 xyouts, .35, .95, title, /normal, charsize=1.5
+
+if postscript then tprint, plot_directory + "mms1_e&b_quicklook_plots"
+iw=iw+1
 stop
 
 ;
 ; EDP QuickLook Plots 
 ;
+if ~postscript then window, iw, xsize=width, ysize=height
 tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
-        'mms_asp1_spot_l1b', 'mms_*_dce_dsl_*'], window=1
+        'mms_asp1_spot_l1b', 'mms_*_dce_dsl_*'], window=iw
 title='MMS EDP Quicklook Plots'
 xyouts, .35, .95, title, /normal, charsize=1.5
+
+if postscript then tprint, plot_directory + "mms1_edp_quicklook_plots"
+
 stop
 
 end

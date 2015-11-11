@@ -33,7 +33,8 @@
 ;	2012-10-13 -> much better
 
 
-pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,ql=ql,l2=l2,hires=hires,qa=qa;,nopreload=nopreload
+pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,ql=ql,l2=l2,$
+                               hires=hires,qa=qa ;,nopreload=nopreload
 
 
 ;Set timerange if it's not already set
@@ -56,6 +57,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 ;Load definitive sc positions and velocities
 
   if ~keyword_set(no_spice_load) then rbsp_load_spice_kernels
+
 
 
                                 ;Get antenna pointing direction and stuff
@@ -126,7 +128,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 
                                 ;spinfit the mag data and transform to MGSE
      rbsp_decimate,rbspx +'_emfisis_quicklook_Mag', upper = 2
-     rbsp_spinfit,rbspx +'_emfisis_quicklook_Mag', plane_dim = 0 ; V12
+     rbsp_spinfit,rbspx +'_emfisis_quicklook_Mag', plane_dim = 0
      rbsp_cotrans,rbspx +'_emfisis_quicklook_Mag_spinfit',rbspx+'_mag_mgse', /dsc2mgse
 
   endif
@@ -142,11 +144,10 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 
                                 ;spinfit the mag data and transform to MGSE
      rbsp_decimate,rbspx +'_emfisis_l2_uvw_Mag', upper = 2
-     rbsp_spinfit,rbspx +'_emfisis_l2_uvw_Mag', plane_dim = 0 ; V12
+     rbsp_spinfit,rbspx +'_emfisis_l2_uvw_Mag', plane_dim = 0 
      rbsp_cotrans,rbspx +'_emfisis_l2_uvw_Mag_spinfit',rbspx+'_mag_mgse', /dsc2mgse
 
   endif
-
 
 
 ; Load eclipse times 

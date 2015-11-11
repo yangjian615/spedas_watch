@@ -8,8 +8,8 @@
 ; Forked for MMS, 10/22/2015, egrimes@igpp
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-10-23 15:37:02 -0700 (Fri, 23 Oct 2015) $
-; $LastChangedRevision: 19147 $
+; $LastChangedDate: 2015-11-10 13:42:19 -0800 (Tue, 10 Nov 2015) $
+; $LastChangedRevision: 19330 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/cdf/mms_cdf_info_to_tplot.pro $
 ;-
 pro mms_cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames, non_record_varying=non_record_varying, $
@@ -21,7 +21,7 @@ pro mms_cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames, non_record_varying=
         load_labels=load_labels ;copy labels from labl_ptr_1 in attributes into dlimits
                                       ;resolve labels implemented as keyword to preserve backwards compatibility
 
-dprint,verbose=verbose,dlevel=4,'$Id: mms_cdf_info_to_tplot.pro 19147 2015-10-23 22:37:02Z egrimes $'
+dprint,verbose=verbose,dlevel=4,'$Id: mms_cdf_info_to_tplot.pro 19330 2015-11-10 21:42:19Z egrimes $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
@@ -141,7 +141,12 @@ for i=0,nv-1 do begin
      else if keyword_set(var_1) then data = {x:tvar.dataptr,y:v.dataptr, v:var_1.dataptr}  $
      else data = {x:tvar.dataptr,y:v.dataptr}
      
-     dlimit = {cdf:cdfstuff,spec:spec,log:log}
+     
+     ; coordinate system support; loads from the COORDINATE_SYSTEM variable attribute (CDF_CHAR)
+     coord_sys =  struct_value(attr,'coordinate_system',default='')
+     if ~undefined(coord_sys) then coord_sys = (strsplit(coord_sys, '>', /extract))[0]
+
+     dlimit = {cdf:cdfstuff,spec:spec,log:log,data_att:{coord_sys:coord_sys}}
      if keyword_set(units) then str_element,/add,dlimit,'ysubtitle','['+units+']'
      
      if keyword_set(load_labels) then begin

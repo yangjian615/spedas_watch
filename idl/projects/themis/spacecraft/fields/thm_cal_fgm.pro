@@ -56,7 +56,13 @@
 ;   applied).  use_eclipse_corrections=1 applies partial eclipse 
 ;   corrections (not recommended, used only for internal SOC processing).  
 ;   use_eclipse_corrections=2 applies all available eclipse corrections.
-;
+; no_spin_tone_batch: As of 2015-11-10, the deafult is to split the
+;    spin tone removal step into batches if the calibration parameters
+;    change during the input time range. Setting /no_spin_tone_batch
+;    turns this behavior off, and the full time range is used for spin
+;    tone removal. Use this for short time intervals.
+; cal_file_in: A full path to the calibration file, for testing. This
+;              will only work for single probe proecessing
 ;optional parameters:
 ;
 ;         name_thx_fgx_in   --> input data (t-plot variable name)
@@ -71,9 +77,9 @@
 ;Notes: under construction!!
 ;
 ;Written by Hannes Schwarzl.
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-09-16 10:41:52 -0700 (Wed, 16 Sep 2015) $
-; $LastChangedRevision: 18806 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2015-11-10 17:15:43 -0800 (Tue, 10 Nov 2015) $
+; $LastChangedRevision: 19334 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -104,8 +110,9 @@ pro thm_cal_fgm,$
          cal_get_fulloffset=cal_get_fulloffset,$
          cal_get_dac_dat=cal_get_dac_dat,$
          cal_get_spin_dat=cal_get_spin_dat,$
-         use_eclipse_corrections=use_eclipse_corrections
-      
+         use_eclipse_corrections=use_eclipse_corrections,$
+         cal_file_in=cal_file_in, no_spin_tone_batch=no_spin_tone_batch, $
+         _extra=_extra      
          ;eg 30/3/2007;Hannes 30/3/2007 ;kb
 
   ;; implement the 'standard' interface as a wrapper around the original
@@ -137,8 +144,10 @@ if n_params() eq 0 then begin
 
    for i = 0, n_elements(probes)-1 do begin
       thx = 'th' + probes[i]
-      cal_relpathname = thx+'/l1/fgm/0000/'+thx+'_fgmcal.txt'
-      cal_file = spd_download(remote_file=cal_relpathname, _extra=!themis)
+      If(keyword_set(cal_file_in)) Then cal_file = cal_file_in Else Begin
+         cal_relpathname = thx+'/l1/fgm/0000/'+thx+'_fgmcal.txt'
+         cal_file = spd_download(remote_file=cal_relpathname, _extra=!themis)
+      Endelse
 
       files = file_search(cal_file,count=fc)
       if fc eq 0 then begin
@@ -178,7 +187,9 @@ if n_params() eq 0 then begin
                         cal_get_fulloffset=fulloffset,$
                         cal_get_dac_dat=dac_dat,$
                         cal_get_spin_dat=spin_dat,$
-                        use_eclipse_corrections=use_eclipse_corrections
+                        use_eclipse_corrections=use_eclipse_corrections,$
+                        cal_file_in=cal_file_in, no_spin_tone_batch=no_spin_tone_batch,$
+                        _extra=_extra      
      
            if arg_present(cal_get_fulloffset) && keyword_set(fulloffset) then begin  
              str_element,cal_get_fulloffset,thx+'.'+dts[j],fulloffset,/add
@@ -396,7 +407,6 @@ FOR i=istart,istop DO BEGIN
 ENDFOR
 
 
-
 ;DPRINT, 'offsets: ',TRANSPOSE(offs)
 ;DPRINT, 'cal matrix: '
 ;DPRINT, calm
@@ -489,7 +499,6 @@ ENDIF ELSE BEGIN
 ENDELSE
 ;end Hannes 30/3/2007
 
-
 ; Pull data array out of structure...workaround for IDL 8.2.2 slowdown.
 ; jwl 2013-04-19
 
@@ -564,23 +573,71 @@ If(n_elements(cal_tone_removal) Eq 0 || cal_tone_removal[0] Gt 0) Then Begin;jmm
     cal_get_fulloffset = dblarr(dimen(thx_fgx.y))
   endif
 
-  max_tm = max(thx_fgx.x,min=min_tm)
-  
-  if max_tm-min_tm lt 10D*60D then begin
-    dprint, dlevel=2,'WARNING: Less than 10 min time range for data Probe: "'+probe_letter+'" Datatype: "' + datatype + '" spin tone removal may not be applied.'
-  endif
 
-  for i = 0,1 do begin
-    if arg_present(cal_get_fulloffset) then begin
-      thm_cal_fgm_spintone_removal,thx_fgx.x,ydata[*,i],dat,datatype,fulloffset=fulloffset
-      cal_get_fulloffset[*,i] = fulloffset
-    endif else begin
-      thm_cal_fgm_spintone_removal,thx_fgx.x,ydata[*,i],dat,datatype
-    endelse
-    
-    ydata[*,i] = dat
-    
-  endfor  
+;Do in batches, ala SCM, if calibrations change, jmm, 2015-11-10
+  If(istart Eq istop Or keyword_set(no_spin_tone_batch)) Then Begin ;this is easy
+     ss_start = 0 & ss_end = count-1L
+  Endif Else Begin
+     nbatch = istop-istart+1
+     btimes = [utc[istart:istop], thx_fgx.x[count-1]+1.0];time interval edges
+     btimes[0] = thx_fgx.x[0]                            ;utc[istart] may be a week ago...
+     ss_start = lonarr(nbatch)-1
+     ss_end = lonarr(nbatch)-1
+     dtbatch = dblarr(nbatch) & dtbatch[*] = 0
+     For jbatch = 0,nbatch-1 Do Begin
+        ss_batch = where(thx_fgx.x Ge btimes[jbatch] And $
+                         thx_fgx.x Lt btimes[jbatch+1], nss_batch)
+        If(nss_batch Gt 0) Then Begin
+           ss_start[jbatch] = min(ss_batch)
+           ss_end[jbatch] = max(ss_batch)
+           dtbatch[jbatch] = thx_fgx.x[ss_end[jbatch]]-thx_fgx.x[ss_start[jbatch]]
+        Endif
+     Endfor
+;There is a 10 minute minimum time enforced below, if a batch is
+;too short, append it to the next batch, or if it's the last
+;batch, append it to the previous batch
+     For jbatch = 0, nbatch-1 Do Begin
+        If(dtbatch[jbatch] Lt 10D*60D) Then Begin
+           If(jbatch Lt nbatch-1) Then begin
+              ss_end[jbatch] = ss_end[jbatch+1]
+              ss_start[jbatch+1] = -1 & ss_end[jbatch+1] = -1;flag the next batch as bad
+           Endif Else Begin
+              ss_start[jbatch] = ss_start[jbatch-1]
+              ss_start[jbatch-1] = -1 & ss_end[jbatch-1] = -1;flag the previous batch as bad
+           Endelse
+        Endif
+     Endfor
+     ok_batch = where(ss_start Ne -1, nbatch)
+     If(nbatch Eq 0) Then Begin
+        dprint, 'Spin tone batching data for different cal times failed, '
+        dprint, 'Processing single batch'
+        ss_start = 0 & ss_end = count-1L
+     Endif Else Begin
+        ss_start = ss_start[ok_batch]
+        ss_end = ss_end[ok_batch]
+     Endelse
+  Endelse
+  nbatch = n_elements(ss_start)
+
+;Process spin_tone_removal 
+  For jbatch = 0, nbatch-1 Do Begin
+     tjbatch = thx_fgx.x[ss_start[jbatch]:ss_end[jbatch]]
+     max_tm = max(tjbatch,min=min_tm)
+     if max_tm-min_tm lt 10D*60D then begin
+        dprint, dlevel=2,'WARNING: Less than 10 min time range for data Probe: "'+probe_letter+'" Datatype: "' + datatype + '" spin tone removal may not be applied.'
+     endif
+     for i = 0,1 do begin
+        ydbatch = ydata[ss_start[jbatch]:ss_end[jbatch], i]
+        if arg_present(cal_get_fulloffset) then begin
+           thm_cal_fgm_spintone_removal,tjbatch,ydbatch,dat,datatype,fulloffset=fulloffset
+           cal_get_fulloffset[ss_start[jbatch], i] = fulloffset
+        endif else begin
+           thm_cal_fgm_spintone_removal,tjbatch,ydbatch,dat,datatype
+        endelse
+;       ydata[ss_start[jbatch]:ss_end[jbatch], i] = dat
+        ydata[ss_start[jbatch], i] = dat ;using only the start subscript should work, right?
+     endfor  
+  Endfor
   
   dprint, dlevel=4,'Spintone Removal Complete'
 

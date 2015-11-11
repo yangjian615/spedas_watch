@@ -5,17 +5,30 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-11-03 07:10:10 -0800 (Tue, 03 Nov 2015) $
-; $LastChangedRevision: 19216 $
+; $LastChangedDate: 2015-11-10 15:12:21 -0800 (Tue, 10 Nov 2015) $
+; $LastChangedRevision: 19331 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
 probe = '1'
 trange = ['2015-08-15', '2015-08-16']
 timespan, '2015-08-15', 1
+iw = 0
 width = 850
 height = 1000
 prefix = 'mms'+probe+'_epd_eis'
+
+; options for send_plots_to:
+;   ps: postscript files
+;   png: png files
+;   win: creates/opens all of the tplot windows
+
+;send_plots_to = 'win'
+;plot_directory = ''
+send_plots_to = 'ps'
+plot_directory = 'C:/Users/clrussell/Desktop/'
+
+postscript = send_plots_to eq 'ps' ? 1 : 0
 
 ; handle any errors that occur in this script gracefully
 catch, errstats
@@ -88,9 +101,11 @@ panels = ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
   prefix+'_extof_alpha_flux_omni_spin', $
   prefix+'_extof_oxygen_flux_omni_spin']
 
-window, xsize=width, ysize=height
-tplot, panels, var_label=position_vars
-
+if ~postscript then window, iw, xsize=width, ysize=height
+tplot, panels, var_label=position_vars, window=iw
 title='EIS - Quicklook'
 xyouts, .4, .96, title, /normal, charsize=1.5
+
+if postscript then tprint, plot_directory + prefix + "_quicklook_plots"
+
 end
