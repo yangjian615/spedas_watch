@@ -20,8 +20,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-09-29 21:07:02 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18959 $
+; $LastChangedDate: 2015-11-11 08:43:26 -0800 (Wed, 11 Nov 2015) $
+; $LastChangedRevision: 19336 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_history.pro $
 ;-
 FUNCTION mms_bss_history_cat, bsh, category, wt
@@ -89,7 +89,18 @@ PRO mms_bss_history, bss=bss, trange=trange, tplot=tplot, csv=csv, dir=dir
   mms_init
   
   if undefined(tplot) then tplot=1
-  if undefined(dir) then dir = '' else dir = thm_addslash(dir) 
+  if undefined(dir) then dir = '' else dir = thm_addslash(dir)
+
+  ;----------------
+  ; CATCH
+  ;----------------
+  catch, error_status
+  if error_status ne 0 then begin
+    catch, /cancel
+    eva_error_message, error_status
+    message, /reset
+    return
+  endif
   
   ;----------------
   ; TIME

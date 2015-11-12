@@ -36,8 +36,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-09-08 18:08:17 -0700 (Tue, 08 Sep 2015) $
-; $LastChangedRevision: 18733 $
+; $LastChangedDate: 2015-11-11 08:43:26 -0800 (Wed, 11 Nov 2015) $
+; $LastChangedRevision: 19336 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_table.pro $
 ;-
 PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
@@ -48,6 +48,17 @@ PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
   if n_elements(console) eq 0 then console = 1
   if n_elements(json) eq 0 then json = 0
   if n_elements(dir) eq 1 then dir = thm_addslash(dir)
+  
+  ;----------------
+  ; CATCH
+  ;----------------
+  catch, error_status
+  if error_status ne 0 then begin
+    catch, /cancel
+    eva_error_message, error_status
+    message, /reset
+    return
+  endif
   
   ;----------------
   ; LOAD DATA

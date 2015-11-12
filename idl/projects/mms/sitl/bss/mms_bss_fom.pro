@@ -41,6 +41,17 @@ PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
   if undefined(csv) then csv = 0
   
   ;----------------
+  ; CATCH
+  ;----------------
+  catch, error_status
+  if error_status ne 0 then begin
+    catch, /cancel
+    eva_error_message, error_status
+    message, /reset
+    return
+  endif
+  
+  ;----------------
   ; TIME
   ;----------------
   tnow = systime(/utc,/seconds)
