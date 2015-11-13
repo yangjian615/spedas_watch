@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-11-10 13:06:44 -0800 (Tue, 10 Nov 2015) $
-; $LastChangedRevision: 19327 $
+; $LastChangedDate: 2015-11-12 14:30:48 -0800 (Thu, 12 Nov 2015) $
+; $LastChangedRevision: 19355 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_fields_crib_qlplots.pro $
 ;-
 
@@ -109,7 +109,7 @@ options, 'mms_*_gsm_dmpa_*', ysubtitle='GSM-DMPA [nT]'
 ;mms_load_dsp, data_rate='fast', probes=[1, 2, 3, 4], datatype='epsd', level='l2'
 ;mms_load_dsp,  data_rate='srvy', probes=[1, 2, 3, 4], datatype='bpsd', level='l2'
 
-mms_load_bss, /include_labels
+spd_mms_load_bss, /include_labels
 
 tplot_options, 'xmargin', [20, 15]
 tplot_options, 'ymargin', [5, 5]

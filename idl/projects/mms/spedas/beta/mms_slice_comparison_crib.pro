@@ -8,15 +8,19 @@ probe='3'
 species='e'
 ;timespan,'2015-09-21/13:52', 2, /min
 ;trange = timerange()
-trange = ['2015-09-21/13:52', '2015-09-21/13:54']
+;trange = ['2015-09-19/09:08:13', '2015-09-19/09:09']
+trange = ['2015-09-19/09:08:48', '2015-09-19/09:09:00']
 
 ;load particle & support data
 mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-dist', $
               probe=probe, trange=trange
-mms_load_dfg, probe=probe, trange=trange, level='ql'
+mms_load_dfg, probe=probe, trange=trange
 mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-moms', $
               probe=probe, trange=trange
-bname = 'mms'+probe+'_dfg_srvy_gse_bvec'
+; b-field vector for data within the last 2 weeks (ql)
+; bname = 'mms'+probe+'_dfg_srvy_gse_bvec'
+; b-field vector for data older than 2 weeks ago (l2pre)
+bname = 'mms'+probe+'_dfg_srvy_l2pre_gse_bvec'
 vname = 'mms'+probe+'_d'+species+'s_bulk'
 join_vec, vname + ['X','Y','Z'], vname
 
@@ -47,7 +51,6 @@ arrange_plots,x0,y0,x1,y1,nx=nx,ny=ny, $
               y0margin=0.25, y1margin=0.01
 
 
-
 ;loop over time samples and slice orientations to create
 ;a set of plots at each sample
 for i=0, n_elements(*dist)-1 do begin
@@ -62,7 +65,7 @@ for i=0, n_elements(*dist)-1 do begin
     slice = spd_slice2d(dist, time=time, window=end_time-time, $
                      rotation=rotation, slice_norm=norms[*,j], /geometric, $
                      mag_data=bname, vel_data=vname)
-    
+
     spd_slice2d_plot, slice, window=win, $
                  zrange = [1.0e-31, 1.0e-26],$ ;#'s optimized for des for 0815
                  /custom, $ ;suppress automatic window formatting

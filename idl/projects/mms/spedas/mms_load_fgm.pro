@@ -52,8 +52,8 @@
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-06 07:48:20 -0800 (Fri, 06 Nov 2015) $
-;$LastChangedRevision: 19276 $
+;$LastChangedDate: 2015-11-12 09:56:29 -0800 (Thu, 12 Nov 2015) $
+;$LastChangedRevision: 19343 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fgm.pro $
 ;-
 
@@ -70,8 +70,11 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
     if undefined(datatype) then datatype = '' ; grab all data in the CDF
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
-    
-    if undefined(level) then level = 'ql' ; default to quick look
+    ; default to QL if the trange is within the last 2 weeks, L2pre if older
+    if undefined(level) then begin 
+        fourteen_days_ago = systime(/seconds)-60*60*24.*14.
+        if trange[1] ge fourteen_days_ago then level = 'ql' else level = 'l2pre'
+    endif
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix = ''
@@ -84,10 +87,9 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
 
     
     ; load the atttude data to do the coordinate transformation 
-;    if undefined(no_attitude_data) then mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec'], $
-;        suffix = suffix
+    if undefined(no_attitude_data) && level ne 'l2pre' then mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec'], suffix = suffix
     ; Note: not all MEC files have right ascension and declination data, commented out until LANL reprocesses
-    if undefined(no_attitude_data) && level ne 'l2pre' then mms_load_mec, trange = trange, probes = probes, suffix = suffix
+  ;  if undefined(no_attitude_data) && level ne 'l2pre' then mms_load_mec, trange = trange, probes = probes, suffix = suffix
 
     ; DMPA coordinates to GSE, for each probe
     for probe_idx = 0, n_elements(probes)-1 do begin
@@ -98,7 +100,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             && undefined(no_attitude_data) && level ne 'l2pre' then begin 
 
             dmpa2gse, this_probe+'_'+instrument+'_'+data_rate+'_dmpa'+suffix, this_probe+'_defatt_spinras'+suffix, $
-                this_probe+'_defatt_spindec'+suffix, this_probe+'_'+instrument+'_'+data_rate+'_gse'+suffix
+                this_probe+'_defatt_spindec'+suffix, this_probe+'_'+instrument+'_'+data_rate+'_gse'+suffix, /ignore_dlimits
             append_array, tplotnames, this_probe+'_'+instrument+'_'+data_rate+'_gse'+suffix
             
         endif

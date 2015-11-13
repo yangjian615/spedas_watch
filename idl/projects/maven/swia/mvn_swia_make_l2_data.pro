@@ -20,13 +20,14 @@
 ;	OLDCAL: Use old calibration factors appropriate for original table
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-03-02 17:09:48 -0800 (Mon, 02 Mar 2015) $
-; $LastChangedRevision: 17063 $
+; $LastChangedDate: 2015-11-12 10:06:11 -0800 (Thu, 12 Nov 2015) $
+; $LastChangedRevision: 19344 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_l2_data.pro $
 ;
 ;-
 
 @mvn_swia_load_l2_data
+@matrix_array_lib
 
 pro mvn_swia_make_l2_data, startdate = startdate, days = days,version = version, revision = revision, type = type, l0_file_path = l0_file_path, opath = opath, kload = kload, oldcal = oldcal
 

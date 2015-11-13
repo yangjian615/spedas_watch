@@ -36,13 +36,15 @@
 
 
 
-pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=suffix,noplot=noplot,nospinfit=nospinfit,ql=ql
+pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=suffix,$
+                                noplot=noplot,nospinfit=nospinfit,ql=ql,boom_pair=bp
 
 
 	rbspx = 'rbsp' + probe
 	timespan,date
 
         if ~keyword_set(ql) then ql = 0
+        if ~keyword_set(bp) then bp = '12'
         
 ;Stuff to make plots pretty	
 	rbsp_efw_init
@@ -70,7 +72,7 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
 
 ;Load spinfit MGSE Efield and Bfield
         if ~keyword_set(nospinfit) then begin
-           rbsp_efw_spinfit_vxb_subtract_crib,probe,/noplot,ql=ql 
+           rbsp_efw_spinfit_vxb_subtract_crib,probe,/noplot,ql=ql,boom_pair=bp
            evar = 'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit'
         endif else begin
            rbsp_efw_vxb_subtract_crib,probe,/noplot,ql=ql

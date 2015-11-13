@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-28 16:22:34 -0700 (Wed, 28 Oct 2015) $
-;$LastChangedRevision: 19180 $
+;$LastChangedDate: 2015-11-12 09:23:00 -0800 (Thu, 12 Nov 2015) $
+;$LastChangedRevision: 19341 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_mec.pro $
 ;-
 
@@ -53,6 +53,6 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
                 names_out=ras_dec_vars
             copy_data, ras_dec_vars[0], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spinras'
             copy_data, ras_dec_vars[1], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spindec'
-        endif
+        endif else dprint, dlevel = 1, 'No right ascension/declination of the L-vector found.'
     endfor
 end

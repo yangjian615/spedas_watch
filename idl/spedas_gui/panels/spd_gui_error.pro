@@ -4,9 +4,9 @@
 ;PURPOSE:
 ; A widget to display, edit and save the file 'spd_gui_error.txt' error
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-09 09:54:22 -0700 (Tue, 09 Jun 2015) $
-;$LastChangedRevision: 17839 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-12 12:46:06 -0800 (Thu, 12 Nov 2015) $
+;$LastChangedRevision: 19350 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_gui_error.pro $
 ;
 ;-
@@ -60,21 +60,16 @@ Pro spd_gui_error, gui_id,historywin
 
   error_arr = 'No Error File'
 ;Find the directory with the file
-  p = expand_path('+'+!path, /array) ;get the path
-  If(!version.os_family Eq 'Windows') Then Begin
-    d = strpos(p, 'spedas_gui\Resources')
-  Endif Else d = strpos(p, 'spedas_gui/Resources')
-  ok = where(d Ne -1)
-  If(ok[0] Ne -1) Then Begin
-    f = file_search(p[ok[0]]+'/'+'spedas_gui_error_message.txt')
-    If(is_string(f)) Then Begin
-      lines = file_lines(f)
-      error_arr = strarr(lines)
-      Openr, unit, f, /get_lun
-      readf, unit, error_arr
-      Free_lun, unit
-    Endif
+  getresourcepath,rpath
+  f = file_search(rpath +'spedas_gui_error_message.txt')
+  If(is_string(f)) Then Begin
+    lines = file_lines(f)
+    error_arr = strarr(lines)
+    Openr, unit, f, /get_lun
+    readf, unit, error_arr
+    Free_lun, unit
   Endif
+
 
 ;Replace "XXXXXXXXXX" line with the path/filename to the running history file:
 ;*****************************************************************************

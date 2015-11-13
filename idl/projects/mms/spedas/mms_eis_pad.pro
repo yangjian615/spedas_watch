@@ -17,7 +17,7 @@
 ;         ion_type: array containing types of particles to include. 
 ;               for PHxTOF data, valid options are 'proton', 'oxygen'
 ;               for ExTOF data, valid options are 'proton', 'oxygen', and/or 'alpha'
-;         scopes: string array of telescopes to be included in PAD ('0'-'5’)”
+;         scopes: string array of telescopes to be included in PAD ('0'-'5')
 ;
 ; EXAMPLES:
 ; 
@@ -29,12 +29,15 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-09 15:11:11 -0800 (Mon, 09 Nov 2015) $
-;$LastChangedRevision: 19324 $
+;$LastChangedDate: 2015-11-12 09:10:38 -0800 (Thu, 12 Nov 2015) $
+;$LastChangedRevision: 19339 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
 ;       + 2015-10-26, I. Cohen      : added "scopes" keyword to mms_eis_pad call-line to allow omittance of t3 (ions) & t2 (electrons)
+;       + 2015-11-12, I. Cohen      : changed sizing of second dimension of flux_file and pa_file to reflect number of elements in "scopes"
+;
+;-
 
 
 pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -92,13 +95,16 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
     rebinned_data = congrid(spin_sum_flux, n_elements(spin_starts), n_elements(new_bins), /center, /interp)
     
     store_data, newname, data={x: spin_times, y: rebinned_data, v: new_bins}, dlimits=flux_dl
-    options, newname, zlog=1, minzlog=.01, spec=1, ystyle=1, ztitle=units_label, ytitle='MMS'+probe+' EIS '+species, ysubtitle=en_range_string+'!CPAD (deg)'
+    options, newname, spec=1, ystyle=1, ztitle=units_label, ytitle='MMS'+probe+' EIS '+species, ysubtitle=en_range_string+'!CPAD (deg)', minzlog=.01
+    zlim, newname, 0, 0, 1
     ylim, newname, 1., 180.
-    ;zlim, newname, 0, 0, 1
-    tdegap, newname, /overwrite
+
+   ; zlim, newname, 0, 0, 1
+    ;options, newname, no_interp=0
+  ;  tdegap, newname, /overwrite
 end
 
-pro eis_bin_info, pa_bins, pa_flux, pa_num_in_bin, pa_file, flux_file, start
+pro eis_pabin_info, pa_bins, pa_flux, pa_num_in_bin, pa_file, flux_file, start
     print, '---------------------------------'
     for i=0, n_elements(pa_file[start, *])-1 do print, strcompress(string(pa_file[start, i]), /rem)+': '+string(flux_file[start, i])
     print, '---------------------------------'
@@ -157,8 +163,8 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, $
           ; get pa from each detector
           get_data, 'mms'+probe+'_epd_eis_' + datatype + '_pitch_angle_t0'+suffix, data = d
     
-          flux_file = fltarr(n_elements(d.x),6) ; time steps, look direction
-          pa_file = fltarr(n_elements(d.x),6) ; time steps, look direction
+          flux_file = fltarr(n_elements(d.x),n_elements(scopes)) ; time steps, look direction
+          pa_file = fltarr(n_elements(d.x),n_elements(scopes)) ; time steps, look direction
           pa_file[*,0] = d.y
           pa_flux = fltarr(n_elements(d.x),n_pabins)
           pa_flux[where(pa_flux eq 0)] = !values.f_nan
@@ -223,12 +229,12 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, $
           new_name = 'mms'+probe+'_epd_eis_' + datatype + '_' + en_range_string + '_' + ion_type[ion_type_idx] + '_' + data_units + '_pad'
          ; store_data, new_name, data={x:d.x, y:pa_flux, v:pa_label}
           store_data, new_name, data={x:d.x, y:new_pa_flux, v:pa_label}
-          options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1, x_no_interp=1, minzlog=0.01, zlog=1, $
-            ytitle = 'MMS'+probe+' EIS ' + ion_type[ion_type_idx], ysubtitle=en_range_string+'!CPA [Deg]', ztitle=units_label
-         
+          options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1 , $
+            ytitle = 'MMS'+probe+' EIS ' + ion_type[ion_type_idx], ysubtitle=en_range_string+'!CPA [Deg]', ztitle=units_label, minzlog=.01
+          zlim, new_name, 0, 0, 1
+                
           ; now do the spin average
           mms_eis_pad_spinavg, probe=probe, species=ion_type[ion_type_idx], datatype=datatype, energy=energy, data_units=data_units, bin_size=bin_size
-          tdegap, new_name, /overwrite
       endfor
     endif
 end

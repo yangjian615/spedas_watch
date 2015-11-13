@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-06-02 16:09:06 -0700 (Tue, 02 Jun 2015) $
-;  $LastChangedRevision: 17794 $
+;  $LastChangedDate: 2015-11-12 13:32:30 -0800 (Thu, 12 Nov 2015) $
+;  $LastChangedRevision: 19353 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_fpi_basic.pro $
 
 
@@ -96,7 +96,21 @@ for j = 0, n_elements(sc_id)-1 do begin
     ; Now we can open the files and create tplot variables
     ; First, we open the initial file
 
-    fpi_struct = mms_sitl_open_fpi_basic_cdf(files_open(0))
+    mms_parse_file_name, files_open, junk1, junk2 , junk3, junk4, $
+                         junk5, version_strings, junk6, junk7, $
+                         /contains_dir
+
+    vstring = version_strings(0)
+    vchop = strmid(vstring, 1, strlen(vstring))
+    vsplit = strsplit(vchop, '.', /extract)
+    vzscore = fix(vsplit(0))
+    
+    if vzscore ge 1 then begin
+      fpi_struct = mms_sitl_open_fpi_new_cdf(files_open(0))
+    endif else begin
+      fpi_struct = mms_sitl_open_fpi_basic_cdf(files_open(0))
+    endelse
+    
     times = fpi_struct.times
     espec = fpi_struct.espec
     ispec = fpi_struct.ispec
@@ -117,14 +131,24 @@ for j = 0, n_elements(sc_id)-1 do begin
     ; Concatenate data if more than one file
     if n_elements(files_open) gt 1 then begin
       for i = 1, n_elements(files_open)-1 do begin
-	temp_struct = mms_sitl_open_fpi_basic_cdf(files_open(i))
-	times = [times, temp_struct.times]
-	espec = [espec, temp_struct.espec]
-	ispec = [ispec, temp_struct.ispec]
-	epadm = [epadm, temp_struct.epadm]
-	epadh = [epadh, temp_struct.epadh]
-	ndens = [ndens, temp_struct.ndens]
-	vdsc = [vdsc, temp_struct.vdsc]
+        vstring = version_strings(i)
+        vchop = strmid(vstring, 1, strlen(vstring))
+        vsplit = strsplit(vchop, '.', /extract)
+        vzscore = fix(vsplit(0))
+
+        if vzscore ge 1 then begin
+          temp_struct = mms_sitl_open_fpi_new_cdf(files_open(i))
+        endif else begin
+          temp_struct = mms_sitl_open_fpi_basic_cdf(files_open(i))
+        endelse
+        
+        times = [times, temp_struct.times]
+        espec = [espec, temp_struct.espec]
+        ispec = [ispec, temp_struct.ispec]
+        epadm = [epadm, temp_struct.epadm]
+        epadh = [epadh, temp_struct.epadh]
+        ndens = [ndens, temp_struct.ndens]
+        vdsc = [vdsc, temp_struct.vdsc]
       endfor
     endif
 

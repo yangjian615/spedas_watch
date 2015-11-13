@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-11-10 15:28:59 -0800 (Tue, 10 Nov 2015) $
-; $LastChangedRevision: 19332 $
+; $LastChangedDate: 2015-11-12 14:30:48 -0800 (Thu, 12 Nov 2015) $
+; $LastChangedRevision: 19355 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib_qlplots.pro $
 ;-
 
@@ -22,10 +22,11 @@ sid = species[0]     ; set species to H+
 tsid = tplotvar_species[0]    
 
 trange = ['2015-08-15', '2015-08-16']
+timespan, '2015-08-15', 1
 ;trange = ['2015-11-02', '2015-11-03']
 tplotvar = 'mms'+pid + '_hpca_' + tsid + '_RF_corrected'
 
-iw = 0
+iw = 2
 width = 900
 height = 1200
 
@@ -96,7 +97,7 @@ position_vars = [eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
 ; create a tplot variable with flags for burst and survey data
 ;mode_var=mms_hpca_mode(tplotvar+'_brst', tplotvar+'_srvy')
 ; use bss routine to create tplot variables for fast, burst, status, and/or FOM
-mms_load_bss, trange=trange, /include_labels
+spd_mms_load_bss, trange=trange, /include_labels
 
 ; set up some plotting parameters
 tplot_options, 'xmargin', [20, 15]

@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-11-10 15:12:21 -0800 (Tue, 10 Nov 2015) $
-; $LastChangedRevision: 19331 $
+; $LastChangedDate: 2015-11-12 14:30:48 -0800 (Thu, 12 Nov 2015) $
+; $LastChangedRevision: 19355 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -92,7 +92,7 @@ tplot_options, 'xmargin', [15, 15]
 ; clip the DFG data to -150nT to 150nT
 tclip, 'mms'+probe+'_dfg_srvy_gse_bvec', -150., 150., /overwrite
 
-mms_load_bss, trange=trange, /include_labels 
+spd_mms_load_bss, trange=trange, /include_labels 
 
 panels = ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
   'mms'+probe+'_dfg_srvy_gse_bvec', $
