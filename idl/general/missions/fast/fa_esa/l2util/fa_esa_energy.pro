@@ -23,11 +23,11 @@ Function fa_esa_energy_array, energy, mode_ind, fillval = fillval
   If(nmode0 Gt 0) Then Begin
      For j = 0, nmode0-1 Do energy_out[0, 0, mode0[j]] = energy[*, *, 0]
   Endif
-  mode1 = where(mode_ind Eq 0, nmode1)
+  mode1 = where(mode_ind Eq 1, nmode1)
   If(nmode1 Gt 0) Then Begin
      For j = 0, nmode1-1 Do energy_out[0, 0, mode1[j]] = energy[*, *, 1]
   Endif
-  mode2 = where(mode_ind Eq 0, nmode2)
+  mode2 = where(mode_ind Eq 2, nmode2)
   If(nmode2 Gt 0) Then Begin
      For j = 0, nmode2-1 Do energy_out[0, 0, mode2[j]] = energy[*, *, 2]
   Endif
@@ -49,8 +49,8 @@ End
 ;HISTORY:
 ; hacked from CDAWlib apply_esa_qflag.pro, jmm, 2015-08-28
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-01 15:45:13 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18686 $
+; $LastChangedDate: 2015-11-16 16:03:51 -0800 (Mon, 16 Nov 2015) $
+; $LastChangedRevision: 19379 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_energy.pro $
 ;-
 Function fa_esa_energy, astruct, orig_names, index=index
@@ -72,36 +72,36 @@ Function fa_esa_energy, astruct, orig_names, index=index
   
   c_0 = astruct.(index).COMPONENT_0
   c_1 = astruct.(index).COMPONENT_1
-  if (c_0 ne '' && c_1 ne '' && c_2 ne '') then begin
+  if (c_0 ne '' && c_1 ne '') then begin
 ;energy variable
      var_idx = tagindex(c_0, atags)
      itags = tag_names(astruct.(var_idx)) ;tags for comp 0
      d0 = tagindex('DAT', itags)
      if(d0[0] ne -1) then energy = astruct.(var_idx).DAT else begin
-        d0 = tagindex('HANDLE',itags)
-        handle_value, astruct.(var_idx).HANDLE, energy
+        d0 = tagindex('HANDLE', itags)
+        if(d0[0] ne -1) then handle_value, astruct.(var_idx).HANDLE, energy else begin
+           message, /info, 'No component_0: '+c_0+' found.'
+           return, astruct
+        endelse
      endelse
+     fillval = astruct.(var_idx).fillval
 ;mode_ind
      var_idx = tagindex(c_1, atags)
      itags = tag_names(astruct.(var_idx)) ;tags for comp 1
      d1 = tagindex('DAT', itags)
      if(d1[0] ne -1) then mode_ind = astruct.(var_idx).DAT else begin
-        d1 = tagindex('HANDLE',itags)
-        handle_value, astruct.(var_idx).HANDLE, mode_ind
-     endelse
+        d1 = tagindex('HANDLE', itags)
+        if(d1[0] ne -1) then handle_value, astruct.(var_idx).HANDLE, mode_ind else begin
+           message, /info, 'No component_1: '+c_1+' found.'
+           return, astruct
+        endelse
+      endelse
 ;That's all, fill the output variable
-     energy_out = fa_esa_energy_array(energy, mode_ind)
-
-;now, need to fill the virtual variable data structure with this new data array
-;and "turn off" the original variable.
+     energy_out = fa_esa_energy_array(energy, mode_ind, fillval=fillval)
+;Looks like you need to add a "handle"
      temp = handle_create(value=energy_out)
      astruct.(index).HANDLE = temp
   endif
-
-; Check astruct and reset variables not in orignal variable list to metadata,
-; so that variables that weren't requested won't be plotted/listed.
-
-  status = check_myvartype(astruct, orig_names)
 
   return, astruct
 

@@ -65,8 +65,8 @@
 ;     9/17/2015 - egrimes: large update, see svn log
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-27 09:29:48 -0700 (Tue, 27 Oct 2015) $
-;$LastChangedRevision: 19164 $
+;$LastChangedDate: 2015-11-13 12:30:49 -0800 (Fri, 13 Nov 2015) $
+;$LastChangedRevision: 19370 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_eis.pro $
 ;-
 
@@ -101,7 +101,7 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, d
         endfor
         sp = '_spin'
         store_data, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, data={x: spin_nums.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
-        options, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, spec=1
+        options, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, spec=1, minzlog = .01
         ylim, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, 50., 500., 1
         zlim, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, 0, 0, 1
     endfor
@@ -138,8 +138,9 @@ pro mms_eis_omni, probe, species = species, datatype = datatype, tplotnames = tp
         newname = 'mms'+probe+'_epd_eis_'+species_str+'_'+data_units+'_omni'+suffix
         store_data, newname, data={x:d.x, y:flux_omni/6., v:d.v}, dlimits=dl
 
-        options, newname, ylog = 1, spec = 1, yrange = en_range, zlog = 1, $
-            ytitle = 'MMS'+probe+' EIS '+species, ysubtitle='Energy [keV]', ztitle=units_label, ystyle=1, /default
+        options, newname, ylog = 1, spec = 1, yrange = en_range, $
+            ytitle = 'MMS'+probe+' EIS '+species, ysubtitle='Energy [keV]', ztitle=units_label, ystyle=1, /default, minzlog = .01
+        zlim, newname, 0., 0., 1.
         append_array, tplotnames, newname
         ; degap the data
         tdegap, newname, /overwrite

@@ -48,12 +48,23 @@ PRO eva_data_plot, wid
         vars_arr[p+pmax_THM] = ptr_new(vars[idxc])
         
         var_lab = ''
+        
+;        tn=tnames(wid.probelist_mms[p]+'_position_mlat', jmax)
+;        if (jmax eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+        tn=tnames(wid.probelist_mms[p]+'_position_mlt', jmax)
+        if (jmax eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+;        tn=tnames(wid.probelist_mms[p]+'_position_r', jmax)
+;        if (jmax eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+        
         tn=tnames(wid.probelist_mms[p]+'_position_z', jmax)
         if (jmax eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
         tn=tnames(wid.probelist_mms[p]+'_position_y', jmax)
         if (jmax eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
         tn=tnames(wid.probelist_mms[p]+'_position_x', jmax)
         if (jmax eq 1) and (strlen(tn[0]) gt 1) then var_lab = [var_lab,tn[0]]
+        
+        
+        
         if n_elements(var_lab) gt 1 then var_lab = var_lab[1:*]
         vars_lab[p+pmax_THM] = ptr_new(var_lab)
       endfor
@@ -115,6 +126,13 @@ PRO eva_data_plot, wid
     
     var_lab = ''
     if pmax_MMS gt 0 then begin
+;      tn=tnames(wid.probelist_mms[0]+'_position_mlat',mmax)
+;      if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
+      tn=tnames(wid.probelist_mms[0]+'_position_mlt',mmax)
+      if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
+;      tn=tnames(wid.probelist_mms[0]+'_position_r',mmax)
+;      if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
+      
       tn=tnames(wid.probelist_mms[0]+'_position_z',mmax)
       if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
       tn=tnames(wid.probelist_mms[0]+'_position_y',mmax)

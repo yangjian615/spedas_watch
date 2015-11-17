@@ -50,6 +50,7 @@ pathname='maven/prelaunch/dpu/prelaunch/FM/20121024_191646_FMS2_LPWCPT/commonBlo
 
 
 
+mvn_pfp_l0_file_read,pathname=pathname,/sep
 
 
 

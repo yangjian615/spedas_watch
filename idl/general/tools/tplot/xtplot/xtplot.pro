@@ -9,8 +9,8 @@
 ; 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-09-01 12:49:48 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18685 $
+; $LastChangedDate: 2015-11-13 07:44:34 -0800 (Fri, 13 Nov 2015) $
+; $LastChangedRevision: 19358 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -94,6 +94,38 @@ PRO xtplot_refresh, widf, gpp=gpp
     tplot,verbose=0, get_plot_pos = plot_pos
     str_element,/add,widf,'plot_pos',plot_pos
   endif else tplot
+END
+
+FUNCTION xtplot_timeformat, tr, nodate=nodate
+  s1 = time_string(tr)
+  s2 = strjoin(strsplit(s1,'/',/extract),'_')
+  s3 = strjoin(strsplit(s2,':',/extract), '')
+  s4 = strjoin(strsplit(s3,'-',/extract), '')
+  if keyword_set(nodate) then begin
+    s4 = strmid(s4,9,1000)
+  endif
+  return, s4
+END
+
+PRO xtplot_makeimage, drwin, jpg=jpg
+  fmt = 'png'
+  if keyword_set(jpg) then fmt = 'jpg'
+  tr = timerange(/current)
+  ts = xtplot_timeformat(tr[0])
+  te = xtplot_timeformat(tr[1],/nodate)
+  fname_default = 'xtplot_'+ts+'-'+te+'.'+fmt
+  fname = dialog_pickfile(DEFAULT_EXTENSION=fmt, /WRITE, FILE=fname_default)
+  if strlen(fname) eq 0 then begin
+    answer = dialog_message('Cancelled',/center,/info)
+  endif else begin
+    nlen=strlen(fname)
+    if strpos(fname,'.'+fmt) eq nlen-4 then fname = strmid(fname,0,nlen-4)
+    case fmt of
+      'png': makepng,fname,window=drwin
+      'jpg': makejpg,fname,window=drwin
+      else:message,'A wrong image format'
+    endcase
+  endelse
 END
 
 PRO xtplot_event, event
@@ -298,11 +330,11 @@ PRO xtplot_event, event
 ;      end
     widf.mnExJPG:     begin
       widget_control, widf.drwPlot, GET_VALUE=drwin
-      makejpg,'xtplot',window=drwin
+      xtplot_makeimage, drwin, /jpg
       end
     widf.mnExPNG:     begin
       widget_control, widf.drwPlot, GET_VALUE=drwin
-      makepng,'xtplot',window=drwin
+      xtplot_makeimage, drwin
       end
 ;    widf.mnExGIF:     makegif,'xtplot'
     widf.mnConfig:    begin

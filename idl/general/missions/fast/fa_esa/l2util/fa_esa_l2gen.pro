@@ -14,8 +14,8 @@
 ;HISTORY:
 ; 2015-09-02, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-08 10:39:20 -0700 (Tue, 08 Sep 2015) $
-; $LastChangedRevision: 18725 $
+; $LastChangedDate: 2015-11-13 16:13:25 -0800 (Fri, 13 Nov 2015) $
+; $LastChangedRevision: 19371 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2gen.pro $
 ;-
 Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
@@ -65,7 +65,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
   orbit_dir = strmid(orbit_str,0,2)+'000'
 ;Unlike L1 files, we put the date in L2 files
   dtemp = fa_orbit_to_time(orbit)
-  date = time_string(dtemp[1], tformat='YYYYMMDD')
+  date = time_string(dtemp[1], tformat='YYYYMMDDhhmmss')
 
 ;For each type, create and output the L2 structure
   type = 'ies'
@@ -78,7 +78,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
   Endelse
 ;move the file into the correct database directory
-  relpathname='fast/l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
+  relpathname='fast/l2/'+type+'/'+orbit_dir;+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
   final_resting_place = ldir+relpathname
   file_move, fullfile, final_resting_place, /overwrite
   skip_ies:
@@ -93,7 +93,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
   Endelse
 ;move the file into the correct database directory
-  relpathname='fast/l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
+  relpathname='fast/l2/'+type+'/'+orbit_dir;+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
   final_resting_place = ldir+relpathname
   file_move, fullfile, final_resting_place, /overwrite
   skip_ees:
@@ -108,7 +108,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
   Endelse
 ;move the file into the correct database directory
-  relpathname='fast/l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
+  relpathname='fast/l2/'+type+'/'+orbit_dir;+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
   final_resting_place = ldir+relpathname
   file_move, fullfile, final_resting_place, /overwrite
   skip_ieb:
@@ -123,7 +123,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
   Endelse
 ;move the file into the correct database directory
-  relpathname='fast/l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
+  relpathname='fast/l2/'+type+'/'+orbit_dir;+'/fa_l2_'+type+'_'+date+'_'+orbit_str+'_'+vxx+'.cdf'
   final_resting_place = ldir+relpathname
   file_move, fullfile, final_resting_place, /overwrite
   skip_eeb:

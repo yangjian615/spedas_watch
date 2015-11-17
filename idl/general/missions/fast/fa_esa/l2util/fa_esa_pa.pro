@@ -20,19 +20,30 @@ Function fa_esa_pa_array, theta, theta_shift, mode_ind, fillval = fillval
 
   ntimes = n_elements(mode_ind)
   If(n_elements(theta_shift) Ne ntimes) Then Return, -1
-  If(keyword_set(fillval)) Then fv = fillval Else fv = !values.f_nan
-  theta_out = fltarr(96, 64, ntimes) & theta_out[*] = fv
+ ;It turns pout that non-NaN fillvals cause weird results, so
+; Set fillval to NaN, will reset after addition,
+  If(keyword_set(fillval)) Then Begin
+     fv = fillval
+     ss_fv = where(theta Eq fv, nfv)
+     If(nfv Gt 0) Then theta[ss_fv] = !values.f_nan
+  Endif Else fv = !values.f_nan
+  theta_out = fltarr(96, 64, ntimes) & theta_out[*] = !values.f_nan
+  
   mode0 = where(mode_ind Eq 0, nmode0)
   If(nmode0 Gt 0) Then Begin
      For j = 0, nmode0-1 Do theta_out[0, 0, mode0[j]] = theta[*, *, 0]+theta_shift[mode0[j]]
   Endif
-  mode1 = where(mode_ind Eq 0, nmode1)
+  mode1 = where(mode_ind Eq 1, nmode1)
   If(nmode1 Gt 0) Then Begin
      For j = 0, nmode1-1 Do theta_out[0, 0, mode1[j]] = theta[*, *, 1]+theta_shift[mode1[j]]
   Endif
-  mode2 = where(mode_ind Eq 0, nmode2)
+  mode2 = where(mode_ind Eq 2, nmode2)
   If(nmode2 Gt 0) Then Begin
      For j = 0, nmode2-1 Do theta_out[0, 0, mode2[j]] = theta[*, *, 2]+theta_shift[mode2[j]]
+  Endif
+  If(keyword_set(fillval)) Then Begin
+     ss_fv = where(~finite(ss_fv), nfv)
+     If(nfv Gt 0) Then theta_out[ss_sv] = fillval
   Endif
   Return, theta_out
 End
@@ -52,8 +63,8 @@ End
 ;HISTORY:
 ; hacked from CDAWlib apply_esa_qflag.pro, jmm, 2015-08-28
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-01 15:45:13 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18686 $
+; $LastChangedDate: 2015-11-16 16:03:51 -0800 (Mon, 16 Nov 2015) $
+; $LastChangedRevision: 19379 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_pa.pro $
 ;-
 Function fa_esa_pa, astruct, orig_names, index=index
@@ -82,37 +93,41 @@ Function fa_esa_pa, astruct, orig_names, index=index
      itags = tag_names(astruct.(var_idx)) ;tags for comp 0
      d0 = tagindex('DAT', itags)
      if(d0[0] ne -1) then theta = astruct.(var_idx).DAT else begin
-        d0 = tagindex('HANDLE',itags)
-        handle_value, astruct.(var_idx).HANDLE, theta
+        d0 = tagindex('HANDLE', itags)
+        if(d0[0] ne -1) then handle_value, astruct.(var_idx).HANDLE, theta else begin
+           message, /info, 'No component_0: '+c_0+' found.'
+           return, astruct
+        endelse
      endelse
 ;shift
      var_idx = tagindex(c_1, atags)
      itags = tag_names(astruct.(var_idx)) ;tags for comp 1
      d1 = tagindex('DAT', itags)
      if(d1[0] ne -1) then theta_shift = astruct.(var_idx).DAT else begin
-        d1 = tagindex('HANDLE',itags)
-        handle_value, astruct.(var_idx).HANDLE, theta_shift
+        d1 = tagindex('HANDLE', itags)
+        if(d1[0] ne -1) then handle_value, astruct.(var_idx).HANDLE, theta_shift else begin
+           message, /info, 'No component_1: '+c_1+' found.'
+           return, astruct
+        endelse
      endelse
-     fill_val = astruct.(var_idx).fillval
+     fillval = astruct.(var_idx).fillval
 ;mode_ind
      var_idx = tagindex(c_2, atags)
      itags = tag_names(astruct.(var_idx)) ;tags for comp 2
      d2 = tagindex('DAT', itags)
      if(d2[0] ne -1) then mode_ind = astruct.(var_idx).DAT else begin
-        d2 = tagindex('HANDLE',itags)
-        handle_value, astruct.(var_idx).HANDLE, mode_ind
+        d2 = tagindex('HANDLE', itags)
+        if(d2[0] ne -1) then handle_value, astruct.(var_idx).HANDLE, mode_ind else begin
+           message, /info, 'No component_1: '+c_1+' found.'
+           return, astruct
+        endelse
      endelse
 ;That's all, fill the output variable
      theta_out = fa_esa_pa_array(theta, theta_shift, mode_ind, fillval=fillval)
-
-;now, need to fill the virtual variable data structure with this new data array
-;and "turn off" the original variable.
+;Looks like you need to add a "handle"
      temp = handle_create(value=theta_out)
      astruct.(index).HANDLE = temp
   endif
-; Check astruct and reset variables not in orignal variable list to metadata,
-; so that variables that weren't requested won't be plotted/listed.
-  status = check_myvartype(astruct, orig_names)
 
   return, astruct
 end

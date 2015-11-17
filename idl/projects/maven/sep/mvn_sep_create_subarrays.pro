@@ -91,6 +91,8 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
           ylog = yval ne 'bins' ? 1 :0
           energy  = bmap.nrg_meas_avg
           denergy = bmap.NRG_MEAS_DELTA
+          if n_elements(energy) eq 1 then energy=[energy]
+          if n_elements(denergy) eq 1 then denergy=[denergy]
           energy_label = string(energy)
           case strlowcase(zval) of
            'counts' : begin
@@ -125,7 +127,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
                          zrange = [1.,1e5]
                          yrange = zrange * 100
                          units = 'keV/s/ster/keV'
-                         tdata = total(data * (replicate(1,nt) # denergy),2)
+                         if n_elements(denergy) gt 1  then tdata = total(data * (replicate(1,nt) # denergy),2) else tdata=data
                      end
           endcase
           rdata[*,det-1] = tdata 

@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-09-24 15:14:07 -0700 (Thu, 24 Sep 2015) $
-; $LastChangedRevision: 18923 $
+; $LastChangedDate: 2015-11-13 07:45:34 -0800 (Fri, 13 Nov 2015) $
+; $LastChangedRevision: 19359 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -90,7 +90,10 @@ FUNCTION eva_data_load_and_plot, state
 
   ; initialize
   clock = eva_tic('LOAD_AND_PLOT')
-  del_data,'*'  
+  if state.trangeChanged then begin
+    del_data,'*'
+    str_element,/add,state,'trangeChanged',0
+  endif
   plshort = strmid(paramlist,0,2); first 2 letters
   str_element,/add,state,'paramlist',paramlist
   
@@ -355,6 +358,7 @@ FUNCTION eva_data_event, ev
     state.drpUserType: begin
       print,'EVA: ***** EVENT: drpUserType *****'
       str_element,/add,state,'user_flag',ev.INDEX
+      str_element,/add,state,'trangeChanged',1
       if state.USER_FLAG ne 0 then begin
         state = eva_data_login(state,ev.TOP)
       endif
@@ -373,11 +377,13 @@ FUNCTION eva_data_event, ev
     state.fldStartTime: begin
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
       str_element,/add,state,'start_time',new_time
+      str_element,/add,state,'trangeChanged',1
       ;eva_data_update_time, state ; not updating fldStartTime
     end
     state.fldEndTime: begin
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
       str_element,/add,state,'end_time',new_time
+      str_element,/add,state,'trangeChanged',1
       ;eva_data_update_time, state ; not updating fldEndTime
     end
     state.calStartTime: begin
@@ -387,6 +393,7 @@ FUNCTION eva_data_event, ev
       spd_ui_calendar,'EVA Calendar',otime,ev.top
       otime->GetProperty,tstring=tstring         ; get tstring
       str_element,/add,state,'start_time',tstring; put tstring into state structure
+      str_element,/add,state,'trangeChanged',1
       widget_control, state.fldStartTime, SET_VALUE=state.start_time; update GUI field
       ;eva_data_update_time, state
       obj_destroy, otime
@@ -398,6 +405,7 @@ FUNCTION eva_data_event, ev
       spd_ui_calendar,'EVA Calendar',otime,ev.top
       otime->GetProperty,tstring=tstring
       str_element,/add,state,'end_time',tstring
+      str_element,/add,state,'trangeChanged',1
       widget_control, state.fldEndTime, SET_VALUE=state.end_time
       ;eva_data_update_time, state
       obj_destroy, otime
@@ -482,7 +490,8 @@ FUNCTION eva_data, parent, $
     paramSetList:  '', $; List of ParameterSets
     paramFileList: '',$
     userType: userType, $
-    user_flag: user_flag}
+    user_flag: user_flag,$
+    trangeChanged: 0}
   
   
   ; ----- CONFIG (READ and VALIDATE) -----

@@ -154,7 +154,8 @@ s = { $
       brst: { $
               l1a: [ '' ], $
               l1b: [ '' ], $
-              ql: [ '' ] $
+              ql: [ '' ], $
+              l2pre: [''] $
             }, $
       fast: { $
               l1a: [ '' ], $
@@ -169,7 +170,8 @@ s = { $
       srvy: { $
               l1a: [ '' ], $
               l1b: [ '' ], $
-              ql:  [ '' ] $
+              ql:  [ '' ], $
+              l2pre: [''] $
             } $
     }
 
@@ -484,8 +486,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-23 15:30:07 -0700 (Fri, 23 Oct 2015) $
-;$LastChangedRevision: 19146 $
+;$LastChangedDate: 2015-11-16 08:16:15 -0800 (Mon, 16 Nov 2015) $
+;$LastChangedRevision: 19375 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $

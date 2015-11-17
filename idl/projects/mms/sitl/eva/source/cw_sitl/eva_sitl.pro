@@ -431,6 +431,7 @@ FUNCTION eva_sitl_event, ev
   refresh_dash = 0
   sanitize_fpi = 1
   xtplot_right_click = 1
+  save = 1
   
   case ev.id of
     state.btnAdd:  begin
@@ -492,6 +493,7 @@ FUNCTION eva_sitl_event, ev
       eva_sitl_fom_recover,'rvrt'
       end
     state.btnValidate: begin
+      save = 0
       print,'EVA: ***** EVENT: btnValidate *****'
       title = 'Validation'
       if state.PREF.EVA_BAKSTRUCT then begin
@@ -552,6 +554,7 @@ FUNCTION eva_sitl_event, ev
 ;      endelse
 ;      end
     state.drpHighlight: begin
+      save =0
       print,'EVA: ***** EVENT: drpHighlight *****'
       tplot
       type = state.hlSet2[ev.index]
@@ -595,19 +598,21 @@ FUNCTION eva_sitl_event, ev
       endif
       end
     state.drpSave: begin
+      save=0
       print,'EVA: ***** EVENT: drpSave *****'
       widget_control, widget_info(ev.Top,find='eva_data'), GET_VALUE=state_data
       dir = state_data.pref.EVA_CACHE_DIR
       type = state.svSet[ev.index]
       case type of
-        'Save': eva_sitl_save,/auto,dir=dir
-        'Restore': eva_sitl_restore,/auto,dir=dir
+;        'Save': eva_sitl_save,/auto,dir=dir
+;        'Restore': eva_sitl_restore,/auto,dir=dir
         'Save As': eva_sitl_save
         'Restore From': eva_sitl_restore
         else: answer = dialog_message('Something is wrong.')
       endcase
       end
     state.btnSubmit: begin
+      save=0
       print,'EVA: ***** EVENT: btnSubmit *****'
       print,'EVA: TESTMODE='+string(state.PREF.EVA_TESTMODE_SUBMIT)
       submit_code = 1
@@ -620,6 +625,7 @@ FUNCTION eva_sitl_event, ev
       endelse
       end
     state.drDash: begin
+      save=0
       ;print,'EVA: ***** EVENT: drDash *****'
       ;widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
       sanitize_fpi=0
@@ -665,6 +671,9 @@ FUNCTION eva_sitl_event, ev
     endif
   endif
   
+  if save then begin
+    eva_sitl_save,/auto,dir=dir,/quiet
+  endif
 
   
   WIDGET_CONTROL, stash, SET_UVALUE=state, /NO_COPY
@@ -726,7 +735,7 @@ FUNCTION eva_sitl, parent, $
   hlSet = ['Default','isPending','inPlaylist','Held','Complete','Overwritten']
   hlSet2 = ['Default','isPending','inPlaylist','Held','Complete','New','Modified',$
     'Deleted','Aborted','Finished','Incomplete','Derelict', 'Demoted','Realloc', 'Deferred']
-  svSet = ['Save','Restore','Save As', 'Restore From']
+  svSet = ['Save As', 'Restore From'];svSet = ['Save','Restore','Save As', 'Restore From']
   
   mainbase = WIDGET_BASE(parent, UVALUE = uval, UNAME = uname, TITLE=title,$
     EVENT_FUNC = "eva_sitl_event", $

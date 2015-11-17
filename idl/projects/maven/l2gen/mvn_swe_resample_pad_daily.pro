@@ -12,16 +12,17 @@
 ;       trange:       One or more dates, in any format accepted by time_double.
 ;                     Only full UT days are processed; any fractional part of
 ;                     the day is ignored.  When trange has more than one element,
-;                     all dates from the earliest to the latest are processed.
+;                     all days between the earliest and the latest (inclusive) 
+;                     are processed.
 ;
 ;KEYWORDS:
 ;
 ;       L2ONLY:       Use L2 MAG data only.  Skip any date(s) where L2 data are
 ;                     incomplete or not available.
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-10-20 17:23:53 -0700 (Tue, 20 Oct 2015) $
-; $LastChangedRevision: 19121 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-11-16 17:23:48 -0800 (Mon, 16 Nov 2015) $
+; $LastChangedRevision: 19381 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_resample_pad_daily.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -65,8 +66,8 @@ pro mvn_swe_resample_pad_daily, trange, l2only=l2only
     if (ok) then begin
       mvn_swe_pad_resample,nbins=128,erange=[100.,150.],/norm,/mask,/silent
       tplot_save,'mvn_swe_pad_resample',file=ofile
-;      spawn, 'chmod g+w '+ofile
-      file_chmod, ofile, '664'o
+      if (file_test(ofile+'.tplot',/user)) then file_chmod, ofile+'.tplot', '664'o $
+                                           else print,"Can't chmod - I'm not the owner!"
     endif
 
   endfor

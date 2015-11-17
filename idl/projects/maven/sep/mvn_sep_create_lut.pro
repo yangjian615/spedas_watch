@@ -194,8 +194,8 @@ case mapname of
   startbin = 0
   mvn_sep_fill_lut,lut,startbin,TID=1,fto=1,nbins=[50,9,1],binwidth=[1,400,446]
   mvn_sep_fill_lut,lut,startbin,TID=1,fto=2,nbins=[50,9,1],binwidth=[1,400,446]
-stop
-  mvn_sep_fill_lut,lut,startbin,TID=1,fto=4,nbins=[50,0,1],binwidth=[1,400,446]
+;stop
+  mvn_sep_fill_lut,lut,startbin,TID=1,fto=4,nbins=[50,9,1],binwidth=[1,400,446]
   mvn_sep_fill_lut,lut,startbin,TID=1,fto=3,nbins=[20,4,1],binwidth=[2,800,856]
   mvn_sep_fill_lut,lut,startbin,TID=1,fto=6,nbins=[20,4,1],binwidth=[2,800,856]
   mvn_sep_fill_lut,lut,startbin,TID=1,fto=7,nbins=[10,3,1],binwidth=[2,800,1676]

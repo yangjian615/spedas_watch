@@ -135,7 +135,7 @@ if format eq 'L2_CDF' then begin
     sepstr = 's'+strtrim(sepnum,2)
     data_type = sepstr+'-cal-svy-full'
     L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v03_r??.cdf'
-    filenames = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange,verbose=verbose,/last_version,/valid_only)
+    filenames = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange,verbose=verbose,/valid_only)
     if ~keyword_set(download_only) then   cdf2tplot,filenames    ,prefix = 'MVN_SEP'+strtrim(sepnum,2)+''
   endfor
   return

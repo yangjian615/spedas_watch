@@ -56,8 +56,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-04 12:50:41 -0700 (Fri, 04 Sep 2015) $
-; $LastChangedRevision: 18715 $
+; $LastChangedDate: 2015-11-16 16:03:51 -0800 (Mon, 16 Nov 2015) $
+; $LastChangedRevision: 19379 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -133,7 +133,10 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
             ['EFLUX', 'FLOAT', 'Differential energy flux array with dimensions (NUM_DISTS, 96, 64)', 'Energy flux'], $
             ['PITCH_ANGLE', 'FLOAT', 'Pitch Angule values for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'Pitch Angle'], $
             ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'Energy'], $
-            ['DENERGY_FULL', 'FLOAT', 'Angular bin size for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'DEnergy']]
+            ['DENERGY_FULL', 'FLOAT', 'Angular bin size for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'DEnergy'], $
+            ['ORBIT_NUMBER', 'FLOAT', 'Orbit number for this file, does not change, so only 2 entries per file', 'Orbit_number'], $
+            ['ORBIT_NUMBER_TIME', 'DOUBLE', 'Time array, unix time for orbit number', 'Orbit Number Time'], $
+            ['ORBIT_NUMBER_EPOCH', 'CDF_EPOCH', 'CDF Epoch array for orbit number', 'Orbit Number Epoch']]
 
 ;Use Lower case for variable names
   rv_vt[0, *] = strlowcase(rv_vt[0, *])
@@ -212,15 +215,21 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
            'time_integ': dvar = cmn_dat.integ_t
            'pitch_angle': Begin ;Virtual variable
               message, /info, 'Variable '+vj+' is Virtual.'
-              dvar = 0.0
            End
            'energy_full': Begin ;Virtual variable
               message, /info, 'Variable '+vj+' is Virtual.'
-              dvar = 0.0
            End
            'denergy_full': Begin ;Virtual variable
               message, /info, 'Variable '+vj+' is Virtual.'
-              dvar = 0.0
+           End
+           'orbit_number': dvar = [cmn_dat.orbit_start, cmn_dat.orbit_end]
+           'orbit_number_time': Begin
+              dvar = minmax(center_time)
+              is_tvar = 1b
+           End
+           'orbit_number_epoch': Begin
+              dvar = time_epoch(minmax(center_time))
+              is_tvar = 1b
            End
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for.'
@@ -230,7 +239,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 
      cdf_type = idl2cdftype(dvar, format_out = fmt, fillval_out = fll, validmin_out = vmn, validmax_out = vmx)
 ;Change types for CDF time variables
-     If(vj eq 'epoch') Then cdf_type = 'CDF_TIME_TT2000'
+     If(vj eq 'epoch' Or vj Eq 'orbit_number_epoch') Then cdf_type = 'CDF_EPOCH'
 
      dtype = size(dvar, /type)
 ;variable attributes here, but only the string attributes, the others
@@ -247,13 +256,16 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 ;fix fill vals, valid mins and valid max's here
      str_element, vatt, 'fillval', fll, /add
      str_element, vatt, 'format', fmt, /add
-     If(vj Eq 'epoch') Then Begin
+     If(vj Eq 'epoch' Or vj Eq 'orbit_number_epoch') Then Begin
         str_element, vatt, 'fillval', epoch_range[0], /add_replace
         str_element, vatt, 'validmin', epoch_range[0], /add
         str_element, vatt, 'validmax', epoch_range[1], /add
-     Endif Else If(vj Eq 'time_unix' Or vj Eq 'time_start' Or vj Eq 'time_end') Then Begin
+     Endif Else If(vj Eq 'time_unix' Or vj Eq 'time_start' Or vj Eq 'time_end' Or vj Eq 'orbit_number_time') Then Begin
         str_element, vatt, 'validmin', date_range[0], /add
         str_element, vatt, 'validmax', date_range[1], /add
+     Endif Else If(vj Eq 'theta_shift' Or vj Eq 'pitch_angle') Then Begin
+        str_element, vatt, 'validmin', 0.0, /add
+        str_element, vatt, 'validmax', 360.0, /add
      Endif Else Begin
         str_element, vatt, 'validmin', vmn, /add
         str_element, vatt, 'validmax', vmx, /add
@@ -292,8 +304,13 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      Endelse
 
 ;Depends and labels
-     vatt.depend_time = 'time_unix'
-     vatt.depend_0 = 'epoch'
+     If(strpos(vj, 'orbit_number') Ne -1) Then Begin
+        vatt.depend_time = 'orbit_number_time'
+        vatt.depend_0 = 'orbit_number_epoch'
+     Endif Else Begin
+        vatt.depend_time = 'time_unix'
+        vatt.depend_0 = 'epoch'
+     Endelse
      vatt.lablaxis = rv_vt[3, j]
 
 ;Assign labels and components for vectors
@@ -302,10 +319,11 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
         vj Eq 'denergy_full') Then Begin
 ;For ISTP compliance, it looks as if the depend's are switched,
 ;probably because we transpose it all in the file
-        vatt.depend_2 = 'compno_96'
-        vatt.depend_1 = 'compno_64'
-        vatt.labl_ptr_2 = vj+'_energy_labl_96'
-        vatt.labl_ptr_1 = vj+'_angle_labl_64'
+;??? Check this ???
+        vatt.depend_1 = 'compno_96'
+        vatt.depend_2 = 'compno_64'
+        vatt.labl_ptr_1 = vj+'_energy_labl_96'
+        vatt.labl_ptr_2 = vj+'_angle_labl_64'
      Endif
  
 ;Time variables are monotonically increasing:
@@ -355,6 +373,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
         vsj.datatype = cdf_type
         vsj.type = dtype
         vsj.attrptr = ptr_new(vatt)
+        vsj.dataptr = ptr_new()
      Endif Else Begin
         vsj.name = vj
         vsj.datatype = cdf_type
@@ -403,13 +422,19 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      str_element, vatt, 'format', fmt, /add
 ;Don't need mins and maxes for string variables
      If(~is_string(dvar)) Then Begin
+;angles from 0.0 t0 360.0
+        If(vj Eq 'theta' Or vj Eq 'dtheta') Then Begin
+           str_element, vatt, 'validmin', 0.0, /add
+           str_element, vatt, 'validmax', 360.0, /add
+        Endif Else Begin
+           str_element, vatt, 'validmin', vmn, /add
+           str_element, vatt, 'validmax', vmx, /add
+        Endelse
         str_element, vatt, 'fillval', fll, /add
-        str_element, vatt, 'validmin', vmn, /add
-        str_element, vatt, 'validmax', vmx, /add
 ;scalemin and scalemax depend on the variable's values
         str_element, vatt, 'scalemin', vmn, /add
         str_element, vatt, 'scalemax', vmx, /add
-        ok = where(finite(dvar), nok)
+        ok = where(finite(dvar) And dvar Ne fll, nok)
         If(nok Gt 0) Then Begin
            vatt.scalemin = min(dvar[ok])
            vatt.scalemax = max(dvar[ok])
@@ -560,8 +585,8 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      Endcase
   Endelse        
 
-;date here, uses the median
-  date = time_string(median(center_time), precision=-3, format=6)
+;SPDF requests full start time in the filename
+  date = time_string(min(center_time), format=6)
   orb_string = string(long(cmn_dat.orbit_start), format = '(i5.5)')
   file0 = 'fa_l2_'+ext+'_'+date+'_'+orb_string+'_'+sw_vsn_str+'.cdf'
   fullfile0 = dir+file0

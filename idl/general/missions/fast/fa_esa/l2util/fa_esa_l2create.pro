@@ -63,8 +63,8 @@
 ; added eflux variable, 2015-08-21, jmm
 ; added orbit stat and end tags, 2015-08-24, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-14 15:48:59 -0700 (Mon, 14 Sep 2015) $
-; $LastChangedRevision: 18793 $
+; $LastChangedDate: 2015-11-16 16:05:24 -0800 (Mon, 16 Nov 2015) $
+; $LastChangedRevision: 19380 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2create.pro $
 ;-
 pro fa_esa_l2create,type=type, $
@@ -126,7 +126,7 @@ pro fa_esa_l2create,type=type, $
 
 ;define eflux, data here
   eflux = fltarr(96, 64, ntimes)
-  eflux[*] = 0.0
+  eflux[*] = -1.0e+31           ;an SPDF fillval
   data = bytarr(96, 64, ntimes)
   data[*] = 0
   for i=0,ntimes-1 do begin
@@ -193,7 +193,21 @@ pro fa_esa_l2create,type=type, $
   str_element, all_dat, 'orbit_start', min(orbit), /add_replace
   str_element, all_dat, 'orbit_end', max(orbit), /add_replace
 
-  return
+;Replace the 0.0 fills in energy, denergy and theta arrays with
+;fillval = -1.0e-31, these will be points where dtheta and energy are
+;zero
+  xxx = where(all_dat.dtheta Eq 0, nxxx)
+  If(nxxx Gt 0) Then Begin
+     all_dat.theta[xxx] = -1.0e+31
+     all_dat.dtheta[xxx] = -1.0e+31
+  Endif
+  xxx = where(all_dat.energy Eq 0, nxxx)
+  If(nxxx Gt 0) Then Begin
+     all_dat.energy[xxx] = -1.0e+31
+     all_dat.denergy[xxx] = -1.0e+31
+  Endif
+
+  Return
 
 end
 

@@ -318,6 +318,9 @@ FUNCTION eva_data_load_mms, state
       wposx = D.y[*,0]/Re
       wposy = D.y[*,1]/Re
       wposz = D.y[*,2]/Re
+      wphi  = atan(wposy,wposx)/!DTOR
+      wxlt  = 12. + wphi/15.
+      wlat  = atan(wposz,sqrt(wposx^2+wposy^2))/!DTOR
       matched=1
     endif
     
@@ -328,8 +331,13 @@ FUNCTION eva_data_load_mms, state
       options,sc+'_position_y',ytitle=sc+' Ygsm (Re)'
       store_data,sc+'_position_x',data={x:wtime,y:wposx}
       options,sc+'_position_x',ytitle=sc+' Xgsm (Re)'
+      store_data,sc+'_position_r',data={x:wtime,y:wdist}
+      options,sc+'_position_r',ytitle=sc+' R (Re)'
+      store_data,sc+'_position_mlt',data={x:wtime,y:wxlt}
+      options,sc+'_position_mlt',ytitle=sc+' MLT (hr)'
+      store_data,sc+'_position_mlat',data={x:wtime,y:wlat}
+      options,sc+'_position_mlat',ytitle=sc+' MLAT (deg)'
     endif
-    
     
   endfor; for each requested probe
   

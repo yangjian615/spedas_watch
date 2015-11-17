@@ -21,7 +21,11 @@ FUNCTION eva_data_load_sitl, state
   widget_control, widget_info(state.PARENT,find='eva_sitl'), GET_VALUE=state_sitl
   stlm = {input: state_sitl.PREF.EVA_STLM_INPUT, update:state_sitl.PREF.EVA_STLM_UPDATE}
   
-
+  ; Check pre-loaded variables.
+  ; Avoid reloading if already exists.
+  tn=tnames('mms_stlm_fomstr',ct)
+  str_element,/add,stlm,'update',(ct eq 0) 
+  
   ; Should use "execute" to reduce number of codes?
   if stlm.update then begin
     
@@ -66,6 +70,7 @@ FUNCTION eva_data_load_sitl, state
       options,   'mms_stlm_fomstr','unix_FOMStr_org'; remove unixFOMStr_org
       options,   'mms_stlm_fomstr','ytitle','FOM'
       options,   'mms_stlm_fomstr','ysubtitle',ysubtitle
+      options,   'mms_stlm_fomstr','constant',[50,100,150,200]
       dgrand = ['mms_stlm_fomstr']
     endif else begin 
       print, 'EVA: FOMStr was not found for the specified time period.'
@@ -84,6 +89,7 @@ FUNCTION eva_data_load_sitl, state
       options,   'mms_stlm_bakstr','unix_BAKStr_org'; remove unix_BAKStr_org
       options,   'mms_stlm_bakstr','ytitle','BAK'
       options,   'mms_stlm_bakstr','ysubtitle',ysubtitle
+      options,   'mms_stlm_bakstr','constant',[50,100,150,200]
       dgrand = [dgrand,'mms_stlm_bakstr']
     endif
     
@@ -93,6 +99,7 @@ FUNCTION eva_data_load_sitl, state
     store_data, 'mms_stlm_input_fom',data=S,lim=lim,dl=dl; Just make a copy
     options, 'mms_stlm_input_fom','ytitle','FOM'
     options, 'mms_stlm_input_fom','ysubtitle','(original)'
+    options, 'mms_stlm_input_fom','constant',[50,100,150,200]
     
     ; 'mms_stlm_output_fom'
     dgrand = [dgrand,'mms_soca_zero']
@@ -101,6 +108,7 @@ FUNCTION eva_data_load_sitl, state
     options, 'mms_stlm_output_fom','codeBAK',codeBAK
     options,'mms_stlm_output_fom','ytitle','FOM'
     options,'mms_stlm_output_fom','ysubtitle',ysubtitle
+    options,'mms_stlm_output_fom','constant',[50,100,150,200]
     eva_sitl_strct_yrange,'mms_stlm_output_fom'
     eva_sitl_strct_yrange,'mms_stlm_fomstr'
   endif

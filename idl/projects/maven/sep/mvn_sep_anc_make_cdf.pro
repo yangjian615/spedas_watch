@@ -6,8 +6,8 @@
 ; Acts as a timestamp file to trigger the regeneration of SEP data products. Also provides Software Version info for the MAVEN SEP instrument.  
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: rlillis2 $
-; $LastChangedDate: 2015-07-28 19:54:39 -0700 (Tue, 28 Jul 2015) $
-; $LastChangedRevision: 18307 $
+; $LastChangedDate: 2015-11-15 23:42:59 -0800 (Sun, 15 Nov 2015) $
+; $LastChangedRevision: 19373 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sep/mvn_sep_anc_make_cdf.pro $
 ;-
 function mvn_sep_anc_sw_version
@@ -23,8 +23,8 @@ sw_structure = {  $
   sw_runtime : time_string(systime(1))  , $
   sw_runby :  getenv('LOGNAME') , $
   svn_changedby : '$LastChangedBy: rlillis2 $' , $
-  svn_changedate: '$LastChangedDate: 2015-07-28 19:54:39 -0700 (Tue, 28 Jul 2015) $' , $
-  svn_revision : '$LastChangedRevision: 18307 $' }
+  svn_changedate: '$LastChangedDate: 2015-11-15 23:42:59 -0800 (Sun, 15 Nov 2015) $' , $
+  svn_revision : '$LastChangedRevision: 19373 $' }
 return,sw_structure
 end
 
@@ -48,8 +48,8 @@ end
 ;	FILE: Output file name
 ;
 ; $LastChangedBy: rlillis2 $
-; $LastChangedDate: 2015-07-28 19:54:39 -0700 (Tue, 28 Jul 2015) $
-; $LastChangedRevision: 18307 $
+; $LastChangedDate: 2015-11-15 23:42:59 -0800 (Sun, 15 Nov 2015) $
+; $LastChangedRevision: 19373 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sep/mvn_sep_anc_make_cdf.pro $
 
 
@@ -147,6 +147,7 @@ dummy = cdf_attcreate(fileid,'DEPEND_0',/variable_scope)
 dummy = cdf_attcreate(fileid,'DEPEND_TIME',/variable_scope)
 dummy = cdf_attcreate(fileid,'DEPEND_1',/variable_scope)
 dummy = cdf_attcreate(fileid,'DEPEND_2',/variable_scope)
+dummy = cdf_attcreate(fileid,'DEPEND_3',/variable_scope)
 dummy = cdf_attcreate(fileid,'DISPLAY_TYPE',/variable_scope)
 dummy = cdf_attcreate(fileid,'VALIDMIN',/variable_scope)
 dummy = cdf_attcreate(fileid,'VALIDMAX',/variable_scope)
@@ -257,7 +258,7 @@ cdf_attput,fileid,'CATDESC',name,'Time, middle of sample, in ephemeris time (use
 cdf_varput,fileid,name,SEP_ancillary.time_ephemeris
 
 ; we require the no-vary vector number, i.e. 1 to 3
-dim_vary = [1]
+dim_vary = 0
 dim = 3
 name = 'vector_component_num'
 varid = cdf_varcreate(fileid, name, dim_vary, /CDF_UINT1, DIM = dim, /REC_NOVARY,/ZVARIABLE)
@@ -307,9 +308,89 @@ for J = 0, 2 do begin
 endfor
 
 
+  
+; we require the phi and theta coordinates of each 'pixel' within the
+; FOV, in sensor coordinates
+dim_vary = 0
+nphi = n_elements (SEP_ancillary[0].fov_phi_centers [0,*])
+dim = nphi
+numdir = ['1f','1r', '2f', '2r']
+direction = ['1-Forward', '1-Reverse', '2-Forward', '2-Reverse']
+names = ('sep-' + numdir + '_fov_phi')
+for J = 0, 3 do begin
+varid = cdf_varcreate(fileid, names[J],dim_vary, /CDF_FLOAT, DIM = dim, /REC_NOVARY,/ZVARIABLE)
+cdf_attput,fileid,'FIELDNAM',varid,names[J],/ZVARIABLE
+cdf_attput,fileid,'FORMAT',varid,'i2',/ZVARIABLE
+cdf_attput,fileid,'LABLAXIS',varid,names[J],/ZVARIABLE
+cdf_attput,fileid,'VAR_TYPE',varid,'metadata',/ZVARIABLE
+cdf_attput,fileid,'FILLVAL',varid,-243657.0,/ZVARIABLE
+cdf_attput,fileid,'VALIDMIN',names[J],0.0,/ZVARIABLE
+cdf_attput,fileid,'VALIDMAX',names[J],2*!pi,/ZVARIABLE
+cdf_attput,fileid,'UNITS',names[J],'N/A',/ZVARIABLE
+cdf_attput,fileid,'CATDESC',names[J],'phi locations of the '+ direction[J] + $
+               ' field of view in sensor coordinates',/ZVARIABLE
+cdf_varput,fileid,names[J],reform (sep_ancillary[0].fov_phi_centers[J,*])
+endfor
+
+dim_vary = 0
+ntheta = n_elements (SEP_ancillary[0].fov_theta_centers [0,*])
+dim = ntheta
+numdir = ['1f','1r', '2f', '2r']
+direction = ['1-Forward', '1-Reverse', '2-Forward', '2-Reverse']
+names = ('sep-' + numdir + '_fov_theta')
+for J = 0, 3 do begin
+varid = cdf_varcreate(fileid, names[J], dim_vary, /CDF_FLOAT, DIM = dim, /REC_NOVARY,/ZVARIABLE)
+cdf_attput,fileid,'FIELDNAM',varid,names[J],/ZVARIABLE
+cdf_attput,fileid,'FORMAT',varid,'i2',/ZVARIABLE
+cdf_attput,fileid,'LABLAXIS',varid,names[J],/ZVARIABLE
+cdf_attput,fileid,'VAR_TYPE',varid,'metadata',/ZVARIABLE
+cdf_attput,fileid,'FILLVAL',varid,-243657.0,/ZVARIABLE
+cdf_attput,fileid,'VALIDMIN',names[J],0.0,/ZVARIABLE
+cdf_attput,fileid,'VALIDMAX',names[J],!pi,/ZVARIABLE
+cdf_attput,fileid,'UNITS',names[J],'N/A',/ZVARIABLE
+cdf_attput,fileid,'CATDESC',names[J],'theta locations of the '+ direction[J] + $
+               ' field of view in sensor coordinates',/ZVARIABLE
+cdf_varput,fileid,names[J],reform (sep_ancillary[0].fov_theta_centers[J,*])
+endfor
+
+
+; store the look directions of every pixel in the FOVs
+dim_vary = [1, 1, 1]  
+numdir = ['1f','1r', '2f', '2r']
+direction = ['1-Forward', '1-Reverse', '2-Forward', '2-Reverse']
+names = ('sep-' + numdir + '_full_fov')
+for M = 0, 3 do begin
+   ntheta = n_elements (SEP_ancillary[0].fov_theta_centers[M,*])
+   nphi = n_elements (SEP_ancillary[0].fov_phi_centers[M,*])
+   dim = [nphi, ntheta,3]  
+    varid = cdf_varcreate(fileid, names[M],dim_vary, /CDF_FLOAT, DIM = dim, /REC_VARY,/ZVARIABLE) 
+    cdf_attput,fileid,'FIELDNAM',varid,names[M],/ZVARIABLE
+    cdf_attput,fileid,'FORMAT',varid,'F8.4',/ZVARIABLE
+    cdf_attput,fileid,'LABLAXIS',varid,'FOV_MSO',/ZVARIABLE
+    cdf_attput,fileid,'VAR_TYPE',varid,'data',/ZVARIABLE
+    cdf_attput,fileid,'FILLVAL',varid,!values.d_nan,/ZVARIABLE
+    cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
+    cdf_attput,fileid,'VALIDMIN',names[M],-1.0,/ZVARIABLE
+    cdf_attput,fileid,'VALIDMAX',names[M],1.0,/ZVARIABLE
+    cdf_attput,fileid,'SCALEMIN',names[M],-1.0,/ZVARIABLE
+    cdf_attput,fileid,'SCALEMAX',names[M],1.0,/ZVARIABLE
+    cdf_attput,fileid,'UNITS',names[M],'Unit vector',/ZVARIABLE
+    cdf_attput,fileid,'CATDESC',names[M],'Look directions of each portion of the '+ direction[M] + $
+               ' field of view in  MSO coordinates.',/ZVARIABLE
+    cdf_attput,fileid,'DEPEND_0',names[M],'time_nssdc',/ZVARIABLE
+    cdf_attput,fileid,'DEPEND_1',names[M],'sep-' + numdir[M] + '_fov_phi',/ZVARIABLE
+    cdf_attput,fileid,'DEPEND_2',names[M],'sep-' + numdir[M] + '_fov_theta',/ZVARIABLE
+    cdf_attput,fileid,'DEPEND_3',names[M],'vector_component_num',/ZVARIABLE
+    cdf_attput,fileid,'DEPEND_TIME',names[M],'time_unix',/ZVARIABLE
+    cdf_varput,fileid,names[M],sep_ancillary.(18+M)
+  endfor
+
+
+
+
 
 ; also require the quaternion number
-dim_vary = [1]
+dim_vary = 0
 dim = 4
 name = 'quaternion_component_num'
 varid = cdf_varcreate(fileid, name, dim_vary, /CDF_UINT1, DIM = dim, /REC_NOVARY,/ZVARIABLE)
@@ -327,7 +408,7 @@ cdf_varput,fileid,name,[1,2,3]
 
 
 ; also require the no-vary FOV number, i.e. 1 to 4
-dim_vary = [1]
+dim_vary = 0
 dim = 4
 name = 'fov_num'
 varid = cdf_varcreate(fileid, name, dim_vary, /CDF_UINT1, DIM = dim, /REC_NOVARY,/ZVARIABLE)
@@ -363,7 +444,7 @@ names = ('sep-' + numdir + '_fov_sun_angle')
     cdf_attput,fileid,'CATDESC',names[M],'Angle between the geometric center of the ' + direction [M] +' field of view and the direction of the sun',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_0',names[M],'time_nssdc',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_TIME',names[M],'time_unix',/ZVARIABLE
-    cdf_varput,fileid,names[M],sep_ancillary.(14+M)
+    cdf_varput,fileid,names[M],sep_ancillary.(22+M)
 endfor
 
 ; now do the angle between the spacecraft RAM direction and the FOVs
@@ -387,8 +468,33 @@ names = ('sep-' + numdir + '_fov_ram_angle')
     
     cdf_attput,fileid,'DEPEND_0',names[M],'time_nssdc',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_TIME',names[M],'time_unix',/ZVARIABLE
-    cdf_varput,fileid,names[M],sep_ancillary.(18+M)
+    cdf_varput,fileid,names[M],sep_ancillary.(26+M)
 endfor
+
+; now do the angle between the NADIR direction and the FOVs
+dim_vary = [1]  
+numdir = ['1f','1r', '2f', '2r']
+names = ('sep-' + numdir + '_fov_nadir_angle')
+ for M = 0, 3 do begin
+    varid = cdf_varcreate(fileid, names[M], /CDF_FLOAT, /REC_VARY,/ZVARIABLE) 
+    cdf_attput,fileid,'FIELDNAM',varid,names[M],/ZVARIABLE
+    cdf_attput,fileid,'FORMAT',varid,'F9.4',/ZVARIABLE
+    cdf_attput,fileid,'LABLAXIS',varid,'Nadir Angle, Degrees',/ZVARIABLE
+    cdf_attput,fileid,'VAR_TYPE',varid,'data',/ZVARIABLE
+    cdf_attput,fileid,'FILLVAL',varid,!values.d_nan,/ZVARIABLE
+    cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
+    cdf_attput,fileid,'VALIDMIN',names[M],0.0,/ZVARIABLE
+    cdf_attput,fileid,'VALIDMAX',names[M],180.0,/ZVARIABLE
+    cdf_attput,fileid,'SCALEMIN',names[M],0.0,/ZVARIABLE
+    cdf_attput,fileid,'SCALEMAX',names[M],180.0,/ZVARIABLE
+    cdf_attput,fileid,'UNITS',names[M],'Degrees',/ZVARIABLE
+    cdf_attput,fileid,'CATDESC',names[M],'Angle between the geometric center of the ' + direction [M] +' field of view and the nadir direction, i.e. towards the center of Mars',/ZVARIABLE
+    
+    cdf_attput,fileid,'DEPEND_0',names[M],'time_nssdc',/ZVARIABLE
+    cdf_attput,fileid,'DEPEND_TIME',names[M],'time_unix',/ZVARIABLE
+    cdf_varput,fileid,names[M],sep_ancillary.(30+M)
+endfor
+
 
 ; now do the pitch angle, i.e. the angle betweenthe average magnetic field direction and the FOVs
 dim_vary = [1]  
@@ -407,11 +513,11 @@ names = ('sep-' + numdir + '_fov_pitch_angle')
     cdf_attput,fileid,'SCALEMIN',names[M],0.0,/ZVARIABLE
     cdf_attput,fileid,'SCALEMAX',names[M],180.0,/ZVARIABLE
     cdf_attput,fileid,'UNITS',names[M],'Degrees',/ZVARIABLE
-    cdf_attput,fileid,'CATDESC',names[M],'Angle between the geometric center of the ' + direction [M] +' field of view and the agnetic field direction averaged over the 32 second interval.',/ZVARIABLE
+    cdf_attput,fileid,'CATDESC',names[M],'Angle between the geometric center of the ' + direction [M] +' field of view and the magnetic field direction averaged over the 32 second interval.',/ZVARIABLE
    
     cdf_attput,fileid,'DEPEND_0',names[M],'time_nssdc',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_TIME',names[M],'time_unix',/ZVARIABLE
-    cdf_varput,fileid,names[M],sep_ancillary.(22+M)
+    cdf_varput,fileid,names[M],sep_ancillary.(34+M)
 endfor
 
 
@@ -436,7 +542,7 @@ names = ('sep-' + numdir + '_frac_fov_mars')
     cdf_attput,fileid,'CATDESC',names[M],'Fraction of each field of view taken up by Mars',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_0',names[M],'time_nssdc',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_TIME',names[M],'time_unix',/ZVARIABLE
-    cdf_varput,fileid,names[M],sep_ancillary.(26+M)
+    cdf_varput,fileid,names[M],sep_ancillary.(38+M)
 endfor
 
 ; now the field of view taken up by sunlit Mars, weighted by the illumination angle.  
@@ -462,7 +568,7 @@ names = ('sep-' + numdir + '_frac_fov_ill')
     cdf_attput,fileid,'CATDESC',names[M],'Fraction of each field of view taken up by Mars, weighted by illumination angle',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_0',names[M],'time_nssdc',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_TIME',names[M],'time_unix',/ZVARIABLE
-    cdf_varput,fileid,names[M],sep_ancillary.(30+M)
+    cdf_varput,fileid,names[M],sep_ancillary.(42+M)
 endfor
 
 ; fraction of the sky filled by Mars
@@ -511,7 +617,7 @@ names = 'sep-' + replicate_array (numsep, 3) + '_qrot2'+ replicate_array (coord,
     cdf_attput,fileid,'DEPEND_0',names[M, J],'time_nssdc',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_1',names[M, J],'quaternion_component_num',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_TIME',names[M, J],'time_unix',/ZVARIABLE
-    cdf_varput,fileid,names[M, J],sep_ancillary.(35+3*M+J)
+    cdf_varput,fileid,names[M, J],sep_ancillary.(47+3*M+J)
   endfor
 endfor
  
@@ -541,7 +647,7 @@ names = object + '_pos_'+coord
     cdf_attput,fileid,'DEPEND_0',names[M],'time_nssdc',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_1',names[M],'vector_component_num',/ZVARIABLE
     cdf_attput,fileid,'DEPEND_TIME',names[M],'time_unix',/ZVARIABLE
-    cdf_varput,fileid,names[M],sep_ancillary.(41+M)
+    cdf_varput,fileid,names[M],sep_ancillary.(53+M)
 endfor
 
 dim_vary = [1]  

@@ -24,7 +24,8 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
   options,'mms_soca_fomstr','ysubtitle','(ABS)'
   options,'mms_soca_fomstr','unix_FOMStr_org',unix_FOMStr
   options,'mms_soca_fomstr','psym',0
-
+  options,'mms_soca_fomstr','constant',[50,100,150,200]
+  
   ;------------------------
   ; 'mms_soca_mdq'
   ;------------------------
@@ -71,6 +72,7 @@ PRO eva_sitl_load_soca, state, str_tspan, mdq=mdq
     options,'mms_soca_bakstr','ysubtitle','(SOC)'
     options,'mms_soca_bakstr','colors',85; 179
     options,'mms_soca_bakstr','unix_BAKStr_org',unix_BAKStr_org
+    options,'mms_soca_bakstr','constant',[50,100,150,200]
     dgrand = [dgrand,'mms_soca_bakstr']
     
     idx = where(strmatch(unix_BAKStr_org.STATUS,"*trimmed*"),ct_trimmed)

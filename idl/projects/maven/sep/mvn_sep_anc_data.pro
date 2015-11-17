@@ -5,6 +5,11 @@ function mvn_sep_anc_data, trange = trange, delta_t = delta_t ,load_kernels=load
   if not keyword_set (delta_t) then delta_t = 32
   if keyword_set(load_kernels) then maven_kernels = mvn_spice_kernels(trange = tr,/load,/all) 
  
+; need to pick the resolution with which we will express the field of
+; view
+  ntheta = 10
+  nphi = 14
+
 if ~keyword_set(times) then begin
   tr = timerange(trange)
   total_time = tr[1] - tr[0]
@@ -12,6 +17,7 @@ if ~keyword_set(times) then begin
   times = tr[0] + delta_t*dindgen(ntimes)
 endif
   et = time_ephemeris(times)
+  
   objects = ['MAVEN_SC_BUS', 'MARS']
   time_valid = spice_valid_times(et,object=objects) 
   printdat,check_objects,time_valid
@@ -39,6 +45,14 @@ endif
                     look_direction_GEO_SEP1_reverse:fltarr(3),$
                     look_direction_GEO_SEP2_forward:fltarr(3),$
                     look_direction_GEO_SEP2_reverse:fltarr(3),$
+                    fov_theta_centers:fltarr(4,ntheta), $
+                    fov_theta_edges:fltarr(4,ntheta+1), $
+                    fov_phi_centers:fltarr(4,nphi), $
+                    fov_phi_edges:fltarr(4,nphi+1), $                   
+                    fov_full_MSO_SEP1_forward:fltarr(nphi, ntheta, 3), $
+                    fov_full_MSO_SEP1_reverse:fltarr(nphi, ntheta, 3), $
+                    fov_full_MSO_SEP2_forward:fltarr(nphi, ntheta, 3), $
+                    fov_full_MSO_SEP2_reverse:fltarr(nphi, ntheta, 3), $ 
                     sun_angle_SEP1_forward: 0d, $
                     sun_angle_SEP1_reverse: 0d, $
                     sun_angle_SEP2_forward: 0d, $
@@ -47,6 +61,10 @@ endif
                     ram_angle_SEP1_reverse: 0d, $
                     ram_angle_SEP2_forward: 0d, $
                     ram_angle_SEP2_reverse: 0d, $
+                    nadir_angle_SEP1_forward: 0d, $
+                    nadir_angle_SEP1_reverse: 0d, $
+                    nadir_angle_SEP2_forward: 0d, $
+                    nadir_angle_SEP2_reverse: 0d, $
                     pitch_angle_SEP1_forward: 0d, $
                     pitch_angle_SEP1_reverse: 0d, $
                     pitch_angle_SEP2_forward: 0d, $
@@ -78,11 +96,28 @@ endif
                     
   SEP_ancillary = replicate (SEP_ancillarya,ntimes)
   
+  ;load up MAVEN position.
+   spacecraft_position_MSO = spice_body_pos('MAVEN','MARS',utc=times,et=et,frame='MAVEN_MSO',check_objects='MAVEN_SC_BUS')
+   spacecraft_position_GEO = spice_body_pos('MAVEN','MARS',utc=times,et=et,frame='IAU_MARS',check_objects='MAVEN_SC_BUS')
+
 
   tmp_MSO = mvn_sep_anc_look_directions(utc = times, coordinate_frame = 'MAVEN_MSO')
   ;maven_kernels = mvn_spice_kernels(trange = tr,/load,/all) 
   tmp_SSO = mvn_sep_anc_look_directions(utc = times, coordinate_frame = 'MAVEN_SSO')
   tmp_GEO = mvn_sep_anc_look_directions(utc = times, coordinate_frame = 'IAU_MARS')
+  
+; use this information to calculate the angle of the center of the FOV
+; from nadir
+  nadir_angle_SEP1_forward = (!pi - $
+                   separation_angle (spacecraft_position_GEO,tmp_GEO.look_direction_SEP1_forward))/!dtor
+  nadir_angle_SEP2_forward = (!pi - $
+                   separation_angle (spacecraft_position_GEO,tmp_GEO.look_direction_SEP2_forward))/!dtor
+  nadir_angle_SEP1_reverse = (!pi - $
+                   separation_angle (spacecraft_position_GEO,tmp_GEO.look_direction_SEP1_reverse))/!dtor
+  nadir_angle_SEP2_reverse = (!pi - $
+                   separation_angle (spacecraft_position_GEO,tmp_GEO.look_direction_SEP2_reverse))/!dtor
+  
+
   
 ; load up the magnetometer data to get the pitch angle ranges
   mvn_mag_load, 'L2_1SEC', trange = trange, spice_frame =  'MAVEN_MSO', data = mag
@@ -131,9 +166,6 @@ endif
    qrot_SEP2_to_SSO =  spice_body_att('MAVEN_SEP2','MAVEN_SSO',times,/quaternion,check_object='MAVEN_SC_BUS') 
    qrot_SEP2_to_GEO =  spice_body_att('MAVEN_SEP2','IAU_MARS',times,/quaternion,check_object='MAVEN_SC_BUS') 
  
-; also load up MAVEN position.
-   spacecraft_position_MSO = spice_body_pos('MAVEN','MARS',utc=times,et=et,frame='MAVEN_MSO',check_objects='MAVEN_SC_BUS')
-   spacecraft_position_GEO = spice_body_pos('MAVEN','MARS',utc=times,et=et,frame='IAU_MARS',check_objects='MAVEN_SC_BUS')
   
 ;   spacecraft_altitude = mvn_get_altitude(spacecraft_position_GEO [0,*], spacecraft_position_GEO [1,*], $
                          ;                 spacecraft_position_GEO [2,*])
@@ -147,8 +179,12 @@ endif
   ;half_angle = asin( Mars_mean_radius/spacecraft_radius)
   fraction_4pi = 0.5*(1.0 - sqrt(1.0 - (Mars_mean_radius/spacecraft_radius)^ 2.0))
   
+; calculate the MSO of each pixel in the field of view 
+   mso = mvn_sep_anc_full_fov_mso(times, ntheta = ntheta, nphi = nphi)
+   
+
 ; fraction of each FOV taken up by Mars and sunlit Mars.  Don't bother when during cruise
-  if mean(fraction_4pi,/nan) gt 1e-3 then fraction = mvn_sep_anc_fov_mars_fraction(times,dang = 1.0,$
+  if mean(fraction_4pi,/nan) gt 1e-3 then fraction = mvn_sep_anc_fov_mars_fraction(times,dang = 2.0,$
     check_objects = ['MAVEN_SC_BUS']) else $
   fraction = {fraction_FOV_Mars: fltarr(ntimes, 4), fraction_FOV_sunlit_Mars: fltarr(ntimes, 4)}
   
@@ -167,7 +203,7 @@ endif
    mso2lt,spacecraft_position_MSO [0,*], spacecraft_position_MSO [1,*], spacecraft_position_MSO [2,*], $
       subsolar_latitude, spacecraft_local_time
    
-   
+  
    SEP_ancillary.time_UNIX = time_double (times)
    SEP_ancillary.time_ephemeris = et
    
@@ -185,6 +221,16 @@ endif
    SEP_ancillary.look_direction_GEO_SEP1_reverse = tmp_GEO.look_direction_SEP1_reverse
    SEP_ancillary.look_direction_GEO_SEP2_forward = tmp_GEO.look_direction_SEP2_forward
    SEP_ancillary.look_direction_GEO_SEP2_reverse = tmp_GEO.look_direction_SEP2_reverse
+  
+   SEP_ancillary.fov_full_MSO_SEP1_forward = reform (mso.MSO [0,*,*,*,*])
+   SEP_ancillary.fov_full_MSO_SEP1_reverse = reform (mso.MSO [1,*,*,*,*])
+   SEP_ancillary.fov_full_MSO_SEP2_forward = reform (mso.MSO [2,*,*,*,*])
+   SEP_ancillary.fov_full_MSO_SEP2_reverse = reform (mso.MSO [3,*,*,*,*])
+   
+   SEP_ancillary.fov_theta_centers = replicate_array (reform (mso.theta_centers),ntimes) 
+   SEP_ancillary.fov_theta_edges = replicate_array (reform (mso.theta_edges),ntimes) 
+   SEP_ancillary.fov_phi_centers = replicate_array (reform (mso.phi_centers),ntimes) 
+   SEP_ancillary.fov_phi_edges = replicate_array (reform (mso.phi_edges),ntimes) 
    
    SEP_ancillary.sun_angle_SEP1_forward = reform (sun_angle_SEP1_forward)            
    SEP_ancillary.sun_angle_SEP1_reverse = reform (sun_angle_SEP1_reverse)              
@@ -195,6 +241,11 @@ endif
    SEP_ancillary.ram_angle_SEP1_reverse = reform (ram_angle_SEP1_reverse)              
    SEP_ancillary.ram_angle_SEP2_forward = reform (ram_angle_SEP2_forward)              
    SEP_ancillary.ram_angle_SEP2_reverse = reform (ram_angle_SEP2_reverse)              
+
+   SEP_ancillary.nadir_angle_SEP1_forward = reform (nadir_angle_SEP1_forward)            
+   SEP_ancillary.nadir_angle_SEP1_reverse = reform (nadir_angle_SEP1_reverse)              
+   SEP_ancillary.nadir_angle_SEP2_forward = reform (nadir_angle_SEP2_forward)              
+   SEP_ancillary.nadir_angle_SEP2_reverse = reform (nadir_angle_SEP2_reverse)              
 
    SEP_ancillary.pitch_angle_SEP1_forward = reform (pitch_angle_SEP1_forward)            
    SEP_ancillary.pitch_angle_SEP1_reverse = reform (pitch_angle_SEP1_reverse)              
@@ -231,7 +282,7 @@ endif
    SEP_ancillary.spacecraft_east_longitude_GEO = reform (spacecraft_east_longitude_GEO)
    SEP_ancillary.spacecraft_solar_zenith_angle = reform (spacecraft_solar_zenith_angle)
    SEP_ancillary.spacecraft_local_time = reform (spacecraft_local_time)
-
+   
   return, SEP_ancillary
 end
   
