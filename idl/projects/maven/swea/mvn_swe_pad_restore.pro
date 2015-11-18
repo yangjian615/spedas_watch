@@ -21,9 +21,9 @@
 ;
 ;       UNNORM:        Unnormalize the color code.   
 ;
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-04-13 15:14:18 -0700 (Mon, 13 Apr 2015) $
-; $LastChangedRevision: 17304 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-11-17 14:36:21 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19399 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_restore.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -115,23 +115,46 @@ pro mvn_swe_pad_restore, trange, orbit=orbit, loadonly=loadonly, unnorm=unnorm
       endif else print,"No data were restored."
     endelse
   endfor
+  
+  nf = rebin(temporary(nf), npts, n_elements(y[0, *]))
+
+; Trim to the requested time range
+
+  indx = where((x ge tmin) and (x le tmax), mpts)
+  if (mpts eq 0L) then begin
+    print,"No data within specified time range!"
+    get_data,tname,index=k
+    if (k gt 0L) then store_data,tname,/delete
+    return
+  endif
+  if (mpts lt npts) then begin
+    x = temporary(x[indx])
+    y = temporary(y[indx,*])
+    v = temporary(v[indx,*])
+    nf = temporary(nf[indx,*])
+    npts = mpts
+    dotrim = 1
+  endif else dotrim = 0
+
+; Remove normalization, if requested
 
   if keyword_set(unnorm) then begin
-     y *= rebin(nf, npts, n_elements(y[0, *]))
+     y *= nf
      str_element, dl, 'ztitle', ztit
      ztit = (strsplit(ztit, /extract))[1]
      str_element, dl, 'ztitle', ztit, /add_replace
   endif
 
-; Check to see if data were actually loaded
+; Store the result back into tplot
 
-  if (docat) then begin
-    print,"Saving merged tplot variable: ", tname
+  if (docat or dotrim) then begin
+    print,"Saving merged/trimmed tplot variable: ", tname
     store_data,tname,data={x:x, x_ind:[npts], $
                            y:y, y_ind:[npts], $
                            v:v, v_ind:[npts]   }, dl=dl
-    if keyword_set(unnorm) then zlim, tname, 0, 0, 1, /def
   endif
+
+  if keyword_set(unnorm) then zlim, tname, 0, 0, 1, /def
 
   return
 

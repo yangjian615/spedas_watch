@@ -1,30 +1,31 @@
 ;+
 ;FUNCTION  polycurve(x,par=p)
 ;PURPOSE:
-;   Evaluates a (4th degree) polynomial (can be used with "FIT")
+;   Evaluates a (5th degree) polynomial (can be used with "FIT")
 ;-
 
 function polycurve, x,  $
     parameters=p,  p_names = p_names, pder_values= pder_values
 
 if not keyword_set(p) then $
-   p = {func:'polycurve',a0:.0d, a1:.0d, a2:.0d, a3:.0d, a4:.0d}
+   p = {func:'polycurve', a0:.0d, a1:.0d, a2:.0d, a3:.0d, a4:.0d, a5:.0d}
 
 if n_params() eq 0 then return,p
 
-f = p.a4 * x^4 + p.a3 * x^3 + p.a2*x^2 + p.a1*x + p.a0
+f = p.a5*x^5 + p.a4*x^4 + p.a3*x^3 + p.a2*x^2 + p.a1*x + p.a0
 
 if keyword_set(p_names) then begin
    np = n_elements(p_names)
    nd = n_elements(f)
    pder_values = dblarr(nd,np)
    for i=0,np-1 do begin
-      case strupcase(p_names[i]) of
-          'A4': pder_values[*,i] = x^4
-          'A3': pder_values[*,i] = x^3
-          'A2': pder_values[*,i] = x^2
-          'A1': pder_values[*,i] = x
-          'A0': pder_values[*,i] = 1
+      case strupcase(p_names(i)) of
+          'A5': pder_values(*,i) = x^5
+          'A4': pder_values(*,i) = x^4
+          'A3': pder_values(*,i) = x^3
+          'A2': pder_values(*,i) = x^2
+          'A1': pder_values(*,i) = x
+          'A0': pder_values(*,i) = 1
       endcase
    endfor
 endif

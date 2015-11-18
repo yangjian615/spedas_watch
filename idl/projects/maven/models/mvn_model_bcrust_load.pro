@@ -32,8 +32,12 @@
 ;
 ;     PURUCKER:   Loads Purucker's spherical harmonic model.
 ;
-;         CALC:   If there is no tplot save files to load, the Martian
-;                 crustal magnetic field is calclated by 'mvn_model_bcrust'.
+;         CALC:   If there are no tplot save files to load, the Martian
+;                 crustal magnetic field is calculated by 'mvn_model_bcrust'.
+;
+;       NOCALC:   If there are no tplot save files to load, then don't
+;                 try to calculate them, and don't ask.  (Allows non-
+;                 interactive calls.)  Takes precedence over CALC.
 ;
 ;       STATUS:   Returns the loading status:
 ;                 0 = Failure.
@@ -45,16 +49,17 @@
 ;CREATED BY:      Takuya Hara on 2015-02-18.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-07-13 06:37:58 -0700 (Mon, 13 Jul 2015) $
-; $LastChangedRevision: 18088 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-11-17 09:05:18 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19384 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/models/mvn_model_bcrust_load.pro $
 ;
 ;-
 PRO mvn_model_bcrust_load, var, orbit=orbit, silent=sl, verbose=vb, calc=calc, status=status, $
                            cain_2003=cain_2003, cain_2011=cain_2011, arkani=arkani, $
                            purucker=purucker, morschhauser=morschhauser, path=path, $
-                           resolution=resolution, data=modelmag, nmax=nmax, version=version, _extra=ext
+                           resolution=resolution, data=modelmag, nmax=nmax, version=version, $
+                           nocalc=nocalc, _extra=ext
 
   IF SIZE(var, /type) NE 0 THEN BEGIN
      trange = time_double(var)
@@ -84,21 +89,24 @@ PRO mvn_model_bcrust_load, var, orbit=orbit, silent=sl, verbose=vb, calc=calc, s
   IF keyword_set(vb) THEN verbose = vb ELSE verbose = 0
   verbose -= silent 
   IF keyword_set(calc) THEN cflg = 1 ELSE cflg = 0
+  IF keyword_set(nocalc) THEN cflg = -1
 
   mvn_model_bcrust_restore, trange, silent=silent, verbose=verbose, status=status,  $
                             cain_2003=cain_2003, cain_2011=cain_2011, arkani=arkani, $
                             purucker=purucker, morschhauser=morschhauser
   
   IF status EQ 0 THEN BEGIN
-     IF (cflg) THEN yes = 1 $
-     ELSE BEGIN
-        IF SIZE(calc, /type) EQ 0 THEN BEGIN
-           PRINT, ptrace()
-           PRINT, '  It seems that the tplot save files have not been generated yet.' 
-           result = EXECUTE("READ,  '  Do you want to calculate now (Yes=1 / No=0)?: ', yes ")
-           IF result EQ 0 THEN yes = 0
-        ENDIF ELSE yes = 0
-     ENDELSE 
+     CASE (cflg) OF
+       1 : yes = 1
+       0 : BEGIN
+             PRINT, ptrace()
+             PRINT, '  It seems that the tplot save files have not been generated yet.' 
+             result = EXECUTE("READ,  '  Do you want to calculate now (Yes=1 / No=0)?: ', yes ")
+             IF result EQ 0 THEN yes = 0
+           END
+       ELSE : yes = 0
+     ENDCASE
+
      IF yes EQ 1 THEN BEGIN
         IF SIZE(morschhauser, /type) EQ 0 THEN morschhauser = 1
         dotplot = INTARR(5)

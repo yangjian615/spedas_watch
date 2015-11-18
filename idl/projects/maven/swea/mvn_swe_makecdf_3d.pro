@@ -22,8 +22,8 @@
 ;   Read version number from common block; MOF: 2015-01-30
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-08-04 11:15:07 -0700 (Tue, 04 Aug 2015) $
-;   $LastChangedRevision: 18376 $
+;   $LastChangedDate: 2015-11-17 09:19:41 -0800 (Tue, 17 Nov 2015) $
+;   $LastChangedRevision: 19393 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_3d.pro $
 ;
 ;-
@@ -369,10 +369,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -128,           /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'binning', 1,       /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'binning', 4,       /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'binning', 1,       /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'binning', 4,       /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'binning', 1B,       /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'binning', 4B,       /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'binning', 1B,       /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'binning', 4B,       /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'binning', $
     'Energy binning factor: 1 = 64 energies, 2 = 32 energies, 4 = 16 energies', $
     /ZVARIABLE
@@ -393,10 +393,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'counts', 0,                       /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'counts', 1e10,                    /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'counts', 0,                       /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'counts', 1e5,                     /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'counts', 0.,                      /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'counts', 1.e10,                   /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'counts', 0.,                      /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'counts', 1.e5,                    /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'counts', 'counts',                /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'counts', 'Raw Instrument Counts', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'counts', 'epoch',                 /ZVARIABLE
@@ -444,10 +444,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,        /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series', /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'diff_en_fluxes', 0,       /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'diff_en_fluxes', 1e14,    /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'diff_en_fluxes', 0,       /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'diff_en_fluxes', 1e11,    /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'diff_en_fluxes', 0.,       /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'diff_en_fluxes', 1.e14,    /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'diff_en_fluxes', 0.,       /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'diff_en_fluxes', 1.e11,    /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'diff_en_fluxes', $
     'eV/[eV cm^2 sr s]', /ZVARIABLE
   cdf_attput, fileid, 'VAR_TYPE', 'diff_en_fluxes', 'data',  /ZVARIABLE
@@ -487,10 +487,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'geom_factor', 0,               /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'geom_factor', 0.0,             /ZVARIABLE
   cdf_attput, fileid, 'VALIDMAX', 'geom_factor', 1.0,             /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'geom_factor', 0,               /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'geom_factor', 1e-2,            /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'geom_factor', 0.0,             /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'geom_factor', 1.e-2,           /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'geom_factor', 'cm^2 sr eV/eV', /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'geom_factor', $
     'Full sensor geometric factor (per anode) at 1.4 keV', /ZVARIABLE
@@ -511,9 +511,9 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'g_engy', 0,               /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'g_engy', 0.0,             /ZVARIABLE
   cdf_attput, fileid, 'VALIDMAX', 'g_engy', 1.0,             /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'g_engy', 0,               /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'g_engy', 0.0,             /ZVARIABLE
   cdf_attput, fileid, 'SCALEMAX', 'g_engy', 0.2,             /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_engy', $
     'Relative sensitivity as a function of energy',          /ZVARIABLE
@@ -543,9 +543,9 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'de_over_e', 0,                 /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'de_over_e', 0.0,               /ZVARIABLE
   cdf_attput, fileid, 'VALIDMAX', 'de_over_e', 1.0,               /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'de_over_e', 0,                 /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'de_over_e', 0.0,               /ZVARIABLE
   cdf_attput, fileid, 'SCALEMAX', 'de_over_e', 0.3,               /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'de_over_e', 'eV/eV',           /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'de_over_e', 'DeltaE/E (FWHM)', /ZVARIABLE
@@ -565,9 +565,9 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'accum_time', 0,                   /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'accum_time', 0.0,                 /ZVARIABLE
   cdf_attput, fileid, 'VALIDMAX', 'accum_time', 1.0,                 /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'accum_time', 0,                   /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'accum_time', 0.0,                 /ZVARIABLE
   cdf_attput, fileid, 'SCALEMAX', 'accum_time', 0.1,                 /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'accum_time', 's',                 /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'accum_time', 'Accumulation time', /ZVARIABLE
@@ -588,10 +588,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'energy', 0,          /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'energy', 5e4,        /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'energy', 0,          /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'energy', 5e3,        /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'energy', 0.,         /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'energy', 5.e4,       /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'energy', 0.,         /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'energy', 5.e3,       /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'energy', 'eV',       /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'energy', 'Energies', /ZVARIABLE
 
@@ -613,10 +613,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'elev', -180,                      /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'elev', 180,                       /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'elev', -90,                       /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'elev', 90,                        /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'elev', -180.,                     /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'elev', 180.,                      /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'elev', -90.,                      /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'elev', 90.,                       /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'elev', 'degrees',                 /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'elev', 'Elevation angle (theta)', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_1', 'elev', 'energy',                  /ZVARIABLE
@@ -642,10 +642,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'g_elev', 0, /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'g_elev', 2, /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'g_elev', 0, /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'g_elev', 2, /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'g_elev', 0., /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'g_elev', 2., /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'g_elev', 0., /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'g_elev', 2., /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_elev', $
     'Relative sensitivity as a function of elevation',       /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_1', 'g_elev', 'energy',        /ZVARIABLE
@@ -697,10 +697,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'azim', 0,                     /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'azim', 360,                   /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'azim', 0,                     /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'azim', 360,                   /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'azim', 0.,                    /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'azim', 360.,                  /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'azim', 0.,                    /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'azim', 360.,                  /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'azim', 'degrees',             /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'azim', 'Azimuth angle (phi)', /ZVARIABLE
 
@@ -724,10 +724,10 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'g_azim', 0, /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'g_azim', 2, /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'g_azim', 0, /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'g_azim', 2, /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'g_azim', 0., /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'g_azim', 2., /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'g_azim', 0., /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'g_azim', 2., /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_azim', $
     'Relative sensitivity as a function of azimuth', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_1', 'g_azim', 'azim',  /ZVARIABLE
@@ -792,16 +792,16 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   varid = cdf_varcreate(fileid, varlist[16], /CDF_INT4, /REC_NOVARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[16],    /ZVARIABLE
-  cdf_attput, fileid, 'FORMAT',       varid, 'I12',           /ZVARIABLE
+  cdf_attput, fileid, 'FORMAT',       varid, 'I12',          /ZVARIABLE
   cdf_attput, fileid, 'LABLAXIS',     varid, varlist[16],    /ZVARIABLE
   cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data', /ZVARIABLE
   cdf_attput, fileid, 'FILLVAL',      varid, -2147483648,    /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'num_dists', 0,     /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'num_dists', 43200, /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMIN', 'num_dists', 0,     /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'num_dists', 43200, /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMIN', 'num_dists', 0L,     /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'num_dists', 43200L, /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMIN', 'num_dists', 0L,     /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'num_dists', 43200L, /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'num_dists', $
     'Number of distributions in file', /ZVARIABLE
 

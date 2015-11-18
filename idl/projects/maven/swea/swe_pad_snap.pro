@@ -31,6 +31,12 @@
 ;
 ;       NORM:          At each energy step, normalize the distribution to the mean.
 ;
+;       POT:           Overplot an estimate of the spacecraft potential.  Must run
+;                      mvn_swe_sc_pot first.
+;
+;       SCP:           Override any other estimates of the spacecraft potential and
+;                      force it to be this value.
+;
 ;       LABEL:         If set, label the anode and deflection bin numbers.
 ;
 ;       KEEPWINS:      If set, then don't close the snapshot window(s) on exit.
@@ -93,9 +99,9 @@
 ;                      which is the fractional change in the magnetic field over
 ;                      one gyroradius.  Only works when HIRES is set.
 ;
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-11-09 16:54:45 -0800 (Mon, 09 Nov 2015) $
-; $LastChangedRevision: 19326 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2015-11-17 09:15:36 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19391 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -104,7 +110,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   units=units, pad=pad, ddd=ddd, zrange=zrange, sum=sum, $
                   label=label, smo=smo, dir=dir, mask_sc=mask_sc, $
                   abins=abins, dbins=dbins, obins=obins, burst=burst, $
-                  pot=pot, spec=spec, plotlims=plotlims, norm=norm, $
+                  pot=pot, scp=scp, spec=spec, plotlims=plotlims, norm=norm, $
                   center=center, pep=pep, resample=resample, hires=hires, $
                   fbdata=fbdata, window=window, adiabatic=adiabatic, uncertainty=uncertainty
 
@@ -142,6 +148,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if not keyword_set(smo) then smo = 1
   if keyword_set(norm) then nflg = 1 else nflg = 0
   if keyword_set(pot) then dopot = 1 else dopot = 0
+  if (size(scp,/type) eq 0) then scp = !values.f_nan else scp = float(scp[0])
   if keyword_set(label) then begin
     dolab = 1
     abin = string(indgen(16),format='(i2.2)')
@@ -404,14 +411,22 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
       !p.multi = [0,1,2]
       specplot,x,y1,z1,limits=limits
-      if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],[0,180],line=2
+      if (dopot) then begin
+        if (finite(scp)) then pot = scp $
+                         else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
+        oplot,[pot,pot],[0,180],line=2
+      endif
       if (plot_pa_lims) then begin
         oplot,[3,5000],[ylo1[63,1],ylo1[63,1]],line=2
         oplot,[3,5000],[yhi1[63,8],yhi1[63,8]],line=2
       endif
       limits.title = ''
       specplot,x,y2,z2,limits=limits
-      if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],[0,180],line=2
+      if (dopot) then begin
+        if (finite(scp)) then pot = scp $
+                         else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
+        oplot,[pot,pot],[0,180],line=2
+      endif
       if (plot_pa_lims) then begin
         oplot,[3,5000],[ylo2[63,1],ylo2[63,1]],line=2
         oplot,[3,5000],[yhi2[63,8],yhi2[63,8]],line=2
@@ -438,6 +453,12 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
             str_element, rlim, 'title', time_string(mean(rpad.time)) + ' (Resampled)', /add_replace
             specplot, average(pad.energy, 2), rpad[0].xax, arpad, lim=rlim
 
+            if (dopot) then begin
+              if (finite(scp)) then pot = scp $
+                               else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
+              oplot,[pot,pot],[0,180],line=2
+            endif
+
             if (uflg) then begin
                urpad = rpad.std
                if size(urpad, /n_dimension) eq 3 then urpad = average(urpad, 3)
@@ -445,6 +466,11 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                str_element, rlim, 'zrange', [1.d-2, 1.], /add_replace
                str_element, rlim, 'title', 'Resampled PAD Relative Uncertainty', /add_replace
                specplot, average(pad.energy, 2), rpad[0].xax, urpad/arpad, lim=rlim
+               if (dopot) then begin
+                 if (finite(scp)) then pot = scp $
+                                  else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
+                 oplot,[pot,pot],[0,180],line=2
+               endif
             endif 
          endif 
          if (hflg) then begin
@@ -657,7 +683,11 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         oplot, x, Fp, psym=10, color=6
         oplot, x, Fm, psym=10, color=2
         oplot, x, Fz, psym=10, color=4
-        if (dopot) then oplot,[pad.sc_pot,pad.sc_pot],drange,line=2
+        if (dopot) then begin
+          if (finite(scp)) then pot = scp $
+                           else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
+          oplot,[pot,pot],drange,line=2
+        endif
         if (pflg) then begin
           oplot,[23.,23.],drange,line=2,color=1
           oplot,[27.,27.],drange,line=2,color=1

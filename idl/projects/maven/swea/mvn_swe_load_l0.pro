@@ -73,8 +73,8 @@
 ;       SPICEINIT:     Force a re-initialization of SPICE.  Use with caution!
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-19 12:07:55 -0700 (Sun, 19 Apr 2015) $
-; $LastChangedRevision: 17366 $
+; $LastChangedDate: 2015-11-17 16:10:45 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19401 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -103,8 +103,22 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
   
   if keyword_set(latest) then begin
     tmax = double(ceil(systime(/sec,/utc)/oneday))*oneday
-    tmin = tmax - (double(latest[0])*oneday)
+    tmin = tmax - (14D*oneday)
+    file = mvn_pfp_file_retrieve(trange=[tmin,tmax],/l0,/valid,no_download=2,verbose=0)
+    nfiles = n_elements(file)
+    if (file[0] eq '') then begin
+      print,"No L0 data in the last two weeks."
+      return
+    endif
+    filename = file[((nfiles - latest) > 0L):*]
+    yyyy = strmid(filename,16,4,/rev)
+    mm = strmid(filename,12,2,/rev)
+    dd = strmid(filename,10,2,/rev)
+    dates = time_double(yyyy + '-' + mm + '-' + dd)
+    tmax = max(dates, min=tmin) + oneday
     trange = [tmin, tmax]
+    filename = 0
+    print, "Lastest L0 data: ", time_string(max(dates),prec=-3)
   endif
 
   tplot_options, get_opt=topt
@@ -127,7 +141,7 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
       return
     endif
     tmin = min(time_double(trange), max=tmax)
-    file = mvn_pfp_file_retrieve(trange=[tmin,tmax],/l0)
+    file = mvn_pfp_file_retrieve(trange=[tmin,tmax],/l0,verbose=1)
     nfiles = n_elements(file)
   endelse
   

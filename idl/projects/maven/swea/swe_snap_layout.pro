@@ -22,8 +22,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 12:05:22 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17721 $
+; $LastChangedDate: 2015-11-17 09:17:14 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19392 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_snap_layout.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -136,6 +136,8 @@ pro swe_snap_layout, layout
 
              Eopt = {xsize:400, ysize:600, xpos:2560+100, ypos:640}  ; SPEC
              Hopt = {xsize:200, ysize:545, xpos:2560+600, ypos:640}
+             
+             tplot_options,'charsize',1.5  ; larger characters for 2560x1440 display
            end
     
     else : begin  ; Default.  No fixed window positions

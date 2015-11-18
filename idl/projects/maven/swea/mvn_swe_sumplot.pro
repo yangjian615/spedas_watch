@@ -60,8 +60,8 @@
 ;       BURST:        Plot a color bar showing PAD burst coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-11 14:54:03 -0700 (Thu, 11 Jun 2015) $
-; $LastChangedRevision: 17855 $
+; $LastChangedDate: 2015-11-17 09:20:40 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19394 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -84,6 +84,9 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   if keyword_set(timing) then tflg = 1 else tflg = 0
   if keyword_set(png) then dopng = 1 else dopng = 0
   if keyword_set(loadonly) then doplot = 0 else doplot = 1
+  if (size(eph,/type) eq 0) then doeph = 1 else doeph = keyword_set(eph)
+  if (size(burst,/type) eq 0) then doburst = 1 else doburst = keyword_set(burst)
+  if (size(orb,/type) eq 0) then doorb = 1 else doorb = keyword_set(orb)
   
   if not keyword_set(apid) then apid = ['A2','A4']
   
@@ -188,12 +191,9 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     store_data,'P5AV'  ,data={x:swe_hsk.time, y:(swe_hsk.P5AV-vnorm[2])}
     store_data,'N5AV'  ,data={x:swe_hsk.time, y:(swe_hsk.N5AV+vnorm[2])}
     store_data,'P28V'  ,data={x:swe_hsk.time, y:(swe_hsk.P28V-vnorm[0])}
-
-   store_data,'TV_frame',data={x:[0D], y:replicate(-100.,1,7), v:findgen(7)} 
- 
+    store_data,'TV_frame',data={x:[0D], y:replicate(-100.,1,7), v:findgen(7)} 
     if (vflg) then begin
-
-     options,'P28V',  'color',TCcol[0]   ; magenta
+      options,'P28V',  'color',TCcol[0]   ; magenta
       options,'P12V',  'color',TCcol[1]   ; blue
       options,'N12V',  'color',TCcol[2]   ; cyan
       options,'P5AV',  'color',TCcol[3]   ; green
@@ -211,16 +211,13 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
       options,'VoltsC','labflag',1
       options,'VoltsC','labels',['+28 V','+12 V','-12 V','+5 V','-5 V','5 DV','3.3 DV']
       vpans = ['VoltsC']
-
-   endif else begin
-
-     options,'P12V',  'color',TCcol[0]   ; magenta
+    endif else begin
+      options,'P12V',  'color',TCcol[0]   ; magenta
       options,'N12V',  'color',TCcol[1]   ; blue
       options,'MCP28V','color',TCcol[2]   ; cyan
       options,'NR28V', 'color',TCcol[3]   ; green
       options,'P28V',  'color',TCcol[4]   ; yellow
-
-     options,'P2P2DV','color',TCcol[0]   ; magenta
+      options,'P2P2DV','color',TCcol[0]   ; magenta
       
       options,'P3P3DV','color',TCcol[1]   ; blue
       options,'P5DV',  'color',TCcol[2]   ; cyan
@@ -235,16 +232,13 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
       options,'VoltsA','yminor',5
       options,'VoltsA','labflag',1
       options,'VoltsA','labels',['+12 V','-12 V','MCP 28V','NR 28V','+28 V','','']
-
-     ylim,'VoltsB',-6,6,0
+      ylim,'VoltsB',-6,6,0
       options,'VoltsB','yticks',2
       options,'VoltsB','yminor',6
       options,'VoltsB','labflag',1
       options,'VoltsB','labels',['+2.5 DV','+3.3 DV','+5 DV','+5 V','-5 V','NRV','']
-
-     vpans = ['VoltsA','VoltsB']
-
-   endelse
+      vpans = ['VoltsA','VoltsB']
+    endelse
 
     store_data,'Temps',data=['TV_frame','LVPST','ANALT','DIGT']
     options,'ANALT','color',TCcol[0]  ; magenta
@@ -348,8 +342,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
       pdC = [pdC,'dca1']
       pdT = [pdT,'dta1']
       TClab[2] = 'A1'
-
-   endif
+    endif
   endif
 
 ; PAD Spectra, Survey (APID A2)
@@ -398,17 +391,25 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
                  end
     endcase
     
-    zmax = 10.^(ceil(alog10(max(y,/nan)))) < zhi
+    ymax = max(y,/nan)
+    if (ymax gt 0.) then begin
+      zmax = 10.^(ceil(alog10(max(y,/nan)))) < zhi
+      zlog = 1
+    endif else begin
+      zlo = 0
+      zhi = 1
+      zmax = 1
+      zlog = 0
+    endelse
     
-
-   pad_s = strtrim(string(round(pad_e)),2)
+    pad_s = strtrim(string(round(pad_e)),2)
     pname = 'swe_pad_' + pad_s
     store_data,pname,data={x:x, y:y, v:findgen(16)}
     options,pname,'ytitle',('E PAD (' + pad_s + ')')
     if (sflg) then begin
       options,pname,'spec',1
       ylim,pname,0,0,0
-      zlim,pname,zlo,zmax,1
+      zlim,pname,zlo,zmax,zlog
       options,pname,'x_no_interp',1
       options,pname,'y_no_interp',1
       options,pname,'ztitle',strupcase(mvn_swe_pad[0].units_name)
@@ -462,8 +463,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
     yc = y/(1. - swe_dead*y)
     
-
-   pad_s = strtrim(string(round(pad_e)),2)
+    pad_s = strtrim(string(round(pad_e)),2)
     pname = 'swe_a2_' + pad_s
  
     store_data,pname,data={x:x, y:yc, v:findgen(16)}
@@ -569,17 +569,26 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
                  end
     endcase
     
-    zmax = 10.^(ceil(alog10(max(y,/nan)))) < zhi
+    
+    ymax = max(y,/nan)
+    if (ymax gt 0.) then begin
+      zmax = 10.^(ceil(alog10(max(y,/nan)))) < zhi
+      zlog = 1
+    endif else begin
+      zlo = 0
+      zhi = 1
+      zmax = 1
+      zlog = 0
+    endelse
 
-
-   pad_s = strtrim(string(round(pad_e)),2)
+    pad_s = strtrim(string(round(pad_e)),2)
     pname = 'swe_pad_arc_' + pad_s
     store_data,pname,data={x:x, y:y, v:findgen(16)}
     options,pname,'ytitle',('E PAD (' + pad_s + ')')
     if (sflg) then begin
       options,pname,'spec',1
       ylim,pname,0,0,0
-      zlim,pname,zlo,zmax,1
+      zlim,pname,zlo,zmax,zlog
       options,pname,'x_no_interp',1
       options,pname,'y_no_interp',1
       options,pname,'ztitle',strupcase(mvn_swe_pad_arc[0].units_name)
@@ -588,7 +597,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
       ylim,pname,zlo,zmax,1
     endelse
     
-    if keyword_set(burst) then begin
+    if (doburst) then begin
       bname = 'swe_a3_bar'
       y = replicate(1.,npkt,2)
       dta3 = mvn_swe_pad_arc.time - shift(mvn_swe_pad_arc.time,1)
@@ -659,8 +668,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
     yc = y/(1. - swe_dead*y)
     
-
-   pad_s = strtrim(string(round(pad_e)),2)
+    pad_s = strtrim(string(round(pad_e)),2)
     pname = 'swe_a3_' + pad_s
  
     store_data,pname,data={x:x, y:yc, v:findgen(16)}
@@ -693,7 +701,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     options,mname,'labflag',1
     options,mname,'psym',3
     
-    if keyword_set(burst) then begin
+    if (doburst) then begin
       bname = 'swe_a3_bar'
       y = replicate(1.,npkt,2)
       dta3 = a3.time - shift(a3.time,1)
@@ -762,8 +770,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
     ename = 'swe_a4'
     store_data,ename,data={x:x, y:y, v:v}
-
-    if (sflg) then begin
+     if (sflg) then begin
       options,ename,'spec',1
       ylim,ename,Emin,Emax,1
       options,ename,'ytitle','Energy (eV)'
@@ -821,8 +828,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
     ename = 'swe_a5'
     store_data,ename,data={x:x, y:y, v:findgen(64)}
-
-    if (sflg) then begin
+     if (sflg) then begin
       options,ename,'spec',1
       ylim,ename,0,64,0
       options,ename,'ytitle','E Bin'
@@ -859,8 +865,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
       pdC = [pdC,'dca5']
       pdT = [pdT,'dta5']
       TClab[6] = 'A5'
-
-   endif
+    endif
     
     if (plotap[5]) then pans = [pans,ename]
 
@@ -868,7 +873,6 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
 ; Fast Housekeeping (APID A6)
 ; Don't plot data (which is done with swe_plot_fhsk), just plot packet stats
-
 ; For A6, just plot the packet times.
 
   if (size(a6,/type) eq 8) then begin      
@@ -966,7 +970,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   if keyword_set(tspan) then tmin = tmin > (tmax - tspan*3600D)
 ; timefit,[tmin,tmax]
   
-  if keyword_set(eph) then begin
+  if (doeph) then begin
     get_data,'alt2',data=alt2,index=i
     if (i eq 0) then maven_orbit_tplot, /current, /loadonly
     pans = ['alt2', pans]
@@ -981,7 +985,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     return
   endif
   
-  if keyword_set(orb) then begin
+  if (doorb) then begin
     npts = round((tmax - tmin)/60D) + 1L
     t = tmin + 60D*dindgen(npts)
     store_data,'orbnum',data={x:t, y:mvn_orbit_num(time=t)}

@@ -31,21 +31,24 @@
 ;
 ;   SEP:       Include two panels for SEP data: one for ions, one for electrons.
 ;
-;   SWIA:      Include a panel for SWIA ion density (cs ground moments).
+;   SWIA:      Include panels for SWIA ion density and bulk velocity (coarse
+;              survey ground moments).
 ;
 ;   STATIC:    Include two panels for STATIC data: one mass spectrum, one energy
 ;              spectrum.
 ;
+;   LPW:       Include panels for LPW data.  (TBD)
+;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-04 17:39:26 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19247 $
+; $LastChangedDate: 2015-11-17 11:45:45 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19397 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
 
-pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static
+pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw
 
   compile_opt idl2
 
@@ -187,11 +190,19 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static
     sta_pan = 'mvn_sta_c0_E mvn_sta_c6_M'
   endif
 
+; LPW data (TBD)
+
+  lpw_pan = ''
+  if keyword_set(lpw) then begin
+    print,"LPW: Place holder. Not ready yet."
+    lpw_pan = ''
+  endif
+
 ; Assemble the panels and plot
 
   pans = ram_pan + ' ' + sun_pan + ' ' + alt_pan + ' ' + swi_pan + ' ' + $
          sta_pan + ' ' + mag_pan + ' ' + sepi_pan + ' ' + sepe_pan + ' ' + $
-         pad_pan + ' ' + engy_pan
+         lpw_pan + ' ' + pad_pan + ' ' + engy_pan
 
   tplot, pans
 

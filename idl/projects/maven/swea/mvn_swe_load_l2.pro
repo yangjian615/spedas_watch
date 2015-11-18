@@ -17,7 +17,8 @@
 ;
 ;INPUTS:
 ;       trange:        Load SWEA packets from L2 data spanning this time range.
-;                      (Reads multiple L0 files, if necessary.)
+;                      (Reads multiple L2 files, if necessary.)  This input is 
+;                      not needed if you first call timespan.
 ;
 ;KEYWORDS:
 ;       FILENAME:      Full path and file name for loading data.  Can be multiple
@@ -54,9 +55,13 @@
 ;       NOERASE:       Do not clear the common block before loading.  This
 ;                      allows multiple calls to load subsets of the data.
 ;
+;       SPICEINIT:     Force an initialization of SPICE.  Use with caution!
+;                      Best practice is to initialize SPICE before calling
+;                      this routine (or any other data loader).
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 12:01:06 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17717 $
+; $LastChangedDate: 2015-11-17 09:11:23 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19388 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l2.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-02-15
@@ -64,7 +69,7 @@
 ;-
 pro mvn_swe_load_l2, trange, filename=filename, latest=latest, spec=spec, pad=pad, ddd=ddd, $
                      sumplot=sumplot, status=status, orbit=orbit, loadonly=loadonly, $
-                     burst=burst, archive=archive, all=all, noerase=noerase
+                     burst=burst, archive=archive, all=all, noerase=noerase, spiceinit=spiceinit
 
   @mvn_swe_com
 
@@ -238,11 +243,10 @@ pro mvn_swe_load_l2, trange, filename=filename, latest=latest, spec=spec, pad=pa
   
   if (~tspan_exists) then timespan, trange
 
-; Initialize SPICE (now done outside of loader - not needed for loading L2 data)
+; Initialize SPICE only if asked
+; (Best practice is to initialize SPICE before calling this routine.)
 
-; mk = spice_test('*', verbose=-1)
-; indx = where(mk ne '', count)
-; if (count eq 0) then mvn_swe_spice_init
+  if keyword_set(spiceinit) then mvn_swe_spice_init,/force
 
 ; Define decompression, telemetry conversion factors, and data structures
 

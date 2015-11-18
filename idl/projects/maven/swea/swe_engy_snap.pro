@@ -37,6 +37,9 @@
 ;       POT:           Overplot an estimate of the spacecraft potential.  Must run
 ;                      mvn_swe_sc_pot first.
 ;
+;       SCP:           Override any other estimates of the spacecraft potential and
+;                      force it to be this value.
+;
 ;       DEMAX:         Maximum width of spacecraft potential signature.
 ;
 ;       PEPEAKS:       Overplot the nominal energies of the photoelectron energy peaks
@@ -93,8 +96,8 @@
 ;       POPEN:         Set this to the name of a postscript file for output.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-08 16:34:11 -0800 (Sun, 08 Nov 2015) $
-; $LastChangedRevision: 19305 $
+; $LastChangedDate: 2015-11-17 09:15:13 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19390 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -121,7 +124,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(sum) then npts = 2 else npts = 1
   if keyword_set(ddd) then dflg = 1 else dflg = 0
   if keyword_set(noerase) then oflg = 0 else oflg = 1
-  if not keyword_set(scp) then scp = 0. else scp = float(scp[0])
+  if (size(scp,/type) eq 0) then scp = !values.f_nan else scp = float(scp[0])
   if (size(thresh,/type) eq 0) then thresh = 0.05
   if (size(dEmax,/type) eq 0) then dEmax = 4.
   if (size(fixy,/type) eq 0) then fixy = 1
@@ -295,8 +298,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if (fflg) then yrange = drange
   
   if (spflg) then begin
-    if (scp ne 0.) then pot = scp $
-                   else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
+    if (finite(scp)) then pot = scp $
+                     else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
     spec = conv_units(spec,'df')
     spec.energy -= pot
     spec = conv_units(spec,units)
@@ -365,8 +368,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       nenergy = odat.nenergy
       sec_spec = dblarr(nenergy)
 
-      if (scp ne 0.) then pot = scp $
-                     else if (finite(phi)) then pot = phi else pot = 0.
+      if (finite(scp)) then pot = scp $
+                       else if (finite(phi)) then pot = phi else pot = 0.
       kndx = where(energy gt pot)
       kmax = max(kndx)
 
@@ -404,8 +407,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       energy = odat.energy
       nenergy = odat.nenergy
 
-      if (scp ne 0.) then pot = scp $
-                     else if (finite(phi)) then pot = phi else pot = 0.
+      if (finite(scp)) then pot = scp $
+                       else if (finite(phi)) then pot = phi else pot = 0.
       kndx = where(energy le pot, kcnt)
 
       if (kcnt gt 0L) then begin
@@ -445,8 +448,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     endif
 
     if (dopot) then begin
-      if (scp ne 0.) then pot = scp $
-                     else if (finite(phi)) then pot = phi else pot = 0.
+      if (finite(scp)) then pot = scp $
+                       else if (finite(phi)) then pot = phi else pot = 0.
      
       oplot,[pot,pot],yrange,line=2,color=6
     endif
@@ -495,8 +498,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       sdev = F1 * (sqrt(sig2)/(cnts > 1.))
 
       p = swe_maxbol()
-      if (scp ne 0.) then p.pot = scp $
-                     else if (finite(phi)) then p.pot = phi else p.pot = 0.
+      if (finite(scp)) then p.pot = scp $
+                       else if (finite(phi)) then p.pot = phi else p.pot = 0.
 
       psep = 2.0
       indx = where(E1 gt psep*p.pot)
@@ -603,8 +606,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         Emin = min(erange, max=Emax)
         j = where((E1 ge Emin) and (E1 le Emax), n_e)
       endif else begin
-        if (scp ne 0.) then pot = scp $
-                       else if (finite(phi)) then pot = phi else pot = 0.
+        if (finite(scp)) then pot = scp $
+                         else if (finite(phi)) then pot = phi else pot = 0.
         j = where(E1 gt pot, n_e)
         j = j[0:(n_e-2)]  ; one channel cushion from s/c potential
         n_e--
@@ -786,8 +789,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
   
         if (spflg) then begin
-          if (scp ne 0.) then pot = scp $
-                         else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
+          if (finite(scp)) then pot = scp $
+                           else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
           spec = conv_units(spec,'df')
           spec.energy -= pot
           spec = conv_units(spec,units)

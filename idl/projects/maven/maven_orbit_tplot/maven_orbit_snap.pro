@@ -68,15 +68,15 @@
 ;                 entry of times with the cursor.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-21 14:39:10 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18563 $
+; $LastChangedDate: 2015-11-17 09:09:13 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19386 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl, times=times, $
-    nodot=nodot, terminator=terminator
+    nodot=nodot, terminator=terminator, thick=thick
 
   @maven_orbit_common
 
@@ -305,9 +305,9 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       szaref = acos(cos(mlon)*cos(mlat))
 
       plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty,/noerase, $
-           xtitle='X (Rp)',ytitle='Y (Rp)',charsize=2.0,title=title
-      oplot,xm,ym,color=6
-      oplot,x,y
+           xtitle='X (Rp)',ytitle='Y (Rp)',charsize=2.0,title=title,thick=thick
+      oplot,xm,ym,color=6,thick=thick
+      oplot,x,y,thick=thick
 
       if (dodot) then oplot,[x[i]],[y[i]],psym=8,color=5
 
@@ -320,7 +320,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         x[indx] = !values.f_nan
         y[indx] = !values.f_nan
       endif
-      oplot,x,y,color=rcols[0]
+      oplot,x,y,color=rcols[0],thick=thick
 
       x = xp
       y = yp
@@ -331,7 +331,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         x[indx] = !values.f_nan
         y[indx] = !values.f_nan
       endif
-      oplot,x,y,color=rcols[1]
+      oplot,x,y,color=rcols[1],thick=thick
 
       x = xw
       y = yw
@@ -342,7 +342,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         x[indx] = !values.f_nan
         y[indx] = !values.f_nan
       endif
-      oplot,x,y,color=rcols[2]
+      oplot,x,y,color=rcols[2],thick=thick
 
 ; Shock conic
 
@@ -351,7 +351,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
       xshock = x0 + rho*cos(phi)
       yshock = rho*sin(phi)
-      oplot,xshock,yshock,color=3,line=1
+      oplot,xshock,yshock,color=3,line=1,thick=thick
 
 ; MPB conic
 
@@ -385,7 +385,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       xpileup = [xpileup, x1[indx], x2[jndx]]
       ypileup = [ypileup, y1[indx], y2[jndx]]
 
-      oplot,xpileup,ypileup,color=3,line=1
+      oplot,xpileup,ypileup,color=3,line=1,thick=thick
 
     endif
 
@@ -407,12 +407,12 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     if (xzflg) then msg = title else msg = ''
 
     plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty,/noerase, $
-         xtitle='X (Rp)',ytitle='Z (Rp)',charsize=2.0,title=msg
-    oplot,xm,ym,color=6
-    oplot,x,z
+         xtitle='X (Rp)',ytitle='Z (Rp)',charsize=2.0,title=msg,thick=thick
+    oplot,xm,ym,color=6,thick=thick
+    oplot,x,z,thick=thick
 
     if (pflg) then i = imid else i = imin
-    if (dodot) then oplot,[x[i]],[z[i]],psym=8,color=5
+    if (dodot) then oplot,[x[i]],[z[i]],psym=8,color=5,thick=thick
 
     x = xs
     y = ys
@@ -423,7 +423,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       x[indx] = !values.f_nan
       z[indx] = !values.f_nan
     endif
-    oplot,x,z,color=rcols[0]
+    oplot,x,z,color=rcols[0],thick=thick
 
     x = xp
     y = yp
@@ -434,7 +434,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       x[indx] = !values.f_nan
       y[indx] = !values.f_nan
     endif
-    oplot,x,z,color=rcols[1]
+    oplot,x,z,color=rcols[1],thick=thick
 
     x = xw
     y = yw
@@ -445,7 +445,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       x[indx] = !values.f_nan
       z[indx] = !values.f_nan
     endif
-    oplot,x,z,color=rcols[2]
+    oplot,x,z,color=rcols[2],thick=thick
 
 ; Shock conic
 
@@ -454,7 +454,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
     xshock = x0 + rho*cos(phi)
     zshock = rho*sin(phi)
-    oplot,xshock,zshock,color=3,line=1
+    oplot,xshock,zshock,color=3,line=1,thick=thick
 
 ; MPB conic
 
@@ -488,7 +488,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     xpileup = [xpileup, x1[indx], x2[jndx]]
     zpileup = [zpileup, z1[indx], z2[jndx]]
 
-    oplot,xpileup,zpileup,color=3,line=1
+    oplot,xpileup,zpileup,color=3,line=1,thick=thick
 
 ; Y-Z Projection
 
@@ -507,12 +507,12 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       endif
 
       plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty,/noerase, $
-           xtitle='Y (Rp)',ytitle='Z (Rp)',charsize=2.0
-      oplot,xm,ym,color=6
-      oplot,y,z
+           xtitle='Y (Rp)',ytitle='Z (Rp)',charsize=2.0,thick=thick
+      oplot,xm,ym,color=6,thick=thick
+      oplot,y,z,thick=thick
 
       if (pflg) then i = imid else i = imin
-      if (dodot) then oplot,[y[i]],[z[i]],psym=8,color=5
+      if (dodot) then oplot,[y[i]],[z[i]],psym=8,color=5,thick=thick
 
       x = xs
       y = ys
@@ -523,7 +523,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         y[indx] = !values.f_nan
         z[indx] = !values.f_nan
       endif
-      oplot,y,z,color=rcols[0]
+      oplot,y,z,color=rcols[0],thick=thick
 
       x = xp
       y = yp
@@ -534,7 +534,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         x[indx] = !values.f_nan
         y[indx] = !values.f_nan
       endif
-      oplot,y,z,color=rcols[1]
+      oplot,y,z,color=rcols[1],thick=thick
 
       x = xw
       y = yw
@@ -545,13 +545,13 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         y[indx] = !values.f_nan
         z[indx] = !values.f_nan
       endif
-      oplot,y,z,color=rcols[2]
+      oplot,y,z,color=rcols[2],thick=thick
 
       L0 = sqrt((L + psi*x0)^2. - x0*x0)
-      oplot,L0*xm,L0*ym,color=3,line=1
+      oplot,L0*xm,L0*ym,color=3,line=1,thick=thick
 
       L0 = sqrt((L_p1 + psi_p1*x0_p1)^2. - x0_p1*x0_p1)
-      oplot,L0*xm,L0*ym,color=3,line=1
+      oplot,L0*xm,L0*ym,color=3,line=1,thick=thick
 
     endif
 
@@ -569,16 +569,16 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
      s = sqrt(y*y + z*z)
 
      plot,xm,ym,xrange=xrange,yrange=[0,yrange[1]],/xsty,/ysty,/noerase, $
-          xtitle='X (Rp)',ytitle='S (Rp)',charsize=2.0,title=title
-     oplot,xm,ym,color=6
-     oplot,x,s
+          xtitle='X (Rp)',ytitle='S (Rp)',charsize=2.0,title=title,thick=thick
+     oplot,xm,ym,color=6,thick=thick
+     oplot,x,s,thick=thick
 
     if (pflg) then i = imid else i = imin
-    if (dodot) then oplot,[x[i]],[s[i]],psym=8,color=5
+    if (dodot) then oplot,[x[i]],[s[i]],psym=8,color=5,thick=thick
 
-    oplot,xs,sqrt(ys*ys + zs*zs),color=rcols[0]
-    oplot,xp,sqrt(yp*yp + zp*zp),color=rcols[1]
-    oplot,xw,sqrt(yw*yw + zw*zw),color=rcols[2]
+    oplot,xs,sqrt(ys*ys + zs*zs),color=rcols[0],thick=thick
+    oplot,xp,sqrt(yp*yp + zp*zp),color=rcols[1],thick=thick
+    oplot,xw,sqrt(yw*yw + zw*zw),color=rcols[2],thick=thick
 
 ; Shock conic
 
@@ -587,7 +587,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
     xshock = x0 + rho*cos(phi)
     zshock = rho*sin(phi)
-    oplot,xshock,zshock,color=3,line=1
+    oplot,xshock,zshock,color=3,line=1,thick=thick
 
 ; MPB conic
 
@@ -621,7 +621,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     xpileup = [xpileup, x1[indx], x2[jndx]]
     zpileup = [zpileup, z1[indx], z2[jndx]]
 
-    oplot,xpileup,zpileup,color=3,line=1
+    oplot,xpileup,zpileup,color=3,line=1,thick=thick
 
    endif
 

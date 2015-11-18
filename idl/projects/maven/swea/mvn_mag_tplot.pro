@@ -19,8 +19,8 @@
 ;                  toward and away sectors.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-10-11 15:04:32 -0700 (Sun, 11 Oct 2015) $
-; $LastChangedRevision: 19046 $
+; $LastChangedDate: 2015-11-17 09:14:19 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19389 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_mag_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
@@ -158,7 +158,7 @@ pro mvn_mag_tplot, bvec, model=model, sang=sang
               data={x: b.x, y: btot}, $
               dlimits={ytitle: 'MAG ' + lvl, ysubtitle: '|B| [nT]'}
 
-  if keyword_set(model) then mvn_model_bcrust_load
+  if keyword_set(model) then mvn_model_bcrust_load, /nocalc
   get_data, 'mvn_mod_bcrust_amp', index=i
   if (i eq 0) then store_data, 'mvn_mod_bcrust_amp', data={x:minmax(b.x), y:[nan,nan]}
   options,'mvn_mod_bcrust_amp','linestyle',2

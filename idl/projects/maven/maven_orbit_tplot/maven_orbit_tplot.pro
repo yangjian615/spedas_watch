@@ -86,8 +86,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-21 14:39:10 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18563 $
+; $LastChangedDate: 2015-11-17 09:08:55 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19385 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -105,6 +105,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   R_vol = (R_equ*R_equ*R_pol)^(1D/3D)
 
   rootdir = 'maven/anc/spice/sav/'
+  ssrc = mvn_file_source(archive_ext='')  ; don't archive old files
 
   treset = 0  
   tplot_options, get=topt
@@ -142,6 +143,10 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   endelse  
   if keyword_set(nocrop) then docrop = 0
 
+; Pad time span by one UT day on both sides (guarantees > 10 orbits)
+
+  if (docrop) then tspan += [-86400D, 86400D]
+
   case n_elements(colors) of
     0 : rcols = [4, 5, 2]
     1 : rcols = [round(colors), 5, 2]
@@ -155,7 +160,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   if (domex) then begin
     pathname = rootdir + 'mex_traj_mso_june2010.sav'
-    file = mvn_pfp_file_retrieve(pathname)
+    file = mvn_pfp_file_retrieve(pathname,source=ssrc)
     finfo = file_info(file)
     if (~finfo.exists) then begin
       print,"File not found: ",pathname
@@ -177,6 +182,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     r = sqrt(x*x + y*y + z*z)
     s = sqrt(y*y + z*z)
     sza = atan(s,x)
+    hgt = (r - 1.)*R_m
     
     lon = 0.  ; no GEO coordinates for MEX
     lat = 0.
@@ -200,7 +206,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     if (cflg) then fname = 'maven_spacecraft_mso_??????' + '.sav' $
               else fname = msoext
 
-    file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
+    file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0,source=ssrc)
     nfiles = n_elements(file)
     
     if (docrop) then begin
@@ -237,7 +243,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     r = sqrt(x*x + y*y + z*z)
     s = sqrt(y*y + z*z)
     sza = atan(s,x)
-    
+    hgt = (r - 1.)*R_m
+
     mso_x = fltarr(n_elements(maven.x),3)
     mso_x[*,0] = maven.x
     mso_x[*,1] = maven.y
@@ -253,7 +260,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     if (cflg) then fname = 'maven_spacecraft_geo_??????' + '.sav' $
               else fname = geoext
 
-    file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0)
+    file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0,source=ssrc)
     nfiles = n_elements(file)
     
     if (docrop) then begin
@@ -279,7 +286,6 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
     lon = atan(maven_g.y, maven_g.x)*!radeg
     lat = asin(maven_g.z/(R_m*r))*!radeg
-    hgt = (r - 1.)*R_m
     
     indx = where(lon lt 0., count)
     if (count gt 0L) then lon[indx] = lon[indx] + 360.
@@ -318,6 +324,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
       r = temporary(r[indx])
       s = temporary(s[indx])
       sza = temporary(sza[indx])
+      hgt = temporary(hgt[indx])
       if (n_elements(lon) ge count) then begin
         lon = temporary(lon[indx])
         lat = temporary(lat[indx])
@@ -341,6 +348,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
             r   : r     , $   ; sqrt(x*x + y*y + z*z)
             s   : s     , $   ; sqrt(y*y + z*z)
             sza : sza   , $   ; atan(s,x)
+            hgt : hgt   , $   ; aerocentric altitude
             lon : lon   , $   ; GEO longitude
             lat : lat      }  ; GEO latitude
   
@@ -482,8 +490,13 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   options,'iono','color',6
   options,'iono','linestyle',2
   options,'iono','thick',2
+  
+  store_data,'alt_lab',data={x:minmax(time), y:replicate(-1.,2,4), v:indgen(4)}
+  options,'alt_lab','labels',['SHADOW','PILEUP','SHEATH','WIND']
+  options,'alt_lab','colors',[reverse(rcols),!p.color]
+  options,'alt_lab','labflag',1
 
-  store_data,'alt2',data=['alt','sheath','pileup','wake','wind','iono']
+  store_data,'alt2',data=['alt_lab','alt','sheath','pileup','wake','wind','iono']
   ylim, 'alt2', 0, 0, 0
   options,'alt2','ytitle','Altitude (km)'
 
@@ -496,51 +509,52 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   di[0L] = 2L
   gap = where(di gt 1L, norb)
 
-  torb = dblarr(norb-3L)
-  twind = torb
-  tsheath = torb
-  tpileup = torb
-  twake = torb
-  period = torb
-  palt = torb
-  sma = dblarr(norb-3L,3)
+  if (norb gt 3) then begin
+    torb = dblarr(norb-3L)
+    twind = torb
+    tsheath = torb
+    tpileup = torb
+    twake = torb
+    period = torb
+    palt = torb
+    sma = dblarr(norb-3L,3)
 
-  hwind = twind
-  hsheath = tsheath
-  hpileup = tpileup
-  hwake = twake
+    hwind = twind
+    hsheath = tsheath
+    hpileup = tpileup
+    hwake = twake
 
-  for i=1L,(norb-3L) do begin
+    for i=1L,(norb-3L) do begin
 
-    p1 = min(alt[gndx[gap[i]:(gap[i+1L]-1L)]],j)
-    j1 = gndx[j+gap[i]]
+      p1 = min(alt[gndx[gap[i]:(gap[i+1L]-1L)]],j)
+      j1 = gndx[j+gap[i]]
 
-    p2 = min(alt[gndx[gap[i+1L]:(gap[i+2L]-1L)]],j)
-    j2 = gndx[j+gap[i+1L]]
+      p2 = min(alt[gndx[gap[i+1L]:(gap[i+2L]-1L)]],j)
+      j2 = gndx[j+gap[i+1L]]
     
-    dj = double(j2 - j1 + 1L)
+      dj = double(j2 - j1 + 1L)
 
-    k = i - 1L
+      k = i - 1L
     
-    torb[k] = time[(j1+j2)/2L]
-    period[k] = (time[j2] - time[j1])/3600D
-    palt[k] = (p1 + p2)/2.
+      torb[k] = time[(j1+j2)/2L]
+      period[k] = (time[j2] - time[j1])/3600D
+      palt[k] = (p1 + p2)/2.
 
-    indx = where(finite(wind[j1:j2,0]), count)
-    twind[k] = double(count)/dj
-    hwind[k] = double(count)*(dt/3600D)
+      indx = where(finite(wind[j1:j2,0]), count)
+      twind[k] = double(count)/dj
+      hwind[k] = double(count)*(dt/3600D)
 
-    indx = where(finite(sheath[j1:j2,0]), count)
-    tsheath[k] = double(count)/dj
-    hsheath[k] = double(count)*(dt/3600D)
+      indx = where(finite(sheath[j1:j2,0]), count)
+      tsheath[k] = double(count)/dj
+      hsheath[k] = double(count)*(dt/3600D)
 
-    indx = where(finite(pileup[j1:j2,0]), count)
-    tpileup[k] = double(count)/dj
-    hpileup[k] = double(count)*(dt/3600D)
+      indx = where(finite(pileup[j1:j2,0]), count)
+      tpileup[k] = double(count)/dj
+      hpileup[k] = double(count)*(dt/3600D)
 
-    indx = where(finite(wake[j1:j2,0]), count)
-    twake[k] = double(count)/dj
-    hwake[k] = double(count)*(dt/3600D)
+      indx = where(finite(wake[j1:j2,0]), count)
+      twake[k] = double(count)/dj
+      hwake[k] = double(count)*(dt/3600D)
 
 ;   Determine semi-minor axis direction for each orbit -- start at periapsis
 ;   and look for the point in the orbit outbound where [S(periapsis) dot S] 
@@ -548,12 +562,13 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 ;   and therefore parallel to the semi-minor axis.  Note: this is all done
 ;   in MSO coordinates.
 
-    s1 = ss[j1:j2,0:2]
-    pdots = (s1[*,0]*s1[0,0]) + (s1[*,1]*s1[0,1]) + (s1[*,2]*s1[0,2])
-    indx = where((pdots*shift(pdots,1)) lt 0.)
-    sma[k,0:2] = ss[indx[0]+j1,0:2]/ss[indx[0]+j1,3]
+      s1 = ss[j1:j2,0:2]
+      pdots = (s1[*,0]*s1[0,0]) + (s1[*,1]*s1[0,1]) + (s1[*,2]*s1[0,2])
+      indx = where((pdots*shift(pdots,1)) lt 0.)
+      sma[k,0:2] = ss[indx[0]+j1,0:2]/ss[indx[0]+j1,3]
 
-  endfor
+    endfor
+  endif
 
   if keyword_set(swia) then begin
     if (norb gt 15) then sma = smooth(sma,[11,1],/edge_truncate) ; unit vector --> semi-minor axis
