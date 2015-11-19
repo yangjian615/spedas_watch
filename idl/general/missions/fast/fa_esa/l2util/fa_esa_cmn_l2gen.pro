@@ -56,8 +56,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-11-16 16:03:51 -0800 (Mon, 16 Nov 2015) $
-; $LastChangedRevision: 19379 $
+; $LastChangedDate: 2015-11-17 19:52:53 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19402 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -76,22 +76,25 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      message,/info,'No multiple orbit files plaese'
      Return
   Endif
-     
+
+;Get the start time for this orbit:
+;  tt = fa_orbit_to_time(cmn_dat.orbit_start)
+;  date = time_string(tt[1], format=6)
 ;First, global attributes
   global_att = {Acknowledgment:'None', $
                 Data_type:'CAL>Calibrated', $
                 Data_version:'0', $
                 Descriptor:'FA_ESA>Fast Auroral SnapshoT Explorer, Electrostatic Analyzer', $
                 Discipline:'Space Physics>Planetary Physics>Particles', $
-                File_naming_convention: 'fa_esa_descriptor_datatype_yyyyMMdd', $
+                File_naming_convention: 'descriptor_datatype_yyyyMMddHHmmss', $
                 Generated_by:'FAST SOC' , $
                 Generation_date:'2015-07-28' , $
                 HTTP_LINK:'http://sprg.ssl.berkeley.edu/fast/', $
                 Instrument_type:'Particles (space)' , $
                 LINK_TEXT:'General Information about the FAST mission' , $
                 LINK_TITLE:'FAST home page' , $
-                Logical_file_id:'fa_l2_XXX_00000000_v00.cdf' , $
-                Logical_source:'fa_l2_XXX' , $
+                Logical_file_id:'fa_esa_l2_XXX_00000000000000_v00.cdf' , $
+                Logical_source:'fa_esa_l2_XXX' , $
                 Logical_source_description:'FAST Ion and Electron Particle Distributions', $
                 Mission_group:'FAST' , $
                 MODS:'Rev-1 2015-07-28' , $
@@ -129,11 +132,12 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
             ['THETA_MIN', 'DOUBLE', 'Angular minimum (NUM_DISTS elements)', 'Angular min'], $
             ['BKG', 'FLOAT', 'Background counts array with dimensions (NUM_DISTS)', 'Background counts'], $
             ['SC_POT', 'FLOAT', 'Spacecraft potential (NUM_DISTS elements)', 'Spacecraft potential'], $
-            ['DATA', 'BYTE', 'Raw Counts data with dimensions (NUM_DISTS, 96, 64)', 'Raw Counts'], $
-            ['EFLUX', 'FLOAT', 'Differential energy flux array with dimensions (NUM_DISTS, 96, 64)', 'Energy flux'], $
-            ['PITCH_ANGLE', 'FLOAT', 'Pitch Angule values for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'Pitch Angle'], $
-            ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'Energy'], $
-            ['DENERGY_FULL', 'FLOAT', 'Angular bin size for each distribution (NUM_DISTS, 96, 64); Virtual variable', 'DEnergy'], $
+            ['DATA', 'BYTE', 'Raw Counts data with dimensions (96, 64, NUM_DISTS)', 'Raw Counts'], $
+            ['EFLUX', 'FLOAT', 'Differential energy flux array with dimensions (96, 64, NUM_DISTS)', 'Energy flux'], $
+            ['PITCH_ANGLE', 'FLOAT', 'Pitch Angle values for each distribution (96, 64, NUM_DISTS); Virtual variable', 'Pitch Angle'], $
+            ['DPITCH_ANGLE', 'FLOAT', 'Angular bin size for each distribution (96, 64, NUM_DISTS); Virtual variable', 'Pitch Angle'], $
+            ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (96, 64, NUM_DISTS); Virtual variable', 'Energy'], $
+            ['DENERGY_FULL', 'FLOAT', 'Energy bin size for each distribution (96, 64, NUM_DISTS); Virtual variable', 'DEnergy'], $
             ['ORBIT_NUMBER', 'FLOAT', 'Orbit number for this file, does not change, so only 2 entries per file', 'Orbit_number'], $
             ['ORBIT_NUMBER_TIME', 'DOUBLE', 'Time array, unix time for orbit number', 'Orbit Number Time'], $
             ['ORBIT_NUMBER_EPOCH', 'CDF_EPOCH', 'CDF Epoch array for orbit number', 'Orbit Number Epoch']]
@@ -213,15 +217,10 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
            End
            'time_delta': dvar = cmn_dat.delta_t
            'time_integ': dvar = cmn_dat.integ_t
-           'pitch_angle': Begin ;Virtual variable
-              message, /info, 'Variable '+vj+' is Virtual.'
-           End
-           'energy_full': Begin ;Virtual variable
-              message, /info, 'Variable '+vj+' is Virtual.'
-           End
-           'denergy_full': Begin ;Virtual variable
-              message, /info, 'Variable '+vj+' is Virtual.'
-           End
+           'pitch_angle': message, /info, 'Variable '+vj+' is Virtual.'
+           'dpitch_angle': message, /info, 'Variable '+vj+' is Virtual.'
+           'energy_full': message, /info, 'Variable '+vj+' is Virtual.'
+           'denergy_full': message, /info, 'Variable '+vj+' is Virtual.'
            'orbit_number': dvar = [cmn_dat.orbit_start, cmn_dat.orbit_end]
            'orbit_number_time': Begin
               dvar = minmax(center_time)
@@ -257,13 +256,13 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      str_element, vatt, 'fillval', fll, /add
      str_element, vatt, 'format', fmt, /add
      If(vj Eq 'epoch' Or vj Eq 'orbit_number_epoch') Then Begin
-        str_element, vatt, 'fillval', epoch_range[0], /add_replace
+        str_element, vatt, 'fillval', -1.0d+31, /add_replace ;istp
         str_element, vatt, 'validmin', epoch_range[0], /add
         str_element, vatt, 'validmax', epoch_range[1], /add
      Endif Else If(vj Eq 'time_unix' Or vj Eq 'time_start' Or vj Eq 'time_end' Or vj Eq 'orbit_number_time') Then Begin
         str_element, vatt, 'validmin', date_range[0], /add
         str_element, vatt, 'validmax', date_range[1], /add
-     Endif Else If(vj Eq 'theta_shift' Or vj Eq 'pitch_angle') Then Begin
+     Endif Else If(vj Eq 'theta_shift' Or vj Eq 'pitch_angle' Or vj Eq 'dpitch_angle') Then Begin
         str_element, vatt, 'validmin', 0.0, /add
         str_element, vatt, 'validmax', 360.0, /add
      Endif Else Begin
@@ -279,6 +278,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
         Endif
      Endelse
      vatt.catdesc = rv_vt[2, j]
+
 ;data is log scaled, everything else is linear, set data, support data
 ;display type here
      IF(vj Eq 'data' Or vj Eq 'eflux') Then Begin
@@ -314,16 +314,16 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      vatt.lablaxis = rv_vt[3, j]
 
 ;Assign labels and components for vectors
-     If(vj Eq 'data' Or vj Eq 'eflux' Or $
-        vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
-        vj Eq 'denergy_full') Then Begin
+     If(vj Eq 'data' Or vj Eq 'eflux') Then Begin; Or $
+;        vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
+;        vj Eq 'denergy_full') Then Begin
 ;For ISTP compliance, it looks as if the depend's are switched,
 ;probably because we transpose it all in the file
 ;??? Check this ???
-        vatt.depend_1 = 'compno_96'
-        vatt.depend_2 = 'compno_64'
-        vatt.labl_ptr_1 = vj+'_energy_labl_96'
-        vatt.labl_ptr_2 = vj+'_angle_labl_64'
+        vatt.depend_2 = 'compno_96'
+        vatt.depend_1 = 'compno_64'
+        vatt.labl_ptr_2 = vj+'_energy_labl_96'
+        vatt.labl_ptr_1 = vj+'_angle_labl_64'
      Endif
  
 ;Time variables are monotonically increasing:
@@ -336,6 +336,11 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
         str_element, vatt, 'component_0', 'theta', /add_replace
         str_element, vatt, 'component_1', 'theta_shift', /add_replace
         str_element, vatt, 'component_2', 'mode_ind', /add_replace
+     Endif Else If(vj Eq 'dpitch_angle') Then Begin
+        str_element, vatt, 'virtual', 'TRUE', /add_replace
+        str_element, vatt, 'funct', 'fa_esa_energy', /add_replace
+        str_element, vatt, 'component_0', 'dtheta', /add_replace
+        str_element, vatt, 'component_1', 'mode_ind', /add_replace
      Endif Else If(vj Eq 'energy_full') Then Begin
         str_element, vatt, 'virtual', 'TRUE', /add_replace
         str_element, vatt, 'funct', 'fa_esa_energy', /add_replace
@@ -368,7 +373,8 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
             numrec:0L, ndimen: 0, d:lonarr(6), dataptr:ptr_new(), $
             attrptr:ptr_new()}
 ;Virtual variable setup:
-     If(vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or vj Eq 'denergy_full') Then Begin
+     If(vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
+        vj Eq 'dpitch_angle' Or vj Eq 'denergy_full') Then Begin
         vsj.name = vj
         vsj.datatype = cdf_type
         vsj.type = dtype
@@ -549,7 +555,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 
   inq = {ndims:0l, decoding:'HOST_DECODING', $
          encoding:'IBMPC_ENCODING', $
-         majority:'ROW_MAJOR', maxrec:-1,$
+         majority:'COLUMN_MAJOR', maxrec:-1,$
          nvars:0, nzvars:nvars, natts:natts, dim:lonarr(1)}
 
 ;time resolution and UTC start and end
@@ -588,15 +594,15 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 ;SPDF requests full start time in the filename
   date = time_string(min(center_time), format=6)
   orb_string = string(long(cmn_dat.orbit_start), format = '(i5.5)')
-  file0 = 'fa_l2_'+ext+'_'+date+'_'+orb_string+'_'+sw_vsn_str+'.cdf'
+  file0 = 'fa_esa_l2_'+ext+'_'+date+'_'+orb_string+'_'+sw_vsn_str+'.cdf'
   fullfile0 = dir+file0
   
   otp_struct.g_attributes.data_type = 'l2_'+ext+'>Level 2 data: '+cmn_dat.data_name
   otp_struct.g_attributes.logical_file_id = file0
   otp_struct.g_attributes.logical_source = 'fa_l2_'+ext
+
 ;save the file -- full database management
   dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update)
-
 
   Return
 End

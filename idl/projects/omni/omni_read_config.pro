@@ -15,9 +15,9 @@
 ; cstruct = a structure with the changeable fields of the !istp
 ;           structure
 ; Copied from thm_read_config and tt2000_read_config lphilpott 20-jun-2012
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-06-19 19:25:49 -0700 (Fri, 19 Jun 2015) $
-;$LastChangedRevision: 17928 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-18 14:02:09 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19410 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/omni_read_config.pro $
 ;-
 Function omni_config_template
@@ -27,7 +27,7 @@ Function omni_config_template
          DATASTART:3l, $
          DELIMITER:61b, $
          MISSINGVALUE:anan[0], $
-         COMMENTSYMBOL:'', $
+         COMMENTSYMBOL:';', $
          FIELDCOUNT:2l, $
          FIELDTYPES:[7l, 7l], $
          FIELDNAMES:['FIELD1', 'FIELD2'], $

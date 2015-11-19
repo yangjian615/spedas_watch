@@ -7,9 +7,9 @@
 ;
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-28 10:48:21 -0700 (Wed, 28 Oct 2015) $
-;$LastChangedRevision: 19175 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-18 14:19:08 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19412 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_read_eph_file.pro $
 ;-
 function mms_read_eph_file, filename

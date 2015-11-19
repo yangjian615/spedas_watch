@@ -14,9 +14,9 @@
 ; cstruct = a structure with the changeable fields of the !istp
 ;           structure
 ; Copied from thm_read_config and tt2000_read_config lphilpott 20-jun-2012
-;$LastChangedBy: lphilpott $
-;$LastChangedDate: 2012-06-21 16:18:22 -0700 (Thu, 21 Jun 2012) $
-;$LastChangedRevision: 10610 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-18 14:03:31 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19411 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wind_read_config.pro $
 ;-
 Function wind_config_template
@@ -26,7 +26,7 @@ Function wind_config_template
          DATASTART:3l, $
          DELIMITER:61b, $
          MISSINGVALUE:anan[0], $
-         COMMENTSYMBOL:'', $
+         COMMENTSYMBOL:';', $
          FIELDCOUNT:2l, $
          FIELDTYPES:[7l, 7l], $
          FIELDNAMES:['FIELD1', 'FIELD2'], $

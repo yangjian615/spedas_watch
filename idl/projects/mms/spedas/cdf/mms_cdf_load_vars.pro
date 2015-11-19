@@ -136,8 +136,8 @@
 ;   Data is returned in pointer variables. Calling routine is responsible for freeing up heap memory - otherwise a memory leak will occur.
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-10-23 15:37:02 -0700 (Fri, 23 Oct 2015) $
-; $LastChangedRevision: 19147 $
+; $LastChangedDate: 2015-11-18 08:47:04 -0800 (Wed, 18 Nov 2015) $
+; $LastChangedRevision: 19403 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/cdf/mms_cdf_load_vars.pro $
 ;
 ;-
@@ -151,7 +151,7 @@ function mms_cdf_load_vars,files,varnames=vars,varformat=vars_fmt,info=info,verb
 vb = keyword_set(verbose) ? verbose : 0
 vars=''
 info = 0
-dprint,dlevel=4,verbose=verbose,'$Id: mms_cdf_load_vars.pro 19147 2015-10-23 22:37:02Z egrimes $'
+dprint,dlevel=4,verbose=verbose,'$Id: mms_cdf_load_vars.pro 19403 2015-11-18 16:47:04Z egrimes $'
 
 on_ioerror, ferr
 for fi=0,n_elements(files)-1 do begin
@@ -271,7 +271,7 @@ for fi=0,n_elements(files)-1 do begin
                     if (vi.ndimen ge 1 and n_elements(record) eq 0) then begin
                         if numrec eq 1 then begin
                             dprint,dlevel=3,'Warning: Single record! ',vi.name,vi.ndimen,vi.d
-                            if size(/dimensions,value) eq 0 then value = reform(value) else value = reform(/overwrite,value, [1,size(/dimensions,value)] )  ; Special case for variables with a single record
+                            if (~is_array(size(/dimensions,value)) && size(/dimensions,value) eq 0) then value = reform(value) else value = reform(/overwrite,value, [1,size(/dimensions,value)] )  ; Special case for variables with a single record
                         
                             ;if is_array(value) && n_elements(value) ne 1 then value = reform(/overwrite,value, [1,size(/dimensions,value)] ) $ ; Special case for variables with a single record
                             ;    else value = reform(value,/overwrite)

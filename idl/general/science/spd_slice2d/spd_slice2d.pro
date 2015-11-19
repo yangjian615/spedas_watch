@@ -186,8 +186,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-11-06 11:21:36 -0800 (Fri, 06 Nov 2015) $
-;$LastChangedRevision: 19279 $
+;$LastChangedDate: 2015-11-18 17:57:46 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19418 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -196,6 +196,8 @@ function spd_slice2d, input1, input2, input3, input4, $
                       time=time_in, $
                       window=window, $
                       center_time=center_time, $
+                      trange=trange_in, $
+                      samples=samples, $
                     ; Orientations
                       custom_rotation=custom_rotation, $
                       rotation=rotation, $
@@ -240,16 +242,17 @@ if ~ptr_valid(input1[0]) and ~is_struct(input1[0]) then begin
   return, invalid
 endif
 
-if undefined(time_in) then begin
-  fail = 'Please specifiy a time at which to compute the slice.'
-  dprint, dlevel=1, fail
-  return, invalid
-endif
-
-if undefined(window) then begin
-  fail = 'Please specifiy a time window for the slice."
-  dprint, dlevel=1, fail
-  return, invalid
+if undefined(trange_in) then begin
+  if undefined(time_in) then begin
+    fail = 'Please specifiy a time or time range over which to compute the slice.  For example: '+ $
+           ssl_newline()+'  "TIME=t, WINDOW=w" or "TRANGE=tr" or "TIME=t, SAMPLES=n"'
+    dprint, dlevel=1, fail
+    return, invalid
+  endif else begin
+    if undefined(window) && undefined(samples) then begin
+      samples = 1 ;use single closest distribution by default
+    endif
+  endelse
 endif
 
 valid_rotations = ['bv', 'be', 'xy', 'xz', 'yz', 'xvel', $
@@ -266,7 +269,7 @@ endif
 
 ; Set default options
 ;------------------------------------------------------------
-time = time_double(time_in[0])
+if ~undefined(time_in) then time = time_double(time_in[0])
 if undefined(rotation) then rotation='xy'
 if keyword_set(energy) && undefined(log) then log = 1
 if rotation eq 'xyz' then rotation = 'xy'
@@ -337,14 +340,29 @@ if ptr_valid(p4) then ds = [ds,p4]
 ; Get the slice's time range
 ;------------------------------------------------------------
 
-; get the boundaries of the time window
-if keyword_set(center_time) then begin
-  trange = [time - window/2d, $
-            time + window/2d  ]
-endif else begin
-  trange = [time, $
-            time + window ]
-endelse
+; get the time range if one was specified
+if ~undefined(trange_in) then begin
+  trange = minmax(trange_in)
+endif
+
+; get the time range if a time & window were specified instead
+if undefined(trange) && keyword_set(window) then begin
+  if keyword_set(center_time) then begin
+    trange = [time - window/2d, $
+              time + window/2d  ]
+  endif else begin
+    trange = [time, $
+              time + window ]
+  endelse
+endif
+
+; if no time range or window was specified then get a time range 
+; from the N closest samples to the specied time
+;   (N=SAMPLES, defaults to 1 if samples is not defined
+if undefined(trange) then begin
+  trange = spd_slice2d_nearest(ds, time, samples)
+endif
+  
 
 ; check that there is data in range before proceeding
 for i=0, n_elements(ds)-1 do begin
@@ -388,22 +406,24 @@ idx = where(datapoints gt 0,n)
 if n gt 0 then begin
   dmoms = moment(alog10(datapoints[idx]),maxmom=2)
   min = 10^(dmoms[0] - 2*sqrt(dmoms[1])) ;ignore if < mean - 2*sigma 
+  drange = minmax(datapoints[idx],min_value=min)
 
-  ;remove points below the minimum 
-  ;  -these points would be hidden on final plot if left and will only 
-  ;   slow the interpolation
-  idx = where(datapoints gt min, n)
-  if n gt 0 then begin
-    datapoints = datapoints[idx]
-    rad = rad[idx]
-    phi = phi[idx]
-    theta = theta[idx]
-    dr = dr[idx]
-    dp = dp[idx]
-    dt = dt[idx]
-  endif
-
-  drange = [min(datapoints),max(datapoints)]
+;*** affects interpolation in some cases ***
+;  ;remove points below the minimum 
+;  ;  -these points would be hidden on final plot if left and will only 
+;  ;   slow the interpolation
+;  idx = where(datapoints gt 0, n)
+;  if n gt 0 then begin
+;    datapoints = datapoints[idx]
+;    rad = rad[idx]
+;    phi = phi[idx]
+;    theta = theta[idx]
+;    dr = dr[idx]
+;    dp = dp[idx]
+;    dt = dt[idx]
+;  endif
+;
+;  drange = [min(datapoints),max(datapoints)]
 endif else begin
   drange = [0,0.]
 endelse

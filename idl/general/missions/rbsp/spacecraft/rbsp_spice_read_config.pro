@@ -14,9 +14,9 @@
 ;           structure
 ;HISTORY:
 ; 01-jul-2011, peters
-;$LastChangedBy: peters $
-;$LastChangedDate: 2012-11-07 15:36:17 -0800 (Wed, 07 Nov 2012) $
-;$LastChangedRevision: 11202 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-18 14:39:54 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19413 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/spacecraft/rbsp_spice_read_config.pro $
 ;-
 Function rbsp_spice_config_template

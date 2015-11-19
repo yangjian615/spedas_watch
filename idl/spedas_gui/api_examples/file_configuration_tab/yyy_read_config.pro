@@ -15,9 +15,9 @@
 ; cstruct = a structure with the changeable fields of the !istp
 ;           structure
 ; Copied from thm_read_config and tt2000_read_config lphilpott 20-jun-2012
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-18 13:41:30 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19408 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/api_examples/file_configuration_tab/yyy_read_config.pro $
 ;-
 Function yyy_config_template
@@ -27,7 +27,7 @@ Function yyy_config_template
          DATASTART:3l, $
          DELIMITER:61b, $
          MISSINGVALUE:anan[0], $
-         COMMENTSYMBOL:'', $
+         COMMENTSYMBOL:';', $
          FIELDCOUNT:2l, $
          FIELDTYPES:[7l, 7l], $
          FIELDNAMES:['FIELD1', 'FIELD2'], $

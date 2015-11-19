@@ -25,9 +25,9 @@
 ; :Author:
 ;   Yoshi Miyoshi (miyoshi at stelab.nagoya-u.ac.jp)
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-06-11 09:23:14 -0700 (Thu, 11 Jun 2015) $
-; $LastChangedRevision: 17851 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2015-11-18 14:02:09 -0800 (Wed, 18 Nov 2015) $
+; $LastChangedRevision: 19410 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/akebono/rdm/akb_load_rdm.pro $
 ;-
 
@@ -39,7 +39,7 @@ function get_akb_rdm_txt_template
     datastart:long(1),$
     delimiter:byte(32),$
     missingvalue:float('NaN'),$
-    commentsymbol:'',$
+    commentsymbol:';',$
     fieldcount:long(11),$
     fieldtypes:long([7,7,4,4,4,4,4,4,4,4,4]), $
     fieldnames:['FIELD01', 'FIELD02', 'FIELD03', 'FIELD04', 'FIELD05', 'FIELD06', 'FIELD07', 'FIELD08', 'FIELD09', 'FIELD10', 'FIELD11'],$

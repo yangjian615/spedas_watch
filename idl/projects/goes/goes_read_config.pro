@@ -17,9 +17,9 @@
 ;           
 ; Copied from thm_read_config and tt2000_read_config lphilpott 20-jun-2012
 ; 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-20 12:42:25 -0700 (Mon, 20 Apr 2015) $
-;$LastChangedRevision: 17376 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-18 14:02:09 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19410 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_read_config.pro $
 ;-
 
@@ -30,7 +30,7 @@ Function goes_config_template
          DATASTART:3l, $
          DELIMITER:61b, $
          MISSINGVALUE:anan[0], $
-         COMMENTSYMBOL:'', $
+         COMMENTSYMBOL:';', $
          FIELDCOUNT:2l, $
          FIELDTYPES:[7l, 7l], $
          FIELDNAMES:['FIELD1', 'FIELD2'], $

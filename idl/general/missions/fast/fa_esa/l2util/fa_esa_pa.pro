@@ -42,8 +42,8 @@ Function fa_esa_pa_array, theta, theta_shift, mode_ind, fillval = fillval
      For j = 0, nmode2-1 Do theta_out[0, 0, mode2[j]] = theta[*, *, 2]+theta_shift[mode2[j]]
   Endif
   If(keyword_set(fillval)) Then Begin
-     ss_fv = where(~finite(ss_fv), nfv)
-     If(nfv Gt 0) Then theta_out[ss_sv] = fillval
+     ss_fv = where(~finite(theta_out), nfv)
+     If(nfv Gt 0) Then theta_out[ss_fv] = fillval
   Endif
   Return, theta_out
 End
@@ -63,8 +63,8 @@ End
 ;HISTORY:
 ; hacked from CDAWlib apply_esa_qflag.pro, jmm, 2015-08-28
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-11-16 16:03:51 -0800 (Mon, 16 Nov 2015) $
-; $LastChangedRevision: 19379 $
+; $LastChangedDate: 2015-11-17 19:52:53 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19402 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_pa.pro $
 ;-
 Function fa_esa_pa, astruct, orig_names, index=index

@@ -14,9 +14,9 @@
 ;           structure
 ;HISTORY:
 ; 01-jul-2011, peters
-;$LastChangedBy: peters $
-;$LastChangedDate: 2011-12-28 10:26:47 -0800 (Wed, 28 Dec 2011) $
-;$LastChangedRevision: 9477 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-18 14:03:31 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19411 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_efw_read_config.pro $
 ;-
 Function rbsp_efw_config_template
@@ -26,7 +26,7 @@ Function rbsp_efw_config_template
          DATASTART:3l, $
          DELIMITER:61b, $
          MISSINGVALUE:anan[0], $
-         COMMENTSYMBOL:'', $
+         COMMENTSYMBOL:';', $
          FIELDCOUNT:2l, $
          FIELDTYPES:[7l, 7l], $
          FIELDNAMES:['FIELD1', 'FIELD2'], $

@@ -10,7 +10,7 @@ Function thm_efi_cal_file_template
   datastart = 1L
   delimiter = 32b
   missingvalue = !values.f_nan
-  commentsymbol = ''
+  commentsymbol = ';'
   fieldcount = 36L
   fieldtypes = [7L, 3L, 3L, 3L, 3L, 3L, 3L, 4L, 4L, 4L, 4L, 4L, 4L, 7L, 3L, 3L, 3L, 4L, $
                 4L, 4L, 3L, 3L, 3L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 7L]

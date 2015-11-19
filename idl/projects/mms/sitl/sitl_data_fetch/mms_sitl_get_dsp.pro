@@ -32,8 +32,8 @@
 ;
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-09-09 10:07:27 -0700 (Wed, 09 Sep 2015) $
-;  $LastChangedRevision: 18741 $
+;  $LastChangedDate: 2015-11-18 10:28:18 -0800 (Wed, 18 Nov 2015) $
+;  $LastChangedRevision: 19405 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_dsp.pro $
 
 pro mms_sitl_get_dsp, trange=trange, sc_id=sc_id, $
@@ -327,7 +327,7 @@ pro mms_sitl_get_dsp, trange=trange, sc_id=sc_id, $
             fles2 = mms_sort_filenames_by_date(fles2)
             cdfi = cdf_load_vars(fles2, var_type=var_type)
             cdf_info_to_tplot, cdfi, tplotnames=tplotnames
-            names = [names, tplotnames]
+            append_array, names, tplotnames
           endfor
         endfor
       endfor

@@ -59,8 +59,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-11-06 11:30:56 -0800 (Fri, 06 Nov 2015) $
-;$LastChangedRevision: 19283 $
+;$LastChangedDate: 2015-11-18 17:57:46 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19418 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -116,9 +116,9 @@ pro spd_slice2d_plot, slice, $
   if undefined(plotbulk) then plotbulk=1b
 
   if undefined(xstyle) then xstyle=0
-  if undefined(xprecision) then xprecision=3
+  if undefined(xprecision) then xprecision=4
   if undefined(ystyle) then ystyle=0
-  if undefined(yprecision) then yprecision=3
+  if undefined(yprecision) then yprecision=4
   if undefined(zstyle) then zstyle=0
   if undefined(zprecision) then zprecision=2
 

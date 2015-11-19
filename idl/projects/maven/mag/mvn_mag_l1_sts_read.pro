@@ -24,9 +24,9 @@
 ; HISTORY:
 ;
 ; VERSION:
-;   $LastChangedBy: davin-mac $
-;   $LastChangedDate: 2015-05-11 20:21:56 -0700 (Mon, 11 May 2015) $
-;   $LastChangedRevision: 17572 $
+;   $LastChangedBy: nikos $
+;   $LastChangedDate: 2015-11-18 14:02:09 -0800 (Wed, 18 Nov 2015) $
+;   $LastChangedRevision: 19410 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_l1_sts_read.pro $
 ;-
 
@@ -308,7 +308,7 @@ function mvn_mag_l1_sts_read, filename, header_info = header_info
     DATASTART:endobj_pos[index]+2L,$
     DELIMITER:byte(32),$
     MISSINGVALUE:!VALUES.F_NAN,$
-    COMMENTSYMBOL:'',$
+    COMMENTSYMBOL:';',$
     FIELDCOUNT:fieldcount,$
     FIELDTYPES:fieldtype,$
     FIELDNAMES:fieldnames,$

@@ -85,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-05 08:09:05 -0800 (Thu, 05 Nov 2015) $
-;$LastChangedRevision: 19265 $
+;$LastChangedDate: 2015-11-18 10:42:24 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19406 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -167,7 +167,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     endelse
 
     if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
-    if undefined(varformat) then varformat = '*'
+   ; if undefined(varformat) then varformat = '*'
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
       else tr = timerange()

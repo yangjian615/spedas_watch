@@ -16,9 +16,9 @@
 ;HISTORY:
 ; Copied shamelessly from thm_read_config by pcruce on 2012/04/18
 ; 
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2012-04-18 15:14:40 -0700 (Wed, 18 Apr 2012) $
-;$LastChangedRevision: 10350 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-11-18 14:03:31 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19411 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/TT2000/tt2000_read_config.pro $
 ;-
 
@@ -29,7 +29,7 @@ Function tt2000_config_template
          DATASTART:3l, $
          DELIMITER:61b, $
          MISSINGVALUE:anan[0], $
-         COMMENTSYMBOL:'', $
+         COMMENTSYMBOL:';', $
          FIELDCOUNT:2l, $
          FIELDTYPES:[7l, 7l], $
          FIELDNAMES:['FIELD1', 'FIELD2'], $

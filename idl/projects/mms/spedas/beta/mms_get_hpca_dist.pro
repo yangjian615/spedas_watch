@@ -24,8 +24,8 @@
 ;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-30 19:54:06 -0700 (Fri, 30 Oct 2015) $
-;$LastChangedRevision: 19203 $
+;$LastChangedDate: 2015-11-18 14:48:09 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19414 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_hpca_dist.pro $
 ;-
 
@@ -66,8 +66,8 @@ datatype = var_info[3]
 s = mms_get_hpca_info()
 
 ;get azimuth data from ancillary file
-;this will be used to set phi angles and as the timestamps of the final distributions
-get_data, 'mms'+probe+'_hpca_azimuth_angles_degrees', data=azimuth 
+;  -contains azimuth & temporal data
+get_data, 'mms'+probe+'_hpca_azimuth_angles_per_ev_degrees', data=azimuth
 
 ;find azimuth times with complete 1/2 spins of particle data
 ;this is used to determine the number of 3D distributions that will be created
@@ -81,8 +81,9 @@ if n_full eq 0 then begin
 endif
 idx = idx[full]
 
-;dimensions (energy-azimuth-elevation)
-dim = [dimen2(d.y), dimen2(azimuth.y), (dimen(d.y))[2]]
+;final dimensions for a single distribution (energy-azimuth-elevation)
+azimuth_dim = dimen(azimuth.y) ;time-energy-elevation-azimuth
+dim = azimuth_dim[ [1,4,3] ]   ;energy-azimuth-elevation
 base_arr = fltarr(dim)
 
 ;mass & charge of species
@@ -168,30 +169,18 @@ dt_sweep = d.x[1:*] - d.x[0:*]        ;delta-time for each full energy sweep
 dist.time = azimuth.x[full] - dt_sweep[idx[full]]
 dist.end_time = dist.time + dt[full]  ;index won't exceed elements due to selection criteria
 
-;shuffle and expand applicable azimuth data 
-;  -shift from from time-elevation-azimuth to azimuth-elevation-time
+;get azimuth 
+;  -shift from from time-energy-elevation-azimuth to energy-azimuth-elevation-time
 ;   (time must be last to be added to structure array)
-;  -expand to energy-azimuth-elevation-time
-;   (energy sweep offsets will be added later)
-phi = transpose(azimuth.y[full,*,*],[2,1,0])
-dist.phi = rebin( reform(phi,[1,dimen(phi)]), [dim,n_full] )
+dist.phi = transpose( azimuth.y[full,*,*,*], [1,3,2,0])
 
 ;get dphi
-;  -no vairation across elevation, probably very little across time
-;  -median is used to discard large differences across 0=360
-dphi = median( phi[1:*,0,*] - phi[0:dim[1]-2,0,*], dim=1 )
-dist.dphi = rebin( reform(dphi, [1,1,1,n_full]), [dim,n_full] )
-
-;add phi energy sweep offsets 
-;  -phi values are for the center of each sweep
-;  -this approximates the time between energy acquisitions as constant
-;   (it is actually somewhat irregular)
-n_steps = dim[0]+1  ;add one to account for flyback step at end of sweep  
-dphi_energy = dphi / n_steps  ;delta-phi per energy step (approx.)
-seed = findgen(n_steps) - (n_steps-1)/2.
-seed = seed[0:n_steps-2]  ;discard flyback step
-phi_offset = seed # dphi_energy
-dist.phi += rebin( reform(phi_offset, [dim[0],1,1,n_full]), [dim,n_full])
+;  -use median distance between subsequent phi measurments within each distribution
+;   (median is used to discard large differences across 0=360)
+;  -preserve dimensionality in case differences arise across energy or elevation
+dphi = median( azimuth.y[full,*,*,1:*] - azimuth.y[full,*,*,0:*], dim=4 ) ;get medain across phi
+dphi = rebin( dphi, [dimen(dphi),dim[1]] ) ;expand back to original dimensions
+dist.dphi = transpose( dphi, [1,3,2,0] ) ;shuffle dimensions
 
 ;copy particle data
 for i=0,  n_elements(dist)-1 do begin
@@ -202,7 +191,8 @@ for i=0,  n_elements(dist)-1 do begin
 endfor
 
 ;ensure phi values are in [0,360]
-dist.phi = (dist.phi + 360) mod 360
+;  -this may be unnecessary with new spinangle cdfs
+;dist.phi = (dist.phi + 360) mod 360
 
 ;spd_slice2d accepts pointers or structures
 ;pointers are more versatile & efficient, but less user friendly

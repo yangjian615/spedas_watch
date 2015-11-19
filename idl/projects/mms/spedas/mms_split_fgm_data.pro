@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-28 10:48:21 -0700 (Wed, 28 Oct 2015) $
-;$LastChangedRevision: 19175 $
+;$LastChangedDate: 2015-11-18 16:35:53 -0800 (Wed, 18 Nov 2015) $
+;$LastChangedRevision: 19417 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_split_fgm_data.pro $
 ;-
 pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate, instrument = instrument
@@ -20,7 +20,8 @@ pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level =
     coords = ['dmpa', 'gse']
 
     for c_idx = 0, n_elements(coords)-1 do begin
-        tplot_name = probe + '_'+instrument+'_'+data_rate_mod+'_'+coords[c_idx]+suffix
+        ; assumption here: tplot names loaded from FGM CDFs are in lower case
+        tplot_name = strlowcase(probe + '_'+instrument+'_'+data_rate_mod+'_'+coords[c_idx])+suffix
 
         get_data, tplot_name, data=fgm_data, dlimits=fgm_dlimits
 

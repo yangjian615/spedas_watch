@@ -63,8 +63,8 @@
 ; added eflux variable, 2015-08-21, jmm
 ; added orbit stat and end tags, 2015-08-24, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-11-16 16:05:24 -0800 (Mon, 16 Nov 2015) $
-; $LastChangedRevision: 19380 $
+; $LastChangedDate: 2015-11-17 19:52:53 -0800 (Tue, 17 Nov 2015) $
+; $LastChangedRevision: 19402 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2create.pro $
 ;-
 pro fa_esa_l2create,type=type, $
@@ -196,18 +196,25 @@ pro fa_esa_l2create,type=type, $
 ;Replace the 0.0 fills in energy, denergy and theta arrays with
 ;fillval = -1.0e-31, these will be points where dtheta and energy are
 ;zero
-  xxx = where(all_dat.dtheta Eq 0, nxxx)
-  If(nxxx Gt 0) Then Begin
-     all_dat.theta[xxx] = -1.0e+31
-     all_dat.dtheta[xxx] = -1.0e+31
-  Endif
+;IES:
+;mode 0 has 48 energies and 32 angles
+;mode 1 has 48 energies and 64 angles
+;mode 2 has 96 energies and 32 angles, but there may be no mode 2
+;IEB:
+;mode 0 has 48 energies and 32 angles
+;mode 1 has 48 energies and 64 angles, but there may be no mode 1
+;mode 2 has 96 energies and 32 angles
+;
+;Or something like that
+;Set to fill any point with energy = 0.0
   xxx = where(all_dat.energy Eq 0, nxxx)
   If(nxxx Gt 0) Then Begin
      all_dat.energy[xxx] = -1.0e+31
      all_dat.denergy[xxx] = -1.0e+31
+     all_dat.theta[xxx] = -1.0e+31
+     all_dat.dtheta[xxx] = -1.0e+31
   Endif
-
-  Return
+ Return
 
 end
 
