@@ -17,8 +17,8 @@
 ;  timebar, mvn_orbit_num( orbnum = indgen(300) )   ; plots a vertical line at periapsis for the first 300 orbits
 ;Author: Davin Larson  - October, 2014
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-11-06 11:43:09 -0800 (Fri, 06 Nov 2015) $
-; $LastChangedRevision: 19286 $
+; $LastChangedDate: 2015-11-19 00:45:57 -0800 (Thu, 19 Nov 2015) $
+; $LastChangedRevision: 19424 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_orbit_num.pro $
 ;-
 
@@ -32,13 +32,14 @@ function mvn_orbit_num_read,filename,count,verbose=verbose
 
   count=0
   if not keyword_set(filename) then return, dat
-  dprint,dlevel=2,verbose=verbose,'Reading file: '+filename
+  fi = file_info(filename)
+  dprint,dlevel=4,verbose=verbose,'Reading file: '+filename+'   ('+strtrim(fi.size,2)+' bytes)   Modified: '+time_string(fi.mtime)
   openr,lun,filename,/get_lun
   i=0L
   while ~eof(lun) do begin
     s=''
     readf,lun,s
-    dprint,dlevel=3,s
+    dprint,dlevel=5,s
     if i++ lt 2 then continue
     if strmatch(s,'*Unable*') then continue
     dat.num = long(strmid(s,0,5))
@@ -60,11 +61,12 @@ end
 
 
 
-function mvn_orbit_num,orbnum=orbnum,time=time,verbose=verbose
+function mvn_orbit_num,orbnum=orbnum,time=time,verbose=verbose,reload_time=reload
 
-common mvn_orbit_num_com2,alldat,time_cached,filenames
+common mvn_orbit_num_com,alldat,time_cached,filenames
 if ~keyword_set(time_cached) then time_cached=1d
-if (systime(1) - time_cached) gt 3600 then begin   ; generate no more than once per hour
+if ~keyword_set(reload) then reload = 3600    ; default to one hour
+if (systime(1) - time_cached) gt reload then begin   ; generate no more than once per hour
   if ~keyword_set(source) then source = spice_file_source(preserve_mtime=1,verbose=verbose,ignore_filesize=1,valid_only=1,last_version=0)
   dprint,dlevel=2,verbose=verbose,'Checking server: ' +source.remote_data_dir+' for new orbit files.'
   filenames = file_retrieve('MAVEN/kernels/spk/maven_orb_rec_??????_??????_v?.orb',_extra=source)
@@ -72,6 +74,8 @@ if (systime(1) - time_cached) gt 3600 then begin   ; generate no more than once 
   filenames = [filenames,file_retrieve('MAVEN/kernels/spk/maven_orb.orb',_extra=source)]              ; predicted orbits
   filenames = [filenames,file_retrieve('MAVEN/kernels/spk/maven_orb.orb.long',_extra=source)]         ; long term predicts
 ;  dprint,dlevel=2, n_elements(filenames) gt 1 ? transpose(filenames) : filenames
+  if debug(3,verbose) then dprint,dlevel=3,verbose=verbose, file_checksum(filenames,/add_mtime,verbose=0)
+  
   alldat = mvn_orbit_num_read('')
 
   last = 1
@@ -83,8 +87,6 @@ if (systime(1) - time_cached) gt 3600 then begin   ; generate no more than once 
   endfor
   time_cached = systime(1)
 endif
-
-;alldat = alldat[UNIQ(alldat.num, SORT(alldat.num))]  ; 
 
 if n_elements(time) ne 0   then return, interp(double(alldat.num),alldat.peri_time,time_double(time))
 if n_elements(orbnum) ne 0 then return, interp(alldat.peri_time,double(alldat.num),double(orbnum))

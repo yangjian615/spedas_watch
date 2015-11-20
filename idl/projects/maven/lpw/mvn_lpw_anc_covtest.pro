@@ -85,14 +85,16 @@ for zz = 0, nele_kernels-1 do cspice_spkcov, kernels_to_check[zz], obj, cover  ;
     
 niv = cspice_wncard( cover )  ;number of coverage intervals
 
-
+     ;Check if a time lies within interval: Make array here so that it's not overwritten in the for loop
+     result = fltarr(nele)
+   
      for j=0, niv-1 do begin
          
          
             print, "========================================"
             print, "SPK coverage for loaded kernels, object # ", object
         
-         cspice_wnfetd, cover, j, b, e   ;b, e are ET TDB time, start and endpoints of coverage
+            cspice_wnfetd, cover, j, b, e   ;b, e are ET TDB time, start and endpoints of coverage
             
             cspice_timout, [b,e], $ 
             "YYYY MON DD HR:MN:SC.###",  $     ;"YYYY MON DD HR:MN:SC.### (TDB) ::TDB",  $
@@ -103,15 +105,28 @@ niv = cspice_wncard( cover )  ;number of coverage intervals
             print, "Start (UTC)  : ", timstr[0]
             print, "Stop (UTC)   : ", timstr[1]
             print
-            
-            
-        ;Check if a time lies within interval:
-        result = fltarr(nele)
-            
-        for aa = 0, nele-1 do result[aa] = cspice_wnelmd(et_tdb_time[aa], cover)           
+                        
+            for aa = 0, nele-1 do result[aa] += cspice_wnelmd(et_tdb_time[aa], cover)    ;add +! if covered. Time may be covered in multiple kernels, so result[] can be greater than 1.       
      endfor  ;over j
-
+     
+     indsTMP = where(result ge 1., nindsTMP)
+     if nindsTMP gt 0. then result[indsTMP] = 1.  ;replace any numbers greater than 1 with 1.
+     
 return, result  ;1 if covered, 0 if outside of coverage
 
 ;stop
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+

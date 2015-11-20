@@ -35,7 +35,10 @@ pro rbsp_detrend,tnames,sec
               if is_struct(dat) then begin
                  
                                 ;Calculate sample rate	
-                 sr = 1/(dat.x[1]-dat.x[0])
+
+                 goo = rbsp_sample_rate(dat.x,out_med_avg=avg)
+                 sr = avg[0]
+
                  n_samples = sr*sec
                  num = n_elements(dat.x)/n_samples
                  

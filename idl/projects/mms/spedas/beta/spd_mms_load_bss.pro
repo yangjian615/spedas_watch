@@ -3,6 +3,12 @@
 ;
 ; PURPOSE: To display horizontal color bars indicating burst data availability
 ;
+; KEYWORDS: 
+; 
+;   trange:          time frame for bss
+;   datatype:        type of BSS data ['fast','burst','status','fom']. default includes all
+;   include_labels:  set this flag to have the horizontal bars labeled
+; 
 ; NOTES: 
 ;   "bss" stands for Burst Segment Status (a term used in the MMS-SDC2SITL-ICD document). 
 ;   By default, it produces the following tplot-variables.
@@ -23,7 +29,7 @@
 ;   4. mms_bss_fom (histogram) 
 ;      The height represents the FOM values (i.e., priority level defined by SITLs)
 ;
-;   See also "mms_load_bss_crib" for examples.
+;   See also "spd_load_bss_crib" and "mms_load_bss_crib" for examples.
 ;
 ;   5. To labels bss bars set the include_labels flag, /include_labels
 ;   
@@ -33,6 +39,7 @@
 ; $LastChangedDate: 2015-10-20 07:31:50 -0700 (Tue, 20 Oct 2015) $
 ; $LastChangedRevision: 19113 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_load_bss.pro $
+
 PRO spd_mms_load_bss, trange=trange, datatype=datatype, include_labels=include_labels
   compile_opt idl2
 

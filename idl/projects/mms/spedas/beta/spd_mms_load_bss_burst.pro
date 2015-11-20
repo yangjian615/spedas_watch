@@ -1,3 +1,15 @@
+; NAME: spd_mms_load_bss_burst
+;
+; PURPOSE: Displays horizontal color bars indicating burst data that has a status of
+;      'COMPLETE&FINISHED'.
+;
+; KEYWORDS:
+;  
+;   trange:          time frame for bss
+;   include_labels:  set this flag to have the horizontal bars labeled
+;
+;   See also "spd_mms_load_bss_crib" for examples and mms_load_bss.
+
 PRO spd_mms_load_bss_burst, trange=trange, include_labels=include_labels
   compile_opt idl2
   

@@ -74,13 +74,13 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; ASPOC
         ;-----------
-        pcode=1
+        pcode=10
         ip=where(perror eq pcode,cp)
         if(strmatch(paramlist[i],'*_asp1_*') and (cp eq 0))then begin
           mms_load_aspoc,datatype='asp1',level='sitl',probe=prb
           answer = 'Yes'
         endif
-        pcode=2
+        pcode=11
         ip=where(perror eq pcode,cp)
         if(strmatch(paramlist[i],'*_asp2_*') and (cp eq 0))then begin
           mms_load_aspoc,datatype='asp2',level='sitl',probe=prb
@@ -88,9 +88,110 @@ FUNCTION eva_data_load_mms, state
         endif
         
         ;-----------
-        ; EDI
+        ; EPD FEEPS
         ;-----------
-        pcode=3
+        pcode=21
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_feeps_*') and (cp eq 0)) then begin
+          mms_load_epd_feeps, sc=sc
+          answer = 'Yes'
+        endif
+        
+        ;-----------
+        ; EPD EIS
+        ;-----------
+        pcode=22
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_epd_eis_*') and (cp eq 0)) then begin
+          mms_load_epd_eis, sc=sc
+          tn=tnames(sc+'_epd_eis_electronenergy_electron_cps_t1',jmax)
+          if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
+            options,tn[0],ytitle='electrons',ylog=1,yrange=[0.8,1e+5]
+            answer = 'Yes'
+          endif
+        endif
+        
+        ;-----------
+        ; FIELDS/AFG
+        ;-----------
+        pcode=30
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_afg*') and (cp eq 0)) then begin
+          mms_sitl_get_afg, sc_id=sc
+          options,sc+'_afg_srvy_gsm_dmpa',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='GSM [nT]',$
+            colors=[2,4,6],labflag=-1,constant=0,cap=1
+          options,sc+'_afg_srvy_dmpa',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='DMPA [nT]',$
+            colors=[2,4,6],labflag=-1,constant=0,cap=1
+          answer = 'Yes'
+        endif
+
+        ;-----------
+        ; FIELDS/DFG
+        ;-----------
+        pcode=32
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_dfg*') and (cp eq 0)) then begin
+          mms_sitl_get_dfg, sc_id=sc
+          options,sc+'_dfg_srvy_gsm_dmpa',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='GSM [nT]',$
+            colors=[2,4,6],labflag=-1,constant=0, cap=1
+          options,sc+'_dfg_srvy_dmpa',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='DMPA [nT]',$
+            colors=[2,4,6],labflag=-1,constant=0, cap=1
+          answer = 'Yes'
+        endif
+        
+        ;-----------
+        ; FIELDS/DSP
+        ;-----------
+        pcode=40
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_dsp_lfb*') and (cp eq 0)) then begin
+          mms_sitl_get_dsp, sc=sc, datatype='bpsd'
+          tn=tnames(sc+'*dsp_lfb*',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            options,tn,zlog=1
+            ylim,tn,30,6000,1
+            answer = 'Yes'
+          endif
+        endif
+        
+        pcode=41
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_dsp_mfe*') and (cp eq 0)) then begin
+          mms_sitl_get_dsp, sc=sc, datatype='epsd'
+          tn=tnames(sc+'*dsp_mfe*',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            options,tn,zlog=1
+            ylim,tn,500,130000,1
+            answer = 'Yes'
+          endif
+        endif
+        
+        pcode=42
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_dsp_bpsd_*') and (cp eq 0)) then begin
+          mms_sitl_get_dsp, sc = sc, datatype = 'bpsd', level = 'l2', data_rate='fast'
+          tn = tnames(sc+'_dsp_bpsd_*',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt gt 1) then begin
+            options,sc+'_dsp_bpsd_omni', spec=1,zlog=1,ytitle=sc+'!CDSP!Cfast!Cbpsd_omni',ysubtitle='[Hz]',ztitle='[(nT)!U2!N/Hz]'
+            ylim, tn, 32, 4000, 1
+            for m=1,3 do begin
+              strm = strtrim(string(m),2)
+              options,sc+'_dsp_bpsd_scm'+strm,spec=1,zlog=1,ytitle=sc+'!CDSP!Cfast!Cbpsd_scm'+strm,$
+                ysubtitle='[Hz]',ztitle='[(nT)!U2!N/Hz]'
+              ylim, sc+'_dsp_bpsd_scm'+strm, 32, 4000, 1
+            endfor
+            answer = 'Yes'
+          endif
+        endif
+        
+        ;-------------
+        ; FIELDS EDI
+        ;-------------
+        pcode=35
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_edi_amb_*') and (cp eq 0)) then begin
           mms_sitl_get_edi_amb,sc=sc
@@ -104,63 +205,59 @@ FUNCTION eva_data_load_mms, state
           answer = 'Yes'
         endif
         
-        ;-----------
-        ; EDP
-        ;-----------
-        pcode=4
+        ;------------
+        ; FIELDS EDP
+        ;------------
+        pcode=36
         ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_edp_*') and (cp eq 0)) then begin
+        if (strmatch(paramlist[i],'*_edp_fast_dce_*') and (cp eq 0)) then begin
           mms_sitl_get_edp,sc=sc
-          options,sc+'_edp_fast_dce_dsl', $
-            labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
-            colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
-          tn = tnames(sc+'_edp_fast_dce_dsl',ct)
-          if ct eq 1 then begin
-            get_data,sc+'_edp_fast_dce_dsl',data=D,dl=dl,lim=lim
+          
+          tn = tnames(sc+'_edp_fast_dce_dsl',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt eq 1) then begin
+            options,tn,labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
+              colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
+          
+            get_data,tn,data=D,dl=dl,lim=lim
             str_element,/add,'lim','labels',['X','Y']
             str_element,/add,'lim','colors',[2,4]
             store_data,sc+'_edp_fast_dce_dsl_xy',data={x:D.x,y:D.y[*,0:1]},dl=dl,lim=lim
-          endif
-          mms_sitl_get_edp, sc=sc, data_rate = 'fast', level='l2', datatype='scpot'
-          tn = tnames(sc+'_edp_fast_scpot',ct)
-          if ct eq 1 then begin
-            get_data,sc+'_edp_fast_scpot',data=D,dl=dl,lim=lim
-            ynew = (-1)*alog10(D.y > 0)
-            store_data,sc+'_edp_fast_scpot',data={x:D.x,y:ynew},dl=dl,lim=lim
-            options,sc+'_edp_fast_scpot',ytitle=sc+'!CEDP!C-log(scpot)';,ysubtitle='[arbitrary]'
+            
           endif
           answer = 'Yes'
         endif
         
-        ;-----------
-        ; EIS
-        ;-----------
-        pcode=5
+        pcode=37
         ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_epd_eis_*') and (cp eq 0)) then begin
-          mms_load_epd_eis, sc=sc
-          tn=tnames(sc+'_epd_eis_electronenergy_electron_cps_t1',jmax)
-          if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
-            options,tn[0],ytitle='electrons',ylog=1,yrange=[0.8,1e+5]
-            answer = 'Yes'
+        if (strmatch(paramlist[i],'*_edp_fast_scpot') and (cp eq 0)) then begin
+          mms_sitl_get_edp, sc=sc, data_rate = 'fast', level='l2', datatype='scpot'
+          tn = tnames(sc+'_edp_fast_scpot',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt eq 1) then begin
+            get_data,tn,data=D,dl=dl,lim=lim
+            ynew = (-1)*alog10(D.y > 0)
+            store_data,tn,data={x:D.x,y:ynew},dl=dl,lim=lim
+            options,tn,ytitle=sc+'!CEDP!C-log(scpot)';,ysubtitle='[arbitrary]'
           endif
+          answer = 'Yes'
         endif
-          
-        ;-----------
-        ; FEEPS
-        ;-----------
-        pcode=6
+        
+        pcode=38
         ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_feeps_*') and (cp eq 0)) then begin
-          mms_load_epd_feeps, sc=sc
-          ;mms_load_feeps, probes=prb, datatype='electron'
+        if (strmatch(paramlist[i],'*_edp_srvy_*') and (cp eq 0)) then begin
+          mms_sitl_get_edp, sc = sc, datatype='hfesp', level = 'l1b', data_rate='srvy'
+          tn = tnames(sc+'_edp_srvy_EPSD_x',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt eq 1) then begin
+            options,tn,ytitle=sc+'!CEDP!Csrvy!Cepsd_x',ysubtitle='[Hz]',ztitle='[(V/m)!U2!N/Hz]'
+            options,tn,spec=1,zlog=1
+            ylim,tn,600,65536,1 
+          endif
           answer = 'Yes'
         endif
         
         ;-----------
         ; FPI
         ;-----------
-        pcode=7
+        pcode=50
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_fpi_*') and (cp eq 0)) then begin
           eva_data_load_mms_fpi, sc=sc
@@ -170,7 +267,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; HPCA
         ;-----------
-        pcode=8
+        pcode=60
         ip=where(perror eq pcode,cp)
         level = 'sitl'
         if (strmatch(paramlist[i],'*_hpca_*rf_corrected') and (cp eq 0)) then begin
@@ -178,25 +275,20 @@ FUNCTION eva_data_load_mms, state
           sa='He!U++!N'
           sp='He!U+!N'
           so='O!U+!N'
-          ;mms_sitl_get_hpca_basic, sc_id=sc, level=level
           mms_sitl_get_hpca, probes=prb, level=level, datatype='rf_corr'
-          
+
           options, sc+'_hpca_hplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sh,ysubtitle='[eV]',ztitle='eflux',/spec,/ylog,/zlog
           ylim,    sc+'_hpca_hplus_RF_corrected', 1, 40000
-          
           options, sc+'_hpca_heplusplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sa,ysubtitle='[eV]',ztitle='eflux',/spec,/ylog,/zlog
           ylim,    sc+'_hpca_heplusplus_RF_corrected', 1, 40000
-          
           options, sc+'_hpca_heplus_RF_corrected', ytitle=sc+'!CHPCA!C'+sp,ysubtitle='[eV]',ztitle='eflux',/spec,/ylog,/zlog
           ylim,    sc+'_hpca_heplus_RF_corrected', 1, 40000
-          
           options, sc+'_hpca_oplus_RF_corrected', ytitle=sc+'!CHPCA!C'+so,ysubtitle='[eV]',ztitle='eflux',/spec,/ylog,/zlog
           ylim,    sc+'_hpca_oplus_RF_corrected', 1, 40000
-          
           answer = 'Yes'
         endif
         
-        pcode=9
+        pcode=61
         ip=where(perror eq pcode,cp)
         level = 'sitl'
         if( (cp eq 0) and $
@@ -227,59 +319,9 @@ FUNCTION eva_data_load_mms, state
         endif
 
         ;-----------
-        ; FIELDS/AFG
-        ;-----------
-        pcode=10
-        ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_afg*') and (cp eq 0)) then begin
-          mms_sitl_get_afg, sc_id=sc
-          options,sc+'_afg_srvy_gsm_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='GSM [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0,cap=1
-          options,sc+'_afg_srvy_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='DMPA [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0,cap=1
-          answer = 'Yes'
-        endif
-  
-        ;-----------
-        ; FIELDS/DFG
-        ;-----------
-        pcode=11
-        ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_dfg*') and (cp eq 0)) then begin
-          mms_sitl_get_dfg, sc_id=sc
-          options,sc+'_dfg_srvy_gsm_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='GSM [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0, cap=1
-          options,sc+'_dfg_srvy_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='DMPA [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0, cap=1
-          answer = 'Yes'
-        endif
-        
-        ;-----------
-        ; FIELDS/DSP
-        ;-----------
-        pcode=12
-        ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_dsp_*') and (cp eq 0)) then begin
-          data_type = (strmatch(paramlist[i],'*b*')) ? 'bpsd' : 'epsd'
-          mms_sitl_get_dsp, sc=sc, datatype=datatype
-          tn=tnames(sc+'*dsp*',jmax)
-          if (strlen(tn[0]) gt 0) and (jmax gt 0) then begin
-            options,tn,ylog=1,zlog=1,yrange=[10,10000]
-            ylim,tn,30,6000
-            idx = where(strmatch(tn,'*_mfe_*'),ct)
-            if ct gt 0 then ylim,tn[idx],500,130000
-          endif
-          answer = 'Yes'
-        endif
-        
-        ;-----------
         ; AE Index
         ;-----------
-        pcode=13
+        pcode=80
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'thg_idx_ae') and (cp eq 0)) then begin
           thm_load_pseudoAE,datatype='ae'
@@ -293,7 +335,7 @@ FUNCTION eva_data_load_mms, state
         ;-----------
         ; ExB
         ;-----------
-        pcode=14
+        pcode=81
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_exb_*') and (cp eq 0)) then begin
           eva_data_load_mms_exb,sc=sc,vthres=500.

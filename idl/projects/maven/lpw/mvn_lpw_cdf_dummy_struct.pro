@@ -401,8 +401,8 @@ Function mvn_lpw_cdf_dummy_struct, var
     date = strmid(dl.time_start[1], 0, 8)
     lfid = strtrim(glattr.Source_name,2)+'_'+strtrim(glattr.data_type,2)+'_'+strtrim(glattr.Descriptor,2)+'_'+strtrim(date,2)+'_'+strtrim(glattr.data_version,2)
     ls = strtrim(glattr.Source_name,2)+'_'+strtrim(glattr.data_type,2)+'_'+strtrim(glattr.Descriptor,2)
-    level = 'Calibrated L2'  ;temp fix, put in case statement for L1a, L1b, L2 etc
-    lsd = 'MAVEN Langmuir Probe and Waves data at level: '+level
+    ;level = 'Calibrated L2'  ;temp fix, put in case statement for L1a, L1b, L2 etc
+    lsd = 'MAVEN Langmuir Probe and Waves data'
 
     glattr.logical_file_id = lfid
     glattr.logical_source = ls

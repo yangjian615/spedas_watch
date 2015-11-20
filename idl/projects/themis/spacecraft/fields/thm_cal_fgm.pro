@@ -77,9 +77,9 @@
 ;Notes: under construction!!
 ;
 ;Written by Hannes Schwarzl.
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-11-10 17:15:43 -0800 (Tue, 10 Nov 2015) $
-; $LastChangedRevision: 19334 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2015-11-19 10:01:41 -0800 (Thu, 19 Nov 2015) $
+; $LastChangedRevision: 19428 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -346,20 +346,20 @@ calstr = calstr[ok_cal]
 spinperi=dblarr(ncal)
 offi=dblarr(ncal,3)
 cali=dblarr(ncal,9)
-spinperii=dblarr(1)
-offii=dblarr(3)
-calii=dblarr(9)
 utci='2006-01-01T00:00:00.000Z'
 utc=dblarr(ncal)
 utcStr=strarr(ncal)
 
 for i=0,ncal-1 DO BEGIN
-    calstri=calstr[i]
-    utci=strmid(calstr[i],0,25)     ;eg 6/3/2007
-    reads,strmid(calstr[i],26),offii,calii,spinperii;,format="(a25,3f5,9f9,f9)"     ;eg 6/3/2007
-    offi[i,*]=offii
-    cali[i,*]=calii
-    spinperi[i]=spinperii
+    split_result = strsplit(calstr[i], COUNT=lct, /EXTRACT) 
+    if lct ne 14 then begin
+      dprint, dlevel=1, 'Error in FGM cal file. Line: ' + i + ", File: " + pathfile
+      continue
+    endif
+    utci=split_result[0]
+    offi[i,*]=split_result[1:3]
+    cali[i,*]=split_result[4:12]
+    spinperi[i]=split_result[13]
     utcStr[i]=utci
     ;translate time information
     STRPUT, utci, '/', 10

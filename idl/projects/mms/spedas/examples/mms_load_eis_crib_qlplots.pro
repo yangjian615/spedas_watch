@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-11-12 14:30:48 -0800 (Thu, 12 Nov 2015) $
-; $LastChangedRevision: 19355 $
+; $LastChangedDate: 2015-11-19 09:59:42 -0800 (Thu, 19 Nov 2015) $
+; $LastChangedRevision: 19426 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -23,10 +23,8 @@ prefix = 'mms'+probe+'_epd_eis'
 ;   png: png files
 ;   win: creates/opens all of the tplot windows
 
-;send_plots_to = 'win'
-;plot_directory = ''
-send_plots_to = 'ps'
-plot_directory = 'C:/Users/clrussell/Desktop/'
+send_plots_to = 'win'
+plot_directory = ''
 
 postscript = send_plots_to eq 'ps' ? 1 : 0
 

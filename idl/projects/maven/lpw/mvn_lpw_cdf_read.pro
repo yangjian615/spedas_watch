@@ -27,7 +27,7 @@
 ;         mrgexb         - Pointing flux
 ;         mrgscpot       - Vsc (spacecraft potential)
 ;         euv            - EUV data              *** NOTE that due to directory formats EUV must be loaded in a separate call; it cannot be loaded with other LPW variables. See examples below.
-;         e12            - 1D electric field
+;         we12           - 1D electric field
 ; 
 ; - level: level of data to load, entered as a string, or string array for multiple levels. Entries can be uppder or lower case. The default (if not set) is just L2. There are four options:
 ;   l1a, l1b, l2, l3 (euv only). 
@@ -91,7 +91,7 @@ ENDIF ELSE BEGIN
 ENDELSE
 
 ;Check vars, levels. Make lower case, as all file names will be lower case.
-varsALL=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'e12', 'euv']
+varsALL=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'we12', 'euv']
 if keyword_set(vars) then vars = strlowcase(vars) else vars=varsALL  ;default ;make everything lower case
 if keyword_set(level) then levels = strlowcase(level) else levels = ['l2']   ;NOTE input is level, but code itself converts this to levels.
 euvcall = 0.
@@ -116,7 +116,7 @@ if n_elements(notValid) gt 1 then begin
     print,""
     print, "The following are acceptable inputs: ", varsALL
     print, "Please correct and re-run. Returning."
-    return
+    retall
 endif
 
 
