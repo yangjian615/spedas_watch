@@ -80,7 +80,7 @@ function spp_swp_spane_slow_hkp_decom,ccsds , ptp_header=ptp_header, apdat=apdat
   psize = 101 ; REV 29
   psize = 97  ;  REV 27
   psize = 105  ; REV ??
-  psize = 113
+  psize = 113  ; REV ???????
   if n_elements(b) ne psize+7 then begin
     dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
     return,0
@@ -179,18 +179,14 @@ end
 
 
 
-
-
-
-function spp_swp_spane_prod1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+function spp_swp_spane_p1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   data = ccsds.data[20:*]
-  
-  lll = 512
+  ;lll = 512
+  lll = 512*4
   if n_elements(data) ne lll then begin
     dprint,'Improper packet size',dlevel=2
     dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
-
     return,0
   endif
   ns = lll/4
@@ -199,6 +195,7 @@ function spp_swp_spane_prod1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   cnts1 = total(cnts,1)
   cnts2 = total(cnts,2)
   tot = total(cnts)   
+
   if 0 then begin    
     hexprint,data
     savetomain,data
@@ -209,8 +206,8 @@ function spp_swp_spane_prod1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     time:ccsds.time, $
     seq_cntr:ccsds.seq_cntr,  $
     seq_group: ccsds.seq_group,  $
-    total :tot, $
-    ndat  : n_elements(cnts), $
+    total:tot, $
+    ndat: n_elements(cnts), $
     cnts: float(cnts[*]), $ 
     cnts1: float(cnts1), $
     cnts2: float(cnts2), $
@@ -224,13 +221,228 @@ end
 
 
 
+function spp_swp_spane_p2_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+
+  data = ccsds.data[20:*]
+  ;lll = 512
+  lll = 512*4
+  if n_elements(data) ne lll then begin
+    dprint,'Improper packet size',dlevel=2
+    dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+    return,0
+  endif
+  ns = lll/4
+  cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+  cnts = reform(cnts,16,ns/16)
+  cnts1 = total(cnts,1)
+  cnts2 = total(cnts,2)
+  tot = total(cnts)   
+
+  if 0 then begin    
+    hexprint,data
+    savetomain,data
+    savetomain,cnts
+  endif
+
+  str = { $
+    time:ccsds.time, $
+    seq_cntr:ccsds.seq_cntr,  $
+    seq_group: ccsds.seq_group,  $
+    total:tot, $
+    ndat: n_elements(cnts), $
+    cnts: float(cnts[*]), $ 
+    cnts1: float(cnts1), $
+    cnts2: float(cnts2), $
+
+    cnts_a0:  float(reform(cnts[ 0,*])), $ 
+    cnts_a1:  float(reform(cnts[ 1,*])), $ 
+    cnts_a2:  float(reform(cnts[ 2,*])), $ 
+    cnts_a3:  float(reform(cnts[ 3,*])), $ 
+    cnts_a4:  float(reform(cnts[ 4,*])), $ 
+    cnts_a5:  float(reform(cnts[ 5,*])), $ 
+    cnts_a6:  float(reform(cnts[ 6,*])), $ 
+    cnts_a7:  float(reform(cnts[ 7,*])), $ 
+    cnts_a8:  float(reform(cnts[ 8,*])), $ 
+    cnts_a9:  float(reform(cnts[ 9,*])), $ 
+    cnts_a10: float(reform(cnts[10,*])), $ 
+    cnts_a11: float(reform(cnts[11,*])), $ 
+    cnts_a12: float(reform(cnts[12,*])), $ 
+    cnts_a13: float(reform(cnts[13,*])), $ 
+    cnts_a14: float(reform(cnts[14,*])), $ 
+    cnts_a15: float(reform(cnts[15,*])), $ 
+
+    gap: 0 }
+    
+    if (ccsds.seq_cntr and 1) ne 0 then return,0
+
+  return, str
+end
+
+
+function spp_swp_spane_p3_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+
+  data = ccsds.data[20:*]
+  ;lll = 512
+  lll = 512*4
+  if n_elements(data) ne lll then begin
+    dprint,'Improper packet size',dlevel=2
+    dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+    return,0
+  endif
+  ns = lll/4
+  cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+  cnts = reform(cnts,16,ns/16)
+  cnts1 = total(cnts,1)
+  cnts2 = total(cnts,2)
+  tot = total(cnts)   
+
+  if 0 then begin    
+    hexprint,data
+    savetomain,data
+    savetomain,cnts
+  endif
+
+  str = { $
+    time:ccsds.time, $
+    seq_cntr:ccsds.seq_cntr,  $
+    seq_group: ccsds.seq_group,  $
+    total:tot, $
+    ndat: n_elements(cnts), $
+    cnts: float(cnts[*]), $ 
+    cnts1: float(cnts1), $
+    cnts2: float(cnts2), $
+    gap: 0 }
+    
+    if (ccsds.seq_cntr and 1) ne 0 then return,0
+
+  return, str
+end
+
+
+function spp_swp_spane_p4_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+
+  data = ccsds.data[20:*]
+  ;lll = 512
+  lll = 512*4
+  if n_elements(data) ne lll then begin
+    dprint,'Improper packet size',dlevel=2
+    dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+    return,0
+  endif
+  ns = lll/4
+  cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+  cnts = reform(cnts,16,ns/16)
+  cnts1 = total(cnts,1)
+  cnts2 = total(cnts,2)
+  tot = total(cnts)   
+
+  if 0 then begin    
+    hexprint,data
+    savetomain,data
+    savetomain,cnts
+  endif
+
+  str = { $
+    time:ccsds.time, $
+    seq_cntr:ccsds.seq_cntr,  $
+    seq_group: ccsds.seq_group,  $
+    total:tot, $
+    ndat: n_elements(cnts), $
+    cnts: float(cnts[*]), $ 
+    cnts1: float(cnts1), $
+    cnts2: float(cnts2), $
+
+    cnts_a0:  float(reform(cnts[ 0,*])), $ 
+    cnts_a1:  float(reform(cnts[ 1,*])), $ 
+    cnts_a2:  float(reform(cnts[ 2,*])), $ 
+    cnts_a3:  float(reform(cnts[ 3,*])), $ 
+    cnts_a4:  float(reform(cnts[ 4,*])), $ 
+    cnts_a5:  float(reform(cnts[ 5,*])), $ 
+    cnts_a6:  float(reform(cnts[ 6,*])), $ 
+    cnts_a7:  float(reform(cnts[ 7,*])), $ 
+    cnts_a8:  float(reform(cnts[ 8,*])), $ 
+    cnts_a9:  float(reform(cnts[ 9,*])), $ 
+    cnts_a10: float(reform(cnts[10,*])), $ 
+    cnts_a11: float(reform(cnts[11,*])), $ 
+    cnts_a12: float(reform(cnts[12,*])), $ 
+    cnts_a13: float(reform(cnts[13,*])), $ 
+    cnts_a14: float(reform(cnts[14,*])), $ 
+    cnts_a15: float(reform(cnts[15,*])), $ 
+
+    gap: 0 }
+    
+    if (ccsds.seq_cntr and 1) ne 0 then return,0
+
+  return, str
+end
+
+
+
+
+pro spp_product_init
+
+  ;;--------------------------
+  ;; FS Product 0
+  options,'spp_spane_p1_CNTS',    spec=1,yrange=[0,16],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+
+  ;;--------------------------
+  ;; FS Product 1
+  options,'spp_spane_p2_CNTS_A0', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A1', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A2', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A3', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A4', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A5', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A6', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A7', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A8', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A9', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A10',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A11',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A12',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A13',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A14',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A15',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+
+  ;;--------------------------
+  ;; TS Product 0
+  options,'spp_spane_p3_CNTS',    spec=1,yrange=[0,16],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+
+  ;;--------------------------
+  ;; TS Product 1
+  options,'spp_spane_p4_CNTS_A0', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A1', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A2', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A3', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A4', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A5', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A6', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A7', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A8', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A9', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A10',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A11',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A12',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A13',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A14',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A15',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+
+
+end
+
+
+
+
+
+
+
 
 pro spp_init
  recorder,recorder_base,title='GSEOS MAG',port=2023,host='abiad-sw',exec_proc='spp_msg_stream_read',destination='spp_raw_YYYYMMDD_hhmmss.msg';,/set_proc,/set_connect,get_filename=filename
  exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
 
 if 0 then begin
-  tplot,'*MON*
+  tplot,'*MON*'
   tplot,'*RIO*',/add
   options,iton(),colors='r'
   tplot,'*CNTS',/add  
@@ -257,10 +469,6 @@ pro misc
    s=hkp.dataptr
    def = (*s).acc_dac * sign((*s).adc_vmon_def1 - (*s).adc_vmon_def2)
    store_data,'def',(*s).time,def
-   
-   
-   
-
 end
 
 
@@ -272,10 +480,19 @@ pro spp_swp_spane_init,save=save
   if n_elements(save) eq 0 then save=1
   rt_flag = 1
 
-
-  spp_apid_data,'360'x ,routine='spp_swp_spane_prod1_decom',tname='spp_spane_spec_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-  spp_apid_data,'361'x ,routine='spp_swp_spane_prod1_decom',tname='spp_spane_spec2_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  ;;-----------------------------------------------------------------------------------------------------------------------------
+  ;; Product Decommutators
+  spp_apid_data,'360'x ,routine='spp_swp_spane_p1_decom',tname='spp_spane_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  spp_apid_data,'361'x ,routine='spp_swp_spane_p2_decom',tname='spp_spane_p2_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  spp_apid_data,'362'x ,routine='spp_swp_spane_p3_decom',tname='spp_spane_p3_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  spp_apid_data,'363'x ,routine='spp_swp_spane_p4_decom',tname='spp_spane_p4_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  
+  ;;-----------------------------------------------------------------------------------------------------------------------------
+  ;; Memory Dump
   spp_apid_data,'36d'x ,routine='spp_generic_decom',tname='spp_spane_dump_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  
+  ;;-----------------------------------------------------------------------------------------------------------------------------
+  ;; Slow Housekeeping
   spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_decom',tname='spp_spane_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
 
   spp_apid_data,apdata=ap

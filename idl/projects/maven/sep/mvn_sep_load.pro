@@ -86,6 +86,19 @@ if keyword_set(ancillary) then begin
         options, 'Mars_in_FOV', 'colors', [1, 2, 4, 6]
         options, 'Mars_in_FOV', 'labels',['1F','1R','2F','2R']
         options, 'Mars_in_FOV', 'labflag', 1
+        options, 'Mars_in_FOV', 'ytitle', 'Fraction !c FOV Mars'
+        store_data, 'Nadir_angles', Data = ['sep-1f_fov_nadir_angle', $             
+                                            'sep-1r_fov_nadir_angle', $    
+                                            'sep-2f_fov_nadir_angle', $             
+                                            'sep-2r_fov_nadir_angle']
+        options, 'Nadir_angles', 'colors', [1, 2, 4, 6]
+        options, 'Nadir_angles', 'ytitle', 'Angle from !c nadir'
+        options, 'Nadir_angles', 'labels',['1F','1R','2F','2R']
+        options, 'Nadir_angles', 'labflag', 1
+        ylim, 'Nadir_angles', 0.0, 180.0
+        options, 'Nadir_angles','yticks', 4
+        options, 'Nadir_angles', 'yminor', 3
+        options, ' Nadir_angles', 'ystyle',1        
      endif
 
 

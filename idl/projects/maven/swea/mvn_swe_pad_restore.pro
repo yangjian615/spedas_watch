@@ -21,9 +21,9 @@
 ;
 ;       UNNORM:        Unnormalize the color code.   
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-17 14:36:21 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19399 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2015-11-20 14:18:33 -0800 (Fri, 20 Nov 2015) $
+; $LastChangedRevision: 19445 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_restore.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -146,7 +146,7 @@ pro mvn_swe_pad_restore, trange, orbit=orbit, loadonly=loadonly, unnorm=unnorm
   endif
 
 ; Store the result back into tplot
-
+  str_element, dl, 'nfactor', reform(nf[*, 0]), /add_replace ; Reinserting the truncated normalization factor.
   if (docat or dotrim) then begin
     print,"Saving merged/trimmed tplot variable: ", tname
     store_data,tname,data={x:x, x_ind:[npts], $

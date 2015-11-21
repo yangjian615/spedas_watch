@@ -883,7 +883,8 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   if keyword_set(time) then dt = utime-time  else dt = 0
 ;  dprint,dlevel=4,time_string(utime,prec=3),ptp_size,sc_id,days,ms,us,source,path,dt,format='(a,i6," x",Z04,i6,i9,i6," x",Z02," x",Z04,f10.2)'
   if ptp_size le 17 then begin
-    dprint,'PTP size error - not enough bytes: '+strtrim(ptp_size,2)+ ' '+time_string(utime)
+    dprint,dlevel=3,'PTP size error - not enough bytes: '+strtrim(ptp_size,2)+ ' '+time_string(utime)
+    if debug(3) then hexprint,buffer
     return
   endif
   ptp_header ={ ptp_time:utime, ptp_scid: sc_id, ptp_source:source, ptp_spare:spare, ptp_path:path, ptp_size:ptp_size }

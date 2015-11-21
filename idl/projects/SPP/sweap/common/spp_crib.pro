@@ -221,7 +221,8 @@ exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
 
 host = 'ABIAD-SW'
 ;host = 'localhost'
-;host = '128.32.98.101'
+;host = '128.32.98.101'  ;  room 160 Silver
+;host = '128.32.13.37'   ;  room 133 addition
 recorder,recorder_base,title='GSEOS PTP',port=2024,host=host,exec_proc='spp_ptp_stream_read',destination='spp_raw_YYYYMMDD_hhmmss.ptp';,/set_proc,/set_connect,get_filename=filename
 printdat,recorder_base,filename,exec_base,/value
 

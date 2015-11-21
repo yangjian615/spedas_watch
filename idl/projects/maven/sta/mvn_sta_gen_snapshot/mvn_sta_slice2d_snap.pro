@@ -44,6 +44,8 @@
 ;
 ;      APID:      If set, specifies the APID data product to use.
 ;
+;    SC_POT:      Specifies the spacecraft potential.
+;
 ;USAGE EXAMPLES:
 ;         1.      ; Normal case
 ;                 ; Uses archive data, and shows the B field direction.
@@ -73,14 +75,14 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-08-20 16:43:03 -0700 (Thu, 20 Aug 2015) $
-; $LastChangedRevision: 18552 $
+; $LastChangedDate: 2015-11-20 12:17:33 -0800 (Fri, 20 Nov 2015) $
+; $LastChangedRevision: 19443 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
 PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _extra=_extra, $
                           bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id,    $
-                          verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst
+                          verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, sc_pot=sc_pot
   
   tplot_options, get_option=topt
   dsize = GET_SCREEN_SIZE()
@@ -181,7 +183,11 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         str_element, d, 'bins', REBIN(TRANSPOSE(d.bins), d.nenergy, d.nbins), /add_replace
         str_element, d, 'bins_sc', REBIN(TRANSPOSE(d.bins_sc), d.nenergy, d.nbins), /add_replace
 
-        wset, wnum
+        IF keyword_set(sc_pot) THEN d.sc_pot = sc_pot
+        d = convert_vframe(d, [0., 0., 0.]) ; Spacecraft potential correcting
+
+        wstat = EXECUTE("wset, wnum")
+        IF wstat EQ 0 THEN wi, wnum, wsize=[dsize[0]/2., dsize[1]*2./3.] ELSE undefine, wstat
         status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir")
         IF status EQ 1 THEN $
            XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal
