@@ -43,6 +43,7 @@
 ;success: a float, set this to a variable to return upon exiting.
 ;         +1: routine successfully loaded requested variables. Note that currenty mrgexb is not available, and euv must be called separately from other LPW variables and will not be loaded 
 ;             if other LPW variables are requested.
+;          0: no data were found
 ;         -1: one or more input variables were not recognized. Check terminal output for which ones.
 ;         -2: no timespan has been set. Set using timespan routine, or the trange keyword here.
 ;         -3: trange was not entered as a string or float.
@@ -300,6 +301,13 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
     ;x,y,dy,flag,dv:    2.  Sometimes dy and dv hold upper and lower limits separately
     ;x,y,dy,flag,dv,v:  3.  This is spectrogram data.
     scode = 0.  ;default code
+    
+    if (size(xTMP,/type) eq 0) then begin
+      print,"### WARNING ### : ", proname, " - No data found!"
+      tplotvars = ''
+      success = 0.
+      return
+    endif
     
     if (size(xTMP,/type) ne 0.) and (size(yTMP,/type) ne 0.) and (size(dyTMP,/type) ne 0.) and (size(flagTMP,/type) ne 0.) and (size(vTMP,/type) eq 0.) and (size(dvTMP,/type) eq 0.) then scode = 1.
     if (size(xTMP,/type) ne 0.) and (size(yTMP,/type) ne 0.) and (size(dyTMP,/type) ne 0.) and (size(flagTMP,/type) ne 0.) and (size(vTMP,/type) eq 0.) and (size(dvTMP,/type) ne 0.) then scode = 2.
