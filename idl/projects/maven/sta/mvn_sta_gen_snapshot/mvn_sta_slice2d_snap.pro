@@ -75,8 +75,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-11-20 12:17:33 -0800 (Fri, 20 Nov 2015) $
-; $LastChangedRevision: 19443 $
+; $LastChangedDate: 2015-11-23 12:48:40 -0800 (Mon, 23 Nov 2015) $
+; $LastChangedRevision: 19454 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
@@ -183,12 +183,18 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         str_element, d, 'bins', REBIN(TRANSPOSE(d.bins), d.nenergy, d.nbins), /add_replace
         str_element, d, 'bins_sc', REBIN(TRANSPOSE(d.bins_sc), d.nenergy, d.nbins), /add_replace
 
-        IF keyword_set(sc_pot) THEN d.sc_pot = sc_pot
-        d = convert_vframe(d, [0., 0., 0.]) ; Spacecraft potential correcting
+        IF keyword_set(sc_pot) THEN BEGIN
+           d.sc_pot = sc_pot
+           vel = v_4d(d)
+           d.sc_pot *= -1.                     ; Reversing a sign to execute 'convert_vframe'.
+           d = convert_vframe(d, [0., 0., 0.]) ; Spacecraft potential correcting
+           badbin = WHERE(~FINITE(d.energy), nbad)
+           IF nbad GT 0 THEN d.bins[badbin] = 0
+        ENDIF 
 
         wstat = EXECUTE("wset, wnum")
         IF wstat EQ 0 THEN wi, wnum, wsize=[dsize[0]/2., dsize[1]*2./3.] ELSE undefine, wstat
-        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir")
+        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel")
         IF status EQ 1 THEN $
            XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal
         undefine, status

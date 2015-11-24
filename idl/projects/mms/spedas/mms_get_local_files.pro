@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-18 16:33:53 -0800 (Wed, 18 Nov 2015) $
-;$LastChangedRevision: 19416 $
+;$LastChangedDate: 2015-11-23 14:42:30 -0800 (Mon, 23 Nov 2015) $
+;$LastChangedRevision: 19459 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_get_local_files.pro $
 ;-
 
@@ -103,9 +103,9 @@ search_pattern =  escape_string(dir_pattern  + file_pattern, list='\')
 ;all_files = file_search(!mms.local_data_dir,'*.cdf')
 ; Updated with performance enhancement from Naritoshi Kitamura, 11/17/2015, 
 ;     to be more specific on which directory to look into. This can significantly speed up searching for local files
-instr_data_dir = !mms.local_data_dir+strlowcase(probe+'\'+instrument+'\'+data_rate+'\'+level+'\')
+instr_data_dir = filepath('', ROOT_DIR=!mms.local_data_dir, $
+                              SUBDIRECTORY=[probe, instrument, data_rate, level])
 all_files = file_search(instr_data_dir,'*.cdf')
-
 
 ;perform search
 idx = where( stregex( all_files, search_pattern, /bool, /fold_case), n_files)
@@ -161,11 +161,16 @@ file_strings = file_strings[*,time_idx]
 ;get file versions
 versions = (stregex(files, '_([^_]+)\.cdf', /subexpr, /extract, /fold_case))[1,*]
 
+; Solution to duplicate files
+;   - Loop over unique file times, not all file times.
+iuniq        = uniq(file_strings[2,*], sort(file_strings[2,*]))
+uniq_strings = file_strings[*,iuniq]
+
 ;loop over file names to find files with multiple versions 
-for i=0, n_elements(files)-1 do begin
+for i=0, n_elements(iuniq)-1 do begin
   
   ;find files with identical names (excluding version)
-  vidx = where(file_strings[0,i] eq file_strings[0,*], n_versions)
+  vidx = where(uniq_strings[0,i] eq file_strings[0,*], n_versions)
   
   ;sort results by ascending version and use last in list
   highest_version = (  (files[vidx])[sort(versions[vidx])]  )[n_versions-1]

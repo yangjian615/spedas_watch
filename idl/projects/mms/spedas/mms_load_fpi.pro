@@ -46,11 +46,15 @@
 ;     MMS>  mms_load_fpi, probes = '3', level='sitl', data_rate='fast', datatype='*'
 ;
 ; NOTES:
-;     Please see the notes in mms_load_data for more information 
+;     Please see the notes at:
+;     
+;        https://lasp.colorado.edu/galaxy/display/mms/FPI+Release+Notes
+;        
+;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-30 18:10:49 -0700 (Fri, 30 Oct 2015) $
-;$LastChangedRevision: 19200 $
+;$LastChangedDate: 2015-11-23 09:19:12 -0800 (Mon, 23 Nov 2015) $
+;$LastChangedRevision: 19450 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi.pro $
 ;-
 

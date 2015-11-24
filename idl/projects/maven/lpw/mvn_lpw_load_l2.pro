@@ -100,6 +100,7 @@ pro mvn_lpw_load_l2, vars, trange=trange, noTPLOT=noTPLOT, success=success, tplo
 proname = 'mvn_lpw_load_l2'
 if size(trange,/type) ne 0. then trange2=trange  ;copy trange, as will convert it to a dbl. Don't want to edit the input as the output will change as it's a keyword.
 if size(vars,/type) eq 0. then vars=['lpnt', 'wspecact', 'wspecpas']  ;default variables if non set.
+NaN = !values.f_nan ; for convenience
 
 ;Acceptable vars:
 varsALL=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'we12', 'euv']
@@ -267,33 +268,116 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
     ;=====
     ;LOOP:
     ;=====
+    first = 1
+    x = NaN
+    y = NaN
+    dy = NaN
+    flag = NaN
+    v = NaN
+    dv = NaN
+
     for tt = 0., neleD-1. do begin   ;go over requested dates
         dateTMP = dates[tt]  ;current date to load.
                         
         mvn_lpw_cdf_read, dateTMP, vars=varTMP, level='l2'  ;this routine will check if varTMP is applicable. If incorrect terms are entered this routine will retall. I could probably make this ignore incorrect terms, I'll edit at a later date, maybe...
         
-        get_data, tvar, data=data1, dlimit=dl1, limit=ll1
+        get_data, tvar, data=data1, dlimit=dl1, limit=ll1, index=i
 
-        if tt eq 0. then begin  ;first time around, save the data into tmp arrays
-              if (tag_exist(data1,'x') eq 1) then xTMP = data1.x
-              if (tag_exist(data1,'y') eq 1) then yTMP = data1.y
-              if (tag_exist(data1,'dy') eq 1) then dyTMP = data1.dy
-              if (tag_exist(data1,'flag') eq 1) then flagTMP = data1.flag
-              if (tag_exist(data1,'v') eq 1) then vTMP = data1.v
-              if (tag_exist(data1,'dv') eq 1) then dvTMP = data1.dv
-        endif else begin 
-              ;Second time through and up, append data to tmp arrays. Check which fields are present
-              ;Fields that should always be present are .x, .y, .dy, .flag. Fields that may be present are .v, .dv. Size if y, v, dy and dv can be 1D or 2D arrays - must check. 
-              ;NOTE: here, I check data1 for each field. If it is present, I assume that that field already has a tmp array. This should always be true, unless a CDF file is bust and does not have all data in it.
-                            
-              if (tag_exist(data1,'x') eq 1) then xTMP = [xTMP, data1.x]  ;top four should always be present, but put in tag check just to be safe
-              if (tag_exist(data1,'y') eq 1) then yTMP = [yTMP, data1.y]
-              if (tag_exist(data1,'dy') eq 1) then dyTMP = [dyTMP, data1.dy]
-              if (tag_exist(data1,'flag') eq 1) then flagTMP = [flagTMP, data1.flag]              
-              if (tag_exist(data1,'v') eq 1) then vTMP = [vTMP, vTMP]   ;bottom two may not be present depending on variable.
-              if (tag_exist(data1,'dv') eq 1) then dvTMP = [dvTMP, dvTMP]                          
-        endelse  ;tt ne 0.             
+        if (i gt 0) then begin
+          if (first) then begin
+            ;First time around, initialize output arrays.  If any parts of the structure are
+            ;missing, then create filler values to maintain correct dimensions.  Array
+            ;concatenation works for 1D and 2D data arrays.  The second dimension must be
+            ;the same for all data files -- otherwise, concatentation does not make sense.
+
+            str_element, data1, 'x', x, success=ok
+            if (ok) then begin
+              Nx = n_elements(x)
+
+              str_element, data1, 'y', y, success=ok  ; where there's a X, there's a Y
+              ydims = size(y)
+              if (ydims[0] eq 2) then Ny = ydims[2] else Ny = 1L  ; 1D or 2D data
+
+              str_element, data1, 'dy', dy, success=ok
+              if (not ok) then dy = replicate(NaN, Nx, Ny)  ; filler values
+
+              str_element, data1, 'flag', flag, success=ok
+              if (not ok) then flag = replicate(NaN, Nx)    ; filler values
+
+              str_element, data1, 'v', v, success=ok
+              if (not ok) then v = replicate(NaN, Nx, Ny)   ; filler values
+
+              str_element, data1, 'dv', dv, success=ok
+              if (not ok) then dv = replicate(NaN, Nx, Ny)  ; filler values
+
+              first = 0
+            endif
+          endif else begin 
+            ;Second time through and up, append data to tmp arrays. Check which fields are present
+            ;Fields that should always be present are .x, .y, .dy, .flag. Fields that may be present
+            ;are .v, .dv.  Size if y, v, dy and dv can be 1D or 2D arrays - must check. 
+            ;NOTE: here, I check data1 for each field. If it is present, I assume that that field 
+            ;already has a tmp array. This should always be true, unless a CDF file is bust and does 
+            ;not have all data in it.
+                                        
+            str_element, data1, 'x', xNEW, success=ok
+            if (ok) then begin
+              Mx = n_elements(xNEW)
+              x = [temporary(x), temporary(xNEW)]
+
+              str_element, data1, 'y', yNEW, success=ok  ; where there's an X, there's a Y
+              yOLD = temporary(y)
+              y = fltarr(Nx+Mx, Ny)
+              y[0L:(Nx-1L),*] = temporary(yOLD)
+              y[Nx:(Nx+Mx-1L),*] = temporary(yNEW)
+
+              str_element, data1, 'dy', dyNEW, success=ok
+              dyOLD = temporary(dy)
+              dy = fltarr(Nx+Mx, Ny)
+              dy[0L:(Nx-1L),*] = temporary(dyOLD)
+              if (ok) then dy[Nx:(Nx+Mx-1L),*] = temporary(dyNEW) $
+                      else dy[Nx:(Nx+Mx-1L),*] = replicate(NaN, Mx, Ny)
+
+              str_element, data1, 'flag', flagNEW, success=ok
+              if (ok) then flag = [temporary(flag), temporary(flagNEW)] $
+                      else flag = [temporary(flag), replicate(NaN, Mx)]
+
+              str_element, data1, 'v', vNEW, success=ok
+              vOLD = temporary(v)
+              v = fltarr(Nx+Mx, Ny)
+              v[0L:(Nx-1L),*] = temporary(vOLD)
+              if (ok) then v[Nx:(Nx+Mx-1L),*] = temporary(vNEW) $
+                      else v[Nx:(Nx+Mx-1L),*] = replicate(NaN, Mx, Ny)
+
+              str_element, data1, 'dv', dvNEW, success=ok
+              dvOLD = temporary(dv)
+              dv = fltarr(Nx+Mx, Ny)
+              dv[0L:(Nx-1L),*] = temporary(dvOLD)
+              if (ok) then dv[Nx:(Nx+Mx-1L),*] = temporary(dvNEW) $
+                      else dv[Nx:(Nx+Mx-1L),*] = replicate(NaN, Mx, Ny)
+
+              Nx += Mx
+            endif
+
+          endelse
+        endif
     endfor ;tt, dates
+    data1 = 0
+    indx = where(finite(x), xcount)
+    indx = where(finite(y), ycount)
+    if ((xcount eq 0L) or (ycount eq 0L)) then begin  ; if no time or no data, then no point
+      undefine, x
+      undefine, y
+      undefine, dy
+      undefine, flag
+      undefine, v
+      undefine, dv
+    endif else begin
+      indx = where(finite(v), count)
+      if (count eq 0L) then undefine, v
+      indx = where(finite(dv), count)
+      if (count eq 0L) then undefine, dv
+    endelse
     
     ;Store tmp arrays into TPLOT variable. Variable must have same name as per L2 CDF files, ie varTMP. Need to check which tags exist in the structure before storing.
     ;Structure format code:
@@ -302,26 +386,33 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
     ;x,y,dy,flag,dv,v:  3.  This is spectrogram data.
     scode = 0.  ;default code
     
-    if (size(xTMP,/type) eq 0) then begin
+    if (size(x,/type) eq 0) then begin
       print,"### WARNING ### : ", proname, " - No data found!"
       tplotvars = ''
       success = 0.
       return
     endif
     
-    if (size(xTMP,/type) ne 0.) and (size(yTMP,/type) ne 0.) and (size(dyTMP,/type) ne 0.) and (size(flagTMP,/type) ne 0.) and (size(vTMP,/type) eq 0.) and (size(dvTMP,/type) eq 0.) then scode = 1.
-    if (size(xTMP,/type) ne 0.) and (size(yTMP,/type) ne 0.) and (size(dyTMP,/type) ne 0.) and (size(flagTMP,/type) ne 0.) and (size(vTMP,/type) eq 0.) and (size(dvTMP,/type) ne 0.) then scode = 2.
-    if (size(xTMP,/type) ne 0.) and (size(yTMP,/type) ne 0.) and (size(dyTMP,/type) ne 0.) and (size(flagTMP,/type) ne 0.) and (size(vTMP,/type) ne 0.) and (size(dvTMP,/type) ne 0.) then scode = 3.
+    if (size(x,/type) ne 0.) and (size(y,/type) ne 0.) and (size(dy,/type) ne 0.) and (size(flag,/type) ne 0.) and (size(v,/type) eq 0.) and (size(dv,/type) eq 0.) then scode = 1.
+    if (size(x,/type) ne 0.) and (size(y,/type) ne 0.) and (size(dy,/type) ne 0.) and (size(flag,/type) ne 0.) and (size(v,/type) eq 0.) and (size(dv,/type) ne 0.) then scode = 2.
+    if (size(x,/type) ne 0.) and (size(y,/type) ne 0.) and (size(dy,/type) ne 0.) and (size(flag,/type) ne 0.) and (size(v,/type) ne 0.) and (size(dv,/type) ne 0.) then scode = 3.
     
     ;Trim data based on timespan:
-    indsKP = where(xTMP ge trange2[0] and xTMP le trange2[1], nindsKP)  ;indsKP are the indices to keep that lie within timespan. These are the same for each tag field. Apply below.
+    indsKP = where(x ge trange2[0] and x le trange2[1], nindsKP)  ;indsKP are the indices to keep that lie within timespan. These are the same for each tag field. Apply below.
 
     ;Store data:
-    case scode of 
-        1.:   dataSTR = create_struct('x', xTMP[indsKP], 'y', yTMP[indsKP,*], 'dy', dyTMP[indsKP,*], 'flag', flagTMP[indsKP])    ;here select data that lies between timespan
-        2.:   dataSTR = create_struct('x', xTMP[indsKP], 'y', yTMP[indsKP,*], 'dy', dyTMP[indsKP,*], 'dv', dvTMP[indsKP,*], 'flag', flagTMP[indsKP])
-        3.:   dataSTR = create_struct('x', xTMP[indsKP], 'y', yTMP[indsKP,*], 'v', vTMP, 'dy', dyTMP[indsKP,*], 'dv', dvTMP[indsKP,*], 'flag', flagTMP[indsKP])
-    endcase
+
+    if (size(x,/type) ne 0) then begin
+      dataSTR = {x:x[indsKP], y:y[indsKP,*], dy:dy[indsKP,*], flag:flag[indsKP]}
+      if (size(v,/type) ne 0) then str_element, dataSTR, 'v', v[indsKP,*], /add
+      if (size(dv,/type) ne 0) then str_element, dataSTR, 'dv', dv[indsKP,*], /add
+    endif
+    
+;    case scode of 
+;        1.:   dataSTR = create_struct('x', x[indsKP], 'y', y[indsKP,*], 'dy', dyTMP[indsKP,*], 'flag', flagTMP[indsKP])    ;here select data that lies between timespan
+;        2.:   dataSTR = create_struct('x', x[indsKP], 'y', y[indsKP,*], 'dy', dyTMP[indsKP,*], 'dv', dvTMP[indsKP,*], 'flag', flagTMP[indsKP])
+;        3.:   dataSTR = create_struct('x', x[indsKP], 'y', y[indsKP,*], 'v', vTMP, 'dy', dyTMP[indsKP,*], 'dv', dvTMP[indsKP,*], 'flag', flagTMP[indsKP])
+;    endcase
     
     if scode eq 0. then begin  ;If data tags don't match
         print, ""
@@ -370,9 +461,3 @@ endif
 success=1. 
 
 end
-
-
-
-
-
-

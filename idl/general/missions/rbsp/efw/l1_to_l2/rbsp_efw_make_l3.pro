@@ -10,33 +10,39 @@
 ;           script -> set if running from script. The date is read in
 ;           differently if so
 ;           version -> 1, 2, 3, etc...Defaults to 1
+;           boom_pair -> defaults to '12' for spinfit data. Can change
+;           to '34'
 ;
 ; HISTORY: Created by Aaron W Breneman, May 2014
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2015-01-08 14:00:07 -0800 (Thu, 08 Jan 2015) $
-;   $LastChangedRevision: 16607 $
+;   $LastChangedDate: 2015-11-23 13:39:04 -0800 (Mon, 23 Nov 2015) $
+;   $LastChangedRevision: 19455 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l3.pro $
 ;-
 
 
-pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,type=type,testing=testing,script=script
+pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
+                     type=type,testing=testing,script=script,$
+                     boom_pair=bp
 
   print,date
 
   ;KEEP!!!!!! Necessary when running scripts
   if keyword_set(script) then date = time_string(double(date),prec=-3)
-
+  
 
   rbsp_efw_init
   if ~keyword_set(type) then type = 'L3'  
+  if ~keyword_set(bp) then bp = '12'
+
   skip_plot = 1                 ;set to skip restoration of cdf file and test plotting at end of program
 
 
   starttime=systime(1)
   dprint,'BEGIN TIME IS ',systime()
 
-  if ~keyword_set(version) then version = 1
+  if ~keyword_set(version) then version = 2
   vstr = string(version, format='(I02)')
 
 
@@ -45,7 +51,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,type=type,testing=tes
 ;__________________________________________________
 
 ;Skeleton file
-  vskeleton = '01'
+  vskeleton = '02'
   skeleton='rbsp'+sc+'_efw-l3_00000000_v'+vskeleton+'.cdf'
 
 
@@ -92,7 +98,8 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,type=type,testing=tes
   rbsp_read_ect_mag_ephem,sc
 
   ;Load both the spinfit data and also the E*B=0 version
-  rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,/noplot,suffix='edotb'
+  rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,/noplot,suffix='edotb',$
+                              boom_pair=bp
 
 
 ;Get the official times to which all quantities are interpolated to
@@ -255,6 +262,47 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,type=type,testing=tes
 ;Populate CDF file for L3 version
 ;--------------------------------------------------
 
+
+  ;;Rename certain variables based on selected boom pair
+  if bp eq '12' then begin
+     cdf_varrename,cdfid,'density_v12','density'
+     cdf_varrename,cdfid,'efield_inertial_frame_mgse_e12','efield_inertial_frame_mgse'
+     cdf_varrename,cdfid,'efield_corotation_frame_mgse_e12','efield_corotation_frame_mgse'
+     cdf_varrename,cdfid,'Vavg_v12','Vavg'
+     cdf_varrename,cdfid,'density_potential_v12','density_potential'
+     cdf_varrename,cdfid,'efield_inertial_frame_mgse_edotb_zero_e12','efield_inertial_frame_mgse_edotb_zero'
+     cdf_varrename,cdfid,'efield_corotation_frame_mgse_edotb_zero_e12','efield_corotation_frame_mgse_edotb_zero'
+
+     cdf_vardelete,cdfid,'density_v34'
+     cdf_vardelete,cdfid,'efield_inertial_frame_mgse_e34'
+     cdf_vardelete,cdfid,'efield_corotation_frame_mgse_e34'
+     cdf_vardelete,cdfid,'Vavg_v34'
+     cdf_vardelete,cdfid,'density_potential_v34'
+     cdf_vardelete,cdfid,'efield_inertial_frame_mgse_edotb_zero_e34'
+     cdf_vardelete,cdfid,'efield_corotation_frame_mgse_edotb_zero_e34'
+  endif else begin
+
+     cdf_varrename,cdfid,'density_v34','density'
+     cdf_varrename,cdfid,'efield_inertial_frame_mgse_e34','efield_inertial_frame_mgse'
+     cdf_varrename,cdfid,'efield_corotation_frame_mgse_e34','efield_corotation_frame_mgse'
+     cdf_varrename,cdfid,'Vavg_v34','Vavg'
+     cdf_varrename,cdfid,'density_potential_v34','density_potential'
+     cdf_varrename,cdfid,'efield_inertial_frame_mgse_edotb_zero_e34','efield_inertial_frame_mgse_edotb_zero'
+     cdf_varrename,cdfid,'efield_corotation_frame_mgse_edotb_zero_e34','efield_corotation_frame_mgse_edotb_zero'
+
+     cdf_vardelete,cdfid,'density_v12'
+     cdf_vardelete,cdfid,'efield_inertial_frame_mgse_e12'
+     cdf_vardelete,cdfid,'efield_corotation_frame_mgse_e12'
+     cdf_vardelete,cdfid,'Vavg_v12'
+     cdf_vardelete,cdfid,'density_potential_v12'
+     cdf_vardelete,cdfid,'efield_inertial_frame_mgse_edotb_zero_e12'
+     cdf_vardelete,cdfid,'efield_corotation_frame_mgse_edotb_zero_e12'
+  endelse
+
+
+
+
+
   if type eq 'L3' then begin
      
      cdf_varput,cdfid,'efield_inertial_frame_mgse',transpose(spinfit_vxb)
@@ -319,7 +367,6 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,type=type,testing=tes
      cdf_vardelete,cdfid,'bfield_minus_model_mgse'
      cdf_vardelete,cdfid,'bfield_magnitude_minus_modelmagnitude'
      cdf_vardelete,cdfid,'bfield_magnitude'
-
 
   endif
 

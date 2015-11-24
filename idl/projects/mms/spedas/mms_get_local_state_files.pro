@@ -79,7 +79,9 @@ file_pattern = strupcase(probe)+f+strupcase(level)+strupcase(filetype)+f+'[0-9]{
 ;search_pattern =  escape_string(dir_pattern  + file_pattern, list='\')
 
 ;get list of all state files in local directory
-all_files = file_search(!mms.local_data_dir, '*.V*')
+instr_data_dir = filepath('', ROOT_DIR=!mms.local_data_dir, $
+                              SUBDIRECTORY=['ancillary', probe, level+filetype])
+all_files = file_search(instr_data_dir,'*.V*')
 
 ;perform search
 idx = where( stregex( all_files, file_pattern, /bool), n_files)
@@ -137,11 +139,16 @@ file_strings = file_strings[time_idx]
 ;get file versions
 versions = stregex(files, '.V([0-9]{2})', /subexpr, /extract)
 
+; Solution to duplicate files
+;   - Loop over unique file times, not all file times.
+iuniq        = uniq(file_strings[2,*], sort(file_strings[2,*]))
+uniq_strings = file_strings[*,iuniq]
+
 ;loop over file names to find files with multiple versions 
-for i=0, n_elements(files)-1 do begin
+for i=0, n_elements(iuniq)-1 do begin
   
   ;find files with identical names (excluding version)
-  vidx = where(file_strings[i] eq file_strings[*], n_versions)
+  vidx = where(uniq_strings[i] eq file_strings[*], n_versions)
   
   ;sort results by ascending version and use last in list
   highest_version = (  (files[vidx])[sort(versions[vidx])]  )[n_versions-1]
@@ -151,10 +158,5 @@ for i=0, n_elements(files)-1 do begin
            
 endfor
 
-;ensure files are in chronoligical order, just in case (see note in mms_load_data) 
-files_out = files_out[bsort(files_out)]
-
 return, files_out
-
-stop
 end

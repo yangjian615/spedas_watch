@@ -30,6 +30,8 @@
 ;           'pfaff_esvy'                                  (working)
 ;           'combo_pfaff'                                 (working)
 ;
+;   boom_pair -> specify for the spinfit routine. Defaults to '12' but
+;   can be set to '34'
 ;
 ; OLD CDF files that are now obsolete are:
 ;      rbspa_efw-l2_e-spinfit-mgse_20130103_v01.cdf
@@ -47,8 +49,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2015-10-22 11:53:21 -0700 (Thu, 22 Oct 2015) $
-; $LastChangedRevision: 19141 $
+; $LastChangedDate: 2015-11-23 13:46:56 -0800 (Mon, 23 Nov 2015) $
+; $LastChangedRevision: 19458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -62,18 +64,19 @@ pro rbsp_efw_make_l2,sc,date,$
                      no_spice_load = no_spice_load,$
                      no_cdf = no_cdf,$
                      testing=testing,$
-                     hires=hires
+                     hires=hires,$
+                     boom_pair=bp
 
 
   if ~keyword_set(type) then type = 'spinfit'
-
-
+  if ~keyword_set(bp) then bp = '12'
+  
 
   compile_opt idl2
 
   rbsp_efw_init
 
-  if n_elements(version) eq 0 then version = 1
+  if n_elements(version) eq 0 then version = 2
   vstr = string(version, format='(I02)')
 
 
@@ -97,16 +100,11 @@ pro rbsp_efw_make_l2,sc,date,$
      if ~keyword_set(no_cdf) then file_mkdir, folder
 
 
-     
 
                                 ; Grab the skeleton file.
      ;; skeleton=rbspx+'/l2/e-spinfit-mgse/0000/'+ $
      ;;          rbspx+'_efw-l2_00000000_v'+vstr+'.cdf'
-     skeleton='/Volumes/UserA/user_homes/kersten/RBSP_l2/'+rbspx+'_efw-l2_00000000_v01.cdf'
-
-
-                                ;skeletonFile=file_retrieve(skeleton,_extra=!rbsp_efw)
-
+     skeleton='/Volumes/UserA/user_homes/kersten/RBSP_l2/'+rbspx+'_efw-l2_00000000_v02.cdf'
 
 
                                 ; use skeleton from the staging dir until we go live in the main data tree
@@ -114,8 +112,10 @@ pro rbsp_efw_make_l2,sc,date,$
 
      found = 1
                                 ; make sure we have the skeleton CDF
-     if ~keyword_set(testing) then skeletonFile=file_search(skeleton,count=found) ; looking for single file, so count will return 0 or 1
-     if keyword_set(testing) then skeletonfile = '~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/rbsp'+sc+'_efw-l2_00000000_v01.cdf'
+     if ~keyword_set(testing) then skeletonFile=file_search(skeleton,count=found)
+     if keyword_set(testing) then $
+        skeletonfile = '~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/rbsp'+$
+                       sc+'_efw-l2_00000000_v02.cdf'
 
 
      if ~found then begin
@@ -126,7 +126,6 @@ pro rbsp_efw_make_l2,sc,date,$
      skeletonFile=skeletonFile[0]
 
   endif
-
 
   if keyword_set(testing) then folder = '~/Desktop/code/Aaron/RBSP/TDAS_trunk_svn/general/missions/rbsp/efw/l1_to_l2/'
 
@@ -208,7 +207,7 @@ pro rbsp_efw_make_l2,sc,date,$
      rbsp_read_ect_mag_ephem,sc
 
                                 ;Load both the spinfit data and also the E*B=0 version
-     rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,/noplot,suffix='edotb'
+     rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,/noplot,suffix='edotb',boom_pair=bp
 
 ;Get the official times to which all quantities are interpolated to
      get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit',data=tmp
@@ -267,7 +266,7 @@ pro rbsp_efw_make_l2,sc,date,$
      
 
 ;--------------------------
-;Density from (V1+V2)/2
+;Density from (V1+V2)/2  or  (V3+V4)/2
 ;--------------------------
 
      get_data,'rbsp'+sc +'_efw_vsvy_V1',data=v1
@@ -287,6 +286,13 @@ pro rbsp_efw_make_l2,sc,date,$
      tinterpol_mxn,'sum12',times,newname='sum12'
      get_data,'sum12',data=sum12
      sum12=sum12.y
+
+     store_data,'sum34',data={x:v3.x,y:sum34}
+     tinterpol_mxn,'sum34',times,newname='sum34'
+     get_data,'sum34',data=sum34
+     sum34=sum34.y
+
+
 
 
                                 ;Interpolate single-ended measurements
@@ -408,6 +414,34 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 
+  ;;--------------------------------------------------
+  ;;Rename certain CDF variables depending on whether we're
+  ;;using the E12 or E34 boom pair
+  ;;--------------------------------------------------
+
+     if bp eq '12' then begin
+        cdf_varrename,cdfid,'efield_spinfit_mgse_e12','efield_spinfit_mgse'
+        cdf_varrename,cdfid,'density_v12','density'
+        cdf_varrename,cdfid,'efield_spinfit_vxb_edotb_mgse_e12','efield_spinfit_vxb_edotb_mgse'
+        cdf_varrename,cdfid,'efield_spinfit_vxb_mgse_e12','efield_spinfit_vxb_mgse'
+
+        cdf_vardelete,cdfid,'efield_spinfit_mgse_e34'
+        cdf_vardelete,cdfid,'density_v34'
+        cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse_e34'
+        cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse_e34'
+
+     endif else begin
+        cdf_varrename,cdfid,'efield_spinfit_mgse_e34','efield_spinfit_mgse'
+        cdf_varrename,cdfid,'density_v34','density'
+        cdf_varrename,cdfid,'efield_spinfit_vxb_edotb_mgse_e34','efield_spinfit_vxb_edotb_mgse'
+        cdf_varrename,cdfid,'efield_spinfit_vxb_mgse_e34','efield_spinfit_vxb_mgse'
+
+        cdf_vardelete,cdfid,'efield_spinfit_mgse_e12'
+        cdf_vardelete,cdfid,'density_v12'
+        cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse_e12'
+        cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse_e12'
+     endelse
+
 
 ;--------------------------------------------------
 ;spinfit E12 files
@@ -441,7 +475,9 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_DFB_config'
      cdf_vardelete,cdfid,'sigma12_spinfit_mgse'
+     cdf_vardelete,cdfid,'sigma34_spinfit_mgse'
      cdf_vardelete,cdfid,'npoints12_spinfit_mgse'
+     cdf_vardelete,cdfid,'npoints34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_uvw'
      cdf_vardelete,cdfid,'efield_raw_uvw'
      cdf_vardelete,cdfid,'density'
@@ -453,20 +489,25 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'bfield_magnitude'
      cdf_vardelete,cdfid,'magnitude_minus_modelmagnitude'
      cdf_vardelete,cdfid,'vsvy'
+     cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'vsvy_vavg'
      cdf_vardelete,cdfid,'vsvy_vavg_combo'
      cdf_vardelete,cdfid,'efw_qual'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'mag_model_mgse'
      cdf_vardelete,cdfid,'mag_minus_model_mgse'
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse'
      cdf_vardelete,cdfid,'e12_vxb_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_spinfit_mgse'
      cdf_vardelete,cdfid,'vel_coro_mgse'
      cdf_vardelete,cdfid,'esvy_vxb_mgse'
      cdf_vardelete,cdfid,'efield_mgse'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_coro_spinfit_mgse'
      cdf_vardelete,cdfid,'vsvy_combo'
+
 
   endif
 
@@ -492,7 +533,8 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'mag_minus_model_mgse',transpose(mag_diff.y) 
      cdf_varput,cdfid,'magnitude_minus_modelmagnitude',mag_diff_magnitude
      cdf_varput,cdfid,'mag_spinfit_mgse',transpose(mag_mgse.y)
-     cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb) 
+     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb) 
+     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_spinfit_mgse',transpose(spinfit_vxb) 
      cdf_varput,cdfid,'density',dens.y
      cdf_varput,cdfid,'mlt',transpose(mlt.y)
      cdf_varput,cdfid,'mlat',transpose(mlat.y)
@@ -513,14 +555,19 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
+     if bp eq '12' then cdf_vardelete,cdfid,'e34_vxb_spinfit_mgse'
+     if bp eq '34' then cdf_vardelete,cdfid,'e12_vxb_spinfit_mgse'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_mgse'
      cdf_vardelete,cdfid,'VxB_mgse'
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_DFB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_efw_qual'
      cdf_vardelete,cdfid,'sigma12_spinfit_mgse'
+     cdf_vardelete,cdfid,'sigma34_spinfit_mgse'
      cdf_vardelete,cdfid,'npoints12_spinfit_mgse'
+     cdf_vardelete,cdfid,'npoints34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_coro_mgse'
      cdf_vardelete,cdfid,'efield_uvw'
      cdf_vardelete,cdfid,'efield_raw_uvw'
@@ -537,6 +584,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'vsvy'
      cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_coro_spinfit_mgse'
      if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy_vxb_mgse'
 
   endif
@@ -579,7 +627,9 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'e_spinfit_mgse_DFB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_efw_qual'
      cdf_vardelete,cdfid,'sigma12_spinfit_mgse'
+     cdf_vardelete,cdfid,'sigma34_spinfit_mgse'
      cdf_vardelete,cdfid,'npoints12_spinfit_mgse'
+     cdf_vardelete,cdfid,'npoints34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_coro_mgse'
      cdf_vardelete,cdfid,'efield_uvw'
      cdf_vardelete,cdfid,'efield_raw_uvw'
@@ -591,21 +641,24 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse'
      cdf_vardelete,cdfid,'bfield_magnitude'
      cdf_vardelete,cdfid,'vsvy'
+     cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'vsvy_combo'
      cdf_vardelete,cdfid,'vsvy_vavg'
      cdf_vardelete,cdfid,'vsvy_vavg_combo'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'mag_model_mgse'
      cdf_vardelete,cdfid,'mag_minus_model_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse'
      cdf_vardelete,cdfid,'e12_vxb_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_spinfit_mgse'
      cdf_vardelete,cdfid,'vel_coro_mgse'
      cdf_vardelete,cdfid,'esvy_vxb_mgse'
      cdf_vardelete,cdfid,'magnitude_minus_modelmagnitude'
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_coro_spinfit_mgse'
      
-
   endif
 
 
@@ -647,7 +700,9 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'e_spinfit_mgse_DFB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_efw_qual'
      cdf_vardelete,cdfid,'sigma12_spinfit_mgse'
+     cdf_vardelete,cdfid,'sigma34_spinfit_mgse'
      cdf_vardelete,cdfid,'npoints12_spinfit_mgse'
+     cdf_vardelete,cdfid,'npoints34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_coro_mgse'
      cdf_vardelete,cdfid,'efield_uvw'
      cdf_vardelete,cdfid,'efield_raw_uvw'
@@ -659,18 +714,22 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse'
      cdf_vardelete,cdfid,'bfield_magnitude'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'vsvy_vavg_combo'
      cdf_vardelete,cdfid,'vsvy_combo'
      cdf_vardelete,cdfid,'mag_model_mgse'
      cdf_vardelete,cdfid,'mag_minus_model_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse'
      cdf_vardelete,cdfid,'e12_vxb_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_spinfit_mgse'
      cdf_vardelete,cdfid,'vel_coro_mgse'
      cdf_vardelete,cdfid,'esvy_vxb_mgse'
      cdf_vardelete,cdfid,'magnitude_minus_modelmagnitude'
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_mgse'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_coro_spinfit_mgse'
+     cdf_vardelete,cdfid,'esvy'
 
   endif
 
@@ -687,9 +746,10 @@ pro rbsp_efw_make_l2,sc,date,$
 ;spinfit resolution
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
      cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
-;     cdf_varput,cdfid,'e12_spinfit_mgse',transpose(spinfit_mgse)           
-     cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb)   
-     cdf_varput,cdfid,'e12_vxb_coro_spinfit_mgse',transpose(spinfit_vxb_coro) 
+     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb)   
+     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_spinfit_mgse',transpose(spinfit_vxb)   
+     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_coro_spinfit_mgse',transpose(spinfit_vxb_coro) 
+     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_coro_spinfit_mgse',transpose(spinfit_vxb_coro) 
      cdf_varput,cdfid,'efield_coro_mgse',transpose(ecoro_mgse.y)
      cdf_varput,cdfid,'vel_coro_mgse',transpose(vcoro_mgse.y)
      cdf_varput,cdfid,'density',dens.y
@@ -707,14 +767,21 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
+     if bp eq '12' then cdf_vardelete,cdfid,'e34_vxb_spinfit_mgse'
+     if bp eq '34' then cdf_vardelete,cdfid,'e12_vxb_spinfit_mgse'
+     if bp eq '12' then cdf_vardelete,cdfid,'e34_vxb_coro_spinfit_mgse'
+     if bp eq '34' then cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_mgse'
      cdf_vardelete,cdfid,'VxB_mgse'
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_DFB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_efw_qual'
      cdf_vardelete,cdfid,'sigma12_spinfit_mgse'
+     cdf_vardelete,cdfid,'sigma34_spinfit_mgse'
      cdf_vardelete,cdfid,'npoints12_spinfit_mgse'
+     cdf_vardelete,cdfid,'npoints34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_uvw'
      cdf_vardelete,cdfid,'efield_raw_uvw'
      cdf_vardelete,cdfid,'bfield_mgse'
@@ -724,6 +791,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse'
      cdf_vardelete,cdfid,'bfield_magnitude'
      cdf_vardelete,cdfid,'vsvy'
+     cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'vsvy_vavg'
      cdf_vardelete,cdfid,'vsvy_vavg_combo'
      cdf_vardelete,cdfid,'vsvy_combo'
@@ -734,7 +802,6 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'magnitude_minus_modelmagnitude'
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_mgse'
-
 
   endif
 
@@ -775,7 +842,9 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'e_spinfit_mgse_DFB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_efw_qual'
      cdf_vardelete,cdfid,'sigma12_spinfit_mgse'
+     cdf_vardelete,cdfid,'sigma34_spinfit_mgse'
      cdf_vardelete,cdfid,'npoints12_spinfit_mgse'
+     cdf_vardelete,cdfid,'npoints34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_coro_mgse'
      cdf_vardelete,cdfid,'efield_uvw'
      cdf_vardelete,cdfid,'efield_raw_uvw'
@@ -786,20 +855,24 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'bfield_magnitude_minus_modelmagnitude'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse'
      cdf_vardelete,cdfid,'bfield_magnitude'
+     cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'vsvy_combo'
      cdf_vardelete,cdfid,'vsvy_vavg'
      cdf_vardelete,cdfid,'vsvy_vavg_combo'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'mag_model_mgse'
      cdf_vardelete,cdfid,'mag_minus_model_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse'
      cdf_vardelete,cdfid,'e12_vxb_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_spinfit_mgse'
      cdf_vardelete,cdfid,'vel_coro_mgse'
      cdf_vardelete,cdfid,'esvy_vxb_mgse'
      cdf_vardelete,cdfid,'magnitude_minus_modelmagnitude'
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_mgse'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_coro_spinfit_mgse'
 
   endif
 
@@ -816,8 +889,8 @@ pro rbsp_efw_make_l2,sc,date,$
 ;spinfit cadence
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
      cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
-     cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb) 
-                                ;cdf_varput,cdfid,'e12_spinfit_mgse',transpose(spinfit_mgse)         
+     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb) 
+     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_spinfit_mgse',transpose(spinfit_vxb) 
      cdf_varput,cdfid,'efield_coro_mgse',transpose(ecoro_mgse.y)
      cdf_varput,cdfid,'vel_coro_mgse',transpose(vcoro_mgse.y)
      cdf_varput,cdfid,'bfield_mgse',transpose(mag_mgse.y)
@@ -846,14 +919,19 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
+     if bp eq '12' then cdf_vardelete,cdfid,'e34_vxb_spinfit_mgse'
+     if bp eq '34' then cdf_vardelete,cdfid,'e12_vxb_spinfit_mgse'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_mgse'
      cdf_vardelete,cdfid,'VxB_mgse'
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_DFB_config'
      cdf_vardelete,cdfid,'e_spinfit_mgse_efw_qual'
      cdf_vardelete,cdfid,'sigma12_spinfit_mgse'
+     cdf_vardelete,cdfid,'sigma34_spinfit_mgse'
      cdf_vardelete,cdfid,'npoints12_spinfit_mgse'
+     cdf_vardelete,cdfid,'npoints34_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_uvw'
      cdf_vardelete,cdfid,'efield_raw_uvw'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse'
@@ -869,9 +947,12 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'magnitude_minus_modelmagnitude'
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
      cdf_vardelete,cdfid,'efield_mgse'
+     cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
+     cdf_vardelete,cdfid,'e34_vxb_coro_spinfit_mgse'
      if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy'
      if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy_vxb_mgse'
+ 
 
   endif
 
