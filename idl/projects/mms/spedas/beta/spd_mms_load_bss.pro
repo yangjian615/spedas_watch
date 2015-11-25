@@ -35,10 +35,11 @@
 ;   
 ; CREATED BY: Mitsuo Oka   Oct 2015
 ;
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-10-20 07:31:50 -0700 (Tue, 20 Oct 2015) $
-; $LastChangedRevision: 19113 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_load_bss.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-11-24 13:27:21 -0800 (Tue, 24 Nov 2015) $
+;$LastChangedRevision: 19463 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/spd_mms_load_bss.pro $
+;-
 
 PRO spd_mms_load_bss, trange=trange, datatype=datatype, include_labels=include_labels
   compile_opt idl2

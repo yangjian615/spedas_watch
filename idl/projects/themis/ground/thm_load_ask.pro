@@ -32,14 +32,16 @@
 ;                variable xxx
 ;  get_support_data = does nothing.  present only for consistency with other
 ;                load routines
+;  rego		read red-line data instead of THEMIS white light
+;
 ;Example:
 ;   thg_load_ask
 ;Notes:
 ;  This routine is (should be) platform independent.
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2012-06-29 15:55:05 -0700 (Fri, 29 Jun 2012) $
+; $LastChangedBy: hfrey $
+; $LastChangedDate: 2015-11-24 15:42:27 -0800 (Tue, 24 Nov 2015) $
 ; $LastChangedRevision: Added valid_names output option$
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_ask.pro $
 ;-
@@ -47,10 +49,20 @@
 ; find the correct file names, based on trange, datatype, and site
 function thm_load_ask_relpath, trange=trange, _extra=_extra
 
-   relpath = 'thg/l1/asi/ask/'
-   prefix = 'thg_l1_ask_'
-   ending = '_v01.cdf'
-;stop
+     relpath = 'thg/l1/asi/ask/'
+     prefix = 'thg_l1_ask_'
+     ending = '_v01.cdf'
+   
+   return, file_dailynames(relpath,prefix,ending,/YEARDIR,trange=trange)
+
+end
+
+function thm_load_rego_ask_relpath, trange=trange, _extra=_extra
+
+     relpath = 'thg/l1/reg/ask/'
+     prefix = 'clg_l1_ask_'
+     ending = '_v01.cdf'
+   
    return, file_dailynames(relpath,prefix,ending,/YEARDIR,trange=trange)
 
 end
@@ -62,7 +74,7 @@ pro thm_load_ask,site = site, datatype = datatype, trange = trange, $
                  varformat=varformat, $
                  valid_names = valid_names, $
                  get_support_data=get_support_data, $
-                 progobj=progob, files=files, suffix=suffix
+                 progobj=progob, files=files, suffix=suffix, rego=rego
 ;                 _extra = _extra
 
   if arg_present(relpathnames_all) then begin
@@ -70,6 +82,25 @@ pro thm_load_ask,site = site, datatype = datatype, trange = trange, $
      no_download=1
   end
 
+  if keyword_set(rego) then $
+  thm_load_xxx,sname=site, datatype=datatype, trange=trange, $
+               level=level, verbose=verbose, downloadonly=downloadonly, $
+               no_download=no_download, relpathnames_all=relpathnames_all, $
+               cdf_data=cdf_data,get_cdf_data=arg_present(cdf_data), $
+               get_support_data=get_support_data, $
+               varnames=varnames, valid_names = valid_names, files=files, $
+               varformat=varformat, $
+               vsnames = 'atha calg fsmi fsim gill resu', $
+               type_sname = 'site', /all_sites_in_one, $
+               vdatatypes = 'ask', $
+               vlevels = 'l1', $
+               deflevel = 'l1', $
+               version = 'v01', $
+               relpath_funct = 'thm_load_rego_ask_relpath', $
+               progobj = progobj, tplotnames=tplotnames, $
+               suffix=suffix, msg_out=msg_out, $
+               _extra = _extra $
+  else $
   thm_load_xxx,sname=site, datatype=datatype, trange=trange, $
                level=level, verbose=verbose, downloadonly=downloadonly, $
                no_download=no_download, relpathnames_all=relpathnames_all, $

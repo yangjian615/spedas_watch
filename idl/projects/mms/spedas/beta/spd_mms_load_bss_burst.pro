@@ -9,6 +9,13 @@
 ;   include_labels:  set this flag to have the horizontal bars labeled
 ;
 ;   See also "spd_mms_load_bss_crib" for examples and mms_load_bss.
+;   
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-11-24 13:28:55 -0800 (Tue, 24 Nov 2015) $
+; $LastChangedRevision: 19464 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/spd_mms_load_bss_burst.pro $
+;-
+
 
 PRO spd_mms_load_bss_burst, trange=trange, include_labels=include_labels
   compile_opt idl2

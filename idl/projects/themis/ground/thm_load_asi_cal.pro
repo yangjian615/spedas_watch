@@ -21,9 +21,11 @@
 ;   /DOWNLOADONLY   
 ;   /VALID_NAMES
 ;   /CURSOR	get time range with cursor
+;   REGO	read cal-file for REGO camera instead of THEMIS
 ;
 ; HISTORY:
 ;   adapted from thm_load_asi
+;   2015-07-21, hfrey, included call to REGO cal-files
 ;
 ;Notes:
 ;
@@ -32,19 +34,20 @@
 ; No further action will be taken.
 ;
 ;Written by: Harald Frey,   Jan 26 2007
-;   $LastChangedBy: aaflores $
-;   $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-;   $LastChangedRevision: 17433 $
+;   $LastChangedBy: hfrey $
+;   $LastChangedDate: 2015-11-24 15:42:00 -0800 (Tue, 24 Nov 2015) $
+;   $LastChangedRevision: 19470 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_asi_cal.pro $
 ;-
 ;
 pro thm_load_asi_cal,site,cal_struc,trange=trange,verbose=verbose,all=all $
    ,downloadonly=downloadonly,valid_names = vstats, $
-   cursor=cursor
+   cursor=cursor,rego=rego
 
 thm_init
 
 	; Valid station names   (see note above):
+if keyword_set(rego) then vstats='atha fsim fsmi gill rank resu talo' else $
 vstats='atha chbg ekat fsmi fsim fykn gako gbay gill inuv kapu '+ $
    'kian kuuj mcgr pgeo pina rank snkq tpas whit yknf nrsq snap talo'
 vstats=strsplit(vstats,' ',/extract)
@@ -63,7 +66,6 @@ endif
 
 	; just get all stations
 if keyword_set(all) then stations='*' else stations=site
-
 stats = strfilter(vstats,stations,delimiter=' ',/string)  ; vstats is the subarray of valid stations
 
 if not keyword_set(stats) then  begin
@@ -80,9 +82,10 @@ for i=0,n_elements(stats)-1 do begin
 
   ; Although these file names appear platform dependent, it works well on MS windows! Please don't change
 
+  if keyword_set(rego) then prefix = 'rego_l2_asc_' + station + '_' else $
+       prefix = 'thg_l2_asc_' + station + '_'
   relpath = 'thg/l2/asi/cal/'
   ending = '_v01.cdf'
-  prefix = 'thg_l2_asc_' + station + '_'
 
   relpathnames = file_dailynames(relpath,prefix,ending,$
      trange=['1970-01-01/00:00:00','1970-01-01/00:00:00'])

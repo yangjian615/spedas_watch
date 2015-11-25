@@ -1,15 +1,15 @@
 ;+
 ; NAME:
-;    THM_ASI_CREATE_MOSAIC
+;    THM_REGO_CREATE_MOSAIC
 ;
 ; PURPOSE:
-;    create mosaic with all THEMIS ASI
+;    create mosaic with all REGO ASI
 ;
 ; CATEGORY:
 ;    None
 ;
 ; CALLING SEQUENCE:
-;    THM_ASI_CREATE_MOSAIC,time
+;    THM_REGO_CREATE_MOSAIC,time
 ;
 ; INPUTS:
 ;    Time	like '2006-01-01/05:00:00'
@@ -86,8 +86,8 @@
 ;    None
 ;
 ; EXAMPLE:
-;    THM_ASI_CREATE_MOSAIC,'2006-01-01/05:00:00'
-;    THM_ASI_CREATE_MOSAIC,'2007-03-01/04:00:00',/thumb,exclude='ekat'
+;    THM_REGO_CREATE_MOSAIC,'2014-12-01/00:50:00'
+;    THM_REGO_CREATE_MOSAIC,'2014-12-01/00:50:00',/thumb,exclude='atha'
 ;
 ; MODIFICATION HISTORY:
 ;    Written by: Harald Frey, 02/06/2007
@@ -101,18 +101,19 @@
 ;		 2009-11-10, cgabrielse, added xy_cursor keyword for
 ;		 sending cursor values up level
 ;                2012-07-02,  jmm, Added color_annotation keyword
+;                2015-07-21, hfrey, adapted for REGO images
 ;
 ; NOTES:
 ;
 ; VERSION:
 ;   $LastChangedBy: hfrey $
-;   $LastChangedDate: 2015-11-24 15:41:25 -0800 (Tue, 24 Nov 2015) $
-;   $LastChangedRevision: 19469 $
+;   $LastChangedDate: 2014-01-07 12:17:57 -0800 (Tue, 07 Jan 2014) $
+;   $LastChangedRevision: 13811 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_asi_create_mosaic.pro $
 ;
 ;-
 
-PRO THM_ASI_CREATE_MOSAIC,time,$
+PRO THM_REGO_CREATE_MOSAIC,time,$
     cal_files=cal_files,$              ; calibration files already read
     gif_out=gif_out,$                  ; output in gif file
     verbose=verbose,$                  ; print debug messages
@@ -120,7 +121,6 @@ PRO THM_ASI_CREATE_MOSAIC,time,$
     thumb=thumb,$                      ; force thumbnails over full images
     exclude=exclude,$                  ; exclude certain stations
     top=top,$                          ; set top value for image
-    special=special,$                  ; treat 32x32 thumbnails
     show=show,$                        ; limit stations shown
     scale=scale,$                      ; scale for map set
     central_lat=central_lat,$          ; geographic latitude of center of plot
@@ -140,7 +140,6 @@ PRO THM_ASI_CREATE_MOSAIC,time,$
     rotation=rotation,$                ; rotate map away from North up
     full_minute=full_minute,$          ; process a full minute of pgm files
     minimum_elevation=minimum_elevation,$ ; set minimum elevation
-    merge=merge,$		       ; merge full resolution and thumbnail images
     gif_dir=gif_dir,$                  ; An output directory for the gif output, default is the local working dir.
     force_map=force_map,$              ; force display of empty map
     no_grid=no_grid,$                  ; do not plot grid
@@ -161,7 +160,6 @@ PRO THM_ASI_CREATE_MOSAIC,time,$
     color_annotation = color_annotation,$ ; color for annotation, via xyouts
     insert=insert,$			; insert stop before end of program
     no_label=no_label,$			; do not label mosaic with date and time
-    block_moon=block_moon,$
     autocenter=autocenter
 
 	; input check
@@ -222,21 +220,19 @@ if keyword_set(zbuffer) then chars=1.15 else chars=1.5
 
 	; some setup
 if keyword_set(minimum_elevation) then minimum_elevation_to_plot=minimum_elevation else minimum_elevation_to_plot=8. ;degrees
-if (keyword_set(thumb) and not keyword_set(special)) then n1=1024l else n1=256l*256l
+if (keyword_set(thumb)) then n1=1024l else n1=512l*512l
 
 ;color for annotation
-If(keyword_set(color_annotation)) Then Begin
-   xyouts_color = color_annotation[0]
-Endif Else xyouts_color = 0
+If keyword_set(color_annotation) Then xyouts_color = color_annotation[0] Else xyouts_color = 0
 
      	; clean up before start
-names=tnames('thg_as*')
+names=tnames('clg_as*')
 if (names[0] ne '') then store_data,delete=names
 
 	; load cal_files once for the whole loop
 if keyword_set(stoptime) then begin
-  if keyword_set(show) then thm_load_asi_cal,show,cal_files else $
-  thm_load_asi_cal,'atha chbg ekat fsmi fsim fykn gako gbay gill inuv kapu kian kuuj mcgr pgeo pina rank snkq tpas whit yknf nrsq snap talo',cal_files
+  if keyword_set(show) then thm_load_asi_cal,show,cal_files,/rego else $
+  thm_load_asi_cal,'atha fsmi fsim gill rank resu talo',cal_files,/rego
   endif
 
 	; automatic center plot
@@ -266,11 +262,10 @@ if not keyword_set(no_midnight) then begin
   endif else midnight_count=0
 
 	; read available data
-thm_mosaic_array,year,month,day,hour,minute,second,strlowcase(site),$
+thm_rego_array,year,month,day,hour,minute,second,strlowcase(site),$
         image,corners,elevation,pixel_illuminated,n_sites,verbose=verbose,$
-        cal_files=cal_files,pgm_file=pgm_file,thumb=thumb,special=special,$
-        show=show,exclude=exclude,full_minute=full_minute,merge=merge,$
-        mask_file=mask_file,block_moon=block_moon
+        cal_files=cal_files,thumb=thumb,$
+        show=show,exclude=exclude,insert=insert
 
 	; exclude unwanted sites
 if keyword_set(exclude) then begin
@@ -300,10 +295,6 @@ if keyword_set(maxval) then begin
         for i=0,n_sites-1 do image[*,i,*]=((image[*,i,*]/bytval[i])*64.) < 254
         endif else begin ; prevent divide by zero
         for i=0,n_sites-1 do bytval[i]=(median(image[*,i]) > 1) ; prevent divide by zero
-        mm_dumm=where(merge ne -1,count_mm_dumm)
-        if (count_mm_dumm ne 0) then begin
-           for dki=0,count_mm_dumm-1 do bytval[mm_dumm[dki]]=(median(image[0:1023,mm_dumm[dki]]) > 1)
-           endif
         for i=0,n_sites-1 do image[*,i]=((image[*,i]/bytval[i])*64.) < 254
         endelse
      endelse
@@ -385,7 +376,7 @@ time=time_string(time_double(time_start)+ikk*3)
 
 if not keyword_set(no_label) then begin
   xyouts,0.005,0.018,time,color=xyouts_color,/normal,charsize=chars
-  xyouts,0.005,0.060,'THEMIS-GBO ASI',color=xyouts_color,/normal,charsize=chars
+  xyouts,0.005,0.060,'REGO ASI',color=xyouts_color,/normal,charsize=chars
   endif
 
 	; plot midnight file
@@ -405,7 +396,7 @@ if keyword_set(gif_out) then begin
    hour=res.hour
    minute=res.min
    second=res.sec
-   out_name='MOSA.'+year+'.'+month+'.'+day+'.'+hour+'.'+minute+'.'+second+'.gif'
+   out_name='REGO.'+year+'.'+month+'.'+day+'.'+hour+'.'+minute+'.'+second+'.gif'
    write_gif,gdir+out_name,img,r,g,b
    dprint, 'Output in ',out_name
    gif_out=out_name
@@ -442,15 +433,6 @@ thm_map_set,scale=map_scale,$
      rotation=rotation,$
      no_color=no_color
 
-	; fill it
-if keyword_set(special) then begin
-  spec_illu=pixel_illuminated-2
-  for i=0,n_elements(special)-1 do begin
-    spec_stat=where(strlowcase(site) eq strlowcase(special[i]))
-    spec_illu[*,spec_stat]=pixel_illuminated[*,spec_stat]
-    endfor
-  endif
-
 	; normal filling
 for pixel=0l,n1-1l do begin
   for i_site=0,n_sites-1 do begin
@@ -464,7 +446,6 @@ for pixel=0l,n1-1l do begin
             corners[pixel*64+ijk < (n1-1),[0,1,2,3,0],1,i_site],color=image[pixel*64+ijk < (n1-1),i_site] < top
        endif
     endfor
-  if (keyword_set(special) and pixel ge 1024) then break
   endfor
 
 	; finish map
@@ -476,7 +457,7 @@ thm_map_add,invariant_lats=findgen(4)*10.+50.,invariant_color=210,$
 
 if not keyword_set(no_label) then begin
   xyouts,0.005,0.018,time,color=xyouts_color,/normal,charsize=chars
-  xyouts,0.005,0.060,'THEMIS-GBO ASI',color=xyouts_color,/normal,charsize=chars
+  xyouts,0.005,0.060,'REGO ASI',color=xyouts_color,/normal,charsize=chars
   endif
 
 if keyword_set(verbose) then dprint, 'After map: ',systime(1)-verbose,$
@@ -578,7 +559,7 @@ if keyword_set(gif_out) then begin
       endcase
       endfor
 	; construct the name
-   out_name='MOSA.'+string(year,'(i4.4)')+'.'+string(month,'(i2.2)')+'.'+$
+   out_name='REGO.'+string(year,'(i4.4)')+'.'+string(month,'(i2.2)')+'.'+$
        string(day,'(i2.2)')+'.'+string(hour,'(i2.2)')+'.'+string(minute,'(i2.2)')+$
        '.'+string(second,'(i2.2)')+'.gif'
    write_gif,gdir+out_name,img,r,g,b

@@ -6,34 +6,38 @@
 ;
 ; See also "spd_mms_load_bss", "mms_load_bss", and "mms_load_bss_crib".
 ;
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-11-24 13:31:05 -0800 (Tue, 24 Nov 2015) $
+; $LastChangedRevision: 19465 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/spd_mms_load_bss_crib.pro $
+;-
+
 
 ; set time range 
-timespan, '2015-10-01', 1d
+timespan, '2015-10-01', 1, /day
 
 ; get data availability for burst and survey data (note that the labels flag
 ; is set so that the display bars will be labeled)
-spd_mms_load_bss, datatype='burst', /include_labels
-spd_mms_load_bss, datatype='fast', /include_labels
-
-; plot bars only
-tplot, ['mms_bss_burst','mms_bss_fast']
-stop
+spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
 
 ; now plot bars with some data 
-sc='mms3'
-mms_sitl_get_dfg,sc=sc
-options,sc+'_dfg_srvy_gsm_dmpa',constant=0,colors=[2,4,6],ystyle=1,yrange=[-100,100]
-mms_sitl_get_fpi_basic, sc=sc
-options,sc+'_fpi_iEnergySpectr_omni',spec=1,ylog=1,zlog=1,yrange=[10,26000],ystyle=1
-tplot,[sc+'_dfg_srvy_gsm_dmpa','mms_bss_fast','mms_bss_burst',sc+'_fpi_iEnergySpectr_omni']
+mms_load_dfg, probe=3, data_rate='brst'
+
+; degap the mag data to avoid tplot connecting the lines between
+; burst segments
+tdegap, 'mms3_dfg_brst_l2pre_gse_bvec', /overwrite
+
+
+tplot,['mms_bss_fast','mms_bss_burst', 'mms3_dfg_brst_l2pre_gse_bvec']
 stop
 
 ; Get all BSS data types (Fast, Burst, Status, and FOM)
 ; if no data type is provided all data types will be returned
 spd_mms_load_bss, /include_labels
+
 ; plot bss bars and fom at top of plot
 tplot,['mms_bss_fast','mms_bss_burst','mms_bss_status', 'mms_bss_fom', $
-       sc+'_dfg_srvy_gsm_dmpa',sc+'_fpi_iEnergySpectr_omni']
+       'mms3_dfg_brst_l2pre_gse_bvec']
 stop
 
 end
