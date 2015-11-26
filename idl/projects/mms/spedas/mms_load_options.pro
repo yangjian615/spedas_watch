@@ -289,6 +289,9 @@ function mms_load_options_hpca
     
 s = { $
       brst: { $
+              l1a: [ $
+                     'spinangles' $
+                   ], $
               l1b: [ $
                      'count_rate', $
                      'flux', $
@@ -299,6 +302,9 @@ s = { $
                    ] $
             }, $
       srvy: { $
+              l1a: [ $
+                     'spinangles' $
+                   ], $
               l1b: [ $
                      'count_rate', $
                      'flux', $
@@ -485,9 +491,9 @@ end
 ;Notes:
 ;  
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-16 08:16:15 -0800 (Mon, 16 Nov 2015) $
-;$LastChangedRevision: 19375 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-11-25 13:17:44 -0800 (Wed, 25 Nov 2015) $
+;$LastChangedRevision: 19479 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_options.pro $
 ;-
 pro mms_load_options, $

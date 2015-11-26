@@ -61,9 +61,9 @@
 ; 
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-30 11:44:49 -0700 (Fri, 30 Oct 2015) $
-;$LastChangedRevision: 19195 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-11-25 13:17:44 -0800 (Wed, 25 Nov 2015) $
+;$LastChangedRevision: 19479 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_hpca.pro $
 ;-
 
@@ -81,20 +81,22 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix=''
     if undefined(varformat) then begin
-       ; allow for the following datatypes:
-       ; count_rate, flux, vel_dist, rf_corr, bkgd_corr
-       case datatype of 
-            'ion': varformat = '*_RF_corrected'
-            'rf_corr': varformat = '*_RF_corrected'
-            'count_rate': varformat = '*_count_rate'
-            'flux': varformat = '*_flux'
-            'vel_dist': varformat = '*_vel_dist_fn'
-            'bkgd_corr': varformat = '*_bkgd_corrected'
-            'moments': varformat = '*'
-            else: varformat = '*_RF_corrected'
-       endcase
-       if ~undefined(varformat) && varformat ne '*' then datatype = 'ion'
-       
+        ;convert "datatypes" to actual datatype and varformat
+        if n_elements(level) eq 1 && strlowcase(level) ne 'l1a' then begin
+            ; allow for the following datatypes:
+            ; count_rate, flux, vel_dist, rf_corr, bkgd_corr
+            case datatype of 
+                'ion': varformat = '*_RF_corrected'
+                'rf_corr': varformat = '*_RF_corrected'
+                'count_rate': varformat = '*_count_rate'
+                'flux': varformat = '*_flux'
+                'vel_dist': varformat = '*_vel_dist_fn'
+                'bkgd_corr': varformat = '*_bkgd_corrected'
+                'moments': varformat = '*'
+                else: varformat = '*_RF_corrected'
+            endcase
+            if ~undefined(varformat) && varformat ne '*' then datatype = 'ion'
+        endif
     endif
     ;if level eq 'sitl' then varformat = '*'
     

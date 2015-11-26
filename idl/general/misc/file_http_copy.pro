@@ -134,10 +134,10 @@
  ;       then the connection would be closed
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2015-11-06 11:29:47 -0800 (Fri, 06 Nov 2015) $
- ; $LastChangedRevision: 19282 $
+ ; $LastChangedDate: 2015-11-25 06:54:20 -0800 (Wed, 25 Nov 2015) $
+ ; $LastChangedRevision: 19473 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
- ; $Id: file_http_copy.pro 19282 2015-11-06 19:29:47Z davin-mac $
+ ; $Id: file_http_copy.pro 19473 2015-11-25 14:54:20Z davin-mac $
  ;-
  
  
@@ -541,7 +541,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19282 2015-11-06 19:29:47Z davin-mac $
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19473 2015-11-25 14:54:20Z davin-mac $
 
    if n_elements(strict_html) eq 0 then begin
       strict_html = 1      ;  set to 1 to be robust,  set to 0 to be much faster
@@ -549,7 +549,7 @@ end
    endif
 
    if keyword_set(user_agent) eq 0 then begin
-     swver = strsplit('$Id: file_http_copy.pro 19282 2015-11-06 19:29:47Z davin-mac $',/extract)
+     swver = strsplit('$Id: file_http_copy.pro 19473 2015-11-25 14:54:20Z davin-mac $',/extract)
      user = getenv('USER')
      if ~user then user=getenv('USERNAME')
      if ~user then user=getenv('LOGNAME')
@@ -1096,7 +1096,7 @@ endif
          dprint,dlevel=1,verbose=verbose,'Local file: "' + localname + '"  (Not downloaded).  Server '+server+' left hanging'
        endelse
      endif else begin
-       dprint,dlevel=1,verbose=verbose,'Remote file not found! "'+ url + '" (increase VERBOSE to learn more)'
+       dprint,dlevel=1,verbose=verbose,'Can not retrieve: "'+ url + '" '+header[0]
        dprint,dlevel=3,verbose=verbose,'If file was expected, you should verify that your anti-virus software did not block the connection and add an exception for IDL, if necessary'
        dprint,dlevel=4,verbose=verbose,'Request Had Header: '
        dprint,dlevel=4,verbose=verbose, transpose(Header)

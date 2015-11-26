@@ -11,15 +11,15 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-28 10:48:21 -0700 (Wed, 28 Oct 2015) $
-;$LastChangedRevision: 19175 $
+;$LastChangedDate: 2015-11-25 11:46:26 -0800 (Wed, 25 Nov 2015) $
+;$LastChangedRevision: 19478 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi_fix_angles.pro $
 ;-
 pro mms_load_fpi_fix_angles, tplotnames, prefix = prefix
     if undefined(prefix) then prefix = 'mms1'
     fpi_angles = mms_fpi_angles()
 
-    spectra_where = strmatch(tplotnames, prefix + '_fpi_?PitchAngDist_*En')
+    spectra_where = strmatch(tplotnames, prefix + '_???_*itchAngDist_*En')
 
     if n_elements(spectra_where) ne 0 then begin
         for var_idx = 0, n_elements(tplotnames)-1 do begin

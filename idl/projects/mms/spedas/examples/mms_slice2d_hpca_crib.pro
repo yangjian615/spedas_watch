@@ -10,65 +10,66 @@
 ;
 ;  *** This is a work in progress ***
 ;
-;  *** Azimuth files not yet available for download *** 
-;       -can be loaded manually if present with:
-;           cdf2tplot, file_name, varform='*' 
-;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-30 19:45:39 -0700 (Fri, 30 Oct 2015) $
-;$LastChangedRevision: 19201 $
+;$LastChangedDate: 2015-11-25 13:19:50 -0800 (Wed, 25 Nov 2015) $
+;$LastChangedRevision: 19480 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_slice2d_hpca_crib.pro $
 ;-
 
-
-;======================================================================
-; HPCA
-;======================================================================
 
 
 ;setup
 ;---------------------------------------------
 probe = '1'
-level = 'l1b'
-data_rate = 'brst' ;may have to use burst data due to azimuthal decimation
+data_rate = 'brst'
+;data_rate = 'srvy'
 
-timespan, '2015-09-06/11:00', 1, /hour
+timespan, '2015-10-20/05:56:30', 5, /min  ;brst
+;timespan, '2015-11-16/06:32:00', 20, /min  ;brst/srvy
 trange = timerange()
 
 
 ;load data into tplot
 ;---------------------------------------------
-mms_load_hpca, probes=probe, trange=trange, $
-               data_rate=data_rate, level=level, datatype='vel_dist'
 
+;particle data 
+mms_load_hpca, probes=probe, trange=trange, $
+               data_rate=data_rate, level='l1b', datatype='vel_dist'
+
+;azimuth data
+mms_load_hpca, probe=probe, trange=trange, $
+               data_rate=data_rate, level='l1a', datatype='spinangles', $
+               varformat='*_angles_per_ev_degrees'
+
+;B field (only necessary for field-aligned slices)
+;mms_load_dfg, probe=probe, trange=trange, level='ql'
 
 ;use h+ dist function var for example
 tname = 'mms'+probe[0]+'_hpca_hplus_vel_dist_fn'
 
 
-;reformat data from tplot variable into compatible 3D structures
-;  -for now these are not truly 3D structures as each represents only
-;   a single azimuthal sweep
+;reformat data from tplot variables into compatible 3D structures
+;  -this will return a pointer to the structure array in order to save memory 
 ;---------------------------------------------
 dist = mms_get_hpca_dist(tname)
 
 
 ;generate and plot 2D slice
-;  -rotations based on B & V data require tplot support vars
-;  -some plot annotations will need to be set manually for now
 ;---------------------------------------------
 
-time = '2015-09-06/11:30' ;start time of slice
-window = 10. ;window (sec) over which to average
+;time at which to retrieve the slice
+time = mean(trange)
 
 ;get slice
-slice = spd_slice2d(dist, time=time, window=window)
+slice = spd_slice2d(dist, time=time, /geo)  ;use distribution closest to specified time
+;slice = spd_slice2d(dist, time=time, /geo, samples=2)  ;average 2 closest distributions
 
-;set annotations
-slice.coord = 'arbitrary'
-slice.units = 'f (sec^3 / cm^6)' 
-
+;average all data in specified time window
+;slice = spd_slice2d(dist, time=time, /geo, window=20)  ; window (sec) starts at TIME  
+;slice = spd_slice2d(dist, time=time, /geo, window=20, /center_time)  ; window centered on TIME
+          
+        
 ;plot
 spd_slice2d_plot, slice
 

@@ -46,6 +46,8 @@
 ;
 ;    SC_POT:      Specifies the spacecraft potential.
 ;
+;       VSC:      Corrects for the spacecraft velocity.
+;
 ;USAGE EXAMPLES:
 ;         1.      ; Normal case
 ;                 ; Uses archive data, and shows the B field direction.
@@ -75,15 +77,17 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-11-23 12:48:40 -0800 (Mon, 23 Nov 2015) $
-; $LastChangedRevision: 19454 $
+; $LastChangedDate: 2015-11-25 11:30:14 -0800 (Wed, 25 Nov 2015) $
+; $LastChangedRevision: 19477 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
 PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _extra=_extra, $
                           bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id,    $
-                          verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, sc_pot=sc_pot
-  
+                          verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
+                          sc_pot=sc_pot, vsc=vsc
+
+  IF !d.name EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
   tplot_options, get_option=topt
   dsize = GET_SCREEN_SIZE()
   IF SIZE(var2, /type) NE 0 THEN BEGIN
@@ -183,21 +187,39 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         str_element, d, 'bins', REBIN(TRANSPOSE(d.bins), d.nenergy, d.nbins), /add_replace
         str_element, d, 'bins_sc', REBIN(TRANSPOSE(d.bins_sc), d.nenergy, d.nbins), /add_replace
 
-        IF keyword_set(sc_pot) THEN BEGIN
-           d.sc_pot = sc_pot
+        IF keyword_set(sc_pot) OR keyword_set(vsc) THEN BEGIN
+           IF keyword_set(vsc) THEN BEGIN
+              sstat = EXECUTE("v_sc = spice_body_vel('MAVEN', 'MARS', utc=0.5*(d.time + d.end_time), frame='MAVEN_MSO')")
+              IF sstat EQ 0 THEN BEGIN
+                 mvn_spice_load, /download, verbose=verbose
+                 v_sc = spice_body_vel('MAVEN', 'MARS', utc=0.5*(d.time + d.end_time), frame='MAVEN_MSO')
+              ENDIF 
+              IF SIZE(v_sc, /type) NE 0 THEN BEGIN
+                 v_sc = spice_vector_rotate(v_sc, 0.5*(d.time + d.end_time), 'MAVEN_MSO', 'MAVEN_STATIC', verbose=verbose, check='MAVEN_SPACECRAFT')
+                 dprint, dlevel=2, verbose=verbose, $
+                         lbreak + '  Correcting f(v) for the spacecraft velocity:' + lbreak + $
+                         '  V_sc (km/s) = [   ' + STRING(v_sc, '(3(F0, :, ",   "))') + '].'
+              ENDIF 
+              undefine, sstat
+           ENDIF ELSE v_sc = [0., 0., 0.]
+
+           IF keyword_set(sc_pot) THEN d.sc_pot = sc_pot
            vel = v_4d(d)
-           d.sc_pot *= -1.                     ; Reversing a sign to execute 'convert_vframe'.
-           d = convert_vframe(d, [0., 0., 0.]) ; Spacecraft potential correcting
+           IF keyword_set(sc_pot) THEN d.sc_pot *= -1. ; Trick to apply 'convert_vframe'.
+           d = convert_vframe(d, v_sc)                 ; Correcting f(v) for either sc_pot or V_sc.
            badbin = WHERE(~FINITE(d.energy), nbad)
            IF nbad GT 0 THEN d.bins[badbin] = 0
-        ENDIF 
+           vel -= v_sc          ; Removing V_sc from the bulk flow.
+           undefine, v_sc
+        ENDIF ELSE vel = v_3d(d)
 
         wstat = EXECUTE("wset, wnum")
         IF wstat EQ 0 THEN wi, wnum, wsize=[dsize[0]/2., dsize[1]*2./3.] ELSE undefine, wstat
         status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel")
         IF status EQ 1 THEN $
            XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal
-        undefine, status
+
+        undefine, status, d, vel
      ENDIF ELSE dprint, 'Click again.', dlevel=2, verbose=verbose
 
      IF SIZE(var2, /type) EQ 0 THEN BEGIN

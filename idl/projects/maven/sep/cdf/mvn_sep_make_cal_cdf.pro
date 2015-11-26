@@ -44,7 +44,7 @@ file_mkdir2,file_dirname(filename)
 fileid = cdf_create(filename,/single_file,/network_encoding,/clobber)
 
 id0 = cdf_attcreate(fileid,'Acknowledgement',/global_scope)
-id0 = cdf_attcreate(fileid,'Title',/global_scope)
+id0 = cdf_attcreate(fileid,'TITLE',/global_scope)
 id1 = cdf_attcreate(fileid,'Project',/global_scope)
 id2 = cdf_attcreate(fileid,'Discipline',/global_scope)
 id3 = cdf_attcreate(fileid,'Source_name',/global_scope)
@@ -74,7 +74,7 @@ for i=0,n_elements(exnames)-1 do  idxx = cdf_attcreate(fileid,exnames[i],/global
 
 ;Load global Attributes
 
-cdf_attput,fileid,'Title',0,'MAVEN SEP Electron and Ion Flux'
+cdf_attput,fileid,'TITLE',0,'MAVEN SEP Electron and Ion Flux'
 cdf_attput,fileid,'Project',0,'MAVEN>Mars Atmosphere and Volatile EvolutioN Mission'
 ;cdf_attput,fileid,'Discipline',0,'Planetary Space Physics>Particles'
 cdf_attput,fileid,'Discipline',0,'Planetary Physics>Particles'
@@ -103,7 +103,7 @@ for i=0,n_elements(exnames)-1 do     cdf_attput,fileid,exnames[i],0,extra.(i)
 
 ; Variable attributes
 
-default_atts = {fieldnam:'',monoton:'',format:'F10.2',lablaxis:'',VAR_TYPE:'support_data',fillval:!values.f_nan,DISPLAY_TYPE:'',scaletyp:'linear', $
+default_atts = {fieldnam:'',monoton:'',format:'E10.2',lablaxis:'',VAR_TYPE:'support_data',display_type:'time_series',fillval:!values.f_nan,scaletyp:'linear', $
       VALIDMIN:-1e31,VALIDMAX:1e31,SCALEMIN:0.,SCALEMAX:100.,UNITS:'',CATDESC:'', $
       FORM_PTR:'',DEPEND_TIME:time_name,DEPEND_0:epoch_name,DEPEND_1:'',DEPEND_2:'' }
 
@@ -126,30 +126,14 @@ cdf_attput,fileid,'SCALEMAX',varid,1d10,/ZVARIABLE
 cdf_attput,fileid,'UNITS',varid,'sec',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in Unix time',/ZVARIABLE
+cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
 cdf_varput,fileid,time_name,time
 
 
 
 ;Epoch
 
-if 0 then begin
-varid = cdf_varcreate(fileid, epoch_name, /CDF_EPOCH, /REC_VARY,/ZVARIABLE)
-cdf_attput,fileid,'FIELDNAM',varid,epoch_name,/ZVARIABLE
-cdf_attput,fileid,'FORMAT',varid,'F25.0',/ZVARIABLE
-cdf_attput,fileid,'LABLAXIS',varid,'Epoch Time',/ZVARIABLE
-cdf_attput,fileid,'VAR_TYPE',varid,'support_data',/ZVARIABLE
-cdf_attput,fileid,'FILLVAL',varid,!values.d_nan,/ZVARIABLE
-cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
-cdf_attput,fileid,'VALIDMIN',varid,epoch_range[0],/ZVARIABLE
-cdf_attput,fileid,'VALIDMAX',varid,epoch_range[1],/ZVARIABLE
-cdf_attput,fileid,'SCALEMIN',varid,epoch[0],/ZVARIABLE
-cdf_attput,fileid,'SCALEMAX',varid,epoch[nrec-1],/ZVARIABLE
-cdf_attput,fileid,'UNITS',varid,'ms',/ZVARIABLE
-cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
-cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in NSSDC Epoch',/ZVARIABLE
 
-cdf_varput,fileid,epoch_name,epoch
-endif
 
 ;TT2000
 
@@ -168,6 +152,7 @@ cdf_attput,fileid,'SCALEMAX',varid,timett2000[nrec-1],/ZVARIABLE
 cdf_attput,fileid,'UNITS',varid,'ns',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in TT2000 time base',/ZVARIABLE
+cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
 
 cdf_varput,fileid,varname,timett2000
 
@@ -188,6 +173,7 @@ cdf_attput,fileid,'SCALEMAX',varid,data_vary[nrec-1].met,/ZVARIABLE
 cdf_attput,fileid,'UNITS',varid,'s',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in raw mission elapsed time',/ZVARIABLE
+cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
 
 cdf_varput,fileid,varname,data_vary.met
 
@@ -209,6 +195,7 @@ cdf_attput,fileid,'SCALEMAX',varid,data_vary[nrec-1].met,/ZVARIABLE
 cdf_attput,fileid,'UNITS',varid,'s',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Ephermeris Time, middle of sample, compatible with spice',/ZVARIABLE
+cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
 
 str_element,data_vary,'time_ephemeris',et
 str_element,data_vary,'et',et
@@ -226,48 +213,43 @@ cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'FORMAT',varid,'I7',/ZVARIABLE
 cdf_attput,fileid,'LABLAXIS',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'VAR_TYPE',varid,'data',/ZVARIABLE
-cdf_attput,fileid,'FILLVAL',varid,-1,/ZVARIABLE
+cdf_attput,fileid,'FILLVAL',varid,uint(-1),/ZVARIABLE
 cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
-cdf_attput,fileid,'VALIDMIN',varid,1,/ZVARIABLE
-cdf_attput,fileid,'VALIDMAX',varid,2,/ZVARIABLE
-cdf_attput,fileid,'SCALEMIN',varid,0,/ZVARIABLE
-cdf_attput,fileid,'SCALEMAX',varid,3,/ZVARIABLE
+cdf_attput,fileid,'VALIDMIN',varid,1u,/ZVARIABLE
+cdf_attput,fileid,'VALIDMAX',varid,2u,/ZVARIABLE
+cdf_attput,fileid,'SCALEMIN',varid,0u,/ZVARIABLE
+cdf_attput,fileid,'SCALEMAX',varid,3u,/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Attenuator state, 0=Error,  1 = open, 2 = closed,   3= mixed',/ZVARIABLE
 cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
 cdf_attput,fileid,'DEPEND_TIME',varid,time_name,/ZVARIABLE
 cdf_varput,fileid,varname,uint(data_vary.att)
 
-if 0 then begin
-  ; Accumulation Time
-  varname = 'accum_time'
-  varid = cdf_varcreate(fileid, varname, /CDF_INT2, /REC_VARY,/ZVARIABLE)
-  cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
-  cdf_attput,fileid,'FORMAT',varid,'I7',/ZVARIABLE
-  cdf_attput,fileid,'LABLAXIS',varid,varname,/ZVARIABLE
-  cdf_attput,fileid,'VAR_TYPE',varid,'support_data',/ZVARIABLE
-  cdf_attput,fileid,'FILLVAL',varid,0,/ZVARIABLE
-  cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
-  cdf_attput,fileid,'VALIDMIN',varid,1,/ZVARIABLE
-  cdf_attput,fileid,'VALIDMAX',varid,8192,/ZVARIABLE
-  cdf_attput,fileid,'SCALEMIN',varid,0,/ZVARIABLE
-  cdf_attput,fileid,'SCALEMAX',varid,8192,/ZVARIABLE
-  cdf_attput,fileid,'CATDESC',varid,'Number of 1-second accumulations contained within this data sample.',/ZVARIABLE
-  cdf_attput,fileid,'DEPEND_TIME',varid,time_name,/ZVARIABLE
-  cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
-  cdf_varput,fileid,varname,data_vary.duration  
-endif else begin
-  varname = 'accum_time'
-  atts = default_atts
-  atts.fieldnam = varname
-  atts.lablaxis = varname
-  atts.var_type ='support_data'
-  atts.catdesc = 'Number of 1-second accumulations contained within this data sample.'
-  mvn_sep_cdf_var_att_create,fileid,varname,data_vary.duration,attributes=atts  
-endelse
+
+
+varname = 'accum_time'
+atts = default_atts
+str_element,/add,atts,'FILLVAL',uint(-1)
+str_element,/add,atts,'VALIDMIN',0u
+str_element,/add,atts,'VALIDMAX',128u
+str_element,/add,atts,'SCALEMIN',0u
+str_element,/add,atts,'SCALEMAX',128u
+str_element,/add,atts,'FORMAT','I6'
+atts.fieldnam = varname
+atts.lablaxis = varname
+atts.var_type ='support_data'
+atts.catdesc = 'Number of 1-second accumulations contained within this data sample.'
+mvn_sep_cdf_var_att_create,fileid,varname,data_vary.duration,attributes=atts
+
 
 
 varname = 'mapid'
 atts = default_atts
+str_element,/add,atts,'FILLVAL',uint(-1)
+str_element,/add,atts,'VALIDMIN',0u
+str_element,/add,atts,'VALIDMAX',128u
+str_element,/add,atts,'SCALEMIN',0u
+str_element,/add,atts,'SCALEMAX',128u
+str_element,/add,atts,'FORMAT','I6'
 atts.var_type ='support_data'
 atts.fieldnam = varname
 atts.lablaxis = varname
@@ -277,9 +259,14 @@ mvn_sep_cdf_var_att_create,fileid,varname,uint(data_vary.mapid),attributes=atts
 varname = 'seq_cntr'
 atts = default_atts
 atts.var_type ='support_data'
+str_element,/add,atts,'FILLVAL',uint(-1)
+str_element,/add,atts,'VALIDMIN',0u
+str_element,/add,atts,'VALIDMAX',2U^14
+str_element,/add,atts,'SCALEMIN',0u
+str_element,/add,atts,'SCALEMAX',2u^14
+str_element,/add,atts,'FORMAT','I6'
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
 atts.catdesc = 'CCSDS Sequence Counter'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.seq_cntr,attributes=atts
 
@@ -570,9 +557,7 @@ atts.catdesc = 'Quality FLAG'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.QUALITY_FLAG,attributes=atts
 
 
-
- 
 cdf_close,fileid
-dprint,dlevel=2,'Created: '+filename
+dprint,dlevel=2,'Created: "'+filename+'"'
 
 end

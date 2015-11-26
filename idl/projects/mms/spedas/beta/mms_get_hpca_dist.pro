@@ -20,12 +20,10 @@
 ;Notes:
 ;  This is a work in progress
 ;
-;  **Currently requires angle data that is not available for download**
-;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-11-18 14:48:09 -0800 (Wed, 18 Nov 2015) $
-;$LastChangedRevision: 19414 $
+;$LastChangedDate: 2015-11-25 13:19:50 -0800 (Wed, 25 Nov 2015) $
+;$LastChangedRevision: 19480 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_hpca_dist.pro $
 ;-
 
@@ -36,7 +34,7 @@ function mms_get_hpca_dist, tname, structure=structure
 
 name = (tnames(tname))[0]
 if name eq '' then begin
-  dprint, 'Variable: "'+tname+'" not found'
+  dprint, dlevel=0, 'Variable: "'+tname+'" not found'
   return, 0
 endif
 
@@ -44,12 +42,12 @@ endif
 get_data, name, data=d, dlimits=dl
 
 if ~is_struct(d) then begin
-  dprint, 'Variable: "'+tname+'" contains invalid data'
+  dprint, dlevel=0, 'Variable: "'+tname+'" contains invalid data'
   return, 0
 endif
 
 if size(d.y,/n_dim) ne 3 then begin
-  dprint, 'Variable: "'+tname+'" has wrong number of elements'
+  dprint, dlevel=0, 'Variable: "'+tname+'" has wrong number of elements'
   return, 0
 endif
 
@@ -69,6 +67,11 @@ s = mms_get_hpca_info()
 ;  -contains azimuth & temporal data
 get_data, 'mms'+probe+'_hpca_azimuth_angles_per_ev_degrees', data=azimuth
 
+if ~is_struct(azimuth) then begin
+  dprint, dlevel=0, 'No azimuth data found for the current time range'
+  return, 0
+endif
+
 ;find azimuth times with complete 1/2 spins of particle data
 ;this is used to determine the number of 3D distributions that will be created
 ;and where their corresponding data is located in the particle data structure
@@ -76,7 +79,7 @@ n_times = n_elements(azimuth.y[0,0,*])
 idx = value_locate(d.x, azimuth.x)
 full = where( (idx[1:*] - idx[0:n_elements(idx)-2]) eq n_times, n_full)
 if n_full eq 0 then begin
-  dprint, 'No azimuth data found for current time range'
+  dprint, dlevel=0, 'Loaded azimuth data does not cover current time range'
   return, 0
 endif
 idx = idx[full]
@@ -110,7 +113,7 @@ case species of
     charge = 2.
   end
   else: begin
-    dprint, 'Cannot determine species'
+    dprint, dlevel=0, 'Cannot determine species'
     return, 0
   endelse
 endcase

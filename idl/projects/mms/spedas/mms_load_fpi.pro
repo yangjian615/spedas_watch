@@ -53,8 +53,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-23 09:19:12 -0800 (Mon, 23 Nov 2015) $
-;$LastChangedRevision: 19450 $
+;$LastChangedDate: 2015-11-25 11:07:27 -0800 (Wed, 25 Nov 2015) $
+;$LastChangedRevision: 19475 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi.pro $
 ;-
 
@@ -74,8 +74,9 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     if undefined(autoscale) then autoscale = 1
     
     ; different datatypes for burst mode files
-    if data_rate eq 'brst' && datatype[0] eq '*' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
-      
+    if data_rate eq 'brst' && (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
+    if data_rate eq 'brst' && (datatype[0] eq '*' || datatype[0] eq '') && level eq 'ql' then datatype=['des', 'dis']
+   
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'fpi', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
