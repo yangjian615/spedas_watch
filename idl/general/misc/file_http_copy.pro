@@ -134,10 +134,10 @@
  ;       then the connection would be closed
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2015-11-25 06:54:20 -0800 (Wed, 25 Nov 2015) $
- ; $LastChangedRevision: 19473 $
+ ; $LastChangedDate: 2015-11-25 22:50:14 -0800 (Wed, 25 Nov 2015) $
+ ; $LastChangedRevision: 19483 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
- ; $Id: file_http_copy.pro 19473 2015-11-25 14:54:20Z davin-mac $
+ ; $Id: file_http_copy.pro 19483 2015-11-26 06:50:14Z davin-mac $
  ;-
  
  
@@ -444,7 +444,7 @@ end
    dprint,dlevel=6,verbose=verbose,'date=',date
    
    ; Look for successful return
-   pos = strpos(strupcase(header[0]),'200 OK')
+   ;pos = strpos(strupcase(header[0]),'200 OK')
    hi.exists = hi.status_code eq 200 || hi.status_code eq 304
    ;  if hi.exists eq 0 then return
    
@@ -541,7 +541,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19473 2015-11-25 14:54:20Z davin-mac $
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19483 2015-11-26 06:50:14Z davin-mac $
 
    if n_elements(strict_html) eq 0 then begin
       strict_html = 1      ;  set to 1 to be robust,  set to 0 to be much faster
@@ -549,7 +549,7 @@ end
    endif
 
    if keyword_set(user_agent) eq 0 then begin
-     swver = strsplit('$Id: file_http_copy.pro 19473 2015-11-25 14:54:20Z davin-mac $',/extract)
+     swver = strsplit('$Id: file_http_copy.pro 19483 2015-11-26 06:50:14Z davin-mac $',/extract)
      user = getenv('USER')
      if ~user then user=getenv('USERNAME')
      if ~user then user=getenv('LOGNAME')
@@ -775,8 +775,7 @@ end
      t_connect = systime(1)
 ;     if debug(4,verbose) then stop
      
- ;    if keyword_set(referrer) and size(/type,referrer) ne 7 then begin
-     if 0 then begin
+     if keyword_set(referrer) and size(/type,referrer) ne 7 then begin
        stack = scope_traceback(/structure)
        referrer = stack.routine + string(stack.line,format='("(",i0,")")')
        referrer = strjoin(referrer,':')
@@ -817,7 +816,7 @@ end
        if error eq -298 then dprint,dlevel=1,verbose=verbose,"Connection refused. Do you need to provide a password?"
        goto, final_quit
      endif
-     dprint,dlevel=4,verbose=verbose,'Purl= ',purl
+     dprint,dlevel=4,verbose=verbose,'Purl= '+purl
      printf, unit, 'GET '+purl +  ' HTTP/1.0'
      
      ; aaflores july-2012 Allow HOST keyword to overwrite default value
@@ -826,7 +825,7 @@ end
      printf, unit, 'Host: ' + host
      
      if keyword_set(user_agent) then begin
-       printf, unit, 'User-Agent: ',user_agent
+       printf, unit, 'User-Agent: '+user_agent
        dprint,dlevel=4,verbose=verbose,'User Agent: '+user_agent
      endif
      if size(/type,referrer) eq 7 then begin
@@ -834,15 +833,15 @@ end
        dprint,dlevel=4,verbose=verbose,'Referer: '+referrer
      endif
      if keyword_set(user_pass) then begin      
-       printf, unit,  'Authorization: Basic ',strpos(user_pass,':') ge 0 ?  idl_base64(byte(user_pass)) : user_pass
+       printf, unit,  'Authorization: Basic '+ (strpos(user_pass,':') ge 0 ?  idl_base64(byte(user_pass)) : user_pass)
        dprint,dlevel=4,verbose=verbose,'USER_PASS: '+user_pass
      endif
      
      if n_elements(if_modified_since) eq 0 then if_modified_since=1 
      if keyword_set(if_modified_since) then begin
        filemodtime = time_string(if_modified_since lt 2 ? lcl.mtime : if_modified_since , tformat='DOW, DD MTH YYYY hh:mm:ss GMT' )       
-       printf, unit, 'If-Modified-Since: ',filemodtime
-       dprint,dlevel=4,verbose=verbose,'If-Modified-Since: ',filemodtime
+       printf, unit, 'If-Modified-Since: '+filemodtime
+       dprint,dlevel=4,verbose=verbose,'If-Modified-Since: '+filemodtime
      endif
      printf, unit, ''
      
@@ -879,7 +878,7 @@ end
      dprint,dlevel=5,verbose=verbose,'Header= ',transpose(header)
      dprint,dlevel=6,verbose=verbose,phelp=2,url_info
      
-     if url_info.status_code eq 401 then begin
+     if url_info.status_code eq 401 then begin                  ; Not authorized.
         dprint,dlevel=3,verbose=verbose,transpose(header)
         realm = file_http_header_element(header,'WWW-Authenticate:')
         prefix = keyword_set(user_pass) ? 'Invalid USER_PASS: "'+user_pass+'" for: '+realm  : 'keyword USER_PASS required for: '+realm
@@ -937,6 +936,11 @@ end
        goto,  close_server      
      endif
      
+     if url_info.status_code eq 400 then begin   ; Bad Request
+       url_info.exists = 1
+       localname = localname + '.400'
+     endif
+     
      if url_info.exists then begin
      
        ; Determine if download is needed
@@ -972,32 +976,22 @@ end
        if keyword_set(no_download) then  download_file = 0
        if keyword_set(force_download) then download_file = 1
        if url_info.status_code ne 200 then begin
-         download_file = 0
+;         download_file = 0
          dprint,verbose=verbose,dlevel=1,'Unknown status code: '+string(url_info.status_code)
          dprint,verbose=verbose,dlevel=2,transpose(header)
        endif
-       if 1 then begin           ; this section moved forward  - should not occur
-         fi_part = file_info(localname+'.part')
-         if fi_part.exists and fi_part.mtime gt (systime(1) - 60) then begin
-           dprint,dlevel=1,verbose=verbose,'File: '+localname+' is in the process of being downloaded by another process. Request Aborted.'
-           download_file = 0
-         endif        
-       endif
+;       if 1 then begin           ; this section moved forward  - should not occur
+;         fi_part = file_info(localname+'.part')
+;         if fi_part.exists and fi_part.mtime gt (systime(1) - 60) then begin
+;           dprint,dlevel=1,verbose=verbose,'File: '+localname+' is in the process of being downloaded by another process. Request Aborted.'
+;           download_file = 0
+;         endif        
+;       endif
        
        if download_file then begin    ;  begin file download
          dirname = file_dirname(localname)
          file_mkdir2,dirname,mode = dir_mode,dlevel=2,verbose=verbose
          On_IOERROR, file_error2
-if 0 then begin
-         if file_test(localname,/regular,/write) then begin
-             if keyword_set(archive_ext) || keyword_set(archive_dir) then begin
-                 file_archive,localname,archive_ext=archive_ext,archive_dir=archive_dir,verbose=verbose,dlevel=2
-             endif else begin
-                dprint,'Deleting old file: '+localname,dlevel=2,verbose=verbose
-                file_delete,localname,/allow_nonexistent
-             endelse
-         endif
-endif
          openw, wunit, localname+'.part', /get_lun
          if keyword_set(file_mode) then file_chmod,localname+'.part',file_mode    ; chmod here in case download is aborted
          ts = systime(1)
@@ -1008,9 +1002,10 @@ endif
            while  eof(unit) EQ 0 do begin
              readf, unit, text
              printf, wunit, text
+             dprint,dlevel=5,verbose=verbose,text
              if arg_present(links2) then begin
                 extract_html_links,strict_html=strict_html,text,links2 ,/relative, /normal,no_parent=url
-                dprint,/phelp,dlevel=5,verbose=verbose,links2
+                dprint,/phelp,dlevel=6,verbose=verbose,links2
              endif
              dprint,dwait=5,dlevel=1,verbose=verbose,'Downloading "'+localname+'"  Please wait '+string( lines)+' lines'
              lines = lines +1
@@ -1065,7 +1060,7 @@ endif
          endelse
          free_lun, wunit    ; closes local file.
          if file_test(localname,/regular,/write) then begin
-             file_archive,localname,archive_ext=archive_ext,archive_dir=archive_dir,verbose=verbose,dlevel=2   ; archive old version if archive_??? is set
+             file_archive,localname,archive_ext=archive_ext,archive_dir=archive_dir,verbose=verbose,dlevel=2   ; archive old version if either ARCHIVE_??? keyword is set
          endif
          file_move,localname+'.part',localname,/overwrite
          if 1 then begin    ;  for testing purposes
@@ -1097,9 +1092,9 @@ endif
        endelse
      endif else begin
        dprint,dlevel=1,verbose=verbose,'Can not retrieve: "'+ url + '" '+header[0]
-       dprint,dlevel=3,verbose=verbose,'If file was expected, you should verify that your anti-virus software did not block the connection and add an exception for IDL, if necessary'
        dprint,dlevel=4,verbose=verbose,'Request Had Header: '
        dprint,dlevel=4,verbose=verbose, transpose(Header)
+       dprint,dlevel=4,verbose=verbose,'If file was expected, you should verify that your anti-virus software did not block the connection and add an exception for IDL, if necessary'
        
      ;      url_info = 0
      endelse
