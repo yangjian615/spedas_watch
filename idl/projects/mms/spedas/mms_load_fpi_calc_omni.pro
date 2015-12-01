@@ -10,8 +10,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-28 10:48:21 -0700 (Wed, 28 Oct 2015) $
-;$LastChangedRevision: 19175 $
+;$LastChangedDate: 2015-11-30 08:24:16 -0800 (Mon, 30 Nov 2015) $
+;$LastChangedRevision: 19486 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi_calc_omni.pro $
 ;-
 pro mms_load_fpi_calc_omni, probe, autoscale = autoscale
@@ -43,8 +43,8 @@ pro mms_load_fpi_calc_omni, probe, autoscale = autoscale
         ; set the metadata for omnidirectional spectra
         options, obsstr+'EnergySpectr_omni_sum', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!Csum'
         options, obsstr+'EnergySpectr_omni_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!Cavg'
-        options, obsstr+'EnergySpectr_omni_sum', ysubtitle='[keV]'
-        options, obsstr+'EnergySpectr_omni_avg', ysubtitle='[keV]'
+        options, obsstr+'EnergySpectr_omni_sum', ysubtitle='[eV]'
+        options, obsstr+'EnergySpectr_omni_avg', ysubtitle='[eV]'
         options, obsstr+'EnergySpectr_omni_sum', ztitle='Counts'
         options, obsstr+'EnergySpectr_omni_avg', ztitle='Counts'
         ylim, obsstr+'EnergySpectr_omni_avg', min(pX.V), max(pX.V), 1

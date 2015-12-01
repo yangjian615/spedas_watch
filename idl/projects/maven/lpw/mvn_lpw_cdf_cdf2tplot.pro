@@ -31,14 +31,15 @@
 ;
 ; record=record if only one record and not full cdf-file is requested
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-02-10 11:41:54 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16942 $
+; $LastChangedBy: cfowler2 $
+; $LastChangedDate: 2015-11-30 08:31:39 -0800 (Mon, 30 Nov 2015) $
+; $LastChangedRevision: 19487 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/lpw/mvn_lpw_cdf_cdf2tplot.pro $
 ;##########
 ;
 ;Version 1.0
 ;;140718 clean up for check out L. Andersson
+;151130: CMF: added cdf_filename keyword in sub routines to append cdf filename to dlimit.L0_datafile structure.
 ;-
 
 pro mvn_lpw_cdf_cdf2tplot,file=file,prefix=prefix,midfix=midfix,midpos=midpos,suffix=suffix ,newname=newname $
@@ -46,10 +47,12 @@ pro mvn_lpw_cdf_cdf2tplot,file=file,prefix=prefix,midfix=midfix,midpos=midpos,su
    ,all=all,verbose=verbose, get_support_data=get_support_data, convert_int1_to_int2=convert_int1_to_int2 $
    ,record=record, tplotnames=tplotnames
 
+cdf_filename = file_basename(file)  ;take CDF file.
+
 ;Automatically use varformat='*' to load all variables:
 IF varformat NE '*' THEN varformat = '*'
 
-dprint,dlevel=4,verbose=verbose,'$Id: mvn_lpw_cdf_cdf2tplot.pro 16942 2015-02-10 19:41:54Z jimm $'
+dprint,dlevel=4,verbose=verbose,'$Id: mvn_lpw_cdf_cdf2tplot.pro 19487 2015-11-30 16:31:39Z cfowler2 $'
 vb = keyword_set(verbose) ? verbose : 0
 
 ; Load data from file(s)
@@ -63,7 +66,7 @@ cdfi = mvn_lpw_cdf_load_vars(file,varformat=varformat,var_type=var_type,/spdf_de
 dprint,dlevel=5,verbose=verbose,'Starting load into tplot'
 ;  Insert into tplot format
 tn = mvn_lpw_cdf_info_to_tplot(cdfi,varnames2,all=all,prefix=prefix,midfix=midfix,midpos=midpos,suffix=suffix,newname=newname, $  ;bpif keyword_set(all) eq 0
-       verbose=verbose,  tplotnames=tplotnames, get_support_data=get_support_data) ;added get_support_data, jmm, 2013-11-13
+       verbose=verbose,  tplotnames=tplotnames, get_support_data=get_support_data, cdf_filename=cdf_filename) ;added get_support_data, jmm, 2013-11-13
 
 dprint,dlevel=5,verbose=verbose,'Starting Clean up' ;bpif keyword_set(all) eq 0
 tplot_ptrs = ptr_extract(tnames(/dataquant))

@@ -134,7 +134,7 @@ if keyword_set(L2) then   format = 'L2_CDF'
 if ~keyword_set(format) then format='L1_SAV'
 
 if format eq 'L1_SAV' then begin
-  mvn_sep_var_restore,trange=trange,download_only=download_only
+  mvn_sep_var_restore,trange=trange,download_only=download_only,verbose=verbose
   if ~keyword_set(download_only) then begin
     mvn_sep_cal_to_tplot,sepn=1
     mvn_sep_cal_to_tplot,sepn=2
@@ -147,7 +147,8 @@ if format eq 'L2_CDF' then begin
   for sepnum = 1,2 do begin
     sepstr = 's'+strtrim(sepnum,2)
     data_type = sepstr+'-cal-svy-full'
-    L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v03_r??.cdf'
+    L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v0?_r??.cdf'
+    if getenv('USER') eq 'davin' then L2_fileformat =  'maven/data/sci/sep/.l2_v04/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v04_r??.cdf'    
     filenames = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange,verbose=verbose,/valid_only)
     if ~keyword_set(download_only) then   cdf2tplot,filenames    ,prefix = 'MVN_SEP'+strtrim(sepnum,2)+''
   endfor

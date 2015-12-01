@@ -136,7 +136,7 @@ if total(strmatch(tplotnames, 'mvn_lpw_lp_n_t_l2')) eq 1. then begin
       'colors' ,                      7 ,$  ;black
       'labflag' ,                     1)
     ;---------------------------------------------
-    store_data,'mvn_lpw_lp_Ne_L2',data=data_l2,limit=limit_l2,dlimit=dlimit_l2
+    store_data,'mvn_lpw_lp_ne_l2',data=data_l2,limit=limit_l2,dlimit=dlimit_l2
     ;---------------------------------------------
 
 
@@ -221,7 +221,7 @@ if total(strmatch(tplotnames, 'mvn_lpw_lp_n_t_l2')) eq 1. then begin
       'colors' ,                      7 ,$  ;black
       'labflag' ,                     1)
     ;---------------------------------------------
-    store_data,'mvn_lpw_lp_Te_L2',data=data_l2,limit=limit_l2,dlimit=dlimit_l2
+    store_data,'mvn_lpw_lp_te_l2',data=data_l2,limit=limit_l2,dlimit=dlimit_l2
     ;---------------------------------------------
 
 
@@ -306,23 +306,23 @@ if total(strmatch(tplotnames, 'mvn_lpw_lp_n_t_l2')) eq 1. then begin
       'colors' ,                      7 ,$  ;black
       'labflag' ,                     1)
     ;---------------------------------------------
-    store_data,'mvn_lpw_lp_Vsc_L2',data=data_l2,limit=limit_l2,dlimit=dlimit_l2
+    store_data,'mvn_lpw_lp_vsc_l2',data=data_l2,limit=limit_l2,dlimit=dlimit_l2
     ;---------------------------------------------
 
     
     ;============
     ;Plot limits:
     ;============
-    options, 'mvn_lpw_lp_Ne_L2', ylog=1
-    ylim, 'mvn_lpw_lp_Ne_L2', 10., 1.e12
-    options, 'mvn_lpw_lp_Ne_L2', psym=1
+    options, 'mvn_lpw_lp_ne_l2', ylog=1
+    ylim, 'mvn_lpw_lp_ne_l2', 10., 1.e12
+    options, 'mvn_lpw_lp_ne_l2', psym=1
     
-    options, 'mvn_lpw_lp_Te_L2', ylog=1
-    ylim, 'mvn_lpw_lp_Te_L2', 10., 1.E4
-    options, 'mvn_lpw_lp_Te_L2', psym=1
+    options, 'mvn_lpw_lp_te_l2', ylog=1
+    ylim, 'mvn_lpw_lp_te_l2', 10., 1.E4
+    options, 'mvn_lpw_lp_te_l2', psym=1
     
-    ylim, 'mvn_lpw_lp_Vsc_L2', -15, 5.
-    options, 'mvn_lpw_lp_Vsc_L2', psym=1
+    ylim, 'mvn_lpw_lp_vsc_l2', -15, 5.
+    options, 'mvn_lpw_lp_vsc_l2', psym=1
     
   
 endif

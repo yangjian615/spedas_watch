@@ -17,8 +17,8 @@
 ;  timebar, mvn_orbit_num( orbnum = indgen(300) )   ; plots a vertical line at periapsis for the first 300 orbits
 ;Author: Davin Larson  - October, 2014
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-11-19 00:45:57 -0800 (Thu, 19 Nov 2015) $
-; $LastChangedRevision: 19424 $
+; $LastChangedDate: 2015-11-30 01:47:43 -0800 (Mon, 30 Nov 2015) $
+; $LastChangedRevision: 19484 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_orbit_num.pro $
 ;-
 
@@ -69,8 +69,8 @@ if ~keyword_set(reload) then reload = 3600    ; default to one hour
 if (systime(1) - time_cached) gt reload then begin   ; generate no more than once per hour
   if ~keyword_set(source) then source = spice_file_source(preserve_mtime=1,verbose=verbose,ignore_filesize=1,valid_only=1,last_version=0)
   dprint,dlevel=2,verbose=verbose,'Checking server: ' +source.remote_data_dir+' for new orbit files.'
-  filenames = file_retrieve('MAVEN/kernels/spk/maven_orb_rec_??????_??????_v?.orb',_extra=source)
-  filenames = [filenames,file_retrieve('MAVEN/kernels/spk/maven_orb_rec.orb',_extra=source)]
+  filenames = file_retrieve('MAVEN/kernels/spk/maven_orb_rec_??????_??????_v?.orb',_extra=source)    ; Note: this algorithm will fail if a version 2 file appears.
+  filenames = [filenames,file_retrieve('MAVEN/kernels/spk/maven_orb_rec.orb',_extra=source)]          ; Recent reconstructed orbits
   filenames = [filenames,file_retrieve('MAVEN/kernels/spk/maven_orb.orb',_extra=source)]              ; predicted orbits
   filenames = [filenames,file_retrieve('MAVEN/kernels/spk/maven_orb.orb.long',_extra=source)]         ; long term predicts
 ;  dprint,dlevel=2, n_elements(filenames) gt 1 ? transpose(filenames) : filenames

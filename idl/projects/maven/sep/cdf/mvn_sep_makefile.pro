@@ -1,4 +1,4 @@
-pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trange=trange  ,prereq_files=prereq_files
+pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trange=trange  ,prereq_files=prereq_files,add_link=add_link,sw_version=sw_version
 
   @mvn_sep_handler_commonblock.pro
 
@@ -13,7 +13,8 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
   sepstr = 's'+sn
   sepname = 'SEP'+sn
   data_type = sepstr+'-raw-svy-full'  
-  L2_fileformat =  'maven/data/sci/sep/.l2_v04b/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v04_r??.cdf'
+  ver = sw_version.sw_version
+  L2_fileformat =  'maven/data/sci/sep/.l2_v04e/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
   source_fi = file_info([source_files,prereq_files])
@@ -30,7 +31,7 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
     mapid = round(median(sepdata.mapid))
     bmaps = mvn_sep_get_bmap(mapid,sepnum)
     dependencies = [source_files,spice_test('*')]
-    mvn_sep_make_raw_cdf,sepdata,bmaps,filename = nextrev_fname,global=global,dependencies=dependencies
+    mvn_sep_make_raw_cdf,sepdata,bmaps,filename = nextrev_fname,global=global,dependencies=dependencies,add_link=add_link
 ;    print_cdf_info,nextrev_fname
     if 0 then begin
       src = mvn_file_source()
@@ -41,14 +42,15 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
 end
 
 
-pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=trange  ,prereq_files=prereq_files,L2_fileformat=l2_fileformat
+pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=trange  ,prereq_files=prereq_files,L2_fileformat=l2_fileformat,add_link=add_link,sw_version=sw_version
   @mvn_sep_handler_commonblock.pro
   sn = strtrim(sepnum,2)
   sepstr = 's'+sn
   sepname = 'SEP'+sn
   data_type = sepstr+'-cal-svy-full'
+  ver = sw_version.sw_version
   if ~keyword_set(L2_fileformat) then $
-      L2_fileformat =  'maven/data/sci/sep/.l2_v04b/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v04_r??.cdf'
+      L2_fileformat =  'maven/data/sci/sep/.l2_v04e/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
   source_fi = file_info([source_files,prereq_files])
@@ -69,7 +71,7 @@ pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=
     mapid = round(median(sepdata.mapid))
     bmaps = mvn_sep_get_bmap(mapid,sepnum)
     dependencies = [source_files,spice_test('*')]
-    mvn_sep_make_cal_cdf,sepcaldata,bmaps,filename = nextrev_fname,global=global,dependencies=dependencies
+    mvn_sep_make_cal_cdf,sepcaldata,bmaps,filename = nextrev_fname,global=global,dependencies=dependencies,add_link=add_link
     ;    print_cdf_info,nextrev_fname
     if 0 then begin
       src = mvn_file_source()
@@ -83,13 +85,13 @@ end
 
 
 
-pro mvn_sep_make_l2_cdfs,trange=trange,source_files=source_files   ,prereq_files=prereq_files
+pro mvn_sep_make_l2_cdfs,trange=trange,source_files=source_files   ,prereq_files=prereq_files,add_link=add_link,sw_version=sw_version
 
-  mvn_sep_make_raw_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files ,prereq_files=prereq_files
-  mvn_sep_make_raw_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files ,prereq_files=prereq_files
+  mvn_sep_make_raw_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files ,prereq_files=prereq_files,add_link=add_link,sw_version=sw_version
+  mvn_sep_make_raw_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files ,prereq_files=prereq_files,add_link=add_link,sw_version=sw_version
 
-  mvn_sep_make_cal_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files ,prereq_files=prereq_files
-  mvn_sep_make_cal_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files ,prereq_files=prereq_files
+  mvn_sep_make_cal_cdf_wrap, sepnum=1,trange=trange,  source_files=source_files ,prereq_files=prereq_files,add_link=add_link,sw_version=sw_version
+  mvn_sep_make_cal_cdf_wrap, sepnum=2,trange=trange,  source_files=source_files ,prereq_files=prereq_files,add_link=add_link,sw_version=sw_version
 
 ;caldat=mvn_sep_get_cal_units(*sep1_svy.x,bkg =bkg)
 
@@ -166,7 +168,8 @@ for i=0L,nd-1 do begin
 ;    printdat,prereq_info
 ;  endelse
   
-  mvn_sep_make_l2_cdfs,source_files=l0_files,prereq_files=prereq_files,trange=tr
+  add_link = (mvn_pfp_file_retrieve('maven/pfp/.secure/.htaccess'))[0]
+  mvn_sep_make_l2_cdfs,source_files=l0_files,prereq_files=prereq_files,trange=tr,add_link=add_link,sw_version=sw_version
 
   if keyword_set(plotformat) then begin
     pf = str_sub(plotformat,'$NDAY',strtrim(ndaysload,2)+'day')

@@ -5,7 +5,7 @@
 ;D. Larson, April, 2008
 ;
 pro file_mkdir2,dirs,mode=mode,dir_mode=dir_mode,writeable=writeable $
-    ,dlevel=dlevel,verbose=verbose
+    ,dlevel=dlevel,verbose=verbose,add_link=add_link
 
 for i = 0,n_elements(dirs)-1  do begin
   dir = dirs[i]
@@ -19,12 +19,15 @@ for i = 0,n_elements(dirs)-1  do begin
   endif else begin
     parent_dir = file_dirname(dir)
     ;dprint,parent_dir
-    if parent_dir ne dir then file_mkdir2,parent_dir,mode=mode,writeable=writeable   ; else message,'Unable to determine parent directory!'
+    if parent_dir ne dir then file_mkdir2,parent_dir,mode=mode,writeable=writeable   ; Make parent directories if needed.
     if writeable then begin
       dprint,'Creating new directory: ',dir,dlevel=dlevel,verbose=verbose
       file_mkdir,dir
       if keyword_set(mode) then file_chmod,dir,mode
       writeable = 1b
+      if keyword_set(add_link) then begin
+        file_link,add_link,dir +'/'+file_basename(add_link)
+      endif
     endif else dprint,dlevel=dlevel,verbose=verbose,'Unable to create Directory: ',dir
   endelse
   

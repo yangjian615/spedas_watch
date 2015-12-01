@@ -31,9 +31,9 @@
 ;'we12bursthf':  tvar = 'mvn_lpw_w_e12_burst_hf_l2'
 ;'wn':           tvar = 'mvn_lpw_w_n_l2'
 ;'lpiv':         tvar = 'mvn_lpw_lp_iv_l2'
-;'lpnt_n':       tvar = 'mvn_lpw_lp_Ne_L2'
-;'lpnt_t':       tvar = 'mvn_lpw_lp_Te_L2'
-;'lpnt_v':       tvar = 'mvn_lpw_lp_Vsc_L2'
+;'lpnt_n':       tvar = 'mvn_lpw_lp_ne_l2'
+;'lpnt_t':       tvar = 'mvn_lpw_lp_te_l2'
+;'lpnt_v':       tvar = 'mvn_lpw_lp_vsc_l2'
 ;'mrgexb':       tvar = 'NA2'   ;THIS IS NOT AVAILABLE YET.
 ;'mrgscpot':     tvar = 'mvn_lpw_mrg_sc_pot_l2'
 ;'euv':          tvar = 'mvn_euv_calib_bands'
@@ -90,7 +90,7 @@
 ;Creation Date: 2015-11-19.
 ;
 ;EDITS:
-;
+;2015-11-30: CMF: made all produced tplot variables lower case.
 ;
 ;-
 
@@ -241,9 +241,9 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
         'we12bursthf':  tvar = 'mvn_lpw_w_e12_burst_hf_l2'
         'wn':           tvar = 'mvn_lpw_w_n_l2'           
         'lpiv':         tvar = 'mvn_lpw_lp_iv_l2'          
-        'lpnt_n':       tvar = 'mvn_lpw_lp_Ne_L2' 
-        'lpnt_t':       tvar = 'mvn_lpw_lp_Te_L2'     
-        'lpnt_v':       tvar = 'mvn_lpw_lp_Vsc_L2'    
+        'lpnt_n':       tvar = 'mvn_lpw_lp_ne_l2' 
+        'lpnt_t':       tvar = 'mvn_lpw_lp_te_l2'     
+        'lpnt_v':       tvar = 'mvn_lpw_lp_vsc_l2'    
         'mrgexb':       tvar = 'NA2'           ;this variable should be removed above if present    
         'mrgscpot':     tvar = 'mvn_lpw_mrg_sc_pot_l2'      
         'euv':          tvar = 'mvn_euv_calib_bands'           
@@ -309,7 +309,9 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
 
               str_element, data1, 'dv', dv, success=ok
               if (not ok) then dv = replicate(NaN, Nx, Ny)  ; filler values
-
+              
+              loaded_filenames = dl1.L0_datafile  ;save cdf filename loaded, append to this below for each day loaded.
+              
               first = 0
             endif
           endif else begin 
@@ -355,7 +357,9 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
               dv[0L:(Nx-1L),*] = temporary(dvOLD)
               if (ok) then dv[Nx:(Nx+Mx-1L),*] = temporary(dvNEW) $
                       else dv[Nx:(Nx+Mx-1L),*] = replicate(NaN, Mx, Ny)
-
+              
+              loaded_filenames = loaded_filenames + dl1.L0_datafile  ;append next loaded cdf file to this string.
+              
               Nx += Mx
             endif
 
@@ -419,10 +423,14 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
         print, "### WARNING ### : ", proname, " CDF data structures do not match for multiple dates. You will need to combine LPW L2 CDF data manually over the time range you selected for the following variable: ", varTMP
       
     endif else begin    ;create tplot variable
-
+          
+          dl1.L0_datafile = loaded_filenames  ;these are all of the CDF files loaded (which include the L0 file names as well).
+          
           store_data, tvarSTORE, data=dataSTR, dlimit=dl1, limit=ll1  
           
-          ;I need to clean up dlimit here, as for now it only uses information from the last loaded day.
+          ;CMF : I need to clean up dlimit here, as for now it only uses information from the last loaded day.
+          if tvarSTORE eq 'mvn_lpw_w_spec_act_l2' then options, 'mvn_lpw_w_spec_act_l2', ylog=1
+          if tvarSTORE eq 'mvn_lpw_w_spec_pas_l2' then options, 'mvn_lpw_w_spec_pas_l2', ylog=1
       
     endelse
     
@@ -430,17 +438,17 @@ endfor  ;vv, variables
 
 ;If lpnt was called, copy TMP variables and then remove then. This is required to prevent variables being overwritten when a new date is called (due to how the data are stored).
 if total(strmatch(vars, 'lpnt_n')) eq 1. then begin
-    get_data, 'mvn_lpw_lp_Ne_L2_TMP', data=dd1, dlimit=dl1, limit=ll1
-    get_data, 'mvn_lpw_lp_Te_L2_TMP', data=dd2, dlimit=dl2, limit=ll2
-    get_data, 'mvn_lpw_lp_Vsc_L2_TMP', data=dd3, dlimit=dl3, limit=ll3
+    get_data, 'mvn_lpw_lp_ne_l2_TMP', data=dd1, dlimit=dl1, limit=ll1
+    get_data, 'mvn_lpw_lp_te_l2_TMP', data=dd2, dlimit=dl2, limit=ll2
+    get_data, 'mvn_lpw_lp_vsc_l2_TMP', data=dd3, dlimit=dl3, limit=ll3
     
-    store_data, 'mvn_lpw_lp_Ne_L2', data=dd1, dlimit=dl1, limit=ll1
-    store_data, 'mvn_lpw_lp_Te_L2', data=dd2, dlimit=dl2, limit=ll2
-    store_data, 'mvn_lpw_lp_Vsc_L2', data=dd3, dlimit=dl3, limit=ll3
+    store_data, 'mvn_lpw_lp_ne_l2', data=dd1, dlimit=dl1, limit=ll1
+    store_data, 'mvn_lpw_lp_te_l2', data=dd2, dlimit=dl2, limit=ll2
+    store_data, 'mvn_lpw_lp_vsc_l2', data=dd3, dlimit=dl3, limit=ll3
     
-    store_data, 'mvn_lpw_lp_Ne_L2_TMP', /delete  ;remove temp variables
-    store_data, 'mvn_lpw_lp_Te_L2_TMP', /delete
-    store_data, 'mvn_lpw_lp_Vsc_L2_TMP', /delete
+    store_data, 'mvn_lpw_lp_ne_l2_TMP', /delete  ;remove temp variables
+    store_data, 'mvn_lpw_lp_te_l2_TMP', /delete
+    store_data, 'mvn_lpw_lp_vsc_l2_TMP', /delete
     store_data, 'mvn_lpw_lp_n_t_l2', /delete
 endif
 

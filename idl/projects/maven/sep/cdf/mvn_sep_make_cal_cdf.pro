@@ -3,7 +3,7 @@
 
 
 
-pro mvn_sep_make_cal_cdf, data_vary, data_novary,filename = filename,dependencies=dependencies,global=global
+pro mvn_sep_make_cal_cdf, data_vary, data_novary,filename = filename,dependencies=dependencies,global=global,add_link=add_link
 
 time = data_vary.time
 time_name = 'time_unix'
@@ -40,7 +40,7 @@ timett2000 = long64((add_tt2000_offset(time)-time_double('2000-01-01/12:00'))*1e
 tstr= time_string(minmax(time),tformat='YYYY-MM-DDThh:mm:ss.fffZ')
 
 
-file_mkdir2,file_dirname(filename)
+file_mkdir2,file_dirname(filename),add_link=add_link
 fileid = cdf_create(filename,/single_file,/network_encoding,/clobber)
 
 id0 = cdf_attcreate(fileid,'Acknowledgement',/global_scope)
@@ -143,12 +143,12 @@ cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'FORMAT',varid,'E25.18',/ZVARIABLE
 cdf_attput,fileid,'LABLAXIS',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'VAR_TYPE',varid,'support_data',/ZVARIABLE
-cdf_attput,fileid,'FILLVAL',varid,0,/ZVARIABLE
+cdf_attput,fileid,'FILLVAL',varid,-9223372036854775808,/ZVARIABLE,/CDF_EPOCH
 cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
-cdf_attput,fileid,'VALIDMIN',varid,tt2000_range[0],/ZVARIABLE
-cdf_attput,fileid,'VALIDMAX',varid,tt2000_range[1],/ZVARIABLE
-cdf_attput,fileid,'SCALEMIN',varid,timett2000[0],/ZVARIABLE
-cdf_attput,fileid,'SCALEMAX',varid,timett2000[nrec-1],/ZVARIABLE
+cdf_attput,fileid,'VALIDMIN',varid,tt2000_range[0],/ZVARIABLE, /CDF_EPOCH
+cdf_attput,fileid,'VALIDMAX',varid,tt2000_range[1],/ZVARIABLE,/CDF_EPOCH
+cdf_attput,fileid,'SCALEMIN',varid,timett2000[0],/ZVARIABLE,/CDF_EPOCH
+cdf_attput,fileid,'SCALEMAX',varid,timett2000[nrec-1],/ZVARIABLE,/CDF_EPOCH
 cdf_attput,fileid,'UNITS',varid,'ns',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in TT2000 time base',/ZVARIABLE
@@ -554,6 +554,14 @@ atts.fieldnam = varname
 atts.lablaxis = varname
 atts.var_type ='support_data'
 atts.catdesc = 'Quality FLAG'
+defval = 0UL
+str_element,/add,atts,'FILLVAL',defval-1
+str_element,/add,atts,'VALIDMIN',defval
+str_element,/add,atts,'VALIDMAX',2UL ^ 10
+str_element,/add,atts,'SCALEMIN',0u
+str_element,/add,atts,'SCALEMAX',2uL ^ 10
+str_element,/add,atts,'FORMAT','I10'
+
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.QUALITY_FLAG,attributes=atts
 
 

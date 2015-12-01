@@ -29,9 +29,9 @@
 ;
 ; Written by Davin Larson
 ;
-; $LastChangedBy: cfowler $
-; $LastChangedDate: 2015-08-13 08:02:55 -0700 (Thu, 13 Aug 2015) $
-; $LastChangedRevision: 18479 $
+; $LastChangedBy: cfowler2 $
+; $LastChangedDate: 2015-11-30 08:31:39 -0800 (Mon, 30 Nov 2015) $
+; $LastChangedRevision: 19487 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/lpw/mvn_lpw_cdf_info_to_tplot.pro $
 ; #############
 ; 
@@ -39,15 +39,18 @@
 ; ;140718 clean up for check out L. Andersson
 ; ;140918 CF: major changes to encompass SIS PDS requirements. Removed for loop over variables; deal with all variables at once. 
 ;             now include MET and TT2000 time in the final tplot variable.
+; 151130: CMF: added cdf_filename keyword, to append cdf filename to dlimit.l0_datafile structure.
 ;-
 function mvn_lpw_cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
         prefix=prefix,midfix=midfix,midpos=midpos,suffix=suffix,newname=newname,  $
         all=all, $
         force_epoch=force_epoch, $
         verbose=verbose,get_support_data=get_support_data,  $
-        tplotnames=tplotnames
+        tplotnames=tplotnames, cdf_filename=cdf_filename
 
-dprint,verbose=verbose,dlevel=4,'$Id: mvn_lpw_cdf_info_to_tplot.pro 18479 2015-08-13 15:02:55Z cfowler $'
+if not keyword_set(cdf_filename) then cdf_filename = ''
+
+dprint,verbose=verbose,dlevel=4,'$Id: mvn_lpw_cdf_info_to_tplot.pro 19487 2015-11-30 16:31:39Z cfowler2 $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
@@ -141,7 +144,7 @@ if nqq eq 1 then begin  ;if we have only one 'data' structure
    dv_var_notes = struct_value(attr, 'dv_var_notes', default = 'NA')
    flag_var_notes = struct_value(attr, 'flag_var_notes', default = 'NA')
    t_epoch = struct_value(attr, 't_epoch', default=!values.f_nan)
-   l0_datafile = struct_value(attr, 'L0_datafile', default='NA')
+   l0_datafile = struct_value(attr, 'L0_datafile', default='NA') + ' # '+cdf_filename
    cal_vers = struct_value(attr, 'cal_vers', default='NA')
    cal_y_const1 = struct_value(attr, 'cal_y_const1', default='NA')
    cal_y_const2 = struct_value(attr, 'cal_y_const2', default='NA')      

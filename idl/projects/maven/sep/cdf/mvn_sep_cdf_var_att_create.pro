@@ -35,7 +35,9 @@ pro mvn_sep_cdf_var_att_create,fileid,varname,data,attributes=attributes,rec_nov
   endif else  varid = cdf_varcreate(fileid, varname,dim gt 1,dimension=dim,_extra=opts,/rec_novary)
 
 
-  if size(/type,attributes) eq 8 then tags= tag_names(attributes)
+  if size(/type,attributes) eq 8 then begin
+    tags= tag_names(attributes)
+  endif
   for i=0,n_elements(tags)-1 do begin
     att = attributes.(i)
     if size(/type,att) eq 7 && (att eq '') then continue      ; ignore null strings

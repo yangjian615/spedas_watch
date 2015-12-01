@@ -3,7 +3,7 @@
 
 
 
-pro mvn_sep_make_raw_cdf, data_vary, data_novary,filename = filename,dependencies=dependencies,global=global
+pro mvn_sep_make_raw_cdf, data_vary, data_novary,filename = filename,dependencies=dependencies,global=global,add_link=add_link
 
 time = data_vary.time
 time_name = 'time_unix'
@@ -40,11 +40,11 @@ timett2000 = long64((add_tt2000_offset(time)-time_double('2000-01-01/12:00'))*1e
 tstr= time_string(minmax(time),tformat='YYYY-MM-DDThh:mm:ss.fffZ')
 
 
-file_mkdir2,file_dirname(filename)
+file_mkdir2,file_dirname(filename),add_link = add_link
 fileid = cdf_create(filename,/single_file,/network_encoding,/clobber)
 
 
-id0 = cdf_attcreate(fileid,'Title',/global_scope)
+id0 = cdf_attcreate(fileid,'TITLE',/global_scope)
 id1 = cdf_attcreate(fileid,'Project',/global_scope)
 id2 = cdf_attcreate(fileid,'Discipline',/global_scope)
 id3 = cdf_attcreate(fileid,'Source_name',/global_scope)
@@ -75,7 +75,7 @@ for i=0,n_elements(exnames)-1 do  idxx = cdf_attcreate(fileid,exnames[i],/global
 
 ;Load global Attributes
 
-cdf_attput,fileid,'Title',0,'MAVEN SEP Electron and Ion Raw Counts'
+cdf_attput,fileid,'TITLE',0,'MAVEN SEP Electron and Ion Raw Counts'
 cdf_attput,fileid,'Project',0,'MAVEN>Mars Atmosphere and Volatile EvolutioN Mission'
 ;cdf_attput,fileid,'Discipline',0,'Planetary Space Physics>Particles'
 cdf_attput,fileid,'Discipline',0,'Planetary Physics>Particles'
@@ -104,7 +104,7 @@ for i=0,n_elements(exnames)-1 do     cdf_attput,fileid,exnames[i],0,extra.(i)
 
 ; Variable attributes
 
-default_atts = {fieldnam:'',monoton:'',format:'F10.2',lablaxis:'',VAR_TYPE:'support_data',fillval:!values.f_nan,DISPLAY_TYPE:'',scaletyp:'linear', $
+default_atts = {fieldnam:'',monoton:'',format:'F10.2',lablaxis:'',VAR_TYPE:'support_data',fillval:!values.f_nan,DISPLAY_TYPE:'time_series',scaletyp:'linear', $
       VALIDMIN:-1e31,VALIDMAX:1e31,SCALEMIN:0.,SCALEMAX:100.,UNITS:'',CATDESC:'', $
       FORM_PTR:'',DEPEND_TIME:time_name,DEPEND_0:epoch_name,DEPEND_1:'',DEPEND_2:'' }
 
@@ -127,30 +127,13 @@ cdf_attput,fileid,'SCALEMAX',varid,1d10,/ZVARIABLE
 cdf_attput,fileid,'UNITS',varid,'sec',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in Unix time',/ZVARIABLE
+cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
+;cdf_attput,fileid,'DEPEND_TIME',varid,time_name,/ZVARIABLE
 cdf_varput,fileid,time_name,time
 
 
 
 ;Epoch
-if 0 then begin
-varid = cdf_varcreate(fileid, epoch_name, /CDF_EPOCH, /REC_VARY,/ZVARIABLE)
-cdf_attput,fileid,'FIELDNAM',varid,epoch_name,/ZVARIABLE
-cdf_attput,fileid,'FORMAT',varid,'F25.0',/ZVARIABLE
-cdf_attput,fileid,'LABLAXIS',varid,'Epoch Time',/ZVARIABLE
-cdf_attput,fileid,'VAR_TYPE',varid,'support_data',/ZVARIABLE
-cdf_attput,fileid,'FILLVAL',varid,!values.d_nan,/ZVARIABLE
-cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
-cdf_attput,fileid,'VALIDMIN',varid,epoch_range[0],/ZVARIABLE
-cdf_attput,fileid,'VALIDMAX',varid,epoch_range[1],/ZVARIABLE
-cdf_attput,fileid,'SCALEMIN',varid,epoch[0],/ZVARIABLE
-cdf_attput,fileid,'SCALEMAX',varid,epoch[nrec-1],/ZVARIABLE
-cdf_attput,fileid,'UNITS',varid,'ms',/ZVARIABLE
-cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
-cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in NSSDC Epoch',/ZVARIABLE
-
-cdf_varput,fileid,epoch_name,epoch
-endif
-
 ;TT2000
 
 varname = 'epoch'
@@ -159,12 +142,12 @@ cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'FORMAT',varid,'I22',/ZVARIABLE
 cdf_attput,fileid,'LABLAXIS',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'VAR_TYPE',varid,'support_data',/ZVARIABLE
-cdf_attput,fileid,'FILLVAL',varid,0,/ZVARIABLE
+cdf_attput,fileid,'FILLVAL',varid,-9223372036854775808,/ZVARIABLE,/CDF_EPOCH
 cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
-cdf_attput,fileid,'VALIDMIN',varid,tt2000_range[0],/ZVARIABLE
-cdf_attput,fileid,'VALIDMAX',varid,tt2000_range[1],/ZVARIABLE
-cdf_attput,fileid,'SCALEMIN',varid,timett2000[0],/ZVARIABLE
-cdf_attput,fileid,'SCALEMAX',varid,timett2000[nrec-1],/ZVARIABLE
+cdf_attput,fileid,'VALIDMIN',varid,tt2000_range[0],/ZVARIABLE, /CDF_EPOCH
+cdf_attput,fileid,'VALIDMAX',varid,tt2000_range[1],/ZVARIABLE,/CDF_EPOCH
+cdf_attput,fileid,'SCALEMIN',varid,timett2000[0],/ZVARIABLE,/CDF_EPOCH
+cdf_attput,fileid,'SCALEMAX',varid,timett2000[nrec-1],/ZVARIABLE,/CDF_EPOCH
 cdf_attput,fileid,'UNITS',varid,'ns',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in TT2000 time base',/ZVARIABLE
@@ -188,6 +171,8 @@ cdf_attput,fileid,'SCALEMAX',varid,data_vary[nrec-1].met,/ZVARIABLE
 cdf_attput,fileid,'UNITS',varid,'s',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in raw mission elapsed time',/ZVARIABLE
+cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
+cdf_attput,fileid,'DEPEND_TIME',varid,time_name,/ZVARIABLE
 
 cdf_varput,fileid,varname,data_vary.met
 
@@ -209,6 +194,8 @@ cdf_attput,fileid,'SCALEMAX',varid,data_vary[nrec-1].met,/ZVARIABLE
 cdf_attput,fileid,'UNITS',varid,'s',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Ephermeris Time, middle of sample, compatible with spice',/ZVARIABLE
+cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
+cdf_attput,fileid,'DEPEND_TIME',varid,time_name,/ZVARIABLE
 
 str_element,data_vary,'time_ephemeris',et
 str_element,data_vary,'et',et
@@ -226,7 +213,7 @@ cdf_attput,fileid,'FIELDNAM',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'FORMAT',varid,'I7',/ZVARIABLE
 cdf_attput,fileid,'LABLAXIS',varid,varname,/ZVARIABLE
 cdf_attput,fileid,'VAR_TYPE',varid,'data',/ZVARIABLE
-cdf_attput,fileid,'FILLVAL',varid,-1,/ZVARIABLE
+cdf_attput,fileid,'FILLVAL',varid,fix(-32768),/ZVARIABLE
 cdf_attput,fileid,'DISPLAY_TYPE',varid,'time_series',/ZVARIABLE
 cdf_attput,fileid,'VALIDMIN',varid,1,/ZVARIABLE
 cdf_attput,fileid,'VALIDMAX',varid,2,/ZVARIABLE
@@ -261,6 +248,12 @@ endif else begin
   atts.fieldnam = varname
   atts.lablaxis = varname
   atts.var_type ='support_data'
+  str_element,/add,atts,'FILLVAL',uint(-1)
+  str_element,/add,atts,'VALIDMIN',0u
+  str_element,/add,atts,'VALIDMAX',128u
+  str_element,/add,atts,'SCALEMIN',0u
+  str_element,/add,atts,'SCALEMAX',128u
+  str_element,/add,atts,'FORMAT','I6'
   atts.catdesc = 'Number of 1-second accumulations contained within this data sample.'
   mvn_sep_cdf_var_att_create,fileid,varname,data_vary.duration,attributes=atts  
 endelse
@@ -271,54 +264,110 @@ atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
 atts.catdesc = 'Binning Map ID number'
+str_element,/add,atts,'FILLVAL',255b
+str_element,/add,atts,'VALIDMIN',0b
+str_element,/add,atts,'VALIDMAX',255b
+str_element,/add,atts,'SCALEMIN',0b
+str_element,/add,atts,'SCALEMAX',255b
+str_element,/add,atts,'FORMAT','I3'
+
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.mapid,attributes=atts
 
 varname = 'seq_cntr'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
-atts.var_type ='data'
+str_element,/add,atts,'FILLVAL',uint(-1)
+str_element,/add,atts,'VALIDMIN',0u
+str_element,/add,atts,'VALIDMAX',2U^14
+str_element,/add,atts,'SCALEMIN',0u
+str_element,/add,atts,'SCALEMAX',2u^14
+str_element,/add,atts,'FORMAT','I6'
+atts.var_type ='support_data'
 atts.catdesc = 'CCSDS Sequence Counter'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.seq_cntr,attributes=atts
+
 
 varname = 'raw_counts'
 atts = default_atts
 atts.fieldnam = varname
 atts.lablaxis = varname
 atts.var_type ='data'
+str_element,/add,atts,'VALIDMIN',0.
+str_element,/add,atts,'VALIDMAX',2.^19
+str_element,/add,atts,'SCALEMIN',0.
+str_element,/add,atts,'SCALEMAX',2.^16
+
 atts.catdesc = 'Raw Counts in each accumulation bin'
 mvn_sep_cdf_var_att_create,fileid,varname,data_vary.data,attributes=atts
 
+
 if keyword_set(data_novary) then begin
   atts=default_atts
-  bmap = data_novary
+  str_element,/add,atts,'FILLVAL',fix(-1)
+  str_element,/add,atts,'VALIDMIN',0
+  str_element,/add,atts,'VALIDMAX',255
+  str_element,/add,atts,'SCALEMIN',0
+  str_element,/add,atts,'SCALEMAX',255
+  str_element,/add,atts,'FORMAT','I3'
+  atts.var_type ='support_data'
+
   
+  bmap = data_novary  
   atts.catdesc = 'BIN Number -  Counts Accumulation Bin'
-  mvn_sep_cdf_var_att_create,fileid,'MAP.BIN'  ,bmap.fto,attributes=atts,/rec_novary
+  atts.fieldnam = 'MAP.BIN'
+  mvn_sep_cdf_var_att_create,fileid,'MAP_BIN'  ,bmap.fto,attributes=atts,/rec_novary
   
   atts.catdesc = 'FTO Pattern - Coincidence pattern for Telescope stack'
-  mvn_sep_cdf_var_att_create,fileid,'MAP.FTO'  ,bmap.fto,attributes=atts,/rec_novary
+  atts.fieldnam = 'MAP.FTO'
+  mvn_sep_cdf_var_att_create,fileid,'MAP_FTO'  ,bmap.fto,attributes=atts,/rec_novary
   
   atts.catdesc = 'TID  - Telescope ID  0=Side A,  1=Side B'
-  mvn_sep_cdf_var_att_create,fileid,'MAP.TID'  ,bmap.tid,attributes=atts,/rec_novary
+  atts.fieldnam = 'MAP.TID'
+  mvn_sep_cdf_var_att_create,fileid,'MAP_TID'  ,bmap.tid,attributes=atts,/rec_novary
+
+  str_element,/add,atts,'VALIDMIN',0
+  str_element,/add,atts,'VALIDMAX',2^14
+  str_element,/add,atts,'SCALEMIN',0
+  str_element,/add,atts,'SCALEMAX',2^14
+  str_element,/add,atts,'FORMAT','i8'
   
   atts.catdesc = 'ADC Low Limit -   ( LOW <= ADC < HIGH) '
-  mvn_sep_cdf_var_att_create,fileid,'MAP.ADC_LOW'  ,bmap.adc[0],attributes=atts,/rec_novary
+  atts.fieldnam = 'MAP.ADC_LOW'
+  mvn_sep_cdf_var_att_create,fileid,'MAP_ADC_LOW'  ,bmap.adc[0],attributes=atts,/rec_novary
   
   atts.catdesc = 'ADC High Limit -   ( LOW <= ADC < HIGH) '
-  mvn_sep_cdf_var_att_create,fileid,'MAP.ADC_HIGH'  ,bmap.adc[1],attributes=atts,/rec_novary
+  atts.fieldnam = 'MAP.ADC_HIGH'
+  mvn_sep_cdf_var_att_create,fileid,'MAP_ADC_HIGH'  ,bmap.adc[1],attributes=atts,/rec_novary
+
+  str_element,/add,atts,'VALIDMIN',0.
+  str_element,/add,atts,'VALIDMAX',2.^16
+  str_element,/add,atts,'SCALEMIN',0.
+  str_element,/add,atts,'SCALEMAX',2.^14
+  str_element,/add,atts,'FORMAT','F8'
 
   atts.catdesc = 'ADC Average -  Average of ADC Values'
-  mvn_sep_cdf_var_att_create,fileid,'MAP.ADC_AVG'  ,bmap.adc_avg,attributes=atts,/rec_novary
+  atts.fieldnam = 'MAP.ADC_AVG'
+  mvn_sep_cdf_var_att_create,fileid,'MAP_ADC_AVG'  ,bmap.adc_avg,attributes=atts,/rec_novary
   
   atts.catdesc = 'ADC Delta -  Delta of ADC Values'
-  mvn_sep_cdf_var_att_create,fileid,'MAP.ADC_DELTA'  ,bmap.adc_delta,attributes=atts,/rec_novary
+  atts.fieldnam = 'MAP.ADC_DELTA'
+  mvn_sep_cdf_var_att_create,fileid,'MAP_ADC_DELTA'  ,bmap.adc_delta,attributes=atts,/rec_novary
+
+  atts=default_atts
+  str_element,/add,atts,'VALIDMIN',0.
+  str_element,/add,atts,'VALIDMAX',50.e6
+  str_element,/add,atts,'SCALEMIN',0u
+  str_element,/add,atts,'SCALEMAX',6e6
+  str_element,/add,atts,'FORMAT','f9'
 
   atts.catdesc = 'Energy -  Average Measured Energy in Bin'
-  mvn_sep_cdf_var_att_create,fileid,'MAP.NRG_MEAS_AVG'  ,bmap.nrg_meas_avg,attributes=atts,/rec_novary
+  atts.fieldnam = 'MAP.NRG_MEAS_AVG'
+  mvn_sep_cdf_var_att_create,fileid,'MAP_NRG_MEAS_AVG'  ,bmap.nrg_meas_avg,attributes=atts,/rec_novary
 
   atts.catdesc = 'Energy Width of bin'
-  mvn_sep_cdf_var_att_create,fileid,'MAP.NRG_MEAS_DELTA'  ,bmap.nrg_meas_delta,attributes=atts,/rec_novary
+  atts.fieldnam = 'MAP.NRG_MEAS_DELTA'
+  mvn_sep_cdf_var_att_create,fileid,'MAP_NRG_MEAS_DELTA'  ,bmap.nrg_meas_delta,attributes=atts,/rec_novary
 
 endif
 

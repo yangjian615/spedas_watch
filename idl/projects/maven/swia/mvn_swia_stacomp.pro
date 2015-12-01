@@ -13,13 +13,13 @@
 ;	TRANGE: time range to use
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-07-17 07:16:21 -0700 (Fri, 17 Jul 2015) $
-; $LastChangedRevision: 18162 $
+; $LastChangedDate: 2015-11-30 11:23:33 -0800 (Mon, 30 Nov 2015) $
+; $LastChangedRevision: 19496 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_stacomp.pro $
 ;
 ;-
 
-pro mvn_swia_stacomp, type = type, trange = trange
+pro mvn_swia_stacomp, type = type, trange = trange, temperature = temperature
 
 if not keyword_set(trange) then ctime,trange,npoints = 2
 if not keyword_set(type) then type = 'd0'
@@ -32,6 +32,15 @@ get_4dt,'v_4d','mvn_sta_get_'+type,mass = [0.3,1.8],name = 'vp', t1= trange(0),t
 get_4dt,'v_4d','mvn_sta_get_'+type,mass = [1.5,2.5],name = 'va', t1= trange(0),t2 = trange(1)
 get_4dt,'v_4d','mvn_sta_get_'+type,mass = [10,20],name = 'vo', t1= trange(0),t2 = trange(1)
 get_4dt,'v_4d','mvn_sta_get_'+type,mass = [20,40],name = 'vo2', t1= trange(0),t2 = trange(1)
+
+
+if keyword_set(temperature) then begin
+	get_4dt,'t_4d','mvn_sta_get_'+type,mass = [0.3,1.8],name = 'tp', t1= trange(0),t2 = trange(1)
+	get_4dt,'t_4d','mvn_sta_get_'+type,mass = [1.8,2.5],name = 'ta', t1= trange(0),t2 = trange(1)
+	get_4dt,'t_4d','mvn_sta_get_'+type,mass = [10,20],name = 'to', t1= trange(0),t2 = trange(1)
+	get_4dt,'t_4d','mvn_sta_get_'+type,mass = [20,40],name = 'to2', t1= trange(0),t2 = trange(1)
+endif
+
 
 get_data,'np',data = np
 get_data,'na',data = na

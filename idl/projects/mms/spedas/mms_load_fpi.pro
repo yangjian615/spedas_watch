@@ -53,8 +53,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-25 11:07:27 -0800 (Wed, 25 Nov 2015) $
-;$LastChangedRevision: 19475 $
+;$LastChangedDate: 2015-11-30 15:41:46 -0800 (Mon, 30 Nov 2015) $
+;$LastChangedRevision: 19502 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_fpi.pro $
 ;-
 
@@ -75,7 +75,7 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     
     ; different datatypes for burst mode files
     if data_rate eq 'brst' && (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
-    if data_rate eq 'brst' && (datatype[0] eq '*' || datatype[0] eq '') && level eq 'ql' then datatype=['des', 'dis']
+    if (datatype[0] eq '*' || datatype[0] eq '') && level eq 'ql' then datatype=['des', 'dis']
    
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'fpi', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
@@ -86,7 +86,7 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     ; correct the energies in the spectra for each probe
     if ~undefined(tplotnames) && n_elements(tplotnames) ne 0 then begin
         for probe_idx = 0, n_elements(probes)-1 do begin
-            mms_load_fpi_fix_spectra, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem)
+            mms_load_fpi_fix_spectra, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem), level = level
             mms_load_fpi_fix_angles, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem)
             mms_load_fpi_calc_omni, probes[probe_idx], autoscale = autoscale
             mms_load_fpi_calc_pad, probes[probe_idx]
