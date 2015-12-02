@@ -33,7 +33,7 @@ if n_elements(pfdpu) ne 0 then mvn_pfdpu_handler,reset=pfdpu,set_realtime=0
 if n_elements(static) ne 0 then mvn_sta_handler,reset=static
 ;if n_elements(lpw) ne 0 then mvn_lpw_handler,reset=lpw,set_realtime=0
 
-dprint,dlevel=2,'Start Loading file ',file
+dprint,dlevel=2,'Start Loading file '+file
 mvn_spc_apid_file_read,file=file,trange=trange
 
 dprint,'Data loaded in ',systime(1)-starttime,' seconds',dlevel=2

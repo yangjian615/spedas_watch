@@ -105,7 +105,7 @@ for i=0,n_elements(exnames)-1 do     cdf_attput,fileid,exnames[i],0,extra.(i)
 
 default_atts = {fieldnam:'',monoton:'',format:'E10.2',lablaxis:'',VAR_TYPE:'support_data',display_type:'time_series',fillval:!values.f_nan,scaletyp:'linear', $
       VALIDMIN:-1e31,VALIDMAX:1e31,SCALEMIN:0.,SCALEMAX:100.,UNITS:'',CATDESC:'', $
-      FORM_PTR:'',DEPEND_TIME:time_name,DEPEND_0:epoch_name,DEPEND_1:'',DEPEND_2:'' }
+      FORM_PTR:'',DEPEND_TIME:time_name,DEPEND_0:epoch_name,DEPEND_1:'',DEPEND_2:'',LABL_PTR_1:'' }
 
 tags=tag_names(default_atts)
 for i=0,n_elements(tags)-1 do dummy=cdf_attcreate(fileid,tags[i],/variable_scope)

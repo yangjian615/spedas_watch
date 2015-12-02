@@ -233,9 +233,9 @@ thm_load_state,probe=probe,coord='gsm',/get_support
 
 if tnames(fgs_name) && tnames('th'+probe+'_state_pos') then begin
 
-   tinterpol_mxn,'th'+probe+'_state_pos',fgs_name,newname='pos_interp'
-
-   tt89,'pos_interp'
+   tinterpol_mxn,'th'+probe+'_state_pos',fgs_name,newname='pos_interp', /QUADRATIC
+   
+   tt89,'pos_interp', period=3.049
 
 ;now subtract
    dif_data,fgs_name,'pos_interp_bt89',newname=fgs_name+'-t89'

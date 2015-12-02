@@ -26,8 +26,8 @@ End
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-10-30 10:30:09 -0700 (Fri, 30 Oct 2015) $
-; $LastChangedRevision: 19186 $
+; $LastChangedDate: 2015-12-01 12:08:36 -0800 (Tue, 01 Dec 2015) $
+; $LastChangedRevision: 19506 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -236,7 +236,7 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      mvn_sta_qf14_load
 ;added mvn_sta_sc_bins_load, 2015-10-25, jmm
      mk = mvn_spice_kernels(/all,/load,trange=timerange())
-     mvn_sta_sc_bins_load
+     If(is_struct(mvn_c8_dat)) Then mvn_sta_sc_bins_load
   Endif Else Begin
      mvn_sta_l0_load, files = filex
 ;Only call ephemeris_load if the date is more than 5 days ago
@@ -246,7 +246,7 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
         mvn_sta_mag_load
         mvn_sta_ephemeris_load
         mk = mvn_spice_kernels(/all,/load,trange=timerange())
-        mvn_sta_sc_bins_load
+        If(is_struct(mvn_c8_dat)) Then mvn_sta_sc_bins_load
      Endif
   Endelse
 ;If yyy is set, we are replicating some app id's

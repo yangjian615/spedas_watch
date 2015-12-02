@@ -14,7 +14,7 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
   sepname = 'SEP'+sn
   data_type = sepstr+'-raw-svy-full'  
   ver = sw_version.sw_version
-  L2_fileformat =  'maven/data/sci/sep/.l2_v04e/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
+  L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
   source_fi = file_info([source_files,prereq_files])
@@ -50,7 +50,7 @@ pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=
   data_type = sepstr+'-cal-svy-full'
   ver = sw_version.sw_version
   if ~keyword_set(L2_fileformat) then $
-      L2_fileformat =  'maven/data/sci/sep/.l2_v04e/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
+      L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
   source_fi = file_info([source_files,prereq_files])
