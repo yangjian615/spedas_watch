@@ -627,7 +627,7 @@ function spp_ccsds_decom,buffer             ; buffer should contain bytes for a 
     return, 0
   endif
   header = swap_endian(uint(buffer[0:11],0,6) ,/swap_if_little_endian )
-  MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16) + (header[5] and '3'x) * 2d^15/150000
+  MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16) +( (header[5] ) mod 4) * 2d^15/150000 
   
   utime = spp_spc_met_to_unixtime(MET)
   ccsds = { $
@@ -742,6 +742,7 @@ if 1 then begin
   spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom_version_81x',tname='spp_spanai_hkp_',tfields='*',save=save
   spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_64x',tname='spp_spanai_rates_',tfields='*',save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
+  spp_apid_data,'386'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_prod_x86_',tfields='*',save=save
 endif
   
 ;  spp_apid_data,'359'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save

@@ -1,8 +1,8 @@
 ;+
 ;PROCEDURE:   maven_orbit_makeeph
 ;PURPOSE:
-;  Generates a MAVEN spacecraft ephemeris using the SPICE Icy toolkit.  The ephemeris 
-;  is returned in a structure with the following tags:
+;  Generates MAVEN spacecraft state vectors using the SPICE Icy toolkit.
+;  The result is returned in a structure with the following tags:
 ;
 ;    T              Time (UTC): number of seconds since 1970-01-01
 ;    X              X position coordinate (km)
@@ -40,8 +40,12 @@
 ;              origin = center of Mars
 ;              units = kilometers
 ;
+;   PHO = body-fixed Phobos geographic coordinates (non-inertial)
+;
+;   DEI = body-fixed Deimos geographic coordiantes (non-inertial)
+;
 ;USAGE:
-;  maven_orbit_makeeph, frame=frame, eph=eph
+;  maven_orbit_makeeph, frame=frame, origin=origin, eph=eph
 ;INPUTS:
 ;
 ;KEYWORDS:
@@ -51,6 +55,10 @@
 ;
 ;       FRAME:     Coordinate frame.  Can be "J2000", "IAU_MARS", or "MSO".
 ;                  (Also accepts "GEO" as a synomym for "IAU_MARS".)
+;                  (Also accepts "PHO" for Phobos and "DEI" for Deimos.)
+;
+;       ORIGIN:    Origin of coordinate frame.  Can be "Mars", "Phobos", or
+;                  "Deimos".  Default = "Mars".
 ;
 ;       TSTART:    Start time for output save file ephemeris.
 ;
@@ -68,14 +76,15 @@
 ;                  the boundary between reconstructions and predictions.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-24 11:25:17 -0700 (Sun, 24 May 2015) $
-; $LastChangedRevision: 17690 $
+; $LastChangedDate: 2015-12-02 11:10:47 -0800 (Wed, 02 Dec 2015) $
+; $LastChangedRevision: 19513 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_makeeph.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
 ;-
 pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop=tstop, $
-                         unload=unload, reset=reset, stat=stat, mvn_spk=mvn_spk
+                         unload=unload, reset=reset, stat=stat, origin=origin, $
+                         mvn_spk=mvn_spk
 
   common mvn_orbit_makeeph, kernels, tstart1, tstop1
 
@@ -139,14 +148,29 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
     'IAU_MARS' : frame = 'IAU_MARS'
     'GEO'      : frame = 'IAU_MARS'
     'MSO'      : frame = 'MSO'
+    'PHO'      : frame = 'IAU_PHOBOS'
+    'DEI'      : frame = 'IAU_DEIMOS'
     else       : begin
                    print,'Unrecognized frame: ',frame
-                   print,'Choices are: J2000, IAU_MARS (= GEO), or MSO.'
+                   print,'Choices are: J2000, IAU_MARS (= GEO), MSO, PHO, DEI.'
                    return
                  end
   endcase
+
+  if (size(origin,/type) ne 7) then origin = 'Mars'
+  case strupcase(origin) of
+    'MARS'   : center = 'Mars'
+    'PHOBOS' : center = 'Phobos'
+    'DEIMOS' : center = 'Deimos'
+    else     : begin
+                   print,'Unrecognized origin: ',origin
+                   print,'Choices are: Mars, Phobos, Deimos.'
+                   return
+               end
+  endcase
   
   print,"Reference frame: ",frame
+  print,"Reference origin: ",center
   print," "
 
 ; Get the time range spanned by the spacecraft SPK kernels
@@ -244,9 +268,10 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
 
   cspice_str2et, timestr, et
 
-; Generate the ephemeris centered on Mars without aberration correction
+; Generate the ephemeris centered on Mars (or Phobos or Deimos) without 
+; aberration correction
 
-  cspice_spkezr, 'MAVEN', et, frame, 'NONE', 'MARS', state, ltime
+  cspice_spkezr, 'MAVEN', et, frame, 'NONE', center, state, ltime
 
 ; Package the result
 

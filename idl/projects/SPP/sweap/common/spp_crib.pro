@@ -230,6 +230,8 @@ spp_swp_apid_data_init,save=1
 spp_apid_data,'3b9'x,name='SWEAP SPAN-I Events',rt_tags='*'
 spp_apid_data,'3bb'x,name='SWEAP SPAN-I Rates',rt_tags='*CNTS *MODE'
 spp_apid_data,'3be'x,name='SWEAP SPAN-I HKP',rt_tags='*'
+spp_apid_data,'3b6'x,name='SWEAP SPAN-I Prod',rt_tags='*'
+
 spp_apid_data, rt_flag = 1
 
 wait,1

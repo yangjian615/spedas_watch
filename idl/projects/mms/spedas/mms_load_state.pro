@@ -87,9 +87,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-28 10:48:21 -0700 (Wed, 28 Oct 2015) $
-;$LastChangedRevision: 19175 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-12-02 11:03:10 -0800 (Wed, 02 Dec 2015) $
+;$LastChangedRevision: 19512 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_state.pro $
 ;-
 
@@ -130,8 +130,8 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     ; initialize undefined values
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = p_names else probes = strcompress(string(probes), /rem)
-    if undefined(level) then level = 'def'
-    if undefined(datatypes) then datatypes = '*' ; default to definitive 
+    if undefined(level) then level = 'def' else level = strlowcase(level)
+    if undefined(datatypes) then datatypes = '*' else datatypes = strlowcase(datatypes) 
     if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
     if undefined(remote_data_dir) then remote_data_dir = !mms.remote_data_dir
     if undefined(pred_or_def) then pred_or_def=1 else pred_or_def=pred_or_def
@@ -142,6 +142,10 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     if datatypes[0] EQ '*' then datatypes = t_names  
     if keyword_set(ephemeris_only) then datatypes = ['pos', 'vel']
     if keyword_set(attitude_only) then datatypes = ['spinras', 'spindec']
+    if keyword_set(attitude_only) && keyword_set(ephemeris_only) then begin
+       dprint, 'mms_load_state error, cannot set both attitude_only and ephemeris_only keywords'
+       return 
+    endif
     
     ; allow users to pass probes as a list of ints
     probes = strcompress(string(probes), /rem)

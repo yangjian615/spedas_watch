@@ -5,8 +5,12 @@
 ;  elevation and clock angles of the magnetic field in the local 
 ;  horizontal plane at the spacecraft, and traces the magnetic
 ;  field in a straight line from the spacecraft to a specified
-;  altitude (see ALT keyword).  This information is appended to the 
-;  mag_pc structure with the following tags:
+;  altitude (see ALT keyword).  This tracing calculation can be 
+;  sigificantly in error when the distance to the central object is
+;  large and the straight-line approximation becomes dubious.
+;
+;  The information is appended to the mag_pc structure with the 
+;  following tags:
 ;
 ;      amp   : magnetic field amplitude (nT)
 ;      azim  : magnetic azimuth angle (deg)
@@ -37,53 +41,127 @@
 ;                  stored in tplot variables.
 ;  
 ;KEYWORDS:
-;       ALT:       Electron absorption altitude.  Default = 170 km.
+;       ALT:       Electron absorption altitude.  Default is 170 km for Mars
+;                  and 0 km for Phobos and Deimos.
 ;
 ;       VAR:       Tplot variable name that contains the magnetic field data
 ;                  in payload coordinates.  Default = 'mvn_B_1sec'.  Variable
 ;                  names for MAG data in other frames are derived from this.
 ;
+;       PHOBOS:    Set this keyword to trace magnetic field lines to Phobos.
+;                  Good luck!  The moon is small and you have to get very
+;                  close for a reasonable chance of intersection.
+;
+;       DEIMOS:    Set this keyword to trace magnetic field lines to Deimos.
+;                  Good luck!  The moon is small and you have to get very
+;                  close for a reasonable chance of intersection.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-10-08 11:27:00 -0700 (Thu, 08 Oct 2015) $
-; $LastChangedRevision: 19033 $
+; $LastChangedDate: 2015-12-02 11:33:25 -0800 (Wed, 02 Dec 2015) $
+; $LastChangedRevision: 19514 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_geom.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
 ;-
-pro mvn_mag_geom, alt=alt, var=var
+pro mvn_mag_geom, alt=alt, var=var, phobos=phobos, deimos=deimos
 
   @maven_orbit_common
 
-  if (size(alt,/type) eq 0) then alt = 170.
+  if (size(var,/type) ne 7) then var = 'mvn_B_1sec'
+  get_data, var, data=mag_pl, index=i
+  if (i eq 0) then begin
+    print,"No MAG data found: ", var
+    return
+  endif
+
+  tmin = min(mag_pl.x, max=tmax) - 600D
+  tmax += 600D
+
+; Central object dimensions.  Use the radius of a sphere that has the same
+; volume as the actual object.  This makes the geometry calculations easier,
+; and is probably good enough, given the straight-line approximation for 
+; magnetic field line tracing.
+
+; Default central object is Mars.
 
   R_m = 3389.9D
   R_equ = 3396.2D
   R_pol = 3376.2D
   R_vol = (R_equ*R_equ*R_pol)^(1D/3D)
+  if (size(alt,/type) eq 0) then alt = 170D
+  to_frame = 'iau_mars'
+  origin = 'Mars'
+
+  if keyword_set(phobos) then begin
+    print,"Calculating ephemeris w.r.t. Phobos ... "
+    maven_orbit_makeeph, frame='PHO', origin='Phobos', eph=pc, $
+                         tstart=tmin, tstop=tmax, tstep=20D
+    maven_orbit_makeeph, frame='MSO', origin='Phobos', eph=ss, $
+                         tstart=tmin, tstop=tmax, tstep=20D
+    moon = {pc:pc, ss:ss}
+    
+    r = sqrt(ss.x^2. + ss.y^2. + ss.z^2.)
+    store_data,'Phobos',data={x:ss.t, y:r}
+    options,'Phobos','ytitle','Phobos Range!c(km)'
+    ylim,'Phobos',0,0,1
+
+    Rx = 13.1D
+    Ry = 11.1D
+    Rz =  9.3D
+    R_m = (Rx*Ry*Rz)^(1D/3D)
+    alt = 0D  ; no atmosphere
+    to_frame = 'iau_phobos'
+    origin = 'Phobos'
+  endif
+
+  if (size(deimos,/type) eq 8) then begin
+    print,"Calculating ephemeris w.r.t. Deimos ... "
+    maven_orbit_makeeph, frame='DEI', origin='Deimos', eph=pc, $
+                         tstart=tmin, tstop=tmax, tstep=20D
+    maven_orbit_makeeph, frame='MSO', origin='Deimos', eph=ss, $
+                         tstart=tmin, tstop=tmax, tstep=20D
+    moon = {pc:pc, ss:ss}
+    
+    r = sqrt(ss.x^2. + ss.y^2. + ss.z^2.)
+    store_data,'Deimos',data={x:ss.t, y:r}
+    options,'Deimos','ytitle','Deimos Range!c(km)'
+    ylim,'Deimos',0,0,1
+
+    Rx = 7.8D
+    Ry = 6.0D
+    Rz = 5.1D
+    R_m = (Rx*Ry*Rz)^(1D/3D)
+    alt = 0D  ; no atmosphere
+    to_frame = 'iau_deimos'
+    origin = 'Deimos'
+  endif
+
   R_exo = R_m + alt
 
-  if (size(var,/type) ne 7) then var = 'mvn_B_1sec'
-  get_data, var, index=i
-  if (i eq 0) then begin
-    print,"No MAG data found: ", var
-    return
-  endif
+; Get the magnetic field in payload coordinates and rotate to the SS and PC
+; frames with respect to Mars, Phobos or Deimos.  The origin does not matter,
+; since the vectors are scaled to the magnetic field amplitude.  For the SS
+; frame just use Mars-centered MSO.  For the PC frame, use the appropriate 
+; central object, in case the magnetic field does intersect the object, and
+; you would like to know where.  (The PC frame keeps track of the orientation
+; of the central object as seen from the spacecraft.)
   
   spice_vector_rotate_tplot, var, 'maven_mso', check='MAVEN_SPACECRAFT'
-  spice_vector_rotate_tplot, var, 'iau_mars' , check='MAVEN_SPACECRAFT'
+  spice_vector_rotate_tplot, var, to_frame, check='MAVEN_SPACECRAFT'
  
   tplot_names,var+'*',names=mname
 
-  ok = strmatch(mname,'*IAU_MARS*',/fold)
+  ok = strmatch(mname,'*'+to_frame+'*',/fold)
   i = (where(ok))[0]
   if (i eq -1) then begin
-    print,"You must first load MAG data in IAU_MARS coordinates."
+    print,"You must first load MAG data in " + strupcase(to_frame) + " coordinates."
     return
   endif
   pcname = mname[i]
   get_data,pcname,data=mag_pc
+  nsam = n_elements(mag_pc.x)
 
-  ok = strmatch(mname,'*MAVEN_MSO*',/fold)
+  ok = strmatch(mname,'*maven_mso*',/fold)
   i = (where(ok))[0]
   if (i eq -1) then begin
     print,"You must first load MAG data in MAVEN_MSO coordinates."
@@ -107,31 +185,70 @@ pro mvn_mag_geom, alt=alt, var=var
   B_ss[*,1] = B_ss[*,1]/B_mag
   B_ss[*,2] = B_ss[*,2]/B_mag
 
-; Spacecraft position at each MAG sample time in GEO and MSO coordinates
+; Spacecraft position at each MAG sample time in PC and SS coordinates.
+; Here the origin does matter, since the vectors are scaled by the radial 
+; distance to the central object.
 
   print,"Interpolating ephemeris ... ",format='(a,$)'
 
-  if (size(state,/type) ne 8) then maven_orbit_tplot,/load
-  nsam = n_elements(mag_pc.x)
-  tmin = min(mag_pc.x, max=tmax) - 600D
-  tmax += 600D
-  if ((min(state.time) gt tmin) or (max(state.time) lt tmax)) then maven_orbit_tplot,/load
+  case origin of
+    'Mars' :   begin
+                 if (size(state,/type) ne 8) then maven_orbit_tplot,/load
+                 if ((min(state.time) gt tmin) or (max(state.time) lt tmax)) then maven_orbit_tplot,/load
 
-  indx = where((state.time ge tmin) and (state.time le tmax), count)
-  if (count eq 0L) then begin
-    print,"Insufficient ephemeris data."
-    return
-  endif
+                 indx = where((state.time ge tmin) and (state.time le tmax), count)
+                 if (count eq 0L) then begin
+                   print,"Insufficient ephemeris data."
+                   return
+                 endif
 
-  S_pc = fltarr(nsam,3)
-  S_pc[*,0] = spline(state.time[indx], state.geo_x[indx,0], mag_pc.x)
-  S_pc[*,1] = spline(state.time[indx], state.geo_x[indx,1], mag_pc.x)
-  S_pc[*,2] = spline(state.time[indx], state.geo_x[indx,2], mag_pc.x)
+                 S_pc = fltarr(nsam,3)
+                 S_pc[*,0] = spline(state.time[indx], state.geo_x[indx,0], mag_pc.x)
+                 S_pc[*,1] = spline(state.time[indx], state.geo_x[indx,1], mag_pc.x)
+                 S_pc[*,2] = spline(state.time[indx], state.geo_x[indx,2], mag_pc.x)
 
-  S_ss = fltarr(nsam,3)
-  S_ss[*,0] = spline(state.time[indx], state.mso_x[indx,0], mag_pc.x)
-  S_ss[*,1] = spline(state.time[indx], state.mso_x[indx,1], mag_pc.x)
-  S_ss[*,2] = spline(state.time[indx], state.mso_x[indx,2], mag_pc.x)
+                 S_ss = fltarr(nsam,3)
+                 S_ss[*,0] = spline(state.time[indx], state.mso_x[indx,0], mag_pc.x)
+                 S_ss[*,1] = spline(state.time[indx], state.mso_x[indx,1], mag_pc.x)
+                 S_ss[*,2] = spline(state.time[indx], state.mso_x[indx,2], mag_pc.x)
+               end
+
+    'Phobos' : begin
+                 jndx = where((moon.pc.t ge tmin) and (moon.pc.t le tmax), jcnt)
+                 if (jcnt eq 0L) then begin
+                   print,"Insufficient Phobos ephemeris data."
+                   return
+                 end
+
+                 S_pc = fltarr(nsam,3)
+                 S_pc[*,0] = spline(moon.pc.t[jndx], moon.pc.x[jndx], mag_pc.x)
+                 S_pc[*,1] = spline(moon.pc.t[jndx], moon.pc.y[jndx], mag_pc.x)
+                 S_pc[*,2] = spline(moon.pc.t[jndx], moon.pc.z[jndx], mag_pc.x)
+
+                 S_ss = fltarr(nsam,3)
+                 S_ss[*,0] = spline(moon.ss.t[jndx], moon.ss.x[jndx], mag_pc.x)
+                 S_ss[*,1] = spline(moon.ss.t[jndx], moon.ss.y[jndx], mag_pc.x)
+                 S_ss[*,2] = spline(moon.ss.t[jndx], moon.ss.z[jndx], mag_pc.x)
+               end
+    
+    'Deimos' : begin
+                 jndx = where((moon.pc.t ge tmin) and (moon.pc.t le tmax), jcnt)
+                 if (jcnt eq 0L) then begin
+                   print,"Insufficient Deimos ephemeris data."
+                   return
+                 end
+
+                 S_pc = fltarr(nsam,3)
+                 S_pc[*,0] = spline(moon.pc.t[jndx], moon.pc.x[jndx], mag_pc.x)
+                 S_pc[*,1] = spline(moon.pc.t[jndx], moon.pc.y[jndx], mag_pc.x)
+                 S_pc[*,2] = spline(moon.pc.t[jndx], moon.pc.z[jndx], mag_pc.x)
+
+                 S_ss = fltarr(nsam,3)
+                 S_ss[*,0] = spline(moon.ss.t[jndx], moon.ss.x[jndx], mag_pc.x)
+                 S_ss[*,1] = spline(moon.ss.t[jndx], moon.ss.y[jndx], mag_pc.x)
+                 S_ss[*,2] = spline(moon.ss.t[jndx], moon.ss.z[jndx], mag_pc.x)
+               end
+  endcase
 
   S_mag = sqrt(total(S_ss*S_ss,2))
   
@@ -222,6 +339,7 @@ pro mvn_mag_geom, alt=alt, var=var
 
 ; Determine if/where the projected magnetic field line intersects the
 ; atmosphere at 170 km altitude and the spacecraft is above 170 km.
+; (or 0 km altitude for Phobos and Deimos).
 
   S = S_pc * (S_mag # replicate(1.,3))  ; scaled vector
   S2 = S_mag*S_mag
@@ -300,7 +418,13 @@ pro mvn_mag_geom, alt=alt, var=var
     options,'B_trace_lat','yticks',3
     options,'B_trace_lat','yminor',3
 
-  endif
+  endif else begin
+    print,"Crikey!  The magnetic field never intersects " + origin + "!"
+    get_data,'B_trace_pol',index=i
+    if (i gt 0L) then store_data,'B_trace_pol',/delete
+    get_data,'B_trace_dist',index=i
+    if (i gt 0L) then store_data,'B_trace_dist',/delete
+  endelse
   
   store_data, pcname, data=mag_pc
 
