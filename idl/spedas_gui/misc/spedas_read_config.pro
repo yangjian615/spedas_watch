@@ -15,10 +15,10 @@
 ; cstruct = a structure with the changeable fields of the !istp
 ;           structure
 ; Copied from thm_read_config and tt2000_read_config lphilpott 20-jun-2012
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2013-10-26 12:08:47 -0700 (Sat, 26 Oct 2013) $
-;$LastChangedRevision: 13403 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/spedas/spd_ui/api_examples/file_configuration_tab/spedas_read_config.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-12-03 13:50:06 -0800 (Thu, 03 Dec 2015) $
+;$LastChangedRevision: 19523 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/misc/spedas_read_config.pro $
 ;-
 Function spedas_config_template
 

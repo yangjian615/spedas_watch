@@ -24,8 +24,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-11-18 17:57:46 -0800 (Wed, 18 Nov 2015) $
-;$LastChangedRevision: 19418 $
+;$LastChangedDate: 2015-12-02 19:04:33 -0800 (Wed, 02 Dec 2015) $
+;$LastChangedRevision: 19516 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_nearest.pro $
 ;
 ;-
@@ -33,25 +33,24 @@ function spd_slice2d_nearest, ds, time, samples
 
     compile_opt idl2, hidden
 
-  ;number of samples to consider from each pointer (as an index)
-  n = undefined(samples) ? 0:samples[0]-1
+  ;number of samples to consider
+  n = undefined(samples) ? 1:samples[0]
 
+  ;get distance to each sample
   for i=0, n_elements(ds)-1 do begin
-
-    ;get distance to each sample
-    times = ( (*ds[i]).end_time + (*ds[i]).time )/2  ;use center
-    distance = abs(times - time)
-
-    ;get n closest samples
-    idx = sort(distance)
-    idx = idx[0:n < n_elements(idx)]
-    
-    ;aggregate full time range
-    tr = [ min((*ds[i])[idx].time), max((*ds[i])[idx].end_time) ]
-    trange = undefined(trange) ? tr : [ trange[0] < tr[0], trange[1] > tr[1] ]
-    
+    start_times = array_concat( (*ds[i]).time, start_times)
+    end_times = array_concat( (*ds[i]).end_time, end_times)
   endfor
 
+  distance = abs( (start_times + end_times)/2 - time ) ;use center
+
+  ;get indices for n closest samples
+  idx = sort(distance)
+  idx = idx[0:(n < n_elements(idx))-1]
+    
+  ;full time range
+  trange = [ min(start_times[idx]), max(end_times[idx]) ]
+  
   return, trange
   
 end

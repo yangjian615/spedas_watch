@@ -55,10 +55,10 @@
 ;           
 ;          
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-12-03 13:55:21 -0800 (Thu, 03 Dec 2015) $
+; $LastChangedRevision: 19524 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/get_tsy_params.pro $
 ;-
 pro get_tsy_params,dst_tvar,imf_tvar,Np_tvar,Vp_tvar,model,newname=newname,$
                    trange=trange,speed=speed,imf_yz=imf_yz,g_coefficients=g_coefficients,$

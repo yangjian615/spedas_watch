@@ -108,15 +108,7 @@
 ;
 ;         Slice plane along the B field and radial position vectors, B field used as slice's x-axis:
 ;           COORD='rgeo', SLICE_NORM=[0,1,0], SLICE_X=[0,0,1]
-;
-; AVERAGE_ANGLE: Two element array specifying an angle range over which 
-;                averaging will be applied. The angle is measured 
-;                from the slice plane and about the slice's x-axis; 
-;                positive in the right handed direction. This will
-;                average over all data within that range.
-;                    e.g. [-25,25] will average data within 25 degrees
-;                         of the slice plane about it's x-axis
-;
+
 ; VEL_DATA: Name of tplot variable containing the bulk velocity data.
 ;           This will be used for slice plane alignment and subtraction.
 ;           If not set the bulk velocity will be automatically calculated
@@ -131,14 +123,6 @@
 ; SMOOTH: An odd integer >=3 specifying the width of the smoothing window in # 
 ;         of points. Even entries will be incremented, 0 and 1 are ignored.
 ;         Smoothing is performed with a gaussian convolution.
-; 
-; REGRID: (2D/3D Interpolation only)
-;         A three element array specifying regrid dimensions in phi, theta, and 
-;         energy respectively. If set, all distributions' data will first be 
-;         spherically interpolated to the requested reslotution using the 
-;         nearest neighbor.  The resolution in energy will only be interpolated 
-;         to integer multiples of the original resolution (e.g. data with 16 
-;         energies will be interpolated to 32, 48, ...)
 ;
 ; THETARANGE: (2D interpolation only)
 ;             Angle range, in degrees [-90,90], used to calculate slice.
@@ -146,6 +130,15 @@
 ; ZDIRRANGE: (2D interpolation only)
 ;            Z-Axis range, in km/s, used to calculate slice.
 ;            Ignored if called with THETARANGE.
+;
+; AVERAGE_ANGLE: (geometric only)
+;                Two element array specifying an angle range over which 
+;                averaging will be applied. The angle is measured 
+;                from the slice plane and about the slice's x-axis; 
+;                positive in the right handed direction. This will
+;                average over all data within that range.
+;                    e.g. [-25,25] will average data within 25 degrees
+;                         of the slice plane about it's x-axis
 ;
 ; MSG_OBJ: Object reference to GUI message bar. If included useful
 ;          console messages will also be output to GUI.
@@ -156,42 +149,50 @@
 ;      {
 ;       data: two dimensional array (NxN) containing the data to be plotted
 ;       xgrid: N dimensional array of x-axis values for plotting 
-;       ygrid: N dimensional array of y-axis values for plotting 
-;       probe: string containing the probe
-;       dist: string or string array containing the type(s) of distribution used
-;       mass: assumed particle mass from original distributions
-;       coord: string describing the coordinate system used for the slice
-;       rot: string describing the user specified rotation (N/A for 2D interp)
-;       units: string describing the units
-;       twin: time window of the slice
+;       ygrid: N dimensional array of y-axis values for plotting
+; 
+;       project_name: name of project
+;       spacecraft: spacecraft designation
+;       data_name: string or string array containing the type(s) of distribution used
+;       n_samples: number of distributions averaged to create slice
+;
+;       mass: partile mass in ev/(km/s)^2
+;       units: the data's units
+;       xyunits: the x & y axes' units
+;       coord: placeholder for coordinate system label
+;       rot: the applied rotation option
+;       type: flag denoting interpolation type (0=geo, 2=2D interp, 3=3D interp);
+;       energy: flag that x and y are energy instead of velocity
 ;       rlog: flag denoting radial log scaling
-;       ndists: number time samples included in slice
-;       type: flag denoting slice type (0=geo, 2=2D interp, 3=3D interp)
+;
 ;       zrange: two-element array containing the range of the un-interpolated data 
 ;       rrange: two-element array containing the radial range of the data
 ;       trange: two-element array containing the numerical time range
-;       shift: 3-vector containing any translations made in addition to 
-;              requested rotations (e.g. subtracted bulk velocity)
+;        
 ;       bulk: 3-vector containing the bulk velocity in the slice plane's coordinates
+;       bfield: 3-vector containing the bfiend in the slice plane's coordinates
 ;       sunvec: 3-vector containing the sun direction in the slice plane's coordinates
-;       coord_m: Rotation matrix from original data's coordinates (DSL) to
-;                those specified by the COORD keyword.
-;       rot_m: Rotation matrix from the the specified coordinates to those 
-;            defined by ROTATION.
-;       orient_m: Rotation matrix from the coordinates defined by ROTATION to 
-;                 the coordinates defined by SLICE_NORM and SLICE_X 
-;                 (column matrix of new coord's basis).
+;       custom_matrix: The applied custom rotation matrix.
+;       rotation_matrix: Rotation matrix from the the original or custom coordinates 
+;                        to those defined by ROTATION.
+;       orient_matrix: Rotation matrix from the coordinates defined by ROTATION to 
+;                      the coordinates defined by SLICE_NORM and SLICE_X 
+;                      (column matrix of new coord's basis).
 ;       }
+; 
 ;
 ;
 ;NOTES:
 ;   - Regions containting no data are assigned zeros instead of NaNs.
 ;   - Interpolation may occur across data gaps or areas with recorded zeroes
 ;     when using 3D interpolation (use geometric interpolation to see bins).
+;   - The center/midpoint time of a distribution is used as it's timestamp
+;     when determining it's inclusion in the requested time range.  The full
+;     time range of all included samples is stored in the metadata.
 ;      
 ;
 ;CREATED BY: 
-;  A. Flores Based on work by Bryan Kerr and Arjun Raj 
+;  A. Flores Based on work by Bryan Kerr and Arjun Raj, and Xuzhi Zhou
 ;
 ;
 ;EXAMPLES:
@@ -199,8 +200,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-22 11:23:41 -0700 (Thu, 22 Oct 2015) $
-;$LastChangedRevision: 19140 $
+;$LastChangedDate: 2015-12-02 19:02:41 -0800 (Wed, 02 Dec 2015) $
+;$LastChangedRevision: 19515 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d.pro $
 ;-
 pro thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
@@ -225,7 +226,6 @@ pro thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
                       count_threshold=count_threshold, $
                       subtract_counts=subtract_counts, $
                       subtract_bulk=subtract_bulk, $
-                      regrid=regrid_in, slice_width=slice_width, $
                       log=log, energy=energy, $
                     ; Output
                       part_slice=slice, $

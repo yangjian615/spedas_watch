@@ -85,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-25 13:21:54 -0800 (Wed, 25 Nov 2015) $
-;$LastChangedRevision: 19481 $
+;$LastChangedDate: 2015-12-03 13:41:41 -0800 (Thu, 03 Dec 2015) $
+;$LastChangedRevision: 19522 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -285,7 +285,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 continue
             endelse
         endelse       
-        
+
         ; sort the data files in time (this is required by 
         ; HPCA (at least) due to multiple files per day
         ; the intention is to order in time before passing

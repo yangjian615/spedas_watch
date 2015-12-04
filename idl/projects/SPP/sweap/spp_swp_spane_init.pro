@@ -183,7 +183,7 @@ function spp_swp_spane_p1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   data = ccsds.data[20:*]
   ;lll = 512
-  lll = 512*4
+  lll = 16*4
   if n_elements(data) ne lll then begin
     dprint,'Improper packet size',dlevel=2
     dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
@@ -213,7 +213,7 @@ function spp_swp_spane_p1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     cnts2: float(cnts2), $
     gap: 0 }
     
-    if (ccsds.seq_cntr and 1) ne 0 then return,0
+;    if (ccsds.seq_cntr and 1) ne 0 then return,0
 
   return, str
 end
@@ -226,6 +226,7 @@ function spp_swp_spane_p2_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   data = ccsds.data[20:*]
   ;lll = 512
   lll = 512*4
+;  lll = 16*4
   if n_elements(data) ne lll then begin
     dprint,'Improper packet size',dlevel=2
     dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
@@ -273,7 +274,7 @@ function spp_swp_spane_p2_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
     gap: 0 }
     
-    if (ccsds.seq_cntr and 1) ne 0 then return,0
+;    if (ccsds.seq_cntr and 1) ne 0 then return,0
 
   return, str
 end
@@ -283,7 +284,7 @@ function spp_swp_spane_p3_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   data = ccsds.data[20:*]
   ;lll = 512
-  lll = 512*4
+  lll = 16*4
   if n_elements(data) ne lll then begin
     dprint,'Improper packet size',dlevel=2
     dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
@@ -313,7 +314,7 @@ function spp_swp_spane_p3_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     cnts2: float(cnts2), $
     gap: 0 }
     
-    if (ccsds.seq_cntr and 1) ne 0 then return,0
+;    if (ccsds.seq_cntr and 1) ne 0 then return,0
 
   return, str
 end
@@ -371,7 +372,7 @@ function spp_swp_spane_p4_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
     gap: 0 }
     
-    if (ccsds.seq_cntr and 1) ne 0 then return,0
+;    if (ccsds.seq_cntr and 1) ne 0 then return,0
 
   return, str
 end

@@ -4,10 +4,10 @@
 ;PURPOSE:    Initializes system variables for spedas data.
 ;            Can be called from idl_startup to set custom locations.
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2013-10-26 12:08:47 -0700 (Sat, 26 Oct 2013) $
-;$LastChangedRevision: 13403 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/spedas/spd_ui/api_examples/file_configuration_tab/spedas_init.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-12-03 13:50:06 -0800 (Thu, 03 Dec 2015) $
+;$LastChangedRevision: 19523 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/misc/spedas_init.pro $
 ;-
 
 pro spedas_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, use_spdf = use_spdf, no_color_setup

@@ -9,10 +9,10 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2013-10-26 12:08:47 -0700 (Sat, 26 Oct 2013) $
-;$LastChangedRevision: 13403 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/spedas/spd_ui/api_examples/file_configuration_tab/spd_ui_spedas_fileconfig.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-12-03 13:50:06 -0800 (Thu, 03 Dec 2015) $
+;$LastChangedRevision: 19523 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/misc/spd_ui_spedas_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
 PRO spd_ui_fileconfig_load_template, fileName, topid, statusBar

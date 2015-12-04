@@ -25,14 +25,26 @@
 ;
 ;Calling Sequence:
 ;  
-;  slice = spd_slice2d, data [,data2 [,data3 [,data4]]] $
-;                       [,time=time] [,window=window]
+;  slice = spd_slice2d( data [,data2 [,data3 [,data4]]] $
+;                       [,time=time [,window=window | samples=samples]]
+;                       [trange=trange] ... )
 ;
 ;
 ;Example Usage:
+;  slice = spd_slice2d(data, time=time)            ;get slice from distribution closest to TIME
+;  slice = spd_slice23(data, time=time, samples=4) ;use average of the 4 samples nearest to TIME
+;  slice = spd_slice23(data, time=time, window=10) ;use average of all data within [TIME,TIME+10sec]
+;                                                  ;add "/center_time" for [TIME-5sec,TIME+5sec]  
+;  slice = spd_slice23(data, trange=trange)        ;use average of all data within TRANGE
+;
+;  slice = spd_slice23(data, time=time, /three_d_interp) ;use 3D interpolation (default) 
+;  slice = spd_slice23(data, time=time, /two_d_interp)   ;use 2D interpolation
+;  slice = spd_slice23(data, time=time, /geometric)      ;use geometric interpolation
+;
 ;  See crib sheets:  
 ;    THEMIS:  thm_crib_part_slice2d  (called by thm_part_slice2d)
-;    MMS:     mms_slice2d_crib
+;    MMS:     mms_slice2d_fpi_crib
+;             mms_slice2d_hpca_crib
 ;    
 ;
 ;Arguments:
@@ -41,9 +53,12 @@
 ; 
 ; 
 ;Basic Keywords:
+;  TRANGE: Two-element time range over which data will be averaged. (string or double)
 ;  TIME: Time at which the slice will be computed. (string or double)
-;  WINDOW: Length in seconds over which data will be averaged. (double)
-;  CENTER_TIME: Flag denoting that TIME should be midpoint or window instad of beginning.
+;    SAMPLES: Number of nearest samples to TIME to average. (int/double)
+;             If neither SAMPLES nor WINDOW are specified then default=1.
+;    WINDOW: Length in seconds from TIME over which data will be averaged. (int/double)  
+;      CENTER_TIME: Flag denoting that TIME should be midpoint for window instad of beginning.
 ;  
 ;  THREE_D_INTERP: Flag to use 3D interpolation method (described above)      
 ;  TWO_D_INTERP: Flag to use 2D interpolation method (described above)
@@ -156,7 +171,7 @@
 ;       xyunits: the x & y axes' units
 ;       coord: placeholder for coordinate system label
 ;       rot: the applied rotation option
-;       type: flag denoting slice type (0=geo, 2=2D interp, 3=3D interp);
+;       type: flag denoting interpolation type (0,2,3 for geomtric, 2D, 3D respectively)
 ;       rlog: flag denoting radial log scaling
 ;
 ;       zrange: two-element array containing the range of the un-interpolated data 
@@ -179,6 +194,9 @@
 ;   - Regions containting no data are assigned zeros instead of NaNs.
 ;   - Interpolation may occur across data gaps or areas with recorded zeroes
 ;     when using 3D interpolation (use geometric interpolation to see bins).
+;   - The center/midpoint time of a distribution is used as it's timestamp
+;     when determining it's inclusion in the requested time range.  The full
+;     time range of all included samples is stored in the metadata.
 ;
 ;
 ;CREATED BY:
@@ -186,8 +204,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-11-18 17:57:46 -0800 (Wed, 18 Nov 2015) $
-;$LastChangedRevision: 19418 $
+;$LastChangedDate: 2015-12-02 19:02:41 -0800 (Wed, 02 Dec 2015) $
+;$LastChangedRevision: 19515 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -299,7 +317,6 @@ endif
 
 ; geometric
 if ~keyword_set(type) then begin
-  regrid = 0 ;incompatible with regridding
   if undefined(resolution) then resolution = 500
 endif
 
@@ -342,7 +359,7 @@ if ptr_valid(p4) then ds = [ds,p4]
 
 ; get the time range if one was specified
 if ~undefined(trange_in) then begin
-  trange = minmax(trange_in)
+  trange = minmax(time_double(trange_in))
 endif
 
 ; get the time range if a time & window were specified instead
@@ -358,7 +375,7 @@ endif
 
 ; if no time range or window was specified then get a time range 
 ; from the N closest samples to the specied time
-;   (N=SAMPLES, defaults to 1 if samples is not defined
+;   (defaults to 1 if SAMPLES is not defined)
 if undefined(trange) then begin
   trange = spd_slice2d_nearest(ds, time, samples)
 endif

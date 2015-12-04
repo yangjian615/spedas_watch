@@ -22,10 +22,10 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-04 15:32:15 -0700 (Tue, 04 Aug 2015) $
-;$LastChangedRevision: 18395 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_get_local_files.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-12-03 14:13:19 -0800 (Thu, 03 Dec 2015) $
+;$LastChangedRevision: 19525 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_get_local_state_files.pro $
 ;-
 
 function mms_get_local_state_files, $
