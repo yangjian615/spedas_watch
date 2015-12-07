@@ -21,8 +21,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-11-06 13:31:24 -0800 (Fri, 06 Nov 2015) $
-;$LastChangedRevision: 19293 $
+;$LastChangedDate: 2015-12-04 18:44:09 -0800 (Fri, 04 Dec 2015) $
+;$LastChangedRevision: 19527 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_dist.pro $
 ;-
 
@@ -62,6 +62,11 @@ if ~undefined(trange) then begin
   indices = minmax(where( *p.x ge tr[0] and *p.x lt tr[1], n_times))
   if n_times eq 0 then begin
     dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
+    return, 0
+  endif
+  ;this *shouldn't* happen
+  if n_times ne (1+indices[1]-indices[0]) then begin
+    dprint, 'Times are not monotonic; cannot retrieve data for this time period'
     return, 0
   endif
 endif else begin

@@ -1,7 +1,7 @@
 ; File to get historic ABS selections. Note that the time stamps on sitl and abs files are not referring
 ; to the contents of the files, but the date and time at which the foms were created.
  
-pro mms_get_abs_fom_files, local_flist, pw_flag, pw_message
+pro mms_get_abs_fom_files, local_flist, pw_flag, pw_message, trange=trange
 
 
 
@@ -23,9 +23,13 @@ spawn, spawnstring, data_dir
 ;----------------------------------------------------------------------------
 ; Convert start and stop times to the format the sdc code wants
 ;;----------------------------------------------------------------------------
+if ~undefined(trange) && n_elements(trange) eq 2 then begin
+  t = timerange(trange)
+endif else begin
+  t = timerange()
+  t = [t[0],t[1]+3.d0*86400.d0,t[1]]
+endelse
 
-t = timerange()
-t = [t[0],t[1]+3.d0*86400.d0,t[1]] 
 st = time_string(t)
 start_date = strmid(st[0],0,10)
 end_date = strmatch(strmid(st[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(st[1],0,10)

@@ -34,9 +34,9 @@
 ; MODIFICATION HISTORY:
 ;
 ;
-;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-09-09 10:07:27 -0700 (Wed, 09 Sep 2015) $
-;  $LastChangedRevision: 18741 $
+;  $LastChangedBy: egrimes $
+;  $LastChangedDate: 2015-12-05 11:16:03 -0800 (Sat, 05 Dec 2015) $
+;  $LastChangedRevision: 19528 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_edp.pro $
 
 
@@ -238,7 +238,9 @@ pro mms_sitl_get_edp, trange=trange, $
             ns = n_elements(strs)
             if ns gt 2 then dats = strs[2] else dats = ''
             if ns gt 3 then coord = '_'+strs[-1] else coord = ''
+            if ns eq 6 then coord = coord + '_res' ; kludge for res, egrimes@igpp, 12/5/2015
             dlen = strlen(dat_str)
+            
             if mode_str eq 'comm' then begin
               sl = strlen(dat_str)
               dat_str1 = strmid(dat_str, 0, 3)
