@@ -86,6 +86,8 @@ function spp_swp_spane_slow_hkp_decom,ccsds , ptp_header=ptp_header, apdat=apdat
     return,0
   endif
 
+hexprint,ccsds.data[0:31]
+
   if keyword_set(apdat) && ptr_valid(apdat.dataindex) && keyword_set(*apdat.dataindex) then begin
     last_spai = (*apdat.dataptr)[*apdat.dataindex -1]
  ;   printdat,last_spai

@@ -214,24 +214,40 @@ pro temp2
 end
 
 
+pro spp_recorders
+  common spp_crib_com, recorder_base1, recorder_base2,exec_base
+  exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
+
+  host = 'ABIAD-SW'
+  ;host = 'localhost'
+  ;host = '128.32.98.101'  ;  room 160 Silver
+  ;host = '128.32.13.37'   ;  room 133 addition
+  recorder,recorder_base1,title='GSEOS PTP room 320',port=2024,host='ABIAD-SW',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  recorder,recorder_base2,title='GSEOS PTP 133 addition',port=2024,host='128.32.13.37',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  printdat,recorder_base,filename,exec_base,/value
+end
+
+
 
 pro spp_init_realtime,filename=filename,base=base
-common spp_crib_com2, recorder_base,exec_base
-exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
 
-host = 'ABIAD-SW'
-;host = 'localhost'
-;host = '128.32.98.101'  ;  room 160 Silver
-;host = '128.32.13.37'   ;  room 133 addition
-recorder,recorder_base,title='GSEOS PTP',port=2024,host=host,exec_proc='spp_ptp_stream_read',destination='spp_raw_YYYYMMDD_hhmmss.ptp';,/set_proc,/set_connect,get_filename=filename
-printdat,recorder_base,filename,exec_base,/value
-
+spp_recorders
 spp_swp_apid_data_init,save=1
 spp_apid_data,'3b9'x,name='SWEAP SPAN-I Events',rt_tags='*'
 spp_apid_data,'3bb'x,name='SWEAP SPAN-I Rates',rt_tags='*CNTS *MODE'
 spp_apid_data,'3be'x,name='SWEAP SPAN-I HKP',rt_tags='*'
-spp_apid_data,'3b6'x,name='SWEAP SPAN-I Prod',rt_tags='*'
-
+spp_apid_data,'380'x,name='SWEAP SPAN-I Prod_x80',rt_tags='*'
+spp_apid_data,'381'x,name='SWEAP SPAN-I Prod_x81',rt_tags='*'
+spp_apid_data,'382'x,name='SWEAP SPAN-I Prod_x82',rt_tags='*'
+spp_apid_data,'383'x,name='SWEAP SPAN-I Prod_x83',rt_tags='*'
+spp_apid_data,'384'x,name='SWEAP SPAN-I Prod_x84',rt_tags='*'
+spp_apid_data,'385'x,name='SWEAP SPAN-I Prod_x85',rt_tags='*'
+spp_apid_data,'386'x,name='SWEAP SPAN-I Prod_x86',rt_tags='*'
+spp_apid_data,'387'x,name='SWEAP SPAN-I Prod_x87',rt_tags='*'
+spp_apid_data,'388'x,name='SWEAP SPAN-I Prod_x88',rt_tags='*'
+spp_apid_data,'389'x,name='SWEAP SPAN-I Prod_x89',rt_tags='*'
+spp_apid_data,'38a'x,name='SWEAP SPAN-I Prod_x8a',rt_tags='*'
+spp_apid_data,'38b'x,name='SWEAP SPAN-I Prod_x8b',rt_tags='*'
 spp_apid_data, rt_flag = 1
 
 wait,1
@@ -249,7 +265,6 @@ if 0 then begin
   spp_ptp_file_read,f1[-1]
   spp_apid_data,rt_flag=1
 endif
-base = recorder_base
 end
 
 

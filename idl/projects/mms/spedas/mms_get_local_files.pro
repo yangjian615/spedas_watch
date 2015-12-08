@@ -26,9 +26,9 @@
 ;  -Input strings should not contain wildcards (datatype may be '*')
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-23 14:42:30 -0800 (Mon, 23 Nov 2015) $
-;$LastChangedRevision: 19459 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-12-07 13:13:58 -0800 (Mon, 07 Dec 2015) $
+;$LastChangedRevision: 19534 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_get_local_files.pro $
 ;-
 
@@ -111,8 +111,9 @@ all_files = file_search(instr_data_dir,'*.cdf')
 idx = where( stregex( all_files, search_pattern, /bool, /fold_case), n_files)
 
 if n_files eq 0 then begin
-  dprint, dlevel=2, 'No local files found for: '+strjoin(basic_inputs,' ') + ' ' +$
-                    (undefined(datatype) ? '':datatype)
+ ; suppress redundant error message
+ ; dprint, dlevel=2, 'No local files found for: '+strjoin(basic_inputs,' ') + ' ' +$
+ ;                   (undefined(datatype) ? '':datatype)
   return, error
 endif
 

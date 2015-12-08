@@ -8,8 +8,8 @@
 ;    Davin Larson - April 2011
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-10-21 12:05:04 -0700 (Wed, 21 Oct 2015) $
-; $LastChangedRevision: 19126 $
+; $LastChangedDate: 2015-12-06 20:29:57 -0800 (Sun, 06 Dec 2015) $
+; $LastChangedRevision: 19530 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/recorder.pro $
 ;
 ;-
@@ -25,10 +25,10 @@ PRO recorder_event, ev   ; recorder
     wids.base:  begin
         if info.hfp gt 0 then begin
             eofile =0
-            treceived = systime(1)
+            info.time_received = systime(1)
             buffer= bytarr(info.maxsize) 
             b=buffer[0]
-            for i=0L,n_elements(buffer)-1 do begin
+            for i=0L,n_elements(buffer)-1 do begin                       ; Read from stream one byte (or value) at a time 
                 flag = file_poll_input(info.hfp,timeout=0)
                 if flag eq 0 then break
                 if eof(info.hfp) then begin
@@ -45,20 +45,21 @@ PRO recorder_event, ev   ; recorder
               buffer = buffer[0:i-1]
               if keyword_set(info.dfp) then writeu,info.dfp, buffer  ;swap_endian(buffer,/swap_if_little_endian)
               flush,info.dfp
-              msg = string(/print,i,buffer[0:(i < 128)-1],format='(i5 ," bytes: ", 128(" ",Z02))')
-              msg = time_string(treceived,tformat='hh:mm:ss - ',local=localtime) + msg
+              msg = string(/print,i,buffer[0:(i < 64)-1],format='(i5 ," bytes: ", 128(" ",Z02))')
+              msg = time_string(info.time_received,tformat='hh:mm:ss - ',local=localtime) + msg
             endif else begin
               dummy = temporary(buffer)    ;           buffer=0
-              msg =time_string(treceived,tformat='hh:mm:ss - No data available',local=localtime)
+              msg =time_string(info.time_received,tformat='hh:mm:ss - No data available',local=localtime)
             endelse
             if widget_info(/button_set,wids.proc_button) then begin
               widget_control,wids.proc_name,get_value = proc_name
-              if keyword_set(proc_name) then call_procedure,proc_name[0],buffer,time=treceived   ; Execute exec_proc here
+              if keyword_set(proc_name) then call_procedure,proc_name[0],buffer ,info=info  ;,time=info.time_received   ; Execute exec_proc here
             endif
             widget_control,wids.output_text,set_value=msg
             dprint,dlevel=dlevel+2,info.title_num+msg,/no_check
             widget_control,wids.poll_int,get_value = poll_int
-            poll_int = float(poll_int)
+            poll_int = float(poll_int) 
+            if poll_int le 0 then poll_int = 1
             if 1 then begin
                 poll_int = poll_int - (systime(1) mod poll_int)  ; sample on regular boundaries
             endif
@@ -158,36 +159,14 @@ PRO recorder_event, ev   ; recorder
         endcase
     end
     wids.dest_flush: begin
-;      dprint,'new'
-;     printdat,ev
-      recorder_event,{top: ev.top, id:wids.dest_button}
-      recorder_event,{top: ev.top, id:wids.dest_button}
-      
-      
-;        widget_control, wids.dest_text ,get_uvalue= fileformat,get_value=filename
-;        if info.dfp gt 0 then begin
-;            free_lun,info.dfp
-;            info.dfp =0
-;            info.filename= ''
-;        endif
-;        dprint,dlevel=3,info.title_num+'Closed file:',filename,get_check_events=cev,check_events=0
-;        filename = time_string(systime(1),tformat = fileformat[0])
-;        widget_control, wids.dest_text, set_uvalue = fileformat,set_value=filename
-;        if keyword_set(filename) then begin
-;            file_open,'u',filename, unit=dfp,dlevel=4
-;            info.dfp = dfp
-;            info.filename= filename
-;            widget_control, wids.dest_flush, sensitive=1
-;        endif
-;        dprint,dlevel=3,info.title_num+'Opened file: '+info.filename,check_events=cev
-;        flush,info.dfp
+      recorder_event,{top: ev.top, id:wids.dest_button}   ; close old file
+      recorder_event,{top: ev.top, id:wids.dest_button}   ; open  new file      
     end
 ;    wids.host_text:  begin
 ;        widget_control,ev.id,get_value=value
 ;        dprint,'"'+value+'"'
 ;    end
     wids.proc_button: begin
-;      printdat,ev & savetomain,ev
       widget_control,wids.proc_name,get_value=proc_name
       widget_control,wids.proc_name,sensitive = (ev.select eq 0)
       info.run_proc = ev.select
@@ -204,6 +183,7 @@ PRO recorder_event, ev   ; recorder
             dprint,dlevel=dlevel-1,info.title_num+'Closing '+fs.name
             free_lun,info.dfp
         endif
+        ptr_free,ptr_extract(info)
         WIDGET_CONTROL, ev.TOP, /DESTROY
         dprint,dlevel=dlevel-1,info.title_num+'Widget Closed'
         return
@@ -220,7 +200,7 @@ PRO recorder_event, ev   ; recorder
 END
 
 
-PRO exec_proc_template,buffer,time=time
+PRO exec_proc_template,buffer,info=info
 ;    savetomain,buffer
 ;    savetomain,time
 
@@ -273,15 +253,20 @@ if ~(keyword_set(base) && widget_info(base,/managed) ) then begin
 ;      hostname:host, hostport:port, $
         title: title, $
         title_num: title_num, $
+        time_received: 0d, $
         hfp:0,  $
         fileformat:destination,  $
         filename:'', $
-        dfp:0 ,maxsize:2L^18, $
+        dfp:0 , $
+        maxsize:2L^20, $
+        buffer_ptr: ptr_new(),   $
 ;        pollinterval:1., $
         verbose:2, $
         dlevel: 2, $
-        exec_proc_ptr: ptr_new(), $        
+        exec_proc_ptr: ptr_new(null), $        
         run_proc:keyword_set(set_procbutton) }
+        
+;    info.buffer_ptr = ptr_new( bytarr( info.maxsize ) )
     WIDGET_CONTROL, ids.base, SET_UVALUE=info
     WIDGET_CONTROL, ids.base, /REALIZE
     widget_control, ids.base, base_set_title=title_num

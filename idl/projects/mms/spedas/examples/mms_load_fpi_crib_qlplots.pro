@@ -9,9 +9,9 @@
 ; BGILES UPDATED 1Sept2015
 ; BGILES UPDATED 31AUGUST2015
 ; 
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-10-26 12:52:11 -0700 (Mon, 26 Oct 2015) $
-; $LastChangedRevision: 19157 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2015-12-07 13:37:34 -0800 (Mon, 07 Dec 2015) $
+; $LastChangedRevision: 19536 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_fpi_crib_qlplots.pro $
 ;-
 
@@ -62,25 +62,33 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
 ; load ephemeris data for all 4 probes
 mms_load_state, trange = trange, probes = probes, /ephemeris
 
+
 ; load DFG data for all 4 probes
-mms_load_dfg, trange = trange, probes = probes
+mms_load_dfg, trange = trange, probes = probes, level = 'ql'
 
 FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     obsstr='mms'+STRING(i,FORMAT='(I1)')+'_fpi_'
     
     ;SET UP TPLOT VARIABLES
-    
+
+    ; ephemeris data is loaded in with J2000 coordinates, need
+    ; to cotrans to GSM
+    spd_cotrans, 'mms'+STRING(i,FORMAT='(I1)')+'_defeph_pos', $
+        'mms'+STRING(i,FORMAT='(I1)')+'_defeph_pos_gsm', in_coord='j2000',$
+        out_coord='gsm', /ignore_dlimits
+         
     ; convert the position data into Re
-    eph_variable = 'mms'+strcompress(string(i), /rem)+'_defeph_pos'
+   ; eph_variable = 'mms'+strcompress(string(i), /rem)+'_defeph_pos'
+    eph_variable = 'mms'+strcompress(string(i), /rem)+'_defeph_pos_gsm'
     calc,'"'+eph_variable+'_re" = "'+eph_variable+'"/6371.2'
     
     ; split the position into its components
     split_vec, eph_variable+'_re'
     
     ; set the label to show along the bottom of the tplot
-    options, eph_variable+'_re_x',ytitle='X (Re)'
-    options, eph_variable+'_re_y',ytitle='Y (Re)'
-    options, eph_variable+'_re_z',ytitle='Z (Re)'
+    options, eph_variable+'_re_x',ytitle='X-GSM (Re)'
+    options, eph_variable+'_re_y',ytitle='Y-GSM (Re)'
+    options, eph_variable+'_re_z',ytitle='Z-GSM (Re)'
     position_vars = [eph_variable+'_re_z', eph_variable+'_re_y', eph_variable+'_re_x']
     
     ; Data quality bar
@@ -138,7 +146,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
 
     ; use bss routine to create tplot variables for fast, burst, status, and/or FOM
     trange = timerange(trange)
-    mms_load_bss, trange=trange, /include_labels
+    spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
         
     ;-----------PLOT ELECTRON ENERGY SPECTRA DETAILS -- ONE SPACECRAFT --------------------
     ;PLOT: electron energy spectra for each observatory

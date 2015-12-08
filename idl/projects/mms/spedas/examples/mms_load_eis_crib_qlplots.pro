@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-11-19 09:59:42 -0800 (Thu, 19 Nov 2015) $
-; $LastChangedRevision: 19426 $
+; $LastChangedDate: 2015-12-07 14:55:59 -0800 (Mon, 07 Dec 2015) $
+; $LastChangedRevision: 19538 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -78,9 +78,9 @@ split_vec, eph_gsm+'_re'
 calc, '"mms'+probe+'_defeph_R_gsm" = sqrt("'+eph_gsm+'_re_x'+'"^2+"'+eph_gsm+'_re_y'+'"^2+"'+eph_gsm+'_re_z'+'"^2)'
 
 ; set the label to show along the bottom of the tplot
-options, eph_gsm+'_re_x',ytitle='X (Re)'
-options, eph_gsm+'_re_y',ytitle='Y (Re)'
-options, eph_gsm+'_re_z',ytitle='Z (Re)'
+options, eph_gsm+'_re_x',ytitle='X-GSM (Re)'
+options, eph_gsm+'_re_y',ytitle='Y-GSM (Re)'
+options, eph_gsm+'_re_z',ytitle='Z-GSM (Re)'
 options, 'mms'+probe+'_defeph_R_gsm',ytitle='R (Re)'
 position_vars = ['mms'+probe+'_defeph_R_gsm', eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
 

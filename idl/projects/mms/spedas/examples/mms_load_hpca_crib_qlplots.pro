@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-11-12 14:30:48 -0800 (Thu, 12 Nov 2015) $
-; $LastChangedRevision: 19355 $
+; $LastChangedDate: 2015-12-07 13:43:52 -0800 (Mon, 07 Dec 2015) $
+; $LastChangedRevision: 19537 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_hpca_crib_qlplots.pro $
 ;-
 
@@ -89,9 +89,9 @@ calc,'"'+eph_gsm+'_re" = "'+eph_gsm+'"/6378.'
 split_vec, eph_gsm+'_re'
 
 ; set the label to show along the bottom of the tplot
-options, eph_gsm+'_re_x',ytitle='X (Re)'
-options, eph_gsm+'_re_y',ytitle='Y (Re)'
-options, eph_gsm+'_re_z',ytitle='Z (Re)'
+options, eph_gsm+'_re_x',ytitle='X-GSM (Re)'
+options, eph_gsm+'_re_y',ytitle='Y-GSM (Re)'
+options, eph_gsm+'_re_z',ytitle='Z-GSM (Re)'
 position_vars = [eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
 
 ; create a tplot variable with flags for burst and survey data

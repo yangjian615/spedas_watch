@@ -84,9 +84,9 @@
 ;           the directory structure at the SDC.
 ;      
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-03 13:41:41 -0800 (Thu, 03 Dec 2015) $
-;$LastChangedRevision: 19522 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2015-12-07 13:13:58 -0800 (Mon, 07 Dec 2015) $
+;$LastChangedRevision: 19534 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -272,8 +272,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         
         ;if no remote list was retrieved then search locally   
         endif else begin
-            dprint, dlevel = 2, 'No remote files found for: '+ $
-                    probe+' '+instrument+' '+data_rate+' '+level+' '+datatype
+            ; suppressed redundant error message
+            ;dprint, dlevel = 2, 'No remote files found for: '+ $
+            ;        probe+' '+instrument+' '+data_rate+' '+level+' '+datatype
             
             local_files = mms_get_local_files(probe=probe, instrument=instrument, $
                     data_rate=data_rate, level=level, datatype=datatype, trange=time_double([day_string, end_string]))
@@ -281,7 +282,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             if is_string(local_files) then begin
                 append_array, files, local_files
             endif else begin
-                dprint, dlevel = 0, 'Error, no data files found for this time.'
+                dprint, dlevel = 0, 'Error, no local or remote data files found: '+$
+                         probe+' '+instrument+' '+data_rate+' '+level+' '+datatype
                 continue
             endelse
         endelse       

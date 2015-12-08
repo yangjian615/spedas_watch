@@ -589,6 +589,96 @@ function spp_swp_spanai_slow_hkp_decom_version_81x,ccsds , ptp_header=ptp_header
 end
 
 
+function spp_swp_spanai_slow_hkp_decom_version_84x,ccsds , ptp_header=ptp_header, apdat=apdat     ; Slow Housekeeping
+
+  b = ccsds.data
+  psize = 97+7   ; should be 94
+  if n_elements(b) ne psize then begin
+    dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
+    return,0
+  endif
+
+  sf0 = ccsds.data[11] and 3
+  if sf0 ne 0 then dprint, 'Odd time at: ',time_string(ccsds.time)
+  ref = 4. ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
+  n=0
+
+  temp_par= spp_sweap_therm_temp()
+  temp_par_8bit = temp_par
+  temp_par_8bit.xmax = 255
+  temp_par_12bit = temp_par
+  temp_par_12bit.xmax = 4095
+
+  spai = { $
+    time: ccsds.time, $
+    met: ccsds.met,  $
+    delay_time: ptp_header.ptp_time - ccsds.time, $
+    seq_cntr: ccsds.seq_cntr, $
+    REVN: b[12],  $
+    CMDS_REC: spp_swp_word_decom(b,13),  $
+    cmds_unk:  ishft(b[15],4), $
+    cmds_err:  b[15] and 'f'x, $
+    GND0: spp_swp_word_decom(b,16) * 4.252,  $
+    GND1: spp_swp_word_decom(b,18) * 4.252,  $
+    MON_LVPS_TEMP: func(spp_swp_word_decom(b,20) * 1., param = temp_par_8bit),  $
+    mon_22A_V: spp_swp_word_decom(b,22) * 0.0281 ,  $
+    mon_1P5D_V: spp_swp_word_decom(b,24) * .0024  ,  $
+    mon_3P3A_V: spp_swp_word_decom(b,26) * .0037 ,  $
+    mon_3P3D_V: spp_swp_word_decom(b,28) * .0037 ,  $
+    mon_N8VA_C:spp_swp_word_decom(b,30) * .0117 ,  $
+    mon_N5VA_C: spp_swp_word_decom(b,32)  * .0063 ,  $
+    mon_P8VA_C: spp_swp_word_decom(b,34) * .0117 ,  $
+    mon_P5A_C: spp_swp_word_decom(b,36) * .0063 ,  $
+    MON_ANAL_TEMP: func(spp_swp_word_decom(b,38) * 1., param = temp_par_8bit),  $
+    MON_3P3_C: spp_swp_word_decom(b,40) * .572,  $
+    MON_1P5_C: spp_swp_word_decom(b,42) * .172,  $
+    MON_P5I_c: spp_swp_word_decom(b,44) * 2.434,  $
+    MON_N5I_C: spp_swp_word_decom(b,46) * 2.434,  $
+    MON_ACC_V: spp_swp_word_decom(b,48)  * 3.6630 , $
+    MON_DEF1_V: spp_swp_word_decom(b,50) * .9768, $
+    MON_ACC_C: spp_swp_word_decom(b,52)  *.0075, $
+    MON_DEF2_V:spp_swp_word_decom(b,54) * .9768, $
+    MON_MCP_V:  spp_swp_word_decom(b,56) * .9162, $
+    MON_SPOIL_V:spp_swp_word_decom(b,58) *  0.0195  , $
+    MON_MCP_C: spp_swp_word_decom(b,60)  * 0.0199  , $
+    MON_TDC_TEMP:  func(spp_swp_word_decom(b,62 )  * 1. ,param = temp_par_12bit) , $
+    MON_RAW_V: spp_swp_word_decom(b,64)  * 1.2210, $
+    MON_FPGA_TEMP: func(spp_swp_word_decom(b,66 )  * 1. ,param = temp_par_12bit) , $
+    MON_RAW_C:  spp_swp_word_decom(b,68) * .0244 , $
+    MON_HEM_V:  spp_swp_word_decom(b,70)  * .9768, $
+    DAC_RAW: spp_swp_word_decom(b,72)   , $
+    HV_STATUS_FLAG: spp_swp_word_decom(b,74), $
+    DAC_MCP: spp_swp_word_decom(b,76), $
+    DAC_ACC: spp_swp_word_decom(b,78), $
+    MAXCNT: spp_swp_word_decom(b,80), $
+    USRVAR: spp_swp_word_decom(b,82), $
+    sram_ADDR:  ishft(b[84] and '3f'xUL,16)  + spp_swp_word_decom(b,85), $
+    reset_cntr: b[87], $
+    chksums: b[88:95] , $
+    SLUT_chksum: b[88], $
+    FSLUT_chksum: b[89], $
+    TSLUT_chksum: b[90], $
+    PILUT_chksum: b[91], $
+    MLUT_chksum: b[92], $
+    MRAN_chksum: b[93], $
+    PSUM_chksum: b[94], $
+    PADD_chksum: b[95], $
+    time_cmds: b[96], $
+    peadl_chksum: b[97], $
+    PMBINS_chksum: b[98], $
+    table_chksum: b[99], $
+    cycle_cntr: ishft(spp_swp_word_decom(b,100) ,-5), $
+    MRAM_ADDR:  ishft( b[101] and '1f'xul  ,16) + spp_swp_word_decom(b,102), $
+    GAP: ccsds.gap }
+    
+    
+    if debug(3) then printdat,spai,/hex
+
+  return,spai
+
+end
+
+
 
 
 
@@ -605,14 +695,48 @@ function spp_log_message_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 end
 
 
-function spp_generic_decom,ccsds,ptp_header=ptp_header,apdat=apdat
-
-  str = create_struct(ptp_header,ccsds)
-;  dprint,format="('Generic routine for ',Z04)",ccsds.apid
-
+function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+;  str = create_struct(ptp_header,ccsds)
+  str = 0
+  ;  dprint,format="('Generic routine for ',Z04)",ccsds.apid
+  size = ccsds.size+7
+  b = ccsds.data[12:*]
+  if debug(3) then begin
+    dprint,dlevel=2,'generic',ccsds.size+7, n_elements(ccsds.data),'  ',time_string(ccsds.time,/local)
+    hexprint,ccsds.data
+  endif
+  case size of
+    22: begin
+      b = [ b , byte( ['80'x,'00'x] ) ]  ;; correct error of truncation of data array
+ ;     hexprint,b
+ ;     dprint,spp_swp_float_decom(b,4),spp_swp_float_decom(b,8)
+      str= { time: ptp_header.ptp_time, $
+             gun_v: spp_swp_float_decom(b,4), $
+             gun_i: spp_swp_float_decom(b,8), $
+             gap: 0}
+      end
+    60: 
+    else: dprint,'Unknown size'
+  endcase
+;  printdat,time_string(ptp_header.ptp_time,/local)
+ ; printdat,str
   return,str
-
 end
+
+
+
+
+
+function spp_generic_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+  str = create_struct(ptp_header,ccsds)
+  ;  dprint,format="('Generic routine for ',Z04)",ccsds.apid
+  if debug(3) then begin
+    dprint,dlevel=2,'generic',ccsds.size+7, n_elements(ccsds.data)
+    hexprint,ccsds.data
+  endif
+  return,str
+end
+
 
 
 ;;------------------------------------------------------------------
@@ -702,10 +826,13 @@ pro spp_apid_data,apid,name=name,clear=clear,reset=reset,save=save,finish=finish
     endfor
     apdat.apid = apid
     all_apdat[apid] = apdat    ; put it all back in
-  endif  else begin
-    if n_elements(rt_flag) ne 0 then all_apdat.rt_flag=rt_flag
+  endif  else begin            ; all 
     w= where(all_apdat.apid ge 0,nw)
-    if nw ne 0 then apdat = all_apdat[w] else apdat=0
+    if nw ne 0 then begin
+      if n_elements(rt_flag) ne 0 then all_apdat[w].rt_flag=rt_flag
+      if n_elements(save) ne 0 then all_apdat[w].save=save   
+      apdat = all_apdat[w]       
+    endif else apdat=0  
   endelse
   
   if keyword_set(clear) and keyword_set(apdat) then begin
@@ -739,16 +866,42 @@ if 0 then begin
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
 endif
 if 1 then begin
-  spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom_version_81x',tname='spp_spanai_hkp_',tfields='*',save=save
+  spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom_version_84x',tname='spp_spanai_hkp_',tfields='*',save=save
   spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_64x',tname='spp_spanai_rates_',tfields='*',save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
-  spp_apid_data,'386'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_prod_x86_',tfields='*',save=save
+  
+  spp_apid_data,'380'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p1_m1_',tfields='*',save=save
+  spp_apid_data,'381'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p1_m2_',tfields='*',save=save
+  spp_apid_data,'382'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p1_m3_',tfields='*',save=save
+  spp_apid_data,'383'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p1_m4_',tfields='*',save=save
+  spp_apid_data,'384'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p2_m1_',tfields='*',save=save
+  spp_apid_data,'385'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p2_m2_',tfields='*',save=save
+  spp_apid_data,'386'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p2_m3_',tfields='*',save=save
+  spp_apid_data,'387'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p2_m4_',tfields='*',save=save
+  spp_apid_data,'388'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p3_m1_',tfields='*',save=save
+  spp_apid_data,'389'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p3_m2_',tfields='*',save=save
+  spp_apid_data,'38a'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p3_m3_',tfields='*',save=save
+  spp_apid_data,'38b'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p3_m4_',tfields='*',save=save
+
+  spp_apid_data,'38c'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p1_m1_',tfields='*',save=save
+  spp_apid_data,'38d'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p1_m2_',tfields='*',save=save
+  spp_apid_data,'38e'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p1_m3_',tfields='*',save=save
+  spp_apid_data,'38f'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p1_m4_',tfields='*',save=save
+  spp_apid_data,'390'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p2_m1_',tfields='*',save=save
+  spp_apid_data,'391'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p2_m2_',tfields='*',save=save
+  spp_apid_data,'392'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p2_m3_',tfields='*',save=save
+  spp_apid_data,'393'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p2_m4_',tfields='*',save=save
+  spp_apid_data,'394'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p3_m1_',tfields='*',save=save
+  spp_apid_data,'395'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p3_m2_',tfields='*',save=save
+  spp_apid_data,'396'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p3_m3_',tfields='*',save=save
+  spp_apid_data,'397'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p3_m4_',tfields='*',save=save
 endif
   
 ;  spp_apid_data,'359'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
 ;  spp_apid_data,'360'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
   
   spp_apid_data,'7c0'x,routine='spp_log_message_decom',tname='log_',tfields='MSG',save=1,rt_tags='MSG',rt_flag=1
+  spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',rt_tags='*_?',rt_flag=1,tfields='*'
   spp_swp_spane_init,save=save
 end
 
@@ -848,6 +1001,10 @@ end
   ;
   ;-
 pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
+  if n_elements(buffer) le 2 then begin
+    dprint,'buffer too small!'
+    return
+  endif
   ptp_size = swap_endian( uint(buffer,0) ,/swap_if_little_endian)   ; first two bytes provide the size
   if ptp_size ne n_elements(buffer) then begin
     dprint,time_string(time,/local_time),' PTP size error- size is ',ptp_size
@@ -884,7 +1041,7 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   if keyword_set(time) then dt = utime-time  else dt = 0
 ;  dprint,dlevel=4,time_string(utime,prec=3),ptp_size,sc_id,days,ms,us,source,path,dt,format='(a,i6," x",Z04,i6,i9,i6," x",Z02," x",Z04,f10.2)'
   if ptp_size le 17 then begin
-    dprint,dlevel=3,'PTP size error - not enough bytes: '+strtrim(ptp_size,2)+ ' '+time_string(utime)
+    dprint,dlevel=2,dwait=60.,'PTP size error - not enough bytes: '+strtrim(ptp_size,2)+ ' '+time_string(utime)
     if debug(3) then hexprint,buffer
     return
   endif

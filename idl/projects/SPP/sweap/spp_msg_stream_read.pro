@@ -16,8 +16,9 @@ end
 
 
 
-pro spp_msg_stream_read,buffer,time=time   ;,   fileunit=fileunit   ,ptr=ptr
+pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit   ,ptr=ptr
   bsize= n_elements(buffer)
+  time = info.time_received
   if debug() then dprint,/phelp,time_string(time),buffer,dlevel=3
   ptr=0L
   while ptr lt bsize do begin
