@@ -21,13 +21,13 @@
 ;       FIGNAME: name of the snapshot file (Def: 'maven_orbit.png')
 ;                most file formats are acceptable
 ;                (http://www.exelisvis.com/docs/save_method.html)
-;       WINCLOSE: close the graphic window when finished
+;       CLOSEWIN: close the graphic window when finished
 ; CREATED BY:
 ;       Yuki Harada on 2015-11-04
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-11-08 15:23:18 -0800 (Sun, 08 Nov 2015) $
-; $LastChangedRevision: 19302 $
+; $LastChangedDate: 2015-12-08 15:45:18 -0800 (Tue, 08 Dec 2015) $
+; $LastChangedRevision: 19545 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_movie.pro $
 ;-
 
@@ -68,7 +68,7 @@ function maven_orbit_movie_altidx, rmso
 end
 
 
-pro maven_orbit_movie, trange=trange, dimensions=dimensions, moviename=moviename, boxsize=boxsize, fps=fps, rate=rate, font_size=font_size, zoomscale=zoomscale, bcmodel=bcmodel, verbose=verbose, snap=snap, tsnap=tsnap, figname=figname, winclose=winclose
+pro maven_orbit_movie, trange=trange, dimensions=dimensions, moviename=moviename, boxsize=boxsize, fps=fps, rate=rate, font_size=font_size, zoomscale=zoomscale, bcmodel=bcmodel, verbose=verbose, snap=snap, tsnap=tsnap, figname=figname, closewin=closewin
 
 ;- return if IDL version < 8
 if float(!version.release) lt 8 then begin
@@ -343,7 +343,7 @@ for irot=0,nstep-1 do begin     ;- movie loop start
    else gr_win.save,figname,width=dimensions[0],height=dimensions[1]
 endfor                          ;- movie loop end
 if ~keyword_set(snap) then ovid = 0 ;- close the movie file
-if keyword_set(winclose) then gr_win.close
+if keyword_set(closewin) then gr_win.close
 
 end
 

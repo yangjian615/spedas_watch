@@ -84,9 +84,9 @@
 ;           the directory structure at the SDC.
 ;      
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2015-12-07 13:13:58 -0800 (Mon, 07 Dec 2015) $
-;$LastChangedRevision: 19534 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2015-12-08 09:53:25 -0800 (Tue, 08 Dec 2015) $
+;$LastChangedRevision: 19540 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_data.pro $
 ;-
 
@@ -110,14 +110,15 @@ function mms_files_in_interval, remote_file_info, trange
         endcase
         append_array, all_times, time_double(timeval, tformat=timeformat)
     endfor
-
     ; if there's only one file, return that file
     if n_elements(all_times) eq 1 then return, remote_file_info
     ; more than one file, sort the arrays by time
     sorted_idx = bsort(all_times)
     sorted_file_structs = remote_file_info[sorted_idx]
     sorted_times = all_times[sorted_idx]
-    idx_interval = where(sorted_times ge tr[0] and sorted_times le tr[1], file_count)
+
+   ; idx_interval = where(sorted_times ge tr[0] and sorted_times le tr[1], file_count)
+    idx_interval = where(sorted_times ge time_double(time_string(tr[0])) and sorted_times le tr[1], file_count)
     if file_count eq 0 then begin
         idx_interval = n_elements(sorted_times)-1
     endif else begin

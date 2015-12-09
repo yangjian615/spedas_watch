@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-12-07 14:55:59 -0800 (Mon, 07 Dec 2015) $
-; $LastChangedRevision: 19538 $
+; $LastChangedDate: 2015-12-08 16:22:28 -0800 (Tue, 08 Dec 2015) $
+; $LastChangedRevision: 19548 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -81,7 +81,7 @@ calc, '"mms'+probe+'_defeph_R_gsm" = sqrt("'+eph_gsm+'_re_x'+'"^2+"'+eph_gsm+'_r
 options, eph_gsm+'_re_x',ytitle='X-GSM (Re)'
 options, eph_gsm+'_re_y',ytitle='Y-GSM (Re)'
 options, eph_gsm+'_re_z',ytitle='Z-GSM (Re)'
-options, 'mms'+probe+'_defeph_R_gsm',ytitle='R (Re)'
+options, 'mms'+probe+'_defeph_R_gsm',ytitle='R-GSM (Re)'
 position_vars = ['mms'+probe+'_defeph_R_gsm', eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
 
 tplot_options, 'ymargin', [5, 5]

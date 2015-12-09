@@ -28,7 +28,7 @@ if resolution eq 0 and geometric eq 0 then resolution=150
 folder = 'slice_test/'
 
 ;trange = ['2015-09-19/09:08:13', '2015-09-19/09:09']
-trange = ['2015-09-19/09:08:46.7', '2015-09-19/09:08:47.5']
+trange = ['2015-09-19/09:08:47', '2015-09-19/09:08:47.05'] 
 
 ;load particle, field & support data
 ;---------------------------------------------
@@ -37,6 +37,8 @@ mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-dist', $
 mms_load_dfg, probe=probe, trange=trange
 mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-moms', $
               probe=probe, trange=trange
+
+  
 ; b-field vector for data within the last 2 weeks (ql)
 ; bname = 'mms'+probe+'_dfg_srvy_gse_bvec'
 ; b-field vector for data older than 2 weeks ago (l2pre)
@@ -56,10 +58,26 @@ join_vec, vname + ['X','Y','Z'], vname
 
 ;---------------------------------------------
 name =  'mms'+probe+'_d'+species+'s_brstSkyMap_dist'
-dist = mms_get_fpi_dist(name, trange=trange[0] + [0,1])
+dist = mms_get_fpi_dist(name, trange=time_double(trange))
 errname =  'mms'+probe+'_d'+species+'s_brstSkyMap_distErr'
-distErr = mms_get_fpi_dist(errname, trange=trange[0] + [0,1])
+distErr = mms_get_fpi_dist(errname, trange=time_double(trange))
 
+get_data, 'mms'+probe+'_d'+species+'s_numberDensity', data=density_struct
+get_data, 'mms'+probe+'_d'+species+'s_bulkX', data=vel_x
+get_data, 'mms'+probe+'_d'+species+'s_bulkY', data=vel_y
+get_data, 'mms'+probe+'_d'+species+'s_bulkZ', data=vel_z
+get_data, 'mms'+probe+'_d'+species+'s_TempXX', data=tempXX
+get_data, 'mms'+probe+'_d'+species+'s_TempXY', data=tempXY
+get_data, 'mms'+probe+'_d'+species+'s_TempXZ', data=tempXZ
+get_data, 'mms'+probe+'_d'+species+'s_TempYY', data=tempYY
+get_data, 'mms'+probe+'_d'+species+'s_TempYZ', data=tempYZ
+get_data, 'mms'+probe+'_d'+species+'s_TempZZ', data=tempZZ
+get_data, 'mms'+probe+'_d'+species+'s_PresXX', data=presXX
+get_data, 'mms'+probe+'_d'+species+'s_PresXY', data=presXY
+get_data, 'mms'+probe+'_d'+species+'s_PresXZ', data=presXZ
+get_data, 'mms'+probe+'_d'+species+'s_PresYY', data=presYY
+get_data, 'mms'+probe+'_d'+species+'s_PresYZ', data=presYZ
+get_data, 'mms'+probe+'_d'+species+'s_PresZZ', data=presZZ
 
 ;set slice orientation
 ; (x parallel to B, y defined by vbulk)
@@ -69,6 +87,8 @@ rotation = 'bv'
 ; (xy plane, xz pane, yz plane)
 norms = [ [0,0,1], [0,1,0], [1,0,0] ]
 
+; make sure data was loaded
+if ~ptr_valid(dist) then stop ; should have thrown an error specifying no data within the range
 
 ;initialize window and get plot positions, axis limits
 ;---------------------------------------------
@@ -90,8 +110,8 @@ WINDOW,/free, XSIZE=1400, YSIZE=800, TITLE='MMS FPI Distributions'
 ;nx = dimen2(norms)
 nx = 4
 ny = 3
-arrange_plots,x0,y0,x1,y1,nx=nx,ny=ny,ygap=0.056,x1margin=0.05,$
-  x0margin=0.05,y1margin=0.02,xgap=0.1,y0margin=0.08
+arrange_plots,x0,y0,x1,y1,nx=nx,ny=ny,ygap=0.056,x1margin=0.1,$
+  x0margin=0.1,y1margin=0.02,xgap=0.1,y0margin=0.08
               
 ;loop over time samples and slice orientations to create a set of plots at each sample
 ;used short window to ensure only a single sample is used
@@ -113,7 +133,7 @@ for i=0, n_elements(*dist)-1 do begin
     spd_slice2d_plot1, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
       /custom, title='',charsize=1.15, pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],$
       noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines
-    xyouts,/norm, align=1.0,x1[ipos],y1[ipos],'dist_PSD'
+    xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_PSD'
     mms_draw_circle,0.,0.,r=vmin,/fill  ;SAB, mask out interpolation below 10 eV
   endfor
   plot,[0,1],[0,1],/nodata,/noerase,pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],xstyle=5,ystyle=5
@@ -128,7 +148,7 @@ for i=0, n_elements(*dist)-1 do begin
     spd_slice2d_plot1, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
       /custom, title='',charsize=1.15, pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],$
       noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines
-    xyouts,/norm, align=1.0,x1[ipos],y1[ipos],'dist_Err'
+    xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_Err'
     mms_draw_circle,0.,0.,r=vmin,/fill  ;SAB, mask out interpolation below 10 eV
   endfor
   plot,[0,1],[0,1],/nodata,/noerase,pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],xstyle=5,ystyle=5  
@@ -160,7 +180,7 @@ for i=0, n_elements(*dist)-1 do begin
     spd_slice2d_plot1, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
       /custom, title='',charsize=1.15, pos = [ x0[ipos], y0[ipos], x1[ipos], y1[ipos] ],$
       noerase = ipos gt 0, nocolorbar = nocolorbar
-    xyouts,/norm, align=1.0,x1[ipos],y1[ipos],'dist_PSD'
+    xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_PSD'
     mms_draw_circle,0.,0.,r=vmin,/fill  ;SAB, mask out interpolation below 10 eV
   endfor
   plot,[0,1],[0,1],/nodata,/noerase,pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],xstyle=5,ystyle=5; plot,[0,1],[0,1],/nodata,/noerase,pos = [min(x0),min(y0[0]),max(x1),max(y1)],xstyle=5,ystyle=5
@@ -168,7 +188,7 @@ for i=0, n_elements(*dist)-1 do begin
 
   plot,[0,1],[0,1],/nodata,/noerase,pos = [min(x0),min(y0[0]),max(x1),max(y1)],xstyle=5,ystyle=5    
   plot,[0,1],[0,1],/nodata,/noerase,pos = [0., 0.,1.,1.],xstyle=5,ystyle=5
-  xyouts,/norm,0.02,0.01,'created by mms_slice_comparison_crib1.pro'
+  xyouts,/norm,0.02,0.01,'created by mms_slice_comparison_crib3.pro'
 
   ;place title
   xyouts, x0[0],y1[0]+0.025, align=0.0, charsize=1.5, /normal, $
@@ -176,6 +196,42 @@ for i=0, n_elements(*dist)-1 do begin
     time_string(time, tformat='YYYYMMDD hh:mm:ss.fff')+' -> '+ $
     time_string(end_time, tformat='hh:mm:ss.fff')
 
+  ; moments closest to this time
+  closest_time = find_nearest_neighbor(density_struct.X, time)
+  closest_idx = where(density_struct.X eq closest_time)
+  density_at_this_time = density_struct.Y[closest_idx]
+  
+  ; bulk velocity closest to this time
+  closest_time_x = find_nearest_neighbor(vel_x.X, time)
+  closest_idx_x = where(vel_x.X eq closest_time_x)
+  closest_time_y = find_nearest_neighbor(vel_y.X, time)
+  closest_idx_y = where(vel_y.X eq closest_time_y)
+  closest_time_z = find_nearest_neighbor(vel_z.X, time)
+  closest_idx_z = where(vel_z.X eq closest_time_z)
+  
+  ; plot density
+  xyouts, 0.85, 0.9, align=0.5, charsize=1.5, /normal, 'Density: '+$
+    strcompress(string(density_at_this_time),/rem) + ' [cm^-3]'
+  
+  ; plot temperature tensor
+  xyouts, 0.85, 0.85, align=0.5, charsize=1.5, /normal, 'Txx: '+strcompress(string(tempXX.Y[closest_idx_x]),/rem)+'  Tyy: '+strcompress(string(tempYY.Y[closest_idx_x]),/rem)
+  xyouts, 0.85, 0.80, align=0.5, charsize=1.5, /normal, 'Txy: '+strcompress(string(tempXY.Y[closest_idx_x]),/rem)+'  Tyz: '+strcompress(string(tempYZ.Y[closest_idx_x]),/rem)
+  xyouts, 0.85, 0.75, align=0.5, charsize=1.5, /normal, 'Txz: '+strcompress(string(tempXZ.Y[closest_idx_x]),/rem)+'  Tzz: '+strcompress(string(tempZZ.Y[closest_idx_x]),/rem)
+  
+  ; plot pressure tensor
+  xyouts, 0.85, 0.7, align=0.5, charsize=1.5, /normal, 'Pxx: '+strcompress(string(presXX.Y[closest_idx_x]),/rem)+'  Pyy: '+strcompress(string(presYY.Y[closest_idx_x]),/rem)
+  xyouts, 0.85, 0.65, align=0.5, charsize=1.5, /normal, 'Pxy: '+strcompress(string(presXY.Y[closest_idx_x]),/rem)+'  Pyz: '+strcompress(string(presYZ.Y[closest_idx_x]),/rem)
+  xyouts, 0.85, 0.6, align=0.5, charsize=1.5, /normal, 'Pxz: '+strcompress(string(presXZ.Y[closest_idx_x]),/rem)+'  Pzz: '+strcompress(string(presZZ.Y[closest_idx_x]),/rem)
+  
+    
+  ; plot components of bulk velocity   
+  xyouts, 0.85, 0.55, align=0.5, charsize=1.5, /normal, slice.data_name + ' bulk velocity'
+  xyouts, 0.85, 0.50, align=0.5, charsize=1.5, /normal, 'Vx: '+$
+    strcompress(string(vel_x.Y[closest_idx_x]),/rem) + ' [km/s]'
+  xyouts, 0.85, 0.45, align=0.5, charsize=1.5, /normal, 'Vy: '+$
+    strcompress(string(vel_y.Y[closest_idx_y]),/rem) + ' [km/s]'
+  xyouts, 0.85, 0.40, align=0.5, charsize=1.5, /normal, 'Vz: '+$
+    strcompress(string(vel_z.Y[closest_idx_z]),/rem) + ' [km/s]'
 
   ;write png
   makepng, folder+'mms'+probe+'_'+species+'_'+rotation+'_'+ $
