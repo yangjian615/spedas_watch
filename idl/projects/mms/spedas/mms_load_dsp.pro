@@ -37,9 +37,9 @@
 ; MODIFICATION HISTORY:
 ;
 ;
-;  $LastChangedBy: crussell $
-;  $LastChangedDate: 2015-10-06 07:56:30 -0700 (Tue, 06 Oct 2015) $
-;  $LastChangedRevision: 19008 $
+;  $LastChangedBy: egrimes $
+;  $LastChangedDate: 2015-12-09 14:53:20 -0800 (Wed, 09 Dec 2015) $
+;  $LastChangedRevision: 19558 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_dsp.pro $
 
 pro mms_load_dsp, trange=trange, probes=probes, $
@@ -333,7 +333,7 @@ pro mms_load_dsp, trange=trange, probes=probes, $
             fles2 = mms_sort_filenames_by_date(fles2)
             cdfi = cdf_load_vars(fles2, var_type=var_type)
             cdf_info_to_tplot, cdfi, tplotnames=tplotnames
-            names = [names, tplotnames]
+            append_array, names, tplotnames
           endfor
         endfor
       endfor

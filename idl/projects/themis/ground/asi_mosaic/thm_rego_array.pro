@@ -98,9 +98,9 @@ w=thm_gbo_site_list(tgb_sites,verbose=verbose)
 if w(0) ne -1 then begin
     thg_site_abbreviations=strarr(n_elements(w))
     thg_date_and_site_string=strarr(n_elements(w))
-    for i=0,n_elements(w)-1 do begin
-       thg_site_abbreviations(i)=strlowcase(thg_map_gb_sites(w(i)).abbreviation)
-       thg_date_and_site_string(i)=date_and_hour_string+'_'+strlowcase(thg_map_gb_sites(w(i)).abbreviation)+'_'
+    for i=0,n_elements(w)-1 do begin $
+       thg_site_abbreviations(i)=strlowcase(thg_map_gb_sites(w(i)).abbreviation) & $
+       thg_date_and_site_string(i)=date_and_hour_string+'_'+strlowcase(thg_map_gb_sites(w(i)).abbreviation)+'_' & $
        endfor
     if keyword_set(verbose) then for i=0,n_elements(w)-1 do dprint, 'VERBOSE_COMMENT_01:  '+$
     	string(i+1,format='(i2.2)')+'  '+thg_date_and_site_string(i)

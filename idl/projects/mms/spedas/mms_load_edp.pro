@@ -39,9 +39,9 @@
 ; MODIFICATION HISTORY:
 ;
 ;
-;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-10-15 10:55:03 -0700 (Thu, 15 Oct 2015) $
-;  $LastChangedRevision: 19079 $
+;  $LastChangedBy: egrimes $
+;  $LastChangedDate: 2015-12-09 14:52:30 -0800 (Wed, 09 Dec 2015) $
+;  $LastChangedRevision: 19557 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_load_edp.pro $
 
 
@@ -244,6 +244,7 @@ pro mms_load_edp, trange=trange, $
             ns = n_elements(strs)
             if ns gt 2 then dats = strs[2] else dats = ''
             if ns gt 3 then coord = '_'+strs[-1] else coord = ''
+            if ns eq 6 then coord = coord + '_res'
             dlen = strlen(dat_str)
             if mode_str eq 'comm' then begin
               sl = strlen(dat_str)

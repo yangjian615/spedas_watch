@@ -19,11 +19,18 @@
 ;CREATED BY:
 ;	Tai Phan (95-9-15)
 ;LAST MODIFICATION:
-;	95-9-29		Tai Phan
+;	2015-12-09		Tai Phan
 ;-
 pro mat_diag , p, EIG_VAL= eig_val, EIG_VEC= eig_vec
 
-	if n_elements(p) ne 6 then dprint, 'matrix must be 3x3'
+	catch, Error_status
+	if Error_status ne 0 then begin
+		eig_val = 0
+		eig_vec = 0
+		return
+	endif
+
+	if n_elements(p) ne 6 then print,'matrix must be 3x3'
 
 	p = [[p(0),p(3),p(4)],[p(3),p(1),p(5)],[p(4),p(5),p(2)]]
 

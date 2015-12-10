@@ -11,6 +11,8 @@
 ;
 ;Input:
 ;  tname: Tplot variable containing the desired data.
+;  trange:  Two element time range to constrain the requested data
+;  index:  Index of time samples to return (supersedes trange)
 ;  structure: Flag to return a structure array instead of a pointer.  
 ;
 ;Output:
@@ -21,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-04 18:44:09 -0800 (Fri, 04 Dec 2015) $
-;$LastChangedRevision: 19527 $
+;$LastChangedDate: 2015-12-09 17:44:04 -0800 (Wed, 09 Dec 2015) $
+;$LastChangedRevision: 19561 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_dist.pro $
 ;-
 
@@ -56,36 +58,23 @@ endif
 ; structures one at time and improves efficency in other cases.
 ;-----------------------------------------------------------------
 
-;get range of indices corresponding to requested time range
-if ~undefined(trange) then begin
-  tr = minmax(time_double(trange))
-  indices = minmax(where( *p.x ge tr[0] and *p.x lt tr[1], n_times))
-  if n_times eq 0 then begin
-    dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
-    return, 0
-  endif
-  ;this *shouldn't* happen
-  if n_times ne (1+indices[1]-indices[0]) then begin
-    dprint, 'Times are not monotonic; cannot retrieve data for this time period'
-    return, 0
-  endif
+;index supersedes time range
+if undefined(index) then begin
+  if ~undefined(trange) then begin
+    tr = minmax(time_double(trange))
+    index = where( *p.x ge tr[0] and *p.x lt tr[1], n_times)
+    if n_times eq 0 then begin
+      dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
+      return, 0
+    endif
+  endif else begin
+    n_times = n_elements(*p.x)
+    index = lindgen(n_times)
+  endelse
 endif else begin
-  n_times = n_elements(*p.x)
-  indices = [0,n_times-1]
+  n_times = n_elements(index)
 endelse
 
-;apply requisted index within requested time range so that calling 
-;code can loop without accessing sample times
-if ~undefined(index) then begin
-  if n_elements(index) ne 1 then return, 0
-  if index lt 0 or index gt n_times-1 then return, 0
-  indices += index
-  n_times = 1
-endif
-
-;for clarity later
-start = indices[0]
-stop = indices[1]
 
 ;get info from tplot variable name
 var_info = stregex(name, '(mms([1-4])_d([ei])s_)brstSkyMap_dist', /subexpr, /extract)
@@ -182,16 +171,16 @@ dist = replicate(template, n_times)
 
 ; Populate
 ;-----------------------------------------------------------------
-dist.time = (*p.x)[start:stop]
-dist.end_time = (*p.x)[start:stop] + integ_time
+dist.time = (*p.x)[index]
+dist.end_time = (*p.x)[index] + integ_time
 
 ;shuffle data to be energy-azimuth-elevation-time
 ;time must be last to be added to structure array
-dist.data = transpose((*p.y)[start:stop,*,*,*],[3,1,2,0])
+dist.data = transpose((*p.y)[index,*,*,*],[3,1,2,0])
 
 ;get energy values for each time sample and copy into
 ;structure array with the correct dimensions
-e0 = reform(energy_table[*,step.y[start:stop]], [dim[0],1,1,n_times])
+e0 = reform(energy_table[*,step.y[index]], [dim[0],1,1,n_times])
 dist.energy = rebin( e0, [dim,n_times] )
 
 ;phi must be in [0,360)

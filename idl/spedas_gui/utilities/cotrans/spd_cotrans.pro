@@ -1,118 +1,4 @@
 
-
-;This routine will replace coordinate plot labels only in the dlimits,
-;If the coordinate name is clearly delineated, so that it will not accidentally modify substrings that look like coordinate names  
-pro spd_cotrans_update_dlimits,out_name,in_coord,out_coord
-
-  get_data, out_name, dlimit = dl
-  
-  if ~is_struct(dl) then return
-  
-  if in_set(strlowcase(tag_names(dl)),'ytitle') then begin
-    type1 = stregex(dl.ytitle,'[^a-zA-Z]'+in_coord+'[^a-zA-Z]',/fold_case)
-    type2 = stregex(dl.ytitle,'^'+in_coord+'[^a-zA-Z]',/fold_case)
-    type3 = stregex(dl.ytitle,'[^a-zA-Z]'+in_coord+'$',/fold_case)
-    type4 = stregex(dl.ytitle,'^'+in_coord+'$',/fold_case)
-    if type1 ne -1 then begin
-      dl.ytitle = strmid(dl.ytitle,0,type1+1) + out_coord + strmid(dl.ytitle,type1+strlen(in_coord)+1,strlen(dl.ytitle)-(type1+strlen(in_coord)+1))
-    endif else if type2 ne -1 then begin
-      dl.ytitle = out_coord + strmid(dl.ytitle,strlen(in_coord),strlen(dl.ytitle)-strlen(in_coord))
-    endif else if type3 ne -1 then begin
-      dl.ytitle = strmid(dl.ytitle,0,type3+1) + out_coord
-    endif else if type4 ne -1 then begin
-      dl.ytitle = out_coord
-    endif else begin
-      return
-    endelse
-    store_data,out_name,dlimit=dl
-  endif
-
-  if in_set(strlowcase(tag_names(dl)),'ysubtitle') then begin
-    type1 = stregex(dl.ysubtitle,'[^a-zA-Z]'+in_coord+'[^a-zA-Z]',/fold_case)
-    type2 = stregex(dl.ysubtitle,'^'+in_coord+'[^a-zA-Z]',/fold_case)
-    type3 = stregex(dl.ysubtitle,'[^a-zA-Z]'+in_coord+'$',/fold_case)
-    type4 = stregex(dl.ysubtitle,'^'+in_coord+'$',/fold_case)
-    if type1 ne -1 then begin
-      dl.ysubtitle = strmid(dl.ysubtitle,0,type1+1) + out_coord + strmid(dl.ysubtitle,type1+strlen(in_coord)+1,strlen(dl.ysubtitle)-(type1+strlen(in_coord)+1))
-    endif else if type2 ne -1 then begin
-      dl.ysubtitle = out_coord + strmid(dl.ysubtitle,strlen(in_coord),strlen(dl.ysubtitle)-strlen(in_coord))
-    endif else if type3 ne -1 then begin
-      dl.ysubtitle = strmid(dl.ysubtitle,0,type3+1) + out_coord
-    endif else if type4 ne -1 then begin
-      dl.ysubtitle = out_coord
-    endif else begin
-      return
-    endelse
-    store_data,out_name,dlimit=dl
-  endif
-
-  if in_set(strlowcase(tag_names(dl)),'labels') then begin
-    nl = n_elements(dl.labels)
-    for k = 0, nl-1 do begin
-      type1 = stregex(dl.labels[k], '[^a-zA-Z]'+in_coord+'[^a-zA-Z]', /fold_case)
-      type2 = stregex(dl.labels[k], '^'+in_coord+'[^a-zA-Z]', /fold_case)
-      type3 = stregex(dl.labels[k], '[^a-zA-Z]'+in_coord+'$', /fold_case)
-      type4 = stregex(dl.labels[k], '^'+in_coord+'$', /fold_case)
-      if type1 ne -1 then begin
-        dl.labels[k] = strmid(dl.labels[k], 0, type1+1) + out_coord + strmid(dl.labels[k], type1+strlen(in_coord)+1, strlen(dl.labels[k])-(type1+strlen(in_coord)+1))
-      endif else if type2 ne -1 then begin
-        dl.labels[k] = out_coord + strmid(dl.labels[k], strlen(in_coord), strlen(dl.labels[k])-strlen(in_coord))
-      endif else if type3 ne -1 then begin
-        dl.labels[k] = strmid(dl.labels[k], 0, type3+1) + out_coord
-      endif else if type4 ne -1 then begin
-        dl.labels[k] = out_coord
-      endif else begin
-        return
-      endelse
-      store_data, out_name, dlimit = dl
-    endfor
-  endif
-
-end
-
-;This routine will replace coordinate plot labels only in the limits,
-;If the coordinate name is clearly delineated, so that it will not accidentally modify substrings that look like coordinate names  
-pro spd_cotrans_update_limits,out_name,in_coord,out_coord
-
-  get_data, out_name, limit = al
-  
-  if ~is_struct(al) then return
-  
-  if in_set(strlowcase(tag_names(al)),'labels') then begin
-    nl = n_elements(al.labels)
-    for k = 0, nl-1 do begin
-      type1 = stregex(al.labels[k], '[^a-zA-Z]'+in_coord+'[^a-zA-Z]', /fold_case)
-      type2 = stregex(al.labels[k], '^'+in_coord+'[^a-zA-Z]', /fold_case)
-      type3 = stregex(al.labels[k], '[^a-zA-Z]'+in_coord+'$', /fold_case)
-      type4 = stregex(al.labels[k], '^'+in_coord+'$', /fold_case)
-      if type1 ne -1 then begin
-        al.labels[k] = strmid(al.labels[k], 0, type1+1) + out_coord + strmid(al.labels[k], type1+strlen(in_coord)+1, strlen(al.labels[k])-(type1+strlen(in_coord)+1))
-      endif else if type2 ne -1 then begin
-        al.labels[k] = out_coord + strmid(al.labels[k], strlen(in_coord), strlen(al.labels[k])-strlen(in_coord))
-      endif else if type3 ne -1 then begin
-        al.labels[k] = strmid(al.labels[k], 0, type3+1) + out_coord
-      endif else if type4 ne -1 then begin
-        al.labels[k] = out_coord
-      endif else begin
-        return
-      endelse
-      store_data, out_name, limit = al
-    endfor
-  endif
-
-end
-
-; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-pro spd_cotrans_check_valid_transform, in_name, in_coord, out_coord
-    get_data, in_name, dlimit = dl
-    if is_struct(dl) && in_set(strlowcase(tag_names(dl)),'data_att') && $
-        in_set(strlowcase(tag_names(dl.data_att)),'st_type') && $ 
-        strlowcase(dl.data_att.st_type) eq 'vel' then begin
-        dprint, 'Warning: Transforming '+in_name+' from '+strupcase(in_coord)+' to '+strupcase(out_coord)+' coordinates can produce invalid results'
-    endif
-end
-
-
 ;+
 ;Purpose:
 ;  Helps simplify transformation logic code using a recursive formulation.
@@ -155,7 +41,7 @@ pro spd_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
         end
         else: begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          spd_cotrans_check_valid_transform, in_name, in_coord, out_coord
+          spd_cotrans_validate_transform, in_name, in_coord, out_coord
           cotrans, in_name,out_name,/gse2gei, ignore_dlimits=ignore_dlimits
           recursive_in_coord='gei'
         end
@@ -183,28 +69,28 @@ pro spd_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
       'gei': switch out_coord of
         'geo': begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          spd_cotrans_check_valid_transform, in_name, in_coord, out_coord
+          spd_cotrans_validate_transform, in_name, in_coord, out_coord
           cotrans,in_name,out_name,/gei2geo,ignore_dlimits=ignore_dlimits
           recursive_in_coord='geo'
           break
         end
         'mag': begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          spd_cotrans_check_valid_transform, in_name, in_coord, out_coord
+          spd_cotrans_validate_transform, in_name, in_coord, out_coord
           cotrans,in_name,out_name,/gei2geo,ignore_dlimits=ignore_dlimits
           recursive_in_coord='geo'
           break
         end
         'j2000': begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          spd_cotrans_check_valid_transform, in_name, in_coord, out_coord
+          spd_cotrans_validate_transform, in_name, in_coord, out_coord
           cotrans,in_name,out_name,/gei2j2000,ignore_dlimits=ignore_dlimits
           recursive_in_coord='j2000'
           break
         end
         else: begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          spd_cotrans_check_valid_transform, in_name, in_coord, out_coord
+          spd_cotrans_validate_transform, in_name, in_coord, out_coord
           cotrans,in_name,out_name,/gei2gse,ignore_dlimits=ignore_dlimits
           recursive_in_coord='gse'
         end
@@ -218,7 +104,7 @@ pro spd_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
         end
         else: begin
           ; if the data is of type 'vel' this is an invalid coordinate transform, warn user
-          spd_cotrans_check_valid_transform, in_name, in_coord, out_coord
+          spd_cotrans_validate_transform, in_name, in_coord, out_coord
           cotrans,in_name,out_name,/geo2gei,ignore_dlimits=ignore_dlimits
           recursive_in_coord='gei'
           break
@@ -293,9 +179,9 @@ end
 ;  This procedure was forked from thm_cotrans.
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-10-27 16:00:21 -0700 (Tue, 27 Oct 2015) $
-;$LastChangedRevision: 19171 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2015-12-08 21:21:58 -0800 (Tue, 08 Dec 2015) $
+;$LastChangedRevision: 19549 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/cotrans/spd_cotrans.pro $
 ;
 ;-

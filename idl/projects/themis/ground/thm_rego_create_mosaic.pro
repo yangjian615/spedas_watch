@@ -207,12 +207,17 @@ second=res.sec
 thm_init
 timespan,time,1,/hour
 thm_asi_stations,site,loc
+	; add RESU site to list
+site=[site,'RESU']
+loc=[[loc],[74.7330   ,   265.100]]
+
+	; some more setup
 if keyword_set(zbuffer) then map_scale=2.6e7 else map_scale=4.e7
 if keyword_set(scale) then map_scale=scale
 if not keyword_set(central_lon) then central_lon=255.
-if not keyword_set(central_lat) then central_lat=63.
-if not keyword_set(xsize) then xsize=700
-if not keyword_set(ysize) then ysize=410
+if not keyword_set(central_lat) then central_lat=64.
+if not keyword_set(xsize) then xsize=500
+if not keyword_set(ysize) then ysize=450
 if not keyword_set(top) then top=254
 
 	; characters

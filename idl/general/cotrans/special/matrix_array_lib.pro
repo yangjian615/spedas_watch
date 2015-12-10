@@ -5,16 +5,16 @@
 ; Helpful functions for dealing with arrays of 3x3 matrixes (Nx3x3)
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-23 11:11:30 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18889 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2015-12-09 11:11:53 -0800 (Wed, 09 Dec 2015) $
+; $LastChangedRevision: 19553 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/matrix_array_lib.pro $
 ;-
 
 ;helper function
 ;used to determine if values are equal within some standard of computational error
 function ctv_err_test,vals,val
-
+  compile_opt idl2, hidden
   err = 1d-5
 
   return,(vals ge val-err and vals le val+err)
@@ -26,7 +26,7 @@ end
 
 function ctv_determ_mats,m
 
-  compile_opt hidden
+  compile_opt idl2, hidden
 
   return,reform(m[*,0,0] * m[*,1,1] * m[*,2,2] $
     -m[*,0,0] * m[*,1,2] * m[*,2,1] $
@@ -42,7 +42,7 @@ end
 ;will return the indexes of the identity matrices in the list of matrices
 function ctv_identity_mats,m
 
-  compile_opt hidden
+  compile_opt idl2, hidden
 
   dim = dimen(m)
 
@@ -58,7 +58,7 @@ end
 ;vectorized multiplication of two lists of 3x3 matrices
 function ctv_mm_mult,m1,m2
 
-  compile_opt hidden
+  compile_opt idl2, hidden
 
   out = make_array(dimen(m1),type=size(m1,/type))
 
@@ -92,7 +92,7 @@ end
 ;returns 5 win!
 function ctv_verify_mats,m
 
-  compile_opt hidden
+  compile_opt idl2, hidden
 
   identity_mats = ctv_identity_mats(ctv_mm_mult(m,transpose(m,[0,2,1])))
 
@@ -124,7 +124,7 @@ end
 ;is this a set of left-handed permutation matrices?
 function ctv_left_mats,m
 
-  compile_opt hidden
+  compile_opt idl2, hidden
 
   t = where(ctv_err_test(ctv_determ_mats(m),-1),c)
 
@@ -134,7 +134,7 @@ end
 
 ;turns a 3x3 matrix with a left-handed basis into a right-handed basis and vice-versa
 function ctv_swap_hands,m
-
+  compile_opt idl2, hidden
   out = m
   out[*,0,*] *= -1
 
@@ -146,7 +146,7 @@ end
 ;calculates the norm of a bunch of vectors simultaneously
 function ctv_norm_vec_rot,v
 
-  COMPILE_OPT HIDDEN
+  compile_opt idl2, hidden
 
   if not keyword_set(v) then return, -1L
 
@@ -160,7 +160,7 @@ end
 ;normalizes a bunch of vectors simultaneously
 function ctv_normalize_vec_rot,v
 
-  COMPILE_OPT HIDDEN
+    compile_opt idl2, hidden
 
   if not keyword_set(v) then return, -1L
 
@@ -184,7 +184,7 @@ end
 ;vectorized fx to multiply n matrices by n vectors
 function ctv_mx_vec_rot,m,x
 
-  COMPILE_OPT HIDDEN
+    compile_opt idl2, hidden
 
   ;input checks
   if(~keyword_set(m)) then return, -1L
@@ -223,5 +223,6 @@ end
 pro matrix_array_lib
 
   ;does nothing, just puts the functions in scope
-
+  compile_opt idl2, hidden
+    
 end

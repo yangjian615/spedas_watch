@@ -110,9 +110,9 @@
 ;
 ; SEE ALSO:  mva_matrix_make.pro, fac_matrix_make.pro,rxy_matrix_make
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-23 11:11:30 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18889 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2015-12-09 11:12:24 -0800 (Wed, 09 Dec 2015) $
+; $LastChangedRevision: 19554 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/tvector_rotate.pro $
 ;-
 
@@ -120,7 +120,7 @@
 ;the input tplot struct to the specified indexes
 function ctv_reduce_time_dimen,dat,idx
 
-  compile_opt hidden
+  compile_opt idl2, hidden
 
   if idx[0] eq -1 then return,dat
 
@@ -167,6 +167,7 @@ pro tvector_rotate,mat_var_in,vec_var_in,newname = newname,suffix=suffix,error=e
                    vector_skip_nonmonotonic=vector_skip_nonmonotonic,$
                    matrix_skip_nonmonotonic=matrix_skip_nonmonotonic
 
+compile_opt idl2, hidden
 ;puts helper functions in scope
 matrix_array_lib
 
@@ -237,7 +238,7 @@ if tplotvar then begin
     
           m_d_y = m_d.y
           
-          verify = ctv_verify_mats(m_d_y)
+          verify_check = ctv_verify_mats(m_d_y)
   
        endif else begin
           
@@ -300,7 +301,7 @@ if tplotvar then begin
             
           endif
        
-          verify = ctv_verify_mats(m_d.y)
+          verify_check = ctv_verify_mats(m_d.y)
           
           is_left_mat = ctv_left_mats(m_d.y)
           
@@ -337,17 +338,17 @@ if tplotvar then begin
        ;returns 3 if there are some invalid mats
        ;returns 4 if there are some nans
        ;returns 5 win!
-       if verify eq 0 then begin
+       if verify_check eq 0 then begin
          dprint,'ERROR: Input matrices contain rotations with determinants of both -1 and 1.  This may indicate an incorrectly formed rotation, or an high level of error in the rotation.',dlevel=1
-       endif else if verify eq 1 then begin
+       endif else if verify_check eq 1 then begin
          dprint,'ERROR: Input matrices are not valid rotation matries. This may indicate an incorrectly formed rotation, or an high level of error in the rotation.',dlevel=1
          ;decided against forced failure, as extreme numerical instability can create false positives for invalid tests
          ;return
-       endif else if verify eq 2 then begin
+       endif else if verify_check eq 2 then begin
          dprint,'ERROR: All input matrices contain non-finite values.(Infinity or NaN)   Results will be non-finite.',dlevel=1
-       endif else if verify eq 3 then begin
+       endif else if verify_check eq 3 then begin
          dprint,'WARNING: Some input matrices are not valid rotation matrices. You may want to verify the result',dlevel=2
-       endif else if verify eq 4 then begin
+       endif else if verify_check eq 4 then begin
          dprint,'WARNING: Some input matrices contain non-finite values.(Infinity or NaN)  Some results will be non-finite.' ,dlevel=2
        endif
        
@@ -506,7 +507,7 @@ endif else begin     ; end of tplotvar
    v_d_s = size(v_d,/dimensions)
 
    m_d_y = mat_var_in
-   verify = ctv_verify_mats(m_d_y)
+   verify_check = ctv_verify_mats(m_d_y)
 
    ;returns 0 if the matrices use a mixed system
    ;returns 1 if there are no valid mats
@@ -514,17 +515,17 @@ endif else begin     ; end of tplotvar
    ;returns 3 if there are some invalid mats
    ;returns 4 if there are some nans
    ;returns 5 win!
-   if verify eq 0 then begin
+   if verify_check eq 0 then begin
      dprint,'ERROR: Input matrices contain rotations with determinants of both -1 and 1.  This may indicate an incorrectly formed rotation, or an high level of error in the rotation.',dlevel=1
-   endif else if verify eq 1 then begin
+   endif else if verify_check eq 1 then begin
      dprint,'ERROR: Input matrices are not valid rotation matries. This may indicate an incorrectly formed rotation, or an high level of error in the rotation.',dlevel=1
      ;decided against forced failure, as extreme numerical instability can create false positives for invalid tests
      ;return
-   endif else if verify eq 2 then begin
+   endif else if verify_check eq 2 then begin
      dprint,'ERROR: All input matrices contain non-finite values.(Infinity or NaN)   Results will be non-finite.',dlevel=1
-   endif else if verify eq 3 then begin
+   endif else if verify_check eq 3 then begin
      dprint,'WARNING: Some input matrices are not valid rotation matrices. You may want to verify the result',dlevel=2
-   endif else if verify eq 4 then begin
+   endif else if verify_check eq 4 then begin
      dprint,'WARNING: Some input matrices contain non-finite values.(Infinity or NaN)  Some results will be non-finite.' ,dlevel=2
    endif
 
