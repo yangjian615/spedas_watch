@@ -74,8 +74,8 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-17 12:51:22 -0700 (Wed, 17 Jun 2015) $
-; $LastChangedRevision: 17897 $
+; $LastChangedDate: 2015-12-09 21:30:03 -0800 (Wed, 09 Dec 2015) $
+; $LastChangedRevision: 19563 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -156,7 +156,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
       obins_b = replicate(1B, 64) # obins[*,boom]
 
       e[*,i] = ddd.energy[*,0]
-      f[*,i] = total(ddd.data * obins_b, 2)/onorm
+      f[*,i] = total(ddd.data * obins_b, 2, /nan)/onorm
     endfor
 
   endif else begin

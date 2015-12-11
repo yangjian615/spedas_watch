@@ -8,7 +8,7 @@ pro mms_draw_circle,x0,y0,r=r,fill=fill,_extra=extra
   oplot, x0 + r*cos(a), y0 + r*sin(a),_extra=extra
   if keyword_set(fill)then polyfill,  x0 + r*cos(a), y0 + r*sin(a),_extra=extra
 end
-
+start_time = systime(/sec)
 ;setup
 ;---------------------------------------------
 probe='1'
@@ -239,4 +239,5 @@ for i=0, n_elements(*dist)-1 do begin
            /mkdir
 
 endfor
+print, 'took: ' + string(systime(/seconds)-start_time) + ' seconds to run'
 end

@@ -18,6 +18,8 @@
 ;       UNITS:         Plot the data in these units.  See mvn_swe_convert_units.
 ;                      Default = 'eflux'.
 ;
+;       TIMES:         Make a plot for these times.
+;
 ;       TPLOT:         Get energy spectra from tplot variable instead of SWEA
 ;                      common block.
 ;
@@ -96,8 +98,8 @@
 ;       POPEN:         Set this to the name of a postscript file for output.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-17 09:15:13 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19390 $
+; $LastChangedDate: 2015-12-09 21:30:59 -0800 (Wed, 09 Dec 2015) $
+; $LastChangedRevision: 19564 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -108,7 +110,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
                    dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
                    bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
-                   xrange=xrange,sscale=sscale, popen=popen
+                   xrange=xrange,sscale=sscale, popen=popen, times=times
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -353,7 +355,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       omask = replicate(1.,64) # obins[*,boom]
       onorm = float(onorm)
 
-      spec3d = total(ddd.data*omask,2)/onorm
+      spec3d = total(ddd.data*omask,2,/nan)/onorm
       oplot,ddd.energy[*,0],spec3d,psym=psym,color=4
     endif
 

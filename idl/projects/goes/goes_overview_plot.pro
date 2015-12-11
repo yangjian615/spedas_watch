@@ -43,9 +43,9 @@
 ;       
 ;       
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-23 19:30:24 -0800 (Fri, 23 Jan 2015) $
-; $LastChangedRevision: 16723 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2015-12-10 11:16:11 -0800 (Thu, 10 Dec 2015) $
+; $LastChangedRevision: 19568 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_overview_plot.pro $
 ;-
 
@@ -56,6 +56,7 @@ pro goes_overview_plot, date = date, probe = probe_in, directory = directory, de
                     
                        
     compile_opt idl2
+    error = 0
     
     ; Catch errors and return
     catch, errstats

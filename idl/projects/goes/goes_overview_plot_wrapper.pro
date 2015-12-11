@@ -33,9 +33,9 @@
 ;                             server_run = '1', themis_dir ='/disks/themisdata/', goes_dir = '/disks/data/goes/qa/'
 ;
 ;HISTORY:
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-07-16 10:29:42 -0700 (Wed, 16 Jul 2014) $
-;$LastChangedRevision: 15581 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2015-12-10 11:16:11 -0800 (Thu, 10 Dec 2015) $
+;$LastChangedRevision: 19568 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_overview_plot_wrapper.pro $
 ;----------
 
@@ -191,6 +191,7 @@ pro goes_overview_plot_wrapper, date_start = date_start, date_end = date_end, $
   
   CALDAT, date_array, Month1, Day1, Year1
   daten=STRTRIM(string(Year1),2)+'-'+STRTRIM(string(Month1, format='(I02)'),2)+'-'+STRTRIM(string(Day1, format='(I02)'),2)
+  count_errors = 0
   
   for i=0, n_elements(daten)-1 do begin
     date = daten[i]
@@ -209,11 +210,20 @@ pro goes_overview_plot_wrapper, date_start = date_start, date_end = date_end, $
         msgstr = "GOES OVERVIEW PLOT: Probe= " + string(probe) + ", date= " + date
         dprint, dlevel = 1, msgstr
         heap_gc
-        goes_overview_plot, date = date, probe = probe, directory = directory, device = device, geopack_lshell = geopack_lshell
+        goes_overview_plot, date = date, probe = probe, directory = directory, device = device, geopack_lshell = geopack_lshell, error=error
+        if ~keyword_set(error) then error=0
+        if error ne 1 then error=0
+        count_errors = count_errors + error
         goes_write_lastdate, lastdate_file, date
       endif
     endfor
   endfor
+  
+  ; if there are too many errors, report it
+  if (count_errors gt 5) && (server_run eq 1) then begin   
+    str_message = "GOES summary plot wrapper encounterred too many errors. Date start: " + daten[0] + ", Date end: " + daten[n_elements(daten)-1]
+    thm_thmsoc_dblog, server_run=1, process_name='goes_overview_plot_wrapper', severity=2, str_message=str_message
+  endif
   
   dprint, dlevel = 2, 'END GOES overview plot. Date: ' + SYSTIME()
 end

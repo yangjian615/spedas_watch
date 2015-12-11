@@ -35,13 +35,14 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-10-08 10:27:56 -0700 (Thu, 08 Oct 2015) $
-;$LastChangedRevision: 19031 $
+;$LastChangedDate: 2015-12-10 11:17:37 -0800 (Thu, 10 Dec 2015) $
+;$LastChangedRevision: 19569 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_thmsoc_dblog.pro $
 ;-----------------------------------------------------------------------------------
 
 pro thm_thmsoc_dblog, server_run=server_run, process_name=process_name, severity=severity, str_message=str_message, testing=testing, args=args
-
+  compile_opt idl2
+  
   if ~keyword_set(process_name) then process_name='test'
   if ~keyword_set(severity) then severity='5'
   if ~keyword_set(str_message) then str_message='Not set'
