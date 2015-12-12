@@ -29,9 +29,9 @@
 ;    Based on dsl2gse from THEMIS, forked 6/22/2015
 ;    
 ;    
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-12-10 14:28:21 -0800 (Thu, 10 Dec 2015) $
-; $LastChangedRevision: 19591 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2015-12-11 12:34:32 -0800 (Fri, 11 Dec 2015) $
+; $LastChangedRevision: 19612 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/dmpa2gse.pro $
 ;-
 
@@ -45,7 +45,7 @@ pro dmpa2gse,name_mms_xxx_in,name_mms_spinras,name_mms_spindec,name_mms_xxx_out,
     get_data,name_mms_spindec,data=mms_spindec
     
     if size(mms_spinras, /type) ne 8 || size(mms_spindec, /type) ne 8 then begin
-       message, 'aborted: must load spin vector data from state file.  Try calling thm_load_state,/get_support'
+       message, 'aborted: must load spin vector data from mec file.  Try calling mms_load_mec'
     endif
     
     if min(mms_spinras.x,/nan)-min(mms_xxx_in.x,/nan) gt 60*60 || max(mms_xxx_in.x,/nan) - max(mms_spinras.x,/nan) gt 60*60 then begin

@@ -7,13 +7,14 @@
 ;  data for use with spd_slice2d. 
 ;
 ;Calling Sequence:
-;  data = mms_get_fpi_dist(tname, [trange=trange], [index=index], [/structure])
+;  data = mms_get_fpi_dist(tname [,index] [,trange=trange] [,/times] [,/structure])
 ;
 ;Input:
 ;  tname: Tplot variable containing the desired data.
-;  trange:  Two element time range to constrain the requested data
 ;  index:  Index of time samples to return (supersedes trange)
-;  structure: Flag to return a structure array instead of a pointer.  
+;  trange:  Two element time range to constrain the requested data
+;  times:  Flag to return full array of time samples
+;  structure:  Flag to return a structure array instead of a pointer.  
 ;
 ;Output:
 ;  return value: pointer to array of 3D particle distribution structures
@@ -23,12 +24,12 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-09 17:44:04 -0800 (Wed, 09 Dec 2015) $
-;$LastChangedRevision: 19561 $
+;$LastChangedDate: 2015-12-11 16:17:21 -0800 (Fri, 11 Dec 2015) $
+;$LastChangedRevision: 19619 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_dist.pro $
 ;-
 
-function mms_get_fpi_dist, tname, trange=trange, index, structure=structure
+function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure
 
     compile_opt idl2
 
@@ -52,6 +53,11 @@ if size(*p.y,/n_dim) ne 4 then begin
   return, 0
 endif
 
+;return times
+;calling code could use get_data but this allows for consistency with other code
+if keyword_set(times) then begin
+  return, *p.x
+endif
 
 ; Allow calling code to request a time range and/or specify index
 ; to specific sample.  This allows calling code to extract 
@@ -146,8 +152,10 @@ template = {  $
   project_name: 'MMS', $
   spacecraft: probe, $
   data_name: data_name, $
-  units_name: 'f (s!U3!N/cm!U6!N)', $
+  ;units_name: 'f (s!U3!N/cm!U6!N)', $
+  units_name: 'df_cm', $
   units_procedure: '', $ ;placeholder
+  species:species,$
   valid: 1b, $
 
   charge: charge, $

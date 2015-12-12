@@ -11,9 +11,9 @@
 ;          2008-04-28, hfrey, run full full_minute with pgm
 ;
 ; VERSION:
-;   $LastChangedBy: aaflores $
-;   $LastChangedDate: 2015-04-27 11:26:29 -0700 (Mon, 27 Apr 2015) $
-;   $LastChangedRevision: 17433 $
+;   $LastChangedBy: hfrey $
+;   $LastChangedDate: 2015-12-11 06:10:53 -0800 (Fri, 11 Dec 2015) $
+;   $LastChangedRevision: 19600 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/asi_mosaic/thm_mosaic_array.pro $
 ;-
 
@@ -25,7 +25,7 @@ pro thm_mosaic_array,iyear_in,im1,id,ih,im,is,tgb_sites,$
                      special=special,local=local,$
                      pgm_file=pgm_file,cal_files=cal_files,thumb=thumb,$
                      show=show,exclude=exclude,full_minute=full_minute,$
-                     merge=merge,mask=mask
+                     merge=merge,mask_file=mask_file,block_moon=block_moon
 
 ; we will figure out the mask later, hfrey, 2009-09-30
 

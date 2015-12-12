@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:14:24 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19585 $
+;$LastChangedDate: 2015-12-11 11:35:59 -0800 (Fri, 11 Dec 2015) $
+;$LastChangedRevision: 19609 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_fgm_fix_metadata.pro $
 ;-
 
@@ -17,7 +17,9 @@ pro mms_fgm_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
     if undefined(prefix) then prefix = ''
     if undefined(suffix) then suffix = ''
     if undefined(level) then level = ''
-    if undefined(instrument) then instrument = 'dfg'
+    ;if undefined(instrument) then instrument = 'dfg'
+    ; updated instrument name to FGM for both afg and dfg data; should be the same product
+    instrument = 'FGM'
     if undefined(data_rate) then data_rate = 'srvy'
     instrument = strlowcase(instrument) ; just in case we get an upper case instrument
     if level eq 'l2pre' then data_rate_mod = data_rate + '_l2pre' else data_rate_mod = data_rate

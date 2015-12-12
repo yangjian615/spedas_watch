@@ -19,7 +19,7 @@ end
 pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit   ,ptr=ptr
   bsize= n_elements(buffer)
   time = info.time_received
-  if debug() then dprint,/phelp,time_string(time),buffer,dlevel=3
+  if 0 && debug(3) then dprint,/phelp,time_string(time),buffer,dlevel=3
   ptr=0L
   while ptr lt bsize do begin
     if ptr gt bsize-6 then begin
@@ -54,7 +54,7 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
       break
     endif
 
-    if 0 then begin
+    if 0 && debug(3) then begin
       dprint,format='(i,i,z,z,i)',ptr,bsize,sync,code,psize,dlevel=2
       hexprint,buffer[ptr+6:ptr+6+psize-1] ;,nbytes=32
     endif

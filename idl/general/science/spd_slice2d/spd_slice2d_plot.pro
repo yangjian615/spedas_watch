@@ -59,8 +59,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-11-18 17:57:46 -0800 (Wed, 18 Nov 2015) $
-;$LastChangedRevision: 19418 $
+;$LastChangedDate: 2015-12-11 10:33:41 -0800 (Fri, 11 Dec 2015) $
+;$LastChangedRevision: 19603 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -205,7 +205,7 @@ pro spd_slice2d_plot, slice, $
 
 
   ;Format the plotting window
-  if !d.name ne 'PS' and ~keyword_set(custom) then begin
+  if !d.name eq 'WIN' or !d.name eq 'X' and ~keyword_set(custom) then begin
 
     device, window_state = wins
     

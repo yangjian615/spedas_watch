@@ -17,10 +17,12 @@ pro spp_ptp_stream_read,buffer,info=info  ;,time=time
 ;  if debug() then dprint,/phelp,time_string(time),buffer,dlevel=3
   p=0L
   while p lt bsize do begin
-    if p gt bsize-3 then dprint,dlevel=0,'PTP stream size error ',p,bsize
-    ptp_size = swap_endian( uint(buffer,p) ,/swap_if_little_endian) 
-    if ptp_size eq 0 then begin
-      dprint,'PTP packet size is zero!'
+    if p gt bsize-3 then begin
+      dprint,dlevel=1,'Warning PTP stream size can not be read ',p,bsize
+      ptp_size = 17     ; (minimum value possible) Dummy value that will trigger end of buffer
+    endif else  ptp_size = swap_endian( uint(buffer,p) ,/swap_if_little_endian) 
+    if ptp_size lt 17 then begin
+      dprint,'PTP packet size is too small!'
       dprint,p,ptp_size,buffer,/phelp
       break
     endif

@@ -248,6 +248,18 @@ spp_apid_data,'388'x,name='SWEAP SPAN-I Prod_x88',rt_tags='*'
 spp_apid_data,'389'x,name='SWEAP SPAN-I Prod_x89',rt_tags='*'
 spp_apid_data,'38a'x,name='SWEAP SPAN-I Prod_x8a',rt_tags='*'
 spp_apid_data,'38b'x,name='SWEAP SPAN-I Prod_x8b',rt_tags='*'
+spp_apid_data,'38c'x,name='SWEAP SPAN-I Prod_x8c',rt_tags='*'
+spp_apid_data,'38d'x,name='SWEAP SPAN-I Prod_x8d',rt_tags='*'
+spp_apid_data,'38e'x,name='SWEAP SPAN-I Prod_x8e',rt_tags='*'
+spp_apid_data,'38f'x,name='SWEAP SPAN-I Prod_x8f',rt_tags='*'
+spp_apid_data,'390'x,name='SWEAP SPAN-I Prod_x90',rt_tags='*'
+spp_apid_data,'391'x,name='SWEAP SPAN-I Prod_x91',rt_tags='*'
+spp_apid_data,'392'x,name='SWEAP SPAN-I Prod_x92',rt_tags='*'
+spp_apid_data,'393'x,name='SWEAP SPAN-I Prod_x93',rt_tags='*'
+spp_apid_data,'394'x,name='SWEAP SPAN-I Prod_x94',rt_tags='*'
+spp_apid_data,'395'x,name='SWEAP SPAN-I Prod_x95',rt_tags='*'
+spp_apid_data,'396'x,name='SWEAP SPAN-I Prod_x96',rt_tags='*'
+spp_apid_data,'397'x,name='SWEAP SPAN-I Prod_x97',rt_tags='*'
 spp_apid_data, rt_flag = 1
 
 wait,1

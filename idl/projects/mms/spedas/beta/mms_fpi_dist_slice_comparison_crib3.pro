@@ -34,7 +34,7 @@ trange = ['2015-09-19/09:08:47', '2015-09-19/09:08:47.05']
 ;---------------------------------------------
 mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-dist', $
               probe=probe, trange=trange
-mms_load_dfg, probe=probe, trange=trange
+mms_load_fgm, probe=probe, trange=trange
 mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-moms', $
               probe=probe, trange=trange
 

@@ -12,8 +12,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-12-10 14:17:32 -0800 (Thu, 10 Dec 2015) $
-; $LastChangedRevision: 19586 $
+; $LastChangedDate: 2015-12-11 11:34:54 -0800 (Fri, 11 Dec 2015) $
+; $LastChangedRevision: 19607 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_fpi_crib_qlplots.pro $
 ;-
 
@@ -25,13 +25,14 @@ start_time = systime(/seconds)
 
 ; full day for FS
 ;date = '2015-11-13/00:00:00'
-;timespan, date, 1, /day
-;data_rate = 'fast'
+date = '2015-9-1/00:00:00'
+timespan, date, 1, /day
+data_rate = 'fast'
 
 ; small interval for burst
-date = '2015-11-13/4:50
-timespan, date, 10, /min
-data_rate = 'brst'
+;date = '2015-11-13/4:50
+;timespan, date, 10, /min
+;data_rate = 'brst'
 
 probes = [1, 2, 3, 4]
 datatype = '*' ; grab all data in the CDF
@@ -71,13 +72,12 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
     autoscale = autoscale
 
-
 ; load ephemeris data for all 4 probes
 ;mms_load_state, trange = trange, probes = probes, /ephemeris
 
 ; load DFG data for all 4 probes
 ;mms_load_dfg, trange = trange, probes = probes, level = 'ql', /no_attitude_data
-mms_load_dfg, trange = trange, probes = probes, /no_attitude_data, level = dfg_level
+mms_load_fgm, trange = trange, probes = probes, /no_attitude_data, level = dfg_level
 
 FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
    ; obsstr='mms'+STRING(i,FORMAT='(I1)')+'_fpi_'
@@ -131,6 +131,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     options, prefix+'_dfg_gsm_srvy', labflag=-1
     options, prefix+'_dfg_gsm_srvy', labels=['Bx', 'By', 'Bz', 'Bmag']
     options, prefix+'_dfg_gsm_srvy', colors=[2, 4, 6, 0]
+    options, prefix+'_dfg_gsm_srvy', ytitle=prefix+'!CFGM!CGSM'
     
     ; combine the densities into one tplot variable
     ;join_vec, [obsstr+'DESnumberDensity', obsstr+'DISnumberDensity'], obsstr+'numberDensity'
@@ -230,7 +231,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     
     panels=['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', qual_bar, $
              prefix+'_dfg_gsm_srvy',e_pad, e_pad_allE]
-    window_caption="MMS FPI Electron PAD:  Counts, summed/averaged over energy bands
+    window_caption="MMS FPI Electron PAD:  Counts, summed/averaged over energy bands"
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
     tplot, panels, window=iw, var_label=position_vars

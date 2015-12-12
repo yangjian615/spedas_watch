@@ -38,9 +38,9 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-10 12:41:48 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19577 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/cotrans/mms_cotrans_transformer.pro $
+;$LastChangedDate: 2015-12-11 12:33:13 -0800 (Fri, 11 Dec 2015) $
+;$LastChangedRevision: 19611 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_transformer.pro $
 ;-
 
 pro mms_cotrans_transformer, $

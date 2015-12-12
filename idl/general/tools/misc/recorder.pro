@@ -8,8 +8,8 @@
 ;    Davin Larson - April 2011
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-12-06 20:29:57 -0800 (Sun, 06 Dec 2015) $
-; $LastChangedRevision: 19530 $
+; $LastChangedDate: 2015-12-11 10:51:54 -0800 (Fri, 11 Dec 2015) $
+; $LastChangedRevision: 19605 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/recorder.pro $
 ;
 ;-
@@ -207,7 +207,7 @@ PRO exec_proc_template,buffer,info=info
     n = n_elements(buffer)
     if n ne 0 then  begin
       print
-      print,time_string(time,prec=3) +''+ strtrim(n_elements(buffer))
+      print,time_string(info.time_received,prec=3) +''+ strtrim(n_elements(buffer))
       hexprint,buffer    ;,swap_endian(uint(buffer,0,n_elements(buffer)/2))
     endif else print,format='(".",$)'
 

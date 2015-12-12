@@ -1,3 +1,10 @@
+function spp_swp_ccsds_header_decom,buffer
+  
+
+return, hdr
+end
+
+
 
 
 function spp_swp_spani_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
@@ -49,7 +56,7 @@ function spp_swp_spani_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
     cnts1: spec1 , $
     cnts2: spec2 , $
     cnts3: spec3 , $
-;    cnts_full: cnts_full, $
+    cnts_full: cnts_full, $
     cnts_total: total_cnts, $
     gap: 0 }
 

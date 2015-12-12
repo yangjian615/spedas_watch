@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:33:38 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19596 $
+;$LastChangedDate: 2015-12-11 08:18:15 -0800 (Fri, 11 Dec 2015) $
+;$LastChangedRevision: 19601 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_get_local_files.pro $
 ;-
 
@@ -146,7 +146,8 @@ times = time_double(time_strings, tformat=tformat)
 time_idx = where( times ge trange[0] and times lt trange[1], n_times)
 
 if n_times eq 0 then begin
-  dprint, dlevel=2, 'No local files found between '+time_string(trange[0])+' and '+time_string(trange[1])
+  ; suppress redundant error message
+  ;dprint, dlevel=2, 'No local files found between '+time_string(trange[0])+' and '+time_string(trange[1])
   return, error
 endif
 

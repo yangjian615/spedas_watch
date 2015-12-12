@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-11-06 11:30:56 -0800 (Fri, 06 Nov 2015) $
-;$LastChangedRevision: 19283 $
+;$LastChangedDate: 2015-12-11 17:20:48 -0800 (Fri, 11 Dec 2015) $
+;$LastChangedRevision: 19620 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/plotting/spd_slice2d_getinfo.pro $
 ;
 ;-
@@ -159,7 +159,7 @@ pro spd_slice2d_getinfo, slice, title=title, short_title=short_title, $
   
   ; Z axis label
   if undefined(ztitle) then begin 
-    units = units_string(strlowcase(slice.units))
+    units = spd_units_string(strlowcase(slice.units))
     if units eq 'Unknown' then units = slice.units
     ztitle = units
   endif

@@ -17,21 +17,30 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-12-10 13:39:24 -0800 (Thu, 10 Dec 2015) $
-; $LastChangedRevision: 19581 $
+; $LastChangedDate: 2015-12-11 15:29:40 -0800 (Fri, 11 Dec 2015) $
+; $LastChangedRevision: 19618 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_basic_dayside.pro $
 ;-
 start_time = systime(/sec)
 
-timespan, '2015-9-1', 1, /day
+date = '2015-09-01/00:00:00
+timespan, date, 1, /day
 probe = '1'
+; options for send_plots_to:
+;   ps: postscript files
+;   png: png files
+;   win: creates/opens all of the tplot windows
+send_plots_to = 'win'
+plot_directory = ''
+
+postscript = send_plots_to eq 'ps' ? 1 : 0
 
 ; load the data
-mms_load_dfg, probe=probe, data_rate='srvy', level='l2pre'
+mms_load_fgm, probe=probe, data_rate='srvy', level='l2pre'
 mms_load_fpi, probe=probe, data_rate='fast', level='sitl'
 mms_load_edp, probe=probe, datatype='scpot', level='l2'
 mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce'
-mms_load_edp, probe=probe, data_rate='srvy', level='l1b'
+mms_load_edp, probe=probe, data_rate='srvy', level='l1b', datatype=['dce', 'hfesp']
 mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd'
 mms_load_hpca, probe=probe, data_rate='srvy', level='sitl'
 
@@ -157,10 +166,15 @@ store_data, 'mms'+probe+'_dfg_gsm_srvy', data='mms'+probe+b_variable+'_bvec'+['_
 options, 'mms'+probe+'_dfg_gsm_srvy', labflag=-1
 options, 'mms'+probe+'_dfg_gsm_srvy', labels=['Bx', 'By', 'Bz']
 options, 'mms'+probe+'_dfg_gsm_srvy', colors=[2, 4, 6]
+options, 'mms'+probe+b_variable+'_btot', labels='Bmag'
+options, 'mms'+probe+b_variable+'_btot', ytitle='mms'+probe+'!CFGM'
+options, 'mms'+probe+'_dfg_gsm_srvy', ytitle='mms'+probe+'!CFGM!CGSM'
 
 ; degap the FPI spectra
 tdegap, 'mms'+probe+'_fpi_iEnergySpectr_omni_sum', /overwrite
 tdegap, 'mms'+probe+'_fpi_eEnergySpectr_omni_sum', /overwrite
+; degap the BPSD
+tdegap, 'mms'+probe+'_dsp_bpsd_omni', /overwrite
 
 window, ysize=800
 ; plot the data
@@ -178,6 +192,14 @@ tplot, 'mms'+probe+['_dfg_gsm_srvy', $
                     '_edp_srvy_EPSD_x', $
                     '_dsp_bpsd_omni' $
                     ], var_label=position_vars
+                    
+if postscript then tprint, plot_directory + 'mms'+probe + '_basic_dayside'
+if send_plots_to eq 'png' then begin
+  makepng, plot_directory + 'mms'+probe + '_basic_dayside_'+ $
+    time_string(date, tformat='YYYYMMDD_hhmmss.fff'), $
+    /mkdir
+endif
+            
 print, 'took ' + string(systime(/sec)-start_time) + ' seconds to run'
 
 end

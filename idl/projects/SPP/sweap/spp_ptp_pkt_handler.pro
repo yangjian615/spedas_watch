@@ -870,31 +870,31 @@ if 1 then begin
   spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_64x',tname='spp_spanai_rates_',tfields='*',save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
   
-  spp_apid_data,'380'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p1_m1_',tfields='*',save=save
-  spp_apid_data,'381'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p1_m2_',tfields='*',save=save
-  spp_apid_data,'382'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p1_m3_',tfields='*',save=save
-  spp_apid_data,'383'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p1_m4_',tfields='*',save=save
-  spp_apid_data,'384'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p2_m1_',tfields='*',save=save
-  spp_apid_data,'385'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p2_m2_',tfields='*',save=save
-  spp_apid_data,'386'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p2_m3_',tfields='*',save=save
-  spp_apid_data,'387'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p2_m4_',tfields='*',save=save
-  spp_apid_data,'388'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p3_m1_',tfields='*',save=save
-  spp_apid_data,'389'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p3_m2_',tfields='*',save=save
-  spp_apid_data,'38a'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p3_m3_',tfields='*',save=save
-  spp_apid_data,'38b'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_full_p3_m4_',tfields='*',save=save
+  spp_apid_data,'380'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p1_m1_',tfields='*',save=save
+  spp_apid_data,'381'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p1_m2_',tfields='*',save=save
+  spp_apid_data,'382'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p1_m3_',tfields='*',save=save
+  spp_apid_data,'383'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p1_m4_',tfields='*',save=save
+  spp_apid_data,'384'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p2_m1_',tfields='*',save=save
+  spp_apid_data,'385'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p2_m2_',tfields='*',save=save
+  spp_apid_data,'386'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p2_m3_',tfields='*',save=save
+  spp_apid_data,'387'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p2_m4_',tfields='*',save=save
+  spp_apid_data,'388'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p3_m1_',tfields='*',save=save
+  spp_apid_data,'389'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p3_m2_',tfields='*',save=save
+  spp_apid_data,'38a'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p3_m3_',tfields='*',save=save
+  spp_apid_data,'38b'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p3_m4_',tfields='*',save=save
 
-  spp_apid_data,'38c'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p1_m1_',tfields='*',save=save
-  spp_apid_data,'38d'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p1_m2_',tfields='*',save=save
-  spp_apid_data,'38e'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p1_m3_',tfields='*',save=save
-  spp_apid_data,'38f'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p1_m4_',tfields='*',save=save
-  spp_apid_data,'390'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p2_m1_',tfields='*',save=save
-  spp_apid_data,'391'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p2_m2_',tfields='*',save=save
-  spp_apid_data,'392'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p2_m3_',tfields='*',save=save
-  spp_apid_data,'393'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p2_m4_',tfields='*',save=save
-  spp_apid_data,'394'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p3_m1_',tfields='*',save=save
-  spp_apid_data,'395'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p3_m2_',tfields='*',save=save
-  spp_apid_data,'396'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p3_m3_',tfields='*',save=save
-  spp_apid_data,'397'x,routine='spp_swp_spani_product_decom',tname='ssp_spani_targ_p3_m4_',tfields='*',save=save
+  spp_apid_data,'38c'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p1_m1_',tfields='*',save=save
+  spp_apid_data,'38d'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p1_m2_',tfields='*',save=save
+  spp_apid_data,'38e'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p1_m3_',tfields='*',save=save
+  spp_apid_data,'38f'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p1_m4_',tfields='*',save=save
+  spp_apid_data,'390'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p2_m1_',tfields='*',save=save
+  spp_apid_data,'391'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p2_m2_',tfields='*',save=save
+  spp_apid_data,'392'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p2_m3_',tfields='*',save=save
+  spp_apid_data,'393'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p2_m4_',tfields='*',save=save
+  spp_apid_data,'394'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p3_m1_',tfields='*',save=save
+  spp_apid_data,'395'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p3_m2_',tfields='*',save=save
+  spp_apid_data,'396'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p3_m3_',tfields='*',save=save
+  spp_apid_data,'397'x,routine='spp_swp_spani_product_decom',tname='spp_spani_targ_p3_m4_',tfields='*',save=save
 endif
   
 ;  spp_apid_data,'359'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
