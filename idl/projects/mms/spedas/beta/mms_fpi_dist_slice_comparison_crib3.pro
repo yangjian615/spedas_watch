@@ -27,16 +27,15 @@ if resolution eq 0 and geometric eq 0 then resolution=150
 ;subfolder of current directory to place images
 folder = 'slice_test/'
 
-;trange = ['2015-09-19/09:08:13', '2015-09-19/09:09']
-trange = ['2015-09-19/09:08:47', '2015-09-19/09:08:47.05'] 
+trange = ['2015-09-1/12:20:09', '2015-09-1/12:20:09.05'] 
 
 ;load particle, field & support data
 ;---------------------------------------------
 mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-dist', $
-              probe=probe, trange=trange
-mms_load_fgm, probe=probe, trange=trange
+              probe=probe, trange=trange, /no_update
+mms_load_fgm, probe=probe, trange=trange, /no_update
 mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-moms', $
-              probe=probe, trange=trange
+              probe=probe, trange=trange, /no_update
 
   
 ; b-field vector for data within the last 2 weeks (ql)
