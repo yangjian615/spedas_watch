@@ -21,8 +21,8 @@
 ;		(appropriate before ~11/25/2014)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-02-10 11:01:05 -0800 (Tue, 10 Feb 2015) $
-; $LastChangedRevision: 16941 $
+; $LastChangedDate: 2015-12-14 14:17:16 -0800 (Mon, 14 Dec 2015) $
+; $LastChangedRevision: 19630 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_load_l0_data.pro $
 ;
 ;-
@@ -32,6 +32,14 @@ pro mvn_swia_load_l0_data, files, tplot = tplot, sync = sync, qlevel = qlevel, t
 compile_opt idl2
 
 common mvn_swia_data, info_str, swihsk, swics, swica, swifs, swifa, swim, swis
+
+swihsk = 0
+swics = 0
+swica = 0
+swifs = 0
+swifa = 0
+swim = 0
+swis = 0
 
 if not keyword_set(path) then path = 'maven/data/sci/pfp/l0/mvn_pfp_all_l0_YYYYMMDD_v???.dat'
 

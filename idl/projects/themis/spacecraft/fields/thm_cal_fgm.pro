@@ -78,8 +78,8 @@
 ;
 ;Written by Hannes Schwarzl.
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-11-19 10:01:41 -0800 (Thu, 19 Nov 2015) $
-; $LastChangedRevision: 19428 $
+; $LastChangedDate: 2015-12-14 11:00:27 -0800 (Mon, 14 Dec 2015) $
+; $LastChangedRevision: 19628 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -353,7 +353,8 @@ utcStr=strarr(ncal)
 for i=0,ncal-1 DO BEGIN
     split_result = strsplit(calstr[i], COUNT=lct, /EXTRACT) 
     if lct ne 14 then begin
-      dprint, dlevel=1, 'Error in FGM cal file. Line: ' + i + ", File: " + pathfile
+      msg = 'Error in FGM cal file. Line: ' + string(i) + ", File: " + pathfile
+      dprint, dlevel=1, msg
       continue
     endif
     utci=split_result[0]
