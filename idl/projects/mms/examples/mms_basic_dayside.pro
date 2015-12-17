@@ -17,8 +17,8 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-12-12 17:45:00 -0800 (Sat, 12 Dec 2015) $
-; $LastChangedRevision: 19625 $
+; $LastChangedDate: 2015-12-16 08:37:16 -0800 (Wed, 16 Dec 2015) $
+; $LastChangedRevision: 19635 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_basic_dayside.pro $
 ;-
 start_time = systime(/sec)
@@ -36,13 +36,13 @@ plot_directory = ''
 postscript = send_plots_to eq 'ps' ? 1 : 0
 
 ; load the data
-mms_load_fgm, probe=probe, data_rate='srvy', level='l2pre', /no_update
-mms_load_fpi, probe=probe, data_rate='fast', level='sitl', /no_update
-mms_load_edp, probe=probe, datatype='scpot', level='l2', /no_update
-mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce', /no_update
-mms_load_edp, probe=probe, data_rate='srvy', level='l1b', datatype=['dce', 'hfesp'], /no_update
-mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd', /no_update
-mms_load_hpca, probe=probe, data_rate='srvy', level='sitl', /no_update
+mms_load_fgm, probe=probe, data_rate='srvy', level='l2pre'
+mms_load_fpi, probe=probe, data_rate='fast', level='sitl'
+mms_load_edp, probe=probe, datatype='scpot', level='l2'
+mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce'
+mms_load_edp, probe=probe, data_rate='srvy', level='l1b', datatype=['dce', 'hfesp']
+mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd'
+mms_load_hpca, probe=probe, data_rate='srvy', level='sitl'
 
 ; sum the HPCA spectra over the full field of view
 mms_hpca_calc_anodes, fov=[0, 360], probe=probe

@@ -52,8 +52,8 @@
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:14:24 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19585 $
+;$LastChangedDate: 2015-12-16 13:26:34 -0800 (Wed, 16 Dec 2015) $
+;$LastChangedRevision: 19636 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -74,7 +74,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     if undefined(level) then begin 
         fourteen_days_ago = systime(/seconds)-60*60*24.*14.
         if trange[1] ge fourteen_days_ago then level = 'ql' else level = 'l2pre'
-    endif
+    endif else level = strlowcase(level)
     if undefined(instrument) then instrument = 'dfg'
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix = ''

@@ -12,8 +12,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-12-12 17:50:38 -0800 (Sat, 12 Dec 2015) $
-; $LastChangedRevision: 19626 $
+; $LastChangedDate: 2015-12-16 08:37:16 -0800 (Wed, 16 Dec 2015) $
+; $LastChangedRevision: 19635 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_fpi_crib_qlplots.pro $
 ;-
 
@@ -70,14 +70,14 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     local_data_dir = local_data_dir, source = source, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
-    autoscale = autoscale, /no_update
+    autoscale = autoscale
 
 ; load ephemeris data for all 4 probes
 ;mms_load_state, trange = trange, probes = probes, /ephemeris
 
 ; load DFG data for all 4 probes
 ;mms_load_dfg, trange = trange, probes = probes, level = 'ql', /no_attitude_data
-mms_load_fgm, trange = trange, probes = probes, /no_attitude_data, level = dfg_level, /no_update
+mms_load_fgm, trange = trange, probes = probes, /no_attitude_data, level = dfg_level
 
 FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
    ; obsstr='mms'+STRING(i,FORMAT='(I1)')+'_fpi_'
