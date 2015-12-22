@@ -56,7 +56,7 @@ PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
   ;----------------
   tnow = systime(/utc,/seconds)
   tlaunch = time_double('2015-03-12/22:44')
-  t30d = tnow - 30.d0*86400.d0; 30 days
+  t30d = tnow - 60.d0*86400.d0; 30 days
   if n_elements(trange) eq 2 then begin
     tr = timerange(trange)
   endif else begin
