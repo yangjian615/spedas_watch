@@ -3,7 +3,7 @@
 ;         mms_fpi_energies
 ;
 ; PURPOSE:
-;         Returns the hard coded energies for the SITL FS FPI spectra
+;         Returns the hard coded energies for the FS FPI spectra
 ;
 ; NOTE:
 ;         Expect this routine to be made obsolete after adding the energies to the CDF
@@ -11,13 +11,13 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:14:24 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19585 $
+;$LastChangedDate: 2015-12-22 11:25:52 -0800 (Tue, 22 Dec 2015) $
+;$LastChangedRevision: 19645 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_energies.pro $
 ;-
 function mms_fpi_energies, species
-    if undefined(species) || (species ne 'ion' && species ne 'electron') then begin
-        dprint, dlevel = 1, "Error, species type ('ion' or 'electron') required for FPI energies"
+    if undefined(species) || (species ne 'i' && species ne 'e') then begin
+        dprint, dlevel = 1, "Error, species type ('i' or 'e') required for FPI energies"
         return, -1
     endif
 
@@ -87,5 +87,5 @@ function mms_fpi_energies, species
         20696.88294, $
         26584.79405]
 
-    if species eq 'ion' then return, dis_energies else return, des_energies
+    if species eq 'i' then return, dis_energies else return, des_energies
 end

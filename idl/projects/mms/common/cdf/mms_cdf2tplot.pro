@@ -18,9 +18,9 @@
 ; Forked for MMS, 10/22/2015, egrimes@igpp
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-10-23 15:37:02 -0700 (Fri, 23 Oct 2015) $
-; $LastChangedRevision: 19147 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/cdf/mms_cdf2tplot.pro $
+; $LastChangedDate: 2015-12-22 13:29:30 -0800 (Tue, 22 Dec 2015) $
+; $LastChangedRevision: 19647 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/mms_cdf2tplot.pro $
 ;-
 
 pro mms_cdf2tplot,files,files=files2,prefix=prefix,midfix=midfix,midpos=midpos,suffix=suffix ,newname=newname $
@@ -29,7 +29,7 @@ pro mms_cdf2tplot,files,files=files2,prefix=prefix,midfix=midfix,midpos=midpos,s
    ,record=record, tplotnames=tplotnames,load_labels=load_labels
 
 
-dprint,dlevel=4,verbose=verbose,'$Id: mms_cdf2tplot.pro 19147 2015-10-23 22:37:02Z egrimes $'
+dprint,dlevel=4,verbose=verbose,'$Id: mms_cdf2tplot.pro 19647 2015-12-22 21:29:30Z egrimes $'
 vb = keyword_set(verbose) ? verbose : 0
 
 if keyword_set(files2) then files=files2    ; added for backward compatibility  and to make it match the documentation

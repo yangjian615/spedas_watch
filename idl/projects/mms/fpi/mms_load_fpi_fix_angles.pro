@@ -11,12 +11,13 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:08:02 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19583 $
+;$LastChangedDate: 2015-12-22 11:25:52 -0800 (Tue, 22 Dec 2015) $
+;$LastChangedRevision: 19645 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_angles.pro $
 ;-
-pro mms_load_fpi_fix_angles, tplotnames, prefix = prefix
-    if undefined(prefix) then prefix = 'mms1'
+pro mms_load_fpi_fix_angles, tplotnames, probe = probe
+    if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
+    prefix = 'mms' + probe
     fpi_angles = mms_fpi_angles()
 
     spectra_where = strmatch(tplotnames, prefix + '_???_*itchAngDist_*En')
@@ -32,6 +33,7 @@ pro mms_load_fpi_fix_angles, tplotnames, prefix = prefix
                     options, tplotnames[var_idx], ysubtitle='[deg]'
                     options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+en+'!CPAD'
                     options, tplotnames[var_idx], ztitle='Counts'
+                    options, tplotnames[var_idx], ystyle=1
                     zlim, tplotnames[var_idx], 0, 0, 1
                     store_data, tplotnames[var_idx], data={x: fpi_d.X, y:fpi_d.Y, v: fpi_angles}, dlimits=dl
                 endif

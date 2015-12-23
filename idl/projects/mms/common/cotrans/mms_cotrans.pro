@@ -58,8 +58,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-11 12:33:13 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19611 $
+;$LastChangedDate: 2015-12-22 16:35:01 -0800 (Tue, 22 Dec 2015) $
+;$LastChangedRevision: 19649 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans.pro $
 ;-
 
@@ -106,7 +106,7 @@ obj_destroy, coord_obj
 
 ;valid values
 valid_probes = ['1','2','3','4']
-valid_coords = ['dmpa',general_coords] ;TODO: return MMS coords from common routine/obj?
+valid_coords = ['dsl','dmpa',general_coords] ;TODO: return MMS coords from common routine/obj?
 
 ;print and return valid inputs if requested
 if keyword_set(valid_names) then begin
@@ -139,10 +139,7 @@ endif
 ;get output coord from suffix if none is specified
 ;  -distinguish "sm" from "gsm"
 if undefined(out_coord) and is_string(out_suffix) then begin
-  out_coord=strmid(out_suffix,2,3,/reverse)
-  if stregex(out_coord,'^[^g]?sm$',/boolean) then begin
-    out_coord = 'sm'
-  endif
+  out_coord = mms_cotrans_parse(out_suffix,valid_coords)
 endif
 
 if undefined(out_coord) then begin
@@ -163,10 +160,7 @@ endif
 ;get input coord from suffix if none is specified
 ;  -distinguish "sm" from "gsm"
 if undefined(in_coord) && is_string(in_suffix) then begin 
-  in_coord=strmid(in_suffix,2,3,/reverse)
-  if stregex(in_coord,'^[^g]?sm$',/boolean) then begin
-    in_coord = 'sm'
-  endif
+  in_coord = mms_cotrans_parse(in_suffix,valid_coords)
 endif
 
 ;check input coordinates, but allow for it to be unspecified

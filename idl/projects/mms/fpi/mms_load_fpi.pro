@@ -53,8 +53,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:08:02 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19583 $
+;$LastChangedDate: 2015-12-22 11:25:52 -0800 (Tue, 22 Dec 2015) $
+;$LastChangedRevision: 19645 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -86,8 +86,9 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     ; correct the energies in the spectra for each probe
     if ~undefined(tplotnames) && n_elements(tplotnames) ne 0 then begin
         for probe_idx = 0, n_elements(probes)-1 do begin
-            mms_load_fpi_fix_spectra, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem), level = level
-            mms_load_fpi_fix_angles, tplotnames, prefix = 'mms'+strcompress(string(probes[probe_idx]), /rem)
+            mms_load_fpi_fix_spectra, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $
+                level = level, data_rate = data_rate
+            mms_load_fpi_fix_angles, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem)
             mms_load_fpi_calc_omni, probes[probe_idx], autoscale = autoscale, level = level
             mms_load_fpi_calc_pad, probes[probe_idx], level = level
         endfor

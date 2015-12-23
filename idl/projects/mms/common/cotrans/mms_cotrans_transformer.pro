@@ -38,8 +38,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-11 12:33:13 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19611 $
+;$LastChangedDate: 2015-12-21 19:27:01 -0800 (Mon, 21 Dec 2015) $
+;$LastChangedRevision: 19640 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_transformer.pro $
 ;-
 
@@ -76,11 +76,26 @@ endif
 ;------------------------------------------------
 case in_coord of 
 
+  ; DSL
+  ;----------
+  'dsl': begin
+    case out_coord of 
+      ;tbd
+      else: begin
+        dmpa2dsl, in_name, out_name, /dsl2dmpa, ignore_dlimits=ignore_dlimits
+        recursive_in_coord = 'dmpa'
+      endelse
+    endcase
+  end
+
   ; DMPA
   ;----------
   'dmpa': begin
     case out_coord of 
-      ;tbd
+      'dsl': begin
+        dmpa2dsl, in_name, out_name, ignore_dlimits=ignore_dlimits
+        recursive_in_coord = 'dsl'
+      end
       else: begin
         spd_cotrans_validate_transform, in_name, in_coord, out_coord
         dmpa2gse, in_name, spinras, spindec, out_name, ignore_dlimits=ignore_dlimits

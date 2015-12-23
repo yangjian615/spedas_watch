@@ -30,8 +30,8 @@
 ;    
 ;    
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-12-11 12:34:32 -0800 (Fri, 11 Dec 2015) $
-; $LastChangedRevision: 19612 $
+; $LastChangedDate: 2015-12-21 19:27:34 -0800 (Mon, 21 Dec 2015) $
+; $LastChangedRevision: 19641 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/dmpa2gse.pro $
 ;-
 
@@ -195,6 +195,7 @@ pro dmpa2gse,name_mms_xxx_in,name_mms_spinras,name_mms_spindec,name_mms_xxx_out,
     
     ;mms_xxx_out.Y=DATA_out
     
+    l_out=l_in
     dl_out=dl_in
     cotrans_set_coord,  dl_out, out_coord ; krb
     
