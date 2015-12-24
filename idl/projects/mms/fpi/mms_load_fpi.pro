@@ -11,8 +11,11 @@
 ;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4']. 
 ;                       If no probe is specified the default is probe '3'
-;         level:        indicates level of data processing. fpi levels currently include 'sitl'. 
-;         datatype:     currently no data types defined.
+;         level:        indicates level of data processing. fpi levels currently include 'sitl', 'ql', 'l1b'. 
+;         datatype:     valid datatypes are:
+;                         Quicklook: ['des', 'dis'] 
+;                         SITL: '' (loads both electron and ion data from single CDF)
+;                         L1b: ['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
 ;         data_rate:    instrument data rates for MMS fpi include 'fast'. 
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
@@ -53,8 +56,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-22 11:25:52 -0800 (Tue, 22 Dec 2015) $
-;$LastChangedRevision: 19645 $
+;$LastChangedDate: 2015-12-23 09:35:13 -0800 (Wed, 23 Dec 2015) $
+;$LastChangedRevision: 19658 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -76,21 +79,30 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     ; different datatypes for burst mode files
     if data_rate eq 'brst' && (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
     if (datatype[0] eq '*' || datatype[0] eq '') && level eq 'ql' then datatype=['des', 'dis']
-   
+    if (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
+
+    ; kludge for level = 'sitl' -> datatype shouldn't be defined for sitl data.
+    if level eq 'sitl' then datatype = '*'
+
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'fpi', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat
 
+    ; since the SITL files contain both ion and electron data, and datatype = '*' doesn't work
+    ; in our 'fix'/'calc' routines for the FPI metadata
+    if level eq 'sitl' then datatype = ['des-dist', 'dis-dist']
+    
     ; correct the energies in the spectra for each probe
     if ~undefined(tplotnames) && n_elements(tplotnames) ne 0 then begin
         for probe_idx = 0, n_elements(probes)-1 do begin
             mms_load_fpi_fix_spectra, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $
-                level = level, data_rate = data_rate
-            mms_load_fpi_fix_angles, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem)
-            mms_load_fpi_calc_omni, probes[probe_idx], autoscale = autoscale, level = level
-            mms_load_fpi_calc_pad, probes[probe_idx], level = level
+                level = level, data_rate = data_rate, datatype = datatype
+            mms_load_fpi_fix_angles, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $ 
+                level = level, datatype = datatype
+            mms_load_fpi_calc_omni, probes[probe_idx], autoscale = autoscale, level = level, datatype = datatype
+            mms_load_fpi_calc_pad, probes[probe_idx], level = level, datatype = datatype
         endfor
     endif
 end

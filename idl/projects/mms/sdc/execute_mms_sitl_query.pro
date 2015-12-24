@@ -17,6 +17,11 @@ function execute_mms_sitl_query, netURL, url_path, query, filename=filename
     netURL->GetProperty, RESPONSE_CODE=code
     ;TODO: let callers print messages?
     case code of
+      200: begin
+        ; false error, one known case is an empty file
+        catch, /cancel
+        return, 0
+      end
       204: printf, -2, "WARNING in execute_mms_sitl_query: No results found."
       206: printf, -2, "WARNING in execute_mms_sitl_query: Only partial results were returned."
       404: printf, -2, "ERROR in execute_mms_sitl_query: Service not found."

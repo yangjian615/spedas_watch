@@ -1,6 +1,6 @@
 pro get_mms_burst_metadata_ut::setup
   compile_opt strictarr
-  url = get_mms_sitl_connection(host='sdc-web1', port='8080', auth='0', /rebuild)
+  url = get_mms_sitl_connection(host='sdc-web2', port='8080', auth='0', /rebuild)
   
 end
 

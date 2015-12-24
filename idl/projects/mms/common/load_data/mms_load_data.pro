@@ -85,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:33:38 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19596 $
+;$LastChangedDate: 2015-12-23 08:06:18 -0800 (Wed, 23 Dec 2015) $
+;$LastChangedRevision: 19650 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -142,7 +142,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, login_info = login_info, $
                   tplotnames = tplotnames, varformat = varformat, no_color_setup = no_color_setup, $
-                  suffix = suffix, time_clip = time_clip, no_update = no_update
+                  suffix = suffix, time_clip = time_clip, no_update = no_update, $
+                  cdf_filenames = cdf_filenames
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -192,7 +193,6 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     
     ;clear so new names are not appended to existsing array
     undefine, tplotnames
-
     ;loop over probe, rate, level, and datatype
     ;omitting some tabbing to keep format reasonable
     for probe_idx = 0, n_elements(probes)-1 do begin
@@ -294,6 +294,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         ; the intention is to order in time before passing
         ; to cdf2tplot
         files = files[bsort(files)]
+        append_array, cdf_filenames, files
 
         if ~undefined(files) then begin
             lt0 = systime(/sec) ;temporary

@@ -10,16 +10,20 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:08:02 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19583 $
+;$LastChangedDate: 2015-12-23 08:07:59 -0800 (Wed, 23 Dec 2015) $
+;$LastChangedRevision: 19651 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_omni.pro $
 ;-
-pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level
+pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatype = datatype
+    if undefined(datatype) then begin
+      dprint, dlevel = 0, 'Error, must provide a datatype to mms_load_fpi_calc_omni'
+      return
+    endif
     if undefined(autoscale) then autoscale = 1
     if undefined(level) then level = 'sitl'
     
-    species = ['i', 'e']
-    species_str = ['ion', 'electron'] ; for the metadata
+    species = strmid(datatype, 1, 1)
+
     for sidx=0, n_elements(species)-1 do begin
         spec_str_format = level eq 'sitl' ? 'EnergySpectr' : 'energySpectr'
         obs_str_format = level eq 'sitl' ? '_fpi_'+species[sidx] : '_d'+species[sidx]+'s_'
@@ -44,9 +48,10 @@ pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level
             store_data, obsstr+'EnergySpectr_omni_sum', data = {x:pX.X, y:e_omni_sum, v:pX.V}, dlimits=dl
         endif
 
+        species_str = species[sidx] eq 'e' ? 'electron' : 'ion'
         ; set the metadata for omnidirectional spectra
-        options, obsstr+'EnergySpectr_omni_sum', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!Csum'
-        options, obsstr+'EnergySpectr_omni_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!Cavg'
+        options, obsstr+'EnergySpectr_omni_sum', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Csum'
+        options, obsstr+'EnergySpectr_omni_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Cavg'
         options, obsstr+'EnergySpectr_omni_sum', ysubtitle='[eV]'
         options, obsstr+'EnergySpectr_omni_avg', ysubtitle='[eV]'
         options, obsstr+'EnergySpectr_omni_sum', ztitle='Counts'

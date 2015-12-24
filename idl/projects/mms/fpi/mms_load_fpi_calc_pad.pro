@@ -10,15 +10,20 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:08:02 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19583 $
+;$LastChangedDate: 2015-12-23 08:07:59 -0800 (Wed, 23 Dec 2015) $
+;$LastChangedRevision: 19651 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_pad.pro $
 ;-
-pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level
+pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype = datatype
+    if undefined(datatype) then begin
+        dprint, dlevel = 0, 'Error, must provide a datatype to mms_load_fpi_calc_pad'
+        return
+    endif
     if undefined(autoscale) then autoscale = 1
     if undefined(level) then level = 'sitl'
-    species = ['i', 'e']
-    species_str = ['ion', 'electron'] ; for the metadata
+    
+    
+    species = strmid(datatype, 1, 1)
     for sidx=0, n_elements(species)-1 do begin
         spec_str_format = level eq 'sitl' ? 'PitchAngDist' : 'pitchAngDist'
         obs_str_format = level eq 'sitl' ? '_fpi_'+species[sidx] : '_d'+species[sidx]+'s_'
@@ -40,9 +45,10 @@ pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level
             store_data, obsstr+'PitchAngDist_avg', data = {x:lowEn.X, y:e_PAD_avg, v:lowEn.V}, dlimits=dl
         endif
 
+        species_str = species[sidx] eq 'e' ? 'electron' : 'ion'
         ; set the metadata for the PADs
-        options, obsstr+'PitchAngDist_sum', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!CPAD!Csum'
-        options, obsstr+'PitchAngDist_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str[sidx]+'!CPAD!Cavg'
+        options, obsstr+'PitchAngDist_sum', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Csum'
+        options, obsstr+'PitchAngDist_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Cavg'
         options, obsstr+'PitchAngDist_sum', ysubtitle='[deg]'
         options, obsstr+'PitchAngDist_avg', ysubtitle='[deg]'
         options, obsstr+'PitchAngDist_sum', ztitle='Counts'

@@ -113,7 +113,7 @@ end
 function get_mms_science_file_ut::test_multiple_data_rate_mode
   compile_opt strictarr
   ;test multiple data_rate_mode
-  status = get_mms_science_file(data_rate_mode=['fast','slow'], instrument_id='afg', start_date='2015-03-16', end_date='2015-03-16')
+  status = get_mms_science_file(data_rate_mode=['fast','slow'], instrument_id='afg', start_date='2015-06-18', end_date='2015-06-18')
   assert, status eq 0, 'Multiple data rate modes returned unexpected results'
 
   return, 1
