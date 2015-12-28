@@ -265,6 +265,22 @@ FUNCTION eva_data_load_mms, state
         endif
 
         ;-----------
+        ; FPI QL
+        ;-----------
+        pcode=51
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_des_*') and (cp eq 0)) then begin
+          eva_data_load_mms_fpi_ql, prb=prb, datatype='des'
+          answer = 'Yes'
+        endif
+        pcode=52
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_dis_*') and (cp eq 0)) then begin
+          eva_data_load_mms_fpi_ql, prb=prb, datatype='dis'
+          answer = 'Yes'
+        endif
+        
+        ;-----------
         ; HPCA
         ;-----------
         pcode=60
@@ -339,6 +355,12 @@ FUNCTION eva_data_load_mms, state
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_exb_*') and (cp eq 0)) then begin
           eva_data_load_mms_exb,sc=sc,vthres=500.
+          answer = 'Yes'
+        endif
+        pcode=82
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_exbql_*') and (cp eq 0)) then begin
+          eva_data_load_mms_exb,sc=sc,vthres=500.,/ql
           answer = 'Yes'
         endif
         

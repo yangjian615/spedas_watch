@@ -1,4 +1,4 @@
-PRO eva_data_load_mms_exb, sc=sc, vthres=vthres
+PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql
   compile_opt idl2
   if undefined(vthres) then vthres = 500.
   
@@ -62,17 +62,20 @@ PRO eva_data_load_mms_exb, sc=sc, vthres=vthres
   ; Compare with FPI
   ;-------------------------
   
+  tpv = keyword_set(ql) ? '_dis_bulk' : '_fpi_iBulkV_DSC' 
+  tpv2 = keyword_set(ql) ? '_dis_bulkVperp_' : '_fpi_iBulkVperp_'
+  tpv3 = keyword_set(ql) ? '_exbql_vperp_' : '_exb_vperp_'
   ; extract Vperp
-  tn = tnames(sc+'_fpi_iBulkV_DSC',ct)
+  tn = tnames(sc+tpv,ct)
   if ct ne 1 then begin
     eva_data_load_mms_fpi, sc=sc
   endif
-  tn = tnames(sc+'_fpi_iBulkV_DSC',ct)
+  tn = tnames(sc+tpv,ct)
   if ct eq 1 then begin
   
     ; V has a much lower time resolution than B
     ; Here, we keep the lower time resolution by interpolating B.
-    get_data,sc+'_fpi_iBulkV_DSC',data=F
+    get_data,sc+tpv,data=F
     wBx = interpol(B.y[*,0], B.x, F.x)
     wBy = interpol(B.y[*,1], B.x, F.x)
     wBz = interpol(B.y[*,2], B.x, F.x)
@@ -83,15 +86,15 @@ PRO eva_data_load_mms_exb, sc=sc, vthres=vthres
     Vperp[*,1] = F.y[*,1] - BdotV*wBy
     Vperp[*,2] = F.y[*,2] - BdotV*wBz
     for c=0,cmax-1 do begin
-      store_data,sc+'_fpi_iBulkVperp_'+comp[c],data={x:F.x,y:Vperp[*,c]}
-      options,sc+'_fpi_iBulkVperp_'+comp[c],labels='Vperp,'+comp[c],labflag=-1,colors=clrs[c],$
+      store_data,sc+tpv2+comp[c],data={x:F.x,y:Vperp[*,c]}
+      options,sc+tpv2+comp[c],labels='Vperp,'+comp[c],labflag=-1,colors=clrs[c],$
         ytitle=sc+'!CFPI!CVperp,'+comp[c],ysubtitle='[km/s]',constant=0,ystyle=1
     endfor
     
     ; combine
     for c=0,cmax-1 do begin
-      store_data,sc+'_exb_vperp_'+comp[c],data=sc+['_exb_dsl_','_fpi_iBulkVperp_']+comp[c]
-      options,sc+'_exb_vperp_'+comp[c],colors=[clrs[c],0],labflag=-1,$
+      store_data,sc+tpv3+comp[c],data=sc+['_exb_dsl_',tpv2]+comp[c]
+      options,sc+tpv3+comp[c],colors=[clrs[c],0],labflag=-1,$
         labels=['(ExB)'+comp[c],'Vperp,'+comp[c]]
     endfor
     
