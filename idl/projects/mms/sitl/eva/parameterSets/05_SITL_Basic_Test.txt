@@ -8,7 +8,7 @@ mms*_dis_numberDensity
 mms*_edp_fast_scpot; SC-potential
 
 mms*_dis_bulk
-mms*_exb_vperp_z; comparison between (ExB)z and FPI Vperp,z
+;mms*_exb_vperp_z; comparison between (ExB)z and FPI Vperp,z
 mms*_exbql_vperp_z; comparison between (ExB)z and FPI Vperp,z
 
 
