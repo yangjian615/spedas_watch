@@ -42,8 +42,8 @@
 ; CREATED BY: moka in Oct 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-12-27 15:57:23 -0800 (Sun, 27 Dec 2015) $
-; $LastChangedRevision: 19662 $
+; $LastChangedDate: 2015-12-29 20:47:11 -0800 (Tue, 29 Dec 2015) $
+; $LastChangedRevision: 19665 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_get_roi.pro $
 ;-
 FUNCTION mms_get_roi_distance, roi_time, tc, distance=distance
@@ -98,7 +98,6 @@ FUNCTION mms_get_roi, t, num, next=next, previous=previous
   
   for n=0,nmax-1 do begin
     restore, local_flist[n]
-    print,n,nmax
     if n_tags(FOMstr) gt 3 then begin
       timestamps = mms_tai2unix(FOMstr.TIMESTAMPS)
       ts = timestamps[0]
