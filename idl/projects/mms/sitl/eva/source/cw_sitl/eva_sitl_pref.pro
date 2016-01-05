@@ -120,6 +120,8 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
   str_element,/add,state,'fldSplit',cw_field(baseSplit,VALUE=str_cs,TITLE='Split Size: ',/ALL_EVENTS,XSIZE=7)
   str_element,/add,state,'btnSplitNominal',widget_button(baseSplit,VALUE=' Nominal Limit ')
   str_element,/add,state,'btnSplitMaximum',widget_button(baseSplit,VALUE=' Maximum Limit ')
+  lblSplit1 = widget_label(mainbase,VALUE="   If 0, EVA will use the default split size")
+  lblSplit2 = widget_label(mainbase,VALUE="   which is 1/2 of the nominal limit")
   
   lblSpace = widget_label(mainbase,VALUE=' ')
   lblSuper = widget_label(mainbase,VALUE="Options for super-SITL:")

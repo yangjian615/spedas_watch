@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  thm_pgs_regrid
+;  spd_pgs_regrid
 ;
 ;Purpose:
 ;  Regrids rotated data to a new set of regularly gridded spherical interpolates
@@ -14,14 +14,14 @@
 ;  error=error: 1 indicates error occured, 0 indicates no error occured
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-03-19 17:18:03 -0700 (Thu, 19 Mar 2015) $
-;$LastChangedRevision: 17151 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_regrid.pro $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-01-04 15:38:57 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19672 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_regrid.pro $
 ;-
 
 
-pro thm_pgs_regrid,data,regrid_dimen,output=output,error=error
+pro spd_pgs_regrid,data,regrid_dimen,output=output,error=error
 
 
   compile_opt idl2,hidden

@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  mms_pgs_make_phi_spec
+;  spd_pgs_make_phi_spec
 ;
 ;Purpose:
 ;  Builds phi (longitudinal) spectrogram from simplified particle data structure.
@@ -27,12 +27,12 @@
 ;
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 14:25:49 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19614 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_make_phi_spec.pro $
+;$LastChangedDate: 2016-01-04 15:38:57 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19672 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_phi_spec.pro $
 ;-
 
-pro mms_pgs_make_phi_spec, data, spec=spec, yaxis=yaxis, _extra=ex
+pro spd_pgs_make_phi_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
 
     compile_opt idl2, hidden
   
@@ -73,7 +73,8 @@ pro mms_pgs_make_phi_spec, data, spec=spec, yaxis=yaxis, _extra=ex
 
   ;init this sample's piece of the spectrogram
   ave = replicate(!values.f_nan,n_phi)
- 
+  ave_s = ave
+
   ;form grid specifying the spectrogram's phi bins
   phi_grid = interpol([0,360.],n_phi+1)
   phi_grid_width = median(phi_grid - shift(phi_grid,1))
@@ -171,7 +172,9 @@ pro mms_pgs_make_phi_spec, data, spec=spec, yaxis=yaxis, _extra=ex
       ;average
       ave[i] = total(d[idx] * weight)
       
-    
+      ;standard deviation
+      ave_s[i] = sqrt(  total(d[idx] * scaling[idx] * weight^2)  )
+      
     endif else begin
       ;nothing
     endelse
@@ -189,13 +192,14 @@ pro mms_pgs_make_phi_spec, data, spec=spec, yaxis=yaxis, _extra=ex
   if n_phi eq 1 then begin
     y = [0.,360]
     ave = [ave,ave]
+    ave_s = [ave_s,ave_s]
   endif
   
   ;concatenate y axes
   if undefined(yaxis) then begin
     yaxis = y
   endif else begin
-    mms_pgs_concat_yaxis, yaxis, y, ns=dimen2(spec)
+    spd_pgs_concat_yaxis, yaxis, y, ns=dimen2(spec)
   endelse
 
   
@@ -203,8 +207,15 @@ pro mms_pgs_make_phi_spec, data, spec=spec, yaxis=yaxis, _extra=ex
   if undefined(spec) then begin
     spec = temporary(ave)
   endif else begin
-    mms_pgs_concat_spec, spec, ave
+    spd_pgs_concat_spec, spec, ave
   endelse
   
+  
+  ;concatenate standard deviation
+  if undefined(sigma) then begin
+    sigma = temporary(ave_s)
+  endif else begin
+    spd_pgs_concat_spec, sigma, ave_s
+  endelse 
   
 end

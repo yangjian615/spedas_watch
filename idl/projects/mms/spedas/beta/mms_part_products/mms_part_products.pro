@@ -18,8 +18,8 @@
 ;  TODO: Accept multiple arguments, loop
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 14:25:49 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19614 $
+;$LastChangedDate: 2016-01-04 16:08:57 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19676 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 
@@ -120,7 +120,7 @@ pro mms_part_products, $
       dprint, 'ERROR: Phi restrictons must have range no larger than 360 degrees'
       return
     endif
-    phi = mms_pgs_map_azimuth(phi_in)
+    phi = spd_pgs_map_azimuth(phi_in)
     ;catch offset full ranges
     if phi[0] eq phi[1] then phi = [0,360.]
   endelse
@@ -132,7 +132,7 @@ pro mms_part_products, $
       dprint, 'ERROR: Gyrophase restrictons must have range no larger than 360 degrees'
       return
     endif
-    gyro = mms_pgs_map_azimuth(gyro_in)
+    gyro = spd_pgs_map_azimuth(gyro_in)
     ;catch offset full ranges
     if gyro[0] eq gyro[1] then gyro = [0,360.]
   endelse
@@ -239,7 +239,7 @@ pro mms_part_products, $
   
   for i = 0,n_elements(time_idx)-1 do begin
   
-    mms_pgs_progress_update,last_tm,i,n_elements(time_idx)-1,display_object=display_object,type_string=in_tvarname
+    spd_pgs_progress_update,last_tm,i,n_elements(time_idx)-1,display_object=display_object,type_string=in_tvarname
   
     ;Get the data structure for this samgple
     ;only FPI, atm
@@ -260,7 +260,7 @@ pro mms_part_products, $
     endif
     
     ;Apply phi, theta, & energy limits
-    mms_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
+    spd_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
     
     ;Calculate moments
     ;  -data must be in 'eflux' units 
@@ -270,17 +270,17 @@ pro mms_part_products, $
    
     ;Build theta spectrogram
     if in_set(outputs_lc, 'theta') then begin
-      mms_pgs_make_theta_spec, clean_data, spec=theta_spec, yaxis=theta_y
+      spd_pgs_make_theta_spec, clean_data, spec=theta_spec, yaxis=theta_y
     endif
     
     ;Build phi spectrogram
     if in_set(outputs_lc, 'phi') then begin
-      mms_pgs_make_phi_spec, clean_data, spec=phi_spec, yaxis=phi_y
+      spd_pgs_make_phi_spec, clean_data, spec=phi_spec, yaxis=phi_y
     endif
     
     ;Build energy spectrogram
     if in_set(outputs_lc, 'energy') then begin
-      mms_pgs_make_e_spec, clean_data, spec=en_spec, yaxis=en_y
+      spd_pgs_make_e_spec, clean_data, spec=en_spec, yaxis=en_y
     endif
     
     ;Perform transformation to FAC, regrid data, and apply limits in new coords
@@ -292,34 +292,34 @@ pro mms_part_products, $
       ;align bins across energies 
       ; -ensures smoother statistics and less jagged edges
       ; -better matches plots from tpm2
-      mms_pgs_align_phi, clean_data
-      mms_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
+      spd_pgs_align_phi, clean_data
+      spd_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
       
       ;perform FAC transformation and interpolate onto a new, regular grid 
-      mms_pgs_do_fac,clean_data,reform(fac_matrix[i,*,*],3,3),output=clean_data,error=error
-      mms_pgs_regrid,clean_data,regrid,output=clean_data
+      spd_pgs_do_fac,clean_data,reform(fac_matrix[i,*,*],3,3),output=clean_data,error=error
+      spd_pgs_regrid,clean_data,regrid,output=clean_data
       
       clean_data.theta = 90-clean_data.theta ;pitch angle is specified in co-latitude
       
       ;apply gyro & pitch angle limits(identical to phi & theta, just in new coords)
-      mms_pgs_limit_range,clean_data,phi=gyro,theta=pitch
+      spd_pgs_limit_range,clean_data,phi=gyro,theta=pitch
       
     endif
     
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
       ;convert from latitude to co-latitude
-      mms_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y
+      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y
     endif
     
     ;Build gyrophase spectrogram
     if in_set(outputs_lc, 'gyro') then begin
-      mms_pgs_make_phi_spec, clean_data, spec=gyro_spec, yaxis=gyro_y
+      spd_pgs_make_phi_spec, clean_data, spec=gyro_spec, yaxis=gyro_y
     endif
     
     ;Build energy spectrogram from field aligned distribution
     if in_set(outputs_lc, 'fac_energy') then begin
-      mms_pgs_make_e_spec, clean_data, spec=fac_en_spec,  yaxis=fac_en_y
+      spd_pgs_make_e_spec, clean_data, spec=fac_en_spec,  yaxis=fac_en_y
     endif
     
   endfor
@@ -332,7 +332,7 @@ pro mms_part_products, $
   ;  bins must be used.  This means that many bins that intersect the 
   ;  limited range but may extend far past it are left active.
   ; -Currently, phi for ESA is the only non-regular case.
-  mms_pgs_clip_spec, y=phi_y, z=phi_spec, range=phi
+  spd_pgs_clip_spec, y=phi_y, z=phi_spec, range=phi
  
  
   ;--------------------------------------------------------
@@ -346,38 +346,38 @@ pro mms_part_products, $
   
   ;Energy Spectrograms
   if ~undefined(en_spec) then begin
-    mms_pgs_make_tplot, tplot_prefix+'energy'+suffix, x=times, y=en_y, z=en_spec, ylog=1, units=units_lc,datagap=datagap,tplotnames=tplotnames
+    spd_pgs_make_tplot, tplot_prefix+'energy'+suffix, x=times, y=en_y, z=en_spec, ylog=1, units=units_lc,datagap=datagap,tplotnames=tplotnames
   endif
  
   ;Theta Spectrograms
   if ~undefined(theta_spec) then begin
-    mms_pgs_make_tplot, tplot_prefix+'theta'+suffix, x=times, y=theta_y, z=theta_spec, yrange=theta,units=units_lc,datagap=datagap,tplotnames=tplotnames
+    spd_pgs_make_tplot, tplot_prefix+'theta'+suffix, x=times, y=theta_y, z=theta_spec, yrange=theta,units=units_lc,datagap=datagap,tplotnames=tplotnames
   endif
   
   ;Phi Spectrograms
   if ~undefined(phi_spec) then begin
     ;phi range may be wrapped about phi=0, this keeps an invalid range from being passed to tplot
     phi_y_range = (undefined(start_angle) ? 0:start_angle) + [0,360]
-    mms_pgs_make_tplot, tplot_prefix+'phi'+suffix, x=times, y=phi_y, z=phi_spec, yrange=phi_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
-    mms_pgs_shift_phi_spec, names=tplot_prefix+'phi'+suffix, start_angle=start_angle
+    spd_pgs_make_tplot, tplot_prefix+'phi'+suffix, x=times, y=phi_y, z=phi_spec, yrange=phi_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
+    spd_pgs_shift_phi_spec, names=tplot_prefix+'phi'+suffix, start_angle=start_angle
   endif
   
   ;Pitch Angle Spectrograms
   if ~undefined(pa_spec) then begin
-    mms_pgs_make_tplot, tplot_prefix+'pa'+suffix, x=times, y=pa_y, z=pa_spec, yrange=pitch,units=units_lc,datagap=datagap,tplotnames=tplotnames
+    spd_pgs_make_tplot, tplot_prefix+'pa'+suffix, x=times, y=pa_y, z=pa_spec, yrange=pitch,units=units_lc,datagap=datagap,tplotnames=tplotnames
   endif
   
   ;Gyrophase Spectrograms
   if ~undefined(gyro_spec) then begin
     ;gyro range may be wrapped about gyro=0, this keeps an invalid range from being passed to tplot
     gyro_y_range = (undefined(start_angle) ? 0:start_angle) + [0,360]
-    mms_pgs_make_tplot, tplot_prefix+'gyro'+suffix, x=times, y=gyro_y, z=gyro_spec, yrange=gyro_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
-    mms_pgs_shift_phi_spec, names=tplot_prefix+'gyro'+suffix, start_angle=start_angle
+    spd_pgs_make_tplot, tplot_prefix+'gyro'+suffix, x=times, y=gyro_y, z=gyro_spec, yrange=gyro_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
+    spd_pgs_shift_phi_spec, names=tplot_prefix+'gyro'+suffix, start_angle=start_angle
   endif
   
   ;Field-Aligned Energy Spectrograms
   if ~undefined(fac_en_spec) then begin
-    mms_pgs_make_tplot, tplot_prefix+'energy'+suffix, x=times, y=fac_en_y, z=fac_en_spec, ylog=1, units=units_lc,datagap=datagap,tplotnames=tplotnames
+    spd_pgs_make_tplot, tplot_prefix+'energy'+suffix, x=times, y=fac_en_y, z=fac_en_spec, ylog=1, units=units_lc,datagap=datagap,tplotnames=tplotnames
   endif
   
   ;Moments Variables

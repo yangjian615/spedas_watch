@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  thm_pgs_make_tplot
+;  spd_pgs_make_tplot
 ;
 ;Purpose:
 ;  Create tplot variable with standard spectrogram settings.
@@ -25,12 +25,12 @@
 ;
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 17:26:33 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19622 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_make_tplot.pro $
+;$LastChangedDate: 2016-01-04 16:08:31 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19675 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_tplot.pro $
 ;-
 
-pro mms_pgs_make_tplot, name, x=x, y=y, z=z, units=units, tplotnames=tplotnames, _extra=ex
+pro spd_pgs_make_tplot, name, x=x, y=y, z=z, units=units, tplotnames=tplotnames, _extra=ex
 
     compile_opt idl2, hidden
 

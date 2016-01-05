@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  thm_pgs_clip_spec
+;  spd_pgs_clip_spec
 ;
 ;Purpose:
 ;  Place NaNs in areas of a spectrogram that are beyond
@@ -19,12 +19,12 @@
 ;Notes:
 ;  
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-07-11 18:33:29 -0700 (Thu, 11 Jul 2013) $
-;$LastChangedRevision: 12670 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clip_spec.pro $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-01-04 15:09:48 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19671 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_clip_spec.pro $
 ;-
-pro thm_pgs_clip_spec, y=y, z=z, range=range
+pro spd_pgs_clip_spec, y=y, z=z, range=range
 
     compile_opt idl2, hidden
 

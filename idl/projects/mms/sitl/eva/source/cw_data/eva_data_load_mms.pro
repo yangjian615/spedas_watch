@@ -126,7 +126,26 @@ FUNCTION eva_data_load_mms, state
             colors=[2,4,6],labflag=-1,constant=0,cap=1
           answer = 'Yes'
         endif
-
+        pcode=31
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_omb*') and (cp eq 0)) then begin
+          mms_sitl_get_afg, sc_id=sc, level='l1b'
+          tn=tnames(sc+'*_afg_srvy_omb*',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            options,sc+'_afg_srvy_omb',$
+              labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='OMB [nT]',$
+              colors=[2,4,6],labflag=-1,constant=0, cap=1
+            answer = 'Yes'
+          endif
+          tn=tnames(sc+'*_afg_srvy_bcs*',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            options,sc+'_afg_srvy_bcs',$
+              labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='BCS [nT]',$
+              colors=[2,4,6],labflag=-1,constant=0, cap=1
+            answer = 'Yes'
+          endif
+        endif
+        
         ;-----------
         ; FIELDS/DFG
         ;-----------
@@ -142,7 +161,26 @@ FUNCTION eva_data_load_mms, state
             colors=[2,4,6],labflag=-1,constant=0, cap=1
           answer = 'Yes'
         endif
-        
+        pcode=33
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_omb*') and (cp eq 0)) then begin
+          mms_sitl_get_dfg, sc_id=sc, level='l1b'
+          tn=tnames(sc+'*_dfg_srvy_omb*',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            options,sc+'_dfg_srvy_omb',$
+              labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='OMB [nT]',$
+              colors=[2,4,6],labflag=-1,constant=0, cap=1
+            answer = 'Yes'
+          endif
+          tn=tnames(sc+'*_dfg_srvy_bcs*',cnt)
+          if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            options,sc+'_dfg_srvy_bcs',$
+              labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='BCS [nT]',$
+              colors=[2,4,6],labflag=-1,constant=0, cap=1
+            answer = 'Yes'
+          endif
+        endif
+
         ;-----------
         ; FIELDS/DSP
         ;-----------

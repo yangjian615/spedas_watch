@@ -26,8 +26,8 @@
 ;
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 14:25:49 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19614 $
+;$LastChangedDate: 2016-01-04 15:45:26 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19673 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_clean_fpi.pro $
 ;
 ;-
@@ -43,7 +43,7 @@ pro mms_pgs_clean_fpi, data_in, output=output,units=units
   output= {  $
     time: data.time, $
     end_time:data.end_time, $
-    scaling:1l,$
+    scaling:fltarr(dims[0],dims[1]*dims[2])+1,$
     units:units,$
     data: reform(data.data,dims[0],dims[1]*dims[2]), $
     bins: reform(data.bins,dims[0],dims[1]*dims[2]), $

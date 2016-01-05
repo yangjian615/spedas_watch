@@ -14,7 +14,7 @@
 ;  yrange: full range of y data from main routine
 ;
 ;-
-pro thm_pgs_shift_phi_spec_pad, data, yrange
+pro spd_pgs_shift_phi_spec_pad, data, yrange
 
     compile_opt idl2, hidden
 
@@ -49,7 +49,7 @@ end
 
 ;+
 ;Procedure:
-;  thm_pgs_shift_phi_spec
+;  spd_pgs_shift_phi_spec
 ;
 ;Purpose:
 ;  Shifts phi (longitudinal) spectrogram's y-axis to start at a different angle.
@@ -71,12 +71,12 @@ end
 ;
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2013-11-18 12:04:32 -0800 (Mon, 18 Nov 2013) $
-;$LastChangedRevision: 13551 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_shift_phi_spec.pro $
+;$LastChangedDate: 2016-01-04 15:38:57 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19672 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_shift_phi_spec.pro $
 ;-
 
-pro thm_pgs_shift_phi_spec, names=names_in, start_angle=start_angle
+pro spd_pgs_shift_phi_spec, names=names_in, start_angle=start_angle
 
   compile_opt idl2, hidden
   
@@ -207,7 +207,7 @@ pro thm_pgs_shift_phi_spec, names=names_in, start_angle=start_angle
     
     ;copy bottom bin onto top of spectrogram to account for white space
     ;cause by shift value not being aligned with bin edges
-    thm_pgs_shift_phi_spec_pad, data, yrange
+    spd_pgs_shift_phi_spec_pad, data, yrange
     
     
     ;store shifted data

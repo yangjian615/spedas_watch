@@ -2,6 +2,7 @@
 
 ; created by Jim Burch, July, 2015.
 ; updated by Tai Phan: August 31, 2015
+; updated by Eric Grimes: January 4, 2016
 
 ; to run this script, in IDL session, type: .r crib_master_v3 (or click the run button)
 
@@ -16,7 +17,7 @@ i_print=1 ; = 1 to generate a postscript file of plot (default name is 'plot.ps'
 
 ; to zoon in and out, use tlimit (various options in tlimit: 'tlimit,/last', 'tlimit,/full', 'tlimit,time1, time2')
 
-timespan,'2015-08-15/11:45', 4.2, /hour ; (other often-used options are /day or /min)
+timespan,'2015-11-15/11:45', 4.2, /hour ; (other often-used options are /day or /min)
 
 ;timespan,'2015-08-28/11:00', 8.2, /hour ; (other often-used options are /day or /min)
 
@@ -59,6 +60,8 @@ mms_sitl_get_dfg, sc_id=sc_id
 
 ;HPCA
 mms_load_hpca, probes=probe_id, datatype='rf_corr', level=level, data_rate='srvy'
+; calculate the spectra for the full field of view
+mms_hpca_calc_anodes, fov=[0, 360], probe=probe_id
 mms_load_hpca, probes=probe_id, datatype='moments', data_rate='srvy', level=level
 
 
@@ -265,9 +268,8 @@ zlim,sc_id+'_dsp_bpsd_omni',1e-8,1e-4,1
 ;*********************************************************
 ; group tplot variables for plotting (grouping not required but better aesthetically)
 ;*********************************************************
-
-name_hpca=[sc_id+'_hpca_hplus_RF_corrected', sc_id+'_hpca_heplusplus_RF_corrected',$
-  sc_id+'_hpca_oplus_RF_corrected', sc_id+'_hpca_hplus_number_density', $
+name_hpca=[sc_id+'_hpca_hplus_RF_corrected_elev_0-360', sc_id+'_hpca_heplusplus_RF_corrected_elev_0-360',$
+  sc_id+'_hpca_oplus_RF_corrected_elev_0-360', sc_id+'_hpca_hplus_number_density', $
   sc_id+'_hpca_hplus_ion_bulk_velocity', sc_id+'_hpca_oplus_ion_bulk_velocity', $
   sc_id+'_hpca_hplus_scalar_temperature']
 

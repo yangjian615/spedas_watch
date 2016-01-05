@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  thm_pgs_align_phi
+;  spd_pgs_align_phi
 ;
 ;Purpose:
 ;  Align phi bins with respect to energy in order to reduce 
@@ -23,13 +23,13 @@
 ;  -sigh
 ;   
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-06-12 11:30:44 -0700 (Fri, 12 Jun 2015) $
-;$LastChangedRevision: 17861 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_align_phi.pro $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-01-04 15:09:48 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19671 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_align_phi.pro $
 ;-
 
-pro thm_pgs_align_phi, data
+pro spd_pgs_align_phi, data
 
     compile_opt idl2, hidden
 

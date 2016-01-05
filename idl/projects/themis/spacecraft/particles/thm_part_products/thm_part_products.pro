@@ -18,8 +18,8 @@
 ;  TODO: Accept multiple arguments, loop
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-11-09 08:57:36 -0800 (Mon, 09 Nov 2015) $
-;$LastChangedRevision: 19311 $
+;$LastChangedDate: 2016-01-04 16:02:05 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19674 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -193,7 +193,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
       dprint, 'ERROR: Phi restrictons must have range no larger than 360 degrees'
       return
     endif
-    phi = thm_pgs_map_azimuth(phi_in)
+    phi = spd_pgs_map_azimuth(phi_in)
     ;catch offset full ranges
     if phi[0] eq phi[1] then phi = [0,360.]
   endelse
@@ -205,7 +205,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
       dprint, 'ERROR: Gyrophase restrictons must have range no larger than 360 degrees'
       return
     endif
-    gyro = thm_pgs_map_azimuth(gyro_in)
+    gyro = spd_pgs_map_azimuth(gyro_in)
     ;catch offset full ranges
     if gyro[0] eq gyro[1] then gyro = [0,360.]
   endelse
@@ -328,7 +328,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
   
   for i = 0,n_elements(time_idx)-1 do begin
   
-    thm_pgs_progress_update,last_tm,i,n_elements(time_idx)-1,display_object=display_object,type_string=strupcase(inst_format)
+    spd_pgs_progress_update,last_tm,i,n_elements(time_idx)-1,display_object=display_object,type_string=strupcase(inst_format)
   
     ;Get the data structure for this samgple
     if size(dist_array,/type) eq 10 then begin
@@ -364,7 +364,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     endif
     
     ;Apply phi, theta, & energy limits
-    thm_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
+    spd_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
     
     ;Calculate moments
     ;  -data must be in 'eflux' units 
@@ -374,17 +374,17 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
    
     ;Build theta spectrogram
     if in_set(outputs_lc, 'theta') then begin
-      thm_pgs_make_theta_spec, clean_data, spec=theta_spec, sigma=theta_sigma, yaxis=theta_y
+      spd_pgs_make_theta_spec, clean_data, spec=theta_spec, sigma=theta_sigma, yaxis=theta_y
     endif
     
     ;Build phi spectrogram
     if in_set(outputs_lc, 'phi') then begin
-      thm_pgs_make_phi_spec, clean_data, spec=phi_spec, sigma=phi_sigma, yaxis=phi_y
+      spd_pgs_make_phi_spec, clean_data, spec=phi_spec, sigma=phi_sigma, yaxis=phi_y
     endif
     
     ;Build energy spectrogram
     if in_set(outputs_lc, 'energy') then begin
-      thm_pgs_make_e_spec, clean_data, spec=en_spec, sigma=en_sigma, yaxis=en_y
+      spd_pgs_make_e_spec, clean_data, spec=en_spec, sigma=en_sigma, yaxis=en_y
     endif
     
     ;Perform transformation to FAC, regrid data, and apply limits in new coords
@@ -396,34 +396,34 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
       ;align bins across energies 
       ; -ensures smoother statistics and less jagged edges
       ; -better matches plots from tpm2
-      thm_pgs_align_phi, clean_data
-      thm_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
+      spd_pgs_align_phi, clean_data
+      spd_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
       
       ;perform FAC transformation and interpolate onto a new, regular grid 
-      thm_pgs_do_fac,clean_data,reform(fac_matrix[i,*,*],3,3),output=clean_data,error=error
-      thm_pgs_regrid,clean_data,regrid,output=clean_data
+      spd_pgs_do_fac,clean_data,reform(fac_matrix[i,*,*],3,3),output=clean_data,error=error
+      spd_pgs_regrid,clean_data,regrid,output=clean_data
       
       clean_data.theta = 90-clean_data.theta ;pitch angle is specified in co-latitude
       
       ;apply gyro & pitch angle limits(identical to phi & theta, just in new coords)
-      thm_pgs_limit_range,clean_data,phi=gyro,theta=pitch
+      spd_pgs_limit_range,clean_data,phi=gyro,theta=pitch
       
     endif
     
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
       ;convert from latitude to co-latitude
-      thm_pgs_make_theta_spec, clean_data, spec=pa_spec, sigma=pa_sigma, yaxis=pa_y
+      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, sigma=pa_sigma, yaxis=pa_y
     endif
     
     ;Build gyrophase spectrogram
     if in_set(outputs_lc, 'gyro') then begin
-      thm_pgs_make_phi_spec, clean_data, spec=gyro_spec, sigma=gyro_sigma, yaxis=gyro_y
+      spd_pgs_make_phi_spec, clean_data, spec=gyro_spec, sigma=gyro_sigma, yaxis=gyro_y
     endif
     
     ;Build energy spectrogram from field aligned distribution
     if in_set(outputs_lc, 'fac_energy') then begin
-      thm_pgs_make_e_spec, clean_data, spec=fac_en_spec, sigma=fac_en_sigma, yaxis=fac_en_y
+      spd_pgs_make_e_spec, clean_data, spec=fac_en_spec, sigma=fac_en_sigma, yaxis=fac_en_y
     endif
     
   endfor
@@ -436,8 +436,8 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
   ;  bins must be used.  This means that many bins that intersect the 
   ;  limited range but may extend far past it are left active.
   ; -Currently, phi for ESA is the only non-regular case.
-  thm_pgs_clip_spec, y=phi_y, z=phi_spec, range=phi
-  thm_pgs_clip_spec, y=phi_y, z=phi_sigma, range=phi
+  spd_pgs_clip_spec, y=phi_y, z=phi_spec, range=phi
+  spd_pgs_clip_spec, y=phi_y, z=phi_sigma, range=phi
  
  
   ;--------------------------------------------------------
@@ -470,10 +470,10 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     ;phi range may be wrapped about phi=0, this keeps an invalid range from being passed to tplot
     phi_y_range = (undefined(start_angle) ? 0:start_angle) + [0,360]
     thm_pgs_make_tplot, tplot_prefix+'phi'+suffix, x=times, y=phi_y, z=phi_spec, yrange=phi_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
-    thm_pgs_shift_phi_spec, names=tplot_prefix+'phi'+suffix, start_angle=start_angle
+    spd_pgs_shift_phi_spec, names=tplot_prefix+'phi'+suffix, start_angle=start_angle
     if keyword_set(get_error) then begin
       thm_pgs_make_tplot, tplot_prefix+'phi_sigma'+suffix, x=times, y=phi_y, z=phi_sigma, yrange=phi_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
-      thm_pgs_shift_phi_spec, names=tplot_prefix+'phi_sigma'+suffix, start_angle=start_angle
+      spd_pgs_shift_phi_spec, names=tplot_prefix+'phi_sigma'+suffix, start_angle=start_angle
     endif
   endif
   
@@ -493,7 +493,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     thm_pgs_shift_phi_spec, names=tplot_prefix+'gyro'+suffix, start_angle=start_angle
     if keyword_set(get_error) then begin
       thm_pgs_make_tplot, tplot_prefix+'gyro_sigma'+suffix, x=times, y=gyro_y, z=gyro_sigma, yrange=gyro_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
-      thm_pgs_shift_phi_spec, names=tplot_prefix+'gyro_sigma'+suffix, start_angle=start_angle
+      spd_pgs_shift_phi_spec, names=tplot_prefix+'gyro_sigma'+suffix, start_angle=start_angle
     endif
   endif
   

@@ -327,7 +327,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
         ;gTdel = double((mms_load_fom_validation()).NOMINAL_SEG_RANGE[1]*10.)
         if(state.PREF.EVA_SPLIT_SIZE eq 0) then begin
           val = mms_load_fom_validation()
-          str_element,/add,state,'pref.EVA_SPLIT_SIZE',val.NOMINAL_SEG_RANGE[1]
+          str_element,/add,state,'pref.EVA_SPLIT_SIZE',floor(val.NOMINAL_SEG_RANGE[1]*0.5)
         endif
         gTdel = double(state.PREF.EVA_SPLIT_SIZE*10.)
         gFOM = segSelect.FOM

@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  thm_pgs_fac
+;  spd_pgs_do_fac
 ;
 ;Purpose:
 ;  Applies field aligned coordinate transformation to input data
@@ -15,13 +15,13 @@
 ;
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 14:25:49 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19614 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_do_fac.pro $
+;$LastChangedDate: 2016-01-04 15:09:48 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19671 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_do_fac.pro $
 ;-
 
 
-pro mms_pgs_do_fac,data,mat,output=output,error=error
+pro spd_pgs_do_fac,data,mat,output=output,error=error
 
   compile_opt idl2,hidden
 

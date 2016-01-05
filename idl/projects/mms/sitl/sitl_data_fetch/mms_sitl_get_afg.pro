@@ -29,15 +29,15 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-10-12 13:28:43 -0700 (Mon, 12 Oct 2015) $
-;  $LastChangedRevision: 19053 $
+;  $LastChangedDate: 2016-01-04 12:40:50 -0800 (Mon, 04 Jan 2016) $
+;  $LastChangedRevision: 19670 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_afg.pro $
 
 
 
 
 
-pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload
+pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload, level = level
 
   t = timerange(/current)
   st = time_string(t)
@@ -48,7 +48,15 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload
   if keyword_set(no_update) and keyword_set(reload) then message, 'ERROR: Keywords /no_update and /reload are ' + $
     'conflicting and should never be used simultaneously.'
 
-  level = 'ql'
+  if ~keyword_set(level) then begin
+    level = 'ql'
+  endif else begin
+    if level ne 'ql' and level ne 'l1b' and level ne 'l2pre' and level ne 'l1a' then begin
+      print, 'Invalid level, defaulting to ql'
+      level = 'ql'
+    endif
+  endelse
+
   mode = 'srvy'
 
   ; See if spacecraft id is set

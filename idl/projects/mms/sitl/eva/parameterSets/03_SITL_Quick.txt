@@ -2,6 +2,9 @@
 
 mms*_dfg_srvy_gsm_dmpa; Bx, By, Bz
 mms*_dfg_srvy_gsm_dmpa_m; |B|
+;mms*_dfg_srvy_omb; Temporary parameters to be used when QL data not available. 
+;mms*_dfg_srvy_omb_m; Temporary parameters to be used when QL data not available.
+
 
 mms*_fpi_iEnergySpectr_omni
 mms*_fpi_eEnergySpectr_omni

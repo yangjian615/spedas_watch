@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  thm_pgs_map_azimuth
+;  spd_pgs_map_azimuth
 ;
 ;Purpose:
 ;  Map any range of azimuth values in [-inf,inf] to [0,360]
@@ -15,17 +15,18 @@
 ;  return value: Input values mapped to [0,360]
 ;
 ;Notes:
+;
 ;  -values of 360 will not be wrapped to zero
 ;   (otherwise a [0,360] range is mapped to [0,0])
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-11-15 15:28:05 -0800 (Fri, 15 Nov 2013) $
-;$LastChangedRevision: 13545 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_map_azimuth.pro $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-01-04 15:09:48 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19671 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_map_azimuth.pro $
 ;
 ;-
-function thm_pgs_map_azimuth, phi
+function spd_pgs_map_azimuth, phi
 
     compile_opt idl2, hidden
 

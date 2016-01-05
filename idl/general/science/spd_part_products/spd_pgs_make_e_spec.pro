@@ -1,7 +1,7 @@
 
 ;+
 ;Procedure:
-;  thm_pgs_make_e_spec
+;  spd_pgs_make_e_spec
 ;
 ;Purpose:
 ;  Builds energy spectrogram from simplified particle data structure.
@@ -25,13 +25,13 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-08-22 12:38:43 -0700 (Thu, 22 Aug 2013) $
-;$LastChangedRevision: 12872 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_make_e_spec.pro $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-01-04 15:38:57 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19672 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_e_spec.pro $
 ;-
 
-pro thm_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
+pro spd_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
 
     compile_opt idl2, hidden
   
@@ -72,7 +72,7 @@ pro thm_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
   if undefined(yaxis) then begin
     yaxis = y
   endif else begin
-    thm_pgs_concat_yaxis, yaxis, y, ns=dimen2(spec)
+    spd_pgs_concat_yaxis, yaxis, y, ns=dimen2(spec)
   endelse
   
   
@@ -80,7 +80,7 @@ pro thm_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
   if undefined(spec) then begin
     spec = temporary(ave)
   endif else begin
-    thm_pgs_concat_spec, spec, ave
+    spd_pgs_concat_spec, spec, ave
   endelse 
   
   
@@ -88,7 +88,7 @@ pro thm_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
   if undefined(sigma) then begin
     sigma = temporary(ave_s)
   endif else begin
-    thm_pgs_concat_spec, sigma, ave_s
+    spd_pgs_concat_spec, sigma, ave_s
   endelse 
    
   

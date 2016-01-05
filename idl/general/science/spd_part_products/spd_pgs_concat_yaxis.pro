@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  thm_pgs_concat_yaxis
+;  spd_pgs_concat_yaxis
 ;
 ;Purpose:
 ;  Concatenates different y axes as spectrogram is built across mode changes
@@ -22,12 +22,12 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2013-07-18 15:28:56 -0700 (Thu, 18 Jul 2013) $
-;$LastChangedRevision: 12688 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_concat_yaxis.pro $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-01-04 15:09:48 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19671 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_concat_yaxis.pro $
 ;-
-pro thm_pgs_concat_yaxis, y, yc, ns=ns
+pro spd_pgs_concat_yaxis, y, yc, ns=ns
 
     compile_opt idl2, hidden
   

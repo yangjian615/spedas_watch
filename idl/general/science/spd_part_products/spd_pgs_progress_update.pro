@@ -1,7 +1,7 @@
 
 ;+
 ;Procedure:
-;  mms_pgs_progress_update
+;  spd_pgs_progress_update
 ;
 ;Purpose:
 ;  Helper routine prints status message indicating completion percent
@@ -19,12 +19,12 @@
 ;  
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 14:25:49 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19614 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_progress_update.pro $
+;$LastChangedDate: 2016-01-04 15:09:48 -0800 (Mon, 04 Jan 2016) $
+;$LastChangedRevision: 19671 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_progress_update.pro $
 ;-
 
-pro mms_pgs_progress_update, last_update_time,current_sample,total_samples, $
+pro spd_pgs_progress_update, last_update_time,current_sample,total_samples, $
                              display_object=display_object,type_string=type_string
 
     compile_opt idl2, hidden
