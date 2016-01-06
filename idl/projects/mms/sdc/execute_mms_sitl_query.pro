@@ -42,6 +42,7 @@ function execute_mms_sitl_query, netURL, url_path, query, filename=filename
   ; Set the path and query for the request.
   netURL->SetProperty, URL_PATH=url_path
   netURL->SetProperty, URL_QUERY=query
+  netURL->SetProperty, timeout=5400
   
   ; Make the request.
   ; If the 'filename' parameter is set, assume we want to download a file.
