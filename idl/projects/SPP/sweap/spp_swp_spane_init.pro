@@ -86,7 +86,7 @@ function spp_swp_spane_slow_hkp_decom,ccsds , ptp_header=ptp_header, apdat=apdat
     return,0
   endif
 
-hexprint,ccsds.data[0:31]
+;hexprint,ccsds.data[0:31]
 
   if keyword_set(apdat) && ptr_valid(apdat.dataindex) && keyword_set(*apdat.dataindex) then begin
     last_spai = (*apdat.dataptr)[*apdat.dataindex -1]
@@ -284,7 +284,6 @@ end
 
 function spp_swp_spane_p3_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
-  data = ccsds.data[20:*]
   ;lll = 512
   lll = 16*4
   if n_elements(data) ne lll then begin
@@ -292,6 +291,7 @@ function spp_swp_spane_p3_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
+  data = ccsds.data[20:*]
   ns = lll/4
   cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)
@@ -324,7 +324,6 @@ end
 
 function spp_swp_spane_p4_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
-  data = ccsds.data[20:*]
   ;lll = 512
   lll = 512*4
   if n_elements(data) ne lll then begin
@@ -332,6 +331,7 @@ function spp_swp_spane_p4_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
+  data = ccsds.data[20:*]
   ns = lll/4
   cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)
@@ -480,7 +480,7 @@ end
 
 
 pro spp_swp_spane_init,save=save
-  if n_elements(save) eq 0 then save=1
+  if n_elements(save) eq 0 then save=0
   rt_flag = 1
 
   ;;-----------------------------------------------------------------------------------------------------------------------------

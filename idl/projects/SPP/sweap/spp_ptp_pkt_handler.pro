@@ -278,6 +278,10 @@ function spp_swp_int4_decom,buffer,n
 end
 
 function spp_swp_float_decom,buffer,n
+   if n gt n_elements(buffer)-4 then begin
+    dprint,'Outside buffer size ',n
+    return, -99.
+   endif
    return,   swap_endian(/swap_if_little_endian,  float(buffer,n) )
 end
 
@@ -689,7 +693,7 @@ function spp_log_message_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 ;  hexprint,ccsds.data
   time = ptp_header.ptp_time
   msg = string(ccsds.data[10:*])
-  dprint,dlevel=2,time_string(time)+  ' "'+msg+'"'
+  dprint,dlevel=3,time_string(time)+  ' "'+msg+'"'
   str={time:time,seq:ccsds.seq_cntr,size:ccsds.size,msg:msg}
   return,str
 end
@@ -700,23 +704,33 @@ function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   str = 0
   ;  dprint,format="('Generic routine for ',Z04)",ccsds.apid
   size = ccsds.size+7
-  b = ccsds.data[12:*]
-  if debug(3) then begin
+  b = ccsds.data
+  if debug(2) then begin
     dprint,dlevel=2,'generic',ccsds.size+7, n_elements(ccsds.data),'  ',time_string(ccsds.time,/local)
     hexprint,ccsds.data
   endif
   case size of
-    22: begin
-      b = [ b , byte( ['80'x,'00'x] ) ]  ;; correct error of truncation of data array
+    78: begin                ; Agilent 3 power supply
  ;     hexprint,b
  ;     dprint,spp_swp_float_decom(b,4),spp_swp_float_decom(b,8)
       str= { time: ptp_header.ptp_time, $
-             gun_v: spp_swp_float_decom(b,4), $
-             gun_i: spp_swp_float_decom(b,8), $
+             output:  b[29],  $
+             P25V: spp_swp_float_decom(b,30), $
+             P25I: spp_swp_float_decom(b,34), $
+             P25Vlim: spp_swp_float_decom(b,38), $
+             P25Ilim: spp_swp_float_decom(b,42), $
+             N25V: spp_swp_float_decom(b,46), $
+             N25I: spp_swp_float_decom(b,50), $
+             N25Vlim: spp_swp_float_decom(b,54), $
+             N25Ilim: spp_swp_float_decom(b,58), $
+             P6V: spp_swp_float_decom(b,62), $
+             P6I: spp_swp_float_decom(b,66), $
+             P6Vlim: spp_swp_float_decom(b,70), $
+             P6Ilim: spp_swp_float_decom(b,74), $
              gap: 0}
       end
-    60: 
-    else: dprint,'Unknown size'
+    60:
+    else: dprint,'Unknown size',size
   endcase
 ;  printdat,time_string(ptp_header.ptp_time,/local)
  ; printdat,str
@@ -1005,6 +1019,7 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
     dprint,'buffer too small!'
     return
   endif
+;  printdat,bufferdprint
   ptp_size = swap_endian( uint(buffer,0) ,/swap_if_little_endian)   ; first two bytes provide the size
   if ptp_size ne n_elements(buffer) then begin
     dprint,time_string(time,/local_time),' PTP size error- size is ',ptp_size

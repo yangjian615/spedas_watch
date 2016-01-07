@@ -223,6 +223,7 @@ pro spp_recorders
   ;host = '128.32.98.101'  ;  room 160 Silver
   ;host = '128.32.13.37'   ;  room 133 addition
   recorder,recorder_base1,title='GSEOS PTP room 320',port=2024,host='ABIAD-SW',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  recorder,recorder_base1,title='GSEOS MSG room 320',port=2023,host='ABIAD-SW',exec_proc='spp_msg_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
   recorder,recorder_base2,title='GSEOS PTP 133 addition',port=2024,host='128.32.13.37',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
   printdat,recorder_base,filename,exec_base,/value
 end
