@@ -91,8 +91,8 @@
 ;   Send e-mail to:  tplot@ssl.berkeley.edu    someone might answer!
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-10-21 12:09:08 -0700 (Wed, 21 Oct 2015) $
-; $LastChangedRevision: 19128 $
+; $LastChangedDate: 2016-01-06 23:52:45 -0800 (Wed, 06 Jan 2016) $
+; $LastChangedRevision: 19682 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot.pro $
 ;-
 
@@ -399,6 +399,7 @@ for i=0,nd-1 do begin
      if size(/type,data) eq 8 then begin
         tshift = 0.d
         str_element,data,'tshift',value = tshift
+        tshift=tshift[0]
 ;  printdat,name,tshift,limits2,dtype
         data.x = (data.x - (time_offset-tshift))/time_scale
      endif  else data={x:dindgen(2),y:findgen(2)}

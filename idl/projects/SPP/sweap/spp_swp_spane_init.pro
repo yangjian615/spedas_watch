@@ -187,8 +187,9 @@ function spp_swp_spane_p1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   ;lll = 512
   lll = 16*4
   if n_elements(data) ne lll then begin
-    dprint,'Improper packet size',dlevel=2
-    dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+    
+    dprint,'Improper packet size ',dlevel=2
+    dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
   ns = lll/4
@@ -231,7 +232,7 @@ function spp_swp_spane_p2_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 ;  lll = 16*4
   if n_elements(data) ne lll then begin
     dprint,'Improper packet size',dlevel=2
-    dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+    dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
   ns = lll/4
@@ -286,12 +287,12 @@ function spp_swp_spane_p3_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   ;lll = 512
   lll = 16*4
+  data = ccsds.data[20:*]
   if n_elements(data) ne lll then begin
     dprint,'Improper packet size',dlevel=2
-    dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+    dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
-  data = ccsds.data[20:*]
   ns = lll/4
   cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)
@@ -326,12 +327,12 @@ function spp_swp_spane_p4_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   ;lll = 512
   lll = 512*4
+  data = ccsds.data[20:*]
   if n_elements(data) ne lll then begin
     dprint,'Improper packet size',dlevel=2
-    dprint,dlevel=1, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+    dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
-  data = ccsds.data[20:*]
   ns = lll/4
   cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)

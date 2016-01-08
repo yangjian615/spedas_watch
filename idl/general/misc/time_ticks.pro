@@ -204,7 +204,7 @@ xtitle = '!C'+xtitle
 ;Time (UT)' + time_string(times(0),/format)
 
 w = where(times ge range[0] and times le range[1],nlabs)
-if nlabs le 1 then stop
+;if nlabs le 1 then stop
 times=times[w]
 struct  = time_struct(times,local=local_time)
 strings = time_string(struct,/format,prec=10,local=local_time)

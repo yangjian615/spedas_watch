@@ -51,8 +51,8 @@
 ;See Also:  "XLIM", "YLIM", "ZLIM",  "OPTIONS",  "TPLOT", "DRAW_COLOR_SCALE"
 ;Author:  Davin Larson,  Space Sciences Lab
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-01-27 17:00:47 -0800 (Tue, 27 Jan 2015) $
-; $LastChangedRevision: 16761 $
+; $LastChangedDate: 2016-01-07 16:06:13 -0800 (Thu, 07 Jan 2016) $
+; $LastChangedRevision: 19691 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/specplot.pro $
 ;-
 pro specplot,x,y,z,limits=lim,data=data,overplot=overplot,overlay=overlay,$
@@ -76,7 +76,8 @@ if keyword_set(data) then begin
        y = struct_value(data,'v2')    ;bp
        if ~keyword_set(y) then begin
          dim2 = size(/dimen,z)
-         y= findgen(dim2[1])
+         ndim2 = size(/n_dimen,z)
+         if ndim2 eq 1 then y = [1.] else y= findgen(dim2[1])
        endif else   z = total(z,2)
   endif
   extract_tags,opt,data,except=['x','y','v']
@@ -185,17 +186,23 @@ str_element,opt,'top',   value=top
 ;Otherwise each gap segment will autoscale to a different range when datagap is set.
 ;(task# 4724)
 ;pcruce 2012-10-10
+trg = opt.xrange
 if opt.zrange[0] eq opt.zrange[1] then begin
-  if keyword_set(zlog) then begin
-    good = where(finite(alog(z)),goodcnt)
-    if goodcnt gt 0 then begin
-      zrange = minmax(z[good],min_value=mn,max_value=mx)
-    endif else begin
-      zrange = [0,0]
-    endelse
-  endif else begin
-    zrange = minmax(z,/nan,min_value=mn,max_value=mx)
-  endelse
+  zrange=[0.,1.]
+  good = where(finite(total(z,2)) and finite(x) and x lt trg[1] and x ge trg[0],goodcnt)
+  if goodcnt gt 0 then zrange = minmax(z[good,*],positive=zlog,min_value=mn,max_value=mx)
+;  printdat,zrange,good
+  
+;  if keyword_set(zlog) then begin
+;    good = where(finite(alog(z)),goodcnt)
+;    if goodcnt gt 0 then begin
+;      zrange = minmax(z[good],min_value=mn,max_value=mx)
+;    endif else begin
+;      zrange = [0,0]
+;    endelse
+;  endif else begin
+;    zrange = minmax(z,/nan,min_value=mn,max_value=mx)
+;  endelse
   
 endif else begin
   zrange = opt.zrange

@@ -42,8 +42,8 @@
 ;     MMS> mms_load_dfg, probes=[1, 2], trange=['2015-06-22', '2015-06-23'], level='ql'
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:14:24 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19585 $
+;$LastChangedDate: 2016-01-07 07:47:58 -0800 (Thu, 07 Jan 2016) $
+;$LastChangedRevision: 19684 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_dfg.pro $
 ;-
 
@@ -53,7 +53,7 @@ pro mms_load_dfg, trange = trange, probes = probes, datatype = datatype, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
     no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data, $
-    varformat = varformat
+    varformat = varformat, cdf_filenames = cdf_filenames
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
 
@@ -62,6 +62,6 @@ pro mms_load_dfg, trange = trange, probes = probes, datatype = datatype, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, no_attitude_data = no_attitude_data, $
-        varformat = varformat
+        varformat = varformat, cdf_filenames = cdf_filenames
 
 end

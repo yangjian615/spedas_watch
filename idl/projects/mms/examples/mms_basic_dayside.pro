@@ -17,8 +17,8 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-12-16 08:37:16 -0800 (Wed, 16 Dec 2015) $
-; $LastChangedRevision: 19635 $
+; $LastChangedDate: 2016-01-07 11:55:46 -0800 (Thu, 07 Jan 2016) $
+; $LastChangedRevision: 19687 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_basic_dayside.pro $
 ;-
 start_time = systime(/sec)
@@ -32,17 +32,20 @@ probe = '1'
 ;   win: creates/opens all of the tplot windows
 send_plots_to = 'win'
 plot_directory = ''
-
 postscript = send_plots_to eq 'ps' ? 1 : 0
 
+; set the following bit to avoid the SDC username/password prompt; this is useful
+; if you want to avoid the SDC, or only use local CDFs
+LOCAL_FILES_ONLY = 0
+
 ; load the data
-mms_load_fgm, probe=probe, data_rate='srvy', level='l2pre'
-mms_load_fpi, probe=probe, data_rate='fast', level='sitl'
-mms_load_edp, probe=probe, datatype='scpot', level='l2'
-mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce'
-mms_load_edp, probe=probe, data_rate='srvy', level='l1b', datatype=['dce', 'hfesp']
-mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd'
-mms_load_hpca, probe=probe, data_rate='srvy', level='sitl'
+mms_load_fgm, probe=probe, data_rate='srvy', level='l2pre', no_update = LOCAL_FILES_ONLY
+mms_load_fpi, probe=probe, data_rate='fast', level='sitl', no_update = LOCAL_FILES_ONLY
+mms_load_edp, probe=probe, datatype='scpot', level='l2', no_update = LOCAL_FILES_ONLY
+mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce', no_update = LOCAL_FILES_ONLY
+mms_load_edp, probe=probe, data_rate='srvy', level='l1b', datatype=['dce', 'hfesp'], no_update = LOCAL_FILES_ONLY
+mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd', no_update = LOCAL_FILES_ONLY
+mms_load_hpca, probe=probe, data_rate='srvy', level='sitl', no_update = LOCAL_FILES_ONLY
 
 ; sum the HPCA spectra over the full field of view
 mms_hpca_calc_anodes, fov=[0, 360], probe=probe
