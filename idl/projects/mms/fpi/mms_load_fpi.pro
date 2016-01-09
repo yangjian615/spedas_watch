@@ -14,7 +14,7 @@
 ;         level:        indicates level of data processing. fpi levels currently include 'sitl', 'ql', 'l1b'. 
 ;         datatype:     valid datatypes are:
 ;                         Quicklook: ['des', 'dis'] 
-;                         SITL: '' (loads both electron and ion data from single CDF)
+;                         SITL: '' (none; loads both electron and ion data from single CDF)
 ;                         L1b: ['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
 ;         data_rate:    instrument data rates for MMS fpi include 'fast'. 
 ;         local_data_dir: local directory to store the CDF files; should be set if
@@ -35,6 +35,7 @@
 ;                       preserving original tplot variable.
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables 
 ;                       that should be loaded into tplot variables
+;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
 ; 
 ; 
 ; EXAMPLE:
@@ -56,8 +57,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-23 09:35:13 -0800 (Wed, 23 Dec 2015) $
-;$LastChangedRevision: 19658 $
+;$LastChangedDate: 2016-01-08 11:49:20 -0800 (Fri, 08 Jan 2016) $
+;$LastChangedRevision: 19702 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -67,7 +68,8 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
-                  autoscale = autoscale, varformat = varformat
+                  autoscale = autoscale, varformat = varformat, $
+                  cdf_filenames = cdf_filenames
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['3'] ; default to MMS 3
@@ -88,7 +90,7 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix, varformat = varformat
+        no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames
 
     ; since the SITL files contain both ion and electron data, and datatype = '*' doesn't work
     ; in our 'fix'/'calc' routines for the FPI metadata

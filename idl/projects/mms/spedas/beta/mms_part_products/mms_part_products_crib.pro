@@ -6,9 +6,9 @@
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate pitch angle and gyrophase distributions
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 14:25:49 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19614 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-01-08 08:12:50 -0800 (Fri, 08 Jan 2016) $
+;$LastChangedRevision: 19692 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products_crib.pro $
 ;
 ;-
@@ -47,7 +47,6 @@
  
   mms_part_products,name,mag_name=bname,pos_name=pos_name,trange=trange,outputs=['phi','theta','pa','gyro','energy']
   tplot,'mms'+probe+'_d'+species+'s_brstSkyMap_dist'+['energy','theta','phi','pa','gyro']
-  tlimit,['2015-09-19/09:08:14', '2015-09-19/09:08:15']
   stop
  
 end

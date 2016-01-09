@@ -35,6 +35,7 @@
 ;                       preserving original tplot variable.
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
+;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
 ;
 ; OUTPUT:
 ;
@@ -46,8 +47,8 @@
 ;                trange=['2015-09-03', '2015-09-04']
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:14:24 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19585 $
+;$LastChangedDate: 2016-01-08 10:39:47 -0800 (Fri, 08 Jan 2016) $
+;$LastChangedRevision: 19700 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edi/mms_load_edi.pro $
 ;-
 
@@ -100,7 +101,7 @@ pro mms_load_edi, trange = trange, probes = probes, datatype = datatype, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
-    varformat = varformat
+    varformat = varformat, cdf_filenames = cdf_filenames
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -113,7 +114,7 @@ pro mms_load_edi, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix, varformat = varformat
+        no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames
     
     mms_edi_set_metadata, tplotnames, data_rate=data_rate, suffix=suffix
 

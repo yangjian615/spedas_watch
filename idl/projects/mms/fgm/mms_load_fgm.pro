@@ -34,6 +34,7 @@
 ;                       preserving original tplot variable.
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
+;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
 ;             
 ; OUTPUT:
 ; 
@@ -52,8 +53,8 @@
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-23 13:44:55 -0800 (Wed, 23 Dec 2015) $
-;$LastChangedRevision: 19659 $
+;$LastChangedDate: 2016-01-08 08:59:47 -0800 (Fri, 08 Jan 2016) $
+;$LastChangedRevision: 19698 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 

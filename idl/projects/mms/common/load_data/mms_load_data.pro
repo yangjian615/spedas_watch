@@ -85,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-23 08:06:18 -0800 (Wed, 23 Dec 2015) $
-;$LastChangedRevision: 19650 $
+;$LastChangedDate: 2016-01-08 10:41:47 -0800 (Fri, 08 Jan 2016) $
+;$LastChangedRevision: 19701 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -191,8 +191,11 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         if status ne 1 then no_download = 1
     endif
     
-    ;clear so new names are not appended to existsing array
+    ;clear so new names are not appended to existing array
     undefine, tplotnames
+    ; clear CDF filenames, so we're not appending to an existing array
+    undefine, cdf_filenames
+    
     ;loop over probe, rate, level, and datatype
     ;omitting some tabbing to keep format reasonable
     for probe_idx = 0, n_elements(probes)-1 do begin

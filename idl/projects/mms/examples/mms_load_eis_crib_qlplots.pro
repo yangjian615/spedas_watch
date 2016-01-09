@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-12-08 16:22:28 -0800 (Tue, 08 Dec 2015) $
-; $LastChangedRevision: 19548 $
+; $LastChangedDate: 2016-01-08 12:45:25 -0800 (Fri, 08 Jan 2016) $
+; $LastChangedRevision: 19703 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -42,6 +42,12 @@ mms_load_eis, probes=probe, trange=trange, datatype='electronenergy', level='l1b
 
 ; load DFG data
 mms_load_dfg, probes=probe, trange=trange, level='ql'
+stop
+
+; add a dashed line at zero for FGM data
+tr=timerange()
+store_data, 'dline0', data={x:tr, y:[0,0]}
+options, 'dline0', linestyle=2
 
 ; setup for plotting the proton flux for all channels
 ylim, prefix+'_electronenergy_electron_flux_omni_spin', 30, 1000, 1
@@ -101,6 +107,7 @@ panels = ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
 
 if ~postscript then window, iw, xsize=width, ysize=height
 tplot, panels, var_label=position_vars, window=iw
+tplot_panel, oplotvar='dline0', panel=3
 title='EIS - Quicklook'
 xyouts, .4, .96, title, /normal, charsize=1.5
 

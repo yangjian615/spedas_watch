@@ -38,6 +38,7 @@
 ;                       preserving original tplot variable.
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
+;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
 ;
 ; 
 ; OUTPUT:
@@ -67,89 +68,10 @@
 ;                  mms_eis_omni to address burst variable name changes
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-16 08:25:30 -0800 (Wed, 16 Dec 2015) $
-;$LastChangedRevision: 19632 $
+;$LastChangedDate: 2016-01-08 09:24:52 -0800 (Fri, 08 Jan 2016) $
+;$LastChangedRevision: 19699 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
-
-pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, datatype = datatype, data_rate = data_rate, suffix=suffix
-    if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
-    if undefined(datatype) then datatype = 'extof'
-    if undefined(data_units) then data_units = 'flux'
-    if undefined(species) then species = 'proton'
-    if undefined(suffix) then species = ''
-    if undefined(data_rate) then data_rate = 'srvy'
-    if datatype eq 'electronenergy' then species = 'electron'
-
-    if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_'+datatype+'_' else prefix = 'mms'+probe+'_epd_eis_'+datatype+'_'
-    ; get the spin #s asscoiated with each measurement
-    get_data, prefix + 'spin'+suffix, data=spin_nums
-
-    ; find where the spins start
-    spin_starts = uniq(spin_nums.Y)
-
-    ; loop over the telescopes
-    for scope_idx = 0, 5 do begin
-        tn = strcompress(string(scope_idx), /rem)
-        get_data, prefix + species + '_' + data_units + '_t'+tn+suffix, data=flux_data, dlimits=flux_dl
-        spin_sum_flux = dblarr(n_elements(spin_starts), n_elements(flux_data.Y[0, *]))
-
-        current_start = 0
-        ; loop through the spins for this telescope
-        for spin_idx = 0, n_elements(spin_starts)-1 do begin
-            ; loop over energies
-            ;spin_sum_flux[spin_idx, *] = total(flux_data.Y[current_start:spin_starts[spin_idx], *], 1)
-            spin_sum_flux[spin_idx, *] = average(flux_data.Y[current_start:spin_starts[spin_idx], *], 1)            
-            current_start = spin_starts[spin_idx]+1
-        endfor
-        sp = '_spin'
-        store_data, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, data={x: spin_nums.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
-        options, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, spec=1, minzlog = .01
-        ylim, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, 50., 500., 1
-        zlim, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, 0, 0, 1
-    endfor
-end
-
-; PURPOSE:
-;       Calculates the omni-directional flux for all 6 telescopes
-;
-; NOTES:
-;       based on Brian Walsh's EIS code from 7/29/2015
-;
-pro mms_eis_omni, probe, species = species, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
-    ; default to electrons
-    if undefined(species) then species = 'electron'
-    if undefined(datatype) then datatype = 'electronenergy'
-    if undefined(suffix) then suffix = ''
-    if undefined(data_units) then data_units = 'flux'
-    if undefined(data_rate) then data_rate = 'srvy'
-    units_label = data_units eq 'flux' ? '#/(cm!U2!N-sr-s-keV)' : 'Counts/s'
-    ; 10 - 50 keV for PHxTOF data
-    ; 40 - 1000 keV for ExTOF and electron data
-    en_range = datatype eq 'phxtof' ?  [9., 50.] : [40., 1000.]
-    
-    probe = strcompress(string(probe), /rem)
-    species_str = datatype+'_'+species
-    if (data_rate) eq 'brst' then prefix = 'mms'+probe+'_epd_eis_brst_' else prefix = 'mms'+probe+'_epd_eis_'
-    get_data, prefix+species_str+'_'+data_units+'_t0'+suffix, data = d, dlimits=dl
-   
-    if is_struct(d) then begin
-        flux_omni = dblarr(n_elements(d.x),n_elements(d.v))
-        for i=0, 5 do begin ; loop through each detector
-            get_data, prefix+species_str+'_'+data_units+'_t'+STRTRIM(i, 1)+suffix, data = d
-            flux_omni = flux_omni + d.Y
-        endfor
-        newname = prefix+species_str+'_'+data_units+'_omni'+suffix
-        store_data, newname, data={x:d.x, y:flux_omni/6., v:d.v}, dlimits=dl
-
-        options, newname, ylog = 1, spec = 1, yrange = en_range, $
-            ytitle = 'MMS'+probe+' EIS '+species, ysubtitle='Energy [keV]', ztitle=units_label, ystyle=1, /default, minzlog = .01
-        zlim, newname, 0., 0., 1.
-        append_array, tplotnames, newname
-        ; degap the data
-        tdegap, newname, /overwrite
-    endif
-end
 
 pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, data_units = data_units, $
@@ -157,7 +79,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, no_interp = no_interp, $
-                  suffix = suffix, varformat = varformat
+                  suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -171,7 +93,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix, varformat = varformat
+        no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames
     
     ; don't try to calculate omnidirectional quantities if no data was loaded
     if undefined(tplotnames) || tplotnames[0] eq '' then return

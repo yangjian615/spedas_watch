@@ -25,14 +25,15 @@
 ;HISTORY:
 ; 25-sep-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-10-16 13:54:18 -0700 (Fri, 16 Oct 2015) $
-; $LastChangedRevision: 19093 $
+; $LastChangedDate: 2016-01-08 13:33:01 -0800 (Fri, 08 Jan 2016) $
+; $LastChangedRevision: 19704 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_qlook_load_kp.pro $
 ;-
 Pro mvn_qlook_load_kp, trange = trange, files = files, $
                        user_pass = user_pass, no_time_clip = no_time_clip, $
                        tvars = tvars, _extra=_extra
 
+  common mvn_file_source_com, psource
 
   tvars = ''
 ;The first step is to set up filenames, if there are any
@@ -50,11 +51,47 @@ Pro mvn_qlook_load_kp, trange = trange, files = files, $
      filex = ''
      For j = 0, ndays-1 Do Begin
         yyyy = strmid(daystr[j], 0, 4) & mmmm = strmid(daystr[j], 4, 2)
+;filej0 is the local data directory relative path, and the SSL remote
+;data relative path
         filej0 = 'maven/data/sci/kp/insitu/'+yyyy+'/'+mmmm+'/mvn_kp_insitu_'+$
                  daystr[j]+'_v??_r??.tab'
-        filej = mvn_pfp_file_retrieve(filej0, user_pass = user_pass)
+;filej1 is the SDC remote data directory relative path
+        filej1 = 'sci/kp/insitu/'+yyyy+'/'+mmmm+'/mvn_kp_insitu_'+$
+                 daystr[j]+'_v??_r??.tab'
+;uses spd_download if sdc_input is set, file_retrieve chokes on
+;'https'
+        If(is_struct(psource)) Then Begin
+           sdc_input = strpos(psource.remote_data_dir, 'lasp.colorado.edu')
+        Endif Else sdc_input = -1
+        If(sdc_input[0] Ne -1 && psource.no_server Eq 0) Then Begin
+           local_path = psource.local_data_dir+filej0
+           local_files = file_search(local_path)
+           remote_path = psource.remote_data_dir+filej1
+           remote_files = remote_path
+           spd_download_expand, remote_files, /last_version
+           If(is_string(local_files)) Then Begin
+              filej = local_files[n_elements(local_files)-1]
+;If the last version of remote_files is greater than the local
+;version, then grab it, using gt and lt on file_basenames will work.
+              If(is_string(remote_files)) Then Begin
+                 If(file_basename(remote_files[0]) Gt file_basename(filej)) Then Begin
+                    filej = spd_download(/last_version, $
+                                         local_path = file_dirname(local_path, /mark_directory), $
+                                         remote_file = remote_files)
+                 Endif 
+              Endif
+              question_mark = strpos(filej, '?')
+           Endif Else Begin
+              filej = spd_download(/last_version, $
+                                   local_path = file_dirname(local_path, /mark_directory), $
+                                   remote_file = remote_files[0])
+              question_mark = strpos(filej, '?')
+           Endelse
+        Endif Else Begin
+           filej = mvn_pfp_file_retrieve(filej0, user_pass = user_pass)
 ;Files with ? or * left were not found
-        question_mark = strpos(filej, '?')
+           question_mark = strpos(filej, '?')
+        Endelse
         If(is_string(filej) && question_mark[0] Eq -1) Then $
            filex = [filex, filej]
      Endfor
