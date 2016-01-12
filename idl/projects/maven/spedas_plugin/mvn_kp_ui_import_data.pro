@@ -9,8 +9,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-10-21 14:16:06 -0700 (Wed, 21 Oct 2015) $
-;$LastChangedRevision: 19130 $
+;$LastChangedDate: 2016-01-11 11:57:33 -0800 (Mon, 11 Jan 2016) $
+;$LastChangedRevision: 19710 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/spedas_plugin/mvn_kp_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -25,6 +25,8 @@ Pro mvn_kp_ui_import_data, loadStruc, $
                            overwrite_selections=overwrite_selections ;allows replay of user overwrite selections from spedas 
                          
   compile_opt hidden,idl2
+
+  mvn_spd_init
 
   instrument=loadStruc.instrument[0]
   parameters=loadStruc.parameters
@@ -45,7 +47,7 @@ Pro mvn_kp_ui_import_data, loadStruc, $
 
   mvn_qlook_load_kp, trange=timeRange, tvars=tplotnames
 
-  If(is_string(tplotnames)) Then  Begin
+  If(is_string(tplotnames)) Then Begin
 
      spd_ui_cleanup_tplot,tn_before,create_time_before=cn_before,del_vars=to_delete,new_vars=new_vars
   

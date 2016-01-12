@@ -87,9 +87,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:31:13 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19594 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2016-01-11 10:26:42 -0800 (Mon, 11 Jan 2016) $
+;$LastChangedRevision: 19705 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -109,7 +109,10 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
 ;      dprint, dlevel = 0, 'Error loading MMS attitude data - no time range given.'
 ;      return
 ;    endif
-
+    ; define cutoff date for retrieving attitude files from mec
+    mec_cutoff_date = time_double('2015-09-24')
+    mec_flag= 0
+      
     ; set up system variable for MMS if not already set    
     defsysv, '!mms', exists=exists
     if not(exists) then mms_init, no_color_setup = no_color_setup
@@ -173,13 +176,33 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
       endif
     endfor
 
+    ; check for attitude data type mec cut off date
+    att_idx = where(strpos(datatypes, 'spin') GE 0, natt)
+    def_idx = where(strpos(level, 'def') GE 0, nlev)
+    if natt GT 0 && trange[0] GE mec_cutoff_date && nlev GT 0 then begin
+       mec_flag = 1
+       eph_idx = where(strpos(datatypes, 'spin') EQ -1, neph)
+    endif
+
     ; get state data for each probe and data type (def or pred) 
     for i = 0, n_elements(probes)-1 do begin      
        for j = 0, n_elements(level)-1 do begin
-              mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
+            if mec_flag EQ 1 then begin
+                 mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files 
+                 ; check that data was loaded if not try def
+                 if undefined(cdf_files) OR neph GT 0 then begin
+                    if undefined(cdf_files) then dt = datatypes else dt = datatypes[eph_idx]
+                    mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
+                      login_info = login_info, datatypes = dt, level = level[j], $
+                      local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
+                      no_download=no_download, pred_or_def=pred_or_def, suffix = suffix
+                 endif
+            endif else begin
+                 mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
                    login_info = login_info, datatypes = datatypes, level = level[j], $
                    local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
                    no_download=no_download, pred_or_def=pred_or_def, suffix = suffix
+            endelse
        endfor
     endfor
 

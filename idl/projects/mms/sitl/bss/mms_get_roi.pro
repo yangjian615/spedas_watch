@@ -42,8 +42,8 @@
 ; CREATED BY: moka in Oct 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-12-29 20:47:11 -0800 (Tue, 29 Dec 2015) $
-; $LastChangedRevision: 19665 $
+; $LastChangedDate: 2016-01-11 11:40:15 -0800 (Mon, 11 Jan 2016) $
+; $LastChangedRevision: 19706 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_get_roi.pro $
 ;-
 FUNCTION mms_get_roi_distance, roi_time, tc, distance=distance
@@ -61,7 +61,7 @@ FUNCTION mms_get_roi_distance, roi_time, tc, distance=distance
   return, nc
 END
 
-FUNCTION mms_get_roi, t, num, next=next, previous=previous
+FUNCTION mms_get_roi, t, num, next=next, previous=previous, login_info=login_info
   compile_opt idl2
 
   ;------------
@@ -84,7 +84,11 @@ FUNCTION mms_get_roi, t, num, next=next, previous=previous
   ;----------
   ; LOAD
   ;----------
-  
+  status = mms_login_lasp(login_info = login_info)
+  if status ne 1 then begin
+    print, 'Log-in failed'
+    return, 0
+  endif
   mms_get_abs_fom_files, local_flist, pw_flag, pw_message, trange=trange
   
   if pw_flag ne 0 then return, 0

@@ -18,8 +18,8 @@
 ;HISTORY:
 ; 2014-12-01, jmm, jimm@ssl.berkeley.edu
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-10-21 14:16:06 -0700 (Wed, 21 Oct 2015) $
-;$LastChangedRevision: 19130 $
+;$LastChangedDate: 2016-01-11 11:54:21 -0800 (Mon, 11 Jan 2016) $
+;$LastChangedRevision: 19709 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/spedas_plugin/mvn_spd_write_config.pro $
 ;-
 
@@ -50,10 +50,9 @@ Pro mvn_spd_write_config, copy = copy, _extra = _extra
     filex_out = filex
     cfg = {local_data_dir:psource.local_data_dir, $
            remote_data_dir:psource.remote_data_dir, $
-           no_download:psource.no_download, $
-           no_update:psource.no_update, $
-           downloadonly:psource.downloadonly, $
-           verbose:psource.verbose}
+           no_server:psource.no_server, $
+           verbose:psource.verbose, $
+           last_version:psource.last_version}
     
     hhh = [';mvn_spd_config.txt', ';MAVEN SPD PLUGIN configuration file', $
            ';Created:'+time_string(systime(/sec))]

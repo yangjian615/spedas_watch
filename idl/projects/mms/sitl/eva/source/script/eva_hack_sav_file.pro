@@ -24,9 +24,9 @@
 ; CREATED BY: Mitsuo Oka   Sep 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-09-23 17:52:05 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18899 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/eva_hack_sav_file.pro $
+; $LastChangedDate: 2016-01-11 11:49:01 -0800 (Mon, 11 Jan 2016) $
+; $LastChangedRevision: 19707 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/script/eva_hack_sav_file.pro $
 PRO eva_hack_sav_file
   mms_init
   

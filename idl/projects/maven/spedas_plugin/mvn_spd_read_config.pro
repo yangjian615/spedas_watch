@@ -15,9 +15,9 @@
 ;           structure
 ;HISTORY:
 ; Hacked from thm_read_config.pro, 2014-12-01, jmm, jimm@ssl.berkeley.edu
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-11-18 14:02:09 -0800 (Wed, 18 Nov 2015) $
-;$LastChangedRevision: 19410 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2016-01-11 11:54:21 -0800 (Mon, 11 Jan 2016) $
+;$LastChangedRevision: 19709 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/spedas_plugin/mvn_spd_read_config.pro $
 ;-
 Function mvn_spd_config_template
@@ -68,17 +68,17 @@ Function mvn_spd_read_config, header = hhh
             fix(strfx.field2[j]), /add
           endif else str_element, otp, strtrim(strfx.field1[j], 2), strtrim(strfx.field2[j], 2), /add
       Endif
-    Endif
-  Endif; Else message, /info, 'NO APP_USER_DIR'
 ;check for slashes, add if necessary
-  temp_string = strtrim(psource.local_data_dir, 2)
-  ll = strmid(temp_string, strlen(temp_string)-1, 1)
-  If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+'/'
-  psource.local_data_dir = temporary(temp_string)
-  temp_string = strtrim(psource.remote_data_dir, 2)
-  ll = strmid(temp_string, strlen(temp_string)-1, 1)
-  If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+'/'
-  psource.remote_data_dir = temporary(temp_string)
+      temp_string = strtrim(otp.local_data_dir, 2)
+      ll = strmid(temp_string, strlen(temp_string)-1, 1)
+      If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+'/'
+      otp.local_data_dir = temporary(temp_string)
+      temp_string = strtrim(otp.remote_data_dir, 2)
+      ll = strmid(temp_string, strlen(temp_string)-1, 1)
+      If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+'/'
+      otp.remote_data_dir = temporary(temp_string)
+    Endif Else message, /info, 'No Config file'
+  Endif Else message, /info, 'NO APP_USER_DIR'
 
   Return, otp
 End
