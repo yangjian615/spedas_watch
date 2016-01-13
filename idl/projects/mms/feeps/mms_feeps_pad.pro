@@ -20,78 +20,16 @@
 ;
 ;
 ; NOTES:
+;     **** this routine needs to be updated for v4.3 CDFs **** 
+;     **** you shouldn't trust the results of this procedure until this comment has been removed ****
+;   
 ;     Based on the EIS pitch angle code by Brian Walsh
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:14:24 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19585 $
+;$LastChangedDate: 2016-01-12 15:13:27 -0800 (Tue, 12 Jan 2016) $
+;$LastChangedRevision: 19721 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
-pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
-    datatype = datatype, energy = energy, bin_size = bin_size
-    if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
-    if undefined(datatype) then datatype = 'electron'
-    if undefined(data_units) then data_units = 'cps'
-    if undefined(suffix) then suffix = ''
-    if undefined(energy) then energy = [0, 1000]
-    if undefined(bin_size) then bin_size = 15
-
-    en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV'
-    units_label = data_units eq 'Counts' ? 'Counts': '[(cm!E2!N s sr KeV)!E-1!N]'
-
-    prefix = 'mms'+probe+'_epd_feeps_'
-    ; get the spin #s asscoiated with each measurement
-    get_data, prefix + 'spin', data=spin_nums
-
-    ; find where the spins start
-    spin_starts = uniq(spin_nums.Y)
-    pad_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'
-
-    get_data, pad_name, data=pad_data, dlimits=pad_dl
-    
-    if ~is_struct(pad_data) then begin
-        stop
-        dprint, dlevel = 0, 'Error, variable containing valid PAD data missing.'
-        return
-    endif
-
-    spin_sum_flux = dblarr(n_elements(spin_starts), n_elements(pad_data.Y[0, *]))
-    spin_times = dblarr(n_elements(spin_starts))
-
-    current_start = 0
-    ; loop through the spins for this telescope
-    for spin_idx = 0, n_elements(spin_starts)-1 do begin
-        ; loop over energies
-        ;spin_sum_flux[spin_idx, *] = total(pad_data.Y[current_start:spin_starts[spin_idx], *], 1)
-        spin_sum_flux[spin_idx, *] = average(pad_data.Y[current_start:spin_starts[spin_idx], *], 1)
-        spin_times[spin_idx] = pad_data.X[current_start]
-        current_start = spin_starts[spin_idx]+1
-    endfor
-
-    suffix = suffix + '_spin'
-    newname = prefix+en_range_string+'_pad'+suffix
-
-    ; rebin the data before storing it
-    ; the idea here is, for bin_size = 15 deg, rebin the data from center points to:
-    ;    new_bins = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135 , 150, 165, 180]
-
-    n_pabins = 180./bin_size
-    new_bins = 180.*indgen(n_pabins+1)/n_pabins
-
-    rebinned_data = congrid(spin_sum_flux, n_elements(spin_starts), n_elements(new_bins), /center, /interp)
-
-    store_data, newname, data={x: spin_times, y: rebinned_data, v: new_bins}, dlimits=flux_dl
-    options, newname, spec=1, ystyle=1, ztitle=units_label, ytitle='MMS'+probe+' FEEPS '+datatype, ysubtitle=en_range_string+'!CPAD (deg)'
-    ylim, newname, 1., 180.
-    zlim, newname, 0, 0, 1
-
-end
-pro feeps_bin_info, pa_bins, pa_flux, pa_num_in_bin, pa_file, flux_file, start
-    print, '---------------------------------'
-    for i=0, n_elements(pa_file[start, *])-1 do print, strcompress(string(pa_file[start, i]), /rem)+': '+string(flux_file[start, i])
-    print, '---------------------------------'
-    for num=0, n_elements(pa_bins)-2 do print, strcompress('['+string(pa_bins[num])+'-'+string(pa_bins[num+1]), /rem)+']: '+string(pa_num_in_bin[start, num])+', ' +string(pa_flux[start,num])
-end
 
 pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, suffix = suffix, datatype = datatype
     if undefined(datatype) then datatype='electron'
@@ -109,8 +47,8 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, suffix =
     pa_label = 180.*indgen(n_pabins)/n_pabins+bin_size/2.
     
     ; get the pitch angles
-    tdeflag, prefix+'_epd_feeps_pitch_angle', 'linear', /overwrite
-    get_data, prefix+'_epd_feeps_pitch_angle', data=pa_data, dlimits=pa_dlimits
+    ;tdeflag, prefix+'_epd_feeps_pitch_angle', 'linear', /overwrite
+    get_data, prefix+'_epd_feeps_pitch_angle'+suffix, data=pa_data, dlimits=pa_dlimits
     
     ; From Allison Jaynes @ LASP: The 6,7,8 sensors (out of 12) are ions, 
     ; so in the pitch angle array, the 5,6,7 columns (counting from zero) will be the ion pitch angles.
@@ -144,8 +82,8 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, suffix =
             endfor
         endfor
     endfor
-   ; feeps_bin_info, pa_bins, pa_flux, pa_num_in_bin, particle_pa, flux_file, 0
-    
+    ;feeps_bin_info, pa_bins, pa_flux, pa_num_in_bin, particle_pa, flux_file, 0
+    ;stop
     ; calculate the average for each bin
     new_pa_flux = fltarr(n_elements(d.x),n_pabins)
 
@@ -159,7 +97,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, suffix =
     
    ; feeps_bin_info, pa_bins, new_pa_flux, pa_num_in_bin, particle_pa, flux_file, 0
 
-    en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV
+    en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV'
     new_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'
 
     store_data, new_name, data={x:d.x, y:new_pa_flux, v:pa_label}
@@ -167,6 +105,6 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, suffix =
         zlog = 1, ytitle = 'MMS'+probe+' FEEPS ' + datatype, ysubtitle=en_range_string+'!CPA [Deg]', ztitle=data_units
 
     ; calculate the spin average
-    mms_feeps_pad_spinavg, probe=probe, datatype=datatype, energy=energy, bin_size=bin_size, data_units=data_units
+    ;mms_feeps_pad_spinavg, probe=probe, datatype=datatype, energy=energy, bin_size=bin_size, data_units=data_units
 
 end

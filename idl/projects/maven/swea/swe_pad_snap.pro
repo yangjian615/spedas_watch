@@ -67,6 +67,8 @@
 ;        PLOTLIMS:     Plot dashed lines at the limits of the pitch angle
 ;                      coverage.
 ;
+;        NOMID:        Do not plot a horizontal line at the average flux.
+;
 ;        PEP:          Plot vertical dashed lines at the nominal photoelectron
 ;                      energy peaks at 23 and 27 eV (due to ionization of CO2
 ;                      and O by 304-Angstrom He-II line).
@@ -75,8 +77,7 @@
 ;                      for each PAD data structure.  This keyword averages them
 ;                      together.
 ;
-;        UNCERTAINTY:  If set, the relative uncertainty of
-;                      the resampled PAD is shown.
+;        UNCERTAINTY:  If set, show the relative uncertainty of the resampled PAD.
 ;
 ;        HIRES:        Use 32-Hz MAG data to map pitch angle with high time 
 ;                      resolution within a 2-second SWEA measurement cycle.  A
@@ -100,8 +101,8 @@
 ;                      one gyroradius.  Only works when HIRES is set.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-17 09:15:36 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19391 $
+; $LastChangedDate: 2016-01-12 12:28:19 -0800 (Tue, 12 Jan 2016) $
+; $LastChangedRevision: 19714 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -112,7 +113,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   abins=abins, dbins=dbins, obins=obins, burst=burst, $
                   pot=pot, scp=scp, spec=spec, plotlims=plotlims, norm=norm, $
                   center=center, pep=pep, resample=resample, hires=hires, $
-                  fbdata=fbdata, window=window, adiabatic=adiabatic, uncertainty=uncertainty
+                  fbdata=fbdata, window=window, adiabatic=adiabatic, $
+                  nomid=nomid, uncertainty=uncertainty
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -155,6 +157,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     dbin = string(indgen(6),format='(i1)')
   endif else dolab = 0
   if keyword_set(plotlims) then plot_pa_lims = 1 else plot_pa_lims = 0
+  if keyword_set(nomid) then domid = 0 else domid = 1
   
   if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
   if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
@@ -682,7 +685,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           charsize=1.4
         oplot, x, Fp, psym=10, color=6
         oplot, x, Fm, psym=10, color=2
-        oplot, x, Fz, psym=10, color=4
+        if (domid) then oplot, x, Fz, psym=10, color=4
         if (dopot) then begin
           if (finite(scp)) then pot = scp $
                            else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.

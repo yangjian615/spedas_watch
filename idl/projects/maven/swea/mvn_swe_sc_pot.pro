@@ -74,13 +74,13 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-12-09 21:30:03 -0800 (Wed, 09 Dec 2015) $
-; $LastChangedRevision: 19563 $
+; $LastChangedDate: 2016-01-12 11:50:43 -0800 (Tue, 12 Jan 2016) $
+; $LastChangedRevision: 19713 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
-pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
+pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
                     pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
                     mask_sc=mask_sc, setval=setval, badval=badval
 
@@ -100,7 +100,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
     return
   endif
   
-  if (size(badval,/type) eq 0) then badval = !values.f_nan
+  if (size(badval,/type) eq 0) then badval = !values.f_nan else badval = float(badval)
 
 ; Clear any previous potential calculations
 
@@ -174,6 +174,14 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
   indx = where(e[*,0] lt 60., n_e)
   e = e[indx,*]
   f = alog10(f[indx,*])
+  
+  potstr = {time : 0D            , $
+            pot  : !values.f_nan , $
+            dE   : !values.f_nan , $
+            amp  : !values.f_nan , $
+            flg  : 0                }
+  potential = replicate(potstr, npts)
+  potential.time = t
 
 ; Filter out bad spectra
 
@@ -183,6 +191,7 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
     t = t[gndx]
     e = e[*,gndx]
     f = f[*,gndx]
+    potential[gndx].flg = 1
   endif else begin
     print,"No good spectra!"
     return
@@ -245,6 +254,9 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
       if ((kmax eq (n_e-1)) or (kmin eq 0)) then dE = 2.*dEmax
       
       if (dE lt dEmax) then phi[i] = ee[max(indx),i]  ; only accept narrow features
+      
+      potential[gndx[i]].dE = dE
+      potential[gndx[i]].amp = dfsmax
     endif
   endfor
 
@@ -252,7 +264,10 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
 
   fmax = max(mvn_swe_engy[gndx].data, dim=1)
   indx = where(fmax lt 1.e7, count)
-  if (count gt 0L) then phi[indx] = badval
+  if (count gt 0L) then begin
+    phi[indx] = badval
+    potential[gndx[indx]].flg = -1
+  endif
 
 ; Filter out shadow regions
 
@@ -264,7 +279,10 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
   if (i gt 0) then begin
     shadow = interpol(float(finite(wake.y)), wake.x, mvn_swe_engy[gndx].time)
     indx = where(shadow gt 0., count)
-    if (count gt 0L) then phi[indx] = badval
+    if (count gt 0L) then begin
+      phi[indx] = badval
+      potential[gndx[indx]].flg = -2
+    endif
   endif
 
 ; Filter out altitudes below 250 km
@@ -277,12 +295,16 @@ pro mvn_swe_sc_pot, potential=phi, erange=erange, fudge=fudge, thresh=thresh, dE
   if (i gt 0) then begin
     altitude = interpol(alt.y, alt.x, mvn_swe_engy[gndx].time)
     indx = where(altitude lt 250., count)
-    if (count gt 0L) then phi[indx] = badval
+    if (count gt 0L) then begin
+      phi[indx] = badval
+      potential[gndx[indx]].flg = -3
+    endif
   endif
 
 ; Apply fudge factor, and store the result
 
   phi = phi*fudge
+  potential[gndx].pot = phi
 
   if (not dflg) then begin
     mvn_swe_engy[gndx].sc_pot = phi

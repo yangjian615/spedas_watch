@@ -153,7 +153,8 @@ function spp_swp_spane_slow_hkp_decom,ccsds , ptp_header=ptp_header, apdat=apdat
     REVNUM: b[71]  * 1.,  $
     raw_dac:   swap_endian(/swap_if_little_endian, uint( b,76 ) ) and 'ffff'x , $
     mcp_dac:   swap_endian(/swap_if_little_endian, uint( b,80 ) ) and 'ffff'x , $
-    acc_dac:   swap_endian(/swap_if_little_endian, uint( b,82 ) ) and 'ffff'x , $
+;    acc_dac:   swap_endian(/swap_if_little_endian, uint( b,82 ) ) and 'ffff'x , $
+    USRVAR:    swap_endian(/swap_if_little_endian, uint( b,82 ) ) and 'ffff'x , $
     max_cnt:   swap_endian(/swap_if_little_endian, uint( b,84 ) ) and 'ffff'x , $
     cycle_cnt: swap_endian(/swap_if_little_endian, uint( b,86 ) ) and 'ffff'x , $
     dCMD_ERRS: 0b , $
@@ -257,17 +258,16 @@ function spp_swp_spane_p2_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     cnts: float(cnts[*]), $ 
     cnts1: float(cnts1), $
     cnts2: float(cnts2), $
-
-    cnts_a0:  float(reform(cnts[ 0,*])), $ 
-    cnts_a1:  float(reform(cnts[ 1,*])), $ 
-    cnts_a2:  float(reform(cnts[ 2,*])), $ 
-    cnts_a3:  float(reform(cnts[ 3,*])), $ 
-    cnts_a4:  float(reform(cnts[ 4,*])), $ 
-    cnts_a5:  float(reform(cnts[ 5,*])), $ 
-    cnts_a6:  float(reform(cnts[ 6,*])), $ 
-    cnts_a7:  float(reform(cnts[ 7,*])), $ 
-    cnts_a8:  float(reform(cnts[ 8,*])), $ 
-    cnts_a9:  float(reform(cnts[ 9,*])), $ 
+    cnts_a00:  float(reform(cnts[ 0,*])), $ 
+    cnts_a01:  float(reform(cnts[ 1,*])), $ 
+    cnts_a02:  float(reform(cnts[ 2,*])), $ 
+    cnts_a03:  float(reform(cnts[ 3,*])), $ 
+    cnts_a04:  float(reform(cnts[ 4,*])), $ 
+    cnts_a05:  float(reform(cnts[ 5,*])), $ 
+    cnts_a06:  float(reform(cnts[ 6,*])), $ 
+    cnts_a07:  float(reform(cnts[ 7,*])), $ 
+    cnts_a08:  float(reform(cnts[ 8,*])), $ 
+    cnts_a09:  float(reform(cnts[ 9,*])), $ 
     cnts_a10: float(reform(cnts[10,*])), $ 
     cnts_a11: float(reform(cnts[11,*])), $ 
     cnts_a12: float(reform(cnts[12,*])), $ 
@@ -327,6 +327,9 @@ function spp_swp_spane_p4_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   ;lll = 512
   lll = 512*4
+  if n_elements(ccsds.data) le 20 then begin
+    dprint,dlevel=1,'No packet data'
+  endif
   data = ccsds.data[20:*]
   if n_elements(data) ne lll then begin
     dprint,'Improper packet size',dlevel=2
@@ -356,16 +359,16 @@ function spp_swp_spane_p4_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     cnts1: float(cnts1), $
     cnts2: float(cnts2), $
 
-    cnts_a0:  float(reform(cnts[ 0,*])), $ 
-    cnts_a1:  float(reform(cnts[ 1,*])), $ 
-    cnts_a2:  float(reform(cnts[ 2,*])), $ 
-    cnts_a3:  float(reform(cnts[ 3,*])), $ 
-    cnts_a4:  float(reform(cnts[ 4,*])), $ 
-    cnts_a5:  float(reform(cnts[ 5,*])), $ 
-    cnts_a6:  float(reform(cnts[ 6,*])), $ 
-    cnts_a7:  float(reform(cnts[ 7,*])), $ 
-    cnts_a8:  float(reform(cnts[ 8,*])), $ 
-    cnts_a9:  float(reform(cnts[ 9,*])), $ 
+    cnts_a00:  float(reform(cnts[ 0,*])), $ 
+    cnts_a01:  float(reform(cnts[ 1,*])), $ 
+    cnts_a02:  float(reform(cnts[ 2,*])), $ 
+    cnts_a03:  float(reform(cnts[ 3,*])), $ 
+    cnts_a04:  float(reform(cnts[ 4,*])), $ 
+    cnts_a05:  float(reform(cnts[ 5,*])), $ 
+    cnts_a06:  float(reform(cnts[ 6,*])), $ 
+    cnts_a07:  float(reform(cnts[ 7,*])), $ 
+    cnts_a08:  float(reform(cnts[ 8,*])), $ 
+    cnts_a09:  float(reform(cnts[ 9,*])), $ 
     cnts_a10: float(reform(cnts[10,*])), $ 
     cnts_a11: float(reform(cnts[11,*])), $ 
     cnts_a12: float(reform(cnts[12,*])), $ 
@@ -391,16 +394,16 @@ pro spp_product_init
 
   ;;--------------------------
   ;; FS Product 1
-  options,'spp_spane_p2_CNTS_A0', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p2_CNTS_A1', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p2_CNTS_A2', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p2_CNTS_A3', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p2_CNTS_A4', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p2_CNTS_A5', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p2_CNTS_A6', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p2_CNTS_A7', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p2_CNTS_A8', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p2_CNTS_A9', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A00', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A01', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A02', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A03', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A04', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A05', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A06', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A07', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A08', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p2_CNTS_A09', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
   options,'spp_spane_p2_CNTS_A10',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
   options,'spp_spane_p2_CNTS_A11',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
   options,'spp_spane_p2_CNTS_A12',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
@@ -414,16 +417,16 @@ pro spp_product_init
 
   ;;--------------------------
   ;; TS Product 1
-  options,'spp_spane_p4_CNTS_A0', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p4_CNTS_A1', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p4_CNTS_A2', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p4_CNTS_A3', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p4_CNTS_A4', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p4_CNTS_A5', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p4_CNTS_A6', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p4_CNTS_A7', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p4_CNTS_A8', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
-  options,'spp_spane_p4_CNTS_A9', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A00', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A01', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A02', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A03', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A04', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A05', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A06', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A07', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A08', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
+  options,'spp_spane_p4_CNTS_A09', spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
   options,'spp_spane_p4_CNTS_A10',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
   options,'spp_spane_p4_CNTS_A11',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
   options,'spp_spane_p4_CNTS_A12',spec=1,yrange=[0,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp, ystyle=1
