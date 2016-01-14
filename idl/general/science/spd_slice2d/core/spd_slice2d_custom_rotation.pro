@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2016-01-13 16:16:11 -0800 (Wed, 13 Jan 2016) $
+;$LastChangedRevision: 19727 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_custom_rotation.pro $
 ;-
 pro spd_slice2d_custom_rotation, $ 
@@ -70,9 +70,9 @@ pro spd_slice2d_custom_rotation, $
   dprint, dlevel=4, 'Applying custom rotation'
 
   ; Transform data and support vectors 
-  if keyword_set(vectors) then vectors = matrix ## temporary(vectors)
-  if keyword_set(vbulk) then vbulk = matrix ## vbulk
-  if keyword_set(bfield) then bfield = matrix ## bfield
-  if keyword_set(sunvec) then sunvec = matrix ## sunvec
+  if ~undefined(vectors) then vectors = matrix ## temporary(vectors)
+  if n_elements(vbulk) eq 3 then vbulk = matrix ## vbulk
+  if n_elements(bfield) eq 3 then bfield = matrix ## bfield
+  if n_elements(sunvec) eq 3 then sunvec = matrix ## sunvec
 
 end

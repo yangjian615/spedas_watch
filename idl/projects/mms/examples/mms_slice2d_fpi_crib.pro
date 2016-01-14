@@ -13,8 +13,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-10-23 19:21:50 -0700 (Fri, 23 Oct 2015) $
-;$LastChangedRevision: 19150 $
+;$LastChangedDate: 2016-01-13 16:05:41 -0800 (Wed, 13 Jan 2016) $
+;$LastChangedRevision: 19725 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_slice2d_fpi_crib.pro $
 ;-
 
@@ -26,8 +26,8 @@
 ;  -FPI data is large and can be very memory intensive!  It is recommended 
 ;   that no more than a few minutes of data is loaded at a time for ions
 ;   and less for electrons.
-;  -Only available with burst data.
 ;======================================================================
+
 
 
 ;=============================
@@ -53,18 +53,6 @@ name =  'mms'+probe+'_d'+species+'s_brstSkyMap_dist'
 ;  -this will return a pointer to the structure array in order to save memory 
 ;---------------------------------------------
 dist = mms_get_fpi_dist(name, trange=trange)
-
-
-;load support data for later examples
-;---------------------------------------------
-mms_load_dfg, probe=probe, trange=trange, level='ql'
-
-mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-moms', $
-              probe=probe, trange=trange
-
-bname = 'mms'+probe+'_dfg_srvy_gse_bvec'
-vname = 'mms'+probe+'_d'+species+'s_bulk'
-join_vec, vname + ['X','Y','Z'], vname
 
 
 ;basic slice
@@ -95,6 +83,18 @@ stop
 ; Field-aligned slices
 ;=============================
 
+;load B field data
+mms_load_dfg, probe=probe, trange=trange, level='ql'
+
+;load velocity moment
+mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-moms', $
+              probe=probe, trange=trange
+
+bname = 'mms'+probe+'_dfg_srvy_gse_bvec'
+vname = 'mms'+probe+'_d'+species+'s_bulk'
+
+;combine separate velocity components
+join_vec, vname + ['X','Y','Z'], vname
 
 ;field/velocity aligned slice
 ;  -the plot's x axis is parallel to the B field
@@ -156,6 +156,33 @@ for i=0, n_elements(slices)-1 do begin
 
 endfor
 
+
+stop
+
+
+;=============================
+; Fast survey data
+;=============================
+
+
+;load fast survey data
+mms_load_fpi, data_rate='fast', level='l1b', datatype='d'+species+'s-dist', $
+              probe=probe, trange=trange
+
+;reformat data
+name = 'mms'+probe+'_d'+species+'s_fastSkyMap_dist'
+dist_fast = mms_get_fpi_dist(name, trange=trange)
+
+time = '2015-8-15/12:50' ;start time of slice
+
+;get slice from distribution closest to specified time
+slice = spd_slice2d(dist_fast, time=time)
+
+;set annotations (temporary)
+slice.coord = 'GSE'
+
+;plot
+spd_slice2d_plot, slice
 
 
 end

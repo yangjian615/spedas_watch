@@ -10,8 +10,8 @@
 ;
 ;
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2016-01-08 12:45:25 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19703 $
+;$LastChangedDate: 2016-01-13 09:03:40 -0800 (Wed, 13 Jan 2016) $
+;$LastChangedRevision: 19722 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_fgm_burst_crib.pro $
 ;-
 ;----------------------------------------------------------------------------
@@ -25,17 +25,15 @@ tr = timerange()
 ; load MMS AFG burst data for MMS 1 
 mms_load_fgm, probes=['1'], instrument='afg', data_rate='brst', level='ql'
 
-; add a dashed line at zero
-store_data, 'dline0', data={x:tr, y:[0,0]}
-options, 'dline0', linestyle=2
-
 tplot, ['mms1_afg_brst_gse_bvec', 'mms1_afg_brst_gse_btot']
-for i=0,1 do tplot_panel, oplotvar='dline0', panel=i[0]
+timebar, 0.0, /databar, varname='mms1_afg_brst_gse_bvec', linestyle=2
+timebar, 0.0, /databar, varname='mms1_afg_brst_gse_btot', linestyle=2
 stop
 
 ; zoom in to region of interest 
 tlimit, '2015-10-15/06:30','2015-10-15/07:30', window=1
-for i=0,1 do tplot_panel, oplotvar='dline0', panel=i[0]
+timebar, 0.0, /databar, varname='mms1_afg_brst_gse_bvec', linestyle=2
+timebar, 0.0, /databar, varname='mms1_afg_brst_gse_btot', linestyle=2
 stop
 
 ;----------------------------------------------------------------------------
@@ -46,14 +44,16 @@ mms_load_fgm, probes=['1','2'], trange=['2015-10-15/00:00','2015-10-16/00:00'], 
 ; add a title
 tplot_options, 'title', 'MMS1 and MMS2 DFG FGM Bvec'
 tplot, ['mms1_dfg_brst_gse_bvec','mms2_dfg_brst_gse_bvec']
-for i=0,1 do tplot_panel, oplotvar='dline0', panel=i[0]
+timebar, 0.0, /databar, varname='mms1_dfg_brst_gse_bvec', linestyle=2
+timebar, 0.0, /databar, varname='mms2_dfg_brst_gse_btot', linestyle=2
 stop
 
 ; zoom in and show both afg and dfg with attitude data and add a title
 tlimit, '2015-10-15/06:30','2015-10-15/07:30'
 tplot_options, 'title', 'MMS1 FGM Bvec, Btotal, Position, and Attitude'
 tplot, ['mms1_dfg_brst_gse_bvec','mms1_afg_brst_gse_bvec','mms1_ql_pos_gse','mms1_ql_RADec_gse']
-for i=0,3 do tplot_panel, oplotvar='dline0', panel=i[0]
+timebar, 0.0, /databar, varname='mms1_dfg_brst_gse_bvec', linestyle=2
+timebar, 0.0, /databar, varname='mms1_afg_brst_gse_bvec', linestyle=2
 stop
 
 ;----------------------------------------------------------------------------
@@ -66,7 +66,10 @@ tlimit, '2015-10-15/06:30','2015-10-15/07:30', window=2
 tplot_options, 'title', 'MMS FGM data for all Probes'
 ; tplot accepts wild cards
 tplot, 'mms*_dfg_brst_gse_bvec'
-for i=0,1 do tplot_panel, oplotvar='dline0', panel=i[0]
+timebar, 0.0, /databar, varname='mms1_dfg_brst_gse_bvec', linestyle=2
+timebar, 0.0, /databar, varname='mms2_dfg_brst_gse_bvec', linestyle=2
+timebar, 0.0, /databar, varname='mms3_dfg_brst_gse_bvec', linestyle=2
+timebar, 0.0, /databar, varname='mms4_dfg_brst_gse_bvec', linestyle=2
 stop
 
 ;-----------------------------------------------------------------------------
@@ -76,7 +79,7 @@ pr='mms1'
 ; tplot variables accept constructed strings
 store_data, pr+'_combined_fgm', data=[pr+'_dfg_brst_gse_btot',pr+'_dfg_brst_gse_bvec']
 tplot, pr+'_combined_fgm'
-tplot_panel, variable=pr+'_combined_fgm', oplotvar='dline0', panel=0 
+timebar, 0.0, /databar, varname=pr+'_combined_fgm', linestyle=2
 stop
 
 ; check out list of all the tplot variables that were loaded

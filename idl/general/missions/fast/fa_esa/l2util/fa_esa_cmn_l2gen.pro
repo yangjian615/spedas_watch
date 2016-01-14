@@ -56,8 +56,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-11-17 19:52:53 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19402 $
+; $LastChangedDate: 2016-01-13 12:48:48 -0800 (Wed, 13 Jan 2016) $
+; $LastChangedRevision: 19723 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -599,7 +599,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
   
   otp_struct.g_attributes.data_type = 'l2_'+ext+'>Level 2 data: '+cmn_dat.data_name
   otp_struct.g_attributes.logical_file_id = file0
-  otp_struct.g_attributes.logical_source = 'fa_l2_'+ext
+  otp_struct.g_attributes.logical_source = 'fa_esa_l2_'+ext
 
 ;save the file -- full database management
   dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update)

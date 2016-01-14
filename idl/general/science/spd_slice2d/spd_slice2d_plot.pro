@@ -59,8 +59,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-11 10:33:41 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19603 $
+;$LastChangedDate: 2016-01-13 16:13:29 -0800 (Wed, 13 Jan 2016) $
+;$LastChangedRevision: 19726 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -345,18 +345,18 @@ pro spd_slice2d_plot, slice, $
   
   
   ; Plot the bulk velocity
-  if keyword_set(plotbulk) and keyword_set(slice.bulk) $
-    and ~keyword_set(slice.shift) then begin
-    ; bulk velocity should already be in the coords defined for
-    ; the slice plane
-    oplot, [0,slice.bulk[0]], [0,slice.bulk[1]], color=!d.table_size-9
+  ; (on by default so don't warn if cannot be plotted)
+  if keyword_set(plotbulk) and ~keyword_set(slice.shift) then begin
+    if n_elements(slice.bulk) eq 3 and finite(total(slice.bulk))  then begin
+      ; bulk velocity should already be in the coords defined for the slice plane
+      oplot, [0,slice.bulk[0]], [0,slice.bulk[1]], color=!d.table_size-9
+    endif
   endif
 
 
   ; Plot sun direction
-  ; loading of state data moved to spd_dist_array 2012-12
   if keyword_set(sundir) then begin
-    if keyword_set(slice.sunvec) then begin
+    if n_elements(slice.sunvec) eq 3 and finite(total(slice.sunvec)) then begin
       ;sun vector is normalized & in slice plane's coords
       ;make total length equal to the smallest axis limit and plot projection
       sunvec = slice.sunvec * min( abs( [xrange,yrange] ) )
@@ -369,7 +369,7 @@ pro spd_slice2d_plot, slice, $
 
   ; Plot B field
   if keyword_set(plotbfield) then begin
-    if keyword_set(slice.bfield) && finite(total(slice.bfield)) then begin
+    if n_elements(slice.bfield) eq 3 and finite(total(slice.bfield)) then begin
       ;bfield is in nT in the slice plane's coords
       ;make total length equal to the smallest axis limit and plot projection
       bfield = slice.bfield / sqrt(total(slice.bfield^2))

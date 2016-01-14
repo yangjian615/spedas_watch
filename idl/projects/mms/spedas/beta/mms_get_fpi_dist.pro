@@ -24,8 +24,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-11 16:17:21 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19619 $
+;$LastChangedDate: 2016-01-13 16:05:41 -0800 (Wed, 13 Jan 2016) $
+;$LastChangedRevision: 19725 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_dist.pro $
 ;-
 
@@ -83,10 +83,10 @@ endelse
 
 
 ;get info from tplot variable name
-var_info = stregex(name, '(mms([1-4])_d([ei])s_)brstSkyMap_dist', /subexpr, /extract)
+var_info = stregex(name, '(mms([1-4])_d([ei])s_)(.*)SkyMap_dist', /subexpr, /extract)
 probe = var_info[2]
 species = var_info[3]
-
+rate = var_info[4]
 
 ; Initialize energies, angles, and support data
 ;-----------------------------------------------------------------
@@ -102,13 +102,19 @@ dim = dim[[2,0,1] ]
 base_arr = fltarr(dim)
 
 
-;get support data
-step_name = (tnames(var_info[1]+'stepTable_parity'))[0]
-if step_name eq '' then begin
-  dprint, 'Cannot find energy table data: "'+var_info[1]+'stepTable_parity'
-  return, 0
-endif
-get_data, step_name, data=step
+;get support data specifying which energy table to use
+;fast data will always use constant table, burst requires support var
+if strlowcase(rate) eq 'fast' then begin
+  step = replicate(2,n_elements(*p.x))
+endif else begin
+  step_name = (tnames(var_info[1]+'stepTable_parity'))[0]
+  if step_name eq '' then begin
+    dprint, 'Cannot find energy table data: "'+var_info[1]+'stepTable_parity'
+    return, 0
+  endif
+  get_data, step_name, data=step_data
+  step = temporary(step_data.y)
+endelse
 
 
 ;mass, charge, & energies
@@ -188,7 +194,7 @@ dist.data = transpose((*p.y)[index,*,*,*],[3,1,2,0])
 
 ;get energy values for each time sample and copy into
 ;structure array with the correct dimensions
-e0 = reform(energy_table[*,step.y[index]], [dim[0],1,1,n_times])
+e0 = reform(energy_table[*,step[index]], [dim[0],1,1,n_times])
 dist.energy = rebin( e0, [dim,n_times] )
 
 ;phi must be in [0,360)

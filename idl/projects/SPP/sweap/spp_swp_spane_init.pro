@@ -81,6 +81,7 @@ function spp_swp_spane_slow_hkp_decom,ccsds , ptp_header=ptp_header, apdat=apdat
   psize = 97  ;  REV 27
   psize = 105  ; REV ??
   psize = 113  ; REV ???????
+  psize = 117  ; REV 3B
   if n_elements(b) ne psize+7 then begin
     dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
     return,0
@@ -91,12 +92,10 @@ function spp_swp_spane_slow_hkp_decom,ccsds , ptp_header=ptp_header, apdat=apdat
   if keyword_set(apdat) && ptr_valid(apdat.dataindex) && keyword_set(*apdat.dataindex) then begin
     last_spai = (*apdat.dataptr)[*apdat.dataindex -1]
  ;   printdat,last_spai
-  endif else dprint,'No previous structure'
+  endif else dprint,dlevel=3,'No previous structure'
 
   sf0 = ccsds.data[11] and 3
   if sf0 ne 0 then dprint,dlevel=4, 'Odd time at: ',time_string(ccsds.time)
-
-
 
   ref = 5.29 ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
 
@@ -185,16 +184,20 @@ end
 function spp_swp_spane_p1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   data = ccsds.data[20:*]
-  ;lll = 512
-  lll = 16*4
-  if n_elements(data) ne lll then begin
-    
-    dprint,'Improper packet size ',dlevel=2
+  ndata = n_elements(data)  
+  compression = (ccsds.data[12] and '80'x) ne 0
+  bps = (compression eq 0) * 4    ; bytes per sample
+  n_expected = 16 * bps
+  if n_elements(data) ne n_expected then begin
     dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
-  ns = lll/4
-  cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+  
+  ns = n_expected / bps
+  if compression then begin
+    cnts = data[*]  
+  endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+
   cnts = reform(cnts,16,ns/16)
   cnts1 = total(cnts,1)
   cnts2 = total(cnts,2)
@@ -228,16 +231,19 @@ end
 function spp_swp_spane_p2_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   data = ccsds.data[20:*]
-  ;lll = 512
-  lll = 512*4
-;  lll = 16*4
-  if n_elements(data) ne lll then begin
-    dprint,'Improper packet size',dlevel=2
+  ndata = n_elements(data)  
+  compression = (ccsds.data[12] and '80'x) ne 0
+  bps = (compression eq 0) * 4    ; bytes per sample
+  n_expected = 512 * bps
+  if n_elements(data) ne n_expected then begin
     dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
-  ns = lll/4
-  cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+  
+  ns = n_expected / bps
+  if compression then begin
+    cnts = data[*]  
+  endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)
   cnts1 = total(cnts,1)
   cnts2 = total(cnts,2)
@@ -285,16 +291,20 @@ end
 
 function spp_swp_spane_p3_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
-  ;lll = 512
-  lll = 16*4
   data = ccsds.data[20:*]
-  if n_elements(data) ne lll then begin
-    dprint,'Improper packet size',dlevel=2
+  ndata = n_elements(data)  
+  compression = (ccsds.data[12] and '80'x) ne 0
+  bps = (compression eq 0) * 4    ; bytes per sample
+  n_expected = 16 * bps
+  if n_elements(data) ne n_expected then begin
     dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
-  ns = lll/4
-  cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+  
+  ns = n_expected / bps
+  if compression then begin
+    cnts = data[*]  
+  endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)
   cnts1 = total(cnts,1)
   cnts2 = total(cnts,2)
@@ -325,19 +335,20 @@ end
 
 function spp_swp_spane_p4_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
-  ;lll = 512
-  lll = 512*4
-  if n_elements(ccsds.data) le 20 then begin
-    dprint,dlevel=1,'No packet data'
-  endif
   data = ccsds.data[20:*]
-  if n_elements(data) ne lll then begin
-    dprint,'Improper packet size',dlevel=2
+  ndata = n_elements(data)  
+  compression = (ccsds.data[12] and '80'x) ne 0
+  bps = (compression eq 0) * 4    ; bytes per sample
+  n_expected = 512 * bps
+  if n_elements(data) ne n_expected then begin
     dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
     return,0
   endif
-  ns = lll/4
-  cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+  
+  ns = n_expected / bps
+  if compression then begin
+    cnts = data[*]  
+  endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)
   cnts1 = total(cnts,1)
   cnts2 = total(cnts,2)

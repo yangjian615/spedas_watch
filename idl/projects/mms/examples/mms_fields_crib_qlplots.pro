@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2016-01-08 12:45:25 -0800 (Fri, 08 Jan 2016) $
-; $LastChangedRevision: 19703 $
+; $LastChangedDate: 2016-01-13 09:03:40 -0800 (Wed, 13 Jan 2016) $
+; $LastChangedRevision: 19722 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_fields_crib_qlplots.pro $
 ;-
 
@@ -111,11 +111,6 @@ options, 'mms_*_gsm_dmpa_*', ysubtitle='GSM-DMPA [nT]'
 
 spd_mms_load_bss, /include_labels
 
-; add dashed line at zero
-tr=timerange()
-store_data, 'dline0', data={x:tr, y:[0,0]}
-options, 'dline0', linestyle=2
-
 ; set plot parameters
 tplot_options, 'xmargin', [20, 15]
 tplot_options, 'ymargin', [5, 5]
@@ -126,7 +121,13 @@ options, 'mms_bss_burst', charsize=2.5
 if ~postscript then window, iw, xsize=width, ysize=height
 tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
         'mms_dfg_srvy_dmpa_btot', 'mms_dfg_srvy_gsm_dmpa_*', 'mms_dfg_srvy_dmpa_bvec_*'], window=iw
-for i=3,9 do tplot_panel, oplotvar='dline0', panel=i[0]
+timebar, 0.0, /databar, varname='mms_dfg_srvy_dmpa_btot', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_x', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_y', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_z', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_dmpa_bvec_x', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_dmpa_bvec_y', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_dmpa_bvec_z', linestyle=2
 title= 'MMS Quicklook Plots for Fields Data'
 xyouts, .25, .95, title, /normal, charsize=1.5
 
@@ -175,8 +176,15 @@ options, 'mms_*spot_l1b', ytitle='ASP1 Scpot'
 if ~postscript then window, iw, xsize=width, ysize=height
 tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
         'mms_*_dce_dsl_*', 'mms_asp1_spot_l1b', 'mms_*_btot', $
-        'mms_*_gsm_dmpa_*'], window=iw
-for i=3,10 do tplot_panel, oplotvar='dline0', panel=i[0]
+        'mms_*_gsm_dmpa_*'], window=iw, var_label=position_vars
+timebar, 0.0, /databar, varname='mms_edp_fast_dce_dsl_x', linestyle=2
+timebar, 0.0, /databar, varname='mms_edp_fast_dce_dsl_y', linestyle=2
+timebar, 0.0, /databar, varname='mms_edp_fast_dce_dsl_z', linestyle=2
+timebar, 0.0, /databar, varname='mms_asp1_spot_l1b', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_dmpa_btot', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_x', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_y', linestyle=2
+timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_z', linestyle=2
 title='MMS E&B Quicklook Plots'
 xyouts, .35, .95, title, /normal, charsize=1.5
 
