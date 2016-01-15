@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-01-12 14:32:15 -0800 (Tue, 12 Jan 2016) $
-; $LastChangedRevision: 19718 $
+; $LastChangedDate: 2016-01-14 16:09:30 -0800 (Thu, 14 Jan 2016) $
+; $LastChangedRevision: 19740 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_feeps_crib_qlplots.pro $
 ;-
 
@@ -15,6 +15,11 @@ probe = '1'
 timespan, '2015-12-15', 1
 width = 950
 height = 1000
+; options:
+; 1) intensity
+; 2) count_rate
+; 3) counts
+type = 'count_rate'
 
 ; options for send_plots_to:
 ;   ps: postscript files
@@ -34,10 +39,10 @@ if errstats ne 0 then begin
   catch, /cancel
 endif
 
-mms_load_feeps, probe=probe, data_rate='srvy', datatype=['electron', 'ion']
-mms_feeps_pad, probe = probe, datatype = 'electron'
-mms_feeps_pad, probe = probe, datatype = 'ion'
-
+mms_load_feeps, probe=probe, data_rate='srvy', datatype='electron', suffix='_electrons'
+mms_load_feeps, probe=probe, data_rate='srvy', datatype='ion', suffix='_ions'
+mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[71, 600], data_units = type
+mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[96, 600], data_units = type
 
 ; we use the B-field data at the top of the plot, and the position data in GSM coordinates
 ; loaded from the QL DFG files
@@ -62,8 +67,11 @@ if ~postscript then window, xsize=width, ysize=height
 
 tplot_options, 'xmargin', [15, 15]
 
-tplot, 'mms'+probe+['_dfg_srvy_gsm_dmpa', '_epd_feeps_top_intensity_sensorID_3', $
-    '_epd_feeps_bottom_intensity_sensorID_3', '_epd_feeps_electron_0-1000keV_pad'], var_label=position_vars
+tplot, 'mms'+probe+['_dfg_srvy_gsm_dmpa', $
+                    '_epd_feeps_top_'+type+'_sensorID_3_electrons_clean', $
+                    '_epd_feeps_bottom_'+type+'_sensorID_6_ions_clean', $
+                    '_epd_feeps_*keV_pad' $
+                    ], var_label=position_vars
 
 stop
 end

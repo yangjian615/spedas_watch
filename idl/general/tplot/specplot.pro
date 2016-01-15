@@ -50,9 +50,9 @@
 ;
 ;See Also:  "XLIM", "YLIM", "ZLIM",  "OPTIONS",  "TPLOT", "DRAW_COLOR_SCALE"
 ;Author:  Davin Larson,  Space Sciences Lab
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-01-07 16:06:13 -0800 (Thu, 07 Jan 2016) $
-; $LastChangedRevision: 19691 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-01-14 07:36:00 -0800 (Thu, 14 Jan 2016) $
+; $LastChangedRevision: 19728 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/specplot.pro $
 ;-
 pro specplot,x,y,z,limits=lim,data=data,overplot=overplot,overlay=overlay,$
@@ -189,20 +189,23 @@ str_element,opt,'top',   value=top
 trg = opt.xrange
 if opt.zrange[0] eq opt.zrange[1] then begin
   zrange=[0.,1.]
-  good = where(finite(total(z,2)) and finite(x) and x lt trg[1] and x ge trg[0],goodcnt)
-  if goodcnt gt 0 then zrange = minmax(z[good,*],positive=zlog,min_value=mn,max_value=mx)
+;  good = where(finite(total(z,2)) and finite(x) and x lt trg[1] and x ge trg[0],goodcnt)
+;  if goodcnt gt 0 then zrange = minmax(z[good,*],positive=zlog,min_value=mn,max_value=mx)
 ;  printdat,zrange,good
-  
-;  if keyword_set(zlog) then begin
-;    good = where(finite(alog(z)),goodcnt)
-;    if goodcnt gt 0 then begin
-;      zrange = minmax(z[good],min_value=mn,max_value=mx)
-;    endif else begin
-;      zrange = [0,0]
-;    endelse
-;  endif else begin
-;    zrange = minmax(z,/nan,min_value=mn,max_value=mx)
-;  endelse
+  ;;;; NOTE by Eric Grimes (egrimes@igpp.ucla.edu):
+  ;;;; r19691 broke spectra plots for THEMIS and MMS
+  ;;;; reverted back on 1/14/2016:
+  ;;;; commented out the above code, uncommented the below code
+  if keyword_set(zlog) then begin
+    good = where(finite(alog(z)),goodcnt)
+    if goodcnt gt 0 then begin
+      zrange = minmax(z[good],min_value=mn,max_value=mx)
+    endif else begin
+      zrange = [0,0]
+    endelse
+  endif else begin
+    zrange = minmax(z,/nan,min_value=mn,max_value=mx)
+  endelse
   
 endif else begin
   zrange = opt.zrange

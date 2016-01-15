@@ -53,8 +53,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-12 13:06:30 -0800 (Tue, 12 Jan 2016) $
-;$LastChangedRevision: 19716 $
+;$LastChangedDate: 2016-01-14 15:38:02 -0800 (Thu, 14 Jan 2016) $
+;$LastChangedRevision: 19734 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
@@ -107,6 +107,37 @@ pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatyp
     endfor
 end
 
+; this function splits the last integral channel from the spectra
+pro mms_feeps_split_integral_ch, type, species, probe, suffix = suffix
+    if undefined(species) then species = 'electron' ; default to electrons
+    if undefined(probe) then probe = '1' ; default to probe 1
+    if undefined(suffix) then suffix = ''
+    
+    if species eq 'electron' then sensors = [3, 4, 5, 11, 12] else sensors = [6, 7, 8]
+    
+    for sensor_idx = 0, n_elements(sensors)-1 do begin
+        top_name = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx])+suffix, /rem)
+        bottom_name = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx])+suffix, /rem)
+        get_data, top_name, data=top_data, dlimits=top_dl
+        get_data, bottom_name, data=bottom_data, dlimits=bottom_dl
+        
+        store_data, top_name+'_clean', data={x: top_data.X, y: top_data.Y[*, 0:n_elements(top_data.V)-2], v: top_data.V[0:n_elements(top_data.V)-2]}, dlimits=top_dl
+        store_data, bottom_name+'_clean', data={x: bottom_data.X, y: bottom_data.Y[*, 0:n_elements(bottom_data.V)-2], v: bottom_data.V[0:n_elements(bottom_data.V)-2]}, dlimits=bottom_dl
+        
+        ; limit the lower energy plotted 
+        options, top_name+'_clean', ystyle=1
+        options, bottom_name+'_clean', ystyle=1
+        ylim, top_name+'_clean', 71, 510., 1
+        ylim, bottom_name+'_clean', 71, 510., 1
+        zlim, top_name+'_clean', 0, 0, 1
+        zlim, bottom_name+'_clean', 0, 0, 1
+        
+        ; store the integral channel
+        store_data, top_name+'_500keV_int', data={x: top_data.X, y: top_data.Y[*, n_elements(bottom_data.V)-1]}
+        store_data, bottom_name+'_500keV_int', data={x: bottom_data.X, y: bottom_data.Y[*, n_elements(bottom_data.V)-1]}
+    endfor
+end
+
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
@@ -131,12 +162,16 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
 
     if undefined(tplotnames) || tplotnames[0] eq '' then return
 
-;    for probe_idx = 0, n_elements(probes)-1 do $
+    for probe_idx = 0, n_elements(probes)-1 do begin
+        mms_feeps_split_integral_ch, 'count_rate', datatype, string(probes[probe_idx]), suffix = suffix
+        mms_feeps_split_integral_ch, 'intensity', datatype, string(probes[probe_idx]), suffix = suffix
 ;        mms_feeps_spin_avg, probe=probes[probe_idx], datatype=datatype, $
 ;            suffix = suffix
+    endfor
     
     ; interpolate to account for gaps in data near perigee for srvy data
     if data_rate eq 'srvy' then begin
         tdeflag, tnames('*_intensity_*'), 'linear', /overwrite
+        tdeflag, tnames('*_count_rate_*'), 'linear', /overwrite
     endif
 end
