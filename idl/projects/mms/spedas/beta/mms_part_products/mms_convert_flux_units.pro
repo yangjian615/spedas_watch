@@ -8,9 +8,9 @@
 ; Only tested with fpi data
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 14:25:49 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19614 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-01-15 11:37:57 -0800 (Fri, 15 Jan 2016) $
+;$LastChangedRevision: 19748 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_convert_flux_units.pro $
 ;-
 pro mms_convert_flux_units,dist,units=units,output=out
@@ -53,10 +53,11 @@ endif
 
 case species_lc of
    'i': A=1;H+
-   'h': A=1;H+
-   'he': A=4;He+
-   'he2': A=4;He++
-   'o': A=16;O+
+   'hplus': A=1;H+
+   'heplus': A=4;He+
+   'heplusplus': A=4;He++
+   'oplus': A=16;O+
+   'oplusplus': A=16;O++
    'e': A=1./1836;e-
 endcase
 

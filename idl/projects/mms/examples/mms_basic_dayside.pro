@@ -17,8 +17,8 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-01-07 11:55:46 -0800 (Thu, 07 Jan 2016) $
-; $LastChangedRevision: 19687 $
+; $LastChangedDate: 2016-01-15 07:40:55 -0800 (Fri, 15 Jan 2016) $
+; $LastChangedRevision: 19741 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_basic_dayside.pro $
 ;-
 start_time = systime(/sec)
@@ -39,7 +39,7 @@ postscript = send_plots_to eq 'ps' ? 1 : 0
 LOCAL_FILES_ONLY = 0
 
 ; load the data
-mms_load_fgm, probe=probe, data_rate='srvy', level='l2pre', no_update = LOCAL_FILES_ONLY
+mms_load_fgm, instrument='dfg', probe=probe, data_rate='srvy', level='l2pre', no_update = LOCAL_FILES_ONLY
 mms_load_fpi, probe=probe, data_rate='fast', level='sitl', no_update = LOCAL_FILES_ONLY
 mms_load_edp, probe=probe, datatype='scpot', level='l2', no_update = LOCAL_FILES_ONLY
 mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce', no_update = LOCAL_FILES_ONLY

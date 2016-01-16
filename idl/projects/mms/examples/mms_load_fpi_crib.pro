@@ -10,8 +10,8 @@
 ;     8/28/15: added modifications from Barbara Giles
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-08-28 11:59:21 -0700 (Fri, 28 Aug 2015) $
-; $LastChangedRevision: 18655 $
+; $LastChangedDate: 2016-01-15 08:50:35 -0800 (Fri, 15 Jan 2016) $
+; $LastChangedRevision: 19745 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_fpi_crib.pro $
 ;-
 timespan, '2015-08-15', 1, /day
@@ -91,8 +91,8 @@ options, espec_omni, spec=1, zlog=1, ylog=1, no_interp=1
 options, e_pad, spec=1, zlog=1, no_interp=1
 if autoscale eq 0 then zlim, electron_espec, .1, 10000
 if autoscale eq 0 then zlim, ion_espec, .1, 10000
-ylim, electron_espec, 0, 32
-ylim, ion_espec, 0, 32
+ylim, electron_espec, 0, 0, 1
+ylim, ion_espec, 0, 0, 1
 
 tplot_options,'xmargin',[15,10]              ; Set left/right margins to 10 characters
 ;tplot_options,'ymargin',[4,2]                ; Set top/bottom margins to 4/2 lines

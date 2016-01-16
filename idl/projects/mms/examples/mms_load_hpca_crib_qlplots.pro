@@ -4,9 +4,9 @@
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
 ;
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-12-07 13:43:52 -0800 (Mon, 07 Dec 2015) $
-; $LastChangedRevision: 19537 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-01-15 09:29:26 -0800 (Fri, 15 Jan 2016) $
+; $LastChangedRevision: 19747 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_hpca_crib_qlplots.pro $
 ;-
 
@@ -107,6 +107,10 @@ tplot_options, 'ymargin', [5, 5]
 ;  'mms1_hpca_hplus_RF_corrected_brst_srvy_anodes_0_15', $
 ;  'mms1_hpca_hplus_RF_corrected_brst_srvy_anodes_5_6', $
 ;  'mms1_hpca_hplus_RF_corrected_brst_srvy_anodes_13_14']
+
+; don't interpolate through the gaps for burst mode data
+tdegap, 'mms1_hpca_hplus_RF_corrected_brst_anodes_*', /overwrite
+
 panels=['mms_bss_burst', 'mms_bss_fast','mms_bss_status', $
    'mms1_hpca_hplus_RF_corrected_brst_anodes_0_15', $
    'mms1_hpca_hplus_RF_corrected_brst_anodes_5_6', $

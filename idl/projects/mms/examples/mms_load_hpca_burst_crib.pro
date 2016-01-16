@@ -4,9 +4,9 @@
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
 ;
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2015-09-30 14:09:50 -0700 (Wed, 30 Sep 2015) $
-; $LastChangedRevision: 18971 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-01-15 09:11:22 -0800 (Fri, 15 Jan 2016) $
+; $LastChangedRevision: 19746 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_hpca_burst_crib.pro $
 ;-
 
@@ -43,7 +43,10 @@ rf_corrected = ['mms1_hpca_hplus_RF_corrected_anodes_0_15', $
   'mms1_hpca_oplus_RF_corrected_anodes_0_15', $
   'mms1_hpca_heplus_RF_corrected_anodes_0_15', $
   'mms1_hpca_heplusplus_RF_corrected_anodes_0_15']
-  
+
+; don't interpolate through the gaps
+tdegap, rf_corrected, /overwrite
+
 ; show spectra for H+, O+ and He+, He++
 tplot, rf_corrected
 stop
@@ -52,6 +55,10 @@ stop
 mms_hpca_calc_anodes, fov=[0, 360], probe='1'
 mms_hpca_calc_anodes, fov=[0, 180], probe='1'
 mms_hpca_calc_anodes, fov=[180, 360], probe='1'
+
+; don't interpolate through the gaps
+tdegap, 'mms1_hpca_*plus_RF_corrected_elev_*', /overwrite
+
 ; plot each view
 tplot, ['mms1_hpca_hplus_RF_corrected_elev_*']  
 stop

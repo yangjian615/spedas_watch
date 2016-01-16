@@ -13,15 +13,17 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-10-06 15:48:11 -0700 (Tue, 06 Oct 2015) $
-; $LastChangedRevision: 19021 $
+; $LastChangedDate: 2016-01-15 08:21:27 -0800 (Fri, 15 Jan 2016) $
+; $LastChangedRevision: 19743 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_eis_crib.pro $
 ;-
+probe = '1'
+prefix = 'mms'+probe
 
 tplot_options, 'xmargin', [20, 15]
 
 ; load ExTOF data:
-mms_load_eis, probes='1', trange=['2015-08-15', '2015-08-16'], datatype='extof'
+mms_load_eis, probes=probe, trange=['2015-08-15', '2015-08-16'], datatype='extof'
 
 ; plot the H+ flux for all channels
 ylim, '*_extof_proton_flux_omni_spin', 50, 300, 1
@@ -35,13 +37,13 @@ tplot, '*_extof_proton_flux_omni_spin'
 stop
 
 ; calculate the PAD for 48-106keV protons
-mms_eis_pad, probe='1', species='ion', datatype='extof', ion_type='proton', data_units='flux', energy=[48, 106]
+mms_eis_pad, probe=probe, species='ion', datatype='extof', ion_type='proton', data_units='flux', energy=[48, 106]
 
 ; calculate the PAD for 105-250 keV protons
-mms_eis_pad, probe='1', species='ion', datatype='extof', ion_type='proton', data_units='flux', energy=[105, 250]
+mms_eis_pad, probe=probe, species='ion', datatype='extof', ion_type='proton', data_units='flux', energy=[105, 250]
 
 ; plot the PAD for 48-106keV (top), 105-250 keV (bottom) protons
-tplot, 'mms1_epd_eis_extof_*keV_proton_flux_pad_spin'
+tplot, '*_epd_eis_extof_*keV_proton_flux_pad_spin'
 stop
 
 ; plot the He++ flux for all channels
@@ -59,7 +61,7 @@ tplot, '*_extof_oxygen_flux_omni_spin'
 stop
 
 ; load PHxTOF data:
-mms_load_eis, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='phxtof'
+mms_load_eis, probes=probe, trange=['2015-07-31', '2015-08-01'], datatype='phxtof'
 
 ; plot the PHxTOF proton spectra
 ylim, '*_phxtof_proton_flux_omni_spin', 10, 50, 1
@@ -69,10 +71,10 @@ tplot, '*_phxtof_proton_flux_omni_spin'
 stop
 
 ; calculate the PHxTOF PAD for protons
-mms_eis_pad, probe='1', species='ion', datatype='phxtof', ion_type='proton', data_units='flux', energy=[0, 30]
+mms_eis_pad, probe=probe, species='ion', datatype='phxtof', ion_type='proton', data_units='flux', energy=[0, 30]
 
-tplot, ['mms1_epd_eis_phxtof_proton_flux_omni_spin', $
-        'mms1_epd_eis_phxtof_0-30keV_proton_flux_pad_spin']
+tplot, ['*_epd_eis_phxtof_proton_flux_omni_spin', $
+        '*_epd_eis_phxtof_0-30keV_proton_flux_pad_spin']
 stop
 
 ; plot the PHxTOF oxygen spectra (note from Barry Mauk: assumed to be oxygen; not terrifically discriminated)
@@ -81,17 +83,17 @@ zlim, '*_phxtof_oxygen_flux_omni_spin', 0, 0, 1
 options, '*_phxtof_oxygen_flux_omni_spin', ystyle=1
 
 ; calculate the PHxTOF PAD for oxygen
-mms_eis_pad, probe='1', species='ion', datatype='phxtof', ion_type='oxygen', data_units='flux', energy=[0, 175]
+mms_eis_pad, probe=probe, species='ion', datatype='phxtof', ion_type='oxygen', data_units='flux', energy=[0, 175]
 
-tplot, ['*_phxtof_oxygen_flux_omni_spin', 'mms1_epd_eis_phxtof_0-175keV_oxygen_flux_pad_spin']
+tplot, ['*_phxtof_oxygen_flux_omni_spin', '*_epd_eis_phxtof_0-175keV_oxygen_flux_pad_spin']
 stop
 
 ; load some electron data; note that the datatype for electron data is "electronenergy"
-mms_load_eis, probes='1', trange=['2015-08-15', '2015-08-16'], datatype='electronenergy'
-mms_eis_pad, probe='1', species='electron', datatype='electronenergy', data_units='flux'
+mms_load_eis, probes=probe, trange=['2015-08-15', '2015-08-16'], datatype='electronenergy'
+mms_eis_pad, probe=probe, species='electron', datatype='electronenergy', data_units='flux'
 
 ; plot the electron spectra
-tplot, ['mms1_epd_eis_electronenergy_electron_flux_omni_spin', 'mms1_epd_eis_electronenergy_*keV_electron_flux_pad_spin']
+tplot, ['*_epd_eis_electronenergy_electron_flux_omni_spin', '*_epd_eis_electronenergy_*keV_electron_flux_pad_spin']
 
 stop
 end

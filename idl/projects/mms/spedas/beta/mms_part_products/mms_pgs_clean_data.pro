@@ -1,11 +1,11 @@
 
 ;+
 ;Procedure:
-;  mms_pgs_clean_fpi
+;  mms_pgs_clean_data
 ;
 ;
 ;Purpose:
-;  Sanitize mms FPI data structures for use with
+;  Sanitize mms FPI/HPCA data structures for use with
 ;  mms_part_products.  Excess fields will be removed and 
 ;  field names conformed to standard.  
 ;
@@ -17,21 +17,22 @@
 ;
 ;
 ;Output:
-;  output: Sanitized output structure for use within thm_part_products.
+;  output: Sanitized output structure for use within mms_part_products.
 ;
 ;
 ;Notes:
 ;  -not much should be happening here since the combined structures 
-;   are already fairly pruned   
+;   are already fairly pruned
+;  -use for fpi and hpca for now
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-01-04 15:45:26 -0800 (Mon, 04 Jan 2016) $
-;$LastChangedRevision: 19673 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_clean_fpi.pro $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-01-15 11:37:57 -0800 (Fri, 15 Jan 2016) $
+;$LastChangedRevision: 19748 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_clean_data.pro $
 ;
 ;-
-pro mms_pgs_clean_fpi, data_in, output=output,units=units
+pro mms_pgs_clean_data, data_in, output=output,units=units
 
   compile_opt idl2,hidden
   

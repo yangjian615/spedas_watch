@@ -17,9 +17,9 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-01-04 16:08:57 -0800 (Mon, 04 Jan 2016) $
-;$LastChangedRevision: 19676 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-01-15 16:04:49 -0800 (Fri, 15 Jan 2016) $
+;$LastChangedRevision: 19750 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 
@@ -182,10 +182,10 @@ pro mms_part_products, $
   ;Get array of sample times and initialize indices for loop
   ;--------------------------------------------------------
   
-  get_data,in_tvarname,times
+  times = mms_get_dist(in_tvarname, /times)
 
   if size(times,/type) ne 5 then begin
-    dprint,dlevel=1, 'No ',inst_format,' data has been loaded.  Use thm_part_load to load particle data.'
+    dprint,dlevel=1, 'No ',in_tvarname,' data has been loaded.
     return
   endif
 
@@ -195,7 +195,7 @@ pro mms_part_products, $
     time_idx = where(times ge trd[0] and times le trd[1], nt)
 
     if nt lt 1 then begin
-      dprint,dlevel=1, 'No ',inst_format,' data for time range ',time_string(trd)
+      dprint,dlevel=1, 'No ',in_tvarname,' data for time range ',time_string(trd)
       return
     endif
     
@@ -244,13 +244,13 @@ pro mms_part_products, $
     ;Get the data structure for this samgple
     ;only FPI, atm
 
-    dist = mms_get_fpi_dist(in_tvarname,time_idx[i],/structure)
+    dist = mms_get_dist(in_tvarname,time_idx[i],/structure)
 
     ;Sanitize Data.
     ;#1 removes uneeded fields from struct to increase efficiency
     ;#2 Reforms into angle by energy data 
   
-    mms_pgs_clean_fpi,dist,output=clean_data,units=units_lc
+    mms_pgs_clean_data,dist,output=clean_data,units=units_lc
     
     ;Copy bin status prior to application of angle/energy limits.
     ;Phi limits will need to be re-applied later after phi bins
