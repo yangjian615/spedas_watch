@@ -16,8 +16,8 @@
 ; HISTORY: Created by Aaron W Breneman, May 2014
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2015-11-23 13:39:04 -0800 (Mon, 23 Nov 2015) $
-;   $LastChangedRevision: 19455 $
+;   $LastChangedDate: 2016-01-17 11:18:47 -0800 (Sun, 17 Jan 2016) $
+;   $LastChangedRevision: 19751 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l3.pro $
 ;-
 
@@ -256,6 +256,21 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   cdf_varput,cdfid,'epoch',epoch
   cdf_varput,cdfid,'flags_all',transpose(flag_arr)
   cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
+
+
+
+;;--------------------------------------------------
+;;Remove values during eclipse times
+;;--------------------------------------------------
+
+  goo = where(flags[*,2] eq 1)
+
+  if goo[0] ne -1 then begin
+     spinfit_vxb[goo,*] = !values.f_nan
+     spinfit_vxb_coro[goo,*] = !values.f_nan
+     dens.y[goo] = !values.f_nan
+     sum12[goo] = !values.f_nan
+  endif
 
  
 ;--------------------------------------------------
