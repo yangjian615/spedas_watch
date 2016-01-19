@@ -1,52 +1,51 @@
 
 
-
-pro ksem_ccsds_pkt_handler,buffer,ptp_header=ptp_header
-
-
-  if debug(3) then begin
-    dprint,dlevel=3,time_string(ptp_header.ptp_time)
-    hexprint,buffer[0:31]
-  endif
-
-  ccsds=ksem_ccsds_decom(buffer)
-
-  if ~keyword_set(ccsds) then begin
-    dprint,dlevel=2,'Invalid CCSDS packet'
-    dprint,dlevel=2,time_string(ptp_header.ptp_time)
-    ;    hexprint,buffer
-    return
-  endif
-
-  if debug(4) then begin
-    dprint,dlevel=3,time_string(ccsds.time)
-    hexprint,ccsds.data[0:31]
-  endif
-
-  if 1 then begin
-    ksem_apid_data,ccsds.apid,apdata=apdat,/increment
-    if (size(/type,*apdat.last_ccsds) eq 8)  then begin    ; look for data gaps
-      dseq = (( ccsds.seq_cntr - (*apdat.last_ccsds).seq_cntr ) and '3fff'x) -1
-      if dseq ne 0  then begin
-        ccsds.gap = 1
-        dprint,dlevel=3,format='("Lost ",i5," ", Z03, " packets")',dseq,apdat.apid
-      endif
-    endif
-    if keyword_set(apdat.routine) then begin
-      strct = call_function(apdat.routine,ccsds,ptp_header=ptp_header,apdat=apdat)
-      if  apdat.save && keyword_set(strct) then begin
-        ;        if ccsds.gap eq 1 then append_array, *apdat.dataptr, fill_nan(strct), index = *apdat.dataindex
-        append_array, *apdat.dataptr, strct, index = *apdat.dataindex
-      endif
-      if apdat.rt_flag && apdat.rt_tags then begin
-        ;        if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-        store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags, /append
-      endif
-    endif
-    *apdat.last_ccsds = ccsds
-  endif
-
-end
+;pro ksem_ccsds_pkt_handler,buffer,ptp_header=ptp_header
+;
+;
+;  if debug(3) then begin
+;    dprint,dlevel=3,time_string(ptp_header.ptp_time)
+;    hexprint,buffer[0:31]
+;  endif
+;
+;  ccsds=ksem_ccsds_decom(buffer)
+;
+;  if ~keyword_set(ccsds) then begin
+;    dprint,dlevel=2,'Invalid CCSDS packet'
+;    dprint,dlevel=2,time_string(ptp_header.ptp_time)
+;    ;    hexprint,buffer
+;    return
+;  endif
+;
+;  if debug(4) then begin
+;    dprint,dlevel=3,time_string(ccsds.time)
+;    hexprint,ccsds.data[0:31]
+;  endif
+;
+;  if 1 then begin
+;    ksem_apid_data,ccsds.apid,apdata=apdat,/increment
+;    if (size(/type,*apdat.last_ccsds) eq 8)  then begin    ; look for data gaps
+;      dseq = (( ccsds.seq_cntr - (*apdat.last_ccsds).seq_cntr ) and '3fff'x) -1
+;      if dseq ne 0  then begin
+;        ccsds.gap = 1
+;        dprint,dlevel=3,format='("Lost ",i5," ", Z03, " packets")',dseq,apdat.apid
+;      endif
+;    endif
+;    if keyword_set(apdat.routine) then begin
+;      strct = call_function(apdat.routine,ccsds,ptp_header=ptp_header,apdat=apdat)
+;      if  apdat.save && keyword_set(strct) then begin
+;        ;        if ccsds.gap eq 1 then append_array, *apdat.dataptr, fill_nan(strct), index = *apdat.dataindex
+;        append_array, *apdat.dataptr, strct, index = *apdat.dataindex
+;      endif
+;      if apdat.rt_flag && apdat.rt_tags then begin
+;        ;        if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
+;        store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags, /append
+;      endif
+;    endif
+;    *apdat.last_ccsds = ccsds
+;  endif
+;
+;end
 
 
 
@@ -74,6 +73,25 @@ function ksem_swemulator_time_status,buffer   ;  decoms 12 Word time and status 
   return,ts
 end
 
+
+
+
+
+
+
+pro ksem_recorders
+  common ksem_crib_com, recorder_base1, recorder_base2,exec_base
+  exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
+
+  ;host = 'ABIAD-SW'
+  ;host = 'localhost'
+  host = '128.32.98.101'  ;  room 160 Silver
+  ;host = '128.32.13.37'   ;  room 133 addition
+  ;  recorder,recorder_base1,title='GSEOS PTP room 320',port=2024,host='ABIAD-SW',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  ;  recorder,recorder_base2,title='GSEOS PTP 133 addition',port=2024,host='128.32.13.37',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  recorder,recorder_base2,title='KSEM room 160',port=4040,host='128.32.98.101' ,exec_proc='ksem_msg_stream_read',destination='ksem_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  printdat,recorder_base,filename,exec_base,/value
+end
 
 
 
@@ -164,21 +182,5 @@ endif
 end
 
 
-
-
-
-pro ksem_recorders
-  common ksem_crib_com, recorder_base1, recorder_base2,exec_base
-  exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
-
-  ;host = 'ABIAD-SW'
-  ;host = 'localhost'
-  host = '128.32.98.101'  ;  room 160 Silver
-  ;host = '128.32.13.37'   ;  room 133 addition
-;  recorder,recorder_base1,title='GSEOS PTP room 320',port=2024,host='ABIAD-SW',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-;  recorder,recorder_base2,title='GSEOS PTP 133 addition',port=2024,host='128.32.13.37',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  recorder,recorder_base2,title='KSEM room 160',port=4040,host='128.32.98.101' ,exec_proc='ksem_msg_stream_read',destination='ksem_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  printdat,recorder_base,filename,exec_base,/value
-end
 
 

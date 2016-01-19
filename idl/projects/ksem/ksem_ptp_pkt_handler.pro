@@ -132,10 +132,9 @@ function ksem_noise_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
 ;  str = create_struct(ptp_header,ccsds)
 
-  ;  dprint,format="('Generic routine for ',Z04)",ccsds.apid
   if debug(3) && 1 then begin
-    dprint,dlevel=2,'noise',ccsds.size+7, n_elements(ccsds.data),  ccsds.apid
-    hexprint,ccsds.data
+    dprint,dlevel=2,'noise',ccsds.size+7, n_elements(ccsds.data),  ccsds.apid,' ',time_string(ccsds.time)
+;    hexprint,ccsds.data
   endif
   
   if ccsds.size+7 ne 180 then begin
@@ -149,12 +148,13 @@ function ksem_noise_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   
   dat = swap_endian(/swap_if_little_endian,  uint(ccsds.data[20:*],0,80) )
 
-  if debug(3)  then dprint,time_string(ccsds.time)
+;  if debug(3)  then dprint,time_string(ccsds.time)
+  t = ccsds.time
 
   if ptr_valid(apdat.usr_ptr) && keyword_set(*apdat.usr_ptr) then begin    
     delta_data = uint(dat - *apdat.usr_ptr)
     str = { $
-      time: ccsds.time, $
+      time: t, $
       seq_cntr: ccsds.seq_cntr, $
       ddata:  float(delta_data), $
       gap:0 }
@@ -175,8 +175,8 @@ function ksem_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   ;  dprint,format="('Generic routine for ',Z04)",ccsds.apid
   if debug(3) && 1 then begin
-    dprint,dlevel=2,'hkp',ccsds.size+7, n_elements(ccsds.data),  ccsds.apid
-    hexprint,ccsds.data
+    dprint,dlevel=2,'hkp',ccsds.size+7, n_elements(ccsds.data),  ccsds.apid,' ',time_string(ccsds.time)
+    hexprint,ccsds.data[0:31]
   endif
   
   if n_elements(ccsds.data) ne 76 then begin
@@ -221,13 +221,23 @@ function ksem_science_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 ;  str = create_struct(ptp_header,ccsds)
   ;  dprint,format="('Generic routine for ',Z04)",ccsds.apid
   if debug(3) && 1 then begin
-    dprint,dlevel=3,'generic',ccsds.size+7, n_elements(ccsds.data)
+    dprint,dlevel=2,'science',ccsds.size+7, n_elements(ccsds.data),  ccsds.apid,' ',time_string(ccsds.time)
+
     hexprint,ccsds.data[0:31]
 ;    printdat,ccsds
   endif
   
+  t = ptp_header.ptp_time
+  t = ccsds.time
+  
+  if n_elements(ccsds.data) ne 532 then begin
+    dprint,'Incorrect science packet size'
+    dprint,phelp=2,ccsds
+    return, 0
+  endif
+  
   d = swap_endian(/swap_if_little_endian,  uint(ccsds.data[20:*],0,256) ) 
-  str = {time:ptp_header.ptp_time ,$
+  str = {time:t ,$
          seq_cntr: ccsds.seq_cntr, $
          data:  float(d) , $
          gap:0 }
@@ -340,6 +350,11 @@ pro ksem_apid_data,apid,name=name,clear=clear,reset=reset,save=save,finish=finis
   endif
 end
 
+
+pro ksem_tplot_init
+  options,'*FLAGS',tplot_routine='bitplot'
+
+end
 
 
 pro ksem_apid_data_init,save=save,rt_flag=rt_flag,reset=reset

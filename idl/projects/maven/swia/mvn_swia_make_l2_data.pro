@@ -20,8 +20,8 @@
 ;	OLDCAL: Use old calibration factors appropriate for original table
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-11-12 10:06:11 -0800 (Thu, 12 Nov 2015) $
-; $LastChangedRevision: 19344 $
+; $LastChangedDate: 2016-01-18 10:26:16 -0800 (Mon, 18 Jan 2016) $
+; $LastChangedRevision: 19752 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_l2_data.pro $
 ;
 ;-
@@ -85,28 +85,28 @@ for i = 0,days-1 do begin
 			ct0 = swics[0].time_unix
 			newc = 1
 		endif else newc = 0
-	endif
+	endif else newc = 0
 	
 	if n_elements(swifs) gt 1 then begin
 		if swifs[0].time_unix ne ft0 then begin
 			ft0 = swifs[0].time_unix
 			newf = 1
 		endif else newf = 0
-	endif
+	endif else newf = 0
 	
 	if n_elements(swica) gt 1 then begin
 		if swica[0].time_unix ne cat0 then begin
 			cat0 = swica[0].time_unix
 			newca = 1
 		endif else newca = 0
-	endif
+	endif else newca = 0
 	
 	if n_elements(swifa) gt 1 then begin
 		if swifa[0].time_unix ne fat0 then begin
 			fat0 = swifa[0].time_unix
 			newfa = 1
 		endif else newfa = 0
-	endif
+	endif else newfa = 0
 	
 	if type eq 'arc' then begin
 		newc = newca
@@ -118,14 +118,14 @@ for i = 0,days-1 do begin
 			mt0 = swim[0].time_unix
 			newm = 1
 		endif else newm = 0
-	endif
+	endif else newm = 0
 	
 	if n_elements(swis) gt 1 then begin
 		if swis[0].time_unix ne st0 then begin
 			st0 = swis[0].time_unix
 			news = 1
 		endif else news = 0
-	endif
+	endif else news = 0
 		
 	if newc then mvn_swia_make_swic_cdf,archive = archive,data_version='v'+version+'r'+revision,file = opath+yyyy+'/'+mmmm+'/mvn_swi_l2_coarse'+type+'3d_'+yyyy+mmmm+dddd+'_v'+version+'_r'+revision+'.cdf'
 	if newf then mvn_swia_make_swif_cdf,archive = archive,data_version='v'+version+'r'+revision,file = opath+yyyy+'/'+mmmm+'/mvn_swi_l2_fine'+type+'3d_'+yyyy+mmmm+dddd+'_v'+version+'_r'+revision+'.cdf'
