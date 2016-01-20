@@ -4,16 +4,17 @@
 ; SYNTAX: 
 ;       mvn_euv_load, trange=trange
 ; PURPOSE:
-;       Load procedure for EUV L2 data
+;       Load procedure for the calibrated EUV irradiances, for
+;       channels A (17-22 nm), B (0-7 nm), and C (121-122 nm).
 ; INPUTS
 ;       trange
 ; OUTPUT: 
 ; KEYWORDS: 
 ; HISTORY:      
 ; VERSION: 
-;  $LastChangedBy: davin-mac $
-;  $LastChangedDate: 2015-11-25 14:19:09 -0800 (Wed, 25 Nov 2015) $
-;  $LastChangedRevision: 19482 $
+;  $LastChangedBy: clee $
+;  $LastChangedDate: 2016-01-19 13:16:23 -0800 (Tue, 19 Jan 2016) $
+;  $LastChangedRevision: 19758 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/euv/mvn_euv_load.pro $
 ;
 ;CREATED BY:  Christina O. Lee  02-24-15

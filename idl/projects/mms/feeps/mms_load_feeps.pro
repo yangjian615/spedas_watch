@@ -53,90 +53,10 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-14 15:38:02 -0800 (Thu, 14 Jan 2016) $
-;$LastChangedRevision: 19734 $
+;$LastChangedDate: 2016-01-19 15:25:55 -0800 (Tue, 19 Jan 2016) $
+;$LastChangedRevision: 19762 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
-pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
-                        suffix = suffix
-    if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
-    if undefined(datatype) then datatype = 'electron'
-    if undefined(data_units) then data_units = 'intensity'
-    if undefined(suffix) then suffix='' 
-    ;electron_idxs = [0, 1, 2, 3, 4, 8, 9, 10, 11] ; all 9, but some are missing at the moment
-    electron_idxs = [2, 3, 4, 10, 11]
-    ion_idxs = [5, 6, 7]
-    num_sensors = datatype eq 'electron' ? n_elements(electron_idxs) : n_elements(ion_idxs)
-    sensors = datatype eq 'electron' ? electron_idxs : ion_idxs
-
-    prefix = 'mms'+probe+'_epd_feeps_'
-    ; get the spin #s associated with each measurement
-    get_data, prefix + 'spin' + suffix, data=spin_nums
-
-    ; find where the spins start
-    if ~is_struct(spin_nums) then begin
-        dprint, dlevel = 0, 'Error, couldn''t find the tplot variable containing spin #s to do spin averaging'
-        return
-    endif
-    spin_starts = uniq(spin_nums.Y)
-
-    prefix = 'mms'+probe+'_epd_feeps_top_intensity_sensorID_'    
-    ; loop over the sensors
-    for scope_idx = 0, num_sensors-1 do begin
-        sensor = strcompress(string(sensors[scope_idx]+1), /rem)
-        get_data, prefix+sensor+suffix, data=flux_data, dlimits=flux_dl
-        if ~is_struct(flux_data) || ~is_struct(flux_dl) then begin
-            dprint, dlevel = 0, 'Error, no data or metadata for the variable: ' + prefix+sensor+suffix
-            continue
-        endif
-
-        spin_sum_flux = dblarr(n_elements(spin_starts), n_elements(flux_data.Y[0, *]))
-
-        current_start = 0
-        ; loop through the spins for this telescope
-        for spin_idx = 0, n_elements(spin_starts)-1 do begin
-            ;spin_sum_flux[spin_idx, *] = total(flux_data.Y[current_start:spin_starts[spin_idx], *], 1)
-            spin_sum_flux[spin_idx, *] = average(flux_data.Y[current_start:spin_starts[spin_idx], *], 1)
-
-            current_start = spin_starts[spin_idx]+1
-        endfor
-        store_data, prefix+sensor+'_spin'+suffix, data={x: spin_nums.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
-        options, prefix+sensor+'_spin'+suffix, spec=1
-        ylim, prefix+sensor+'_spin'+suffix, 50., 600., 1
-        zlim, prefix+sensor+'_spin'+suffix, 0, 0, 1
-    endfor
-end
-
-; this function splits the last integral channel from the spectra
-pro mms_feeps_split_integral_ch, type, species, probe, suffix = suffix
-    if undefined(species) then species = 'electron' ; default to electrons
-    if undefined(probe) then probe = '1' ; default to probe 1
-    if undefined(suffix) then suffix = ''
-    
-    if species eq 'electron' then sensors = [3, 4, 5, 11, 12] else sensors = [6, 7, 8]
-    
-    for sensor_idx = 0, n_elements(sensors)-1 do begin
-        top_name = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx])+suffix, /rem)
-        bottom_name = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx])+suffix, /rem)
-        get_data, top_name, data=top_data, dlimits=top_dl
-        get_data, bottom_name, data=bottom_data, dlimits=bottom_dl
-        
-        store_data, top_name+'_clean', data={x: top_data.X, y: top_data.Y[*, 0:n_elements(top_data.V)-2], v: top_data.V[0:n_elements(top_data.V)-2]}, dlimits=top_dl
-        store_data, bottom_name+'_clean', data={x: bottom_data.X, y: bottom_data.Y[*, 0:n_elements(bottom_data.V)-2], v: bottom_data.V[0:n_elements(bottom_data.V)-2]}, dlimits=bottom_dl
-        
-        ; limit the lower energy plotted 
-        options, top_name+'_clean', ystyle=1
-        options, bottom_name+'_clean', ystyle=1
-        ylim, top_name+'_clean', 71, 510., 1
-        ylim, bottom_name+'_clean', 71, 510., 1
-        zlim, top_name+'_clean', 0, 0, 1
-        zlim, bottom_name+'_clean', 0, 0, 1
-        
-        ; store the integral channel
-        store_data, top_name+'_500keV_int', data={x: top_data.X, y: top_data.Y[*, n_elements(bottom_data.V)-1]}
-        store_data, bottom_name+'_500keV_int', data={x: bottom_data.X, y: bottom_data.Y[*, n_elements(bottom_data.V)-1]}
-    endfor
-end
 
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $

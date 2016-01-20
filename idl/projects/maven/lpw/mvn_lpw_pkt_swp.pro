@@ -217,7 +217,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 data.x       = time                                                                                                                
                 for i=0L,nn_pktnum-1 do begin
                   data.y[i]  = bias_arr[2048-output_swp_dyn_offset[i],swpn]    ; Volt 
-                  data.dy[i] = (bias_arr[(output_swp_dyn_offset[i]-1)>0,1]-bias_arr[((output_swp_dyn_offset[i]+1)>0)<4095,1])*0.5  
+                  data.dy[i] = (bias_arr[(output_swp_dyn_offset[i]-1)>0,1]-bias_arr[(output_swp_dyn_offset[i]+1)<4095,1])*0.5  
                                                                          ; the derived error is the dV/2 of the two next to each other bins              
                  endfor  
                 ;-------------------------------------------
@@ -351,20 +351,22 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 ;---------------------------------------------
           endif   
          
-          
+    
 
        IF tplot_var EQ 'ALL' THEN BEGIN   ;< ----  
+         ;--------------- variable:  offsets:izero  this is the individual measurements, not used in the L2 production ---------------------------
+
+         data =  create_struct(   $
+           'x',    dblarr(nn_pktnum) ,  $     ; double 1-D arr
+           'y',    fltarr(nn_pktnum,2) ,  $     ; most of the time float and 1-D or 2-D
+           'dy',   fltarr(nn_pktnum,2) )     ;1-D
+         ;-------------- derive  time/variable ----------------
+         data.x = time
+         ;--------------
             get_data,'mvn_lpw_pas_V'+strtrim(vnum,2),data=data2,limit=limit2,dlimit=dlimit2   ;to correct for the potential
             tmp=size(data2)
             if tmp[0] EQ 1 then begin           ;<---------- double check that PAS information exists   
-                ;--------------- variable:  offsets:izero  this is the individual measurements, not used in the L2 production ---------------------------
-                
-                data =  create_struct(   $           
-                                         'x',    dblarr(nn_pktnum) ,  $     ; double 1-D arr
-                                         'y',    fltarr(nn_pktnum,2) ,  $     ; most of the time float and 1-D or 2-D
-                                         'dy',   fltarr(nn_pktnum,2) )     ;1-D 
-                ;-------------- derive  time/variable ----------------     
-                data.x = time                                                                                                                
+                pas_v = ' Potential from PAS subcycle used for calibration'
                 index_pas_v=nn_pa*(lindgen(n_elements(data2.x)/nn_pa)) +(nn_pa-1) ; find the last voltage point in each packet               
                 pas_time=data2.x(index_pas_v)
                 pas_volt=data2.y(index_pas_v)                  
@@ -377,6 +379,22 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                       data.dy[i,0]  = 1.*16
                       data.dy[i,1]  =  mvn_lpw_cal_swp_izero(pas_volt[nq],1.*16,0,swpn)  
                 endfor  
+               ENDIF ELSE BEGIN
+                 get_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_V'+strtrim(vnum,2),data=data2,limit=limit2,dlimit=dlimit2   ;to correct for the potential
+                 pas_v = ' Potential for calibration from boom 2 this subcycle  ZEROD OUT'
+                 index_pas_v=nn_pa*(lindgen(n_elements(data2.x)/nn_pa)) +(nn_pa-1) ; find the last voltage point in each packet
+                 pas_time=data2.x(index_pas_v)
+                 pas_volt=data2.y(index_pas_v) *0.0
+                 for i=0L,nn_pktnum-1 do begin
+                   data.y[i,0] = output_I_ZERO[i]*16                             ; this is the i_zero uncorrected from each packet,converted to the same resolution as all the other currents
+                   tmp2           = min( abs(data.x(i) -   pas_time),nq )   ;find the last measurement in the PAS paket which was taken at the same time as the i_zero measurement
+                   if  pas_time(nq) GT data.x(i) then nq=nq-1       ;make sure that the order of the packets are correct
+                   nq            = (nq > 1) <(n_elements(data2.x)-1)
+                   data.y[i,1]   =  mvn_lpw_cal_swp_izero(pas_volt[nq],output_I_ZERO[i]*16,0,swpn)
+                   data.dy[i,0]  = 1.*16
+                   data.dy[i,1]  =  mvn_lpw_cal_swp_izero(pas_volt[nq],1.*16,0,swpn)
+                 endfor              
+               ENDELSE
                 ;-------------------------------------------
                 ;--------------- dlimit   ------------------
                 dlimit=create_struct(   $                           
@@ -407,7 +425,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                    'SPICE_kernel_flag'      ,       spice_used, $                   
                    'L0_datafile'     ,              filename_L0 , $ 
                    'cal_vers'        ,              cal_ver+' # '+pkt_ver ,$     
-                   'cal_y_const1'    ,              'Used: '+' # '+dlimit2.cal_y_const1 +' # and cal-izero',$ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+                   'cal_y_const1'    ,              'Used: '+' # '+dlimit2.cal_y_const1 +' # and cal-izero '+ pas_v,$ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
                    ;'cal_y_const2'    ,             'Used :' , $  ; Fixed convert information from measured binary values to physical units, variables from space testing
                    ;'cal_datafile'    ,             'No calibration file used' , $
                    'cal_source'      ,              'Used PKT: SWP'+strtrim(swpn,2)+' and from PAS toget the voltage associated with the measured izero', $     
@@ -431,7 +449,7 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 store_data,'mvn_lpw_swp'+strtrim(swpn,2)+'_izero',data=data,limit=limit,dlimit=dlimit
                 ;---------------------------------------------
              ENDIF
-           endif 
+          
                 
                             
                 

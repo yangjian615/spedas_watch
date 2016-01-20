@@ -193,6 +193,8 @@ function ksem_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   err1s = [ishft(err1,-12),ishft(err1,-8),ishft(err1,-4),err1] and 'f'x
   err2 = d[25]
   err2s = [ishft(err2,-8),err2] and 'ff'x
+  rates = d[16:23]
+  rates = rates[[0,1,3,2,4,5,7,6]]     ; remove this line when Jianxin fixes order
   str = {time:t ,$
     seq_cntr: ccsds.seq_cntr, $
     MON:  d[0:7],  $
@@ -206,7 +208,7 @@ function ksem_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     maddr: d[13], $  
     chksum:  b[27], $
     pps:  b[28], $
-    rates:   d[16:23], $   ; check order - not consistent in doc
+    rates: rates, $   ; check order - not consistent in doc
     err1: err1s , $
     err2: err2s , $  
     gap:0 }

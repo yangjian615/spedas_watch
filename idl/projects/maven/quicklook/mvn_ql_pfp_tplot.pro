@@ -51,8 +51,11 @@
 ;                    - Sun direction in the payload coordinates used
 ;                      to check the MAG rolls.
 ;
-;     SWIA, SWEA, STATIC, SEP, MAG, LPW individual instruments' switches to load:
-;                 Default = 1. If they set to be zero (e.g., swia=0), it skips to load.                 
+;SPACEWEATHER:    If set, some representative tplot variables useful
+;                 for the spaceweather studies will be created. 
+;
+;     SWIA, SWEA, STATIC, SEP, MAG, LPW, EUV individual instruments' switches to load:
+;                 Default = 1 except for EUV. If they set to be zero (e.g., swia=0), it skips to load.                 
 ;
 ;NOTE:            This routine is assumed to be used when there are
 ;                 no tplot variables.
@@ -61,8 +64,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-09-12 20:20:47 -0700 (Sat, 12 Sep 2015) $
-; $LastChangedRevision: 18780 $
+; $LastChangedDate: 2016-01-19 14:53:33 -0800 (Tue, 19 Jan 2016) $
+; $LastChangedRevision: 19761 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -142,7 +145,7 @@ END
 PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
                       pad=pad, tplot=tplot, window=window, tname=ptname, phobos=phobos, $
                       bcrust=bcrust, burst_bar=bbar, bvec=bvec, sundir=sundir, tohban=tohban, tobhan=tobhan, $
-                      swia=swi, swea=swe, static=sta, sep=sep, mag=mag, lpw=lpw
+                      swia=swi, swea=swe, static=sta, sep=sep, mag=mag, lpw=lpw, euv=euv, spaceweather=spw
 
   oneday = 24.d0 * 3600.d0
   nan = !values.f_nan
@@ -173,19 +176,34 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      dprint, 'You must set the specified time interval to load.'
      RETURN
   ENDIF
+
+  IF KEYWORD_SET(spw) THEN BEGIN
+     IF SIZE(swi, /type) EQ 0 THEN swi = 1
+     IF SIZE(swe, /type) EQ 0 THEN swe = 1
+     IF SIZE(sta, /type) EQ 0 THEN sta = 0
+     IF SIZE(sep, /type) EQ 0 THEN sep = 1
+     IF SIZE(mag, /type) EQ 0 THEN mag = 0
+     IF SIZE(lpw, /type) EQ 0 THEN lpw = 0
+     IF SIZE(euv, /type) EQ 0 THEN euv = 1
+     IF SIZE(bbar, /type) EQ 0 THEN bbar = 1
+  ENDIF 
+
   IF SIZE(swi, /type) EQ 0 THEN iflg = 1 ELSE iflg = swi 
   IF SIZE(swe, /type) EQ 0 THEN eflg = 1 ELSE eflg = swe 
   IF SIZE(sta, /type) EQ 0 THEN tflg = 1 ELSE tflg = sta 
   IF SIZE(sep, /type) EQ 0 THEN pflg = 1 ELSE pflg = sep 
   IF SIZE(mag, /type) EQ 0 THEN mflg = 1 ELSE mflg = mag 
   IF SIZE(lpw, /type) EQ 0 THEN lflg = 1 ELSE lflg = lpw 
-  IF keyword_set(tobhan) THEN tohban = 1 ; Many people tend to mistake its spelling...
+  IF SIZE(euv, /type) EQ 0 THEN vflg = 0 ELSE vflg = euv ; Perhaps it changes someday... 
+  IF keyword_set(tobhan) THEN BEGIN
+     dprint, 'It is a misspelling! (Tobhan -> Tohban)...', dlevel=2, verbose=verbose
+     tohban = 1                 ; Many people tend to mistake its spelling...
+  ENDIF 
   IF keyword_set(tohban) THEN BEGIN
      IF SIZE(bbar, /type) EQ 0 THEN bbar = 1
      IF SIZE(phobos, /type) EQ 0 THEN phobos = 1
      IF SIZE(sundir, /type) EQ 0 THEN sundir = 1
   ENDIF 
-
   ; SPICE
   status = EXECUTE("mvn_spice_load, trange=trange, /download_only, verbose=verbose")
   IF status EQ 0 THEN $
@@ -430,6 +448,27 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      undefine, lpath, lname, lfile
   ENDIF 
 
+  ; EUV
+  IF (vflg) THEN BEGIN
+     mvn_euv_load, /all
+     get_data, 'mvn_euv_data', data=vd
+     get_data, 'mvn_euv_flag', data=vf
+     w = WHERE(vf.y EQ 0, nw)
+     IF nw GT 0 THEN vd = {x: vd.x[w], y: vd.y[w, *]} $
+     ELSE vd = {x: trange, y: REFORM(REPLICATE(nan, 6), [2, 3])}
+     undefine, w, nw
+
+     store_data, 'mvn_euv_irrad', data=vd, dlim={datagap: 60., ysubtitle: '[W/m!E2!N]', ytickformat: 'mvn_ql_pfp_tplot_ytickname_plus_log', ylog: 1}
+     split_vec, 'mvn_euv_irrad', suffix='_ch_' + ['a', 'b', 'c']
+     options, 'mvn_euv_irrad', labels=['ch_a:!C  17-22 nm', 'ch_b:!C  0-7 nm', 'ch_c:!C  121-122 nm'], $
+              ytitle='EUV!CIrradiance', labflag=1, colors='bgr', /def
+     options, 'mvn_euv_irrad', labsize=0.8
+     options, 'mvn_euv_irrad_ch_a', ytitle='EUV!C17-22 nm', /def
+     options, 'mvn_euv_irrad_ch_b', ytitle='EUV!C0-7 nm', /def
+     options, 'mvn_euv_irrad_ch_c', ytitle='EUV!C121-122 nm', /def
+     store_data, 'mvn_euv_' + ['data', 'dfreq', 'ddata', 'flag'], /delete, verbose=verbose
+  ENDIF 
+
   ; MAG 
   bvec = 'mvn_mag_bmso_1sec'
   IF (mflg) THEN BEGIN
@@ -596,9 +635,13 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   tplot_options, opt=topt 
   IF keyword_set(tplot) THEN BEGIN
      IF SIZE(ptname, /type) EQ 0 THEN BEGIN
-        ptname = ['mvn_sep1_B-O_Eflux_Energy', 'mvn_sep2_B-O_Eflux_Energy', $
-                  'mvn_sta_c0_e', 'mvn_sta_c6_m', 'mvn_swis_en_eflux', $
-                  'mvn_swe_etspec', 'mvn_mag_bamp', bvec, 'alt2']
+        IF KEYWORD_SET(spw) THEN $
+           ptname = ['mvn_euv_irrad_ch_b', 'mvn_sep1_B-O_Eflux_Energy', 'mvn_sep2_B-O_Eflux_Energy', $
+                     'mvn_swis_en_eflux', 'mvn_swe_etspec', 'alt2'] $
+        ELSE $
+           ptname = ['mvn_sep1_B-O_Eflux_Energy', 'mvn_sep2_B-O_Eflux_Energy', $
+                     'mvn_sta_c0_e', 'mvn_sta_c6_m', 'mvn_swis_en_eflux', $
+                     'mvn_swe_etspec', 'mvn_mag_bamp', bvec, 'alt2']
 
         IF keyword_set(bbar) THEN ptname = [ptname, 'burst_flag'] 
         IF keyword_set(tohban) THEN ptname = ['mvn_sundir_payload', 'Phobos-MAVEN', ptname]

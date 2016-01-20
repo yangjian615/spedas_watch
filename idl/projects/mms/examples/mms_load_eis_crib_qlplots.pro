@@ -4,9 +4,9 @@
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
 ;
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2016-01-13 09:03:40 -0800 (Wed, 13 Jan 2016) $
-; $LastChangedRevision: 19722 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-01-19 15:31:05 -0800 (Tue, 19 Jan 2016) $
+; $LastChangedRevision: 19763 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -42,11 +42,6 @@ mms_load_eis, probes=probe, trange=trange, datatype='electronenergy', level='l1b
 
 ; load DFG data
 mms_load_dfg, probes=probe, trange=trange, level='ql'
-
-; add a dashed line at zero for FGM data
-tr=timerange()
-store_data, 'dline0', data={x:tr, y:[0,0]}
-options, 'dline0', linestyle=2
 
 ; setup for plotting the proton flux for all channels
 ylim, prefix+'_electronenergy_electron_flux_omni_spin', 30, 1000, 1

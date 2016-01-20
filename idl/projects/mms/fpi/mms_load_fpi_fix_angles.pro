@@ -11,8 +11,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-23 09:07:16 -0800 (Wed, 23 Dec 2015) $
-;$LastChangedRevision: 19653 $
+;$LastChangedDate: 2016-01-19 08:43:08 -0800 (Tue, 19 Jan 2016) $
+;$LastChangedRevision: 19755 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_angles.pro $
 ;-
 pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, level = level
@@ -27,6 +27,10 @@ pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, lev
     if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
     prefix = 'mms' + probe
     fpi_angles = mms_fpi_angles()
+    
+    ; in case the user passes datatype = '*'
+    if (datatype[0] eq '*' || datatype[0] eq '') && level eq 'ql' then datatype=['des', 'dis']
+    if (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist']
 
     ; the following works because the FPI spectra datatypes are:
     ; QL: des, dis

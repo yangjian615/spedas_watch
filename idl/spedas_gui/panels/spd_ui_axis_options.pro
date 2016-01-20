@@ -22,9 +22,9 @@
 ;NB: This problem doesn't seem to happen with the panel title on Panel Options window.
 ;If we could work out why the panel title combobox worked there it would be better to fix axis label title to match rather than truncating.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-09-30 09:09:23 -0700 (Tue, 30 Sep 2014) $
-;$LastChangedRevision: 15881 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2016-01-19 14:01:09 -0800 (Tue, 19 Jan 2016) $
+;$LastChangedRevision: 19759 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_axis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -529,7 +529,14 @@ pro SPD_UI_INIT_AXIS_WINDOW ,tlb, state=state
   ;
   currpanelobj = spd_ui_axis_options_getcurrentpanel(state)
   axissettings = spd_ui_axis_options_getaxis(state)
+  panelObjs = spd_ui_axis_options_getpanelobjs(state)
   
+  ; Set axispanelselect to bottom panel if panels are locked
+;  activeWindow = state.windowStorage->GetActive()
+;  if Obj_Valid(activeWindow) then begin
+;     activeWindow->getproperty, locked = locked  
+     ;if locked NE -1 then state.axispanelselect=n_elements(panelObjs)-1
+;  endif
   
   ; put updating of widgets on hold until end of init function
   tabid = widget_info(state.tlb, find_by_uname='tabs')
@@ -537,7 +544,6 @@ pro SPD_UI_INIT_AXIS_WINDOW ,tlb, state=state
   widget_control, tabid, update=0
   
   ; Check if there are any panels. Pass panelsExist to sensitive to make things noneditable if no panels exist
-  panelObjs = spd_ui_axis_options_getpanelobjs(state)
   if obj_valid(panelObjs[0]) then panelsExist = 1 else panelsExist = 0
   
   
@@ -557,7 +563,7 @@ pro SPD_UI_INIT_AXIS_WINDOW ,tlb, state=state
   
   id = widget_info(tlb, find_by_uname = 'rangepaneldroplist')
   widget_control, id, set_combobox_select = state.axispanelselect
-  
+ 
   ;Set appropriate sensitivity, buttons, and attributes for Range Options, Scaling, Fixed Min/Max, AutoRange, and Floating Center:
   ;*******************************************************************************************************************************
   
@@ -3763,7 +3769,7 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
   ;If 0th PANELOBJ is valid, then assume the AXISPANELSELECT-th PANELOBJ is valid and get AXISSETTINGS for correct axis:
   ;*********************************************************************************************************************
   ;
-  axispanelselect = 0
+  axispanelselect = 0 
   
   if obj_valid(panelobjs[0]) then begin
   
@@ -3771,7 +3777,9 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
       axispanelselect = panel_select
     endif else begin
       if windowlocked ne -1 then begin
-        axispanelselect = windowlocked
+;        axispanelselect = windowlocked
+        ;if panels are locked default to the bottom panel
+        axispanelselect = n_elements(panelObjs)-1
       endif
     endelse
     
@@ -3818,10 +3826,15 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
   ;  axissettings->SetProperty, rangemargin=rangemargin
   ;endif
     
-  ;range widgets
-    
+  ;range widgets 
   rpdlabel = Widget_label(panelbase, value = 'Panel: ', /align_center)
   rangepanelDroplist = Widget_combobox(panelBase, Value=panelNames, XSize=200, uval='PANELDROPLIST', uname='rangepaneldroplist')
+
+  ; warn user if xaxis selected and panels are locked.
+  IF axisselect EQ 0 && ~undefined(locked) && locked NE -1 THEN BEGIN
+    anolab = widget_label(panelBase, value ='  *Panels locked. Use apply all to change other panels.')
+  ENDIF
+
   roptionsLabel = Widget_Label(rlabelBase, Value='Range Options:', /Align_Left)
   rbuttonsBase = Widget_Base(roptionsBase, /Col, /Exclusive)
   ;IF isTimeAxis EQ 1 THEN sensitive=0 ELSE sensitive=1
@@ -3924,7 +3937,11 @@ PRO spd_ui_axis_options, gui_id, windowStorage, loadedData, drawObject, historyW
   tpanellabel = widget_label(tpanelbase, value = 'Panel: ', /align_left)
   tpanelDroplist = Widget_combobox(tpanelBase, Value=panelNames, XSize=200, $
     uval='PANELDROPLIST', uname='tickpaneldroplist')
-    
+  ; warn user if xaxis selected and panels are locked.
+  IF axisselect EQ 0 && ~undefined(locked) && locked NE -1 THEN BEGIN
+    anolab = widget_label(tpanelBase, value ='  *Panels locked. Use apply all to change other panels.')
+  ENDIF
+  
   tickUnitValues = axisSettings->GetUnits()
   tickStyleValues = axisSettings->GetStyles()
   
@@ -4055,6 +4072,11 @@ lminorLabel = Widget_Label(lminorBase, Value=' pts')
 gppanelbase = widget_base(gpbase, /row)
 gplabel = widget_label(gppanelbase, value='Panel: ')
 gpDroplist = Widget_combobox(gppanelBase, Value=panelNames, XSize=200, uval='PANELDROPLIST', uname='gridpaneldroplist')
+; warn user if xaxis selected and panels are locked.
+IF axisselect EQ 0 && ~undefined(locked) && locked NE -1 THEN BEGIN
+  anolab = widget_label(gppanelBase, value ='  *Panels locked. Use apply all to change other panels.')
+ENDIF
+
 ;outlineBase = Widget_Base(gpBase, /Row)
 ;outlineIncrement = spd_ui_spinner(outlineBase, Label= 'Panel Outline Thickness : ', Increment=1, Value=1,  uval='OUTLINETHICK', uname='outlinethick', min_value=1, max_value=10)
 gmajorLabel = Widget_Label(mglabelBase, Value='Major Grids: ', /Align_left, uname='majorgridbtnlabel')
@@ -4117,10 +4139,14 @@ sminorDroplist = Widget_combobox(sminorbase, XSize=160, $
 ;n;  widget_control,setAllgButton,/set_button
 ;n;endif
   
-;annotation widgets
-  
+;annotation widgets   
 anoPlabel = widget_label(anopanelbase, value = 'Panel: ')
 anoPanelDroplist = Widget_combobox(anopanelBase, Value=panelNames, XSize=200, uval='PANELDROPLIST', uname='annopaneldroplist')
+; if panels are locked default to the bottom panel
+; warn user if xaxis selected and panels are locked.
+IF axisselect EQ 0 && ~undefined(locked) && locked NE -1 THEN BEGIN
+  anolab = widget_label(anopanelBase, value ='  *Panels locked. Use apply all to change other panels.')
+ENDIF
 
 IF isTimeAxis EQ 1 THEN sensitive=1 ELSE sensitive=0
 
@@ -4137,11 +4163,14 @@ WIDGET_CONTROL, anoftButton, /Set_Button
 ano2ftButton =  Widget_Button(anoDrawBase, Value='Annotate Range Max', uval='ANNOTATERANGEMAX', $
   uname='annotaterangemax')
 WIDGET_CONTROL, ano2ftButton, /Set_Button
-anoShowButton = Widget_Button(anoDrawBase, Value='Show Date', Sensitive=sensitive, $
-  uval='SHOWDATE', uname='showdate')
-WIDGET_CONTROL, anoShowButton, /Set_Button
+;anoShowButton = Widget_Button(anoDrawBase, Value='Show Date', Sensitive=sensitive, $
+;  uval='SHOWDATE', uname='showdate')
+;WIDGET_CONTROL, anoShowButton, /Set_Button
 
 anoShowDateBase = Widget_Base(anoMiddleBase, /Row, /NonExclusive)
+anoShowButton = Widget_Button(anoShowDateBase, Value='Show Date:', Sensitive=sensitive, $
+  uval='SHOWDATE', uname='showdate', tooltip='Include Date string with first tick')
+WIDGET_CONTROL, anoShowButton, /Set_Button
 anoDateBase = Widget_Base(anoMiddleBase, /Row, frame=1, uname='anodatebase')
 anoDateTextBases = Widget_Base(anoDateBase, /col)
 anoDateFormat1Base = Widget_Base(anoDateTextBases, /row)
@@ -4154,9 +4183,11 @@ anoDateFormat2Label = Widget_Label(anoDateFormat2Base, Value='Line 2: ')
 anoDateFormat2 = Widget_Text(anoDateFormat2Base, /editable, uval='ANODATE2', uname='anodate2', /All_Events)
 
 anoDatePreviewText = Widget_Text(anoDatePreviewTextBase, ysize=2, xsize=32, /wrap, uname='anodatepreviewtext')
-anoDatePreviewButt = Widget_Button(anoDatePreviewTextBase, value='Preview', uval='ANODATEPREVIEW')
+anoDatePreviewButt = Widget_Button(anoDatePreviewTextBase, value='Preview of Date String', uval='ANODATEPREVIEW')
 
 ;anoDateButton = Widget_Button(anoTopCol2Base, Value='Date Format...', Sensitive=sensitive)
+anoSpaceBase = Widget_Base(anoMiddleBase, /Row)
+anoSpaceLabel = Widget_Label(anoSpaceBase, value = '    ')
 anoAxisBase = Widget_Base(anoMiddleBase, /Row, /NonExclusive)
 anoAxisButton = Widget_Button(anoAxisBase, Value='Annotate Along Axis:', uval='ANNOTATEAXIS', $
   uname='annotateaxis')
@@ -4260,6 +4291,11 @@ titlePLabel=Widget_Label(titlepdBase, value='Panel: ')
 
 
 titlepanelDroplist = Widget_combobox(titlepdBase, Value=panelNames,  XSize=150, uval='PANELDROPLIST', uname='titlepaneldroplist')
+; warn user if xaxis selected and panels are locked.
+IF axisselect EQ 0 && ~undefined(locked) && locked NE -1 THEN BEGIN
+  anolab = widget_label(titlepdBase, value ='  *Panels locked. Use apply all to change other panels.')
+ENDIF
+
 titletextcolbase = widget_base(titletextBase, col=2, space=350)
 titletextframeLabel = Widget_Label(titletextcolbase, Value='Text: ', /Align_Left)
 titlehelpbutton = widget_button(titletextcolbase, value='Format Help', uname='formathelpbutton', uvalue='FORMATHELPBUTTON')
@@ -4363,6 +4399,11 @@ lpdBase = widget_base(lpanelbase, /row)
 panelLabel=Widget_Label(lpdBase, value='Panel: ')
 
 lpanelDroplist = Widget_combobox(lpdBase, Value=panelNames,  XSize=150, uval='PANELDROPLIST', uname='labelpaneldroplist')
+; warn user if xaxis selected and panels are locked.
+IF axisselect EQ 0 && ~undefined(locked) && locked NE -1 THEN BEGIN
+  anolab = widget_label(lpdBase, value ='  *Panels locked. Use apply all to change other panels.')
+ENDIF
+
 ltextLabel = Widget_Label(labeltextBase, Value='Text: ', /Align_Left)
 ltFrameBase = Widget_Base(labeltextBase, /col, Frame=3,XPad=1, uname='ltframebase')
 lt1TextBase = Widget_Base(ltFrameBase, /row, xpad=3)
@@ -4470,11 +4511,13 @@ cancelButton = Widget_Button(buttonBase, Value='Cancel', UValue='CANC', XSize=75
 templateButton = Widget_Button(buttonBase,  Value='Save as Default', UValue='TEMP',xsize=125,tooltip="Save current settings as default template")
 ;helpButton = Widget_Button(buttonBase, Value='Help', XSize=75)
 
+
 ;Create Status Bar Object:
 ;*************************
 ;
 panelDroplists=[rangepanelDroplist, tpanelDroplist, gpDroplist, anopanelDroplist, titlepanelDroplist, lpanelDroplist]
 statusBar = Obj_New('SPD_UI_MESSAGE_BAR', statusBase, XSize=80, YSize=1)
+
 ;state = {tlb:tlb, gui_id:gui_id, rangeOptions:rangeOptions,$; tabbase:tabbase,$
 ;  scalingOptions:scalingOptions, labelselect:0, atype:atype, $
 ;  axispanelselect:axispanelselect,; panels:panels, panelobjs:panelobjs, $

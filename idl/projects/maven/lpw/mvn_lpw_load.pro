@@ -81,6 +81,8 @@
 ; 
 ;      leavespice: set /leavespice to leave SPICE kernels in IDL memory at end of this routine. Default if not set is to clear them.
 ;      
+;      success: Set this to a variable name. The returned value is 0. if the load was not successful for the given date, and 1 if it was successful.
+;      
 ;NOTES: 
 ; This routine is a wrapper for several of Davin Larons IDL routines: mvn_pfp_file_retrieve, mvn_spice_kernels, and routines within these. See comments in these
 ; programs for more information. Davin's routines are available from the Berkeley svn/ssh server.
@@ -169,12 +171,12 @@
 ;2015-10-08: CMF: modified so that we don't spam NAIF with many requests for SPICE kernels. Kernels are looked up and downloaded (if needed) once at start of routine.
 ;                 SPICE kernels are cleared by default once all processing done, but remain as a tplot variable.
 ;2015-11-09: CMF: modified SPICE kernel finder routines - they now add 20 minutes to each end to make sure we cover all times within the day; sometimes packets can be outside of the day by a few minutes.
-;           
+;2015-12-22: CMF added success keyword.           
 ;           
 ;-
 
 pro mvn_lpw_load, utc_in, data_dir=data_dir, tplot_var=tplot_var, filetype=filetype, packet=packet, board=board, nospice=nospice, noserver=noserver, $
-                  notatlasp=notatlasp, get_file_info=get_file_info, get_clock_jumps = get_clock_jumps, leavespice=leavespice
+                  notatlasp=notatlasp, get_file_info=get_file_info, get_clock_jumps = get_clock_jumps, leavespice=leavespice, success=success
 
 common clock_check, jump_times_nospice
 jump_times_nospice = dblarr(1)
@@ -203,12 +205,14 @@ if not keyword_set(data_dir) and getenv('ROOT_DATA_DIR') eq '' then begin  ;if n
       print, "###NOTE###: the SSL software requires a specific file structure to store L0 and SPICE kernels. Your setenv directory"
       print, "should be a parent directory to where you want the SSL software to setup the required folder tree."
       print, "Set the environment variable ROOT_DATA_DIR before trying again. Returning to terminal."
-      retall
+      success = 0.
+      return
 endif
 
 if keyword_set(data_dir) then begin
     if size(data_dir, /type) ne 7 then begin
         print, "#### WARNING ####: data_dir must be a string with the path to your Berkeley data tree. Returning."
+        success = 0.
         return
     endif else begin
                ;Make sure last symbol is / so that files go from that folder:
@@ -237,10 +241,12 @@ if keyword_set(data_dir) then begin
         
         if (response ne 'yes') and (response ne 'no') then begin
             print, "### ERROR ###: You must respond either 'yes' or 'no'. Returning to IDL terminal."
+            success = 0.
             return
         endif
         if response eq 'no' then begin
             print, "Response = no. Returning to IDL terminal."
+            success = 0.
             return
         endif
         if response eq 'yes' then begin
@@ -260,10 +266,12 @@ if keyword_set(data_dir) then begin
                 
                 if (response2 ne 'yes') and (response2 ne 'no') then begin
                     print, "### ERROR ###: You must respond either 'yes' or 'no'. Returning to IDL terminal."
+                    success = 0.
                     return
                 endif
                 if (response2 eq 'no') then begin
                     print, "Response = no. Returning to IDL terminal."
+                    success = 0.
                     return
                 endif
                 if (response2 eq 'yes') then begin
@@ -302,17 +310,20 @@ IF size(utc_in, /type) EQ 7 THEN BEGIN  ;utc_in must be a string
     IF n_elements(utc_in) NE 1 THEN BEGIN  ;only one date entry
         print, "#### WARNING ####: UTC time of orbit must be a string in the format 'yyyy-mm-dd'."
         print, "For example: utc_in = '2014-02-01'. For now, must read in one orbit at a time."
-        retall            
+        success = 0.
+        return            
     ENDIF
     IF strmatch(utc_in, '[0123456789][0123456789][0123456789][0123456789]-[0123456789][0123456789]-[0123456789][0123456789]') NE 1 THEN BEGIN
         print, "#### WARNING ####: UTC time of orbit must be a string in the format 'yyyy-mm-dd'."
         print, "For example: utc_in = '2014-02-01'. For now, must read in one orbit at a time."
-        retall        
+        success = 0.
+        return        
     ENDIF
 ENDIF ELSE BEGIN
     print, "#### WARNING ####: UTC time of orbit must be a string in the format 'yyyy-mm-dd'."
     print, "For example: utc_in = '2014-02-01'. For now, must read in one orbit at a time."
-    retall
+    success = 0.
+    return
 ENDELSE
 
 if filetype eq 'L0' then begin 
@@ -323,7 +334,8 @@ if filetype eq 'L0' then begin
             print, "At LASP, this is the lds/spg/ server, assumed to be located at /Volumes/spg/ on a Mac."
             print, "If you are not at LASP, use the keyword '/notatlasp' to skip this check. See mvn_lpw_load.pro"
             print, "for more information. Returning."
-            retall
+            success = 0.
+            return
       ENDIF
    ENDIF
       
@@ -340,7 +352,8 @@ if filetype eq 'L0' then begin
             
             if response ne 'yes' then begin
                   print, "Returning to terminal."
-                  retall
+                  success = 0.
+                  return
             endif 
       endif  ;over mavenpfp_user_pass
       
@@ -377,12 +390,14 @@ if filetype eq 'L0' then begin
       IF strpos(files, '??') NE -1 THEN BEGIN  ;Data not available if we have v???.dat on the file name
           print, "#### WARNING ####: Date entered (", utc_in[0], ") is outside of the MAVEN mission time frame or is not yet available."
           print, "Exiting routine."
+          success = 0.
           return
       ENDIF
       
       IF (strmid(files[0], 0, 2) EQ '//') OR (strmid(files[0], 0, 2) EQ '/\') THEN BEGIN   ;files[0] begins with '//' if the file wasn't found
           print, "#### WARNING ####: Date entered (", utc_in[0], ") is outside of the MAVEN mission time frame or is not yet available."
           print, "Exiting routine."
+          success = 0.
           return
       ENDIF
       
@@ -427,7 +442,8 @@ if (filetype eq 'GROUND') then begin
    
     if file_search(response3) eq '' then begin
         print, "#### WARNING ####: File ", response3, " not found by IDL. Returning to terminal."
-        retall 
+        success = 0.
+        return 
     endif else begin
         print, "File ", response3, " found."
         files = response3
@@ -438,7 +454,8 @@ endif
 ;Check that files has been defined:
 if size(files, /type) eq 0 then begin
     print, "### WARNING ###: Data file has not been defined. Did you enter keywords correctly? Returning."
-    retall
+    success = 0.
+    return
 endif
 
 
@@ -496,6 +513,8 @@ endif
 
 ;CLEAR SPICE kernels here:
 if not keyword_set(leavespice) then mvn_lpw_anc_clear_spice_kernels
+
+success = 1.
 
 ;stop
 end

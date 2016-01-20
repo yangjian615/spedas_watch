@@ -10,8 +10,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-23 08:07:59 -0800 (Wed, 23 Dec 2015) $
-;$LastChangedRevision: 19651 $
+;$LastChangedDate: 2016-01-19 08:43:08 -0800 (Tue, 19 Jan 2016) $
+;$LastChangedRevision: 19755 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_omni.pro $
 ;-
 pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatype = datatype
@@ -22,6 +22,10 @@ pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatyp
     if undefined(autoscale) then autoscale = 1
     if undefined(level) then level = 'sitl'
     
+    ; in case the user passes datatype = '*'
+    if (datatype[0] eq '*' || datatype[0] eq '') && level eq 'ql' then datatype=['des', 'dis']
+    if (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist']
+
     species = strmid(datatype, 1, 1)
 
     for sidx=0, n_elements(species)-1 do begin

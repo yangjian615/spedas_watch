@@ -106,10 +106,14 @@ function spp_swp_spane_slow_hkp_decom,ccsds , ptp_header=ptp_header, apdat=apdat
     met: ccsds.met,  $
     delay_time: ptp_header.ptp_time - ccsds.time, $
     seq_cntr: ccsds.seq_cntr, $
-    HDR_16: b[16]  * 1.,  $
-    HDR_17: b[17]  * 1.,  $
-    HDR_18: b[18]  * 1.,  $
-    HDR_19: b[19]  * 1.,  $
+    HDR_12: b[12], $
+    HDR_13: b[13], $
+    HDR_14: b[14], $
+    HDR_15: b[15], $
+    HDR_16: b[16],  $
+    HDR_17: b[17]  ,  $
+    HDR_18: b[18]  ,  $
+    HDR_19: b[19]  ,  $
 
     RIO_20: b[20]  * 1.,  $
     RIO_21: b[21]  * 1.,  $
@@ -181,22 +185,33 @@ end
 
 
 
+
 function spp_swp_spane_p1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   data = ccsds.data[20:*]
   ndata = n_elements(data)  
-  compression = (ccsds.data[12] and '80'x) ne 0
+  nsamples = 16
+  compression = (ccsds.data[12] and '20'x) ne 0
   bps = (compression eq 0) * 4    ; bytes per sample
-  n_expected = 16 * bps
-  if n_elements(data) ne n_expected then begin
-    dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
-    return,0
+  nbytes = nsamples * bps
+  
+  if n_elements(data) ne nbytes then begin
+    dprint,dlevel=3, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+;    return,0
   endif
   
-  ns = n_expected / bps
+ ; compression = 1
+ ; data = data[0:15]
+  dprint,dlevel=3,'hello',compression,bps
+
+  
+  ns = nsamples
   if compression then begin
-    cnts = data[*]  
+    ccode = 0
+    cnts = mvn_pfp_log_decomp(data[0:ns],ccode)   ; / .218
   endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+
+dprint,cnts,dlevel=3
 
   cnts = reform(cnts,16,ns/16)
   cnts1 = total(cnts,1)
@@ -242,7 +257,8 @@ function spp_swp_spane_p2_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   
   ns = n_expected / bps
   if compression then begin
-    cnts = data[*]  
+    ccode = 0
+    cnts = mvn_pfp_log_decomp(data,ccode)
   endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)
   cnts1 = total(cnts,1)
@@ -303,7 +319,8 @@ function spp_swp_spane_p3_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   
   ns = n_expected / bps
   if compression then begin
-    cnts = data[*]  
+    ccode = 0
+    cnts = mvn_pfp_log_decomp(data,ccode)
   endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)
   cnts1 = total(cnts,1)
@@ -347,7 +364,8 @@ function spp_swp_spane_p4_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   
   ns = n_expected / bps
   if compression then begin
-    cnts = data[*]  
+    ccode = 0
+    cnts = mvn_pfp_log_decomp(data,ccode)
   endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
   cnts = reform(cnts,16,ns/16)
   cnts1 = total(cnts,1)

@@ -242,7 +242,7 @@ pro mvn_lpw_pkt_spectra,output,lpw_const,subcycle,type,tplot_var=tplot_var,spice
       data.dv(j,*)   =abs( transpose((f_high-f_low)/2) ) ;get the low and high frequency bins
     endfor
 
-    data.dy   = SQRT(ABS(data.y))
+    data.dy   = 0.2 * ABS(data.y)   ; 20 % uncertnaty.....
 
     ;-------------------------------------------
     ;--------------- dlimit   ------------------
@@ -313,7 +313,7 @@ pro mvn_lpw_pkt_spectra,output,lpw_const,subcycle,type,tplot_var=tplot_var,spice
 
 
 
-
+    if min(data.dv)                lt 0 then stanna
 
 
     ;   data.y               = data.y  ; * power_scale[gain]  * h_window * f_zero_freq     ;C/sensor_distance                           ;get the right y-sacle for the three different frequency ranges
@@ -452,6 +452,11 @@ pro mvn_lpw_pkt_spectra,output,lpw_const,subcycle,type,tplot_var=tplot_var,spice
     store_data,'mvn_lpw_spec2_'+type+'_'+subcycle,data=data,limit=limit,dlimit=dlimit
     if type EQ 'hf' then  store_data,'mvn_lpw_spec2_hg_'+subcycle,data={x:data.x,y:rr_norm2}
     ;---------------------------------------------
+
+
+
+    if min(data.dv)                lt 0 then stanna
+
 
     ;-------------  HSBM FFT power---------------------------
     data =  create_struct(   $

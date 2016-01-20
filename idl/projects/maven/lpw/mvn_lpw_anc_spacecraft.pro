@@ -47,7 +47,7 @@
 ;
 ;mvn_lpw_anc_mvn_vel_J2000: MAVEN velocity in J2000, Vx, Vy, Vz in km/s.
 ;
-;mvn_lpw_anc_mvn_vel_sc_mso: MAVEN velocity in the s/c frame, in km/s, based on the MSO frame
+;mvn_lpw_anc_mvn_vel_sc_mso: MAVEN velocity in the s/c frame, in km/s, based on the MSO frame. 3x1 vector: x,y,z in s/c frame. [0,0,1] for example means that the s/c is traveling antenna first (fly Z), in the MSO frame at Mars.
 ;
 ;mvn_lpw_anc_mvn_vel_sc_iau: MAVEN velocity in the s/c frame, in km/s, based on the IAU frame.
 ;
@@ -74,6 +74,8 @@
 ;mvn_lpw_anc_phobos_pos_mvn  :Phobos position in MAVEN s/c frame, in km
 ;
 ;mvn_lpw_anc_deimos_pos_mvn  :Deimos position in MAVEN s/c frame, in km
+;
+;mvn_lpw_anc_mvn_pos_pho    :MAVEN position in the Phobos IAU frame, in Rmars.
 ;
 ;
 ;KEYWORDS:
@@ -1779,10 +1781,13 @@ if keyword_set(moons) then begin
     ;General info:
     frame1    = 'MAVEN_MSO'
     frame2   = 'IAU_MARS'
+    frame3   = 'IAU_PHOBOS'
     abcorr   = 'LT+S'
     observer = 'Mars'
+    observer2 = 'PHOBOS'
     target1 = 'PHOBOS'
     target2 = 'DEIMOS'
+    target3 = 'MAVEN_SPACECRAFT'
 
     ;if (spk_coverage eq 'all') and (ck_coverage eq 'all') then stateezr = spice_body_pos(target, observer, utc=utc_time, frame=frame, abcorr=abcorr) else begin  ;DAVINS ROUTINE
     if (spk_coverage eq 'all') then begin
@@ -1790,11 +1795,13 @@ if keyword_set(moons) then begin
       cspice_spkezr, target1, et_time, frame2, abcorr, observer, stateezr2, ltime  ;contains R and V in the IAU_MARS frame
       cspice_spkezr, target2, et_time, frame1, abcorr, observer, stateezr3, ltime ;state contains R and V [0:5], USE FOR NOW UNTIL DAVIN ADDS VEL TO HIS ABOVE
       cspice_spkezr, target2, et_time, frame2, abcorr, observer, stateezr4, ltime  ;contains R and V in the IAU_MARS frame
+      ;cspice_spkezr, target3, et_time, frame3, abcorr, observer2, stateezr5, ltime ;MAVEN position wrt Phobos IAU frame
     endif else begin
       stateezr1 = dblarr(6,nele)  ;must fill this rotation matrix in one time step at a time now. Here time goes in y axis for spice routines
       stateezr2 = dblarr(6,nele)
       stateezr3 = dblarr(6,nele)
       stateezr4 = dblarr(6,nele)
+      ;stateezr5 = dblarr(6,nele)
       for aa = 0, nele-1 do begin  ;do each time point individually
         ;if (spkcov[aa] eq 1) and (ck_check[aa] eq 1) then state_temp = spice_body_pos(target, observer, utc=utc_time[aa], frame=frame, abcorr=abcorr) else state_temp=[!values.f_nan, !values.f_nan, !values.f_nan]  ;DAVINS
         if (spkcov[aa] eq 1) then begin
@@ -1802,11 +1809,13 @@ if keyword_set(moons) then begin
           cspice_spkezr, target1, et_time[aa], frame2, abcorr, observer, state_temp2, ltime   ;USE THIS FOR NOW UNTIL DAVINS HAS VEL
           cspice_spkezr, target2, et_time[aa], frame1, abcorr, observer, state_temp3, ltime   ;USE THIS FOR NOW UNTIL DAVINS HAS VEL
           cspice_spkezr, target2, et_time[aa], frame2, abcorr, observer, state_temp4, ltime   ;USE THIS FOR NOW UNTIL DAVINS HAS VEL
+          ;cspice_spkezr, target3, et_time, frame3, abcorr, observer2, stateezr5, ltime
         endif else begin
             state_temp1=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]
             state_temp2=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]
             state_temp3=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]
             state_temp4=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]
+            ;state_temp5=[!values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan, !values.f_nan]
         endelse
 
         ;if we don't have coverage, use nans instead
@@ -1838,6 +1847,12 @@ if keyword_set(moons) then begin
         stateezr4[4,aa] = state_temp4[4]
         stateezr4[5,aa] = state_temp4[5]
 
+        ;stateezr5[0,aa] = state_temp5[0]  ;add time step to overall array
+        ;stateezr5[1,aa] = state_temp5[1]
+        ;stateezr5[2,aa] = state_temp5[2]
+        ;stateezr5[3,aa] = state_temp5[3]  ;vel
+        ;stateezr5[4,aa] = state_temp5[4]
+        ;stateezr5[5,aa] = state_temp5[5]
       endfor
     endelse
 
@@ -1845,6 +1860,7 @@ if keyword_set(moons) then begin
     pho_pos_iau = dblarr(nele,4)
     dei_pos_mso = dblarr(nele,4)  ;x,y,z,total (4 rows)
     dei_pos_iau = dblarr(nele,4)
+    ;mvn_pos_pho = dblarr(nele,4)
 
     Rmars = 3376.0d ;Mars radius, km
 
@@ -1867,7 +1883,19 @@ if keyword_set(moons) then begin
     dei_pos_iau[*,1] = stateezr4[1,*]/Rmars  ;positions in Rmars
     dei_pos_iau[*,2] = stateezr4[2,*]/Rmars  ;positions in Rmars
     dei_pos_iau[*,3] = sqrt(dei_pos_iau[*,0]^2 + dei_pos_iau[*,1]^2 + dei_pos_iau[*,2]^2)  ;total radius
-
+    
+    ;mvn_pos_pho[*,0] = stateezr5[0,*]/Rmars  ;positions in Rmars
+    ;mvn_pos_pho[*,1] = stateezr5[1,*]/Rmars  ;positions in Rmars
+    ;mvn_pos_pho[*,2] = stateezr5[2,*]/Rmars  ;positions in Rmars
+    ;mvn_pos_pho[*,3] = sqrt(mvn_pos_pho[*,0]^2 + mvn_pos_pho[*,1]^2 + mvn_pos_pho[*,2]^2)  ;total radius
+    
+    ;SPICE didn't like doing MAVEN in Phobos frame, so use rotate instead:
+    get_data, 'mvn_lpw_anc_mvn_pos_mso', data=ddTMP
+    mavPTMP = transpose(ddTMP.y[*,0:2])  ;get x,y,z
+    phoTMP = spice_vector_rotate(mavPTMP*Rmars, ddTMP.x, 'MAVEN_MSO', 'IAU_PHOBOS', check_objects='IAU_PHOBOS')   ;!@#$!@#% Doesn't work yet
+    phoTMP = transpose(phoTMP)  ;back to tplot format
+    phoR = sqrt(phoTMP[*,0]^2 + phoTMP[*,1]^2 + phoTMP[*,2]^2)
+    phoTMP = [[phoTMP], [phoR]]  ;add in magnitude
 
     ;Store as tplot variable:
     ;-------
@@ -2185,6 +2213,86 @@ if keyword_set(moons) then begin
     ;---------------------------------
     store_data, 'mvn_lpw_anc_dei_pos_iau', data={x:unix_in, y:dei_pos_iau, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
     ;---------------------------------
+
+    ;--------------- dlimit   ------------------
+    dlimit=create_struct(   $
+      'Product_name',                  'mvn_lpw_anc_mvn_pos_pho', $
+      'Project',                       cdf_istp[12], $
+      'Source_name',                   cdf_istp[0], $     ;Required for cdf production...
+      'Discipline',                    cdf_istp[1], $
+      'Instrument_type',               cdf_istp[2], $
+      'Data_type',                     'Support_data' ,  $
+      'Data_version',                  cdf_istp[4], $  ;Keep this text string, need to add v## when we make the CDF file (done later)
+      'Descriptor',                    cdf_istp[5], $
+      'PI_name',                       cdf_istp[6], $
+      'PI_affiliation',                cdf_istp[7], $
+      'TEXT',                          cdf_istp[8], $
+      'Mission_group',                 cdf_istp[9], $
+      'Generated_by',                  cdf_istp[10],  $
+      'Generation_date',                today_date+' # '+t_routine, $
+      'Rules of use',                  cdf_istp[11], $
+      'Acknowledgement',               cdf_istp[13],   $
+      'x_catdesc',                     'Timestamps for each data point, in UNIX time.', $
+      'y_catdesc',                     'MAVEN position, in the IAU_PHOBOS frame.', $
+      ;'v_catdesc',                     'test dlimit file, v', $    ;###
+      'dy_catdesc',                    'Error on the data.', $     ;###
+      ;'dv_catdesc',                    'test dlimit file, dv', $   ;###
+      'flag_catdesc',                  'Flag equals 1 when no SPICE times available.', $   ; ###
+      'x_Var_notes',                   'UNIX time: Number of seconds elapsed since 1970-01-01/00:00:00.', $
+      'y_Var_notes',                   'Units of Mars radii. IAU_PHOBOS frame (areodetic): I *think* this is correct, but you should check: X points from center of Phobos to 0 degrees east longitude and 0 degrees latitude; Y points from center of Phobos to +90 degrees east longitude and 0 degrees latitude; Z completes the right handed system.' , $
+    ;'v_Var_notes',                   'Frequency bins', $
+    'dy_Var_notes',                  'Not used.', $
+      ;'dv_Var_notes',                   'Error on frequency', $
+      'flag_Var_notes',                '0 = no flag: SPICE times available; 1 = flag: no SPICE times available.', $
+    'xFieldnam',                     'x: More information', $      ;###
+      'yFieldnam',                     'y: 1 Mars radius = 3376.0 km.', $
+      ; 'vFieldnam',                     'v: More information', $
+      'dyFieldnam',                    'No used.', $
+      ;  'dvFieldnam',                    'dv: More information', $
+      'flagFieldnam',                  'flag: based off of SPICE ck and spk kernel coverage.', $
+      'SI_conversion',                 '1 Mars radius = 3376.0 km',  $
+      'MONOTON', 'INCREASE', $
+      'SCALEMIN', min(phoTMP), $
+      'SCALEMAX', max(phoTMP), $        ;..end of required for cdf production.
+      't_epoch'         ,     t_epoch, $
+      'Time_start'      ,     time_start, $
+      'Time_end'        ,     time_end, $
+      'Time_field'      ,     time_field, $
+      'SPICE_kernel_version', kernel_version, $
+      'SPICE_kernel_flag'      ,     spice_used, $
+      'L0_datafile'     ,     L0_datafile , $
+      'cal_vers'        ,     kernel_version ,$
+      'cal_y_const1'    ,     loaded_kernels , $  ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+      ;'cal_y_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
+      ;'cal_datafile'    ,     'No calibration file used' , $
+      'cal_source'      ,     'SPICE kernels', $
+      'xsubtitle'       ,     '[sec]', $
+      'ysubtitle'       ,     '[Mars radii (IAU frame)]');, $
+    ;'cal_v_const1'    ,     'PKT level::' , $ ; Fixed convert information from measured binary values to physical units, variables from ground testing and design
+    ;'cal_v_const2'    ,     'Used :'   ; Fixed convert information from measured binary values to physical units, variables from space testing
+    ;'zsubtitle'       ,     '[Attitude]')
+    ;-------------  limit ----------------
+    limit=create_struct(   $
+      'char_size' ,     1.2                      ,$
+      'xtitle' ,        str_xtitle                   ,$
+      'ytitle' ,        'MAVEN-position'                 ,$
+      'yrange' ,        [-10.,10.] ,$     ;range of orbit at Mars
+      'ystyle'  ,       1.                       ,$
+      'labels',         ['X', 'Y', 'Z', 'TOTAL'], $
+      'labflag',        1, $
+      'colors',         [2, 4, 6, 0], $  ;blue, green, red, black
+      ;'ztitle' ,        'Z-title'                ,$
+      ;'zrange' ,        [min(data.y),max(data.y)],$
+      ;'spec'            ,     1, $
+      ;'xrange2'  ,      [min(data.x),max(data.x)],$           ;for plotting lpw pkt lab data
+      ;'xstyle2'  ,      1                       , $           ;for plotting lpw pkt lab data
+      ;'xlim2'    ,      [min(data.x),max(data.x)], $          ;for plotting lpw pkt lab data
+      'noerrorbars', 1)
+    ;---------------------------------
+    store_data, 'mvn_lpw_anc_mvn_pos_pho', data={x:unix_in, y:phoTMP, flag:ck_spk_flag}, dlimit=dlimit, limit=limit
+    ;---------------------------------
+
+
 
     ;===================================================================================================================================
     ;Get the positions of the moons Phobos and Deimos in MAVEN frames:
