@@ -22,11 +22,17 @@
 ;
 ;
 ;Notes:
+;  -Assumes theta values are exact and constant across energy
+;  -Assumes bins do not overlap
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-01-04 15:38:57 -0800 (Mon, 04 Jan 2016) $
-;$LastChangedRevision: 19672 $
+;History:
+;  2016-01-20: Changed algorithm to allow ungrouped theta values (~8% slower now)
+;
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-01-20 10:57:13 -0800 (Wed, 20 Jan 2016) $
+;$LastChangedRevision: 19765 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_theta_spec.pro $
 ;-
 
@@ -48,45 +54,36 @@ pro spd_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=e
   ;copy data and zero inactive bins to ensure
   ;areas with no data are represented as NaN
   d = data.data
-  scaling = data.scaling
   idx = where(~data.bins,nd)
   if nd gt 0 then begin
     d[idx] = 0.
   endif
   
-
-  ;get start and end indices of each group of theta bins
-  ; -assumes thetas already grouped together 
-  ;  (but not necessarily sorted)
-  ; -assumes thetas do not change with energy
-  if anum gt 1 then begin
-    end_idx = uniq(data.theta[0,*])
-    start_idx = [0,(end_idx[0:n_elements(end_idx)-2] + 1)]
-  endif else begin
-    end_idx = 0
-    start_idx = 0
-  endelse
+  ;get unique theta values
+  values = data.theta[0,uniq( data.theta[0,*], sort(data.theta[0,*]) )]
 
   ;init this sample's piece of the spectrogram
-  ave = replicate(!values.f_nan, n_elements(start_idx))
+  ave = replicate(!values.f_nan, n_elements(values))
   ave_s = ave
-  nbins = fltarr(n_elements(start_idx))
+  nbins = fltarr(n_elements(values))
   
-  ;loop over each theta to sum all active data 
+  ;loop over each unique theta to sum all active data 
   ;and bin flags for that value
-  for i=0, n_elements(end_idx)-1 do begin
-    ave[i] = total( d[*,start_idx[i]:end_idx[i]] )
-    ave_s[i] = total( d[*,start_idx[i]:end_idx[i]] * scaling[*,start_idx[i]:end_idx[i]])
-    nbins[i] = total( data.bins[*,start_idx[i]:end_idx[i]] )
+  ;  -assumes theta constant across energy
+  for i=0, n_elements(values)-1 do begin
+    idx = where(data.theta[0,*] eq values[i])
+    ave[i] = total( d[*,idx] )
+    ave_s[i] = total( d[*,idx] * data.scaling[*,idx])
+    nbins[i] = total( data.bins[*,idx] )
   endfor
 
   ;divide by total active bins to get average
   ave = ave / nbins
   ave_s = sqrt(ave_s / nbins^2)
   
-  
+
   ;get values for the y axis
-  y = (data.theta[0,*])[end_idx]
+  y = values
   
   ;sort y axis and data
   s = sort(y)

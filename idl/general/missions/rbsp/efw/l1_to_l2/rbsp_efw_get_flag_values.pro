@@ -10,8 +10,8 @@
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2015-08-06 14:34:15 -0700 (Thu, 06 Aug 2015) $
-;   $LastChangedRevision: 18415 $
+;   $LastChangedDate: 2016-01-20 14:19:52 -0800 (Wed, 20 Jan 2016) $
+;   $LastChangedRevision: 19766 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
@@ -86,10 +86,18 @@ function rbsp_efw_get_flag_values,sc,times
   ;;Determine density from sc potential. Remove values when dens < 10 and dens > 3000 cm-3
   store_data,'sc_potential',data={x:times,y:sum12}
   rbsp_efw_density_fit_from_uh_line,'sc_potential',sc,$
-                                    newname='rbsp'+sc+'_density',$
+                                    newname='rbsp'+sc+'_density12',$
                                     dmin=10.,$
                                     dmax=3000.,$
                                     setval=-1.e31
+
+  store_data,'sc_potential',data={x:times,y:sum34}
+  rbsp_efw_density_fit_from_uh_line,'sc_potential',sc,$
+                                    newname='rbsp'+sc+'_density34',$
+                                    dmin=10.,$
+                                    dmax=3000.,$
+                                    setval=-1.e31
+
 
 ;For density we have a special requirement
 ;.....Remove when (V1+V2)/2 > -1  AND
@@ -154,10 +162,15 @@ function rbsp_efw_get_flag_values,sc,times
   ;; tplot,['charging_flag','Vavg']
 
 
-  get_data,'rbsp'+sc+'_density',data=dens
+  get_data,'rbsp'+sc+'_density12',data=dens
   goo = where(charging_flag eq 1)
   if goo[0] ne -1 then dens.y[goo] = -1.e31
-  store_data,'rbsp'+sc+'_density',data=dens
+  store_data,'rbsp'+sc+'_density12',data=dens
+
+  get_data,'rbsp'+sc+'_density34',data=dens
+  goo = where(charging_flag eq 1)
+  if goo[0] ne -1 then dens.y[goo] = -1.e31
+  store_data,'rbsp'+sc+'_density34',data=dens
 
 
 ;----------------------------------------------------------------------------------------------------

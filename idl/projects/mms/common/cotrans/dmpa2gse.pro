@@ -29,9 +29,9 @@
 ;    Based on dsl2gse from THEMIS, forked 6/22/2015
 ;    
 ;    
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-12-21 19:27:34 -0800 (Mon, 21 Dec 2015) $
-; $LastChangedRevision: 19641 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-01-20 14:30:54 -0800 (Wed, 20 Jan 2016) $
+; $LastChangedRevision: 19767 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/dmpa2gse.pro $
 ;-
 
@@ -45,7 +45,7 @@ pro dmpa2gse,name_mms_xxx_in,name_mms_spinras,name_mms_spindec,name_mms_xxx_out,
     get_data,name_mms_spindec,data=mms_spindec
     
     if size(mms_spinras, /type) ne 8 || size(mms_spindec, /type) ne 8 then begin
-       message, 'aborted: must load spin vector data from mec file.  Try calling mms_load_mec'
+       message, 'aborted: must load spin vector (right ascension/declination of L) data.  Try calling mms_load_state'
     endif
     
     if min(mms_spinras.x,/nan)-min(mms_xxx_in.x,/nan) gt 60*60 || max(mms_xxx_in.x,/nan) - max(mms_spinras.x,/nan) gt 60*60 then begin
@@ -120,7 +120,7 @@ pro dmpa2gse,name_mms_xxx_in,name_mms_spinras,name_mms_spindec,name_mms_xxx_out,
     mms_spinras_highres = CREATE_STRUCT('X',mms_xxx_in.X ,'Y',rasInterp,'V',0.0)
     decInterp = interpol( mms_spindec.Y,mms_spindec.X,mms_xxx_in.X)
     mms_spindec_highres = CREATE_STRUCT('X',mms_xxx_in.X ,'Y',decInterp,'V',0.0)
-    
+
     ;cdatj00,2,3,4,5
     
     ;convert the time
