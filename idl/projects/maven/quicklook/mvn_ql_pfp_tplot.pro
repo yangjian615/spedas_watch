@@ -64,8 +64,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2016-01-19 14:53:33 -0800 (Tue, 19 Jan 2016) $
-; $LastChangedRevision: 19761 $
+; $LastChangedDate: 2016-01-21 01:38:56 -0800 (Thu, 21 Jan 2016) $
+; $LastChangedRevision: 19768 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -452,8 +452,8 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   IF (vflg) THEN BEGIN
      mvn_euv_load, /all
      get_data, 'mvn_euv_data', data=vd
-     get_data, 'mvn_euv_flag', data=vf
-     w = WHERE(vf.y EQ 0, nw)
+     get_data, 'mvn_euv_flag', data=vf, index=ivf
+     IF (ivf) THEN w = WHERE(vf.y EQ 0, nw) ELSE nw = 0
      IF nw GT 0 THEN vd = {x: vd.x[w], y: vd.y[w, *]} $
      ELSE vd = {x: trange, y: REFORM(REPLICATE(nan, 6), [2, 3])}
      undefine, w, nw
