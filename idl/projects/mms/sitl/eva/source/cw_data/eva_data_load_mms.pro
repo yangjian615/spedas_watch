@@ -318,6 +318,29 @@ FUNCTION eva_data_load_mms, state
           answer = 'Yes'
         endif
         
+        ;--------------
+        ; FPI BentPipe
+        ;--------------
+        pcode=53
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_fpi_bent*') and (cp eq 0)) then begin
+          mms_load_fpi, probes = prb, level='sitl', data_rate='fast'
+          get_data,sc+'_fpi_bentPipeB_X_DSC',data=Dx
+          get_data,sc+'_fpi_bentPipeB_Y_DSC',data=Dy
+          get_data,sc+'_fpi_bentPipeB_Z_DSC',data=Dz
+          get_data,sc+'_fpi_bentPipeB_Norm',data=Dabs
+          ydata = [[Dabs.Y*Dx.Y], [Dabs.Y*Dy.Y], [Dabs.Y*Dz.Y]]
+          ysize = sqrt(ydata[*,0]^2+ydata[*,1]^2+ydata[*,2]^2)
+          store_data,sc+'_fpi_bentPipeB_DSC',data={x:Dx.X, y:ydata}
+          store_data,sc+'_fpi_bentPipeB_DSC_m',data={x:Dx.X, y:ysize}
+          options,sc+'_fpi_bentPipeB_DSC',$
+            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CFPI!CbentPipeB',ysubtitle='DSC',$
+            colors=[2,4,6],labflag=-1,constant=0
+          options,sc+'_fpi_bentPipeB_DSC_m',constant=0,colors=[0],$
+            ytitle=sc+'!CFPI!CbentPipeB',ysubtitle='(magnitude)'
+          answer = 'Yes'
+        endif
+        
         ;-----------
         ; HPCA
         ;-----------

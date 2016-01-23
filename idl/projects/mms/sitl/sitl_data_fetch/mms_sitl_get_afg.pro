@@ -29,8 +29,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-01-04 12:40:50 -0800 (Mon, 04 Jan 2016) $
-;  $LastChangedRevision: 19670 $
+;  $LastChangedDate: 2016-01-22 08:56:40 -0800 (Fri, 22 Jan 2016) $
+;  $LastChangedRevision: 19788 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_afg.pro $
 
 
@@ -128,7 +128,7 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload, level
 
 
     file_flag = 0
-    if login_flag eq 1 then begin
+    if login_flag eq 1 or local_flist(0) eq '' or !mms.no_server eq 1 then begin
       print, 'Unable to locate files on the SDC server, checking local cache...'
       mms_check_local_cache, local_flist, file_flag, $
         mode, 'afg', level, sc_id(j)

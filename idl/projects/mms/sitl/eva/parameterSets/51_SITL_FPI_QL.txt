@@ -1,4 +1,6 @@
 mms*_dfg_srvy_gsm_dmpa
+;mms*_fpi_bentPipeB_DSC; Emergency parameters from FPI when DFG/AFG not available.
+;mms*_fpi_bentPipeB_DSC_m; ; Emergency parameters from FPI when DFG/AFG not available.
 
 mms*_dis_EnergySpectr_omni_avg
 mms*_dis_numberDensity

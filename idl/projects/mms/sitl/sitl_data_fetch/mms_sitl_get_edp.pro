@@ -34,9 +34,9 @@
 ; MODIFICATION HISTORY:
 ;
 ;
-;  $LastChangedBy: egrimes $
-;  $LastChangedDate: 2015-12-05 11:16:03 -0800 (Sat, 05 Dec 2015) $
-;  $LastChangedRevision: 19528 $
+;  $LastChangedBy: rickwilder $
+;  $LastChangedDate: 2016-01-22 08:28:46 -0800 (Fri, 22 Jan 2016) $
+;  $LastChangedRevision: 19787 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_edp.pro $
 
 
@@ -112,7 +112,7 @@ pro mms_sitl_get_edp, trange=trange, $
     mode=mode, level=level, $
     optional_descriptor=datatype, reload=reload
 
-  if strlen(flist[0]) eq 0 or login_flag eq 1 then begin
+  if strlen(flist[0]) eq 0 or login_flag eq 1 or !mms.no_server eq 1 then begin
     mms_check_local_cache_multi, flist, file_flag, $
       sc_id = sc_id, level=level, $
       mode=mode, instrument_id=instrument_id, $

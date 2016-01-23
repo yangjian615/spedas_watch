@@ -345,9 +345,7 @@ function spp_swp_spane_p1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   
  ; compression = 1
  ; data = data[0:15]
-  dprint,dlevel=3,'hello',compression,bps
-
-  
+  dprint,dlevel=3,'hello',compression,bps  
   ns = nsamples
   if compression then begin
     ccode = 0
@@ -450,25 +448,44 @@ end
 
 function spp_swp_spane_p3_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
+
   data = ccsds.data[20:*]
   ndata = n_elements(data)  
-  compression = (ccsds.data[12] and '80'x) ne 0
+  nsamples = 16
+  compression = (ccsds.data[12] and '20'x) ne 0
   bps = (compression eq 0) * 4    ; bytes per sample
-  ;n_expected = 16 * bps
-  n_expected = 512 * bps
-  if n_elements(data) ne n_expected then begin
-    dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
-    return,0
+  nbytes = nsamples * bps
+  if n_elements(data) ne nbytes then begin
+    dprint,dlevel=3, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+    ;return,0
   endif
-  
-  ns = n_expected / bps
+  ns = nsamples
   if compression then begin
     ccode = 0
-    cnts = mvn_pfp_log_decomp(data,ccode)
+    cnts = mvn_pfp_log_decomp(data[0:ns],ccode)   ; / .218
   endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
-  cnts = reform(cnts,16,ns/16)
-  cnts1 = total(cnts,1)
-  cnts2 = total(cnts,2)
+
+
+  ;data = ccsds.data[20:*]
+  ;ndata = n_elements(data)  
+  ;compression = (ccsds.data[12] and '80'x) ne 0
+  ;bps = (compression eq 0) * 4    ; bytes per sample
+  ;;n_expected = 16 * bps
+  ;n_expected = 512 * bps
+  ;if n_elements(data) ne n_expected then begin
+  ;  dprint,dlevel=2, 'Size error ',n_elements(data),ccsds.size,ccsds.apid
+  ;  return,0
+  ;endif
+  ;ns = n_expected / bps
+  ;if compression then begin
+  ;  ccode = 0
+  ;  cnts = mvn_pfp_log_decomp(data,ccode)
+  ;endif  else cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian )   ; convert 4 bytes to a ulong word
+
+  
+  ;cnts = reform(cnts,16,ns/16)
+  cnts1 = cnts;total(cnts,1)
+  cnts2 = cnts;total(cnts,2)
   tot = total(cnts)   
 
   if 0 then begin    

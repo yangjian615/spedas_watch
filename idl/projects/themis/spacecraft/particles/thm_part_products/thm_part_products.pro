@@ -17,9 +17,9 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-01-04 16:02:05 -0800 (Mon, 04 Jan 2016) $
-;$LastChangedRevision: 19674 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-01-22 16:52:39 -0800 (Fri, 22 Jan 2016) $
+;$LastChangedRevision: 19800 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -490,7 +490,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     ;gyro range may be wrapped about gyro=0, this keeps an invalid range from being passed to tplot
     gyro_y_range = (undefined(start_angle) ? 0:start_angle) + [0,360]
     thm_pgs_make_tplot, tplot_prefix+'gyro'+suffix, x=times, y=gyro_y, z=gyro_spec, yrange=gyro_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
-    thm_pgs_shift_phi_spec, names=tplot_prefix+'gyro'+suffix, start_angle=start_angle
+    spd_pgs_shift_phi_spec, names=tplot_prefix+'gyro'+suffix, start_angle=start_angle
     if keyword_set(get_error) then begin
       thm_pgs_make_tplot, tplot_prefix+'gyro_sigma'+suffix, x=times, y=gyro_y, z=gyro_sigma, yrange=gyro_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
       spd_pgs_shift_phi_spec, names=tplot_prefix+'gyro_sigma'+suffix, start_angle=start_angle

@@ -1,5 +1,6 @@
 PRO eva_data_load_mms_fpi_ql, prb=prb, datatype=datatype
-
+  compile_opt idl2
+  
   mms_load_fpi, probes = prb, level='ql', data_rate='fast', datatype=datatype
   
 

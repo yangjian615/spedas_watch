@@ -3,6 +3,9 @@
 function spp_swp_spani_targ_p1_m1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   
   data = ccsds.data[20:*]
+
+  stop
+
   lll = 1024*4
   if n_elements(data) ne lll then begin
      dprint,'Improper packet size',dlevel=2

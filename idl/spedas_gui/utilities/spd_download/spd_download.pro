@@ -108,8 +108,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-08 11:26:49 -0700 (Fri, 08 May 2015) $
-;$LastChangedRevision: 17524 $
+;$LastChangedDate: 2016-01-22 16:46:58 -0800 (Fri, 22 Jan 2016) $
+;$LastChangedRevision: 19799 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download.pro $
 ;
 ;-
@@ -303,42 +303,44 @@ endif
 ; Aggregate filenames
 ;--------------------------------------------
 
-;if a file was not downloaded then check destination for pre-existing file
-not_downloaded = where(file_list eq '', nnd)
+;if a file was successfully downloaded then add it to the ouput list
+;otherwise search locally and add existing local files
+;the final output list should preserve the order of the input
+for i=0, n_elements(file_list)-1 do begin
 
-if nnd ne 0 then begin
+  ;successful download
+  if file_list[i] ne '' then begin
+    output_list = array_concat(file_list[i],output_list)
+    continue
+  endif
 
-  for i=0, nnd-1 do begin
+  ;this will catch any wild cards left behind if /no_download was set
+  local_matches = file_search(filename[i], count=n_local)
 
-    ;this will catch any wild cards left behind if /no_download was set
-    local_matches = file_search(filename[not_downloaded[i]], count=n_local)
-
-    ;this is, hopefully, temporary support for an awful, backwards 
-    ;feature of file_retrieve that returns imaginary paths to files
-    ;that were not downloaded and do not exist on the file system
-    if n_local eq 0 && ~keyword_set(valid_only) then begin
-      file_list[not_downloaded[i]] = filename[not_downloaded[i]]
-    endif
+  ;local file found
+  if n_local gt 0 then begin
 
     ;use last in (lexically sorted) list if requested
     if keyword_set(last_version) then begin
       local_matches = local_matches[n_local-1 > 0]
     endif
+  
+    output_list = array_concat(local_matches,output_list)
 
-    ;append matches for simplicity, empty strings will be trimmed later
-    file_list = array_concat(local_matches,file_list)
+  endif else begin
 
-  endfor
+    ;this is support for an imprudent feature of file_retrieve that
+    ;returns imaginary paths to files that were not downloaded and
+    ;do not exist on the file system
+    if ~keyword_set(valid_only) then begin
+      output_list = array_concat(filename[i],output_list)
+    endif
 
-endif
+  endelse
 
+endfor
 
-;trim the list and copy to output variable
-found = where(file_list ne '', nf)
-
-if nf ne 0 then begin
-  output = file_list[found]
-endif
+if ~undefined(output_list) then output=output_list
 
 return, output
 

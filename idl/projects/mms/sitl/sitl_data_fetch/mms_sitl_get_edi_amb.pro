@@ -254,7 +254,7 @@ TRANGE    = trange
 		;Check local cache.
 		;   - FILE_FLAG=1 means no file found.
 		file_flag = 0
-		if login_flag eq 1 then begin
+		if login_flag eq 1 or local_flist(0) eq '' or !mms.no_server eq 1 then begin
 			message, 'Unable to locate files on the SDC server, checking local cache...', /INFORMATIONAL
 			mms_check_local_cache, local_flist, file_flag, mode, instr, level, sc_id[j], $
 			                       OPTIONAL_DESCRIPTOR = optdesc

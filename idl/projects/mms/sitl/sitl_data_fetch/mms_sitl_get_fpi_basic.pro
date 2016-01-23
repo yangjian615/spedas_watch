@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-11-12 13:32:30 -0800 (Thu, 12 Nov 2015) $
-;  $LastChangedRevision: 19353 $
+;  $LastChangedDate: 2016-01-22 08:56:40 -0800 (Fri, 22 Jan 2016) $
+;  $LastChangedRevision: 19788 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_fpi_basic.pro $
 
 
@@ -79,7 +79,7 @@ for j = 0, n_elements(sc_id)-1 do begin
   endif
 
   file_flag = 0
-  if login_flag eq 1 then begin
+  if login_flag eq 1 or local_flist(0) eq '' or !mms.no_server eq 1 then begin
     print, 'Unable to locate files on the SDC server, checking local cache...'
     mms_check_local_cache, local_flist, file_flag, $
       mode, 'fpi', level, sc_id(j)

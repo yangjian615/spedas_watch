@@ -3,6 +3,7 @@
 function spp_swp_spani_full_p1_m1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   
   data = ccsds.data[20:*]
+
   lll = 1024*4
   if n_elements(data) ne lll then begin
      dprint,'Improper packet size',dlevel=2
@@ -23,16 +24,16 @@ function spp_swp_spani_full_p1_m1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     cnts: float(cnts[*]), $
     enr_cnts: float(total(reform(total(cnts,3)),2)), $
        
-    cnts_a0:  float(reform(total(cnts[*, 0,*],1))), $
-    cnts_a1:  float(reform(total(cnts[*, 1,*],1))), $
-    cnts_a2:  float(reform(total(cnts[*, 2,*],1))), $
-    cnts_a3:  float(reform(total(cnts[*, 3,*],1))), $
-    cnts_a4:  float(reform(total(cnts[*, 4,*],1))), $
-    cnts_a5:  float(reform(total(cnts[*, 5,*],1))), $
-    cnts_a6:  float(reform(total(cnts[*, 6,*],1))), $
-    cnts_a7:  float(reform(total(cnts[*, 7,*],1))), $
-    cnts_a8:  float(reform(total(cnts[*, 8,*],1))), $
-    cnts_a9:  float(reform(total(cnts[*, 9,*],1))), $
+    cnts_a00: float(reform(total(cnts[*, 0,*],1))), $
+    cnts_a01: float(reform(total(cnts[*, 1,*],1))), $
+    cnts_a02: float(reform(total(cnts[*, 2,*],1))), $
+    cnts_a03: float(reform(total(cnts[*, 3,*],1))), $
+    cnts_a04: float(reform(total(cnts[*, 4,*],1))), $
+    cnts_a05: float(reform(total(cnts[*, 5,*],1))), $
+    cnts_a06: float(reform(total(cnts[*, 6,*],1))), $
+    cnts_a07: float(reform(total(cnts[*, 7,*],1))), $
+    cnts_a08: float(reform(total(cnts[*, 8,*],1))), $
+    cnts_a09: float(reform(total(cnts[*, 9,*],1))), $
     cnts_a10: float(reform(total(cnts[*,10,*],1))), $
     cnts_a11: float(reform(total(cnts[*,11,*],1))), $
     cnts_a12: float(reform(total(cnts[*,12,*],1))), $

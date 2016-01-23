@@ -5,6 +5,7 @@ function spp_swp_spane_p1_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   data = ccsds.data[20:*]
   ;;lll = 512
   lll = 512*4
+
   if n_elements(data) ne lll then begin
     dprint,'Improper packet size',dlevel=2
     dprint,dlevel=1, 'Size error ',$

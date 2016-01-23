@@ -50,9 +50,9 @@
 ;
 ;See Also:  "XLIM", "YLIM", "ZLIM",  "OPTIONS",  "TPLOT", "DRAW_COLOR_SCALE"
 ;Author:  Davin Larson,  Space Sciences Lab
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-01-14 07:36:00 -0800 (Thu, 14 Jan 2016) $
-; $LastChangedRevision: 19728 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2016-01-22 15:06:50 -0800 (Fri, 22 Jan 2016) $
+; $LastChangedRevision: 19796 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/specplot.pro $
 ;-
 pro specplot,x,y,z,limits=lim,data=data,overplot=overplot,overlay=overlay,$
@@ -186,26 +186,59 @@ str_element,opt,'top',   value=top
 ;Otherwise each gap segment will autoscale to a different range when datagap is set.
 ;(task# 4724)
 ;pcruce 2012-10-10
+
+;modified to autoscale only to visible data set, rather than to entire time range of input variable
+;(task #5304)
+;pcruce 2016-01-22
 trg = opt.xrange
 if opt.zrange[0] eq opt.zrange[1] then begin
-  zrange=[0.,1.]
-;  good = where(finite(total(z,2)) and finite(x) and x lt trg[1] and x ge trg[0],goodcnt)
-;  if goodcnt gt 0 then zrange = minmax(z[good,*],positive=zlog,min_value=mn,max_value=mx)
+
+  ;restrict to visible time range
+  goodx = where(finite(x) and x lt trg[1] and x ge trg[0],goodxcnt)
+ 
+  if goodxcnt gt 0 then begin
+    
+    if keyword_Set(zlog) then begin
+      good = where(finite(alog(z[goodx,*])),goodcnt)  ;log axis only calculates range over valid log output
+      if goodcnt gt 0 then begin
+        zrange = minmax((z[goodx,*])[good],min_value=mn,max_value=mx) ;restrict over time and valid log
+      endif else begin
+        zrange = [0.,0.]
+      endelse
+    endif else begin ;linear z axis
+      zrange = minmax(z[goodx,*],min_value=mn,max_value=mx)
+    endelse
+  
+  endif else begin
+    zrange = [0.,0.]
+  endelse
+ 
+ ;Multiple alternative implementations below
+ ;The version above tries to accomplish the goals of both
+ ;#1 Don't autoscale each gap segment independently, use a "global" scale that is consistent for all gaps
+ ;#2 Only autoscale based on displayed data, not on data outside of displayed range
+ ;#3 Make sure NANs, Infinities, and non-positive integers(log axes) don't break range calculation
+ ; 
+ ;DL implementation
+  ;  zrange=[0.,1.]
+  ;  good = where(finite(total(z,2)) and finite(x) and x lt trg[1] and x ge trg[0],goodcnt)
+  ;  if goodcnt gt 0 then zrange = minmax(z[good,*],positive=zlog,min_value=mn,max_value=mx)
+  
 ;  printdat,zrange,good
   ;;;; NOTE by Eric Grimes (egrimes@igpp.ucla.edu):
   ;;;; r19691 broke spectra plots for THEMIS and MMS
   ;;;; reverted back on 1/14/2016:
   ;;;; commented out the above code, uncommented the below code
-  if keyword_set(zlog) then begin
-    good = where(finite(alog(z)),goodcnt)
-    if goodcnt gt 0 then begin
-      zrange = minmax(z[good],min_value=mn,max_value=mx)
-    endif else begin
-      zrange = [0,0]
-    endelse
-  endif else begin
-    zrange = minmax(z,/nan,min_value=mn,max_value=mx)
-  endelse
+;  if keyword_set(zlog) then begin
+;    good = where(finite(alog(z)),goodcnt)
+;    if goodcnt gt 0 then begin
+;      zrange = minmax(z[good],min_value=mn,max_value=mx)
+;    endif else begin
+;      zrange = [0,0]
+;    endelse
+;  endif else begin
+;    zrange = minmax(z,/nan,min_value=mn,max_value=mx)
+;  endelse
   
 endif else begin
   zrange = opt.zrange
