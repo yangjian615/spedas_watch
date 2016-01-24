@@ -134,10 +134,10 @@
  ;       then the connection would be closed
  ;
  ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2015-11-25 22:50:14 -0800 (Wed, 25 Nov 2015) $
- ; $LastChangedRevision: 19483 $
+ ; $LastChangedDate: 2016-01-23 15:14:44 -0800 (Sat, 23 Jan 2016) $
+ ; $LastChangedRevision: 19802 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
- ; $Id: file_http_copy.pro 19483 2015-11-26 06:50:14Z davin-mac $
+ ; $Id: file_http_copy.pro 19802 2016-01-23 23:14:44Z davin-mac $
  ;-
  
  
@@ -541,7 +541,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19483 2015-11-26 06:50:14Z davin-mac $
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19802 2016-01-23 23:14:44Z davin-mac $
 
    if n_elements(strict_html) eq 0 then begin
       strict_html = 1      ;  set to 1 to be robust,  set to 0 to be much faster
@@ -549,7 +549,7 @@ end
    endif
 
    if keyword_set(user_agent) eq 0 then begin
-     swver = strsplit('$Id: file_http_copy.pro 19483 2015-11-26 06:50:14Z davin-mac $',/extract)
+     swver = strsplit('$Id: file_http_copy.pro 19802 2016-01-23 23:14:44Z davin-mac $',/extract)
      user = getenv('USER')
      if ~user then user=getenv('USERNAME')
      if ~user then user=getenv('LOGNAME')
@@ -839,7 +839,7 @@ end
      
      if n_elements(if_modified_since) eq 0 then if_modified_since=1 
      if keyword_set(if_modified_since) then begin
-       filemodtime = time_string(if_modified_since lt 2 ? lcl.mtime : if_modified_since , tformat='DOW, DD MTH YYYY hh:mm:ss GMT' )       
+       filemodtime = time_string(if_modified_since lt 2 ? lcl.mtime+1 : if_modified_since , tformat='DOW, DD MTH YYYY hh:mm:ss GMT' )       
        printf, unit, 'If-Modified-Since: '+filemodtime
        dprint,dlevel=4,verbose=verbose,'If-Modified-Since: '+filemodtime
      endif
