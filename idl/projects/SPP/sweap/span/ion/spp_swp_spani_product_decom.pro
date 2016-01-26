@@ -43,7 +43,7 @@ function spp_swp_spani_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
       spec1 = cnts
  ;     printdat,cnts
     end
-    else: dprint,dlevel=1,dwait=10.,string(ccsds.apid,data_size,format='("Packet ",z03, " Unknown size:",i5)')
+    else: dprint,dlevel=2,dwait=10.,string(ccsds.apid,data_size,format='("Packet 0x",z04, " Unknown size:",i5)')
   endcase
     
   prod_str = { $

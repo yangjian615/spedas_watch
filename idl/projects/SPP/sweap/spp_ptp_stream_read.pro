@@ -22,22 +22,21 @@ pro spp_ptp_stream_read,buffer,info=info  ;,time=time
       ptp_size = 17     ; (minimum value possible) Dummy value that will trigger end of buffer
     endif else  ptp_size = swap_endian( uint(buffer,p) ,/swap_if_little_endian) 
     if ptp_size lt 17 then begin
-      dprint,'PTP packet size is too small!'
-      dprint,p,ptp_size,buffer,/phelp
+      dprint,dlevel=1,'PTP packet size is too small!'
+      dprint,dlevel=1,p,ptp_size,buffer,/phelp
       break
     endif
     if p+ptp_size gt bsize then begin   ; Buffer doesn't have complete pkt.
       dprint,dlevel=3,'Buffer has incomplete packet. Saving ',n_elements(buffer)-p,' bytes for next call.'
-;      dprint,p,ptp_size,buffer,/phelp
+;      dprint,dlevel=1,p,ptp_size,buffer,/phelp
       *info.exec_proc_ptr = buffer[p:*]                   ; store remainder of buffer to be used on the next call to this procedure
-;      dprint,info,phelp=2
       return
       break
     endif
     spp_ptp_pkt_handler,buffer[p:p+ptp_size-1],time=time
     p += ptp_size
   endwhile
-  if p ne bsize then dprint,'Buffer incomplete',p,ptp_size,bsize
+  if p ne bsize then dprint,dlevel=1,'Buffer incomplete',p,ptp_size,bsize
   return
 end
 

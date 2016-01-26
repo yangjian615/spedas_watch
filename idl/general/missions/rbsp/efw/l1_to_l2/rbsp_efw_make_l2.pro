@@ -51,8 +51,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-01-22 14:32:38 -0800 (Fri, 22 Jan 2016) $
-; $LastChangedRevision: 19795 $
+; $LastChangedDate: 2016-01-25 13:14:43 -0800 (Mon, 25 Jan 2016) $
+; $LastChangedRevision: 19807 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -352,6 +352,8 @@ pro rbsp_efw_make_l2,sc,date,$
      if type eq 'spinfit_both_boompairs' then begin
 
         tmp = 0.
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_spinfit_12',times,$
+                      newname='rbsp'+sc+'_efw_esvy_spinfit_12'
         get_data,'rbsp'+sc+'_efw_esvy_spinfit_12',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
@@ -360,6 +362,8 @@ pro rbsp_efw_make_l2,sc,date,$
         endif
 
                                 ;Spinfit with corotation field
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_12',times,$
+                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_12'
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_12',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
@@ -367,12 +371,16 @@ pro rbsp_efw_make_l2,sc,date,$
            tmp = 0.
         endif
                                 ;Spinfit with corotation field and E*B=0
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_12',$
+                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_12'
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_12',data=tmp
         if is_struct(tmp) then begin
            spinfit_vxb_edotb_12 = tmp.y
         endif
 
                                 ;Spinfit without corotation field
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_12',$
+                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_12'
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_12',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
@@ -380,6 +388,8 @@ pro rbsp_efw_make_l2,sc,date,$
            tmp = 0.
         endif
                                 ;Spinfit without corotation field and E*B=0
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12',$
+                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12'
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12',data=tmp
         if is_struct(tmp) then begin
            spinfit_vxb_coro_edotb_12 = tmp.y
@@ -387,6 +397,8 @@ pro rbsp_efw_make_l2,sc,date,$
                                 ;----
 
         tmp = 0.
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_spinfit_34',$
+                      newname='rbsp'+sc+'_efw_esvy_spinfit_34'
         get_data,'rbsp'+sc+'_efw_esvy_spinfit_34',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
@@ -394,6 +406,8 @@ pro rbsp_efw_make_l2,sc,date,$
            tmp = 0.
         endif
                    ;Spinfit with corotation field
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_34',$
+                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_34'
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_34',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
@@ -401,11 +415,15 @@ pro rbsp_efw_make_l2,sc,date,$
            tmp = 0.
         endif
                    ;Spinfit with corotation field and E*B=0
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_34',$
+                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_34'
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_34',data=tmp
         if is_struct(tmp) then begin
            spinfit_vxb_edotb_34 = tmp.y
         endif
                    ;Spinfit without corotation field
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_34',$
+                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_34'
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_34',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
@@ -413,6 +431,8 @@ pro rbsp_efw_make_l2,sc,date,$
            tmp = 0.
         endif
                    ;Spinfit without corotation field and E*B=0
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34',$
+                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34'
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34',data=tmp
         if is_struct(tmp) then begin
            spinfit_vxb_coro_edotb_34 = tmp.y
@@ -468,13 +488,15 @@ pro rbsp_efw_make_l2,sc,date,$
 ;--------------------------------------------------
 
      ;;density
+     tinterpol_mxn,'rbsp'+sc+'_density12',times,newname='rbsp'+sc+'_density12'
      get_data,'rbsp'+sc+'_density12',data=dens12
      goo = where(flag_arr[*,0] eq 1)
-     if goo[0] ne -1 then dens12.y[goo] = -1.e31
+     if goo[0] ne -1 and is_struct(dens12) then dens12.y[goo] = -1.e31
 
+     tinterpol_mxn,'rbsp'+sc+'_density34',times,newname='rbsp'+sc+'_density34'
      get_data,'rbsp'+sc+'_density34',data=dens34
      goo = where(flag_arr[*,0] eq 1)
-     if goo[0] ne -1 then dens34.y[goo] = -1.e31
+     if goo[0] ne -1 and is_struct(dens34) then dens34.y[goo] = -1.e31
 
 
 
@@ -620,8 +642,8 @@ pro rbsp_efw_make_l2,sc,date,$
 
      cdf_varput,cdfid,'efield_spinfit_vxb_edotb_mgse_e12',transpose(spinfit_vxb_edotb_12)
      cdf_varput,cdfid,'efield_spinfit_vxb_edotb_mgse_e34',transpose(spinfit_vxb_edotb_34)
-     cdf_varput,cdfid,'density_v12',dens12.y
-     cdf_varput,cdfid,'density_v34',dens34.y
+     if is_struct(dens12) then cdf_varput,cdfid,'density_v12',dens12.y
+     if is_struct(dens34) then cdf_varput,cdfid,'density_v34',dens34.y
 
      cdf_varput,cdfid,'vsvy_vavg',transpose([[sum12],[sum34],[sum56]])
      cdf_varput,cdfid,'VxB_mgse',transpose(vxb.y)

@@ -1,6 +1,5 @@
 ;compile_opt idl2
-
-
+;keep
 
 
 
@@ -233,7 +232,7 @@ end
 
 
 pro spp_init_realtime,filename=filename,base=base
-
+dprint, 'hello'
 spp_recorders
 spp_swp_apid_data_init,save=1
 spp_apid_data,'3b9'x,name='SWEAP SPAN-I Events',rt_tags='*'
@@ -266,7 +265,7 @@ spp_apid_data,'397'x,name='SWEAP SPAN-I Prod_x97',rt_tags='*'
 spp_apid_data, rt_flag = 1
 
 wait,1
-
+spp_swp_manip_init
 spp_set_tplot_options
 
 spp_apid_data,apdata=ap

@@ -31,15 +31,15 @@ Function fa_esa_pa_array, theta, theta_shift, mode_ind, fillval = fillval
   
   mode0 = where(mode_ind Eq 0, nmode0)
   If(nmode0 Gt 0) Then Begin
-     For j = 0, nmode0-1 Do theta_out[0, 0, mode0[j]] = theta[*, *, 0]+theta_shift[mode0[j]]
+     For j = 0, nmode0-1 Do theta_out[0, 0, mode0[j]] = (theta[*, *, 0]+theta_shift[mode0[j]]) mod 360.0
   Endif
   mode1 = where(mode_ind Eq 1, nmode1)
   If(nmode1 Gt 0) Then Begin
-     For j = 0, nmode1-1 Do theta_out[0, 0, mode1[j]] = theta[*, *, 1]+theta_shift[mode1[j]]
+     For j = 0, nmode1-1 Do theta_out[0, 0, mode1[j]] = (theta[*, *, 1]+theta_shift[mode1[j]]) mod 360.0
   Endif
   mode2 = where(mode_ind Eq 2, nmode2)
   If(nmode2 Gt 0) Then Begin
-     For j = 0, nmode2-1 Do theta_out[0, 0, mode2[j]] = theta[*, *, 2]+theta_shift[mode2[j]]
+     For j = 0, nmode2-1 Do theta_out[0, 0, mode2[j]] = (theta[*, *, 2]+theta_shift[mode2[j]]) mod 360.0
   Endif
   If(keyword_set(fillval)) Then Begin
      ss_fv = where(~finite(theta_out), nfv)
@@ -63,8 +63,8 @@ End
 ;HISTORY:
 ; hacked from CDAWlib apply_esa_qflag.pro, jmm, 2015-08-28
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-11-17 19:52:53 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19402 $
+; $LastChangedDate: 2016-01-25 11:13:15 -0800 (Mon, 25 Jan 2016) $
+; $LastChangedRevision: 19803 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_pa.pro $
 ;-
 Function fa_esa_pa, astruct, orig_names, index=index

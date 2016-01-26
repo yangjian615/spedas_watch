@@ -108,6 +108,8 @@ function spp_swp_spanai_rates_decom_64x,ccsds, ptp_header=ptp_header, apdat=apda
     return,0
   endif
   
+  if (ccsds.data[11] and 1) eq 1 then return,0
+  
   ;dprint,time_string(ccsds.time)
 
   sf0 = ccsds.data[11] and 3
@@ -753,6 +755,30 @@ end
 
 
 
+
+function spp_swp_spanai_tof_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+  str = create_struct(ptp_header,ccsds)
+  ;  dprint,format="('Generic routine for ',Z04)",ccsds.apid
+  if debug(3) then begin
+    dprint,dlevel=2,'TOF',ccsds.size+7, n_elements(ccsds.data[20:*])
+    hexprint,ccsds.data
+  endif
+  return,str
+end
+
+
+
+
+function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
+  str = create_struct(ptp_header,ccsds)
+  if debug(3) then begin
+    dprint,dlevel=2,'swem',ccsds.size+7, n_elements(ccsds.data)
+    hexprint,ccsds.data
+  endif
+  return,str
+end
+
+
 ;;------------------------------------------------------------------
 ;; Added by Roberto Livi (2015-06-09)
 
@@ -760,8 +786,7 @@ end
 function spp_ccsds_decom,buffer             ; buffer should contain bytes for a single ccsds packet, header is contained in first 3 words (6 bytes)
   buffer_length = n_elements(buffer)
   if buffer_length lt 12 then begin
-    dprint,'Invalid buffer length: ',buffer_length,dlevel=2
-    
+    dprint,'Invalid buffer length: ',buffer_length,dlevel=1
     return, 0
   endif
   header = swap_endian(uint(buffer[0:11],0,6) ,/swap_if_little_endian )
@@ -780,10 +805,13 @@ function spp_ccsds_decom,buffer             ; buffer should contain bytes for a 
     data:  buffer[0:*], $
     gap : 0b }
 
+
   if MET lt -1e5 then begin
     dprint,dlevel=1,'Invalid MET: ',MET,' For packet type: ',ccsds.apid
     ccsds.time = !values.d_nan
   endif
+
+ ;  dprint,format='(04z," ",)'
 
 ;  if ccsds.size ne (n_elements(ccsds.data))-7 then begin
 ;    dprint,dlevel=3,format='(a," x",z04,i7,i7)','CCSDS size error',ccsds.apid,ccsds.size,n_elements(ccsds.data)
@@ -880,11 +908,15 @@ if 0 then begin
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
 endif
 if 1 then begin
+  
   spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom_version_84x',tname='spp_spanai_hkp_',tfields='*',save=save
   spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_64x',tname='spp_spanai_rates_',tfields='*',save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',tname='spp_spanai_events_',tfields='*',save=save
+  spp_apid_data,'3ba'x,routine='spp_swp_spanai_tof_decom',tname='spp_spanai_tof_',tfields='*',save=save
+
   
   spp_apid_data,'380'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p1_m1_',tfields='*',save=save
+;spp_swp_spani_full_p1_m1_init
   spp_apid_data,'381'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p1_m2_',tfields='*',save=save
   spp_apid_data,'382'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p1_m3_',tfields='*',save=save
   spp_apid_data,'383'x,routine='spp_swp_spani_product_decom',tname='spp_spani_full_p1_m4_',tfields='*',save=save
@@ -913,6 +945,9 @@ endif
   
 ;  spp_apid_data,'359'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
 ;  spp_apid_data,'360'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
+
+
+  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper'
   
   spp_apid_data,'7c0'x,routine='spp_log_message_decom',tname='log_',tfields='MSG',save=1,rt_tags='MSG',rt_flag=1
   spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',rt_tags='*_?',rt_flag=1,tfields='*'
@@ -925,27 +960,48 @@ end
 
 pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
 
-
   ccsds=spp_ccsds_decom(buffer)
-  
-  ;dprint,time_string(ccsds.time)
-  
-;  printdat,ccsds,/hex
-    
+      
   if ~keyword_set(ccsds) then begin
-    dprint,dlevel=2,'Invalid CCSDS packet'
-    dprint,dlevel=2,time_string(ptp_header.ptp_time)
-;    hexprint,buffer
+    dprint,dlevel=1,'Invalid CCSDS packet'
+    dprint,dlevel=1,time_string(ptp_header.ptp_time)
     return
   endif
-
+  
+ ; if n_elements(buffer) ne  ccsds.length+7  then dprint,'size error',ccsds.apid,n_elements(buffer) ,ccsds.length+7
+  
+  common spp_ccsds_pkt_handler_com2,last_ccsds,last_time,total_bytes,rate_sm
+  time = ptp_header.ptp_time
+  time = systime(1)
+  if keyword_set(last_time) then begin  
+    dt = time - last_time
+    len = n_elements(buffer)
+    total_bytes += len
+    if dt gt .1 then begin
+      rate = total_bytes/dt
+      store_data,'AVG_DATA_RATE',append=1,time, rate,dlimit={psym:-4}
+      total_bytes =0
+      last_time = time
+    endif    
+  endif else begin
+    last_time = time
+    total_bytes = 0
+  endelse
+  last_ccsds = ccsds
+  
+  
+  
   if 1 then begin
     spp_apid_data,ccsds.apid,apdata=apdat,/increment
     if (size(/type,*apdat.last_ccsds) eq 8)  then begin    ; look for data gaps
+      if 1 then begin
+        store_data,'APIDS_ALL',ccsds.time,ccsds.apid,/append,dlimit={psym:4,symsize:.2 ,ynozero:1}
+      endif
       dseq = (( ccsds.seq_cntr - (*apdat.last_ccsds).seq_cntr ) and '3fff'x) -1
       if dseq ne 0  then begin
         ccsds.gap = 1
         dprint,dlevel=3,format='("Lost ",i5," ", Z03, " packets")',dseq,apdat.apid
+        store_data,'APIDS_GAP',ccsds.time,ccsds.apid,/append,dlimit={psym:4,symsize:.4 ,ynozero:1, colors:'r'}
       endif
     endif
     if keyword_set(apdat.routine) then begin
@@ -965,33 +1021,33 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
 end
 
 
-
-function ptp_pkt_add_header,buffer,time=time,spc_id=spc_id,path=path,source=source
-
-if ~keyword_set(time) then time=systime(1)
-if ~keyword_set(spc_id) then spc_id = 187
-if ~keyword_set(path) then path = 'a200'x
-if ~keyword_set(source) then source = 'a0'x
-size = n_elements(buffer)
-
-st = time_struct(time)
-day1958 = uint(st.daynum -714779)
-msec =  ulong(st.sod * 1000)
-usec = 0U
-
-b_size    = byte( swap_endian(/swap_if_little_endian, uint(size+17)), 0 ,2)
-b_sc_id   = byte( swap_endian(/swap_if_little_endian, uint(spc_id)), 0 ,2)
-b_day1958 = byte( swap_endian(/swap_if_little_endian, uint(day1958)), 0 ,2)
-b_msec    = byte( swap_endian(/swap_if_little_endian, ulong(msec)), 0 ,4)
-b_usec    = byte( swap_endian(/swap_if_little_endian, uint(usec)), 0 ,2)
-b_source  = byte(source)
-b_spare   = byte(0)
-b_path    = byte( swap_endian(/swap_if_little_endian, uint(path)), 0 ,2)
-
-hdr = [b_size, 3b, b_sc_id, b_day1958, b_msec, b_usec, b_source, b_spare, b_path]
-return, size ne 0 ? [hdr,buffer] : hdr
-end
-
+;
+;function ptp_pkt_add_header,buffer,time=time,spc_id=spc_id,path=path,source=source
+;
+;if ~keyword_set(time) then time=systime(1)
+;if ~keyword_set(spc_id) then spc_id = 187
+;if ~keyword_set(path) then path = 'a200'x
+;if ~keyword_set(source) then source = 'a0'x
+;size = n_elements(buffer)
+;
+;st = time_struct(time)
+;day1958 = uint(st.daynum -714779)
+;msec =  ulong(st.sod * 1000)
+;usec = 0U
+;
+;b_size    = byte( swap_endian(/swap_if_little_endian, uint(size+17)), 0 ,2)
+;b_sc_id   = byte( swap_endian(/swap_if_little_endian, uint(spc_id)), 0 ,2)
+;b_day1958 = byte( swap_endian(/swap_if_little_endian, uint(day1958)), 0 ,2)
+;b_msec    = byte( swap_endian(/swap_if_little_endian, ulong(msec)), 0 ,4)
+;b_usec    = byte( swap_endian(/swap_if_little_endian, uint(usec)), 0 ,2)
+;b_source  = byte(source)
+;b_spare   = byte(0)
+;b_path    = byte( swap_endian(/swap_if_little_endian, uint(path)), 0 ,2)
+;
+;hdr = [b_size, 3b, b_sc_id, b_day1958, b_msec, b_usec, b_source, b_spare, b_path]
+;return, size ne 0 ? [hdr,buffer] : hdr
+;end
+;
 
 
   ;+
@@ -1056,7 +1112,7 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   if keyword_set(time) then dt = utime-time  else dt = 0
 ;  dprint,dlevel=4,time_string(utime,prec=3),ptp_size,sc_id,days,ms,us,source,path,dt,format='(a,i6," x",Z04,i6,i9,i6," x",Z02," x",Z04,f10.2)'
   if ptp_size le 17 then begin
-    dprint,dlevel=2,dwait=60.,'PTP size error - not enough bytes: '+strtrim(ptp_size,2)+ ' '+time_string(utime)
+    dprint,dlevel=2,'PTP size error - not enough bytes: '+strtrim(ptp_size,2)+ ' '+time_string(utime)
     if debug(3) then hexprint,buffer
     return
   endif
