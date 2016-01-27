@@ -16,8 +16,8 @@
 ;       occurs in the higher level routine, gse2agsm
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GSE2aGSM,data_in,data_out,aGSM2GSE=aGSM2GSE
@@ -60,8 +60,8 @@ end
 ;
 ;Written by Hannes Schwarzl
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GSE2GSM,data_in,data_out,GSM2GSE=GSM2GSE
@@ -111,8 +111,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro sub_GEI2GSE,data_in,data_out,GSE2GEI=GSE2GEI
@@ -161,8 +161,8 @@ end
 ;
 ;Written by Hannes Schwarzl
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GSM2SM,data_in,data_out,SM2GSM=SM2GSM
@@ -211,8 +211,8 @@ end
 ;
 ;Written by Patrick Cruce(pcruce@igpp.ucla.edu)
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GEI2GEO,data_in,data_out,GEO2GEI=GEO2GEI
@@ -255,8 +255,8 @@ end
 ;
 ;Written by Cindy Russell(clrussell@igpp.ucla.edu)
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/cotrans_lib.pro $
 ;-
 pro sub_GEO2MAG,data_in,data_out,MAG2GEO=MAG2GEO
@@ -297,8 +297,8 @@ end
 ;Example:
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 @matrix_array_lib
@@ -344,8 +344,8 @@ end
 ;Example:
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subJ20002GEI,TIMES,DATA_in,DATA_out
@@ -444,8 +444,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subGEI2GSE,TIMES,DATA_in,DATA_out
@@ -488,8 +488,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subGSE2GEI,TIMES,DATA_in,DATA_out
@@ -532,8 +532,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subGSE2GSM,TIMES,DATA_in,DATA_out
@@ -576,8 +576,8 @@ end
 ;Notes: under construction!!  will run faster in the near future!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subGSM2GSE,TIMES,DATA_in,DATA_out
@@ -619,8 +619,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subGSM2SM,TIMES,DATA_in,DATA_out
@@ -662,8 +662,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subSM2GSM,TIMES,DATA_in,DATA_out
@@ -705,8 +705,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subGEI2GEO,TIMES,DATA_in,DATA_out
@@ -740,8 +740,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subGEO2GEI,TIMES,DATA_in,DATA_out
@@ -775,8 +775,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subGEO2MAG,TIMES,DATA_in,DATA_out
@@ -802,8 +802,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro subMAG2GEO,TIMES,DATA_in,DATA_out
@@ -832,8 +832,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro csundir_vect,iyear,idoy,ih,im,is,gst,slong,sra,sdec,obliq
@@ -931,8 +931,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro tgeigse_vect,iyear,idoy,ih,im,is,xgei,ygei,zgei,xgse,ygse,zgse
@@ -984,8 +984,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro tgsegei_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgei,ygei,zgei
@@ -1037,8 +1037,8 @@ end
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro tgsegsm_vect,iyear,idoy,ih,im,is,xgse,ygse,zgse,xgsm,ygsm,zgsm
@@ -1102,8 +1102,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro tgsmgse_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xgse,ygse,zgse
@@ -1164,8 +1164,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro tgsmsm_vect,iyear,idoy,ih,im,is,xgsm,ygsm,zgsm,xsm,ysm,zsm
@@ -1212,8 +1212,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro tsmgsm_vect,iyear,idoy,ih,im,is,xsm,ysm,zsm,xgsm,ygsm,zgsm
@@ -1256,8 +1256,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ;
 ; faster algorithm (for loop across all points avoided) Hannes 05/25/2007
 ;
@@ -1349,8 +1349,8 @@ END
 ;Notes: under construction!!
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-29 08:31:38 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18953 $
+; $LastChangedDate: 2016-01-26 15:33:45 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19817 $
 ; $URL $
 ;-
 pro cdipdir,iyear,idoy,d1,d2,d3
@@ -1633,25 +1633,30 @@ dh15 = [0.0, 0.0, -26.6, 0.0, -27.4, -14.1, 0.0, 8.2, -0.4, 1.8, 0.0, -1.3, 5.3,
       iy=iyear
       id=idoy
       iday=idoy
+      
+      defsysv,'!cotrans_lib',exists=exists
+      
+      if exists && !cotrans_lib.nolimit_igrf then begin
+        ; do nothing
+      endif else begin
+        ; *** Check date interval of validity
 
-; *** Check date interval of validity
+        ;     we are restricted by the interval 1965-2015, for which the igrf
+        ;     coefficients are known;
+        ;     if iyear is outside this interval, then the subroutine uses the
+        ;     nearest limiting value and prints a warning:
+        if(iy LT 1965) then BEGIN
+          iy=1965
+          if(ipr NE 1) then dprint,  format=f10, iyear, iy
+          ipr=1
+        endif
 
-;     we are restricted by the interval 1965-2015, for which the igrf
-;     coefficients are known;
-;     if iyear is outside this interval, then the subroutine uses the
-;     nearest limiting value and prints a warning:
-
-      if(iy LT 1965) then BEGIN
-                    iy=1965
-                    if(ipr NE 1) then dprint,  format=f10, iyear, iy
-                    ipr=1
-                    endif
-
-      if(iy GT 2020) then BEGIN
-                    iy=2020
-                    if(ipr NE 1) then dprint,  format=f10, iyear, iy
-                    ipr=1
-                    endif
+        if(iy GT 2020) then BEGIN
+          iy=2020
+          if(ipr NE 1) then dprint,  format=f10, iyear, iy
+          ipr=1
+        endif
+      endelse
 
 ; *** Starting computations
 
@@ -1841,9 +1846,43 @@ end
 
 ;     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-pro cotrans_lib
-; does nothing.
-; call cotrans_lib at the beginning of any routine
-; that needs to use any cotrans_lib routines, to ensure
-; that they are compiled.
+;
+;+
+; PROCEDURE cotrans_lib
+;   Loads the cotrans_lib library and sets configurations.
+;
+; USAGE
+;   Call cotrans_lib at the beginning of any routine
+;   that needs to use any cotrans_lib routines, to ensure
+;   that they are compiled.  Configurations are valid until the next call 
+;   to cotrans_lib.
+; 
+; KEYWORDS
+;    /nolimit_igrf configure cotrans_lib to remove the arbitrary
+;                  5-year limit on extrapolation of IGRF model.
+;                  This also isolates dprint code.
+;                  NOTE: the configuration will be reset
+;                  to 0 if cotrans_lib is called without keywords.  This is
+;                  for backwards compatibility:  any routine that calls
+;                  cotrans_lib without keywords will get the standard behavior,
+;                  regardless of how cotrans_lib was previously configured.
+;                  
+;                  Note: Use this keyword at your own risk - extrapolating 
+;                  these coefficients too far into the future can produce 
+;                  non-physical results
+;             
+;  Written by Hannes Leinweber
+;  Modified by Ken Bromund: added /nolimit_igrf configuration
+;-
+pro cotrans_lib, nolimit_igrf=nolimit_igrf
+
+  cotrans_lib_config = { nolimit_igrf:keyword_set(nolimit_igrf)}
+
+  defsysv,'!cotrans_lib',exists=exists
+  if ~keyword_set(exists) then begin
+    defsysv, '!cotrans_lib', cotrans_lib_config
+  endif else begin
+    !cotrans_lib = cotrans_lib_config
+  endelse
+
 end

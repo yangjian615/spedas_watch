@@ -41,8 +41,8 @@
 ; CREATED BY: Mitsuo Oka   Jan 2016
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-01-11 12:51:30 -0800 (Mon, 11 Jan 2016) $
-; $LastChangedRevision: 19712 $
+; $LastChangedDate: 2016-01-26 15:27:13 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19816 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/script/eva_cmd_load.pro $
 ;-
 PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan,login_info=login_info
@@ -54,17 +54,19 @@ PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan
   ; ParameterSet
   ;----------------  
   if undefined(paramset) then paramset='SITL_Basic_Dayside'
-  paramset_tmp = strsplit(strlowcase(paramset),'.',/extract)
+  paramset_tmp = strsplit(paramset,'.',/extract)
   paramset = paramset_tmp[0]
   ; 'dir' produces the directory name with a path separator character that can be OS dependent.
-  dir = file_search(ProgramRootDir(/twoup)+'parameterSets',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
-  paramFileList = strlowcase(file_search(dir,'*',/FULLY_QUALIFY_PATH,count=cmax)); full path to the files
+  dir = file_search(ProgramRootDir(/twoup)+'parameterSets',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH,/FOLD_CASE); directory
+  paramFileList = file_search(dir,'*',/FULLY_QUALIFY_PATH,count=cmax,/FOLD_CASE); full path to the files
   if cmax gt 0 then begin
-    idx = where(strmatch(paramFileList,'*'+paramset+'*'),ct)
+    idx = where(strmatch(paramFileList,'*'+paramset+'*',/FOLD_CASE),ct)
     if ct eq 1 then begin
       filename = paramFileList[idx[0]]
     endif else begin
-      print, 'WARNING: Multiple parameterSets found with the string *'+paramset+'*. Please be more specific.'
+      msg = 'WARNING: Multiple parameterSets found with the string *'+paramset+'*. Please be more specific.'
+      if ct eq 0 then msg = paramset+' is not found.'
+      print, msg
       return 
     endelse
   endif else begin

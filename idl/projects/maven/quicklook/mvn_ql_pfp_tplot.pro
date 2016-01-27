@@ -64,8 +64,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2016-01-21 01:38:56 -0800 (Thu, 21 Jan 2016) $
-; $LastChangedRevision: 19768 $
+; $LastChangedDate: 2016-01-26 09:20:54 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19811 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -574,7 +574,15 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   ; Ephemeris
   maven_orbit_tplot, /current, /load, timecrop=[-2.d0, 2.d0]*oneday + trange ; +/- 2 day is buffer.
   options, 'alt2', panel_size=2./3., ytitle='Alt. [km]'
-  
+  IF KEYWORD_SET(spw) THEN BEGIN
+     options, ['twake', 'tpileup', 'tsheath', 'twind'], 'color'
+     options, 'twake', colors=2
+     options, 'tpileup', colors=5
+     options, 'tsheath', colors=4
+     options, 'twind', colors=0
+     options, 'stat', yminor=2, labflag=-1, labels=['WIND', 'SHEATH', 'PILEUP', 'SHADOW'], ytitle='Orbit!CFraction'
+     ylim, 'stat', -0.05, 1.05
+  ENDIF
   IF keyword_set(phobos) THEN BEGIN
      mvn_phobos_tplot, trange=trange
      options, 'Phobos-MAVEN', panel_size=0.75, ytitle='Phobos!CMAVEN', ylog=1, /def
@@ -636,8 +644,8 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   IF keyword_set(tplot) THEN BEGIN
      IF SIZE(ptname, /type) EQ 0 THEN BEGIN
         IF KEYWORD_SET(spw) THEN $
-           ptname = ['mvn_euv_irrad_ch_b', 'mvn_sep1_B-O_Eflux_Energy', 'mvn_sep2_B-O_Eflux_Energy', $
-                     'mvn_swis_en_eflux', 'mvn_swe_etspec', 'alt2'] $
+           ptname = ['mvn_euv_irrad_ch_b', 'mvn_sep1_B-O_Eflux_Energy', 'mvn_sep1_A-F_Eflux_Energy', $
+                     'mvn_swis_en_eflux', 'mvn_swe_etspec', 'stat'] $
         ELSE $
            ptname = ['mvn_sep1_B-O_Eflux_Energy', 'mvn_sep2_B-O_Eflux_Energy', $
                      'mvn_sta_c0_e', 'mvn_sta_c6_m', 'mvn_swis_en_eflux', $

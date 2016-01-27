@@ -51,8 +51,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-01-25 13:14:43 -0800 (Mon, 25 Jan 2016) $
-; $LastChangedRevision: 19807 $
+; $LastChangedDate: 2016-01-26 14:10:54 -0800 (Tue, 26 Jan 2016) $
+; $LastChangedRevision: 19815 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -306,6 +306,7 @@ pro rbsp_efw_make_l2,sc,date,$
      charging_flag = flag_str.charging_flag
      ibias = flag_str.ibias
 
+     
 
 ;--------------------------------------------------
 ;save all spinfit resolution Efield quantities
@@ -657,7 +658,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
      cdf_varput,cdfid,'orbit_num',orbit_num.y
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
-     if is_struct(ibias) then cdf_varput,cdfid,'bias_current',transpose(ibias)
+     cdf_varput,cdfid,'bias_current',transpose(ibias)
 
 
 
@@ -1231,5 +1232,6 @@ pro rbsp_efw_make_l2,sc,date,$
   endif
 
   cdf_close, cdfid
+
 
 end
