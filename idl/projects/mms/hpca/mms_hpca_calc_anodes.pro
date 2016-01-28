@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:14:24 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19585 $
+;$LastChangedDate: 2016-01-27 12:46:35 -0800 (Wed, 27 Jan 2016) $
+;$LastChangedRevision: 19821 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_calc_anodes.pro $
 ;-
 function mms_hpca_elevations
@@ -89,6 +89,8 @@ function mms_hpca_avg_fov, data_struct, fov = fov, anodes = anodes
     ;anode_elevation = mms_hpca_elevations()
     energies = mms_hpca_energies()
 
+    data_within_fov = data_struct.Y[*,*,anodes_in_fov]
+    
     if n_elements(anodes_in_fov) eq 1 then data_total = reform(data_within_fov) else data_total = total(data_within_fov, 3, /nan)
 
     data_mean = dblarr(n_elements(times), n_elements(energies))
@@ -160,7 +162,7 @@ pro mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probe=probe, anodes = 
     ;avg_anodes = ['*_flux', '*_vel_dist_fn']
     ; removed velocity distribution from above because
     ; we need the full (non-avg'd) data for 2d slices
-    avg_anodes = ['*_flux']
+    avg_anodes = ['*_flux']+suffix
 
     for sum_idx = 0, n_elements(sum_anodes)-1 do begin
         vars_to_sum = strmatch(tplotnames, sum_anodes[sum_idx])

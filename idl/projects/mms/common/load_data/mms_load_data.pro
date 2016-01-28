@@ -85,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-08 10:41:47 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19701 $
+;$LastChangedDate: 2016-01-27 15:58:06 -0800 (Wed, 27 Jan 2016) $
+;$LastChangedRevision: 19829 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -143,7 +143,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   get_support_data = get_support_data, login_info = login_info, $
                   tplotnames = tplotnames, varformat = varformat, no_color_setup = no_color_setup, $
                   suffix = suffix, time_clip = time_clip, no_update = no_update, $
-                  cdf_filenames = cdf_filenames
+                  cdf_filenames = cdf_filenames, cdf_version = cdf_version, latest_version = latest_version, $
+                  min_version = min_version
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -297,14 +298,16 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         ; the intention is to order in time before passing
         ; to cdf2tplot
         files = files[bsort(files)]
-        append_array, cdf_filenames, files
 
         if ~undefined(files) then begin
             lt0 = systime(/sec) ;temporary
             mms_cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, $
-                suffix = suffix, get_support_data = get_support_data, /load_labels
+                suffix = suffix, get_support_data = get_support_data, /load_labels, $
+                min_version=min_version,version=cdf_version,latest_version=latest_version
             dt_load += systime(/sec) - lt0 ;temporary
         endif
+        
+        append_array, cdf_filenames, files
         if ~undefined(loaded_tnames) then append_array, tplotnames, loaded_tnames
         
         ; forget about the daily files for this probe

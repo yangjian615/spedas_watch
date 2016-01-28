@@ -53,8 +53,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-19 15:25:55 -0800 (Tue, 19 Jan 2016) $
-;$LastChangedRevision: 19762 $
+;$LastChangedDate: 2016-01-27 15:55:28 -0800 (Wed, 27 Jan 2016) $
+;$LastChangedRevision: 19828 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 
@@ -64,7 +64,9 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
-                  varformat = varformat, cdf_filenames = cdf_filenames
+                  varformat = varformat, cdf_filenames = cdf_filenames, $
+                  cdf_version = cdf_version, latest_version = latest_version, $
+                  min_version = min_version
 
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
@@ -77,7 +79,9 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames
+        no_update = no_update, suffix = suffix, varformat = varformat, $
+        cdf_filenames = cdf_filenames, cdf_version = cdf_version, latest_version = latest_version, $
+        min_version = min_version
     
 
     if undefined(tplotnames) || tplotnames[0] eq '' then return

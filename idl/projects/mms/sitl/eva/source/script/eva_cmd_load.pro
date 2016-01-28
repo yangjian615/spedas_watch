@@ -41,8 +41,8 @@
 ; CREATED BY: Mitsuo Oka   Jan 2016
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-01-26 15:27:13 -0800 (Tue, 26 Jan 2016) $
-; $LastChangedRevision: 19816 $
+; $LastChangedDate: 2016-01-27 12:54:50 -0800 (Wed, 27 Jan 2016) $
+; $LastChangedRevision: 19823 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/script/eva_cmd_load.pro $
 ;-
 PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan,login_info=login_info
@@ -132,7 +132,7 @@ PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan
   ;---------------------------------
   ; Main Program
   ;---------------------------------
-  result = eva_data_load_mms(state)  
+  result = eva_data_load_mms(state,/no_gui)  
 
   dt = systime(/sec)-t0
   strdt = strtrim(dt)+' sec'

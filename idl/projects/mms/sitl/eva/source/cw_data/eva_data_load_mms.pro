@@ -1,4 +1,4 @@
-FUNCTION eva_data_load_mms, state
+FUNCTION eva_data_load_mms, state, no_gui=no_gui
   compile_opt idl2
 
   ;-------------
@@ -18,11 +18,13 @@ FUNCTION eva_data_load_mms, state
   ; NUMBER OF PARAMETERS
   ;----------------------
   cparam = imax*pmax
-  if cparam ge 17 then begin
-    rst = dialog_message('Total of '+strtrim(string(cparam),2)+' MMS parameters. Still plot?',/question,/center)
-  endif else rst = 'Yes'
-  if rst eq 'No' then return, 'No'
-
+  if not keyword_set(no_gui) then begin
+    if cparam ge 17 then begin
+      rst = dialog_message('Total of '+strtrim(string(cparam),2)+' MMS parameters. Still plot?',/question,/center)
+    endif else rst = 'Yes'
+    if rst eq 'No' then return, 'No'
+  endif
+  
   ;-------------
   ; CATCH ERROR
   ;-------------

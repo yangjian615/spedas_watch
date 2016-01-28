@@ -31,11 +31,13 @@
 ;       FILES_OUT:      Those files within `FILENAMES` that pass the filter criterion.
 ;       
 ; NOTES:
-;    By Matt Argall @ UNH
+;    By Matthew Argall @ UNH
+;    Modifications by egrimes@igpp:
+;       - Added no_time keyword, to avoid filtering in time
 ;    
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-01-26 11:45:21 -0800 (Tue, 26 Jan 2016) $
-; $LastChangedRevision: 19813 $
+; $LastChangedDate: 2016-01-27 15:34:08 -0800 (Wed, 27 Jan 2016) $
+; $LastChangedRevision: 19825 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/unh_mms_file_filter.pro $
 ;-
 
@@ -44,18 +46,25 @@ COUNT=count, $
 TRANGE=trange, $
 LATEST_VERSION=latest_version, $
 MIN_VERSION=min_version, $
-VERSION=version
+VERSION=version, $
+NO_TIME=no_time
 	compile_opt idl2
 	on_error, 2
 	
-	;Default start and end times
-	if n_elements(trange) eq 0 then trange = time_string(timerange())
+  
 	tf_checkv = n_elements(version)     gt 0
 	tf_minv   = n_elements(min_version) gt 0
 	tf_latest = keyword_set(latest_version)
 	if tf_checkv + tf_minv + tf_latest gt 1 $
 		then message, 'MIN_VERSION and VERSION are mutually exclusive.'
+	if tf_checkv then specific_version = version
+	count = n_elements(filenames)
 	
+	if undefined(no_time) then begin
+	  ;Default start and end times
+	  ; if n_elements(trange) eq 0 then trange = time_string(timerange())
+	if undefined(trange) then trange = timerange() else trange = timerange(trange)
+	  
 	;Parse the file names
 	mms_parse_file_name, filenames, sc, instr, mode, level, optdesc, version, fstart, year
 	
@@ -75,9 +84,9 @@ VERSION=version
 ;------------------------------------;
 	
 	;TT2000 values for the start and end times
-	mms_parse_start_string, strjoin(strsplit(trange[0], '-/:', /EXTRACT)), smo, sday, sry, shr, smnt, ssec
+	mms_parse_start_string, strjoin(strsplit(time_string(trange[0]), '-/:', /EXTRACT)), smo, sday, sry, shr, smnt, ssec
 	cdf_tt2000, tt2000_start, sry, smo, sday, shr, smnt, ssec, /COMPUTE_EPOCH
-	mms_parse_start_string, strjoin(strsplit(trange[1], '-/:', /EXTRACT)), emo, eday, eyr, ehr, emnt, esec, second
+	mms_parse_start_string, strjoin(strsplit(time_string(trange[1]), '-/:', /EXTRACT)), emo, eday, eyr, ehr, emnt, esec, second
 	cdf_tt2000, tt2000_end, eyr, emo, eday, ehr, emnt, esec, /COMPUTE_EPOCH
 
 	;Filter files by begin time
@@ -86,7 +95,7 @@ VERSION=version
 	;   - Assume the start time of one file marks the end time of the previous file.
 	;   - With this, we look for the file that begins just prior to TRANGE[0] and
 	;     throw away any files that start before it.
-	istart = where( tt2000 le tt2000_start[0], nstart )
+	istart = where( tt2000 ge tt2000_start[0], nstart )
 	if nstart gt 0 then begin
 		files_out = files_out[istart]
 		tt2000    = tt2000[istart]
@@ -99,7 +108,7 @@ VERSION=version
 		files_out = files_out[iend]
 		tt2000    = tt2000[iend]
 	endif
-	
+
 	;Number of files kept
 	count = nstart + nend
 	if count eq 0 then begin
@@ -127,17 +136,17 @@ VERSION=version
 			files_out = ''
 		endelse
 	endif
-
+  endif else files_out = filenames
 ;------------------------------------;
 ; Filter Version                     ;
 ;------------------------------------;
-	
+
 	;Filter by minimum version number
 	if count gt 0 && (tf_checkv || tf_minv || tf_latest) then begin
 		;Extract X, Y, Z version numbers from file
 		fversion = stregex(files_out, 'v([0-9]+)\.([0-9]+)\.([0-9])\.cdf$', /SUBEXP, /EXTRACT)
 		fv = fix(fversion[1:3,*])
-	
+
 		;MINIMUM Version
 		if tf_minv then begin
 			;Version numbers to match
@@ -148,16 +157,15 @@ VERSION=version
 			            ( (fv[0,*] eq version[0]) and (fv[1,*] gt version[1]) ) or $
 			            ( (fv[0,*] eq version[0]) and (fv[1,*] eq version[1]) and (fv[2,*] ge version[2]) ), count )
 			if count gt 0 then files_out = files_out[iv]
-		
 		;EXACT Version
-		endif else if tf_minv then begin
+		endif else if tf_checkv then begin
 			;Version numbers to match
-			version  = fix(strsplit(version, '.', /EXTRACT))
-			
+			version  = fix(strsplit(specific_version, '.', /EXTRACT))
+
 			;Select file versions
 			iv = where( (fv[0,*] eq version[0]) and (fv[1,*] eq version[1]) and (fv[2,*] eq version[2]), count )
 			if count gt 0 then files_out = files_out[iv]
-		
+
 		;LATEST Version
 		endif else begin
 			;Step through X, Y, Z version numbers
@@ -168,7 +176,7 @@ VERSION=version
 				;Select version
 				fv        = fv[*,iv]
 				files_out = files_out[iv]
-				tt2000    = tt2000[iv]
+				;tt2000    = tt2000[iv]
 			endfor
 		endelse
 		

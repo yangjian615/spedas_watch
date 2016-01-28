@@ -51,8 +51,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-01-26 14:10:54 -0800 (Tue, 26 Jan 2016) $
-; $LastChangedRevision: 19815 $
+; $LastChangedDate: 2016-01-27 14:29:37 -0800 (Wed, 27 Jan 2016) $
+; $LastChangedRevision: 19824 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -254,6 +254,10 @@ pro rbsp_efw_make_l2,sc,date,$
         copy_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb',$
                   'tmp_sf_vxb_coro_edotb_34'
         
+
+
+
+        ;;Now copy to final names
         copy_data,'tmp_sf_12',$
                   'rbsp'+sc+'_efw_esvy_spinfit_12'
         copy_data,'tmp_sf_34',$
@@ -276,7 +280,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
         copy_data,'tmp_sf_vxb_coro_edotb_12',$
                   'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12'
-        copy_data,'tmp_sf_vxb_coro_edotb_12',$
+        copy_data,'tmp_sf_vxb_coro_edotb_34',$
                   'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34'
         
 
@@ -305,6 +309,7 @@ pro rbsp_efw_make_l2,sc,date,$
      ab_flag = flag_str.ab_flag
      charging_flag = flag_str.charging_flag
      ibias = flag_str.ibias
+
 
      
 
@@ -350,12 +355,13 @@ pro rbsp_efw_make_l2,sc,date,$
 
      endif
 
+     ;----------
      if type eq 'spinfit_both_boompairs' then begin
 
         tmp = 0.
         tinterpol_mxn,'rbsp'+sc+'_efw_esvy_spinfit_12',times,$
-                      newname='rbsp'+sc+'_efw_esvy_spinfit_12'
-        get_data,'rbsp'+sc+'_efw_esvy_spinfit_12',data=tmp
+              newname='rbsp'+sc+'_efw_esvy_spinfit_12'
+        get_data,     'rbsp'+sc+'_efw_esvy_spinfit_12',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
            spinfit_esvy_12 = tmp.y
@@ -364,77 +370,77 @@ pro rbsp_efw_make_l2,sc,date,$
 
                                 ;Spinfit with corotation field
         tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_12',times,$
-                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_12'
-        get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_12',data=tmp
+              newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_12'
+        get_data,     'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_12',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
            spinfit_vxb_12 = tmp.y
            tmp = 0.
         endif
                                 ;Spinfit with corotation field and E*B=0
-        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_12',$
-                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_12'
-        get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_12',data=tmp
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_12',times,$
+              newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_12'
+        get_data,     'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_12',data=tmp
         if is_struct(tmp) then begin
            spinfit_vxb_edotb_12 = tmp.y
         endif
 
                                 ;Spinfit without corotation field
-        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_12',$
-                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_12'
-        get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_12',data=tmp
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_12',times,$
+              newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_12'
+        get_data,     'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_12',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
            spinfit_vxb_coro_12 = tmp.y
            tmp = 0.
         endif
                                 ;Spinfit without corotation field and E*B=0
-        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12',$
-                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12'
-        get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12',data=tmp
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12',times,$
+              newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12'
+        get_data,     'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12',data=tmp
         if is_struct(tmp) then begin
            spinfit_vxb_coro_edotb_12 = tmp.y
         endif
                                 ;----
 
         tmp = 0.
-        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_spinfit_34',$
-                      newname='rbsp'+sc+'_efw_esvy_spinfit_34'
-        get_data,'rbsp'+sc+'_efw_esvy_spinfit_34',data=tmp
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_spinfit_34',times,$
+              newname='rbsp'+sc+'_efw_esvy_spinfit_34'
+        get_data,     'rbsp'+sc+'_efw_esvy_spinfit_34',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
            spinfit_esvy_34 = tmp.y
            tmp = 0.
         endif
                    ;Spinfit with corotation field
-        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_34',$
-                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_34'
-        get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_34',data=tmp
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_34',times,$
+              newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_34'
+        get_data,     'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_34',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
            spinfit_vxb_34 = tmp.y
            tmp = 0.
         endif
                    ;Spinfit with corotation field and E*B=0
-        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_34',$
-                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_34'
-        get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_34',data=tmp
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_34',times,$
+              newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_34'
+        get_data,     'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb_34',data=tmp
         if is_struct(tmp) then begin
            spinfit_vxb_edotb_34 = tmp.y
         endif
                    ;Spinfit without corotation field
-        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_34',$
-                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_34'
-        get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_34',data=tmp
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_34',times,$
+              newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_34'
+        get_data,     'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_34',data=tmp
         if is_struct(tmp) then begin
            tmp.y[*,0] = -1.0E31
            spinfit_vxb_coro_34 = tmp.y
            tmp = 0.
         endif
                    ;Spinfit without corotation field and E*B=0
-        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34',$
-                      newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34'
-        get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34',data=tmp
+        tinterpol_mxn,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34',times,$
+              newname='rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34'
+        get_data,     'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34',data=tmp
         if is_struct(tmp) then begin
            spinfit_vxb_coro_edotb_34 = tmp.y
         endif
@@ -556,6 +562,7 @@ pro rbsp_efw_make_l2,sc,date,$
      tinterpol_mxn,'rbsp'+sc+'_spinaxis_direction_gse',times,newname='rbsp'+sc+'_spinaxis_direction_gse'
      get_data,'rbsp'+sc+'_spinaxis_direction_gse',data=sa
 
+     tinterpol_mxn,'angles',times,newname='angles'
      get_data,'angles',data=angles
 
      
