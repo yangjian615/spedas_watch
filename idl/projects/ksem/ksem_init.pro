@@ -94,6 +94,11 @@ pro ksem_recorders
 end
 
 
+pro ksem_tplot
+tplot,'ksem_hkp_MON ksem_hkp_ERR1 ksem_hkp_ERR2 ksem_hkp_RATES ksem_hkp_MADDR ksem_hkp_FTUO_FLAGS ksem_science_DATA ksem_noise_DDATA'
+
+end
+
 
 
 

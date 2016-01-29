@@ -676,7 +676,7 @@ end
 pro spp_swp_spane_init,save=save
   if n_elements(save) eq 0 then save=0
   rt_flag = 1
-
+  spp_swp_manip_init
   ;;-----------------------------------------------------------------------------------------------------------------------------
   ;; Product Decommutators
   spp_apid_data,'360'x ,routine='spp_swp_spane_p1_decom',tname='spp_spane_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag

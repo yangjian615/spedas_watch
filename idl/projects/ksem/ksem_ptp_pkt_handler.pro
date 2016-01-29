@@ -165,6 +165,11 @@ function ksem_noise_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 end
 
 
+function ksem_labels
+lbls =  strsplit('.... ...O ..U. ..UO .T.. .T.O .TU. .TUO F... F..O F.U. F.UO FT.. FT.O FTU. FTUO',/extract)
+lbls =  strsplit('X O U UO T TO TU TUO F FO FU FUO FT FTO FTU FTUO',/extract)
+return, lbls
+end
 
 
 
@@ -194,10 +199,10 @@ function ksem_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   err2 = d[25]
   err2s = [ishft(err2,-8),err2] and 'ff'x
   rates = d[16:23]
-  rates = rates[[0,1,3,2,4,5,7,6]]     ; remove this line when Jianxin fixes order
+;  rates = rates[[0,1,3,2,4,5,7,6]]     ; remove this line when Jianxin fixes order
   str = {time:t ,$
     seq_cntr: ccsds.seq_cntr, $
-    MON:  d[0:7],  $
+    MON:  fix(d[0:7]),  $
     MAPID:  b[16],  $
     REV:    b[17], $
     vcmd_cntr: b[18], $
@@ -391,7 +396,7 @@ pro ksem_ccsds_pkt_handler,buffer,ptp_header=ptp_header
     return
   endif
   
-  ccsds.time = ptp_header.ptp_time   ; remove this line when the time gets fixed.
+;  ccsds.time = ptp_header.ptp_time   ; remove this line when the time gets fixed.
 
   if 1 then begin
     ksem_apid_data,ccsds.apid,apdata=apdat,/increment
