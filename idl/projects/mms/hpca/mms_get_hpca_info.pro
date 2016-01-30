@@ -9,10 +9,10 @@
 ;  Elevations are in colatitude.
 ;  Values were copied from hpca manual 20150817_0. 
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-21 19:29:30 -0700 (Fri, 21 Aug 2015) $
-;$LastChangedRevision: 18580 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_hpca_info.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-01-29 15:22:13 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19853 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_info.pro $
 ;-
 function mms_get_hpca_info
 

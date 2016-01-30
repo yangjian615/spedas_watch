@@ -21,11 +21,13 @@
 ; use_yrange = if set, scale using the yrange range for the
 ;              spectrogram, if not set, use min and max of data.v.
 ; zero_line = if set, add a line for zero potential
+; suffix = suffix for output variable
 ;HISTORY:
 ; 3-sep-2013, jmm, jimm@ssl.berkeley.edu
+; 29-jan-2016, jmm, must have lost the suffix keyword, replaced it.
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2013-09-10 13:00:16 -0700 (Tue, 10 Sep 2013) $
-;$LastChangedRevision: 13012 $
+;$LastChangedDate: 2016-01-29 11:44:34 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19841 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/scpot_overlay.pro $
 ;-
 Function scpot_overlay, pvar, svar, $
@@ -35,6 +37,7 @@ Function scpot_overlay, pvar, svar, $
                         scale_scpot = scale_scpot, $
                         use_yrange = use_yrange, $
                         zero_line = zero_line, $
+                        suffix = suffix, $
                         _extra=_extra
 
 
@@ -53,7 +56,8 @@ Endif
 
 ;CLone the variables
 get_data, pv0, data = pd, dlimits = pdl
-pv1 = 'SCPOT4_'+sv0
+If(Keyword_set(suffix)) Then sfx = suffix Else sfx = ''
+pv1 = 'SCPOT4_'+sv0+sfx
 
 get_data, sv0, data = d, dlimits = dl, limits = al
 
@@ -112,10 +116,8 @@ If(keyword_set(sc_line_color)) Then options, pv1, 'color', sc_line_color
 If(keyword_set(sc_line_thick)) Then options, pv1, 'thick', sc_line_thick
 If(keyword_set(sc_line_style)) Then options, pv1, 'linestyle', sc_line_style
 
-;supress the RHS of the spectrogram
-
 ;Create the compound variable
-otp = sv0+'_SCPOT'
+otp = sv0+'_SCPOT'+sfx
 store_data, otp, data = [sv0, pv1]
 options, otp, 'yrange', [yr0, yr1]
 

@@ -50,8 +50,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-08 10:39:47 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19700 $
+;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19843 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/aspoc/mms_load_aspoc.pro $
 ;-
 
@@ -61,7 +61,9 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, tplotnames = tplotnames, $
                   no_color_setup = no_color_setup, instrument = instrument, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
-                  varformat = varformat, cdf_filenames = cdf_filenames
+                  varformat = varformat, cdf_filenames = cdf_filenames, $
+                  cdf_version = cdf_version, latest_version = latest_version, $
+                  min_version = min_version
                   
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -79,7 +81,8 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
-        suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames
+        suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
         
     for tvar_idx = 0, n_elements(tplotnames)-1 do begin
         tvar_name = tplotnames[tvar_idx]

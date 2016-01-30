@@ -53,8 +53,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-27 15:55:28 -0800 (Wed, 27 Jan 2016) $
-;$LastChangedRevision: 19828 $
+;$LastChangedDate: 2016-01-29 12:19:44 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19844 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 
@@ -74,6 +74,10 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     if undefined(datatype) then datatype = 'electron' 
     if undefined(level) then level = 'l1b' 
     if undefined(data_rate) then data_rate = 'srvy'
+    
+    ; set the default minimum version to avoid issues with v3.3.x CDFs
+    if undefined(cdf_version) && undefined(latest_version) && $
+       undefined(min_version) then min_version = '4.3.0' ; requested by Drew Turner/Allison Jaynes, 1/28/16
       
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'feeps', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

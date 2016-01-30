@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-01-14 16:09:30 -0800 (Thu, 14 Jan 2016) $
-; $LastChangedRevision: 19740 $
+; $LastChangedDate: 2016-01-29 15:01:36 -0800 (Fri, 29 Jan 2016) $
+; $LastChangedRevision: 19847 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_feeps_crib_qlplots.pro $
 ;-
 
@@ -67,7 +67,7 @@ if ~postscript then window, xsize=width, ysize=height
 
 tplot_options, 'xmargin', [15, 15]
 
-tplot, 'mms'+probe+['_dfg_srvy_gsm_dmpa', $
+tplot, 'mms'+probe+['_dfg_srvy_dmpa', $
                     '_epd_feeps_top_'+type+'_sensorID_3_electrons_clean', $
                     '_epd_feeps_bottom_'+type+'_sensorID_6_ions_clean', $
                     '_epd_feeps_*keV_pad' $

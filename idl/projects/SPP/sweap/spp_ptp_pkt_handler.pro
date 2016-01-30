@@ -772,8 +772,8 @@ end
 function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
   str = create_struct(ptp_header,ccsds)
   if debug(3) then begin
-    dprint,dlevel=2,'swem',ccsds.size+7, n_elements(ccsds.data)
-    hexprint,ccsds.data
+    dprint,dlevel=2,'swem',ccsds.apid,ccsds.size+7, n_elements(ccsds.data),ccsds.seq_cntr, ccsds.seq_group,format='(A8," ",Z04,i5,i5,i6,i3)'
+ ;   hexprint,ccsds.data
   endif
   return,str
 end
@@ -806,9 +806,13 @@ function spp_ccsds_decom,buffer             ; buffer should contain bytes for a 
     gap : 0b }
 
 
-  if MET lt -1e5 then begin
+  if MET lt 1e5 then begin
     dprint,dlevel=1,'Invalid MET: ',MET,' For packet type: ',ccsds.apid
     ccsds.time = !values.d_nan
+  endif
+  
+  if ccsds.size + 7  ne n_elements(buffer) then begin
+    dprint,dlevel=1,'CCSDS packet size mismatch',ccsds.size+7,n_elements(buffer),ccsds.apid
   endif
 
  ;  dprint,format='(04z," ",)'
@@ -947,7 +951,7 @@ endif
 ;  spp_apid_data,'360'x ,routine='spp_generic_decom',tname='spp_spane_events_',tfields='*', save=save
 
 
-  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper'
+  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='spp_swem_34f_',tfields='*',save=save
   
   spp_apid_data,'7c0'x,routine='spp_log_message_decom',tname='log_',tfields='MSG',save=1,rt_tags='MSG',rt_flag=1
   spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',rt_tags='*_?',rt_flag=1,tfields='*'
@@ -972,7 +976,7 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
   
   common spp_ccsds_pkt_handler_com2,last_ccsds,last_time,total_bytes,rate_sm
   time = ptp_header.ptp_time
-  time = systime(1)
+;  time = systime(1)
   if keyword_set(last_time) then begin  
     dt = time - last_time
     len = n_elements(buffer)
@@ -995,7 +999,7 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
     spp_apid_data,ccsds.apid,apdata=apdat,/increment
     if (size(/type,*apdat.last_ccsds) eq 8)  then begin    ; look for data gaps
       if 1 then begin
-        store_data,'APIDS_ALL',ccsds.time,ccsds.apid,/append,dlimit={psym:4,symsize:.2 ,ynozero:1}
+        store_data,'APIDS_ALL',ccsds.time,ccsds.apid,/append,dlimit={psym:3,ynozero:1}
       endif
       dseq = (( ccsds.seq_cntr - (*apdat.last_ccsds).seq_cntr ) and '3fff'x) -1
       if dseq ne 0  then begin
@@ -1004,6 +1008,7 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header
         store_data,'APIDS_GAP',ccsds.time,ccsds.apid,/append,dlimit={psym:4,symsize:.4 ,ynozero:1, colors:'r'}
       endif
     endif
+    
     if keyword_set(apdat.routine) then begin
       strct = call_function(apdat.routine,ccsds,ptp_header=ptp_header,apdat=apdat)
       if  apdat.save && keyword_set(strct) then begin

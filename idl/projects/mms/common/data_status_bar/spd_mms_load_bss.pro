@@ -36,9 +36,9 @@
 ; CREATED BY: Mitsuo Oka   Oct 2015
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-24 13:27:21 -0800 (Tue, 24 Nov 2015) $
-;$LastChangedRevision: 19463 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/spd_mms_load_bss.pro $
+;$LastChangedDate: 2016-01-29 15:05:42 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19848 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/spd_mms_load_bss.pro $
 ;-
 
 PRO spd_mms_load_bss, trange=trange, datatype=datatype, include_labels=include_labels

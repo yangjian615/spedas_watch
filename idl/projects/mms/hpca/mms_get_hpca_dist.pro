@@ -24,10 +24,10 @@
 ;  This is a work in progress
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-15 11:37:57 -0800 (Fri, 15 Jan 2016) $
-;$LastChangedRevision: 19748 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_hpca_dist.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-01-29 15:22:13 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19853 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 
 function mms_get_hpca_dist, tname, index, trange=trange, times=times, structure=structure

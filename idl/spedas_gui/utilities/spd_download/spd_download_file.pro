@@ -19,7 +19,9 @@
 ;             provided it will assumes a relative path. (string)
 ;  
 ;  user_agent:  Specifies user agent reported to remote server. (string)
-;  headers:  Array of HTML headers to be sent to remote server.  
+;  headers:  Array of HTML headers to be sent to remote server.
+;            Other IDLneturl properties are passed through _extra but
+;            this one is extracted so that defaults can be appended:
 ;              -"User-Agent" is added by default
 ;              -"If-Modified-Since" is added if file age is checked
 ;  
@@ -53,8 +55,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-08-28 14:36:40 -0700 (Fri, 28 Aug 2015) $
-;$LastChangedRevision: 18666 $
+;$LastChangedDate: 2016-01-28 18:23:21 -0800 (Thu, 28 Jan 2016) $
+;$LastChangedRevision: 19833 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -65,7 +67,7 @@ function spd_download_file, $
                   filename = filename_in, $
 
                   user_agent = user_agent, $
-                  headers = headers, $
+                  headers = headers_in, $
                   
                   no_update = no_update, $
                   force_download = force_download, $
@@ -132,9 +134,15 @@ net_object = obj_new('idlneturl')
 ; Form custom header
 ;----------------------------------------
 
+;headers should be passed via _extra from spd_download, 
+;but avoid mutating input just in case
+if ~undefined(headers_in) then begin
+  headers = headers_in
+endif
+
 ;user agent is required sometimes
 if keyword_set(user_agent) then begin
-  headers = array_concat('User-Agent: '+user_agent)
+  headers = array_concat('User-Agent: '+user_agent,headers)
 endif else begin
   headers = array_concat('User-Agent: '+'IDL/'+!version.release+' ('+!version.os+' '+!version.arch+')', headers)
 endelse

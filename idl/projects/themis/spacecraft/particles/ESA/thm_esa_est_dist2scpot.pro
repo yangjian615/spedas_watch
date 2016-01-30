@@ -26,8 +26,8 @@
 ;HISTORY:
 ; 31-may-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-07-06 14:07:27 -0700 (Mon, 06 Jul 2015) $
-; $LastChangedRevision: 18024 $
+; $LastChangedDate: 2016-01-29 11:46:08 -0800 (Fri, 29 Jan 2016) $
+; $LastChangedRevision: 19842 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_est_dist2scpot.pro $
 ;-
 
@@ -107,8 +107,8 @@ Pro thm_esa_est_dist2scpot, date, probe, trange=trange, $
 
   If(keyword_set(plot) Or keyword_set(random_dp)) Then Begin
      thm_spec_lim4overplot, thx+'_'+dtyp+'_en_counts', zlog = 1, ylog = 1, /overwrite, ymin = 2.0
-     scpot_overlay1 = scpot_overlay(thx+'_'+dtyp+'_sc_pot', thx+'_'+dtyp+'_en_counts', sc_line_thick = 2.0, suffix = 'EST', /use_yrange)
-     scpot_overlay2 = scpot_overlay(thx+'_est_scpot', thx+'_'+dtyp+'_en_counts', sc_line_thick = 2.0, /use_yrange)
+     scpot_overlay1 = scpot_overlay(thx+'_'+dtyp+'_sc_pot', thx+'_'+dtyp+'_en_counts', sc_line_thick = 2.0, /use_yrange)
+     scpot_overlay2 = scpot_overlay(thx+'_est_scpot', thx+'_'+dtyp+'_en_counts', sc_line_thick = 2.0, suffix = '_EST', /use_yrange)
      window, xs = 1024, ys = 1024
      tplot, [scpot_overlay1, scpot_overlay2]
   Endif

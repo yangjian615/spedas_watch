@@ -213,7 +213,7 @@ pro temp2
 end
 
 
-pro spp_recorders
+pro spp_recorders,msg=msg
   common spp_crib_com, recorder_base1, recorder_base2,exec_base
   exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
 
@@ -221,11 +221,13 @@ pro spp_recorders
   ;host = 'localhost'
   ;host = '128.32.98.101'  ;  room 160 Silver
   ;host = '128.32.13.37'   ;  room 133 addition
-  recorder,recorder_base1,title='GSEOS PTP room 320',port=2024,host='ABIAD-SW',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  recorder,recorder_hub,title='GSEOS HUB PTP room 320',port=2028,host='ABIAD-SW',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  recorder,recorder_base1b,title='GSEOS MSG room 320',port=2023,host='ABIAD-SW',exec_proc='spp_msg_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  recorder,recorder_base2,title='GSEOS PTP 133 addition',port=2024,host='128.32.13.37',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  recorder,recorder_hub_133,title='GSEOS HUB PTP 133 addition',port=2028,host='128.32.13.37',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+; recorder,title='GSEOS PTP room 320',port=2024,host='ABIAD-SW',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  recorder,title='GSEOS HUB PTP room 320',port=2028,host='ABIAD-SW',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  if keyword_set(msg) then $
+    recorder,title='GSEOS MSG room 320',port=2023,host='ABIAD-SW',exec_proc='spp_msg_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat'
+  ;recorder,title='GSEOS MSG 133 addition',port=2023,host='128.32.13.37',exec_proc='spp_msg_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+; ; recorder,recorder_133,title='GSEOS PTP 133 addition',port=2024,host='128.32.13.37',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  ;recorder,recorder_hub_133,title='GSEOS HUB PTP 133 addition',port=2028,host='128.32.13.37',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
   printdat,recorder_base,filename,exec_base,/value
 end
 
@@ -233,9 +235,10 @@ end
 
 pro spp_init_realtime,filename=filename,base=base
 dprint, 'hello'
-spp_recorders
+;spp_recorders
 spp_swp_apid_data_init,save=1
 spp_apid_data,'3b9'x,name='SWEAP SPAN-I Events',rt_tags='*'
+spp_apid_data,'3ba'x,name='SWEAP SPAN-I TOF',rt_tags='*'
 spp_apid_data,'3bb'x,name='SWEAP SPAN-I Rates',rt_tags='*CNTS *MODE'
 spp_apid_data,'3be'x,name='SWEAP SPAN-I HKP',rt_tags='*'
 spp_apid_data,'380'x,name='SWEAP SPAN-I Prod_x80',rt_tags='*'

@@ -108,8 +108,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-22 16:46:58 -0800 (Fri, 22 Jan 2016) $
-;$LastChangedRevision: 19799 $
+;$LastChangedDate: 2016-01-28 18:23:21 -0800 (Thu, 28 Jan 2016) $
+;$LastChangedRevision: 19833 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download.pro $
 ;
 ;-
@@ -264,7 +264,6 @@ if ~keyword_set(no_download) then begin
                          filename = filename[i], $
   
                          user_agent = user_agent, $
-                         headers = headers, $
                          
                          no_update = no_update, $
                          force_download = force_download, $

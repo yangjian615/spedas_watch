@@ -53,8 +53,8 @@
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-08 08:59:47 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19698 $
+;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19843 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -65,7 +65,9 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
-                  no_attitude_data = no_attitude_data, varformat = varformat, cdf_filenames = cdf_filenames
+                  no_attitude_data = no_attitude_data, varformat = varformat, $
+                  cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+                  latest_version = latest_version, min_version = min_version
     
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
@@ -87,7 +89,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
-        suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames
+        suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
 
     
     ; load the atttude data to do the coordinate transformation 

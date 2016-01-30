@@ -57,8 +57,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-08 11:49:20 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19702 $
+;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19843 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -69,7 +69,8 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
                   autoscale = autoscale, varformat = varformat, $
-                  cdf_filenames = cdf_filenames
+                  cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+                  latest_version = latest_version, min_version = min_version
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['3'] ; default to MMS 3
@@ -90,7 +91,8 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames
+        no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
 
     ; since the SITL files contain both ion and electron data, and datatype = '*' doesn't work
     ; in our 'fix'/'calc' routines for the FPI metadata

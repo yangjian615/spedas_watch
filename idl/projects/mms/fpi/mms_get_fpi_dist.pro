@@ -23,10 +23,10 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-13 16:05:41 -0800 (Wed, 13 Jan 2016) $
-;$LastChangedRevision: 19725 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_get_fpi_dist.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-01-29 15:22:13 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19853 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
 function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure

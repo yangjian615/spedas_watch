@@ -63,8 +63,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-08 10:39:47 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19700 $
+;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
+;$LastChangedRevision: 19843 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -74,7 +74,8 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
                   get_support_data = get_support_data, varformat = varformat, $
                   tplotnames = tplotnames, no_color_setup = no_color_setup, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
-                  cdf_filenames = cdf_filenames
+                  cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+                  latest_version = latest_version, min_version = min_version
                 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -106,7 +107,8 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, varformat = varformat, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix, cdf_filenames = cdf_filenames
+        no_update = no_update, suffix = suffix, cdf_filenames = cdf_filenames, $
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
     
     if undefined(tplotnames) then return
     

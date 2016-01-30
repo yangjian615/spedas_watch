@@ -3,7 +3,16 @@
 ; do you have suggestions for this crib sheet?  
 ;   please send them to egrimes@igpp.ucla.edu
 ; 
+; Note:
+; Quicklook plots are NOT intended for science analysis
+;     but rather, are useful for identifing data gaps,
+;     instrument problems, etc. 
+;    
+;    
 ; History:
+; egrimes updated 1/29/2016, changing to DMPA coordinates for 
+;     magnetic field data, now using position from DFG files, 
+;     instead of the ASCII/MEC files
 ; egrimes updated 12/9/2015, changed to GSM coordinates, adding 
 ;     support for l2pre, switched to use QL data instead of SITL
 ; egrimes updated 23Sep2015, to set some metadata for spectra/PADs
@@ -12,8 +21,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-12-16 08:37:16 -0800 (Wed, 16 Dec 2015) $
-; $LastChangedRevision: 19635 $
+; $LastChangedDate: 2016-01-29 14:57:24 -0800 (Fri, 29 Jan 2016) $
+; $LastChangedRevision: 19846 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_fpi_crib_qlplots.pro $
 ;-
 
@@ -24,8 +33,8 @@ start_time = systime(/seconds)
 ;date = '15-9-01/00:00:00'
 
 ; full day for FS
-;date = '2015-11-13/00:00:00'
-date = '2015-9-1/00:00:00'
+date = '2015-11-13/00:00:00'
+;date = '2015-10-11/00:00:00'
 timespan, date, 1, /day
 data_rate = 'fast'
 
@@ -36,8 +45,8 @@ data_rate = 'fast'
 
 probes = [1, 2, 3, 4]
 datatype = '*' ; grab all data in the CDF
-;level = 'sitl'
-level = 'ql'
+level = 'ql' ; FPI data
+dfg_level = 'ql' ; FGM
 autoscale = 1
 iw=0
 width = 650
@@ -73,66 +82,59 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     autoscale = autoscale
 
 ; load ephemeris data for all 4 probes
+; as of 1/29/16, we use the S/C position data loaded from the FGM files
 ;mms_load_state, trange = trange, probes = probes, /ephemeris
+;if dfg_level ne 'l2pre' then mms_load_mec, trange = trange, probes = probes
 
 ; load DFG data for all 4 probes
-;mms_load_dfg, trange = trange, probes = probes, level = 'ql', /no_attitude_data
-mms_load_fgm, trange = trange, probes = probes, /no_attitude_data, level = dfg_level
+mms_load_fgm, trange = trange, probes = probes, /no_attitude_data, level = dfg_level, instrument='dfg'
 
 FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
-   ; obsstr='mms'+STRING(i,FORMAT='(I1)')+'_fpi_'
     obsstr='mms'+STRING(i,FORMAT='(I1)')+'_'
     
     ;SET UP TPLOT VARIABLES
-
-    ; ephemeris data is loaded in with J2000 coordinates, need
-    ; to cotrans to GSM
-    ;spd_cotrans, 'mms'+STRING(i,FORMAT='(I1)')+'_defeph_pos', $
-    ;    'mms'+STRING(i,FORMAT='(I1)')+'_defeph_pos_gsm', in_coord='j2000',$
-    ;    out_coord='gsm', /ignore_dlimits
          
     ; convert the position data into Re
    ; eph_variable = 'mms'+strcompress(string(i), /rem)+'_defeph_pos'
     if dfg_level eq 'l2pre' then begin
         eph_variable = 'mms'+strcompress(string(i), /rem)+'_pos_gsm'
-        b_variable = '_dfg_srvy_l2pre_gsm'
-        suffix_kludge = ['0', '1', '2'] ; because the suffix is different depending on the level...
+        b_variable = '_dfg_srvy_l2pre_dmpa'
     endif else begin
         eph_variable = 'mms'+strcompress(string(i), /rem)+'_ql_pos_gsm'
-        b_variable = '_dfg_srvy_gsm'
-        suffix_kludge = ['x', 'y', 'z'] ; because the suffix is different depending on the level...
+        b_variable = '_dfg_srvy_dmpa'
     endelse
-   ; eph_variable = 'mms'+strcompress(string(i), /rem)+'_dfg_srvy_gsm_dmpa'
+
+    suffix_kludge = ['0', '1', '2']
     calc,'"'+eph_variable+'_re" = "'+eph_variable+'"/6371.2'
     
     ; split the position into its components
     split_vec, eph_variable+'_re'
-    
+    calc, '"'+eph_variable+'_R_gsm" = sqrt("'+eph_variable+'_re_'+suffix_kludge[0]+'"^2+"'+eph_variable+'_re_'+suffix_kludge[1]+'"^2+"'+eph_variable+'_re_'+suffix_kludge[2]+'"^2)'
+
     ; set the label to show along the bottom of the tplot
+    options, eph_variable+'_R_gsm', ytitle='R (Re)'
     options, eph_variable+'_re_'+suffix_kludge[0],ytitle='X-GSM (Re)'
     options, eph_variable+'_re_'+suffix_kludge[1],ytitle='Y-GSM (Re)'
     options, eph_variable+'_re_'+suffix_kludge[2],ytitle='Z-GSM (Re)'
-    ;position_vars = [eph_variable+'_re_'+suffix_kludge[0], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[2]]
-    position_vars = [eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0]]
+    position_vars = [eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0], eph_variable+'_R_gsm']
 
     ; Data quality bar
     qual_bar = mms_quality_bar(obsstr+'dataQuality')
     
     ; combine bent pipe B DSC into a single tplot variable
     prefix = 'mms'+strcompress(string(i), /rem)
-    ;split_vec, prefix+'_dfg_srvy_gse_bvec'
-    split_vec, prefix+b_variable+'_bvec'
+    split_vec, prefix+b_variable
     
     ; time clip the data to -150nT to 150nT
-    tclip, prefix+b_variable+'_bvec_?', -150, 150, /overwrite
+    tclip, prefix+b_variable+'_?', -150, 150, /overwrite
     tclip, prefix+b_variable+'_btot', -150, 150, /overwrite
     
-    store_data, prefix+'_dfg_gsm_srvy', data=prefix+[b_variable+'_bvec'+['_x', '_y', '_z'], b_variable+'_btot']
-    options, prefix+'_dfg_gsm_srvy', labflag=-1
-    options, prefix+'_dfg_gsm_srvy', labels=['Bx', 'By', 'Bz', 'Bmag']
-    options, prefix+'_dfg_gsm_srvy', colors=[2, 4, 6, 0]
-    options, prefix+'_dfg_gsm_srvy', ytitle=prefix+'!CFGM!CGSM'
-    
+    store_data, prefix+'_dfg_dmpa_srvy_clipped', data=prefix+[b_variable+'_'+suffix_kludge, b_variable+'_btot']
+    options, prefix+'_dfg_dmpa_srvy_clipped', labflag=-1
+    options, prefix+'_dfg_dmpa_srvy_clipped', labels=['Bx', 'By', 'Bz', 'Bmag']
+    options, prefix+'_dfg_dmpa_srvy_clipped', colors=[2, 4, 6, 0]
+    options, prefix+'_dfg_dmpa_srvy_clipped', ytitle=prefix+'!CDFG!CDMPA'
+
     ; combine the densities into one tplot variable
     ;join_vec, [obsstr+'DESnumberDensity', obsstr+'DISnumberDensity'], obsstr+'numberDensity'
     join_vec, [obsstr+'des_numberDensity', obsstr+'dis_numberDensity'], obsstr+'numberDensity'
@@ -190,8 +192,8 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     ; replace gaps with NaNs so tplot doesn't interpolate on the X axis
     tdegap, electron_espec, /overwrite
     tdegap, electron_espec_omni, /overwrite
-    panels=['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', qual_bar, $
-            prefix+'_dfg_gsm_srvy', electron_espec, electron_espec_omni]
+    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
+            prefix+'_dfg_dmpa_srvy_clipped', electron_espec, electron_espec_omni]
     window_caption="MMS FPI Electron energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
@@ -206,12 +208,13 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
                      obsstr+'dis_energySpectr_pY', obsstr+'dis_energySpectr_mY', $
                      obsstr+'dis_energySpectr_pZ', obsstr+'dis_energySpectr_mZ']
     ion_espec_omni= [obsstr+'dis_EnergySpectr_omni_sum',obsstr+'dis_EnergySpectr_omni_avg']
+
     ; replace gaps with NaNs so tplot doesn't interpolate on the X axis
     tdegap, ion_espec, /overwrite
     tdegap, ion_espec_omni, /overwrite
     
-    panels=['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', qual_bar, $
-             prefix+'_dfg_gsm_srvy',ion_espec, ion_espec_omni]
+    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
+             prefix+'_dfg_dmpa_srvy_clipped',ion_espec, ion_espec_omni]
     window_caption="MMS FPI Ion energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
 ;    tplot_options,'title', window_caption
@@ -229,8 +232,8 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     tdegap, e_pad, /overwrite
     tdegap, e_pad_allE, /overwrite
     
-    panels=['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', qual_bar, $
-             prefix+'_dfg_gsm_srvy',e_pad, e_pad_allE]
+    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
+             prefix+'_dfg_dmpa_srvy_clipped',e_pad, e_pad_allE]
     window_caption="MMS FPI Electron PAD:  Counts, summed/averaged over energy bands"
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
@@ -241,10 +244,10 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
            
               
     ;-----------ONE SPACECRAFT FPI SUMMARY PLOT--------------------
-    fpi_moments = [prefix+'_dfg_gsm_srvy', [obsstr+'des_numberDensity', obsstr+'dis_numberDensity'], obsstr+'eBulkV_DSC',  $
+    fpi_moments = [prefix+'_dfg_dmpa_srvy_clipped', [obsstr+'des_numberDensity', obsstr+'dis_numberDensity'], obsstr+'eBulkV_DSC',  $
                    obsstr+'iBulkV_DSC', obsstr+'temp']
     fpi_espects = [obsstr+'dis_EnergySpectr_omni_avg', obsstr+'des_EnergySpectr_omni_avg']
-    panels=['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', qual_bar, $
+    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
             fpi_moments, obsstr+'des_PitchAngDist_avg', fpi_espects]                    
     window_caption="MMS FPI Observatory Summary:"+"MMS"+STRING(i,FORMAT='(I1)')
     if ~postscript then window, iw, xsize=width, ysize=height
@@ -260,10 +263,10 @@ ENDFOR
 
 
 ;-----------FOUR SPACECRAFT SUMMARY PLOT--------------------
-panels=['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', qual_bar, obsstr+'dataQuality']
+panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, obsstr+'dataQuality']
 FOR i=1,4 DO BEGIN
    obsstr = 'mms'+STRING(i,FORMAT='(I1)')
-   panels=[panels,obsstr+'_dfg_gsm_srvy',obsstr+'_des_EnergySpectr_omni_sum',obsstr+'_dis_EnergySpectr_omni_sum'] 
+   panels=[panels,obsstr+'_dfg_dmpa_srvy_clipped',obsstr+'_des_EnergySpectr_omni_sum',obsstr+'_dis_EnergySpectr_omni_sum'] 
 ENDFOR
 window_caption="MMS FPI Observatory Summary: MMS1, MMS2, MMS3, MMS4"
 if ~postscript then window, iw, xsize=width, ysize=height
