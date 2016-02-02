@@ -34,9 +34,9 @@
 ;
 ; MODIFICATION HISTORY:
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
-;$LastChangedRevision: 17856 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-01-30 14:22:19 -0800 (Sat, 30 Jan 2016) $
+;$LastChangedRevision: 19861 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_spdfcdawebchooser.pro $
 ;-
 
@@ -633,9 +633,16 @@ PRO spd_ui_spdfcdawebchooser_event, event
     return
   ENDIF
   
+  ;get state structure and widget identity
   widget_control, event.top, get_uvalue=state
-  Widget_Control, event.id, Get_UValue=userValueb
-  CASE userValueb[0] OF
+  widget_name = widget_info(event.id, /uname)
+
+  ; *** NOTE ***
+  ; Some events caught here appear to have identical event.top & event.id
+  ; These appear to be the benign results of "Undocumented features" in xmanager
+  
+  ;process recognized widgets' events
+  CASE widget_name[0] OF
   
     'PICKDIR':BEGIN
     localDirText = widget_info(event.top, find_by_uname='LOCALDIR')
@@ -649,18 +656,20 @@ PRO spd_ui_spdfcdawebchooser_event, event
         widget_control, localDirText, set_value=sFolder
     endif 
     
-  END
-  'SAVECDFFILE': BEGIN
-    *state.saveData = event.select
-  END
-  'EXIT': BEGIN
-    spd_spdf_savecdfdir, event
-    spd_spdfExit, event
-    return
-  end
-  else:
+    END
+    'SAVECDFFILE': BEGIN
+      *state.saveData = event.select
+
+    END
+    'EXIT': BEGIN
+      spd_spdf_savecdfdir, event
+      spd_spdfExit, event
+      return
+    end
+    else:
   
-endcase
+  endcase
+
 end
 
 pro spd_spdf_savecdfdir, event
@@ -831,8 +840,7 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
     statusBar,$
     historyWin,$
     timeRangeObj=timeRangeObj,$
-    uvalue='TIME_WIDGET',$
-    uname='time_widget', $
+    uname='TIME_WIDGET',$
     startyear = 1965)
   ; the following is needed to grab SPDF data, for some reason, egrimes 7/10/2014  
   timePanel = widget_base(new_col_base, /row, MAP=0, SCR_YSIZE=1, scr_xsize=120)
@@ -851,18 +859,18 @@ pro spd_ui_spdfcdawebchooser, historyWin=historyWin, GROUP_LEADER = groupLeaderW
   localDirPanel = widget_base(right_col_base, row=2)
   localDirLabel = widget_label(localDirPanel, value = 'Local CDF directory:  ')
   localDirText = widget_text(localDirPanel, /edit, /all_events, xsize = 20,  $
-    uval = 'LOCALDIR', uname = 'LOCALDIR', val = localdir )
+     uname = 'LOCALDIR', val = localdir )
 
   getresourcepath,rpath
   folderbmp = read_bmp(rpath + 'folder_horizontal_open.bmp', /rgb)
   spd_ui_match_background, tlb, folderbmp
 
-  localDirButton=WIDGET_BUTTON(localDirPanel, VALUE=folderbmp, UValue='PICKDIR', $
+  localDirButton=WIDGET_BUTTON(localDirPanel, VALUE=folderbmp, uname='PICKDIR', $
     tooltip='Choose directory for saving CDAWeb CDF files', /BITMAP)
 
   localDirLabelEmpty = widget_label(localDirPanel, value = ' ')
   saveCDFPanel = widget_base(localDirPanel, /row, /NonExclusive)
-  prefixLabel = Widget_Button(saveCDFPanel, uname='SAVECDFFILE', uvalue='SAVECDFFILE', value = 'Save local CDF file')
+  prefixLabel = Widget_Button(saveCDFPanel, uname='SAVECDFFILE', value = 'Save local CDF file')
 
 
   prefixPanel = widget_base(right_col_base, /row)

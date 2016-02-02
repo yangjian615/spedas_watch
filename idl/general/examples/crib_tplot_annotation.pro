@@ -25,9 +25,9 @@
 ;  2.  If you see any useful commands missing from these cribs, please let us know.
 ;   these cribs can help double as documentation for tplot.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16596 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2016-02-01 11:25:06 -0800 (Mon, 01 Feb 2016) $
+; $LastChangedRevision: 19869 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_tplot_annotation.pro $
 ;-
 
@@ -274,6 +274,14 @@ tplot, 'sta_SWEA_mom_flux'
 
 print,'  The "colors" option controls line/label color'
 print,'Type ".c" to continue'
+
+stop
+
+; add a dashed line at zero
+timebar, 0.0, /databar, varname='sta_SWEA_mom_flux', linestyle=2
+
+print,'Add a horizontal bar to mark data with the "timebar" routine and keyword /databar'
+print,'Type ".c" to continue"
 
 stop
 

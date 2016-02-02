@@ -10,8 +10,8 @@
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-01-20 14:19:52 -0800 (Wed, 20 Jan 2016) $
-;   $LastChangedRevision: 19766 $
+;   $LastChangedDate: 2016-02-01 08:05:19 -0800 (Mon, 01 Feb 2016) $
+;   $LastChangedRevision: 19867 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
@@ -193,7 +193,7 @@ function rbsp_efw_get_flag_values,sc,times
   ;;             'magnetic_wake',$
   ;;             'autobias',$
   ;;             'charging',$
-  ;;             'undefined',$
+  ;;             'density',$
   ;;             'undefined',$
   ;;             'undefined',$
   ;;             'undefined']
@@ -211,13 +211,15 @@ function rbsp_efw_get_flag_values,sc,times
   flag_arr = replicate(fill_val,n_elements(times),20)
 
 
-;Some values we an set right away
+;Some values we can set right away
   flag_arr[*,9] = 1             ;V5 flag always set
   flag_arr[*,10] = 1            ;V6 flag always set
   flag_arr[*,11] = na_val       ;Espb_magnitude
   flag_arr[*,12] = na_val       ;Eparallel_magnitude
   flag_arr[*,13] = na_val       ;magnetic_wake
-  flag_arr[*,16:19] = na_val    ;undefined values
+  flag_arr[*,17:19] = na_val    ;undefined values
+
+
 
 
 ;Set flag if antenna potential exceeds max value

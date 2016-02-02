@@ -33,10 +33,10 @@ end
 
 
 
-function ksem_sweap_therm_temp,dval,parameter=p
+function ksem_therm_temp,dval,parameter=p
   if not keyword_set (p) then begin
 ;    p = {func:'mvn_sep_therm_temp2',R1:10000d, xmax:1023d, Rv:1d8, thm:thermistor_temp()}
-     p = {func:'ksem_sweap_therm_temp',R1:10000d, xmax:1023d, Rv:1d7, thm:'thermistor_resistance_ysi4908'}
+     p = {func:'ksem_therm_temp',R1:10000d, xmax:1023d, Rv:1d7, thm:'thermistor_resistance_ysi4908'}
   endif
 
   if n_params() eq 0 then return,p
@@ -115,7 +115,6 @@ end
 
 
 function ksem_generic_decom,ccsds,ptp_header=ptp_header,apdat=apdat
-  
 ;  ccsds.time = ptp_header.ptp_time
   str = create_struct(ptp_header,ccsds)
   
@@ -128,9 +127,38 @@ function ksem_generic_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 end
 
 
-function ksem_noise_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
-;  str = create_struct(ptp_header,ccsds)
+function  ksem_find_peak,d,cbins,window = wnd,threshold=threshold
+  nan = !values.d_nan
+  peak = {a:nan, x0:nan, s:nan}
+  if n_params() eq 0 then return,peak
+  if not keyword_set(cbins) then cbins = dindgen(n_elements(d))
+
+  if keyword_set(wnd) then begin
+    mx = max(d,b)
+    i1 = (b-wnd) > 0
+    i2 = (b+wnd) < (n_elements(d)-1)
+    ;    dprint,wnd
+    pk = find_peak(d[i1:i2],cbins[i1:i2],threshold=threshold)
+    return,pk
+  endif
+  if keyword_set(threshold) then begin
+    dprint,'not functioning'
+  endif
+
+  t = total(d)
+  avg = total(d * cbins)/t
+  sdev = sqrt(total(d*(cbins-avg)^2)/t)
+  peak.a=t
+  peak.x0=avg
+  peak.s=sdev
+  return,peak
+end
+
+
+
+
+function ksem_noise_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   if debug(3) && 1 then begin
     dprint,dlevel=2,'noise',ccsds.size+7, n_elements(ccsds.data),  ccsds.apid,' ',time_string(ccsds.time)
@@ -144,19 +172,38 @@ function ksem_noise_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     endif
     return,0
   endif
-  
-  
+
   dat = swap_endian(/swap_if_little_endian,  uint(ccsds.data[20:*],0,80) )
 
 ;  if debug(3)  then dprint,time_string(ccsds.time)
   t = ccsds.time
 
-  if ptr_valid(apdat.usr_ptr) && keyword_set(*apdat.usr_ptr) then begin    
-    delta_data = uint(dat - *apdat.usr_ptr)
+;printdat,apdat.last_ccsds
+  if ptr_valid(apdat.usr_ptr) && keyword_set(*apdat.usr_ptr) then begin  
+    delta_data = uint(dat - *apdat.usr_ptr)  
+    delta_seq_cntr = (ccsds.seq_cntr - (*apdat.last_ccsds).seq_cntr) and '3fff'x
+;    printdat,delta_seq_cntr
+    ddata = float(delta_data)/delta_seq_cntr
+
+    p= replicate(find_peak(),8)
+
+    noise_res = 3  ; temporary fix - needs to be obtained from hkp packets
+
+    x = (dindgen(10)-4.5) * ( 2d ^ (noise_res-3))
+    d = reform(ddata,10,8)
+    for j=0,7 do begin
+      ;     p[j] = find_peak(d[*,j],x)
+      p[j] = ksem_find_peak(d[0:8,j],x[0:8])   ; ignore end channel
+    endfor
+;    printdat,p
+    
     str = { $
       time: t, $
       seq_cntr: ccsds.seq_cntr, $
-      ddata:  float(delta_data), $
+      ddata: ddata, $
+      num: p.a,   $
+      baseline : p.x0,  $
+      sigma: p.s,  $
       gap:0 }
   endif else     str = 0
   *apdat.usr_ptr = dat
@@ -200,6 +247,8 @@ function ksem_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   err2s = [ishft(err2,-8),err2] and 'ff'x
   rates = d[16:23]
 ;  rates = rates[[0,1,3,2,4,5,7,6]]     ; remove this line when Jianxin fixes order
+  noise_resolution= ishft(d[12],-8) and 7
+  noise_rate= d[12] and 'ff'x
   str = {time:t ,$
     seq_cntr: ccsds.seq_cntr, $
     MON:  fix(d[0:7]),  $
@@ -210,10 +259,12 @@ function ksem_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     FTUO_flags: d[10],   $
     DETEN_flags: d[11], $
     NOISE_flags: d[12], $
+    noise_res:  noise_resolution, $
+    noise_rate:  noise_rate, $
     maddr: d[13], $  
     chksum:  b[27], $
     pps:  b[28], $
-    rates: rates, $   ; check order - not consistent in doc
+    rates: rates, $  
     err1: err1s , $
     err2: err2s , $  
     gap:0 }
@@ -260,8 +311,7 @@ end
 function ksem_ccsds_decom,buffer             ; buffer should contain bytes for a single ccsds packet, header is contained in first 3 words (6 bytes)
   buffer_length = n_elements(buffer)
   if buffer_length lt 12 then begin
-    dprint,'Invalid buffer length: ',buffer_length,dlevel=2
-    
+    dprint,'Invalid buffer length: ',buffer_length,dlevel=2    
     return, 0
   endif
   header = swap_endian(uint(buffer[0:11],0,6) ,/swap_if_little_endian )
@@ -359,8 +409,16 @@ end
 
 
 pro ksem_tplot_init
+  tplot_options,'no_interp',1
+  tplot_options,'wshow',0
+  tplot_options,'lazy_ytitle',1
+  options,'ksem_noise_DDATA',spec=1,panel_size=3,yrange=[0,80],zrange=[0,100]
+  options,'ksem_science_DATA',spec=1,panel_size=7
+  ylim,'ksem_science_DATA',-1,256,0
+  zlim,'ksem_science_DATA',.8,200,1
   options,'*FLAGS',tplot_routine='bitplot'
-
+  ylim,'ksem_hkp_RATES',.8,1e5 ,1
+  tplot,'ksem_hkp_MON ksem_hkp_RATES ksem_hkp_MADDR ksem_hkp_FTUO_FLAGS ksem_science_DATA ksem_noise_DDATA ksem_noise_BASELINE ksem_noise_SIGMA'
 end
 
 

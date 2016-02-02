@@ -16,8 +16,8 @@
 ; HISTORY: Created by Aaron W Breneman, May 2014
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-01-17 11:18:47 -0800 (Sun, 17 Jan 2016) $
-;   $LastChangedRevision: 19751 $
+;   $LastChangedDate: 2016-02-01 08:03:13 -0800 (Mon, 01 Feb 2016) $
+;   $LastChangedRevision: 19863 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l3.pro $
 ;-
 
@@ -118,6 +118,8 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   charging_flag = flag_str.charging_flag
   ibias = flag_str.ibias
 
+  if bp eq '12' then copy_data,'rbsp'+sc+'_density12','rbsp'+sc+'_density'
+  if bp eq '34' then copy_data,'rbsp'+sc+'_density34','rbsp'+sc+'_density'
 
   get_data,'rbsp'+sc+'_density',data=dens
 

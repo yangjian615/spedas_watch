@@ -18,18 +18,21 @@
 ;     
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 15:31:07 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19854 $
+;$LastChangedDate: 2016-02-01 07:59:12 -0800 (Mon, 01 Feb 2016) $
+;$LastChangedRevision: 19862 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_spin_sum.pro $
 ;-
 
-pro mms_hpca_spin_sum, probe = probe, varname
+pro mms_hpca_spin_sum, probe = probe, datatype=datatype, species=species, fov=fov
     if undefined(probe) then begin
         dprint, dlevel = 0, 'Error, must provide probe # to spin-sum the HPCA data'
         return
     endif else begin
         probe = strcompress(string(probe), /rem)
     endelse
+    if undefined(datatype) then datatype='RF_corrected'
+    if undefined(species) then species = 'hplus'
+    if undefined(fov) then fov = ['0', '360'] else fov = strcompress(string(fov),/rem)
     
     get_data, 'mms'+probe+'_hpca_start_azimuth', data=start_az
     
@@ -44,6 +47,7 @@ pro mms_hpca_spin_sum, probe = probe, varname
         return
     endif
 
+    varname = 'mms'+probe+'_hpca_'+species+'_'+datatype+'_elev_'+fov[0]+'-'+fov[1]
     get_data, varname, data=hpca_data
     
     if ~is_struct(hpca_data) then begin
